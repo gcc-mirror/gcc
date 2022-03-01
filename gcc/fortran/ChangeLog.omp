@@ -1,3 +1,64 @@
+2022-03-01  Tobias Burnus  <tobias@codesourcery.com>
+
+	* class.cc (finalization_scalarizer): Mark syms as artificial.
+	(generate_callback_wrapper): New.
+	(gfc_find_derived_vtab): Call it, add _callback comp.
+	* f95-lang.cc (LANG_HOOKS_OMP_DEEP_MAPPING,
+	LANG_HOOKS_OMP_DEEP_MAPPING_P,
+	LANG_HOOKS_OMP_DEEP_MAPPING_CNT): Redeinfe
+	* gfortran.h (gfc_import_iso_c_binding_module,
+	GFC_CLASS_CALLBACK_DEFAULT_FLAG, GFC_CLASS_CALLBACK_VTABLE_FLAG,
+	GFC_CLASS_CB_ALLOCATABLE, GFC_CLASS_CB_POINTER,
+	GFC_CLASS_CB_PROC_POINTER, GFC_CLASS_CB_VTABLE,
+	GFC_CLASS_CB_VPTR): New.
+	* match.cc (select_type_set_tmp): Propagate allocatable property.
+	* module.cc (MOD_VERSION): Bump due to vtab change.
+	(import_iso_c_binding_module): New import_all arg.
+	(gfc_import_iso_c_binding_module): New.
+	(gfc_use_module): Update call.
+	* openmp.cc (resolve_omp_clauses): Accept DT with alloc comps.
+	* resolve.cc (gfc_resolve_formal_arglist, gfc_resolve_intrinsic,
+	resolve_fl_procedure, resolve_types): Permit some violations
+	for internal code.
+	* trans-array.cc (gfc_conv_descriptor_stride_get,
+	gfc_tree_array_size, gfc_full_array_size): Update
+	for GFC_TYPE_ARRAY_AKIND change.
+	(gfc_conv_expr_descriptor): Likewise; permit calling with tree code.
+	* trans-expr.cc (VTABLE_CALLBACK_FIELD): Add.
+	(VTAB_GET_FIELD_GEN): Use it.
+	(VTABLE_DEALLOCATE_FIELD): Undef at the end.
+	(gfc_conv_expr_reference): Fixes; avoid unneccessary temp var.
+	* trans-intrinsic.cc (gfc_conv_intrinsic_sizeof,
+	gfc_conv_associated): Fix class and comp-ref handling.
+	(conv_isocbinding_function): Remove buggy code.
+	* trans-openmp.ccc (gfc_has_alloc_comps): Add ptr_ok arg.
+	(gfc_omp_private_outer_ref, gfc_walk_alloc_comps,
+	gfc_omp_clause_default_ctor, gfc_omp_clause_copy_ctor,
+	gfc_omp_clause_assign_op, gfc_omp_clause_dtor,
+	(gfc_omp_finish_clause): Update call.
+	(GFC_MAP_TOKEN_DATA, GFC_MAP_TOKEN_SIZES, GFC_MAP_TOKEN_KINDS,
+	GFC_MAP_TOKEN_DATA_OFFSET, GFC_MAP_TOKEN_OFFSET,
+	GFC_MAP_TOKEN_FLAGS, GFC_MAP_TOKEN_DETACH): Define.
+	(gfc_omp_get_token_data, gfc_omp_get_token_sizes,
+	gfc_omp_get_token_kinds, gfc_omp_get_token_offset_data,
+	gfc_omp_get_token_offset, gfc_omp_get_token_flags,
+	gfc_omp_get_token_detach, gfc_omp_get_map_token_type,
+	gfc_omp_get_cb_type, gfc_omp_gen_deep_map_fn,
+	gfc_omp_deep_mapping_map, gfc_omp_deep_mapping_item,
+	gfc_omp_deep_mapping_comps, gfc_omp_gen_simple_loop,
+	gfc_omp_get_array_size, gfc_omp_elmental_loop,
+	gfc_omp_deep_map_kind_p, gfc_omp_deep_mapping_int_p,
+	gfc_omp_deep_mapping_p, gfc_omp_deep_mapping_do),
+	gfc_omp_deep_mapping_cnt, gfc_omp_deep_mapping): New.
+	(gfc_trans_omp_array_section): Save clause decl to survive gimplifying.
+	(gfc_trans_omp_clauses): Likewise; fixes.
+	* trans-types.cc (gfc_build_array_type, gfc_get_derived_type,
+	gfc_get_array_descr_info): Update array kind to distinguish
+	different assumed-rank arrays.
+	* trans.h (gfc_class_vtab_callback_get, gfc_omp_deep_mapping_p,
+	gfc_omp_deep_mapping_cnt, gfc_omp_deep_mapping): New prototypes.
+	(enum gfc_array_kind): Additional GFC_ARRAY_ASSUMED_RANK_* entries.
+
 2022-02-11  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	* decl.cc (gfc_match_end): Search for first previous state that is not

@@ -51,6 +51,8 @@ along with GCC; see the file COPYING3.  If not see
 		 allocatable components and calls FINAL subroutines.
     * _deallocate: A procedure pointer to a deallocation procedure; nonnull
 		 only for a recursive derived type.
+    * _callback: A procedure pointer, taking a callback proc pointer and
+		 calling that one for the DT and the allocatable components.
 
    After these follow procedure pointer components for the specific
    type-bound procedures.  */
@@ -1172,6 +1174,7 @@ finalization_scalarizer (gfc_symbol *array, gfc_symbol *ptr,
   /* C_F_POINTER().  */
   block = gfc_get_code (EXEC_CALL);
   gfc_get_sym_tree ("c_f_pointer", sub_ns, &block->symtree, true);
+  block->symtree->n.sym->attr.artificial = 1;
   block->resolved_sym = block->symtree->n.sym;
   block->resolved_sym->attr.flavor = FL_PROCEDURE;
   block->resolved_sym->attr.intrinsic = 1;
@@ -1194,6 +1197,7 @@ finalization_scalarizer (gfc_symbol *array, gfc_symbol *ptr,
   expr = gfc_get_expr ();
   expr->expr_type = EXPR_FUNCTION;
   gfc_get_sym_tree ("c_loc", sub_ns, &expr->symtree, false);
+  expr->symtree->n.sym->attr.artificial = 1;
   expr->symtree->n.sym->attr.flavor = FL_PROCEDURE;
   expr->symtree->n.sym->intmod_sym_id = ISOCBINDING_LOC;
   expr->symtree->n.sym->attr.intrinsic = 1;
@@ -2317,6 +2321,557 @@ finish_assumed_rank:
   free (name);
 }
 
+/* Generate:  __callback (cb, token, this)
+   with   size_t (*cb) (cb_token, cb_addr, cb_len, cb_flag, cb_fn)
+	  void *token
+	  void *this_ptr - flag=GFC_CLASS_CALLBACK_VTABLE_FLAG:
+			     scalar pointer to this DT -> 'scalar'
+			   flag flag=GFC_CLASS_CALLBACK_DEFAULT_FLAG:
+			     var's _vtab component
+		Assumed to be != NULL.
+	  flag - GFC_CLASS_CALLBACK_DEFAULT_FLAG:
+		   map allocatable/pointer components
+		 GFC_CLASS_CALLBACK_VTABLE_FLAG:
+		   map vtable of this type and return
+	  cb_flag: GFC_CLASS_CB_ALLOCATABLE, GFC_CLASS_CB_POINTER,
+		   GFC_CLASS_CB_VTABLE, GFC_CLASS_CB_VPTR
+   Calls 'cb' with:
+     cb_token := token
+     if flag == GFC_CLASS_CALLBACK_VTABLE_FLAG:
+       cb_var := this_ptr; size = c_sizeof (vtable); cb_flag=GFC_CLASS_CB_VTABLE
+     else (flag = GFC_CLASS_CALLBACK_DEFAULT_FLAG)
+       call c_f_pointer (this_ptr, scalar)
+       for each component:
+	 if pointer && associated
+	   [class only] cb_var = scalar.comp._vptr, size == 0,
+			cb_flag = GFC_CLASS_CB_VPTR
+	   cb_var = scalar.comp.(_data), size == 0, cb_flag=GFC_CLASS_CB_POINTER
+	   if allocatable && allocatated
+	     [class only]
+	       scalar.comp._vptr->callback(cb, token, scalar.comp._vptr,
+					   flag=GFC_CLASS_CALLBACK_VTABLE_FLAG)
+	     cb_var = scalar.comp._vptr, size == c_sizeof(scalar.comp.(_data),
+		    cb_flag = GFC_CLASS_CB_ALLOCATABLE
+	   if (allocatable comp || class)
+	     [class only]
+	       scalar.comp._vptr->callback(cb, token, scalar.comp._vptr,
+					   flag=GFC_CLASS_CALLBACK_VTABLE_FLAG)
+	     // Note: callback is elemental, i.e. one call per array elem
+	     scalar.comp._vptr->callback(cb, token, scalar.comp.(_data),
+					 flag=GFC_CLASS_CALLBACK_DEFAULT_FLAG)
+*/
+
+static void
+generate_callback_wrapper (gfc_symbol *vtab, gfc_symbol *derived,
+			   gfc_namespace *ns, const char *tname,
+			   gfc_component *vtab_cb)
+{
+  gfc_namespace *sub_ns;
+  gfc_code *last_code, *block;
+  gfc_symbol *callback, *cb, *token, *this_ptr, *scalar, *flag, *result;
+  gfc_symbol *c_ptr, *c_funptr, *c_null_funptr, *c_short, *c_size_t;
+  gfc_expr *size;
+  int c_short_kind, c_size_kind;
+  char *name;
+
+  /* Set up the namespace.  */
+  sub_ns = gfc_get_namespace (ns, 0);
+  sub_ns->sibling = ns->contained;
+  ns->contained = sub_ns;
+  sub_ns->resolved = 1;
+
+  gfc_namespace *saved_ns = gfc_current_ns;
+  gfc_current_ns = sub_ns;
+  gfc_import_iso_c_binding_module ();
+  gfc_current_ns = saved_ns;
+  gfc_find_symbol ("c_ptr", sub_ns, 0, &c_ptr);
+  gfc_find_symbol ("c_funptr", sub_ns, 0, &c_funptr);
+  gfc_find_symbol ("c_null_funptr", sub_ns, 0, &c_null_funptr);
+  gfc_find_symbol ("c_short", sub_ns, 0, &c_short);
+  c_short_kind = mpz_get_si (c_short->value->value.integer);
+  gfc_find_symbol ("c_size_t", sub_ns, 0, &c_size_t);
+  c_size_kind = mpz_get_si (c_size_t->value->value.integer);
+
+  /* Set up the procedure symbol.  */
+  name = xasprintf ("__callback_%s", tname);
+  gfc_get_symbol (name, sub_ns, &callback);
+  free (name);
+  sub_ns->proc_name = callback;
+  callback->attr.flavor = FL_PROCEDURE;
+  callback->attr.function = 1;
+  callback->attr.pure = 0;
+  callback->attr.recursive = 1;
+  callback->attr.elemental = 1;
+  callback->result = callback;
+  callback->ts.type = BT_INTEGER;
+  callback->ts.kind = gfc_index_integer_kind;
+  callback->attr.artificial = 1;
+  callback->attr.always_explicit = 1;
+  callback->attr.if_source = IFSRC_DECL;
+  if (ns->proc_name && ns->proc_name->attr.flavor == FL_MODULE)
+    callback->module = ns->proc_name->name;
+  gfc_set_sym_referenced (callback);
+
+  /* Set up formal argument.  */
+  gfc_get_symbol ("cb", sub_ns, &cb);
+  cb->attr.flavor = FL_PROCEDURE;
+  cb->attr.artificial = 1;
+  cb->attr.dummy = 1;
+  cb->attr.elemental = 1;  // FIXME - that's not quite right.
+  cb->attr.function = 1;
+  cb->attr.intent = INTENT_IN;
+  cb->result = cb;
+  cb->ts.type = BT_INTEGER;
+  cb->ts.kind = gfc_index_integer_kind;
+  cb->attr.if_source = IFSRC_IFBODY;
+  gfc_set_sym_referenced (cb);
+  callback->formal = gfc_get_formal_arglist ();
+  callback->formal->sym = cb;
+  cb->formal_ns = gfc_get_namespace (sub_ns, 0);
+  cb->formal_ns->proc_name = cb;
+  /* cb_token. */
+  gfc_get_symbol ("cb_token", cb->formal_ns, &token);
+  token->ts.type = BT_DERIVED;
+  token->ts.u.derived = c_ptr;
+  token->attr.flavor = FL_VARIABLE;
+  token->attr.dummy = 1;
+  token->attr.value = 1;
+  token->attr.artificial = 1;
+  token->attr.intent = INTENT_IN;
+  gfc_set_sym_referenced (token);
+  cb->formal = gfc_get_formal_arglist ();
+  cb->formal->sym = token;
+  /* cb_var */
+  gfc_get_symbol ("cb_var", cb->formal_ns, &token);
+  token->ts.type = BT_DERIVED;
+  token->ts.u.derived = c_ptr;
+  token->attr.flavor = FL_VARIABLE;
+  token->attr.dummy = 1;
+  token->attr.artificial = 1;
+  token->attr.intent = INTENT_IN;
+  gfc_set_sym_referenced (token);
+  cb->formal->next = gfc_get_formal_arglist ();
+  cb->formal->next->sym = token;
+  /* cb_len */
+  gfc_get_symbol ("cb_len", cb->formal_ns, &token);
+  token->ts.type = BT_INTEGER;
+  token->ts.kind = gfc_index_integer_kind;
+  token->attr.flavor = FL_VARIABLE;
+  token->attr.dummy = 1;
+  token->attr.value = 1;
+  token->attr.artificial = 1;
+  token->attr.intent = INTENT_IN;
+  gfc_set_sym_referenced (token);
+  cb->formal->next->next = gfc_get_formal_arglist ();
+  cb->formal->next->next->sym = token;
+  /* cb_flag */
+  gfc_get_symbol ("cb_flag", cb->formal_ns, &token);
+  token->ts.type = BT_INTEGER;
+  token->ts.kind = c_short_kind;
+  token->attr.flavor = FL_VARIABLE;
+  token->attr.dummy = 1;
+  token->attr.value = 1;
+  token->attr.artificial = 1;
+  token->attr.intent = INTENT_IN;
+  gfc_set_sym_referenced (token);
+  cb->formal->next->next = gfc_get_formal_arglist ();
+  cb->formal->next->next->sym = token;
+  /* cb_fn */
+  gfc_get_symbol ("cb_fn", cb->formal_ns, &token);
+  token->ts.type = BT_DERIVED;
+  token->ts.u.derived = c_funptr;
+  token->attr.flavor = FL_VARIABLE;
+  token->attr.dummy = 1;
+  token->attr.elemental = 1;
+  token->attr.value = 1;
+  token->attr.artificial = 1;
+  token->attr.intent = INTENT_IN;
+  gfc_set_sym_referenced (token);
+  cb->formal->next->next->next = gfc_get_formal_arglist ();
+  cb->formal->next->next->next->sym = token;
+
+  /* Con't __callback_%s  args.  */
+  gfc_get_symbol ("token", sub_ns, &token);
+  token->ts.type = BT_DERIVED;
+  token->ts.u.derived = c_ptr;
+  token->attr.flavor = FL_VARIABLE;
+  token->attr.dummy = 1;
+  token->attr.value = 1;
+  token->attr.artificial = 1;
+  token->attr.intent = INTENT_IN;
+  gfc_set_sym_referenced (token);
+  callback->formal->next = gfc_get_formal_arglist ();
+  callback->formal->next->sym = token;
+
+  gfc_get_symbol ("this_ptr", sub_ns, &this_ptr);
+  this_ptr->ts.type = BT_DERIVED;
+  this_ptr->ts.u.derived = c_ptr;
+  this_ptr->attr.flavor = FL_VARIABLE;
+  this_ptr->attr.dummy = 1;
+  this_ptr->attr.value = 1;
+  this_ptr->attr.artificial = 1;
+  this_ptr->attr.intent = INTENT_IN;
+  gfc_set_sym_referenced (this_ptr);
+  callback->formal->next->next = gfc_get_formal_arglist ();
+  callback->formal->next->next->sym = this_ptr;
+
+  gfc_get_symbol ("flag", sub_ns, &flag);
+  flag->ts.type = BT_INTEGER;
+  flag->ts.kind = c_short_kind;
+  flag->attr.flavor = FL_VARIABLE;
+  flag->attr.dummy = 1;
+  flag->attr.contiguous = 1;
+  flag->attr.artificial = 1;
+  flag->attr.value = 1;
+  flag->attr.intent = INTENT_IN;
+  gfc_set_sym_referenced (flag);
+  callback->formal->next->next->next = gfc_get_formal_arglist ();
+  callback->formal->next->next->next->sym = flag;
+
+  /* Local var. */
+  gfc_get_symbol ("result", sub_ns, &result);
+  result->ts = callback->ts;
+  result->attr.flavor = FL_VARIABLE;
+  result->attr.result = 1;
+  callback->result = result;
+  gfc_set_sym_referenced (result);
+
+  gfc_get_symbol ("scalar", sub_ns, &scalar);
+  scalar->ts.type = BT_DERIVED;
+  scalar->ts.u.derived = derived;
+  scalar->attr.flavor = FL_VARIABLE;
+  scalar->attr.pointer = 1;
+  scalar->attr.artificial = 1;
+  gfc_set_sym_referenced (scalar);
+
+  /* Set return value to 0.  */
+  last_code = gfc_get_code (EXEC_ASSIGN);
+  last_code->expr1 = gfc_lval_expr_from_sym (result);
+  last_code->expr2 = gfc_get_int_expr (gfc_index_integer_kind, NULL, 0);
+  sub_ns->code = last_code;
+
+  /* if (flag == GFC_CLASS_CALLBACK_VTABLE_FLAG)
+       return cb (token, scalar.vtab, c_sizeof (vtab),
+		  GFC_CLASS_CB_VTABLE, NULL) */
+  last_code->next = gfc_get_code (EXEC_IF);
+  last_code = last_code->next;
+  last_code->block = gfc_get_code (EXEC_IF);
+  block = last_code->block;
+  block->expr1 = gfc_get_expr ();
+  block->expr1->expr_type = EXPR_OP;
+  block->expr1->where = gfc_current_locus;
+  block->expr1->ts.type = BT_LOGICAL;
+  block->expr1->ts.kind = 1;
+  block->expr1->value.op.op = INTRINSIC_EQ;
+  block->expr1->value.op.op1 = gfc_lval_expr_from_sym (flag);
+  block->expr1->value.op.op2
+    = gfc_get_int_expr (flag->ts.kind, NULL, GFC_CLASS_CALLBACK_VTABLE_FLAG);
+  size = gfc_get_expr ();
+  size->expr_type = EXPR_FUNCTION;
+  size->value.function.isym = gfc_intrinsic_function_by_id (GFC_ISYM_SIZEOF);
+  size->value.function.name = size->value.function.isym->name;
+  size->value.function.esym = NULL;
+  size->value.function.actual = gfc_get_actual_arglist ();
+  size->value.function.actual->expr = gfc_lval_expr_from_sym (vtab);
+  size->where = gfc_current_locus;
+  block->next = gfc_get_code (EXEC_ASSIGN);
+  block = block->next;
+  block->expr1 = gfc_lval_expr_from_sym (result);
+  block->expr2 = gfc_get_expr ();
+  block->expr2->expr_type = EXPR_FUNCTION;
+  block->expr2->ts = cb->ts;
+  block->expr2->where = gfc_current_locus;
+  block->expr2->symtree = gfc_find_symtree (sub_ns->sym_root, cb->name);
+  block->expr2->value.function.esym = cb;
+  block->expr2->value.function.name = cb->name;
+  block->expr2->value.function.actual = gfc_get_actual_arglist ();
+  block->expr2->value.function.actual->expr = gfc_lval_expr_from_sym (token);
+  block->expr2->value.function.actual->next = gfc_get_actual_arglist ();
+  block->expr2->value.function.actual->next->expr
+    = gfc_lval_expr_from_sym (this_ptr);
+  block->expr2->value.function.actual->next->next
+    = gfc_get_actual_arglist ();
+  block->expr2->value.function.actual->next->next->expr = size;
+  block->expr2->value.function.actual->next->next->next
+    = gfc_get_actual_arglist ();
+  block->expr2->value.function.actual->next->next->next->expr
+    = gfc_get_int_expr (c_short_kind, NULL, GFC_CLASS_CB_VTABLE);
+  block->expr2->value.function.actual->next->next->next->next
+    = gfc_get_actual_arglist ();
+  block->expr2->value.function.actual->next->next->next->next->expr
+    = gfc_lval_expr_from_sym (c_null_funptr);
+
+  block->next = gfc_get_code (EXEC_RETURN);
+
+  // call c_f_pointer (this_ptr, scalar)
+  last_code->next = gfc_get_code (EXEC_CALL);
+  last_code = last_code->next;
+  gfc_get_sym_tree ("c_f_pointer", sub_ns, &last_code->symtree, false);
+  last_code->resolved_sym = last_code->symtree->n.sym;
+  last_code->resolved_isym
+    = gfc_intrinsic_subroutine_by_id (GFC_ISYM_C_F_POINTER);
+  last_code->ext.actual = gfc_get_actual_arglist ();
+  last_code->ext.actual->expr = gfc_lval_expr_from_sym (this_ptr);
+  last_code->ext.actual->next = gfc_get_actual_arglist ();
+  last_code->ext.actual->next->expr = gfc_lval_expr_from_sym (scalar);
+
+  /* Call now for pointer:
+       [class only:] cb (token, comp->_vptr, 3, NULL);
+       cb (token, comp(->_data), 0, NULL);
+     for allocatable:
+       [class only:] comp->_vptr->callback (cb, token, comp->var_vptr, 1)
+       cb (token, comp->var(.data), size, 1, NULL);
+     and then for allocatable of either class type or with allocatable comps
+       for each array element
+	 cb (token, comp->var(.data), size, 0, var's cb fn);  */
+  for (gfc_component *comp = derived->components; comp; comp = comp->next)
+    {
+      bool pointer = (comp->ts.type == BT_CLASS
+		      ? CLASS_DATA (comp)->attr.pointer : comp->attr.pointer);
+      bool proc_ptr = comp->attr.proc_pointer;
+      if (!pointer && !proc_ptr && comp->ts.type != BT_CLASS
+	  && !comp->attr.allocatable)
+	continue;
+
+      gfc_expr *expr = gfc_lval_expr_from_sym (scalar);
+      expr->ref = gfc_get_ref ();
+      expr->ref->type = REF_COMPONENT;
+      expr->ref->u.c.sym = derived;
+      expr->ref->u.c.component = comp;
+      expr->ts = comp->ts;
+
+      if (!proc_ptr && comp->ts.type != BT_CLASS && comp->attr.dimension)
+	{
+	  gfc_ref *ref = expr->ref;
+	  ref->next = gfc_get_ref ();
+	  ref = ref->next;
+	  ref->type = REF_ARRAY;
+	  ref->u.ar.type = AR_FULL;
+	  ref->u.ar.as = comp->as;
+	  expr->rank = comp->as->rank;
+	}
+
+      if (pointer || proc_ptr)
+	size = gfc_get_int_expr (gfc_index_integer_kind, NULL, 0);
+      else
+	{
+	  size = gfc_get_expr ();
+	  size->expr_type = EXPR_FUNCTION;
+	  size->value.function.isym
+	    = gfc_intrinsic_function_by_id (GFC_ISYM_SIZEOF);
+	  size->value.function.name = size->value.function.isym->name;
+	  size->value.function.esym = NULL;
+	  size->value.function.actual = gfc_get_actual_arglist ();
+	  size->value.function.actual->expr = gfc_copy_expr (expr);
+	  size->where = gfc_current_locus;
+	}
+
+      if (!proc_ptr && comp->ts.type == BT_CLASS)
+	{
+	  gfc_add_data_component (expr);
+	  if (comp->attr.dimension)
+	    {
+	      gfc_ref *ref = expr->ref->next;
+	      ref->next = gfc_get_ref ();
+	      ref = ref->next;
+	      ref->type = REF_ARRAY;
+	      ref->u.ar.type = AR_FULL;
+	      ref->u.ar.as = comp->as;
+	      expr->rank = comp->as->rank;
+	    }
+	}
+
+      /* if (allocated/associated(comp) */
+      last_code->next = gfc_get_code (EXEC_IF);
+      last_code = last_code->next;
+      last_code->block = gfc_get_code (EXEC_IF);
+      block = last_code->block;
+      block->expr1 = gfc_get_expr ();
+      block->expr1->expr_type = EXPR_FUNCTION;
+      block->expr1->ts.type = BT_LOGICAL;
+      block->expr1->ts.kind = 1;
+      block->expr1->value.function.isym
+	= gfc_intrinsic_function_by_id (pointer || proc_ptr
+					? GFC_ISYM_ASSOCIATED
+					: GFC_ISYM_ALLOCATED);
+      block->expr1->value.function.name
+	= block->expr1->value.function.isym->name;
+      block->expr1->value.function.esym = NULL;
+      block->expr1->value.function.actual = gfc_get_actual_arglist ();
+      block->expr1->value.function.actual->expr = gfc_copy_expr (expr);
+      if (pointer || proc_ptr)
+	block->expr1->value.function.actual->next = gfc_get_actual_arglist ();
+      block->expr1->where = gfc_current_locus;
+
+      /* n += cb (token, &scalar->comp(._data), size, pointer ? 1 : 0, NULL) */
+
+      /* c_loc (scalar%comp) */
+      gfc_expr *loc_expr = gfc_get_expr ();
+      loc_expr->expr_type = EXPR_FUNCTION;
+      gfc_get_sym_tree ("c_loc", sub_ns, &loc_expr->symtree, false);
+      loc_expr->symtree->n.sym->attr.flavor = FL_PROCEDURE;
+      loc_expr->symtree->n.sym->intmod_sym_id = ISOCBINDING_LOC;
+      loc_expr->symtree->n.sym->attr.intrinsic = 1;
+      loc_expr->symtree->n.sym->from_intmod = INTMOD_ISO_C_BINDING;
+      loc_expr->value.function.isym
+	= gfc_intrinsic_function_by_id (GFC_ISYM_C_LOC);
+      loc_expr->value.function.name = loc_expr->value.function.isym->name;
+      loc_expr->value.function.actual = gfc_get_actual_arglist ();
+      loc_expr->value.function.actual->expr = expr;
+      loc_expr->symtree->n.sym->result = expr->symtree->n.sym;
+      loc_expr->ts.type = BT_INTEGER;
+      loc_expr->ts.kind = gfc_index_integer_kind;
+      loc_expr->where = gfc_current_locus;
+
+      /* Call CB procedure for ptr assignment or allocatable copying.  */
+      block->next = gfc_get_code (EXEC_ASSIGN);
+      block = block->next;
+      block->expr1 = gfc_lval_expr_from_sym (result);
+      block->expr2 = gfc_get_expr ();
+      block->expr2->ts = result->ts;
+      block->expr2->where = gfc_current_locus;
+      block->expr2->expr_type = EXPR_OP;
+      block->expr2->value.op.op = INTRINSIC_PLUS;
+      block->expr2->value.op.op1 = gfc_lval_expr_from_sym (result);
+      block->expr2->value.op.op2 = gfc_get_expr ();
+
+      gfc_expr *e = block->expr2->value.op.op2;
+      e->expr_type = EXPR_FUNCTION;
+      e->ts = cb->ts;
+      e->where = gfc_current_locus;
+      e->symtree = gfc_find_symtree (sub_ns->sym_root, cb->name);
+      e->value.function.esym = cb;
+      e->value.function.name = cb->name;
+      e->value.function.actual = gfc_get_actual_arglist ();
+      e->value.function.actual->expr = gfc_lval_expr_from_sym (token);
+      e->value.function.actual->next = gfc_get_actual_arglist ();
+      e->value.function.actual->next->expr = loc_expr;
+      e->value.function.actual->next->next = gfc_get_actual_arglist ();
+      e->value.function.actual->next->next->expr = size;
+      e->value.function.actual->next->next->next = gfc_get_actual_arglist ();
+      e->value.function.actual->next->next->next->expr
+	= gfc_get_int_expr (c_short_kind, NULL,
+			    proc_ptr ? GFC_CLASS_CB_PROC_POINTER
+				     : (pointer ? GFC_CLASS_CB_POINTER
+						: GFC_CLASS_CB_ALLOCATABLE));
+      e->value.function.actual->next->next->next->next
+	= gfc_get_actual_arglist ();
+      e->value.function.actual->next->next->next->next->expr
+	= gfc_lval_expr_from_sym (c_null_funptr);
+
+      /* Call for each element cb when comp can have allocatable comps. */
+      if (((comp->ts.type != BT_DERIVED || !comp->ts.u.derived->attr.alloc_comp)
+	    && comp->ts.type != BT_CLASS)
+	  || pointer || proc_ptr)
+	continue;
+
+      /* TODO: Handle unlimited polymorphic components.  */
+      if (comp->ts.type == BT_CLASS
+	  && CLASS_DATA (comp)->ts.u.derived->attr.unlimited_polymorphic)
+	continue;
+
+      /* TODO: Handle unlimited polymorphic components.  */
+      if (comp->ts.type == BT_CLASS
+	  && comp->ts.u.derived->attr.unlimited_polymorphic)
+	continue;
+
+      gfc_expr *vtab_cb_expr;
+      if (comp->ts.type == BT_DERIVED)
+	vtab_cb_expr = gfc_lval_expr_from_sym (gfc_find_vtab (&comp->ts));
+      else
+	{
+	  vtab_cb_expr = gfc_lval_expr_from_sym (scalar);
+	  vtab_cb_expr->ref = gfc_get_ref ();
+	  vtab_cb_expr->ref->type = REF_COMPONENT;
+	  vtab_cb_expr->ref->u.c.sym = derived;
+	  vtab_cb_expr->ref->u.c.component = comp;
+	  gfc_add_vptr_component (vtab_cb_expr);
+	}
+      gfc_add_component_ref (vtab_cb_expr, "_callback");
+
+      block->next = gfc_get_code (EXEC_ASSIGN);
+      block = block->next;
+      block->expr1 = gfc_lval_expr_from_sym (result);
+      block->expr2 = gfc_get_expr ();
+      block->expr2->ts = result->ts;
+      block->expr2->where = gfc_current_locus;
+      block->expr2->expr_type = EXPR_OP;
+      block->expr2->value.op.op = INTRINSIC_PLUS;
+      block->expr2->value.op.op1 = gfc_lval_expr_from_sym (result);
+      block->expr2->value.op.op2 = gfc_get_expr ();
+      e = block->expr2->value.op.op2;
+
+      /* size:  storage_size(comp_expr) / storage_size(0_1), where the
+	 denominator is BITS_PER_UNIT as bit_size = kind * BITS_PER_UNIT.  */
+      size = gfc_get_expr ();
+      size->expr_type = EXPR_OP;
+      size->where = gfc_current_locus;
+      size->ts.type = BT_INTEGER;
+      size->ts.kind = c_size_kind;
+      size->value.op.op = INTRINSIC_DIVIDE;
+      size->value.op.op1 = gfc_get_expr ();
+      size->value.op.op1->ts = size->ts;
+      size->value.op.op1->expr_type = EXPR_FUNCTION;
+      size->value.op.op1->value.function.isym
+	= gfc_intrinsic_function_by_id (GFC_ISYM_STORAGE_SIZE);
+      size->value.op.op1->value.function.name
+	= size->value.op.op1->value.function.isym->name;
+      size->value.op.op1->value.function.esym = NULL;
+      size->value.op.op1->value.function.actual = gfc_get_actual_arglist ();
+      size->value.op.op1->value.function.actual->expr = gfc_copy_expr (expr);
+      size->value.op.op1->where = gfc_current_locus;
+      size->value.op.op2 = gfc_get_expr ();
+      size->value.op.op2->ts = size->ts;
+      size->value.op.op2->expr_type = EXPR_FUNCTION;
+      size->value.op.op2->value.function.isym
+	= gfc_intrinsic_function_by_id (GFC_ISYM_STORAGE_SIZE);
+      size->value.op.op2->value.function.name
+	= size->value.op.op2->value.function.isym->name;
+      size->value.op.op2->value.function.esym = NULL;
+      size->value.op.op2->value.function.actual = gfc_get_actual_arglist ();
+      size->value.op.op2->value.function.actual->expr
+	= gfc_get_int_expr (/* kind = */ 1, NULL, 0);
+      size->value.op.op2->where = gfc_current_locus;
+
+      if (comp->attr.dimension)
+	{
+	  e->expr_type = EXPR_FUNCTION;
+	  e->ts = cb->ts;
+	  e->where = gfc_current_locus;
+	  e->value.function.isym = gfc_intrinsic_function_by_id (GFC_ISYM_SUM);
+	  e->value.function.name = e->value.function.isym->name;
+	  e->value.function.esym = NULL;
+	  e->value.function.actual = gfc_get_actual_arglist ();
+	  e->value.function.actual->next = gfc_get_actual_arglist ();
+	  e->value.function.actual->next->next = gfc_get_actual_arglist ();
+	  e->value.function.actual->expr = gfc_get_expr ();
+	  e = e->value.function.actual->expr;
+	}
+
+      e->expr_type = EXPR_FUNCTION;
+      e->ts = cb->ts;
+      e->where = gfc_current_locus;
+      e->symtree = gfc_find_symtree (sub_ns->sym_root, cb->name);
+      e->value.function.esym = cb;
+      e->value.function.name = cb->name;
+      e->value.function.actual = gfc_get_actual_arglist ();
+      e->value.function.actual->expr = gfc_lval_expr_from_sym (token);
+      e->value.function.actual->next = gfc_get_actual_arglist ();
+      e->value.function.actual->next->expr = gfc_copy_expr (expr);
+      e->value.function.actual->next->next = gfc_get_actual_arglist ();
+      e->value.function.actual->next->next->expr = size;
+      e->value.function.actual->next->next->next = gfc_get_actual_arglist ();
+      e->value.function.actual->next->next->next->expr
+	= gfc_get_int_expr (gfc_index_integer_kind, NULL,
+			    GFC_CLASS_CB_ALLOCATABLE);
+      e->value.function.actual->next->next->next->next = gfc_get_actual_arglist ();
+      e->value.function.actual->next->next->next->next->expr = vtab_cb_expr;
+    }
+
+  vtab_cb->initializer = gfc_lval_expr_from_sym (callback);
+  vtab_cb->ts.interface = callback;
+  gfc_commit_symbols ();
+}
 
 /* Add procedure pointers for all type-bound procedures to a vtab.  */
 
@@ -2500,6 +3055,8 @@ gfc_find_derived_vtab (gfc_symbol *derived)
 		  c->initializer = gfc_get_null_expr (NULL);
 		}
 
+	      vtab->ts.u.derived = vtype;
+
 	      if (!derived->attr.unlimited_polymorphic
 		  && derived->components == NULL
 		  && !derived->attr.zero_comp)
@@ -2678,13 +3235,25 @@ gfc_find_derived_vtab (gfc_symbol *derived)
 		  c->ts.interface = dealloc;
 		}
 
+	      /* Add component _callback.  */
+	      if (!gfc_add_component (vtype, "_callback", &c))
+		goto cleanup;
+	      c->attr.proc_pointer = 1;
+	      c->attr.access = ACCESS_PRIVATE;
+	      c->tb = XCNEW (gfc_typebound_proc);
+	      c->tb->ppc = 1;
+	      if (derived->attr.unlimited_polymorphic
+		  || derived->attr.abstract)
+		c->initializer = gfc_get_null_expr (NULL);
+	      else
+		generate_callback_wrapper (vtab, derived, ns, tname, c);
+
 	      /* Add procedure pointers for type-bound procedures.  */
 	      if (!derived->attr.unlimited_polymorphic)
 		add_procs_to_declared_vtab (derived, vtype);
 	  }
 
 have_vtype:
-	  vtab->ts.u.derived = vtype;
 	  vtab->value = gfc_default_initializer (&vtab->ts);
 	}
       free (name);

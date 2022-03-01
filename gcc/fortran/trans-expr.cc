@@ -204,6 +204,7 @@ gfc_get_ultimate_alloc_ptr_comps_caf_token (gfc_se *outerse, gfc_expr *expr)
 #define VTABLE_COPY_FIELD 4
 #define VTABLE_FINAL_FIELD 5
 #define VTABLE_DEALLOCATE_FIELD 6
+#define VTABLE_CALLBACK_FIELD 7
 
 
 tree
@@ -383,6 +384,7 @@ VTAB_GET_FIELD_GEN (def_init, VTABLE_DEF_INIT_FIELD)
 VTAB_GET_FIELD_GEN (copy, VTABLE_COPY_FIELD)
 VTAB_GET_FIELD_GEN (final, VTABLE_FINAL_FIELD)
 VTAB_GET_FIELD_GEN (deallocate, VTABLE_DEALLOCATE_FIELD)
+VTAB_GET_FIELD_GEN (callback, VTABLE_CALLBACK_FIELD)
 #undef VTAB_GET_FIELD_GEN
 
 /* The size field is returned as an array index type.  Therefore treat
@@ -420,6 +422,9 @@ gfc_vptr_size_get (tree vptr)
 #undef VTABLE_DEF_INIT_FIELD
 #undef VTABLE_COPY_FIELD
 #undef VTABLE_FINAL_FIELD
+#undef VTABLE_DEALLOCATE_FIELD
+#undef VTABLE_CALLBACK_FIELD
+
 
 
 /* IF ts is null (default), search for the last _class ref in the chain
@@ -9592,7 +9597,8 @@ gfc_conv_expr_reference (gfc_se * se, gfc_expr * expr)
   if (expr->ts.type == BT_CHARACTER)
     {
       gfc_conv_expr (se, expr);
-      gfc_conv_string_parameter (se);
+      if (expr->expr_type != EXPR_VARIABLE || !gfc_expr_attr (expr).proc_pointer)
+	gfc_conv_string_parameter (se);
       return;
     }
 
@@ -9640,6 +9646,9 @@ gfc_conv_expr_reference (gfc_se * se, gfc_expr * expr)
       TREE_STATIC (var) = 1;
       pushdecl (var);
     }
+  else if (expr->expr_type == EXPR_VARIABLE
+	   && (DECL_P (se->expr) || TREE_CODE (se->expr) == COMPONENT_REF))
+    var = se->expr;
   else
     {
       var = gfc_create_var (TREE_TYPE (se->expr), NULL);

@@ -1,3 +1,19 @@
+2022-03-01  Tobias Burnus  <tobias@codesourcery.com>
+
+	* langhooks-def.h (lhd_omp_deep_mapping_p,
+	lhd_omp_deep_mapping_cnt, lhd_omp_deep_mapping): New.
+	(LANG_HOOKS_OMP_DEEP_MAPPING_P, LANG_HOOKS_OMP_DEEP_MAPPING_CNT,
+	LANG_HOOKS_OMP_DEEP_MAPPING): Define.
+	(LANG_HOOKS_DECLS): Use it.
+	* langhooks.cc (lhd_omp_deep_mapping_p, lhd_omp_deep_mapping_cnt,
+	lhd_omp_deep_mapping): New stubs.
+	* langhooks.h (struct lang_hooks_for_decls): Add new hooks
+	* omp-expand.cc (expand_omp_target): Handle dynamic-size
+	addr/sizes/kinds arrays.
+	* omp-low.cc (build_sender_ref, fixup_child_record_type,
+	scan_sharing_clauses, lower_omp_target): Update to handle
+	new hooks and dynamic-size addr/sizes/kinds arrays.
+
 2022-01-28  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	* gimplify.cc (gimplify_omp_metadirective): Mark offloadable functions

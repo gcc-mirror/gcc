@@ -7978,13 +7978,6 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 			 && n->sym->as->type == AS_ASSUMED_SIZE)
 		  gfc_error ("Assumed size array %qs in %s clause at %L",
 			     n->sym->name, name, &n->where);
-		if (!openacc
-		    && list == OMP_LIST_MAP
-		    && n->sym->ts.type == BT_DERIVED
-		    && n->sym->ts.u.derived->attr.alloc_comp)
-		  gfc_error ("List item %qs with allocatable components is not "
-			     "permitted in map clause at %L", n->sym->name,
-			     &n->where);
 		if (list == OMP_LIST_MAP && !openacc)
 		  switch (code->op)
 		    {

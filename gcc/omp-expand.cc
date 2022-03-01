@@ -10017,8 +10017,9 @@ expand_omp_target (struct omp_region *region)
 		  /* We're ignoring the subcode because we're
 		     effectively doing a STRIP_NOPS.  */
 
-		  if (TREE_CODE (arg) == ADDR_EXPR
-		      && TREE_OPERAND (arg, 0) == sender)
+		  if ((TREE_CODE (arg) == ADDR_EXPR
+		       && TREE_OPERAND (arg, 0) == sender)
+		      || arg == sender)
 		    {
 		      tgtcopy_stmt = stmt;
 		      break;
@@ -10467,13 +10468,24 @@ expand_omp_target (struct omp_region *region)
       t3 = t2;
       t4 = t2;
     }
-  else
+  else if (TREE_VEC_LENGTH (t) == 3)
     {
       t1 = TYPE_MAX_VALUE (TYPE_DOMAIN (TREE_TYPE (TREE_VEC_ELT (t, 1))));
       t1 = size_binop (PLUS_EXPR, t1, size_int (1));
       t2 = build_fold_addr_expr (TREE_VEC_ELT (t, 0));
       t3 = build_fold_addr_expr (TREE_VEC_ELT (t, 1));
       t4 = build_fold_addr_expr (TREE_VEC_ELT (t, 2));
+    }
+  else
+    {
+      t1 = force_gimple_operand_gsi (&gsi, TREE_VEC_ELT (t, 3), true, NULL_TREE,
+				     true, GSI_SAME_STMT);
+      t2 = force_gimple_operand_gsi (&gsi, TREE_VEC_ELT (t, 0), true, NULL_TREE,
+				     true, GSI_SAME_STMT);
+      t3 = force_gimple_operand_gsi (&gsi, TREE_VEC_ELT (t, 1), true, NULL_TREE,
+				     true, GSI_SAME_STMT);
+      t4 = force_gimple_operand_gsi (&gsi, TREE_VEC_ELT (t, 2), true, NULL_TREE,
+				     true, GSI_SAME_STMT);
     }
 
   gimple *g;

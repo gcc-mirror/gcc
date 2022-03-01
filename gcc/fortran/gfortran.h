@@ -3863,6 +3863,7 @@ void gfc_free_wait (gfc_wait *);
 bool gfc_resolve_wait (gfc_wait *);
 
 /* module.cc */
+void gfc_import_iso_c_binding_module (void);
 void gfc_module_init_2 (void);
 void gfc_module_done_2 (void);
 void gfc_dump_module (const char *, int);
@@ -3926,6 +3927,13 @@ bool gfc_invalid_null_arg (gfc_expr *);
 
 
 /* class.cc */
+#define GFC_CLASS_CALLBACK_DEFAULT_FLAG 0
+#define GFC_CLASS_CALLBACK_VTABLE_FLAG 1
+#define GFC_CLASS_CB_ALLOCATABLE 0
+#define GFC_CLASS_CB_POINTER 1
+#define GFC_CLASS_CB_PROC_POINTER 2
+#define GFC_CLASS_CB_VTABLE 3
+#define GFC_CLASS_CB_VPTR 4
 void gfc_fix_class_refs (gfc_expr *e);
 void gfc_add_component_ref (gfc_expr *, const char *);
 void gfc_add_class_array_ref (gfc_expr *);

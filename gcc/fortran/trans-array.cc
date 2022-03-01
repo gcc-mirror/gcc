@@ -465,9 +465,11 @@ gfc_conv_descriptor_stride_get (tree desc, tree dim)
   gcc_assert (GFC_DESCRIPTOR_TYPE_P (type));
   if (integer_zerop (dim)
       && (GFC_TYPE_ARRAY_AKIND (type) == GFC_ARRAY_ALLOCATABLE
-	  ||GFC_TYPE_ARRAY_AKIND (type) == GFC_ARRAY_ASSUMED_SHAPE_CONT
-	  ||GFC_TYPE_ARRAY_AKIND (type) == GFC_ARRAY_ASSUMED_RANK_CONT
-	  ||GFC_TYPE_ARRAY_AKIND (type) == GFC_ARRAY_POINTER_CONT))
+	  || GFC_TYPE_ARRAY_AKIND (type) == GFC_ARRAY_ASSUMED_SHAPE_CONT
+	  || GFC_TYPE_ARRAY_AKIND (type) == GFC_ARRAY_ASSUMED_RANK_CONT
+	  || GFC_TYPE_ARRAY_AKIND (type) == GFC_ARRAY_ASSUMED_RANK_ALLOCATABLE
+	  || GFC_TYPE_ARRAY_AKIND (type) == GFC_ARRAY_ASSUMED_RANK_POINTER_CONT
+	  || GFC_TYPE_ARRAY_AKIND (type) == GFC_ARRAY_POINTER_CONT))
     return gfc_index_one_node;
 
   return gfc_conv_descriptor_stride (desc, dim);
@@ -8344,7 +8346,8 @@ gfc_conv_expr_descriptor (gfc_se *se, gfc_expr *expr)
 
 
 /* Calculate the array size (number of elements); if dim != NULL_TREE,
-   return size for that dim (dim=0..rank-1; only for GFC_DESCRIPTOR_TYPE_P).  */
+   return size for that dim (dim=0..rank-1; only for GFC_DESCRIPTOR_TYPE_P).
+   If !expr && descriptor array, the rank is taken from the descriptor.  */
 tree
 gfc_tree_array_size (stmtblock_t *block, tree desc, gfc_expr *expr, tree dim)
 {
@@ -8354,20 +8357,21 @@ gfc_tree_array_size (stmtblock_t *block, tree desc, gfc_expr *expr, tree dim)
       return GFC_TYPE_ARRAY_SIZE (TREE_TYPE (desc));
     }
   tree size, tmp, rank = NULL_TREE, cond = NULL_TREE;
-  symbol_attribute attr = gfc_expr_attr (expr);
-  gfc_array_spec *as = gfc_get_full_arrayspec_from_expr (expr);
   gcc_assert (GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (desc)));
-  if ((!attr.pointer && !attr.allocatable && as && as->type == AS_ASSUMED_RANK)
-       || !dim)
-    {
-      if (expr->rank < 0)
-	rank = fold_convert (signed_char_type_node,
-			     gfc_conv_descriptor_rank (desc));
-      else
-	rank = build_int_cst (signed_char_type_node, expr->rank);
-    }
+  /* Nonallocatable, nonpointer assumed-rank array.  */
+  enum gfc_array_kind akind = GFC_TYPE_ARRAY_AKIND (TREE_TYPE (desc));
+  bool assumed_rank = (akind == GFC_ARRAY_ASSUMED_RANK_CONT
+		       || akind == GFC_ARRAY_ASSUMED_RANK
+		       || akind == GFC_ARRAY_ASSUMED_RANK_ALLOCATABLE
+		       || akind == GFC_ARRAY_ASSUMED_RANK_POINTER
+		       || akind == GFC_ARRAY_ASSUMED_RANK_POINTER_CONT);
+  if (expr == NULL || expr->rank < 0)
+    rank = fold_convert (signed_char_type_node,
+			 gfc_conv_descriptor_rank (desc));
+  else
+    rank = build_int_cst (signed_char_type_node, expr->rank);
 
-  if (dim || expr->rank == 1)
+  if (dim || (expr && expr->rank == 1))
     {
       if (!dim)
 	dim = gfc_index_zero_node;
@@ -8384,8 +8388,8 @@ gfc_tree_array_size (stmtblock_t *block, tree desc, gfc_expr *expr, tree dim)
 	   size = max (0, size);  */
       size = fold_build2_loc (input_location, MAX_EXPR, gfc_array_index_type,
 			      size, gfc_index_zero_node);
-      if (!attr.pointer && !attr.allocatable
-	  && as && as->type == AS_ASSUMED_RANK)
+      if (assumed_rank && (akind == GFC_ARRAY_ASSUMED_RANK_CONT
+			   || akind == GFC_ARRAY_ASSUMED_RANK))
 	{
 	  tmp = fold_build2_loc (input_location, MINUS_EXPR, signed_char_type_node,
 				 rank, build_int_cst (signed_char_type_node, 1));
@@ -8426,7 +8430,8 @@ gfc_tree_array_size (stmtblock_t *block, tree desc, gfc_expr *expr, tree dim)
 	   extent = 0
       size *= extent.  */
   cond = NULL_TREE;
-  if (!attr.pointer && !attr.allocatable && as && as->type == AS_ASSUMED_RANK)
+  if (assumed_rank && (akind == GFC_ARRAY_ASSUMED_RANK_CONT
+		       || akind == GFC_ARRAY_ASSUMED_RANK))
     {
       tmp = fold_build2_loc (input_location, MINUS_EXPR, signed_char_type_node,
 			     rank, build_int_cst (signed_char_type_node, 1));
@@ -8918,7 +8923,10 @@ gfc_full_array_size (stmtblock_t *block, tree decl, int rank)
   tree idx;
   tree nelems;
   tree tmp;
-  idx = gfc_rank_cst[rank - 1];
+  if (rank < 0)
+    idx = gfc_conv_descriptor_rank (decl);
+  else
+    idx = gfc_rank_cst[rank - 1];
   nelems = gfc_conv_descriptor_ubound_get (decl, idx);
   tmp = gfc_conv_descriptor_lbound_get (decl, idx);
   tmp = fold_build2_loc (input_location, MINUS_EXPR, gfc_array_index_type,

@@ -25,9 +25,15 @@ along with GCC; see the file COPYING3.  If not see
 #include "options.h"
 #include "tree.h"
 #include "gfortran.h"
+#include "basic-block.h"
+#include "tree-ssa.h"
+#include "tree-pass.h"  /* for PROP_gimple_any */
+#include "function.h"
+#include "gimple.h"
 #include "gimple-expr.h"
 #include "trans.h"
 #include "stringpool.h"
+#include "cgraph.h"
 #include "fold-const.h"
 #include "gimplify.h"	/* For create_tmp_var_raw.  */
 #include "trans-stmt.h"
@@ -40,6 +46,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "omp-general.h"
 #include "omp-low.h"
 #include "memmodel.h"  /* For MEMMODEL_ enums.  */
+#include "stor-layout.h"
+#include "gimple-iterator.h"
+#include "gimplify-me.h"
 
 #undef GCC_DIAG_STYLE
 #define GCC_DIAG_STYLE __gcc_tdiag__
@@ -369,22 +378,25 @@ gfc_omp_report_decl (tree decl)
   return decl;
 }
 
-/* Return true if TYPE has any allocatable components.  */
+/* Return true if TYPE has any allocatable components;
+   if ptr_ok, the decl itself is permitted to have the POINTER attribute.  */
 
 static bool
-gfc_has_alloc_comps (tree type, tree decl)
+gfc_has_alloc_comps (tree type, tree decl, bool ptr_ok)
 {
   tree field, ftype;
 
   if (POINTER_TYPE_P (type))
     {
-      if (GFC_DECL_GET_SCALAR_ALLOCATABLE (decl))
+      if (GFC_DECL_GET_SCALAR_ALLOCATABLE (decl)
+	  || (ptr_ok && GFC_DECL_GET_SCALAR_POINTER (decl)))
 	type = TREE_TYPE (type);
       else if (GFC_DECL_GET_SCALAR_POINTER (decl))
 	return false;
     }
 
-  if (GFC_DESCRIPTOR_TYPE_P (type)
+  if (!ptr_ok
+      && GFC_DESCRIPTOR_TYPE_P (type)
       && (GFC_TYPE_ARRAY_AKIND (type) == GFC_ARRAY_POINTER
 	  || GFC_TYPE_ARRAY_AKIND (type) == GFC_ARRAY_POINTER_CONT))
     return false;
@@ -403,7 +415,7 @@ gfc_has_alloc_comps (tree type, tree decl)
       if (GFC_DESCRIPTOR_TYPE_P (ftype)
 	  && GFC_TYPE_ARRAY_AKIND (ftype) == GFC_ARRAY_ALLOCATABLE)
 	return true;
-      if (gfc_has_alloc_comps (ftype, field))
+      if (gfc_has_alloc_comps (ftype, field, false))
 	return true;
     }
   return false;
@@ -481,7 +493,7 @@ gfc_omp_private_outer_ref (tree decl)
   if (GFC_DECL_GET_SCALAR_ALLOCATABLE (decl))
     return true;
 
-  if (gfc_has_alloc_comps (type, decl))
+  if (gfc_has_alloc_comps (type, decl, false))
     return true;
 
   return false;
@@ -621,7 +633,7 @@ gfc_walk_alloc_comps (tree decl, tree dest, tree var,
     {
       tree ftype = TREE_TYPE (field);
       tree declf, destf = NULL_TREE;
-      bool has_alloc_comps = gfc_has_alloc_comps (ftype, field);
+      bool has_alloc_comps = gfc_has_alloc_comps (ftype, field, false);
       if ((!GFC_DESCRIPTOR_TYPE_P (ftype)
 	   || GFC_TYPE_ARRAY_AKIND (ftype) != GFC_ARRAY_ALLOCATABLE)
 	  && !GFC_DECL_GET_SCALAR_ALLOCATABLE (field)
@@ -745,7 +757,7 @@ gfc_omp_clause_default_ctor (tree clause, tree decl, tree outer)
       && (!GFC_DECL_GET_SCALAR_ALLOCATABLE (OMP_CLAUSE_DECL (clause))
 	  || !POINTER_TYPE_P (type)))
     {
-      if (gfc_has_alloc_comps (type, OMP_CLAUSE_DECL (clause)))
+      if (gfc_has_alloc_comps (type, OMP_CLAUSE_DECL (clause), false))
 	{
 	  gcc_assert (outer);
 	  gfc_start_block (&block);
@@ -798,7 +810,7 @@ gfc_omp_clause_default_ctor (tree clause, tree decl, tree outer)
   else
     gfc_add_modify (&cond_block, unshare_expr (decl),
 		    fold_convert (TREE_TYPE (decl), ptr));
-  if (gfc_has_alloc_comps (type, OMP_CLAUSE_DECL (clause)))
+  if (gfc_has_alloc_comps (type, OMP_CLAUSE_DECL (clause), false))
     {
       tree tem = gfc_walk_alloc_comps (outer, decl,
 				       OMP_CLAUSE_DECL (clause),
@@ -940,7 +952,7 @@ gfc_omp_clause_copy_ctor (tree clause, tree dest, tree src)
       && (!GFC_DECL_GET_SCALAR_ALLOCATABLE (OMP_CLAUSE_DECL (clause))
 	  || !POINTER_TYPE_P (type)))
     {
-      if (gfc_has_alloc_comps (type, OMP_CLAUSE_DECL (clause)))
+      if (gfc_has_alloc_comps (type, OMP_CLAUSE_DECL (clause), false))
 	{
 	  gfc_start_block (&block);
 	  gfc_add_modify (&block, dest, src);
@@ -999,7 +1011,7 @@ gfc_omp_clause_copy_ctor (tree clause, tree dest, tree src)
 			      builtin_decl_explicit (BUILT_IN_MEMCPY), 3, ptr,
 			      srcptr, size);
   gfc_add_expr_to_block (&cond_block, fold_convert (void_type_node, call));
-  if (gfc_has_alloc_comps (type, OMP_CLAUSE_DECL (clause)))
+  if (gfc_has_alloc_comps (type, OMP_CLAUSE_DECL (clause), false))
     {
       tree tem = gfc_walk_alloc_comps (src, dest,
 				       OMP_CLAUSE_DECL (clause),
@@ -1044,7 +1056,7 @@ gfc_omp_clause_assign_op (tree clause, tree dest, tree src)
       && (!GFC_DECL_GET_SCALAR_ALLOCATABLE (OMP_CLAUSE_DECL (clause))
 	  || !POINTER_TYPE_P (type)))
     {
-      if (gfc_has_alloc_comps (type, OMP_CLAUSE_DECL (clause)))
+      if (gfc_has_alloc_comps (type, OMP_CLAUSE_DECL (clause), false))
 	{
 	  gfc_start_block (&block);
 	  /* First dealloc any allocatable components in DEST.  */
@@ -1066,7 +1078,7 @@ gfc_omp_clause_assign_op (tree clause, tree dest, tree src)
 
   gfc_start_block (&block);
 
-  if (gfc_has_alloc_comps (type, OMP_CLAUSE_DECL (clause)))
+  if (gfc_has_alloc_comps (type, OMP_CLAUSE_DECL (clause), false))
     {
       then_b = gfc_walk_alloc_comps (dest, NULL_TREE, OMP_CLAUSE_DECL (clause),
 				     WALK_ALLOC_COMPS_DTOR);
@@ -1181,7 +1193,7 @@ gfc_omp_clause_assign_op (tree clause, tree dest, tree src)
 			      builtin_decl_explicit (BUILT_IN_MEMCPY), 3, ptr,
 			      srcptr, size);
   gfc_add_expr_to_block (&cond_block, fold_convert (void_type_node, call));
-  if (gfc_has_alloc_comps (type, OMP_CLAUSE_DECL (clause)))
+  if (gfc_has_alloc_comps (type, OMP_CLAUSE_DECL (clause), false))
     {
       tree tem = gfc_walk_alloc_comps (src, dest,
 				       OMP_CLAUSE_DECL (clause),
@@ -1433,7 +1445,7 @@ gfc_omp_clause_dtor (tree clause, tree decl)
       && (!GFC_DECL_GET_SCALAR_ALLOCATABLE (OMP_CLAUSE_DECL (clause))
 	  || !POINTER_TYPE_P (type)))
     {
-      if (gfc_has_alloc_comps (type, OMP_CLAUSE_DECL (clause)))
+      if (gfc_has_alloc_comps (type, OMP_CLAUSE_DECL (clause), false))
 	return gfc_walk_alloc_comps (decl, NULL_TREE,
 				     OMP_CLAUSE_DECL (clause),
 				     WALK_ALLOC_COMPS_DTOR);
@@ -1453,7 +1465,7 @@ gfc_omp_clause_dtor (tree clause, tree decl)
     tem = gfc_call_free (decl);
   tem = gfc_omp_unshare_expr (tem);
 
-  if (gfc_has_alloc_comps (type, OMP_CLAUSE_DECL (clause)))
+  if (gfc_has_alloc_comps (type, OMP_CLAUSE_DECL (clause), false))
     {
       stmtblock_t block;
       tree then_b;
@@ -1561,6 +1573,7 @@ gfc_omp_finish_clause (tree c, gimple_seq *pre_p, bool openacc)
 
   tree c2 = NULL_TREE, c3 = NULL_TREE, c4 = NULL_TREE;
   tree present = gfc_omp_check_optional_argument (decl, true);
+  tree orig_decl = NULL_TREE;
   if (DECL_P (decl) && POINTER_TYPE_P (TREE_TYPE (decl)))
     {
       if (!gfc_omp_privatize_by_reference (decl)
@@ -1569,7 +1582,7 @@ gfc_omp_finish_clause (tree c, gimple_seq *pre_p, bool openacc)
 	  && !GFC_DECL_CRAY_POINTEE (decl)
 	  && !GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (TREE_TYPE (decl))))
 	return;
-      tree orig_decl = decl;
+      orig_decl = decl;
 
       c4 = build_omp_clause (OMP_CLAUSE_LOCATION (c), OMP_CLAUSE_MAP);
       OMP_CLAUSE_SET_MAP_KIND (c4, GOMP_MAP_POINTER);
@@ -1582,14 +1595,14 @@ gfc_omp_finish_clause (tree c, gimple_seq *pre_p, bool openacc)
 	{
 	  c2 = build_omp_clause (input_location, OMP_CLAUSE_MAP);
 	  OMP_CLAUSE_SET_MAP_KIND (c2, GOMP_MAP_POINTER);
-	  OMP_CLAUSE_DECL (c2) = decl;
+	  OMP_CLAUSE_DECL (c2) = unshare_expr (decl);
 	  OMP_CLAUSE_SIZE (c2) = size_int (0);
 
 	  stmtblock_t block;
 	  gfc_start_block (&block);
-	  tree ptr = decl;
-	  ptr = gfc_build_cond_assign_expr (&block, present, decl,
-					    null_pointer_node);
+	  tree ptr = gfc_build_cond_assign_expr (&block, present,
+						 unshare_expr (decl),
+						 null_pointer_node);
 	  gimplify_and_add (gfc_finish_block (&block), pre_p);
 	  ptr = build_fold_indirect_ref (ptr);
 	  OMP_CLAUSE_DECL (c) = ptr;
@@ -1606,10 +1619,10 @@ gfc_omp_finish_clause (tree c, gimple_seq *pre_p, bool openacc)
 	{
 	  c3 = build_omp_clause (OMP_CLAUSE_LOCATION (c), OMP_CLAUSE_MAP);
 	  OMP_CLAUSE_SET_MAP_KIND (c3, GOMP_MAP_POINTER);
-	  OMP_CLAUSE_DECL (c3) = unshare_expr (decl);
+	  OMP_CLAUSE_DECL (c3) = decl;
 	  OMP_CLAUSE_SIZE (c3) = size_int (0);
 	  decl = build_fold_indirect_ref (decl);
-	  OMP_CLAUSE_DECL (c) = decl;
+	  OMP_CLAUSE_DECL (c) = unshare_expr (decl);
 	}
     }
   if (GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (decl)))
@@ -1652,7 +1665,7 @@ gfc_omp_finish_clause (tree c, gimple_seq *pre_p, bool openacc)
 						   : GOMP_MAP_POINTER);
       if (present)
 	{
-	  ptr = gfc_conv_descriptor_data_get (decl);
+	  ptr = gfc_conv_descriptor_data_get (unshare_expr (decl));
 	  ptr = gfc_build_addr_expr (NULL, ptr);
 	  ptr = gfc_build_cond_assign_expr (&block, present,
 					    ptr, null_pointer_node);
@@ -1665,16 +1678,34 @@ gfc_omp_finish_clause (tree c, gimple_seq *pre_p, bool openacc)
       tree size = create_tmp_var (gfc_array_index_type);
       tree elemsz = TYPE_SIZE_UNIT (gfc_get_element_type (type));
       elemsz = fold_convert (gfc_array_index_type, elemsz);
-      if (GFC_TYPE_ARRAY_AKIND (type) == GFC_ARRAY_ALLOCATABLE
-	  || GFC_TYPE_ARRAY_AKIND (type) == GFC_ARRAY_POINTER
-	  || GFC_TYPE_ARRAY_AKIND (type) == GFC_ARRAY_POINTER_CONT)
+
+      if (orig_decl == NULL_TREE)
+	orig_decl = decl;
+      if (!openacc
+	  && gfc_has_alloc_comps (type, orig_decl, true))
+	{
+	  /* Save array descriptor for use in gfc_omp_deep_mapping{,_p,_cnt};
+	     force evaluate to ensure that it is not gimplified + is a decl.  */
+	  gfc_allocate_lang_decl (size);
+	  GFC_DECL_SAVED_DESCRIPTOR (size) = orig_decl;
+	}
+      enum gfc_array_kind akind = GFC_TYPE_ARRAY_AKIND (type);
+      if (akind == GFC_ARRAY_ALLOCATABLE
+	  || akind == GFC_ARRAY_POINTER
+	  || akind == GFC_ARRAY_POINTER_CONT
+	  || akind == GFC_ARRAY_ASSUMED_RANK_ALLOCATABLE
+	  || akind == GFC_ARRAY_ASSUMED_RANK_POINTER
+	  || akind == GFC_ARRAY_ASSUMED_RANK_POINTER_CONT)
 	{
 	  stmtblock_t cond_block;
 	  tree tem, then_b, else_b, zero, cond;
 
+	  int rank = ((akind == GFC_ARRAY_ASSUMED_RANK_ALLOCATABLE
+		       || akind == GFC_ARRAY_ASSUMED_RANK_POINTER
+		       || akind == GFC_ARRAY_ASSUMED_RANK_POINTER_CONT)
+		      ? -1 : GFC_TYPE_ARRAY_RANK (type));
 	  gfc_init_block (&cond_block);
-	  tem = gfc_full_array_size (&cond_block, decl,
-				     GFC_TYPE_ARRAY_RANK (type));
+	  tem = gfc_full_array_size (&cond_block, unshare_expr (decl), rank);
 	  gfc_add_modify (&cond_block, size, tem);
 	  gfc_add_modify (&cond_block, size,
 			  fold_build2 (MULT_EXPR, gfc_array_index_type,
@@ -1684,7 +1715,7 @@ gfc_omp_finish_clause (tree c, gimple_seq *pre_p, bool openacc)
 	  zero = build_int_cst (gfc_array_index_type, 0);
 	  gfc_add_modify (&cond_block, size, zero);
 	  else_b = gfc_finish_block (&cond_block);
-	  tem = gfc_conv_descriptor_data_get (decl);
+	  tem = gfc_conv_descriptor_data_get (unshare_expr (decl));
 	  tem = fold_convert (pvoid_type_node, tem);
 	  cond = fold_build2_loc (input_location, NE_EXPR,
 				  boolean_type_node, tem, null_pointer_node);
@@ -1701,11 +1732,13 @@ gfc_omp_finish_clause (tree c, gimple_seq *pre_p, bool openacc)
 	{
 	  stmtblock_t cond_block;
 	  tree then_b;
-
+	  int rank = ((akind == GFC_ARRAY_ASSUMED_RANK
+		       || akind == GFC_ARRAY_ASSUMED_RANK_CONT)
+		      ? -1 : GFC_TYPE_ARRAY_RANK (type));
 	  gfc_init_block (&cond_block);
 	  gfc_add_modify (&cond_block, size,
-			  gfc_full_array_size (&cond_block, decl,
-					       GFC_TYPE_ARRAY_RANK (type)));
+			  gfc_full_array_size (&cond_block, unshare_expr (decl),
+					       rank));
 	  gfc_add_modify (&cond_block, size,
 			  fold_build2 (MULT_EXPR, gfc_array_index_type,
 				       size, elemsz));
@@ -1716,9 +1749,12 @@ gfc_omp_finish_clause (tree c, gimple_seq *pre_p, bool openacc)
 	}
       else
 	{
+	  int rank = ((akind == GFC_ARRAY_ASSUMED_RANK
+		       || akind == GFC_ARRAY_ASSUMED_RANK_CONT)
+		      ? -1 : GFC_TYPE_ARRAY_RANK (type));
 	  gfc_add_modify (&block, size,
-			  gfc_full_array_size (&block, decl,
-					       GFC_TYPE_ARRAY_RANK (type)));
+			  gfc_full_array_size (&block, unshare_expr (decl),
+					       rank));
 	  gfc_add_modify (&block, size,
 			  fold_build2 (MULT_EXPR, gfc_array_index_type,
 				       size, elemsz));
@@ -1727,11 +1763,30 @@ gfc_omp_finish_clause (tree c, gimple_seq *pre_p, bool openacc)
       tree stmt = gfc_finish_block (&block);
       gimplify_and_add (stmt, pre_p);
     }
+  else
+    {
+      if (OMP_CLAUSE_SIZE (c) == NULL_TREE)
+	OMP_CLAUSE_SIZE (c)
+	  = DECL_P (decl) ? DECL_SIZE_UNIT (decl)
+			  : TYPE_SIZE_UNIT (TREE_TYPE (decl));
+
+      tree type = TREE_TYPE (decl);
+      if (POINTER_TYPE_P (type) && POINTER_TYPE_P (TREE_TYPE (type)))
+	type = TREE_TYPE (type);
+      if (!openacc
+	  && orig_decl != NULL_TREE
+	  && gfc_has_alloc_comps (type, orig_decl, true))
+	{
+	  /* Save array descriptor for use in gfc_omp_deep_mapping{,_p,_cnt};
+	     force evaluate to ensure that it is not gimplified + is a decl.  */
+	  tree size = create_tmp_var (TREE_TYPE (OMP_CLAUSE_SIZE (c)));
+	  gfc_allocate_lang_decl (size);
+	  GFC_DECL_SAVED_DESCRIPTOR (size) = orig_decl;
+	  gimplify_assign (size, OMP_CLAUSE_SIZE (c), pre_p);
+	  OMP_CLAUSE_SIZE (c) = size;
+	}
+    }
   tree last = c;
-  if (OMP_CLAUSE_SIZE (c) == NULL_TREE)
-    OMP_CLAUSE_SIZE (c)
-      = DECL_P (decl) ? DECL_SIZE_UNIT (decl)
-		      : TYPE_SIZE_UNIT (TREE_TYPE (decl));
   if (gimplify_expr (&OMP_CLAUSE_SIZE (c), pre_p,
 		     NULL, is_gimple_val, fb_rvalue) == GS_ERROR)
     OMP_CLAUSE_SIZE (c) = size_int (0);
@@ -1754,6 +1809,1289 @@ gfc_omp_finish_clause (tree c, gimple_seq *pre_p, bool openacc)
     }
 }
 
+#define GFC_MAP_TOKEN_DATA 0
+#define GFC_MAP_TOKEN_SIZES 1
+#define GFC_MAP_TOKEN_KINDS 2
+#define GFC_MAP_TOKEN_DATA_OFFSET 3
+#define GFC_MAP_TOKEN_OFFSET 4
+#define GFC_MAP_TOKEN_FLAGS 5
+#define GFC_MAP_TOKEN_DETACH 6
+
+static tree
+gfc_omp_get_token_data (tree token)
+{
+  token = TYPE_FIELDS (TREE_TYPE (token));
+  return gfc_advance_chain (token, GFC_MAP_TOKEN_DATA);
+}
+
+static tree
+gfc_omp_get_token_sizes (tree token)
+{
+  token = TYPE_FIELDS (TREE_TYPE (token));
+  return gfc_advance_chain (token, GFC_MAP_TOKEN_SIZES);
+}
+
+static tree
+gfc_omp_get_token_kinds (tree token)
+{
+  token = TYPE_FIELDS (TREE_TYPE (token));
+  return gfc_advance_chain (token, GFC_MAP_TOKEN_KINDS);
+}
+
+static tree
+gfc_omp_get_token_offset_data (tree token)
+{
+  token = TYPE_FIELDS (TREE_TYPE (token));
+  return gfc_advance_chain (token, GFC_MAP_TOKEN_DATA_OFFSET);
+}
+
+static tree
+gfc_omp_get_token_offset (tree token)
+{
+  token = TYPE_FIELDS (TREE_TYPE (token));
+  return gfc_advance_chain (token, GFC_MAP_TOKEN_OFFSET);
+}
+
+static tree
+gfc_omp_get_token_flags (tree token)
+{
+  token = TYPE_FIELDS (TREE_TYPE (token));
+  return gfc_advance_chain (token, GFC_MAP_TOKEN_FLAGS);
+}
+
+static tree
+gfc_omp_get_token_detach (tree token)
+{
+  token = TYPE_FIELDS (TREE_TYPE (token));
+  return gfc_advance_chain (token, GFC_MAP_TOKEN_DETACH);
+}
+
+#undef GFC_MAP_TOKEN_DATA
+#undef GFC_MAP_TOKEN_SIZES
+#undef GFC_MAP_TOKEN_KINDS
+#undef GFC_MAP_TOKEN_OFFSET_DATA
+#undef GFC_MAP_TOKEN_OFFSET
+#undef GFC_MAP_TOKEN_FLAGS
+#undef GFC_MAP_TOKEN_DETACH
+
+/* Returns a record type to store the arrays used for mapping.  */
+static tree
+gfc_omp_get_map_token_type (bool pointer)
+{
+  static tree decl = NULL_TREE;
+  if (decl != NULL_TREE)
+    return pointer ? build_pointer_type (decl) : decl;
+  decl = make_node (RECORD_TYPE);
+  TYPE_NAME (decl) = get_identifier ("map_token_t");
+  TYPE_NAMELESS (decl) = 1;
+
+  tree type = ptr_type_node;
+  type = build_pointer_type (ptr_type_node);
+  tree field = build_decl (UNKNOWN_LOCATION, FIELD_DECL,
+			   get_identifier ("data"), type);
+  TYPE_FIELDS (decl) = field;
+  DECL_CONTEXT (field) = decl;
+  TREE_NO_WARNING (field) = 1;
+
+  type = build_pointer_type (size_type_node);
+  tree field2 = build_decl (UNKNOWN_LOCATION, FIELD_DECL,
+			    get_identifier ("sizes"), type);
+  DECL_CHAIN (field) = field2;
+  DECL_CONTEXT (field2) = decl;
+  TREE_NO_WARNING (field2) = 1;
+
+  type = build_pointer_type (short_unsigned_type_node);
+  field = build_decl (UNKNOWN_LOCATION, FIELD_DECL,
+		      get_identifier ("kinds"), type);
+  DECL_CHAIN (field2) = field;
+  DECL_CONTEXT (field) = decl;
+  TREE_NO_WARNING (field) = 1;
+
+  field2 = build_decl (UNKNOWN_LOCATION, FIELD_DECL,
+		      get_identifier ("offset_data"), size_type_node);
+  DECL_CHAIN (field) = field2;
+  DECL_CONTEXT (field2) = decl;
+  TREE_NO_WARNING (field2) = 1;
+
+  field = build_decl (UNKNOWN_LOCATION, FIELD_DECL,
+		      get_identifier ("offset"), size_type_node);
+  DECL_CHAIN (field2) = field;
+  DECL_CONTEXT (field) = decl;
+  TREE_NO_WARNING (field) = 1;
+
+  field2 = build_decl (UNKNOWN_LOCATION, FIELD_DECL,
+		       get_identifier ("flags"), short_unsigned_type_node);
+  DECL_CHAIN (field) = field2;
+  DECL_CONTEXT (field2) = decl;
+  TREE_NO_WARNING (field2) = 1;
+
+  field = build_decl (UNKNOWN_LOCATION, FIELD_DECL,
+		       get_identifier ("detach"), boolean_type_node);
+  DECL_CHAIN (field2) = field;
+  DECL_CONTEXT (field) = decl;
+  TREE_NO_WARNING (field) = 1;
+
+  layout_type (decl);
+
+  return pointer ? build_pointer_type (decl) : decl;
+}
+
+
+/* Returns the type of the Fortran __callback_<derived-type> function.  */
+static tree
+gfc_omp_get_cb_type ()
+{
+  tree type;
+  type = build_function_type_list (size_type_node, ptr_type_node, NULL_TREE);
+  type = build_pointer_type (type);
+  type = build_function_type_list (size_type_node, ptr_type_node, ptr_type_node,
+				   size_type_node, type, NULL_TREE);
+  type = build_function_type_list (size_type_node, type, ptr_type_node,
+				   ptr_type_node, NULL_TREE);
+  return type;
+}
+
+/* Generate call back function, either one which counts alloc comps
+   or one which maps. */
+
+static tree
+gfc_omp_gen_deep_map_fn (bool count_fn)
+{
+  tree old_context = current_function_decl;
+  tree decl, type, tmp, cb_fn, token, data, size, flag;
+  location_t loc = UNKNOWN_LOCATION;
+
+  if (old_context)
+    {
+      push_function_context ();
+      current_function_decl = NULL_TREE;
+    }
+
+  type = gfc_omp_get_cb_type ();
+  type = build_pointer_type (type);
+  type = build_function_type_list (size_type_node,
+				   count_fn ? ptr_type_node
+					    : gfc_omp_get_map_token_type (true),
+				   build_pointer_type (ptr_type_node),
+				   size_type_node, short_integer_type_node,
+				   type, NULL_TREE);
+  decl = build_decl (loc, FUNCTION_DECL,
+		     get_identifier (count_fn ? GFC_PREFIX ("omp_count")
+					      : GFC_PREFIX ("omp_map")), type);
+  TREE_STATIC (decl) = 1;
+  TREE_USED (decl) = 1;
+  DECL_ARTIFICIAL (decl) = 1;
+  DECL_IGNORED_P (decl) = 0;
+  DECL_UNINLINABLE (decl) = 1;
+  TREE_PUBLIC (decl) = 0;
+  DECL_EXTERNAL (decl) = 0;
+  DECL_INITIAL (decl) = make_node (BLOCK);
+  BLOCK_SUPERCONTEXT (DECL_INITIAL (decl)) = decl;
+
+  tmp = build_decl (loc, RESULT_DECL, NULL_TREE, size_type_node);
+  DECL_ARTIFICIAL (tmp) = 1;
+  DECL_IGNORED_P (tmp) = 1;
+  DECL_CONTEXT (tmp) = decl;
+  DECL_RESULT (decl) = tmp;
+
+  /* Declare its args.  */
+  tree arglist = NULL_TREE;
+  tree typelist = TYPE_ARG_TYPES (TREE_TYPE (decl));
+  tmp = TREE_VALUE (typelist);
+  token = build_decl (loc, PARM_DECL, get_identifier ("token"), tmp);
+  DECL_CONTEXT (token) = decl;
+  DECL_ARG_TYPE (token) = TREE_VALUE (typelist);
+  TREE_READONLY (token) = 1;
+  arglist = chainon (arglist, token);
+
+  typelist = TREE_CHAIN (typelist);
+  tmp = TREE_VALUE (typelist);
+  data = build_decl (loc, PARM_DECL, get_identifier ("data"), tmp);
+  DECL_CONTEXT (data) = decl;
+  DECL_ARG_TYPE (data) = TREE_VALUE (typelist);
+  TREE_READONLY (data) = 1;
+  arglist = chainon (arglist, data);
+
+  typelist = TREE_CHAIN (typelist);
+  tmp = TREE_VALUE (typelist);
+  size = build_decl (loc, PARM_DECL, get_identifier ("size"), tmp);
+  DECL_CONTEXT (size) = decl;
+  DECL_ARG_TYPE (size) = TREE_VALUE (typelist);
+  TREE_READONLY (size) = 1;
+  arglist = chainon (arglist, size);
+
+  typelist = TREE_CHAIN (typelist);
+  tmp = TREE_VALUE (typelist);
+  flag = build_decl (loc, PARM_DECL, get_identifier ("flag"), tmp);
+  DECL_CONTEXT (flag) = decl;
+  DECL_ARG_TYPE (flag) = TREE_VALUE (typelist);
+  TREE_READONLY (flag) = 1;
+  arglist = chainon (arglist, flag);
+
+  typelist = TREE_CHAIN (typelist);
+  tmp = TREE_VALUE (typelist);
+  cb_fn = build_decl (loc, PARM_DECL, get_identifier ("cb_fn"), tmp);
+  DECL_CONTEXT (cb_fn) = decl;
+  DECL_ARG_TYPE (cb_fn) = TREE_VALUE (typelist);
+  TREE_READONLY (cb_fn) = 1;
+  arglist = chainon (arglist, cb_fn);
+
+  DECL_ARGUMENTS (decl) = arglist;
+  push_struct_function (decl);
+  push_gimplify_context (true);
+  init_tree_ssa (cfun);
+
+  /* Body. */
+  gimple_seq seq = NULL;
+
+  /* n = 0 */
+  if (count_fn)
+    {
+      /* For allocatables + vtable:
+	 if ((flag == GFC_CLASS_CB_ALLOCATABLE || flag == GFC_CLASS_CB_VTABLE)
+	     && size != 0)
+	   n = 1;
+	 if ((flag == GFC_CLASS_CB_ALLOCATABLE || flag == GFC_CLASS_CB_VTABLE)
+	     && size != 0 && cb_fn)
+	   n = n + cb_fn (...)
+	 return n; */
+      tree num = build_decl (loc, VAR_DECL, create_tmp_var_name ("n"),
+			     size_type_node);
+      tmp = fold_build2_loc (loc, MODIFY_EXPR, size_type_node, num,
+			     build_int_cst (size_type_node,
+					    GFC_CLASS_CB_ALLOCATABLE));
+      gimplify_and_add (tmp, &seq);
+
+      tmp = fold_build2_loc (loc, EQ_EXPR, boolean_type_node, flag,
+			     build_zero_cst (short_integer_type_node));
+      tree cond = fold_build2_loc (loc, EQ_EXPR, boolean_type_node, flag,
+				   build_int_cst (short_integer_type_node,
+						  GFC_CLASS_CB_VTABLE));
+      tmp = fold_build2_loc (loc, TRUTH_OR_EXPR, boolean_type_node, tmp, cond);
+      cond = fold_build2_loc (loc, NE_EXPR, boolean_type_node, size,
+			      build_zero_cst (size_type_node));
+      cond = fold_build2_loc (loc, TRUTH_AND_EXPR, boolean_type_node,
+			      tmp, cond);
+      tmp = build3 (COND_EXPR, void_type_node, cond,
+		    fold_build2_loc (loc, MODIFY_EXPR, size_type_node,
+				     num, build_int_cst (size_type_node, 1)),
+		    build_empty_stmt (loc));
+      gimplify_and_add (tmp, &seq);
+
+      tmp = fold_build2_loc (loc, NE_EXPR, boolean_type_node,
+			     cb_fn, null_pointer_node);
+      cond = fold_build2_loc (loc, TRUTH_AND_EXPR, boolean_type_node,
+			      cond, tmp);
+      tmp = build_call_expr_loc (loc, build_fold_indirect_ref_loc (loc, cb_fn),
+				 4, build_fold_addr_expr (decl), token,
+				 build_fold_indirect_ref_loc (loc, data),
+				 build_int_cst (short_integer_type_node,
+						GFC_CLASS_CALLBACK_DEFAULT_FLAG));
+      tmp = fold_build2_loc (loc, PLUS_EXPR, size_type_node, num, tmp);
+      tmp = build3 (COND_EXPR, void_type_node, cond,
+		    fold_build2_loc (loc, MODIFY_EXPR, size_type_node,
+				     num, tmp), build_empty_stmt (loc));
+      gimplify_and_add (tmp, &seq);
+
+      tmp = fold_build2_loc (loc, MODIFY_EXPR, size_type_node,
+			     DECL_RESULT (decl), num);
+      tmp = fold_build1_loc (loc, RETURN_EXPR, void_type_node, tmp);
+      gimplify_and_add (tmp, &seq);
+    }
+  else
+    {
+      /* Map allocatables and the vtable
+	 if (flag != 0 && flag != 2) || size == 0)
+	   goto return_label
+	 map(<flag>: <*token.data> [len: <size>])
+	 map((token.detach ? detach : attach):
+	     <token.data> [pointer assign, bias: 0])
+	 if (!cb_fn)
+	   goto return_label
+	 cb_fn (...)
+	 return_label:
+	 return 0 */
+
+      tree return_label = create_artificial_label (loc);
+      tree cont_label = create_artificial_label (loc);
+      tmp = fold_build2_loc (loc, NE_EXPR, boolean_type_node, flag,
+			     build_int_cst (short_integer_type_node,
+					    GFC_CLASS_CB_ALLOCATABLE));
+      tree cond = fold_build2_loc (loc, NE_EXPR, boolean_type_node, flag,
+				   build_int_cst (short_integer_type_node,
+						  GFC_CLASS_CB_VTABLE));
+      tmp = fold_build2_loc (loc, TRUTH_AND_EXPR, boolean_type_node, tmp, cond);
+      cond = fold_build2_loc (loc, EQ_EXPR, boolean_type_node, size,
+			      build_zero_cst (size_type_node));
+      cond = fold_build2_loc (loc, TRUTH_OR_EXPR, boolean_type_node,
+			      tmp, cond);
+      tmp = build3 (COND_EXPR, void_type_node, cond,
+		    fold_build1_loc (loc, GOTO_EXPR, void_type_node,
+				     return_label), build_empty_stmt (loc));
+      gimplify_and_add (tmp, &seq);
+
+      gimple_seq_add_stmt (&seq,
+			   gimple_build_cond (EQ_EXPR, size, size_zero_node,
+					      return_label, cont_label));
+      gimple_seq_add_stmt (&seq, gimple_build_label (cont_label));
+
+      /* data[offset_data] = *token.data; */
+      token = build_fold_indirect_ref_loc (loc, token);
+      tree one = build_int_cst (size_type_node, 1);
+      tree field = gfc_omp_get_token_data (token);
+      tree offset_field = gfc_omp_get_token_offset_data (token);
+      tree offset = fold_build3_loc (loc, COMPONENT_REF,
+				     TREE_TYPE (offset_field), token,
+				     offset_field, NULL_TREE);
+      tree tmp = fold_build3_loc (loc, COMPONENT_REF, TREE_TYPE (field),
+				  token, field, NULL_TREE);
+      tmp = build2_loc (loc, POINTER_PLUS_EXPR, TREE_TYPE (tmp), tmp,
+			build2_loc (loc, MULT_EXPR, size_type_node,
+			TYPE_SIZE_UNIT (ptr_type_node), offset));
+      gimple_seq seq2 = NULL;
+      tmp = force_gimple_operand (tmp, &seq2, true, NULL_TREE);
+      gimple_seq_add_seq (&seq, seq2);
+      tmp = build_fold_indirect_ref_loc (loc, tmp);
+      gimplify_assign (tmp, build_fold_indirect_ref_loc (loc, data), &seq);
+
+      /* token.offset_data++ */
+      tmp = build2_loc (loc, PLUS_EXPR, size_type_node, offset,
+			one);
+      gimplify_assign (offset, tmp, &seq);
+
+      /* data[offset_data] = data.  */
+      tmp = fold_build3_loc (loc, COMPONENT_REF, TREE_TYPE (field),
+			     token, field, NULL_TREE);
+      tmp = build2_loc (loc, POINTER_PLUS_EXPR, TREE_TYPE (tmp), tmp,
+			build2_loc (loc, MULT_EXPR, size_type_node,
+			TYPE_SIZE_UNIT (ptr_type_node), offset));
+      seq2 = NULL;
+      tmp = force_gimple_operand (tmp, &seq2, true, NULL_TREE);
+      gimple_seq_add_seq (&seq, seq2);
+      tmp = build_fold_indirect_ref_loc (loc, tmp);
+      gimplify_assign (tmp, data, &seq);
+
+      /* token.offset_data++ */
+      tmp = build2_loc (loc, PLUS_EXPR, size_type_node, offset,
+			one);
+      gimplify_assign (unshare_expr (offset), tmp, &seq);
+
+      /* sizes[offset] = size. */
+      field = gfc_omp_get_token_sizes (token);
+      offset_field = gfc_omp_get_token_offset (token);
+      offset = fold_build3_loc (loc, COMPONENT_REF, TREE_TYPE (offset_field),
+				token, offset_field, NULL_TREE);
+      tmp = fold_build3_loc (loc, COMPONENT_REF, TREE_TYPE (field),
+			     token, field, NULL_TREE);
+      tmp = build2_loc (loc, POINTER_PLUS_EXPR, TREE_TYPE (tmp), tmp,
+			build2_loc (loc, MULT_EXPR, size_type_node,
+			TYPE_SIZE_UNIT (ptr_type_node), offset));
+      seq2 = NULL;
+      tmp = force_gimple_operand (tmp, &seq2, true, NULL_TREE);
+      gimple_seq_add_seq (&seq, seq2);
+      tmp = build_fold_indirect_ref_loc (loc, tmp);
+      gimplify_assign (tmp, size, &seq);
+
+      /* FIXME: tkind |= talign << talign_shift; */
+      /* kinds[offset] = (flag == 2) ? 'to' : tkind. */
+      field = gfc_omp_get_token_kinds (token);
+      tmp = fold_build3_loc (loc, COMPONENT_REF, TREE_TYPE (field),
+			     token, field, NULL_TREE);
+      tmp = build2_loc (loc, POINTER_PLUS_EXPR, TREE_TYPE (tmp), tmp,
+			build2_loc (loc, MULT_EXPR, size_type_node,
+				    TYPE_SIZE_UNIT (short_unsigned_type_node),
+						    offset));
+      seq2 = NULL;
+      tmp = force_gimple_operand (tmp, &seq2, true, NULL_TREE);
+      gimple_seq_add_seq (&seq, seq2);
+      cond = fold_build2_loc (loc, EQ_EXPR, boolean_type_node, flag,
+				   build_int_cst (short_integer_type_node,
+						  GFC_CLASS_CB_VTABLE));
+      tree tmp2 = fold_build3_loc (loc, COMPONENT_REF,
+				   TREE_TYPE (DECL_CHAIN (offset_field)), token,
+				   DECL_CHAIN (offset_field), NULL_TREE);
+      tmp2 = build3 (COND_EXPR, short_unsigned_type_node, cond,
+		     build_int_cst (short_unsigned_type_node, GOMP_MAP_TO),
+		     tmp2);
+      tmp = build_fold_indirect_ref_loc (loc, tmp);
+      gimplify_assign (tmp, tmp2, &seq);
+
+      /* token.offset++ */
+      tmp = build2_loc (loc, PLUS_EXPR, size_type_node, offset,
+			one);
+      gimplify_assign (offset, tmp, &seq);
+
+      /* sizes[offset] = 0 (= bias).  */
+      field = gfc_omp_get_token_sizes (token);
+      tmp = fold_build3_loc (loc, COMPONENT_REF, TREE_TYPE (field),
+			     token, field, NULL_TREE);
+      tmp = build2_loc (loc, POINTER_PLUS_EXPR, TREE_TYPE (tmp), tmp,
+			build2_loc (loc, MULT_EXPR, size_type_node,
+			TYPE_SIZE_UNIT (ptr_type_node),
+			fold_build3_loc (loc, COMPONENT_REF,
+					 TREE_TYPE (offset_field), token,
+					 offset_field, NULL_TREE)));
+      seq2 = NULL;
+      tmp = force_gimple_operand (tmp, &seq2, true, NULL_TREE);
+      gimple_seq_add_seq (&seq, seq2);
+      tmp = build_fold_indirect_ref_loc (loc, tmp);
+      gimplify_assign (tmp, build_zero_cst (size_type_node), &seq);
+
+      /* kind[offset] = (token.detach ? GOMP_MAP_DETACH : GOMP_MAP_ATTACH. */
+      field = gfc_omp_get_token_detach (token);
+      tmp2 = fold_build3_loc (loc, COMPONENT_REF, TREE_TYPE (field), token,
+			      field, NULL_TREE);
+      tmp2 = fold_build2_loc (loc, NE_EXPR, boolean_type_node,
+			      tmp2, build_zero_cst (TREE_TYPE (tmp2)));
+      tmp2 = build3 (COND_EXPR, short_unsigned_type_node, tmp2,
+		     build_int_cst (short_unsigned_type_node, GOMP_MAP_DETACH),
+		     build_int_cst (short_unsigned_type_node, GOMP_MAP_ATTACH));
+
+      field = gfc_omp_get_token_kinds (token);
+      tmp = fold_build3_loc (loc, COMPONENT_REF, TREE_TYPE (field),
+			     token, field, NULL_TREE);
+      tmp = build2_loc (loc, POINTER_PLUS_EXPR, TREE_TYPE (tmp), tmp,
+			build2_loc (loc, MULT_EXPR, size_type_node,
+			TYPE_SIZE_UNIT (short_unsigned_type_node),
+			fold_build3_loc (loc, COMPONENT_REF,
+					 TREE_TYPE (offset_field), token,
+					 offset_field, NULL_TREE)));
+      seq2 = NULL;
+      tmp = force_gimple_operand (tmp, &seq2, true, NULL_TREE);
+      gimple_seq_add_seq (&seq, seq2);
+      tmp = build_fold_indirect_ref_loc (loc, tmp);
+      gimplify_assign (tmp, tmp2, &seq);
+
+      /* token.offset++ */
+      tmp = build2_loc (loc, PLUS_EXPR, size_type_node, offset, one);
+      gimplify_assign (unshare_expr (offset), tmp, &seq);
+
+      /* if (cb_fn)
+	   goto return_label
+	 cb_fn (...) */
+
+      cont_label = create_artificial_label (loc);
+      gimple_seq_add_stmt (&seq,
+			   gimple_build_cond (EQ_EXPR, cb_fn, null_pointer_node,
+					      return_label, cont_label));
+      gimple_seq_add_stmt (&seq, gimple_build_label (cont_label));
+      tmp = build_call_expr_loc (loc, build_fold_indirect_ref_loc (loc, cb_fn),
+				 4, build_fold_addr_expr (decl),
+				 TREE_OPERAND (token, 0),
+				 build_fold_indirect_ref_loc (loc, data),
+				 build_int_cst (short_integer_type_node,
+						GFC_CLASS_CALLBACK_DEFAULT_FLAG));
+      gimplify_and_add (tmp, &seq);
+
+      /* return_label:
+	 return 0 */
+      gimple_seq_add_stmt (&seq, gimple_build_label (return_label));
+      tmp = fold_build2_loc (loc, MODIFY_EXPR, size_type_node,
+			     DECL_RESULT (decl),
+			     build_zero_cst (size_type_node));
+      tmp = fold_build1_loc (loc, RETURN_EXPR, void_type_node, tmp);
+      gimplify_and_add (tmp, &seq);
+    }
+
+  pop_gimplify_context (NULL);
+  gimple_set_body (decl, gimple_build_bind (NULL_TREE, seq, NULL));
+  cfun->function_end_locus = loc;
+  cfun->curr_properties |= PROP_gimple_any;
+  pop_cfun ();
+  cgraph_node::add_new_function (decl, true);
+
+  if (old_context)
+    pop_function_context ();
+  current_function_decl = old_context;
+  return decl;
+}
+
+/* map(<flag>: data [len: <size>])
+   map(attach: &data [bias: <bias>])
+   offset += 2; offset_data += 2 */
+static void
+gfc_omp_deep_mapping_map (tree data, tree size, unsigned HOST_WIDE_INT tkind,
+			  location_t loc, tree data_array, tree sizes_array,
+			  tree kinds_array, tree offset_data, tree offset,
+			  gimple_seq *seq, const gimple *ctx)
+{
+  tree one = build_int_cst (size_type_node, 1);
+
+  STRIP_NOPS (data);
+  if (!POINTER_TYPE_P (TREE_TYPE (data)))
+    {
+      gcc_assert (TREE_CODE (data) == INDIRECT_REF);
+      data = TREE_OPERAND (data, 0);
+    }
+
+  /* data_array[offset_data] = data; */
+  tree tmp = build4 (ARRAY_REF, TREE_TYPE (TREE_TYPE (data_array)),
+		     unshare_expr (data_array), offset_data,
+		     NULL_TREE, NULL_TREE);
+  gimplify_assign (tmp, data, seq);
+
+  /* offset_data++ */
+  tmp = build2_loc (loc, PLUS_EXPR, size_type_node, offset_data, one);
+  gimplify_assign (offset_data, tmp, seq);
+
+  /* data_array[offset_data] = &data; */
+  tmp = build4 (ARRAY_REF, TREE_TYPE (TREE_TYPE (data_array)),
+		unshare_expr (data_array),
+		offset_data, NULL_TREE, NULL_TREE);
+  gimplify_assign (tmp, build_fold_addr_expr (data), seq);
+
+  /* offset_data++ */
+  tmp = build2_loc (loc, PLUS_EXPR, size_type_node, offset_data, one);
+  gimplify_assign (offset_data, tmp, seq);
+
+  /* sizes_array[offset] = size */
+  tmp = build2_loc (loc, MULT_EXPR, size_type_node,
+		    TYPE_SIZE_UNIT (size_type_node), offset);
+  tmp = build2_loc (loc, POINTER_PLUS_EXPR, TREE_TYPE (sizes_array),
+		    sizes_array, tmp);
+  gimple_seq seq2 = NULL;
+  tmp = force_gimple_operand (tmp, &seq2, true, NULL_TREE);
+  gimple_seq_add_seq (seq, seq2);
+  tmp = build_fold_indirect_ref_loc (loc, tmp);
+  gimplify_assign (tmp, size, seq);
+
+  /* FIXME: tkind |= talign << talign_shift; */
+  /* kinds_array[offset] = tkind. */
+  tmp = build2_loc (loc, MULT_EXPR, size_type_node,
+		    TYPE_SIZE_UNIT (short_unsigned_type_node), offset);
+  tmp = build2_loc (loc, POINTER_PLUS_EXPR, TREE_TYPE (kinds_array),
+		    kinds_array, tmp);
+  seq2 = NULL;
+  tmp = force_gimple_operand (tmp, &seq2, true, NULL_TREE);
+  gimple_seq_add_seq (seq, seq2);
+  tmp = build_fold_indirect_ref_loc (loc, tmp);
+  gimplify_assign (tmp, build_int_cst (short_unsigned_type_node, tkind), seq);
+
+  /* offset++ */
+  tmp = build2_loc (loc, PLUS_EXPR, size_type_node, offset, one);
+  gimplify_assign (offset, tmp, seq);
+
+  /* sizes_array[offset] = bias (= 0).  */
+  tmp = build2_loc (loc, MULT_EXPR, size_type_node,
+		    TYPE_SIZE_UNIT (size_type_node), offset);
+  tmp = build2_loc (loc, POINTER_PLUS_EXPR, TREE_TYPE (sizes_array),
+		    sizes_array, tmp);
+  seq2 = NULL;
+  tmp = force_gimple_operand (tmp, &seq2, true, NULL_TREE);
+  gimple_seq_add_seq (seq, seq2);
+  tmp = build_fold_indirect_ref_loc (loc, tmp);
+  gimplify_assign (tmp, build_zero_cst (size_type_node), seq);
+
+  gcc_assert (gimple_code (ctx) == GIMPLE_OMP_TARGET);
+  tkind = (gimple_omp_target_kind (ctx) == GF_OMP_TARGET_KIND_EXIT_DATA
+	   ? GOMP_MAP_DETACH : GOMP_MAP_ATTACH);
+
+  /* kinds_array[offset] = tkind. */
+  tmp = build2_loc (loc, MULT_EXPR, size_type_node,
+		    TYPE_SIZE_UNIT (short_unsigned_type_node), offset);
+  tmp = build2_loc (loc, POINTER_PLUS_EXPR, TREE_TYPE (kinds_array),
+		    kinds_array, tmp);
+  seq2 = NULL;
+  tmp = force_gimple_operand (tmp, &seq2, true, NULL_TREE);
+  gimple_seq_add_seq (seq, seq2);
+  tmp = build_fold_indirect_ref_loc (loc, tmp);
+  gimplify_assign (tmp, build_int_cst (short_unsigned_type_node, tkind), seq);
+
+  /* offset++ */
+  tmp = build2_loc (loc, PLUS_EXPR, size_type_node, offset, one);
+  gimplify_assign (offset, tmp, seq);
+}
+
+static void gfc_omp_deep_mapping_item (bool, bool, bool, location_t, tree,
+				       tree *, unsigned HOST_WIDE_INT, tree,
+				       tree, tree, tree, tree, tree,
+				       gimple_seq *, const gimple *);
+
+/* Map allocatable components.  */
+static void
+gfc_omp_deep_mapping_comps (bool is_cnt, location_t loc, tree decl,
+			    tree *token, unsigned HOST_WIDE_INT tkind,
+			    tree data_array, tree sizes_array, tree kinds_array,
+			    tree offset_data, tree offset, tree num,
+			    gimple_seq *seq, const gimple *ctx)
+{
+  tree type = TREE_TYPE (decl);
+  if (TREE_CODE (type) != RECORD_TYPE)
+    return;
+  for (tree field = TYPE_FIELDS (type); field; field = DECL_CHAIN (field))
+    {
+      type = TREE_TYPE (field);
+      if (gfc_is_polymorphic_nonptr (type)
+	  || GFC_DECL_GET_SCALAR_ALLOCATABLE (field)
+	  || (GFC_DESCRIPTOR_TYPE_P (type)
+	      && GFC_TYPE_ARRAY_AKIND (type) == GFC_ARRAY_ALLOCATABLE))
+	{
+	  tree tmp = fold_build3_loc (loc, COMPONENT_REF, TREE_TYPE (field),
+				      decl, field, NULL_TREE);
+	  gfc_omp_deep_mapping_item (is_cnt, true, true, loc, tmp, token,
+				     tkind, data_array, sizes_array,
+				     kinds_array, offset_data, offset, num,
+				     seq, ctx);
+	}
+      else if (GFC_DECL_GET_SCALAR_POINTER (field)
+	       || GFC_DESCRIPTOR_TYPE_P (type))
+	continue;
+      else if (gfc_has_alloc_comps (TREE_TYPE (field), field, false))
+	{
+	  tree tmp = fold_build3_loc (loc, COMPONENT_REF, TREE_TYPE (field),
+				      decl, field, NULL_TREE);
+	  if (TREE_CODE (TREE_TYPE (tmp)) == ARRAY_TYPE)
+	    gfc_omp_deep_mapping_item (is_cnt, false, false, loc, tmp,
+				       token, tkind, data_array, sizes_array,
+				       kinds_array, offset_data, offset, num,
+				       seq, ctx);
+	  else
+	    gfc_omp_deep_mapping_comps (is_cnt, loc, tmp, token, tkind,
+					data_array, sizes_array, kinds_array,
+					offset_data, offset, num, seq, ctx);
+	}
+    }
+}
+
+static void
+gfc_omp_gen_simple_loop (tree var, tree begin, tree end, enum tree_code cond,
+			 tree step, location_t loc, gimple_seq *seq1,
+			 gimple_seq *seq2)
+{
+  tree tmp;
+
+  /* var = begin. */
+  gimplify_assign (var, begin, seq1);
+
+  /* Loop: for (var = begin; var <cond> end; var += step).  */
+  tree label_loop = create_artificial_label (loc);
+  tree label_cond = create_artificial_label (loc);
+
+  gimplify_and_add (fold_build1_loc (loc, GOTO_EXPR, void_type_node,
+				     label_cond), seq1);
+  gimple_seq_add_stmt (seq1, gimple_build_label (label_loop));
+
+  /* Everything above is seq1; place loop body here.  */
+
+  /* End of loop body -> put into seq2.  */
+  tmp = fold_build2_loc (loc, PLUS_EXPR, TREE_TYPE (var), var, step);
+  gimplify_assign (var, tmp, seq2);
+  gimple_seq_add_stmt (seq2, gimple_build_label (label_cond));
+  tmp = fold_build2_loc (loc, cond, boolean_type_node, var, end);
+  tmp = build3_v (COND_EXPR, tmp, build1_v (GOTO_EXPR, label_loop),
+		  build_empty_stmt (loc));
+  gimplify_and_add (tmp, seq2);
+}
+
+/* Return size variable with the size of an array.  */
+static tree
+gfc_omp_get_array_size (location_t loc, tree desc, gimple_seq *seq)
+{
+  tree tmp;
+  gimple_seq seq1 = NULL, seq2 = NULL;
+  tree size = build_decl (loc, VAR_DECL, create_tmp_var_name ("size"),
+			  size_type_node);
+  tree extent = build_decl (loc, VAR_DECL, create_tmp_var_name ("extent"),
+			    gfc_array_index_type);
+  tree idx = build_decl (loc, VAR_DECL, create_tmp_var_name ("idx"),
+			 signed_char_type_node);
+
+  tree begin = build_zero_cst (signed_char_type_node);
+  tree end;
+  if (GFC_TYPE_ARRAY_AKIND (TREE_TYPE (desc)) == GFC_ARRAY_ASSUMED_SHAPE_CONT
+      || GFC_TYPE_ARRAY_AKIND (TREE_TYPE (desc)) == GFC_ARRAY_ASSUMED_SHAPE)
+    end = gfc_conv_descriptor_rank (desc);
+  else
+    end = build_int_cst (signed_char_type_node,
+			 GFC_TYPE_ARRAY_RANK (TREE_TYPE (desc)));
+  tree step = build_int_cst (signed_char_type_node, 1);
+
+  /* size = 0
+     for (idx = 0; idx < rank; idx++)
+       extent = gfc->dim[i].ubound - gfc->dim[i].lbound + 1
+       if (extent < 0) extent = 0
+	 size *= extent.  */
+  gimplify_assign (size, build_int_cst (size_type_node, 1), seq);
+
+  gfc_omp_gen_simple_loop (idx, begin, end, LT_EXPR, step, loc, &seq1, &seq2);
+  gimple_seq_add_seq (seq, seq1);
+
+  tmp = fold_build2_loc (loc, MINUS_EXPR, gfc_array_index_type,
+			 gfc_conv_descriptor_ubound_get (desc, idx),
+			 gfc_conv_descriptor_lbound_get (desc, idx));
+  tmp = fold_build2_loc (loc, PLUS_EXPR, gfc_array_index_type,
+			 tmp, gfc_index_one_node);
+  gimplify_assign (extent, tmp, seq);
+  tmp = fold_build2_loc (loc, LT_EXPR, boolean_type_node,
+			 extent, gfc_index_zero_node);
+  tmp = build3_v (COND_EXPR, tmp,
+		  fold_build2_loc (loc, MODIFY_EXPR,
+				   gfc_array_index_type,
+				   extent, gfc_index_zero_node),
+		  build_empty_stmt (loc));
+  gimplify_and_add (tmp, seq);
+  /* size *= extent.  */
+  gimplify_assign (size, fold_build2_loc (loc, MULT_EXPR, size_type_node, size,
+					  fold_convert (size_type_node,
+							extent)), seq);
+  gimple_seq_add_seq (seq, seq2);
+  return size;
+}
+
+/* Generate loop to access every array element; takes addr of first element
+   (decl's data comp); returns loop code in seq1 + seq2
+   and the pointer to the element as return value.  */
+static tree
+gfc_omp_elmental_loop (location_t loc, tree decl, tree size, tree elem_len,
+		       gimple_seq *seq1, gimple_seq *seq2)
+{
+  tree idx = build_decl (loc, VAR_DECL, create_tmp_var_name ("idx"),
+			 size_type_node);
+  tree begin = build_zero_cst (size_type_node);
+  tree end = size;
+  tree step = build_int_cst (size_type_node, 1);
+  tree ptr;
+
+  gfc_omp_gen_simple_loop (idx, begin, end, LT_EXPR, step, loc, seq1, seq2);
+
+  tree type = TREE_TYPE (decl);
+  if (POINTER_TYPE_P (type))
+    {
+      type = TREE_TYPE (type);
+      gcc_assert (TREE_CODE (type) == ARRAY_TYPE);
+      decl = fold_convert (build_pointer_type (TREE_TYPE (type)), decl);
+    }
+  else
+    {
+      gcc_assert (TREE_CODE (type) == ARRAY_TYPE);
+      decl = build_fold_addr_expr_loc (loc, decl);
+    }
+  decl = fold_convert (build_pointer_type (TREE_TYPE (type)), decl);
+  tree tmp = build2_loc (loc, MULT_EXPR, size_type_node, idx, elem_len);
+  ptr = build2_loc (loc, POINTER_PLUS_EXPR, TREE_TYPE (decl), decl, tmp);
+  gimple_seq seq3 = NULL;
+  ptr = force_gimple_operand (ptr, &seq3, true, NULL_TREE);
+  gimple_seq_add_seq (seq1, seq3);
+
+  return ptr;
+}
+
+
+/* If do_copy, copy data pointer and vptr (if applicable) as well.
+   Otherwise, only handle allocatable components.
+   do_copy == false can happen only with nonpolymorphic arguments
+   to a copy clause.
+   if (is_cnt) token ... offset is ignored and num is used, otherwise
+   num is NULL_TREE and unused.  */
+
+static void
+gfc_omp_deep_mapping_item (bool is_cnt, bool do_copy, bool do_alloc_check,
+			   location_t loc, tree decl, tree *token,
+			   unsigned HOST_WIDE_INT tkind, tree data_array,
+			   tree sizes_array, tree kinds_array, tree offset_data,
+			   tree offset, tree num, gimple_seq *seq,
+			   const gimple *ctx)
+{
+  static tree map_fn = NULL_TREE;
+  static tree cnt_fn = NULL_TREE;
+  tree tmp;
+  tree type = TREE_TYPE (decl);
+  if (POINTER_TYPE_P (type))
+    type = TREE_TYPE (type);
+  bool poly = gfc_is_polymorphic_nonptr (type);
+  tree end_label = NULL_TREE;
+  tree size = NULL_TREE, elem_len = NULL_TREE;
+
+  if (do_alloc_check)
+    {
+      tree then_label = create_artificial_label (loc);
+      end_label = create_artificial_label (loc);
+      tmp = decl;
+      if (TREE_CODE (TREE_TYPE (tmp)) == REFERENCE_TYPE
+	  || (POINTER_TYPE_P (TREE_TYPE (tmp))
+	      && (POINTER_TYPE_P (TREE_TYPE (TREE_TYPE (tmp)))
+		  || GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (TREE_TYPE (tmp))))))
+	tmp = build_fold_indirect_ref_loc (loc, tmp);
+      if (poly)
+	tmp = gfc_class_data_get (tmp);
+      if (GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (tmp)))
+	tmp = gfc_conv_descriptor_data_get (tmp);
+      gimple_seq seq2 = NULL;
+      tmp = force_gimple_operand (tmp, &seq2, true, NULL_TREE);
+      gimple_seq_add_seq (seq, seq2);
+
+      gimple_seq_add_stmt (seq,
+			   gimple_build_cond (NE_EXPR, tmp, null_pointer_node,
+					      then_label, end_label));
+      gimple_seq_add_stmt (seq, gimple_build_label (then_label));
+    }
+  if (POINTER_TYPE_P (TREE_TYPE (decl)))
+    {
+      decl = build_fold_indirect_ref (decl);
+      type = TREE_TYPE (decl);
+    }
+
+  if (!is_cnt && poly && *token == NULL_TREE)
+    {
+      *token = build_decl (input_location, VAR_DECL,
+			   create_tmp_var_name ("map_token"),
+			   gfc_omp_get_map_token_type (false));
+      gimple_add_tmp_var (*token);
+
+      /* token.data = &data_array[0] */
+      tree field = gfc_omp_get_token_data (*token);
+      tmp = build4 (ARRAY_REF, TREE_TYPE (field), data_array,
+		    build_zero_cst (size_type_node), NULL_TREE, NULL_TREE);
+      gimplify_assign (fold_build3_loc (loc, COMPONENT_REF, TREE_TYPE (field),
+					*token, field, NULL_TREE),
+		       build_fold_addr_expr_loc (loc, tmp), seq);
+      /* token.sizes = sizes */
+      field = gfc_omp_get_token_sizes (*token);
+      gimplify_assign (fold_build3_loc (loc, COMPONENT_REF, TREE_TYPE (field),
+					*token, field, NULL_TREE), sizes_array,
+					seq);
+      /* token.kinds = kinds_array */
+      field = gfc_omp_get_token_kinds (*token);
+      gimplify_assign (fold_build3_loc (loc, COMPONENT_REF, TREE_TYPE (field),
+					*token, field, NULL_TREE), kinds_array,
+					seq);
+      /* token.flags = tkind */
+      field = gfc_omp_get_token_flags (*token);
+      tmp = build_int_cstu (short_unsigned_type_node, tkind);
+      gimplify_assign (fold_build3_loc (loc, COMPONENT_REF, TREE_TYPE (field),
+					*token, field, NULL_TREE), tmp, seq);
+      /* token.detach = (ctx == EXIT_DATA)  */
+      field = gfc_omp_get_token_detach (*token);
+      gimplify_assign (fold_build3_loc (loc, COMPONENT_REF, TREE_TYPE (field),
+					*token, field, NULL_TREE),
+		       (gimple_omp_target_kind (ctx)
+			== GF_OMP_TARGET_KIND_EXIT_DATA) ? boolean_true_node
+							 : boolean_false_node,
+		       seq);
+    }
+
+  if (poly && !map_fn)
+    {
+      cnt_fn = build_fold_addr_expr (gfc_omp_gen_deep_map_fn (true));
+      map_fn = build_fold_addr_expr (gfc_omp_gen_deep_map_fn (false));
+    }
+
+  if (is_cnt && do_copy)
+    {
+      tree tmp = fold_build2_loc (input_location, PLUS_EXPR, size_type_node,
+				  num, build_int_cst (size_type_node, 1));
+      gimplify_assign (num, tmp, seq);
+    }
+  else if (poly && do_copy)
+    {
+      /* token.offset_data = offset_data */
+      tree field = gfc_omp_get_token_offset_data (*token);
+      tmp = fold_build3_loc (loc, COMPONENT_REF, TREE_TYPE (field), *token,
+			     field, NULL_TREE);
+      gimplify_assign (tmp, offset_data, seq);
+      /* token.offset = offset */
+      field = gfc_omp_get_token_offset (*token);
+      tmp = fold_build3_loc (loc, COMPONENT_REF, TREE_TYPE (field), *token,
+			     field, NULL_TREE);
+      gimplify_assign (tmp, offset_data, seq);
+
+      /* copy vptr + data pointer  */
+      /* decl->vptr->callback (omp_map, token, &decl->vptr,
+			       GFC_CLASS_CALLBACK_VTABLE_FLAG) */
+      tree cb = build_fold_indirect_ref (gfc_class_vtab_callback_get (decl));
+      tmp = build_fold_addr_expr (gfc_class_vptr_get (decl));
+      tmp
+	= build_call_expr_loc (loc, cb, 4, map_fn,
+			       build_fold_addr_expr (*token), tmp,
+			       build_int_cst (short_integer_type_node,
+					      GFC_CLASS_CALLBACK_VTABLE_FLAG));
+      gimplify_and_add (tmp, seq);
+
+      /* offset_data = token.offset_data */
+      field = gfc_omp_get_token_offset_data (*token);
+      tmp = fold_build3_loc (loc, COMPONENT_REF, TREE_TYPE (field), *token,
+			     field, NULL_TREE);
+      gimplify_assign (tmp, offset_data, seq);
+      /* offset = token.offset */
+      field = gfc_omp_get_token_offset (*token);
+      tmp = fold_build3_loc (loc, COMPONENT_REF, TREE_TYPE (field), *token,
+			     field, NULL_TREE);
+      gimplify_assign (tmp, offset_data, seq);
+
+      tree bytesize = fold_convert (size_type_node,
+				    gfc_class_vtab_size_get (decl));
+      tmp = gfc_class_data_get (decl);
+      if (GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (tmp)))
+	{
+	  elem_len = bytesize;
+	  size = gfc_omp_get_array_size (loc, tmp, seq);
+	  bytesize = fold_build2_loc (loc, MULT_EXPR, size_type_node,
+				      size, elem_len);
+	  tmp = gfc_conv_descriptor_data_get (tmp);
+	}
+
+      gfc_omp_deep_mapping_map (tmp, bytesize, tkind, loc, data_array,
+				sizes_array, kinds_array, offset_data,
+				offset, seq, ctx);
+    }
+  else if (do_copy)
+    {
+      /* copy data pointer  */
+      tree bytesize;
+      if (GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (decl)))
+	{
+	  /* TODO: Optimization: Shouldn't this be an expr. const, except for
+	     deferred-length strings. (Cf. also below).  */
+	  elem_len = gfc_conv_descriptor_elem_len (decl);
+	  tmp = (POINTER_TYPE_P (TREE_TYPE (decl))
+		 ? build_fold_indirect_ref (decl) : decl);
+	  size = gfc_omp_get_array_size (loc, tmp, seq);
+	  bytesize = fold_build2_loc (loc, MULT_EXPR, size_type_node,
+				      size, elem_len);
+	  tmp = gfc_conv_descriptor_data_get (decl);
+	}
+      else
+	{
+	  tmp = decl;
+	  bytesize = TYPE_SIZE_UNIT (TREE_TYPE (decl));
+	}
+      gfc_omp_deep_mapping_map (tmp, bytesize, tkind, loc, data_array,
+				sizes_array, kinds_array, offset_data,
+				offset, seq, ctx);
+    }
+
+  /* Handle allocatable components. */
+  if (!is_cnt && poly)
+    {
+      /* token.offset_data = offset_data */
+      tree field = gfc_omp_get_token_offset_data (*token);
+      tmp = fold_build3_loc (loc, COMPONENT_REF, TREE_TYPE (field), *token,
+			     field, NULL_TREE);
+      gimplify_assign (tmp, offset_data, seq);
+      /* token.offset = offset */
+      field = gfc_omp_get_token_offset (*token);
+      tmp = fold_build3_loc (loc, COMPONENT_REF, TREE_TYPE (field), *token,
+			     field, NULL_TREE);
+      gimplify_assign (unshare_expr (tmp), offset_data, seq);
+    }
+  if (poly)
+    {
+      tree cb = build_fold_indirect_ref (gfc_class_vtab_callback_get (decl));
+      tmp = gfc_class_data_get (decl);
+      gimple_seq seq2 = NULL;
+      if (GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (tmp)))
+	{
+	  if (elem_len == NULL_TREE)
+	    {
+	      elem_len = fold_convert (size_type_node,
+				       gfc_class_vtab_size_get (decl));
+	      size = gfc_omp_get_array_size (loc, tmp, seq);
+	    }
+	  tmp = gfc_conv_descriptor_data_get (tmp);
+	  tmp = gfc_omp_elmental_loop (loc, tmp, size, elem_len, seq, &seq2);
+	}
+      tree flag = build_int_cst (short_integer_type_node,
+				 GFC_CLASS_CALLBACK_DEFAULT_FLAG);
+      tmp = build_call_expr_loc (loc, cb, 4, is_cnt ? cnt_fn : map_fn,
+				 is_cnt ? null_pointer_node
+					: build_fold_addr_expr (*token),
+				 tmp, flag);
+      gimplify_and_add (tmp, seq);
+      gimple_seq_add_seq (seq, seq2);
+    }
+  if (!is_cnt && poly)
+    {
+      /* offset_data = token.offset_data */
+      tree field = gfc_omp_get_token_offset_data (*token);
+      tmp = fold_build3_loc (loc, COMPONENT_REF, TREE_TYPE (field), *token,
+			     field, NULL_TREE);
+      gimplify_assign (unshare_expr (offset_data), tmp, seq);
+      /* offset = token.offset */
+      field = gfc_omp_get_token_offset (*token);
+      tmp = fold_build3_loc (loc, COMPONENT_REF, TREE_TYPE (field), *token,
+			     field, NULL_TREE);
+      gimplify_assign (unshare_expr (offset_data), tmp, seq);
+    }
+
+  /* Get field decl.  */
+  if (!poly)
+    {
+      tmp = decl;
+      if (POINTER_TYPE_P (TREE_TYPE (decl)))
+	while (TREE_CODE (tmp) == COMPONENT_REF || TREE_CODE (tmp) == ARRAY_REF)
+	  tmp = TREE_OPERAND (tmp, TREE_CODE (tmp) == COMPONENT_REF ? 1 : 0);
+    }
+  if (!poly && gfc_has_alloc_comps (type, tmp, true))
+    {
+      gimple_seq seq2 = NULL;
+      if (GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (decl)))
+	{
+	  if (elem_len == NULL_TREE)
+	    {
+	      elem_len = gfc_conv_descriptor_elem_len (decl);
+	      size = gfc_omp_get_array_size (loc, decl, seq);
+	    }
+	  decl = gfc_conv_descriptor_data_get (decl);
+	  decl = gfc_omp_elmental_loop (loc, decl, size, elem_len, seq, &seq2);
+	  decl = build_fold_indirect_ref_loc (loc, decl);
+	}
+      else if (TREE_CODE (TREE_TYPE (tmp)) == ARRAY_TYPE)
+	{
+	  type = TREE_TYPE (tmp);
+	  /* FIXME: PR95868 - for var%str of deferred length, elem_len == 0;
+	     len is stored as var%_str_length, but not in GFC_DECL_STRING_LEN
+	     nor in TYPE_SIZE_UNIT as expression. */
+	  elem_len = TYPE_SIZE_UNIT (TREE_TYPE (type));
+	  size = fold_convert (size_type_node, GFC_TYPE_ARRAY_SIZE (type));
+	  decl = gfc_omp_elmental_loop (loc, decl, size, elem_len, seq, &seq2);
+	  decl = build_fold_indirect_ref_loc (loc, decl);
+	}
+      else if (POINTER_TYPE_P (decl))
+	decl = build_fold_indirect_ref (decl);
+      gfc_omp_deep_mapping_comps (is_cnt, loc, decl, token, tkind,
+				  data_array, sizes_array, kinds_array,
+				  offset_data, offset, num, seq, ctx);
+      gimple_seq_add_seq (seq, seq2);
+    }
+  if (end_label)
+    gimple_seq_add_stmt (seq, gimple_build_label (end_label));
+}
+
+
+/* Which map types to check/handle for deep mapping.  */
+static bool
+gfc_omp_deep_map_kind_p (tree clause)
+{
+  switch (OMP_CLAUSE_CODE (clause))
+    {
+    case OMP_CLAUSE_MAP:
+      break;
+    case OMP_CLAUSE_FIRSTPRIVATE:
+    case OMP_CLAUSE_TO:
+    case OMP_CLAUSE_FROM:
+      return true;
+    default:
+      gcc_unreachable ();
+    }
+
+  switch (OMP_CLAUSE_MAP_KIND (clause))
+    {
+    case GOMP_MAP_TO:
+    case GOMP_MAP_FROM:
+    case GOMP_MAP_TOFROM:
+    case GOMP_MAP_ALWAYS_TO:
+    case GOMP_MAP_ALWAYS_FROM:
+    case GOMP_MAP_ALWAYS_TOFROM:
+    case GOMP_MAP_FIRSTPRIVATE:
+      return true;
+    case GOMP_MAP_ALLOC:
+    case GOMP_MAP_POINTER:
+    case GOMP_MAP_TO_PSET:
+    case GOMP_MAP_FORCE_PRESENT:
+    case GOMP_MAP_DELETE:
+    case GOMP_MAP_FORCE_DEVICEPTR:
+    case GOMP_MAP_DEVICE_RESIDENT:
+    case GOMP_MAP_LINK:
+    case GOMP_MAP_IF_PRESENT:
+    case GOMP_MAP_FIRSTPRIVATE_INT:
+    case GOMP_MAP_USE_DEVICE_PTR:
+    case GOMP_MAP_ZERO_LEN_ARRAY_SECTION:
+    case GOMP_MAP_FORCE_ALLOC:
+    case GOMP_MAP_FORCE_TO:
+    case GOMP_MAP_FORCE_FROM:
+    case GOMP_MAP_FORCE_TOFROM:
+    case GOMP_MAP_USE_DEVICE_PTR_IF_PRESENT:
+    case GOMP_MAP_STRUCT:
+    case GOMP_MAP_ALWAYS_POINTER:
+    case GOMP_MAP_POINTER_TO_ZERO_LENGTH_ARRAY_SECTION:
+    case GOMP_MAP_DELETE_ZERO_LEN_ARRAY_SECTION:
+    case GOMP_MAP_RELEASE:
+    case GOMP_MAP_ATTACH:
+    case GOMP_MAP_DETACH:
+    case GOMP_MAP_FORCE_DETACH:
+    case GOMP_MAP_ATTACH_ZERO_LENGTH_ARRAY_SECTION:
+    case GOMP_MAP_FIRSTPRIVATE_POINTER:
+    case GOMP_MAP_FIRSTPRIVATE_REFERENCE:
+    case GOMP_MAP_ATTACH_DETACH:
+      break;
+    default:
+      gcc_unreachable ();
+    }
+  return false;
+}
+
+/* Three OpenMP deep-mapping lang hooks: gfc_omp_deep_mapping{_p,_cnt,}.  */
+
+/* Common check for gfc_omp_deep_mapping_p and gfc_omp_deep_mapping_do. */
+
+static tree
+gfc_omp_deep_mapping_int_p (const gimple *ctx, tree clause)
+{
+  if (is_gimple_omp_oacc (ctx) || !gfc_omp_deep_map_kind_p (clause))
+    return NULL_TREE;
+  tree decl = OMP_CLAUSE_DECL (clause);
+  if (OMP_CLAUSE_SIZE (clause) != NULL_TREE
+      && DECL_P (OMP_CLAUSE_SIZE (clause))
+      && DECL_LANG_SPECIFIC (OMP_CLAUSE_SIZE (clause))
+      && GFC_DECL_SAVED_DESCRIPTOR (OMP_CLAUSE_SIZE (clause)))
+    /* Saved decl. */
+    decl = GFC_DECL_SAVED_DESCRIPTOR (OMP_CLAUSE_SIZE (clause));
+  else if (TREE_CODE (decl) == MEM_REF || TREE_CODE (decl) == INDIRECT_REF)
+    /* The following can happen for, e.g., class(t) :: var(..)  */
+    decl = TREE_OPERAND (decl, 0);
+  if (TREE_CODE (decl) == INDIRECT_REF)
+    /* The following can happen for, e.g., class(t) :: var(..)  */
+    decl = TREE_OPERAND (decl, 0);
+  if (DECL_P (decl)
+      && DECL_LANG_SPECIFIC (decl)
+      && GFC_DECL_SAVED_DESCRIPTOR (decl))
+    decl = GFC_DECL_SAVED_DESCRIPTOR (decl);
+  /* Handle map(to: var.desc) map([to/from/tofrom:] var.desc.data)
+     to get proper map kind by skipping to the next item. */
+  tree tmp = OMP_CLAUSE_CHAIN (clause);
+  if (tmp != NULL_TREE
+      && OMP_CLAUSE_CODE (tmp) == OMP_CLAUSE_CODE (clause)
+      && OMP_CLAUSE_SIZE (tmp) != NULL_TREE
+      && DECL_P (OMP_CLAUSE_SIZE (tmp))
+      && DECL_LANG_SPECIFIC (OMP_CLAUSE_SIZE (tmp))
+      && GFC_DECL_SAVED_DESCRIPTOR (OMP_CLAUSE_SIZE (tmp)) == decl)
+    return NULL_TREE;
+  if (DECL_P (decl)
+      && DECL_LANG_SPECIFIC (decl)
+      && GFC_DECL_SAVED_DESCRIPTOR (decl))
+    decl = GFC_DECL_SAVED_DESCRIPTOR (decl);
+  tree type = TREE_TYPE (decl);
+  if (POINTER_TYPE_P (type))
+    type = TREE_TYPE (type);
+  if (POINTER_TYPE_P (type))
+    type = TREE_TYPE (type);
+  tmp = decl;
+  while (TREE_CODE (tmp) == COMPONENT_REF || TREE_CODE (tmp) == ARRAY_REF)
+    tmp = TREE_OPERAND (tmp, TREE_CODE (tmp) == COMPONENT_REF ? 1 : 0);
+  if (!gfc_is_polymorphic_nonptr (type)
+      && !gfc_has_alloc_comps (type, tmp, true))
+    return NULL_TREE;
+  return decl;
+}
+
+/* Return true if there is deep mapping, even if the number of mapping is known
+   at compile time. */
+bool
+gfc_omp_deep_mapping_p (const gimple *ctx, tree clause)
+{
+  tree decl = gfc_omp_deep_mapping_int_p (ctx, clause);
+  if (decl == NULL_TREE)
+    return false;
+  return true;
+}
+
+/* Handle gfc_omp_deep_mapping{,_cnt} */
+static tree
+gfc_omp_deep_mapping_do (bool is_cnt, const gimple *ctx, tree clause,
+			 unsigned HOST_WIDE_INT tkind, tree data, tree sizes,
+			 tree kinds, tree offset_data, tree offset,
+			 gimple_seq *seq)
+{
+  tree num = NULL_TREE;
+  location_t loc = OMP_CLAUSE_LOCATION (clause);
+  tree decl = gfc_omp_deep_mapping_int_p (ctx, clause);
+  if (decl == NULL_TREE)
+    return NULL_TREE;
+  tree type = TREE_TYPE (decl);
+  if (POINTER_TYPE_P (type))
+    type = TREE_TYPE (type);
+  if (POINTER_TYPE_P (type))
+    type = TREE_TYPE (type);
+  bool poly = gfc_is_polymorphic_nonptr (type);
+
+  if (is_cnt)
+    {
+      num = build_decl (input_location, VAR_DECL,
+			create_tmp_var_name ("n_deepmap"), size_type_node);
+      tree tmp = fold_build2_loc (loc, MODIFY_EXPR, size_type_node, num,
+				  build_int_cst (size_type_node, 0));
+      gimple_add_tmp_var (num);
+      gimplify_and_add (tmp, seq);
+    }
+  else
+    gcc_assert (short_unsigned_type_node == TREE_TYPE (TREE_TYPE (kinds)));
+
+  bool do_copy = poly;
+  bool do_alloc_check = false;
+  tree token = NULL_TREE;
+  tree tmp = decl;
+  if (poly)
+    {
+      tmp = TYPE_FIELDS (type);
+      type = TREE_TYPE (tmp);
+    }
+  else
+    while (TREE_CODE (tmp) == COMPONENT_REF || TREE_CODE (tmp) == ARRAY_REF)
+      tmp = TREE_OPERAND (tmp, TREE_CODE (tmp) == COMPONENT_REF ? 1 : 0);
+  /* If the clause argument is nonallocatable, skip is-allocate check. */
+  if (GFC_DECL_GET_SCALAR_ALLOCATABLE (tmp)
+      || GFC_DECL_GET_SCALAR_POINTER (tmp)
+      || (GFC_DESCRIPTOR_TYPE_P (type)
+	  && (GFC_TYPE_ARRAY_AKIND (type) == GFC_ARRAY_ALLOCATABLE
+	      || GFC_TYPE_ARRAY_AKIND (type) == GFC_ARRAY_POINTER
+	      || GFC_TYPE_ARRAY_AKIND (type) == GFC_ARRAY_POINTER_CONT)))
+    do_alloc_check = true;
+
+  /* TODO: For map(a(:)), we know it is present & allocated.  */
+
+  tree present = (DECL_P (decl) ? gfc_omp_check_optional_argument (decl, true)
+				: NULL_TREE);
+  if (POINTER_TYPE_P (TREE_TYPE (decl))
+      && POINTER_TYPE_P (TREE_TYPE (TREE_TYPE (decl))))
+    decl = build_fold_indirect_ref (decl);
+  if (present)
+    {
+      tree then_label = create_artificial_label (loc);
+      tree end_label = create_artificial_label (loc);
+      gimple_seq seq2 = NULL;
+      tmp = force_gimple_operand (present, &seq2, true, NULL_TREE);
+      gimple_seq_add_seq (seq, seq2);
+      gimple_seq_add_stmt (seq,
+			   gimple_build_cond_from_tree (present,
+							then_label, end_label));
+      gimple_seq_add_stmt (seq, gimple_build_label (then_label));
+      gfc_omp_deep_mapping_item (is_cnt, do_copy, do_alloc_check, loc, decl,
+				 &token, tkind, data, sizes, kinds,
+				 offset_data, offset, num, seq, ctx);
+      gimple_seq_add_stmt (seq, gimple_build_label (end_label));
+    }
+  else
+    gfc_omp_deep_mapping_item (is_cnt, do_copy, do_alloc_check, loc, decl,
+			       &token, tkind, data, sizes, kinds, offset_data,
+			       offset, num, seq, ctx);
+  /* Double: Map + pointer assign.  */
+  if (is_cnt)
+    gimplify_assign (num,
+		     fold_build2_loc (input_location, MULT_EXPR,
+				      size_type_node, num,
+				      build_int_cst (size_type_node, 2)), seq);
+  return num;
+}
+
+/* Return tree with a variable which contains the count of deep-mappyings
+   (value depends, e.g., on allocation status)  */
+tree
+gfc_omp_deep_mapping_cnt (const gimple *ctx, tree clause, gimple_seq *seq)
+{
+  return gfc_omp_deep_mapping_do (true, ctx, clause, 0, NULL_TREE, NULL_TREE,
+				  NULL_TREE, NULL_TREE, NULL_TREE, seq);
+}
+
+/* Does the actual deep mapping. */
+void
+gfc_omp_deep_mapping (const gimple *ctx, tree clause,
+		      unsigned HOST_WIDE_INT tkind, tree data,
+		      tree sizes, tree kinds, tree offset_data, tree offset,
+		      gimple_seq *seq)
+{
+  (void) gfc_omp_deep_mapping_do (false, ctx, clause, tkind, data, sizes, kinds,
+				  offset_data, offset, seq);
+}
 
 /* Return true if DECL is a scalar variable (for the purpose of
    implicit firstprivatization/mapping). Only if 'ptr_alloc_ok.'
@@ -2449,6 +3787,18 @@ gfc_trans_omp_array_section (stmtblock_t *block, gfc_omp_namelist *n,
       elemsz = fold_convert (gfc_array_index_type, elemsz);
       OMP_CLAUSE_SIZE (node) = fold_build2 (MULT_EXPR, gfc_array_index_type,
 					    OMP_CLAUSE_SIZE (node), elemsz);
+      if (n->expr->ts.type == BT_DERIVED
+	  && n->expr->ts.u.derived->attr.alloc_comp)
+	{
+	  /* Save array descriptor for use in gfc_omp_deep_mapping{,_p,_cnt};
+	     force evaluate to ensure that it is not gimplified + is a decl.  */
+	  tree tmp = OMP_CLAUSE_SIZE (node);
+	  tree var = gfc_create_var (TREE_TYPE (tmp), NULL);
+	  gfc_add_modify_loc (input_location, block, var, tmp);
+	  OMP_CLAUSE_SIZE (node) = var;
+	  gfc_allocate_lang_decl (var);
+	  GFC_DECL_SAVED_DESCRIPTOR (var) = se.expr;
+	}
     }
   gcc_assert (se.post.head == NULL_TREE);
   gcc_assert (POINTER_TYPE_P (TREE_TYPE (ptr)));
@@ -3377,13 +4727,40 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 		    {
 		      /* A single indirectref is handled by the middle end.  */
 		      gcc_assert (!POINTER_TYPE_P (TREE_TYPE (decl)));
-		      decl = TREE_OPERAND (decl, 0);
-		      decl = gfc_build_cond_assign_expr (block, present, decl,
+		      tree tmp = TREE_OPERAND (decl, 0);
+		      tmp = gfc_build_cond_assign_expr (block, present, tmp,
 							 null_pointer_node);
-		      OMP_CLAUSE_DECL (node) = build_fold_indirect_ref (decl);
+		      OMP_CLAUSE_DECL (node) = build_fold_indirect_ref (tmp);
 		    }
 		  else
 		    OMP_CLAUSE_DECL (node) = decl;
+		  if ((TREE_CODE (decl) != PARM_DECL
+		       || DECL_ARTIFICIAL (OMP_CLAUSE_DECL (node)))
+		      && n->sym->ts.type == BT_DERIVED
+		      && n->sym->ts.u.derived->attr.alloc_comp)
+		    {
+		      /* Save array descriptor for use in
+			 gfc_omp_deep_mapping{,_p,_cnt}; force evaluate
+			 to ensure that it is not gimplified + is a decl.  */
+		      tree tmp = OMP_CLAUSE_SIZE (node);
+		      if (tmp == NULL_TREE)
+			tmp = DECL_P (decl) ? DECL_SIZE_UNIT (decl)
+					    : TYPE_SIZE_UNIT (TREE_TYPE (decl));
+		      tree var = gfc_create_var (TREE_TYPE (tmp), NULL);
+		      gfc_add_modify_loc (input_location, block, var, tmp);
+		      OMP_CLAUSE_SIZE (node) = var;
+		      gfc_allocate_lang_decl (var);
+		      if (TREE_CODE (decl) == INDIRECT_REF)
+			decl = TREE_OPERAND (decl, 0);
+		      if (TREE_CODE (decl) == INDIRECT_REF)
+			decl = TREE_OPERAND (decl, 0);
+		      if (DECL_LANG_SPECIFIC (decl)
+			  && GFC_DECL_SAVED_DESCRIPTOR (decl))
+			GFC_DECL_SAVED_DESCRIPTOR (var)
+			  = GFC_DECL_SAVED_DESCRIPTOR (decl);
+		      else
+			GFC_DECL_SAVED_DESCRIPTOR (var) = decl;
+		    }
 		}
 	      else if (n->expr
 		       && n->expr->expr_type == EXPR_VARIABLE
@@ -3455,6 +4832,31 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 			  OMP_CLAUSE_SIZE (node3)
 			    = TYPE_SIZE_UNIT (gfc_charlen_type_node);
 			}
+		      if (!openacc
+			  && n->expr->ts.type == BT_DERIVED
+			  && n->expr->ts.u.derived->attr.alloc_comp)
+			{
+			  /* Save array descriptor for use in
+			     gfc_omp_deep_mapping{,_p,_cnt}; force evaluate
+			     to ensure that it is not gimplified + is a decl.  */
+			  tree tmp = OMP_CLAUSE_SIZE (node);
+			  if (tmp == NULL_TREE)
+			    tmp = (DECL_P (se.expr)
+				   ? DECL_SIZE_UNIT (se.expr)
+				   : TYPE_SIZE_UNIT (TREE_TYPE (se.expr)));
+			  tree var = gfc_create_var (TREE_TYPE (tmp), NULL);
+			  gfc_add_modify_loc (input_location, block, var, tmp);
+			  OMP_CLAUSE_SIZE (node) = var;
+			  gfc_allocate_lang_decl (var);
+			  if (TREE_CODE (se.expr) == INDIRECT_REF)
+			    se.expr = TREE_OPERAND (se.expr, 0);
+			  if (DECL_LANG_SPECIFIC (se.expr)
+			      && GFC_DECL_SAVED_DESCRIPTOR (se.expr))
+			    GFC_DECL_SAVED_DESCRIPTOR (var)
+			      = GFC_DECL_SAVED_DESCRIPTOR (se.expr);
+			  else
+			    GFC_DECL_SAVED_DESCRIPTOR (var) = se.expr;
+			}
 		    }
 		}
 	      else if (n->expr
@@ -3493,7 +4895,7 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 		      && (lastref->u.c.component->ts.type == BT_DERIVED
 			  || lastref->u.c.component->ts.type == BT_CLASS))
 		    {
-		      if (pointer || (openacc && allocatable))
+		      if (pointer || allocatable)
 			{
 			  tree data, size;
 
@@ -3526,6 +4928,22 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 			  OMP_CLAUSE_DECL (node) = inner;
 			  OMP_CLAUSE_SIZE (node)
 			    = TYPE_SIZE_UNIT (TREE_TYPE (inner));
+			}
+		      if (!openacc
+			  && n->expr->ts.type == BT_DERIVED
+			  && n->expr->ts.u.derived->attr.alloc_comp)
+			{
+			  /* Save array descriptor for use in
+			     gfc_omp_deep_mapping{,_p,_cnt}; force evaluate
+			     to ensure that it is not gimplified + is a decl.  */
+			  tree tmp = OMP_CLAUSE_SIZE (node);
+			  tree var = gfc_create_var (TREE_TYPE (tmp), NULL);
+			  gfc_add_modify_loc (input_location, block, var, tmp);
+			  OMP_CLAUSE_SIZE (node) = var;
+			  gfc_allocate_lang_decl (var);
+			  if (TREE_CODE (inner) == INDIRECT_REF)
+			    inner = TREE_OPERAND (inner, 0);
+			  GFC_DECL_SAVED_DESCRIPTOR (var) = inner;
 			}
 		    }
 		  else if (lastref->type == REF_ARRAY
@@ -3598,6 +5016,22 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 			    {
 			      node2 = node;
 			      node = desc_node;  /* Put first.  */
+			      if (n->expr->ts.type == BT_DERIVED
+				  && n->expr->ts.u.derived->attr.alloc_comp)
+				{
+				  /* Save array descriptor for use
+				     in gfc_omp_deep_mapping{,_p,_cnt}; force
+				     evaluate to ensure that it is
+				     not gimplified + is a decl.  */
+				  tree tmp = OMP_CLAUSE_SIZE (node2);
+				  tree var = gfc_create_var (TREE_TYPE (tmp),
+							     NULL);
+				  gfc_add_modify_loc (input_location, block,
+						      var, tmp);
+				  OMP_CLAUSE_SIZE (node2) = var;
+				  gfc_allocate_lang_decl (var);
+				  GFC_DECL_SAVED_DESCRIPTOR (var) = inner;
+				}
 			    }
 			  node3 = build_omp_clause (input_location,
 						    OMP_CLAUSE_MAP);

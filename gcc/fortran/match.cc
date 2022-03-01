@@ -6479,6 +6479,8 @@ select_type_set_tmp (gfc_typespec *ts)
 	{
 	  sym->attr.pointer
 		= CLASS_DATA (selector)->attr.class_pointer;
+	  sym->attr.allocatable
+		= CLASS_DATA (selector)->attr.allocatable;
 
 	  /* Copy across the array spec to the selector.  */
 	  if (CLASS_DATA (selector)->attr.dimension

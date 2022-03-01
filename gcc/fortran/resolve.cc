@@ -488,7 +488,8 @@ gfc_resolve_formal_arglist (gfc_symbol *proc)
 	      continue;
 	    }
 
-	  if (sym->attr.flavor == FL_PROCEDURE)
+	  if (sym->attr.flavor == FL_PROCEDURE
+	      && !proc->attr.artificial && !sym->attr.artificial)
 	    {
 	      gfc_error ("Dummy procedure %qs not allowed in elemental "
 			 "procedure %qs at %L", sym->name, proc->name,
@@ -1915,7 +1916,8 @@ gfc_resolve_intrinsic (gfc_symbol *sym, locus *loc)
   sym->attr.elemental = isym->elemental;
 
   /* Check it is actually available in the standard settings.  */
-  if (!gfc_check_intrinsic_standard (isym, &symstd, false, sym->declared_at))
+  if ((!sym->ns->proc_name || !sym->ns->proc_name->attr.artificial)
+      && !gfc_check_intrinsic_standard (isym, &symstd, false, sym->declared_at))
     {
       gfc_error ("The intrinsic %qs declared INTRINSIC at %L is not "
 		 "available in the current standard settings but %s. Use "
@@ -13742,7 +13744,7 @@ resolve_fl_procedure (gfc_symbol *sym, int mp_flag)
 		     name, &sym->declared_at);
 	  return false;
 	}
-      if (sym->attr.dummy)
+      if (sym->attr.dummy && !sym->attr.artificial)
 	{
 	  gfc_error ("Dummy procedure %qs at %L shall not be elemental",
 		     sym->name, &sym->declared_at);
@@ -17894,7 +17896,8 @@ resolve_types (gfc_namespace *ns)
 
   for (n = ns->contained; n; n = n->sibling)
     {
-      if (gfc_pure (ns->proc_name) && !gfc_pure (n->proc_name))
+      if (gfc_pure (ns->proc_name) && !gfc_pure (n->proc_name)
+	  && (!n->proc_name || !n->proc_name->attr.artificial))
 	gfc_error ("Contained procedure %qs at %L of a PURE procedure must "
 		   "also be PURE", n->proc_name->name,
 		   &n->proc_name->declared_at);

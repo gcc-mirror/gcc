@@ -8922,13 +8922,13 @@ gfc_conv_associated (gfc_se *se, gfc_expr *expr)
       if (scalar)
         {
 	  /* A pointer to a scalar.  */
+	  symbol_attribute attr = gfc_expr_attr (arg1->expr);
 	  arg1se.want_pointer = 1;
 	  gfc_conv_expr (&arg1se, arg1->expr);
-	  if (arg1->expr->symtree->n.sym->attr.proc_pointer
-	      && arg1->expr->symtree->n.sym->attr.dummy)
+	  if (attr.proc_pointer && attr.dummy)
 	    arg1se.expr = build_fold_indirect_ref_loc (input_location,
 						       arg1se.expr);
-  	  if (arg1->expr->ts.type == BT_CLASS)
+	  if (!attr.proc_pointer && arg1->expr->ts.type == BT_CLASS)
 	    {
 	      tmp2 = gfc_class_data_get (arg1se.expr);
 	      if (GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (tmp2)))
@@ -9548,13 +9548,6 @@ conv_isocbinding_function (gfc_se *se, gfc_expr *expr)
 	  gfc_conv_expr_descriptor (se, arg->expr);
 	  se->expr = gfc_conv_descriptor_data_get (se->expr);
 	}
-
-      /* TODO -- the following two lines shouldn't be necessary, but if
-	 they're removed, a bug is exposed later in the code path.
-	 This workaround was thus introduced, but will have to be
-	 removed; please see PR 35150 for details about the issue.  */
-      se->expr = convert (pvoid_type_node, se->expr);
-      se->expr = gfc_evaluate_now (se->expr, &se->pre);
     }
   else if (expr->value.function.isym->id == GFC_ISYM_C_FUNLOC)
     gfc_conv_expr_reference (se, arg->expr);
