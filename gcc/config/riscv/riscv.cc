@@ -1258,7 +1258,9 @@ riscv_legitimate_constant_p (machine_mode mode ATTRIBUTE_UNUSED, rtx x)
   return riscv_const_insns (x) > 0;
 }
 
-/* Implement TARGET_CANNOT_FORCE_CONST_MEM.  */
+/* Implement TARGET_CANNOT_FORCE_CONST_MEM.
+   Return true if X cannot (or should not) be spilled to the
+   constant pool.  */
 
 static bool
 riscv_cannot_force_const_mem (machine_mode mode ATTRIBUTE_UNUSED, rtx x)
@@ -8624,7 +8626,7 @@ riscv_modes_tieable_p (machine_mode mode1, machine_mode mode2)
 	       && GET_MODE_CLASS (mode2) == MODE_FLOAT));
 }
 
-/* Implement CLASS_MAX_NREGS.  */
+/* Implement TARGET_CLASS_MAX_NREGS.  */
 
 static unsigned char
 riscv_class_max_nregs (reg_class_t rclass, machine_mode mode)

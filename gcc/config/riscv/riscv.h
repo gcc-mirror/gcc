@@ -315,7 +315,7 @@ ASM_MISA_SPEC
 	- FRAME_POINTER_REGNUM
    - 1 vl register
    - 1 vtype register
-   - 30 unused registers for future expansion
+   - 28 unused registers for future expansion
    - 32 vector registers  */
 
 #define FIRST_PSEUDO_REGISTER 128
