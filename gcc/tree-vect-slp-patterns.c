@@ -873,10 +873,8 @@ compatible_complex_nodes_p (slp_compat_nodes_map_t *compat_cache,
 static inline bool
 vect_validate_multiplication (slp_tree_to_load_perm_map_t *perm_cache,
 			      slp_compat_nodes_map_t *compat_cache,
-			      vec<slp_tree> &left_op,
-			      vec<slp_tree> &right_op,
-			      bool subtract,
-			      enum _conj_status *_status)
+			      vec<slp_tree> &left_op, vec<slp_tree> &right_op,
+			      bool subtract, enum _conj_status *_status)
 {
   auto_vec<slp_tree> ops;
   enum _conj_status stats = CONJ_NONE;
@@ -902,29 +900,31 @@ vect_validate_multiplication (slp_tree_to_load_perm_map_t *perm_cache,
 
   /* Default to style and perm 0, most operations use this one.  */
   int style = 0;
-  int perm = subtract ? 1 : 0;
+  int perm = 0;
 
-  /* Check if we have a negate operation, if so absorb the node and continue
-     looking.  */
+  /* Determine which style we're looking at.  We only have different ones
+     whenever a conjugate is involved.  If so absorb the node and continue.  */
   bool neg0 = vect_match_expression_p (right_op[0], NEGATE_EXPR);
   bool neg1 = vect_match_expression_p (right_op[1], NEGATE_EXPR);
 
-  /* Determine which style we're looking at.  We only have different ones
-     whenever a conjugate is involved.  */
-  if (neg0 && neg1)
-    ;
-  else if (neg0)
+   /* Determine which style we're looking at.  We only have different ones
+      whenever a conjugate is involved.  */
+  if (neg0 != neg1 && (neg0 || neg1))
     {
-      right_op[0] = SLP_TREE_CHILDREN (right_op[0])[0];
-      stats = CONJ_FST;
-      if (subtract)
-	perm = 0;
-    }
-  else if (neg1)
-    {
-      right_op[1] = SLP_TREE_CHILDREN (right_op[1])[0];
-      stats = CONJ_SND;
-      perm = 1;
+      unsigned idx = !!neg1;
+      right_op[idx] = SLP_TREE_CHILDREN (right_op[idx])[0];
+      if (linear_loads_p (perm_cache, left_op[!!!neg1]) == PERM_EVENEVEN)
+	{
+	  stats = CONJ_FST;
+	  style = 1;
+	  if (subtract && neg0)
+	    perm = 1;
+	}
+      else
+	{
+	  stats = CONJ_SND;
+	  perm = 1;
+	}
     }
 
   *_status = stats;
@@ -1069,7 +1069,16 @@ complex_mul_pattern::matches (complex_operation_t op,
   enum _conj_status status;
   if (!vect_validate_multiplication (perm_cache, compat_cache, left_op,
 				     right_op, false, &status))
-    return IFN_LAST;
+    {
+	/* Try swapping the operands and trying again.  */
+	std::swap (left_op[0], left_op[1]);
+	right_op.truncate (0);
+	right_op.safe_splice (SLP_TREE_CHILDREN (muls[1]));
+	std::swap (right_op[0], right_op[1]);
+	if (!vect_validate_multiplication (perm_cache, compat_cache, left_op,
+					   right_op, false, &status))
+	  return IFN_LAST;
+    }
 
   if (status == CONJ_NONE)
     ifn = IFN_COMPLEX_MUL;
@@ -1089,7 +1098,7 @@ complex_mul_pattern::matches (complex_operation_t op,
       ops->quick_push (right_op[1]);
       ops->quick_push (left_op[0]);
     }
-  else if (kind == PERM_EVENEVEN && status != CONJ_SND)
+  else if (kind == PERM_EVENEVEN && status == CONJ_NONE)
     {
       ops->quick_push (left_op[0]);
       ops->quick_push (right_op[0]);
@@ -1246,15 +1255,15 @@ complex_fma_pattern::matches (complex_operation_t op,
 
   if (ifn == IFN_COMPLEX_FMA)
     {
-      ops->quick_push (SLP_TREE_CHILDREN (vnode)[0]);
       ops->quick_push (SLP_TREE_CHILDREN (node)[1]);
       ops->quick_push (SLP_TREE_CHILDREN (node)[0]);
+      ops->quick_push (SLP_TREE_CHILDREN (vnode)[0]);
     }
   else
     {
-      ops->quick_push (SLP_TREE_CHILDREN (vnode)[0]);
       ops->quick_push (SLP_TREE_CHILDREN (node)[0]);
       ops->quick_push (SLP_TREE_CHILDREN (node)[1]);
+      ops->quick_push (SLP_TREE_CHILDREN (vnode)[0]);
     }
 
   return ifn;
@@ -1290,8 +1299,8 @@ complex_fma_pattern::build (vec_info *vinfo)
   SLP_TREE_CHILDREN (*this->m_node).create (3);
   SLP_TREE_CHILDREN (*this->m_node).safe_splice (this->m_ops);
 
+  SLP_TREE_REF_COUNT (this->m_ops[0])++;
   SLP_TREE_REF_COUNT (this->m_ops[1])++;
-  SLP_TREE_REF_COUNT (this->m_ops[2])++;
 
   vect_free_slp_tree (node);
 
@@ -1397,23 +1406,31 @@ complex_fms_pattern::matches (complex_operation_t op,
   if (!vect_pattern_validate_optab (ifn, *ref_node))
     return IFN_LAST;
 
+  child = SLP_TREE_CHILDREN ((*ops)[1])[0];
   ops->truncate (0);
   ops->create (4);
 
   complex_perm_kinds_t kind = linear_loads_p (perm_cache, right_op[0]);
-  if (kind == PERM_EVENODD)
+  if (kind == PERM_EVENODD || kind == PERM_TOP)
     {
       ops->quick_push (child);
       ops->quick_push (right_op[0]);
       ops->quick_push (right_op[1]);
-      ops->quick_push (left_op[1]);
+      ops->quick_push (left_op[0]);
+    }
+  else if (status == CONJ_NONE)
+    {
+      ops->quick_push (child);
+      ops->quick_push (right_op[1]);
+      ops->quick_push (right_op[0]);
+      ops->quick_push (left_op[0]);
     }
   else
     {
       ops->quick_push (child);
       ops->quick_push (right_op[1]);
       ops->quick_push (right_op[0]);
-      ops->quick_push (left_op[0]);
+      ops->quick_push (left_op[1]);
     }
 
   return ifn;
