@@ -139,7 +139,10 @@ NodeId
 Mappings::get_next_node_id (CrateNum crateNum)
 {
   auto it = nodeIdIter.find (crateNum);
-  rust_assert (it != nodeIdIter.end ());
+  // We're probably *not* parsing actual rust code... but mostly reusing
+  // the parser in another way. Return 0
+  if (it == nodeIdIter.end ())
+    return 0;
 
   auto id = it->second + 1;
   nodeIdIter[crateNum] = id;

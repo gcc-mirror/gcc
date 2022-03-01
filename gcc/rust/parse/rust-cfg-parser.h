@@ -41,8 +41,7 @@ namespace Rust {
  * @return false if the given input was invalid, true otherwise
  */
 bool
-parse_cfg_option (const std::string &input, std::string &key,
-		  std::string &value);
+parse_cfg_option (std::string &input, std::string &key, std::string &value);
 } // namespace Rust
 
 #if CHECKING_P

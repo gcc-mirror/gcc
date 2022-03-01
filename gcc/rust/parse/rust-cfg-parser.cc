@@ -1,45 +1,55 @@
 #include "rust-cfg-parser.h"
+#include "rust-lex.h"
+#include "rust-parse.h"
+#include "rust-session-manager.h"
 #include "selftest.h"
 
 namespace Rust {
 bool
-parse_cfg_option (const std::string &input, std::string &key,
-		  std::string &value)
+parse_cfg_option (std::string &input, std::string &key, std::string &value)
 {
   key.clear ();
   value.clear ();
 
-  auto equal = input.find ('=');
+  auto lexer = Lexer::lex_string (input);
+  auto parser = Parser<Lexer> (std::move (lexer));
 
-  // If there is no equal sign, it means there is no value. Clean up the key
-  // and return
-  if (equal == std::string::npos)
+  auto token = parser.peek_current_token ();
+  if (token->get_id () != IDENTIFIER)
     {
-      key = input;
-
-      // FIXME: Make sure key is a proper identifier
-
-      return true;
+      return false;
     }
 
-  key = input.substr (0, equal);
+  key = token->get_str ();
 
-  auto remaining_input = input.substr (equal + 1);
-  if (remaining_input[0] != '"' || remaining_input.back () != '"')
-    return false;
+  rust_assert (parser.skip_token (IDENTIFIER));
+  token = parser.peek_current_token ();
 
-  // Remove the quotes around the value, by advancing one character
-  value = remaining_input.substr (1);
-  // And trimming the rightmost character. This is fine since we've already
-  // checked that both the first and last characters were quotes.
-  value.resize (value.size () - 1);
+  switch (token->get_id ())
+    {
+    case END_OF_FILE:
+      // we're done parsing, we had a valid key, return happily
+      return true;
+    case EQUAL:
+      // We have an equal sign: Skip the token and parse an identifier
+      {
+	rust_assert (parser.skip_token (EQUAL));
 
-  // FIXME: We need to sanitize here and make sure that both key and value
-  // are proper identifiers
+	auto value_expr = parser.parse_literal_expr ();
+	// We had an equal sign but no value, error out
+	if (!value_expr)
+	  return false;
 
-  return true;
+	if (value_expr->get_lit_type () != AST::Literal::LitType::STRING)
+	  return false;
+
+	value = value_expr->get_literal ().as_string ();
+	return true;
+      }
+    default:
+      return false;
+    }
 }
-
 } // namespace Rust
 
 #if CHECKING_P
@@ -52,23 +62,49 @@ rust_cfg_parser_test (void)
   std::string key;
   std::string value;
 
-  ASSERT_TRUE (Rust::parse_cfg_option ("key-no-value", key, value));
-  ASSERT_EQ (key, "key-no-value");
+  auto input = std::string ("key_no_value");
+
+  ASSERT_TRUE (Rust::parse_cfg_option (input, key, value));
+  ASSERT_EQ (key, "key_no_value");
   ASSERT_TRUE (value.empty ());
 
-  ASSERT_TRUE (Rust::parse_cfg_option ("k=\"v\"", key, value));
+  input = std::string ("k=\"v\"");
+
+  ASSERT_TRUE (Rust::parse_cfg_option (input, key, value));
   ASSERT_EQ (key, "k");
   ASSERT_EQ (value, "v");
 
   // values should be between double quotes
-  ASSERT_FALSE (Rust::parse_cfg_option ("k=v", key, value));
+  input = std::string ("k=v");
+  ASSERT_FALSE (Rust::parse_cfg_option (input, key, value));
 
   // No value is an error if there is an equal sign
-  ASSERT_FALSE (Rust::parse_cfg_option ("k=", key, value));
+  input = std::string ("k=");
+  ASSERT_FALSE (Rust::parse_cfg_option (input, key, value));
 
   // No key is an error
-  ASSERT_FALSE (Rust::parse_cfg_option ("=", key, value));
-  ASSERT_FALSE (Rust::parse_cfg_option ("=value", key, value));
+  input = std::string ("=");
+  ASSERT_FALSE (Rust::parse_cfg_option (input, key, value));
+
+  input = std::string ("=value");
+  ASSERT_FALSE (Rust::parse_cfg_option (input, key, value));
+
+  // values that are not string literals are an error
+  input = std::string ("key=b\"a\"");
+  ASSERT_FALSE (Rust::parse_cfg_option (input, key, value));
+
+  input = std::string ("key='v'");
+  ASSERT_FALSE (Rust::parse_cfg_option (input, key, value));
+
+  input = std::string ("key=155");
+  ASSERT_FALSE (Rust::parse_cfg_option (input, key, value));
+
+  input = std::string ("key=3.14");
+  ASSERT_FALSE (Rust::parse_cfg_option (input, key, value));
+
+  // kebab case is not valid for an identifier
+  input = std::string ("key-no-value");
+  ASSERT_FALSE (Rust::parse_cfg_option (input, key, value));
 }
 } // namespace selftest
 
