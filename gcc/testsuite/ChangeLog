@@ -1,3 +1,91 @@
+2022-02-28  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR tree-optimization/91384
+	* gcc.target/i386/pr91384.c: New test case.
+
+2022-02-28  Roger Sayle  <roger@nextmovesoftware.com>
+	    Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.target/i386/pr80270.c: New test case.
+
+2022-02-28  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/104637
+	* gcc.target/i386/pr104637.c: New.
+
+2022-02-28  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* gdc.dg/torture/simd7413a.d: Update.
+	* gdc.dg/ubsan/pr88957.d: Update.
+	* gdc.dg/simd18489.d: New test.
+	* gdc.dg/torture/simd21727.d: New test.
+
+2022-02-28  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/104682
+	* g++.dg/ext/attr-unavailable-10.C: New test.
+	* g++.dg/ext/attr-unavailable-11.C: New test.
+	* g++.dg/warn/deprecated-17.C: New test.
+	* g++.dg/warn/deprecated-18.C: New test.
+
+2022-02-28  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/104667
+	* g++.dg/ext/attrib64.C: New test.
+
+2022-02-28  Qing Zhao  <qing.zhao@oracle.com>
+
+	PR middle-end/104550
+	* gcc.dg/auto-init-pr104550-1.c: New test.
+	* gcc.dg/auto-init-pr104550-2.c: New test.
+	* gcc.dg/auto-init-pr104550-3.c: New test.
+
+2022-02-28  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/104648
+	* g++.dg/pr104648.C: New test.
+
+2022-02-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/104700
+	* gcc.dg/pr104700-2.c: New testcase.
+	* gcc.dg/torture/pr104700-1.c: Likewise.
+
+2022-02-28  Tom de Vries  <tdevries@suse.de>
+
+	* gcc.target/nvptx/atomic-store-1.c: Add -mptx=_.
+	* gcc.target/nvptx/atomic-store-2.c: Same.
+	* gcc.target/nvptx/float16-1.c: Same.
+	* gcc.target/nvptx/float16-2.c: Same.
+	* gcc.target/nvptx/float16-3.c: Same.
+	* gcc.target/nvptx/float16-4.c: Same.
+	* gcc.target/nvptx/float16-5.c: Same.
+	* gcc.target/nvptx/float16-6.c: Same.
+	* gcc.target/nvptx/tanh-1.c: Same.
+	* gcc.target/nvptx/uniform-simt-1.c: Same.
+	* gcc.target/nvptx/uniform-simt-3.c: Same.
+
+2022-02-28  Tom de Vries  <tdevries@suse.de>
+
+	* gcc.target/nvptx/atomic-store-3.c: Add -misa=sm_30.
+
+2022-02-28  Tom de Vries  <tdevries@suse.de>
+
+	* gcc.target/nvptx/uniform-simt-2.c: Add -misa=sm_30.
+
+2022-02-28  Tom de Vries  <tdevries@suse.de>
+
+	* gcc.target/nvptx/rotate.c: Add -misa=sm_35.
+
+2022-02-28  Hongyu Wang  <hongyu.wang@intel.com>
+
+	* gcc.target/i386/avx512f-vpternlogd-1.c: Use new enum.
+	* gcc.target/i386/avx512f-vpternlogq-1.c: Likewise.
+	* gcc.target/i386/avx512vl-vpternlogd-1.c: Likewise.
+	* gcc.target/i386/avx512vl-vpternlogq-1.c: Likewise.
+	* gcc.target/i386/testimm-10.c: Remove imm check for vpternlog
+	insns since the imm has been truncated in intrinsic.
+
 2022-02-27  Jason Merrill  <jason@redhat.com>
 
 	PR c++/104618

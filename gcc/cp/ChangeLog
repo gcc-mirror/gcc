@@ -1,3 +1,16 @@
+2022-02-28  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/104682
+	* cp-tree.h (build_enumerator): Adjust.
+	* decl.cc (finish_enum): Make it return the new decl.
+	* pt.cc (tsubst_enum): Propagate TREE_DEPRECATED and TREE_UNAVAILABLE.
+
+2022-02-28  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/104667
+	* decl2.cc (is_late_template_attribute): Cope with a decl without
+	a type.
+
 2022-02-27  Jason Merrill  <jason@redhat.com>
 
 	PR c++/104618

@@ -1,3 +1,12 @@
+2022-02-28  Tom de Vries  <tdevries@suse.de>
+
+	* testsuite/libgomp.c/declare-variant-3-sm30.c: Add -foffload=-mptx=_.
+	* testsuite/libgomp.c/declare-variant-3-sm35.c: Same.
+	* testsuite/libgomp.c/declare-variant-3-sm53.c: Same.
+	* testsuite/libgomp.c/declare-variant-3-sm70.c: Same.
+	* testsuite/libgomp.c/declare-variant-3-sm75.c: Same.
+	* testsuite/libgomp.c/declare-variant-3-sm80.c: Same.
+
 2022-02-24  Tom de Vries  <tdevries@suse.de>
 
 	* testsuite/libgomp.c/declare-variant-3-sm30.c: New test.

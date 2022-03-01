@@ -1,3 +1,85 @@
+2022-02-28  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR tree-optimization/91384
+	* config/i386/i386.md (peephole2): Eliminate final testl insn
+	from the sequence *movsi_internal, *negsi_1, *cmpsi_ccno_1 by
+	transforming using *negsi_2 for the negation.
+
+2022-02-28  Roger Sayle  <roger@nextmovesoftware.com>
+	    Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR middle-end/80270
+	* expmed.cc (extract_integral_bit_field): If OP0 is a hard
+	register, copy it to a pseudo before calling simplify_gen_subreg.
+
+2022-02-28  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/104637
+	* lra-assigns.cc (lra_split_hard_reg_for): Split hard regs as many
+	as possible on one subpass.
+
+2022-02-28  Qing Zhao  <qing.zhao@oracle.com>
+
+	PR middle-end/104550
+	* gimple-fold.cc (clear_padding_flush): Suppress warnings for new
+	created uses.
+
+2022-02-28  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/104648
+	* main.cc (main): Use flag_checking instead of CHECKING_P
+	and run toplev::finalize only if there is not error seen.
+
+2022-02-28  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-pre.cc (compute_avail): Revert part of last change.
+
+2022-02-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/104700
+	* tree-ssa-pre.cc (get_or_alloc_expr_for): Remove and inline
+	into ...
+	(find_or_generate_expression): ... here, simplifying code.
+
+2022-02-28  Tom de Vries  <tdevries@suse.de>
+
+	* config/nvptx/nvptx-opts.h (enum ptx_version): Add
+	PTX_VERSION_default.
+	* config/nvptx/nvptx.cc (handle_ptx_version_option): Handle
+	PTX_VERSION_default.
+	* config/nvptx/nvptx.opt: Add EnumValue "_" / PTX_VERSION_default.
+
+2022-02-28  Richard Biener  <rguenther@suse.de>
+
+	PR rtl-optimization/104686
+	* ira-int.h (minmax_set_iter_cond): Use ctz_hwi to elide loop
+	skipping bits that are zero.
+	(ira_object_conflict_iter_cond): Likewise.
+
+2022-02-28  Hongyu Wang  <hongyu.wang@intel.com>
+
+	* config/i386/avx512fintrin.h (_MM_TERNLOG_ENUM): New enum.
+	(_mm512_ternarylogic_epi64): Truncate imm to unsigned
+	char to avoid error when using ~enum as parameter.
+	(_mm512_mask_ternarylogic_epi64): Likewise.
+	(_mm512_maskz_ternarylogic_epi64): Likewise.
+	(_mm512_ternarylogic_epi32): Likewise.
+	(_mm512_mask_ternarylogic_epi32): Likewise.
+	(_mm512_maskz_ternarylogic_epi32): Likewise.
+	* config/i386/avx512vlintrin.h (_mm256_ternarylogic_epi64):
+	Adjust imm param type to unsigned char.
+	(_mm256_mask_ternarylogic_epi64): Likewise.
+	(_mm256_maskz_ternarylogic_epi64): Likewise.
+	(_mm256_ternarylogic_epi32): Likewise.
+	(_mm256_mask_ternarylogic_epi32): Likewise.
+	(_mm256_maskz_ternarylogic_epi32): Likewise.
+	(_mm_ternarylogic_epi64): Likewise.
+	(_mm_mask_ternarylogic_epi64): Likewise.
+	(_mm_maskz_ternarylogic_epi64): Likewise.
+	(_mm_ternarylogic_epi32): Likewise.
+	(_mm_mask_ternarylogic_epi32): Likewise.
+	(_mm_maskz_ternarylogic_epi32): Likewise.
+
 2022-02-25  Jakub Jelinek  <jakub@redhat.com>
 	    Marc Glisse  <marc.glisse@inria.fr>
 
