@@ -1,5 +1,5 @@
-/* { dg-do compile } */
-/* { dg-options "-O2 -msse" } */
+/* { dg-do compile { target { ! ia32 } } } */
+/* { dg-options "-O2" } */
 
 typedef int v8 __attribute__((vector_size(8)));
 struct S1 {
