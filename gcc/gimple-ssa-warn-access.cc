@@ -4169,8 +4169,7 @@ pass_waccess::check_pointer_uses (gimple *stmt, tree ptr,
   for (unsigned i = 0; i != pointers.length (); ++i)
     {
       tree ptr = pointers[i];
-      if (TREE_CODE (ptr) == SSA_NAME
-	  && !bitmap_set_bit (visited, SSA_NAME_VERSION (ptr)))
+      if (!bitmap_set_bit (visited, SSA_NAME_VERSION (ptr)))
 	/* Avoid revisiting the same pointer.  */
 	continue;
 
@@ -4267,7 +4266,7 @@ pass_waccess::check_pointer_uses (gimple *stmt, tree ptr,
 
 	  if (gcall *call = dyn_cast <gcall *>(use_stmt))
 	    {
-	      if (gimple_call_return_arg (call))
+	      if (gimple_call_return_arg (call) == ptr)
 		if (tree lhs = gimple_call_lhs (call))
 		  if (TREE_CODE (lhs) == SSA_NAME)
 		    pointers.safe_push (lhs);
