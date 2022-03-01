@@ -144,7 +144,7 @@ public:
   /**
    * Lex the contents of a string instead of a file
    */
-  static Lexer lex_string (std::string &input)
+  static Lexer lex_string (std::string input)
   {
     // We can perform this ugly cast to a non-const char* since we're only
     // *reading* the string. This would not be valid if we were doing any
