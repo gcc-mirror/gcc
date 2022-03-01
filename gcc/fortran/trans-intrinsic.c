@@ -8088,12 +8088,18 @@ gfc_conv_intrinsic_sizeof (gfc_se *se, gfc_expr *expr)
 	 class object.  The class object may be a non-pointer object, e.g.
 	 located on the stack, or a memory location pointed to, e.g. a
 	 parameter, i.e., an indirect_ref.  */
-      if (arg->rank < 0
-	  || (arg->rank > 0 && !VAR_P (argse.expr)
-	      && ((INDIRECT_REF_P (TREE_OPERAND (argse.expr, 0))
-		   && GFC_DECL_CLASS (TREE_OPERAND (
-					TREE_OPERAND (argse.expr, 0), 0)))
-		  || GFC_DECL_CLASS (TREE_OPERAND (argse.expr, 0)))))
+      if (POINTER_TYPE_P (TREE_TYPE (argse.expr))
+	  && GFC_CLASS_TYPE_P (TREE_TYPE (TREE_TYPE (argse.expr))))
+	byte_size
+	  = gfc_class_vtab_size_get (build_fold_indirect_ref (argse.expr));
+      else if (GFC_CLASS_TYPE_P (TREE_TYPE (argse.expr)))
+	byte_size = gfc_class_vtab_size_get (argse.expr);
+      else if (arg->rank < 0
+	       || (arg->rank > 0 && !VAR_P (argse.expr)
+		   && ((INDIRECT_REF_P (TREE_OPERAND (argse.expr, 0))
+			&& GFC_DECL_CLASS (TREE_OPERAND (
+					     TREE_OPERAND (argse.expr, 0), 0)))
+		       || GFC_DECL_CLASS (TREE_OPERAND (argse.expr, 0)))))
 	byte_size = gfc_class_vtab_size_get (TREE_OPERAND (argse.expr, 0));
       else if (arg->rank > 0
 	       || (arg->rank == 0
@@ -8103,7 +8109,7 @@ gfc_conv_intrinsic_sizeof (gfc_se *se, gfc_expr *expr)
 	byte_size = gfc_class_vtab_size_get (
 	      GFC_DECL_SAVED_DESCRIPTOR (arg->symtree->n.sym->backend_decl));
       else
-	byte_size = gfc_class_vtab_size_get (argse.expr);
+	gcc_unreachable ();
     }
   else
     {
@@ -8864,13 +8870,13 @@ gfc_conv_associated (gfc_se *se, gfc_expr *expr)
       if (scalar)
         {
 	  /* A pointer to a scalar.  */
+	  symbol_attribute attr = gfc_expr_attr (arg1->expr);
 	  arg1se.want_pointer = 1;
 	  gfc_conv_expr (&arg1se, arg1->expr);
-	  if (arg1->expr->symtree->n.sym->attr.proc_pointer
-	      && arg1->expr->symtree->n.sym->attr.dummy)
+	  if (attr.proc_pointer && attr.dummy)
 	    arg1se.expr = build_fold_indirect_ref_loc (input_location,
 						       arg1se.expr);
-  	  if (arg1->expr->ts.type == BT_CLASS)
+	  if (!attr.proc_pointer && arg1->expr->ts.type == BT_CLASS)
 	    {
 	      tmp2 = gfc_class_data_get (arg1se.expr);
 	      if (GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (tmp2)))
@@ -9490,13 +9496,6 @@ conv_isocbinding_function (gfc_se *se, gfc_expr *expr)
 	  gfc_conv_expr_descriptor (se, arg->expr);
 	  se->expr = gfc_conv_descriptor_data_get (se->expr);
 	}
-
-      /* TODO -- the following two lines shouldn't be necessary, but if
-	 they're removed, a bug is exposed later in the code path.
-	 This workaround was thus introduced, but will have to be
-	 removed; please see PR 35150 for details about the issue.  */
-      se->expr = convert (pvoid_type_node, se->expr);
-      se->expr = gfc_evaluate_now (se->expr, &se->pre);
     }
   else if (expr->value.function.isym->id == GFC_ISYM_C_FUNLOC)
     gfc_conv_expr_reference (se, arg->expr);

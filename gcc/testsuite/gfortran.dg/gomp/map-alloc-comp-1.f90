@@ -10,5 +10,5 @@ type sct
 end type
 type(sct) var
 
-!$omp target enter data map(to:var)  ! { dg-error "allocatable components is not permitted in map clause" }
+!$omp target enter data map(to:var)
 end

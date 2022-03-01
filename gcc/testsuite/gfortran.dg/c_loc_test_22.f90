@@ -20,4 +20,4 @@ end
 ! { dg-final { scan-tree-dump-times "parm.\[0-9\]+.data = \\(void .\\) &\\(.yyy.\[0-9\]+\\)\\\[0\\\];" 1 "original" } }
 ! { dg-final { scan-tree-dump-times "parm.\[0-9\]+.data = \\(void .\\) &\\(.yyy.\[0-9\]+\\)\\\[D.\[0-9\]+ \\* 4\\\];" 1 "original" } }
 
-! { dg-final { scan-tree-dump-times "D.\[0-9\]+ = parm.\[0-9\]+.data;\[^;]+ptr\[1-4\] = D.\[0-9\]+;" 4 "original" } }
+! { dg-final { scan-tree-dump-times "ptr\[1-4\] = parm.\[0-9\]+.data;" 4 "original" } }
