@@ -17,7 +17,8 @@ subroutine ROUTINE
 
   call setup(a, b)
 
-  !$acc loop ! { dg-message "optimized: assigned OpenACC worker vector loop parallelism" }
+  !$acc loop ! { dg-line l_loop_i1 }
+  ! { dg-optimized {assigned OpenACC worker vector loop parallelism} {} { target *-*-* } l_loop_i1 }
   do i = 0, n - 1
      c(i) = a(i) + b(i)
   end do
