@@ -146,7 +146,7 @@ warn_string_no_nul (location_t loc, GimpleOrTree expr, const char *fname,
   loc = expansion_point_location_if_in_system_header (loc);
   bool warned;
 
-  /* Format the bound range as a string to keep the nuber of messages
+  /* Format the bound range as a string to keep the number of messages
      from exploding.  */
   char bndstr[80];
   *bndstr = 0;
@@ -619,7 +619,7 @@ maybe_warn_nonstring_arg (tree fndecl, GimpleOrTree exp)
       /* In a call to strncat with a bound in a range whose lower but
 	 not upper bound is less than the array size, reset ASIZE to
 	 be the same as the bound and the other variable to trigger
-	 the apprpriate warning below.  */
+	 the appropriate warning below.  */
       if (fncode == BUILT_IN_STRNCAT
 	  && bndrng[0] != bndrng[1]
 	  && wi::ltu_p (wi::to_offset (bndrng[0]), asize)
@@ -1538,7 +1538,7 @@ check_access (tree expr, tree dstwrite,
 }
 
 /* Return true if STMT is a call to an allocation function.  Unless
-   ALL_ALLOC is set, consider only functions that return dynmamically
+   ALL_ALLOC is set, consider only functions that return dynamically
    allocated objects.  Otherwise return true even for all forms of
    alloca (including VLA).  */
 
@@ -1720,7 +1720,7 @@ new_delete_mismatch_p (const demangle_component &newc,
 }
 
 /* Return true if DELETE_DECL is an operator delete that's not suitable
-   to call with a pointer returned fron NEW_DECL.  */
+   to call with a pointer returned from NEW_DECL.  */
 
 static bool
 new_delete_mismatch_p (tree new_decl, tree delete_decl)
@@ -1960,7 +1960,7 @@ matching_alloc_calls_p (tree alloc_decl, tree dealloc_decl)
 }
 
 /* Return true if DEALLOC_DECL is a function suitable to deallocate
-   objectes allocated by the ALLOC call.  */
+   objects allocated by the ALLOC call.  */
 
 static bool
 matching_alloc_calls_p (gimple *alloc, tree dealloc_decl)
@@ -2215,7 +2215,7 @@ alloc_max_size (void)
 
 /* Diagnose a call EXP to function FN decorated with attribute alloc_size
    whose argument numbers given by IDX with values given by ARGS exceed
-   the maximum object size or cause an unsigned oveflow (wrapping) when
+   the maximum object size or cause an unsigned overflow (wrapping) when
    multiplied.  FN is null when EXP is a call via a function pointer.
    When ARGS[0] is null the function does nothing.  ARGS[1] may be null
    for functions like malloc, and non-null for those like calloc that
@@ -2388,7 +2388,7 @@ pass_waccess::check_alloca (gcall *stmt)
       /* -Walloca-larger-than and -Wvla-larger-than settings of less
 	 than  HWI_MAX override the more general -Walloc-size-larger-than
 	 so unless either of the former options is smaller than the last
-	 one (wchich would imply that the call was already checked), check
+	 one (which would imply that the call was already checked), check
 	 the alloca arguments for overflow.  */
       const tree alloc_args[] = { call_arg (stmt, 0), NULL_TREE };
       const int idx[] = { 0, -1 };
@@ -2471,7 +2471,7 @@ pass_waccess::check_strcat (gcall *stmt)
 
   /* There is no way here to determine the length of the string in
      the destination to which the SRC string is being appended so
-     just diagnose cases when the souce string is longer than
+     just diagnose cases when the source string is longer than
      the destination object.  */
   access_data data (m_ptr_qry.rvals, stmt, access_read_write, NULL_TREE,
 		    true, NULL_TREE, true);
@@ -2789,7 +2789,7 @@ memmodel_to_uhwi (tree ord, gimple *stmt, unsigned HOST_WIDE_INT *cstval)
   else
     {
       /* Use the range query to determine constant values in the absence
-	 of constant proppagation (such as at -O0).  */
+	 of constant propagation (such as at -O0).  */
       value_range rng;
       if (!get_range_query (cfun)->range_of_expr (rng, ord, stmt)
 	  || !rng.constant_p ()
@@ -3270,7 +3270,7 @@ pass_waccess::check_builtin (gcall *stmt)
 }
 
 /* Returns the type of the argument ARGNO to function with type FNTYPE
-   or null when the typoe cannot be determined or no such argument exists.  */
+   or null when the type cannot be determined or no such argument exists.  */
 
 static tree
 fntype_argno_type (tree fntype, unsigned argno)
@@ -3347,7 +3347,7 @@ pass_waccess::maybe_check_access_sizes (rdwr_map *rwm, tree fndecl, tree fntype,
       tree ptrtype = fntype_argno_type (fntype, ptridx);
       if (!ptrtype)
 	/* A function with a prototype was redeclared without one and
-	   the protype has been lost.  See pr102759.  Avoid dealing
+	   the prototype has been lost.  See pr102759.  Avoid dealing
 	   with this pathological case.  */
 	return;
 
@@ -3605,7 +3605,7 @@ pass_waccess::check_call_access (gcall *stmt)
   if (!fntypeattrs)
     return false;
 
-  /* Map of attribute accewss specifications for function arguments.  */
+  /* Map of attribute access specifications for function arguments.  */
   rdwr_map rdwr_idx;
   init_attr_rdwr_indices (&rdwr_idx, fntypeattrs);
 
@@ -3621,7 +3621,7 @@ pass_waccess::check_call_access (gcall *stmt)
 	  if (POINTER_TYPE_P (TREE_TYPE (arg)))
 	    {
 	      access->ptr = arg;
-	      // A nonnull ACCESS->SIZE contains VLA bounds.  */
+	      /* A nonnull ACCESS->SIZE contains VLA bounds.  */
 	    }
 	  else
 	    {
@@ -3654,7 +3654,7 @@ check_nonstring_args (gcall *stmt)
 /* Issue a warning if a deallocation function such as free, realloc,
    or C++ operator delete is called with an argument not returned by
    a matching allocation function such as malloc or the corresponding
-   form of C++ operatorn new.  */
+   form of C++ operator new.  */
 
 void
 pass_waccess::maybe_check_dealloc_call (gcall *call)
@@ -4331,7 +4331,7 @@ pass_waccess::check_stmt (gimple *stmt)
   if (m_check_dangling_p
       && gimple_clobber_p (stmt, CLOBBER_EOL))
     {
-      /* Ignore clobber statemts in blocks with exceptional edges.  */
+      /* Ignore clobber statements in blocks with exceptional edges.  */
       basic_block bb = gimple_bb (stmt);
       edge e = EDGE_PRED (bb, 0);
       if (e->flags & EDGE_EH)
