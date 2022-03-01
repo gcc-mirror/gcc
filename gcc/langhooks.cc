@@ -642,6 +642,30 @@ lhd_omp_array_size (tree, gimple_seq *)
   return NULL_TREE;
 }
 
+/* Returns true when additional mappings for a decl are needed.  */
+
+bool
+lhd_omp_deep_mapping_p (const gimple *, tree)
+{
+  return false;
+}
+
+/* Returns number of additional mappings for a decl.  */
+
+tree
+lhd_omp_deep_mapping_cnt (const gimple *, tree, gimple_seq *)
+{
+  return NULL_TREE;
+}
+
+/* Do the additional mappings.  */
+
+void
+lhd_omp_deep_mapping (const gimple *, tree, unsigned HOST_WIDE_INT, tree, tree,
+		      tree, tree, tree, gimple_seq *)
+{
+}
+
 /* Return true if DECL is a scalar variable (for the purpose of
    implicit firstprivatization & mapping). Only if alloc_ptr_ok
    are allocatables and pointers accepted. */

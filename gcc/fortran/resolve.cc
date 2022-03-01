@@ -481,7 +481,8 @@ gfc_resolve_formal_arglist (gfc_symbol *proc)
 	      continue;
 	    }
 
-	  if (sym->attr.flavor == FL_PROCEDURE)
+	  if (sym->attr.flavor == FL_PROCEDURE
+	      && !proc->attr.artificial && !sym->attr.artificial)
 	    {
 	      gfc_error ("Dummy procedure %qs not allowed in elemental "
 			 "procedure %qs at %L", sym->name, proc->name,
@@ -1928,7 +1929,8 @@ gfc_resolve_intrinsic (gfc_symbol *sym, locus *loc)
   sym->attr.elemental = isym->elemental;
 
   /* Check it is actually available in the standard settings.  */
-  if (!gfc_check_intrinsic_standard (isym, &symstd, false, sym->declared_at))
+  if ((!sym->ns->proc_name || !sym->ns->proc_name->attr.artificial)
+      && !gfc_check_intrinsic_standard (isym, &symstd, false, sym->declared_at))
     {
       gfc_error ("The intrinsic %qs declared INTRINSIC at %L is not "
 		 "available in the current standard settings but %s. Use "
@@ -14109,7 +14111,7 @@ resolve_fl_procedure (gfc_symbol *sym, int mp_flag)
 		     name, &sym->declared_at);
 	  return false;
 	}
-      if (sym->attr.dummy)
+      if (sym->attr.dummy && !sym->attr.artificial)
 	{
 	  gfc_error ("Dummy procedure %qs at %L shall not be elemental",
 		     sym->name, &sym->declared_at);
@@ -14333,17 +14335,14 @@ gfc_resolve_finalizers (gfc_symbol* derived, bool *finalizable)
   if (parent)
     gfc_resolve_finalizers (parent, finalizable);
 
-  /* Ensure that derived-type components have a their finalizers resolved.  */
+  /* Ensure that derived-type components have a their finalizers resolved;
+     handle allocatables but avoid issues with (in)direct allocatable types. */
   bool has_final = derived->f2k_derived && derived->f2k_derived->finalizers;
   for (c = derived->components; c; c = c->next)
     if (c->ts.type == BT_DERIVED
 	&& !c->attr.pointer && !c->attr.proc_pointer && !c->attr.allocatable)
-      {
-	bool has_final2 = false;
-	if (!gfc_resolve_finalizers (c->ts.u.derived, &has_final2))
-	  return false;  /* Error.  */
-	has_final = has_final || has_final2;
-      }
+      has_final |= gfc_is_finalizable (c->ts.u.derived, NULL);
+
   /* Return early if not finalizable.  */
   if (!has_final)
     {
@@ -15942,6 +15941,19 @@ resolve_fl_derived (gfc_symbol *sym)
 		  sym->name, &sym->declared_at);
       return false;
     }
+
+  gfc_component *c = (sym->attr.is_class
+		      ? CLASS_DATA (sym->components) : sym->components);
+  for ( ; c; c = c->next)
+    if ((c->ts.type == BT_DERIVED || c->ts.type == BT_CLASS)
+	&& !c->ts.u.derived->resolve_symbol_called)
+      {
+	if (c->ts.u.derived->components == NULL
+	    && !c->ts.u.derived->attr.zero_comp
+	    && !c->ts.u.derived->attr.use_assoc)
+	  continue;
+	resolve_symbol (c->ts.u.derived);
+      }
 
   /* Resolve the finalizer procedures.  */
   if (!gfc_resolve_finalizers (sym, NULL))
@@ -18336,9 +18348,8 @@ resolve_types (gfc_namespace *ns)
   for (n = ns->contained; n; n = n->sibling)
     {
       /* Exclude final wrappers with the test for the artificial attribute.  */
-      if (gfc_pure (ns->proc_name)
-	  && !gfc_pure (n->proc_name)
-	  && !n->proc_name->attr.artificial)
+      if (gfc_pure (ns->proc_name) && !gfc_pure (n->proc_name)
+	  && (!n->proc_name || !n->proc_name->attr.artificial))
 	gfc_error ("Contained procedure %qs at %L of a PURE procedure must "
 		   "also be PURE", n->proc_name->name,
 		   &n->proc_name->declared_at);

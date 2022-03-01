@@ -1,3 +1,21 @@
+2022-04-27  Tobias Burnus <tobias@codesourcery.com>
+
+	* gfortran.dg/abstract_type_6.f03: Remove dg-error as
+	now hidden by other errors; copy to ...
+	* gfortran.dg/abstract_type_6a.f03: ... here; remove
+	some error to diagnose the error.
+	* gfortran.dg/finalize_39a.f90: New test.
+
+2022-04-25  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/finalize_38b.f90: New test.
+
+2022-03-01  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/c_loc_test_22.f90: Update scan-tree.
+	* gfortran.dg/finalize_21.f90: Likewise.
+	* gfortran.dg/gomp/map-alloc-comp-1.f90: Remove sorry dg-error.
+
 2021-04-29  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	* c-c++-common/goacc/data-clause-1.c (foo): Remove expected message.
