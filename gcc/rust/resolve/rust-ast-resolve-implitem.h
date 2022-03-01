@@ -49,13 +49,15 @@ public:
     item->accept_vis (resolver);
   }
 
-  // FIXME: ARTHUR: See if this is necessary for MacroInvocation
-  // void visit (AST::MacroInvocationSemi &invoc) override
-  // {
-  //   AST::ASTFragment &fragment = invoc.get_fragment ();
-  //   for (auto &node : fragment.get_nodes ())
-  //     node.accept_vis (*this);
-  // }
+  void visit (AST::MacroInvocation &invoc) override
+  {
+    if (!invoc.has_semicolon ())
+      return;
+
+    AST::ASTFragment &fragment = invoc.get_fragment ();
+    for (auto &node : fragment.get_nodes ())
+      node.accept_vis (*this);
+  }
 
   void visit (AST::TypeAlias &type) override
   {
@@ -145,13 +147,15 @@ public:
     item->accept_vis (resolver);
   };
 
-  // FIXME: ARTHUR: See if this is necessary for MacroInvocation
-  // void visit (AST::MacroInvocationSemi &invoc) override
-  // {
-  //   AST::ASTFragment &fragment = invoc.get_fragment ();
-  //   for (auto &node : fragment.get_nodes ())
-  //     node.accept_vis (*this);
-  // }
+  void visit (AST::MacroInvocation &invoc) override
+  {
+    if (!invoc.has_semicolon ())
+      return;
+
+    AST::ASTFragment &fragment = invoc.get_fragment ();
+    for (auto &node : fragment.get_nodes ())
+      node.accept_vis (*this);
+  }
 
   void visit (AST::TraitItemFunc &function) override
   {
@@ -256,13 +260,15 @@ public:
     item->accept_vis (resolver);
   };
 
-  // FIXME: ARTHUR: See if this is necessary for MacroInvocation
-  // void visit (AST::MacroInvocationSemi &invoc) override
-  // {
-  //   AST::ASTFragment &fragment = invoc.get_fragment ();
-  //   for (auto &node : fragment.get_nodes ())
-  //     node.accept_vis (*this);
-  // }
+  void visit (AST::MacroInvocation &invoc) override
+  {
+    if (!invoc.has_semicolon ())
+      return;
+
+    AST::ASTFragment &fragment = invoc.get_fragment ();
+    for (auto &node : fragment.get_nodes ())
+      node.accept_vis (*this);
+  }
 
   void visit (AST::ExternalFunctionItem &function) override
   {

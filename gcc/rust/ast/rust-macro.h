@@ -469,6 +469,8 @@ class MacroInvocation : public TypeNoBounds,
   // Important for when we actually expand the macro
   bool is_semi_coloned;
 
+  NodeId node_id;
+
 public:
   std::string as_string () const override;
 
@@ -477,7 +479,9 @@ public:
 		   bool is_semi_coloned = false)
     : outer_attrs (std::move (outer_attrs)),
       invoc_data (std::move (invoc_data)), locus (locus),
-      fragment (ASTFragment::create_empty ()), is_semi_coloned (is_semi_coloned)
+      fragment (ASTFragment::create_empty ()),
+      is_semi_coloned (is_semi_coloned),
+      node_id (Analysis::Mappings::get ()->get_next_node_id ())
   {}
 
   Location get_locus () const override final { return locus; }
@@ -503,6 +507,8 @@ public:
   {
     return ExprWithoutBlock::get_node_id ();
   }
+
+  NodeId get_macro_node_id () const { return node_id; }
 
   MacroInvocData &get_invoc_data () { return invoc_data; }
 
@@ -562,12 +568,9 @@ protected:
   }
 
   ExprWithoutBlock *to_stmt () const override
-  
-   
-   
-   
-  { 
-    auto new_impl  = clone_macro_invocation_impl();
+
+  {
+    auto new_impl = clone_macro_invocation_impl ();
     new_impl->is_semi_coloned = true;
 
     return new_impl;

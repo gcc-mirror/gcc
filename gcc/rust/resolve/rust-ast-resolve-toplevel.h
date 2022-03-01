@@ -43,13 +43,12 @@ public:
     item->accept_vis (resolver);
   };
 
-  // FIXME: ARTHUR: See if this is necessary for MacroInvocation
-  // void visit (AST::MacroInvocationSemi &invoc) override
-  // {
-  //   AST::ASTFragment &fragment = invoc.get_fragment ();
-  //   for (auto &node : fragment.get_nodes ())
-  //     node.accept_vis (*this);
-  // }
+  void visit (AST::MacroInvocation &invoc) override
+  {
+    AST::ASTFragment &fragment = invoc.get_fragment ();
+    for (auto &node : fragment.get_nodes ())
+      node.accept_vis (*this);
+  }
 
   void visit (AST::Module &module) override
   {

@@ -44,14 +44,16 @@ public:
     stmt->accept_vis (resolver);
   };
 
-  // FIXME: ARTHUR: See if this is necessary for MacroInvocation
-  // void visit (AST::MacroInvocationSemi &invoc) override
-  // {
-  //   AST::ASTFragment &fragment = invoc.get_fragment ();
+  void visit (AST::MacroInvocation &invoc) override
+  {
+    if (!invoc.has_semicolon ())
+      return;
 
-  //   for (auto &node : fragment.get_nodes ())
-  //     node.accept_vis (*this);
-  // }
+    AST::ASTFragment &fragment = invoc.get_fragment ();
+
+    for (auto &node : fragment.get_nodes ())
+      node.accept_vis (*this);
+  }
 
   void visit (AST::ExprStmtWithBlock &stmt) override
   {

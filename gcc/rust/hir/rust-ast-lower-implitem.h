@@ -52,16 +52,18 @@ public:
     return resolver.translated;
   }
 
-  // FIXME: ARTHUR: See if this is necessary for MacroInvocation
-  // void visit (AST::MacroInvocationSemi &invoc) override
-  // {
-  //   AST::ASTFragment &fragment = invoc.get_fragment ();
+  void visit (AST::MacroInvocation &invoc) override
+  {
+    if (!invoc.has_semicolon ())
+      return;
 
-  //   // FIXME
-  //   // this assertion might go away, maybe on failure's to expand a macro?
-  //   rust_assert (!fragment.get_nodes ().empty ());
-  //   fragment.get_nodes ().at (0).accept_vis (*this);
-  // }
+    AST::ASTFragment &fragment = invoc.get_fragment ();
+
+    // FIXME
+    // this assertion might go away, maybe on failure's to expand a macro?
+    rust_assert (!fragment.get_nodes ().empty ());
+    fragment.get_nodes ().at (0).accept_vis (*this);
+  }
 
   void visit (AST::TypeAlias &alias) override
   {
@@ -319,16 +321,18 @@ public:
     return resolver.translated;
   }
 
-  // FIXME: ARTHUR: See if this is necessary for MacroInvocation
-  // void visit (AST::MacroInvocationSemi &invoc) override
-  // {
-  //   AST::ASTFragment &fragment = invoc.get_fragment ();
+  void visit (AST::MacroInvocation &invoc) override
+  {
+    if (!invoc.has_semicolon ())
+      return;
 
-  //   // FIXME
-  //   // this assertion might go away, maybe on failure's to expand a macro?
-  //   rust_assert (!fragment.get_nodes ().empty ());
-  //   fragment.get_nodes ().at (0).accept_vis (*this);
-  // }
+    AST::ASTFragment &fragment = invoc.get_fragment ();
+
+    // FIXME
+    // this assertion might go away, maybe on failure's to expand a macro?
+    rust_assert (!fragment.get_nodes ().empty ());
+    fragment.get_nodes ().at (0).accept_vis (*this);
+  }
 
   void visit (AST::TraitItemFunc &func) override
   {
