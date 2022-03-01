@@ -1288,15 +1288,19 @@ resolve_structure_cons (gfc_expr *expr, int init)
 	}
     }
 
-  cons = gfc_constructor_first (expr->value.constructor);
-
   /* A constructor may have references if it is the result of substituting a
      parameter variable.  In this case we just pull out the component we
      want.  */
   if (expr->ref)
     comp = expr->ref->u.c.sym->components;
-  else
+  else if ((expr->ts.type == BT_DERIVED || expr->ts.type == BT_CLASS
+	    || expr->ts.type == BT_UNION)
+	   && expr->ts.u.derived)
     comp = expr->ts.u.derived->components;
+  else
+    return false;
+
+  cons = gfc_constructor_first (expr->value.constructor);
 
   for (; comp && cons; comp = comp->next, cons = gfc_constructor_next (cons))
     {
