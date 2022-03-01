@@ -3277,8 +3277,15 @@ find_seed_stmts_for_distribution (class loop *loop, vec<gimple *> *work_list)
 	  work_list->safe_push (stmt);
 	}
     }
+  bool res = work_list->length () > 0;
+  if (res && !can_copy_bbs_p (bbs, loop->num_nodes))
+    {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file, "cannot copy loop %d.\n", loop->num);
+      res = false;
+    }
   free (bbs);
-  return work_list->length () > 0;
+  return res;
 }
 
 /* A helper function for generate_{rawmemchr,strlen}_builtin functions in order
