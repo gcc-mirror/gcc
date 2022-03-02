@@ -7981,6 +7981,7 @@ components_to_record (Node_Id gnat_component_list, Entity_Id gnat_record_type,
       tree gnu_union_type;
       tree this_first_free_pos, gnu_variant_list = NULL_TREE;
       bool union_field_needs_strict_alignment = false;
+      bool innermost_variant_level = true;
       auto_vec <vinfo_t, 16> variant_types;
       vinfo_t *gnu_variant;
       unsigned int variants_align = 0;
@@ -8026,6 +8027,19 @@ components_to_record (Node_Id gnat_component_list, Entity_Id gnat_record_type,
 	      }
 	}
 
+      /* For an unchecked union with a fixed part, we need to compute whether
+	 we are at the innermost level of the variant part.  */
+      if (unchecked_union && gnu_field_list)
+	for (variant = First_Non_Pragma (Variants (gnat_variant_part));
+	     Present (variant);
+	     variant = Next_Non_Pragma (variant))
+	  if (Present (Component_List (variant))
+	      && Present (Variant_Part (Component_List (variant))))
+	    {
+	      innermost_variant_level = false;
+	      break;
+	    }
+
       /* We build the variants in two passes.  The bulk of the work is done in
 	 the first pass, that is to say translating the GNAT nodes, building
 	 the container types and computing the associated properties.  However
@@ -8066,11 +8080,12 @@ components_to_record (Node_Id gnat_component_list, Entity_Id gnat_record_type,
 
 	  /* Add the fields into the record type for the variant but note that
 	     we aren't sure to really use it at this point, see below.  In the
-	     case of an unchecked union, we force the fields with a rep clause
-	     present in a nested variant to be moved to the outermost variant,
-	     so as to flatten the rep-ed layout as much as possible, the reason
-	     being that we cannot do any flattening when a subtype statically
-	     selects a variant later on, for example for an aggregate.  */
+	     case of an unchecked union with a fixed part, we force the fields
+	     with a rep clause present in the innermost variant to be moved to
+	     the outer variant, so as to flatten the rep-ed layout as much as
+	     possible, the reason being that we cannot do any flattening when
+	     a subtype statically selects a variant later on, for example for
+	     an aggregate.  */
 	  has_rep
 	    = components_to_record (Component_List (variant), gnat_record_type,
 				    NULL_TREE, gnu_variant_type, packed,
@@ -8078,7 +8093,9 @@ components_to_record (Node_Id gnat_component_list, Entity_Id gnat_record_type,
 				    unchecked_union, true, needs_xv_encodings,
 				    true, this_first_free_pos,
 				    (all_rep || this_first_free_pos)
-				    && !(in_variant && unchecked_union)
+				    && !(unchecked_union
+				         && gnu_field_list
+					 && innermost_variant_level)
 				    ? NULL : &gnu_rep_list);
 
 	  /* Translate the qualifier and annotate the GNAT node.  */
