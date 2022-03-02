@@ -399,7 +399,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wswitch  -Wno-switch-bool  -Wswitch-default  -Wswitch-enum @gol
 -Wno-switch-outside-range  -Wno-switch-unreachable  -Wsync-nand @gol
 -Wsystem-headers  -Wtautological-compare  -Wtrampolines  -Wtrigraphs @gol
--Wtsan -Wtype-limits  -Wundef @gol
+-Wtrivial-auto-var-init -Wtsan -Wtype-limits  -Wundef @gol
 -Wuninitialized  -Wunknown-pragmas @gol
 -Wunsuffixed-float-constants  -Wunused @gol
 -Wunused-but-set-parameter  -Wunused-but-set-variable @gol
@@ -6953,6 +6953,14 @@ This warning is enabled by default for C and C++ programs.
 Warn when @code{__sync_fetch_and_nand} and @code{__sync_nand_and_fetch}
 built-in functions are used.  These functions changed semantics in GCC 4.4.
 
+@item -Wtrivial-auto-var-init
+@opindex Wtrivial-auto-var-init
+@opindex Wno-trivial-auto-var-init
+Warn when @code{-ftrivial-auto-var-init} cannot initialize the automatic
+variable.  A common situation is an automatic variable that is declared
+between the controlling expression and the first case label of a @code{switch}
+statement.
+
 @item -Wunused-but-set-parameter
 @opindex Wunused-but-set-parameter
 @opindex Wno-unused-but-set-parameter
@@ -12314,6 +12322,10 @@ initializer as uninitialized, @option{-Wuninitialized} and
 warning messages on such automatic variables.
 With this option, GCC will also initialize any padding of automatic variables
 that have structure or union types to zeroes.
+However, the current implementation cannot initialize automatic variables that
+are declared between the controlling expression and the first case of a
+@code{switch} statement.  Using @option{-Wtrivial-auto-var-init} to report all
+such cases.
 
 The three values of @var{choice} are:
 

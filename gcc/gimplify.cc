@@ -2029,13 +2029,55 @@ gimplify_statement_list (tree *expr_p, gimple_seq *pre_p)
   return GS_ALL_DONE;
 }
 
+
+/* Emit warning for the unreachable statment STMT if needed.
+   Return the gimple itself when the warning is emitted, otherwise
+   return NULL.  */
+static gimple *
+emit_warn_switch_unreachable (gimple *stmt)
+{
+  if (gimple_code (stmt) == GIMPLE_GOTO
+      && TREE_CODE (gimple_goto_dest (stmt)) == LABEL_DECL
+      && DECL_ARTIFICIAL (gimple_goto_dest (stmt)))
+  /* Don't warn for compiler-generated gotos.  These occur
+     in Duff's devices, for example.  */
+    return NULL;
+  else if ((flag_auto_var_init > AUTO_INIT_UNINITIALIZED)
+	   && ((gimple_call_internal_p (stmt, IFN_DEFERRED_INIT))
+		|| (gimple_call_builtin_p (stmt, BUILT_IN_CLEAR_PADDING)
+		    && (bool) TREE_INT_CST_LOW (gimple_call_arg (stmt, 1)))
+		|| (is_gimple_assign (stmt)
+		    && gimple_assign_single_p (stmt)
+		    && (TREE_CODE (gimple_assign_rhs1 (stmt)) == SSA_NAME)
+		    && gimple_call_internal_p (
+			 SSA_NAME_DEF_STMT (gimple_assign_rhs1 (stmt)),
+			 IFN_DEFERRED_INIT))))
+  /* Don't warn for compiler-generated initializations for
+     -ftrivial-auto-var-init.
+     There are 3 cases:
+	case 1: a call to .DEFERRED_INIT;
+	case 2: a call to __builtin_clear_padding with the 2nd argument is
+		present and non-zero;
+	case 3: a gimple assign store right after the call to .DEFERRED_INIT
+		that has the LHS of .DEFERRED_INIT as the RHS as following:
+		  _1 = .DEFERRED_INIT (4, 2, &"i1"[0]);
+		  i1 = _1.  */
+    return NULL;
+  else
+    warning_at (gimple_location (stmt), OPT_Wswitch_unreachable,
+		"statement will never be executed");
+  return stmt;
+}
+
 /* Callback for walk_gimple_seq.  */
 
 static tree
-warn_switch_unreachable_r (gimple_stmt_iterator *gsi_p, bool *handled_ops_p,
-			   struct walk_stmt_info *wi)
+warn_switch_unreachable_and_auto_init_r (gimple_stmt_iterator *gsi_p,
+					 bool *handled_ops_p,
+					 struct walk_stmt_info *wi)
 {
   gimple *stmt = gsi_stmt (*gsi_p);
+  bool unreachable_issued = wi->info != NULL;
 
   *handled_ops_p = true;
   switch (gimple_code (stmt))
@@ -2046,8 +2088,12 @@ warn_switch_unreachable_r (gimple_stmt_iterator *gsi_p, bool *handled_ops_p,
 	 worse location info.  */
       if (gimple_try_eval (stmt) == NULL)
 	{
-	  wi->info = stmt;
-	  return integer_zero_node;
+	  if (warn_switch_unreachable && !unreachable_issued)
+	    wi->info = emit_warn_switch_unreachable (stmt);
+
+	  /* Stop when auto var init warning is not on.  */
+	  if (!warn_trivial_auto_var_init)
+	    return integer_zero_node;
 	}
       /* Fall through.  */
     case GIMPLE_BIND:
@@ -2064,28 +2110,55 @@ warn_switch_unreachable_r (gimple_stmt_iterator *gsi_p, bool *handled_ops_p,
 	 there will be non-debug stmts too, and we'll catch those.  */
       break;
 
+    case GIMPLE_LABEL:
+      /* Stop till the first Label.  */
+      return integer_zero_node;
     case GIMPLE_CALL:
       if (gimple_call_internal_p (stmt, IFN_ASAN_MARK))
 	{
 	  *handled_ops_p = false;
 	  break;
 	}
+      if (warn_trivial_auto_var_init
+	  && flag_auto_var_init > AUTO_INIT_UNINITIALIZED
+	  && gimple_call_internal_p (stmt, IFN_DEFERRED_INIT))
+	{
+	  /* Get the variable name from the 3rd argument of call.  */
+	  tree var_name = gimple_call_arg (stmt, 2);
+	  var_name = TREE_OPERAND (TREE_OPERAND (var_name, 0), 0);
+	  const char *var_name_str = TREE_STRING_POINTER (var_name);
+
+	  warning_at (gimple_location (stmt), OPT_Wtrivial_auto_var_init,
+		      "%qs cannot be initialized with"
+		      "%<-ftrivial-auto-var_init%>",
+		      var_name_str);
+	  break;
+       }
+
       /* Fall through.  */
     default:
-      /* Save the first "real" statement (not a decl/lexical scope/...).  */
-      wi->info = stmt;
-      return integer_zero_node;
+      /* check the first "real" statement (not a decl/lexical scope/...), issue
+	 warning if needed.  */
+      if (warn_switch_unreachable && !unreachable_issued)
+	wi->info = emit_warn_switch_unreachable (stmt);
+      /* Stop when auto var init warning is not on.  */
+      if (!warn_trivial_auto_var_init)
+	return integer_zero_node;
+      break;
     }
   return NULL_TREE;
 }
 
+
 /* Possibly warn about unreachable statements between switch's controlling
-   expression and the first case.  SEQ is the body of a switch expression.  */
+   expression and the first case.  Also warn about -ftrivial-auto-var-init
+   cannot initialize the auto variable under such situation.
+   SEQ is the body of a switch expression.  */
 
 static void
-maybe_warn_switch_unreachable (gimple_seq seq)
+maybe_warn_switch_unreachable_and_auto_init (gimple_seq seq)
 {
-  if (!warn_switch_unreachable
+  if ((!warn_switch_unreachable && !warn_trivial_auto_var_init)
       /* This warning doesn't play well with Fortran when optimizations
 	 are on.  */
       || lang_GNU_Fortran ()
@@ -2093,21 +2166,9 @@ maybe_warn_switch_unreachable (gimple_seq seq)
     return;
 
   struct walk_stmt_info wi;
-  memset (&wi, 0, sizeof (wi));
-  walk_gimple_seq (seq, warn_switch_unreachable_r, NULL, &wi);
-  gimple *stmt = (gimple *) wi.info;
 
-  if (stmt && gimple_code (stmt) != GIMPLE_LABEL)
-    {
-      if (gimple_code (stmt) == GIMPLE_GOTO
-	  && TREE_CODE (gimple_goto_dest (stmt)) == LABEL_DECL
-	  && DECL_ARTIFICIAL (gimple_goto_dest (stmt)))
-	/* Don't warn for compiler-generated gotos.  These occur
-	   in Duff's devices, for example.  */;
-      else
-	warning_at (gimple_location (stmt), OPT_Wswitch_unreachable,
-		    "statement will never be executed");
-    }
+  memset (&wi, 0, sizeof (wi));
+  walk_gimple_seq (seq, warn_switch_unreachable_and_auto_init_r, NULL, &wi);
 }
 
 
@@ -2640,7 +2701,7 @@ gimplify_switch_expr (tree *expr_p, gimple_seq *pre_p)
       gimplify_stmt (&SWITCH_BODY (switch_expr), &switch_body_seq);
 
       gimplify_ctxp->in_switch_expr = old_in_switch_expr;
-      maybe_warn_switch_unreachable (switch_body_seq);
+      maybe_warn_switch_unreachable_and_auto_init (switch_body_seq);
       maybe_warn_implicit_fallthrough (switch_body_seq);
       /* Only do this for the outermost GIMPLE_SWITCH.  */
       if (!gimplify_ctxp->in_switch_expr)

@@ -801,6 +801,10 @@ Wtrampolines
 Common Var(warn_trampolines) Warning
 Warn whenever a trampoline is generated.
 
+Wtrivial-auto-var-init
+Common Var(warn_trivial_auto_var_init) Warning Init(0)
+Warn about cases where -ftrivial-auto-var-init cannot initialize an auto variable.
+
 Wtype-limits
 Common Var(warn_type_limits) Warning EnabledBy(Wextra)
 Warn if a comparison is always true or always false due to the limited range of the data type.
