@@ -1314,6 +1314,7 @@ is_late_template_attribute (tree attr, tree decl)
 	       /* But some attributes specifically apply to templates.  */
 	       && !is_attribute_p ("abi_tag", name)
 	       && !is_attribute_p ("deprecated", name)
+	       && !is_attribute_p ("unavailable", name)
 	       && !is_attribute_p ("visibility", name))
 	return true;
       else

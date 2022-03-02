@@ -26976,9 +26976,7 @@ tsubst_enum (tree tag, tree newtag, tree args)
   DECL_SOURCE_LOCATION (TYPE_NAME (newtag))
     = DECL_SOURCE_LOCATION (TYPE_NAME (tag));
   TREE_DEPRECATED (newtag) = TREE_DEPRECATED (tag);
-  /* We don't need to propagate TREE_UNAVAILABLE here, because it is, unlike
-     deprecated, applied at instantiation time rather than template
-     definition time.  */
+  TREE_UNAVAILABLE (newtag) = TREE_UNAVAILABLE (tag);
 }
 
 /* DECL is a FUNCTION_DECL that is a template specialization.  Return
