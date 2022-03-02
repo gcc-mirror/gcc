@@ -6,7 +6,10 @@
 
 package net
 
-import "syscall"
+import (
+	"syscall"
+	_ "unsafe"
+)
 
 // Use a helper function to call fcntl.  This is defined in C in
 // libgo/runtime.

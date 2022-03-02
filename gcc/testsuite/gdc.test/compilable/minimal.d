@@ -10,7 +10,7 @@
 
 struct S { }
 
-enum E 
+enum E
 {
     e0 = 0,
     e1 = 1

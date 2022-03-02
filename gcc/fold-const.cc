@@ -8643,7 +8643,7 @@ native_interpret_fixed (tree type, const unsigned char *ptr, int len)
    the buffer PTR of length LEN as a REAL_CST of type TYPE.
    If the buffer cannot be interpreted, return NULL_TREE.  */
 
-static tree
+tree
 native_interpret_real (tree type, const unsigned char *ptr, int len)
 {
   scalar_float_mode mode = SCALAR_FLOAT_TYPE_MODE (type);
@@ -8694,19 +8694,7 @@ native_interpret_real (tree type, const unsigned char *ptr, int len)
     }
 
   real_from_target (&r, tmp, mode);
-  tree ret = build_real (type, r);
-  if (MODE_COMPOSITE_P (mode))
-    {
-      /* For floating point values in composite modes, punt if this folding
-	 doesn't preserve bit representation.  As the mode doesn't have fixed
-	 precision while GCC pretends it does, there could be valid values that
-	 GCC can't really represent accurately.  See PR95450.  */
-      unsigned char buf[24];
-      if (native_encode_expr (ret, buf, total_bytes, 0) != total_bytes
-	  || memcmp (ptr, buf, total_bytes) != 0)
-	ret = NULL_TREE;
-    }
-  return ret;
+  return build_real (type, r);
 }
 
 
@@ -8824,7 +8812,23 @@ native_interpret_expr (tree type, const unsigned char *ptr, int len)
       return native_interpret_int (type, ptr, len);
 
     case REAL_TYPE:
-      return native_interpret_real (type, ptr, len);
+      if (tree ret = native_interpret_real (type, ptr, len))
+	{
+	  /* For floating point values in composite modes, punt if this
+	     folding doesn't preserve bit representation.  As the mode doesn't
+	     have fixed precision while GCC pretends it does, there could be
+	     valid values that GCC can't really represent accurately.
+	     See PR95450.  Even for other modes, e.g. x86 XFmode can have some
+	     bit combinationations which GCC doesn't preserve.  */
+	  unsigned char buf[24];
+	  scalar_float_mode mode = SCALAR_FLOAT_TYPE_MODE (type);
+	  int total_bytes = GET_MODE_SIZE (mode);
+	  if (native_encode_expr (ret, buf, total_bytes, 0) != total_bytes
+	      || memcmp (ptr, buf, total_bytes) != 0)
+	    return NULL_TREE;
+	  return ret;
+	}
+      return NULL_TREE;
 
     case FIXED_POINT_TYPE:
       return native_interpret_fixed (type, ptr, len);
@@ -14208,11 +14212,7 @@ multiple_of_p (tree type, const_tree top, const_tree bottom, bool nowrap)
 	      && multiple_of_p (type, TREE_OPERAND (top, 2), bottom, nowrap));
 
     case INTEGER_CST:
-      if (TREE_CODE (bottom) != INTEGER_CST
-	  || integer_zerop (bottom)
-	  || (TYPE_UNSIGNED (type)
-	      && (tree_int_cst_sgn (top) < 0
-		  || tree_int_cst_sgn (bottom) < 0)))
+      if (TREE_CODE (bottom) != INTEGER_CST || integer_zerop (bottom))
 	return 0;
       return wi::multiple_of_p (wi::to_widest (top), wi::to_widest (bottom),
 				SIGNED);
@@ -16790,6 +16790,26 @@ address_compare (tree_code code, tree type, tree op0, tree op1,
     return 0;
 
   return equal;
+}
+
+/* Return the single non-zero element of a CONSTRUCTOR or NULL_TREE.  */
+tree
+ctor_single_nonzero_element (const_tree t)
+{
+  unsigned HOST_WIDE_INT idx;
+  constructor_elt *ce;
+  tree elt = NULL_TREE;
+
+  if (TREE_CODE (t) != CONSTRUCTOR)
+    return NULL_TREE;
+  for (idx = 0; vec_safe_iterate (CONSTRUCTOR_ELTS (t), idx, &ce); idx++)
+    if (!integer_zerop (ce->value) && !real_zerop (ce->value))
+      {
+	if (elt)
+	  return NULL_TREE;
+	elt = ce->value;
+      }
+  return elt;
 }
 
 #if CHECKING_P

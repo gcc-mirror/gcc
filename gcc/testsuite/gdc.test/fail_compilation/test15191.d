@@ -1,5 +1,5 @@
 /* TEST_OUTPUT:
-PERMUTE_ARGS -dip1000
+PERMUTE_ARGS: -dip1000
 ---
 fail_compilation/test15191.d(31): Error: returning `&identity(x)` escapes a reference to local variable `x`
 fail_compilation/test15191.d(37): Error: returning `&identityPtr(x)` escapes a reference to local variable `x`

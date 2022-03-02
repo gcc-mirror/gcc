@@ -24,6 +24,7 @@
 #include <string>
 #include <memory>
 #include <iostream>
+#include <future>
 #include "../util/testsuite_allocator.h" // NullablePointer
 
 typedef std::tuple<int, int> ExTuple;
@@ -181,9 +182,14 @@ main()
     std::string message(int) const { return ""; }
   } cat;
   std::error_code emiaow(42, cat);
-  // { dg-final { note-test emiaow {std::error_code = {"miaow": 42}} } }
+  // { dg-final { note-test emiaow {std::error_code = {custom_cat: 42}} } }
   std::error_condition ecmiaow(42, cat);
-  // { dg-final { note-test ecmiaow {std::error_condition = {"miaow": 42}} } }
+  // { dg-final { note-test ecmiaow {std::error_condition = {custom_cat: 42}} } }
+
+  std::error_code ecio = std::make_error_code(std::io_errc::stream);
+  // { dg-final { note-test ecio {std::error_code = {"io": stream}} } }
+  std::error_code ecfut0 = std::make_error_code(std::future_errc{});
+  // { dg-final { note-test ecfut0 {std::error_code = {"future": 0}} } }
 
   placeholder(""); // Mark SPOT
   use(efl);

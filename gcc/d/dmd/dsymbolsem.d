@@ -356,6 +356,8 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
         if (sc && sc.inunion && sc.inunion.isAnonDeclaration())
             dsym.overlapped = true;
 
+        dsym.sequenceNumber = global.varSequenceNumber++;
+
         Scope* scx = null;
         if (dsym._scope)
         {
@@ -462,8 +464,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
         //printf("sc.stc = %x\n", sc.stc);
         //printf("storage_class = x%x\n", storage_class);
 
-        if (global.params.vcomplex)
-            dsym.type.checkComplexTransition(dsym.loc, sc);
+        dsym.type.checkComplexTransition(dsym.loc, sc);
 
         // Calculate type size + safety checks
         if (sc.func && !sc.intypeof)
@@ -845,11 +846,10 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
                 dsym.error("globals, statics, fields, manifest constants, ref and out parameters cannot be `scope`");
             }
 
-            // @@@DEPRECATED@@@  https://dlang.org/deprecate.html#scope%20as%20a%20type%20constraint
+            // @@@DEPRECATED_2.097@@@  https://dlang.org/deprecate.html#scope%20as%20a%20type%20constraint
             // Deprecated in 2.087
             // Remove this when the feature is removed from the language
-            if (0 &&          // deprecation disabled for now to accommodate existing extensive use
-               !(dsym.storage_class & STC.scope_))
+            if (!(dsym.storage_class & STC.scope_))
             {
                 if (!(dsym.storage_class & STC.parameter) && dsym.ident != Id.withSym)
                     dsym.error("reference to `scope class` must be `scope`");
@@ -1038,15 +1038,8 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
                             // See if initializer is a NewExp that can be allocated on the stack
                             if (dsym.type.toBasetype().ty == Tclass)
                             {
-                                if (ne.newargs && ne.newargs.dim > 1)
-                                {
-                                    dsym.mynew = true;
-                                }
-                                else
-                                {
-                                    ne.onstack = 1;
-                                    dsym.onstack = true;
-                                }
+                                ne.onstack = 1;
+                                dsym.onstack = true;
                             }
                         }
                         else if (auto fe = ex.isFuncExp())
@@ -1636,7 +1629,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
 
         // Should be merged with PragmaStatement
         //printf("\tPragmaDeclaration::semantic '%s'\n", pd.toChars());
-        if (target.mscoff)
+        if (target.supportsLinkerDirective())
         {
             if (pd.ident == Id.linkerDirective)
             {
@@ -2177,7 +2170,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
         {
             /* C11 6.7.2.2
              */
-            ed.memtype = Type.tint32; // C11 6.7.2.2-4 implementation defined
+            assert(ed.memtype);
             int nextValue = 0;        // C11 6.7.2.2-3 first member value defaults to 0
 
             void emSemantic(EnumMember em, ref int nextValue)
@@ -2436,8 +2429,12 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
             Type tprev = eprev.type.toHeadMutable().equals(em.ed.type.toHeadMutable())
                 ? em.ed.memtype
                 : eprev.type;
-
-            Expression emax = tprev.getProperty(sc, em.ed.loc, Id.max, 0);
+            /*
+                https://issues.dlang.org/show_bug.cgi?id=20777
+                Previously this used getProperty, which doesn't consider anything user defined,
+                this construct does do that and thus fixes the bug.
+            */
+            Expression emax = DotIdExp.create(em.ed.loc, new TypeExp(em.ed.loc, tprev), Id.max);
             emax = emax.expressionSemantic(sc);
             emax = emax.ctfeInterpret();
 
@@ -2977,10 +2974,6 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
 
     void funcDeclarationSemantic(FuncDeclaration funcdecl)
     {
-        TypeFunction f;
-        AggregateDeclaration ad;
-        InterfaceDeclaration id;
-
         version (none)
         {
             printf("FuncDeclaration::semantic(sc = %p, this = %p, '%s', linkage = %d)\n", sc, funcdecl, funcdecl.toPrettyChars(), sc.linkage);
@@ -3021,7 +3014,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
         funcdecl.foverrides.setDim(0); // reset in case semantic() is being retried for this function
 
         funcdecl.storage_class |= sc.stc & ~STC.ref_;
-        ad = funcdecl.isThis();
+        AggregateDeclaration ad = funcdecl.isThis();
         // Don't nest structs b/c of generated methods which should not access the outer scopes.
         // https://issues.dlang.org/show_bug.cgi?id=16627
         if (ad && !funcdecl.generated)
@@ -3040,21 +3033,22 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
         if (sc.flags & SCOPE.compile)
             funcdecl.flags |= FUNCFLAG.compileTimeOnly; // don't emit code for this function
 
-        FuncLiteralDeclaration fld = funcdecl.isFuncLiteralDeclaration();
-        if (fld && fld.treq)
+        funcdecl.linkage = sc.linkage;
+        if (auto fld = funcdecl.isFuncLiteralDeclaration())
         {
-            Type treq = fld.treq;
-            assert(treq.nextOf().ty == Tfunction);
-            if (treq.ty == Tdelegate)
-                fld.tok = TOK.delegate_;
-            else if (treq.isPtrToFunction())
-                fld.tok = TOK.function_;
-            else
-                assert(0);
-            funcdecl.linkage = treq.nextOf().toTypeFunction().linkage;
+            if (fld.treq)
+            {
+                Type treq = fld.treq;
+                assert(treq.nextOf().ty == Tfunction);
+                if (treq.ty == Tdelegate)
+                    fld.tok = TOK.delegate_;
+                else if (treq.isPtrToFunction())
+                    fld.tok = TOK.function_;
+                else
+                    assert(0);
+                funcdecl.linkage = treq.nextOf().toTypeFunction().linkage;
+            }
         }
-        else
-            funcdecl.linkage = sc.linkage;
 
         // evaluate pragma(inline)
         if (auto pragmadecl = sc.inlining)
@@ -3076,16 +3070,24 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
 
         if (!funcdecl.originalType)
             funcdecl.originalType = funcdecl.type.syntaxCopy();
-        if (funcdecl.type.ty != Tfunction)
+
+        static TypeFunction getFunctionType(FuncDeclaration fd)
         {
-            if (funcdecl.type.ty != Terror)
+            if (auto tf = fd.type.isTypeFunction())
+                return tf;
+
+            if (!fd.type.isTypeError())
             {
-                funcdecl.error("`%s` must be a function instead of `%s`", funcdecl.toChars(), funcdecl.type.toChars());
-                funcdecl.type = Type.terror;
+                fd.error("`%s` must be a function instead of `%s`", fd.toChars(), fd.type.toChars());
+                fd.type = Type.terror;
             }
-            funcdecl.errors = true;
-            return;
+            fd.errors = true;
+            return null;
         }
+
+        if (!getFunctionType(funcdecl))
+            return;
+
         if (!funcdecl.type.deco)
         {
             sc = sc.push();
@@ -3145,14 +3147,17 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
                 sc.stc |= STC.property;
             if (tf.purity == PURE.fwdref)
                 sc.stc |= STC.pure_;
+
             if (tf.trust != TRUST.default_)
+            {
                 sc.stc &= ~STC.safeGroup;
-            if (tf.trust == TRUST.safe)
-                sc.stc |= STC.safe;
-            if (tf.trust == TRUST.system)
-                sc.stc |= STC.system;
-            if (tf.trust == TRUST.trusted)
-                sc.stc |= STC.trusted;
+                if (tf.trust == TRUST.safe)
+                    sc.stc |= STC.safe;
+                else if (tf.trust == TRUST.system)
+                    sc.stc |= STC.system;
+                else if (tf.trust == TRUST.trusted)
+                    sc.stc |= STC.trusted;
+            }
 
             if (funcdecl.isCtorDeclaration())
             {
@@ -3204,37 +3209,46 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
             funcdecl.type = funcdecl.type.typeSemantic(funcdecl.loc, sc);
             sc = sc.pop();
         }
-        if (funcdecl.type.ty != Tfunction)
-        {
-            if (funcdecl.type.ty != Terror)
-            {
-                funcdecl.error("`%s` must be a function instead of `%s`", funcdecl.toChars(), funcdecl.type.toChars());
-                funcdecl.type = Type.terror;
-            }
-            funcdecl.errors = true;
-            return;
-        }
-        else
+
+        auto f = getFunctionType(funcdecl);
+        if (!f)
+            return;     // funcdecl's type is not a function
+
         {
             // Merge back function attributes into 'originalType'.
             // It's used for mangling, ddoc, and json output.
             TypeFunction tfo = funcdecl.originalType.toTypeFunction();
-            TypeFunction tfx = funcdecl.type.toTypeFunction();
-            tfo.mod = tfx.mod;
-            tfo.isScopeQual = tfx.isScopeQual;
-            tfo.isreturninferred = tfx.isreturninferred;
-            tfo.isscopeinferred = tfx.isscopeinferred;
-            tfo.isref = tfx.isref;
-            tfo.isnothrow = tfx.isnothrow;
-            tfo.isnogc = tfx.isnogc;
-            tfo.isproperty = tfx.isproperty;
-            tfo.purity = tfx.purity;
-            tfo.trust = tfx.trust;
+            tfo.mod = f.mod;
+            tfo.isScopeQual = f.isScopeQual;
+            tfo.isreturninferred = f.isreturninferred;
+            tfo.isscopeinferred = f.isscopeinferred;
+            tfo.isref = f.isref;
+            tfo.isnothrow = f.isnothrow;
+            tfo.isnogc = f.isnogc;
+            tfo.isproperty = f.isproperty;
+            tfo.purity = f.purity;
+            tfo.trust = f.trust;
 
             funcdecl.storage_class &= ~(STC.TYPECTOR | STC.FUNCATTR);
         }
 
-        f = cast(TypeFunction)funcdecl.type;
+        if (funcdecl.overnext && funcdecl.isCsymbol())
+        {
+            /* C does not allow function overloading, but it does allow
+             * redeclarations of the same function. If .overnext points
+             * to a redeclaration, ok. Error if it is an overload.
+             */
+            auto fnext = funcdecl.overnext.isFuncDeclaration();
+            funcDeclarationSemantic(fnext);
+            auto fn = fnext.type.isTypeFunction();
+            if (!fn || !cFuncEquivalence(f, fn))
+            {
+                funcdecl.error("redeclaration with different type");
+                //printf("t1: %s\n", f.toChars());
+                //printf("t2: %s\n", fn.toChars());
+            }
+            funcdecl.overnext = null;   // don't overload the redeclarations
+        }
 
         if ((funcdecl.storage_class & STC.auto_) && !f.isref && !funcdecl.inferRetType)
             funcdecl.error("storage class `auto` has no effect if return type is not inferred");
@@ -3353,8 +3367,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
             }
         }
 
-        id = parent.isInterfaceDeclaration();
-        if (id)
+        if (auto id = parent.isInterfaceDeclaration())
         {
             funcdecl.storage_class |= STC.abstract_;
             if (funcdecl.isCtorDeclaration() || funcdecl.isPostBlitDeclaration() || funcdecl.isDtorDeclaration() || funcdecl.isInvariantDeclaration() || funcdecl.isNewDeclaration() || funcdecl.isDelete())
@@ -3362,6 +3375,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
             if (funcdecl.fbody && funcdecl.isVirtual())
                 funcdecl.error("function body only allowed in `final` functions in interface `%s`", id.toChars());
         }
+
         if (UnionDeclaration ud = parent.isUnionDeclaration())
         {
             if (funcdecl.isPostBlitDeclaration() || funcdecl.isDtorDeclaration() || funcdecl.isInvariantDeclaration())
@@ -3447,8 +3461,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
                     Dsymbol s = cd.baseClass.search(funcdecl.loc, funcdecl.ident);
                     if (s)
                     {
-                        FuncDeclaration f2 = s.isFuncDeclaration();
-                        if (f2)
+                        if (auto f2 = s.isFuncDeclaration())
                         {
                             f2 = f2.overloadExactMatch(funcdecl.type);
                             if (f2 && f2.isFinalFunc() && f2.visible().kind != Visibility.Kind.private_)
@@ -3457,9 +3470,11 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
                     }
                 }
 
-                /* These quirky conditions mimic what VC++ appears to do
+                /* These quirky conditions mimic what happens when virtual
+                   inheritance is implemented by producing a virtual base table
+                   with offsets to each of the virtual bases.
                  */
-                if (target.mscoff && cd.classKind == ClassKind.cpp &&
+                if (target.cpp.splitVBasetable && cd.classKind == ClassKind.cpp &&
                     cd.baseClass && cd.baseClass.vtbl.dim)
                 {
                     /* if overriding an interface function, then this is not
@@ -3557,7 +3572,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
                             goto Lintro;
                     }
 
-                    if (fdv.isDeprecated)
+                    if (fdv.isDeprecated && !funcdecl.isDeprecated)
                         deprecation(funcdecl.loc, "`%s` is overriding the deprecated method `%s`",
                                     funcdecl.toPrettyChars, fdv.toPrettyChars);
 
@@ -3646,11 +3661,17 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
                         funcdecl.tintro = fdv.tintro;
                     else if (!funcdecl.type.equals(fdv.type))
                     {
+                        auto tnext = funcdecl.type.nextOf();
+                        if (auto handle = tnext.isClassHandle())
+                        {
+                            if (handle.semanticRun < PASS.semanticdone && !handle.isBaseInfoComplete())
+                                handle.dsymbolSemantic(null);
+                        }
                         /* Only need to have a tintro if the vptr
                          * offsets differ
                          */
                         int offset;
-                        if (fdv.type.nextOf().isBaseOf(funcdecl.type.nextOf(), &offset))
+                        if (fdv.type.nextOf().isBaseOf(tnext, &offset))
                         {
                             funcdecl.tintro = fdv.type;
                         }
@@ -3792,11 +3813,9 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
             {
                 if (b.sym)
                 {
-                    Dsymbol s = search_function(b.sym, funcdecl.ident);
-                    if (s)
+                    if (auto s = search_function(b.sym, funcdecl.ident))
                     {
-                        FuncDeclaration f2 = s.isFuncDeclaration();
-                        if (f2)
+                        if (auto f2 = s.isFuncDeclaration())
                         {
                             f2 = f2.overloadExactMatch(funcdecl.type);
                             if (f2 && f2.isFinalFunc() && f2.visible().kind != Visibility.Kind.private_)
@@ -3812,7 +3831,8 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
                     deprecation(funcdecl.loc,
                                 "`%s` cannot be annotated with `@disable` because it is overriding a function in the base class",
                                 funcdecl.toPrettyChars);
-                if (funcdecl.isDeprecated)
+
+                if (funcdecl.isDeprecated && !(funcdecl.foverrides.length && funcdecl.foverrides[0].isDeprecated))
                     deprecation(funcdecl.loc,
                                 "`%s` cannot be marked as `deprecated` because it is overriding a function in the base class",
                                 funcdecl.toPrettyChars);
@@ -3842,8 +3862,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
          */
         if (funcdecl.isVirtual())
         {
-            TemplateInstance ti = parent.isTemplateInstance();
-            if (ti)
+            if (auto ti = parent.isTemplateInstance())
             {
                 // Take care of nested templates
                 while (1)
@@ -4415,7 +4434,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
             return;
         int errors = global.errors;
 
-        //printf("+StructDeclaration::semantic(this=%p, '%s', sizeok = %d)\n", this, sd.toPrettyChars(), sd.sizeok);
+        //printf("+StructDeclaration::semantic(this=%p, '%s', sizeok = %d)\n", sd, sd.toPrettyChars(), sd.sizeok);
         Scope* scx = null;
         if (sd._scope)
         {
@@ -5264,7 +5283,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
         }
         //printf("-ClassDeclaration.dsymbolSemantic(%s), type = %p, sizeok = %d, this = %p\n", toChars(), type, sizeok, this);
 
-        // @@@DEPRECATED@@@ https://dlang.org/deprecate.html#scope%20as%20a%20type%20constraint
+        // @@@DEPRECATED_2.097@@@ https://dlang.org/deprecate.html#scope%20as%20a%20type%20constraint
         // Deprecated in 2.087
         // Make an error in 2.091
         // Don't forget to remove code at https://github.com/dlang/dmd/blob/b2f8274ba76358607fc3297a1e9f361480f9bcf9/src/dmd/dsymbolsem.d#L1032-L1036
@@ -5571,12 +5590,12 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
         }
         assert(idec.type.ty != Tclass || (cast(TypeClass)idec.type).sym == idec);
 
-        // @@@DEPRECATED@@@https://dlang.org/deprecate.html#scope%20as%20a%20type%20constraint
+        // @@@DEPRECATED_2.120@@@ https://dlang.org/deprecate.html#scope%20as%20a%20type%20constraint
         // Deprecated in 2.087
-        // Remove in 2.091
+        // Made an error in 2.100, but removal depends on `scope class` being removed too
         // Don't forget to remove code at https://github.com/dlang/dmd/blob/b2f8274ba76358607fc3297a1e9f361480f9bcf9/src/dmd/dsymbolsem.d#L1032-L1036
         if (idec.storage_class & STC.scope_)
-            deprecation(idec.loc, "`scope` as a type constraint is deprecated.  Use `scope` at the usage site.");
+            error(idec.loc, "`scope` as a type constraint is obsolete.  Use `scope` at the usage site.");
     }
 }
 
@@ -5868,13 +5887,16 @@ void templateInstanceSemantic(TemplateInstance tempinst, Scope* sc, Expressions*
             scope v = new InstMemberWalker(tempinst.inst);
             tempinst.inst.accept(v);
 
-            if (tempinst.minst) // if inst was not speculative
+            if (!global.params.allInst &&
+                tempinst.minst) // if inst was not speculative...
             {
-                /* Add 'inst' once again to the root module members[], then the
-                 * instance members will get codegen chances.
-                 */
+                assert(!tempinst.minst.isRoot()); // ... it was previously appended to a non-root module
+                // Append again to the root module members[], so that the instance will
+                // get codegen chances (depending on `tempinst.inst.needsCodegen()`).
                 tempinst.inst.appendToModuleMember();
             }
+
+            assert(tempinst.inst.memberOf && tempinst.inst.memberOf.isRoot(), "no codegen chances");
         }
 
         // modules imported by an existing instance should be added to the module

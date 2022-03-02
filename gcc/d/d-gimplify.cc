@@ -62,6 +62,18 @@ empty_modify_p (tree type, tree op)
   return empty_aggregate_p (type);
 }
 
+/* Return TRUE if EXPR is a COMPONENT_REF to a bit-field declaration.  */
+
+static bool
+bit_field_ref (const_tree expr)
+{
+  if (TREE_CODE (expr) == COMPONENT_REF
+      && DECL_BIT_FIELD (TREE_OPERAND (expr, 1)))
+    return true;
+
+  return false;
+}
+
 /* Gimplify assignment from an INIT_EXPR or MODIFY_EXPR.  */
 
 static gimplify_status
@@ -93,6 +105,13 @@ d_gimplify_modify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
     {
       TREE_OPERAND (*expr_p, 1) = build1 (VIEW_CONVERT_EXPR,
 					  TREE_TYPE (op0), op1);
+      return GS_OK;
+    }
+
+  /* Same as above, but for bit-field assignments.  */
+  if (bit_field_ref (op0) && TREE_TYPE (op0) != TREE_TYPE (op1))
+    {
+      TREE_OPERAND (*expr_p, 1) = convert (TREE_TYPE (op0), op1);
       return GS_OK;
     }
 
@@ -178,6 +197,54 @@ d_gimplify_unsigned_rshift_expr (tree *expr_p)
   return GS_OK;
 }
 
+/* Gimplify an unary expression node.  */
+
+static gimplify_status
+d_gimplify_unary_expr (tree *expr_p)
+{
+  tree op0 = TREE_OPERAND (*expr_p, 0);
+
+  if (error_operand_p (op0))
+    return GS_UNHANDLED;
+
+  /* Front end doesn't know that bit-field types are really different
+     from basic types, add an explicit conversion in unary expressions.  */
+  if (bit_field_ref (op0) && TREE_TYPE (op0) != TREE_TYPE (*expr_p))
+    {
+      TREE_OPERAND (*expr_p, 0) = convert (TREE_TYPE (*expr_p), op0);
+      return GS_OK;
+    }
+
+  return GS_UNHANDLED;
+}
+
+/* Gimplify a binary expression node.  */
+
+static gimplify_status
+d_gimplify_binary_expr (tree *expr_p)
+{
+  tree op0 = TREE_OPERAND (*expr_p, 0);
+  tree op1 = TREE_OPERAND (*expr_p, 1);
+
+  if (error_operand_p (op0) || error_operand_p (op1))
+    return GS_UNHANDLED;
+
+  /* Front end doesn't know that bit-field types are really different
+     from basic types, add an explicit conversion in binary expressions.  */
+  if (bit_field_ref (op0) || bit_field_ref (op1))
+    {
+      if (TREE_TYPE (op0) != TREE_TYPE (*expr_p))
+    	TREE_OPERAND (*expr_p, 0) = convert (TREE_TYPE (*expr_p), op0);
+
+      if (TREE_TYPE (op1) != TREE_TYPE (*expr_p))
+    	TREE_OPERAND (*expr_p, 1) = convert (TREE_TYPE (*expr_p), op1);
+
+      return GS_OK;
+    }
+
+  return GS_UNHANDLED;
+}
+
 /* Implements the lang_hooks.gimplify_expr routine for language D.
    Do gimplification of D specific expression trees in EXPR_P.  */
 
@@ -203,6 +270,10 @@ d_gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
       gcc_unreachable ();
 
     default:
+      if (UNARY_CLASS_P (*expr_p) && !CONVERT_EXPR_P (*expr_p))
+	return d_gimplify_unary_expr (expr_p);
+      if (BINARY_CLASS_P (*expr_p))
+	return d_gimplify_binary_expr (expr_p);
       break;
     }
 

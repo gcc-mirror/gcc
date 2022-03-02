@@ -1144,6 +1144,87 @@ namespace views::__adaptor
   template<typename _Tp>
     inline constexpr bool enable_borrowed_range<ref_view<_Tp>> = true;
 
+  template<range _Range>
+    requires movable<_Range>
+      && (!__detail::__is_initializer_list<remove_cv_t<_Range>>)
+    class owning_view : public view_interface<owning_view<_Range>>
+    {
+    private:
+      _Range _M_r = _Range();
+
+    public:
+      owning_view() requires default_initializable<_Range> = default;
+
+      constexpr
+      owning_view(_Range&& __t)
+      noexcept(is_nothrow_move_constructible_v<_Range>)
+	: _M_r(std::move(__t))
+      { }
+
+      owning_view(owning_view&&) = default;
+      owning_view& operator=(owning_view&&) = default;
+
+      constexpr _Range&
+      base() & noexcept
+      { return _M_r; }
+
+      constexpr const _Range&
+      base() const& noexcept
+      { return _M_r; }
+
+      constexpr _Range&&
+      base() && noexcept
+      { return std::move(_M_r); }
+
+      constexpr const _Range&&
+      base() const&& noexcept
+      { return std::move(_M_r); }
+
+      constexpr iterator_t<_Range>
+      begin()
+      { return ranges::begin(_M_r); }
+
+      constexpr sentinel_t<_Range>
+      end()
+      { return ranges::end(_M_r); }
+
+      constexpr auto
+      begin() const requires range<const _Range>
+      { return ranges::begin(_M_r); }
+
+      constexpr auto
+      end() const requires range<const _Range>
+      { return ranges::end(_M_r); }
+
+      constexpr bool
+      empty() requires requires { ranges::empty(_M_r); }
+      { return ranges::empty(_M_r); }
+
+      constexpr bool
+      empty() const requires requires { ranges::empty(_M_r); }
+      { return ranges::empty(_M_r); }
+
+      constexpr auto
+      size() requires sized_range<_Range>
+      { return ranges::size(_M_r); }
+
+      constexpr auto
+      size() const requires sized_range<const _Range>
+      { return ranges::size(_M_r); }
+
+      constexpr auto
+      data() requires contiguous_range<_Range>
+      { return ranges::data(_M_r); }
+
+      constexpr auto
+      data() const requires contiguous_range<const _Range>
+      { return ranges::data(_M_r); }
+    };
+
+  template<typename _Tp>
+    inline constexpr bool enable_borrowed_range<owning_view<_Tp>>
+      = enable_borrowed_range<_Tp>;
+
   namespace views
   {
     namespace __detail
@@ -1152,7 +1233,7 @@ namespace views::__adaptor
 	concept __can_ref_view = requires { ref_view{std::declval<_Range>()}; };
 
       template<typename _Range>
-	concept __can_subrange = requires { subrange{std::declval<_Range>()}; };
+	concept __can_owning_view = requires { owning_view{std::declval<_Range>()}; };
     } // namespace __detail
 
     struct _All : __adaptor::_RangeAdaptorClosure
@@ -1166,13 +1247,13 @@ namespace views::__adaptor
 	  else if constexpr (__detail::__can_ref_view<_Range>)
 	    return true;
 	  else
-	    return noexcept(subrange{std::declval<_Range>()});
+	    return noexcept(owning_view{std::declval<_Range>()});
 	}
 
       template<viewable_range _Range>
 	requires view<decay_t<_Range>>
 	  || __detail::__can_ref_view<_Range>
-	  || __detail::__can_subrange<_Range>
+	  || __detail::__can_owning_view<_Range>
 	constexpr auto
 	operator() [[nodiscard]] (_Range&& __r) const
 	noexcept(_S_noexcept<_Range>())
@@ -1182,7 +1263,7 @@ namespace views::__adaptor
 	  else if constexpr (__detail::__can_ref_view<_Range>)
 	    return ref_view{std::forward<_Range>(__r)};
 	  else
-	    return subrange{std::forward<_Range>(__r)};
+	    return owning_view{std::forward<_Range>(__r)};
 	}
 
       static constexpr bool _S_has_simple_call_op = true;

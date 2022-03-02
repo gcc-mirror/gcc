@@ -1394,6 +1394,45 @@
   [(set_attr "type" "neon_qsub<q>")]
 )
 
+(define_expand "vec_cmp<mode><v_cmp_result>"
+  [(set (match_operand:<V_cmp_result> 0 "s_register_operand")
+	(match_operator:<V_cmp_result> 1 "comparison_operator"
+	  [(match_operand:VDQWH 2 "s_register_operand")
+	   (match_operand:VDQWH 3 "reg_or_zero_operand")]))]
+  "TARGET_NEON
+   && (!<Is_float_mode> || flag_unsafe_math_optimizations)"
+{
+  arm_expand_vector_compare (operands[0], GET_CODE (operands[1]),
+			     operands[2], operands[3], false);
+  DONE;
+})
+
+(define_expand "vec_cmpu<mode><mode>"
+  [(set (match_operand:VDQIW 0 "s_register_operand")
+	(match_operator:VDQIW 1 "comparison_operator"
+	  [(match_operand:VDQIW 2 "s_register_operand")
+	   (match_operand:VDQIW 3 "reg_or_zero_operand")]))]
+  "TARGET_NEON"
+{
+  arm_expand_vector_compare (operands[0], GET_CODE (operands[1]),
+			     operands[2], operands[3], false);
+  DONE;
+})
+
+(define_expand "vcond_mask_<mode><v_cmp_result>"
+  [(set (match_operand:VDQWH 0 "s_register_operand")
+	(if_then_else:VDQWH
+	  (match_operand:<V_cmp_result> 3 "s_register_operand")
+	  (match_operand:VDQWH 1 "s_register_operand")
+	  (match_operand:VDQWH 2 "s_register_operand")))]
+  "TARGET_NEON
+   && (!<Is_float_mode> || flag_unsafe_math_optimizations)"
+{
+  emit_insn (gen_neon_vbsl<mode> (operands[0], operands[3], operands[1],
+				  operands[2]));
+  DONE;
+})
+
 ;; Patterns for builtins.
 
 ; good for plain vadd, vaddq.

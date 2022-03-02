@@ -146,12 +146,13 @@ along with GCC; see the file COPYING3.  If not see
 	Like VECTOR_MODES, but start the mode names with PREFIX instead
 	of the usual "V".
 
-     VECTOR_BOOL_MODE (NAME, COUNT, BYTESIZE)
+     VECTOR_BOOL_MODE (NAME, COUNT, COMPONENT, BYTESIZE)
         Create a vector mode called NAME that contains COUNT boolean
         elements and occupies BYTESIZE bytes in total.  Each boolean
-        element occupies (COUNT * BITS_PER_UNIT) / BYTESIZE bits, with
-        the element at index 0 occupying the lsb of the first byte in
-        memory.  Only the lowest bit of each element is significant.
+        element is of COMPONENT type and occupies (COUNT * BITS_PER_UNIT) /
+        BYTESIZE bits, with the element at index 0 occupying the lsb of the
+        first byte in memory.  Only the lowest bit of each element is
+        significant.
 
      OPAQUE_MODE (NAME, BYTESIZE)
         Create an opaque mode called NAME that is BYTESIZE bytes wide.
@@ -196,7 +197,7 @@ RANDOM_MODE (VOID);
 RANDOM_MODE (BLK);
 
 /* Single bit mode used for booleans.  */
-FRACTIONAL_INT_MODE (BI, 1, 1);
+BOOL_MODE (BI, 1, 1);
 
 /* Basic integer modes.  We go up to TI in generic code (128 bits).
    TImode is needed here because the some front ends now genericly

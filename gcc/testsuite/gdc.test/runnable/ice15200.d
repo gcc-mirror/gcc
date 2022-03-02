@@ -1,5 +1,5 @@
 // EXTRA_SOURCES: imports/ice15200a.d imports/ice15200b.d
-// COMPILE_SEPARATELY
+// COMPILE_SEPARATELY:
 
 module ice15200;
 

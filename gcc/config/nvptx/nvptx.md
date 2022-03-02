@@ -94,6 +94,18 @@
   return register_operand (op, mode);
 })
 
+(define_predicate "nvptx_register_or_complex_di_df_register_operand"
+  (ior (match_code "reg")
+       (match_code "concat"))
+{
+  if (GET_CODE (op) == CONCAT)
+    return ((GET_MODE (op) == DCmode || GET_MODE (op) == CDImode)
+	    && nvptx_register_operand (XEXP (op, 0), mode)
+	    && nvptx_register_operand (XEXP (op, 1), mode));
+
+  return nvptx_register_operand (op, mode);
+})
+
 (define_predicate "nvptx_nonimmediate_operand"
   (match_code "mem,reg")
 {
@@ -288,7 +300,8 @@
   "@
    %.\\tmov.b16\\t%0, %1;
    %.\\tld.b16\\t%0, %1;
-   %.\\tst.b16\\t%0, %1;")
+   %.\\tst.b16\\t%0, %1;"
+  [(set_attr "subregs_ok" "true")])
 
 (define_expand "movhf"
   [(set (match_operand:HF 0 "nonimmediate_operand" "")
@@ -806,6 +819,22 @@
 			(match_operand:SI 2 "nvptx_nonmemory_operand" "Ri")))]
   ""
   "%.\\tshr.u%T0\\t%0, %1, %2;")
+
+(define_insn "rotlsi3"
+  [(set (match_operand:SI 0 "nvptx_register_operand" "=R")
+	(rotate:SI (match_operand:SI 1 "nvptx_register_operand" "R")
+		   (and:SI (match_operand:SI 2 "nvptx_nonmemory_operand" "Ri")
+			   (const_int 31))))]
+  "TARGET_SM35"
+  "%.\\tshf.l.wrap.b32\\t%0, %1, %1, %2;")
+
+(define_insn "rotrsi3"
+  [(set (match_operand:SI 0 "nvptx_register_operand" "=R")
+	(rotatert:SI (match_operand:SI 1 "nvptx_register_operand" "R")
+		     (and:SI (match_operand:SI 2 "nvptx_nonmemory_operand" "Ri")
+			     (const_int 31))))]
+  "TARGET_SM35"
+  "%.\\tshf.r.wrap.b32\\t%0, %1, %1, %2;")
 
 ;; Logical operations
 
@@ -1885,8 +1914,8 @@
 ;; Implement IFN_GOMP_SIMT_XCHG_BFLY: perform a "butterfly" exchange
 ;; across lanes
 (define_expand "omp_simt_xchg_bfly"
-  [(match_operand 0 "nvptx_register_operand" "=R")
-   (match_operand 1 "nvptx_register_operand" "R")
+  [(match_operand 0 "nvptx_register_or_complex_di_df_register_operand" "=R")
+   (match_operand 1 "nvptx_register_or_complex_di_df_register_operand" "R")
    (match_operand:SI 2 "nvptx_nonmemory_operand" "Ri")]
   ""
 {
@@ -1898,8 +1927,8 @@
 ;; Implement IFN_GOMP_SIMT_XCHG_IDX: broadcast value in operand 1
 ;; from lane given by index in operand 2 to operand 0 in all lanes
 (define_expand "omp_simt_xchg_idx"
-  [(match_operand 0 "nvptx_register_operand" "=R")
-   (match_operand 1 "nvptx_register_operand" "R")
+  [(match_operand 0 "nvptx_register_or_complex_di_df_register_operand" "=R")
+   (match_operand 1 "nvptx_register_or_complex_di_df_register_operand" "R")
    (match_operand:SI 2 "nvptx_nonmemory_operand" "Ri")]
   ""
 {
@@ -2069,8 +2098,8 @@
 
   if (TARGET_SM70)
     {
-       emit_insn (gen_nvptx_atomic_store<mode> (operands[0], operands[1],
-						operands[2]));
+       emit_insn (gen_nvptx_atomic_store_sm70<mode> (operands[0], operands[1],
+						     operands[2]));
        DONE;
     }
 
@@ -2079,13 +2108,12 @@
     /* Fall back to expand_atomic_store.  */
     FAIL;
 
-  rtx tmpreg = gen_reg_rtx (<MODE>mode);
-  emit_insn (gen_atomic_exchange<mode> (tmpreg, operands[0], operands[1],
-					operands[2]));
+  emit_insn (gen_nvptx_atomic_store<mode> (operands[0], operands[1],
+					   operands[2]));
   DONE;
 })
 
-(define_insn "nvptx_atomic_store<mode>"
+(define_insn "nvptx_atomic_store_sm70<mode>"
   [(set (match_operand:SDIM 0 "memory_operand" "+m")	      ;; memory
        (unspec_volatile:SDIM
 	 [(match_operand:SDIM 1 "nvptx_nonmemory_operand" "Ri") ;; input
@@ -2095,6 +2123,20 @@
   {
     const char *t
       = "%.\tst%A0.b%T0\t%0, %1;";
+    return nvptx_output_atomic_insn (t, operands, 0, 2);
+  }
+  [(set_attr "atomic" "false")]) ;; Note: st is not an atomic insn.
+
+(define_insn "nvptx_atomic_store<mode>"
+  [(set (match_operand:SDIM 0 "memory_operand" "+m")	      ;; memory
+       (unspec_volatile:SDIM
+	 [(match_operand:SDIM 1 "nvptx_nonmemory_operand" "Ri") ;; input
+	  (match_operand:SI 2 "const_int_operand")]		;; model
+	       UNSPECV_ST))]
+  "!TARGET_SM70"
+  {
+    const char *t
+      = "%.\tatom%A0.exch.b%T0\t_, %0, %1;";
     return nvptx_output_atomic_insn (t, operands, 0, 2);
   }
   [(set_attr "atomic" "true")])

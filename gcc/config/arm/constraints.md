@@ -312,6 +312,12 @@
  (and (match_code "const_vector")
       (match_test "(TARGET_NEON || TARGET_HAVE_MVE) && op == CONST0_RTX (mode)")))
 
+(define_constraint "DB"
+ "@internal
+  In ARM/Thumb-2 state with MVE a constant vector of booleans."
+ (and (match_code "const_vector")
+      (match_test "TARGET_HAVE_MVE && GET_MODE_CLASS (mode) == MODE_VECTOR_BOOL")))
+
 (define_constraint "Da"
  "@internal
   In ARM/Thumb-2 state a const_int, const_double or const_vector that can

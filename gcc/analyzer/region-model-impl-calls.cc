@@ -80,6 +80,14 @@ call_details::call_details (const gcall *call, region_model *model,
     }
 }
 
+/* Get the manager from m_model.  */
+
+region_model_manager *
+call_details::get_manager () const
+{
+  return m_model->get_manager ();
+}
+
 /* Get any uncertainty_t associated with the region_model_context.  */
 
 uncertainty_t *

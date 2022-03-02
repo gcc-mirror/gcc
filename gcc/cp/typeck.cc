@@ -6854,6 +6854,12 @@ cp_build_addr_expr_1 (tree arg, bool strict_lvalue, tsubst_flags_t complain)
 	    return error_mark_node;
 	  }
 
+	/* Forming a pointer-to-member is a use of non-pure-virtual fns.  */
+	if (TREE_CODE (t) == FUNCTION_DECL
+	    && !DECL_PURE_VIRTUAL_P (t)
+	    && !mark_used (t, complain) && !(complain & tf_error))
+	  return error_mark_node;
+
 	type = build_ptrmem_type (context_for_name_lookup (t),
 				  TREE_TYPE (t));
 	t = make_ptrmem_cst (type, t);
@@ -6878,9 +6884,9 @@ cp_build_addr_expr_1 (tree arg, bool strict_lvalue, tsubst_flags_t complain)
      so we can just form an ADDR_EXPR with the correct type.  */
   if (processing_template_decl || TREE_CODE (arg) != COMPONENT_REF)
     {
-      tree stripped_arg = tree_strip_any_location_wrapper (arg);
-      if (TREE_CODE (stripped_arg) == FUNCTION_DECL
-	  && !mark_used (stripped_arg, complain) && !(complain & tf_error))
+      tree stripped_arg
+	= tree_strip_any_location_wrapper (maybe_undo_parenthesized_ref (arg));
+      if (!mark_single_function (stripped_arg, complain))
 	return error_mark_node;
       val = build_address (arg);
       if (TREE_CODE (arg) == OFFSET_REF)

@@ -2055,9 +2055,14 @@ if (isBidirectionalRange!Range)
 }
 
 /**
-   Moves the front of `r` out and returns it. Leaves `r.front` in a
-   destroyable state that does not allocate any resources (usually equal
-   to its `.init` value).
+   Moves the front of `r` out and returns it.
+
+   If `r.front` is a struct with a destructor or copy constructor defined, it
+   is reset to its `.init` value after its value is moved. Otherwise, it is
+   left unchanged.
+
+   In either case, `r.front` is left in a destroyable state that does not
+   allocate any resources.
 */
 ElementType!R moveFront(R)(R r)
 {

@@ -206,6 +206,32 @@ string MODtoString(MOD mod) nothrow pure
     }
 }
 
+/*************************************************
+ * Pick off one of the trust flags from trust,
+ * and return a string representation of it.
+ */
+string trustToString(TRUST trust) pure nothrow @nogc @safe
+{
+    final switch (trust)
+    {
+    case TRUST.default_:
+        return null;
+    case TRUST.system:
+        return "@system";
+    case TRUST.trusted:
+        return "@trusted";
+    case TRUST.safe:
+        return "@safe";
+    }
+}
+
+unittest
+{
+    assert(trustToString(TRUST.default_) == "");
+    assert(trustToString(TRUST.system) == "@system");
+    assert(trustToString(TRUST.trusted) == "@trusted");
+    assert(trustToString(TRUST.safe) == "@safe");
+}
 
 /************************************
  * Convert MODxxxx to STCxxx
@@ -228,6 +254,57 @@ StorageClass ModToStc(uint mod) pure nothrow @nogc @safe
 bool isSomeChar(TY ty) pure nothrow @nogc @safe
 {
     return ty == Tchar || ty == Twchar || ty == Tdchar;
+}
+
+/************************************
+ * Determine mutability of indirections in (ref) t.
+ *
+ * Returns: When the type has any mutable indirections, returns 0.
+ * When all indirections are immutable, returns 2.
+ * Otherwise, when the type has const/inout indirections, returns 1.
+ *
+ * Params:
+ *      isref = if true, check `ref t`; otherwise, check just `t`
+ *      t = the type that is being checked
+ */
+int mutabilityOfType(bool isref, Type t)
+{
+    if (isref)
+    {
+        if (t.mod & MODFlags.immutable_)
+            return 2;
+        if (t.mod & (MODFlags.const_ | MODFlags.wild))
+            return 1;
+        return 0;
+    }
+
+    t = t.baseElemOf();
+
+    if (!t.hasPointers() || t.mod & MODFlags.immutable_)
+        return 2;
+
+    /* Accept immutable(T)[] and immutable(T)* as being strongly pure
+     */
+    if (t.ty == Tarray || t.ty == Tpointer)
+    {
+        Type tn = t.nextOf().toBasetype();
+        if (tn.mod & MODFlags.immutable_)
+            return 2;
+        if (tn.mod & (MODFlags.const_ | MODFlags.wild))
+            return 1;
+    }
+
+    /* The rest of this is too strict; fix later.
+     * For example, the only pointer members of a struct may be immutable,
+     * which would maintain strong purity.
+     * (Just like for dynamic arrays and pointers above.)
+     */
+    if (t.mod & (MODFlags.const_ | MODFlags.wild))
+        return 1;
+
+    /* Should catch delegates and function pointers, and fold in their purity
+     */
+    return 0;
 }
 
 /****************
@@ -349,7 +426,7 @@ extern (C++) abstract class Type : ASTNode
     extern (C++) __gshared Type[TMAX] basic;
 
     extern (D) __gshared StringTable!Type stringtable;
-    extern (D) private __gshared ubyte[TMAX] sizeTy = ()
+    extern (D) private static immutable ubyte[TMAX] sizeTy = ()
         {
             ubyte[TMAX] sizeTy = __traits(classInstanceSize, TypeBasic);
             sizeTy[Tsarray] = __traits(classInstanceSize, TypeSArray);
@@ -571,7 +648,15 @@ extern (C++) abstract class Type : ASTNode
                     goto Lcovariant;
             }
             else if (t1n.ty == t2n.ty && t1n.implicitConvTo(t2n))
+            {
+                if (t1.isref && t2.isref)
+                {
+                    // Treat like pointers to t1n and t2n
+                    if (t1n.constConv(t2n) < MATCH.constant)
+                        goto Lnotcovariant;
+                }
                 goto Lcovariant;
+            }
             else if (t1n.ty == Tnull)
             {
                 // NULL is covariant with any pointer type, but not with any
@@ -2553,6 +2638,10 @@ extern (C++) abstract class Type : ASTNode
             default:
                 assert(0);
             }
+            // @@@DEPRECATED_2.117@@@
+            // Deprecated in 2.097 - Can be made an error from 2.117.
+            // The deprecation period is longer than usual as `cfloat`,
+            // `cdouble`, and `creal` were quite widely used.
             if (t.iscomplex())
             {
                 deprecation(loc, "use of complex type `%s` is deprecated, use `std.complex.Complex!(%s)` instead",
@@ -4168,9 +4257,9 @@ extern (C++) final class TypeFunction : TypeNext
         this.trust = TRUST.default_;
         if (stc & STC.safe)
             this.trust = TRUST.safe;
-        if (stc & STC.system)
+        else if (stc & STC.system)
             this.trust = TRUST.system;
-        if (stc & STC.trusted)
+        else if (stc & STC.trusted)
             this.trust = TRUST.trusted;
     }
 
@@ -4217,54 +4306,11 @@ extern (C++) final class TypeFunction : TypeNext
         if (tf.purity != PURE.fwdref)
             return;
 
-        /* Determine purity level based on mutability of t
-         * and whether it is a 'ref' type or not.
-         */
-        static PURE purityOfType(bool isref, Type t)
-        {
-            if (isref)
-            {
-                if (t.mod & MODFlags.immutable_)
-                    return PURE.strong;
-                if (t.mod & (MODFlags.const_ | MODFlags.wild))
-                    return PURE.const_;
-                return PURE.weak;
-            }
-
-            t = t.baseElemOf();
-
-            if (!t.hasPointers() || t.mod & MODFlags.immutable_)
-                return PURE.strong;
-
-            /* Accept immutable(T)[] and immutable(T)* as being strongly pure
-             */
-            if (t.ty == Tarray || t.ty == Tpointer)
-            {
-                Type tn = t.nextOf().toBasetype();
-                if (tn.mod & MODFlags.immutable_)
-                    return PURE.strong;
-                if (tn.mod & (MODFlags.const_ | MODFlags.wild))
-                    return PURE.const_;
-            }
-
-            /* The rest of this is too strict; fix later.
-             * For example, the only pointer members of a struct may be immutable,
-             * which would maintain strong purity.
-             * (Just like for dynamic arrays and pointers above.)
-             */
-            if (t.mod & (MODFlags.const_ | MODFlags.wild))
-                return PURE.const_;
-
-            /* Should catch delegates and function pointers, and fold in their purity
-             */
-            return PURE.weak;
-        }
-
-        purity = PURE.strong; // assume strong until something weakens it
+        purity = PURE.const_; // assume strong until something weakens it
 
         /* Evaluate what kind of purity based on the modifiers for the parameters
          */
-    Lloop: foreach (i, fparam; tf.parameterList)
+        foreach (i, fparam; tf.parameterList)
         {
             Type t = fparam.type;
             if (!t)
@@ -4275,33 +4321,11 @@ extern (C++) final class TypeFunction : TypeNext
                 purity = PURE.weak;
                 break;
             }
-            switch (purityOfType((fparam.storageClass & STC.ref_) != 0, t))
-            {
-                case PURE.weak:
-                    purity = PURE.weak;
-                    break Lloop; // since PURE.weak, no need to check further
-
-                case PURE.const_:
-                    purity = PURE.const_;
-                    continue;
-
-                case PURE.strong:
-                    continue;
-
-                default:
-                    assert(0);
-            }
+            const pref = (fparam.storageClass & STC.ref_) != 0;
+            if (mutabilityOfType(pref, t) == 0)
+                purity = PURE.weak;
         }
 
-        if (purity > PURE.weak && tf.nextOf())
-        {
-            /* Adjust purity based on mutability of return type.
-             * https://issues.dlang.org/show_bug.cgi?id=15862
-             */
-            const purity2 = purityOfType(tf.isref, tf.nextOf());
-            if (purity2 < purity)
-                purity = purity2;
-        }
         tf.purity = purity;
     }
 
@@ -6306,10 +6330,7 @@ extern (C++) final class TypeClass : Type
 
     extern (D) MATCH implicitConvToWithoutAliasThis(Type to)
     {
-        MATCH m = constConv(to);
-        if (m > MATCH.nomatch)
-            return m;
-
+        // Run semantic before checking whether class is convertible
         ClassDeclaration cdto = to.isClassHandle();
         if (cdto)
         {
@@ -6318,11 +6339,15 @@ extern (C++) final class TypeClass : Type
                 cdto.dsymbolSemantic(null);
             if (sym.semanticRun < PASS.semanticdone && !sym.isBaseInfoComplete())
                 sym.dsymbolSemantic(null);
-            if (cdto.isBaseOf(sym, null) && MODimplicitConv(mod, to.mod))
-            {
-                //printf("'to' is base\n");
-                return MATCH.convert;
-            }
+        }
+        MATCH m = constConv(to);
+        if (m > MATCH.nomatch)
+            return m;
+
+        if (cdto && cdto.isBaseOf(sym, null) && MODimplicitConv(mod, to.mod))
+        {
+            //printf("'to' is base\n");
+            return MATCH.convert;
         }
         return MATCH.nomatch;
     }
@@ -6359,7 +6384,7 @@ extern (C++) final class TypeClass : Type
         /* Conversion derived to const(base)
          */
         int offset = 0;
-        if (to.isBaseOf(this, &offset) && offset == 0 && MODimplicitConv(mod, to.mod))
+        if (to.isBaseOf(this, &offset) && MODimplicitConv(mod, to.mod))
         {
             // Disallow:
             //  derived to base
@@ -6373,6 +6398,9 @@ extern (C++) final class TypeClass : Type
 
     override MOD deduceWild(Type t, bool isRef)
     {
+        // If sym is forward referenced:
+        if (sym.semanticRun < PASS.semanticdone && !sym.isBaseInfoComplete())
+            sym.dsymbolSemantic(null);
         ClassDeclaration cd = t.isClassHandle();
         if (cd && (sym == cd || cd.isBaseOf(sym, null)))
             return Type.deduceWild(t, isRef);
@@ -6760,19 +6788,21 @@ extern (C++) final class TypeTag : Type
     Loc loc;                /// location of declaration
     TOK tok;                /// TOK.struct_, TOK.union_, TOK.enum_
     Identifier id;          /// tag name identifier
+    Type base;              /// base type for enums otherwise null
     Dsymbols* members;      /// members of struct, null if none
 
     Type resolved;          /// type after semantic() in case there are more others
                             /// pointing to this instance, which can happen with
                             ///   struct S { int a; } s1, *s2;
 
-    extern (D) this(const ref Loc loc, TOK tok, Identifier id, Dsymbols* members)
+    extern (D) this(const ref Loc loc, TOK tok, Identifier id, Type base, Dsymbols* members)
     {
         //printf("TypeTag %p\n", this);
         super(Ttag);
         this.loc = loc;
         this.tok = tok;
         this.id = id;
+        this.base = base;
         this.members = members;
     }
 
@@ -7261,10 +7291,9 @@ void attributesApply(const TypeFunction tf, void delegate(string) dg, TRUSTforma
 
     if (trustAttrib == TRUST.default_)
     {
-        if (trustFormat == TRUSTformatSystem)
-            trustAttrib = TRUST.system;
-        else
-            return; // avoid calling with an empty string
+        if (trustFormat != TRUSTformatSystem)
+            return;
+        trustAttrib = TRUST.system; // avoid calling with an empty string
     }
 
     dg(trustToString(trustAttrib));

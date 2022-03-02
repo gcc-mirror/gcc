@@ -49,6 +49,7 @@ extern void init_tree_ssa (function *, int size = 0);
 extern void delete_tree_ssa (function *);
 extern bool tree_ssa_useless_type_conversion (tree);
 extern tree tree_ssa_strip_useless_type_conversions (tree);
+extern tree find_released_ssa_name (tree *, int *, void *);
 
 
 extern bool ssa_defined_default_def_p (tree t);

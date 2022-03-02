@@ -4405,6 +4405,33 @@
   }
 )
 
+;; Implement MAX/MIN (A, B) - C using SUBS/ADDS followed by CSEL/CSINV/CSINC.
+;; See aarch64_maxmin_plus_const for details about the supported cases.
+(define_insn_and_split "*aarch64_minmax_plus"
+  [(set (match_operand:GPI 0 "register_operand" "=r")
+	(plus:GPI
+	  (MAXMIN:GPI
+	    (match_operand:GPI 1 "register_operand" "r")
+	    (match_operand:GPI 2 "const_int_operand"))
+	  (match_operand:GPI 3 "aarch64_plus_immediate")))
+   (clobber (reg:CC CC_REGNUM))]
+  "aarch64_maxmin_plus_const (<CODE>, operands, false)"
+  "#"
+  "&& 1"
+  [(parallel
+     [(set (reg:CC CC_REGNUM)
+	   (compare:CC (match_dup 1) (match_dup 4)))
+      (set (match_dup 6)
+	   (plus:GPI (match_dup 1) (match_dup 3)))])
+   (set (match_dup 0)
+	(if_then_else:GPI (match_dup 5) (match_dup 6) (match_dup 7)))]
+  {
+    if (!aarch64_maxmin_plus_const (<CODE>, operands, true))
+      gcc_unreachable ();
+  }
+  [(set_attr "length" "8")]
+)
+
 ;; -------------------------------------------------------------------
 ;; Logical operations
 ;; -------------------------------------------------------------------
@@ -4531,7 +4558,7 @@
 
 (define_split
   [(set (match_operand:GPI 0 "register_operand")
-	(LOGICAL:GPI
+	(LOGICAL_OR_PLUS:GPI
 	  (and:GPI (ashift:GPI (match_operand:GPI 1 "register_operand")
 			       (match_operand:QI 2 "aarch64_shift_imm_<mode>"))
 		   (match_operand:GPI 3 "const_int_operand"))
@@ -4544,16 +4571,23 @@
 	   && REGNO (operands[1]) == REGNO (operands[4])))
    && (trunc_int_for_mode (GET_MODE_MASK (GET_MODE (operands[4]))
 			   << INTVAL (operands[2]), <MODE>mode)
-       == INTVAL (operands[3]))"
+       == INTVAL (operands[3]))
+   && (<CODE> != PLUS
+       || (GET_MODE_MASK (GET_MODE (operands[4]))
+	   & INTVAL (operands[3])) == 0)"
   [(set (match_dup 5) (zero_extend:GPI (match_dup 4)))
-   (set (match_dup 0) (LOGICAL:GPI (ashift:GPI (match_dup 5) (match_dup 2))
-				   (match_dup 5)))]
-  "operands[5] = gen_reg_rtx (<MODE>mode);"
+   (set (match_dup 0) (match_dup 6))]
+  {
+    operands[5] = gen_reg_rtx (<MODE>mode);
+    rtx shift = gen_rtx_ASHIFT (<MODE>mode, operands[5], operands[2]);
+    rtx_code new_code = (<CODE> == PLUS ? IOR : <CODE>);
+    operands[6] = gen_rtx_fmt_ee (new_code, <MODE>mode, shift, operands[5]);
+  }
 )
 
 (define_split
   [(set (match_operand:GPI 0 "register_operand")
-	(LOGICAL:GPI
+	(LOGICAL_OR_PLUS:GPI
 	  (and:GPI (ashift:GPI (match_operand:GPI 1 "register_operand")
 			       (match_operand:QI 2 "aarch64_shift_imm_<mode>"))
 		   (match_operand:GPI 4 "const_int_operand"))
@@ -4562,11 +4596,17 @@
    && pow2_or_zerop (UINTVAL (operands[3]) + 1)
    && (trunc_int_for_mode (UINTVAL (operands[3])
 			   << INTVAL (operands[2]), <MODE>mode)
-       == INTVAL (operands[4]))"
+       == INTVAL (operands[4]))
+   && (<CODE> != PLUS
+       || (INTVAL (operands[4]) & INTVAL (operands[3])) == 0)"
   [(set (match_dup 5) (and:GPI (match_dup 1) (match_dup 3)))
-   (set (match_dup 0) (LOGICAL:GPI (ashift:GPI (match_dup 5) (match_dup 2))
-				   (match_dup 5)))]
-  "operands[5] = gen_reg_rtx (<MODE>mode);"
+   (set (match_dup 0) (match_dup 6))]
+  {
+    operands[5] = gen_reg_rtx (<MODE>mode);
+    rtx shift = gen_rtx_ASHIFT (<MODE>mode, operands[5], operands[2]);
+    rtx_code new_code = (<CODE> == PLUS ? IOR : <CODE>);
+    operands[6] = gen_rtx_fmt_ee (new_code, <MODE>mode, shift, operands[5]);
+  }
 )
 
 (define_split
@@ -7052,6 +7092,16 @@
   ""
   "hint\t7 // xpaclri"
 )
+
+;; Save X30 in the X18-based POST_INC stack (consistent with clang).
+(define_expand "scs_push"
+  [(set (mem:DI (post_inc:DI (reg:DI R18_REGNUM)))
+	(reg:DI R30_REGNUM))])
+
+;; Load X30 form the X18-based PRE_DEC stack (consistent with clang).
+(define_expand "scs_pop"
+  [(set (reg:DI R30_REGNUM)
+	(mem:DI (pre_dec:DI (reg:DI R18_REGNUM))))])
 
 ;; UNSPEC_VOLATILE is considered to use and clobber all hard registers and
 ;; all of memory.  This blocks insns from being moved across this point.

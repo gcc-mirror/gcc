@@ -71,13 +71,13 @@ modref_access_node::contains (const modref_access_node &a) const
 	   /* Accesses are never below parm_offset, so look
 	      for smaller offset.
 	      If access ranges are known still allow merging
-	      when bit offsets comparsion passes.  */
+	      when bit offsets comparison passes.  */
 	   if (!known_le (parm_offset, a.parm_offset)
 	       && !range_info_useful_p ())
 	     return false;
 	   /* We allow negative aoffset_adj here in case
 	      there is an useful range.  This is because adding
-	      a.offset may result in non-ngative offset again.
+	      a.offset may result in non-negative offset again.
 	      Ubsan fails on val << LOG_BITS_PER_UNIT where val
 	      is negative.  */
 	   aoffset_adj = (a.parm_offset - parm_offset)
@@ -89,7 +89,7 @@ modref_access_node::contains (const modref_access_node &a) const
       if (!a.range_info_useful_p ())
 	return false;
       /* Sizes of stores are used to check that object is big enough
-	 to fit the store, so smaller or unknown sotre is more general
+	 to fit the store, so smaller or unknown store is more general
 	 than large store.  */
       if (known_size_p (size)
 	  && (!known_size_p (a.size)
@@ -266,7 +266,7 @@ modref_access_node::closer_pair_p (const modref_access_node &a1,
     gcc_unreachable ();
 
 
-  /* Now compute distnace of the intervals.  */
+  /* Now compute distance of the intervals.  */
   poly_int64 dist1, dist2;
   if (known_le (offseta1, offsetb1))
     {
@@ -509,7 +509,7 @@ modref_access_node::stream_in (struct lto_input_block *ib)
    If RECORD_ADJUSTMENTs is true avoid too many interval extensions.
    Return true if record was changed.
 
-   Reutrn 0 if nothing changed, 1 if insert was successful and -1
+   Return 0 if nothing changed, 1 if insert was successful and -1
    if entries should be collapsed.  */
 int
 modref_access_node::insert (vec <modref_access_node, va_gc> *&accesses,
@@ -800,7 +800,7 @@ modref_access_node::insert_kill (vec<modref_access_node> &kills,
   gcc_checking_assert (a.useful_for_kill_p ());
 
   /* See if we have corresponding entry already or we can merge with
-     neighbouring entry.  */
+     neighboring entry.  */
   FOR_EACH_VEC_ELT (kills, index, a2)
     {
       if (a2->contains_for_kills (a))

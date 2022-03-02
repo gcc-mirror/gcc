@@ -3929,7 +3929,7 @@ emit_move_multi_word (machine_mode mode, rtx x, rtx y)
      hard regs shouldn't appear here except as return values.
      We never want to emit such a clobber after reload.  */
   if (x != y
-      && ! (lra_in_progress || reload_in_progress || reload_completed)
+      && ! (reload_in_progress || reload_completed)
       && need_clobber != 0)
     emit_clobber (x);
 

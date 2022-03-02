@@ -4379,7 +4379,17 @@ clear_padding_flush (clear_padding_struct *buf, bool full)
 	      else
 		{
 		  src = make_ssa_name (type);
-		  g = gimple_build_assign (src, unshare_expr (dst));
+		  tree tmp_dst = unshare_expr (dst);
+		  /* The folding introduces a read from the tmp_dst, we should
+		     prevent uninitialized warning analysis from issuing warning
+		     for such fake read.  In order to suppress warning only for
+		     this expr, we should set the location of tmp_dst to
+		     UNKNOWN_LOCATION first, then suppress_warning will call
+		     set_no_warning_bit to set the no_warning flag only for
+		     tmp_dst.  */
+		  SET_EXPR_LOCATION (tmp_dst, UNKNOWN_LOCATION);
+		  suppress_warning (tmp_dst, OPT_Wuninitialized);
+		  g = gimple_build_assign (src, tmp_dst);
 		  gimple_set_location (g, buf->loc);
 		  gsi_insert_before (buf->gsi, g, GSI_SAME_STMT);
 		  tree mask = native_interpret_expr (type,
@@ -4807,10 +4817,10 @@ clear_padding_type (clear_padding_struct *buf, tree type,
 	clear_padding_flush (buf, false);
       if (clear_padding_real_needs_padding_p (type))
 	{
-	  /* Use native_interpret_expr + native_encode_expr to figure out
+	  /* Use native_interpret_real + native_encode_expr to figure out
 	     which bits are padding.  */
 	  memset (buf->buf + buf->size, ~0, sz);
-	  tree cst = native_interpret_expr (type, buf->buf + buf->size, sz);
+	  tree cst = native_interpret_real (type, buf->buf + buf->size, sz);
 	  gcc_assert (cst && TREE_CODE (cst) == REAL_CST);
 	  int len = native_encode_expr (cst, buf->buf + buf->size, sz);
 	  gcc_assert (len > 0 && (size_t) len == (size_t) sz);

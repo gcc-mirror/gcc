@@ -1,5 +1,7 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target vect_int } */
+/* For negative stride we need to reverse the aligned load.  */
+/* { dg-require-effective-target vect_perm } */
 
 void b (int *p)
 {

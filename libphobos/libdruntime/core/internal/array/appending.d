@@ -35,14 +35,14 @@ template _d_arrayappendcTXImpl(Tarr : T[], T)
     *   is temporarily declared `@trusted pure` until the implementation can be brought up to modern D expectations.
      */
     static if (isCopyingNothrow!T) // `nothrow` deduction doesn't work, so this is needed
-        ref Tarr _d_arrayappendcTX(return scope ref Tarr px, size_t n) @trusted pure nothrow
+        ref Tarr _d_arrayappendcTX(return ref scope Tarr px, size_t n) @trusted pure nothrow
         {
             pragma(inline, false);
 
             mixin(_d_arrayappendcTXBody);
         }
     else
-        ref Tarr _d_arrayappendcTX(return scope ref Tarr px, size_t n) @trusted pure nothrow
+        ref Tarr _d_arrayappendcTX(return ref scope Tarr px, size_t n) @trusted pure nothrow
         {
             pragma(inline, false);
 
@@ -96,14 +96,14 @@ template _d_arrayappendTImpl(Tarr : T[], T)
     *   is temporarily declared `@trusted pure` until the implementation can be brought up to modern D expectations.
      */
     static if (isCopyingNothrow!T)
-        ref Tarr _d_arrayappendT(return scope ref Tarr x, scope Tarr y) @trusted pure nothrow
+        ref Tarr _d_arrayappendT(return ref scope Tarr x, scope Tarr y) @trusted pure nothrow
         {
             pragma(inline, false);
 
             mixin(_d_arrayappendTBody);
         }
     else
-        ref Tarr _d_arrayappendT(return scope ref Tarr x, scope Tarr y) @trusted pure
+        ref Tarr _d_arrayappendT(return ref scope Tarr x, scope Tarr y) @trusted pure
         {
             pragma(inline, false);
 

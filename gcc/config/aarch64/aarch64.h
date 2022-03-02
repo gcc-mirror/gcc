@@ -922,9 +922,21 @@ struct GTY (()) aarch64_frame
 	 Indicated by CALLEE_ADJUST == 0 && EMIT_FRAME_CHAIN.
 
      These fields indicate which registers we've decided to handle using
-     (1) or (2), or INVALID_REGNUM if none.  */
-  unsigned wb_candidate1;
-  unsigned wb_candidate2;
+     (1) or (2), or INVALID_REGNUM if none.
+
+     In some cases we don't always need to pop all registers in the push
+     candidates, pop candidates record which registers need to be popped
+     eventually.  The initial value of a pop candidate is copied from its
+     corresponding push candidate.
+
+     Currently, different pop candidates are only used for shadow call
+     stack.  When "-fsanitize=shadow-call-stack" is specified, we replace
+     x30 in the pop candidate with INVALID_REGNUM to ensure that x30 is
+     not popped twice.  */
+  unsigned wb_push_candidate1;
+  unsigned wb_push_candidate2;
+  unsigned wb_pop_candidate1;
+  unsigned wb_pop_candidate2;
 
   /* Big-endian SVE frames need a spare predicate register in order
      to save vector registers in the correct layout for unwinding.
@@ -932,6 +944,9 @@ struct GTY (()) aarch64_frame
   unsigned spare_pred_reg;
 
   bool laid_out;
+
+  /* True if shadow call stack should be enabled for the current function.  */
+  bool is_scs_enabled;
 };
 
 typedef struct GTY (()) machine_function

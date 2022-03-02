@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-//go:build aix || darwin || dragonfly || hurd || netbsd || openbsd || solaris
+//go:build aix || darwin || dragonfly || netbsd || openbsd || solaris
 
 package syscall
 
@@ -143,13 +143,13 @@ func forkAndExecInChild(argv0 *byte, argv, envv []*byte, chroot, dir *byte, attr
 	// User and groups
 	if cred := sys.Credential; cred != nil {
 		ngroups := len(cred.Groups)
-		var groups *Gid_t
+		var groups unsafe.Pointer
 		if ngroups > 0 {
 			gids := make([]Gid_t, ngroups)
 			for i, v := range cred.Groups {
 				gids[i] = Gid_t(v)
 			}
-			groups = &gids[0]
+			groups = unsafe.Pointer(&gids[0])
 		}
 		if !cred.NoSetGroups {
 			err1 = raw_setgroups(ngroups, groups)

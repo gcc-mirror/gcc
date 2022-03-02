@@ -25,7 +25,6 @@ import dmd.arraytypes;
 import dmd.astenums;
 import dmd.ast_node;
 import dmd.gluelayer;
-import dmd.canthrow;
 import dmd.constfold;
 import dmd.ctfeexpr;
 import dmd.ctorflow;
@@ -466,7 +465,17 @@ private Expression callCpCtor(Scope* sc, Expression e, Type destinationType)
              */
             auto tmp = copyToTemp(STC.rvalue, "__copytmp", e);
             if (sd.hasCopyCtor && destinationType)
-                tmp.type = destinationType;
+            {
+                // https://issues.dlang.org/show_bug.cgi?id=22619
+                // If the destination type is inout we can preserve it
+                // only if inside an inout function; if we are not inside
+                // an inout function, then we will preserve the type of
+                // the source
+                if (destinationType.hasWild && !(sc.func.storage_class & STC.wild))
+                    tmp.type = e.type;
+                else
+                    tmp.type = destinationType;
+            }
             tmp.storage_class |= STC.nodtor;
             tmp.dsymbolSemantic(sc);
             Expression de = new DeclarationExp(e.loc, tmp);
@@ -1733,11 +1742,21 @@ extern (C++) abstract class Expression : ASTNode
         inout(PrettyFuncInitExp) isPrettyFuncInitExp() { return op == EXP.prettyFunction ? cast(typeof(return))this : null; }
         inout(ClassReferenceExp) isClassReferenceExp() { return op == EXP.classReference ? cast(typeof(return))this : null; }
         inout(ThrownExceptionExp) isThrownExceptionExp() { return op == EXP.thrownException ? cast(typeof(return))this : null; }
-    }
 
-    inout(BinAssignExp) isBinAssignExp() pure inout nothrow @nogc
-    {
-        return null;
+        inout(UnaExp) isUnaExp() pure inout nothrow @nogc
+        {
+            return exptab[op] & EXPFLAGS.unary ? cast(typeof(return))this : null;
+        }
+
+        inout(BinExp) isBinExp() pure inout nothrow @nogc
+        {
+            return exptab[op] & EXPFLAGS.binary ? cast(typeof(return))this : null;
+        }
+
+        inout(BinAssignExp) isBinAssignExp() pure inout nothrow @nogc
+        {
+            return exptab[op] & EXPFLAGS.binaryAssign ? cast(typeof(return))this : null;
+        }
     }
 
     override void accept(Visitor v)
@@ -2707,29 +2726,6 @@ extern (C++) final class StringExp : Expression
         return ErrorExp.get();
     }
 
-    uint charAt(uinteger_t i) const
-    {
-        uint value;
-        switch (sz)
-        {
-        case 1:
-            value = (cast(char*)string)[cast(size_t)i];
-            break;
-
-        case 2:
-            value = (cast(ushort*)string)[cast(size_t)i];
-            break;
-
-        case 4:
-            value = (cast(uint*)string)[cast(size_t)i];
-            break;
-
-        default:
-            assert(0);
-        }
-        return value;
-    }
-
     /********************************
      * Convert string contents to a 0 terminated string,
      * allocated by mem.xmalloc().
@@ -3507,12 +3503,11 @@ extern (C++) final class TemplateExp : Expression
 }
 
 /***********************************************************
- * thisexp.new(newargs) newtype(arguments)
+ * newtype(arguments)
  */
 extern (C++) final class NewExp : Expression
 {
     Expression thisexp;         // if !=null, 'this' for class being allocated
-    Expressions* newargs;       // Array of Expression's to call new operator
     Type newtype;
     Expressions* arguments;     // Array of Expression's
 
@@ -3521,25 +3516,23 @@ extern (C++) final class NewExp : Expression
     bool onstack;               // allocate on stack
     bool thrownew;              // this NewExp is the expression of a ThrowStatement
 
-    extern (D) this(const ref Loc loc, Expression thisexp, Expressions* newargs, Type newtype, Expressions* arguments)
+    extern (D) this(const ref Loc loc, Expression thisexp, Type newtype, Expressions* arguments)
     {
         super(loc, EXP.new_, __traits(classInstanceSize, NewExp));
         this.thisexp = thisexp;
-        this.newargs = newargs;
         this.newtype = newtype;
         this.arguments = arguments;
     }
 
-    static NewExp create(const ref Loc loc, Expression thisexp, Expressions* newargs, Type newtype, Expressions* arguments)
+    static NewExp create(const ref Loc loc, Expression thisexp, Type newtype, Expressions* arguments)
     {
-        return new NewExp(loc, thisexp, newargs, newtype, arguments);
+        return new NewExp(loc, thisexp, newtype, arguments);
     }
 
     override NewExp syntaxCopy()
     {
         return new NewExp(loc,
             thisexp ? thisexp.syntaxCopy() : null,
-            arraySyntaxCopy(newargs),
             newtype.syntaxCopy(),
             arraySyntaxCopy(arguments));
     }
@@ -3551,27 +3544,25 @@ extern (C++) final class NewExp : Expression
 }
 
 /***********************************************************
- * thisexp.new(newargs) class baseclasses { } (arguments)
+ * class baseclasses { } (arguments)
  */
 extern (C++) final class NewAnonClassExp : Expression
 {
     Expression thisexp;     // if !=null, 'this' for class being allocated
-    Expressions* newargs;   // Array of Expression's to call new operator
     ClassDeclaration cd;    // class being instantiated
     Expressions* arguments; // Array of Expression's to call class constructor
 
-    extern (D) this(const ref Loc loc, Expression thisexp, Expressions* newargs, ClassDeclaration cd, Expressions* arguments)
+    extern (D) this(const ref Loc loc, Expression thisexp, ClassDeclaration cd, Expressions* arguments)
     {
         super(loc, EXP.newAnonymousClass, __traits(classInstanceSize, NewAnonClassExp));
         this.thisexp = thisexp;
-        this.newargs = newargs;
         this.cd = cd;
         this.arguments = arguments;
     }
 
     override NewAnonClassExp syntaxCopy()
     {
-        return new NewAnonClassExp(loc, thisexp ? thisexp.syntaxCopy() : null, arraySyntaxCopy(newargs), cd.syntaxCopy(null), arraySyntaxCopy(arguments));
+        return new NewAnonClassExp(loc, thisexp ? thisexp.syntaxCopy() : null, cd.syntaxCopy(null), arraySyntaxCopy(arguments));
     }
 
     override void accept(Visitor v)
@@ -4584,11 +4575,6 @@ extern (C++) class BinAssignExp : BinExp
         return toLvalue(sc, this);
     }
 
-    override inout(BinAssignExp) isBinAssignExp() pure inout nothrow @nogc @safe
-    {
-        return this;
-    }
-
     override void accept(Visitor v)
     {
         v.visit(this);
@@ -4672,6 +4658,31 @@ extern (C++) final class AssertExp : UnaExp
     override AssertExp syntaxCopy()
     {
         return new AssertExp(loc, e1.syntaxCopy(), msg ? msg.syntaxCopy() : null);
+    }
+
+    override void accept(Visitor v)
+    {
+        v.visit(this);
+    }
+}
+
+/***********************************************************
+ * `throw <e1>` as proposed by DIP 1034.
+ *
+ * Replacement for the deprecated `ThrowStatement` that can be nested
+ * in other expression.
+ */
+extern (C++) final class ThrowExp : UnaExp
+{
+    extern (D) this(const ref Loc loc, Expression e)
+    {
+        super(loc, EXP.throw_, __traits(classInstanceSize, ThrowExp), e);
+        this.type = Type.tnoreturn;
+    }
+
+    override ThrowExp syntaxCopy()
+    {
+        return new ThrowExp(loc, e1.syntaxCopy());
     }
 
     override void accept(Visitor v)
@@ -7021,3 +7032,53 @@ extern(D) Modifiable checkModifiable(Expression exp, Scope* sc, ModifyFlags flag
             return exp.type ? Modifiable.yes : Modifiable.no; // default modifiable
     }
 }
+
+/******************************
+ * Provide efficient way to implement isUnaExp(), isBinExp(), isBinAssignExp()
+ */
+private immutable ubyte[EXP.max + 1] exptab =
+() {
+    ubyte[EXP.max + 1] tab;
+    with (EXPFLAGS)
+    {
+        foreach (i; Eunary)  { tab[i] |= unary;  }
+        foreach (i; Ebinary) { tab[i] |= unary | binary; }
+        foreach (i; EbinaryAssign) { tab[i] |= unary | binary | binaryAssign; }
+    }
+    return tab;
+} ();
+
+private enum EXPFLAGS : ubyte
+{
+    unary = 1,
+    binary = 2,
+    binaryAssign = 4,
+}
+
+private enum Eunary =
+    [
+        EXP.import_, EXP.assert_, EXP.throw_, EXP.dotIdentifier, EXP.dotTemplateDeclaration,
+        EXP.dotVariable, EXP.dotTemplateInstance, EXP.delegate_, EXP.dotType, EXP.call,
+        EXP.address, EXP.star, EXP.negate, EXP.uadd, EXP.tilde, EXP.not, EXP.delete_, EXP.cast_,
+        EXP.vector, EXP.vectorArray, EXP.slice, EXP.arrayLength, EXP.array, EXP.delegatePointer,
+        EXP.delegateFunctionPointer, EXP.preMinusMinus, EXP.prePlusPlus,
+    ];
+
+private enum Ebinary =
+    [
+        EXP.dot, EXP.comma, EXP.index, EXP.minusMinus, EXP.plusPlus, EXP.assign,
+        EXP.add, EXP.min, EXP.concatenate, EXP.mul, EXP.div, EXP.mod, EXP.pow, EXP.leftShift,
+        EXP.rightShift, EXP.unsignedRightShift, EXP.and, EXP.or, EXP.xor, EXP.andAnd, EXP.orOr,
+        EXP.lessThan, EXP.lessOrEqual, EXP.greaterThan, EXP.greaterOrEqual,
+        EXP.in_, EXP.remove, EXP.equal, EXP.notEqual, EXP.identity, EXP.notIdentity,
+        EXP.question,
+        EXP.construct, EXP.blit,
+    ];
+
+private enum EbinaryAssign =
+    [
+        EXP.addAssign, EXP.minAssign, EXP.mulAssign, EXP.divAssign, EXP.modAssign,
+        EXP.andAssign, EXP.orAssign, EXP.xorAssign, EXP.powAssign,
+        EXP.leftShiftAssign, EXP.rightShiftAssign, EXP.unsignedRightShiftAssign,
+        EXP.concatenateAssign, EXP.concatenateElemAssign, EXP.concatenateDcharAssign,
+    ];

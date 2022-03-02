@@ -1375,13 +1375,19 @@ rust_demangle_callback (const char *mangled, int options,
   /* Rust symbols (v0) use only [_0-9a-zA-Z] characters. */
   for (p = rdm.sym; *p; p++)
     {
+      /* Rust v0 symbols can have '.' suffixes, ignore those.  */
+      if (rdm.version == 0 && *p == '.')
+        break;
+
       rdm.sym_len++;
 
       if (*p == '_' || ISALNUM (*p))
         continue;
 
-      /* Legacy Rust symbols can also contain [.:$] characters. */
-      if (rdm.version == -1 && (*p == '$' || *p == '.' || *p == ':'))
+      /* Legacy Rust symbols can also contain [.:$] characters.
+         Or @ in the .suffix (which will be skipped, see below). */
+      if (rdm.version == -1 && (*p == '$' || *p == '.' || *p == ':'
+                                || *p == '@'))
         continue;
 
       return 0;
@@ -1390,7 +1396,16 @@ rust_demangle_callback (const char *mangled, int options,
   /* Legacy Rust symbols need to be handled separately. */
   if (rdm.version == -1)
     {
-      /* Legacy Rust symbols always end with E. */
+      /* Legacy Rust symbols always end with E.  But can be followed by a
+         .suffix (which we want to ignore).  */
+      int dot_suffix = 1;
+      while (rdm.sym_len > 0 &&
+             !(dot_suffix && rdm.sym[rdm.sym_len - 1] == 'E'))
+        {
+          dot_suffix = rdm.sym[rdm.sym_len - 1] == '.';
+          rdm.sym_len--;
+        }
+
       if (!(rdm.sym_len > 0 && rdm.sym[rdm.sym_len - 1] == 'E'))
         return 0;
       rdm.sym_len--;

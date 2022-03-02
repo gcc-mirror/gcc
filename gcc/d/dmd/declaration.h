@@ -248,7 +248,6 @@ public:
     bool isowner;               // this is an Owner, despite it being `scope`
     bool setInCtorOnly;         // field can only be set in a constructor, as it is const or immutable
     bool onstack;               // it is a class that was allocated on the stack
-    bool mynew;                 // it is a class new'd with custom operator new
     char canassign;             // it can be assigned to
     bool overlapped;            // if it is a field and has overlapping
     bool overlapUnsafe;         // if it is an overlapping field and the overlaps are unsafe

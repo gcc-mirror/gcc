@@ -24,6 +24,9 @@ deprecated("use _DEFAULT_SOURCE")
     enum _SVID_SOURCE = true;
 }
 
+deprecated("use _DEFAULT_SOURCE")
 enum __USE_MISC = _DEFAULT_SOURCE;
+deprecated("use _ATFILE_SOURCE")
 enum __USE_ATFILE = _ATFILE_SOURCE;
+deprecated("use _GNU_SOURCE")
 enum __USE_GNU = _GNU_SOURCE;

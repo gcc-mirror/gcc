@@ -2202,7 +2202,8 @@ out:
 	    {
 	      if (dump_enabled_p ())
 		dump_printf_loc (MSG_NOTE, vect_location,
-				 "Using a splat of the uniform operand\n");
+				 "Using a splat of the uniform operand %G",
+				 first_def->stmt);
 	      oprnd_info->first_dt = vect_external_def;
 	    }
 	}
@@ -2467,7 +2468,7 @@ vect_print_slp_tree (dump_flags_t dump_kind, dump_location_t loc,
 
   dump_metadata_t metadata (dump_kind, loc.get_impl_location ());
   dump_user_location_t user_loc = loc.get_user_location ();
-  dump_printf_loc (metadata, user_loc, "node%s %p (max_nunits=%u, refcnt=%u)\n",
+  dump_printf_loc (metadata, user_loc, "node%s %p (max_nunits=%u, refcnt=%u)",
 		   SLP_TREE_DEF_TYPE (node) == vect_external_def
 		   ? " (external)"
 		   : (SLP_TREE_DEF_TYPE (node) == vect_constant_def
@@ -2475,6 +2476,9 @@ vect_print_slp_tree (dump_flags_t dump_kind, dump_location_t loc,
 		      : ""), node,
 		   estimated_poly_value (node->max_nunits),
 					 SLP_TREE_REF_COUNT (node));
+  if (SLP_TREE_VECTYPE (node))
+    dump_printf (metadata, " %T", SLP_TREE_VECTYPE (node));
+  dump_printf (metadata, "\n");
   if (SLP_TREE_DEF_TYPE (node) == vect_internal_def)
     {
       if (SLP_TREE_CODE (node) == VEC_PERM_EXPR)
@@ -4533,6 +4537,37 @@ vect_slp_convert_to_external (vec_info *vinfo, slp_tree node,
   return true;
 }
 
+/* Return true if all elements of the slice are the same.  */
+bool
+vect_scalar_ops_slice::all_same_p () const
+{
+  for (unsigned int i = 1; i < length; ++i)
+    if (!operand_equal_p (op (0), op (i)))
+      return false;
+  return true;
+}
+
+hashval_t
+vect_scalar_ops_slice_hash::hash (const value_type &s)
+{
+  hashval_t hash = 0;
+  for (unsigned i = 0; i < s.length; ++i)
+    hash = iterative_hash_expr (s.op (i), hash);
+  return hash;
+}
+
+bool
+vect_scalar_ops_slice_hash::equal (const value_type &s1,
+				   const compare_type &s2)
+{
+  if (s1.length != s2.length)
+    return false;
+  for (unsigned i = 0; i < s1.length; ++i)
+    if (!operand_equal_p (s1.op (i), s2.op (i)))
+      return false;
+  return true;
+}
+
 /* Compute the prologue cost for invariant or constant operands represented
    by NODE.  */
 
@@ -4549,45 +4584,39 @@ vect_prologue_cost_for_slp (slp_tree node,
      When all elements are the same we can use a splat.  */
   tree vectype = SLP_TREE_VECTYPE (node);
   unsigned group_size = SLP_TREE_SCALAR_OPS (node).length ();
-  unsigned num_vects_to_check;
   unsigned HOST_WIDE_INT const_nunits;
   unsigned nelt_limit;
+  auto ops = &SLP_TREE_SCALAR_OPS (node);
+  auto_vec<unsigned int> starts (SLP_TREE_NUMBER_OF_VEC_STMTS (node));
   if (TYPE_VECTOR_SUBPARTS (vectype).is_constant (&const_nunits)
       && ! multiple_p (const_nunits, group_size))
     {
-      num_vects_to_check = SLP_TREE_NUMBER_OF_VEC_STMTS (node);
       nelt_limit = const_nunits;
+      hash_set<vect_scalar_ops_slice_hash> vector_ops;
+      for (unsigned int i = 0; i < SLP_TREE_NUMBER_OF_VEC_STMTS (node); ++i)
+	if (!vector_ops.add ({ ops, i * const_nunits, const_nunits }))
+	  starts.quick_push (i * const_nunits);
     }
   else
     {
       /* If either the vector has variable length or the vectors
 	 are composed of repeated whole groups we only need to
 	 cost construction once.  All vectors will be the same.  */
-      num_vects_to_check = 1;
       nelt_limit = group_size;
+      starts.quick_push (0);
     }
-  tree elt = NULL_TREE;
-  unsigned nelt = 0;
-  for (unsigned j = 0; j < num_vects_to_check * nelt_limit; ++j)
+  /* ???  We're just tracking whether vectors in a single node are the same.
+     Ideally we'd do something more global.  */
+  for (unsigned int start : starts)
     {
-      unsigned si = j % group_size;
-      if (nelt == 0)
-	elt = SLP_TREE_SCALAR_OPS (node)[si];
-      /* ???  We're just tracking whether all operands of a single
-	 vector initializer are the same, ideally we'd check if
-	 we emitted the same one already.  */
-      else if (elt != SLP_TREE_SCALAR_OPS (node)[si])
-	elt = NULL_TREE;
-      nelt++;
-      if (nelt == nelt_limit)
-	{
-	  record_stmt_cost (cost_vec, 1,
-			    SLP_TREE_DEF_TYPE (node) == vect_external_def
-			    ? (elt ? scalar_to_vec : vec_construct)
-			    : vector_load,
-			    NULL, vectype, 0, vect_prologue);
-	  nelt = 0;
-	}
+      vect_cost_for_stmt kind;
+      if (SLP_TREE_DEF_TYPE (node) == vect_constant_def)
+	kind = vector_load;
+      else if (vect_scalar_ops_slice { ops, start, nelt_limit }.all_same_p ())
+	kind = scalar_to_vec;
+      else
+	kind = vec_construct;
+      record_stmt_cost (cost_vec, 1, kind, node, vectype, 0, vect_prologue);
     }
 }
 
@@ -4899,7 +4928,13 @@ vect_slp_analyze_operations (vec_info *vinfo)
 	  /* CTOR instances require vectorized defs for the SLP tree root.  */
 	  || (SLP_INSTANCE_KIND (instance) == slp_inst_kind_ctor
 	      && (SLP_TREE_DEF_TYPE (SLP_INSTANCE_TREE (instance))
-		  != vect_internal_def))
+		  != vect_internal_def
+		  /* Make sure we vectorized with the expected type.  */
+		  || !useless_type_conversion_p
+			(TREE_TYPE (TREE_TYPE (gimple_assign_rhs1
+					      (instance->root_stmts[0]->stmt))),
+			 TREE_TYPE (SLP_TREE_VECTYPE
+					    (SLP_INSTANCE_TREE (instance))))))
 	  /* Check we can vectorize the reduction.  */
 	  || (SLP_INSTANCE_KIND (instance) == slp_inst_kind_bb_reduc
 	      && !vectorizable_bb_reduc_epilogue (instance, &cost_vec)))
@@ -5380,7 +5415,6 @@ vect_bb_vectorization_profitable_p (bb_vec_info bb_vinfo,
       unsigned dummy;
       finish_cost (scalar_target_cost_data, nullptr,
 		   &dummy, &scalar_cost, &dummy);
-      delete scalar_target_cost_data;
 
       /* Complete the target-specific vector cost calculation.  */
       class vector_costs *vect_target_cost_data = init_cost (bb_vinfo, false);
@@ -5393,6 +5427,7 @@ vect_bb_vectorization_profitable_p (bb_vec_info bb_vinfo,
 	     && li_vector_costs[vi].first == vl);
       finish_cost (vect_target_cost_data, scalar_target_cost_data,
 		   &vec_prologue_cost, &vec_inside_cost, &vec_epilogue_cost);
+      delete scalar_target_cost_data;
       delete vect_target_cost_data;
 
       vec_outside_cost = vec_prologue_cost + vec_epilogue_cost;
@@ -7095,7 +7130,7 @@ vectorizable_slp_permutation (vec_info *vinfo, gimple_stmt_iterator *gsi,
     }
 
   if (!gsi)
-    record_stmt_cost (cost_vec, nperms, vec_perm, NULL, vectype, 0, vect_body);
+    record_stmt_cost (cost_vec, nperms, vec_perm, node, vectype, 0, vect_body);
 
   return true;
 }
@@ -7347,10 +7382,6 @@ vectorize_slp_instance_root_stmt (slp_tree node, slp_instance instance)
 	  gimple *child_stmt = SLP_TREE_VEC_STMTS (node)[0];
 	  tree vect_lhs = gimple_get_lhs (child_stmt);
 	  tree root_lhs = gimple_get_lhs (instance->root_stmts[0]->stmt);
-	  if (!useless_type_conversion_p (TREE_TYPE (root_lhs),
-					  TREE_TYPE (vect_lhs)))
-	    vect_lhs = build1 (VIEW_CONVERT_EXPR, TREE_TYPE (root_lhs),
-			       vect_lhs);
 	  rstmt = gimple_build_assign (root_lhs, vect_lhs);
 	}
       else if (SLP_TREE_NUMBER_OF_VEC_STMTS (node) > 1)

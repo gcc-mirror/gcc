@@ -6579,4 +6579,6 @@ extern unsigned fndecl_dealloc_argno (tree);
    object or pointer.  Otherwise return null.  */
 extern tree get_attr_nonstring_decl (tree, tree * = NULL);
 
+extern int get_target_clone_attr_len (tree);
+
 #endif  /* GCC_TREE_H  */

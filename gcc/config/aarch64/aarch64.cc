@@ -80,6 +80,7 @@
 #include "fractional-cost.h"
 #include "rtlanal.h"
 #include "tree-dfa.h"
+#include "asan.h"
 
 /* This file should be included last.  */
 #include "target-def.h"
@@ -3781,6 +3782,110 @@ aarch64_gen_compare_reg_maybe_ze (RTX_CODE code, rtx x, rtx y,
   return aarch64_gen_compare_reg (code, x, y);
 }
 
+/* Consider the operation:
+
+     OPERANDS[0] = CODE (OPERANDS[1], OPERANDS[2]) + OPERANDS[3]
+
+   where:
+
+   - CODE is [SU]MAX or [SU]MIN
+   - OPERANDS[2] and OPERANDS[3] are constant integers
+   - OPERANDS[3] is a positive or negative shifted 12-bit immediate
+   - all operands have mode MODE
+
+   Decide whether it is possible to implement the operation using:
+
+     SUBS <tmp>, OPERANDS[1], -OPERANDS[3]
+     or
+     ADDS <tmp>, OPERANDS[1], OPERANDS[3]
+
+   followed by:
+
+     <insn> OPERANDS[0], <tmp>, [wx]zr, <cond>
+
+   where <insn> is one of CSEL, CSINV or CSINC.  Return true if so.
+   If GENERATE_P is true, also update OPERANDS as follows:
+
+     OPERANDS[4] = -OPERANDS[3]
+     OPERANDS[5] = the rtl condition representing <cond>
+     OPERANDS[6] = <tmp>
+     OPERANDS[7] = 0 for CSEL, -1 for CSINV or 1 for CSINC.  */
+bool
+aarch64_maxmin_plus_const (rtx_code code, rtx *operands, bool generate_p)
+{
+  signop sgn = (code == UMAX || code == UMIN ? UNSIGNED : SIGNED);
+  rtx dst = operands[0];
+  rtx maxmin_op = operands[2];
+  rtx add_op = operands[3];
+  machine_mode mode = GET_MODE (dst);
+
+  /* max (x, y) - z == (x >= y + 1 ? x : y) - z
+		    == (x >= y ? x : y) - z
+		    == (x > y ? x : y) - z
+		    == (x > y - 1 ? x : y) - z
+
+     min (x, y) - z == (x <= y - 1 ? x : y) - z
+		    == (x <= y ? x : y) - z
+		    == (x < y ? x : y) - z
+		    == (x < y + 1 ? x : y) - z
+
+     Check whether z is in { y - 1, y, y + 1 } and pick the form(s) for
+     which x is compared with z.  Set DIFF to y - z.  Thus the supported
+     combinations are as follows, with DIFF being the value after the ":":
+
+     max (x, y) - z == x >= y + 1 ? x - (y + 1) : -1   [z == y + 1]
+		    == x >= y ? x - y : 0              [z == y]
+		    == x > y ? x - y : 0               [z == y]
+		    == x > y - 1 ? x - (y - 1) : 1     [z == y - 1]
+
+     min (x, y) - z == x <= y - 1 ? x - (y - 1) : 1    [z == y - 1]
+		    == x <= y ? x - y : 0              [z == y]
+		    == x < y ? x - y : 0               [z == y]
+		    == x < y + 1 ? x - (y + 1) : -1    [z == y + 1].  */
+  auto maxmin_val = rtx_mode_t (maxmin_op, mode);
+  auto add_val = rtx_mode_t (add_op, mode);
+  auto sub_val = wi::neg (add_val);
+  auto diff = wi::sub (maxmin_val, sub_val);
+  if (!(diff == 0
+	|| (diff == 1 && wi::gt_p (maxmin_val, sub_val, sgn))
+	|| (diff == -1 && wi::lt_p (maxmin_val, sub_val, sgn))))
+    return false;
+
+  if (!generate_p)
+    return true;
+
+  rtx_code cmp;
+  switch (code)
+    {
+    case SMAX:
+      cmp = diff == 1 ? GT : GE;
+      break;
+    case UMAX:
+      cmp = diff == 1 ? GTU : GEU;
+      break;
+    case SMIN:
+      cmp = diff == -1 ? LT : LE;
+      break;
+    case UMIN:
+      cmp = diff == -1 ? LTU : LEU;
+      break;
+    default:
+      gcc_unreachable ();
+    }
+  rtx cc = gen_rtx_REG (CCmode, CC_REGNUM);
+
+  operands[4] = immed_wide_int_const (sub_val, mode);
+  operands[5] = gen_rtx_fmt_ee (cmp, VOIDmode, cc, const0_rtx);
+  if (can_create_pseudo_p ())
+    operands[6] = gen_reg_rtx (mode);
+  else
+    operands[6] = dst;
+  operands[7] = immed_wide_int_const (diff, mode);
+
+  return true;
+}
+
+
 /* Build the SYMBOL_REF for __tls_get_addr.  */
 
 static GTY(()) rtx tls_get_addr_libfunc;
@@ -7443,8 +7548,8 @@ aarch64_layout_frame (void)
 #define SLOT_NOT_REQUIRED (-2)
 #define SLOT_REQUIRED     (-1)
 
-  frame.wb_candidate1 = INVALID_REGNUM;
-  frame.wb_candidate2 = INVALID_REGNUM;
+  frame.wb_push_candidate1 = INVALID_REGNUM;
+  frame.wb_push_candidate2 = INVALID_REGNUM;
   frame.spare_pred_reg = INVALID_REGNUM;
 
   /* First mark all the registers that really need to be saved...  */
@@ -7559,9 +7664,9 @@ aarch64_layout_frame (void)
     {
       /* FP and LR are placed in the linkage record.  */
       frame.reg_offset[R29_REGNUM] = offset;
-      frame.wb_candidate1 = R29_REGNUM;
+      frame.wb_push_candidate1 = R29_REGNUM;
       frame.reg_offset[R30_REGNUM] = offset + UNITS_PER_WORD;
-      frame.wb_candidate2 = R30_REGNUM;
+      frame.wb_push_candidate2 = R30_REGNUM;
       offset += 2 * UNITS_PER_WORD;
     }
 
@@ -7569,10 +7674,10 @@ aarch64_layout_frame (void)
     if (known_eq (frame.reg_offset[regno], SLOT_REQUIRED))
       {
 	frame.reg_offset[regno] = offset;
-	if (frame.wb_candidate1 == INVALID_REGNUM)
-	  frame.wb_candidate1 = regno;
-	else if (frame.wb_candidate2 == INVALID_REGNUM)
-	  frame.wb_candidate2 = regno;
+	if (frame.wb_push_candidate1 == INVALID_REGNUM)
+	  frame.wb_push_candidate1 = regno;
+	else if (frame.wb_push_candidate2 == INVALID_REGNUM)
+	  frame.wb_push_candidate2 = regno;
 	offset += UNITS_PER_WORD;
       }
 
@@ -7595,11 +7700,11 @@ aarch64_layout_frame (void)
 	  }
 
 	frame.reg_offset[regno] = offset;
-	if (frame.wb_candidate1 == INVALID_REGNUM)
-	  frame.wb_candidate1 = regno;
-	else if (frame.wb_candidate2 == INVALID_REGNUM
-		 && frame.wb_candidate1 >= V0_REGNUM)
-	  frame.wb_candidate2 = regno;
+	if (frame.wb_push_candidate1 == INVALID_REGNUM)
+	  frame.wb_push_candidate1 = regno;
+	else if (frame.wb_push_candidate2 == INVALID_REGNUM
+		 && frame.wb_push_candidate1 >= V0_REGNUM)
+	  frame.wb_push_candidate2 = regno;
 	offset += vector_save_size;
       }
 
@@ -7630,10 +7735,38 @@ aarch64_layout_frame (void)
   frame.sve_callee_adjust = 0;
   frame.callee_offset = 0;
 
+  frame.wb_pop_candidate1 = frame.wb_push_candidate1;
+  frame.wb_pop_candidate2 = frame.wb_push_candidate2;
+
+  /* Shadow call stack only deals with functions where the LR is pushed
+     onto the stack and without specifying the "no_sanitize" attribute
+     with the argument "shadow-call-stack".  */
+  frame.is_scs_enabled
+    = (!crtl->calls_eh_return
+       && sanitize_flags_p (SANITIZE_SHADOW_CALL_STACK)
+       && known_ge (cfun->machine->frame.reg_offset[LR_REGNUM], 0));
+
+  /* When shadow call stack is enabled, the scs_pop in the epilogue will
+     restore x30, and we don't need to pop x30 again in the traditional
+     way.  Pop candidates record the registers that need to be popped
+     eventually.  */
+  if (frame.is_scs_enabled)
+    {
+      if (frame.wb_pop_candidate2 == R30_REGNUM)
+	frame.wb_pop_candidate2 = INVALID_REGNUM;
+      else if (frame.wb_pop_candidate1 == R30_REGNUM)
+	frame.wb_pop_candidate1 = INVALID_REGNUM;
+    }
+
+  /* If candidate2 is INVALID_REGNUM, we need to adjust max_push_offset to
+     256 to ensure that the offset meets the requirements of emit_move_insn.
+     Similarly, if candidate1 is INVALID_REGNUM, we need to set
+     max_push_offset to 0, because no registers are popped at this time,
+     so callee_adjust cannot be adjusted.  */
   HOST_WIDE_INT max_push_offset = 0;
-  if (frame.wb_candidate2 != INVALID_REGNUM)
+  if (frame.wb_pop_candidate2 != INVALID_REGNUM)
     max_push_offset = 512;
-  else if (frame.wb_candidate1 != INVALID_REGNUM)
+  else if (frame.wb_pop_candidate1 != INVALID_REGNUM)
     max_push_offset = 256;
 
   HOST_WIDE_INT const_size, const_outgoing_args_size, const_fp_offset;
@@ -7723,8 +7856,8 @@ aarch64_layout_frame (void)
     {
       /* We've decided not to associate any register saves with the initial
 	 stack allocation.  */
-      frame.wb_candidate1 = INVALID_REGNUM;
-      frame.wb_candidate2 = INVALID_REGNUM;
+      frame.wb_pop_candidate1 = frame.wb_push_candidate1 = INVALID_REGNUM;
+      frame.wb_pop_candidate2 = frame.wb_push_candidate2 = INVALID_REGNUM;
     }
 
   frame.laid_out = true;
@@ -8037,8 +8170,8 @@ aarch64_save_callee_saves (poly_int64 start_offset,
       bool frame_related_p = aarch64_emit_cfi_for_reg_p (regno);
 
       if (skip_wb
-	  && (regno == cfun->machine->frame.wb_candidate1
-	      || regno == cfun->machine->frame.wb_candidate2))
+	  && (regno == cfun->machine->frame.wb_push_candidate1
+	      || regno == cfun->machine->frame.wb_push_candidate2))
 	continue;
 
       if (cfun->machine->reg_is_wrapped_separately[regno])
@@ -8148,8 +8281,8 @@ aarch64_restore_callee_saves (poly_int64 start_offset, unsigned start,
       rtx reg, mem;
 
       if (skip_wb
-	  && (regno == cfun->machine->frame.wb_candidate1
-	      || regno == cfun->machine->frame.wb_candidate2))
+	  && (regno == cfun->machine->frame.wb_pop_candidate1
+	      || regno == cfun->machine->frame.wb_pop_candidate2))
 	continue;
 
       machine_mode mode = aarch64_reg_save_mode (regno);
@@ -8320,8 +8453,8 @@ aarch64_get_separate_components (void)
   if (cfun->machine->frame.spare_pred_reg != INVALID_REGNUM)
     bitmap_clear_bit (components, cfun->machine->frame.spare_pred_reg);
 
-  unsigned reg1 = cfun->machine->frame.wb_candidate1;
-  unsigned reg2 = cfun->machine->frame.wb_candidate2;
+  unsigned reg1 = cfun->machine->frame.wb_push_candidate1;
+  unsigned reg2 = cfun->machine->frame.wb_push_candidate2;
   /* If registers have been chosen to be stored/restored with
      writeback don't interfere with them to avoid having to output explicit
      stack adjustment instructions.  */
@@ -8930,8 +9063,8 @@ aarch64_expand_prologue (void)
   poly_int64 sve_callee_adjust = cfun->machine->frame.sve_callee_adjust;
   poly_int64 below_hard_fp_saved_regs_size
     = cfun->machine->frame.below_hard_fp_saved_regs_size;
-  unsigned reg1 = cfun->machine->frame.wb_candidate1;
-  unsigned reg2 = cfun->machine->frame.wb_candidate2;
+  unsigned reg1 = cfun->machine->frame.wb_push_candidate1;
+  unsigned reg2 = cfun->machine->frame.wb_push_candidate2;
   bool emit_frame_chain = cfun->machine->frame.emit_frame_chain;
   rtx_insn *insn;
 
@@ -8961,6 +9094,10 @@ aarch64_expand_prologue (void)
       add_reg_note (insn, REG_CFA_TOGGLE_RA_MANGLE, const0_rtx);
       RTX_FRAME_RELATED_P (insn) = 1;
     }
+
+  /* Push return address to shadow call stack.  */
+  if (cfun->machine->frame.is_scs_enabled)
+    emit_insn (gen_scs_push ());
 
   if (flag_stack_usage_info)
     current_function_static_stack_size = constant_lower_bound (frame_size);
@@ -9108,8 +9245,10 @@ aarch64_expand_epilogue (bool for_sibcall)
   poly_int64 sve_callee_adjust = cfun->machine->frame.sve_callee_adjust;
   poly_int64 below_hard_fp_saved_regs_size
     = cfun->machine->frame.below_hard_fp_saved_regs_size;
-  unsigned reg1 = cfun->machine->frame.wb_candidate1;
-  unsigned reg2 = cfun->machine->frame.wb_candidate2;
+  unsigned reg1 = cfun->machine->frame.wb_pop_candidate1;
+  unsigned reg2 = cfun->machine->frame.wb_pop_candidate2;
+  unsigned int last_gpr = (cfun->machine->frame.is_scs_enabled
+			   ? R29_REGNUM : R30_REGNUM);
   rtx cfi_ops = NULL;
   rtx_insn *insn;
   /* A stack clash protection prologue may not have left EP0_REGNUM or
@@ -9179,8 +9318,12 @@ aarch64_expand_epilogue (bool for_sibcall)
 				false, &cfi_ops);
   if (maybe_ne (sve_callee_adjust, 0))
     aarch64_add_sp (NULL_RTX, NULL_RTX, sve_callee_adjust, true);
+
+  /* When shadow call stack is enabled, the scs_pop in the epilogue will
+     restore x30, we don't need to restore x30 again in the traditional
+     way.  */
   aarch64_restore_callee_saves (callee_offset - sve_callee_adjust,
-				R0_REGNUM, R30_REGNUM,
+				R0_REGNUM, last_gpr,
 				callee_adjust != 0, &cfi_ops);
 
   if (need_barrier_p)
@@ -9215,6 +9358,17 @@ aarch64_expand_epilogue (bool for_sibcall)
       insn = get_last_insn ();
       cfi_ops = alloc_reg_note (REG_CFA_DEF_CFA, stack_pointer_rtx, cfi_ops);
       REG_NOTES (insn) = cfi_ops;
+      RTX_FRAME_RELATED_P (insn) = 1;
+    }
+
+  /* Pop return address from shadow call stack.  */
+  if (cfun->machine->frame.is_scs_enabled)
+    {
+      machine_mode mode = aarch64_reg_save_mode (R30_REGNUM);
+      rtx reg = gen_rtx_REG (mode, R30_REGNUM);
+
+      insn = emit_insn (gen_scs_pop ());
+      add_reg_note (insn, REG_CFA_RESTORE, reg);
       RTX_FRAME_RELATED_P (insn) = 1;
     }
 
@@ -14904,7 +15058,7 @@ public:
   aarch64_vector_costs (vec_info *, bool);
 
   unsigned int add_stmt_cost (int count, vect_cost_for_stmt kind,
-			      stmt_vec_info stmt_info, tree vectype,
+			      stmt_vec_info stmt_info, slp_tree, tree vectype,
 			      int misalign,
 			      vect_cost_model_location where) override;
   void finish_cost (const vector_costs *) override;
@@ -14931,6 +15085,31 @@ private:
        SIMD code.
      - If M_VEC_FLAGS & VEC_ANY_SVE is nonzero then we're costing SVE code.  */
   unsigned int m_vec_flags = 0;
+
+  /* At the moment, we do not model LDP and STP in the vector and scalar costs.
+     This means that code such as:
+
+	a[0] = x;
+	a[1] = x;
+
+     will be costed as two scalar instructions and two vector instructions
+     (a scalar_to_vec and an unaligned_store).  For SLP, the vector form
+     wins if the costs are equal, because of the fact that the vector costs
+     include constant initializations whereas the scalar costs don't.
+     We would therefore tend to vectorize the code above, even though
+     the scalar version can use a single STP.
+
+     We should eventually fix this and model LDP and STP in the main costs;
+     see the comment in aarch64_sve_adjust_stmt_cost for some of the problems.
+     Until then, we look specifically for code that does nothing more than
+     STP-like operations.  We cost them on that basis in addition to the
+     normal latency-based costs.
+
+     If the scalar or vector code could be a sequence of STPs +
+     initialization, this variable counts the cost of the sequence,
+     with 2 units per instruction.  The variable is ~0U for other
+     kinds of code.  */
+  unsigned int m_stp_sequence_cost = 0;
 
   /* On some CPUs, SVE and Advanced SIMD provide the same theoretical vector
      throughput, such as 4x128 Advanced SIMD vs. 2x256 SVE.  In those
@@ -15724,10 +15903,108 @@ aarch64_vector_costs::count_ops (unsigned int count, vect_cost_for_stmt kind,
     }
 }
 
+/* Return true if STMT_INFO contains a memory access and if the constant
+   component of the memory address is aligned to SIZE bytes.  */
+static bool
+aarch64_aligned_constant_offset_p (stmt_vec_info stmt_info,
+				   poly_uint64 size)
+{
+  if (!STMT_VINFO_DATA_REF (stmt_info))
+    return false;
+
+  if (auto first_stmt = DR_GROUP_FIRST_ELEMENT (stmt_info))
+    stmt_info = first_stmt;
+  tree constant_offset = DR_INIT (STMT_VINFO_DATA_REF (stmt_info));
+  /* Needed for gathers & scatters, for example.  */
+  if (!constant_offset)
+    return false;
+
+  return multiple_p (wi::to_poly_offset (constant_offset), size);
+}
+
+/* Check if a scalar or vector stmt could be part of a region of code
+   that does nothing more than store values to memory, in the scalar
+   case using STP.  Return the cost of the stmt if so, counting 2 for
+   one instruction.  Return ~0U otherwise.
+
+   The arguments are a subset of those passed to add_stmt_cost.  */
+unsigned int
+aarch64_stp_sequence_cost (unsigned int count, vect_cost_for_stmt kind,
+			   stmt_vec_info stmt_info, tree vectype)
+{
+  /* Code that stores vector constants uses a vector_load to create
+     the constant.  We don't apply the heuristic to that case for two
+     main reasons:
+
+     - At the moment, STPs are only formed via peephole2, and the
+       constant scalar moves would often come between STRs and so
+       prevent STP formation.
+
+     - The scalar code also has to load the constant somehow, and that
+       isn't costed.  */
+  switch (kind)
+    {
+    case scalar_to_vec:
+      /* Count 2 insns for a GPR->SIMD dup and 1 insn for a FPR->SIMD dup.  */
+      return (FLOAT_TYPE_P (vectype) ? 2 : 4) * count;
+
+    case vec_construct:
+      if (FLOAT_TYPE_P (vectype))
+	/* Count 1 insn for the maximum number of FP->SIMD INS
+	   instructions.  */
+	return (vect_nunits_for_cost (vectype) - 1) * 2 * count;
+
+      /* Count 2 insns for a GPR->SIMD move and 2 insns for the
+	 maximum number of GPR->SIMD INS instructions.  */
+      return vect_nunits_for_cost (vectype) * 4 * count;
+
+    case vector_store:
+    case unaligned_store:
+      /* Count 1 insn per vector if we can't form STP Q pairs.  */
+      if (aarch64_sve_mode_p (TYPE_MODE (vectype)))
+	return count * 2;
+      if (aarch64_tune_params.extra_tuning_flags
+	  & AARCH64_EXTRA_TUNE_NO_LDP_STP_QREGS)
+	return count * 2;
+
+      if (stmt_info)
+	{
+	  /* Assume we won't be able to use STP if the constant offset
+	     component of the address is misaligned.  ??? This could be
+	     removed if we formed STP pairs earlier, rather than relying
+	     on peephole2.  */
+	  auto size = GET_MODE_SIZE (TYPE_MODE (vectype));
+	  if (!aarch64_aligned_constant_offset_p (stmt_info, size))
+	    return count * 2;
+	}
+      return CEIL (count, 2) * 2;
+
+    case scalar_store:
+      if (stmt_info && STMT_VINFO_DATA_REF (stmt_info))
+	{
+	  /* Check for a mode in which STP pairs can be formed.  */
+	  auto size = GET_MODE_SIZE (TYPE_MODE (aarch64_dr_type (stmt_info)));
+	  if (maybe_ne (size, 4) && maybe_ne (size, 8))
+	    return ~0U;
+
+	  /* Assume we won't be able to use STP if the constant offset
+	     component of the address is misaligned.  ??? This could be
+	     removed if we formed STP pairs earlier, rather than relying
+	     on peephole2.  */
+	  if (!aarch64_aligned_constant_offset_p (stmt_info, size))
+	    return ~0U;
+	}
+      return count;
+
+    default:
+      return ~0U;
+    }
+}
+
 unsigned
 aarch64_vector_costs::add_stmt_cost (int count, vect_cost_for_stmt kind,
-				     stmt_vec_info stmt_info, tree vectype,
-				     int misalign,
+				     stmt_vec_info stmt_info, slp_tree,
+				     tree vectype, int misalign,
 				     vect_cost_model_location where)
 {
   fractional_cost stmt_cost
@@ -15745,6 +16022,14 @@ aarch64_vector_costs::add_stmt_cost (int count, vect_cost_for_stmt kind,
 	analyze_loop_vinfo (loop_vinfo);
 
       m_analyzed_vinfo = true;
+    }
+
+  /* Apply the heuristic described above m_stp_sequence_cost.  */
+  if (m_stp_sequence_cost != ~0U)
+    {
+      uint64_t cost = aarch64_stp_sequence_cost (count, kind,
+						 stmt_info, vectype);
+      m_stp_sequence_cost = MIN (m_stp_sequence_cost + cost, ~0U);
     }
 
   /* Try to get a more accurate cost by looking at STMT_INFO instead
@@ -16016,6 +16301,15 @@ aarch64_vector_costs::finish_cost (const vector_costs *uncast_scalar_costs)
       && aarch64_use_new_vector_costs_p ())
     m_costs[vect_body] = adjust_body_cost (loop_vinfo, scalar_costs,
 					   m_costs[vect_body]);
+
+  /* Apply the heuristic described above m_stp_sequence_cost.  Prefer
+     the scalar code in the event of a tie, since there is more chance
+     of scalar code being optimized with surrounding operations.  */
+  if (!loop_vinfo
+      && scalar_costs
+      && m_stp_sequence_cost != ~0U
+      && m_stp_sequence_cost >= scalar_costs->m_stp_sequence_cost)
+    m_costs[vect_body] = 2 * scalar_costs->total_cost ();
 
   vector_costs::finish_cost (scalar_costs);
 }
@@ -16633,6 +16927,10 @@ aarch64_override_options_internal (struct gcc_options *opts)
 	       "-mstack-protector-guard-offset=");
       aarch64_stack_protector_guard_offset = offs;
     }
+
+  if ((flag_sanitize & SANITIZE_SHADOW_CALL_STACK)
+      && !fixed_regs[R18_REGNUM])
+    error ("%<-fsanitize=shadow-call-stack%> requires %<-ffixed-x18%>");
 
   initialize_aarch64_code_model (opts);
   initialize_aarch64_tls_size (opts);
@@ -26839,6 +27137,9 @@ aarch64_libgcc_floating_mode_supported_p
 
 #undef TARGET_ASM_FUNCTION_EPILOGUE
 #define TARGET_ASM_FUNCTION_EPILOGUE aarch64_sls_emit_blr_function_thunks
+
+#undef TARGET_HAVE_SHADOW_CALL_STACK
+#define TARGET_HAVE_SHADOW_CALL_STACK true
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

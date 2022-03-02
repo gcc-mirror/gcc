@@ -21,7 +21,7 @@ void test()
 {
     foo();
     foo(null);
-    
+
     baz("");
     baz(3, null);
 }

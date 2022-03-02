@@ -414,17 +414,17 @@ public:
     /**
      * Implements assignment operators of the form `BigInt op= BigInt`.
      */
-    BigInt opOpAssign(string op, T)(T y) pure nothrow @safe scope return
+    BigInt opOpAssign(string op, T)(T y) pure nothrow @safe return scope
         if ((op=="+" || op== "-" || op=="*" || op=="|" || op=="&" || op=="^" || op=="/" || op=="%")
             && is (T: BigInt))
     {
         static if (op == "+")
         {
-            data = BigUint.addOrSub(data, y.data, sign != y.sign, &sign);
+            data = BigUint.addOrSub(data, y.data, sign != y.sign, sign);
         }
         else static if (op == "-")
         {
-            data = BigUint.addOrSub(data, y.data, sign == y.sign, &sign);
+            data = BigUint.addOrSub(data, y.data, sign == y.sign, sign);
         }
         else static if (op == "*")
         {
@@ -2244,7 +2244,7 @@ void divMod(const BigInt dividend, const BigInt divisor, out BigInt quotient, ou
     BigUint.divMod(dividend.data, divisor.data, q, r);
     quotient.sign = dividend.sign != divisor.sign;
     quotient.data = q;
-    remainder.sign = dividend.sign;
+    remainder.sign = r.isZero() ? false : dividend.sign;
     remainder.data = r;
 }
 
@@ -2289,6 +2289,14 @@ void divMod(const BigInt dividend, const BigInt divisor, out BigInt quotient, ou
     assert(q == -10);
     assert(r == -24);
     assert(q * d + r == -c);
+}
+
+// https://issues.dlang.org/show_bug.cgi?id=22771
+@safe pure nothrow unittest
+{
+    BigInt quotient, remainder;
+    divMod(BigInt(-50), BigInt(1), quotient, remainder);
+    assert(remainder == 0);
 }
 
 // https://issues.dlang.org/show_bug.cgi?id=19740

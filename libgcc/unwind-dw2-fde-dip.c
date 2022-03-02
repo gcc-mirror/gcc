@@ -514,7 +514,7 @@ _Unwind_Find_FDE (void *pc, struct dwarf_eh_bases *bases)
 # if DLFO_STRUCT_HAS_EH_DBASE
 			    (_Unwind_Ptr) dlfo.dlfo_eh_dbase,
 # else
-			    NULL,
+			    0,
 # endif
 			    bases);
     else

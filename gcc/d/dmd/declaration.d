@@ -1048,7 +1048,6 @@ extern (C++) class VarDeclaration : Declaration
     uint endlinnum;                 // line number of end of scope that this var lives in
     uint offset;
     uint sequenceNumber;            // order the variables are declared
-    __gshared uint nextSequenceNumber;   // the counter for sequenceNumber
     structalign_t alignment;
 
     // When interpreting, these point to the value (NULL if value not determinable)
@@ -1065,9 +1064,8 @@ extern (C++) class VarDeclaration : Declaration
     // Both these mean the var is not rebindable once assigned,
     // and the destructor gets run when it goes out of scope
     bool onstack;                   // it is a class that was allocated on the stack
-    bool mynew;                     // it is a class new'd with custom operator new
 
-    byte canassign;                  // it can be assigned to
+    byte canassign;                 // it can be assigned to
     bool overlapped;                // if it is a field and has overlapping
     bool overlapUnsafe;             // if it is an overlapping field and the overlaps are unsafe
     bool doNotInferScope;           // do not infer 'scope' for this variable
@@ -1099,7 +1097,6 @@ extern (C++) class VarDeclaration : Declaration
         this._init = _init;
         ctfeAdrOnStack = AdrOnStackNone;
         this.storage_class = storage_class;
-        sequenceNumber = ++nextSequenceNumber;
     }
 
     static VarDeclaration create(const ref Loc loc, Type type, Identifier ident, Initializer _init, StorageClass storage_class = STC.undefined_)
@@ -1454,7 +1451,7 @@ extern (C++) class VarDeclaration : Declaration
                 //if (cd.isInterfaceDeclaration())
                 //    error("interface `%s` cannot be scope", cd.toChars());
 
-                if (mynew || onstack) // if any destructors
+                if (onstack) // if any destructors
                 {
                     // delete'ing C++ classes crashes (and delete is deprecated anyway)
                     if (cd.classKind == ClassKind.cpp)
@@ -1657,12 +1654,10 @@ extern (C++) class VarDeclaration : Declaration
         // Sequence numbers work when there are no special VarDeclaration's involved
         if (!((this.storage_class | v.storage_class) & special))
         {
-            // FIXME: VarDeclaration's for parameters are created in semantic3, so
-            //        they will have a greater sequence number than local variables.
-            //        Hence reverse the result for mixed comparisons.
-            const exp = this.isParameter() == v.isParameter();
+            assert(this.sequenceNumber != this.sequenceNumber.init);
+            assert(v.sequenceNumber != v.sequenceNumber.init);
 
-            return (this.sequenceNumber < v.sequenceNumber) == exp;
+            return (this.sequenceNumber < v.sequenceNumber);
         }
 
         // Assume that semantic produces temporaries according to their lifetime

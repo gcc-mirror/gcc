@@ -61,8 +61,8 @@ extern (C++) struct Target
     import dmd.dscope : Scope;
     import dmd.expression : Expression;
     import dmd.func : FuncDeclaration;
-    import dmd.globals : LINK, Loc, d_int64;
-    import dmd.astenums : TY;
+    import dmd.globals : Loc, d_int64;
+    import dmd.astenums : LINK, TY;
     import dmd.mtype : Type, TypeFunction, TypeTuple;
     import dmd.root.ctfloat : real_t;
     import dmd.statement : Statement;
@@ -119,7 +119,7 @@ extern (C++) struct Target
     const(char)[] lib_ext;    /// extension for static library files
     const(char)[] dll_ext;    /// extension for dynamic library files
     bool run_noext;           /// allow -run sources without extensions
-    bool mscoff = false;      // for Win32: write MsCoff object files instead of OMF
+    bool omfobj = false;      // for Win32: write OMF object files instead of MsCoff
     /**
      * Values representing all properties for floating point types
      */
@@ -293,6 +293,13 @@ extern (C++) struct Target
      *      `false` if the target backend handles synchronizing monitors.
      */
     extern (C++) bool libraryObjectMonitors(FuncDeclaration fd, Statement fbody);
+
+    /**
+     * Returns true if the target supports `pragma(linkerDirective)`.
+     * Returns:
+     *      `false` if the target does not support `pragma(linkerDirective)`.
+     */
+    extern (C++) bool supportsLinkerDirective() const;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -324,7 +331,11 @@ struct TargetC
         Gcc_Clang,            /// gcc and clang
     }
     bool  crtDestructorsSupported = true; /// Not all platforms support crt_destructor
+    ubyte boolsize;           /// size of a C `_Bool` type
+    ubyte shortsize;          /// size of a C `short` or `unsigned short` type
+    ubyte intsize;            /// size of a C `int` or `unsigned int` type
     ubyte longsize;           /// size of a C `long` or `unsigned long` type
+    ubyte long_longsize;      /// size of a C `long long` or `unsigned long long` type
     ubyte long_doublesize;    /// size of a C `long double`
     ubyte wchar_tsize;        /// size of a C `wchar_t` type
     Runtime runtime;          /// vendor of the C runtime to link against
@@ -340,7 +351,7 @@ struct TargetCPP
     import dmd.dsymbol : Dsymbol;
     import dmd.dclass : ClassDeclaration;
     import dmd.func : FuncDeclaration;
-    import dmd.mtype : Parameter, Type;
+    import dmd.mtype : Type;
 
     enum Runtime : ubyte
     {
@@ -354,6 +365,7 @@ struct TargetCPP
     bool reverseOverloads;    /// set if overloaded functions are grouped and in reverse order (such as in dmc and cl)
     bool exceptions;          /// set if catching C++ exceptions is supported
     bool twoDtorInVtable;     /// target C++ ABI puts deleting and non-deleting destructor into vtable
+    bool splitVBasetable;     /// set if C++ ABI uses separate tables for virtual functions and virtual bases
     bool wrapDtorInExternD;   /// set if C++ dtors require a D wrapper to be callable from runtime
     Runtime runtime;          /// vendor of the C++ runtime to link against
 
@@ -398,13 +410,13 @@ struct TargetCPP
 
     /**
      * Get the type that will really be used for passing the given argument
-     * to an `extern(C++)` function.
+     * to an `extern(C++)` function, or `null` if unhandled.
      * Params:
-     *      p = parameter to be passed.
+     *      t = type to be passed.
      * Returns:
-     *      `Type` to use for parameter `p`.
+     *      `Type` to use for type `t`.
      */
-    extern (C++) Type parameterType(Parameter p);
+    extern (C++) Type parameterType(Type t);
 
     /**
      * Checks whether type is a vendor-specific fundamental type.

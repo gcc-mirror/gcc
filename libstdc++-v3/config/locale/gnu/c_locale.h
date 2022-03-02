@@ -61,6 +61,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   typedef __locale_t		__c_locale;
 
+#if defined _GLIBCXX_LONG_DOUBLE_ALT128_COMPAT \
+  && defined __LONG_DOUBLE_IEEE128__
+namespace __gnu_cxx_ieee128 {
+#endif
+
   // Convert numeric value of type double and long double to string and
   // return length of string.  If vsnprintf is available use it, otherwise
   // fall back to the unsafe vsprintf which, in general, can be dangerous
@@ -107,6 +112,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
     return __ret;
   }
+
+#if defined _GLIBCXX_LONG_DOUBLE_ALT128_COMPAT \
+  && defined __LONG_DOUBLE_IEEE128__
+} // namespace __gnu_cxx_ieee128
+#endif
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace

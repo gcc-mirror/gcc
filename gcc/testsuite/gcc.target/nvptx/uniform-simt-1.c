@@ -1,4 +1,4 @@
-/* { dg-options "-O2 -muniform-simt" } */
+/* { dg-options "-O2 -muniform-simt -misa=sm_70 -mptx=_" } */
 
 enum memmodel
 {
@@ -16,3 +16,4 @@ f (void)
 }
 
 /* { dg-final { scan-assembler-times "@%r\[0-9\]*\tatom.global.cas" 1 } } */
+/* { dg-final { scan-assembler-times "shfl.sync.idx.b32" 1 } } */

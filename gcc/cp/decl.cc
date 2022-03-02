@@ -16409,7 +16409,7 @@ finish_enum (tree enumtype)
    Apply ATTRIBUTES if available.  LOC is the location of NAME.
    Assignment of sequential values by default is handled here.  */
 
-void
+tree
 build_enumerator (tree name, tree value, tree enumtype, tree attributes,
 		  location_t loc)
 {
@@ -16611,6 +16611,8 @@ incremented enumerator value is too large for %<long%>"));
 
   /* Add this enumeration constant to the list for this type.  */
   TYPE_VALUES (enumtype) = tree_cons (name, decl, TYPE_VALUES (enumtype));
+
+  return decl;
 }
 
 /* Look for an enumerator with the given NAME within the enumeration

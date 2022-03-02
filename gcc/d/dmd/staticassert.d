@@ -59,6 +59,11 @@ extern (C++) final class StaticAssert : Dsymbol
         return "static assert";
     }
 
+    override inout(StaticAssert) isStaticAssert() inout
+    {
+        return this;
+    }
+
     override void accept(Visitor v)
     {
         v.visit(this);

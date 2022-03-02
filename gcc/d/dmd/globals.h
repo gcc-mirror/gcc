@@ -290,6 +290,7 @@ struct Global
     Array<class Identifier*>* debugids;   // command line debug versions and predefined versions
 
     bool hasMainFunction;
+    unsigned varSequenceNumber;
 
     /* Start gagging. Return the current number of gagged errors
      */

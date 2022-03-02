@@ -20,7 +20,6 @@ class ClassDeclaration;
 class Dsymbol;
 class Expression;
 class FuncDeclaration;
-class Parameter;
 class Statement;
 class Type;
 class TypeTuple;
@@ -71,7 +70,11 @@ struct TargetC
     };
 
     uint8_t crtDestructorsSupported; // Not all platforms support crt_destructor
+    uint8_t boolsize;            // size of a C '_Bool' type
+    uint8_t shortsize;           // size of a C 'short' or 'unsigned short' type
+    uint8_t intsize;             // size of a C 'int' or 'unsigned int' type
     uint8_t longsize;            // size of a C 'long' or 'unsigned long' type
+    uint8_t long_longsize;       // size of a C 'long long' or 'unsigned long long' type
     uint8_t long_doublesize;     // size of a C 'long double'
     uint8_t wchar_tsize;         // size of a C 'wchar_t' type
     Runtime runtime;
@@ -92,6 +95,7 @@ struct TargetCPP
     bool reverseOverloads;    // with dmc and cl, overloaded functions are grouped and in reverse order
     bool exceptions;          // set if catching C++ exceptions is supported
     bool twoDtorInVtable;     // target C++ ABI puts deleting and non-deleting destructor into vtable
+    bool splitVBasetable;     // set if C++ ABI uses separate tables for virtual functions and virtual bases
     bool wrapDtorInExternD;   // set if C++ dtors require a D wrapper to be callable from runtime
     Runtime runtime;
 
@@ -99,7 +103,7 @@ struct TargetCPP
     const char *typeInfoMangle(ClassDeclaration *cd);
     const char *thunkMangle(FuncDeclaration *fd, int offset);
     const char *typeMangle(Type *t);
-    Type *parameterType(Parameter *p);
+    Type *parameterType(Type *p);
     bool fundamentalType(const Type *t, bool& isFundamental);
     unsigned derivedClassOffset(ClassDeclaration *baseClass);
 };
@@ -160,7 +164,7 @@ struct Target
     DString lib_ext;    /// extension for static library files
     DString dll_ext;    /// extension for dynamic library files
     bool run_noext;     /// allow -run sources without extensions
-    bool mscoff;        /// for Win32: write COFF object files instead of OMF
+    bool omfobj;        /// for Win32: write OMF object files instead of COFF
 
     template <typename T>
     struct FPTypeProperties
@@ -205,6 +209,7 @@ public:
     Expression *getTargetInfo(const char* name, const Loc& loc);
     bool isCalleeDestroyingArgs(TypeFunction* tf);
     bool libraryObjectMonitors(FuncDeclaration *fd, Statement *fbody);
+    bool supportsLinkerDirective() const;
     void addPredefinedGlobalIdentifiers() const;
 };
 

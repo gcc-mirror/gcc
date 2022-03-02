@@ -2308,27 +2308,27 @@ type Bad Bad // invalid type
 	conf := Config{Error: func(error) {}}
 	pkg, _ := conf.Check(f.Name.Name, fset, []*ast.File{f}, nil)
 
-	scope := pkg.Scope()
+	lookup := func(tname string) Type { return pkg.Scope().Lookup(tname).Type() }
 	var (
-		EmptyIface   = scope.Lookup("EmptyIface").Type().Underlying().(*Interface)
-		I            = scope.Lookup("I").Type().(*Named)
+		EmptyIface   = lookup("EmptyIface").Underlying().(*Interface)
+		I            = lookup("I").(*Named)
 		II           = I.Underlying().(*Interface)
-		C            = scope.Lookup("C").Type().(*Named)
+		C            = lookup("C").(*Named)
 		CI           = C.Underlying().(*Interface)
-		Integer      = scope.Lookup("Integer").Type().Underlying().(*Interface)
-		EmptyTypeSet = scope.Lookup("EmptyTypeSet").Type().Underlying().(*Interface)
-		N1           = scope.Lookup("N1").Type()
+		Integer      = lookup("Integer").Underlying().(*Interface)
+		EmptyTypeSet = lookup("EmptyTypeSet").Underlying().(*Interface)
+		N1           = lookup("N1")
 		N1p          = NewPointer(N1)
-		N2           = scope.Lookup("N2").Type()
+		N2           = lookup("N2")
 		N2p          = NewPointer(N2)
-		N3           = scope.Lookup("N3").Type()
-		N4           = scope.Lookup("N4").Type()
-		Bad          = scope.Lookup("Bad").Type()
+		N3           = lookup("N3")
+		N4           = lookup("N4")
+		Bad          = lookup("Bad")
 	)
 
 	tests := []struct {
-		t    Type
-		i    *Interface
+		V    Type
+		T    *Interface
 		want bool
 	}{
 		{I, II, true},
@@ -2359,8 +2359,78 @@ type Bad Bad // invalid type
 	}
 
 	for _, test := range tests {
-		if got := Implements(test.t, test.i); got != test.want {
-			t.Errorf("Implements(%s, %s) = %t, want %t", test.t, test.i, got, test.want)
+		if got := Implements(test.V, test.T); got != test.want {
+			t.Errorf("Implements(%s, %s) = %t, want %t", test.V, test.T, got, test.want)
+		}
+
+		// The type assertion x.(T) is valid if T is an interface or if T implements the type of x.
+		// The assertion is never valid if T is a bad type.
+		V := test.T
+		T := test.V
+		want := false
+		if _, ok := T.Underlying().(*Interface); (ok || Implements(T, V)) && T != Bad {
+			want = true
+		}
+		if got := AssertableTo(V, T); got != want {
+			t.Errorf("AssertableTo(%s, %s) = %t, want %t", V, T, got, want)
 		}
 	}
+}
+
+func TestMissingMethodAlternative(t *testing.T) {
+	const src = `
+package p
+type T interface {
+	m()
+}
+
+type V0 struct{}
+func (V0) m() {}
+
+type V1 struct{}
+
+type V2 struct{}
+func (V2) m() int
+
+type V3 struct{}
+func (*V3) m()
+
+type V4 struct{}
+func (V4) M()
+`
+
+	pkg, err := pkgFor("p.go", src, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	T := pkg.Scope().Lookup("T").Type().Underlying().(*Interface)
+	lookup := func(name string) (*Func, bool) {
+		return MissingMethod(pkg.Scope().Lookup(name).Type(), T, true)
+	}
+
+	// V0 has method m with correct signature. Should not report wrongType.
+	method, wrongType := lookup("V0")
+	if method != nil || wrongType {
+		t.Fatalf("V0: got method = %v, wrongType = %v", method, wrongType)
+	}
+
+	checkMissingMethod := func(tname string, reportWrongType bool) {
+		method, wrongType := lookup(tname)
+		if method == nil || method.Name() != "m" || wrongType != reportWrongType {
+			t.Fatalf("%s: got method = %v, wrongType = %v", tname, method, wrongType)
+		}
+	}
+
+	// V1 has no method m. Should not report wrongType.
+	checkMissingMethod("V1", false)
+
+	// V2 has method m with wrong signature type (ignoring receiver). Should report wrongType.
+	checkMissingMethod("V2", true)
+
+	// V3 has no method m but it exists on *V3. Should report wrongType.
+	checkMissingMethod("V3", true)
+
+	// V4 has no method m but has M. Should not report wrongType.
+	checkMissingMethod("V4", false)
 }

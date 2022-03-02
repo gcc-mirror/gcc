@@ -98,7 +98,7 @@ module std.path;
 
 import std.file : getcwd;
 static import std.meta;
-import std.range.primitives;
+import std.range;
 import std.traits;
 
 version (OSX)
@@ -262,8 +262,7 @@ version (Windows)
     from a path.
 */
 private auto ltrimDirSeparators(R)(R path)
-if (isInputRange!R && !isInfinite!R && isSomeChar!(ElementType!R) ||
-    isNarrowString!R)
+if (isSomeFiniteCharInputRange!R || isNarrowString!R)
 {
     static if (isRandomAccessRange!R && hasSlicing!R || isNarrowString!R)
     {
@@ -3213,12 +3212,8 @@ int filenameCharCmp(CaseSensitive cs = CaseSensitive.osDefault)(dchar a, dchar b
 */
 int filenameCmp(CaseSensitive cs = CaseSensitive.osDefault, Range1, Range2)
     (Range1 filename1, Range2 filename2)
-if (isInputRange!Range1 && !isInfinite!Range1 &&
-    isSomeChar!(ElementEncodingType!Range1) &&
-    !isConvertibleToString!Range1 &&
-    isInputRange!Range2 && !isInfinite!Range2 &&
-    isSomeChar!(ElementEncodingType!Range2) &&
-    !isConvertibleToString!Range2)
+if (isSomeFiniteCharInputRange!Range1 && !isConvertibleToString!Range1 &&
+    isSomeFiniteCharInputRange!Range2 && !isConvertibleToString!Range2)
 {
     alias C1 = Unqual!(ElementEncodingType!Range1);
     alias C2 = Unqual!(ElementEncodingType!Range2);

@@ -1,7 +1,7 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail15089.d(10): Error: cannot implicitly convert expression `130` of type `int` to `byte`
+fail_compilation/fail15089.d(10): Error: cannot implicitly convert expression `2 ^ 128` of type `int` to `byte`
 ---
 */
 

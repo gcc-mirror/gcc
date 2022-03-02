@@ -4446,30 +4446,6 @@ rs6000_option_override_internal (bool global_init_p)
       && (rs6000_isa_flags_explicit & OPTION_MASK_P10_FUSION) == 0)
     rs6000_isa_flags |= OPTION_MASK_P10_FUSION;
 
-  if (TARGET_POWER10 &&
-      (rs6000_isa_flags_explicit & OPTION_MASK_P10_FUSION_LD_CMPI) == 0)
-    rs6000_isa_flags |= OPTION_MASK_P10_FUSION_LD_CMPI;
-
-  if (TARGET_POWER10
-      && (rs6000_isa_flags_explicit & OPTION_MASK_P10_FUSION_2LOGICAL) == 0)
-    rs6000_isa_flags |= OPTION_MASK_P10_FUSION_2LOGICAL;
-
-  if (TARGET_POWER10
-      && (rs6000_isa_flags_explicit & OPTION_MASK_P10_FUSION_LOGADD) == 0)
-    rs6000_isa_flags |= OPTION_MASK_P10_FUSION_LOGADD;
-
-  if (TARGET_POWER10
-      && (rs6000_isa_flags_explicit & OPTION_MASK_P10_FUSION_ADDLOG) == 0)
-    rs6000_isa_flags |= OPTION_MASK_P10_FUSION_ADDLOG;
-
-  if (TARGET_POWER10
-      && (rs6000_isa_flags_explicit & OPTION_MASK_P10_FUSION_2ADD) == 0)
-    rs6000_isa_flags |= OPTION_MASK_P10_FUSION_2ADD;
-
-  if (TARGET_POWER10
-      && (rs6000_isa_flags_explicit & OPTION_MASK_P10_FUSION_2STORE) == 0)
-    rs6000_isa_flags |= OPTION_MASK_P10_FUSION_2STORE;
-
   /* Turn off vector pair/mma options on non-power10 systems.  */
   else if (!TARGET_POWER10 && TARGET_MMA)
     {
@@ -5236,7 +5212,7 @@ public:
   using vector_costs::vector_costs;
 
   unsigned int add_stmt_cost (int count, vect_cost_for_stmt kind,
-			      stmt_vec_info stmt_info, tree vectype,
+			      stmt_vec_info stmt_info, slp_tree, tree vectype,
 			      int misalign,
 			      vect_cost_model_location where) override;
   void finish_cost (const vector_costs *) override;
@@ -5452,8 +5428,9 @@ rs6000_cost_data::update_target_cost_per_stmt (vect_cost_for_stmt kind,
 
 unsigned
 rs6000_cost_data::add_stmt_cost (int count, vect_cost_for_stmt kind,
-				 stmt_vec_info stmt_info, tree vectype,
-				 int misalign, vect_cost_model_location where)
+				 stmt_vec_info stmt_info, slp_tree,
+				 tree vectype, int misalign,
+				 vect_cost_model_location where)
 {
   unsigned retval = 0;
 
@@ -5494,7 +5471,8 @@ rs6000_cost_data::adjust_vect_cost_per_loop (loop_vec_info loop_vinfo)
 	  /* Each length needs one shift to fill into bits 0-7.  */
 	  shift_cnt += num_vectors_m1 + 1;
 
-      add_stmt_cost (shift_cnt, scalar_stmt, NULL, NULL_TREE, 0, vect_body);
+      add_stmt_cost (shift_cnt, scalar_stmt, NULL, NULL,
+		     NULL_TREE, 0, vect_body);
     }
 }
 
@@ -11018,6 +10996,12 @@ init_float128_ibm (machine_mode mode)
       set_conv_libfunc (trunc_optab, DDmode, mode, "__dpd_trunctfdd");
       set_conv_libfunc (sext_optab, TDmode, mode, "__dpd_extendtftd");
 
+      set_conv_libfunc (sfix_optab, DImode, mode, "__fixtfdi");
+      set_conv_libfunc (ufix_optab, DImode, mode, "__fixunstfdi");
+
+      set_conv_libfunc (sfloat_optab, mode, DImode, "__floatditf");
+      set_conv_libfunc (ufloat_optab, mode, DImode, "__floatunditf");
+
       if (TARGET_POWERPC64)
 	{
 	  set_conv_libfunc (sfix_optab, TImode, mode, "__fixtfti");
@@ -16209,6 +16193,12 @@ rs6000_emit_int_cmove (rtx dest, rtx op, rtx true_cond, rtx false_cond)
   if (mode != SImode && (!TARGET_POWERPC64 || mode != DImode))
     return false;
 
+  /* PR104335: We now need to expect CC-mode "comparisons"
+     coming from ifcvt.  The following code expects proper
+     comparisons so better abort here.  */
+  if (GET_MODE_CLASS (GET_MODE (XEXP (op, 0))) == MODE_CC)
+    return false;
+
   /* We still have to do the compare, because isel doesn't do a
      compare, it just looks at the CRx bits set by a previous compare
      instruction.  */
@@ -19020,8 +19010,7 @@ power10_sched_reorder (rtx_insn **ready, int lastpos)
 
   /* Try to pair certain store insns to adjacent memory locations
      so that the hardware will fuse them to a single operation.  */
-  if (TARGET_P10_FUSION && TARGET_P10_FUSION_2STORE
-      && is_fusable_store (last_scheduled_insn, &mem1))
+  if (TARGET_P10_FUSION && is_fusable_store (last_scheduled_insn, &mem1))
     {
 
       /* A fusable store was just scheduled.  Scan the ready list for another
@@ -27710,14 +27699,13 @@ emit_fusion_gpr_load (rtx target, rtx mem)
   return "";
 }
 
-
-#ifdef RS6000_GLIBC_ATOMIC_FENV
-/* Function declarations for rs6000_atomic_assign_expand_fenv.  */
-static tree atomic_hold_decl, atomic_clear_decl, atomic_update_decl;
-#endif
+/* This is not inside an  #ifdef RS6000_GLIBC_ATOMIC_FENV  because gengtype
+   ignores it then.  */
+static GTY(()) tree atomic_hold_decl;
+static GTY(()) tree atomic_clear_decl;
+static GTY(()) tree atomic_update_decl;
 
 /* Implement TARGET_ATOMIC_ASSIGN_EXPAND_FENV hook.  */
-
 static void
 rs6000_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
 {

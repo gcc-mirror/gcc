@@ -9,6 +9,9 @@
 
 // N.B MSVC doesn't have a C++11 switch, but it defaults to the latest fully-supported standard
 
+// Broken for unknown reasons since the OMF => MsCOFF switch
+// DISABLED: win32omf
+
 import core.stdc.stdio;
 import core.stdc.stdarg;
 import core.stdc.config;
@@ -466,7 +469,7 @@ extern (C++, std)
         static if (__traits(getTargetInfo, "cppStd") >= 201703)
         {
             // std::allocator no longer derives from __gnu_cxx::new_allocator,
-            // it derives from std::__new_allocator instead. 
+            // it derives from std::__new_allocator instead.
             struct __new_allocator(T)
             {
                 alias size_type = size_t;

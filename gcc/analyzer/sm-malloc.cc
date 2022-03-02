@@ -356,10 +356,16 @@ public:
     if (const region_svalue *ptr = sval->dyn_cast_region_svalue ())
       {
 	const region *reg = ptr->get_pointee ();
-	const region *base_reg = reg->get_base_region ();
-	if (base_reg->get_kind () == RK_DECL
-	    || base_reg->get_kind () == RK_STRING)
-	  return m_non_heap;
+	switch (reg->get_memory_space ())
+	  {
+	  default:
+	    break;
+	  case MEMSPACE_CODE:
+	  case MEMSPACE_GLOBALS:
+	  case MEMSPACE_STACK:
+	  case MEMSPACE_READONLY_DATA:
+	    return m_non_heap;
+	  }
       }
     return m_start;
   }
@@ -425,6 +431,11 @@ private:
 			  const gcall *call,
 			  const deallocator_set *deallocators,
 			  bool returns_nonnull = false) const;
+  void handle_free_of_non_heap (sm_context *sm_ctxt,
+				const supernode *node,
+				const gcall *call,
+				tree arg,
+				const deallocator *d) const;
   void on_deallocator_call (sm_context *sm_ctxt,
 			    const supernode *node,
 			    const gcall *call,
@@ -1289,8 +1300,9 @@ class free_of_non_heap : public malloc_diagnostic
 {
 public:
   free_of_non_heap (const malloc_state_machine &sm, tree arg,
+		    const region *freed_reg,
 		    const char *funcname)
-  : malloc_diagnostic (sm, arg), m_funcname (funcname), m_kind (KIND_UNKNOWN)
+  : malloc_diagnostic (sm, arg), m_freed_reg (freed_reg), m_funcname (funcname)
   {
   }
 
@@ -1300,7 +1312,8 @@ public:
     FINAL OVERRIDE
   {
     const free_of_non_heap &other = (const free_of_non_heap &)base_other;
-    return (same_tree_p (m_arg, other.m_arg) && m_kind == other.m_kind);
+    return (same_tree_p (m_arg, other.m_arg)
+	    && m_freed_reg == other.m_freed_reg);
   }
 
   bool emit (rich_location *rich_loc) FINAL OVERRIDE
@@ -1308,44 +1321,32 @@ public:
     auto_diagnostic_group d;
     diagnostic_metadata m;
     m.add_cwe (590); /* CWE-590: Free of Memory not on the Heap.  */
-    switch (m_kind)
+    switch (get_memory_space ())
       {
       default:
+      case MEMSPACE_HEAP:
 	gcc_unreachable ();
-      case KIND_UNKNOWN:
+      case MEMSPACE_UNKNOWN:
+      case MEMSPACE_CODE:
+      case MEMSPACE_GLOBALS:
+      case MEMSPACE_READONLY_DATA:
 	return warning_meta (rich_loc, m, OPT_Wanalyzer_free_of_non_heap,
 			     "%<%s%> of %qE which points to memory"
 			     " not on the heap",
 			     m_funcname, m_arg);
 	break;
-      case KIND_ALLOCA:
+      case MEMSPACE_STACK:
 	return warning_meta (rich_loc, m, OPT_Wanalyzer_free_of_non_heap,
-			     "%<%s%> of memory allocated on the stack by"
-			     " %qs (%qE) will corrupt the heap",
-			     m_funcname, "alloca", m_arg);
+			     "%<%s%> of %qE which points to memory"
+			     " on the stack",
+			     m_funcname, m_arg);
 	break;
       }
   }
 
-  label_text describe_state_change (const evdesc::state_change &change)
+  label_text describe_state_change (const evdesc::state_change &)
     FINAL OVERRIDE
   {
-    /* Attempt to reconstruct what kind of pointer it is.
-       (It seems neater for this to be a part of the state, though).  */
-    if (change.m_expr && TREE_CODE (change.m_expr) == SSA_NAME)
-      {
-	gimple *def_stmt = SSA_NAME_DEF_STMT (change.m_expr);
-	if (gcall *call = dyn_cast <gcall *> (def_stmt))
-	  {
-	    if (is_special_named_call_p (call, "alloca", 1)
-		|| is_special_named_call_p (call, "__builtin_alloca", 1))
-	      {
-		m_kind = KIND_ALLOCA;
-		return label_text::borrow
-		  ("memory is allocated on the stack here");
-	      }
-	  }
-      }
     return label_text::borrow ("pointer is from here");
   }
 
@@ -1354,14 +1355,23 @@ public:
     return ev.formatted_print ("call to %qs here", m_funcname);
   }
 
-private:
-  enum kind
+  void mark_interesting_stuff (interesting_t *interest) FINAL OVERRIDE
   {
-    KIND_UNKNOWN,
-    KIND_ALLOCA
-  };
+    if (m_freed_reg)
+      interest->add_region_creation (m_freed_reg);
+  }
+
+private:
+  enum memory_space get_memory_space () const
+  {
+    if (m_freed_reg)
+      return m_freed_reg->get_memory_space ();
+    else
+      return MEMSPACE_UNKNOWN;
+  }
+
+  const region *m_freed_reg;
   const char *m_funcname;
-  enum kind m_kind;
 };
 
 /* struct allocation_state : public state_machine::state.  */
@@ -1701,26 +1711,6 @@ malloc_state_machine::on_stmt (sm_context *sm_ctxt,
     if (any_pointer_p (lhs))
       on_zero_assignment (sm_ctxt, stmt,lhs);
 
-  /* If we have "LHS = &EXPR;" and EXPR is something other than a MEM_REF,
-     transition LHS from start to non_heap.
-     Doing it for ADDR_EXPR(MEM_REF()) is likely wrong, and can lead to
-     unbounded chains of unmergeable sm-state on pointer arithmetic in loops
-     when optimization is enabled.  */
-  if (const gassign *assign_stmt = dyn_cast <const gassign *> (stmt))
-    {
-      enum tree_code op = gimple_assign_rhs_code (assign_stmt);
-      if (op == ADDR_EXPR)
-	{
-	  tree lhs = gimple_assign_lhs (assign_stmt);
-	  if (lhs)
-	    {
-	      tree addr_expr = gimple_assign_rhs1 (assign_stmt);
-	      if (TREE_CODE (TREE_OPERAND (addr_expr, 0)) != MEM_REF)
-		sm_ctxt->on_transition (node, stmt, lhs, m_start, m_non_heap);
-	    }
-	}
-    }
-
   /* Handle dereferences.  */
   for (unsigned i = 0; i < gimple_num_ops (stmt); i++)
     {
@@ -1789,6 +1779,30 @@ malloc_state_machine::on_allocator_call (sm_context *sm_ctxt,
     }
 }
 
+/* Handle deallocations of non-heap pointers.
+   non-heap -> stop, with warning.  */
+
+void
+malloc_state_machine::handle_free_of_non_heap (sm_context *sm_ctxt,
+					       const supernode *node,
+					       const gcall *call,
+					       tree arg,
+					       const deallocator *d) const
+{
+  tree diag_arg = sm_ctxt->get_diagnostic_tree (arg);
+  const region *freed_reg = NULL;
+  if (const program_state *old_state = sm_ctxt->get_old_program_state ())
+    {
+      const region_model *old_model = old_state->m_region_model;
+      const svalue *ptr_sval = old_model->get_rvalue (arg, NULL);
+      freed_reg = old_model->deref_rvalue (ptr_sval, arg, NULL);
+    }
+  sm_ctxt->warn (node, call, arg,
+		 new free_of_non_heap (*this, diag_arg, freed_reg,
+				       d->m_name));
+  sm_ctxt->set_next_state (call, arg, m_stop);
+}
+
 void
 malloc_state_machine::on_deallocator_call (sm_context *sm_ctxt,
 					   const supernode *node,
@@ -1835,11 +1849,7 @@ malloc_state_machine::on_deallocator_call (sm_context *sm_ctxt,
   else if (state == m_non_heap)
     {
       /* non-heap -> stop, with warning.  */
-      tree diag_arg = sm_ctxt->get_diagnostic_tree (arg);
-      sm_ctxt->warn (node, call, arg,
-		     new free_of_non_heap (*this, diag_arg,
-					   d->m_name));
-      sm_ctxt->set_next_state (call, arg, m_stop);
+      handle_free_of_non_heap (sm_ctxt, node, call, arg, d);
     }
 }
 
@@ -1894,11 +1904,7 @@ malloc_state_machine::on_realloc_call (sm_context *sm_ctxt,
   else if (state == m_non_heap)
     {
       /* non-heap -> stop, with warning.  */
-      tree diag_arg = sm_ctxt->get_diagnostic_tree (arg);
-      sm_ctxt->warn (node, call, arg,
-		     new free_of_non_heap (*this, diag_arg,
-					   d->m_name));
-      sm_ctxt->set_next_state (call, arg, m_stop);
+      handle_free_of_non_heap (sm_ctxt, node, call, arg, d);
       if (path_context *path_ctxt = sm_ctxt->get_path_context ())
 	path_ctxt->terminate_path ();
     }

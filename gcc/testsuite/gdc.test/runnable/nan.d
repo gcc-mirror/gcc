@@ -45,15 +45,26 @@ void test2(T)()
     assert(a is c);
 
     static if (T.mant_dig == 64 && T.max_exp == 16384)
+    {
         enum size = 10; // x87, exclude padding
+        enum mant_dig = T.mant_dig;
+    }
+    else static if (T.mant_dig == 106)
+    {
+        enum size = 8; // IBM, only look at first index
+        enum mant_dig = 53;
+    }
     else
+    {
         enum size = T.sizeof;
+        enum mant_dig = T.mant_dig;
+    }
     const pa = (cast(ubyte*) &a)[0 .. size];
 
     // the highest 2 bits of the mantissa should be set, everything else zero
-    assert(bittst(pa, T.mant_dig - 1));
-    assert(bittst(pa, T.mant_dig - 2));
-    foreach(p; 0..T.mant_dig - 2)
+    assert(bittst(pa, mant_dig - 1));
+    assert(bittst(pa, mant_dig - 2));
+    foreach(p; 0..mant_dig - 2)
         assert(!bittst(pa, p));
 }
 

@@ -2235,7 +2235,7 @@ aggregate_initializer_decl (AggregateDeclaration *decl)
 tree
 layout_class_initializer (ClassDeclaration *cd)
 {
-  NewExp *ne = NewExp::create (cd->loc, NULL, NULL, cd->type, NULL);
+  NewExp *ne = NewExp::create (cd->loc, NULL, cd->type, NULL);
   ne->type = cd->type;
 
   Expression *e = ne->ctfeInterpret ();

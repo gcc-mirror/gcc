@@ -263,7 +263,7 @@ class FileLogger : Logger
 {
     auto dl = cast(FileLogger) sharedLog;
     assert(dl !is null);
-    assert(dl.logLevel == LogLevel.all);
+    assert(dl.logLevel == LogLevel.warning);
     assert(globalLogLevel == LogLevel.all);
 
     auto tl = cast(StdForwardLogger) stdThreadLocalLog;

@@ -652,10 +652,19 @@ gfc_trans_stop (gfc_code *code, bool error_stop)
 {
   gfc_se se;
   tree tmp;
+  tree quiet;
 
   /* Start a new block for this statement.  */
   gfc_init_se (&se, NULL);
   gfc_start_block (&se.pre);
+
+  if (code->expr2)
+    {
+      gfc_conv_expr_val (&se, code->expr2);
+      quiet = fold_convert (boolean_type_node, se.expr);
+    }
+  else
+    quiet = boolean_false_node;
 
   if (code->expr1 == NULL)
     {
@@ -669,7 +678,7 @@ gfc_trans_stop (gfc_code *code, bool error_stop)
 				    ? gfor_fndecl_caf_stop_str
 				    : gfor_fndecl_stop_string),
 				 3, build_int_cst (pchar_type_node, 0), tmp,
-				 boolean_false_node);
+				 quiet);
     }
   else if (code->expr1->ts.type == BT_INTEGER)
     {
@@ -683,7 +692,7 @@ gfc_trans_stop (gfc_code *code, bool error_stop)
 				    ? gfor_fndecl_caf_stop_numeric
 				    : gfor_fndecl_stop_numeric), 2,
 				 fold_convert (integer_type_node, se.expr),
-				 boolean_false_node);
+				 quiet);
     }
   else
     {
@@ -698,7 +707,7 @@ gfc_trans_stop (gfc_code *code, bool error_stop)
 				    : gfor_fndecl_stop_string),
 				 3, se.expr, fold_convert (size_type_node,
 							   se.string_length),
-				 boolean_false_node);
+				 quiet);
     }
 
   gfc_add_expr_to_block (&se.pre, tmp);

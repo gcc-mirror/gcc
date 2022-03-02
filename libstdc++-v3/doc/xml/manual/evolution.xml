@@ -1045,6 +1045,9 @@ were deprecated for C++17.
 
 <para>
 Non-standard <code>std::pair</code> constructors were deprecated.
+A non-standard default argument for
+<code>vector&lt;bool&gt;::insert(const_iterator, const bool&amp;)</code>
+was deprecated.
 </para>
 
 <para>

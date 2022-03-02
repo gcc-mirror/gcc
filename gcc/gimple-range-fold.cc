@@ -397,7 +397,8 @@ adjust_imagpart_expr (irange &res, const gimple *stmt)
 	}
       return;
     }
-  if (is_gimple_assign (def_stmt))
+  if (is_gimple_assign (def_stmt)
+      && gimple_assign_rhs_code (def_stmt) == COMPLEX_CST)
     {
       tree cst = gimple_assign_rhs1 (def_stmt);
       if (TREE_CODE (cst) == COMPLEX_CST)
@@ -422,7 +423,8 @@ adjust_realpart_expr (irange &res, const gimple *stmt)
   if (!SSA_NAME_DEF_STMT (name))
     return;
 
-  if (is_gimple_assign (def_stmt))
+  if (is_gimple_assign (def_stmt)
+      && gimple_assign_rhs_code (def_stmt) == COMPLEX_CST)
     {
       tree cst = gimple_assign_rhs1 (def_stmt);
       if (TREE_CODE (cst) == COMPLEX_CST)
@@ -1269,6 +1271,18 @@ fold_using_range::range_of_cond_expr  (irange &r, gassign *s, fur_source &src)
   src.get_operand (cond_range, cond);
   src.get_operand (range1, op1);
   src.get_operand (range2, op2);
+
+  // Try to see if there is a dependence between the COND and either operand
+  if (src.gori ())
+    if (src.gori ()->condexpr_adjust (range1, range2, s, cond, op1, op2, src))
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	{
+	  fprintf (dump_file, "Possible COND_EXPR adjustment. Range op1 : ");
+	  range1.dump(dump_file);
+	  fprintf (dump_file, " and Range op2: ");
+	  range2.dump(dump_file);
+	  fprintf (dump_file, "\n");
+	}
 
   // If the condition is known, choose the appropriate expression.
   if (cond_range.singleton_p ())

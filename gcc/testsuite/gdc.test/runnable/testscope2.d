@@ -178,7 +178,7 @@ struct S10
 {
     int x;
 
-    ref inout(int) foo() inout
+    ref inout(int) foo() inout return
     {
         return x;
     }

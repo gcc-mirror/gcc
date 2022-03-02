@@ -788,6 +788,9 @@ cfi_oprnd_equal_p (enum dw_cfi_oprnd_type t, dw_cfi_oprnd *a, dw_cfi_oprnd *b)
     case dw_cfi_oprnd_loc:
       return loc_descr_equal_p (a->dw_cfi_loc, b->dw_cfi_loc);
     case dw_cfi_oprnd_cfa_loc:
+      /* If any of them is NULL, don't dereference either.  */
+      if (!a->dw_cfi_cfa_loc || !b->dw_cfi_cfa_loc)
+	return a->dw_cfi_cfa_loc == b->dw_cfi_cfa_loc;
       return cfa_equal_p (a->dw_cfi_cfa_loc, b->dw_cfi_cfa_loc);
     }
   gcc_unreachable ();

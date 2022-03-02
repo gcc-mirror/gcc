@@ -13,12 +13,12 @@ fail_compilation/diag8101.d(38):                        `diag8101.f_2(int, int, 
 fail_compilation/diag8101.d(39):                        `diag8101.f_2(int, int, int, int)`
 fail_compilation/diag8101.d(40):                        `diag8101.f_2(int, int, int, int, int)`
 fail_compilation/diag8101.d(59):        ... (1 more, -v to show) ...
-fail_compilation/diag8101.d(61): Error: template `diag8101.t_0` cannot deduce function from argument types `!()()`
+fail_compilation/diag8101.d(61): Error: none of the overloads of template `diag8101.t_0` are callable using argument types `!()()`
 fail_compilation/diag8101.d(43):        Candidate is: `t_0(T1)()`
-fail_compilation/diag8101.d(62): Error: template `diag8101.t_1` cannot deduce function from argument types `!()()`
+fail_compilation/diag8101.d(62): Error: none of the overloads of template `diag8101.t_1` are callable using argument types `!()()`
 fail_compilation/diag8101.d(45):        Candidates are: `t_1(T1)()`
 fail_compilation/diag8101.d(46):                        `t_1(T1, T2)()`
-fail_compilation/diag8101.d(63): Error: template `diag8101.t_2` cannot deduce function from argument types `!()()`
+fail_compilation/diag8101.d(63): Error: none of the overloads of template `diag8101.t_2` are callable using argument types `!()()`
 fail_compilation/diag8101.d(48):        Candidates are: `t_2(T1)()`
 fail_compilation/diag8101.d(49):                        `t_2(T1, T2)()`
 fail_compilation/diag8101.d(50):                        `t_2(T1, T2, T3)()`

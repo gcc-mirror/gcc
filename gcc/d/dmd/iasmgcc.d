@@ -84,7 +84,7 @@ int parseExtAsmOperands(Parser)(Parser p, GccAsmStatement s)
 
             case TOK.string_:
                 constraint = p.parsePrimaryExp();
-                // @@@DEPRECATED@@@
+                // @@@DEPRECATED_2.101@@@
                 // Old parser allowed omitting parentheses around the expression.
                 // Deprecated in 2.091. Can be made permanent error after 2.100
                 if (p.token.value != TOK.leftParenthesis)

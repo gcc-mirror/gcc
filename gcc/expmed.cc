@@ -1975,6 +1975,10 @@ extract_integral_bit_field (rtx op0, opt_scalar_int_mode op0_mode,
 					    unsignedp, reverse);
 	  return convert_extracted_bit_field (target, mode, tmode, unsignedp);
 	}
+      /* If OP0 is a hard register, copy it to a pseudo before calling
+	 simplify_gen_subreg.  */
+      if (REG_P (op0) && HARD_REGISTER_P (op0))
+	op0 = copy_to_reg (op0);
       op0 = simplify_gen_subreg (word_mode, op0, op0_mode.require (),
 				 bitnum / BITS_PER_WORD * UNITS_PER_WORD);
       op0_mode = word_mode;

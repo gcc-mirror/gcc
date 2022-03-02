@@ -33,7 +33,7 @@ func isBasic(t Type, info BasicInfo) bool {
 // The allX predicates below report whether t is an X.
 // If t is a type parameter the result is true if isX is true
 // for all specified types of the type parameter's type set.
-// allX is an optimized version of isX(structuralType(t)) (which
+// allX is an optimized version of isX(coreType(t)) (which
 // is the same as underIs(t, isX)).
 
 func allBoolean(typ Type) bool         { return allBasic(typ, IsBoolean) }
@@ -47,7 +47,7 @@ func allNumericOrString(typ Type) bool { return allBasic(typ, IsNumeric|IsString
 // allBasic reports whether under(t) is a basic type with the specified info.
 // If t is a type parameter, the result is true if isBasic(t, info) is true
 // for all specific types of the type parameter's type set.
-// allBasic(t, info) is an optimized version of isBasic(structuralType(t), info).
+// allBasic(t, info) is an optimized version of isBasic(coreType(t), info).
 func allBasic(t Type, info BasicInfo) bool {
 	if tpar, _ := t.(*TypeParam); tpar != nil {
 		return tpar.is(func(t *term) bool { return t != nil && isBasic(t.typ, info) })
@@ -104,10 +104,11 @@ func isGeneric(t Type) bool {
 
 // Comparable reports whether values of type T are comparable.
 func Comparable(T Type) bool {
-	return comparable(T, nil)
+	return comparable(T, nil, nil)
 }
 
-func comparable(T Type, seen map[Type]bool) bool {
+// If reportf != nil, it may be used to report why T is not comparable.
+func comparable(T Type, seen map[Type]bool, reportf func(string, ...interface{})) bool {
 	if seen[T] {
 		return true
 	}
@@ -125,13 +126,22 @@ func comparable(T Type, seen map[Type]bool) bool {
 		return true
 	case *Struct:
 		for _, f := range t.fields {
-			if !comparable(f.typ, seen) {
+			if !comparable(f.typ, seen, nil) {
+				if reportf != nil {
+					reportf("struct containing %s cannot be compared", f.typ)
+				}
 				return false
 			}
 		}
 		return true
 	case *Array:
-		return comparable(t.elem, seen)
+		if !comparable(t.elem, seen, nil) {
+			if reportf != nil {
+				reportf("%s cannot be compared", t)
+			}
+			return false
+		}
+		return true
 	case *Interface:
 		return !isTypeParam(T) || t.typeSet().IsComparable(seen)
 	}
@@ -308,6 +318,9 @@ func identical(x, y Type, cmpTags bool, p *ifacePair) bool {
 		if y, ok := y.(*Interface); ok {
 			xset := x.typeSet()
 			yset := y.typeSet()
+			if xset.comparable != yset.comparable {
+				return false
+			}
 			if !xset.terms.equal(yset.terms) {
 				return false
 			}
