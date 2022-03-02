@@ -5573,7 +5573,7 @@ strlen_pass::handle_integral_assign (bool *cleanup_eh)
 }
 
 /* Handle assignment statement at *GSI to LHS.  Set *ZERO_WRITE if
-   the assignent stores all zero bytes..  */
+   the assignment stores all zero bytes.  */
 
 bool
 strlen_pass::handle_assign (tree lhs, bool *zero_write)
@@ -5811,7 +5811,7 @@ strlen_pass::before_dom_children (basic_block bb)
   /* Attempt to optimize individual statements.  */
   for (m_gsi = gsi_start_bb (bb); !gsi_end_p (m_gsi); )
     {
-      /* Reset search depth preformance counter.  */
+      /* Reset search depth performance counter.  */
       ptr_qry.depth = 0;
 
       if (check_and_optimize_stmt (&cleanup_eh))
