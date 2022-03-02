@@ -1,3 +1,62 @@
+2022-03-01  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/104715
+	* gcc.dg/Wdangling-pointer-3.c: New test.
+
+2022-03-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/104715
+	* c-c++-common/Wdangling-pointer-7.c: New test.
+
+2022-03-01  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/104736
+	* gdc.test/runnable/dhry.d: Removed.
+
+2022-03-01  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR testsuite/104725
+	* g++.target/i386/pr35513-1.C: Limit to Linux.
+	* g++.target/i386/pr35513-2.C: Likewise.
+
+2022-03-01  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/104716
+	* gfortran.dg/pr104716.f: New testcase.
+
+2022-03-01  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/104727
+	* gcc.target/i386/pr84101.c: Remove XFAIL.
+
+2022-03-01  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/104728
+	* gcc.dg/vect/pr81196-2.c: Require vect_perm.
+
+2022-03-01  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* gcc.target/i386/pr80270.c: Don't compile new test case on ia32.
+
+2022-03-01  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/104533
+	* g++.target/i386/pr104533.C: New test.
+
+2022-03-01  Tom de Vries  <tdevries@suse.de>
+
+	* gcc.target/nvptx/sm30.c: New test.
+	* gcc.target/nvptx/sm35.c: New test.
+	* gcc.target/nvptx/sm53.c: New test.
+	* gcc.target/nvptx/sm70.c: New test.
+	* gcc.target/nvptx/sm75.c: New test.
+	* gcc.target/nvptx/sm80.c: New test.
+
+2022-03-01  Hongyu Wang  <hongyu.wang@intel.com>
+
+	PR target/104664
+	* gcc.target/i386/pr104664.c: New test.
+
 2022-02-28  Roger Sayle  <roger@nextmovesoftware.com>
 
 	PR tree-optimization/91384

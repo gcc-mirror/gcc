@@ -1,3 +1,97 @@
+2022-03-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/104715
+	* gimple-ssa-warn-access.cc (pass_waccess::check_pointer_uses): Don't
+	unnecessarily test if ptr is a SSA_NAME, it has to be.  Only push lhs
+	of a call if gimple_call_return_arg is equal to ptr, not just when it
+	is non-NULL.
+
+2022-03-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* gimple-ssa-warn-access.cc (warn_string_no_nul,
+	maybe_warn_nonstring_arg, fndecl_alloc_p, new_delete_mismatch_p,
+	matching_alloc_calls_p, maybe_warn_alloc_args_overflow,
+	pass_waccess::check_alloca, pass_waccess::check_strcat,
+	memmodel_to_uhwi, fntype_argno_type,
+	pass_waccess::maybe_check_access_sizes,
+	pass_waccess::check_call_access,
+	pass_waccess::maybe_check_dealloc_call, pass_waccess::check_stmt):
+	Comment spelling fixes.
+
+2022-03-01  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/104716
+	* tree-loop-distribution.cc (find_seed_stmts_for_distribution):
+	Check if we can copy the loop.
+
+2022-03-01  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR middle-end/104721
+	* cfgexpand.cc (expand_gimple_basic_block): Clear
+	currently_expanding_gimple_stmt when returning inside the loop.
+
+2022-03-01  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/104533
+	* multiple_target.cc (get_attr_len): Move to tree.c.
+	(expand_target_clones): Remove single value checking.
+	* tree.cc (get_target_clone_attr_len): New fn.
+	* tree.h (get_target_clone_attr_len): Likewise.
+
+2022-03-01  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/104677
+	* doc/invoke.texi: Document more .gcda file name generation.
+
+2022-03-01  Tom de Vries  <tdevries@suse.de>
+
+	PR target/102429
+	* config/nvptx/nvptx.cc (nvptx_gen_shuffle): Handle DCmode and CDImode.
+	* config/nvptx/nvptx.md
+	(define_predicate "nvptx_register_or_complex_di_df_register_operand"):
+	New predicate.
+	(define_expand "omp_simt_xchg_bfly", define_expand "omp_simt_xchg_idx"):
+	Use nvptx_register_or_complex_di_df_register_operand.
+
+2022-03-01  Tom de Vries  <tdevries@suse.de>
+
+	* config.gcc (nvptx*-*-*): Add nvptx/nvptx-gen.opt to extra_options.
+	* config/nvptx/gen-copyright.sh: New file.
+	* config/nvptx/gen-h.sh: New file.
+	* config/nvptx/gen-opt.sh: New file.
+	* config/nvptx/nvptx.h (TARGET_SM35, TARGET_SM53, TARGET_SM70)
+	(TARGET_SM75, TARGET_SM80): Move ...
+	* config/nvptx/nvptx-gen.h: ... here.  New file, generate.
+	* config/nvptx/nvptx.opt (Enum ptx_isa): Move ...
+	* config/nvptx/nvptx-gen.opt: ... here.  New file, generate.
+	* config/nvptx/t-nvptx ($(srcdir)/config/nvptx/nvptx-gen.h)
+	($(srcdir)/config/nvptx/nvptx-gen.opt): New make target.
+
+2022-03-01  Tom de Vries  <tdevries@suse.de>
+
+	* config/nvptx/gen-omp-device-properties.sh: New file.
+	* config/nvptx/t-omp-device: Use gen-omp-device-properties.sh.
+
+2022-03-01  Tom de Vries  <tdevries@suse.de>
+
+	* config/nvptx/nvptx-sm.def: New file.
+	* config/nvptx/nvptx-c.cc (nvptx_cpu_cpp_builtins): Use nvptx-sm.def.
+	* config/nvptx/nvptx-opts.h (enum ptx_isa): Same.
+	* config/nvptx/nvptx.cc (sm_version_to_string)
+	(nvptx_omp_device_kind_arch_isa): Same.
+
+2022-03-01  Robin Dapp  <rdapp@linux.ibm.com>
+
+	PR rtl-optimization/104154
+	* config/arc/arc.cc (gen_compare_reg):  Return the CC-mode
+	comparison ifcvt passed us.
+
+2022-03-01  Hongyu Wang  <hongyu.wang@intel.com>
+
+	PR target/104664
+	* config/i386/i386-expand.cc (ix86_expand_vector_init_duplicate):
+	  Use vec_setv8hf_0 for HF to V8HFmode move instead of subreg.
+
 2022-02-28  Roger Sayle  <roger@nextmovesoftware.com>
 
 	PR tree-optimization/91384

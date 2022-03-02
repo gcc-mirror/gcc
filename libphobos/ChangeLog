@@ -1,3 +1,9 @@
+2022-03-01  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/104659
+	* libdruntime/config/mingw/msvc.c (init_msvc): Fix misspelling of
+	msvcUsesUCRT.
+
 2022-02-28  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* libdruntime/MERGE: Merge upstream druntime caf14b0f.

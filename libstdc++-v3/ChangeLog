@@ -1,3 +1,9 @@
+2022-03-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR middle-end/103984
+	* include/bits/regex_compiler.h (_BracketMatcher::_M_char): Use
+	default member initializer.
+
 2022-02-24  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/104602

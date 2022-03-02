@@ -1,3 +1,9 @@
+2022-03-01  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/104533
+	* c-attribs.cc (handle_target_clones_attribute): Use
+	get_target_clone_attr_len and report warning soon.
+
 2022-02-17  Jonathan Wakely  <jwakely@redhat.com>
 
 	* c-pragma.cc (handle_pragma_pack): Remove parameter name.
