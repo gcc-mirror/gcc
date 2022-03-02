@@ -1,0 +1,3238 @@
+2021-12-30   Gaius Mulley   <gaius.mulley@southwales.ac.uk>
+
+        * gm2-gcc/m2expr.def: Use FOR "C" keyword and ident.
+        * mc-boot/GRTExceptions.c: Rebuilt.
+        * mc-boot/GSArgs.c: Rebuilt.
+        * mc-boot/Gdecl.c: Rebuilt.
+        * mc-boot/Glibc.h: Rebuilt.
+        * mc/decl.mod (varparamT): isForC new field.  (paramT) isForC new
+        field.  (varargsT) isForC new field.  (putDefForC) Implemented.
+        (makeNonVarParameter) assign isForC.  (makeVarParameter) Assign
+        isForC. (getParameterVariable) ignore isDefForC.
+        (doParamTypeEmit) New procedure.  (doParamC) Call doParamTypeEmit.
+        (doVarParamC) call doParamTypeEmit.  (doCompletePartialProcType)
+        Emit a C named type which differs from the m2 proctype.
+        (doPrototypeC) Ignore isDefForC and extended opaque option.
+        (doFuncUnbounded) Disable C string parameters.
+        (doProcedureParamC) Handle isForC for a formal parameter.
+        (isForC) New procedure function.  (isDefForCNode) New procedure
+        function.  (doFuncParamC) Detect var param for a definition
+        module for "C" proc type parameter and emit error message.
+        Detect param for a definition module for "C" and reference the
+        .proc field.  (outputPartialRecordArrayProcType) New procedure.
+        (outputPartial) Rewritten.
+
+2021-12-25   Gaius Mulley   <gaius.mulley@southwales.ac.uk>
+
+        * gm2-compiler/M2Error.mod (EnterProcedureScope): Corrected
+        indentation.  (EnterModuleScope): Corrected
+        indentation.  (EnterProgramScope): Corrected indentation.
+        (EnterImplementationScope) Corrected indentation.
+        (FlushAll) Assign currentScope to the error scope.
+
+2021-12-25   Gaius Mulley   <gaius.mulley@southwales.ac.uk>
+
+        * gm2-compiler/M2Error.mod (GetAnnounceScope): Issue
+        "no scope active" message.  (AnnounceScope) Add ": "
+        after the no scope active message.
+
+2021-12-25   Gaius Mulley   <gaius.mulley@southwales.ac.uk>
+
+        * Make-lang.in (m2/gm2-compiler-boot/M2Error.o): New rule
+        to build M2Error.o using the --entended-opaque option since
+        M2Error.mod aggressively uses opaque data types.
+        * bnf/m2-1.bnf (DefProcedureHeading) ensure DefaultProcedure
+        scope is created before any further tokens are consumed.
+        Call LeaveErrorScope at the end of the rule.
+        * bnf/m2-2.bnf (DefProcedureHeading): Call LeaveErrorScope
+        at the end of the rule.
+        * bnf/m2-3.bnf (DefProcedureHeading): Call LeaveErrorScope
+        at the end of the rule.
+        * bnf/m2-c.bnf (DefProcedureHeading): Call LeaveErrorScope
+        at the end of the rule.
+        * bnf/m2-h.bnf (DefProcedureHeading): Call DefaultProcedure
+        and the beginning and LeaveErrorScope at the end of the rule.
+        * bnf/m2.bnf (DefProcedureHeading): Call DefaultProcedure
+        and the beginning of the rule.
+        * gm2-compiler/M2Comp.mod (M2Error): Import list replaced
+        identifiers ParsingComplete; and ResetErrorScope;.
+        * gm2-compiler/M2Error.def (NameKey): Renamed ParsingComplete to
+        ResetErrorScope.  Call ResetErrorScope before each pass commenses.
+        Import list replaced identifiers LeaveScope,
+        ParsingComplete by EnterErrorScope, ErrorScope,
+        GetCurrentErrorScope,
+        (LeaveErrorScope): New procedure.  (ResetErrorScope): New
+        procedure.  (LeaveScope) Removed.
+        * gm2-compiler/M2Error.mod (M2Options): Import StackOfAddress.
+        (printf2) Imported. (printf3) Imported.
+        (IsErrorScopeNul): New procedure function.
+        (GetAnnounceScope): Re-implementation.
+        (IsSameScope): New procedure function.
+        (AnnounceScope): Detect no scope.
+        (newErrorScope): Use scopeArray to push a new scope.
+        (DefaultProgramModule):  New implementation.
+        (DefaultImplementationModule): New implementation.
+        (DefaultDefinitionModule): New implementation.
+        (DefaultInnerModule): New implementation.
+        (GetCurrentErrorScope): New procedure function.
+        * gm2-compiler/M2MetaError.def: Extend the specifiers to
+        allow error contents to be pushed to a string stack;
+        string stack contents to be popped onto the output string;
+        replace dictionary string by the current output string and
+        remove all contents in the dictionary.
+        * gm2-compiler/M2MetaError.mod (addEntry) New procedure.
+        (killEntry) New procedure function.
+        (lookupDefine) New procedure function.
+        (lookupString) New procedure function.
+        (newEntry) New procedure function.
+        (popOutput) New procedure function.
+        (processDefine) New procedure.
+        (pushOutput) New procedure function.
+        (readWord) New procedure function.
+        (resetDictionary) New procedure.
+        (doErrorScopeMod) Enter error scope before
+        generate an error.
+        (doErrorScopeDef) Enter error scope before
+        generate an error.
+        (op): Handle 'Q', 'X', 'Y', 'Z' format directives.
+        * gm2-compiler/M2Scope.mod (SymbolTable): Import list includes
+        identifier GetErrorScope.
+        (enter): Re-implemented.
+        * gm2-compiler/M2StackWord.mod: Renamed data types so
+        they are easier to debug during bootstrap (avoid name clashes
+        with the M2StackAddress module).
+        * gm2-compiler/P0SymBuild.mod (EndProcedure): Call
+        LeaseErrorScope instead of LeaveScope at the end of the procedure.
+        * gm2-compiler/P2SymBuild.mod (P2EndBuildDefModule): Call
+        LeaseErrorScope instead of LeaveScope at the end of the procedure.
+        (P2EndBuildImplementationModule): Call
+        LeaseErrorScope instead of LeaveScope at the end of the procedure.
+        (P2EndBuildProgramModule): Call
+        LeaseErrorScope instead of LeaveScope at the end of the procedure.
+        (EndBuildInnerModule): Call
+        LeaseErrorScope instead of LeaveScope at the end of the procedure.
+        (P3EndBuildImpModule): Call
+        LeaseErrorScope instead of LeaveScope at the end of the procedure.
+        (P3EndBuildProgModule): Call
+        LeaseErrorScope instead of LeaveScope at the end of the procedure.
+        (EndBuildInnerModule): Call
+        LeaseErrorScope instead of LeaveScope at the end of the procedure.
+        * gm2-compiler/PCSymBuild.mod (PCEndBuildDefModule): Call
+        LeaseErrorScope instead of
+        LeaveScope at the end of the procedure.
+        (PCEndBuildImpModule): Call LeaseErrorScope instead of
+        LeaveScope at the end of the procedure.
+        (PCEndBuildProgModule): Call LeaseErrorScope instead of
+        LeaveScope at the end of the procedure.
+        (PCEndBuildInnerModule): Call LeaseErrorScope instead of
+        LeaveScope at the end of the procedure.
+        * gm2-compiler/SymbolKey.def (NoOfNodes): New procedure
+        function.
+        (ForeachNodeConditionDo) New procedure.
+        * gm2-compiler/SymbolKey.mod (NoOfNodes): New procedure
+        function.
+        (ContainsSymKey): Call FindNodeParentInTree instead of
+        FindNodeAndParentInTree.
+        (GetSymKey): Call FindNodeParentInTree instead of
+        FindNodeAndParentInTree.
+        (DelSymKey): Call FindNodeParentInTree instead of
+        FindNodeAndParentInTree.
+        (FindNodeParentInTree): Renamed from FindNodeAndParentInTree.
+        (IsEmptyTree): Reformatted.  (DoesTreeContainAny): Reformatted.
+        (SearchForAny): Reformatted.  (ForeachNodeConditionDo) New
+        procedure.  (SearchConditional) New procedure.
+        * gm2-compiler/SymbolTable.def (GetErrorScope): New procedure
+        function.  (PutErrorScope) New procedure.
+        * gm2-compiler/SymbolTable.def (GetErrorScope): New procedure
+        function implemented.  (PutErrorScope) New procedure implemented.
+        (AddListify) New procedure.  (Listify) New procedure.
+        (errorScope) field added to procedure, module, defimp
+        symbols and initialized during their construction.
+
+2021-12-17   Gaius Mulley   <gaius.mulley@southwales.ac.uk>
+
+        * bnf/m2-1.bnf (ProgramModule): Set up DefaultProgramModule scope.
+        (ImplementationModule) Set up DefaultImplementationModule scope.
+        (ProcedureHeading) Set up DefaultProcedureScope.
+        (ModuleDeclaration) Set up DefaultInnerModule scope.
+        * bnf/m2-2.bnf (ProgramModule): Set up DefaultProgramModule scope.
+        (ImplementationModule) Set up DefaultImplementationModule scope.
+        (ProcedureHeading) Set up DefaultProcedureScope.
+        (ModuleDeclaration) Set up DefaultInnerModule scope.
+        * bnf/m2-3.bnf (ProgramModule): Set up DefaultProgramModule scope.
+        (ImplementationModule) Set up DefaultImplementationModule scope.
+        (ProcedureHeading) Set up DefaultProcedureScope.
+        (ModuleDeclaration) Set up DefaultInnerModule scope.
+        * bnf/m2-c.bnf (ProgramModule): Set up DefaultProgramModule scope.
+        (ImplementationModule) Set up DefaultImplementationModule scope.
+        (ProcedureHeading) Set up DefaultProcedureScope.
+        (ModuleDeclaration) Set up DefaultInnerModule scope.
+        * bnf/m2-h.bnf (ProgramModule): Set up DefaultProgramModule scope.
+        (ImplementationModule) Set up DefaultImplementationModule scope.
+        (ProcedureHeading) Set up DefaultProcedureScope.
+        (ModuleDeclaration) Set up DefaultInnerModule scope.
+        * bnf/m2.bnf (ProgramModule): Set up DefaultProgramModule scope.
+        (ImplementationModule) Set up DefaultImplementationModule scope.
+        (ProcedureHeading) Set up DefaultProcedureScope.
+        (ModuleDeclaration) Set up DefaultInnerModule scope.  (WasNoError)
+        replaced by seenError.  (Expect) reformatted.
+        (CheckInsertCandiate) New procedure which replaces CheckAndInsert.
+        (PeepToken) use CheckInsertCandiate.  (WarnMissingToken) generate
+        a warning using %W.
+        * gm2-compiler/M2Comp.mod (DefaultProgramModule): New procedure.
+        (DefaultImplementationModule) New procedure.
+        (DefaultDefinitionModule) New procedure.  (DefaultInnerModule)
+        New procedure.  (DefaultProcedure) New procedure.
+        (EnterImplementationScope) call LeaveScope if parsing.
+        (EnterProgramScope) call LeaveScope if parsing.
+        (EnterDefinitionScope) call LeaveScope if parsing.
+        (EnterModuleScope) call LeaveScope if parsing.
+        (EnterProcedureScope) call LeaveScope if parsing.
+        (ParsingComplete) New procedure.
+        * gm2-compiler/M2Comp.def (DefaultProgramModule): New procedure.
+        (DefaultImplementationModule) New procedure.
+        (DefaultDefinitionModule) New procedure.  (DefaultInnerModule)
+        New procedure.  (DefaultProcedure) New procedure.
+        (ParsingComplete) New procedure.
+        * gm2-compiler/M2Error.def (DefaultProgramModule) New procedure.
+        (DefaultImplementationModule) New procedure.
+        (DefaultDefinitionModule) New procedure.  (DefaultInnerModule) New
+        procedure.  (DefaultProcedure) New procedure.  (ParsingComplete)
+        New procedure.
+        * gm2-compiler/M2Error.mod (DefaultProgramModule) New procedure.
+        (DefaultImplementationModule) New procedure.
+        (DefaultDefinitionModule) New procedure.  (DefaultInnerModule) New
+        procedure.  (DefaultProcedure) New procedure.  (ParsingComplete)
+        New procedure.  (GetAnnounceScope) check to see scopeName is non
+        null before using name.
+        * gm2-compiler/M2LexBuf.def (NameKey): Import list replaced identifiers
+        DisplayToken and DumpTokens.
+        * gm2-compiler/M2LexBuf.mod (InsertToken)  Reimplemented.
+        (InsertTokenAndRewind) Reimplemented.
+        * gm2-compiler/M2MetaError.mod (doErrorScopeMod): setup
+        DefaultScope before calling EnterScope.
+        (doErrorScopeMod) (doErrorScopeDef): setup
+        DefaultScope before calling EnterScope.
+        * gm2-compiler/P0SymBuild.mod (RegisterProgramModule):
+        Reformatted.  (RegisterImplementationModule) Reformatted.
+        (RegisterDefinitionModule) Reformatted.
+
+2021-11-19   Gaius Mulley   <gaius.mulley@southwales.ac.uk>
+
+        * gm2-compiler/M2Error.mod (ChainError): Initialize scopeKind and
+        scopeName.
+        * gm2-compiler/M2Range.mod (CodeErrorCheckLoc): Added comment.
+
+2021-11-18   Gaius Mulley   <gaius.mulley@southwales.ac.uk>
+
+        * gm2-compiler/M2Error.def (GetAnnounceScope): Exported.
+        (AnnounceScope) changed to use an extra parameter message.
+        * gm2-compiler/M2Error.mod (GetAnnounceScope): New procedure function.
+        (AnnounceScope) Rewritten to use GetAnnounceScope.
+        * gm2-compiler/M2Range.mod (M2Error): Added GetAnnounceScope to
+        import list.  (CodeErrorCheckLoc) Rewritten to use GetAnnounceScope.
+        * gm2-gcc/rtegraph.c (generate_report): Emit error message using
+        the GCC scope heading and message house style.
+        * gm2-libs/RTExceptions.mod (Raise): Emit the message using the GCC
+        scope heading and message house style.
+
+2021-11-16   Gaius Mulley   <gaius.mulley@southwales.ac.uk>
+
+        * gm2-compiler/M2Error.def (NameKey): Imported identifier Name.
+        (AnnounceScope) defined and exported.  (EnterDefinitionScope)
+        defined and exported.  (EnterImplementationScope) defined and
+        exported.  (EnterProcedureScope) defined and exported.
+        (EnterProgramScope) defined and exported.  (EnterModuleScope)
+        defined exported.  (LeaveScope) defined and exported.
+        (DepthScope) defined and exported.
+        * gm2-compiler/M2Error.mod (M2Debug): Import Assert.
+        (M2StackWord) Import StackOfWord, InitStackWord, InitStackWord,
+        NoOfItemsInStackWord, PopWord, and PushWord.
+        (M2ColorString) Import quoteOpen and quoteClose.
+        (M2Error) Added scopeKind.
+        (ScopeBlock) Added scopeName and kindScope.
+        (New) Reformatted.  (SetScope) New procedure.
+        (AddToRange) call InitScopeBlock.  (GetGlobalQuads) Rewritten
+        to call SetScope whether a new error scope occurs.  Ensure that
+        scope starts when a new file starts and ends.
+        (GetProcQuads) Rewritten to start and end error scope when procedure
+        or module starts or ends.  (DisplayScope) rewritten to display the
+        error scope.  (InitScopeBlock) initialize kindScope to unsetscope.
+        (KillScopeBlock) Reformatted.  (ForeachScopeBlockDo) call enter
+        and leave for every scope.  (enter) New procedure.  (leave)
+        New procedure.
+        * gm2-compiler/Output.mod (WriteKey) assign buffer to result
+        of ConCat.  (StartBuffer) fixbug call InitString with an empty string.
+        gm2-compiler/P0SymBuild.mod (M2Error): Imported.
+        (RegisterProgramModule) call EnterProgramModule.
+        (RegisterImplementationModule) call EnterImplementationScope.
+        (RegisterInnerModule) call EnterModuleScope.  (RegisterProcedure)
+        call EnterProcedureScope.  (EndModule) call LeaveScope.
+        * gm2-compiler/P2SymBuild.mod (P2StartBuildDefModule) call
+        EnterDefinitionScope.  (P2EndBuildDefModule) call LeaveScope.
+        (P2StartBuildImplementationModule) call EnterImplementationScope.
+        (P2StartBuildProgramModule) call EnterProgramScope.
+        (P2EndBuildProgramModule) call LeaveScope.
+        (StartBuildInnerModule) call EnterModuleScope.
+        (EndBuildInnerModule) call LeaveScope.  (StartBuildProcedure)
+        call EnterProcedureScope.  (EndBuildProcedure) call LeaveScope.
+        * gm2-compiler/P3SymBuild.mod (P3StartBuildDefModule) call
+        EnterDefinitionScope.  (P3EndBuildDefModule) call LeaveScope.
+        (P3EndBuildImpModule) call LeaveScope.  (P3StartBuildProgModule)
+        call EnterProgramScope.  (P3EndBuildProgModule) call LeaveScope.
+        (StartBuildInnerModule) call EnterModuleScope.
+        (EndBuildInnerModule) call LeaveScope.  (StartBuildProcedure)
+        call EnterProcedureScope.  (EndBuildProcedure) call LeaveScope.
+        (PCStartBuildDefModule) call EnterDefinitionScope.
+        (PCEndBuildDefModule) call LeaveScope.  (PCStartBuildImpModule)
+        call EnterImplementationScope.  (PCEndBuildImpModule) call
+        LeaveScope.  (PCStartBuildProgModule) call EnterProgramScope.
+        (PCEndBuildProgModule) call LeaveScope.  (PCStartBuildInnerModule)
+        call EnterModuleScope.  (PCEndBuildInnerModule) call LeaveScope.
+        (PCStartBuildProcedure) call EnterProcedureScope.
+        (PCEndBuildProcedure) call LeaveScope.
+        * gm2-compiler/SymbolTable.def (GetDeclaredDefinition) exported.
+        (GetDeclaredModule) exported.
+
+2021-10-26   Gaius Mulley   <gaius.mulley@southwales.ac.uk>
+
+        * gm2-compiler/M2Options.def (m2linemap): Import list replaced
+        identifiers SaveTemps, SetSaveTemps and SetSaveTempsDir.
+        * gm2-compiler/M2Options.mod (SetSaveTemps): New procedure.
+        Sets SaveTemps to value.
+        (MakeSaveTempsFileName) New procedure which appends ".i" to
+        filename.
+        (PreprocessModule) Check SaveTemps to determine whether the
+        temporary file should be deleted upon exit.
+        (SetSaveTempsDir) Stub added.
+        * gm2-gcc/m2options.h (SetSaveTemps): Prototype added.
+        (SetSaveTempsDir) Prototype added.
+        * gm2-lang.c (gm2_langhook_handle_option): Extended to
+        include OP_save_temps and OP_save_temps_.
+        * lang-options.h: Add -fsave-temps and -fsave-temps=.
+        * lang-specs.h: Pass %{save-temps*} to cc1gm2.
+        * lang.opt: Add -save-temps as an alias to save-temps.
+        Add save-temps, add save-temps=.
+
+        ChangeLog:
+
+        * m2tools/Makefile.in : Rebuilt.
+
+2021-10-13   Gaius Mulley   <gaius.mulley@southwales.ac.uk>
+
+        * gm2-libs-ch/termios.c (GetFlag): Corrected macro test
+        against absence of __MAX_BAUD.
+
+2021-10-13   Gaius Mulley   <gaius.mulley@southwales.ac.uk>
+
+        * Make-lang.in (lang_checks_parallelized): Include check-gm2.
+        (check_gm2_parallelize) Set to 10000.
+
+2021-10-13   Gaius Mulley   <gaius.mulley@southwales.ac.uk>
+
+        * m2-link-support.h (SCAFFOLDNAME): Add %d so scaffold files
+        are removed when gcc finishes without error.
+
+2021-10-11   Gaius Mulley   <gaius.mulley@southwales.ac.uk>
+
+        * gm2-compiler/M2GCCDeclare.mod (mystop): Removed.
+        (DebugSets): Commented out.
+        (TryFindSymbol): Commented out.
+        (DeclareTypePartially): Delete variable t and use Assert to test
+        return values.
+        (NotAllDependantsPartiallyOrFullyDeclared): Commented out.
+        (DeclareTypeFromPartial): Commented out.
+        (DeclarePointerTypeFully): Commented out.
+        (ForeachTryDeclare): Remove unused parameters start and end.
+        (DeclaredOutstandingTypes): Alter all calls to ForeachTryDeclare.
+        (DeclareType): Alter all calls to ForeachTryDeclare.
+        (DeclareStringConstant): Commented out.
+        (PromoteToString): Use tokenno to derive location.
+        (DeclareConstructor): Add location to a call to BuildStringConstant.
+        (TryDeclareConstant): Delete variable tok introduce parameter tokenno.
+        (DeclareConst):  Change all calls to BuildConvert to pass the
+        location.
+        (WalkFamilyOfUnbounded):  Add location to the calls of
+        DeclareStringConstant.
+        (WalkDependants): Reformatted.
+        (PopBinding): Remove start, end quadruple values from
+        ResolveConstantExpressions.
+        (AssertAllTypesDeclared): delete variable  and use Assert to check
+        return result.
+        (DoVariableDeclaration): delete variables s and t.
+        (DeclareImportedVariables): Remove call to AlignDeclarationWithSource.
+        (DeclareLocalVariable): Remove call to AlignDeclarationWithSource.
+        (DeclareEnumeration): Remove call to AlignDeclarationWithSource.
+        (IncludeGetNth): Remove call to AlignDeclarationWithSource.
+        (DeclarePackedSubrange): Reformatted.
+        (WalkVarientDependants): Commented out.
+        (BuildTreeFromInterface): replace variable location.
+        * gm2-compiler/M2GenGCC.mod: (CodeInline):  Add tokenno to calls
+        to BuildTreeFromInterface.
+        (CodeAddr): Change call to BuildStringConstant to use location
+        parameter.
+        * gm2-compiler/M2MetaError.mod (InternalFormat): Generate error
+        message using line number.
+        (OutColorS): Commented out.
+        (doGetType): Introduce safely check using HIGH.
+        (doGetSkipType): Introduce safely check using HIGH.
+        (ConCatWord): Commented out.
+        (copySym): Commented out.
+        * gm2-compiler/M2Quads.mod: Remove CheckRangeAddVariableRead and
+        CheckRangeRemoveVariableRead from the import list.
+        * gm2-compiler/M2Range.def (DynamicStrings): Import list commented
+        out identifiers CheckRangeAddVariableRead, CheckRangeRemoveVariableRead.
+        (CheckRangeAddVariableRead): Commented out.
+        * gm2-compiler/M2Range.mod (InitAssignmentRangeCheck): Delete variable
+        p and use Assert to check the return result.
+        (InitReturnRangeCheck): Delete variable
+        p and use Assert to check the return result.
+        (InitSubrangeRangeCheck): Delete variable
+        p and use Assert to check the return result.
+        (InitStaticArraySubscriptRangeCheck): Delete variable
+        p and use Assert to check the return result.
+        (InitDynamicArraySubscriptRangeCheck): Delete variable
+        p and use Assert to check the return result.
+        (InitIncRangeCheck): Delete variable
+        p and use Assert to check the return result.
+        (InitDecRangeCheck): Delete variable
+        p and use Assert to check the return result.
+        (InitInclCheck): Delete variable
+        p and use Assert to check the return result.
+        (InitExclCheck): Delete variable
+        p and use Assert to check the return result.
+        (InitShiftCheck): Delete variable
+        p and use Assert to check the return result.
+        (InitRotateCheck): Delete variable
+        p and use Assert to check the return result.
+        (InitTypesAssignmentCheck): Delete variable
+        p and use Assert to check the return result.
+        (InitTypesParameterCheck): Delete variable
+        p and use Assert to check the return result.
+        (InitTypesExpressionCheck): Delete variable
+        p and use Assert to check the return result.
+        (InitForLoopBeginRangeCheck): Delete variable
+        p and use Assert to check the return result.
+        (InitForLoopToRangeCheck): Delete variable
+        p and use Assert to check the return result.
+        (InitForLoopEndRangeCheck): Delete variable
+        p and use Assert to check the return result.
+        (InitPointerRangeCheck): Delete variable
+        p and use Assert to check the return result.
+        (InitNoReturnRangeCheck): Delete variable
+        p and use Assert to check the return result.
+        (InitNoElseRangeCheck): Delete variable
+        p and use Assert to check the return result.
+        (InitWholeNonPosDivCheck): Delete variable
+        p and use Assert to check the return result.
+        (InitWholeNonPosModCheck): Delete variable
+        p and use Assert to check the return result.
+        (InitWholeZeroDivisionCheck): Delete variable
+        p and use Assert to check the return result.
+        (FoldNil): Delete variable
+        p and use Assert to check the return result.
+        (FoldTypeExpr): Delete variable
+        p and use Assert to check the return result.
+        (CodeTypeExpr): Delete variable
+        p and use Assert to check the return result.
+        (FoldForLoopBegin): Delete variable
+        p and use Assert to check the return result.
+        (MakeAndDeclareConstLit): Delete variable
+        p and use Assert to check the return result.
+        (FoldNonPosMod): Delete variable
+        p and use Assert to check the return result.
+        (FoldZeroDiv): Delete variable
+        p and use Assert to check the return result.
+        (FoldZeroRem): Delete variable
+        p and use Assert to check the return result.
+        (FoldRangeCheck): Delete variable
+        p and use Assert to check the return result.
+        (CodeErrorCheck): Delete variable
+        p and use Assert to check the return result.
+        (CodeInclExcl): Delete variable
+        p and use Assert to check the return result.
+        (DiffTypesCodeForLoopEnd): Delete variable
+        p and use Assert to check the return result.
+        (DiffTypesCodeForLoopEnd): Delete variable
+        p and use Assert to check the return result.
+        (CodeNil): Delete variable
+        p and use Assert to check the return result.
+        (CodeWholeZero): Delete variable
+        p and use Assert to check the return result.
+        (InitCaseBounds): Delete variable
+        p and use Assert to check the return result.
+        (AddVarRead): Delete variable
+        p and use Assert to check the return result.
+        (SubVarRead): Delete variable
+        p and use Assert to check the return result.
+        (CheckRangeAddVariableRead): Delete variable
+        p and use Assert to check the return result.
+        (CheckRangeRemoveVariableRead): Delete variable
+        p and use Assert to check the return result.
+        (WriteRangeCheck): Delete variable
+        p and use Assert to check the return result.
+        * gm2-gcc/m2decl.c: (BuildStringConstant) add location parameter.
+        * gm2-gcc/m2decl.def: (BuildStringConstant) add location parameter.
+        * gm2-gcc/m2decl.h: (BuildStringConstant) add location parameter.
+
+2021-10-08   Gaius Mulley   <gaius.mulley@southwales.ac.uk>
+
+        * gm2-compiler/M2GenGCC.mod (m2statement): Import list inserted
+        identifier BuildFunctionCallTree.
+        (ConvertQuadsToTree): Delete variable Prev.  Reformatted.
+        (IsCompilingMainModule):  Reformatted.
+        (CodeStatement): Remove unused parameters for many of the Code
+        procedures.
+        (ResolveConstantExpressions): Remove unused parameters for many of
+        the Fold procedures.
+        (CodeSaveException): replace variables exceptionCall and functValue.
+        Use BuildFunctionCallTree to avoid an unused return result.
+        (CodeRestoreException): Replace variables exceptionCall and
+        functValue.  Use BuildFunctionCallTree to avoid an unused return result.
+        (PopScope): Check return result.
+        (CodeRange): Remove unused parameters.
+        (CodeError): Remove unused parameters.
+        (CodeStartModFile): Remove unused parameters.
+        (CodeStartDefFile): Remove unused parameters and renamed existing
+        parameters.
+        (CodeEndFile): Remove unused parameters.
+        (CodeInitStart): Remove unused parameters.
+        (CodeInitStart): Reformatted.
+        (CodeInitEnd): replace variables t and moduleTree.
+        (CodeInitEnd): Reformatted.
+        (CodeFinallyStart): Rewritten to remove unused parameters and
+        renamed remaining parameters.
+        (CodeFinallyEnd): replace variables t and moduleTree.
+        (CodeFinallyEnd): Rewritten to remove unused parameters and
+        renamed remaining parameters.
+        (GetHighFromUnbounded): Commented out unused variable remainingDim.
+        (MakeCopyUse): Insert variables Type and NewArray.  Reformatted.
+        (BuildCascadedIfThenElsif): Reformatted.
+        (CheckUnboundedNonVarParameter): Reformatted.
+        (IsParameterWritten): Removed usused variable i.
+        (AutoInitVariable): Removed usused variable i.
+        (CodeNewLocalVar): Reformatted.
+        (CodeKillLocalVar): Reformatted.
+        (CodeProcedureScope): Reformatted.
+        (CodeCall): Reformatted.
+        (FoldBuiltin): Renamed parameter.
+        (CodeFunctValue): Removed unused parameter.
+        (CodeAddr): Removed unused parameter.
+        (FoldBecomes): Delete variable t.  Removed unused parameter.
+        (CodeTry): Removed all parameters.
+        (CodeThrow): Removed unused parameters.
+        (CodeCatchBegin): Reformatted.
+        (checkDeclare): Reformatted and renamed parameters.  Removed
+        unused parameters.
+        (LValueToGenericPtr): Removed unused parameter and reformatted.
+        (CodeAddCheck): Renamed parameters.
+        (FoldSub): Renamed parameters.
+        (CodeAddCheck): Renamed parameters.
+        (CodeSubCheck): Renamed parameters.
+        (FoldMult): Renamed parameters.
+        (CodeSub): Renamed parameters.
+        (CodeMultCheck): Rewritten and reformatted.
+        (CodeDivM2Checked): Rewritten and reformatted.
+        (CodeDivM2Check): Rewritten and reformatted.
+        (CodeModM2Checked): Rewritten and reformatted.
+        (CodeModM2Check): Rewritten and reformatted.
+        (FoldDivM2): Rewritten and reformatted.
+        (CodeDivM2): Rewritten and reformatted.
+        (FoldModM2): Rewritten and reformatted.
+        (FoldDivTrunc): Rewritten and reformatted.
+        (FoldDivCeil): Rewritten and reformatted.
+        (FoldDivFloor): Rewritten and reformatted.
+        (FoldBuiltinConst): Rewritten and reformatted.
+        (FoldBuiltinTypeInfo): Rewritten and reformatted.
+        (CodeStandardFunction): Rewritten and reformatted.
+        (CodeSavePriority): Rewritten and reformatted.
+        (CodeRestorePriority): Rewritten and reformatted.
+        (CodeUnarySet): Rewritten and reformatted.
+        (FoldIfIn): Rewritten and reformatted.
+        (GetSetLimits): Rewritten and reformatted.
+        (CodeIncl): Rewritten and reformatted.
+        (CodeExcl): Rewritten and reformatted.
+        (FoldUnary): Rewritten and reformatted.
+        (FoldUnarySet): Rewritten and reformatted.
+        (CodeUnaryCheck): Rewritten and reformatted.
+        (CodeUnary): Rewritten and reformatted.
+        (CodeNegateChecked): Rewritten and reformatted.
+        (CodeSize): Rewritten and reformatted.
+        (FoldRecordField): Delete variables location and t.
+        (BuildHighFromArray): Rewritten and reformatted.
+        (BuildHighFromStaticArray): Rewritten and reformatted.
+        (ResolveHigh): Rewritten and reformatted.
+        (FoldHigh): Rewritten and reformatted.
+        (CodeArray): Rewritten and reformatted.
+        (FoldElementSizeForArray): Rewritten and reformatted.
+        (FoldElementSizeForUnbounded): Rewritten and reformatted.
+        (FoldConvert): Rewritten and reformatted.
+        (CodeIfNotEqu): Rewritten and reformatted.
+        (MixTypes3): Rewritten and reformatted.
+        (AddQuadInformation): Rewritten and reformatted.
+        (UndoReadWriteInfo): Rewritten and reformatted.
+        (WriteQuad): Rewritten and reformatted.
+        * gm2-gcc/m2statement.c (BuildFunctionCallTree): New function.
+        * gm2-gcc/m2statement.def (BuildFunctionCallTree): New function.
+        * gm2-gcc/m2statement.h (BuildFunctionCallTree): New function.
+
+2021-10-08   Gaius Mulley   <gaius.mulley@southwales.ac.uk>
+
+        * gm2-compiler/M2GenGCC.mod (m2statement): Import list inserted
+        identifier BuildFunctionCallTree.
+        (ConvertQuadsToTree): Delete variable Prev.  Reformatted.
+        (IsCompilingMainModule):  Reformatted.
+        (CodeStatement): Remove unused parameters for many of the Code
+        procedures.
+        (ResolveConstantExpressions): Remove unused parameters for many of
+        the Fold procedures.
+        (CodeSaveException): replace variables exceptionCall and functValue.
+        Use BuildFunctionCallTree to avoid an unused return result.
+        (CodeRestoreException): Replace variables exceptionCall and
+        functValue.  Use BuildFunctionCallTree to avoid an unused return result.
+        (PopScope): Check return result.
+        (CodeRange): Remove unused parameters.
+        (CodeError): Remove unused parameters.
+        (CodeStartModFile): Remove unused parameters.
+        (CodeStartDefFile): Remove unused parameters and renamed existing
+        parameters.
+        (CodeEndFile): Remove unused parameters.
+        (CodeInitStart): Remove unused parameters.
+        (CodeInitStart): Reformatted.
+        (CodeInitEnd): replace variables t and moduleTree.
+        (CodeInitEnd): Reformatted.
+        (CodeFinallyStart): Rewritten to remove unused parameters and
+        renamed remaining parameters.
+        (CodeFinallyEnd): replace variables t and moduleTree.
+        (CodeFinallyEnd): Rewritten to remove unused parameters and
+        renamed remaining parameters.
+        (GetHighFromUnbounded): Commented out unused variable remainingDim.
+        (MakeCopyUse): Insert variables Type and NewArray.  Reformatted.
+        (BuildCascadedIfThenElsif): Reformatted.
+        (CheckUnboundedNonVarParameter): Reformatted.
+        (IsParameterWritten): Removed usused variable i.
+        (AutoInitVariable): Removed usused variable i.
+        (CodeNewLocalVar): Reformatted.
+        (CodeKillLocalVar): Reformatted.
+        (CodeProcedureScope): Reformatted.
+        (CodeCall): Reformatted.
+        (FoldBuiltin): Renamed parameter.
+        (CodeFunctValue): Removed unused parameter.
+        (CodeAddr): Removed unused parameter.
+        (FoldBecomes): Delete variable t.  Removed unused parameter.
+        (CodeTry): Removed all parameters.
+        (CodeThrow): Removed unused parameters.
+        (CodeCatchBegin): Reformatted.
+        (checkDeclare): Reformatted and renamed parameters.  Removed
+        unused parameters.
+        (LValueToGenericPtr): Removed unused parameter and reformatted.
+        (CodeAddCheck): Renamed parameters.
+        (FoldSub): Renamed parameters.
+        (CodeAddCheck): Renamed parameters.
+        (CodeSubCheck): Renamed parameters.
+        (FoldMult): Renamed parameters.
+        (CodeSub): Renamed parameters.
+        (CodeMultCheck): Rewritten and reformatted.
+        (CodeDivM2Checked): Rewritten and reformatted.
+        (CodeDivM2Check): Rewritten and reformatted.
+        (CodeModM2Checked): Rewritten and reformatted.
+        (CodeModM2Check): Rewritten and reformatted.
+        (FoldDivM2): Rewritten and reformatted.
+        (CodeDivM2): Rewritten and reformatted.
+        (FoldModM2): Rewritten and reformatted.
+        (FoldDivTrunc): Rewritten and reformatted.
+        (FoldDivCeil): Rewritten and reformatted.
+        (FoldDivFloor): Rewritten and reformatted.
+        (FoldBuiltinConst): Rewritten and reformatted.
+        (FoldBuiltinTypeInfo): Rewritten and reformatted.
+        (CodeStandardFunction): Rewritten and reformatted.
+        (CodeSavePriority): Rewritten and reformatted.
+        (CodeRestorePriority): Rewritten and reformatted.
+        (CodeUnarySet): Rewritten and reformatted.
+        (FoldIfIn): Rewritten and reformatted.
+        (GetSetLimits): Rewritten and reformatted.
+        (CodeIncl): Rewritten and reformatted.
+        (CodeExcl): Rewritten and reformatted.
+        (FoldUnary): Rewritten and reformatted.
+        (FoldUnarySet): Rewritten and reformatted.
+        (CodeUnaryCheck): Rewritten and reformatted.
+        (CodeUnary): Rewritten and reformatted.
+        (CodeNegateChecked): Rewritten and reformatted.
+        (CodeSize): Rewritten and reformatted.
+        (FoldRecordField): Delete variables location and t.
+        (BuildHighFromArray): Rewritten and reformatted.
+        (BuildHighFromStaticArray): Rewritten and reformatted.
+        (ResolveHigh): Rewritten and reformatted.
+        (FoldHigh): Rewritten and reformatted.
+        (CodeArray): Rewritten and reformatted.
+        (FoldElementSizeForArray): Rewritten and reformatted.
+        (FoldElementSizeForUnbounded): Rewritten and reformatted.
+        (FoldConvert): Rewritten and reformatted.
+        (CodeIfNotEqu): Rewritten and reformatted.
+        (MixTypes3): Rewritten and reformatted.
+        (AddQuadInformation): Rewritten and reformatted.
+        (UndoReadWriteInfo): Rewritten and reformatted.
+        (WriteQuad): Rewritten and reformatted.
+        * gm2-gcc/m2statement.c (BuildFunctionCallTree): New function.
+        * gm2-gcc/m2statement.def (BuildFunctionCallTree): New function.
+        * gm2-gcc/m2statement.h (BuildFunctionCallTree): New function.
+
+2021-09-16   Gaius Mulley   <gaius.mulley@southwales.ac.uk>
+
+        * gm2-compiler/M2GenGCC.def (DoCopyString): Renamed parameter t
+        to length.
+        * gm2-compiler/M2GenGCC.mod (CodeStatement): Call
+        FoldStatementNote with one parameter.  Call CodeGoto with
+        one parameter.  Call CodeReturnValue without op2.  Call
+        CodeInline without q, op1 and op2.  Call CodeStatement with a
+        single parameter.  Call CodeSaveException a single parameter op3.
+        Call CodeRestoreException with op1 and op3.
+        (ResolveConstantExpressions) Call FoldStatementNote with one
+        parameter.  Call FoldRange without op1 and op2.  Call
+        FoldStatementNote with only op3.  (CodeInline) Reformatted.
+        (FoldStatementNote) changed to use a single parameter.
+        (FoldRange) Renamed parameter q to quad, commented out p
+        and removed op1, op2.  (CodeSaveException) Rewritten using
+        descriptive variable names.  (CodeRestoreException) Rewritten
+        using descriptive variable names.  (MakeCopyAndUse) Use
+        BuildAssignmentStatement and remove variable t.
+        (AutoInitVariable) Use BuildAssignmentStatement and remove
+        variable t.  (CodeMakeAdr) Use BuildAssignmentStatement.
+        (CodeAddr) Use BuildAssignmentStatement and remove
+        variable t.  (DoCopyString) Renamed parameter t to length.
+        (CodeInitAddress) Use BuildAssignmentStatement and remove
+        variable t.  (CodeBecomes) Use BuildAssignmentStatement and remove
+        variable t.  (CodeBinaryCheck) Use BuildAssignmentStatement and
+        remove variable t.  (CodeBinary) Use BuildAssignmentStatement and
+        remove variable t.  (CodeStandardFunction) Use
+        BuildAssignmentStatement and remove variable t.
+        (CodeUnaryCheck) Use BuildAssignmentStatement and remove
+        variable t.  (CodeUnary) Use BuildAssignmentStatement and remove
+        variable t.  (CodeSize) Use BuildAssignmentStatement and remove
+        variable t.  (CodeOffset) Use BuildAssignmentStatement and remove
+        variable t.  (CodeHigh) Use BuildAssignmentStatement and remove
+        variable t.  (CodeUnbounded) Use BuildAssignmentStatement and remove
+        variable t.  (CodeArray) Use BuildAssignmentStatement and remove
+        variable t.  (FoldRecordField) renamed local variable t to ptr.
+        (CodeOffset) renamed local variable t to offset.
+        * gm2-gcc/m2statement.def (BuildAssignmentStatement): New
+        procedure.
+        * gm2-gcc/m2statement.h (BuildAssignmentStatement): New
+        function declaration.
+        * gm2-gcc/m2statement.c: (BuildAssignmentStatement): New
+        function.
+
+2021-09-13   Gaius Mulley   <gaius.mulley@southwales.ac.uk>
+
+        * gm2-compiler/M2ALU.mod (WatchedValue):  Removed.  (stop)
+        Removed.  (AddElement) Removed.  (SetNegate) Removed variable j.
+        (DisplayElements) Removed variable t.  (WalkConstructorDependants)
+        Removed variable r.  (PerformSetIn) Removed variable v.
+        (BuildStructBitset) Removed GccField.  (ConstructRecordConstant)
+        Removed variables GccFieldType, gccsym, high, low and location.
+        (InitialiseArrayOfCharWithString) Removed parameter v.
+        (CheckElementString) Remove parameter baseType.  Call
+        InitialiseArrayOfCharWithString without the NIL third parameter.
+        (InitialiseArrayWith) Remove parameter baseType.  Call
+        CheckElementString without baseType.  (InitialiseArrayOfCharWith)
+        Remove parameter baseType.  Remove variables Subrange, Subscript
+        and seenString.
+        * gm2-compiler/M2CaseList.def (OverlappingCaseBounds):  Remove
+        unused tokenno parameter.  (MissingCaseBounds) use MetaErrorT2 and
+        position the error at tokenno.  (WriteCase) Simplistic
+        implmentation.
+        * gm2-compiler/M2Range.mod:  (FoldCaseBounds) call
+        OverlappingCaseBounds without tokenno parameter.
+
+2021-08-26   Gaius Mulley   <gaius.mulley@southwales.ac.uk>
+
+        * Make-lang.in (GM2-COMP-BOOT-DEFS): Remove cflex.def from list.
+        (GM2-COMP-BOOT-MODS) Remove cflex.mod from list.
+        * gm2-compiler/CLexBuf.mod (GetToken):
+        Remove unused local variable a.  Use AdvanceToken
+        instead of GetToken.  (AddTokToList) Remove unused variable b.
+        (IsLastTokenEof) Remove unused variable t.
+        * gm2-compiler/M2ALU.mod (Reduce): New procedure.
+        (PrintValue) Use Reduce rather than PopIntegerTree.
+        * gm2-compiler/M2Base.mod (Param): Remove unused
+        global variable.  (IsVarientSame) Initialize ga at the procedure
+        start.  Initialize gb at the procedure start.
+        * gm2-compiler/M2CaseList.def (CaseBoundsResolved): tokenno
+        parameter removed.
+        * gm2-compiler/M2CaseList.mod (RangePair): Data type
+        simplified.  (ConflictingPair) Data type simplified.  (CaseList)
+        Data type simplified.  (SetRange) Data type simplified.
+        (Overlaps) Reformatted.  (OverlappingCaseBound) Remove tokenno
+        parameter.
+        * gm2-compiler/M2GenGCC.mod (ConvertForComparison):
+        Commented out.  (IsWord) Removed.  (HaveDifferentTypes) Removed.
+        (FoldSetLogicalDifference) Commented out.  (DetermineFieldOf)
+        Commented out.  (CodeMath) Commented out.
+        * gm2-compiler/M2Range.mod  (FoldCaseBounds): Remove
+        first parameter to TypeCaseBounds.  (CodeCaseBounds) Remove
+        first parameter to TypeCaseBounds.
+        * gm2-compiler/M2Search.mod (Assert): Imported.
+        (GarbageDebugging) Declared.  (doDSdbEnter) Commented out.
+        (doDSdbExit) Commented out.  (DSdbEnter) Commented out.
+        (DSdbExit) Commented out.  (DSdbExit) Assert s # NIL.
+        * gm2-compiler/M2Swig.mod (Doresolveorder): Remove
+        parameter main.  (DetermineParameter) Remove annotate parameter.
+        * gm2-compiler/ObjectFiles.mod (RegisterModuleObject):
+        Remove local variable r as libc.close and libc.read procedure
+        functions have an optional return result.  (IsRegistered)
+        Remove local variable r as libc.close and libc.read procedure
+        functions have an optional return result.
+        * gm2-compiler/PCSymBuild.mod (WalkConst): Commented out.
+        * gm2-compiler/Sets.mod (checkRange): Remove unused
+        variable a.  Use Assert to check memset and memcpy results instead
+        of assigning to a.  (DuplicateSet) Remove unused variable a.
+        Use Assert to check return value of memset and memcpy instead of
+        assigning to a.
+        * gm2-compiler/SymbolTable.mod (MetaErrorT2): Imported.
+        (AlreadyImportedError) Commented out.  (DisplayScopes) Commented
+        out.  (GetConstFromTypeTree) Commented out.
+        (PutConstIntoTypeTree) Commented out.  (SkipHiddenType) Commented
+        out.  (GetLastMainScopeId) Commented out.
+        (PutExportUnImplemented) Commented out.  (DumpSymbols) Commented out.
+        * gm2-compiler/cflex.def (AdvanceToken): New procedure.
+        * gm2-libs-min/libc.c (abort): Add infinite loop.
+        (exit) Add infinite loop.
+        * gm2-libs/libc.def (read): Define return value as
+        optional.  (write) Define return value as optional.
+        (close) Define return value as optional.
+        (system) Define return value as optional.
+        (readv) Define return value as optional.
+        (writev) Define return value as optional.
+        (chown) Define return value as optional.
+        (strcpy) Define return value as optional.
+        (strncpy) Define return value as optional.
+        (unlink) Define return value as optional.
+        (memcpy) Define return value as optional.
+        (memset) Define return value as optional.
+        (memmove) Define return value as optional.
+        (setenv) Define return value as optional.
+        (ftime) Define return value as optional.
+        (shutdown) Define return value as optional.
+        (rename) Define return value as optional.
+        (atexit) Sefine return value as optional.
+        * Makefile.in: Rebuilt.
+
+2021-08-26   Gaius Mulley   <gaius.mulley@southwales.ac.uk>
+        * gcc/m2/Make-lang.in (cflex.def): Removed from
+        GM2-COMP-BOOT-DEFS.  (cflex.mod) Removed from
+        GM2-COMP-BOOT-MODS.
+        * gcc/m2/gm2-compiler/CLexBuf.mod (GetToken):
+        Remove unused local variable a.  Use AdvanceToken
+        instead of GetToken.  (AddTokToList) Remove unused variable b.
+        (IsLastTokenEof) Remove unused variable t.
+        * gcc/m2/gm2-compiler/M2ALU.mod (Reduce): New procedure.
+        (PrintValue) Use Reduce rather than PopIntegerTree.
+        * gcc/m2/gm2-compiler/M2Base.mod (Param): Remove unused
+        global variable.  (IsVarientSame) Initialize ga at the procedure
+        start.  Initialize gb at the procedure start.
+        * gcc/m2/gm2-compiler/M2CaseList.def (CaseBoundsResolved) tokenno
+        parameter removed.
+        * gcc/m2/gm2-compiler/M2CaseList.mod (RangePair) Data type
+        simplified.  (ConflictingPair) Data type simplified.  (CaseList)
+        Data type simplified.  (SetRange) Data type simplified.
+        (Overlaps) Reformatted.  (OverlappingCaseBound) Remove tokenno
+        parameter.
+        * gcc/m2/gm2-compiler/M2GenGCC.mod:  (ConvertForComparison)
+        Commented out.  (IsWord) Removed.  (HaveDifferentTypes) Removed.
+        (FoldSetLogicalDifference) Commented out.  (DetermineFieldOf)
+        Commented out.  (CodeMath) Commented out.
+        * gcc/m2/gm2-compiler/M2Range.mod  (FoldCaseBounds) remove
+        first parameter to TypeCaseBounds.  (CodeCaseBounds) remove
+        first parameter to TypeCaseBounds.
+        * gcc/m2/gm2-compiler/M2Search.mod (Assert) Imported.
+        (GarbageDebugging) Declared.  (doDSdbEnter) Commented out.
+        (doDSdbExit) Commented out.  (DSdbEnter) Commented out.
+        (DSdbExit) Commented out.  (DSdbExit) Assert s # NIL.
+        * gcc/m2/gm2-compiler/M2Swig.mod (Doresolveorder) Remove
+        parameter main.  (DetermineParameter) Remove annotate parameter.
+        * gcc/m2/gm2-compiler/ObjectFiles.mod (RegisterModuleObject)
+        Remove local variable r as libc.close and libc.read procedure
+        functions have an optional return result.  (IsRegistered)
+        Remove local variable r as libc.close and libc.read procedure
+        functions have an optional return result.
+        * gcc/m2/gm2-compiler/PCSymBuild.mod (WalkConst): Commented out.
+        * gcc/m2/gm2-compiler/Sets.mod (checkRange): Remove unused
+        variable a.  Use Assert to check memset and memcpy results instead
+        of assigning to a.  (DuplicateSet): Remove unused variable a.
+        Use Assert to check return value of memset and memcpy instead of
+        assigning to a.
+        * gcc/m2/gm2-compiler/SymbolTable.mod (MetaErrorT2): Imported.
+        (AlreadyImportedError) Commented out.  (DisplayScopes) Commented
+        out.  (GetConstFromTypeTree) Commented out.
+        (PutConstIntoTypeTree) Commented out.  (SkipHiddenType) Commented
+        out.  (GetLastMainScopeId) Commented out.
+        (PutExportUnImplemented) Commented out.  (DumpSymbols) Commented out.
+        * gcc/m2/gm2-compiler/cflex.def (AdvanceToken): New procedure.
+        * gcc/m2/gm2-libs-min/libc.c (abort):  Add infinite loop.
+        (exit):  Add infinite loop.
+        * gcc/m2/gm2-libs/libc.def (read): define return value as
+        optional.  (write) define return value as optional.
+        (close) define return value as optional.
+        (system) define return value as optional.
+        (readv) define return value as optional.
+        (writev) define return value as optional.
+        (chown) define return value as optional.
+        (strcpy) define return value as optional.
+        (strncpy) define return value as optional.
+        (unlink) define return value as optional.
+        (memcpy) define return value as optional.
+        (memset) define return value as optional.
+        (memmove) define return value as optional.
+        (setenv) define return value as optional.
+        (ftime) define return value as optional.
+        (shutdown) define return value as optional.
+        (rename) define return value as optional.
+        (atexit) define return value as optional.
+        (Makefile.in): Rebuilt.
+
+2021-08-18   Gaius Mulley   <gaius.mulley@southwales.ac.uk>
+
+        * gm2-compiler/M2Options.def (SetMakeall): Commented out.
+        (SetMakeall0) Commented out.  (SetIncludePath) Commented out.
+        * gm2-compiler/M2Options.mod: (SetMakeall): Commented out.
+        (SetMakeall0) Commented out.  (SetIncludePath) Commented out.
+        * gm2-libs/SArgs.mod (GetArg): Cast ArgV to PtrToChar before
+        adding the offset.  Removes a warning from the resultant C/C++ code.
+
+2021-08-18   Gaius Mulley   <gaius.mulley@southwales.ac.uk>
+
+        * Make-lang.in: Add $(generated_files) to the list
+        of dependanies for all .o files.
+
+2021-08-17   Gaius Mulley   <gaius.mulley@southwales.ac.uk>
+
+        * Make-lang.in (m2/gm2-gcc/%.o): Add $(generated_files) to the list
+        of dependanies.
+
+2021-08-15   Gaius Mulley   <gaius.mulley@southwales.ac.uk>
+
+        * m2-boot-ch/Gtermios.c (GetFlag): Correct guard using
+        defined(__MAX_BAUD).  (SetFlag): Correct guard using
+        defined(__MAX_BAUD).
+
+2021-08-12   Gaius Mulley   <gaius.mulley@southwales.ac.uk>
+
+        * gm2-libs/GetOpt.mod:  Rename the getopt module with cgetopt
+        to avoid a clash of source filenames in the gcc tree.
+
+2021-08-12   Gaius Mulley   <gaius.mulley@southwales.ac.uk>
+
+        * Make-lang.in (PGE):  bootstrap binary location changed.
+        Use gcc-12 version of the gm2 libraries when regenerating
+        mc.  All automatically generated parser files for mc are now
+        built by PGE using the -o option.
+        * gm2-compiler/M2Base.def (NegateType): Remove NearTok
+        parameter.
+        * gm2-compiler/M2Base.mod (NegateType): Remove NearTok
+        parameter.  (IsEnumerationSame) Remove error parameter.
+        * gm2-compiler/M2GenGCC.mod: Caller to NegateType removes
+        token position parameter.
+        * gm2-compiler/M2Quads.mod: Caller to NegateType removes
+        token position parameter.
+        * gm2-compiler/M2System.mod (Assert) Imported.
+        (AttemptToCreateType) renamed to CreateType.
+        (AttemptToCreateSetType) renamed to CreateSetType.
+        (AttemptToCreateSetType) reimplemented.  (AttemptToCreateType)
+        reimplemented.  (MakeFixedSizedTypes) reimplemented.
+        (InitPIMTypes) reimplemented.  (InitISOTypes) reimplemented.
+        (MakeExtraSystemTypes) reimplemented.
+        * gm2-compiler/PCSymBuild.mod (stackPtr) Removed.  (currentConst)
+        removed.  (BuildVarAtAddress) Commented out.
+        (BuildOptArgInitializer) Commented out.
+        * mc/keyc.mod:  Introduce prototype for throw.
+        * mc-boot/GDynamicStrings.c:  Rebuilt.
+        * mc-boot/GFIO.c:  Rebuilt.
+        * mc-boot/GIndexing.c:  Rebuilt.
+        * mc-boot/GM2EXCEPTION.c:  Rebuilt.
+        * mc-boot/GPushBackInput.c:  Rebuilt.
+        * mc-boot/GRTExceptions.c:  Rebuilt.
+        * mc-boot/GRTint.c:  Rebuilt.
+        * mc-boot/GStdIO.c:  Rebuilt.
+        * mc-boot/GStrLib.c:  Rebuilt.
+        * mc-boot/GStrLib.h:  Rebuilt.
+        * mc-boot/GStringConvert.c:  Rebuilt.
+        * mc-boot/GSysStorage.c:  Rebuilt.
+        * mc-boot/Gdecl.c:  Rebuilt.
+        * mc-boot/Gkeyc.c:  Rebuilt.
+        * mc-boot/GmcComment.c:  Rebuilt.
+        * mc-boot/GmcComp.c:  Rebuilt.
+        * mc-boot/GmcDebug.c:  Rebuilt.
+        * mc-boot/GmcMetaError.c:  Rebuilt.
+        * mc-boot/GmcStack.c:  Rebuilt.
+        * mc-boot/Gmcp1.c:  Rebuilt.
+        * mc-boot/Gmcp2.c:  Rebuilt.
+        * mc-boot/Gmcp3.c:  Rebuilt.
+        * mc-boot/Gmcp4.c:  Rebuilt.
+        * mc-boot/Gmcp5.c:  Rebuilt.
+        * mc-boot/GnameKey.c:  Rebuilt.
+        * mc-boot/GsymbolKey.c:  Rebuilt.
+
+2021-08-10   Gaius Mulley   <gaius.mulley@southwales.ac.uk>
+
+        * gm2-compiler/M2Quads.mod (doDSdbEnter): Commented out.
+        (DSdbExit) Remove parameter.  (GetQF) Cast procedure
+        function return result.  (CheckAddVariableReadLeftValue)
+        Commented out.  (CheckRemoveVariableReadLeftValue) Commented
+        out.  (CheckParameterOrdinals) Remove parameter.
+        (CheckProcTypeAndProcedure) Remove tokpos and TypeList parameters.
+        (BuildCapFunction) Use local optok instead of erroneous global
+        vartok.  (BuildProcedureEnd) Use RemoveTop rather than PopWord.
+        (CheckReadBeforeInitialized) Call CheckReadBeforeInitialized
+        without Start parameter.  (CheckForLogicalOperator) Renamed
+        CheckLogicalOperator.  (CheckGenericNulSet) Renamed
+        doCheckGenericNulSet and commented out.  (CheckForGenericNulSet)
+        Renamed CheckGenericNulSet and commented out.  (ds) Commented out.
+        (DSdbExit) called without a parameter.  (BuildStmtNote)
+        Reformatted and INTEGER i is cast to a CARDINAL prior to
+        comparison.  (IncOperandD) Commented out.  (PushTrw) Commented
+        out.  (StressStack) Commented out.
+        * gm2-compiler/M2StackWord.def (RemoveTop): Definition added.
+        * gm2-compiler/M2StackWord.mod (RemoveTop): Implementation added.
+
+2021-08-02   Gaius Mulley   <gaius.mulley@southwales.ac.uk>
+
+        * gm2-compiler/M2BasicBlock.mod (ConvertQuads2BasicBlock): Assign
+        CurrentBB to NIL.  (Sub): Commented out.  (DisplayBasicBlocks):
+        Commented out.  (DisplayBlock): Commented out.
+        * gm2-compiler/M2Code.mod (PrintModule): Commented out.
+        (DisplayQuadsInScope): Commented out.  (DisplayQuadNumbers):
+        Commented out.
+        * gm2-compiler/M2Error.mod: Import NulName. (DoFormat1) initialize
+        n.  (DoFormat2) initialize n.
+        * gm2-compiler/M2Optimize.mod (DeleteUnReachableProcedures):
+        Commented out.
+        * gm2-compiler/M2Options.mod:  Commented out string garbage
+        debugging procedures.  (SetDebugging) Commented out.
+        * gm2-compiler/M2Printf.mod (IsDigit): Commented out.
+        * gm2-compiler/P1SymBuild.mod (CheckProcedure): Removed.
+        (CheckFileName) Commented out.  (BuildHiddenType) Remove Sym.
+        Use Assert to check return value.
+        * gm2-compiler/P2SymBuild.def (SeenBoolean): Remove sym parameter.
+        (SeenZType): Remove sym parameter.  (SeenRType): Remove sym
+        parameter.  (SeenCType): Remove sym parameter.
+        * gm2-compiler/P2SymBuild.mod (SeenBoolean): Remove sym parameter.
+        (SeenZType): Remove sym parameter.  (SeenRType): Remove sym
+        parameter.  (SeenCType): Remove sym parameter.
+        (StartBuildEnumeration): Remove name.  (FailParameter) Use default
+        ELSE and Assert.  (BuildNulParam) Removed.  (BuildFieldRecord)
+        Remove name.  Assign Field to NulSym.  (BuildVarientSelector)
+        Remove Parent.
+        * gm2-compiler/SymbolTable.def (GCFieldVarient): Removed.
+        (FillInUnboundedFields):  Remove field.
+        * gm2-compiler/gm2lcc.mod (CollectObjects): remove s.
+        (WriteModuleName) Removed.
+        * gm2-compiler/gm2lorder.mod (InitRuntimeModules) Remove l.
+        * gm2-gcc/m2expr.c (divFloorOverflowPosPos) Remove unused
+        parameters.  (divFloorOverflowPosNeg) Remove unused parameters.
+        (divFloorOverflowNegPos) Remove unused parameters.
+
+2021-07-28  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
+
+	* Make-lang.in: Added Output.mod to the list of ppg
+	modules.
+	* Make-lang.in: Added Output.def to the list of ppg
+	modules.
+	* gm2-compiler/Output.def: (New file).
+	* gm2-compiler/Output.mod: (New file).
+	* bnf/gm2l.bnf: (DescribeError) no longer has any parameters.
+	Removed unused rules.
+	* bnf/gm2m.bnf: (DescribeError) no longer has any parameters.
+	Removed unused rules.
+	* bnf/m2-1.bnf: (DescribeError) no longer has any parameters.
+	Removed unused rules.
+	* bnf/m2-2.bnf: (DescribeError) no longer has any parameters.
+	Removed unused rules.
+	* bnf/m2-3.bnf: (DescribeError) no longer has any parameters.
+	Removed unused rules.
+	* bnf/m2-c.bnf: (DescribeError) no longer has any parameters.
+	Removed unused rules.
+	* bnf/m2-h.bnf: (DescribeError) no longer has any parameters.
+	Removed unused rules.
+	* bnf/m2.bnf: (DescribeError) no longer has any parameters.
+	Removed unused rules.
+	* bnf/mc-1.bnf: (DescribeError) no longer has any parameters.
+	Removed unused rules.
+	* bnf/mc-2.bnf: (DescribeError) no longer has any parameters.
+	Removed unused rules.
+	* bnf/mc-3.bnf: (DescribeError) no longer has any parameters.
+	Removed unused rules.
+	* bnf/mc-4.bnf: (DescribeError) no longer has any parameters.
+	Removed unused rules.
+	* bnf/mc-5.bnf: (DescribeError) no longer has any parameters.
+	Removed unused rules.
+	* gm2-compiler/M2ALU.mod: (InitialiseArrayOfCharWithString)
+	isChar set to FALSE.
+	* gm2-compiler/M2ALU.def: (DisplayModules) exported.
+	* gm2-compiler/M2Depth.def: (DisplayGraph) exported.
+	* gm2-compiler/M2Depth.mod: (DisplayGraph) added comment.
+	* gm2-compiler/M2Options.mod: (SetProfiling) commented out.
+	* gm2-compiler/M2Quads.mod: (BuildAddAdrFunction) vartok removed.
+	(BuildAbsFunction) combinedtok removed. (BuildRotateFunction)
+	paramtok removed.
+	* gm2-compiler/P0SymBuild.mod: (pc) commented out.
+	(FlushImports) removed sym and reformatted.  (DeclareModules)
+	reformatted.  (MoveNext) commented out.
+	* gm2-compiler/SymbolKey.mod: (stop) commented out.
+	* gm2-compiler/ppg.mod: (Output) imported.  (ArgName)
+	declared.  (ParametersUsed) declared.  (PrettyFollow)
+	use the Output module to delay emitting text.  (WriteCodeHunkList)
+	use the Output module to delay emitting text.  (WriteIndent)
+	use the Output module to delay emitting text.  (WriteIndent)
+	(CheckWrite) use the Output module to delay emitting text.
+	(WriteIndent) use the Output module to delay emitting text.
+	(NewLine) use the Output module to delay emitting text.
+	(IndentString) use the Output module to delay emitting text.
+	(DescribeError) remove parameters.  (SyntaxError) call
+	DescribeError without parameters.  (KeyWord) use the
+	Output module to delay emitting text.  (PrettyPara)
+	use the Output module to delay emitting text.  (WriteKeyTexinfo)
+	use the Output module to delay emitting text.
+	(PrettyCommentFactor) use the Output module to delay emitting
+	text.  (PrettyCommentTerm) use the Output module to delay emitting
+	text.  (PrettyCommentProduction) use the Output module to delay emitting
+	text.  (PrettyPrintProduction) use the Output module to delay emitting
+	text.  (EmitFileLineTag) use the Output module to delay emitting
+	text.  (CodeThenDo) use the Output module to delay emitting
+	text.  (CodeElseEnd) use the Output module to delay emitting
+	text.  (EmitNonVarCode) use the Output module to delay emitting
+	text.  (FlushCode) use the Output module to delay emitting
+	text.  (CodeFactor) use the Output module to delay emitting
+	text.  (CodeProduction) use the Output module to delay emitting
+	text.  (WriteElement) use the Output module to delay emitting
+	text.  (EmitIsInSet) use the Output module to delay emitting
+	text.  (EmitIsInSubSet) use the Output module to delay emitting
+	text.  (EmitIsInFirst) use the Output module to delay emitting
+	text.  (RecoverFactor) use the Output module to delay emitting
+	text.  (RecoverTerm) use the Output module to delay emitting
+	text.  (EmitUsed) use the Output module to delay emitting
+	text.  (EmitStopParameters) use the Output module to delay emitting
+	text.  (EmitSet) use the Output module to delay emitting
+	text.  (EmitSetName) use the Output module to delay emitting
+	text.  (EmitStopParametersAndSet) use the Output module to delay emitting
+	text.  (EmitSetAsParameters) use the Output module to delay emitting
+	text.  (EmitStopParametersAndFollow) use the Output module to delay emitting
+	text.  (RecoverProduction) use the Output module to delay emitting
+	text.  (WriteUpto) use the Output module to delay emitting
+	text.  (CheckForVar) use the Output module to delay emitting
+	text.  (EmitFDLNotice) use the Output module to delay emitting
+	text.  (DescribeElement) use the Output module to delay emitting
+	text.  (EmitInTestStop) use the Output module to delay emitting
+	text.  (DescribeStopElement) use the Output module to delay emitting
+	text.  (EmitDescribeStop) use the Output module to delay emitting
+	text.  (EmitDescribeError) use the Output module to delay emitting
+	text.  (EmitSetTypes) use the Output module to delay emitting
+	text.  (ParseArgs) open output filename.
+	* gm2-gcc/m2decl.c: (m2decl_DeclareKnownVariable) change format
+	specifier to generate quoted declaration.  Call internal_error
+	and use quoted format specifier.
+	* gm2-gcc/m2except.c: (ASSERT) removed.  (ERROR) removed.
+	(m2except_BuildThrow) rewritten.
+	* gm2-gcc/m2expr.c: (m2expr_GetSizeOfInBits) use quoted format
+	specifier for error.  (m2type_BuildSetTypeFromSubrange) add
+	attribute unused for the name of the subrange and add comment
+	about dwarf-5 set type.
+	* gm2-libs/StrLib.def: (StrLen) renamed parameters.
+	* gm2-libs/StrLib.mod: (StrLen) renamed parameters.
+	* init/ppginit: Add SFIO and Output to the list of modules.
+	* gm2-compiler/Output.def: (New file).
+	* gm2-compiler/Output.mod: (New file).
+
+2021-07-07   Gaius Mulley   <gaius.mulley@southwales.ac.uk>
+        * COPYING.FDL: New file.
+        * COPYING.RUNTIME: New file.
+        * COPYING3: New file.
+        * COPYING3.LIB: New file.
+        * ChangeLog-2001: New file.
+        * ChangeLog-2002: New file.
+        * ChangeLog-2003: New file.
+        * ChangeLog-2004: New file.
+        * ChangeLog-2005: New file.
+        * ChangeLog-2006: New file.
+        * ChangeLog-2007: New file.
+        * ChangeLog-2008: New file.
+        * ChangeLog-2009: New file.
+        * ChangeLog-2010: New file.
+        * ChangeLog-2011: New file.
+        * ChangeLog-2012: New file.
+        * ChangeLog-2013: New file.
+        * ChangeLog-2014: New file.
+        * ChangeLog-2015: New file.
+        * ChangeLog-2016: New file.
+        * ChangeLog-2017: New file.
+        * ChangeLog-2018: New file.
+        * ChangeLog-2019: New file.
+        * ChangeLog-2020: New file.
+        * Make-lang.in: New file.
+        * NEWS: New file.
+        * README: New file.
+        * aclocal.m4: New file.
+        * bnf/README: New file.
+        * bnf/gm2l.bnf: New file.
+        * bnf/gm2m.bnf: New file.
+        * bnf/m2-1.bnf: New file.
+        * bnf/m2-2.bnf: New file.
+        * bnf/m2-3.bnf: New file.
+        * bnf/m2-c.bnf: New file.
+        * bnf/m2-h.bnf: New file.
+        * bnf/m2.bnf: New file.
+        * bnf/mc-1.bnf: New file.
+        * bnf/mc-2.bnf: New file.
+        * bnf/mc-3.bnf: New file.
+        * bnf/mc-4.bnf: New file.
+        * bnf/mc-5.bnf: New file.
+        * config-lang.in: New file.
+        * config-make.in: New file.
+        * configure: New file.
+        * configure.ac: New file.
+        * el/gm2-mode.el: New file.
+        * gm2-compiler/CLexBuf.def: New file.
+        * gm2-compiler/CLexBuf.mod: New file.
+        * gm2-compiler/FifoQueue.def: New file.
+        * gm2-compiler/FifoQueue.mod: New file.
+        * gm2-compiler/Lists.def: New file.
+        * gm2-compiler/Lists.mod: New file.
+        * gm2-compiler/M2ALU.def: New file.
+        * gm2-compiler/M2ALU.mod: New file.
+        * gm2-compiler/M2AsmUtil.def: New file.
+        * gm2-compiler/M2AsmUtil.mod: New file.
+        * gm2-compiler/M2Base.def: New file.
+        * gm2-compiler/M2Base.mod: New file.
+        * gm2-compiler/M2BasicBlock.def: New file.
+        * gm2-compiler/M2BasicBlock.mod: New file.
+        * gm2-compiler/M2Batch.def: New file.
+        * gm2-compiler/M2Batch.mod: New file.
+        * gm2-compiler/M2Bitset.def: New file.
+        * gm2-compiler/M2Bitset.mod: New file.
+        * gm2-compiler/M2CaseList.def: New file.
+        * gm2-compiler/M2CaseList.mod: New file.
+        * gm2-compiler/M2Check.def: New file.
+        * gm2-compiler/M2Check.mod: New file.
+        * gm2-compiler/M2Code.def: New file.
+        * gm2-compiler/M2Code.mod: New file.
+        * gm2-compiler/M2ColorString.def: New file.
+        * gm2-compiler/M2ColorString.mod: New file.
+        * gm2-compiler/M2Comp.def: New file.
+        * gm2-compiler/M2Comp.mod: New file.
+        * gm2-compiler/M2Configure.def: New file.
+        * gm2-compiler/M2Configure.mod: New file.
+        * gm2-compiler/M2Const.def: New file.
+        * gm2-compiler/M2Const.mod: New file.
+        * gm2-compiler/M2Debug.def: New file.
+        * gm2-compiler/M2Debug.mod: New file.
+        * gm2-compiler/M2DebugStack.def: New file.
+        * gm2-compiler/M2DebugStack.mod: New file.
+        * gm2-compiler/M2Defaults.def: New file.
+        * gm2-compiler/M2Defaults.mod: New file.
+        * gm2-compiler/M2Depth.def: New file.
+        * gm2-compiler/M2Depth.mod: New file.
+        * gm2-compiler/M2DriverOptions.def: New file.
+        * gm2-compiler/M2DriverOptions.mod: New file.
+        * gm2-compiler/M2Emit.def: New file.
+        * gm2-compiler/M2Emit.mod: New file.
+        * gm2-compiler/M2Error.def: New file.
+        * gm2-compiler/M2Error.mod: New file.
+        * gm2-compiler/M2EvalSym.def: New file.
+        * gm2-compiler/M2FileName.def: New file.
+        * gm2-compiler/M2FileName.mod: New file.
+        * gm2-compiler/M2GCCDeclare.def: New file.
+        * gm2-compiler/M2GCCDeclare.mod: New file.
+        * gm2-compiler/M2GenGCC.def: New file.
+        * gm2-compiler/M2GenGCC.mod: New file.
+        * gm2-compiler/M2Lex.def: New file.
+        * gm2-compiler/M2Lex.mod: New file.
+        * gm2-compiler/M2LexBuf.def: New file.
+        * gm2-compiler/M2LexBuf.mod: New file.
+        * gm2-compiler/M2MetaError.def: New file.
+        * gm2-compiler/M2MetaError.mod: New file.
+        * gm2-compiler/M2Optimize.def: New file.
+        * gm2-compiler/M2Optimize.mod: New file.
+        * gm2-compiler/M2Options.def: New file.
+        * gm2-compiler/M2Options.mod: New file.
+        * gm2-compiler/M2Pass.def: New file.
+        * gm2-compiler/M2Pass.mod: New file.
+        * gm2-compiler/M2Preprocess.def: New file.
+        * gm2-compiler/M2Preprocess.mod: New file.
+        * gm2-compiler/M2Printf.def: New file.
+        * gm2-compiler/M2Printf.mod: New file.
+        * gm2-compiler/M2Quads.def: New file.
+        * gm2-compiler/M2Quads.mod: New file.
+        * gm2-compiler/M2Quiet.def: New file.
+        * gm2-compiler/M2Quiet.mod: New file.
+        * gm2-compiler/M2Range.def: New file.
+        * gm2-compiler/M2Range.mod: New file.
+        * gm2-compiler/M2Reserved.def: New file.
+        * gm2-compiler/M2Reserved.mod: New file.
+        * gm2-compiler/M2SSA.def: New file.
+        * gm2-compiler/M2SSA.mod: New file.
+        * gm2-compiler/M2Scope.def: New file.
+        * gm2-compiler/M2Scope.mod: New file.
+        * gm2-compiler/M2Search.def: New file.
+        * gm2-compiler/M2Search.mod: New file.
+        * gm2-compiler/M2Size.def: New file.
+        * gm2-compiler/M2Size.mod: New file.
+        * gm2-compiler/M2StackAddress.def: New file.
+        * gm2-compiler/M2StackAddress.mod: New file.
+        * gm2-compiler/M2StackWord.def: New file.
+        * gm2-compiler/M2StackWord.mod: New file.
+        * gm2-compiler/M2Students.def: New file.
+        * gm2-compiler/M2Students.mod: New file.
+        * gm2-compiler/M2Swig.def: New file.
+        * gm2-compiler/M2Swig.mod: New file.
+        * gm2-compiler/M2System.def: New file.
+        * gm2-compiler/M2System.mod: New file.
+        * gm2-compiler/M2Version.def: New file.
+        * gm2-compiler/NameKey.def: New file.
+        * gm2-compiler/NameKey.mod: New file.
+        * gm2-compiler/ObjectFiles.def: New file.
+        * gm2-compiler/ObjectFiles.mod: New file.
+        * gm2-compiler/P0SymBuild.def: New file.
+        * gm2-compiler/P0SymBuild.mod: New file.
+        * gm2-compiler/P0SyntaxCheck.def: New file.
+        * gm2-compiler/P1Build.def: New file.
+        * gm2-compiler/P1SymBuild.def: New file.
+        * gm2-compiler/P1SymBuild.mod: New file.
+        * gm2-compiler/P2Build.def: New file.
+        * gm2-compiler/P2SymBuild.def: New file.
+        * gm2-compiler/P2SymBuild.mod: New file.
+        * gm2-compiler/P3Build.def: New file.
+        * gm2-compiler/P3SymBuild.def: New file.
+        * gm2-compiler/P3SymBuild.mod: New file.
+        * gm2-compiler/PCBuild.def: New file.
+        * gm2-compiler/PCSymBuild.def: New file.
+        * gm2-compiler/PCSymBuild.mod: New file.
+        * gm2-compiler/PHBuild.def: New file.
+        * gm2-compiler/README: New file.
+        * gm2-compiler/Sets.def: New file.
+        * gm2-compiler/Sets.mod: New file.
+        * gm2-compiler/SymbolConversion.def: New file.
+        * gm2-compiler/SymbolConversion.mod: New file.
+        * gm2-compiler/SymbolKey.def: New file.
+        * gm2-compiler/SymbolKey.mod: New file.
+        * gm2-compiler/SymbolTable.def: New file.
+        * gm2-compiler/SymbolTable.mod: New file.
+        * gm2-compiler/bnflex.def: New file.
+        * gm2-compiler/bnflex.mod: New file.
+        * gm2-compiler/cflex.def: New file.
+        * gm2-compiler/gm2.mod: New file.
+        * gm2-compiler/gm2lcc.mod: New file.
+        * gm2-compiler/gm2lgen.mod: New file.
+        * gm2-compiler/gm2lorder.mod: New file.
+        * gm2-compiler/m2flex.def: New file.
+        * gm2-compiler/ppg.mod: New file.
+        * gm2-gcc/README: New file.
+        * gm2-gcc/dynamicstrings.h: New file.
+        * gm2-gcc/gcc-consolidation.h: New file.
+        * gm2-gcc/init.c: New file.
+        * gm2-gcc/init.def: New file.
+        * gm2-gcc/init.h: New file.
+        * gm2-gcc/m2assert.c: New file.
+        * gm2-gcc/m2assert.h: New file.
+        * gm2-gcc/m2block.c: New file.
+        * gm2-gcc/m2block.def: New file.
+        * gm2-gcc/m2block.h: New file.
+        * gm2-gcc/m2builtins.c: New file.
+        * gm2-gcc/m2builtins.def: New file.
+        * gm2-gcc/m2builtins.h: New file.
+        * gm2-gcc/m2color.c: New file.
+        * gm2-gcc/m2color.def: New file.
+        * gm2-gcc/m2color.h: New file.
+        * gm2-gcc/m2convert.c: New file.
+        * gm2-gcc/m2convert.def: New file.
+        * gm2-gcc/m2convert.h: New file.
+        * gm2-gcc/m2decl.c: New file.
+        * gm2-gcc/m2decl.def: New file.
+        * gm2-gcc/m2decl.h: New file.
+        * gm2-gcc/m2except.c: New file.
+        * gm2-gcc/m2except.def: New file.
+        * gm2-gcc/m2except.h: New file.
+        * gm2-gcc/m2expr.c: New file.
+        * gm2-gcc/m2expr.def: New file.
+        * gm2-gcc/m2expr.h: New file.
+        * gm2-gcc/m2linemap.c: New file.
+        * gm2-gcc/m2linemap.def: New file.
+        * gm2-gcc/m2linemap.h: New file.
+        * gm2-gcc/m2misc.c: New file.
+        * gm2-gcc/m2misc.def: New file.
+        * gm2-gcc/m2misc.h: New file.
+        * gm2-gcc/m2options.h: New file.
+        * gm2-gcc/m2range.h: New file.
+        * gm2-gcc/m2search.h: New file.
+        * gm2-gcc/m2statement.c: New file.
+        * gm2-gcc/m2statement.def: New file.
+        * gm2-gcc/m2statement.h: New file.
+        * gm2-gcc/m2top.c: New file.
+        * gm2-gcc/m2top.def: New file.
+        * gm2-gcc/m2top.h: New file.
+        * gm2-gcc/m2tree.c: New file.
+        * gm2-gcc/m2tree.def: New file.
+        * gm2-gcc/m2tree.h: New file.
+        * gm2-gcc/m2treelib.c: New file.
+        * gm2-gcc/m2treelib.def: New file.
+        * gm2-gcc/m2treelib.h: New file.
+        * gm2-gcc/m2type.c: New file.
+        * gm2-gcc/m2type.def: New file.
+        * gm2-gcc/m2type.h: New file.
+        * gm2-gcc/rtegraph.c: New file.
+        * gm2-gcc/rtegraph.h: New file.
+        * gm2-ici/M2Emit.mod: New file.
+        * gm2-ici/README: New file.
+        * gm2-ici/m2linemap.c: New file.
+        * gm2-internals.texi: New file.
+        * gm2-lang.c: New file.
+        * gm2-lang.h: New file.
+        * gm2-libiberty/README: New file.
+        * gm2-libiberty/choosetemp.def: New file.
+        * gm2-libiberty/pexecute.def: New file.
+        * gm2-libs-ch/README: New file.
+        * gm2-libs-ch/RTcodummy.c: New file.
+        * gm2-libs-ch/RTintdummy.c: New file.
+        * gm2-libs-ch/Selective.c: New file.
+        * gm2-libs-ch/SysExceptions.c: New file.
+        * gm2-libs-ch/UnixArgs.c: New file.
+        * gm2-libs-ch/cgetopt.c: New file.
+        * gm2-libs-ch/choosetemp.c: New file.
+        * gm2-libs-ch/dtoa.c: New file.
+        * gm2-libs-ch/errno.c: New file.
+        * gm2-libs-ch/host.c: New file.
+        * gm2-libs-ch/ldtoa.c: New file.
+        * gm2-libs-ch/pthdummy.c: New file.
+        * gm2-libs-ch/termios.c: New file.
+        * gm2-libs-ch/tools.c: New file.
+        * gm2-libs-ch/wrapc.c: New file.
+        * gm2-libs-ch/xlibc.c: New file.
+        * gm2-libs-coroutines/Debug.def: New file.
+        * gm2-libs-coroutines/Debug.mod: New file.
+        * gm2-libs-coroutines/Executive.def: New file.
+        * gm2-libs-coroutines/Executive.mod: New file.
+        * gm2-libs-coroutines/KeyBoardLEDs.def: New file.
+        * gm2-libs-coroutines/README.texi: New file.
+        * gm2-libs-coroutines/SYSTEM.def: New file.
+        * gm2-libs-coroutines/SYSTEM.mod: New file.
+        * gm2-libs-coroutines/TimerHandler.def: New file.
+        * gm2-libs-coroutines/TimerHandler.mod: New file.
+        * gm2-libs-iso/COROUTINES.def: New file.
+        * gm2-libs-iso/COROUTINES.mod: New file.
+        * gm2-libs-iso/ChanConsts.def: New file.
+        * gm2-libs-iso/ChanConsts.h: New file.
+        * gm2-libs-iso/ChanConsts.mod: New file.
+        * gm2-libs-iso/CharClass.def: New file.
+        * gm2-libs-iso/CharClass.mod: New file.
+        * gm2-libs-iso/ClientSocket.def: New file.
+        * gm2-libs-iso/ClientSocket.mod: New file.
+        * gm2-libs-iso/ComplexMath.def: New file.
+        * gm2-libs-iso/ComplexMath.mod: New file.
+        * gm2-libs-iso/ConvStringLong.def: New file.
+        * gm2-libs-iso/ConvStringLong.mod: New file.
+        * gm2-libs-iso/ConvStringReal.def: New file.
+        * gm2-libs-iso/ConvStringReal.mod: New file.
+        * gm2-libs-iso/ConvTypes.def: New file.
+        * gm2-libs-iso/ConvTypes.mod: New file.
+        * gm2-libs-iso/EXCEPTIONS.def: New file.
+        * gm2-libs-iso/EXCEPTIONS.mod: New file.
+        * gm2-libs-iso/ErrnoCategory.c: New file.
+        * gm2-libs-iso/ErrnoCategory.def: New file.
+        * gm2-libs-iso/GeneralUserExceptions.def: New file.
+        * gm2-libs-iso/GeneralUserExceptions.mod: New file.
+        * gm2-libs-iso/IOChan.def: New file.
+        * gm2-libs-iso/IOChan.mod: New file.
+        * gm2-libs-iso/IOConsts.def: New file.
+        * gm2-libs-iso/IOConsts.mod: New file.
+        * gm2-libs-iso/IOLink.def: New file.
+        * gm2-libs-iso/IOLink.mod: New file.
+        * gm2-libs-iso/IOResult.def: New file.
+        * gm2-libs-iso/IOResult.mod: New file.
+        * gm2-libs-iso/LongComplexMath.def: New file.
+        * gm2-libs-iso/LongComplexMath.mod: New file.
+        * gm2-libs-iso/LongConv.def: New file.
+        * gm2-libs-iso/LongConv.mod: New file.
+        * gm2-libs-iso/LongIO.def: New file.
+        * gm2-libs-iso/LongIO.mod: New file.
+        * gm2-libs-iso/LongMath.def: New file.
+        * gm2-libs-iso/LongMath.mod: New file.
+        * gm2-libs-iso/LongStr.def: New file.
+        * gm2-libs-iso/LongStr.mod: New file.
+        * gm2-libs-iso/LongWholeIO.def: New file.
+        * gm2-libs-iso/LongWholeIO.mod: New file.
+        * gm2-libs-iso/LowLong.def: New file.
+        * gm2-libs-iso/LowLong.mod: New file.
+        * gm2-libs-iso/LowReal.def: New file.
+        * gm2-libs-iso/LowReal.mod: New file.
+        * gm2-libs-iso/LowShort.def: New file.
+        * gm2-libs-iso/LowShort.mod: New file.
+        * gm2-libs-iso/M2EXCEPTION.def: New file.
+        * gm2-libs-iso/M2EXCEPTION.mod: New file.
+        * gm2-libs-iso/M2RTS.def: New file.
+        * gm2-libs-iso/M2RTS.mod: New file.
+        * gm2-libs-iso/MemStream.def: New file.
+        * gm2-libs-iso/MemStream.mod: New file.
+        * gm2-libs-iso/Preemptive.def: New file.
+        * gm2-libs-iso/Preemptive.mod: New file.
+        * gm2-libs-iso/Processes.def: New file.
+        * gm2-libs-iso/Processes.mod: New file.
+        * gm2-libs-iso/ProgramArgs.def: New file.
+        * gm2-libs-iso/ProgramArgs.mod: New file.
+        * gm2-libs-iso/README.texi: New file.
+        * gm2-libs-iso/RTco.def: New file.
+        * gm2-libs-iso/RTdata.def: New file.
+        * gm2-libs-iso/RTdata.mod: New file.
+        * gm2-libs-iso/RTentity.def: New file.
+        * gm2-libs-iso/RTentity.mod: New file.
+        * gm2-libs-iso/RTfio.def: New file.
+        * gm2-libs-iso/RTfio.mod: New file.
+        * gm2-libs-iso/RTgen.def: New file.
+        * gm2-libs-iso/RTgen.mod: New file.
+        * gm2-libs-iso/RTgenif.def: New file.
+        * gm2-libs-iso/RTgenif.mod: New file.
+        * gm2-libs-iso/RTio.def: New file.
+        * gm2-libs-iso/RTio.mod: New file.
+        * gm2-libs-iso/RandomNumber.def: New file.
+        * gm2-libs-iso/RandomNumber.mod: New file.
+        * gm2-libs-iso/RawIO.def: New file.
+        * gm2-libs-iso/RawIO.mod: New file.
+        * gm2-libs-iso/RealConv.def: New file.
+        * gm2-libs-iso/RealConv.mod: New file.
+        * gm2-libs-iso/RealIO.def: New file.
+        * gm2-libs-iso/RealIO.mod: New file.
+        * gm2-libs-iso/RealMath.def: New file.
+        * gm2-libs-iso/RealMath.mod: New file.
+        * gm2-libs-iso/RealStr.def: New file.
+        * gm2-libs-iso/RealStr.mod: New file.
+        * gm2-libs-iso/RndFile.def: New file.
+        * gm2-libs-iso/RndFile.mod: New file.
+        * gm2-libs-iso/SIOResult.def: New file.
+        * gm2-libs-iso/SIOResult.mod: New file.
+        * gm2-libs-iso/SLongIO.def: New file.
+        * gm2-libs-iso/SLongIO.mod: New file.
+        * gm2-libs-iso/SLongWholeIO.def: New file.
+        * gm2-libs-iso/SLongWholeIO.mod: New file.
+        * gm2-libs-iso/SRawIO.def: New file.
+        * gm2-libs-iso/SRawIO.mod: New file.
+        * gm2-libs-iso/SRealIO.def: New file.
+        * gm2-libs-iso/SRealIO.mod: New file.
+        * gm2-libs-iso/SShortIO.def: New file.
+        * gm2-libs-iso/SShortIO.mod: New file.
+        * gm2-libs-iso/SShortWholeIO.def: New file.
+        * gm2-libs-iso/SShortWholeIO.mod: New file.
+        * gm2-libs-iso/STextIO.def: New file.
+        * gm2-libs-iso/STextIO.mod: New file.
+        * gm2-libs-iso/SWholeIO.def: New file.
+        * gm2-libs-iso/SWholeIO.mod: New file.
+        * gm2-libs-iso/SYSTEM.def: New file.
+        * gm2-libs-iso/SYSTEM.mod: New file.
+        * gm2-libs-iso/Semaphores.def: New file.
+        * gm2-libs-iso/Semaphores.mod: New file.
+        * gm2-libs-iso/SeqFile.def: New file.
+        * gm2-libs-iso/SeqFile.mod: New file.
+        * gm2-libs-iso/ServerSocket.def: New file.
+        * gm2-libs-iso/ServerSocket.mod: New file.
+        * gm2-libs-iso/ShortComplexMath.def: New file.
+        * gm2-libs-iso/ShortComplexMath.mod: New file.
+        * gm2-libs-iso/ShortIO.def: New file.
+        * gm2-libs-iso/ShortIO.mod: New file.
+        * gm2-libs-iso/ShortWholeIO.def: New file.
+        * gm2-libs-iso/ShortWholeIO.mod: New file.
+        * gm2-libs-iso/SimpleCipher.def: New file.
+        * gm2-libs-iso/SimpleCipher.mod: New file.
+        * gm2-libs-iso/StdChans.def: New file.
+        * gm2-libs-iso/StdChans.mod: New file.
+        * gm2-libs-iso/Storage.def: New file.
+        * gm2-libs-iso/Storage.mod: New file.
+        * gm2-libs-iso/StreamFile.def: New file.
+        * gm2-libs-iso/StreamFile.mod: New file.
+        * gm2-libs-iso/StringChan.def: New file.
+        * gm2-libs-iso/StringChan.mod: New file.
+        * gm2-libs-iso/Strings.def: New file.
+        * gm2-libs-iso/Strings.mod: New file.
+        * gm2-libs-iso/SysClock.def: New file.
+        * gm2-libs-iso/SysClock.mod: New file.
+        * gm2-libs-iso/TERMINATION.def: New file.
+        * gm2-libs-iso/TERMINATION.mod: New file.
+        * gm2-libs-iso/TermFile.def: New file.
+        * gm2-libs-iso/TermFile.mod: New file.
+        * gm2-libs-iso/TextIO.def: New file.
+        * gm2-libs-iso/TextIO.mod: New file.
+        * gm2-libs-iso/WholeConv.def: New file.
+        * gm2-libs-iso/WholeConv.mod: New file.
+        * gm2-libs-iso/WholeIO.def: New file.
+        * gm2-libs-iso/WholeIO.mod: New file.
+        * gm2-libs-iso/WholeStr.def: New file.
+        * gm2-libs-iso/WholeStr.mod: New file.
+        * gm2-libs-iso/wrapsock.c: New file.
+        * gm2-libs-iso/wrapsock.def: New file.
+        * gm2-libs-iso/wraptime.c: New file.
+        * gm2-libs-iso/wraptime.def: New file.
+        * gm2-libs-min/M2RTS.def: New file.
+        * gm2-libs-min/M2RTS.mod: New file.
+        * gm2-libs-min/SYSTEM.def: New file.
+        * gm2-libs-min/SYSTEM.mod: New file.
+        * gm2-libs-min/libc.c: New file.
+        * gm2-libs-min/libc.def: New file.
+        * gm2-libs-pim/BitBlockOps.def: New file.
+        * gm2-libs-pim/BitBlockOps.mod: New file.
+        * gm2-libs-pim/BitByteOps.def: New file.
+        * gm2-libs-pim/BitByteOps.mod: New file.
+        * gm2-libs-pim/BitWordOps.def: New file.
+        * gm2-libs-pim/BitWordOps.mod: New file.
+        * gm2-libs-pim/BlockOps.def: New file.
+        * gm2-libs-pim/BlockOps.mod: New file.
+        * gm2-libs-pim/Break.c: New file.
+        * gm2-libs-pim/Break.def: New file.
+        * gm2-libs-pim/CardinalIO.def: New file.
+        * gm2-libs-pim/CardinalIO.mod: New file.
+        * gm2-libs-pim/Conversions.def: New file.
+        * gm2-libs-pim/Conversions.mod: New file.
+        * gm2-libs-pim/DebugPMD.def: New file.
+        * gm2-libs-pim/DebugPMD.mod: New file.
+        * gm2-libs-pim/DebugTrace.def: New file.
+        * gm2-libs-pim/DebugTrace.mod: New file.
+        * gm2-libs-pim/Delay.def: New file.
+        * gm2-libs-pim/Delay.mod: New file.
+        * gm2-libs-pim/Display.def: New file.
+        * gm2-libs-pim/Display.mod: New file.
+        * gm2-libs-pim/ErrorCode.def: New file.
+        * gm2-libs-pim/ErrorCode.mod: New file.
+        * gm2-libs-pim/FileSystem.def: New file.
+        * gm2-libs-pim/FileSystem.mod: New file.
+        * gm2-libs-pim/FloatingUtilities.def: New file.
+        * gm2-libs-pim/FloatingUtilities.mod: New file.
+        * gm2-libs-pim/InOut.def: New file.
+        * gm2-libs-pim/InOut.mod: New file.
+        * gm2-libs-pim/Keyboard.def: New file.
+        * gm2-libs-pim/Keyboard.mod: New file.
+        * gm2-libs-pim/LongIO.def: New file.
+        * gm2-libs-pim/LongIO.mod: New file.
+        * gm2-libs-pim/NumberConversion.def: New file.
+        * gm2-libs-pim/NumberConversion.mod: New file.
+        * gm2-libs-pim/README.texi: New file.
+        * gm2-libs-pim/Random.def: New file.
+        * gm2-libs-pim/Random.mod: New file.
+        * gm2-libs-pim/RealConversions.def: New file.
+        * gm2-libs-pim/RealConversions.mod: New file.
+        * gm2-libs-pim/RealInOut.def: New file.
+        * gm2-libs-pim/RealInOut.mod: New file.
+        * gm2-libs-pim/Strings.def: New file.
+        * gm2-libs-pim/Strings.mod: New file.
+        * gm2-libs-pim/Termbase.def: New file.
+        * gm2-libs-pim/Termbase.mod: New file.
+        * gm2-libs-pim/Terminal.def: New file.
+        * gm2-libs-pim/Terminal.mod: New file.
+        * gm2-libs-pim/TimeDate.def: New file.
+        * gm2-libs-pim/TimeDate.mod: New file.
+        * gm2-libs/ASCII.def: New file.
+        * gm2-libs/ASCII.mod: New file.
+        * gm2-libs/Args.def: New file.
+        * gm2-libs/Args.mod: New file.
+        * gm2-libs/Assertion.def: New file.
+        * gm2-libs/Assertion.mod: New file.
+        * gm2-libs/Break.def: New file.
+        * gm2-libs/Break.mod: New file.
+        * gm2-libs/Builtins.def: New file.
+        * gm2-libs/Builtins.mod: New file.
+        * gm2-libs/COROUTINES.def: New file.
+        * gm2-libs/COROUTINES.mod: New file.
+        * gm2-libs/CmdArgs.def: New file.
+        * gm2-libs/CmdArgs.mod: New file.
+        * gm2-libs/Debug.def: New file.
+        * gm2-libs/Debug.mod: New file.
+        * gm2-libs/DynamicStrings.def: New file.
+        * gm2-libs/DynamicStrings.mod: New file.
+        * gm2-libs/Environment.def: New file.
+        * gm2-libs/Environment.mod: New file.
+        * gm2-libs/FIO.def: New file.
+        * gm2-libs/FIO.mod: New file.
+        * gm2-libs/FormatStrings.def: New file.
+        * gm2-libs/FormatStrings.mod: New file.
+        * gm2-libs/FpuIO.def: New file.
+        * gm2-libs/FpuIO.mod: New file.
+        * gm2-libs/GetOpt.def: New file.
+        * gm2-libs/GetOpt.mod: New file.
+        * gm2-libs/IO.def: New file.
+        * gm2-libs/IO.mod: New file.
+        * gm2-libs/Indexing.def: New file.
+        * gm2-libs/Indexing.mod: New file.
+        * gm2-libs/LMathLib0.def: New file.
+        * gm2-libs/LMathLib0.mod: New file.
+        * gm2-libs/LegacyReal.def: New file.
+        * gm2-libs/LegacyReal.mod: New file.
+        * gm2-libs/M2EXCEPTION.def: New file.
+        * gm2-libs/M2EXCEPTION.mod: New file.
+        * gm2-libs/M2RTS.def: New file.
+        * gm2-libs/M2RTS.mod: New file.
+        * gm2-libs/MathLib0.def: New file.
+        * gm2-libs/MathLib0.mod: New file.
+        * gm2-libs/MemUtils.def: New file.
+        * gm2-libs/MemUtils.mod: New file.
+        * gm2-libs/NumberIO.def: New file.
+        * gm2-libs/NumberIO.mod: New file.
+        * gm2-libs/OptLib.def: New file.
+        * gm2-libs/OptLib.mod: New file.
+        * gm2-libs/PushBackInput.def: New file.
+        * gm2-libs/PushBackInput.mod: New file.
+        * gm2-libs/README.texi: New file.
+        * gm2-libs/RTExceptions.def: New file.
+        * gm2-libs/RTExceptions.mod: New file.
+        * gm2-libs/RTint.def: New file.
+        * gm2-libs/RTint.mod: New file.
+        * gm2-libs/SArgs.def: New file.
+        * gm2-libs/SArgs.mod: New file.
+        * gm2-libs/SCmdArgs.def: New file.
+        * gm2-libs/SCmdArgs.mod: New file.
+        * gm2-libs/SEnvironment.def: New file.
+        * gm2-libs/SEnvironment.mod: New file.
+        * gm2-libs/SFIO.def: New file.
+        * gm2-libs/SFIO.mod: New file.
+        * gm2-libs/SMathLib0.def: New file.
+        * gm2-libs/SMathLib0.mod: New file.
+        * gm2-libs/SYSTEM.def: New file.
+        * gm2-libs/SYSTEM.mod: New file.
+        * gm2-libs/Scan.def: New file.
+        * gm2-libs/Scan.mod: New file.
+        * gm2-libs/Selective.def: New file.
+        * gm2-libs/StdIO.def: New file.
+        * gm2-libs/StdIO.mod: New file.
+        * gm2-libs/Storage.def: New file.
+        * gm2-libs/Storage.mod: New file.
+        * gm2-libs/StrCase.def: New file.
+        * gm2-libs/StrCase.mod: New file.
+        * gm2-libs/StrIO.def: New file.
+        * gm2-libs/StrIO.mod: New file.
+        * gm2-libs/StrLib.def: New file.
+        * gm2-libs/StrLib.mod: New file.
+        * gm2-libs/StringConvert.def: New file.
+        * gm2-libs/StringConvert.mod: New file.
+        * gm2-libs/SysExceptions.def: New file.
+        * gm2-libs/SysStorage.def: New file.
+        * gm2-libs/SysStorage.mod: New file.
+        * gm2-libs/TimeString.def: New file.
+        * gm2-libs/TimeString.mod: New file.
+        * gm2-libs/UnixArgs.def: New file.
+        * gm2-libs/cbuiltin.def: New file.
+        * gm2-libs/cgetopt.def: New file.
+        * gm2-libs/config-host: New file.
+        * gm2-libs/config-host.in: New file.
+        * gm2-libs/cxxabi.def: New file.
+        * gm2-libs/dtoa.def: New file.
+        * gm2-libs/errno.def: New file.
+        * gm2-libs/gdbif.def: New file.
+        * gm2-libs/gdbif.mod: New file.
+        * gm2-libs/gm2-libs-host.h.in: New file.
+        * gm2-libs/ldtoa.def: New file.
+        * gm2-libs/libc.def: New file.
+        * gm2-libs/libm.def: New file.
+        * gm2-libs/sckt.def: New file.
+        * gm2-libs/termios.def: New file.
+        * gm2-libs/wrapc.def: New file.
+        * gm2config.h.in: New file.
+        * gm2spec.c: New file.
+        * gm2version.h: New file.
+        * images/LICENSE.IMG: New file.
+        * images/gnu.eps: New file.
+        * images/gnupng: New file.
+        * init/README: New file.
+        * init/gm2-gccinit: New file.
+        * init/gm2lccinit: New file.
+        * init/gm2lgeninit: New file.
+        * init/gm2linit: New file.
+        * init/gm2lorderinit: New file.
+        * init/gm2minit: New file.
+        * init/mcinit: New file.
+        * init/ppginit: New file.
+        * lang-options.h: New file.
+        * lang-specs.h: New file.
+        * lang.opt: New file.
+        * m2-link-support.h: New file.
+        * m2-tree.def: New file.
+        * m2-tree.h: New file.
+        * m2.flex: New file.
+        * m2pp.c: New file.
+        * m2pp.h: New file.
+        * mc-boot-ch/GBuiltins.c: New file.
+        * mc-boot-ch/GRTco.c: New file.
+        * mc-boot-ch/GSYSTEM.c: New file.
+        * mc-boot-ch/GSelective.c: New file.
+        * mc-boot-ch/GSysExceptions.c: New file.
+        * mc-boot-ch/GUnixArgs.c: New file.
+        * mc-boot-ch/Gcbuiltin.c: New file.
+        * mc-boot-ch/Gdtoa.c: New file.
+        * mc-boot-ch/Gerrno.c: New file.
+        * mc-boot-ch/Gldtoa.c: New file.
+        * mc-boot-ch/Glibc.c: New file.
+        * mc-boot-ch/Glibm.c: New file.
+        * mc-boot-ch/Gmcrts.c: New file.
+        * mc-boot-ch/Gmcrts.h: New file.
+        * mc-boot-ch/Gnetwork.h: New file.
+        * mc-boot-ch/Gpth.c: New file.
+        * mc-boot-ch/Gtermios.c: New file.
+        * mc-boot-ch/Gwrapc.c: New file.
+        * mc-boot-ch/README: New file.
+        * mc-boot-ch/network.c: New file.
+        * mc-boot/GASCII.c: New file.
+        * mc-boot/GASCII.h: New file.
+        * mc-boot/GArgs.c: New file.
+        * mc-boot/GArgs.h: New file.
+        * mc-boot/GAssertion.c: New file.
+        * mc-boot/GAssertion.h: New file.
+        * mc-boot/GBreak.c: New file.
+        * mc-boot/GBreak.h: New file.
+        * mc-boot/GCOROUTINES.h: New file.
+        * mc-boot/GCmdArgs.c: New file.
+        * mc-boot/GCmdArgs.h: New file.
+        * mc-boot/GDebug.c: New file.
+        * mc-boot/GDebug.h: New file.
+        * mc-boot/GDynamicStrings.c: New file.
+        * mc-boot/GDynamicStrings.h: New file.
+        * mc-boot/GEnvironment.c: New file.
+        * mc-boot/GEnvironment.h: New file.
+        * mc-boot/GFIO.c: New file.
+        * mc-boot/GFIO.h: New file.
+        * mc-boot/GFormatStrings.c: New file.
+        * mc-boot/GFormatStrings.h: New file.
+        * mc-boot/GFpuIO.c: New file.
+        * mc-boot/GFpuIO.h: New file.
+        * mc-boot/GIO.c: New file.
+        * mc-boot/GIO.h: New file.
+        * mc-boot/GIndexing.c: New file.
+        * mc-boot/GIndexing.h: New file.
+        * mc-boot/GM2EXCEPTION.c: New file.
+        * mc-boot/GM2EXCEPTION.h: New file.
+        * mc-boot/GM2RTS.c: New file.
+        * mc-boot/GM2RTS.h: New file.
+        * mc-boot/GMemUtils.c: New file.
+        * mc-boot/GMemUtils.h: New file.
+        * mc-boot/GNumberIO.c: New file.
+        * mc-boot/GNumberIO.h: New file.
+        * mc-boot/GPushBackInput.c: New file.
+        * mc-boot/GPushBackInput.h: New file.
+        * mc-boot/GRTExceptions.c: New file.
+        * mc-boot/GRTExceptions.h: New file.
+        * mc-boot/GRTco.h: New file.
+        * mc-boot/GRTint.c: New file.
+        * mc-boot/GRTint.h: New file.
+        * mc-boot/GSArgs.c: New file.
+        * mc-boot/GSArgs.h: New file.
+        * mc-boot/GSFIO.c: New file.
+        * mc-boot/GSFIO.h: New file.
+        * mc-boot/GSYSTEM.h: New file.
+        * mc-boot/GSelective.h: New file.
+        * mc-boot/GStdIO.c: New file.
+        * mc-boot/GStdIO.h: New file.
+        * mc-boot/GStorage.c: New file.
+        * mc-boot/GStorage.h: New file.
+        * mc-boot/GStrCase.c: New file.
+        * mc-boot/GStrCase.h: New file.
+        * mc-boot/GStrIO.c: New file.
+        * mc-boot/GStrIO.h: New file.
+        * mc-boot/GStrLib.c: New file.
+        * mc-boot/GStrLib.h: New file.
+        * mc-boot/GStringConvert.c: New file.
+        * mc-boot/GStringConvert.h: New file.
+        * mc-boot/GSysExceptions.h: New file.
+        * mc-boot/GSysStorage.c: New file.
+        * mc-boot/GSysStorage.h: New file.
+        * mc-boot/GTimeString.c: New file.
+        * mc-boot/GTimeString.h: New file.
+        * mc-boot/GUnixArgs.h: New file.
+        * mc-boot/Galists.c: New file.
+        * mc-boot/Galists.h: New file.
+        * mc-boot/Gdecl.c: New file.
+        * mc-boot/Gdecl.h: New file.
+        * mc-boot/Gdtoa.h: New file.
+        * mc-boot/Gerrno.h: New file.
+        * mc-boot/Gkeyc.c: New file.
+        * mc-boot/Gkeyc.h: New file.
+        * mc-boot/Gldtoa.h: New file.
+        * mc-boot/Glibc.h: New file.
+        * mc-boot/Glibm.h: New file.
+        * mc-boot/Glists.c: New file.
+        * mc-boot/Glists.h: New file.
+        * mc-boot/GmcComment.c: New file.
+        * mc-boot/GmcComment.h: New file.
+        * mc-boot/GmcComp.c: New file.
+        * mc-boot/GmcComp.h: New file.
+        * mc-boot/GmcDebug.c: New file.
+        * mc-boot/GmcDebug.h: New file.
+        * mc-boot/GmcError.c: New file.
+        * mc-boot/GmcError.h: New file.
+        * mc-boot/GmcFileName.c: New file.
+        * mc-boot/GmcFileName.h: New file.
+        * mc-boot/GmcLexBuf.c: New file.
+        * mc-boot/GmcLexBuf.h: New file.
+        * mc-boot/GmcMetaError.c: New file.
+        * mc-boot/GmcMetaError.h: New file.
+        * mc-boot/GmcOptions.c: New file.
+        * mc-boot/GmcOptions.h: New file.
+        * mc-boot/GmcPreprocess.c: New file.
+        * mc-boot/GmcPreprocess.h: New file.
+        * mc-boot/GmcPretty.c: New file.
+        * mc-boot/GmcPretty.h: New file.
+        * mc-boot/GmcPrintf.c: New file.
+        * mc-boot/GmcPrintf.h: New file.
+        * mc-boot/GmcQuiet.c: New file.
+        * mc-boot/GmcQuiet.h: New file.
+        * mc-boot/GmcReserved.c: New file.
+        * mc-boot/GmcReserved.h: New file.
+        * mc-boot/GmcSearch.c: New file.
+        * mc-boot/GmcSearch.h: New file.
+        * mc-boot/GmcStack.c: New file.
+        * mc-boot/GmcStack.h: New file.
+        * mc-boot/GmcStream.c: New file.
+        * mc-boot/GmcStream.h: New file.
+        * mc-boot/Gmcflex.h: New file.
+        * mc-boot/Gmcp1.c: New file.
+        * mc-boot/Gmcp1.h: New file.
+        * mc-boot/Gmcp2.c: New file.
+        * mc-boot/Gmcp2.h: New file.
+        * mc-boot/Gmcp3.c: New file.
+        * mc-boot/Gmcp3.h: New file.
+        * mc-boot/Gmcp4.c: New file.
+        * mc-boot/Gmcp4.h: New file.
+        * mc-boot/Gmcp5.c: New file.
+        * mc-boot/Gmcp5.h: New file.
+        * mc-boot/GnameKey.c: New file.
+        * mc-boot/GnameKey.h: New file.
+        * mc-boot/Gpth.h: New file.
+        * mc-boot/GsymbolKey.c: New file.
+        * mc-boot/GsymbolKey.h: New file.
+        * mc-boot/Gtermios.h: New file.
+        * mc-boot/Gtop.c: New file.
+        * mc-boot/Gvarargs.c: New file.
+        * mc-boot/Gvarargs.h: New file.
+        * mc-boot/Gwlists.c: New file.
+        * mc-boot/Gwlists.h: New file.
+        * mc-boot/Gwrapc.h: New file.
+        * mc-boot/README: New file.
+        * mc/Indexing.def: New file.
+        * mc/Indexing.mod: New file.
+        * mc/README: New file.
+        * mc/alists.def: New file.
+        * mc/alists.mod: New file.
+        * mc/decl.def: New file.
+        * mc/decl.mod: New file.
+        * mc/decl.mod-extra: New file.
+        * mc/keyc.def: New file.
+        * mc/keyc.mod: New file.
+        * mc/lists.def: New file.
+        * mc/lists.mod: New file.
+        * mc/m2flex.def: New file.
+        * mc/mc.flex: New file.
+        * mc/mcComment.def: New file.
+        * mc/mcComment.h: New file.
+        * mc/mcComment.mod: New file.
+        * mc/mcComp.def: New file.
+        * mc/mcComp.mod: New file.
+        * mc/mcDebug.def: New file.
+        * mc/mcDebug.mod: New file.
+        * mc/mcError.def: New file.
+        * mc/mcError.mod: New file.
+        * mc/mcFileName.def: New file.
+        * mc/mcFileName.mod: New file.
+        * mc/mcLexBuf.def: New file.
+        * mc/mcLexBuf.h: New file.
+        * mc/mcLexBuf.mod: New file.
+        * mc/mcMetaError.def: New file.
+        * mc/mcMetaError.mod: New file.
+        * mc/mcOptions.def: New file.
+        * mc/mcOptions.mod: New file.
+        * mc/mcPreprocess.def: New file.
+        * mc/mcPreprocess.mod: New file.
+        * mc/mcPretty.def: New file.
+        * mc/mcPretty.mod: New file.
+        * mc/mcPrintf.def: New file.
+        * mc/mcPrintf.mod: New file.
+        * mc/mcQuiet.def: New file.
+        * mc/mcQuiet.mod: New file.
+        * mc/mcReserved.def: New file.
+        * mc/mcReserved.h: New file.
+        * mc/mcReserved.mod: New file.
+        * mc/mcSearch.def: New file.
+        * mc/mcSearch.mod: New file.
+        * mc/mcStack.def: New file.
+        * mc/mcStack.mod: New file.
+        * mc/mcStream.def: New file.
+        * mc/mcStream.mod: New file.
+        * mc/mcflex.def: New file.
+        * mc/mcp1.def: New file.
+        * mc/mcp2.def: New file.
+        * mc/mcp3.def: New file.
+        * mc/mcp4.def: New file.
+        * mc/mcp5.def: New file.
+        * mc/nameKey.def: New file.
+        * mc/nameKey.mod: New file.
+        * mc/symbolKey.def: New file.
+        * mc/symbolKey.mod: New file.
+        * mc/top.mod: New file.
+        * mc/varargs.def: New file.
+        * mc/varargs.mod: New file.
+        * mc/wlists.def: New file.
+        * mc/wlists.mod: New file.
+        * patches/gcc/11.1.0/01-patches: New file.
+        * patches/gcc/11.1.0/02-patches: New file.
+        * patches/gcc/11.1.0/03-patches: New file.
+        * patches/gcc/11.1.0/04-patches: New file.
+        * patches/gcc/11.1.0/05-patches: New file.
+        * patches/gcc/11.1.0/06-patches: New file.
+        * patches/gcc/11.1.0/07-patches: New file.
+        * patches/gcc/11.1.0/08-patches: New file.
+        * patches/gcc/11.1.0/09-patches: New file.
+        * patches/gcc/11.1.0/10-patches: New file.
+        * patches/gcc/11.1.0/11-patches: New file.
+        * patches/gcc/11.1.0/12-patches: New file.
+        * patches/gcc/11.1.0/13-patches: New file.
+        * patches/gcc/11.1.0/14-patches: New file.
+        * patches/gcc/11.1.0/15-patches: New file.
+        * patches/gcc/11.1.0/16-patches: New file.
+        * patches/gcc/11.1.0/17-patches: New file.
+        * patches/gcc/11.1.0/18-patches: New file.
+        * patches/gcc/11.1.0/19-patches: New file.
+        * patches/gcc/11.1.0/20-patches: New file.
+        * patches/gcc/11.1.0/21-patches: New file.
+        * patches/gcc/11.1.0/22-patches: New file.
+        * patches/gcc/11.1.0/23-patches: New file.
+        * patches/gcc/3.3.6/01.waldek_patch_gcc: New file.
+        * patches/gcc/3.3.6/02.gaius_patch_gcc: New file.
+        * patches/gcc/4.1.0/01.gaius_patch_gcc: New file.
+        * patches/gcc/4.1.1/01.gaius_patch_gcc: New file.
+        * patches/gcc/4.1.2/01-patches: New file.
+        * patches/gcc/4.1.2/02-patches: New file.
+        * patches/gcc/4.1.2/ChangeLog: New file.
+        * patches/gcc/4.1.2/old/01.gaius_patch_gcc: New file.
+        * patches/gcc/4.1.2/old/02.gaius_rs6000_lang: New file.
+        * patches/gcc/4.1.2/old/03.michael_i386: New file.
+        * patches/gcc/4.1.2/old/04.gaius_patch_gcc: New file.
+        * patches/gcc/4.1.2/old/05.gaius_patch_gcc: New file.
+        * patches/gcc/4.1.2/old/06.gaius_patch_tree: New file.
+        * patches/gcc/4.1.2/old/07.michael_i386: New file.
+        * patches/gcc/4.1.2/old/08.gaius_ipa_type_escape.c: New file.
+        * patches/gcc/4.1.2/old/09.gaius_patch_config: New file.
+        * patches/gcc/4.1.2/old/10.michael_snowleopard1: New file.
+        * patches/gcc/4.1.2/old/11.michael_snowleopard2: New file.
+        * patches/gcc/4.1.2/old/12.gaius_patch_tree_flow_inline_h: New file.
+        * patches/gcc/4.7.1/01-patches: New file.
+        * patches/gcc/4.7.1/02-patches: New file.
+        * patches/gcc/4.7.3/01-patches: New file.
+        * patches/gcc/4.7.3/02-patches: New file.
+        * patches/gcc/4.7.3/03-patches: New file.
+        * patches/gcc/4.7.3/04-patches: New file.
+        * patches/gcc/4.7.3/05-patches: New file.
+        * patches/gcc/4.7.3/06-patches: New file.
+        * patches/gcc/4.7.3/07-patches: New file.
+        * patches/gcc/4.7.3/08-patches: New file.
+        * patches/gcc/4.7.3/09-patches: New file.
+        * patches/gcc/4.7.3/10-patches: New file.
+        * patches/gcc/4.7.3/11-patches: New file.
+        * patches/gcc/4.7.3/12-patches: New file.
+        * patches/gcc/4.7.4/01-patches: New file.
+        * patches/gcc/4.7.4/02-patches: New file.
+        * patches/gcc/4.7.4/03-patches: New file.
+        * patches/gcc/4.7.4/04-patches: New file.
+        * patches/gcc/4.7.4/05-patches: New file.
+        * patches/gcc/4.7.4/06-patches: New file.
+        * patches/gcc/4.7.4/07-patches: New file.
+        * patches/gcc/4.7.4/08-patches: New file.
+        * patches/gcc/4.7.4/09-patches: New file.
+        * patches/gcc/4.7.4/10-patches: New file.
+        * patches/gcc/4.7.4/11-patches: New file.
+        * patches/gcc/4.7.4/12-patches: New file.
+        * patches/gcc/5.2.0/01-patches: New file.
+        * patches/gcc/5.2.0/02-patches: New file.
+        * patches/gcc/5.2.0/03-patches: New file.
+        * patches/gcc/5.2.0/04-patches: New file.
+        * patches/gcc/5.2.0/05-patches: New file.
+        * patches/gcc/5.2.0/06-patches: New file.
+        * patches/gcc/5.2.0/07-patches: New file.
+        * patches/gcc/5.2.0/08-patches: New file.
+        * patches/gcc/5.2.0/09-patches: New file.
+        * patches/gcc/5.2.0/10-patches: New file.
+        * patches/gcc/5.2.0/11-patches: New file.
+        * patches/gcc/5.2.0/12-patches: New file.
+        * patches/gcc/6.4.0/01-patches: New file.
+        * patches/gcc/6.4.0/02-patches: New file.
+        * patches/gcc/6.4.0/03-patches: New file.
+        * patches/gcc/6.4.0/04-patches: New file.
+        * patches/gcc/6.4.0/05-patches: New file.
+        * patches/gcc/6.4.0/06-patches: New file.
+        * patches/gcc/6.4.0/07-patches: New file.
+        * patches/gcc/6.4.0/08-patches: New file.
+        * patches/gcc/6.4.0/09-patches: New file.
+        * patches/gcc/6.4.0/10-patches: New file.
+        * patches/gcc/6.4.0/11-patches: New file.
+        * patches/gcc/trunc/01-patches: New file.
+        * patches/gcc/trunc/02-patches: New file.
+        * patches/gcc/trunc/03-patches: New file.
+        * patches/gcc/trunc/04-patches: New file.
+        * patches/gcc/trunc/05-patches: New file.
+        * patches/gcc/trunc/06-patches: New file.
+        * patches/gcc/trunc/07-patches: New file.
+        * patches/gcc/trunc/08-patches: New file.
+        * patches/gcc/trunc/09-patches: New file.
+        * patches/gcc/trunc/10-patches: New file.
+        * patches/gcc/trunc/11-patches: New file.
+        * patches/gcc/trunk/01-patches: New file.
+        * patches/gcc/trunk/02-patches: New file.
+        * patches/gcc/trunk/03-patches: New file.
+        * patches/gcc/trunk/04-patches: New file.
+        * patches/gcc/trunk/05-patches: New file.
+        * patches/gcc/trunk/06-patches: New file.
+        * patches/gcc/trunk/07-patches: New file.
+        * patches/gcc/trunk/08-patches: New file.
+        * patches/gcc/trunk/09-patches: New file.
+        * patches/gcc/trunk/10-patches: New file.
+        * patches/gcc/trunk/11-patches: New file.
+        * patches/gcc/trunk/12-patches: New file.
+        * patches/gcc/trunk/13-patches: New file.
+        * patches/gcc/trunk/15-patches: New file.
+        * patches/gcc/trunk/23-patches: New file.
+        * patches/gcc/trunk/24-patches: New file.
+        * patches/gcc/trunk/25-patches: New file.
+        * patches/gdb/6.3/01.waldek_patch_gdb: New file.
+        * patches/gdb/6.3/02.gaius_patch_gdb: New file.
+        * plugin/README: New file.
+        * plugin/m2rte.c: New file.
+        * tools-src/README: New file.
+        * tools-src/array2index.py: New file.
+        * tools-src/boilerplate.py: New file.
+        * tools-src/buildpg: New file.
+        * tools-src/buildsyntax: New file.
+        * tools-src/calcpath: New file.
+        * tools-src/createUlmSys: New file.
+        * tools-src/def2texi.py: New file.
+        * tools-src/gensum.py: New file.
+        * tools-src/incfile: New file.
+        * tools-src/makeSystem: New file.
+        * tools-src/makeconfigure: New file.
+        * tools-src/makeversion: New file.
+        * tools-src/mklink.c: New file.
+        * tools-src/tidydates.py: New file.
+        * version.c: New file.
+        * www/Makefile.in: New file.
+        * www/README: New file.
+        * www/gm2-logo.ms: New file.
+        * www/gm2.css: New file.
+        * www/tools/createhtml.py: New file.
+        * www/tools/texi2tr/html/about.tpl: New file.
+        * www/tools/texi2tr/html/community.html: New file.
+        * www/tools/texi2tr/html/community.tpl: New file.
+        * www/tools/texi2tr/html/development.html: New file.
+        * www/tools/texi2tr/html/development.tpl: New file.
+        * www/tools/texi2tr/html/download.tpl: New file.
+        * www/tools/texi2tr/html/footer.ht: New file.
+        * www/tools/texi2tr/html/header.ht: New file.
+        * www/tools/texi2tr/html/heading.ht: New file.
+        * www/tools/texi2tr/html/homepage.tpl: New file.
+        * www/tools/texi2tr/html/index.html: New file.
+        * www/tools/texi2tr/html/license.tpl: New file.
+        * www/tools/texi2tr/html/news.html: New file.
+        * www/tools/texi2tr/html/news.tpl: New file.
+        * www/tools/texi2tr/html/platforms.tpl: New file.
+        * www/tools/texi2tr/html/release.tpl: New file.
+        * www/tools/texi2tr/html/texi2tr.css: New file.
+        * www/tools/texi2tr/html/title.ht: New file.
+        * www/tools/texi2tr/html/users.tpl: New file.
+        * www/tools/texi2tr/png/200px-Heckert_GNU_white.png: New file.
+        * www/tools/texi2tr/png/debian-swirl48x48.png: New file.
+        * www/tools/texi2tr/png/develop.png: New file.
+        * www/tools/texi2tr/png/install.png: New file.
+        * www/tools/texi2tr/png/library.png: New file.
+        * www/tools/texi2tr/png/menu-left-tab.png: New file.
+        * www/tools/texi2tr/png/menu-right-tab.png: New file.
+        * www/tools/texi2tr/png/menu-selected-left-tab.png: New file.
+        * www/tools/texi2tr/png/menu-selected-right-tab.png: New file.
+        * www/tools/texi2tr/png/next.png: New file.
+        * www/tools/texi2tr/png/note.png: New file.
+        * www/tools/texi2tr/png/prev.png: New file.
+        * www/tools/texi2tr/png/release.png: New file.
+        * www/tools/texi2tr/png/snapshot.png: New file.
+        * www/tools/texi2tr/png/terminal.png: New file.
+        * www/tools/texi2tr/png/users.png: New file.
+        * www/tools/texi2tr/src/config.py: New file.
+        * www/tools/texi2tr/src/navigation.py: New file.
+        * www/tools/texi2tr/src/outputdev.py: New file.
+        * www/tools/texi2tr/src/texi2tr.py: New file.
+
+2021-07-02  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
+
+	* doc/gm2.texi (Obtaining): added.  (Obtaining) New using
+	node added.
+	* www/tools/createhtml.py: __RELEASE__ substitution
+	implemented.
+	* www/tools/texi2tr/html/users.tpl (User guide):
+	points to __RELEASE__/using.html.  (Libaries)
+	point to __RELEASE__/Libraries.html.
+
+2021-07-01  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
+
+	* www/Makefile.in: moved {news,community,development}.html
+	into .tpl and adjusted the rules.
+	* www/tools/createhtml.py: (__WEBRELEASE__) substitution
+	implemented.  (usage) New function.  Handle the -w option.
+	* www/tools/texi2tr/html/news.tpl: (New file).
+	* www/tools/texi2tr/html/development.tpl: (New file).
+	* www/tools/texi2tr/html/community.tpl: (New file).
+	* www/Makefile.in: remove development.html rule.
+	* www/tools/texi2tr/html/users.tpl: (using) reference use
+	__WEBRELEASE__.  (obtaining) reference use __WEBRELEASE__.
+	(libraries) reference use __WEBRELEASE__.
+	* www/tools/texi2tr/html/title.ht: use template for HOME_HREF
+	and 12_HREF.
+	* www/Makefile.in: create copy of title.ht in build directory
+	and include build directory in template path for texi2tr.
+	* www/Makefile.in: corrected install rule.
+	* www/Makefile.in: added -w option to invocation of createhtml.py.
+
+2021-06-30  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
+
+	* www/Makefile.in: copy $(RELEASE)/*.{html,png} files into
+	WWWROOT/www/gm2/$(RELEASE).
+	* www/tools/createhtml.py: add 11_HREF substitution.
+	* www/tools/texi2tr/html/release.tpl: added note about GCC_11.
+	* www/tools/texi2tr/html/texi2tr.css: updated to include new
+	style for release tag.
+	* www/tools/texi2tr/src/outputdev.py: (setSubDirectory)
+	New method.
+	* www/tools/texi2tr/src/texi2tr.py: set subDirectory.
+	Join subdirectory to node.  Permit -s subdirectory option.
+
+2021-06-27  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
+
+	* Make-lang.in: renamed getopt.c to cgetopt.c.
+	* gm2-compiler/P2SymBuild.mod: (BuildProcedureType)
+	call CheckForExportedImplementation.  Fixes a bug report by
+	Derek Wyss
+	(https://lists.nongnu.org/archive/html/gm2/2021-06/msg00005.html).
+	* gm2-compiler/SymbolTable.mod: (CheckForImplementedExports)
+	reformatted.  (UnImplementedSymbolError) detect procedure types
+	and issue a message about undeclared procedure types.  Also
+	provide a generic error for any non procedure, proc type or type.
+
+2021-06-24  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
+
+	* website branch created.
+
+2021-06-22  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
+
+	* m2/gm2-compiler/M2ColorString.mod: import open_quote and
+	close_quote from m2color.
+	* m2/gm2-gcc/m2color.c: (open_quote) New function implemented.
+	(close_quote) New function implemented, both functions import
+	open and close quotes from gcc/intl.c to pick up whether the
+	host has utf-8 capability.
+	* m2/gm2-gcc/m2color.def: (open_quote) New function defined.
+	(close_quote) New function defined.
+	* m2/gm2-gcc/m2color.h: (open_quote) and (close_quote) provide C
+	prototypes for external	functions.
+
+2021-06-21  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
+
+	* tools-src/calcpath: (New file).
+	* Make-lang.in: (m2/gm2-libs/gm2-libs-host.h) use calcpath
+	to determine the srcdir of the new subdirectory.
+	(m2/gm2config.h) use calcpath
+	to determine the srcdir of the new subdirectory.
+	Fixes an error and based on a patch reported by Segher Boessenkool
+	<segher@kernel.crashing.org>.
+	* Make-lang.in: (m2/gm2-libs/gm2-libs-host.h) Restore tabs.
+	* Make-lang.in: (m2/gm2config.h) Restore tabs.
+	* Make-lang.in: Replaced getopt.c by cgetopt.c.
+	* gm2-libs/getopt.def: Renamed gm2-libs/cgetopt.def.
+	* gm2-libs-ch/getopt.c: Renamed gm2-libs-ch/cgetopt.c.
+	Replaced getopt_ by cgetopt_.
+	Fixes an error reported by Segher Boessenkool
+	<segher@kernel.crashing.org>.
+	* tools-src/calcpath: (Corrected header comment).
+	* tools-src/calcpath: (Redirect error echo to stderr).
+
+2021-06-19  Matthias Klose  <doko@ubuntu.com>
+
+	* Make-lang.in: introduce parallel linking.
+	* Make-lang.in (m2.serial): New target.
+	(cc1gm2): Depend on $(m2.prev).
+	(stageN/m2/cc1gm2): Call LLINKER, also call LINK_PROGRESS.
+
+2021-06-19  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
+
+	* Make-lang.in: commented out libgcc-support from %.o rules.
+	* Make-lang.in: removed libgcc-support from %.o rules.
+	Fixes make install as it no longer rebuilds the executables.
+
+2021-06-17  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
+
+	* Make-lang.in: removed gm2m from the tools to be installed.
+	* tools-src/makeSystem: write SYSTEM.o to /dev/null.
+	* patches/gcc/trunk/01-patches: (rebuilt).
+	* patches/gcc/trunk/02-patches: (rebuilt).  Add objects
+	containing a date string into the list of objects to be ignored.
+	* Make-lang.in: added header dependancies to m2rte.
+	* patches/gcc/trunk/24-patches: (rebuilt).  Corrected
+	missing text.
+
+2021-06-16  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
+
+	* patches/gcc/trunk/01-patches: (Rebuilt).  Cast value
+	since on some hosts value is declared as a long long int.
+	* tools-src/makeSystem: remove SYSTEM.o after creating definition
+	module.
+	* Make-lang.in: rewritten m2.info rule.
+	* Make-lang.in: added $(M2LINK) as a dependancy to all link
+	rules.  Added GCC header dependancies to object build rules.
+
+2021-06-15  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
+
+	* patches/gcc/trunk/01-patches: (Rebuilt).  Disable libgm2
+	by default and do not configure it unless Modula-2 was specified.
+	* patches/gcc/trunk/02-patches: (Rebuilt).  Disable libgm2
+	by default and do not configure it unless Modula-2 was specified.
+	* patches/gcc/trunk/08-patches: (Rebuilt).  add libstdc++-v3
+	as a dependant for gm2tools.
+
+2021-06-14  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
+
+	* Make-lang.in: corrected many include paths to pick up
+	gm2-libs-host.h.
+	* gm2-gcc/rtegraph.c: remove include <mpfr.h> use "mpfr.h" instead.
+	* gm2-ici/m2linemap.c: remove include <stdlib.h> use config.h system.h.
+	* gm2-libs-ch/Selective.c: remove system includes and use gcc
+	config.h system.h instead.
+	* gm2-libs-ch/SysExceptions.c: remove system includes and use gcc
+	config.h system.h instead.
+	* gm2-libs-ch/choosetemp.c: remove system includes and use gcc
+	config.h system.h instead.
+	* gm2-libs-ch/dtoa.c: remove system includes and use gcc
+	config.h system.h instead.
+	* gm2-libs-ch/errno.c: remove system includes and use gcc
+	config.h system.h instead.
+	* gm2-libs-ch/getopt.c: remove system includes and use gcc
+	config.h system.h instead.
+	* gm2-libs-ch/host.c: remove system includes and use gcc
+	config.h system.h instead.
+	* gm2-libs-ch/ldtoa.c: remove system includes and use gcc
+	config.h system.h instead.
+	* gm2-libs-ch/termios.c: remove system includes and use gcc
+	config.h system.h instead.
+	* gm2-libs-ch/tools.c: remove system includes and use gcc
+	config.h system.h instead.
+	* gm2-libs-ch/wrapc.c: remove system includes and use gcc
+	config.h system.h instead.
+	* gm2-libs-ch/xlibc.c: remove system includes and use gcc
+	config.h system.h instead.
+	* gm2-libs/gm2-libs-host.h.in: remove PACKAGE_BUGREPORT,
+	PACKAGE_NAME, PACKAGE_STRING, PACKAGE_TARNAME, PACKAGE_VERSION and
+	PACKAGE_URL.
+	* mc-boot-ch/GSelective.c: remove system includes and use gcc
+	config.h system.h instead.
+	* mc-boot-ch/GSysExceptions.c: remove system includes and use gcc
+	config.h system.h instead.
+	* mc-boot-ch/Gcbuiltin.c: remove system includes and use gcc
+	config.h system.h instead.
+	* mc-boot-ch/Gdtoa.c: remove system includes and use gcc
+	config.h system.h instead.
+	* mc-boot-ch/Gerrno.c: remove system includes and use gcc
+	config.h system.h instead.
+	* mc-boot-ch/Gldtoa.c: remove system includes and use gcc
+	config.h system.h instead.
+	* mc-boot-ch/Glibc.c: remove system includes and use gcc
+	config.h system.h instead.
+	* mc-boot-ch/Glibm.c: remove system includes and use gcc
+	config.h system.h instead.
+	* mc-boot-ch/Gmcrts.c: remove system includes and use gcc
+	config.h system.h instead.
+	* mc-boot-ch/Gpth.c: remove system includes and use gcc
+	config.h system.h instead.
+	* mc-boot-ch/Gtermios.c: remove system includes and use gcc
+	config.h system.h instead.
+	* mc-boot-ch/Gwrapc.c: remove system includes and use gcc
+	config.h system.h instead.
+	* mc-boot-ch/network.c: remove system includes and use gcc
+	config.h system.h instead.
+	* analyzer branch created.
+	* removed all analyzer patches and analyzer testsuite tests
+	on master for now.
+
+2021-06-12  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
+
+	* Make-lang.in: remove duplicate --gcc-config-system from
+	mc.  Documentation rules now refer to gm2.texi contained in ../gcc.
+	* NEWS: (updated gm2 into the gcc tree).
+	* config-lang.in: removed examples.
+	* el/gm2-mode.el: fixed date.
+	* gm2-compiler/M2Base.mod: (InitSystem) no longer has a parameter.
+	* gm2-compiler/M2LexBuf.mod: improved formatting.
+	* gm2-compiler/M2Quads.mod: (PushTFADrwtok) corrected end name.
+	* gm2-compiler/M2SSA.def: (EnableSSA) disabled.
+	* gm2-compiler/M2System.def: (InitSystem) no longer has a parameter.
+	* gm2-compiler/M2System.mod: (InitSystem) no longer has a parameter.
+	* gm2-compiler/P1SymBuild.mod:
+	(P1StartBuildImplementationModule) removed unused variable and
+	tidied up formatting.
+	* gm2-gcc/m2block.c: added comment explaining why
+	commented out code should remain.
+	* gm2-gcc/m2builtins.c: removed commented out code.
+	* gm2-gcc/m2expr.c: removed commented out code.
+
+2021-06-11  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
+
+	* patches/gcc/trunk/23-patches: (New file). Patch for hwint.h.
+	* patches/gcc/trunk/24-patches: (new file). Patch for
+	install.texi.
+	* patches/gcc/trunk/24-patches: (new file). Patch for
+	sourcebuild.texi.
+	* m2/Make-lang.in: (m2.html) renamed documentation m2.texi.
+	(m2.dvi) renamed documentation m2.texi,
+	(m2.pdf) renamed documentation m2.texi.
+	(MC_ARGS) add --gcc-config-system.  (m2/gm2-libs-boot/%.o)
+	use --gcc-config-system.  Add --gcc-config-system to all bootstrap
+	rules to use GCC config.h and system.h rather than installed
+	headers.  Alter all include search paths to find config.h and
+	system.h and libiberty.
+	* bnf/gm2l.bnf: (DisplayUsage) New procedure called when
+	-h or --help is used.
+	* gm2-compiler/gm2lcc.mod: (DisplayHelp) New procedure called
+	when -h or --help is used.
+	* gm2-compiler/gm2lgen.mod: (DisplayHelp) New procedure called
+	when -h or --help is used.  Tidied up formatting.
+	* gm2-compiler/gm2lorder.mod: Tidied up formatting.
+	* gm2-compiler/ppg.mod: (DisplayHelp) New procedure called
+	when -h or --help is used.
+	* gm2-libs-ch/choosetemp.c: use "libiberty.h" rather than
+	<libiberty.h>.
+	* gm2.texi: removed subsection.
+	* gm2spec.c: remove dependance upon installed headers.
+	* mc-boot: (all files in this directory rebuilt).
+	* mc/README: removed old done markers.
+	* mc/decl.mod: (doCapC) detect getGccConfigSystem and use TOUPPER
+	rather than toupper.
+	* mc/keyc.mod: import getGccConfigSystem and issue include
+	config.h include system.h if this switch is on.  Also use
+	safe-ctype.h rather than ctype.h.  Avoid system headers if this
+	switch is on.  Add true and false to the macros to be avoided.
+	Add new to the list of keywords to be avoided.
+	* mc/mcOptions.def: (getGccConfigSystem) New procedure function.
+	* mc/mcOptions.mod: Updated year and implemented
+	(getGccConfigSystem).  Update help to include --gcc-config-system.
+	(handleOption) detect --gcc-config-system.
+	* tools-src/mklink.c: allow to be build by a c++ compiler.
+	Remove dependance upon installed headers, use config.h and system.h.
+
+2021-06-07  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
+
+	* gm2-ici/README: added gm2m to list of tools.
+	* Make-lang.in: (GM2_LINK_TOOLS) only set to gm2m.
+	(HAVE_STPCPY) removed.  (m2/gm2config.h) removed debugging
+	diagnostic.  Removed commented out rules and tidied comments
+	to use GNU style.  (check_module-2) Removed redundant
+	equivalence rule.
+	* bnf/gm2m.bnf: (ParseArgs) use printf1 and use correct format
+	specifier (%s).
+	* gm2-compiler/M2GCCDeclare.mod: tidied up long comment.
+	* m2/gm2-gcc/m2linemap.def: change definition module to
+	definition for "C" and explicitly export qualified all
+	identifiers.
+	* gm2-libiberty/pexecute.def: change to definition module for
+	"C".
+	* patches/gcc/trunk/[01-22]-patches: (rebuilt).
+	* Make-lang.in: (GM2_LINK_TOOLS_INSTALL) new definition.
+	(GM2_LINK_TOOLS) defined to allow bootstrapping gm2tools.
+
+2021-05-31  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
+
+	* Make-lang.in: renamed gm2-tools directory to gm2-ici.
+	Updated all gm2-tool rules.
+	* config-lang.in: mkdir gm2-ici and gm2-ici-boot.  Remove
+	mkdir gm2-tools and gm2-tools-boot.
+
+2021-05-30  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
+
+	* gm2-gcc/gcc-consolidation.h: include realmpfr.h.
+	remove include stdio.h.
+	* gm2-gcc/init.c: remove include stdio.h.  include
+	config.h and system.h.
+	* m2/gm2-lang.c: remove include mpfr.h.
+
+2021-05-28  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
+
+	* patches/gcc/trunk/22-patches: rebuilt after tidying up
+	the code.
+	* gm2-gcc/m2decl.c: (m2decl_DeclareKnownVariable) tidied up
+	safety checks with calls to gcc_assert.
+
+2021-05-27  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
+
+	* patches/gcc/trunk/14-patches: (removed brig patch).
+	* patches/gcc/trunk/23-patches: (renamed as 14-patches).
+	* patches/gcc/trunk/{01-22}-patches: rebuilt.
+	* Make-lang.in: removed reference to version.o
+	* gm2-compiler/M2SSA.def: (New file).
+	* gm2-compiler/M2SSA.mod: (New file).
+	* patches/gcc/trunk/{01-22}-patches: rebuilt.
+
+2021-05-26  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
+
+	* Make-lang.in: added entries for M2SSA.def and M2SSA.mod.
+	* bnf/m2-2.bnf: (Qualident) pass tok to RequestSym.
+	* bnf/m2-3.bnf: (Qualident) rewritten to generate a virtual
+	token for the complete qualident.
+	* bnf/m2-c.bnf: (Qualident) rewritten to generate a virtual
+	token for the complete qualident.
+	* bnf/m2-h.bnf: (Qualident) rewritten to generate a virtual
+	token for the complete qualident.
+	* gm2-compiler/M2Base.def: (IsNeededAtRunTime) introduce
+	extra parameter, tok.
+	* gm2-compiler/M2Base.mod: ImportFrom changed to include
+	location position.  RequestSym changed to include location
+	position.  FromModuleGetSym changed to include location
+	position.  (IsCompatible) short circuit the same types.
+	* gm2-compiler/M2Code.mod: (DetermineSubExpTemporaries) New
+	procedure.  (Code) call DetermineSubExpTemporaries after
+	dependant types have been created.
+	* gm2-compiler/M2GCCDeclare.def: (DeclareLocalVariable)
+	New procedure.
+	* gm2-compiler/M2GCCDeclare.def: (DeclareLocalVariables)
+	changed parameter names to be more informative.
+	(DeclareLocalVariable) New procedure.  Updated formatting to
+	use GNU coding standard spacing.
+	* gm2-compiler/M2GenGCC.mod: (Replace) New procedure.
+	(CodeFunctValue) check for SSA variable and call Replace if
+	necessary.  (checkDeclare) New procedure.  (CodeBinaryCheck)
+	check if SSA variable needs to be replaced.  (CodeUnaryCheck)
+	check if SSA variable needs to be replaced.  (CodeBecomes)
+	check if SSA variable needs to be replaced.
+	* gm2-compiler/M2Quads.mod: Updated some of the procedures
+	to adhere to GNU coding standard spacing.  Change all calls to
+	RequestSym to pass location reference.  (BuildCaseEquality)
+	no longer use GetTokenNo but the location of the expression on
+	the expression stack.
+	* gm2-compiler/M2Scope.mod: added developer
+	debugging information.
+	* gm2-compiler/M2System.def: (InitSystem) pass location rather
+	than tokenno.
+	* gm2-compiler/P1SymBuild.mod: use tokenno on the expression
+	stack rather than GetTokenNo when building import/export lists.
+	* gm2-compiler/P2SymBuild.mod: (BuildImportOuterModule)
+	(BuildImportInnerModule) change GetExported to pass token number
+	stored on the expression stack.  (BuildVarientSelector)
+	pass token number on the expression stack rather than GetTokenNo.
+	* gm2-compiler/P3SymBuild.mod: (StartBuildInnerModule) use
+	expression stack tokenno when calling RequestSym.
+	(CheckImportListOuterModule)  use expression stack tokenno when
+	calling RequestSym.  (StartBuildProcedure) use expression stack
+	tokenno when calling RequestSym.  (BuildConst) use expression stack
+	tokenno when calling RequestSym.
+	(BuildVarAtAddress) use expression stack tokenno when calling
+	RequestSym.
+	* gm2-compiler/PCSymBuild.mod: (PCStartBuildInnerModule) use
+	expression stack tokenno when calling RequestSym.
+	(PCStartBuildProcedure) use expression stack
+	tokenno when calling RequestSym.  (BuildConst) use expression stack
+	tokenno when calling RequestSym.  (StartDesConst) use expression stack
+	tokenno when calling RequestSym.
+	* gm2-compiler/SymbolConversion.mod: (AddTemporaryKnown)
+	New procedure.
+	* gm2-compiler/SymbolTable.def: (PutVariableSSA) New
+	procedure.  (IsVariableSSA) New procedure function.
+	(GetDeclareSym) introduce token position parameter.
+	(FromModuleGetSym) introduce token position parameter.
+	(RequestSym) introduce token position parameter.
+	(PutExportQualified) introduce token position parameter.
+	(PutExportUnQualified) introduce token position parameter.
+	(PutExportUnImplemented) introduce token position parameter.
+	(GetExported) introduce token position parameter.
+	(GetFromOuterModule) introduce token position parameter.
+	(UnknownReported) New procedure.
+	* gm2-compiler/SymbolTable.mod: (PutVariableSSA) Implement
+	new procedure.  (IsVariableSSA) New procedure function.
+	(GetDeclareSym) introduce token position parameter.
+	(FromModuleGetSym) introduce token position parameter.
+	(RequestSym) introduce token position parameter.
+	(PutExportQualified) introduce token position parameter.
+	(PutExportUnQualified) introduce token position parameter.
+	(PutExportUnImplemented) introduce token position parameter.
+	(GetExported) introduce token position parameter.
+	(GetFromOuterModule) introduce token position parameter.
+	(UnknownReported) Implement new procedure.
+	* gm2-gcc/init.c: call M2_M2SSA_init before module
+	compilation.
+	* gm2-gcc/m2decl.c: attempt to create a nameless temporary
+	if necessary.
+	* gm2-gcc/m2statement.c: GNU coding standard formatting
+	changes.
+	* init/gm2-gccinit: add M2SSA to list of compiler modules.
+
+2021-05-06  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
+
+	* gm2-compiler/M2GenGCC.mod: remove GetTokenNo
+	from import.  (UseBuiltin) introduce new parameter tokenno
+	and use this instead of GetTokenNo ().  Change all calls to
+	UseBuiltin to pass the tokenno across.  Fixes a bug (a bad error
+	position) seen if a constant is created by a folded builtin
+	procedure function.
+
+2021-04-29  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
+
+	* NEWS: version 1.9.5.
+	* gm2-libs/config-host.in: updated to 1.9.5.
+	* version.c: 1.9.5.
+
+2021-04-28  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
+
+	* Make-lang.in: added gmp.h header file include directories to
+	the m2rte plugin compile rule.
+	* mc-boot/GDynamicStrings.c: regenerated.
+	* mc-boot/GEnvironment.c: regenerated.
+	* mc-boot/GFIO.c: regenerated.
+	* mc-boot/GFormatStrings.c: regenerated.
+	* mc-boot/GIO.c: regenerated.
+	* mc-boot/GIndexing.c: regenerated.
+	* mc-boot/GM2EXCEPTION.c: regenerated.
+	* mc-boot/GPushBackInput.c: regenerated.
+	* mc-boot/GRTExceptions.c: regenerated.
+	* mc-boot/GRTint.c: regenerated.
+	* mc-boot/GSArgs.c: regenerated.
+	* mc-boot/GSFIO.c: regenerated.
+	* mc-boot/GStdIO.c: regenerated.
+	* mc-boot/GStringConvert.c: regenerated.
+	* mc-boot/GSysStorage.c: regenerated.
+	* mc-boot/GTimeString.c: regenerated.
+	* mc-boot/Galists.c: regenerated.
+	* mc-boot/Gdecl.c: regenerated.
+	* mc-boot/Gkeyc.c: regenerated.
+	* mc-boot/Glists.c: regenerated.
+	* mc-boot/GmcComment.c: regenerated.
+	* mc-boot/GmcComp.c: regenerated.
+	* mc-boot/GmcDebug.c: regenerated.
+	* mc-boot/GmcError.c: regenerated.
+	* mc-boot/GmcLexBuf.c: regenerated.
+	* mc-boot/GmcMetaError.c: regenerated.
+	* mc-boot/GmcOptions.c: regenerated.
+	* mc-boot/GmcPretty.c: regenerated.
+	* mc-boot/GmcPrintf.c: regenerated.
+	* mc-boot/GmcSearch.c: regenerated.
+	* mc-boot/GmcStack.c: regenerated.
+	* mc-boot/GmcStream.c: regenerated.
+	* mc-boot/Gmcp1.c: regenerated.
+	* mc-boot/Gmcp2.c: regenerated.
+	* mc-boot/Gmcp3.c: regenerated.
+	* mc-boot/Gmcp4.c: regenerated.
+	* mc-boot/Gmcp5.c: regenerated.
+	* mc-boot/GnameKey.c: regenerated.
+	* mc-boot/GsymbolKey.c: regenerated.
+	* mc-boot/Gvarargs.c: regenerated.
+	* mc-boot/Gwlists.c: regenerated.
+	* mc/keyc.mod: redefine NULL for OpenBSD.
+	* testsuite/gm2/analyzer/fail/callbyref3badreturn.mod: added dg-warning.
+	* testsuite/gm2/analyzer/fail/testnoreturn.mod: added dg-warning.
+
+2021-04-26  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
+
+	* gm2-compiler/M2Quads.mod: improve formatting.
+	* gm2-compiler/SymbolTable.mod: improve formatting.
+	* patches/gcc/trunk/19-patches: (New file).
+	* patches/gcc/trunk/20-patches: (New file).
+	* patches/gcc/trunk/21-patches: (New file).
+	* patches/gcc/trunk/22-patches: (New file).
+	* patches/gcc/trunk/23-patches: (New file).
+
+2021-04-18  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
+
+	* patches/gcc/trunk/16-patch: (on_deallocator_call)
+	defends against skip_reference returning NULL.
+
+2021-04-17  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
+
+	* bnf/m2-1.bnf: calls to BuildNumber pass tokenpos.
+	* bnf/m2-2.bnf: calls to BuildNumber pass tokenpos.
+	* bnf/m2-3.bnf: calls to BuildNumber pass tokenpos.
+	* bnf/m2-c.bnf: calls to BuildNumber pass tokenpos.
+	* bnf/m2-h.bnf: calls to BuildNumber pass tokenpos.
+	* bnf/m2.bnf: calls to BuildNumber pass tokenpos.
+	* gm2-compiler/M2Base.mod: improved formatting.
+	* gm2-compiler/M2GCCDeclare.def: (TryDeclareConstructor)
+	removed unused quad parameter.
+	* gm2-compiler/M2GCCDeclare.mod: (TryDeclareConstructor)
+	removed unused quad parameter.
+	* gm2-compiler/M2GenGCC.mod: Removed unused quad parameter
+	to TryDeclareConstructor.
+	* gm2-compiler/M2Quads.def: (BuildEndFor) use endpostok.
+	Tightened up the accuracy of the tokens used in subexpressions.
+	* gm2-compiler/M2Quads.mod: (BuildEndFor) use endpostok.
+	Tightened up the accuracy of the tokens used in subexpressions.
+
+2021-04-16  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
+
+	* patches/gcc/trunk/16-patch: (remade patch with
+	ability to track SysStorage and Storage heaps).
+	* testsuite/gm2/analyzer/fail: (new tests added).
+	* gm2-compiler/M2Quads.mod: (BuildDesignatorPointer)
+	use ptrtok position and check for NIL dereference.
+	Create virtual token for resulting subexpression.
+	* gm2-compiler/M2Quads.def: (BuildDesignatorPointer)
+	pass ptrtok position.
+	* bnf/m2-3.bnf: pass token number to BuildDesignatorPointer.
+
+2021-04-14  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
+
+	* bnf/m2-3.bnf: cosmetic formatting changes.
+	* gm2-compiler/M2Quads.mod: (BuildAssignmentWithoutBounds)
+	introduce a tok position and use it.  (MoveWithMode) use token
+	position.  (doBuildAssignment) use token position and use GenQuadO
+	with the token position parameter.
+	(AssignHighField) pass token position to
+	BuildAssignmentWithoutBounds.  Changed all calls to
+	BuildAssignmentWithoutBounds passing in the becomes token
+	position.  (BuildReturn) use GenQuadO with the token position of
+	the RETURN keyword.  (BuildStaticArray) create virtual token
+	position for subexpression.  (BuildDynamicArray) create virtual
+	token for subexpression.  (ConvertBooleanToVariable)
+	introduce token position and use it instead of GetTokenNo ().
+	(BuildBooleanVariable) use token number on the stack associated
+	with the operand.  (PushTFADrwtok) replaces PushTFADrw.
+	(PushTFDtok) replaces PushTFD.  (PushTFDrwtok) replaces PushTFDrw.
+	Changed all calls to replacement procedures.
+	* patches/gcc/trunk/16-patch: (remade patch).
+	* patches/gcc/trunk/17-patch: (remade patch).
+	* patches/gcc/trunk/18-patch: (remade patch).
+	* patches/gcc/trunk/19-patch: (New patch).
+	* gm2-lang.c: (gm2_langhook_new_dispose_storage_substitution)
+	New function.  (LANG_HOOKS_NEW_DISPOSE_STORAGE_SUBSTITUTION)
+	defined to gm2_langhook_new_dispose_storage_substitution.
+
+2021-04-10  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
+
+	* gm2-libs/RTint.mod: guard against NEW (v) failing.
+	* patches/gcc/trunk/16-patch: (remade patch).
+
+2021-04-09  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
+
+	* patches/gcc/trunk/16-patch: (remade patch).
+
+2021-04-08  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
+
+	* bnf/m2-3.bnf: (AssignmentOrProcedureCall) pass function token
+	number to BuildProcedureCall.
+	* gm2-compiler/M2Quads.mod: (BuildProcedureCall) use functok
+	and generate combinedtok.
+	(BuildNewProcedure) use functok and combinedtok for
+	accurate token position for generated results.
+	(BuildDisposeProcedure) use functok and combinedtok for
+	accurate token position for generated results.
+	(BuildRealFunctionCall) pass tokno to BuildRealFunctionCall.
+	(BuildPseudoProcedureCall) pass tokno to lower level procedures.
+	* gm2-lang.c: remove #if 1 debugging aids.
+	* patches/gcc/trunk/{17,18}-patch: (New files).
+	* patches/gcc/trunk/{16,17,18-patch}: (remade patches).
+
+2021-04-07  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
+
+	* patches/gcc/trunk/16-patches: added analyzer patch.
+
+2021-03-05  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
+
+	* Make-lang.in: invoke all shell scripts using sh.
+
+2021-03-04  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
+
+	* gm2-tools/M2Emit.mod: (InternalError) call abort.
+	* Make-lang.in: invoke all shell scripts with the appropriate
+	interpreter.
+
+2021-02-16  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
+
+	* gm2-compiler/M2ALU.mod: changed calls to InternalError to use
+	a single parameter.
+	* gm2-compiler/M2Base.mod: changed calls to InternalError to
+	use a single parameter.
+	* gm2-compiler/M2Check.mod: changed calls to InternalError to
+	use a single parameter.
+	* gm2-compiler/M2Error.mod: changed calls to InternalError to
+	use a single parameter.
+	* gm2-compiler/M2GCCDeclare.mod: changed calls to InternalError
+	to use a single parameter.
+	* gm2-compiler/M2GenGCC.mod: changed calls to InternalError to
+	use a single parameter.
+	* gm2-compiler/M2MetaError.mod: changed calls to InternalError
+	to use a single parameter.
+	* gm2-compiler/M2Quads.mod: changed calls to InternalError to
+	use a single parameter.
+	* gm2-compiler/M2Range.mod: changed calls to InternalError to
+	use a single parameter.
+	* gm2-compiler/P2SymBuild.mod: changed calls to InternalError
+	to use a single parameter.
+	* gm2-compiler/P3SymBuild.mod: changed calls to InternalError
+	to use a single parameter.
+	* gm2-compiler/PCSymBuild.mod: changed calls to InternalError
+	to use a single parameter.
+	* gm2-compiler/Sets.mod: changed calls to InternalError to use
+	a single parameter.
+	* gm2-compiler/SymbolConversion.mod: changed calls to
+	InternalError to use a single parameter.
+	* gm2-compiler/SymbolTable.mod: changed calls to InternalError
+	to use a single parameter.
+	* gm2-tools/M2Emit.mod: changed calls to InternalError to use
+	a single parameter.
+
+2021-02-15  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
+
+	* gm2-compiler/Lists.mod: all calls to InternalError changed
+	to use single parameter.
+	* gm2-compiler/M2ALU.mod: all calls to InternalError changed
+	to use single parameter.
+	* gm2-compiler/M2AsmUtil.mod: all calls to InternalError
+	changed to use single parameter.
+	* gm2-compiler/M2Base.mod: all calls to InternalError changed
+	to use single parameter.
+	* gm2-compiler/M2Batch.mod: all calls to InternalError changed
+	to use single parameter.
+	* gm2-compiler/M2CaseList.mod: all calls to InternalError
+	changed to use single parameter.
+	* gm2-compiler/M2Check.mod: all calls to InternalError changed
+	to use single parameter.
+	* gm2-compiler/M2Const.mod: all calls to InternalError changed
+	to use single parameter.
+	* gm2-compiler/M2Debug.mod: all calls to InternalError changed
+	to use single parameter.
+	* gm2-compiler/M2DebugStack.mod: all calls to InternalError
+	changed to use single parameter.
+	* gm2-compiler/M2Emit.def: all calls to InternalError changed
+	to use single parameter.
+	* gm2-compiler/M2Emit.mod: all calls to InternalError changed
+	to use single parameter.
+	* gm2-compiler/M2Error.def: all calls to InternalError changed
+	to use single parameter.
+	* gm2-compiler/M2Error.mod: all calls to InternalError changed
+	to use single parameter.
+	* gm2-compiler/M2GCCDeclare.mod: all calls to InternalError
+	changed to use single parameter.
+	* gm2-compiler/M2GenGCC.mod: all calls to InternalError
+	changed to use single parameter.
+	* gm2-compiler/M2MetaError.mod: all calls to InternalError
+	changed to use single parameter.
+	* gm2-compiler/M2Optimize.mod: all calls to InternalError
+	changed to use single parameter.
+	* gm2-compiler/M2Pass.mod: all calls to InternalError changed
+	to use single parameter.
+	* gm2-compiler/M2Quads.mod: all calls to InternalError changed
+	to use single parameter.
+	* gm2-compiler/M2Range.mod: all calls to InternalError changed
+	to use single parameter.
+	* gm2-compiler/M2StackAddress.mod: all calls to InternalError
+	changed to use single parameter.
+	* gm2-compiler/M2StackWord.mod: all calls to InternalError
+	changed to use single parameter.
+	* gm2-compiler/M2Swig.mod: all calls to InternalError changed
+	to use single parameter.
+	* gm2-compiler/M2System.mod: all calls to InternalError
+	changed to use single parameter.
+	* gm2-compiler/P2SymBuild.mod: all calls to InternalError
+	changed to use single parameter.
+	* gm2-compiler/PCSymBuild.mod: all calls to InternalError
+	changed to use single parameter.
+	* gm2-compiler/Sets.mod: all calls to InternalError changed to
+	use single parameter.
+	* gm2-compiler/SymbolConversion.mod: all calls to
+	InternalErrorchanged to use single parameter.
+	* gm2-compiler/SymbolTable.mod: all calls to InternalError
+	changed to use single parameter.
+	* gm2-tools/M2Emit.mod: all calls to InternalError changed to
+	use single parameter.
+
+2021-02-10  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
+
+	* mc-boot/Gmcp5.c: (SubDesignator) check to see if expression
+	is NIL.
+	* bnf/mc-5.bnf: (SubDesignator) check to see if expression
+	is NIL.
+	* gm2-gcc/rtegraph.c: (DEBUGGING) includes complete functions
+	rather than just the body of a function.
+	* gm2-compiler/M2Check.mod: (isTrue) commented out.
+	(checkTypeEquivalence) completed comment.  (checkTypeEquivalence)
+	removed unused parameter tInfo and added comments.
+	(checkSubrange) completed comment and check for result known
+	at beginning.  (checkGenericTypeEquivalence) completed comment.
+	(checkSystemEquivalence) completed comment and removed unused
+	tInfo parameter.  (checkEnumerationEquivalence) removed unused
+	tInfo parameter.  (checkPointerType) completed comment and removed
+	unused tInfo parameter.  (checkValueEquivalence) completed comment and
+	removed unused tInfo parameter.  (visit) removed.
+	(checkSkipEquivalence) removed unused parameter tInfo.
+	(checkRecordEquivalence) removed unused parameter tInfo.
+	(getCompatible) removed.
+
+2021-01-29  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
+
+        * gm2-compiler/M2GenGCC.mod: (ToSubrange) removed unused export.
+        * gm2-gcc/m2convert.c: (ToSubrange) removed.
+        * gm2-gcc/m2convert.h: (ToSubrange) removed.
+        * gm2-libs/SArgs.mod: Reverted change.
+
+2021-01-27  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
+
+	* gm2-compiler/M2BasicBlock.def: (KillBasicBlock) use
+	optional return.
+	* gm2-compiler/M2BasicBlock.mod: (KillBasicBlock) parameter
+	is VAR and the parameter is assigned to NIL.  (FreeBasicBlocks)
+	New procedure.  (BasicBlock) declared without unnecessary
+	forward type.  (InitBasicBlocks) formatting.
+	* gm2-compiler/M2Code.mod: (Percent) formatting.
+	(SecondDeclareAndOptimize) remove unnecessary variable bb.
+	Use FreeBasicBlocks on functional basic block evaluations.
+	* gm2-compiler/M2GenGCC.mod: (IsExported) Reformatted.
+	* gm2-compiler/M2LexBuf.mod: (GetToken) call GetToken
+	without using the return result to advance token position.
+	* gm2-compiler/m2flex.def: (GetToken) declared with optional
+	return result.
+	* gm2-gcc/gcc-consolidation.h: corrected dates.
+	* gm2-gcc/init.c: corrected dates.
+	* gm2-gcc/init.def: corrected dates.
+	* gm2-gcc/init.h: corrected dates.
+	* gm2-gcc/m2assert.c: corrected dates.
+	* gm2-gcc/m2assert.h: corrected dates.
+	* gm2-gcc/m2block.c: corrected dates.
+	* gm2-gcc/m2block.def: corrected dates.
+	* gm2-gcc/m2block.h: corrected dates.
+	* gm2-gcc/m2builtins.c: corrected dates.
+	* gm2-gcc/m2builtins.def: corrected dates.
+	* gm2-gcc/m2builtins.h: corrected dates.
+	* gm2-gcc/m2color.c: corrected dates.
+	* gm2-gcc/m2color.def: corrected dates.
+	* gm2-gcc/m2color.h: corrected dates.
+	* gm2-gcc/m2convert.c: corrected dates.
+	* gm2-gcc/m2convert.def: corrected dates.
+	* gm2-gcc/m2convert.h: corrected dates.
+	* gm2-gcc/m2decl.c: corrected dates.
+	* gm2-gcc/m2decl.def: corrected dates.
+	* gm2-gcc/m2decl.h: corrected dates.
+	* gm2-gcc/m2except.c: corrected dates.
+	* gm2-gcc/m2except.def: corrected dates.
+	* gm2-gcc/m2except.h: corrected dates.
+	* gm2-gcc/m2expr.c: corrected dates.
+	* gm2-gcc/m2expr.def: corrected dates.
+	* gm2-gcc/m2expr.h: corrected dates.
+	* gm2-gcc/m2linemap.c: corrected dates.
+	* gm2-gcc/m2linemap.def: corrected dates.
+	* gm2-gcc/m2linemap.h: corrected dates.
+	* gm2-gcc/m2misc.c: corrected dates.
+	* gm2-gcc/m2misc.def: corrected dates.
+	* gm2-gcc/m2misc.h: corrected dates.
+	* gm2-gcc/m2options.h: corrected dates.
+	* gm2-gcc/m2range.h: corrected dates.
+	* gm2-gcc/m2search.h: corrected dates.
+	* gm2-gcc/m2statement.c: corrected dates.
+	* gm2-gcc/m2statement.def: corrected dates.
+	* gm2-gcc/m2statement.h: corrected dates.
+	* gm2-gcc/m2top.c: corrected dates.
+	* gm2-gcc/m2top.def: corrected dates.
+	* gm2-gcc/m2top.h: corrected dates.
+	* gm2-gcc/m2tree.c: corrected dates.
+	* gm2-gcc/m2tree.def: corrected dates.
+	* gm2-gcc/m2tree.h: corrected dates.
+	* gm2-gcc/m2treelib.c: corrected dates.
+	* gm2-gcc/m2treelib.def: corrected dates.
+	* gm2-gcc/m2treelib.h: corrected dates.
+	* gm2-gcc/m2type.c: corrected dates.
+	* gm2-gcc/m2type.def: corrected dates.
+	* gm2-gcc/m2type.h: corrected dates.
+	* gm2-gcc/rtegraph.c: corrected dates.
+	* gm2-gcc/rtegraph.h: corrected dates.
+	* patches/gcc/trunk: rebuilt all patches.
+	* gm2-compiler/M2Base.mod: (InitBuiltins) check builtins to
+	ensure source file was found.  (GetBaseTypeMinMax) remove unused
+	local variable.  (GetBaseTypeMinMax) reformatted.
+	(InitBaseProcedures): check rtexceptions to determine whether
+	source file was found.
+	* gm2-compiler/M2Code.mod: (CodeBlock) KillScopeBlock no
+	longer returns a value.
+	* gm2-compiler/M2GCCDeclare.mod:
+	(DeclareTypesConstantsProcedures) KillScopeBlock no longer returns
+	a value.
+	* gm2-compiler/M2Scope.def: (KillScopeBlock) remove
+	return result and pass sb by reference.
+	* gm2-compiler/M2Scope.mod: assign parameter to NIL.
+	* gm2-compiler/M2Swig.mod: (DetermineParameter) KillBasicBlock
+	no longer returns a value.
+	* gm2-gcc/m2type.c: (build_set_type) commented out.
+	(convert_type_to_range) commented out.
+	* gm2-libs/SArgs.mod: convert pointer to non void * pointer before
+	performing arithmetic.
+	* gcc/m2/gm2-compiler/M2Optimize.mod: (DisplayReachable)
+	exported.
+	* gcc/m2/gm2-compiler/M2Optimize.def: (DisplayReachable)
+	exported.
+
+2021-01-25  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
+
+        * gcc/m2/Make-lang.in: supply subdirectory parameter to makeversion.
+        Invoke makeversion without changing into a subdirectory.
+        * gcc/m2/tools-src/makeversion: added subdirectory argument.
+        All output files are placed into the supplied subdirectory.
+	* gcc/m2/patches/gcc/trunk/15-patches: (New file) git front end
+	patch.
+
+2021-01-16  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
+
+	* patches/gcc/trunk/02-patches: (corrected path depth).
+	* gcc/m2/Make-lang.in: added dependancies $(PLUGIN_HEADERS) alongside
+	$(TARGET_H).
+	* gcc/m2/config-lang.in: corrected dates.
+	* gcc/m2/configure.ac: corrected dates.
+	* gcc/m2/gm2-internals.texi: corrected dates.
+	* gcc/m2/gm2-lang.c: corrected dates.
+	* gcc/m2/gm2-lang.h: corrected dates.
+	* gcc/m2/gm2.texi: corrected dates.
+	* gcc/m2/gnu.texi: corrected dates.
+	* gcc/m2/lang-options.h: corrected dates.
+	* gcc/m2/lang-specs.h: corrected dates.
+	* gcc/m2/lang.opt: corrected dates.
+	* gcc/m2/m2-link-support.h: corrected dates.
+	* gcc/m2/m2-tree.def: corrected dates.
+	* gcc/m2/m2.flex: corrected dates.
+	* gcc/m2/mc-boot-ch/GRTco.c: corrected dates.
+	* gcc/m2/mc/mc.flex: corrected dates.
+	* gcc/m2/mc/mcComment.h: corrected dates.
+	* gcc/m2/mc/mcLexBuf.h: corrected dates.
+	* gcc/m2/mc/mcReserved.h: corrected dates.
+	* gcc/m2/tools-src/array2index.py: corrected dates.
+	* gcc/m2/tools-src/buildpg: corrected dates.
+	* gcc/m2/tools-src/buildsyntax: corrected dates.
+	* gcc/m2/tools-src/createUlmSys: corrected dates.
+	* gcc/m2/tools-src/def2texi.py: corrected dates.
+	* gcc/m2/tools-src/incfile: corrected dates.
+	* gcc/m2/tools-src/makeSystem: corrected dates.
+	* gcc/m2/tools-src/makeconfigure: corrected dates.
+	* gcc/m2/tools-src/makeversion: corrected dates.
+	* gcc/m2/tools-src/tidydates.py: corrected dates.
+	* gcc/m2/www/gm2-logo.ms: corrected dates.
+	* gcc/m2/www/tools/texi2tr/src/config.py: corrected dates.
+	* gcc/m2/www/tools/texi2tr/src/navigation.py: corrected dates.
+	* gcc/m2/www/tools/texi2tr/src/outputdev.py: corrected dates.
+	* gcc/m2/www/tools/texi2tr/src/texi2tr.py: corrected dates.
+	* gcc/m2/www/Makefile.in: regenerted.
+	* libgm2/Makefile.in: regenerted.
+	* libgm2/libm2cor/Makefile.in: regenerted.
+	* libgm2/libm2iso/Makefile.in: regenerted.
+	* libgm2/libm2log/Makefile.in: regenerted.
+	* libgm2/libm2min/Makefile.in: regenerted.
+	* libgm2/libm2pim/Makefile.in: regenerted.
+
+2021-01-14  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
+
+	* bnf/gm2m.bnf: removed unused local variables.
+	* gm2-compiler/M2CaseList.mod: removed unused local variables.
+	* gm2-compiler/M2Check.mod: removed unused local variables.
+	* gm2-compiler/M2DebugStack.mod: removed unused local variables.
+	* gm2-compiler/M2Range.mod: removed unused local variables.
+	* gm2-compiler/M2Students.mod: removed unused local variables.
+	* gm2-compiler/Sets.mod: removed unused local variables.
+	* gm2-libs/IO.mod: removed unused local variables.
+
+2021-01-13  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
+
+	* gm2-compiler/M2CaseList.mod: (DisposeRanges) remove
+	unused variable tag.  (SubBitRange) remove dummy.  Use
+	MetaErrorT0.
+	* gm2-compiler/M2GenGCC.mod: Use tokenno rather than
+	CurrentQuadToken when passed as a parameter.  (CodeMakeAdr)
+	Initialize location before use.
+	* bnf/gm2l.bnf: altered grammar to include <* noreturn *>
+	attribute.
+	* bnf/gm2m.bnf: altered grammar to include <* noreturn *>
+	attribute.
+	* Make-lang.in: updated dates and also the bootstrap path
+	for mc.
+	* bnf/m2-1.bnf: altered grammar to include <* noreturn *>
+	attribute.
+	* bnf/m2-2.bnf: altered grammar to include <* noreturn *>
+	attribute.
+	* bnf/m2-3.bnf: altered grammar to include <* noreturn *>
+	attribute.
+	* bnf/m2-c.bnf: altered grammar to include <* noreturn *>
+	attribute.
+	* bnf/m2-h.bnf: altered grammar to include <* noreturn *>
+	attribute.
+	* bnf/m2.bnf: altered grammar to include <* noreturn *>
+	attribute.
+	* bnf/mc-1.bnf: altered grammar to include <* noreturn *>
+	attribute.
+	* bnf/mc-2.bnf: altered grammar to include <* noreturn *>
+	attribute.
+	* bnf/mc-3.bnf: altered grammar to include <* noreturn *>
+	attribute.
+	* bnf/mc-4.bnf: altered grammar to include <* noreturn *>
+	attribute.
+	* bnf/mc-5.bnf: altered grammar to include <* noreturn *>
+	attribute.
+	* gm2-compiler/M2BasicBlock.mod: (ConvertQuads2BasicBlock) removed
+	unused variable.
+	* gm2-compiler/M2Error.def: (InternalError) added <* noreturn *>.
+	* gm2-compiler/M2Error.mod: (InternalError) added <* noreturn *>.
+	* gm2-compiler/M2Quads.mod: (CheckCompatibleWithBecomes) improved
+	error messages and tidied up formatting.
+	* gm2-compiler/M2StackAddress.mod: (PushAddress) removed unused variable.
+	* gm2-compiler/P0SymBuild.mod: (pc) added comment.
+	* gm2-compiler/P1SymBuild.mod: (CheckFileName) corrected type of basename.
+	(P1StartBuildDefinitionModule) removed unused variable.  (BuildImportInnerModule)
+	removed unused variable.  (BuildExportInnerModule) removed unused variable.
+	* gm2-compiler/SymbolTable.mod: (IsLegal) removed useless comparison.
+	* gm2-compiler/gm2lgen.mod: (GenExternals) removed unused variable.
+	(GenInitializationCalls) removed unused variable.  (GenFinalizationCalls)
+	removed unused variable.
+	* gm2-libs/M2RTS.def: (Terminate) added <* noreturn *>.  (HALT)
+	added <* noreturn *>.  (Halt) added <* noreturn *>.  (ErrorMessage)
+	added <* noreturn *>.
+	* gm2-libs/M2RTS.mod: (Terminate) added <* noreturn *>.  (HALT)
+	added <* noreturn *>.  (Halt) added <* noreturn *>.  (ErrorMessage)
+	added <* noreturn *>.
+	* gm2-libs/libc.def: (abort) <* noreturn *>.  (exit) <* noreturn *>.
+	* mc-boot/GASCII.c: (rebuilt).
+	* mc-boot/GASCII.h: (rebuilt).
+	* mc-boot/GArgs.c: (rebuilt).
+	* mc-boot/GArgs.h: (rebuilt).
+	* mc-boot/GAssertion.c: (rebuilt).
+	* mc-boot/GAssertion.h: (rebuilt).
+	* mc-boot/GBreak.c: (rebuilt).
+	* mc-boot/GBreak.h: (rebuilt).
+	* mc-boot/GCOROUTINES.h: (rebuilt).
+	* mc-boot/GCmdArgs.c: (rebuilt).
+	* mc-boot/GCmdArgs.h: (rebuilt).
+	* mc-boot/GDebug.c: (rebuilt).
+	* mc-boot/GDebug.h: (rebuilt).
+	* mc-boot/GDynamicStrings.c: (rebuilt).
+	* mc-boot/GDynamicStrings.h: (rebuilt).
+	* mc-boot/GEnvironment.c: (rebuilt).
+	* mc-boot/GEnvironment.h: (rebuilt).
+	* mc-boot/GFIO.c: (rebuilt).
+	* mc-boot/GFIO.h: (rebuilt).
+	* mc-boot/GFormatStrings.c: (rebuilt).
+	* mc-boot/GFormatStrings.h: (rebuilt).
+	* mc-boot/GFpuIO.c: (rebuilt).
+	* mc-boot/GFpuIO.h: (rebuilt).
+	* mc-boot/GIO.c: (rebuilt).
+	* mc-boot/GIO.h: (rebuilt).
+	* mc-boot/GIndexing.c: (rebuilt).
+	* mc-boot/GIndexing.h: (rebuilt).
+	* mc-boot/GM2EXCEPTION.c: (rebuilt).
+	* mc-boot/GM2EXCEPTION.h: (rebuilt).
+	* mc-boot/GM2RTS.c: (rebuilt).
+	* mc-boot/GM2RTS.h: (rebuilt).
+	* mc-boot/GMemUtils.c: (rebuilt).
+	* mc-boot/GMemUtils.h: (rebuilt).
+	* mc-boot/GNumberIO.c: (rebuilt).
+	* mc-boot/GNumberIO.h: (rebuilt).
+	* mc-boot/GPushBackInput.c: (rebuilt).
+	* mc-boot/GPushBackInput.h: (rebuilt).
+	* mc-boot/GRTExceptions.c: (rebuilt).
+	* mc-boot/GRTExceptions.h: (rebuilt).
+	* mc-boot/GRTco.h: (rebuilt).
+	* mc-boot/GRTint.c: (rebuilt).
+	* mc-boot/GRTint.h: (rebuilt).
+	* mc-boot/GSArgs.c: (rebuilt).
+	* mc-boot/GSArgs.h: (rebuilt).
+	* mc-boot/GSFIO.c: (rebuilt).
+	* mc-boot/GSFIO.h: (rebuilt).
+	* mc-boot/GSYSTEM.h: (rebuilt).
+	* mc-boot/GSelective.h: (rebuilt).
+	* mc-boot/GStdIO.c: (rebuilt).
+	* mc-boot/GStdIO.h: (rebuilt).
+	* mc-boot/GStorage.c: (rebuilt).
+	* mc-boot/GStorage.h: (rebuilt).
+	* mc-boot/GStrCase.c: (rebuilt).
+	* mc-boot/GStrCase.h: (rebuilt).
+	* mc-boot/GStrIO.c: (rebuilt).
+	* mc-boot/GStrIO.h: (rebuilt).
+	* mc-boot/GStrLib.c: (rebuilt).
+	* mc-boot/GStrLib.h: (rebuilt).
+	* mc-boot/GStringConvert.c: (rebuilt).
+	* mc-boot/GStringConvert.h: (rebuilt).
+	* mc-boot/GSysExceptions.h: (rebuilt).
+	* mc-boot/GSysStorage.c: (rebuilt).
+	* mc-boot/GSysStorage.h: (rebuilt).
+	* mc-boot/GTimeString.c: (rebuilt).
+	* mc-boot/GTimeString.h: (rebuilt).
+	* mc-boot/GUnixArgs.h: (rebuilt).
+	* mc-boot/Galists.c: (rebuilt).
+	* mc-boot/Galists.h: (rebuilt).
+	* mc-boot/Gdecl.c: (rebuilt).
+	* mc-boot/Gdecl.h: (rebuilt).
+	* mc-boot/Gdtoa.h: (rebuilt).
+	* mc-boot/Gerrno.h: (rebuilt).
+	* mc-boot/Gkeyc.c: (rebuilt).
+	* mc-boot/Gkeyc.h: (rebuilt).
+	* mc-boot/Gldtoa.h: (rebuilt).
+	* mc-boot/Glibc.h: (rebuilt).
+	* mc-boot/Glibm.h: (rebuilt).
+	* mc-boot/Glists.h: (rebuilt).
+	* mc-boot/GmcComment.c: (rebuilt).
+	* mc-boot/GmcComment.h: (rebuilt).
+	* mc-boot/GmcComp.c: (rebuilt).
+	* mc-boot/GmcComp.h: (rebuilt).
+	* mc-boot/GmcDebug.c: (rebuilt).
+	* mc-boot/GmcDebug.h: (rebuilt).
+	* mc-boot/GmcError.c: (rebuilt).
+	* mc-boot/GmcError.h: (rebuilt).
+	* mc-boot/GmcFileName.h: (rebuilt).
+	* mc-boot/GmcLexBuf.c: (rebuilt).
+	* mc-boot/GmcLexBuf.h: (rebuilt).
+	* mc-boot/GmcMetaError.c: (rebuilt).
+	* mc-boot/GmcMetaError.h: (rebuilt).
+	* mc-boot/GmcOptions.h: (rebuilt).
+	* mc-boot/GmcPreprocess.h: (rebuilt).
+	* mc-boot/GmcPretty.h: (rebuilt).
+	* mc-boot/GmcPrintf.h: (rebuilt).
+	* mc-boot/GmcQuiet.h: (rebuilt).
+	* mc-boot/GmcReserved.h: (rebuilt).
+	* mc-boot/GmcSearch.h: (rebuilt).
+	* mc-boot/GmcStack.c: (rebuilt).
+	* mc-boot/GmcStack.h: (rebuilt).
+	* mc-boot/GmcStream.c: (rebuilt).
+	* mc-boot/GmcStream.h: (rebuilt).
+	* mc-boot/Gmcflex.h: (rebuilt).
+	* mc-boot/Gmcp1.c: (rebuilt).
+	* mc-boot/Gmcp1.h: (rebuilt).
+	* mc-boot/Gmcp2.c: (rebuilt).
+	* mc-boot/Gmcp2.h: (rebuilt).
+	* mc-boot/Gmcp3.c: (rebuilt).
+	* mc-boot/Gmcp3.h: (rebuilt).
+	* mc-boot/Gmcp4.c: (rebuilt).
+	* mc-boot/Gmcp4.h: (rebuilt).
+	* mc-boot/Gmcp5.c: (rebuilt).
+	* mc-boot/Gmcp5.h: (rebuilt).
+	* mc-boot/GnameKey.c: (rebuilt).
+	* mc-boot/GnameKey.h: (rebuilt).
+	* mc-boot/GsymbolKey.c: (rebuilt).
+	* mc-boot/GsymbolKey.h: (rebuilt).
+	* mc-boot/Gtermios.h: (rebuilt).
+	* mc-boot/Gtop.c: (rebuilt).
+	* mc-boot/Gvarargs.c: (rebuilt).
+	* mc-boot/Gvarargs.h: (rebuilt).
+	* mc-boot/Gwlists.c: (rebuilt).
+	* mc-boot/Gwlists.h: (rebuilt).
+	* mc-boot/Gwrapc.h: (rebuilt).
+	* mc/decl.def: (setNoReturn) new procedure.
+	* mc/decl.mod: (doProcedureHeadingC) added extra parameter for heading.
+        (setNoReturn) new procedure.
+
+2021-01-12  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
+
+	* gm2-compiler/M2Quads.mod: (BuildOddFunction) combinedok initialize
+	before use during error case.  (BuildMinFunction) rewritten to
+	initialize all tokens before use when an error condition occurs.
+	(BuildConstFunctionCall) initialize paramtok and combinedtok before
+	use.
+	* m2pp.c: (pl) renamed as ptcl and declared as external.
+	* m2pp.h: (ptcl) declared as external.
+
+2021-01-11  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
+
+	* configure.ac: avoid comparing SYSTEM.o between stages during
+	bootstrap checks.
+
+2021-01-09  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
+
+	* lang.opt: commented out descriptions for options which are
+	used by C.
+	* updated all dates for the New Year.
+	* tools-src/boilerplate.py: detect GCC with runtime exceptions
+	licence.
+	* New year ChangeLog file.
