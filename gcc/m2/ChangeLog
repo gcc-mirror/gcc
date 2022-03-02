@@ -14,6 +14,10 @@
 	is not deleted if the user specified -fmakeinit.
 	* mc-boot-ch/Glibc.c (libc_putenv): New function.
 	* ChangeLog-2021: (New file).
+	* m2/m2-link-support.h (GEN_SCAFFOLD_SRC): New definition.
+	(M2LINK) use GEN_SCAFFOLD_SRC to generate the scaffold name.
+	* m2/configure.ac: Added rule to test for Python3.  Added rule to
+	detect realpath.
 
 2022-01-25   Gaius Mulley   <gaius.mulley@southwales.ac.uk>
 

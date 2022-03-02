@@ -24,7 +24,7 @@ AC_CANONICAL_BUILD
 AC_CANONICAL_HOST
 AC_CANONICAL_TARGET
 
-# Determine the noncanonical host name, for Ada.
+# Determine the noncanonical host name, for Modula-2a.
 ACX_NONCANONICAL_HOST
 
 # Determine the noncanonical target name, for directory use.
@@ -37,6 +37,12 @@ if test x$regex_flex = "x" ; then
     AC_MSG_ERROR([flex is required to build GNU Modula-2 (hint install flex).])
 fi
 
+AC_CHECK_PROGS(regex_realpath, realpath)
+if test x$regex_realpath = "x" ; then
+    AC_MSG_ERROR([realpath is required to build GNU Modula-2 (hint install coreutils).])
+fi
+
+AM_PATH_PYTHON([3.0])
 AC_CHECK_FUNCS([stpcpy])
 
 AC_DEFINE_UNQUOTED(AR_PATH, "$AR_PATH", the path to target archiver)
