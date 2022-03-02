@@ -365,7 +365,8 @@ gfc_target_encode_expr (gfc_expr *source, unsigned char *buffer,
 
 
 static size_t
-interpret_array (unsigned char *buffer, size_t buffer_size, gfc_expr *result)
+interpret_array (unsigned char *buffer, size_t buffer_size, gfc_expr *result,
+		 bool convert_widechar)
 {
   gfc_constructor_base base = NULL;
   size_t array_size = 1;
@@ -390,7 +391,7 @@ interpret_array (unsigned char *buffer, size_t buffer_size, gfc_expr *result)
       gfc_constructor_append_expr (&base, e, &result->where);
 
       ptr += gfc_target_interpret_expr (&buffer[ptr], buffer_size - ptr, e,
-					true);
+					convert_widechar);
     }
 
   result->value.constructor = base;
@@ -580,7 +581,7 @@ gfc_target_interpret_expr (unsigned char *buffer, size_t buffer_size,
 			   gfc_expr *result, bool convert_widechar)
 {
   if (result->expr_type == EXPR_ARRAY)
-    return interpret_array (buffer, buffer_size, result);
+    return interpret_array (buffer, buffer_size, result, convert_widechar);
 
   switch (result->ts.type)
     {

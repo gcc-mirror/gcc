@@ -89,9 +89,10 @@ stmt_in_inner_loop_p (vec_info *vinfo, class _stmt_vec_info *stmt_info)
    target model or by saving it in a vector for later processing.
    Return a preliminary estimate of the statement's cost.  */
 
-unsigned
+static unsigned
 record_stmt_cost (stmt_vector_for_cost *body_cost_vec, int count,
-		  enum vect_cost_for_stmt kind, stmt_vec_info stmt_info,
+		  enum vect_cost_for_stmt kind,
+		  stmt_vec_info stmt_info, slp_tree node,
 		  tree vectype, int misalign,
 		  enum vect_cost_model_location where)
 {
@@ -102,11 +103,43 @@ record_stmt_cost (stmt_vector_for_cost *body_cost_vec, int count,
       && (stmt_info && STMT_VINFO_GATHER_SCATTER_P (stmt_info)))
     kind = vector_scatter_store;
 
-  stmt_info_for_cost si = { count, kind, where, stmt_info, vectype, misalign };
+  stmt_info_for_cost si
+    = { count, kind, where, stmt_info, node, vectype, misalign };
   body_cost_vec->safe_push (si);
 
   return (unsigned)
       (builtin_vectorization_cost (kind, vectype, misalign) * count);
+}
+
+unsigned
+record_stmt_cost (stmt_vector_for_cost *body_cost_vec, int count,
+		  enum vect_cost_for_stmt kind, stmt_vec_info stmt_info,
+		  tree vectype, int misalign,
+		  enum vect_cost_model_location where)
+{
+  return record_stmt_cost (body_cost_vec, count, kind, stmt_info, NULL,
+			   vectype, misalign, where);
+}
+
+unsigned
+record_stmt_cost (stmt_vector_for_cost *body_cost_vec, int count,
+		  enum vect_cost_for_stmt kind, slp_tree node,
+		  tree vectype, int misalign,
+		  enum vect_cost_model_location where)
+{
+  return record_stmt_cost (body_cost_vec, count, kind, NULL, node,
+			   vectype, misalign, where);
+}
+
+unsigned
+record_stmt_cost (stmt_vector_for_cost *body_cost_vec, int count,
+		  enum vect_cost_for_stmt kind,
+		  enum vect_cost_model_location where)
+{
+  gcc_assert (kind == cond_branch_taken || kind == cond_branch_not_taken
+	      || kind == scalar_stmt);
+  return record_stmt_cost (body_cost_vec, count, kind, NULL, NULL,
+			   NULL_TREE, 0, where);
 }
 
 /* Return a variable of type ELEM_TYPE[NELEMS].  */
@@ -3444,7 +3477,9 @@ vectorizable_call (vec_info *vinfo,
     {
       if (slp_node)
 	for (i = 0; i < nargs; ++i)
-	  if (!vect_maybe_update_slp_op_vectype (slp_op[i], vectype_in))
+	  if (!vect_maybe_update_slp_op_vectype (slp_op[i],
+						 vectypes[i]
+						 ? vectypes[i] : vectype_in))
 	    {
 	      if (dump_enabled_p ())
 		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,

@@ -76,36 +76,42 @@ import std.range.primitives : isOutputRange;
 import std.traits;
 import std.internal.attributes : betterC;
 
-///
+/// Value tuples
 @safe unittest
 {
-    // value tuples
     alias Coord = Tuple!(int, "x", int, "y", int, "z");
     Coord c;
     c[1] = 1;       // access by index
     c.z = 1;        // access by given name
     assert(c == Coord(0, 1, 1));
 
-    // names can be omitted
-    alias DicEntry = Tuple!(string, string);
+    // names can be omitted, types can be mixed
+    alias DictEntry = Tuple!(string, int);
+    auto dict = DictEntry("seven", 7);
 
-    // tuples can also be constructed on instantiation
+    // element types can be inferred
     assert(tuple(2, 3, 4)[1] == 3);
-    // construction on instantiation works with names too
-    assert(tuple!("x", "y", "z")(2, 3, 4).y == 3);
+    // type inference works with names too
+    auto tup = tuple!("x", "y", "z")(2, 3, 4);
+    assert(tup.y == 3);
+}
 
-    // Rebindable references to const and immutable objects
+/// Rebindable references to const and immutable objects
+@safe unittest
+{
+    class Widget
     {
-        class Widget { void foo() const @safe {} }
-        const w1 = new Widget, w2 = new Widget;
-        w1.foo();
-        // w1 = w2 would not work; can't rebind const object
-        auto r = Rebindable!(const Widget)(w1);
-        // invoke method as if r were a Widget object
-        r.foo();
-        // rebind r to refer to another object
-        r = w2;
+        void foo() const @safe {}
     }
+    const w1 = new Widget, w2 = new Widget;
+    w1.foo();
+    // w1 = w2 would not work; can't rebind const object
+
+    auto r = Rebindable!(const Widget)(w1);
+    // invoke method as if r were a Widget object
+    r.foo();
+    // rebind r to refer to another object
+    r = w2;
 }
 
 /**
@@ -2792,13 +2798,24 @@ struct Nullable(T)
         }
     }
 
-    this (ref return scope inout Nullable!T rhs) inout
+    static if (__traits(hasPostblit, T))
     {
-        _isNull = rhs._isNull;
-        if (!_isNull)
-            _value.payload = rhs._value.payload;
-        else
-            _value = DontCallDestructorT.init;
+        this(this)
+        {
+            if (!_isNull)
+                _value.payload.__xpostblit();
+        }
+    }
+    else static if (__traits(hasCopyConstructor, T))
+    {
+        this(ref return scope inout Nullable!T rhs) inout
+        {
+            _isNull = rhs._isNull;
+            if (!_isNull)
+                _value.payload = rhs._value.payload;
+            else
+                _value = DontCallDestructorT.init;
+        }
     }
 
     /**
@@ -4036,7 +4053,7 @@ template apply(alias fun)
     import std.functional : unaryFun;
 
     auto apply(T)(auto ref T t)
-    if (isInstanceOf!(Nullable, T) && is(typeof(unaryFun!fun(T.init.get))))
+    if (isInstanceOf!(Nullable, T))
     {
         alias FunType = typeof(unaryFun!fun(T.init.get));
 
@@ -5107,6 +5124,46 @@ private static:
         static abstract class C_9 : K {}
         auto o = new BlackHole!C_9;
     }+/
+    // test `parent` alias
+    {
+        interface I_11
+        {
+            void simple(int) @safe;
+            int anotherSimple(string);
+            int overloaded(int);
+            /+ XXX [BUG 19715]
+            void overloaded(string) @safe;
+            +/
+        }
+
+        static class C_11
+        {
+            import std.traits : Parameters, ReturnType;
+            import std.meta : Alias;
+
+            protected ReturnType!fn _impl(alias fn)(Parameters!fn)
+            if (is(Alias!(__traits(parent, fn)) == interface))
+            {
+                static if (!is(typeof(return) == void))
+                    return typeof(return).init;
+            }
+        }
+
+        template tpl(I, alias fn)
+        if (is(I == interface) && __traits(isSame, __traits(parent, fn), I))
+        {
+            enum string tpl = q{
+                enum bool haveReturn = !is(typeof(return) == void);
+
+                static if (is(typeof(return) == void))
+                    _impl!parent(args);
+                else
+                    return _impl!parent(args);
+            };
+        }
+
+        auto o = new AutoImplement!(I_11, C_11, tpl);
+    }
 }
 
 // https://issues.dlang.org/show_bug.cgi?id=17177
@@ -5188,6 +5245,7 @@ version (StdUnittest)
         void bar(int a) { }
     }
 }
+
 @system unittest
 {
     auto foo = new issue10647_DoNothing!issue10647_Foo();
@@ -5424,8 +5482,8 @@ private static:
             if (!isCtor)
             {
                 preamble ~= "alias self = " ~ name ~ ";\n";
-                if (WITH_BASE_CLASS && !__traits(isAbstractFunction, func))
-                    preamble ~= `alias parent = __traits(getMember, super, "` ~ name ~ `");`;
+                static if (WITH_BASE_CLASS)
+                    preamble ~= `alias parent = __traits(getMember, ` ~ Policy.BASE_CLASS_ID ~ `, "` ~ name ~ `");`;
             }
 
             // Function body
@@ -9583,13 +9641,28 @@ unittest
     {
         int b;
         @disable this(this);
-        this (ref return scope inout S rhs) inout
+        this(ref return scope inout S rhs) inout
         {
             this.b = rhs.b + 1;
         }
     }
 
     Nullable!S s1 = S(1);
+    assert(s1.get().b == 2);
     Nullable!S s2 = s1;
-    assert(s2.get().b > s1.get().b);
+    assert(s2.get().b == 3);
+}
+
+@safe unittest
+{
+    static struct S
+    {
+        int b;
+        this(this) { ++b; }
+    }
+
+    Nullable!S s1 = S(1);
+    assert(s1.get().b == 2);
+    Nullable!S s2 = s1;
+    assert(s2.get().b == 3);
 }

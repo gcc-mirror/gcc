@@ -1287,6 +1287,7 @@ enum reg_class
   SFP_REG,
   AFP_REG,
   VPR_REG,
+  GENERAL_AND_VPR_REGS,
   ALL_REGS,
   LIM_REG_CLASSES
 };
@@ -1316,6 +1317,7 @@ enum reg_class
   "SFP_REG",		\
   "AFP_REG",		\
   "VPR_REG",		\
+  "GENERAL_AND_VPR_REGS", \
   "ALL_REGS"		\
 }
 
@@ -1344,7 +1346,8 @@ enum reg_class
   { 0x00000000, 0x00000000, 0x00000000, 0x00000040 }, /* SFP_REG */	\
   { 0x00000000, 0x00000000, 0x00000000, 0x00000080 }, /* AFP_REG */	\
   { 0x00000000, 0x00000000, 0x00000000, 0x00000400 }, /* VPR_REG.  */	\
-  { 0xFFFF7FFF, 0xFFFFFFFF, 0xFFFFFFFF, 0x0000000F }  /* ALL_REGS.  */	\
+  { 0x00005FFF, 0x00000000, 0x00000000, 0x00000400 }, /* GENERAL_AND_VPR_REGS.  */ \
+  { 0xFFFF7FFF, 0xFFFFFFFF, 0xFFFFFFFF, 0x0000040F }  /* ALL_REGS.  */	\
 }
 
 #define FP_SYSREGS \
@@ -1453,7 +1456,9 @@ extern const char *fp_sysreg_names[NB_FP_SYSREGS];
    ARM regs are UNITS_PER_WORD bits.  
    FIXME: Is this true for iWMMX?  */
 #define CLASS_MAX_NREGS(CLASS, MODE)  \
-  (ARM_NUM_REGS (MODE))
+  (CLASS == VPR_REG)		      \
+  ? CEIL (GET_MODE_SIZE (MODE), 2)    \
+  : (ARM_NUM_REGS (MODE))
 
 /* If defined, gives a class of registers that cannot be used as the
    operand of a SUBREG that changes the mode of the object illegally.  */

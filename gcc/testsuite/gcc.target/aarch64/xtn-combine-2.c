@@ -1,6 +1,8 @@
 /* { dg-do assemble } */
 /* { dg-options "-O3 --save-temps --param=vect-epilogues-nomask=0" } */
 
+#pragma GCC target "+nosve"
+
 #define SIGN signed
 #define TYPE1 short
 #define TYPE2 int

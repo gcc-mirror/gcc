@@ -44,6 +44,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "ipa-modref-tree.h"
 #include "ipa-modref.h"
 #include "target.h"
+#include "tree-ssa-loop-niter.h"
 
 /* This file implements dead store elimination.
 
@@ -1418,6 +1419,8 @@ unsigned int
 pass_dse::execute (function *fun)
 {
   unsigned todo = 0;
+  bool released_def = false;
+
   need_eh_cleanup = BITMAP_ALLOC (NULL);
   need_ab_cleanup = BITMAP_ALLOC (NULL);
   auto_sbitmap live_bytes (param_dse_max_object_size);
@@ -1460,6 +1463,7 @@ pass_dse::execute (function *fun)
 		  if (gsi_remove (&gsi, true) && need_eh_cleanup)
 		    bitmap_set_bit (need_eh_cleanup, bb->index);
 		  release_defs (stmt);
+		  released_def = true;
 		}
 	    }
 	  if (gsi_end_p (gsi))
@@ -1481,6 +1485,7 @@ pass_dse::execute (function *fun)
 		}
 	      remove_phi_node (&si, true);
 	      removed_phi = true;
+	      released_def = true;
 	    }
 	  else
 	    gsi_next (&si);
@@ -1505,6 +1510,9 @@ pass_dse::execute (function *fun)
 
   BITMAP_FREE (need_eh_cleanup);
   BITMAP_FREE (need_ab_cleanup);
+
+  if (released_def)
+    free_numbers_of_iterations_estimates (fun);
 
   return todo;
 }

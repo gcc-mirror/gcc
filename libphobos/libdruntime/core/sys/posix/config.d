@@ -51,14 +51,24 @@ version (CRuntime_Glibc)
     enum __USE_LARGEFILE     = __USE_FILE_OFFSET64 && !__REDIRECT;
     enum __USE_LARGEFILE64   = __USE_FILE_OFFSET64 && !__REDIRECT;
 
-    enum __USE_XOPEN2K       = _XOPEN_SOURCE >= 600;
-    enum __USE_XOPEN2KXSI    = _XOPEN_SOURCE >= 600;
-    enum __USE_XOPEN2K8      = _XOPEN_SOURCE >= 700;
-    enum __USE_XOPEN2K8XSI   = _XOPEN_SOURCE >= 700;
+    deprecated("use _XOPEN_SOURCE >= 600")
+    {
+        enum __USE_XOPEN2K      = _XOPEN_SOURCE >= 600;
+        enum __USE_XOPEN2KXSI   = _XOPEN_SOURCE >= 600;
+    }
+    deprecated("use _XOPEN_SOURCE >= 700")
+    {
+        enum __USE_XOPEN2K8     = _XOPEN_SOURCE >= 700;
+        enum __USE_XOPEN2K8XSI  = _XOPEN_SOURCE >= 700;
+    }
 
+    deprecated("use _DEFAULT_SOURCE")
     enum __USE_MISC          = _DEFAULT_SOURCE;
+    deprecated("use _ATFILE_SOURCE")
     enum __USE_ATFILE        = _ATFILE_SOURCE;
+    deprecated("use _GNU_SOURCE")
     enum __USE_GNU           = _GNU_SOURCE;
+    deprecated("use _REENTRANT")
     enum __USE_REENTRANT     = _REENTRANT;
 
     version (D_LP64)
@@ -68,6 +78,10 @@ version (CRuntime_Glibc)
 }
 else version (CRuntime_Musl)
 {
+    enum _GNU_SOURCE         = false;
+    enum _DEFAULT_SOURCE     = false;
+    enum _ATFILE_SOURCE      = false;
+
     // off_t is always 64 bits on Musl
     enum _FILE_OFFSET_BITS   = 64;
 
@@ -99,14 +113,24 @@ else version (CRuntime_UClibc)
     enum __USE_LARGEFILE     = __USE_FILE_OFFSET64 && !__REDIRECT;
     enum __USE_LARGEFILE64   = __USE_FILE_OFFSET64 && !__REDIRECT;
 
-    enum __USE_XOPEN2K       = _XOPEN_SOURCE >= 600;
-    enum __USE_XOPEN2KXSI    = _XOPEN_SOURCE >= 600;
-    enum __USE_XOPEN2K8      = _XOPEN_SOURCE >= 700;
-    enum __USE_XOPEN2K8XSI   = _XOPEN_SOURCE >= 700;
+    deprecated("use _XOPEN_SOURCE >= 600")
+    {
+        enum __USE_XOPEN2K      = _XOPEN_SOURCE >= 600;
+        enum __USE_XOPEN2KXSI   = _XOPEN_SOURCE >= 600;
+    }
+    deprecated("use _XOPEN_SOURCE >= 700")
+    {
+        enum __USE_XOPEN2K8     = _XOPEN_SOURCE >= 700;
+        enum __USE_XOPEN2K8XSI  = _XOPEN_SOURCE >= 700;
+    }
 
+    deprecated("use _DEFAULT_SOURCE")
     enum __USE_MISC          = _DEFAULT_SOURCE;
+    deprecated("use _ATFILE_SOURCE")
     enum __USE_ATFILE        = _ATFILE_SOURCE;
+    deprecated("use _GNU_SOURCE")
     enum __USE_GNU           = _GNU_SOURCE;
+    deprecated("use _REENTRANT")
     enum __USE_REENTRANT     = _REENTRANT;
 
     version (D_LP64)
@@ -117,7 +141,11 @@ else version (CRuntime_UClibc)
 else version (CRuntime_Bionic)
 {
     enum _GNU_SOURCE         = false;
+    enum _DEFAULT_SOURCE     = false;
+    enum _ATFILE_SOURCE      = false;
+
     enum __USE_FILE_OFFSET64 = false; // see https://android.googlesource.com/platform/bionic/+/master/docs/32-bit-abi.md
+    deprecated("use _GNU_SOURCE")
     enum __USE_GNU           = _GNU_SOURCE;
 
     version (D_LP64)
@@ -187,10 +215,16 @@ else version (Solaris)
     enum __USE_LARGEFILE = __USE_FILE_OFFSET64 && !__REDIRECT;
     enum __USE_LARGEFILE64 = __USE_FILE_OFFSET64 && !__REDIRECT;
 
-    enum __USE_XOPEN2K = _XOPEN_SOURCE >= 600;
-    enum __USE_XOPEN2KXSI = _XOPEN_SOURCE >= 600;
-    enum __USE_XOPEN2K8 = _XOPEN_SOURCE >= 700;
-    enum __USE_XOPEN2K8XSI = _XOPEN_SOURCE >= 700;
+    deprecated("use _XOPEN_SOURCE >= 600")
+    {
+        enum __USE_XOPEN2K      = _XOPEN_SOURCE >= 600;
+        enum __USE_XOPEN2KXSI   = _XOPEN_SOURCE >= 600;
+    }
+    deprecated("use _XOPEN_SOURCE >= 700")
+    {
+        enum __USE_XOPEN2K8     = _XOPEN_SOURCE >= 700;
+        enum __USE_XOPEN2K8XSI  = _XOPEN_SOURCE >= 700;
+    }
 
     version (D_LP64)
         enum __WORDSIZE = 64;

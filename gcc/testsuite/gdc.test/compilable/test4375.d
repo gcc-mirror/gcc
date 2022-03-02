@@ -256,7 +256,7 @@ label1:
                         else
                             assert(89);
     else
-        assert(12); 
+        assert(12);
 
 
     with (x)
@@ -299,7 +299,7 @@ label1:
             if (true)
                 assert(110);
             else
-                assert(112);                
+                assert(112);
         finally
             assert(111);
 
@@ -316,7 +316,7 @@ label1:
             int w;
 
         static if (true)
-            int t; 
+            int t;
         else static if (false)
             int u;
         else

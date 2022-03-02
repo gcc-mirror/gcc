@@ -86,6 +86,10 @@
 /* This file should be included last.  */
 #include "target-def.h"
 
+extern tree rs6000_builtin_mask_for_load (void);
+extern tree rs6000_builtin_md_vectorized_function (tree, tree, tree);
+extern tree rs6000_builtin_reciprocal (tree);
+
   /* Set -mabi=ieeelongdouble on some old targets.  In the future, power server
      systems will also set long double to be IEEE 128-bit.  AIX and Darwin
      explicitly redefine TARGET_IEEEQUAD and TARGET_IEEEQUAD_DEFAULT to 0, so
@@ -105,9 +109,6 @@
 #define PCREL_SUPPORTED_BY_OS	0
 #endif
 
-/* Support targetm.vectorize.builtin_mask_for_load.  */
-tree altivec_builtin_mask_for_load;
-
 #ifdef USING_ELFOS_H
 /* Counter for labels which are to be placed in .fixup.  */
 int fixuplabelno = 0;
@@ -121,21 +122,8 @@ int dot_symbols;
    of this machine mode.  */
 scalar_int_mode rs6000_pmode;
 
-#if TARGET_ELF
-/* Note whether IEEE 128-bit floating point was passed or returned, either as
-   the __float128/_Float128 explicit type, or when long double is IEEE 128-bit
-   floating point.  We changed the default C++ mangling for these types and we
-   may want to generate a weak alias of the old mangling (U10__float128) to the
-   new mangling (u9__ieee128).  */
-bool rs6000_passes_ieee128 = false;
-#endif
-
 /* Track use of r13 in 64bit AIX TLS.  */
 static bool xcoff_tls_exec_model_detected = false;
-
-/* Generate the manged name (i.e. U10__float128) used in GCC 8.1, and not the
-   name used in current releases (i.e. u9__ieee128).  */
-static bool ieee128_mangling_gcc_8_1;
 
 /* Width in bits of a pointer.  */
 unsigned rs6000_pointer_size;
@@ -172,9 +160,6 @@ enum reg_class rs6000_regno_regclass[FIRST_PSEUDO_REGISTER];
 
 static int dbg_cost_ctrl;
 
-/* Built in types.  */
-tree rs6000_builtin_types[RS6000_BTI_MAX];
-
 /* Flag to say the TOC is initialized */
 int toc_initialized, need_toc_init;
 char toc_label_name[10];
@@ -202,9 +187,6 @@ enum reg_class rs6000_constraints[RS6000_CONSTRAINT_MAX];
 
 /* Describe the alignment of a vector.  */
 int rs6000_vector_align[NUM_MACHINE_MODES];
-
-/* Map selected modes to types for builtins.  */
-tree builtin_mode_to_type[MAX_MACHINE_MODE][2];
 
 /* What modes to automatically generate reciprocal divide estimate (fre) and
    reciprocal sqrt (frsqrte) for.  */
@@ -1764,11 +1746,6 @@ static const struct attribute_spec rs6000_attribute_table[] =
 
 #undef TARGET_STARTING_FRAME_OFFSET
 #define TARGET_STARTING_FRAME_OFFSET rs6000_starting_frame_offset
-
-#if TARGET_ELF && RS6000_WEAK
-#undef TARGET_ASM_GLOBALIZE_DECL_NAME
-#define TARGET_ASM_GLOBALIZE_DECL_NAME rs6000_globalize_decl_name
-#endif
 
 #undef TARGET_SETJMP_PRESERVES_NONVOLATILE_REGS_P
 #define TARGET_SETJMP_PRESERVES_NONVOLATILE_REGS_P hook_bool_void_true
@@ -3856,10 +3833,6 @@ rs6000_option_override_internal (bool global_init_p)
 	   & OPTION_MASK_DIRECT_MOVE))
     rs6000_isa_flags |= ~rs6000_isa_flags_explicit & OPTION_MASK_STRICT_ALIGN;
 
-  if (!rs6000_fold_gimple)
-     fprintf (stderr,
-	      "gimple folding of rs6000 builtins has been disabled.\n");
-
   /* Add some warnings for VSX.  */
   if (TARGET_VSX)
     {
@@ -3960,6 +3933,15 @@ rs6000_option_override_internal (bool global_init_p)
     rs6000_isa_flags |= (ISA_2_2_MASKS & ~ignore_masks);
   else if (TARGET_ALTIVEC)
     rs6000_isa_flags |= (OPTION_MASK_PPC_GFXOPT & ~ignore_masks);
+
+  /* Disable VSX and Altivec silently if the user switched cpus to power7 in a
+     target attribute or pragma which automatically enables both options,
+     unless the altivec ABI was set.  This is set by default for 64-bit, but
+     not for 32-bit.  Don't move this before the above code using ignore_masks,
+     since it can reset the cleared VSX/ALTIVEC flag again.  */
+  if (main_target_opt && !main_target_opt->x_rs6000_altivec_abi)
+    rs6000_isa_flags &= ~((OPTION_MASK_VSX | OPTION_MASK_ALTIVEC)
+			  & ~rs6000_isa_flags_explicit);
 
   if (TARGET_CRYPTO && !TARGET_ALTIVEC)
     {
@@ -4377,18 +4359,6 @@ rs6000_option_override_internal (bool global_init_p)
 	}
     }
 
-  /* Disable VSX and Altivec silently if the user switched cpus to power7 in a
-     target attribute or pragma which automatically enables both options,
-     unless the altivec ABI was set.  This is set by default for 64-bit, but
-     not for 32-bit.  */
-  if (main_target_opt != NULL && !main_target_opt->x_rs6000_altivec_abi)
-    {
-      TARGET_FLOAT128_TYPE = 0;
-      rs6000_isa_flags &= ~((OPTION_MASK_VSX | OPTION_MASK_ALTIVEC
-			     | OPTION_MASK_FLOAT128_KEYWORD)
-			    & ~rs6000_isa_flags_explicit);
-    }
-
   /* Enable Altivec ABI for AIX -maltivec.  */
   if (TARGET_XCOFF
       && (TARGET_ALTIVEC || TARGET_VSX)
@@ -4476,36 +4446,22 @@ rs6000_option_override_internal (bool global_init_p)
       && (rs6000_isa_flags_explicit & OPTION_MASK_P10_FUSION) == 0)
     rs6000_isa_flags |= OPTION_MASK_P10_FUSION;
 
-  if (TARGET_POWER10 &&
-      (rs6000_isa_flags_explicit & OPTION_MASK_P10_FUSION_LD_CMPI) == 0)
-    rs6000_isa_flags |= OPTION_MASK_P10_FUSION_LD_CMPI;
-
-  if (TARGET_POWER10
-      && (rs6000_isa_flags_explicit & OPTION_MASK_P10_FUSION_2LOGICAL) == 0)
-    rs6000_isa_flags |= OPTION_MASK_P10_FUSION_2LOGICAL;
-
-  if (TARGET_POWER10
-      && (rs6000_isa_flags_explicit & OPTION_MASK_P10_FUSION_LOGADD) == 0)
-    rs6000_isa_flags |= OPTION_MASK_P10_FUSION_LOGADD;
-
-  if (TARGET_POWER10
-      && (rs6000_isa_flags_explicit & OPTION_MASK_P10_FUSION_ADDLOG) == 0)
-    rs6000_isa_flags |= OPTION_MASK_P10_FUSION_ADDLOG;
-
-  if (TARGET_POWER10
-      && (rs6000_isa_flags_explicit & OPTION_MASK_P10_FUSION_2ADD) == 0)
-    rs6000_isa_flags |= OPTION_MASK_P10_FUSION_2ADD;
-
-  if (TARGET_POWER10
-      && (rs6000_isa_flags_explicit & OPTION_MASK_P10_FUSION_2STORE) == 0)
-    rs6000_isa_flags |= OPTION_MASK_P10_FUSION_2STORE;
-
   /* Turn off vector pair/mma options on non-power10 systems.  */
   else if (!TARGET_POWER10 && TARGET_MMA)
     {
       if ((rs6000_isa_flags_explicit & OPTION_MASK_MMA) != 0)
 	error ("%qs requires %qs", "-mmma", "-mcpu=power10");
 
+      rs6000_isa_flags &= ~OPTION_MASK_MMA;
+    }
+
+  /* MMA requires SIMD support as ISA 3.1 claims and our implementation
+     such as "*movoo" uses vector pair access which use VSX registers.
+     So make MMA require VSX support here.  */
+  if (TARGET_MMA && !TARGET_VSX)
+    {
+      if ((rs6000_isa_flags_explicit & OPTION_MASK_MMA) != 0)
+	error ("%qs requires %qs", "-mmma", "-mvsx");
       rs6000_isa_flags &= ~OPTION_MASK_MMA;
     }
 
@@ -4987,18 +4943,6 @@ rs6000_option_override (void)
 }
 
 
-/* Implement targetm.vectorize.builtin_mask_for_load.  */
-static tree
-rs6000_builtin_mask_for_load (void)
-{
-  /* Don't use lvsl/vperm for P8 and similarly efficient machines.  */
-  if ((TARGET_ALTIVEC && !TARGET_VSX)
-      || (TARGET_VSX && !TARGET_EFFICIENT_UNALIGNED_VSX))
-    return altivec_builtin_mask_for_load;
-  else
-    return 0;
-}
-
 /* Implement LOOP_ALIGN. */
 align_flags
 rs6000_loop_align (rtx label)
@@ -5268,7 +5212,7 @@ public:
   using vector_costs::vector_costs;
 
   unsigned int add_stmt_cost (int count, vect_cost_for_stmt kind,
-			      stmt_vec_info stmt_info, tree vectype,
+			      stmt_vec_info stmt_info, slp_tree, tree vectype,
 			      int misalign,
 			      vect_cost_model_location where) override;
   void finish_cost (const vector_costs *) override;
@@ -5457,8 +5401,11 @@ rs6000_cost_data::update_target_cost_per_stmt (vect_cost_for_stmt kind,
 	{
 	  tree vectype = STMT_VINFO_VECTYPE (stmt_info);
 	  unsigned int nunits = vect_nunits_for_cost (vectype);
-	  /* We don't expect strided/elementwise loads for just 1 nunit.  */
-	  gcc_assert (nunits > 1);
+	  /* As PR103702 shows, it's possible that vectorizer wants to do
+	     costings for only one unit here, it's no need to do any
+	     penalization for it, so simply early return here.  */
+	  if (nunits == 1)
+	    return;
 	  /* i386 port adopts nunits * stmt_cost as the penalized cost
 	     for this kind of penalization, we used to follow it but
 	     found it could result in an unreliable body cost especially
@@ -5481,8 +5428,9 @@ rs6000_cost_data::update_target_cost_per_stmt (vect_cost_for_stmt kind,
 
 unsigned
 rs6000_cost_data::add_stmt_cost (int count, vect_cost_for_stmt kind,
-				 stmt_vec_info stmt_info, tree vectype,
-				 int misalign, vect_cost_model_location where)
+				 stmt_vec_info stmt_info, slp_tree,
+				 tree vectype, int misalign,
+				 vect_cost_model_location where)
 {
   unsigned retval = 0;
 
@@ -5523,7 +5471,8 @@ rs6000_cost_data::adjust_vect_cost_per_loop (loop_vec_info loop_vinfo)
 	  /* Each length needs one shift to fill into bits 0-7.  */
 	  shift_cnt += num_vectors_m1 + 1;
 
-      add_stmt_cost (shift_cnt, scalar_stmt, NULL, NULL_TREE, 0, vect_body);
+      add_stmt_cost (shift_cnt, scalar_stmt, NULL, NULL,
+		     NULL_TREE, 0, vect_body);
     }
 }
 
@@ -5700,119 +5649,6 @@ rs6000_builtin_vectorized_function (unsigned int fn, tree type_out,
   /* Generate calls to libmass if appropriate.  */
   if (rs6000_veclib_handler)
     return rs6000_veclib_handler (combined_fn (fn), type_out, type_in);
-
-  return NULL_TREE;
-}
-
-/* Implement targetm.vectorize.builtin_md_vectorized_function.  */
-
-static tree
-rs6000_builtin_md_vectorized_function (tree fndecl, tree type_out,
-				       tree type_in)
-{
-  machine_mode in_mode, out_mode;
-  int in_n, out_n;
-
-  if (TARGET_DEBUG_BUILTIN)
-    fprintf (stderr,
-	     "rs6000_builtin_md_vectorized_function (%s, %s, %s)\n",
-	     IDENTIFIER_POINTER (DECL_NAME (fndecl)),
-	     GET_MODE_NAME (TYPE_MODE (type_out)),
-	     GET_MODE_NAME (TYPE_MODE (type_in)));
-
-  /* TODO: Should this be gcc_assert?  */
-  if (TREE_CODE (type_out) != VECTOR_TYPE
-      || TREE_CODE (type_in) != VECTOR_TYPE)
-    return NULL_TREE;
-
-  out_mode = TYPE_MODE (TREE_TYPE (type_out));
-  out_n = TYPE_VECTOR_SUBPARTS (type_out);
-  in_mode = TYPE_MODE (TREE_TYPE (type_in));
-  in_n = TYPE_VECTOR_SUBPARTS (type_in);
-
-  enum rs6000_gen_builtins fn
-    = (enum rs6000_gen_builtins) DECL_MD_FUNCTION_CODE (fndecl);
-  switch (fn)
-    {
-    case RS6000_BIF_RSQRTF:
-      if (VECTOR_UNIT_ALTIVEC_OR_VSX_P (V4SFmode)
-	  && out_mode == SFmode && out_n == 4
-	  && in_mode == SFmode && in_n == 4)
-	return rs6000_builtin_decls[RS6000_BIF_VRSQRTFP];
-      break;
-    case RS6000_BIF_RSQRT:
-      if (VECTOR_UNIT_VSX_P (V2DFmode)
-	  && out_mode == DFmode && out_n == 2
-	  && in_mode == DFmode && in_n == 2)
-	return rs6000_builtin_decls[RS6000_BIF_RSQRT_2DF];
-      break;
-    case RS6000_BIF_RECIPF:
-      if (VECTOR_UNIT_ALTIVEC_OR_VSX_P (V4SFmode)
-	  && out_mode == SFmode && out_n == 4
-	  && in_mode == SFmode && in_n == 4)
-	return rs6000_builtin_decls[RS6000_BIF_VRECIPFP];
-      break;
-    case RS6000_BIF_RECIP:
-      if (VECTOR_UNIT_VSX_P (V2DFmode)
-	  && out_mode == DFmode && out_n == 2
-	  && in_mode == DFmode && in_n == 2)
-	return rs6000_builtin_decls[RS6000_BIF_RECIP_V2DF];
-      break;
-    default:
-      break;
-    }
-
-  machine_mode in_vmode = TYPE_MODE (type_in);
-  machine_mode out_vmode = TYPE_MODE (type_out);
-
-  /* Power10 supported vectorized built-in functions.  */
-  if (TARGET_POWER10
-      && in_vmode == out_vmode
-      && VECTOR_UNIT_ALTIVEC_OR_VSX_P (in_vmode))
-    {
-      machine_mode exp_mode = DImode;
-      machine_mode exp_vmode = V2DImode;
-      enum rs6000_gen_builtins bif;
-      switch (fn)
-	{
-	case RS6000_BIF_DIVWE:
-	case RS6000_BIF_DIVWEU:
-	  exp_mode = SImode;
-	  exp_vmode = V4SImode;
-	  if (fn == RS6000_BIF_DIVWE)
-	    bif = RS6000_BIF_VDIVESW;
-	  else
-	    bif = RS6000_BIF_VDIVEUW;
-	  break;
-	case RS6000_BIF_DIVDE:
-	case RS6000_BIF_DIVDEU:
-	  if (fn == RS6000_BIF_DIVDE)
-	    bif = RS6000_BIF_VDIVESD;
-	  else
-	    bif = RS6000_BIF_VDIVEUD;
-	  break;
-	case RS6000_BIF_CFUGED:
-	  bif = RS6000_BIF_VCFUGED;
-	  break;
-	case RS6000_BIF_CNTLZDM:
-	  bif = RS6000_BIF_VCLZDM;
-	  break;
-	case RS6000_BIF_CNTTZDM:
-	  bif = RS6000_BIF_VCTZDM;
-	  break;
-	case RS6000_BIF_PDEPD:
-	  bif = RS6000_BIF_VPDEPD;
-	  break;
-	case RS6000_BIF_PEXTD:
-	  bif = RS6000_BIF_VPEXTD;
-	  break;
-	default:
-	  return NULL_TREE;
-	}
-
-      if (in_mode == exp_mode && in_vmode == exp_vmode)
-	return rs6000_builtin_decls[bif];
-    }
 
   return NULL_TREE;
 }
@@ -6399,8 +6235,11 @@ vspltis_shifted (rtx op)
     return false;
 
   /* We need to create pseudo registers to do the shift, so don't recognize
-     shift vector constants after reload.  */
-  if (!can_create_pseudo_p ())
+     shift vector constants after reload.  Don't match it even before RA
+     after split1 is done, because there won't be further splitting pass
+     before RA to do the splitting.  */
+  if (!can_create_pseudo_p ()
+      || (cfun->curr_properties & PROP_rtl_split_insns))
     return false;
 
   nunits = GET_MODE_NUNITS (mode);
@@ -8456,8 +8295,14 @@ darwin_rs6000_legitimate_lo_sum_const_p (rtx x, machine_mode mode)
   if (GET_CODE (x) == CONST)
     x = XEXP (x, 0);
 
+  /* If we are building PIC code, then any symbol must be wrapped in an
+     UNSPEC_MACHOPIC_OFFSET so that it will get the picbase subtracted.  */
+  bool machopic_offs_p = false;
   if (GET_CODE (x) == UNSPEC && XINT (x, 1) == UNSPEC_MACHOPIC_OFFSET)
-    x =  XVECEXP (x, 0, 0);
+    {
+      x =  XVECEXP (x, 0, 0);
+      machopic_offs_p = true;
+    }
 
   rtx sym = NULL_RTX;
   unsigned HOST_WIDE_INT offset = 0;
@@ -8488,6 +8333,9 @@ darwin_rs6000_legitimate_lo_sum_const_p (rtx x, machine_mode mode)
   if (sym)
     {
       tree decl = SYMBOL_REF_DECL (sym);
+      /* As noted above, PIC code cannot use a bare SYMBOL_REF.  */
+      if (TARGET_MACHO && flag_pic && !machopic_offs_p)
+	return false;
 #if TARGET_MACHO
       if (MACHO_SYMBOL_INDIRECTION_P (sym))
       /* The decl in an indirection symbol is the original one, which might
@@ -9075,7 +8923,7 @@ legitimate_lo_sum_address_p (machine_mode mode, rtx x, int strict)
     return false;
   x = XEXP (x, 1);
 
-  if (TARGET_ELF || TARGET_MACHO)
+  if (TARGET_ELF)
     {
       bool large_toc_ok;
 
@@ -9101,7 +8949,32 @@ legitimate_lo_sum_address_p (machine_mode mode, rtx x, int strict)
 
       return CONSTANT_P (x) || large_toc_ok;
     }
+  else if (TARGET_MACHO)
+    {
+      if (GET_MODE_NUNITS (mode) != 1)
+	return false;
+      if (GET_MODE_SIZE (mode) > UNITS_PER_WORD
+	  && !(/* see above  */
+	       TARGET_HARD_FLOAT && (mode == DFmode || mode == DDmode)))
+	return false;
+#if TARGET_MACHO
+      if (MACHO_DYNAMIC_NO_PIC_P || !flag_pic)
+	return CONSTANT_P (x);
+#endif
+      /* Macho-O PIC code from here.  */
+      if (GET_CODE (x) == CONST)
+	x = XEXP (x, 0);
 
+      /* SYMBOL_REFs need to be wrapped in an UNSPEC_MACHOPIC_OFFSET.  */
+      if (SYMBOL_REF_P (x))
+	return false;
+
+      /* So this is OK if the wrapped object is const.  */
+      if (GET_CODE (x) == UNSPEC
+	  && XINT (x, 1) == UNSPEC_MACHOPIC_OFFSET)
+	return CONSTANT_P (XVECEXP (x, 0, 0));
+      return CONSTANT_P (x);
+    }
   return false;
 }
 
@@ -11122,6 +10995,12 @@ init_float128_ibm (machine_mode mode)
       set_conv_libfunc (trunc_optab, SDmode, mode, "__dpd_trunctfsd");
       set_conv_libfunc (trunc_optab, DDmode, mode, "__dpd_trunctfdd");
       set_conv_libfunc (sext_optab, TDmode, mode, "__dpd_extendtftd");
+
+      set_conv_libfunc (sfix_optab, DImode, mode, "__fixtfdi");
+      set_conv_libfunc (ufix_optab, DImode, mode, "__fixunstfdi");
+
+      set_conv_libfunc (sfloat_optab, mode, DImode, "__floatditf");
+      set_conv_libfunc (ufloat_optab, mode, DImode, "__floatunditf");
 
       if (TARGET_POWERPC64)
 	{
@@ -16314,6 +16193,12 @@ rs6000_emit_int_cmove (rtx dest, rtx op, rtx true_cond, rtx false_cond)
   if (mode != SImode && (!TARGET_POWERPC64 || mode != DImode))
     return false;
 
+  /* PR104335: We now need to expect CC-mode "comparisons"
+     coming from ifcvt.  The following code expects proper
+     comparisons so better abort here.  */
+  if (GET_MODE_CLASS (GET_MODE (XEXP (op, 0))) == MODE_CC)
+    return false;
+
   /* We still have to do the compare, because isel doesn't do a
      compare, it just looks at the CRx bits set by a previous compare
      instruction.  */
@@ -19125,8 +19010,7 @@ power10_sched_reorder (rtx_insn **ready, int lastpos)
 
   /* Try to pair certain store insns to adjacent memory locations
      so that the hardware will fuse them to a single operation.  */
-  if (TARGET_P10_FUSION && TARGET_P10_FUSION_2STORE
-      && is_fusable_store (last_scheduled_insn, &mem1))
+  if (TARGET_P10_FUSION && is_fusable_store (last_scheduled_insn, &mem1))
     {
 
       /* A fusable store was just scheduled.  Scan the ready list for another
@@ -20262,7 +20146,7 @@ rs6000_mangle_type (const_tree type)
   if (SCALAR_FLOAT_TYPE_P (type) && FLOAT128_IBM_P (TYPE_MODE (type)))
     return "g";
   if (SCALAR_FLOAT_TYPE_P (type) && FLOAT128_IEEE_P (TYPE_MODE (type)))
-    return ieee128_mangling_gcc_8_1 ? "U10__float128" : "u9__ieee128";
+    return "u9__ieee128";
 
   if (type == vector_pair_type_node)
     return "u13__vector_pair";
@@ -22556,31 +22440,6 @@ rs6000_ira_change_pseudo_allocno_class (int regno ATTRIBUTE_UNUSED,
     }
 
   return allocno_class;
-}
-
-/* Returns a code for a target-specific builtin that implements
-   reciprocal of the function, or NULL_TREE if not available.  */
-
-static tree
-rs6000_builtin_reciprocal (tree fndecl)
-{
-  switch (DECL_MD_FUNCTION_CODE (fndecl))
-    {
-    case RS6000_BIF_XVSQRTDP:
-      if (!RS6000_RECIP_AUTO_RSQRTE_P (V2DFmode))
-	return NULL_TREE;
-
-      return rs6000_builtin_decls[RS6000_BIF_RSQRT_2DF];
-
-    case RS6000_BIF_XVSQRTSP:
-      if (!RS6000_RECIP_AUTO_RSQRTE_P (V4SFmode))
-	return NULL_TREE;
-
-      return rs6000_builtin_decls[RS6000_BIF_RSQRT_4SF];
-
-    default:
-      return NULL_TREE;
-    }
 }
 
 /* Load up a constant.  If the mode is a vector mode, splat the value across
@@ -27840,14 +27699,13 @@ emit_fusion_gpr_load (rtx target, rtx mem)
   return "";
 }
 
-
-#ifdef RS6000_GLIBC_ATOMIC_FENV
-/* Function declarations for rs6000_atomic_assign_expand_fenv.  */
-static tree atomic_hold_decl, atomic_clear_decl, atomic_update_decl;
-#endif
+/* This is not inside an  #ifdef RS6000_GLIBC_ATOMIC_FENV  because gengtype
+   ignores it then.  */
+static GTY(()) tree atomic_hold_decl;
+static GTY(()) tree atomic_clear_decl;
+static GTY(()) tree atomic_update_decl;
 
 /* Implement TARGET_ATOMIC_ASSIGN_EXPAND_FENV hook.  */
-
 static void
 rs6000_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
 {
@@ -28159,39 +28017,6 @@ rs6000_starting_frame_offset (void)
 }
 
 
-/* Create an alias for a mangled name where we have changed the mangling (in
-   GCC 8.1, we used U10__float128, and now we use u9__ieee128).  This is called
-   via the target hook TARGET_ASM_GLOBALIZE_DECL_NAME.  */
-
-#if TARGET_ELF && RS6000_WEAK
-static void
-rs6000_globalize_decl_name (FILE * stream, tree decl)
-{
-  const char *name = XSTR (XEXP (DECL_RTL (decl), 0), 0);
-
-  targetm.asm_out.globalize_label (stream, name);
-
-  if (rs6000_passes_ieee128 && name[0] == '_' && name[1] == 'Z')
-    {
-      tree save_asm_name = DECL_ASSEMBLER_NAME (decl);
-      const char *old_name;
-
-      ieee128_mangling_gcc_8_1 = true;
-      lang_hooks.set_decl_assembler_name (decl);
-      old_name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
-      SET_DECL_ASSEMBLER_NAME (decl, save_asm_name);
-      ieee128_mangling_gcc_8_1 = false;
-
-      if (strcmp (name, old_name) != 0)
-	{
-	  fprintf (stream, "\t.weak %s\n", old_name);
-	  fprintf (stream, "\t.set %s,%s\n", old_name, name);
-	}
-    }
-}
-#endif
-
-
 /* On 64-bit Linux and Freebsd systems, possibly switch the long double library
    function names from <foo>l to <foo>f128 if the default long double type is
    IEEE 128-bit.  Typically, with the C and C++ languages, the standard math.h
@@ -28276,6 +28101,7 @@ rs6000_mangle_decl_assembler_name (tree decl, tree id)
 	{
 	  size_t printf_len = strlen ("printf");
 	  size_t scanf_len = strlen ("scanf");
+	  size_t printf_chk_len = strlen ("printf_chk");
 
 	  if (len >= printf_len
 	      && strcmp (name + len - printf_len, "printf") == 0)
@@ -28284,6 +28110,10 @@ rs6000_mangle_decl_assembler_name (tree decl, tree id)
 	  else if (len >= scanf_len
 		   && strcmp (name + len - scanf_len, "scanf") == 0)
 	    newname = xasprintf ("__isoc99_%sieee128", name);
+
+	  else if (len >= printf_chk_len
+		   && strcmp (name + len - printf_chk_len, "printf_chk") == 0)
+	    newname = xasprintf ("%sieee128", name);
 
 	  else if (name[len - 1] == 'l')
 	    {

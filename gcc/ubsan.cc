@@ -832,8 +832,8 @@ ubsan_expand_null_ifn (gimple_stmt_iterator *gsip)
   else
     {
       enum built_in_function bcode
-	= (flag_sanitize_recover & ((check_align ? SANITIZE_ALIGNMENT : 0)
-				    | (check_null ? SANITIZE_NULL : 0)))
+	= (flag_sanitize_recover & ((check_align ? SANITIZE_ALIGNMENT + 0 : 0)
+				    | (check_null ? SANITIZE_NULL + 0 : 0)))
 	  ? BUILT_IN_UBSAN_HANDLE_TYPE_MISMATCH_V1
 	  : BUILT_IN_UBSAN_HANDLE_TYPE_MISMATCH_V1_ABORT;
       tree fn = builtin_decl_implicit (bcode);

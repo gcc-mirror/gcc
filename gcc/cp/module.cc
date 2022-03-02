@@ -6034,6 +6034,9 @@ trees_out::core_vals (tree t)
       WT (t->function_decl.function_specific_target);
       WT (t->function_decl.function_specific_optimization);
       WT (t->function_decl.vindex);
+
+      if (DECL_HAS_DEPENDENT_EXPLICIT_SPEC_P (t))
+	WT (lookup_explicit_specifier (t));
       break;
 
     case USING_DECL:
@@ -6531,6 +6534,13 @@ trees_in::core_vals (tree t)
 	RT (t->function_decl.function_specific_target);
 	RT (t->function_decl.function_specific_optimization);
 	RT (t->function_decl.vindex);
+
+	if (DECL_HAS_DEPENDENT_EXPLICIT_SPEC_P (t))
+	  {
+	    tree spec;
+	    RT (spec);
+	    store_explicit_specifier (t, spec);
+	  }
       }
       break;
 
@@ -12966,7 +12976,7 @@ depset::hash::add_specializations (bool decl_p)
 	/* Implicit instantiations only walked if we reach them.  */
 	needs_reaching = true;
       else if (!DECL_LANG_SPECIFIC (spec)
-	       || !DECL_MODULE_PURVIEW_P (spec))
+	       || !DECL_MODULE_PURVIEW_P (STRIP_TEMPLATE (spec)))
 	/* Likewise, GMF explicit or partial specializations.  */
 	needs_reaching = true;
 

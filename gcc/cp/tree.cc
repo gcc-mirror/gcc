@@ -557,8 +557,7 @@ bool
 is_local_temp (tree decl)
 {
   return (VAR_P (decl) && DECL_ARTIFICIAL (decl)
-	  && !TREE_STATIC (decl)
-	  && DECL_FUNCTION_SCOPE_P (decl));
+	  && !TREE_STATIC (decl));
 }
 
 /* Set various status flags when building an AGGR_INIT_EXPR object T.  */
@@ -786,8 +785,8 @@ build_vec_init_elt (tree type, tree init, tsubst_flags_t complain)
 tree
 build_vec_init_expr (tree type, tree init, tsubst_flags_t complain)
 {
-  if (init && TREE_CODE (init) == VEC_INIT_EXPR)
-    return init;
+  if (tree vi = get_vec_init_expr (init))
+    return vi;
 
   tree elt_init;
   if (init && TREE_CODE (init) == CONSTRUCTOR
@@ -2840,6 +2839,10 @@ fixup_deferred_exception_variants (tree type, tree raises)
 	  }
 	else
 	  TYPE_RAISES_EXCEPTIONS (variant) = raises;
+
+	if (!TYPE_DEPENDENT_P (variant))
+	  /* We no longer know that it's not type-dependent.  */
+	  TYPE_DEPENDENT_P_VALID (variant) = false;
       }
 }
 
@@ -3662,6 +3665,8 @@ build_min_non_dep_op_overload (enum tree_code op,
   nargs = call_expr_nargs (non_dep);
 
   expected_nargs = cp_tree_code_length (op);
+  if (TREE_CODE (TREE_TYPE (overload)) == METHOD_TYPE)
+    expected_nargs -= 1;
   if ((op == POSTINCREMENT_EXPR
        || op == POSTDECREMENT_EXPR)
       /* With -fpermissive non_dep could be operator++().  */
@@ -3688,7 +3693,7 @@ build_min_non_dep_op_overload (enum tree_code op,
       tree method = build_baselink (binfo, binfo, overload, NULL_TREE);
       fn = build_min (COMPONENT_REF, TREE_TYPE (overload),
 		      object, method, NULL_TREE);
-      for (int i = 1; i < nargs; i++)
+      for (int i = 0; i < nargs; i++)
 	{
 	  tree arg = va_arg (p, tree);
 	  vec_safe_push (args, arg);
@@ -3724,7 +3729,6 @@ build_min_non_dep_op_overload (tree non_dep, tree overload, tree object,
   tree method = build_baselink (binfo, binfo, overload, NULL_TREE);
   tree fn = build_min (COMPONENT_REF, TREE_TYPE (overload),
 		       object, method, NULL_TREE);
-  nargs--;
   gcc_assert (vec_safe_length (args) == nargs);
 
   tree call = build_min_non_dep_call_vec (non_dep, fn, args);

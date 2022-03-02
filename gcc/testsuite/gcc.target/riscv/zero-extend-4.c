@@ -1,5 +1,6 @@
 /* { dg-do compile { target { riscv64*-*-* } } } */
-/* { dg-options "-march=rv64gc -mabi=lp64 -O2" } */
+/* { dg-options "-march=rv64gc -mabi=lp64" } */
+/* { dg-skip-if "" { *-*-* } { "-O0" } } */
 int a, b, e;
 struct c *d;
 struct c

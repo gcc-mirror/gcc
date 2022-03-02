@@ -4338,6 +4338,9 @@ gfc_check_norm2 (gfc_expr *array, gfc_expr *dim)
   if (!array_check (array, 0))
     return false;
 
+  if (!dim_check (dim, 1, false))
+    return false;
+
   if (!dim_rank_check (dim, array, false))
     return false;
 
@@ -4474,6 +4477,9 @@ gfc_check_parity (gfc_expr *mask, gfc_expr *dim)
     return false;
 
   if (!array_check (mask, 0))
+    return false;
+
+  if (!dim_check (dim, 1, false))
     return false;
 
   if (!dim_rank_check (dim, mask, false))
@@ -6144,8 +6150,8 @@ gfc_calculate_transfer_sizes (gfc_expr *source, gfc_expr *mold, gfc_expr *size,
    * representation is not shorter than that of SOURCE.
    * If SIZE is present, the result is an array of rank one and size SIZE.
    */
-  if (result_elt_size == 0 && *source_size > 0 && !size
-      && mold->expr_type == EXPR_ARRAY)
+  if (result_elt_size == 0 && *source_size > 0
+      && (mold->expr_type == EXPR_ARRAY || mold->rank))
     {
       gfc_error ("%<MOLD%> argument of %<TRANSFER%> intrinsic at %L is an "
 		 "array and shall not have storage size 0 when %<SOURCE%> "

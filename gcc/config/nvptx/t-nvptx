@@ -13,4 +13,21 @@ mkoffload$(exeext): mkoffload.o collect-utils.o libcommon-target.a $(LIBIBERTY) 
 	+$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ \
 	  mkoffload.o collect-utils.o libcommon-target.a $(LIBIBERTY) $(LIBS)
 
+$(srcdir)/config/nvptx/nvptx.h: $(srcdir)/config/nvptx/nvptx-gen.h
+$(srcdir)/config/nvptx/nvptx-gen.h: s-nvptx-gen-h; @true
+s-nvptx-gen-h: $(srcdir)/config/nvptx/nvptx-sm.def
+	$(SHELL) $(srcdir)/config/nvptx/gen-h.sh "$(srcdir)/config/nvptx" \
+	  > tmp-nvptx-gen.h
+	$(SHELL) $(srcdir)/../move-if-change \
+	  tmp-nvptx-gen.h $(srcdir)/config/nvptx/nvptx-gen.h
+	$(STAMP) s-nvptx-gen-h
+
+$(srcdir)/config/nvptx/nvptx-gen.opt: s-nvptx-gen-opt; @true
+s-nvptx-gen-opt: $(srcdir)/config/nvptx/nvptx-sm.def
+	$(SHELL) $(srcdir)/config/nvptx/gen-opt.sh "$(srcdir)/config/nvptx" \
+	  > tmp-nvptx-gen.opt
+	$(SHELL) $(srcdir)/../move-if-change \
+	  tmp-nvptx-gen.opt $(srcdir)/config/nvptx/nvptx-gen.opt
+	$(STAMP) s-nvptx-gen-opt
+
 MULTILIB_OPTIONS = mgomp

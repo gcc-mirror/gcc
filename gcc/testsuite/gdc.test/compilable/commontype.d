@@ -196,7 +196,8 @@ static assert(is( X!( C***, B*** ) == const(B**)* )); // `B***`
 
 static assert(is( X!( C*, I* ) == I* ));
 static assert(is( X!( I*, C* ) == I* ));
-static assert(Error!( C**, I** ));
+//static assert(Error!( C**, I** ));
+static assert(is( X!( C**, I** ) == const(I*)* ));
 
 static assert(Error!( C*, D* )); // should work
 
@@ -303,13 +304,15 @@ static assert(is( X!(C[4], B[4]) ));
 static assert(Error!( C[4], I[4] ));
 static assert(Error!( C[4], D[4] ));
 static assert(is( X!( C[4], const(B)[4] ) == const(B)[4] ));
-static assert(Error!( C[4], const(I)[4] ));
+//static assert(Error!( C[4], const(I)[4] ));
+static assert(is( X!( C[4], const(I)[4] ) == const(I)[] ));
 static assert(Error!( C[4], const(D)[4] ));
 static assert(Error!( C*[4], B*[4] ));
 static assert(Error!( C*[4], I*[4] ));
 static assert(Error!( C*[4], D*[4] ));
 static assert(is( X!( C*[4], const(B*)[4] ) == const(B*)[] )); // !?
-static assert(Error!( C*[4], const(I*)[4] ));
+//static assert(Error!( C*[4], const(I*)[4] ));
+static assert(is( X!( C*[4], const(I*)[4] ) == const(I*)[] ));
 static assert(Error!( C*[4], const(D*)[4] ));
 static assert(Error!( C*[4], B**[4] ));
 static assert(Error!( C*[4], const(B*)*[4] ));

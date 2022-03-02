@@ -3,7 +3,7 @@
 TEST_OUTPUT:
 ---
 fail_compilation/bug8150a.d(14): Error: `object.Exception` is thrown but not caught
-fail_compilation/bug8150a.d(12): Error: `nothrow` constructor `bug8150a.Foo.this` may throw
+fail_compilation/bug8150a.d(12): Error: constructor `bug8150a.Foo.this` may throw but is marked as `nothrow`
 ---
 */
 

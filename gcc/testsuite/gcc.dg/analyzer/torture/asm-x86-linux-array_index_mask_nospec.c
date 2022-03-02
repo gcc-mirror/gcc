@@ -1,4 +1,4 @@
-/* { dg-do assemble { target x86_64-*-* } } */
+/* { dg-do compile { target x86_64-*-* } } */
 /* { dg-require-effective-target lp64 } */
 /* { dg-skip-if "" { *-*-* } { "-fno-fat-lto-objects" } { "" } } */
 

@@ -70,7 +70,7 @@ void test_6 (struct foo *p)
 void test_7 ()
 {
   struct foo f;
-  foo_release (&f); /* { dg-warning "not on the heap" "analyzer" } */
+  foo_release (&f); /* { dg-warning "on the stack" "analyzer" } */
   /* { dg-warning "'foo_release' called on unallocated object 'f'" "non-analyzer" { target *-*-* } .-1 } */
 }
 

@@ -101,8 +101,11 @@ class PredictDefFile:
 
         p = None
         modified_lines = []
-        for l in lines:
+        for i, l in enumerate(lines):
             if l.startswith('DEF_PREDICTOR'):
+                next_line = lines[i + 1]
+                if l.endswith(','):
+                    l += next_line
                 m = re.match('.*"(.*)".*', l)
                 p = m.group(1)
             elif l == '':

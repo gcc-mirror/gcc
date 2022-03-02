@@ -1157,6 +1157,8 @@
 	    (ior (match_test "TARGET_AVX512VL")
 		 (match_test "GET_MODE_SIZE (GET_MODE (op)) == 64")))
        (match_test "VALID_BCST_MODE_P (GET_MODE_INNER (GET_MODE (op)))")
+       (match_test "GET_MODE (XEXP (op, 0))
+		    == GET_MODE_INNER (GET_MODE (op))")
        (match_test "memory_operand (XEXP (op, 0), GET_MODE (XEXP (op, 0)))")))
 
 ; Return true when OP is bcst_mem_operand or vector_memory_operand.

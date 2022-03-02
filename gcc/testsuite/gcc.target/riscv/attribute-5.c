@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O -mriscv-attribute -mno-strict-align" } */
+/* { dg-options "-mriscv-attribute -mno-strict-align" } */
 int foo()
 {
 }

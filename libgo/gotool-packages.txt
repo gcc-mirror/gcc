@@ -32,14 +32,15 @@ cmd/go/internal/run
 cmd/go/internal/search
 cmd/go/internal/str
 cmd/go/internal/test
+cmd/go/internal/test/internal/genflags
 cmd/go/internal/tool
 cmd/go/internal/trace
-cmd/go/internal/txtar
 cmd/go/internal/vcs
 cmd/go/internal/version
 cmd/go/internal/vet
 cmd/go/internal/web
 cmd/go/internal/work
+cmd/go/internal/workcmd
 cmd/internal/browser
 cmd/internal/buildid
 cmd/internal/codesign
@@ -47,6 +48,7 @@ cmd/internal/diff
 cmd/internal/edit
 cmd/internal/objabi
 cmd/internal/pkgpath
+cmd/internal/quoted
 cmd/internal/sys
 cmd/internal/test2json
 cmd/internal/traceviewer
@@ -103,5 +105,7 @@ golang.org/x/tools/go/types/objectpath
 golang.org/x/tools/go/types/typeutil
 golang.org/x/tools/internal/analysisinternal
 golang.org/x/tools/internal/lsp/fuzzy
+golang.org/x/tools/internal/typeparams
+golang.org/x/tools/txtar
 golang.org/x/xerrors
 golang.org/x/xerrors/internal

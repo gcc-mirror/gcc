@@ -1,4 +1,4 @@
-/* { dg-additional-options "-Wno-analyzer-use-of-uninitialized-value" } */
+/* { dg-additional-options "-Wno-analyzer-use-of-uninitialized-value -Wno-psabi" } */
 
 typedef int __attribute__((__vector_size__(4))) T;
 typedef unsigned __attribute__((__vector_size__(4))) U;

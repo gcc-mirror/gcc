@@ -105,6 +105,7 @@
 // REQUIRED_ARGS: -version=none
 // REQUIRED_ARGS: -version=D_PreConditions
 // REQUIRED_ARGS: -version=D_PostConditions
+// REQUIRED_ARGS: -version=D_ProfileGC
 // REQUIRED_ARGS: -debug=DigitalMars
 // REQUIRED_ARGS: -debug=GNU
 // REQUIRED_ARGS: -debug=LDC
@@ -207,6 +208,7 @@
 // REQUIRED_ARGS: -debug=none
 // REQUIRED_ARGS: -debug=D_PreConditions
 // REQUIRED_ARGS: -debug=D_PostConditions
+// REQUIRED_ARGS: -debug=D_ProfileGC
 /*
 TEST_OUTPUT:
 ---
@@ -315,5 +317,6 @@ Error: version identifier `all` is reserved and cannot be set
 Error: version identifier `none` is reserved and cannot be set
 Error: version identifier `D_PreConditions` is reserved and cannot be set
 Error: version identifier `D_PostConditions` is reserved and cannot be set
+Error: version identifier `D_ProfileGC` is reserved and cannot be set
 ---
 */

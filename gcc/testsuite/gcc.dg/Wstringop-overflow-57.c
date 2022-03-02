@@ -1,7 +1,8 @@
 /* Verify that an anti-range ~[A, B] with small positive A and B
    is handled correctly and doesn't trigger warnings.
    { dg-do compile }
-   { dg-options "-O2 -Wall" } */
+   { dg-options "-O2 -Wall" }
+   { dg-require-effective-target alloca } */
 
 typedef __typeof__ (sizeof 0) size_t;
 

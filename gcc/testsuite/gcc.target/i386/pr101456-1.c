@@ -30,4 +30,5 @@ foo3 (void)
   bar ();
 }
 
-/* { dg-final { scan-assembler-not "vzeroupper" } } */
+/* See PR104581 for the XFAIL reason.  */
+/* { dg-final { scan-assembler-not "vzeroupper" { xfail *-*-* } } } */

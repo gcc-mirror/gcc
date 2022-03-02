@@ -1472,6 +1472,8 @@ resolve_structure_cons (gfc_expr *expr, int init)
 		  t = false;
 		  break;
 		};
+	      if (cons->expr->shape == NULL)
+		continue;
 	      mpz_set_ui (len, 1);
 	      mpz_add (len, len, comp->as->upper[n]->value.integer);
 	      mpz_sub (len, len, comp->as->lower[n]->value.integer);
@@ -9227,7 +9229,6 @@ resolve_assoc_var (gfc_symbol* sym, bool resolve_target)
 	sym->ts.u.cl = target->ts.u.cl;
 
       if (sym->ts.deferred && target->expr_type == EXPR_VARIABLE
-	  && target->symtree->n.sym->attr.dummy
 	  && sym->ts.u.cl == target->ts.u.cl)
 	{
 	  sym->ts.u.cl = gfc_new_charlen (sym->ns, NULL);
@@ -11943,8 +11944,17 @@ start:
 	case EXEC_END_NESTED_BLOCK:
 	case EXEC_CYCLE:
 	case EXEC_PAUSE:
+	  break;
+
 	case EXEC_STOP:
 	case EXEC_ERROR_STOP:
+	  if (code->expr2 != NULL
+	      && (code->expr2->ts.type != BT_LOGICAL
+		  || code->expr2->rank != 0))
+	    gfc_error ("QUIET specifier at %L must be a scalar LOGICAL",
+		       &code->expr2->where);
+	  break;
+
 	case EXEC_EXIT:
 	case EXEC_CONTINUE:
 	case EXEC_DT_END:

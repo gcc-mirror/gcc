@@ -1,4 +1,5 @@
-/* { dg-options "-Os -march=rv32imc -mabi=ilp32" } */
+/* { dg-options "-march=rv32imc -mabi=ilp32" } */
+/* { dg-skip-if "" { *-*-* } { "*" } { "-Os" } } */
 
 /* shorten_memrefs should use a correct base address*/
 

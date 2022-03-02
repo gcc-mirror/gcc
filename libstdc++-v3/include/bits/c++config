@@ -810,11 +810,6 @@ namespace std
 
 #undef _GLIBCXX_HAS_BUILTIN
 
-#if __cplusplus >= 202002L && __cpp_concepts && __GNUC__ >= 12
-// XXX workaround for missing feature test macro for P0848R3 (see P2493R0).
-# define _GLIBCXX_HAVE_COND_TRIVIAL_SPECIAL_MEMBERS 1
-#endif
-
 // PSTL configuration
 
 #if __cplusplus >= 201703L

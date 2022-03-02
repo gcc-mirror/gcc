@@ -9,6 +9,8 @@ import (
 	"unsafe"
 )
 
+const _SYS_DUP3 = 0
+
 // See version list in https://github.com/DragonFlyBSD/DragonFlyBSD/blob/master/sys/sys/param.h
 var (
 	osreldateOnce sync.Once

@@ -5,7 +5,7 @@ fail_compilation/fail220.d(12): Error: identifier expected for template value pa
 fail_compilation/fail220.d(12): Error: found `==` when expecting `)`
 fail_compilation/fail220.d(12): Error: found `class` when expecting `)`
 fail_compilation/fail220.d(12): Error: declaration expected, not `)`
-fail_compilation/fail220.d(16): Error: unrecognized declaration
+fail_compilation/fail220.d(16): Error: unmatched closing brace
 ---
 */
 template types (T) {

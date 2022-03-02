@@ -27,6 +27,10 @@
 # define NEED_DO_COPY_FILE
 # define NEED_DO_SPACE
 #endif
+#ifndef _GNU_SOURCE
+// Cygwin needs this for secure_getenv
+# define _GNU_SOURCE 1
+#endif
 
 #include <bits/largefile-config.h>
 #include <experimental/filesystem>
@@ -58,6 +62,8 @@
   namespace experimental { namespace filesystem {
 #define _GLIBCXX_END_NAMESPACE_FILESYSTEM } }
 #include "ops-common.h"
+
+#include <filesystem> // std::filesystem::remove_all
 
 namespace fs = std::experimental::filesystem;
 namespace posix = std::filesystem::__gnu_posix;
@@ -366,7 +372,7 @@ fs::copy_file(const path& from, const path& to, copy_options option)
 
 bool
 fs::copy_file(const path& from, const path& to, copy_options options,
-	      error_code& ec) noexcept
+	      error_code& ec)
 {
 #ifdef _GLIBCXX_HAVE_SYS_STAT_H
   return do_copy_file(from.c_str(), to.c_str(), copy_file_options(options),
@@ -418,7 +424,7 @@ fs::create_directories(const path& p)
 }
 
 bool
-fs::create_directories(const path& p, error_code& ec) noexcept
+fs::create_directories(const path& p, error_code& ec)
 {
   if (p.empty())
     {
@@ -1092,35 +1098,10 @@ fs::remove_all(const path& p)
 }
 
 std::uintmax_t
-fs::remove_all(const path& p, error_code& ec) noexcept
+fs::remove_all(const path& p, error_code& ec)
 {
-  const auto s = symlink_status(p, ec);
-  if (!status_known(s))
-    return -1;
-
-  ec.clear();
-  if (s.type() == file_type::not_found)
-    return 0;
-
-  uintmax_t count = 0;
-  if (s.type() == file_type::directory)
-    {
-      directory_iterator d(p, ec), end;
-      while (!ec && d != end)
-	{
-	  const auto removed = fs::remove_all(d->path(), ec);
-	  if (removed == numeric_limits<uintmax_t>::max())
-	    return -1;
-	  count += removed;
-	  d.increment(ec);
-	  if (ec)
-	    return -1;
-	}
-    }
-
-  if (fs::remove(p, ec))
-    ++count;
-  return ec ? -1 : count;
+  // Use the C++17 implementation.
+  return std::filesystem::remove_all(p.native(), ec);
 }
 
 void

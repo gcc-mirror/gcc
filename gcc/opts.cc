@@ -2017,6 +2017,7 @@ const struct sanitizer_opts_s sanitizer_opts[] =
   SANITIZER_OPT (vptr, SANITIZE_VPTR, true),
   SANITIZER_OPT (pointer-overflow, SANITIZE_POINTER_OVERFLOW, true),
   SANITIZER_OPT (builtin, SANITIZE_BUILTIN, true),
+  SANITIZER_OPT (shadow-call-stack, SANITIZE_SHADOW_CALL_STACK, false),
   SANITIZER_OPT (all, ~0U, true),
 #undef SANITIZER_OPT
   { NULL, 0U, 0UL, false }
@@ -2143,7 +2144,8 @@ parse_sanitizer_options (const char *p, location_t loc, int scode,
 		  }
 		else
 		  flags |= ~(SANITIZE_THREAD | SANITIZE_LEAK
-			     | SANITIZE_UNREACHABLE | SANITIZE_RETURN);
+			     | SANITIZE_UNREACHABLE | SANITIZE_RETURN
+			     | SANITIZE_SHADOW_CALL_STACK);
 	      }
 	    else if (value)
 	      {
@@ -2621,10 +2623,6 @@ common_handle_option (struct gcc_options *opts,
 	  &= ~(SANITIZE_UNDEFINED | SANITIZE_UNDEFINED_NONDEFAULT);
       break;
 
-    case OPT_fsanitize_coverage_:
-      opts->x_flag_sanitize_coverage = value;
-      break;
-
     case OPT_O:
     case OPT_Os:
     case OPT_Ofast:
@@ -2899,8 +2897,6 @@ common_handle_option (struct gcc_options *opts,
     case OPT_fauto_profile:
       enable_fdo_optimizations (opts, opts_set, value);
       SET_OPTION_IF_UNSET (opts, opts_set, flag_profile_correction, value);
-      SET_OPTION_IF_UNSET (opts, opts_set,
-			   param_early_inliner_max_iterations, 10);
       break;
 
     case OPT_fprofile_generate_:
@@ -3160,6 +3156,10 @@ common_handle_option (struct gcc_options *opts,
       /* It is documented that we silently ignore silly values.  */
       if (value >= 1 && value <= 100)
 	dc->tabstop = value;
+      break;
+
+    case OPT_freport_bug:
+      dc->report_bug = value;
       break;
 
     default:
@@ -3709,12 +3709,67 @@ test_get_option_html_page ()
 #endif
 }
 
+/* Verify EnumSet and EnumBitSet requirements.  */
+
+static void
+test_enum_sets ()
+{
+  for (unsigned i = 0; i < cl_options_count; ++i)
+    if (cl_options[i].var_type == CLVC_ENUM
+	&& cl_options[i].var_value != CLEV_NORMAL)
+      {
+	const struct cl_enum *e = &cl_enums[cl_options[i].var_enum];
+	unsigned HOST_WIDE_INT used_sets = 0;
+	unsigned HOST_WIDE_INT mask = 0;
+	unsigned highest_set = 0;
+	for (unsigned j = 0; e->values[j].arg; ++j)
+	  {
+	    unsigned set = e->values[j].flags >> CL_ENUM_SET_SHIFT;
+	    if (cl_options[i].var_value == CLEV_BITSET)
+	      {
+		/* For EnumBitSet Set shouldn't be used and Value should
+		   be a power of two.  */
+		ASSERT_TRUE (set == 0);
+		ASSERT_TRUE (pow2p_hwi (e->values[j].value));
+		continue;
+	      }
+	    /* Test that enumerators referenced in EnumSet have all
+	       Set(n) on them within the valid range.  */
+	    ASSERT_TRUE (set >= 1 && set <= HOST_BITS_PER_WIDE_INT);
+	    highest_set = MAX (set, highest_set);
+	    used_sets |= HOST_WIDE_INT_1U << (set - 1);
+	  }
+	if (cl_options[i].var_value == CLEV_BITSET)
+	  continue;
+	/* If there is just one set, no point to using EnumSet.  */
+	ASSERT_TRUE (highest_set >= 2);
+	/* Test that there are no gaps in between the sets.  */
+	if (highest_set == HOST_BITS_PER_WIDE_INT)
+	  ASSERT_TRUE (used_sets == HOST_WIDE_INT_M1U);
+	else
+	  ASSERT_TRUE (used_sets == (HOST_WIDE_INT_1U << highest_set) - 1);
+	for (unsigned int j = 1; j <= highest_set; ++j)
+	  {
+	    unsigned HOST_WIDE_INT this_mask = 0;
+	    for (unsigned k = 0; e->values[k].arg; ++k)
+	      {
+		unsigned set = e->values[j].flags >> CL_ENUM_SET_SHIFT;
+		if (set == j)
+		  this_mask |= e->values[j].value;
+	      }
+	    ASSERT_TRUE ((mask & this_mask) == 0);
+	    mask |= this_mask;
+	  }
+      }
+}
+
 /* Run all of the selftests within this file.  */
 
 void
 opts_cc_tests ()
 {
   test_get_option_html_page ();
+  test_enum_sets ();
 }
 
 } // namespace selftest

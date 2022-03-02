@@ -84,7 +84,9 @@ enum arm_type_qualifiers
   qualifier_lane_pair_index = 0x1000,
   /* Lane indices selected in quadtuplets - must be within range of previous
      argument = a vector.  */
-  qualifier_lane_quadtup_index = 0x2000
+  qualifier_lane_quadtup_index = 0x2000,
+  /* MVE vector predicates.  */
+  qualifier_predicate = 0x4000
 };
 
 struct arm_simd_type_info

@@ -500,6 +500,11 @@ public:
     return m_unknown_side_effects;
   }
 
+  const program_state *get_old_program_state () const FINAL OVERRIDE
+  {
+    return m_old_state;
+  }
+
   log_user m_logger;
   exploded_graph &m_eg;
   exploded_node *m_enode_for_diag;
@@ -3799,7 +3804,7 @@ exploded_graph::process_node (exploded_node *node)
 	    /* Apply edge_info to state.  */
 	    impl_region_model_context
 	      bifurcation_ctxt (*this,
-				NULL, // enode_for_diag
+				node, // enode_for_diag
 				&path_ctxt.get_state_at_bifurcation (),
 				&bifurcated_new_state,
 				NULL, // uncertainty_t *uncertainty

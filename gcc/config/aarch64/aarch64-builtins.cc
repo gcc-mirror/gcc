@@ -2820,6 +2820,13 @@ aarch64_general_gimple_fold_builtin (unsigned int fcode, gcall *stmt,
 	gimple_call_set_lhs (new_stmt, gimple_call_lhs (stmt));
 	break;
 
+      /* Lower sqrt builtins to gimple/internal function sqrt. */
+      BUILTIN_VHSDF_DF (UNOP, sqrt, 2, FP)
+	new_stmt = gimple_build_call_internal (IFN_SQRT,
+					       1, args[0]);
+	gimple_call_set_lhs (new_stmt, gimple_call_lhs (stmt));
+	break;
+
      /*lower store and load neon builtins to gimple.  */
      BUILTIN_VALL_F16 (LOAD1, ld1, 0, LOAD)
      BUILTIN_VDQ_I (LOAD1_U, ld1, 0, LOAD)

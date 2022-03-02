@@ -1425,7 +1425,7 @@ void test19758()
     int[2] array = [16, 678];
     union U { int i; bool b; }
     U u;
-    u.i = 0xDEADBEEF;
+    u.i = 0xBFBFBFBF;
     assert(array[u.b] == 678);
 }
 

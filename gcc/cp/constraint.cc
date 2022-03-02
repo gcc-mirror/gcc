@@ -2818,7 +2818,8 @@ satisfaction_value (tree t)
     return t;
 
   gcc_assert (TREE_CODE (t) == INTEGER_CST
-	      && same_type_p (TREE_TYPE (t), boolean_type_node));
+	      && same_type_ignoring_top_level_qualifiers_p (TREE_TYPE (t),
+							    boolean_type_node));
   if (integer_zerop (t))
     return boolean_false_node;
   else
@@ -3154,12 +3155,11 @@ satisfy_declaration_constraints (tree t, sat_info info)
 	 set of template arguments.  Augment this with the outer template
 	 arguments that were used to regenerate the lambda.  */
       gcc_assert (!args || TMPL_ARGS_DEPTH (args) == 1);
-      tree lambda = CLASSTYPE_LAMBDA_EXPR (DECL_CONTEXT (t));
-      tree outer_args = TI_ARGS (LAMBDA_EXPR_REGEN_INFO (lambda));
+      tree regen_args = lambda_regenerating_args (t);
       if (args)
-	args = add_to_template_args (outer_args, args);
+	args = add_to_template_args (regen_args, args);
       else
-	args = outer_args;
+	args = regen_args;
     }
 
   /* If any arguments depend on template parameters, we can't

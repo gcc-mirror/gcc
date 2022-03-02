@@ -11,5 +11,5 @@ struct TemplatedStruct(Param)
 
 void foo()
 {
-        alias TemplatedStruct!(Dummy) X;        
+        alias TemplatedStruct!(Dummy) X;
 }

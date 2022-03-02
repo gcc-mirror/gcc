@@ -22,6 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 #define GCC_TREE_VECTORIZER_H
 
 typedef class _stmt_vec_info *stmt_vec_info;
+typedef struct _slp_tree *slp_tree;
 
 #include "tree-data-ref.h"
 #include "tree-hash-traits.h"
@@ -101,6 +102,7 @@ struct stmt_info_for_cost {
   enum vect_cost_for_stmt kind;
   enum vect_cost_model_location where;
   stmt_vec_info stmt_info;
+  slp_tree node;
   tree vectype;
   int misalign;
 };
@@ -113,10 +115,44 @@ typedef hash_map<tree_operand_hash,
 		 std::pair<stmt_vec_info, innermost_loop_behavior *> >
 	  vec_base_alignments;
 
+/* Represents elements [START, START + LENGTH) of cyclical array OPS*
+   (i.e. OPS repeated to give at least START + LENGTH elements)  */
+struct vect_scalar_ops_slice
+{
+  tree op (unsigned int i) const;
+  bool all_same_p () const;
+
+  vec<tree> *ops;
+  unsigned int start;
+  unsigned int length;
+};
+
+/* Return element I of the slice.  */
+inline tree
+vect_scalar_ops_slice::op (unsigned int i) const
+{
+  return (*ops)[(i + start) % ops->length ()];
+}
+
+/* Hash traits for vect_scalar_ops_slice.  */
+struct vect_scalar_ops_slice_hash : typed_noop_remove<vect_scalar_ops_slice>
+{
+  typedef vect_scalar_ops_slice value_type;
+  typedef vect_scalar_ops_slice compare_type;
+
+  static const bool empty_zero_p = true;
+
+  static void mark_deleted (value_type &s) { s.length = ~0U; }
+  static void mark_empty (value_type &s) { s.length = 0; }
+  static bool is_deleted (const value_type &s) { return s.length == ~0U; }
+  static bool is_empty (const value_type &s) { return s.length == 0; }
+  static hashval_t hash (const value_type &);
+  static bool equal (const value_type &, const compare_type &);
+};
+
 /************************************************************************
   SLP
  ************************************************************************/
-typedef struct _slp_tree *slp_tree;
 typedef vec<std::pair<unsigned, unsigned> > lane_permutation_t;
 typedef vec<unsigned> load_permutation_t;
 
@@ -1427,7 +1463,7 @@ public:
      - WHERE specifies whether the cost occurs in the loop prologue,
        the loop body, or the loop epilogue.
      - KIND is the kind of statement, which is always meaningful.
-     - STMT_INFO, if nonnull, describes the statement that will be
+     - STMT_INFO or NODE, if nonnull, describe the statement that will be
        vectorized.
      - VECTYPE, if nonnull, is the vector type that the vectorized
        statement will operate on.  Note that this should be used in
@@ -1441,8 +1477,9 @@ public:
      Return the calculated cost as well as recording it.  The return
      value is used for dumping purposes.  */
   virtual unsigned int add_stmt_cost (int count, vect_cost_for_stmt kind,
-				      stmt_vec_info stmt_info, tree vectype,
-				      int misalign,
+				      stmt_vec_info stmt_info,
+				      slp_tree node,
+				      tree vectype, int misalign,
 				      vect_cost_model_location where);
 
   /* Finish calculating the cost of the code.  The results can be
@@ -1708,7 +1745,7 @@ init_cost (vec_info *vinfo, bool costing_for_scalar)
 }
 
 extern void dump_stmt_cost (FILE *, int, enum vect_cost_for_stmt,
-			    stmt_vec_info, tree, int, unsigned,
+			    stmt_vec_info, slp_tree, tree, int, unsigned,
 			    enum vect_cost_model_location);
 
 /* Alias targetm.vectorize.add_stmt_cost.  */
@@ -1716,15 +1753,25 @@ extern void dump_stmt_cost (FILE *, int, enum vect_cost_for_stmt,
 static inline unsigned
 add_stmt_cost (vector_costs *costs, int count,
 	       enum vect_cost_for_stmt kind,
-	       stmt_vec_info stmt_info, tree vectype, int misalign,
+	       stmt_vec_info stmt_info, slp_tree node,
+	       tree vectype, int misalign,
 	       enum vect_cost_model_location where)
 {
-  unsigned cost = costs->add_stmt_cost (count, kind, stmt_info, vectype,
+  unsigned cost = costs->add_stmt_cost (count, kind, stmt_info, node, vectype,
 					misalign, where);
   if (dump_file && (dump_flags & TDF_DETAILS))
-    dump_stmt_cost (dump_file, count, kind, stmt_info, vectype, misalign,
+    dump_stmt_cost (dump_file, count, kind, stmt_info, node, vectype, misalign,
 		    cost, where);
   return cost;
+}
+
+static inline unsigned
+add_stmt_cost (vector_costs *costs, int count, enum vect_cost_for_stmt kind,
+	       enum vect_cost_model_location where)
+{
+  gcc_assert (kind == cond_branch_taken || kind == cond_branch_not_taken
+	      || kind == scalar_stmt);
+  return add_stmt_cost (costs, count, kind, NULL, NULL, NULL_TREE, 0, where);
 }
 
 /* Alias targetm.vectorize.add_stmt_cost.  */
@@ -1732,7 +1779,7 @@ add_stmt_cost (vector_costs *costs, int count,
 static inline unsigned
 add_stmt_cost (vector_costs *costs, stmt_info_for_cost *i)
 {
-  return add_stmt_cost (costs, i->count, i->kind, i->stmt_info,
+  return add_stmt_cost (costs, i->count, i->kind, i->stmt_info, i->node,
 			i->vectype, i->misalign, i->where);
 }
 
@@ -1758,7 +1805,7 @@ add_stmt_costs (vector_costs *costs, stmt_vector_for_cost *cost_vec)
   unsigned i;
   FOR_EACH_VEC_ELT (*cost_vec, i, cost)
     add_stmt_cost (costs, cost->count, cost->kind, cost->stmt_info,
-		   cost->vectype, cost->misalign, cost->where);
+		   cost->node, cost->vectype, cost->misalign, cost->where);
 }
 
 /*-----------------------------------------------------------------*/
@@ -2085,6 +2132,12 @@ extern bool supportable_narrowing_operation (enum tree_code, tree, tree,
 extern unsigned record_stmt_cost (stmt_vector_for_cost *, int,
 				  enum vect_cost_for_stmt, stmt_vec_info,
 				  tree, int, enum vect_cost_model_location);
+extern unsigned record_stmt_cost (stmt_vector_for_cost *, int,
+				  enum vect_cost_for_stmt, slp_tree,
+				  tree, int, enum vect_cost_model_location);
+extern unsigned record_stmt_cost (stmt_vector_for_cost *, int,
+				  enum vect_cost_for_stmt,
+				  enum vect_cost_model_location);
 
 /* Overload of record_stmt_cost with VECTYPE derived from STMT_INFO.  */
 
@@ -2301,6 +2354,7 @@ extern void duplicate_and_interleave (vec_info *, gimple_seq *, tree,
 extern int vect_get_place_in_interleaving_chain (stmt_vec_info, stmt_vec_info);
 extern slp_tree vect_create_new_slp_node (unsigned, tree_code);
 extern void vect_free_slp_tree (slp_tree);
+extern bool compatible_calls_p (gcall *, gcall *);
 
 /* In tree-vect-patterns.cc.  */
 extern void
@@ -2339,6 +2393,12 @@ typedef enum _complex_perm_kinds {
 typedef hash_map <slp_tree, complex_perm_kinds_t>
   slp_tree_to_load_perm_map_t;
 
+/* Cache from nodes pair to being compatible or not.  */
+typedef pair_hash <nofree_ptr_hash <_slp_tree>,
+		   nofree_ptr_hash <_slp_tree>> slp_node_hash;
+typedef hash_map <slp_node_hash, bool> slp_compat_nodes_map_t;
+
+
 /* Vector pattern matcher base class.  All SLP pattern matchers must inherit
    from this type.  */
 
@@ -2371,7 +2431,8 @@ class vect_pattern
   public:
 
     /* Create a new instance of the pattern matcher class of the given type.  */
-    static vect_pattern* recognize (slp_tree_to_load_perm_map_t *, slp_tree *);
+    static vect_pattern* recognize (slp_tree_to_load_perm_map_t *,
+				    slp_compat_nodes_map_t *, slp_tree *);
 
     /* Build the pattern from the data collected so far.  */
     virtual void build (vec_info *) = 0;
@@ -2385,6 +2446,7 @@ class vect_pattern
 
 /* Function pointer to create a new pattern matcher from a generic type.  */
 typedef vect_pattern* (*vect_pattern_decl_t) (slp_tree_to_load_perm_map_t *,
+					      slp_compat_nodes_map_t *,
 					      slp_tree *);
 
 /* List of supported pattern matchers.  */

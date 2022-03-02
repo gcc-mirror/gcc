@@ -2411,6 +2411,7 @@ reg_subword_p (rtx x, rtx reg)
     x = XEXP (x, 0);
 
   return GET_CODE (x) == SUBREG
+	 && !paradoxical_subreg_p (x)
 	 && SUBREG_REG (x) == reg
 	 && GET_MODE_CLASS (GET_MODE (x)) == MODE_INT;
 }
@@ -4017,6 +4018,24 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
 
 	  insn_code_number = recog_for_combine (&newpat, i3, &new_i3_notes);
 
+	  /* Likewise, recog_for_combine might have added clobbers to NEWPAT.
+	     Checking that the SET0's SET_DEST and SET1's SET_DEST aren't
+	     mentioned/clobbered, ensures NEWI2PAT's SET_DEST is live.  */
+	  if (insn_code_number >= 0 && GET_CODE (newpat) == PARALLEL)
+	    {
+	      for (i = XVECLEN (newpat, 0) - 1; i >= 0; i--)
+		if (GET_CODE (XVECEXP (newpat, 0, i)) == CLOBBER)
+		  {
+		    rtx reg = XEXP (XVECEXP (newpat, 0, i), 0);
+		    if (reg_overlap_mentioned_p (reg, SET_DEST (set0))
+			|| reg_overlap_mentioned_p (reg, SET_DEST (set1)))
+		      {
+			undo_all ();
+			return 0;
+		      }
+		  }
+	    }
+
 	  if (insn_code_number >= 0)
 	    split_i2i3 = 1;
 	}
@@ -4204,10 +4223,12 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
 	  for (rtx_insn *insn = NEXT_INSN (i3);
 	       !done
 	       && insn
-	       && NONDEBUG_INSN_P (insn)
+	       && INSN_P (insn)
 	       && BLOCK_FOR_INSN (insn) == this_basic_block;
 	       insn = NEXT_INSN (insn))
 	    {
+	      if (DEBUG_INSN_P (insn))
+		continue;
 	      struct insn_link *link;
 	      FOR_EACH_LOG_LINK (link, insn)
 		if (link->insn == i3 && link->regno == regno)
@@ -5515,6 +5536,12 @@ subst (rtx x, rtx from, rtx to, int in_dest, int in_cond, int unique_copy)
 		  if (!x)
 		    return gen_rtx_CLOBBER (VOIDmode, const0_rtx);
 		}
+	      /* CONST_INTs shouldn't be substituted into PRE_DEC, PRE_MODIFY
+		 etc. arguments, otherwise we can ICE before trying to recog
+		 it.  See PR104446.  */
+	      else if (CONST_SCALAR_INT_P (new_rtx)
+		       && GET_RTX_CLASS (GET_CODE (x)) == RTX_AUTOINC)
+		return gen_rtx_CLOBBER (VOIDmode, const0_rtx);
 	      else
 		SUBST (XEXP (x, i), new_rtx);
 	    }

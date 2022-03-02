@@ -2726,17 +2726,14 @@ build_class_member_access_expr (cp_expr object, tree member,
   /* Transform `(a, b).x' into `(*(a, &b)).x', `(a ? b : c).x' into
      `(*(a ?  &b : &c)).x', and so on.  A COND_EXPR is only an lvalue
      in the front end; only _DECLs and _REFs are lvalues in the back end.  */
-  {
-    tree temp = unary_complex_lvalue (ADDR_EXPR, object);
-    if (temp)
-      {
-	temp = cp_build_fold_indirect_ref (temp);
-	if (xvalue_p (object) && !xvalue_p (temp))
-	  /* Preserve xvalue kind.  */
-	  temp = move (temp);
-	object = temp;
-      }
-  }
+  if (tree temp = unary_complex_lvalue (ADDR_EXPR, object))
+    {
+      temp = cp_build_fold_indirect_ref (temp);
+      if (!lvalue_p (object) && lvalue_p (temp))
+	/* Preserve rvalueness.  */
+	temp = move (temp);
+      object = temp;
+    }
 
   /* In [expr.ref], there is an explicit list of the valid choices for
      MEMBER.  We check for each of those cases here.  */
@@ -6857,6 +6854,12 @@ cp_build_addr_expr_1 (tree arg, bool strict_lvalue, tsubst_flags_t complain)
 	    return error_mark_node;
 	  }
 
+	/* Forming a pointer-to-member is a use of non-pure-virtual fns.  */
+	if (TREE_CODE (t) == FUNCTION_DECL
+	    && !DECL_PURE_VIRTUAL_P (t)
+	    && !mark_used (t, complain) && !(complain & tf_error))
+	  return error_mark_node;
+
 	type = build_ptrmem_type (context_for_name_lookup (t),
 				  TREE_TYPE (t));
 	t = make_ptrmem_cst (type, t);
@@ -6881,9 +6884,9 @@ cp_build_addr_expr_1 (tree arg, bool strict_lvalue, tsubst_flags_t complain)
      so we can just form an ADDR_EXPR with the correct type.  */
   if (processing_template_decl || TREE_CODE (arg) != COMPONENT_REF)
     {
-      tree stripped_arg = tree_strip_any_location_wrapper (arg);
-      if (TREE_CODE (stripped_arg) == FUNCTION_DECL
-	  && !mark_used (stripped_arg, complain) && !(complain & tf_error))
+      tree stripped_arg
+	= tree_strip_any_location_wrapper (maybe_undo_parenthesized_ref (arg));
+      if (!mark_single_function (stripped_arg, complain))
 	return error_mark_node;
       val = build_address (arg);
       if (TREE_CODE (arg) == OFFSET_REF)
@@ -9596,7 +9599,9 @@ build_ptrmemfunc (tree type, tree pfn, int force, bool c_cast_p,
   /* Handle null pointer to member function conversions.  */
   if (null_ptr_cst_p (pfn))
     {
-      pfn = cp_build_c_cast (input_location, type, pfn, complain);
+      pfn = cp_build_c_cast (input_location,
+			     TYPE_PTRMEMFUNC_FN_TYPE_RAW (to_type),
+			     pfn, complain);
       return build_ptrmemfunc1 (to_type,
 				integer_zero_node,
 				pfn);

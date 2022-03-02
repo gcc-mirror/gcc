@@ -144,22 +144,21 @@ range_operator::wi_fold_in_parts (irange &r, tree type,
 				  const wide_int &rh_lb,
 				  const wide_int &rh_ub) const
 {
-  wi::overflow_type ov_rh, ov_lh;
   int_range_max tmp;
-  wide_int rh_range = wi::sub (rh_ub, rh_lb, TYPE_SIGN (type), &ov_rh);
-  wide_int lh_range = wi::sub (lh_ub, lh_lb, TYPE_SIGN (type), &ov_lh);
-  signop sign = TYPE_SIGN (type);;
+  widest_int rh_range = wi::sub (widest_int::from (rh_ub, TYPE_SIGN (type)),
+				 widest_int::from (rh_lb, TYPE_SIGN (type)));
+  widest_int lh_range = wi::sub (widest_int::from (lh_ub, TYPE_SIGN (type)),
+				 widest_int::from (lh_lb, TYPE_SIGN (type)));
   // If there are 2, 3, or 4 values in the RH range, do them separately.
   // Call wi_fold_in_parts to check the RH side.
-  if (wi::gt_p (rh_range, 0, sign) && wi::lt_p (rh_range, 4, sign)
-      && ov_rh == wi::OVF_NONE)
+  if (rh_range > 0 && rh_range < 4)
     {
       wi_fold_in_parts (r, type, lh_lb, lh_ub, rh_lb, rh_lb);
-      if (wi::gt_p (rh_range, 1, sign))
+      if (rh_range > 1)
 	{
 	  wi_fold_in_parts (tmp, type, lh_lb, lh_ub, rh_lb + 1, rh_lb + 1);
 	  r.union_ (tmp);
-	  if (wi::eq_p (rh_range, 3))
+	  if (rh_range == 3)
 	    {
 	      wi_fold_in_parts (tmp, type, lh_lb, lh_ub, rh_lb + 2, rh_lb + 2);
 	      r.union_ (tmp);
@@ -170,15 +169,14 @@ range_operator::wi_fold_in_parts (irange &r, tree type,
     }
   // Otherise check for 2, 3, or 4 values in the LH range and split them up.
   // The RH side has been checked, so no recursion needed.
-  else if (wi::gt_p (lh_range, 0, sign) && wi::lt_p (lh_range, 4, sign)
-	   && ov_lh == wi::OVF_NONE)
+  else if (lh_range > 0 && lh_range < 4)
     {
       wi_fold (r, type, lh_lb, lh_lb, rh_lb, rh_ub);
-      if (wi::gt_p (lh_range, 1, sign))
+      if (lh_range > 1)
 	{
 	  wi_fold (tmp, type, lh_lb + 1, lh_lb + 1, rh_lb, rh_ub);
 	  r.union_ (tmp);
-	  if (wi::eq_p (lh_range, 3))
+	  if (lh_range == 3)
 	    {
 	      wi_fold (tmp, type, lh_lb + 2, lh_lb + 2, rh_lb, rh_ub);
 	      r.union_ (tmp);

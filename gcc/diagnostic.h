@@ -340,6 +340,9 @@ struct diagnostic_context
      source output.  */
   bool show_ruler_p;
 
+  /* True if -freport-bug option is used.  */
+  bool report_bug;
+
   /* Used to specify additional diagnostic output to be emitted after the
      rest of the diagnostic.  This is for implementing
      -fdiagnostics-parseable-fixits and GCC_EXTRA_DIAGNOSTIC_OUTPUT.  */

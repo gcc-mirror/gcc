@@ -363,6 +363,9 @@ unsigned int ix86_default_incoming_stack_boundary;
 /* Alignment for incoming stack boundary in bits.  */
 unsigned int ix86_incoming_stack_boundary;
 
+/* True if there is no direct access to extern symbols.  */
+bool ix86_has_no_direct_extern_access;
+
 /* Calling abi specific va_list type nodes.  */
 tree sysv_va_list_type_node;
 tree ms_va_list_type_node;
@@ -1873,8 +1876,12 @@ type_natural_mode (const_tree type, const CUMULATIVE_ARGS *cum,
 	{
 	  machine_mode innermode = TYPE_MODE (TREE_TYPE (type));
 
-	  /* There are no XFmode vector modes.  */
+	  /* There are no XFmode vector modes ...  */
 	  if (innermode == XFmode)
+	    return mode;
+
+	  /* ... and no decimal float vector modes.  */
+	  if (DECIMAL_FLOAT_MODE_P (innermode))
 	    return mode;
 
 	  if (TREE_CODE (TREE_TYPE (type)) == REAL_TYPE)
@@ -7400,7 +7407,8 @@ find_drap_reg (void)
 	 register in such case.  */
       if (DECL_STATIC_CHAIN (decl)
 	  || cfun->machine->no_caller_saved_registers
-	  || crtl->tail_call_emit)
+	  || crtl->tail_call_emit
+	  || crtl->calls_eh_return)
 	return DI_REG;
 
       /* Reuse static chain register if it isn't used for parameter
@@ -10513,13 +10521,17 @@ darwin_local_data_pic (rtx disp)
 }
 
 /* True if the function symbol operand X should be loaded from GOT.
+   If CALL_P is true, X is a call operand.
+
+   NB: -mno-direct-extern-access doesn't force load from GOT for
+   call.
 
    NB: In 32-bit mode, only non-PIC is allowed in inline assembly
    statements, since a PIC register could not be available at the
    call site.  */
 
 bool
-ix86_force_load_from_GOT_p (rtx x)
+ix86_force_load_from_GOT_p (rtx x, bool call_p)
 {
   return ((TARGET_64BIT || (!flag_pic && HAVE_AS_IX86_GOT32X))
 	  && !TARGET_PECOFF && !TARGET_MACHO
@@ -10527,11 +10539,16 @@ ix86_force_load_from_GOT_p (rtx x)
 	  && ix86_cmodel != CM_LARGE
 	  && ix86_cmodel != CM_LARGE_PIC
 	  && GET_CODE (x) == SYMBOL_REF
-	  && SYMBOL_REF_FUNCTION_P (x)
-	  && (!flag_plt
-	      || (SYMBOL_REF_DECL (x)
-		  && lookup_attribute ("noplt",
-				       DECL_ATTRIBUTES (SYMBOL_REF_DECL (x)))))
+	  && ((!call_p
+	       && (!ix86_direct_extern_access
+		   || (SYMBOL_REF_DECL (x)
+		       && lookup_attribute ("nodirect_extern_access",
+					    DECL_ATTRIBUTES (SYMBOL_REF_DECL (x))))))
+	      || (SYMBOL_REF_FUNCTION_P (x)
+		  && (!flag_plt
+		      || (SYMBOL_REF_DECL (x)
+			  && lookup_attribute ("noplt",
+					       DECL_ATTRIBUTES (SYMBOL_REF_DECL (x)))))))
 	  && !SYMBOL_REF_LOCAL_P (x));
 }
 
@@ -10798,7 +10815,11 @@ legitimate_pic_address_disp_p (rtx disp)
 	    }
 	  else if (!SYMBOL_REF_FAR_ADDR_P (op0)
 		   && (SYMBOL_REF_LOCAL_P (op0)
-		       || (HAVE_LD_PIE_COPYRELOC
+		       || ((ix86_direct_extern_access
+			    && !(SYMBOL_REF_DECL (op0)
+				 && lookup_attribute ("nodirect_extern_access",
+						      DECL_ATTRIBUTES (SYMBOL_REF_DECL (op0)))))
+			   && HAVE_LD_PIE_COPYRELOC
 			   && flag_pie
 			   && !SYMBOL_REF_WEAK (op0)
 			   && !SYMBOL_REF_FUNCTION_P (op0)))
@@ -13754,7 +13775,7 @@ ix86_print_operand (FILE *file, rtx x, int code)
 
       if (code == 'P')
 	{
-	  if (ix86_force_load_from_GOT_p (x))
+	  if (ix86_force_load_from_GOT_p (x, true))
 	    {
 	      /* For inline assembly statement, load function address
 		 from GOT with 'P' operand modifier to avoid PLT.  */
@@ -14356,19 +14377,22 @@ ix86_check_avx_upper_register (const_rtx exp)
 
 static void
 ix86_check_avx_upper_stores (rtx dest, const_rtx, void *data)
- {
-   if (ix86_check_avx_upper_register (dest))
+{
+  if (ix86_check_avx_upper_register (dest))
     {
       bool *used = (bool *) data;
       *used = true;
     }
- }
+}
 
 /* Return needed mode for entity in optimize_mode_switching pass.  */
 
 static int
 ix86_avx_u128_mode_needed (rtx_insn *insn)
 {
+  if (DEBUG_INSN_P (insn))
+    return AVX_U128_ANY;
+
   if (CALL_P (insn))
     {
       rtx link;
@@ -14408,6 +14432,8 @@ ix86_avx_u128_mode_needed (rtx_insn *insn)
       return AVX_U128_CLEAN;
     }
 
+  subrtx_iterator::array_type array;
+
   rtx set = single_set (insn);
   if (set)
     {
@@ -14422,74 +14448,11 @@ ix86_avx_u128_mode_needed (rtx_insn *insn)
 	  else
 	    return AVX_U128_ANY;
 	}
-      else if (ix86_check_avx_upper_register (src))
+      else
 	{
-	  /* This is an YMM/ZMM store.  Check for the source operand
-	     of SRC DEFs in the same basic block before INSN.  */
-	  basic_block bb = BLOCK_FOR_INSN (insn);
-	  rtx_insn *end = BB_END (bb);
-
-	  /* Return AVX_U128_DIRTY if there is no DEF in the same basic
-	     block.  */
-	  int status = AVX_U128_DIRTY;
-
-	  for (df_ref def = DF_REG_DEF_CHAIN (REGNO (src));
-	       def; def = DF_REF_NEXT_REG (def))
-	    if (DF_REF_BB (def) == bb)
-	      {
-		/* Ignore DEF from different basic blocks.  */
-		rtx_insn *def_insn = DF_REF_INSN (def);
-
-		/* Check if DEF_INSN is before INSN.  */
-		rtx_insn *next;
-		for (next = NEXT_INSN (def_insn);
-		     next != nullptr && next != end && next != insn;
-		     next = NEXT_INSN (next))
-		  ;
-
-		/* Skip if DEF_INSN isn't before INSN.  */
-		if (next != insn)
-		  continue;
-
-		/* Return AVX_U128_DIRTY if the source operand of
-		   DEF_INSN isn't constant zero.  */
-
-		if (CALL_P (def_insn))
-		  {
-		    bool avx_upper_reg_found = false;
-		    note_stores (def_insn, ix86_check_avx_upper_stores,
-				 &avx_upper_reg_found);
-
-		    /* Return AVX_U128_DIRTY if call returns AVX.  */
-		    if (avx_upper_reg_found)
-		      return AVX_U128_DIRTY;
-
-		    continue;
-		  }
-
-		set = single_set (def_insn);
-		if (!set)
-		  return AVX_U128_DIRTY;
-
-		dest = SET_DEST (set);
-
-		/* Skip if DEF_INSN is not an AVX load.  */
-		if (ix86_check_avx_upper_register (dest))
-		  {
-		    src = SET_SRC (set);
-		    /* Return AVX_U128_DIRTY if the source operand isn't
-		       constant zero.  */
-		    if (standard_sse_constant_p (src, GET_MODE (dest))
-			!= 1)
-		      return AVX_U128_DIRTY;
-		  }
-
-		/* We get here only if all AVX loads are from constant
-		   zero.  */
-		status = AVX_U128_ANY;
-	      }
-
-	  return status;
+	  FOR_EACH_SUBRTX (iter, array, src, NONCONST)
+	    if (ix86_check_avx_upper_register (*iter))
+	      return AVX_U128_DIRTY;
 	}
 
       /* This isn't YMM/ZMM load/store.  */
@@ -14500,7 +14463,6 @@ ix86_avx_u128_mode_needed (rtx_insn *insn)
      Hardware changes state only when a 256bit register is written to,
      but we need to prevent the compiler from moving optimal insertion
      point above eventual read from 256bit or 512 bit register.  */
-  subrtx_iterator::array_type array;
   FOR_EACH_SUBRTX (iter, array, PATTERN (insn), NONCONST)
     if (ix86_check_avx_upper_register (*iter))
       return AVX_U128_DIRTY;
@@ -18641,6 +18603,8 @@ ix86_gimple_fold_builtin (gimple_stmt_iterator *gsi)
 
     do_shift:
       gcc_assert (n_args >= 2);
+      if (!gimple_call_lhs (stmt))
+	break;
       arg0 = gimple_call_arg (stmt, 0);
       arg1 = gimple_call_arg (stmt, 1);
       elems = TYPE_VECTOR_SUBPARTS (TREE_TYPE (arg0));
@@ -22520,10 +22484,10 @@ int
 asm_preferred_eh_data_format (int code, int global)
 {
   /* PE-COFF is effectively always -fPIC because of the .reloc section.  */
-  if (flag_pic || TARGET_PECOFF)
+  if (flag_pic || TARGET_PECOFF || !ix86_direct_extern_access)
     {
       int type = DW_EH_PE_sdata8;
-      if (!TARGET_64BIT
+      if (ptr_mode == SImode
 	  || ix86_cmodel == CM_SMALL_PIC
 	  || (ix86_cmodel == CM_MEDIUM_PIC && (global || code)))
 	type = DW_EH_PE_sdata4;
@@ -23018,8 +22982,8 @@ class ix86_vector_costs : public vector_costs
   using vector_costs::vector_costs;
 
   unsigned int add_stmt_cost (int count, vect_cost_for_stmt kind,
-			      stmt_vec_info stmt_info, tree vectype,
-			      int misalign,
+			      stmt_vec_info stmt_info, slp_tree node,
+			      tree vectype, int misalign,
 			      vect_cost_model_location where) override;
 };
 
@@ -23033,8 +22997,9 @@ ix86_vectorize_create_costs (vec_info *vinfo, bool costing_for_scalar)
 
 unsigned
 ix86_vector_costs::add_stmt_cost (int count, vect_cost_for_stmt kind,
-				  stmt_vec_info stmt_info, tree vectype,
-				  int misalign, vect_cost_model_location where)
+				  stmt_vec_info stmt_info, slp_tree node,
+				  tree vectype, int misalign,
+				  vect_cost_model_location where)
 {
   unsigned retval = 0;
   bool scalar_p
@@ -23194,6 +23159,49 @@ ix86_vector_costs::add_stmt_cost (int count, vect_cost_for_stmt kind,
     {
       stmt_cost = ix86_builtin_vectorization_cost (kind, vectype, misalign);
       stmt_cost *= (TYPE_VECTOR_SUBPARTS (vectype) + 1);
+    }
+  else if (kind == vec_construct
+	   && node
+	   && SLP_TREE_DEF_TYPE (node) == vect_external_def
+	   && INTEGRAL_TYPE_P (TREE_TYPE (vectype)))
+    {
+      stmt_cost = ix86_builtin_vectorization_cost (kind, vectype, misalign);
+      unsigned i;
+      tree op;
+      FOR_EACH_VEC_ELT (SLP_TREE_SCALAR_OPS (node), i, op)
+	if (TREE_CODE (op) == SSA_NAME)
+	  TREE_VISITED (op) = 0;
+      FOR_EACH_VEC_ELT (SLP_TREE_SCALAR_OPS (node), i, op)
+	{
+	  if (TREE_CODE (op) != SSA_NAME
+	      || TREE_VISITED (op))
+	    continue;
+	  TREE_VISITED (op) = 1;
+	  gimple *def = SSA_NAME_DEF_STMT (op);
+	  tree tem;
+	  if (is_gimple_assign (def)
+	      && CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (def))
+	      && ((tem = gimple_assign_rhs1 (def)), true)
+	      && TREE_CODE (tem) == SSA_NAME
+	      /* A sign-change expands to nothing.  */
+	      && tree_nop_conversion_p (TREE_TYPE (gimple_assign_lhs (def)),
+					TREE_TYPE (tem)))
+	    def = SSA_NAME_DEF_STMT (tem);
+	  /* When the component is loaded from memory we can directly
+	     move it to a vector register, otherwise we have to go
+	     via a GPR or via vpinsr which involves similar cost.
+	     Likewise with a BIT_FIELD_REF extracting from a vector
+	     register we can hope to avoid using a GPR.  */
+	  if (!is_gimple_assign (def)
+	      || (!gimple_assign_load_p (def)
+		  && (gimple_assign_rhs_code (def) != BIT_FIELD_REF
+		      || !VECTOR_TYPE_P (TREE_TYPE
+				(TREE_OPERAND (gimple_assign_rhs1 (def), 0))))))
+	    stmt_cost += ix86_cost->sse_to_integer;
+	}
+      FOR_EACH_VEC_ELT (SLP_TREE_SCALAR_OPS (node), i, op)
+	if (TREE_CODE (op) == SSA_NAME)
+	  TREE_VISITED (op) = 0;
     }
   if (stmt_cost == -1)
     stmt_cost = ix86_builtin_vectorization_cost (kind, vectype, misalign);
@@ -23613,10 +23621,28 @@ ix86_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
 static bool
 ix86_binds_local_p (const_tree exp)
 {
-  return default_binds_local_p_3 (exp, flag_shlib != 0, true, true,
-				  (!flag_pic
-				   || (TARGET_64BIT
-				       && HAVE_LD_PIE_COPYRELOC != 0)));
+  bool direct_extern_access
+    = (ix86_direct_extern_access
+       && !(VAR_OR_FUNCTION_DECL_P (exp)
+	    && lookup_attribute ("nodirect_extern_access",
+				 DECL_ATTRIBUTES (exp))));
+  if (!direct_extern_access)
+    ix86_has_no_direct_extern_access = true;
+  return default_binds_local_p_3 (exp, flag_shlib != 0, true,
+				  direct_extern_access,
+				  (direct_extern_access
+				   && (!flag_pic
+				       || (TARGET_64BIT
+					   && HAVE_LD_PIE_COPYRELOC != 0))));
+}
+
+/* If flag_pic or ix86_direct_extern_access is false, then neither
+   local nor global relocs should be placed in readonly memory.  */
+
+static int
+ix86_reloc_rw_mask (void)
+{
+  return (flag_pic || !ix86_direct_extern_access) ? 3 : 0;
 }
 #endif
 
@@ -24680,6 +24706,11 @@ ix86_libgcc_floating_mode_supported_p
 
 #undef TARGET_IFUNC_REF_LOCAL_OK
 #define TARGET_IFUNC_REF_LOCAL_OK hook_bool_void_true
+
+#if !TARGET_MACHO && !TARGET_DLLIMPORT_DECL_ATTRIBUTES
+# undef TARGET_ASM_RELOC_RW_MASK
+# define TARGET_ASM_RELOC_RW_MASK ix86_reloc_rw_mask
+#endif
 
 static bool ix86_libc_has_fast_function (int fcode ATTRIBUTE_UNUSED)
 {

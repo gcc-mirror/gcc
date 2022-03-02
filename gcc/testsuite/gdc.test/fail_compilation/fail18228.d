@@ -1,9 +1,9 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail18228.d(12): Error: Using `this` as a type is obsolete. Use `typeof(this)` instead
-fail_compilation/fail18228.d(13): Error: Using `this` as a type is obsolete. Use `typeof(this)` instead
-fail_compilation/fail18228.d(14): Error: Using `super` as a type is obsolete. Use `typeof(super)` instead
+fail_compilation/fail18228.d(12): Error: undefined identifier `this`, did you mean `typeof(this)`?
+fail_compilation/fail18228.d(13): Error: undefined identifier `this`, did you mean `typeof(this)`?
+fail_compilation/fail18228.d(14): Error: undefined identifier `super`, did you mean `typeof(super)`?
 ---
 */
 

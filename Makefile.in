@@ -66516,7 +66516,6 @@ all-m4: maybe-all-intl
 configure-target-fastjar: maybe-configure-target-zlib
 all-target-fastjar: maybe-all-target-zlib
 configure-target-libgo: maybe-all-target-libstdc++-v3
-configure-target-libffi: maybe-all-target-libstdc++-v3
 all-target-libgo: maybe-all-target-libbacktrace
 all-target-libgo: maybe-all-target-libatomic
 configure-target-liboffloadmic: maybe-configure-target-libgomp

@@ -121,10 +121,12 @@ s390_handle_option (struct gcc_options *opts ATTRIBUTE_UNUSED,
 
 static bool
 s390_supports_split_stack (bool report,
-			   struct gcc_options *opts)
+			   struct gcc_options *opts ATTRIBUTE_UNUSED)
 {
-  if (opts->x_linux_libc == LIBC_GLIBC)
+#ifdef OPTION_GLIBC_P
+  if (OPTION_GLIBC_P (opts))
     return true;
+#endif
 
   if (report)
     error ("%<-fsplit-stack%> currently only supported on GNU/Linux");

@@ -4,7 +4,7 @@ TEST_OUTPUT:
 ---
 fail_compilation/diagin.d(14): Error: function `diagin.foo(in int)` is not callable using argument types `()`
 fail_compilation/diagin.d(14):        missing argument for parameter #1: `in int`
-fail_compilation/diagin.d(16): Error: template `diagin.foo1` cannot deduce function from argument types `!()(bool[])`
+fail_compilation/diagin.d(16): Error: none of the overloads of template `diagin.foo1` are callable using argument types `!()(bool[])`
 fail_compilation/diagin.d(20):        Candidate is: `foo1(T)(in T v, string)`
 ---
  */

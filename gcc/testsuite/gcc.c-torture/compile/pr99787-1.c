@@ -1,4 +1,5 @@
 /* { dg-options "-ftree-slp-vectorize -ffp-contract=on -ffloat-store"  }  */
+/* { dg-require-effective-target alloca } */
 
 _Complex foo_x_0;
 int foo_n11, foo_i, foo_l;

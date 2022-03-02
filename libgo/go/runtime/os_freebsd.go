@@ -5,6 +5,7 @@
 package runtime
 
 import (
+	"internal/goarch"
 	"unsafe"
 )
 
@@ -87,9 +88,9 @@ func getncpu() int32 {
 		return 1
 	}
 
-	maskSize := uintptr(int(maxcpus+7) / 8)
-	if maskSize < sys.PtrSize {
-		maskSize = sys.PtrSize
+	maskSize := int(maxcpus+7) / 8
+	if maskSize < goarch.PtrSize {
+		maskSize = goarch.PtrSize
 	}
 	if maskSize > uintptr(len(mask)) {
 		maskSize = uintptr(len(mask))
@@ -181,7 +182,7 @@ func sysargs(argc int32, argv **byte) {
 	n++
 
 	// now argv+n is auxv
-	auxv := (*[1 << 28]uintptr)(add(unsafe.Pointer(argv), uintptr(n)*sys.PtrSize))
+	auxv := (*[1 << 28]uintptr)(add(unsafe.Pointer(argv), uintptr(n)*goarch.PtrSize))
 	sysauxv(auxv[:])
 }
 

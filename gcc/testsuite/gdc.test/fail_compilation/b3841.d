@@ -47,7 +47,7 @@ void main()
         f!(op, long, short)();
         f!(op, float, long)();
         f!(op, double, float)();
-        
+
         // Should that really be OK ?
         f!(op, short, int)();
         f!(op, float, double)();

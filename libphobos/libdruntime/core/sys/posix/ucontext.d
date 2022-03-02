@@ -63,9 +63,8 @@ struct ucontext_t
 }
 */
 
-version (CRuntime_Glibc)
+version (linux)
 {
-
     version (X86_64)
     {
         enum
@@ -146,7 +145,8 @@ version (CRuntime_Glibc)
             mcontext_t      uc_mcontext;
             sigset_t        uc_sigmask;
             _libc_fpstate   __fpregs_mem;
-            ulong[4]        __ssp;
+            version (CRuntime_Glibc)
+                ulong[4]    __ssp;
         }
     }
     else version (X86)
@@ -218,7 +218,8 @@ version (CRuntime_Glibc)
             mcontext_t      uc_mcontext;
             sigset_t        uc_sigmask;
             _libc_fpstate   __fpregs_mem;
-            c_ulong[4]      __ssp;
+            version (CRuntime_Glibc)
+                c_ulong[4]  __ssp;
         }
     }
     else version (HPPA)
@@ -784,139 +785,6 @@ version (CRuntime_Glibc)
         }
 
         alias ucontext_t = ucontext;
-    }
-    else
-        static assert(0, "unimplemented");
-}
-else version (CRuntime_Musl)
-{
-    version (AArch64)
-    {
-        struct mcontext_t
-        {
-            real[18+256] __regs;
-        }
-
-        struct ucontext_t
-        {
-            c_ulong     uc_flags;
-            ucontext_t* uc_link;
-            stack_t     uc_stack;
-            sigset_t    uc_sigmask;
-            mcontext_t  uc_mcontext;
-        }
-    }
-    else version (ARM)
-    {
-        struct mcontext_t
-        {
-            c_ulong[21] __regs;
-        }
-
-        struct ucontext_t
-        {
-            c_ulong     uc_flags;
-            ucontext_t* uc_link;
-            stack_t     uc_stack;
-            mcontext_t  uc_mcontext;
-            sigset_t    uc_sigmask;
-            ulong[64]   uc_regspace;
-        }
-    }
-    else version (IBMZ_Any)
-    {
-        struct mcontext_t
-        {
-            c_ulong[18] __regs1;
-            uint[18]    __regs2;
-            double[16]  __regs3;
-        }
-
-        struct ucontext_t
-        {
-            c_ulong     uc_flags;
-            ucontext_t* uc_link;
-            stack_t     uc_stack;
-            mcontext_t  uc_mcontext;
-            sigset_t    uc_sigmask;
-        }
-    }
-    else version (MIPS_Any)
-    {
-        version (MIPS_N32)
-        {
-            struct mcontext_t
-            {
-                ulong[32]  __mc1;
-                double[32] __mc2;
-                ulong[9]   __mc3;
-                uint[4]    __mc4;
-            }
-        }
-        else version (MIPS64)
-        {
-            struct mcontext_t
-            {
-                ulong[32]  __mc1;
-                double[32] __mc2;
-                ulong[9]   __mc3;
-                uint[4]    __mc4;
-            }
-        }
-        else
-        {
-            struct mcontext_t
-            {
-                uint[2]    __mc1;
-                ulong[65]  __mc2;
-                uint[5]    __mc3;
-                ulong[2]   __mc4;
-                uint[6]    __mc5;
-            }
-        }
-
-        struct ucontext_t
-        {
-            c_ulong     uc_flags;
-            ucontext_t* uc_link;
-            stack_t     uc_stack;
-            mcontext_t  uc_mcontext;
-            sigset_t    uc_sigmask;
-        }
-    }
-    else version (X86)
-    {
-        struct mcontext_t
-        {
-            uint[22] __space;
-        }
-
-        struct ucontext_t
-        {
-            c_ulong     uc_flags;
-            ucontext_t* uc_link;
-            stack_t     uc_stack;
-            mcontext_t  uc_mcontext;
-            sigset_t    uc_sigmask;
-            c_ulong[28] __fpregs_mem;
-        }
-    }
-    else version (X86_64)
-    {
-        struct mcontext_t
-        {
-            ulong[32] __space;
-        }
-
-        struct ucontext_t
-        {
-            c_ulong     uc_flags;
-            ucontext_t* uc_link;
-            stack_t     uc_stack;
-            mcontext_t  uc_mcontext;
-            sigset_t    uc_sigmask;
-            ulong[64]   __fpregs_mem;
-        }
     }
     else
         static assert(0, "unimplemented");
@@ -1721,186 +1589,6 @@ else version (Solaris)
             c_long[3]  uc_filler;
         }
     }
-}
-else version (CRuntime_UClibc)
-{
-    version (X86_64)
-    {
-        enum
-        {
-            REG_R8 = 0,
-            REG_R9,
-            REG_R10,
-            REG_R11,
-            REG_R12,
-            REG_R13,
-            REG_R14,
-            REG_R15,
-            REG_RDI,
-            REG_RSI,
-            REG_RBP,
-            REG_RBX,
-            REG_RDX,
-            REG_RAX,
-            REG_RCX,
-            REG_RSP,
-            REG_RIP,
-            REG_EFL,
-            REG_CSGSFS,     /* Actually short cs, gs, fs, __pad0.  */
-            REG_ERR,
-            REG_TRAPNO,
-            REG_OLDMASK,
-            REG_CR2
-        }
-
-        alias sigcontext mcontext_t;
-
-        struct ucontext_t
-        {
-            c_ulong         uc_flags;
-            ucontext_t*     uc_link;
-            stack_t         uc_stack;
-            mcontext_t      uc_mcontext;
-            sigset_t        uc_sigmask;
-        }
-    }
-    else version (MIPS32)
-    {
-        alias greg_t    = ulong;
-        enum NGREG      = 32;
-        enum NFPREG     = 32;
-        alias gregset_t = greg_t[NGREG];
-
-        struct fpregset_t
-        {
-            union fp_r
-            {
-                double[NFPREG]  fp_dregs;
-                struct _fp_fregs
-                {
-                    float   _fp_fregs;
-                    uint    _fp_pad;
-                }
-                _fp_fregs[NFPREG] fp_fregs;
-            }
-        }
-
-        version (MIPS_O32)
-        {
-            struct mcontext_t
-            {
-                uint regmask;
-                uint status;
-                greg_t pc;
-                gregset_t gregs;
-                fpregset_t fpregs;
-                uint fp_owned;
-                uint fpc_csr;
-                uint fpc_eir;
-                uint used_math;
-                uint dsp;
-                greg_t mdhi;
-                greg_t mdlo;
-                c_ulong hi1;
-                c_ulong lo1;
-                c_ulong hi2;
-                c_ulong lo2;
-                c_ulong hi3;
-                c_ulong lo3;
-            }
-        }
-        else
-        {
-            struct mcontext_t
-            {
-                gregset_t gregs;
-                fpregset_t fpregs;
-                greg_t mdhi;
-                greg_t hi1;
-                greg_t hi2;
-                greg_t hi3;
-                greg_t mdlo;
-                greg_t lo1;
-                greg_t lo2;
-                greg_t lo3;
-                greg_t pc;
-                uint fpc_csr;
-                uint used_math;
-                uint dsp;
-                uint reserved;
-            }
-        }
-
-        struct ucontext_t
-        {
-            c_ulong uc_flags;
-            ucontext_t* uc_link;
-            stack_t uc_stack;
-            mcontext_t uc_mcontext;
-            sigset_t uc_sigmask;
-        }
-    }
-    else version (ARM)
-    {
-        enum
-        {
-            R0 = 0,
-            R1 = 1,
-            R2 = 2,
-            R3 = 3,
-            R4 = 4,
-            R5 = 5,
-            R6 = 6,
-            R7 = 7,
-            R8 = 8,
-            R9 = 9,
-            R10 = 10,
-            R11 = 11,
-            R12 = 12,
-            R13 = 13,
-            R14 = 14,
-            R15 = 15
-        }
-
-        struct sigcontext
-        {
-            c_ulong trap_no;
-            c_ulong error_code;
-            c_ulong oldmask;
-            c_ulong arm_r0;
-            c_ulong arm_r1;
-            c_ulong arm_r2;
-            c_ulong arm_r3;
-            c_ulong arm_r4;
-            c_ulong arm_r5;
-            c_ulong arm_r6;
-            c_ulong arm_r7;
-            c_ulong arm_r8;
-            c_ulong arm_r9;
-            c_ulong arm_r10;
-            c_ulong arm_fp;
-            c_ulong arm_ip;
-            c_ulong arm_sp;
-            c_ulong arm_lr;
-            c_ulong arm_pc;
-            c_ulong arm_cpsr;
-            c_ulong fault_address;
-        }
-
-        alias sigcontext mcontext_t;
-
-        struct ucontext_t
-        {
-            c_ulong uc_flags;
-            ucontext_t* uc_link;
-            stack_t uc_stack;
-            mcontext_t uc_mcontext;
-            sigset_t uc_sigmask;
-            align(8) c_ulong[128] uc_regspace;
-        }
-    }
-    else
-        static assert(0, "unimplemented");
 }
 
 //

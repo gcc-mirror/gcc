@@ -23,6 +23,22 @@ along with GCC; see the file COPYING3.  If not see
 
 namespace ana {
 
+/* A bundle of information about things that are of interest to a
+   pending_diagnostic.
+
+   For now, merely the set of regions that are pertinent to the
+   diagnostic, so that we can notify the user about when they
+   were created.  */
+
+struct interesting_t
+{
+  void add_region_creation (const region *reg);
+
+  void dump_to_pp (pretty_printer *pp, bool simple) const;
+
+  auto_vec<const region *> m_region_creation;
+};
+
 /* Various bundles of information used for generating more precise
    messages for events within a diagnostic_path, for passing to the
    various "describe_*" vfuncs of pending_diagnostic.  See those
@@ -281,6 +297,14 @@ class pending_diagnostic
   supercedes_p (const pending_diagnostic &other ATTRIBUTE_UNUSED) const
   {
     return false;
+  }
+
+  /* Vfunc for registering additional information of interest to this
+     diagnostic.  */
+
+  virtual void mark_interesting_stuff (interesting_t *)
+  {
+    /* Default no-op implementation.  */
   }
 };
 

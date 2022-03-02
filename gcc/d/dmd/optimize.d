@@ -631,13 +631,6 @@ Expression Expression_optimize(Expression e, int result, bool keepLvalue)
     {
         expOptimize(e.thisexp, WANTvalue);
         // Optimize parameters
-        if (e.newargs)
-        {
-            for (size_t i = 0; i < e.newargs.dim; i++)
-            {
-                expOptimize((*e.newargs)[i], WANTvalue);
-            }
-        }
         if (e.arguments)
         {
             for (size_t i = 0; i < e.arguments.dim; i++)
@@ -1130,8 +1123,8 @@ Expression Expression_optimize(Expression e, int result, bool keepLvalue)
             const e1Opt = e.e1.toBool();
             if (e.e2.isConst())
             {
-                bool n1 = e1Opt.hasValue(true);
-                bool n2 = e.e2.toBool().hasValue(true);
+                bool n1 = e1Opt.get();
+                bool n2 = e.e2.toBool().get();
                 ret = new IntegerExp(e.loc, oror ? (n1 || n2) : (n1 && n2), e.type);
             }
             else if (e1Opt.hasValue(!oror))

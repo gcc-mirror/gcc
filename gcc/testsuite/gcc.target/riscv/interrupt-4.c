@@ -1,6 +1,7 @@
 /* Verify t0 is saved before use.  */
 /* { dg-do compile } */
-/* { dg-options "-O0 -fomit-frame-pointer" } */
+/* { dg-options "-fomit-frame-pointer" } */
+/* { dg-skip-if "" { *-*-* } { "*" } { "-O0" } } */
 void __attribute__ ((interrupt))
 foo2 (void)
 {

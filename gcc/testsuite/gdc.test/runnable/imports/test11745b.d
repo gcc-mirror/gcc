@@ -1,17 +1,17 @@
 module imports.test11745b;
 
-unittest 
+unittest
 {
-		
+
 }
 
-private unittest 
+private unittest
 {
-	
+
 }
 
 private:
-unittest 
+unittest
 {
-	
+
 }

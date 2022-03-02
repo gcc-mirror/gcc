@@ -3391,7 +3391,11 @@ noce_convert_multiple_sets_1 (struct noce_if_info *if_info,
   rtx cond = noce_get_condition (jump, &cond_earliest, false);
 
   rtx cc_cmp = cond_exec_get_condition (jump);
+  if (cc_cmp)
+    cc_cmp = copy_rtx (cc_cmp);
   rtx rev_cc_cmp = cond_exec_get_condition (jump, /* get_reversed */ true);
+  if (rev_cc_cmp)
+    rev_cc_cmp = copy_rtx (rev_cc_cmp);
 
   rtx_insn *insn;
   int count = 0;
@@ -3515,6 +3519,7 @@ noce_convert_multiple_sets_1 (struct noce_if_info *if_info,
       unsigned cost1 = 0, cost2 = 0;
       rtx_insn *seq, *seq1, *seq2;
       rtx temp_dest = NULL_RTX, temp_dest1 = NULL_RTX, temp_dest2 = NULL_RTX;
+      bool read_comparison = false;
 
       seq1 = try_emit_cmove_seq (if_info, temp, cond,
 				 new_val, old_val, need_cmov,
@@ -3524,9 +3529,40 @@ noce_convert_multiple_sets_1 (struct noce_if_info *if_info,
 	 as well.  This allows the backend to emit a cmov directly without
 	 creating an additional compare for each.  If successful, costing
 	 is easier and this sequence is usually preferred.  */
-      seq2 = try_emit_cmove_seq (if_info, target, cond,
+      seq2 = try_emit_cmove_seq (if_info, temp, cond,
 				 new_val, old_val, need_cmov,
 				 &cost2, &temp_dest2, cc_cmp, rev_cc_cmp);
+
+      /* The backend might have created a sequence that uses the
+	 condition.  Check this.  */
+      rtx_insn *walk = seq2;
+      while (walk)
+	{
+	  rtx set = single_set (walk);
+
+	  if (!set || !SET_SRC (set))
+	    {
+	      walk = NEXT_INSN (walk);
+	      continue;
+	    }
+
+	  rtx src = SET_SRC (set);
+
+	  if (XEXP (set, 1) && GET_CODE (XEXP (set, 1)) == IF_THEN_ELSE)
+	    ; /* We assume that this is the cmove created by the backend that
+		 naturally uses the condition.  Therefore we ignore it.  */
+	  else
+	    {
+	      if (reg_mentioned_p (XEXP (cond, 0), src)
+		  || reg_mentioned_p (XEXP (cond, 1), src))
+		{
+		  read_comparison = true;
+		  break;
+		}
+	    }
+
+	  walk = NEXT_INSN (walk);
+	}
 
       /* Check which version is less expensive.  */
       if (seq1 != NULL_RTX && (cost1 <= cost2 || seq2 == NULL_RTX))
@@ -3540,6 +3576,8 @@ noce_convert_multiple_sets_1 (struct noce_if_info *if_info,
 	{
 	  seq = seq2;
 	  temp_dest = temp_dest2;
+	  if (!second_try && read_comparison)
+	    *last_needs_comparison = count;
 	}
       else
 	{
@@ -3557,6 +3595,12 @@ noce_convert_multiple_sets_1 (struct noce_if_info *if_info,
       temporaries->safe_push (temp_dest);
       unmodified_insns->safe_push (insn);
     }
+
+  /* Even if we did not actually need the comparison, we want to make sure
+     to try a second time in order to get rid of the temporaries.  */
+  if (*last_needs_comparison == -1)
+    *last_needs_comparison = 0;
+
 
   return true;
 }

@@ -79,7 +79,7 @@ extern bool ix86_expand_cmpstrn_or_cmpmem (rtx, rtx, rtx, rtx, rtx, bool);
 extern bool constant_address_p (rtx);
 extern bool legitimate_pic_operand_p (rtx);
 extern bool legitimate_pic_address_disp_p (rtx);
-extern bool ix86_force_load_from_GOT_p (rtx);
+extern bool ix86_force_load_from_GOT_p (rtx, bool = false);
 extern void print_reg (rtx, int, FILE*);
 extern void ix86_print_operand (FILE *, rtx, int);
 
@@ -221,6 +221,8 @@ extern void ix86_split_mmx_punpck (rtx[], bool);
 extern void ix86_expand_avx_vzeroupper (void);
 extern void ix86_expand_atomic_fetch_op_loop (rtx, rtx, rtx, enum rtx_code,
 					      bool, bool);
+extern void ix86_expand_cmpxchg_loop (rtx *, rtx, rtx, rtx, rtx, rtx,
+				      bool, rtx_code_label *);
 
 #ifdef TREE_CODE
 extern void init_cumulative_args (CUMULATIVE_ARGS *, tree, rtx, tree, int);
@@ -401,3 +403,5 @@ extern rtl_opt_pass *make_pass_insert_endbr_and_patchable_area
   (gcc::context *);
 extern rtl_opt_pass *make_pass_remove_partial_avx_dependency
   (gcc::context *);
+
+extern bool ix86_has_no_direct_extern_access;

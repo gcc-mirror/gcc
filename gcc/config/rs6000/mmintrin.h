@@ -170,17 +170,17 @@ _mm_cvtsi64_si64x (__m64 __i)
 extern __inline __m64 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_packs_pi16 (__m64 __m1, __m64 __m2)
 {
-  __vector signed short vm1;
-  __vector signed char vresult;
+  __vector signed short __vm1;
+  __vector signed char __vresult;
 
-  vm1 = (__vector signed short) (__vector unsigned long long)
+  __vm1 = (__vector signed short) (__vector unsigned long long)
 #ifdef __LITTLE_ENDIAN__
         { __m1, __m2 };
 #else
         { __m2, __m1 };
 #endif
-  vresult = vec_packs (vm1, vm1);
-  return (__m64) ((__vector long long) vresult)[0];
+  __vresult = vec_packs (__vm1, __vm1);
+  return (__m64) ((__vector long long) __vresult)[0];
 }
 
 extern __inline __m64 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
@@ -195,17 +195,17 @@ _m_packsswb (__m64 __m1, __m64 __m2)
 extern __inline __m64 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_packs_pi32 (__m64 __m1, __m64 __m2)
 {
-  __vector signed int vm1;
-  __vector signed short vresult;
+  __vector signed int __vm1;
+  __vector signed short __vresult;
 
-  vm1 = (__vector signed int) (__vector unsigned long long)
+  __vm1 = (__vector signed int) (__vector unsigned long long)
 #ifdef __LITTLE_ENDIAN__
         { __m1, __m2 };
 #else
         { __m2, __m1 };
 #endif
-  vresult = vec_packs (vm1, vm1);
-  return (__m64) ((__vector long long) vresult)[0];
+  __vresult = vec_packs (__vm1, __vm1);
+  return (__m64) ((__vector long long) __vresult)[0];
 }
 
 extern __inline __m64 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
@@ -220,19 +220,19 @@ _m_packssdw (__m64 __m1, __m64 __m2)
 extern __inline __m64 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_packs_pu16 (__m64 __m1, __m64 __m2)
 {
-  __vector unsigned char r;
-  __vector signed short vm1 = (__vector signed short) (__vector long long)
+  __vector unsigned char __r;
+  __vector signed short __vm1 = (__vector signed short) (__vector long long)
 #ifdef __LITTLE_ENDIAN__
         { __m1, __m2 };
 #else
         { __m2, __m1 };
 #endif
   const __vector signed short __zero = { 0 };
-  __vector __bool short __select = vec_cmplt (vm1, __zero);
-  r = vec_packs ((__vector unsigned short) vm1, (__vector unsigned short) vm1);
-  __vector __bool char packsel = vec_pack (__select, __select);
-  r = vec_sel (r, (const __vector unsigned char) __zero, packsel);
-  return (__m64) ((__vector long long) r)[0];
+  __vector __bool short __select = vec_cmplt (__vm1, __zero);
+  __r = vec_packs ((__vector unsigned short) __vm1, (__vector unsigned short) __vm1);
+  __vector __bool char __packsel = vec_pack (__select, __select);
+  __r = vec_sel (__r, (const __vector unsigned char) __zero, __packsel);
+  return (__m64) ((__vector long long) __r)[0];
 }
 
 extern __inline __m64 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
@@ -248,28 +248,28 @@ extern __inline __m64 __attribute__((__gnu_inline__, __always_inline__, __artifi
 _mm_unpackhi_pi8 (__m64 __m1, __m64 __m2)
 {
 #if _ARCH_PWR8
-  __vector unsigned char a, b, c;
+  __vector unsigned char __a, __b, __c;
 
-  a = (__vector unsigned char)vec_splats (__m1);
-  b = (__vector unsigned char)vec_splats (__m2);
-  c = vec_mergel (a, b);
-  return (__m64) ((__vector long long) c)[1];
+  __a = (__vector unsigned char)vec_splats (__m1);
+  __b = (__vector unsigned char)vec_splats (__m2);
+  __c = vec_mergel (__a, __b);
+  return (__m64) ((__vector long long) __c)[1];
 #else
-  __m64_union m1, m2, res;
+  __m64_union __mu1, __mu2, __res;
 
-  m1.as_m64 = __m1;
-  m2.as_m64 = __m2;
+  __mu1.as_m64 = __m1;
+  __mu2.as_m64 = __m2;
 
-  res.as_char[0] = m1.as_char[4];
-  res.as_char[1] = m2.as_char[4];
-  res.as_char[2] = m1.as_char[5];
-  res.as_char[3] = m2.as_char[5];
-  res.as_char[4] = m1.as_char[6];
-  res.as_char[5] = m2.as_char[6];
-  res.as_char[6] = m1.as_char[7];
-  res.as_char[7] = m2.as_char[7];
+  __res.as_char[0] = __mu1.as_char[4];
+  __res.as_char[1] = __mu2.as_char[4];
+  __res.as_char[2] = __mu1.as_char[5];
+  __res.as_char[3] = __mu2.as_char[5];
+  __res.as_char[4] = __mu1.as_char[6];
+  __res.as_char[5] = __mu2.as_char[6];
+  __res.as_char[6] = __mu1.as_char[7];
+  __res.as_char[7] = __mu2.as_char[7];
 
-  return (__m64) res.as_m64;
+  return (__m64) __res.as_m64;
 #endif
 }
 
@@ -284,17 +284,17 @@ _m_punpckhbw (__m64 __m1, __m64 __m2)
 extern __inline __m64 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_unpackhi_pi16 (__m64 __m1, __m64 __m2)
 {
-  __m64_union m1, m2, res;
+  __m64_union __mu1, __mu2, __res;
 
-  m1.as_m64 = __m1;
-  m2.as_m64 = __m2;
+  __mu1.as_m64 = __m1;
+  __mu2.as_m64 = __m2;
 
-  res.as_short[0] = m1.as_short[2];
-  res.as_short[1] = m2.as_short[2];
-  res.as_short[2] = m1.as_short[3];
-  res.as_short[3] = m2.as_short[3];
+  __res.as_short[0] = __mu1.as_short[2];
+  __res.as_short[1] = __mu2.as_short[2];
+  __res.as_short[2] = __mu1.as_short[3];
+  __res.as_short[3] = __mu2.as_short[3];
 
-  return (__m64) res.as_m64;
+  return (__m64) __res.as_m64;
 }
 
 extern __inline __m64 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
@@ -307,15 +307,15 @@ _m_punpckhwd (__m64 __m1, __m64 __m2)
 extern __inline __m64 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_unpackhi_pi32 (__m64 __m1, __m64 __m2)
 {
-  __m64_union m1, m2, res;
+  __m64_union __mu1, __mu2, __res;
 
-  m1.as_m64 = __m1;
-  m2.as_m64 = __m2;
+  __mu1.as_m64 = __m1;
+  __mu2.as_m64 = __m2;
 
-  res.as_int[0] = m1.as_int[1];
-  res.as_int[1] = m2.as_int[1];
+  __res.as_int[0] = __mu1.as_int[1];
+  __res.as_int[1] = __mu2.as_int[1];
 
-  return (__m64) res.as_m64;
+  return (__m64) __res.as_m64;
 }
 
 extern __inline __m64 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
@@ -329,28 +329,28 @@ extern __inline __m64 __attribute__((__gnu_inline__, __always_inline__, __artifi
 _mm_unpacklo_pi8 (__m64 __m1, __m64 __m2)
 {
 #if _ARCH_PWR8
-  __vector unsigned char a, b, c;
+  __vector unsigned char __a, __b, __c;
 
-  a = (__vector unsigned char)vec_splats (__m1);
-  b = (__vector unsigned char)vec_splats (__m2);
-  c = vec_mergel (a, b);
-  return (__m64) ((__vector long long) c)[0];
+  __a = (__vector unsigned char)vec_splats (__m1);
+  __b = (__vector unsigned char)vec_splats (__m2);
+  __c = vec_mergel (__a, __b);
+  return (__m64) ((__vector long long) __c)[0];
 #else
-  __m64_union m1, m2, res;
+  __m64_union __mu1, __mu2, __res;
 
-  m1.as_m64 = __m1;
-  m2.as_m64 = __m2;
+  __mu1.as_m64 = __m1;
+  __mu2.as_m64 = __m2;
 
-  res.as_char[0] = m1.as_char[0];
-  res.as_char[1] = m2.as_char[0];
-  res.as_char[2] = m1.as_char[1];
-  res.as_char[3] = m2.as_char[1];
-  res.as_char[4] = m1.as_char[2];
-  res.as_char[5] = m2.as_char[2];
-  res.as_char[6] = m1.as_char[3];
-  res.as_char[7] = m2.as_char[3];
+  __res.as_char[0] = __mu1.as_char[0];
+  __res.as_char[1] = __mu2.as_char[0];
+  __res.as_char[2] = __mu1.as_char[1];
+  __res.as_char[3] = __mu2.as_char[1];
+  __res.as_char[4] = __mu1.as_char[2];
+  __res.as_char[5] = __mu2.as_char[2];
+  __res.as_char[6] = __mu1.as_char[3];
+  __res.as_char[7] = __mu2.as_char[3];
 
-  return (__m64) res.as_m64;
+  return (__m64) __res.as_m64;
 #endif
 }
 
@@ -364,17 +364,17 @@ _m_punpcklbw (__m64 __m1, __m64 __m2)
 extern __inline __m64 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_unpacklo_pi16 (__m64 __m1, __m64 __m2)
 {
-  __m64_union m1, m2, res;
+  __m64_union __mu1, __mu2, __res;
 
-  m1.as_m64 = __m1;
-  m2.as_m64 = __m2;
+  __mu1.as_m64 = __m1;
+  __mu2.as_m64 = __m2;
 
-  res.as_short[0] = m1.as_short[0];
-  res.as_short[1] = m2.as_short[0];
-  res.as_short[2] = m1.as_short[1];
-  res.as_short[3] = m2.as_short[1];
+  __res.as_short[0] = __mu1.as_short[0];
+  __res.as_short[1] = __mu2.as_short[0];
+  __res.as_short[2] = __mu1.as_short[1];
+  __res.as_short[3] = __mu2.as_short[1];
 
-  return (__m64) res.as_m64;
+  return (__m64) __res.as_m64;
 }
 
 extern __inline __m64 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
@@ -388,15 +388,15 @@ _m_punpcklwd (__m64 __m1, __m64 __m2)
 extern __inline __m64 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_unpacklo_pi32 (__m64 __m1, __m64 __m2)
 {
-  __m64_union m1, m2, res;
+  __m64_union __mu1, __mu2, __res;
 
-  m1.as_m64 = __m1;
-  m2.as_m64 = __m2;
+  __mu1.as_m64 = __m1;
+  __mu2.as_m64 = __m2;
 
-  res.as_int[0] = m1.as_int[0];
-  res.as_int[1] = m2.as_int[0];
+  __res.as_int[0] = __mu1.as_int[0];
+  __res.as_int[1] = __mu2.as_int[0];
 
-  return (__m64) res.as_m64;
+  return (__m64) __res.as_m64;
 }
 
 extern __inline __m64 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
@@ -410,28 +410,28 @@ extern __inline __m64 __attribute__((__gnu_inline__, __always_inline__, __artifi
 _mm_add_pi8 (__m64 __m1, __m64 __m2)
 {
 #if _ARCH_PWR8
-  __vector signed char a, b, c;
+  __vector signed char __a, __b, __c;
 
-  a = (__vector signed char)vec_splats (__m1);
-  b = (__vector signed char)vec_splats (__m2);
-  c = vec_add (a, b);
-  return (__m64) ((__vector long long) c)[0];
+  __a = (__vector signed char)vec_splats (__m1);
+  __b = (__vector signed char)vec_splats (__m2);
+  __c = vec_add (__a, __b);
+  return (__m64) ((__vector long long) __c)[0];
 #else
-  __m64_union m1, m2, res;
+  __m64_union __mu1, __mu2, __res;
 
-  m1.as_m64 = __m1;
-  m2.as_m64 = __m2;
+  __mu1.as_m64 = __m1;
+  __mu2.as_m64 = __m2;
 
-  res.as_char[0] = m1.as_char[0] + m2.as_char[0];
-  res.as_char[1] = m1.as_char[1] + m2.as_char[1];
-  res.as_char[2] = m1.as_char[2] + m2.as_char[2];
-  res.as_char[3] = m1.as_char[3] + m2.as_char[3];
-  res.as_char[4] = m1.as_char[4] + m2.as_char[4];
-  res.as_char[5] = m1.as_char[5] + m2.as_char[5];
-  res.as_char[6] = m1.as_char[6] + m2.as_char[6];
-  res.as_char[7] = m1.as_char[7] + m2.as_char[7];
+  __res.as_char[0] = __mu1.as_char[0] + __mu2.as_char[0];
+  __res.as_char[1] = __mu1.as_char[1] + __mu2.as_char[1];
+  __res.as_char[2] = __mu1.as_char[2] + __mu2.as_char[2];
+  __res.as_char[3] = __mu1.as_char[3] + __mu2.as_char[3];
+  __res.as_char[4] = __mu1.as_char[4] + __mu2.as_char[4];
+  __res.as_char[5] = __mu1.as_char[5] + __mu2.as_char[5];
+  __res.as_char[6] = __mu1.as_char[6] + __mu2.as_char[6];
+  __res.as_char[7] = __mu1.as_char[7] + __mu2.as_char[7];
 
-  return (__m64) res.as_m64;
+  return (__m64) __res.as_m64;
 #endif
 }
 
@@ -446,24 +446,24 @@ extern __inline __m64 __attribute__((__gnu_inline__, __always_inline__, __artifi
 _mm_add_pi16 (__m64 __m1, __m64 __m2)
 {
 #if _ARCH_PWR8
-  __vector signed short a, b, c;
+  __vector signed short __a, __b, __c;
 
-  a = (__vector signed short)vec_splats (__m1);
-  b = (__vector signed short)vec_splats (__m2);
-  c = vec_add (a, b);
-  return (__m64) ((__vector long long) c)[0];
+  __a = (__vector signed short)vec_splats (__m1);
+  __b = (__vector signed short)vec_splats (__m2);
+  __c = vec_add (__a, __b);
+  return (__m64) ((__vector long long) __c)[0];
 #else
-  __m64_union m1, m2, res;
+  __m64_union __mu1, __mu2, __res;
 
-  m1.as_m64 = __m1;
-  m2.as_m64 = __m2;
+  __mu1.as_m64 = __m1;
+  __mu2.as_m64 = __m2;
 
-  res.as_short[0] = m1.as_short[0] + m2.as_short[0];
-  res.as_short[1] = m1.as_short[1] + m2.as_short[1];
-  res.as_short[2] = m1.as_short[2] + m2.as_short[2];
-  res.as_short[3] = m1.as_short[3] + m2.as_short[3];
+  __res.as_short[0] = __mu1.as_short[0] + __mu2.as_short[0];
+  __res.as_short[1] = __mu1.as_short[1] + __mu2.as_short[1];
+  __res.as_short[2] = __mu1.as_short[2] + __mu2.as_short[2];
+  __res.as_short[3] = __mu1.as_short[3] + __mu2.as_short[3];
 
-  return (__m64) res.as_m64;
+  return (__m64) __res.as_m64;
 #endif
 }
 
@@ -478,22 +478,22 @@ extern __inline __m64 __attribute__((__gnu_inline__, __always_inline__, __artifi
 _mm_add_pi32 (__m64 __m1, __m64 __m2)
 {
 #if _ARCH_PWR9
-  __vector signed int a, b, c;
+  __vector signed int __a, __b, __c;
 
-  a = (__vector signed int)vec_splats (__m1);
-  b = (__vector signed int)vec_splats (__m2);
-  c = vec_add (a, b);
-  return (__m64) ((__vector long long) c)[0];
+  __a = (__vector signed int)vec_splats (__m1);
+  __b = (__vector signed int)vec_splats (__m2);
+  __c = vec_add (__a, __b);
+  return (__m64) ((__vector long long) __c)[0];
 #else
-  __m64_union m1, m2, res;
+  __m64_union __mu1, __mu2, __res;
 
-  m1.as_m64 = __m1;
-  m2.as_m64 = __m2;
+  __mu1.as_m64 = __m1;
+  __mu2.as_m64 = __m2;
 
-  res.as_int[0] = m1.as_int[0] + m2.as_int[0];
-  res.as_int[1] = m1.as_int[1] + m2.as_int[1];
+  __res.as_int[0] = __mu1.as_int[0] + __mu2.as_int[0];
+  __res.as_int[1] = __mu1.as_int[1] + __mu2.as_int[1];
 
-  return (__m64) res.as_m64;
+  return (__m64) __res.as_m64;
 #endif
 }
 
@@ -508,28 +508,28 @@ extern __inline __m64 __attribute__((__gnu_inline__, __always_inline__, __artifi
 _mm_sub_pi8 (__m64 __m1, __m64 __m2)
 {
 #if _ARCH_PWR8
-  __vector signed char a, b, c;
+  __vector signed char __a, __b, __c;
 
-  a = (__vector signed char)vec_splats (__m1);
-  b = (__vector signed char)vec_splats (__m2);
-  c = vec_sub (a, b);
-  return (__m64) ((__vector long long) c)[0];
+  __a = (__vector signed char)vec_splats (__m1);
+  __b = (__vector signed char)vec_splats (__m2);
+  __c = vec_sub (__a, __b);
+  return (__m64) ((__vector long long) __c)[0];
 #else
-  __m64_union m1, m2, res;
+  __m64_union __mu1, __mu2, __res;
 
-  m1.as_m64 = __m1;
-  m2.as_m64 = __m2;
+  __mu1.as_m64 = __m1;
+  __mu2.as_m64 = __m2;
 
-  res.as_char[0] = m1.as_char[0] - m2.as_char[0];
-  res.as_char[1] = m1.as_char[1] - m2.as_char[1];
-  res.as_char[2] = m1.as_char[2] - m2.as_char[2];
-  res.as_char[3] = m1.as_char[3] - m2.as_char[3];
-  res.as_char[4] = m1.as_char[4] - m2.as_char[4];
-  res.as_char[5] = m1.as_char[5] - m2.as_char[5];
-  res.as_char[6] = m1.as_char[6] - m2.as_char[6];
-  res.as_char[7] = m1.as_char[7] - m2.as_char[7];
+  __res.as_char[0] = __mu1.as_char[0] - __mu2.as_char[0];
+  __res.as_char[1] = __mu1.as_char[1] - __mu2.as_char[1];
+  __res.as_char[2] = __mu1.as_char[2] - __mu2.as_char[2];
+  __res.as_char[3] = __mu1.as_char[3] - __mu2.as_char[3];
+  __res.as_char[4] = __mu1.as_char[4] - __mu2.as_char[4];
+  __res.as_char[5] = __mu1.as_char[5] - __mu2.as_char[5];
+  __res.as_char[6] = __mu1.as_char[6] - __mu2.as_char[6];
+  __res.as_char[7] = __mu1.as_char[7] - __mu2.as_char[7];
 
-  return (__m64) res.as_m64;
+  return (__m64) __res.as_m64;
 #endif
 }
 
@@ -544,24 +544,24 @@ extern __inline __m64 __attribute__((__gnu_inline__, __always_inline__, __artifi
 _mm_sub_pi16 (__m64 __m1, __m64 __m2)
 {
 #if _ARCH_PWR8
-  __vector signed short a, b, c;
+  __vector signed short __a, __b, __c;
 
-  a = (__vector signed short)vec_splats (__m1);
-  b = (__vector signed short)vec_splats (__m2);
-  c = vec_sub (a, b);
-  return (__m64) ((__vector long long) c)[0];
+  __a = (__vector signed short)vec_splats (__m1);
+  __b = (__vector signed short)vec_splats (__m2);
+  __c = vec_sub (__a, __b);
+  return (__m64) ((__vector long long) __c)[0];
 #else
-  __m64_union m1, m2, res;
+  __m64_union __mu1, __mu2, __res;
 
-  m1.as_m64 = __m1;
-  m2.as_m64 = __m2;
+  __mu1.as_m64 = __m1;
+  __mu2.as_m64 = __m2;
 
-  res.as_short[0] = m1.as_short[0] - m2.as_short[0];
-  res.as_short[1] = m1.as_short[1] - m2.as_short[1];
-  res.as_short[2] = m1.as_short[2] - m2.as_short[2];
-  res.as_short[3] = m1.as_short[3] - m2.as_short[3];
+  __res.as_short[0] = __mu1.as_short[0] - __mu2.as_short[0];
+  __res.as_short[1] = __mu1.as_short[1] - __mu2.as_short[1];
+  __res.as_short[2] = __mu1.as_short[2] - __mu2.as_short[2];
+  __res.as_short[3] = __mu1.as_short[3] - __mu2.as_short[3];
 
-  return (__m64) res.as_m64;
+  return (__m64) __res.as_m64;
 #endif
 }
 
@@ -576,22 +576,22 @@ extern __inline __m64 __attribute__((__gnu_inline__, __always_inline__, __artifi
 _mm_sub_pi32 (__m64 __m1, __m64 __m2)
 {
 #if _ARCH_PWR9
-  __vector signed int a, b, c;
+  __vector signed int __a, __b, __c;
 
-  a = (__vector signed int)vec_splats (__m1);
-  b = (__vector signed int)vec_splats (__m2);
-  c = vec_sub (a, b);
-  return (__m64) ((__vector long long) c)[0];
+  __a = (__vector signed int)vec_splats (__m1);
+  __b = (__vector signed int)vec_splats (__m2);
+  __c = vec_sub (__a, __b);
+  return (__m64) ((__vector long long) __c)[0];
 #else
-  __m64_union m1, m2, res;
+  __m64_union __mu1, __mu2, __res;
 
-  m1.as_m64 = __m1;
-  m2.as_m64 = __m2;
+  __mu1.as_m64 = __m1;
+  __mu2.as_m64 = __m2;
 
-  res.as_int[0] = m1.as_int[0] - m2.as_int[0];
-  res.as_int[1] = m1.as_int[1] - m2.as_int[1];
+  __res.as_int[0] = __mu1.as_int[0] - __mu2.as_int[0];
+  __res.as_int[1] = __mu1.as_int[1] - __mu2.as_int[1];
 
-  return (__m64) res.as_m64;
+  return (__m64) __res.as_m64;
 #endif
 }
 
@@ -729,30 +729,30 @@ extern __inline __m64 __attribute__((__gnu_inline__, __always_inline__, __artifi
 _mm_cmpeq_pi8 (__m64 __m1, __m64 __m2)
 {
 #if defined(_ARCH_PWR6) && defined(__powerpc64__)
-  __m64 res;
+  __m64 __res;
   __asm__(
       "cmpb %0,%1,%2;\n"
-      : "=r" (res)
+      : "=r" (__res)
       : "r" (__m1),
 	"r" (__m2)
       : );
-  return (res);
+  return (__res);
 #else
-  __m64_union m1, m2, res;
+  __m64_union __mu1, __mu2, __res;
 
-  m1.as_m64 = __m1;
-  m2.as_m64 = __m2;
+  __mu1.as_m64 = __m1;
+  __mu2.as_m64 = __m2;
 
-  res.as_char[0] = (m1.as_char[0] == m2.as_char[0])? -1: 0;
-  res.as_char[1] = (m1.as_char[1] == m2.as_char[1])? -1: 0;
-  res.as_char[2] = (m1.as_char[2] == m2.as_char[2])? -1: 0;
-  res.as_char[3] = (m1.as_char[3] == m2.as_char[3])? -1: 0;
-  res.as_char[4] = (m1.as_char[4] == m2.as_char[4])? -1: 0;
-  res.as_char[5] = (m1.as_char[5] == m2.as_char[5])? -1: 0;
-  res.as_char[6] = (m1.as_char[6] == m2.as_char[6])? -1: 0;
-  res.as_char[7] = (m1.as_char[7] == m2.as_char[7])? -1: 0;
+  __res.as_char[0] = (__mu1.as_char[0] == __mu2.as_char[0])? -1: 0;
+  __res.as_char[1] = (__mu1.as_char[1] == __mu2.as_char[1])? -1: 0;
+  __res.as_char[2] = (__mu1.as_char[2] == __mu2.as_char[2])? -1: 0;
+  __res.as_char[3] = (__mu1.as_char[3] == __mu2.as_char[3])? -1: 0;
+  __res.as_char[4] = (__mu1.as_char[4] == __mu2.as_char[4])? -1: 0;
+  __res.as_char[5] = (__mu1.as_char[5] == __mu2.as_char[5])? -1: 0;
+  __res.as_char[6] = (__mu1.as_char[6] == __mu2.as_char[6])? -1: 0;
+  __res.as_char[7] = (__mu1.as_char[7] == __mu2.as_char[7])? -1: 0;
 
-  return (__m64) res.as_m64;
+  return (__m64) __res.as_m64;
 #endif
 }
 
@@ -766,28 +766,28 @@ extern __inline __m64 __attribute__((__gnu_inline__, __always_inline__, __artifi
 _mm_cmpgt_pi8 (__m64 __m1, __m64 __m2)
 {
 #if _ARCH_PWR8
-  __vector signed char a, b, c;
+  __vector signed char __a, __b, __c;
 
-  a = (__vector signed char)vec_splats (__m1);
-  b = (__vector signed char)vec_splats (__m2);
-  c = (__vector signed char)vec_cmpgt (a, b);
-  return (__m64) ((__vector long long) c)[0];
+  __a = (__vector signed char)vec_splats (__m1);
+  __b = (__vector signed char)vec_splats (__m2);
+  __c = (__vector signed char)vec_cmpgt (__a, __b);
+  return (__m64) ((__vector long long) __c)[0];
 #else
-  __m64_union m1, m2, res;
+  __m64_union __mu1, __mu2, __res;
 
-  m1.as_m64 = __m1;
-  m2.as_m64 = __m2;
+  __mu1.as_m64 = __m1;
+  __mu2.as_m64 = __m2;
 
-  res.as_char[0] = (m1.as_char[0] > m2.as_char[0])? -1: 0;
-  res.as_char[1] = (m1.as_char[1] > m2.as_char[1])? -1: 0;
-  res.as_char[2] = (m1.as_char[2] > m2.as_char[2])? -1: 0;
-  res.as_char[3] = (m1.as_char[3] > m2.as_char[3])? -1: 0;
-  res.as_char[4] = (m1.as_char[4] > m2.as_char[4])? -1: 0;
-  res.as_char[5] = (m1.as_char[5] > m2.as_char[5])? -1: 0;
-  res.as_char[6] = (m1.as_char[6] > m2.as_char[6])? -1: 0;
-  res.as_char[7] = (m1.as_char[7] > m2.as_char[7])? -1: 0;
+  __res.as_char[0] = (__mu1.as_char[0] > __mu2.as_char[0])? -1: 0;
+  __res.as_char[1] = (__mu1.as_char[1] > __mu2.as_char[1])? -1: 0;
+  __res.as_char[2] = (__mu1.as_char[2] > __mu2.as_char[2])? -1: 0;
+  __res.as_char[3] = (__mu1.as_char[3] > __mu2.as_char[3])? -1: 0;
+  __res.as_char[4] = (__mu1.as_char[4] > __mu2.as_char[4])? -1: 0;
+  __res.as_char[5] = (__mu1.as_char[5] > __mu2.as_char[5])? -1: 0;
+  __res.as_char[6] = (__mu1.as_char[6] > __mu2.as_char[6])? -1: 0;
+  __res.as_char[7] = (__mu1.as_char[7] > __mu2.as_char[7])? -1: 0;
 
-  return (__m64) res.as_m64;
+  return (__m64) __res.as_m64;
 #endif
 }
 
@@ -803,24 +803,24 @@ extern __inline __m64 __attribute__((__gnu_inline__, __always_inline__, __artifi
 _mm_cmpeq_pi16 (__m64 __m1, __m64 __m2)
 {
 #if _ARCH_PWR8
-  __vector signed short a, b, c;
+  __vector signed short __a, __b, __c;
 
-  a = (__vector signed short)vec_splats (__m1);
-  b = (__vector signed short)vec_splats (__m2);
-  c = (__vector signed short)vec_cmpeq (a, b);
-  return (__m64) ((__vector long long) c)[0];
+  __a = (__vector signed short)vec_splats (__m1);
+  __b = (__vector signed short)vec_splats (__m2);
+  __c = (__vector signed short)vec_cmpeq (__a, __b);
+  return (__m64) ((__vector long long) __c)[0];
 #else
-  __m64_union m1, m2, res;
+  __m64_union __mu1, __mu2, __res;
 
-  m1.as_m64 = __m1;
-  m2.as_m64 = __m2;
+  __mu1.as_m64 = __m1;
+  __mu2.as_m64 = __m2;
 
-  res.as_short[0] = (m1.as_short[0] == m2.as_short[0])? -1: 0;
-  res.as_short[1] = (m1.as_short[1] == m2.as_short[1])? -1: 0;
-  res.as_short[2] = (m1.as_short[2] == m2.as_short[2])? -1: 0;
-  res.as_short[3] = (m1.as_short[3] == m2.as_short[3])? -1: 0;
+  __res.as_short[0] = (__mu1.as_short[0] == __mu2.as_short[0])? -1: 0;
+  __res.as_short[1] = (__mu1.as_short[1] == __mu2.as_short[1])? -1: 0;
+  __res.as_short[2] = (__mu1.as_short[2] == __mu2.as_short[2])? -1: 0;
+  __res.as_short[3] = (__mu1.as_short[3] == __mu2.as_short[3])? -1: 0;
 
-  return (__m64) res.as_m64;
+  return (__m64) __res.as_m64;
 #endif
 }
 
@@ -834,24 +834,24 @@ extern __inline __m64 __attribute__((__gnu_inline__, __always_inline__, __artifi
 _mm_cmpgt_pi16 (__m64 __m1, __m64 __m2)
 {
 #if _ARCH_PWR8
-  __vector signed short a, b, c;
+  __vector signed short __a, __b, __c;
 
-  a = (__vector signed short)vec_splats (__m1);
-  b = (__vector signed short)vec_splats (__m2);
-  c = (__vector signed short)vec_cmpgt (a, b);
-  return (__m64) ((__vector long long) c)[0];
+  __a = (__vector signed short)vec_splats (__m1);
+  __b = (__vector signed short)vec_splats (__m2);
+  __c = (__vector signed short)vec_cmpgt (__a, __b);
+  return (__m64) ((__vector long long) __c)[0];
 #else
-  __m64_union m1, m2, res;
+  __m64_union __mu1, __mu2, __res;
 
-  m1.as_m64 = __m1;
-  m2.as_m64 = __m2;
+  __mu1.as_m64 = __m1;
+  __mu2.as_m64 = __m2;
 
-  res.as_short[0] = (m1.as_short[0] > m2.as_short[0])? -1: 0;
-  res.as_short[1] = (m1.as_short[1] > m2.as_short[1])? -1: 0;
-  res.as_short[2] = (m1.as_short[2] > m2.as_short[2])? -1: 0;
-  res.as_short[3] = (m1.as_short[3] > m2.as_short[3])? -1: 0;
+  __res.as_short[0] = (__mu1.as_short[0] > __mu2.as_short[0])? -1: 0;
+  __res.as_short[1] = (__mu1.as_short[1] > __mu2.as_short[1])? -1: 0;
+  __res.as_short[2] = (__mu1.as_short[2] > __mu2.as_short[2])? -1: 0;
+  __res.as_short[3] = (__mu1.as_short[3] > __mu2.as_short[3])? -1: 0;
 
-  return (__m64) res.as_m64;
+  return (__m64) __res.as_m64;
 #endif
 }
 
@@ -867,22 +867,22 @@ extern __inline __m64 __attribute__((__gnu_inline__, __always_inline__, __artifi
 _mm_cmpeq_pi32 (__m64 __m1, __m64 __m2)
 {
 #if _ARCH_PWR9
-  __vector signed int a, b, c;
+  __vector signed int __a, __b, __c;
 
-  a = (__vector signed int)vec_splats (__m1);
-  b = (__vector signed int)vec_splats (__m2);
-  c = (__vector signed int)vec_cmpeq (a, b);
-  return (__m64) ((__vector long long) c)[0];
+  __a = (__vector signed int)vec_splats (__m1);
+  __b = (__vector signed int)vec_splats (__m2);
+  __c = (__vector signed int)vec_cmpeq (__a, __b);
+  return (__m64) ((__vector long long) __c)[0];
 #else
-  __m64_union m1, m2, res;
+  __m64_union __mu1, __mu2, __res;
 
-  m1.as_m64 = __m1;
-  m2.as_m64 = __m2;
+  __mu1.as_m64 = __m1;
+  __mu2.as_m64 = __m2;
 
-  res.as_int[0] = (m1.as_int[0] == m2.as_int[0])? -1: 0;
-  res.as_int[1] = (m1.as_int[1] == m2.as_int[1])? -1: 0;
+  __res.as_int[0] = (__mu1.as_int[0] == __mu2.as_int[0])? -1: 0;
+  __res.as_int[1] = (__mu1.as_int[1] == __mu2.as_int[1])? -1: 0;
 
-  return (__m64) res.as_m64;
+  return (__m64) __res.as_m64;
 #endif
 }
 
@@ -896,22 +896,22 @@ extern __inline __m64 __attribute__((__gnu_inline__, __always_inline__, __artifi
 _mm_cmpgt_pi32 (__m64 __m1, __m64 __m2)
 {
 #if _ARCH_PWR9
-  __vector signed int a, b, c;
+  __vector signed int __a, __b, __c;
 
-  a = (__vector signed int)vec_splats (__m1);
-  b = (__vector signed int)vec_splats (__m2);
-  c = (__vector signed int)vec_cmpgt (a, b);
-  return (__m64) ((__vector long long) c)[0];
+  __a = (__vector signed int)vec_splats (__m1);
+  __b = (__vector signed int)vec_splats (__m2);
+  __c = (__vector signed int)vec_cmpgt (__a, __b);
+  return (__m64) ((__vector long long) __c)[0];
 #else
-  __m64_union m1, m2, res;
+  __m64_union __mu1, __mu2, __res;
 
-  m1.as_m64 = __m1;
-  m2.as_m64 = __m2;
+  __mu1.as_m64 = __m1;
+  __mu2.as_m64 = __m2;
 
-  res.as_int[0] = (m1.as_int[0] > m2.as_int[0])? -1: 0;
-  res.as_int[1] = (m1.as_int[1] > m2.as_int[1])? -1: 0;
+  __res.as_int[0] = (__mu1.as_int[0] > __mu2.as_int[0])? -1: 0;
+  __res.as_int[1] = (__mu1.as_int[1] > __mu2.as_int[1])? -1: 0;
 
-  return (__m64) res.as_m64;
+  return (__m64) __res.as_m64;
 #endif
 }
 
@@ -927,12 +927,12 @@ _m_pcmpgtd (__m64 __m1, __m64 __m2)
 extern __inline __m64 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_adds_pi8 (__m64 __m1, __m64 __m2)
 {
-  __vector signed char a, b, c;
+  __vector signed char __a, __b, __c;
 
-  a = (__vector signed char)vec_splats (__m1);
-  b = (__vector signed char)vec_splats (__m2);
-  c = vec_adds (a, b);
-  return (__m64) ((__vector long long) c)[0];
+  __a = (__vector signed char)vec_splats (__m1);
+  __b = (__vector signed char)vec_splats (__m2);
+  __c = vec_adds (__a, __b);
+  return (__m64) ((__vector long long) __c)[0];
 }
 
 extern __inline __m64 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
@@ -945,12 +945,12 @@ _m_paddsb (__m64 __m1, __m64 __m2)
 extern __inline __m64 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_adds_pi16 (__m64 __m1, __m64 __m2)
 {
-  __vector signed short a, b, c;
+  __vector signed short __a, __b, __c;
 
-  a = (__vector signed short)vec_splats (__m1);
-  b = (__vector signed short)vec_splats (__m2);
-  c = vec_adds (a, b);
-  return (__m64) ((__vector long long) c)[0];
+  __a = (__vector signed short)vec_splats (__m1);
+  __b = (__vector signed short)vec_splats (__m2);
+  __c = vec_adds (__a, __b);
+  return (__m64) ((__vector long long) __c)[0];
 }
 
 extern __inline __m64 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
@@ -963,12 +963,12 @@ _m_paddsw (__m64 __m1, __m64 __m2)
 extern __inline __m64 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_adds_pu8 (__m64 __m1, __m64 __m2)
 {
-  __vector unsigned char a, b, c;
+  __vector unsigned char __a, __b, __c;
 
-  a = (__vector unsigned char)vec_splats (__m1);
-  b = (__vector unsigned char)vec_splats (__m2);
-  c = vec_adds (a, b);
-  return (__m64) ((__vector long long) c)[0];
+  __a = (__vector unsigned char)vec_splats (__m1);
+  __b = (__vector unsigned char)vec_splats (__m2);
+  __c = vec_adds (__a, __b);
+  return (__m64) ((__vector long long) __c)[0];
 }
 
 extern __inline __m64 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
@@ -982,12 +982,12 @@ _m_paddusb (__m64 __m1, __m64 __m2)
 extern __inline __m64 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_adds_pu16 (__m64 __m1, __m64 __m2)
 {
-  __vector unsigned short a, b, c;
+  __vector unsigned short __a, __b, __c;
 
-  a = (__vector unsigned short)vec_splats (__m1);
-  b = (__vector unsigned short)vec_splats (__m2);
-  c = vec_adds (a, b);
-  return (__m64) ((__vector long long) c)[0];
+  __a = (__vector unsigned short)vec_splats (__m1);
+  __b = (__vector unsigned short)vec_splats (__m2);
+  __c = vec_adds (__a, __b);
+  return (__m64) ((__vector long long) __c)[0];
 }
 
 extern __inline __m64 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
@@ -1001,12 +1001,12 @@ _m_paddusw (__m64 __m1, __m64 __m2)
 extern __inline __m64 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_subs_pi8 (__m64 __m1, __m64 __m2)
 {
-  __vector signed char a, b, c;
+  __vector signed char __a, __b, __c;
 
-  a = (__vector signed char)vec_splats (__m1);
-  b = (__vector signed char)vec_splats (__m2);
-  c = vec_subs (a, b);
-  return (__m64) ((__vector long long) c)[0];
+  __a = (__vector signed char)vec_splats (__m1);
+  __b = (__vector signed char)vec_splats (__m2);
+  __c = vec_subs (__a, __b);
+  return (__m64) ((__vector long long) __c)[0];
 }
 
 extern __inline __m64 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
@@ -1020,12 +1020,12 @@ _m_psubsb (__m64 __m1, __m64 __m2)
 extern __inline __m64 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_subs_pi16 (__m64 __m1, __m64 __m2)
 {
-  __vector signed short a, b, c;
+  __vector signed short __a, __b, __c;
 
-  a = (__vector signed short)vec_splats (__m1);
-  b = (__vector signed short)vec_splats (__m2);
-  c = vec_subs (a, b);
-  return (__m64) ((__vector long long) c)[0];
+  __a = (__vector signed short)vec_splats (__m1);
+  __b = (__vector signed short)vec_splats (__m2);
+  __c = vec_subs (__a, __b);
+  return (__m64) ((__vector long long) __c)[0];
 }
 
 extern __inline __m64 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
@@ -1039,12 +1039,12 @@ _m_psubsw (__m64 __m1, __m64 __m2)
 extern __inline __m64 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_subs_pu8 (__m64 __m1, __m64 __m2)
 {
-  __vector unsigned char a, b, c;
+  __vector unsigned char __a, __b, __c;
 
-  a = (__vector unsigned char)vec_splats (__m1);
-  b = (__vector unsigned char)vec_splats (__m2);
-  c = vec_subs (a, b);
-  return (__m64) ((__vector long long) c)[0];
+  __a = (__vector unsigned char)vec_splats (__m1);
+  __b = (__vector unsigned char)vec_splats (__m2);
+  __c = vec_subs (__a, __b);
+  return (__m64) ((__vector long long) __c)[0];
 }
 
 extern __inline __m64 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
@@ -1058,12 +1058,12 @@ _m_psubusb (__m64 __m1, __m64 __m2)
 extern __inline __m64 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_subs_pu16 (__m64 __m1, __m64 __m2)
 {
-  __vector unsigned short a, b, c;
+  __vector unsigned short __a, __b, __c;
 
-  a = (__vector unsigned short)vec_splats (__m1);
-  b = (__vector unsigned short)vec_splats (__m2);
-  c = vec_subs (a, b);
-  return (__m64) ((__vector long long) c)[0];
+  __a = (__vector unsigned short)vec_splats (__m1);
+  __b = (__vector unsigned short)vec_splats (__m2);
+  __c = vec_subs (__a, __b);
+  return (__m64) ((__vector long long) __c)[0];
 }
 
 extern __inline __m64 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
@@ -1078,14 +1078,14 @@ _m_psubusw (__m64 __m1, __m64 __m2)
 extern __inline __m64 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_madd_pi16 (__m64 __m1, __m64 __m2)
 {
-  __vector signed short a, b;
-  __vector signed int c;
-  __vector signed int zero = {0, 0, 0, 0};
+  __vector signed short __a, __b;
+  __vector signed int __c;
+  __vector signed int __zero = {0, 0, 0, 0};
 
-  a = (__vector signed short)vec_splats (__m1);
-  b = (__vector signed short)vec_splats (__m2);
-  c = vec_vmsumshm (a, b, zero);
-  return (__m64) ((__vector long long) c)[0];
+  __a = (__vector signed short)vec_splats (__m1);
+  __b = (__vector signed short)vec_splats (__m2);
+  __c = vec_vmsumshm (__a, __b, __zero);
+  return (__m64) ((__vector long long) __c)[0];
 }
 
 extern __inline __m64 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
@@ -1098,10 +1098,10 @@ _m_pmaddwd (__m64 __m1, __m64 __m2)
 extern __inline __m64 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_mulhi_pi16 (__m64 __m1, __m64 __m2)
 {
-  __vector signed short a, b;
-  __vector signed short c;
-  __vector signed int w0, w1;
-  __vector unsigned char xform1 = {
+  __vector signed short __a, __b;
+  __vector signed short __c;
+  __vector signed int __w0, __w1;
+  __vector unsigned char __xform1 = {
 #ifdef __LITTLE_ENDIAN__
       0x02, 0x03, 0x12, 0x13,  0x06, 0x07, 0x16, 0x17,
       0x0A, 0x0B, 0x1A, 0x1B,  0x0E, 0x0F, 0x1E, 0x1F
@@ -1111,14 +1111,14 @@ _mm_mulhi_pi16 (__m64 __m1, __m64 __m2)
 #endif
     };
 
-  a = (__vector signed short)vec_splats (__m1);
-  b = (__vector signed short)vec_splats (__m2);
+  __a = (__vector signed short)vec_splats (__m1);
+  __b = (__vector signed short)vec_splats (__m2);
 
-  w0 = vec_vmulesh (a, b);
-  w1 = vec_vmulosh (a, b);
-  c = (__vector signed short)vec_perm (w0, w1, xform1);
+  __w0 = vec_vmulesh (__a, __b);
+  __w1 = vec_vmulosh (__a, __b);
+  __c = (__vector signed short)vec_perm (__w0, __w1, __xform1);
 
-  return (__m64) ((__vector long long) c)[0];
+  return (__m64) ((__vector long long) __c)[0];
 }
 
 extern __inline __m64 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
@@ -1132,12 +1132,12 @@ _m_pmulhw (__m64 __m1, __m64 __m2)
 extern __inline __m64 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_mullo_pi16 (__m64 __m1, __m64 __m2)
 {
-  __vector signed short a, b, c;
+  __vector signed short __a, __b, __c;
 
-  a = (__vector signed short)vec_splats (__m1);
-  b = (__vector signed short)vec_splats (__m2);
-  c = a * b;
-  return (__m64) ((__vector long long) c)[0];
+  __a = (__vector signed short)vec_splats (__m1);
+  __b = (__vector signed short)vec_splats (__m2);
+  __c = __a * __b;
+  return (__m64) ((__vector long long) __c)[0];
 }
 
 extern __inline __m64 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
@@ -1150,15 +1150,15 @@ _m_pmullw (__m64 __m1, __m64 __m2)
 extern __inline __m64 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_sll_pi16 (__m64 __m, __m64 __count)
 {
-  __vector signed short m, r;
-  __vector unsigned short c;
+  __vector signed short __r;
+  __vector unsigned short __c;
 
   if (__count <= 15)
     {
-      m = (__vector signed short)vec_splats (__m);
-      c = (__vector unsigned short)vec_splats ((unsigned short)__count);
-      r = vec_sl (m, (__vector unsigned short)c);
-      return (__m64) ((__vector long long) r)[0];
+      __r = (__vector signed short)vec_splats (__m);
+      __c = (__vector unsigned short)vec_splats ((unsigned short)__count);
+      __r = vec_sl (__r, (__vector unsigned short)__c);
+      return (__m64) ((__vector long long) __r)[0];
     }
   else
   return (0);
@@ -1187,13 +1187,13 @@ _m_psllwi (__m64 __m, int __count)
 extern __inline __m64 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_sll_pi32 (__m64 __m, __m64 __count)
 {
-  __m64_union m, res;
+  __m64_union __res;
 
-  m.as_m64 = __m;
+  __res.as_m64 = __m;
 
-  res.as_int[0] = m.as_int[0] << __count;
-  res.as_int[1] = m.as_int[1] << __count;
-  return (res.as_m64);
+  __res.as_int[0] = __res.as_int[0] << __count;
+  __res.as_int[1] = __res.as_int[1] << __count;
+  return (__res.as_m64);
 }
 
 extern __inline __m64 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
@@ -1219,15 +1219,15 @@ _m_pslldi (__m64 __m, int __count)
 extern __inline __m64 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_sra_pi16 (__m64 __m, __m64 __count)
 {
-  __vector signed short m, r;
-  __vector unsigned short c;
+  __vector signed short __r;
+  __vector unsigned short __c;
 
   if (__count <= 15)
     {
-	m = (__vector signed short)vec_splats (__m);
-	c = (__vector unsigned short)vec_splats ((unsigned short)__count);
-	r = vec_sra (m, (__vector unsigned short)c);
-        return (__m64) ((__vector long long) r)[0];
+	__r = (__vector signed short)vec_splats (__m);
+	__c = (__vector unsigned short)vec_splats ((unsigned short)__count);
+	__r = vec_sra (__r, (__vector unsigned short)__c);
+        return (__m64) ((__vector long long) __r)[0];
     }
   else
   return (0);
@@ -1256,13 +1256,13 @@ _m_psrawi (__m64 __m, int __count)
 extern __inline __m64 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_sra_pi32 (__m64 __m, __m64 __count)
 {
-  __m64_union m, res;
+  __m64_union __res;
 
-  m.as_m64 = __m;
+  __res.as_m64 = __m;
 
-  res.as_int[0] = m.as_int[0] >> __count;
-  res.as_int[1] = m.as_int[1] >> __count;
-  return (res.as_m64);
+  __res.as_int[0] = __res.as_int[0] >> __count;
+  __res.as_int[1] = __res.as_int[1] >> __count;
+  return (__res.as_m64);
 }
 
 extern __inline __m64 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
@@ -1288,15 +1288,15 @@ _m_psradi (__m64 __m, int __count)
 extern __inline __m64 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_srl_pi16 (__m64 __m, __m64 __count)
 {
-  __vector unsigned short m, r;
-  __vector unsigned short c;
+  __vector unsigned short __r;
+  __vector unsigned short __c;
 
   if (__count <= 15)
     {
-	m = (__vector unsigned short)vec_splats (__m);
-	c = (__vector unsigned short)vec_splats ((unsigned short)__count);
-	r = vec_sr (m, (__vector unsigned short)c);
-        return (__m64) ((__vector long long) r)[0];
+	__r = (__vector unsigned short)vec_splats (__m);
+	__c = (__vector unsigned short)vec_splats ((unsigned short)__count);
+	__r = vec_sr (__r, (__vector unsigned short)__c);
+        return (__m64) ((__vector long long) __r)[0];
     }
   else
     return (0);
@@ -1325,13 +1325,13 @@ _m_psrlwi (__m64 __m, int __count)
 extern __inline __m64 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_srl_pi32 (__m64 __m, __m64 __count)
 {
-  __m64_union m, res;
+  __m64_union __res;
 
-  m.as_m64 = __m;
+  __res.as_m64 = __m;
 
-  res.as_int[0] = (unsigned int)m.as_int[0] >> __count;
-  res.as_int[1] = (unsigned int)m.as_int[1] >> __count;
-  return (res.as_m64);
+  __res.as_int[0] = (unsigned int)__res.as_int[0] >> __count;
+  __res.as_int[1] = (unsigned int)__res.as_int[1] >> __count;
+  return (__res.as_m64);
 }
 
 extern __inline __m64 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
@@ -1358,24 +1358,24 @@ _m_psrldi (__m64 __m, int __count)
 extern __inline __m64 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_set_pi32 (int __i1, int __i0)
 {
-  __m64_union res;
+  __m64_union __res;
 
-  res.as_int[0] = __i0;
-  res.as_int[1] = __i1;
-  return (res.as_m64);
+  __res.as_int[0] = __i0;
+  __res.as_int[1] = __i1;
+  return (__res.as_m64);
 }
 
 /* Creates a vector of four 16-bit values; W0 is least significant.  */
 extern __inline __m64 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_set_pi16 (short __w3, short __w2, short __w1, short __w0)
 {
-  __m64_union res;
+  __m64_union __res;
 
-  res.as_short[0] = __w0;
-  res.as_short[1] = __w1;
-  res.as_short[2] = __w2;
-  res.as_short[3] = __w3;
-  return (res.as_m64);
+  __res.as_short[0] = __w0;
+  __res.as_short[1] = __w1;
+  __res.as_short[2] = __w2;
+  __res.as_short[3] = __w3;
+  return (__res.as_m64);
 }
 
 /* Creates a vector of eight 8-bit values; B0 is least significant.  */
@@ -1383,28 +1383,28 @@ extern __inline __m64 __attribute__((__gnu_inline__, __always_inline__, __artifi
 _mm_set_pi8 (char __b7, char __b6, char __b5, char __b4,
 	     char __b3, char __b2, char __b1, char __b0)
 {
-  __m64_union res;
+  __m64_union __res;
 
-  res.as_char[0] = __b0;
-  res.as_char[1] = __b1;
-  res.as_char[2] = __b2;
-  res.as_char[3] = __b3;
-  res.as_char[4] = __b4;
-  res.as_char[5] = __b5;
-  res.as_char[6] = __b6;
-  res.as_char[7] = __b7;
-  return (res.as_m64);
+  __res.as_char[0] = __b0;
+  __res.as_char[1] = __b1;
+  __res.as_char[2] = __b2;
+  __res.as_char[3] = __b3;
+  __res.as_char[4] = __b4;
+  __res.as_char[5] = __b5;
+  __res.as_char[6] = __b6;
+  __res.as_char[7] = __b7;
+  return (__res.as_m64);
 }
 
 /* Similar, but with the arguments in reverse order.  */
 extern __inline __m64 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_setr_pi32 (int __i0, int __i1)
 {
-  __m64_union res;
+  __m64_union __res;
 
-  res.as_int[0] = __i0;
-  res.as_int[1] = __i1;
-  return (res.as_m64);
+  __res.as_int[0] = __i0;
+  __res.as_int[1] = __i1;
+  return (__res.as_m64);
 }
 
 extern __inline __m64 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
@@ -1424,11 +1424,11 @@ _mm_setr_pi8 (char __b0, char __b1, char __b2, char __b3,
 extern __inline __m64 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_set1_pi32 (int __i)
 {
-  __m64_union res;
+  __m64_union __res;
 
-  res.as_int[0] = __i;
-  res.as_int[1] = __i;
-  return (res.as_m64);
+  __res.as_int[0] = __i;
+  __res.as_int[1] = __i;
+  return (__res.as_m64);
 }
 
 /* Creates a vector of four 16-bit values, all elements containing W.  */
@@ -1441,13 +1441,13 @@ _mm_set1_pi16 (short __w)
   w = (__vector signed short)vec_splats (__w);
   return (__m64) ((__vector long long) w)[0];
 #else
-  __m64_union res;
+  __m64_union __res;
 
-  res.as_short[0] = __w;
-  res.as_short[1] = __w;
-  res.as_short[2] = __w;
-  res.as_short[3] = __w;
-  return (res.as_m64);
+  __res.as_short[0] = __w;
+  __res.as_short[1] = __w;
+  __res.as_short[2] = __w;
+  __res.as_short[3] = __w;
+  return (__res.as_m64);
 #endif
 }
 
@@ -1456,22 +1456,22 @@ extern __inline __m64 __attribute__((__gnu_inline__, __always_inline__, __artifi
 _mm_set1_pi8 (signed char __b)
 {
 #if _ARCH_PWR8
-  __vector signed char b;
+  __vector signed char __res;
 
-  b = (__vector signed char)vec_splats (__b);
-  return (__m64) ((__vector long long) b)[0];
+  __res = (__vector signed char)vec_splats (__b);
+  return (__m64) ((__vector long long) __res)[0];
 #else
-  __m64_union res;
+  __m64_union __res;
 
-  res.as_char[0] = __b;
-  res.as_char[1] = __b;
-  res.as_char[2] = __b;
-  res.as_char[3] = __b;
-  res.as_char[4] = __b;
-  res.as_char[5] = __b;
-  res.as_char[6] = __b;
-  res.as_char[7] = __b;
-  return (res.as_m64);
+  __res.as_char[0] = __b;
+  __res.as_char[1] = __b;
+  __res.as_char[2] = __b;
+  __res.as_char[3] = __b;
+  __res.as_char[4] = __b;
+  __res.as_char[5] = __b;
+  __res.as_char[6] = __b;
+  __res.as_char[7] = __b;
+  return (__res.as_m64);
 #endif
 }
 #endif /* _MMINTRIN_H_INCLUDED */

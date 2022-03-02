@@ -289,6 +289,22 @@ x)
 	;;
 esac
 
+gobuild() {
+    line=$(echo "$1" | sed -e 's|//go:build ||')
+    line=$(echo "$line" | sed -e 's/go1\.[0-9]\+/1/g' -e 's/goexperiment\./goexperiment/')
+    line=" $line "
+    wrap='[ ()!&|]'
+    for ones in $goarch $goos cgo gccgo goexperimentfieldtrack; do
+	line=$(echo "$line" | sed -e "s/\\(${wrap}\\)${ones}\\(${wrap}\\)/"'\11\2/g')
+    done
+    # 386 is a special case since it looks like a number to the shell.
+    # We need it to be 0 if it's not $goarch.
+    if test "$goarch" != "386"; then
+	line=$(echo "$line" | sed -e "s/\\(${wrap}\\)386\\(${wrap}\\)/\10\2/g")
+    fi
+    (($line))
+}
+
 case "x$gofiles" in
 x)
 	for f in `ls *_test.go`; do
@@ -330,15 +346,28 @@ x)
 		;;
 	    esac
 
-	    if test x$tag1 != xnonmatchingtag -a x$tag2 != xnonmatchingtag; then
-		tags=`sed '/^package /q' < $f | grep '^// *+build '`
-		omatch=true
-		first=true
-		match=false
-		for tag in $tags; do
-		    case $tag in
+	    if test x$tag1 = xnonmatchingtag -o x$tag2 = xnonmatchingtag; then
+		continue
+	    fi
+
+	    # Check for go:build line
+	    build=$(sed '/^package /q' < $f | grep '^//go:build ' | cat)
+	    if test -n "$build"; then
+		if $(gobuild "$build"); then
+		    gofiles="$gofiles $f"
+		fi
+		continue
+	    fi
+
+	    # No go:build line, check for +build lines.
+	    tags=`sed '/^package /q' < $f | grep '^// *+build '`
+	    omatch=true
+	    first=true
+	    match=false
+	    for tag in $tags; do
+		case $tag in
 		    "//")
-			;;
+		    ;;
 		    "+build" | "//+build")
 			if test "$first" = "true"; then
 			    first=false
@@ -356,16 +385,16 @@ x)
 			cmatch=true
 			for ctag in `echo $tag | sed -e 's/,/ /g'`; do
 			    case $ctag in
-			    $goos | $goarch | cgo | gccgo | goexperiment.fieldtrack | go1.[0-9] | go1.[0-9][0-9])
+				$goos | $goarch | cgo | gccgo | goexperiment.fieldtrack | go1.[0-9] | go1.[0-9][0-9])
 				;;
-			    "!"$goos | "!"$goarch | "!cgo" | "!gccgo" | "!goexperiment.fieldtrack" | "!"go1.[0-9] | "!"go1.1[0-7])
-				cmatch=false
-				;;
-			    "!"*)
-			        ;;
-			    *)
-				cmatch=false
-				;;
+				"!"$goos | "!"$goarch | "!cgo" | "!gccgo" | "!goexperiment.fieldtrack" | "!"go1.[0-9] | "!"go1.1[0-7])
+				    cmatch=false
+				    ;;
+				"!"*)
+			            ;;
+				*)
+				    cmatch=false
+				    ;;
 			    esac
 			done
 			if test "$cmatch" = "true"; then
@@ -375,16 +404,15 @@ x)
 		    "!"*)
 			match=true
 			;;
-		    esac
-		done
+		esac
+	    done
 
-		if test "$match" = "false" -a "$first" = "false"; then
-		    omatch=false
-		fi
+	    if test "$match" = "false" -a "$first" = "false"; then
+		omatch=false
+	    fi
 
-		if test "$omatch" = "true"; then
-		    gofiles="$gofiles $f"
-		fi
+	    if test "$omatch" = "true"; then
+		gofiles="$gofiles $f"
 	    fi
 	done
 	;;
@@ -546,6 +574,18 @@ symtogo() {
   done
 }
 
+# Find Go benchmark/fuzz/example functions.
+# The argument is the function name prefix.
+findfuncs() {
+	pattern='$1([^a-z].*)?'
+	syms=$($NM -p -v _gotest_.o | egrep " $text .*\."$pattern'$' | fgrep -v ' __go_' | egrep -v '\.\.\w+$' | sed 's/.* //')
+	if $havex; then
+	    xsyms=$($NM -p -v $xofile | egrep " $text .*\."$pattern'$' | fgrep -v ' __go_' | egrep -v '\.\.\w+$' | sed 's/.* //')
+	    syms="$syms $xsyms"
+	fi
+        $(symtogo "$benchmarksyms")
+}
+
 # Takes an example name and puts any output into the file example.txt.
 # It strips comment markers but does not otherwise change the output.
 exampleoutput() {
@@ -589,23 +629,10 @@ exampleoutput() {
 		echo 'gotest: warning: no tests matching '$pattern in _gotest_.o $xofile 1>&2
 		exit 2
 	fi
-	# benchmarks are named BenchmarkFoo.
-	pattern='Benchmark([^a-z].*)?'
-	benchmarksyms=$($NM -p -v _gotest_.o | egrep " $text .*\."$pattern'$' | fgrep -v ' __go_' | egrep -v '\.\.\w+$' | sed 's/.* //')
-	if $havex; then
-	    benchmarkxsyms=$($NM -p -v $xofile | egrep " $text .*\."$pattern'$' | fgrep -v ' __go_' | egrep -v '\.\.\w+$' | sed 's/.* //')
-	    benchmarksyms="$benchmarksyms $benchmarkxsyms"
-	fi
-        benchmarks=$(symtogo "$benchmarksyms")
 
-	# examples are named ExampleFoo
-	pattern='Example([^a-z].*)?'
-	examplesyms=$($NM -p -v _gotest_.o | egrep " $text .*\."$pattern'$' | fgrep -v ' __go_' | egrep -v '\.\.\w+$' | sed 's/.* //')
-	if $havex; then
-	    examplexsyms=$($NM -p -v $xofile | egrep " $text .*\."$pattern'$' | fgrep -v ' __go_' | egrep -v '\.\.\w+$' | sed 's/.* //')
-	    examplesyms="$examplesyms $examplexsyms"
-	fi
-	examples=$(symtogo "$examplesyms")
+	benchmarks=$(findfuncs Benchmark)
+	fuzztargets=$(findfuncs Fuzz)
+	examples=$(findfuncs Example)
 
 	# package spec
 	echo 'package main'
@@ -663,6 +690,15 @@ exampleoutput() {
 	done
 	echo '}'
 
+	# fuzz array
+	echo 'var fuzzTargets = []testing.InternalFuzzTarget{'
+	for i in $fuzztargets; do
+		n=$(testname $i)
+		j=$(localname $i)
+		echo '  {"'$n'", '$j'},'
+	done
+	echo '}'
+
 	# examples array
 	echo 'var examples = []testing.InternalExample{'
 	for i in $examples; do
@@ -710,7 +746,7 @@ exampleoutput() {
 	echo \
 '
 func main() {
-	m := testing.MainStart(testdeps.TestDeps{}, tests, benchmarks, examples)
+	m := testing.MainStart(testdeps.TestDeps{}, tests, benchmarks, fuzzTargets, examples)
 '
 	if test -n "$testmain"; then
 		echo "	${testmain}(m)"

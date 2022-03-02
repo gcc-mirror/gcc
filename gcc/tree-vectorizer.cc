@@ -99,7 +99,8 @@ auto_purge_vect_location::~auto_purge_vect_location ()
 
 void
 dump_stmt_cost (FILE *f, int count, enum vect_cost_for_stmt kind,
-		stmt_vec_info stmt_info, tree, int misalign, unsigned cost,
+		stmt_vec_info stmt_info, slp_tree node, tree,
+		int misalign, unsigned cost,
 		enum vect_cost_model_location where)
 {
   if (stmt_info)
@@ -107,6 +108,8 @@ dump_stmt_cost (FILE *f, int count, enum vect_cost_for_stmt kind,
       print_gimple_expr (f, STMT_VINFO_STMT (stmt_info), 0, TDF_SLIM);
       fprintf (f, " ");
     }
+  else if (node)
+    fprintf (f, "node %p ", (void *)node);
   else
     fprintf (f, "<unknown> ");
   fprintf (f, "%d times ", count);
@@ -1766,8 +1769,9 @@ scalar_cond_masked_key::get_cond_ops_from_tree (tree t)
 
 unsigned int
 vector_costs::add_stmt_cost (int count, vect_cost_for_stmt kind,
-			     stmt_vec_info stmt_info, tree vectype,
-			     int misalign, vect_cost_model_location where)
+			     stmt_vec_info stmt_info, slp_tree,
+			     tree vectype, int misalign,
+			     vect_cost_model_location where)
 {
   unsigned int cost
     = builtin_vectorization_cost (kind, vectype, misalign) * count;

@@ -63,6 +63,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   __last_system_error() noexcept
   {
 #ifdef _GLIBCXX_FILESYSTEM_IS_WINDOWS
+    // N.B. use error_code::default_error_condition() to convert to generic.
     return {(int)::GetLastError(), std::system_category()};
 #else
     return {errno, std::generic_category()};

@@ -2,7 +2,7 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail19441.d(44): Deprecation: Cannot use `alias this` to partially initialize variable `wrap[0]` of type `Wrap10595`. Use `wrap[0].i`
+fail_compilation/fail19441.d(44): Error: cannot use `alias this` to partially initialize variable `wrap[0]` of type `Wrap10595`. Use `wrap[0].i`
 ---
 */
 

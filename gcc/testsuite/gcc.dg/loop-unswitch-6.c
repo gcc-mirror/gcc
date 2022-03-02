@@ -1,5 +1,6 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -funswitch-loops -g -fcompare-debug -fdump-tree-unswitch-details" } */
+/* { dg-options "-O2 -funswitch-loops -g -fdump-tree-unswitch-details" } */
+/* { dg-additional-options "-fcompare-debug" { target { ! powerpc-ibm-aix* } } } */
 
 short a, d;
 int b, c;

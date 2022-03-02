@@ -26,11 +26,10 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "libgfortran.h"
 
 
-/* Check support for issignaling macro.
-   TODO: In the future, provide fallback implementations for IEEE types,
-   because many libc's do not have issignaling yet.  */
+/* Check support for issignaling macro.  If not, we include our own
+   fallback implementation.  */
 #ifndef issignaling
-# define issignaling(X) 0
+# include "issignaling_fallback.h"
 #endif
 
 

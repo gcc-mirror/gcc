@@ -5195,15 +5195,53 @@ enum isAssignable(Lhs, Rhs = Lhs) = isRvalueAssignable!(Lhs, Rhs) && isLvalueAss
 
 /**
 Returns `true` iff an rvalue of type `Rhs` can be assigned to a variable of
-type `Lhs`
+type `Lhs`.
 */
 enum isRvalueAssignable(Lhs, Rhs = Lhs) = __traits(compiles, { lvalueOf!Lhs = rvalueOf!Rhs; });
 
+///
+@safe unittest
+{
+    struct S1
+    {
+        void opAssign(S1);
+    }
+
+    struct S2
+    {
+        void opAssign(ref S2);
+    }
+
+    static assert( isRvalueAssignable!(long, int));
+    static assert(!isRvalueAssignable!(int, long));
+    static assert( isRvalueAssignable!S1);
+    static assert(!isRvalueAssignable!S2);
+}
+
 /**
 Returns `true` iff an lvalue of type `Rhs` can be assigned to a variable of
-type `Lhs`
+type `Lhs`.
 */
 enum isLvalueAssignable(Lhs, Rhs = Lhs) = __traits(compiles, { lvalueOf!Lhs = lvalueOf!Rhs; });
+
+///
+@safe unittest
+{
+    struct S1
+    {
+        void opAssign(S1);
+    }
+
+    struct S2
+    {
+        void opAssign(ref S2);
+    }
+
+    static assert( isLvalueAssignable!(long, int));
+    static assert(!isLvalueAssignable!(int, long));
+    static assert( isLvalueAssignable!S1);
+    static assert( isLvalueAssignable!S2);
+}
 
 @safe unittest
 {
@@ -6095,7 +6133,7 @@ template BuiltinTypeOf(T)
             alias X = OriginalType!T;
         static if (__traits(isArithmetic, X) && !is(X == __vector) ||
                 __traits(isStaticArray, X) || is(X == E[], E) ||
-                __traits(isAssociativeArray, X))
+                __traits(isAssociativeArray, X) || is(X == typeof(null)))
             alias BuiltinTypeOf = X;
         else
             static assert(0);
@@ -6117,7 +6155,13 @@ enum bool isBoolean(T) = __traits(isUnsigned, T) && is(T : bool);
     static assert( isBoolean!bool);
     enum EB : bool { a = true }
     static assert( isBoolean!EB);
-    static assert(!isBoolean!(SubTypeOf!bool));
+
+    struct SubTypeOfBool
+    {
+        bool val;
+        alias val this;
+    }
+    static assert(!isBoolean!(SubTypeOfBool));
 }
 
 @safe unittest
@@ -6994,6 +7038,18 @@ enum bool isArray(T) = isStaticArray!T || isDynamicArray!T;
  */
 enum bool isAssociativeArray(T) = __traits(isAssociativeArray, T);
 
+///
+@safe unittest
+{
+    struct S;
+
+    static assert( isAssociativeArray!(int[string]));
+    static assert( isAssociativeArray!(S[S]));
+    static assert(!isAssociativeArray!(string[]));
+    static assert(!isAssociativeArray!S);
+    static assert(!isAssociativeArray!(int[4]));
+}
+
 @safe unittest
 {
     struct Foo
@@ -7037,6 +7093,7 @@ enum bool isBuiltinType(T) = is(BuiltinTypeOf!T) && !isAggregateType!T;
     static assert( isBuiltinType!string);
     static assert( isBuiltinType!(int[]));
     static assert( isBuiltinType!(C[string]));
+    static assert( isBuiltinType!(typeof(null)));
     static assert(!isBuiltinType!C);
     static assert(!isBuiltinType!U);
     static assert(!isBuiltinType!S);
@@ -7049,6 +7106,7 @@ enum bool isBuiltinType(T) = is(BuiltinTypeOf!T) && !isAggregateType!T;
  */
 enum bool isSIMDVector(T) = is(T : __vector(V[N]), V, size_t N);
 
+///
 @safe unittest
 {
     static if (is(__vector(float[4])))
@@ -7065,6 +7123,20 @@ enum bool isSIMDVector(T) = is(T : __vector(V[N]), V, size_t N);
  * Detect whether type `T` is a pointer.
  */
 enum bool isPointer(T) = is(T == U*, U) && __traits(isScalar, T);
+
+///
+@safe unittest
+{
+    void fun();
+
+    static assert( isPointer!(int*));
+    static assert( isPointer!(int function()));
+    static assert(!isPointer!int);
+    static assert(!isPointer!string);
+    static assert(!isPointer!(typeof(null)));
+    static assert(!isPointer!(typeof(fun)));
+    static assert(!isPointer!(int delegate()));
+}
 
 @safe unittest
 {
@@ -8834,6 +8906,27 @@ enum bool allSameType(Ts...) =
    if)-expression, that is if $(D if (pred(T.init)) {}) is compilable.
 */
 enum ifTestable(T, alias pred = a => a) = __traits(compiles, { if (pred(T.init)) {} });
+
+///
+@safe unittest
+{
+    class C;
+    struct S1;
+    struct S2
+    {
+        T opCast(T)() const;
+    }
+
+    static assert( ifTestable!bool);
+    static assert( ifTestable!int);
+    static assert( ifTestable!(S1*));
+    static assert( ifTestable!(typeof(null)));
+    static assert( ifTestable!(int[]));
+    static assert( ifTestable!(int[string]));
+    static assert( ifTestable!S2);
+    static assert( ifTestable!C);
+    static assert(!ifTestable!S1);
+}
 
 @safe unittest
 {

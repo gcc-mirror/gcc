@@ -331,6 +331,10 @@ OPTAB_D (sinh_optab, "sinh$a2")
 OPTAB_D (tan_optab, "tan$a2")
 OPTAB_D (tanh_optab, "tanh$a2")
 
+OPTAB_D (fegetround_optab, "fegetround$a")
+OPTAB_D (feclearexcept_optab, "feclearexcept$a")
+OPTAB_D (feraiseexcept_optab, "feraiseexcept$a")
+
 /* C99 implementations of fmax/fmin.  */
 OPTAB_D (fmax_optab, "fmax$a3")
 OPTAB_D (fmin_optab, "fmin$a3")

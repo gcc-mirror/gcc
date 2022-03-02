@@ -374,8 +374,10 @@ for example
 
 which moves the outer @code{plus} operation to the inner arms
 of the @code{vec_cond} expression but only if the actual plus
-operations both simplify.  Note this is currently only supported
-for code generation targeting @code{GIMPLE}.
+operations both simplify.  Note that on @code{GENERIC} a simple
+operand means that the result satisfies @code{!EXPR_P} which
+can be limiting if the operation itself simplifies but the
+remaining operand is an (unrelated) expression.
 
 As intermediate conversions are often optional there is a way to
 avoid the need to repeat patterns both with and without such

@@ -242,23 +242,6 @@ static GTY ((cache))
 static GTY ((cache))
      hash_table<tree_decl_map_cache_hasher> *value_expr_for_decl;
 
-struct tree_vec_map_cache_hasher : ggc_cache_ptr_hash<tree_vec_map>
-{
-  static hashval_t hash (tree_vec_map *m) { return DECL_UID (m->base.from); }
-
-  static bool
-  equal (tree_vec_map *a, tree_vec_map *b)
-  {
-    return a->base.from == b->base.from;
-  }
-
-  static int
-  keep_cache_entry (tree_vec_map *&m)
-  {
-    return ggc_marked_p (m->base.from);
-  }
-};
-
 static GTY ((cache))
      hash_table<tree_vec_map_cache_hasher> *debug_args_for_decl;
 
@@ -306,6 +289,7 @@ unsigned const char omp_clause_num_ops[] =
   2, /* OMP_CLAUSE_FROM  */
   2, /* OMP_CLAUSE_TO  */
   2, /* OMP_CLAUSE_MAP  */
+  1, /* OMP_CLAUSE_HAS_DEVICE_ADDR  */
   2, /* OMP_CLAUSE__CACHE_  */
   2, /* OMP_CLAUSE_GANG  */
   1, /* OMP_CLAUSE_ASYNC  */
@@ -395,6 +379,7 @@ const char * const omp_clause_code_name[] =
   "from",
   "to",
   "map",
+  "has_device_addr",
   "_cache_",
   "gang",
   "async",
@@ -2328,10 +2313,11 @@ build_constructor_va (tree type, int nelts, ...)
 /* Return a node of type TYPE for which TREE_CLOBBER_P is true.  */
 
 tree
-build_clobber (tree type)
+build_clobber (tree type, enum clobber_kind kind)
 {
   tree clobber = build_constructor (type, NULL);
   TREE_THIS_VOLATILE (clobber) = true;
+  CLOBBER_KIND (clobber) = kind;
   return clobber;
 }
 
@@ -9534,7 +9520,7 @@ build_common_builtin_nodes (void)
       local_define_builtin ("__builtin_clear_padding", ftype,
 			    BUILT_IN_CLEAR_PADDING,
 			    "__builtin_clear_padding",
-			      ECF_LEAF | ECF_NOTHROW);
+			    ECF_LEAF | ECF_NOTHROW);
     }
 
   if (!builtin_decl_explicit_p (BUILT_IN_UNREACHABLE)
@@ -10492,7 +10478,7 @@ build_call_array_loc (location_t loc, tree return_type, tree fn,
 /* Like build_call_array, but takes a vec.  */
 
 tree
-build_call_vec (tree return_type, tree fn, vec<tree, va_gc> *args)
+build_call_vec (tree return_type, tree fn, const vec<tree, va_gc> *args)
 {
   tree ret, t;
   unsigned int ix;
@@ -12061,10 +12047,12 @@ warn_deprecated_use (tree node, tree attr)
 	attr = DECL_ATTRIBUTES (node);
       else if (TYPE_P (node))
 	{
-	  tree decl = TYPE_STUB_DECL (node);
+	  tree decl = TYPE_STUB_DECL (TYPE_MAIN_VARIANT (node));
 	  if (decl)
-	    attr = lookup_attribute ("deprecated",
-				     TYPE_ATTRIBUTES (TREE_TYPE (decl)));
+	    {
+	      node = TREE_TYPE (decl);
+	      attr = TYPE_ATTRIBUTES (node);
+	    }
 	}
     }
 
@@ -14563,6 +14551,30 @@ get_attr_nonstring_decl (tree expr, tree *ref)
     return decl;
 
   return NULL_TREE;
+}
+
+/* Return length of attribute names string,
+   if arglist chain > 1, -1 otherwise.  */
+
+int
+get_target_clone_attr_len (tree arglist)
+{
+  tree arg;
+  int str_len_sum = 0;
+  int argnum = 0;
+
+  for (arg = arglist; arg; arg = TREE_CHAIN (arg))
+    {
+      const char *str = TREE_STRING_POINTER (TREE_VALUE (arg));
+      size_t len = strlen (str);
+      str_len_sum += len + 1;
+      for (const char *p = strchr (str, ','); p; p = strchr (p + 1, ','))
+	argnum++;
+      argnum++;
+    }
+  if (argnum <= 1)
+    return -1;
+  return str_len_sum;
 }
 
 #if CHECKING_P

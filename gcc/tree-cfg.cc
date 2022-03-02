@@ -4289,10 +4289,11 @@ verify_gimple_assign_ternary (gassign *stmt)
       /* Fallthrough.  */
     case COND_EXPR:
       if (!is_gimple_val (rhs1)
-	  && verify_gimple_comparison (TREE_TYPE (rhs1),
-				       TREE_OPERAND (rhs1, 0),
-				       TREE_OPERAND (rhs1, 1),
-				       TREE_CODE (rhs1)))
+	  && (!is_gimple_condexpr (rhs1)
+	      || verify_gimple_comparison (TREE_TYPE (rhs1),
+					   TREE_OPERAND (rhs1, 0),
+					   TREE_OPERAND (rhs1, 1),
+					   TREE_CODE (rhs1))))
 	return true;
       if (!useless_type_conversion_p (lhs_type, rhs2_type)
 	  || !useless_type_conversion_p (lhs_type, rhs3_type))
@@ -4410,7 +4411,8 @@ verify_gimple_assign_ternary (gassign *stmt)
 					TREE_TYPE (rhs2_type))
 		 && multiple_p (TYPE_VECTOR_SUBPARTS (rhs1_type),
 				TYPE_VECTOR_SUBPARTS (rhs2_type))
-		 && multiple_of_p (bitsizetype, rhs3, TYPE_SIZE (rhs2_type)))))
+		 && multiple_p (wi::to_poly_offset (rhs3),
+				wi::to_poly_offset (TYPE_SIZE (rhs2_type))))))
 	{
 	  error ("not allowed type combination in %qs", code_name);
 	  debug_generic_expr (rhs1_type);
@@ -8914,10 +8916,6 @@ gimple_purge_dead_abnormal_call_edges (basic_block bb)
   edge e;
   edge_iterator ei;
   gimple *stmt = last_stmt (bb);
-
-  if (!cfun->has_nonlocal_label
-      && !cfun->calls_setjmp)
-    return false;
 
   if (stmt && stmt_can_make_abnormal_goto (stmt))
     return false;

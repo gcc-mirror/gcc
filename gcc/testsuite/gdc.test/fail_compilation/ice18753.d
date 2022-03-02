@@ -14,7 +14,7 @@ struct ChunkByImpl
 {
     struct Group
     { }
-    
+
     static assert(isForwardRange!Group);
 }
 

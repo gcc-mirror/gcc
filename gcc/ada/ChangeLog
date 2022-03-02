@@ -1,3 +1,26 @@
+2022-02-13  Maciej W. Rozycki  <macro@orcam.me.uk>
+
+	PR ada/98724
+	PR ada/97504
+	* Makefile.rtl (LIBGNAT_TARGET_PAIRS) <alpha*-*-linux*>: Use
+	wraplf version of Aux_Long_Long_Float.
+
+2022-01-31  Pierre-Marie de Rodat  <derodat@adacore.com>
+
+	* doc/share/conf.py: Remove spurious call to ".decode()".
+
+2022-01-31  Arnaud Charlet  <charlet@adacore.com>
+
+	PR ada/104027
+	* gnat1drv.adb (Gnat1drv): Only call Exit_Program when not
+	generating code, otherwise instead go to End_Of_Program.
+
+2022-01-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/104258
+	* exp_ch4.adb (Narrow_Large_Operation): Also copy the entity, if
+	any, when rewriting the operator node.
+
 2022-01-19  H.J. Lu  <hjl.tools@gmail.com>
 
 	PR ada/103538

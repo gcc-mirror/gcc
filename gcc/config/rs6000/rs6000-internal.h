@@ -183,9 +183,6 @@ extern tree rs6000_fold_builtin (tree fndecl ATTRIBUTE_UNUSED,
 			         tree *args ATTRIBUTE_UNUSED,
 			         bool ignore ATTRIBUTE_UNUSED);
 
-#if TARGET_ELF
-extern bool rs6000_passes_ieee128;
-#endif
 extern bool rs6000_passes_float;
 extern bool rs6000_passes_long_double;
 extern bool rs6000_passes_vector;

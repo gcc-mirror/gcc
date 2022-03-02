@@ -103,10 +103,7 @@ lto_obj_file_open (const char *filename, bool writable)
 		  : O_RDONLY | O_BINARY),
 		 0666);
   if (lo->fd == -1)
-    {
-      error ("open %s failed: %s", fname, xstrerror (errno));
-      goto fail;
-    }
+    fatal_error (input_location, "open %s failed: %s", fname, xstrerror (errno));
 
   if (!writable)
     {
@@ -146,13 +143,12 @@ lto_obj_file_open (const char *filename, bool writable)
 
   return &lo->base;
 
- fail_errmsg:
+fail_errmsg:
   if (err == 0)
     error ("%s: %s", fname, errmsg);
   else
     error ("%s: %s: %s", fname, errmsg, xstrerror (err));
 					 
- fail:
   if (lo->fd != -1)
     lto_obj_file_close ((lto_file *) lo);
   free (lo);

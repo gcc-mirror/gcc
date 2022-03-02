@@ -125,10 +125,10 @@ type Conn interface {
 	// Any blocked Read or Write operations will be unblocked and return errors.
 	Close() error
 
-	// LocalAddr returns the local network address.
+	// LocalAddr returns the local network address, if known.
 	LocalAddr() Addr
 
-	// RemoteAddr returns the remote network address.
+	// RemoteAddr returns the remote network address, if known.
 	RemoteAddr() Addr
 
 	// SetDeadline sets the read and write deadlines associated
@@ -328,7 +328,7 @@ type PacketConn interface {
 	// Any blocked ReadFrom or WriteTo operations will be unblocked and return errors.
 	Close() error
 
-	// LocalAddr returns the local network address.
+	// LocalAddr returns the local network address, if known.
 	LocalAddr() Addr
 
 	// SetDeadline sets the read and write deadlines associated
@@ -396,8 +396,12 @@ type Listener interface {
 // An Error represents a network error.
 type Error interface {
 	error
-	Timeout() bool   // Is the error a timeout?
-	Temporary() bool // Is the error temporary?
+	Timeout() bool // Is the error a timeout?
+
+	// Deprecated: Temporary errors are not well-defined.
+	// Most "temporary" errors are timeouts, and the few exceptions are surprising.
+	// Do not use this method.
+	Temporary() bool
 }
 
 // Various errors contained in OpError.

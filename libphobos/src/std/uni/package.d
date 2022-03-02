@@ -5363,7 +5363,7 @@ pure @safe unittest
 pure @safe unittest
 {
     import std.range : stride;
-    static bool testAll(Matcher, Range)(scope ref Matcher m, ref Range r)
+    static bool testAll(Matcher, Range)(ref Matcher m, ref Range r) @safe
     {
         bool t = m.test(r);
         auto save = r.idx;

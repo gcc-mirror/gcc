@@ -1,3 +1,66 @@
+2022-03-01  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/104533
+	* c-attribs.cc (handle_target_clones_attribute): Use
+	get_target_clone_attr_len and report warning soon.
+
+2022-02-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	* c-pragma.cc (handle_pragma_pack): Remove parameter name.
+	(handle_pragma_weak): Likewise.
+	(handle_pragma_scalar_storage_order): Likewise.
+	(handle_pragma_redefine_extname): Likewise.
+	(handle_pragma_visibility): Likewise.
+	(handle_pragma_diagnostic): Likewise.
+	(handle_pragma_target): Likewise.
+	(handle_pragma_optimize): Likewise.
+	(handle_pragma_push_options): Likewise.
+	(handle_pragma_pop_options): Likewise.
+	(handle_pragma_reset_options): Likewise.
+	(handle_pragma_message): Likewise.
+	(handle_pragma_float_const_decimal64): Likewise.
+
+2022-02-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/104531
+	* c-omp.cc (c_finish_omp_atomic): For MIN_EXPR/MAX_EXPR, try first
+	build_binary_op with LT_EXPR and only if that doesn't return
+	error_mark_node call build_modify_expr.
+
+2022-02-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/104510
+	* c-common.cc (shorten_compare): Convert original arguments to
+	the original *restype_ptr when mixing binary and decimal float.
+
+2022-02-14  Richard Biener  <rguenther@suse.de>
+
+	PR c/104505
+	* c-pretty-print.cc (c_pretty_printer::postfix_expression): Handle
+	internal function calls.
+
+2022-02-11  Richard Biener  <rguenther@suse.de>
+
+	* c-attribs.cc (c_common_attribute_table): Add entry for
+	vector_mask.
+	(handle_vector_mask_attribute): New.
+
+2022-02-10  Marcel Vollweiler  <marcel@codesourcery.com>
+
+	* c-omp.cc (c_omp_split_clauses): Added OMP_CLAUSE_HAS_DEVICE_ADDR case.
+	* c-pragma.h (enum pragma_kind): Added 5.1 in comment.
+	(enum pragma_omp_clause): Added PRAGMA_OMP_CLAUSE_HAS_DEVICE_ADDR.
+
+2022-02-09  Jason Merrill  <jason@redhat.com>
+
+	* c-cppbuiltin.cc (c_cpp_builtins): Update values
+	of __cpp_constexpr and __cpp_concepts for C++20.
+
+2022-01-24  Marek Polacek  <polacek@redhat.com>
+
+	PR preprocessor/104030
+	* c.opt (Wbidi-chars): Mark as EnumSet.  Also accept =ucn.
+
 2022-01-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/104148

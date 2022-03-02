@@ -467,6 +467,8 @@ cxx_incomplete_type_error (location_t loc, const_tree value, const_tree type)
 static void
 maybe_push_temp_cleanup (tree sub, vec<tree,va_gc> **flags)
 {
+  if (!flag_exceptions)
+    return;
   if (tree cleanup
       = cxx_maybe_build_cleanup (sub, tf_warning_or_error))
     {
@@ -496,6 +498,7 @@ split_nonconstant_init_1 (tree dest, tree init, bool last,
   bool array_type_p = false;
   bool complete_p = true;
   HOST_WIDE_INT num_split_elts = 0;
+  tree last_split_elt = NULL_TREE;
 
   switch (TREE_CODE (type))
     {
@@ -548,6 +551,10 @@ split_nonconstant_init_1 (tree dest, tree init, bool last,
 
 	  bool elt_last = last && idx == CONSTRUCTOR_NELTS (init) - 1;
 
+	  /* We need to see sub-array TARGET_EXPR before cp_fold_r so we can
+	     handle cleanup flags properly.  */
+	  gcc_checking_assert (!target_expr_needs_replace (value));
+
 	  if (TREE_CODE (value) == CONSTRUCTOR)
 	    {
 	      if (!split_nonconstant_init_1 (sub, value, elt_last, flags)
@@ -568,18 +575,20 @@ split_nonconstant_init_1 (tree dest, tree init, bool last,
 	      else
 		{
 		  /* Mark element for removal.  */
+		  last_split_elt = field_index;
 		  CONSTRUCTOR_ELT (init, idx)->index = NULL_TREE;
 		  if (idx < tidx)
 		    tidx = idx;
 		  num_split_elts++;
 		}
 	    }
-	  else if (TREE_CODE (value) == VEC_INIT_EXPR)
+	  else if (tree vi = get_vec_init_expr (value))
 	    {
-	      add_stmt (expand_vec_init_expr (sub, value, tf_warning_or_error,
+	      add_stmt (expand_vec_init_expr (sub, vi, tf_warning_or_error,
 					      flags));
 
 	      /* Mark element for removal.  */
+	      last_split_elt = field_index;
 	      CONSTRUCTOR_ELT (init, idx)->index = NULL_TREE;
 	      if (idx < tidx)
 		tidx = idx;
@@ -588,6 +597,26 @@ split_nonconstant_init_1 (tree dest, tree init, bool last,
 	  else if (!initializer_constant_valid_p (value, inner_type))
 	    {
 	      tree code;
+
+	      /* Push cleanups for any preceding members with constant
+		 initialization.  */
+	      if (CLASS_TYPE_P (type))
+		for (tree prev = (last_split_elt ?
+				  DECL_CHAIN (last_split_elt)
+				  : TYPE_FIELDS (type));
+		     ; prev = DECL_CHAIN (prev))
+		  {
+		    prev = next_initializable_field (prev);
+		    if (prev == field_index)
+		      break;
+		    tree ptype = TREE_TYPE (prev);
+		    if (type_build_dtor_call (ptype))
+		      {
+			tree pcref = build3 (COMPONENT_REF, ptype, dest, prev,
+					     NULL_TREE);
+			maybe_push_temp_cleanup (pcref, flags);
+		      }
+		  }
 
 	      /* Mark element for removal.  */
 	      CONSTRUCTOR_ELT (init, idx)->index = NULL_TREE;
@@ -641,6 +670,7 @@ split_nonconstant_init_1 (tree dest, tree init, bool last,
 		    maybe_push_temp_cleanup (sub, flags);
 		}
 
+	      last_split_elt = field_index;
 	      num_split_elts++;
 	    }
 	}
@@ -1925,6 +1955,7 @@ process_init_constructor (tree type, tree init, int nested, int flags,
 	 initializer-clause until later so we can use a loop.  */
       TREE_TYPE (init) = init_list_type_node;
       init = build_vec_init_expr (type, init, complain);
+      init = get_target_expr (init);
     }
   return init;
 }

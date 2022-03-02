@@ -250,6 +250,7 @@ static enum gimplify_status gimplify_compound_expr (tree *, gimple_seq *, bool);
 static hash_map<tree, tree> *oacc_declare_returns;
 static enum gimplify_status gimplify_expr (tree *, gimple_seq *, gimple_seq *,
 					   bool (*) (tree), fallback_t, bool);
+static void prepare_gimple_addressable (tree *, gimple_seq *);
 
 /* Shorter alias name for the above function for use in gimplify.cc
    only.  */
@@ -1475,7 +1476,7 @@ gimplify_bind_expr (tree *expr_p, gimple_seq *pre_p)
 	      && !is_gimple_reg (t)
 	      && flag_stack_reuse != SR_NONE)
 	    {
-	      tree clobber = build_clobber (TREE_TYPE (t));
+	      tree clobber = build_clobber (TREE_TYPE (t), CLOBBER_EOL);
 	      gimple *clobber_stmt;
 	      clobber_stmt = gimple_build_assign (t, clobber);
 	      gimple_set_location (clobber_stmt, end_locus);
@@ -1804,7 +1805,6 @@ gimple_add_padding_init_for_auto_var (tree decl, bool is_vla,
 				      gimple_seq *seq_p)
 {
   tree addr_of_decl = NULL_TREE;
-  bool for_auto_init = true;
   tree fn = builtin_decl_explicit (BUILT_IN_CLEAR_PADDING);
 
   if (is_vla)
@@ -1821,11 +1821,8 @@ gimple_add_padding_init_for_auto_var (tree decl, bool is_vla,
       addr_of_decl = build_fold_addr_expr (decl);
     }
 
-  gimple *call = gimple_build_call (fn,
-				    3, addr_of_decl,
-				    build_zero_cst (TREE_TYPE (addr_of_decl)),
-				    build_int_cst (integer_type_node,
-						   (int) for_auto_init));
+  gimple *call = gimple_build_call (fn, 2, addr_of_decl,
+				    build_one_cst (TREE_TYPE (addr_of_decl)));
   gimplify_seq_add_stmt (seq_p, call);
 }
 
@@ -3126,10 +3123,12 @@ gimplify_compound_lval (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
      gimplified before gimplifying the size expressions.
 
      So we do this in three steps.  First we deal with variable
-     bounds, sizes, and positions, then we gimplify the base,
-     then we deal with the annotations for any variables in the
-     components and any indices, from left to right.  */
+     bounds, sizes, and positions, then we gimplify the base and
+     ensure it is memory if needed, then we deal with the annotations
+     for any variables in the components and any indices, from left
+     to right.  */
 
+  bool need_non_reg = false;
   for (i = expr_stack.length () - 1; i >= 0; i--)
     {
       tree t = expr_stack[i];
@@ -3165,6 +3164,7 @@ gimplify_compound_lval (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 		  TREE_OPERAND (t, 3) = elmt_size;
 		}
 	    }
+	  need_non_reg = true;
 	}
       else if (TREE_CODE (t) == COMPONENT_REF)
 	{
@@ -3186,6 +3186,7 @@ gimplify_compound_lval (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 		  TREE_OPERAND (t, 2) = offset;
 		}
 	    }
+	  need_non_reg = true;
 	}
     }
 
@@ -3195,6 +3196,12 @@ gimplify_compound_lval (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
   tret = gimplify_expr (p, pre_p, post_p, is_gimple_min_lval,
 			fallback | fb_lvalue);
   ret = MIN (ret, tret);
+
+  /* Step 2a: if we have component references we do not support on
+     registers then make sure the base isn't a register.  Of course
+     we can only do so if an rvalue is OK.  */
+  if (need_non_reg && (fallback & fb_rvalue))
+    prepare_gimple_addressable (p, pre_p);
 
   /* Step 3: gimplify size expressions and the indices and operands of
      ARRAY_REF.  During this loop we also remove any useless conversions.  */
@@ -3536,15 +3543,12 @@ gimplify_call_expr (tree *expr_p, gimple_seq *pre_p, bool want_value)
 	  {
 	    /* Remember the original type of the argument in an internal
 	       dummy second argument, as in GIMPLE pointer conversions are
-	       useless. also mark this call as not for automatic initialization
-	       in the internal dummy third argument.  */
+	       useless.  Also mark this call as not for automatic
+	       initialization in the internal dummy third argument.  */
 	    p = CALL_EXPR_ARG (*expr_p, 0);
-	    bool for_auto_init = false;
 	    *expr_p
-	      = build_call_expr_loc (EXPR_LOCATION (*expr_p), fndecl, 3, p,
-				     build_zero_cst (TREE_TYPE (p)),
-				     build_int_cst (integer_type_node,
-						    (int) for_auto_init));
+	      = build_call_expr_loc (EXPR_LOCATION (*expr_p), fndecl, 2, p,
+				     build_zero_cst (TREE_TYPE (p)));
 	    return GS_OK;
 	  }
 	break;
@@ -6981,7 +6985,7 @@ gimplify_target_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
 	{
 	  if (flag_stack_reuse == SR_ALL)
 	    {
-	      tree clobber = build_clobber (TREE_TYPE (temp));
+	      tree clobber = build_clobber (TREE_TYPE (temp), CLOBBER_EOL);
 	      clobber = build2 (MODIFY_EXPR, TREE_TYPE (temp), temp, clobber);
 	      gimple_push_cleanup (temp, clobber, false, pre_p, true);
 	    }
@@ -9552,7 +9556,10 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 			  == REFERENCE_TYPE))
 		    decl = TREE_OPERAND (decl, 0);
 		}
-	      if (decl != orig_decl && DECL_P (decl) && indir_p)
+	      if (decl != orig_decl && DECL_P (decl) && indir_p
+		  && (TREE_CODE (TREE_TYPE (decl)) == POINTER_TYPE
+		      || (decl_ref
+			  && TREE_CODE (TREE_TYPE (decl_ref)) == POINTER_TYPE)))
 		{
 		  gomp_map_kind k
 		    = ((code == OACC_EXIT_DATA || code == OMP_TARGET_EXIT_DATA)
@@ -10274,6 +10281,14 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 	case OMP_CLAUSE_USE_DEVICE_ADDR:
 	  flags = GOVD_EXPLICIT;
 	  goto do_add;
+
+	case OMP_CLAUSE_HAS_DEVICE_ADDR:
+	  decl = OMP_CLAUSE_DECL (c);
+	  while (TREE_CODE (decl) == INDIRECT_REF
+		 || TREE_CODE (decl) == ARRAY_REF)
+	    decl = TREE_OPERAND (decl, 0);
+	  flags = GOVD_EXPLICIT;
+	  goto do_add_decl;
 
 	case OMP_CLAUSE_IS_DEVICE_PTR:
 	  flags = GOVD_FIRSTPRIVATE | GOVD_EXPLICIT;
@@ -11425,6 +11440,16 @@ gimplify_adjust_omp_clauses (gimple_seq *pre_p, gimple_seq body, tree *list_p,
 	    }
 	  break;
 
+	case OMP_CLAUSE_HAS_DEVICE_ADDR:
+	  decl = OMP_CLAUSE_DECL (c);
+	  while (TREE_CODE (decl) == INDIRECT_REF
+		 || TREE_CODE (decl) == ARRAY_REF)
+	    decl = TREE_OPERAND (decl, 0);
+	  n = splay_tree_lookup (ctx->variables, (splay_tree_key) decl);
+	  remove = n == NULL || !(n->value & GOVD_SEEN);
+	  break;
+
+	case OMP_CLAUSE_IS_DEVICE_PTR:
 	case OMP_CLAUSE_NONTEMPORAL:
 	  decl = OMP_CLAUSE_DECL (c);
 	  n = splay_tree_lookup (ctx->variables, (splay_tree_key) decl);
@@ -11726,7 +11751,6 @@ gimplify_adjust_omp_clauses (gimple_seq *pre_p, gimple_seq body, tree *list_p,
 	case OMP_CLAUSE_DETACH:
 	case OMP_CLAUSE_USE_DEVICE_PTR:
 	case OMP_CLAUSE_USE_DEVICE_ADDR:
-	case OMP_CLAUSE_IS_DEVICE_PTR:
 	case OMP_CLAUSE_ASYNC:
 	case OMP_CLAUSE_WAIT:
 	case OMP_CLAUSE_INDEPENDENT:

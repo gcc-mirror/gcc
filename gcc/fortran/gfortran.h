@@ -1393,7 +1393,8 @@ enum
   OMP_LIST_USE_DEVICE_ADDR,
   OMP_LIST_NONTEMPORAL,
   OMP_LIST_ALLOCATE,
-  OMP_LIST_NUM
+  OMP_LIST_HAS_DEVICE_ADDR,
+  OMP_LIST_NUM /* Must be the last.  */
 };
 
 /* Because a symbol can belong to multiple namelists, they must be
@@ -3896,6 +3897,9 @@ bool gfc_is_finalizable (gfc_symbol *, gfc_expr **);
 	 && CLASS_DATA (sym) \
 	 && CLASS_DATA (sym)->attr.dimension \
 	 && !CLASS_DATA (sym)->attr.class_pointer)
+#define IS_POINTER(sym) \
+	(sym->ts.type == BT_CLASS && sym->attr.class_ok && CLASS_DATA (sym) \
+	 ? CLASS_DATA (sym)->attr.class_pointer : sym->attr.pointer)
 
 /* frontend-passes.cc */
 

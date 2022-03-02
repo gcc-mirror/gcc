@@ -58,7 +58,7 @@ extern int sigaltstack(const struct sigaltstack *, struct sigaltstack *);
 static void
 segv_crash_handler (int sig ATTRIBUTE_UNUSED)
 {
-  internal_error ("Segmentation Fault (code)");
+  internal_error ("segmentation fault (code)");
 }
 
 static void
@@ -128,7 +128,7 @@ segv_handler (int sig ATTRIBUTE_UNUSED,
   fprintf (stderr, "[address=%08lx pc=%08x]\n", 
 	   uc->uc_mcontext->MC_FLD(es).MC_FLD(dar),
 	   uc->uc_mcontext->MC_FLD(ss).MC_FLD(srr0));
-  internal_error ("Segmentation Fault");
+  internal_error ("segmentation fault");
   exit (FATAL_EXIT_CODE);
 }
 

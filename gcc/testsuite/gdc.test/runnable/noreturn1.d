@@ -112,10 +112,162 @@ void test3()
     }
 }
 
+/*****************************************/
+
+Exception collectException(void function() f)
+{
+    try
+    {
+        f();
+        return null;
+    }
+    catch (Exception e)
+        return e;
+}
+
+
+int return_()
+{
+    return throw new Exception("Return");
+}
+
+void ternary(int i)
+{
+    i > 0 ? i++ : throw new Exception("Ternary");
+}
+
+void call()
+{
+    ternary(throw new Exception("Call"));
+}
+
+void arrayLiteral()
+{
+    int[] arr = [
+        1,
+        throw new Exception("ArrayLiteral"),
+        2
+    ];
+}
+
+void assocArrayLiteral()
+{
+    int[string] arr = [
+        "A": 1,
+        "B": throw new Exception("AssocArrayLiteral"),
+        "C": 2
+    ];
+}
+
+void testThrowExpression()
+{
+    Exception ae = collectException({ return_(); });
+    assert(ae);
+
+    ae = collectException({ ternary(1); });
+    assert(!ae);
+
+    ae = collectException({ ternary(-1); });
+    assert(ae);
+
+    ae = collectException(&call);
+    assert(ae);
+    assert(ae.msg == "Call");
+
+    ae = collectException(&arrayLiteral);
+    assert(ae);
+
+    ae = collectException(&assocArrayLiteral);
+    assert(ae);
+}
+
+
+/*****************************************/
+
+/// Verify that throws does not screw with side effects
+void testThrowSideEffect()
+{
+    static void foo(bool, void*, int) {}
+
+    bool b;
+    int i;
+
+    try
+    {
+        foo(b = true, throw new Exception(""), i++);
+        assert(false);
+    }
+    catch (Exception) {}
+
+    assert(b == true);
+    assert(i == 0);
+}
+
+/// Verify that throws does not screw with dtors
+void testThrowDtor()
+{
+    static struct S
+    {
+        __gshared int destructed;
+        int id;
+
+        ~this()
+        {
+            assert(!(destructed & id));
+            destructed |= id;
+        }
+
+        string getMessage()
+        {
+            // Force runtime dependency
+            return destructed ? "Already destructed" : "Valid";
+        }
+    }
+
+    static void fooD(S, int, S) {}
+    bool caught;
+
+    try
+    {
+        fooD(S(1), throw new Exception(S(2).getMessage()), S(4));
+        assert(false);
+    }
+    catch (Exception e)
+    {
+        caught = true;
+        assert(e.msg == "Valid");
+    }
+    assert(caught);
+    assert(S.destructed == (1 | 2));
+
+
+    static void fooC(S, int, S) {}
+    caught = false;
+    S.destructed = 0;
+
+    try
+    {
+        fooC(S(1), throw new Exception(S(2).getMessage()), S(4));
+        assert(false);
+    }
+    catch (Exception e)
+    {
+        caught = true;
+        assert(e.msg == "Valid");
+    }
+    assert(caught);
+    assert(S.destructed == (1 | 2));
+}
+
+/*****************************************/
+
 int main()
 {
     test1();
     test2();
     test3();
+    testThrowExpression();
+    testThrowSideEffect();
+    testThrowDtor();
     return 0;
 }

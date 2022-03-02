@@ -1,4 +1,4 @@
-// COMPILE_SEPARATELY
+// COMPILE_SEPARATELY:
 // EXTRA_SOURCES: imports/link13394a.d
 
 module link13394;

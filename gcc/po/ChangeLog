@@ -1,3 +1,11 @@
+2022-02-11  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.pot: Regenerate.
+
+2022-02-11  Joseph Myers  <joseph@codesourcery.com>
+
+	* exgettext: Also process C++ sources with --language=GCC-source.
+
 2022-01-17  Martin Liska  <mliska@suse.cz>
 
 	* EXCLUDES: Rename .c names to .cc.

@@ -19,7 +19,9 @@
 // { dg-do run { target c++2a } }
 
 #include <algorithm>
+#include <array>
 #include <ranges>
+#include <vector>
 #include <testsuite_hooks.h>
 #include <testsuite_iterators.h>
 
@@ -130,20 +132,6 @@ test05()
   static_assert(!requires { 0 | all; });
 }
 
-template<bool B1, bool B2>
-struct BorrowedRange
-{
-  int* ptr = nullptr;
-
-  BorrowedRange(int (&arr)[3]) noexcept : ptr(arr) { }
-
-  int* begin() const noexcept(B1) { return ptr; }
-  int* end() const noexcept(B2) { return ptr + 3; }
-};
-
-template<bool B1, bool B2>
-const bool std::ranges::enable_borrowed_range<BorrowedRange<B1, B2>> = true;
-
 void
 test06()
 {
@@ -152,11 +140,11 @@ test06()
   // Using ref_view:
   static_assert(noexcept(views::all(x)));
 
-  // Using subrange:
-  static_assert(noexcept(views::all(BorrowedRange<true, true>(x))));
-  static_assert(!noexcept(views::all(BorrowedRange<true, false>(x))));
-  static_assert(!noexcept(views::all(BorrowedRange<false, true>(x))));
-  static_assert(!noexcept(views::all(BorrowedRange<false, false>(x))));
+  // Using owning_view:
+  static_assert(noexcept(views::all(std::array<int, 3>{})));
+  struct A { A(); A(const A&); };
+  static_assert(!std::is_nothrow_move_constructible_v<std::array<A, 3>>);
+  static_assert(!noexcept(views::all(std::array<A, 3>{})));
 }
 
 void
@@ -173,6 +161,38 @@ test07()
   static_assert(!ranges::viewable_range<view_t&>);
 }
 
+constexpr bool
+test08()
+{
+  // Verify P2415R2 "What is a view?" changes.
+  // In particular, rvalue non-view non-borrowed ranges are now viewable.
+  static_assert(ranges::viewable_range<std::vector<int>&&>);
+  static_assert(!ranges::viewable_range<const std::vector<int>&&>);
+
+  static_assert(ranges::viewable_range<std::initializer_list<int>&>);
+  static_assert(ranges::viewable_range<const std::initializer_list<int>&>);
+  static_assert(!ranges::viewable_range<std::initializer_list<int>&&>);
+  static_assert(!ranges::viewable_range<const std::initializer_list<int>&&>);
+
+  using type = views::all_t<std::vector<int>&&>;
+  using type = ranges::owning_view<std::vector<int>>;
+
+  std::same_as<type> auto v = std::vector<int>{{1,2,3}} | views::all;
+
+  VERIFY( ranges::equal(v, (int[]){1,2,3}) );
+  VERIFY( ranges::size(v) == 3 );
+  VERIFY( !ranges::empty(v) );
+  VERIFY( ranges::data(v) == &v[0] );
+
+  const auto w = std::move(v);
+  VERIFY( ranges::equal(w, (int[]){1,2,3}) );
+  VERIFY( ranges::size(w) == 3 );
+  VERIFY( !ranges::empty(w) );
+  VERIFY( ranges::data(w) == &w[0] );
+
+  return true;
+}
+
 int
 main()
 {
@@ -183,4 +203,5 @@ main()
   test05();
   test06();
   test07();
+  static_assert(test08());
 }

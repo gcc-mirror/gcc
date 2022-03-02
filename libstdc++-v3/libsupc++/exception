@@ -120,7 +120,7 @@ namespace std
    *  %exception can result in a call of 1terminate()`
    *  (15.5.1).'
    */
-  _GLIBCXX17_DEPRECATED
+  _GLIBCXX17_DEPRECATED_SUGGEST("std::uncaught_exceptions()")
   bool uncaught_exception() _GLIBCXX_USE_NOEXCEPT __attribute__ ((__pure__));
 
 #if __cplusplus >= 201703L || !defined(__STRICT_ANSI__) // c++17 or gnu++98

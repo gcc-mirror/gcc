@@ -142,12 +142,12 @@ back_threader::back_threader (function *fun, unsigned flags, bool first)
 
   m_fun = fun;
   m_flags = flags;
-  m_solver = new path_range_query (flags & BT_RESOLVE);
   m_last_stmt = NULL;
 
   // The path solver needs EDGE_DFS_BACK in resolving mode.
   if (flags & BT_RESOLVE)
     mark_dfs_back_edges ();
+  m_solver = new path_range_query (flags & BT_RESOLVE);
 }
 
 back_threader::~back_threader ()

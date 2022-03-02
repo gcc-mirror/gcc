@@ -1,4 +1,5 @@
-/* { dg-options "-Os -march=rv32imc -mabi=ilp32" } */
+/* { dg-options "-march=rv32imc -mabi=ilp32" } */
+/* { dg-skip-if "" { *-*-* } { "*" } { "-Os" } } */
 
 /* These loads cannot be compressed because only one compressed reg is
    available (since args are passed in a0-a4, that leaves a5-a7 available, of

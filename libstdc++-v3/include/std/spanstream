@@ -75,10 +75,17 @@ template<typename _CharT, typename _Traits = char_traits<_CharT>>
 
     basic_spanbuf(const basic_spanbuf&) = delete;
 
-    /// Move constructor. In this implementation `rhs` is left unchanged.
+    /** Move constructor.
+     *
+     * Transfers the buffer and pointers into the get and put areas from
+     * `__rhs` to `*this`.
+     *
+     * In this implementation `rhs` is left unchanged,
+     * but that is not guaranteed by the standard.
+     */
     basic_spanbuf(basic_spanbuf&& __rhs)
-    : __streambuf_type(__rhs), _M_mode(__rhs._M_mode)
-    { span(__rhs._M_buf); }
+    : __streambuf_type(__rhs), _M_mode(__rhs._M_mode), _M_buf(__rhs._M_buf)
+    { }
 
     // [spanbuf.assign], assignment and swap
     basic_spanbuf& operator=(const basic_spanbuf&) = delete;
@@ -86,7 +93,7 @@ template<typename _CharT, typename _Traits = char_traits<_CharT>>
     basic_spanbuf&
     operator=(basic_spanbuf&& __rhs)
     {
-      basic_spanbuf(std::move(__rhs))->swap(*this);
+      basic_spanbuf(std::move(__rhs)).swap(*this);
       return *this;
     }
 

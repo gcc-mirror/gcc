@@ -297,7 +297,12 @@ function var_set(flags)
 	}
 	if (flag_set_p("Enum.*", flags)) {
 		en = opt_args("Enum", flags);
-		return enum_index[en] ", CLVC_ENUM, 0"
+		if (flag_set_p("EnumSet", flags))
+			return enum_index[en] ", CLVC_ENUM, CLEV_SET"
+		else if (flag_set_p("EnumBitSet", flags))
+			return enum_index[en] ", CLVC_ENUM, CLEV_BITSET"
+		else
+			return enum_index[en] ", CLVC_ENUM, CLEV_NORMAL"
 	}
 	if (var_type(flags) == "const char *")
 		return "0, CLVC_STRING, 0"

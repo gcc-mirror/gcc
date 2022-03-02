@@ -1,5 +1,6 @@
 /* { dg-do run } */
-/* { dg-options "-O1 -ftree-slp-vectorize -funroll-loops" } */
+/* { dg-options "-ftree-slp-vectorize -funroll-loops" } */
+/* { dg-skip-if "" { *-*-* } { "-O0" } } */
 
 #include <stdio.h>
 #include <stdlib.h>

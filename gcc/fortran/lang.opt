@@ -421,23 +421,29 @@ Fortran
 Produce a warning at runtime if a array temporary has been created for a procedure argument.
 
 fconvert=
-Fortran RejectNegative Joined Enum(gfc_convert) Var(flag_convert) Init(GFC_FLAG_CONVERT_NATIVE)
--fconvert=<big-endian|little-endian|native|swap>	The endianness used for unformatted files.
+Fortran RejectNegative Joined Enum(gfc_convert) EnumSet Var(flag_convert) Init(GFC_FLAG_CONVERT_NATIVE)
+-fconvert=<big-endian|little-endian|native|swap|r16_ieee|r16_ibm>	The endianness used for unformatted files.
 
 Enum
 Name(gfc_convert) Type(enum gfc_convert) UnknownError(Unrecognized option to endianness value: %qs)
 
 EnumValue
-Enum(gfc_convert) String(big-endian) Value(GFC_FLAG_CONVERT_BIG)
+Enum(gfc_convert) String(big-endian) Value(GFC_FLAG_CONVERT_BIG) Set(1)
 
 EnumValue
-Enum(gfc_convert) String(little-endian) Value(GFC_FLAG_CONVERT_LITTLE)
+Enum(gfc_convert) String(little-endian) Value(GFC_FLAG_CONVERT_LITTLE) Set(1)
 
 EnumValue
-Enum(gfc_convert) String(native) Value(GFC_FLAG_CONVERT_NATIVE)
+Enum(gfc_convert) String(native) Value(GFC_FLAG_CONVERT_NATIVE) Set(1)
 
 EnumValue
-Enum(gfc_convert) String(swap) Value(GFC_FLAG_CONVERT_SWAP)
+Enum(gfc_convert) String(swap) Value(GFC_FLAG_CONVERT_SWAP) Set(1)
+
+EnumValue
+Enum(gfc_convert) String(r16_ieee) Value(GFC_FLAG_CONVERT_R16_IEEE) Set(2)
+
+EnumValue
+Enum(gfc_convert) String(r16_ibm) Value(GFC_FLAG_CONVERT_R16_IBM) Set(2)
 
 fcray-pointer
 Fortran Var(flag_cray_pointer)

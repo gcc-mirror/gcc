@@ -1222,7 +1222,7 @@ diagnostic_manager::emit_saved_diagnostic (const exploded_graph &eg,
      trailing eedge stashed, add any events for it.  This is for use
      in handling longjmp, to show where a longjmp is rewinding to.  */
   if (sd.m_trailing_eedge)
-    add_events_for_eedge (pb, *sd.m_trailing_eedge, &emission_path);
+    add_events_for_eedge (pb, *sd.m_trailing_eedge, &emission_path, NULL);
 
   emission_path.prepare_for_emission (sd.m_d);
 
@@ -1269,10 +1269,42 @@ diagnostic_manager::build_emission_path (const path_builder &pb,
 					 checker_path *emission_path) const
 {
   LOG_SCOPE (get_logger ());
+
+  interesting_t interest;
+  pb.get_pending_diagnostic ()->mark_interesting_stuff (&interest);
+
+  /* Add region creation events for any globals of interest, at the
+     beginning of the path.  */
+  {
+    for (auto reg : interest.m_region_creation)
+      switch (reg->get_memory_space ())
+	{
+	default:
+	  continue;
+	case MEMSPACE_CODE:
+	case MEMSPACE_GLOBALS:
+	case MEMSPACE_READONLY_DATA:
+	  {
+	    const region *base_reg = reg->get_base_region ();
+	    if (tree decl = base_reg->maybe_get_decl ())
+	      if (DECL_P (decl)
+		  && DECL_SOURCE_LOCATION (decl) != UNKNOWN_LOCATION)
+		{
+		  emission_path->add_region_creation_event
+		    (reg,
+		     DECL_SOURCE_LOCATION (decl),
+		     NULL_TREE,
+		     0);
+		}
+	  }
+	}
+  }
+
+  /* Walk EPATH, adding events as appropriate.  */
   for (unsigned i = 0; i < epath.m_edges.length (); i++)
     {
       const exploded_edge *eedge = epath.m_edges[i];
-      add_events_for_eedge (pb, *eedge, emission_path);
+      add_events_for_eedge (pb, *eedge, emission_path, &interest);
     }
 }
 
@@ -1566,6 +1598,11 @@ struct null_assignment_sm_context : public sm_context
     return NULL_TREE;
   }
 
+  const program_state *get_old_program_state () const FINAL OVERRIDE
+  {
+    return m_old_state;
+  }
+
   const program_state *m_old_state;
   const program_state *m_new_state;
   const gimple *m_stmt;
@@ -1580,10 +1617,12 @@ struct null_assignment_sm_context : public sm_context
 void
 diagnostic_manager::add_events_for_eedge (const path_builder &pb,
 					  const exploded_edge &eedge,
-					  checker_path *emission_path) const
+					  checker_path *emission_path,
+					  interesting_t *interest) const
 {
   const exploded_node *src_node = eedge.m_src;
   const program_point &src_point = src_node->get_point ();
+  const int src_stack_depth = src_point.get_stack_depth ();
   const exploded_node *dst_node = eedge.m_dest;
   const program_point &dst_point = dst_node->get_point ();
   const int dst_stack_depth = dst_point.get_stack_depth ();
@@ -1645,6 +1684,29 @@ diagnostic_manager::add_events_for_eedge (const path_builder &pb,
 	     (dst_point.get_supernode ()->get_start_location (),
 	      dst_point.get_fndecl (),
 	      dst_stack_depth));
+	  /* Create region_creation_events for on-stack regions within
+	     this frame.  */
+	  if (interest)
+	    {
+	      unsigned i;
+	      const region *reg;
+	      FOR_EACH_VEC_ELT (interest->m_region_creation, i, reg)
+		if (const frame_region *frame = reg->maybe_get_frame_region ())
+		  if (frame->get_fndecl () == dst_point.get_fndecl ())
+		    {
+		      const region *base_reg = reg->get_base_region ();
+		      if (tree decl = base_reg->maybe_get_decl ())
+			if (DECL_P (decl)
+			    && DECL_SOURCE_LOCATION (decl) != UNKNOWN_LOCATION)
+			  {
+			    emission_path->add_region_creation_event
+			      (reg,
+			       DECL_SOURCE_LOCATION (decl),
+			       dst_point.get_fndecl (),
+			       dst_stack_depth);
+			  }
+		    }
+	    }
 	}
       break;
     case PK_BEFORE_STMT:
@@ -1700,9 +1762,46 @@ diagnostic_manager::add_events_for_eedge (const path_builder &pb,
 			    == dst_node->m_succs[0]->m_dest->get_point ())))
 		  break;
 	      }
+
 	  }
       }
       break;
+    }
+
+  /* Look for changes in dynamic extents, which will identify
+     the creation of heap-based regions and alloca regions.  */
+  if (interest)
+    {
+      const region_model *src_model = src_state.m_region_model;
+      const region_model *dst_model = dst_state.m_region_model;
+      if (src_model->get_dynamic_extents ()
+	  != dst_model->get_dynamic_extents ())
+	{
+	  unsigned i;
+	  const region *reg;
+	  FOR_EACH_VEC_ELT (interest->m_region_creation, i, reg)
+	    {
+	      const region *base_reg = reg->get_base_region ();
+	      const svalue *old_extents
+		= src_model->get_dynamic_extents (base_reg);
+	      const svalue *new_extents
+		= dst_model->get_dynamic_extents (base_reg);
+	      if (old_extents == NULL && new_extents != NULL)
+		switch (base_reg->get_kind ())
+		  {
+		  default:
+		    break;
+		  case RK_HEAP_ALLOCATED:
+		  case RK_ALLOCA:
+		    emission_path->add_region_creation_event
+		      (reg,
+		       src_point.get_location (),
+		       src_point.get_fndecl (),
+		       src_stack_depth);
+		    break;
+		  }
+	    }
+	}
     }
 
   if (pb.get_feasibility_problem ()
@@ -2002,6 +2101,10 @@ diagnostic_manager::prune_for_sm_diagnostic (checker_path *path,
 		path->delete_event (idx);
 	      }
 	  }
+	  break;
+
+	case EK_REGION_CREATION:
+	  /* Don't filter these.  */
 	  break;
 
 	case EK_FUNCTION_ENTRY:

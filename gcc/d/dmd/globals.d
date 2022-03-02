@@ -327,6 +327,7 @@ extern (C++) struct Global
     Array!Identifier* debugids;   /// command line debug versions and predefined versions
 
     bool hasMainFunction; /// Whether a main function has already been compiled in (for -main switch)
+    uint varSequenceNumber = 1; /// Relative lifetime of `VarDeclaration` within a function, used for `scope` checks
 
     enum recursionLimit = 500; /// number of recursive template expansions before abort
 
@@ -613,49 +614,6 @@ nothrow:
         return filename !is null;
     }
 }
-
-/// A linkage attribute as defined by `extern(XXX)`
-///
-/// https://dlang.org/spec/attribute.html#linkage
-enum LINK : ubyte
-{
-    default_,
-    d,
-    c,
-    cpp,
-    windows,
-    objc,
-    system,
-}
-
-/// Whether to mangle an external aggregate as a struct or class, as set by `extern(C++, struct)`
-enum CPPMANGLE : ubyte
-{
-    def,      /// default
-    asStruct, /// `extern(C++, struct)`
-    asClass,  /// `extern(C++, class)`
-}
-
-/// Function match levels
-///
-/// https://dlang.org/spec/function.html#function-overloading
-enum MATCH : int
-{
-    nomatch,   /// no match
-    convert,   /// match with conversions
-    constant,  /// match with conversion to const
-    exact,     /// exact match
-}
-
-/// Inline setting as defined by `pragma(inline, XXX)`
-enum PINLINE : ubyte
-{
-    default_, /// as specified on the command line
-    never,    /// never inline
-    always,   /// always inline
-}
-
-alias StorageClass = ulong;
 
 /// Collection of global state
 extern (C++) __gshared Global global;

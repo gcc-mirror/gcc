@@ -120,15 +120,10 @@ UnionExp Not(Type type, Expression e1)
 {
     UnionExp ue = void;
     Loc loc = e1.loc;
+    // BUG: Should be replaced with e1.toBool().get(), but this is apparently
+    //      executed for some expressions that cannot be const-folded
+    //      To be fixed in another PR
     emplaceExp!(IntegerExp)(&ue, loc, e1.toBool().hasValue(false) ? 1 : 0, type);
-    return ue;
-}
-
-private UnionExp Bool(Type type, Expression e1)
-{
-    UnionExp ue = void;
-    Loc loc = e1.loc;
-    emplaceExp!(IntegerExp)(&ue, loc, e1.toBool().hasValue(true) ? 1 : 0, type);
     return ue;
 }
 
@@ -832,9 +827,9 @@ UnionExp Equal(EXP op, const ref Loc loc, Type type, Expression e1, Expression e
         else
         {
             cmp = 1; // if dim1 winds up being 0
-            for (size_t i = 0; i < dim1; i++)
+            foreach (i; 0 .. dim1)
             {
-                uinteger_t c = es1.charAt(i);
+                uinteger_t c = es1.getCodeUnit(i);
                 auto ee2 = es2[i];
                 if (ee2.isConst() != 1)
                 {
@@ -1093,19 +1088,14 @@ UnionExp Cast(const ref Loc loc, Type type, Type to, Expression e1)
     }
     else if (tb.ty == Tbool)
     {
-        bool val = void;
         const opt = e1.toBool();
-        if (opt.hasValue(true))
-            val = true;
-        else if (opt.hasValue(false))
-            val = false;
-        else
+        if (opt.isEmpty())
         {
             cantExp(ue);
             return ue;
         }
 
-        emplaceExp!(IntegerExp)(&ue, loc, val, type);
+        emplaceExp!(IntegerExp)(&ue, loc, opt.get(), type);
     }
     else if (type.isintegral())
     {
@@ -1257,7 +1247,7 @@ UnionExp Index(Type type, Expression e1, Expression e2)
         }
         else
         {
-            emplaceExp!(IntegerExp)(&ue, loc, es1.charAt(i), type);
+            emplaceExp!(IntegerExp)(&ue, loc, es1.getCodeUnit(cast(size_t) i), type);
         }
     }
     else if (e1.type.toBasetype().ty == Tsarray && e2.op == EXP.int64)

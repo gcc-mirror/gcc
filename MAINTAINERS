@@ -112,7 +112,6 @@ rs6000/powerpc port	David Edelsohn		<dje.gcc@gmail.com>
 rs6000/powerpc port	Segher Boessenkool	<segher@kernel.crashing.org>
 rs6000 vector extns	Aldy Hernandez		<aldyh@redhat.com>
 rx port			Nick Clifton		<nickc@redhat.com>
-s390 port		Hartmut Penner		<hepenner@us.ibm.com>
 s390 port		Ulrich Weigand		<uweigand@de.ibm.com>
 s390 port		Andreas Krebbel		<krebbel@linux.ibm.com>
 sh port			Alexandre Oliva		<aoliva@gcc.gnu.org>
@@ -519,7 +518,7 @@ Martin v. Löwis					<loewis@informatik.hu-berlin.de>
 H.J. Lu						<hjl.tools@gmail.com>
 Xiong Hu Luo					<luoxhu@gcc.gnu.org>
 Bin Bin Lv					<shlb@linux.ibm.com>
-Christophe Lyon					<christophe.lyon@st.com>
+Christophe Lyon					<christophe.lyon@arm.com>
 Jun Ma						<junma@linux.alibaba.com>
 Luis Machado					<luisgpm@br.ibm.com>
 Ziga Mahkovec					<ziga.mahkovec@klika.si>
@@ -623,7 +622,7 @@ Johannes Singler				<singler@kit.edu>
 Franz Sirl					<franz.sirl-kernel@lauterbach.com>
 Jan Sjodin					<jan.sjodin@amd.com>
 Trevor Smigiel					<trevor_smigiel@playstation.sony.com>
-Edward Smith-Rowland				<3dw4rd@verizon.net>
+Edward Smith-Rowland				<esmithrowland@gmail.com>
 Anatoly Sokolov					<aesok@dol.ru>
 Michael Sokolov					<msokolov@ivan.Harhan.ORG>
 Jayant Sonar					<rsonar.jayant@gmail.com>
@@ -722,6 +721,7 @@ Siddhesh Poyarekar				<siddhesh@gotplt.org>
 Navid Rahimi					<navidrahimi@microsoft.com>
 Trevor Saunders					<tbsaunde+gcc@tbsaunde.org>
 Nathan Sidwell					<nathan@acm.org>
+Edward Smith-Rowland				<esmithrowland@gmail.com>
 Petter Tomner					<tomner@kth.se>
 Martin Uecker					<uecker@gcc.gnu.org>
 Jonathan Wakely					<jwakely@redhat.com>

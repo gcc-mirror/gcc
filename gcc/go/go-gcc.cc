@@ -898,6 +898,20 @@ Gcc_backend::Gcc_backend()
                        t, 0);
 
   t = build_function_type_list(unsigned_char_type_node,
+			       ptr_type_node,
+			       integer_type_node,
+			       NULL_TREE);
+  this->define_builtin(BUILT_IN_ATOMIC_LOAD_1, "__atomic_load_1", NULL, t, 0);
+
+  t = build_function_type_list(void_type_node,
+			       ptr_type_node,
+			       unsigned_char_type_node,
+			       integer_type_node,
+			       NULL_TREE);
+  this->define_builtin(BUILT_IN_ATOMIC_STORE_1, "__atomic_store_1", NULL,
+		       t, 0);
+
+  t = build_function_type_list(unsigned_char_type_node,
                                ptr_type_node,
                                unsigned_char_type_node,
                                integer_type_node,

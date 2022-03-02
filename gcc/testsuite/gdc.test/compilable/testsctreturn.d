@@ -17,3 +17,19 @@ void test()
     size_t* p;
     const ppi = const(PackedPtrImpl!(3))(p);
 }
+
+/************************************************/
+
+// issues.dlang.org/show_bug.cgi?id=22541
+
+struct S
+{
+    int i;
+    int* ptr;
+
+    int* wannabeReturnRef() scope return
+    {
+        return &i;
+    }
+}
+

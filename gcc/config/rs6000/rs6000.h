@@ -2551,7 +2551,6 @@ enum rs6000_builtin_type_index
 extern GTY(()) tree rs6000_builtin_types[RS6000_BTI_MAX];
 
 #ifndef USED_FOR_TARGET
-extern GTY(()) tree builtin_mode_to_type[MAX_MACHINE_MODE][2];
 extern GTY(()) tree altivec_builtin_mask_for_load;
 extern GTY(()) section *toc_section;
 

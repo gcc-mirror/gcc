@@ -1,4 +1,5 @@
 /* { dg-additional-options "-O0 -fdump-tree-omplower" } */
+/* { dg-additional-options "-foffload=-Wa,--verify" { target offload_target_nvptx } } */
 /* { dg-require-alias "" } */
 /* { dg-xfail-if "PR 97102/PR 97106 - .alias not (yet) supported for nvptx" { offload_target_nvptx } } */
 

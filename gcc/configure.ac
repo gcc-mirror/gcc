@@ -1041,7 +1041,15 @@ AC_SUBST(enable_shared)
 
 AC_ARG_ENABLE(gcov,
 [  --disable-gcov          don't provide libgcov and related host tools],
-[], [enable_gcov=yes])
+[], [case $target in
+       bpf-*-*)
+         enable_gcov=no
+       ;;
+       *)
+         enable_gcov=yes
+       ;;
+     esac])
+
 AC_SUBST(enable_gcov)
 
 AC_ARG_WITH(specs,
@@ -5286,7 +5294,7 @@ configured with --enable-newlib-nano-formatted-io.])
 		 [Define if the assembler understands -misa-spec=.])])
     gcc_GAS_CHECK_FEATURE([-march=rv32i_zifencei support],
       gcc_cv_as_riscv_march_zifencei,
-      [-march=rv32i_zifencei],,,
+      [-march=rv32i_zifencei2p0],,,
       [AC_DEFINE(HAVE_AS_MARCH_ZIFENCEI, 1,
 		 [Define if the assembler understands -march=rv*_zifencei.])])
     ;;

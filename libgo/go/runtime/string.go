@@ -5,8 +5,9 @@
 package runtime
 
 import (
+	"internal/abi"
 	"internal/bytealg"
-	"runtime/internal/sys"
+	"internal/goarch"
 	"unsafe"
 )
 
@@ -88,14 +89,17 @@ func slicebytetostring(buf *tmpBuf, ptr *byte, n int) (str string) {
 		racereadrangepc(unsafe.Pointer(ptr),
 			uintptr(n),
 			getcallerpc(),
-			funcPC(slicebytetostring))
+			abi.FuncPCABIInternal(slicebytetostring))
 	}
 	if msanenabled {
 		msanread(unsafe.Pointer(ptr), uintptr(n))
 	}
+	if asanenabled {
+		asanread(unsafe.Pointer(ptr), uintptr(n))
+	}
 	if n == 1 {
 		p := unsafe.Pointer(&staticuint64s[*ptr])
-		if sys.BigEndian {
+		if goarch.BigEndian {
 			p = add(p, 7)
 		}
 		stringStructOf(&str).str = p
@@ -144,10 +148,13 @@ func slicebytetostringtmp(ptr *byte, n int) (str string) {
 		racereadrangepc(unsafe.Pointer(ptr),
 			uintptr(n),
 			getcallerpc(),
-			funcPC(slicebytetostringtmp))
+			abi.FuncPCABIInternal(slicebytetostringtmp))
 	}
 	if msanenabled && n > 0 {
 		msanread(unsafe.Pointer(ptr), uintptr(n))
+	}
+	if asanenabled && n > 0 {
+		asanread(unsafe.Pointer(ptr), uintptr(n))
 	}
 	stringStructOf(&str).str = unsafe.Pointer(ptr)
 	stringStructOf(&str).len = n
@@ -195,10 +202,13 @@ func slicerunetostring(buf *tmpBuf, a []rune) string {
 		racereadrangepc(unsafe.Pointer(&a[0]),
 			uintptr(len(a))*unsafe.Sizeof(a[0]),
 			getcallerpc(),
-			funcPC(slicerunetostring))
+			abi.FuncPCABIInternal(slicerunetostring))
 	}
 	if msanenabled && len(a) > 0 {
 		msanread(unsafe.Pointer(&a[0]), uintptr(len(a))*unsafe.Sizeof(a[0]))
+	}
+	if asanenabled && len(a) > 0 {
+		asanread(unsafe.Pointer(&a[0]), uintptr(len(a))*unsafe.Sizeof(a[0]))
 	}
 	var dum [4]byte
 	size1 := 0

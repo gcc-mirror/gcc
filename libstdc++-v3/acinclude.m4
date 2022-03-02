@@ -172,6 +172,7 @@ dnl  LD (as a side effect of testing)
 dnl Sets:
 dnl  with_gnu_ld
 dnl  glibcxx_ld_is_gold (set to "no" or "yes")
+dnl  glibcxx_ld_is_mold (set to "no" or "yes")
 dnl  glibcxx_gnu_ld_version (possibly)
 dnl
 dnl The last will be a single integer, e.g., version 1.23.45.0.67.89 will
@@ -204,11 +205,14 @@ AC_DEFUN([GLIBCXX_CHECK_LINKER_FEATURES], [
   # Start by getting the version number.  I think the libtool test already
   # does some of this, but throws away the result.
   glibcxx_ld_is_gold=no
+  glibcxx_ld_is_mold=no
   if test x"$with_gnu_ld" = x"yes"; then
     AC_MSG_CHECKING([for ld version])
     changequote(,)
     if $LD --version 2>/dev/null | grep 'GNU gold' >/dev/null 2>&1; then
       glibcxx_ld_is_gold=yes
+    elif $LD --version 2>/dev/null | grep 'mold' >/dev/null 2>&1; then
+      glibcxx_ld_is_mold=yes
     fi
     ldver=`$LD --version 2>/dev/null |
 	   sed -e 's/[. ][0-9]\{8\}$//;s/.* \([^ ]\{1,\}\)$/\1/; q'`
@@ -220,7 +224,7 @@ AC_DEFUN([GLIBCXX_CHECK_LINKER_FEATURES], [
 
   # Set --gc-sections.
   glibcxx_have_gc_sections=no
-  if test "$glibcxx_ld_is_gold" = "yes"; then
+  if test "$glibcxx_ld_is_gold" = "yes" || test "$glibcxx_ld_is_mold" = "yes" ; then
     if $LD --help 2>/dev/null | grep gc-sections >/dev/null 2>&1; then
       glibcxx_have_gc_sections=yes
     fi
@@ -2826,11 +2830,13 @@ AC_DEFUN([GLIBCXX_ENABLE_CSTDIO], [
       CSTDIO_H=config/io/c_io_stdio.h
       BASIC_FILE_H=config/io/basic_file_stdio.h
       BASIC_FILE_CC=config/io/basic_file_stdio.cc
-      AC_MSG_RESULT(stdio)
 
       if test "x$enable_cstdio" = "xstdio_pure" ; then
+	AC_MSG_RESULT([stdio (without POSIX read/write)])
 	AC_DEFINE(_GLIBCXX_USE_STDIO_PURE, 1,
 		  [Define to restrict std::__basic_file<> to stdio APIs.])
+      else
+	AC_MSG_RESULT([stdio (with POSIX read/write)])
       fi
       ;;
   esac
@@ -3603,6 +3609,8 @@ AC_DEFUN([GLIBCXX_ENABLE_LOCK_POLICY], [
     ac_save_CXXFLAGS="$CXXFLAGS"
 
     dnl Why do we care about 2-byte CAS on targets with 4-byte _Atomic_word?!
+    dnl Why don't we check 8-byte CAS for sparc64, where _Atomic_word is long?!
+    dnl New targets should only check for CAS for the _Atomic_word type.
     AC_TRY_COMPILE([
     #if ! defined __GCC_HAVE_SYNC_COMPARE_AND_SWAP_2
     # error "No 2-byte compare-and-swap"
@@ -3796,6 +3804,8 @@ changequote([,])dnl
     enable_symvers=no
   elif test $glibcxx_ld_is_gold = yes ; then
     : All versions of gold support symbol versioning.
+  elif test $glibcxx_ld_is_mold = yes ; then
+    : All versions of mold support symbol versioning.
   elif test $glibcxx_gnu_ld_version -lt $glibcxx_min_gnu_ld_version ; then
     # The right tools, the right setup, but too old.  Fallbacks?
     AC_MSG_WARN(=== Linker version $glibcxx_gnu_ld_version is too old for)
@@ -4734,6 +4744,43 @@ dnl
   ])
   if test $glibcxx_cv_truncate = yes; then
     AC_DEFINE(HAVE_TRUNCATE, 1, [Define if truncate is available in <unistd.h>.])
+  fi
+dnl
+  AC_CACHE_CHECK([for fdopendir],
+    glibcxx_cv_fdopendir, [dnl
+    GCC_TRY_COMPILE_OR_LINK(
+      [#include <dirent.h>],
+      [::DIR* dir = ::fdopendir(1);],
+      [glibcxx_cv_fdopendir=yes],
+      [glibcxx_cv_fdopendir=no])
+  ])
+  if test $glibcxx_cv_fdopendir = yes; then
+    AC_DEFINE(HAVE_FDOPENDIR, 1, [Define if fdopendir is available in <dirent.h>.])
+  fi
+dnl
+  AC_CACHE_CHECK([for dirfd],
+    glibcxx_cv_dirfd, [dnl
+    GCC_TRY_COMPILE_OR_LINK(
+      [#include <dirent.h>],
+      [int fd = ::dirfd((::DIR*)0);],
+      [glibcxx_cv_dirfd=yes],
+      [glibcxx_cv_dirfd=no])
+  ])
+  if test $glibcxx_cv_dirfd = yes; then
+    AC_DEFINE(HAVE_DIRFD, 1, [Define if dirfd is available in <dirent.h>.])
+  fi
+dnl
+  AC_CACHE_CHECK([for unlinkat],
+    glibcxx_cv_unlinkat, [dnl
+    GCC_TRY_COMPILE_OR_LINK(
+      [#include <fcntl.h>
+       #include <unistd.h>],
+      [::unlinkat(AT_FDCWD, "", AT_REMOVEDIR);],
+      [glibcxx_cv_unlinkat=yes],
+      [glibcxx_cv_unlinkat=no])
+  ])
+  if test $glibcxx_cv_unlinkat = yes; then
+    AC_DEFINE(HAVE_UNLINKAT, 1, [Define if unlinkat is available in <fcntl.h>.])
   fi
 dnl
   CXXFLAGS="$ac_save_CXXFLAGS"

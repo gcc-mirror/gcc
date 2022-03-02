@@ -1042,17 +1042,27 @@ number_of_iterations_ne (class loop *loop, tree type, affine_iv *iv,
 	    new_base = base - step > FINAL ; step < 0
 					     && base - step doesn't overflow
 
-       2') |FINAL - new_base| is an exact multiple of step.
-
-     Please refer to PR34114 as an example of loop-ch's impact, also refer
-     to PR72817 as an example why condition 2') is necessary.
+     Please refer to PR34114 as an example of loop-ch's impact.
 
      Note, for NE_EXPR, base equals to FINAL is a special case, in
-     which the loop exits immediately, and the iv does not overflow.  */
+     which the loop exits immediately, and the iv does not overflow.
+
+     Also note, we prove condition 2) by checking base and final seperately
+     along with condition 1) or 1').  Since we ensure the difference
+     computation of c does not wrap with cond below and the adjusted s
+     will fit a signed type as well as an unsigned we can safely do
+     this using the type of the IV if it is not pointer typed.  */
+  tree mtype = type;
+  if (POINTER_TYPE_P (type))
+    mtype = niter_type;
   if (!niter->control.no_overflow
-      && (integer_onep (s) || multiple_of_p (type, c, s)))
+      && (integer_onep (s)
+	  || (multiple_of_p (mtype, fold_convert (mtype, iv->base),
+			     fold_convert (mtype, s), false)
+	      && multiple_of_p (mtype, fold_convert (mtype, final),
+				fold_convert (mtype, s), false))))
     {
-      tree t, cond, new_c, relaxed_cond = boolean_false_node;
+      tree t, cond, relaxed_cond = boolean_false_node;
 
       if (tree_int_cst_sign_bit (iv->step))
 	{
@@ -1066,12 +1076,8 @@ number_of_iterations_ne (class loop *loop, tree type, affine_iv *iv,
 	      if (integer_nonzerop (t))
 		{
 		  t = fold_build2 (MINUS_EXPR, type, iv->base, iv->step);
-		  new_c = fold_build2 (MINUS_EXPR, niter_type,
-				       fold_convert (niter_type, t),
-				       fold_convert (niter_type, final));
-		  if (multiple_of_p (type, new_c, s))
-		    relaxed_cond = fold_build2 (GT_EXPR, boolean_type_node,
-						t, final);
+		  relaxed_cond = fold_build2 (GT_EXPR, boolean_type_node, t,
+					      final);
 		}
 	    }
 	}
@@ -1087,12 +1093,8 @@ number_of_iterations_ne (class loop *loop, tree type, affine_iv *iv,
 	      if (integer_nonzerop (t))
 		{
 		  t = fold_build2 (MINUS_EXPR, type, iv->base, iv->step);
-		  new_c = fold_build2 (MINUS_EXPR, niter_type,
-				       fold_convert (niter_type, final),
-				       fold_convert (niter_type, t));
-		  if (multiple_of_p (type, new_c, s))
-		    relaxed_cond = fold_build2 (LT_EXPR, boolean_type_node,
-						t, final);
+		  relaxed_cond = fold_build2 (LT_EXPR, boolean_type_node, t,
+					      final);
 		}
 	    }
 	}
@@ -1102,19 +1104,11 @@ number_of_iterations_ne (class loop *loop, tree type, affine_iv *iv,
 	t = simplify_using_initial_conditions (loop, relaxed_cond);
 
       if (t && integer_onep (t))
-	niter->control.no_overflow = true;
-    }
-
-  /* First the trivial cases -- when the step is 1.  */
-  if (integer_onep (s))
-    {
-      niter->niter = c;
-      return true;
-    }
-  if (niter->control.no_overflow && multiple_of_p (type, c, s))
-    {
-      niter->niter = fold_build2 (FLOOR_DIV_EXPR, niter_type, c, s);
-      return true;
+	{
+	  niter->control.no_overflow = true;
+	  niter->niter = fold_build2 (EXACT_DIV_EXPR, niter_type, c, s);
+	  return true;
+	}
     }
 
   /* Let nsd (step, size of mode) = d.  If d does not divide c, the loop
@@ -1579,8 +1573,21 @@ number_of_iterations_until_wrap (class loop *loop, tree type, affine_iv *iv0,
      { IVbase - STEP, +, STEP } != bound
      Here, biasing IVbase by 1 step makes 'bound' be the value before wrap.
      */
-  niter->control.base = fold_build2 (MINUS_EXPR, niter_type,
-				     niter->control.base, niter->control.step);
+  tree base_type = TREE_TYPE (niter->control.base);
+  if (POINTER_TYPE_P (base_type))
+    {
+      tree utype = unsigned_type_for (base_type);
+      niter->control.base
+	= fold_build2 (MINUS_EXPR, utype,
+		       fold_convert (utype, niter->control.base),
+		       fold_convert (utype, niter->control.step));
+      niter->control.base = fold_convert (base_type, niter->control.base);
+    }
+  else
+    niter->control.base
+      = fold_build2 (MINUS_EXPR, base_type, niter->control.base,
+		     niter->control.step);
+
   span = fold_build2 (MULT_EXPR, niter_type, niter->niter,
 		      fold_convert (niter_type, niter->control.step));
   niter->bound = fold_build2 (PLUS_EXPR, niter_type, span,
@@ -1881,7 +1888,8 @@ number_of_iterations_cond (class loop *loop,
      provided that either below condition is satisfied:
 
        a) the test is NE_EXPR;
-       b) iv0.step - iv1.step is integer and iv0/iv1 don't overflow.
+       b) iv0 and iv1 do not overflow and iv0.step - iv1.step is of
+	  the same sign and of less or equal magnitude than iv0.step
 
      This rarely occurs in practice, but it is simple enough to manage.  */
   if (!integer_zerop (iv0->step) && !integer_zerop (iv1->step))
@@ -1890,17 +1898,37 @@ number_of_iterations_cond (class loop *loop,
       tree step = fold_binary_to_constant (MINUS_EXPR, step_type,
 					   iv0->step, iv1->step);
 
-      /* No need to check sign of the new step since below code takes care
-	 of this well.  */
-      if (code != NE_EXPR
-	  && (TREE_CODE (step) != INTEGER_CST
-	      || !iv0->no_overflow || !iv1->no_overflow))
-	return false;
+      /* For code other than NE_EXPR we have to ensure moving the evolution
+	 of IV1 to that of IV0 does not introduce overflow.  */
+      if (TREE_CODE (step) != INTEGER_CST
+	  || !iv0->no_overflow || !iv1->no_overflow)
+	{
+	  if (code != NE_EXPR)
+	    return false;
+	  iv0->no_overflow = false;
+	}
+      /* If the new step of IV0 has changed sign or is of greater
+	 magnitude then we do not know whether IV0 does overflow
+	 and thus the transform is not valid for code other than NE_EXPR.  */
+      else if (tree_int_cst_sign_bit (step) != tree_int_cst_sign_bit (iv0->step)
+	       || wi::gtu_p (wi::abs (wi::to_widest (step)),
+			     wi::abs (wi::to_widest (iv0->step))))
+	{
+	  if (POINTER_TYPE_P (type) && code != NE_EXPR)
+	    /* For relational pointer compares we have further guarantees
+	       that the pointers always point to the same object (or one
+	       after it) and that objects do not cross the zero page.  So
+	       not only is the transform always valid for relational
+	       pointer compares, we also know the resulting IV does not
+	       overflow.  */
+	    ;
+	  else if (code != NE_EXPR)
+	    return false;
+	  else
+	    iv0->no_overflow = false;
+	}
 
       iv0->step = step;
-      if (!POINTER_TYPE_P (type))
-	iv0->no_overflow = false;
-
       iv1->step = build_int_cst (step_type, 0);
       iv1->no_overflow = true;
     }

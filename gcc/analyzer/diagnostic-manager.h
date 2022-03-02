@@ -141,7 +141,8 @@ private:
 
   void add_events_for_eedge (const path_builder &pb,
 			     const exploded_edge &eedge,
-			     checker_path *emission_path) const;
+			     checker_path *emission_path,
+			     interesting_t *interest) const;
 
   bool significant_edge_p (const path_builder &pb,
 			   const exploded_edge &eedge) const;

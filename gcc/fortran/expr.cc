@@ -312,7 +312,8 @@ gfc_copy_expr (gfc_expr *p)
 	  break;
 
 	case BT_CHARACTER:
-	  if (p->representation.string)
+	  if (p->representation.string
+	      && p->ts.kind == gfc_default_character_kind)
 	    q->value.character.string
 	      = gfc_char_to_widechar (q->representation.string);
 	  else
@@ -1717,7 +1718,13 @@ find_array_section (gfc_expr *expr, gfc_ref *ref)
 	}
 
       cons = gfc_constructor_lookup (base, limit);
-      gcc_assert (cons);
+      if (cons == NULL)
+	{
+	  gfc_error ("Error in array constructor referenced at %L",
+		     &ref->u.ar.where);
+	  t = false;
+	  goto cleanup;
+	}
       gfc_constructor_append_expr (&expr->value.constructor,
 				   gfc_copy_expr (cons->expr), NULL);
     }

@@ -57,6 +57,13 @@
 #endif  /* HPUX11_CPP_POW_INLINE_CHECK */
 
 
+#if defined( HPUX_MATH_CONSTEXPR_CHECK )
+#  define _DINFINITY (__builtin_inf ())
+#    define _SINFINITY (__builtin_inff ())
+#    define _SQNAN (__builtin_nanf (""))
+#endif  /* HPUX_MATH_CONSTEXPR_CHECK */
+
+
 #if defined( HPUX11_FABSF_CHECK )
 #ifdef _PA_RISC
 #ifndef __cplusplus

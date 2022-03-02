@@ -342,6 +342,9 @@ enum omp_clause_code {
      OpenMP clause: map ({alloc:,to:,from:,tofrom:,}variable-list).  */
   OMP_CLAUSE_MAP,
 
+  /* OpenMP clause: has_device_addr (variable-list).  */
+  OMP_CLAUSE_HAS_DEVICE_ADDR,
+
   /* Internal structure to hold OpenACC cache directive's variable-list.
      #pragma acc cache (variable-list).  */
   OMP_CLAUSE__CACHE_,
@@ -963,6 +966,15 @@ enum annot_expr_kind {
   annot_expr_kind_last
 };
 
+/* The kind of a TREE_CLOBBER_P CONSTRUCTOR node.  */
+enum clobber_kind {
+  /* Unspecified, this clobber acts as a store of an undefined value.  */
+  CLOBBER_UNDEF,
+  /* This clobber ends the lifetime of the storage.  */
+  CLOBBER_EOL,
+  CLOBBER_LAST
+};
+
 /*---------------------------------------------------------------------------
                                 Type definitions
 ---------------------------------------------------------------------------*/
@@ -1055,7 +1067,8 @@ struct GTY(()) tree_base {
 
       /* This field is only used with TREE_TYPE nodes; the only reason it is
 	 present in tree_base instead of tree_type is to save space.  The size
-	 of the field must be large enough to hold addr_space_t values.  */
+	 of the field must be large enough to hold addr_space_t values.
+	 For CONSTRUCTOR nodes this holds the clobber_kind enum.  */
       unsigned address_space : 8;
     } bits;
 
