@@ -1,3 +1,12 @@
+2022-03-01  Tamar Christina  <tamar.christina@arm.com>
+
+	* tree-vect-slp-patterns.c (vect_validate_multiplication): Correctly
+	detect conjugate cases.
+	(complex_mul_pattern::matches): Likewise.
+	(complex_fma_pattern::matches): Move accumulator last as expected.
+	(complex_fma_pattern::build): Likewise.
+	(complex_fms_pattern::matches): Handle different conjugate form.
+
 2022-02-25  Tamar Christina  <tamar.christina@arm.com>
 
 	* config/arm/arm_neon.h (vdot_laneq_u32, vdotq_laneq_u32,

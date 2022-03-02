@@ -1,3 +1,70 @@
+2022-03-01  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc.dg/vect/complex/bb-slp-complex-add-pattern-int.c: Update test
+	cases to not be UNSUPPORTED.
+	* gcc.dg/vect/complex/bb-slp-complex-add-pattern-long.c: Likewise.
+	* gcc.dg/vect/complex/bb-slp-complex-add-pattern-short.c: Likewise.
+	* gcc.dg/vect/complex/bb-slp-complex-add-pattern-unsigned-int.c:
+	Likewise.
+	* gcc.dg/vect/complex/bb-slp-complex-add-pattern-unsigned-long.c:
+	Likewise.
+	* gcc.dg/vect/complex/bb-slp-complex-add-pattern-unsigned-short.c:
+	Likewise.
+	* gcc.dg/vect/complex/complex-add-pattern-template.c: Likewise.
+	* gcc.dg/vect/complex/complex-add-template.c: Likewise.
+	* gcc.dg/vect/complex/complex-operations-run.c: Likewise.
+	* gcc.dg/vect/complex/fast-math-bb-slp-complex-add-double.c: Likewise.
+	* gcc.dg/vect/complex/fast-math-bb-slp-complex-add-float.c: Likewise.
+	* gcc.dg/vect/complex/fast-math-bb-slp-complex-add-half-float.c:
+	Likewise.
+	* gcc.dg/vect/complex/fast-math-bb-slp-complex-add-pattern-double.c:
+	Likewise.
+	* gcc.dg/vect/complex/fast-math-bb-slp-complex-add-pattern-float.c:
+	Likewise.
+	* gcc.dg/vect/complex/fast-math-bb-slp-complex-add-pattern-half-float.c:
+	Likewise.
+	* gcc.dg/vect/complex/fast-math-bb-slp-complex-mla-double.c: Likewise.
+	* gcc.dg/vect/complex/fast-math-bb-slp-complex-mla-float.c: Likewise.
+	* gcc.dg/vect/complex/fast-math-bb-slp-complex-mla-half-float.c:
+	Likewise.
+	* gcc.dg/vect/complex/fast-math-bb-slp-complex-mls-double.c: Likewise.
+	* gcc.dg/vect/complex/fast-math-bb-slp-complex-mls-float.c: Likewise.
+	* gcc.dg/vect/complex/fast-math-bb-slp-complex-mls-half-float.c:
+	Likewise.
+	* gcc.dg/vect/complex/fast-math-bb-slp-complex-mul-double.c: Likewise.
+	* gcc.dg/vect/complex/fast-math-bb-slp-complex-mul-float.c: Likewise.
+	* gcc.dg/vect/complex/fast-math-bb-slp-complex-mul-half-float.c:
+	Likewise.
+	* gcc.dg/vect/complex/fast-math-complex-add-double.c: Likewise.
+	* gcc.dg/vect/complex/fast-math-complex-add-float.c: Likewise.
+	* gcc.dg/vect/complex/fast-math-complex-add-half-float.c: Likewise.
+	* gcc.dg/vect/complex/fast-math-complex-add-pattern-double.c: Likewise.
+	* gcc.dg/vect/complex/fast-math-complex-add-pattern-float.c: Likewise.
+	* gcc.dg/vect/complex/fast-math-complex-add-pattern-half-float.c:
+	Likewise.
+	* gcc.dg/vect/complex/fast-math-complex-mla-double.c: Likewise.
+	* gcc.dg/vect/complex/fast-math-complex-mla-float.c: Likewise.
+	* gcc.dg/vect/complex/fast-math-complex-mla-half-float.c: Likewise.
+	* gcc.dg/vect/complex/fast-math-complex-mls-double.c: Likewise.
+	* gcc.dg/vect/complex/fast-math-complex-mls-float.c: Likewise.
+	* gcc.dg/vect/complex/fast-math-complex-mls-half-float.c: Likewise.
+	* gcc.dg/vect/complex/fast-math-complex-mul-double.c: Likewise.
+	* gcc.dg/vect/complex/fast-math-complex-mul-float.c: Likewise.
+	* gcc.dg/vect/complex/fast-math-complex-mul-half-float.c: Likewise.
+	* gcc.dg/vect/complex/vect-complex-add-pattern-byte.c: Likewise.
+	* gcc.dg/vect/complex/vect-complex-add-pattern-int.c: Likewise.
+	* gcc.dg/vect/complex/vect-complex-add-pattern-long.c: Likewise.
+	* gcc.dg/vect/complex/vect-complex-add-pattern-short.c: Likewise.
+	* gcc.dg/vect/complex/vect-complex-add-pattern-unsigned-byte.c:
+	Likewise.
+	* gcc.dg/vect/complex/vect-complex-add-pattern-unsigned-int.c:
+	Likewise.
+	* gcc.dg/vect/complex/vect-complex-add-pattern-unsigned-long.c:
+	Likewise.
+	* gcc.dg/vect/complex/vect-complex-add-pattern-unsigned-short.c:
+	Likewise.
+	* gcc.dg/vect/complex/complex.exp: Copyright year update.
+
 2022-02-28  Marek Polacek  <polacek@redhat.com>
 
 	Backported from master:
