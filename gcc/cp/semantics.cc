@@ -3150,7 +3150,13 @@ finish_compound_literal (tree type, tree compound_literal,
 	   && !AUTO_IS_DECLTYPE (type)
 	   && CONSTRUCTOR_NELTS (compound_literal) == 1)
     {
-      if (cxx_dialect < cxx23)
+      if (is_constrained_auto (type))
+	{
+	  if (complain & tf_error)
+	    error ("%<auto{x}%> cannot be constrained");
+	  return error_mark_node;
+	}
+      else if (cxx_dialect < cxx23)
 	pedwarn (input_location, OPT_Wc__23_extensions,
 		 "%<auto{x}%> only available with "
 		 "%<-std=c++2b%> or %<-std=gnu++2b%>");
