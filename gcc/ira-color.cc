@@ -1338,26 +1338,65 @@ update_allocno_cost (ira_allocno_t allocno, int hard_regno,
   return true;
 }
 
-/* Return TRUE if allocnos A1 and A2 conflicts. Here we are
-   interesting only in conflicts of allocnos with intersected allocno
-   classes. */
+/* Return TRUE if the object OBJ conflicts with the allocno A.  */
 static bool
-allocnos_conflict_p (ira_allocno_t a1, ira_allocno_t a2)
+object_conflicts_with_allocno_p (ira_object_t obj, ira_allocno_t a)
 {
-  ira_object_t obj, conflict_obj;
-  ira_object_conflict_iterator oci;
-  int word, nwords = ALLOCNO_NUM_OBJECTS (a1);
-  
-  for (word = 0; word < nwords; word++)
+  if  (!OBJECT_CONFLICT_VEC_P (obj))
+    for (int word = 0; word < ALLOCNO_NUM_OBJECTS (a); word++)
+      {
+	ira_object_t another_obj = ALLOCNO_OBJECT (a, word);
+	if (OBJECT_CONFLICT_ID (another_obj) >= OBJECT_MIN (obj)
+	    && OBJECT_CONFLICT_ID (another_obj) <= OBJECT_MAX (obj)
+	    && TEST_MINMAX_SET_BIT (OBJECT_CONFLICT_BITVEC (obj),
+				    OBJECT_CONFLICT_ID (another_obj),
+				    OBJECT_MIN (obj), OBJECT_MAX (obj)))
+	  return true;
+      }
+  else
     {
-      obj = ALLOCNO_OBJECT (a1, word);
-      /* Take preferences of conflicting allocnos into account.  */
+      /* If this linear walk ever becomes a bottleneck we could add a
+	 conflict_vec_sorted_p flag and if not set, sort the conflicts after
+	 their ID so we can use a binary search.  That would also require
+	 tracking the actual number of conflicts in the vector to not rely
+	 on the NULL termination.  */
+      ira_object_conflict_iterator oci;
+      ira_object_t conflict_obj;
       FOR_EACH_OBJECT_CONFLICT (obj, conflict_obj, oci)
-	if (OBJECT_ALLOCNO (conflict_obj) == a2)
+	if (OBJECT_ALLOCNO (conflict_obj) == a)
 	  return true;
     }
   return false;
-}  
+}
+
+/* Return TRUE if allocnos A1 and A2 conflicts. Here we are
+   interested only in conflicts of allocnos with intersecting allocno
+   classes.  */
+static bool
+allocnos_conflict_p (ira_allocno_t a1, ira_allocno_t a2)
+{
+  /* Compute the upper bound for the linear iteration when the object
+     conflicts are represented as a sparse vector.  In particular this
+     will make sure we prefer O(1) bitvector testing.  */
+  int num_conflicts_in_vec1 = 0, num_conflicts_in_vec2 = 0;
+  for (int word = 0; word < ALLOCNO_NUM_OBJECTS (a1); ++word)
+    if (OBJECT_CONFLICT_VEC_P (ALLOCNO_OBJECT (a1, word)))
+      num_conflicts_in_vec1 += OBJECT_NUM_CONFLICTS (ALLOCNO_OBJECT (a1, word));
+  for (int word = 0; word < ALLOCNO_NUM_OBJECTS (a2); ++word)
+    if (OBJECT_CONFLICT_VEC_P (ALLOCNO_OBJECT (a2, word)))
+      num_conflicts_in_vec2 += OBJECT_NUM_CONFLICTS (ALLOCNO_OBJECT (a2, word));
+  if (num_conflicts_in_vec2 < num_conflicts_in_vec1)
+    std::swap (a1, a2);
+
+  for (int word = 0; word < ALLOCNO_NUM_OBJECTS (a1); word++)
+    {
+      ira_object_t obj = ALLOCNO_OBJECT (a1, word);
+      /* Take preferences of conflicting allocnos into account.  */
+      if (object_conflicts_with_allocno_p (obj, a2))
+	return true;
+    }
+  return false;
+}
 
 /* Update (decrease if DECR_P) HARD_REGNO cost of allocnos connected
    by copies to ALLOCNO to increase chances to remove some copies as
@@ -1572,15 +1611,15 @@ update_conflict_hard_regno_costs (int *costs, enum reg_class aclass,
 	else
 	  gcc_unreachable ();
 
+	another_aclass = ALLOCNO_CLASS (another_allocno);
 	if (another_allocno == from
-	    || allocnos_conflict_p (another_allocno, start))
+	    || ALLOCNO_ASSIGNED_P (another_allocno)
+	    || ALLOCNO_COLOR_DATA (another_allocno)->may_be_spilled_p
+	    || ! ira_reg_classes_intersect_p[aclass][another_aclass])
+	  continue;
+	if (allocnos_conflict_p (another_allocno, start))
 	  continue;
 
- 	another_aclass = ALLOCNO_CLASS (another_allocno);
- 	if (! ira_reg_classes_intersect_p[aclass][another_aclass]
-	    || ALLOCNO_ASSIGNED_P (another_allocno)
-	    || ALLOCNO_COLOR_DATA (another_allocno)->may_be_spilled_p)
-	  continue;
 	class_size = ira_class_hard_regs_num[another_aclass];
 	ira_allocate_and_copy_costs
 	  (&ALLOCNO_UPDATED_CONFLICT_HARD_REG_COSTS (another_allocno),
