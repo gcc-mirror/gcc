@@ -1,3 +1,20 @@
+2022-02-02   Gaius Mulley   <gaius.mulley@southwales.ac.uk>
+
+	* gm2-libs/Args.def (GetArg): Corrected formatting.
+	* gm2-libs/Environment.def (GetEnvironment): Renamed parameter
+	a to dest.  (PutEnvironment) New procedure function.
+	* gm2-libs/Environment.mod (GetEnvironment): Renamed parameter
+	a to dest.  (PutEnvironment) New procedure function.
+	* gm2-libs/SEnvironment.def (GetEnvironment): Renamed parameter
+	a to dest.  (PutEnvironment) New procedure function.
+	* gm2-libs/SEnvironment.mod  (GetEnvironment): Renamed parameter
+	a to dest.  (PutEnvironment) New procedure function.
+	* gm2-libs/libc.def: Export list introduced identifiers putenv, execv.
+	* m2/m2-link-support.h: Ensure that the scaffold program
+	is not deleted if the user specified -fmakeinit.
+	* mc-boot-ch/Glibc.c (libc_putenv): New function.
+	* ChangeLog-2021: (New file).
+
 2022-01-25   Gaius Mulley   <gaius.mulley@southwales.ac.uk>
 
         * gm2spec.cc: Replaced save_switch by fe_save_switch.

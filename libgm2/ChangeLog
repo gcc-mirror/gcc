@@ -1,3 +1,8 @@
+2022-02-02   Gaius Mulley   <gaius.mulley@southwales.ac.uk>
+
+	* libm2pim/sckt.c (tcpServerEstablishPort): Corrected spelling.
+	(tcpServerEstablish) Corrected spelling.
+
 2021-06-27      Gaius Mulley <gaius.mulley@southwales.ac.uk>
 
 	* Makefile.am:  renamed getopt.c to cgetopt.c.
