@@ -144,7 +144,30 @@ public:
   /**
    * Lex the contents of a string instead of a file
    */
-  static Lexer lex_string (std::string input)
+  // FIXME: This is unsafe!
+  // Since we are taking a reference to the string's internal buffer, we must
+  // ensure that the lexer does not outlive the string, which might not always
+  // be the case.
+  //
+  // We could have a fix, which would include using fmemopen() to allocate a
+  // buffer and copy the string inside it.
+  // ```
+  // // There will be an extra nul-terminator byte written on fclose(), so
+  // // account for that
+  // auto string_file = fmemopen(NULL, input.length() + 1, "wr");
+  // fwrite(input.c_str(), sizeof(char), input.length(), string_file);
+  // auto wrapper = RAIIFile(string_file);
+  // ```
+  // But sadly our RAIIFile does not support moving really well... And the
+  // destructor, which calls fclose(), gets called, triggering a lack of a
+  // buffer to parse :)
+  //
+  // We need to look into fixing the RAIIFile so that it supports this
+  // behaviour. I'm assuming this will be something like fixing one of the copy
+  // or move constructors, but is outside of the scope of this fix. For now,
+  // make sure your lexers don't live longer than the strings they're trying
+  // to lex
+  static Lexer lex_string (std::string &input)
   {
     // We can perform this ugly cast to a non-const char* since we're only
     // *reading* the string. This would not be valid if we were doing any
