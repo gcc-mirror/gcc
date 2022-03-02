@@ -4295,8 +4295,13 @@ MATCH deduceType(RootObject o, Scope* sc, Type tparam, TemplateParameters* param
                 if (ti && ti.toAlias() == t.sym)
                 {
                     auto tx = new TypeInstance(Loc.initial, ti);
-                    result = deduceType(tx, sc, tparam, parameters, dedtypes, wm);
-                    return;
+                    auto m = deduceType(tx, sc, tparam, parameters, dedtypes, wm);
+                    // if we have a no match we still need to check alias this
+                    if (m != MATCH.nomatch)
+                    {
+                        result = m;
+                        return;
+                    }
                 }
 
                 /* Match things like:

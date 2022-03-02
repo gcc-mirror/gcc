@@ -47,6 +47,7 @@ import dmd.globals;
 import dmd.gluelayer;
 import dmd.id;
 import dmd.identifier;
+import dmd.importc;
 import dmd.init;
 import dmd.intrange;
 import dmd.mtype;
@@ -2862,6 +2863,7 @@ package (dmd) extern (C++) final class StatementSemanticVisitor : Visitor
                 rs.exp = inferType(rs.exp, fld.treq.nextOf().nextOf());
 
             rs.exp = rs.exp.expressionSemantic(sc);
+            rs.exp = rs.exp.arrayFuncConv(sc);
             // If we're returning by ref, allow the expression to be `shared`
             const returnSharedRef = (tf.isref && (fd.inferRetType || tret.isShared()));
             rs.exp.checkSharedAccess(sc, returnSharedRef);

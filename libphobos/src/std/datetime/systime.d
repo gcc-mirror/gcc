@@ -8713,13 +8713,14 @@ public:
 
     /++
         Creates a $(LREF SysTime) from a string with the format
-        YYYYMMDDTHHMMSS.FFFFFFFTZ (where F is fractional seconds is the time
-        zone). Whitespace is stripped from the given string.
+        YYYYMMDDTHHMMSS.FFFFFFFTZ (where F is fractional seconds and TZ
+        is the time zone). Whitespace is stripped from the given string.
 
-        The exact format is exactly as described in `toISOString` except that
-        trailing zeroes are permitted - including having fractional seconds with
-        all zeroes. However, a decimal point with nothing following it is
-        invalid. Also, while $(LREF toISOString) will never generate a string
+        The exact format is exactly as described in $(LREF toISOString) except
+        that trailing zeroes are permitted - including having fractional seconds
+        with all zeroes. The time zone and fractional seconds are optional,
+        however, a decimal point with nothing following it is invalid.
+        Also, while $(LREF toISOString) will never generate a string
         with more than 7 digits in the fractional seconds (because that's the
         limit with hecto-nanosecond precision), it will allow more than 7 digits
         in order to read strings from other sources that have higher precision
@@ -9024,13 +9025,14 @@ public:
 
     /++
         Creates a $(LREF SysTime) from a string with the format
-        YYYY-MM-DDTHH:MM:SS.FFFFFFFTZ (where F is fractional seconds is the
-        time zone). Whitespace is stripped from the given string.
+        YYYY-MM-DDTHH:MM:SS.FFFFFFFTZ (where F is fractional seconds and TZ
+        is the time zone). Whitespace is stripped from the given string.
 
-        The exact format is exactly as described in `toISOExtString`
+        The exact format is exactly as described in $(LREF toISOExtString)
         except that trailing zeroes are permitted - including having fractional
-        seconds with all zeroes. However, a decimal point with nothing following
-        it is invalid. Also, while $(LREF toISOExtString) will never generate a
+        seconds with all zeroes. The time zone and fractional seconds are
+        optional, however, a decimal point with nothing following it is invalid.
+        Also, while $(LREF toISOExtString) will never generate a
         string with more than 7 digits in the fractional seconds (because that's
         the limit with hecto-nanosecond precision), it will allow more than 7
         digits in order to read strings from other sources that have higher
@@ -9273,13 +9275,14 @@ public:
 
     /++
         Creates a $(LREF SysTime) from a string with the format
-        YYYY-MM-DD HH:MM:SS.FFFFFFFTZ (where F is fractional seconds is the
-        time zone). Whitespace is stripped from the given string.
+        YYYY-Mon-DD HH:MM:SS.FFFFFFFTZ (where F is fractional seconds and TZ
+        is the time zone). Whitespace is stripped from the given string.
 
-        The exact format is exactly as described in `toSimpleString` except
+        The exact format is exactly as described in $(LREF toSimpleString) except
         that trailing zeroes are permitted - including having fractional seconds
-        with all zeroes. However, a decimal point with nothing following it is
-        invalid. Also, while $(LREF toSimpleString) will never generate a
+        with all zeroes. The time zone and fractional seconds are optional,
+        however, a decimal point with nothing following it is invalid.
+        Also, while $(LREF toSimpleString) will never generate a
         string with more than 7 digits in the fractional seconds (because that's
         the limit with hecto-nanosecond precision), it will allow more than 7
         digits in order to read strings from other sources that have higher

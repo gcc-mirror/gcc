@@ -246,6 +246,7 @@ enum TOK : ubyte
     arrow,      // ->
     colonColon, // ::
     wchar_tLiteral,
+    whitespace,
 
     // C only keywords
     inline,
@@ -851,6 +852,7 @@ extern (C++) struct Token
         TOK.wcharLiteral: "wcharv",
         TOK.dcharLiteral: "dcharv",
         TOK.wchar_tLiteral: "wchar_tv",
+        TOK.whitespace: "whitespace",
 
         TOK.hexadecimalString: "xstring",
 

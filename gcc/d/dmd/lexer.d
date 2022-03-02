@@ -79,6 +79,12 @@ class Lexer
         bool doDocComment;      // collect doc comment information
         bool anyToken;          // seen at least one token
         bool commentToken;      // comments are TOK.comment's
+
+        version (DMDLIB)
+        {
+            bool whitespaceToken;   // tokenize whitespaces
+        }
+
         int inTokenStringConstant; // can be larger than 1 when in nested q{} strings
         int lastDocLine;        // last line of previous doc comment
 
@@ -142,6 +148,31 @@ class Lexer
                 break;
             }
             endOfLine();
+        }
+    }
+
+    version (DMDLIB)
+    {
+        this(const(char)* filename, const(char)* base, size_t begoffset, size_t endoffset,
+            bool doDocComment, bool commentToken, bool whitespaceToken)
+        {
+            this(filename, base, begoffset, endoffset, doDocComment, commentToken);
+            this.whitespaceToken = whitespaceToken;
+        }
+
+        bool empty() const pure @property @nogc @safe
+        {
+            return front() == TOK.endOfFile;
+        }
+
+        TOK front() const pure @property @nogc @safe
+        {
+            return token.value;
+        }
+
+        void popFront()
+        {
+            nextToken();
         }
     }
 
@@ -237,20 +268,52 @@ class Lexer
                 while (*p == ' ')
                     p++;
             LendSkipFourSpaces:
+                version (DMDLIB)
+                {
+                    if (whitespaceToken)
+                    {
+                        t.value = TOK.whitespace;
+                        return;
+                    }
+                }
                 continue; // skip white space
             case '\t':
             case '\v':
             case '\f':
                 p++;
+                version (DMDLIB)
+                {
+                    if (whitespaceToken)
+                    {
+                        t.value = TOK.whitespace;
+                        return;
+                    }
+                }
                 continue; // skip white space
             case '\r':
                 p++;
                 if (*p != '\n') // if CR stands by itself
                     endOfLine();
+                version (DMDLIB)
+                {
+                    if (whitespaceToken)
+                    {
+                        t.value = TOK.whitespace;
+                        return;
+                    }
+                }
                 continue; // skip white space
             case '\n':
                 p++;
                 endOfLine();
+                version (DMDLIB)
+                {
+                    if (whitespaceToken)
+                    {
+                        t.value = TOK.whitespace;
+                        return;
+                    }
+                }
                 continue; // skip white space
             case '0':
                 if (!isZeroSecond(p[1]))        // if numeric literal does not continue
@@ -594,8 +657,12 @@ class Lexer
                     }
                     if (commentToken)
                     {
-                        p++;
-                        endOfLine();
+                        version (DMDLIB) {}
+                        else
+                        {
+                            p++;
+                            endOfLine();
+                        }
                         t.loc = startLoc;
                         t.value = TOK.comment;
                         return;
