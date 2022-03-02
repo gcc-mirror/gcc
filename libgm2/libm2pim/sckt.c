@@ -121,8 +121,8 @@ localExit (int i)
 
 /*
  *  tcpServerEstablishPort - returns a tcpState containing the relevant
- *                           information about a socket declared to recieve
- *                           tcp connections. This method attempts to use
+ *                           information about a socket declared to receive
+ *                           tcp connections.  This method attempts to use
  *                           the port specified by the parameter.
  */
 
@@ -182,7 +182,7 @@ tcpServerEstablishPort (int portNo)
 
 /*
  *  tcpServerEstablish - returns a tcpServerState containing the relevant
- *                       information about a socket declared to recieve
+ *                       information about a socket declared to receive
  *                       tcp connections.
  */
 

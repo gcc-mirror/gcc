@@ -173,6 +173,13 @@ libc_getenv (char *name)
 
 EXTERN
 int
+libc_putenv (char *name)
+{
+  return putenv (name);
+}
+
+EXTERN
+int
 libc_creat (char *p, mode_t mode)
 {
   return creat (p, mode);

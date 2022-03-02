@@ -1,4 +1,4 @@
-2015-11-30      Gaius Mulley <gaius@gnu.org>
+2015-11-30  Gaius Mulley  <gaius@gnu.org>
 
 	* gm2/examples/gravity/twoDsim.mod:  fixed syntax error.
 	* gm2/examples/pge/bounce3.mod:  use groff device.
@@ -14,13 +14,13 @@
 	* gm2/el/g-mode.el:  fixed comment spacing at end of sentance
           in the automatically generated header and updated the dates.
 
-2015-10-07      Gaius Mulley <gaius@gnu.org>
+2015-10-07  Gaius Mulley  <gaius@gnu.org>
 
 	* gm2/examples/pge/twoDsim.mod:  tided up debugging.
 	* gm2/examples/pge/elc2.mod:  New file.
 	* gm2/examples/pge/rboxes.mod:  New file.
 
-2015-10-06      Gaius Mulley <gaius@gnu.org>
+2015-10-06  Gaius Mulley  <gaius@gnu.org>
 
 	* gm2/examples/pge/Makefile.in:  build rotating-circles.m.
 	* gm2/examples/pge/mxmparser.py:  formatting change.
@@ -44,7 +44,7 @@
 	  upon whether polygon is orbiting.  New procedure
 	  findCollisionLineLineOrbiting.
 
-2015-10-05      Gaius Mulley <gaius@gnu.org>
+2015-10-05  Gaius Mulley  <gaius@gnu.org>
 
 	* gm2/examples/pge/Makefile.in:  added new rule for elc2.mod
 	* gm2/examples/pge/coord.mod:  tidied up formatting.
@@ -53,7 +53,7 @@
           collidePolygonAgainstMovingPolygon (rewritten).
 	  Interim checkin.
 
-2015-09-28      Gaius Mulley <gaius@gnu.org>
+2015-09-28  Gaius Mulley  <gaius@gnu.org>
 
 	* gm2/examples/pge/Makefile.in:  new example circle added.
 	* gm2/examples/pge/coord.def:  new procedure function
@@ -72,7 +72,7 @@
 	  in the debugging output of large source files when -fcpp
 	  was used.
 
-2015-09-14      Gaius Mulley <gaius@gnu.org>
+2015-09-14  Gaius Mulley  <gaius@gnu.org>
 
 	* gm2/examples/pge/Makefile.in:  add boxes.raw and removed
 	  dependancy output.raw from playback.
@@ -95,7 +95,7 @@
 	  of the polygon data structures, now use a c of g and polar
 	  coordinates to describe polygon.  Removed rpolygon.
 
-2015-09-09      Gaius Mulley <gaius@gnu.org>
+2015-09-09  Gaius Mulley  <gaius@gnu.org>
 
 	* gm2/examples/pge/examples/exampleBoxes.py:  interim checkin.
 	* gm2/examples/pge/pge.py:  get_xvel, get_yvel, get_xaccel,
@@ -114,7 +114,7 @@
 	* gm2/examples/pge/twoDsim.mod:  get_xvel, get_yvel, get_xaccel,
 	  get_yaccel (Implement new procedure functions).
 
-2015-09-04      Gaius Mulley <gaius@gnu.org>
+2015-09-04  Gaius Mulley  <gaius@gnu.org>
 
 	* gm2/examples/pge/Makefile.in:  added -I to link rule.
 	* gm2/examples/pge/mxmmaxima.py:  corrected unary -, + handling.
@@ -129,7 +129,7 @@
 	* gm2/www/tools/texi2tr/html/release.html:  updated stable release
           version.
 
-2015-09-03      Gaius Mulley <gaius@gnu.org>
+2015-09-03  Gaius Mulley  <gaius@gnu.org>
 
 	* gm2/Make-lang.in:  fixed dates and gcc version number (4.7.4).
 	* gm2/Makefile.in:  fixed dates.
@@ -156,7 +156,7 @@
 	* gm2/gm2-libs/config-host:  rebuilt.
 	* gm2/gm2-libs/config-target:  rebuilt.
 
-2015-08-24      Gaius Mulley <gaius@gnu.org>
+2015-08-24  Gaius Mulley  <gaius@gnu.org>
 
 	* gm2/examples/pge/examples/exampleBoxes.py:  much more debugging
 	  added.
@@ -198,7 +198,7 @@
 	* gm2/pim/pass/typeequiv2.mod:  corrected date.
 	* gm2/pim/pass/typeequiv3.mod:  corrected date.
 
-2015-08-18      Gaius Mulley <gaius@gnu.org>
+2015-08-18  Gaius Mulley  <gaius@gnu.org>
 
 	* gm2/examples/pge/GC.mod:  (gdbif) imported to aid debugging.
 	  Initialised callbacks to NIL (bugfix).
@@ -211,7 +211,7 @@
 	* libgm2/libpim/Makefile.am:  added SCmdArgs.mod to be built and
 	  installed.
 
-2015-08-14      Gaius Mulley <gaius@gnu.org>
+2015-08-14  Gaius Mulley  <gaius@gnu.org>
 
 	* gm2/gm2-compiler/M2GenGCC.mod:  modified debugging hooks.
 	* gm2/gm2-compiler/M2Quads.mod:  (BuildConvert) allow record types
@@ -222,7 +222,7 @@
 	  New function.
 	* gm2/gm2-lang.c:  (convert) simplified.
 
-2015-08-11      Gaius Mulley <gaius@gnu.org>
+2015-08-11  Gaius Mulley  <gaius@gnu.org>
 
 	* gm2/README:  corrected README to reflect prefered method of obtaining
 	  tar.gz file.  Also improved the text.  Removed the build instructions
@@ -233,7 +233,7 @@
 	* gm2/gm2-compiler/M2Base.mod:  fixed bug to allow BYTE to be parameter
 	  compatible with any BYTE sized type (including packed RECORD).
 
-2015-08-05      Gaius Mulley <gaius@gnu.org>
+2015-08-05  Gaius Mulley  <gaius@gnu.org>
 
 	* gm2/examples/pge/Makefile.in:  new rule for playback and output.raw.
 	* the following changes fix bugs in packed enumeration types.  Test code
@@ -250,7 +250,7 @@
 	* gm2/gm2-gcc/m2type.def:  change definition of BuildEndEnumeration.
 	* gm2/gm2-gcc/m2type.h:  change prototype of BuildEndEnumeration.
 
-2015-07-01      Gaius Mulley <gaius@gnu.org>
+2015-07-01  Gaius Mulley  <gaius@gnu.org>
 
 	* gm2/gm2-gcc/m2convert.c:  change all calls to BuildConvert,
 	  GetIntegerOne, GetIntegerZero, GetWordOne, GetWordZero, GetCardinalOne,
@@ -317,7 +317,7 @@
 	  GetIntegerOne, GetIntegerZero, GetWordOne, GetWordZero, GetCardinalOne,
 	  GetCardinalZero to have an extra location parameter.
 
-2015-06-26      Gaius Mulley <gaius@gnu.org>
+2015-06-26  Gaius Mulley  <gaius@gnu.org>
 
 	* gm2/gm2-compiler/M2GenGCC.mod:  ConvertTo (New procedure function).
 	  ConvertRHS (New procedure function).  IsWord (New procedure function).
@@ -339,7 +339,7 @@
 	  by testing each library in turn.
 	* gm2/gm2-compiler/M2GenGCC.mod:  corrected type for rhs.
 
-2015-05-30      Gaius Mulley <gaius@gnu.org>
+2015-05-30  Gaius Mulley  <gaius@gnu.org>
 
 	* gm2/Make-lang.in:  added rule to detect HAVE_STPCPY in configure output.
 	* gm2/configure.in:  check for function stpcpy.
@@ -353,7 +353,7 @@
 	* gm2/Make-lang.in:  added dynamic test to check for HAVE_STPCPY.
 	* gm2/gm2-libs/gm2-libs-host.h.in:  added check for stpcpy.
 
-2015-05-29      Gaius Mulley <gaius@gnu.org>
+2015-05-29  Gaius Mulley  <gaius@gnu.org>
 
 	* Solaris build fixes.
 	* gm2/Make-lang.in:  added place holder for the stpcpy rule.
@@ -380,7 +380,7 @@
 	* gm2/libpim/wrapc.c:  added conditional compilation tests for
 	  SIGNBIT, SIGNBITL and SIGNBITF.
 
-2015-05-29      Gaius Mulley <gaius@gnu.org>
+2015-05-29  Gaius Mulley  <gaius@gnu.org>
 
 	* Linking fixes (-v).
 	* This fixes a bug reported by Christoph Schlegel and many others.
@@ -399,7 +399,7 @@
 	  exit.
   	* gm2/gm2version.h:  updated the prototype for gm2_version.
 
-2015-05-29      Gaius Mulley <gaius@gnu.org>
+2015-05-29  Gaius Mulley  <gaius@gnu.org>
 
 	* gm2/gm2-libs-iso/TextIO.mod:  new procedure SkipSpaces.
 	  ReadToken calls SkipSpaces, this fixes a bug reported by:
@@ -411,7 +411,7 @@
   	* gm2/tools-src/makeversion:  changed to reflect the new gm2_version
 	  which has a parameter, mustExit.
 
-2015-05-04      Gaius Mulley <gaius@gnu.org>
+2015-05-04  Gaius Mulley  <gaius@gnu.org>
 
 	* gm2/examples/pge:  more interim checkins.
 	* gm2/gm2-compiler/M2Batch.def:  IsModuleSeen (New procedure
@@ -425,18 +425,18 @@
 	* gm2/gm2-libs-iso/ProgramArgs.mod:  fixed bug reported by
 	  (D.E.Evans <sinuhe@gnu.org>).
 
-2015-04-27      Gaius Mulley <gaius@gnu.org>
+2015-04-27  Gaius Mulley  <gaius@gnu.org>
 
 	* gm2/gm2-libs-iso/MemStream.mod:  removed debugging printf.
 	* gm2/examples/pge:  more changes.
 
-2015-04-23      Gaius Mulley <gaius@gnu.org>
+2015-04-23  Gaius Mulley  <gaius@gnu.org>
 
 	* gm2/Make-lang.in:  add $(TIMEVAR_H) to all m2.flex
 	  dependant rules.
 	* gm2/examples/pge:  more changes.
 
-2015-04-21      Gaius Mulley <gaius@gnu.org>
+2015-04-21  Gaius Mulley  <gaius@gnu.org>
 
 	* gm2/examples/pge/examples:  another interim checkin.
           (More debugging statements added and internal checking).
@@ -448,7 +448,7 @@
 	  the interactive behaviour of the iso libraries so that
 	  output is flushed before data is read.
 
-2015-04-15      Gaius Mulley <gaius@gnu.org>
+2015-04-15  Gaius Mulley  <gaius@gnu.org>
 
 	* released GM2 1.1.3
 	* gm2/gm2-libs/config-host:  rebuilt.
@@ -459,7 +459,7 @@
 	* gm2/version.c:  1.1.3.
 	* gm2/examples/pge/examples:  improved debugging log messages.
 
-2015-04-09      Gaius Mulley <gaius@gnu.org>
+2015-04-09  Gaius Mulley  <gaius@gnu.org>
 
 	* gm2/Make-lang.in:  changed path to gnu.eps to contain
 	  $(objdir).
@@ -469,7 +469,7 @@
 	* gm2/examples/pge/pgeplayback.py:  more intermin changes.
 	* gm2/examples/pge/twoDsim.mod:  more intermin changes.
 
-2015-04-02      Gaius Mulley <gaius@gnu.org>
+2015-04-02  Gaius Mulley  <gaius@gnu.org>
 
 	* gm2/gm2-libs-iso/ConvStringLong.mod:  check to see if the
 	  conversion generates a NAN and return accordingly.
@@ -477,7 +477,7 @@
 	  conversion generates a NAN and return accordingly.
 	  This fixes a bug reported by:  Michael Riedl.
 
-2015-04-01      Gaius Mulley <gaius@gnu.org>
+2015-04-01  Gaius Mulley  <gaius@gnu.org>
 
 	* gm2/examples/pge:  many bugfixes to the shared library example.
 	* gm2/gm2-compiler/M2GenGCC.mod:  FoldConvert use PopKindTree.
@@ -485,40 +485,40 @@
 	  by:  Michael Riedl.  (see
 	  http://lists.nongnu.org/archive/html/gm2/2015-02/msg00006.html).
 
-2015-03-28      Gaius Mulley <gaius@gnu.org>
+2015-03-28  Gaius Mulley  <gaius@gnu.org>
 
 	* gm2/examples/pge:  many bugfixes to the shared library example.
 
-2015-03-16      Gaius Mulley <gaius@gnu.org>
+2015-03-16  Gaius Mulley  <gaius@gnu.org>
 
 	* gm2/examples/pge:  many more improvements to pgeplayback.py
 	  and twoDsim.mod.
 
-2015-03-15      Gaius Mulley <gaius@gnu.org>
+2015-03-15  Gaius Mulley  <gaius@gnu.org>
 
 	* gm2/examples/pge:  more changes to the shared library example.
 	* gm2/gm2-libs/gdbif.mod:  New file.
 	* gm2/gm2-libs/gdbif.def:  New file.
 
-2015-02-25      Gaius Mulley <gaius@gnu.org>
+2015-02-25  Gaius Mulley  <gaius@gnu.org>
 
 	* gm2/examples/pge:  huge amount of changes to expose the frame
 	  buffer to python/pygame.
 
-2015-02-19      Gaius Mulley <gaius@gnu.org>
+2015-02-19  Gaius Mulley  <gaius@gnu.org>
 
 	* libgm2/libiso/Makefile.in:  added MemStream.def and MemStream.mod
 	  in list of modules to be built and installed.
 	* gm2/gm2-libs-iso/MemStream.def:  New file.
 	* gm2/gm2-libs-iso/MemStream.mod:  New file.
 
-2015-02-17      Gaius Mulley <gaius@gnu.org>
+2015-02-17  Gaius Mulley  <gaius@gnu.org>
 
 	* gm2/gm2-libs-iso/Storage.mod:  fixed bug reported by
           reported by Michael Riedl <udo-michael.riedl@t-online.de>.
 	  DEALLOCATE should assign the pointer to NIL.
 
-2015-02-11      Gaius Mulley <gaius@gnu.org>
+2015-02-11  Gaius Mulley  <gaius@gnu.org>
 
 	* gm2/examples/pge/pge.py:  tidied up formatting.
 	* gm2/gm2-compiler/M2GenGCC.mod:  CanConvert (New procedure function).
@@ -533,7 +533,7 @@
 	  gm2-1.1.1.
 	* testsuite/gm2/iso/pass/realbitscast.mod:  simplified test code.
 
-2015-01-26      Gaius Mulley <gaius@gnu.org>
+2015-01-26  Gaius Mulley  <gaius@gnu.org>
 
 	* gm2/gm2-compiler/M2Quads.mod:  MakeLengthConst new procedure
 	  function.   BuildLengthFunction use MakeLengthConst.
@@ -545,7 +545,7 @@
 	  list.
 	* gm2/gm2-compiler/M2Options.mod:  add string to the import list.
 
-2015-01-13      Gaius Mulley <gaius@gnu.org>
+2015-01-13  Gaius Mulley  <gaius@gnu.org>
 
 	* Fixed bug reported by Peter Fletcher.
 	* gm2/bnf/gm2l.bnf:  handle '-v' options and remember cpp options.
@@ -558,7 +558,7 @@
 	  download reference to 4.7.x series of gcc.
 	* gm2 now builds when grafted onto 4.7.4.
 
-2015-01-04      Gaius Mulley <gaius@gnu.org>
+2015-01-04  Gaius Mulley  <gaius@gnu.org>
 
 	* gm2/examples/pge/Fractions.mod:  removed unnecessary local
 	 variable.
@@ -573,7 +573,7 @@
 	* gm2/gm2-libs/Builtins.def:  correct prototype for huge_val,
 	  huge_valf, huge_vall.
 
-2015-01-03      Gaius Mulley <gaius@gnu.org>
+2015-01-03  Gaius Mulley  <gaius@gnu.org>
 
 	* gm2/bnf/gm2m.bnf:  added debugging and verbose flag.
 	  Also fixed bug so that it understands the -fmake-I option.
@@ -586,7 +586,7 @@
 	  and -fmake-I options present outside the -fgm2begin
 	  -fgm2end delimiters.
 
-2015-01-02      Gaius Mulley <gaius@gnu.org>
+2015-01-02  Gaius Mulley  <gaius@gnu.org>
 
 	* released GM2 1.1.0
 	* gm2/gm2-libs/config-host:  rebuilt.
@@ -598,4 +598,3 @@
 	* gm2/version.c:  1.1.0.
 	* gm2/examples/pge/Makefile.in:  interim checkin libpgeif uses
 	  libtool during construction.  Temporary files removed from git.
-

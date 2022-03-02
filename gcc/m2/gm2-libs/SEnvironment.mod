@@ -30,7 +30,7 @@ FROM DynamicStrings IMPORT string, InitStringCharStar,
                            InitStringDB, InitStringCharStarDB,
                            InitStringCharDB, MultDB, DupDB, SliceDB ;
 
-FROM libc IMPORT getenv ;
+FROM libc IMPORT getenv, putenv ;
 
 (*
 #undef GM2_DEBUG_SENVIRONMENT
@@ -46,30 +46,45 @@ if defined(GM2_DEBUG_SENVIRONMENT)
 
 
 (*
-   GetEnvironment - gets the environment variable, Env, and places
-      	       	    a copy of its value into string, a.
+   GetEnvironment - gets the environment variable Env and places
+      	       	    a copy of its value into String, dest.
+                    It returns TRUE if the string Env was found in
+                    the processes environment.
 *)
 
-PROCEDURE GetEnvironment (env: String; VAR s: String) : BOOLEAN ;
+PROCEDURE GetEnvironment (Env: String;
+                          VAR dest: String) : BOOLEAN ;
 VAR
    Addr: POINTER TO CHAR ;
 BEGIN
-   IF env=NIL
+   IF Env=NIL
    THEN
-      s := NIL ;
-      RETURN( FALSE )
+      dest := NIL ;
+      RETURN FALSE
    ELSE
-      Addr := getenv(string(env)) ;
+      Addr := getenv (string (Env)) ;
       IF Addr=NIL
       THEN
-         s := NIL ;
-         RETURN( FALSE )
+         dest := NIL ;
+         RETURN FALSE
       ELSE
-         s := InitStringCharStar(Addr) ;
-         RETURN( TRUE )
+         dest := InitStringCharStar (Addr) ;
+         RETURN TRUE
       END
    END
 END GetEnvironment ;
+
+
+(*
+   PutEnvironment - change or add an environment variable definition EnvDef.
+                    TRUE is returned if the environment variable was
+                    set or changed successfully.
+*)
+
+PROCEDURE PutEnvironment (EnvDef: String) : BOOLEAN ;
+BEGIN
+   RETURN putenv (string (EnvDef)) = 0
+END PutEnvironment ;
 
 
 END SEnvironment.

@@ -28,36 +28,51 @@ IMPLEMENTATION MODULE Environment ;
 
 
 FROM SYSTEM IMPORT ADR ;
-FROM libc IMPORT getenv ;
+FROM libc IMPORT getenv, putenv ;
 FROM ASCII IMPORT nul ;
 FROM StrLib IMPORT StrCopy ;
 
 
 (*
-   GetEnvironment - gets the environment variable, Env, and places
-      	       	    a copy of its value into string, a.
+   GetEnvironment - gets the environment variable Env and places
+      	       	    a copy of its value into string, dest.
+                    It returns TRUE if the string Env was found in
+                    the processes environment.
 *)
 
-PROCEDURE GetEnvironment (Env: ARRAY OF CHAR; VAR a: ARRAY OF CHAR) : BOOLEAN ;
+PROCEDURE GetEnvironment (Env: ARRAY OF CHAR;
+                          VAR dest: ARRAY OF CHAR) : BOOLEAN ;
 VAR
    High,
    i   : CARDINAL ;
    Addr: POINTER TO CHAR ;
 BEGIN
    i := 0 ;
-   High := HIGH(a) ;
-   Addr := getenv(ADR(Env)) ;
+   High := HIGH (dest) ;
+   Addr := getenv (ADR (Env)) ;
    WHILE (i<High) AND (Addr#NIL) AND (Addr^#nul) DO
-      a[i] := Addr^ ;
-      INC(Addr) ;
-      INC(i)
+      dest[i] := Addr^ ;
+      INC (Addr) ;
+      INC (i)
    END ;
    IF i<High
    THEN
-      a[i] := nul
+      dest[i] := nul
    END ;
-   RETURN( Addr#NIL )
+   RETURN Addr#NIL
 END GetEnvironment ;
+
+
+(*
+   PutEnvironment - change or add an environment variable definition EnvDef.
+                    TRUE is returned if the environment variable was
+                    set or changed successfully.
+*)
+
+PROCEDURE PutEnvironment (EnvDef: ARRAY OF CHAR) : BOOLEAN ;
+BEGIN
+   RETURN putenv (ADR (EnvDef)) = 0
+END PutEnvironment ;
 
 
 END Environment.

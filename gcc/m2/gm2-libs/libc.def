@@ -33,7 +33,7 @@ EXPORT UNQUALIFIED time_t, timeb, tm, ptrToTM,
                    system, abort,
                    malloc, free,
                    exit, isatty,
-                   getenv, getpid,
+                   getenv, putenv, getpid,
                    dup, close, open, lseek,
                    readv, writev,
                    perror, creat,
@@ -43,7 +43,7 @@ EXPORT UNQUALIFIED time_t, timeb, tm, ptrToTM,
                    rand, srand,
                    time, localtime, ftime,
                    shutdown, rename, setjmp, longjmp, atexit,
-                   ttyname, sleep ;
+                   ttyname, sleep, execv ;
 
 
 TYPE
@@ -176,6 +176,13 @@ PROCEDURE exit (r: INTEGER) <* noreturn *> ;
 *)
 
 PROCEDURE getenv (s: ADDRESS) : ADDRESS ;
+
+
+(*
+   putenv - change or add an environment variable.
+*)
+
+PROCEDURE putenv (s: ADDRESS) : INTEGER ;
 
 
 (*
@@ -457,6 +464,13 @@ PROCEDURE ttyname (filedes: INTEGER) : ADDRESS ;
 *)
 
 PROCEDURE sleep (seconds: CARDINAL) : [ CARDINAL ] ;
+
+
+(*
+   execv - execute a file.
+*)
+
+PROCEDURE execv (pathname: ADDRESS; argv: ADDRESS) : [ INTEGER ] ;
 
 
 END libc.

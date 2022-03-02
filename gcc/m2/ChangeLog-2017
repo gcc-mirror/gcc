@@ -1,4 +1,4 @@
-2017-12-31      Gaius Mulley <gaius@gnu.org>
+2017-12-31  Gaius Mulley  <gaius@gnu.org>
 
 	* gm2/gm2-compiler/M2Base.def:  (ExceptionWholeValue) exported
 	  and declared.  (ExceptionRealValue) exported and declared.
@@ -58,7 +58,7 @@
 	* gm2/ulm-lib-gm2/std/M2RTS.mod:  (WholeValueException)
 	  and (RealValueException) New procedures.
 
-2017-12-28      Gaius Mulley <gaius@gnu.org>
+2017-12-28  Gaius Mulley  <gaius@gnu.org>
 
 	* gm2/gm2-compiler/M2Options.def:  (SetFloatValueCheck),
           (GetFloatValueCheck) exported.  (FloatValueChecking) New global
@@ -89,7 +89,7 @@
 	* gm2/lang.opt:  introduce -ffloatvalue.  Update comment for
 	  -fsoft-check-all.
 
-2017-12-27      Gaius Mulley <gaius@gnu.org>
+2017-12-27  Gaius Mulley  <gaius@gnu.org>
 
 	* gm2/gm2-compiler/M2Range.mod:  remove unused variables from
           many procedures.  (RangeCheckReal)  New procedure.
@@ -117,7 +117,7 @@
 	* gm2/m2pp.c:  add includes to allow m2pp.c to be built for use
 	  in cc1.
 
-2017-12-20      Gaius Mulley <gaius@gnu.org>
+2017-12-20  Gaius Mulley  <gaius@gnu.org>
 
 	* gm2/gm2-libs/Builtins.def:  new function definitions
           for (nan), (nanf), (nanl), (isfinite), (isfinitef),
@@ -129,7 +129,7 @@
           for (nan), (nanf), (nanl), (isfinite), (isfinitef),
           (isfinitel), (isinf_sign), (isinf_signf), (isinf_signl).
 
-2017-12-01      Gaius Mulley <gaius@gnu.org>
+2017-12-01  Gaius Mulley  <gaius@gnu.org>
 
 	* gm2/gm2-compiler/M2Quads.mod:  (CheckBecomesMeta)
           check to see if GetDType(Des) and GetDType(Exp) are non
@@ -137,7 +137,7 @@
           undefined symbols being compared which might result in
 	  a fatal error.  (see testsuite/gm2/iso/fail/bug8.mod).
 
-2017-11-08      Gaius Mulley <gaius@gnu.org>
+2017-11-08  Gaius Mulley  <gaius@gnu.org>
 
 	* gm2/Make-lang.in:  removed Storage.c from GM2-LIBS-BOOT-C.
           made gm2.paranoid dependant upon mc.
@@ -147,12 +147,12 @@
           build directory) from StdIO.mod via mc.
 	* gm2/Make-lang.in:  added Storage.mod into GM2-LIBS-MODS.
 
-2017-11-02      Gaius Mulley <gaius@gnu.org>
+2017-11-02  Gaius Mulley  <gaius@gnu.org>
 
 	* gm2/Make-lang.in:  removed duplicate and incorrect rule.
           Changed rule for building C files to the correct directory.
 
-2017-11-01      Gaius Mulley <gaius@gnu.org>
+2017-11-01  Gaius Mulley  <gaius@gnu.org>
 
 	* gm2/gm2-gcc/gcc-consolidation.h:  #include "stringpool.h"
 	* gm2/gm2-compiler/M2Base.mod:  removed unnecessary forward
@@ -167,13 +167,13 @@
           layout the paramater type at this time (as it might be a
 	  recursive usage of the proctype).
 
-2017-10-30      Gaius Mulley <gaius@gnu.org>
+2017-10-30  Gaius Mulley  <gaius@gnu.org>
 
 	* gm2/m2.flex:  change linelen to int rather than
           unsigned int, a mismatch found when building for
 	  cygwin.
 
-2017-10-04      Gaius Mulley <gaius@gnu.org>
+2017-10-04  Gaius Mulley  <gaius@gnu.org>
 
 	* gm2/gm2-libs/GetOpt.def:  New file.
 	* gm2/gm2-libs/GetOpt.mod:  New file.
@@ -193,7 +193,7 @@
 	* gm2/tools-src/buildpg:  changes to reflect changes to
 	  ppg.mod
 
-2017-07-24      Gaius Mulley <gaius@gnu.org>
+2017-07-24  Gaius Mulley  <gaius@gnu.org>
 
 	* patches/gcc/6.4.0:  01-patches (New file).
 	* patches/gcc/6.4.0:  02-patches (New file).
@@ -207,7 +207,7 @@
 	* patches/gcc/6.4.0:  10-patches (New file).
 	* patches/gcc/6.4.0:  11-patches (New file).
 
-2017-07-21      Gaius Mulley <gaius@gnu.org>
+2017-07-21  Gaius Mulley  <gaius@gnu.org>
 
 	* gm2/el/g-mode.el:  updated to include the new SYSTEM data types.
 	* gm2/gm2-compiler/M2GCCDeclare.mod:  rename the new types
@@ -226,7 +226,7 @@
 	* gm2/gm2-libs/libc.def:  corrected dates and use new data types.
 	* gm2/gm2.texi:  updated documentation about new data types.
 
-2017-07-18      Gaius Mulley <gaius@gnu.org>
+2017-07-18  Gaius Mulley  <gaius@gnu.org>
 
 	* gm2/Make-lang.in:  the pge build rules all rewritten to
           clean the build process.  All versions of pge have their
@@ -243,7 +243,7 @@
 	* gm2/gm2-compiler/M2System.mod:  declare CSizeT as a system
 	  type.
 
-2017-06-27      Gaius Mulley <gaius@gnu.org>
+2017-06-27  Gaius Mulley  <gaius@gnu.org>
 
 	* gm2/bnf/gm2m.bnf:  removed unnecessary spaces.
 	* gm2/mc-boot/GStdIO.c:  rebuilt.
@@ -256,7 +256,7 @@
           -fmakeall failed as reported by Christoph Schlegel
 	  and Georg Lokowandt.
 
-2017-06-21      Gaius Mulley <gaius@gnu.org>
+2017-06-21  Gaius Mulley  <gaius@gnu.org>
 
 	* gm2/examples/map/StoreCoord.mod:  spacing.
 	* gm2/gm2-compiler/M2GCCDeclare.mod:  handle large arrays.
@@ -325,11 +325,11 @@
 	* patches/gcc/trunc/10-patches:  regenerated.
 	* patches/gcc/trunc/11-patches:  regenerated.
 
-2017-06-13      Gaius Mulley <gaius@gnu.org>
+2017-06-13  Gaius Mulley  <gaius@gnu.org>
 
 	* gm2/gm2-gcc/m2expr.c:  more gnu coding standard changes.
 
-2017-06-12      Gaius Mulley <gaius@gnu.org>
+2017-06-12  Gaius Mulley  <gaius@gnu.org>
 
 	* gm2/Make-lang.in:  renamed target.c to host.c
           and changed appropriate rules.
@@ -345,14 +345,14 @@
 	* gm2/gm2-gcc/m2expr.c:  BuildModM2, BuildDivM2 fold and strip
 	  no ops before asserting their type.
 
-2017-06-09      Gaius Mulley <gaius@gnu.org>
+2017-06-09  Gaius Mulley  <gaius@gnu.org>
 
  	* gm2/gm2-libs-ch/dtoa.c:  use memmove instead of memcpy.
           Fixes a bug reported by Ernst Bokkelkamp.
 	* gm2/gm2-gcc/m2expr.c:  many formatting gnu coding standard
 	  changes.
 
-2017-06-08      Gaius Mulley <gaius@gnu.org>
+2017-06-08  Gaius Mulley  <gaius@gnu.org>
 
 	* Fixed pim4 and iso DIV and MOD bug reported by Ernst Bokkelkamp
           <ernst@bokkelkamp.de>, Benjamin Kowarsch and Xin Wang.
@@ -387,7 +387,7 @@
 	* gm2/tools-src/gensum.py:  filter out gm2/non-free results
 	  from being displayed.
 
-2017-06-06      Gaius Mulley <gaius@gnu.org>
+2017-06-06  Gaius Mulley  <gaius@gnu.org>
 
 	* gm2/gm2-compiler/M2GenGCC.mod: (CodeLengthFunction) Call
           InternalError if op1 is a constant.
@@ -405,7 +405,7 @@
           process temporary file name.
 	* (mc) regenerated.
 
-2017-06-05      Gaius Mulley <gaius@gnu.org>
+2017-06-05  Gaius Mulley  <gaius@gnu.org>
 
 	* gm2/gm2-compiler/M2GenGCC.mod:  CodeArray add extra
           parameter to BuildArray.
@@ -432,7 +432,7 @@
           the fobjc-std=objc1 option.
 	* gm2/patches/gcc/trunc/11-patches:  remove assert.
 
-2017-06-01      Gaius Mulley <gaius@gnu.org>
+2017-06-01  Gaius Mulley  <gaius@gnu.org>
 
 	* gm2/Make-lang.in:  removed M2Constants.def
           M2Constants.mod M2Entity.def M2Entity.mod.
@@ -468,11 +468,11 @@
           from the initialization sequence.
 	* gm2/gm2-gcc/m2expr.c:  added test shortcut.
 
-2017-05-31      Gaius Mulley <gaius@gnu.org>
+2017-05-31  Gaius Mulley  <gaius@gnu.org>
 
 	* gm2/tools-src/gensum.py:  improved summary using colours.
 
-2017-05-30      Gaius Mulley <gaius@gnu.org>
+2017-05-30  Gaius Mulley  <gaius@gnu.org>
 
 	* patches/gcc/trunc/01-patches:  (New file).
 	* patches/gcc/trunc/02-patches:  (New file).
@@ -496,7 +496,7 @@
           Generate a summary at the top of the passes, failures and
 	  unresolved tests.
 
-2017-05-24      Gaius Mulley <gaius@gnu.org>
+2017-05-24  Gaius Mulley  <gaius@gnu.org>
 
 	* gm2/gm2-compiler/M2GCCDeclare.mod:  use separate procedure to
           declare variables depending whether -fm2-whole-program was
@@ -508,7 +508,7 @@
 	  DeclareImportedVariablesWholeProgram.
 	* gm2/gm2-gcc/m2decl.c:  corrected dates.
 
-2017-05-23      Gaius Mulley <gaius@gnu.org>
+2017-05-23  Gaius Mulley  <gaius@gnu.org>
 
 	* gm2/gm2-compiler/M2Code.mod:  removed unnecessary code.
           No longer need M2SubExp.mod.
@@ -522,7 +522,7 @@
 	* gm2/init/gm2-gccinit:  remove M2SubExp from the list.
 	* updated web pages to reflect release of 1.2.0.
 
-2017-05-11      Gaius Mulley <gaius@gnu.org>
+2017-05-11  Gaius Mulley  <gaius@gnu.org>
 
 	* gm2/NEWS:  updated to reflect release 1.2.0.
 	* gm2/configure:  regenerated.
@@ -537,7 +537,7 @@
           between operands in CodeIfSetEqu and CodeIfSetNotEqu.  Fixes a bug
           reported by Ernst Bokkelkamp.
 
-2017-05-10      Gaius Mulley <gaius@gnu.org>
+2017-05-10  Gaius Mulley  <gaius@gnu.org>
 
 	* gm2/gm2.texi:  document the -fm2-g option.
 	* gm2/Make-lang.in:  removed old conditional.  Added
@@ -595,12 +595,12 @@
 	* gm2/m2.flex:  only run the assert if we are not invoking
 	  the C preprocessor.
 
-2017-04-27      Gaius Mulley <gaius@gnu.org>
+2017-04-27  Gaius Mulley  <gaius@gnu.org>
 
 	* gm2/Make-lang.in:  many new rules to allow
           make gm2.verifystage12 to work.
 
-2017-04-27      Gaius Mulley <gaius@gnu.org>
+2017-04-27  Gaius Mulley  <gaius@gnu.org>
 
 	* gm2/Make-lang.in:  gm2/gm2-compiler/m2flex.o new rule
           for g++.   gm2/gm2-compiler/cflex.o new rule for g++.
@@ -615,7 +615,7 @@
 	* gm2/gm2-compiler/SymbolTable.mod:  implement GetSType,
 	  GetLType and GetDType.
 
-2017-04-26      Gaius Mulley <gaius@gnu.org>
+2017-04-26  Gaius Mulley  <gaius@gnu.org>
 
 	* gm2/gm2-compiler/M2GCCDeclare.mod:  import
           GetLowestType and use it during the declaration of
@@ -641,7 +641,7 @@
 	* gm2/lang.opt:  improved description.  Introduced
 	  fdebug-function-line-numbers.
 
-2017-04-21      Gaius Mulley <gaius@gnu.org>
+2017-04-21  Gaius Mulley  <gaius@gnu.org>
 
 	* Applied fixes to the testsuite reported by
           Ernst Bokkelkamp.
@@ -653,29 +653,29 @@
           test for the source path and filename when avoiding
 	  a testcase.
 
-2017-03-29      Gaius Mulley <gaius@gnu.org>
+2017-03-29  Gaius Mulley  <gaius@gnu.org>
 
 	* gm2/mc-boot-ch/Glibc.c:  return the result from
 	  close.
 
-2017-03-21      Gaius Mulley <gaius@gnu.org>
+2017-03-21  Gaius Mulley  <gaius@gnu.org>
 
 	* gm2/m2.flex:  match new cpp file start/end codes.
 
-2017-03-21      Gaius Mulley <gaius@gnu.org>
+2017-03-21  Gaius Mulley  <gaius@gnu.org>
 
 	* gm2/gm2-compiler/M2GCCDeclare.mod:  detect circular
           dependency in AssertAllTypesDeclared and generate
           error message rather than abort.
 	* corrected a number of regression test programs.
 
-2017-03-18      Gaius Mulley <gaius@gnu.org>
+2017-03-18  Gaius Mulley  <gaius@gnu.org>
 
 	* gm2/Make-lang.in:  many changes to the way the parser
           generator is built.  A number of cyclic dependancies
           have been removed and building times are much shorter.
 
-2017-03-14      Gaius Mulley <gaius@gnu.org>
+2017-03-14  Gaius Mulley  <gaius@gnu.org>
 
 	* gm2/gm2-gcc/m2type.c:  get_unsigned (New function).
           BuildSubrangeType use get_unsigned.
@@ -687,7 +687,7 @@
 	* gm2/patches/gcc/5.2.0/11-patches:  New file.
 	* gm2/patches/gcc/5.2.0/12-patches:  New file.
 
-2017-03-14      Gaius Mulley <gaius@gnu.org>
+2017-03-14  Gaius Mulley  <gaius@gnu.org>
 
 	* gm2/gm2-compiler/M2GCCDeclare.mod:  check range of type conversion
 	  of constants.
@@ -722,7 +722,7 @@
 	* gm2/mc/decl.mod:  fixed bug in recordfield
 	  (initialize scope to NIL).
 
-2017-02-17      Gaius Mulley <gaius@gnu.org>
+2017-02-17  Gaius Mulley  <gaius@gnu.org>
 
 	* gm2/gm2-compiler/M2GCCDeclare.mod:  removed
           procedure prototypes.
@@ -734,7 +734,7 @@
 	* gm2/m2pp.c:  (m2pp_identifier) detect and handle
 	  COMPONENT_REF.
 
-2017-02-12      Gaius Mulley <gaius@gnu.org>
+2017-02-12  Gaius Mulley  <gaius@gnu.org>
 
 	* gm2/gm2-compiler/M2Base.mod:  allow many more
           base types to be compatible with SYSTEM types
@@ -747,7 +747,7 @@
 	* gm2/gm2-gcc/m2type.def:  export GetM2ComplexType.
 	* gm2/gm2-lang.c:  introduce minor debugging.
 
-2017-02-04      Gaius Mulley <gaius@gnu.org>
+2017-02-04  Gaius Mulley  <gaius@gnu.org>
 
 	* gm2/gm2-compiler/M2GenGCC.mod:  add location to
           BuildStartFunctionCode.  Add location to
@@ -774,14 +774,14 @@
           the pretty state machine.  Which will be used to print
 	  useful TREE boolean flags.
 
-2017-02-01      Gaius Mulley <gaius@gnu.org>
+2017-02-01  Gaius Mulley  <gaius@gnu.org>
 
 	* gm2/m2pp.c:  modified to allow it to be built and
           included in the cc1 and cc1plus frontends.
 	  Also fixed bugs to avoid crashing if bitfields
           are used and displayed from cc1plus.
 
-2017-01-23      Gaius Mulley <gaius@gnu.org>
+2017-01-23  Gaius Mulley  <gaius@gnu.org>
 
 	* gm2/mc-boot/Gdecl.c:  regenerated.
 	* gm2/mc-boot/GmcError.c:  regenerated.
@@ -790,7 +790,7 @@
 	* gm2/mc/mcError.mod:  set ExitOnHalt before calling InternalError.
 	* gm2/mc/top.mod:  call ExitOnHalt before calling compile.
 
-2017-01-19      Gaius Mulley <gaius@gnu.org>
+2017-01-19  Gaius Mulley  <gaius@gnu.org>
 
 	* gm2/gm2-libs-iso/wrapsock.c:  corrected a configure bug
           use HAVE_SIGNAL_H instead of HAVE_MALLOC_H.
@@ -809,19 +809,19 @@
 	* gm2/mc/decl.mod:  doLengthC (New procedure).
 	  length is placed in the base symbol scope.
 
-2017-01-16      Gaius Mulley <gaius@gnu.org>
+2017-01-16  Gaius Mulley  <gaius@gnu.org>
 
 	* gm2/mc/decl.mod:  add shortcomplex, longcomplex
           to the list of base datatypes in mc.
 
-2017-01-15      Gaius Mulley <gaius@gnu.org>
+2017-01-15  Gaius Mulley  <gaius@gnu.org>
 
 	* gm2/mc-boot-ch/Glibc.c:  process the \\n
           escapes before using vfprintf.  libc_getpid
           (New function).  libc_sleep (New function).
 	* gm2/mc/decl.mod:  (doEscapeC) avoid escaping \\.
 
-2017-01-12      Gaius Mulley <gaius@gnu.org>
+2017-01-12  Gaius Mulley  <gaius@gnu.org>
 
 	* gm2/mc-boot/Gdecl.c:  New file.
 	* gm2/mc-boot/GmcComment.c:  New file.
@@ -829,7 +829,7 @@
 	* gm2/mc/mcComment.def:  New file.
 	* gm2/mc/mcComment.mod:  New file.
 
-2017-01-11      Gaius Mulley <gaius@gnu.org>
+2017-01-11  Gaius Mulley  <gaius@gnu.org>
 
 	* gm2/mc/decl.mod:  add a def to the done list.
 	* gm2/mc-boot/Gdecl.c:  regenerated.
@@ -917,7 +917,7 @@
 	* gm2/mc-boot/Gwlists.h:  regenerated.
 	* gm2/mc-boot/Gwrapc.h:  regenerated.
 
-2017-01-09      Gaius Mulley <gaius@gnu.org>
+2017-01-09  Gaius Mulley  <gaius@gnu.org>
 
 	* gm2/Make-lang.in:  new rule to build mcComment.mod
 	* gm2/bnf/mc-1.bnf:  import and call setProcedureComment.
@@ -1058,7 +1058,7 @@
 	* gm2/mc/mcReserved.def:  added new token commenttok.
 	* gm2/mc/mcReserved.h:  added new token commenttok.
 
-2017-01-03      Gaius Mulley <gaius@gnu.org>
+2017-01-03  Gaius Mulley  <gaius@gnu.org>
 
 	* gm2/mc/keyc.mod:  added main to the list of names to avoid.
 	* gm2/Make-lang.in:  change sed commands for malloc/realloc to
@@ -1070,8 +1070,7 @@
 	* gm2/mc/decl.mod:  bugfix for high field passed as a parameter
 	  into another dynamic array.
 
-2017-01-01      Gaius Mulley <gaius@gnu.org>
+2017-01-01  Gaius Mulley  <gaius@gnu.org>
 
 	* gm2/gm2-gcc/m2statement.c:  fixed nested procedure bug, use
           cgraph_node::get_create rather than cgraph_node::create.
-

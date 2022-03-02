@@ -1,4 +1,4 @@
-2020-11-10       Gaius Mulley <gaius.mulley@southwales.ac.uk>
+2020-11-10  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
 
 	* m2/gm2-compiler/M2Quads.mod:  improved comment and tidied up
           formatting.
@@ -9,7 +9,7 @@
           and generate error.  (BuildSubrangeType) set TYPE_UNSIGNED using
           base type.
 
-2020-11-03       Gaius Mulley <gaius.mulley@southwales.ac.uk>
+2020-11-03  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
 
 	* gcc/m2/gm2-compiler/M2GCCDeclare.mod:  (DeclareSubrange) reverted.
 	* m2/gm2-compiler/M2GenGCC.mod:  (CodeBecomes) revert to use
@@ -18,7 +18,7 @@
 	* m2/gm2-gcc/m2type.c:  (BuildSubrangeType) revert and tidy up.
           Implement using build_range_type as before.
 
-2020-11-01       Gaius Mulley <gaius.mulley@southwales.ac.uk>
+2020-11-01  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
 
 	* gcc/m2/gm2-compiler/M2GenGCC.mod:  (CodeBecomes) interim
           checkin with debugging info enabled.
@@ -35,7 +35,7 @@
 	* gcc/m2/gm2-compiler/M2GenGCC.mod:  (CodeBecomes) disabled
         debugging.
 
-2020-10-27       Gaius Mulley <gaius.mulley@southwales.ac.uk>
+2020-10-27  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
 
 	* m2/gm2-gcc/gcc-consolidation.h:  include tree-nested.h.
 	* m2/gm2-gcc/m2statement.c:  rewrite the nested function
@@ -43,7 +43,7 @@
 	* m2/gm2-lang.c:  rewrite the nested function
 	iteration code using new methods.
 
-2020-10-05       Gaius Mulley <gaius.mulley@southwales.ac.uk>
+2020-10-05  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
 
 	* m2/gm2.texi:  corrected key commands for debian packages.
 	* m2/gm2-compiler/SymbolTable.def:  (MakeConstLit) additional
@@ -76,7 +76,7 @@
 	* m2/gm2-compiler/P2SymBuild.mod:  (BuildNumber) use token
 	location and pass it to MakeConstLit.
 
-2020-09-29       Gaius Mulley <gaius.mulley@southwales.ac.uk>
+2020-09-29  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
 
 	* m2/gm2-compiler/M2Quads.mod:  (BuildLengthFunction) use
 	MakeVirtualToken to convey the LENGTH expression as a
@@ -84,12 +84,12 @@
 	(BuildHighFunction) use MakeVirtualToken to convey the LENGTH
 	expression as a	subexpression.
 
-2020-09-28       Gaius Mulley <gaius.mulley@southwales.ac.uk>
+2020-09-28  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
 
 	* m2/gm2-compiler/M2Quads.mod:  (BuildAdrFunction) use
 	MakeVirtualToken to convey the ADR expression as a subexpression.
 
-2020-09-23       Gaius Mulley <gaius.mulley@southwales.ac.uk>
+2020-09-23  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
 
 	* m2/gm2-compiler/M2Configure.def:  tidied up comments.
 	* m2/gm2-compiler/M2Quads.mod:  (BuildRealFuncProcCall) tidied up
@@ -103,13 +103,13 @@
 	* m2/gm2.texi:  changed key and also use buster repository (rather
 	than stretch).
 
-2020-09-16       Gaius Mulley <gaius.mulley@southwales.ac.uk>
+2020-09-16  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
 
 	* m2/gm2-libs/SysStorage.mod:  (enableDeallocation = TRUE),
 	(enableZero = FALSE), (enableTrace = FALSE).
 	* m2/mc-boot:  (regenerated).
 
-2020-09-15       Gaius Mulley <gaius.mulley@southwales.ac.uk>
+2020-09-15  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
 
 	* major changes to ensure that four kinds of strings are
         produced and remain separate.
@@ -135,7 +135,7 @@
 	* gcc/m2/mc-boot/Gdecl.c:  rebuilt.
 	* gcc/m2/mc-boot/Glibc.h:  rebuilt.
 
-2020-09-13       Gaius Mulley <gaius.mulley@southwales.ac.uk>
+2020-09-13  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
 
 	* gm2-compiler/M2StackAddress.mod:  changed tail to prev.
 	Improved formatting and removed redundant intermediate record
@@ -144,7 +144,7 @@
 	* gm2-libs/SysStorage.mod:  implement tracing switch,
 	memzero switch, deallocation switch.
 
-2020-09-12       Gaius Mulley <gaius.mulley@southwales.ac.uk>
+2020-09-12  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
 
 	* gcc/m2/Make-lang.in:  modify the link rule for mc to
 	include RTcodummy.o.
@@ -152,7 +152,7 @@
 	* gcc/m2/mc-boot/Gdecl.c:  (rebuilt).
 	* gcc/m2/mc/decl.mod:  added many case clauses for length.
 
-2020-09-08       Gaius Mulley <gaius.mulley@southwales.ac.uk>
+2020-09-08  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
 
 	* gcc/m2/Make-lang.in:  use 11.0 for mc regen.
 	* gcc/m2/config-lang.in:  removed Ulm build directories.
@@ -250,7 +250,7 @@
 	* pointer subtraction into CARDINAL.
 	* libgm2/libm2iso/RTco.c:  (stdlib.h) included.
 
-2020-08-23       Gaius Mulley <gaius.mulley@southwales.ac.uk>
+2020-08-23  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
 
 	* m2/gm2-internals.texi:  (changed copyright).
 	* m2/gm2-libs-coroutines/README.texi:  (changed copyright).
@@ -285,7 +285,7 @@
 	* m2/gm2-libs-iso/Preemptive.def:  (New file).
 	* m2/gm2-libs-iso/Preemptive.mod:  (New file).
 
-2020-08-08       Gaius Mulley <gaius.mulley@southwales.ac.uk>
+2020-08-08  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
 
 	* m2/gm2-libs-iso:  update formatting.  Also fixed bugs
 	when processes are created, they should not be removed
@@ -294,12 +294,12 @@
 	* testsuite/gm2/iso/run/pass/concurrentstore.mod:  (New
 	test case)
 
-2020-07-21       Gaius Mulley <gaius.mulley@southwales.ac.uk>
+2020-07-21  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
 
 	* m2/Make-file.in:  build mc using HOSTCC allowing gm2 to be
 	built by a cross compiler.
 
-2020-07-09       Gaius Mulley <gaius.mulley@southwales.ac.uk>
+2020-07-09  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
 
 	* These following fixes remove preprocessed sources from
 	/tmp after compilation.
@@ -311,13 +311,13 @@
 	* m2/mc-boot-ch/Glibc.c:  (libc_atexit) added wrapper
 	for atexit.
 
-2020-07-07       Gaius Mulley <gaius.mulley@southwales.ac.uk>
+2020-07-07  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
 
 	* m2/gm2-compiler/M2GCCDeclare.def:  (PrintSym) exported.
 	* m2/Make-lang.in:  (m2.install-plugin) rewritten so that
 	it installs correctly when built as a cross compiler.
 
-2020-07-04       Gaius Mulley <gaius.mulley@southwales.ac.uk>
+2020-07-04  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
 
 	* m2/Make-lang.in:  (GM2_FLAGS) add -fauto-init.
 	(MCOPTIONS) include -fauto-init.
@@ -343,7 +343,7 @@
 	* m2/lang.opt:  added -fauto-init option.
 	* m2/mc/README:  corrected name.
 
-2020-06-31       Gaius Mulley <gaius.mulley@southwales.ac.uk>
+2020-06-31  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
 
 	* m2/examples/cppDef/Makefile:  improved clean.
 	* m2/gm2-compiler/gm2lcc.mod:  (ConCatStartupFile)
@@ -364,7 +364,7 @@
 	(Fixes made so that -fcpp work during linking)
 	(see m2/examples/cppDef).
 
-2020-06-30       Gaius Mulley <gaius.mulley@southwales.ac.uk>
+2020-06-30  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
 
 	* configure.ac:  (compare_exclusions) include M2Version
 	in list of objects to ignore.
@@ -383,12 +383,12 @@
         * gcc/m2/patches/gcc/trunk/13-patches:  (regenerated).
         * gcc/m2/patches/gcc/trunk/14-patches:  (regenerated).
 
-2020-06-30       Gaius Mulley <gaius.mulley@southwales.ac.uk>
+2020-06-30  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
 
 	* gcc/m2/gm2-gcc/m2expr.c:  tidied up comments and removed
 	Modula-2 code related --fixme--.
 
-2020-06-29       Gaius Mulley <gaius.mulley@southwales.ac.uk>
+2020-06-29  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
 
 	* m2/gm2-libs-iso/README.texi:  updated dates and use
 	free documentation license 1.3 as per GCC.
@@ -397,11 +397,11 @@
 	* m2/gm2-libs/README.texi:  updated dates and use
 	free documentation license 1.3 as per GCC.
 
-2020-06-28       Gaius Mulley <gaius.mulley@southwales.ac.uk>
+2020-06-28  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
 
 	* m2/man:  removed as it is automatically generated from gm2.texi.
 
-2020-06-27       Gaius Mulley <gaius.mulley@southwales.ac.uk>
+2020-06-27  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
 
 	* m2/gm2-gcc/rtegraph.c:  tidied up some comments.
 	* m2/el/gm2-mode.el:  fixed copyright date.
@@ -466,7 +466,7 @@
 	* m2/init/mcinit:  use GPL3 and correct dates.
 	* m2/init/ppginit:  use GPL3 and correct dates.
 
-2020-06-26       Gaius Mulley <gaius.mulley@southwales.ac.uk>
+2020-06-26  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
 
 	* m2/m2-link-support.h:  added %{fcpp:%g.mod;:%i} as the
 	source component to GM2L.  Fixes a sigsegv bug reported by
@@ -486,7 +486,7 @@
 	* m2/gm2-gcc/rtegraph.c:  tidied up comments.
 	* m2/gm2.texi:  tidied up explanation of expression compatibility.
 
-2020-06-25       Gaius Mulley <gaius.mulley@southwales.ac.uk>
+2020-06-25  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
 
 	* Removed -fmakeall and friends.
 	* m2/gm2-lang.c:  case clauses (OPT_fclean), (OPT_fmakeall),
@@ -507,23 +507,23 @@
 	rewritten.  (Assignment compatibility) added language references
 	and reworded section.
 
-2020-06-24       Gaius Mulley <gaius.mulley@southwales.ac.uk>
+2020-06-24  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
 
 	* m2/gm2.texi:  resumed the git browsing url.
 
-2020-06-23       Gaius Mulley <gaius.mulley@southwales.ac.uk>
+2020-06-23  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
 
 	* m2/gm2.texi:  purged much of the older release information.
 	Updated git repository information.
 
-2020-06-22       Gaius Mulley <gaius.mulley@southwales.ac.uk>
+2020-06-22  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
 
 	* m2/gm2.texi:  purged much of the older release information.
 	Updated git repository information.
 	* m2/www/tools/html:  rewritten hand build pages to reflect
 	new release structure.
 
-2020-06-18       Gaius Mulley <gaius.mulley@southwales.ac.uk>
+2020-06-18  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
 
         * gcc/m2/patches/gcc/trunk/01-patches:  (regenerated).
         * gcc/m2/patches/gcc/trunk/02-patches:  (regenerated).
@@ -543,7 +543,7 @@
         xgm2.
 	* testsuite/lib/gm2.exp:  look for gm2 rather than xgm2.
 
-2020-06-17       Gaius Mulley <gaius.mulley@southwales.ac.uk>
+2020-06-17  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
 
 	* regenerated patches since the mechanism for
 	GM2_FOR_TARGET has changed.
@@ -565,7 +565,7 @@
         dates.
 	* m2/gm2-libs/config-lang.in:  version 1.9.4.
 
-2020-06-16       Gaius Mulley <gaius.mulley@southwales.ac.uk>
+2020-06-16  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
 
 	* m2/gm2spec.c:  (LANGSPEC) removed unused define.
         (MATHLIB) removed unused define.
@@ -574,7 +574,7 @@
         use Python3 for all examples.
 	* m2/version.c:  1.9.4.
 
-2020-06-15       Gaius Mulley <gaius.mulley@southwales.ac.uk>
+2020-06-15  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
 
         * gcc/m2/patches/gcc/trunk/01-patches:  (regenerated).
         * gcc/m2/patches/gcc/trunk/02-patches:  (regenerated).
@@ -893,7 +893,7 @@
 	* gcc/m2/gm2version.h:  Corrected dates.
 	* m2/gm2config.h.in:  Corrected dates.
 
-2020-06-11       Gaius Mulley <gaius.mulley@southwales.ac.uk>
+2020-06-11  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
 
 	* gcc/m2/gm2-compiler/M2Check.def:  updated the comments
         to state an empty string will result in no error
@@ -902,12 +902,12 @@
         check whether the assignment is legal and produce
 	a bespoke error message.
 
-2020-06-11       Gaius Mulley <gaius.mulley@southwales.ac.uk>
+2020-06-11  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
 
 	* m2/gm2-compiler/M2Quads.mod:  (BuildConstFunctionCall)
         reformatted.
 
-2020-06-09       Gaius Mulley <gaius.mulley@southwales.ac.uk>
+2020-06-09  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
 
 	* (11-patches):  removed zero byte file.
         * gcc/m2/patches/gcc/trunk/01-patches:  (regenerated).
@@ -924,7 +924,7 @@
         * gcc/m2/patches/gcc/trunk/13-patches:  (regenerated).
         * gcc/m2/patches/gcc/trunk/14-patches:  (regenerated).
 
-2020-06-09       Gaius Mulley <gaius.mulley@southwales.ac.uk>
+2020-06-09  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
 
 	* gcc/m2/gm2-compiler/M2GenGCC.mod:  (CodeBinaryCheck)
 	quadpos removed.
@@ -959,7 +959,7 @@
 	* libgm2/libm2min/Makefile.in:  (regenerated).
 	* libgm2/libm2pim/Makefile.in:  (regenerated).
 
-2020-06-06       Gaius Mulley <gaius.mulley@southwales.ac.uk>
+2020-06-06  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
 
         * gcc/m2/patches/gcc/trunk/01-patches:  (regenerated).
         * gcc/m2/patches/gcc/trunk/02-patches:  (regenerated).
@@ -975,7 +975,7 @@
         * gcc/m2/patches/gcc/trunk/13-patches:  (regenerated).
         * gcc/m2/patches/gcc/trunk/14-patches:  (regenerated).
 
-2020-06-06       Gaius Mulley <gaius.mulley@southwales.ac.uk>
+2020-06-06  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
 
         * gcc/m2/patches/gcc/trunk/01-patches:  (regenerated).
         * gcc/m2/patches/gcc/trunk/02-patches:  (regenerated).
@@ -992,7 +992,7 @@
         * gcc/m2/patches/gcc/trunk/14-patches:  (regenerated).
         * gcc/m2/patches/gcc/trunk/15-patches:  (regenerated).
 
-2020-06-05       Gaius Mulley <gaius.mulley@southwales.ac.uk>
+2020-06-05  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
 
         * gcc/m2/patches/gcc/trunk/01-patches:  (regenerated).
         * gcc/m2/patches/gcc/trunk/02-patches:  (regenerated).
@@ -1009,7 +1009,7 @@
         * gcc/m2/patches/gcc/trunk/13-patches:  (regenerated).
         * gcc/m2/patches/gcc/trunk/14-patches:  (regenerated).
 
-2020-06-02      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+2020-06-02  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
 
 	* 01-patches:  (regenerated).
 	* 02-patches:  (regenerated).
@@ -1026,18 +1026,18 @@
 	* 13-patches:  (regenerated).
 	* 14-patches:  (regenerated).
 
-2020-06-01      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+2020-06-01  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
 
 	* m2/Make-lang.in:  use LINKER for linking executables.
         (also ensure LDFLAGS is used for each LINKER invocation).
 
-2020-05-31      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+2020-05-31  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
 
 	* m2/gm2-tools/m2linemap.c:  (New file).
 	* m2/gm2-libs/OptLib.mod:  cast return values from
 	SIZE into INTEGER.
 
-2020-05-30      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+2020-05-30  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
 
 	* gcc/m2/gm2-compiler/M2ALU.mod:  (IsAComplexType)
 	renamed to IsComplexType.
@@ -1092,14 +1092,14 @@
 	* gcc/testsuite/gm2/pim/pass/testsize.mod:  changed parameter
 	to CARDINAL as the type checking has been improved.
 
-2020-05-27      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+2020-05-27  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
 
 	* gcc/m2/gm2-compiler/M2Quads.mod:  applied formatting
 	corrections.
 	* gcc/m2/gm2-compiler/M2Quads.mod:  (doBuildBinaryOp)
 	replaced many local variables with better names.
 
-2020-05-26      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+2020-05-26  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
 
 	* gcc/m2/Make-lang.in:  (m2/gm2-tools-boot/m2linemap.o)
         New rule.  (m2/gm2-tools/m2linemap.o)  New rule.
@@ -1136,19 +1136,19 @@
         function.
 	* gcc/m2/gm2-gcc/m2linemap.h:  (GetLocationBinary) New function.
 
-2020-05-19      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+2020-05-19  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
 
 	* m2/gm2-libs-iso/RTentity.mod:  external procedures
         all protected by a mutex semaphore to ensure they
 	are all thread safe.  Reformatted.
 
-2020-05-14      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+2020-05-14  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
 
 	* gcc/m2/gm2-compiler/M2ALU.mod:  (GetConstructorElement)
         use tokenno for the location of the error and improve error
         message to include the array name.
 
-2020-05-13      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+2020-05-13  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
 
 	* gcc/testsuite/gm2/pimlib/logitech/run/pass/realinput.mod:
         (PutString), (PutCh) removed actual parameter 1 as per
@@ -1160,7 +1160,7 @@
         (PutString), (PutCh) removed actual parameter 1 as per
 	PushBackInput specification change.
 
-2020-05-11      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+2020-05-11  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
 
 	* gcc/m2/gm2-compiler/bnflex.mod:  (PutChar) and
 	(PutString) no longer pass the file first parameter.
@@ -1169,13 +1169,13 @@
 	* gcc/m2/gm2-libs/PushBackInput.mod:  (PutCh) no longer
 	uses the first parameter.  (PutStr) New procedure.
 
-2020-05-06      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+2020-05-06  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
 
 	* gcc/m2/gm2-compiler/M2GenGCC.mod:  (CodeCast)
         create warning if the sizes differ and -Wpedantic-cast
         is set, otherwise use CodeConvert as per ISO standard.
 
-2020-05-05      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+2020-05-05  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
 
 	* gcc/m2/bnf/gm2l.bnf:  removed redundant Element rule.
 	* gcc/m2/bnf/gm2m.bnf:  removed redundant Element rule.
@@ -1194,14 +1194,14 @@
 	* gcc/m2/gm2-compiler/P2SymBuild.mod:  (BuildNulName)
 	include token number to be pushed onto the stack.
 
-2020-05-04      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+2020-05-04  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
 
 	* gcc/m2/man:  (removed) as the manual page is now
         generated automatically from the gm2.texi.
 	* gcc/m2/config-lang.in:  removed reference to man/Makefile.in.
 	* gcc/m2/m2pp.c:  use GM2_MAINTAINER to hide debugging functions.
 
-2020-05-01      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+2020-05-01  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
 
 	* gcc/m2/mc-boot/GFormatStrings.c:  rebuilt
 	* gcc/m2/mc-boot/GFormatStrings.h:  rebuilt
@@ -1213,12 +1213,12 @@
 	* gcc/m2/mc-boot/Gkeyc.c:  rebuilt.
 	* gcc/m2/mc/keyc.mod:  reverted throw prototype.
 
-2020-04-29      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+2020-04-29  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
 
 	* m2/gm2-lang.c:  (convert_loc) added a default catch
         all to stop any attempt to convert an aggregate type.
 
-2020-04-22      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+2020-04-22  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
 
 	* gcc/m2/gm2-libs/FormatStrings.def:  (HandleEscape)
 	updated comment reflecting additional functionality.
@@ -1230,7 +1230,7 @@
 	handle the \a, \b, \e, \f, \n, \r, \[octal] into
         their respective ascii codes.
 
-2020-04-20      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+2020-04-20  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
 
 	* gcc/m2/gm2-compiler/M2GenGCC.mod:  (CodeConvert)
         checks to see if a generic type is specified then the
@@ -1255,7 +1255,7 @@
 	code by using BITSET8 and friends.
 	* gcc/m2/gm2-libs-pim/Random.mod: tidied up formatting.
 
-2020-04-09      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+2020-04-09  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
 
 	* gcc/m2/gm2-compiler/M2Check.def:
 	* gcc/m2/gm2-compiler/M2Check.mod:  create errors at
@@ -1269,7 +1269,7 @@
         parameter to FALSE.  (determineCompatible) always check
 	to see if an error should be emitted.
 
-2020-04-08      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+2020-04-08  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
 
 	* gcc/m2/gm2-compiler/M2Check.mod:  (errorSig) New data
         structure to prevent multiple errors occurring about the
@@ -1286,7 +1286,7 @@
 	* gcc/m2/gm2-compiler/M2Check.mod:  (checkBaseEquivalence)
 	use IsExpressionCompatible instead of IsParameterCompatible.
 
-2020-04-07      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+2020-04-07  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
 
 	* gcc/m2/gm2-compiler/M2Check.mod:  (errorSig) New data
         structure to prevent multiple errors occurring about the
@@ -1303,7 +1303,7 @@
 	* gcc/m2/gm2-compiler/M2Check.mod:  (checkBaseEquivalence)
 	use IsExpressionCompatible instead of IsParameterCompatible.
 
-2020-04-06      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+2020-04-06  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
 
 	* gcc/m2/gm2-compiler/M2Check.mod:  completed
         implementation of Array/subrange checking.
@@ -1313,7 +1313,7 @@
 	* gcc/testsuite/gm2/switches/makeall/pass/gm2.exp:
 	corrected search path so regression test passes.
 
-2020-04-05      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+2020-04-05  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
 
 	* gcc/m2/gm2-compiler/M2Check.def:
         (AssignmentTypeCompatible) New procedure function.
@@ -1326,7 +1326,7 @@
 	* gcc/m2/gm2-libs-coroutines/SYSTEM.mod:  convert types.
 	* gcc/m2/lang.opt:  add new option -fm2-strict-type.
 
-2020-03-12      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+2020-03-12  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
 
 	* gcc/m2/gm2-compiler/M2Check.mod:  intermin checkin
 	clean compile for stage1 and stage2.
@@ -1354,21 +1354,21 @@
 	* gcc/m2/mc/decl.mod:  correct proctype handling.
 	* gcc/m2/mc/keyc.mod:  add and, or, not to the list of keywords.
 
-2020-03-12      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+2020-03-12  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
 
 	* m2/gm2-compiler/M2Check.mod:  interim checkin.
 
-2020-03-11      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+2020-03-11  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
 
 	* m2/gm2-compiler/M2Check.def:  New file.
 	* m2/gm2-compiler/M2Check.mod:  New file.
 
-2020-03-06      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+2020-03-06  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
 
 	* m2/gm2.texi:  added more detail about the gm2 repository
         and branches.
 
-2020-03-05      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+2020-03-05  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
 
 	* m2/www/tools/texi2tr/src/navigation.py:  use __next__ rather
         than next.
@@ -1378,20 +1378,20 @@
         commands and conditionals.  Added support for macros.
 	(safeName) converted to Python3.
 
-2020-02-27      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+2020-02-27  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
 
 	* m2/gm2.texi:  updated obtaining source via git
         given the merged repository at floppsie.
 	* m2/www/tools/texi2tr/src/texi2tr.py:  changes to include
 	many more texinfo commands.
 
-2020-01-22      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+2020-01-22  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
 
 	* m2/el/gm2-mode.el:  corrected email address.
 	* testsuite/gm2/iso/run/pass/tinyconst4.mod:  corrected string
         length.
 
-2020-01-20      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+2020-01-20  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
 
 	* m2/gm2-compiler/M2ALU.mod:  (InitialiseArrayWith) reformatted.
         (CheckGetCharFromString) New procedure function.
@@ -1407,7 +1407,7 @@
 	* m2/gm2-gcc/m2type.h:  (BuildCharConstantChar) declared.
 	* Fixes bugs shown in testsuite/gm2/iso/run/pass/conststrarray.mod.
 
-2020-01-13      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+2020-01-13  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
 
 	* m2/bnf/m2-2.bnf:  (SetType) detect whether the set
         was described as PACKED and pass a boolean into
@@ -1435,11 +1435,11 @@
 	* testsuite/gm2/iso/run/pass/onebyte.mod:  above changes allow
 	this test code to pass.
 
-2020-01-11      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+2020-01-11  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
 
 	* m2/gm2-gcc/m2assert.h:  remove quotes in format specifiers.
 
-2020-01-10      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+2020-01-10  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
 
 	* m2/gm2-gcc/m2assert.h:  (ASSERT) declare if not already set.
         (ASSERT_BOOL) declare if not already set.  (ASSERT_CONDITION)
@@ -1498,7 +1498,7 @@
 	* m2/mc/decl.mod:  (doProcedureC) emit __builtin_unreachable if
 	all last statements perform a RETURN.
 
-2020-01-09      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+2020-01-09  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
 
 	* m2/Make-lang.in:  (mc) add RTintdummy.o as a dependant
 	and link with RTintdummy.o.
@@ -1570,7 +1570,7 @@
 	* m2/mc/decl.mod:  introduced unreachable intrinsic node
 	which is issued after HALT and an exception.
 
-2020-01-08      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+2020-01-08  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
 
 	* updated the copyright dates for 2020.
 	* mc/decl.mod:  added call to __builtin_unreachable
@@ -1701,7 +1701,7 @@
 	* m2/gm2-compiler/SymbolTable.mod:  (doGetType) initialise type.
 	(PutParamName) initialise ParSym.
 
-2020-01-07      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+2020-01-07  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
 
 	* testsuite/iso/run/pass/onebyte.mod:  New file.
 	* testsuite/iso/run/pass/conststrarray.mod:  New file.

@@ -1,4 +1,4 @@
-2018-07-30      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+2018-07-30  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
 
 	* gm2/gm2spec.c:  (fe_generate_option) do not duplicate the old
           argument.  free up a string after use.  (build_include_path)
@@ -7,11 +7,11 @@
           (no_link) return a string which can be free'd.
 	  (add_exec_name) return a string which can be free'd.
 
-2018-07-18      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+2018-07-18  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
 
 	* gm2/gm2spec.c: reformatted according to GNU coding standards.
 
-2018-07-17      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+2018-07-17  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
 
 	* gm2/gm2-compiler/ObjectFiles.mod:  import ALLOCATE
           and DEALLOCATE from Storage.  Collect return results
@@ -20,14 +20,14 @@
 	* gm2/gm2-libs/GetOpt.mod:  remove declaration of PtrToInteger.
 	* gm2/gm2-libs/GetOpt.mod:  corrected record/pointer reference.
 
-2018-07-16      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+2018-07-16  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
 
 	* gm2/bnf/gm2l.bnf:  reformatted to gnu standards.
 	* gm2/el/gm2-mode.el:  minor formatting change.
 	* gm2/gm2-libs/DynamicStrings.mod:  reformatted to gnu standards.
 	* gm2/gm2-compiler/ObjectFiles.def:  (New file).
 
-2018-07-14      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+2018-07-14  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
 
 	* gm2/Make-lang.in:  remove the target configure scripts from
 	  gm2/gm2-libs.
@@ -59,7 +59,7 @@
 	* gm2/gm2spec.c:  removed unused variable and reformatted.
 	* gm2/tools-src/makeversion:  remove reference to config-target.in.
 
-2018-07-10      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+2018-07-10  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
 
 	* gm2/gm2-compiler/ObjectFiles.def:  New file.
 	* gm2/gm2-compiler/ObjectFiles.mod:  New file.
@@ -75,7 +75,7 @@
 	* libgm2/libpim/wrapc.c:  (fileinode) New function.  Tidied up
 	  formatting.
 
-2018-07-07      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+2018-07-07  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
 
 	* gm2/bnf/gm2l.bnf:  import Verbose and use.  (RegisterImport)
           reformatted.  (ScanSources) display the module name if Verbose.
@@ -100,7 +100,7 @@
           Fixed many preprocessor invocation problems which occur when linking
 	  an application which uses the preprocessor.
 
-2018-07-02      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+2018-07-02  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
 
 	* gm2/Make-lang.in:  changes to build stage2/gm2/gm2l
 	* gm2/bnf/gm2l.bnf:  remove FORWARD references.
@@ -110,7 +110,7 @@
 	* gm2/gm2-libs/GetOpt.def:  introduce long options.
 	* gm2/iso/run/pass/constructor2.mod:  reformatted.
 
-2018-06-27      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+2018-06-27  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
 
 	* gm2/gm2-compiler/M2GenGCC.mod:  (GetHighFromUnbounded)
           check to see if the unbounded array has static array
@@ -119,30 +119,30 @@
           (BuildHighFromStaticArray)  New procedure function.
 	* gm2/gm2-compiler/M2Range.mod:  add missing case clause.
 
-2018-06-23      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+2018-06-23  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
 
 	* gm2/el/g-mode.el: bug fixes to the m2-tag feature.
 	* gm2/el/g-mode.el: allow . before a type, keyword,
 	  function and const.
 
-2018-06-22      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+2018-06-22  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
 
 	* gm2/el/g-mode.el: generate types and builtin functions
 	  dependant upon the dialect chosen.
 
-2018-06-21      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+2018-06-21  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
 
 	* gm2/el/g-mode.el: fixed m2-tag (find declaration
           understands the path and also works in algol keyword mode.
 	* gm2/el/g-mode.el: fixed visual parenthesis balancing.
 	* gm2/el/g-mode.el: removed some debugging statements.
 
-2018-06-20      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+2018-06-20  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
 
 	* gm2/el/g-mode.el:  fixed traditional mode.  Both algol
 	  mode and traditional are now usable and user selectable.
 
-2018-06-13      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+2018-06-13  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
 
 	* gm2/el/g-mode.el:  added ability to turn on/off
           lowercase algol style keyword transformation.
@@ -150,7 +150,7 @@
 	* gm2/el/gm2-mode.el:  renamed from g-mode.el.
 	  Changed internal variables from g-mode- to m2-auto-.
 
-2018-06-11      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+2018-06-11  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
 
 	* gm2/el/g-mode.el:  added defcustom declarations
           and fixed some regexp bugs.  Applied some defcustom
@@ -163,18 +163,18 @@
           for binary choices.  Fixed key binding for DEL and
 	  Backspace.
 
-2018-06-08      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+2018-06-08  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
 
 	* gm2/el/g-mode.el:  interim checkin, keyword editing
           complete (minus delete key).
 
-2018-06-07      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+2018-06-07  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
 
 	* gm2/el/g-mode.el:  interim checkin.
 	* gm2/el/g-mode.el:  another interim checkin in
 	  the development of lowercase keywords.
 
-2018-05-24      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+2018-05-24  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
 
 	* gm2/gm2-gcc/m2expr.c:  (BuildNotEqualToZero)
           new function.  (checkWholeNegateOverflow)
@@ -187,7 +187,7 @@
           to BuildTruthAndIf and renamed BuildLogicalOrIf
 	  to BuildTruthOrIf.
 
-2018-05-23      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+2018-05-23  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
 
 	* implement range checks on whole number multiply.
 	* gm2/gm2-compiler/M2GenGCC.mod:  import BuildMultCheck.
@@ -205,14 +205,14 @@
 	* gm2/gm2-gcc/m2expr.h:  BuildMultCheck defined.
 	* gm2/gm2-gcc/m2expr.c:  added missing semicolon.
 
-2018-04-16      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+2018-04-16  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
 
 	* gm2/Make-lang.in:  changed the plugin directory to
           plugin rather than gm2/plugin.  Corrected .so typeos.
 	* gm2/gm2.texi:  Semantic checking (New section).
 	* testsuite/gm2/iso/analysis/fail/gm2.exp:  New file.
 
-2018-04-14      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+2018-04-14  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
 
 	* gm2/Make-lang.in:  build plugin/m2rte.so and create
 	  gm2/plugin directory.
@@ -300,7 +300,7 @@
 	* gm2/ulm-lib-gm2/std/RTExceptions.mod:  removed FORWARD prototype
 	  definitions.
 
-2018-04-10      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+2018-04-10  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
 
 	* gm2/Make-lang.in:  build m2rte plugin, install m2rte plugin.
 	* gm2/gm2-compiler/M2Base.def:  define new exception ExceptionReturn.
@@ -324,7 +324,7 @@
 	* gm2/ulm-lib-gm2/std/M2RTS.mod:  ReturnException implemented.
 	* plugins/m2rte.c:  New file.
 
-2018-03-28      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+2018-03-28  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
 
 	* gm2/bnf/m2-2.bnf:  updated dates and trimmed end of
 	  line spaces.
@@ -345,7 +345,7 @@
           allowed to be referenced in a const expression.
 	  (But they can be called).
 
-2018-03-27      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+2018-03-27  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
 
 	* gm2/el/g-mode.el:  corrected dates and changed name
           to help debugging.
@@ -364,7 +364,7 @@
           record types as we are no longer bootstrapping using
           p2c.
 
-2018-03-26      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+2018-03-26  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
 
 	* gm2/gm2-lang.c:  (gm2_langhook_type_for_mode)  rewritten
           (borrowed code from go-lang.c).
@@ -372,7 +372,7 @@
           handle address of unbounded array and check the dimension
 	  access.
 
-2018-03-14      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+2018-03-14  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
 
 	* gm2/gm2-compiler/SymbolTable.mod:  (PutUnbounded)
           ensure that all dimensions prior to the requested dimension
@@ -387,7 +387,7 @@
           Fixes bugs exposed in
 	  testsuite/gm2/iso/run/pass/adrunbounded3.mod
 
-2018-02-19      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+2018-02-19  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
 
 	* gm2/gm2-compiler/M2Quads.mod:  (AssignHighField)
           check for ArraySym and use if actual parameter
@@ -398,22 +398,22 @@
           as the array will be referencing the desired dimension.
 	  A temporary type will have been created.
 
-2018-02-15      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+2018-02-15  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
 
 	* gm2/gm2-compiler/M2GenGCC.mod:  check and use lvalue op3
 	  which points to the data for the unbounded quadruple.
 
-2018-02-08      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+2018-02-08  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
 
 	* gm2/gm2-compiler/M2Quads.mod:  check open array actual
           parameter which is indexed and check the dimension against
 	  formal parameters.
 
-2018-02-07      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+2018-02-07  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
 
 	* gm2/Make-lang.in:  added LDFLAGS to the link of mc.
 
-2018-01-28      Gaius Mulley <gaius@gnu.org>
+2018-01-28  Gaius Mulley  <gaius@gnu.org>
 
 	* gm2/bnf/mc-5.bnf:  regenerated.
 	* gm2/mc-boot/GCmdArgs.c:  regenerated.
@@ -449,7 +449,7 @@
 	* gm2/mc/mcLexBuf.mod:  fixed an infinite loop bug hunting
 	  for the next token on a buffer boundary case.
 
-2018-01-26      Gaius Mulley <gaius@gnu.org>
+2018-01-26  Gaius Mulley  <gaius@gnu.org>
 
 	* gm2/Make-lang.in:  added extra commented definition for
 	bootstrapping under trunc.
@@ -539,7 +539,7 @@
           procedure function.  (getBodyComment)  Implement new
 	  procedure function.
 
-2018-01-03      Gaius Mulley <gaius@gnu.org>
+2018-01-03  Gaius Mulley  <gaius@gnu.org>
 
 	* gm2/gm2-compiler/M2GenGCC.mod:  (BuildUnaryCheckProcedure)
           imported.  (BuildNegateCheck) imported.  (CodeStatement)
@@ -555,7 +555,7 @@
           Defined.  (BuildNegateCheck) defined.
 	* gm2/gm2-gcc/m2expr.h:  (BuildNegateCheck) added prototype.
 
-2018-01-02      Gaius Mulley <gaius@gnu.org>
+2018-01-02  Gaius Mulley  <gaius@gnu.org>
 
 	* gm2/gm2-compiler/M2GenGCC.mod:  (CodeStatement) call
           CodeAddChecked and call CodeSubChecked.
@@ -572,7 +572,7 @@
 	* gm2/gm2-gcc/m2range.h:  (New file).
 	* gm2/patches/gcc/trunc:  (Regenerated).
 
-2018-01-01      Gaius Mulley <gaius@gnu.org>
+2018-01-01  Gaius Mulley  <gaius@gnu.org>
 
 	* gm2/gm2-compiler/M2GenGCC.mod:  (CodeAddCheck) New procedure.
           (CodeSubCheck) New procedure.  (CodeBinaryCheck) New procedure.
@@ -604,4 +604,3 @@
           parameter.  (BuildSubCheck) extra parameter lowest.
           (BuildAddCheck) extra parameter lowest.
 	* gm2/gm2-gcc/m2expr.h:  corrected prototype.
-
