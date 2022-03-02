@@ -31,3 +31,5 @@ s-nvptx-gen-opt: $(srcdir)/config/nvptx/nvptx-sm.def
 	$(STAMP) s-nvptx-gen-opt
 
 MULTILIB_OPTIONS = mgomp
+
+MULTILIB_EXTRA_OPTS = misa=sm_30
