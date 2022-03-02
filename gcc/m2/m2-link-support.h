@@ -168,6 +168,13 @@ along with GCC; see the file COPYING3.  If not see
 
 #define GM2(INPUT,OUTPUT) CC1GM2 " -o " OUTPUT " " INPUT
 
+/* GEN_SCAFFOLD_SRC generates the string SCAFFOLDNAME ".cpp"
+   marking it for deletion if -fmakeinit is absent.  */
+
+#define GEN_SCAFFOLD_SRC \
+     "%{fmakeinit:" SCAFFOLDNAME ".cpp;:" \
+                    SCAFFOLDNAME "%d.cpp}"
+
 /* M2LINK compile main module (providing absense of -fonlylink)
    and link all project dependent modules.  */
 
@@ -177,7 +184,7 @@ along with GCC; see the file COPYING3.  If not see
                    %{!fuselist:" GM2L("%i"," -o %g.l ") " \n\
                                " GM2LORDER("%g.l","%g.lst") " \n\
                    " GM2LGEN("%{fuselist:%b.lst;:%g.lst}",\
-			     "%{g:{!fmakeinit:%d}" SCAFFOLDNAME ".cpp;:%g.cpp}",\
+                             GEN_SCAFFOLD_SRC,\
 			     "%d" SCAFFOLDNAME "%O") "}}\n\
     }"
 
