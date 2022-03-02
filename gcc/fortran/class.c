@@ -2300,9 +2300,9 @@ generate_callback_wrapper (gfc_symbol *vtab, gfc_symbol *derived,
   gfc_namespace *sub_ns;
   gfc_code *last_code, *block;
   gfc_symbol *callback, *cb, *token, *this_ptr, *scalar, *flag, *result;
-  gfc_symbol *c_ptr, *c_funptr, *c_null_funptr, *c_short;
+  gfc_symbol *c_ptr, *c_funptr, *c_null_funptr, *c_short, *c_size_t;
   gfc_expr *size;
-  int c_short_kind;
+  int c_short_kind, c_size_kind;
   char *name;
 
   /* Set up the namespace.  */
@@ -2320,6 +2320,8 @@ generate_callback_wrapper (gfc_symbol *vtab, gfc_symbol *derived,
   gfc_find_symbol ("c_null_funptr", sub_ns, 0, &c_null_funptr);
   gfc_find_symbol ("c_short", sub_ns, 0, &c_short);
   c_short_kind = mpz_get_si (c_short->value->value.integer);
+  gfc_find_symbol ("c_size_t", sub_ns, 0, &c_size_t);
+  c_size_kind = mpz_get_si (c_size_t->value->value.integer);
 
   /* Set up the procedure symbol.  */
   name = xasprintf ("__callback_%s", tname);
@@ -2512,7 +2514,7 @@ generate_callback_wrapper (gfc_symbol *vtab, gfc_symbol *derived,
   block->expr2->where = gfc_current_locus;
   block->expr2->symtree = gfc_find_symtree (sub_ns->sym_root, cb->name);
   block->expr2->value.function.esym = cb;
-  block->expr2->value.function.esym->name = cb->name;
+  block->expr2->value.function.name = cb->name;
   block->expr2->value.function.actual = gfc_get_actual_arglist ();
   block->expr2->value.function.actual->expr = gfc_lval_expr_from_sym (token);
   block->expr2->value.function.actual->next = gfc_get_actual_arglist ();
@@ -2642,7 +2644,9 @@ generate_callback_wrapper (gfc_symbol *vtab, gfc_symbol *derived,
       loc_expr->symtree->n.sym->intmod_sym_id = ISOCBINDING_LOC;
       loc_expr->symtree->n.sym->attr.intrinsic = 1;
       loc_expr->symtree->n.sym->from_intmod = INTMOD_ISO_C_BINDING;
-      loc_expr->value.function.isym = gfc_intrinsic_function_by_id (GFC_ISYM_C_LOC);
+      loc_expr->value.function.isym
+	= gfc_intrinsic_function_by_id (GFC_ISYM_C_LOC);
+      loc_expr->value.function.name = loc_expr->value.function.isym->name;
       loc_expr->value.function.actual = gfc_get_actual_arglist ();
       loc_expr->value.function.actual->expr = expr;
       loc_expr->symtree->n.sym->result = expr->symtree->n.sym;
@@ -2668,7 +2672,7 @@ generate_callback_wrapper (gfc_symbol *vtab, gfc_symbol *derived,
       e->where = gfc_current_locus;
       e->symtree = gfc_find_symtree (sub_ns->sym_root, cb->name);
       e->value.function.esym = cb;
-      e->value.function.esym->name = cb->name;
+      e->value.function.name = cb->name;
       e->value.function.actual = gfc_get_actual_arglist ();
       e->value.function.actual->expr = gfc_lval_expr_from_sym (token);
       e->value.function.actual->next = gfc_get_actual_arglist ();
@@ -2690,6 +2694,16 @@ generate_callback_wrapper (gfc_symbol *vtab, gfc_symbol *derived,
       if (((comp->ts.type != BT_DERIVED || !comp->ts.u.derived->attr.alloc_comp)
 	    && comp->ts.type != BT_CLASS)
 	  || pointer || proc_ptr)
+	continue;
+
+      /* TODO: Handle unlimited polymorphic components.  */
+      if (comp->ts.type == BT_CLASS
+	  && CLASS_DATA (comp)->ts.u.derived->attr.unlimited_polymorphic)
+	continue;
+
+      /* TODO: Handle unlimited polymorphic components.  */
+      if (comp->ts.type == BT_CLASS
+	  && comp->ts.u.derived->attr.unlimited_polymorphic)
 	continue;
 
       gfc_expr *vtab_cb_expr;
@@ -2718,6 +2732,38 @@ generate_callback_wrapper (gfc_symbol *vtab, gfc_symbol *derived,
       block->expr2->value.op.op2 = gfc_get_expr ();
       e = block->expr2->value.op.op2;
 
+      /* size:  storage_size(comp_expr) / storage_size(0_1), where the
+	 denominator is BITS_PER_UNIT as bit_size = kind * BITS_PER_UNIT.  */
+      size = gfc_get_expr ();
+      size->expr_type = EXPR_OP;
+      size->where = gfc_current_locus;
+      size->ts.type = BT_INTEGER;
+      size->ts.kind = c_size_kind;
+      size->value.op.op = INTRINSIC_DIVIDE;
+      size->value.op.op1 = gfc_get_expr ();
+      size->value.op.op1->ts = size->ts;
+      size->value.op.op1->expr_type = EXPR_FUNCTION;
+      size->value.op.op1->value.function.isym
+	= gfc_intrinsic_function_by_id (GFC_ISYM_STORAGE_SIZE);
+      size->value.op.op1->value.function.name
+	= size->value.op.op1->value.function.isym->name;
+      size->value.op.op1->value.function.esym = NULL;
+      size->value.op.op1->value.function.actual = gfc_get_actual_arglist ();
+      size->value.op.op1->value.function.actual->expr = gfc_copy_expr (expr);
+      size->value.op.op1->where = gfc_current_locus;
+      size->value.op.op2 = gfc_get_expr ();
+      size->value.op.op2->ts = size->ts;
+      size->value.op.op2->expr_type = EXPR_FUNCTION;
+      size->value.op.op2->value.function.isym
+	= gfc_intrinsic_function_by_id (GFC_ISYM_STORAGE_SIZE);
+      size->value.op.op2->value.function.name
+	= size->value.op.op2->value.function.isym->name;
+      size->value.op.op2->value.function.esym = NULL;
+      size->value.op.op2->value.function.actual = gfc_get_actual_arglist ();
+      size->value.op.op2->value.function.actual->expr
+	= gfc_get_int_expr (/* kind = */ 1, NULL, 0);
+      size->value.op.op2->where = gfc_current_locus;
+
       if (comp->attr.dimension)
 	{
 	  e->expr_type = EXPR_FUNCTION;
@@ -2738,17 +2784,19 @@ generate_callback_wrapper (gfc_symbol *vtab, gfc_symbol *derived,
       e->where = gfc_current_locus;
       e->symtree = gfc_find_symtree (sub_ns->sym_root, cb->name);
       e->value.function.esym = cb;
-      e->value.function.esym->name = cb->name;
+      e->value.function.name = cb->name;
       e->value.function.actual = gfc_get_actual_arglist ();
       e->value.function.actual->expr = gfc_lval_expr_from_sym (token);
       e->value.function.actual->next = gfc_get_actual_arglist ();
       e->value.function.actual->next->expr = gfc_copy_expr (expr);
       e->value.function.actual->next->next = gfc_get_actual_arglist ();
-      e->value.function.actual->next->next->expr
+      e->value.function.actual->next->next->expr = size;
+      e->value.function.actual->next->next->next = gfc_get_actual_arglist ();
+      e->value.function.actual->next->next->next->expr
 	= gfc_get_int_expr (gfc_index_integer_kind, NULL,
 			    GFC_CLASS_CB_ALLOCATABLE);
-      e->value.function.actual->next->next->next = gfc_get_actual_arglist ();
-      e->value.function.actual->next->next->next->expr = vtab_cb_expr;
+      e->value.function.actual->next->next->next->next = gfc_get_actual_arglist ();
+      e->value.function.actual->next->next->next->next->expr = vtab_cb_expr;
     }
 
   vtab_cb->initializer = gfc_lval_expr_from_sym (callback);
