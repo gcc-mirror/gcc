@@ -37,7 +37,7 @@ along with GCC; see the file COPYING3.  If not see
    The following information is computed
      1) load/store access tree described in ipa-modref-tree.h
 	This is used by tree-ssa-alias to disambiguate load/stores
-     2) EAF flags used by points-to analysis (in tree-ssa-structlias).
+     2) EAF flags used by points-to analysis (in tree-ssa-structalias).
 	and defined in tree-core.h.
    and stored to optimization_summaries.
 
@@ -50,7 +50,7 @@ along with GCC; see the file COPYING3.  If not see
        necessary because gimple_call_fnspec performs additional
        analysis except for looking callee fndecl.
      - escape_summary holds escape points for given call edge.
-       That is a vector recording what function parmaeters
+       That is a vector recording what function parameters
        may escape to a function call (and with what parameter index).  */
 
 #include "config.h"
@@ -680,7 +680,7 @@ modref_summary::finalize (tree fun)
   global_memory_written = !stores || stores->global_access_p ();
 
   /* We can do DSE if we know function has no side effects and
-     we can analyse all stores.  Disable dse if there are too many
+     we can analyze all stores.  Disable dse if there are too many
      stores to try.  */
   if (side_effects || global_memory_written || writes_errno)
     try_dse = false;
@@ -788,7 +788,7 @@ get_modref_function_summary (gcall *call, bool *interposed)
 
 namespace {
 
-/* Return true if ECF flags says that nondeterminsm can be ignored.  */
+/* Return true if ECF flags says that nondeterminism can be ignored.  */
 
 static bool
 ignore_nondeterminism_p (tree caller, int flags)
@@ -966,23 +966,23 @@ private:
   void propagate ();
 
   /* Summary being computed.
-     We work eitehr with m_summary or m_summary_lto.  Never on both.  */
+     We work either with m_summary or m_summary_lto.  Never on both.  */
   modref_summary *m_summary;
   modref_summary_lto *m_summary_lto;
-  /* Recursive calls needs simplisitc dataflow after analysis finished.
+  /* Recursive calls needs simplistic dataflow after analysis finished.
      Collect all calls into this vector during analysis and later process
      them in propagate.  */
   auto_vec <gimple *, 32> m_recursive_calls;
-  /* ECF flags of function being analysed.  */
+  /* ECF flags of function being analyzed.  */
   int m_ecf_flags;
   /* True if IPA propagation will be done later.  */
   bool m_ipa;
-  /* Set true if statement currently analysed is known to be
+  /* Set true if statement currently analyze is known to be
      executed each time function is called.  */
   bool m_always_executed;
 };
 
-/* Set side_effects flag and return if someting changed.  */
+/* Set side_effects flag and return if something changed.  */
 
 bool
 modref_access_analysis::set_side_effects ()
@@ -1002,7 +1002,7 @@ modref_access_analysis::set_side_effects ()
   return changed;
 }
 
-/* Set nondeterministic flag and return if someting changed.  */
+/* Set nondeterministic flag and return if something changed.  */
 
 bool
 modref_access_analysis::set_nondeterministic ()
@@ -1211,7 +1211,7 @@ modref_access_analysis::record_unknown_store ()
   return changed;
 }
 
-/* Record unknown load from gloal memory.  */
+/* Record unknown load from global memory.  */
 
 bool
 modref_access_analysis::record_global_memory_load ()
@@ -1228,7 +1228,7 @@ modref_access_analysis::record_global_memory_load ()
   return changed;
 }
 
-/* Record unknown store from gloal memory.  */
+/* Record unknown store from global memory.  */
 
 bool
 modref_access_analysis::record_global_memory_store ()
@@ -1838,7 +1838,7 @@ modref_access_analysis::analyze_stmt (gimple *stmt, bool always_executed)
    }
 }
 
-/* Propagate load/stres acress recursive calls.  */
+/* Propagate load/stores across recursive calls.  */
 
 void
 modref_access_analysis::propagate ()
@@ -1885,7 +1885,7 @@ modref_access_analysis::analyze ()
 	   !gsi_end_p (si); gsi_next_nondebug (&si))
 	{
 	  /* NULL memory accesses terminates BB.  These accesses are known
-	     to trip undefined behaviour.  gimple-ssa-isolate-paths turns them
+	     to trip undefined behavior.  gimple-ssa-isolate-paths turns them
 	     to volatile accesses and adds builtin_trap call which would
 	     confuse us otherwise.  */
 	  if (infer_nonnull_range_by_dereference (gsi_stmt (si),
@@ -1899,7 +1899,7 @@ modref_access_analysis::analyze ()
 	    }
 	  analyze_stmt (gsi_stmt (si), always_executed);
 
-	  /* Avoid doing useles work.  */
+	  /* Avoid doing useless work.  */
 	  if ((!m_summary || !m_summary->useful_p (m_ecf_flags, false))
 	      && (!m_summary_lto
 		  || !m_summary_lto->useful_p (m_ecf_flags, false)))
@@ -1914,7 +1914,7 @@ modref_access_analysis::analyze ()
       if (!summary_useful)
 	break;
     }
-  /* In non-IPA mode we need to perform iterative datafow on recursive calls.
+  /* In non-IPA mode we need to perform iterative dataflow on recursive calls.
      This needs to be done after all other side effects are computed.  */
   if (summary_useful)
     {
@@ -1990,13 +1990,13 @@ struct escape_point
   /* Argument it escapes to.  */
   int arg;
   /* Flags already known about the argument (this can save us from recording
-     esape points if local analysis did good job already).  */
+     escape points if local analysis did good job already).  */
   eaf_flags_t min_flags;
-  /* Does value escape directly or indiretly?  */
+  /* Does value escape directly or indirectly?  */
   bool direct;
 };
 
-/* Lattice used during the eaf flags analsysis dataflow.  For a given SSA name
+/* Lattice used during the eaf flags analysis dataflow.  For a given SSA name
    we aim to compute its flags and escape points.  We also use the lattice
    to dynamically build dataflow graph to propagate on.  */
 
@@ -2019,7 +2019,7 @@ public:
      Only remember them and do the merging at IPA propagation time.  */
   vec <escape_point, va_heap, vl_ptr> escape_points;
 
-  /* Representation of a graph for dataaflow.  This graph is built on-demand
+  /* Representation of a graph for dataflow.  This graph is built on-demand
      using modref_eaf_analysis::analyze_ssa and later solved by
      modref_eaf_analysis::propagate.
      Each edge represents the fact that flags of current lattice should be
@@ -2140,7 +2140,7 @@ modref_lattice::merge (int f)
   if ((flags & f) != flags)
     {
       flags &= f;
-      /* Prune obvoiusly useless flags;
+      /* Prune obviously useless flags;
 	 We do not have ECF_FLAGS handy which is not big problem since
 	 we will do final flags cleanup before producing summary.
 	 Merging should be fast so it can work well with dataflow.  */
@@ -2152,7 +2152,7 @@ modref_lattice::merge (int f)
   return false;
 }
 
-/* Merge in WITH.  Return true if anyting changed.  */
+/* Merge in WITH.  Return true if anything changed.  */
 
 bool
 modref_lattice::merge (const modref_lattice &with)
@@ -2173,7 +2173,7 @@ modref_lattice::merge (const modref_lattice &with)
 }
 
 /* Merge in deref of WITH.  If IGNORE_STORES is true do not consider
-   stores.  Return true if anyting changed.  */
+   stores.  Return true if anything changed.  */
 
 bool
 modref_lattice::merge_deref (const modref_lattice &with, bool ignore_stores)
@@ -2218,12 +2218,12 @@ modref_lattice::merge_direct_store ()
 }
 
 /* Analyzer of EAF flags.
-   This is genrally dataflow problem over the SSA graph, however we only
+   This is generally dataflow problem over the SSA graph, however we only
    care about flags of few selected ssa names (arguments, return slot and
    static chain).  So we first call analyze_ssa_name on all relevant names
    and perform a DFS walk to discover SSA names where flags needs to be
    determined.  For acyclic graphs we try to determine final flags during
-   this walk.  Once cycles or recursin depth is met we enlist SSA names
+   this walk.  Once cycles or recursion depth is met we enlist SSA names
    for dataflow which is done by propagate call.
 
    After propagation the flags can be obtained using get_ssa_name_flags.  */
@@ -2233,7 +2233,7 @@ class modref_eaf_analysis
 public:
   /* Mark NAME as relevant for analysis.  */
   void analyze_ssa_name (tree name, bool deferred = false);
-  /* Dataflow slover.  */
+  /* Dataflow solver.  */
   void propagate ();
   /* Return flags computed earlier for NAME.  */
   int get_ssa_name_flags (tree name)
@@ -2260,7 +2260,7 @@ public:
 	m_lattice[i].release ();
   }
 private:
-  /* If true, we produce analysis for IPA mode.  In this case escape points ar
+  /* If true, we produce analysis for IPA mode.  In this case escape points are
      collected.  */
   bool m_ipa;
   /* Depth of recursion of analyze_ssa_name.  */
@@ -2276,7 +2276,7 @@ private:
 };
 
 
-/* Call statements may return tgeir parameters.  Consider argument number
+/* Call statements may return their parameters.  Consider argument number
    ARG of USE_STMT and determine flags that can needs to be cleared
    in case pointer possibly indirectly references from ARG I is returned.
    If DIRECT is true consider direct returns and if INDIRECT consider
@@ -2425,7 +2425,7 @@ modref_eaf_analysis::analyze_ssa_name (tree name, bool deferred)
 	  print_gimple_stmt (dump_file, use_stmt, 0);
 	}
       /* If we see a direct non-debug use, clear unused bit.
-	 All dereferneces should be accounted below using deref_flags.  */
+	 All dereferences should be accounted below using deref_flags.  */
       m_lattice[index].merge (~EAF_UNUSED);
 
       /* Gimple return may load the return value.
@@ -2499,7 +2499,7 @@ modref_eaf_analysis::analyze_ssa_name (tree name, bool deferred)
 			 the callee's return slot is returned it means that
 			 arg is written to itself which is an escape.
 			 Since we do not track the memory it is written to we
-			 need to give up on analysisng it.  */
+			 need to give up on analyzing it.  */
 		      if (!isretslot)
 			{
 			  if (!(call_flags & (EAF_NOT_RETURNED_DIRECTLY
@@ -2768,7 +2768,7 @@ modref_eaf_analysis::propagate ()
   rpo.safe_grow (m_names_to_propagate.length (), true);
   stack.reserve_exact (m_names_to_propagate.length ());
 
-  /* We reuse known flag for RPO DFS walk bookeeping.  */
+  /* We reuse known flag for RPO DFS walk bookkeeping.  */
   if (flag_checking)
     FOR_EACH_VEC_ELT (m_names_to_propagate, i, index)
       gcc_assert (!m_lattice[index].known && m_lattice[index].changed);
@@ -2813,7 +2813,7 @@ modref_eaf_analysis::propagate ()
 	}
     }
 
-  /* Perform itrative dataflow.  */
+  /* Perform iterative dataflow.  */
   while (changed)
     {
       changed = false;
@@ -2890,9 +2890,9 @@ modref_eaf_analysis::record_escape_points (tree name, int parm_index, int flags)
 
 /* Determine EAF flags for function parameters
    and fill in SUMMARY/SUMMARY_LTO.  If IPA is true work in IPA mode
-   where we also collect scape points.
+   where we also collect escape points.
    PAST_FLAGS, PAST_RETSLOT_FLAGS, PAST_STATIC_CHAIN_FLAGS can be
-   used to preserve flags from prevoius (IPA) run for cases where
+   used to preserve flags from previous (IPA) run for cases where
    late optimizations changed code in a way we can no longer analyze
    it easily.  */
 
@@ -4043,7 +4043,7 @@ remap_arg_flags (auto_vec <eaf_flags_t> &arg_flags, clone_info *info)
     }
 }
 
-/* Update kills accrdoing to the parm map MAP.  */
+/* Update kills according to the parm map MAP.  */
 
 static void
 remap_kills (vec <modref_access_node> &kills, const vec <int> &map)
@@ -4359,7 +4359,7 @@ update_escape_summary_1 (cgraph_edge *e,
     escape_summaries->remove (e);
 }
 
-/* Update escape map fo NODE.  */
+/* Update escape map for NODE.  */
 
 static void
 update_escape_summary (cgraph_node *node,
@@ -4632,7 +4632,7 @@ propagate_unknown_call (cgraph_node *node,
   return changed;
 }
 
-/* Maybe remove summaies of NODE pointed to by CUR_SUMMARY_PTR
+/* Maybe remove summaries of NODE pointed to by CUR_SUMMARY_PTR
    and CUR_SUMMARY_LTO_PTR if they are useless according to ECF_FLAGS.  */
 
 static void
@@ -5311,8 +5311,8 @@ ipa_merge_modref_summary_after_inlining (cgraph_edge *edge)
     }
 
   /* Now merge escape summaries.
-     For every escape to the callee we need to merge calle flags
-     and remap calees escapes.  */
+     For every escape to the callee we need to merge callee flags
+     and remap callee's escapes.  */
   class escape_summary *sum = escape_summaries->get (edge);
   int max_escape = -1;
   escape_entry *ee;
@@ -5482,7 +5482,7 @@ pass_ipa_modref::execute (function *)
   delete escape_summaries;
   escape_summaries = NULL;
 
-  /* If we posibly made constructors const/pure we may need to remove
+  /* If we possibly made constructors const/pure we may need to remove
      them.  */
   return pureconst ? TODO_remove_functions : 0;
 }
