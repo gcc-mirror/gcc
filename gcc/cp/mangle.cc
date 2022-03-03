@@ -180,9 +180,9 @@ static tree maybe_template_info (const tree);
 
 static inline tree canonicalize_for_substitution (tree);
 static void add_substitution (tree);
-static inline int is_std_substitution (const tree,
+static inline bool is_std_substitution (const tree,
 				       const substitution_identifier_index_t);
-static inline int is_std_substitution_char (const tree,
+static inline bool is_std_substitution_char (const tree,
 					    const substitution_identifier_index_t);
 static int find_substitution (tree);
 static void mangle_call_offset (const tree, const tree);
@@ -467,9 +467,10 @@ add_substitution (tree node)
 
 /* Helper function for find_substitution.  Returns nonzero if NODE,
    which may be a decl or a CLASS_TYPE, is a template-id with template
-   name of substitution_index[INDEX] in the ::std namespace.  */
+   name of substitution_index[INDEX] in the ::std namespace, with
+   global module attachment.  */
 
-static inline int
+static bool
 is_std_substitution (const tree node,
 		     const substitution_identifier_index_t index)
 {
@@ -488,13 +489,22 @@ is_std_substitution (const tree node,
     }
   else
     /* These are not the droids you're looking for.  */
-    return 0;
+    return false;
 
-  return (DECL_NAMESPACE_STD_P (CP_DECL_CONTEXT (decl))
-	  && TYPE_LANG_SPECIFIC (type)
-	  && TYPE_TEMPLATE_INFO (type)
-	  && (DECL_NAME (TYPE_TI_TEMPLATE (type))
-	      == subst_identifiers[index]));
+  if (!DECL_NAMESPACE_STD_P (CP_DECL_CONTEXT (decl)))
+    return false;
+
+  if (!(TYPE_LANG_SPECIFIC (type) && TYPE_TEMPLATE_INFO (type)))
+    return false;
+
+  tree tmpl = TYPE_TI_TEMPLATE (type);
+  if (DECL_NAME (tmpl) != subst_identifiers[index])
+    return false;
+
+  if (modules_p () && get_originating_module (tmpl, true) >= 0)
+    return false;
+
+  return true;
 }
 
 /* Return the ABI tags (the TREE_VALUE of the "abi_tag" attribute entry) for T,
@@ -526,7 +536,7 @@ get_abi_tags (tree t)
    ::std::identifier<char>, where identifier is
    substitution_index[INDEX].  */
 
-static inline int
+static bool
 is_std_substitution_char (const tree node,
 			  const substitution_identifier_index_t index)
 {
