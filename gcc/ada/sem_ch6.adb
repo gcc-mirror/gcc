@@ -3733,6 +3733,7 @@ package body Sem_Ch6 is
 
          procedure Detect_And_Exchange (Id : Entity_Id) is
             Typ : constant Entity_Id := Etype (Id);
+
          begin
             if From_Limited_With (Typ)
               and then Has_Non_Limited_View (Typ)
@@ -5189,23 +5190,34 @@ package body Sem_Ch6 is
       --  is the limited view of a class-wide type and the non-limited view is
       --  available, update the return type accordingly.
 
-      if Ada_Version >= Ada_2005 and then Present (Spec_Id) then
+      if Ada_Version >= Ada_2005
+        and then Present (Spec_Id)
+        and then Ekind (Etype (Spec_Id)) = E_Anonymous_Access_Type
+      then
          declare
             Etyp : Entity_Id;
-            Rtyp : Entity_Id;
 
          begin
-            Rtyp := Etype (Spec_Id);
+            Etyp := Directly_Designated_Type (Etype (Spec_Id));
 
-            if Ekind (Rtyp) = E_Anonymous_Access_Type then
-               Etyp := Directly_Designated_Type (Rtyp);
+            if Is_Class_Wide_Type (Etyp)
+              and then From_Limited_With (Etyp)
+              and then Has_Non_Limited_View (Etyp)
+            then
+               Desig_View := Etyp;
+               Etyp := Non_Limited_View (Etyp);
 
-               if Is_Class_Wide_Type (Etyp)
-                 and then From_Limited_With (Etyp)
+               --  If the class-wide type has been created by the completion of
+               --  an incomplete tagged type declaration, get the class-wide
+               --  type of the incomplete tagged type to match Find_Type_Name.
+
+               if Nkind (Parent (Etyp)) = N_Full_Type_Declaration
+                 and then Present (Incomplete_View (Parent (Etyp)))
                then
-                  Desig_View := Etyp;
-                  Set_Directly_Designated_Type (Rtyp, Available_View (Etyp));
+                  Etyp := Class_Wide_Type (Incomplete_View (Parent (Etyp)));
                end if;
+
+               Set_Directly_Designated_Type (Etype (Spec_Id), Etyp);
             end if;
          end;
       end if;

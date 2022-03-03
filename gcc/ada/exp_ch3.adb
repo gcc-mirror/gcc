@@ -2100,8 +2100,7 @@ package body Exp_Ch3 is
                  and then Present (Incomplete_View (Parent (Rec_Type)))
                then
                   Append_Elmt (
-                    N  => Defining_Identifier
-                            (Incomplete_View (Parent (Rec_Type))),
+                    N  => Incomplete_View (Parent (Rec_Type)),
                     To => Map);
                   Append_Elmt (
                     N  => Defining_Identifier

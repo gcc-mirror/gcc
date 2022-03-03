@@ -6475,7 +6475,7 @@ package body Sem_Util is
          elsif Nkind (Parent (B_Type)) = N_Full_Type_Declaration
            and then Present (Incomplete_View (Parent (B_Type)))
          then
-            Id := Defining_Entity (Incomplete_View (Parent (B_Type)));
+            Id := Incomplete_View (Parent (B_Type));
 
             --  If T is a derived from a type with an incomplete view declared
             --  elsewhere, that incomplete view is irrelevant, we want the

@@ -61,6 +61,7 @@ with Sem_Cat;        use Sem_Cat;
 with Sem_Ch6;        use Sem_Ch6;
 with Sem_Ch7;        use Sem_Ch7;
 with Sem_Ch8;        use Sem_Ch8;
+with Sem_Ch10;       use Sem_Ch10;
 with Sem_Ch13;       use Sem_Ch13;
 with Sem_Dim;        use Sem_Dim;
 with Sem_Disp;       use Sem_Disp;
@@ -3158,7 +3159,7 @@ package body Sem_Ch3 is
         and then Present (Full_View (Prev))
       then
          T := Full_View (Prev);
-         Set_Incomplete_View (N, Parent (Prev));
+         Set_Incomplete_View (N, Prev);
       else
          T := Prev;
       end if;
@@ -11600,10 +11601,9 @@ package body Sem_Ch3 is
 
             if H = Typ then
                Set_Name_Entity_Id (Chars (Typ), Homonym (Typ));
+
             else
-               while Present (H)
-                 and then Homonym (H) /= Typ
-               loop
+               while Present (Homonym (H)) and then Homonym (H) /= Typ loop
                   H := Homonym (Typ);
                end loop;
 
@@ -11613,15 +11613,47 @@ package body Sem_Ch3 is
             Insert_Before (Typ_Decl, Decl);
             Analyze (Decl);
             Set_Full_View (Inc_T, Typ);
+            Set_Incomplete_View (Typ_Decl, Inc_T);
+
+            --  If the type is tagged, create a common class-wide type for
+            --  both views, and set the Etype of the class-wide type to the
+            --  full view.
 
             if Is_Tagged then
-
-               --  Create a common class-wide type for both views, and set the
-               --  Etype of the class-wide type to the full view.
-
                Make_Class_Wide_Type (Inc_T);
                Set_Class_Wide_Type (Typ, Class_Wide_Type (Inc_T));
                Set_Etype (Class_Wide_Type (Typ), Typ);
+            end if;
+
+            --  If the scope is a package with a limited view, create a shadow
+            --  entity for the incomplete type like Build_Limited_Views, so as
+            --  to make it possible for Remove_Limited_With_Unit to reinstall
+            --  this incomplete type as the visible entity.
+
+            if Ekind (Scope (Inc_T)) = E_Package
+              and then Present (Limited_View (Scope (Inc_T)))
+            then
+               declare
+                  Shadow : constant Entity_Id := Make_Temporary (Loc, 'Z');
+
+               begin
+                  --  This is modeled on Build_Shadow_Entity
+
+                  Set_Chars              (Shadow, Chars (Inc_T));
+                  Set_Parent             (Shadow, Decl);
+                  Decorate_Type          (Shadow, Scope (Inc_T), Is_Tagged);
+                  Set_Is_Internal        (Shadow);
+                  Set_From_Limited_With  (Shadow);
+                  Set_Non_Limited_View   (Shadow, Inc_T);
+                  Set_Private_Dependents (Shadow, New_Elmt_List);
+
+                  if Is_Tagged then
+                     Set_Non_Limited_View
+                       (Class_Wide_Type (Shadow), Class_Wide_Type (Inc_T));
+                  end if;
+
+                  Append_Entity (Shadow, Limited_View (Scope (Inc_T)));
+               end;
             end if;
          end if;
       end Build_Incomplete_Type_Declaration;

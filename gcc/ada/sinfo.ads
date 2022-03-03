@@ -1536,10 +1536,8 @@ package Sinfo is
 
    --  Incomplete_View
    --    Present in full type declarations that are completions of incomplete
-   --    type declarations. Denotes the corresponding incomplete type
-   --    declaration. Used to simplify the retrieval of primitive operations
-   --    that may be declared between the partial and the full view of an
-   --    untagged type.
+   --    type declarations. Denotes the corresponding incomplete view declared
+   --    by the incomplete declaration.
 
    --  Inherited_Discriminant
    --    This flag is present in N_Component_Association nodes. It indicates
