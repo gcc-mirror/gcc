@@ -47,7 +47,7 @@
 #include "tree-object-size.h"
 #include "tree-ssa-strlen.h"
 #include "calls.h"
-#include "cfgloop.h"
+#include "cfganal.h"
 #include "intl.h"
 #include "gimple-range.h"
 #include "stringpool.h"
@@ -4709,6 +4709,9 @@ pass_waccess::execute (function *fun)
 {
   calculate_dominance_info (CDI_DOMINATORS);
   calculate_dominance_info (CDI_POST_DOMINATORS);
+
+  /* Set or clear EDGE_DFS_BACK bits on back edges.  */
+  mark_dfs_back_edges (fun);
 
   /* Create a new ranger instance and associate it with FUN.  */
   m_ptr_qry.rvals = enable_ranger (fun);
