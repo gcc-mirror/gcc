@@ -8273,19 +8273,23 @@ package body Exp_Ch7 is
 
          Counter        : Nat := 0;
          Finalizer_Data : Finalization_Exception_Data;
+         Last_POC_Call  : Node_Id := Empty;
 
          function Process_Component_List_For_Finalize
-           (Comps : Node_Id) return List_Id;
+           (Comps           : Node_Id;
+            In_Variant_Part : Boolean := False) return List_Id;
          --  Build all necessary finalization statements for a single component
          --  list. The statements may include a jump circuitry if flag Is_Local
-         --  is enabled.
+         --  is enabled. In_Variant_Part indicates whether this is a recursive
+         --  call.
 
          -----------------------------------------
          -- Process_Component_List_For_Finalize --
          -----------------------------------------
 
          function Process_Component_List_For_Finalize
-           (Comps : Node_Id) return List_Id
+           (Comps           : Node_Id;
+            In_Variant_Part : Boolean := False) return List_Id
          is
             procedure Process_Component_For_Finalize
               (Decl      : Node_Id;
@@ -8467,7 +8471,8 @@ package body Exp_Ch7 is
                            New_Copy_List (Discrete_Choices (Var)),
                          Statements =>
                            Process_Component_List_For_Finalize (
-                             Component_List (Var))));
+                             Component_List (Var),
+                             In_Variant_Part => True)));
 
                      Next_Non_Pragma (Var);
                   end loop;
@@ -8532,6 +8537,12 @@ package body Exp_Ch7 is
 
                   Prev_Non_Pragma (Decl);
                end loop;
+            end if;
+
+            if not In_Variant_Part then
+               Last_POC_Call := Last (Stmts);
+               --  In the case of a type extension, the deep-finalize call
+               --  for the _Parent component will be inserted here.
             end if;
 
             --  Process the rest of the components in reverse order
@@ -8749,7 +8760,38 @@ package body Exp_Ch7 is
                                     (Finalizer_Data))));
                      end if;
 
-                     Append_To (Bod_Stmts, Fin_Stmt);
+                     --  The intended component finalization order is
+                     --    1) POC components of extension
+                     --    2) _Parent component
+                     --    3) non-POC components of extension.
+                     --
+                     --  With this "finalize the parent part in the middle"
+                     --  ordering, we can avoid the need for making two
+                     --  calls to the parent's subprogram in the way that
+                     --  is necessary for Init_Procs. This does have the
+                     --  peculiar (but legal) consequence that the parent's
+                     --  non-POC components are finalized before the
+                     --  non-POC extension components. This violates the
+                     --  usual "finalize in reverse declaration order"
+                     --  principle, but that's ok (see Ada RM 7.6.1(9)).
+                     --
+                     --  Last_POC_Call should be non-empty if the extension
+                     --  has at least one POC. Interactions with variant
+                     --  parts are incorrectly ignored.
+
+                     if Present (Last_POC_Call) then
+                        Insert_After (Last_POC_Call, Fin_Stmt);
+                     else
+                        --  At this point, we could look for the common case
+                        --  where there are no POC components anywhere in
+                        --  sight (inherited or not) and, in that common case,
+                        --  call Append_To instead of Prepend_To. That would
+                        --  result in finalizing the parent part after, rather
+                        --  than before, the extension components. That might
+                        --  be more intuitive (as discussed in preceding
+                        --  comment), but it is not required.
+                        Prepend_To (Bod_Stmts, Fin_Stmt);
+                     end if;
                   end if;
                end if;
             end;
