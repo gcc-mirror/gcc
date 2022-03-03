@@ -642,7 +642,7 @@ namespace std
     template<typename _Tp, typename _Up>
       concept __strongly_ordered
 	= __adl_strong<_Tp, _Up>
-	  // FIXME: || floating_point<remove_reference_t<_Tp>>
+	  || floating_point<remove_reference_t<_Tp>>
 	  || __cmp3way<strong_ordering, _Tp, _Up>;
 
     template<typename _Tp, typename _Up>
@@ -667,6 +667,252 @@ namespace std
       friend class _Weak_order;
       friend class _Strong_fallback;
 
+      // Names for the supported floating-point representations.
+      enum class _Fp_fmt
+      {
+	_Binary16, _Binary32, _Binary64, _Binary128, // IEEE
+	_X86_80bit,  // x86 80-bit extended precision
+	_M68k_80bit, // m68k 80-bit extended precision
+	_Dbldbl, // IBM 128-bit double-double
+	// TODO: _Bfloat16,
+      };
+
+      // Identify the format used by a floating-point type.
+      template<typename _Tp>
+	static consteval _Fp_fmt
+	_S_fp_fmt() noexcept
+	{
+	  using enum _Fp_fmt;
+
+	  // Identify these formats first, then assume anything else is IEEE.
+	  // N.B. ARM __fp16 alternative format can be handled as binary16.
+
+#ifdef __LONG_DOUBLE_IBM128__
+	  if constexpr (__is_same(_Tp, long double))
+	    return _Dbldbl;
+#elif defined __LONG_DOUBLE_IEEE128__ && defined __SIZEOF_IBM128__
+	  if constexpr (__is_same(_Tp, __ibm128))
+	    return _Dbldbl;
+#endif
+
+#if __LDBL_MANT_DIG__ == 64
+	  if constexpr (__is_same(_Tp, long double))
+	    return __LDBL_MIN_EXP__ == -16381 ? _X86_80bit : _M68k_80bit;
+#endif
+#ifdef __SIZEOF_FLOAT80__
+	  if constexpr (__is_same(_Tp, __float80))
+	    return _X86_80bit;
+#endif
+
+	  constexpr int __width = sizeof(_Tp) * __CHAR_BIT__;
+
+	  if constexpr (__width == 16)       // IEEE binary16 (or ARM fp16).
+	    return _Binary16;
+	  else if constexpr (__width == 32)  // IEEE binary32
+	    return _Binary32;
+	  else if constexpr (__width == 64)  // IEEE binary64
+	    return _Binary64;
+	  else if constexpr (__width == 128) // IEEE binary128
+	    return _Binary128;
+	}
+
+      // So we don't need to include <stdint.h> and pollute the namespace.
+      using int64_t = __INT64_TYPE__;
+      using int32_t = __INT32_TYPE__;
+      using int16_t = __INT16_TYPE__;
+      using uint64_t = __UINT64_TYPE__;
+      using uint16_t = __UINT16_TYPE__;
+
+      // Used to unpack floating-point types that do not fit into an integer.
+      template<typename _Tp>
+	struct _Int
+	{
+#if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
+	  uint64_t _M_lo;
+	  _Tp _M_hi;
+#else
+	  _Tp _M_hi;
+	  uint64_t _M_lo;
+#endif
+
+	  constexpr explicit
+	  _Int(_Tp __hi, uint64_t __lo) noexcept : _M_hi(__hi)
+	  { _M_lo = __lo; }
+
+	  constexpr explicit
+	  _Int(uint64_t __lo) noexcept : _M_hi(0)
+	  { _M_lo = __lo; }
+
+	  constexpr bool operator==(const _Int&) const = default;
+
+#if defined __hppa__ || (defined __mips__ && !defined __mips_nan2008)
+	  consteval _Int
+	  operator<<(int __n) const noexcept
+	  {
+	    // XXX this assumes n >= 64, which is true for the use below.
+	    return _Int(static_cast<_Tp>(_M_lo << (__n - 64)), 0);
+	  }
+#endif
+
+	  constexpr _Int&
+	  operator^=(const _Int& __rhs) noexcept
+	  {
+	    _M_hi ^= __rhs._M_hi;
+	    _M_lo ^= __rhs._M_lo;
+	    return *this;
+	  }
+
+	  constexpr strong_ordering
+	  operator<=>(const _Int& __rhs) const noexcept
+	  {
+	    strong_ordering __cmp = _M_hi <=> __rhs._M_hi;
+	    if (__cmp != strong_ordering::equal)
+	      return __cmp;
+	    return _M_lo <=> __rhs._M_lo;
+	  }
+	};
+
+      template<typename _Tp>
+	static constexpr _Tp
+	_S_compl(_Tp __t) noexcept
+	{
+	  constexpr int __width = sizeof(_Tp) * __CHAR_BIT__;
+	  // Sign extend to get all ones or all zeros.
+	  make_unsigned_t<_Tp> __sign = __t >> (__width - 1);
+	  // If the sign bit was set, this flips all bits below it.
+	  // This converts ones' complement to two's complement.
+	  return __t ^ (__sign >> 1);
+	}
+
+      // As above but works on both parts of _Int<T>.
+      template<typename _Tp>
+	static constexpr _Int<_Tp>
+	_S_compl(_Int<_Tp> __t) noexcept
+	{
+	  constexpr int __width = sizeof(_Tp) * __CHAR_BIT__;
+	  make_unsigned_t<_Tp> __sign = __t._M_hi >> (__width - 1);
+	  __t._M_hi ^= (__sign >> 1 );
+	  uint64_t __sign64 = (_Tp)__sign;
+	  __t._M_lo ^= __sign64;
+	  return __t;
+	}
+
+      // Bit-cast a floating-point value to an unsigned integer.
+      template<typename _Tp>
+	constexpr static auto
+	_S_fp_bits(_Tp __val) noexcept
+	{
+	  if constexpr (sizeof(_Tp) == sizeof(int64_t))
+	    return __builtin_bit_cast(int64_t, __val);
+	  else if constexpr (sizeof(_Tp) == sizeof(int32_t))
+	    return __builtin_bit_cast(int32_t, __val);
+	  else if constexpr (sizeof(_Tp) == sizeof(int16_t))
+	    return __builtin_bit_cast(int16_t, __val);
+	  else
+	    {
+	      using enum _Fp_fmt;
+	      constexpr auto __fmt = _S_fp_fmt<_Tp>();
+	      if constexpr (__fmt == _X86_80bit || __fmt == _M68k_80bit)
+		{
+		  if constexpr (sizeof(_Tp) == 3 * sizeof(int32_t))
+		    {
+		      auto __ival = __builtin_bit_cast(_Int<int32_t>, __val);
+		      return _Int<int16_t>(__ival._M_hi, __ival._M_lo);
+		    }
+		  else
+		    {
+		      auto __ival = __builtin_bit_cast(_Int<int64_t>, __val);
+		      return _Int<int16_t>(__ival._M_hi, __ival._M_lo);
+		    }
+		}
+	      else if constexpr (sizeof(_Tp) == 2 * sizeof(int64_t))
+		{
+#if __SIZEOF_INT128__
+		  return __builtin_bit_cast(__int128, __val);
+#else
+		  return __builtin_bit_cast(_Int<int64_t>, __val);
+#endif
+		}
+	      else
+		static_assert(sizeof(_Tp) == sizeof(int64_t),
+			      "unsupported floating-point type");
+	    }
+	}
+
+      template<typename _Tp>
+	static constexpr strong_ordering
+	_S_fp_cmp(_Tp __x, _Tp __y) noexcept
+	{
+	  auto __ix = _S_fp_bits(__x);
+	  auto __iy = _S_fp_bits(__y);
+
+	  if (__ix == __iy)
+	    return strong_ordering::equal; // All bits are equal, we're done.
+
+	  using enum _Fp_fmt;
+	  using _Int = decltype(__ix);
+
+	  constexpr auto __fmt = _S_fp_fmt<_Tp>();
+
+	  if constexpr (__fmt == _Dbldbl) // double-double
+	    {
+	      // Unpack the double-double into two parts.
+	      // We never inspect the low double as a double, cast to integer.
+	      struct _Unpacked { double _M_hi; int64_t _M_lo; };
+	      auto __x2 = __builtin_bit_cast(_Unpacked, __x);
+	      auto __y2 = __builtin_bit_cast(_Unpacked, __y);
+
+	      // Compare the high doubles first and use result if unequal.
+	      auto __cmp = _S_fp_cmp(__x2._M_hi, __y2._M_hi);
+	      if (__cmp != strong_ordering::equal)
+		return __cmp;
+
+	      // For NaN the low double is unused, so if the high doubles
+	      // are the same NaN, we don't need to compare the low doubles.
+	      if (__builtin_isnan(__x2._M_hi))
+		return strong_ordering::equal;
+	      // Similarly, if the low doubles are +zero or -zero (which is
+	      // true for all infinities and some other values), we're done.
+	      if (((__x2._M_lo | __y2._M_lo) & 0x7fffffffffffffffULL) == 0)
+		return strong_ordering::equal;
+
+	      // Otherwise, compare the low parts.
+	      return _S_compl(__x2._M_lo) <=> _S_compl(__y2._M_lo);
+	    }
+	  else
+	    {
+	      if constexpr (__fmt == _M68k_80bit)
+		{
+		  // For m68k the MSB of the significand is ignored for the
+		  // greatest exponent, so either 0 or 1 is valid there.
+		  // Set it before comparing, so that we never have 0 there.
+		  constexpr uint16_t __maxexp = 0x7fff;
+		  if ((__ix._M_hi & __maxexp) == __maxexp)
+		    __ix._M_lo |= 1ull << 63;
+		  if ((__iy._M_hi & __maxexp) == __maxexp)
+		    __iy._M_lo |= 1ull << 63;
+		}
+	      else
+		{
+#if defined __hppa__ || (defined __mips__ && !defined __mips_nan2008)
+		  // IEEE 754-1985 allowed the meaning of the quiet/signaling
+		  // bit to be reversed. Flip that to give desired ordering.
+		  if (__builtin_isnan(__x) && __builtin_isnan(__y))
+		    {
+		      constexpr int __nantype = __fmt == _Binary32  ?  22
+					      : __fmt == _Binary64  ?  51
+					      : __fmt == _Binary128 ? 111
+					      : -1;
+		      constexpr _Int __bit = _Int(1) << __nantype;
+		      __ix ^= __bit;
+		      __iy ^= __bit;
+		    }
+#endif
+		}
+	      return _S_compl(__ix) <=> _S_compl(__iy);
+	    }
+	}
+
     public:
       template<typename _Tp, __decayed_same_as<_Tp> _Up>
 	requires __strongly_ordered<_Tp, _Up>
@@ -674,10 +920,9 @@ namespace std
 	operator() [[nodiscard]] (_Tp&& __e, _Up&& __f) const
 	noexcept(_S_noexcept<_Tp, _Up>())
 	{
-	  /* FIXME:
 	  if constexpr (floating_point<decay_t<_Tp>>)
-	    return __cmp_cust::__fp_strong_order(__e, __f);
-	  else */ if constexpr (__adl_strong<_Tp, _Up>)
+	    return _S_fp_cmp(__e, __f);
+	  else if constexpr (__adl_strong<_Tp, _Up>)
 	    return strong_ordering(strong_order(static_cast<_Tp&&>(__e),
 						static_cast<_Up&&>(__f)));
 	  else if constexpr (__cmp3way<strong_ordering, _Tp, _Up>)
