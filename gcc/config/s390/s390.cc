@@ -15420,6 +15420,21 @@ s390_loop_unroll_adjust (unsigned nunroll, struct loop *loop)
   if (s390_tune < PROCESSOR_2097_Z10)
     return nunroll;
 
+  if (unroll_only_small_loops)
+    {
+      /* Only unroll loops smaller than or equal to 12 insns.  */
+      const unsigned int small_threshold = 12;
+
+      if (loop->ninsns > small_threshold)
+	return 0;
+
+      /* ???: Make this dependent on the type of registers in
+	 the loop.  Increase the limit for vector registers.  */
+      const unsigned int max_insns = optimize >= 3 ? 36 : 24;
+
+      nunroll = MIN (nunroll, max_insns / loop->ninsns);
+    }
+
   /* Count the number of memory references within the loop body.  */
   bbs = get_loop_body (loop);
   subrtx_iterator::array_type array;
@@ -15494,6 +15509,19 @@ static void
 s390_override_options_after_change (void)
 {
   s390_default_align (&global_options);
+
+  /* Explicit -funroll-loops turns -munroll-only-small-loops off.  */
+  if ((OPTION_SET_P (flag_unroll_loops) && flag_unroll_loops)
+       || (OPTION_SET_P (flag_unroll_all_loops)
+	   && flag_unroll_all_loops))
+    {
+      if (!OPTION_SET_P (unroll_only_small_loops))
+	unroll_only_small_loops = 0;
+      if (!OPTION_SET_P (flag_cunroll_grow_size))
+	flag_cunroll_grow_size = 1;
+    }
+  else if (!OPTION_SET_P (flag_cunroll_grow_size))
+    flag_cunroll_grow_size = flag_peel_loops || optimize >= 3;
 }
 
 static void
@@ -15702,6 +15730,9 @@ s390_option_override_internal (struct gcc_options *opts,
 
   /* Set the default alignment.  */
   s390_default_align (opts);
+
+  /* Set unroll options.  */
+  s390_override_options_after_change ();
 
   /* Call target specific restore function to do post-init work.  At the moment,
      this just sets opts->x_s390_cost_pointer.  */
