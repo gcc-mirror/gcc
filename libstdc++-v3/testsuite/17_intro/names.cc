@@ -195,6 +195,8 @@
 #undef y
 // <sys/var.h> defines vario::v
 #undef v
+// <sys/timer.h> defines trb::func and cputime_tmr::func
+#undef func
 #endif
 
 #ifdef __APPLE__
