@@ -380,7 +380,7 @@ extern void vxworks_emit_call_builtin___clear_cache (rtx begin, rtx end);
    with VxWorks.  */
 
 #undef DWARF_VERSION_DEFAULT
-#define DWARF_VERSION_DEFAULT (TARGET_VXWORKS7 ? 4 : 2)
+#define DWARF_VERSION_DEFAULT (TARGET_VXWORKS7 ? 3 : 2)
 
 #undef DWARF_GNAT_ENCODINGS_DEFAULT
 #define DWARF_GNAT_ENCODINGS_DEFAULT \
