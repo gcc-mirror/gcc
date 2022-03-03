@@ -24,4 +24,4 @@ template <> void frob::store (int i_)
 // { dg-final { scan-lang-dump {Cluster members:\n  \[0\]=specialization declaration '::frob::store<int>'} module } }
 // { dg-final { scan-lang-dump {Pending specialization '::frob::store<int>' entity:[0-9]* section:. keyed to '::frob'} module } }
 
-// { dg-final { scan-assembler {_ZN4frob5storeIiEEvT_:} } }
+// { dg-final { scan-assembler {_ZNW3TPL4frob5storeIiEEvT_:} } }

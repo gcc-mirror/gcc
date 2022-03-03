@@ -11,4 +11,4 @@ void frob (mytype &)
 {
 }
 
-// { dg-final { scan-assembler {_ZW4zero4eins4zwei4drei4vier4funf5sechs6sieben4acht4neun4zehn3elfE4frobRWW1_E6mytype:} } }
+// { dg-final { scan-assembler {_ZW4zeroW4einsW4zweiW4dreiW4vierW4funfW5sechsW6siebenW4achtW4neunW4zehnW3elf4frobRSA_6mytype:} } }

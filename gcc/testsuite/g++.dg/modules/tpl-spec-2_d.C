@@ -23,5 +23,5 @@ int two ()
 // { dg-final { scan-lang-dump {Reading 1 pending entities keyed to '::foo'} module } }
 // { dg-final { scan-lang-dump-not {Reading definition function_decl '::foo@TPL:.<int>'} module } }
 
-// { dg-final { scan-assembler-not {_Z3fooIiEiT_:} } }
-// { dg-final { scan-assembler {_Z3fooIfEiT_:} } }
+// { dg-final { scan-assembler-not {_ZW3TPL3fooIiEiT_:} } }
+// { dg-final { scan-assembler {_ZW3TPL3fooIfEiT_:} } }
