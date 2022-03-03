@@ -13786,7 +13786,7 @@ gimplify_omp_loop (tree *expr_p, gimple_seq *pre_p)
       *pc = NULL_TREE;
       *expr_p = t;
     }
-  return gimplify_omp_for (expr_p, pre_p);
+  return gimplify_expr (expr_p, pre_p, NULL, is_gimple_stmt, fb_none);
 }
 
 
@@ -15540,8 +15540,19 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	  ret = GS_ALL_DONE;
 	  break;
 
-	case OMP_FOR:
 	case OMP_SIMD:
+	  {
+	    /* Temporarily disable into_ssa, as scan_omp_simd
+	       which calls copy_gimple_seq_and_replace_locals can't deal
+	       with SSA_NAMEs defined outside of the body properly.  */
+	    bool saved_into_ssa = gimplify_ctxp->into_ssa;
+	    gimplify_ctxp->into_ssa = false;
+	    ret = gimplify_omp_for (expr_p, pre_p);
+	    gimplify_ctxp->into_ssa = saved_into_ssa;
+	    break;
+	  }
+
+	case OMP_FOR:
 	case OMP_DISTRIBUTE:
 	case OMP_TASKLOOP:
 	case OACC_LOOP:
