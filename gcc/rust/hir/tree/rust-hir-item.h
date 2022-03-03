@@ -2821,6 +2821,8 @@ public:
 
   Identifier get_item_name () const { return item_name; }
 
+  AST::AttrVec &get_outer_attrs () { return outer_attrs; }
+
 protected:
   ExternalItem (Analysis::NodeMapping mappings, Identifier item_name,
 		Visibility vis, AST::AttrVec outer_attrs, Location locus)
