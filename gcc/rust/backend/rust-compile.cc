@@ -82,7 +82,8 @@ CompileBlock::visit (HIR::BlockExpr &expr)
       auto compiled_expr = CompileStmt::Compile (s.get (), ctx);
       if (compiled_expr != nullptr)
 	{
-	  ctx->add_statement (compiled_expr);
+	  tree s = convert_to_void (compiled_expr, ICV_STATEMENT);
+	  ctx->add_statement (s);
 	}
     }
 

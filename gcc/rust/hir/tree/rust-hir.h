@@ -723,6 +723,9 @@ public:
   const Analysis::NodeMapping get_mappings () const { return mappings; }
 
   virtual TraitItemKind get_item_kind () const = 0;
+
+  virtual AST::AttrVec &get_outer_attrs () = 0;
+  virtual const AST::AttrVec &get_outer_attrs () const = 0;
 };
 
 class ImplItem

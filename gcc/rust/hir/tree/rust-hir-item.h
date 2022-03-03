@@ -2369,8 +2369,11 @@ public:
     return TraitItemKind::FUNC;
   }
 
-  AST::AttrVec &get_outer_attrs () { return outer_attrs; }
-  const AST::AttrVec &get_outer_attrs () const { return outer_attrs; }
+  AST::AttrVec &get_outer_attrs () override final { return outer_attrs; }
+  const AST::AttrVec &get_outer_attrs () const override final
+  {
+    return outer_attrs;
+  }
 
 protected:
   // Clone function implementation as (not pure) virtual method
@@ -2452,6 +2455,12 @@ public:
     return TraitItemKind::CONST;
   }
 
+  AST::AttrVec &get_outer_attrs () override final { return outer_attrs; }
+  const AST::AttrVec &get_outer_attrs () const override final
+  {
+    return outer_attrs;
+  }
+
 protected:
   // Clone function implementation as (not pure) virtual method
   TraitItemConst *clone_trait_item_impl () const override
@@ -2531,6 +2540,12 @@ public:
   TraitItemKind get_item_kind () const override final
   {
     return TraitItemKind::TYPE;
+  }
+
+  AST::AttrVec &get_outer_attrs () override final { return outer_attrs; }
+  const AST::AttrVec &get_outer_attrs () const override final
+  {
+    return outer_attrs;
   }
 
 protected:

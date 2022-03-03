@@ -34,6 +34,14 @@ L
 Rust Joined Separate
 ; Not documented
 
+Wall
+Rust
+; Documented in c.opt
+
+Wunused-result
+Rust Var(warn_unused_result) Init(1) Warning
+Warn if a caller of a function, marked with attribute warn_unused_result, does not use its return value.
+
 frust-crate=
 Rust Joined RejectNegative
 -frust-crate=<name>             Set the crate name for the compilation
