@@ -1,3 +1,16 @@
+2022-03-02  Tamar Christina  <tamar.christina@arm.com>
+
+	PR testsuite/104730
+	* gcc.dg/vect/complex/pr102819-1.c: Add vect_float.
+	* gcc.dg/vect/complex/pr102819-2.c: Likewise.
+	* gcc.dg/vect/complex/pr102819-3.c: Likewise.
+	* gcc.dg/vect/complex/pr102819-4.c: Likewise.
+	* gcc.dg/vect/complex/pr102819-5.c: Likewise.
+	* gcc.dg/vect/complex/pr102819-6.c: Likewise.
+	* gcc.dg/vect/complex/pr102819-7.c: Likewise.
+	* gcc.dg/vect/complex/pr102819-8.c: Likewise.
+	* gcc.dg/vect/complex/pr102819-9.c: Likewise.
+
 2022-03-01  Tamar Christina  <tamar.christina@arm.com>
 
 	* gcc.dg/vect/complex/bb-slp-complex-add-pattern-int.c: Update test
