@@ -3615,12 +3615,13 @@ MacroExpander::match_token (Parser<MacroInvocLexer> &parser, AST::Token &token)
 }
 
 bool
-MacroExpander::match_n_matches (
-  Parser<MacroInvocLexer> &parser,
-  std::vector<std::unique_ptr<AST::MacroMatch>> &matches, size_t &match_amount,
-  size_t lo_bound, size_t hi_bound)
+MacroExpander::match_n_matches (Parser<MacroInvocLexer> &parser,
+				AST::MacroMatchRepetition &rep,
+				size_t &match_amount, size_t lo_bound,
+				size_t hi_bound)
 {
   match_amount = 0;
+  auto &matches = rep.get_matches ();
 
   const MacroInvocLexer &source = parser.get_token_source ();
   while (true)
@@ -3630,6 +3631,12 @@ MacroExpander::match_n_matches (
       auto t_id = parser.peek_current_token ()->get_id ();
       if (t_id == RIGHT_PAREN || t_id == RIGHT_SQUARE || t_id == RIGHT_CURLY)
 	break;
+
+      // Skip parsing a separator on the first match, otherwise consume it.
+      // If it isn't present, this is an error
+      if (rep.has_sep () && match_amount > 0)
+	if (!match_token (parser, *rep.get_sep ()))
+	  break;
 
       bool valid_current_match = false;
       for (auto &match : matches)
@@ -3705,17 +3712,17 @@ MacroExpander::match_repetition (Parser<MacroInvocLexer> &parser,
     case AST::MacroMatchRepetition::MacroRepOp::ANY:
       lo_str = "0";
       hi_str = "+inf";
-      res = match_n_matches (parser, rep.get_matches (), match_amount);
+      res = match_n_matches (parser, rep, match_amount);
       break;
     case AST::MacroMatchRepetition::MacroRepOp::ONE_OR_MORE:
       lo_str = "1";
       hi_str = "+inf";
-      res = match_n_matches (parser, rep.get_matches (), match_amount, 1);
+      res = match_n_matches (parser, rep, match_amount, 1);
       break;
     case AST::MacroMatchRepetition::MacroRepOp::ZERO_OR_ONE:
       lo_str = "0";
       hi_str = "1";
-      res = match_n_matches (parser, rep.get_matches (), match_amount, 0, 1);
+      res = match_n_matches (parser, rep, match_amount, 0, 1);
       break;
     default:
       gcc_unreachable ();
