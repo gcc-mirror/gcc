@@ -1,3 +1,9 @@
+2022-03-02  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/104573
+	* resolve.cc (resolve_structure_cons): Avoid NULL pointer
+	dereference when there is no valid component.
+
 2022-02-24  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/84519

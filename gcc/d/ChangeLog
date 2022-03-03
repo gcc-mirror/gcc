@@ -1,3 +1,7 @@
+2022-03-02  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* dmd/MERGE: Merge upstream dmd 423f19b41.
+
 2022-02-28  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* d-target.cc (Target::_init): Initialize C type size fields.

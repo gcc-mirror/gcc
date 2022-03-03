@@ -1,3 +1,73 @@
+2022-03-02  Alexandre Oliva  <oliva@adacore.com>
+
+	* lra-constraints.cc (undo_optional_reloads): Recognize and
+	drop insns of multi-word move sequences, tolerate removal
+	iteration on an already-removed clobber, and refuse to
+	substitute original pseudos into clobbers.
+
+2022-03-02  Qing Zhao  <qing.zhao@oracle.com>
+
+	PR middle-end/102276
+	* common.opt (-Wtrivial-auto-var-init): New option.
+	* doc/invoke.texi (-Wtrivial-auto-var-init): Document new option.
+	(-ftrivial-auto-var-init): Update option;
+	* gimplify.cc (emit_warn_switch_unreachable): New function.
+	(warn_switch_unreachable_r): Rename to ...
+	(warn_switch_unreachable_and_auto_init_r): This.
+	(maybe_warn_switch_unreachable): Rename to ...
+	(maybe_warn_switch_unreachable_and_auto_init): This.
+	(gimplify_switch_expr): Update calls to renamed function.
+
+2022-03-02  Richard Biener  <rguenther@suse.de>
+
+	PR rtl-optimization/104686
+	* ira-color.cc (object_conflicts_with_allocno_p): New function
+	using a bitvector test instead of iterating when possible.
+	(allocnos_conflict_p): Choose the best allocno to iterate over
+	object conflicts.
+	(update_conflict_hard_regno_costs): Do allocnos_conflict_p test
+	last.
+
+2022-03-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* cfg.cc (dump_edge_info): Dump goto_locus if present.
+
+2022-03-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/104589
+	* cfgrtl.cc (fixup_reorder_chain): Use loc_equal instead of direct
+	INSN_LOCATION comparison with goto_locus.
+
+2022-03-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree-ssa-strlen.cc (strlen_pass::handle_assign,
+	strlen_pass::before_dom_children): Comment spelling fixes.
+
+2022-03-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* ipa-modref-tree.cc (modref_access_node::contains,
+	modref_access_node::closer_pair_p, modref_access_node::insert,
+	modref_access_node::insert_kill): Comment spelling fixes.
+	* ipa-modref.cc: Likewise.
+	(modref_summary::finalize, ignore_nondeterminism_p,
+	class modref_access_analysis,
+	modref_access_analysis::set_side_effects,
+	modref_access_analysis::set_nondeterministic,
+	modref_access_analysis::record_global_memory_load,
+	modref_access_analysis::propagate, modref_access_analysis::analyze,
+	struct escape_point, class modref_lattice, modref_lattice::merge,
+	modref_lattice::merge_deref, class modref_eaf_analysis,
+	modref_eaf_analysis::merge_call_lhs_flags,
+	modref_eaf_analysis::analyze_ssa_name, modref_eaf_analysis::propagate,
+	modref_eaf_analysis::record_escape_points, remap_kills,
+	update_escape_summary, remove_useless_summaries,
+	ipa_merge_modref_summary_after_inlining, pass_ipa_modref::execute):
+	Likewise.
+	* ipa-modref.h (struct modref_summary, interposable_eaf_flags):
+	Likewise.
+	* ipa-modref-tree.h (enum modref_special_parms,
+	struct modref_access_node): Likewise.
+
 2022-03-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/104715

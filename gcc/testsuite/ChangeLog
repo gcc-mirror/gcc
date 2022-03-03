@@ -1,3 +1,60 @@
+2022-03-02  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/104573
+	* gfortran.dg/assumed_type_14.f90: New test.
+
+2022-03-02  David Edelsohn  <dje.gcc@gmail.com>
+
+	* c-c++-common/pr104505.c: Add -Wno-psabi.
+
+2022-03-02  Qing Zhao  <qing.zhao@oracle.com>
+
+	PR middle-end/102276
+	* gcc.dg/auto-init-pr102276-1.c: New test.
+	* gcc.dg/auto-init-pr102276-2.c: New test.
+	* gcc.dg/auto-init-pr102276-3.c: New test.
+	* gcc.dg/auto-init-pr102276-4.c: New test.
+
+2022-03-02  Tamar Christina  <tamar.christina@arm.com>
+
+	PR testsuite/104730
+	* gcc.dg/vect/complex/pr102819-1.c: Add vect_float.
+	* gcc.dg/vect/complex/pr102819-2.c: Likewise.
+	* gcc.dg/vect/complex/pr102819-3.c: Likewise.
+	* gcc.dg/vect/complex/pr102819-4.c: Likewise.
+	* gcc.dg/vect/complex/pr102819-5.c: Likewise.
+	* gcc.dg/vect/complex/pr102819-6.c: Likewise.
+	* gcc.dg/vect/complex/pr102819-7.c: Likewise.
+	* gcc.dg/vect/complex/pr102819-8.c: Likewise.
+	* gcc.dg/vect/complex/pr102819-9.c: Likewise.
+
+2022-03-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/104637
+	* gcc.target/i386/pr104637.c: Don't run on ia32.  Add -Wno-div-by-zero
+	to dg-options.
+	(foo): Remove extraneous initializer.
+
+2022-03-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/100541
+	* g++.dg/opt/pr100541-1.C: New test.
+	* g++.dg/opt/pr100541-2.C: New test.
+
+2022-03-02  Hongyu Wang  <hongyu.wang@intel.com>
+
+	PR target/104726
+	* gcc.target/i386/pr104551.c: Use avx2-check.h.
+
+2022-03-02  Hongyu Wang  <hongyu.wang@intel.com>
+
+	PR target/104724
+	* gcc.target/i386/avx512fp16-vcvtsi2sh-1b.c: Use long long
+	instead of __int64_t.
+	* gcc.target/i386/avx512fp16-vcvtsi2sh64-1b.c: Ditto.
+	* gcc.target/i386/avx512fp16-vcvtusi2sh-1b.c: Ditto.
+	* gcc.target/i386/avx512fp16-vcvtusi2sh64-1b.c: Ditto.
+
 2022-03-01  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/104715
