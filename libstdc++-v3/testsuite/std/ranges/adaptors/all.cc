@@ -164,20 +164,26 @@ test07()
 constexpr bool
 test08()
 {
+#ifdef _GLIBCXX_DEBUG
+  using std::_GLIBCXX_STD_C::vector;
+#else
+  using std::vector;
+#endif
+
   // Verify P2415R2 "What is a view?" changes.
   // In particular, rvalue non-view non-borrowed ranges are now viewable.
-  static_assert(ranges::viewable_range<std::vector<int>&&>);
-  static_assert(!ranges::viewable_range<const std::vector<int>&&>);
+  static_assert(ranges::viewable_range<vector<int>&&>);
+  static_assert(!ranges::viewable_range<const vector<int>&&>);
 
   static_assert(ranges::viewable_range<std::initializer_list<int>&>);
   static_assert(ranges::viewable_range<const std::initializer_list<int>&>);
   static_assert(!ranges::viewable_range<std::initializer_list<int>&&>);
   static_assert(!ranges::viewable_range<const std::initializer_list<int>&&>);
 
-  using type = views::all_t<std::vector<int>&&>;
-  using type = ranges::owning_view<std::vector<int>>;
+  using type = views::all_t<vector<int>&&>;
+  using type = ranges::owning_view<vector<int>>;
 
-  std::same_as<type> auto v = std::vector<int>{{1,2,3}} | views::all;
+  std::same_as<type> auto v = vector<int>{{1,2,3}} | views::all;
 
   VERIFY( ranges::equal(v, (int[]){1,2,3}) );
   VERIFY( ranges::size(v) == 3 );
