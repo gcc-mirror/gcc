@@ -49,12 +49,14 @@ public:
    * Substitute a macro repetition by its given fragments
    *
    * @param pattern_start Start index of the pattern tokens
-   * @param pattern_end Index  Amount of tokens in the pattern
+   * @param pattern_end End index of the patterns tokens
+   * @param separator Optional separator to include when expanding tokens
    *
    * @return A vector containing the repeated pattern
    */
   std::vector<std::unique_ptr<AST::Token>>
-  substitute_repetition (size_t pattern_start, size_t pattern_end);
+  substitute_repetition (size_t pattern_start, size_t pattern_end,
+			 std::unique_ptr<AST::Token> separator);
 
   /**
    * Substitute a given token by its appropriate representation
