@@ -249,11 +249,9 @@ public:
 
   // Statements.
 
-  tree expression_statement (tree, tree);
-
   tree init_statement (tree, Bvariable *var, tree init);
 
-  tree assignment_statement (tree, tree lhs, tree rhs, Location);
+  tree assignment_statement (tree lhs, tree rhs, Location);
 
   tree return_statement (tree, const std::vector<tree> &, Location);
 
@@ -1837,14 +1835,6 @@ Gcc_backend::call_expression (tree, // containing fcn for call
   return ret;
 }
 
-// An expression as a statement.
-
-tree
-Gcc_backend::expression_statement (tree, tree expr)
-{
-  return expr;
-}
-
 // Variable initialization.
 
 tree
@@ -1880,8 +1870,7 @@ Gcc_backend::init_statement (tree, Bvariable *var, tree init_tree)
 // Assignment.
 
 tree
-Gcc_backend::assignment_statement (tree bfn, tree lhs, tree rhs,
-				   Location location)
+Gcc_backend::assignment_statement (tree lhs, tree rhs, Location location)
 {
   if (lhs == error_mark_node || rhs == error_mark_node)
     return error_mark_node;
@@ -1896,8 +1885,7 @@ Gcc_backend::assignment_statement (tree bfn, tree lhs, tree rhs,
       || int_size_in_bytes (TREE_TYPE (lhs)) == 0
       || TREE_TYPE (rhs) == void_type_node
       || int_size_in_bytes (TREE_TYPE (rhs)) == 0)
-    return this->compound_statement (this->expression_statement (bfn, lhs),
-				     this->expression_statement (bfn, rhs));
+    return this->compound_statement (lhs, rhs);
 
   rhs = this->convert_tree (TREE_TYPE (lhs), rhs, location);
 
@@ -2527,8 +2515,7 @@ Gcc_backend::temporary_variable (tree fndecl, tree bind_tree, tree type_tree,
   if (init_tree != NULL_TREE
       && (this->type_size (type_tree) == 0
 	  || TREE_TYPE (init_tree) == void_type_node))
-    *pstatement = this->compound_statement (
-      this->expression_statement (fndecl, init_tree), *pstatement);
+    *pstatement = this->compound_statement (init_tree, *pstatement);
 
   return new Bvariable (var);
 }

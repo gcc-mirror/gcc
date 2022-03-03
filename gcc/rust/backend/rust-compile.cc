@@ -82,10 +82,7 @@ CompileBlock::visit (HIR::BlockExpr &expr)
       auto compiled_expr = CompileStmt::Compile (s.get (), ctx);
       if (compiled_expr != nullptr)
 	{
-	  tree compiled_stmt
-	    = ctx->get_backend ()->expression_statement (fnctx.fndecl,
-							 compiled_expr);
-	  ctx->add_statement (compiled_stmt);
+	  ctx->add_statement (compiled_expr);
 	}
     }
 
@@ -98,10 +95,7 @@ CompileBlock::visit (HIR::BlockExpr &expr)
 	{
 	  if (result == nullptr)
 	    {
-	      tree final_stmt
-		= ctx->get_backend ()->expression_statement (fnctx.fndecl,
-							     compiled_expr);
-	      ctx->add_statement (final_stmt);
+	      ctx->add_statement (compiled_expr);
 	    }
 	  else
 	    {
@@ -109,8 +103,7 @@ CompileBlock::visit (HIR::BlockExpr &expr)
 		result, expr.get_final_expr ()->get_locus ());
 
 	      tree assignment
-		= ctx->get_backend ()->assignment_statement (fnctx.fndecl,
-							     result_reference,
+		= ctx->get_backend ()->assignment_statement (result_reference,
 							     compiled_expr,
 							     expr.get_locus ());
 	      ctx->add_statement (assignment);

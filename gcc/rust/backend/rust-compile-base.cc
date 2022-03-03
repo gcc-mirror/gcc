@@ -262,9 +262,7 @@ HIRCompileBase::compile_function_body (Context *ctx, tree fndecl,
       auto compiled_expr = CompileStmt::Compile (s.get (), ctx);
       if (compiled_expr != nullptr)
 	{
-	  tree compiled_stmt
-	    = ctx->get_backend ()->expression_statement (fndecl, compiled_expr);
-	  ctx->add_statement (compiled_stmt);
+	  ctx->add_statement (compiled_expr);
 	}
     }
 
@@ -289,10 +287,8 @@ HIRCompileBase::compile_function_body (Context *ctx, tree fndecl,
 	    }
 	  else
 	    {
-	      tree final_stmt
-		= ctx->get_backend ()->expression_statement (fndecl,
-							     compiled_expr);
-	      ctx->add_statement (final_stmt);
+	      // FIXME can this actually happen?
+	      ctx->add_statement (compiled_expr);
 	    }
 	}
     }
