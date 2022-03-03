@@ -25153,7 +25153,12 @@
    (set_attr "length_immediate" "1,0,1")
    (set_attr "prefix_extra" "0,1,*")
    (set_attr "prefix" "maybe_vex,maybe_evex,orig")
-   (set_attr "mode" "TI,V4SF,V4SF")])
+   (set_attr "mode" "TI,V4SF,V4SF")
+   (set (attr "preferred_for_speed")
+     (cond [(eq_attr "alternative" "1")
+	      (symbol_ref "!TARGET_INTER_UNIT_MOVES_TO_VEC")
+	   ]
+	   (symbol_ref "true")))])
 
 (define_insn "*vec_dupv2di"
   [(set (match_operand:V2DI 0 "register_operand"     "=x,v,v,x")
