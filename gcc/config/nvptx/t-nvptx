@@ -32,4 +32,4 @@ s-nvptx-gen-opt: $(srcdir)/config/nvptx/nvptx-sm.def
 
 MULTILIB_OPTIONS = mgomp
 
-MULTILIB_EXTRA_OPTS = misa=sm_30 mptx=3.1
+MULTILIB_EXTRA_OPTS = mptx=3.1
