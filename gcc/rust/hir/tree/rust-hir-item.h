@@ -19,6 +19,7 @@
 #ifndef RUST_HIR_ITEM_H
 #define RUST_HIR_ITEM_H
 
+#include "rust-abi.h"
 #include "rust-ast-full-decls.h"
 #include "rust-common.h"
 #include "rust-hir.h"
@@ -481,28 +482,22 @@ private:
   AsyncConstStatus const_status;
   Unsafety unsafety;
   bool has_extern;
-  std::string extern_abi; // e.g. extern "C" fn() -> i32 {}
-  // TODO: maybe ensure that extern_abi only exists if extern exists?
+  ABI abi;
 
 public:
   FunctionQualifiers (AsyncConstStatus const_status, Unsafety unsafety,
-		      bool has_extern = false,
-		      std::string extern_abi = std::string ())
+		      bool has_extern, ABI abi)
     : const_status (const_status), unsafety (unsafety), has_extern (has_extern),
-      extern_abi (std::move (extern_abi))
-  {
-    if (!this->extern_abi.empty ())
-      {
-	// having extern is required; not having it is an implementation error
-	gcc_assert (has_extern);
-      }
-  }
+      abi (abi)
+  {}
 
   std::string as_string () const;
 
   AsyncConstStatus get_status () const { return const_status; }
 
   bool is_const () const { return const_status == AsyncConstStatus::CONST_FN; }
+
+  ABI get_abi () const { return abi; }
 };
 
 // A function parameter
@@ -3082,15 +3077,9 @@ protected:
 // An extern block HIR node
 class ExternBlock : public VisItem
 {
-  // bool has_abi;
-  std::string abi;
-
-  // bool has_inner_attrs;
+  ABI abi;
   AST::AttrVec inner_attrs;
-
-  // bool has_extern_items;
   std::vector<std::unique_ptr<ExternalItem>> extern_items;
-
   Location locus;
 
 public:
@@ -3102,17 +3091,14 @@ public:
   // Returns whether extern block has extern items.
   bool has_extern_items () const { return !extern_items.empty (); }
 
-  // Returns whether extern block has ABI name.
-  bool has_abi () const { return !abi.empty (); }
+  ABI get_abi () const { return abi; }
 
-  std::string get_abi () const { return abi; }
-
-  ExternBlock (Analysis::NodeMapping mappings, std::string abi,
+  ExternBlock (Analysis::NodeMapping mappings, ABI abi,
 	       std::vector<std::unique_ptr<ExternalItem>> extern_items,
 	       Visibility vis, AST::AttrVec inner_attrs,
 	       AST::AttrVec outer_attrs, Location locus)
     : VisItem (std::move (mappings), std::move (vis), std::move (outer_attrs)),
-      abi (std::move (abi)), inner_attrs (std::move (inner_attrs)),
+      abi (abi), inner_attrs (std::move (inner_attrs)),
       extern_items (std::move (extern_items)), locus (locus)
   {}
 
