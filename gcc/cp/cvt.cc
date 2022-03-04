@@ -1482,6 +1482,9 @@ convert_to_void (tree expr, impl_conv_void implicit, tsubst_flags_t complain)
     default:;
     }
   expr = resolve_nondeduced_context (expr, complain);
+  if (!mark_single_function (expr, complain))
+    return error_mark_node;
+
   {
     tree probe = expr;
 

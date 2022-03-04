@@ -13893,20 +13893,18 @@ void
 module_state::mangle (bool include_partition)
 {
   if (subst)
-    mangle_module_substitution (subst - 1);
+    mangle_module_substitution (subst);
   else
     {
       if (parent)
 	parent->mangle (include_partition);
-      if (include_partition || !is_partition ())
+      if (include_partition || !is_partition ()) 
 	{
-	  char p = 0;
-	  // Partitions are significant for global initializer functions
-	  if (is_partition () && !parent->is_partition ())
-	    p = 'P';
+	  // Partitions are significant for global initializer
+	  // functions
+	  bool partition = is_partition () && !parent->is_partition ();
+	  subst = mangle_module_component (name, partition);
 	  substs.safe_push (this);
-	  subst = substs.length ();
-	  mangle_identifier (p, name);
 	}
     }
 }
@@ -13915,6 +13913,8 @@ void
 mangle_module (int mod, bool include_partition)
 {
   module_state *imp = (*modules)[mod];
+
+  gcc_checking_assert (!imp->is_header ());
 
   if (!imp->name)
     /* Set when importing the primary module interface.  */
@@ -18391,14 +18391,15 @@ get_originating_module (tree decl, bool for_mangle)
   if (!DECL_LANG_SPECIFIC (not_tmpl))
     return for_mangle ? -1 : 0;
 
-  if (for_mangle
-      && (DECL_MODULE_EXPORT_P (owner) || !DECL_MODULE_PURVIEW_P (not_tmpl)))
+  if (for_mangle && !DECL_MODULE_PURVIEW_P (not_tmpl))
     return -1;
 
-  if (!DECL_MODULE_IMPORT_P (not_tmpl))
-    return 0;
+  int mod = !DECL_MODULE_IMPORT_P (not_tmpl) ? 0 : get_importing_module (owner);
 
-  return get_importing_module (owner);
+  if (for_mangle && (*modules)[mod]->is_header ())
+    return -1;
+
+  return mod;
 }
 
 unsigned

@@ -1,3 +1,9 @@
+2022-03-01  Martin Liska  <mliska@suse.cz>
+
+	* lto-plugin.c (process_offload_section): Use a linker as many
+	comments are connected to gold linker.
+	(process_option): Likewise.
+
 2021-12-02  Rasmus Villemoes  <rasmus.villemoes@prevas.dk>
 
 	* lto-plugin.c: Fix -linker-output-auto-notlo-rel ->

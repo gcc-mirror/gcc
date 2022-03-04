@@ -1041,7 +1041,15 @@ AC_SUBST(enable_shared)
 
 AC_ARG_ENABLE(gcov,
 [  --disable-gcov          don't provide libgcov and related host tools],
-[], [enable_gcov=yes])
+[], [case $target in
+       bpf-*-*)
+         enable_gcov=no
+       ;;
+       *)
+         enable_gcov=yes
+       ;;
+     esac])
+
 AC_SUBST(enable_gcov)
 
 AC_ARG_WITH(specs,
@@ -4268,6 +4276,8 @@ changequote([,])dnl
   if echo "$ld_ver" | grep GNU > /dev/null; then
     # Require GNU ld or gold 2.21+ for plugin support by default.
     if test "$ld_vers_major" -eq 2 -a "$ld_vers_minor" -ge 21; then
+      gcc_cv_lto_plugin=2
+    elif test "$ld_is_mold" = yes; then
       gcc_cv_lto_plugin=2
     # Allow -fuse-linker-plugin to enable plugin support in GNU gold 2.20.
     elif test "$ld_is_gold" = yes -a "$ld_vers_major" -eq 2 -a "$ld_vers_minor" -eq 20; then

@@ -2646,9 +2646,9 @@ T _d_newThrowable(T, Args...)(auto ref Args args) @trusted
 {
     debug(PRINTF) printf("_d_newThrowable(%s)\n", cast(char*) T.stringof);
 
-    import core.stdc.stdlib : malloc;
+    import core.memory : pureMalloc;
     auto init = __traits(initSymbol, T);
-    void* p = malloc(init.length);
+    void* p = pureMalloc(init.length);
     if (!p)
     {
         import core.exception : onOutOfMemoryError;

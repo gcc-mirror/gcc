@@ -2978,6 +2978,13 @@ Fortran 2008 has
    R856 allstop-stmt  is ALL STOP [ stop-code ]
    R857 stop-code     is scalar-default-char-constant-expr
                       or scalar-int-constant-expr
+Fortran 2018 has
+
+   R1160 stop-stmt       is STOP [ stop-code ] [ , QUIET = scalar-logical-expr]
+   R1161 error-stop-stmt is
+                      ERROR STOP [ stop-code ] [ , QUIET = scalar-logical-expr]
+   R1162 stop-code       is scalar-default-char-expr
+                         or scalar-int-expr
 
 For free-form source code, all standards contain a statement of the form:
 
@@ -2994,8 +3001,10 @@ static match
 gfc_match_stopcode (gfc_statement st)
 {
   gfc_expr *e = NULL;
+  gfc_expr *quiet = NULL;
   match m;
   bool f95, f03, f08;
+  char c;
 
   /* Set f95 for -std=f95.  */
   f95 = (gfc_option.allow_std == GFC_STD_OPT_F95);
@@ -3006,11 +3015,16 @@ gfc_match_stopcode (gfc_statement st)
   /* Set f08 for -std=f2008.  */
   f08 = (gfc_option.allow_std == GFC_STD_OPT_F08);
 
-  /* Look for a blank between STOP and the stop-code for F2008 or later.  */
-  if (gfc_current_form != FORM_FIXED && !(f95 || f03))
-    {
-      char c = gfc_peek_ascii_char ();
+  /* Plain STOP statement?  */
+  if (gfc_match_eos () == MATCH_YES)
+    goto checks;
 
+  /* Look for a blank between STOP and the stop-code for F2008 or later.
+     But allow for F2018's ,QUIET= specifier.  */
+  c = gfc_peek_ascii_char ();
+
+  if (gfc_current_form != FORM_FIXED && !(f95 || f03) && c != ',')
+    {
       /* Look for end-of-statement.  There is no stop-code.  */
       if (c == '\n' || c == '!' || c == ';')
         goto done;
@@ -3023,7 +3037,12 @@ gfc_match_stopcode (gfc_statement st)
 	}
     }
 
-  if (gfc_match_eos () != MATCH_YES)
+  if (c == ' ')
+    {
+      gfc_gobble_whitespace ();
+      c = gfc_peek_ascii_char ();
+    }
+  if (c != ',')
     {
       int stopcode;
       locus old_locus;
@@ -3053,10 +3072,19 @@ gfc_match_stopcode (gfc_statement st)
 	goto cleanup;
       if (m == MATCH_NO)
 	goto syntax;
-
-      if (gfc_match_eos () != MATCH_YES)
-	goto syntax;
     }
+
+  if (gfc_match (" , quiet = %e", &quiet) == MATCH_YES)
+    {
+      if (!gfc_notify_std (GFC_STD_F2018, "QUIET= specifier for %s at %L",
+			   gfc_ascii_statement (st), &quiet->where))
+	goto cleanup;
+    }
+
+  if (gfc_match_eos () != MATCH_YES)
+    goto syntax;
+
+checks:
 
   if (gfc_pure (NULL))
     {
@@ -3133,10 +3161,22 @@ gfc_match_stopcode (gfc_statement st)
 	  goto cleanup;
 	}
 
-      if (e->ts.type == BT_INTEGER && e->ts.kind != gfc_default_integer_kind)
+      if (e->ts.type == BT_INTEGER && e->ts.kind != gfc_default_integer_kind
+	  && !gfc_notify_std (GFC_STD_F2018,
+			      "STOP code at %L must be default integer KIND=%d",
+			      &e->where, (int) gfc_default_integer_kind))
+	goto cleanup;
+    }
+
+  if (quiet != NULL)
+    {
+      if (!gfc_simplify_expr (quiet, 0))
+	goto cleanup;
+
+      if (quiet->rank != 0)
 	{
-	  gfc_error ("STOP code at %L must be default integer KIND=%d",
-		     &e->where, (int) gfc_default_integer_kind);
+	  gfc_error ("QUIET specifier at %L must be a scalar LOGICAL",
+		     &quiet->where);
 	  goto cleanup;
 	}
     }
@@ -3159,6 +3199,7 @@ done:
     }
 
   new_st.expr1 = e;
+  new_st.expr2 = quiet;
   new_st.ext.stop_code = -1;
 
   return MATCH_YES;
@@ -3169,6 +3210,7 @@ syntax:
 cleanup:
 
   gfc_free_expr (e);
+  gfc_free_expr (quiet);
   return MATCH_ERROR;
 }
 

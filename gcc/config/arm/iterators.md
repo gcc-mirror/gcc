@@ -272,6 +272,8 @@
 (define_mode_iterator MVE_2 [V16QI V8HI V4SI])
 (define_mode_iterator MVE_5 [V8HI V4SI])
 (define_mode_iterator MVE_6 [V8HI V4SI])
+(define_mode_iterator MVE_7 [V16BI V8BI V4BI])
+(define_mode_iterator MVE_7_HI [HI V16BI V8BI V4BI])
 
 ;;----------------------------------------------------------------------------
 ;; Code iterators
@@ -946,6 +948,10 @@
 			       (V8HF "u16") (V4SF "32")])
 (define_mode_attr earlyclobber_32 [(V16QI "=w") (V8HI "=w") (V4SI "=&w")
 						(V8HF "=w") (V4SF "=&w")])
+(define_mode_attr MVE_VPRED [(V16QI "V16BI") (V8HI "V8BI") (V4SI "V4BI")
+                             (V2DI "HI") (V8HF "V8BI")   (V4SF "V4BI")])
+(define_mode_attr MVE_vpred [(V16QI "v16bi") (V8HI "v8bi") (V4SI "v4bi")
+                             (V2DI "hi") (V8HF "v8bi")   (V4SF "v4bi")])
 
 ;;----------------------------------------------------------------------------
 ;; Code attributes

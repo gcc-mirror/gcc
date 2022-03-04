@@ -4437,6 +4437,8 @@ expand_SPACESHIP (internal_fn, gcall *stmt)
   tree rhs2 = gimple_call_arg (stmt, 1);
   tree type = TREE_TYPE (rhs1);
 
+  do_pending_stack_adjust ();
+
   rtx target = expand_expr (lhs, NULL_RTX, VOIDmode, EXPAND_WRITE);
   rtx op1 = expand_normal (rhs1);
   rtx op2 = expand_normal (rhs2);

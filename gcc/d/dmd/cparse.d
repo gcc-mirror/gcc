@@ -48,8 +48,12 @@ final class CParser(AST) : Parser!AST
         linkage = LINK.c;
         Ccompile = true;
 
-        // Configure sizes for C `long`, `long double`, `wchar_t`
+        // Configure sizes for C `long`, `long double`, `wchar_t`, ...
+        this.boolsize = target.boolsize;
+        this.shortsize = target.shortsize;
+        this.intsize = target.intsize;
         this.longsize = target.longsize;
+        this.long_longsize = target.long_longsize;
         this.long_doublesize = target.long_doublesize;
         this.wchar_tsize = target.wchar_tsize;
 
@@ -197,6 +201,7 @@ final class CParser(AST) : Parser!AST
             }
             break;
 
+        case TOK.charLiteral:
         case TOK.int32Literal:
         case TOK.uns32Literal:
         case TOK.int64Literal:
@@ -264,6 +269,7 @@ final class CParser(AST) : Parser!AST
         case TOK.const_:
         case TOK.volatile:
         case TOK.restrict:
+        case TOK.__stdcall:
 
         // alignment-specifier
         case TOK._Alignas:
@@ -635,6 +641,7 @@ final class CParser(AST) : Parser!AST
             nextToken();
             break;
 
+        case TOK.charLiteral:
         case TOK.int32Literal:
             e = new AST.IntegerExp(loc, token.intvalue, AST.Type.tint32);
             nextToken();
@@ -1585,7 +1592,7 @@ final class CParser(AST) : Parser!AST
         if (tspec && specifier.mod & MOD.xconst)
         {
             tspec = toConst(tspec);
-            specifier.mod = MOD.xnone;          // 'used' it
+            specifier.mod &= ~MOD.xnone;          // 'used' it
         }
 
         bool first = true;
@@ -1708,7 +1715,7 @@ final class CParser(AST) : Parser!AST
                         symbols.push(stag);
                         if (tt.tok == TOK.enum_)
                         {
-                            if (!tt.members)
+                            if (!stag.members)
                                 error(tt.loc, "`enum %s` has no members", stag.toChars());
                             isalias = false;
                             s = new AST.AliasDeclaration(token.loc, id, stag);
@@ -1842,8 +1849,8 @@ final class CParser(AST) : Parser!AST
             /* Since there were declarations, the parameter-list must have been
              * an identifier-list.
              */
+            ft.parameterList.hasIdentifierList = true;        // semantic needs to know to adjust parameter types
             auto pl = ft.parameterList;
-            pl.hasIdentifierList = true;        // semantic needs to know to adjust parameter types
             if (pl.varargs != AST.VarArg.none && pl.length)
                 error("function identifier-list cannot end with `...`");
             ft.parameterList.varargs = AST.VarArg.variadic;     // but C11 allows extra arguments
@@ -2071,6 +2078,7 @@ final class CParser(AST) : Parser!AST
                 case TOK.const_:     modx = MOD.xconst;     break;
                 case TOK.volatile:   modx = MOD.xvolatile;  break;
                 case TOK.restrict:   modx = MOD.xrestrict;  break;
+                case TOK.__stdcall:  modx = MOD.x__stdcall; break;
 
                 // Type specifiers
                 case TOK.char_:      tkwx = TKW.xchar;      break;
@@ -2267,36 +2275,36 @@ final class CParser(AST) : Parser!AST
             case TKW.xshort:
             case TKW.xsigned | TKW.xshort:
             case TKW.xsigned | TKW.xshort | TKW.xint:
-            case TKW.xshort | TKW.xint:         t = AST.Type.tint16; break;
+            case TKW.xshort | TKW.xint:         t = integerTypeForSize(shortsize); break;
 
             case TKW.xunsigned | TKW.xshort | TKW.xint:
-            case TKW.xunsigned | TKW.xshort:    t = AST.Type.tuns16; break;
+            case TKW.xunsigned | TKW.xshort:    t = unsignedTypeForSize(shortsize); break;
 
             case TKW.xint:
             case TKW.xsigned:
-            case TKW.xsigned | TKW.xint:        t = AST.Type.tint32; break;
+            case TKW.xsigned | TKW.xint:        t = integerTypeForSize(intsize); break;
 
             case TKW.xunsigned:
-            case TKW.xunsigned | TKW.xint:      t = AST.Type.tuns32; break;
+            case TKW.xunsigned | TKW.xint:      t = unsignedTypeForSize(intsize); break;
 
             case TKW.xlong:
             case TKW.xsigned | TKW.xlong:
             case TKW.xsigned | TKW.xlong | TKW.xint:
-            case TKW.xlong | TKW.xint:          t = longsize == 4 ? AST.Type.tint32 : AST.Type.tint64; break;
+            case TKW.xlong | TKW.xint:          t = integerTypeForSize(longsize); break;
 
             case TKW.xunsigned | TKW.xlong | TKW.xint:
-            case TKW.xunsigned | TKW.xlong:     t = longsize == 4 ? AST.Type.tuns32 : AST.Type.tuns64; break;
+            case TKW.xunsigned | TKW.xlong:     t = unsignedTypeForSize(longsize); break;
 
             case TKW.xllong:
             case TKW.xsigned | TKW.xllong:
             case TKW.xsigned | TKW.xllong | TKW.xint:
-            case TKW.xllong | TKW.xint:          t = AST.Type.tint64; break;
+            case TKW.xllong | TKW.xint:          t = integerTypeForSize(long_longsize); break;
 
             case TKW.xunsigned | TKW.xllong | TKW.xint:
-            case TKW.xunsigned | TKW.xllong:     t = AST.Type.tuns64; break;
+            case TKW.xunsigned | TKW.xllong:     t = unsignedTypeForSize(long_longsize); break;
 
             case TKW.xvoid:                     t = AST.Type.tvoid; break;
-            case TKW.xbool:                     t = AST.Type.tbool; break;
+            case TKW.xbool:                     t = boolsize == 1 ? AST.Type.tbool : integerTypeForSize(boolsize); break;
 
             case TKW.xfloat:                    t = AST.Type.tfloat32; break;
             case TKW.xdouble:                   t = AST.Type.tfloat64; break;
@@ -2409,6 +2417,13 @@ final class CParser(AST) : Parser!AST
                      *       T ((*fp))();
                      */
                     nextToken();
+
+                    if (token.value == TOK.__stdcall) // T (__stdcall*fp)();
+                    {
+                        specifier.mod |= MOD.x__stdcall;
+                        nextToken();
+                    }
+
                     ts = parseDecl(t);
                     check(TOK.rightParenthesis);
                     break;
@@ -2544,7 +2559,8 @@ final class CParser(AST) : Parser!AST
                         this.symbols = null;
 
                         auto parameterList = cparseParameterList();
-                        AST.Type tf = new AST.TypeFunction(parameterList, t, linkage, 0);
+                        const lkg = specifier.mod & MOD.x__stdcall ? LINK.windows : linkage;
+                        AST.Type tf = new AST.TypeFunction(parameterList, t, lkg, 0);
     //                  tf = tf.addSTC(storageClass);  // TODO
                         insertTx(ts, tf, t);  // ts -> ... -> tf -> t
 
@@ -2612,6 +2628,7 @@ final class CParser(AST) : Parser!AST
      *    restrict
      *    volatile
      *    _Atomic
+     *    __stdcall
      */
     MOD cparseTypeQualifierList()
     {
@@ -2624,6 +2641,7 @@ final class CParser(AST) : Parser!AST
                 case TOK.volatile:   mod |= MOD.xvolatile;  break;
                 case TOK.restrict:   mod |= MOD.xrestrict;  break;
                 case TOK._Atomic:    mod |= MOD.x_Atomic;   break;
+                case TOK.__stdcall:  mod |= MOD.x__stdcall; break;
 
                 default:
                     return mod;
@@ -3708,6 +3726,7 @@ final class CParser(AST) : Parser!AST
                 case TOK.const_:
                 case TOK.volatile:
                 case TOK.restrict:
+                case TOK.__stdcall:
                     t = peek(t);
                     any = true;
                     continue;
@@ -3948,6 +3967,7 @@ final class CParser(AST) : Parser!AST
                 case TOK.restrict:
                 case TOK.volatile:
                 case TOK._Atomic:
+                case TOK.__stdcall:
                     t = peek(t);
                     continue;
 
@@ -4000,6 +4020,7 @@ final class CParser(AST) : Parser!AST
                 case TOK.const_:
                 case TOK.restrict:
                 case TOK.volatile:
+                case TOK.__stdcall:
 
                 // Type Specifiers
                 case TOK.char_:
@@ -4202,6 +4223,7 @@ final class CParser(AST) : Parser!AST
         switch (t.value)
         {
             case TOK.identifier:
+            case TOK.charLiteral:
             case TOK.int32Literal:
             case TOK.uns32Literal:
             case TOK.int64Literal:
@@ -4283,6 +4305,7 @@ final class CParser(AST) : Parser!AST
         xvolatile = 2,
         xrestrict = 4,
         x_Atomic  = 8,
+        x__stdcall = 0x10, // Windows linkage extension
     }
 
     /**********************************
@@ -4357,6 +4380,48 @@ final class CParser(AST) : Parser!AST
             }
         }
         return stc;
+    }
+
+    /***********************
+     * Return suitable signed integer type for the given size
+     * Params:
+     *  size = size of type
+     * Returns:
+     *  corresponding signed D integer type
+     */
+    private AST.Type integerTypeForSize(ubyte size)
+    {
+        if (size <= 1)
+            return AST.Type.tint8;
+        if (size <= 2)
+            return AST.Type.tint16;
+        if (size <= 4)
+            return AST.Type.tint32;
+        if (size <= 8)
+            return AST.Type.tint64;
+        error("unsupported integer type");
+        return AST.Type.terror;
+    }
+
+    /***********************
+     * Return suitable unsigned integer type for the given size
+     * Params:
+     *  size = size of type
+     * Returns:
+     *  corresponding unsigned D integer type
+     */
+    private AST.Type unsignedTypeForSize(ubyte size)
+    {
+        if (size <= 1)
+            return AST.Type.tuns8;
+        if (size <= 2)
+            return AST.Type.tuns16;
+        if (size <= 4)
+            return AST.Type.tuns32;
+        if (size <= 8)
+            return AST.Type.tuns64;
+        error("unsupported integer type");
+        return AST.Type.terror;
     }
 
     /***********************

@@ -1642,7 +1642,7 @@ if (!isImplicitlyConvertible!(S, T) &&
 Array-to-array conversion (except when target is a string type)
 converts each element in turn by using `to`.
  */
-private T toImpl(T, S)(S value)
+private T toImpl(T, S)(scope S value)
 if (!isImplicitlyConvertible!(S, T) &&
     !isSomeString!S && isDynamicArray!S &&
     !isExactSomeString!T && isArray!T)

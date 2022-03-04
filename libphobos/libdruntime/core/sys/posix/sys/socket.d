@@ -1038,9 +1038,9 @@ else version (OpenBSD)
     {
          ubyte       ss_len;
          sa_family_t ss_family;
-         byte[6]     __ss_pad1;
+         ubyte[6]    __ss_pad1;
          long        __ss_align;
-         byte[240]   __ss_pad2;
+         ubyte[240]  __ss_pad2;
     }
 
     struct msghdr
@@ -1063,20 +1063,25 @@ else version (OpenBSD)
 
     enum : uint
     {
-        SCM_RIGHTS    = 0x01
+        SCM_RIGHTS    = 0x01,
+        SCM_TIMESTAMP = 0x04
     }
 
     private // <sys/_types.h>
     {
-        extern (D) size_t _ALIGN(size_t p) { return (p + _ALIGNBYTES) & ~_ALIGNBYTES; }
+        enum _ALIGNBYTES = c_long.sizeof - 1;
+        extern (D) size_t _ALIGN(size_t p) pure nothrow @nogc
+        {
+            return (p + _ALIGNBYTES) & ~_ALIGNBYTES;
+        }
     }
 
-    extern (D) ubyte* CMSG_DATA(cmsghdr* cmsg)
+    extern (D) ubyte* CMSG_DATA(cmsghdr* cmsg) pure nothrow @nogc
     {
         return cast(ubyte*) cmsg + _ALIGN(cmsghdr.sizeof);
     }
 
-    extern (D) cmsghdr* CMSG_NXTHDR(msghdr* mhdr, cmsghdr* cmsg)
+    extern (D) cmsghdr* CMSG_NXTHDR(msghdr* mhdr, cmsghdr* cmsg) pure nothrow @nogc
     {
         if (cast(ubyte*) cmsg + _ALIGN(cmsg.cmsg_len) + _ALIGN(cmsghdr.sizeof) >
                 cast(ubyte*) mhdr.msg_control + mhdr.msg_controllen)
@@ -1085,9 +1090,22 @@ else version (OpenBSD)
             return cast(cmsghdr*) (cast(ubyte*) cmsg + _ALIGN(cmsg.cmsg_len));
     }
 
-    extern (D) cmsghdr* CMSG_FIRSTHDR(msghdr* mhdr)
+    extern (D) cmsghdr* CMSG_FIRSTHDR(msghdr* mhdr) pure nothrow @nogc
     {
         return mhdr.msg_controllen >= cmsghdr.sizeof ? cast(cmsghdr*) mhdr.msg_control : null;
+    }
+
+    extern (D)
+    {
+        size_t CMSG_LEN(size_t len) pure nothrow @nogc
+        {
+            return _ALIGN(cmsghdr.sizeof) + len;
+        }
+    }
+
+    extern (D) size_t CMSG_SPACE(size_t len) pure nothrow @nogc
+    {
+        return _ALIGN(cmsghdr.sizeof) + _ALIGN(len);
     }
 
     struct linger

@@ -2319,7 +2319,10 @@ finish_qualified_id_expr (tree qualifying_class,
   if (error_operand_p (expr))
     return error_mark_node;
 
-  if ((DECL_P (expr) || BASELINK_P (expr))
+  if (DECL_P (expr)
+      /* Functions are marked after overload resolution; avoid redundant
+	 warnings.  */
+      && TREE_CODE (expr) != FUNCTION_DECL
       && !mark_used (expr, complain))
     return error_mark_node;
 
@@ -4198,9 +4201,6 @@ finish_id_expression_1 (tree id_expression,
 	  decl = (adjust_result_of_qualified_name_lookup
 		  (decl, scope, current_nonlambda_class_type()));
 
-	  if (TREE_CODE (decl) == FUNCTION_DECL)
-	    mark_used (decl);
-
 	  cp_warn_deprecated_use_scopes (scope);
 
 	  if (TYPE_P (scope))
@@ -4231,18 +4231,6 @@ finish_id_expression_1 (tree id_expression,
 	     concerned with (all member fns or all non-members).  */
 	  tree first_fn = get_first_fn (decl);
 	  first_fn = STRIP_TEMPLATE (first_fn);
-
-	  /* [basic.def.odr]: "A function whose name appears as a
-	     potentially-evaluated expression is odr-used if it is the unique
-	     lookup result".
-
-	     But only mark it if it's a complete postfix-expression; in a call,
-	     ADL might select a different function, and we'll call mark_used in
-	     build_over_call.  */
-	  if (done
-	      && !really_overloaded_fn (decl)
-	      && !mark_used (first_fn))
-	    return error_mark_node;
 
 	  if (!template_arg_p
 	      && (TREE_CODE (first_fn) == USING_DECL
@@ -11252,6 +11240,8 @@ finish_decltype_type (tree expr, bool id_expression_or_member_access_p,
   /* The type denoted by decltype(e) is defined as follows:  */
 
   expr = resolve_nondeduced_context (expr, complain);
+  if (!mark_single_function (expr, complain))
+    return error_mark_node;
 
   if (invalid_nonstatic_memfn_p (input_location, expr, complain))
     return error_mark_node;

@@ -7096,6 +7096,14 @@ counters are incremented using atomic operations.  Targets not supporting\n\
 type.",
  HOST_WIDE_INT, (void), default_gcov_type_size)
 
+/* This value represents whether the shadow call stack is implemented on
+   the target platform.  */
+DEFHOOKPOD
+(have_shadow_call_stack,
+ "This value is true if the target platform supports\n\
+@option{-fsanitize=shadow-call-stack}.  The default value is false.",
+ bool, false)
+
 /* Close the 'struct gcc_target' definition.  */
 HOOK_VECTOR_END (C90_EMPTY_HACK)
 

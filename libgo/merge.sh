@@ -198,6 +198,18 @@ done
     libgofile=${libgotd}/$f
     merge ${name} ${oldfile} ${newfile} ${libgofile}
   done
+  (cd ${newtd} & git ls-files .) | while read f; do
+    if test "`basename -- $f`" = ".gitignore"; then
+      continue
+    fi
+    oldfile=${oldtd}/$f
+    if ! test -f ${oldfile}; then
+      name=$d/$f
+      newfile=${newtd}/$f
+      libgofile=${libgotd}/$f
+      merge ${name} ${oldfile} ${newfile} ${libgofile}
+    fi
+  done
 done
 
 (cd ${NEWDIR}/misc/cgo && find . -type f -print) | while read f; do

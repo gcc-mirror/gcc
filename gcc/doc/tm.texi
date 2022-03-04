@@ -12596,3 +12596,8 @@ counters are incremented using atomic operations.  Targets not supporting
 64-bit atomic operations may override the default value and request a 32-bit
 type.
 @end deftypefn
+
+@deftypevr {Target Hook} bool TARGET_HAVE_SHADOW_CALL_STACK
+This value is true if the target platform supports
+@option{-fsanitize=shadow-call-stack}.  The default value is false.
+@end deftypevr

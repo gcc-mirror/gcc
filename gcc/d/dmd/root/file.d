@@ -97,13 +97,13 @@ nothrow:
             int fd = name.toCStringThen!(slice => open(slice.ptr, O_RDONLY));
             if (fd == -1)
             {
-                //printf("\topen error, errno = %d\n",errno);
+                //perror("\topen error");
                 return result;
             }
             //printf("\tfile opened\n");
             if (fstat(fd, &buf))
             {
-                perror("\tfstat error");
+                //perror("\tfstat error");
                 close(fd);
                 return result;
             }
@@ -112,12 +112,12 @@ nothrow:
             numread = .read(fd, buffer, size);
             if (numread != size)
             {
-                perror("\tread error");
+                //perror("\tread error");
                 goto err2;
             }
             if (close(fd) == -1)
             {
-                perror("\tclose error");
+                //perror("\tclose error");
                 goto err;
             }
             // Always store a wchar ^Z past end of buffer so scanner has a
@@ -289,3 +289,35 @@ nothrow:
     }
 }
 
+private
+{
+    version (linux) version (PPC)
+    {
+        // https://issues.dlang.org/show_bug.cgi?id=22823
+        // Define our own version of stat_t, as older versions of the compiler
+        // had the st_size field at the wrong offset on PPC.
+        alias stat_t_imported = core.sys.posix.sys.stat.stat_t;
+        static if (stat_t_imported.st_size.offsetof != 48)
+        {
+            extern (C) nothrow @nogc:
+            struct stat_t
+            {
+                ulong[6] __pad1;
+                ulong st_size;
+                ulong[6] __pad2;
+            }
+            version (CRuntime_Glibc)
+            {
+                int fstat64(int, stat_t*) @trusted;
+                alias fstat = fstat64;
+                int stat64(const scope char*, stat_t*) @system;
+                alias stat = stat64;
+            }
+            else
+            {
+                int fstat(int, stat_t*) @trusted;
+                int stat(const scope char*, stat_t*) @system;
+            }
+        }
+    }
+}

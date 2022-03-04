@@ -5927,7 +5927,10 @@ expand_gimple_basic_block (basic_block bb, bool disable_tail_calls)
 	{
 	  new_bb = expand_gimple_cond (bb, as_a <gcond *> (stmt));
 	  if (new_bb)
-	    return new_bb;
+	    {
+	      currently_expanding_gimple_stmt = NULL;
+	      return new_bb;
+	    }
 	}
       else if (is_gimple_debug (stmt))
 	{
@@ -6049,7 +6052,10 @@ expand_gimple_basic_block (basic_block bb, bool disable_tail_calls)
 		  if (can_fallthru)
 		    bb = new_bb;
 		  else
-		    return new_bb;
+		    {
+		      currently_expanding_gimple_stmt = NULL;
+		      return new_bb;
+		    }
 		}
 	    }
 	  else

@@ -216,6 +216,19 @@ func TestCgoCCodeSIGPROF(t *testing.T) {
 	}
 }
 
+func TestCgoPprofCallback(t *testing.T) {
+	t.Parallel()
+	switch runtime.GOOS {
+	case "windows", "plan9":
+		t.Skipf("skipping cgo pprof callback test on %s", runtime.GOOS)
+	}
+	got := runTestProg(t, "testprogcgo", "CgoPprofCallback")
+	want := "OK\n"
+	if got != want {
+		t.Errorf("expected %q got %v", want, got)
+	}
+}
+
 func TestCgoCrashTraceback(t *testing.T) {
 	t.Parallel()
 	switch platform := runtime.GOOS + "/" + runtime.GOARCH; platform {
@@ -614,6 +627,9 @@ func TestSegv(t *testing.T) {
 			t.Log(got)
 			want := "SIGSEGV"
 			if !strings.Contains(got, want) {
+				if runtime.GOOS == "darwin" && runtime.GOARCH == "amd64" && strings.Contains(got, "fatal: morestack on g0") {
+					testenv.SkipFlaky(t, 39457)
+				}
 				t.Errorf("did not see %q in output", want)
 			}
 
@@ -628,13 +644,11 @@ func TestSegv(t *testing.T) {
 					// a VDSO call via asmcgocall.
 					testenv.SkipFlaky(t, 50504)
 				}
-				if testenv.Builder() == "linux-mips64le-mengzhuo" && strings.Contains(got, "runtime: unknown pc") {
-					// Runtime sometimes throw "unknown pc" when generating the traceback.
-					// Curiously, that doesn't seem to happen on the linux-mips64le-rtrk
-					// builder.
-					testenv.SkipFlaky(t, 50605)
-				}
 			}
+			if test == "SegvInCgo" && strings.Contains(got, "runtime: unknown pc") {
+				testenv.SkipFlaky(t, 50979)
+			}
+
 			nowant := "runtime: "
 			if strings.Contains(got, nowant) {
 				t.Errorf("unexpectedly saw %q in output", nowant)

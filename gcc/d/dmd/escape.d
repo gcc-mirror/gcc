@@ -380,7 +380,7 @@ bool checkParamArgumentEscape(Scope* sc, FuncDeclaration fdc, Parameter par, Exp
 
         notMaybeScope(v);
 
-        if (!v.isReference() && p == sc.func)
+        if (p == sc.func)
         {
             if (psr == ScopeRef.Scope ||
                 psr == ScopeRef.RefScope ||

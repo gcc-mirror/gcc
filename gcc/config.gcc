@@ -477,6 +477,7 @@ nvptx-*-*)
 	cpu_type=nvptx
 	c_target_objs="nvptx-c.o"
 	cxx_target_objs="nvptx-c.o"
+	extra_options="${extra_options} nvptx/nvptx-gen.opt"
 	;;
 or1k*-*-*)
 	cpu_type=or1k

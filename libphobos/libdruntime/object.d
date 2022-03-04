@@ -1885,8 +1885,8 @@ class TypeInfo_Struct : TypeInfo
             return false;
         else if (xopEquals)
         {
-            const dg = _memberFunc(p2, xopEquals);
-            return dg.xopEquals(p1);
+            const dg = _memberFunc(p1, xopEquals);
+            return dg.xopEquals(p2);
         }
         else if (p1 == p2)
             return true;
@@ -2649,13 +2649,18 @@ class Throwable : Object
 
     /**
      * Get the message describing the error.
-     * Base behavior is to return the `Throwable.msg` field.
-     * Override to return some other error message.
+     *
+     * This getter is an alternative way to access the Exception's message,
+     * with the added advantage of being override-able in subclasses.
+     * Subclasses are hence free to do their own memory managements without
+     * being tied to the requirement of providing a `string` in a field.
+     *
+     * The default behavior is to return the `Throwable.msg` field.
      *
      * Returns:
-     *  Error message
+     *  A message representing the cause of the `Throwable`
      */
-    @__future const(char)[] message() const
+    @__future const(char)[] message() const @safe nothrow
     {
         return this.msg;
     }
@@ -4440,7 +4445,11 @@ void destroy(bool initialize = true, T)(T obj) if (is(T == class))
         }
     }
     else
-        rt_finalize(cast(void*)obj);
+    {
+        // Bypass overloaded opCast
+        auto ptr = (() @trusted => *cast(void**) &obj)();
+        rt_finalize(ptr);
+    }
 }
 
 /// ditto
@@ -4700,6 +4709,18 @@ nothrow unittest
     auto c = new C;
     destroy(c);
     assert(C.dtorCount == 1);
+}
+
+// https://issues.dlang.org/show_bug.cgi?id=22832
+nothrow unittest
+{
+    static struct A {}
+    static class B
+    {
+        A opCast(T : A)() { return A(); }
+    }
+
+    destroy(B.init);
 }
 
 /// ditto

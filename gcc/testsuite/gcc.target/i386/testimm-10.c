@@ -22,13 +22,6 @@ test8bit (void)
   m512i = _mm512_mask_permutex_epi64 (m512i, mmask8, m512i, 256); /* { dg-error "the last argument must be an 8-bit immediate" } */
   m512i = _mm512_maskz_permutex_epi64 (mmask8, m512i, 256); /* { dg-error "the last argument must be an 8-bit immediate" } */
 
-  m512i = _mm512_ternarylogic_epi64 (m512i, m512i, m512i, 256); /* { dg-error "the last argument must be an 8-bit immediate" } */
-  m512i = _mm512_mask_ternarylogic_epi64 (m512i, mmask8, m512i, m512i, 256); /* { dg-error "the last argument must be an 8-bit immediate" } */
-  m512i = _mm512_maskz_ternarylogic_epi64 (mmask8, m512i, m512i, m512i, 256); /* { dg-error "the last argument must be an 8-bit immediate" } */
-  m512i = _mm512_ternarylogic_epi32 (m512i, m512i, m512i, 256); /* { dg-error "the last argument must be an 8-bit immediate" } */
-  m512i = _mm512_mask_ternarylogic_epi32 (m512i, mmask16, m512i, m512i, 256); /* { dg-error "the last argument must be an 8-bit immediate" } */
-  m512i = _mm512_maskz_ternarylogic_epi32 (mmask16, m512i, m512i, m512i, 256); /* { dg-error "the last argument must be an 8-bit immediate" } */
-
   m512i = _mm512_shuffle_epi32 (m512i, 256); /* { dg-error "the last argument must be an 8-bit immediate" } */
   m512i = _mm512_mask_shuffle_epi32 (m512i, mmask16, m512i, 256); /* { dg-error "the last argument must be an 8-bit immediate" } */
   m512i = _mm512_maskz_shuffle_epi32 (mmask16, m512i, 256); /* { dg-error "the last argument must be an 8-bit immediate" } */

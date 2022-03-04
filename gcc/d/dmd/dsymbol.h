@@ -71,6 +71,7 @@ class Expression;
 class ExpressionDsymbol;
 class AliasAssign;
 class OverloadSet;
+class StaticAssert;
 struct AA;
 #ifdef IN_GCC
 typedef union tree_node Symbol;
@@ -307,6 +308,7 @@ public:
     virtual VisibilityDeclaration *isVisibilityDeclaration() { return NULL; }
     virtual OverloadSet *isOverloadSet() { return NULL; }
     virtual CompileDeclaration *isCompileDeclaration() { return NULL; }
+    virtual StaticAssert *isStaticAssert() { return NULL; }
     void accept(Visitor *v) { v->visit(this); }
 };
 

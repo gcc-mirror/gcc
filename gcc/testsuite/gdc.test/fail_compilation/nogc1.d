@@ -63,12 +63,9 @@ fail_compilation/nogc1.d(55): Error: cannot use `new` in `@nogc` function `nogc1
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/nogc1.d(76): Deprecation: The `delete` keyword has been deprecated.  Use `object.destroy()` (and `core.memory.GC.free()` if applicable) instead.
-fail_compilation/nogc1.d(76): Error: cannot use `delete` in `@nogc` function `nogc1.testDelete`
-fail_compilation/nogc1.d(77): Deprecation: The `delete` keyword has been deprecated.  Use `object.destroy()` (and `core.memory.GC.free()` if applicable) instead.
-fail_compilation/nogc1.d(77): Error: cannot use `delete` in `@nogc` function `nogc1.testDelete`
-fail_compilation/nogc1.d(78): Deprecation: The `delete` keyword has been deprecated.  Use `object.destroy()` (and `core.memory.GC.free()` if applicable) instead.
-fail_compilation/nogc1.d(78): Error: cannot use `delete` in `@nogc` function `nogc1.testDelete`
+fail_compilation/nogc1.d(73): Error: The `delete` keyword is obsolete.  Use `object.destroy()` (and `core.memory.GC.free()` if applicable) instead.
+fail_compilation/nogc1.d(74): Error: The `delete` keyword is obsolete.  Use `object.destroy()` (and `core.memory.GC.free()` if applicable) instead.
+fail_compilation/nogc1.d(75): Error: The `delete` keyword is obsolete.  Use `object.destroy()` (and `core.memory.GC.free()` if applicable) instead.
 ---
 */
 @nogc void testDelete(int* p, Object o, S1* s)

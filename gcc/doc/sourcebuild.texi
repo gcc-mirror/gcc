@@ -2236,6 +2236,10 @@ ARM target supports the @code{-mfloat-abi=softfp} option.
 @anchor{arm_hard_ok}
 ARM target supports the @code{-mfloat-abi=hard} option.
 
+@item arm_mve
+@anchor{arm_mve}
+ARM target supports generating MVE instructions.
+
 @item arm_v8_1_lob_ok
 @anchor{arm_v8_1_lob_ok}
 ARM Target supports executing the Armv8.1-M Mainline Low Overhead Loop

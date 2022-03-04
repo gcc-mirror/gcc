@@ -2,6 +2,8 @@
 /* { dg-options "-O3 -mavx2" } */
 /* { dg-require-effective-target avx2 } */
 
+#include "avx2-check.h"
+
 unsigned int
 __attribute__((noipa))
 test(unsigned int a, unsigned char p[16]) {
@@ -11,7 +13,8 @@ test(unsigned int a, unsigned char p[16]) {
   return res;
 }
 
-int main ()
+static void
+avx2_test (void)
 {
   unsigned int a = 16U;
   unsigned char p[16];
@@ -20,5 +23,4 @@ int main ()
   unsigned int res = test (a, p);
   if (res != 128)
     __builtin_abort ();
-  return 0;
 }

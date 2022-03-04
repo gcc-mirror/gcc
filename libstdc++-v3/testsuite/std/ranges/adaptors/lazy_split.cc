@@ -163,10 +163,15 @@ test09()
   static_assert(!requires { lazy_split(p)(); });
   static_assert(!requires { s | lazy_split; });
 
-  static_assert(!requires { s | lazy_split(p); });
-  static_assert(!requires { lazy_split(p)(s); });
-  static_assert(!requires { s | (lazy_split(p) | views::all); });
-  static_assert(!requires { (lazy_split(p) | views::all)(s); });
+  // Test the case where the closure object is used as an rvalue and therefore
+  // the copy of p is forwarded as an rvalue.
+  // This used to be invalid, but is now well-formed after P2415R2 relaxed
+  // the requirements of viewable_range to admit rvalue non-view non-borrowed
+  // ranges such as std::string&&.
+  static_assert(requires { s | lazy_split(p); });
+  static_assert(requires { lazy_split(p)(s); });
+  static_assert(requires { s | (lazy_split(p) | views::all); });
+  static_assert(requires { (lazy_split(p) | views::all)(s); });
 
   static_assert(requires { s | lazy_split(views::all(p)); });
   static_assert(requires { lazy_split(views::all(p))(s); });

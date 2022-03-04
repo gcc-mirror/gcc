@@ -177,14 +177,6 @@
 // 		directory, but it is not accessed. When -modfile is specified, an
 // 		alternate go.sum file is also used: its path is derived from the
 // 		-modfile flag by trimming the ".mod" extension and appending ".sum".
-// 	-workfile file
-// 		in module aware mode, use the given go.work file as a workspace file.
-// 		By default or when -workfile is "auto", the go command searches for a
-// 		file named go.work in the current directory and then containing directories
-// 		until one is found. If a valid go.work file is found, the modules
-// 		specified will collectively be used as the main modules. If -workfile
-// 		is "off", or a go.work file is not found in "auto" mode, workspace
-// 		mode is disabled.
 // 	-overlay file
 // 		read a JSON config file that provides an overlay for build operations.
 // 		The file is a JSON struct with a single field, named 'Replace', that
@@ -1379,7 +1371,7 @@
 // builds from local modules.
 //
 // go.work files are line-oriented. Each line holds a single directive,
-// made up of a keyword followed by aruments. For example:
+// made up of a keyword followed by arguments. For example:
 //
 // 	go 1.18
 //
@@ -1472,25 +1464,25 @@
 // The -json flag prints the final go.work file in JSON format instead of
 // writing it back to go.mod. The JSON output corresponds to these Go types:
 //
-// 	type Module struct {
-// 		Path    string
-// 		Version string
-// 	}
-//
 // 	type GoWork struct {
-// 		Go        string
-// 		Directory []Directory
-// 		Replace   []Replace
+// 		Go      string
+// 		Use     []Use
+// 		Replace []Replace
 // 	}
 //
 // 	type Use struct {
-// 		Path       string
+// 		DiskPath   string
 // 		ModulePath string
 // 	}
 //
 // 	type Replace struct {
 // 		Old Module
 // 		New Module
+// 	}
+//
+// 	type Module struct {
+// 		Path    string
+// 		Version string
 // 	}
 //
 // See the workspaces design proposal at
@@ -2036,6 +2028,8 @@
 // 	GOENV
 // 		The location of the Go environment configuration file.
 // 		Cannot be set using 'go env -w'.
+// 		Setting GOENV=off in the environment disables the use of the
+// 		default configuration file.
 // 	GOFLAGS
 // 		A space-separated list of -flag=value settings to apply
 // 		to go commands by default, when the given flag is known by
@@ -2073,6 +2067,14 @@
 // 	GOVCS
 // 		Lists version control commands that may be used with matching servers.
 // 		See 'go help vcs'.
+// 	GOWORK
+// 		In module aware mode, use the given go.work file as a workspace file.
+// 		By default or when GOWORK is "auto", the go command searches for a
+// 		file named go.work in the current directory and then containing directories
+// 		until one is found. If a valid go.work file is found, the modules
+// 		specified will collectively be used as the main modules. If GOWORK
+// 		is "off", or a go.work file is not found in "auto" mode, workspace
+// 		mode is disabled.
 //
 // Environment variables for use with cgo:
 //

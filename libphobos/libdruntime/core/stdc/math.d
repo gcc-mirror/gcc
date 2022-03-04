@@ -90,6 +90,13 @@ else version (DragonFlyBSD)
     ///
     enum int FP_ILOGBNAN      = int.max;
 }
+else version (Solaris)
+{
+    ///
+    enum int FP_ILOGB0        = -int.max;
+    ///
+    enum int FP_ILOGBNAN      = int.max;
+}
 else version (CRuntime_Bionic)
 {
     ///
@@ -1380,18 +1387,128 @@ else version (DragonFlyBSD)
 }
 else version (Solaris)
 {
-    pure int __isnanf(float x);
-    pure int __isnan(double x);
-    pure int __isnanl(real x);
+    enum
+    {
+        FP_INFINITE  = 3,
+        FP_NAN       = 4,
+        FP_NORMAL    = 2,
+        FP_SUBNORMAL = 1,
+        FP_ZERO      = 0,
+    }
+
+    enum
+    {
+        ///
+        FP_FAST_FMA  = 0,
+        ///
+        FP_FAST_FMAF = 0,
+        ///
+        FP_FAST_FMAL = 0,
+    }
+
+  extern (D)
+  {
+    //int fpclassify(real-floating x);
+    ///
+    pure int fpclassify(float x)
+    {
+        return isnan(x) ? FP_NAN    : isinf(x)  ? FP_INFINITE :
+            isnormal(x) ? FP_NORMAL : x == 0.0f ? FP_ZERO :
+                          FP_SUBNORMAL;
+    }
+
+    ///
+    pure int fpclassify(double x)
+    {
+        return isnan(x) ? FP_NAN    : isinf(x)  ? FP_INFINITE :
+            isnormal(x) ? FP_NORMAL : x == 0.0  ? FP_ZERO :
+                          FP_SUBNORMAL;
+    }
+
+    ///
+    pure int fpclassify(real x)
+    {
+        return isnan(x) ? FP_NAN    : isinf(x)  ? FP_INFINITE :
+            isnormal(x) ? FP_NORMAL : x == 0.0L ? FP_ZERO :
+                          FP_SUBNORMAL;
+    }
+
+    //int isfinite(real-floating x);
+    ///
+    pure int isfinite(float x)       { return !isnan(x) && !isinf(x); }
+    ///
+    pure int isfinite(double x)      { return !isnan(x) && !isinf(x); }
+    ///
+    pure int isfinite(real x)        { return !isnan(x) && !isinf(x); }
+
+    //int isinf(real-floating x);
+    ///
+    pure int isinf(float x)          { return x == float.infinity || x == -float.infinity; }
+    ///
+    pure int isinf(double x)         { return x == double.infinity || x == -double.infinity; }
+    ///
+    pure int isinf(real x)           { return x == real.infinity || x == -real.infinity; }
 
     //int isnan(real-floating x);
-      ///
-    pragma(mangle, "__isnanf") pure int isnan(float x);
     ///
-    pragma(mangle, "__isnan")  pure int isnan(double x);
+    pure int isnan(float x)          { return x != x; }
     ///
-    pragma(mangle, real.sizeof == double.sizeof ? "__isnan" : "__isnanl")
-    pure int isnan(real x);
+    pure int isnan(double x)         { return x != x; }
+    ///
+    pure int isnan(real x)           { return x != x; }
+
+    //int isnormal(real-floating x);
+    ///
+    pure int isnormal(float x)
+    {
+        import core.math;
+        return isfinite(x) && fabs(x) >= float.min_normal;
+    }
+    ///
+    pure int isnormal(double x)
+    {
+        import core.math;
+        return isfinite(x) && fabs(x) >= double.min_normal;
+    }
+    ///
+    pure int isnormal(real x)
+    {
+        import core.math;
+        return isfinite(x) && fabs(x) >= real.min_normal;
+    }
+
+    //int signbit(real-floating x);
+    ///
+    pure int signbit(float x)
+    {
+        version (SPARC_Any)
+            return cast(int)(*cast(uint*)&x >> 31);
+        else version (X86_Any)
+            return cast(int)(*cast(uint*)&x >> 31);
+        else
+            static assert(false, "Architecture not supported.");
+    }
+    ///
+    pure int signbit(double x)
+    {
+        version (SPARC_Any)
+            return cast(int)(*cast(uint*)&x >> 31);
+        else version (X86_Any)
+            return cast(int)((cast(uint*)&x)[1] >> 31);
+        else
+            static assert(false, "Architecture not supported.");
+    }
+    ///
+    pure int signbit(real x)
+    {
+        version (SPARC_Any)
+            return cast(int)(*cast(uint*)&x >> 31);
+        else version (X86_Any)
+            return cast(int)((cast(ushort *)&x)[4] >> 15);
+        else
+            static assert(false, "Architecture not supported.");
+    }
+  }
 }
 else version (CRuntime_Bionic)
 {

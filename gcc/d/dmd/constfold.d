@@ -827,9 +827,9 @@ UnionExp Equal(EXP op, const ref Loc loc, Type type, Expression e1, Expression e
         else
         {
             cmp = 1; // if dim1 winds up being 0
-            for (size_t i = 0; i < dim1; i++)
+            foreach (i; 0 .. dim1)
             {
-                uinteger_t c = es1.charAt(i);
+                uinteger_t c = es1.getCodeUnit(i);
                 auto ee2 = es2[i];
                 if (ee2.isConst() != 1)
                 {
@@ -1247,7 +1247,7 @@ UnionExp Index(Type type, Expression e1, Expression e2)
         }
         else
         {
-            emplaceExp!(IntegerExp)(&ue, loc, es1.charAt(i), type);
+            emplaceExp!(IntegerExp)(&ue, loc, es1.getCodeUnit(cast(size_t) i), type);
         }
     }
     else if (e1.type.toBasetype().ty == Tsarray && e2.op == EXP.int64)

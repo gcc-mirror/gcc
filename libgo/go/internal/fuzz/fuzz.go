@@ -316,12 +316,12 @@ func CoordinateFuzzing(ctx context.Context, opts CoordinateFuzzingOpts) (err err
 					} else {
 						// Update the coordinator's coverage mask and save the value.
 						inputSize := len(result.entry.Data)
-						duplicate, err := c.addCorpusEntries(true, result.entry)
+						entryNew, err := c.addCorpusEntries(true, result.entry)
 						if err != nil {
 							stop(err)
 							break
 						}
-						if duplicate {
+						if !entryNew {
 							continue
 						}
 						c.updateCoverage(keepCoverage)
@@ -419,11 +419,21 @@ type corpus struct {
 	hashes  map[[sha256.Size]byte]bool
 }
 
+// addCorpusEntries adds entries to the corpus, and optionally writes the entries
+// to the cache directory. If an entry is already in the corpus it is skipped. If
+// all of the entries are unique, addCorpusEntries returns true and a nil error,
+// if at least one of the entries was a duplicate, it returns false and a nil error.
 func (c *coordinator) addCorpusEntries(addToCache bool, entries ...CorpusEntry) (bool, error) {
+	noDupes := true
 	for _, e := range entries {
-		h := sha256.Sum256(e.Data)
+		data, err := corpusEntryData(e)
+		if err != nil {
+			return false, err
+		}
+		h := sha256.Sum256(data)
 		if c.corpus.hashes[h] {
-			return true, nil
+			noDupes = false
+			continue
 		}
 		if addToCache {
 			if err := writeToCorpus(&e, c.opts.CacheDir); err != nil {
@@ -437,7 +447,7 @@ func (c *coordinator) addCorpusEntries(addToCache bool, entries ...CorpusEntry) 
 		c.corpus.hashes[h] = true
 		c.corpus.entries = append(c.corpus.entries, e)
 	}
-	return false, nil
+	return noDupes, nil
 }
 
 // CorpusEntry represents an individual input for fuzzing.
@@ -468,9 +478,9 @@ type CorpusEntry = struct {
 	IsSeed bool
 }
 
-// Data returns the raw input bytes, either from the data struct field,
-// or from disk.
-func CorpusEntryData(ce CorpusEntry) ([]byte, error) {
+// corpusEntryData returns the raw input bytes, either from the data struct
+// field, or from disk.
+func corpusEntryData(ce CorpusEntry) ([]byte, error) {
 	if ce.Data != nil {
 		return ce.Data, nil
 	}
@@ -587,7 +597,7 @@ type coordinator struct {
 
 	// interestingCount is the number of unique interesting values which have
 	// been found this execution.
-	interestingCount int64
+	interestingCount int
 
 	// warmupInputCount is the count of all entries in the corpus which will
 	// need to be received from workers to run once during warmup, but not fuzz.
@@ -721,8 +731,8 @@ func (c *coordinator) logStats() {
 	} else {
 		rate := float64(c.count-c.countLastLog) / now.Sub(c.timeLastLog).Seconds()
 		if coverageEnabled {
-			interestingTotalCount := int64(c.warmupInputCount-len(c.opts.Seed)) + c.interestingCount
-			fmt.Fprintf(c.opts.Log, "fuzz: elapsed: %s, execs: %d (%.0f/sec), new interesting: %d (total: %d)\n", c.elapsed(), c.count, rate, c.interestingCount, interestingTotalCount)
+			total := c.warmupInputCount + c.interestingCount
+			fmt.Fprintf(c.opts.Log, "fuzz: elapsed: %s, execs: %d (%.0f/sec), new interesting: %d (total: %d)\n", c.elapsed(), c.count, rate, c.interestingCount, total)
 		} else {
 			fmt.Fprintf(c.opts.Log, "fuzz: elapsed: %s, execs: %d (%.0f/sec)\n", c.elapsed(), c.count, rate)
 		}

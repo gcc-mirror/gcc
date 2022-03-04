@@ -25,6 +25,6 @@ struct issue14554_2 {
 
 void test14554()
 {
-     issue14554_1.foo!bool(1);    
-     issue14554_2.foo!bool(1);    
+     issue14554_1.foo!bool(1);
+     issue14554_2.foo!bool(1);
 }

@@ -222,14 +222,6 @@ final class ArchiveMember
     @property @safe pure nothrow @nogc uint expandedSize() const { return _expandedSize; }
 
     /**
-     * Should be 0.
-     *
-     * Returns: The number of the disk where this member can be found.
-     */
-    deprecated("Multidisk not supported; will be removed in 2.099.0")
-    @property @safe pure nothrow @nogc ushort diskNumber() const { return 0; }
-
-    /**
      * Data of member in compressed form.
      *
      * Returns: The file data in compressed form.
@@ -452,13 +444,6 @@ public:
     private bool _isZip64;
     static const ushort zip64ExtractVersion = 45;
 
-    deprecated("Use digitalSignatureLength instead; will be removed in 2.098.0")
-    static const int digiSignLength = 6;
-    deprecated("Use zip64EndOfCentralDirLocatorLength instead; will be removed in 2.098.0")
-    static const int eocd64LocLength = 20;
-    deprecated("Use zip64EndOfCentralDirLength instead; will be removed in 2.098.0")
-    static const int eocd64Length = 56;
-
     private Segment[] _segs;
 
     /**
@@ -469,29 +454,11 @@ public:
     @property @safe @nogc pure nothrow ubyte[] data() { return _data; }
 
     /**
-     * 0 since multi-disk zip archives are not supported.
-     *
-     * Returns: Number of this disk.
-     */
-    deprecated("Multidisk not supported; will be removed in 2.099.0")
-    @property @safe @nogc pure nothrow uint diskNumber() const { return 0; }
-
-    /**
-     * 0 since multi-disk zip archives are not supported.
-     *
-     * Returns: Number of the disk, where the central directory starts.
-     */
-    deprecated("Multidisk not supported; will be removed in 2.099.0")
-    @property @safe @nogc pure nothrow uint diskStartDir() const { return 0; }
-
-    /**
      * Number of ArchiveMembers in the directory.
      *
      * Returns: The number of files in this archive.
      */
-    deprecated("Use totalEntries instead; will be removed in 2.099.0")
-    @property @safe @nogc pure nothrow uint numEntries() const { return cast(uint) _directory.length; }
-    @property @safe @nogc pure nothrow uint totalEntries() const { return cast(uint) _directory.length; }    /// ditto
+    @property @safe @nogc pure nothrow uint totalEntries() const { return cast(uint) _directory.length; }
 
     /**
      * True when the archive is in Zip64 format. Set this to true to force building a Zip64 archive.

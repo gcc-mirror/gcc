@@ -18,5 +18,4 @@ uint64_pair_t pair(int num)
   return p ;
 }
 
-/* See PR92266 for the XFAIL.  */
-/* { dg-final { scan-tree-dump-not "optimized: basic block" "slp2" { xfail ilp32 } } } */
+/* { dg-final { scan-tree-dump-not "optimized: basic block" "slp2" } } */

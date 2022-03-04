@@ -2798,13 +2798,24 @@ struct Nullable(T)
         }
     }
 
-    this (ref return scope inout Nullable!T rhs) inout
+    static if (__traits(hasPostblit, T))
     {
-        _isNull = rhs._isNull;
-        if (!_isNull)
-            _value.payload = rhs._value.payload;
-        else
-            _value = DontCallDestructorT.init;
+        this(this)
+        {
+            if (!_isNull)
+                _value.payload.__xpostblit();
+        }
+    }
+    else static if (__traits(hasCopyConstructor, T))
+    {
+        this(ref return scope inout Nullable!T rhs) inout
+        {
+            _isNull = rhs._isNull;
+            if (!_isNull)
+                _value.payload = rhs._value.payload;
+            else
+                _value = DontCallDestructorT.init;
+        }
     }
 
     /**
@@ -9630,13 +9641,28 @@ unittest
     {
         int b;
         @disable this(this);
-        this (ref return scope inout S rhs) inout
+        this(ref return scope inout S rhs) inout
         {
             this.b = rhs.b + 1;
         }
     }
 
     Nullable!S s1 = S(1);
+    assert(s1.get().b == 2);
     Nullable!S s2 = s1;
-    assert(s2.get().b > s1.get().b);
+    assert(s2.get().b == 3);
+}
+
+@safe unittest
+{
+    static struct S
+    {
+        int b;
+        this(this) { ++b; }
+    }
+
+    Nullable!S s1 = S(1);
+    assert(s1.get().b == 2);
+    Nullable!S s2 = s1;
+    assert(s2.get().b == 3);
 }

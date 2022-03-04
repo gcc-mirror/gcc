@@ -68,6 +68,8 @@ import std.traits : isCallable, Parameters;
 
 import std.internal.attributes : betterC;
 
+public import core.lifetime : forward;
+
 private template needOpCallAlias(alias fun)
 {
     /* Determine whether or not unaryFun and binaryFun need to alias to fun or
@@ -1844,11 +1846,4 @@ if (isCallable!(F))
         auto dg_xtrnD = toDelegate(&S.xtrnD);
         static assert(! is(typeof(dg_xtrnC) == typeof(dg_xtrnD)));
     }
-}
-
-// forward used to be here but was moved to druntime
-template forward(args...)
-{
-    import core.lifetime : fun = forward;
-    alias forward = fun!args;
 }

@@ -469,7 +469,7 @@ extern (C++, std)
         static if (__traits(getTargetInfo, "cppStd") >= 201703)
         {
             // std::allocator no longer derives from __gnu_cxx::new_allocator,
-            // it derives from std::__new_allocator instead. 
+            // it derives from std::__new_allocator instead.
             struct __new_allocator(T)
             {
                 alias size_type = size_t;

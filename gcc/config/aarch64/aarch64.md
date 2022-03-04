@@ -7093,6 +7093,16 @@
   "hint\t7 // xpaclri"
 )
 
+;; Save X30 in the X18-based POST_INC stack (consistent with clang).
+(define_expand "scs_push"
+  [(set (mem:DI (post_inc:DI (reg:DI R18_REGNUM)))
+	(reg:DI R30_REGNUM))])
+
+;; Load X30 form the X18-based PRE_DEC stack (consistent with clang).
+(define_expand "scs_pop"
+  [(set (reg:DI R30_REGNUM)
+	(mem:DI (pre_dec:DI (reg:DI R18_REGNUM))))])
+
 ;; UNSPEC_VOLATILE is considered to use and clobber all hard registers and
 ;; all of memory.  This blocks insns from being moved across this point.
 

@@ -185,11 +185,7 @@ nothrow:
         if (res == 1)
             return readToFileBuffer(name);
 
-        const fullName = lookForSourceFile(name, global.path ? (*global.path)[] : null);
-        if (!fullName)
-            return null;
-
-        return readToFileBuffer(fullName);
+        return null;
     }
 
     extern(C++) FileBuffer* lookup(const(char)* filename)

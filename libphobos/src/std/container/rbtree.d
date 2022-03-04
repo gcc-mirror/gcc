@@ -111,7 +111,7 @@ struct RBNode(V)
     /**
      * Get the left child
      */
-    @property inout(RBNode)* left() inout
+    @property inout(RBNode)* left() inout return scope
     {
         return _left;
     }
@@ -119,7 +119,7 @@ struct RBNode(V)
     /**
      * Get the right child
      */
-    @property inout(RBNode)* right() inout
+    @property inout(RBNode)* right() inout return scope
     {
         return _right;
     }
@@ -127,7 +127,7 @@ struct RBNode(V)
     /**
      * Get the parent
      */
-    @property inout(RBNode)* parent() inout
+    @property inout(RBNode)* parent() inout return scope
     {
         return _parent;
     }
@@ -377,7 +377,7 @@ struct RBNode(V)
      * Returns the next highest valued node in the tree after this one, or end
      * if this was the highest-valued node.
      */
-    Node remove(Node end)
+    Node remove(Node end) return
     {
         //
         // remove this node from the tree, fixing the color if necessary.
@@ -558,7 +558,7 @@ struct RBNode(V)
     /**
      * Return the leftmost descendant of this node.
      */
-    @property inout(RBNode)* leftmost() inout
+    @property inout(RBNode)* leftmost() inout return
     {
         inout(RBNode)* result = &this;
         while (result._left !is null)
@@ -569,7 +569,7 @@ struct RBNode(V)
     /**
      * Return the rightmost descendant of this node
      */
-    @property inout(RBNode)* rightmost() inout
+    @property inout(RBNode)* rightmost() inout return
     {
         inout(RBNode)* result = &this;
         while (result._right !is null)
@@ -583,7 +583,7 @@ struct RBNode(V)
      * You should never call this on the marker node, as it is assumed that
      * there is a valid next node.
      */
-    @property inout(RBNode)* next() inout
+    @property inout(RBNode)* next() inout return
     {
         inout(RBNode)* n = &this;
         if (n.right is null)
@@ -602,7 +602,7 @@ struct RBNode(V)
      * You should never call this on the leftmost node of the tree as it is
      * assumed that there is a valid previous node.
      */
-    @property inout(RBNode)* prev() inout
+    @property inout(RBNode)* prev() inout return
     {
         inout(RBNode)* n = &this;
         if (n.left is null)

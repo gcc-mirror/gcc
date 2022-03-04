@@ -16,7 +16,7 @@ nothrow:
 @nogc:
 @system:
 
-static if (__USE_GNU)
+static if (_GNU_SOURCE)
 {
     pure void* memmem(return scope const void* haystack, size_t haystacklen, scope const void* needle, size_t needlelen);
 }

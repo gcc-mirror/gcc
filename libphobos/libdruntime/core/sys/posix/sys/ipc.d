@@ -83,7 +83,26 @@ version (linux)
 }
 else version (Darwin)
 {
+    align(4) struct ipc_perm
+    {
+        uid_t   uid;
+        gid_t   gid;
+        uid_t   cuid;
+        gid_t   cgid;
+        mode_t  mode;
+        ushort  _seq;
+        key_t   _key;
+    }
 
+    enum IPC_CREAT      = 0x0200; // 01000
+    enum IPC_EXCL       = 0x0400; // 02000
+    enum IPC_NOWAIT     = 0x0800; // 04000
+
+    enum key_t IPC_PRIVATE = 0;
+
+    enum IPC_RMID       = 0;
+    enum IPC_SET        = 1;
+    enum IPC_STAT       = 2;
 }
 else version (FreeBSD)
 {
@@ -188,6 +207,46 @@ else version (DragonFlyBSD)
     enum IPC_SET        = 1;
     enum IPC_STAT       = 2;
 }
+else version (Solaris)
+{
+    version (D_LP64)
+    {
+        struct ipc_perm
+        {
+            uid_t   uid;
+            gid_t   gid;
+            uid_t   cuid;
+            gid_t   cgid;
+            mode_t  mode;
+            uint    seq;
+            key_t   key;
+        }
+    }
+    else
+    {
+        struct ipc_perm
+        {
+            uid_t   uid;
+            gid_t   gid;
+            uid_t   cuid;
+            gid_t   cgid;
+            mode_t  mode;
+            uint    seq;
+            key_t   key;
+            int[4] pad;
+        }
+    }
+
+    enum IPC_CREAT      = 0x200;
+    enum IPC_EXCL       = 0x400;
+    enum IPC_NOWAIT     = 0x800;
+
+    enum key_t IPC_PRIVATE = 0;
+
+    enum IPC_RMID       = 10;
+    enum IPC_SET        = 11;
+    enum IPC_STAT       = 12;
+}
 else
 {
     static assert(false, "Unsupported platform");
@@ -203,7 +262,7 @@ version (CRuntime_Glibc)
 }
 else version (Darwin)
 {
-
+    key_t ftok(const scope char*, int);
 }
 else version (FreeBSD)
 {
@@ -218,6 +277,10 @@ else version (OpenBSD)
     key_t ftok(const scope char*, int);
 }
 else version (DragonFlyBSD)
+{
+    key_t ftok(const scope char*, int);
+}
+else version (Solaris)
 {
     key_t ftok(const scope char*, int);
 }

@@ -993,13 +993,17 @@ public:
 	t->ctype = build_variant_type_copy (build_ctype (underlying));
 	build_type_decl (t->ctype, t->sym);
       }
-    else if (!INTEGRAL_TYPE_P (basetype) || TREE_CODE (basetype) == BOOLEAN_TYPE)
+    else if (t->sym->ident == NULL
+	     || !INTEGRAL_TYPE_P (basetype)
+	     || TREE_CODE (basetype) == BOOLEAN_TYPE)
       {
-	/* Enums in D2 can have a base type that is not necessarily integral.
-	   For these, we simplify this a little by using the base type directly
-	   instead of building an ENUMERAL_TYPE.  */
+	/* Enums in D2 can either be anonymous, or have a base type that is not
+	   necessarily integral. For these, we simplify this a little by using
+	   the base type directly instead of building an ENUMERAL_TYPE.  */
 	t->ctype = build_variant_type_copy (basetype);
-	build_type_decl (t->ctype, t->sym);
+
+	if (t->sym->ident != NULL)
+	  build_type_decl (t->ctype, t->sym);
       }
     else
       {

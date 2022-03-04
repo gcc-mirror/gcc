@@ -801,6 +801,7 @@ unittest
     const Cm10_0 = inc(com(C10_0)); // Cent(0, -10);
     const Cm10_1 = inc(com(C10_1)); // Cent(-1, -11);
     const Cm10_3 = inc(com(C10_3)); // Cent(-3, -11);
+    const Cm20_0 = inc(com(C20_0)); // Cent(0, -20);
 
     enum Cs_3 = Cent(3, I.min);
 
@@ -904,6 +905,7 @@ unittest
     assert(mul(C9_3, C10) == C90_30);
     assert(mul(Cs_3, C10) == C30);
     assert(mul(Cm10, Cm10) == C100);
+    assert(mul(C20_0, Cm1) == Cm20_0);
 
     assert( or(C4_8, C3_1) == C7_9);
     assert(and(C4_8, C7_9) == C4_8);

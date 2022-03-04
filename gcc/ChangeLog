@@ -1,3 +1,994 @@
+2022-03-03  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/104761
+	* gimple-ssa-warn-access.cc (pass_waccess::execute): Call
+	mark_dfs_back_edges.
+
+2022-03-03  Martin Liska  <mliska@suse.cz>
+
+	* configure.ac: Use linker plug-in by default.
+	* configure: Regenerate.
+
+2022-03-03  Martin Liska  <mliska@suse.cz>
+
+	* configure.ac: Now ld.mold support LTO plugin API, use it.
+	* configure: Regenerate.
+
+2022-03-03  Tom de Vries  <tdevries@suse.de>
+
+	* config/nvptx/t-nvptx (MULTILIB_EXTRA_OPTS): Add mptx=3.1.
+
+2022-03-03  Tom de Vries  <tdevries@suse.de>
+
+	PR target/104758
+	* config/nvptx/t-nvptx (MULTILIB_EXTRA_OPTS): Add misa=sm_30.
+
+2022-03-03  Tom de Vries  <tdevries@suse.de>
+
+	* config/nvptx/nvptx.h (ASM_SPEC): Add %{misa=sm_30:--no-verify}.
+
+2022-03-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/104757
+	* gimplify.cc (gimplify_omp_loop): Call gimplify_expr rather than
+	gimplify_omp_for.
+	(gimplify_expr) <case OMP_SIMD>: Temporarily disable
+	gimplify_ctxp->into_ssa around call to gimplify_omp_for.
+
+2022-03-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/104558
+	* calls.cc (store_one_arg): When not calling emit_push_insn
+	because size_rtx is const0_rtx, call at least anti_adjust_stack
+	on arg->locate.alignment_pad if !argblock and the alignment might
+	be non-zero.
+
+2022-03-02  Alexandre Oliva  <oliva@adacore.com>
+
+	* lra-constraints.cc (undo_optional_reloads): Recognize and
+	drop insns of multi-word move sequences, tolerate removal
+	iteration on an already-removed clobber, and refuse to
+	substitute original pseudos into clobbers.
+
+2022-03-02  Qing Zhao  <qing.zhao@oracle.com>
+
+	PR middle-end/102276
+	* common.opt (-Wtrivial-auto-var-init): New option.
+	* doc/invoke.texi (-Wtrivial-auto-var-init): Document new option.
+	(-ftrivial-auto-var-init): Update option;
+	* gimplify.cc (emit_warn_switch_unreachable): New function.
+	(warn_switch_unreachable_r): Rename to ...
+	(warn_switch_unreachable_and_auto_init_r): This.
+	(maybe_warn_switch_unreachable): Rename to ...
+	(maybe_warn_switch_unreachable_and_auto_init): This.
+	(gimplify_switch_expr): Update calls to renamed function.
+
+2022-03-02  Richard Biener  <rguenther@suse.de>
+
+	PR rtl-optimization/104686
+	* ira-color.cc (object_conflicts_with_allocno_p): New function
+	using a bitvector test instead of iterating when possible.
+	(allocnos_conflict_p): Choose the best allocno to iterate over
+	object conflicts.
+	(update_conflict_hard_regno_costs): Do allocnos_conflict_p test
+	last.
+
+2022-03-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* cfg.cc (dump_edge_info): Dump goto_locus if present.
+
+2022-03-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/104589
+	* cfgrtl.cc (fixup_reorder_chain): Use loc_equal instead of direct
+	INSN_LOCATION comparison with goto_locus.
+
+2022-03-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree-ssa-strlen.cc (strlen_pass::handle_assign,
+	strlen_pass::before_dom_children): Comment spelling fixes.
+
+2022-03-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* ipa-modref-tree.cc (modref_access_node::contains,
+	modref_access_node::closer_pair_p, modref_access_node::insert,
+	modref_access_node::insert_kill): Comment spelling fixes.
+	* ipa-modref.cc: Likewise.
+	(modref_summary::finalize, ignore_nondeterminism_p,
+	class modref_access_analysis,
+	modref_access_analysis::set_side_effects,
+	modref_access_analysis::set_nondeterministic,
+	modref_access_analysis::record_global_memory_load,
+	modref_access_analysis::propagate, modref_access_analysis::analyze,
+	struct escape_point, class modref_lattice, modref_lattice::merge,
+	modref_lattice::merge_deref, class modref_eaf_analysis,
+	modref_eaf_analysis::merge_call_lhs_flags,
+	modref_eaf_analysis::analyze_ssa_name, modref_eaf_analysis::propagate,
+	modref_eaf_analysis::record_escape_points, remap_kills,
+	update_escape_summary, remove_useless_summaries,
+	ipa_merge_modref_summary_after_inlining, pass_ipa_modref::execute):
+	Likewise.
+	* ipa-modref.h (struct modref_summary, interposable_eaf_flags):
+	Likewise.
+	* ipa-modref-tree.h (enum modref_special_parms,
+	struct modref_access_node): Likewise.
+
+2022-03-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/104715
+	* gimple-ssa-warn-access.cc (pass_waccess::check_pointer_uses): Don't
+	unnecessarily test if ptr is a SSA_NAME, it has to be.  Only push lhs
+	of a call if gimple_call_return_arg is equal to ptr, not just when it
+	is non-NULL.
+
+2022-03-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* gimple-ssa-warn-access.cc (warn_string_no_nul,
+	maybe_warn_nonstring_arg, fndecl_alloc_p, new_delete_mismatch_p,
+	matching_alloc_calls_p, maybe_warn_alloc_args_overflow,
+	pass_waccess::check_alloca, pass_waccess::check_strcat,
+	memmodel_to_uhwi, fntype_argno_type,
+	pass_waccess::maybe_check_access_sizes,
+	pass_waccess::check_call_access,
+	pass_waccess::maybe_check_dealloc_call, pass_waccess::check_stmt):
+	Comment spelling fixes.
+
+2022-03-01  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/104716
+	* tree-loop-distribution.cc (find_seed_stmts_for_distribution):
+	Check if we can copy the loop.
+
+2022-03-01  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR middle-end/104721
+	* cfgexpand.cc (expand_gimple_basic_block): Clear
+	currently_expanding_gimple_stmt when returning inside the loop.
+
+2022-03-01  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/104533
+	* multiple_target.cc (get_attr_len): Move to tree.c.
+	(expand_target_clones): Remove single value checking.
+	* tree.cc (get_target_clone_attr_len): New fn.
+	* tree.h (get_target_clone_attr_len): Likewise.
+
+2022-03-01  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/104677
+	* doc/invoke.texi: Document more .gcda file name generation.
+
+2022-03-01  Tom de Vries  <tdevries@suse.de>
+
+	PR target/102429
+	* config/nvptx/nvptx.cc (nvptx_gen_shuffle): Handle DCmode and CDImode.
+	* config/nvptx/nvptx.md
+	(define_predicate "nvptx_register_or_complex_di_df_register_operand"):
+	New predicate.
+	(define_expand "omp_simt_xchg_bfly", define_expand "omp_simt_xchg_idx"):
+	Use nvptx_register_or_complex_di_df_register_operand.
+
+2022-03-01  Tom de Vries  <tdevries@suse.de>
+
+	* config.gcc (nvptx*-*-*): Add nvptx/nvptx-gen.opt to extra_options.
+	* config/nvptx/gen-copyright.sh: New file.
+	* config/nvptx/gen-h.sh: New file.
+	* config/nvptx/gen-opt.sh: New file.
+	* config/nvptx/nvptx.h (TARGET_SM35, TARGET_SM53, TARGET_SM70)
+	(TARGET_SM75, TARGET_SM80): Move ...
+	* config/nvptx/nvptx-gen.h: ... here.  New file, generate.
+	* config/nvptx/nvptx.opt (Enum ptx_isa): Move ...
+	* config/nvptx/nvptx-gen.opt: ... here.  New file, generate.
+	* config/nvptx/t-nvptx ($(srcdir)/config/nvptx/nvptx-gen.h)
+	($(srcdir)/config/nvptx/nvptx-gen.opt): New make target.
+
+2022-03-01  Tom de Vries  <tdevries@suse.de>
+
+	* config/nvptx/gen-omp-device-properties.sh: New file.
+	* config/nvptx/t-omp-device: Use gen-omp-device-properties.sh.
+
+2022-03-01  Tom de Vries  <tdevries@suse.de>
+
+	* config/nvptx/nvptx-sm.def: New file.
+	* config/nvptx/nvptx-c.cc (nvptx_cpu_cpp_builtins): Use nvptx-sm.def.
+	* config/nvptx/nvptx-opts.h (enum ptx_isa): Same.
+	* config/nvptx/nvptx.cc (sm_version_to_string)
+	(nvptx_omp_device_kind_arch_isa): Same.
+
+2022-03-01  Robin Dapp  <rdapp@linux.ibm.com>
+
+	PR rtl-optimization/104154
+	* config/arc/arc.cc (gen_compare_reg):  Return the CC-mode
+	comparison ifcvt passed us.
+
+2022-03-01  Hongyu Wang  <hongyu.wang@intel.com>
+
+	PR target/104664
+	* config/i386/i386-expand.cc (ix86_expand_vector_init_duplicate):
+	  Use vec_setv8hf_0 for HF to V8HFmode move instead of subreg.
+
+2022-02-28  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR tree-optimization/91384
+	* config/i386/i386.md (peephole2): Eliminate final testl insn
+	from the sequence *movsi_internal, *negsi_1, *cmpsi_ccno_1 by
+	transforming using *negsi_2 for the negation.
+
+2022-02-28  Roger Sayle  <roger@nextmovesoftware.com>
+	    Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR middle-end/80270
+	* expmed.cc (extract_integral_bit_field): If OP0 is a hard
+	register, copy it to a pseudo before calling simplify_gen_subreg.
+
+2022-02-28  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/104637
+	* lra-assigns.cc (lra_split_hard_reg_for): Split hard regs as many
+	as possible on one subpass.
+
+2022-02-28  Qing Zhao  <qing.zhao@oracle.com>
+
+	PR middle-end/104550
+	* gimple-fold.cc (clear_padding_flush): Suppress warnings for new
+	created uses.
+
+2022-02-28  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/104648
+	* main.cc (main): Use flag_checking instead of CHECKING_P
+	and run toplev::finalize only if there is not error seen.
+
+2022-02-28  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-pre.cc (compute_avail): Revert part of last change.
+
+2022-02-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/104700
+	* tree-ssa-pre.cc (get_or_alloc_expr_for): Remove and inline
+	into ...
+	(find_or_generate_expression): ... here, simplifying code.
+
+2022-02-28  Tom de Vries  <tdevries@suse.de>
+
+	* config/nvptx/nvptx-opts.h (enum ptx_version): Add
+	PTX_VERSION_default.
+	* config/nvptx/nvptx.cc (handle_ptx_version_option): Handle
+	PTX_VERSION_default.
+	* config/nvptx/nvptx.opt: Add EnumValue "_" / PTX_VERSION_default.
+
+2022-02-28  Richard Biener  <rguenther@suse.de>
+
+	PR rtl-optimization/104686
+	* ira-int.h (minmax_set_iter_cond): Use ctz_hwi to elide loop
+	skipping bits that are zero.
+	(ira_object_conflict_iter_cond): Likewise.
+
+2022-02-28  Hongyu Wang  <hongyu.wang@intel.com>
+
+	* config/i386/avx512fintrin.h (_MM_TERNLOG_ENUM): New enum.
+	(_mm512_ternarylogic_epi64): Truncate imm to unsigned
+	char to avoid error when using ~enum as parameter.
+	(_mm512_mask_ternarylogic_epi64): Likewise.
+	(_mm512_maskz_ternarylogic_epi64): Likewise.
+	(_mm512_ternarylogic_epi32): Likewise.
+	(_mm512_mask_ternarylogic_epi32): Likewise.
+	(_mm512_maskz_ternarylogic_epi32): Likewise.
+	* config/i386/avx512vlintrin.h (_mm256_ternarylogic_epi64):
+	Adjust imm param type to unsigned char.
+	(_mm256_mask_ternarylogic_epi64): Likewise.
+	(_mm256_maskz_ternarylogic_epi64): Likewise.
+	(_mm256_ternarylogic_epi32): Likewise.
+	(_mm256_mask_ternarylogic_epi32): Likewise.
+	(_mm256_maskz_ternarylogic_epi32): Likewise.
+	(_mm_ternarylogic_epi64): Likewise.
+	(_mm_mask_ternarylogic_epi64): Likewise.
+	(_mm_maskz_ternarylogic_epi64): Likewise.
+	(_mm_ternarylogic_epi32): Likewise.
+	(_mm_mask_ternarylogic_epi32): Likewise.
+	(_mm_maskz_ternarylogic_epi32): Likewise.
+
+2022-02-25  Jakub Jelinek  <jakub@redhat.com>
+	    Marc Glisse  <marc.glisse@inria.fr>
+
+	PR tree-optimization/104675
+	* match.pd (t * 2U / 2 -> t & (~0 / 2), t / 2U * 2 -> t & ~1):
+	Restrict simplifications to INTEGRAL_TYPE_P.
+
+2022-02-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/104681
+	* config/rs6000/vector.md (movmisalign<mode>): Use rs6000_emit_move.
+
+2022-02-25  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/arc.cc (gen_compare_reg): Return NULL_RTX if the
+	comparison is not valid.
+	* config/arc/arc.md (movsicc): Fail if comparison is not valid.
+	(movdicc): Likewise.
+	(movsfcc): Likewise.
+	(movdfcc): Likewise.
+
+2022-02-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/103037
+	* tree-ssa-sccvn.h (alloc_vn_nary_op_noinit): Declare.
+	(vn_nary_length_from_stmt): Likewise.
+	(init_vn_nary_op_from_stmt): Likewise.
+	(vn_nary_op_compute_hash): Likewise.
+	* tree-ssa-sccvn.cc (alloc_vn_nary_op_noinit): Export.
+	(vn_nary_length_from_stmt): Likewise.
+	(init_vn_nary_op_from_stmt): Likewise.
+	(vn_nary_op_compute_hash): Likewise.
+	* tree-ssa-pre.cc (pre_expr_obstack): New obstack.
+	(get_or_alloc_expr_for_nary): Pass in the value-id to use,
+	(re-)compute the hash value and if the expression is not
+	found allocate it from pre_expr_obstack.
+	(phi_translate_1): Do not insert the NARY found in the
+	VN tables but build a PRE expression from the valueized
+	NARY with the value-id we eventually found.
+	(find_or_generate_expression): Assert we have an entry
+	for constant values.
+	(compute_avail): Insert not valueized expressions into
+	EXP_GEN using the value-id from the VN tables.
+	(init_pre): Allocate pre_expr_obstack.
+	(fini_pre): Free pre_expr_obstack.
+
+2022-02-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/104674
+	* config/i386/i386.h (enum ix86_stack_slot): Add SLOT_FLOATxFDI_387.
+	* config/i386/i386.md (splitter to floatdi<mode>2_i387_with_xmm): Use
+	SLOT_FLOATxFDI_387 rather than SLOT_TEMP.
+
+2022-02-25  Jakub Jelinek  <jakub@redhat.com>
+
+	* warning-control.cc (get_nowarn_spec): Comment spelling fix.
+
+2022-02-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/104679
+	* internal-fn.cc (expand_SPACESHIP): Call do_pending_stack_adjust.
+
+2022-02-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/104675
+	* match.pd (-A - 1 -> ~A, -1 - A -> ~A): Don't simplify for
+	COMPLEX_TYPE.
+
+2022-02-25  Alexandre Oliva  <oliva@adacore.com>
+
+	PR target/104121
+	PR target/103302
+	* expr.cc (emit_move_multi_word): Restore clobbers during LRA.
+
+2022-02-25  Alexandre Oliva  <oliva@adacore.com>
+
+	PR middle-end/104540
+	* dwarf2cfi.cc (cfi_oprnd_equal_p): Cope with NULL
+	dw_cfi_cfa_loc.
+
+2022-02-25  Alexandre Oliva  <oliva@adacore.com>
+
+	PR tree-optimization/103856
+	* gimple-harden-conditionals.cc (non_eh_succ_edge): Enable the
+	eh edge to be requested through an extra parameter.
+	(pass_harden_compares::execute): Copy PHI args in the EH dest
+	block for the new EH edge added for the inverted compare.
+
+2022-02-24  Palmer Dabbelt  <palmer@rivosinc.com>
+
+	* doc/invoke.texi (RISC-V -mcmodel=medany): Document the degree
+	of position independence that -mcmodel=medany affords.
+
+2022-02-24  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	PR target/104656
+	* configure.ac: --disable-gcov if targetting bpf-*.
+	* configure: Regenerate.
+
+2022-02-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/104676
+	* tree-loop-distribution.cc (loop_distribution::execute):
+	Do a full scev_reset.
+
+2022-02-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/104601
+	* tree-ssa-sccvn.cc (visit_reference_op_call): For calls with
+	non-SSA_NAME lhs value number vdef to itself instead of e.g. the
+	vuse value number.
+
+2022-02-24  Tom de Vries  <tdevries@suse.de>
+	    Tobias Burnus  <tobias@codesourcery.com>
+
+	* config/nvptx/nvptx.cc (nvptx_omp_device_kind_arch_isa): Handle
+	sm_70, sm_75 and sm_80.
+	* config/nvptx/t-omp-device: Add sm_53, sm_70, sm_75 and sm_80.
+
+2022-02-24  Tom de Vries  <tdevries@suse.de>
+
+	* config/nvptx/nvptx.md (define_insn "rotlsi3", define_insn
+	"rotrsi3"): New define_insn.
+
+2022-02-24  Tom de Vries  <tdevries@suse.de>
+
+	* config/nvptx/nvptx.cc (gen_comment): Use
+	DECL_SOURCE_LOCATION (cfun->decl) instead of cfun->function_start_locus.
+
+2022-02-24  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/sse.md (<code>v1ti3): Add suffix and replace
+	isa attr of alternative 2 from avx to avx512vl.
+
+2022-02-23  Richard Biener  <rguenther@suse.de>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/104644
+	* doc/match-and-simplify.texi: Amend ! documentation.
+	* genmatch.cc (expr::gen_transform): Code-generate ! support
+	for GENERIC.
+	(parser::parse_expr): Allow ! for GENERIC.
+	* match.pd (cmp (bswap @0) INTEGER_CST@1): Use ! modifier on
+	bswap.
+
+2022-02-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/101636
+	* tree-vect-slp.cc (vect_print_slp_tree): Dump the
+	vector type of the node.
+	(vect_slp_analyze_operations): Make sure the CTOR
+	is vectorized with an expected type.
+	(vectorize_slp_instance_root_stmt): Revert r10-5979 fix.
+
+2022-02-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/104633
+	* gimple-warn-recursion.cc (pass_warn_recursion::find_function_exit):
+	Don't warn about calls to corresponding builtin from extern inline
+	gnu_inline wrappers.
+
+2022-02-23  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR target/104489
+	* config/nvptx/nvptx.md (*movhf_insn): Add subregs_ok attribute.
+
+2022-02-23  Christophe Lyon  <christophe.lyon@arm.com>
+
+	PR target/100757
+	PR target/101325
+	* config/arm/vfp.md (thumb2_movhi_vfp, thumb2_movhi_fp16): Fix
+	typo.
+
+2022-02-23  Cui,Lili  <lili.cui@intel.com>
+
+	* doc/invoke.texi: Update documents for Intel architectures.
+
+2022-02-22  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* config/i386/i386-expand.cc (ix86_expand_cmpxchg_loop): Restore
+	bootstrap.
+
+2022-02-22  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* omp-low.cc (omp_build_component_ref): Move function...
+	* omp-general.cc (omp_build_component_ref): ... here.  Remove
+	'static'.
+	* omp-general.h (omp_build_component_ref): Declare function.
+	* omp-oacc-neuter-broadcast.cc (oacc_build_component_ref): Remove
+	function.
+	(build_receiver_ref, build_sender_ref): Call
+	'omp_build_component_ref' instead.
+
+2022-02-22  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* omp-oacc-neuter-broadcast.cc (record_field_map_t): Further
+	simplify.  Adjust all users.
+
+2022-02-22  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/88134
+	* config/rs6000/rs6000.cc (atomic_hold_decl, atomic_clear_decl,
+	atomic_update_decl): Add GTY markup.
+
+2022-02-22  Christophe Lyon  <christophe.lyon@arm.com>
+
+	* config/arm/arm.h (REG_CLASS_CONTENTS): Add VPR_REG to ALL_REGS.
+
+2022-02-22  Christophe Lyon  <christophe.lyon@arm.com>
+
+	PR target/100757
+	PR target/101325
+	* config/arm/arm-builtins.cc (CX_UNARY_UNONE_QUALIFIERS): Use
+	predicate.
+	(CX_BINARY_UNONE_QUALIFIERS): Likewise.
+	(CX_TERNARY_UNONE_QUALIFIERS): Likewise.
+	(TERNOP_NONE_NONE_NONE_UNONE_QUALIFIERS): Delete.
+	(QUADOP_NONE_NONE_NONE_NONE_UNONE_QUALIFIERS): Delete.
+	(QUADOP_UNONE_UNONE_UNONE_UNONE_UNONE_QUALIFIERS): Delete.
+	* config/arm/arm_mve_builtins.def: Use predicated qualifiers.
+	* config/arm/mve.md: Use VxBI instead of HI.
+
+2022-02-22  Christophe Lyon  <christophe.lyon@arm.com>
+
+	PR target/100757
+	PR target/101325
+	* config/arm/arm-builtins.cc (STRSBS_P_QUALIFIERS): Use predicate
+	qualifier.
+	(STRSBU_P_QUALIFIERS): Likewise.
+	(LDRGBS_Z_QUALIFIERS): Likewise.
+	(LDRGBU_Z_QUALIFIERS): Likewise.
+	(LDRGBWBXU_Z_QUALIFIERS): Likewise.
+	(LDRGBWBS_Z_QUALIFIERS): Likewise.
+	(LDRGBWBU_Z_QUALIFIERS): Likewise.
+	(STRSBWBS_P_QUALIFIERS): Likewise.
+	(STRSBWBU_P_QUALIFIERS): Likewise.
+	* config/arm/mve.md: Use VxBI instead of HI.
+
+2022-02-22  Christophe Lyon  <christophe.lyon@arm.com>
+
+	PR target/100757
+	PR target/101325
+	* config/arm/arm-builtins.cc (TERNOP_UNONE_UNONE_NONE_UNONE_QUALIFIERS): Change to ...
+	(TERNOP_UNONE_UNONE_NONE_PRED_QUALIFIERS): ... this.
+	(TERNOP_UNONE_UNONE_IMM_UNONE_QUALIFIERS): Change to ...
+	(TERNOP_UNONE_UNONE_IMM_PRED_QUALIFIERS): ... this.
+	(TERNOP_NONE_NONE_IMM_UNONE_QUALIFIERS): Change to ...
+	(TERNOP_NONE_NONE_IMM_PRED_QUALIFIERS): ... this.
+	(TERNOP_NONE_NONE_UNONE_UNONE_QUALIFIERS): Change to ...
+	(TERNOP_NONE_NONE_UNONE_PRED_QUALIFIERS): ... this.
+	(QUADOP_UNONE_UNONE_NONE_NONE_UNONE_QUALIFIERS): Change to ...
+	(QUADOP_UNONE_UNONE_NONE_NONE_PRED_QUALIFIERS): ... this.
+	(QUADOP_NONE_NONE_NONE_NONE_PRED_QUALIFIERS): New.
+	(QUADOP_NONE_NONE_NONE_IMM_UNONE_QUALIFIERS): Change to ...
+	(QUADOP_NONE_NONE_NONE_IMM_PRED_QUALIFIERS): ... this.
+	(QUADOP_UNONE_UNONE_UNONE_UNONE_PRED_QUALIFIERS): New.
+	(QUADOP_UNONE_UNONE_NONE_IMM_UNONE_QUALIFIERS): Change to ...
+	(QUADOP_UNONE_UNONE_NONE_IMM_PRED_QUALIFIERS): ... this.
+	(QUADOP_NONE_NONE_UNONE_IMM_UNONE_QUALIFIERS): Change to ...
+	(QUADOP_NONE_NONE_UNONE_IMM_PRED_QUALIFIERS): ... this.
+	(QUADOP_UNONE_UNONE_UNONE_IMM_UNONE_QUALIFIERS): Change to ...
+	(QUADOP_UNONE_UNONE_UNONE_IMM_PRED_QUALIFIERS): ... this.
+	(QUADOP_UNONE_UNONE_UNONE_NONE_UNONE_QUALIFIERS): Change to ...
+	(QUADOP_UNONE_UNONE_UNONE_NONE_PRED_QUALIFIERS): ... this.
+	(STRS_P_QUALIFIERS): Use predicate qualifier.
+	(STRU_P_QUALIFIERS): Likewise.
+	(STRSU_P_QUALIFIERS): Likewise.
+	(STRSS_P_QUALIFIERS): Likewise.
+	(LDRGS_Z_QUALIFIERS): Likewise.
+	(LDRGU_Z_QUALIFIERS): Likewise.
+	(LDRS_Z_QUALIFIERS): Likewise.
+	(LDRU_Z_QUALIFIERS): Likewise.
+	(QUINOP_UNONE_UNONE_UNONE_UNONE_IMM_UNONE_QUALIFIERS): Change to ...
+	(QUINOP_UNONE_UNONE_UNONE_UNONE_IMM_PRED_QUALIFIERS): ... this.
+	(BINOP_NONE_NONE_PRED_QUALIFIERS): New.
+	(BINOP_UNONE_UNONE_PRED_QUALIFIERS): New.
+	* config/arm/arm_mve_builtins.def: Use new predicated qualifiers.
+	* config/arm/mve.md: Use MVE_VPRED instead of HI.
+
+2022-02-22  Christophe Lyon  <christophe.lyon@arm.com>
+
+	PR target/100757
+	PR target/101325
+	* config/arm/arm-builtins.cc (BINOP_UNONE_NONE_NONE_QUALIFIERS):
+	Delete.
+	(TERNOP_UNONE_NONE_NONE_UNONE_QUALIFIERS): Change to ...
+	(TERNOP_PRED_NONE_NONE_PRED_QUALIFIERS): ... this.
+	(TERNOP_PRED_UNONE_UNONE_PRED_QUALIFIERS): New.
+	* config/arm/arm_mve_builtins.def (vcmp*q_n_, vcmp*q_m_f): Use new
+	predicated qualifiers.
+	* config/arm/mve.md (mve_vcmp<mve_cmp_op>q_n_<mode>)
+	(mve_vcmp*q_m_f<mode>): Use MVE_VPRED instead of HI.
+
+2022-02-22  Christophe Lyon  <christophe.lyon@arm.com>
+
+	PR target/100757
+	* config/arm/arm-protos.h (arm_get_mask_mode): New prototype.
+	(arm_expand_vector_compare): Update prototype.
+	* config/arm/arm.cc (TARGET_VECTORIZE_GET_MASK_MODE): New.
+	(arm_vector_mode_supported_p): Add support for VxBI modes.
+	(arm_expand_vector_compare): Remove useless generation of vpsel.
+	(arm_expand_vcond): Fix select operands.
+	(arm_get_mask_mode): New.
+	* config/arm/mve.md (vec_cmp<mode><MVE_vpred>): New.
+	(vec_cmpu<mode><MVE_vpred>): New.
+	(vcond_mask_<mode><MVE_vpred>): New.
+	* config/arm/vec-common.md (vec_cmp<mode><v_cmp_result>)
+	(vec_cmpu<mode><mode, vcond_mask_<mode><v_cmp_result>): Move to ...
+	* config/arm/neon.md (vec_cmp<mode><v_cmp_result>)
+	(vec_cmpu<mode><mode, vcond_mask_<mode><v_cmp_result>): ... here
+	and disable for MVE.
+	* doc/sourcebuild.texi (arm_mve): Document new effective-target.
+
+2022-02-22  Christophe Lyon  <christophe.lyon@arm.com>
+
+	PR target/100757
+	PR target/101325
+	* config/arm/arm-builtins.cc (BINOP_PRED_UNONE_UNONE_QUALIFIERS)
+	(BINOP_PRED_NONE_NONE_QUALIFIERS)
+	(TERNOP_NONE_NONE_NONE_PRED_QUALIFIERS)
+	(TERNOP_UNONE_UNONE_UNONE_PRED_QUALIFIERS): New.
+	* config/arm/arm-protos.h (mve_bool_vec_to_const): New.
+	* config/arm/arm.cc (arm_hard_regno_mode_ok): Handle new VxBI
+	modes.
+	(arm_mode_to_pred_mode): New.
+	(arm_expand_vector_compare): Use the right VxBI mode instead of
+	HI.
+	(arm_expand_vcond): Likewise.
+	(simd_valid_immediate): Handle MODE_VECTOR_BOOL.
+	(mve_bool_vec_to_const): New.
+	(neon_make_constant): Call mve_bool_vec_to_const when needed.
+	* config/arm/arm_mve_builtins.def (vcmpneq_, vcmphiq_, vcmpcsq_)
+	(vcmpltq_, vcmpleq_, vcmpgtq_, vcmpgeq_, vcmpeqq_, vcmpneq_f)
+	(vcmpltq_f, vcmpleq_f, vcmpgtq_f, vcmpgeq_f, vcmpeqq_f, vpselq_u)
+	(vpselq_s, vpselq_f): Use new predicated qualifiers.
+	* config/arm/constraints.md (DB): New.
+	* config/arm/iterators.md (MVE_7, MVE_7_HI): New mode iterators.
+	(MVE_VPRED, MVE_vpred): New attribute iterators.
+	* config/arm/mve.md (@mve_vcmp<mve_cmp_op>q_<mode>)
+	(@mve_vcmp<mve_cmp_op>q_f<mode>, @mve_vpselq_<supf><mode>)
+	(@mve_vpselq_f<mode>): Use MVE_VPRED instead of HI.
+	(@mve_vpselq_<supf>v2di): Define separately.
+	(mov<mode>): New expander for VxBI modes.
+	* config/arm/vfp.md (thumb2_movhi_vfp, thumb2_movhi_fp16): Use
+	MVE_7_HI iterator and add support for DB constraint.
+
+2022-02-22  Christophe Lyon  <christophe.lyon@arm.com>
+	    Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/100757
+	PR target/101325
+	* config/aarch64/aarch64-modes.def (VNx16BI, VNx8BI, VNx4BI,
+	VNx2BI): Update definition.
+	* config/arm/arm-builtins.cc (arm_init_simd_builtin_types): Add new
+	simd types.
+	(arm_init_builtin): Map predicate vectors arguments to HImode.
+	(arm_expand_builtin_args): Move HImode predicate arguments to VxBI
+	rtx. Move return value to HImode rtx.
+	* config/arm/arm-builtins.h (arm_type_qualifiers): Add qualifier_predicate.
+	* config/arm/arm-modes.def (B2I, B4I, V16BI, V8BI, V4BI): New modes.
+	* config/arm/arm-simd-builtin-types.def (Pred1x16_t,
+	Pred2x8_t,Pred4x4_t): New.
+	* emit-rtl.cc (init_emit_once): Handle all boolean modes.
+	* genmodes.cc (mode_data): Add boolean field.
+	(blank_mode): Initialize it.
+	(make_complex_modes): Fix handling of boolean modes.
+	(make_vector_modes): Likewise.
+	(VECTOR_BOOL_MODE): Use new COMPONENT parameter.
+	(make_vector_bool_mode): Likewise.
+	(BOOL_MODE): New.
+	(make_bool_mode): New.
+	(emit_insn_modes_h): Fix generation of boolean modes.
+	(emit_class_narrowest_mode): Likewise.
+	* machmode.def: (VECTOR_BOOL_MODE): Document new COMPONENT
+	parameter.  Use new BOOL_MODE instead of FRACTIONAL_INT_MODE to
+	define BImode.
+	* rtx-vector-builder.cc (rtx_vector_builder::find_cached_value):
+	Fix handling of constm1_rtx for VECTOR_BOOL.
+	* simplify-rtx.cc (native_encode_rtx): Fix support for VECTOR_BOOL.
+	(native_decode_vector_rtx): Likewise.
+	(test_vector_ops_duplicate): Skip vec_merge test
+	with vectors of booleans.
+	* varasm.cc (output_constant_pool_2): Likewise.
+
+2022-02-22  Christophe Lyon  <christophe.lyon@arm.com>
+
+	* config/arm/mve.md (mve_vmvnq_n_<supf><mode>): Use V_elem mode
+	for operand 1.
+
+2022-02-22  Christophe Lyon  <christophe.lyon@arm.com>
+
+	* config/arm/arm.cc (arm_class_likely_spilled_p): Handle VPR_REG.
+
+2022-02-22  Christophe Lyon  <christophe.lyon@arm.com>
+
+	* config/arm/arm.h (reg_class): Add GENERAL_AND_VPR_REGS.
+	(REG_CLASS_NAMES): Likewise.
+	(REG_CLASS_CONTENTS): Likewise.
+	(CLASS_MAX_NREGS): Handle VPR.
+	* config/arm/arm.cc (arm_hard_regno_nregs): Handle VPR.
+
+2022-02-22  Tobias Burnus  <tobias@codesourcery.com>
+	    Tom de Vries  <tdevries@suse.de>
+
+	* config/nvptx/nvptx-c.cc (nvptx_cpu_cpp_builtins): Handle SM70.
+	* config/nvptx/nvptx.cc (first_ptx_version_supporting_sm):
+	Likewise.
+	* config/nvptx/nvptx.opt (misa): Add sm_70 alias PTX_ISA_SM70.
+
+2022-02-22  Tobias Burnus  <tobias@codesourcery.com>
+	    Tom de Vries  <tdevries@suse.de>
+
+	* config/nvptx/nvptx.opt (mptx): Add 6.0 alias PTX_VERSION_6_0.
+	* doc/invoke.texi (-mptx): Update for new values and defaults.
+
+2022-02-22  Tom de Vries  <tdevries@suse.de>
+
+	* config/nvptx/nvptx.cc (gen_comment): New function.
+	(workaround_uninit_method_1, workaround_uninit_method_2)
+	(workaround_uninit_method_3): : Use gen_comment.
+	* config/nvptx/nvptx.opt (mptx-comment): New option.
+
+2022-02-22  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-slp.cc (vect_build_slp_tree_2): Dump the def used
+	for a splat.
+
+2022-02-22  Roger Sayle  <roger@nextmovesoftware.com>
+	    Richard Biener  <rguenther@suse.de>
+
+	* fold-const.cc (ctor_single_nonzero_element): New function to
+	return the single non-zero element of a (vector) constructor.
+	* fold-const.h (ctor_single_nonzero_element): Prototype here.
+	* match.pd (reduc (constructor@0)): Simplify reductions of a
+	constructor containing a single non-zero element.
+	(reduc (@0 op VECTOR_CST) ->  (reduc @0) op CONST): Simplify
+	reductions of vector operations of the same operator with
+	constant vector operands.
+
+2022-02-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/104604
+	* gimple-range-fold.cc (adjust_imagpart_expr, adjust_realpart_expr):
+	Only check if gimple_assign_rhs1 is COMPLEX_CST if
+	gimple_assign_rhs_code is COMPLEX_CST.
+
+2022-02-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/104612
+	* config/i386/i386-expand.cc (ix86_expand_copysign): Call force_reg
+	on input operands before calling lowpart_subreg on it.  For output
+	operand, use a vmode pseudo as destination and then move its lowpart
+	subreg into operands[0] if lowpart_subreg fails on dest.
+	(ix86_expand_xorsign): Likewise.
+
+2022-02-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/104582
+	PR target/99881
+	* config/i386/i386.cc (ix86_vector_costs::add_stmt_cost):
+	Cost GPR to vector register moves for integer vector construction.
+
+2022-02-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/104582
+	* tree-vectorizer.h (stmt_info_for_cost::node): New field.
+	(vector_costs::add_stmt_cost): Add SLP node parameter.
+	(dump_stmt_cost): Likewise.
+	(add_stmt_cost): Likewise, new overload and adjust.
+	(add_stmt_costs): Adjust.
+	(record_stmt_cost): New overload.
+	* tree-vectorizer.cc (dump_stmt_cost): Dump the SLP node.
+	(vector_costs::add_stmt_cost): Adjust.
+	* tree-vect-loop.cc (vect_estimate_min_profitable_iters):
+	Adjust.
+	* tree-vect-slp.cc (vect_prologue_cost_for_slp): Record
+	the SLP node for costing.
+	(vectorizable_slp_permutation): Likewise.
+	* tree-vect-stmts.cc (record_stmt_cost): Adjust and add
+	new overloads.
+	* config/i386/i386.cc (ix86_vector_costs::add_stmt_cost):
+	Adjust.
+	* config/aarch64/aarch64.cc (aarch64_vector_costs::add_stmt_cost):
+	Adjust.
+	* config/rs6000/rs6000.cc (rs6000_vector_costs::add_stmt_cost):
+	Adjust.
+	(rs6000_cost_data::adjust_vect_cost_per_loop): Likewise.
+
+2022-02-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/104582
+	* tree-vectorizer.h (add_stmt_cost): New overload.
+	(record_stmt_cost): Likewise.
+	* tree-vect-loop.cc (vect_compute_single_scalar_iteration_cost):
+	Use add_stmt_costs.
+	(vect_get_known_peeling_cost): Use new overloads.
+	(vect_estimate_min_profitable_iters): Likewise.  Consistently
+	use scalar_stmt for costing versioning checks.
+	* tree-vect-stmts.cc (record_stmt_cost): New overload.
+
+2022-02-22  Hongyu Wang  <hongyu.wang@intel.com>
+
+	PR target/103069
+	* config/i386/i386-expand.cc (ix86_expand_atomic_fetch_op_loop):
+	Split atomic fetch and loop part.
+	(ix86_expand_cmpxchg_loop): New expander for cmpxchg loop.
+	* config/i386/i386-protos.h (ix86_expand_cmpxchg_loop): New
+	prototype.
+	* config/i386/sync.md (atomic_compare_and_swap<mode>): Call new
+	expander under TARGET_RELAX_CMPXCHG_LOOP.
+	(atomic_compare_and_swap<mode>): Likewise for doubleword modes.
+
+2022-02-21  Dan Li  <ashimida@linux.alibaba.com>
+
+	* config/aarch64/aarch64.cc (SLOT_REQUIRED):
+	Change wb_candidate[12] to wb_push_candidate[12].
+	(aarch64_layout_frame): Likewise, and
+	change callee_adjust when scs is enabled.
+	(aarch64_save_callee_saves):
+	Change wb_candidate[12] to wb_push_candidate[12].
+	(aarch64_restore_callee_saves):
+	Change wb_candidate[12] to wb_pop_candidate[12].
+	(aarch64_get_separate_components):
+	Change wb_candidate[12] to wb_push_candidate[12].
+	(aarch64_expand_prologue): Push x30 onto SCS before it's
+	pushed onto stack.
+	(aarch64_expand_epilogue): Pop x30 frome SCS, while
+	preventing it from being popped from the regular stack again.
+	(aarch64_override_options_internal): Add SCS compile option check.
+	(TARGET_HAVE_SHADOW_CALL_STACK): New hook.
+	* config/aarch64/aarch64.h (struct GTY): Add is_scs_enabled,
+	wb_pop_candidate[12], and rename wb_candidate[12] to
+	wb_push_candidate[12].
+	* config/aarch64/aarch64.md (scs_push): New template.
+	(scs_pop): Likewise.
+	* doc/invoke.texi: Document -fsanitize=shadow-call-stack.
+	* doc/tm.texi: Regenerate.
+	* doc/tm.texi.in: Add hook have_shadow_call_stack.
+	* flag-types.h (enum sanitize_code):
+	Add SANITIZE_SHADOW_CALL_STACK.
+	* opts.cc (parse_sanitizer_options): Add shadow-call-stack
+	and exclude SANITIZE_SHADOW_CALL_STACK.
+	* target.def: New hook.
+	* toplev.cc (process_options): Add SCS compile option check.
+	* ubsan.cc (ubsan_expand_null_ifn): Enum type conversion.
+
+2022-02-21  Tom de Vries  <tdevries@suse.de>
+
+	PR target/104440
+	* config/nvptx/nvptx.cc (workaround_uninit_method_1)
+	(workaround_uninit_method_2, workaround_uninit_method_3)
+	(workaround_uninit): New function.
+	(nvptx_reorg): Use workaround_uninit.
+	* config/nvptx/nvptx.opt (minit-regs): New option.
+
+2022-02-21  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	PR rtl-optimization/104498
+	* alias.cc (compare_base_symbol_refs): Correct distance computation
+	when swapping x and y.
+
+2022-02-21  Andrew Pinski  <apinski@marvell.com>
+
+	PR c/104506
+	* tree-ssa.cc (tree_ssa_useless_type_conversion):
+	Check the inner type before calling useless_type_conversion_p.
+
+2022-02-19  Tom de Vries  <tdevries@suse.de>
+
+	* config/nvptx/nvptx.cc (nvptx_reorg_uniform_simt): Handle SET insn.
+	* config/nvptx/nvptx.md
+	(define_insn "nvptx_atomic_store<mode>"): Rename to ...
+	(define_insn "nvptx_atomic_store_sm70<mode>"): This.
+	(define_insn "nvptx_atomic_store<mode>"): New define_insn.
+	(define_expand "atomic_store<mode>"): Handle rename.  Use
+	nvptx_atomic_store instead of atomic_exchange.
+
+2022-02-19  Tom de Vries  <tdevries@suse.de>
+
+	* config/nvptx/nvptx.cc (nvptx_reorg_uniform_simt): Handle all
+	insns with atomic attribute.  Assert that all handled insns are
+	PARALLELs.
+	* config/nvptx/nvptx.md (define_insn "nvptx_atomic_store<mode>"):
+	Set atomic attribute to false.
+
+2022-02-19  Tom de Vries  <tdevries@suse.de>
+
+	* config/nvptx/nvptx.cc (nvptx_unisimt_handle_set): Change return
+	type to bool.
+	(nvptx_reorg_uniform_simt): Insert nvptx_uniform_warp_check or
+	nvptx_warpsync, if necessary.
+
+2022-02-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/102656
+	* asan.cc (instrument_derefs): If inner is a RESULT_DECL and access is
+	known to be within bounds, treat it like automatic variables.
+	If instrumenting access and inner is {VAR,PARM,RESULT}_DECL from
+	current function and !TREE_STATIC which is not TREE_ADDRESSABLE, mark
+	it addressable.
+
+2022-02-18  Pat Haugen  <pthaugen@linux.ibm.com>
+
+	* config/rs6000/rs6000.opt (mpower10-fusion): Mark Undocumented.
+	(mpower10-fusion-ld-cmpi, mpower10-fusion-2logical,
+	mpower10-fusion-logical-add, mpower10-fusion-add-logical,
+	mpower10-fusion-2add, mpower10-fusion-2store): Remove.
+	* config/rs6000/rs6000-cpus.def (ISA_3_1_MASKS_SERVER,
+	OTHER_P9_VECTOR_MASKS): Remove Power10 fusion sub-options.
+	* config/rs6000/rs6000.cc (rs6000_option_override_internal,
+	power10_sched_reorder): Likewise.
+	* config/rs6000/genfusion.pl (gen_ld_cmpi_p10, gen_logical_addsubf,
+	gen_addadd): Likewise
+	* config/rs6000/fusion.md: Regenerate.
+
+2022-02-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/104257
+	PR target/104598
+	* config/rs6000/mm_malloc.h (_mm_malloc): Call posix_memalign
+	rather than __posix_memalign.
+
+2022-02-18  Richard Biener  <rguenther@suse.de>
+
+	PR target/104581
+	* config/i386/i386.cc (ix86_avx_u128_mode_source): Remove.
+	(ix86_avx_u128_mode_needed): Return AVX_U128_DIRTY instead
+	of calling ix86_avx_u128_mode_source which would eventually
+	have returned AVX_U128_ANY in some very special case.
+
+2022-02-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/96881
+	* tree-ssa-dce.cc (mark_stmt_if_obviously_necessary): Comment
+	CLOBBER handling.
+	(control_parents_preserved_p): New function.
+	(eliminate_unnecessary_stmts): Check that we preserved control
+	parents before retaining a CLOBBER.
+	(perform_tree_ssa_dce): Pass down aggressive flag
+	to eliminate_unnecessary_stmts.
+
+2022-02-17  Jason Merrill  <jason@redhat.com>
+
+	* tree.cc (warn_deprecated_use): Look for TYPE_STUB_DECL
+	on TYPE_MAIN_VARIANT.
+
+2022-02-17  Paul A. Clarke  <pc@us.ibm.com>
+
+	PR target/104257
+	* config/rs6000/bmi2intrin.h: Uglify local variables.
+	* config/rs6000/emmintrin.h: Likewise.
+	* config/rs6000/mm_malloc.h: Likewise.
+	* config/rs6000/mmintrin.h: Likewise.
+	* config/rs6000/pmmintrin.h: Likewise.
+	* config/rs6000/smmintrin.h: Likewise.
+	* config/rs6000/tmmintrin.h: Likewise.
+	* config/rs6000/xmmintrin.h: Likewise.
+
+2022-02-17  Robin Dapp  <rdapp@linux.ibm.com>
+
+	PR target/104335
+	* config/rs6000/rs6000.cc (rs6000_emit_int_cmove): Return false
+	if the expected comparison's first operand is of mode MODE_CC.
+
+2022-02-17  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/104447
+	* lra-constraints.cc (spill_hard_reg_in_range): Initiate ignore
+	hard reg set by lra_no_alloc_regs.
+
+2022-02-17  liuhongt  <hongtao.liu@intel.com>
+
+	PR tree-optimization/104551
+	PR tree-optimization/103771
+	* match.pd (cond_expr_convert_p): Add types_match check when
+	convert is extension.
+	* tree-vect-patterns.cc
+	(gimple_cond_expr_convert_p): Adjust comments.
+	(vect_recog_cond_expr_convert_pattern): Ditto.
+
+2022-02-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/104557
+	* valtrack.cc (debug_lowpart_subreg): Don't call gen_rtx_raw_SUBREG
+	if expr has VOIDmode.
+
+2022-02-17  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/cpuid.h (bit_MPX): Removed.
+	(bit_BNDREGS): Ditto.
+	(bit_BNDCSR): Ditto.
+
+2022-02-17  Michael Meissner  <meissner@the-meissners.org>
+
+	PR target/99708
+	* config/rs6000/rs6000-c.cc (rs6000_cpu_cpp_builtins): Define
+	__SIZEOF_IBM128__ if the IBM 128-bit long double type is created.
+	Define __SIZEOF_FLOAT128__ if the IEEE 128-bit floating point type
+	is created.
+
 2022-02-16  Andrew MacLeod  <amacleod@redhat.com>
 
 	* gimple-range-gori.cc (gori_compute::condexpr_adjust): Use

@@ -2,7 +2,7 @@
    shared state space.  */
 
 /* { dg-do compile } */
-/* { dg-options "-misa=sm_53" } */
+/* { dg-options "-misa=sm_53 -mptx=_" } */
 
 enum memmodel
 {
@@ -21,6 +21,6 @@ main()
   return 0;
 }
 
-/* { dg-final { scan-assembler-times "atom.shared.exch.b32" 1 } } */
-/* { dg-final { scan-assembler-times "atom.shared.exch.b64" 1 } } */
+/* { dg-final { scan-assembler-times "atom.shared.exch.b32\[\t \]+_," 1 } } */
+/* { dg-final { scan-assembler-times "atom.shared.exch.b64\[\t \]+_," 1 } } */
 /* { dg-final { scan-assembler-times "membar.cta" 4 } } */

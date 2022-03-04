@@ -5,7 +5,7 @@ version (CppRuntime_Sun)   version = CppMangle_Itanium;
 template ScopeClass(C)
 if (is(C == class) && __traits(getLinkage, C) == "C++")
 {
-    
+
     extern(C++, class)
     extern(C++, __traits(getCppNamespaces,C))
     extern(C++, (ns))
@@ -35,4 +35,4 @@ alias ns = AliasSeq!();
 immutable ns2 = AliasSeq!();
 extern(C++,(ns)) class Bar {}
 extern(C++,) class Baz {}
-extern(C++, (ns2)) class Quux {} 
+extern(C++, (ns2)) class Quux {}

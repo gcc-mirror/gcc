@@ -2153,7 +2153,7 @@ void
 ix86_expand_copysign (rtx operands[])
 {
   machine_mode mode, vmode;
-  rtx dest, op0, op1, mask, op2, op3;
+  rtx dest, vdest, op0, op1, mask, op2, op3;
 
   mode = GET_MODE (operands[0]);
 
@@ -2174,8 +2174,13 @@ ix86_expand_copysign (rtx operands[])
       return;
     }
 
-  dest = lowpart_subreg (vmode, operands[0], mode);
-  op1 = lowpart_subreg (vmode, operands[2], mode);
+  dest = operands[0];
+  vdest = lowpart_subreg (vmode, dest, mode);
+  if (vdest == NULL_RTX)
+    vdest = gen_reg_rtx (vmode);
+  else
+    dest = NULL_RTX;
+  op1 = lowpart_subreg (vmode, force_reg (mode, operands[2]), mode);
   mask = ix86_build_signbit_mask (vmode, 0, 0);
 
   if (CONST_DOUBLE_P (operands[1]))
@@ -2184,7 +2189,9 @@ ix86_expand_copysign (rtx operands[])
       /* Optimize for 0, simplify b = copy_signf (0.0f, a) to b = mask & a.  */
       if (op0 == CONST0_RTX (mode))
 	{
-	  emit_move_insn (dest, gen_rtx_AND (vmode, mask, op1));
+	  emit_move_insn (vdest, gen_rtx_AND (vmode, mask, op1));
+	  if (dest)
+	    emit_move_insn (dest, lowpart_subreg (mode, vdest, vmode));
 	  return;
 	}
 
@@ -2193,7 +2200,7 @@ ix86_expand_copysign (rtx operands[])
       op0 = force_reg (vmode, op0);
     }
   else
-    op0 = lowpart_subreg (vmode, operands[1], mode);
+    op0 = lowpart_subreg (vmode, force_reg (mode, operands[1]), mode);
 
   op2 = gen_reg_rtx (vmode);
   op3 = gen_reg_rtx (vmode);
@@ -2201,7 +2208,9 @@ ix86_expand_copysign (rtx operands[])
 				    gen_rtx_NOT (vmode, mask),
 				    op0));
   emit_move_insn (op3, gen_rtx_AND (vmode, mask, op1));
-  emit_move_insn (dest, gen_rtx_IOR (vmode, op2, op3));
+  emit_move_insn (vdest, gen_rtx_IOR (vmode, op2, op3));
+  if (dest)
+    emit_move_insn (dest, lowpart_subreg (mode, vdest, vmode));
 }
 
 /* Expand an xorsign operation.  */
@@ -2210,7 +2219,7 @@ void
 ix86_expand_xorsign (rtx operands[])
 {
   machine_mode mode, vmode;
-  rtx dest, op0, op1, mask, x, temp;
+  rtx dest, vdest, op0, op1, mask, x, temp;
 
   dest = operands[0];
   op0 = operands[1];
@@ -2230,15 +2239,22 @@ ix86_expand_xorsign (rtx operands[])
   temp = gen_reg_rtx (vmode);
   mask = ix86_build_signbit_mask (vmode, 0, 0);
 
-  op1 = lowpart_subreg (vmode, op1, mode);
+  op1 = lowpart_subreg (vmode, force_reg (mode, op1), mode);
   x = gen_rtx_AND (vmode, op1, mask);
   emit_insn (gen_rtx_SET (temp, x));
 
-  op0 = lowpart_subreg (vmode, op0, mode);
+  op0 = lowpart_subreg (vmode, force_reg (mode, op0), mode);
   x = gen_rtx_XOR (vmode, temp, op0);
 
-  dest = lowpart_subreg (vmode, dest, mode);
-  emit_insn (gen_rtx_SET (dest, x));
+  vdest = lowpart_subreg (vmode, dest, mode);
+  if (vdest == NULL_RTX)
+    vdest = gen_reg_rtx (vmode);
+  else
+    dest = NULL_RTX;
+  emit_insn (gen_rtx_SET (vdest, x));
+
+  if (dest)
+    emit_move_insn (dest, lowpart_subreg (mode, vdest, vmode));
 }
 
 static rtx ix86_expand_compare (enum rtx_code code, rtx op0, rtx op1);
@@ -14883,7 +14899,12 @@ ix86_expand_vector_init_duplicate (bool mmx_ok, machine_mode mode,
 	  dperm.one_operand_p = true;
 
 	  if (mode == V8HFmode)
-	    tmp1 = lowpart_subreg (V8HFmode, force_reg (HFmode, val), HFmode);
+	    {
+	      tmp1 = force_reg (HFmode, val);
+	      tmp2 = gen_reg_rtx (mode);
+	      emit_insn (gen_vec_setv8hf_0 (tmp2, CONST0_RTX (mode), tmp1));
+	      tmp1 = gen_lowpart (mode, tmp2);
+	    }
 	  else
 	    {
 	      /* Extend to SImode using a paradoxical SUBREG.  */
@@ -23203,16 +23224,14 @@ void ix86_expand_atomic_fetch_op_loop (rtx target, rtx mem, rtx val,
 				       enum rtx_code code, bool after,
 				       bool doubleword)
 {
-  rtx old_reg, new_reg, old_mem, success, oldval, new_mem;
-  rtx_code_label *loop_label, *pause_label, *done_label;
+  rtx old_reg, new_reg, old_mem, success;
   machine_mode mode = GET_MODE (target);
+  rtx_code_label *loop_label = NULL;
 
   old_reg = gen_reg_rtx (mode);
   new_reg = old_reg;
-  loop_label = gen_label_rtx ();
-  pause_label = gen_label_rtx ();
-  done_label = gen_label_rtx ();
   old_mem = copy_to_reg (mem);
+  loop_label = gen_label_rtx ();
   emit_label (loop_label);
   emit_move_insn (old_reg, old_mem);
 
@@ -23234,50 +23253,128 @@ void ix86_expand_atomic_fetch_op_loop (rtx target, rtx mem, rtx val,
   if (after)
     emit_move_insn (target, new_reg);
 
-  /* Load memory again inside loop.  */
-  new_mem = copy_to_reg (mem);
-  /* Compare mem value with expected value.  */
+  success = NULL_RTX;
 
+  ix86_expand_cmpxchg_loop (&success, old_mem, mem, old_reg, new_reg,
+			    gen_int_mode (MEMMODEL_SYNC_SEQ_CST,
+					  SImode),
+			    doubleword, loop_label);
+}
+
+/* Relax cmpxchg instruction, param loop_label indicates whether
+   the instruction should be relaxed with a pause loop.  If not,
+   it will be relaxed to an atomic load + compare, and skip
+   cmpxchg instruction if mem != exp_input.  */
+
+void ix86_expand_cmpxchg_loop (rtx *ptarget_bool, rtx target_val,
+			       rtx mem, rtx exp_input, rtx new_input,
+			       rtx mem_model, bool doubleword,
+			       rtx_code_label *loop_label)
+{
+  rtx_code_label *cmp_label = NULL;
+  rtx_code_label *done_label = NULL;
+  rtx target_bool = NULL_RTX, new_mem = NULL_RTX;
+  rtx (*gen) (rtx, rtx, rtx, rtx, rtx) = NULL;
+  rtx (*gendw) (rtx, rtx, rtx, rtx, rtx, rtx) = NULL;
+  machine_mode mode = GET_MODE (target_val), hmode = mode;
+
+  if (*ptarget_bool == NULL)
+    target_bool = gen_reg_rtx (QImode);
+  else
+    target_bool = *ptarget_bool;
+
+  cmp_label = gen_label_rtx ();
+  done_label = gen_label_rtx ();
+
+  new_mem = gen_reg_rtx (mode);
+  /* Load memory first.  */
+  expand_atomic_load (new_mem, mem, MEMMODEL_SEQ_CST);
+
+  switch (mode)
+    {
+    case E_TImode:
+      gendw = gen_atomic_compare_and_swapti_doubleword;
+      hmode = DImode;
+      break;
+    case E_DImode:
+      if (doubleword)
+	{
+	  gendw = gen_atomic_compare_and_swapdi_doubleword;
+	  hmode = SImode;
+	}
+      else
+	gen = gen_atomic_compare_and_swapdi_1;
+      break;
+    case E_SImode:
+      gen = gen_atomic_compare_and_swapsi_1;
+      break;
+    case E_HImode:
+      gen = gen_atomic_compare_and_swaphi_1;
+      break;
+    case E_QImode:
+      gen = gen_atomic_compare_and_swapqi_1;
+      break;
+    default:
+      gcc_unreachable ();
+    }
+
+  /* Compare mem value with expected value.  */
   if (doubleword)
     {
-      machine_mode half_mode = (mode == DImode)? SImode : DImode;
-      rtx low_new_mem = gen_lowpart (half_mode, new_mem);
-      rtx low_old_mem = gen_lowpart (half_mode, old_mem);
-      rtx high_new_mem = gen_highpart (half_mode, new_mem);
-      rtx high_old_mem = gen_highpart (half_mode, old_mem);
-      emit_cmp_and_jump_insns (low_new_mem, low_old_mem, NE, NULL_RTX,
-			       half_mode, 1, pause_label,
+      rtx low_new_mem = gen_lowpart (hmode, new_mem);
+      rtx low_exp_input = gen_lowpart (hmode, exp_input);
+      rtx high_new_mem = gen_highpart (hmode, new_mem);
+      rtx high_exp_input = gen_highpart (hmode, exp_input);
+      emit_cmp_and_jump_insns (low_new_mem, low_exp_input, NE, NULL_RTX,
+			       hmode, 1, cmp_label,
 			       profile_probability::guessed_never ());
-      emit_cmp_and_jump_insns (high_new_mem, high_old_mem, NE, NULL_RTX,
-			       half_mode, 1, pause_label,
+      emit_cmp_and_jump_insns (high_new_mem, high_exp_input, NE, NULL_RTX,
+			       hmode, 1, cmp_label,
 			       profile_probability::guessed_never ());
     }
   else
-    emit_cmp_and_jump_insns (new_mem, old_mem, NE, NULL_RTX,
-			     GET_MODE (old_mem), 1, pause_label,
+    emit_cmp_and_jump_insns (new_mem, exp_input, NE, NULL_RTX,
+			     GET_MODE (exp_input), 1, cmp_label,
 			     profile_probability::guessed_never ());
 
-  success = NULL_RTX;
-  oldval = old_mem;
-  expand_atomic_compare_and_swap (&success, &oldval, mem, old_reg,
-				  new_reg, false, MEMMODEL_SYNC_SEQ_CST,
-				  MEMMODEL_RELAXED);
-  if (oldval != old_mem)
-    emit_move_insn (old_mem, oldval);
+  /* Directly emits cmpxchg here.  */
+  if (doubleword)
+    emit_insn (gendw (target_val, mem, exp_input,
+		      gen_lowpart (hmode, new_input),
+		      gen_highpart (hmode, new_input),
+		      mem_model));
+  else
+    emit_insn (gen (target_val, mem, exp_input, new_input, mem_model));
 
-  emit_cmp_and_jump_insns (success, const0_rtx, EQ, const0_rtx,
-			   GET_MODE (success), 1, loop_label,
-			   profile_probability::guessed_never ());
+  if (!loop_label)
+  {
+    emit_jump_insn (gen_jump (done_label));
+    emit_barrier ();
+    emit_label (cmp_label);
+    emit_move_insn (target_val, new_mem);
+    emit_label (done_label);
+    ix86_expand_setcc (target_bool, EQ, gen_rtx_REG (CCZmode, FLAGS_REG),
+		       const0_rtx);
+  }
+  else
+  {
+    ix86_expand_setcc (target_bool, EQ, gen_rtx_REG (CCZmode, FLAGS_REG),
+		       const0_rtx);
+    emit_cmp_and_jump_insns (target_bool, const0_rtx, EQ, const0_rtx,
+			     GET_MODE (target_bool), 1, loop_label,
+			     profile_probability::guessed_never ());
+    emit_jump_insn (gen_jump (done_label));
+    emit_barrier ();
 
-  emit_jump_insn (gen_jump (done_label));
-  emit_barrier ();
+    /* If mem is not expected, pause and loop back.  */
+    emit_label (cmp_label);
+    emit_insn (gen_pause ());
+    emit_jump_insn (gen_jump (loop_label));
+    emit_barrier ();
+    emit_label (done_label);
+  }
 
-  /* If mem is not expected, pause and loop back.  */
-  emit_label (pause_label);
-  emit_insn (gen_pause ());
-  emit_jump_insn (gen_jump (loop_label));
-  emit_barrier ();
-  emit_label (done_label);
+  *ptarget_bool = target_bool;
 }
 
 #include "gt-i386-expand.h"

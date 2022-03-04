@@ -14377,80 +14377,12 @@ ix86_check_avx_upper_register (const_rtx exp)
 
 static void
 ix86_check_avx_upper_stores (rtx dest, const_rtx, void *data)
- {
-   if (ix86_check_avx_upper_register (dest))
+{
+  if (ix86_check_avx_upper_register (dest))
     {
       bool *used = (bool *) data;
       *used = true;
     }
- }
-
-/* For YMM/ZMM store or YMM/ZMM extract.  Return mode for the source
-   operand of SRC DEFs in the same basic block before INSN.  */
-
-static int
-ix86_avx_u128_mode_source (rtx_insn *insn, const_rtx src)
-{
-  basic_block bb = BLOCK_FOR_INSN (insn);
-  rtx_insn *end = BB_END (bb);
-
-  /* Return AVX_U128_DIRTY if there is no DEF in the same basic
-     block.  */
-  int status = AVX_U128_DIRTY;
-
-  for (df_ref def = DF_REG_DEF_CHAIN (REGNO (src));
-       def; def = DF_REF_NEXT_REG (def))
-    if (DF_REF_BB (def) == bb)
-      {
-	/* Ignore DEF from different basic blocks.  */
-	rtx_insn *def_insn = DF_REF_INSN (def);
-
-	/* Check if DEF_INSN is before INSN.  */
-	rtx_insn *next;
-	for (next = NEXT_INSN (def_insn);
-	     next != nullptr && next != end && next != insn;
-	     next = NEXT_INSN (next))
-	  ;
-
-	/* Skip if DEF_INSN isn't before INSN.  */
-	if (next != insn)
-	  continue;
-
-	/* Return AVX_U128_DIRTY if the source operand of DEF_INSN
-	   isn't constant zero.  */
-
-	if (CALL_P (def_insn))
-	  {
-	    bool avx_upper_reg_found = false;
-	    note_stores (def_insn,
-			 ix86_check_avx_upper_stores,
-			 &avx_upper_reg_found);
-
-	    /* Return AVX_U128_DIRTY if call returns AVX.  */
-	    if (avx_upper_reg_found)
-	      return AVX_U128_DIRTY;
-
-	    continue;
-	  }
-
-	rtx set = single_set (def_insn);
-	if (!set)
-	  return AVX_U128_DIRTY;
-
-	rtx dest = SET_DEST (set);
-
-	/* Skip if DEF_INSN is not an AVX load.  Return AVX_U128_DIRTY
-	   if the source operand isn't constant zero.  */
-	if (ix86_check_avx_upper_register (dest)
-	    && standard_sse_constant_p (SET_SRC (set),
-					GET_MODE (dest)) != 1)
-	  return AVX_U128_DIRTY;
-
-	/* We get here only if all AVX loads are from constant zero.  */
-	status = AVX_U128_ANY;
-      }
-
-  return status;
 }
 
 /* Return needed mode for entity in optimize_mode_switching pass.  */
@@ -14520,11 +14452,7 @@ ix86_avx_u128_mode_needed (rtx_insn *insn)
 	{
 	  FOR_EACH_SUBRTX (iter, array, src, NONCONST)
 	    if (ix86_check_avx_upper_register (*iter))
-	      {
-		int status = ix86_avx_u128_mode_source (insn, *iter);
-		if (status == AVX_U128_DIRTY)
-		  return status;
-	      }
+	      return AVX_U128_DIRTY;
 	}
 
       /* This isn't YMM/ZMM load/store.  */
@@ -23054,8 +22982,8 @@ class ix86_vector_costs : public vector_costs
   using vector_costs::vector_costs;
 
   unsigned int add_stmt_cost (int count, vect_cost_for_stmt kind,
-			      stmt_vec_info stmt_info, tree vectype,
-			      int misalign,
+			      stmt_vec_info stmt_info, slp_tree node,
+			      tree vectype, int misalign,
 			      vect_cost_model_location where) override;
 };
 
@@ -23069,8 +22997,9 @@ ix86_vectorize_create_costs (vec_info *vinfo, bool costing_for_scalar)
 
 unsigned
 ix86_vector_costs::add_stmt_cost (int count, vect_cost_for_stmt kind,
-				  stmt_vec_info stmt_info, tree vectype,
-				  int misalign, vect_cost_model_location where)
+				  stmt_vec_info stmt_info, slp_tree node,
+				  tree vectype, int misalign,
+				  vect_cost_model_location where)
 {
   unsigned retval = 0;
   bool scalar_p
@@ -23230,6 +23159,49 @@ ix86_vector_costs::add_stmt_cost (int count, vect_cost_for_stmt kind,
     {
       stmt_cost = ix86_builtin_vectorization_cost (kind, vectype, misalign);
       stmt_cost *= (TYPE_VECTOR_SUBPARTS (vectype) + 1);
+    }
+  else if (kind == vec_construct
+	   && node
+	   && SLP_TREE_DEF_TYPE (node) == vect_external_def
+	   && INTEGRAL_TYPE_P (TREE_TYPE (vectype)))
+    {
+      stmt_cost = ix86_builtin_vectorization_cost (kind, vectype, misalign);
+      unsigned i;
+      tree op;
+      FOR_EACH_VEC_ELT (SLP_TREE_SCALAR_OPS (node), i, op)
+	if (TREE_CODE (op) == SSA_NAME)
+	  TREE_VISITED (op) = 0;
+      FOR_EACH_VEC_ELT (SLP_TREE_SCALAR_OPS (node), i, op)
+	{
+	  if (TREE_CODE (op) != SSA_NAME
+	      || TREE_VISITED (op))
+	    continue;
+	  TREE_VISITED (op) = 1;
+	  gimple *def = SSA_NAME_DEF_STMT (op);
+	  tree tem;
+	  if (is_gimple_assign (def)
+	      && CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (def))
+	      && ((tem = gimple_assign_rhs1 (def)), true)
+	      && TREE_CODE (tem) == SSA_NAME
+	      /* A sign-change expands to nothing.  */
+	      && tree_nop_conversion_p (TREE_TYPE (gimple_assign_lhs (def)),
+					TREE_TYPE (tem)))
+	    def = SSA_NAME_DEF_STMT (tem);
+	  /* When the component is loaded from memory we can directly
+	     move it to a vector register, otherwise we have to go
+	     via a GPR or via vpinsr which involves similar cost.
+	     Likewise with a BIT_FIELD_REF extracting from a vector
+	     register we can hope to avoid using a GPR.  */
+	  if (!is_gimple_assign (def)
+	      || (!gimple_assign_load_p (def)
+		  && (gimple_assign_rhs_code (def) != BIT_FIELD_REF
+		      || !VECTOR_TYPE_P (TREE_TYPE
+				(TREE_OPERAND (gimple_assign_rhs1 (def), 0))))))
+	    stmt_cost += ix86_cost->sse_to_integer;
+	}
+      FOR_EACH_VEC_ELT (SLP_TREE_SCALAR_OPS (node), i, op)
+	if (TREE_CODE (op) == SSA_NAME)
+	  TREE_VISITED (op) = 0;
     }
   if (stmt_cost == -1)
     stmt_cost = ix86_builtin_vectorization_cost (kind, vectype, misalign);
@@ -23814,24 +23786,7 @@ ix86_optab_supported_p (int op, machine_mode mode1, machine_mode,
 rtx
 ix86_gen_scratch_sse_rtx (machine_mode mode)
 {
-  if (TARGET_SSE && !lra_in_progress)
-    {
-      unsigned int regno;
-      if (TARGET_64BIT)
-	{
-	  /* In 64-bit mode, use XMM31 to avoid vzeroupper and always
-	     use XMM31 for CSE.  */
-	  if (ix86_hard_regno_mode_ok (LAST_EXT_REX_SSE_REG, mode))
-	    regno = LAST_EXT_REX_SSE_REG;
-	  else
-	    regno = LAST_REX_SSE_REG;
-	}
-      else
-	regno = LAST_SSE_REG;
-      return gen_rtx_REG (mode, regno);
-    }
-  else
-    return gen_reg_rtx (mode);
+  return gen_reg_rtx (mode);
 }
 
 /* Address space support.
