@@ -81,9 +81,11 @@ public:
     HirId hirId = stct.get_mappings ().get_hirid ();
     if (should_warn (hirId))
       {
-	rust_warning_at (stct.get_locus (), 0,
-			 "struct is never constructed: %<%s%>",
-			 stct.get_identifier ().c_str ());
+	bool name_starts_underscore = stct.get_identifier ().at (0) == '_';
+	if (!name_starts_underscore)
+	  rust_warning_at (stct.get_locus (), 0,
+			   "struct is never constructed: %<%s%>",
+			   stct.get_identifier ().c_str ());
       }
     else
       {
@@ -122,6 +124,12 @@ public:
 	    implItem->accept_vis (*this);
 	  }
       }
+  }
+
+  void visit (HIR::Module &mod) override
+  {
+    for (auto &item : mod.get_items ())
+      item->accept_vis (*this);
   }
 
 private:

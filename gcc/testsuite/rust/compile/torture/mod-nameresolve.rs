@@ -1,5 +1,6 @@
-mod foo { // { dg-warning "unused name" }
-    struct A; // { dg-warning "unused name" }
+// { dg-additional-options "-w" }
+mod foo {
+    struct A;
 }
 
 fn main() {}
