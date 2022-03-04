@@ -37,6 +37,8 @@ int main()
 
 #pragma acc kernels /* { dg-line l_compute[incr c_compute] } */
   /* { dg-note {variable 'g2\.0' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} {} { target *-*-* } l_compute$c_compute } */
+  /* { dg-note {variable 'f1\.1' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} {} { target *-*-* } l_compute$c_compute } */
+  /* { dg-note {variable 'f1\.2' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} {} { target *-*-* } l_compute$c_compute } */
   {
     /* { dg-note {beginning 'gang-single' part in OpenACC 'kernels' region} {} { target *-*-* } .+1 } */
     int c = 234;
