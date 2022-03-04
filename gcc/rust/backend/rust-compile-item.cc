@@ -73,6 +73,10 @@ CompileItem::visit (HIR::StaticItem &var)
 void
 CompileItem::visit (HIR::ConstantItem &constant)
 {
+  if (ctx->lookup_const_decl (constant.get_mappings ().get_hirid (),
+			      &reference))
+    return;
+
   // resolve the type
   TyTy::BaseType *resolved_type = nullptr;
   bool ok
