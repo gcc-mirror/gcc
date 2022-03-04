@@ -4,6 +4,7 @@
    removed.  */
 
 /* { dg-do "compile" } */
+/* { dg-additional-options "-fsigned-char" } */
 
 /* Minimal replacement of system headers.  */
 
