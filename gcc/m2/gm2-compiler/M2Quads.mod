@@ -4332,10 +4332,10 @@ VAR
    ProcSym, Type, tok: CARDINAL ;
 BEGIN
    PopTFtok (ProcSym, Type, tok) ;
-   IF ProcSym=Size
+   IF (ProcSym=Size) OR (ProcSym=TSize) OR (ProcSym=TBitSize)
    THEN
       QuadrupleGeneration := FALSE ;
-      BuildingSize := TRUE ;
+      BuildingSize := TRUE
    ELSIF ProcSym=High
    THEN
       QuadrupleGeneration := FALSE ;
@@ -4352,10 +4352,10 @@ END BuildSizeCheckStart ;
 
 PROCEDURE BuildSizeCheckEnd (ProcSym: CARDINAL) ;
 BEGIN
-   IF ProcSym=Size
+   IF (ProcSym=Size) OR (ProcSym=TSize) OR (ProcSym=TBitSize)
    THEN
       QuadrupleGeneration := TRUE ;
-      BuildingSize := FALSE ;
+      BuildingSize := FALSE
    ELSIF ProcSym=High
    THEN
       QuadrupleGeneration := TRUE ;
@@ -9551,6 +9551,7 @@ BEGIN
    PopT (NoOfParam) ;
    ProcSym := OperandT (NoOfParam + 1) ;
    functok := OperandTtok (NoOfParam) ;
+   BuildSizeCheckEnd (ProcSym) ;   (* quadruple generation now on *)
    IF NoOfParam = 1
    THEN
       paramtok := OperandTtok (1) ;
@@ -9562,7 +9563,7 @@ BEGIN
       ELSIF IsVar (OperandT (1))
       THEN
          ReturnVar := MakeTemporary (resulttok, ImmediateValue) ;
-         GenQuadO (resulttok, SizeOp, ReturnVar, NulSym, GetSType(OperandT(1)), FALSE)
+         GenQuadO (resulttok, SizeOp, ReturnVar, NulSym, GetSType (OperandT (1)), FALSE)
       ELSE
          MetaErrorT1 (resulttok,
                       '{%E}SYSTEM procedure function {%kTSIZE} expects a variable as its first parameter, seen {%E1d}',
@@ -9637,6 +9638,7 @@ BEGIN
    PopT (NoOfParam) ;
    ProcSym := OperandT (NoOfParam + 1) ;
    functok := OperandTtok (NoOfParam) ;
+   BuildSizeCheckEnd (ProcSym) ;   (* quadruple generation now on *)
    IF NoOfParam = 1
    THEN
       paramtok := OperandTtok (1) ;
