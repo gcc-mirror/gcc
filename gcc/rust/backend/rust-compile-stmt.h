@@ -81,6 +81,7 @@ public:
     bool ok = ctx->get_tyctx ()->lookup_type (
       stmt.get_init_expr ()->get_mappings ().get_hirid (), &actual);
     rust_assert (ok);
+    tree stmt_type = TyTyResolveCompile::compile (ctx, ty);
 
     Location lvalue_locus = stmt.get_pattern ()->get_locus ();
     Location rvalue_locus = stmt.get_init_expr ()->get_locus ();
@@ -90,8 +91,14 @@ public:
     auto fnctx = ctx->peek_fn ();
     if (ty->is_unit ())
       {
-	// FIXME this feels wrong
 	ctx->add_statement (init);
+
+	auto unit_type_init_expr
+	  = ctx->get_backend ()->constructor_expression (stmt_type, false, {},
+							 -1, rvalue_locus);
+	auto s = ctx->get_backend ()->init_statement (fnctx.fndecl, var,
+						      unit_type_init_expr);
+	ctx->add_statement (s);
       }
     else
       {

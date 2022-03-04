@@ -54,10 +54,10 @@ public:
 
   void visit (TyTy::TupleType &type) override
   {
-    if (type.num_fields () == 0)
-      translated = backend->unit_type ();
-    else
-      gcc_unreachable ();
+    // this interface is only for unit-type the -type interface takes into
+    // account the context
+    rust_assert (type.num_fields () == 0);
+    translated = backend->unit_type ();
   }
 
   void visit (TyTy::ArrayType &) override { gcc_unreachable (); }

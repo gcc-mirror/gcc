@@ -122,7 +122,7 @@ public:
     static tree unit_type;
     if (unit_type == nullptr)
       {
-	auto unit_type_node = integer_type (true, 0);
+	auto unit_type_node = struct_type ({});
 	unit_type = named_type ("()", unit_type_node,
 				::Linemap::predeclared_location ());
       }
