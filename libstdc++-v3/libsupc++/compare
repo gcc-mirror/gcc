@@ -850,8 +850,6 @@ namespace std
 	    return strong_ordering::equal; // All bits are equal, we're done.
 
 	  using enum _Fp_fmt;
-	  using _Int = decltype(__ix);
-
 	  constexpr auto __fmt = _S_fp_fmt<_Tp>();
 
 	  if constexpr (__fmt == _Dbldbl) // double-double
@@ -899,6 +897,8 @@ namespace std
 		  // bit to be reversed. Flip that to give desired ordering.
 		  if (__builtin_isnan(__x) && __builtin_isnan(__y))
 		    {
+		      using _Int = decltype(__ix);
+
 		      constexpr int __nantype = __fmt == _Binary32  ?  22
 					      : __fmt == _Binary64  ?  51
 					      : __fmt == _Binary128 ? 111
