@@ -11359,9 +11359,11 @@ package body Sem_Ch13 is
          when Aspect_Predicate_Failure =>
             T := Standard_String;
 
-         --  Here is the list of aspects that don't require delay analysis
+         --  As for some other aspects above, the expression of this aspect is
+         --  just an entity that does not need any resolution, so just analyze.
 
          when Aspect_Designated_Storage_Model =>
+            Analyze (Expression (ASN));
             return;
 
          when Aspect_Storage_Model_Type =>
@@ -11388,6 +11390,8 @@ package body Sem_Ch13 is
             end;
 
             return;
+
+         --  Here is the list of aspects that don't require delay analysis
 
          when Aspect_Abstract_State
             | Aspect_Annotate
