@@ -9444,12 +9444,15 @@ ix86_expand_epilogue (int style)
 	  rtx sa = EH_RETURN_STACKADJ_RTX;
 	  rtx_insn *insn;
 
-	  /* %ecx can't be used for both DRAP register and eh_return.  */
-	  if (crtl->drap_reg)
-	    gcc_assert (REGNO (crtl->drap_reg) != CX_REG);
+	  /* Stack realignment doesn't work with eh_return.  */
+	  if (crtl->stack_realign_needed)
+	    sorry ("Stack realignment not supported with "
+		   "%<__builtin_eh_return%>");
 
 	  /* regparm nested functions don't work with eh_return.  */
-	  gcc_assert (!ix86_static_chain_on_stack);
+	  if (ix86_static_chain_on_stack)
+	    sorry ("regparm nested function not supported with "
+		   "%<__builtin_eh_return%>");
 
 	  if (frame_pointer_needed)
 	    {
