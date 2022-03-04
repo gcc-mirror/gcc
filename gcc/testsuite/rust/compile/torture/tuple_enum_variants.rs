@@ -1,8 +1,7 @@
-enum E        // { dg-warning "unused name" }
-{
-  T0(),       // { dg-warning "unused name" }
-  T1(i32),    // { dg-warning "unused name" }
-  T2(i32,u32) // { dg-warning "unused name" }
+enum E {
+    T0(),
+    T1(i32),
+    T2(i32, u32),
 }
 
 /* The following doesn't parse yet...

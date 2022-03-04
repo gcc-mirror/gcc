@@ -101,6 +101,7 @@ GRS_OBJS = \
     rust/rust-autoderef.o \
     rust/rust-substitution-mapper.o \
     rust/rust-lint-marklive.o \
+    rust/rust-lint-unused-var.o \
     rust/rust-hir-type-check-path.o \
     rust/rust-compile-intrinsic.o \
     rust/rust-compile-pattern.o \

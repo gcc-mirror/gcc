@@ -8,8 +8,6 @@ pub trait Not {
     type Output;
 
     fn not(self) -> Self::Output;
-    // { dg-warning "unused name .self." "" { target *-*-* } .-1 }
-    // { dg-warning "unused name .Not::not." "" { target *-*-* } .-2 }
 }
 
 impl Not for i32 {

@@ -1,6 +1,5 @@
 trait Foo {
     fn bar() -> i32;
-    // { dg-warning "unused name" "" { target *-*-* } .-1 }
 }
 
 struct Test(i32, f32);

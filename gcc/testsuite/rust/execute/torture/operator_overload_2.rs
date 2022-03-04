@@ -8,9 +8,6 @@ pub trait Add<Rhs = Self> {
     type Output;
 
     fn add(self, rhs: Rhs) -> Self::Output;
-    // { dg-warning "unused name .self." "" { target *-*-* } .-1 }
-    // { dg-warning "unused name .rhs." "" { target *-*-* } .-2 }
-    // { dg-warning "unused name .Add::add." "" { target *-*-* } .-3 }
 }
 
 struct Foo(i32);

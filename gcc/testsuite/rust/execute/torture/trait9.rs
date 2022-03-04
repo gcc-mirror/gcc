@@ -5,15 +5,12 @@ extern "C" {
 
 trait FnLike<A, R> {
     fn call(&self, arg: A) -> R;
-    // { dg-warning "unused name .self." "" { target *-*-* } .-1 }
-    // { dg-warning "unused name .arg." "" { target *-*-* } .-2 }
 }
 
 struct S;
 impl<T> FnLike<&T, &T> for S {
     fn call(&self, arg: &T) -> &T {
         // { dg-warning "unused name .self." "" { target *-*-* } .-1 }
-        // { dg-warning "unused name .<S as FnLike>::call." "" { target *-*-* } .-2 }
         arg
     }
 }

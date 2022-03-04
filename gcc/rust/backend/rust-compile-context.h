@@ -307,6 +307,11 @@ public:
     return mangler.mangle_item (ty, path);
   }
 
+  std::vector<tree> &get_type_decls () { return type_decls; }
+  std::vector<::Bvariable *> &get_var_decls () { return var_decls; }
+  std::vector<tree> &get_const_decls () { return const_decls; }
+  std::vector<tree> &get_func_decls () { return func_decls; }
+
 private:
   ::Backend *backend;
   Resolver::Resolver *resolver;

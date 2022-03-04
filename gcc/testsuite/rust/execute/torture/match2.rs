@@ -12,7 +12,6 @@ fn inspect(f: Foo) -> i32 {
     match f {
         Foo::C(x) => x,
         Foo::D { x, y } => y,
-        // { dg-warning "unused name .x." "" { target *-*-* } .-1 }
     }
 }
 

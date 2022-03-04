@@ -6,7 +6,6 @@ extern "C" {
 struct Foo(i32);
 trait Bar {
     fn baz(&self);
-    // { dg-warning "unused name" "" { target *-*-* } .-1 }
 
     fn qux(&self) {
         // { dg-warning "unused name" "" { target *-*-* } .-1 }
@@ -22,7 +21,6 @@ trait Bar {
 
 impl Bar for Foo {
     fn baz(&self) {
-        // { dg-warning "unused name" "" { target *-*-* } .-1 }
         unsafe {
             let a = "%i\n\0";
             let b = a as *const str;

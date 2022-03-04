@@ -1,7 +1,6 @@
 trait A {
     #[must_use]
     fn test() -> i32;
-    // { dg-warning "unused name" "" { target *-*-* } .-1 }
 }
 
 struct S;

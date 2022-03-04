@@ -23,6 +23,8 @@
 #include "rust-hir-trait-resolve.h"
 #include "rust-hir-path-probe.h"
 
+#include "print-tree.h"
+
 namespace Rust {
 namespace Compile {
 
@@ -117,12 +119,18 @@ ResolvePathRef::resolve (const HIR::PathIdentSegment &final_segment,
   // might be a constant
   tree constant_expr;
   if (ctx->lookup_const_decl (ref, &constant_expr))
-    return constant_expr;
+    {
+      TREE_USED (constant_expr) = 1;
+      return constant_expr;
+    }
 
   // this might be a variable reference or a function reference
   Bvariable *var = nullptr;
   if (ctx->lookup_var_decl (ref, &var))
-    return ctx->get_backend ()->var_expression (var, expr_locus);
+    {
+      // TREE_USED is setup in the gcc abstraction here
+      return ctx->get_backend ()->var_expression (var, expr_locus);
+    }
 
   // it might be a function call
   if (lookup->get_kind () == TyTy::TypeKind::FNDEF)
@@ -131,13 +139,19 @@ ResolvePathRef::resolve (const HIR::PathIdentSegment &final_segment,
       tree fn = NULL_TREE;
       if (ctx->lookup_function_decl (fntype->get_ty_ref (), &fn))
 	{
+	  TREE_USED (fn) = 1;
 	  return address_expression (fn, expr_locus);
 	}
     }
 
   // let the query system figure it out
-  return query_compile (ref, lookup, final_segment, mappings, expr_locus,
-			is_qualified_path);
+  tree resolved_item = query_compile (ref, lookup, final_segment, mappings,
+				      expr_locus, is_qualified_path);
+  if (resolved_item != error_mark_node)
+    {
+      TREE_USED (resolved_item) = 1;
+    }
+  return resolved_item;
 }
 
 tree

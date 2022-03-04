@@ -38,6 +38,18 @@ Wall
 Rust
 ; Documented in c.opt
 
+Wunused-variable
+Rust Var(warn_unused_variable) Init(1) Warning
+; documented in common.opt
+
+Wunused-const-variable
+Rust Warning Alias(Wunused-const-variable=, 2, 0)
+Warn when a const variable is unused.
+
+Wunused-const-variable=
+Rust Joined RejectNegative UInteger Var(warn_unused_const_variable) Init(1) Warning LangEnabledBy(Rust,Wunused-variable, 1, 0) IntegerRange(0, 2)
+Warn when a const variable is unused.
+
 Wunused-result
 Rust Var(warn_unused_result) Init(1) Warning
 Warn if a caller of a function, marked with attribute warn_unused_result, does not use its return value.

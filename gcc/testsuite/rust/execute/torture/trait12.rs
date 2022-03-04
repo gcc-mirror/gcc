@@ -5,8 +5,6 @@ extern "C" {
 
 trait FnLike<A, R> {
     fn call(&self, arg: A) -> R;
-    // { dg-warning "unused name .self." "" { target *-*-* } .-1 }
-    // { dg-warning "unused name .arg." "" { target *-*-* } .-2 }
 }
 
 type FnObject<'b> = dyn for<'a> FnLike<&'a isize, &'a isize> + 'b;
@@ -16,7 +14,6 @@ struct Identity;
 impl<'a, T> FnLike<&'a T, &'a T> for Identity {
     fn call(&self, arg: &'a T) -> &'a T {
         // { dg-warning "unused name .self." "" { target *-*-* } .-1 }
-        // { dg-warning "unused name" "" { target *-*-* } .-2 }
         arg
     }
 }

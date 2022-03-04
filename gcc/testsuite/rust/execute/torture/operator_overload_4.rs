@@ -8,8 +8,6 @@ pub trait Neg {
     type Output;
 
     fn neg(self) -> Self::Output;
-    // { dg-warning "unused name .self." "" { target *-*-* } .-1 }
-    // { dg-warning "unused name .Neg::neg." "" { target *-*-* } .-2 }
 }
 
 impl Neg for i32 {

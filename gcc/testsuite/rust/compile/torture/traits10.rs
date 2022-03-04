@@ -2,7 +2,6 @@ trait Foo // where
 //     Self: Sized,
 {
     fn get(self) -> i32;
-    // { dg-warning "unused name" "" { target *-*-* } .-1 }
 
     fn test(self) -> i32 {
         self.get()

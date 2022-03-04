@@ -1,6 +1,5 @@
-// { dg-additional-options "-w" }
 mod foo {
-    struct A;
+    struct A; // { dg-warning "struct is never constructed" }
 }
 
 fn main() {}
