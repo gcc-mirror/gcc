@@ -5120,6 +5120,12 @@ gimplify_init_constructor (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	  {
 	    if (notify_temp_creation)
 	      return GS_OK;
+
+	    /* The var will be initialized and so appear on lhs of
+	       assignment, it can't be TREE_READONLY anymore.  */
+	    if (VAR_P (object))
+	      TREE_READONLY (object) = 0;
+
 	    is_empty_ctor = true;
 	    break;
 	  }
@@ -5170,6 +5176,11 @@ gimplify_init_constructor (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	    *expr_p = NULL_TREE;
 	    break;
 	  }
+
+	/* The var will be initialized and so appear on lhs of
+	   assignment, it can't be TREE_READONLY anymore.  */
+	if (VAR_P (object) && !notify_temp_creation)
+	  TREE_READONLY (object) = 0;
 
 	/* If there are "lots" of initialized elements, even discounting
 	   those that are not address constants (and thus *must* be
