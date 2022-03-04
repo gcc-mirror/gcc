@@ -1,3 +1,48 @@
+2022-03-03  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/104761
+	* gimple-ssa-warn-access.cc (pass_waccess::execute): Call
+	mark_dfs_back_edges.
+
+2022-03-03  Martin Liska  <mliska@suse.cz>
+
+	* configure.ac: Use linker plug-in by default.
+	* configure: Regenerate.
+
+2022-03-03  Martin Liska  <mliska@suse.cz>
+
+	* configure.ac: Now ld.mold support LTO plugin API, use it.
+	* configure: Regenerate.
+
+2022-03-03  Tom de Vries  <tdevries@suse.de>
+
+	* config/nvptx/t-nvptx (MULTILIB_EXTRA_OPTS): Add mptx=3.1.
+
+2022-03-03  Tom de Vries  <tdevries@suse.de>
+
+	PR target/104758
+	* config/nvptx/t-nvptx (MULTILIB_EXTRA_OPTS): Add misa=sm_30.
+
+2022-03-03  Tom de Vries  <tdevries@suse.de>
+
+	* config/nvptx/nvptx.h (ASM_SPEC): Add %{misa=sm_30:--no-verify}.
+
+2022-03-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/104757
+	* gimplify.cc (gimplify_omp_loop): Call gimplify_expr rather than
+	gimplify_omp_for.
+	(gimplify_expr) <case OMP_SIMD>: Temporarily disable
+	gimplify_ctxp->into_ssa around call to gimplify_omp_for.
+
+2022-03-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/104558
+	* calls.cc (store_one_arg): When not calling emit_push_insn
+	because size_rtx is const0_rtx, call at least anti_adjust_stack
+	on arg->locate.alignment_pad if !argblock and the alignment might
+	be non-zero.
+
 2022-03-02  Alexandre Oliva  <oliva@adacore.com>
 
 	* lra-constraints.cc (undo_optional_reloads): Recognize and

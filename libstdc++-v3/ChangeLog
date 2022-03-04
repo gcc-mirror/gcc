@@ -1,3 +1,21 @@
+2022-03-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/104748
+	* testsuite/std/ranges/adaptors/all.cc: Use non-debug vector for
+	constexpr test.
+
+2022-03-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/17_intro/names.cc (func): Undef on AIX.
+
+2022-03-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/96526
+	* libsupc++/compare (strong_order): Add missing support for
+	floating-point types.
+	* testsuite/18_support/comparisons/algorithms/strong_order_floats.cc:
+	New test.
+
 2022-03-01  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR middle-end/103984

@@ -1,3 +1,11 @@
+2022-03-03  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	PR fortran/104131
+	* openmp.cc (gfc_match_omp_detach): Move check for type of event
+	handle to...
+	(resolve_omp_clauses) ...here.  Also check that the event handle is
+	not an array, or an array access or structure element access.
+
 2022-03-02  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/104573

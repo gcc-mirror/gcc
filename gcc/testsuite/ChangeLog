@@ -1,3 +1,33 @@
+2022-03-03  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/104761
+	* g++.dg/warn/Wdangling-pointer-4.C: New test.
+	* gcc.dg/Wdangling-pointer-4.c: New test.
+
+2022-03-03  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	PR fortran/104131
+	* gfortran.dg/gomp/pr104131.f90: New.
+	* gfortran.dg/gomp/task-detach-1.f90: Update expected error message.
+
+2022-03-03  Tom de Vries  <tdevries@suse.de>
+
+	* gcc.target/nvptx/sm53.c: Add -mptx=_.
+	* gcc.target/nvptx/sm70.c: Same.
+	* gcc.target/nvptx/sm75.c: Same.
+	* gcc.target/nvptx/sm80.c: Same.
+
+2022-03-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/104757
+	* gfortran.dg/gomp/pr104757.f90: New test.
+	* gcc.dg/gomp/pr104757.c: New test.
+
+2022-03-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/104558
+	* gcc.dg/pr104558.c: New test.
+
 2022-03-02  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/104573
