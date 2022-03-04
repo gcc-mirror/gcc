@@ -4178,13 +4178,6 @@ rs6000_option_override_internal (bool global_init_p)
     ; /* The option value can be seen when cl_target_option_restore is called.  */
   else if (rs6000_long_double_type_size == 128)
     rs6000_long_double_type_size = FLOAT_PRECISION_TFmode;
-  else if (OPTION_SET_P (rs6000_ieeequad))
-    {
-      if (global_options.x_rs6000_ieeequad)
-	error ("%qs requires %qs", "-mabi=ieeelongdouble", "-mlong-double-128");
-      else
-	error ("%qs requires %qs", "-mabi=ibmlongdouble", "-mlong-double-128");
-    }
 
   /* Set -mabi=ieeelongdouble on some old targets.  In the future, power server
      systems will also set long double to be IEEE 128-bit.  AIX and Darwin
@@ -4194,13 +4187,13 @@ rs6000_option_override_internal (bool global_init_p)
   if (!OPTION_SET_P (rs6000_ieeequad))
     rs6000_ieeequad = TARGET_IEEEQUAD_DEFAULT;
 
-  else
+  else if (TARGET_LONG_DOUBLE_128)
     {
       if (global_options.x_rs6000_ieeequad
 	  && (!TARGET_POPCNTD || !TARGET_VSX))
 	error ("%qs requires full ISA 2.06 support", "-mabi=ieeelongdouble");
 
-      if (rs6000_ieeequad != TARGET_IEEEQUAD_DEFAULT && TARGET_LONG_DOUBLE_128)
+      if (rs6000_ieeequad != TARGET_IEEEQUAD_DEFAULT)
 	{
 	  /* Determine if the user can change the default long double type at
 	     compilation time.  You need GLIBC 2.32 or newer to be able to
