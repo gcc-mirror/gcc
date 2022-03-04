@@ -17,6 +17,7 @@
 #include "rust-constexpr.h"
 #include "rust-location.h"
 #include "rust-diagnostics.h"
+#include "rust-tree.h"
 
 #include "fold-const.h"
 #include "realmpfr.h"
@@ -24,52 +25,6 @@
 #include "print-tree.h"
 #include "gimplify.h"
 #include "tree-iterator.h"
-
-/* Returns true if NODE is a pointer.  */
-#define TYPE_PTR_P(NODE) (TREE_CODE (NODE) == POINTER_TYPE)
-
-/* Returns true if NODE is a reference.  */
-#define TYPE_REF_P(NODE) (TREE_CODE (NODE) == REFERENCE_TYPE)
-
-/* Returns true if NODE is a pointer or a reference.  */
-#define INDIRECT_TYPE_P(NODE) (TYPE_PTR_P (NODE) || TYPE_REF_P (NODE))
-
-/* [basic.fundamental]
-
-   Types  bool, char, wchar_t, and the signed and unsigned integer types
-   are collectively called integral types.
-
-   Note that INTEGRAL_TYPE_P, as defined in tree.h, allows enumeration
-   types as well, which is incorrect in C++.  Keep these checks in
-   ascending code order.  */
-#define RS_INTEGRAL_TYPE_P(TYPE)                                               \
-  (TREE_CODE (TYPE) == BOOLEAN_TYPE || TREE_CODE (TYPE) == INTEGER_TYPE)
-
-/* [basic.fundamental]
-
-   Integral and floating types are collectively called arithmetic
-   types.
-
-   As a GNU extension, we also accept complex types.
-
-   Keep these checks in ascending code order.  */
-#define ARITHMETIC_TYPE_P(TYPE)                                                \
-  (RS_INTEGRAL_TYPE_P (TYPE) || TREE_CODE (TYPE) == REAL_TYPE                  \
-   || TREE_CODE (TYPE) == COMPLEX_TYPE)
-
-/* True iff TYPE is cv decltype(nullptr).  */
-#define NULLPTR_TYPE_P(TYPE) (TREE_CODE (TYPE) == NULLPTR_TYPE)
-
-/* [basic.types]
-
-   Arithmetic types, enumeration types, pointer types,
-   pointer-to-member types, and std::nullptr_t are collectively called
-   scalar types.
-
-   Keep these checks in ascending code order.  */
-#define SCALAR_TYPE_P(TYPE)                                                    \
-  (TREE_CODE (TYPE) == ENUMERAL_TYPE || ARITHMETIC_TYPE_P (TYPE)               \
-   || TYPE_PTR_P (TYPE) || NULLPTR_TYPE_P (TYPE))
 
 namespace Rust {
 namespace Compile {

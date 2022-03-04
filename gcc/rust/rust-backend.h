@@ -292,16 +292,13 @@ public:
 
   // Statements.
 
-  // Create an expression statement within the specified function.
-  virtual tree expression_statement (tree, tree) = 0;
-
   // Create a variable initialization statement in the specified
   // function.  This initializes a local variable at the point in the
   // program flow where it is declared.
   virtual tree init_statement (tree, Bvariable *var, tree init) = 0;
 
   // Create an assignment statement within the specified function.
-  virtual tree assignment_statement (tree, tree lhs, tree rhs, Location) = 0;
+  virtual tree assignment_statement (tree lhs, tree rhs, Location) = 0;
 
   // Create a return statement, passing the representation of the
   // function and the list of values to return.

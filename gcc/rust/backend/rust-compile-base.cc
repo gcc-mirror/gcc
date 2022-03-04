@@ -22,6 +22,8 @@
 #include "rust-compile-fnparam.h"
 #include "rust-compile-var-decl.h"
 
+#include "rust-expr.h" // for AST::AttrInputLiteral
+
 #include "fold-const.h"
 #include "stringpool.h"
 
@@ -52,9 +54,15 @@ HIRCompileBase::setup_attributes_on_fndecl (
   for (const auto &attr : attrs)
     {
       bool is_inline = attr.get_path ().as_string ().compare ("inline") == 0;
+      bool is_must_use
+	= attr.get_path ().as_string ().compare ("must_use") == 0;
       if (is_inline)
 	{
 	  handle_inline_attribute_on_fndecl (fndecl, attr);
+	}
+      else if (is_must_use)
+	{
+	  handle_must_use_attribute_on_fndecl (fndecl, attr);
 	}
     }
 }
@@ -105,6 +113,30 @@ HIRCompileBase::handle_inline_attribute_on_fndecl (tree fndecl,
     {
       rust_error_at (attr.get_locus (), "unknown inline option");
     }
+}
+
+void
+HIRCompileBase::handle_must_use_attribute_on_fndecl (tree fndecl,
+						     const AST::Attribute &attr)
+{
+  tree nodiscard = get_identifier ("nodiscard");
+  tree value = NULL_TREE;
+
+  if (attr.has_attr_input ())
+    {
+      rust_assert (attr.get_attr_input ().get_attr_input_type ()
+		   == AST::AttrInput::AttrInputType::LITERAL);
+
+      auto &literal
+	= static_cast<AST::AttrInputLiteral &> (attr.get_attr_input ());
+      const auto &msg_str = literal.get_literal ().as_string ();
+      tree message = build_string (msg_str.size (), msg_str.c_str ());
+
+      value = tree_cons (nodiscard, message, NULL_TREE);
+    }
+
+  DECL_ATTRIBUTES (fndecl)
+    = tree_cons (nodiscard, value, DECL_ATTRIBUTES (fndecl));
 }
 
 void
@@ -262,9 +294,8 @@ HIRCompileBase::compile_function_body (Context *ctx, tree fndecl,
       auto compiled_expr = CompileStmt::Compile (s.get (), ctx);
       if (compiled_expr != nullptr)
 	{
-	  tree compiled_stmt
-	    = ctx->get_backend ()->expression_statement (fndecl, compiled_expr);
-	  ctx->add_statement (compiled_stmt);
+	  tree s = convert_to_void (compiled_expr, ICV_STATEMENT);
+	  ctx->add_statement (s);
 	}
     }
 
@@ -289,10 +320,8 @@ HIRCompileBase::compile_function_body (Context *ctx, tree fndecl,
 	    }
 	  else
 	    {
-	      tree final_stmt
-		= ctx->get_backend ()->expression_statement (fndecl,
-							     compiled_expr);
-	      ctx->add_statement (final_stmt);
+	      // FIXME can this actually happen?
+	      ctx->add_statement (compiled_expr);
 	    }
 	}
     }

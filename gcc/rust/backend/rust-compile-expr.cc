@@ -63,8 +63,6 @@ CompileExpr::visit (HIR::ArithmeticOrLogicalExpr &expr)
 void
 CompileExpr::visit (HIR::CompoundAssignmentExpr &expr)
 {
-  fncontext fn = ctx->peek_fn ();
-
   auto op = expr.get_expr_type ();
   auto lhs = CompileExpr::Compile (expr.get_left_expr ().get (), ctx);
   auto rhs = CompileExpr::Compile (expr.get_right_expr ().get (), ctx);
@@ -82,10 +80,7 @@ CompileExpr::visit (HIR::CompoundAssignmentExpr &expr)
 	= resolve_operator_overload (lang_item_type, expr, lhs, rhs,
 				     expr.get_left_expr ().get (),
 				     expr.get_right_expr ().get ());
-      auto assignment
-	= ctx->get_backend ()->expression_statement (fn.fndecl,
-						     compound_assignment);
-      ctx->add_statement (assignment);
+      ctx->add_statement (compound_assignment);
 
       return;
     }
@@ -94,7 +89,7 @@ CompileExpr::visit (HIR::CompoundAssignmentExpr &expr)
     = ctx->get_backend ()->arithmetic_or_logical_expression (op, lhs, rhs,
 							     expr.get_locus ());
   tree assignment
-    = ctx->get_backend ()->assignment_statement (fn.fndecl, lhs, operator_expr,
+    = ctx->get_backend ()->assignment_statement (lhs, operator_expr,
 						 expr.get_locus ());
   ctx->add_statement (assignment);
 }
@@ -304,8 +299,10 @@ CompileExpr::visit (HIR::MatchExpr &expr)
 	{
 	  tree result_reference
 	    = ctx->get_backend ()->var_expression (tmp, arm_locus);
-	  tree assignment = ctx->get_backend ()->assignment_statement (
-	    fnctx.fndecl, result_reference, kase_expr_tree, arm_locus);
+	  tree assignment
+	    = ctx->get_backend ()->assignment_statement (result_reference,
+							 kase_expr_tree,
+							 arm_locus);
 	  ctx->add_statement (assignment);
 	}
 

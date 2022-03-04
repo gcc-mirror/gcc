@@ -25,9 +25,9 @@
 #include "rust-hir-type-check.h"
 #include "rust-backend.h"
 #include "rust-compile-tyty.h"
-#include "rust-ast-full.h"
 #include "rust-hir-full.h"
 #include "rust-mangle.h"
+#include "rust-tree.h"
 
 namespace Rust {
 namespace Compile {

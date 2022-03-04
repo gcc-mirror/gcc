@@ -169,7 +169,6 @@ public:
 
   void visit (HIR::AssignmentExpr &expr) override
   {
-    fncontext fn = ctx->peek_fn ();
     auto lvalue = CompileExpr::Compile (expr.get_lhs (), ctx);
     auto rvalue = CompileExpr::Compile (expr.get_rhs (), ctx);
 
@@ -191,7 +190,7 @@ public:
 		       expr.get_rhs ()->get_locus ());
 
     tree assignment
-      = ctx->get_backend ()->assignment_statement (fn.fndecl, lvalue, rvalue,
+      = ctx->get_backend ()->assignment_statement (lvalue, rvalue,
 						   expr.get_locus ());
 
     ctx->add_statement (assignment);
@@ -594,9 +593,7 @@ public:
       = CompileBlock::compile (expr.get_loop_block ().get (), ctx, nullptr);
     tree loop_expr
       = ctx->get_backend ()->loop_expression (code_block, expr.get_locus ());
-    tree loop_stmt
-      = ctx->get_backend ()->expression_statement (fnctx.fndecl, loop_expr);
-    ctx->add_statement (loop_stmt);
+    ctx->add_statement (loop_expr);
 
     if (tmp != NULL)
       {
@@ -645,9 +642,7 @@ public:
       = CompileExpr::Compile (expr.get_predicate_expr ().get (), ctx);
     tree exit_expr
       = ctx->get_backend ()->exit_expression (condition, expr.get_locus ());
-    tree break_stmt
-      = ctx->get_backend ()->expression_statement (fnctx.fndecl, exit_expr);
-    ctx->add_statement (break_stmt);
+    ctx->add_statement (exit_expr);
 
     tree code_block_stmt
       = CompileBlock::compile (expr.get_loop_block ().get (), ctx, nullptr);
@@ -659,14 +654,11 @@ public:
 
     tree loop_expr
       = ctx->get_backend ()->loop_expression (loop_block, expr.get_locus ());
-    tree loop_stmt
-      = ctx->get_backend ()->expression_statement (fnctx.fndecl, loop_expr);
-    ctx->add_statement (loop_stmt);
+    ctx->add_statement (loop_expr);
   }
 
   void visit (HIR::BreakExpr &expr) override
   {
-    fncontext fnctx = ctx->peek_fn ();
     if (expr.has_break_expr ())
       {
 	tree compiled_expr
@@ -676,8 +668,10 @@ public:
 	tree result_reference = ctx->get_backend ()->var_expression (
 	  loop_result_holder, expr.get_expr ()->get_locus ());
 
-	tree assignment = ctx->get_backend ()->assignment_statement (
-	  fnctx.fndecl, result_reference, compiled_expr, expr.get_locus ());
+	tree assignment
+	  = ctx->get_backend ()->assignment_statement (result_reference,
+						       compiled_expr,
+						       expr.get_locus ());
 	ctx->add_statement (assignment);
       }
 
@@ -721,9 +715,7 @@ public:
 	tree exit_expr = ctx->get_backend ()->exit_expression (
 	  ctx->get_backend ()->boolean_constant_expression (true),
 	  expr.get_locus ());
-	tree break_stmt
-	  = ctx->get_backend ()->expression_statement (fnctx.fndecl, exit_expr);
-	ctx->add_statement (break_stmt);
+	ctx->add_statement (exit_expr);
       }
   }
 
@@ -761,9 +753,7 @@ public:
 	  }
       }
 
-    tree goto_label
-      = ctx->get_backend ()->goto_statement (label, expr.get_locus ());
-    ctx->add_statement (goto_label);
+    translated = ctx->get_backend ()->goto_statement (label, expr.get_locus ());
   }
 
   void visit (HIR::BorrowExpr &expr) override;

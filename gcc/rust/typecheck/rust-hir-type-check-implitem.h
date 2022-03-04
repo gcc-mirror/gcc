@@ -404,8 +404,6 @@ public:
 
   void visit (HIR::ConstantItem &constant) override
   {
-    // resolved_trait_item = trait_reference.lookup_trait_item (
-    //   constant.get_identifier (), TraitItemReference::TraitItemType::CONST);
     trait_reference.lookup_trait_item_by_type (
       constant.get_identifier (), TraitItemReference::TraitItemType::CONST,
       &resolved_trait_item);
@@ -427,6 +425,11 @@ public:
       return;
     if (resolved_trait_item->is_error ())
       return;
+
+    // merge the attributes
+    const HIR::TraitItem *hir_trait_item
+      = resolved_trait_item->get_hir_trait_item ();
+    merge_attributes (constant.get_outer_attrs (), *hir_trait_item);
 
     // check the types are compatible
     if (!resolved_trait_item->get_tyty ()->can_eq (lookup, true))
@@ -466,6 +469,11 @@ public:
       return;
     if (resolved_trait_item->is_error ())
       return;
+
+    // merge the attributes
+    const HIR::TraitItem *hir_trait_item
+      = resolved_trait_item->get_hir_trait_item ();
+    merge_attributes (type.get_outer_attrs (), *hir_trait_item);
 
     // check the types are compatible
     if (!resolved_trait_item->get_tyty ()->can_eq (lookup, true))
@@ -515,6 +523,11 @@ public:
     if (resolved_trait_item->is_error ())
       return;
 
+    // merge the attributes
+    const HIR::TraitItem *hir_trait_item
+      = resolved_trait_item->get_hir_trait_item ();
+    merge_attributes (function.get_outer_attrs (), *hir_trait_item);
+
     rust_assert (lookup->get_kind () == TyTy::TypeKind::FNDEF);
     rust_assert (resolved_trait_item->get_tyty ()->get_kind ()
 		 == TyTy::TypeKind::FNDEF);
@@ -554,6 +567,18 @@ public:
 	  r, "method %<%s%> has an incompatible type for trait %<%s%>",
 	  fntype->get_identifier ().c_str (),
 	  trait_reference.get_name ().c_str ());
+      }
+  }
+
+protected:
+  // this allows us to inherit the must_use specified on a trait definition onto
+  // its implementation
+  void merge_attributes (AST::AttrVec &impl_item_attrs,
+			 const HIR::TraitItem &trait_item)
+  {
+    for (const auto &attr : trait_item.get_outer_attrs ())
+      {
+	impl_item_attrs.push_back (attr);
       }
   }
 
