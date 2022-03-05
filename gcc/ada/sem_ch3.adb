@@ -16333,6 +16333,7 @@ package body Sem_Ch3 is
 
       if Ekind (New_Subp) = E_Function then
          Set_Mechanism (New_Subp, Mechanism (Parent_Subp));
+         Set_Returns_By_Ref (New_Subp, Returns_By_Ref (Parent_Subp));
       end if;
 
       --  Ada 2022 (AI12-0279): If a Yield aspect is specified True for a
