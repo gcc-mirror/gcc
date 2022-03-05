@@ -1,3 +1,191 @@
+2022-03-04  Nathan Sidwell  <nathan@acm.org>
+
+	* g++.dg/modules/std-subst-2.C: New.
+	* g++.dg/modules/std-subst-3.C: New.
+	* g++.dg/modules/std-subst-4_a.C: New.
+	* g++.dg/modules/std-subst-4_b.C: New.
+	* g++.dg/modules/std-subst-4_c.C: New.
+
+2022-03-04  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/103521
+	* gcc.dg/analyzer/pr93032-mztools.c: Move to...
+	* gcc.dg/analyzer/pr93032-mztools-signed-char.c: ...this, adding
+	-fsigned-char to args, and...
+	* gcc.dg/analyzer/pr93032-mztools-unsigned-char.c: ...copy to here,
+	adding -funsigned-char to args.
+
+2022-03-04  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/103443
+	* g++.dg/cpp2a/consteval29.C: New test.
+
+2022-03-04  Nathan Sidwell  <nathan@acm.org>
+
+	* g++.dg/modules/fn-inline-1_b.C: Adjust.
+	* g++.dg/modules/fn-inline-1_c.C: Adjust.
+	* g++.dg/modules/imp-inline-1_a.C: Adjust.
+	* g++.dg/modules/imp-inline-1_b.C: Adjust.
+	* g++.dg/modules/init-2_a.C: Adjust.
+	* g++.dg/modules/init-2_b.C: Adjust.
+	* g++.dg/modules/init-2_c.C: Adjust.
+	* g++.dg/modules/member-def-2_d.C: Adjust.
+	* g++.dg/modules/mod-sym-1.C: Adjust.
+	* g++.dg/modules/mod-sym-2.C: Adjust.
+	* g++.dg/modules/mod-sym-3.C: Adjust.
+	* g++.dg/modules/sym-subst-1.C: Adjust.
+	* g++.dg/modules/sym-subst-2_b.C: Adjust.
+	* g++.dg/modules/sym-subst-3_a.C: Adjust.
+	* g++.dg/modules/sym-subst-3_b.C: Adjust.
+	* g++.dg/modules/sym-subst-4.C: Adjust.
+	* g++.dg/modules/sym-subst-5.C: Adjust.
+	* g++.dg/modules/sym-subst-6.C: Adjust.
+	* g++.dg/modules/tpl-spec-1_a.C: Adjust.
+	* g++.dg/modules/tpl-spec-2_b.C: Adjust.
+	* g++.dg/modules/tpl-spec-2_d.C: Adjust.
+	* g++.dg/modules/tpl-spec-3_a.C: Adjust.
+	* g++.dg/modules/virt-1_a.C: Adjust.
+	* g++.dg/modules/virt-2_a.C: Adjust.
+	* g++.dg/modules/virt-2_b.C: Adjust.
+	* g++.dg/modules/virt-2_c.C: Adjust.
+	* g++.dg/modules/vtt-1_a.C: Adjust.
+	* g++.dg/modules/vtt-1_b.C: Adjust.
+
+2022-03-04  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/87496
+	PR target/104208
+	* gcc.target/powerpc/pr104208-1.c: New test.
+	* gcc.target/powerpc/pr104208-2.c: Likewise.
+	* gcc.target/powerpc/pr87496-2.c: Swap long double options to trigger
+	the expected error.
+	* gcc.target/powerpc/pr87496-3.c: Likewise.
+
+2022-03-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/104529
+	* g++.dg/tree-ssa/pr104529.C: New test.
+
+2022-03-04  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR middle-end/100280
+	PR middle-end/104132
+	PR middle-end/104133
+	* c-c++-common/goacc/kernels-decompose-pr104061-1-3.c: Adjust.
+	* c-c++-common/goacc/kernels-decompose-pr104061-1-4.c: Likewise.
+	* c-c++-common/goacc/kernels-decompose-pr104132-1.c: Likewise.
+	* c-c++-common/goacc/kernels-decompose-pr104133-1.c: Likewise.
+
+2022-03-04  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR middle-end/100280
+	* c-c++-common/goacc/classify-kernels-unparallelized.c: Adjust.
+	* c-c++-common/goacc/classify-kernels.c: Likewise.
+	* c-c++-common/goacc/kernels-decompose-2.c: Likewise.
+	* c-c++-common/goacc/kernels-decompose-pr100280-1.c: Likewise.
+	* c-c++-common/goacc/kernels-decompose-pr104061-1-2.c: Likewise.
+	* c-c++-common/goacc/kernels-decompose-pr104061-1-3.c: Likewise.
+	* c-c++-common/goacc/kernels-decompose-pr104061-1-4.c: Likewise.
+	* c-c++-common/goacc/kernels-decompose-pr104132-1.c: Likewise.
+	* c-c++-common/goacc/kernels-decompose-pr104133-1.c: Likewise.
+
+2022-03-04  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR middle-end/100280
+	* c-c++-common/goacc/classify-kernels-unparallelized.c: Add
+	'--param=openacc-privatization=noisy'.
+	* c-c++-common/goacc/classify-kernels.c: Likewise.
+	* c-c++-common/goacc/kernels-decompose-2.c: Adjust.
+	* c-c++-common/goacc/kernels-decompose-pr100280-1.c: Likewise.
+	* c-c++-common/goacc/kernels-decompose-pr104061-1-2.c: Likewise.
+	* c-c++-common/goacc/kernels-decompose-pr104061-1-3.c: Likewise.
+	* c-c++-common/goacc/kernels-decompose-pr104061-1-4.c: Likewise.
+	* c-c++-common/goacc/kernels-decompose-pr104132-1.c: Likewise.
+	* c-c++-common/goacc/kernels-decompose-pr104133-1.c: Likewise.
+
+2022-03-04  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR middle-end/100400
+	PR middle-end/103836
+	PR middle-end/104061
+	* c-c++-common/goacc/kernels-decompose-pr100400-1-1.c: New.
+	* c-c++-common/goacc/kernels-decompose-pr100400-1-2.c: New.
+	* c-c++-common/goacc/kernels-decompose-pr100400-1-3.c: New.
+	* c-c++-common/goacc/kernels-decompose-pr100400-1-4.c: New.
+	* c-c++-common/goacc/kernels-decompose-pr103836-1-1.c: New.
+	* c-c++-common/goacc/kernels-decompose-pr103836-1-2.c: New.
+	* c-c++-common/goacc/kernels-decompose-pr103836-1-3.c: New.
+	* c-c++-common/goacc/kernels-decompose-pr103836-1-4.c: New.
+	* c-c++-common/goacc/kernels-decompose-pr104061-1-1.c: New.
+	* c-c++-common/goacc/kernels-decompose-pr104061-1-2.c: New.
+	* c-c++-common/goacc/kernels-decompose-pr104061-1-3.c: New.
+	* c-c++-common/goacc/kernels-decompose-pr104061-1-4.c: New.
+
+2022-03-04  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR middle-end/104133
+	* c-c++-common/goacc/kernels-decompose-pr104133-1.c: New file.
+
+2022-03-04  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR middle-end/104132
+	* c-c++-common/goacc/kernels-decompose-pr104132-1.c: New file.
+
+2022-03-04  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* c-c++-common/goacc/classify-kernels-parloops.c: Update.
+	* c-c++-common/goacc/classify-kernels-unparallelized-parloops.c:
+	Likewise.
+	* c-c++-common/goacc/classify-kernels-unparallelized.c: Likewise.
+	* c-c++-common/goacc/classify-kernels.c: Likewise.
+	* c-c++-common/goacc/classify-parallel.c: Likewise.
+	* c-c++-common/goacc/classify-routine-nohost.c: Likewise.
+	* c-c++-common/goacc/classify-routine.c: Likewise.
+	* c-c++-common/goacc/classify-serial.c: Likewise.
+	* gfortran.dg/goacc/classify-kernels-parloops.f95: Likewise.
+	* gfortran.dg/goacc/classify-kernels-unparallelized-parloops.f95:
+	Likewise.
+	* gfortran.dg/goacc/classify-kernels-unparallelized.f95: Likewise.
+	* gfortran.dg/goacc/classify-kernels.f95: Likewise.
+	* gfortran.dg/goacc/classify-parallel.f95: Likewise.
+	* gfortran.dg/goacc/classify-routine-nohost.f95: Likewise.
+	* gfortran.dg/goacc/classify-routine.f95: Likewise.
+	* gfortran.dg/goacc/classify-serial.f95: Likewise.
+
+2022-03-04  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/104704
+	* gcc.target/i386/incoming-11.c: Xfail.
+	* gcc.target/i386/pieces-memset-3.c: Likewise.
+	* gcc.target/i386/pieces-memset-37.c: Likewise.
+	* gcc.target/i386/pieces-memset-39.c: Likewise.
+	* gcc.target/i386/pieces-memset-46.c: Likewise.
+	* gcc.target/i386/pieces-memset-47.c: Likewise.
+	* gcc.target/i386/pieces-memset-48.c: Likewise.
+	* gcc.target/i386/pr90773-5.c: Likewise.
+	* gcc.target/i386/pr90773-14.c: Likewise.
+	* gcc.target/i386/pr90773-17.c: Likewise.
+	* gcc.target/i386/pr100865-8a.c: Likewise.
+	* gcc.target/i386/pr100865-8c.c: Likewise.
+	* gcc.target/i386/pr100865-9c.c: Likewise.
+	* gcc.target/i386/pieces-memset-21.c: Always expect vzeroupper.
+	* gcc.target/i386/pr82941-1.c: Likewise.
+	* gcc.target/i386/pr82942-1.c: Likewise.
+	* gcc.target/i386/pr82990-1.c: Likewise.
+	* gcc.target/i386/pr82990-3.c: Likewise.
+	* gcc.target/i386/pr82990-5.c: Likewise.
+	* gcc.target/i386/pr100865-11b.c: Expect vmovdqa instead of
+	vmovdqa64.
+	* gcc.target/i386/pr100865-12b.c: Likewise.
+	* gcc.target/i386/pr100865-8b.c: Likewise.
+	* gcc.target/i386/pr100865-9b.c: Likewise.
+	* gcc.target/i386/pr104704-1.c: New test.
+	* gcc.target/i386/pr104704-2.c: Likewise.
+	* gcc.target/i386/pr104704-3.c: Likewise.
+	* gcc.target/i386/pr104704-4.c: Likewise.
+	* gcc.target/i386/pr104704-5.c: Likewise.
+	* gcc.target/i386/pr104704-6.c: Likewise.
+
 2022-03-03  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/104761

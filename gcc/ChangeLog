@@ -1,3 +1,91 @@
+2022-03-04  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.cc (rs6000_machine_from_flags): Restructure a
+	bit.  Handle most older CPUs.
+
+2022-03-04  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin.cc (darwin_fold_builtin): Make fcode an int to
+	avoid a mismatch with DECL_MD_FUNCTION_CODE().
+
+2022-03-04  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR target/104117
+	* config/rs6000/darwin.md (@machopic_high_<mode>): New.
+	(@machopic_low_<mode>): New.
+	* config/rs6000/predicates.md (macho_pic_address): New.
+	* config/rs6000/rs6000.cc (rs6000_legitimize_address): Do not
+	apply the TLS processing to Darwin.
+	* lra-constraints.cc (process_address_1): Revert the changes
+	in r12-7209.
+
+2022-03-04  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/87496
+	PR target/104208
+	* config/rs6000/rs6000.cc (rs6000_option_override_internal): Make the
+	ISA 2.06 requirement for -mabi=ieeelongdouble conditional on
+	-mlong-double-128.
+	Move the -mabi=ieeelongdouble and -mabi=ibmlongdouble error checking
+	from here...
+	* common/config/rs6000/rs6000-common.cc (rs6000_handle_option):
+	... to here.
+
+2022-03-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/104529
+	* gimplify.cc (gimplify_init_constructor): Clear TREE_READONLY
+	on automatic objects which will be runtime initialized.
+
+2022-03-04  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR middle-end/100280
+	PR middle-end/104132
+	PR middle-end/104133
+	* omp-low.cc (task_shared_vars): Rename to
+	'make_addressable_vars'.  Adjust all users.
+	(scan_sharing_clauses) <OMP_CLAUSE_MAP> Use it for
+	'OMP_CLAUSE_MAP_DECL_MAKE_ADDRESSABLE' DECLs, too.
+
+2022-03-04  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR middle-end/100280
+	* tree.h (OMP_CLAUSE_MAP_DECL_MAKE_ADDRESSABLE): New.
+	* tree-core.h: Document it.
+	* omp-low.cc (scan_sharing_clauses) <OMP_CLAUSE_MAP>: Handle
+	'OMP_CLAUSE_MAP_DECL_MAKE_ADDRESSABLE'.
+	* omp-oacc-kernels-decompose.cc (maybe_build_inner_data_region):
+	Set 'OMP_CLAUSE_MAP_DECL_MAKE_ADDRESSABLE' instead of
+	'TREE_ADDRESSABLE'.
+
+2022-03-04  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR middle-end/100280
+	* omp-oacc-kernels-decompose.cc (maybe_build_inner_data_region):
+	Add diagnostic: "note: OpenACC 'kernels' decomposition: variable
+	'[...]' declared in block made addressable".
+
+2022-03-04  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR middle-end/100400
+	PR middle-end/103836
+	PR middle-end/104061
+	* omp-oacc-kernels-decompose.cc (decompose_kernels_region_body):
+	Catch 'GIMPLE_DEBUG'.
+
+2022-03-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/104627
+	* tree.cc (warn_deprecated_use): For types prefer to use node
+	and only use TYPE_MAIN_VARIANT (node) if TYPE_STUB_DECL (node) is
+	NULL.
+
+2022-03-04  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/104704
+	* config/i386/i386.cc (ix86_gen_scratch_sse_rtx): Always return
+	a pseudo register.
+
 2022-03-03  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/104761

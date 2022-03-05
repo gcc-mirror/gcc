@@ -1,3 +1,8 @@
+2022-03-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	* libsupc++/compare (strong_order::_S_fp_cmp): Move typedef
+	inside #if condition.
+
 2022-03-03  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/104748

@@ -1,3 +1,26 @@
+2022-03-04  Nathan Sidwell  <nathan@acm.org>
+
+	* mangle.cc (is_std_substitution): Check global module.
+	(is_std_substitution_char): Return bool.
+
+2022-03-04  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-tree.h (mangle_identifier): Replace with ...
+	(mangle_module_component): ... this.
+	* mangle.cc (dump_substitution_candidates): Adjust.
+	(add_substitution): Likewise.
+	(find_substitution): Likewise.
+	(unmangled_name_p): Likewise.
+	(mangle_module_substitution): Reimplement.
+	(mangle_module_component): New.
+	(write_module, maybe_write_module): Adjust.
+	(write_name): Drop modules here.
+	(write_unqualified): Do them here instead.
+	(mangle_global_init): Adjust.
+	* module.cc (module_state::mangle): Adjust.
+	(mangle_module): Likewise.
+	(get_originating_module): Adjust.
+
 2022-02-28  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/104682
