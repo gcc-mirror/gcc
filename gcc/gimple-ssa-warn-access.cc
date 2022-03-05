@@ -3812,20 +3812,15 @@ pass_waccess::use_after_inval_p (gimple *inval_stmt, gimple *use_stmt,
       /* Proceed only when looking for uses of dangling pointers.  */
       auto gsi = gsi_for_stmt (use_stmt);
 
-      auto_bitmap visited;
-
       /* A use statement in the last basic block in a function or one that
 	 falls through to it is after any other prior clobber of the used
 	 variable unless it's followed by a clobber of the same variable. */
       basic_block bb = use_bb;
       while (bb != inval_bb
 	     && single_succ_p (bb)
-	     && !(single_succ_edge (bb)->flags & (EDGE_EH|EDGE_DFS_BACK)))
+	     && !(single_succ_edge (bb)->flags
+		  & (EDGE_EH | EDGE_ABNORMAL | EDGE_DFS_BACK)))
 	{
-	  if (!bitmap_set_bit (visited, bb->index))
-	    /* Avoid cycles. */
-	    return true;
-
 	  for (; !gsi_end_p (gsi); gsi_next_nondebug (&gsi))
 	    {
 	      gimple *stmt = gsi_stmt (gsi);
