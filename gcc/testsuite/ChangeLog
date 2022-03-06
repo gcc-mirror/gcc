@@ -1,3 +1,15 @@
+2022-03-05  Michael Meissner  <meissner@the-meissners.org>
+
+	PR target/99708
+	* gcc.target/powerpc/pr99708.c: New test.  Backport change made to
+	the master branch on 2022-02-17.
+
+2022-03-05  Michael Meissner  <meissner@the-meissners.org>
+
+	PR target/104253
+	* gcc.target/powerpc/pr104253.c: New test.  Backport
+	change from 2022-02-14 made on the master branch.
+
 2022-03-02  Tamar Christina  <tamar.christina@arm.com>
 
 	PR testsuite/104730
