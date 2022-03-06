@@ -17,8 +17,8 @@ SubstituteCtx::substitute_metavar (std::unique_ptr<AST::Token> &metavar)
   else
     {
       // Replace
-      // We only care about the vector when expanding repetitions. Just access
-      // the first element of the vector.
+      // We only care about the vector when expanding repetitions.
+      // Just access the first element of the vector.
       // FIXME: Clean this up so it makes more sense
       auto &frag = it->second[0];
       for (size_t offs = frag.token_offset_begin; offs < frag.token_offset_end;
@@ -103,7 +103,13 @@ SubstituteCtx::substitute_repetition (size_t pattern_start, size_t pattern_end)
       for (auto &kv_match : fragments)
 	{
 	  std::vector<MatchedFragment> sub_vec;
-	  sub_vec.emplace_back (kv_match.second[i]);
+
+	  // FIXME: Hack: If a fragment is not repeated, how does it fit in the
+	  // submap? Do we really want to expand it? Is this normal behavior?
+	  if (kv_match.second.size () == 1)
+	    sub_vec.emplace_back (kv_match.second[0]);
+	  else
+	    sub_vec.emplace_back (kv_match.second[i]);
 
 	  sub_map.insert ({kv_match.first, sub_vec});
 	}
@@ -177,6 +183,7 @@ std::vector<std::unique_ptr<AST::Token>>
 SubstituteCtx::substitute_tokens ()
 {
   std::vector<std::unique_ptr<AST::Token>> replaced_tokens;
+  rust_debug ("expanding tokens");
 
   for (size_t i = 0; i < macro.size (); i++)
     {
