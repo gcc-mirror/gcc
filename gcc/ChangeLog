@@ -1,3 +1,31 @@
+2022-03-05  Jakub Jelinek  <jakub@redhat.com>
+
+	* gimple-ssa-warn-access.cc (pass_waccess::use_after_inval_p): Remove
+	visited bitmap and its use.  Also punt on EDGE_ABNORMAL edges.
+
+2022-03-05  Roger Sayle  <roger@nextmovesoftware.com>
+	    Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR testsuite/104732
+	* config/i386/i386.md (SWIM1248x): Renamed from SWIM1248s.
+	Include DI mode unconditionally.
+	(*anddi3_doubleword): Remove && TARGET_STV && TARGET_SSE2 condition,
+	i.e. always split on !TARGET_64BIT.
+	(*<any_or>di3_doubleword): Likewise.
+	(*one_cmpldi2_doubleword): Likewise.
+	(and<mode>3 expander): Update to use SWIM1248x from SWIM1248s.
+	(<any_or><mode>3 expander): Likewise.
+	(one_cmpl<mode>2 expander): Likewise.
+
+2022-03-05   Michael Meissner  <meissner@linux.ibm.com>
+
+	PR target/104698
+	* config/rs6000/vsx.md (UNSPEC_MTVSRD_DITI_W1): Delete.
+	(mtvsrdd_diti_w1): Delete.
+	(extendditi2): Convert from define_expand to
+	define_insn_and_split.  Replace with code to deal with both GPR
+	registers and with altivec registers.
+
 2022-03-04  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* config/rs6000/rs6000.cc (rs6000_machine_from_flags): Restructure a

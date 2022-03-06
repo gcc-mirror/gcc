@@ -1,3 +1,15 @@
+2022-03-05  Roger Sayle  <roger@nextmovesoftware.com>
+	    Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR testsuite/104732
+	* gcc.target/i386/pr104732.c: New test case.
+
+2022-03-05   Michael Meissner  <meissner@linux.ibm.com>
+
+	PR target/104698
+	* gcc.target/powerpc/pr104698-1.c: New test.
+	* gcc.target/powerpc/pr104698-2.c: New test.
+
 2022-03-04  Nathan Sidwell  <nathan@acm.org>
 
 	* g++.dg/modules/std-subst-2.C: New.
