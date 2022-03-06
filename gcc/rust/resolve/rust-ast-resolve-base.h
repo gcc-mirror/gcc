@@ -38,7 +38,6 @@ public:
   void visit (AST::IdentifierExpr &) {}
   void visit (AST::Lifetime &) {}
   void visit (AST::LifetimeParam &) {}
-  void visit (AST::MacroInvocationSemi &) {}
   void visit (AST::PathInExpression &) {}
   void visit (AST::TypePathSegment &) {}
   void visit (AST::TypePathSegmentGeneric &) {}

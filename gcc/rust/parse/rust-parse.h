@@ -80,6 +80,7 @@ struct ParseRestrictions
    * like struct exprs being parsed from a dereference. */
   bool entered_from_unary = false;
   bool expr_can_be_null = false;
+  bool expr_can_be_stmt = false;
 };
 
 // Parser implementation for gccrs.
@@ -157,7 +158,7 @@ private:
   std::unique_ptr<AST::TokenTree> parse_token_tree ();
   std::unique_ptr<AST::MacroRulesDefinition>
   parse_macro_rules_def (AST::AttrVec outer_attrs);
-  std::unique_ptr<AST::MacroInvocationSemi>
+  std::unique_ptr<AST::MacroInvocation>
   parse_macro_invocation_semi (AST::AttrVec outer_attrs);
   std::unique_ptr<AST::MacroInvocation>
   parse_macro_invocation (AST::AttrVec outer_attrs);
@@ -468,9 +469,9 @@ private:
   parse_index_expr (const_TokenPtr tok, std::unique_ptr<AST::Expr> array_expr,
 		    AST::AttrVec outer_attrs,
 		    ParseRestrictions restrictions = ParseRestrictions ());
-  std::unique_ptr<AST::MacroInvocation>
-  parse_macro_invocation_partial (AST::PathInExpression path,
-				  AST::AttrVec outer_attrs);
+  std::unique_ptr<AST::MacroInvocation> parse_macro_invocation_partial (
+    AST::PathInExpression path, AST::AttrVec outer_attrs,
+    ParseRestrictions restrictions = ParseRestrictions ());
   std::unique_ptr<AST::StructExprStruct>
   parse_struct_expr_struct_partial (AST::PathInExpression path,
 				    AST::AttrVec outer_attrs);
@@ -490,7 +491,9 @@ private:
   std::unique_ptr<AST::ExprWithBlock>
   parse_expr_with_block (AST::AttrVec outer_attrs);
   std::unique_ptr<AST::ExprWithoutBlock>
-  parse_expr_without_block (AST::AttrVec outer_attrs = AST::AttrVec ());
+  parse_expr_without_block (AST::AttrVec outer_attrs = AST::AttrVec (),
+			    ParseRestrictions restrictions
+			    = ParseRestrictions ());
   // When given a pratt_parsed_loc, use it as the location of the
   // first token parsed in the expression (the parsing of that first
   // token should be skipped).

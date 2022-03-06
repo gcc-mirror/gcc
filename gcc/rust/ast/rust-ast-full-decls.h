@@ -54,7 +54,6 @@ class MacroItem;
 class TraitItem;
 class InherentImplItem;
 class TraitImplItem;
-class MacroInvocationSemi;
 struct Crate;
 class PathExpr;
 

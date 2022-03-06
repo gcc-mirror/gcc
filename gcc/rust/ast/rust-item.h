@@ -28,7 +28,6 @@ namespace AST {
 // forward decls
 class BlockExpr;
 class TypePath;
-class MacroInvocationSemi;
 
 // TODO: inline?
 /*struct AbiName {
@@ -4306,7 +4305,6 @@ protected:
 
 // Replaced with forward decls - defined in "rust-macro.h"
 class MacroItem;
-class MacroInvocationSemi;
 class MacroRulesDefinition;
 } // namespace AST
 } // namespace Rust

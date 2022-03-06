@@ -45,8 +45,11 @@ public:
     return resolver.translated;
   }
 
-  void visit (AST::MacroInvocationSemi &invoc) override
+  void visit (AST::MacroInvocation &invoc) override
   {
+    if (!invoc.has_semicolon ())
+      return;
+
     AST::ASTFragment &fragment = invoc.get_fragment ();
 
     // FIXME

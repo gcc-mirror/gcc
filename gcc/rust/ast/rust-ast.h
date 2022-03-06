@@ -861,7 +861,9 @@ public:
   add_crate_name (std::vector<std::string> &names ATTRIBUTE_UNUSED) const
   {}
 
-  bool is_item () const override final { return true; }
+  // FIXME: ARTHUR: Is it okay to have removed that final? Is it *required*
+  // behavior that we have items that can also be expressions?
+  bool is_item () const override { return true; }
 
 protected:
   // Clone function implementation as pure virtual method
@@ -957,6 +959,8 @@ public:
   {
     return clone_expr_without_block_impl ();
   }
+
+  virtual ExprWithoutBlock *to_stmt () const { return clone_expr_impl (); }
 };
 
 /* HACK: IdentifierExpr, delete when figure out identifier vs expr problem in
@@ -1628,104 +1632,6 @@ public:
   static ASTFragment create_empty () { return ASTFragment ({}); }
 
   std::vector<SingleASTNode> &get_nodes () { return nodes; }
-};
-
-/* A macro invocation item (or statement) AST node (i.e. semi-coloned macro
- * invocation) */
-class MacroInvocationSemi : public MacroItem,
-			    public TraitItem,
-			    public InherentImplItem,
-			    public TraitImplItem,
-			    public ExternalItem
-{
-  std::vector<Attribute> outer_attrs;
-  MacroInvocData invoc_data;
-  Location locus;
-  NodeId node_id;
-
-  // this is the expanded macro
-  ASTFragment fragment;
-
-public:
-  std::string as_string () const override;
-
-  MacroInvocationSemi (MacroInvocData invoc_data,
-		       std::vector<Attribute> outer_attrs, Location locus)
-    : outer_attrs (std::move (outer_attrs)),
-      invoc_data (std::move (invoc_data)), locus (locus),
-      node_id (Analysis::Mappings::get ()->get_next_node_id ()),
-      fragment (ASTFragment::create_empty ())
-  {}
-
-  void accept_vis (ASTVisitor &vis) override;
-
-  // Clones this macro invocation semi.
-  std::unique_ptr<MacroInvocationSemi> clone_macro_invocation_semi () const
-  {
-    return std::unique_ptr<MacroInvocationSemi> (
-      clone_macro_invocation_semi_impl ());
-  }
-
-  void mark_for_strip () override { invoc_data.mark_for_strip (); }
-  bool is_marked_for_strip () const override
-  {
-    return invoc_data.is_marked_for_strip ();
-  }
-
-  // TODO: this mutable getter seems really dodgy. Think up better way.
-  const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
-  std::vector<Attribute> &get_outer_attrs () { return outer_attrs; }
-
-  Location get_locus () const override final { return locus; }
-
-  MacroInvocData &get_invoc_data () { return invoc_data; }
-
-  ASTFragment &get_fragment () { return fragment; }
-
-  void set_fragment (ASTFragment &&f) { fragment = std::move (f); }
-
-  NodeId get_macro_node_id () const { return node_id; }
-
-protected:
-  MacroInvocationSemi *clone_macro_invocation_semi_impl () const
-  {
-    return new MacroInvocationSemi (*this);
-  }
-
-  /* Use covariance to implement clone function as returning this object
-   * rather than base */
-  MacroInvocationSemi *clone_item_impl () const final override
-  {
-    return clone_macro_invocation_semi_impl ();
-  }
-
-  /* Use covariance to implement clone function as returning this object
-   * rather than base */
-  MacroInvocationSemi *clone_inherent_impl_item_impl () const final override
-  {
-    return clone_macro_invocation_semi_impl ();
-  }
-
-  /* Use covariance to implement clone function as returning this object
-   * rather than base */
-  MacroInvocationSemi *clone_trait_impl_item_impl () const final override
-  {
-    return clone_macro_invocation_semi_impl ();
-  }
-
-  /* Use covariance to implement clone function as returning this object
-   * rather than base */
-  MacroInvocationSemi *clone_trait_item_impl () const final override
-  {
-    return clone_macro_invocation_semi_impl ();
-  }
-
-  /* Use covariance to implement clone function as returning this object
-   * rather than base */
-  MacroInvocationSemi *clone_external_item_impl () const final override
-  {
-    return clone_macro_invocation_semi_impl ();
-  }
 };
 
 // A crate AST object - holds all the data for a single compilation unit

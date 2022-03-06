@@ -1276,18 +1276,6 @@ TypeAlias::as_string () const
 }
 
 std::string
-MacroInvocationSemi::as_string () const
-{
-  std::string str = "MacroInvocationSemi: ";
-
-  str += append_attributes (outer_attrs, OUTER);
-
-  str += "\n" + invoc_data.as_string ();
-
-  return str;
-}
-
-std::string
 ExternBlock::as_string () const
 {
   std::string str = VisItem::as_string ();
@@ -1376,6 +1364,9 @@ MacroInvocation::as_string () const
   str += append_attributes (outer_attrs, OUTER);
 
   str += "\n " + invoc_data.as_string ();
+
+  str += "\n has semicolon: ";
+  str += has_semicolon () ? "true" : "false";
 
   return str;
 }
@@ -4917,12 +4908,6 @@ Lifetime::accept_vis (ASTVisitor &vis)
 
 void
 LifetimeParam::accept_vis (ASTVisitor &vis)
-{
-  vis.visit (*this);
-}
-
-void
-MacroInvocationSemi::accept_vis (ASTVisitor &vis)
 {
   vis.visit (*this);
 }
