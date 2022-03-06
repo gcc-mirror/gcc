@@ -7,7 +7,7 @@
 package runtime
 
 import (
-	"runtime/internal/sys"
+	"internal/goarch"
 	"unsafe"
 )
 
@@ -106,7 +106,7 @@ func createGcRootsIndex() {
 	// Construct the gcRootsIndex slice. Use non-heap storage for the array
 	// backing the slice.
 	sp := (*notInHeapSlice)(unsafe.Pointer(&gcRootsIndex))
-	sp.array = (*notInHeap)(persistentalloc1(sys.PtrSize*uintptr(nroots), sys.PtrSize, &memstats.other_sys))
+	sp.array = (*notInHeap)(persistentalloc1(goarch.PtrSize*uintptr(nroots), goarch.PtrSize, &memstats.other_sys))
 	if sp.array == nil {
 		throw("runtime: cannot allocate memory")
 	}
@@ -125,7 +125,7 @@ func createGcRootsIndex() {
 	}
 
 	// Sort it by starting address.
-	rootradixsort(gcRootsIndex, 0, nroots-1, sys.PtrSize*8-1)
+	rootradixsort(gcRootsIndex, 0, nroots-1, goarch.PtrSize*8-1)
 }
 
 // registerGCRoots is called by compiler-generated code.

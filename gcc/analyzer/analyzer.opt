@@ -43,7 +43,7 @@ Common Joined UInteger Var(param_analyzer_max_recursion_depth) Init(2) Param
 The maximum number of times a callsite can appear in a call stack within the analyzer, before terminating analysis of a call that would recurse deeper.
 
 -param=analyzer-max-svalue-depth=
-Common Joined UInteger Var(param_analyzer_max_svalue_depth) Init(13) Param
+Common Joined UInteger Var(param_analyzer_max_svalue_depth) Init(12) Param
 The maximum depth of a symbolic value, before approximating the value as unknown.
 
 -param=analyzer-min-snodes-for-call-summary=

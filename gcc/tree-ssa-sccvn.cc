@@ -426,11 +426,8 @@ typedef hash_table<vn_ssa_aux_hasher>::iterator vn_ssa_aux_iterator_type;
 static struct obstack vn_ssa_aux_obstack;
 
 static vn_nary_op_t vn_nary_op_insert_stmt (gimple *, tree);
-static unsigned int vn_nary_length_from_stmt (gimple *);
-static vn_nary_op_t alloc_vn_nary_op_noinit (unsigned int, obstack *);
 static vn_nary_op_t vn_nary_op_insert_into (vn_nary_op_t,
 					    vn_nary_op_table_type *);
-static void init_vn_nary_op_from_stmt (vn_nary_op_t, gassign *);
 static void init_vn_nary_op_from_pieces (vn_nary_op_t, unsigned int,
 					 enum tree_code, tree, tree *);
 static tree vn_lookup_simplify_result (gimple_match_op *);
@@ -3854,7 +3851,7 @@ vn_reference_insert_pieces (tree vuse, alias_set_type set,
 
 /* Compute and return the hash value for nary operation VBO1.  */
 
-static hashval_t
+hashval_t
 vn_nary_op_compute_hash (const vn_nary_op_t vno1)
 {
   inchash::hash hstate;
@@ -3927,7 +3924,7 @@ init_vn_nary_op_from_pieces (vn_nary_op_t vno, unsigned int length,
 
 /* Return the number of operands for a vn_nary ops structure from STMT.  */
 
-static unsigned int
+unsigned int
 vn_nary_length_from_stmt (gimple *stmt)
 {
   switch (gimple_assign_rhs_code (stmt))
@@ -3950,7 +3947,7 @@ vn_nary_length_from_stmt (gimple *stmt)
 
 /* Initialize VNO from STMT.  */
 
-static void
+void
 init_vn_nary_op_from_stmt (vn_nary_op_t vno, gassign *stmt)
 {
   unsigned i;
@@ -4047,7 +4044,7 @@ vn_nary_op_lookup_stmt (gimple *stmt, vn_nary_op_t *vnresult)
 
 /* Allocate a vn_nary_op_t with LENGTH operands on STACK.  */
 
-static vn_nary_op_t
+vn_nary_op_t
 alloc_vn_nary_op_noinit (unsigned int length, struct obstack *stack)
 {
   return (vn_nary_op_t) obstack_alloc (stack, sizeof_vn_nary_op (length));
@@ -5218,12 +5215,20 @@ visit_reference_op_call (tree lhs, gcall *stmt)
 
   if (vnresult)
     {
-      if (vnresult->result_vdef && vdef)
-	changed |= set_ssa_val_to (vdef, vnresult->result_vdef);
-      else if (vdef)
-	/* If the call was discovered to be pure or const reflect
-	   that as far as possible.  */
-	changed |= set_ssa_val_to (vdef, vuse_ssa_val (gimple_vuse (stmt)));
+      if (vdef)
+	{
+	  if (vnresult->result_vdef)
+	    changed |= set_ssa_val_to (vdef, vnresult->result_vdef);
+	  else if (!lhs && gimple_call_lhs (stmt))
+	    /* If stmt has non-SSA_NAME lhs, value number the vdef to itself,
+	       as the call still acts as a lhs store.  */
+	    changed |= set_ssa_val_to (vdef, vdef);
+	  else
+	    /* If the call was discovered to be pure or const reflect
+	       that as far as possible.  */
+	    changed |= set_ssa_val_to (vdef,
+				       vuse_ssa_val (gimple_vuse (stmt)));
+	}
 
       if (!vnresult->result && lhs)
 	vnresult->result = lhs;
@@ -5248,7 +5253,11 @@ visit_reference_op_call (tree lhs, gcall *stmt)
 	      if (TREE_CODE (fn) == ADDR_EXPR
 		  && TREE_CODE (TREE_OPERAND (fn, 0)) == FUNCTION_DECL
 		  && (flags_from_decl_or_type (TREE_OPERAND (fn, 0))
-		      & (ECF_CONST | ECF_PURE)))
+		      & (ECF_CONST | ECF_PURE))
+		  /* If stmt has non-SSA_NAME lhs, value number the
+		     vdef to itself, as the call still acts as a lhs
+		     store.  */
+		  && (lhs || gimple_call_lhs (stmt) == NULL_TREE))
 		vdef_val = vuse_ssa_val (gimple_vuse (stmt));
 	    }
 	  changed |= set_ssa_val_to (vdef, vdef_val);
@@ -7034,15 +7043,14 @@ eliminate_with_rpo_vn (bitmap inserted_exprs)
   return walker.eliminate_cleanup ();
 }
 
-static unsigned
+unsigned
 do_rpo_vn (function *fn, edge entry, bitmap exit_bbs,
-	   bool iterate, bool eliminate);
+	   bool iterate, bool eliminate, vn_lookup_kind kind);
 
 void
 run_rpo_vn (vn_lookup_kind kind)
 {
-  default_vn_walk_kind = kind;
-  do_rpo_vn (cfun, NULL, NULL, true, false);
+  do_rpo_vn (cfun, NULL, NULL, true, false, kind);
 
   /* ???  Prune requirement of these.  */
   constant_to_value_id = new hash_table<vn_constant_hasher> (23);
@@ -7740,11 +7748,12 @@ do_unwind (unwind_state *to, rpo_elim &avail)
    executed and iterate.  If ELIMINATE is true then perform
    elimination, otherwise leave that to the caller.  */
 
-static unsigned
+unsigned
 do_rpo_vn (function *fn, edge entry, bitmap exit_bbs,
-	   bool iterate, bool eliminate)
+	   bool iterate, bool eliminate, vn_lookup_kind kind)
 {
   unsigned todo = 0;
+  default_vn_walk_kind = kind;
 
   /* We currently do not support region-based iteration when
      elimination is requested.  */
@@ -8164,8 +8173,7 @@ do_rpo_vn (function *fn, edge entry, bitmap exit_bbs,
 unsigned
 do_rpo_vn (function *fn, edge entry, bitmap exit_bbs)
 {
-  default_vn_walk_kind = VN_WALKREWRITE;
-  unsigned todo = do_rpo_vn (fn, entry, exit_bbs, false, true);
+  unsigned todo = do_rpo_vn (fn, entry, exit_bbs, false, true, VN_WALKREWRITE);
   free_rpo_vn ();
   return todo;
 }
@@ -8221,8 +8229,7 @@ pass_fre::execute (function *fun)
   if (iterate_p)
     loop_optimizer_init (AVOID_CFG_MODIFICATIONS);
 
-  default_vn_walk_kind = VN_WALKREWRITE;
-  todo = do_rpo_vn (fun, NULL, NULL, iterate_p, true);
+  todo = do_rpo_vn (fun, NULL, NULL, iterate_p, true, VN_WALKREWRITE);
   free_rpo_vn ();
 
   if (iterate_p)

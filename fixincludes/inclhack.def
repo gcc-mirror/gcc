@@ -2283,6 +2283,24 @@ fix = {
 };
 
 /*
+ * This hack fixes the declarations of _DINFINITY, _SINFINITY and _SQNAN.
+ */
+fix = {
+    hackname  = hpux_math_constexpr;
+    mach      = "*-hp-hpux11*";
+    files     = math.h;
+    sed       = "s@^[ \t]*extern[ \t]*const[ \t]*double[ \t]*_DINFINITY;"
+	"[ \t]*$@#  define _DINFINITY (__builtin_inf ())@";
+    sed       = "s@^[ \t]*extern[ \t]*const[ \t]*float[ \t]*_SINFINITY;"
+	"[ \t]*$@#    define _SINFINITY (__builtin_inff ())@";
+    sed       = "s@^[ \t]*extern[ \t]*const[ \t]*float[ \t]*_SQNAN;"
+	"[ \t]*$@#    define _SQNAN (__builtin_nanf (\\\"\\\"))@";
+    test_text = "  extern const double _DINFINITY;\n"
+		"  extern const float _SINFINITY;\n"
+		"  extern const float _SQNAN;";
+};
+
+/*
  *  Fix hpux 10.X missing ctype declarations 1
  */
 fix = {

@@ -1,3 +1,296 @@
+2022-03-04  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR testsuite/104791
+	* testsuite/libgomp.oacc-c-c++-common/kernels-decompose-1.c: Fix
+	expected diagnostics.
+
+2022-03-04  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR middle-end/104784
+	* testsuite/libgomp.oacc-c-c++-common/kernels-private-vars-local-worker-1.c:
+	Test with '--param=openacc-kernels=decompose'.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-private-vars-local-worker-2.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-private-vars-local-worker-3.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-private-vars-local-worker-4.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-private-vars-local-worker-5.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-private-vars-loop-gang-1.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-private-vars-loop-gang-2.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-private-vars-loop-gang-3.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-private-vars-loop-gang-4.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-private-vars-loop-gang-5.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-private-vars-loop-gang-6.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-private-vars-loop-vector-1.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-private-vars-loop-vector-2.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-private-vars-loop-worker-1.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-private-vars-loop-worker-2.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-private-vars-loop-worker-3.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-private-vars-loop-worker-4.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-private-vars-loop-worker-5.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-private-vars-loop-worker-6.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-private-vars-loop-worker-7.c:
+	Likewise.
+	* testsuite/libgomp.oacc-fortran/kernels-private-vars-loop-gang-1.f90:
+	Likewise.
+	* testsuite/libgomp.oacc-fortran/kernels-private-vars-loop-gang-2.f90:
+	Likewise.
+	* testsuite/libgomp.oacc-fortran/kernels-private-vars-loop-gang-3.f90:
+	Likewise.
+	* testsuite/libgomp.oacc-fortran/kernels-private-vars-loop-gang-6.f90:
+	Likewise.
+	* testsuite/libgomp.oacc-fortran/kernels-private-vars-loop-vector-1.f90:
+	Likewise.
+	* testsuite/libgomp.oacc-fortran/kernels-private-vars-loop-vector-2.f90:
+	Likewise.
+	* testsuite/libgomp.oacc-fortran/kernels-private-vars-loop-worker-1.f90:
+	Likewise.
+	* testsuite/libgomp.oacc-fortran/kernels-private-vars-loop-worker-2.f90:
+	Likewise.
+	* testsuite/libgomp.oacc-fortran/kernels-private-vars-loop-worker-3.f90:
+	Likewise.
+	* testsuite/libgomp.oacc-fortran/kernels-private-vars-loop-worker-4.f90:
+	Likewise.
+	* testsuite/libgomp.oacc-fortran/kernels-private-vars-loop-worker-5.f90:
+	Likewise.
+	* testsuite/libgomp.oacc-fortran/kernels-private-vars-loop-worker-6.f90:
+	Likewise.
+	* testsuite/libgomp.oacc-fortran/kernels-private-vars-loop-worker-7.f90:
+	Likewise.
+
+2022-03-04  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/kernels-private-vars-local-worker-1.c:
+	Test '-fopt-info-omp-all'.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-private-vars-local-worker-2.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-private-vars-local-worker-3.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-private-vars-local-worker-4.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-private-vars-local-worker-5.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-private-vars-loop-gang-1.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-private-vars-loop-gang-2.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-private-vars-loop-gang-3.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-private-vars-loop-gang-4.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-private-vars-loop-gang-5.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-private-vars-loop-gang-6.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-private-vars-loop-vector-1.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-private-vars-loop-vector-2.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-private-vars-loop-worker-1.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-private-vars-loop-worker-2.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-private-vars-loop-worker-3.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-private-vars-loop-worker-4.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-private-vars-loop-worker-5.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-private-vars-loop-worker-6.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-private-vars-loop-worker-7.c:
+	Likewise.
+	* testsuite/libgomp.oacc-fortran/kernels-private-vars-loop-gang-1.f90:
+	Likewise.
+	* testsuite/libgomp.oacc-fortran/kernels-private-vars-loop-gang-2.f90:
+	Likewise.
+	* testsuite/libgomp.oacc-fortran/kernels-private-vars-loop-gang-3.f90:
+	Likewise.
+	* testsuite/libgomp.oacc-fortran/kernels-private-vars-loop-gang-6.f90:
+	Likewise.
+	* testsuite/libgomp.oacc-fortran/kernels-private-vars-loop-vector-1.f90:
+	Likewise.
+	* testsuite/libgomp.oacc-fortran/kernels-private-vars-loop-vector-2.f90:
+	Likewise.
+	* testsuite/libgomp.oacc-fortran/kernels-private-vars-loop-worker-1.f90:
+	Likewise.
+	* testsuite/libgomp.oacc-fortran/kernels-private-vars-loop-worker-2.f90:
+	Likewise.
+	* testsuite/libgomp.oacc-fortran/kernels-private-vars-loop-worker-3.f90:
+	Likewise.
+	* testsuite/libgomp.oacc-fortran/kernels-private-vars-loop-worker-4.f90:
+	Likewise.
+	* testsuite/libgomp.oacc-fortran/kernels-private-vars-loop-worker-5.f90:
+	Likewise.
+	* testsuite/libgomp.oacc-fortran/kernels-private-vars-loop-worker-6.f90:
+	Likewise.
+	* testsuite/libgomp.oacc-fortran/kernels-private-vars-loop-worker-7.f90:
+	Likewise.
+
+2022-03-04  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR middle-end/100280
+	PR middle-end/104132
+	PR middle-end/104133
+	* testsuite/libgomp.oacc-c-c++-common/kernels-decompose-1.c:
+	Extend.
+
+2022-03-04  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR middle-end/100280
+	* testsuite/libgomp.oacc-c-c++-common/f-asyncwait-1.c: Adjust.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-decompose-1.c:
+	Likewise.
+
+2022-03-04  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR middle-end/100280
+	* testsuite/libgomp.oacc-c-c++-common/f-asyncwait-1.c: Adjust.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-decompose-1.c:
+	Likewise.
+
+2022-02-28  Tom de Vries  <tdevries@suse.de>
+
+	* testsuite/libgomp.c/declare-variant-3-sm30.c: Add -foffload=-mptx=_.
+	* testsuite/libgomp.c/declare-variant-3-sm35.c: Same.
+	* testsuite/libgomp.c/declare-variant-3-sm53.c: Same.
+	* testsuite/libgomp.c/declare-variant-3-sm70.c: Same.
+	* testsuite/libgomp.c/declare-variant-3-sm75.c: Same.
+	* testsuite/libgomp.c/declare-variant-3-sm80.c: Same.
+
+2022-02-24  Tom de Vries  <tdevries@suse.de>
+
+	* testsuite/libgomp.c/declare-variant-3-sm30.c: New test.
+	* testsuite/libgomp.c/declare-variant-3-sm35.c: New test.
+	* testsuite/libgomp.c/declare-variant-3-sm53.c: New test.
+	* testsuite/libgomp.c/declare-variant-3-sm70.c: New test.
+	* testsuite/libgomp.c/declare-variant-3-sm75.c: New test.
+	* testsuite/libgomp.c/declare-variant-3-sm80.c: New test.
+	* testsuite/libgomp.c/declare-variant-3.h: New header file.
+
+2022-02-22  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.oacc-fortran/privatized-ref-2.f90: Fix OpenACC
+	gang-redundant execution.
+
+2022-02-22  Tom de Vries  <tdevries@suse.de>
+
+	PR target/99555
+	* config/nvptx/bar.c (generation_to_barrier): New function, copied
+	from config/rtems/bar.c.
+	(futex_wait, futex_wake): New function.
+	(do_spin, do_wait): New function, copied from config/linux/wait.h.
+	(gomp_barrier_wait_end, gomp_barrier_wait_last)
+	(gomp_team_barrier_wake, gomp_team_barrier_wait_end):
+	(gomp_team_barrier_wait_cancel_end, gomp_team_barrier_cancel): Remove
+	and replace with include of config/linux/bar.c.
+	* config/nvptx/bar.h (gomp_barrier_t): Add fields waiters and lock.
+	(gomp_barrier_init): Init new fields.
+	* testsuite/libgomp.c-c++-common/task-detach-6.c: Remove nvptx-specific
+	workarounds.
+	* testsuite/libgomp.c/pr99555-1.c: Same.
+	* testsuite/libgomp.fortran/task-detach-6.f90: Same.
+
+2022-02-22  Tom de Vries  <tdevries@suse.de>
+
+	PR testsuite/104146
+	* testsuite/libgomp.c++/pr96390.C: Add additional-option
+	-foffload=-Wa,--verify for nvptx.
+	* testsuite/libgomp.c-c++-common/pr96390.c: Same.
+
+2022-02-15  Tobias Burnus  <tobias@codesourcery.com>
+
+	* testsuite/libgomp.fortran/depend-4.f90: New test.
+
+2022-02-10  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR c++/102204
+	* testsuite/libgomp.c++/target-virtual-1.C: New test.
+
+2022-02-10  Marcel Vollweiler  <marcel@codesourcery.com>
+
+	* libgomp.texi: Updated entry for HAS_DEVICE_ADDR.
+	* target.c (copy_firstprivate_data): Copy only if host address is not
+	NULL.
+	* testsuite/libgomp.c++/target-has-device-addr-2.C: New test.
+	* testsuite/libgomp.c++/target-has-device-addr-4.C: New test.
+	* testsuite/libgomp.c++/target-has-device-addr-5.C: New test.
+	* testsuite/libgomp.c++/target-has-device-addr-6.C: New test.
+	* testsuite/libgomp.c-c++-common/target-has-device-addr-1.c: New test.
+	* testsuite/libgomp.c/target-has-device-addr-3.c: New test.
+	* testsuite/libgomp.fortran/target-has-device-addr-1.f90: New test.
+	* testsuite/libgomp.fortran/target-has-device-addr-2.f90: New test.
+	* testsuite/libgomp.fortran/target-has-device-addr-3.f90: New test.
+	* testsuite/libgomp.fortran/target-has-device-addr-4.f90: New test.
+
+2022-02-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgomp/104385
+	* task.c (gomp_task_run_post_handle_dependers): If parent is NULL,
+	clear task->parent.
+	* testsuite/libgomp.c/pr104385.c: New test.
+
+2022-02-04  Tobias Burnus  <tobias@codesourcery.com>
+
+	* testsuite/libgomp.fortran/allocate-1.f90: Remove spurious
+	STOP of previous commit.
+
+2022-02-04  Tobias Burnus  <tobias@codesourcery.com>
+
+	* testsuite/libgomp.fortran/allocate-1.c (is_64bit_aligned): Renamed
+	from is_64bit_aligned_.
+	* testsuite/libgomp.fortran/allocate-1.f90: Fix interface decl
+	and use it, more implicit none, remove unused argument.
+
+2022-02-03  David Seifert  <soap@gentoo.org>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	* configure.ac: Support --disable-werror.
+	* configure: Regenerate.
+
+2022-02-01  Tom de Vries  <tdevries@suse.de>
+
+	* testsuite/libgomp.oacc-c-c++-common/private-atomic-1.c: Remove
+	PR83812 workaround.
+	* testsuite/libgomp.oacc-fortran/private-atomic-1-vector.f90: Same.
+	* testsuite/libgomp.oacc-fortran/private-atomic-1-worker.f90: Same.
+
+2022-02-01  Tom de Vries  <tdevries@suse.de>
+
+	* testsuite/libgomp.oacc-c-c++-common/broadcast-many.c: Reduce
+	num_workers for nvidia accelerator to fix libgomp error 'insufficient
+	resources'.
+	* testsuite/libgomp.oacc-c-c++-common/par-loop-comb-reduction-4.c:
+	Same.
+	* testsuite/libgomp.oacc-c-c++-common/reduction-7.c: Same.
+
+2022-02-01  Tom de Vries  <tdevries@suse.de>
+
+	* testsuite/libgomp.fortran/examples-4/declare_target-1.f90: Reduce
+	recursion depth.
+	* testsuite/libgomp.fortran/examples-4/declare_target-2.f90: Same.
+
+2022-01-31  Martin Liska  <mliska@suse.cz>
+
+	* acinclude.m4: Detect *_ld_is_mold and use it.
+	* configure: Regenerate.
+
 2022-01-27  Tobias Burnus  <tobias@codesourcery.com>
 
 	* libgomp.texi (OpenMP 5.0): Update implementation status.

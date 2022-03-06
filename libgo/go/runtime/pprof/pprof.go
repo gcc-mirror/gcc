@@ -76,6 +76,7 @@ import (
 	"bufio"
 	"bytes"
 	"fmt"
+	"internal/abi"
 	"io"
 	"runtime"
 	"sort"
@@ -133,7 +134,7 @@ import (
 type Profile struct {
 	name  string
 	mu    sync.Mutex
-	m     map[interface{}][]uintptr
+	m     map[any][]uintptr
 	count func() int
 	write func(io.Writer, int) error
 }
@@ -216,7 +217,7 @@ func NewProfile(name string) *Profile {
 	}
 	p := &Profile{
 		name: name,
-		m:    map[interface{}][]uintptr{},
+		m:    map[any][]uintptr{},
 	}
 	profiles.m[name] = p
 	return p
@@ -276,7 +277,7 @@ func (p *Profile) Count() int {
 // Passing skip=0 begins the stack trace at the call to Add inside rpc.NewClient.
 // Passing skip=1 begins the stack trace at the call to NewClient inside mypkg.Run.
 //
-func (p *Profile) Add(value interface{}, skip int) {
+func (p *Profile) Add(value any, skip int) {
 	if p.name == "" {
 		panic("pprof: use of uninitialized Profile")
 	}
@@ -289,7 +290,7 @@ func (p *Profile) Add(value interface{}, skip int) {
 	stk = stk[:n]
 	if len(stk) == 0 {
 		// The value for skip is too large, and there's no stack trace to record.
-		stk = []uintptr{funcPC(lostProfileEvent) + 1}
+		stk = []uintptr{abi.FuncPCABIInternal(lostProfileEvent) + 1}
 	}
 
 	p.mu.Lock()
@@ -302,7 +303,7 @@ func (p *Profile) Add(value interface{}, skip int) {
 
 // Remove removes the execution stack associated with value from the profile.
 // It is a no-op if the value is not in the profile.
-func (p *Profile) Remove(value interface{}) {
+func (p *Profile) Remove(value any) {
 	p.mu.Lock()
 	defer p.mu.Unlock()
 	delete(p.m, value)

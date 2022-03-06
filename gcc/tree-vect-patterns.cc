@@ -924,6 +924,103 @@ vect_reassociating_reduction_p (vec_info *vinfo,
   return true;
 }
 
+/* match.pd function to match
+   (cond (cmp@3 a b) (convert@1 c) (convert@2 d))
+   with conditions:
+   1) @1, @2, c, d, a, b are all integral type.
+   2) There's single_use for both @1 and @2.
+   3) a, c have same precision.
+   4) c and @1 have different precision.
+   5) c, d are the same type or they can differ in sign when convert is
+   truncation.
+
+   record a and c and d and @3.  */
+
+extern bool gimple_cond_expr_convert_p (tree, tree*, tree (*)(tree));
+
+/* Function vect_recog_cond_expr_convert
+
+   Try to find the following pattern:
+
+   TYPE_AB A,B;
+   TYPE_CD C,D;
+   TYPE_E E;
+   TYPE_E op_true = (TYPE_E) A;
+   TYPE_E op_false = (TYPE_E) B;
+
+   E = C cmp D ? op_true : op_false;
+
+   where
+   TYPE_PRECISION (TYPE_E) != TYPE_PRECISION (TYPE_CD);
+   TYPE_PRECISION (TYPE_AB) == TYPE_PRECISION (TYPE_CD);
+   single_use of op_true and op_false.
+   TYPE_AB could differ in sign when (TYPE_E) A is a truncation.
+
+   Input:
+
+   * STMT_VINFO: The stmt from which the pattern search begins.
+   here it starts with E = c cmp D ? op_true : op_false;
+
+   Output:
+
+   TYPE1 E' = C cmp D ? A : B;
+   TYPE3 E = (TYPE3) E';
+
+   There may extra nop_convert for A or B to handle different signness.
+
+   * TYPE_OUT: The vector type of the output of this pattern.
+
+   * Return value: A new stmt that will be used to replace the sequence of
+   stmts that constitute the pattern. In this case it will be:
+   E = (TYPE3)E';
+   E' = C cmp D ? A : B; is recorded in pattern definition statements;  */
+
+static gimple *
+vect_recog_cond_expr_convert_pattern (vec_info *vinfo,
+				      stmt_vec_info stmt_vinfo, tree *type_out)
+{
+  gassign *last_stmt = dyn_cast <gassign *> (stmt_vinfo->stmt);
+  tree lhs, match[4], temp, type, new_lhs, op2;
+  gimple *cond_stmt;
+  gimple *pattern_stmt;
+
+  if (!last_stmt)
+    return NULL;
+
+  lhs = gimple_assign_lhs (last_stmt);
+
+  /* Find E = C cmp D ? (TYPE3) A ? (TYPE3) B;
+     TYPE_PRECISION (A) == TYPE_PRECISION (C).  */
+  if (!gimple_cond_expr_convert_p (lhs, &match[0], NULL))
+    return NULL;
+
+  vect_pattern_detected ("vect_recog_cond_expr_convert_pattern", last_stmt);
+
+  op2 = match[2];
+  type = TREE_TYPE (match[1]);
+  if (TYPE_SIGN (type) != TYPE_SIGN (TREE_TYPE (match[2])))
+    {
+      op2 = vect_recog_temp_ssa_var (type, NULL);
+      gimple* nop_stmt = gimple_build_assign (op2, NOP_EXPR, match[2]);
+      append_pattern_def_seq (vinfo, stmt_vinfo, nop_stmt,
+			      get_vectype_for_scalar_type (vinfo, type));
+    }
+
+  temp = vect_recog_temp_ssa_var (type, NULL);
+  cond_stmt = gimple_build_assign (temp, build3 (COND_EXPR, type, match[3],
+						 match[1], op2));
+  append_pattern_def_seq (vinfo, stmt_vinfo, cond_stmt,
+			  get_vectype_for_scalar_type (vinfo, type));
+  new_lhs = vect_recog_temp_ssa_var (TREE_TYPE (lhs), NULL);
+  pattern_stmt = gimple_build_assign (new_lhs, NOP_EXPR, temp);
+  *type_out = STMT_VINFO_VECTYPE (stmt_vinfo);
+
+  if (dump_enabled_p ())
+    dump_printf_loc (MSG_NOTE, vect_location,
+		     "created pattern stmt: %G", pattern_stmt);
+  return pattern_stmt;
+}
+
 /* Function vect_recog_dot_prod_pattern
 
    Try to find the following pattern:
@@ -3041,6 +3138,9 @@ vect_synth_mult_by_constant (vec_info *vinfo, tree op, tree val,
   bool cast_to_unsigned_p = !TYPE_OVERFLOW_WRAPS (itype);
 
   tree multtype = cast_to_unsigned_p ? unsigned_type_for (itype) : itype;
+  tree vectype = get_vectype_for_scalar_type (vinfo, multtype);
+  if (!vectype)
+    return NULL;
 
   /* Targets that don't support vector shifts but support vector additions
      can synthesize shifts that way.  */
@@ -3050,16 +3150,13 @@ vect_synth_mult_by_constant (vec_info *vinfo, tree op, tree val,
   /* Use MAX_COST here as we don't want to limit the sequence on rtx costs.
      The vectorizer's benefit analysis will decide whether it's beneficial
      to do this.  */
-  bool possible = choose_mult_variant (mode, hwval, &alg,
-					&variant, MAX_COST);
+  bool possible = choose_mult_variant (VECTOR_MODE_P (TYPE_MODE (vectype))
+				       ? TYPE_MODE (vectype) : mode,
+				       hwval, &alg, &variant, MAX_COST);
   if (!possible)
     return NULL;
 
-  tree vectype = get_vectype_for_scalar_type (vinfo, multtype);
-
-  if (!vectype
-      || !target_supports_mult_synth_alg (&alg, variant,
-					   vectype, synth_shift_p))
+  if (!target_supports_mult_synth_alg (&alg, variant, vectype, synth_shift_p))
     return NULL;
 
   tree accumulator;
@@ -5492,6 +5589,7 @@ static vect_recog_func vect_vect_recog_func_ptrs[] = {
   /* Must come after over_widening, which narrows the shift as much as
      possible beforehand.  */
   { vect_recog_average_pattern, "average" },
+  { vect_recog_cond_expr_convert_pattern, "cond_expr_convert" },
   { vect_recog_mulhs_pattern, "mult_high" },
   { vect_recog_cast_forwprop_pattern, "cast_forwprop" },
   { vect_recog_widen_mult_pattern, "widen_mult" },

@@ -29,6 +29,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-pretty-print.h"
 #include "gimple-range.h"
 #include "tree-cfg.h"
+#include "target.h"
+#include "attribs.h"
+#include "gimple-iterator.h"
+#include "gimple-walk.h"
 
 #define DEBUG_RANGE_CACHE (dump_file					\
 			   && (param_ranger_debug & RANGER_DEBUG_CACHE))
@@ -48,6 +52,21 @@ non_null_ref::~non_null_ref ()
 {
   bitmap_obstack_release (&m_bitmaps);
   m_nn.release ();
+}
+
+// This routine will update NAME in BB to be nonnull if it is not already.
+// return TRUE if the update happens.
+
+bool
+non_null_ref::set_nonnull (basic_block bb, tree name)
+{
+  gcc_checking_assert (gimple_range_ssa_p (name)
+		       && POINTER_TYPE_P (TREE_TYPE (name)));
+  // Only process when its not already set.
+  if (non_null_deref_p  (name, bb, false))
+    return false;
+  bitmap_set_bit (m_nn[SSA_NAME_VERSION (name)], bb->index);
+  return true;
 }
 
 // Return true if NAME has a non-null dereference in block bb.  If this is the
@@ -83,35 +102,6 @@ non_null_ref::non_null_deref_p (tree name, basic_block bb, bool search_dom)
 	    bb = get_immediate_dominator (CDI_DOMINATORS, bb))
 	if (bitmap_bit_p (m_nn[v], bb->index))
 	  return true;
-    }
-  return false;
-}
-
-// If NAME has a non-null dereference in block BB, adjust R with the
-// non-zero information from non_null_deref_p, and return TRUE.  If
-// SEARCH_DOM is true, non_null_deref_p should search the dominator tree.
-
-bool
-non_null_ref::adjust_range (irange &r, tree name, basic_block bb,
-			    bool search_dom)
-{
-  // Non-call exceptions mean we could throw in the middle of the
-  // block, so just punt on those for now.
-  if (cfun->can_throw_non_call_exceptions)
-    return false;
-
-  // We only care about the null / non-null property of pointers.
-  if (!POINTER_TYPE_P (TREE_TYPE (name)))
-    return false;
-  if (r.undefined_p () || r.lower_bound () != 0 || r.upper_bound () == 0)
-    return false;
-  // Check if pointers have any non-null dereferences.
-  if (non_null_deref_p (name, bb, search_dom))
-    {
-      // Remove zero from the range.
-      unsigned prec = TYPE_PRECISION (TREE_TYPE (name));
-      r.intersect (wi::one (prec), wi::max_value (prec, UNSIGNED));
-      return true;
     }
   return false;
 }
@@ -1014,9 +1004,6 @@ ranger_cache::range_of_def (irange &r, tree name, basic_block bb)
       else
 	r = gimple_range_global (name);
     }
-
-  if (bb)
-    m_non_null.adjust_range (r, name, bb, false);
 }
 
 // Get the range of NAME as it occurs on entry to block BB.
@@ -1034,8 +1021,6 @@ ranger_cache::entry_range (irange &r, tree name, basic_block bb)
   // Otherwise pick up the best available global value.
   if (!m_on_entry.get_bb_range (r, name, bb))
     range_of_def (r, name);
-
-  m_non_null.adjust_range (r, name, bb, false);
 }
 
 // Get the range of NAME as it occurs on exit from block BB.
@@ -1089,6 +1074,9 @@ ranger_cache::range_of_expr (irange &r, tree name, gimple *stmt)
    if (gimple_range_ssa_p (expr))
     {
       exit_range (r, expr, e->src);
+      // If this is not an abnormal edge, check for a non-null exit.
+      if ((e->flags & (EDGE_EH | EDGE_ABNORMAL)) == 0)
+	m_non_null.adjust_range (r, expr, e->src, false);
       int_range_max edge_range;
       if (m_gori.outgoing_edge_range_p (edge_range, e, expr, *this))
 	r.intersect (edge_range);
@@ -1466,4 +1454,83 @@ ranger_cache::range_from_dom (irange &r, tree name, basic_block bb)
       r.set_nonzero (TREE_TYPE (name));
     }
   return true;
+}
+
+// This routine will update NAME in block BB to the nonnull state.
+// It will then update the on-entry cache for this block to be non-null
+// if it isn't already.
+
+void
+ranger_cache::update_to_nonnull (basic_block bb, tree name)
+{
+  tree type = TREE_TYPE (name);
+  if (gimple_range_ssa_p (name) && POINTER_TYPE_P (type))
+    {
+      m_non_null.set_nonnull (bb, name);
+      // Update the on-entry cache for BB to be non-zero.  Note this can set
+      // the on entry value in the DEF block, which can override the def.
+      int_range_max r;
+      exit_range (r, name, bb);
+      if (r.varying_p ())
+	{
+	  r.set_nonzero (type);
+	  m_on_entry.set_bb_range (name, bb, r);
+	}
+    }
+}
+
+// Adapted from infer_nonnull_range_by_dereference and check_loadstore
+// to process nonnull ssa_name OP in S.  DATA contains the ranger_cache.
+
+static bool
+non_null_loadstore (gimple *s, tree op, tree, void *data)
+{
+  if (TREE_CODE (op) == MEM_REF || TREE_CODE (op) == TARGET_MEM_REF)
+    {
+      /* Some address spaces may legitimately dereference zero.  */
+      addr_space_t as = TYPE_ADDR_SPACE (TREE_TYPE (op));
+      if (!targetm.addr_space.zero_address_valid (as))
+	{
+	  tree ssa = TREE_OPERAND (op, 0);
+	  basic_block bb = gimple_bb (s);
+	  ((ranger_cache *)data)->update_to_nonnull (bb, ssa);
+	}
+    }
+  return false;
+}
+
+// This routine is used during a block walk to move the state of non-null for
+// any operands on stmt S to nonnull.
+
+void
+ranger_cache::block_apply_nonnull (gimple *s)
+{
+  if (!flag_delete_null_pointer_checks)
+    return;
+  if (is_a<gphi *> (s))
+    return;
+  if (gimple_code (s) == GIMPLE_ASM || gimple_clobber_p (s))
+    return;
+  if (is_a<gcall *> (s))
+    {
+      tree fntype = gimple_call_fntype (s);
+      bitmap nonnullargs = get_nonnull_args (fntype);
+      // Process any non-null arguments
+      if (nonnullargs)
+	{
+	  basic_block bb = gimple_bb (s);
+	  for (unsigned i = 0; i < gimple_call_num_args (s); i++)
+	    {
+	      if (bitmap_empty_p (nonnullargs) || bitmap_bit_p (nonnullargs, i))
+		{
+		  tree op = gimple_call_arg (s, i);
+		  update_to_nonnull (bb, op);
+		}
+	    }
+	  BITMAP_FREE (nonnullargs);
+	}
+      // Fallthru and walk load/store ops now.
+    }
+  walk_stmt_load_store_ops (s, (void *)this, non_null_loadstore,
+			    non_null_loadstore);
 }

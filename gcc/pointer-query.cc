@@ -1433,12 +1433,11 @@ ssa_name_limit_t::~ssa_name_limit_t ()
 }
 
 /* Default ctor.  Initialize object with pointers to the range_query
-   and cache_type instances to use or null.  */
+   instance to use or null.  */
 
-pointer_query::pointer_query (range_query *qry /* = NULL */,
-			      cache_type *cache /* = NULL */)
-: rvals (qry), var_cache (cache), hits (), misses (),
-  failures (), depth (), max_depth ()
+pointer_query::pointer_query (range_query *qry /* = NULL */)
+  : rvals (qry), hits (), misses (), failures (), depth (), max_depth (),
+    var_cache ()
 {
   /* No op.  */
 }
@@ -1449,28 +1448,22 @@ pointer_query::pointer_query (range_query *qry /* = NULL */,
 const access_ref *
 pointer_query::get_ref (tree ptr, int ostype /* = 1 */) const
 {
-  if (!var_cache)
-    {
-      ++misses;
-      return NULL;
-    }
-
   unsigned version = SSA_NAME_VERSION (ptr);
   unsigned idx = version << 1 | (ostype & 1);
-  if (var_cache->indices.length () <= idx)
+  if (var_cache.indices.length () <= idx)
     {
       ++misses;
       return NULL;
     }
 
-  unsigned cache_idx = var_cache->indices[idx];
-  if (var_cache->access_refs.length () <= cache_idx)
+  unsigned cache_idx = var_cache.indices[idx];
+  if (var_cache.access_refs.length () <= cache_idx)
     {
       ++misses;
       return NULL;
     }
 
-  access_ref &cache_ref = var_cache->access_refs[cache_idx];
+  const access_ref &cache_ref = var_cache.access_refs[cache_idx];
   if (cache_ref.ref)
     {
       ++hits;
@@ -1491,17 +1484,17 @@ pointer_query::get_ref (tree ptr, gimple *stmt, access_ref *pref,
   const unsigned version
     = TREE_CODE (ptr) == SSA_NAME ? SSA_NAME_VERSION (ptr) : 0;
 
-  if (var_cache && version)
+  if (version)
     {
       unsigned idx = version << 1 | (ostype & 1);
-      if (idx < var_cache->indices.length ())
+      if (idx < var_cache.indices.length ())
 	{
-	  unsigned cache_idx = var_cache->indices[idx] - 1;
-	  if (cache_idx < var_cache->access_refs.length ()
-	      && var_cache->access_refs[cache_idx].ref)
+	  unsigned cache_idx = var_cache.indices[idx] - 1;
+	  if (cache_idx < var_cache.access_refs.length ()
+	      && var_cache.access_refs[cache_idx].ref)
 	    {
 	      ++hits;
-	      *pref = var_cache->access_refs[cache_idx];
+	      *pref = var_cache.access_refs[cache_idx];
 	      return true;
 	    }
 	}
@@ -1525,7 +1518,7 @@ void
 pointer_query::put_ref (tree ptr, const access_ref &ref, int ostype /* = 1 */)
 {
   /* Only add populated/valid entries.  */
-  if (!var_cache || !ref.ref || ref.sizrng[0] < 0)
+  if (!ref.ref || ref.sizrng[0] < 0)
     return;
 
   /* Add REF to the two-level cache.  */
@@ -1535,20 +1528,20 @@ pointer_query::put_ref (tree ptr, const access_ref &ref, int ostype /* = 1 */)
   /* Grow INDICES if necessary.  An index is valid if it's nonzero.
      Its value minus one is the index into ACCESS_REFS.  Not all
      entries are valid.  */
-  if (var_cache->indices.length () <= idx)
-    var_cache->indices.safe_grow_cleared (idx + 1);
+  if (var_cache.indices.length () <= idx)
+    var_cache.indices.safe_grow_cleared (idx + 1);
 
-  if (!var_cache->indices[idx])
-    var_cache->indices[idx] = var_cache->access_refs.length () + 1;
+  if (!var_cache.indices[idx])
+    var_cache.indices[idx] = var_cache.access_refs.length () + 1;
 
   /* Grow ACCESS_REF cache if necessary.  An entry is valid if its
      REF member is nonnull.  All entries except for the last two
      are valid.  Once nonnull, the REF value must stay unchanged.  */
-  unsigned cache_idx = var_cache->indices[idx];
-  if (var_cache->access_refs.length () <= cache_idx)
-    var_cache->access_refs.safe_grow_cleared (cache_idx + 1);
+  unsigned cache_idx = var_cache.indices[idx];
+  if (var_cache.access_refs.length () <= cache_idx)
+    var_cache.access_refs.safe_grow_cleared (cache_idx + 1);
 
-  access_ref &cache_ref = var_cache->access_refs[cache_idx];
+  access_ref &cache_ref = var_cache.access_refs[cache_idx];
   if (cache_ref.ref)
   {
     gcc_checking_assert (cache_ref.ref == ref.ref);
@@ -1563,10 +1556,8 @@ pointer_query::put_ref (tree ptr, const access_ref &ref, int ostype /* = 1 */)
 void
 pointer_query::flush_cache ()
 {
-  if (!var_cache)
-    return;
-  var_cache->indices.release ();
-  var_cache->access_refs.release ();
+  var_cache.indices.release ();
+  var_cache.access_refs.release ();
 }
 
 /* Dump statistics and, optionally, cache contents to DUMP_FILE.  */
@@ -1574,20 +1565,17 @@ pointer_query::flush_cache ()
 void
 pointer_query::dump (FILE *dump_file, bool contents /* = false */)
 {
-  if (!var_cache)
-    return;
-
   unsigned nused = 0, nrefs = 0;
-  unsigned nidxs = var_cache->indices.length ();
+  unsigned nidxs = var_cache.indices.length ();
   for (unsigned i = 0; i != nidxs; ++i)
     {
-      unsigned ari = var_cache->indices[i];
+      unsigned ari = var_cache.indices[i];
       if (!ari)
 	continue;
 
       ++nused;
 
-      const access_ref &aref = var_cache->access_refs[ari];
+      const access_ref &aref = var_cache.access_refs[ari];
       if (!aref.ref)
 	continue;
 
@@ -1604,7 +1592,7 @@ pointer_query::dump (FILE *dump_file, bool contents /* = false */)
 	   "  failures:           %u\n"
 	   "  max_depth:          %u\n",
 	   nidxs, nused,
-	   var_cache->access_refs.length (), nrefs,
+	   var_cache.access_refs.length (), nrefs,
 	   hits, misses, failures, max_depth);
 
   if (!contents || !nidxs)
@@ -1614,11 +1602,11 @@ pointer_query::dump (FILE *dump_file, bool contents /* = false */)
 
   for (unsigned i = 0; i != nidxs; ++i)
     {
-      unsigned ari = var_cache->indices[i];
+      unsigned ari = var_cache.indices[i];
       if (!ari)
 	continue;
 
-      const access_ref &aref = var_cache->access_refs[ari];
+      const access_ref &aref = var_cache.access_refs[ari];
       if (!aref.ref)
 	continue;
 

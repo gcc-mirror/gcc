@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-fstack-usage" } */
+/* { dg-options "-fstack-usage -fno-stack-protector" } */
 /* nvptx doesn't have a reg allocator, and hence no stack usage data.  */
 /* { dg-skip-if "" { nvptx-*-* } } */
 

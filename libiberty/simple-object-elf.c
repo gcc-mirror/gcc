@@ -528,7 +528,7 @@ simple_object_elf_match (unsigned char header[SIMPLE_OBJECT_MATCH_HEADER_LEN],
 	     not handle objects with more than SHN_LORESERVE sections
 	     correctly.  All large section indexes were offset by
 	     0x100.  There is more information at
-	     http://sourceware.org/bugzilla/show_bug.cgi?id-5900 .
+	     https://sourceware.org/PR5900 .
 	     Fortunately these object files are easy to detect, as the
 	     GNU binutils always put the section header string table
 	     near the end of the list of sections.  Thus if the
@@ -1559,17 +1559,13 @@ simple_object_elf_copy_lto_debug_sections (simple_object_read *sobj,
 	  {
 	    sh_info = ELF_FETCH_FIELD (type_functions, ei_class, Shdr,
 				       shdr, sh_info, Elf_Word);
-	    if (sh_info < SHN_LORESERVE
-		|| sh_info > SHN_HIRESERVE)
-	      sh_info = sh_map[sh_info];
+	    sh_info = sh_map[sh_info];
 	    ELF_SET_FIELD (type_functions, ei_class, Shdr,
 			   shdr, sh_info, Elf_Word, sh_info);
 	  }
 	sh_link = ELF_FETCH_FIELD (type_functions, ei_class, Shdr,
 				   shdr, sh_link, Elf_Word);
-	if (sh_link < SHN_LORESERVE
-	    || sh_link > SHN_HIRESERVE)
-	  sh_link = sh_map[sh_link];
+	sh_link = sh_map[sh_link];
 	ELF_SET_FIELD (type_functions, ei_class, Shdr,
 		       shdr, sh_link, Elf_Word, sh_link);
       }

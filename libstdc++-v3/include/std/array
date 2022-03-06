@@ -127,7 +127,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { std::swap_ranges(begin(), end(), __other.begin()); }
 
       // Iterators.
-      [[__nodiscard__]]
+      [[__gnu__::__const__, __nodiscard__]]
       _GLIBCXX17_CONSTEXPR iterator
       begin() noexcept
       { return iterator(data()); }
@@ -137,7 +137,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       begin() const noexcept
       { return const_iterator(data()); }
 
-      [[__nodiscard__]]
+      [[__gnu__::__const__, __nodiscard__]]
       _GLIBCXX17_CONSTEXPR iterator
       end() noexcept
       { return iterator(data() + _Nm); }
@@ -147,7 +147,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       end() const noexcept
       { return const_iterator(data() + _Nm); }
 
-      [[__nodiscard__]]
+      [[__gnu__::__const__, __nodiscard__]]
       _GLIBCXX17_CONSTEXPR reverse_iterator
       rbegin() noexcept
       { return reverse_iterator(end()); }
@@ -157,7 +157,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       rbegin() const noexcept
       { return const_reverse_iterator(end()); }
 
-      [[__nodiscard__]]
+      [[__gnu__::__const__, __nodiscard__]]
       _GLIBCXX17_CONSTEXPR reverse_iterator
       rend() noexcept
       { return reverse_iterator(begin()); }
@@ -188,15 +188,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { return const_reverse_iterator(begin()); }
 
       // Capacity.
-      [[__nodiscard__]]
+      [[__gnu__::__const__, __nodiscard__]]
       constexpr size_type
       size() const noexcept { return _Nm; }
 
-      [[__nodiscard__]]
+      [[__gnu__::__const__, __nodiscard__]]
       constexpr size_type
       max_size() const noexcept { return _Nm; }
 
-      [[__nodiscard__]]
+      [[__gnu__::__const__, __nodiscard__]]
       constexpr bool
       empty() const noexcept { return size() == 0; }
 
@@ -278,7 +278,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
  	           : _AT_Type::_S_ref(_M_elems, 0);
       }
 
-      [[__nodiscard__]]
+      [[__gnu__::__const__, __nodiscard__]]
       _GLIBCXX17_CONSTEXPR pointer
       data() noexcept
       { return _AT_Type::_S_ptr(_M_elems); }

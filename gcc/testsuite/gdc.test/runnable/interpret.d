@@ -4,14 +4,6 @@ TEST_OUTPUT:
 true
 g
 &Test109S(&Test109S(<recursion>))
-runnable/interpret.d(3197): Deprecation: The `delete` keyword has been deprecated.  Use `object.destroy()` (and `core.memory.GC.free()` if applicable) instead.
-runnable/interpret.d(3199): Deprecation: The `delete` keyword has been deprecated.  Use `object.destroy()` (and `core.memory.GC.free()` if applicable) instead.
-runnable/interpret.d(3202): Deprecation: The `delete` keyword has been deprecated.  Use `object.destroy()` (and `core.memory.GC.free()` if applicable) instead.
-runnable/interpret.d(3205): Deprecation: The `delete` keyword has been deprecated.  Use `object.destroy()` (and `core.memory.GC.free()` if applicable) instead.
-runnable/interpret.d(3206): Deprecation: The `delete` keyword has been deprecated.  Use `object.destroy()` (and `core.memory.GC.free()` if applicable) instead.
-runnable/interpret.d(3212): Deprecation: The `delete` keyword has been deprecated.  Use `object.destroy()` (and `core.memory.GC.free()` if applicable) instead.
-runnable/interpret.d(3213): Deprecation: The `delete` keyword has been deprecated.  Use `object.destroy()` (and `core.memory.GC.free()` if applicable) instead.
-runnable/interpret.d(3216): Deprecation: The `delete` keyword has been deprecated.  Use `object.destroy()` (and `core.memory.GC.free()` if applicable) instead.
 tfoo
 tfoo
 Crash!
@@ -3187,33 +3179,96 @@ auto test110 = [Test110f(1, Test110s(1, 2, 3))];
 
 /************************************************/
 // https://issues.dlang.org/show_bug.cgi?id=6907
+// FIXME: Shouldn't this go in core.memory now that `delete` has been removed?
 
 int test6907()
 {
+    import core.memory : __delete;
+
     int dtor1;
     class C { ~this() { ++dtor1; } }
 
     // delete on Object
-    { Object o; delete o; }
+    { Object o; if (!__ctfe) __delete(o); }
     { scope o = new Object(); }
-    { Object o = new Object(); delete o; }
+    { Object o = new Object(); if (!__ctfe) __delete(o); }
 
     // delete on C
-    { C c; delete c; }
-    { { scope c = new C(); } assert(dtor1 == 1); }
-    { { scope Object o = new C(); } assert(dtor1 == 2); }
-    { C c = new C(); delete c; assert(dtor1 == 3); }
-    { Object o = new C(); delete o; assert(dtor1 == 4); }
+    {
+        C c;
+        if (!__ctfe)
+            __delete(c);
+    }
+    {
+        { scope c = new C(); }
+        assert(dtor1 == 1);
+    }
+    {
+        { scope Object o = new C(); }
+        assert(dtor1 == 2);
+    }
+    {
+        C c = new C();
+        if (__ctfe)
+        {
+            c.__dtor();
+            c = null;
+        }
+        else
+            __delete(c);
+        assert(dtor1 == 3);
+    }
+    {
+        Object o = new C();
+        if (__ctfe)
+        {
+            (cast(C)o).__dtor();
+            o = null;
+        }
+        else
+            __delete(o);
+        assert(dtor1 == 4);
+    }
 
     int dtor2;
     struct S1 { ~this() { ++dtor2; } }
 
     // delete on S1
-    { S1* p; delete p; }
-    { S1* p = new S1(); delete p; assert(dtor2 == 1); }
+    {
+        S1* p;
+        // https://issues.dlang.org/show_bug.cgi?id=22779
+        // Uncomment after druntime fix
+        version (none)
+        {
+            if (!__ctfe)
+                __delete(p);
+        }
+    }
+    {
+        S1* p = new S1();
+        if (__ctfe) 
+        {
+            (*p).__dtor();
+            destroy(p);
+        }
+        else
+            __delete(p);
+        assert(dtor2 == 1);
+    }
 
     // delete on S1[]
-    { S1[] a = [S1(), S1()]; delete a; assert(dtor2 == 3); }
+    {
+        S1[] a = [S1(), S1()];
+        if (__ctfe)
+        {
+            a[1].__dtor();
+            a[0].__dtor();
+            destroy(a);
+        }
+        else
+            __delete(a);
+        assert(dtor2 == 3);
+    }
 
     return 1;
 }

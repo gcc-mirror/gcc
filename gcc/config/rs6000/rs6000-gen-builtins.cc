@@ -2255,20 +2255,20 @@ write_decls (void)
   fprintf (header_file, "};\n\n");
 
   fprintf (header_file, "#define PPC_MAXRESTROPNDS 3\n");
-  fprintf (header_file, "struct GTY((user)) bifdata\n");
+  fprintf (header_file, "struct GTY(()) bifdata\n");
   fprintf (header_file, "{\n");
-  fprintf (header_file, "  const char *bifname;\n");
-  fprintf (header_file, "  bif_enable enable;\n");
+  fprintf (header_file, "  const char *GTY((skip(\"\"))) bifname;\n");
+  fprintf (header_file, "  bif_enable GTY((skip(\"\"))) enable;\n");
   fprintf (header_file, "  tree fntype;\n");
-  fprintf (header_file, "  insn_code icode;\n");
+  fprintf (header_file, "  insn_code GTY((skip(\"\"))) icode;\n");
   fprintf (header_file, "  int  nargs;\n");
   fprintf (header_file, "  int  bifattrs;\n");
   fprintf (header_file, "  int  restr_opnd[PPC_MAXRESTROPNDS];\n");
-  fprintf (header_file, "  restriction restr[PPC_MAXRESTROPNDS];\n");
+  fprintf (header_file, "  restriction GTY((skip(\"\"))) restr[PPC_MAXRESTROPNDS];\n");
   fprintf (header_file, "  int  restr_val1[PPC_MAXRESTROPNDS];\n");
   fprintf (header_file, "  int  restr_val2[PPC_MAXRESTROPNDS];\n");
-  fprintf (header_file, "  const char *attr_string;\n");
-  fprintf (header_file, "  rs6000_gen_builtins assoc_bif;\n");
+  fprintf (header_file, "  const char *GTY((skip(\"\"))) attr_string;\n");
+  fprintf (header_file, "  rs6000_gen_builtins GTY((skip(\"\"))) assoc_bif;\n");
   fprintf (header_file, "};\n\n");
 
   fprintf (header_file, "#define bif_init_bit\t\t(0x00000001)\n");
@@ -2343,21 +2343,15 @@ write_decls (void)
 	   "#define bif_is_ibmld(x)\t((x).bifattrs & bif_ibmld_bit)\n");
   fprintf (header_file, "\n");
 
-  /* #### Cannot mark this as a GC root because only pointer types can
-     be marked as GTY((user)) and be GC roots.  All trees in here are
-     kept alive by other globals, so not a big deal.  Alternatively,
-     we could change the enum fields to ints and cast them in and out
-     to avoid requiring a GTY((user)) designation, but that seems
-     unnecessarily gross.  */
   fprintf (header_file,
-	   "extern bifdata rs6000_builtin_info[RS6000_BIF_MAX];\n\n");
+	   "extern GTY(()) bifdata rs6000_builtin_info[RS6000_BIF_MAX];\n\n");
 
-  fprintf (header_file, "struct GTY((user)) ovlddata\n");
+  fprintf (header_file, "struct GTY(()) ovlddata\n");
   fprintf (header_file, "{\n");
-  fprintf (header_file, "  const char *bifname;\n");
-  fprintf (header_file, "  rs6000_gen_builtins bifid;\n");
+  fprintf (header_file, "  const char *GTY((skip(\"\"))) bifname;\n");
+  fprintf (header_file, "  rs6000_gen_builtins GTY((skip(\"\"))) bifid;\n");
   fprintf (header_file, "  tree fntype;\n");
-  fprintf (header_file, "  ovlddata *next;\n");
+  fprintf (header_file, "  ovlddata *GTY((skip(\"\"))) next;\n");
   fprintf (header_file, "};\n\n");
 
   fprintf (header_file, "struct ovldrecord\n");
@@ -2367,14 +2361,7 @@ write_decls (void)
   fprintf (header_file, "};\n\n");
 
   fprintf (header_file,
-	   "/* #### Cannot mark this as a GC root because only pointer\n"
-	   "   types can be marked as GTY((user)) and be GC roots.  All\n"
-	   "   trees in here are kept alive by other globals, so not a big\n"
-	   "   deal.  Alternatively, we could change the enum fields to ints\n"
-	   "   and cast them in and out to avoid requiring a GTY((user))\n"
-	   "   designation, but that seems unnecessarily gross.  */\n");
-  fprintf (header_file,
-	   "extern ovlddata rs6000_instance_info[RS6000_INST_MAX];\n");
+	   "extern GTY(()) ovlddata rs6000_instance_info[RS6000_INST_MAX];\n");
   fprintf (header_file, "extern ovldrecord rs6000_overload_info[];\n\n");
 
   fprintf (header_file, "extern void rs6000_init_generated_builtins ();\n\n");
@@ -2383,33 +2370,6 @@ write_decls (void)
   fprintf (header_file,
 	   "extern tree rs6000_builtin_decl (unsigned, "
 	   "bool ATTRIBUTE_UNUSED);\n\n");
-  fprintf (header_file,
-	   "extern void gt_ggc_mx (bifdata *bd);\n");
-  fprintf (header_file,
-	   "extern void gt_pch_nx (bifdata *bd);\n");
-  fprintf (header_file,
-	   "extern void gt_pch_nx (bifdata *bd, gt_pointer_operator op, "
-	   "void *cookie);\n");
-  fprintf (header_file,
-	   "extern void gt_ggc_mx (ovlddata *od);\n");
-  fprintf (header_file,
-	   "extern void gt_pch_nx (ovlddata *od);\n");
-  fprintf (header_file,
-	   "extern void gt_pch_nx (ovlddata *od, gt_pointer_operator op, "
-	   "void *cookie);\n");
-}
-
-/* Callback functions used for generating trees for function types.  */
-void
-write_extern_fntype (char *str)
-{
-  fprintf (header_file, "extern GTY(()) tree %s;\n", str);
-}
-
-void
-write_fntype (char *str)
-{
-  fprintf (init_file, "tree %s;\n", str);
 }
 
 /* Comparator for bsearch on the type map.  */
@@ -2452,12 +2412,17 @@ write_fntype_init (char *str)
   /* Avoid side effects of strtok on the original string by using a copy.  */
   char *buf = strdup (str);
 
-  if (tf_found)
-    fprintf (init_file, "  if (float128_type_node)\n  ");
-  else if (dfp_found)
-    fprintf (init_file, "  if (dfloat64_type_node)\n  ");
+  if (tf_found || dfp_found)
+    fprintf (init_file, "  tree %s = NULL_TREE;\n", buf);
+  else
+    fprintf (init_file, "  tree ");
 
-  fprintf (init_file, "  %s\n    = build_function_type_list (", buf);
+  if (tf_found)
+    fprintf (init_file, "  if (float128_type_node)\n    ");
+  else if (dfp_found)
+    fprintf (init_file, "  if (dfloat64_type_node)\n    ");
+
+  fprintf (init_file, "%s\n    = build_function_type_list (", buf);
   tok = strtok (buf, "_");
   write_type_node (tok, tf_found || dfp_found);
   tok = strtok (0, "_");
@@ -2491,8 +2456,6 @@ write_header_file (void)
 
   write_decls ();
 
-  /* Write function type list declarators to the header file.  */
-  rbt_inorder_callback (&fntype_rbt, fntype_rbt.rbt_root, write_extern_fntype);
   fprintf (header_file, "\n");
   fprintf (header_file, "\n#endif\n");
 
@@ -2846,9 +2809,6 @@ write_init_file (void)
   write_bif_static_init ();
   write_ovld_static_init ();
 
-  rbt_inorder_callback (&fntype_rbt, fntype_rbt.rbt_root, write_fntype);
-  fprintf (init_file, "\n");
-
   fprintf (init_file, "void\n");
   fprintf (init_file, "rs6000_init_generated_builtins ()\n");
   fprintf (init_file, "{\n");
@@ -2867,33 +2827,6 @@ write_init_file (void)
   write_init_ovld_table ();
 
   fprintf (init_file, "}\n\n");
-
-  fprintf (init_file,
-	   "void gt_ggc_mx (bifdata *bd)\n");
-  fprintf (init_file,
-	   "{\n  gt_ggc_mx (bd->fntype);\n}\n\n");
-  fprintf (init_file,
-	   "void gt_pch_nx (bifdata *bd)\n");
-  fprintf (init_file,
-	   "{\n  gt_pch_nx (bd->fntype);\n}\n\n");
-  fprintf (init_file,
-	   "void gt_pch_nx (bifdata *bd, gt_pointer_operator op, "
-	   "void *cookie)\n");
-  fprintf (init_file,
-	   "{\n  op(&(bd->fntype), NULL, cookie);\n}\n\n");
-  fprintf (init_file,
-	   "void gt_ggc_mx (ovlddata *od)\n");
-  fprintf (init_file,
-	   "{\n  gt_ggc_mx (od->fntype);\n}\n\n");
-  fprintf (init_file,
-	   "void gt_pch_nx (ovlddata *od)\n");
-  fprintf (init_file,
-	   "{\n  gt_pch_nx (od->fntype);\n}\n\n");
-  fprintf (init_file,
-	   "void gt_pch_nx (ovlddata *od, gt_pointer_operator op, "
-	   "void *cookie)\n");
-  fprintf (init_file,
-	   "{\n  op(&(od->fntype), NULL, cookie);\n}\n");
 
   return 1;
 }

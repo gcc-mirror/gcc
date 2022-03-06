@@ -12,7 +12,7 @@ static int __attribute__((noinline))
 bar (int i, int k)
 {
   asm ("" : "+r" (i));
-  use (i);		/* { dg-final { gdb-test . "k" "3" { xfail *-*-* } } } */
+  use (i);		/* { dg-final { gdb-test . "k" "3" { xfail { ! { aarch64*-*-* && { any-opts "-O0" "-O1" "-Og" } } } } } } */
   return 6;
 }
 

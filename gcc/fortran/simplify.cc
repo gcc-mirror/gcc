@@ -2572,6 +2572,9 @@ gfc_simplify_eoshift (gfc_expr *array, gfc_expr *shift, gfc_expr *boundary,
   if (arraysize == 0)
     goto final;
 
+  if (array->shape == NULL)
+    goto final;
+
   arrayvec = XCNEWVEC (gfc_expr *, arraysize);
   array_ctor = gfc_constructor_first (array->value.constructor);
   for (i = 0; i < arraysize; i++)

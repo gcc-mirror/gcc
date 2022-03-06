@@ -1,10 +1,4 @@
 // PERMUTE_ARGS:
-/*
-TEST_OUTPUT:
----
-runnable/newdel.d(46): Deprecation: The `delete` keyword has been deprecated.  Use `object.destroy()` (and `core.memory.GC.free()` if applicable) instead.
----
-*/
 
 import core.stdc.stdio;
 import core.stdc.stdlib;
@@ -43,7 +37,7 @@ void test1()
     assert(f.d == 56);
     assert(Foo.flags == 0);
 
-    delete f;
+    destroy(f);
     assert(Foo.flags == 1);
 }
 

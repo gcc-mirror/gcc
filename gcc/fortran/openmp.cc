@@ -531,14 +531,6 @@ gfc_match_omp_detach (gfc_expr **expr)
   if (gfc_match_variable (expr, 0) != MATCH_YES)
     goto syntax_error;
 
-  if ((*expr)->ts.type != BT_INTEGER || (*expr)->ts.kind != gfc_c_intptr_kind)
-    {
-      gfc_error ("%qs at %L should be of type "
-		 "integer(kind=omp_event_handle_kind)",
-		 (*expr)->symtree->n.sym->name, &(*expr)->where);
-      return MATCH_ERROR;
-    }
-
   if (gfc_match_char (')') != MATCH_YES)
     goto syntax_error;
 
@@ -926,7 +918,7 @@ enum omp_mask1
   OMP_MASK1_LAST
 };
 
-/* OpenACC 2.0+ specific clauses. */
+/* More OpenMP clauses and OpenACC 2.0+ specific clauses. */
 enum omp_mask2
 {
   OMP_CLAUSE_ASYNC,
@@ -955,6 +947,7 @@ enum omp_mask2
   OMP_CLAUSE_FINALIZE,
   OMP_CLAUSE_ATTACH,
   OMP_CLAUSE_NOHOST,
+  OMP_CLAUSE_HAS_DEVICE_ADDR,  /* OpenMP 5.1  */
   /* This must come last.  */
   OMP_MASK2_LAST
 };
@@ -2151,6 +2144,11 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 	    }
 	  break;
 	case 'h':
+	  if ((mask & OMP_CLAUSE_HAS_DEVICE_ADDR)
+	      && gfc_match_omp_variable_list
+		   ("has_device_addr (", &c->lists[OMP_LIST_HAS_DEVICE_ADDR],
+		    false, NULL, NULL, true) == MATCH_YES)
+	    continue;
 	  if ((mask & OMP_CLAUSE_HINT)
 	      && (m = gfc_match_dupl_check (!c->hint, "hint", true, &c->hint))
 		 != MATCH_NO)
@@ -2923,8 +2921,8 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 	    continue;
 	  if ((mask & OMP_CLAUSE_USE_DEVICE_ADDR)
 	      && gfc_match_omp_variable_list
-		   ("use_device_addr (",
-		    &c->lists[OMP_LIST_USE_DEVICE_ADDR], false) == MATCH_YES)
+		   ("use_device_addr (", &c->lists[OMP_LIST_USE_DEVICE_ADDR],
+		    false, NULL, NULL, true) == MATCH_YES)
 	    continue;
 	  break;
 	case 'v':
@@ -3651,7 +3649,8 @@ cleanup:
    | OMP_CLAUSE_DEPEND | OMP_CLAUSE_NOWAIT | OMP_CLAUSE_PRIVATE		\
    | OMP_CLAUSE_FIRSTPRIVATE | OMP_CLAUSE_DEFAULTMAP			\
    | OMP_CLAUSE_IS_DEVICE_PTR | OMP_CLAUSE_IN_REDUCTION			\
-   | OMP_CLAUSE_THREAD_LIMIT | OMP_CLAUSE_ALLOCATE)
+   | OMP_CLAUSE_THREAD_LIMIT | OMP_CLAUSE_ALLOCATE			\
+   | OMP_CLAUSE_HAS_DEVICE_ADDR)
 #define OMP_TARGET_DATA_CLAUSES \
   (omp_mask (OMP_CLAUSE_DEVICE) | OMP_CLAUSE_MAP | OMP_CLAUSE_IF	\
    | OMP_CLAUSE_USE_DEVICE_PTR | OMP_CLAUSE_USE_DEVICE_ADDR)
@@ -6283,7 +6282,7 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 	"IN_REDUCTION", "TASK_REDUCTION",
 	"DEVICE_RESIDENT", "LINK", "USE_DEVICE",
 	"CACHE", "IS_DEVICE_PTR", "USE_DEVICE_PTR", "USE_DEVICE_ADDR",
-	"NONTEMPORAL", "ALLOCATE" };
+	"NONTEMPORAL", "ALLOCATE", "HAS_DEVICE_ADDR" };
   STATIC_ASSERT (ARRAY_SIZE (clause_names) == OMP_LIST_NUM);
 
   if (omp_clauses == NULL)
@@ -7132,6 +7131,7 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 			     n->sym->name, name, &n->where);
 	      }
 	    break;
+	  case OMP_LIST_HAS_DEVICE_ADDR:
 	  case OMP_LIST_USE_DEVICE_PTR:
 	  case OMP_LIST_USE_DEVICE_ADDR:
 	    /* FIXME: Handle OMP_LIST_USE_DEVICE_PTR.  */
@@ -7573,9 +7573,29 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 	gfc_error ("%s must contain at least one MAP clause at %L",
 		   p, &code->loc);
     }
-  if (!openacc && omp_clauses->mergeable && omp_clauses->detach)
-    gfc_error ("%<DETACH%> clause at %L must not be used together with "
-	       "%<MERGEABLE%> clause", &omp_clauses->detach->where);
+
+  if (!openacc && omp_clauses->detach)
+    {
+      if (!gfc_resolve_expr (omp_clauses->detach)
+	  || omp_clauses->detach->ts.type != BT_INTEGER
+	  || omp_clauses->detach->ts.kind != gfc_c_intptr_kind
+	  || omp_clauses->detach->rank != 0)
+	gfc_error ("%qs at %L should be a scalar of type "
+		   "integer(kind=omp_event_handle_kind)",
+		   omp_clauses->detach->symtree->n.sym->name,
+		   &omp_clauses->detach->where);
+      else if (omp_clauses->detach->symtree->n.sym->attr.dimension > 0)
+	gfc_error ("The event handle at %L must not be an array element",
+		   &omp_clauses->detach->where);
+      else if (omp_clauses->detach->symtree->n.sym->ts.type == BT_DERIVED
+	       || omp_clauses->detach->symtree->n.sym->ts.type == BT_CLASS)
+	gfc_error ("The event handle at %L must not be part of "
+		   "a derived type or class", &omp_clauses->detach->where);
+
+      if (omp_clauses->mergeable)
+	gfc_error ("%<DETACH%> clause at %L must not be used together with "
+		   "%<MERGEABLE%> clause", &omp_clauses->detach->where);
+    }
 }
 
 
@@ -7660,9 +7680,16 @@ static bool
 is_scalar_intrinsic_expr (gfc_expr *expr, bool must_be_var, bool conv_ok)
 {
   if (must_be_var
-      && (expr->expr_type != EXPR_VARIABLE || !expr->symtree)
-      && (!conv_ok || !is_conversion (expr, true, true)))
-    return false;
+      && (expr->expr_type != EXPR_VARIABLE || !expr->symtree))
+    {
+      if (!conv_ok)
+	return false;
+      gfc_expr *conv = is_conversion (expr, true, true);
+      if (!conv)
+	return false;
+      if (conv->expr_type != EXPR_VARIABLE || !conv->symtree)
+	return false;
+    }
   return (expr->rank == 0
 	  && !gfc_is_coindexed (expr)
 	  && (expr->ts.type == BT_INTEGER
@@ -7680,7 +7707,7 @@ resolve_omp_atomic (gfc_code *code)
   gfc_omp_atomic_op aop
     = (gfc_omp_atomic_op) (atomic_code->ext.omp_clauses->atomic_op
 			   & GFC_OMP_ATOMIC_MASK);
-  gfc_code *stmt = NULL, *capture_stmt = NULL;
+  gfc_code *stmt = NULL, *capture_stmt = NULL, *tailing_stmt = NULL;
   gfc_expr *comp_cond = NULL;
   locus *loc = NULL;
 
@@ -7705,6 +7732,7 @@ resolve_omp_atomic (gfc_code *code)
       if (next->op == EXEC_IF
 	  && next->block
 	  && next->block->op == EXEC_IF
+	  && next->block->next
 	  && next->block->next->op == EXEC_ASSIGN)
 	{
 	  comp_cond = next->block->expr1;
@@ -7757,6 +7785,7 @@ resolve_omp_atomic (gfc_code *code)
       if (code->op == EXEC_IF
 	  && code->block
 	  && code->block->op == EXEC_IF
+	  && code->block->next
 	  && code->block->next->op == EXEC_ASSIGN)
 	{
 	  comp_cond = code->block->expr1;
@@ -7816,7 +7845,8 @@ resolve_omp_atomic (gfc_code *code)
 	  stmt = code;
 	  capture_stmt = code->next;
 	}
-      gcc_assert (!code->next->next);
+      /* Shall be NULL but can happen for invalid code. */
+      tailing_stmt = code->next->next;
     }
   else
     {
@@ -7824,7 +7854,8 @@ resolve_omp_atomic (gfc_code *code)
       stmt = code;
       if (!atomic_code->ext.omp_clauses->compare && stmt->op != EXEC_ASSIGN)
 	goto unexpected;
-      gcc_assert (!code->next);
+      /* Shall be NULL but can happen for invalid code. */
+      tailing_stmt = code->next;
     }
 
   if (comp_cond)
@@ -7876,6 +7907,9 @@ resolve_omp_atomic (gfc_code *code)
 		 &stmt->expr1->where);
       return;
     }
+
+  /* Should be diagnosed above already. */
+  gcc_assert (tailing_stmt == NULL);
 
   var = stmt->expr1->symtree->n.sym;
   stmt_expr2 = is_conversion (stmt->expr2, true, true);

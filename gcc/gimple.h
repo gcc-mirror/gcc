@@ -2939,6 +2939,15 @@ gimple_clobber_p (const gimple *s)
          && TREE_CLOBBER_P (gimple_assign_rhs1 (s));
 }
 
+/* Return true if S is a clobber statement.  */
+
+static inline bool
+gimple_clobber_p (const gimple *s, enum clobber_kind kind)
+{
+  return gimple_clobber_p (s)
+	 && CLOBBER_KIND (gimple_assign_rhs1 (s)) == kind;
+}
+
 /* Return true if GS is a GIMPLE_CALL.  */
 
 static inline bool

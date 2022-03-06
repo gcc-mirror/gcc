@@ -82,18 +82,17 @@ struct OutBuffer
     /**
     Frees resources associated.
     */
-    extern (C++) void dtor() nothrow @trusted
+    extern (C++) void dtor() pure nothrow @trusted
     {
         if (fileMapping)
         {
             if (fileMapping.active)
                 fileMapping.close();
-            fileMapping = null;
         }
         else
         {
             debug (stomp) memset(data.ptr, 0xFF, data.length);
-            free(data.ptr);
+            pureFree(data.ptr);
         }
     }
 
@@ -102,17 +101,7 @@ struct OutBuffer
     */
     extern (C++) ~this() pure nothrow @trusted
     {
-        if (fileMapping)
-        {
-            if (fileMapping.active)
-                fileMapping.close();
-            fileMapping = null;
-        }
-        else
-        {
-            debug (stomp) memset(data.ptr, 0xFF, data.length);
-            pureFree(data.ptr);
-        }
+        dtor();
     }
 
     /// For porting with ease from dmd.backend.outbuf.Outbuffer
@@ -150,17 +139,10 @@ struct OutBuffer
     */
     extern (C++) void destroy() pure nothrow @trusted
     {
-        if (fileMapping && fileMapping.active)
-        {
-            fileMapping.close();
-            data = null;
-            offset = 0;
-        }
-        else
-        {
-            debug (stomp) memset(data.ptr, 0xFF, data.length);
-            pureFree(extractData());
-        }
+        dtor();
+        fileMapping = null;
+        data = null;
+        offset = 0;
     }
 
     /**

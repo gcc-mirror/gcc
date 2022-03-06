@@ -426,7 +426,8 @@ maybe_mode_change (machine_mode orig_mode, machine_mode copy_mode,
 
   if (orig_mode == new_mode)
     return gen_raw_REG (new_mode, regno);
-  else if (mode_change_ok (orig_mode, new_mode, regno))
+  else if (mode_change_ok (orig_mode, new_mode, regno)
+	   && mode_change_ok (copy_mode, new_mode, copy_regno))
     {
       int copy_nregs = hard_regno_nregs (copy_regno, copy_mode);
       int use_nregs = hard_regno_nregs (copy_regno, new_mode);
@@ -891,6 +892,7 @@ copyprop_hardreg_forward_1 (basic_block bb, struct value_data *vd)
       if (set && REG_P (SET_SRC (set)))
 	{
 	  rtx src = SET_SRC (set);
+	  rtx dest = SET_DEST (set);
 	  unsigned int regno = REGNO (src);
 	  machine_mode mode = GET_MODE (src);
 	  unsigned int i;
@@ -914,7 +916,7 @@ copyprop_hardreg_forward_1 (basic_block bb, struct value_data *vd)
 
 	  /* If the destination is also a register, try to find a source
 	     register in the same class.  */
-	  if (REG_P (SET_DEST (set)))
+	  if (REG_P (dest))
 	    {
 	      new_rtx = find_oldest_value_reg (REGNO_REG_CLASS (regno),
 					       src, vd);
@@ -942,6 +944,20 @@ copyprop_hardreg_forward_1 (basic_block bb, struct value_data *vd)
 				       mode, i, regno);
 	      if (new_rtx != NULL_RTX)
 		{
+		  /* Don't propagate for a more expensive reg-reg move.  */
+		  if (REG_P (dest))
+		    {
+		      enum reg_class from = REGNO_REG_CLASS (regno);
+		      enum reg_class to = REGNO_REG_CLASS (REGNO (dest));
+		      enum reg_class new_from = REGNO_REG_CLASS (i);
+		      unsigned int original_cost
+			= targetm.register_move_cost (mode, from, to);
+		      unsigned int after_cost
+			= targetm.register_move_cost (mode, new_from, to);
+		      if (after_cost > original_cost)
+			continue;
+		    }
+
 		  if (validate_change (insn, &SET_SRC (set), new_rtx, 0))
 		    {
 		      ORIGINAL_REGNO (new_rtx) = ORIGINAL_REGNO (src);

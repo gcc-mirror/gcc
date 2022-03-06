@@ -13554,3 +13554,10 @@ counters are incremented using atomic operations.  Targets not supporting
 type.
 @end deftypefn
 @c hook-end
+
+@deftypevr {Target Hook} bool TARGET_HAVE_SHADOW_CALL_STACK
+@c hook-start:TARGET_HAVE_SHADOW_CALL_STACK
+This value is true if the target platform supports
+@option{-fsanitize=shadow-call-stack}.  The default value is false.
+@end deftypevr
+@c hook-end

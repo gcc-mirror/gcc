@@ -34,8 +34,6 @@ ACLOCAL_AMFLAGS = -I ../.. -I ../../config
 AM_CPPFLAGS = -I $(top_srcdir)/../include -I $(top_srcdir)/../libgcc \
 	-I ../../libgcc -I .. -I $(top_srcdir) -I $(top_srcdir)/../libbacktrace
 
-WARN_FLAGS = -W -Wall -Wwrite-strings -Wmissing-format-attribute \
-	     -Wcast-qual -Werror
 C_WARN_FLAGS = $(WARN_FLAGS) -Wstrict-prototypes -Wmissing-prototypes -Wold-style-definition
 CXX_WARN_FLAGS = $(WARN_FLAGS) -Wno-unused-parameter
 AM_CFLAGS = $(C_WARN_FLAGS)

@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O" } */
+/* { dg-options "" } */
 char n;
 void *i, *j;
 void foo(void) {

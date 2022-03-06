@@ -493,6 +493,9 @@ dump_omp_clause (pretty_printer *pp, tree clause, int spc, dump_flags_t flags)
     case OMP_CLAUSE_USE_DEVICE_ADDR:
       name = "use_device_addr";
       goto print_remap;
+    case OMP_CLAUSE_HAS_DEVICE_ADDR:
+      name = "has_device_addr";
+      goto print_remap;
     case OMP_CLAUSE_IS_DEVICE_PTR:
       name = "is_device_ptr";
       goto print_remap;
@@ -2500,7 +2503,11 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, dump_flags_t flags,
 	  }
 	pp_left_brace (pp);
 	if (TREE_CLOBBER_P (node))
-	  pp_string (pp, "CLOBBER");
+	  {
+	    pp_string (pp, "CLOBBER");
+	    if (CLOBBER_KIND (node) == CLOBBER_EOL)
+	      pp_string (pp, "(eol)");
+	  }
 	else if (TREE_CODE (TREE_TYPE (node)) == RECORD_TYPE
 		 || TREE_CODE (TREE_TYPE (node)) == UNION_TYPE)
 	  is_struct_init = true;

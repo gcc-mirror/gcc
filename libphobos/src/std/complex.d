@@ -1015,6 +1015,14 @@ Complex!T tan(T)(Complex!T z) @safe pure nothrow @nogc
 @safe pure nothrow @nogc unittest
 {
     static import std.math;
+
+    int ceqrel(T)(const Complex!T x, const Complex!T y) @safe pure nothrow @nogc
+    {
+        import std.math.operations : feqrel;
+        const r = feqrel(x.re, y.re);
+        const i = feqrel(x.im, y.im);
+        return r < i ? r : i;
+    }
     assert(ceqrel(tan(complex(1.0, 0.0)), complex(std.math.tan(1.0), 0.0)) >= double.mant_dig - 2);
     assert(ceqrel(tan(complex(0.0, 1.0)), complex(0.0, std.math.tanh(1.0))) >= double.mant_dig - 2);
 }
@@ -1705,14 +1713,11 @@ Complex!T log10(T)(Complex!T x) @safe pure nothrow @nogc
     auto b = log10(complex(0.0, 1.0)) * 2.0;
     auto c = log10(complex(sqrt(2.0) / 2, sqrt(2.0) / 2)) * 4.0;
     assert(isClose(b, c, 0.0, 1e-15));
-
-    assert(ceqrel(log10(complex(-100.0L, 0.0L)), complex(2.0L, PI / LN10)) >= real.mant_dig - 1);
-    assert(ceqrel(log10(complex(-100.0L, -0.0L)), complex(2.0L, -PI / LN10)) >= real.mant_dig - 1);
 }
 
 @safe pure nothrow @nogc unittest
 {
-    import std.math.constants : PI;
+    import std.math.constants : LN10, PI;
     import std.math.operations : isClose;
 
     auto a = log10(fromPolar(1.0, PI / 6.0));
@@ -1732,6 +1737,9 @@ Complex!T log10(T)(Complex!T x) @safe pure nothrow @nogc
 
     auto f = log10(complex(-1.0L, 0.0L));
     assert(isClose(f, complex(0.0L, 1.36437635384184134748L), 0.0, 1e-15));
+
+    assert(ceqrel(log10(complex(-100.0L, 0.0L)), complex(2.0L, PI / LN10)) >= real.mant_dig - 1);
+    assert(ceqrel(log10(complex(-100.0L, -0.0L)), complex(2.0L, -PI / LN10)) >= real.mant_dig - 1);
 }
 
 /**
@@ -1771,9 +1779,6 @@ if (isIntegral!Int)
     assert(pow(a, 3) == a * a * a);
     assert(pow(a, -2) == 1.0 / (a * a));
     assert(isClose(pow(a, -3), 1.0 / (a * a * a)));
-
-    auto b = complex(2.0);
-    assert(ceqrel(pow(b, 3), exp(3 * log(b))) >= double.mant_dig - 1);
 }
 
 /// ditto
@@ -1865,6 +1870,9 @@ Complex!T pow(T)(const T x, Complex!T n) @trusted pure nothrow @nogc
 
     auto d = pow(PI, complex(2.0, -1.0));
     assert(ceqrel(d, complex(4.0790296880118296, -8.9872469554541869)) >= double.mant_dig - 1);
+
+    auto e = complex(2.0);
+    assert(ceqrel(pow(e, 3), exp(3 * log(e))) >= double.mant_dig - 1);
 }
 
 @safe pure nothrow @nogc unittest

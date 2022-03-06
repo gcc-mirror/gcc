@@ -496,6 +496,81 @@ assert(std.datetime.Date(2010, 9, 7) - std.datetime.Date(2010, 10, 3) ==
  +/
 struct Duration
 {
+    /++
+        Converts this `Duration` to a `string`.
+
+        The string is meant to be human readable, not machine parseable (e.g.
+        whether there is an `'s'` on the end of the unit name usually depends on
+        whether it's plural or not, and empty units are not included unless the
+        Duration is `zero`). Any code needing a specific string format should
+        use `total` or `split` to get the units needed to create the desired
+        string format and create the string itself.
+
+        The format returned by toString may or may not change in the future.
+
+        Params:
+          sink = A sink object, expected to be a delegate or aggregate
+                 implementing `opCall` that accepts a `scope const(char)[]`
+                 as argument.
+      +/
+    void toString (SinkT) (scope SinkT sink) const scope
+    {
+        static immutable units = [
+            "weeks", "days", "hours", "minutes", "seconds", "msecs", "usecs"
+        ];
+
+        static void appListSep(SinkT sink, uint pos, bool last)
+        {
+            if (pos == 0)
+                return;
+            if (!last)
+                sink(", ");
+            else
+                sink(pos == 1 ? " and " : ", and ");
+        }
+
+        static void appUnitVal(string units)(SinkT sink, long val)
+        {
+            immutable plural = val != 1;
+            string unit;
+            static if (units == "seconds")
+                unit = plural ? "secs" : "sec";
+            else static if (units == "msecs")
+                unit = "ms";
+            else static if (units == "usecs")
+                unit = "μs";
+            else
+                unit = plural ? units : units[0 .. $-1];
+            sink(signedToTempString(val));
+            sink(" ");
+            sink(unit);
+        }
+
+        if (_hnsecs == 0)
+        {
+            sink("0 hnsecs");
+            return;
+        }
+
+        long hnsecs = _hnsecs;
+        uint pos;
+        static foreach (unit; units)
+        {
+            if (auto val = splitUnitsFromHNSecs!unit(hnsecs))
+            {
+                appListSep(sink, pos++, hnsecs == 0);
+                appUnitVal!unit(sink, val);
+            }
+            if (hnsecs == 0)
+                return;
+        }
+        if (hnsecs != 0)
+        {
+            appListSep(sink, pos++, true);
+            appUnitVal!"hnsecs"(sink, hnsecs);
+        }
+    }
+
 @safe pure:
 
 public:
@@ -1539,71 +1614,12 @@ public:
         }
     }
 
-
-    /++
-        Converts this `Duration` to a `string`.
-
-        The string is meant to be human readable, not machine parseable (e.g.
-        whether there is an `'s'` on the end of the unit name usually depends on
-        whether it's plural or not, and empty units are not included unless the
-        Duration is `zero`). Any code needing a specific string format should
-        use `total` or `split` to get the units needed to create the desired
-        string format and create the string itself.
-
-        The format returned by toString may or may not change in the future.
-      +/
-    string toString() const nothrow pure @safe
+    /// Ditto
+    string toString() const scope nothrow
     {
-        static void appListSep(ref string res, uint pos, bool last)
-        {
-            if (pos == 0)
-                return;
-            if (!last)
-                res ~= ", ";
-            else
-                res ~= pos == 1 ? " and " : ", and ";
-        }
-
-        static void appUnitVal(string units)(ref string res, long val)
-        {
-            immutable plural = val != 1;
-            string unit;
-            static if (units == "seconds")
-                unit = plural ? "secs" : "sec";
-            else static if (units == "msecs")
-                unit = "ms";
-            else static if (units == "usecs")
-                unit = "μs";
-            else
-                unit = plural ? units : units[0 .. $-1];
-            res ~= signedToTempString(val);
-            res ~= " ";
-            res ~= unit;
-        }
-
-        if (_hnsecs == 0)
-            return "0 hnsecs";
-
-        template TT(T...) { alias T TT; }
-        alias units = TT!("weeks", "days", "hours", "minutes", "seconds", "msecs", "usecs");
-
-        long hnsecs = _hnsecs; string res; uint pos;
-        foreach (unit; units)
-        {
-            if (auto val = splitUnitsFromHNSecs!unit(hnsecs))
-            {
-                appListSep(res, pos++, hnsecs == 0);
-                appUnitVal!unit(res, val);
-            }
-            if (hnsecs == 0)
-                break;
-        }
-        if (hnsecs != 0)
-        {
-            appListSep(res, pos++, true);
-            appUnitVal!"hnsecs"(res, hnsecs);
-        }
-        return res;
+        string result;
+        this.toString((in char[] data) { result ~= data; });
+        return result;
     }
 
     ///
@@ -1729,6 +1745,20 @@ unittest
 
     auto myTime = 100.msecs + 20_000.usecs + 30_000.hnsecs;
     assert(myTime == 123.msecs);
+}
+
+// Ensure `toString` doesn't allocate if the sink doesn't
+version (CoreUnittest) @safe pure nothrow @nogc unittest
+{
+    char[256] buffer; size_t len;
+    scope sink = (in char[] data) {
+        assert(data.length + len <= buffer.length);
+        buffer[len .. len + data.length] = data[];
+        len += data.length;
+    };
+    auto dur = Duration(-12_096_020_900_003);
+    dur.toString(sink);
+    assert(buffer[0 .. len] == "-2 weeks, -2 secs, -90 ms, and -3 hnsecs");
 }
 
 /++

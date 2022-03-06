@@ -98,7 +98,7 @@ get_nowarn_spec (const_tree expr)
   return nowarn_map ? nowarn_map->get (loc) : NULL;
 }
 
-/* Return the no-warning bitmap for stateemt STMT.  */
+/* Return the no-warning bitmap for statement STMT.  */
 
 static nowarn_spec_t *
 get_nowarn_spec (const gimple *stmt)

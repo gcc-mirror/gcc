@@ -4186,11 +4186,6 @@ new_addr_loc_descr (rtx addr, enum dtprel_bool dtprel)
 #define DEBUG_LTO_LINE_STR_SECTION  ".gnu.debuglto_.debug_line_str"
 #endif
 
-/* Standard ELF section names for compiled code and data.  */
-#ifndef TEXT_SECTION_NAME
-#define TEXT_SECTION_NAME	".text"
-#endif
-
 /* Section flags for .debug_str section.  */
 #define DEBUG_STR_SECTION_FLAGS                                 \
   (HAVE_GAS_SHF_MERGE && flag_merge_debug_strings               \
@@ -20436,7 +20431,10 @@ rtl_for_decl_init (tree init, tree type)
 	}
     }
   /* Other aggregates, and complex values, could be represented using
-     CONCAT: FIXME!  */
+     CONCAT: FIXME!
+     If this changes, please adjust tree_add_const_value_attribute
+     so that for early_dwarf it will for such initializers mangle referenced
+     decls.  */
   else if (AGGREGATE_TYPE_P (type)
 	   || (TREE_CODE (init) == VIEW_CONVERT_EXPR
 	       && AGGREGATE_TYPE_P (TREE_TYPE (TREE_OPERAND (init, 0))))
@@ -20886,6 +20884,19 @@ add_location_or_const_value_attribute (dw_die_ref die, tree decl, bool cache_p)
   return tree_add_const_value_attribute_for_decl (die, decl);
 }
 
+/* Mangle referenced decls.  */
+static tree
+mangle_referenced_decls (tree *tp, int *walk_subtrees, void *)
+{
+  if (! EXPR_P (*tp) && ! CONSTANT_CLASS_P (*tp))
+    *walk_subtrees = 0;
+
+  if (VAR_OR_FUNCTION_DECL_P (*tp))
+    assign_assembler_name_if_needed (*tp);
+
+  return NULL_TREE;
+}
+
 /* Attach a DW_AT_const_value attribute to DIE. The value of the
    attribute is the const value T.  */
 
@@ -20894,7 +20905,6 @@ tree_add_const_value_attribute (dw_die_ref die, tree t)
 {
   tree init;
   tree type = TREE_TYPE (t);
-  rtx rtl;
 
   if (!t || !TREE_TYPE (t) || TREE_TYPE (t) == error_mark_node)
     return false;
@@ -20915,11 +20925,26 @@ tree_add_const_value_attribute (dw_die_ref die, tree t)
 	  return true;
 	}
     }
-  /* Generate the RTL even if early_dwarf to force mangling of all refered to
-     symbols.  */
-  rtl = rtl_for_decl_init (init, type);
-  if (rtl && !early_dwarf)
-    return add_const_value_attribute (die, TYPE_MODE (type), rtl);
+  if (!early_dwarf)
+    {
+      rtx rtl = rtl_for_decl_init (init, type);
+      if (rtl)
+	return add_const_value_attribute (die, TYPE_MODE (type), rtl);
+    }
+  else
+    {
+      /* For early_dwarf force mangling of all referenced symbols.  */
+      tree initializer = init;
+      STRIP_NOPS (initializer);
+      /* rtl_for_decl_init punts on other aggregates, and complex values.  */
+      if (AGGREGATE_TYPE_P (type)
+	  || (TREE_CODE (initializer) == VIEW_CONVERT_EXPR
+	      && AGGREGATE_TYPE_P (TREE_TYPE (TREE_OPERAND (initializer, 0))))
+	  || TREE_CODE (type) == COMPLEX_TYPE)
+	;
+      else if (initializer_constant_valid_p (initializer, type))
+	walk_tree (&initializer, mangle_referenced_decls, NULL, NULL);
+    }
   /* If the host and target are sane, try harder.  */
   if (CHAR_BIT == 8 && BITS_PER_UNIT == 8
       && initializer_constant_valid_p (init, type))
@@ -32160,6 +32185,7 @@ dwarf2out_finish (const char *filename)
     FOR_EACH_CHILD (die, c, gcc_assert (! c->die_mark));
   }
 #endif
+  base_types.truncate (0);
   for (ctnode = comdat_type_list; ctnode != NULL; ctnode = ctnode->next)
     resolve_addr (ctnode->root_die);
   resolve_addr (comp_unit_die ());
@@ -33004,6 +33030,7 @@ dwarf2out_early_finish (const char *filename)
      location related output removed and some LTO specific changes.
      Some refactoring might make both smaller and easier to match up.  */
 
+  base_types.truncate (0);
   for (ctnode = comdat_type_list; ctnode != NULL; ctnode = ctnode->next)
     mark_base_types (ctnode->root_die);
   mark_base_types (comp_unit_die ());

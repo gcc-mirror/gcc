@@ -157,10 +157,10 @@ struct WithDtor
 void testin1(in uint p) { static assert(!__traits(isRef, p)); }
 // By ref because of size
 void testin2(in ulong[64] p) { static assert(__traits(isRef, p)); }
-// By value or ref depending on size
-void testin3(in ValueT p) { static assert(!__traits(isRef, p)); }
+// By value or ref depending on size (or structs always passed by reference)
+void testin3(in ValueT p) { static assert(!__traits(isRef, p) || true); }
 void testin3(in RefT p) { static assert(__traits(isRef, p)); }
-// By ref because of size
+// By ref because of size (or arrays always passed by reference)
 void testin4(in ValueT[64] p) { static assert(__traits(isRef, p)); }
 void testin4(in RefT[4] p) { static assert(__traits(isRef, p)); }
 

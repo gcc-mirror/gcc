@@ -361,9 +361,9 @@ make_pass_harden_conditional_branches (gcc::context *ctxt)
 }
 
 /* Return the fallthru edge of a block whose other edge is an EH
-   edge.  */
+   edge.  If EHP is not NULL, store the EH edge in it.  */
 static inline edge
-non_eh_succ_edge (basic_block bb)
+non_eh_succ_edge (basic_block bb, edge *ehp = NULL)
 {
   gcc_checking_assert (EDGE_COUNT (bb->succs) == 2);
 
@@ -374,6 +374,9 @@ non_eh_succ_edge (basic_block bb)
 
   gcc_checking_assert (!(ret->flags & EDGE_EH)
 		       && (eh->flags & EDGE_EH));
+
+  if (ehp)
+    *ehp = eh;
 
   return ret;
 }
@@ -538,8 +541,9 @@ pass_harden_compares::execute (function *fun)
 	    add_stmt_to_eh_lp (asgnck, lookup_stmt_eh_lp (asgn));
 	    make_eh_edges (asgnck);
 
+	    edge ckeh;
 	    basic_block nbb = split_edge (non_eh_succ_edge
-					  (gimple_bb (asgnck)));
+					  (gimple_bb (asgnck), &ckeh));
 	    gsi_split = gsi_start_bb (nbb);
 
 	    if (dump_file)
@@ -547,6 +551,27 @@ pass_harden_compares::execute (function *fun)
 		       "Splitting non-EH edge from block %i into %i after"
 		       " the newly-inserted reversed throwing compare\n",
 		       gimple_bb (asgnck)->index, nbb->index);
+
+	    if (!gimple_seq_empty_p (phi_nodes (ckeh->dest)))
+	      {
+		edge aseh;
+		non_eh_succ_edge (gimple_bb (asgn), &aseh);
+
+		gcc_checking_assert (aseh->dest == ckeh->dest);
+
+		for (gphi_iterator psi = gsi_start_phis (ckeh->dest);
+		     !gsi_end_p (psi); gsi_next (&psi))
+		  {
+		    gphi *phi = psi.phi ();
+		    add_phi_arg (phi, PHI_ARG_DEF_FROM_EDGE (phi, aseh), ckeh,
+				 gimple_phi_arg_location_from_edge (phi, aseh));
+		  }
+
+		if (dump_file)
+		  fprintf (dump_file,
+			   "Copying PHI args in EH block %i from %i to %i\n",
+			   aseh->dest->index, aseh->src->index, ckeh->src->index);
+	      }
 	  }
 
 	gcc_checking_assert (single_succ_p (gsi_bb (gsi_split)));

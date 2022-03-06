@@ -89,11 +89,12 @@ PHOBOS_DSOURCES = etc/c/curl.d etc/c/zlib.d std/algorithm/comparison.d \
 	std/algorithm/mutation.d std/algorithm/package.d \
 	std/algorithm/searching.d std/algorithm/setops.d \
 	std/algorithm/sorting.d std/array.d std/ascii.d std/base64.d \
-	std/bigint.d std/bitmanip.d std/compiler.d std/complex.d \
-	std/concurrency.d std/container/array.d std/container/binaryheap.d \
-	std/container/dlist.d std/container/package.d std/container/rbtree.d \
-	std/container/slist.d std/container/util.d std/conv.d std/csv.d \
-	std/datetime/date.d std/datetime/interval.d std/datetime/package.d \
+	std/bigint.d std/bitmanip.d std/checkedint.d std/compiler.d \
+	std/complex.d std/concurrency.d std/container/array.d \
+	std/container/binaryheap.d std/container/dlist.d \
+	std/container/package.d std/container/rbtree.d std/container/slist.d \
+	std/container/util.d std/conv.d std/csv.d std/datetime/date.d \
+	std/datetime/interval.d std/datetime/package.d \
 	std/datetime/stopwatch.d std/datetime/systime.d \
 	std/datetime/timezone.d std/demangle.d std/digest/crc.d \
 	std/digest/digest.d std/digest/hmac.d std/digest/md.d \

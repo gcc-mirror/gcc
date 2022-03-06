@@ -2498,9 +2498,15 @@ process_alt_operands (int only_alternative)
 		  if (mode == BLKmode)
 		    break;
 		  this_alternative = reg_class_subunion[this_alternative][cl];
+		  if (hard_reg_set_subset_p (this_alternative_set,
+					     reg_class_contents[cl]))
+		    this_alternative_exclude_start_hard_regs
+		      = ira_exclude_class_mode_regs[cl][mode];
+		  else if (!hard_reg_set_subset_p (reg_class_contents[cl],
+						   this_alternative_set))
+		    this_alternative_exclude_start_hard_regs
+		      |= ira_exclude_class_mode_regs[cl][mode];
 		  this_alternative_set |= reg_class_contents[cl];
-		  this_alternative_exclude_start_hard_regs
-		    |= ira_exclude_class_mode_regs[cl][mode];
 		  if (costly_p)
 		    {
 		      this_costly_alternative
@@ -6015,7 +6021,7 @@ spill_hard_reg_in_range (int regno, enum reg_class rclass, rtx_insn *from, rtx_i
   HARD_REG_SET ignore;
   
   lra_assert (from != NULL && to != NULL);
-  CLEAR_HARD_REG_SET (ignore);
+  ignore = lra_no_alloc_regs;
   EXECUTE_IF_SET_IN_BITMAP (&lra_reg_info[regno].insn_bitmap, 0, uid, bi)
     {
       lra_insn_recog_data_t id = lra_insn_recog_data[uid];
@@ -7268,15 +7274,17 @@ undo_optional_reloads (void)
 	      continue;
 	    src = SET_SRC (set);
 	    dest = SET_DEST (set);
-	    if (! REG_P (src) || ! REG_P (dest))
+	    if ((! REG_P (src) && ! SUBREG_P (src))
+		|| (! REG_P (dest) && ! SUBREG_P (dest)))
 	      continue;
-	    if (REGNO (dest) == regno
+	    if (get_regno (dest) == (int) regno
 		/* Ignore insn for optional reloads itself.  */
-		&& REGNO (lra_reg_info[regno].restore_rtx) != REGNO (src)
+		&& (get_regno (lra_reg_info[regno].restore_rtx)
+		    != get_regno (src))
 		/* Check only inheritance on last inheritance pass.  */
-		&& (int) REGNO (src) >= new_regno_start
+		&& get_regno (src) >= new_regno_start
 		/* Check that the optional reload was inherited.  */
-		&& bitmap_bit_p (&lra_inheritance_pseudos, REGNO (src)))
+		&& bitmap_bit_p (&lra_inheritance_pseudos, get_regno (src)))
 	      {
 		keep_p = true;
 		break;
@@ -7298,18 +7306,22 @@ undo_optional_reloads (void)
       bitmap_copy (insn_bitmap, &lra_reg_info[regno].insn_bitmap);
       EXECUTE_IF_SET_IN_BITMAP (insn_bitmap, 0, uid, bi2)
 	{
+	  /* We may have already removed a clobber.  */
+	  if (!lra_insn_recog_data[uid])
+	    continue;
 	  insn = lra_insn_recog_data[uid]->insn;
 	  if ((set = single_set (insn)) != NULL_RTX)
 	    {
 	      src = SET_SRC (set);
 	      dest = SET_DEST (set);
-	      if (REG_P (src) && REG_P (dest)
-		  && ((REGNO (src) == regno
-		       && (REGNO (lra_reg_info[regno].restore_rtx)
-			   == REGNO (dest)))
-		      || (REGNO (dest) == regno
-			  && (REGNO (lra_reg_info[regno].restore_rtx)
-			      == REGNO (src)))))
+	      if ((REG_P (src) || SUBREG_P (src))
+		  && (REG_P (dest) || SUBREG_P (dest))
+		  && ((get_regno (src) == (int) regno
+		       && (get_regno (lra_reg_info[regno].restore_rtx)
+			   == get_regno (dest)))
+		      || (get_regno (dest) == (int) regno
+			  && (get_regno (lra_reg_info[regno].restore_rtx)
+			      == get_regno (src)))))
 		{
 		  if (lra_dump_file != NULL)
 		    {
@@ -7317,7 +7329,7 @@ undo_optional_reloads (void)
 			       INSN_UID (insn));
 		      dump_insn_slim (lra_dump_file, insn);
 		    }
-		  delete_move_and_clobber (insn, REGNO (dest));
+		  delete_move_and_clobber (insn, get_regno (dest));
 		  continue;
 		}
 	      /* We should not worry about generation memory-memory
@@ -7326,6 +7338,11 @@ undo_optional_reloads (void)
 		 we remove the inheritance pseudo and the optional
 		 reload.  */
 	    }
+	  if (GET_CODE (PATTERN (insn)) == CLOBBER
+	      && REG_P (SET_DEST (insn))
+	      && get_regno (SET_DEST (insn)) == (int) regno)
+	    /* Refuse to remap clobbers to preexisting pseudos.  */
+	    gcc_unreachable ();
 	  lra_substitute_pseudo_within_insn
 	    (insn, regno, lra_reg_info[regno].restore_rtx, false);
 	  lra_update_insn_regno_info (insn);

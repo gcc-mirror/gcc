@@ -260,3 +260,50 @@ Expression castCallAmbiguity(Expression e, Scope* sc)
     }
 }
 
+/********************************************
+ * Implement the C11 notion of function equivalence,
+ * which allows prototyped functions to match K+R functions,
+ * even though they are different.
+ * Params:
+ *      tf1 = type of first function
+ *      tf2 = type of second function
+ * Returns:
+ *      true if C11 considers them equivalent
+ */
+
+bool cFuncEquivalence(TypeFunction tf1, TypeFunction tf2)
+{
+    if (tf1.equals(tf2))
+        return true;
+
+    if (tf1.linkage != tf2.linkage)
+        return false;
+
+    // Allow func(void) to match func()
+    if (tf1.parameterList.length == 0 && tf2.parameterList.length == 0)
+        return true;
+
+    if (!tf1.parameterList.hasIdentifierList &&
+        !tf2.parameterList.hasIdentifierList)
+        return false;   // both functions are prototyped
+
+    // Otherwise ignore variadicness, as K+R functions are all variadic
+
+    if (!tf1.nextOf().equals(tf2.nextOf()))
+        return false;   // function return types don't match
+
+    if (tf1.parameterList.length != tf2.parameterList.length)
+        return false;
+
+    foreach (i, fparam ; tf1.parameterList)
+    {
+        Type t1 = fparam.type;
+        Type t2 = tf2.parameterList[i].type;
+        if (!t1.equals(t2))
+            return false;
+    }
+
+    //printf("t1: %s\n", tf1.toChars());
+    //printf("t2: %s\n", tf2.toChars());
+    return true;
+}

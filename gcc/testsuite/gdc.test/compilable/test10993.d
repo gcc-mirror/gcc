@@ -19,7 +19,7 @@ auto fun()
 {
 	auto x = foo!()(test!(a=>a)());
 //	pragma(msg, "fun: " ~ typeof(x).mangleof);
-	
+
 	return x;
 }
 

@@ -31,7 +31,7 @@ version (FreeBSD)
     version = DarwinBSDLocale;
 version (NetBSD)
     version = DarwinBSDLocale;
-version (DragonflyBSD)
+version (DragonFlyBSD)
     version = DarwinBSDLocale;
 
 version (CRuntime_Glibc)

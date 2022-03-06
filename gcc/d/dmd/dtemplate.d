@@ -4295,8 +4295,13 @@ MATCH deduceType(RootObject o, Scope* sc, Type tparam, TemplateParameters* param
                 if (ti && ti.toAlias() == t.sym)
                 {
                     auto tx = new TypeInstance(Loc.initial, ti);
-                    result = deduceType(tx, sc, tparam, parameters, dedtypes, wm);
-                    return;
+                    auto m = deduceType(tx, sc, tparam, parameters, dedtypes, wm);
+                    // if we have a no match we still need to check alias this
+                    if (m != MATCH.nomatch)
+                    {
+                        result = m;
+                        return;
+                    }
                 }
 
                 /* Match things like:
@@ -5125,15 +5130,6 @@ private bool reliesOnTemplateParameters(Expression e, TemplateParameter[] tparam
             //printf("NewExp.reliesOnTemplateParameters('%s')\n", e.toChars());
             if (e.thisexp)
                 e.thisexp.accept(this);
-            if (!result && e.newargs)
-            {
-                foreach (ea; *e.newargs)
-                {
-                    ea.accept(this);
-                    if (result)
-                        return;
-                }
-            }
             result = e.newtype.reliesOnTemplateParameters(tparams);
             if (!result && e.arguments)
             {
@@ -6223,114 +6219,62 @@ extern (C++) class TemplateInstance : ScopeDsymbol
      */
     final bool needsCodegen()
     {
-        if (!minst)
+        // minst is finalized after the 1st invocation.
+        // tnext and tinst are only needed for the 1st invocation and
+        // cleared for further invocations.
+        TemplateInstance tnext = this.tnext;
+        TemplateInstance tinst = this.tinst;
+        this.tnext = null;
+        this.tinst = null;
+
+        if (errors || (inst && inst.isDiscardable()))
         {
-            // If this is a speculative instantiation,
-            // 1. do codegen if ancestors really needs codegen.
-            // 2. become non-speculative if siblings are not speculative
-
-            TemplateInstance tnext = this.tnext;
-            TemplateInstance tinst = this.tinst;
-            // At first, disconnect chain first to prevent infinite recursion.
-            this.tnext = null;
-            this.tinst = null;
-
-            // Determine necessity of tinst before tnext.
-            if (tinst && tinst.needsCodegen())
-            {
-                minst = tinst.minst; // cache result
-                if (global.params.allInst && minst)
-                {
-                    return true;
-                }
-                assert(minst);
-                assert(minst.isRoot() || minst.rootImports());
-                return true;
-            }
-            if (tnext && (tnext.needsCodegen() || tnext.minst))
-            {
-                minst = tnext.minst; // cache result
-                if (global.params.allInst && minst)
-                {
-                    return true;
-                }
-                assert(minst);
-                return minst.isRoot() || minst.rootImports();
-            }
-
-            // Elide codegen because this is really speculative.
+            minst = null; // mark as speculative
             return false;
         }
 
         if (global.params.allInst)
         {
-            return true;
-        }
+            // Do codegen if there is an instantiation from a root module, to maximize link-ability.
 
-        if (isDiscardable())
-        {
-            return false;
-        }
-
-        /* Even when this is reached to the codegen pass,
-         * a non-root nested template should not generate code,
-         * due to avoid ODR violation.
-         */
-        if (enclosing && enclosing.inNonRoot())
-        {
-            if (tinst)
-            {
-                auto r = tinst.needsCodegen();
-                minst = tinst.minst; // cache result
-                return r;
-            }
-            if (tnext)
-            {
-                auto r = tnext.needsCodegen();
-                minst = tnext.minst; // cache result
-                return r;
-            }
-            return false;
-        }
-
-        if (global.params.useUnitTests)
-        {
-            // Prefer instantiations from root modules, to maximize link-ability.
-            if (minst.isRoot())
+            // Do codegen if `this` is instantiated from a root module.
+            if (minst && minst.isRoot())
                 return true;
 
-            TemplateInstance tnext = this.tnext;
-            TemplateInstance tinst = this.tinst;
-            this.tnext = null;
-            this.tinst = null;
-
+            // Do codegen if the ancestor needs it.
             if (tinst && tinst.needsCodegen())
             {
                 minst = tinst.minst; // cache result
                 assert(minst);
-                assert(minst.isRoot() || minst.rootImports());
+                assert(minst.isRoot());
                 return true;
             }
-            if (tnext && tnext.needsCodegen())
+
+            // Do codegen if a sibling needs it.
+            if (tnext)
             {
-                minst = tnext.minst; // cache result
-                assert(minst);
-                assert(minst.isRoot() || minst.rootImports());
-                return true;
+                if (tnext.needsCodegen())
+                {
+                    minst = tnext.minst; // cache result
+                    assert(minst);
+                    assert(minst.isRoot());
+                    return true;
+                }
+                else if (!minst && tnext.minst)
+                {
+                    minst = tnext.minst; // cache result from non-speculative sibling
+                    return false;
+                }
             }
 
-            // https://issues.dlang.org/show_bug.cgi?id=2500 case
-            if (minst.rootImports())
-                return true;
-
-            // Elide codegen because this is not included in root instances.
+            // Elide codegen because there's no instantiation from any root modules.
             return false;
         }
         else
         {
-            // Prefer instantiations from non-root module, to minimize object code size.
+            // Prefer instantiations from non-root modules, to minimize object code size.
 
-            /* If a TemplateInstance is ever instantiated by non-root modules,
+            /* If a TemplateInstance is ever instantiated from a non-root module,
              * we do not have to generate code for it,
              * because it will be generated when the non-root module is compiled.
              *
@@ -6341,22 +6285,51 @@ extern (C++) class TemplateInstance : ScopeDsymbol
              * or the compilation of B do the actual instantiation?
              *
              * See https://issues.dlang.org/show_bug.cgi?id=2500.
+             *
+             * => Elide codegen if there is at least one instantiation from a non-root module
+             *    which doesn't import any root modules.
              */
-            if (!minst.isRoot() && !minst.rootImports())
-                return false;
 
-            TemplateInstance tnext = this.tnext;
-            this.tnext = null;
-
-            if (tnext && !tnext.needsCodegen() && tnext.minst)
+            // If the ancestor isn't speculative,
+            // 1. do codegen if the ancestor needs it
+            // 2. elide codegen if the ancestor doesn't need it (non-root instantiation of ancestor incl. subtree)
+            if (tinst)
             {
-                minst = tnext.minst; // cache result
-                assert(!minst.isRoot());
-                return false;
+                const needsCodegen = tinst.needsCodegen(); // sets tinst.minst
+                if (tinst.minst) // not speculative
+                {
+                    minst = tinst.minst; // cache result
+                    return needsCodegen;
+                }
             }
 
-            // Do codegen because this is not included in non-root instances.
-            return true;
+            // Elide codegen if `this` doesn't need it.
+            if (minst && !minst.isRoot() && !minst.rootImports())
+                return false;
+
+            // Elide codegen if a (non-speculative) sibling doesn't need it.
+            if (tnext)
+            {
+                const needsCodegen = tnext.needsCodegen(); // sets tnext.minst
+                if (tnext.minst) // not speculative
+                {
+                    if (!needsCodegen)
+                    {
+                        minst = tnext.minst; // cache result
+                        assert(!minst.isRoot() && !minst.rootImports());
+                        return false;
+                    }
+                    else if (!minst)
+                    {
+                        minst = tnext.minst; // cache result from non-speculative sibling
+                        return true;
+                    }
+                }
+            }
+
+            // Unless `this` is still speculative (=> all further siblings speculative too),
+            // do codegen because we found no guaranteed-codegen'd non-root instantiation.
+            return minst !is null;
         }
     }
 
@@ -7311,7 +7284,7 @@ extern (C++) class TemplateInstance : ScopeDsymbol
                 if ((td && td.literal) || (ti && ti.enclosing) || (d && !d.isDataseg() && !(d.storage_class & STC.manifest) && (!d.isFuncDeclaration() || d.isFuncDeclaration().isNested()) && !isTemplateMixin()))
                 {
                     Dsymbol dparent = sa.toParent2();
-                    if (!dparent)
+                    if (!dparent || dparent.isModule)
                         goto L1;
                     else if (!enclosing)
                         enclosing = dparent;
@@ -7370,23 +7343,16 @@ extern (C++) class TemplateInstance : ScopeDsymbol
     {
         Module mi = minst; // instantiated . inserted module
 
-        if (global.params.useUnitTests)
-        {
-            // Turn all non-root instances to speculative
-            if (mi && !mi.isRoot())
-                mi = null;
-        }
-
         //printf("%s.appendToModuleMember() enclosing = %s mi = %s\n",
         //    toPrettyChars(),
         //    enclosing ? enclosing.toPrettyChars() : null,
         //    mi ? mi.toPrettyChars() : null);
-        if (!mi || mi.isRoot())
+        if (global.params.allInst || !mi || mi.isRoot())
         {
             /* If the instantiated module is speculative or root, insert to the
              * member of a root module. Then:
              *  - semantic3 pass will get called on the instance members.
-             *  - codegen pass will get a selection chance to do/skip it.
+             *  - codegen pass will get a selection chance to do/skip it (needsCodegen()).
              */
             static Dsymbol getStrictEnclosing(TemplateInstance ti)
             {
@@ -7404,8 +7370,18 @@ extern (C++) class TemplateInstance : ScopeDsymbol
             // where tempdecl is declared.
             mi = (enc ? enc : tempdecl).getModule();
             if (!mi.isRoot())
-                mi = mi.importedFrom;
-            assert(mi.isRoot());
+            {
+                if (mi.importedFrom)
+                {
+                    mi = mi.importedFrom;
+                    assert(mi.isRoot());
+                }
+                else
+                {
+                    // This can happen when using the frontend as a library.
+                    // Append it to the non-root module.
+                }
+            }
         }
         else
         {
@@ -7413,24 +7389,12 @@ extern (C++) class TemplateInstance : ScopeDsymbol
              * non-root module. Then:
              *  - semantic3 pass won't be called on the instance.
              *  - codegen pass won't reach to the instance.
+             * Unless it is re-appended to a root module later (with changed minst).
              */
         }
         //printf("\t-. mi = %s\n", mi.toPrettyChars());
 
-        if (memberOf is mi)     // already a member
-        {
-            debug               // make sure it really is a member
-            {
-                auto a = mi.members;
-                for (size_t i = 0; 1; ++i)
-                {
-                    assert(i != a.dim);
-                    if (this == (*a)[i])
-                        break;
-                }
-            }
-            return null;
-        }
+        assert(!memberOf || (!memberOf.isRoot() && mi.isRoot()), "can only re-append from non-root to root module");
 
         Dsymbols* a = mi.members;
         a.push(this);
@@ -7831,15 +7795,22 @@ struct TemplateInstanceBox
     {
         bool res = void;
         if (ti.inst && s.ti.inst)
+        {
             /* This clause is only used when an instance with errors
              * is replaced with a correct instance.
              */
             res = ti is s.ti;
+        }
         else
+        {
             /* Used when a proposed instance is used to see if there's
              * an existing instance.
              */
-            res = (cast()s.ti).equalsx(cast()ti);
+            static if (__VERSION__ >= 2099)
+                res = (cast()ti).equalsx(cast()s.ti);
+            else // https://issues.dlang.org/show_bug.cgi?id=22717
+                res = (cast()s.ti).equalsx(cast()ti);
+        }
 
         debug (FindExistingInstance) ++(res ? nHits : nCollisions);
         return res;

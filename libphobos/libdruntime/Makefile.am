@@ -170,7 +170,7 @@ DRUNTIME_CSOURCES = core/stdc/errno_.c
 DRUNTIME_DSOURCES = core/atomic.d core/attribute.d core/bitop.d \
 	core/builtins.d core/checkedint.d core/cpuid.d core/demangle.d \
 	core/exception.d core/gc/config.d core/gc/gcinterface.d \
-	core/gc/registry.d core/internal/abort.d \
+	core/gc/registry.d core/int128.d core/internal/abort.d \
 	core/internal/array/appending.d core/internal/array/capacity.d \
 	core/internal/array/casting.d core/internal/array/comparison.d \
 	core/internal/array/concatenation.d core/internal/array/construction.d \
@@ -425,4 +425,4 @@ DRUNTIME_DSOURCES_WINDOWS = core/sys/windows/accctrl.d \
 	core/sys/windows/winuser.d core/sys/windows/winver.d \
 	core/sys/windows/wtsapi32.d core/sys/windows/wtypes.d
 
-DRUNTIME_DISOURCES = __main.di
+DRUNTIME_DISOURCES = __builtins.di __main.di

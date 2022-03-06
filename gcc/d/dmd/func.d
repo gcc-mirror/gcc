@@ -549,9 +549,22 @@ extern (C++) class FuncDeclaration : Declaration
             if (thandle.ty == Tstruct)
             {
                 vthis.storage_class |= STC.ref_;
-                // if member function is marked 'inout', then 'this' is 'return ref'
-                if (type.ty == Tfunction && (cast(TypeFunction)type).isInOutQual())
-                    vthis.storage_class |= STC.return_;
+
+                /* if member function is marked 'inout', then 'this' is 'return ref'
+                 * The same thing is done for `ref inout` parameters in TypeFunction's semantic routine.
+                 */
+                if (auto tf = type.isTypeFunction())
+                {
+                    /* This feature was a mistake, but existing code relies on it.
+                     * So only disable it in @safe code and DIP1000 code
+                     */
+                    if (!(global.params.useDIP1000 == FeatureState.enabled &&
+                          tf.trust == TRUST.safe))
+                    {
+                        if (tf.isInOutQual())
+                            vthis.storage_class |= STC.return_;
+                    }
+                }
             }
         }
 
@@ -567,7 +580,8 @@ extern (C++) class FuncDeclaration : Declaration
              * do existing practice. But we should examine how TypeFunction does
              * it, for consistency.
              */
-            if (!tf.isref && isRefReturnScope(vthis.storage_class))
+            if (global.params.useDIP1000 != FeatureState.enabled &&
+                !tf.isref && isRefReturnScope(vthis.storage_class))
             {
                 /* if `ref return scope`, evaluate to `ref` `return scope`
                  */
@@ -3052,7 +3066,7 @@ FuncDeclaration resolveFuncCall(const ref Loc loc, Scope* sc, Dsymbol s,
         // all of overloads are templates
         if (td)
         {
-            .error(loc, "%s `%s.%s` cannot deduce function from argument types `!(%s)%s`",
+            .error(loc, "none of the overloads of %s `%s.%s` are callable using argument types `!(%s)%s`",
                    td.kind(), td.parent.toPrettyChars(), td.ident.toChars(),
                    tiargsBuf.peekChars(), fargsBuf.peekChars());
 

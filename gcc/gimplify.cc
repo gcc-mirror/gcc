@@ -250,6 +250,7 @@ static enum gimplify_status gimplify_compound_expr (tree *, gimple_seq *, bool);
 static hash_map<tree, tree> *oacc_declare_returns;
 static enum gimplify_status gimplify_expr (tree *, gimple_seq *, gimple_seq *,
 					   bool (*) (tree), fallback_t, bool);
+static void prepare_gimple_addressable (tree *, gimple_seq *);
 
 /* Shorter alias name for the above function for use in gimplify.cc
    only.  */
@@ -1475,7 +1476,7 @@ gimplify_bind_expr (tree *expr_p, gimple_seq *pre_p)
 	      && !is_gimple_reg (t)
 	      && flag_stack_reuse != SR_NONE)
 	    {
-	      tree clobber = build_clobber (TREE_TYPE (t));
+	      tree clobber = build_clobber (TREE_TYPE (t), CLOBBER_EOL);
 	      gimple *clobber_stmt;
 	      clobber_stmt = gimple_build_assign (t, clobber);
 	      gimple_set_location (clobber_stmt, end_locus);
@@ -1804,7 +1805,6 @@ gimple_add_padding_init_for_auto_var (tree decl, bool is_vla,
 				      gimple_seq *seq_p)
 {
   tree addr_of_decl = NULL_TREE;
-  bool for_auto_init = true;
   tree fn = builtin_decl_explicit (BUILT_IN_CLEAR_PADDING);
 
   if (is_vla)
@@ -1821,11 +1821,8 @@ gimple_add_padding_init_for_auto_var (tree decl, bool is_vla,
       addr_of_decl = build_fold_addr_expr (decl);
     }
 
-  gimple *call = gimple_build_call (fn,
-				    3, addr_of_decl,
-				    build_zero_cst (TREE_TYPE (addr_of_decl)),
-				    build_int_cst (integer_type_node,
-						   (int) for_auto_init));
+  gimple *call = gimple_build_call (fn, 2, addr_of_decl,
+				    build_one_cst (TREE_TYPE (addr_of_decl)));
   gimplify_seq_add_stmt (seq_p, call);
 }
 
@@ -2032,13 +2029,55 @@ gimplify_statement_list (tree *expr_p, gimple_seq *pre_p)
   return GS_ALL_DONE;
 }
 
+
+/* Emit warning for the unreachable statment STMT if needed.
+   Return the gimple itself when the warning is emitted, otherwise
+   return NULL.  */
+static gimple *
+emit_warn_switch_unreachable (gimple *stmt)
+{
+  if (gimple_code (stmt) == GIMPLE_GOTO
+      && TREE_CODE (gimple_goto_dest (stmt)) == LABEL_DECL
+      && DECL_ARTIFICIAL (gimple_goto_dest (stmt)))
+  /* Don't warn for compiler-generated gotos.  These occur
+     in Duff's devices, for example.  */
+    return NULL;
+  else if ((flag_auto_var_init > AUTO_INIT_UNINITIALIZED)
+	   && ((gimple_call_internal_p (stmt, IFN_DEFERRED_INIT))
+		|| (gimple_call_builtin_p (stmt, BUILT_IN_CLEAR_PADDING)
+		    && (bool) TREE_INT_CST_LOW (gimple_call_arg (stmt, 1)))
+		|| (is_gimple_assign (stmt)
+		    && gimple_assign_single_p (stmt)
+		    && (TREE_CODE (gimple_assign_rhs1 (stmt)) == SSA_NAME)
+		    && gimple_call_internal_p (
+			 SSA_NAME_DEF_STMT (gimple_assign_rhs1 (stmt)),
+			 IFN_DEFERRED_INIT))))
+  /* Don't warn for compiler-generated initializations for
+     -ftrivial-auto-var-init.
+     There are 3 cases:
+	case 1: a call to .DEFERRED_INIT;
+	case 2: a call to __builtin_clear_padding with the 2nd argument is
+		present and non-zero;
+	case 3: a gimple assign store right after the call to .DEFERRED_INIT
+		that has the LHS of .DEFERRED_INIT as the RHS as following:
+		  _1 = .DEFERRED_INIT (4, 2, &"i1"[0]);
+		  i1 = _1.  */
+    return NULL;
+  else
+    warning_at (gimple_location (stmt), OPT_Wswitch_unreachable,
+		"statement will never be executed");
+  return stmt;
+}
+
 /* Callback for walk_gimple_seq.  */
 
 static tree
-warn_switch_unreachable_r (gimple_stmt_iterator *gsi_p, bool *handled_ops_p,
-			   struct walk_stmt_info *wi)
+warn_switch_unreachable_and_auto_init_r (gimple_stmt_iterator *gsi_p,
+					 bool *handled_ops_p,
+					 struct walk_stmt_info *wi)
 {
   gimple *stmt = gsi_stmt (*gsi_p);
+  bool unreachable_issued = wi->info != NULL;
 
   *handled_ops_p = true;
   switch (gimple_code (stmt))
@@ -2049,8 +2088,12 @@ warn_switch_unreachable_r (gimple_stmt_iterator *gsi_p, bool *handled_ops_p,
 	 worse location info.  */
       if (gimple_try_eval (stmt) == NULL)
 	{
-	  wi->info = stmt;
-	  return integer_zero_node;
+	  if (warn_switch_unreachable && !unreachable_issued)
+	    wi->info = emit_warn_switch_unreachable (stmt);
+
+	  /* Stop when auto var init warning is not on.  */
+	  if (!warn_trivial_auto_var_init)
+	    return integer_zero_node;
 	}
       /* Fall through.  */
     case GIMPLE_BIND:
@@ -2067,28 +2110,55 @@ warn_switch_unreachable_r (gimple_stmt_iterator *gsi_p, bool *handled_ops_p,
 	 there will be non-debug stmts too, and we'll catch those.  */
       break;
 
+    case GIMPLE_LABEL:
+      /* Stop till the first Label.  */
+      return integer_zero_node;
     case GIMPLE_CALL:
       if (gimple_call_internal_p (stmt, IFN_ASAN_MARK))
 	{
 	  *handled_ops_p = false;
 	  break;
 	}
+      if (warn_trivial_auto_var_init
+	  && flag_auto_var_init > AUTO_INIT_UNINITIALIZED
+	  && gimple_call_internal_p (stmt, IFN_DEFERRED_INIT))
+	{
+	  /* Get the variable name from the 3rd argument of call.  */
+	  tree var_name = gimple_call_arg (stmt, 2);
+	  var_name = TREE_OPERAND (TREE_OPERAND (var_name, 0), 0);
+	  const char *var_name_str = TREE_STRING_POINTER (var_name);
+
+	  warning_at (gimple_location (stmt), OPT_Wtrivial_auto_var_init,
+		      "%qs cannot be initialized with"
+		      "%<-ftrivial-auto-var_init%>",
+		      var_name_str);
+	  break;
+       }
+
       /* Fall through.  */
     default:
-      /* Save the first "real" statement (not a decl/lexical scope/...).  */
-      wi->info = stmt;
-      return integer_zero_node;
+      /* check the first "real" statement (not a decl/lexical scope/...), issue
+	 warning if needed.  */
+      if (warn_switch_unreachable && !unreachable_issued)
+	wi->info = emit_warn_switch_unreachable (stmt);
+      /* Stop when auto var init warning is not on.  */
+      if (!warn_trivial_auto_var_init)
+	return integer_zero_node;
+      break;
     }
   return NULL_TREE;
 }
 
+
 /* Possibly warn about unreachable statements between switch's controlling
-   expression and the first case.  SEQ is the body of a switch expression.  */
+   expression and the first case.  Also warn about -ftrivial-auto-var-init
+   cannot initialize the auto variable under such situation.
+   SEQ is the body of a switch expression.  */
 
 static void
-maybe_warn_switch_unreachable (gimple_seq seq)
+maybe_warn_switch_unreachable_and_auto_init (gimple_seq seq)
 {
-  if (!warn_switch_unreachable
+  if ((!warn_switch_unreachable && !warn_trivial_auto_var_init)
       /* This warning doesn't play well with Fortran when optimizations
 	 are on.  */
       || lang_GNU_Fortran ()
@@ -2096,21 +2166,9 @@ maybe_warn_switch_unreachable (gimple_seq seq)
     return;
 
   struct walk_stmt_info wi;
-  memset (&wi, 0, sizeof (wi));
-  walk_gimple_seq (seq, warn_switch_unreachable_r, NULL, &wi);
-  gimple *stmt = (gimple *) wi.info;
 
-  if (stmt && gimple_code (stmt) != GIMPLE_LABEL)
-    {
-      if (gimple_code (stmt) == GIMPLE_GOTO
-	  && TREE_CODE (gimple_goto_dest (stmt)) == LABEL_DECL
-	  && DECL_ARTIFICIAL (gimple_goto_dest (stmt)))
-	/* Don't warn for compiler-generated gotos.  These occur
-	   in Duff's devices, for example.  */;
-      else
-	warning_at (gimple_location (stmt), OPT_Wswitch_unreachable,
-		    "statement will never be executed");
-    }
+  memset (&wi, 0, sizeof (wi));
+  walk_gimple_seq (seq, warn_switch_unreachable_and_auto_init_r, NULL, &wi);
 }
 
 
@@ -2643,7 +2701,7 @@ gimplify_switch_expr (tree *expr_p, gimple_seq *pre_p)
       gimplify_stmt (&SWITCH_BODY (switch_expr), &switch_body_seq);
 
       gimplify_ctxp->in_switch_expr = old_in_switch_expr;
-      maybe_warn_switch_unreachable (switch_body_seq);
+      maybe_warn_switch_unreachable_and_auto_init (switch_body_seq);
       maybe_warn_implicit_fallthrough (switch_body_seq);
       /* Only do this for the outermost GIMPLE_SWITCH.  */
       if (!gimplify_ctxp->in_switch_expr)
@@ -3126,10 +3184,12 @@ gimplify_compound_lval (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
      gimplified before gimplifying the size expressions.
 
      So we do this in three steps.  First we deal with variable
-     bounds, sizes, and positions, then we gimplify the base,
-     then we deal with the annotations for any variables in the
-     components and any indices, from left to right.  */
+     bounds, sizes, and positions, then we gimplify the base and
+     ensure it is memory if needed, then we deal with the annotations
+     for any variables in the components and any indices, from left
+     to right.  */
 
+  bool need_non_reg = false;
   for (i = expr_stack.length () - 1; i >= 0; i--)
     {
       tree t = expr_stack[i];
@@ -3165,6 +3225,7 @@ gimplify_compound_lval (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 		  TREE_OPERAND (t, 3) = elmt_size;
 		}
 	    }
+	  need_non_reg = true;
 	}
       else if (TREE_CODE (t) == COMPONENT_REF)
 	{
@@ -3186,6 +3247,7 @@ gimplify_compound_lval (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 		  TREE_OPERAND (t, 2) = offset;
 		}
 	    }
+	  need_non_reg = true;
 	}
     }
 
@@ -3195,6 +3257,12 @@ gimplify_compound_lval (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
   tret = gimplify_expr (p, pre_p, post_p, is_gimple_min_lval,
 			fallback | fb_lvalue);
   ret = MIN (ret, tret);
+
+  /* Step 2a: if we have component references we do not support on
+     registers then make sure the base isn't a register.  Of course
+     we can only do so if an rvalue is OK.  */
+  if (need_non_reg && (fallback & fb_rvalue))
+    prepare_gimple_addressable (p, pre_p);
 
   /* Step 3: gimplify size expressions and the indices and operands of
      ARRAY_REF.  During this loop we also remove any useless conversions.  */
@@ -3536,15 +3604,12 @@ gimplify_call_expr (tree *expr_p, gimple_seq *pre_p, bool want_value)
 	  {
 	    /* Remember the original type of the argument in an internal
 	       dummy second argument, as in GIMPLE pointer conversions are
-	       useless. also mark this call as not for automatic initialization
-	       in the internal dummy third argument.  */
+	       useless.  Also mark this call as not for automatic
+	       initialization in the internal dummy third argument.  */
 	    p = CALL_EXPR_ARG (*expr_p, 0);
-	    bool for_auto_init = false;
 	    *expr_p
-	      = build_call_expr_loc (EXPR_LOCATION (*expr_p), fndecl, 3, p,
-				     build_zero_cst (TREE_TYPE (p)),
-				     build_int_cst (integer_type_node,
-						    (int) for_auto_init));
+	      = build_call_expr_loc (EXPR_LOCATION (*expr_p), fndecl, 2, p,
+				     build_zero_cst (TREE_TYPE (p)));
 	    return GS_OK;
 	  }
 	break;
@@ -5055,6 +5120,12 @@ gimplify_init_constructor (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	  {
 	    if (notify_temp_creation)
 	      return GS_OK;
+
+	    /* The var will be initialized and so appear on lhs of
+	       assignment, it can't be TREE_READONLY anymore.  */
+	    if (VAR_P (object))
+	      TREE_READONLY (object) = 0;
+
 	    is_empty_ctor = true;
 	    break;
 	  }
@@ -5105,6 +5176,11 @@ gimplify_init_constructor (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	    *expr_p = NULL_TREE;
 	    break;
 	  }
+
+	/* The var will be initialized and so appear on lhs of
+	   assignment, it can't be TREE_READONLY anymore.  */
+	if (VAR_P (object) && !notify_temp_creation)
+	  TREE_READONLY (object) = 0;
 
 	/* If there are "lots" of initialized elements, even discounting
 	   those that are not address constants (and thus *must* be
@@ -6981,7 +7057,7 @@ gimplify_target_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
 	{
 	  if (flag_stack_reuse == SR_ALL)
 	    {
-	      tree clobber = build_clobber (TREE_TYPE (temp));
+	      tree clobber = build_clobber (TREE_TYPE (temp), CLOBBER_EOL);
 	      clobber = build2 (MODIFY_EXPR, TREE_TYPE (temp), temp, clobber);
 	      gimple_push_cleanup (temp, clobber, false, pre_p, true);
 	    }
@@ -10278,6 +10354,14 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 	  flags = GOVD_EXPLICIT;
 	  goto do_add;
 
+	case OMP_CLAUSE_HAS_DEVICE_ADDR:
+	  decl = OMP_CLAUSE_DECL (c);
+	  while (TREE_CODE (decl) == INDIRECT_REF
+		 || TREE_CODE (decl) == ARRAY_REF)
+	    decl = TREE_OPERAND (decl, 0);
+	  flags = GOVD_EXPLICIT;
+	  goto do_add_decl;
+
 	case OMP_CLAUSE_IS_DEVICE_PTR:
 	  flags = GOVD_FIRSTPRIVATE | GOVD_EXPLICIT;
 	  goto do_add;
@@ -11428,6 +11512,16 @@ gimplify_adjust_omp_clauses (gimple_seq *pre_p, gimple_seq body, tree *list_p,
 	    }
 	  break;
 
+	case OMP_CLAUSE_HAS_DEVICE_ADDR:
+	  decl = OMP_CLAUSE_DECL (c);
+	  while (TREE_CODE (decl) == INDIRECT_REF
+		 || TREE_CODE (decl) == ARRAY_REF)
+	    decl = TREE_OPERAND (decl, 0);
+	  n = splay_tree_lookup (ctx->variables, (splay_tree_key) decl);
+	  remove = n == NULL || !(n->value & GOVD_SEEN);
+	  break;
+
+	case OMP_CLAUSE_IS_DEVICE_PTR:
 	case OMP_CLAUSE_NONTEMPORAL:
 	  decl = OMP_CLAUSE_DECL (c);
 	  n = splay_tree_lookup (ctx->variables, (splay_tree_key) decl);
@@ -11729,7 +11823,6 @@ gimplify_adjust_omp_clauses (gimple_seq *pre_p, gimple_seq body, tree *list_p,
 	case OMP_CLAUSE_DETACH:
 	case OMP_CLAUSE_USE_DEVICE_PTR:
 	case OMP_CLAUSE_USE_DEVICE_ADDR:
-	case OMP_CLAUSE_IS_DEVICE_PTR:
 	case OMP_CLAUSE_ASYNC:
 	case OMP_CLAUSE_WAIT:
 	case OMP_CLAUSE_INDEPENDENT:
@@ -13704,7 +13797,7 @@ gimplify_omp_loop (tree *expr_p, gimple_seq *pre_p)
       *pc = NULL_TREE;
       *expr_p = t;
     }
-  return gimplify_omp_for (expr_p, pre_p);
+  return gimplify_expr (expr_p, pre_p, NULL, is_gimple_stmt, fb_none);
 }
 
 
@@ -15458,8 +15551,19 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	  ret = GS_ALL_DONE;
 	  break;
 
-	case OMP_FOR:
 	case OMP_SIMD:
+	  {
+	    /* Temporarily disable into_ssa, as scan_omp_simd
+	       which calls copy_gimple_seq_and_replace_locals can't deal
+	       with SSA_NAMEs defined outside of the body properly.  */
+	    bool saved_into_ssa = gimplify_ctxp->into_ssa;
+	    gimplify_ctxp->into_ssa = false;
+	    ret = gimplify_omp_for (expr_p, pre_p);
+	    gimplify_ctxp->into_ssa = saved_into_ssa;
+	    break;
+	  }
+
+	case OMP_FOR:
 	case OMP_DISTRIBUTE:
 	case OMP_TASKLOOP:
 	case OACC_LOOP:

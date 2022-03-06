@@ -469,10 +469,11 @@ Expression Expression_optimize(Expression e, int result, bool keepLvalue)
              * Params:
              *      e = the DotVarExp or VarExp
              *      var = set to the VarExp at the end, or null if doesn't end in VarExp
+             *      eint = set to the IntegerExp at the end, or null if doesn't end in IntegerExp
              *      offset = accumulation of all the .var offsets encountered
              * Returns: true on error
              */
-            static bool getVarAndOffset(Expression e, ref VarDeclaration var, ref uint offset)
+            static bool getVarAndOffset(Expression e, out VarDeclaration var, out IntegerExp eint, ref uint offset)
             {
                 if (e.type.size() == SIZE_INVALID)  // trigger computation of v.offset
                     return true;
@@ -483,7 +484,7 @@ Expression Expression_optimize(Expression e, int result, bool keepLvalue)
                     if (!v || !v.isField() || v.isBitFieldDeclaration())
                         return false;
 
-                    if (getVarAndOffset(dve.e1, var, offset))
+                    if (getVarAndOffset(dve.e1, var, eint, offset))
                         return true;
                     offset += v.offset;
                 }
@@ -497,12 +498,20 @@ Expression Expression_optimize(Expression e, int result, bool keepLvalue)
                         var = ve.var.isVarDeclaration();
                     }
                 }
+                else if (auto ep = e.isPtrExp())
+                {
+                    if (auto ei = ep.e1.isIntegerExp())
+                    {
+                        eint = ei;
+                    }
+                }
                 return false;
             }
 
             uint offset;
             VarDeclaration var;
-            if (getVarAndOffset(e.e1, var, offset))
+            IntegerExp eint;
+            if (getVarAndOffset(e.e1, var, eint, offset))
             {
                 ret = ErrorExp.get();
                 return;
@@ -511,6 +520,11 @@ Expression Expression_optimize(Expression e, int result, bool keepLvalue)
             {
                 ret = new SymOffExp(e.loc, var, offset, false);
                 ret.type = e.type;
+                return;
+            }
+            if (eint)
+            {
+                ret = new IntegerExp(e.loc, eint.toInteger() + offset, e.type);
                 return;
             }
         }
@@ -631,13 +645,6 @@ Expression Expression_optimize(Expression e, int result, bool keepLvalue)
     {
         expOptimize(e.thisexp, WANTvalue);
         // Optimize parameters
-        if (e.newargs)
-        {
-            for (size_t i = 0; i < e.newargs.dim; i++)
-            {
-                expOptimize((*e.newargs)[i], WANTvalue);
-            }
-        }
         if (e.arguments)
         {
             for (size_t i = 0; i < e.arguments.dim; i++)
@@ -835,6 +842,7 @@ Expression Expression_optimize(Expression e, int result, bool keepLvalue)
 
     void visitMin(MinExp e)
     {
+        //printf("MinExp::optimize(%s)\n", e.toChars());
         if (binOptimize(e, result))
             return;
         if (e.e1.isConst() && e.e2.isConst())
@@ -1130,8 +1138,8 @@ Expression Expression_optimize(Expression e, int result, bool keepLvalue)
             const e1Opt = e.e1.toBool();
             if (e.e2.isConst())
             {
-                bool n1 = e1Opt.hasValue(true);
-                bool n2 = e.e2.toBool().hasValue(true);
+                bool n1 = e1Opt.get();
+                bool n2 = e.e2.toBool().get();
                 ret = new IntegerExp(e.loc, oror ? (n1 || n2) : (n1 && n2), e.type);
             }
             else if (e1Opt.hasValue(!oror))

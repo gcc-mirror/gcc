@@ -1,3 +1,145 @@
+2022-03-03  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	PR fortran/104131
+	* openmp.cc (gfc_match_omp_detach): Move check for type of event
+	handle to...
+	(resolve_omp_clauses) ...here.  Also check that the event handle is
+	not an array, or an array access or structure element access.
+
+2022-03-02  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/104573
+	* resolve.cc (resolve_structure_cons): Avoid NULL pointer
+	dereference when there is no valid component.
+
+2022-02-24  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/84519
+	* dump-parse-tree.cc (show_code_node): Dump QUIET specifier when
+	present.
+	* match.cc (gfc_match_stopcode): Implement parsing of F2018 QUIET
+	specifier.  F2018 stopcodes may have non-default integer kind.
+	* resolve.cc (gfc_resolve_code): Add checks for QUIET argument.
+	* trans-stmt.cc (gfc_trans_stop): Pass QUIET specifier to call of
+	library function.
+
+2022-02-22  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/104619
+	* resolve.cc (resolve_structure_cons): Skip shape check if shape
+	of constructor cannot be determined at compile time.
+
+2022-02-20  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/77693
+	* data.cc (gfc_assign_data_value): If a variable in a data
+	statement has the POINTER attribute, check for allowed initial
+	data target that is compatible with pointer assignment.
+	* gfortran.h (IS_POINTER): New macro.
+
+2022-02-15  Tobias Burnus  <tobias@codesourcery.com>
+
+	* trans-openmp.cc (gfc_trans_omp_depobj): Fix to alloc/ptr dummy
+	and for c_ptr.
+
+2022-02-15  Tobias Burnus  <tobias@codesourcery.com>
+
+	* trans-openmp.cc (gfc_trans_omp_clauses, gfc_trans_omp_depobj):
+	Depend on the proper addr, for ptr/alloc depend on pointee.
+
+2022-02-14  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/104211
+	* expr.cc (find_array_section): Replace assertion by error
+	recovery when encountering bad array constructor.
+
+2022-02-13  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/104228
+	* resolve.cc (resolve_assoc_var): Also create a new character
+	length for non-dummy associate targets.
+	* trans-stmt.cc (trans_associate_var): Initialize character length
+	even if no temporary is used for the associate variable.
+
+2022-02-10  Roger Sayle  <roger@nextmovesoftware.com>
+	    Tobias Burnus  <tobias@codesourcery.com>
+
+	* trans-common.cc (GFC_EQUIV_FMT): New macro respecting the
+	target's NO_DOT_IN_LABEL and NO_DOLLAR_IN_LABEL preferences.
+	(build_equiv_decl): Use GFC_EQUIV_FMT here.
+
+2022-02-10  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/104329
+	* openmp.cc (resolve_omp_atomic): Defer extra-code assert after
+	other diagnostics.
+
+2022-02-10  Marcel Vollweiler  <marcel@codesourcery.com>
+
+	* dump-parse-tree.cc (show_omp_clauses): Added OMP_LIST_HAS_DEVICE_ADDR
+	case.
+	* gfortran.h: Added OMP_LIST_HAS_DEVICE_ADDR.
+	* openmp.cc (enum omp_mask2): Added OMP_CLAUSE_HAS_DEVICE_ADDR.
+	(gfc_match_omp_clauses): Parse HAS_DEVICE_ADDR clause.
+	(resolve_omp_clauses): Same.
+	* trans-openmp.cc (gfc_trans_omp_variable_list): Added
+	OMP_LIST_HAS_DEVICE_ADDR case.
+	(gfc_trans_omp_clauses): Firstprivatize of array descriptors.
+
+2022-02-09  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/66193
+	* arith.cc (reduce_binary_ac): When reducing binary expressions,
+	try simplification.  Handle case of empty constructor.
+	(reduce_binary_ca): Likewise.
+
+2022-02-03  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/104311
+	* check.cc (gfc_calculate_transfer_sizes): Checks for case when
+	storage size of SOURCE is greater than zero while the storage size
+	of MOLD is zero and MOLD is an array shall not depend on SIZE.
+
+2022-02-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/104328
+	* openmp.cc (is_scalar_intrinsic_expr): If must_be_var && conv_ok
+	and expr is conversion, verify it is a conversion from EXPR_VARIABLE
+	with non-NULL symtree.  Check ->block->next before dereferencing it.
+
+2022-02-01  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/104331
+	* simplify.cc (gfc_simplify_eoshift): Avoid NULL pointer
+	dereference when shape is not set.
+
+2022-01-28  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/103790
+	* trans-array.cc (structure_alloc_comps): Prevent descriptor
+	stacking for non-array data; do not broadcast caf-tokens.
+	* trans-intrinsic.cc (conv_co_collective): Prevent generation
+	of unused descriptor.
+
+2022-01-28  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	Revert:
+	2022-01-28  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/103790
+	* trans-array.cc (structure_alloc_comps): Prevent descriptor
+	stacking for non-array data; do not broadcast caf-tokens.
+	* trans-intrinsic.cc (conv_co_collective): Prevent generation
+	of unused descriptor.
+
+2022-01-28  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/103790
+	* trans-array.cc (structure_alloc_comps): Prevent descriptor
+	stacking for non-array data; do not broadcast caf-tokens.
+	* trans-intrinsic.cc (conv_co_collective): Prevent generation
+	of unused descriptor.
+
 2022-01-27  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/104128

@@ -436,28 +436,30 @@ expand_vector_comparison (gimple_stmt_iterator *gsi, tree type, tree op0,
      feeding a VEC_COND_EXPR statement.  */
   auto_vec<gimple *> uses;
   FOR_EACH_IMM_USE_FAST (use_p, iterator, lhs)
-    uses.safe_push (USE_STMT (use_p));
-
-  for (unsigned i = 0; i < uses.length (); i ++)
     {
-      gassign *use = dyn_cast<gassign *> (uses[i]);
-      if (use != NULL
+      gimple *use = USE_STMT (use_p);
+      if (is_gimple_debug (use))
+	continue;
+      if (is_gimple_assign (use)
 	  && gimple_assign_rhs_code (use) == VEC_COND_EXPR
-	  && gimple_assign_rhs1 (use) == lhs)
-	{
-	  gimple_stmt_iterator it = gsi_for_stmt (use);
-	  if (!expand_vector_condition (&it, dce_ssa_names))
-	    {
-	      vec_cond_expr_only = false;
-	      break;
-	    }
-	}
+	  && gimple_assign_rhs1 (use) == lhs
+	  && gimple_assign_rhs2 (use) != lhs
+	  && gimple_assign_rhs3 (use) != lhs)
+	uses.safe_push (use);
       else
-	{
-	  vec_cond_expr_only = false;
-	  break;
-	}
+	vec_cond_expr_only = false;
     }
+
+  if (vec_cond_expr_only)
+    for (gimple *use : uses)
+      {
+	gimple_stmt_iterator it = gsi_for_stmt (use);
+	if (!expand_vector_condition (&it, dce_ssa_names))
+	  {
+	    vec_cond_expr_only = false;
+	    break;
+	  }
+      }
 
   if (!uses.is_empty () && vec_cond_expr_only)
     return NULL_TREE;

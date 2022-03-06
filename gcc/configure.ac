@@ -1041,7 +1041,15 @@ AC_SUBST(enable_shared)
 
 AC_ARG_ENABLE(gcov,
 [  --disable-gcov          don't provide libgcov and related host tools],
-[], [enable_gcov=yes])
+[], [case $target in
+       bpf-*-*)
+         enable_gcov=no
+       ;;
+       *)
+         enable_gcov=yes
+       ;;
+     esac])
+
 AC_SUBST(enable_gcov)
 
 AC_ARG_WITH(specs,
@@ -4267,6 +4275,8 @@ changequote([,])dnl
     # Require GNU ld or gold 2.21+ for plugin support by default.
     if test "$ld_vers_major" -eq 2 -a "$ld_vers_minor" -ge 21; then
       gcc_cv_lto_plugin=2
+    elif test "$ld_is_mold" = yes; then
+      gcc_cv_lto_plugin=2
     # Allow -fuse-linker-plugin to enable plugin support in GNU gold 2.20.
     elif test "$ld_is_gold" = yes -a "$ld_vers_major" -eq 2 -a "$ld_vers_minor" -eq 20; then
       gcc_cv_lto_plugin=1
@@ -5286,7 +5296,7 @@ configured with --enable-newlib-nano-formatted-io.])
 		 [Define if the assembler understands -misa-spec=.])])
     gcc_GAS_CHECK_FEATURE([-march=rv32i_zifencei support],
       gcc_cv_as_riscv_march_zifencei,
-      [-march=rv32i_zifencei],,,
+      [-march=rv32i_zifencei2p0],,,
       [AC_DEFINE(HAVE_AS_MARCH_ZIFENCEI, 1,
 		 [Define if the assembler understands -march=rv*_zifencei.])])
     ;;

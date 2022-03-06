@@ -73,6 +73,9 @@
 /* Define to 1 if you have the <dirent.h> header file. */
 #undef HAVE_DIRENT_H
 
+/* Define if dirfd is available in <dirent.h>. */
+#undef HAVE_DIRFD
+
 /* Define to 1 if you have the <dlfcn.h> header file. */
 #undef HAVE_DLFCN_H
 
@@ -485,6 +488,9 @@
 
 /* Define to 1 if you have the <unistd.h> header file. */
 #undef HAVE_UNISTD_H
+
+/* Define if unlinkat is available in <fcntl.h>. */
+#undef HAVE_UNLINKAT
 
 /* Define to 1 if you have the `uselocale' function. */
 #undef HAVE_USELOCALE

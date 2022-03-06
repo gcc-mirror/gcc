@@ -12,5 +12,5 @@ int main ()
   return 0;
 }
 
-// { dg-final { scan-assembler "_Z4frobi:" } }
-// { dg-final { scan-assembler ".weak(_definition)?\[\t ]*_?_Z4frobi" } }
+// { dg-final { scan-assembler "_ZW3bob4frobi:" } }
+// { dg-final { scan-assembler ".weak(_definition)?\[\t ]*_?_ZW3bob4frobi" } }

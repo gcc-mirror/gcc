@@ -7,6 +7,7 @@
 package reflect
 
 import (
+	"internal/abi"
 	"unsafe"
 )
 
@@ -131,6 +132,16 @@ func makeValueMethod(v Value) Value {
 	makeFuncFFI(makeCIF(ftyp), unsafe.Pointer(impl))
 
 	return Value{t, unsafe.Pointer(&impl), v.flag&flagRO | flag(Func) | flagIndir}
+}
+
+// methodValueCallCodePtr and methodValueCall are only here to provide
+// something to return for the UnsafePointer method of a method value.
+func methodValueCallCodePtr() uintptr {
+	return abi.FuncPCABI0(methodValueCall)
+}
+
+func methodValueCall() {
+	panic("methodValueCall")
 }
 
 // Call the function represented by a makeFuncImpl.

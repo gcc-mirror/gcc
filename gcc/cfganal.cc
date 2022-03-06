@@ -27,6 +27,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "timevar.h"
 #include "cfganal.h"
 #include "cfgloop.h"
+#include "diagnostic.h"
 
 namespace {
 /* Store the data structures necessary for depth-first search.  */
@@ -139,6 +140,40 @@ bool
 mark_dfs_back_edges (void)
 {
   return mark_dfs_back_edges (cfun);
+}
+
+/* Return TRUE if EDGE_DFS_BACK is up to date for CFUN.  */
+
+void
+verify_marked_backedges (struct function *fun)
+{
+  auto_edge_flag saved_dfs_back (fun);
+  basic_block bb;
+  edge e;
+  edge_iterator ei;
+
+  // Save all the back edges...
+  FOR_EACH_BB_FN (bb, fun)
+    FOR_EACH_EDGE (e, ei, bb->succs)
+      {
+	if (e->flags & EDGE_DFS_BACK)
+	  {
+	    e->flags |= saved_dfs_back;
+	    e->flags &= ~EDGE_DFS_BACK;
+	  }
+      }
+
+  // ...and verify that recalculating them agrees with the saved ones.
+  mark_dfs_back_edges ();
+  FOR_EACH_BB_FN (bb, fun)
+    FOR_EACH_EDGE (e, ei, bb->succs)
+      {
+	if (((e->flags & EDGE_DFS_BACK) != 0)
+	    != ((e->flags & saved_dfs_back) != 0))
+	  internal_error ("%<verify_marked_backedges%> failed");
+
+	e->flags &= ~saved_dfs_back;
+      }
 }
 
 /* Find unreachable blocks.  An unreachable block will have 0 in

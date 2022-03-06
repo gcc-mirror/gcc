@@ -24,6 +24,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "gimple.h"
 #include "ssa.h"
+#include "pointer-query.h"
 #include "gimple-array-bounds.h"
 #include "gimple-iterator.h"
 #include "gimple-walk.h"
@@ -37,7 +38,13 @@ along with GCC; see the file COPYING3.  If not see
 #include "domwalk.h"
 #include "tree-cfg.h"
 #include "attribs.h"
-#include "pointer-query.h"
+
+array_bounds_checker::array_bounds_checker (struct function *func,
+					    range_query *qry)
+  : fun (func), m_ptr_qry (qry)
+{
+  /* No-op.  */
+}
 
 // This purposely returns a value_range, not a value_range_equiv, to
 // break the dependency on equivalences for this pass.
@@ -45,7 +52,7 @@ along with GCC; see the file COPYING3.  If not see
 const value_range *
 array_bounds_checker::get_value_range (const_tree op, gimple *stmt)
 {
-  return ranges->get_value_range (op, stmt);
+  return m_ptr_qry.rvals->get_value_range (op, stmt);
 }
 
 /* Try to determine the DECL that REF refers to.  Return the DECL or
@@ -401,7 +408,7 @@ array_bounds_checker::check_mem_ref (location_t location, tree ref,
       axssize = wi::to_offset (access_size);
 
   access_ref aref;
-  if (!compute_objsize (ref, m_stmt, 0, &aref, ranges))
+  if (!m_ptr_qry.get_ref (ref, m_stmt, &aref, 0))
     return false;
 
   if (aref.offset_in_range (axssize))

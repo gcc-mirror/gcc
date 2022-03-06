@@ -23,7 +23,6 @@
 #define DEFAULT_ABI ABI_AIX
 #undef  TARGET_AIX
 #define TARGET_AIX 1
-#define OPTION_GLIBC 0
 
 /* Linux64.h wants to redefine TARGET_AIX based on -m64, but it can't be used
    in the #if conditional in options-default.h, so provide another macro.  */

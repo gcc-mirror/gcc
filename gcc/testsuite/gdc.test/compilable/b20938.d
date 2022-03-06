@@ -12,11 +12,11 @@ void fun() {
     immutable S _is;
     Object o;
     immutable Object io;
-    
+
     auto a = [pi, ipi];
-    auto b = [ai, iai];    
+    auto b = [ai, iai];
     auto c = [s, _is];
     auto d = [o, io];
-    
+
     auto e = [A.a, B.b];
 }

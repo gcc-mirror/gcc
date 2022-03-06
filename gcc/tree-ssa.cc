@@ -272,7 +272,7 @@ target_for_debug_bind (tree var)
 /* Called via walk_tree, look for SSA_NAMEs that have already been
    released.  */
 
-static tree
+tree
 find_released_ssa_name (tree *tp, int *walk_subtrees, void *data_)
 {
   struct walk_stmt_info *wi = (struct walk_stmt_info *) data_;
@@ -1256,18 +1256,24 @@ delete_tree_ssa (struct function *fn)
 bool
 tree_ssa_useless_type_conversion (tree expr)
 {
+  tree outer_type, inner_type;
+
   /* If we have an assignment that merely uses a NOP_EXPR to change
      the top of the RHS to the type of the LHS and the type conversion
      is "safe", then strip away the type conversion so that we can
      enter LHS = RHS into the const_and_copies table.  */
-  if (CONVERT_EXPR_P (expr)
-      || TREE_CODE (expr) == VIEW_CONVERT_EXPR
-      || TREE_CODE (expr) == NON_LVALUE_EXPR)
-    return useless_type_conversion_p
-      (TREE_TYPE (expr),
-       TREE_TYPE (TREE_OPERAND (expr, 0)));
+  if (!CONVERT_EXPR_P (expr)
+      && TREE_CODE (expr) != VIEW_CONVERT_EXPR
+      && TREE_CODE (expr) != NON_LVALUE_EXPR)
+    return false;
 
-  return false;
+  outer_type = TREE_TYPE (expr);
+  inner_type = TREE_TYPE (TREE_OPERAND (expr, 0));
+
+  if (inner_type == error_mark_node)
+    return false;
+
+  return useless_type_conversion_p (outer_type, inner_type);
 }
 
 /* Strip conversions from EXP according to
@@ -1417,8 +1423,8 @@ maybe_rewrite_mem_ref_base (tree *tp, bitmap suitable_for_renaming)
       if (TREE_CODE (TREE_TYPE (sym)) == VECTOR_TYPE
 	  && useless_type_conversion_p (TREE_TYPE (*tp),
 					TREE_TYPE (TREE_TYPE (sym)))
-	  && multiple_of_p (sizetype, TREE_OPERAND (*tp, 1),
-			    TYPE_SIZE_UNIT (TREE_TYPE (*tp))))
+	  && multiple_p (mem_ref_offset (*tp),
+			 wi::to_poly_offset (TYPE_SIZE_UNIT (TREE_TYPE (*tp)))))
 	{
 	  *tp = build3 (BIT_FIELD_REF, TREE_TYPE (*tp), sym, 
 			TYPE_SIZE (TREE_TYPE (*tp)),
@@ -1504,8 +1510,8 @@ non_rewritable_mem_ref_base (tree ref)
 	  && known_ge (mem_ref_offset (base), 0)
 	  && known_gt (wi::to_poly_offset (TYPE_SIZE_UNIT (TREE_TYPE (decl))),
 		       mem_ref_offset (base))
-	  && multiple_of_p (sizetype, TREE_OPERAND (base, 1),
-			    TYPE_SIZE_UNIT (TREE_TYPE (base))))
+	  && multiple_p (mem_ref_offset (base),
+			 wi::to_poly_offset (TYPE_SIZE_UNIT (TREE_TYPE (base)))))
 	return NULL_TREE;
       /* For same sizes and zero offset we can use a VIEW_CONVERT_EXPR.  */
       if (integer_zerop (TREE_OPERAND (base, 1))
@@ -1596,8 +1602,8 @@ non_rewritable_lvalue_p (tree lhs)
 	  && known_ge (mem_ref_offset (lhs), 0)
 	  && known_gt (wi::to_poly_offset (TYPE_SIZE_UNIT (TREE_TYPE (decl))),
 		       mem_ref_offset (lhs))
-	  && multiple_of_p (sizetype, TREE_OPERAND (lhs, 1),
-			    TYPE_SIZE_UNIT (TREE_TYPE (lhs)))
+	  && multiple_p (mem_ref_offset (lhs),
+			 wi::to_poly_offset (TYPE_SIZE_UNIT (TREE_TYPE (lhs))))
 	  && known_ge (wi::to_poly_offset (TYPE_SIZE (TREE_TYPE (decl))),
 		       wi::to_poly_offset (TYPE_SIZE (TREE_TYPE (lhs)))))
 	{
@@ -1969,9 +1975,9 @@ execute_update_addresses_taken (void)
 		    && known_gt (wi::to_poly_offset
 				   (TYPE_SIZE_UNIT (TREE_TYPE (sym))),
 				 mem_ref_offset (lhs))
-		    && multiple_of_p (sizetype,
-				      TREE_OPERAND (lhs, 1),
-				      TYPE_SIZE_UNIT (TREE_TYPE (lhs))))
+		    && multiple_p (mem_ref_offset (lhs),
+				   wi::to_poly_offset
+				     (TYPE_SIZE_UNIT (TREE_TYPE (lhs)))))
 		  {
 		    tree val = gimple_assign_rhs1 (stmt);
 		    if (! types_compatible_p (TREE_TYPE (val),

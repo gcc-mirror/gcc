@@ -353,8 +353,13 @@ c_finish_omp_atomic (location_t loc, enum tree_code code,
     }
   bool save = in_late_binary_op;
   in_late_binary_op = true;
-  x = build_modify_expr (loc, blhs ? blhs : lhs, NULL_TREE, opcode,
-			 loc, rhs, NULL_TREE);
+  if ((opcode == MIN_EXPR || opcode == MAX_EXPR)
+      && build_binary_op (loc, LT_EXPR, blhs ? blhs : lhs, rhs,
+			  true) == error_mark_node)
+    x = error_mark_node;
+  else
+    x = build_modify_expr (loc, blhs ? blhs : lhs, NULL_TREE, opcode,
+			   loc, rhs, NULL_TREE);
   in_late_binary_op = save;
   if (x == error_mark_node)
     return error_mark_node;
@@ -1862,6 +1867,7 @@ c_omp_split_clauses (location_t loc, enum tree_code code,
 	case OMP_CLAUSE_DEVICE:
 	case OMP_CLAUSE_MAP:
 	case OMP_CLAUSE_IS_DEVICE_PTR:
+	case OMP_CLAUSE_HAS_DEVICE_ADDR:
 	case OMP_CLAUSE_DEFAULTMAP:
 	case OMP_CLAUSE_DEPEND:
 	  s = C_OMP_CLAUSE_SPLIT_TARGET;

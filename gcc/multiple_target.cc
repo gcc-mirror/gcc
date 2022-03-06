@@ -185,30 +185,6 @@ create_dispatcher_calls (struct cgraph_node *node)
     }
 }
 
-/* Return length of attribute names string,
-   if arglist chain > 1, -1 otherwise.  */
-
-static int
-get_attr_len (tree arglist)
-{
-  tree arg;
-  int str_len_sum = 0;
-  int argnum = 0;
-
-  for (arg = arglist; arg; arg = TREE_CHAIN (arg))
-    {
-      const char *str = TREE_STRING_POINTER (TREE_VALUE (arg));
-      size_t len = strlen (str);
-      str_len_sum += len + 1;
-      for (const char *p = strchr (str, ','); p; p = strchr (p + 1, ','))
-	argnum++;
-      argnum++;
-    }
-  if (argnum <= 1)
-    return -1;
-  return str_len_sum;
-}
-
 /* Create string with attributes separated by comma.
    Return number of attributes.  */
 
@@ -342,7 +318,7 @@ expand_target_clones (struct cgraph_node *node, bool definition)
     return false;
 
   tree arglist = TREE_VALUE (attr_target);
-  int attr_len = get_attr_len (arglist);
+  int attr_len = get_target_clone_attr_len (arglist);
 
   /* No need to clone for 1 target attribute.  */
   if (attr_len == -1)

@@ -1,4 +1,5 @@
-/* { dg-options "-Os -march=rv32imc -mabi=ilp32 -mno-shorten-memrefs" } */
+/* { dg-options "-march=rv32imc -mabi=ilp32 -mno-shorten-memrefs" } */
+/* { dg-skip-if "" { *-*-* } { "-O0" } } */
 
 /* Check that these load/stores do not get rewritten into a compressible format
    when shorten_memrefs is disabled.  */

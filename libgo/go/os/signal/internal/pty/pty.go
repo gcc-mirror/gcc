@@ -3,8 +3,6 @@
 // license that can be found in the LICENSE file.
 
 //go:build (aix || darwin || dragonfly || freebsd || hurd || (linux && !android) || netbsd || openbsd || solaris) && cgo
-// +build aix darwin dragonfly freebsd hurd linux,!android netbsd openbsd solaris
-// +build cgo
 
 // Package pty is a simple pseudo-terminal package for Unix systems,
 // implemented by calling C functions via cgo.

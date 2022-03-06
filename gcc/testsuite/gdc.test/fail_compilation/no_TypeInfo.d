@@ -1,4 +1,4 @@
-/* 
+/*
 DFLAGS:
 REQUIRED_ARGS: -c
 EXTRA_SOURCES: extra-files/minimal/object.d

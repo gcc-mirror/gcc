@@ -262,6 +262,8 @@ private enum isHashable(T) = __traits(compiles,
 
 private enum hasPostblit(T) = __traits(hasPostblit, T);
 
+private enum isInout(T) = is(T == inout);
+
 /**
  * A [tagged union](https://en.wikipedia.org/wiki/Tagged_union) that can hold a
  * single value from any of a specified set of types.
@@ -419,6 +421,7 @@ public:
         (
             allSatisfy!(isCopyable, Map!(InoutOf, Types))
             && !anySatisfy!(hasPostblit, Map!(InoutOf, Types))
+            && allSatisfy!(isInout, Map!(InoutOf, Types))
         )
         {
             /// Constructs a `SumType` that's a copy of another `SumType`.
@@ -530,15 +533,35 @@ public:
         /**
          * Assigns a value to a `SumType`.
          *
-         * Assigning to a `SumType` is `@system` if any of the
-         * `SumType`'s members contain pointers or references, since
-         * those members may be reachable through external references,
-         * and overwriting them could therefore lead to memory
-         * corruption.
+         * If any of the `SumType`'s members other than the one being assigned
+         * to contain pointers or references, it is possible for the assignment
+         * to cause memory corruption (see the
+         * ["Memory corruption" example](#memory-corruption) below for an
+         * illustration of how). Therefore, such assignments are considered
+         * `@system`.
          *
          * An individual assignment can be `@trusted` if the caller can
-         * guarantee that there are no outstanding references to $(I any)
-         * of the `SumType`'s members when the assignment occurs.
+         * guarantee that there are no outstanding references to any `SumType`
+         * members that contain pointers or references at the time the
+         * assignment occurs.
+         *
+         * Examples:
+         *
+         * $(DIVID memory-corruption, $(H3 Memory corruption))
+         *
+         * This example shows how assignment to a `SumType` can be used to
+         * cause memory corruption in `@system` code. In `@safe` code, the
+         * assignment `s = 123` would not be allowed.
+         *
+         * ---
+         * SumType!(int*, int) s = new int;
+         * s.tryMatch!(
+         *     (ref int* p) {
+         *         s = 123; // overwrites `p`
+         *         return *p; // undefined behavior
+         *     }
+         * );
+         * ---
          */
         ref SumType opAssign(T rhs);
     }
@@ -550,14 +573,35 @@ public:
             /**
              * Assigns a value to a `SumType`.
              *
-             * Assigning to a `SumType` is `@system` if any of the `SumType`'s
-             * $(I other) members contain pointers or references, since those
-             * members may be reachable through external references, and
-             * overwriting them could therefore lead to memory corruption.
+             * If any of the `SumType`'s members other than the one being assigned
+             * to contain pointers or references, it is possible for the assignment
+             * to cause memory corruption (see the
+             * ["Memory corruption" example](#memory-corruption) below for an
+             * illustration of how). Therefore, such assignments are considered
+             * `@system`.
              *
              * An individual assignment can be `@trusted` if the caller can
-             * guarantee that, when the assignment occurs, there are no
-             * outstanding references to any such members.
+             * guarantee that there are no outstanding references to any `SumType`
+             * members that contain pointers or references at the time the
+             * assignment occurs.
+             *
+             * Examples:
+             *
+             * $(DIVID memory-corruption, $(H3 Memory corruption))
+             *
+             * This example shows how assignment to a `SumType` can be used to
+             * cause memory corruption in `@system` code. In `@safe` code, the
+             * assignment `s = 123` would not be allowed.
+             *
+             * ---
+             * SumType!(int*, int) s = new int;
+             * s.tryMatch!(
+             *     (ref int* p) {
+             *         s = 123; // overwrites `p`
+             *         return *p; // undefined behavior
+             *     }
+             * );
+             * ---
              */
             ref SumType opAssign(T rhs)
             {
@@ -1490,6 +1534,23 @@ version (D_BetterC) {} else
     SumType!(int*) s = &n;
     const SumType!(int*) sc = &n;
     immutable SumType!(int*) si = &ni;
+}
+
+// Immutable member type with copy constructor
+// https://issues.dlang.org/show_bug.cgi?id=22572
+@safe unittest
+{
+    static struct CopyConstruct
+    {
+        this(ref inout CopyConstruct other) inout {}
+    }
+
+    static immutable struct Value
+    {
+        CopyConstruct c;
+    }
+
+    SumType!Value s;
 }
 
 /// True if `T` is an instance of the `SumType` template, otherwise false.

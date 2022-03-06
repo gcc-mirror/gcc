@@ -295,7 +295,7 @@ static enum arm_type_qualifiers
 arm_cx_unary_unone_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_none, qualifier_immediate, qualifier_none,
       qualifier_unsigned_immediate,
-      qualifier_unsigned };
+      qualifier_predicate };
 #define CX_UNARY_UNONE_QUALIFIERS (arm_cx_unary_unone_qualifiers)
 
 /* T (immediate, T, T, unsigned immediate).  */
@@ -304,7 +304,7 @@ arm_cx_binary_unone_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_none, qualifier_immediate,
       qualifier_none, qualifier_none,
       qualifier_unsigned_immediate,
-      qualifier_unsigned };
+      qualifier_predicate };
 #define CX_BINARY_UNONE_QUALIFIERS (arm_cx_binary_unone_qualifiers)
 
 /* T (immediate, T, T, T, unsigned immediate).  */
@@ -313,7 +313,7 @@ arm_cx_ternary_unone_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_none, qualifier_immediate,
       qualifier_none, qualifier_none, qualifier_none,
       qualifier_unsigned_immediate,
-      qualifier_unsigned };
+      qualifier_predicate };
 #define CX_TERNARY_UNONE_QUALIFIERS (arm_cx_ternary_unone_qualifiers)
 
 /* The first argument (return type) of a store should be void type,
@@ -421,6 +421,12 @@ arm_binop_unone_unone_unone_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   (arm_binop_unone_unone_unone_qualifiers)
 
 static enum arm_type_qualifiers
+arm_binop_pred_unone_unone_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_predicate, qualifier_unsigned, qualifier_unsigned };
+#define BINOP_PRED_UNONE_UNONE_QUALIFIERS \
+  (arm_binop_pred_unone_unone_qualifiers)
+
+static enum arm_type_qualifiers
 arm_binop_unone_none_imm_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_unsigned, qualifier_none, qualifier_immediate };
 #define BINOP_UNONE_NONE_IMM_QUALIFIERS \
@@ -433,10 +439,10 @@ arm_binop_none_none_unone_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   (arm_binop_none_none_unone_qualifiers)
 
 static enum arm_type_qualifiers
-arm_binop_unone_none_none_qualifiers[SIMD_MAX_BUILTIN_ARGS]
-  = { qualifier_unsigned, qualifier_none, qualifier_none };
-#define BINOP_UNONE_NONE_NONE_QUALIFIERS \
-  (arm_binop_unone_none_none_qualifiers)
+arm_binop_pred_none_none_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_predicate, qualifier_none, qualifier_none };
+#define BINOP_PRED_NONE_NONE_QUALIFIERS \
+  (arm_binop_pred_none_none_qualifiers)
 
 static enum arm_type_qualifiers
 arm_binop_unone_unone_none_qualifiers[SIMD_MAX_BUILTIN_ARGS]
@@ -478,24 +484,24 @@ arm_ternop_unone_unone_none_imm_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   (arm_ternop_unone_unone_none_imm_qualifiers)
 
 static enum arm_type_qualifiers
-arm_ternop_unone_unone_none_unone_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+arm_ternop_unone_unone_none_pred_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_unsigned, qualifier_unsigned, qualifier_none,
-      qualifier_unsigned };
-#define TERNOP_UNONE_UNONE_NONE_UNONE_QUALIFIERS \
-  (arm_ternop_unone_unone_none_unone_qualifiers)
+      qualifier_predicate };
+#define TERNOP_UNONE_UNONE_NONE_PRED_QUALIFIERS \
+  (arm_ternop_unone_unone_none_pred_qualifiers)
 
 static enum arm_type_qualifiers
-arm_ternop_unone_unone_imm_unone_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+arm_ternop_unone_unone_imm_pred_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_unsigned, qualifier_unsigned, qualifier_immediate,
-    qualifier_unsigned };
-#define TERNOP_UNONE_UNONE_IMM_UNONE_QUALIFIERS \
-  (arm_ternop_unone_unone_imm_unone_qualifiers)
+    qualifier_predicate };
+#define TERNOP_UNONE_UNONE_IMM_PRED_QUALIFIERS \
+  (arm_ternop_unone_unone_imm_pred_qualifiers)
 
 static enum arm_type_qualifiers
-arm_ternop_unone_none_none_unone_qualifiers[SIMD_MAX_BUILTIN_ARGS]
-  = { qualifier_unsigned, qualifier_none, qualifier_none, qualifier_unsigned };
-#define TERNOP_UNONE_NONE_NONE_UNONE_QUALIFIERS \
-  (arm_ternop_unone_none_none_unone_qualifiers)
+arm_ternop_pred_none_none_pred_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_predicate, qualifier_none, qualifier_none, qualifier_predicate };
+#define TERNOP_PRED_NONE_NONE_PRED_QUALIFIERS \
+  (arm_ternop_pred_none_none_pred_qualifiers)
 
 static enum arm_type_qualifiers
 arm_ternop_none_none_none_imm_qualifiers[SIMD_MAX_BUILTIN_ARGS]
@@ -504,22 +510,22 @@ arm_ternop_none_none_none_imm_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   (arm_ternop_none_none_none_imm_qualifiers)
 
 static enum arm_type_qualifiers
-arm_ternop_none_none_none_unone_qualifiers[SIMD_MAX_BUILTIN_ARGS]
-  = { qualifier_none, qualifier_none, qualifier_none, qualifier_unsigned };
-#define TERNOP_NONE_NONE_NONE_UNONE_QUALIFIERS \
-  (arm_ternop_none_none_none_unone_qualifiers)
+arm_ternop_none_none_none_pred_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_none, qualifier_none, qualifier_none, qualifier_predicate };
+#define TERNOP_NONE_NONE_NONE_PRED_QUALIFIERS \
+  (arm_ternop_none_none_none_pred_qualifiers)
 
 static enum arm_type_qualifiers
-arm_ternop_none_none_imm_unone_qualifiers[SIMD_MAX_BUILTIN_ARGS]
-  = { qualifier_none, qualifier_none, qualifier_immediate, qualifier_unsigned };
-#define TERNOP_NONE_NONE_IMM_UNONE_QUALIFIERS \
-  (arm_ternop_none_none_imm_unone_qualifiers)
+arm_ternop_none_none_imm_pred_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_none, qualifier_none, qualifier_immediate, qualifier_predicate };
+#define TERNOP_NONE_NONE_IMM_PRED_QUALIFIERS \
+  (arm_ternop_none_none_imm_pred_qualifiers)
 
 static enum arm_type_qualifiers
-arm_ternop_none_none_unone_unone_qualifiers[SIMD_MAX_BUILTIN_ARGS]
-  = { qualifier_none, qualifier_none, qualifier_unsigned, qualifier_unsigned };
-#define TERNOP_NONE_NONE_UNONE_UNONE_QUALIFIERS \
-  (arm_ternop_none_none_unone_unone_qualifiers)
+arm_ternop_none_none_unone_pred_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_none, qualifier_none, qualifier_unsigned, qualifier_predicate };
+#define TERNOP_NONE_NONE_UNONE_PRED_QUALIFIERS \
+  (arm_ternop_none_none_unone_pred_qualifiers)
 
 static enum arm_type_qualifiers
 arm_ternop_unone_unone_unone_unone_qualifiers[SIMD_MAX_BUILTIN_ARGS]
@@ -529,66 +535,80 @@ arm_ternop_unone_unone_unone_unone_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   (arm_ternop_unone_unone_unone_unone_qualifiers)
 
 static enum arm_type_qualifiers
+arm_ternop_unone_unone_unone_pred_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_unsigned, qualifier_unsigned, qualifier_unsigned,
+    qualifier_predicate };
+#define TERNOP_UNONE_UNONE_UNONE_PRED_QUALIFIERS \
+  (arm_ternop_unone_unone_unone_pred_qualifiers)
+
+static enum arm_type_qualifiers
+arm_ternop_pred_unone_unone_pred_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_predicate, qualifier_unsigned, qualifier_unsigned,
+    qualifier_predicate };
+#define TERNOP_PRED_UNONE_UNONE_PRED_QUALIFIERS \
+  (arm_ternop_pred_unone_unone_pred_qualifiers)
+
+static enum arm_type_qualifiers
 arm_ternop_none_none_none_none_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_none, qualifier_none, qualifier_none, qualifier_none };
 #define TERNOP_NONE_NONE_NONE_NONE_QUALIFIERS \
   (arm_ternop_none_none_none_none_qualifiers)
 
 static enum arm_type_qualifiers
-arm_quadop_unone_unone_none_none_unone_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+arm_quadop_unone_unone_none_none_pred_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_unsigned, qualifier_unsigned, qualifier_none, qualifier_none,
-    qualifier_unsigned };
-#define QUADOP_UNONE_UNONE_NONE_NONE_UNONE_QUALIFIERS \
-  (arm_quadop_unone_unone_none_none_unone_qualifiers)
+    qualifier_predicate };
+#define QUADOP_UNONE_UNONE_NONE_NONE_PRED_QUALIFIERS \
+  (arm_quadop_unone_unone_none_none_pred_qualifiers)
 
 static enum arm_type_qualifiers
-arm_quadop_none_none_none_none_unone_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+arm_quadop_none_none_none_none_pred_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_none, qualifier_none, qualifier_none, qualifier_none,
-    qualifier_unsigned };
-#define QUADOP_NONE_NONE_NONE_NONE_UNONE_QUALIFIERS \
-  (arm_quadop_none_none_none_none_unone_qualifiers)
+    qualifier_predicate };
+#define QUADOP_NONE_NONE_NONE_NONE_PRED_QUALIFIERS \
+  (arm_quadop_none_none_none_none_pred_qualifiers)
 
 static enum arm_type_qualifiers
-arm_quadop_none_none_none_imm_unone_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+arm_quadop_none_none_none_imm_pred_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_none, qualifier_none, qualifier_none, qualifier_immediate,
-    qualifier_unsigned };
-#define QUADOP_NONE_NONE_NONE_IMM_UNONE_QUALIFIERS \
-  (arm_quadop_none_none_none_imm_unone_qualifiers)
+    qualifier_predicate };
+#define QUADOP_NONE_NONE_NONE_IMM_PRED_QUALIFIERS \
+  (arm_quadop_none_none_none_imm_pred_qualifiers)
 
 static enum arm_type_qualifiers
-arm_quadop_unone_unone_unone_unone_unone_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+arm_quadop_unone_unone_unone_unone_pred_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_unsigned, qualifier_unsigned, qualifier_unsigned,
-    qualifier_unsigned, qualifier_unsigned };
-#define QUADOP_UNONE_UNONE_UNONE_UNONE_UNONE_QUALIFIERS \
-  (arm_quadop_unone_unone_unone_unone_unone_qualifiers)
+    qualifier_unsigned, qualifier_predicate };
+#define QUADOP_UNONE_UNONE_UNONE_UNONE_PRED_QUALIFIERS \
+  (arm_quadop_unone_unone_unone_unone_pred_qualifiers)
 
 static enum arm_type_qualifiers
-arm_quadop_unone_unone_none_imm_unone_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+arm_quadop_unone_unone_none_imm_pred_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_unsigned, qualifier_unsigned, qualifier_none,
-    qualifier_immediate, qualifier_unsigned };
-#define QUADOP_UNONE_UNONE_NONE_IMM_UNONE_QUALIFIERS \
-  (arm_quadop_unone_unone_none_imm_unone_qualifiers)
+    qualifier_immediate, qualifier_predicate };
+#define QUADOP_UNONE_UNONE_NONE_IMM_PRED_QUALIFIERS \
+  (arm_quadop_unone_unone_none_imm_pred_qualifiers)
 
 static enum arm_type_qualifiers
-arm_quadop_none_none_unone_imm_unone_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+arm_quadop_none_none_unone_imm_pred_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_none, qualifier_none, qualifier_unsigned, qualifier_immediate,
-    qualifier_unsigned };
-#define QUADOP_NONE_NONE_UNONE_IMM_UNONE_QUALIFIERS \
-  (arm_quadop_none_none_unone_imm_unone_qualifiers)
+    qualifier_predicate };
+#define QUADOP_NONE_NONE_UNONE_IMM_PRED_QUALIFIERS \
+  (arm_quadop_none_none_unone_imm_pred_qualifiers)
 
 static enum arm_type_qualifiers
-arm_quadop_unone_unone_unone_imm_unone_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+arm_quadop_unone_unone_unone_imm_pred_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_unsigned, qualifier_unsigned, qualifier_unsigned,
-    qualifier_immediate, qualifier_unsigned };
-#define QUADOP_UNONE_UNONE_UNONE_IMM_UNONE_QUALIFIERS \
-  (arm_quadop_unone_unone_unone_imm_unone_qualifiers)
+    qualifier_immediate, qualifier_predicate };
+#define QUADOP_UNONE_UNONE_UNONE_IMM_PRED_QUALIFIERS \
+  (arm_quadop_unone_unone_unone_imm_pred_qualifiers)
 
 static enum arm_type_qualifiers
-arm_quadop_unone_unone_unone_none_unone_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+arm_quadop_unone_unone_unone_none_pred_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_unsigned, qualifier_unsigned, qualifier_unsigned,
-    qualifier_none, qualifier_unsigned };
-#define QUADOP_UNONE_UNONE_UNONE_NONE_UNONE_QUALIFIERS \
-  (arm_quadop_unone_unone_unone_none_unone_qualifiers)
+    qualifier_none, qualifier_predicate };
+#define QUADOP_UNONE_UNONE_UNONE_NONE_PRED_QUALIFIERS \
+  (arm_quadop_unone_unone_unone_none_pred_qualifiers)
 
 static enum arm_type_qualifiers
 arm_strs_qualifiers[SIMD_MAX_BUILTIN_ARGS]
@@ -625,37 +645,37 @@ arm_strsbu_qualifiers[SIMD_MAX_BUILTIN_ARGS]
 
 static enum arm_type_qualifiers
 arm_strs_p_qualifiers[SIMD_MAX_BUILTIN_ARGS]
-  = { qualifier_void, qualifier_pointer, qualifier_none, qualifier_unsigned};
+  = { qualifier_void, qualifier_pointer, qualifier_none, qualifier_predicate};
 #define STRS_P_QUALIFIERS (arm_strs_p_qualifiers)
 
 static enum arm_type_qualifiers
 arm_stru_p_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_void, qualifier_pointer, qualifier_unsigned,
-      qualifier_unsigned};
+      qualifier_predicate};
 #define STRU_P_QUALIFIERS (arm_stru_p_qualifiers)
 
 static enum arm_type_qualifiers
 arm_strsu_p_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_void, qualifier_pointer, qualifier_unsigned,
-      qualifier_unsigned, qualifier_unsigned};
+      qualifier_unsigned, qualifier_predicate};
 #define STRSU_P_QUALIFIERS (arm_strsu_p_qualifiers)
 
 static enum arm_type_qualifiers
 arm_strss_p_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_void, qualifier_pointer, qualifier_unsigned,
-      qualifier_none, qualifier_unsigned};
+      qualifier_none, qualifier_predicate};
 #define STRSS_P_QUALIFIERS (arm_strss_p_qualifiers)
 
 static enum arm_type_qualifiers
 arm_strsbs_p_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_void, qualifier_unsigned, qualifier_immediate,
-      qualifier_none, qualifier_unsigned};
+      qualifier_none, qualifier_predicate};
 #define STRSBS_P_QUALIFIERS (arm_strsbs_p_qualifiers)
 
 static enum arm_type_qualifiers
 arm_strsbu_p_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_void, qualifier_unsigned, qualifier_immediate,
-      qualifier_unsigned, qualifier_unsigned};
+      qualifier_unsigned, qualifier_predicate};
 #define STRSBU_P_QUALIFIERS (arm_strsbu_p_qualifiers)
 
 static enum arm_type_qualifiers
@@ -691,43 +711,43 @@ arm_ldrgbu_qualifiers[SIMD_MAX_BUILTIN_ARGS]
 static enum arm_type_qualifiers
 arm_ldrgbs_z_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_none, qualifier_unsigned, qualifier_immediate,
-      qualifier_unsigned};
+      qualifier_predicate};
 #define LDRGBS_Z_QUALIFIERS (arm_ldrgbs_z_qualifiers)
 
 static enum arm_type_qualifiers
 arm_ldrgbu_z_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_unsigned, qualifier_unsigned, qualifier_immediate,
-      qualifier_unsigned};
+      qualifier_predicate};
 #define LDRGBU_Z_QUALIFIERS (arm_ldrgbu_z_qualifiers)
 
 static enum arm_type_qualifiers
 arm_ldrgs_z_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_none, qualifier_pointer, qualifier_unsigned,
-      qualifier_unsigned};
+      qualifier_predicate};
 #define LDRGS_Z_QUALIFIERS (arm_ldrgs_z_qualifiers)
 
 static enum arm_type_qualifiers
 arm_ldrgu_z_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_unsigned, qualifier_pointer, qualifier_unsigned,
-      qualifier_unsigned};
+      qualifier_predicate};
 #define LDRGU_Z_QUALIFIERS (arm_ldrgu_z_qualifiers)
 
 static enum arm_type_qualifiers
 arm_ldrs_z_qualifiers[SIMD_MAX_BUILTIN_ARGS]
-  = { qualifier_none, qualifier_pointer, qualifier_unsigned};
+  = { qualifier_none, qualifier_pointer, qualifier_predicate};
 #define LDRS_Z_QUALIFIERS (arm_ldrs_z_qualifiers)
 
 static enum arm_type_qualifiers
 arm_ldru_z_qualifiers[SIMD_MAX_BUILTIN_ARGS]
-  = { qualifier_unsigned, qualifier_pointer, qualifier_unsigned};
+  = { qualifier_unsigned, qualifier_pointer, qualifier_predicate};
 #define LDRU_Z_QUALIFIERS (arm_ldru_z_qualifiers)
 
 static enum arm_type_qualifiers
-arm_quinop_unone_unone_unone_unone_imm_unone_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+arm_quinop_unone_unone_unone_unone_imm_pred_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_unsigned, qualifier_unsigned, qualifier_unsigned,
-      qualifier_unsigned, qualifier_immediate, qualifier_unsigned };
-#define QUINOP_UNONE_UNONE_UNONE_UNONE_IMM_UNONE_QUALIFIERS \
-  (arm_quinop_unone_unone_unone_unone_imm_unone_qualifiers)
+      qualifier_unsigned, qualifier_immediate, qualifier_predicate };
+#define QUINOP_UNONE_UNONE_UNONE_UNONE_IMM_PRED_QUALIFIERS \
+  (arm_quinop_unone_unone_unone_unone_imm_pred_qualifiers)
 
 static enum arm_type_qualifiers
 arm_ldrgbwbxu_qualifiers[SIMD_MAX_BUILTIN_ARGS]
@@ -737,7 +757,7 @@ arm_ldrgbwbxu_qualifiers[SIMD_MAX_BUILTIN_ARGS]
 static enum arm_type_qualifiers
 arm_ldrgbwbxu_z_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_unsigned, qualifier_unsigned, qualifier_immediate,
-      qualifier_unsigned};
+      qualifier_predicate};
 #define LDRGBWBXU_Z_QUALIFIERS (arm_ldrgbwbxu_z_qualifiers)
 
 static enum arm_type_qualifiers
@@ -753,13 +773,13 @@ arm_ldrgbwbu_qualifiers[SIMD_MAX_BUILTIN_ARGS]
 static enum arm_type_qualifiers
 arm_ldrgbwbs_z_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_none, qualifier_unsigned, qualifier_immediate,
-      qualifier_unsigned};
+      qualifier_predicate};
 #define LDRGBWBS_Z_QUALIFIERS (arm_ldrgbwbs_z_qualifiers)
 
 static enum arm_type_qualifiers
 arm_ldrgbwbu_z_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_unsigned, qualifier_unsigned, qualifier_immediate,
-      qualifier_unsigned};
+      qualifier_predicate};
 #define LDRGBWBU_Z_QUALIFIERS (arm_ldrgbwbu_z_qualifiers)
 
 static enum arm_type_qualifiers
@@ -775,13 +795,13 @@ arm_strsbwbu_qualifiers[SIMD_MAX_BUILTIN_ARGS]
 static enum arm_type_qualifiers
 arm_strsbwbs_p_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_unsigned, qualifier_unsigned, qualifier_const,
-      qualifier_none, qualifier_unsigned};
+      qualifier_none, qualifier_predicate};
 #define STRSBWBS_P_QUALIFIERS (arm_strsbwbs_p_qualifiers)
 
 static enum arm_type_qualifiers
 arm_strsbwbu_p_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_unsigned, qualifier_unsigned, qualifier_const,
-      qualifier_unsigned, qualifier_unsigned};
+      qualifier_unsigned, qualifier_predicate};
 #define STRSBWBU_P_QUALIFIERS (arm_strsbwbu_p_qualifiers)
 
 static enum arm_type_qualifiers
@@ -803,6 +823,18 @@ static enum arm_type_qualifiers
 arm_sqshl_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_unsigned, qualifier_unsigned, qualifier_const};
 #define SQSHL_QUALIFIERS (arm_sqshl_qualifiers)
+
+static enum arm_type_qualifiers
+arm_binop_none_none_pred_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_none, qualifier_none, qualifier_predicate };
+#define BINOP_NONE_NONE_PRED_QUALIFIERS \
+  (arm_binop_none_none_pred_qualifiers)
+
+static enum arm_type_qualifiers
+arm_binop_unone_unone_pred_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_unsigned, qualifier_unsigned, qualifier_predicate };
+#define BINOP_UNONE_UNONE_PRED_QUALIFIERS \
+  (arm_binop_unone_unone_pred_qualifiers)
 
 /* End of Qualifier for MVE builtins.  */
 
@@ -1553,11 +1585,28 @@ arm_init_simd_builtin_types (void)
       tree eltype = arm_simd_types[i].eltype;
       machine_mode mode = arm_simd_types[i].mode;
 
-      if (eltype == NULL)
+      if (eltype == NULL
+	  /* VECTOR_BOOL is not supported unless MVE is activated,
+	     this would make build_truth_vector_type_for_mode
+	     crash.  */
+	  && ((GET_MODE_CLASS (mode) != MODE_VECTOR_BOOL)
+	      || !TARGET_HAVE_MVE))
 	continue;
       if (arm_simd_types[i].itype == NULL)
 	{
-	  tree type = build_vector_type (eltype, GET_MODE_NUNITS (mode));
+	  tree type;
+	  if (GET_MODE_CLASS (mode) == MODE_VECTOR_BOOL)
+	    {
+	      /* Handle MVE predicates: they are internally stored as
+		 16 bits, but are used as vectors of 1, 2 or 4-bit
+		 elements.  */
+	      type = build_truth_vector_type_for_mode (GET_MODE_NUNITS (mode),
+						       mode);
+	      eltype = TREE_TYPE (type);
+	    }
+	  else
+	    type = build_vector_type (eltype, GET_MODE_NUNITS (mode));
+
 	  type = build_distinct_type_copy (type);
 	  SET_TYPE_STRUCTURAL_EQUALITY (type);
 
@@ -1694,6 +1743,11 @@ arm_init_builtin (unsigned int fcode, arm_builtin_datum *d,
 	 for certain arguments, encoded in d->mode.  */
       if (qualifiers & qualifier_map_mode)
 	op_mode = d->mode;
+
+      /* MVE Predicates use HImode as mandated by the ABI: pred16_t is
+	 unsigned short.  */
+      if (qualifiers & qualifier_predicate)
+	op_mode = HImode;
 
       /* For pointers, we want a pointer to the basic type
 	 of the vector.  */
@@ -2939,6 +2993,12 @@ arm_expand_builtin_args (rtx target, machine_mode map_mode, int fcode,
 	    case ARG_BUILTIN_COPY_TO_REG:
 	      if (POINTER_TYPE_P (TREE_TYPE (arg[argc])))
 		op[argc] = convert_memory_address (Pmode, op[argc]);
+
+	      /* MVE uses mve_pred16_t (aka HImode) for vectors of
+		 predicates.  */
+	      if (GET_MODE_CLASS (mode[argc]) == MODE_VECTOR_BOOL)
+		op[argc] = gen_lowpart (mode[argc], op[argc]);
+
 	      /*gcc_assert (GET_MODE (op[argc]) == mode[argc]); */
 	      if (!(*insn_data[icode].operand[opno].predicate)
 		  (op[argc], mode[argc]))
@@ -3143,6 +3203,13 @@ constant_arg:
     error ("this builtin is not supported for this target");
   else
     emit_insn (insn);
+
+  if (GET_MODE_CLASS (tmode) == MODE_VECTOR_BOOL)
+    {
+      rtx HItarget = gen_reg_rtx (HImode);
+      emit_move_insn (HItarget, gen_lowpart (HImode, target));
+      return HItarget;
+    }
 
   return target;
 }

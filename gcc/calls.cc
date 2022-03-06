@@ -5139,6 +5139,13 @@ store_one_arg (struct arg_data *arg, rtx argblock, int flags,
 			ARGS_SIZE_RTX (arg->locate.offset),
 			reg_parm_stack_space,
 			ARGS_SIZE_RTX (arg->locate.alignment_pad), false);
+      /* If we bypass emit_push_insn because it is a zero sized argument,
+	 we still might need to adjust stack if such argument requires
+	 extra alignment.  See PR104558.  */
+      else if ((arg->locate.alignment_pad.var
+		|| maybe_ne (arg->locate.alignment_pad.constant, 0))
+	       && !argblock)
+	anti_adjust_stack (ARGS_SIZE_RTX (arg->locate.alignment_pad));
 
       /* Unless this is a partially-in-register argument, the argument is now
 	 in the stack.

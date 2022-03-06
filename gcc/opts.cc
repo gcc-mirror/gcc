@@ -2017,6 +2017,7 @@ const struct sanitizer_opts_s sanitizer_opts[] =
   SANITIZER_OPT (vptr, SANITIZE_VPTR, true),
   SANITIZER_OPT (pointer-overflow, SANITIZE_POINTER_OVERFLOW, true),
   SANITIZER_OPT (builtin, SANITIZE_BUILTIN, true),
+  SANITIZER_OPT (shadow-call-stack, SANITIZE_SHADOW_CALL_STACK, false),
   SANITIZER_OPT (all, ~0U, true),
 #undef SANITIZER_OPT
   { NULL, 0U, 0UL, false }
@@ -2143,7 +2144,8 @@ parse_sanitizer_options (const char *p, location_t loc, int scode,
 		  }
 		else
 		  flags |= ~(SANITIZE_THREAD | SANITIZE_LEAK
-			     | SANITIZE_UNREACHABLE | SANITIZE_RETURN);
+			     | SANITIZE_UNREACHABLE | SANITIZE_RETURN
+			     | SANITIZE_SHADOW_CALL_STACK);
 	      }
 	    else if (value)
 	      {
@@ -2895,8 +2897,6 @@ common_handle_option (struct gcc_options *opts,
     case OPT_fauto_profile:
       enable_fdo_optimizations (opts, opts_set, value);
       SET_OPTION_IF_UNSET (opts, opts_set, flag_profile_correction, value);
-      SET_OPTION_IF_UNSET (opts, opts_set,
-			   param_early_inliner_max_iterations, 10);
       break;
 
     case OPT_fprofile_generate_:

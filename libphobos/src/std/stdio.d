@@ -50,8 +50,8 @@ import core.stdc.stddef : wchar_t;
 public import core.stdc.stdio;
 import std.algorithm.mutation : copy;
 import std.meta : allSatisfy;
-import std.range.primitives : ElementEncodingType, empty, front,
-    isBidirectionalRange, isInputRange, put;
+import std.range : ElementEncodingType, empty, front, isBidirectionalRange,
+    isInputRange, isSomeFiniteCharInputRange, put;
 import std.traits : isSomeChar, isSomeString, Unqual, isPointer;
 import std.typecons : Flag, No, Yes;
 
@@ -555,7 +555,7 @@ Throws: `ErrnoException` if the file could not be opened.
 
     /// ditto
     this(R1, R2)(R1 name)
-        if (isInputRange!R1 && isSomeChar!(ElementEncodingType!R1))
+        if (isSomeFiniteCharInputRange!R1)
     {
         import std.conv : to;
         this(name.to!string, "rb");
@@ -563,8 +563,8 @@ Throws: `ErrnoException` if the file could not be opened.
 
     /// ditto
     this(R1, R2)(R1 name, R2 mode)
-        if (isInputRange!R1 && isSomeChar!(ElementEncodingType!R1) &&
-            isInputRange!R2 && isSomeChar!(ElementEncodingType!R2))
+        if (isSomeFiniteCharInputRange!R1 &&
+            isSomeFiniteCharInputRange!R2)
     {
         import std.conv : to;
         this(name.to!string, mode.to!string);
@@ -957,7 +957,7 @@ Throws: `Exception` if the file is not opened.
     }
 
 /**
-If the file is not opened, returns `true`. Otherwise, returns
+If the file is closed or not yet opened, returns `true`. Otherwise, returns
 $(HTTP cplusplus.com/reference/clibrary/cstdio/ferror.html, ferror) for
 the file handle.
  */
@@ -1013,8 +1013,8 @@ Throws: `ErrnoException` on failure if closing the file.
     }
 
 /**
-If the file was unopened, succeeds vacuously. Otherwise closes the
-file (by calling $(HTTP
+If the file was closed or not yet opened, succeeds vacuously. Otherwise
+closes the file (by calling $(HTTP
 cplusplus.com/reference/clibrary/cstdio/fclose.html, fclose)),
 throwing on error. Even if an exception is thrown, afterwards the $(D
 File) object is empty. This is different from `detach` in that it
@@ -1042,7 +1042,7 @@ Throws: `ErrnoException` on error.
     }
 
 /**
-If the file is not opened, succeeds vacuously. Otherwise, returns
+If the file is closed or not yet opened, succeeds vacuously. Otherwise, returns
 $(HTTP cplusplus.com/reference/clibrary/cstdio/_clearerr.html,
 _clearerr) for the file handle.
  */
@@ -4642,8 +4642,8 @@ if (isSomeChar!C && is(Unqual!C == C) && !is(C == enum) &&
  * with appropriately-constructed C-style strings.
  */
 private FILE* _fopen(R1, R2)(R1 name, R2 mode = "r")
-if ((isInputRange!R1 && isSomeChar!(ElementEncodingType!R1) || isSomeString!R1) &&
-    (isInputRange!R2 && isSomeChar!(ElementEncodingType!R2) || isSomeString!R2))
+if ((isSomeFiniteCharInputRange!R1 || isSomeString!R1) &&
+    (isSomeFiniteCharInputRange!R2 || isSomeString!R2))
 {
     import std.internal.cstring : tempCString;
 
@@ -4684,8 +4684,8 @@ version (Posix)
      * with appropriately-constructed C-style strings.
      */
     FILE* _popen(R1, R2)(R1 name, R2 mode = "r") @trusted nothrow @nogc
-    if ((isInputRange!R1 && isSomeChar!(ElementEncodingType!R1) || isSomeString!R1) &&
-        (isInputRange!R2 && isSomeChar!(ElementEncodingType!R2) || isSomeString!R2))
+    if ((isSomeFiniteCharInputRange!R1 || isSomeString!R1) &&
+        (isSomeFiniteCharInputRange!R2 || isSomeString!R2))
     {
         import std.internal.cstring : tempCString;
 

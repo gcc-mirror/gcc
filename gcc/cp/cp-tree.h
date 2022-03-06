@@ -2829,6 +2829,12 @@ struct GTY(()) lang_decl_base {
 
   /* The following apply to VAR, FUNCTION, TYPE, CONCEPT, & NAMESPACE
      decls.  */
+  // FIXME: Purview and Attachment are not the same thing, due to
+  // linkage-declarations.  The modules code presumes they are the
+  // same.  (For context, linkage-decl semantics was a very late
+  // change). We need a module_attachment_p flag, and this will allow
+  // some simplification of how we handle header unit entities.
+  // Hurrah!
   unsigned module_purview_p : 1;	   /* in module purview (not GMF) */
   unsigned module_import_p : 1;     	   /* from an import */
   unsigned module_entity_p : 1;		   /* is in the entitity ary &
@@ -4201,6 +4207,18 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
 #define VEC_INIT_EXPR_VALUE_INIT(NODE) \
   TREE_LANG_FLAG_1 (VEC_INIT_EXPR_CHECK (NODE))
 
+/* If T is a VEC_INIT_EXPR, return it, possibly stripping a TARGET_EXPR
+   wrapper.  Otherwise, return null.  */
+inline tree
+get_vec_init_expr (tree t)
+{
+  if (t && TREE_CODE (t) == TARGET_EXPR)
+    t = TARGET_EXPR_INITIAL (t);
+  if (t && TREE_CODE (t) == VEC_INIT_EXPR)
+    return t;
+  return NULL_TREE;
+}
+
 /* The condition under which this MUST_NOT_THROW_EXPR actually blocks
    exceptions.  NULL_TREE means 'true'.  */
 #define MUST_NOT_THROW_COND(NODE) \
@@ -5360,6 +5378,21 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
   (TREE_CODE (NODE) == TARGET_EXPR				\
    && TARGET_EXPR_INITIAL (NODE)				\
    && !VOID_TYPE_P (TREE_TYPE (TARGET_EXPR_INITIAL (NODE))))
+
+/* True if T is a TARGET_EXPR for which we'll need to replace_decl to use it as
+   an initializer.  */
+inline bool
+target_expr_needs_replace (tree t)
+{
+  if (!t || TREE_CODE (t) != TARGET_EXPR)
+    return false;
+  tree init = TARGET_EXPR_INITIAL (t);
+  if (!init || !VOID_TYPE_P (TREE_TYPE (init)))
+    return false;
+  while (TREE_CODE (init) == COMPOUND_EXPR)
+    init = TREE_OPERAND (init, 1);
+  return TREE_CODE (init) != AGGR_INIT_EXPR;
+}
 
 /* True if EXPR expresses direct-initialization of a TYPE.  */
 #define DIRECT_INIT_EXPR_P(TYPE,EXPR)					\
@@ -6806,7 +6839,7 @@ extern void xref_basetypes			(tree, tree);
 extern tree start_enum				(tree, tree, tree, tree, bool, bool *);
 extern void finish_enum_value_list		(tree);
 extern void finish_enum				(tree);
-extern void build_enumerator			(tree, tree, tree, tree, location_t);
+extern tree build_enumerator			(tree, tree, tree, tree, location_t);
 extern tree lookup_enumerator			(tree, tree);
 extern bool start_preparsed_function		(tree, tree, int);
 extern bool start_function			(cp_decl_specifier_seq *,
@@ -6903,6 +6936,7 @@ extern void no_linkage_error			(tree);
 extern void check_default_args			(tree);
 extern bool mark_used				(tree);
 extern bool mark_used			        (tree, tsubst_flags_t);
+extern bool mark_single_function	        (tree, tsubst_flags_t);
 extern void finish_static_data_member_decl	(tree, tree, bool, tree, int);
 extern tree cp_build_parm_decl			(tree, tree, tree);
 extern void copy_linkage			(tree, tree);
@@ -7393,6 +7427,7 @@ extern bool copy_guide_p			(const_tree);
 extern bool template_guide_p			(const_tree);
 extern bool builtin_guide_p			(const_tree);
 extern void store_explicit_specifier		(tree, tree);
+extern tree lookup_explicit_specifier		(tree);
 extern void walk_specializations		(bool,
 						 void (*)(bool, spec_entry *,
 							  void *),
@@ -7715,6 +7750,7 @@ extern void finish_lambda_scope			(void);
 extern tree start_lambda_function		(tree fn, tree lambda_expr);
 extern void finish_lambda_function		(tree body);
 extern bool regenerated_lambda_fn_p		(tree);
+extern tree lambda_regenerating_args		(tree);
 extern tree most_general_lambda			(tree);
 extern tree finish_omp_target			(location_t, tree, tree, bool);
 extern void finish_omp_target_clauses		(location_t, tree, tree *);
@@ -8150,7 +8186,7 @@ extern char *get_mangled_vtable_map_var_name    (tree);
 extern bool mangle_return_type_p		(tree);
 extern tree mangle_decomp			(tree, vec<tree> &);
 extern void mangle_module_substitution		(int);
-extern void mangle_identifier			(char, tree);
+extern int mangle_module_component		(tree id, bool partition);
 extern tree mangle_module_global_init		(int);
 
 /* in dump.cc */

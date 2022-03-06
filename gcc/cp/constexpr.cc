@@ -1840,13 +1840,10 @@ cxx_eval_internal_function (const constexpr_ctx *ctx, tree t,
 						 false, non_constant_p,
 						 overflow_p);
 	if (TREE_CODE (arg) == VECTOR_CST)
-	  return fold_const_call (CFN_VEC_CONVERT, TREE_TYPE (t), arg);
-	else
-	  {
-	    *non_constant_p = true;
-	    return t;
-	  }
+	  if (tree r = fold_const_call (CFN_VEC_CONVERT, TREE_TYPE (t), arg))
+	    return r;
       }
+      /* FALLTHRU */
 
     default:
       if (!ctx->quiet)
@@ -3413,7 +3410,10 @@ cxx_eval_binary_expression (const constexpr_ctx *ctx, tree t,
       if (ctx->manifestly_const_eval
 	  && (flag_constexpr_fp_except
 	      || TREE_CODE (type) != REAL_TYPE))
-	r = fold_binary_initializer_loc (loc, code, type, lhs, rhs);
+	{
+	  auto ofcc = make_temp_override (folding_cxx_constexpr, true);
+	  r = fold_binary_initializer_loc (loc, code, type, lhs, rhs);
+	}
       else
 	r = fold_binary_loc (loc, code, type, lhs, rhs);
     }
@@ -6649,7 +6649,6 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 	    /* Allow __FUNCTION__ etc.  */
 	    && !DECL_ARTIFICIAL (r))
 	  {
-	    gcc_assert (cxx_dialect >= cxx23);
 	    if (!ctx->quiet)
 	      {
 		if (CP_DECL_THREAD_LOCAL_P (r))
@@ -9066,6 +9065,14 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
     case BIND_EXPR:
       return RECUR (BIND_EXPR_BODY (t), want_rval);
 
+    case NON_DEPENDENT_EXPR:
+      /* Treat NON_DEPENDENT_EXPR as non-constant: it's not handled by
+	 constexpr evaluation or tsubst, so fold_non_dependent_expr can't
+	 do anything useful with it.  And we shouldn't see it in a context
+	 where a constant expression is strictly required, hence the assert.  */
+      gcc_checking_assert (!(flags & tf_error));
+      return false;
+
     case CLEANUP_POINT_EXPR:
     case MUST_NOT_THROW_EXPR:
     case TRY_CATCH_EXPR:
@@ -9073,7 +9080,6 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
     case EH_SPEC_BLOCK:
     case EXPR_STMT:
     case PAREN_EXPR:
-    case NON_DEPENDENT_EXPR:
       /* For convenience.  */
     case LOOP_EXPR:
     case EXIT_EXPR:
@@ -9364,8 +9370,8 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
     case GOTO_EXPR:
       {
 	tree *target = &TREE_OPERAND (t, 0);
-	/* Gotos representing break and continue are OK.  */
-	if (breaks (target) || continues (target))
+	/* Gotos representing break, continue and cdtor return are OK.  */
+	if (breaks (target) || continues (target) || returns (target))
 	  {
 	    *jump_target = *target;
 	    return true;

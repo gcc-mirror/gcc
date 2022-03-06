@@ -5,7 +5,6 @@
 
 /* { dg-final { scan-assembler "locghinle\t%r.?,1" } } */
 /* { dg-final { scan-assembler "locgrnle\t.*" } } */
-#include <stdbool.h>
 #include <limits.h>
 #include <stdio.h>
 #include <assert.h>
@@ -33,7 +32,7 @@ int main()
 {
   long a[] = {2, 1, -13, LONG_MAX, LONG_MIN, 0};
 
-  long res = foo (a, sizeof (a));
+  long res = foo (a, sizeof (a) / sizeof (a[0]));
 
   assert (res == (LONG_MIN + 1));
 }

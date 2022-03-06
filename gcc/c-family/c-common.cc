@@ -3174,7 +3174,11 @@ shorten_compare (location_t loc, tree *op0_ptr, tree *op1_ptr,
   else if (real1 && real2
 	   && (DECIMAL_FLOAT_MODE_P (TYPE_MODE (TREE_TYPE (primop0)))
 	       || DECIMAL_FLOAT_MODE_P (TYPE_MODE (TREE_TYPE (primop1)))))
-    return NULL_TREE;
+    {
+      type = *restype_ptr;
+      primop0 = op0;
+      primop1 = op1;
+    }
 
   else if (real1 && real2
 	   && (TYPE_PRECISION (TREE_TYPE (primop0))

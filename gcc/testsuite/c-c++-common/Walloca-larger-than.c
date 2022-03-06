@@ -1,6 +1,7 @@
 /* PR middle-end/100425 - missing -Walloca-larger-than with -O0
    { dg-do compile }
-   { dg-options "-O0 -Wall -Walloca-larger-than=128" } */
+   { dg-options "-O0 -Wall -Walloca-larger-than=128" }
+   { dg-require-effective-target alloca } */
 
 typedef __SIZE_TYPE__ size_t;
 

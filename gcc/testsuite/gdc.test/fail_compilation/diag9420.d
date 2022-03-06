@@ -1,5 +1,5 @@
 /*
-TEST_OUTPUT
+TEST_OUTPUT:
 ---
 fail_compilation/diag9420.d(21): Error: function `diag9420.S.t3!().tx()` is not callable using argument types `(int)`
 fail_compilation/diag9420.d(21):        expected 0 argument(s), not 1

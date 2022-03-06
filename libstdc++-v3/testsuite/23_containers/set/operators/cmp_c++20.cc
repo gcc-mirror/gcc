@@ -49,9 +49,13 @@ test01()
   {
     bool operator==(E) { return true; }
   };
-  static_assert( ! std::totally_ordered<std::set<E>> );
+  struct Cmp
+  {
+    bool operator()(E, E) const { return false; }
+  };
+  static_assert( ! std::totally_ordered<std::set<E, Cmp>> );
   static_assert( ! std::three_way_comparable<E> );
-  static_assert( ! std::three_way_comparable<std::set<E>> );
+  static_assert( ! std::three_way_comparable<std::set<E, Cmp>> );
 }
 
 void

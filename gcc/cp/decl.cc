@@ -6017,6 +6017,11 @@ maybe_deduce_size_from_array_init (tree decl, tree init)
 		return;
 	      if (!check_array_designated_initializer (ce, i))
 		failure = 1;
+	      /* If an un-designated initializer is type-dependent, we can't
+		 check brace elision yet.  */
+	      if (ce->index == NULL_TREE
+		  && type_dependent_expression_p (ce->value))
+		return;
 	    }
 	}
 
@@ -7958,9 +7963,19 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
       enum auto_deduction_context adc = adc_variable_type;
       if (VAR_P (decl) && DECL_DECOMPOSITION_P (decl))
 	adc = adc_decomp_type;
+      tree outer_targs = NULL_TREE;
+      if (PLACEHOLDER_TYPE_CONSTRAINTS_INFO (auto_node)
+	  && VAR_P (decl)
+	  && DECL_LANG_SPECIFIC (decl)
+	  && DECL_TEMPLATE_INFO (decl)
+	  && !DECL_FUNCTION_SCOPE_P (decl))
+	/* The outer template arguments might be needed for satisfaction.
+	   (For function scope variables, do_auto_deduction will obtain the
+	   outer template arguments from current_function_decl.)  */
+	outer_targs = DECL_TI_ARGS (decl);
       type = TREE_TYPE (decl) = do_auto_deduction (type, d_init, auto_node,
 						   tf_warning_or_error, adc,
-						   NULL_TREE, flags);
+						   outer_targs, flags);
       if (type == error_mark_node)
 	return;
       if (TREE_CODE (type) == FUNCTION_TYPE)
@@ -8103,7 +8118,7 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
       else
 	{
 	  gcc_assert (!DECL_PRETTY_FUNCTION_P (decl));
-	  /* Deduce array size even if the initializer is dependent.  */
+	  /* Try to deduce array size.  */
 	  maybe_deduce_size_from_array_init (decl, init);
 	  /* And complain about multiple initializers.  */
 	  if (init && TREE_CODE (init) == TREE_LIST && TREE_CHAIN (init)
@@ -9560,7 +9575,8 @@ cp_complete_array_type (tree *ptype, tree initial_value, bool do_default)
       /* An array of character type can be initialized from a
 	 brace-enclosed string constant so call reshape_init to
 	 remove the optional braces from a braced string literal.  */
-      if (BRACE_ENCLOSED_INITIALIZER_P (initial_value))
+      if (char_type_p (TYPE_MAIN_VARIANT (TREE_TYPE (*ptype)))
+	  && BRACE_ENCLOSED_INITIALIZER_P (initial_value))
 	initial_value = reshape_init (*ptype, initial_value,
 				      tf_warning_or_error);
 
@@ -11089,7 +11105,7 @@ create_array_type_for_decl (tree name, tree type, tree size, location_t loc)
 
   /* [dcl.type.class.deduct] prohibits forming an array of placeholder
      for a deduced class type.  */
-  if (is_auto (type) && CLASS_PLACEHOLDER_TEMPLATE (type))
+  if (template_placeholder_p (type))
     {
       if (name)
 	error_at (loc, "%qD declared as array of template placeholder "
@@ -11159,8 +11175,16 @@ create_array_type_for_decl (tree name, tree type, tree size, location_t loc)
 
   /* Figure out the index type for the array.  */
   if (size)
-    itype = compute_array_index_type_loc (loc, name, size,
-					  tf_warning_or_error);
+    {
+      itype = compute_array_index_type_loc (loc, name, size,
+					    tf_warning_or_error);
+      if (type_uses_auto (type)
+	  && variably_modified_type_p (itype, /*fn=*/NULL_TREE))
+	{
+	  sorry_at (loc, "variable-length array of %<auto%>");
+	  return error_mark_node;
+	}
+    }
 
   return build_cplus_array_type (type, itype);
 }
@@ -16385,7 +16409,7 @@ finish_enum (tree enumtype)
    Apply ATTRIBUTES if available.  LOC is the location of NAME.
    Assignment of sequential values by default is handled here.  */
 
-void
+tree
 build_enumerator (tree name, tree value, tree enumtype, tree attributes,
 		  location_t loc)
 {
@@ -16587,6 +16611,8 @@ incremented enumerator value is too large for %<long%>"));
 
   /* Add this enumeration constant to the list for this type.  */
   TYPE_VALUES (enumtype) = tree_cons (name, decl, TYPE_VALUES (enumtype));
+
+  return decl;
 }
 
 /* Look for an enumerator with the given NAME within the enumeration
