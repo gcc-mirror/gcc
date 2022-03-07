@@ -2226,7 +2226,7 @@
 	return "";
       }
     const char *t
-      = "%.\\tatom%A1.b%T0.<logic>\\t%0, %1, %2;";
+      = "%.\\tatom%A1.<logic>.b%T0\\t%0, %1, %2;";
     return nvptx_output_atomic_insn (t, operands, 1, 3);
   }
 
