@@ -1,3 +1,18 @@
+2022-03-06  Michael Meissner  <meissner@the-meissners.org>
+
+	PR target/104253
+	* config/rs6000/rs6000.c (init_float128_ibm): Update the
+	conversion functions used to convert IFmode types.  Backport
+	change made to the master branch on 2022-02-14.
+
+2022-03-06  Michael Meissner  <meissner@the-meissners.org>
+
+	PR target/99708
+	* config/rs6000/rs6000-c.c (rs6000_cpu_cpp_builtins): Define
+	__SIZEOF_IBM128__ if the IBM 128-bit long double type is created.
+	Define __SIZEOF_FLOAT128__ if the IEEE 128-bit floating point type
+	is created.  Backport change to master branch on 2022-02-17.
+
 2022-02-17  Richard Biener  <rguenther@suse.de>
 
 	Backported from master:
