@@ -1915,7 +1915,7 @@ load_line (FILE *input, gfc_char_t **pbuf, int *pbuflen, const int *first_char)
 
       /* For truncation and tab warnings, set seen_comment to false if one has
 	 either an OpenMP or OpenACC directive - or a !GCC$ attribute.  If
-	 OpenMP is enabled, use '!$' as as conditional compilation sentinel
+	 OpenMP is enabled, use '!$' as conditional compilation sentinel
 	 and OpenMP directive ('!$omp').  */
       if (seen_comment && first_comment && flag_openmp && comment_ix + 1 == i
 	  && c == '$')

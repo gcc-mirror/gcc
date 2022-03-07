@@ -5678,7 +5678,7 @@ gfc_conv_gfc_desc_to_cfi_desc (gfc_se *parmse, gfc_expr *e, gfc_symbol *fsym)
      Note that allocatable implies 'len=:'.  */
   if (e->ts.type != BT_ASSUMED && e->ts.type != BT_CHARACTER )
     {
-      /* Length is known at compile time; use use 'block' for it.  */
+      /* Length is known at compile time; use 'block' for it.  */
       tmp = size_in_bytes (gfc_typenode_for_spec (&e->ts));
       tmp2 = gfc_get_cfi_desc_elem_len (cfi);
       gfc_add_modify (&block, tmp2, fold_convert (TREE_TYPE (tmp2), tmp));

@@ -20334,7 +20334,7 @@ ix86_division_cost (const struct processor_costs *cost,
 
 /* Return cost of shift in MODE.
    If CONSTANT_OP1 is true, the op1 value is known and set in OP1_VAL.
-   AND_IN_OP1 specify in op1 is result of and and SHIFT_AND_TRUNCATE
+   AND_IN_OP1 specify in op1 is result of AND and SHIFT_AND_TRUNCATE
    if op1 is a result of subreg.
 
    SKIP_OP0/1 is set to true if cost of OP0/1 should be ignored.  */

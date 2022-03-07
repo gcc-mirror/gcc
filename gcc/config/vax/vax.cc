@@ -1124,7 +1124,7 @@ vax_select_cc_mode (enum rtx_code op,
 
 /* Return the narrowest CC mode that spans both modes offered.  If they
    intersect, this will be the wider of the two, and if they do not then
-   find find one that is a superset of both (i.e. CCNZmode for a pair
+   find one that is a superset of both (i.e. CCNZmode for a pair
    consisting of CCNmode and CCZmode).  A wider CC writer will satisfy
    a narrower CC reader, e.g. a comparison operator that uses CCZmode
    can use a CCNZmode output of a previous instruction.  */

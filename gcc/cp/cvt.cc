@@ -2092,7 +2092,7 @@ can_convert_tx_safety (tree to, tree from)
 }
 
 /* Return true iff FROM can convert to TO by dropping noexcept.
-   This is just a subroutine of of fnptr_conv_p.  */
+   This is just a subroutine of fnptr_conv_p.  */
 
 static bool
 noexcept_conv_p (tree to, tree from)

@@ -3918,7 +3918,7 @@ exploded_graph::process_node (exploded_node *node)
                         analysis of the current function.
 
                         The analyzer handles calls to such functions while
-                        analysing the stmt itself, so the the function call
+                        analysing the stmt itself, so the function call
                         must have been handled by the anlyzer till now.  */
                      exploded_node *next
                        = get_or_create_node (next_point,
