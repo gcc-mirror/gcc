@@ -12696,10 +12696,10 @@ package body Sem_Util is
             return Type_Or_Variable_Has_Enabled_Property
               (First_Subtype (Etype (Base_Type (Item_Id))));
 
-         --  If not specified explicitly for an object and the type
+         --  If not specified explicitly for an object and its type
          --  is effectively volatile, then take result from the type.
 
-         elsif not Is_Type (Item_Id)
+         elsif Is_Object (Item_Id)
            and then Is_Effectively_Volatile (Etype (Item_Id))
          then
             return Has_Enabled_Property (Etype (Item_Id), Property);
