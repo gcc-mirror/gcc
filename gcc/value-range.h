@@ -397,9 +397,8 @@ inline
 irange::irange (tree *base, unsigned nranges)
 {
   m_base = base;
-  m_num_ranges = 0;
   m_max_ranges = nranges;
-  m_kind = VR_UNDEFINED;
+  set_undefined ();
 }
 
 // Constructors for int_range<>.
