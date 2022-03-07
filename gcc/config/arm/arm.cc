@@ -3185,8 +3185,8 @@ arm_option_override_internal (struct gcc_options *opts,
   if (arm_stack_protector_guard == SSP_GLOBAL
       && opts->x_arm_stack_protector_guard_offset_str)
     {
-      error ("incompatible options %'-mstack-protector-guard=global%' and"
-	     "%'-mstack-protector-guard-offset=%qs%'",
+      error ("incompatible options %<-mstack-protector-guard=global%> and"
+	     "%<-mstack-protector-guard-offset=%s%>",
 	     arm_stack_protector_guard_offset_str);
     }
 
@@ -3880,7 +3880,7 @@ arm_option_reconfigure_globals (void)
     }
 
   if (!TARGET_HARD_TP && arm_stack_protector_guard == SSP_TLSREG)
-    error("%'-mstack-protector-guard=tls%' needs a hardware TLS register");
+    error("%<-mstack-protector-guard=tls%> needs a hardware TLS register");
 }
 
 /* Perform some validation between the desired architecture and the rest of the
