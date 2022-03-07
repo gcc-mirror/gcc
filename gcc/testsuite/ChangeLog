@@ -1,3 +1,8 @@
+2022-03-06  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* gcc.dg/lower-subreg-1.c: Update test case.  iordi3 is no longer
+	lowered by the RTL subreg1 pass on ia32 [even with -mno-stv].
+
 2022-03-05  Roger Sayle  <roger@nextmovesoftware.com>
 	    Uroš Bizjak  <ubizjak@gmail.com>
 
