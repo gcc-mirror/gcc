@@ -2805,9 +2805,9 @@ conv_parent_component_references (gfc_se * se, gfc_ref * ref)
   dt = ref->u.c.sym;
   c = ref->u.c.component;
 
-  /* Return if the component is in the parent type.  */
+  /* Return if the component is in this type, i.e. not in the parent type.  */
   for (cmp = dt->components; cmp; cmp = cmp->next)
-    if (strcmp (c->name, cmp->name) == 0)
+    if (c == cmp)
       return;
 
   /* Build a gfc_ref to recursively call gfc_conv_component_ref.  */
@@ -2867,6 +2867,8 @@ tree
 gfc_maybe_dereference_var (gfc_symbol *sym, tree var, bool descriptor_only_p,
 			   bool is_classarray)
 {
+  if (!POINTER_TYPE_P (TREE_TYPE (var)))
+    return var;
   if (is_CFI_desc (sym, NULL))
     return build_fold_indirect_ref_loc (input_location, var);
 
