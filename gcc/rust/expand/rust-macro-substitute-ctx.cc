@@ -33,7 +33,9 @@ SubstituteCtx::substitute_metavar (std::unique_ptr<AST::Token> &metavar)
 }
 
 std::vector<std::unique_ptr<AST::Token>>
-SubstituteCtx::substitute_repetition (size_t pattern_start, size_t pattern_end)
+SubstituteCtx::substitute_repetition (
+  size_t pattern_start, size_t pattern_end,
+  std::unique_ptr<AST::Token> separator_token)
 {
   rust_assert (pattern_end < macro.size ());
 
@@ -117,6 +119,11 @@ SubstituteCtx::substitute_repetition (size_t pattern_start, size_t pattern_end)
       auto substitute_context = SubstituteCtx (input, new_macro, sub_map);
       auto new_tokens = substitute_context.substitute_tokens ();
 
+      // Skip the first repetition, but add the separator to the expanded
+      // tokens if it is present
+      if (i != 0 && separator_token)
+	expanded.emplace_back (separator_token->clone_token ());
+
       for (auto &new_token : new_tokens)
 	expanded.emplace_back (new_token->clone_token ());
     }
@@ -125,6 +132,13 @@ SubstituteCtx::substitute_repetition (size_t pattern_start, size_t pattern_end)
   // contain the same amount of repetitions as the first one
 
   return expanded;
+}
+
+static bool
+is_rep_op (std::unique_ptr<AST::Token> &tok)
+{
+  auto id = tok->get_id ();
+  return id == QUESTION_MARK || id == ASTERISK || id == PLUS;
 }
 
 std::pair<std::vector<std::unique_ptr<AST::Token>>, size_t>
@@ -148,20 +162,34 @@ SubstituteCtx::substitute_token (size_t token_idx)
 	     pattern_end++)
 	  ;
 
+	std::unique_ptr<AST::Token> separator_token = nullptr;
+	// FIXME: Can this go out of bounds?
+	auto &post_pattern_token = macro.at (pattern_end + 1);
+	if (!is_rep_op (post_pattern_token))
+	  separator_token = post_pattern_token->clone_token ();
+
+	// Amount of tokens to skip
+	auto to_skip = 0;
+	// Parentheses
+	to_skip += 2;
+	// Repetition operator
+	to_skip += 1;
+	// Separator
+	if (separator_token)
+	  to_skip += 1;
+
 	// FIXME: This skips whitespaces... Is that okay??
-	// FIXME: Is there any existing parsing function that allows us to parse
-	// a macro pattern?
+	// FIXME: Is there any existing parsing function that allows us to
+	// parse a macro pattern?
 
 	// FIXME: Add error handling in the case we haven't found a matching
 	// closing delimiter
 
 	// FIXME: We need to parse the repetition token now
 
-	return {
-	  substitute_repetition (pattern_start, pattern_end),
-	  // + 2 for the opening and closing parentheses which are mandatory
-	  // + 1 for the repetitor (+, *, ?)
-	  pattern_end - pattern_start + 3};
+	return {substitute_repetition (pattern_start, pattern_end,
+				       std::move (separator_token)),
+		pattern_end - pattern_start + to_skip};
       }
       // TODO: We need to check if the $ was alone. In that case, do
       // not error out: Simply act as if there was an empty identifier

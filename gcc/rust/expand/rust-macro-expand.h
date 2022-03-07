@@ -192,7 +192,7 @@ struct MacroExpander
    * Match any amount of matches
    *
    * @param parser Parser to use for matching
-   * @param matches All consecutive matches to identify
+   * @param rep Repetition to try and match
    * @param match_amount Reference in which to store the ammount of succesful
    * and valid matches
    *
@@ -209,9 +209,8 @@ struct MacroExpander
    * otherwise
    */
   bool match_n_matches (Parser<MacroInvocLexer> &parser,
-			std::vector<std::unique_ptr<AST::MacroMatch>> &matches,
-			size_t &match_amount, size_t lo_bound = 0,
-			size_t hi_bound = 0);
+			AST::MacroMatchRepetition &rep, size_t &match_amount,
+			size_t lo_bound = 0, size_t hi_bound = 0);
 
   void push_context (ContextType t) { context.push_back (t); }
 

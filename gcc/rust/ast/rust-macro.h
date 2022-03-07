@@ -206,6 +206,7 @@ public:
   }
 
   MacroRepOp get_op () const { return op; }
+  const std::unique_ptr<MacroRepSep> &get_sep () const { return sep; }
   std::vector<std::unique_ptr<MacroMatch> > &get_matches () { return matches; }
 
 protected:
