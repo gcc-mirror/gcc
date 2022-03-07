@@ -1006,6 +1006,6 @@ default_plugin_dir_name (void)
 {
   if (!plugindir_string)
     fatal_error (input_location,
-		 "%<-iplugindir <dir>%> option not passed from the gcc driver");
+		 "%<-iplugindir%> option not passed from the gcc driver");
   return plugindir_string;
 }
