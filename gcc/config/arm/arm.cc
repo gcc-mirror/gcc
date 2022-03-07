@@ -3185,7 +3185,7 @@ arm_option_override_internal (struct gcc_options *opts,
   if (arm_stack_protector_guard == SSP_GLOBAL
       && opts->x_arm_stack_protector_guard_offset_str)
     {
-      error ("incompatible options %<-mstack-protector-guard=global%> and"
+      error ("incompatible options %<-mstack-protector-guard=global%> and "
 	     "%<-mstack-protector-guard-offset=%s%>",
 	     arm_stack_protector_guard_offset_str);
     }
