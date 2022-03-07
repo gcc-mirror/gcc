@@ -3274,7 +3274,9 @@ static bool
 nvptx_unisimt_handle_set (rtx set, rtx_insn *insn, rtx master)
 {
   rtx reg;
-  if (GET_CODE (set) == SET && REG_P (reg = SET_DEST (set)))
+  if (GET_CODE (set) == SET
+      && REG_P (reg = SET_DEST (set))
+      && find_reg_note (insn, REG_UNUSED, reg) == NULL_RTX)
     {
       emit_insn_after (nvptx_gen_shuffle (reg, reg, master, SHUFFLE_IDX),
 		       insn);
