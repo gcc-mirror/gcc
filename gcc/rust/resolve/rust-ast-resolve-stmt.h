@@ -44,17 +44,6 @@ public:
     stmt->accept_vis (resolver);
   };
 
-  void visit (AST::MacroInvocation &invoc) override
-  {
-    if (!invoc.has_semicolon ())
-      return;
-
-    AST::ASTFragment &fragment = invoc.get_fragment ();
-
-    for (auto &node : fragment.get_nodes ())
-      node.accept_vis (*this);
-  }
-
   void visit (AST::ExprStmtWithBlock &stmt) override
   {
     ResolveExpr::go (stmt.get_expr ().get (), stmt.get_node_id (), prefix,

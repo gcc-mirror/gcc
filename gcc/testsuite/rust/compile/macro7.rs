@@ -2,8 +2,8 @@ fn f() {}
 
 macro_rules! one_or_more {
     ($($a:literal)+) => { // { dg-error "invalid amount of matches for macro invocation" }
-        f()
-    }
+        f();
+    };
 }
 
 fn main() {

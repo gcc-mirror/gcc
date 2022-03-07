@@ -49,16 +49,6 @@ public:
     item->accept_vis (resolver);
   }
 
-  void visit (AST::MacroInvocation &invoc) override
-  {
-    if (!invoc.has_semicolon ())
-      return;
-
-    AST::ASTFragment &fragment = invoc.get_fragment ();
-    for (auto &node : fragment.get_nodes ())
-      node.accept_vis (*this);
-  }
-
   void visit (AST::TypeAlias &type) override
   {
     auto decl
@@ -146,16 +136,6 @@ public:
     ResolveTopLevelTraitItems resolver (prefix, canonical_prefix);
     item->accept_vis (resolver);
   };
-
-  void visit (AST::MacroInvocation &invoc) override
-  {
-    if (!invoc.has_semicolon ())
-      return;
-
-    AST::ASTFragment &fragment = invoc.get_fragment ();
-    for (auto &node : fragment.get_nodes ())
-      node.accept_vis (*this);
-  }
 
   void visit (AST::TraitItemFunc &function) override
   {
@@ -259,16 +239,6 @@ public:
     ResolveToplevelExternItem resolver (prefix);
     item->accept_vis (resolver);
   };
-
-  void visit (AST::MacroInvocation &invoc) override
-  {
-    if (!invoc.has_semicolon ())
-      return;
-
-    AST::ASTFragment &fragment = invoc.get_fragment ();
-    for (auto &node : fragment.get_nodes ())
-      node.accept_vis (*this);
-  }
 
   void visit (AST::ExternalFunctionItem &function) override
   {

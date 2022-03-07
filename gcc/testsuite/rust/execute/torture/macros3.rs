@@ -15,7 +15,7 @@ fn f() {
 
 macro_rules! invocation0 {
     (valid) => {
-        f()
+        f();
     };
     () => {};
 }
@@ -23,27 +23,27 @@ macro_rules! invocation0 {
 macro_rules! invocation1 {
     (valid) => {};
     () => {
-        f()
+        f();
     };
 }
 
 macro_rules! invocation2 {
     (valid) => {
-        f()
+        f();
     };
     (invalid) => {};
 }
 
 macro_rules! invocation3 {
     (this is a valid invocation) => {
-        f()
+        f();
     };
     (not this one) => {};
 }
 
 macro_rules! invocation4 {
     (fn f() {}) => {
-        f()
+        f();
     };
     (not a keyword) => {};
 }

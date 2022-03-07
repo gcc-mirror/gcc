@@ -1491,21 +1491,21 @@ public:
   };
 
   SingleASTNode (std::unique_ptr<Expr> expr)
-    : type (EXPRESSION), expr (std::move (expr)), item (nullptr), stmt (nullptr)
+    : kind (EXPRESSION), expr (std::move (expr)), item (nullptr), stmt (nullptr)
   {}
 
   SingleASTNode (std::unique_ptr<Item> item)
-    : type (ITEM), expr (nullptr), item (std::move (item)), stmt (nullptr)
+    : kind (ITEM), expr (nullptr), item (std::move (item)), stmt (nullptr)
   {}
 
   SingleASTNode (std::unique_ptr<Stmt> stmt)
-    : type (STMT), expr (nullptr), item (nullptr), stmt (std::move (stmt))
+    : kind (STMT), expr (nullptr), item (nullptr), stmt (std::move (stmt))
   {}
 
   SingleASTNode (SingleASTNode const &other)
   {
-    type = other.type;
-    switch (type)
+    kind = other.kind;
+    switch (kind)
       {
       case EXPRESSION:
 	expr = other.expr->clone_expr ();
@@ -1523,8 +1523,8 @@ public:
 
   SingleASTNode operator= (SingleASTNode const &other)
   {
-    type = other.type;
-    switch (type)
+    kind = other.kind;
+    switch (kind)
       {
       case EXPRESSION:
 	expr = other.expr->clone_expr ();
@@ -1544,27 +1544,52 @@ public:
   SingleASTNode (SingleASTNode &&other) = default;
   SingleASTNode &operator= (SingleASTNode &&other) = default;
 
-  std::unique_ptr<Expr> &get_expr ()
+  NodeType get_kind () const { return kind; }
+
+  std::unique_ptr<Expr> &get_inner ()
   {
-    rust_assert (type == EXPRESSION);
+    rust_assert (kind == EXPRESSION);
     return expr;
   }
 
   std::unique_ptr<Item> &get_item ()
   {
-    rust_assert (type == ITEM);
+    rust_assert (kind == ITEM);
     return item;
   }
 
   std::unique_ptr<Stmt> &get_stmt ()
   {
-    rust_assert (type == STMT);
+    rust_assert (kind == STMT);
     return stmt;
+  }
+
+  /**
+   * Access the inner nodes and take ownership of them.
+   * You can only call these functions once per node
+   */
+
+  std::unique_ptr<Stmt> take_stmt ()
+  {
+    rust_assert (!is_error ());
+    return std::move (stmt);
+  }
+
+  std::unique_ptr<Expr> take_expr ()
+  {
+    rust_assert (!is_error ());
+    return std::move (expr);
+  }
+
+  std::unique_ptr<Item> take_item ()
+  {
+    rust_assert (!is_error ());
+    return std::move (item);
   }
 
   void accept_vis (ASTVisitor &vis)
   {
-    switch (type)
+    switch (kind)
       {
       case EXPRESSION:
 	expr->accept_vis (vis);
@@ -1580,8 +1605,38 @@ public:
       }
   }
 
+  bool is_error ()
+  {
+    switch (kind)
+      {
+      case EXPRESSION:
+	return expr == nullptr;
+      case ITEM:
+	return item == nullptr;
+      case STMT:
+	return stmt == nullptr;
+      default:
+	return true;
+      }
+  }
+
+  std::string as_string ()
+  {
+    switch (kind)
+      {
+      case EXPRESSION:
+	return "Expr: " + expr->as_string ();
+      case ITEM:
+	return "Item: " + item->as_string ();
+      case STMT:
+	return "Stmt: " + stmt->as_string ();
+      default:
+	return "";
+      }
+  }
+
 private:
-  NodeType type;
+  NodeType kind;
 
   // FIXME make this a union
   std::unique_ptr<Expr> expr;
@@ -1604,11 +1659,18 @@ private:
    * ability for a macro to expand to two statements, for instance. */
 
   std::vector<SingleASTNode> nodes;
+  bool fragment_is_error;
 
 public:
-  ASTFragment (std::vector<SingleASTNode> nodes) : nodes (std::move (nodes)) {}
+  ASTFragment (std::vector<SingleASTNode> nodes, bool fragment_is_error = false)
+    : nodes (std::move (nodes)), fragment_is_error (fragment_is_error)
+  {
+    if (fragment_is_error)
+      rust_assert (nodes.empty ());
+  }
 
   ASTFragment (ASTFragment const &other)
+    : fragment_is_error (other.fragment_is_error)
   {
     nodes.clear ();
     nodes.reserve (other.nodes.size ());
@@ -1620,18 +1682,47 @@ public:
 
   ASTFragment &operator= (ASTFragment const &other)
   {
+    fragment_is_error = other.fragment_is_error;
     nodes.clear ();
     nodes.reserve (other.nodes.size ());
     for (auto &n : other.nodes)
       {
 	nodes.push_back (n);
       }
+
     return *this;
   }
 
   static ASTFragment create_empty () { return ASTFragment ({}); }
+  static ASTFragment create_error () { return ASTFragment ({}, true); }
 
   std::vector<SingleASTNode> &get_nodes () { return nodes; }
+  bool is_error () const { return fragment_is_error; }
+
+  bool should_expand () const { return !is_error () && !nodes.empty (); }
+
+  /**
+   * We need to make a special case for Expression fragments as only one
+   * Node will be extracted from the `nodes` vector
+   */
+
+  bool is_expression_fragment () const
+  {
+    return nodes.size () == 1
+	   && nodes[0].get_kind () == SingleASTNode::NodeType::EXPRESSION;
+  }
+
+  std::unique_ptr<Expr> take_expression_fragment ()
+  {
+    rust_assert (is_expression_fragment ());
+    return nodes[0].take_expr ();
+  }
+
+  void accept_vis (ASTVisitor &vis)
+  {
+    for (auto &node : nodes)
+      node.accept_vis (vis);
+  }
 };
 
 // A crate AST object - holds all the data for a single compilation unit

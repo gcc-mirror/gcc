@@ -464,9 +464,6 @@ class MacroInvocation : public TypeNoBounds,
   MacroInvocData invoc_data;
   Location locus;
 
-  // this is the expanded macro
-  ASTFragment fragment;
-
   // Important for when we actually expand the macro
   bool is_semi_coloned;
 
@@ -480,7 +477,6 @@ public:
 		   bool is_semi_coloned = false)
     : outer_attrs (std::move (outer_attrs)),
       invoc_data (std::move (invoc_data)), locus (locus),
-      fragment (ASTFragment::create_empty ()),
       is_semi_coloned (is_semi_coloned),
       node_id (Analysis::Mappings::get ()->get_next_node_id ())
   {}
@@ -512,10 +508,6 @@ public:
   NodeId get_macro_node_id () const { return node_id; }
 
   MacroInvocData &get_invoc_data () { return invoc_data; }
-
-  ASTFragment &get_fragment () { return fragment; }
-
-  void set_fragment (ASTFragment &&f) { fragment = std::move (f); }
 
   bool has_semicolon () const { return is_semi_coloned; }
 

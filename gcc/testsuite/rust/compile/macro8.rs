@@ -2,8 +2,8 @@ fn f() {}
 
 macro_rules! expr {
     ($($a:expr)?) => {
-        f()
-    }
+        f();
+    };
 }
 
 fn main() {

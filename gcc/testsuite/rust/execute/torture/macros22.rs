@@ -1,0 +1,23 @@
+// { dg-output "1\n2\nNaN\n3\n" }
+
+macro_rules! print_num {
+    ($l:literal) => {
+        printf("%d\n\0" as *const str as *const i8, $l);
+    };
+}
+
+extern "C" {
+    fn printf(s: *const i8, ...);
+}
+
+// Check to make sure that expanding macros does not break the flow of calls
+fn main() -> i32 {
+    print_num!(1);
+    print_num!(2);
+
+    printf("NaN\n\0" as *const str as *const i8);
+
+    print_num!(3);
+
+    0
+}

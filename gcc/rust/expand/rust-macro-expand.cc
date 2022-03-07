@@ -331,12 +331,6 @@ public:
       expander.expand_invoc_semi (macro_invoc);
     else
       expander.expand_invoc (macro_invoc);
-
-    // we need to visit the expanded fragments since it may need cfg
-    // expansion
-    // and it may be recursive
-    for (auto &node : macro_invoc.get_fragment ().get_nodes ())
-      node.accept_vis (*this);
   }
 
   void visit (AST::PathInExpression &path) override
@@ -531,10 +525,25 @@ public:
 
     /* should have no possibility for outer attrs as would be parsed
      * with outer expr */
-    expr.get_left_expr ()->accept_vis (*this);
+    auto &l_expr = expr.get_left_expr ();
+    l_expr->accept_vis (*this);
+    auto l_fragment = expander.take_expanded_fragment ();
+    if (l_fragment.should_expand ())
+      {
+	l_fragment.accept_vis (*this);
+	l_expr = l_fragment.take_expression_fragment ();
+      }
+
     /* should syntactically not have outer attributes, though this may
      * not have worked in practice */
-    expr.get_right_expr ()->accept_vis (*this);
+    auto &r_expr = expr.get_right_expr ();
+    r_expr->accept_vis (*this);
+    auto r_fragment = expander.take_expanded_fragment ();
+    if (r_fragment.should_expand ())
+      {
+	r_fragment.accept_vis (*this);
+	r_expr = r_fragment.take_expression_fragment ();
+      }
 
     // ensure that they are not marked for strip
     if (expr.get_left_expr ()->is_marked_for_strip ())
@@ -645,10 +654,25 @@ public:
 
     /* should have no possibility for outer attrs as would be parsed
      * with outer expr */
-    expr.get_left_expr ()->accept_vis (*this);
+    auto &l_expr = expr.get_left_expr ();
+    l_expr->accept_vis (*this);
+    auto l_frag = expander.take_expanded_fragment ();
+    if (l_frag.should_expand ())
+      {
+	l_frag.accept_vis (*this);
+	l_expr = l_frag.take_expression_fragment ();
+      }
+
     /* should syntactically not have outer attributes, though this may
      * not have worked in practice */
-    expr.get_right_expr ()->accept_vis (*this);
+    auto &r_expr = expr.get_right_expr ();
+    r_expr->accept_vis (*this);
+    auto r_frag = expander.take_expanded_fragment ();
+    if (r_frag.should_expand ())
+      {
+	r_frag.accept_vis (*this);
+	r_expr = r_frag.take_expression_fragment ();
+      }
 
     // ensure that they are not marked for strip
     if (expr.get_left_expr ()->is_marked_for_strip ())
@@ -975,7 +999,33 @@ public:
 
     /* spec says outer attributes are specifically allowed for elements
      * of call expressions, so full stripping possible */
+    // FIXME: Arthur: Figure out how to refactor this - This is similar to
+    // expanding items in the crate or stmts in blocks
     expand_pointer_allow_strip (expr.get_params ());
+    auto &params = expr.get_params ();
+    for (auto it = params.begin (); it != params.end ();)
+      {
+	auto &stmt = *it;
+
+	stmt->accept_vis (*this);
+
+	auto fragment = expander.take_expanded_fragment ();
+	if (fragment.should_expand ())
+	  {
+	    fragment.accept_vis (*this);
+	    // Remove the current expanded invocation
+	    it = params.erase (it);
+	    for (auto &node : fragment.get_nodes ())
+	      {
+		it = params.insert (it, node.take_expr ());
+		it++;
+	      }
+	  }
+	else if (stmt->is_marked_for_strip ())
+	  it = params.erase (it);
+	else
+	  it++;
+      }
   }
   void visit (AST::MethodCallExpr &expr) override
   {
@@ -1072,7 +1122,31 @@ public:
       }
 
     // strip all statements
-    expand_pointer_allow_strip (expr.get_statements ());
+    auto &stmts = expr.get_statements ();
+    for (auto it = stmts.begin (); it != stmts.end ();)
+      {
+	auto &stmt = *it;
+
+	stmt->accept_vis (*this);
+
+	auto fragment = expander.take_expanded_fragment ();
+	if (fragment.should_expand ())
+	  {
+	    fragment.accept_vis (*this);
+	    // Remove the current expanded invocation
+	    it = stmts.erase (it);
+	    for (auto &node : fragment.get_nodes ())
+	      {
+		it = stmts.insert (it, node.take_stmt ());
+		it++;
+	      }
+	  }
+
+	else if (stmt->is_marked_for_strip ())
+	  it = stmts.erase (it);
+	else
+	  it++;
+      }
 
     // strip tail expression if exists - can actually fully remove it
     if (expr.has_tail_expr ())
@@ -1080,6 +1154,12 @@ public:
 	auto &tail_expr = expr.get_tail_expr ();
 
 	tail_expr->accept_vis (*this);
+	auto fragment = expander.take_expanded_fragment ();
+	if (fragment.should_expand ())
+	  {
+	    fragment.accept_vis (*this);
+	    tail_expr = fragment.take_expression_fragment ();
+	  }
 
 	if (tail_expr->is_marked_for_strip ())
 	  expr.strip_tail_expr ();
@@ -2819,10 +2899,18 @@ public:
       {
 	auto &init_expr = stmt.get_init_expr ();
 	init_expr->accept_vis (*this);
+
 	if (init_expr->is_marked_for_strip ())
 	  rust_error_at (init_expr->get_locus (),
 			 "cannot strip expression in this position - outer "
 			 "attributes not allowed");
+
+	auto fragment = expander.take_expanded_fragment ();
+	if (fragment.should_expand ())
+	  {
+	    fragment.accept_vis (*this);
+	    init_expr = fragment.take_expression_fragment ();
+	  }
       }
   }
   void visit (AST::ExprStmtWithoutBlock &stmt) override
@@ -3125,7 +3213,7 @@ MacroExpander::expand_decl_macro (Location invoc_locus,
       RichLocation r (invoc_locus);
       r.add_range (rules_def.get_locus ());
       rust_error_at (r, "Failed to match any rule within macro");
-      return AST::ASTFragment::create_empty ();
+      return AST::ASTFragment::create_error ();
     }
 
   return transcribe_rule (*matched_rule, invoc_token_tree, matched_fragments,
@@ -3187,10 +3275,10 @@ MacroExpander::expand_invoc (AST::MacroInvocation &invoc)
     fragment
       = expand_decl_macro (invoc.get_locus (), invoc_data, *rules_def, false);
 
-  // lets attach this fragment to the invocation
-  invoc.set_fragment (std::move (fragment));
+  set_expanded_fragment (std::move (fragment));
 }
 
+// FIXME: Arthur: Refactor these two functions, they're really similar
 void
 MacroExpander::expand_invoc_semi (AST::MacroInvocation &invoc)
 {
@@ -3228,8 +3316,7 @@ MacroExpander::expand_invoc_semi (AST::MacroInvocation &invoc)
     fragment
       = expand_decl_macro (invoc.get_locus (), invoc_data, *rules_def, true);
 
-  // lets attach this fragment to the invocation
-  invoc.set_fragment (std::move (fragment));
+  set_expanded_fragment (std::move (fragment));
 }
 
 /* Determines whether any cfg predicate is false and hence item with attributes
@@ -3363,10 +3450,22 @@ MacroExpander::expand_crate ()
       // mark for stripping if required
       item->accept_vis (attr_visitor);
 
-      if (item->is_marked_for_strip ())
+      auto fragment = take_expanded_fragment ();
+      if (fragment.should_expand ())
+	{
+	  fragment.accept_vis (attr_visitor);
+	  // Remove the current expanded invocation
+	  it = items.erase (it);
+	  for (auto &node : fragment.get_nodes ())
+	    {
+	      it = items.insert (it, node.take_item ());
+	      it++;
+	    }
+	}
+      else if (item->is_marked_for_strip ())
 	it = items.erase (it);
       else
-	++it;
+	it++;
     }
 
   pop_context ();
@@ -3756,6 +3855,73 @@ MacroExpander::match_repetition (Parser<MacroInvocLexer> &parser,
   return res;
 }
 
+/**
+ * Helper function to refactor calling a parsing function 0 or more times
+ */
+static std::vector<AST::SingleASTNode>
+parse_many (Parser<MacroInvocLexer> &parser, TokenId &delimiter,
+	    std::function<AST::SingleASTNode ()> parse_fn)
+{
+  std::vector<AST::SingleASTNode> nodes;
+
+  while (true)
+    {
+      if (parser.peek_current_token ()->get_id () == delimiter)
+	break;
+
+      auto node = parse_fn ();
+      nodes.emplace_back (std::move (node));
+    }
+
+  return nodes;
+}
+
+/**
+ * Transcribe 0 or more items from a macro invocation
+ *
+ * @param parser Parser to extract items from
+ * @param delimiter Id of the token on which parsing should stop
+ */
+static std::vector<AST::SingleASTNode>
+transcribe_many_items (Parser<MacroInvocLexer> &parser, TokenId &delimiter)
+{
+  return parse_many (parser, delimiter, [&parser] () {
+    auto item = parser.parse_item (true);
+    return AST::SingleASTNode (std::move (item));
+  });
+}
+
+/**
+ * Transcribe 0 or more statements from a macro invocation
+ *
+ * @param parser Parser to extract statements from
+ * @param delimiter Id of the token on which parsing should stop
+ */
+static std::vector<AST::SingleASTNode>
+transcribe_many_stmts (Parser<MacroInvocLexer> &parser, TokenId &delimiter)
+{
+  // FIXME: This is invalid! It needs to also handle cases where the macro
+  // transcriber is an expression, but since the macro call is followed by
+  // a semicolon, it's a valid ExprStmt
+  return parse_many (parser, delimiter, [&parser] () {
+    auto stmt = parser.parse_stmt ();
+    return AST::SingleASTNode (std::move (stmt));
+  });
+}
+
+/**
+ * Transcribe one expression from a macro invocation
+ *
+ * @param parser Parser to extract statements from
+ */
+static std::vector<AST::SingleASTNode>
+transcribe_expression (Parser<MacroInvocLexer> &parser)
+{
+  auto expr = parser.parse_expr ();
+
+  return {AST::SingleASTNode (std::move (expr))};
+}
+
 AST::ASTFragment
 MacroExpander::transcribe_rule (
   AST::MacroRule &match_rule, AST::DelimTokenTree &invoc_token_tree,
@@ -3775,20 +3941,24 @@ MacroExpander::transcribe_rule (
   std::vector<std::unique_ptr<AST::Token>> substituted_tokens
     = substitute_context.substitute_tokens ();
 
-  // // handy for debugging
+  // parse it to an ASTFragment
+  MacroInvocLexer lex (std::move (substituted_tokens));
+  Parser<MacroInvocLexer> parser (std::move (lex));
+
+  // handy for debugging
   // for (auto &tok : substituted_tokens)
   //   {
   //     rust_debug ("tok: [%s]", tok->as_string ().c_str ());
   //   }
 
-  // parse it to an ASTFragment
-  MacroInvocLexer lex (std::move (substituted_tokens));
-  Parser<MacroInvocLexer> parser (std::move (lex));
+  auto last_token_id = TokenId::RIGHT_CURLY;
+  std::vector<AST::SingleASTNode> nodes;
 
   // this is used so we can check that we delimit the stream correctly.
   switch (transcribe_tree.get_delim_type ())
     {
     case AST::DelimType::PARENS:
+      last_token_id = TokenId::RIGHT_PAREN;
       rust_assert (parser.skip_token (LEFT_PAREN));
       break;
 
@@ -3797,6 +3967,7 @@ MacroExpander::transcribe_rule (
       break;
 
     case AST::DelimType::SQUARE:
+      last_token_id = TokenId::RIGHT_SQUARE;
       rust_assert (parser.skip_token (LEFT_SQUARE));
       break;
     }
@@ -3811,79 +3982,44 @@ MacroExpander::transcribe_rule (
   //   as a statement (either via ExpressionStatement or
   //   MacroInvocationWithSemi)
 
-  // parse the item
-  std::vector<AST::SingleASTNode> nodes;
-  switch (invoc_token_tree.get_delim_type ())
-    {
-    case AST::DelimType::PARENS:
-      case AST::DelimType::SQUARE: {
-	switch (ctx)
-	  {
-	    case ContextType::ITEM: {
-	      auto item = parser.parse_item (true);
-	      if (item != nullptr && !parser.has_errors ())
-		{
-		  rust_debug ("HELLO WORLD: [%s]", item->as_string ().c_str ());
-		  nodes.push_back (std::move (item));
-		}
-	    }
-	    break;
+  // The flow-chart in order to choose a parsing function is as follows:
+  //
+  // [is in item context?]
+  //     -- Yes --> parser.parse_item();
+  //     -- No --> [has semicolon?]
+  //                 -- Yes --> parser.parse_stmt();
+  //                 -- No --> [switch invocation.delimiter()]
+  //                             -- { } --> parser.parse_stmt();
+  //                             -- _ --> parser.parse_expr();
 
-	    case ContextType::BLOCK: {
-	      auto expr = parser.parse_expr ();
-	      if (expr != nullptr && !parser.has_errors ())
-		nodes.push_back (std::move (expr));
-	    }
-	    break;
-	  }
+  // If there is a semicolon OR we are expanding a MacroInvocationSemi, then
+  // we can parse multiple items. Otherwise, parse *one* expression
+
+  if (ctx == ContextType::ITEM)
+    nodes = transcribe_many_items (parser, last_token_id);
+  else if (semicolon)
+    nodes = transcribe_many_stmts (parser, last_token_id);
+  else
+    switch (invoc_token_tree.get_delim_type ())
+      {
+      case AST::CURLY:
+	nodes = transcribe_many_stmts (parser, last_token_id);
+	break;
+      default:
+	nodes = transcribe_expression (parser);
+	break;
       }
-      break;
-
-      case AST::DelimType::CURLY: {
-	switch (ctx)
-	  {
-	    case ContextType::ITEM: {
-	      auto item = parser.parse_item (true);
-	      if (item != nullptr && !parser.has_errors ())
-		nodes.push_back (std::move (item));
-	    }
-	    break;
-
-	    case ContextType::BLOCK: {
-	      auto stmt = parser.parse_stmt ();
-	      if (stmt != nullptr && !parser.has_errors ())
-		nodes.push_back (std::move (stmt));
-	    }
-	    break;
-	  }
-      }
-      break;
-    }
 
   // emit any errors
   if (parser.has_errors ())
     {
       for (auto &err : parser.get_errors ())
-	{
-	  rust_error_at (err.locus, "%s", err.message.c_str ());
-	}
-      return AST::ASTFragment::create_empty ();
+	rust_error_at (err.locus, "%s", err.message.c_str ());
+      return AST::ASTFragment::create_error ();
     }
 
   // are all the tokens used?
-  bool did_delimit = false;
-  switch (transcribe_tree.get_delim_type ())
-    {
-    case AST::DelimType::PARENS:
-      did_delimit = parser.skip_token (RIGHT_PAREN);
-      break;
-    case AST::DelimType::SQUARE:
-      did_delimit = parser.skip_token (RIGHT_SQUARE);
-      break;
-    case AST::DelimType::CURLY:
-      did_delimit = parser.skip_token (RIGHT_CURLY);
-      break;
-    }
+  bool did_delimit = parser.skip_token (last_token_id);
 
   bool reached_end_of_stream = did_delimit && parser.skip_token (END_OF_FILE);
   if (!reached_end_of_stream)

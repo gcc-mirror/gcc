@@ -15,19 +15,19 @@ fn f() {
 
 macro_rules! kw0 {
     (keyword) => {
-        f()
+        f();
     };
 }
 
 macro_rules! kw1 {
     (fn) => {
-        f()
+        f();
     };
 }
 
 macro_rules! kw2 {
     (kw0 kw1 kw3) => {
-        f()
+        f();
     };
 }
 

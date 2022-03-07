@@ -102,12 +102,10 @@ public:
 
   void visit (AST::MacroInvocation &expr) override
   {
-    AST::ASTFragment &fragment = expr.get_fragment ();
-
-    // FIXME
-    // this assertion might go away, maybe on failure's to expand a macro?
-    rust_assert (!fragment.get_nodes ().empty ());
-    fragment.get_nodes ().at (0).accept_vis (*this);
+    rust_fatal_error (
+      expr.get_locus (),
+      "macro expansion failed: No macro invocation should get lowered to HIR "
+      "as they should disappear during expansion");
   }
 
   void visit (AST::TupleIndexExpr &expr) override
