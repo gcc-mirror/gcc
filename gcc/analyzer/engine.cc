@@ -740,6 +740,51 @@ readability_comparator (const void *p1, const void *p2)
   return 0;
 }
 
+/* Return true is SNODE is the EXIT node of a function, or is one
+   of the final snodes within its function.
+
+   Specifically, handle the final supernodes before the EXIT node,
+   for the case of clobbers that happen immediately before exiting.
+   We need a run of snodes leading to the return_p snode, where all edges are
+   intraprocedural, and every snode has just one successor.
+
+   We use this when suppressing leak reports at the end of "main".  */
+
+static bool
+returning_from_function_p (const supernode *snode)
+{
+  if (!snode)
+    return false;
+
+  unsigned count = 0;
+  const supernode *iter = snode;
+  while (true)
+    {
+      if (iter->return_p ())
+	return true;
+      if (iter->m_succs.length () != 1)
+	return false;
+      const superedge *sedge = iter->m_succs[0];
+      if (sedge->get_kind () != SUPEREDGE_CFG_EDGE)
+	return false;
+      iter = sedge->m_dest;
+
+      /* Impose a limit to ensure we terminate for pathological cases.
+
+	 We only care about the final 3 nodes, due to cases like:
+	   BB:
+	     (clobber causing leak)
+
+	   BB:
+	   <label>:
+	   return _val;
+
+	   EXIT BB.*/
+      if (++count > 3)
+	return false;
+    }
+}
+
 /* Find the best tree for SVAL and call SM's on_leak vfunc with it.
    If on_leak returns a pending_diagnostic, queue it up to be reported,
    so that we potentially complain about a leak of SVAL in the given STATE.  */
@@ -794,8 +839,7 @@ impl_region_model_context::on_state_leak (const state_machine &sm,
   gcc_assert (m_enode_for_diag);
 
   /* Don't complain about leaks when returning from "main".  */
-  if (m_enode_for_diag->get_supernode ()
-      && m_enode_for_diag->get_supernode ()->return_p ())
+  if (returning_from_function_p (m_enode_for_diag->get_supernode ()))
     {
       tree fndecl = m_enode_for_diag->get_function ()->decl;
       if (id_equal (DECL_NAME (fndecl), "main"))
