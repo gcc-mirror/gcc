@@ -360,7 +360,6 @@
    UNSPEC_XXGENPCV
    UNSPEC_MTVSBM
    UNSPEC_EXTENDDITI2
-   UNSPEC_MTVSRD_DITI_W1
    UNSPEC_VCNTMB
    UNSPEC_VEXPAND
    UNSPEC_VEXTRACT
@@ -5023,15 +5022,67 @@
   DONE;
 })
 
-;; ISA 3.1 vector sign extend
-;; Move DI value from GPR to TI mode in VSX register, word 1.
-(define_insn "mtvsrdd_diti_w1"
-  [(set (match_operand:TI 0 "register_operand" "=wa")
-	(unspec:TI [(match_operand:DI 1 "register_operand" "r")]
-		     UNSPEC_MTVSRD_DITI_W1))]
-  "TARGET_POWERPC64 && TARGET_DIRECT_MOVE"
-  "mtvsrdd %x0,0,%1"
-  [(set_attr "type" "vecmove")])
+;; Sign extend DI to TI.  We provide both GPR targets and Altivec targets on
+;; power10.  On earlier systems, the machine independent code will generate a
+;; shift left to sign extend the 64-bit value to 128-bit.
+;;
+;; If the register allocator prefers to use GPR registers, we will use a shift
+;; left instruction to sign extend the 64-bit value to 128-bit.
+;;
+;; If the register allocator prefers to use Altivec registers on power10,
+;; generate the vextsd2q instruction.
+(define_insn_and_split "extendditi2"
+  [(set (match_operand:TI 0 "register_operand" "=r,r,v,v,v")
+	(sign_extend:TI (match_operand:DI 1 "input_operand" "r,m,r,wa,Z")))
+   (clobber (reg:DI CA_REGNO))]
+  "TARGET_POWERPC64 && TARGET_POWER10"
+  "#"
+  "&& reload_completed"
+  [(pc)]
+{
+  rtx dest = operands[0];
+  rtx src = operands[1];
+  int dest_regno = reg_or_subregno (dest);
+
+  /* Handle conversion to GPR registers.  Load up the low part and then do
+     a sign extension to the upper part.  */
+  if (INT_REGNO_P (dest_regno))
+    {
+      rtx dest_hi = gen_highpart (DImode, dest);
+      rtx dest_lo = gen_lowpart (DImode, dest);
+
+      emit_move_insn (dest_lo, src);
+      /* In case src is a MEM, we have to use the destination, which is a
+         register, instead of re-using the source.  */
+      rtx src2 = (REG_P (src) || SUBREG_P (src)) ? src : dest_lo;
+      emit_insn (gen_ashrdi3 (dest_hi, src2, GEN_INT (63)));
+      DONE;
+    }
+
+  /* For conversion to an Altivec register, generate either a splat operation
+     or a load rightmost double word instruction.  Both instructions gets the
+     DImode value into the lower 64 bits, and then do the vextsd2q
+     instruction.  */
+
+  else if (ALTIVEC_REGNO_P (dest_regno))
+    {
+      if (MEM_P (src))
+	emit_insn (gen_vsx_lxvrdx (dest, src));
+      else
+	{
+	  rtx dest_v2di = gen_rtx_REG (V2DImode, dest_regno);
+	  emit_insn (gen_vsx_splat_v2di (dest_v2di, src));
+	}
+
+      emit_insn (gen_extendditi2_vector (dest, dest));
+      DONE;
+    }
+
+  else
+    gcc_unreachable ();
+}
+  [(set_attr "length" "8")
+   (set_attr "type" "shift,load,vecmove,vecperm,load")])
 
 ;; Sign extend 64-bit value in TI reg, word 1, to 128-bit value in TI reg
 (define_insn "extendditi2_vector"
@@ -5041,18 +5092,6 @@
   "TARGET_POWER10"
   "vextsd2q %0,%1"
   [(set_attr "type" "vecexts")])
-
-(define_expand "extendditi2"
-  [(set (match_operand:TI 0 "gpc_reg_operand")
-	(sign_extend:DI (match_operand:DI 1 "gpc_reg_operand")))]
-  "TARGET_POWER10"
-  {
-    /* Move 64-bit src from GPR to vector reg and sign extend to 128-bits.  */
-    rtx temp = gen_reg_rtx (TImode);
-    emit_insn (gen_mtvsrdd_diti_w1 (temp, operands[1]));
-    emit_insn (gen_extendditi2_vector (operands[0], temp));
-    DONE;
-  })
 
 
 ;; ISA 3.0 Binary Floating-Point Support

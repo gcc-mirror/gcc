@@ -1858,7 +1858,7 @@ except when optimizing for size via @option{-Os}.  If the code
 contains a very large number of argument that have to be packed, code
 size and also compilation time may become excessive.  If that is the
 case, it may be better to disable this option.  Instances of packing
-can be found by using by using @option{-Warray-temporaries}.
+can be found by using @option{-Warray-temporaries}.
 
 @item -fexternal-blas
 @opindex @code{fexternal-blas}
@@ -2068,7 +2068,7 @@ does not generate prototypes for @code{BIND(C)} procedures, use
 @option{-fc-prototypes} for that.
 
 The generated prototypes may need inclusion of an appropriate
-header, such as as @code{<stdint.h>} or @code{<stdlib.h>}.
+header, such as @code{<stdint.h>} or @code{<stdlib.h>}.
 
 This is primarily meant for legacy code to ensure that existing C
 bindings match what @command{gfortran} emits.  The generated C

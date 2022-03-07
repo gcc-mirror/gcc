@@ -1302,6 +1302,34 @@ finish_options (struct gcc_options *opts, struct gcc_options *opts_set,
     SET_OPTION_IF_UNSET (opts, opts_set, flag_vect_cost_model,
 			 VECT_COST_MODEL_CHEAP);
 
+  if (flag_gtoggle)
+    {
+      /* Make sure to process -gtoggle only once.  */
+      flag_gtoggle = false;
+      if (debug_info_level == DINFO_LEVEL_NONE)
+	{
+	  debug_info_level = DINFO_LEVEL_NORMAL;
+
+	  if (write_symbols == NO_DEBUG)
+	    write_symbols = PREFERRED_DEBUGGING_TYPE;
+	}
+      else
+	debug_info_level = DINFO_LEVEL_NONE;
+    }
+
+  if (!OPTION_SET_P (debug_nonbind_markers_p))
+    debug_nonbind_markers_p
+      = (optimize
+	 && debug_info_level >= DINFO_LEVEL_NORMAL
+	 && dwarf_debuginfo_p ()
+	 && !(flag_selective_scheduling || flag_selective_scheduling2));
+
+  /* Note -fvar-tracking is enabled automatically with OPT_LEVELS_1_PLUS and
+     so we need to drop it if we are called from optimize attribute.  */
+  if (debug_info_level == DINFO_LEVEL_NONE
+      && !OPTION_SET_P (flag_var_tracking))
+    flag_var_tracking = false;
+
   /* One could use EnabledBy, but it would lead to a circular dependency.  */
   if (!OPTION_SET_P (flag_var_tracking_uninit))
      flag_var_tracking_uninit = flag_var_tracking;
@@ -1328,27 +1356,6 @@ finish_options (struct gcc_options *opts, struct gcc_options *opts_set,
       profile_flag = 0;
     }
 
-  if (flag_gtoggle)
-    {
-      /* Make sure to process -gtoggle only once.  */
-      flag_gtoggle = false;
-      if (debug_info_level == DINFO_LEVEL_NONE)
-	{
-	  debug_info_level = DINFO_LEVEL_NORMAL;
-
-	  if (write_symbols == NO_DEBUG)
-	    write_symbols = PREFERRED_DEBUGGING_TYPE;
-	}
-      else
-	debug_info_level = DINFO_LEVEL_NONE;
-    }
-
-  if (!OPTION_SET_P (debug_nonbind_markers_p))
-    debug_nonbind_markers_p
-      = (optimize
-	 && debug_info_level >= DINFO_LEVEL_NORMAL
-	 && dwarf_debuginfo_p ()
-	 && !(flag_selective_scheduling || flag_selective_scheduling2));
 
   diagnose_options (opts, opts_set, loc);
 }

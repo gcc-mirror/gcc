@@ -697,7 +697,7 @@ private:
 				 gimple_stmt_iterator new_gsi);
 };
 
-/* Call post_new_stmt for each each new statement that has been added
+/* Call post_new_stmt for each new statement that has been added
    to the current BB.  OLD_GSI is the statement iterator before the BB
    changes ocurred.  NEW_GSI is the iterator which may contain new
    statements.  */

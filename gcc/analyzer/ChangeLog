@@ -1,3 +1,9 @@
+2022-03-04  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/103521
+	* analyzer.opt (-param=analyzer-max-svalue-depth=): Reduce from 13
+	to 12.
+
 2022-02-23  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/104434

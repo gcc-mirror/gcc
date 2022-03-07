@@ -4617,7 +4617,7 @@ create_dirs (char *path)
       }
 }
 
-/* Given a CLASSTYPE_DECL_LIST VALUE get the the template friend decl,
+/* Given a CLASSTYPE_DECL_LIST VALUE get the template friend decl,
    if that's what this is.  */
 
 static tree

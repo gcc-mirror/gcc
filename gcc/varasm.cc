@@ -283,7 +283,7 @@ get_noswitch_section (unsigned int flags, noswitch_section_callback callback)
    a new section with the given fields if no such structure exists.
    When NOT_EXISTING, then fail if the section already exists.  Return
    the existing section if the SECTION_RETAIN bit doesn't match.  Set
-   the SECTION_WRITE | SECTION_RELRO bits on the the existing section
+   the SECTION_WRITE | SECTION_RELRO bits on the existing section
    if one of the section flags is SECTION_WRITE | SECTION_RELRO and the
    other has none of these flags in named sections and either the section
    hasn't been declared yet or has been declared as writable.  */

@@ -890,7 +890,7 @@ gori_compute::logical_combine (irange &r, enum tree_code code,
       case BIT_AND_EXPR:
         if (!lhs.zero_p ())
 	  {
-	    // The TRUE side is the intersection of the the 2 true ranges.
+	    // The TRUE side is the intersection of the 2 true ranges.
 	    r = op1_true;
 	    r.intersect (op2_true);
 	  }

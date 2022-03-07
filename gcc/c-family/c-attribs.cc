@@ -3421,7 +3421,7 @@ handle_malloc_attribute (tree *node, tree name, tree args, int flags,
 	 it with this one.  Ideally, the attribute would reference
 	 the DECL of the deallocator but since that changes for each
 	 redeclaration, use DECL_NAME instead.  (DECL_ASSEMBLER_NAME
-	 need not be set set this point and setting it here is too early.  */
+	 need not be set at this point and setting it here is too early.  */
       tree attrs = build_tree_list (NULL_TREE, DECL_NAME (fndecl));
       attrs = tree_cons (get_identifier ("*dealloc"), attrs, at_noinline);
       decl_attributes (&dealloc, attrs, 0);
@@ -5142,7 +5142,7 @@ handle_access_attribute (tree node[3], tree name, tree args, int flags,
      value: "+^2[*],$0$1^3[*],$1$1"
      list:  < <0, x> <1, y> >
 
-   where the list has a single value which itself is is a list each
+   where the list has a single value which itself is a list, each
    of whose <node>s corresponds to one VLA bound for each of the two
    parameters.  */
 

@@ -12897,7 +12897,7 @@ end program real_kinds
 @table @asis
 @item @emph{Description}:
 @code{SET_EXPONENT(X, I)} returns the real number whose fractional part
-is that that of @var{X} and whose exponent part is @var{I}.
+is that of @var{X} and whose exponent part is @var{I}.
 
 @item @emph{Standard}:
 Fortran 90 and later
@@ -12917,7 +12917,7 @@ Elemental function
 @item @emph{Return value}:
 The return value is of the same type and kind as @var{X}.
 The real number whose fractional part
-is that that of @var{X} and whose exponent part if @var{I} is returned;
+is that of @var{X} and whose exponent part if @var{I} is returned;
 it is @code{FRACTION(X) * RADIX(X)**I}.
 
 @item @emph{Example}:

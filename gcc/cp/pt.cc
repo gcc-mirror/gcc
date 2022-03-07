@@ -30049,7 +30049,7 @@ do_class_deduction (tree ptype, tree tmpl, tree init,
 
    OUTER_TARGS is used during template argument deduction (context == adc_unify)
    to properly substitute the result.  It's also used in the adc_unify and
-   adc_requirement contexts to communicate the the necessary template arguments
+   adc_requirement contexts to communicate the necessary template arguments
    to satisfaction.  OUTER_TARGS is ignored in other contexts.
 
    For partial-concept-ids, extra args may be appended to the list of deduced

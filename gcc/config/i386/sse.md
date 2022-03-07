@@ -15210,7 +15210,15 @@
   DONE;
 })
 
-(define_insn "avx512dq_mul<mode>3<mask_name>"
+(define_expand "avx512dq_mul<mode>3<mask_name>"
+  [(set (match_operand:VI8_AVX512VL 0 "register_operand")
+	(mult:VI8_AVX512VL
+	  (match_operand:VI8_AVX512VL 1 "bcst_vector_operand")
+	  (match_operand:VI8_AVX512VL 2 "bcst_vector_operand")))]
+  "TARGET_AVX512DQ && <mask_mode512bit_condition>"
+  "ix86_fixup_binary_operands_no_copy (MULT, <MODE>mode, operands);")
+
+(define_insn "*avx512dq_mul<mode>3<mask_name>"
   [(set (match_operand:VI8_AVX512VL 0 "register_operand" "=v")
 	(mult:VI8_AVX512VL
 	  (match_operand:VI8_AVX512VL 1 "bcst_vector_operand" "%v")
@@ -16824,7 +16832,18 @@
   DONE;
 })
 
-(define_insn "<mask_codefor><code><mode>3<mask_name>"
+(define_expand "<code><mode>3_mask"
+  [(set (match_operand:VI48_AVX512VL 0 "register_operand")
+	(vec_merge:VI48_AVX512VL
+	  (any_logic:VI48_AVX512VL
+	    (match_operand:VI48_AVX512VL 1 "bcst_vector_operand")
+	    (match_operand:VI48_AVX512VL 2 "bcst_vector_operand"))
+	  (match_operand:VI48_AVX512VL 3 "nonimm_or_0_operand")
+	  (match_operand:<avx512fmaskmode> 4 "register_operand")))]
+  "TARGET_AVX512F"
+  "ix86_fixup_binary_operands_no_copy (<CODE>, <MODE>mode, operands);")
+
+(define_insn "*<code><mode>3<mask_name>"
   [(set (match_operand:VI48_AVX_AVX512F 0 "register_operand" "=x,x,v")
 	(any_logic:VI48_AVX_AVX512F
 	  (match_operand:VI48_AVX_AVX512F 1 "bcst_vector_operand" "%0,x,v")

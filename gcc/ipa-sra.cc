@@ -2874,7 +2874,7 @@ struct caller_issues
   bool thunk;
   /* Call site with no available information.  */
   bool unknown_callsite;
-  /* Call from outside the the candidate's comdat group.  */
+  /* Call from outside the candidate's comdat group.  */
   bool call_from_outside_comdat;
   /* There is a bit-aligned load into one of non-gimple-typed arguments. */
   bool bit_aligned_aggregate_argument;

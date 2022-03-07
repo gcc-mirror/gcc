@@ -144,7 +144,7 @@ typedef struct GTY ((chain_next ("%h.dmd_next"))) ctf_dmdef
 typedef struct GTY (()) ctf_func_arg
 {
   ctf_id_t farg_type;		  /* Type identifier of the argument.  */
-  const char * farg_name;	  /* Name of the the argument.  */
+  const char * farg_name;	  /* Name of the argument.  */
   uint32_t farg_name_offset;	  /* Offset of the name in str table.  */
   struct ctf_func_arg * farg_next;/* A list node.  */
 } ctf_func_arg_t;

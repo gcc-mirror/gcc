@@ -1,3 +1,8 @@
+2022-03-04  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/rs6000/t-darwin-ehs: Add darwin-fallback.o.
+	* config/t-darwin-ehs: Add dependency on unwind.h.
+
 2022-02-24  Xi Ruoyao  <xry111@mengyan1223.wang>
 
 	* unwind-dw2-fde-dip.c (_Unwind_Find_FDE): Call find_fde_tail

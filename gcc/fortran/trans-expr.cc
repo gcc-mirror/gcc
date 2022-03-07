@@ -1777,7 +1777,7 @@ trans_scalar_class_assign (stmtblock_t *block, gfc_se *lse, gfc_se *rse)
   bool not_call_expr = TREE_CODE (rse->expr) != CALL_EXPR;
   bool not_lhs_array_type;
 
-  /* Temporaries arising from depencies in assignment get cast as a
+  /* Temporaries arising from dependencies in assignment get cast as a
      character type of the dynamic size of the rhs. Use the vptr copy
      for this case.  */
   tmp = TREE_TYPE (lse->expr);
@@ -2934,7 +2934,7 @@ gfc_maybe_dereference_var (gfc_symbol *sym, tree var, bool descriptor_only_p,
 		   || CLASS_DATA (sym)->attr.class_pointer))
 	var = build_fold_indirect_ref_loc (input_location, var);
       /* And the case where a non-dummy, non-result, non-function,
-	 non-allotable and non-pointer classarray is present.  This case was
+	 non-allocable and non-pointer classarray is present.  This case was
 	 previously covered by the first if, but with introducing the
 	 condition !is_classarray there, that case has to be covered
 	 explicitly.  */
@@ -5678,7 +5678,7 @@ gfc_conv_gfc_desc_to_cfi_desc (gfc_se *parmse, gfc_expr *e, gfc_symbol *fsym)
      Note that allocatable implies 'len=:'.  */
   if (e->ts.type != BT_ASSUMED && e->ts.type != BT_CHARACTER )
     {
-      /* Length is known at compile time; use use 'block' for it.  */
+      /* Length is known at compile time; use 'block' for it.  */
       tmp = size_in_bytes (gfc_typenode_for_spec (&e->ts));
       tmp2 = gfc_get_cfi_desc_elem_len (cfi);
       gfc_add_modify (&block, tmp2, fold_convert (TREE_TYPE (tmp2), tmp));
