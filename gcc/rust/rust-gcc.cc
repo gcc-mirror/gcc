@@ -86,9 +86,15 @@ private:
 tree
 Bvariable::get_tree (Location location) const
 {
-  if (this->orig_type_ == NULL || this->t_ == error_mark_node
-      || TREE_TYPE (this->t_) == this->orig_type_)
-    return this->t_;
+  if (this->t_ == error_mark_node)
+    return error_mark_node;
+
+  TREE_USED (this->t_) = 1;
+  if (this->orig_type_ == NULL || TREE_TYPE (this->t_) == this->orig_type_)
+    {
+      return this->t_;
+    }
+
   // Return *(orig_type*)&decl.  */
   tree t = build_fold_addr_expr_loc (location.gcc_location (), this->t_);
   t = fold_build1_loc (location.gcc_location (), NOP_EXPR,
@@ -122,7 +128,7 @@ public:
     static tree unit_type;
     if (unit_type == nullptr)
       {
-	auto unit_type_node = integer_type (true, 0);
+	auto unit_type_node = struct_type ({});
 	unit_type = named_type ("()", unit_type_node,
 				::Linemap::predeclared_location ());
       }
@@ -1063,10 +1069,7 @@ Gcc_backend::zero_expression (tree t)
 tree
 Gcc_backend::var_expression (Bvariable *var, Location location)
 {
-  tree ret = var->get_tree (location);
-  if (ret == error_mark_node)
-    return error_mark_node;
-  return ret;
+  return var->get_tree (location);
 }
 
 // An expression that indirectly references an expression.
@@ -2394,7 +2397,6 @@ Gcc_backend::local_variable (tree function, const std::string &name,
   tree decl = build_decl (location.gcc_location (), VAR_DECL,
 			  get_identifier_from_string (name), type_tree);
   DECL_CONTEXT (decl) = function;
-  TREE_USED (decl) = 1;
 
   if (decl_var != NULL)
     {
@@ -2417,7 +2419,7 @@ Gcc_backend::parameter_variable (tree function, const std::string &name,
 			  get_identifier_from_string (name), type_tree);
   DECL_CONTEXT (decl) = function;
   DECL_ARG_TYPE (decl) = type_tree;
-  TREE_USED (decl) = 1;
+
   rust_preserve_from_gc (decl);
   return new Bvariable (decl);
 }

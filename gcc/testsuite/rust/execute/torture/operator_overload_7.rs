@@ -8,8 +8,6 @@ pub trait Deref {
     type Target;
 
     fn deref(&self) -> &Self::Target;
-    // { dg-warning "unused name .self." "" { target *-*-* } .-1 }
-    // { dg-warning "unused name .Deref::deref." "" { target *-*-* } .-2 }
 }
 
 impl<T> Deref for &T {

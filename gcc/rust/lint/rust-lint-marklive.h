@@ -262,6 +262,12 @@ public:
     stct.get_struct_base ()->base_struct->accept_vis (*this);
   }
 
+  void visit (HIR::Module &module) override
+  {
+    for (auto &item : module.get_items ())
+      item->accept_vis (*this);
+  }
+
 private:
   std::vector<HirId> worklist;
   std::set<HirId> liveSymbols;

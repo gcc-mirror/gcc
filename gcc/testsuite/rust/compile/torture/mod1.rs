@@ -9,4 +9,3 @@ mod _bar {
         struct _B;
     }
 }
-

@@ -1339,18 +1339,22 @@ CompileExpr::visit (HIR::IdentifierExpr &expr)
   Bvariable *var = nullptr;
   if (ctx->lookup_const_decl (ref, &translated))
     {
+      TREE_USED (translated) = 1;
       return;
     }
   else if (ctx->lookup_function_decl (ref, &fn))
     {
+      TREE_USED (fn) = 1;
       translated = address_expression (fn, expr.get_locus ());
     }
   else if (ctx->lookup_var_decl (ref, &var))
     {
+      // TREE_USED is setup in the gcc abstraction here
       translated = ctx->get_backend ()->var_expression (var, expr.get_locus ());
     }
   else if (ctx->lookup_pattern_binding (ref, &translated))
     {
+      TREE_USED (translated) = 1;
       return;
     }
   else
@@ -1371,6 +1375,11 @@ CompileExpr::visit (HIR::IdentifierExpr &expr)
       else
 	translated = CompileItem::compile (resolved_item, ctx, lookup, true,
 					   expr.get_locus ());
+
+      if (translated != error_mark_node)
+	{
+	  TREE_USED (translated) = 1;
+	}
     }
 }
 

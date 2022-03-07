@@ -9,7 +9,7 @@
 
 /// outer doc line for module
 /** outer doc block for module               */
-pub mod module // { dg-warning "unused name" }
+pub mod module
 {
   //!  inner line doc
   //!! inner line doc!
@@ -24,22 +24,22 @@ pub mod module // { dg-warning "unused name" }
   /**  outer block doc */
   /*** block comment   */
 
-  mod block_doc_comments // { dg-warning "unused name" }
+  mod block_doc_comments
   {
     /*   /* */  /** */  /*! */  */
     /*!  /* */  /** */  /*! */  */
     /**  /* */  /** */  /*! */  */
-    mod item { } // { dg-warning "unused name" }
+    mod item { }
   }
 
-  pub mod empty // { dg-warning "unused name" }
+  pub mod empty
   {
     //!
     /*!*/
     //
 
     ///
-    mod doc { }    // { dg-warning "unused name" }
+    mod doc { }
 
     /**/
     /***/

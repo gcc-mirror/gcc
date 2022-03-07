@@ -1,15 +1,13 @@
 mod foomod {
-    pub struct Foo { // { dg-warning "unused name" }
-    }
+    pub struct Foo {}
 }
 
 impl foomod::Foo {
     pub fn new() -> Self {
-        foomod::Foo {
-        }
+        foomod::Foo {}
     }
 }
- 
+
 fn main() {
-   let _a = foomod::Foo::new();
+    let _a = foomod::Foo::new();
 }

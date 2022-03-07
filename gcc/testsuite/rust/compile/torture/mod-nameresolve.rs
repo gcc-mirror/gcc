@@ -1,5 +1,5 @@
-mod foo { // { dg-warning "unused name" }
-    struct A; // { dg-warning "unused name" }
+mod foo {
+    struct A; // { dg-warning "struct is never constructed" }
 }
 
 fn main() {}

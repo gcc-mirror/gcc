@@ -2,8 +2,6 @@ pub trait Foo {
     type Target;
 
     fn bar(&self) -> &Self::Target;
-    // { dg-warning "unused name .self." "" { target *-*-* } .-1 }
-    // { dg-warning "unused name .Foo::bar." "" { target *-*-* } .-2 }
 }
 
 impl<T> Foo for &T {

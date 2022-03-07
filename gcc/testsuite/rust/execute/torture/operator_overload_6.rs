@@ -6,9 +6,6 @@ extern "C" {
 #[lang = "add_assign"]
 pub trait AddAssign<Rhs = Self> {
     fn add_assign(&mut self, rhs: Rhs);
-    // { dg-warning "unused name .self." "" { target *-*-* } .-1 }
-    // { dg-warning "unused name .rhs." "" { target *-*-* } .-2 }
-    // { dg-warning "unused name .AddAssign::add_assign." "" { target *-*-* } .-3 }
 }
 
 impl AddAssign for i32 {

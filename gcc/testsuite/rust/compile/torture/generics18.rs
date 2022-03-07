@@ -3,7 +3,6 @@ struct Foo<T>(T);
 impl<X> Foo<X> {
     fn new(a: X) -> Self {
         // { dg-warning "associated function is never used" "" { target *-*-* } .-1 }
-        // { dg-warning "unused name" "" { target *-*-* } .-2 }
         Self(a)
     }
 

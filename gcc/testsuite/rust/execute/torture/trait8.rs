@@ -7,7 +7,6 @@ pub trait Foo {
     type A;
 
     fn bar(&self) -> Self::A;
-    // { dg-warning "unused name" "" { target *-*-* } .-1 }
 }
 
 struct S(i32);
@@ -15,7 +14,6 @@ impl Foo for S {
     type A = i32;
 
     fn bar(&self) -> Self::A {
-        // { dg-warning "unused name" "" { target *-*-* } .-1 }
         self.0
     }
 }

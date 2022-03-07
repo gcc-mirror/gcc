@@ -25,11 +25,11 @@
 #include "rust-ast-resolve.h"
 #include "rust-ast-lower.h"
 #include "rust-hir-type-check.h"
-#include "rust-lint-scan-deadcode.h"
 #include "rust-tycheck-dump.h"
-#include "rust-ast-resolve-unused.h"
 #include "rust-compile.h"
 #include "rust-cfg-parser.h"
+#include "rust-lint-scan-deadcode.h"
+#include "rust-lint-unused-var.h"
 
 #include "diagnostic.h"
 #include "input.h"
@@ -599,27 +599,18 @@ Session::parse_file (const char *filename)
   if (saw_errors ())
     return;
 
-  // scan dead code
-  Analysis::ScanDeadcode::Scan (hir);
-
-  if (saw_errors ())
-    return;
-
-  // scan unused has to be done after type resolution since methods are
-  // resolved at that point
-  Resolver::ScanUnused::Scan ();
-
-  if (saw_errors ())
-    return;
-
-  // do compile
+  // do compile to gcc generic
   Compile::Context ctx (backend);
   Compile::CompileCrate::Compile (hir, &ctx);
 
-  if (saw_errors ())
-    return;
+  // we can't do static analysis if there are errors to worry about
+  if (!saw_errors ())
+    {
+      Analysis::ScanDeadcode::Scan (hir);
+      Analysis::UnusedVariables::Lint (ctx);
+    }
 
-  // pass to GCC
+  // pass to GCC middle-end
   ctx.write_to_backend ();
 }
 

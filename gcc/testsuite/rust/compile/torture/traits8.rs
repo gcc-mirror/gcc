@@ -7,7 +7,6 @@ struct Bar(i32);
 
 impl Foo for Bar {
     fn default() -> i32 {
-        // { dg-warning "unused name" "" { target *-*-* } .-1 }
         123
     }
 }

@@ -1,11 +1,9 @@
 trait A {
     fn get(self) -> f64;
-    // { dg-warning "unused name" "" { target *-*-* } .-1 }
 }
 
 trait B {
     fn get(self) -> u8;
-    // { dg-warning "unused name" "" { target *-*-* } .-1 }
 }
 
 struct Foo(u8, f64);
