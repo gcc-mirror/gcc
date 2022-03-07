@@ -51,7 +51,6 @@ with Sem_Aux;        use Sem_Aux;
 with Sem_Case;       use Sem_Case;
 with Sem_Cat;        use Sem_Cat;
 with Sem_Ch3;        use Sem_Ch3;
-with Sem_Ch5;        use Sem_Ch5;
 with Sem_Ch8;        use Sem_Ch8;
 with Sem_Ch13;       use Sem_Ch13;
 with Sem_Dim;        use Sem_Dim;
@@ -2890,12 +2889,12 @@ package body Sem_Aggr is
       is
          Loc      : constant Source_Ptr := Sloc (N);
          Choice   : Node_Id;
+         Copy     : Node_Id;
          Ent      : Entity_Id;
          Expr     : Node_Id;
          Key_Expr : Node_Id;
          Id       : Entity_Id;
          Id_Name  : Name_Id;
-         Iter     : Node_Id;
          Typ      : Entity_Id := Empty;
 
       begin
@@ -2906,15 +2905,29 @@ package body Sem_Aggr is
          --  is present. In both cases a Key_Expression is present.
 
          if Nkind (Comp) = N_Iterated_Element_Association then
+
+            --  Create a temporary scope to avoid some modifications from
+            --  escaping the Analyze call below. The original Tree will be
+            --  reanalyzed later.
+
+            Ent := New_Internal_Entity
+                     (E_Loop, Current_Scope, Sloc (Comp), 'L');
+            Set_Etype  (Ent, Standard_Void_Type);
+            Set_Parent (Ent, Parent (Comp));
+            Push_Scope (Ent);
+
             if Present (Loop_Parameter_Specification (Comp)) then
-               Analyze_Loop_Parameter_Specification
-                  (Loop_Parameter_Specification (Comp));
+               Copy := Copy_Separate_Tree (Comp);
+
+               Analyze
+                 (Loop_Parameter_Specification (Copy));
+
                Id_Name := Chars (Defining_Identifier
                             (Loop_Parameter_Specification (Comp)));
             else
-               Iter := Copy_Separate_Tree (Iterator_Specification (Comp));
-               Analyze (Iter);
-               Typ := Etype (Defining_Identifier (Iter));
+               Copy := Copy_Separate_Tree (Iterator_Specification (Comp));
+               Analyze (Copy);
+
                Id_Name := Chars (Defining_Identifier
                             (Iterator_Specification (Comp)));
             end if;
@@ -2926,12 +2939,14 @@ package body Sem_Aggr is
 
             Key_Expr := Key_Expression (Comp);
             Analyze_And_Resolve (New_Copy_Tree (Key_Expr), Key_Type);
+            End_Scope;
 
          elsif Present (Iterator_Specification (Comp)) then
-            Iter    := Copy_Separate_Tree (Iterator_Specification (Comp));
+            Copy    := Copy_Separate_Tree (Iterator_Specification (Comp));
             Id_Name := Chars (Defining_Identifier (Comp));
-            Analyze (Iter);
-            Typ := Etype (Defining_Identifier (Iter));
+
+            Analyze (Copy);
+            Typ := Etype (Defining_Identifier (Copy));
 
          else
             Choice := First (Discrete_Choices (Comp));
@@ -2965,7 +2980,8 @@ package body Sem_Aggr is
          --  analysis.
 
          Id := Make_Defining_Identifier (Sloc (Comp), Id_Name);
-         Ent := New_Internal_Entity (E_Loop, Current_Scope, Sloc (Comp), 'L');
+         Ent := New_Internal_Entity (E_Loop,
+                  Current_Scope, Sloc (Comp), 'L');
          Set_Etype  (Ent, Standard_Void_Type);
          Set_Parent (Ent, Parent (Comp));
          Push_Scope (Ent);
@@ -2999,6 +3015,8 @@ package body Sem_Aggr is
          End_Scope;
 
       end Resolve_Iterated_Association;
+
+   --  Start of processing for Resolve_Container_Aggregate
 
    begin
       pragma Assert (Nkind (Asp) = N_Aggregate);
