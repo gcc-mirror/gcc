@@ -5,17 +5,37 @@ LIBGCC2_DEBUG_CFLAGS =
 # VxWorks specific entry point.
 LIB2FUNCS_EXCLUDE += _clear_cache
 
-# This ensures that the correct target headers are used; some VxWorks
-# system headers have names that collide with GCC's internal (host)
-# headers, e.g. regs.h. Make sure the local libgcc headers still
-# prevail (e.g. unwind.h), and that gcc provided header files intended
-# to be user visible eventually are visible as well.
+# Arrange to have the correct target headers used when compiling
+# libgcc.  We specifically need to handle VxWorks system headers
+# having names that collide with GCC's internal headers.
+#
+# For example, compiling gthr-vxworks.c #includes <taskLib.h>
+# which in turn #includes <regs.h>, which exists both in the gcc
+# source tree and as a VxWorks system header.  We need that
+# #include to get the VxWorks version, not the compiler one.
+#
+# We still need to make sure that the local libgcc headers prevail
+# (e.g. ./unwind.h), and that gcc provided header files intended
+# to be user visible eventually are visible as well (gcc/include
+# and gcc/include-fixed).
+#
+# The latter are added unconditionally as -isystem during regular
+# cross builds via the %I spec processing and search paths introduced
+# by -B options. These take priority over whatever we can add here,
+# even with -nostdinc, and end up at the tail of the search chain.
+#
+# We keep explicit options nevertheless, to accommodate canadian
+# setups where the libraries are built with an installed cross compiler,
+# without -B.  Also note, incidentally, that the detection of duplicate
+# paths differs between Windows and Linux hosts as the latter can perform
+# inode based checks while the former may only rely on name comparisons.
+
 LIBGCC2_INCLUDES = -nostdinc -I. \
-  -I$(MULTIBUILDTOP)../../gcc/include-fixed$(MULTISUBDIR) \
-  -I$(MULTIBUILDTOP)../../gcc/include \
   $(if $(findstring vxworks7, $(target_noncanonical)), \
     -I$(VSB_DIR)/h -I$(VSB_DIR)/share/h -I=/system -I=/public, \
-    -I=/ -I=/wrn/coreip)
+    -I=/ -I=/wrn/coreip) \
+  -isystem $(MULTIBUILDTOP)../../gcc/include-fixed$(MULTISUBDIR) \
+  -isystem $(MULTIBUILDTOP)../../gcc/include
 
 # Use these also for the vxcrstuff objects (.e.g for version.h), on top of
 # the options possibly already set specifically for the target:
