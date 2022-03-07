@@ -362,7 +362,7 @@ adjust_pointer_diff_expr (irange &res, const gimple *diff_stmt)
       tree max = vrp_val_max (ptrdiff_type_node);
       unsigned prec = TYPE_PRECISION (TREE_TYPE (max));
       wide_int wmaxm1 = wi::to_wide (max, prec) - 1;
-      res.intersect (wi::zero (prec), wmaxm1);
+      res.intersect (int_range<2> (TREE_TYPE (max), wi::zero (prec), wmaxm1));
     }
 }
 
@@ -403,8 +403,8 @@ adjust_imagpart_expr (irange &res, const gimple *stmt)
       tree cst = gimple_assign_rhs1 (def_stmt);
       if (TREE_CODE (cst) == COMPLEX_CST)
 	{
-	  wide_int imag = wi::to_wide (TREE_IMAGPART (cst));
-	  res.intersect (imag, imag);
+	  int_range<2> imag (TREE_IMAGPART (cst), TREE_IMAGPART (cst));
+	  res.intersect (imag);
 	}
     }
 }

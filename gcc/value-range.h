@@ -73,7 +73,6 @@ public:
   // In-place operators.
   void union_ (const irange &);
   void intersect (const irange &);
-  void intersect (const wide_int& lb, const wide_int& ub);
   void invert ();
 
   // Operator overloads.
@@ -135,6 +134,7 @@ private:
   void irange_set_1bit_anti_range (tree, tree);
   bool varying_compatible_p () const;
 
+  void intersect (const wide_int& lb, const wide_int& ub);
   unsigned char m_num_ranges;
   unsigned char m_max_ranges;
   ENUM_BITFIELD(value_range_kind) m_kind : 8;

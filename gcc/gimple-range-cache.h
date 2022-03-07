@@ -64,8 +64,10 @@ non_null_ref::adjust_range (irange &r, tree name, basic_block bb,
   if (non_null_deref_p (name, bb, search_dom))
     {
       // Remove zero from the range.
-      unsigned prec = TYPE_PRECISION (TREE_TYPE (name));
-      r.intersect (wi::one (prec), wi::max_value (prec, UNSIGNED));
+      gcc_checking_assert (TYPE_UNSIGNED (TREE_TYPE (name)));
+      int_range<2> nz;
+      nz.set_nonzero (TREE_TYPE (name));
+      r.intersect (nz);
       return true;
     }
   return false;
