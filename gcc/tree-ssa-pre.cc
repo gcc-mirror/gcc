@@ -3246,14 +3246,11 @@ insert_into_preds_of_block (basic_block block, unsigned int exprnum,
 	  && r.kind () == VR_RANGE
 	  && !wi::neg_p (r.lower_bound (), SIGNED)
 	  && !wi::neg_p (r.upper_bound (), SIGNED))
-	/* Just handle extension and sign-changes of all-positive ranges.  */
-	set_range_info (temp, VR_RANGE,
-			wide_int_storage::from (r.lower_bound (),
-						TYPE_PRECISION (type),
-						TYPE_SIGN (type)),
-			wide_int_storage::from (r.upper_bound (),
-						TYPE_PRECISION (type),
-						TYPE_SIGN (type)));
+	{
+	  /* Just handle extension and sign-changes of all-positive ranges.  */
+	  range_cast (r, type);
+	  set_range_info (temp, r);
+	}
     }
 
   if (dump_file && (dump_flags & TDF_DETAILS))

@@ -4862,7 +4862,8 @@ optimize_spaceship (gimple *stmt)
 
   wide_int wm1 = wi::minus_one (TYPE_PRECISION (integer_type_node));
   wide_int w2 = wi::two (TYPE_PRECISION (integer_type_node));
-  set_range_info (lhs, VR_RANGE, wm1, w2);
+  value_range vr (TREE_TYPE (lhs), wm1, w2);
+  set_range_info (lhs, vr);
 }
 
 

@@ -5987,11 +5987,13 @@ ipcp_update_vr (struct cgraph_node *node)
 		  print_decs (vr[i].max, dump_file);
 		  fprintf (dump_file, "]\n");
 		}
-	      set_range_info (ddef, vr[i].type,
-			      wide_int_storage::from (vr[i].min, prec,
-						      TYPE_SIGN (type)),
-			      wide_int_storage::from (vr[i].max, prec,
-						      TYPE_SIGN (type)));
+	      value_range v (type,
+			     wide_int_storage::from (vr[i].min, prec,
+						     TYPE_SIGN (type)),
+			     wide_int_storage::from (vr[i].max, prec,
+						     TYPE_SIGN (type)),
+			     vr[i].type);
+	      set_range_info (ddef, v);
 	    }
 	  else if (POINTER_TYPE_P (TREE_TYPE (ddef))
 		   && vr[i].nonzero_p (TREE_TYPE (ddef)))

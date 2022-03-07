@@ -4231,7 +4231,8 @@ try_substitute_return_value (gimple_stmt_iterator *gsi,
 
 	  wide_int min = wi::shwi (retval[0], prec);
 	  wide_int max = wi::shwi (retval[1], prec);
-	  set_range_info (lhs, VR_RANGE, min, max);
+	  value_range r (TREE_TYPE (lhs), min, max);
+	  set_range_info (lhs, r);
 
 	  setrange = true;
 	}

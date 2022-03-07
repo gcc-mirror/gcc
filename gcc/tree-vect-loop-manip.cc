@@ -2056,22 +2056,28 @@ vect_gen_vector_loop_niters (loop_vec_info loop_vinfo, tree niters,
       if (stmts != NULL && log_vf)
 	{
 	  if (niters_no_overflow)
-	    set_range_info (niters_vector, VR_RANGE,
-			    wi::one (TYPE_PRECISION (type)),
-			    wi::rshift (wi::max_value (TYPE_PRECISION (type),
-						       TYPE_SIGN (type)),
-					exact_log2 (const_vf),
-					TYPE_SIGN (type)));
+	    {
+	      value_range vr (type,
+			      wi::one (TYPE_PRECISION (type)),
+			      wi::rshift (wi::max_value (TYPE_PRECISION (type),
+							 TYPE_SIGN (type)),
+					  exact_log2 (const_vf),
+					  TYPE_SIGN (type)));
+	      set_range_info (niters_vector, vr);
+	    }
 	  /* For VF == 1 the vector IV might also overflow so we cannot
 	     assert a minimum value of 1.  */
 	  else if (const_vf > 1)
-	    set_range_info (niters_vector, VR_RANGE,
-			    wi::one (TYPE_PRECISION (type)),
-			    wi::rshift (wi::max_value (TYPE_PRECISION (type),
-						       TYPE_SIGN (type))
-					- (const_vf - 1),
-					exact_log2 (const_vf), TYPE_SIGN (type))
-			    + 1);
+	    {
+	      value_range vr (type,
+			      wi::one (TYPE_PRECISION (type)),
+			      wi::rshift (wi::max_value (TYPE_PRECISION (type),
+							 TYPE_SIGN (type))
+					  - (const_vf - 1),
+					  exact_log2 (const_vf), TYPE_SIGN (type))
+			      + 1);
+	      set_range_info (niters_vector, vr);
+	    }
 	}
     }
   *niters_vector_ptr = niters_vector;
@@ -2888,9 +2894,12 @@ vect_do_peeling (loop_vec_info loop_vinfo, tree niters, tree nitersm1,
       /* It's guaranteed that vector loop bound before vectorization is at
 	 least VF, so set range information for newly generated var.  */
       if (new_var_p)
-	set_range_info (niters, VR_RANGE,
-			wi::to_wide (build_int_cst (type, vf)),
-			wi::to_wide (TYPE_MAX_VALUE (type)));
+	{
+	  value_range vr (type,
+			  wi::to_wide (build_int_cst (type, vf)),
+			  wi::to_wide (TYPE_MAX_VALUE (type)));
+	  set_range_info (niters, vr);
+	}
 
       /* Prolog iterates at most bound_prolog times, latch iterates at
 	 most bound_prolog - 1 times.  */

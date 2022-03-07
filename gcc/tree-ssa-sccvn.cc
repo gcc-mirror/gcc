@@ -6304,9 +6304,7 @@ eliminate_dom_walker::eliminate_stmt (basic_block b, gimple_stmt_iterator *gsi)
 		   && SSA_NAME_RANGE_INFO (lhs)
 		   && ! SSA_NAME_RANGE_INFO (sprime)
 		   && b == sprime_b)
-	    duplicate_ssa_name_range_info (sprime,
-					   SSA_NAME_RANGE_TYPE (lhs),
-					   SSA_NAME_RANGE_INFO (lhs));
+	    duplicate_ssa_name_range_info (sprime, lhs);
 	}
 
       /* Inhibit the use of an inserted PHI on a loop header when

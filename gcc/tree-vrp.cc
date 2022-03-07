@@ -3742,9 +3742,16 @@ vrp_asserts::remove_range_assertions ()
 		    && all_imm_uses_in_stmt_or_feed_cond (var, stmt,
 							  single_pred (bb)))
 		  {
-		    set_range_info (var, SSA_NAME_RANGE_TYPE (lhs),
-				    SSA_NAME_RANGE_INFO (lhs)->get_min (),
-				    SSA_NAME_RANGE_INFO (lhs)->get_max ());
+		    /* We could use duplicate_ssa_name_range_info here
+		       instead of peeking inside SSA_NAME_RANGE_INFO,
+		       but the aforementioned asserts that the
+		       destination has no global range.  This is
+		       slated for removal anyhow.  */
+		    value_range r (TREE_TYPE (lhs),
+				   SSA_NAME_RANGE_INFO (lhs)->get_min (),
+				   SSA_NAME_RANGE_INFO (lhs)->get_max (),
+				   SSA_NAME_RANGE_TYPE (lhs));
+		    set_range_info (var, r);
 		    maybe_set_nonzero_bits (single_pred_edge (bb), var);
 		  }
 	      }

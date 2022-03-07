@@ -2980,9 +2980,12 @@ simplify_using_ranges::simplify_truth_ops_using_ranges
       gsi_insert_before (gsi, newop, GSI_SAME_STMT);
       if (INTEGRAL_TYPE_P (TREE_TYPE (tem))
 	  && TYPE_PRECISION (TREE_TYPE (tem)) > 1)
-	set_range_info (tem, VR_RANGE,
-			wi::zero (TYPE_PRECISION (TREE_TYPE (tem))),
-			wi::one (TYPE_PRECISION (TREE_TYPE (tem))));
+	{
+	  value_range vr (TREE_TYPE (tem),
+			  wi::zero (TYPE_PRECISION (TREE_TYPE (tem))),
+			  wi::one (TYPE_PRECISION (TREE_TYPE (tem))));
+	  set_range_info (tem, vr);
+	}
       gimple_assign_set_rhs_with_ops (gsi, NOP_EXPR, tem);
     }
   /* Or without.  */
