@@ -2050,7 +2050,7 @@
   ""
   {
     const char *t
-      = "%.\\tatom%A1.cas.b%T0\\t%0, %1, %2, %3;";
+      = "%.\\tatom%A1.cas.b%T0\\t%x0, %1, %2, %3;";
     return nvptx_output_atomic_insn (t, operands, 1, 4);
   }
   [(set_attr "atomic" "true")])
@@ -2076,7 +2076,7 @@
 	return "";
       }
     const char *t
-      = "%.\tatom%A1.exch.b%T0\t%0, %1, %2;";
+      = "%.\tatom%A1.exch.b%T0\t%x0, %1, %2;";
     return nvptx_output_atomic_insn (t, operands, 1, 3);
   }
   [(set_attr "atomic" "true")])
@@ -2166,7 +2166,7 @@
 	return "";
       }
     const char *t
-      = "%.\\tatom%A1.add%t0\\t%0, %1, %2;";
+      = "%.\\tatom%A1.add%t0\\t%x0, %1, %2;";
     return nvptx_output_atomic_insn (t, operands, 1, 3);
   }
   [(set_attr "atomic" "true")])
@@ -2196,7 +2196,7 @@
 	return "";
       }
     const char *t
-      = "%.\\tatom%A1.add%t0\\t%0, %1, %2;";
+      = "%.\\tatom%A1.add%t0\\t%x0, %1, %2;";
     return nvptx_output_atomic_insn (t, operands, 1, 3);
   }
   [(set_attr "atomic" "true")])
@@ -2226,7 +2226,7 @@
 	return "";
       }
     const char *t
-      = "%.\\tatom%A1.<logic>.b%T0\\t%0, %1, %2;";
+      = "%.\\tatom%A1.<logic>.b%T0\\t%x0, %1, %2;";
     return nvptx_output_atomic_insn (t, operands, 1, 3);
   }
 

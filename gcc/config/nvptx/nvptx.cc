@@ -2835,7 +2835,8 @@ nvptx_mem_maybe_shared_p (const_rtx x)
    S -- print a shuffle kind specified by CONST_INT
    t -- print a type opcode suffix, promoting QImode to 32 bits
    T -- print a type size in bits
-   u -- print a type opcode suffix without promotions.  */
+   u -- print a type opcode suffix without promotions.
+   x -- print a destination operand that may also be a bit bucket.  */
 
 static void
 nvptx_print_operand (FILE *file, rtx x, int code)
@@ -2863,6 +2864,14 @@ nvptx_print_operand (FILE *file, rtx x, int code)
 
   switch (code)
     {
+    case 'x':
+      if (current_output_insn != NULL
+	  && find_reg_note (current_output_insn, REG_UNUSED, x) != NULL_RTX)
+	{
+	  fputs ("_", file);
+	  return;
+	}
+      goto common;
     case 'B':
       if (SYMBOL_REF_P (XEXP (x, 0)))
 	switch (SYMBOL_DATA_AREA (XEXP (x, 0)))
