@@ -3922,65 +3922,92 @@ arm_expand_builtin (tree exp,
       if (GET_MODE (op1) == VOIDmode)
 	{
 	  imm = INTVAL (op1);
-	  if ((fcode == ARM_BUILTIN_WRORHI || fcode == ARM_BUILTIN_WRORWI
-	       || fcode == ARM_BUILTIN_WRORH || fcode == ARM_BUILTIN_WRORW)
+	  if ((fcode == ARM_BUILTIN_WRORWI || fcode == ARM_BUILTIN_WRORW)
 	      && (imm < 0 || imm > 32))
 	    {
-	      if (fcode == ARM_BUILTIN_WRORHI)
-		error ("the range of count should be in 0 to 32; please check the intrinsic %<_mm_rori_pi16%> in code");
-	      else if (fcode == ARM_BUILTIN_WRORWI)
-		error ("the range of count should be in 0 to 32; please check the intrinsic %<_mm_rori_pi32%> in code");
-	      else if (fcode == ARM_BUILTIN_WRORH)
-		error ("the range of count should be in 0 to 32; please check the intrinsic %<_mm_ror_pi16%> in code");
-	      else
-		error ("the range of count should be in 0 to 32; please check the intrinsic %<_mm_ror_pi32%> in code");
+	      const char *builtin = (fcode == ARM_BUILTIN_WRORWI
+				     ? "_mm_rori_pi32" : "_mm_ror_pi32");
+	      error ("the range of count should be in 0 to 32; "
+		     "please check the intrinsic %qs in code", builtin);
+	    }
+	  else if ((fcode == ARM_BUILTIN_WRORHI || fcode == ARM_BUILTIN_WRORH)
+		   && (imm < 0 || imm > 16))
+	    {
+	      const char *builtin = (fcode == ARM_BUILTIN_WRORHI
+				     ? "_mm_rori_pi16" : "_mm_ror_pi16");
+	      error ("the range of count should be in 0 to 16; "
+		     "please check the intrinsic %qs in code", builtin);
 	    }
 	  else if ((fcode == ARM_BUILTIN_WRORDI || fcode == ARM_BUILTIN_WRORD)
 		   && (imm < 0 || imm > 64))
 	    {
-	      if (fcode == ARM_BUILTIN_WRORDI)
-		error ("the range of count should be in 0 to 64; please check the intrinsic %<_mm_rori_si64%> in code");
-	      else
-		error ("the range of count should be in 0 to 64; please check the intrinsic %<_mm_ror_si64%> in code");
+	      const char *builtin = (fcode == ARM_BUILTIN_WRORDI
+				     ? "_mm_rori_si64" : "_mm_ror_si64");
+	      error ("the range of count should be in 0 to 64; "
+		     "please check the intrinsic %qs in code", builtin);
 	    }
 	  else if (imm < 0)
 	    {
-	      if (fcode == ARM_BUILTIN_WSRLHI)
-		error ("the count should be no less than 0; please check the intrinsic %<_mm_srli_pi16%> in code");
-	      else if (fcode == ARM_BUILTIN_WSRLWI)
-		error ("the count should be no less than 0; please check the intrinsic %<_mm_srli_pi32%> in code");
-	      else if (fcode == ARM_BUILTIN_WSRLDI)
-		error ("the count should be no less than 0; please check the intrinsic %<_mm_srli_si64%> in code");
-	      else if (fcode == ARM_BUILTIN_WSLLHI)
-		error ("the count should be no less than 0; please check the intrinsic %<_mm_slli_pi16%> in code");
-	      else if (fcode == ARM_BUILTIN_WSLLWI)
-		error ("the count should be no less than 0; please check the intrinsic %<_mm_slli_pi32%> in code");
-	      else if (fcode == ARM_BUILTIN_WSLLDI)
-		error ("the count should be no less than 0; please check the intrinsic %<_mm_slli_si64%> in code");
-	      else if (fcode == ARM_BUILTIN_WSRAHI)
-		error ("the count should be no less than 0; please check the intrinsic %<_mm_srai_pi16%> in code");
-	      else if (fcode == ARM_BUILTIN_WSRAWI)
-		error ("the count should be no less than 0; please check the intrinsic %<_mm_srai_pi32%> in code");
-	      else if (fcode == ARM_BUILTIN_WSRADI)
-		error ("the count should be no less than 0; please check the intrinsic %<_mm_srai_si64%> in code");
-	      else if (fcode == ARM_BUILTIN_WSRLH)
-		error ("the count should be no less than 0; please check the intrinsic %<_mm_srl_pi16%> in code");
-	      else if (fcode == ARM_BUILTIN_WSRLW)
-		error ("the count should be no less than 0; please check the intrinsic %<_mm_srl_pi32%> in code");
-	      else if (fcode == ARM_BUILTIN_WSRLD)
-		error ("the count should be no less than 0; please check the intrinsic %<_mm_srl_si64%> in code");
-	      else if (fcode == ARM_BUILTIN_WSLLH)
-		error ("the count should be no less than 0; please check the intrinsic %<_mm_sll_pi16%> in code");
-	      else if (fcode == ARM_BUILTIN_WSLLW)
-		error ("the count should be no less than 0; please check the intrinsic %<_mm_sll_pi32%> in code");
-	      else if (fcode == ARM_BUILTIN_WSLLD)
-		error ("the count should be no less than 0; please check the intrinsic %<_mm_sll_si64%> in code");
-	      else if (fcode == ARM_BUILTIN_WSRAH)
-		error ("the count should be no less than 0; please check the intrinsic %<_mm_sra_pi16%> in code");
-	      else if (fcode == ARM_BUILTIN_WSRAW)
-		error ("the count should be no less than 0; please check the intrinsic %<_mm_sra_pi32%> in code");
-	      else
-		error ("the count should be no less than 0; please check the intrinsic %<_mm_sra_si64%> in code");
+	      const char *builtin;
+	      switch (fcode)
+		{
+		  case ARM_BUILTIN_WSRLHI:
+		    builtin = "_mm_srli_pi16";
+		    break;
+		  case ARM_BUILTIN_WSRLWI:
+		    builtin = "_mm_srli_pi32";
+		    break;
+		  case ARM_BUILTIN_WSRLDI:
+		    builtin = "_mm_srli_si64";
+		    break;
+		  case ARM_BUILTIN_WSLLHI:
+		    builtin = "_mm_slli_pi16";
+		    break;
+		  case ARM_BUILTIN_WSLLWI:
+		    builtin = "_mm_slli_pi32";
+		    break;
+		  case ARM_BUILTIN_WSLLDI:
+		    builtin = "_mm_slli_si64";
+		    break;
+		  case ARM_BUILTIN_WSRAHI:
+		    builtin = "_mm_srai_pi16";
+		    break;
+		  case ARM_BUILTIN_WSRAWI:
+		    builtin = "_mm_srai_pi32";
+		    break;
+		  case ARM_BUILTIN_WSRADI:
+		    builtin = "_mm_srai_si64";
+		    break;
+		  case ARM_BUILTIN_WSRLH:
+		    builtin = "_mm_srl_pi16";
+		    break;
+		  case ARM_BUILTIN_WSRLW:
+		    builtin = "_mm_srl_pi32";
+		    break;
+		  case ARM_BUILTIN_WSRLD:
+		    builtin = "_mm_srl_si64";
+		    break;
+		  case ARM_BUILTIN_WSLLH:
+		    builtin = "_mm_sll_pi16";
+		    break;
+		  case ARM_BUILTIN_WSLLW:
+		    builtin = "_mm_sll_pi32";
+		    break;
+		  case ARM_BUILTIN_WSLLD:
+		    builtin = "_mm_sll_si64";
+		    break;
+		  case ARM_BUILTIN_WSRAH:
+		    builtin = "_mm_sra_pi16";
+		    break;
+		  case ARM_BUILTIN_WSRAW:
+		    builtin = "_mm_sra_si64";
+		    break;
+		  default:
+		    builtin = "_mm_sra_si64";
+		    break;
+		}
+	      error ("the count should be no less than 0; "
+		     "please check the intrinsic %qs in code", builtin);
 	    }
 	}
       return arm_expand_binop_builtin (icode, exp, target);
