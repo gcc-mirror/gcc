@@ -974,7 +974,7 @@ cfe_code (gfc_code **c, int *walk_subtrees, void *data ATTRIBUTE_UNUSED)
   changed_statement = NULL;
 
   /* Do not do anything inside a WHERE statement; scalar assignments, BLOCKs
-     and allocation on assigment are prohibited inside WHERE, and finally
+     and allocation on assignment are prohibited inside WHERE, and finally
      masking an expression would lead to wrong-code when replacing
 
      WHERE (a>0)

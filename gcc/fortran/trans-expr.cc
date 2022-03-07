@@ -1777,7 +1777,7 @@ trans_scalar_class_assign (stmtblock_t *block, gfc_se *lse, gfc_se *rse)
   bool not_call_expr = TREE_CODE (rse->expr) != CALL_EXPR;
   bool not_lhs_array_type;
 
-  /* Temporaries arising from depencies in assignment get cast as a
+  /* Temporaries arising from dependencies in assignment get cast as a
      character type of the dynamic size of the rhs. Use the vptr copy
      for this case.  */
   tmp = TREE_TYPE (lse->expr);
@@ -2934,7 +2934,7 @@ gfc_maybe_dereference_var (gfc_symbol *sym, tree var, bool descriptor_only_p,
 		   || CLASS_DATA (sym)->attr.class_pointer))
 	var = build_fold_indirect_ref_loc (input_location, var);
       /* And the case where a non-dummy, non-result, non-function,
-	 non-allotable and non-pointer classarray is present.  This case was
+	 non-allocable and non-pointer classarray is present.  This case was
 	 previously covered by the first if, but with introducing the
 	 condition !is_classarray there, that case has to be covered
 	 explicitly.  */

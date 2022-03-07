@@ -8424,7 +8424,7 @@ gfc_simplify_this_image (gfc_expr *coarray, gfc_expr *dim,
     return NULL;
 
   /* If no coarray argument has been passed or when the first argument
-     is actually a distance argment.  */
+     is actually a distance argument.  */
   if (coarray == NULL || !gfc_is_coarray (coarray))
     {
       gfc_expr *result;
