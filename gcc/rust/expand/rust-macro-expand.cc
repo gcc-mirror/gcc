@@ -3493,26 +3493,30 @@ MacroExpander::match_matcher (Parser<MacroInvocLexer> &parser,
       return false;
     }
 
+  auto delimiter = parser.peek_current_token ();
+
   // this is used so we can check that we delimit the stream correctly.
-  switch (matcher.get_delim_type ())
+  switch (delimiter->get_id ())
     {
-      case AST::DelimType::PARENS: {
+      case LEFT_PAREN: {
 	if (!parser.skip_token (LEFT_PAREN))
 	  return false;
       }
       break;
 
-      case AST::DelimType::SQUARE: {
+      case LEFT_SQUARE: {
 	if (!parser.skip_token (LEFT_SQUARE))
 	  return false;
       }
       break;
 
-      case AST::DelimType::CURLY: {
+      case LEFT_CURLY: {
 	if (!parser.skip_token (LEFT_CURLY))
 	  return false;
       }
       break;
+    default:
+      gcc_unreachable ();
     }
 
   const MacroInvocLexer &source = parser.get_token_source ();
@@ -3566,25 +3570,27 @@ MacroExpander::match_matcher (Parser<MacroInvocLexer> &parser,
 	}
     }
 
-  switch (matcher.get_delim_type ())
+  switch (delimiter->get_id ())
     {
-      case AST::DelimType::PARENS: {
+      case LEFT_PAREN: {
 	if (!parser.skip_token (RIGHT_PAREN))
 	  return false;
       }
       break;
 
-      case AST::DelimType::SQUARE: {
+      case LEFT_SQUARE: {
 	if (!parser.skip_token (RIGHT_SQUARE))
 	  return false;
       }
       break;
 
-      case AST::DelimType::CURLY: {
+      case LEFT_CURLY: {
 	if (!parser.skip_token (RIGHT_CURLY))
 	  return false;
       }
       break;
+    default:
+      gcc_unreachable ();
     }
 
   return true;
