@@ -14989,6 +14989,9 @@ in an inner loop relative to the loop being vectorized.  The factor applied
 is the maximum of the estimated number of iterations of the inner loop and
 this parameter.  The default value of this parameter is 50.
 
+@item vect-induction-float
+Enable loop vectorization of floating point inductions.
+
 @item avoid-fma-max-bits
 Maximum number of bits for which we avoid creating FMAs.
 

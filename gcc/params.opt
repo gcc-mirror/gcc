@@ -1176,6 +1176,10 @@ Controls how loop vectorizer uses partial vectors.  0 means never, 1 means only 
 Common Joined UInteger Var(param_vect_inner_loop_cost_factor) Init(50) IntegerRange(1, 10000) Param Optimization
 The maximum factor which the loop vectorizer applies to the cost of statements in an inner loop relative to the loop being vectorized.
 
+-param=vect-induction-float=
+Common Joined UInteger Var(param_vect_induction_float) Init(1) IntegerRage(0, 1) Param Optimization
+Enable loop vectorization of floating point inductions.
+
 -param=vrp1-mode=
 Common Joined Var(param_vrp1_mode) Enum(vrp_mode) Init(VRP_MODE_VRP) Param Optimization
 --param=vrp1-mode=[vrp|ranger] Specifies the mode VRP1 should operate in.
