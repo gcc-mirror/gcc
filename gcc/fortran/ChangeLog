@@ -1,3 +1,41 @@
+2022-03-07  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/99585
+	PR fortran/104430
+	* trans-expr.cc (conv_parent_component_references): Fix comment;
+	simplify comparison.
+	(gfc_maybe_dereference_var): Avoid d referencing a nonpointer.
+
+2022-03-07  Tobias Burnus  <tobias@codesourcery.com>
+
+	* array.cc (gfc_ref_dimen_size): Fix comment typo.
+	* dump-parse-tree.cc (gfc_dump_c_prototypes): Likewise.
+	* frontend-passes.cc (cfe_code): Likewise.
+	* gfortran.texi: Likewise.
+	* resolve.cc (generate_component_assignments): Likewise.
+	* simplify.cc (gfc_simplify_this_image): Likewise.
+	* trans-expr.cc (trans_scalar_class_assign,
+	gfc_maybe_dereference_var): Likewise.
+	* intrinsic.texi: Remove word duplication.
+	* invoke.texi: Likewise.
+
+2022-03-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* trans-expr.cc: Fix up duplicated word issue in a comment.
+	* gfortran.h: Likewise.
+	* scanner.cc: Likewise.
+
+2022-03-07  Martin Liska  <mliska@suse.cz>
+
+	* intrinsic.cc (gfc_is_intrinsic): Remove asterisk from error
+	message.
+
+2022-03-07  Martin Liska  <mliska@suse.cz>
+
+	PR translation/90148
+	* intrinsic.cc (gfc_is_intrinsic): Put
+	quote to a proper place.
+
 2022-03-03  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	PR fortran/104131

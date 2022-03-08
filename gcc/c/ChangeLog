@@ -1,3 +1,8 @@
+2022-03-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.cc (c_parser_omp_clause_map): Add missing space in string
+	literal.
+
 2022-02-23  Richard Biener  <rguenther@suse.de>
 
 	* gimple-parser.cc (c_parser_parse_gimple_body): Diagnose

@@ -1,3 +1,15 @@
+2022-03-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/104807
+	* include/bits/c++config (__terminate, __glibcxx_assert_fail):
+	Replace _GLIBCXX_VISIBILITY on function with visibility pragma.
+	(__is_constant_evaluated): Add visibility pragma.
+
+2022-03-07  Rasmus Villemoes  <rasmus.villemoes@prevas.dk>
+
+	* config/locale/vxworks/ctype_members.cc: Remove <iostream>
+	  include.
+
 2022-03-05  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/c++config (__glibcxx_assert_fail): Add visibility

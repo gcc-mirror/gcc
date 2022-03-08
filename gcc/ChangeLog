@@ -1,3 +1,101 @@
+2022-03-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/invoke.texi (C++ Modules): Remove anachronism.
+
+2022-03-07  Martin Liska  <mliska@suse.cz>
+
+	PR middle-end/104381
+	* opts.cc (finish_options): If debug info is disabled
+	(debug_info_level) and -fvar-tracking is unset, disable it.
+
+2022-03-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree-ssa-propagate.cc: Fix up duplicated word issue in a comment.
+	* config/riscv/riscv.cc: Likewise.
+	* config/darwin.h: Likewise.
+	* config/i386/i386.cc: Likewise.
+	* config/aarch64/thunderx3t110.md: Likewise.
+	* config/aarch64/fractional-cost.h: Likewise.
+	* config/vax/vax.cc: Likewise.
+	* config/rs6000/pcrel-opt.md: Likewise.
+	* config/rs6000/predicates.md: Likewise.
+	* ctfc.h: Likewise.
+	* tree-ssa-uninit.cc: Likewise.
+	* value-relation.h: Likewise.
+	* gimple-range-gori.cc: Likewise.
+	* ipa-polymorphic-call.cc: Likewise.
+	* pointer-query.cc: Likewise.
+	* ipa-sra.cc: Likewise.
+	* internal-fn.cc: Likewise.
+	* varasm.cc: Likewise.
+	* gimple-ssa-warn-access.cc: Likewise.
+
+2022-03-07  Martin Liska  <mliska@suse.cz>
+
+	PR target/104794
+	* config/arm/arm.cc (arm_option_override_internal): Add missing
+	space.
+
+2022-03-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/104782
+	* tree-vect-slp.cc (vectorize_slp_instance_root_stmt):
+	Re-instantiate r10-5979 fix, add comment.
+
+2022-03-07  Martin Liska  <mliska@suse.cz>
+
+	PR target/104797
+	* config/msp430/msp430.cc (msp430_expand_delay_cycles): Remove
+	parenthesis from built-in name.
+
+2022-03-07  Martin Liska  <mliska@suse.cz>
+
+	PR target/104794
+	* config/arm/arm.cc (arm_option_override_internal): Fix quoting
+	of options in error messages.
+	(arm_option_reconfigure_globals): Likewise.
+
+2022-03-07  Martin Liska  <mliska@suse.cz>
+
+	PR target/104794
+	* config/arm/arm-builtins.cc (arm_expand_builtin): Reuse error
+	message.  Fix ARM_BUILTIN_WRORHI and ARM_BUILTIN_WRORH that can
+	have only range [0,32].
+
+2022-03-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/104775
+	* config/s390/s390.md (*cmp_and_trap_unsigned_int<mode>): Use
+	S constraint instead of T in the last alternative.
+
+2022-03-07  Martin Liska  <mliska@suse.cz>
+
+	* plugin.cc (default_plugin_dir_name): Remove <dir> from error
+	message.
+
+2022-03-07  Martin Liska  <mliska@suse.cz>
+
+	PR translation/90148
+	* config/rs6000/rs6000.cc (rs6000_linux64_override_options): Put
+	quote to a proper place.
+	* plugin.cc (default_plugin_dir_name): Likewise.
+
+2022-03-07  Martin Liska  <mliska@suse.cz>
+
+	PR target/99297
+	* config/rx/rx.cc (rx_expand_builtin_mvtc): Fix translation
+	string.
+
+2022-03-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/104779
+	* config/i386/sse.md (avx512dq_mul<mode>3<mask_name>): New
+	define_expand pattern.  Rename define_insn to ...
+	(*avx512dq_mul<mode>3<mask_name>): ... this.
+	(<code><mode>3_mask): New any_logic define_expand pattern.
+	(<mask_codefor><code><mode>3<mask_name>): Rename to ...
+	(*<code><mode>3<mask_name>): ... this.
+
 2022-03-05  Jakub Jelinek  <jakub@redhat.com>
 
 	* gimple-ssa-warn-access.cc (pass_waccess::use_after_inval_p): Remove

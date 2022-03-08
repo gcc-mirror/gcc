@@ -1,3 +1,35 @@
+2022-03-07  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/99585
+	PR fortran/104430
+	* gfortran.dg/class_result_10.f90: New test.
+
+2022-03-07  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/101983
+	* gcc.dg/analyzer/pr101983-main.c: New test.
+	* gcc.dg/analyzer/pr101983-not-main.c: New test.
+
+2022-03-07  Martin Liska  <mliska@suse.cz>
+
+	PR middle-end/104381
+	* gcc.dg/pr104381.c: New test.
+
+2022-03-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/104782
+	* gcc.dg/vect/pr104782.c: New testcase.
+
+2022-03-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/104775
+	* gcc.target/s390/pr104775.c: New test.
+
+2022-03-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/104779
+	* gcc.target/i386/pr104779.c: New test.
+
 2022-03-06  Roger Sayle  <roger@nextmovesoftware.com>
 
 	* gcc.dg/lower-subreg-1.c: Update test case.  iordi3 is no longer

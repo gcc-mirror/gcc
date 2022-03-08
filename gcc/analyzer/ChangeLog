@@ -1,3 +1,17 @@
+2022-03-07  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/101983
+	* engine.cc (returning_from_function_p): New.
+	(impl_region_model_context::on_state_leak): Use it when rejecting
+	leaks at the return from "main".
+
+2022-03-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* store.cc: Fix up duplicated word issue in a comment.
+	* analyzer.cc: Likewise.
+	* engine.cc: Likewise.
+	* sm-taint.cc: Likewise.
+
 2022-03-04  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/103521

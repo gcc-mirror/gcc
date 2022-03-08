@@ -1,3 +1,7 @@
+2022-03-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-attribs.cc: Fix up duplicated word issue in a comment.
+
 2022-03-01  Martin Liska  <mliska@suse.cz>
 
 	PR ipa/104533

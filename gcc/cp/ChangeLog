@@ -1,3 +1,22 @@
+2022-03-07  Jason Merrill  <jason@redhat.com>
+
+	PR c++/104618
+	* decl2.cc (mark_single_function): Look through parens and location
+	wrapper.
+	* typeck.cc (cp_build_addr_expr_1): Not here.
+
+2022-03-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* parser.cc (cp_parser_omp_clause_map): Add missing space in string
+	literal.
+
+2022-03-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* cvt.cc: Fix up duplicated word issue in a comment.
+	* pt.cc: Likewise.
+	* module.cc: Likewise.
+	* coroutines.cc: Likewise.
+
 2022-03-04  Nathan Sidwell  <nathan@acm.org>
 
 	* mangle.cc (is_std_substitution): Check global module.
