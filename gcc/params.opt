@@ -551,7 +551,7 @@ Maximum loop depth of a call which is considered for inlining functions called o
 
 -param=max-inline-functions-called-once-insns=
 Common Joined UInteger Var(param_inline_functions_called_once_insns) Init(4000) Optimization Param
-Maximum combinaed size of caller and callee wich is inlined if callee is called once.
+Maximum combined size of caller and callee which is inlined if callee is called once.
 
 -param=max-inline-insns-auto=
 Common Joined UInteger Var(param_max_inline_insns_auto) Init(15) Optimization Param
