@@ -1020,6 +1020,7 @@ d_make_comp (struct d_info *di, enum demangle_component_type type,
     case DEMANGLE_COMPONENT_NULLARY:
     case DEMANGLE_COMPONENT_TRINARY_ARG2:
     case DEMANGLE_COMPONENT_TPARM_OBJ:
+    case DEMANGLE_COMPONENT_STRUCTURED_BINDING:
       if (left == NULL)
 	return NULL;
       break;
@@ -1619,12 +1620,12 @@ d_prefix (struct d_info *di, int subst)
     }
 }
 
-/* <unqualified-name> ::= <operator-name>
-                      ::= <ctor-dtor-name>
-                      ::= <source-name>
-		      ::= <local-source-name> 
-
-    <local-source-name>	::= L <source-name> <discriminator>
+/* <unqualified-name> ::= <operator-name> [<abi-tags>]
+                      ::= <ctor-dtor-name> [<abi-tags>]
+                      ::= <source-name> [<abi-tags>]
+		      ::= <local-source-name>  [<abi-tags>]
+		      ::= DC <source-name>+ E [<abi-tags>]
+    <local-source-name>	::= L <source-name> <discriminator> [<abi-tags>]
 */
 
 static struct demangle_component *
@@ -1654,6 +1655,28 @@ d_unqualified_name (struct d_info *di)
 	    ret = d_make_comp (di, DEMANGLE_COMPONENT_UNARY, ret,
 			       d_source_name (di));
 	}
+    }
+  else if (peek == 'D' && d_peek_next_char (di) == 'C')
+    {
+      // structured binding
+      d_advance (di, 2);
+      struct demangle_component *prev = NULL;
+      do
+	{
+	  struct demangle_component *next = 
+	    d_make_comp (di, DEMANGLE_COMPONENT_STRUCTURED_BINDING,
+			 d_source_name (di), NULL);
+	  if (prev)
+	    d_right (prev) = next;
+	  else
+	    ret = next;
+	  prev = next;
+	}
+      while (prev && d_peek_char (di) != 'E');
+      if (prev)
+	d_advance (di, 1);
+      else
+	ret = NULL;
     }
   else if (peek == 'C' || peek == 'D')
     ret = d_ctor_dtor_name (di);
@@ -4179,6 +4202,7 @@ d_count_templates_scopes (struct d_print_info *dpi,
     case DEMANGLE_COMPONENT_CHARACTER:
     case DEMANGLE_COMPONENT_NUMBER:
     case DEMANGLE_COMPONENT_UNNAMED_TYPE:
+    case DEMANGLE_COMPONENT_STRUCTURED_BINDING:
       break;
 
     case DEMANGLE_COMPONENT_TEMPLATE:
@@ -4847,6 +4871,19 @@ d_print_comp_inner (struct d_print_info *dpi, int options,
       d_print_comp (dpi, options, d_left (dc));
       d_append_string (dpi, "[abi:");
       d_print_comp (dpi, options, d_right (dc));
+      d_append_char (dpi, ']');
+      return;
+
+    case DEMANGLE_COMPONENT_STRUCTURED_BINDING:
+      d_append_char (dpi, '[');
+      for (;;)
+	{
+	  d_print_comp (dpi, options, d_left (dc));
+	  dc = d_right (dc);
+	  if (!dc)
+	    break;
+	  d_append_string (dpi, ", ");
+	}
       d_append_char (dpi, ']');
       return;
 

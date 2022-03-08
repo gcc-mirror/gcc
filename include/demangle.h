@@ -449,7 +449,9 @@ enum demangle_component_type
   /* A cloned function.  */
   DEMANGLE_COMPONENT_CLONE,
   DEMANGLE_COMPONENT_NOEXCEPT,
-  DEMANGLE_COMPONENT_THROW_SPEC
+  DEMANGLE_COMPONENT_THROW_SPEC,
+
+  DEMANGLE_COMPONENT_STRUCTURED_BINDING
 };
 
 /* Types which are only used internally.  */
