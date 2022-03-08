@@ -251,7 +251,7 @@ Recursive cloning only when the probability of call being executed exceeds the p
 
 -param=ipa-cp-recursive-freq-factor=
 Common Joined UInteger Var(param_ipa_cp_recursive_freq_factor) Init(6) Param Optimization
-When propagating IPA-CP effect estimates, multiply frequencies of recursive edges that that bring back an unchanged value by this factor.
+When propagating IPA-CP effect estimates, multiply frequencies of recursive edges that bring back an unchanged value by this factor.
 
 -param=ipa-cp-recursion-penalty=
 Common Joined UInteger Var(param_ipa_cp_recursion_penalty) Init(40) IntegerRange(0, 100) Param Optimization
