@@ -4500,32 +4500,14 @@ package body Exp_Ch3 is
       ---------------------
 
       function User_Defined_Eq (T : Entity_Id) return Entity_Id is
-         Prim : Elmt_Id;
-         Op   : Entity_Id;
+         Op : constant Entity_Id := TSS (T, TSS_Composite_Equality);
 
       begin
-         Op := TSS (T, TSS_Composite_Equality);
-
          if Present (Op) then
             return Op;
+         else
+            return Get_User_Defined_Eq (T);
          end if;
-
-         Prim := First_Elmt (Collect_Primitive_Operations (T));
-         while Present (Prim) loop
-            Op := Node (Prim);
-
-            if Chars (Op) = Name_Op_Eq
-              and then Etype (Op) = Standard_Boolean
-              and then Etype (First_Formal (Op)) = T
-              and then Etype (Next_Formal (First_Formal (Op))) = T
-            then
-               return Op;
-            end if;
-
-            Next_Elmt (Prim);
-         end loop;
-
-         return Empty;
       end User_Defined_Eq;
 
    --  Start of processing for Build_Untagged_Equality
