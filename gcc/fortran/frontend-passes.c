@@ -2276,6 +2276,7 @@ optimize_minmaxloc (gfc_expr **e)
   if (fn->rank != 1
       || fn->value.function.actual == NULL
       || fn->value.function.actual->expr == NULL
+      || fn->value.function.actual->expr->ts.type == BT_CHARACTER
       || fn->value.function.actual->expr->rank != 1)
     return;
 
