@@ -843,6 +843,11 @@ namespace std
 	static constexpr strong_ordering
 	_S_fp_cmp(_Tp __x, _Tp __y) noexcept
 	{
+#ifdef __vax__
+	  // VAX format has no NaN, only "excess" for Inf, so totally ordered.
+	  return __builtin_bit_cast(strong_ordering, __x <=> __y);
+#endif
+
 	  auto __ix = _S_fp_bits(__x);
 	  auto __iy = _S_fp_bits(__y);
 
