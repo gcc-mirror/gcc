@@ -4541,6 +4541,7 @@ package body Exp_Ch3 is
            and then Present (User_Defined_Eq (Etype (Comp)))
          then
             Build_Eq := True;
+            exit;
          end if;
 
          Next_Component (Comp);
