@@ -2268,25 +2268,28 @@
 (define_insn "nvptx_warpsync"
   [(unspec_volatile [(const_int 0)] UNSPECV_WARPSYNC)]
   "TARGET_PTX_6_0"
-  "\\tbar.warp.sync\\t0xffffffff;"
-  [(set_attr "predicable" "false")])
+  "%.\\tbar.warp.sync\\t0xffffffff;")
 
 (define_insn "nvptx_uniform_warp_check"
   [(unspec_volatile [(const_int 0)] UNSPECV_UNIFORM_WARP_CHECK)]
   ""
   {
-    output_asm_insn ("{", NULL);
-    output_asm_insn ("\\t"	 ".reg.b32"	   "\\t" "act;", NULL);
-    output_asm_insn ("\\t"	 "vote.ballot.b32" "\\t" "act,1;", NULL);
-    output_asm_insn ("\\t"	 ".reg.pred"	   "\\t" "uni;", NULL);
-    output_asm_insn ("\\t"	 "setp.eq.b32"	   "\\t" "uni,act,0xffffffff;",
-		     NULL);
-    output_asm_insn ("@ !uni\\t" "trap;", NULL);
-    output_asm_insn ("@ !uni\\t" "exit;", NULL);
-    output_asm_insn ("}", NULL);
+    const char *insns[] = {
+      "{",
+      "\\t"	      ".reg.b32"	"\\t" "act;",
+      "%.\\t"	      "vote.ballot.b32" "\\t" "act,1;",
+      "\\t"	      ".reg.pred"	"\\t" "do_abort;",
+      "\\t"	      "mov.pred"	"\\t" "do_abort,0;",
+      "%.\\t"	      "setp.ne.b32"	"\\t" "do_abort,act,0xffffffff;",
+      "@ do_abort\\t" "trap;",
+      "@ do_abort\\t" "exit;",
+      "}",
+      NULL
+    };
+    for (const char **p = &insns[0]; *p != NULL; p++)
+      output_asm_insn (*p, NULL);
     return "";
-  }
-  [(set_attr "predicable" "false")])
+  })
 
 (define_expand "memory_barrier"
   [(set (match_dup 0)
