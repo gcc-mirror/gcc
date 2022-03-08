@@ -2025,7 +2025,7 @@ We also must compile the scaffold.
 @example
 gm2 -c -g -fmakelist c.mod
 gm2 -c -g -fmakeinit -fshared c.mod
-libtool --tag=CC --mode=compile g++ -g -c _m2_c.cpp -o _m2_c.lo
+libtool --tag=CC --mode=compile g++ -g -c c_m2.cpp -o _m2_c.lo
 @end example
 
 The third step is to link all these @file{.lo} files.
