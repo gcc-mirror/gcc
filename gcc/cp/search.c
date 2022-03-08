@@ -1249,6 +1249,13 @@ lookup_field_fuzzy_info::fuzzy_lookup_field (tree type)
       if (is_lambda_ignored_entity (field))
 	continue;
 
+      /* Ignore special identifiers with space at the end like cdtor or
+	 conversion op identifiers.  */
+      if (TREE_CODE (DECL_NAME (field)) == IDENTIFIER_NODE)
+	if (unsigned int len = IDENTIFIER_LENGTH (DECL_NAME (field)))
+	  if (IDENTIFIER_POINTER (DECL_NAME (field))[len - 1] == ' ')
+	    continue;
+
       m_candidates.safe_push (DECL_NAME (field));
     }
 }
