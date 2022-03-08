@@ -3591,68 +3591,78 @@ package Sem_Util is
       --  for the Storage_Model feature. These functions provide an interface
       --  that the compiler (in particular back-end phases such as gigi and
       --  GNAT-LLVM) can use to easily obtain entities and operations that
-      --  are specified for types in the aspects Storage_Model_Type and
+      --  are specified for types that have aspects Storage_Model_Type or
       --  Designated_Storage_Model.
 
-      function Get_Storage_Model_Type_Entity
-        (Typ : Entity_Id;
-         Nam : Name_Id) return Entity_Id;
-      --  Given type Typ with aspect Storage_Model_Type, returns the Entity_Id
-      --  corresponding to the entity associated with Nam in the aspect. If the
-      --  type does not specify the aspect, or such an entity is not present,
-      --  then returns Empty. (Note: This function is modeled on function
-      --  Get_Iterable_Type_Primitive.)
+      function Has_Storage_Model_Type_Aspect (Typ : Entity_Id) return Boolean;
+      --  Returns True iff Typ specifies aspect Storage_Model_Type
 
       function Has_Designated_Storage_Model_Aspect
         (Typ : Entity_Id) return Boolean;
       --  Returns True iff Typ specifies aspect Designated_Storage_Model
 
-      function Has_Storage_Model_Type_Aspect (Typ : Entity_Id) return Boolean;
-      --  Returns True iff Typ specifies aspect Storage_Model_Type
-
       function Storage_Model_Object (Typ : Entity_Id) return Entity_Id;
-      --  Given an access type with aspect Designated_Storage_Model, returns
-      --  the storage-model object associated with that type; returns Empty
-      --  if there is no associated object.
+      --  Given an access type Typ with aspect Designated_Storage_Model,
+      --  returns the storage-model object associated with that type.
+      --  The object Entity_Ids returned by this function can be passed
+      --  other functions declared in this interface to retrieve operations
+      --  associated with Storage_Model_Type aspect of the object's type.
 
       function Storage_Model_Type (Obj : Entity_Id) return Entity_Id;
       --  Given an object Obj of a type specifying aspect Storage_Model_Type,
-      --  returns that type; otherwise returns Empty.
+      --  returns that type.
 
-      function Storage_Model_Address_Type (Typ : Entity_Id) return Entity_Id;
-      --  Given a type Typ that specifies aspect Storage_Model_Type, returns
-      --  the type specified for the Address_Type choice in that aspect;
-      --  returns Empty if the aspect or the type isn't specified.
+      function Get_Storage_Model_Type_Entity
+        (SM_Obj_Or_Type : Entity_Id;
+         Nam            : Name_Id) return Entity_Id;
+      --  Given a type with aspect Storage_Model_Type or an object of such a
+      --  type, and Nam denoting the name of one of the argument kinds allowed
+      --  for that aspect, returns the Entity_Id corresponding to the entity
+      --  associated with Nam in the aspect. If such an entity is not present,
+      --  then returns Empty. (Note: This function is modeled on function
+      --  Get_Iterable_Type_Primitive.)
 
-      function Storage_Model_Null_Address (Typ : Entity_Id) return Entity_Id;
-      --  Given a type Typ that specifies aspect Storage_Model_Type, returns
-      --  constant specified for Null_Address choice in that aspect; returns
-      --  Empty if the aspect or the constant object isn't specified.
+      function Storage_Model_Address_Type
+        (SM_Obj_Or_Type : Entity_Id) return Entity_Id;
+      --  Given a type with aspect Storage_Model_Type or an object of such a
+      --  type, returns the type specified for the Address_Type choice in that
+      --  aspect; returns Empty if the type isn't specified.
 
-      function Storage_Model_Allocate (Typ : Entity_Id) return Entity_Id;
-      --  Given a type Typ that specifies aspect Storage_Model_Type, returns
-      --  procedure specified for the Allocate choice in that aspect; returns
-      --  Empty if the aspect or the procedure isn't specified.
+      function Storage_Model_Null_Address
+        (SM_Obj_Or_Type : Entity_Id) return Entity_Id;
+      --  Given a type with aspect Storage_Model_Type or an object of such a
+      --  type, returns the constant specified for the Null_Address choice in
+      --  that aspect; returns Empty if the constant object isn't specified.
 
-      function Storage_Model_Deallocate (Typ : Entity_Id) return Entity_Id;
-      --  Given a type Typ that specifies aspect Storage_Model_Type, returns
-      --  procedure specified for the Deallocate choice in that aspect; returns
-      --  Empty if the aspect or the procedure isn't specified.
+      function Storage_Model_Allocate
+        (SM_Obj_Or_Type : Entity_Id) return Entity_Id;
+      --  Given a type with aspect Storage_Model_Type or an object of such a
+      --  type, returns the procedure specified for the Allocate choice in that
+      --  aspect; returns Empty if the procedure isn't specified.
 
-      function Storage_Model_Copy_From (Typ : Entity_Id) return Entity_Id;
-      --  Given a type Typ that specifies aspect Storage_Model_Type, returns
-      --  procedure specified for the Copy_From choice in that aspect; returns
-      --  Empty if the aspect or the procedure isn't specified.
+      function Storage_Model_Deallocate
+        (SM_Obj_Or_Type : Entity_Id) return Entity_Id;
+      --  Given a type with aspect Storage_Model_Type or an object of such a
+      --  type, returns the procedure specified for the Deallocate choice in
+      --  that aspect; returns Empty if the procedure isn't specified.
 
-      function Storage_Model_Copy_To (Typ : Entity_Id) return Entity_Id;
-      --  Given a type Typ that specifies aspect Storage_Model_Type, returns
-      --  procedure specified for the Copy_To choice in that aspect; returns
-      --  Empty if the aspect or the procedure isn't specified.
+      function Storage_Model_Copy_From
+        (SM_Obj_Or_Type : Entity_Id) return Entity_Id;
+      --  Given a type with aspect Storage_Model_Type or an object of such a
+      --  type, returns the procedure specified for the Copy_From choice in
+      --  that aspect; returns Empty if the procedure isn't specified.
 
-      function Storage_Model_Storage_Size (Typ : Entity_Id) return Entity_Id;
-      --  Given a type Typ that specifies aspect Storage_Model_Type, returns
-      --  function specified for Storage_Size choice in that aspect; returns
-      --  Empty if the aspect or the procedure isn't specified.
+      function Storage_Model_Copy_To
+        (SM_Obj_Or_Type : Entity_Id) return Entity_Id;
+      --  Given a type with aspect Storage_Model_Type or an object of such a
+      --  type, returns the procedure specified for the Copy_To choice in that
+      --  aspect; returns Empty if the procedure isn't specified.
+
+      function Storage_Model_Storage_Size
+        (SM_Obj_Or_Type : Entity_Id) return Entity_Id;
+      --  Given a type with aspect Storage_Model_Type or an object of such a
+      --  type, returns the function specified for the Storage_Size choice in
+      --  that aspect; returns Empty if the procedure isn't specified.
 
    end Storage_Model_Support;
 
