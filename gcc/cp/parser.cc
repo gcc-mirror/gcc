@@ -48218,7 +48218,8 @@ synthesize_implicit_template_parm  (cp_parser *parser, tree constr)
      function template is equivalent to an explicit template.
 
      Note that DECL_ARTIFICIAL is used elsewhere for template parameters.  */
-  DECL_VIRTUAL_P (TREE_VALUE (new_parm)) = true;
+  if (TREE_VALUE (new_parm) != error_mark_node)
+    DECL_VIRTUAL_P (TREE_VALUE (new_parm)) = true;
 
   // Chain the new parameter to the list of implicit parameters.
   if (parser->implicit_template_parms)
