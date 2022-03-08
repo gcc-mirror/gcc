@@ -23,7 +23,7 @@ elif test x$long = xyes; then
     r=$(git describe --all --abbrev=40 --match 'basepoints/gcc-[0-9]*' $c | sed -n 's,^\(tags/\)\?basepoints/gcc-,r,p')
 else
     r=$(git describe --all --abbrev=14 --match 'basepoints/gcc-[0-9]*' $c | sed -n 's,^\(tags/\)\?basepoints/gcc-,r,p');
-    expr match ${r:-no} 'r[0-9]\+$' >/dev/null && r=${r}-0-g$(git rev-parse $c);
+    expr ${r:-no} : 'r[0-9]\+$' >/dev/null && r=${r}-0-g$(git rev-parse $c);
 fi;
 if test -n $r; then
     o=$(git config --get gcc-config.upstream);
