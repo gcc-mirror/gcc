@@ -429,10 +429,12 @@ static struct demangle_component *d_name (struct d_info *, int substable);
 
 static struct demangle_component *d_nested_name (struct d_info *);
 
+static int d_maybe_module_name (struct d_info *, struct demangle_component **);
+
 static struct demangle_component *d_prefix (struct d_info *, int);
 
 static struct demangle_component *d_unqualified_name (struct d_info *,
-						      struct demangle_component *scope);
+	struct demangle_component *scope, struct demangle_component *module);
 
 static struct demangle_component *d_source_name (struct d_info *);
 
@@ -984,6 +986,7 @@ d_make_comp (struct d_info *di, enum demangle_component_type type,
     case DEMANGLE_COMPONENT_COMPOUND_NAME:
     case DEMANGLE_COMPONENT_VECTOR_TYPE:
     case DEMANGLE_COMPONENT_CLONE:
+    case DEMANGLE_COMPONENT_MODULE_ENTITY:
       if (left == NULL || right == NULL)
 	return NULL;
       break;
@@ -1022,6 +1025,7 @@ d_make_comp (struct d_info *di, enum demangle_component_type type,
     case DEMANGLE_COMPONENT_TRINARY_ARG2:
     case DEMANGLE_COMPONENT_TPARM_OBJ:
     case DEMANGLE_COMPONENT_STRUCTURED_BINDING:
+    case DEMANGLE_COMPONENT_MODULE_INIT:
       if (left == NULL)
 	return NULL;
       break;
@@ -1030,6 +1034,8 @@ d_make_comp (struct d_info *di, enum demangle_component_type type,
 	 empty.  */
     case DEMANGLE_COMPONENT_ARRAY_TYPE:
     case DEMANGLE_COMPONENT_INITIALIZER_LIST:
+    case DEMANGLE_COMPONENT_MODULE_NAME:
+    case DEMANGLE_COMPONENT_MODULE_PARTITION:
       if (right == NULL)
 	return NULL;
       break;
@@ -1422,6 +1428,7 @@ d_name (struct d_info *di, int substable)
 {
   char peek = d_peek_char (di);
   struct demangle_component *dc = NULL;
+  struct demangle_component *module = NULL;
   int subst = 0;
 
   switch (peek)
@@ -1435,7 +1442,7 @@ d_name (struct d_info *di, int substable)
       break;
 
     case 'U':
-      dc = d_unqualified_name (di, NULL);
+      dc = d_unqualified_name (di, NULL, NULL);
       break;
 
     case 'S':
@@ -1446,12 +1453,21 @@ d_name (struct d_info *di, int substable)
 	    dc = d_make_name (di, "std", 3);
 	    di->expansion += 3;
 	  }
-	else
+
+	if (d_peek_char (di) == 'S')
 	  {
-	    dc = d_substitution (di, 0);
-	    if (!dc)
+	    module = d_substitution (di, 0);
+	    if (!module)
 	      return NULL;
-	    subst = 1;
+	    if (!(module->type == DEMANGLE_COMPONENT_MODULE_NAME
+		  || module->type == DEMANGLE_COMPONENT_MODULE_PARTITION))
+	      {
+		if (dc)
+		  return NULL;
+		subst = 1;
+		dc = module;
+		module = NULL;
+	      }
 	  }
       }
       /* FALLTHROUGH */
@@ -1459,7 +1475,7 @@ d_name (struct d_info *di, int substable)
     case 'L':
     default:
       if (!subst)
-	dc = d_unqualified_name (di, dc);
+	dc = d_unqualified_name (di, dc, module);
       if (d_peek_char (di) == 'I')
 	{
 	  /* This is <template-args>, which means that we just saw
@@ -1552,15 +1568,6 @@ d_prefix (struct d_info *di, int substable)
 	    return NULL;
 	  ret = cplus_demangle_type (di);
 	}
-      else if (peek == 'S')
-	{
-	  if (ret)
-	    return NULL;
-	  ret = d_substitution (di, 1);
-	  if (!ret)
-	    return NULL;
-	  continue;
-	}
       else if (peek == 'I')
 	{
 	  if (ret == NULL)
@@ -1586,7 +1593,24 @@ d_prefix (struct d_info *di, int substable)
 	  d_advance (di, 1);
 	}
       else
-	ret = d_unqualified_name (di, ret);
+	{
+	  struct demangle_component *module = NULL;
+	  if (peek == 'S')
+	    {
+	      module = d_substitution (di, 1);
+	      if (!module)
+		return NULL;
+	      if (!(module->type == DEMANGLE_COMPONENT_MODULE_NAME
+		    || module->type == DEMANGLE_COMPONENT_MODULE_PARTITION))
+		{
+		  if (ret)
+		    return NULL;
+		  ret = module;
+		  continue;
+		}
+	    }
+	  ret = d_unqualified_name (di, ret, module);
+	}
 
       if (!ret)
 	break;
@@ -1601,19 +1625,45 @@ d_prefix (struct d_info *di, int substable)
   return ret;
 }
 
-/* <unqualified-name> ::= <operator-name> [<abi-tags>]
-                      ::= <ctor-dtor-name> [<abi-tags>]
-                      ::= <source-name> [<abi-tags>]
-		      ::= <local-source-name>  [<abi-tags>]
-		      ::= DC <source-name>+ E [<abi-tags>]
+static int
+d_maybe_module_name (struct d_info *di, struct demangle_component **name)
+{
+  while (d_peek_char (di) == 'W')
+    {
+      d_advance (di, 1);
+      enum demangle_component_type code = DEMANGLE_COMPONENT_MODULE_NAME;
+      if (d_peek_char (di) == 'P')
+	{
+	  code = DEMANGLE_COMPONENT_MODULE_PARTITION;
+	  d_advance (di, 1);
+	}
+
+      *name = d_make_comp (di, code, *name, d_source_name (di));
+      if (!*name)
+	return 0;
+      if (!d_add_substitution (di, *name))
+	return 0;
+    }
+  return 1;
+}
+
+/* <unqualified-name> ::= [<module-name>] <operator-name> [<abi-tags>]
+                      ::= [<module-name>] <ctor-dtor-name> [<abi-tags>]
+                      ::= [<module-name>] <source-name> [<abi-tags>]
+		      ::= [<module-name>] <local-source-name>  [<abi-tags>]
+                      ::= [<module-name>] DC <source-name>+ E [<abi-tags>]
     <local-source-name>	::= L <source-name> <discriminator> [<abi-tags>]
 */
 
 static struct demangle_component *
-d_unqualified_name (struct d_info *di, struct demangle_component *scope)
+d_unqualified_name (struct d_info *di, struct demangle_component *scope,
+		    struct demangle_component *module)
 {
   struct demangle_component *ret;
   char peek;
+
+  if (!d_maybe_module_name (di, &module))
+    return NULL;
 
   peek = d_peek_char (di);
   if (IS_DIGIT (peek))
@@ -1688,6 +1738,8 @@ d_unqualified_name (struct d_info *di, struct demangle_component *scope)
   else
     return NULL;
 
+  if (module)
+    ret = d_make_comp (di, DEMANGLE_COMPONENT_MODULE_ENTITY, ret, module);
   if (d_peek_char (di) == 'B')
     ret = d_abi_tags (di, ret);
   if (scope)
@@ -2166,6 +2218,14 @@ d_special_name (struct d_info *di)
 	  return d_make_comp (di, DEMANGLE_COMPONENT_HIDDEN_ALIAS,
 			      d_encoding (di, 0), NULL);
 
+	case 'I':
+	  {
+	    struct demangle_component *module = NULL;
+	    if (!d_maybe_module_name (di, &module) || !module)
+	      return NULL;
+	    return d_make_comp (di, DEMANGLE_COMPONENT_MODULE_INIT,
+				module, NULL);
+	  }
 	case 'T':
 	  switch (d_next_char (di))
 	    {
@@ -3302,7 +3362,7 @@ d_unresolved_name (struct d_info *di)
     }
   else
     type = cplus_demangle_type (di);
-  name = d_unqualified_name (di, type);
+  name = d_unqualified_name (di, type, NULL);
   if (d_peek_char (di) == 'I')
     name = d_make_comp (di, DEMANGLE_COMPONENT_TEMPLATE, name,
 			d_template_args (di));
@@ -3375,7 +3435,7 @@ d_expression_1 (struct d_info *di)
 	/* operator-function-id, i.e. operator+(t).  */
 	d_advance (di, 2);
 
-      name = d_unqualified_name (di, NULL);
+      name = d_unqualified_name (di, NULL, NULL);
       if (name == NULL)
 	return NULL;
       if (d_peek_char (di) == 'I')
@@ -3483,7 +3543,7 @@ d_expression_1 (struct d_info *di)
 	      /* fold-expression.  */
 	      left = d_operator_name (di);
 	    else if (!strcmp (code, "di"))
-	      left = d_unqualified_name (di, NULL);
+	      left = d_unqualified_name (di, NULL, NULL);
 	    else
 	      left = d_expression_1 (di);
 	    if (!strcmp (code, "cl"))
@@ -3501,7 +3561,7 @@ d_expression_1 (struct d_info *di)
 		       d_unqualified_name rather than d_expression_1 here for
 		       old mangled names that didn't add 'on' before operator
 		       names.  */
-		    right = d_unqualified_name (di, NULL);
+		    right = d_unqualified_name (di, NULL, NULL);
 		    if (d_peek_char (di) == 'I')
 		      right = d_make_comp (di, DEMANGLE_COMPONENT_TEMPLATE,
 					   right, d_template_args (di));
@@ -4147,6 +4207,9 @@ d_count_templates_scopes (struct d_print_info *dpi,
     case DEMANGLE_COMPONENT_NUMBER:
     case DEMANGLE_COMPONENT_UNNAMED_TYPE:
     case DEMANGLE_COMPONENT_STRUCTURED_BINDING:
+    case DEMANGLE_COMPONENT_MODULE_NAME:
+    case DEMANGLE_COMPONENT_MODULE_PARTITION:
+    case DEMANGLE_COMPONENT_MODULE_INIT:
       break;
 
     case DEMANGLE_COMPONENT_TEMPLATE:
@@ -4252,6 +4315,7 @@ d_count_templates_scopes (struct d_print_info *dpi,
 
     case DEMANGLE_COMPONENT_GLOBAL_CONSTRUCTORS:
     case DEMANGLE_COMPONENT_GLOBAL_DESTRUCTORS:
+    case DEMANGLE_COMPONENT_MODULE_ENTITY:
       d_count_templates_scopes (dpi, d_left (dc));
       break;
 
@@ -4831,6 +4895,25 @@ d_print_comp_inner (struct d_print_info *dpi, int options,
       d_append_char (dpi, ']');
       return;
 
+    case DEMANGLE_COMPONENT_MODULE_ENTITY:
+      d_print_comp (dpi, options, d_left (dc));
+      d_append_char (dpi, '@');
+      d_print_comp (dpi, options, d_right (dc));
+      return;
+
+    case DEMANGLE_COMPONENT_MODULE_NAME:
+    case DEMANGLE_COMPONENT_MODULE_PARTITION:
+      {
+	if (d_left (dc))
+	  d_print_comp (dpi, options, d_left (dc));
+	char c = dc->type == DEMANGLE_COMPONENT_MODULE_PARTITION
+	  ? ':' : d_left (dc) ? '.' : 0;
+	if (c)
+	  d_append_char (dpi, c);
+	d_print_comp (dpi, options, d_right (dc));
+      }
+      return;
+
     case DEMANGLE_COMPONENT_QUAL_NAME:
     case DEMANGLE_COMPONENT_LOCAL_NAME:
       d_print_comp (dpi, options, d_left (dc));
@@ -5060,6 +5143,11 @@ d_print_comp_inner (struct d_print_info *dpi, int options,
     case DEMANGLE_COMPONENT_DTOR:
       d_append_char (dpi, '~');
       d_print_comp (dpi, options, dc->u.s_dtor.name);
+      return;
+
+    case DEMANGLE_COMPONENT_MODULE_INIT:
+      d_append_string (dpi, "initializer for module ");
+      d_print_comp (dpi, options, d_left (dc));
       return;
 
     case DEMANGLE_COMPONENT_VTABLE:

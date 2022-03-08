@@ -1503,3 +1503,70 @@ std::[a]
 
 _ZN3NMSDC1aEE
 NMS::[a]
+
+# Modules
+_ZN5Outer5InnerW3FOO2FnERNS0_1XE
+Outer::Inner::Fn@FOO(Outer::Inner::X&)
+
+_ZN5OuterW3FOO5Inner2FnERNS1_1XE
+Outer::Inner@FOO::Fn(Outer::Inner@FOO::X&)
+
+_ZN4Quux4TotoW3FooW3Bar3BazEPNS0_S2_5PlughE
+Quux::Toto::Baz@Foo.Bar(Quux::Toto::Plugh@Foo.Bar*)
+
+_ZW6Module1fNS_1a1bENS0_1cE
+f@Module(a@Module::b, a@Module::c)
+
+_ZN3BobW3FOOW3BAR3BarEPS1_1APNS_S1_1BE
+Bob::Bar@FOO.BAR(A@FOO.BAR*, Bob::B@FOO.BAR*)
+
+_ZW3FOOW3BAR3FooPS0_1APN3BobS0_1BE
+Foo@FOO.BAR(A@FOO.BAR*, Bob::B@FOO.BAR*)
+
+_ZN3BobW3FOOW3BAZ3FooEPS0_W3BAR1APNS_S2_1BE
+Bob::Foo@FOO.BAZ(A@FOO.BAR*, Bob::B@FOO.BAR*)
+
+_ZW3FOOW3BAZ3BarPS_W3BAR1APN3BobS1_1BE
+Bar@FOO.BAZ(A@FOO.BAR*, Bob::B@FOO.BAR*)
+
+_ZNW3FOO3TPLIS_3OneE1MEPS1_
+TPL@FOO<One@FOO>::M(One@FOO*)
+
+_ZNW3FOO3TPLIS_3OneE1NIS_3TwoEEvPS1_PT_
+void TPL@FOO<One@FOO>::N<Two@FOO>(One@FOO*, Two@FOO*)
+
+_ZN3NMSW3FOO3TPLINS_S0_3OneEE1MEPS2_
+NMS::TPL@FOO<NMS::One@FOO>::M(NMS::One@FOO*)
+
+_ZN3NMSW3FOO3TPLINS_S0_3OneEE1NINS_S0_3TwoEEEvPS2_PT_
+void NMS::TPL@FOO<NMS::One@FOO>::N<NMS::Two@FOO>(NMS::One@FOO*, NMS::Two@FOO*)
+
+_ZNStW3STD9allocatorIiE1MEPi
+std::allocator@STD<int>::M(int*)
+
+_ZNStW3STD9allocatorIiE1NIfEEPT_Pi
+float* std::allocator@STD<int>::N<float>(int*)
+
+_ZNStW3STD9allocatorI4PoohE1MEPS1_
+std::allocator@STD<Pooh>::M(Pooh*)
+
+_ZNStW3STD9allocatorI4PoohE1NI6PigletEEPT_PS1_
+Piglet* std::allocator@STD<Pooh>::N<Piglet>(Pooh*)
+
+_ZW3FooDC1a1bE
+[a, b]@Foo
+
+_ZN1NW3FooDC1a1bEE
+N::[a, b]@Foo
+
+_ZN3NMSW3MOD3FooB3ABIEv
+NMS::Foo@MOD[abi:ABI]()
+
+_ZGIW3Foo
+initializer for module Foo
+
+_ZGIW3FooW3Bar
+initializer for module Foo.Bar
+
+_ZGIW3FooWP3BarW3Baz
+initializer for module Foo:Bar.Baz
