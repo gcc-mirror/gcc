@@ -5483,13 +5483,15 @@ start_decl (const cp_declarator *declarator,
 
   *pushed_scope_p = NULL_TREE;
 
-  attributes = chainon (attributes, prefix_attributes);
+  if (prefix_attributes != error_mark_node)
+    attributes = chainon (attributes, prefix_attributes);
 
   decl = grokdeclarator (declarator, declspecs, NORMAL, initialized,
 			 &attributes);
 
   if (decl == NULL_TREE || VOID_TYPE_P (decl)
-      || decl == error_mark_node)
+      || decl == error_mark_node
+      || prefix_attributes == error_mark_node)
     return error_mark_node;
 
   context = CP_DECL_CONTEXT (decl);
