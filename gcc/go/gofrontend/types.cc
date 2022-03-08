@@ -5303,7 +5303,7 @@ Function_type::do_export(Export* exp) const
   if (results != NULL)
     {
       exp->write_c_string(" ");
-      if (results->size() == 1 && results->begin()->name().empty())
+      if (results->size() == 1)
 	exp->write_type(results->begin()->type());
       else
 	{
