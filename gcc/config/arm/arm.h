@@ -1099,6 +1099,10 @@ extern const int arm_arch_cde_coproc_bits[];
   ((MODE) == V2DImode ||(MODE) == V4SImode || (MODE) == V8HImode \
    || (MODE) == V16QImode)
 
+/* Modes used in MVE's narrowing stores or widening loads.  */
+#define MVE_STN_LDW_MODE(MODE) \
+  ((MODE) == V4QImode || (MODE) == V8QImode || (MODE) == V4HImode)
+
 #define VALID_MVE_SF_MODE(MODE) \
   ((MODE) == V8HFmode || (MODE) == V4SFmode || (MODE) == V2DFmode)
 

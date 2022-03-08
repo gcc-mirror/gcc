@@ -13521,27 +13521,28 @@ mve_vector_mem_operand (machine_mode mode, rtx op, bool strict)
 	  case E_V16QImode:
 	  case E_V8QImode:
 	  case E_V4QImode:
-	    if (abs (val) <= 127)
-	      return (reg_no < LAST_ARM_REGNUM && reg_no != SP_REGNUM)
-		|| reg_no >= FIRST_PSEUDO_REGISTER;
-	    return FALSE;
+	    if (abs (val) > 127)
+	      return FALSE;
+	    break;
 	  case E_V8HImode:
 	  case E_V8HFmode:
 	  case E_V4HImode:
 	  case E_V4HFmode:
-	    if (val % 2 == 0 && abs (val) <= 254)
-	      return reg_no <= LAST_LO_REGNUM
-		|| reg_no >= FIRST_PSEUDO_REGISTER;
-	    return FALSE;
+	    if (val % 2 != 0 || abs (val) > 254)
+	      return FALSE;
+	    break;
 	  case E_V4SImode:
 	  case E_V4SFmode:
-	    if (val % 4 == 0 && abs (val) <= 508)
-	      return (reg_no < LAST_ARM_REGNUM && reg_no != SP_REGNUM)
-		|| reg_no >= FIRST_PSEUDO_REGISTER;
-	    return FALSE;
+	    if (val % 4 != 0 || abs (val) > 508)
+	      return FALSE;
+	    break;
 	  default:
 	    return FALSE;
 	}
+      return reg_no >= FIRST_PSEUDO_REGISTER
+	|| (MVE_STN_LDW_MODE (mode)
+	    ? reg_no <= LAST_LO_REGNUM
+	    : (reg_no < LAST_ARM_REGNUM && reg_no != SP_REGNUM));
     }
   return FALSE;
 }
