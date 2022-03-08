@@ -39,9 +39,6 @@ SubstituteCtx::substitute_repetition (
 {
   rust_assert (pattern_end < macro.size ());
 
-  rust_debug ("pattern start: %lu", pattern_start);
-  rust_debug ("pattern end: %lu", pattern_end);
-
   std::vector<std::unique_ptr<AST::Token>> expanded;
 
   // Find the first fragment and get the amount of repetitions that we should
@@ -154,19 +151,57 @@ SubstituteCtx::substitute_token (size_t token_idx)
 	// We need to parse up until the closing delimiter and expand this
 	// fragment->n times.
 	rust_debug ("expanding repetition");
-	std::vector<std::unique_ptr<AST::Token>> repetition_pattern;
+
+	// We're in a context where macro repetitions have already been
+	// parsed and validated: This means that
+	// 1/ There will be no delimiters as that is an error
+	// 2/ There are no fragment specifiers anymore, which prevents us
+	// from reusing parser functions.
+	//
+	// Repetition patterns are also special in that they cannot contain
+	// "rogue" delimiters: For example, this is invalid, as they are
+	// parsed as MacroMatches and must contain a correct amount of
+	// delimiters.
+	// `$($e:expr ) )`
+	//            ^ rogue closing parenthesis
+	//
+	// With all of that in mind, we can simply skip ahead from one
+	// parenthesis to the other to find the pattern to expand. Of course,
+	// pairs of delimiters, including parentheses, are allowed.
+	// `$($e:expr ( ) )`
+	// Parentheses are the sole delimiter for which we need a special
+	// behavior since they delimit the repetition pattern
+
 	size_t pattern_start = token_idx + 1;
 	size_t pattern_end = pattern_start;
-	for (; pattern_end < macro.size ()
-	       && macro.at (pattern_end)->get_id () != RIGHT_PAREN;
-	     pattern_end++)
-	  ;
+	auto parentheses_stack = 0;
+	for (size_t idx = pattern_start; idx < macro.size (); idx++)
+	  {
+	    if (macro.at (idx)->get_id () == LEFT_PAREN)
+	      {
+		parentheses_stack++;
+	      }
+	    else if (macro.at (idx)->get_id () == RIGHT_PAREN)
+	      {
+		if (parentheses_stack == 0)
+		  {
+		    pattern_end = idx;
+		    break;
+		  }
+		parentheses_stack--;
+	      }
+	  }
+
+	// Unreachable case, but let's make sure we don't ever run into it
+	rust_assert (pattern_end != pattern_start);
 
 	std::unique_ptr<AST::Token> separator_token = nullptr;
-	// FIXME: Can this go out of bounds?
-	auto &post_pattern_token = macro.at (pattern_end + 1);
-	if (!is_rep_op (post_pattern_token))
-	  separator_token = post_pattern_token->clone_token ();
+	if (pattern_end + 1 <= macro.size ())
+	  {
+	    auto &post_pattern_token = macro.at (pattern_end + 1);
+	    if (!is_rep_op (post_pattern_token))
+	      separator_token = post_pattern_token->clone_token ();
+	  }
 
 	// Amount of tokens to skip
 	auto to_skip = 0;
@@ -177,15 +212,6 @@ SubstituteCtx::substitute_token (size_t token_idx)
 	// Separator
 	if (separator_token)
 	  to_skip += 1;
-
-	// FIXME: This skips whitespaces... Is that okay??
-	// FIXME: Is there any existing parsing function that allows us to
-	// parse a macro pattern?
-
-	// FIXME: Add error handling in the case we haven't found a matching
-	// closing delimiter
-
-	// FIXME: We need to parse the repetition token now
 
 	return {substitute_repetition (pattern_start, pattern_end,
 				       std::move (separator_token)),
