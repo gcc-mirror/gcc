@@ -5610,8 +5610,11 @@ gfc_conv_gfc_desc_to_cfi_desc (gfc_se *parmse, gfc_expr *e, gfc_symbol *fsym)
     itype = (e->ts.u.derived->intmod_sym_id == ISOCBINDING_FUNPTR
 	     ? CFI_type_cfunptr : CFI_type_cptr);
   else
-    switch (e->ts.type)
-      {
+    {
+      if (e->expr_type == EXPR_NULL && e->ts.type == BT_UNKNOWN)
+	e->ts = fsym->ts;
+      switch (e->ts.type)
+	{
 	case BT_INTEGER:
 	case BT_LOGICAL:
 	case BT_REAL:
@@ -5649,7 +5652,8 @@ gfc_conv_gfc_desc_to_cfi_desc (gfc_se *parmse, gfc_expr *e, gfc_symbol *fsym)
 	case BT_UNKNOWN:
 	  // FIXME: Really unreachable? Or reachable for type(*) ? If so, CFI_type_other?
 	  gcc_unreachable ();
-      }
+	}
+    }
 
   tmp = gfc_get_cfi_desc_type (cfi);
   gfc_add_modify (&block, tmp,
@@ -5702,7 +5706,8 @@ gfc_conv_gfc_desc_to_cfi_desc (gfc_se *parmse, gfc_expr *e, gfc_symbol *fsym)
   gfc_init_block (&block2);
 
   /* Set elem_len, which may be only known at run time. */
-  if (e->ts.type == BT_CHARACTER)
+  if (e->ts.type == BT_CHARACTER
+      && (e->expr_type != EXPR_NULL || gfc_strlen != NULL_TREE))
     {
       gcc_assert (gfc_strlen);
       tmp = gfc_strlen;
