@@ -30,6 +30,4 @@ s-nvptx-gen-opt: $(srcdir)/config/nvptx/nvptx-sm.def
 	  tmp-nvptx-gen.opt $(srcdir)/config/nvptx/nvptx-gen.opt
 	$(STAMP) s-nvptx-gen-opt
 
-MULTILIB_OPTIONS = mgomp
-
-MULTILIB_EXTRA_OPTS = mptx=3.1
+MULTILIB_OPTIONS = mgomp mptx=3.1
