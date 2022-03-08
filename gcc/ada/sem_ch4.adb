@@ -3461,8 +3461,9 @@ package body Sem_Ch4 is
    ----------------------
 
    procedure Analyze_Negation (N : Node_Id) is
-      R     : constant Node_Id := Right_Opnd (N);
-      Op_Id : Entity_Id := Entity (N);
+      R : constant Node_Id := Right_Opnd (N);
+
+      Op_Id : Entity_Id;
 
    begin
       Set_Etype (N, Any_Type);
@@ -3470,7 +3471,15 @@ package body Sem_Ch4 is
 
       Analyze_Expression (R);
 
-      if Present (Op_Id) then
+      --  If the entity is already set, the node is the instantiation of a
+      --  generic node with a non-local reference, or was manufactured by a
+      --  call to Make_Op_xxx. In either case the entity is known to be valid,
+      --  and we do not need to collect interpretations, instead we just get
+      --  the single possible interpretation.
+
+      if Present (Entity (N)) then
+         Op_Id := Entity (N);
+
          if Ekind (Op_Id) = E_Operator then
             Find_Negation_Types (R, Op_Id, N);
          else
@@ -6067,8 +6076,9 @@ package body Sem_Ch4 is
    ----------------------
 
    procedure Analyze_Unary_Op (N : Node_Id) is
-      R     : constant Node_Id := Right_Opnd (N);
-      Op_Id : Entity_Id := Entity (N);
+      R : constant Node_Id := Right_Opnd (N);
+
+      Op_Id : Entity_Id;
 
    begin
       Set_Etype (N, Any_Type);
@@ -6076,7 +6086,15 @@ package body Sem_Ch4 is
 
       Analyze_Expression (R);
 
-      if Present (Op_Id) then
+      --  If the entity is already set, the node is the instantiation of a
+      --  generic node with a non-local reference, or was manufactured by a
+      --  call to Make_Op_xxx. In either case the entity is known to be valid,
+      --  and we do not need to collect interpretations, instead we just get
+      --  the single possible interpretation.
+
+      if Present (Entity (N)) then
+         Op_Id := Entity (N);
+
          if Ekind (Op_Id) = E_Operator then
             Find_Unary_Types (R, Op_Id,  N);
          else
