@@ -189,6 +189,16 @@ static const struct riscv_ext_version riscv_ext_version_table[] =
   {NULL, ISA_SPEC_CLASS_NONE, 0, 0}
 };
 
+/* Combine extensions defined in this table  */
+static const struct riscv_ext_version riscv_combine_info[] =
+{
+  {"zk",  ISA_SPEC_CLASS_NONE, 1, 0},
+  {"zkn",  ISA_SPEC_CLASS_NONE, 1, 0},
+  {"zks",  ISA_SPEC_CLASS_NONE, 1, 0},
+  /* Terminate the list.  */
+  {NULL, ISA_SPEC_CLASS_NONE, 0, 0}
+};
+
 static const riscv_cpu_info riscv_cpu_tables[] =
 {
 #define RISCV_CORE(CORE_NAME, ARCH, TUNE) \
@@ -813,6 +823,50 @@ riscv_subset_list::handle_implied_ext (riscv_subset_t *ext)
     }
 }
 
+/* Check any combine extensions for EXT.  */
+void
+riscv_subset_list::handle_combine_ext ()
+{
+  const riscv_ext_version *combine_info;
+  const riscv_implied_info_t *implied_info;
+  bool is_combined = false;
+
+  for (combine_info = &riscv_combine_info[0]; combine_info->name;
+       ++combine_info)
+    {
+      /* Skip if combine extensions are present */
+      if (lookup (combine_info->name))
+	continue;
+
+      /* Find all extensions of the combine extension   */
+      for (implied_info = &riscv_implied_info[0]; implied_info->ext;
+	   ++implied_info)
+	{
+	  /* Skip if implied extension don't match combine extension */
+	  if (strcmp (combine_info->name, implied_info->ext) != 0)
+	    continue;
+
+	  if (lookup (implied_info->implied_ext))
+	    is_combined = true;
+	  else
+	    {
+	      is_combined = false;
+	      break;
+	    }
+	}
+
+      /* Add combine extensions */
+      if (is_combined)
+	{
+	  if (lookup (combine_info->name) == NULL)
+	    {
+	      add (combine_info->name, combine_info->major_version,
+		   combine_info->minor_version, false, true);
+	    }
+	}
+    }
+}
+
 /* Parsing function for multi-letter extensions.
 
    Return Value:
@@ -991,6 +1045,8 @@ riscv_subset_list::parse (const char *arch, location_t loc)
     {
       subset_list->handle_implied_ext (itr);
     }
+
+  subset_list->handle_combine_ext ();
 
   return subset_list;
 
