@@ -16148,8 +16148,9 @@ cp_parser_linkage_specification (cp_parser* parser, tree prefix_attr)
   /* Transform the literal into an identifier.  If the literal is a
      wide-character string, or contains embedded NULs, then we can't
      handle it as the user wants.  */
-  if (strlen (TREE_STRING_POINTER (linkage))
-      != (size_t) (TREE_STRING_LENGTH (linkage) - 1))
+  if (linkage == error_mark_node
+      || strlen (TREE_STRING_POINTER (linkage))
+	 != (size_t) (TREE_STRING_LENGTH (linkage) - 1))
     {
       cp_parser_error (parser, "invalid linkage-specification");
       /* Assume C++ linkage.  */
