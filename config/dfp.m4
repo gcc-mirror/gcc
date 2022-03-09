@@ -38,6 +38,7 @@ Valid choices are 'yes', 'bid', 'dpd', and 'no'.]) ;;
 ],
 [
   case $1 in
+    aarch64* | \
     powerpc*-*-linux* | i?86*-*-linux* | x86_64*-*-linux* | s390*-*-linux* | \
     i?86*-*-elfiamcu | i?86*-*-gnu* | x86_64*-*-gnu* | \
     i?86*-*-mingw* | x86_64*-*-mingw* | \
@@ -55,7 +56,7 @@ Valid choices are 'yes', 'bid', 'dpd', and 'no'.]) ;;
 case x$enable_decimal_float in
   xyes)
     case $1 in
-      i?86*-*-* | x86_64*-*-*)
+      aarch64* | i?86*-*-* | x86_64*-*-*)
 	enable_decimal_float=bid
 	;;
       *)
