@@ -1,5 +1,6 @@
 ! { dg-do compile }
 ! { dg-additional-options "-fdump-tree-original -fdump-tree-gimple" }
+! { dg-additional-options "-fdump-tree-omplower" }
 
 module omp_lib_kinds
   use iso_c_binding, only: c_int, c_intptr_t
@@ -47,6 +48,7 @@ end type
   real, allocatable :: var3(:,:)
   type (my_type), allocatable :: var4
   integer, pointer :: pii, parr(:)
+  integer, allocatable :: var
 
   character, allocatable :: str1a, str1aarr(:) 
   character(len=5), allocatable :: str5a, str5aarr(:)
@@ -67,9 +69,16 @@ end type
 
   !$omp allocate
   allocate(pii, parr(5))
+
+  ! allocate statement not associated with an allocate directive
+  allocate(var)
 end subroutine
 
 ! { dg-final { scan-tree-dump-times "#pragma omp allocate \\(kind=allocate\\)" 6 "original" } }
 ! { dg-final { scan-tree-dump "#pragma omp allocate \\(kind=free\\)" "original" } }
 ! { dg-final { scan-tree-dump-times "#pragma omp allocate \\(kind=allocate\\)" 6 "gimple" } }
 ! { dg-final { scan-tree-dump "#pragma omp allocate \\(kind=free\\)" "gimple" } }
+! { dg-final { scan-tree-dump-times "builtin_malloc" 11 "original" } }
+! { dg-final { scan-tree-dump-times "builtin_free" 9 "original" } }
+! { dg-final { scan-tree-dump-times "GOMP_alloc" 10 "omplower" } }
+! { dg-final { scan-tree-dump-times "GOMP_free" 8 "omplower" } }
