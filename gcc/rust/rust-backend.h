@@ -275,10 +275,6 @@ public:
 				const std::vector<tree> &vals, Location)
     = 0;
 
-  // Return an expression for the address of BASE[INDEX].
-  // BASE has a pointer type.  This is used for slice indexing.
-  virtual tree pointer_offset_expression (tree base, tree index, Location) = 0;
-
   // Return an expression for ARRAY[INDEX] as an l-value.  ARRAY is a valid
   // fixed-length array, not a slice.
   virtual tree array_index_expression (tree array, tree index, Location) = 0;

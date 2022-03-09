@@ -177,6 +177,12 @@ expr_loc_or_input_loc (const_tree t);
 extern tree
 get_fndecl_from_callee (tree fn);
 
+// FIXME some helpers from HIRCompileBase could probably be moved here over time
+
+// Return an expression for the address of BASE[INDEX], used in offset intrinsic
+extern tree
+pointer_offset_expression (tree base_tree, tree index_tree, location_t locus);
+
 } // namespace Rust
 
 #endif // RUST_TREE

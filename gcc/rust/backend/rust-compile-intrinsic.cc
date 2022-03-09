@@ -15,9 +15,19 @@
 // <http://www.gnu.org/licenses/>.
 
 #include "rust-compile-intrinsic.h"
+#include "rust-compile-type.h"
+#include "rust-compile-fnparam.h"
+#include "rust-tree.h"
 
 namespace Rust {
 namespace Compile {
+
+static tree
+offset_intrinsic_handler (Context *ctx, TyTy::BaseType *fntype);
+
+static const std::map<std::string,
+		      std::function<tree (Context *, TyTy::BaseType *)>>
+  generic_intrinsics = {{"offset", &offset_intrinsic_handler}};
 
 Intrinsics::Intrinsics (Context *ctx) : ctx (ctx) {}
 
@@ -82,10 +92,122 @@ Intrinsics::compile (TyTy::FnType *fntype)
   if (builtin != nullptr)
     return builtin;
 
+  // is it an generic builtin?
+  auto it = generic_intrinsics.find (fntype->get_identifier ());
+  if (it != generic_intrinsics.end ())
+    return it->second (ctx, fntype);
+
   Location locus = ctx->get_mappings ()->lookup_location (fntype->get_ref ());
-  rust_error_at (locus, "unknown builtin");
+  rust_error_at (locus, "unknown builtin intrinsic: %s",
+		 fntype->get_identifier ().c_str ());
 
   return error_mark_node;
+}
+
+static tree
+offset_intrinsic_handler (Context *ctx, TyTy::BaseType *fntype_tyty)
+{
+  rust_assert (fntype_tyty->get_kind () == TyTy::TypeKind::FNDEF);
+  TyTy::FnType *fntype = static_cast<TyTy::FnType *> (fntype_tyty);
+  const Resolver::CanonicalPath &canonical_path = fntype->get_ident ().path;
+
+  // items can be forward compiled which means we may not need to invoke this
+  // code. We might also have already compiled this generic function as well.
+  tree lookup = NULL_TREE;
+  if (ctx->lookup_function_decl (fntype->get_ty_ref (), &lookup,
+				 fntype->get_id (), fntype))
+    {
+      // has this been added to the list then it must be finished
+      if (ctx->function_completed (lookup))
+	{
+	  tree dummy = NULL_TREE;
+	  if (!ctx->lookup_function_decl (fntype->get_ty_ref (), &dummy))
+	    {
+	      ctx->insert_function_decl (fntype, lookup);
+	    }
+	  return lookup;
+	}
+    }
+
+  if (fntype->has_subsititions_defined ())
+    {
+      // override the Hir Lookups for the substituions in this context
+      fntype->override_context ();
+    }
+
+  // offset intrinsic has two params dst pointer and offset isize
+  if (fntype->get_params ().size () != 2)
+    {
+      rust_error_at (fntype->get_ident ().locus,
+		     "invalid number of parameters for offset intrinsic");
+      return error_mark_node;
+    }
+
+  tree compiled_fn_type = TyTyResolveCompile::compile (ctx, fntype);
+  std::string ir_symbol_name
+    = canonical_path.get () + fntype->subst_as_string ();
+  std::string asm_name = ctx->mangle_item (fntype, canonical_path);
+
+  unsigned int flags = 0;
+  tree fndecl
+    = ctx->get_backend ()->function (compiled_fn_type, ir_symbol_name, asm_name,
+				     flags, fntype->get_ident ().locus);
+  TREE_PUBLIC (fndecl) = 0;
+  TREE_READONLY (fndecl) = 1;
+  DECL_ARTIFICIAL (fndecl) = 1;
+  DECL_EXTERNAL (fndecl) = 0;
+  DECL_DECLARED_INLINE_P (fndecl) = 1;
+
+  // setup the params
+  std::vector<Bvariable *> param_vars;
+  for (auto &parm : fntype->get_params ())
+    {
+      auto &referenced_param = parm.first;
+      auto &param_tyty = parm.second;
+      auto compiled_param_type = TyTyResolveCompile::compile (ctx, param_tyty);
+
+      Location param_locus = referenced_param->get_locus ();
+      Bvariable *compiled_param_var
+	= CompileFnParam::compile (ctx, fndecl, referenced_param,
+				   compiled_param_type, param_locus);
+
+      param_vars.push_back (compiled_param_var);
+    }
+
+  auto &dst_param = param_vars.at (0);
+  auto &size_param = param_vars.at (1);
+  rust_assert (param_vars.size () == 2);
+  if (!ctx->get_backend ()->function_set_parameters (fndecl, param_vars))
+    return error_mark_node;
+
+  tree enclosing_scope = NULL_TREE;
+  Location start_location = Location ();
+  Location end_location = Location ();
+
+  tree code_block = ctx->get_backend ()->block (fndecl, enclosing_scope, {},
+						start_location, end_location);
+  ctx->push_block (code_block);
+
+  // BUILTIN offset FN BODY BEGIN
+  tree dst = ctx->get_backend ()->var_expression (dst_param, Location ());
+  tree size = ctx->get_backend ()->var_expression (size_param, Location ());
+  tree pointer_offset_expr
+    = pointer_offset_expression (dst, size, BUILTINS_LOCATION);
+  auto return_statement
+    = ctx->get_backend ()->return_statement (fndecl, {pointer_offset_expr},
+					     Location ());
+  ctx->add_statement (return_statement);
+  // BUILTIN offset FN BODY END
+
+  tree bind_tree = ctx->pop_block ();
+
+  gcc_assert (TREE_CODE (bind_tree) == BIND_EXPR);
+  DECL_SAVED_TREE (fndecl) = bind_tree;
+
+  ctx->pop_fn ();
+  ctx->push_function (fndecl);
+
+  return fndecl;
 }
 
 } // namespace Compile

@@ -246,8 +246,6 @@ public:
   tree array_constructor_expression (tree, const std::vector<unsigned long> &,
 				     const std::vector<tree> &, Location);
 
-  tree pointer_offset_expression (tree base, tree offset, Location);
-
   tree array_index_expression (tree array, tree index, Location);
 
   tree call_expression (tree caller, tree fn, const std::vector<tree> &args,
@@ -1715,27 +1713,6 @@ Gcc_backend::array_constructor_expression (
     ret = fold_build2_loc (location.gcc_location (), COMPOUND_EXPR, type_tree,
 			   sink, ret);
   return ret;
-}
-
-// Return an expression for the address of BASE[INDEX].
-
-tree
-Gcc_backend::pointer_offset_expression (tree base_tree, tree index_tree,
-					Location location)
-{
-  tree element_type_tree = TREE_TYPE (TREE_TYPE (base_tree));
-  if (base_tree == error_mark_node || TREE_TYPE (base_tree) == error_mark_node
-      || index_tree == error_mark_node || element_type_tree == error_mark_node)
-    return error_mark_node;
-
-  tree element_size = TYPE_SIZE_UNIT (element_type_tree);
-  index_tree
-    = fold_convert_loc (location.gcc_location (), sizetype, index_tree);
-  tree offset = fold_build2_loc (location.gcc_location (), MULT_EXPR, sizetype,
-				 index_tree, element_size);
-  tree ptr = fold_build2_loc (location.gcc_location (), POINTER_PLUS_EXPR,
-			      TREE_TYPE (base_tree), base_tree, offset);
-  return ptr;
 }
 
 // Return an expression representing ARRAY[INDEX]

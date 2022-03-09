@@ -17,6 +17,7 @@
 // <http://www.gnu.org/licenses/>.
 
 #include "rust-compile-resolve-path.h"
+#include "rust-compile-intrinsic.h"
 #include "rust-compile-item.h"
 #include "rust-compile-implitem.h"
 #include "rust-compile-expr.h"
@@ -139,6 +140,13 @@ ResolvePathRef::resolve (const HIR::PathIdentSegment &final_segment,
       tree fn = NULL_TREE;
       if (ctx->lookup_function_decl (fntype->get_ty_ref (), &fn))
 	{
+	  TREE_USED (fn) = 1;
+	  return address_expression (fn, expr_locus);
+	}
+      else if (fntype->get_abi () == ABI::INTRINSIC)
+	{
+	  Intrinsics compile (ctx);
+	  fn = compile.compile (fntype);
 	  TREE_USED (fn) = 1;
 	  return address_expression (fn, expr_locus);
 	}
