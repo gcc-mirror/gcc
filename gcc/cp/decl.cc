@@ -7962,6 +7962,9 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
   if (type == error_mark_node)
     return;
 
+  if (VAR_P (decl) && is_copy_initialization (init))
+    flags |= LOOKUP_ONLYCONVERTING;
+
   /* Warn about register storage specifiers except when in GNU global
      or local register variable extension.  */
   if (VAR_P (decl) && DECL_REGISTER (decl) && asmspec_tree == NULL_TREE)

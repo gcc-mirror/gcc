@@ -26581,8 +26581,7 @@ instantiate_decl (tree d, bool defer_ok, bool expl_inst_class_mem_p)
 	      const_init
 		= DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (code_pattern);
 	      cp_finish_decl (d, init, /*init_const_expr_p=*/const_init,
-			      /*asmspec_tree=*/NULL_TREE,
-			      LOOKUP_ONLYCONVERTING);
+			      /*asmspec_tree=*/NULL_TREE, 0);
 	    }
 	  if (enter_context)
 	    pop_nested_class ();

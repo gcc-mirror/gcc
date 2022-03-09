@@ -7037,6 +7037,7 @@ extern void emit_mem_initializers		(tree);
 extern tree build_aggr_init			(tree, tree, int,
                                                  tsubst_flags_t);
 extern int is_class_type			(tree, int);
+extern bool is_copy_initialization		(tree);
 extern tree build_zero_init			(tree, tree, bool);
 extern tree build_value_init			(tree, tsubst_flags_t);
 extern tree build_value_init_noctor		(tree, tsubst_flags_t);
