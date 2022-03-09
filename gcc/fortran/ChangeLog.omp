@@ -1,6 +1,15 @@
 2022-03-09  Abid Qadeer  <abidh@codesourcery.com>
 
 	Backport of a patch posted at
+	https://gcc.gnu.org/pipermail/gcc-patches/2022-January/588369.html
+
+	* trans-openmp.cc (gfc_trans_omp_clauses): Handle OMP_LIST_ALLOCATOR.
+	(gfc_trans_omp_allocate): New function.
+	(gfc_trans_omp_directive): Handle EXEC_OMP_ALLOCATE.
+
+2022-03-09  Abid Qadeer  <abidh@codesourcery.com>
+
+	Backport of a patch posted at
 	https://gcc.gnu.org/pipermail/gcc-patches/2022-January/588368.html
 
 	* dump-parse-tree.cc (show_omp_node): Handle EXEC_OMP_ALLOCATE.
