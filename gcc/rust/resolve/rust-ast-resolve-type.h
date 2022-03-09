@@ -386,6 +386,8 @@ public:
 
   void visit (AST::InferredType &type) override;
 
+  void visit (AST::NeverType &type) override;
+
   void visit (AST::RawPointerType &type) override;
 
   void visit (AST::TraitObjectTypeOneBound &type) override;
