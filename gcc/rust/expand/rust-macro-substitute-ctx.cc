@@ -16,11 +16,9 @@ SubstituteCtx::substitute_metavar (std::unique_ptr<AST::Token> &metavar)
     }
   else
     {
-      // Replace
       // We only care about the vector when expanding repetitions.
       // Just access the first element of the vector.
-      // FIXME: Clean this up so it makes more sense
-      auto &frag = it->second[0];
+      auto &frag = it->second.get_single_fragment ();
       for (size_t offs = frag.token_offset_begin; offs < frag.token_offset_end;
 	   offs++)
 	{
@@ -66,7 +64,7 @@ SubstituteCtx::substitute_repetition (
 		}
 
 	      // FIXME: Refactor, ugly
-	      repeat_amount = it->second[0].match_amount;
+	      repeat_amount = it->second.get_match_amount ();
 	    }
 	}
     }
@@ -98,19 +96,20 @@ SubstituteCtx::substitute_repetition (
 
   for (size_t i = 0; i < repeat_amount; i++)
     {
-      std::map<std::string, std::vector<MatchedFragment>> sub_map;
+      std::map<std::string, MatchedFragmentContainer> sub_map;
       for (auto &kv_match : fragments)
 	{
-	  std::vector<MatchedFragment> sub_vec;
+	  MatchedFragment sub_fragment;
 
 	  // FIXME: Hack: If a fragment is not repeated, how does it fit in the
 	  // submap? Do we really want to expand it? Is this normal behavior?
-	  if (kv_match.second.size () == 1)
-	    sub_vec.emplace_back (kv_match.second[0]);
+	  if (kv_match.second.is_single_fragment ())
+	    sub_fragment = kv_match.second.get_single_fragment ();
 	  else
-	    sub_vec.emplace_back (kv_match.second[i]);
+	    sub_fragment = kv_match.second.get_fragments ()[i];
 
-	  sub_map.insert ({kv_match.first, sub_vec});
+	  sub_map.insert (
+	    {kv_match.first, MatchedFragmentContainer::one (sub_fragment)});
 	}
 
       auto substitute_context = SubstituteCtx (input, new_macro, sub_map);

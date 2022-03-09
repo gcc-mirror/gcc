@@ -3102,7 +3102,7 @@ MacroExpander::expand_decl_macro (Location invoc_locus,
 
   // find matching arm
   AST::MacroRule *matched_rule = nullptr;
-  std::map<std::string, std::vector<MatchedFragment>> matched_fragments;
+  std::map<std::string, MatchedFragmentContainer> matched_fragments;
   for (auto &rule : rules_def.get_rules ())
     {
       sub_stack.push ();
@@ -3111,9 +3111,10 @@ MacroExpander::expand_decl_macro (Location invoc_locus,
 
       if (did_match_rule)
 	{
-	  for (auto &kv : matched_fragments)
-	    rust_debug ("[fragment]: %s (%ld)", kv.first.c_str (),
-			kv.second.size ());
+	  // Debugging
+	  //   for (auto &kv : matched_fragments)
+	  //     rust_debug ("[fragment]: %s (%ld)", kv.first.c_str (),
+	  // 		kv.second.get_fragments ().size ());
 
 	  matched_rule = &rule;
 	  break;
@@ -3726,7 +3727,10 @@ MacroExpander::match_repetition (Parser<MacroInvocLexer> &parser,
   rust_debug_loc (rep.get_match_locus (), "%s matched %lu times",
 		  res ? "successfully" : "unsuccessfully", match_amount);
 
-  // We can now set the amount to each fragment we matched in the substack
+  // We have to handle zero fragments differently: They will not have been
+  // "matched" but they are still valid and should be inserted as a special
+  // case. So we go through the stack map, and for every fragment which doesn't
+  // exist, insert a zero-matched fragment.
   auto &stack_map = sub_stack.peek ();
   for (auto &match : rep.get_matches ())
     {
@@ -3736,20 +3740,9 @@ MacroExpander::match_repetition (Parser<MacroInvocLexer> &parser,
 	  auto fragment = static_cast<AST::MacroMatchFragment *> (match.get ());
 	  auto it = stack_map.find (fragment->get_ident ());
 
-	  // If we can't find the fragment, but the result was valid, then
-	  // it's a zero-matched fragment and we can insert it
 	  if (it == stack_map.end ())
-	    {
-	      sub_stack.insert_fragment (
-		MatchedFragment::zero (fragment->get_ident ()));
-	    }
-	  else
-	    {
-	      // We can just set the repetition amount on the first match
-	      // FIXME: Make this more ergonomic and similar to what we fetch
-	      // in `substitute_repetition`
-	      it->second[0].set_match_amount (match_amount);
-	    }
+	    sub_stack.insert_matches (fragment->get_ident (),
+				      MatchedFragmentContainer::zero ());
 	}
     }
 
@@ -3759,7 +3752,7 @@ MacroExpander::match_repetition (Parser<MacroInvocLexer> &parser,
 AST::ASTFragment
 MacroExpander::transcribe_rule (
   AST::MacroRule &match_rule, AST::DelimTokenTree &invoc_token_tree,
-  std::map<std::string, std::vector<MatchedFragment>> &matched_fragments,
+  std::map<std::string, MatchedFragmentContainer> &matched_fragments,
   bool semicolon, ContextType ctx)
 {
   // we can manipulate the token tree to substitute the dollar identifiers so
