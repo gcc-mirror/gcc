@@ -344,19 +344,6 @@ private:
   tree non_zero_size_type (tree);
 
   tree convert_tree (tree, tree, Location);
-
-private:
-  static const int builtin_const = 1 << 0;
-  static const int builtin_noreturn = 1 << 1;
-  static const int builtin_novops = 1 << 2;
-
-  void define_builtin (const std::string rust_name, built_in_function bcode,
-		       const char *name, const char *libname, tree fntype,
-		       int flags);
-
-  // A mapping of the GCC built-ins exposed to GCCRust.
-  std::map<std::string, tree> builtin_functions_;
-  std::map<std::string, std::string> rust_intrinsic_to_gcc_builtin;
 };
 
 // A helper function to create a GCC identifier from a C++ string.
@@ -473,14 +460,6 @@ Gcc_backend::Gcc_backend ()
   //       		builtin_const);
 
   // We provide some functions for the math library.
-  tree math_function_type_f32
-    = build_function_type_list (float_type_node, float_type_node, NULL_TREE);
-
-  this->define_builtin ("sinf32", BUILT_IN_SINF, "__builtin_sinf", "sinf",
-			math_function_type_f32, builtin_const);
-
-  this->define_builtin ("sqrtf32", BUILT_IN_SQRTF, "__builtin_sqrtf", "sqrtf",
-			math_function_type_f32, builtin_const);
 
   // We use __builtin_return_address in the thunk we build for
   // functions which call recover, and for runtime.getcallerpc.
@@ -2661,27 +2640,6 @@ Gcc_backend::function_set_parameters (
   return true;
 }
 
-// Look up a named built-in function in the current backend implementation.
-// Returns NULL if no built-in function by that name exists.
-
-tree
-Gcc_backend::lookup_gcc_builtin (const std::string &name)
-{
-  if (this->builtin_functions_.count (name) != 0)
-    return this->builtin_functions_[name];
-  return NULL;
-}
-
-tree
-Gcc_backend::lookup_builtin_by_rust_name (const std::string &name)
-{
-  auto it = rust_intrinsic_to_gcc_builtin.find (name);
-  if (it == rust_intrinsic_to_gcc_builtin.end ())
-    return NULL;
-
-  return lookup_gcc_builtin (it->second);
-}
-
 // Write the definitions for all TYPE_DECLS, CONSTANT_DECLS,
 // FUNCTION_DECLS, and VARIABLE_DECLS declared globally, as well as
 // emit early debugging information.
@@ -2761,44 +2719,6 @@ void
 Gcc_backend::write_export_data (const char *bytes, unsigned int size)
 {
   rust_write_export_data (bytes, size);
-}
-
-// Define a builtin function.  BCODE is the builtin function code
-// defined by builtins.def.  NAME is the name of the builtin function.
-// LIBNAME is the name of the corresponding library function, and is
-// NULL if there isn't one.  FNTYPE is the type of the function.
-// CONST_P is true if the function has the const attribute.
-// NORETURN_P is true if the function has the noreturn attribute.
-
-void
-Gcc_backend::define_builtin (const std::string rust_name,
-			     built_in_function bcode, const char *name,
-			     const char *libname, tree fntype, int flags)
-{
-  tree decl = add_builtin_function (name, fntype, bcode, BUILT_IN_NORMAL,
-				    libname, NULL_TREE);
-  if ((flags & builtin_const) != 0)
-    TREE_READONLY (decl) = 1;
-  if ((flags & builtin_noreturn) != 0)
-    TREE_THIS_VOLATILE (decl) = 1;
-  if ((flags & builtin_novops) != 0)
-    DECL_IS_NOVOPS (decl) = 1;
-  set_builtin_decl (bcode, decl, true);
-  this->builtin_functions_[name] = decl;
-  if (libname != NULL)
-    {
-      decl = add_builtin_function (libname, fntype, bcode, BUILT_IN_NORMAL,
-				   NULL, NULL_TREE);
-      if ((flags & builtin_const) != 0)
-	TREE_READONLY (decl) = 1;
-      if ((flags & builtin_noreturn) != 0)
-	TREE_THIS_VOLATILE (decl) = 1;
-      if ((flags & builtin_novops) != 0)
-	DECL_IS_NOVOPS (decl) = 1;
-      this->builtin_functions_[libname] = decl;
-    }
-
-  rust_intrinsic_to_gcc_builtin[rust_name] = name;
 }
 
 // Return the backend generator.

@@ -504,12 +504,6 @@ public:
 			   const std::vector<Bvariable *> &param_vars)
     = 0;
 
-  // Look up a named built-in function in the current backend implementation.
-  // Returns NULL if no built-in function by that name exists.
-  virtual tree lookup_gcc_builtin (const std::string &) = 0;
-
-  virtual tree lookup_builtin_by_rust_name (const std::string &) = 0;
-
   // Utility.
 
   // Write the definitions for all TYPE_DECLS, CONSTANT_DECLS,
