@@ -13751,7 +13751,7 @@ grokdeclarator (const cp_declarator *declarator,
       }
     else if (decl_context == FIELD)
       {
-	if (!staticp && !friendp && TREE_CODE (type) != METHOD_TYPE)
+	if (!staticp && !friendp && !FUNC_OR_METHOD_TYPE_P (type))
 	  if (tree auto_node = type_uses_auto (type))
 	    {
 	      location_t tloc = declspecs->locations[ds_type_spec];
