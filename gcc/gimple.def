@@ -388,6 +388,12 @@ DEFGSCODE(GIMPLE_OMP_TARGET, "gimple_omp_target", GSS_OMP_PARALLEL_LAYOUT)
    CHILD_FN and DATA_ARG like for GIMPLE_OMP_PARALLEL.  */
 DEFGSCODE(GIMPLE_OMP_TEAMS, "gimple_omp_teams", GSS_OMP_PARALLEL_LAYOUT)
 
+/* GIMPLE_OMP_ALLOCATE <CLAUSES> represents
+   #pragma omp allocate
+   CLAUSES is an OMP_CLAUSE chain holding the associated clauses which hold
+   variables to be allocated.  */
+DEFGSCODE(GIMPLE_OMP_ALLOCATE, "gimple_omp_allocate", GSS_OMP_ALLOCATE)
+
 /* GIMPLE_OMP_ORDERED <BODY, CLAUSES> represents #pragma omp ordered.
    BODY is the sequence of statements to execute in the ordered section.
    CLAUSES is an OMP_CLAUSE chain holding the associated clauses.  */

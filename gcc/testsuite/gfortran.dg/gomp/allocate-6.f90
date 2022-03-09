@@ -1,5 +1,5 @@
 ! { dg-do compile }
-! { dg-additional-options "-fdump-tree-original" }
+! { dg-additional-options "-fdump-tree-original -fdump-tree-gimple" }
 
 module omp_lib_kinds
   use iso_c_binding, only: c_int, c_intptr_t
@@ -71,3 +71,5 @@ end subroutine
 
 ! { dg-final { scan-tree-dump-times "#pragma omp allocate \\(kind=allocate\\)" 6 "original" } }
 ! { dg-final { scan-tree-dump "#pragma omp allocate \\(kind=free\\)" "original" } }
+! { dg-final { scan-tree-dump-times "#pragma omp allocate \\(kind=allocate\\)" 6 "gimple" } }
+! { dg-final { scan-tree-dump "#pragma omp allocate \\(kind=free\\)" "gimple" } }

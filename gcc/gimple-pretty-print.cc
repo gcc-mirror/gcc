@@ -1970,6 +1970,38 @@ dump_gimple_omp_critical (pretty_printer *buffer, const gomp_critical *gs,
     }
 }
 
+static void
+dump_gimple_omp_allocate (pretty_printer *buffer, const gomp_allocate *gs,
+			  int spc, dump_flags_t flags)
+{
+  if (flags & TDF_RAW)
+    {
+      const char *kind="";
+      switch (gimple_omp_allocate_kind (gs))
+      {
+	case GF_OMP_ALLOCATE_KIND_ALLOCATE:
+	  kind = "allocate";
+	  break;
+	case GF_OMP_ALLOCATE_KIND_FREE:
+	  kind = "free";
+	  break;
+      }
+    dump_gimple_fmt (buffer, spc, flags, "%G <kind:%s CLAUSES <", gs, kind);
+    dump_omp_clauses (buffer, gimple_omp_allocate_clauses (gs), spc, flags);
+    dump_gimple_fmt (buffer, spc, flags, " > >");
+    }
+  else
+    {
+      pp_string (buffer, "#pragma omp allocate ");
+      if (gimple_omp_allocate_kind (gs) == GF_OMP_ALLOCATE_KIND_ALLOCATE)
+	pp_string (buffer, "(kind=allocate) ");
+      else if (gimple_omp_allocate_kind (gs) == GF_OMP_ALLOCATE_KIND_FREE)
+	pp_string (buffer, "(kind=free) ");
+
+      dump_omp_clauses (buffer, gimple_omp_allocate_clauses (gs), spc, flags);
+    }
+}
+
 /* Dump a GIMPLE_OMP_ORDERED tuple on the pretty_printer BUFFER.  */
 
 static void
@@ -2887,6 +2919,11 @@ pp_gimple_stmt_1 (pretty_printer *buffer, const gimple *gs, int spc,
       dump_gimple_omp_metadirective (buffer,
 				     as_a <const gomp_metadirective *> (gs),
 				     spc, flags);
+      break;
+
+    case GIMPLE_OMP_ALLOCATE:
+      dump_gimple_omp_allocate (buffer, as_a <const gomp_allocate *> (gs), spc,
+				flags);
       break;
 
     case GIMPLE_CATCH:
