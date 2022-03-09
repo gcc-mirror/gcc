@@ -12359,6 +12359,16 @@ walk_tree_1 (tree *tp, walk_tree_fn func, void *data,
 	    WALK_SUBTREE_TAIL (OMP_CLAUSE_CHAIN (*tp));
 	  }
 
+	/* This hunk is only needed on og11 as master uses same code
+	   for all clauses.  */
+	case OMP_CLAUSE_ALLOCATOR:
+	  {
+	    int len = omp_clause_num_ops[OMP_CLAUSE_CODE (*tp)];
+	    for (int i = 0; i < len; i++)
+	      WALK_SUBTREE (OMP_CLAUSE_OPERAND (*tp, i));
+	    WALK_SUBTREE_TAIL (OMP_CLAUSE_CHAIN (*tp));
+	  }
+
 	default:
 	  gcc_unreachable ();
 	}

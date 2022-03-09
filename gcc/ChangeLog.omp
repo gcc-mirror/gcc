@@ -1,3 +1,7 @@
+2022-03-10  Abid Qadeer  <abidh@codesourcery.com>
+
+	* tree.c (walk_tree_1): Add case for OMP_CLAUSE_ALLOCATOR.
+
 2022-03-09  Abid Qadeer  <abidh@codesourcery.com>
 
 	Backport of a patch posted at
