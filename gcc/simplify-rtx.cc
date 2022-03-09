@@ -1527,7 +1527,7 @@ simplify_context::simplify_unary_operation_1 (rtx_code code, machine_mode mode,
 		  if (partial_subreg_p (temp))
 		    {
 		      SUBREG_PROMOTED_VAR_P (temp) = 1;
-		      SUBREG_PROMOTED_SET (temp, 1);
+		      SUBREG_PROMOTED_SET (temp, SRP_SIGNED);
 		    }
 		  return temp;
 		}
@@ -1662,7 +1662,7 @@ simplify_context::simplify_unary_operation_1 (rtx_code code, machine_mode mode,
 		  if (partial_subreg_p (temp))
 		    {
 		      SUBREG_PROMOTED_VAR_P (temp) = 1;
-		      SUBREG_PROMOTED_SET (temp, 0);
+		      SUBREG_PROMOTED_SET (temp, SRP_UNSIGNED);
 		    }
 		  return temp;
 		}
