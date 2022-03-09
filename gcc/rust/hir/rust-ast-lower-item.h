@@ -800,15 +800,23 @@ public:
 	extern_items.push_back (std::unique_ptr<HIR::ExternalItem> (lowered));
       }
 
+    ABI abi = ABI::RUST;
+    if (extern_block.has_abi ())
+      {
+	const std::string &extern_abi = extern_block.get_abi ();
+	abi = get_abi_from_string (extern_abi);
+	if (abi == ABI::UNKNOWN)
+	  rust_error_at (extern_block.get_locus (), "unknown ABI option");
+      }
+
     auto crate_num = mappings->get_current_crate ();
     Analysis::NodeMapping mapping (crate_num, extern_block.get_node_id (),
 				   mappings->get_next_hir_id (crate_num),
 				   mappings->get_next_localdef_id (crate_num));
 
     HIR::ExternBlock *hir_extern_block
-      = new HIR::ExternBlock (mapping, extern_block.get_abi (),
-			      std::move (extern_items), std::move (vis),
-			      extern_block.get_inner_attrs (),
+      = new HIR::ExternBlock (mapping, abi, std::move (extern_items),
+			      std::move (vis), extern_block.get_inner_attrs (),
 			      extern_block.get_outer_attrs (),
 			      extern_block.get_locus ());
 

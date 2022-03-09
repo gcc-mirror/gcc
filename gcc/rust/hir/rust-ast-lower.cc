@@ -602,11 +602,17 @@ ASTLoweringBase::lower_qualifiers (const AST::FunctionQualifiers &qualifiers)
     = qualifiers.is_unsafe () ? Unsafety::Unsafe : Unsafety::Normal;
   bool has_extern = qualifiers.is_extern ();
 
-  // FIXME turn this into the Rust::ABI enum
-  std::string extern_abi = qualifiers.get_extern_abi ();
+  ABI abi = ABI::RUST;
+  if (qualifiers.has_abi ())
+    {
+      const std::string &extern_abi = qualifiers.get_extern_abi ();
+      abi = get_abi_from_string (extern_abi);
+      if (has_extern && abi == ABI::UNKNOWN)
+	rust_error_at (qualifiers.get_locus (), "unknown ABI option");
+    }
 
   return HIR::FunctionQualifiers (qualifiers.get_const_status (), unsafety,
-				  has_extern, extern_abi);
+				  has_extern, abi);
 }
 
 void

@@ -1030,10 +1030,7 @@ ExternBlock::as_string () const
   std::string str = VisItem::as_string ();
 
   str += "extern ";
-  if (has_abi ())
-    {
-      str += "\"" + abi + "\" ";
-    }
+  str += "\"" + get_string_from_abi (abi) + "\" ";
 
   // inner attributes
   str += "\n inner attributes: ";
@@ -2058,10 +2055,7 @@ FunctionQualifiers::as_string () const
   if (has_extern)
     {
       str += "extern";
-      if (extern_abi != "")
-	{
-	  str += " \"" + extern_abi + "\"";
-	}
+      str += " \"" + get_string_from_abi (abi) + "\"";
     }
 
   return str;

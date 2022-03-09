@@ -484,25 +484,20 @@ public:
 // Qualifiers for function, i.e. const, unsafe, extern etc.
 struct FunctionQualifiers
 {
-public:
-  /* Whether the function is neither const nor async, const only, or async
-   * only. */
-
 private:
   AsyncConstStatus const_status;
   bool has_unsafe;
   bool has_extern;
-  std::string extern_abi; // e.g. extern "C" fn() -> i32 {}
-  // TODO: maybe ensure that extern_abi only exists if extern exists?
-
-  // should this store location info?
+  std::string extern_abi;
+  Location locus;
 
 public:
-  FunctionQualifiers (AsyncConstStatus const_status, bool has_unsafe,
-		      bool has_extern = false,
+  FunctionQualifiers (Location locus, AsyncConstStatus const_status,
+		      bool has_unsafe, bool has_extern = false,
 		      std::string extern_abi = std::string ())
     : const_status (const_status), has_unsafe (has_unsafe),
-      has_extern (has_extern), extern_abi (std::move (extern_abi))
+      has_extern (has_extern), extern_abi (std::move (extern_abi)),
+      locus (locus)
   {
     if (!this->extern_abi.empty ())
       {
@@ -517,6 +512,9 @@ public:
   bool is_unsafe () const { return has_unsafe; }
   bool is_extern () const { return has_extern; }
   std::string get_extern_abi () const { return extern_abi; }
+  bool has_abi () const { return !extern_abi.empty (); }
+
+  Location get_locus () const { return locus; }
 };
 
 // A function parameter
@@ -723,7 +721,7 @@ public:
   // Creates an error state method.
   static Method create_error ()
   {
-    return Method ("", FunctionQualifiers (NONE, true),
+    return Method ("", FunctionQualifiers (Location (), NONE, true),
 		   std::vector<std::unique_ptr<GenericParam>> (),
 		   SelfParam::create_error (), std::vector<FunctionParam> (),
 		   nullptr, WhereClause::create_empty (), nullptr,

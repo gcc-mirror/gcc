@@ -2620,13 +2620,13 @@ AST::FunctionQualifiers
 Parser<ManagedTokenSource>::parse_function_qualifiers ()
 {
   AsyncConstStatus const_status = NONE;
-  // bool has_const = false;
   bool has_unsafe = false;
   bool has_extern = false;
   std::string abi;
 
   // Check in order of const, unsafe, then extern
   const_TokenPtr t = lexer.peek_token ();
+  Location locus = t->get_locus ();
   switch (t->get_id ())
     {
     case CONST:
@@ -2662,7 +2662,7 @@ Parser<ManagedTokenSource>::parse_function_qualifiers ()
 	}
     }
 
-  return AST::FunctionQualifiers (const_status, has_unsafe, has_extern,
+  return AST::FunctionQualifiers (locus, const_status, has_unsafe, has_extern,
 				  std::move (abi));
 }
 
