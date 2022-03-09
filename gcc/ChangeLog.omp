@@ -1,3 +1,13 @@
+2022-03-09  Hafiz Abid Qadeer  <abidh@codesourcery.com>
+
+	* tree-pretty-print.cc (dump_omp_clause): Handle OMP_CLAUSE_ALLOCATOR.
+	(dump_generic_node): Handle OMP_ALLOCATE.
+	* tree.def (OMP_ALLOCATE): New.
+	* tree.h (OMP_ALLOCATE_CLAUSES): Likewise.
+	(OMP_ALLOCATE_DECL): Likewise.
+	(OMP_ALLOCATE_ALLOCATOR): Likewise.
+	* tree.cc (omp_clause_num_ops): Add entry for OMP_CLAUSE_ALLOCATOR.
+
 2022-03-01  Tobias Burnus  <tobias@codesourcery.com>
 
 	* langhooks-def.h (lhd_omp_deep_mapping_p,

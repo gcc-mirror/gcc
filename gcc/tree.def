@@ -1351,6 +1351,10 @@ DEFTREECODE (OMP_ATOMIC_READ, "omp_atomic_read", tcc_statement, 1)
 DEFTREECODE (OMP_ATOMIC_CAPTURE_OLD, "omp_atomic_capture_old", tcc_statement, 2)
 DEFTREECODE (OMP_ATOMIC_CAPTURE_NEW, "omp_atomic_capture_new", tcc_statement, 2)
 
+/* OpenMP - #pragma omp allocate
+   Operand 0: Clauses.  */
+DEFTREECODE (OMP_ALLOCATE, "omp allocate", tcc_statement, 1)
+
 /* OpenMP clauses.  */
 DEFTREECODE (OMP_CLAUSE, "omp_clause", tcc_exceptional, 0)
 

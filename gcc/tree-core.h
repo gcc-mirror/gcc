@@ -527,6 +527,9 @@ enum omp_clause_code {
 
   /* OpenACC clause: nohost.  */
   OMP_CLAUSE_NOHOST,
+
+  /* OpenMP clause: allocator.  */
+  OMP_CLAUSE_ALLOCATOR,
 };
 
 #undef DEFTREESTRUCT

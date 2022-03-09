@@ -1,5 +1,11 @@
 2022-03-09  Hafiz Abid Qadeer  <abidh@codesourcery.com>
 
+	* trans-openmp.cc (gfc_trans_omp_clauses): Handle OMP_LIST_ALLOCATOR.
+	(gfc_trans_omp_allocate): New function.
+	(gfc_trans_omp_directive): Handle EXEC_OMP_ALLOCATE.
+
+2022-03-09  Hafiz Abid Qadeer  <abidh@codesourcery.com>
+
 	* dump-parse-tree.cc (show_omp_node): Handle EXEC_OMP_ALLOCATE.
 	(show_code_node): Likewise.
 	* gfortran.h (enum gfc_statement): Add ST_OMP_ALLOCATE.

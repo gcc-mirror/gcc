@@ -326,6 +326,7 @@ unsigned const char omp_clause_num_ops[] =
   0, /* OMP_CLAUSE_IF_PRESENT */
   0, /* OMP_CLAUSE_FINALIZE */
   0, /* OMP_CLAUSE_NOHOST */
+  2, /* OMP_CLAUSE_ALLOCATOR */
 };
 
 const char * const omp_clause_code_name[] =

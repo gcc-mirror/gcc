@@ -1480,6 +1480,8 @@ class auto_suppress_location_wrappers
 #define OACC_UPDATE_CLAUSES(NODE) \
   TREE_OPERAND (OACC_UPDATE_CHECK (NODE), 0)
 
+#define OMP_ALLOCATE_CLAUSES(NODE) TREE_OPERAND (OMP_ALLOCATE_CHECK (NODE), 0)
+
 #define OMP_PARALLEL_BODY(NODE)    TREE_OPERAND (OMP_PARALLEL_CHECK (NODE), 0)
 #define OMP_PARALLEL_CLAUSES(NODE) TREE_OPERAND (OMP_PARALLEL_CHECK (NODE), 1)
 
@@ -1907,6 +1909,15 @@ class auto_suppress_location_wrappers
 
 #define OMP_CLAUSE_ALLOCATE_ALIGN(NODE) \
   OMP_CLAUSE_OPERAND (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_ALLOCATE), 2)
+
+/* May be we can use OMP_CLAUSE_DECL but the I am not sure where to place
+   OMP_CLAUSE_ALLOCATOR in omp_clause_code.  */
+
+#define OMP_ALLOCATE_DECL(NODE) \
+  OMP_CLAUSE_OPERAND (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_ALLOCATOR), 0)
+
+#define OMP_ALLOCATE_ALLOCATOR(NODE) \
+  OMP_CLAUSE_OPERAND (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_ALLOCATOR), 1)
 
 /* True if an ALLOCATE clause was present on a combined or composite
    construct and the code for splitting the clauses has already performed
