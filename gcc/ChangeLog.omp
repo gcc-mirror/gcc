@@ -1,6 +1,17 @@
 2022-03-09  Abid Qadeer  <abidh@codesourcery.com>
 
 	Backport of a patch posted at
+	https://gcc.gnu.org/pipermail/gcc-patches/2022-January/588372.html
+
+	* omp-low.c (scan_sharing_clauses): Handle OMP_CLAUSE_ALLOCATOR.
+	(scan_omp_allocate): New.
+	(scan_omp_1_stmt): Call it.
+	(lower_omp_allocate): New function.
+	(lower_omp_1): Call it.
+
+2022-03-09  Abid Qadeer  <abidh@codesourcery.com>
+
+	Backport of a patch posted at
 	https://gcc.gnu.org/pipermail/gcc-patches/2022-January/588371.html
 
 	* doc/gimple.texi: Describe GIMPLE_OMP_ALLOCATE.
