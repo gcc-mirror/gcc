@@ -1470,6 +1470,43 @@ duplicate_function_template_decls (tree newdecl, tree olddecl)
   return false;
 }
 
+/* OLD_PARMS is the innermost set of template parameters for some template
+   declaration, and NEW_PARMS is the corresponding set of template parameters
+   for a redeclaration of that template.  Merge the default arguments within
+   these two sets of parameters.  CLASS_P is true iff the template in
+   question is a class template.  */
+
+bool
+merge_default_template_args (tree new_parms, tree old_parms, bool class_p)
+{
+  gcc_checking_assert (TREE_VEC_LENGTH (new_parms)
+		       == TREE_VEC_LENGTH (old_parms));
+  for (int i = 0; i < TREE_VEC_LENGTH (new_parms); i++)
+    {
+      tree new_parm = TREE_VALUE (TREE_VEC_ELT (new_parms, i));
+      tree old_parm = TREE_VALUE (TREE_VEC_ELT (old_parms, i));
+      tree& new_default = TREE_PURPOSE (TREE_VEC_ELT (new_parms, i));
+      tree& old_default = TREE_PURPOSE (TREE_VEC_ELT (old_parms, i));
+      if (new_default != NULL_TREE && old_default != NULL_TREE)
+	{
+	  auto_diagnostic_group d;
+	  error ("redefinition of default argument for %q+#D", new_parm);
+	  inform (DECL_SOURCE_LOCATION (old_parm),
+		  "original definition appeared here");
+	  return false;
+	}
+      else if (new_default != NULL_TREE)
+	/* Update the previous template parameters (which are the ones
+	   that will really count) with the new default value.  */
+	old_default = new_default;
+      else if (class_p && old_default != NULL_TREE)
+	/* Update the new parameters, too; they'll be used as the
+	   parameters for any members.  */
+	new_default = old_default;
+    }
+  return true;
+}
+
 /* If NEWDECL is a redeclaration of OLDDECL, merge the declarations.
    If the redeclaration is invalid, a diagnostic is issued, and the
    error_mark_node is returned.  Otherwise, OLDDECL is returned.
@@ -1990,7 +2027,21 @@ duplicate_decls (tree newdecl, tree olddecl, bool hiding, bool was_hidden)
 		     template shall be specified on the initial declaration
 		     of the member function within the class template.  */
 		  || CLASSTYPE_TEMPLATE_INFO (CP_DECL_CONTEXT (olddecl))))
-	    check_redeclaration_no_default_args (newdecl);
+	    {
+	      check_redeclaration_no_default_args (newdecl);
+
+	      if (DECL_TEMPLATE_INFO (olddecl)
+		  && DECL_MEMBER_TEMPLATE_P (DECL_TI_TEMPLATE (olddecl)))
+		{
+		  tree new_parms = DECL_TEMPLATE_INFO (newdecl)
+		    ? DECL_INNERMOST_TEMPLATE_PARMS (DECL_TI_TEMPLATE (newdecl))
+		    : INNERMOST_TEMPLATE_PARMS (current_template_parms);
+		  tree old_parms
+		    = DECL_INNERMOST_TEMPLATE_PARMS (DECL_TI_TEMPLATE (olddecl));
+		  merge_default_template_args (new_parms, old_parms,
+					       /*class_p=*/false);
+		}
+	    }
 	  else
 	    {
 	      tree t1 = FUNCTION_FIRST_USER_PARMTYPE (olddecl);
@@ -2235,6 +2286,11 @@ duplicate_decls (tree newdecl, tree olddecl, bool hiding, bool was_hidden)
 		 translation unit."  */
 	      check_no_redeclaration_friend_default_args
 		(old_result, new_result);
+
+	      tree new_parms = DECL_INNERMOST_TEMPLATE_PARMS (newdecl);
+	      tree old_parms = DECL_INNERMOST_TEMPLATE_PARMS (olddecl);
+	      merge_default_template_args (new_parms, old_parms,
+					   /*class_p=*/false);
 	    }
 	  if (!DECL_UNIQUE_FRIEND_P (old_result))
 	    DECL_UNIQUE_FRIEND_P (new_result) = false;
