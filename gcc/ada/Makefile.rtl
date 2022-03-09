@@ -416,6 +416,7 @@ GNATRTL_NONTASKING_OBJS= \
   g-arrspl$(objext) \
   g-awk$(objext) \
   g-binenv$(objext) \
+  g-binsea$(objext) \
   g-brapre$(objext) \
   g-bubsor$(objext) \
   g-busora$(objext) \
