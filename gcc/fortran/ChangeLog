@@ -1,3 +1,16 @@
+2022-03-08  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/104126
+	* trans-expr.cc (gfc_conv_gfc_desc_to_cfi_desc): Handle NULL
+	without MOLD.
+
+2022-03-08  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/104811
+	* frontend-passes.cc (optimize_minmaxloc): Do not attempt
+	frontend-optimization of MINLOC/MAXLOC for character arrays, as
+	there is no suitable code yet for inline expansion.
+
 2022-03-07  Tobias Burnus  <tobias@codesourcery.com>
 
 	PR fortran/99585

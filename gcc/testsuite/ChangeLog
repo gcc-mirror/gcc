@@ -1,3 +1,89 @@
+2022-03-08  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR c++/96440
+	* g++.dg/cpp0x/pr96440.C: New test case.
+
+2022-03-08  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/104126
+	* gfortran.dg/null_actual_2.f90: New test.
+
+2022-03-08  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR c++/96437
+	* g++.dg/cpp2a/pr96437.C: New test case.
+
+2022-03-08  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR c++/96329
+	* g++.dg/template/pr96329.C: New test case.
+
+2022-03-08  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/104108
+	* g++.dg/cpp0x/alias-decl-74.C: New test.
+
+2022-03-08  Marek Polacek  <polacek@redhat.com>
+
+	* g++.dg/ext/attr-unavailable-9.C: Add dg-error.
+
+2022-03-08  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/104811
+	* gfortran.dg/minmaxloc_16.f90: New test.
+
+2022-03-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/104806
+	* g++.dg/spellcheck-pr104806.C: New test.
+
+2022-03-08  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/99771
+	* gcc.dg/analyzer/leak-4.c: New test.
+
+2022-03-08  Marek Polacek  <polacek@redhat.com>
+
+	PR rtl-optimization/104777
+	* gcc.dg/torture/tls/pr104777.c: New test.
+
+2022-03-08  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/104781
+	* gcc.target/i386/eh_return-1.c: Add -mincoming-stack-boundary=4.
+	* gcc.target/i386/eh_return-2.c: Likewise.
+
+2022-03-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/84201
+	* gcc.dg/vect/pr84201.c: New testcase.
+
+2022-03-08  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/104755
+	* gcc.dg/vect/vect-bic-bitmask-10.c: Disable sparc.
+	* gcc.dg/vect/vect-bic-bitmask-11.c: Likewise.
+	* gcc.dg/vect/vect-bic-bitmask-12.c: Likewise.
+	* gcc.dg/vect/vect-bic-bitmask-2.c: Likewise.
+	* gcc.dg/vect/vect-bic-bitmask-23.c: Likewise.
+	* gcc.dg/vect/vect-bic-bitmask-3.c: Likewise.
+	* gcc.dg/vect/vect-bic-bitmask-4.c: Likewise.
+	* gcc.dg/vect/vect-bic-bitmask-5.c: Likewise.
+	* gcc.dg/vect/vect-bic-bitmask-6.c: Likewise.
+	* gcc.dg/vect/vect-bic-bitmask-8.c: Likewise.
+	* gcc.dg/vect/vect-bic-bitmask-9.c: Likewise.
+
+2022-03-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/104825
+	* gcc.dg/torture/pr104825.c: New testcase.
+
+2022-03-08  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr100865-8a.c: Adjust testcase.
+	* gcc.target/i386/pr100865-8c.c: Ditto.
+	* gcc.target/i386/pr100865-9c.c: Ditto.
+
 2022-03-07  Tobias Burnus  <tobias@codesourcery.com>
 
 	PR fortran/99585

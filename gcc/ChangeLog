@@ -1,3 +1,64 @@
+2022-03-08  Christophe Lyon  <christophe.lyon@arm.com>
+
+	* config/arm/arm-builtins.cc
+	(arm_binop_none_none_unone_qualifiers): Delete.
+	(BINOP_NONE_NONE_UNONE_QUALIFIERS): Delete.
+
+2022-03-08  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR translation/104552
+	* config/host-darwin.cc (darwin_gt_pch_get_address): Amend
+	the PCH out of memory error message punctuation and wording.
+
+2022-03-08  Marek Polacek  <polacek@redhat.com>
+
+	PR rtl-optimization/104777
+	* rtl.cc (classify_insn): For ASM_OPERANDS, return JUMP_INSN only if
+	ASM_OPERANDS_LABEL_VEC has at least one element.
+
+2022-03-08  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/104781
+	* config/i386/i386.cc (ix86_expand_epilogue): Sorry if there is
+	stack realignment or regparm nested function with EH return.
+
+2022-03-08  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	PR target/104790
+	* config/arm/arm.h (MVE_STN_LDW_MODE): New MACRO.
+	* config/arm/arm.cc (mve_vector_mem_operand): Relax constraint on base
+	register for non widening loads or narrowing stores.
+
+2022-03-08  Eric Gallager  <egallager@gcc.gnu.org>
+
+	PR translation/104552
+	* params.opt: Fix typo.
+
+2022-03-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/84201
+	* params.opt (-param=vect-induction-float): Add.
+	* doc/invoke.texi (vect-induction-float): Document.
+	* tree-vect-loop.cc (vectorizable_induction): Honor
+	param_vect_induction_float.
+
+2022-03-08  Martin Jambor  <mjambor@suse.cz>
+
+	PR translation/104552
+	* params.opt (ipa-cp-recursive-freq-factor): Remove repeated word
+	"that" in the description.
+
+2022-03-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/104825
+	* tree-ssa-sccvn.cc (visit_reference_op_call): Properly
+	guard modref get_ao_ref on a pointer typed argument.
+
+2022-03-08  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/sse.md (*vec_dupv4si): Disable memory operand
+	for !TARGET_INTER_UNIT_MOVES_TO_VEC when prefer_for_speed.
+
 2022-03-07  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/invoke.texi (C++ Modules): Remove anachronism.
