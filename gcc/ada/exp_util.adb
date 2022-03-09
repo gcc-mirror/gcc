@@ -7751,12 +7751,17 @@ package body Exp_Util is
 
                  --  We must not climb up out of an N_Iterated_xxx_Association
                  --  because the actions might contain references to the loop
-                 --  parameter. But it turns out that setting the Loop_Actions
-                 --  attribute in the case of an N_Component_Association
-                 --  when the attribute was not already set can lead to
-                 --  (as yet not understood) bugboxes (gcc failures that are
-                 --  presumably due to malformed trees). So we don't do that.
+                 --  parameter, except if we come from the Discrete_Choices of
+                 --  N_Iterated_Component_Association which cannot contain any.
+                 --  But it turns out that setting the Loop_Actions field in
+                 --  the case of an N_Component_Association when the field was
+                 --  not already set can lead to gigi assertion failures that
+                 --  are presumably due to malformed trees, so don't do that.
 
+                 and then (Nkind (P) /= N_Iterated_Component_Association
+                            or else not Is_List_Member (N)
+                            or else
+                              List_Containing (N) /= Discrete_Choices (P))
                  and then (Nkind (P) /= N_Component_Association
                             or else Present (Loop_Actions (P)))
                then
