@@ -513,7 +513,10 @@ enum omp_clause_code {
   OMP_CLAUSE_IF_PRESENT,
 
   /* OpenACC clause: finalize.  */
-  OMP_CLAUSE_FINALIZE
+  OMP_CLAUSE_FINALIZE,
+
+  /* OpenMP clause: allocator.  */
+  OMP_CLAUSE_ALLOCATOR
 };
 
 #undef DEFTREESTRUCT
