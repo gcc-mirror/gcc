@@ -1,7 +1,6 @@
 /* PR c++/55095 */
 /* { dg-do compile { target int32 } } */
 /* { dg-options "-Wshift-overflow=1" } */
-/* { dg-additional-options "-std=c++11" { target c++ } } */
 
 int i00 = 0b1 << 31;
 int i01 = 0b10 << 30;
@@ -34,4 +33,4 @@ int i27 = 0b1000000000000000000000000000 << 4;
 int i28 = 0b10000000000000000000000000000 << 3;
 int i29 = 0b100000000000000000000000000000 << 2;
 int i30 = 0b1000000000000000000000000000000 << 1;
-int i31 = (int) 0b10000000000000000000000000000000u << 1; /* { dg-warning "requires 33 bits to represent" } */
+int i31 = (int) 0b10000000000000000000000000000000u << 1; /* { dg-warning "requires 33 bits to represent" "" { target { c || c++17_down } } } */
