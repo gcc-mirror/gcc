@@ -5809,7 +5809,7 @@ name is still supported, but the newer name is more descriptive.)
 -Wredundant-move @r{(only for C++)}  @gol
 -Wtype-limits  @gol
 -Wuninitialized  @gol
--Wshift-negative-value @r{(in C++03 and in C99 and newer)}  @gol
+-Wshift-negative-value @r{(in C++11 to C++17 and in C99 and newer)}  @gol
 -Wunused-parameter @r{(only with} @option{-Wunused} @r{or} @option{-Wall}@r{)} @gol
 -Wunused-but-set-parameter @r{(only with} @option{-Wunused} @r{or} @option{-Wall}@r{)}}
 
@@ -6839,7 +6839,7 @@ of the type.  This warning is enabled by default.
 @opindex Wshift-negative-value
 @opindex Wno-shift-negative-value
 Warn if left shifting a negative value.  This warning is enabled by
-@option{-Wextra} in C99 and C++11 modes (and newer).
+@option{-Wextra} in C99 (and newer) and C++11 to C++17 modes.
 
 @item -Wno-shift-overflow
 @itemx -Wshift-overflow=@var{n}

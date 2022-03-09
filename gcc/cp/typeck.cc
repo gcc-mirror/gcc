@@ -5382,6 +5382,7 @@ cp_build_binary_op (const op_location_t &location,
 	  doing_shift = true;
 	  if (TREE_CODE (const_op0) == INTEGER_CST
 	      && tree_int_cst_sgn (const_op0) < 0
+	      && !TYPE_OVERFLOW_WRAPS (type0)
 	      && (complain & tf_warning)
 	      && c_inhibit_evaluation_warnings == 0)
 	    warning_at (location, OPT_Wshift_negative_value,

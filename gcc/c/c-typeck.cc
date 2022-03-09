@@ -12213,7 +12213,8 @@ build_binary_op (location_t location, enum tree_code code,
 	{
 	  doing_shift = true;
 	  if (TREE_CODE (op0) == INTEGER_CST
-	      && tree_int_cst_sgn (op0) < 0)
+	      && tree_int_cst_sgn (op0) < 0
+	      && !TYPE_OVERFLOW_WRAPS (type0))
 	    {
 	      /* Don't reject a left shift of a negative value in a context
 		 where a constant expression is needed in C90.  */
