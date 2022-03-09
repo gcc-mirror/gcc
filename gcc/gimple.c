@@ -1302,6 +1302,16 @@ gimple_build_omp_metadirective_variant (gimple_seq body)
   return variant;
 }
 
+gomp_allocate *
+gimple_build_omp_allocate (tree clauses, int kind)
+{
+  gomp_allocate *p
+    = as_a <gomp_allocate *> (gimple_alloc (GIMPLE_OMP_ALLOCATE, 0));
+  gimple_omp_allocate_set_clauses (p, clauses);
+  gimple_omp_allocate_set_kind (p, kind);
+  return p;
+}
+
 /* Build a GIMPLE_TRANSACTION statement.  */
 
 gtransaction *
