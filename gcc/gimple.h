@@ -150,6 +150,9 @@ enum gf_mask {
     GF_CALL_BY_DESCRIPTOR	= 1 << 10,
     GF_CALL_NOCF_CHECK		= 1 << 11,
     GF_CALL_FROM_NEW_OR_DELETE	= 1 << 12,
+    GF_OMP_ALLOCATE_KIND_MASK	= (1 << 2) - 1,
+    GF_OMP_ALLOCATE_KIND_ALLOCATE = 1,
+    GF_OMP_ALLOCATE_KIND_FREE = 2,
     GF_OMP_PARALLEL_COMBINED	= 1 << 0,
     GF_OMP_TASK_TASKLOOP	= 1 << 0,
     GF_OMP_TASK_TASKWAIT	= 1 << 1,
@@ -800,6 +803,17 @@ struct GTY((tag("GSS_OMP_ATOMIC_LOAD")))
   tree rhs, lhs;
 };
 
+/* GSS_OMP_ALLOCATE.  */
+
+struct GTY((tag("GSS_OMP_ALLOCATE")))
+  gomp_allocate : public gimple
+{
+  /* [ WORD 1-6 ] : base class */
+
+  /* [ WORD 7 ]  */
+  tree clauses;
+};
+
 /* GIMPLE_OMP_ATOMIC_STORE.
    See note on GIMPLE_OMP_ATOMIC_LOAD.  */
 
@@ -1174,6 +1188,14 @@ is_a_helper <gomp_atomic_store *>::test (gimple *gs)
 template <>
 template <>
 inline bool
+is_a_helper <gomp_allocate *>::test (gimple *gs)
+{
+  return gs->code == GIMPLE_OMP_ALLOCATE;
+}
+
+template <>
+template <>
+inline bool
 is_a_helper <gimple_statement_omp_return *>::test (gimple *gs)
 {
   return gs->code == GIMPLE_OMP_RETURN;
@@ -1440,6 +1462,14 @@ is_a_helper <const gomp_atomic_store *>::test (const gimple *gs)
 template <>
 template <>
 inline bool
+is_a_helper <const gomp_allocate *>::test (const gimple *gs)
+{
+  return gs->code == GIMPLE_OMP_ALLOCATE;
+}
+
+template <>
+template <>
+inline bool
 is_a_helper <const gimple_statement_omp_return *>::test (const gimple *gs)
 {
   return gs->code == GIMPLE_OMP_RETURN;
@@ -1662,6 +1692,7 @@ gomp_sections *gimple_build_omp_sections (gimple_seq, tree);
 gimple *gimple_build_omp_sections_switch (void);
 gomp_single *gimple_build_omp_single (gimple_seq, tree);
 gomp_target *gimple_build_omp_target (gimple_seq, int, tree);
+gomp_allocate *gimple_build_omp_allocate (tree, int);
 gomp_teams *gimple_build_omp_teams (gimple_seq, tree);
 gomp_atomic_load *gimple_build_omp_atomic_load (tree, tree,
 						enum omp_memory_order);
@@ -6483,6 +6514,30 @@ gimple_omp_sections_set_control (gimple *gs, tree control)
   omp_sections_stmt->control = control;
 }
 
+static inline void
+gimple_omp_allocate_set_clauses (gomp_allocate *gs, tree c)
+{
+  gs->clauses = c;
+}
+
+static inline void
+gimple_omp_allocate_set_kind (gomp_allocate *gs, int kind)
+{
+  gs->subcode = (gs->subcode & ~GF_OMP_ALLOCATE_KIND_MASK)
+		      | (kind & GF_OMP_ALLOCATE_KIND_MASK);
+}
+
+static inline tree
+gimple_omp_allocate_clauses (const gomp_allocate *gs)
+{
+  return gs->clauses;
+}
+
+static inline int
+gimple_omp_allocate_kind (const gomp_allocate *gs)
+{
+  return (gimple_omp_subcode (gs) & GF_OMP_ALLOCATE_KIND_MASK);
+}
 
 /* Set the value being stored in an atomic store.  */
 
@@ -6847,7 +6902,8 @@ gimple_return_set_retval (greturn *gs, tree retval)
     case GIMPLE_OMP_ATOMIC_LOAD:		\
     case GIMPLE_OMP_ATOMIC_STORE:		\
     case GIMPLE_OMP_METADIRECTIVE:		\
-    case GIMPLE_OMP_CONTINUE
+    case GIMPLE_OMP_CONTINUE:			\
+    case GIMPLE_OMP_ALLOCATE
 
 inline bool
 is_gimple_omp (const gimple *stmt)

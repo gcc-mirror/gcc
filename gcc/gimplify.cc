@@ -15866,6 +15866,21 @@ gimplify_omp_workshare (tree *expr_p, gimple_seq *pre_p)
   *expr_p = NULL_TREE;
 }
 
+static void
+gimplify_omp_allocate (tree *expr_p, gimple_seq *pre_p)
+{
+  tree expr = *expr_p;
+  int kind;
+  if (OMP_ALLOCATE_KIND_ALLOCATE (expr))
+    kind = GF_OMP_ALLOCATE_KIND_ALLOCATE;
+  else
+    kind = GF_OMP_ALLOCATE_KIND_FREE;
+  gimple *stmt = gimple_build_omp_allocate (OMP_ALLOCATE_CLAUSES (expr),
+					    kind);
+  gimplify_seq_add_stmt (pre_p, stmt);
+  *expr_p = NULL_TREE;
+}
+
 /* Gimplify the gross structure of OpenACC enter/exit data, update, and OpenMP
    target update constructs.  */
 
@@ -17444,6 +17459,10 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	case OMP_TARGET_ENTER_DATA:
 	case OMP_TARGET_EXIT_DATA:
 	  gimplify_omp_target_update (expr_p, pre_p);
+	  ret = GS_ALL_DONE;
+	  break;
+	case OMP_ALLOCATE:
+	  gimplify_omp_allocate (expr_p, pre_p);
 	  ret = GS_ALL_DONE;
 	  break;
 

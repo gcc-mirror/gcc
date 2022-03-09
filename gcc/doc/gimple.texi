@@ -420,6 +420,9 @@ kinds, along with their relationships to @code{GSS_} values (layouts) and
      + gomp_continue
      |        layout: GSS_OMP_CONTINUE, code: GIMPLE_OMP_CONTINUE
      |
+     + gomp_allocate
+     |        layout: GSS_OMP_ALLOCATE, code: GIMPLE_OMP_ALLOCATE
+     |
      + gomp_atomic_load
      |        layout: GSS_OMP_ATOMIC_LOAD, code: GIMPLE_OMP_ATOMIC_LOAD
      |
@@ -454,6 +457,7 @@ The following table briefly describes the GIMPLE instruction set.
 @item @code{GIMPLE_GOTO}		@tab x			@tab x
 @item @code{GIMPLE_LABEL}		@tab x			@tab x
 @item @code{GIMPLE_NOP}			@tab x			@tab x
+@item @code{GIMPLE_OMP_ALLOCATE}	@tab x			@tab x
 @item @code{GIMPLE_OMP_ATOMIC_LOAD}	@tab x			@tab x
 @item @code{GIMPLE_OMP_ATOMIC_STORE}	@tab x			@tab x
 @item @code{GIMPLE_OMP_CONTINUE}	@tab x			@tab x
@@ -1028,6 +1032,7 @@ Return a deep copy of statement @code{STMT}.
 * @code{GIMPLE_LABEL}::
 * @code{GIMPLE_GOTO}::
 * @code{GIMPLE_NOP}::
+* @code{GIMPLE_OMP_ALLOCATE}::
 * @code{GIMPLE_OMP_ATOMIC_LOAD}::
 * @code{GIMPLE_OMP_ATOMIC_STORE}::
 * @code{GIMPLE_OMP_CONTINUE}::
@@ -1728,6 +1733,38 @@ Build a @code{GIMPLE_NOP} statement.
 Returns @code{TRUE} if statement @code{G} is a @code{GIMPLE_NOP}.
 @end deftypefn
 
+@node @code{GIMPLE_OMP_ALLOCATE}
+@subsection @code{GIMPLE_OMP_ALLOCATE}
+@cindex @code{GIMPLE_OMP_ALLOCATE}
+
+@deftypefn {GIMPLE function} gomp_allocate *gimple_build_omp_allocate ( @
+tree clauses, int kind)
+Build a @code{GIMPLE_OMP_ALLOCATE} statement.  @code{CLAUSES} is the clauses
+associated with this node.  @code{KIND} is the enumeration value
+@code{GF_OMP_ALLOCATE_KIND_ALLOCATE} if this directive allocates memory
+or @code{GF_OMP_ALLOCATE_KIND_FREE} if it de-allocates.
+@end deftypefn
+
+@deftypefn {GIMPLE function} void gimple_omp_allocate_set_clauses ( @
+gomp_allocate *g, tree clauses)
+Set the @code{CLAUSES} for a @code{GIMPLE_OMP_ALLOCATE}.
+@end deftypefn
+
+@deftypefn {GIMPLE function} tree gimple_omp_aallocate_clauses ( @
+const gomp_allocate *g)
+Get the @code{CLAUSES} of a @code{GIMPLE_OMP_ALLOCATE}.
+@end deftypefn
+
+@deftypefn {GIMPLE function} void gimple_omp_allocate_set_kind ( @
+gomp_allocate *g, int kind)
+Set the @code{KIND} for a @code{GIMPLE_OMP_ALLOCATE}.
+@end deftypefn
+
+@deftypefn {GIMPLE function} tree gimple_omp_allocate_kind ( @
+const gomp_atomic_load *g)
+Get the @code{KIND} of a @code{GIMPLE_OMP_ALLOCATE}.
+@end deftypefn
+
 @node @code{GIMPLE_OMP_ATOMIC_LOAD}
 @subsection @code{GIMPLE_OMP_ATOMIC_LOAD}
 @cindex @code{GIMPLE_OMP_ATOMIC_LOAD}
@@ -1758,7 +1795,6 @@ Set the @code{RHS} of an atomic set.
 const gomp_atomic_load *g)
 Get the @code{RHS} of an atomic set.
 @end deftypefn
-
 
 @node @code{GIMPLE_OMP_ATOMIC_STORE}
 @subsection @code{GIMPLE_OMP_ATOMIC_STORE}

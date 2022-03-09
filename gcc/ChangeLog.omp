@@ -1,3 +1,25 @@
+2022-03-09  Hafiz Abid Qadeer  <abidh@codesourcery.com>
+
+	* doc/gimple.texi: Describe GIMPLE_OMP_ALLOCATE.
+	* gimple-pretty-print.cc (dump_gimple_omp_allocate): New function.
+	(pp_gimple_stmt_1): Call it.
+	* gimple.cc (gimple_build_omp_allocate): New function.
+	* gimple.def (GIMPLE_OMP_ALLOCATE): New node.
+	* gimple.h (enum gf_mask): Add GF_OMP_ALLOCATE_KIND_MASK,
+	GF_OMP_ALLOCATE_KIND_ALLOCATE and GF_OMP_ALLOCATE_KIND_FREE.
+	(struct gomp_allocate): New.
+	(is_a_helper <gomp_allocate *>::test): New.
+	(is_a_helper <const gomp_allocate *>::test): New.
+	(gimple_build_omp_allocate): Declare.
+	(gimple_omp_allocate_set_clauses): New.
+	(gimple_omp_allocate_set_kind): Likewise.
+	(gimple_omp_allocate_clauses): Likewise.
+	(gimple_omp_allocate_kind): Likewise.
+	(CASE_GIMPLE_OMP): Add GIMPLE_OMP_ALLOCATE.
+	* gimplify.cc (gimplify_omp_allocate): New.
+	(gimplify_expr): Call it.
+	* gsstruct.def (GSS_OMP_ALLOCATE): Define.
+
 2022-01-08  Hafiz Abid Qadeer  <abidh@codesourcery.com>
 
 	* tree-core.h (struct tree_base): Add comments.
