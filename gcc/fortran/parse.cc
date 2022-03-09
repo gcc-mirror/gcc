@@ -895,6 +895,7 @@ decode_omp_directive (void)
       matcho ("assumes", gfc_match_omp_assumes, ST_OMP_ASSUMES);
       matchs ("assume", gfc_match_omp_assume, ST_OMP_ASSUME);
       matcho ("atomic", gfc_match_omp_atomic, ST_OMP_ATOMIC);
+      matcho ("allocate", gfc_match_omp_allocate, ST_OMP_ALLOCATE);
       break;
     case 'b':
       matcho ("barrier", gfc_match_omp_barrier, ST_OMP_BARRIER);
@@ -1701,9 +1702,9 @@ next_statement (void)
   case ST_OMP_CANCEL: case ST_OMP_CANCELLATION_POINT: case ST_OMP_DEPOBJ: \
   case ST_OMP_TARGET_UPDATE: case ST_OMP_TARGET_ENTER_DATA: \
   case ST_OMP_TARGET_EXIT_DATA: case ST_OMP_ORDERED_DEPEND: case ST_OMP_ERROR: \
-  case ST_ERROR_STOP: case ST_OMP_SCAN: case ST_SYNC_ALL: \
-  case ST_SYNC_IMAGES: case ST_SYNC_MEMORY: case ST_LOCK: case ST_UNLOCK: \
-  case ST_FORM_TEAM: case ST_CHANGE_TEAM: \
+  case ST_OMP_ALLOCATE: case ST_ERROR_STOP: case ST_OMP_SCAN: \
+  case ST_SYNC_ALL: case ST_SYNC_IMAGES: case ST_SYNC_MEMORY: case ST_LOCK: \
+  case ST_UNLOCK: case ST_FORM_TEAM: case ST_CHANGE_TEAM: \
   case ST_END_TEAM: case ST_SYNC_TEAM: \
   case ST_EVENT_POST: case ST_EVENT_WAIT: case ST_FAIL_IMAGE: \
   case ST_OACC_UPDATE: case ST_OACC_WAIT: case ST_OACC_CACHE: \
@@ -2424,6 +2425,9 @@ gfc_ascii_statement (gfc_statement st, bool strip_sentinel)
       break;
     case ST_OMP_ASSUMES:
       p = "!$OMP ASSUMES";
+      break;
+    case ST_OMP_ALLOCATE:
+      p = "!$OMP ALLOCATE";
       break;
     case ST_OMP_ATOMIC:
       p = "!$OMP ATOMIC";
