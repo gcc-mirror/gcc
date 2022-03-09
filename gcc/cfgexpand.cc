@@ -3297,7 +3297,9 @@ expand_asm_stmt (gasm *stmt)
 		    && GET_MODE (DECL_RTL (val)) != TYPE_MODE (type)))
 	  || ! allows_reg
 	  || is_inout
-	  || TREE_ADDRESSABLE (type))
+	  || TREE_ADDRESSABLE (type)
+	  || (!tree_fits_poly_int64_p (TYPE_SIZE (type))
+	      && !known_size_p (max_int_size_in_bytes (type))))
 	{
 	  op = expand_expr (val, NULL_RTX, VOIDmode,
 			    !allows_reg ? EXPAND_MEMORY : EXPAND_WRITE);
