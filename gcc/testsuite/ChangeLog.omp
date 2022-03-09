@@ -1,6 +1,12 @@
 2022-03-09  Hafiz Abid Qadeer  <abidh@codesourcery.com>
 
 	* gfortran.dg/gomp/allocate-6.f90: Add tests.
+	* gfortran.dg/gomp/allocate-7.f90: New test.
+	* gfortran.dg/gomp/allocate-8.f90: New test.
+
+2022-03-09  Hafiz Abid Qadeer  <abidh@codesourcery.com>
+
+	* gfortran.dg/gomp/allocate-6.f90: Add tests.
 
 2022-01-08  Hafiz Abid Qadeer  <abidh@codesourcery.com>
 

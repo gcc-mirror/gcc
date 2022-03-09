@@ -1,3 +1,7 @@
+2022-03-09  Hafiz Abid Qadeer  <abidh@codesourcery.com>
+
+	* testsuite/libgomp.fortran/allocate-2.f90: New test.
+
 2022-03-01  Tobias Burnus  <tobias@codesourcery.com>
 
 	* testsuite/libgomp.fortran/allocatable-comp.f90: New test.

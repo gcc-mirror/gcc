@@ -2039,6 +2039,7 @@ scan_sharing_clauses (tree clauses, omp_context *ctx,
 	case OMP_CLAUSE_FINALIZE:
 	case OMP_CLAUSE_TASK_REDUCTION:
 	case OMP_CLAUSE_ALLOCATE:
+	case OMP_CLAUSE_ALLOCATOR:
 	  break;
 
 	case OMP_CLAUSE_ALIGNED:
@@ -2262,6 +2263,7 @@ scan_sharing_clauses (tree clauses, omp_context *ctx,
 	case OMP_CLAUSE_FINALIZE:
 	case OMP_CLAUSE_FILTER:
 	case OMP_CLAUSE__CONDTEMP_:
+	case OMP_CLAUSE_ALLOCATOR:
 	  break;
 
 	case OMP_CLAUSE__CACHE_:
@@ -3362,6 +3364,16 @@ scan_omp_simd_scan (gimple_stmt_iterator *gsi, gomp_for *stmt,
   scan_omp (gimple_omp_body_ptr (scan_stmt), ctx);
 
   maybe_lookup_ctx (new_stmt)->for_simd_scan_phase = true;
+}
+
+/* Scan an OpenMP allocate directive.  */
+
+static void
+scan_omp_allocate (gomp_allocate *stmt, omp_context *outer_ctx)
+{
+  omp_context *ctx;
+  ctx = new_omp_context (stmt, outer_ctx);
+  scan_sharing_clauses (gimple_omp_allocate_clauses (stmt), ctx);
 }
 
 /* Scan an OpenMP sections directive.  */
@@ -4819,6 +4831,9 @@ scan_omp_1_stmt (gimple_stmt_iterator *gsi, bool *handled_ops_p,
 	       var = DECL_CHAIN (var))
 	    insert_decl_map (&ctx->cb, var, var);
       }
+      break;
+    case GIMPLE_OMP_ALLOCATE:
+      scan_omp_allocate (as_a <gomp_allocate *> (stmt), ctx);
       break;
     default:
       *handled_ops_p = false;
@@ -9328,6 +9343,125 @@ lower_omp_single_simple (gomp_single *single_stmt, gimple_seq *pre_p)
   gimple_seq_add_stmt (pre_p, gimple_build_label (tlabel));
   gimple_seq_add_seq (pre_p, gimple_omp_body (single_stmt));
   gimple_seq_add_stmt (pre_p, gimple_build_label (flabel));
+}
+
+static void
+lower_omp_allocate (gimple_stmt_iterator *gsi_p, omp_context *ctx)
+{
+  gomp_allocate *st = as_a <gomp_allocate *> (gsi_stmt (*gsi_p));
+  tree clauses = gimple_omp_allocate_clauses (st);
+  int kind = gimple_omp_allocate_kind (st);
+  gcc_assert (kind == GF_OMP_ALLOCATE_KIND_ALLOCATE
+	      || kind == GF_OMP_ALLOCATE_KIND_FREE);
+
+  for (tree c = clauses; c; c = OMP_CLAUSE_CHAIN (c))
+    {
+      if (OMP_CLAUSE_CODE (c) != OMP_CLAUSE_ALLOCATOR)
+	continue;
+
+      bool allocate = (kind == GF_OMP_ALLOCATE_KIND_ALLOCATE);
+      /* The allocate directives that appear in a target region must specify
+	 an allocator clause unless a requires directive with the
+	 dynamic_allocators clause is present in the same compilation unit.  */
+      if (OMP_ALLOCATE_ALLOCATOR (c) == NULL_TREE
+	  && ((omp_requires_mask & OMP_REQUIRES_DYNAMIC_ALLOCATORS) == 0)
+	  && omp_maybe_offloaded_ctx (ctx))
+	error_at (OMP_CLAUSE_LOCATION (c), "%<allocate%> directive must"
+		  " specify an allocator here");
+
+      tree var = OMP_ALLOCATE_DECL (c);
+
+      gimple_stmt_iterator gsi = *gsi_p;
+      for (gsi_next (&gsi); !gsi_end_p (gsi); gsi_next (&gsi))
+	{
+	  gimple *stmt = gsi_stmt (gsi);
+
+	  if (gimple_code (stmt) != GIMPLE_CALL
+	      || (allocate && gimple_call_fndecl (stmt)
+		  != builtin_decl_explicit (BUILT_IN_MALLOC))
+	      || (!allocate && gimple_call_fndecl (stmt)
+		  != builtin_decl_explicit (BUILT_IN_FREE)))
+	    continue;
+	  const gcall *gs = as_a <const gcall *> (stmt);
+	  tree allocator = OMP_ALLOCATE_ALLOCATOR (c)
+			   ? OMP_ALLOCATE_ALLOCATOR (c)
+			   : integer_zero_node;
+	  if (allocate)
+	    {
+	      tree lhs = gimple_call_lhs (gs);
+	      if (lhs && TREE_CODE (lhs) == SSA_NAME)
+		{
+		  gimple_stmt_iterator gsi2 = gsi;
+		  gsi_next (&gsi2);
+		  gimple *assign = gsi_stmt (gsi2);
+		  if (gimple_code (assign) == GIMPLE_ASSIGN)
+		    {
+		      lhs = gimple_assign_lhs (as_a <const gassign *> (assign));
+		      if (lhs == NULL_TREE
+			  || TREE_CODE (lhs) != COMPONENT_REF)
+			continue;
+		      lhs = TREE_OPERAND (lhs, 0);
+		    }
+		}
+
+	      if (lhs == var)
+		{
+		  unsigned HOST_WIDE_INT ialign = 0;
+		  tree align;
+		  if (TYPE_P (var))
+		    ialign = TYPE_ALIGN_UNIT (var);
+		  else
+		    ialign = DECL_ALIGN_UNIT (var);
+		  align = build_int_cst (size_type_node, ialign);
+		  tree repl = builtin_decl_explicit (BUILT_IN_GOMP_ALLOC);
+		  tree size = gimple_call_arg (gs, 0);
+		  gimple *g = gimple_build_call (repl, 3, align, size,
+						 allocator);
+		  gimple_call_set_lhs (g, gimple_call_lhs (gs));
+		  gimple_set_location (g, gimple_location (stmt));
+		  gsi_replace (&gsi, g, true);
+		  /* The malloc call has been replaced.  Now see if there is
+		     any free call due to deallocate statement and replace
+		     that too.  */
+		  allocate = false;
+		}
+	    }
+	  else
+	    {
+	      tree arg = gimple_call_arg (gs, 0);
+	      if (arg && TREE_CODE (arg) == SSA_NAME)
+		{
+		  gimple_stmt_iterator gsi2 = gsi;
+		  gsi_prev (&gsi2);
+		  if (!gsi_end_p (gsi2))
+		    {
+		      gimple *gs = gsi_stmt (gsi2);
+		      if (gimple_code (gs) == GIMPLE_ASSIGN)
+			{
+			  const gassign *assign = as_a <const gassign *> (gs);
+			  tree rhs = gimple_assign_rhs1 (assign);
+			  tree lhs = gimple_assign_lhs (assign);
+			  if (lhs == arg && rhs
+			      && TREE_CODE (rhs) == COMPONENT_REF)
+			      arg = TREE_OPERAND (rhs, 0);
+			}
+		    }
+		}
+
+	      if (arg == var)
+		{
+		  tree repl = builtin_decl_explicit (BUILT_IN_GOMP_FREE);
+		  gimple *g = gimple_build_call (repl, 2,
+						 gimple_call_arg (gs, 0),
+						 allocator);
+		  gimple_set_location (g, gimple_location (stmt));
+		  gsi_replace (&gsi, g, true);
+		  break;
+		}
+	    }
+	}
+    }
+  gsi_replace (gsi_p, gimple_build_nop (), true);
 }
 
 
@@ -15485,6 +15619,11 @@ lower_omp_1 (gimple_stmt_iterator *gsi_p, omp_context *ctx)
       ctx = maybe_lookup_ctx (stmt);
       gcc_assert (ctx);
       lower_omp_scope (gsi_p, ctx);
+      break;
+    case GIMPLE_OMP_ALLOCATE:
+      ctx = maybe_lookup_ctx (stmt);
+      gcc_assert (ctx);
+      lower_omp_allocate (gsi_p, ctx);
       break;
     case GIMPLE_OMP_SINGLE:
       ctx = maybe_lookup_ctx (stmt);

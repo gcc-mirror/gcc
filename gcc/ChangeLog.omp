@@ -1,5 +1,13 @@
 2022-03-09  Hafiz Abid Qadeer  <abidh@codesourcery.com>
 
+	* omp-low.cc (scan_sharing_clauses): Handle OMP_CLAUSE_ALLOCATOR.
+	(scan_omp_allocate): New.
+	(scan_omp_1_stmt): Call it.
+	(lower_omp_allocate): New function.
+	(lower_omp_1): Call it.
+
+2022-03-09  Hafiz Abid Qadeer  <abidh@codesourcery.com>
+
 	* doc/gimple.texi: Describe GIMPLE_OMP_ALLOCATE.
 	* gimple-pretty-print.cc (dump_gimple_omp_allocate): New function.
 	(pp_gimple_stmt_1): Call it.
