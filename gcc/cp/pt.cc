@@ -3817,7 +3817,7 @@ expand_integer_pack (tree call, tree args, tsubst_flags_t complain,
   tree hi = tsubst_copy_and_build (ohi, args, complain, in_decl,
 				   false/*fn*/, true/*int_cst*/);
 
-  if (value_dependent_expression_p (hi))
+  if (instantiation_dependent_expression_p (hi))
     {
       if (hi != ohi)
 	{
@@ -6349,9 +6349,7 @@ redeclare_class_template (tree type, tree parms, tree cons)
 
 /* The actual substitution part of instantiate_non_dependent_expr_sfinae,
    to be used when the caller has already checked
-   (processing_template_decl
-    && !instantiation_dependent_expression_p (expr)
-    && potential_constant_expression (expr))
+    !instantiation_dependent_uneval_expression_p (expr)
    and cleared processing_template_decl.  */
 
 tree
@@ -6365,8 +6363,7 @@ instantiate_non_dependent_expr_internal (tree expr, tsubst_flags_t complain)
 				/*integral_constant_expression_p=*/true);
 }
 
-/* Simplify EXPR if it is a non-dependent expression.  Returns the
-   (possibly simplified) expression.  */
+/* Instantiate the non-dependent expression EXPR.  */
 
 tree
 instantiate_non_dependent_expr_sfinae (tree expr, tsubst_flags_t complain)
@@ -6374,16 +6371,10 @@ instantiate_non_dependent_expr_sfinae (tree expr, tsubst_flags_t complain)
   if (expr == NULL_TREE)
     return NULL_TREE;
 
-  /* If we're in a template, but EXPR isn't value dependent, simplify
-     it.  We're supposed to treat:
-
-       template <typename T> void f(T[1 + 1]);
-       template <typename T> void f(T[2]);
-
-     as two declarations of the same function, for example.  */
-  if (processing_template_decl
-      && is_nondependent_constant_expression (expr))
+  if (processing_template_decl)
     {
+      /* The caller should have checked this already.  */
+      gcc_checking_assert (!instantiation_dependent_uneval_expression_p (expr));
       processing_template_decl_sentinel s;
       expr = instantiate_non_dependent_expr_internal (expr, complain);
     }
@@ -6396,8 +6387,8 @@ instantiate_non_dependent_expr (tree expr)
   return instantiate_non_dependent_expr_sfinae (expr, tf_error);
 }
 
-/* Like instantiate_non_dependent_expr, but return NULL_TREE rather than
-   an uninstantiated expression.  */
+/* Like instantiate_non_dependent_expr, but return NULL_TREE if the
+   expression is dependent or non-constant.  */
 
 tree
 instantiate_non_dependent_or_null (tree expr)
