@@ -1693,7 +1693,7 @@ function_types_compatible_p (const_tree f1, const_tree f2,
 
   if (args1 == NULL_TREE)
     {
-      if (flag_isoc2x ? stdarg_p (f2) : !self_promoting_args_p (args2))
+      if (!self_promoting_args_p (args2))
 	return 0;
       /* If one of these types comes from a non-prototype fn definition,
 	 compare that with the other type's arglist.
@@ -1706,7 +1706,7 @@ function_types_compatible_p (const_tree f1, const_tree f2,
     }
   if (args2 == NULL_TREE)
     {
-      if (flag_isoc2x ? stdarg_p (f1) : !self_promoting_args_p (args1))
+      if (!self_promoting_args_p (args1))
 	return 0;
       if (TYPE_ACTUAL_ARG_TYPES (f2)
 	  && type_lists_compatible_p (args1, TYPE_ACTUAL_ARG_TYPES (f2),
