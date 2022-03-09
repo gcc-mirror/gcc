@@ -1881,6 +1881,10 @@
   ""
 {
   emit_insn (gen_omp_simt_exit (Pmode, operands[0]));
+  if (TARGET_PTX_6_0)
+    emit_insn (gen_nvptx_warpsync ());
+  else
+    emit_insn (gen_nvptx_uniform_warp_check ());
   DONE;
 })
 
