@@ -1,3 +1,11 @@
+2022-03-10  Andrew Stubbs <ams@codesourcery.com>
+
+	Backport of the patch posted at
+	https://gcc.gnu.org/pipermail/gcc-patches/2022-March/591351.html
+
+	* openmp.cc (gfc_match_omp_requires): Check compatibility of
+	-foffload-memory option with requires directive.
+
 2022-03-09  Abid Qadeer  <abidh@codesourcery.com>
 
 	Backport of a patch posted at

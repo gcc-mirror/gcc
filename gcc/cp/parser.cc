@@ -46921,7 +46921,16 @@ cp_parser_omp_requires (cp_parser *parser, cp_token *pragma_tok)
 	  if (!strcmp (p, "unified_address"))
 	    this_req = OMP_REQUIRES_UNIFIED_ADDRESS;
 	  else if (!strcmp (p, "unified_shared_memory"))
+	  {
 	    this_req = OMP_REQUIRES_UNIFIED_SHARED_MEMORY;
+
+	    if (flag_offload_memory != OFFLOAD_MEMORY_UNIFIED
+		&& flag_offload_memory != OFFLOAD_MEMORY_NONE)
+	      error_at (cloc,
+			"unified_shared_memory is incompatible with the "
+			"selected -foffload-memory option");
+	    flag_offload_memory = OFFLOAD_MEMORY_UNIFIED;
+	  }
 	  else if (!strcmp (p, "dynamic_allocators"))
 	    this_req = OMP_REQUIRES_DYNAMIC_ALLOCATORS;
 	  else if (!strcmp (p, "reverse_offload"))
