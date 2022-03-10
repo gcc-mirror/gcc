@@ -16263,7 +16263,7 @@ finish_enum_value_list (tree enumtype)
 
 	  /* Update the minimum and maximum values, if appropriate.  */
 	  value = DECL_INITIAL (decl);
-	  if (value == error_mark_node)
+	  if (TREE_CODE (value) != INTEGER_CST)
 	    value = integer_zero_node;
 	  /* Figure out what the minimum and maximum values of the
 	     enumerators are.  */
@@ -16552,7 +16552,7 @@ build_enumerator (tree name, tree value, tree enumtype, tree attributes,
 		 which case the type is an unspecified integral type
 		 sufficient to contain the incremented value.  */
 	      prev_value = DECL_INITIAL (TREE_VALUE (TYPE_VALUES (enumtype)));
-	      if (error_operand_p (prev_value))
+	      if (TREE_CODE (prev_value) != INTEGER_CST)
 		value = error_mark_node;
 	      else
 		{
