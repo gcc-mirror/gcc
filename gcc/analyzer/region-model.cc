@@ -1583,6 +1583,61 @@ region_model::purge_state_involving (const svalue *sval,
     ctxt->purge_state_involving (sval);
 }
 
+/* Check CALL a call to external function CALLEE_FNDECL based on
+   any __attribute__ ((access, ....) on the latter, complaining to
+   CTXT about any issues.
+
+   Currently we merely call check_region_for_write on any regions
+   pointed to by arguments marked with a "write_only" or "read_write"
+   attribute.  */
+
+void
+region_model::
+check_external_function_for_access_attr (const gcall *call,
+					 tree callee_fndecl,
+					 region_model_context *ctxt) const
+{
+  gcc_assert (call);
+  gcc_assert (callee_fndecl);
+  gcc_assert (ctxt);
+
+  tree fntype = TREE_TYPE (callee_fndecl);
+  if (!fntype)
+    return;
+
+  if (!TYPE_ATTRIBUTES (fntype))
+    return;
+
+  /* Initialize a map of attribute access specifications for arguments
+     to the function call.  */
+  rdwr_map rdwr_idx;
+  init_attr_rdwr_indices (&rdwr_idx, TYPE_ATTRIBUTES (fntype));
+
+  unsigned argno = 0;
+
+  for (tree iter = TYPE_ARG_TYPES (fntype); iter;
+       iter = TREE_CHAIN (iter), ++argno)
+    {
+      const attr_access* access = rdwr_idx.get (argno);
+      if (!access)
+	continue;
+
+      /* Ignore any duplicate entry in the map for the size argument.  */
+      if (access->ptrarg != argno)
+	continue;
+
+      if (access->mode == access_write_only
+	  || access->mode == access_read_write)
+	{
+	  tree ptr_tree = gimple_call_arg (call, access->ptrarg);
+	  const svalue *ptr_sval = get_rvalue (ptr_tree, ctxt);
+	  const region *reg = deref_rvalue (ptr_sval, ptr_tree, ctxt);
+	  check_region_for_write (reg, ctxt);
+	  /* We don't use the size arg for now.  */
+	}
+    }
+}
+
 /* Handle a call CALL to a function with unknown behavior.
 
    Traverse the regions in this model, determining what regions are
@@ -1597,6 +1652,9 @@ region_model::handle_unrecognized_call (const gcall *call,
 					region_model_context *ctxt)
 {
   tree fndecl = get_fndecl_for_call (call, ctxt);
+
+  if (fndecl && ctxt)
+    check_external_function_for_access_attr (call, fndecl, ctxt);
 
   reachable_regions reachable_regs (this);
 
