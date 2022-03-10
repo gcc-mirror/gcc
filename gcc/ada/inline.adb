@@ -2773,7 +2773,7 @@ package body Inline is
             Scop := Protected_Body_Subprogram (Scop);
 
          elsif Is_Subprogram (Scop)
-           and then Is_Protected_Type (Scope (Scop))
+           and then Is_Protected_Type (Underlying_Type (Scope (Scop)))
            and then Present (Protected_Body_Subprogram (Scop))
          then
             --  If a protected operation contains an instance, its cleanup
