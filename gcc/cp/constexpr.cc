@@ -3165,7 +3165,7 @@ cxx_eval_check_shift_p (location_t loc, const constexpr_ctx *ctx,
      The value of E1 << E2 is the unique value congruent to E1 x 2^E2 modulo
      2^N, where N is the range exponent of the type of the result.  */
   if (code == LSHIFT_EXPR
-      && !TYPE_UNSIGNED (lhstype)
+      && !TYPE_OVERFLOW_WRAPS (lhstype)
       && cxx_dialect >= cxx11
       && cxx_dialect < cxx20)
     {

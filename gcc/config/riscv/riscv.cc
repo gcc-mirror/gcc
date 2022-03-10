@@ -4984,7 +4984,7 @@ riscv_option_override (void)
     target_flags |= MASK_FDIV;
 
   /* Handle -mtune, use -mcpu if -mtune is not given, and use default -mtune
-     if -mtune and -mcpu both not not given.  */
+     if -mtune and -mcpu both not given.  */
   cpu = riscv_parse_tune (riscv_tune_string ? riscv_tune_string :
 			  (riscv_cpu_string ? riscv_cpu_string :
 			   RISCV_TUNE_STRING_DEFAULT));

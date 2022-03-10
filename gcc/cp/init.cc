@@ -2019,11 +2019,7 @@ build_aggr_init (tree exp, tree init, int flags, tsubst_flags_t complain)
       return stmt_expr;
     }
 
-  if (init && init != void_type_node
-      && TREE_CODE (init) != TREE_LIST
-      && !(TREE_CODE (init) == TARGET_EXPR
-	   && TARGET_EXPR_DIRECT_INIT_P (init))
-      && !DIRECT_LIST_INIT_P (init))
+  if (is_copy_initialization (init))
     flags |= LOOKUP_ONLYCONVERTING;
 
   is_global = begin_init_stmts (&stmt_expr, &compound_stmt);
@@ -2329,6 +2325,19 @@ is_class_type (tree type, int or_else)
       return 0;
     }
   return 1;
+}
+
+/* Returns true iff the initializer INIT represents copy-initialization
+   (and therefore we must set LOOKUP_ONLYCONVERTING when processing it).  */
+
+bool
+is_copy_initialization (tree init)
+{
+  return (init && init != void_type_node
+	  && TREE_CODE (init) != TREE_LIST
+	  && !(TREE_CODE (init) == TARGET_EXPR
+	       && TARGET_EXPR_DIRECT_INIT_P (init))
+	  && !DIRECT_LIST_INIT_P (init));
 }
 
 /* Build a reference to a member of an aggregate.  This is not a C++

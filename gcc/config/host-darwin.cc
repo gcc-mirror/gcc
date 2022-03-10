@@ -104,7 +104,7 @@ darwin_gt_pch_get_address (size_t sz, int fd)
      space.  */
   if (addr == (void *) MAP_FAILED)
     {
-      error ("PCH memory not available %m");
+      error ("PCH memory is not available: %m");
       return NULL;
     }
 

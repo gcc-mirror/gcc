@@ -33,7 +33,6 @@
 #include <cstdlib>
 #include <cstring>
 #include <cstdio>
-#include <iostream>
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {

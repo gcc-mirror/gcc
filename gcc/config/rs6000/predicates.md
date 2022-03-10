@@ -496,7 +496,7 @@
 })
 
 ;; Return 1 if op is a constant integer valid for D field
-;; or non-special register register.
+;; or non-special register.
 (define_predicate "reg_or_short_operand"
   (if_then_else (match_code "const_int")
     (match_operand 0 "short_cint_operand")
@@ -1109,7 +1109,7 @@
 		    && (DEFAULT_ABI != ABI_AIX || SYMBOL_REF_FUNCTION_P (op))")))
 
 ;; Return 1 if op is an operand that can be loaded via the GOT.
-;; or non-special register register field no cr0
+;; or non-special register field no cr0
 (define_predicate "got_operand"
   (match_code "symbol_ref,const,label_ref"))
 

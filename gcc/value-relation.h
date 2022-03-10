@@ -50,7 +50,7 @@ along with GCC; see the file COPYING3.  If not see
 // relation comes back EQ_EXPR, it is also possible to query the set of
 // equivlaencies.  These are basically bitmaps over ssa_names.
 //
-// relations are maintained via the dominace trees, are are optimized assuming
+// Relations are maintained via the dominace trees and are optimized assuming
 // they are registered in dominance order.   When a new relation is added, it
 // is intersected with whatever existing relation exists in the dominance tree
 // and registered at the specified block.

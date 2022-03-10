@@ -8099,12 +8099,14 @@ gfc_conv_intrinsic_sizeof (gfc_se *se, gfc_expr *expr)
 	 class object.  The class object may be a non-pointer object, e.g.
 	 located on the stack, or a memory location pointed to, e.g. a
 	 parameter, i.e., an indirect_ref.  */
-      if (arg->rank < 0
-	  || (arg->rank > 0 && !VAR_P (argse.expr)
-	      && ((INDIRECT_REF_P (TREE_OPERAND (argse.expr, 0))
-		   && GFC_DECL_CLASS (TREE_OPERAND (
-					TREE_OPERAND (argse.expr, 0), 0)))
-		  || GFC_DECL_CLASS (TREE_OPERAND (argse.expr, 0)))))
+      if (POINTER_TYPE_P (TREE_TYPE (argse.expr))
+	  && GFC_CLASS_TYPE_P (TREE_TYPE (TREE_TYPE (argse.expr))))
+	byte_size
+	  = gfc_class_vtab_size_get (build_fold_indirect_ref (argse.expr));
+      else if (GFC_CLASS_TYPE_P (TREE_TYPE (argse.expr)))
+	byte_size = gfc_class_vtab_size_get (argse.expr);
+      else if (GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (argse.expr))
+	       && TREE_CODE (argse.expr) == COMPONENT_REF)
 	byte_size = gfc_class_vtab_size_get (TREE_OPERAND (argse.expr, 0));
       else if (arg->rank > 0
 	       || (arg->rank == 0
@@ -8114,7 +8116,7 @@ gfc_conv_intrinsic_sizeof (gfc_se *se, gfc_expr *expr)
 	byte_size = gfc_class_vtab_size_get (
 	      GFC_DECL_SAVED_DESCRIPTOR (arg->symtree->n.sym->backend_decl));
       else
-	byte_size = gfc_class_vtab_size_get (argse.expr);
+	gcc_unreachable ();
     }
   else
     {

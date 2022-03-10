@@ -302,15 +302,16 @@ namespace std
   typedef decltype(nullptr)	nullptr_t;
 #endif
 
+#pragma GCC visibility push(default)
   // This allows the library to terminate without including all of <exception>
   // and without making the declaration of std::terminate visible to users.
   extern "C++" __attribute__ ((__noreturn__, __always_inline__))
-  _GLIBCXX_VISIBILITY(default)
   inline void __terminate() _GLIBCXX_USE_NOEXCEPT
   {
     void terminate() _GLIBCXX_USE_NOEXCEPT __attribute__ ((__noreturn__));
     terminate();
   }
+#pragma GCC visibility pop
 }
 
 #define _GLIBCXX_USE_DUAL_ABI
@@ -506,6 +507,7 @@ namespace std
 
 namespace std
 {
+#pragma GCC visibility push(default)
   // Internal version of std::is_constant_evaluated().
   // This can be used without checking if the compiler supports the feature.
   // The macro _GLIBCXX_HAVE_IS_CONSTANT_EVALUATED can be used to check if
@@ -523,6 +525,7 @@ namespace std
     return false;
 #endif
   }
+#pragma GCC visibility pop
 }
 
 // Debug Mode implies checking assertions.
@@ -553,13 +556,15 @@ namespace std
 # ifdef _GLIBCXX_VERBOSE_ASSERT
 namespace std
 {
+#pragma GCC visibility push(default)
   // Avoid the use of assert, because we're trying to keep the <cassert>
   // include out of the mix.
-  extern "C++" _GLIBCXX_NORETURN _GLIBCXX_VISIBILITY(default)
+  extern "C++" _GLIBCXX_NORETURN
   void
   __glibcxx_assert_fail(const char* __file, int __line,
 			const char* __function, const char* __condition)
   _GLIBCXX_NOEXCEPT;
+#pragma GCC visibility pop
 }
 #define __glibcxx_assert_impl(_Condition)				\
   if (__builtin_expect(!bool(_Condition), false))			\

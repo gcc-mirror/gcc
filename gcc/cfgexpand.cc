@@ -3290,14 +3290,19 @@ expand_asm_stmt (gasm *stmt)
 
       generating_concat_p = 0;
 
-      if ((TREE_CODE (val) == INDIRECT_REF && allows_mem)
+      gcc_assert (TREE_CODE (val) != INDIRECT_REF);
+      if (((TREE_CODE (val) == MEM_REF
+	    && TREE_CODE (TREE_OPERAND (val, 0)) != ADDR_EXPR)
+	   && allows_mem)
 	  || (DECL_P (val)
 	      && (allows_mem || REG_P (DECL_RTL (val)))
 	      && ! (REG_P (DECL_RTL (val))
 		    && GET_MODE (DECL_RTL (val)) != TYPE_MODE (type)))
 	  || ! allows_reg
 	  || is_inout
-	  || TREE_ADDRESSABLE (type))
+	  || TREE_ADDRESSABLE (type)
+	  || (!tree_fits_poly_int64_p (TYPE_SIZE (type))
+	      && !known_size_p (max_int_size_in_bytes (type))))
 	{
 	  op = expand_expr (val, NULL_RTX, VOIDmode,
 			    !allows_reg ? EXPAND_MEMORY : EXPAND_WRITE);

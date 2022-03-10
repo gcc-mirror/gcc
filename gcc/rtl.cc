@@ -765,7 +765,7 @@ classify_insn (rtx x)
     return CALL_INSN;
   if (ANY_RETURN_P (x))
     return JUMP_INSN;
-  if (GET_CODE (x) == ASM_OPERANDS && ASM_OPERANDS_LABEL_VEC (x))
+  if (GET_CODE (x) == ASM_OPERANDS && ASM_OPERANDS_LABEL_LENGTH (x))
     return JUMP_INSN;
   if (GET_CODE (x) == SET)
     {
@@ -794,7 +794,7 @@ classify_insn (rtx x)
       if (has_return_p)
 	return JUMP_INSN;
       if (GET_CODE (XVECEXP (x, 0, 0)) == ASM_OPERANDS
-	  && ASM_OPERANDS_LABEL_VEC (XVECEXP (x, 0, 0)))
+	  && ASM_OPERANDS_LABEL_LENGTH (XVECEXP (x, 0, 0)))
 	return JUMP_INSN;
     }
 #ifdef GENERATOR_FILE

@@ -2642,7 +2642,7 @@ pass_waccess::check_strncmp (gcall *stmt)
      a bound that's larger than the size of either array makes no sense
      and is likely a bug.  When the length of neither of the two strings
      is known but the sizes of both of the arrays they are stored in is,
-     issue a warning if the bound is larger than than the size of
+     issue a warning if the bound is larger than the size of
      the larger of the two arrays.  */
 
   c_strlen_data lendata1{ }, lendata2{ };

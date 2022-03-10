@@ -3512,7 +3512,7 @@ rs6000_linux64_override_options ()
 	{
 	  if (OPTION_SET_P (rs6000_current_cmodel)
 	      && rs6000_current_cmodel != CMODEL_SMALL)
-	    error ("%<-mcmodel incompatible with other toc options%>");
+	    error ("%<-mcmodel%> incompatible with other toc options");
 	  if (TARGET_MINIMAL_TOC)
 	    SET_CMODEL (CMODEL_SMALL);
 	  else if (TARGET_PCREL

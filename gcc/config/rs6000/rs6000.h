@@ -2444,8 +2444,6 @@ enum rs6000_builtin_type_index
   RS6000_BTI_ptr_long_double,
   RS6000_BTI_ptr_dfloat64,
   RS6000_BTI_ptr_dfloat128,
-  RS6000_BTI_ptr_ieee128_float,
-  RS6000_BTI_ptr_ibm128_float,
   RS6000_BTI_ptr_vector_pair,
   RS6000_BTI_ptr_vector_quad,
   RS6000_BTI_ptr_long_long,
@@ -2541,8 +2539,6 @@ enum rs6000_builtin_type_index
 #define ptr_long_double_type_node	 (rs6000_builtin_types[RS6000_BTI_ptr_long_double])
 #define ptr_dfloat64_type_node		 (rs6000_builtin_types[RS6000_BTI_ptr_dfloat64])
 #define ptr_dfloat128_type_node		 (rs6000_builtin_types[RS6000_BTI_ptr_dfloat128])
-#define ptr_ieee128_float_type_node	 (rs6000_builtin_types[RS6000_BTI_ptr_ieee128_float])
-#define ptr_ibm128_float_type_node	 (rs6000_builtin_types[RS6000_BTI_ptr_ibm128_float])
 #define ptr_vector_pair_type_node	 (rs6000_builtin_types[RS6000_BTI_ptr_vector_pair])
 #define ptr_vector_quad_type_node	 (rs6000_builtin_types[RS6000_BTI_ptr_vector_quad])
 #define ptr_long_long_integer_type_node	 (rs6000_builtin_types[RS6000_BTI_ptr_long_long])

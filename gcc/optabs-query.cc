@@ -720,7 +720,7 @@ static bool
 supports_vec_convert_optab_p (optab op, machine_mode mode)
 {
   int start = mode == VOIDmode ? 0 : mode;
-  int end = mode == VOIDmode ? MAX_MACHINE_MODE : mode;
+  int end = mode == VOIDmode ? MAX_MACHINE_MODE - 1 : mode;
   for (int i = start; i <= end; ++i)
     if (VECTOR_MODE_P ((machine_mode) i))
       for (int j = MIN_MODE_VECTOR_INT; j < MAX_MODE_VECTOR_INT; ++j)

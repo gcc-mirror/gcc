@@ -9444,12 +9444,15 @@ ix86_expand_epilogue (int style)
 	  rtx sa = EH_RETURN_STACKADJ_RTX;
 	  rtx_insn *insn;
 
-	  /* %ecx can't be used for both DRAP register and eh_return.  */
-	  if (crtl->drap_reg)
-	    gcc_assert (REGNO (crtl->drap_reg) != CX_REG);
+	  /* Stack realignment doesn't work with eh_return.  */
+	  if (crtl->stack_realign_needed)
+	    sorry ("Stack realignment not supported with "
+		   "%<__builtin_eh_return%>");
 
 	  /* regparm nested functions don't work with eh_return.  */
-	  gcc_assert (!ix86_static_chain_on_stack);
+	  if (ix86_static_chain_on_stack)
+	    sorry ("regparm nested function not supported with "
+		   "%<__builtin_eh_return%>");
 
 	  if (frame_pointer_needed)
 	    {
@@ -20334,7 +20337,7 @@ ix86_division_cost (const struct processor_costs *cost,
 
 /* Return cost of shift in MODE.
    If CONSTANT_OP1 is true, the op1 value is known and set in OP1_VAL.
-   AND_IN_OP1 specify in op1 is result of and and SHIFT_AND_TRUNCATE
+   AND_IN_OP1 specify in op1 is result of AND and SHIFT_AND_TRUNCATE
    if op1 is a result of subreg.
 
    SKIP_OP0/1 is set to true if cost of OP0/1 should be ignored.  */

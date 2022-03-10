@@ -1253,7 +1253,7 @@ build_noexcept_spec (tree expr, tsubst_flags_t complain)
   if (check_for_bare_parameter_packs (expr))
     return error_mark_node;
   if (TREE_CODE (expr) != DEFERRED_NOEXCEPT
-      && !value_dependent_expression_p (expr))
+      && !instantiation_dependent_expression_p (expr))
     {
       expr = build_converted_constant_bool_expr (expr, complain);
       expr = instantiate_non_dependent_expr_sfinae (expr, complain);
