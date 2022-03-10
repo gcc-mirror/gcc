@@ -107,8 +107,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    __now = _Clock::now();
 	  }
       }
-  } // namespace this_thread
 #endif // ! NO_SLEEP
+  } // namespace this_thread
 
   /// @}
 
