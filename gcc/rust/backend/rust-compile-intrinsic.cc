@@ -113,6 +113,10 @@ private:
 		    "__builtin_unreachable", NULL,
 		    build_function_type (void_type_node, void_list_node),
 		    builtin_const | builtin_noreturn);
+
+    define_builtin ("abort", BUILT_IN_ABORT, "__builtin_abort", "abort",
+		    build_function_type (void_type_node, void_list_node),
+		    builtin_const | builtin_noreturn);
   }
 
   // Define a builtin function.  BCODE is the builtin function code
