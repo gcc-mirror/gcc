@@ -19,6 +19,11 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+/* ??? We use HAVE_INITFINI_ARRAY_SUPPORT in preprocessor guards in this
+   header, which is conveyed by auto-host.h despite being a target property.
+   #include auto-host.h here would trigger lots of conflicts so we rely on
+   compiler .c files doing this before target configuration headers.  */
+
 /* Assert that we are targeting VxWorks.  */
 #undef TARGET_VXWORKS
 #define TARGET_VXWORKS 1
