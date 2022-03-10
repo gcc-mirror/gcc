@@ -1665,6 +1665,8 @@ public:
 
   HIR::Expr &get_capacity_expr () const { return capacity_expr; }
 
+  ArrayType *handle_substitions (SubstitutionArgumentMappings mappings);
+
 private:
   TyVar element_type;
   HIR::Expr &capacity_expr;
@@ -1709,6 +1711,8 @@ public:
   {
     return get_element_type ()->is_concrete ();
   }
+
+  SliceType *handle_substitions (SubstitutionArgumentMappings mappings);
 
 private:
   TyVar element_type;

@@ -1508,6 +1508,22 @@ ArrayType::clone () const
 			element_type, get_combined_refs ());
 }
 
+ArrayType *
+ArrayType::handle_substitions (SubstitutionArgumentMappings mappings)
+{
+  auto mappings_table = Analysis::Mappings::get ();
+
+  ArrayType *ref = static_cast<ArrayType *> (clone ());
+  ref->set_ty_ref (mappings_table->get_next_hir_id ());
+
+  // might be &T or &ADT so this needs to be recursive
+  auto base = ref->get_element_type ();
+  BaseType *concrete = Resolver::SubstMapperInternal::Resolve (base, mappings);
+  ref->element_type = TyVar (concrete->get_ty_ref ());
+
+  return ref;
+}
+
 void
 SliceType::accept_vis (TyVisitor &vis)
 {
@@ -1579,6 +1595,22 @@ SliceType::clone () const
 {
   return new SliceType (get_ref (), get_ty_ref (), ident.locus, element_type,
 			get_combined_refs ());
+}
+
+SliceType *
+SliceType::handle_substitions (SubstitutionArgumentMappings mappings)
+{
+  auto mappings_table = Analysis::Mappings::get ();
+
+  SliceType *ref = static_cast<SliceType *> (clone ());
+  ref->set_ty_ref (mappings_table->get_next_hir_id ());
+
+  // might be &T or &ADT so this needs to be recursive
+  auto base = ref->get_element_type ();
+  BaseType *concrete = Resolver::SubstMapperInternal::Resolve (base, mappings);
+  ref->element_type = TyVar (concrete->get_ty_ref ());
+
+  return ref;
 }
 
 void
