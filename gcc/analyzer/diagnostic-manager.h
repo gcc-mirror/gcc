@@ -42,6 +42,8 @@ public:
 
   bool operator== (const saved_diagnostic &other) const;
 
+  void add_note (pending_note *pn);
+
   json::object *to_json () const;
 
   const feasibility_problem *get_feasibility_problem () const
@@ -59,6 +61,8 @@ public:
   unsigned get_index () const { return m_idx; }
 
   bool supercedes_p (const saved_diagnostic &other) const;
+
+  void emit_any_notes () const;
 
   //private:
   const state_machine *m_sm;
@@ -80,6 +84,7 @@ private:
   feasibility_problem *m_problem; // owned
 
   auto_vec<const saved_diagnostic *> m_duplicates;
+  auto_delete_vec <pending_note> m_notes;
 };
 
 class path_builder;
@@ -115,6 +120,8 @@ public:
 		       const supernode *snode, const gimple *stmt,
 		       stmt_finder *finder,
 		       pending_diagnostic *d);
+
+  void add_note (pending_note *pn);
 
   void emit_saved_diagnostics (const exploded_graph &eg);
 

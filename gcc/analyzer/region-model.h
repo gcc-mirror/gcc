@@ -881,6 +881,10 @@ class region_model_context
      Return true if the diagnostic was stored, or false if it was deleted.  */
   virtual bool warn (pending_diagnostic *d) = 0;
 
+  /* Hook for clients to add a note to the last previously stored pending diagnostic.
+     Takes ownership of the pending_node (or deletes it).  */
+  virtual void add_note (pending_note *pn) = 0;
+
   /* Hook for clients to be notified when an SVAL that was reachable
      in a previous state is no longer live, so that clients can emit warnings
      about leaks.  */
@@ -954,6 +958,7 @@ class noop_region_model_context : public region_model_context
 {
 public:
   bool warn (pending_diagnostic *) OVERRIDE { return false; }
+  void add_note (pending_note *pn) OVERRIDE;
   void on_svalue_leak (const svalue *) OVERRIDE {}
   void on_liveness_change (const svalue_set &,
 			   const region_model *) OVERRIDE {}
@@ -1018,6 +1023,147 @@ public:
 
 private:
   int m_num_unexpected_codes;
+};
+
+/* Subclass of region_model_context that wraps another context, allowing
+   for extra code to be added to the various hooks.  */
+
+class region_model_context_decorator : public region_model_context
+{
+ public:
+  bool warn (pending_diagnostic *d) OVERRIDE
+  {
+    return m_inner->warn (d);
+  }
+
+  void add_note (pending_note *pn) OVERRIDE
+  {
+    m_inner->add_note (pn);
+  }
+
+  void on_svalue_leak (const svalue *sval) OVERRIDE
+  {
+    m_inner->on_svalue_leak (sval);
+  }
+
+  void on_liveness_change (const svalue_set &live_svalues,
+			   const region_model *model) OVERRIDE
+  {
+    m_inner->on_liveness_change (live_svalues, model);
+  }
+
+  logger *get_logger () OVERRIDE
+  {
+    return m_inner->get_logger ();
+  }
+
+  void on_condition (const svalue *lhs,
+		     enum tree_code op,
+		     const svalue *rhs) OVERRIDE
+  {
+    m_inner->on_condition (lhs, op, rhs);
+  }
+
+  void on_unknown_change (const svalue *sval, bool is_mutable) OVERRIDE
+  {
+    m_inner->on_unknown_change (sval, is_mutable);
+  }
+
+  void on_phi (const gphi *phi, tree rhs) OVERRIDE
+  {
+    m_inner->on_phi (phi, rhs);
+  }
+
+  void on_unexpected_tree_code (tree t,
+				const dump_location_t &loc) OVERRIDE
+  {
+    m_inner->on_unexpected_tree_code (t, loc);
+  }
+
+  void on_escaped_function (tree fndecl) OVERRIDE
+  {
+    m_inner->on_escaped_function (fndecl);
+  }
+
+  uncertainty_t *get_uncertainty () OVERRIDE
+  {
+    return m_inner->get_uncertainty ();
+  }
+
+  void purge_state_involving (const svalue *sval) OVERRIDE
+  {
+    m_inner->purge_state_involving (sval);
+  }
+
+  void bifurcate (custom_edge_info *info) OVERRIDE
+  {
+    m_inner->bifurcate (info);
+  }
+
+  void terminate_path () OVERRIDE
+  {
+    m_inner->terminate_path ();
+  }
+
+  const extrinsic_state *get_ext_state () const OVERRIDE
+  {
+    return m_inner->get_ext_state ();
+  }
+
+  bool get_malloc_map (sm_state_map **out_smap,
+		       const state_machine **out_sm,
+		       unsigned *out_sm_idx) OVERRIDE
+  {
+    return m_inner->get_malloc_map (out_smap, out_sm, out_sm_idx);
+  }
+
+  bool get_taint_map (sm_state_map **out_smap,
+		      const state_machine **out_sm,
+		      unsigned *out_sm_idx) OVERRIDE
+  {
+    return m_inner->get_taint_map (out_smap, out_sm, out_sm_idx);
+  }
+
+  const gimple *get_stmt () const OVERRIDE
+  {
+    return m_inner->get_stmt ();
+  }
+
+protected:
+  region_model_context_decorator (region_model_context *inner)
+  : m_inner (inner)
+  {
+    gcc_assert (m_inner);
+  }
+
+  region_model_context *m_inner;
+};
+
+/* Subclass of region_model_context_decorator that adds a note
+   when saving diagnostics.  */
+
+class note_adding_context : public region_model_context_decorator
+{
+public:
+  bool warn (pending_diagnostic *d) OVERRIDE
+  {
+    if (m_inner->warn (d))
+      {
+	add_note (make_note ());
+	return true;
+      }
+    else
+      return false;
+  }
+
+  /* Hook to make the new note.  */
+  virtual pending_note *make_note () = 0;
+
+protected:
+  note_adding_context (region_model_context *inner)
+  : region_model_context_decorator (inner)
+  {
+  }
 };
 
 /* A bundle of data for use when attempting to merge two region_model

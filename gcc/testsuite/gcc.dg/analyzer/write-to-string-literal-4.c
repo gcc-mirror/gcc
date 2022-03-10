@@ -1,6 +1,6 @@
 typedef __SIZE_TYPE__ size_t;
 
-int getrandom (void *__buffer, size_t __length,
+int getrandom (void *__buffer, size_t __length, /* { dg-message "parameter 1 of 'getrandom' marked with attribute 'access \\(write_only, 1, 2\\)'" } */
 	       unsigned int __flags)
   __attribute__ ((access (__write_only__, 1, 2)));
 

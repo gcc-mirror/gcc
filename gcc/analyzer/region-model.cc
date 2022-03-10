@@ -1583,6 +1583,41 @@ region_model::purge_state_involving (const svalue *sval,
     ctxt->purge_state_involving (sval);
 }
 
+/* A pending_note subclass for adding a note about an
+   __attribute__((access, ...)) to a diagnostic.  */
+
+class reason_attr_access : public pending_note_subclass<reason_attr_access>
+{
+public:
+  reason_attr_access (tree callee_fndecl, const attr_access &access)
+  : m_callee_fndecl (callee_fndecl),
+    m_ptr_argno (access.ptrarg),
+    m_access_str (TREE_STRING_POINTER (access.to_external_string ()))
+  {
+  }
+
+  const char *get_kind () const FINAL OVERRIDE { return "reason_attr_access"; }
+
+  void emit () const
+  {
+    inform (DECL_SOURCE_LOCATION (m_callee_fndecl),
+	    "parameter %i of %qD marked with attribute %qs",
+	    m_ptr_argno + 1, m_callee_fndecl, m_access_str);
+  }
+
+  bool operator== (const reason_attr_access &other) const
+  {
+    return (m_callee_fndecl == other.m_callee_fndecl
+	    && m_ptr_argno == other.m_ptr_argno
+	    && !strcmp (m_access_str, other.m_access_str));
+  }
+
+private:
+  tree m_callee_fndecl;
+  unsigned m_ptr_argno;
+  const char *m_access_str;
+};
+
 /* Check CALL a call to external function CALLEE_FNDECL based on
    any __attribute__ ((access, ....) on the latter, complaining to
    CTXT about any issues.
@@ -1629,10 +1664,36 @@ check_external_function_for_access_attr (const gcall *call,
       if (access->mode == access_write_only
 	  || access->mode == access_read_write)
 	{
+	  /* Subclass of decorated_region_model_context that
+	     adds a note about the attr access to any saved diagnostics.  */
+	  class annotating_ctxt : public note_adding_context
+	  {
+	  public:
+	    annotating_ctxt (tree callee_fndecl,
+			     const attr_access &access,
+			     region_model_context *ctxt)
+	    : note_adding_context (ctxt),
+	      m_callee_fndecl (callee_fndecl),
+	      m_access (access)
+	    {
+	    }
+	    pending_note *make_note () FINAL OVERRIDE
+	    {
+	      return new reason_attr_access (m_callee_fndecl, m_access);
+	    }
+	  private:
+	    tree m_callee_fndecl;
+	    const attr_access &m_access;
+	  };
+
+	  /* Use this ctxt below so that any diagnostics get the
+	     note added to them.  */
+	  annotating_ctxt my_ctxt (callee_fndecl, *access, ctxt);
+
 	  tree ptr_tree = gimple_call_arg (call, access->ptrarg);
-	  const svalue *ptr_sval = get_rvalue (ptr_tree, ctxt);
-	  const region *reg = deref_rvalue (ptr_sval, ptr_tree, ctxt);
-	  check_region_for_write (reg, ctxt);
+	  const svalue *ptr_sval = get_rvalue (ptr_tree, &my_ctxt);
+	  const region *reg = deref_rvalue (ptr_sval, ptr_tree, &my_ctxt);
+	  check_region_for_write (reg, &my_ctxt);
 	  /* We don't use the size arg for now.  */
 	}
     }
@@ -4147,6 +4208,12 @@ region_model::unset_dynamic_extents (const region *reg)
 }
 
 /* class noop_region_model_context : public region_model_context.  */
+
+void
+noop_region_model_context::add_note (pending_note *pn)
+{
+  delete pn;
+}
 
 void
 noop_region_model_context::bifurcate (custom_edge_info *info)

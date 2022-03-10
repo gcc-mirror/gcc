@@ -629,7 +629,8 @@ saved_diagnostic::saved_diagnostic (const state_machine *sm,
   m_var (var), m_sval (sval), m_state (state),
   m_d (d), m_trailing_eedge (NULL),
   m_idx (idx),
-  m_best_epath (NULL), m_problem (NULL)
+  m_best_epath (NULL), m_problem (NULL),
+  m_notes ()
 {
   gcc_assert (m_stmt || m_stmt_finder);
 
@@ -651,6 +652,11 @@ saved_diagnostic::~saved_diagnostic ()
 bool
 saved_diagnostic::operator== (const saved_diagnostic &other) const
 {
+  if (m_notes.length () != other.m_notes.length ())
+    return false;
+  for (unsigned i = 0; i < m_notes.length (); i++)
+    if (!m_notes[i]->equal_p (*other.m_notes[i]))
+      return false;
   return (m_sm == other.m_sm
 	  /* We don't compare m_enode.  */
 	  && m_snode == other.m_snode
@@ -660,6 +666,15 @@ saved_diagnostic::operator== (const saved_diagnostic &other) const
 	  && m_state == other.m_state
 	  && m_d->equal_p (*other.m_d)
 	  && m_trailing_eedge == other.m_trailing_eedge);
+}
+
+/* Add PN to this diagnostic, taking ownership of it.  */
+
+void
+saved_diagnostic::add_note (pending_note *pn)
+{
+  gcc_assert (pn);
+  m_notes.safe_push (pn);
 }
 
 /* Return a new json::object of the form
@@ -697,6 +712,7 @@ saved_diagnostic::to_json () const
      exploded_edge *m_trailing_eedge;
      enum status m_status;
      feasibility_problem *m_problem;
+     auto_delete_vec <pending_note> m_notes;
   */
 
   return sd_obj;
@@ -767,6 +783,15 @@ saved_diagnostic::supercedes_p (const saved_diagnostic &other) const
   if (m_stmt != other.m_stmt)
     return false;
   return m_d->supercedes_p (*other.m_d);
+}
+
+/* Emit any pending notes owned by this diagnostic.  */
+
+void
+saved_diagnostic::emit_any_notes () const
+{
+  for (auto pn : m_notes)
+    pn->emit ();
 }
 
 /* State for building a checker_path from a particular exploded_path.
@@ -873,6 +898,20 @@ diagnostic_manager::add_diagnostic (exploded_node *enode,
 {
   gcc_assert (enode);
   add_diagnostic (NULL, enode, snode, stmt, finder, NULL_TREE, NULL, 0, d);
+}
+
+/* Add PN to the most recent saved_diagnostic.  */
+
+void
+diagnostic_manager::add_note (pending_note *pn)
+{
+  LOG_FUNC (get_logger ());
+  gcc_assert (pn);
+
+  /* Get most recent saved_diagnostic.  */
+  gcc_assert (m_saved_diagnostics.length () > 0);
+  saved_diagnostic *sd = m_saved_diagnostics[m_saved_diagnostics.length () - 1];
+  sd->add_note (pn);
 }
 
 /* Return a new json::object of the form
@@ -1240,6 +1279,8 @@ diagnostic_manager::emit_saved_diagnostic (const exploded_graph &eg,
   auto_cfun sentinel (sd.m_snode->m_fun);
   if (sd.m_d->emit (&rich_loc))
     {
+      sd.emit_any_notes ();
+
       unsigned num_dupes = sd.get_num_dupes ();
       if (flag_analyzer_show_duplicate_count && num_dupes > 0)
 	inform_n (loc, num_dupes,
