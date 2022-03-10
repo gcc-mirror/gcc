@@ -1,3 +1,13 @@
+2022-03-09  Kito Cheng  <kito.cheng@sifive.com>
+
+	Backported from master:
+	2022-02-05  Kito Cheng  <kito.cheng@sifive.com>
+
+	PR target/104219
+	* config.gcc (riscv*-*-*): Normalize the with_isa_spec value.
+	(all_defaults): Add isa_spec.
+	* config/riscv/riscv.h (OPTION_DEFAULT_SPECS): Add isa_spec.
+
 2022-03-05  Michael Meissner  <meissner@the-meissners.org>
 
 	PR target/99708
