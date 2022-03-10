@@ -3447,6 +3447,8 @@ expand_call (tree exp, rtx target, int ignore)
 		  >= (1 << (HOST_BITS_PER_INT - 2)))
 	        {
 	          sorry ("passing too large argument on stack");
+		  /* Don't worry about stack clean-up.  */
+		  flags |= ECF_NORETURN;
 		  continue;
 		}
 
