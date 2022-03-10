@@ -600,5 +600,15 @@ TypeCheckType::visit (HIR::ArrayType &type)
 				    TyTy::TyVar (base->get_ref ()));
 }
 
+void
+TypeCheckType::visit (HIR::SliceType &type)
+{
+  TyTy::BaseType *base
+    = TypeCheckType::Resolve (type.get_element_type ().get ());
+  translated
+    = new TyTy::SliceType (type.get_mappings ().get_hirid (), type.get_locus (),
+			   TyTy::TyVar (base->get_ref ()));
+}
+
 } // namespace Resolver
 } // namespace Rust

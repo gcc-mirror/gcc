@@ -668,6 +668,8 @@ public:
   void accept_vis (HIRFullVisitor &vis) override;
   void accept_vis (HIRTypeVisitor &vis) override;
 
+  std::unique_ptr<Type> &get_element_type () { return elem_type; }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
