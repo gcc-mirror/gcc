@@ -120,7 +120,7 @@ along with GCC; see the file COPYING3.  If not see
      -lc_internal after -lc -lgcc.
 
    - libc_internal also contains __init/__fini functions for
-     USE_INITFINI_ARRAY support. However, the system expects these in
+     INITFINI_ARRAY support. However, the system expects these in
      every shared lib as well, with slightly different names, and it is
      simpler for us to provide our own versions through vxcrtstuff.
 
@@ -225,10 +225,9 @@ along with GCC; see the file COPYING3.  If not see
 #endif
 
 /* Setup the crtstuff begin/end we might need for dwarf EH registration
-   and/or INITFINI_ARRAY support for shared libs.  */
-
-#if (HAVE_INITFINI_ARRAY_SUPPORT && defined(ENABLE_SHARED_LIBGCC)) \
-    || (DWARF2_UNWIND_INFO && !defined(CONFIG_SJLJ_EXCEPTIONS))
+   and/or INITFINI_ARRAY support.  */
+#if (HAVE_INITFINI_ARRAY_SUPPORT					\
+     || (DWARF2_UNWIND_INFO && !defined(CONFIG_SJLJ_EXCEPTIONS)))
 #define VX_CRTBEGIN_SPEC "%{!shared:vx_crtbegin.o%s;:vx_crtbeginS.o%s}"
 #define VX_CRTEND_SPEC   "%{!shared:vx_crtend.o%s;:vx_crtendS.o%s}"
 #else
