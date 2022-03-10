@@ -5994,12 +5994,17 @@ split_reg (bool before_p, int original_regno, rtx_insn *insn,
 			 before_p ? NULL : save,
 			 call_save_p
 			 ?  "Add save<-reg" : "Add split<-reg");
-  if (nregs > 1)
+  if (nregs > 1 || original_regno < FIRST_PSEUDO_REGISTER)
     /* If we are trying to split multi-register.  We should check
        conflicts on the next assignment sub-pass.  IRA can allocate on
        sub-register levels, LRA do this on pseudos level right now and
        this discrepancy may create allocation conflicts after
-       splitting.  */
+       splitting.
+
+       If we are trying to split hard register we should also check conflicts
+       as such splitting can create artificial conflict of the hard register
+       with another pseudo because of simplified conflict calculation in
+       LRA.  */
     check_and_force_assignment_correctness_p = true;
   if (lra_dump_file != NULL)
     fprintf (lra_dump_file,
