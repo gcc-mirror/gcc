@@ -1,3 +1,11 @@
+2022-03-10  Andrew Stubbs <ams@codesourcery.com>
+
+	Backport of the patch posted at
+	https://gcc.gnu.org/pipermail/gcc-patches/2022-March/591351.html
+
+	* c-c++-common/gomp/usm-1.c: New test.
+	* gfortran.dg/gomp/usm-1.f90: New test.
+
 2022-03-09  Abid Qadeer  <abidh@codesourcery.com>
 
 	Backport of a patch posted at
