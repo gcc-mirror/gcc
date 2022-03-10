@@ -31,6 +31,9 @@ public:
 
   static AST::ASTFragment file (Location invoc_locus,
 				AST::MacroInvocData &invoc);
+
+  static AST::ASTFragment column (Location invoc_locus,
+				  AST::MacroInvocData &invoc);
 };
 } // namespace Rust
 

@@ -42,6 +42,8 @@ public:
 
   int location_line (Location);
 
+  int location_column (Location);
+
 protected:
   Location get_predeclared_location ();
 
@@ -109,6 +111,13 @@ int
 Gcc_linemap::location_line (Location loc)
 {
   return LOCATION_LINE (loc.gcc_location ());
+}
+
+// Return the column number for a given location.
+int
+Gcc_linemap::location_column (Location loc)
+{
+  return LOCATION_COLUMN (loc.gcc_location ());
 }
 
 // Stop getting locations.

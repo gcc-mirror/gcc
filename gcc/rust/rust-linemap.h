@@ -72,6 +72,9 @@ public:
   // Return the line number for a given location.
   virtual int location_line (Location) = 0;
 
+  // Return the column number for a given location.
+  virtual int location_column (Location) = 0;
+
 protected:
   // Return a special Location used for predeclared identifiers.  This
   // Location should be different from that for any actual source
@@ -148,6 +151,12 @@ public:
   {
     rust_assert (Linemap::instance_ != NULL);
     return Linemap::instance_->location_line (loc);
+  }
+
+  static int location_to_column (Location loc)
+  {
+    rust_assert (Linemap::instance_ != NULL);
+    return Linemap::instance_->location_column (loc);
   }
 };
 
