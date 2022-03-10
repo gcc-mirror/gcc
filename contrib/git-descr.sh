@@ -18,11 +18,11 @@ do
 done
 
 if test x$short = xyes; then
-    r=$(git describe --all --match 'basepoints/gcc-[1-9]*' $c | sed -n 's,^tags/,,;s,^basepoints/gcc-\([1-9][0-9]*\)-\([0-9][0-9]*\)-g[0-9a-f]*$,r\1-\2,p;s,^basepoints/gcc-\([1-9][0-9]*\)$,r\1-0,p');
+    r=$(git describe --all --match 'basepoints/gcc-[0-9]*' $c | sed -n 's,^tags/,,;s,^basepoints/gcc-\([0-9][0-9]*\)-\([0-9][0-9]*\)-g[0-9a-f]*$,r\1-\2,p;s,^basepoints/gcc-\([0-9][0-9]*\)$,r\1-0,p');
 elif test x$long = xyes; then
-    r=$(git describe --all --abbrev=40 --match 'basepoints/gcc-[1-9]*' $c | sed -n 's,^tags/,,;s,^basepoints/gcc-,r,p')
+    r=$(git describe --all --abbrev=40 --match 'basepoints/gcc-[0-9]*' $c | sed -n 's,^tags/,,;s,^basepoints/gcc-,r,p')
 else
-    r=$(git describe --all --abbrev=14 --match 'basepoints/gcc-[1-9]*' $c | sed -n 's,^tags/,,;s,^basepoints/gcc-,r,p')
+    r=$(git describe --all --abbrev=14 --match 'basepoints/gcc-[0-9]*' $c | sed -n 's,^tags/,,;s,^basepoints/gcc-,r,p')
     expr ${r:-no} : 'r[0-9]\+$' >/dev/null && r=${r}-0-g$(git rev-parse $c);
 fi;
 if test -n $r; then
