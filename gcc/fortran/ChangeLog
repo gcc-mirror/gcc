@@ -1,3 +1,13 @@
+2022-03-09  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/104849
+	* expr.cc (find_array_section): Avoid NULL pointer dereference on
+	invalid array section.
+
+2022-03-09  Tobias Burnus  <tobias@codesourcery.com>
+
+	* trans-intrinsic.cc (gfc_conv_intrinsic_sizeof): Fix CLASS handling.
+
 2022-03-08  Tobias Burnus  <tobias@codesourcery.com>
 
 	PR fortran/104126

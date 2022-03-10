@@ -1,3 +1,9 @@
+2022-03-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR other/102664
+	* git-descr.sh: Use portable sed commands.
+	* git-undescr.sh: Likewise.
+
 2022-03-08  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR other/102664

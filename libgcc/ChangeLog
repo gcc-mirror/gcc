@@ -1,3 +1,11 @@
+2022-03-09  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR target/102215
+	* config/gcn/atomic.c (__sync_val_compare_and_swap_##SIZE): Move
+	a line up to non-arg-dependent value first.
+	(__ATOMIC_COMPARE_EXCHANGE): Define + call to generate
+	__atomic_compare_exchange_{1,2}.
+
 2022-03-04  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* config/rs6000/t-darwin-ehs: Add darwin-fallback.o.

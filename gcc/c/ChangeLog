@@ -1,3 +1,16 @@
+2022-03-09  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-typeck.cc (function_types_compatible_p): Do not handle C2X
+	differently from earlier standards for unprototyped function type
+	compatibility.
+
+2022-03-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/104711
+	* c-fold.cc (c_fully_fold_internal): Don't emit
+	-Wshift-negative-value warning if TYPE_OVERFLOW_WRAPS.
+	* c-typeck.cc (build_binary_op): Likewise.
+
 2022-03-07  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-parser.cc (c_parser_omp_clause_map): Add missing space in string

@@ -1,3 +1,10 @@
+2022-03-09  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/104859
+	* src/c++17/floating_to_chars.cc (__floating_to_chars_hex):
+	Be explicit when narrowing the shifted effective_mantissa,
+	since it may have an integer-class type.
+
 2022-03-08  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/uses_allocator_args.h: Remove incorrect copyright

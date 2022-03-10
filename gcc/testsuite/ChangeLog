@@ -1,3 +1,83 @@
+2022-03-09  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/c11-unproto-1.c, gcc.dg/c11-unproto-2.c: Update comments.
+	* gcc.dg/c2x-unproto-1.c, gcc.dg/c2x-unproto-2.c: Expect same
+	results as in C11 mode.  Update comments.
+
+2022-03-09  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/104849
+	* gfortran.dg/pr104849.f90: New test.
+
+2022-03-09  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/104823
+	* g++.dg/cpp0x/Wnarrowing19.C: New test.
+	* g++.dg/cpp0x/constexpr-attribute4.C: New file.
+
+2022-03-09  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/102137
+	PR c++/87820
+	* g++.dg/cpp0x/explicit15.C: New test.
+	* g++.dg/cpp1z/class-deduction108.C: New test.
+
+2022-03-09  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/65396
+	* g++.dg/cpp0x/vt-34314.C: Adjust expected location of
+	"redeclared here" note.
+	* g++.dg/template/pr92440.C: Likewise.
+	* g++.old-deja/g++.pt/redecl1.C: Adjust expected location of
+	"redefinition of default argument" error.
+	* g++.dg/template/defarg23.C: New test.
+	* g++.dg/template/defarg23a.C: New test.
+
+2022-03-09  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/104759
+	* gcc.dg/vect/vect-multitypes-12.c: Adjust.
+
+2022-03-09  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/104786
+	* gcc.dg/pr104786.c: New testcase.
+
+2022-03-09  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/sizeof_6.f90: New test.
+
+2022-03-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/104711
+	* c-c++-common/Wshift-negative-value-1.c: Remove
+	dg-additional-options, instead in target selectors of each diagnostic
+	check for exact C++ versions where it should be diagnosed.
+	* c-c++-common/Wshift-negative-value-2.c: Likewise.
+	* c-c++-common/Wshift-negative-value-3.c: Likewise.
+	* c-c++-common/Wshift-negative-value-4.c: Likewise.
+	* c-c++-common/Wshift-negative-value-7.c: New test.
+	* c-c++-common/Wshift-negative-value-8.c: New test.
+	* c-c++-common/Wshift-negative-value-9.c: New test.
+	* c-c++-common/Wshift-negative-value-10.c: New test.
+	* c-c++-common/Wshift-overflow-1.c: Remove
+	dg-additional-options, instead in target selectors of each diagnostic
+	check for exact C++ versions where it should be diagnosed.
+	* c-c++-common/Wshift-overflow-2.c: Likewise.
+	* c-c++-common/Wshift-overflow-5.c: Likewise.
+	* c-c++-common/Wshift-overflow-6.c: Likewise.
+	* c-c++-common/Wshift-overflow-7.c: Likewise.
+	* c-c++-common/Wshift-overflow-8.c: New test.
+	* c-c++-common/Wshift-overflow-9.c: New test.
+	* c-c++-common/Wshift-overflow-10.c: New test.
+	* c-c++-common/Wshift-overflow-11.c: New test.
+	* c-c++-common/Wshift-overflow-12.c: New test.
+
+2022-03-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/104839
+	* gcc.c-torture/execute/pr104839.c: New test.
+
 2022-03-08  Roger Sayle  <roger@nextmovesoftware.com>
 
 	PR c++/96440

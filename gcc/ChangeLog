@@ -1,3 +1,48 @@
+2022-03-09  Richard Biener  <rguenther@suse.de>
+
+	* cfgexpand.cc (expand_gimple_asm): Special-case MEM_REF
+	with non-decl operand, avoiding a copy.
+
+2022-03-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/104781
+	* config/i386/i386.h (LIBGCC2_UNWIND_ATTRIBUTE): Define for ia32.
+
+2022-03-09  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/104786
+	* cfgexpand.cc (expand_asm_stmt): Do not generate a copy
+	for VLAs without an upper size bound.
+
+2022-03-09  Xi Ruoyao  <xry111@mengyan1223.wang>
+
+	PR tree-optimization/104851
+	* optabs-query.cc (supports_vec_convert_optab_p): Fix off-by-one
+	error.
+
+2022-03-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/104711
+	* doc/invoke.texi (-Wextra): Document that -Wshift-negative-value
+	is enabled by it only for C++11 to C++17 rather than for C++03 or
+	later.
+	(-Wshift-negative-value): Similarly (except here we stated
+	that it is enabled for C++11 or later).
+
+2022-03-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/104839
+	* simplify-rtx.cc (simplify_unary_operation_1) <case SIGN_EXTEND>:
+	Use SRP_SIGNED instead of incorrect 1 in SUBREG_PROMOTED_SET.
+	(simplify_unary_operation_1) <case ZERO_EXTEND>: Use SRP_UNSIGNED
+	instead of incorrect 0 in SUBREG_PROMOTED_SET.
+
+2022-03-09  Xi Ruoyao  <xry111@mengyan1223.wang>
+
+	PR target/104842
+	* config/mips/mips.h (LUI_OPERAND): Cast the input to an unsigned
+	value before adding an offset.
+
 2022-03-08  Christophe Lyon  <christophe.lyon@arm.com>
 
 	* config/arm/arm-builtins.cc
