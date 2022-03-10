@@ -32119,8 +32119,9 @@ cp_parser_late_parsing_for_member (cp_parser* parser, tree member_function)
   maybe_begin_member_template_processing (member_function);
 
   /* If the body of the function has not yet been parsed, parse it
-     now.  */
-  if (DECL_PENDING_INLINE_P (member_function))
+     now.  Except if the tokens have been purged (PR c++/39751).  */
+  if (DECL_PENDING_INLINE_P (member_function)
+      && !DECL_PENDING_INLINE_INFO (member_function)->first->purged_p)
     {
       tree function_scope;
       cp_token_cache *tokens;
