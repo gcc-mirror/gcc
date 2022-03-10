@@ -844,8 +844,16 @@ namespace std
 	_S_fp_cmp(_Tp __x, _Tp __y) noexcept
 	{
 #ifdef __vax__
-	  // VAX format has no NaN, only "excess" for Inf, so totally ordered.
-	  return __builtin_bit_cast(strong_ordering, __x <=> __y);
+	  if (__builtin_isnan(__x) || __builtin_isnan(__y))
+	    {
+	      int __ix = (bool) __builtin_isnan(__x);
+	      int __iy = (bool) __builtin_isnan(__y);
+	      __ix *= __builtin_signbit(__x) ? -1 : 1;
+	      __iy *= __builtin_signbit(__y) ? -1 : 1;
+	      return __ix <=> __iy;
+	    }
+	  else
+	    return __builtin_bit_cast(strong_ordering, __x <=> __y);
 #endif
 
 	  auto __ix = _S_fp_bits(__x);
