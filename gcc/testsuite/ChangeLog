@@ -1,3 +1,11 @@
+2022-03-10  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2022-03-08  Marek Polacek  <polacek@redhat.com>
+
+	PR rtl-optimization/104777
+	* gcc.dg/torture/tls/pr104777.c: New test.
+
 2022-03-09  Richard Biener  <rguenther@suse.de>
 
 	Backported from master:
