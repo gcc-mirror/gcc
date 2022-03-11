@@ -1425,7 +1425,8 @@ See RS/6000 and PowerPC Options.
 -msse4a  -m3dnow  -m3dnowa  -mpopcnt  -mabm  -mbmi  -mtbm  -mfma4  -mxop @gol
 -madx  -mlzcnt  -mbmi2  -mfxsr  -mxsave  -mxsaveopt  -mrtm  -mhle  -mlwp @gol
 -mmwaitx  -mclzero  -mpku  -mthreads  -mgfni  -mvaes  -mwaitpkg @gol
--mshstk -mmanual-endbr -mforce-indirect-call  -mavx512vbmi2 -mavx512bf16 -menqcmd @gol
+-mshstk -mmanual-endbr -mcet-switch -mforce-indirect-call @gol
+-mavx512vbmi2 -mavx512bf16 -menqcmd @gol
 -mvpclmulqdq  -mavx512bitalg  -mmovdiri  -mmovdir64b  -mavx512vpopcntdq @gol
 -mavx5124fmaps  -mavx512vnni  -mavx5124vnniw  -mprfchw  -mrdpid @gol
 -mrdseed  -msgx -mavx512vp2intersect -mserialize -mtsxldtrk@gol
@@ -32723,6 +32724,17 @@ Insert ENDBR instruction at function entry only via the @code{cf_check}
 function attribute. This is useful when used with the option
 @option{-fcf-protection=branch} to control ENDBR insertion at the
 function entry.
+
+@item -mcet-switch
+@opindex mcet-switch
+By default, CET instrumentation is turned off on switch statements that
+use a jump table and indirect branch track is disabled.  Since jump
+tables are stored in read-only memory, this does not result in a direct
+loss of hardening.  But if the jump table index is attacker-controlled,
+the indirect jump may not be constrained by CET.  This option turns on
+CET instrumentation to enable indirect branch track for switch statements
+with jump tables which leads to the jump targets reachable via any indirect
+jumps.
 
 @item -mcall-ms2sysv-xlogues
 @opindex mcall-ms2sysv-xlogues
