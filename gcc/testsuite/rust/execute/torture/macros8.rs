@@ -8,13 +8,15 @@ fn f() {
     let s_p = r_s as *const str;
     let c_p = s_p as *const i8;
 
-    unsafe { printf(c_p); }
+    unsafe {
+        printf(c_p);
+    }
 }
 
 macro_rules! zero_or_one {
     ($($a:expr)?) => {
-        f()
-    }
+        f();
+    };
 }
 
 fn main() -> i32 {

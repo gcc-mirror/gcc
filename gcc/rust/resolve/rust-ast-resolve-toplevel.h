@@ -43,13 +43,6 @@ public:
     item->accept_vis (resolver);
   };
 
-  void visit (AST::MacroInvocation &invoc) override
-  {
-    AST::ASTFragment &fragment = invoc.get_fragment ();
-    for (auto &node : fragment.get_nodes ())
-      node.accept_vis (*this);
-  }
-
   void visit (AST::Module &module) override
   {
     auto mod

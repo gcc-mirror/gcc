@@ -5,9 +5,9 @@ macro_rules! two {
 }
 
 macro_rules! one {
-    (1) => {
+    (1) => {{
         two!(2)
-    };
+    }};
 }
 
 fn main() -> i32 {

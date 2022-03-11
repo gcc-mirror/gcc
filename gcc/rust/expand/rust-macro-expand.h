@@ -137,7 +137,9 @@ struct MacroExpander
 
   MacroExpander (AST::Crate &crate, ExpansionCfg cfg, Session &session)
     : cfg (cfg), crate (crate), session (session),
-      sub_stack (SubstitutionScope ()), resolver (Resolver::Resolver::get ()),
+      sub_stack (SubstitutionScope ()),
+      expanded_fragment (AST::ASTFragment::create_empty ()),
+      resolver (Resolver::Resolver::get ()),
       mappings (Analysis::Mappings::get ())
   {}
 
@@ -223,11 +225,25 @@ struct MacroExpander
 
   ContextType peek_context () { return context.back (); }
 
+  void set_expanded_fragment (AST::ASTFragment &&fragment)
+  {
+    expanded_fragment = std::move (fragment);
+  }
+
+  AST::ASTFragment take_expanded_fragment ()
+  {
+    AST::ASTFragment old_fragment = std::move (expanded_fragment);
+    expanded_fragment = AST::ASTFragment::create_empty ();
+
+    return old_fragment;
+  }
+
 private:
   AST::Crate &crate;
   Session &session;
   SubstitutionScope sub_stack;
   std::vector<ContextType> context;
+  AST::ASTFragment expanded_fragment;
 
 public:
   Resolver::Resolver *resolver;

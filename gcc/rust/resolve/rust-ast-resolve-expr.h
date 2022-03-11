@@ -62,8 +62,6 @@ public:
   static void go (AST::Expr *expr, NodeId parent, const CanonicalPath &prefix,
 		  const CanonicalPath &canonical_prefix);
 
-  void visit (AST::MacroInvocation &expr) override;
-
   void visit (AST::TupleIndexExpr &expr) override;
 
   void visit (AST::TupleExpr &expr) override;
