@@ -1,3 +1,14 @@
+2022-03-11  Abid Qadeer  <abidh@codesourcery.com>
+
+	Backport of a patch posted at
+	https://gcc.gnu.org/pipermail/gcc-patches/2022-March/591353.html
+
+	* omp-low.cc (usm_transform): New function.
+	(make_pass_usm_transform): Likewise.
+	(class pass_usm_transform): New.
+	* passes.def: Add pass_usm_transform.
+	* tree-pass.h (make_pass_usm_transform): New declaration.
+
 2022-03-10  Andrew Stubbs <ams@codesourcery.com>
 
 	Backport of the patch posted at
