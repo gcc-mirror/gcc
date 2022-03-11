@@ -24,12 +24,12 @@ class SubstituteCtx
 {
   std::vector<std::unique_ptr<AST::Token>> &input;
   std::vector<std::unique_ptr<AST::Token>> &macro;
-  std::map<std::string, std::vector<MatchedFragment>> &fragments;
+  std::map<std::string, MatchedFragmentContainer> &fragments;
 
 public:
   SubstituteCtx (std::vector<std::unique_ptr<AST::Token>> &input,
 		 std::vector<std::unique_ptr<AST::Token>> &macro,
-		 std::map<std::string, std::vector<MatchedFragment>> &fragments)
+		 std::map<std::string, MatchedFragmentContainer> &fragments)
     : input (input), macro (macro), fragments (fragments)
   {}
 
