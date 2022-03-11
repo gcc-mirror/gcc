@@ -1,5 +1,50 @@
 2022-03-11  Andrew Stubbs  <ams@codesourcery.com>
 
+	* allocator.c (omp_max_predefined_alloc): Update.
+	(omp_aligned_alloc): Don't fallback ompx_host_mem_alloc.
+	(omp_aligned_calloc): Likewise.
+	(omp_realloc): Likewise.
+	* config/linux/allocator.c (linux_memspace_alloc): Handle USM.
+	(linux_memspace_calloc): Handle USM.
+	(linux_memspace_free): Handle USM.
+	(linux_memspace_realloc): Handle USM.
+	* config/nvptx/allocator.c (nvptx_memspace_alloc): Reject
+	ompx_host_mem_alloc.
+	(nvptx_memspace_calloc): Likewise.
+	(nvptx_memspace_realloc): Likewise.
+	* libgomp-plugin.h (GOMP_OFFLOAD_usm_alloc): New prototype.
+	(GOMP_OFFLOAD_usm_free): New prototype.
+	(GOMP_OFFLOAD_is_usm_ptr): New prototype.
+	* libgomp.h (gomp_usm_alloc): New prototype.
+	(gomp_usm_free): New prototype.
+	(gomp_is_usm_ptr): New prototype.
+	(struct gomp_device_descr): Add USM functions.
+	* omp.h.in (omp_memspace_handle_t): Add ompx_unified_shared_mem_space
+	and ompx_host_mem_space.
+	(omp_allocator_handle_t): Add ompx_unified_shared_mem_alloc and
+	ompx_host_mem_alloc.
+	* omp_lib.f90.in: Likewise.
+	* plugin/plugin-nvptx.c (nvptx_alloc): Add "usm" parameter.
+	Call cuMemAllocManaged as appropriate.
+	(GOMP_OFFLOAD_get_num_devices): Allow GOMP_REQUIRES_UNIFIED_ADDRESS
+	and GOMP_REQUIRES_UNIFIED_SHARED_MEMORY.
+	(GOMP_OFFLOAD_alloc): Move internals to ...
+	(GOMP_OFFLOAD_alloc_1): ... this, and add usm parameter.
+	(GOMP_OFFLOAD_usm_alloc): New function.
+	(GOMP_OFFLOAD_usm_free): New function.
+	(GOMP_OFFLOAD_is_usm_ptr): New function.
+	* target.c (gomp_map_vars_internal): Add USM support.
+	(gomp_usm_alloc): New function.
+	(gomp_usm_free): New function.
+	(gomp_load_plugin_for_device): New function.
+	* testsuite/libgomp.c/usm-1.c: New test.
+	* testsuite/libgomp.c/usm-2.c: New test.
+	* testsuite/libgomp.c/usm-3.c: New test.
+	* testsuite/libgomp.c/usm-4.c: New test.
+	* testsuite/libgomp.c/usm-5.c: New test.
+
+2022-03-11  Andrew Stubbs  <ams@codesourcery.com>
+
 	* allocator.c (MEMSPACE_VALIDATE): New macro.
 	(omp_aligned_alloc): Use MEMSPACE_VALIDATE.
 	(omp_aligned_calloc): Likewise.

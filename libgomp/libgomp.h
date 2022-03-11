@@ -1129,6 +1129,9 @@ extern int gomp_pause_host (void);
 extern void gomp_init_targets_once (void);
 extern int gomp_get_num_devices (void);
 extern bool gomp_target_task_fn (void *);
+extern void * gomp_usm_alloc (size_t size);
+extern void gomp_usm_free (void *device_ptr);
+extern bool gomp_is_usm_ptr (void *ptr);
 extern void gomp_target_rev (uint64_t, uint64_t, uint64_t, uint64_t, uint64_t,
 			     int,
 			     void (*) (void *, const void *, size_t, void *),
@@ -1389,6 +1392,9 @@ struct gomp_device_descr
   __typeof (GOMP_OFFLOAD_unload_image) *unload_image_func;
   __typeof (GOMP_OFFLOAD_alloc) *alloc_func;
   __typeof (GOMP_OFFLOAD_free) *free_func;
+  __typeof (GOMP_OFFLOAD_usm_alloc) *usm_alloc_func;
+  __typeof (GOMP_OFFLOAD_usm_free) *usm_free_func;
+  __typeof (GOMP_OFFLOAD_is_usm_ptr) *is_usm_ptr_func;
   __typeof (GOMP_OFFLOAD_dev2host) *dev2host_func;
   __typeof (GOMP_OFFLOAD_host2dev) *host2dev_func;
   __typeof (GOMP_OFFLOAD_dev2dev) *dev2dev_func;

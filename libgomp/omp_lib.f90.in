@@ -160,6 +160,10 @@
                  parameter :: omp_thread_mem_alloc = 8
         integer (kind=omp_allocator_handle_kind), &
                  parameter :: ompx_pinned_mem_alloc = 9
+        integer (kind=omp_allocator_handle_kind), &
+                 parameter :: ompx_unified_shared_mem_alloc = 10
+        integer (kind=omp_allocator_handle_kind), &
+                 parameter :: ompx_host_mem_alloc = 11
         integer (omp_memspace_handle_kind), &
                  parameter :: omp_default_mem_space = 0
         integer (omp_memspace_handle_kind), &
@@ -170,6 +174,10 @@
                  parameter :: omp_high_bw_mem_space = 3
         integer (omp_memspace_handle_kind), &
                  parameter :: omp_low_lat_mem_space = 4
+        integer (omp_memspace_handle_kind), &
+                 parameter :: omp_unified_shared_mem_space = 5
+        integer (omp_memspace_handle_kind), &
+                 parameter :: omp_host_mem_space = 6
         integer, parameter :: omp_initial_device = -1
         integer, parameter :: omp_invalid_device = -4
 

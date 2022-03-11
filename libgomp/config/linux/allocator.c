@@ -53,9 +53,11 @@
 static void *
 linux_memspace_alloc (omp_memspace_handle_t memspace, size_t size, int pin)
 {
-  (void)memspace;
-
-  if (pin)
+  if (memspace == ompx_unified_shared_mem_space)
+    {
+      return gomp_usm_alloc (size);
+    }
+  else if (pin)
     {
       void *addr = mmap (NULL, size, PROT_READ | PROT_WRITE,
 			 MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
@@ -78,7 +80,14 @@ linux_memspace_alloc (omp_memspace_handle_t memspace, size_t size, int pin)
 static void *
 linux_memspace_calloc (omp_memspace_handle_t memspace, size_t size, int pin)
 {
-  if (pin)
+  if (memspace == ompx_unified_shared_mem_space)
+    {
+      void *ret = gomp_usm_alloc (size);
+      memset (ret, 0, size);
+      return ret;
+    }
+  else if (memspace == ompx_unified_shared_mem_space
+      || pin)
     return linux_memspace_alloc (memspace, size, pin);
   else
     return calloc (1, size);
@@ -88,9 +97,9 @@ static void
 linux_memspace_free (omp_memspace_handle_t memspace, void *addr, size_t size,
 		     int pin)
 {
-  (void)memspace;
-
-  if (pin)
+  if (memspace == ompx_unified_shared_mem_space)
+    gomp_usm_free (addr);
+  else if (pin)
     munmap (addr, size);
   else
     free (addr);
@@ -100,7 +109,9 @@ static void *
 linux_memspace_realloc (omp_memspace_handle_t memspace, void *addr,
 			size_t oldsize, size_t size, int oldpin, int pin)
 {
-  if (oldpin && pin)
+  if (memspace == ompx_unified_shared_mem_space)
+    goto manual_realloc;
+  else if (oldpin && pin)
     {
       void *newaddr = mremap (addr, oldsize, size, MREMAP_MAYMOVE);
       if (newaddr == MAP_FAILED)
@@ -109,18 +120,19 @@ linux_memspace_realloc (omp_memspace_handle_t memspace, void *addr,
       return newaddr;
     }
   else if (oldpin || pin)
-    {
-      void *newaddr = linux_memspace_alloc (memspace, size, pin);
-      if (newaddr)
-	{
-	  memcpy (newaddr, addr, oldsize < size ? oldsize : size);
-	  linux_memspace_free (memspace, addr, oldsize, oldpin);
-	}
-
-      return newaddr;
-    }
+    goto manual_realloc;
   else
     return realloc (addr, size);
+
+manual_realloc:
+  void *newaddr = linux_memspace_alloc (memspace, size, pin);
+  if (newaddr)
+    {
+      memcpy (newaddr, addr, oldsize < size ? oldsize : size);
+      linux_memspace_free (memspace, addr, oldsize, oldpin);
+    }
+
+  return newaddr;
 }
 
 #define MEMSPACE_ALLOC(MEMSPACE, SIZE, PIN) \

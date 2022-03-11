@@ -120,6 +120,8 @@ typedef enum omp_memspace_handle_t __GOMP_UINTPTR_T_ENUM
   omp_const_mem_space = 2,
   omp_high_bw_mem_space = 3,
   omp_low_lat_mem_space = 4,
+  ompx_unified_shared_mem_space = 5,
+  ompx_host_mem_space = 6,
   __omp_memspace_handle_t_max__ = __UINTPTR_MAX__
 } omp_memspace_handle_t;
 
@@ -135,6 +137,8 @@ typedef enum omp_allocator_handle_t __GOMP_UINTPTR_T_ENUM
   omp_pteam_mem_alloc = 7,
   omp_thread_mem_alloc = 8,
   ompx_pinned_mem_alloc = 9,
+  ompx_unified_shared_mem_alloc = 10,
+  ompx_host_mem_alloc = 11,
   __omp_allocator_handle_t_max__ = __UINTPTR_MAX__
 } omp_allocator_handle_t;
 
