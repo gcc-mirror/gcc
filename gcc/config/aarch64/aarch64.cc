@@ -4828,7 +4828,7 @@ aarch64_split_128bit_move (rtx dst, rtx src)
 
   machine_mode mode = GET_MODE (dst);
 
-  gcc_assert (mode == TImode || mode == TFmode);
+  gcc_assert (mode == TImode || mode == TFmode || mode == TDmode);
   gcc_assert (!(side_effects_p (src) || side_effects_p (dst)));
   gcc_assert (mode == GET_MODE (src) || GET_MODE (src) == VOIDmode);
 
@@ -10568,6 +10568,7 @@ aarch64_mode_valid_for_sched_fusion_p (machine_mode mode)
 {
   return mode == SImode || mode == DImode
 	 || mode == SFmode || mode == DFmode
+	 || mode == SDmode || mode == DDmode
 	 || (aarch64_vector_mode_supported_p (mode)
 	     && (known_eq (GET_MODE_SIZE (mode), 8)
 		 || (known_eq (GET_MODE_SIZE (mode), 16)
@@ -10610,12 +10611,13 @@ aarch64_classify_address (struct aarch64_address_info *info,
   vec_flags &= ~VEC_PARTIAL;
 
   /* On BE, we use load/store pair for all large int mode load/stores.
-     TI/TFmode may also use a load/store pair.  */
+     TI/TF/TDmode may also use a load/store pair.  */
   bool advsimd_struct_p = (vec_flags == (VEC_ADVSIMD | VEC_STRUCT));
   bool load_store_pair_p = (type == ADDR_QUERY_LDP_STP
 			    || type == ADDR_QUERY_LDP_STP_N
 			    || mode == TImode
 			    || mode == TFmode
+			    || mode == TDmode
 			    || (BYTES_BIG_ENDIAN && advsimd_struct_p));
   /* If we are dealing with ADDR_QUERY_LDP_STP_N that means the incoming mode
      corresponds to the actual size of the memory being loaded/stored and the
@@ -10689,7 +10691,7 @@ aarch64_classify_address (struct aarch64_address_info *info,
 	  info->offset = op1;
 	  info->const_offset = offset;
 
-	  /* TImode and TFmode values are allowed in both pairs of X
+	  /* TImode, TFmode and TDmode values are allowed in both pairs of X
 	     registers and individual Q registers.  The available
 	     address modes are:
 	     X,X: 7-bit signed scaled offset
@@ -10698,7 +10700,7 @@ aarch64_classify_address (struct aarch64_address_info *info,
 	     When performing the check for pairs of X registers i.e.  LDP/STP
 	     pass down DImode since that is the natural size of the LDP/STP
 	     instruction memory accesses.  */
-	  if (mode == TImode || mode == TFmode)
+	  if (mode == TImode || mode == TFmode || mode == TDmode)
 	    return (aarch64_offset_7bit_signed_scaled_p (DImode, offset)
 		    && (aarch64_offset_9bit_signed_unscaled_p (mode, offset)
 			|| offset_12bit_unsigned_scaled_p (mode, offset)));
@@ -10821,14 +10823,14 @@ aarch64_classify_address (struct aarch64_address_info *info,
 	  info->offset = XEXP (XEXP (x, 1), 1);
 	  info->const_offset = offset;
 
-	  /* TImode and TFmode values are allowed in both pairs of X
+	  /* TImode, TFmode and TDmode values are allowed in both pairs of X
 	     registers and individual Q registers.  The available
 	     address modes are:
 	     X,X: 7-bit signed scaled offset
 	     Q:   9-bit signed offset
 	     We conservatively require an offset representable in either mode.
 	   */
-	  if (mode == TImode || mode == TFmode)
+	  if (mode == TImode || mode == TFmode || mode == TDmode)
 	    return (aarch64_offset_7bit_signed_scaled_p (mode, offset)
 		    && aarch64_offset_9bit_signed_unscaled_p (mode, offset));
 
@@ -10990,9 +10992,9 @@ aarch64_legitimize_address_displacement (rtx *offset1, rtx *offset2,
 	 offset.  Use 4KB range for 1- and 2-byte accesses and a 16KB
 	 range otherwise to increase opportunities for sharing the base
 	 address of different sizes.  Unaligned accesses use the signed
-	 9-bit range, TImode/TFmode use the intersection of signed
+	 9-bit range, TImode/TFmode/TDmode use the intersection of signed
 	 scaled 7-bit and signed 9-bit offset.  */
-      if (mode == TImode || mode == TFmode)
+      if (mode == TImode || mode == TFmode || mode == TDmode)
 	second_offset = ((const_offset + 0x100) & 0x1f8) - 0x100;
       else if ((const_offset & (size - 1)) != 0)
 	second_offset = ((const_offset + 0x100) & 0x1ff) - 0x100;
@@ -11073,7 +11075,7 @@ aarch64_reinterpret_float_as_int (rtx value, unsigned HOST_WIDE_INT *intval)
 		  CONST_DOUBLE_REAL_VALUE (value),
 		  REAL_MODE_FORMAT (mode));
 
-  if (mode == DFmode)
+  if (mode == DFmode || mode == DDmode)
     {
       int order = BYTES_BIG_ENDIAN ? 1 : 0;
       ival = zext_hwi (res[order], 32);
@@ -11114,11 +11116,15 @@ aarch64_float_const_rtx_p (rtx x)
   return false;
 }
 
-/* Return TRUE if rtx X is immediate constant 0.0 */
+/* Return TRUE if rtx X is immediate constant 0.0 (but not in Decimal
+   Floating Point).  */
 bool
 aarch64_float_const_zero_rtx_p (rtx x)
 {
-  if (GET_MODE (x) == VOIDmode)
+  /* 0.0 in Decimal Floating Point cannot be represented by #0 or
+     zr as our callers expect, so no need to check the actual
+     value if X is of Decimal Floating Point type.  */
+  if (GET_MODE_CLASS (GET_MODE (x)) == MODE_DECIMAL_FLOAT)
     return false;
 
   if (REAL_VALUE_MINUS_ZERO (*CONST_DOUBLE_REAL_VALUE (x)))
@@ -11156,7 +11162,7 @@ aarch64_can_const_movi_rtx_p (rtx x, machine_mode mode)
   else
     return false;
 
-   /* use a 64 bit mode for everything except for DI/DF mode, where we use
+   /* use a 64 bit mode for everything except for DI/DF/DD mode, where we use
      a 128 bit vector mode.  */
   int width = GET_MODE_BITSIZE (imode) == 64 ? 128 : 64;
 
@@ -12356,7 +12362,7 @@ aarch64_anchor_offset (HOST_WIDE_INT offset, HOST_WIDE_INT size,
   if (IN_RANGE (offset, -256, 0))
     return 0;
 
-  if (mode == TImode || mode == TFmode)
+  if (mode == TImode || mode == TFmode || mode == TDmode)
     return (offset + 0x100) & ~0x1ff;
 
   /* Use 12-bit offset by access size.  */
@@ -12465,7 +12471,9 @@ aarch64_secondary_reload (bool in_p ATTRIBUTE_UNUSED, rtx x,
 
   /* Without the TARGET_SIMD instructions we cannot move a Q register
      to a Q register directly.  We need a scratch.  */
-  if (REG_P (x) && (mode == TFmode || mode == TImode) && mode == GET_MODE (x)
+  if (REG_P (x)
+      && (mode == TFmode || mode == TImode || mode == TDmode)
+      && mode == GET_MODE (x)
       && FP_REGNUM_P (REGNO (x)) && !TARGET_SIMD
       && reg_class_subset_p (rclass, FP_REGS))
     {
@@ -12473,14 +12481,16 @@ aarch64_secondary_reload (bool in_p ATTRIBUTE_UNUSED, rtx x,
       return NO_REGS;
     }
 
-  /* A TFmode or TImode memory access should be handled via an FP_REGS
+  /* A TFmode, TImode or TDmode memory access should be handled via an FP_REGS
      because AArch64 has richer addressing modes for LDR/STR instructions
      than LDP/STP instructions.  */
   if (TARGET_FLOAT && rclass == GENERAL_REGS
       && known_eq (GET_MODE_SIZE (mode), 16) && MEM_P (x))
     return FP_REGS;
 
-  if (rclass == FP_REGS && (mode == TImode || mode == TFmode) && CONSTANT_P(x))
+  if (rclass == FP_REGS
+      && (mode == TImode || mode == TFmode || mode == TDmode)
+      && CONSTANT_P(x))
       return GENERAL_REGS;
 
   return NO_REGS;
@@ -13611,9 +13621,9 @@ aarch64_rtx_costs (rtx x, machine_mode mode, int outer ATTRIBUTE_UNUSED,
 		*cost += extra_cost->ldst.storev;
 	      else if (GET_MODE_CLASS (mode) == MODE_INT)
 		*cost += extra_cost->ldst.store;
-	      else if (mode == SFmode)
+	      else if (mode == SFmode || mode == SDmode)
 		*cost += extra_cost->ldst.storef;
-	      else if (mode == DFmode)
+	      else if (mode == DFmode || mode == DDmode)
 		*cost += extra_cost->ldst.stored;
 
 	      *cost +=
@@ -13737,11 +13747,11 @@ aarch64_rtx_costs (rtx x, machine_mode mode, int outer ATTRIBUTE_UNUSED,
 	  /* mov[df,sf]_aarch64.  */
 	  if (aarch64_float_const_representable_p (x))
 	    /* FMOV (scalar immediate).  */
-	    *cost += extra_cost->fp[mode == DFmode].fpconst;
+	    *cost += extra_cost->fp[mode == DFmode || mode == DDmode].fpconst;
 	  else if (!aarch64_float_const_zero_rtx_p (x))
 	    {
 	      /* This will be a load from memory.  */
-	      if (mode == DFmode)
+	      if (mode == DFmode || mode == DDmode)
 		*cost += extra_cost->ldst.loadd;
 	      else
 		*cost += extra_cost->ldst.loadf;
@@ -13767,9 +13777,9 @@ aarch64_rtx_costs (rtx x, machine_mode mode, int outer ATTRIBUTE_UNUSED,
 	    *cost += extra_cost->ldst.loadv;
 	  else if (GET_MODE_CLASS (mode) == MODE_INT)
 	    *cost += extra_cost->ldst.load;
-	  else if (mode == SFmode)
+	  else if (mode == SFmode || mode == SDmode)
 	    *cost += extra_cost->ldst.loadf;
-	  else if (mode == DFmode)
+	  else if (mode == DFmode || mode == DDmode)
 	    *cost += extra_cost->ldst.loadd;
 
 	  *cost +=
@@ -19352,7 +19362,7 @@ aarch64_legitimate_constant_p (machine_mode mode, rtx x)
 {
   /* Support CSE and rematerialization of common constants.  */
   if (CONST_INT_P (x)
-      || (CONST_DOUBLE_P (x) && GET_MODE_CLASS (mode) == MODE_FLOAT))
+      || CONST_DOUBLE_P (x))
     return true;
 
   /* Only accept variable-length vector constants if they can be
@@ -19793,6 +19803,18 @@ aarch64_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
 	  field_t = long_double_type_node;
 	  field_ptr_t = long_double_ptr_type_node;
 	  break;
+	case SDmode:
+	  field_t = dfloat32_type_node;
+	  field_ptr_t = build_pointer_type (dfloat32_type_node);
+	  break;
+	case DDmode:
+	  field_t = dfloat64_type_node;
+	  field_ptr_t = build_pointer_type (dfloat64_type_node);
+	  break;
+	case TDmode:
+	  field_t = dfloat128_type_node;
+	  field_ptr_t = build_pointer_type (dfloat128_type_node);
+	  break;
 	case E_HFmode:
 	  field_t = aarch64_fp16_type_node;
 	  field_ptr_t = aarch64_fp16_ptr_type_node;
@@ -20044,7 +20066,8 @@ aapcs_vfp_sub_candidate (const_tree type, machine_mode *modep,
     case REAL_TYPE:
       mode = TYPE_MODE (type);
       if (mode != DFmode && mode != SFmode
-	  && mode != TFmode && mode != HFmode)
+	  && mode != TFmode && mode != HFmode
+	  && mode != SDmode && mode != DDmode && mode != TDmode)
 	return -1;
 
       if (*modep == VOIDmode)
@@ -20360,7 +20383,9 @@ aarch64_vfp_is_call_or_return_candidate (machine_mode mode,
   machine_mode new_mode = VOIDmode;
   bool composite_p = aarch64_composite_type_p (type, mode);
 
-  if ((!composite_p && GET_MODE_CLASS (mode) == MODE_FLOAT)
+  if ((!composite_p
+       && (GET_MODE_CLASS (mode) == MODE_FLOAT
+	   || GET_MODE_CLASS (mode) == MODE_DECIMAL_FLOAT))
       || aarch64_short_vector_p (type, mode))
     {
       *count = 1;
@@ -23268,7 +23293,7 @@ aarch64_output_scalar_simd_mov_immediate (rtx immediate, scalar_int_mode mode)
     }
 
   machine_mode vmode;
-  /* use a 64 bit mode for everything except for DI/DF mode, where we use
+  /* use a 64 bit mode for everything except for DI/DF/DD mode, where we use
      a 128 bit vector mode.  */
   int width = GET_MODE_BITSIZE (mode) == 64 ? 128 : 64;
 
@@ -26086,7 +26111,7 @@ aarch64_gen_adjusted_ldpstp (rtx *operands, bool load,
     base_off = (off_val_1 + off_val_3) / 2;
   else
     /* However, due to issues with negative LDP/STP offset generation for
-       larger modes, for DF, DI and vector modes. we must not use negative
+       larger modes, for DF, DD, DI and vector modes. we must not use negative
        addresses smaller than 9 signed unadjusted bits can store.  This
        provides the most range in this case.  */
     base_off = off_val_1;
@@ -26364,6 +26389,9 @@ aarch64_libgcc_floating_mode_supported_p (scalar_float_mode mode)
 static bool
 aarch64_scalar_mode_supported_p (scalar_mode mode)
 {
+  if (DECIMAL_FLOAT_MODE_P (mode))
+    return default_decimal_float_supported_p ();
+
   return (mode == HFmode
 	  ? true
 	  : default_scalar_mode_supported_p (mode));

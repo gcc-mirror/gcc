@@ -1477,11 +1477,11 @@
    (set_attr "arch" "simd,fp16,simd,simd,simd,fp16,simd,*,*,*,*,*")]
 )
 
-(define_insn "*movsf_aarch64"
-  [(set (match_operand:SF 0 "nonimmediate_operand" "=w,w  ,?r,w,w  ,w  ,w,m,r,m ,r,r")
-	(match_operand:SF 1 "general_operand"      "Y ,?rY, w,w,Ufc,Uvi,m,w,m,rY,r,M"))]
-  "TARGET_FLOAT && (register_operand (operands[0], SFmode)
-    || aarch64_reg_or_fp_zero (operands[1], SFmode))"
+(define_insn "*mov<mode>_aarch64"
+  [(set (match_operand:SFD 0 "nonimmediate_operand" "=w,w  ,?r,w,w  ,w  ,w,m,r,m ,r,r")
+	(match_operand:SFD 1 "general_operand"      "Y ,?rY, w,w,Ufc,Uvi,m,w,m,rY,r,M"))]
+  "TARGET_FLOAT && (register_operand (operands[0], <MODE>mode)
+    || aarch64_reg_or_fp_zero (operands[1], <MODE>mode))"
   "@
    movi\\t%0.2s, #0
    fmov\\t%s0, %w1
@@ -1501,11 +1501,11 @@
    (set_attr "arch" "simd,*,*,*,*,simd,*,*,*,*,*,*")]
 )
 
-(define_insn "*movdf_aarch64"
-  [(set (match_operand:DF 0 "nonimmediate_operand" "=w, w  ,?r,w,w  ,w  ,w,m,r,m ,r,r")
-	(match_operand:DF 1 "general_operand"      "Y , ?rY, w,w,Ufc,Uvi,m,w,m,rY,r,N"))]
-  "TARGET_FLOAT && (register_operand (operands[0], DFmode)
-    || aarch64_reg_or_fp_zero (operands[1], DFmode))"
+(define_insn "*mov<mode>_aarch64"
+  [(set (match_operand:DFD 0 "nonimmediate_operand" "=w, w  ,?r,w,w  ,w  ,w,m,r,m ,r,r")
+	(match_operand:DFD 1 "general_operand"      "Y , ?rY, w,w,Ufc,Uvi,m,w,m,rY,r,N"))]
+  "TARGET_FLOAT && (register_operand (operands[0], <MODE>mode)
+    || aarch64_reg_or_fp_zero (operands[1], <MODE>mode))"
   "@
    movi\\t%d0, #0
    fmov\\t%d0, %x1
@@ -1545,13 +1545,13 @@
   }
 )
 
-(define_insn "*movtf_aarch64"
-  [(set (match_operand:TF 0
+(define_insn "*mov<mode>_aarch64"
+  [(set (match_operand:TFD 0
 	 "nonimmediate_operand" "=w,?r ,w ,?r,w,?w,w,m,?r,m ,m")
-	(match_operand:TF 1
+	(match_operand:TFD 1
 	 "general_operand"      " w,?rY,?r,w ,Y,Y ,m,w,m ,?r,Y"))]
-  "TARGET_FLOAT && (register_operand (operands[0], TFmode)
-    || aarch64_reg_or_fp_zero (operands[1], TFmode))"
+  "TARGET_FLOAT && (register_operand (operands[0], <MODE>mode)
+    || aarch64_reg_or_fp_zero (operands[1], <MODE>mode))"
   "@
    mov\\t%0.16b, %1.16b
    #
@@ -1571,8 +1571,8 @@
 )
 
 (define_split
-   [(set (match_operand:TF 0 "register_operand" "")
-	 (match_operand:TF 1 "nonmemory_operand" ""))]
+   [(set (match_operand:TFD 0 "register_operand" "")
+	 (match_operand:TFD 1 "nonmemory_operand" ""))]
   "reload_completed && aarch64_split_128bit_move_p (operands[0], operands[1])"
   [(const_int 0)]
   {
