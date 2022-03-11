@@ -122,6 +122,10 @@ public:
       }
   }
 
+  void visit (AST::SliceType &slice) override;
+
+  void visit (AST::RawPointerType &ptr) override;
+
   void visit (AST::ReferenceType &ref) override;
 
   void visit (AST::TypePathSegmentGeneric &seg) override;
