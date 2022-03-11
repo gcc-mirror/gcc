@@ -349,8 +349,38 @@ TyTyResolveCompile::visit (const TyTy::ArrayType &type)
 void
 TyTyResolveCompile::visit (const TyTy::SliceType &type)
 {
-  // TODO
-  gcc_unreachable ();
+  if (ctx->lookup_compiled_types (type.get_ty_ref (), &translated, &type))
+    return;
+
+  std::vector<Backend::typed_identifier> fields;
+
+  tree element_type
+    = TyTyResolveCompile::compile (ctx, type.get_element_type ());
+  tree data_field_ty = build_pointer_type (element_type);
+  Backend::typed_identifier data_field ("data", data_field_ty, Location ());
+  fields.push_back (std::move (data_field));
+
+  // lookup usize
+  TyTy::BaseType *usize = nullptr;
+  bool ok = ctx->get_tyctx ()->lookup_builtin ("usize", &usize);
+  rust_assert (ok);
+
+  tree len_field_ty = TyTyResolveCompile::compile (ctx, usize);
+  Backend::typed_identifier len_field ("len", len_field_ty, Location ());
+  fields.push_back (std::move (len_field));
+
+  tree type_record = ctx->get_backend ()->struct_type (fields);
+
+  std::string named_struct_str
+    = std::string ("[") + type.get_element_type ()->get_name () + "]";
+  tree named_struct
+    = ctx->get_backend ()->named_type (named_struct_str, type_record,
+				       type.get_ident ().locus);
+
+  ctx->push_type (named_struct);
+  translated = named_struct;
+
+  ctx->insert_compiled_type (type.get_ty_ref (), named_struct, &type);
 }
 
 void
