@@ -85,3 +85,6 @@ Initialize ptx registers.
 
 mptx-comment
 Target Var(nvptx_comment) Init(1) Undocumented
+
+malias
+Target Var(nvptx_alias) Init(0) Undocumented

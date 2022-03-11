@@ -25,6 +25,13 @@ if ![istarget nvptx*-*-*] then {
 # Load support procs.
 load_lib gcc-dg.exp
 
+# Return 1 if code with -mptx=6.3 can be run.
+proc check_effective_target_runtime_ptx_isa_version_6_3 { args } {
+    return [check_runtime run_ptx_isa_6_3 {
+	int main (void) { return 0; }
+    } "-mptx=6.3"]
+}
+
 # If a testcase doesn't have special options, use these.
 global DEFAULT_CFLAGS
 if ![info exists DEFAULT_CFLAGS] then {
