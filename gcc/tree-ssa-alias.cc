@@ -790,6 +790,29 @@ ao_ref_alias_ptr_type (ao_ref *ref)
   return ret;
 }
 
+/* Return the alignment of the access *REF and store it in the *ALIGN
+   and *BITPOS pairs.  Returns false if no alignment could be determined.
+   See get_object_alignment_2 for details.  */
+
+bool
+ao_ref_alignment (ao_ref *ref, unsigned int *align,
+		  unsigned HOST_WIDE_INT *bitpos)
+{
+  if (ref->ref)
+    return get_object_alignment_1 (ref->ref, align, bitpos);
+
+  /* When we just have ref->base we cannot use get_object_alignment since
+     that will eventually use the type of the appearant access while for
+     example ao_ref_init_from_ptr_and_range is not careful to adjust that.  */
+  *align = BITS_PER_UNIT;
+  HOST_WIDE_INT offset;
+  if (!ref->offset.is_constant (&offset)
+      || !get_object_alignment_2 (ref->base, align, bitpos, true))
+    return false;
+  *bitpos += (unsigned HOST_WIDE_INT)offset * BITS_PER_UNIT;
+  *bitpos = *bitpos & (*align - 1);
+  return true;
+}
 
 /* Init an alias-oracle reference representation from a gimple pointer
    PTR a range specified by OFFSET, SIZE and MAX_SIZE under the assumption

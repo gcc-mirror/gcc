@@ -52,6 +52,8 @@ extern bool force_folding_builtin_constant_p;
 extern bool called_as_built_in (tree);
 extern bool get_object_alignment_1 (tree, unsigned int *,
 				    unsigned HOST_WIDE_INT *);
+extern bool get_object_alignment_2 (tree, unsigned int *,
+				    unsigned HOST_WIDE_INT *, bool);
 extern unsigned int get_object_alignment (tree);
 extern bool get_pointer_alignment_1 (tree, unsigned int *,
 				     unsigned HOST_WIDE_INT *);
