@@ -29,12 +29,12 @@ static int g2;
 static void f1 ()
 {
   int a = 0;
-  /*TODO Without making 'a' addressable, for GCN offloading we will not see the expected value copied out.  (But it does work for nvptx offloading, strange...)  */
+  /*TODO <https://gcc.gnu.org/PR104892> */
   (volatile int *) &a;
 #define N 123
   int b[N] = { 0 };
   unsigned long long f1;
-  /*TODO See above.  */
+  /*TODO <https://gcc.gnu.org/PR104892> */
   (volatile void *) &f1;
 
 #pragma acc kernels /* { dg-line l_compute[incr c_compute] } */
