@@ -358,6 +358,15 @@ nvptx_memspace_realloc (omp_memspace_handle_t memspace, void *addr,
     return realloc (addr, size);
 }
 
+static inline int
+nvptx_memspace_validate (omp_memspace_handle_t memspace, unsigned access)
+{
+  /* Disallow use of low-latency memory when it must be accessible by
+     all threads.  */
+  return (memspace != omp_low_lat_mem_space
+	  || access != omp_atv_all);
+}
+
 #define MEMSPACE_ALLOC(MEMSPACE, SIZE, PIN) \
   nvptx_memspace_alloc (MEMSPACE, SIZE)
 #define MEMSPACE_CALLOC(MEMSPACE, SIZE, PIN) \
@@ -366,5 +375,7 @@ nvptx_memspace_realloc (omp_memspace_handle_t memspace, void *addr,
   nvptx_memspace_realloc (MEMSPACE, ADDR, OLDSIZE, SIZE)
 #define MEMSPACE_FREE(MEMSPACE, ADDR, SIZE, PIN) \
   nvptx_memspace_free (MEMSPACE, ADDR, SIZE)
+#define MEMSPACE_VALIDATE(MEMSPACE, ACCESS) \
+  nvptx_memspace_validate (MEMSPACE, ACCESS)
 
 #include "../../allocator.c"
