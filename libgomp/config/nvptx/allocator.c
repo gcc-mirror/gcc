@@ -358,13 +358,13 @@ nvptx_memspace_realloc (omp_memspace_handle_t memspace, void *addr,
     return realloc (addr, size);
 }
 
-#define MEMSPACE_ALLOC(MEMSPACE, SIZE) \
+#define MEMSPACE_ALLOC(MEMSPACE, SIZE, PIN) \
   nvptx_memspace_alloc (MEMSPACE, SIZE)
-#define MEMSPACE_CALLOC(MEMSPACE, SIZE) \
+#define MEMSPACE_CALLOC(MEMSPACE, SIZE, PIN) \
   nvptx_memspace_calloc (MEMSPACE, SIZE)
-#define MEMSPACE_REALLOC(MEMSPACE, ADDR, OLDSIZE, SIZE) \
+#define MEMSPACE_REALLOC(MEMSPACE, ADDR, OLDSIZE, SIZE, OLDPIN, PIN) \
   nvptx_memspace_realloc (MEMSPACE, ADDR, OLDSIZE, SIZE)
-#define MEMSPACE_FREE(MEMSPACE, ADDR, SIZE) \
+#define MEMSPACE_FREE(MEMSPACE, ADDR, SIZE, PIN) \
   nvptx_memspace_free (MEMSPACE, ADDR, SIZE)
 
 #include "../../allocator.c"

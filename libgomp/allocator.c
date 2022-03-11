@@ -39,16 +39,20 @@
 
 /* These macros may be overridden in config/<target>/allocator.c.  */
 #ifndef MEMSPACE_ALLOC
-#define MEMSPACE_ALLOC(MEMSPACE, SIZE) malloc (SIZE)
+#define MEMSPACE_ALLOC(MEMSPACE, SIZE, PIN) \
+  (PIN ? NULL : malloc (SIZE))
 #endif
 #ifndef MEMSPACE_CALLOC
-#define MEMSPACE_CALLOC(MEMSPACE, SIZE) calloc (1, SIZE)
+#define MEMSPACE_CALLOC(MEMSPACE, SIZE, PIN) \
+  (PIN ? NULL : calloc (1, SIZE))
 #endif
 #ifndef MEMSPACE_REALLOC
-#define MEMSPACE_REALLOC(MEMSPACE, ADDR, OLDSIZE, SIZE) realloc (ADDR, SIZE)
+#define MEMSPACE_REALLOC(MEMSPACE, ADDR, OLDSIZE, SIZE, OLDPIN, PIN) \
+  ((PIN) || (OLDPIN) ? NULL : realloc (ADDR, SIZE))
 #endif
 #ifndef MEMSPACE_FREE
-#define MEMSPACE_FREE(MEMSPACE, ADDR, SIZE) free (ADDR)
+#define MEMSPACE_FREE(MEMSPACE, ADDR, SIZE, PIN) \
+  (PIN ? NULL : free (ADDR))
 #endif
 
 /* Map the predefined allocators to the correct memory space.
@@ -351,10 +355,6 @@ omp_init_allocator (omp_memspace_handle_t memspace, int ntraits,
       break;
     }
 
-  /* No support for this so far.  */
-  if (data.pinned)
-    return omp_null_allocator;
-
   ret = gomp_malloc (sizeof (struct omp_allocator_data));
   *ret = data;
 #ifndef HAVE_SYNC_BUILTINS
@@ -481,7 +481,8 @@ retry:
 	}
       else
 #endif
-	ptr = MEMSPACE_ALLOC (allocator_data->memspace, new_size);
+	ptr = MEMSPACE_ALLOC (allocator_data->memspace, new_size,
+			      allocator_data->pinned);
       if (ptr == NULL)
 	{
 #ifdef HAVE_SYNC_BUILTINS
@@ -511,7 +512,8 @@ retry:
 	    = (allocator_data
 	       ? allocator_data->memspace
 	       : predefined_alloc_mapping[allocator]);
-	  ptr = MEMSPACE_ALLOC (memspace, new_size);
+	  ptr = MEMSPACE_ALLOC (memspace, new_size,
+				allocator_data && allocator_data->pinned);
 	}
       if (ptr == NULL)
 	goto fail;
@@ -542,9 +544,9 @@ fail:
 #ifdef LIBGOMP_USE_MEMKIND
 	  || memkind
 #endif
-	  || (allocator_data
-	      && allocator_data->pool_size < ~(uintptr_t) 0)
-	  || !allocator_data)
+	  || !allocator_data
+	  || allocator_data->pool_size < ~(uintptr_t) 0
+	  || allocator_data->pinned)
 	{
 	  allocator = omp_default_mem_alloc;
 	  goto retry;
@@ -596,6 +598,7 @@ omp_free (void *ptr, omp_allocator_handle_t allocator)
   struct omp_mem_header *data;
   omp_memspace_handle_t memspace __attribute__((unused))
     = omp_default_mem_space;
+  int pinned __attribute__((unused)) = false;
 
   if (ptr == NULL)
     return;
@@ -627,6 +630,7 @@ omp_free (void *ptr, omp_allocator_handle_t allocator)
 #endif
 
       memspace = allocator_data->memspace;
+      pinned = allocator_data->pinned;
     }
   else
     {
@@ -651,7 +655,7 @@ omp_free (void *ptr, omp_allocator_handle_t allocator)
       memspace = predefined_alloc_mapping[data->allocator];
     }
 
-  MEMSPACE_FREE (memspace, data->ptr, data->size);
+  MEMSPACE_FREE (memspace, data->ptr, data->size, pinned);
 }
 
 ialias (omp_free)
@@ -767,7 +771,8 @@ retry:
 	}
       else
 #endif
-	ptr = MEMSPACE_CALLOC (allocator_data->memspace, new_size);
+	ptr = MEMSPACE_CALLOC (allocator_data->memspace, new_size,
+			       allocator_data->pinned);
       if (ptr == NULL)
 	{
 #ifdef HAVE_SYNC_BUILTINS
@@ -797,7 +802,8 @@ retry:
 	    = (allocator_data
 	       ? allocator_data->memspace
 	       : predefined_alloc_mapping[allocator]);
-	  ptr = MEMSPACE_CALLOC (memspace, new_size);
+	  ptr = MEMSPACE_CALLOC (memspace, new_size,
+				 allocator_data && allocator_data->pinned);
 	}
       if (ptr == NULL)
 	goto fail;
@@ -828,9 +834,9 @@ fail:
 #ifdef LIBGOMP_USE_MEMKIND
 	  || memkind
 #endif
-	  || (allocator_data
-	      && allocator_data->pool_size < ~(uintptr_t) 0)
-	  || !allocator_data)
+	  || !allocator_data
+	  || allocator_data->pool_size < ~(uintptr_t) 0
+	  || allocator_data->pinned)
 	{
 	  allocator = omp_default_mem_alloc;
 	  goto retry;
@@ -1021,9 +1027,13 @@ retry:
 #endif
       if (prev_size)
 	new_ptr = MEMSPACE_REALLOC (allocator_data->memspace, data->ptr,
-				    data->size, new_size);
+				    data->size, new_size,
+				    (free_allocator_data
+				     && free_allocator_data->pinned),
+				    allocator_data->pinned);
       else
-	new_ptr = MEMSPACE_ALLOC (allocator_data->memspace, new_size);
+	new_ptr = MEMSPACE_ALLOC (allocator_data->memspace, new_size,
+				  allocator_data->pinned);
       if (new_ptr == NULL)
 	{
 #ifdef HAVE_SYNC_BUILTINS
@@ -1069,10 +1079,14 @@ retry:
 	    = (allocator_data
 	       ? allocator_data->memspace
 	       : predefined_alloc_mapping[allocator]);
-	  new_ptr = MEMSPACE_REALLOC (memspace, data->ptr, data->size, new_size);
+	  new_ptr = MEMSPACE_REALLOC (memspace, data->ptr, data->size, new_size,
+				      (free_allocator_data
+				       && free_allocator_data->pinned),
+				      allocator_data && allocator_data->pinned);
 	}
       if (new_ptr == NULL)
 	goto fail;
+
       ret = (char *) new_ptr + sizeof (struct omp_mem_header);
       ((struct omp_mem_header *) ret)[-1].ptr = new_ptr;
       ((struct omp_mem_header *) ret)[-1].size = new_size;
@@ -1095,7 +1109,8 @@ retry:
 	    = (allocator_data
 	       ? allocator_data->memspace
 	       : predefined_alloc_mapping[allocator]);
-	  new_ptr = MEMSPACE_ALLOC (memspace, new_size);
+	  new_ptr = MEMSPACE_ALLOC (memspace, new_size,
+				    allocator_data && allocator_data->pinned);
 	}
       if (new_ptr == NULL)
 	goto fail;
@@ -1151,9 +1166,9 @@ fail:
 #ifdef LIBGOMP_USE_MEMKIND
 	  || memkind
 #endif
-	  || (allocator_data
-	      && allocator_data->pool_size < ~(uintptr_t) 0)
-	  || !allocator_data)
+	  || !allocator_data
+	  || allocator_data->pool_size < ~(uintptr_t) 0
+	  || allocator_data->pinned)
 	{
 	  allocator = omp_default_mem_alloc;
 	  goto retry;

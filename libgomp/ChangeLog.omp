@@ -1,3 +1,25 @@
+2022-03-11  Andrew Stubbs  <ams@codesourcery.com>
+
+	* allocator.c (MEMSPACE_ALLOC): Add PIN.
+	(MEMSPACE_CALLOC): Add PIN.
+	(MEMSPACE_REALLOC): Add PIN.
+	(MEMSPACE_FREE): Add PIN.
+	(xmlock): New function.
+	(omp_init_allocator): Don't disallow the pinned trait.
+	(omp_aligned_alloc): Add pinning to all MEMSPACE_* calls.
+	(omp_aligned_calloc): Likewise.
+	(omp_realloc): Likewise.
+	(omp_free): Likewise.
+	* config/linux/allocator.c: New file.
+	* config/nvptx/allocator.c (MEMSPACE_ALLOC): Add PIN.
+	(MEMSPACE_CALLOC): Add PIN.
+	(MEMSPACE_REALLOC): Add PIN.
+	(MEMSPACE_FREE): Add PIN.
+	* testsuite/libgomp.c/alloc-pinned-1.c: New test.
+	* testsuite/libgomp.c/alloc-pinned-2.c: New test.
+	* testsuite/libgomp.c/alloc-pinned-3.c: New test.
+	* testsuite/libgomp.c/alloc-pinned-4.c: New test.
+
 2022-03-09  Hafiz Abid Qadeer  <abidh@codesourcery.com>
 
 	* testsuite/libgomp.fortran/allocate-2.f90: New test.
