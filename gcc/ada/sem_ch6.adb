@@ -5459,6 +5459,22 @@ package body Sem_Ch6 is
          end;
       end;
 
+      --  Check if a Body_To_Inline was created, but the subprogram has
+      --  references to object renamings which will be replaced by the special
+      --  SPARK expansion into nodes of a different kind, which is not expected
+      --  by the inlining mechanism. In that case, the Body_To_Inline is
+      --  deleted prior to being analyzed. This check needs to take place
+      --  after analysis of the subprogram body.
+
+      if GNATprove_Mode
+        and then Present (Spec_Id)
+        and then
+          Nkind (Unit_Declaration_Node (Spec_Id)) = N_Subprogram_Declaration
+        and then Present (Body_To_Inline (Unit_Declaration_Node (Spec_Id)))
+      then
+         Check_Object_Renaming_In_GNATprove_Mode (Spec_Id);
+      end if;
+
       --  Check for variables that are never modified
 
       declare

@@ -8122,7 +8122,10 @@ package body Sem_Ch12 is
                      Set_Entity (New_N, Entity (Name (Assoc)));
 
                   elsif Nkind (Assoc) in N_Entity
-                    and then Expander_Active
+                    and then (Expander_Active or
+                                (GNATprove_Mode
+                                  and then not In_Spec_Expression
+                                  and then not Inside_A_Generic))
                   then
                      --  Inlining case: we are copying a tree that contains
                      --  global entities, which are preserved in the copy to be
