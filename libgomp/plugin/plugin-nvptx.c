@@ -1055,11 +1055,13 @@ nvptx_stacks_free (struct ptx_device *ptx_dev, bool force)
 }
 
 static void *
-nvptx_alloc (size_t s, bool suppress_errors)
+nvptx_alloc (size_t s, bool suppress_errors, bool usm)
 {
   CUdeviceptr d;
 
-  CUresult r = CUDA_CALL_NOCHECK (cuMemAlloc, &d, s);
+  CUresult r = (usm ? CUDA_CALL_NOCHECK (cuMemAllocManaged, &d, s,
+					 CU_MEM_ATTACH_GLOBAL)
+		: CUDA_CALL_NOCHECK (cuMemAlloc, &d, s));
   if (suppress_errors && r == CUDA_ERROR_OUT_OF_MEMORY)
     return NULL;
   else if (r != CUDA_SUCCESS)
@@ -1444,8 +1446,8 @@ GOMP_OFFLOAD_unload_image (int ord, unsigned version, const void *target_data)
   return ret;
 }
 
-void *
-GOMP_OFFLOAD_alloc (int ord, size_t size)
+static void *
+GOMP_OFFLOAD_alloc_1 (int ord, size_t size, bool usm)
 {
   if (!nvptx_attach_host_thread_to_device (ord))
     return NULL;
@@ -1466,7 +1468,7 @@ GOMP_OFFLOAD_alloc (int ord, size_t size)
       blocks = tmp;
     }
 
-  void *d = nvptx_alloc (size, true);
+  void *d = nvptx_alloc (size, true, usm);
   if (d)
     return d;
   else
@@ -1474,8 +1476,20 @@ GOMP_OFFLOAD_alloc (int ord, size_t size)
       /* Memory allocation failed.  Try freeing the stacks block, and
 	 retrying.  */
       nvptx_stacks_free (ptx_dev, true);
-      return nvptx_alloc (size, false);
+      return nvptx_alloc (size, false, usm);
     }
+}
+
+void *
+GOMP_OFFLOAD_alloc (int ord, size_t size)
+{
+  return GOMP_OFFLOAD_alloc_1 (ord, size, false);
+}
+
+void *
+GOMP_OFFLOAD_usm_alloc (int ord, size_t size)
+{
+  return GOMP_OFFLOAD_alloc_1 (ord, size, true);
 }
 
 bool
@@ -1483,6 +1497,25 @@ GOMP_OFFLOAD_free (int ord, void *ptr)
 {
   return (nvptx_attach_host_thread_to_device (ord)
 	  && nvptx_free (ptr, ptx_devices[ord]));
+}
+
+bool
+GOMP_OFFLOAD_usm_free (int ord, void *ptr)
+{
+  return GOMP_OFFLOAD_free (ord, ptr);
+}
+
+bool
+GOMP_OFFLOAD_is_usm_ptr (void *ptr)
+{
+  bool managed = false;
+  /* This returns 3 outcomes ...
+     CUDA_ERROR_INVALID_VALUE    - Not a Cuda allocated pointer.
+     CUDA_SUCCESS, managed:false - Cuda allocated, but not USM.
+     CUDA_SUCCESS, managed:true  - USM.  */
+  CUDA_CALL_NOCHECK (cuPointerGetAttribute, &managed,
+		     CU_POINTER_ATTRIBUTE_IS_MANAGED, (CUdeviceptr)ptr);
+  return managed;
 }
 
 void

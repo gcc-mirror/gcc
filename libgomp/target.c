@@ -1045,6 +1045,15 @@ gomp_map_vars_internal (struct gomp_device_descr *devicep,
 	    tgt->list[i].offset = 0;
 	  continue;
 	}
+      else if (devicep->is_usm_ptr_func
+	       && devicep->is_usm_ptr_func (hostaddrs[i]))
+	{
+	  /* The memory is visible from both host and target
+	     so nothing needs to be moved.  */
+	  tgt->list[i].key = NULL;
+	  tgt->list[i].offset = OFFSET_INLINED;
+	  continue;
+	}
       else if ((kind & typemask) == GOMP_MAP_STRUCT)
 	{
 	  size_t first = i + 1;
@@ -1564,6 +1573,9 @@ gomp_map_vars_internal (struct gomp_device_descr *devicep,
 		  continue;
 		}
 	      default:
+		if (tgt->list[i].offset == OFFSET_INLINED
+		    && !array)
+		  continue;
 		break;
 	      }
 
@@ -3528,6 +3540,61 @@ omp_target_free (void *device_ptr, int device_num)
   gomp_mutex_unlock (&devicep->lock);
 }
 
+void *
+gomp_usm_alloc (size_t size, int device_num)
+{
+  if (device_num == gomp_get_num_devices ())
+    return malloc (size);
+
+  struct gomp_device_descr *devicep = resolve_device (device_num);
+  if (devicep == NULL)
+    return NULL;
+
+  if (!(devicep->capabilities & GOMP_OFFLOAD_CAP_OPENMP_400)
+      || devicep->capabilities & GOMP_OFFLOAD_CAP_SHARED_MEM)
+    return malloc (size);
+
+  void *ret = NULL;
+  gomp_mutex_lock (&devicep->lock);
+  if (devicep->usm_alloc_func)
+    ret = devicep->usm_alloc_func (devicep->target_id, size);
+  gomp_mutex_unlock (&devicep->lock);
+  return ret;
+}
+
+void
+gomp_usm_free (void *device_ptr, int device_num)
+{
+  if (device_ptr == NULL)
+    return;
+
+  if (device_num == gomp_get_num_devices ())
+    {
+      free (device_ptr);
+      return;
+    }
+
+  struct gomp_device_descr *devicep = resolve_device (device_num);
+  if (devicep == NULL)
+    return;
+
+  if (!(devicep->capabilities & GOMP_OFFLOAD_CAP_OPENMP_400)
+      || devicep->capabilities & GOMP_OFFLOAD_CAP_SHARED_MEM)
+    {
+      free (device_ptr);
+      return;
+    }
+
+  gomp_mutex_lock (&devicep->lock);
+  if (devicep->usm_free_func
+      && !devicep->usm_free_func (devicep->target_id, device_ptr))
+    {
+      gomp_mutex_unlock (&devicep->lock);
+      gomp_fatal ("error in freeing device memory block at %p", device_ptr);
+    }
+  gomp_mutex_unlock (&devicep->lock);
+}
+
 int
 omp_target_is_present (const void *ptr, int device_num)
 {
@@ -3983,6 +4050,9 @@ gomp_load_plugin_for_device (struct gomp_device_descr *device,
   DLSYM (unload_image);
   DLSYM (alloc);
   DLSYM (free);
+  DLSYM_OPT (usm_alloc, usm_alloc);
+  DLSYM_OPT (usm_free, usm_free);
+  DLSYM_OPT (is_usm_ptr, is_usm_ptr);
   DLSYM (dev2host);
   DLSYM (host2dev);
   DLSYM (evaluate_device);

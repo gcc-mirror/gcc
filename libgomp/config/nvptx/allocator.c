@@ -125,6 +125,8 @@ nvptx_memspace_alloc (omp_memspace_handle_t memspace, size_t size)
       __atomic_store_n (&__nvptx_lowlat_heap_root, root.raw, MEMMODEL_RELEASE);
       return result;
     }
+  else if (memspace == ompx_host_mem_space)
+    return NULL;
   else
     return malloc (size);
 }
@@ -145,6 +147,8 @@ nvptx_memspace_calloc (omp_memspace_handle_t memspace, size_t size)
 
       return result;
     }
+  else if (memspace == ompx_host_mem_space)
+    return NULL;
   else
     return calloc (1, size);
 }
@@ -354,6 +358,8 @@ nvptx_memspace_realloc (omp_memspace_handle_t memspace, void *addr,
 	}
       return result;
     }
+  else if (memspace == ompx_host_mem_space)
+    return NULL;
   else
     return realloc (addr, size);
 }

@@ -32,7 +32,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define omp_max_predefined_alloc ompx_pinned_mem_alloc
+#define omp_max_predefined_alloc ompx_host_mem_alloc
 
 /* These macros may be overridden in config/<target>/allocator.c.  */
 #ifndef MEMSPACE_ALLOC
@@ -68,6 +68,8 @@ static const omp_memspace_handle_t predefined_alloc_mapping[] = {
   omp_low_lat_mem_space,   /* omp_pteam_mem_alloc. */
   omp_low_lat_mem_space,   /* omp_thread_mem_alloc. */
   omp_default_mem_space,   /* ompx_pinned_mem_alloc. */
+  ompx_unified_shared_mem_space,  /* ompx_unified_shared_mem_alloc. */
+  ompx_host_mem_space,     /* ompx_host_mem_alloc.  */
 };
 
 struct omp_allocator_data
@@ -367,7 +369,8 @@ fail:
   int fallback = (allocator_data
 		  ? allocator_data->fallback
 		  : (allocator == omp_default_mem_alloc
-		     || allocator == ompx_pinned_mem_alloc)
+		     || allocator == ompx_pinned_mem_alloc
+		     || allocator == ompx_host_mem_alloc)
 		  ? omp_atv_null_fb
 		  : omp_atv_default_mem_fb);
   switch (fallback)
@@ -600,7 +603,8 @@ fail:
   int fallback = (allocator_data
 		  ? allocator_data->fallback
 		  : (allocator == omp_default_mem_alloc
-		     || allocator == ompx_pinned_mem_alloc)
+		     || allocator == ompx_pinned_mem_alloc
+		     || allocator == ompx_host_mem_alloc)
 		  ? omp_atv_null_fb
 		  : omp_atv_default_mem_fb);
   switch (fallback)
@@ -857,7 +861,8 @@ fail:
   int fallback = (allocator_data
 		  ? allocator_data->fallback
 		  : (allocator == omp_default_mem_alloc
-		     || allocator == ompx_pinned_mem_alloc)
+		     || allocator == ompx_pinned_mem_alloc
+		     || allocator == ompx_host_mem_alloc)
 		  ? omp_atv_null_fb
 		  : omp_atv_default_mem_fb);
   switch (fallback)
