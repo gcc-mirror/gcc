@@ -54,6 +54,9 @@
 #define MEMSPACE_FREE(MEMSPACE, ADDR, SIZE, PIN) \
   (PIN ? NULL : free (ADDR))
 #endif
+#ifndef MEMSPACE_VALIDATE
+#define MEMSPACE_VALIDATE(MEMSPACE, ACCESS) 1
+#endif
 
 /* Map the predefined allocators to the correct memory space.
    The index to this table is the omp_allocator_handle_t enum value.  */
@@ -438,6 +441,10 @@ retry:
   if (__builtin_add_overflow (size, new_size, &new_size))
     goto fail;
 
+  if (allocator_data
+      && !MEMSPACE_VALIDATE (allocator_data->memspace, allocator_data->access))
+    goto fail;
+
   if (__builtin_expect (allocator_data
 			&& allocator_data->pool_size < ~(uintptr_t) 0, 0))
     {
@@ -733,6 +740,10 @@ retry:
   if (__builtin_add_overflow (size_temp, new_size, &new_size))
     goto fail;
 
+  if (allocator_data
+      && !MEMSPACE_VALIDATE (allocator_data->memspace, allocator_data->access))
+    goto fail;
+
   if (__builtin_expect (allocator_data
 			&& allocator_data->pool_size < ~(uintptr_t) 0, 0))
     {
@@ -963,6 +974,10 @@ retry:
   if (__builtin_add_overflow (size, new_size, &new_size))
     goto fail;
   old_size = data->size;
+
+  if (allocator_data
+      && !MEMSPACE_VALIDATE (allocator_data->memspace, allocator_data->access))
+    goto fail;
 
   if (__builtin_expect (allocator_data
 			&& allocator_data->pool_size < ~(uintptr_t) 0, 0))

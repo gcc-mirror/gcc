@@ -23,10 +23,11 @@ main ()
   #pragma omp target
   {
     /* Ensure that the memory we get *is* low-latency with a null-fallback.  */
-    omp_alloctrait_t traits[1]
-      = { { omp_atk_fallback, omp_atv_null_fb } };
+    omp_alloctrait_t traits[2]
+      = { { omp_atk_fallback, omp_atv_null_fb },
+          { omp_atk_access, omp_atv_pteam } };
     omp_allocator_handle_t lowlat = omp_init_allocator (omp_low_lat_mem_space,
-							1, traits);
+							2, traits);
 
     int size = 16;
 

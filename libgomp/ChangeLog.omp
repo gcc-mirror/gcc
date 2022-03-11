@@ -1,5 +1,17 @@
 2022-03-11  Andrew Stubbs  <ams@codesourcery.com>
 
+	* allocator.c (MEMSPACE_VALIDATE): New macro.
+	(omp_aligned_alloc): Use MEMSPACE_VALIDATE.
+	(omp_aligned_calloc): Likewise.
+	(omp_realloc): Likewise.
+	* config/nvptx/allocator.c (nvptx_memspace_validate): New function.
+	(MEMSPACE_VALIDATE): New macro.
+	* testsuite/libgomp.c/allocators-4.c (main): Add access trait.
+	* testsuite/libgomp.c/allocators-6.c (main): Add access trait.
+	* testsuite/libgomp.c/allocators-7.c: New test.
+
+2022-03-11  Andrew Stubbs  <ams@codesourcery.com>
+
 	* allocator.c (omp_max_predefined_alloc): Update.
 	(omp_aligned_alloc): Support ompx_pinned_mem_alloc.
 	(omp_free): Likewise.
