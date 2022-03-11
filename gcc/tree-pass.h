@@ -429,6 +429,7 @@ extern gimple_opt_pass *make_pass_omp_expand_metadirective (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_lower_omp (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_omp_data_optimize (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_diagnose_omp_blocks (gcc::context *ctxt);
+extern gimple_opt_pass *make_pass_usm_transform (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_expand_omp (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_expand_omp_ssa (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_omp_target_link (gcc::context *ctxt);

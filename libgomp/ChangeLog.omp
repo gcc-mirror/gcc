@@ -1,3 +1,8 @@
+2022-03-11  Hafiz Abid Qadeer  <abidh@codesourcery.com>
+
+	* testsuite/libgomp.c/usm-6.c: New test.
+	* testsuite/libgomp.c++/usm-1.C: Likewise.
+
 2022-03-11  Andrew Stubbs  <ams@codesourcery.com>
 
 	* allocator.c (omp_max_predefined_alloc): Update.

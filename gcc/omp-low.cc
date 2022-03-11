@@ -16246,6 +16246,180 @@ make_pass_diagnose_omp_blocks (gcc::context *ctxt)
 {
   return new pass_diagnose_omp_blocks (ctxt);
 }
+
+/* Provide transformation required for using unified shared memory
+   by replacing calls to standard memory allocation functions with
+   function provided by the libgomp.  */
+
+static tree
+usm_transform (gimple_stmt_iterator *gsi_p, bool *,
+	       struct walk_stmt_info *)
+{
+  gimple *stmt = gsi_stmt (*gsi_p);
+  /* ompx_unified_shared_mem_alloc is 10.  */
+  const unsigned int unified_shared_mem_alloc = 10;
+
+  switch (gimple_code (stmt))
+    {
+    case GIMPLE_CALL:
+      {
+	gcall *gs = as_a <gcall *> (stmt);
+	tree fndecl = gimple_call_fndecl (gs);
+	if (fndecl)
+	  {
+	    tree allocator = build_int_cst (pointer_sized_int_node,
+					    unified_shared_mem_alloc);
+	    const char *name = IDENTIFIER_POINTER (DECL_NAME (fndecl));
+	    if ((strcmp (name, "malloc") == 0)
+		 || (fndecl_built_in_p (fndecl, BUILT_IN_NORMAL)
+		     && DECL_FUNCTION_CODE (fndecl) == BUILT_IN_MALLOC)
+		 || DECL_IS_REPLACEABLE_OPERATOR_NEW_P (fndecl)
+		 || strcmp (name, "omp_target_alloc") == 0)
+	      {
+		  tree omp_alloc_type
+		    = build_function_type_list (ptr_type_node, size_type_node,
+						pointer_sized_int_node,
+						NULL_TREE);
+		tree repl = build_fn_decl ("omp_alloc", omp_alloc_type);
+		tree size = gimple_call_arg (gs, 0);
+		gimple *g = gimple_build_call (repl, 2, size, allocator);
+		gimple_call_set_lhs (g, gimple_call_lhs (gs));
+		gimple_set_location (g, gimple_location (stmt));
+		gsi_replace (gsi_p, g, true);
+	      }
+	    else if (strcmp (name, "aligned_alloc") == 0)
+	      {
+		/*  May be we can also use this for new operator with
+		    std::align_val_t parameter.  */
+		tree omp_alloc_type
+		  = build_function_type_list (ptr_type_node, size_type_node,
+					      size_type_node,
+					      pointer_sized_int_node,
+					      NULL_TREE);
+		tree repl = build_fn_decl ("omp_aligned_alloc",
+					   omp_alloc_type);
+		tree align = gimple_call_arg (gs, 0);
+		tree size = gimple_call_arg (gs, 1);
+		gimple *g = gimple_build_call (repl, 3, align, size,
+					       allocator);
+		gimple_call_set_lhs (g, gimple_call_lhs (gs));
+		gimple_set_location (g, gimple_location (stmt));
+		gsi_replace (gsi_p, g, true);
+	      }
+	    else if ((strcmp (name, "calloc") == 0)
+		      || (fndecl_built_in_p (fndecl, BUILT_IN_NORMAL)
+			  && DECL_FUNCTION_CODE (fndecl) == BUILT_IN_CALLOC))
+	      {
+		tree omp_calloc_type
+		  = build_function_type_list (ptr_type_node, size_type_node,
+					      size_type_node,
+					      pointer_sized_int_node,
+					      NULL_TREE);
+		tree repl = build_fn_decl ("omp_calloc", omp_calloc_type);
+		tree num = gimple_call_arg (gs, 0);
+		tree size = gimple_call_arg (gs, 1);
+		gimple *g = gimple_build_call (repl, 3, num, size, allocator);
+		gimple_call_set_lhs (g, gimple_call_lhs (gs));
+		gimple_set_location (g, gimple_location (stmt));
+		gsi_replace (gsi_p, g, true);
+	      }
+	    else if ((strcmp (name, "realloc") == 0)
+		      || (fndecl_built_in_p (fndecl, BUILT_IN_NORMAL)
+			  && DECL_FUNCTION_CODE (fndecl) == BUILT_IN_REALLOC))
+	      {
+		tree omp_realloc_type
+		  = build_function_type_list (ptr_type_node, ptr_type_node,
+					      size_type_node,
+					      pointer_sized_int_node,
+					      pointer_sized_int_node,
+					      NULL_TREE);
+		tree repl = build_fn_decl ("omp_realloc", omp_realloc_type);
+		tree ptr = gimple_call_arg (gs, 0);
+		tree size = gimple_call_arg (gs, 1);
+		gimple *g = gimple_build_call (repl, 4, ptr, size, allocator,
+					       allocator);
+		gimple_call_set_lhs (g, gimple_call_lhs (gs));
+		gimple_set_location (g, gimple_location (stmt));
+		gsi_replace (gsi_p, g, true);
+	      }
+	    else  if ((strcmp (name, "free") == 0)
+		       || (fndecl_built_in_p (fndecl, BUILT_IN_NORMAL)
+			   && DECL_FUNCTION_CODE (fndecl) == BUILT_IN_FREE)
+		       || (DECL_IS_OPERATOR_DELETE_P (fndecl)
+			   && DECL_IS_REPLACEABLE_OPERATOR (fndecl))
+		       || strcmp (name, "omp_target_free") == 0)
+	      {
+		tree omp_free_type
+		  = build_function_type_list (void_type_node, ptr_type_node,
+					      pointer_sized_int_node,
+					      NULL_TREE);
+		tree repl = build_fn_decl ("omp_free", omp_free_type);
+		tree ptr = gimple_call_arg (gs, 0);
+		gimple *g = gimple_build_call (repl, 2, ptr, allocator);
+		gimple_set_location (g, gimple_location (stmt));
+		gsi_replace (gsi_p, g, true);
+	      }
+	  }
+      }
+      break;
+
+    default:
+      break;
+    }
+
+  return NULL_TREE;
+}
+
+namespace {
+
+const pass_data pass_data_usm_transform =
+{
+  GIMPLE_PASS, /* type */
+  "usm_transform", /* name */
+  OPTGROUP_OMP, /* optinfo_flags */
+  TV_NONE, /* tv_id */
+  PROP_gimple_any, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  0, /* todo_flags_finish */
+};
+
+class pass_usm_transform : public gimple_opt_pass
+{
+public:
+  pass_usm_transform (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_usm_transform, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  virtual bool gate (function *)
+  {
+    return (flag_openmp || flag_openmp_simd)
+	    && (flag_offload_memory == OFFLOAD_MEMORY_UNIFIED
+		|| omp_requires_mask & OMP_REQUIRES_UNIFIED_SHARED_MEMORY
+		|| omp_requires_mask & OMP_REQUIRES_UNIFIED_ADDRESS);
+  }
+  virtual unsigned int execute (function *)
+  {
+    struct walk_stmt_info wi;
+    gimple_seq body = gimple_body (current_function_decl);
+
+    memset (&wi, 0, sizeof (wi));
+    walk_gimple_seq (body, usm_transform, NULL, &wi);
+
+    return 0;
+  }
+
+}; // class pass_usm_transform
+
+} // anon namespace
+
+gimple_opt_pass *
+make_pass_usm_transform (gcc::context *ctxt)
+{
+  return new pass_usm_transform (ctxt);
+}
 
 
 #include "gt-omp-low.h"

@@ -1,3 +1,11 @@
+2022-03-11  Hafiz Abid Qadeer  <abidh@codesourcery.com>
+
+	* omp-low.cc (usm_transform): New function.
+	(make_pass_usm_transform): Likewise.
+	(class pass_usm_transform): New.
+	* passes.def: Add pass_usm_transform.
+	* tree-pass.h (make_pass_usm_transform): New declaration.
+
 2022-02-02  Andrew Stubbs  <ams@codesourcery.com>
 
 	* common.opt: Add -foffload-memory and its enum values.
