@@ -35,7 +35,7 @@
 #include <dlfcn.h>
 #endif
 
-#define omp_max_predefined_alloc omp_thread_mem_alloc
+#define omp_max_predefined_alloc ompx_pinned_mem_alloc
 
 /* These macros may be overridden in config/<target>/allocator.c.  */
 #ifndef MEMSPACE_ALLOC
@@ -67,6 +67,7 @@ static const omp_memspace_handle_t predefined_alloc_mapping[] = {
   omp_low_lat_mem_space,   /* omp_cgroup_mem_alloc. */
   omp_low_lat_mem_space,   /* omp_pteam_mem_alloc. */
   omp_low_lat_mem_space,   /* omp_thread_mem_alloc. */
+  omp_default_mem_space,   /* ompx_pinned_mem_alloc. */
 };
 
 enum gomp_memkind_kind
@@ -512,8 +513,11 @@ retry:
 	    = (allocator_data
 	       ? allocator_data->memspace
 	       : predefined_alloc_mapping[allocator]);
-	  ptr = MEMSPACE_ALLOC (memspace, new_size,
-				allocator_data && allocator_data->pinned);
+	  int pinned __attribute__((unused))
+	    = (allocator_data
+	       ? allocator_data->pinned
+	       : allocator == ompx_pinned_mem_alloc);
+	  ptr = MEMSPACE_ALLOC (memspace, new_size, pinned);
 	}
       if (ptr == NULL)
 	goto fail;
@@ -534,7 +538,8 @@ retry:
 fail:
   int fallback = (allocator_data
 		  ? allocator_data->fallback
-		  : allocator == omp_default_mem_alloc
+		  : (allocator == omp_default_mem_alloc
+		     || allocator == ompx_pinned_mem_alloc)
 		  ? omp_atv_null_fb
 		  : omp_atv_default_mem_fb);
   switch (fallback)
@@ -653,6 +658,7 @@ omp_free (void *ptr, omp_allocator_handle_t allocator)
 #endif
 
       memspace = predefined_alloc_mapping[data->allocator];
+      pinned = (data->allocator == ompx_pinned_mem_alloc);
     }
 
   MEMSPACE_FREE (memspace, data->ptr, data->size, pinned);
@@ -802,8 +808,11 @@ retry:
 	    = (allocator_data
 	       ? allocator_data->memspace
 	       : predefined_alloc_mapping[allocator]);
-	  ptr = MEMSPACE_CALLOC (memspace, new_size,
-				 allocator_data && allocator_data->pinned);
+	  int pinned __attribute__((unused))
+	    = (allocator_data
+	       ? allocator_data->pinned
+	       : allocator == ompx_pinned_mem_alloc);
+	  ptr = MEMSPACE_CALLOC (memspace, new_size, pinned);
 	}
       if (ptr == NULL)
 	goto fail;
@@ -824,7 +833,8 @@ retry:
 fail:
   int fallback = (allocator_data
 		  ? allocator_data->fallback
-		  : allocator == omp_default_mem_alloc
+		  : (allocator == omp_default_mem_alloc
+		     || allocator == ompx_pinned_mem_alloc)
 		  ? omp_atv_null_fb
 		  : omp_atv_default_mem_fb);
   switch (fallback)
@@ -1026,11 +1036,15 @@ retry:
       else
 #endif
       if (prev_size)
-	new_ptr = MEMSPACE_REALLOC (allocator_data->memspace, data->ptr,
-				    data->size, new_size,
-				    (free_allocator_data
-				     && free_allocator_data->pinned),
-				    allocator_data->pinned);
+	{
+	  int was_pinned __attribute__((unused))
+	    = (free_allocator_data
+	       ? free_allocator_data->pinned
+	       : free_allocator == ompx_pinned_mem_alloc);
+	  new_ptr = MEMSPACE_REALLOC (allocator_data->memspace, data->ptr,
+				      data->size, new_size, was_pinned,
+				      allocator_data->pinned);
+	}
       else
 	new_ptr = MEMSPACE_ALLOC (allocator_data->memspace, new_size,
 				  allocator_data->pinned);
@@ -1079,10 +1093,16 @@ retry:
 	    = (allocator_data
 	       ? allocator_data->memspace
 	       : predefined_alloc_mapping[allocator]);
+	  int was_pinned __attribute__((unused))
+	    = (free_allocator_data
+	       ? free_allocator_data->pinned
+	       : free_allocator == ompx_pinned_mem_alloc);
+	  int pinned __attribute__((unused))
+	    = (allocator_data
+	       ? allocator_data->pinned
+	       : allocator == ompx_pinned_mem_alloc);
 	  new_ptr = MEMSPACE_REALLOC (memspace, data->ptr, data->size, new_size,
-				      (free_allocator_data
-				       && free_allocator_data->pinned),
-				      allocator_data && allocator_data->pinned);
+				      was_pinned, pinned);
 	}
       if (new_ptr == NULL)
 	goto fail;
@@ -1109,8 +1129,11 @@ retry:
 	    = (allocator_data
 	       ? allocator_data->memspace
 	       : predefined_alloc_mapping[allocator]);
-	  new_ptr = MEMSPACE_ALLOC (memspace, new_size,
-				    allocator_data && allocator_data->pinned);
+	  int pinned __attribute__((unused))
+	    = (allocator_data
+	       ? allocator_data->pinned
+	       : allocator == ompx_pinned_mem_alloc);
+	  new_ptr = MEMSPACE_ALLOC (memspace, new_size, pinned);
 	}
       if (new_ptr == NULL)
 	goto fail;
@@ -1156,7 +1179,8 @@ retry:
 fail:
   int fallback = (allocator_data
 		  ? allocator_data->fallback
-		  : allocator == omp_default_mem_alloc
+		  : (allocator == omp_default_mem_alloc
+		     || allocator == ompx_pinned_mem_alloc)
 		  ? omp_atv_null_fb
 		  : omp_atv_default_mem_fb);
   switch (fallback)

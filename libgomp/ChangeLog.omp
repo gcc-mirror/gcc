@@ -1,5 +1,18 @@
 2022-03-11  Andrew Stubbs  <ams@codesourcery.com>
 
+	* allocator.c (omp_max_predefined_alloc): Update.
+	(omp_aligned_alloc): Support ompx_pinned_mem_alloc.
+	(omp_free): Likewise.
+	(omp_aligned_calloc): Likewise.
+	(omp_realloc): Likewise.
+	* omp.h.in (omp_allocator_handle_t): Add ompx_pinned_mem_alloc.
+	* omp_lib.f90.in: Add ompx_pinned_mem_alloc.
+	* testsuite/libgomp.c/alloc-pinned-5.c: New test.
+	* testsuite/libgomp.c/alloc-pinned-6.c: New test.
+	* testsuite/libgomp.fortran/alloc-pinned-1.f90: New test.
+
+2022-03-11  Andrew Stubbs  <ams@codesourcery.com>
+
 	* allocator.c (MEMSPACE_ALLOC): Add PIN.
 	(MEMSPACE_CALLOC): Add PIN.
 	(MEMSPACE_REALLOC): Add PIN.

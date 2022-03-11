@@ -134,6 +134,7 @@ typedef enum omp_allocator_handle_t __GOMP_UINTPTR_T_ENUM
   omp_cgroup_mem_alloc = 6,
   omp_pteam_mem_alloc = 7,
   omp_thread_mem_alloc = 8,
+  ompx_pinned_mem_alloc = 9,
   __omp_allocator_handle_t_max__ = __UINTPTR_MAX__
 } omp_allocator_handle_t;
 
