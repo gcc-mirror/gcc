@@ -1893,8 +1893,9 @@ package body Inline is
       then
          return False;
 
-      --  Subprograms in generic instances are currently not inlined, to avoid
-      --  problems with inlining of standard library subprograms.
+      --  Subprograms in generic instances are currently not inlined, as this
+      --  interacts badly with the expansion of object renamings in GNATprove
+      --  mode.
 
       elsif Instantiation_Location (Sloc (Id)) /= No_Location then
          return False;
