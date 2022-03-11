@@ -221,11 +221,19 @@ public:
     resolved = type.handle_substitions (mappings);
   }
 
+  void visit (TyTy::ArrayType &type) override
+  {
+    resolved = type.handle_substitions (mappings);
+  }
+
+  void visit (TyTy::SliceType &type) override
+  {
+    resolved = type.handle_substitions (mappings);
+  }
+
   // nothing to do for these
   void visit (TyTy::InferType &) override { gcc_unreachable (); }
   void visit (TyTy::FnPtr &) override { gcc_unreachable (); }
-  void visit (TyTy::ArrayType &) override { gcc_unreachable (); }
-  void visit (TyTy::SliceType &) override { gcc_unreachable (); }
   void visit (TyTy::BoolType &) override { gcc_unreachable (); }
   void visit (TyTy::IntType &) override { gcc_unreachable (); }
   void visit (TyTy::UintType &) override { gcc_unreachable (); }

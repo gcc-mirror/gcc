@@ -120,6 +120,8 @@ public:
 
   void visit (HIR::ArrayType &type) override;
 
+  void visit (HIR::SliceType &type) override;
+
   void visit (HIR::ReferenceType &type) override
   {
     TyTy::BaseType *base
@@ -347,8 +349,8 @@ public:
     binding->inherit_bounds (specified_bounds);
 
     // When we apply these bounds we must lookup which type this binding
-    // resolves to, as this is the type which will be used during resolution of
-    // the block.
+    // resolves to, as this is the type which will be used during resolution
+    // of the block.
     NodeId ast_node_id = binding_type_path->get_mappings ().get_nodeid ();
 
     // then lookup the reference_node_id

@@ -68,6 +68,9 @@ public:
     RANGE_INCLUSIVE,
     RANGE_TO_INCLUSIVE,
 
+    // https://github.com/rust-lang/rust/blob/master/library/core/src/ptr/const_ptr.rs
+    CONST_PTR,
+
     UNKNOWN,
   };
 
@@ -201,6 +204,10 @@ public:
       {
 	return ItemType::RANGE_TO_INCLUSIVE;
       }
+    else if (item.compare ("const_ptr") == 0)
+      {
+	return ItemType::CONST_PTR;
+      }
 
     return ItemType::UNKNOWN;
   }
@@ -273,6 +280,8 @@ public:
 	return "RangeInclusive";
       case RANGE_TO_INCLUSIVE:
 	return "RangeToInclusive";
+      case CONST_PTR:
+	return "const_ptr";
 
       case UNKNOWN:
 	return "<UNKNOWN>";
