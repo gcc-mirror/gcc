@@ -15835,6 +15835,68 @@ lower_omp (gimple_seq *body, omp_context *ctx)
   input_location = saved_location;
 }
 
+/* Emit a constructor function to enable -foffload-memory=pinned
+   at runtime.  Libgomp handles the OS mode setting, but we need to trigger
+   it by calling GOMP_enable_pinned mode before the program proper runs.  */
+
+static void
+omp_enable_pinned_mode ()
+{
+  static bool visited = false;
+  if (visited)
+    return;
+  visited = true;
+
+  /* Create a new function like this:
+     
+       static void __attribute__((constructor))
+       __set_pinned_mode ()
+       {
+         GOMP_enable_pinned_mode ();
+       }
+  */
+
+  tree name = get_identifier ("__set_pinned_mode");
+  tree voidfntype = build_function_type_list (void_type_node, NULL_TREE);
+  tree decl = build_decl (UNKNOWN_LOCATION, FUNCTION_DECL, name, voidfntype);
+
+  TREE_STATIC (decl) = 1;
+  TREE_USED (decl) = 1;
+  DECL_ARTIFICIAL (decl) = 1;
+  DECL_IGNORED_P (decl) = 0;
+  TREE_PUBLIC (decl) = 0;
+  DECL_UNINLINABLE (decl) = 1;
+  DECL_EXTERNAL (decl) = 0;
+  DECL_CONTEXT (decl) = NULL_TREE;
+  DECL_INITIAL (decl) = make_node (BLOCK);
+  BLOCK_SUPERCONTEXT (DECL_INITIAL (decl)) = decl;
+  DECL_STATIC_CONSTRUCTOR (decl) = 1;
+  DECL_ATTRIBUTES (decl) = tree_cons (get_identifier ("constructor"),
+				      NULL_TREE, NULL_TREE);
+
+  tree t = build_decl (UNKNOWN_LOCATION, RESULT_DECL, NULL_TREE,
+		       void_type_node);
+  DECL_ARTIFICIAL (t) = 1;
+  DECL_IGNORED_P (t) = 1;
+  DECL_CONTEXT (t) = decl;
+  DECL_RESULT (decl) = t;
+
+  push_struct_function (decl);
+  init_tree_ssa (cfun);
+
+  tree calldecl = builtin_decl_explicit (BUILT_IN_GOMP_ENABLE_PINNED_MODE);
+  gcall *call = gimple_build_call (calldecl, 0);
+
+  gimple_seq seq = NULL;
+  gimple_seq_add_stmt (&seq, call);
+  gimple_set_body (decl, gimple_build_bind (NULL_TREE, seq, NULL));
+
+  cfun->function_end_locus = UNKNOWN_LOCATION;
+  cfun->curr_properties |= PROP_gimple_any;
+  pop_cfun ();
+  cgraph_node::add_new_function (decl, true);
+}
+
 /* Main entry point.  */
 
 static unsigned int
@@ -15891,6 +15953,10 @@ execute_lower_omp (void)
   for (auto task_stmt : task_cpyfns)
     finalize_task_copyfn (task_stmt);
   task_cpyfns.release ();
+
+  if (flag_offload_memory == OFFLOAD_MEMORY_PINNED)
+    omp_enable_pinned_mode ();
+
   return 0;
 }
 

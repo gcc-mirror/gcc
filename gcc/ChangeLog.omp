@@ -1,3 +1,9 @@
+2022-03-11  Andrew Stubbs  <ams@codesourcery.com>
+
+	* omp-builtins.def (BUILT_IN_GOMP_ENABLE_PINNED_MODE): New.
+	* omp-low.cc (omp_enable_pinned_mode): New function.
+	(execute_lower_omp): Call omp_enable_pinned_mode.
+
 2022-03-11  Hafiz Abid Qadeer  <abidh@codesourcery.com>
 
 	* omp-low.cc (usm_transform): New function.

@@ -1,3 +1,7 @@
+2022-03-11  Andrew Stubbs  <ams@codesourcery.com>
+
+	* c-c++-common/gomp/alloc-pinned-1.c: New test.
+
 2022-03-11  Hafiz Abid Qadeer  <abidh@codesourcery.com>
 
 	* c-c++-common/gomp/usm-2.c: New test.

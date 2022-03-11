@@ -1,3 +1,14 @@
+2022-03-11  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/linux/allocator.c (always_pinned_mode): New variable.
+	(GOMP_enable_pinned_mode): New function.
+	(linux_memspace_alloc): Disable pinning when always_pinned_mode set.
+	(linux_memspace_calloc): Likewise.
+	(linux_memspace_free): Likewise.
+	(linux_memspace_realloc): Likewise.
+	* libgomp.map: Add GOMP_enable_pinned_mode.
+	* testsuite/libgomp.c/alloc-pinned-7.c: New test.
+
 2022-03-11  Hafiz Abid Qadeer  <abidh@codesourcery.com>
 
 	* testsuite/libgomp.c/usm-6.c: New test.

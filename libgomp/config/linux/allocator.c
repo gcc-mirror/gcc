@@ -50,9 +50,26 @@
 #include <string.h>
 #include "libgomp.h"
 
+static bool always_pinned_mode = false;
+
+/* This function is called by the compiler when -foffload-memory=pinned
+   is used.  */
+
+void
+GOMP_enable_pinned_mode ()
+{
+  if (mlockall (MCL_CURRENT | MCL_FUTURE) != 0)
+    gomp_error ("failed to pin all memory (ulimit too low?)");
+  else
+    always_pinned_mode = true;
+}
+
 static void *
 linux_memspace_alloc (omp_memspace_handle_t memspace, size_t size, int pin)
 {
+  /* Explicit pinning may not be required.  */
+  pin = pin && !always_pinned_mode;
+
   if (memspace == ompx_unified_shared_mem_space)
     {
       return gomp_usm_alloc (size);
@@ -80,6 +97,9 @@ linux_memspace_alloc (omp_memspace_handle_t memspace, size_t size, int pin)
 static void *
 linux_memspace_calloc (omp_memspace_handle_t memspace, size_t size, int pin)
 {
+  /* Explicit pinning may not be required.  */
+  pin = pin && !always_pinned_mode;
+
   if (memspace == ompx_unified_shared_mem_space)
     {
       void *ret = gomp_usm_alloc (size);
@@ -97,6 +117,9 @@ static void
 linux_memspace_free (omp_memspace_handle_t memspace, void *addr, size_t size,
 		     int pin)
 {
+  /* Explicit pinning may not be required.  */
+  pin = pin && !always_pinned_mode;
+
   if (memspace == ompx_unified_shared_mem_space)
     gomp_usm_free (addr);
   else if (pin)
@@ -109,6 +132,9 @@ static void *
 linux_memspace_realloc (omp_memspace_handle_t memspace, void *addr,
 			size_t oldsize, size_t size, int oldpin, int pin)
 {
+  /* Explicit pinning may not be required.  */
+  pin = pin && !always_pinned_mode;
+
   if (memspace == ompx_unified_shared_mem_space)
     goto manual_realloc;
   else if (oldpin && pin)

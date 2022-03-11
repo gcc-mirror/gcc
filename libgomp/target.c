@@ -1615,7 +1615,8 @@ gomp_map_vars_internal (struct gomp_device_descr *devicep,
 		  continue;
 		}
 	      default:
-		if (tgt->list[i].offset == OFFSET_INLINED)
+		if (tgt->list[i].offset == OFFSET_INLINED
+		    && !array)
 		  continue;
 		break;
 	      }
