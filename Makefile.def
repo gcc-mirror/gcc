@@ -73,6 +73,7 @@ host_modules= { module= isl; lib_path=.libs; bootstrap=true;
 		no_install= true; };
 host_modules= { module= gold; bootstrap=true; };
 host_modules= { module= gprof; };
+host_modules= { module= gprofng; };
 // intl acts on 'host_shared' directly, and does not support --with-pic.
 host_modules= { module= intl; bootstrap=true; };
 host_modules= { module= tcl;
@@ -511,6 +512,16 @@ dependencies = { module=all-gprof; on=all-bfd; };
 dependencies = { module=all-gprof; on=all-opcodes; };
 dependencies = { module=all-gprof; on=all-intl; };
 dependencies = { module=all-gprof; on=all-gas; };
+
+dependencies = { module=configure-gprofng; on=configure-intl; };
+dependencies = { module=all-gprofng; on=all-libiberty; };
+dependencies = { module=all-gprofng; on=all-bfd; };
+dependencies = { module=all-gprofng; on=all-opcodes; };
+dependencies = { module=all-gprofng; on=all-intl; };
+dependencies = { module=all-gprofng; on=all-gas; };
+dependencies = { module=install-gprofng; on=install-opcodes; };
+dependencies = { module=install-gprofng; on=install-bfd; };
+
 dependencies = { module=configure-ld; on=configure-intl; };
 dependencies = { module=all-ld; on=all-libiberty; };
 dependencies = { module=all-ld; on=all-bfd; };

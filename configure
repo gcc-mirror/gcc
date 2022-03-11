@@ -806,6 +806,7 @@ enable_offload_targets
 enable_offload_defaulted
 enable_gold
 enable_ld
+enable_gprofng
 enable_compressed_debug_sections
 enable_default_compressed_debug_sections_algorithm
 enable_libquadmath
@@ -1544,6 +1545,7 @@ Optional Features:
 
   --enable-gold[=ARG]     build gold [ARG={default,yes,no}]
   --enable-ld[=ARG]       build ld [ARG={default,yes,no}]
+  --enable-gprofng[=ARG]  build gprofng [ARG={yes,no}]
   --enable-compressed-debug-sections={all,gas,gold,ld,none}
                           Enable compressed debug sections for gas, gold or ld
                           by default
@@ -3130,6 +3132,22 @@ $as_echo "$as_me: WARNING: neither ld nor gold are enabled" >&2;}
     as_fn_error $? "invalid --enable-ld argument" "$LINENO" 5
     ;;
 esac
+
+# Check whether --enable-gprofng was given.
+if test "${enable_gprofng+set}" = set; then :
+  enableval=$enable_gprofng; enable_gprofng=$enableval
+else
+  enable_gprofng=yes
+fi
+
+if test "$enable_gprofng" = "yes"; then
+  case "${target}" in
+    x86_64-*-linux* | i?86-*-linux* | aarch64-*-linux*)
+    configdirs="$configdirs gprofng"
+    ;;
+  esac
+fi
+
 
 # PR gas/19109
 # Decide the default method for compressing debug sections.

@@ -1089,6 +1089,7 @@ configure-host:  \
     maybe-configure-isl \
     maybe-configure-gold \
     maybe-configure-gprof \
+    maybe-configure-gprofng \
     maybe-configure-intl \
     maybe-configure-tcl \
     maybe-configure-itcl \
@@ -1242,6 +1243,7 @@ all-host: maybe-all-isl
 all-host: maybe-all-gold
 @endif gold-no-bootstrap
 all-host: maybe-all-gprof
+all-host: maybe-all-gprofng
 @if intl-no-bootstrap
 all-host: maybe-all-intl
 @endif intl-no-bootstrap
@@ -1381,6 +1383,7 @@ info-host: maybe-info-mpc
 info-host: maybe-info-isl
 info-host: maybe-info-gold
 info-host: maybe-info-gprof
+info-host: maybe-info-gprofng
 info-host: maybe-info-intl
 info-host: maybe-info-tcl
 info-host: maybe-info-itcl
@@ -1471,6 +1474,7 @@ dvi-host: maybe-dvi-mpc
 dvi-host: maybe-dvi-isl
 dvi-host: maybe-dvi-gold
 dvi-host: maybe-dvi-gprof
+dvi-host: maybe-dvi-gprofng
 dvi-host: maybe-dvi-intl
 dvi-host: maybe-dvi-tcl
 dvi-host: maybe-dvi-itcl
@@ -1561,6 +1565,7 @@ pdf-host: maybe-pdf-mpc
 pdf-host: maybe-pdf-isl
 pdf-host: maybe-pdf-gold
 pdf-host: maybe-pdf-gprof
+pdf-host: maybe-pdf-gprofng
 pdf-host: maybe-pdf-intl
 pdf-host: maybe-pdf-tcl
 pdf-host: maybe-pdf-itcl
@@ -1651,6 +1656,7 @@ html-host: maybe-html-mpc
 html-host: maybe-html-isl
 html-host: maybe-html-gold
 html-host: maybe-html-gprof
+html-host: maybe-html-gprofng
 html-host: maybe-html-intl
 html-host: maybe-html-tcl
 html-host: maybe-html-itcl
@@ -1741,6 +1747,7 @@ TAGS-host: maybe-TAGS-mpc
 TAGS-host: maybe-TAGS-isl
 TAGS-host: maybe-TAGS-gold
 TAGS-host: maybe-TAGS-gprof
+TAGS-host: maybe-TAGS-gprofng
 TAGS-host: maybe-TAGS-intl
 TAGS-host: maybe-TAGS-tcl
 TAGS-host: maybe-TAGS-itcl
@@ -1831,6 +1838,7 @@ install-info-host: maybe-install-info-mpc
 install-info-host: maybe-install-info-isl
 install-info-host: maybe-install-info-gold
 install-info-host: maybe-install-info-gprof
+install-info-host: maybe-install-info-gprofng
 install-info-host: maybe-install-info-intl
 install-info-host: maybe-install-info-tcl
 install-info-host: maybe-install-info-itcl
@@ -1921,6 +1929,7 @@ install-dvi-host: maybe-install-dvi-mpc
 install-dvi-host: maybe-install-dvi-isl
 install-dvi-host: maybe-install-dvi-gold
 install-dvi-host: maybe-install-dvi-gprof
+install-dvi-host: maybe-install-dvi-gprofng
 install-dvi-host: maybe-install-dvi-intl
 install-dvi-host: maybe-install-dvi-tcl
 install-dvi-host: maybe-install-dvi-itcl
@@ -2011,6 +2020,7 @@ install-pdf-host: maybe-install-pdf-mpc
 install-pdf-host: maybe-install-pdf-isl
 install-pdf-host: maybe-install-pdf-gold
 install-pdf-host: maybe-install-pdf-gprof
+install-pdf-host: maybe-install-pdf-gprofng
 install-pdf-host: maybe-install-pdf-intl
 install-pdf-host: maybe-install-pdf-tcl
 install-pdf-host: maybe-install-pdf-itcl
@@ -2101,6 +2111,7 @@ install-html-host: maybe-install-html-mpc
 install-html-host: maybe-install-html-isl
 install-html-host: maybe-install-html-gold
 install-html-host: maybe-install-html-gprof
+install-html-host: maybe-install-html-gprofng
 install-html-host: maybe-install-html-intl
 install-html-host: maybe-install-html-tcl
 install-html-host: maybe-install-html-itcl
@@ -2191,6 +2202,7 @@ installcheck-host: maybe-installcheck-mpc
 installcheck-host: maybe-installcheck-isl
 installcheck-host: maybe-installcheck-gold
 installcheck-host: maybe-installcheck-gprof
+installcheck-host: maybe-installcheck-gprofng
 installcheck-host: maybe-installcheck-intl
 installcheck-host: maybe-installcheck-tcl
 installcheck-host: maybe-installcheck-itcl
@@ -2281,6 +2293,7 @@ mostlyclean-host: maybe-mostlyclean-mpc
 mostlyclean-host: maybe-mostlyclean-isl
 mostlyclean-host: maybe-mostlyclean-gold
 mostlyclean-host: maybe-mostlyclean-gprof
+mostlyclean-host: maybe-mostlyclean-gprofng
 mostlyclean-host: maybe-mostlyclean-intl
 mostlyclean-host: maybe-mostlyclean-tcl
 mostlyclean-host: maybe-mostlyclean-itcl
@@ -2371,6 +2384,7 @@ clean-host: maybe-clean-mpc
 clean-host: maybe-clean-isl
 clean-host: maybe-clean-gold
 clean-host: maybe-clean-gprof
+clean-host: maybe-clean-gprofng
 clean-host: maybe-clean-intl
 clean-host: maybe-clean-tcl
 clean-host: maybe-clean-itcl
@@ -2461,6 +2475,7 @@ distclean-host: maybe-distclean-mpc
 distclean-host: maybe-distclean-isl
 distclean-host: maybe-distclean-gold
 distclean-host: maybe-distclean-gprof
+distclean-host: maybe-distclean-gprofng
 distclean-host: maybe-distclean-intl
 distclean-host: maybe-distclean-tcl
 distclean-host: maybe-distclean-itcl
@@ -2551,6 +2566,7 @@ maintainer-clean-host: maybe-maintainer-clean-mpc
 maintainer-clean-host: maybe-maintainer-clean-isl
 maintainer-clean-host: maybe-maintainer-clean-gold
 maintainer-clean-host: maybe-maintainer-clean-gprof
+maintainer-clean-host: maybe-maintainer-clean-gprofng
 maintainer-clean-host: maybe-maintainer-clean-intl
 maintainer-clean-host: maybe-maintainer-clean-tcl
 maintainer-clean-host: maybe-maintainer-clean-itcl
@@ -2699,6 +2715,7 @@ check-host:  \
     maybe-check-isl \
     maybe-check-gold \
     maybe-check-gprof \
+    maybe-check-gprofng \
     maybe-check-intl \
     maybe-check-tcl \
     maybe-check-itcl \
@@ -2836,6 +2853,7 @@ install-host-nogcc:  \
     maybe-install-isl \
     maybe-install-gold \
     maybe-install-gprof \
+    maybe-install-gprofng \
     maybe-install-intl \
     maybe-install-tcl \
     maybe-install-itcl \
@@ -2891,6 +2909,7 @@ install-host:  \
     maybe-install-isl \
     maybe-install-gold \
     maybe-install-gprof \
+    maybe-install-gprofng \
     maybe-install-intl \
     maybe-install-tcl \
     maybe-install-itcl \
@@ -3001,6 +3020,7 @@ install-strip-host:  \
     maybe-install-strip-isl \
     maybe-install-strip-gold \
     maybe-install-strip-gprof \
+    maybe-install-strip-gprofng \
     maybe-install-strip-intl \
     maybe-install-strip-tcl \
     maybe-install-strip-itcl \
@@ -19298,6 +19318,474 @@ maintainer-clean-gprof:
 	  || exit 1
 
 @endif gprof
+
+
+
+.PHONY: configure-gprofng maybe-configure-gprofng
+maybe-configure-gprofng:
+@if gcc-bootstrap
+configure-gprofng: stage_current
+@endif gcc-bootstrap
+@if gprofng
+maybe-configure-gprofng: configure-gprofng
+configure-gprofng: 
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	test ! -f $(HOST_SUBDIR)/gprofng/Makefile || exit 0; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/gprofng; \
+	$(HOST_EXPORTS)  \
+	echo Configuring in $(HOST_SUBDIR)/gprofng; \
+	cd "$(HOST_SUBDIR)/gprofng" || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(HOST_SUBDIR)/gprofng/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	module_srcdir=gprofng; \
+	$(SHELL) \
+	  $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias}  \
+	  || exit 1
+@endif gprofng
+
+
+
+
+
+.PHONY: all-gprofng maybe-all-gprofng
+maybe-all-gprofng:
+@if gcc-bootstrap
+all-gprofng: stage_current
+@endif gcc-bootstrap
+@if gprofng
+TARGET-gprofng=all
+maybe-all-gprofng: all-gprofng
+all-gprofng: configure-gprofng
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS)  \
+	(cd $(HOST_SUBDIR)/gprofng && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_HOST_FLAGS) $(STAGE1_FLAGS_TO_PASS)  \
+		$(TARGET-gprofng))
+@endif gprofng
+
+
+
+
+.PHONY: check-gprofng maybe-check-gprofng
+maybe-check-gprofng:
+@if gprofng
+maybe-check-gprofng: check-gprofng
+
+check-gprofng:
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS)  \
+	(cd $(HOST_SUBDIR)/gprofng && \
+	  $(MAKE) $(FLAGS_TO_PASS)  check)
+
+@endif gprofng
+
+.PHONY: install-gprofng maybe-install-gprofng
+maybe-install-gprofng:
+@if gprofng
+maybe-install-gprofng: install-gprofng
+
+install-gprofng: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	(cd $(HOST_SUBDIR)/gprofng && \
+	  $(MAKE) $(FLAGS_TO_PASS)  install)
+
+@endif gprofng
+
+.PHONY: install-strip-gprofng maybe-install-strip-gprofng
+maybe-install-strip-gprofng:
+@if gprofng
+maybe-install-strip-gprofng: install-strip-gprofng
+
+install-strip-gprofng: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	(cd $(HOST_SUBDIR)/gprofng && \
+	  $(MAKE) $(FLAGS_TO_PASS)  install-strip)
+
+@endif gprofng
+
+# Other targets (info, dvi, pdf, etc.)
+
+.PHONY: maybe-info-gprofng info-gprofng
+maybe-info-gprofng:
+@if gprofng
+maybe-info-gprofng: info-gprofng
+
+info-gprofng: \
+    configure-gprofng 
+	@: $(MAKE); $(unstage)
+	@[ -f ./gprofng/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing info in gprofng"; \
+	(cd $(HOST_SUBDIR)/gprofng && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          info) \
+	  || exit 1
+
+@endif gprofng
+
+.PHONY: maybe-dvi-gprofng dvi-gprofng
+maybe-dvi-gprofng:
+@if gprofng
+maybe-dvi-gprofng: dvi-gprofng
+
+dvi-gprofng: \
+    configure-gprofng 
+	@: $(MAKE); $(unstage)
+	@[ -f ./gprofng/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing dvi in gprofng"; \
+	(cd $(HOST_SUBDIR)/gprofng && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          dvi) \
+	  || exit 1
+
+@endif gprofng
+
+.PHONY: maybe-pdf-gprofng pdf-gprofng
+maybe-pdf-gprofng:
+@if gprofng
+maybe-pdf-gprofng: pdf-gprofng
+
+pdf-gprofng: \
+    configure-gprofng 
+	@: $(MAKE); $(unstage)
+	@[ -f ./gprofng/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing pdf in gprofng"; \
+	(cd $(HOST_SUBDIR)/gprofng && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          pdf) \
+	  || exit 1
+
+@endif gprofng
+
+.PHONY: maybe-html-gprofng html-gprofng
+maybe-html-gprofng:
+@if gprofng
+maybe-html-gprofng: html-gprofng
+
+html-gprofng: \
+    configure-gprofng 
+	@: $(MAKE); $(unstage)
+	@[ -f ./gprofng/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing html in gprofng"; \
+	(cd $(HOST_SUBDIR)/gprofng && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          html) \
+	  || exit 1
+
+@endif gprofng
+
+.PHONY: maybe-TAGS-gprofng TAGS-gprofng
+maybe-TAGS-gprofng:
+@if gprofng
+maybe-TAGS-gprofng: TAGS-gprofng
+
+TAGS-gprofng: \
+    configure-gprofng 
+	@: $(MAKE); $(unstage)
+	@[ -f ./gprofng/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing TAGS in gprofng"; \
+	(cd $(HOST_SUBDIR)/gprofng && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          TAGS) \
+	  || exit 1
+
+@endif gprofng
+
+.PHONY: maybe-install-info-gprofng install-info-gprofng
+maybe-install-info-gprofng:
+@if gprofng
+maybe-install-info-gprofng: install-info-gprofng
+
+install-info-gprofng: \
+    configure-gprofng \
+    info-gprofng 
+	@: $(MAKE); $(unstage)
+	@[ -f ./gprofng/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-info in gprofng"; \
+	(cd $(HOST_SUBDIR)/gprofng && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          install-info) \
+	  || exit 1
+
+@endif gprofng
+
+.PHONY: maybe-install-dvi-gprofng install-dvi-gprofng
+maybe-install-dvi-gprofng:
+@if gprofng
+maybe-install-dvi-gprofng: install-dvi-gprofng
+
+install-dvi-gprofng: \
+    configure-gprofng \
+    dvi-gprofng 
+	@: $(MAKE); $(unstage)
+	@[ -f ./gprofng/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-dvi in gprofng"; \
+	(cd $(HOST_SUBDIR)/gprofng && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          install-dvi) \
+	  || exit 1
+
+@endif gprofng
+
+.PHONY: maybe-install-pdf-gprofng install-pdf-gprofng
+maybe-install-pdf-gprofng:
+@if gprofng
+maybe-install-pdf-gprofng: install-pdf-gprofng
+
+install-pdf-gprofng: \
+    configure-gprofng \
+    pdf-gprofng 
+	@: $(MAKE); $(unstage)
+	@[ -f ./gprofng/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-pdf in gprofng"; \
+	(cd $(HOST_SUBDIR)/gprofng && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          install-pdf) \
+	  || exit 1
+
+@endif gprofng
+
+.PHONY: maybe-install-html-gprofng install-html-gprofng
+maybe-install-html-gprofng:
+@if gprofng
+maybe-install-html-gprofng: install-html-gprofng
+
+install-html-gprofng: \
+    configure-gprofng \
+    html-gprofng 
+	@: $(MAKE); $(unstage)
+	@[ -f ./gprofng/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-html in gprofng"; \
+	(cd $(HOST_SUBDIR)/gprofng && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          install-html) \
+	  || exit 1
+
+@endif gprofng
+
+.PHONY: maybe-installcheck-gprofng installcheck-gprofng
+maybe-installcheck-gprofng:
+@if gprofng
+maybe-installcheck-gprofng: installcheck-gprofng
+
+installcheck-gprofng: \
+    configure-gprofng 
+	@: $(MAKE); $(unstage)
+	@[ -f ./gprofng/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing installcheck in gprofng"; \
+	(cd $(HOST_SUBDIR)/gprofng && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          installcheck) \
+	  || exit 1
+
+@endif gprofng
+
+.PHONY: maybe-mostlyclean-gprofng mostlyclean-gprofng
+maybe-mostlyclean-gprofng:
+@if gprofng
+maybe-mostlyclean-gprofng: mostlyclean-gprofng
+
+mostlyclean-gprofng: 
+	@: $(MAKE); $(unstage)
+	@[ -f ./gprofng/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing mostlyclean in gprofng"; \
+	(cd $(HOST_SUBDIR)/gprofng && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          mostlyclean) \
+	  || exit 1
+
+@endif gprofng
+
+.PHONY: maybe-clean-gprofng clean-gprofng
+maybe-clean-gprofng:
+@if gprofng
+maybe-clean-gprofng: clean-gprofng
+
+clean-gprofng: 
+	@: $(MAKE); $(unstage)
+	@[ -f ./gprofng/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing clean in gprofng"; \
+	(cd $(HOST_SUBDIR)/gprofng && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          clean) \
+	  || exit 1
+
+@endif gprofng
+
+.PHONY: maybe-distclean-gprofng distclean-gprofng
+maybe-distclean-gprofng:
+@if gprofng
+maybe-distclean-gprofng: distclean-gprofng
+
+distclean-gprofng: 
+	@: $(MAKE); $(unstage)
+	@[ -f ./gprofng/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing distclean in gprofng"; \
+	(cd $(HOST_SUBDIR)/gprofng && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          distclean) \
+	  || exit 1
+
+@endif gprofng
+
+.PHONY: maybe-maintainer-clean-gprofng maintainer-clean-gprofng
+maybe-maintainer-clean-gprofng:
+@if gprofng
+maybe-maintainer-clean-gprofng: maintainer-clean-gprofng
+
+maintainer-clean-gprofng: 
+	@: $(MAKE); $(unstage)
+	@[ -f ./gprofng/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing maintainer-clean in gprofng"; \
+	(cd $(HOST_SUBDIR)/gprofng && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          maintainer-clean) \
+	  || exit 1
+
+@endif gprofng
 
 
 
@@ -66063,6 +66551,8 @@ all-stagetrain-gas: maybe-all-stagetrain-intl
 all-stagefeedback-gas: maybe-all-stagefeedback-intl
 all-stageautoprofile-gas: maybe-all-stageautoprofile-intl
 all-stageautofeedback-gas: maybe-all-stageautofeedback-intl
+install-gprofng: maybe-install-opcodes
+install-gprofng: maybe-install-bfd
 configure-ld: maybe-configure-intl
 configure-stage1-ld: maybe-configure-stage1-intl
 configure-stage2-ld: maybe-configure-stage2-intl
@@ -66503,6 +66993,7 @@ configure-gdb: stage_last
 configure-gdbserver: stage_last
 configure-gdbsupport: stage_last
 configure-gprof: stage_last
+configure-gprofng: stage_last
 configure-sid: stage_last
 configure-sim: stage_last
 configure-fastjar: stage_last
@@ -66537,6 +67028,12 @@ all-gprof: maybe-all-bfd
 all-gprof: maybe-all-opcodes
 all-gprof: maybe-all-intl
 all-gprof: maybe-all-gas
+configure-gprofng: maybe-configure-intl
+all-gprofng: maybe-all-libiberty
+all-gprofng: maybe-all-bfd
+all-gprofng: maybe-all-opcodes
+all-gprofng: maybe-all-intl
+all-gprofng: maybe-all-gas
 all-sid: maybe-all-libiberty
 all-sid: maybe-all-bfd
 all-sid: maybe-all-opcodes
