@@ -941,11 +941,13 @@ is
          else
             T2 := Yhi * Zlo;
             pragma Assert (Big (T2) = Big (Double_Uns'(Yhi * Zlo)));
+            pragma Assert (Big_0 = Big (Double_Uns'(Ylo * Zhi)));
          end if;
 
       else
          T2 := Ylo * Zhi;
          pragma Assert (Big (T2) = Big (Double_Uns'(Ylo * Zhi)));
+         pragma Assert (Big_0 = Big (Double_Uns'(Yhi * Zlo)));
       end if;
 
       T1 := Ylo * Zlo;
