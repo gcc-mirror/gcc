@@ -2611,7 +2611,7 @@ __gnat_install_handler (void)
   struct sigaction act;
   int err;
 
-  act.sa_handler = __gnat_error_handler;
+  act.sa_sigaction = __gnat_error_handler;
   act.sa_flags = SA_NODEFER | SA_SIGINFO;
   sigemptyset (&act.sa_mask);
 
