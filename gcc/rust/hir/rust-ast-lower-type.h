@@ -291,6 +291,19 @@ public:
 			       translated);
   }
 
+  void visit (AST::NeverType &type) override
+  {
+    auto crate_num = mappings->get_current_crate ();
+    Analysis::NodeMapping mapping (crate_num, type.get_node_id (),
+				   mappings->get_next_hir_id (crate_num),
+				   mappings->get_next_localdef_id (crate_num));
+
+    translated = new HIR::NeverType (mapping, type.get_locus ());
+
+    mappings->insert_hir_type (mapping.get_crate_num (), mapping.get_hirid (),
+			       translated);
+  }
+
   void visit (AST::TraitObjectTypeOneBound &type) override;
 
   void visit (AST::TraitObjectType &type) override;

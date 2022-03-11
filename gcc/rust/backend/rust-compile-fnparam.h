@@ -36,6 +36,14 @@ public:
     return compiler.compiled_param;
   }
 
+  static Bvariable *compile (Context *ctx, tree fndecl, HIR::Pattern *param,
+			     tree decl_type, Location locus)
+  {
+    CompileFnParam compiler (ctx, fndecl, decl_type, locus);
+    param->accept_vis (compiler);
+    return compiler.compiled_param;
+  }
+
   void visit (HIR::IdentifierPattern &pattern) override
   {
     if (!pattern.is_mut ())

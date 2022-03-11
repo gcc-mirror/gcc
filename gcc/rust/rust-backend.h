@@ -275,10 +275,6 @@ public:
 				const std::vector<tree> &vals, Location)
     = 0;
 
-  // Return an expression for the address of BASE[INDEX].
-  // BASE has a pointer type.  This is used for slice indexing.
-  virtual tree pointer_offset_expression (tree base, tree index, Location) = 0;
-
   // Return an expression for ARRAY[INDEX] as an l-value.  ARRAY is a valid
   // fixed-length array, not a slice.
   virtual tree array_index_expression (tree array, tree index, Location) = 0;
@@ -507,12 +503,6 @@ public:
   function_set_parameters (tree function,
 			   const std::vector<Bvariable *> &param_vars)
     = 0;
-
-  // Look up a named built-in function in the current backend implementation.
-  // Returns NULL if no built-in function by that name exists.
-  virtual tree lookup_gcc_builtin (const std::string &) = 0;
-
-  virtual tree lookup_builtin_by_rust_name (const std::string &) = 0;
 
   // Utility.
 

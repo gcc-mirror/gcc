@@ -145,6 +145,15 @@ public:
 				      type.get_locus ());
   }
 
+  void visit (HIR::NeverType &type) override
+  {
+    TyTy::BaseType *lookup = nullptr;
+    bool ok = context->lookup_builtin ("!", &lookup);
+    rust_assert (ok);
+
+    translated = lookup->clone ();
+  }
+
   void visit (HIR::TraitObjectType &type) override;
 
 private:

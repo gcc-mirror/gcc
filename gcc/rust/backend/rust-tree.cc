@@ -17,6 +17,7 @@
 // <http://www.gnu.org/licenses/>.
 
 #include "rust-tree.h"
+#include "fold-const.h"
 #include "stringpool.h"
 #include "attribs.h"
 #include "escaped_string.h"
@@ -654,6 +655,23 @@ get_fndecl_from_callee (tree fn)
   if (TREE_CODE (fn) == FUNCTION_DECL)
     return fn;
   return NULL_TREE;
+}
+
+tree
+pointer_offset_expression (tree base_tree, tree index_tree, location_t location)
+{
+  tree element_type_tree = TREE_TYPE (TREE_TYPE (base_tree));
+  if (base_tree == error_mark_node || TREE_TYPE (base_tree) == error_mark_node
+      || index_tree == error_mark_node || element_type_tree == error_mark_node)
+    return error_mark_node;
+
+  tree element_size = TYPE_SIZE_UNIT (element_type_tree);
+  index_tree = fold_convert_loc (location, sizetype, index_tree);
+  tree offset
+    = fold_build2_loc (location, MULT_EXPR, sizetype, index_tree, element_size);
+
+  return fold_build2_loc (location, POINTER_PLUS_EXPR, TREE_TYPE (base_tree),
+			  base_tree, offset);
 }
 
 } // namespace Rust
