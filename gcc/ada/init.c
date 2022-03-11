@@ -2625,26 +2625,26 @@ __gnat_install_handler (void)
     }
   }
   if (__gnat_get_interrupt_state (SIGILL) != 's') {
-    sigaction (SIGILL,  &act, NULL);
+    err = sigaction (SIGILL,  &act, NULL);
     if (err == -1) {
       err = errno;
-      perror ("error while attaching SIGFPE");
+      perror ("error while attaching SIGILL");
       perror (strerror (err));
     }
   }
   if (__gnat_get_interrupt_state (SIGSEGV) != 's') {
-    sigaction (SIGSEGV, &act, NULL);
+    err = sigaction (SIGSEGV, &act, NULL);
     if (err == -1) {
       err = errno;
-      perror ("error while attaching SIGFPE");
+      perror ("error while attaching SIGSEGV");
       perror (strerror (err));
     }
   }
   if (__gnat_get_interrupt_state (SIGBUS) != 's') {
-    sigaction (SIGBUS,  &act, NULL);
+    err = sigaction (SIGBUS,  &act, NULL);
     if (err == -1) {
       err = errno;
-      perror ("error while attaching SIGFPE");
+      perror ("error while attaching SIGBUS");
       perror (strerror (err));
     }
   }
