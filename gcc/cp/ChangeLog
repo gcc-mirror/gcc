@@ -1,3 +1,42 @@
+2022-03-10  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/104608
+	* parser.cc (cp_parser_template_name): Repeat lookup of
+	TYPE_DECLs.
+
+2022-03-10  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/104752
+	* semantics.cc (finish_compound_literal): Disallow auto{x} for
+	is_constrained_auto.
+	* typeck2.cc (build_functional_cast_1): Likewise.
+
+2022-03-10  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/104846
+	* decl.cc (grokdeclarator): Check FUNC_OR_METHOD_TYPE_P before giving
+	data member errors.
+
+2022-03-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/103460
+	* decl.cc (grok_op_properties): Allow variadic operator[] for
+	C++23.
+
+2022-03-10  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR c++/95999
+	* decl.cc (finish_enum_value_list): If VALUE isn't an INTEGER_CST
+	consider it to be zero (i.e. treat it like error_mark_node).
+	(build_enumerator): Likewise, if PREV_VALUE isn't an INTEGER_CST,
+	set VALUE to error_mark_node.
+
+2022-03-10  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR c++/39751
+	* parser.cc (cp_parser_late_parsing_for_member): Confirm the token
+	stream hasn't been purged before processing DECL_PENDING_INLINE.
+
 2022-03-09  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/104823

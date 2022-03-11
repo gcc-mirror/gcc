@@ -1,3 +1,136 @@
+2022-03-10  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR c++/84964
+	* calls.cc (expand_call): Ignore stack adjustments after sorry.
+
+2022-03-10  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR target/103074
+	* lra-constraints.cc (split_reg): Set up
+	check_and_force_assignment_correctness_p when splitting hard
+	register live range.
+
+2022-03-10  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/104813
+	* ipa-cp.cc (create_specialized_node): Move removal of
+	self-recursive calls from callers vector before refrence
+	adjustments.
+
+2022-03-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/102943
+	* gimple-range-cache.cc (sbr_sparse_bitmap::bitvec):
+	Make a bitmap_head.
+	(sbr_sparse_bitmap::sbr_sparse_bitmap): Adjust and switch
+	to tree view.
+	(sbr_sparse_bitmap::set_bb_range): Adjust.
+	(sbr_sparse_bitmap::get_bb_range): Likewise.
+
+2022-03-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/102943
+	* tree-ssa-dom.cc (back_propagate_equivalences): Only
+	populate the dominance bitmap if fast queries are not
+	available.  Use a tree view bitmap.
+	(record_temporary_equivalences): Cache the dominance bitmap
+	across all equivalences on the edge.
+
+2022-03-10  Tom de Vries  <tdevries@suse.de>
+
+	PR target/104840
+	* config/nvptx/nvptx.md (define_attr "predicable"): Use no,yes instead
+	of false,true.
+
+2022-03-10  Tom de Vries  <tdevries@suse.de>
+
+	PR target/104783
+	* config/nvptx/nvptx.cc (nvptx_init_unisimt_predicate)
+	(nvptx_output_unisimt_switch): Handle unisimt_outside_simt_predicate.
+	(nvptx_get_unisimt_outside_simt_predicate): New function.
+	(predicate_insn): New function, factored out of ...
+	(nvptx_reorg_uniform_simt): ... here.  Predicate all emitted insns.
+	* config/nvptx/nvptx.h (struct machine_function): Add
+	unisimt_outside_simt_predicate field.
+	* config/nvptx/nvptx.md (define_insn "nvptx_warpsync")
+	(define_insn "nvptx_uniform_warp_check"): Make predicable.
+
+2022-03-10  Tom de Vries  <tdevries@suse.de>
+
+	* config/nvptx/nvptx.cc (nvptx_unisimt_handle_set): Handle unused
+	result.
+
+2022-03-10  Tom de Vries  <tdevries@suse.de>
+
+	PR target/104815
+	* config/nvptx/nvptx.cc (nvptx_print_operand): Handle 'x' operand
+	modifier.
+	* config/nvptx/nvptx.md: Use %x0 destination operand in atom insns.
+
+2022-03-10  Tom de Vries  <tdevries@suse.de>
+
+	* config/nvptx/nvptx.md (define_insn "atomic_fetch_<logic><mode>"):
+	Emit atom.and.b64 instead of atom.b64.and.
+
+2022-03-10  Tom de Vries  <tdevries@suse.de>
+
+	* config/nvptx/t-nvptx (MULTILIB_EXTRA_OPTS): Move mptx=3.1 ...
+	(MULTILIB_OPTIONS): ... here.
+
+2022-03-10  Tom de Vries  <tdevries@suse.de>
+
+	PR target/104758
+	* config/nvptx/nvptx.opt (misa): Set default to sm_30.
+	* config/nvptx/t-nvptx (MULTILIB_EXTRA_OPTS): Remove misa=sm_30.
+
+2022-03-10  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR middle-end/90115
+	PR middle-end/102330
+	PR middle-end/104774
+	* omp-low.cc (oacc_privatization_candidate_p)
+	(oacc_privatization_scan_clause_chain)
+	(oacc_privatization_scan_decl_chain, lower_oacc_private_marker):
+	Analyze 'lookup_decl'-translated DECL.
+
+2022-03-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/99708
+	* config/rs6000/rs6000.h (enum rs6000_builtin_type_index): Remove
+	RS6000_BTI_ptr_ieee128_float and RS6000_BTI_ptr_ibm128_float.
+	(ptr_ieee128_float_type_node, ptr_ibm128_float_type_node): Remove.
+	* config/rs6000/rs6000-builtin.cc (rs6000_type_string): Return
+	"**NULL**" if type_node is NULL first.  Handle
+	ieee128_float_type_node.
+	(rs6000_init_builtins): Don't initialize ptr_ieee128_float_type_node
+	and ptr_ibm128_float_type_node.  Set ibm128_float_type_node and
+	ieee128_float_type_node to NULL rather than long_double_type_node if
+	they aren't supported.  Do support __ibm128 even if
+	!TARGET_FLOAT128_TYPE when long double is double double.
+	(rs6000_expand_builtin): Error if bif_is_ibm128 and
+	!ibm128_float_type_node.  Remap RS6000_BIF_{,UN}PACK_IF to
+	RS6000_BIF_{,UN}PACK_TF much earlier and only use bif_is_ibm128 check
+	for it.
+	* config/rs6000/rs6000-c.cc (rs6000_target_modify_macros): Define
+	__SIZEOF_FLOAT128__ here and only iff __float128 macro is defined.
+	(rs6000_cpu_cpp_builtins): Don't define __SIZEOF_FLOAT128__ here.
+	Define __SIZEOF_IBM128__=16 if ieee128_float_type_node is non-NULL.
+	Formatting fix.
+	* config/rs6000/rs6000-gen-builtins.cc: Document ibm128 attribute.
+	(struct attrinfo): Add isibm128 member.
+	(TYPE_MAP_SIZE): Remove.
+	(type_map): Use [] instead of [TYPE_MAP_SIZE].  For "if" use
+	ibm128_float_type_node only if it is non-NULL, otherwise fall back
+	to long_double_type_node.  Remove "pif" entry.
+	(parse_bif_attrs): Handle ibm128 attribute and print it for debugging.
+	(write_decls): Output bif_ibm128_bit and bif_is_ibm128.
+	(write_type_node): Use sizeof type_map / sizeof type_map[0]
+	instead of TYPE_MAP_SIZE.
+	(write_bif_static_init): Handle isibm128.
+	* config/rs6000/rs6000-builtins.def: Document ibm128 attribute.
+	(__builtin_pack_ibm128, __builtin_unpack_ibm128): Add ibm128
+	attribute.
+
 2022-03-09  Richard Biener  <rguenther@suse.de>
 
 	* cfgexpand.cc (expand_gimple_asm): Special-case MEM_REF

@@ -1,3 +1,59 @@
+2022-03-10  Hafiz Abid Qadeer  <abidh@codesourcery.com>
+
+	* testsuite/libgomp.fortran/allocate-1.f90: Remove pool_size
+	trait.  Test last index in w and v array.  Remove redundant
+	assignment to V(1).  Move alignment checks at the end of
+	parallel region.
+
+2022-03-10  Tom de Vries  <tdevries@suse.de>
+
+	* testsuite/libgomp.c/pr104783.c: New test.
+
+2022-03-10  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR middle-end/90115
+	PR middle-end/102330
+	PR middle-end/104774
+	* testsuite/libgomp.oacc-c-c++-common/kernels-decompose-1.c:
+	Enhance.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-private-vars-local-worker-1.c:
+	Adjust.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-private-vars-local-worker-2.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-private-vars-local-worker-3.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-private-vars-local-worker-4.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-private-vars-local-worker-5.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-private-vars-loop-vector-1.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-private-vars-loop-vector-2.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-private-vars-loop-worker-2.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-private-vars-loop-worker-3.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-private-vars-loop-worker-4.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-private-vars-loop-worker-5.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-private-vars-loop-worker-6.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-private-vars-loop-worker-7.c:
+	Likewise.
+	* testsuite/libgomp.oacc-fortran/optional-private.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/privatized-ref-1.f95: Likewise.
+	* testsuite/libgomp.oacc-fortran/privatized-ref-2.f90: Likewise.
+
+2022-03-10  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR middle-end/90115
+	* testsuite/libgomp.oacc-fortran/routine-1.f90: Enhance.
+	* testsuite/libgomp.oacc-fortran/routine-2.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/routine-3.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/routine-9.f90: Likewise.
+
 2022-03-04  Thomas Schwinge  <thomas@codesourcery.com>
 
 	PR testsuite/104791

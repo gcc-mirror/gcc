@@ -1,3 +1,25 @@
+2022-03-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/104870
+	* src/c++17/floating_from_chars.cc: Check __SIZE_WIDTH__ >= 32
+	before using fast_float.
+
+2022-03-10  Detlef Vollmann  <dv@vollmann.ch>
+
+	PR libstdc++/104866
+	* include/bits/this_thread_sleep.h: Fix order of #endif and
+	closing brace of namespace.
+
+2022-03-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	* libsupc++/compare (_Strong_order::_S_fp_cmp) [__vax__]:
+	Handle NaN.
+
+2022-03-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	* libsupc++/compare (_Strong_ordering::_S_fp_cmp) [__vax__]: Use
+	<=> comparison.
+
 2022-03-09  Patrick Palka  <ppalka@redhat.com>
 
 	PR libstdc++/104859

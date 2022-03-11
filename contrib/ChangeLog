@@ -1,3 +1,14 @@
+2022-03-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR other/102664
+	* gcc-git-customization.sh: Fix non-portable commands.
+
+2022-03-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR other/102664
+	* git-descr.sh: Replace all [1-9] occurrences with [0-9].
+	* git-undescr.sh: Likewise.
+
 2022-03-09  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR other/102664
