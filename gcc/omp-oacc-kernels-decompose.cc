@@ -1505,7 +1505,6 @@ omp_oacc_kernels_decompose_1 (gimple *kernels_stmt)
 
 	    case GOMP_MAP_POINTER:
 	    case GOMP_MAP_TO_PSET:
-	    case GOMP_MAP_FORCE_TOFROM:
 	    case GOMP_MAP_FIRSTPRIVATE_POINTER:
 	    case GOMP_MAP_FIRSTPRIVATE_REFERENCE:
 	      /* ??? Copying these map kinds leads to internal compiler

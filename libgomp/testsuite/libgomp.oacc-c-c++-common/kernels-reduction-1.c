@@ -19,11 +19,10 @@ int
 main ()
 {
   int i, red = 0;
-  /*TODO <https://gcc.gnu.org/PR104892> */
-  (volatile int *) &red;
 
 #pragma acc kernels /* { dg-line l_compute1 } */
-  /* { dg-note {variable 'red\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} {} { target *-*-* } l_compute1 } */
+  /* { dg-note {OpenACC 'kernels' decomposition: variable 'red' in 'copy' clause requested to be made addressable} {} { target *-*-* } l_compute1 }
+     { dg-note {variable 'red' made addressable} {} { target *-*-* } l_compute1 } */
   {
 #pragma acc loop reduction (+:red) /* { dg-line l_loop_i1 } */
     /* { dg-note {forwarded loop nest in OpenACC 'kernels' region to 'parloops' for analysis} {} { target *-*-* } l_loop_i1 } */

@@ -65,8 +65,6 @@ int test_parallel ()
 int test_kernels ()
 {
   int val = 2;
-  /*TODO <https://gcc.gnu.org/PR104892> */
-  (volatile int *) &val;
   int ary[32];
   int ondev = 0;
 
@@ -75,8 +73,9 @@ int test_kernels ()
 
   /* val defaults to copy, ary defaults to copy.  */
 #pragma acc kernels copy(ondev) /* { dg-line l_compute[incr c_compute] } */
+  /* { dg-note {OpenACC 'kernels' decomposition: variable 'val' in 'copy' clause requested to be made addressable} {} { target *-*-* } l_compute$c_compute }
+     { dg-note {variable 'val' made addressable} {} { target *-*-* } l_compute$c_compute } */
   /* { dg-note {variable 'ondev\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} {} { target *-*-* } l_compute$c_compute } */
-  /* { dg-note {variable 'val\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} {} { target *-*-* } l_compute$c_compute } */
   {
     /* { dg-note {beginning 'gang-single' part in OpenACC 'kernels' region} {} { target *-*-* } .+1 } */
     ondev = acc_on_device (acc_device_not_host);

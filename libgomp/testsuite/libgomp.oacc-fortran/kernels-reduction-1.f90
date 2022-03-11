@@ -15,13 +15,12 @@
 program reduction
   integer, parameter     :: n = 20
   integer                :: i, red
-  !TODO <https://gcc.gnu.org/PR104892>
-  call make_addressable (red)
 
   red = 0
 
   !$acc kernels ! { dg-line l_compute1 } */
-  ! { dg-note {variable 'red\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} {} { target *-*-* } l_compute1 }
+  ! { dg-note {OpenACC 'kernels' decomposition: variable 'red' in 'copy' clause requested to be made addressable} {} { target *-*-* } l_compute1 }
+  !   { dg-note {variable 'red' made addressable} {} { target *-*-* } l_compute1 }
   !$acc loop reduction (+:red) ! { dg-line l_loop_i1 }
   ! { dg-note {forwarded loop nest in OpenACC 'kernels' region to 'parloops' for analysis} {} { target *-*-* } l_loop_i1 }
   ! { dg-note {variable 'i' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} {} { target *-*-* } l_loop_i1 }
@@ -32,11 +31,4 @@ program reduction
   !$acc end kernels
 
   if (red .ne. n) stop 1
-
-contains
-
-  subroutine make_addressable (v)
-    integer :: v ! by reference
-  end subroutine make_addressable
-
 end program reduction

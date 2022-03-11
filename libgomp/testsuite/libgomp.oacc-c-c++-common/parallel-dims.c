@@ -642,14 +642,21 @@ int main ()
      kernels.  */
   {
     int gangs_min, gangs_max, workers_min, workers_max, vectors_min, vectors_max;
-    /*TODO <https://gcc.gnu.org/PR104892> */
-    (volatile int *) &gangs_min, &gangs_max, &workers_min, &workers_max, &vectors_min, &vectors_max;
     gangs_min = workers_min = vectors_min = INT_MAX;
     gangs_max = workers_max = vectors_max = INT_MIN;
 #pragma acc kernels /* { dg-line l_compute[incr c_compute] } */
-    /* { dg-note {variable 'gangs_max\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} {} { target *-*-* } l_compute$c_compute } */
-    /* { dg-note {variable 'workers_max\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} {} { target *-*-* } l_compute$c_compute } */
-    /* { dg-note {variable 'vectors_max\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} {} { target *-*-* } l_compute$c_compute } */
+    /* { dg-note {OpenACC 'kernels' decomposition: variable 'vectors_max' in 'copy' clause requested to be made addressable} {} { target *-*-* } l_compute$c_compute }
+       { dg-note {variable 'vectors_max' made addressable} {} { target *-*-* } l_compute$c_compute } */
+    /* { dg-note {OpenACC 'kernels' decomposition: variable 'vectors_min' in 'copy' clause requested to be made addressable} {} { target *-*-* } l_compute$c_compute }
+       { dg-note {variable 'vectors_min' made addressable} {} { target *-*-* } l_compute$c_compute } */
+    /* { dg-note {OpenACC 'kernels' decomposition: variable 'workers_max' in 'copy' clause requested to be made addressable} {} { target *-*-* } l_compute$c_compute }
+       { dg-note {variable 'workers_max' made addressable} {} { target *-*-* } l_compute$c_compute } */
+    /* { dg-note {OpenACC 'kernels' decomposition: variable 'workers_min' in 'copy' clause requested to be made addressable} {} { target *-*-* } l_compute$c_compute }
+       { dg-note {variable 'workers_min' made addressable} {} { target *-*-* } l_compute$c_compute } */
+    /* { dg-note {OpenACC 'kernels' decomposition: variable 'gangs_max' in 'copy' clause requested to be made addressable} {} { target *-*-* } l_compute$c_compute }
+       { dg-note {variable 'gangs_max' made addressable} {} { target *-*-* } l_compute$c_compute } */
+    /* { dg-note {OpenACC 'kernels' decomposition: variable 'gangs_min' in 'copy' clause requested to be made addressable} {} { target *-*-* } l_compute$c_compute }
+       { dg-note {variable 'gangs_min' made addressable} {} { target *-*-* } l_compute$c_compute } */
     {
 #pragma acc loop /* { dg-line l_loop_i[incr c_loop_i] } */ \
   reduction (min: gangs_min, workers_min, vectors_min) reduction (max: gangs_max, workers_max, vectors_max)
@@ -682,17 +689,24 @@ int main ()
 #define WORKERS 5
 #define VECTORS 13
     int gangs_min, gangs_max, workers_min, workers_max, vectors_min, vectors_max;
-    /*TODO <https://gcc.gnu.org/PR104892> */
-    (volatile int *) &gangs_min, &gangs_max, &workers_min, &workers_max, &vectors_min, &vectors_max;
     gangs_min = workers_min = vectors_min = INT_MAX;
     gangs_max = workers_max = vectors_max = INT_MIN;
 #pragma acc kernels /* { dg-line l_compute[incr c_compute] } */ \
   num_gangs (gangs) \
   num_workers (WORKERS) \
   vector_length (VECTORS)
-    /* { dg-note {variable 'gangs_max\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} {} { target *-*-* } l_compute$c_compute } */
-    /* { dg-note {variable 'workers_max\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} {} { target *-*-* } l_compute$c_compute } */
-    /* { dg-note {variable 'vectors_max\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} {} { target *-*-* } l_compute$c_compute } */
+    /* { dg-note {OpenACC 'kernels' decomposition: variable 'vectors_max' in 'copy' clause requested to be made addressable} {} { target *-*-* } l_compute$c_compute }
+       { dg-note {variable 'vectors_max' made addressable} {} { target *-*-* } l_compute$c_compute } */
+    /* { dg-note {OpenACC 'kernels' decomposition: variable 'vectors_min' in 'copy' clause requested to be made addressable} {} { target *-*-* } l_compute$c_compute }
+       { dg-note {variable 'vectors_min' made addressable} {} { target *-*-* } l_compute$c_compute } */
+    /* { dg-note {OpenACC 'kernels' decomposition: variable 'workers_max' in 'copy' clause requested to be made addressable} {} { target *-*-* } l_compute$c_compute }
+       { dg-note {variable 'workers_max' made addressable} {} { target *-*-* } l_compute$c_compute } */
+    /* { dg-note {OpenACC 'kernels' decomposition: variable 'workers_min' in 'copy' clause requested to be made addressable} {} { target *-*-* } l_compute$c_compute }
+       { dg-note {variable 'workers_min' made addressable} {} { target *-*-* } l_compute$c_compute } */
+    /* { dg-note {OpenACC 'kernels' decomposition: variable 'gangs_max' in 'copy' clause requested to be made addressable} {} { target *-*-* } l_compute$c_compute }
+       { dg-note {variable 'gangs_max' made addressable} {} { target *-*-* } l_compute$c_compute } */
+    /* { dg-note {OpenACC 'kernels' decomposition: variable 'gangs_min' in 'copy' clause requested to be made addressable} {} { target *-*-* } l_compute$c_compute }
+       { dg-note {variable 'gangs_min' made addressable} {} { target *-*-* } l_compute$c_compute } */
     {
 #pragma acc loop /* { dg-line l_loop_i[incr c_loop_i] } */ \
   reduction (min: gangs_min, workers_min, vectors_min) reduction (max: gangs_max, workers_max, vectors_max)

@@ -33,6 +33,10 @@ f (void)
     A[i] = -i;
 
 #pragma acc kernels /* { dg-line l_compute[incr c_compute] } */
+  /* { dg-note {OpenACC 'kernels' decomposition: variable 'i' in 'copy' clause requested to be made addressable} {} { target *-*-* } l_compute$c_compute }
+     { dg-note {variable 'i' made addressable} {} { target *-*-* } l_compute$c_compute } */
+  /* { dg-note {OpenACC 'kernels' decomposition: variable 'N' in 'copy' clause requested to be made addressable} {} { target *-*-* } l_compute$c_compute }
+     { dg-note {variable 'N' made addressable} {} { target *-*-* } l_compute$c_compute } */
   /* { dg-optimized {assigned OpenACC seq loop parallelism} {} { target { ! __OPTIMIZE__ } } l_compute$c_compute }
      { dg-optimized {assigned OpenACC gang loop parallelism} {} { target __OPTIMIZE__ } l_compute$c_compute } */
   /* { dg-note {beginning 'parloops' part in OpenACC 'kernels' region} {} { target *-*-* } .+1 } */
