@@ -19974,6 +19974,13 @@ mips_option_override (void)
 	target_flags |= MASK_64BIT;
     }
 
+  /* -fsanitize=address needs to turn on -fasynchronous-unwind-tables in
+     order for tracebacks to be complete but not if any
+     -fasynchronous-unwind-table were already specified.  */
+  if (flag_sanitize & SANITIZE_USER_ADDRESS
+      && !global_options_set.x_flag_asynchronous_unwind_tables)
+    flag_asynchronous_unwind_tables = 1;
+
   if ((target_flags_explicit & MASK_FLOAT64) != 0)
     {
       if (mips_isa_rev >= 6 && !TARGET_FLOAT64)
@@ -22591,7 +22598,7 @@ mips_constant_alignment (const_tree exp, HOST_WIDE_INT align)
 static unsigned HOST_WIDE_INT
 mips_asan_shadow_offset (void)
 {
-  return 0x0aaa0000;
+  return SUBTARGET_SHADOW_OFFSET;
 }
 
 /* Implement TARGET_STARTING_FRAME_OFFSET.  See mips_compute_frame_info
