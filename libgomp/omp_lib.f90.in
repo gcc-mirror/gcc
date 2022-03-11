@@ -158,6 +158,8 @@
                  parameter :: omp_pteam_mem_alloc = 7
         integer (kind=omp_allocator_handle_kind), &
                  parameter :: omp_thread_mem_alloc = 8
+        integer (kind=omp_allocator_handle_kind), &
+                 parameter :: ompx_pinned_mem_alloc = 9
         integer (omp_memspace_handle_kind), &
                  parameter :: omp_default_mem_space = 0
         integer (omp_memspace_handle_kind), &
