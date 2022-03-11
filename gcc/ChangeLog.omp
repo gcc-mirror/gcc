@@ -1,3 +1,11 @@
+2022-03-11  Andrew Stubbs <ams@codesourcery.com>
+
+	Backport of the patch posted at
+	https://gcc.gnu.org/pipermail/gcc-patches/2022-March/591354.html
+
+	* omp-low.cc (omp_enable_pinned_mode): New function.
+	(execute_lower_omp): Call omp_enable_pinned_mode.
+
 2022-03-11  Abid Qadeer  <abidh@codesourcery.com>
 
 	Backport of a patch posted at

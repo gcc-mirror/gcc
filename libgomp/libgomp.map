@@ -403,6 +403,11 @@ GOMP_5.1 {
 	GOMP_evaluate_target_device;
 } GOMP_5.0.1;
 
+GOMP_5.1.1 {
+  global:
+	GOMP_enable_pinned_mode;
+} GOMP_5.1;
+
 OACC_2.0 {
   global:
 	acc_get_num_devices;

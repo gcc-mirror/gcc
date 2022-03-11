@@ -1,3 +1,10 @@
+2022-03-11  Andrew Stubbs <ams@codesourcery.com>
+
+	Backport of the patch posted at
+	https://gcc.gnu.org/pipermail/gcc-patches/2022-March/591354.html
+
+	* c-c++-common/gomp/alloc-pinned-1.c: New test.
+
 2022-03-11  Abid Qadeer  <abidh@codesourcery.com>
 
 	Backport of a patch posted at
