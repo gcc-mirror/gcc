@@ -31,13 +31,16 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "d-tree.h"
 
+static hash_map<Dsymbol *, tree> *imported_decls;
 
 /* Implements the visitor interface to build debug trees for all
-   module and import declarations, where ISYM holds the cached
-   back-end representation to be returned.  */
+   module and import declarations, where RESULT_ holds the back-end
+   representation to be cached and returned from the caller.  */
 class ImportVisitor : public Visitor
 {
   using Visitor::visit;
+
+  tree result_;
 
   /* Build the declaration DECL as an imported symbol.  */
   tree make_import (tree decl)
@@ -55,6 +58,12 @@ class ImportVisitor : public Visitor
 public:
   ImportVisitor (void)
   {
+    this->result_ = NULL_TREE;
+  }
+
+  tree result (void)
+  {
+    return this->result_;
   }
 
   /* This should be overridden by each symbol class.  */
@@ -70,16 +79,16 @@ public:
     Loc loc = (m->md != NULL) ? m->md->loc
       : Loc (m->srcfile.toChars (), 1, 0);
 
-    m->isym = build_decl (make_location_t (loc), NAMESPACE_DECL,
-			  get_identifier (m->toPrettyChars ()),
-			  void_type_node);
-    d_keep (m->isym);
+    this->result_ = build_decl (make_location_t (loc), NAMESPACE_DECL,
+				get_identifier (m->toPrettyChars ()),
+				void_type_node);
+    d_keep (this->result_);
 
     if (!m->isRoot ())
-      DECL_EXTERNAL (m->isym) = 1;
+      DECL_EXTERNAL (this->result_) = 1;
 
-    TREE_PUBLIC (m->isym) = 1;
-    DECL_CONTEXT (m->isym) = NULL_TREE;
+    TREE_PUBLIC (this->result_) = 1;
+    DECL_CONTEXT (this->result_) = NULL_TREE;
   }
 
   /* Build an import of another module symbol.  */
@@ -87,7 +96,7 @@ public:
   void visit (Import *m)
   {
     tree module = build_import_decl (m->mod);
-    m->isym = this->make_import (module);
+    this->result_ = this->make_import (module);
   }
 
   /* Build an import for any kind of user defined type.
@@ -141,20 +150,14 @@ public:
 
     /* This symbol is really an alias for another, visit the other.  */
     if (dsym != d)
-      {
-	dsym->accept (this);
-	d->isym = dsym->isym;
-      }
+      dsym->accept (this);
   }
 
   /* Visit the underlying alias symbol of overloadable aliases.  */
   void visit (OverDeclaration *d)
   {
     if (d->aliassym != NULL)
-      {
-	d->aliassym->accept (this);
-	d->isym = d->aliassym->isym;
-      }
+      d->aliassym->accept (this);
   }
 
   /* Function aliases are the same as alias symbols.  */
@@ -163,10 +166,7 @@ public:
     FuncDeclaration *fd = d->toAliasFunc ();
 
     if (fd != NULL)
-      {
-	fd->accept (this);
-	d->isym = fd->isym;
-      }
+      fd->accept (this);
   }
 
   /* Skip over importing templates and tuples.  */
@@ -182,7 +182,7 @@ public:
      symbol generation routines, the compiler will throw an error.  */
   void visit (Declaration *d)
   {
-    d->isym = this->make_import (get_symbol_decl (d));
+    this->result_ = this->make_import (get_symbol_decl (d));
   }
 };
 
@@ -192,17 +192,22 @@ public:
 tree
 build_import_decl (Dsymbol *d)
 {
-  if (!d->isym)
-    {
-      location_t saved_location = input_location;
-      ImportVisitor v;
+  hash_map_maybe_create<hm_ggc> (imported_decls);
 
-      input_location = make_location_t (d->loc);
-      d->accept (&v);
-      input_location = saved_location;
-    }
+  if (tree *decl = imported_decls->get (d))
+    return *decl;
 
-  /* Not all visitors set `isym'.  */
-  return d->isym ? d->isym : NULL_TREE;
+  location_t saved_location = input_location;
+  ImportVisitor v = ImportVisitor ();
+
+  input_location = make_location_t (d->loc);
+  d->accept (&v);
+  input_location = saved_location;
+
+  /* Not all visitors set `result'.  */
+  tree isym = v.result ();
+  if (isym != NULL_TREE)
+    imported_decls->put (d, isym);
+
+  return isym;
 }
-
