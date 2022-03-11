@@ -143,6 +143,16 @@ impl_region_model_context::warn (pending_diagnostic *d)
 }
 
 void
+impl_region_model_context::add_note (pending_note *pn)
+{
+  LOG_FUNC (get_logger ());
+  if (m_eg)
+    m_eg->get_diagnostic_manager ().add_note (pn);
+  else
+    delete pn;
+}
+
+void
 impl_region_model_context::on_svalue_leak (const svalue *sval)
 
 {

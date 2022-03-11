@@ -173,7 +173,7 @@ ubsan_instrument_shift (location_t loc, enum tree_code code,
       || cxx_dialect >= cxx20)
     ;
 
-  /* For signed x << y, in C99/C11, the following:
+  /* For signed x << y, in C99 and later, the following:
      (unsigned) x >> (uprecm1 - y)
      if non-zero, is undefined.  */
   else if (code == LSHIFT_EXPR && flag_isoc99 && cxx_dialect < cxx11)
@@ -186,7 +186,7 @@ ubsan_instrument_shift (location_t loc, enum tree_code code,
 			build_int_cst (TREE_TYPE (tt), 0));
     }
 
-  /* For signed x << y, in C++11 and later, the following:
+  /* For signed x << y, in C++11 to C++17, the following:
      x < 0 || ((unsigned) x >> (uprecm1 - y))
      if > 1, is undefined.  */
   else if (code == LSHIFT_EXPR && cxx_dialect >= cxx11)

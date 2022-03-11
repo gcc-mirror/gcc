@@ -3150,7 +3150,13 @@ finish_compound_literal (tree type, tree compound_literal,
 	   && !AUTO_IS_DECLTYPE (type)
 	   && CONSTRUCTOR_NELTS (compound_literal) == 1)
     {
-      if (cxx_dialect < cxx23)
+      if (is_constrained_auto (type))
+	{
+	  if (complain & tf_error)
+	    error ("%<auto{x}%> cannot be constrained");
+	  return error_mark_node;
+	}
+      else if (cxx_dialect < cxx23)
 	pedwarn (input_location, OPT_Wc__23_extensions,
 		 "%<auto{x}%> only available with "
 		 "%<-std=c++2b%> or %<-std=gnu++2b%>");
@@ -11217,6 +11223,8 @@ finish_decltype_type (tree expr, bool id_expression_or_member_access_p,
   /* decltype is an unevaluated context.  */
   cp_unevaluated u;
 
+  processing_template_decl_sentinel ptds (/*reset=*/false);
+
   /* Depending on the resolution of DR 1172, we may later need to distinguish
      instantiation-dependent but not type-dependent expressions so that, say,
      A<decltype(sizeof(T))>::U doesn't require 'typename'.  */
@@ -11235,6 +11243,10 @@ finish_decltype_type (tree expr, bool id_expression_or_member_access_p,
       expr = instantiate_non_dependent_expr_sfinae (expr, complain);
       if (expr == error_mark_node)
 	return error_mark_node;
+      /* Keep processing_template_decl cleared for the rest of the function
+	 (for sake of the call to lvalue_kind below, which handles templated
+	 and non-templated COND_EXPR differently).  */
+      processing_template_decl = 0;
     }
 
   /* The type denoted by decltype(e) is defined as follows:  */

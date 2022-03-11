@@ -904,6 +904,10 @@ taint_state_machine::check_for_tainted_size_arg (sm_context *sm_ctxt,
       if (!access)
 	continue;
 
+      /* Ignore any duplicate entry in the map for the size argument.  */
+      if (access->ptrarg != argno)
+	continue;
+
       if (access->sizarg == UINT_MAX)
 	continue;
 

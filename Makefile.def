@@ -570,7 +570,7 @@ dependencies = { module=all-sim; on=all-intl; };
 dependencies = { module=all-sim; on=all-libiberty; };
 dependencies = { module=all-sim; on=all-bfd; };
 dependencies = { module=all-sim; on=all-opcodes; };
-dependencies = { module=all-sim; on=all-readline; };
+dependencies = { module=configure-sim; on=all-readline; };
 
 // Other host modules.
 dependencies = { module=all-fastjar; on=all-zlib; };

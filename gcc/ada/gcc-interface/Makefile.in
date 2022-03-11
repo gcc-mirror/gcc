@@ -138,6 +138,7 @@ objdir = .
 
 target_alias=@target_alias@
 target=@target@
+target_noncanonical=@target_noncanonical@
 target_cpu=@target_cpu@
 target_vendor=@target_vendor@
 target_os=@target_os@
@@ -598,7 +599,7 @@ OSCONS_CC=$(subst ./xgcc,../../xgcc,$(subst -B./, -B../../,$(GCC_FOR_TARGET)))
 # has a <types.h> header).
 
 OSCONS_CPP=$(OSCONS_CC) $(GNATLIBCFLAGS_FOR_C) -E -C \
-  -DTARGET=\"$(target)\" -iquote $(fsrcpfx)ada $(fsrcpfx)ada/s-oscons-tmplt.c > s-oscons-tmplt.i
+  -DTARGET=\"$(target_noncanonical)\" -iquote $(fsrcpfx)ada $(fsrcpfx)ada/s-oscons-tmplt.c > s-oscons-tmplt.i
 OSCONS_EXTRACT=$(OSCONS_CC) $(GNATLIBCFLAGS_FOR_C) -S s-oscons-tmplt.i
 
 # Note: if you need to build with a non-GNU compiler, you could adapt the

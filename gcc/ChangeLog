@@ -1,3 +1,340 @@
+2022-03-10  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR c++/84964
+	* calls.cc (expand_call): Ignore stack adjustments after sorry.
+
+2022-03-10  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR target/103074
+	* lra-constraints.cc (split_reg): Set up
+	check_and_force_assignment_correctness_p when splitting hard
+	register live range.
+
+2022-03-10  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/104813
+	* ipa-cp.cc (create_specialized_node): Move removal of
+	self-recursive calls from callers vector before refrence
+	adjustments.
+
+2022-03-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/102943
+	* gimple-range-cache.cc (sbr_sparse_bitmap::bitvec):
+	Make a bitmap_head.
+	(sbr_sparse_bitmap::sbr_sparse_bitmap): Adjust and switch
+	to tree view.
+	(sbr_sparse_bitmap::set_bb_range): Adjust.
+	(sbr_sparse_bitmap::get_bb_range): Likewise.
+
+2022-03-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/102943
+	* tree-ssa-dom.cc (back_propagate_equivalences): Only
+	populate the dominance bitmap if fast queries are not
+	available.  Use a tree view bitmap.
+	(record_temporary_equivalences): Cache the dominance bitmap
+	across all equivalences on the edge.
+
+2022-03-10  Tom de Vries  <tdevries@suse.de>
+
+	PR target/104840
+	* config/nvptx/nvptx.md (define_attr "predicable"): Use no,yes instead
+	of false,true.
+
+2022-03-10  Tom de Vries  <tdevries@suse.de>
+
+	PR target/104783
+	* config/nvptx/nvptx.cc (nvptx_init_unisimt_predicate)
+	(nvptx_output_unisimt_switch): Handle unisimt_outside_simt_predicate.
+	(nvptx_get_unisimt_outside_simt_predicate): New function.
+	(predicate_insn): New function, factored out of ...
+	(nvptx_reorg_uniform_simt): ... here.  Predicate all emitted insns.
+	* config/nvptx/nvptx.h (struct machine_function): Add
+	unisimt_outside_simt_predicate field.
+	* config/nvptx/nvptx.md (define_insn "nvptx_warpsync")
+	(define_insn "nvptx_uniform_warp_check"): Make predicable.
+
+2022-03-10  Tom de Vries  <tdevries@suse.de>
+
+	* config/nvptx/nvptx.cc (nvptx_unisimt_handle_set): Handle unused
+	result.
+
+2022-03-10  Tom de Vries  <tdevries@suse.de>
+
+	PR target/104815
+	* config/nvptx/nvptx.cc (nvptx_print_operand): Handle 'x' operand
+	modifier.
+	* config/nvptx/nvptx.md: Use %x0 destination operand in atom insns.
+
+2022-03-10  Tom de Vries  <tdevries@suse.de>
+
+	* config/nvptx/nvptx.md (define_insn "atomic_fetch_<logic><mode>"):
+	Emit atom.and.b64 instead of atom.b64.and.
+
+2022-03-10  Tom de Vries  <tdevries@suse.de>
+
+	* config/nvptx/t-nvptx (MULTILIB_EXTRA_OPTS): Move mptx=3.1 ...
+	(MULTILIB_OPTIONS): ... here.
+
+2022-03-10  Tom de Vries  <tdevries@suse.de>
+
+	PR target/104758
+	* config/nvptx/nvptx.opt (misa): Set default to sm_30.
+	* config/nvptx/t-nvptx (MULTILIB_EXTRA_OPTS): Remove misa=sm_30.
+
+2022-03-10  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR middle-end/90115
+	PR middle-end/102330
+	PR middle-end/104774
+	* omp-low.cc (oacc_privatization_candidate_p)
+	(oacc_privatization_scan_clause_chain)
+	(oacc_privatization_scan_decl_chain, lower_oacc_private_marker):
+	Analyze 'lookup_decl'-translated DECL.
+
+2022-03-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/99708
+	* config/rs6000/rs6000.h (enum rs6000_builtin_type_index): Remove
+	RS6000_BTI_ptr_ieee128_float and RS6000_BTI_ptr_ibm128_float.
+	(ptr_ieee128_float_type_node, ptr_ibm128_float_type_node): Remove.
+	* config/rs6000/rs6000-builtin.cc (rs6000_type_string): Return
+	"**NULL**" if type_node is NULL first.  Handle
+	ieee128_float_type_node.
+	(rs6000_init_builtins): Don't initialize ptr_ieee128_float_type_node
+	and ptr_ibm128_float_type_node.  Set ibm128_float_type_node and
+	ieee128_float_type_node to NULL rather than long_double_type_node if
+	they aren't supported.  Do support __ibm128 even if
+	!TARGET_FLOAT128_TYPE when long double is double double.
+	(rs6000_expand_builtin): Error if bif_is_ibm128 and
+	!ibm128_float_type_node.  Remap RS6000_BIF_{,UN}PACK_IF to
+	RS6000_BIF_{,UN}PACK_TF much earlier and only use bif_is_ibm128 check
+	for it.
+	* config/rs6000/rs6000-c.cc (rs6000_target_modify_macros): Define
+	__SIZEOF_FLOAT128__ here and only iff __float128 macro is defined.
+	(rs6000_cpu_cpp_builtins): Don't define __SIZEOF_FLOAT128__ here.
+	Define __SIZEOF_IBM128__=16 if ieee128_float_type_node is non-NULL.
+	Formatting fix.
+	* config/rs6000/rs6000-gen-builtins.cc: Document ibm128 attribute.
+	(struct attrinfo): Add isibm128 member.
+	(TYPE_MAP_SIZE): Remove.
+	(type_map): Use [] instead of [TYPE_MAP_SIZE].  For "if" use
+	ibm128_float_type_node only if it is non-NULL, otherwise fall back
+	to long_double_type_node.  Remove "pif" entry.
+	(parse_bif_attrs): Handle ibm128 attribute and print it for debugging.
+	(write_decls): Output bif_ibm128_bit and bif_is_ibm128.
+	(write_type_node): Use sizeof type_map / sizeof type_map[0]
+	instead of TYPE_MAP_SIZE.
+	(write_bif_static_init): Handle isibm128.
+	* config/rs6000/rs6000-builtins.def: Document ibm128 attribute.
+	(__builtin_pack_ibm128, __builtin_unpack_ibm128): Add ibm128
+	attribute.
+
+2022-03-09  Richard Biener  <rguenther@suse.de>
+
+	* cfgexpand.cc (expand_gimple_asm): Special-case MEM_REF
+	with non-decl operand, avoiding a copy.
+
+2022-03-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/104781
+	* config/i386/i386.h (LIBGCC2_UNWIND_ATTRIBUTE): Define for ia32.
+
+2022-03-09  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/104786
+	* cfgexpand.cc (expand_asm_stmt): Do not generate a copy
+	for VLAs without an upper size bound.
+
+2022-03-09  Xi Ruoyao  <xry111@mengyan1223.wang>
+
+	PR tree-optimization/104851
+	* optabs-query.cc (supports_vec_convert_optab_p): Fix off-by-one
+	error.
+
+2022-03-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/104711
+	* doc/invoke.texi (-Wextra): Document that -Wshift-negative-value
+	is enabled by it only for C++11 to C++17 rather than for C++03 or
+	later.
+	(-Wshift-negative-value): Similarly (except here we stated
+	that it is enabled for C++11 or later).
+
+2022-03-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/104839
+	* simplify-rtx.cc (simplify_unary_operation_1) <case SIGN_EXTEND>:
+	Use SRP_SIGNED instead of incorrect 1 in SUBREG_PROMOTED_SET.
+	(simplify_unary_operation_1) <case ZERO_EXTEND>: Use SRP_UNSIGNED
+	instead of incorrect 0 in SUBREG_PROMOTED_SET.
+
+2022-03-09  Xi Ruoyao  <xry111@mengyan1223.wang>
+
+	PR target/104842
+	* config/mips/mips.h (LUI_OPERAND): Cast the input to an unsigned
+	value before adding an offset.
+
+2022-03-08  Christophe Lyon  <christophe.lyon@arm.com>
+
+	* config/arm/arm-builtins.cc
+	(arm_binop_none_none_unone_qualifiers): Delete.
+	(BINOP_NONE_NONE_UNONE_QUALIFIERS): Delete.
+
+2022-03-08  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR translation/104552
+	* config/host-darwin.cc (darwin_gt_pch_get_address): Amend
+	the PCH out of memory error message punctuation and wording.
+
+2022-03-08  Marek Polacek  <polacek@redhat.com>
+
+	PR rtl-optimization/104777
+	* rtl.cc (classify_insn): For ASM_OPERANDS, return JUMP_INSN only if
+	ASM_OPERANDS_LABEL_VEC has at least one element.
+
+2022-03-08  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/104781
+	* config/i386/i386.cc (ix86_expand_epilogue): Sorry if there is
+	stack realignment or regparm nested function with EH return.
+
+2022-03-08  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	PR target/104790
+	* config/arm/arm.h (MVE_STN_LDW_MODE): New MACRO.
+	* config/arm/arm.cc (mve_vector_mem_operand): Relax constraint on base
+	register for non widening loads or narrowing stores.
+
+2022-03-08  Eric Gallager  <egallager@gcc.gnu.org>
+
+	PR translation/104552
+	* params.opt: Fix typo.
+
+2022-03-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/84201
+	* params.opt (-param=vect-induction-float): Add.
+	* doc/invoke.texi (vect-induction-float): Document.
+	* tree-vect-loop.cc (vectorizable_induction): Honor
+	param_vect_induction_float.
+
+2022-03-08  Martin Jambor  <mjambor@suse.cz>
+
+	PR translation/104552
+	* params.opt (ipa-cp-recursive-freq-factor): Remove repeated word
+	"that" in the description.
+
+2022-03-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/104825
+	* tree-ssa-sccvn.cc (visit_reference_op_call): Properly
+	guard modref get_ao_ref on a pointer typed argument.
+
+2022-03-08  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/sse.md (*vec_dupv4si): Disable memory operand
+	for !TARGET_INTER_UNIT_MOVES_TO_VEC when prefer_for_speed.
+
+2022-03-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/invoke.texi (C++ Modules): Remove anachronism.
+
+2022-03-07  Martin Liska  <mliska@suse.cz>
+
+	PR middle-end/104381
+	* opts.cc (finish_options): If debug info is disabled
+	(debug_info_level) and -fvar-tracking is unset, disable it.
+
+2022-03-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree-ssa-propagate.cc: Fix up duplicated word issue in a comment.
+	* config/riscv/riscv.cc: Likewise.
+	* config/darwin.h: Likewise.
+	* config/i386/i386.cc: Likewise.
+	* config/aarch64/thunderx3t110.md: Likewise.
+	* config/aarch64/fractional-cost.h: Likewise.
+	* config/vax/vax.cc: Likewise.
+	* config/rs6000/pcrel-opt.md: Likewise.
+	* config/rs6000/predicates.md: Likewise.
+	* ctfc.h: Likewise.
+	* tree-ssa-uninit.cc: Likewise.
+	* value-relation.h: Likewise.
+	* gimple-range-gori.cc: Likewise.
+	* ipa-polymorphic-call.cc: Likewise.
+	* pointer-query.cc: Likewise.
+	* ipa-sra.cc: Likewise.
+	* internal-fn.cc: Likewise.
+	* varasm.cc: Likewise.
+	* gimple-ssa-warn-access.cc: Likewise.
+
+2022-03-07  Martin Liska  <mliska@suse.cz>
+
+	PR target/104794
+	* config/arm/arm.cc (arm_option_override_internal): Add missing
+	space.
+
+2022-03-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/104782
+	* tree-vect-slp.cc (vectorize_slp_instance_root_stmt):
+	Re-instantiate r10-5979 fix, add comment.
+
+2022-03-07  Martin Liska  <mliska@suse.cz>
+
+	PR target/104797
+	* config/msp430/msp430.cc (msp430_expand_delay_cycles): Remove
+	parenthesis from built-in name.
+
+2022-03-07  Martin Liska  <mliska@suse.cz>
+
+	PR target/104794
+	* config/arm/arm.cc (arm_option_override_internal): Fix quoting
+	of options in error messages.
+	(arm_option_reconfigure_globals): Likewise.
+
+2022-03-07  Martin Liska  <mliska@suse.cz>
+
+	PR target/104794
+	* config/arm/arm-builtins.cc (arm_expand_builtin): Reuse error
+	message.  Fix ARM_BUILTIN_WRORHI and ARM_BUILTIN_WRORH that can
+	have only range [0,32].
+
+2022-03-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/104775
+	* config/s390/s390.md (*cmp_and_trap_unsigned_int<mode>): Use
+	S constraint instead of T in the last alternative.
+
+2022-03-07  Martin Liska  <mliska@suse.cz>
+
+	* plugin.cc (default_plugin_dir_name): Remove <dir> from error
+	message.
+
+2022-03-07  Martin Liska  <mliska@suse.cz>
+
+	PR translation/90148
+	* config/rs6000/rs6000.cc (rs6000_linux64_override_options): Put
+	quote to a proper place.
+	* plugin.cc (default_plugin_dir_name): Likewise.
+
+2022-03-07  Martin Liska  <mliska@suse.cz>
+
+	PR target/99297
+	* config/rx/rx.cc (rx_expand_builtin_mvtc): Fix translation
+	string.
+
+2022-03-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/104779
+	* config/i386/sse.md (avx512dq_mul<mode>3<mask_name>): New
+	define_expand pattern.  Rename define_insn to ...
+	(*avx512dq_mul<mode>3<mask_name>): ... this.
+	(<code><mode>3_mask): New any_logic define_expand pattern.
+	(<mask_codefor><code><mode>3<mask_name>): Rename to ...
+	(*<code><mode>3<mask_name>): ... this.
+
 2022-03-05  Jakub Jelinek  <jakub@redhat.com>
 
 	* gimple-ssa-warn-access.cc (pass_waccess::use_after_inval_p): Remove

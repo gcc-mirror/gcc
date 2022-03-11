@@ -29,8 +29,7 @@ foo (void)
     /* { dg-note {forwarded loop nest in OpenACC 'kernels' region to 'parloops' for analysis} {} { target *-*-* } .+1 } */
 #pragma acc loop /* { dg-line l_loop_k1 } */
     /* { dg-note {variable 'k' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} {} { target *-*-* } l_loop_k1 } */
-    /* { dg-note {variable 'k' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} {w/o debug} { target *-*-* } l_loop_k1 }
-       { dg-bogus {note: variable 'k' in 'private' clause is candidate for adjusting OpenACC privatization level} {w/ debug} { xfail *-*-* } l_loop_k1 } */
+    /* { dg-note {variable 'k' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} {} { target *-*-* } l_loop_k1 }
     /* { dg-optimized {assigned OpenACC seq loop parallelism} {} { target *-*-* } l_loop_k1 } */
     for (k = 0; k < 2; k++)
       arr_0 += k;

@@ -10590,6 +10590,10 @@ oacc_privatization_candidate_p (const location_t loc, const tree c,
 
   if (res && !VAR_P (decl))
     {
+      /* A PARM_DECL (appearing in a 'private' clause) is expected to have been
+	 privatized into a new VAR_DECL.  */
+      gcc_checking_assert (TREE_CODE (decl) != PARM_DECL);
+
       res = false;
 
       if (dump_enabled_p ())
@@ -10670,11 +10674,15 @@ oacc_privatization_scan_clause_chain (omp_context *ctx, tree clauses)
       {
 	tree decl = OMP_CLAUSE_DECL (c);
 
-	if (!oacc_privatization_candidate_p (OMP_CLAUSE_LOCATION (c), c, decl))
+	tree new_decl = lookup_decl (decl, ctx);
+
+	if (!oacc_privatization_candidate_p (OMP_CLAUSE_LOCATION (c), c,
+					     new_decl))
 	  continue;
 
-	gcc_checking_assert (!ctx->oacc_privatization_candidates.contains (decl));
-	ctx->oacc_privatization_candidates.safe_push (decl);
+	gcc_checking_assert
+	  (!ctx->oacc_privatization_candidates.contains (new_decl));
+	ctx->oacc_privatization_candidates.safe_push (new_decl);
       }
 }
 
@@ -10686,11 +10694,16 @@ oacc_privatization_scan_decl_chain (omp_context *ctx, tree decls)
 {
   for (tree decl = decls; decl; decl = DECL_CHAIN (decl))
     {
-      if (!oacc_privatization_candidate_p (gimple_location (ctx->stmt), NULL, decl))
+      tree new_decl = lookup_decl (decl, ctx);
+      gcc_checking_assert (new_decl == decl);
+
+      if (!oacc_privatization_candidate_p (gimple_location (ctx->stmt), NULL,
+					   new_decl))
 	continue;
 
-      gcc_checking_assert (!ctx->oacc_privatization_candidates.contains (decl));
-      ctx->oacc_privatization_candidates.safe_push (decl);
+      gcc_checking_assert
+	(!ctx->oacc_privatization_candidates.contains (new_decl));
+      ctx->oacc_privatization_candidates.safe_push (new_decl);
     }
 }
 
@@ -11557,17 +11570,7 @@ lower_oacc_private_marker (omp_context *ctx)
   tree decl;
   FOR_EACH_VEC_ELT (ctx->oacc_privatization_candidates, i, decl)
     {
-      for (omp_context *thisctx = ctx; thisctx; thisctx = thisctx->outer)
-	{
-	  tree inner_decl = maybe_lookup_decl (decl, thisctx);
-	  if (inner_decl)
-	    {
-	      decl = inner_decl;
-	      break;
-	    }
-	}
-      gcc_checking_assert (decl);
-
+      gcc_checking_assert (TREE_ADDRESSABLE (decl));
       tree addr = build_fold_addr_expr (decl);
       args.safe_push (addr);
     }

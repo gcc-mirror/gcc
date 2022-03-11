@@ -74,11 +74,14 @@ f (int i, int j, int a)
      { dg-note {variable 's' ought to be adjusted for OpenACC privatization level: 'vector'} "" { target *-*-* } l_loop$c_loop } */
   /* { dg-note {variable 'e' in 'private' clause is candidate for adjusting OpenACC privatization level} "" { target *-*-* } l_loop$c_loop }
      { dg-note {variable 'e' ought to be adjusted for OpenACC privatization level: 'vector'} "" { target *-*-* } l_loop$c_loop } */
-  /* { dg-note {variable 'a' in 'private' clause potentially has improper OpenACC privatization level: 'parm_decl'} "TODO" { target *-*-* } l_loop$c_loop } */
+  /* { dg-note {variable 'a' in 'private' clause is candidate for adjusting OpenACC privatization level} "" { target *-*-* } l_loop$c_loop }
+     { dg-note {variable 'a' ought to be adjusted for OpenACC privatization level: 'vector'} "" { target *-*-* } l_loop$c_loop } */
   /* { dg-note {variable 'j\.1' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_loop$c_loop } */
   /* { dg-note {variable 'i\.0' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_loop$c_loop } */
-  /* { dg-note {variable 'j' in 'private' clause potentially has improper OpenACC privatization level: 'parm_decl'} "TODO" { target *-*-* } l_loop$c_loop } */
-  /* { dg-note {variable 'i' in 'private' clause potentially has improper OpenACC privatization level: 'parm_decl'} "TODO" { target *-*-* } l_loop$c_loop } */
+  /* { dg-note {variable 'j' in 'private' clause is candidate for adjusting OpenACC privatization level} "" { target *-*-* } l_loop$c_loop }
+     { dg-note {variable 'j' ought to be adjusted for OpenACC privatization level: 'vector'} "" { target *-*-* } l_loop$c_loop } */
+  /* { dg-note {variable 'i' in 'private' clause is candidate for adjusting OpenACC privatization level} "" { target *-*-* } l_loop$c_loop }
+     { dg-note {variable 'i' ought to be adjusted for OpenACC privatization level: 'vector'} "" { target *-*-* } l_loop$c_loop } */
   /* { dg-note {variable 'll' declared in block potentially has improper OpenACC privatization level: 'label_decl'} "TODO" { target *-*-* } l_loop$c_loop } */
   /* { dg-note {variable 'struct struct s_ss' declared in block potentially has improper OpenACC privatization level: 'type_decl'} "TODO" { target c } l_loop$c_loop }
      { dg-note {variable 's_ss' declared in block potentially has improper OpenACC privatization level: 'type_decl'} "TODO" { target c++ } l_loop$c_loop } */

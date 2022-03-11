@@ -5809,7 +5809,7 @@ name is still supported, but the newer name is more descriptive.)
 -Wredundant-move @r{(only for C++)}  @gol
 -Wtype-limits  @gol
 -Wuninitialized  @gol
--Wshift-negative-value @r{(in C++03 and in C99 and newer)}  @gol
+-Wshift-negative-value @r{(in C++11 to C++17 and in C99 and newer)}  @gol
 -Wunused-parameter @r{(only with} @option{-Wunused} @r{or} @option{-Wall}@r{)} @gol
 -Wunused-but-set-parameter @r{(only with} @option{-Wunused} @r{or} @option{-Wall}@r{)}}
 
@@ -6839,7 +6839,7 @@ of the type.  This warning is enabled by default.
 @opindex Wshift-negative-value
 @opindex Wno-shift-negative-value
 Warn if left shifting a negative value.  This warning is enabled by
-@option{-Wextra} in C99 and C++11 modes (and newer).
+@option{-Wextra} in C99 (and newer) and C++11 to C++17 modes.
 
 @item -Wno-shift-overflow
 @itemx -Wshift-overflow=@var{n}
@@ -14988,6 +14988,9 @@ The maximum factor which the loop vectorizer applies to the cost of statements
 in an inner loop relative to the loop being vectorized.  The factor applied
 is the maximum of the estimated number of iterations of the inner loop and
 this parameter.  The default value of this parameter is 50.
+
+@item vect-induction-float
+Enable loop vectorization of floating point inductions.
 
 @item avoid-fma-max-bits
 Maximum number of bits for which we avoid creating FMAs.

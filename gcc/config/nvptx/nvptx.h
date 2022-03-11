@@ -226,6 +226,7 @@ struct GTY(()) machine_function
   rtx sync_bar; /* Synchronization barrier ID for vectors.  */
   rtx unisimt_master; /* 'Master lane index' for -muniform-simt.  */
   rtx unisimt_predicate; /* Predicate for -muniform-simt.  */
+  rtx unisimt_outside_simt_predicate; /* Predicate for -muniform-simt.  */
   rtx unisimt_location; /* Mask location for -muniform-simt.  */
   /* The following two fields hold the maximum size resp. alignment required
      for per-lane storage in OpenMP SIMD regions.  */

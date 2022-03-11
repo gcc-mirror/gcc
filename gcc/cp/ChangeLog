@@ -1,3 +1,151 @@
+2022-03-10  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/104608
+	* parser.cc (cp_parser_template_name): Repeat lookup of
+	TYPE_DECLs.
+
+2022-03-10  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/104752
+	* semantics.cc (finish_compound_literal): Disallow auto{x} for
+	is_constrained_auto.
+	* typeck2.cc (build_functional_cast_1): Likewise.
+
+2022-03-10  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/104846
+	* decl.cc (grokdeclarator): Check FUNC_OR_METHOD_TYPE_P before giving
+	data member errors.
+
+2022-03-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/103460
+	* decl.cc (grok_op_properties): Allow variadic operator[] for
+	C++23.
+
+2022-03-10  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR c++/95999
+	* decl.cc (finish_enum_value_list): If VALUE isn't an INTEGER_CST
+	consider it to be zero (i.e. treat it like error_mark_node).
+	(build_enumerator): Likewise, if PREV_VALUE isn't an INTEGER_CST,
+	set VALUE to error_mark_node.
+
+2022-03-10  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR c++/39751
+	* parser.cc (cp_parser_late_parsing_for_member): Confirm the token
+	stream hasn't been purged before processing DECL_PENDING_INLINE.
+
+2022-03-09  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/104823
+	* except.cc (build_noexcept_spec): Strengthen dependence check
+	to instantiation_dependent_expression_p.
+	* parser.cc (cp_parser_parenthesized_expression_list_elt):
+	Remove fold_expr_p parameter, and don't call
+	instantiate_non_dependent_expr.
+	(cp_parser_parenthesized_expression_list): Adjust accordingly.
+	* pt.cc (expand_integer_pack): Strengthen dependence check
+	to instantiation_dependent_expression_p.
+	(instantiate_non_dependent_expr_internal): Adjust comment.
+	(instantiate_non_dependent_expr_sfinae): Likewise.  Drop
+	the potentially-constant check, and relax and turn the
+	dependence check into a checking assert.
+	(instantiate_non_dependent_or_null): Adjust comment.
+	* semantics.cc (finish_decltype_type): Keep
+	processing_template_decl cleared after calling
+	instantiate_non_dependent_expr_sfinae.
+
+2022-03-09  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/102137
+	PR c++/87820
+	* cp-tree.h (is_copy_initialization): Declare.
+	* decl.cc (cp_finish_decl): Set LOOKUP_ONLYCONVERTING
+	when is_copy_initialization is true.
+	* init.cc (build_aggr_init): Split out copy-initialization
+	check into ...
+	(is_copy_initialization): ... here.
+	* pt.cc (instantiate_decl): Pass 0 instead of
+	LOOKUP_ONLYCONVERTING as flags to cp_finish_decl.
+
+2022-03-09  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/65396
+	* cp-tree.h (merge_default_template_args): Declare.
+	* decl.cc (merge_default_template_args): Define, factored out
+	from redeclare_class_template.
+	(duplicate_decls): Use it when merging member function template
+	and free function declarations.
+	* pt.cc (redeclare_class_template): Factor out default argument
+	merging logic into merge_default_template_args.  Improve location
+	of a note when there's a template parameter kind mismatch.
+
+2022-03-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/104711
+	* constexpr.cc (cxx_eval_check_shift_p): Use TYPE_OVERFLOW_WRAPS
+	instead of TYPE_UNSIGNED.
+	* typeck.cc (cp_build_binary_op): Don't emit
+	-Wshift-negative-value warning if TYPE_OVERFLOW_WRAPS.
+
+2022-03-08  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR c++/96440
+	* decl.cc (start_decl): Defend against prefix_attributes being
+	error_mark_node.
+
+2022-03-08  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR c++/96437
+	* parser.cc (synthesize_implicit_template_parm): Check that
+	TREE_VALUE (new_parm) isn't error_mark_node before setting its
+	DECL_VIRTUAL_P.
+
+2022-03-08  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR c++/96329
+	* parser.cc (cp_parser_linkage_specification): Treat the case where
+	linkage is error_mark_node as "invalid linkage-specification".
+
+2022-03-08  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/104108
+	* pt.cc (convert_nontype_argument): Recompute
+	value_dependent_expression_p after build_converted_constant_expr.
+
+2022-03-08  Marek Polacek  <polacek@redhat.com>
+
+	* decl2.cc (is_late_template_attribute): Do not defer attribute
+	unavailable.
+	* pt.cc (tsubst_enum): Set TREE_UNAVAILABLE.
+
+2022-03-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/104806
+	* search.cc (lookup_field_fuzzy_info::fuzzy_lookup_field): Ignore
+	identifiers with space at the end.
+
+2022-03-07  Jason Merrill  <jason@redhat.com>
+
+	PR c++/104618
+	* decl2.cc (mark_single_function): Look through parens and location
+	wrapper.
+	* typeck.cc (cp_build_addr_expr_1): Not here.
+
+2022-03-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* parser.cc (cp_parser_omp_clause_map): Add missing space in string
+	literal.
+
+2022-03-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* cvt.cc: Fix up duplicated word issue in a comment.
+	* pt.cc: Likewise.
+	* module.cc: Likewise.
+	* coroutines.cc: Likewise.
+
 2022-03-04  Nathan Sidwell  <nathan@acm.org>
 
 	* mangle.cc (is_std_substitution): Check global module.

@@ -433,12 +433,6 @@ arm_binop_unone_none_imm_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   (arm_binop_unone_none_imm_qualifiers)
 
 static enum arm_type_qualifiers
-arm_binop_none_none_unone_qualifiers[SIMD_MAX_BUILTIN_ARGS]
-  = { qualifier_none, qualifier_none, qualifier_unsigned };
-#define BINOP_NONE_NONE_UNONE_QUALIFIERS \
-  (arm_binop_none_none_unone_qualifiers)
-
-static enum arm_type_qualifiers
 arm_binop_pred_none_none_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_predicate, qualifier_none, qualifier_none };
 #define BINOP_PRED_NONE_NONE_QUALIFIERS \
