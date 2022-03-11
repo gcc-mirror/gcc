@@ -277,7 +277,7 @@ Add comments for ignored declarations in the generated C++ header.
 
 fdump-c++-spec=
 D RejectNegative Joined
--fdump-cxx-spec=<filename>	Write all declarations as C++ code to <file>.
+-fdump-cxx-spec=<filename>	Write all declarations as C++ code to <filename>.
 
 fdump-d-original
 D
@@ -370,7 +370,7 @@ Use field-wise comparisons for struct equality.
 
 fpreview=fixaliasthis
 D RejectNegative
-When a symbol is resolved, check alias this scope before going to upper scopes.
+When a symbol is resolved, check `alias this' scope before going to upper scopes.
 
 fpreview=in
 D RejectNegative
