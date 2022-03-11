@@ -1,3 +1,18 @@
+2022-03-11  Andrew Stubbs <ams@codesourcery.com>
+
+	Backport of the patch posted at
+	https://gcc.gnu.org/pipermail/gcc-patches/2022-March/591354.html
+
+	* config/linux/allocator.c (always_pinned_mode): New variable.
+	(GOMP_enable_pinned_mode): New function.
+	(linux_memspace_alloc): Disable pinning when always_pinned_mode set.
+	(linux_memspace_calloc): Likewise.
+	(linux_memspace_free): Likewise.
+	(linux_memspace_realloc): Likewise.
+	* libgomp.map (GOMP_5.1.1): New version space with
+	GOMP_enable_pinned_mode.
+	* testsuite/libgomp.c/alloc-pinned-7.c: New test.
+
 2022-03-11  Abid Qadeer  <abidh@codesourcery.com>
 
 	Backport of a patch posted at
