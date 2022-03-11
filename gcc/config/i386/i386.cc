@@ -22597,16 +22597,21 @@ ix86_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
 
       case vec_construct:
 	{
-	  /* N element inserts into SSE vectors.  */
-	  int cost = TYPE_VECTOR_SUBPARTS (vectype) * ix86_cost->sse_op;
+	  int n = TYPE_VECTOR_SUBPARTS (vectype);
+	  /* N - 1 element inserts into an SSE vector, the possible
+	     GPR -> XMM move is accounted for in add_stmt_cost.  */
+	  if (GET_MODE_BITSIZE (mode) <= 128)
+	    return (n - 1) * ix86_cost->sse_op;
 	  /* One vinserti128 for combining two SSE vectors for AVX256.  */
-	  if (GET_MODE_BITSIZE (mode) == 256)
-	    cost += ix86_vec_cost (mode, ix86_cost->addss);
+	  else if (GET_MODE_BITSIZE (mode) == 256)
+	    return ((n - 2) * ix86_cost->sse_op
+		    + ix86_vec_cost (mode, ix86_cost->addss));
 	  /* One vinserti64x4 and two vinserti128 for combining SSE
 	     and AVX256 vectors to AVX512.  */
 	  else if (GET_MODE_BITSIZE (mode) == 512)
-	    cost += 3 * ix86_vec_cost (mode, ix86_cost->addss);
-	  return cost;
+	    return ((n - 4) * ix86_cost->sse_op
+		    + 3 * ix86_vec_cost (mode, ix86_cost->addss));
+	  gcc_unreachable ();
 	}
 
       default:
