@@ -6023,6 +6023,17 @@ perfect_candidate_p (z_candidate *cand)
   return true;
 }
 
+/* True iff one of CAND's argument conversions is NULL.  */
+
+static bool
+missing_conversion_p (const z_candidate *cand)
+{
+  for (unsigned i = 0; i < cand->num_convs; ++i)
+    if (!cand->convs[i])
+      return true;
+  return false;
+}
+
 /* Add each of the viable functions in FNS (a FUNCTION_DECL or
    OVERLOAD) to the CANDIDATES, returning an updated list of
    CANDIDATES.  The ARGS are the arguments provided to the call;
@@ -6200,7 +6211,7 @@ add_candidates (tree fns, tree first_arg, const vec<tree, va_gc> *args,
 
       if (cand->viable == -1
 	  && shortcut_bad_convs
-	  && !cand->convs[cand->reversed () ? 0 : cand->num_convs - 1])
+	  && missing_conversion_p (cand))
 	{
 	  /* This candidate has been tentatively marked non-strictly viable,
 	     and we didn't compute all argument conversions for it (having
