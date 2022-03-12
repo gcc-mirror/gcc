@@ -1,3 +1,8 @@
+2022-03-11  Michael Meissner  <meissner@the-meissners.org>
+
+	PR target/99708
+	* config/rs6000/rs6000-c.c: Revert patch from 2022-03-05.
+
 2022-03-10  Marek Polacek  <polacek@redhat.com>
 
 	Backported from master:
