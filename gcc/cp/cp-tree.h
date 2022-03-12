@@ -5563,6 +5563,8 @@ enum tsubst_flags {
 				(build_target_expr and friends) */
   tf_norm = 1 << 11,		 /* Build diagnostic information during
 				    constraint normalization.  */
+  tf_tst_ok = 1 << 12,		 /* Allow a typename-specifier to name
+				    a template (C++17 or later).  */
   /* Convenient substitution flags combinations.  */
   tf_warning_or_error = tf_warning | tf_error
 };

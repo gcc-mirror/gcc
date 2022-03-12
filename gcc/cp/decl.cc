@@ -4204,15 +4204,25 @@ make_typename_type (tree context, tree name, enum tag_types tag_type,
     }
   if (!want_template && TREE_CODE (t) != TYPE_DECL)
     {
-      if (complain & tf_error)
-	error ("%<typename %T::%D%> names %q#T, which is not a type",
-	       context, name, t);
-      return error_mark_node;
+      if ((complain & tf_tst_ok) && cxx_dialect >= cxx17
+	  && DECL_TYPE_TEMPLATE_P (t))
+	/* The caller permits this typename-specifier to name a template
+	   (because it appears in a CTAD-enabled context).  */;
+      else
+	{
+	  if (complain & tf_error)
+	    error ("%<typename %T::%D%> names %q#T, which is not a type",
+		   context, name, t);
+	  return error_mark_node;
+	}
     }
 
   if (!check_accessibility_of_qualified_id (t, /*object_type=*/NULL_TREE,
 					    context, complain))
     return error_mark_node;
+
+  if (!want_template && DECL_TYPE_TEMPLATE_P (t))
+    return make_template_placeholder (t);
 
   if (want_template)
     {
