@@ -7579,6 +7579,29 @@ find_immediate_fndecl (tree *tp, int */*walk_subtrees*/, void */*data*/)
   return NULL_TREE;
 }
 
+/* T has TREE_CONSTANT set but has been deemed not a valid C++ constant
+   expression.  Return a version of T that has TREE_CONSTANT cleared.  */
+
+static tree
+mark_non_constant (tree t)
+{
+  gcc_checking_assert (TREE_CONSTANT (t));
+
+  /* This isn't actually constant, so unset TREE_CONSTANT.
+     Don't clear TREE_CONSTANT on ADDR_EXPR, as the middle-end requires
+     it to be set if it is invariant address, even when it is not
+     a valid C++ constant expression.  Wrap it with a NOP_EXPR
+     instead.  */
+  if (EXPR_P (t) && TREE_CODE (t) != ADDR_EXPR)
+    t = copy_node (t);
+  else if (TREE_CODE (t) == CONSTRUCTOR)
+    t = build1 (VIEW_CONVERT_EXPR, TREE_TYPE (t), t);
+  else
+    t = build_nop (TREE_TYPE (t), t);
+  TREE_CONSTANT (t) = false;
+  return t;
+}
+
 /* ALLOW_NON_CONSTANT is false if T is required to be a constant expression.
    STRICT has the same sense as for constant_value_1: true if we only allow
    conforming C++ constant expressions, or false if we want a constant value
@@ -7801,20 +7824,7 @@ cxx_eval_outermost_constant_expr (tree t, bool allow_non_constant,
   else if (constexpr_dtor)
     return r;
   else if (non_constant_p && TREE_CONSTANT (r))
-    {
-      /* This isn't actually constant, so unset TREE_CONSTANT.
-	 Don't clear TREE_CONSTANT on ADDR_EXPR, as the middle-end requires
-	 it to be set if it is invariant address, even when it is not
-	 a valid C++ constant expression.  Wrap it with a NOP_EXPR
-	 instead.  */
-      if (EXPR_P (r) && TREE_CODE (r) != ADDR_EXPR)
-	r = copy_node (r);
-      else if (TREE_CODE (r) == CONSTRUCTOR)
-	r = build1 (VIEW_CONVERT_EXPR, TREE_TYPE (r), r);
-      else
-	r = build_nop (TREE_TYPE (r), r);
-      TREE_CONSTANT (r) = false;
-    }
+    r = mark_non_constant (r);
   else if (non_constant_p)
     return t;
 
@@ -7965,11 +7975,9 @@ maybe_constant_value (tree t, tree decl, bool manifestly_const_eval)
 
   if (!is_nondependent_constant_expression (t))
     {
-      if (TREE_OVERFLOW_P (t))
-	{
-	  t = build_nop (TREE_TYPE (t), t);
-	  TREE_CONSTANT (t) = false;
-	}
+      if (TREE_OVERFLOW_P (t)
+	  || (!processing_template_decl && TREE_CONSTANT (t)))
+	t = mark_non_constant (t);
       return t;
     }
   else if (CONSTANT_CLASS_P (t))
