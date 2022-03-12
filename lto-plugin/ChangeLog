@@ -1,3 +1,8 @@
+2022-03-11  Tobias Burnus  <tobias@codesourcery.com>
+
+	* lto-plugin.c (all_symbols_read_handler): With -save-temps, use
+	link_output_name for -foffload-objects's file name, if available.
+
 2022-03-01  Martin Liska  <mliska@suse.cz>
 
 	* lto-plugin.c (process_offload_section): Use a linker as many

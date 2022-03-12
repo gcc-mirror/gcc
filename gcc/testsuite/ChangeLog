@@ -1,3 +1,39 @@
+2022-03-11  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR tree-optimization/98335
+	* g++.target/i386/pr98335.C: New test case.
+	* gcc.target/i386/pr98335.c: New test case.
+
+2022-03-11  Roger Sayle  <roger@nextmovesoftware.com>
+	    Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/98335
+	* g++.dg/pr98335.C: New test case.
+	* gcc.dg/pr86010.c: New test case.
+	* gcc.dg/pr86010-2.c: New test case.
+
+2022-03-11  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR c++/84964
+	* g++.dg/other/pr84964.C: Tweak test to check for the ICE, not for
+	the (target-dependent) sorry.
+
+2022-03-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/104880
+	* g++.dg/opt/pr104880.cc: New testcase.
+
+2022-03-11  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/goacc/array-with-dt-1.f90: Update/add comments;
+	remove dg-warning for 'is used uninitialized'.
+	* gfortran.dg/goacc/pr93464.f90: Likewise.
+	* gfortran.dg/goacc/array-with-dt-1a.f90: New; copied from
+	gfortran.dg/goacc/array-with-dt-1.f90 but run with -O0. Update
+	dg-warning for 'may be used uninitialized'.
+	* gfortran.dg/goacc/pr93464-2.f90: Likewise; copied from
+	gfortran.dg/goacc/pr93464.f90.
+
 2022-03-10  Roger Sayle  <roger@nextmovesoftware.com>
 
 	PR c++/84964

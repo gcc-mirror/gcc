@@ -1,3 +1,11 @@
+2022-03-11  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR d/103528
+	* configure.ac <x86_64-*-solaris2.* | i?86-*-solaris2.*>: Remove
+	gas requirement.
+	* configure: Regenerate.
+	* configure.tgt (sparc*-*-solaris2.11*): Mark supported.
+
 2022-03-02  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* libdruntime/MERGE: Merge upstream druntime 100a608c.

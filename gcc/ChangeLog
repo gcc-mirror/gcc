@@ -1,3 +1,34 @@
+2022-03-11  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR tree-optimization/98335
+	* config/i386/i386.md (peephole2): Eliminate redundant insv.
+	Combine movl followed by movb.  Transform xorl followed by
+	a suitable movb or movw into the equivalent movz[bw]l.
+
+2022-03-11  Roger Sayle  <roger@nextmovesoftware.com>
+	    Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/98335
+	* builtins.cc (get_object_alignment_2): Export.
+	* builtins.h (get_object_alignment_2): Likewise.
+	* tree-ssa-alias.cc (ao_ref_alignment): New.
+	* tree-ssa-alias.h (ao_ref_alignment): Declare.
+	* tree-ssa-dse.cc (compute_trims): Improve logic deciding whether
+	to align head/tail, writing more bytes but using fewer store insns.
+
+2022-03-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/104880
+	* tree-ssa.cc (execute_update_address_taken): Remember if we
+	optimistically made something not addressable and
+	prepare to undo it.
+
+2022-03-11  Richard Biener  <rguenther@suse.de>
+
+	PR target/104762
+	* config/i386/i386.cc (ix86_builtin_vectorization_cost): Do not
+	cost the first lane of SSE pieces as inserts for vec_construct.
+
 2022-03-10  Roger Sayle  <roger@nextmovesoftware.com>
 
 	PR c++/84964

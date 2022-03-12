@@ -1,3 +1,24 @@
+2022-03-11  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* imports.cc (imported_decls): Define.
+	(class ImportVisitor): Add result_ field.
+	(ImportVisitor::result): New method.
+	(ImportVisitor::visit (Module *)): Store decl to result_.
+	(ImportVisitor::visit (Import *)): Likewise.
+	(ImportVisitor::visit (AliasDeclaration *)): Don't cache decl in
+	front-end AST node.
+	(ImportVisitor::visit (OverDeclaration *)): Likewise.
+	(ImportVisitor::visit (FuncDeclaration *)): Likewise.
+	(ImportVisitor::visit (Declaration *)): Likewise.
+	(build_import_decl): Use imported_decls to cache and lookup built
+	declarations.
+
+2022-03-11  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR translation/104552
+	* lang.opt (fdump-cxx-spec=): Fix typo in argument handle.
+	(fpreview=fixaliasthis): Quote `alias this' as code.
+
 2022-03-02  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* dmd/MERGE: Merge upstream dmd 423f19b41.
