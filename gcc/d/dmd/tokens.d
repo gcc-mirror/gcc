@@ -124,7 +124,6 @@ enum TOK : ubyte
     // Leaf operators
     identifier,
     string_,
-    hexadecimalString,
     this_,
     super_,
     error,
@@ -854,8 +853,6 @@ extern (C++) struct Token
         TOK.wchar_tLiteral: "wchar_tv",
         TOK.whitespace: "whitespace",
 
-        TOK.hexadecimalString: "xstring",
-
         // C only keywords
         TOK.inline    : "inline",
         TOK.register  : "register",
@@ -1008,24 +1005,6 @@ nothrow:
                 p = buf.extractSlice().ptr;
             }
             break;
-        case TOK.hexadecimalString:
-            {
-                OutBuffer buf;
-                buf.writeByte('x');
-                buf.writeByte('"');
-                foreach (size_t i; 0 .. len)
-                {
-                    if (i)
-                        buf.writeByte(' ');
-                    buf.printf("%02x", ustring[i]);
-                }
-                buf.writeByte('"');
-                if (postfix)
-                    buf.writeByte(postfix);
-                buf.writeByte(0);
-                p = buf.extractSlice().ptr;
-                break;
-            }
         case TOK.identifier:
         case TOK.enum_:
         case TOK.struct_:

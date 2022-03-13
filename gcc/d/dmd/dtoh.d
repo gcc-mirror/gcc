@@ -180,6 +180,15 @@ struct _d_dynamicArray final
 `);
     }
 
+    // prevent trailing newlines
+    version (Windows)
+        while (buf.length >= 4 && buf[$-4..$] == "\r\n\r\n")
+            buf.remove(buf.length - 2, 2);
+    else
+        while (buf.length >= 2 && buf[$-2..$] == "\n\n")
+            buf.remove(buf.length - 1, 1);
+
+
     if (global.params.cxxhdrname is null)
     {
         // Write to stdout; assume it succeeds

@@ -675,24 +675,28 @@ extern (C++) final class Module : Package
 
         //printf("Module::read('%s') file '%s'\n", toChars(), srcfile.toChars());
 
-        if (global.params.emitMakeDeps)
-        {
-            global.params.makeDeps.push(srcfile.toChars());
-        }
 
+
+        bool success;
         if (auto readResult = FileManager.fileManager.lookup(srcfile))
         {
             srcBuffer = readResult;
-            return true;
+            success = true;
         }
-
-        auto readResult = File.read(srcfile.toChars());
-        if (loadSourceBuffer(loc, readResult))
+        else
         {
-            FileManager.fileManager.add(srcfile, srcBuffer);
-            return true;
+            auto readResult = File.read(srcfile.toChars());
+            if (loadSourceBuffer(loc, readResult))
+            {
+                FileManager.fileManager.add(srcfile, srcBuffer);
+                success = true;
+            }
         }
-        return false;
+        if (success && global.params.emitMakeDeps)
+        {
+            global.params.makeDeps.push(srcfile.toChars());
+        }
+        return success;
     }
 
     /// syntactic parse

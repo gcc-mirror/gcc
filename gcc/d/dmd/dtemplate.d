@@ -7806,10 +7806,10 @@ struct TemplateInstanceBox
             /* Used when a proposed instance is used to see if there's
              * an existing instance.
              */
-            static if (__VERSION__ >= 2099)
-                res = (cast()ti).equalsx(cast()s.ti);
-            else // https://issues.dlang.org/show_bug.cgi?id=22717
+            static if (__VERSION__ < 2099) // https://issues.dlang.org/show_bug.cgi?id=22717
                 res = (cast()s.ti).equalsx(cast()ti);
+            else
+                res = (cast()ti).equalsx(cast()s.ti);
         }
 
         debug (FindExistingInstance) ++(res ? nHits : nCollisions);

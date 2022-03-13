@@ -119,6 +119,7 @@ public:
     LINK linkage;
     short inuse;                // used to detect cycles
     uint8_t adFlags;
+    Symbol* isym;               // import version of csym
     DString mangleOverride;     // overridden symbol with pragma(mangle, "...")
 
     const char *kind() const;

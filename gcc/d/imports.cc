@@ -106,20 +106,20 @@ public:
     tree type = build_ctype (d->type);
     /* Not all kinds of D enums create a TYPE_DECL.  */
     if (TREE_CODE (type) == ENUMERAL_TYPE)
-      d->isym = this->make_import (TYPE_STUB_DECL (type));
+      this->result_ = this->make_import (TYPE_STUB_DECL (type));
   }
 
   void visit (AggregateDeclaration *d)
   {
     tree type = build_ctype (d->type);
-    d->isym = this->make_import (TYPE_STUB_DECL (type));
+    this->result_ = this->make_import (TYPE_STUB_DECL (type));
   }
 
   void visit (ClassDeclaration *d)
   {
     /* Want the RECORD_TYPE, not POINTER_TYPE.  */
     tree type = TREE_TYPE (build_ctype (d->type));
-    d->isym = this->make_import (TYPE_STUB_DECL (type));
+    this->result_ = this->make_import (TYPE_STUB_DECL (type));
   }
 
   /* For now, ignore importing other kinds of dsymbols.  */

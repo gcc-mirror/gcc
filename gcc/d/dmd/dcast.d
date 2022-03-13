@@ -2443,7 +2443,7 @@ Expression castTo(Expression e, Scope* sc, Type t, Type att = null)
         {
             printf("DelegateExp::castTo(this=%s, type=%s, t=%s)\n", e.toChars(), e.type.toChars(), t.toChars());
         }
-        __gshared const(char)* msg = "cannot form delegate due to covariant return type";
+        static immutable msg = "cannot form delegate due to covariant return type";
 
         Type tb = t.toBasetype();
         Type typeb = e.type.toBasetype();
@@ -2453,7 +2453,7 @@ Expression castTo(Expression e, Scope* sc, Type t, Type att = null)
             int offset;
             e.func.tookAddressOf++;
             if (e.func.tintro && e.func.tintro.nextOf().isBaseOf(e.func.type.nextOf(), &offset) && offset)
-                e.error("%s", msg);
+                e.error("%s", msg.ptr);
             auto result = e.copy();
             result.type = t;
             return result;
@@ -2469,7 +2469,7 @@ Expression castTo(Expression e, Scope* sc, Type t, Type att = null)
                 {
                     int offset;
                     if (f.tintro && f.tintro.nextOf().isBaseOf(f.type.nextOf(), &offset) && offset)
-                        e.error("%s", msg);
+                        e.error("%s", msg.ptr);
                     if (f != e.func)    // if address not already marked as taken
                         f.tookAddressOf++;
                     auto result = new DelegateExp(e.loc, e.e1, f, false, e.vthis2);
@@ -2477,7 +2477,7 @@ Expression castTo(Expression e, Scope* sc, Type t, Type att = null)
                     return result;
                 }
                 if (e.func.tintro)
-                    e.error("%s", msg);
+                    e.error("%s", msg.ptr);
             }
         }
 

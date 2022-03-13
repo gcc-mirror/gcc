@@ -72,10 +72,15 @@ import dmd.typesem;
 import dmd.visitor;
 
 enum LOGSEMANTIC = false;
+
 void emplaceExp(T : Expression, Args...)(void* p, Args args)
 {
-    scope tmp = new T(args);
-    memcpy(p, cast(void*)tmp, __traits(classInstanceSize, T));
+    static if (__VERSION__ < 2099)
+        const init = typeid(T).initializer;
+    else
+        const init = __traits(initSymbol, T);
+    p[0 .. __traits(classInstanceSize, T)] = init[];
+    (cast(T)p).__ctor(args);
 }
 
 void emplaceExp(T : UnionExp)(T* p, Expression e)
@@ -5828,6 +5833,13 @@ extern (C++) final class IndexExp : BinExp
     extern (D) this(const ref Loc loc, Expression e1, Expression e2)
     {
         super(loc, EXP.index, __traits(classInstanceSize, IndexExp), e1, e2);
+        //printf("IndexExp::IndexExp('%s')\n", toChars());
+    }
+
+    extern (D) this(const ref Loc loc, Expression e1, Expression e2, bool indexIsInBounds)
+    {
+        super(loc, EXP.index, __traits(classInstanceSize, IndexExp), e1, e2);
+        this.indexIsInBounds = indexIsInBounds;
         //printf("IndexExp::IndexExp('%s')\n", toChars());
     }
 

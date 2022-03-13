@@ -1,15 +1,19 @@
 /* TEST_OUTPUT:
-PERMUTE_ARGS: -dip1000
+REQUIRED_ARGS: -preview=dip1000
 ---
-fail_compilation/test15191.d(31): Error: returning `&identity(x)` escapes a reference to local variable `x`
-fail_compilation/test15191.d(37): Error: returning `&identityPtr(x)` escapes a reference to local variable `x`
-fail_compilation/test15191.d(43): Error: cannot take address of `ref return` of `identityPtr()` in `@safe` function `addrOfRefTransitive`
-fail_compilation/test15191.d(43): Error: returning `&identityPtr(x)` escapes a reference to local variable `x`
+fail_compilation/test15191.d(35): Error: returning `&identity(x)` escapes a reference to local variable `x`
+fail_compilation/test15191.d(41): Error: returning `&identityPtr(x)` escapes a reference to local variable `x`
+fail_compilation/test15191.d(47): Error: cannot take address of `ref return` of `identityPtr()` in `@safe` function `addrOfRefTransitive`
+fail_compilation/test15191.d(47):        return type `int*` has pointers that may be `scope`
+fail_compilation/test15191.d(68): Error: cannot slice static array of `ref return` of `identityArr()` in `@safe` function `sliceOfRefEscape`
+fail_compilation/test15191.d(68):        return type `int*[1]` has pointers that may be `scope`
 ---
 */
 
+// Test taking the address of a `ref return` using & and [] operators
 // https://issues.dlang.org/show_bug.cgi?id=15191
 // https://issues.dlang.org/show_bug.cgi?id=22519
+// https://issues.dlang.org/show_bug.cgi?id=22539
 
 @safe:
 ref int foo(return ref int s)
@@ -49,4 +53,18 @@ ref int getGlobalInt() {return gInt;}
 int* addrOfRefGlobal()
 {
 	return &getGlobalInt();
+}
+
+// Slice:
+ref int*[1] identityArr(ref return scope int*[1] x)
+{
+	return x;
+}
+
+int* sliceOfRefEscape()
+{
+	int stackVar = 0xFF;
+	scope int*[1] x = [&stackVar];
+	int*[] y = identityArr(x)[];
+	return y[0];
 }

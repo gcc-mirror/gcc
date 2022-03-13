@@ -99,3 +99,81 @@ void test5(int i)
 
     }
 }
+
+/++
+TEST_OUTPUT:
+---
+fail_compilation/test_switch_error.d(513): Error: undefined identifier `undefinedFunc`
+fail_compilation/test_switch_error.d(517): Error: `case` must be a `string` or an integral constant, not `Strukt(1)`
+fail_compilation/test_switch_error.d(518): Error: `case` variables have to be `const` or `immutable`
+fail_compilation/test_switch_error.d(518): Error: `case` variables not allowed in `final switch` statements
+fail_compilation/test_switch_error.d(519): Error: `case` variables not allowed in `final switch` statements
+fail_compilation/test_switch_error.d(522): Error: undefined identifier `undefinedFunc2`
+---
+++/
+#line 500
+
+enum Foo
+{
+   one, two
+}
+
+struct Strukt
+{
+    int i;
+}
+
+void errorsWithErrors(int param, immutable int constant)
+{
+   final switch(undefinedFunc())
+   {
+      case Foo.one:     break;
+      case Foo.two:     break;
+      case Strukt(1):   break;
+      case param:       break;
+      case constant:    break;
+   }
+
+   switch (undefinedFunc2())
+   {
+       case constant:   break;
+   }
+}
+
+/++
+TEST_OUTPUT:
+---
+fail_compilation/test_switch_error.d(622): Error: undefined identifier `undefinedFunc`
+fail_compilation/test_switch_error.d(624): Error: `case` must be a `string` or an integral constant, not `SubtypeOfInt(2)`
+fail_compilation/test_switch_error.d(625): Error: `case` must be a `string` or an integral constant, not `SubtypeOfIntMethod()`
+---
+++/
+#line 600
+
+struct SubtypeOfInt
+{
+    int i;
+    alias i this;
+}
+
+struct SubtypeOfIntMethod
+{
+    int getI() { return 0; }
+    alias getI this;
+}
+
+void errorsWithErrors2(int param)
+{
+    final switch(param)
+    {
+        case SubtypeOfInt(1):         break;
+        case SubtypeOfIntMethod():    break;
+    }
+
+    // This snippet causes somewhat misleading error messages
+    final switch(undefinedFunc())
+    {
+        case SubtypeOfInt(2):         break;
+        case SubtypeOfIntMethod():    break;
+    }
+}
