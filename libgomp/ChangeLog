@@ -1,3 +1,52 @@
+2022-03-12  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR middle-end/100280
+	PR middle-end/104892
+	* testsuite/libgomp.oacc-c-c++-common/declare-vla.c: Adjust.
+	* testsuite/libgomp.oacc-c-c++-common/default-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-decompose-1.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-reduction-1.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/parallel-dims.c: Likewise.
+	* testsuite/libgomp.oacc-fortran/asyncwait-1.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/kernels-reduction-1.f90:
+	Likewise.
+
+2022-03-12  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR middle-end/104892
+	* testsuite/libgomp.oacc-c-c++-common/kernels-decompose-1.c: Point
+	to PR104892.
+	* testsuite/libgomp.oacc-c-c++-common/default-1.c: Likewise,
+	enable '--param=openacc-kernels=decompose' and adjust.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-reduction-1.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/parallel-dims.c: Likewise.
+	* testsuite/libgomp.oacc-fortran/kernels-reduction-1.f90:
+	Likewise.
+
+2022-03-12  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR middle-end/90115
+	* testsuite/libgomp.oacc-c-c++-common/default-1.c: Enhance.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-reduction-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/parallel-dims.c: Likewise.
+	* testsuite/libgomp.oacc-fortran/kernels-reduction-1.f90: Likewise.
+
+2022-03-12  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR middle-end/100280
+	PR middle-end/104086
+	* testsuite/libgomp.oacc-c-c++-common/declare-vla-kernels-decompose-ice-1.c:
+	Merge this...
+	* testsuite/libgomp.oacc-c-c++-common/declare-vla-kernels-decompose.c:
+	..., and this...
+	* testsuite/libgomp.oacc-c-c++-common/declare-vla.c: ... into
+	this, and adjust.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-decompose-1.c:
+	Extend.
+
 2022-03-10  Hafiz Abid Qadeer  <abidh@codesourcery.com>
 
 	* testsuite/libgomp.fortran/allocate-1.f90: Remove pool_size

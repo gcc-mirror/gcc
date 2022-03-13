@@ -1,3 +1,67 @@
+2022-03-12  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/104641
+	* g++.dg/cpp1z/class-deduction107.C: New test.
+
+2022-03-12  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/104622
+	* g++.dg/template/conv18.C: New test.
+
+2022-03-12  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/104527
+	* g++.dg/cpp2a/concepts-return-req4.C: New test.
+
+2022-03-12  Patrick Palka  <ppalka@redhat.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	PR c++/98644
+	* g++.dg/cpp2a/concepts-pr98644.C: New test.
+	* g++.dg/parse/array-size2.C: Remove expected diagnostic about a
+	narrowing conversion.
+
+2022-03-12  Patrick Palka  <ppalka@redhat.com>
+
+	* g++.dg/concepts/diagnostic3.C: Adjusted expected location of
+	"evaluated to false" diagnostics.
+
+2022-03-12  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR middle-end/100280
+	PR middle-end/104892
+	* c-c++-common/goacc/kernels-decompose-2.c: Adjust.
+	* c-c++-common/goacc/kernels-decompose-pr100400-1-1.c: Likewise.
+	* c-c++-common/goacc/kernels-decompose-pr100400-1-2.c: Likewise.
+	* c-c++-common/goacc/kernels-decompose-pr100400-1-3.c: Likewise.
+	* c-c++-common/goacc/kernels-decompose-pr100400-1-4.c: Likewise.
+	* c-c++-common/goacc/kernels-decompose-pr104061-1-1.c: Likewise.
+	* c-c++-common/goacc/kernels-decompose-pr104061-1-2.c: Likewise.
+	* c-c++-common/goacc/kernels-decompose-pr104061-1-3.c: Likewise.
+	* c-c++-common/goacc/kernels-decompose-pr104061-1-4.c: Likewise.
+	* c-c++-common/goacc/kernels-decompose-pr104132-1.c: Likewise.
+	* c-c++-common/goacc/kernels-decompose-pr104133-1.c: Likewise.
+	* c-c++-common/goacc/kernels-decompose-pr104774-1.c: Likewise.
+	* gfortran.dg/goacc/classify-kernels.f95: Likewise.
+	* gfortran.dg/goacc/kernels-decompose-2.f95: Likewise.
+
+2022-03-12  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR middle-end/100280
+	PR middle-end/104086
+	* c-c++-common/goacc/kernels-decompose-pr104086-1.c: Adjust,
+	extend.
+
+2022-03-12  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR middle-end/104086
+	* c-c++-common/goacc/kernels-decompose-pr104086-1.c: New file.
+
+2022-03-12  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR middle-end/98420
+	* gcc.dg/pr98420.c: New test case.
+
 2022-03-11  Roger Sayle  <roger@nextmovesoftware.com>
 
 	PR tree-optimization/98335

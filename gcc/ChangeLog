@@ -1,3 +1,43 @@
+2022-03-12  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/104829
+	* config/rs6000/rs6000.cc (rs6000_machine_from_flags): Don't output
+	"ppc" and "ppc64" based on rs6000_cpu.
+
+2022-03-12  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR middle-end/100280
+	PR middle-end/104892
+	* omp-oacc-kernels-decompose.cc (omp_oacc_kernels_decompose_1):
+	Remove special handling of 'GOMP_MAP_FORCE_TOFROM'.
+
+2022-03-12  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR middle-end/100280
+	PR middle-end/104086
+	* omp-oacc-kernels-decompose.cc (omp_oacc_kernels_decompose_1):
+	Mark variables used in 'present' clauses as addressable.
+	* omp-low.cc (scan_sharing_clauses) <OMP_CLAUSE_MAP>: Gracefully
+	handle duplicate 'OMP_CLAUSE_MAP_DECL_MAKE_ADDRESSABLE'.
+
+2022-03-12  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR other/65095
+	* tree-core.h (user_omp_claus_code_name): Declare function.
+	* tree.cc (user_omp_clause_code_name): New function.
+
+2022-03-12  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR middle-end/98420
+	* match.pd (minus @0 @0): Additional checks for -fno-rounding-math
+	(the defaut) or -fno-signed-zeros.
+
+2022-03-12   Michael Meissner  <meissner@linux.ibm.com>
+
+	PR target/104868
+	* config/rs6000/vsx.md (extendditi2): Use a 'b' constraint when
+	moving from a GPR register to an Altivec register.
+
 2022-03-11  Roger Sayle  <roger@nextmovesoftware.com>
 
 	PR tree-optimization/98335
