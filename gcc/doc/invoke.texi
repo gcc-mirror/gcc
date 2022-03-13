@@ -8238,7 +8238,7 @@ Warn when attempting to deallocate an object that was either not allocated
 on the heap, or by using a pointer that was not returned from a prior call
 to the corresponding allocation function.  For example, because the call
 to @code{stpcpy} returns a pointer to the terminating nul character and
-not to the begginning of the object, the call to @code{free} below is
+not to the beginning of the object, the call to @code{free} below is
 diagnosed.
 
 @smallexample
@@ -9527,7 +9527,7 @@ accessing more than the maximum number of elements may be diagnosed.
 For example, the warning triggers for the following redeclarations because
 the first one allows an array of any size to be passed to @code{f} while
 the second one specifies that the array argument must have at least @code{n}
-elements.  In addition, calling @code{f} with the assotiated VLA bound
+elements.  In addition, calling @code{f} with the associated VLA bound
 parameter in excess of the actual VLA bound triggers a warning as well.
 
 @smallexample
@@ -19639,7 +19639,7 @@ Generate instructions supported by barrel shifter.  This is the default
 unless @option{-mcpu=ARC601} or @samp{-mcpu=ARCEM} is in effect.
 
 @item -mjli-always
-@opindex mjli-alawys
+@opindex mjli-always
 Force to call a function using jli_s instruction.  This option is
 valid only for ARCv2 architecture.
 

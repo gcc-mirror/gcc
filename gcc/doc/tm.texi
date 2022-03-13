@@ -736,7 +736,7 @@ If a target implements string objects then this hook should return
 @end deftypefn
 
 @deftypefn {C Target Hook} void TARGET_CHECK_STRING_OBJECT_FORMAT_ARG (tree @var{format_arg}, tree @var{args_list})
-If a target implements string objects then this hook should should
+If a target implements string objects then this hook should
 provide a facility to check the function arguments in @var{args_list}
 against the format specifiers in @var{format_arg} where the type of
 @var{format_arg} is one recognized as a valid string reference type.
@@ -2799,7 +2799,7 @@ intermediate registers or scratch registers.
 
 If copying a register @var{class} in @var{mode} to @var{x} requires an
 intermediate or scratch register, @code{SECONDARY_OUTPUT_RELOAD_CLASS}
-was supposed to be defined be defined to return the largest register
+was supposed to be defined to return the largest register
 class required.  If the
 requirements for input and output reloads were the same, the macro
 @code{SECONDARY_RELOAD_CLASS} should have been used instead of defining both
