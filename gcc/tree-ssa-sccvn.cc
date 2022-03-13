@@ -5140,11 +5140,12 @@ visit_reference_op_call (tree lhs, gcall *stmt)
 		{
 		  accesses.quick_grow (accesses.length () + 1);
 		  ao_ref *r = &accesses.last ();
-		  if (!access_node.get_ao_ref (stmt, r))
+		  tree arg = access_node.get_call_arg (stmt);
+		  if (!POINTER_TYPE_P (TREE_TYPE (arg))
+		      || !access_node.get_ao_ref (stmt, r))
 		    {
 		      /* Initialize a ref based on the argument and
 			 unknown offset if possible.  */
-		      tree arg = access_node.get_call_arg (stmt);
 		      if (arg && TREE_CODE (arg) == SSA_NAME)
 			arg = SSA_VAL (arg);
 		      if (arg

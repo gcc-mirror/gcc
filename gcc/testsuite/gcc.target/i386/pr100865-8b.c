@@ -4,4 +4,4 @@
 #include "pr100865-8a.c"
 
 /* { dg-final { scan-assembler-times "vpbroadcastd\[\\t \]+%(?:r|e)\[^\n\]*, %xmm\[0-9\]+" 1 } } */
-/* { dg-final { scan-assembler-times "vmovdqa64\[\\t \]%xmm\[0-9\]+, " 16 } } */
+/* { dg-final { scan-assembler-times "vmovdqa\[\\t \]%xmm\[0-9\]+, " 16 } } */

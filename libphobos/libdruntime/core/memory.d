@@ -1229,7 +1229,10 @@ void __delete(T)(ref T x) @system
     else static if (is(T == U*, U))
     {
         static if (is(U == struct))
-            _destructRecurse(*x);
+        {
+            if (x)
+                _destructRecurse(*x);
+        }
     }
     else static if (is(T : E[], E))
     {
@@ -1334,6 +1337,10 @@ unittest
     assert(a is null);
     assert(dtorCalled);
     assert(GC.addrOf(cast(void*) a) == null);
+
+    // https://issues.dlang.org/show_bug.cgi?id=22779
+    A *aptr;
+    __delete(aptr);
 }
 
 /// Deleting arrays

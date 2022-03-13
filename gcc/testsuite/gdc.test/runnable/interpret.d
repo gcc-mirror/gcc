@@ -3246,7 +3246,7 @@ int test6907()
     }
     {
         S1* p = new S1();
-        if (__ctfe) 
+        if (__ctfe)
         {
             (*p).__dtor();
             destroy(p);

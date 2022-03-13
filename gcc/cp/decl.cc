@@ -1470,6 +1470,43 @@ duplicate_function_template_decls (tree newdecl, tree olddecl)
   return false;
 }
 
+/* OLD_PARMS is the innermost set of template parameters for some template
+   declaration, and NEW_PARMS is the corresponding set of template parameters
+   for a redeclaration of that template.  Merge the default arguments within
+   these two sets of parameters.  CLASS_P is true iff the template in
+   question is a class template.  */
+
+bool
+merge_default_template_args (tree new_parms, tree old_parms, bool class_p)
+{
+  gcc_checking_assert (TREE_VEC_LENGTH (new_parms)
+		       == TREE_VEC_LENGTH (old_parms));
+  for (int i = 0; i < TREE_VEC_LENGTH (new_parms); i++)
+    {
+      tree new_parm = TREE_VALUE (TREE_VEC_ELT (new_parms, i));
+      tree old_parm = TREE_VALUE (TREE_VEC_ELT (old_parms, i));
+      tree& new_default = TREE_PURPOSE (TREE_VEC_ELT (new_parms, i));
+      tree& old_default = TREE_PURPOSE (TREE_VEC_ELT (old_parms, i));
+      if (new_default != NULL_TREE && old_default != NULL_TREE)
+	{
+	  auto_diagnostic_group d;
+	  error ("redefinition of default argument for %q+#D", new_parm);
+	  inform (DECL_SOURCE_LOCATION (old_parm),
+		  "original definition appeared here");
+	  return false;
+	}
+      else if (new_default != NULL_TREE)
+	/* Update the previous template parameters (which are the ones
+	   that will really count) with the new default value.  */
+	old_default = new_default;
+      else if (class_p && old_default != NULL_TREE)
+	/* Update the new parameters, too; they'll be used as the
+	   parameters for any members.  */
+	new_default = old_default;
+    }
+  return true;
+}
+
 /* If NEWDECL is a redeclaration of OLDDECL, merge the declarations.
    If the redeclaration is invalid, a diagnostic is issued, and the
    error_mark_node is returned.  Otherwise, OLDDECL is returned.
@@ -1990,7 +2027,21 @@ duplicate_decls (tree newdecl, tree olddecl, bool hiding, bool was_hidden)
 		     template shall be specified on the initial declaration
 		     of the member function within the class template.  */
 		  || CLASSTYPE_TEMPLATE_INFO (CP_DECL_CONTEXT (olddecl))))
-	    check_redeclaration_no_default_args (newdecl);
+	    {
+	      check_redeclaration_no_default_args (newdecl);
+
+	      if (DECL_TEMPLATE_INFO (olddecl)
+		  && DECL_MEMBER_TEMPLATE_P (DECL_TI_TEMPLATE (olddecl)))
+		{
+		  tree new_parms = DECL_TEMPLATE_INFO (newdecl)
+		    ? DECL_INNERMOST_TEMPLATE_PARMS (DECL_TI_TEMPLATE (newdecl))
+		    : INNERMOST_TEMPLATE_PARMS (current_template_parms);
+		  tree old_parms
+		    = DECL_INNERMOST_TEMPLATE_PARMS (DECL_TI_TEMPLATE (olddecl));
+		  merge_default_template_args (new_parms, old_parms,
+					       /*class_p=*/false);
+		}
+	    }
 	  else
 	    {
 	      tree t1 = FUNCTION_FIRST_USER_PARMTYPE (olddecl);
@@ -2235,6 +2286,11 @@ duplicate_decls (tree newdecl, tree olddecl, bool hiding, bool was_hidden)
 		 translation unit."  */
 	      check_no_redeclaration_friend_default_args
 		(old_result, new_result);
+
+	      tree new_parms = DECL_INNERMOST_TEMPLATE_PARMS (newdecl);
+	      tree old_parms = DECL_INNERMOST_TEMPLATE_PARMS (olddecl);
+	      merge_default_template_args (new_parms, old_parms,
+					   /*class_p=*/false);
 	    }
 	  if (!DECL_UNIQUE_FRIEND_P (old_result))
 	    DECL_UNIQUE_FRIEND_P (new_result) = false;
@@ -4148,15 +4204,25 @@ make_typename_type (tree context, tree name, enum tag_types tag_type,
     }
   if (!want_template && TREE_CODE (t) != TYPE_DECL)
     {
-      if (complain & tf_error)
-	error ("%<typename %T::%D%> names %q#T, which is not a type",
-	       context, name, t);
-      return error_mark_node;
+      if ((complain & tf_tst_ok) && cxx_dialect >= cxx17
+	  && DECL_TYPE_TEMPLATE_P (t))
+	/* The caller permits this typename-specifier to name a template
+	   (because it appears in a CTAD-enabled context).  */;
+      else
+	{
+	  if (complain & tf_error)
+	    error ("%<typename %T::%D%> names %q#T, which is not a type",
+		   context, name, t);
+	  return error_mark_node;
+	}
     }
 
   if (!check_accessibility_of_qualified_id (t, /*object_type=*/NULL_TREE,
 					    context, complain))
     return error_mark_node;
+
+  if (!want_template && DECL_TYPE_TEMPLATE_P (t))
+    return make_template_placeholder (t);
 
   if (want_template)
     {
@@ -5483,13 +5549,15 @@ start_decl (const cp_declarator *declarator,
 
   *pushed_scope_p = NULL_TREE;
 
-  attributes = chainon (attributes, prefix_attributes);
+  if (prefix_attributes != error_mark_node)
+    attributes = chainon (attributes, prefix_attributes);
 
   decl = grokdeclarator (declarator, declspecs, NORMAL, initialized,
 			 &attributes);
 
   if (decl == NULL_TREE || VOID_TYPE_P (decl)
-      || decl == error_mark_node)
+      || decl == error_mark_node
+      || prefix_attributes == error_mark_node)
     return error_mark_node;
 
   context = CP_DECL_CONTEXT (decl);
@@ -7903,6 +7971,9 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
   type = TREE_TYPE (decl);
   if (type == error_mark_node)
     return;
+
+  if (VAR_P (decl) && is_copy_initialization (init))
+    flags |= LOOKUP_ONLYCONVERTING;
 
   /* Warn about register storage specifiers except when in GNU global
      or local register variable extension.  */
@@ -13690,7 +13761,7 @@ grokdeclarator (const cp_declarator *declarator,
       }
     else if (decl_context == FIELD)
       {
-	if (!staticp && !friendp && TREE_CODE (type) != METHOD_TYPE)
+	if (!staticp && !friendp && !FUNC_OR_METHOD_TYPE_P (type))
 	  if (tree auto_node = type_uses_auto (type))
 	    {
 	      location_t tloc = declspecs->locations[ds_type_spec];
@@ -15153,6 +15224,9 @@ grok_op_properties (tree decl, bool complain)
       if (!arg)
 	{
 	  /* Variadic.  */
+	  if (operator_code == ARRAY_REF && cxx_dialect >= cxx23)
+	    break;
+
 	  error_at (loc, "%qD must not have variable number of arguments",
 		    decl);
 	  return false;
@@ -15228,7 +15302,8 @@ grok_op_properties (tree decl, bool complain)
     }
 
   /* There can be no default arguments.  */
-  for (tree arg = argtypes; arg != void_list_node; arg = TREE_CHAIN (arg))
+  for (tree arg = argtypes; arg && arg != void_list_node;
+       arg = TREE_CHAIN (arg))
     if (TREE_PURPOSE (arg))
       {
 	TREE_PURPOSE (arg) = NULL_TREE;
@@ -16202,7 +16277,7 @@ finish_enum_value_list (tree enumtype)
 
 	  /* Update the minimum and maximum values, if appropriate.  */
 	  value = DECL_INITIAL (decl);
-	  if (value == error_mark_node)
+	  if (TREE_CODE (value) != INTEGER_CST)
 	    value = integer_zero_node;
 	  /* Figure out what the minimum and maximum values of the
 	     enumerators are.  */
@@ -16491,7 +16566,7 @@ build_enumerator (tree name, tree value, tree enumtype, tree attributes,
 		 which case the type is an unspecified integral type
 		 sufficient to contain the incremented value.  */
 	      prev_value = DECL_INITIAL (TREE_VALUE (TYPE_VALUES (enumtype)));
-	      if (error_operand_p (prev_value))
+	      if (TREE_CODE (prev_value) != INTEGER_CST)
 		value = error_mark_node;
 	      else
 		{

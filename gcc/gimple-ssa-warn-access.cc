@@ -47,7 +47,7 @@
 #include "tree-object-size.h"
 #include "tree-ssa-strlen.h"
 #include "calls.h"
-#include "cfgloop.h"
+#include "cfganal.h"
 #include "intl.h"
 #include "gimple-range.h"
 #include "stringpool.h"
@@ -2642,7 +2642,7 @@ pass_waccess::check_strncmp (gcall *stmt)
      a bound that's larger than the size of either array makes no sense
      and is likely a bug.  When the length of neither of the two strings
      is known but the sizes of both of the arrays they are stored in is,
-     issue a warning if the bound is larger than than the size of
+     issue a warning if the bound is larger than the size of
      the larger of the two arrays.  */
 
   c_strlen_data lendata1{ }, lendata2{ };
@@ -3812,20 +3812,15 @@ pass_waccess::use_after_inval_p (gimple *inval_stmt, gimple *use_stmt,
       /* Proceed only when looking for uses of dangling pointers.  */
       auto gsi = gsi_for_stmt (use_stmt);
 
-      auto_bitmap visited;
-
       /* A use statement in the last basic block in a function or one that
 	 falls through to it is after any other prior clobber of the used
 	 variable unless it's followed by a clobber of the same variable. */
       basic_block bb = use_bb;
       while (bb != inval_bb
 	     && single_succ_p (bb)
-	     && !(single_succ_edge (bb)->flags & (EDGE_EH|EDGE_DFS_BACK)))
+	     && !(single_succ_edge (bb)->flags
+		  & (EDGE_EH | EDGE_ABNORMAL | EDGE_DFS_BACK)))
 	{
-	  if (!bitmap_set_bit (visited, bb->index))
-	    /* Avoid cycles. */
-	    return true;
-
 	  for (; !gsi_end_p (gsi); gsi_next_nondebug (&gsi))
 	    {
 	      gimple *stmt = gsi_stmt (gsi);
@@ -4709,6 +4704,9 @@ pass_waccess::execute (function *fun)
 {
   calculate_dominance_info (CDI_DOMINATORS);
   calculate_dominance_info (CDI_POST_DOMINATORS);
+
+  /* Set or clear EDGE_DFS_BACK bits on back edges.  */
+  mark_dfs_back_edges (fun);
 
   /* Create a new ranger instance and associate it with FUN.  */
   m_ptr_qry.rvals = enable_ranger (fun);

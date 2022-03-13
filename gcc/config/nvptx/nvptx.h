@@ -32,7 +32,7 @@
 /* Default needs to be in sync with default for misa in nvptx.opt.
    We add a default here to work around a hard-coded sm_30 default in
    nvptx-as.  */
-#define ASM_SPEC "%{misa=*:-m %*; :-m sm_35}"
+#define ASM_SPEC "%{misa=*:-m %*; :-m sm_35}%{misa=sm_30:--no-verify}"
 
 #define TARGET_CPU_CPP_BUILTINS() nvptx_cpu_cpp_builtins ()
 
@@ -226,6 +226,7 @@ struct GTY(()) machine_function
   rtx sync_bar; /* Synchronization barrier ID for vectors.  */
   rtx unisimt_master; /* 'Master lane index' for -muniform-simt.  */
   rtx unisimt_predicate; /* Predicate for -muniform-simt.  */
+  rtx unisimt_outside_simt_predicate; /* Predicate for -muniform-simt.  */
   rtx unisimt_location; /* Mask location for -muniform-simt.  */
   /* The following two fields hold the maximum size resp. alignment required
      for per-lane storage in OpenMP SIMD regions.  */

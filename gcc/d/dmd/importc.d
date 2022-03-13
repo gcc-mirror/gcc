@@ -159,7 +159,8 @@ Expression carraySemantic(ArrayExp ae, Scope* sc)
     if (t1.isTypeDArray() || t1.isTypeSArray())
     {
         e2 = e2.expressionSemantic(sc).arrayFuncConv(sc);
-        return new IndexExp(ae.loc, e1, e2).expressionSemantic(sc);
+        // C doesn't do array bounds checking, so `true` turns it off
+        return new IndexExp(ae.loc, e1, e2, true).expressionSemantic(sc);
     }
 
     e1 = e1.arrayFuncConv(sc);   // e1 might still be a function call
@@ -167,7 +168,7 @@ Expression carraySemantic(ArrayExp ae, Scope* sc)
     auto t2 = e2.type.toBasetype();
     if (t2.isTypeDArray() || t2.isTypeSArray())
     {
-        return new IndexExp(ae.loc, e2, e1).expressionSemantic(sc); // swap operands
+        return new IndexExp(ae.loc, e2, e1, true).expressionSemantic(sc); // swap operands
     }
 
     e2 = e2.arrayFuncConv(sc);

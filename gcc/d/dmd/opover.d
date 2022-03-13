@@ -396,13 +396,10 @@ Expression op_overload(Expression e, Scope* sc, EXP* pop = null)
                     fd = search_function(ad, id);
                     if (fd)
                     {
-                        // @@@DEPRECATED_2.098@@@.
-                        // Deprecated in 2.088
-                        // Make an error in 2.098
-                        e.deprecation("`%s` is deprecated.  Use `opUnary(string op)() if (op == \"%s\")` instead.", id.toChars(), EXPtoString(e.op).ptr);
-                        // Rewrite +e1 as e1.add()
-                        result = build_overload(e.loc, sc, e.e1, null, fd);
-                        return result;
+                        // @@@DEPRECATED_2.110@@@.
+                        // Deprecated in 2.088, made an error in 2.100
+                        e.error("`%s` is obsolete.  Use `opUnary(string op)() if (op == \"%s\")` instead.", id.toChars(), EXPtoString(e.op).ptr);
+                        return ErrorExp.get();
                     }
                 }
                 // Didn't find it. Forward to aliasthis
@@ -670,13 +667,13 @@ Expression op_overload(Expression e, Scope* sc, EXP* pop = null)
                     s = search_function(ad1, id);
                     if (s && id != Id.assign)
                     {
-                        // @@@DEPRECATED_2.098@@@.
-                        // Deprecated in 2.088
-                        // Make an error in 2.098
+                        // @@@DEPRECATED_2.110@@@.
+                        // Deprecated in 2.088, made an error in 2.100
                         if (id == Id.postinc || id == Id.postdec)
-                            e.deprecation("`%s` is deprecated.  Use `opUnary(string op)() if (op == \"%s\")` instead.", id.toChars(), EXPtoString(e.op).ptr);
+                            e.error("`%s` is obsolete.  Use `opUnary(string op)() if (op == \"%s\")` instead.", id.toChars(), EXPtoString(e.op).ptr);
                         else
-                            e.deprecation("`%s` is deprecated.  Use `opBinary(string op)(...) if (op == \"%s\")` instead.", id.toChars(), EXPtoString(e.op).ptr);
+                            e.error("`%s` is obsolete.  Use `opBinary(string op)(...) if (op == \"%s\")` instead.", id.toChars(), EXPtoString(e.op).ptr);
+                        return ErrorExp.get();
                     }
                 }
                 if (ad2 && id_r)
@@ -689,10 +686,10 @@ Expression op_overload(Expression e, Scope* sc, EXP* pop = null)
                         s_r = null;
                     if (s_r)
                     {
-                        // @@@DEPRECATED_2.098@@@.
-                        // Deprecated in 2.088
-                        // Make an error in 2.098
-                        e.deprecation("`%s` is deprecated.  Use `opBinaryRight(string op)(...) if (op == \"%s\")` instead.", id_r.toChars(), EXPtoString(e.op).ptr);
+                        // @@@DEPRECATED_2.110@@@.
+                        // Deprecated in 2.088, made an error in 2.100
+                        e.error("`%s` is obsolete.  Use `opBinaryRight(string op)(...) if (op == \"%s\")` instead.", id_r.toChars(), EXPtoString(e.op).ptr);
+                        return ErrorExp.get();
                     }
                 }
             }
@@ -1232,12 +1229,12 @@ Expression op_overload(Expression e, Scope* sc, EXP* pop = null)
                 s = search_function(ad1, id);
                 if (s)
                 {
-                    // @@@DEPRECATED_2.098@@@.
-                    // Deprecated in 2.088
-                    // Make an error in 2.098
+                    // @@@DEPRECATED_2.110@@@.
+                    // Deprecated in 2.088, made an error in 2.100
                     scope char[] op = EXPtoString(e.op).dup;
                     op[$-1] = '\0'; // remove trailing `=`
-                    e.deprecation("`%s` is deprecated.  Use `opOpAssign(string op)(...) if (op == \"%s\")` instead.", id.toChars(), op.ptr);
+                    e.error("`%s` is obsolete.  Use `opOpAssign(string op)(...) if (op == \"%s\")` instead.", id.toChars(), op.ptr);
+                    return ErrorExp.get();
                 }
             }
 
@@ -1552,7 +1549,8 @@ bool inferForeachAggregate(Scope* sc, bool isForeach, ref Expression feaggr, out
  * Params:
  *      fes = the foreach statement
  *      sc = context
- *      sapply = null or opApply or delegate
+ *      sapply = null or opApply or delegate, overload resolution has not been done.
+ *               Do overload resolution on sapply.
  * Returns:
  *      false for errors
  */
@@ -1588,8 +1586,7 @@ bool inferApplyArgTypes(ForeachStatement fes, Scope* sc, ref Dsymbol sapply)
          */
         if (FuncDeclaration fd = sapply.isFuncDeclaration())
         {
-            auto fdapply = findBestOpApplyMatch(ethis, fd, fes.parameters);
-            if (fdapply)
+            if (auto fdapply = findBestOpApplyMatch(ethis, fd, fes.parameters))
             {
                 // Fill in any missing types on foreach parameters[]
                 matchParamsToOpApply(fdapply.type.isTypeFunction(), fes.parameters, true);
@@ -1598,7 +1595,7 @@ bool inferApplyArgTypes(ForeachStatement fes, Scope* sc, ref Dsymbol sapply)
             }
             return false;
         }
-        return sapply !is null;
+        return true;   // shouldn't this be false?
     }
 
     Parameter p = (*fes.parameters)[0];

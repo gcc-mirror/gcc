@@ -188,7 +188,7 @@ struct omp_context
 static splay_tree all_contexts;
 static int taskreg_nesting_level;
 static int target_nesting_level;
-static bitmap task_shared_vars;
+static bitmap make_addressable_vars;
 static bitmap global_nonaddressable_vars;
 static vec<omp_context *> taskreg_contexts;
 static vec<gomp_task *> task_cpyfns;
@@ -572,9 +572,9 @@ use_pointer_for_field (tree decl, omp_context *shared_ctx)
 	      /* Taking address of OUTER in lower_send_shared_vars
 		 might need regimplification of everything that uses the
 		 variable.  */
-	      if (!task_shared_vars)
-		task_shared_vars = BITMAP_ALLOC (NULL);
-	      bitmap_set_bit (task_shared_vars, DECL_UID (outer));
+	      if (!make_addressable_vars)
+		make_addressable_vars = BITMAP_ALLOC (NULL);
+	      bitmap_set_bit (make_addressable_vars, DECL_UID (outer));
 	      TREE_ADDRESSABLE (outer) = 1;
 	    }
 	  return true;
@@ -601,13 +601,13 @@ omp_copy_decl_2 (tree var, tree name, tree type, omp_context *ctx)
   else
     record_vars (copy);
 
-  /* If VAR is listed in task_shared_vars, it means it wasn't
-     originally addressable and is just because task needs to take
-     it's address.  But we don't need to take address of privatizations
+  /* If VAR is listed in make_addressable_vars, it wasn't
+     originally addressable, but was only later made so.
+     We don't need to take address of privatizations
      from that var.  */
   if (TREE_ADDRESSABLE (var)
-      && ((task_shared_vars
-	   && bitmap_bit_p (task_shared_vars, DECL_UID (var)))
+      && ((make_addressable_vars
+	   && bitmap_bit_p (make_addressable_vars, DECL_UID (var)))
 	  || (global_nonaddressable_vars
 	      && bitmap_bit_p (global_nonaddressable_vars, DECL_UID (var)))))
     TREE_ADDRESSABLE (copy) = 0;
@@ -1495,6 +1495,49 @@ scan_sharing_clauses (tree clauses, omp_context *ctx)
 	  if (ctx->outer)
 	    scan_omp_op (&OMP_CLAUSE_SIZE (c), ctx->outer);
 	  decl = OMP_CLAUSE_DECL (c);
+	  /* If requested, make 'decl' addressable.  */
+	  if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_MAP
+	      && OMP_CLAUSE_MAP_DECL_MAKE_ADDRESSABLE (c))
+	    {
+	      gcc_checking_assert (DECL_P (decl));
+
+	      bool decl_addressable = TREE_ADDRESSABLE (decl);
+	      if (!decl_addressable)
+		{
+		  if (!make_addressable_vars)
+		    make_addressable_vars = BITMAP_ALLOC (NULL);
+		  bitmap_set_bit (make_addressable_vars, DECL_UID (decl));
+		  TREE_ADDRESSABLE (decl) = 1;
+		}
+
+	      if (dump_enabled_p ())
+		{
+		  location_t loc = OMP_CLAUSE_LOCATION (c);
+		  const dump_user_location_t d_u_loc
+		    = dump_user_location_t::from_location_t (loc);
+		  /* PR100695 "Format decoder, quoting in 'dump_printf' etc." */
+#if __GNUC__ >= 10
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wformat"
+#endif
+		  if (!decl_addressable)
+		    dump_printf_loc (MSG_NOTE, d_u_loc,
+				     "variable %<%T%>"
+				     " made addressable\n",
+				     decl);
+		  else
+		    dump_printf_loc (MSG_NOTE, d_u_loc,
+				     "variable %<%T%>"
+				     " already made addressable\n",
+				     decl);
+#if __GNUC__ >= 10
+# pragma GCC diagnostic pop
+#endif
+		}
+
+	      /* Done.  */
+	      OMP_CLAUSE_MAP_DECL_MAKE_ADDRESSABLE (c) = 0;
+	    }
 	  /* Global variables with "omp declare target" attribute
 	     don't need to be copied, the receiver side will use them
 	     directly.  However, global variables with "omp declare target link"
@@ -2371,11 +2414,11 @@ finish_taskreg_scan (omp_context *ctx)
   if (ctx->record_type == NULL_TREE)
     return;
 
-  /* If any task_shared_vars were needed, verify all
+  /* If any make_addressable_vars were needed, verify all
      OMP_CLAUSE_SHARED clauses on GIMPLE_OMP_{PARALLEL,TASK,TEAMS}
      statements if use_pointer_for_field hasn't changed
      because of that.  If it did, update field types now.  */
-  if (task_shared_vars)
+  if (make_addressable_vars)
     {
       tree c;
 
@@ -2390,7 +2433,7 @@ finish_taskreg_scan (omp_context *ctx)
 	       the receiver side will use them directly.  */
 	    if (is_global_var (maybe_lookup_decl_in_outer_ctx (decl, ctx)))
 	      continue;
-	    if (!bitmap_bit_p (task_shared_vars, DECL_UID (decl))
+	    if (!bitmap_bit_p (make_addressable_vars, DECL_UID (decl))
 		|| !use_pointer_for_field (decl, ctx))
 	      continue;
 	    tree field = lookup_field (decl, ctx);
@@ -10556,6 +10599,10 @@ oacc_privatization_candidate_p (const location_t loc, const tree c,
 
   if (res && !VAR_P (decl))
     {
+      /* A PARM_DECL (appearing in a 'private' clause) is expected to have been
+	 privatized into a new VAR_DECL.  */
+      gcc_checking_assert (TREE_CODE (decl) != PARM_DECL);
+
       res = false;
 
       if (dump_enabled_p ())
@@ -10636,11 +10683,15 @@ oacc_privatization_scan_clause_chain (omp_context *ctx, tree clauses)
       {
 	tree decl = OMP_CLAUSE_DECL (c);
 
-	if (!oacc_privatization_candidate_p (OMP_CLAUSE_LOCATION (c), c, decl))
+	tree new_decl = lookup_decl (decl, ctx);
+
+	if (!oacc_privatization_candidate_p (OMP_CLAUSE_LOCATION (c), c,
+					     new_decl))
 	  continue;
 
-	gcc_checking_assert (!ctx->oacc_privatization_candidates.contains (decl));
-	ctx->oacc_privatization_candidates.safe_push (decl);
+	gcc_checking_assert
+	  (!ctx->oacc_privatization_candidates.contains (new_decl));
+	ctx->oacc_privatization_candidates.safe_push (new_decl);
       }
 }
 
@@ -10652,11 +10703,16 @@ oacc_privatization_scan_decl_chain (omp_context *ctx, tree decls)
 {
   for (tree decl = decls; decl; decl = DECL_CHAIN (decl))
     {
-      if (!oacc_privatization_candidate_p (gimple_location (ctx->stmt), NULL, decl))
+      tree new_decl = lookup_decl (decl, ctx);
+      gcc_checking_assert (new_decl == decl);
+
+      if (!oacc_privatization_candidate_p (gimple_location (ctx->stmt), NULL,
+					   new_decl))
 	continue;
 
-      gcc_checking_assert (!ctx->oacc_privatization_candidates.contains (decl));
-      ctx->oacc_privatization_candidates.safe_push (decl);
+      gcc_checking_assert
+	(!ctx->oacc_privatization_candidates.contains (new_decl));
+      ctx->oacc_privatization_candidates.safe_push (new_decl);
     }
 }
 
@@ -11523,17 +11579,7 @@ lower_oacc_private_marker (omp_context *ctx)
   tree decl;
   FOR_EACH_VEC_ELT (ctx->oacc_privatization_candidates, i, decl)
     {
-      for (omp_context *thisctx = ctx; thisctx; thisctx = thisctx->outer)
-	{
-	  tree inner_decl = maybe_lookup_decl (decl, thisctx);
-	  if (inner_decl)
-	    {
-	      decl = inner_decl;
-	      break;
-	    }
-	}
-      gcc_checking_assert (decl);
-
+      gcc_checking_assert (TREE_ADDRESSABLE (decl));
       tree addr = build_fold_addr_expr (decl);
       args.safe_push (addr);
     }
@@ -14040,7 +14086,7 @@ lower_omp_teams (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 
 /* Callback for lower_omp_1.  Return non-NULL if *tp needs to be
    regimplified.  If DATA is non-NULL, lower_omp_1 is outside
-   of OMP context, but with task_shared_vars set.  */
+   of OMP context, but with make_addressable_vars set.  */
 
 static tree
 lower_omp_regimplify_p (tree *tp, int *walk_subtrees,
@@ -14054,9 +14100,9 @@ lower_omp_regimplify_p (tree *tp, int *walk_subtrees,
       && DECL_HAS_VALUE_EXPR_P (t))
     return t;
 
-  if (task_shared_vars
+  if (make_addressable_vars
       && DECL_P (t)
-      && bitmap_bit_p (task_shared_vars, DECL_UID (t)))
+      && bitmap_bit_p (make_addressable_vars, DECL_UID (t)))
     return t;
 
   /* If a global variable has been privatized, TREE_CONSTANT on
@@ -14141,7 +14187,7 @@ lower_omp_1 (gimple_stmt_iterator *gsi_p, omp_context *ctx)
   if (gimple_has_location (stmt))
     input_location = gimple_location (stmt);
 
-  if (task_shared_vars)
+  if (make_addressable_vars)
     memset (&wi, '\0', sizeof (wi));
 
   /* If we have issued syntax errors, avoid doing any heavy lifting.
@@ -14158,7 +14204,7 @@ lower_omp_1 (gimple_stmt_iterator *gsi_p, omp_context *ctx)
     case GIMPLE_COND:
       {
 	gcond *cond_stmt = as_a <gcond *> (stmt);
-	if ((ctx || task_shared_vars)
+	if ((ctx || make_addressable_vars)
 	    && (walk_tree (gimple_cond_lhs_ptr (cond_stmt),
 			   lower_omp_regimplify_p,
 			   ctx ? NULL : &wi, NULL)
@@ -14250,7 +14296,7 @@ lower_omp_1 (gimple_stmt_iterator *gsi_p, omp_context *ctx)
       lower_omp_critical (gsi_p, ctx);
       break;
     case GIMPLE_OMP_ATOMIC_LOAD:
-      if ((ctx || task_shared_vars)
+      if ((ctx || make_addressable_vars)
 	  && walk_tree (gimple_omp_atomic_load_rhs_ptr (
 			  as_a <gomp_atomic_load *> (stmt)),
 			lower_omp_regimplify_p, ctx ? NULL : &wi, NULL))
@@ -14371,7 +14417,7 @@ lower_omp_1 (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 
     default:
     regimplify:
-      if ((ctx || task_shared_vars)
+      if ((ctx || make_addressable_vars)
 	  && walk_gimple_op (stmt, lower_omp_regimplify_p,
 			     ctx ? NULL : &wi))
 	{
@@ -14435,10 +14481,10 @@ execute_lower_omp (void)
 
   if (all_contexts->root)
     {
-      if (task_shared_vars)
+      if (make_addressable_vars)
 	push_gimplify_context ();
       lower_omp (&body, NULL);
-      if (task_shared_vars)
+      if (make_addressable_vars)
 	pop_gimplify_context (NULL);
     }
 
@@ -14447,7 +14493,7 @@ execute_lower_omp (void)
       splay_tree_delete (all_contexts);
       all_contexts = NULL;
     }
-  BITMAP_FREE (task_shared_vars);
+  BITMAP_FREE (make_addressable_vars);
   BITMAP_FREE (global_nonaddressable_vars);
 
   /* If current function is a method, remove artificial dummy VAR_DECL created

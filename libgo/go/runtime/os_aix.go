@@ -7,7 +7,6 @@
 package runtime
 
 import (
-	"internal/abi"
 	"unsafe"
 )
 

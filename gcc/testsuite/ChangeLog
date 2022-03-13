@@ -1,3 +1,736 @@
+2022-03-12  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/104641
+	* g++.dg/cpp1z/class-deduction107.C: New test.
+
+2022-03-12  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/104622
+	* g++.dg/template/conv18.C: New test.
+
+2022-03-12  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/104527
+	* g++.dg/cpp2a/concepts-return-req4.C: New test.
+
+2022-03-12  Patrick Palka  <ppalka@redhat.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	PR c++/98644
+	* g++.dg/cpp2a/concepts-pr98644.C: New test.
+	* g++.dg/parse/array-size2.C: Remove expected diagnostic about a
+	narrowing conversion.
+
+2022-03-12  Patrick Palka  <ppalka@redhat.com>
+
+	* g++.dg/concepts/diagnostic3.C: Adjusted expected location of
+	"evaluated to false" diagnostics.
+
+2022-03-12  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR middle-end/100280
+	PR middle-end/104892
+	* c-c++-common/goacc/kernels-decompose-2.c: Adjust.
+	* c-c++-common/goacc/kernels-decompose-pr100400-1-1.c: Likewise.
+	* c-c++-common/goacc/kernels-decompose-pr100400-1-2.c: Likewise.
+	* c-c++-common/goacc/kernels-decompose-pr100400-1-3.c: Likewise.
+	* c-c++-common/goacc/kernels-decompose-pr100400-1-4.c: Likewise.
+	* c-c++-common/goacc/kernels-decompose-pr104061-1-1.c: Likewise.
+	* c-c++-common/goacc/kernels-decompose-pr104061-1-2.c: Likewise.
+	* c-c++-common/goacc/kernels-decompose-pr104061-1-3.c: Likewise.
+	* c-c++-common/goacc/kernels-decompose-pr104061-1-4.c: Likewise.
+	* c-c++-common/goacc/kernels-decompose-pr104132-1.c: Likewise.
+	* c-c++-common/goacc/kernels-decompose-pr104133-1.c: Likewise.
+	* c-c++-common/goacc/kernels-decompose-pr104774-1.c: Likewise.
+	* gfortran.dg/goacc/classify-kernels.f95: Likewise.
+	* gfortran.dg/goacc/kernels-decompose-2.f95: Likewise.
+
+2022-03-12  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR middle-end/100280
+	PR middle-end/104086
+	* c-c++-common/goacc/kernels-decompose-pr104086-1.c: Adjust,
+	extend.
+
+2022-03-12  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR middle-end/104086
+	* c-c++-common/goacc/kernels-decompose-pr104086-1.c: New file.
+
+2022-03-12  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR middle-end/98420
+	* gcc.dg/pr98420.c: New test case.
+
+2022-03-11  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR tree-optimization/98335
+	* g++.target/i386/pr98335.C: New test case.
+	* gcc.target/i386/pr98335.c: New test case.
+
+2022-03-11  Roger Sayle  <roger@nextmovesoftware.com>
+	    Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/98335
+	* g++.dg/pr98335.C: New test case.
+	* gcc.dg/pr86010.c: New test case.
+	* gcc.dg/pr86010-2.c: New test case.
+
+2022-03-11  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR c++/84964
+	* g++.dg/other/pr84964.C: Tweak test to check for the ICE, not for
+	the (target-dependent) sorry.
+
+2022-03-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/104880
+	* g++.dg/opt/pr104880.cc: New testcase.
+
+2022-03-11  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/goacc/array-with-dt-1.f90: Update/add comments;
+	remove dg-warning for 'is used uninitialized'.
+	* gfortran.dg/goacc/pr93464.f90: Likewise.
+	* gfortran.dg/goacc/array-with-dt-1a.f90: New; copied from
+	gfortran.dg/goacc/array-with-dt-1.f90 but run with -O0. Update
+	dg-warning for 'may be used uninitialized'.
+	* gfortran.dg/goacc/pr93464-2.f90: Likewise; copied from
+	gfortran.dg/goacc/pr93464.f90.
+
+2022-03-10  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR c++/84964
+	* g++.dg/other/pr84964.C: New test case.
+
+2022-03-10  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/104863
+	* gcc.dg/analyzer/torture/pr104863.c: New test.
+
+2022-03-10  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR target/103074
+	* gcc.target/i386/pr103074.c: New.
+
+2022-03-10  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/104608
+	* g++.dg/parse/template-keyword3.C: New test.
+	* g++.dg/parse/template-keyword4.C: New test.
+
+2022-03-10  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/104752
+	* g++.dg/cpp23/auto-fncast12.C: New test.
+
+2022-03-10  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/104846
+	* g++.dg/init/delete5.C: New test.
+
+2022-03-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/103460
+	* g++.dg/cpp23/subscript7.C: New test.
+
+2022-03-10  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/104793
+	* gcc.dg/analyzer/write-to-const-2.c: Add dg-message directives
+	for expected notes.
+	* gcc.dg/analyzer/write-to-function-1.c: Likewise.
+	* gcc.dg/analyzer/write-to-string-literal-2.c: Likewise.
+	* gcc.dg/analyzer/write-to-string-literal-3.c: Likewise.
+	* gcc.dg/analyzer/write-to-string-literal-4.c: Likewise.
+	* gcc.dg/analyzer/write-to-string-literal-5.c: New test.
+
+2022-03-10  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/104793
+	* gcc.dg/analyzer/write-to-const-2.c: New test.
+	* gcc.dg/analyzer/write-to-function-1.c: New test.
+	* gcc.dg/analyzer/write-to-string-literal-2.c: New test.
+	* gcc.dg/analyzer/write-to-string-literal-3.c: New test.
+	* gcc.dg/analyzer/write-to-string-literal-4.c: New test.
+
+2022-03-10  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/analyzer/taint-size-access-attr-1.c: Add
+	-fanalyzer-show-duplicate-count to options; verify that a
+	duplicate was not created for the tainted size.
+
+2022-03-10  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/104813
+	* gcc.dg/ipa/pr104813.c: New test.
+
+2022-03-10  Tom de Vries  <tdevries@suse.de>
+
+	* gcc.target/nvptx/uniform-simt-4.c: New test.
+
+2022-03-10  Tom de Vries  <tdevries@suse.de>
+
+	PR target/104815
+	* gcc.target/nvptx/atomic-bit-bucket-dest.c: New test.
+
+2022-03-10  Tom de Vries  <tdevries@suse.de>
+
+	* gcc.target/nvptx/atomic_fetch-1.c: Update.
+	* gcc.target/nvptx/atomic_fetch-2.c: Update.
+
+2022-03-10  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR middle-end/90115
+	PR middle-end/102330
+	PR middle-end/104774
+	* c-c++-common/goacc/kernels-decompose-pr104061-1-3.c: Adjust.
+	* c-c++-common/goacc/kernels-decompose-pr104061-1-4.c: Likewise.
+	* c-c++-common/goacc/kernels-decompose-pr104132-1.c: Likewise.
+	* c-c++-common/goacc/kernels-decompose-pr104133-1.c: Likewise.
+	* c-c++-common/goacc/kernels-decompose-pr104774-1.c: Likewise.
+	* c-c++-common/goacc/privatization-1-compute-loop.c: Likewise.
+	* c-c++-common/goacc/privatization-1-compute.c: Likewise.
+	* c-c++-common/goacc/privatization-1-routine_gang-loop.c:
+	Likewise.
+	* c-c++-common/goacc/privatization-1-routine_gang.c: Likewise.
+	* gfortran.dg/goacc-gomp/pr102330-1.f90: Likewise, and subsume...
+	* gfortran.dg/goacc-gomp/pr102330-2.f90: ... this file, and...
+	* gfortran.dg/goacc-gomp/pr102330-3.f90: ... this file.
+	* gfortran.dg/goacc/privatization-1-compute-loop.f90: Adjust.
+	* gfortran.dg/goacc/privatization-1-compute.f90: Likewise.
+	* gfortran.dg/goacc/privatization-1-routine_gang-loop.f90:
+	Likewise.
+	* gfortran.dg/goacc/privatization-1-routine_gang.f90: Likewise.
+
+2022-03-10  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR middle-end/104774
+	* c-c++-common/goacc/kernels-decompose-pr104774-1.c: New file.
+
+2022-03-10  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR middle-end/102330
+	* gfortran.dg/goacc-gomp/pr102330-1.f90: New file.
+	* gfortran.dg/goacc-gomp/pr102330-2.f90: Likewise.
+	* gfortran.dg/goacc-gomp/pr102330-3.f90: Likewise.
+
+2022-03-10  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR middle-end/90115
+	* c-c++-common/goacc/nesting-1.c: Enhance.
+	* gcc.dg/goacc/nested-function-1.c: Likewise.
+	* gcc.dg/goacc/nested-function-2.c: Likewise.
+	* gfortran.dg/goacc/nested-function-1.f90: Likewise.
+
+2022-03-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/99708
+	* gcc.dg/pr99708.c: New test.
+	* gcc.target/powerpc/pr99708-2.c: New test.
+	* gcc.target/powerpc/convert-fp-128.c (mode_kf): Define only if
+	__FLOAT128_TYPE__ is defined.
+
+2022-03-10  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR c++/95999
+	* g++.dg/parse/pr95999.C: New test case.
+
+2022-03-10  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR c++/39751
+	* g++.dg/parse/pr39751.C: New test case.
+
+2022-03-09  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/c11-unproto-1.c, gcc.dg/c11-unproto-2.c: Update comments.
+	* gcc.dg/c2x-unproto-1.c, gcc.dg/c2x-unproto-2.c: Expect same
+	results as in C11 mode.  Update comments.
+
+2022-03-09  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/104849
+	* gfortran.dg/pr104849.f90: New test.
+
+2022-03-09  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/104823
+	* g++.dg/cpp0x/Wnarrowing19.C: New test.
+	* g++.dg/cpp0x/constexpr-attribute4.C: New file.
+
+2022-03-09  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/102137
+	PR c++/87820
+	* g++.dg/cpp0x/explicit15.C: New test.
+	* g++.dg/cpp1z/class-deduction108.C: New test.
+
+2022-03-09  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/65396
+	* g++.dg/cpp0x/vt-34314.C: Adjust expected location of
+	"redeclared here" note.
+	* g++.dg/template/pr92440.C: Likewise.
+	* g++.old-deja/g++.pt/redecl1.C: Adjust expected location of
+	"redefinition of default argument" error.
+	* g++.dg/template/defarg23.C: New test.
+	* g++.dg/template/defarg23a.C: New test.
+
+2022-03-09  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/104759
+	* gcc.dg/vect/vect-multitypes-12.c: Adjust.
+
+2022-03-09  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/104786
+	* gcc.dg/pr104786.c: New testcase.
+
+2022-03-09  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/sizeof_6.f90: New test.
+
+2022-03-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/104711
+	* c-c++-common/Wshift-negative-value-1.c: Remove
+	dg-additional-options, instead in target selectors of each diagnostic
+	check for exact C++ versions where it should be diagnosed.
+	* c-c++-common/Wshift-negative-value-2.c: Likewise.
+	* c-c++-common/Wshift-negative-value-3.c: Likewise.
+	* c-c++-common/Wshift-negative-value-4.c: Likewise.
+	* c-c++-common/Wshift-negative-value-7.c: New test.
+	* c-c++-common/Wshift-negative-value-8.c: New test.
+	* c-c++-common/Wshift-negative-value-9.c: New test.
+	* c-c++-common/Wshift-negative-value-10.c: New test.
+	* c-c++-common/Wshift-overflow-1.c: Remove
+	dg-additional-options, instead in target selectors of each diagnostic
+	check for exact C++ versions where it should be diagnosed.
+	* c-c++-common/Wshift-overflow-2.c: Likewise.
+	* c-c++-common/Wshift-overflow-5.c: Likewise.
+	* c-c++-common/Wshift-overflow-6.c: Likewise.
+	* c-c++-common/Wshift-overflow-7.c: Likewise.
+	* c-c++-common/Wshift-overflow-8.c: New test.
+	* c-c++-common/Wshift-overflow-9.c: New test.
+	* c-c++-common/Wshift-overflow-10.c: New test.
+	* c-c++-common/Wshift-overflow-11.c: New test.
+	* c-c++-common/Wshift-overflow-12.c: New test.
+
+2022-03-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/104839
+	* gcc.c-torture/execute/pr104839.c: New test.
+
+2022-03-08  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR c++/96440
+	* g++.dg/cpp0x/pr96440.C: New test case.
+
+2022-03-08  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/104126
+	* gfortran.dg/null_actual_2.f90: New test.
+
+2022-03-08  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR c++/96437
+	* g++.dg/cpp2a/pr96437.C: New test case.
+
+2022-03-08  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR c++/96329
+	* g++.dg/template/pr96329.C: New test case.
+
+2022-03-08  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/104108
+	* g++.dg/cpp0x/alias-decl-74.C: New test.
+
+2022-03-08  Marek Polacek  <polacek@redhat.com>
+
+	* g++.dg/ext/attr-unavailable-9.C: Add dg-error.
+
+2022-03-08  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/104811
+	* gfortran.dg/minmaxloc_16.f90: New test.
+
+2022-03-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/104806
+	* g++.dg/spellcheck-pr104806.C: New test.
+
+2022-03-08  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/99771
+	* gcc.dg/analyzer/leak-4.c: New test.
+
+2022-03-08  Marek Polacek  <polacek@redhat.com>
+
+	PR rtl-optimization/104777
+	* gcc.dg/torture/tls/pr104777.c: New test.
+
+2022-03-08  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/104781
+	* gcc.target/i386/eh_return-1.c: Add -mincoming-stack-boundary=4.
+	* gcc.target/i386/eh_return-2.c: Likewise.
+
+2022-03-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/84201
+	* gcc.dg/vect/pr84201.c: New testcase.
+
+2022-03-08  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/104755
+	* gcc.dg/vect/vect-bic-bitmask-10.c: Disable sparc.
+	* gcc.dg/vect/vect-bic-bitmask-11.c: Likewise.
+	* gcc.dg/vect/vect-bic-bitmask-12.c: Likewise.
+	* gcc.dg/vect/vect-bic-bitmask-2.c: Likewise.
+	* gcc.dg/vect/vect-bic-bitmask-23.c: Likewise.
+	* gcc.dg/vect/vect-bic-bitmask-3.c: Likewise.
+	* gcc.dg/vect/vect-bic-bitmask-4.c: Likewise.
+	* gcc.dg/vect/vect-bic-bitmask-5.c: Likewise.
+	* gcc.dg/vect/vect-bic-bitmask-6.c: Likewise.
+	* gcc.dg/vect/vect-bic-bitmask-8.c: Likewise.
+	* gcc.dg/vect/vect-bic-bitmask-9.c: Likewise.
+
+2022-03-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/104825
+	* gcc.dg/torture/pr104825.c: New testcase.
+
+2022-03-08  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr100865-8a.c: Adjust testcase.
+	* gcc.target/i386/pr100865-8c.c: Ditto.
+	* gcc.target/i386/pr100865-9c.c: Ditto.
+
+2022-03-07  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/99585
+	PR fortran/104430
+	* gfortran.dg/class_result_10.f90: New test.
+
+2022-03-07  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/101983
+	* gcc.dg/analyzer/pr101983-main.c: New test.
+	* gcc.dg/analyzer/pr101983-not-main.c: New test.
+
+2022-03-07  Martin Liska  <mliska@suse.cz>
+
+	PR middle-end/104381
+	* gcc.dg/pr104381.c: New test.
+
+2022-03-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/104782
+	* gcc.dg/vect/pr104782.c: New testcase.
+
+2022-03-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/104775
+	* gcc.target/s390/pr104775.c: New test.
+
+2022-03-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/104779
+	* gcc.target/i386/pr104779.c: New test.
+
+2022-03-06  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* gcc.dg/lower-subreg-1.c: Update test case.  iordi3 is no longer
+	lowered by the RTL subreg1 pass on ia32 [even with -mno-stv].
+
+2022-03-05  Roger Sayle  <roger@nextmovesoftware.com>
+	    Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR testsuite/104732
+	* gcc.target/i386/pr104732.c: New test case.
+
+2022-03-05   Michael Meissner  <meissner@linux.ibm.com>
+
+	PR target/104698
+	* gcc.target/powerpc/pr104698-1.c: New test.
+	* gcc.target/powerpc/pr104698-2.c: New test.
+
+2022-03-04  Nathan Sidwell  <nathan@acm.org>
+
+	* g++.dg/modules/std-subst-2.C: New.
+	* g++.dg/modules/std-subst-3.C: New.
+	* g++.dg/modules/std-subst-4_a.C: New.
+	* g++.dg/modules/std-subst-4_b.C: New.
+	* g++.dg/modules/std-subst-4_c.C: New.
+
+2022-03-04  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/103521
+	* gcc.dg/analyzer/pr93032-mztools.c: Move to...
+	* gcc.dg/analyzer/pr93032-mztools-signed-char.c: ...this, adding
+	-fsigned-char to args, and...
+	* gcc.dg/analyzer/pr93032-mztools-unsigned-char.c: ...copy to here,
+	adding -funsigned-char to args.
+
+2022-03-04  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/103443
+	* g++.dg/cpp2a/consteval29.C: New test.
+
+2022-03-04  Nathan Sidwell  <nathan@acm.org>
+
+	* g++.dg/modules/fn-inline-1_b.C: Adjust.
+	* g++.dg/modules/fn-inline-1_c.C: Adjust.
+	* g++.dg/modules/imp-inline-1_a.C: Adjust.
+	* g++.dg/modules/imp-inline-1_b.C: Adjust.
+	* g++.dg/modules/init-2_a.C: Adjust.
+	* g++.dg/modules/init-2_b.C: Adjust.
+	* g++.dg/modules/init-2_c.C: Adjust.
+	* g++.dg/modules/member-def-2_d.C: Adjust.
+	* g++.dg/modules/mod-sym-1.C: Adjust.
+	* g++.dg/modules/mod-sym-2.C: Adjust.
+	* g++.dg/modules/mod-sym-3.C: Adjust.
+	* g++.dg/modules/sym-subst-1.C: Adjust.
+	* g++.dg/modules/sym-subst-2_b.C: Adjust.
+	* g++.dg/modules/sym-subst-3_a.C: Adjust.
+	* g++.dg/modules/sym-subst-3_b.C: Adjust.
+	* g++.dg/modules/sym-subst-4.C: Adjust.
+	* g++.dg/modules/sym-subst-5.C: Adjust.
+	* g++.dg/modules/sym-subst-6.C: Adjust.
+	* g++.dg/modules/tpl-spec-1_a.C: Adjust.
+	* g++.dg/modules/tpl-spec-2_b.C: Adjust.
+	* g++.dg/modules/tpl-spec-2_d.C: Adjust.
+	* g++.dg/modules/tpl-spec-3_a.C: Adjust.
+	* g++.dg/modules/virt-1_a.C: Adjust.
+	* g++.dg/modules/virt-2_a.C: Adjust.
+	* g++.dg/modules/virt-2_b.C: Adjust.
+	* g++.dg/modules/virt-2_c.C: Adjust.
+	* g++.dg/modules/vtt-1_a.C: Adjust.
+	* g++.dg/modules/vtt-1_b.C: Adjust.
+
+2022-03-04  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/87496
+	PR target/104208
+	* gcc.target/powerpc/pr104208-1.c: New test.
+	* gcc.target/powerpc/pr104208-2.c: Likewise.
+	* gcc.target/powerpc/pr87496-2.c: Swap long double options to trigger
+	the expected error.
+	* gcc.target/powerpc/pr87496-3.c: Likewise.
+
+2022-03-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/104529
+	* g++.dg/tree-ssa/pr104529.C: New test.
+
+2022-03-04  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR middle-end/100280
+	PR middle-end/104132
+	PR middle-end/104133
+	* c-c++-common/goacc/kernels-decompose-pr104061-1-3.c: Adjust.
+	* c-c++-common/goacc/kernels-decompose-pr104061-1-4.c: Likewise.
+	* c-c++-common/goacc/kernels-decompose-pr104132-1.c: Likewise.
+	* c-c++-common/goacc/kernels-decompose-pr104133-1.c: Likewise.
+
+2022-03-04  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR middle-end/100280
+	* c-c++-common/goacc/classify-kernels-unparallelized.c: Adjust.
+	* c-c++-common/goacc/classify-kernels.c: Likewise.
+	* c-c++-common/goacc/kernels-decompose-2.c: Likewise.
+	* c-c++-common/goacc/kernels-decompose-pr100280-1.c: Likewise.
+	* c-c++-common/goacc/kernels-decompose-pr104061-1-2.c: Likewise.
+	* c-c++-common/goacc/kernels-decompose-pr104061-1-3.c: Likewise.
+	* c-c++-common/goacc/kernels-decompose-pr104061-1-4.c: Likewise.
+	* c-c++-common/goacc/kernels-decompose-pr104132-1.c: Likewise.
+	* c-c++-common/goacc/kernels-decompose-pr104133-1.c: Likewise.
+
+2022-03-04  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR middle-end/100280
+	* c-c++-common/goacc/classify-kernels-unparallelized.c: Add
+	'--param=openacc-privatization=noisy'.
+	* c-c++-common/goacc/classify-kernels.c: Likewise.
+	* c-c++-common/goacc/kernels-decompose-2.c: Adjust.
+	* c-c++-common/goacc/kernels-decompose-pr100280-1.c: Likewise.
+	* c-c++-common/goacc/kernels-decompose-pr104061-1-2.c: Likewise.
+	* c-c++-common/goacc/kernels-decompose-pr104061-1-3.c: Likewise.
+	* c-c++-common/goacc/kernels-decompose-pr104061-1-4.c: Likewise.
+	* c-c++-common/goacc/kernels-decompose-pr104132-1.c: Likewise.
+	* c-c++-common/goacc/kernels-decompose-pr104133-1.c: Likewise.
+
+2022-03-04  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR middle-end/100400
+	PR middle-end/103836
+	PR middle-end/104061
+	* c-c++-common/goacc/kernels-decompose-pr100400-1-1.c: New.
+	* c-c++-common/goacc/kernels-decompose-pr100400-1-2.c: New.
+	* c-c++-common/goacc/kernels-decompose-pr100400-1-3.c: New.
+	* c-c++-common/goacc/kernels-decompose-pr100400-1-4.c: New.
+	* c-c++-common/goacc/kernels-decompose-pr103836-1-1.c: New.
+	* c-c++-common/goacc/kernels-decompose-pr103836-1-2.c: New.
+	* c-c++-common/goacc/kernels-decompose-pr103836-1-3.c: New.
+	* c-c++-common/goacc/kernels-decompose-pr103836-1-4.c: New.
+	* c-c++-common/goacc/kernels-decompose-pr104061-1-1.c: New.
+	* c-c++-common/goacc/kernels-decompose-pr104061-1-2.c: New.
+	* c-c++-common/goacc/kernels-decompose-pr104061-1-3.c: New.
+	* c-c++-common/goacc/kernels-decompose-pr104061-1-4.c: New.
+
+2022-03-04  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR middle-end/104133
+	* c-c++-common/goacc/kernels-decompose-pr104133-1.c: New file.
+
+2022-03-04  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR middle-end/104132
+	* c-c++-common/goacc/kernels-decompose-pr104132-1.c: New file.
+
+2022-03-04  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* c-c++-common/goacc/classify-kernels-parloops.c: Update.
+	* c-c++-common/goacc/classify-kernels-unparallelized-parloops.c:
+	Likewise.
+	* c-c++-common/goacc/classify-kernels-unparallelized.c: Likewise.
+	* c-c++-common/goacc/classify-kernels.c: Likewise.
+	* c-c++-common/goacc/classify-parallel.c: Likewise.
+	* c-c++-common/goacc/classify-routine-nohost.c: Likewise.
+	* c-c++-common/goacc/classify-routine.c: Likewise.
+	* c-c++-common/goacc/classify-serial.c: Likewise.
+	* gfortran.dg/goacc/classify-kernels-parloops.f95: Likewise.
+	* gfortran.dg/goacc/classify-kernels-unparallelized-parloops.f95:
+	Likewise.
+	* gfortran.dg/goacc/classify-kernels-unparallelized.f95: Likewise.
+	* gfortran.dg/goacc/classify-kernels.f95: Likewise.
+	* gfortran.dg/goacc/classify-parallel.f95: Likewise.
+	* gfortran.dg/goacc/classify-routine-nohost.f95: Likewise.
+	* gfortran.dg/goacc/classify-routine.f95: Likewise.
+	* gfortran.dg/goacc/classify-serial.f95: Likewise.
+
+2022-03-04  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/104704
+	* gcc.target/i386/incoming-11.c: Xfail.
+	* gcc.target/i386/pieces-memset-3.c: Likewise.
+	* gcc.target/i386/pieces-memset-37.c: Likewise.
+	* gcc.target/i386/pieces-memset-39.c: Likewise.
+	* gcc.target/i386/pieces-memset-46.c: Likewise.
+	* gcc.target/i386/pieces-memset-47.c: Likewise.
+	* gcc.target/i386/pieces-memset-48.c: Likewise.
+	* gcc.target/i386/pr90773-5.c: Likewise.
+	* gcc.target/i386/pr90773-14.c: Likewise.
+	* gcc.target/i386/pr90773-17.c: Likewise.
+	* gcc.target/i386/pr100865-8a.c: Likewise.
+	* gcc.target/i386/pr100865-8c.c: Likewise.
+	* gcc.target/i386/pr100865-9c.c: Likewise.
+	* gcc.target/i386/pieces-memset-21.c: Always expect vzeroupper.
+	* gcc.target/i386/pr82941-1.c: Likewise.
+	* gcc.target/i386/pr82942-1.c: Likewise.
+	* gcc.target/i386/pr82990-1.c: Likewise.
+	* gcc.target/i386/pr82990-3.c: Likewise.
+	* gcc.target/i386/pr82990-5.c: Likewise.
+	* gcc.target/i386/pr100865-11b.c: Expect vmovdqa instead of
+	vmovdqa64.
+	* gcc.target/i386/pr100865-12b.c: Likewise.
+	* gcc.target/i386/pr100865-8b.c: Likewise.
+	* gcc.target/i386/pr100865-9b.c: Likewise.
+	* gcc.target/i386/pr104704-1.c: New test.
+	* gcc.target/i386/pr104704-2.c: Likewise.
+	* gcc.target/i386/pr104704-3.c: Likewise.
+	* gcc.target/i386/pr104704-4.c: Likewise.
+	* gcc.target/i386/pr104704-5.c: Likewise.
+	* gcc.target/i386/pr104704-6.c: Likewise.
+
+2022-03-03  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/104761
+	* g++.dg/warn/Wdangling-pointer-4.C: New test.
+	* gcc.dg/Wdangling-pointer-4.c: New test.
+
+2022-03-03  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	PR fortran/104131
+	* gfortran.dg/gomp/pr104131.f90: New.
+	* gfortran.dg/gomp/task-detach-1.f90: Update expected error message.
+
+2022-03-03  Tom de Vries  <tdevries@suse.de>
+
+	* gcc.target/nvptx/sm53.c: Add -mptx=_.
+	* gcc.target/nvptx/sm70.c: Same.
+	* gcc.target/nvptx/sm75.c: Same.
+	* gcc.target/nvptx/sm80.c: Same.
+
+2022-03-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/104757
+	* gfortran.dg/gomp/pr104757.f90: New test.
+	* gcc.dg/gomp/pr104757.c: New test.
+
+2022-03-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/104558
+	* gcc.dg/pr104558.c: New test.
+
+2022-03-02  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/104573
+	* gfortran.dg/assumed_type_14.f90: New test.
+
+2022-03-02  David Edelsohn  <dje.gcc@gmail.com>
+
+	* c-c++-common/pr104505.c: Add -Wno-psabi.
+
+2022-03-02  Qing Zhao  <qing.zhao@oracle.com>
+
+	PR middle-end/102276
+	* gcc.dg/auto-init-pr102276-1.c: New test.
+	* gcc.dg/auto-init-pr102276-2.c: New test.
+	* gcc.dg/auto-init-pr102276-3.c: New test.
+	* gcc.dg/auto-init-pr102276-4.c: New test.
+
+2022-03-02  Tamar Christina  <tamar.christina@arm.com>
+
+	PR testsuite/104730
+	* gcc.dg/vect/complex/pr102819-1.c: Add vect_float.
+	* gcc.dg/vect/complex/pr102819-2.c: Likewise.
+	* gcc.dg/vect/complex/pr102819-3.c: Likewise.
+	* gcc.dg/vect/complex/pr102819-4.c: Likewise.
+	* gcc.dg/vect/complex/pr102819-5.c: Likewise.
+	* gcc.dg/vect/complex/pr102819-6.c: Likewise.
+	* gcc.dg/vect/complex/pr102819-7.c: Likewise.
+	* gcc.dg/vect/complex/pr102819-8.c: Likewise.
+	* gcc.dg/vect/complex/pr102819-9.c: Likewise.
+
+2022-03-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/104637
+	* gcc.target/i386/pr104637.c: Don't run on ia32.  Add -Wno-div-by-zero
+	to dg-options.
+	(foo): Remove extraneous initializer.
+
+2022-03-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/100541
+	* g++.dg/opt/pr100541-1.C: New test.
+	* g++.dg/opt/pr100541-2.C: New test.
+
+2022-03-02  Hongyu Wang  <hongyu.wang@intel.com>
+
+	PR target/104726
+	* gcc.target/i386/pr104551.c: Use avx2-check.h.
+
+2022-03-02  Hongyu Wang  <hongyu.wang@intel.com>
+
+	PR target/104724
+	* gcc.target/i386/avx512fp16-vcvtsi2sh-1b.c: Use long long
+	instead of __int64_t.
+	* gcc.target/i386/avx512fp16-vcvtsi2sh64-1b.c: Ditto.
+	* gcc.target/i386/avx512fp16-vcvtusi2sh-1b.c: Ditto.
+	* gcc.target/i386/avx512fp16-vcvtusi2sh64-1b.c: Ditto.
+
 2022-03-01  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/104715

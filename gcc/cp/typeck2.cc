@@ -2308,7 +2308,13 @@ build_functional_cast_1 (location_t loc, tree exp, tree parms,
 	       && list_length (parms) == 1)
 	{
 	  init = TREE_VALUE (parms);
-	  if (cxx_dialect < cxx23)
+	  if (is_constrained_auto (anode))
+	    {
+	      if (complain & tf_error)
+		error_at (loc, "%<auto(x)%> cannot be constrained");
+	      return error_mark_node;
+	    }
+	  else if (cxx_dialect < cxx23)
 	    pedwarn (loc, OPT_Wc__23_extensions,
 		     "%<auto(x)%> only available with "
 		     "%<-std=c++2b%> or %<-std=gnu++2b%>");

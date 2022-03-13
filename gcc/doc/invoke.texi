@@ -399,7 +399,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wswitch  -Wno-switch-bool  -Wswitch-default  -Wswitch-enum @gol
 -Wno-switch-outside-range  -Wno-switch-unreachable  -Wsync-nand @gol
 -Wsystem-headers  -Wtautological-compare  -Wtrampolines  -Wtrigraphs @gol
--Wtsan -Wtype-limits  -Wundef @gol
+-Wtrivial-auto-var-init -Wtsan -Wtype-limits  -Wundef @gol
 -Wuninitialized  -Wunknown-pragmas @gol
 -Wunsuffixed-float-constants  -Wunused @gol
 -Wunused-but-set-parameter  -Wunused-but-set-variable @gol
@@ -5809,7 +5809,7 @@ name is still supported, but the newer name is more descriptive.)
 -Wredundant-move @r{(only for C++)}  @gol
 -Wtype-limits  @gol
 -Wuninitialized  @gol
--Wshift-negative-value @r{(in C++03 and in C99 and newer)}  @gol
+-Wshift-negative-value @r{(in C++11 to C++17 and in C99 and newer)}  @gol
 -Wunused-parameter @r{(only with} @option{-Wunused} @r{or} @option{-Wall}@r{)} @gol
 -Wunused-but-set-parameter @r{(only with} @option{-Wunused} @r{or} @option{-Wall}@r{)}}
 
@@ -6839,7 +6839,7 @@ of the type.  This warning is enabled by default.
 @opindex Wshift-negative-value
 @opindex Wno-shift-negative-value
 Warn if left shifting a negative value.  This warning is enabled by
-@option{-Wextra} in C99 and C++11 modes (and newer).
+@option{-Wextra} in C99 (and newer) and C++11 to C++17 modes.
 
 @item -Wno-shift-overflow
 @itemx -Wshift-overflow=@var{n}
@@ -6952,6 +6952,14 @@ This warning is enabled by default for C and C++ programs.
 @opindex Wno-sync-nand
 Warn when @code{__sync_fetch_and_nand} and @code{__sync_nand_and_fetch}
 built-in functions are used.  These functions changed semantics in GCC 4.4.
+
+@item -Wtrivial-auto-var-init
+@opindex Wtrivial-auto-var-init
+@opindex Wno-trivial-auto-var-init
+Warn when @code{-ftrivial-auto-var-init} cannot initialize the automatic
+variable.  A common situation is an automatic variable that is declared
+between the controlling expression and the first case label of a @code{switch}
+statement.
 
 @item -Wunused-but-set-parameter
 @opindex Wunused-but-set-parameter
@@ -8230,7 +8238,7 @@ Warn when attempting to deallocate an object that was either not allocated
 on the heap, or by using a pointer that was not returned from a prior call
 to the corresponding allocation function.  For example, because the call
 to @code{stpcpy} returns a pointer to the terminating nul character and
-not to the begginning of the object, the call to @code{free} below is
+not to the beginning of the object, the call to @code{free} below is
 diagnosed.
 
 @smallexample
@@ -9519,7 +9527,7 @@ accessing more than the maximum number of elements may be diagnosed.
 For example, the warning triggers for the following redeclarations because
 the first one allows an array of any size to be passed to @code{f} while
 the second one specifies that the array argument must have at least @code{n}
-elements.  In addition, calling @code{f} with the assotiated VLA bound
+elements.  In addition, calling @code{f} with the associated VLA bound
 parameter in excess of the actual VLA bound triggers a warning as well.
 
 @smallexample
@@ -12314,6 +12322,10 @@ initializer as uninitialized, @option{-Wuninitialized} and
 warning messages on such automatic variables.
 With this option, GCC will also initialize any padding of automatic variables
 that have structure or union types to zeroes.
+However, the current implementation cannot initialize automatic variables that
+are declared between the controlling expression and the first case of a
+@code{switch} statement.  Using @option{-Wtrivial-auto-var-init} to report all
+such cases.
 
 The three values of @var{choice} are:
 
@@ -14976,6 +14988,9 @@ The maximum factor which the loop vectorizer applies to the cost of statements
 in an inner loop relative to the loop being vectorized.  The factor applied
 is the maximum of the estimated number of iterations of the inner loop and
 this parameter.  The default value of this parameter is 50.
+
+@item vect-induction-float
+Enable loop vectorization of floating point inductions.
 
 @item avoid-fma-max-bits
 Maximum number of bits for which we avoid creating FMAs.
@@ -19624,7 +19639,7 @@ Generate instructions supported by barrel shifter.  This is the default
 unless @option{-mcpu=ARC601} or @samp{-mcpu=ARCEM} is in effect.
 
 @item -mjli-always
-@opindex mjli-alawys
+@opindex mjli-always
 Force to call a function using jli_s instruction.  This option is
 valid only for ARCv2 architecture.
 
@@ -34139,9 +34154,7 @@ provides a modular compilation system, intending to provide both
 faster builds and better library isolation.  The ``Merging Modules''
 paper @uref{https://wg21.link/p1103}, provides the easiest to read set
 of changes to the standard, although it does not capture later
-changes.  That specification is now part of C++20,
-@uref{git@@github.com:cplusplus/draft.git}, it is considered complete
-(there may be defect reports to come).
+changes.
 
 @emph{G++'s modules support is not complete.}  Other than bugs, the
 known missing pieces are:

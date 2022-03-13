@@ -313,7 +313,7 @@ private:
   int bitmap_get_quad (const_bitmap head, int quad);
   irange_allocator *m_irange_allocator;
   irange *m_range[SBR_NUM];
-  bitmap bitvec;
+  bitmap_head bitvec;
   tree m_type;
 };
 
@@ -324,7 +324,8 @@ sbr_sparse_bitmap::sbr_sparse_bitmap (tree t, irange_allocator *allocator,
 {
   gcc_checking_assert (TYPE_P (t));
   m_type = t;
-  bitvec = BITMAP_ALLOC (bm);
+  bitmap_initialize (&bitvec, bm);
+  bitmap_tree_view (&bitvec);
   m_irange_allocator = allocator;
   // Pre-cache varying.
   m_range[0] = m_irange_allocator->allocate (2);
@@ -370,7 +371,7 @@ sbr_sparse_bitmap::set_bb_range (const_basic_block bb, const irange &r)
 {
   if (r.undefined_p ())
     {
-      bitmap_set_quad (bitvec, bb->index, SBR_UNDEF);
+      bitmap_set_quad (&bitvec, bb->index, SBR_UNDEF);
       return true;
     }
 
@@ -380,11 +381,11 @@ sbr_sparse_bitmap::set_bb_range (const_basic_block bb, const irange &r)
       {
 	if (!m_range[x])
 	  m_range[x] = m_irange_allocator->allocate (r);
-	bitmap_set_quad (bitvec, bb->index, x + 1);
+	bitmap_set_quad (&bitvec, bb->index, x + 1);
 	return true;
       }
   // All values are taken, default to VARYING.
-  bitmap_set_quad (bitvec, bb->index, SBR_VARYING);
+  bitmap_set_quad (&bitvec, bb->index, SBR_VARYING);
   return false;
 }
 
@@ -394,7 +395,7 @@ sbr_sparse_bitmap::set_bb_range (const_basic_block bb, const irange &r)
 bool
 sbr_sparse_bitmap::get_bb_range (irange &r, const_basic_block bb)
 {
-  int value = bitmap_get_quad (bitvec, bb->index);
+  int value = bitmap_get_quad (&bitvec, bb->index);
 
   if (!value)
     return false;
@@ -412,7 +413,7 @@ sbr_sparse_bitmap::get_bb_range (irange &r, const_basic_block bb)
 bool
 sbr_sparse_bitmap::bb_range_p (const_basic_block bb)
 {
-  return (bitmap_get_quad (bitvec, bb->index) != 0);
+  return (bitmap_get_quad (&bitvec, bb->index) != 0);
 }
 
 // -------------------------------------------------------------------------

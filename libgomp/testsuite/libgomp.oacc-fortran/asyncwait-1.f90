@@ -219,6 +219,8 @@ program asyncwait
   !$acc data copy (a(1:N)) copy (b(1:N)) copy (c(1:N)) copy (d(1:N))
 
   !$acc kernels async (1) ! { dg-line l_compute[incr c_compute] }
+  ! { dg-note {OpenACC 'kernels' decomposition: variable 'i' in 'copy' clause requested to be made addressable} {} { target *-*-* } l_compute$c_compute }
+  !   { dg-note {variable 'i' made addressable} {} { target *-*-* } l_compute$c_compute } */
   ! { dg-optimized "assigned OpenACC seq loop parallelism" "" { target *-*-* } l_compute$c_compute }
   ! { dg-note {beginning 'parloops' part in OpenACC 'kernels' region} {} { target *-*-* } .+1 }
   do i = 1, N
@@ -227,6 +229,8 @@ program asyncwait
   !$acc end kernels
 
   !$acc kernels async (1) ! { dg-line l_compute[incr c_compute] }
+  ! { dg-note {OpenACC 'kernels' decomposition: variable 'i' in 'copy' clause requested to be made addressable} {} { target *-*-* } l_compute$c_compute }
+  !   { dg-note {variable 'i' already made addressable} {} { target *-*-* } l_compute$c_compute } */
   ! { dg-optimized "assigned OpenACC seq loop parallelism" "" { target *-*-* } l_compute$c_compute }
   ! { dg-note {beginning 'parloops' part in OpenACC 'kernels' region} {} { target *-*-* } .+1 }
   do i = 1, N
@@ -263,6 +267,8 @@ program asyncwait
   !$acc data copy (a(1:N), b(1:N), c(1:N), d(1:N), e(1:N))
 
   !$acc kernels async (1) ! { dg-line l_compute[incr c_compute] }
+  ! { dg-note {OpenACC 'kernels' decomposition: variable 'i' in 'copy' clause requested to be made addressable} {} { target *-*-* } l_compute$c_compute }
+  !   { dg-note {variable 'i' already made addressable} {} { target *-*-* } l_compute$c_compute } */
   ! { dg-optimized "assigned OpenACC seq loop parallelism" "" { target *-*-* } l_compute$c_compute }
   ! { dg-note {beginning 'parloops' part in OpenACC 'kernels' region} {} { target *-*-* } .+1 }
   do i = 1, N

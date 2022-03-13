@@ -3512,7 +3512,7 @@ rs6000_linux64_override_options ()
 	{
 	  if (OPTION_SET_P (rs6000_current_cmodel)
 	      && rs6000_current_cmodel != CMODEL_SMALL)
-	    error ("%<-mcmodel incompatible with other toc options%>");
+	    error ("%<-mcmodel%> incompatible with other toc options");
 	  if (TARGET_MINIMAL_TOC)
 	    SET_CMODEL (CMODEL_SMALL);
 	  else if (TARGET_PCREL
@@ -4178,13 +4178,6 @@ rs6000_option_override_internal (bool global_init_p)
     ; /* The option value can be seen when cl_target_option_restore is called.  */
   else if (rs6000_long_double_type_size == 128)
     rs6000_long_double_type_size = FLOAT_PRECISION_TFmode;
-  else if (OPTION_SET_P (rs6000_ieeequad))
-    {
-      if (global_options.x_rs6000_ieeequad)
-	error ("%qs requires %qs", "-mabi=ieeelongdouble", "-mlong-double-128");
-      else
-	error ("%qs requires %qs", "-mabi=ibmlongdouble", "-mlong-double-128");
-    }
 
   /* Set -mabi=ieeelongdouble on some old targets.  In the future, power server
      systems will also set long double to be IEEE 128-bit.  AIX and Darwin
@@ -4194,13 +4187,13 @@ rs6000_option_override_internal (bool global_init_p)
   if (!OPTION_SET_P (rs6000_ieeequad))
     rs6000_ieeequad = TARGET_IEEEQUAD_DEFAULT;
 
-  else
+  else if (TARGET_LONG_DOUBLE_128)
     {
       if (global_options.x_rs6000_ieeequad
 	  && (!TARGET_POPCNTD || !TARGET_VSX))
 	error ("%qs requires full ISA 2.06 support", "-mabi=ieeelongdouble");
 
-      if (rs6000_ieeequad != TARGET_IEEEQUAD_DEFAULT && TARGET_LONG_DOUBLE_128)
+      if (rs6000_ieeequad != TARGET_IEEEQUAD_DEFAULT)
 	{
 	  /* Determine if the user can change the default long double type at
 	     compilation time.  You need GLIBC 2.32 or newer to be able to
@@ -5771,33 +5764,68 @@ const char *rs6000_machine;
 const char *
 rs6000_machine_from_flags (void)
 {
-  /* For some CPUs, the machine cannot be determined by ISA flags.  We have to
-     check them first.  */
-  switch (rs6000_cpu)
-    {
-    case PROCESSOR_PPC8540:
-    case PROCESSOR_PPC8548:
-      return "e500";
+  /* e300 and e500 */
+  if (rs6000_cpu == PROCESSOR_PPCE300C2 || rs6000_cpu == PROCESSOR_PPCE300C3)
+    return "e300";
+  if (rs6000_cpu == PROCESSOR_PPC8540 || rs6000_cpu == PROCESSOR_PPC8548)
+    return "e500";
+  if (rs6000_cpu == PROCESSOR_PPCE500MC)
+    return "e500mc";
+  if (rs6000_cpu == PROCESSOR_PPCE500MC64)
+    return "e500mc64";
+  if (rs6000_cpu == PROCESSOR_PPCE5500)
+    return "e5500";
+  if (rs6000_cpu == PROCESSOR_PPCE6500)
+    return "e6500";
 
-    case PROCESSOR_PPCE300C2:
-    case PROCESSOR_PPCE300C3:
-      return "e300";
+  /* 400 series */
+  if (rs6000_cpu == PROCESSOR_PPC403)
+    return "\"403\"";
+  if (rs6000_cpu == PROCESSOR_PPC405)
+    return "\"405\"";
+  if (rs6000_cpu == PROCESSOR_PPC440)
+    return "\"440\"";
+  if (rs6000_cpu == PROCESSOR_PPC476)
+    return "\"476\"";
 
-    case PROCESSOR_PPCE500MC:
-      return "e500mc";
+  /* A2 */
+  if (rs6000_cpu == PROCESSOR_PPCA2)
+    return "a2";
 
-    case PROCESSOR_PPCE500MC64:
-      return "e500mc64";
+  /* Cell BE */
+  if (rs6000_cpu == PROCESSOR_CELL)
+    return "cell";
 
-    case PROCESSOR_PPCE5500:
-      return "e5500";
+  /* Titan */
+  if (rs6000_cpu == PROCESSOR_TITAN)
+    return "titan";
 
-    case PROCESSOR_PPCE6500:
-      return "e6500";
+  /* 500 series and 800 series */
+  if (rs6000_cpu == PROCESSOR_MPCCORE)
+    return "\"821\"";
 
-    default:
-      break;
-    }
+#if 0
+  /* This (and ppc64 below) are disabled here (for now at least) because
+     PROCESSOR_POWERPC, PROCESSOR_POWERPC64, and PROCESSOR_COMMON
+     are #define'd as some of these.  Untangling that is a job for later.  */
+
+  /* 600 series and 700 series, "classic" */
+  if (rs6000_cpu == PROCESSOR_PPC601 || rs6000_cpu == PROCESSOR_PPC603
+      || rs6000_cpu == PROCESSOR_PPC604 || rs6000_cpu == PROCESSOR_PPC604e
+      || rs6000_cpu == PROCESSOR_PPC750)
+    return "ppc";
+#endif
+
+  /* Classic with AltiVec, "G4" */
+  if (rs6000_cpu == PROCESSOR_PPC7400 || rs6000_cpu == PROCESSOR_PPC7450)
+    return "\"7450\"";
+
+#if 0
+  /* The older 64-bit CPUs */
+  if (rs6000_cpu == PROCESSOR_PPC620 || rs6000_cpu == PROCESSOR_PPC630
+      || rs6000_cpu == PROCESSOR_RS64A)
+    return "ppc64";
+#endif
 
   HOST_WIDE_INT flags = rs6000_isa_flags;
 
@@ -9028,7 +9056,7 @@ rs6000_legitimize_address (rtx x, rtx oldx ATTRIBUTE_UNUSED,
       else
 	return force_reg (Pmode, x);
     }
-  if (SYMBOL_REF_P (x))
+  if (SYMBOL_REF_P (x) && !TARGET_MACHO)
     {
       enum tls_model model = SYMBOL_REF_TLS_MODEL (x);
       if (model != 0)

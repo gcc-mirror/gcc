@@ -10,4 +10,4 @@ foo (void)
 }
 
 /* { dg-final { scan-assembler-times "movups\[\\t \]+%xmm\[0-9\]+, \\(%\[\^,\]+\\)" 1 } } */
-/* { dg-final { scan-assembler-times "movq\[\\t \]+%xmm\[0-9\]+, 13\\(%\[\^,\]+\\)" 1 } } */
+/* { dg-final { scan-assembler-times "movq\[\\t \]+%xmm\[0-9\]+, 13\\(%\[\^,\]+\\)" 1 { xfail *-*-* } } } */

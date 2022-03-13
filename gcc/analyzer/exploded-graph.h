@@ -48,6 +48,7 @@ class impl_region_model_context : public region_model_context
 			     logger *logger = NULL);
 
   bool warn (pending_diagnostic *d) FINAL OVERRIDE;
+  void add_note (pending_note *pn) FINAL OVERRIDE;
   void on_svalue_leak (const svalue *) OVERRIDE;
   void on_liveness_change (const svalue_set &live_svalues,
 			   const region_model *model) FINAL OVERRIDE;

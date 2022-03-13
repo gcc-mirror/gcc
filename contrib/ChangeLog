@@ -1,3 +1,25 @@
+2022-03-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR other/102664
+	* gcc-git-customization.sh: Fix non-portable commands.
+
+2022-03-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR other/102664
+	* git-descr.sh: Replace all [1-9] occurrences with [0-9].
+	* git-undescr.sh: Likewise.
+
+2022-03-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR other/102664
+	* git-descr.sh: Use portable sed commands.
+	* git-undescr.sh: Likewise.
+
+2022-03-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR other/102664
+	* git-descr.sh: Use portable form of expr match.
+
 2022-01-31  Martin Liska  <mliska@suse.cz>
 
 	* analyze_brprob.py: Support more formatted predict.def file.

@@ -1,3 +1,22 @@
+2022-03-12  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR other/65095
+	* c-common.h (c_omp_map_clause_name): Remove.
+	* c-omp.cc (c_omp_map_clause_name): Remove.
+
+2022-03-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/104711
+	* c-opts.cc (c_common_post_options): Don't enable
+	-Wshift-negative-value from -Wextra for C++20 or later.
+	* c-ubsan.cc (ubsan_instrument_shift): Adjust comments.
+	* c-warn.cc (maybe_warn_shift_overflow): Use TYPE_OVERFLOW_WRAPS
+	instead of TYPE_UNSIGNED.
+
+2022-03-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-attribs.cc: Fix up duplicated word issue in a comment.
+
 2022-03-01  Martin Liska  <mliska@suse.cz>
 
 	PR ipa/104533

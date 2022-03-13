@@ -4214,6 +4214,7 @@ extern (C++) final class TypeFunction : TypeNext
         inoutParam      = 0x0400, // inout on the parameters
         inoutQual       = 0x0800, // inout on the qualifier
         isctor          = 0x1000, // the function is a constructor
+        isreturnscope   = 0x2000, // `this` is returned by value
     }
 
     LINK linkage;               // calling convention
@@ -4247,6 +4248,8 @@ extern (C++) final class TypeFunction : TypeNext
             this.isref = true;
         if (stc & STC.return_)
             this.isreturn = true;
+        if (stc & STC.returnScope)
+            this.isreturnscope = true;
         if (stc & STC.returninferred)
             this.isreturninferred = true;
         if (stc & STC.scope_)
@@ -4285,6 +4288,7 @@ extern (C++) final class TypeFunction : TypeNext
         t.isproperty = isproperty;
         t.isref = isref;
         t.isreturn = isreturn;
+        t.isreturnscope = isreturnscope;
         t.isScopeQual = isScopeQual;
         t.isreturninferred = isreturninferred;
         t.isscopeinferred = isscopeinferred;
@@ -4507,6 +4511,7 @@ extern (C++) final class TypeFunction : TypeNext
             tf.isproperty = t.isproperty;
             tf.isref = t.isref;
             tf.isreturn = t.isreturn;
+            tf.isreturnscope = t.isreturnscope;
             tf.isScopeQual = t.isScopeQual;
             tf.isreturninferred = t.isreturninferred;
             tf.isscopeinferred = t.isscopeinferred;
@@ -4573,6 +4578,7 @@ extern (C++) final class TypeFunction : TypeNext
         t.isproperty = isproperty;
         t.isref = isref;
         t.isreturn = isreturn;
+        t.isreturnscope = isreturnscope;
         t.isScopeQual = isScopeQual;
         t.isreturninferred = isreturninferred;
         t.isscopeinferred = isscopeinferred;
@@ -5134,6 +5140,18 @@ extern (C++) final class TypeFunction : TypeNext
     {
         if (v) funcFlags |= FunctionFlag.isreturn;
         else funcFlags &= ~FunctionFlag.isreturn;
+    }
+
+    /// set or get if the function has the `returnscope` attribute
+    bool isreturnscope() const pure nothrow @safe @nogc
+    {
+        return (funcFlags & FunctionFlag.isreturnscope) != 0;
+    }
+    /// ditto
+    void isreturnscope(bool v) pure nothrow @safe @nogc
+    {
+        if (v) funcFlags |= FunctionFlag.isreturnscope;
+        else funcFlags &= ~FunctionFlag.isreturnscope;
     }
 
     /// set or get if the function has the `scope` attribute
@@ -6384,7 +6402,7 @@ extern (C++) final class TypeClass : Type
         /* Conversion derived to const(base)
          */
         int offset = 0;
-        if (to.isBaseOf(this, &offset) && MODimplicitConv(mod, to.mod))
+        if (to.isBaseOf(this, &offset) && offset == 0 && MODimplicitConv(mod, to.mod))
         {
             // Disallow:
             //  derived to base

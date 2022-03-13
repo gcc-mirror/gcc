@@ -14,5 +14,5 @@ void bar (mytype &m)
   foo (m);
 }
 
-// { dg-final { scan-assembler {_ZW3bob5kevinE3barRW_1E6mytype:} } }
-// { dg-final { scan-assembler {_ZW3bob6stuartE5innerIW_05kevinE6mytypeEvRT_:} } }
+// { dg-final { scan-assembler {_ZW3bobW5kevin3barRS0_6mytype:} } }
+// { dg-final { scan-assembler {_ZW3bobW6stuart5innerIS_W5kevin6mytypeEvRT_:} } }

@@ -3150,7 +3150,13 @@ finish_compound_literal (tree type, tree compound_literal,
 	   && !AUTO_IS_DECLTYPE (type)
 	   && CONSTRUCTOR_NELTS (compound_literal) == 1)
     {
-      if (cxx_dialect < cxx23)
+      if (is_constrained_auto (type))
+	{
+	  if (complain & tf_error)
+	    error ("%<auto{x}%> cannot be constrained");
+	  return error_mark_node;
+	}
+      else if (cxx_dialect < cxx23)
 	pedwarn (input_location, OPT_Wc__23_extensions,
 		 "%<auto{x}%> only available with "
 		 "%<-std=c++2b%> or %<-std=gnu++2b%>");
@@ -5189,7 +5195,7 @@ handle_omp_array_sections_1 (tree c, tree t, vec<tree> &types,
 	{
 	  error_at (OMP_CLAUSE_LOCATION (c),
 		    "expected single pointer in %qs clause",
-		    c_omp_map_clause_name (c, ort == C_ORT_ACC));
+		    user_omp_clause_code_name (c, ort == C_ORT_ACC));
 	  return error_mark_node;
 	}
     }
@@ -6647,7 +6653,7 @@ cp_oacc_check_attachments (tree c)
       if (TREE_CODE (type) != POINTER_TYPE)
 	{
 	  error_at (OMP_CLAUSE_LOCATION (c), "expected pointer in %qs clause",
-		    c_omp_map_clause_name (c, true));
+		    user_omp_clause_code_name (c, true));
 	  return true;
 	}
     }
@@ -11217,6 +11223,8 @@ finish_decltype_type (tree expr, bool id_expression_or_member_access_p,
   /* decltype is an unevaluated context.  */
   cp_unevaluated u;
 
+  processing_template_decl_sentinel ptds (/*reset=*/false);
+
   /* Depending on the resolution of DR 1172, we may later need to distinguish
      instantiation-dependent but not type-dependent expressions so that, say,
      A<decltype(sizeof(T))>::U doesn't require 'typename'.  */
@@ -11235,6 +11243,10 @@ finish_decltype_type (tree expr, bool id_expression_or_member_access_p,
       expr = instantiate_non_dependent_expr_sfinae (expr, complain);
       if (expr == error_mark_node)
 	return error_mark_node;
+      /* Keep processing_template_decl cleared for the rest of the function
+	 (for sake of the call to lvalue_kind below, which handles templated
+	 and non-templated COND_EXPR differently).  */
+      processing_template_decl = 0;
     }
 
   /* The type denoted by decltype(e) is defined as follows:  */
@@ -12185,7 +12197,7 @@ finish_unary_fold_expr (tree expr, int op, tree_code dir)
 
   /* Build the fold expression.  */
   tree code = build_int_cstu (integer_type_node, abs (op));
-  tree fold = build_min_nt_loc (UNKNOWN_LOCATION, dir, code, pack);
+  tree fold = build_min_nt_loc (input_location, dir, code, pack);
   FOLD_EXPR_MODIFY_P (fold) = (op < 0);
   TREE_TYPE (fold) = build_dependent_operator_type (NULL_TREE,
 						    FOLD_EXPR_OP (fold),
@@ -12214,7 +12226,7 @@ finish_binary_fold_expr (tree pack, tree init, int op, tree_code dir)
 {
   pack = make_pack_expansion (pack);
   tree code = build_int_cstu (integer_type_node, abs (op));
-  tree fold = build_min_nt_loc (UNKNOWN_LOCATION, dir, code, pack, init);
+  tree fold = build_min_nt_loc (input_location, dir, code, pack, init);
   FOLD_EXPR_MODIFY_P (fold) = (op < 0);
   TREE_TYPE (fold) = build_dependent_operator_type (NULL_TREE,
 						    FOLD_EXPR_OP (fold),

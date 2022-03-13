@@ -81,7 +81,7 @@ DEFHOOK
 
 DEFHOOK
 (check_string_object_format_arg,
- "If a target implements string objects then this hook should should\n\
+ "If a target implements string objects then this hook should\n\
 provide a facility to check the function arguments in @var{args_list}\n\
 against the format specifiers in @var{format_arg} where the type of\n\
 @var{format_arg} is one recognized as a valid string reference type.",

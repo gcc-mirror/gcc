@@ -1204,7 +1204,7 @@ binding_cluster::validate () const
 /* Return a new json::object of the form
    {"escaped": true/false,
     "touched": true/false,
-    "map" : object for the the binding_map.  */
+    "map" : object for the binding_map.  */
 
 json::object *
 binding_cluster::to_json () const
@@ -1892,7 +1892,7 @@ binding_cluster::redundant_p () const
 	  && !m_touched);
 }
 
-/* Add PV to OUT_PVS, casting it to TYPE if if is not already of that type.  */
+/* Add PV to OUT_PVS, casting it to TYPE if it is not already of that type.  */
 
 static void
 append_pathvar_with_type (path_var pv,

@@ -329,6 +329,49 @@ class pending_diagnostic_subclass : public pending_diagnostic
   }
 };
 
+/* An abstract base class for capturing additional notes that are to be
+   emitted with a diagnostic.  */
+
+class pending_note
+{
+public:
+  virtual ~pending_note () {}
+
+  /* Hand-coded RTTI: get an ID for the subclass.  */
+  virtual const char *get_kind () const = 0;
+
+  /* Vfunc for emitting the note.  */
+  virtual void emit () const = 0;
+
+  bool equal_p (const pending_note &other) const
+  {
+    /* Check for pointer equality on the IDs from get_kind.  */
+    if (get_kind () != other.get_kind ())
+      return false;
+    /* Call vfunc now we know they have the same ID: */
+    return subclass_equal_p (other);
+  }
+
+  /* A vfunc for testing for equality, where we've already
+     checked they have the same ID.  See pending_note_subclass
+     below for a convenience subclass for implementing this.  */
+  virtual bool subclass_equal_p (const pending_note &other) const = 0;
+};
+
+/* Analogous to pending_diagnostic_subclass, but for pending_note.  */
+
+template <class Subclass>
+class pending_note_subclass : public pending_note
+{
+ public:
+  bool subclass_equal_p (const pending_note &base_other) const
+    FINAL OVERRIDE
+  {
+    const Subclass &other = (const Subclass &)base_other;
+    return *(const Subclass*)this == other;
+  }
+};
+
 } // namespace ana
 
 #endif /* GCC_ANALYZER_PENDING_DIAGNOSTIC_H */

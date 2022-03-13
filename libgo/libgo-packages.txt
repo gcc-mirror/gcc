@@ -95,7 +95,6 @@ golang.org/x/net/http/httpproxy
 golang.org/x/net/http2/hpack
 golang.org/x/net/idna
 golang.org/x/net/nettest
-golang.org/x/sync/semaphore
 golang.org/x/sys/cpu
 golang.org/x/text/secure/bidirule
 golang.org/x/text/transform

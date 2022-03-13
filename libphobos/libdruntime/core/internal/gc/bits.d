@@ -239,7 +239,9 @@ struct GCBits
             size_t cntWords = lastWord - firstWord;
             copyWordsShifted(firstWord, cntWords, firstOff, source);
 
-            wordtype src = (source[cntWords - 1] >> (BITS_PER_WORD - firstOff)) | (source[cntWords] << firstOff);
+            wordtype src = (source[cntWords - 1] >> (BITS_PER_WORD - firstOff));
+            if (lastOff >= firstOff) // prevent buffer overread
+                src |= (source[cntWords] << firstOff);
             wordtype mask = (BITS_2 << lastOff) - 1;
             data[lastWord] = (data[lastWord] & ~mask) | (src & mask);
         }

@@ -9444,12 +9444,15 @@ ix86_expand_epilogue (int style)
 	  rtx sa = EH_RETURN_STACKADJ_RTX;
 	  rtx_insn *insn;
 
-	  /* %ecx can't be used for both DRAP register and eh_return.  */
-	  if (crtl->drap_reg)
-	    gcc_assert (REGNO (crtl->drap_reg) != CX_REG);
+	  /* Stack realignment doesn't work with eh_return.  */
+	  if (crtl->stack_realign_needed)
+	    sorry ("Stack realignment not supported with "
+		   "%<__builtin_eh_return%>");
 
 	  /* regparm nested functions don't work with eh_return.  */
-	  gcc_assert (!ix86_static_chain_on_stack);
+	  if (ix86_static_chain_on_stack)
+	    sorry ("regparm nested function not supported with "
+		   "%<__builtin_eh_return%>");
 
 	  if (frame_pointer_needed)
 	    {
@@ -20334,7 +20337,7 @@ ix86_division_cost (const struct processor_costs *cost,
 
 /* Return cost of shift in MODE.
    If CONSTANT_OP1 is true, the op1 value is known and set in OP1_VAL.
-   AND_IN_OP1 specify in op1 is result of and and SHIFT_AND_TRUNCATE
+   AND_IN_OP1 specify in op1 is result of AND and SHIFT_AND_TRUNCATE
    if op1 is a result of subreg.
 
    SKIP_OP0/1 is set to true if cost of OP0/1 should be ignored.  */
@@ -22594,16 +22597,21 @@ ix86_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
 
       case vec_construct:
 	{
-	  /* N element inserts into SSE vectors.  */
-	  int cost = TYPE_VECTOR_SUBPARTS (vectype) * ix86_cost->sse_op;
+	  int n = TYPE_VECTOR_SUBPARTS (vectype);
+	  /* N - 1 element inserts into an SSE vector, the possible
+	     GPR -> XMM move is accounted for in add_stmt_cost.  */
+	  if (GET_MODE_BITSIZE (mode) <= 128)
+	    return (n - 1) * ix86_cost->sse_op;
 	  /* One vinserti128 for combining two SSE vectors for AVX256.  */
-	  if (GET_MODE_BITSIZE (mode) == 256)
-	    cost += ix86_vec_cost (mode, ix86_cost->addss);
+	  else if (GET_MODE_BITSIZE (mode) == 256)
+	    return ((n - 2) * ix86_cost->sse_op
+		    + ix86_vec_cost (mode, ix86_cost->addss));
 	  /* One vinserti64x4 and two vinserti128 for combining SSE
 	     and AVX256 vectors to AVX512.  */
 	  else if (GET_MODE_BITSIZE (mode) == 512)
-	    cost += 3 * ix86_vec_cost (mode, ix86_cost->addss);
-	  return cost;
+	    return ((n - 4) * ix86_cost->sse_op
+		    + 3 * ix86_vec_cost (mode, ix86_cost->addss));
+	  gcc_unreachable ();
 	}
 
       default:
@@ -23786,24 +23794,7 @@ ix86_optab_supported_p (int op, machine_mode mode1, machine_mode,
 rtx
 ix86_gen_scratch_sse_rtx (machine_mode mode)
 {
-  if (TARGET_SSE && !lra_in_progress)
-    {
-      unsigned int regno;
-      if (TARGET_64BIT)
-	{
-	  /* In 64-bit mode, use XMM31 to avoid vzeroupper and always
-	     use XMM31 for CSE.  */
-	  if (ix86_hard_regno_mode_ok (LAST_EXT_REX_SSE_REG, mode))
-	    regno = LAST_EXT_REX_SSE_REG;
-	  else
-	    regno = LAST_REX_SSE_REG;
-	}
-      else
-	regno = LAST_SSE_REG;
-      return gen_rtx_REG (mode, regno);
-    }
-  else
-    return gen_reg_rtx (mode);
+  return gen_reg_rtx (mode);
 }
 
 /* Address space support.

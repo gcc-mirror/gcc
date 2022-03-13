@@ -2,4 +2,4 @@
 export module Foo;
 // { dg-module-cmi Foo }
 
-// { dg-final { scan-assembler {_ZGIW3FooEv:} } }
+// { dg-final { scan-assembler {_ZGIW3Foo:} } }
