@@ -750,6 +750,7 @@ Mappings::insert_macro_def (AST::MacroRulesDefinition *macro)
     builtin_macros = {
       {"assert", MacroBuiltin::assert},
       {"file", MacroBuiltin::file},
+      {"column", MacroBuiltin::column},
     };
 
   auto builtin = builtin_macros.find (macro->get_rule_name ());
