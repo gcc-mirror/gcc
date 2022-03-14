@@ -359,6 +359,10 @@ public:
       case AST::Literal::LitType::BOOL:
 	type = HIR::Literal::LitType::BOOL;
 	break;
+	// Error literals should have been stripped during expansion
+      case AST::Literal::LitType::ERROR:
+	gcc_unreachable ();
+	break;
       }
     auto crate_num = mappings->get_current_crate ();
     Analysis::NodeMapping mapping (crate_num, expr.get_node_id (),
