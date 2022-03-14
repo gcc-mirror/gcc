@@ -304,8 +304,6 @@ offset_intrinsic_handler (Context *ctx, TyTy::BaseType *fntype_tyty)
 
   gcc_assert (TREE_CODE (bind_tree) == BIND_EXPR);
   DECL_SAVED_TREE (fndecl) = bind_tree;
-
-  ctx->pop_fn ();
   ctx->push_function (fndecl);
 
   return fndecl;
@@ -393,8 +391,6 @@ sizeof_intrinsic_handler (Context *ctx, TyTy::BaseType *fntype_tyty)
 
   gcc_assert (TREE_CODE (bind_tree) == BIND_EXPR);
   DECL_SAVED_TREE (fndecl) = bind_tree;
-
-  ctx->pop_fn ();
   ctx->push_function (fndecl);
 
   return fndecl;
