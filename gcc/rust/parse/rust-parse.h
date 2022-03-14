@@ -135,6 +135,9 @@ public:
    */
   std::unique_ptr<AST::Stmt> parse_stmt (bool allow_no_semi = false);
   std::unique_ptr<AST::Type> parse_type ();
+  std::unique_ptr<AST::ExternalItem> parse_external_item ();
+  std::unique_ptr<AST::TraitItem> parse_trait_item ();
+  std::unique_ptr<AST::InherentImplItem> parse_inherent_impl_item ();
   AST::PathInExpression parse_path_in_expression ();
   std::vector<std::unique_ptr<AST::LifetimeParam> > parse_lifetime_params ();
   AST::Visibility parse_visibility ();
@@ -285,7 +288,6 @@ private:
 						      AST::AttrVec outer_attrs);
   std::unique_ptr<AST::Trait> parse_trait (AST::Visibility vis,
 					   AST::AttrVec outer_attrs);
-  std::unique_ptr<AST::TraitItem> parse_trait_item ();
   std::unique_ptr<AST::TraitItemType>
   parse_trait_type (AST::AttrVec outer_attrs);
   std::unique_ptr<AST::TraitItemConst>
@@ -293,7 +295,6 @@ private:
   AST::SelfParam parse_self_param ();
   std::unique_ptr<AST::Impl> parse_impl (AST::Visibility vis,
 					 AST::AttrVec outer_attrs);
-  std::unique_ptr<AST::InherentImplItem> parse_inherent_impl_item ();
   std::unique_ptr<AST::InherentImplItem>
   parse_inherent_impl_function_or_method (AST::Visibility vis,
 					  AST::AttrVec outer_attrs);
@@ -303,7 +304,6 @@ private:
 				       AST::AttrVec outer_attrs);
   std::unique_ptr<AST::ExternBlock>
   parse_extern_block (AST::Visibility vis, AST::AttrVec outer_attrs);
-  std::unique_ptr<AST::ExternalItem> parse_external_item ();
   AST::NamedFunctionParam parse_named_function_param (AST::AttrVec outer_attrs
 						      = AST::AttrVec ());
   AST::Method parse_method ();

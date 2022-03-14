@@ -1511,18 +1511,45 @@ public:
     EXPRESSION,
     ITEM,
     STMT,
+    EXTERN,
+    TRAIT,
+    IMPL,
   };
 
+private:
+  NodeType kind;
+
+  // FIXME make this a union
+  std::unique_ptr<Expr> expr;
+  std::unique_ptr<Item> item;
+  std::unique_ptr<Stmt> stmt;
+  std::unique_ptr<ExternalItem> external_item;
+  std::unique_ptr<TraitItem> trait_item;
+  std::unique_ptr<InherentImplItem> impl_item;
+
+public:
   SingleASTNode (std::unique_ptr<Expr> expr)
-    : kind (EXPRESSION), expr (std::move (expr)), item (nullptr), stmt (nullptr)
+    : kind (EXPRESSION), expr (std::move (expr))
   {}
 
   SingleASTNode (std::unique_ptr<Item> item)
-    : kind (ITEM), expr (nullptr), item (std::move (item)), stmt (nullptr)
+    : kind (ITEM), item (std::move (item))
   {}
 
   SingleASTNode (std::unique_ptr<Stmt> stmt)
-    : kind (STMT), expr (nullptr), item (nullptr), stmt (std::move (stmt))
+    : kind (STMT), stmt (std::move (stmt))
+  {}
+
+  SingleASTNode (std::unique_ptr<ExternalItem> item)
+    : kind (EXTERN), external_item (std::move (item))
+  {}
+
+  SingleASTNode (std::unique_ptr<TraitItem> item)
+    : kind (TRAIT), trait_item (std::move (item))
+  {}
+
+  SingleASTNode (std::unique_ptr<InherentImplItem> item)
+    : kind (IMPL), impl_item (std::move (item))
   {}
 
   SingleASTNode (SingleASTNode const &other)
@@ -1540,6 +1567,18 @@ public:
 
       case STMT:
 	stmt = other.stmt->clone_stmt ();
+	break;
+
+      case EXTERN:
+	external_item = other.external_item->clone_external_item ();
+	break;
+
+      case TRAIT:
+	trait_item = other.trait_item->clone_trait_item ();
+	break;
+
+      case IMPL:
+	impl_item = other.impl_item->clone_inherent_impl_item ();
 	break;
       }
   }
@@ -1560,6 +1599,18 @@ public:
       case STMT:
 	stmt = other.stmt->clone_stmt ();
 	break;
+
+      case EXTERN:
+	external_item = other.external_item->clone_external_item ();
+	break;
+
+      case TRAIT:
+	trait_item = other.trait_item->clone_trait_item ();
+	break;
+
+      case IMPL:
+	impl_item = other.impl_item->clone_inherent_impl_item ();
+	break;
       }
     return *this;
   }
@@ -1569,7 +1620,7 @@ public:
 
   NodeType get_kind () const { return kind; }
 
-  std::unique_ptr<Expr> &get_inner ()
+  std::unique_ptr<Expr> &get_expr ()
   {
     rust_assert (kind == EXPRESSION);
     return expr;
@@ -1610,6 +1661,24 @@ public:
     return std::move (item);
   }
 
+  std::unique_ptr<TraitItem> take_trait_item ()
+  {
+    rust_assert (!is_error ());
+    return std::move (trait_item);
+  }
+
+  std::unique_ptr<ExternalItem> take_external_item ()
+  {
+    rust_assert (!is_error ());
+    return std::move (external_item);
+  }
+
+  std::unique_ptr<InherentImplItem> take_impl_item ()
+  {
+    rust_assert (!is_error ());
+    return std::move (impl_item);
+  }
+
   void accept_vis (ASTVisitor &vis)
   {
     switch (kind)
@@ -1625,6 +1694,18 @@ public:
       case STMT:
 	stmt->accept_vis (vis);
 	break;
+
+      case EXTERN:
+	external_item->accept_vis (vis);
+	break;
+
+      case TRAIT:
+	trait_item->accept_vis (vis);
+	break;
+
+      case IMPL:
+	impl_item->accept_vis (vis);
+	break;
       }
   }
 
@@ -1638,9 +1719,16 @@ public:
 	return item == nullptr;
       case STMT:
 	return stmt == nullptr;
-      default:
-	return true;
+      case EXTERN:
+	return external_item == nullptr;
+      case TRAIT:
+	return trait_item == nullptr;
+      case IMPL:
+	return impl_item == nullptr;
       }
+
+    gcc_unreachable ();
+    return true;
   }
 
   std::string as_string ()
@@ -1653,18 +1741,17 @@ public:
 	return "Item: " + item->as_string ();
       case STMT:
 	return "Stmt: " + stmt->as_string ();
-      default:
-	return "";
+      case EXTERN:
+	return "External Item: " + external_item->as_string ();
+      case TRAIT:
+	return "Trait Item: " + trait_item->as_string ();
+      case IMPL:
+	return "Impl Item: " + impl_item->as_string ();
       }
+
+    gcc_unreachable ();
+    return "";
   }
-
-private:
-  NodeType kind;
-
-  // FIXME make this a union
-  std::unique_ptr<Expr> expr;
-  std::unique_ptr<Item> item;
-  std::unique_ptr<Stmt> stmt;
 };
 
 /* Basically, a "fragment" that can be incorporated into the AST, created as

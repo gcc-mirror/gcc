@@ -187,6 +187,9 @@ struct MacroExpander
   {
     ITEM,
     BLOCK,
+    TRAIT,
+    IMPL,
+    EXTERN,
   };
 
   ExpansionCfg cfg;

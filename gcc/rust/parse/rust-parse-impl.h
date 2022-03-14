@@ -5251,12 +5251,11 @@ Parser<ManagedTokenSource>::parse_inherent_impl_item ()
   switch (t->get_id ())
     {
     case IDENTIFIER:
+      // FIXME: Arthur: Do we need to some lookahead here?
+      return parse_macro_invocation_semi (outer_attrs);
     case SUPER:
     case SELF:
     case CRATE:
-    case DOLLAR_SIGN:
-      // these seem to be SimplePath tokens, so this is a macro invocation semi
-      return parse_macro_invocation_semi (std::move (outer_attrs));
       case PUB: {
 	// visibility, so not a macro invocation semi - must be constant,
 	// function, or method
@@ -5813,6 +5812,8 @@ Parser<ManagedTokenSource>::parse_external_item ()
   const_TokenPtr t = lexer.peek_token ();
   switch (t->get_id ())
     {
+    case IDENTIFIER:
+      return parse_macro_invocation_semi (outer_attrs);
       case STATIC_TOK: {
 	// parse extern static item
 	lexer.skip_token ();

@@ -1114,8 +1114,6 @@ AttrVisitor::visit (AST::ClosureExprInner &expr)
 void
 AttrVisitor::visit (AST::BlockExpr &expr)
 {
-  expander.push_context (MacroExpander::BLOCK);
-
   // initial strip test based on outer attrs
   expander.expand_cfg_attrs (expr.get_outer_attrs ());
   if (expander.fails_cfg_with_expand (expr.get_outer_attrs ()))
@@ -1135,31 +1133,13 @@ AttrVisitor::visit (AST::BlockExpr &expr)
       return;
     }
 
-  // strip all statements
-  auto &stmts = expr.get_statements ();
-  for (auto it = stmts.begin (); it != stmts.end ();)
-    {
-      auto &stmt = *it;
+  std::function<std::unique_ptr<AST::Stmt> (AST::SingleASTNode)> extractor
+    = [] (AST::SingleASTNode node) { return node.take_stmt (); };
 
-      stmt->accept_vis (*this);
+  expand_macro_children (MacroExpander::BLOCK, expr.get_statements (),
+			 extractor);
 
-      auto fragment = expander.take_expanded_fragment (*this);
-      if (fragment.should_expand ())
-	{
-	  // Remove the current expanded invocation
-	  it = stmts.erase (it);
-	  for (auto &node : fragment.get_nodes ())
-	    {
-	      it = stmts.insert (it, node.take_stmt ());
-	      it++;
-	    }
-	}
-
-      else if (stmt->is_marked_for_strip ())
-	it = stmts.erase (it);
-      else
-	it++;
-    }
+  expander.push_context (MacroExpander::BLOCK);
 
   // strip tail expression if exists - can actually fully remove it
   if (expr.has_tail_expr ())
@@ -2489,8 +2469,11 @@ AttrVisitor::visit (AST::Trait &trait)
   if (trait.has_where_clause ())
     expand_where_clause (trait.get_where_clause ());
 
-  // strip trait items if required
-  expand_pointer_allow_strip (trait.get_trait_items ());
+  std::function<std::unique_ptr<AST::TraitItem> (AST::SingleASTNode)> extractor
+    = [] (AST::SingleASTNode node) { return node.take_trait_item (); };
+
+  expand_macro_children (MacroExpander::TRAIT, trait.get_trait_items (),
+			 extractor);
 }
 void
 AttrVisitor::visit (AST::InherentImpl &impl)
@@ -2523,8 +2506,11 @@ AttrVisitor::visit (AST::InherentImpl &impl)
   if (impl.has_where_clause ())
     expand_where_clause (impl.get_where_clause ());
 
-  // strip inherent impl items if required
-  expand_pointer_allow_strip (impl.get_impl_items ());
+  std::function<std::unique_ptr<AST::InherentImplItem> (AST::SingleASTNode)>
+    extractor = [] (AST::SingleASTNode node) { return node.take_impl_item (); };
+
+  expand_macro_children (MacroExpander::IMPL, impl.get_impl_items (),
+			 extractor);
 }
 void
 AttrVisitor::visit (AST::TraitImpl &impl)
@@ -2659,8 +2645,12 @@ AttrVisitor::visit (AST::ExternBlock &block)
       return;
     }
 
-  // strip external items if required
-  expand_pointer_allow_strip (block.get_extern_items ());
+  std::function<std::unique_ptr<AST::ExternalItem> (AST::SingleASTNode)>
+    extractor
+    = [] (AST::SingleASTNode node) { return node.take_external_item (); };
+
+  expand_macro_children (MacroExpander::EXTERN, block.get_extern_items (),
+			 extractor);
 }
 
 // I don't think it would be possible to strip macros without expansion
