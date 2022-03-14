@@ -2532,7 +2532,7 @@ operator_logical_and::op1_range (irange &r, tree type,
        break;
      default:
        // Any other result means only one side has to be false, the
-       // other side can be anything. So we cannott be sure of any
+       // other side can be anything.  So we cannot be sure of any
        // result here.
        r = range_true_and_false (type);
        break;
