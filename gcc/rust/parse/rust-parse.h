@@ -88,7 +88,24 @@ struct ParseRestrictions
 template <typename ManagedTokenSource> class Parser
 {
 public:
+  /**
+   * Consume a token, reporting an error if it isn't the next token
+   *
+   * @param t ID of the token to consume
+   *
+   * @return true if the token was next, false if it wasn't found
+   */
   bool skip_token (TokenId t);
+
+  /**
+   * Same as `skip_token` but allows for failure without necessarily reporting
+   * an error
+   *
+   * @param t ID of the token to consume
+   *
+   * @return true if the token was next, false if it wasn't found
+   */
+  bool maybe_skip_token (TokenId t);
 
   std::unique_ptr<AST::Expr>
   parse_expr (AST::AttrVec outer_attrs = AST::AttrVec (),
@@ -103,7 +120,20 @@ public:
 
   std::unique_ptr<AST::Item> parse_item (bool called_from_statement);
   std::unique_ptr<AST::Pattern> parse_pattern ();
-  std::unique_ptr<AST::Stmt> parse_stmt ();
+
+  /**
+   * Parse a statement
+   *
+   * Statement : ';'
+   *    | Item
+   *    | LetStatement
+   *    | ExpressionStatement
+   *    | MacroInvocationSemi
+   *
+   * @param allow_no_semi Allow the parser to not parse a semicolon after
+   * 		the statement without erroring out
+   */
+  std::unique_ptr<AST::Stmt> parse_stmt (bool allow_no_semi = false);
   std::unique_ptr<AST::Type> parse_type ();
   AST::PathInExpression parse_path_in_expression ();
   std::vector<std::unique_ptr<AST::LifetimeParam> > parse_lifetime_params ();
@@ -575,12 +605,25 @@ private:
   AST::MaybeNamedParam parse_maybe_named_param (AST::AttrVec outer_attrs);
 
   // Statement-related
-  std::unique_ptr<AST::LetStmt> parse_let_stmt (AST::AttrVec outer_attrs);
-  std::unique_ptr<AST::ExprStmt> parse_expr_stmt (AST::AttrVec outer_attrs);
+
+  /**
+   *Parse a let-statement
+   * LetStatement :
+   * 	OuterAttribute*
+   * 		'let' PatternNoTopAlt ( ':' Type )? ('=' Expression )? ';'
+   *
+   * @param allow_no_semi Allow parsing a let-statement without expecting a
+   * 		semicolon to follow it
+   */
+  std::unique_ptr<AST::LetStmt> parse_let_stmt (AST::AttrVec outer_attrs,
+						bool allow_no_semi = false);
+  std::unique_ptr<AST::ExprStmt> parse_expr_stmt (AST::AttrVec outer_attrs,
+						  bool allow_no_semi = false);
   std::unique_ptr<AST::ExprStmtWithBlock>
   parse_expr_stmt_with_block (AST::AttrVec outer_attrs);
   std::unique_ptr<AST::ExprStmtWithoutBlock>
-  parse_expr_stmt_without_block (AST::AttrVec outer_attrs);
+  parse_expr_stmt_without_block (AST::AttrVec outer_attrs,
+				 bool allow_no_semi = false);
   ExprOrStmt parse_stmt_or_expr_without_block ();
   ExprOrStmt parse_stmt_or_expr_with_block (AST::AttrVec outer_attrs);
   ExprOrStmt parse_macro_invocation_maybe_semi (AST::AttrVec outer_attrs);
