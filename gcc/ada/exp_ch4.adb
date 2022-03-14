@@ -10776,6 +10776,8 @@ package body Exp_Ch4 is
          Ensure_Valid (Operand);
       end if;
 
+      Freeze_Before (Operand, Target_Type);
+
       --  Apply possible constraint check
 
       Apply_Constraint_Check (Operand, Target_Type, No_Sliding => True);
