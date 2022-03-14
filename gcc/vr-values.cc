@@ -883,7 +883,7 @@ vr_values::extract_range_from_binary_expr (value_range_equiv *vr,
 	      wide_int wmax = wi::to_wide (max, TYPE_PRECISION (TREE_TYPE (max)));
 	      tree range_min = build_zero_cst (expr_type);
 	      tree range_max = wide_int_to_tree (expr_type, wmax - 1);
-	      vr->set (range_min, range_max);
+	      vr->set (range_min, range_max, NULL);
 	      return;
 	    }
      }
@@ -1275,7 +1275,7 @@ vr_values::extract_range_basic (value_range_equiv *vr, gimple *stmt)
 		      /* This is the boolean return value whether compare and
 			 exchange changed anything or not.  */
 		      vr->set (build_int_cst (type, 0),
-			       build_int_cst (type, 1));
+			       build_int_cst (type, 1), NULL);
 		      return;
 		    }
 		  break;
@@ -1297,7 +1297,7 @@ vr_values::extract_range_basic (value_range_equiv *vr, gimple *stmt)
 			vr->set_varying (type);
 		      else
 			vr->set (build_int_cst (type, 0),
-				 build_int_cst (type, 1));
+				 build_int_cst (type, 1), NULL);
 		    }
 		  else if (types_compatible_p (type, TREE_TYPE (op0))
 			   && types_compatible_p (type, TREE_TYPE (op1)))

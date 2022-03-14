@@ -22,6 +22,8 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_VALUE_RANGE_H
 #define GCC_VALUE_RANGE_H
 
+class irange;
+
 // Types of value ranges.
 enum value_range_kind
 {
@@ -37,24 +39,71 @@ enum value_range_kind
   VR_LAST
 };
 
-// Range of values that can be associated with an SSA_NAME.
-//
-// This is the base class without any storage.
+// Discriminator between different vrange types.
 
-class GTY((user)) irange
+enum value_range_discriminator
+{
+  // Range holds an integer or pointer.
+  VR_IRANGE,
+  // Range holds an unsupported type.
+  VR_UNKNOWN
+};
+
+// Abstract class for ranges of any of the supported types.
+
+class vrange
+{
+  template <typename T> friend bool is_a (vrange &);
+public:
+  virtual void set (tree, tree, value_range_kind = VR_RANGE) = 0;
+  virtual tree type () const = 0;
+  virtual void set_varying (tree type) = 0;
+  virtual void set_undefined () = 0;
+  virtual void dump (FILE * = stderr) const = 0;
+  virtual bool union_ (const vrange &) = 0;
+  virtual bool intersect (const vrange &) = 0;
+  virtual bool singleton_p (tree *result = NULL) const;
+  virtual bool contains_p (tree cst) const;
+  virtual bool zero_p () const = 0;
+  virtual bool nonzero_p () const = 0;
+  virtual void set_nonzero (tree type) = 0;
+  virtual void set_zero (tree type) = 0;
+  virtual void set_nonnegative (tree type) = 0;
+  virtual bool fits_p (const vrange &r) const = 0;
+
+  static bool supports_type_p (tree);
+
+  bool varying_p () const;
+  bool undefined_p () const;
+  vrange& operator= (const vrange &);
+  bool operator== (const vrange &) const;
+  bool operator!= (const vrange &r) const { return !(*this == r); }
+
+  enum value_range_kind kind () const;		// DEPRECATED
+  void debug () const;
+
+protected:
+  ENUM_BITFIELD(value_range_kind) m_kind : 8;
+  ENUM_BITFIELD(value_range_discriminator) m_discriminator : 4;
+};
+
+// An integer range without any storage.
+
+class GTY((user)) irange : public vrange
 {
   friend class irange_allocator;
 public:
   // In-place setters.
-  void set (tree, tree, value_range_kind = VR_RANGE);
-  void set_nonzero (tree);
-  void set_zero (tree);
-  void set_varying (tree type);
-  void set_undefined ();
+  virtual void set (tree, tree, value_range_kind = VR_RANGE) override;
+  virtual void set_nonzero (tree type) override;
+  virtual void set_zero (tree type) override;
+  virtual void set_nonnegative (tree type) override;
+  virtual void set_varying (tree type) override;
+  virtual void set_undefined () override;
 
   // Range types.
   static bool supports_type_p (tree);
-  tree type () const;
+  virtual tree type () const override;
 
   // Iteration over sub-ranges.
   unsigned num_pairs () const;
@@ -63,16 +112,14 @@ public:
   wide_int upper_bound () const;
 
   // Predicates.
-  bool zero_p () const;
-  bool nonzero_p () const;
-  bool undefined_p () const;
-  bool varying_p () const;
-  bool singleton_p (tree *result = NULL) const;
-  bool contains_p (tree) const;
+  virtual bool zero_p () const override;
+  virtual bool nonzero_p () const override;
+  virtual bool singleton_p (tree *result = NULL) const override;
+  virtual bool contains_p (tree cst) const override;
 
   // In-place operators.
-  bool union_ (const irange &);
-  bool intersect (const irange &);
+  virtual bool union_ (const vrange &) override;
+  virtual bool intersect (const vrange &) override;
   void invert ();
 
   // Operator overloads.
@@ -81,12 +128,10 @@ public:
   bool operator!= (const irange &r) const { return !(*this == r); }
 
   // Misc methods.
-  bool fits_p (const irange &r) { return m_max_ranges >= r.num_pairs (); }
-  void dump (FILE * = stderr) const;
-  void debug () const;
+  virtual bool fits_p (const vrange &r) const override;
+  virtual void dump (FILE * = stderr) const override;
 
   // Deprecated legacy public methods.
-  enum value_range_kind kind () const;		// DEPRECATED
   tree min () const;				// DEPRECATED
   tree max () const;				// DEPRECATED
   bool symbolic_p () const;			// DEPRECATED
@@ -139,7 +184,6 @@ private:
   bool intersect (const wide_int& lb, const wide_int& ub);
   unsigned char m_num_ranges;
   unsigned char m_max_ranges;
-  ENUM_BITFIELD(value_range_kind) m_kind : 8;
   tree *m_base;
 };
 
@@ -173,6 +217,88 @@ private:
   tree m_ranges[N*2];
 };
 
+// Unsupported temporaries may be created by ranger before it's known
+// they're unsupported, or by vr_values::get_value_range.  All
+// operations except construction cause a trap.
+
+class unsupported_range : public vrange
+{
+public:
+  unsupported_range ();
+  virtual void set (tree, tree, value_range_kind) override;
+  virtual tree type () const override;
+  virtual void set_varying (tree type) override;
+  virtual void set_undefined () override;
+  virtual void dump (FILE *) const override;
+  virtual bool union_ (const vrange &) override;
+  virtual bool intersect (const vrange &) override;
+  virtual bool zero_p () const override;
+  virtual bool nonzero_p () const override;
+  virtual void set_nonzero (tree) override;
+  virtual void set_zero (tree) override;
+  virtual void set_nonnegative (tree) override;
+  virtual bool fits_p (const vrange &) const override;
+};
+
+// Traits to implement vrange is_a<> and as_a<>.
+
+template<typename T>
+struct vrange_traits
+{
+  // Default to something unusable.
+  typedef void range_type;
+};
+
+template<>
+struct vrange_traits<irange>
+{
+  typedef irange range_type;
+};
+
+template <typename T>
+inline bool
+is_a (vrange &v)
+{
+  gcc_unreachable ();
+  return false;
+}
+
+template <typename T>
+inline bool
+is_a (const vrange &v)
+{
+  // Reuse is_a <vrange> to implement the const version.
+  const T &derived = static_cast<const T &> (v);
+  return is_a <T> (const_cast<T &> (derived));
+}
+
+template <typename T>
+inline T &
+as_a (vrange &v)
+{
+  typedef typename vrange_traits<T>::range_type range_type;
+  gcc_checking_assert (is_a <range_type> (v));
+  return static_cast <range_type &> (v);
+}
+
+template <typename T>
+inline const T &
+as_a (const vrange &v)
+{
+  typedef typename vrange_traits<T>::range_type range_type;
+  gcc_checking_assert (is_a <range_type> (v));
+  return static_cast <const range_type &> (v);
+}
+
+// Specializations for the different range types.
+
+template <>
+inline bool
+is_a <irange> (vrange &v)
+{
+  return v.m_discriminator == VR_IRANGE;
+}
+
 // This is a special int_range<1> with only one pair, plus
 // VR_ANTI_RANGE magic to describe slightly more than can be described
 // in one pair.  It is described in the code as a "legacy range" (as
@@ -197,13 +323,13 @@ irange::legacy_mode_p () const
 extern bool range_has_numeric_bounds_p (const irange *);
 extern bool ranges_from_anti_range (const value_range *,
 				    value_range *, value_range *);
-extern void dump_value_range (FILE *, const irange *);
+extern void dump_value_range (FILE *, const vrange *);
 extern bool vrp_val_is_min (const_tree);
 extern bool vrp_val_is_max (const_tree);
 extern bool vrp_operand_equal_p (const_tree, const_tree);
 
 inline value_range_kind
-irange::kind () const
+vrange::kind () const
 {
   return m_kind;
 }
@@ -293,13 +419,13 @@ irange::varying_compatible_p () const
 }
 
 inline bool
-irange::varying_p () const
+vrange::varying_p () const
 {
   return m_kind == VR_VARYING;
 }
 
 inline bool
-irange::undefined_p () const
+vrange::undefined_p () const
 {
   return m_kind == VR_UNDEFINED;
 }
@@ -398,6 +524,7 @@ gt_pch_nx (int_range<N> *x, gt_pointer_operator op, void *cookie)
 inline
 irange::irange (tree *base, unsigned nranges)
 {
+  m_discriminator = VR_IRANGE;
   m_base = base;
   m_max_ranges = nranges;
   set_undefined ();
@@ -547,21 +674,21 @@ irange::upper_bound () const
 }
 
 inline bool
-irange::union_ (const irange &r)
+irange::union_ (const vrange &r)
 {
   dump_flags_t m_flags = dump_flags;
   dump_flags &= ~TDF_DETAILS;
-  bool ret = irange::legacy_verbose_union_ (&r);
+  bool ret = irange::legacy_verbose_union_ (&as_a <irange> (r));
   dump_flags = m_flags;
   return ret;
 }
 
 inline bool
-irange::intersect (const irange &r)
+irange::intersect (const vrange &r)
 {
   dump_flags_t m_flags = dump_flags;
   dump_flags &= ~TDF_DETAILS;
-  bool ret = irange::legacy_verbose_intersect (&r);
+  bool ret = irange::legacy_verbose_intersect (&as_a <irange> (r));
   dump_flags = m_flags;
   return ret;
 }
@@ -606,6 +733,12 @@ irange::normalize_kind ()
       else
 	gcc_unreachable ();
     }
+}
+
+inline bool
+vrange::supports_type_p (tree type)
+{
+  return irange::supports_type_p (type);
 }
 
 // Return the maximum value for TYPE.
