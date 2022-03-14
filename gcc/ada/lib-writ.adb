@@ -403,7 +403,9 @@ package body Lib.Writ is
          Kernel_Elm  : Elmt_Id;
          Kernel      : Entity_Id;
       begin
-         if not Enable_CUDA_Expansion then
+         if not Enable_CUDA_Expansion
+           or else Nkind (Unit_Id) = N_Null_Statement
+         then
             return;
          end if;
          Spec_Id := (if Nkind (Unit_Id) = N_Package_Body
