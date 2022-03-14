@@ -266,7 +266,7 @@ vr_values::update_value_range (const_tree var, value_range_equiv *new_vr)
       value_range_equiv nr;
       get_global_range_query ()->range_of_expr (nr, const_cast <tree> (var));
       if (!nr.undefined_p ())
-	new_vr->intersect (&nr);
+	new_vr->legacy_verbose_intersect (&nr);
     }
 
   /* Update the value range, if necessary.  If we cannot allocate a lattice
@@ -750,7 +750,7 @@ vr_values::extract_range_for_var_from_comparison_expr (tree var,
     gcc_unreachable ();
 
   /* Finally intersect the new range with what we already know about var.  */
-  vr_p->intersect (get_value_range (var));
+  vr_p->legacy_verbose_intersect (get_value_range (var));
 }
 
 /* Extract value range information from an ASSERT_EXPR EXPR and store
@@ -1014,7 +1014,7 @@ vr_values::extract_range_from_cond_expr (value_range_equiv *vr, gassign *stmt)
 
   /* The resulting value range is the union of the operand ranges */
   vr->deep_copy (vr0);
-  vr->union_ (vr1);
+  vr->legacy_verbose_union_ (vr1);
 }
 
 
@@ -2300,10 +2300,10 @@ simplify_using_ranges::vrp_evaluate_conditional_warnv_with_ops
 	     for previously LE_ or LT_EXPR and GT_EXPR otherwise, but
 	     the comments next to the enclosing if suggest it's not
 	     generally profitable to do so.  */
-	  vro.intersect (vr0);
+	  vro.legacy_verbose_intersect (vr0);
 	  if (vro.undefined_p ())
 	    return boolean_false_node;
-	  vri.intersect (vr0);
+	  vri.legacy_verbose_intersect (vr0);
 	  if (vri.undefined_p ())
 	    return boolean_true_node;
 	}
@@ -2803,7 +2803,7 @@ vr_values::extract_range_from_phi_node (gphi *phi,
 	  if (first)
 	    vr_result->deep_copy (vr_arg);
 	  else
-	    vr_result->union_ (vr_arg);
+	    vr_result->legacy_verbose_union_ (vr_arg);
 	  first = false;
 
 	  if (vr_result->varying_p ())

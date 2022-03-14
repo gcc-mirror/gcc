@@ -1442,7 +1442,7 @@ irange::legacy_union (irange *vr0, const irange *vr1)
    may not be the smallest possible such range.  */
 
 void
-irange::union_ (const irange *other)
+irange::legacy_verbose_union_ (const irange *other)
 {
   if (legacy_mode_p ())
     {
@@ -1482,7 +1482,7 @@ irange::union_ (const irange *other)
 }
 
 void
-irange::intersect (const irange *other)
+irange::legacy_verbose_intersect (const irange *other)
 {
   if (legacy_mode_p ())
     {

@@ -768,7 +768,7 @@ extract_range_from_plus_minus_expr (value_range *vr,
 	  value_range vrres;
 	  extract_range_from_plus_minus_expr (&vrres, code, expr_type,
 					      &vrtem1, vr1_);
-	  vr->union_ (&vrres);
+	  vr->union_ (vrres);
 	}
       return;
     }
@@ -782,7 +782,7 @@ extract_range_from_plus_minus_expr (value_range *vr,
 	  value_range vrres;
 	  extract_range_from_plus_minus_expr (&vrres, code, expr_type,
 					      vr0_, &vrtem1);
-	  vr->union_ (&vrres);
+	  vr->union_ (vrres);
 	}
       return;
     }
@@ -2470,7 +2470,7 @@ find_case_label_range (gswitch *switch_stmt, const irange *range_of_op)
       int_range_max label_range (CASE_LOW (label), case_high);
       if (!types_compatible_p (label_range.type (), range_of_op->type ()))
 	range_cast (label_range, range_of_op->type ());
-      label_range.intersect (range_of_op);
+      label_range.intersect (*range_of_op);
       if (label_range == *range_of_op)
 	return label;
     }
@@ -2494,7 +2494,7 @@ find_case_label_range (gswitch *switch_stmt, const irange *range_of_op)
       int_range_max label_range (CASE_LOW (min_label), case_high);
       if (!types_compatible_p (label_range.type (), range_of_op->type ()))
 	range_cast (label_range, range_of_op->type ());
-      label_range.intersect (range_of_op);
+      label_range.intersect (*range_of_op);
       if (label_range.undefined_p ())
 	return gimple_switch_label (switch_stmt, 0);
     }
