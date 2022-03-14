@@ -593,8 +593,8 @@ compute_distributive_range (tree type, value_range &op0_range,
   gcc_assert (INTEGRAL_TYPE_P (type) && !TYPE_OVERFLOW_TRAPS (type));
   if (result_range)
     {
-      range_operator *op = range_op_handler (code, type);
-      op->fold_range (*result_range, type, op0_range, op1_range);
+      range_op_handler op (code, type);
+      op.fold_range (*result_range, type, op0_range, op1_range);
     }
 
   /* The distributive property guarantees that if TYPE is no narrower
@@ -639,10 +639,10 @@ compute_distributive_range (tree type, value_range &op0_range,
   range_cast (op0_range, ssizetype);
   range_cast (op1_range, ssizetype);
   value_range wide_range;
-  range_operator *op = range_op_handler (code, ssizetype);
+  range_op_handler op (code, ssizetype);
   bool saved_flag_wrapv = flag_wrapv;
   flag_wrapv = 1;
-  op->fold_range (wide_range, ssizetype, op0_range, op1_range);
+  op.fold_range (wide_range, ssizetype, op0_range, op1_range);
   flag_wrapv = saved_flag_wrapv;
   if (wide_range.num_pairs () != 1 || !range_int_cst_p (&wide_range))
     return false;

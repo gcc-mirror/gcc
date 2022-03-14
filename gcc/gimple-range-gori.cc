@@ -44,9 +44,9 @@ gimple_range_calc_op1 (irange &r, const gimple *stmt, const irange &lhs_range)
   // Unary operations require the type of the first operand in the
   // second range position.
   tree type = TREE_TYPE (gimple_range_operand1 (stmt));
-  int_range<2> type_range (type);
-  return gimple_range_handler (stmt)->op1_range (r, type, lhs_range,
-						 type_range);
+  Value_Range type_range (type);
+  type_range.set_varying (type);
+  return range_op_handler (stmt).op1_range (r, type, lhs_range, type_range);
 }
 
 // Calculate what we can determine of the range of this statement's
@@ -72,12 +72,12 @@ gimple_range_calc_op1 (irange &r, const gimple *stmt,
       // This is sometimes invoked on single operand stmts.
       if (gimple_num_ops (stmt) < 3)
 	return false;
-      int_range<2> trange (TREE_TYPE (gimple_range_operand2 (stmt)));
-      return gimple_range_handler (stmt)->op1_range (r, type, lhs_range,
-						     trange);
+      tree op2_type = TREE_TYPE (gimple_range_operand2 (stmt));
+      Value_Range trange (op2_type);
+      trange.set_varying (op2_type);
+      return range_op_handler (stmt).op1_range (r, type, lhs_range, trange);
     }
-  return gimple_range_handler (stmt)->op1_range (r, type, lhs_range,
-						 op2_range);
+  return range_op_handler (stmt).op1_range (r, type, lhs_range, op2_range);
 }
 
 // Calculate what we can determine of the range of this statement's
@@ -97,12 +97,13 @@ gimple_range_calc_op2 (irange &r, const gimple *stmt,
   // If op1 is undefined, solve as if it is varying.
   if (op1_range.undefined_p ())
     {
-      int_range<2> trange (TREE_TYPE (gimple_range_operand1 (stmt)));
-      return gimple_range_handler (stmt)->op2_range (r, type, lhs_range,
-						     trange);
+      tree op1_type = TREE_TYPE (gimple_range_operand1 (stmt));
+      Value_Range trange (op1_type);
+      trange.set_varying (op1_type);
+      return range_op_handler (stmt).op2_range (r, type, lhs_range, trange);
     }
-  return gimple_range_handler (stmt)->op2_range (r, type, lhs_range,
-						 op1_range);
+  return range_op_handler (stmt).op2_range (r, type, lhs_range,
+					    op1_range);
 }
 
 // Return TRUE if GS is a logical && or || expression.
@@ -346,7 +347,7 @@ range_def_chain::get_def_chain (tree name)
     }
 
   gimple *stmt = SSA_NAME_DEF_STMT (name);
-  if (gimple_range_handler (stmt))
+  if (range_op_handler (stmt))
     {
       ssa1 = gimple_range_ssa_p (gimple_range_operand1 (stmt));
       ssa2 = gimple_range_ssa_p (gimple_range_operand2 (stmt));
@@ -707,7 +708,7 @@ gori_compute::compute_operand_range (irange &r, gimple *stmt,
   if (is_a<gswitch *> (stmt))
     return compute_operand_range_switch (r, as_a<gswitch *> (stmt), lhs, name,
 					 src);
-  if (!gimple_range_handler (stmt))
+  if (!range_op_handler (stmt))
     return false;
 
   tree op1 = gimple_range_ssa_p (gimple_range_operand1 (stmt));
@@ -1328,7 +1329,7 @@ gori_compute::condexpr_adjust (irange &r1, irange &r2, gimple *, tree cond,
   tree type = TREE_TYPE (gimple_assign_rhs1 (cond_def));
   if (!range_compatible_p (type, TREE_TYPE (gimple_assign_rhs2 (cond_def))))
     return false;
-  range_operator *hand = range_op_handler (gimple_assign_rhs_code (cond_def), type);
+  range_op_handler hand (gimple_assign_rhs_code (cond_def), type);
   if (!hand)
     return false;
 
@@ -1351,18 +1352,18 @@ gori_compute::condexpr_adjust (irange &r1, irange &r2, gimple *, tree cond,
   // the op1 or op2 routines based on its location.
   if (c1)
     {
-      if (!hand->op1_range (cond_false, type, m_bool_zero, cr))
+      if (!hand.op1_range (cond_false, type, m_bool_zero, cr))
 	return false;
-      if (!hand->op1_range (cond_true, type, m_bool_one, cr))
+      if (!hand.op1_range (cond_true, type, m_bool_one, cr))
 	return false;
       cond_false.intersect (cl);
       cond_true.intersect (cl);
     }
   else
     {
-      if (!hand->op2_range (cond_false, type, m_bool_zero, cl))
+      if (!hand.op2_range (cond_false, type, m_bool_zero, cl))
 	return false;
-      if (!hand->op2_range (cond_true, type, m_bool_one, cl))
+      if (!hand.op2_range (cond_true, type, m_bool_one, cl))
 	return false;
       cond_false.intersect (cr);
       cond_true.intersect (cr);

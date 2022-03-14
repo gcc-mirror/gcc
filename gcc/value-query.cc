@@ -234,13 +234,13 @@ range_query::get_tree_range (irange &r, tree expr, gimple *stmt)
     }
   if (BINARY_CLASS_P (expr))
     {
-      range_operator *op = range_op_handler (TREE_CODE (expr), type);
+      range_op_handler op (TREE_CODE (expr), type);
       if (op)
 	{
 	  int_range_max r0, r1;
 	  range_of_expr (r0, TREE_OPERAND (expr, 0), stmt);
 	  range_of_expr (r1, TREE_OPERAND (expr, 1), stmt);
-	  op->fold_range (r, type, r0, r1);
+	  op.fold_range (r, type, r0, r1);
 	}
       else
 	r.set_varying (type);
@@ -248,13 +248,13 @@ range_query::get_tree_range (irange &r, tree expr, gimple *stmt)
     }
   if (UNARY_CLASS_P (expr))
     {
-      range_operator *op = range_op_handler (TREE_CODE (expr), type);
+      range_op_handler op (TREE_CODE (expr), type);
       tree op0_type = TREE_TYPE (TREE_OPERAND (expr, 0));
       if (op && irange::supports_type_p (op0_type))
 	{
 	  int_range_max r0;
 	  range_of_expr (r0, TREE_OPERAND (expr, 0), stmt);
-	  op->fold_range (r, type, r0, int_range<1> (type));
+	  op.fold_range (r, type, r0, int_range<1> (type));
 	}
       else
 	r.set_varying (type);
