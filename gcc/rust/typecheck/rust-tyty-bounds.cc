@@ -67,6 +67,10 @@ TypeCheckBase::resolve_trait_path (HIR::TypePath &path)
 
 namespace TyTy {
 
+TypeBoundPredicate::TypeBoundPredicate (DefId reference, Location locus)
+  : reference (reference), locus (locus), args (nullptr)
+{}
+
 std::string
 TypeBoundPredicate::as_string () const
 {
@@ -190,6 +194,56 @@ bool
 TypeBoundPredicateItem::needs_implementation () const
 {
   return !get_raw_item ()->is_optional ();
+}
+
+// TypeBoundsMappings
+
+TypeBoundsMappings::TypeBoundsMappings (
+  std::vector<TypeBoundPredicate> specified_bounds)
+  : specified_bounds (specified_bounds)
+{}
+
+std::vector<TypeBoundPredicate> &
+TypeBoundsMappings::get_specified_bounds ()
+{
+  return specified_bounds;
+}
+
+const std::vector<TypeBoundPredicate> &
+TypeBoundsMappings::get_specified_bounds () const
+{
+  return specified_bounds;
+}
+
+size_t
+TypeBoundsMappings::num_specified_bounds () const
+{
+  return specified_bounds.size ();
+}
+
+std::string
+TypeBoundsMappings::raw_bounds_as_string () const
+{
+  std::string buf;
+  for (size_t i = 0; i < specified_bounds.size (); i++)
+    {
+      const TypeBoundPredicate &b = specified_bounds.at (i);
+      bool has_next = (i + 1) < specified_bounds.size ();
+      buf += b.get_name () + (has_next ? " + " : "");
+    }
+  return buf;
+}
+
+std::string
+TypeBoundsMappings::bounds_as_string () const
+{
+  return "bounds:[" + raw_bounds_as_string () + "]";
+}
+
+void
+TypeBoundsMappings::add_bound (TypeBoundPredicate predicate)
+{
+  specified_bounds.push_back (predicate);
 }
 
 } // namespace TyTy

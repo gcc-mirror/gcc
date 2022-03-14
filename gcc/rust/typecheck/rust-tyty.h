@@ -108,92 +108,24 @@ private:
   const Resolver::TraitItemReference *trait_item_ref;
 };
 
-class TypeBoundPredicate
-{
-public:
-  TypeBoundPredicate (DefId reference, Location locus)
-    : reference (reference), locus (locus), args (nullptr)
-  {}
-
-  std::string as_string () const;
-
-  const Resolver::TraitReference *get () const;
-
-  Location get_locus () const { return locus; }
-
-  std::string get_name () const;
-
-  // check that this predicate is object-safe see:
-  // https://doc.rust-lang.org/reference/items/traits.html#object-safety
-  bool is_object_safe (bool emit_error, Location locus) const;
-
-  void apply_generic_arguments (HIR::GenericArgs *generic_args);
-
-  bool contains_item (const std::string &search) const;
-
-  TypeBoundPredicateItem
-  lookup_associated_item (const std::string &search) const;
-
-  HIR::GenericArgs *get_generic_args () { return args; }
-
-  const HIR::GenericArgs *get_generic_args () const { return args; }
-
-  bool has_generic_args () const
-  {
-    if (args == nullptr)
-      return false;
-
-    return args->has_generic_args ();
-  }
-
-private:
-  DefId reference;
-  Location locus;
-  HIR::GenericArgs *args;
-};
-
 class TypeBoundsMappings
 {
 protected:
-  TypeBoundsMappings (std::vector<TypeBoundPredicate> specified_bounds)
-    : specified_bounds (specified_bounds)
-  {}
+  TypeBoundsMappings (std::vector<TypeBoundPredicate> specified_bounds);
 
 public:
-  std::vector<TypeBoundPredicate> &get_specified_bounds ()
-  {
-    return specified_bounds;
-  }
+  std::vector<TypeBoundPredicate> &get_specified_bounds ();
 
-  const std::vector<TypeBoundPredicate> &get_specified_bounds () const
-  {
-    return specified_bounds;
-  }
+  const std::vector<TypeBoundPredicate> &get_specified_bounds () const;
 
-  size_t num_specified_bounds () const { return specified_bounds.size (); }
+  size_t num_specified_bounds () const;
 
-  std::string raw_bounds_as_string () const
-  {
-    std::string buf;
-    for (size_t i = 0; i < specified_bounds.size (); i++)
-      {
-	const TypeBoundPredicate &b = specified_bounds.at (i);
-	bool has_next = (i + 1) < specified_bounds.size ();
-	buf += b.get_name () + (has_next ? " + " : "");
-      }
-    return buf;
-  }
+  std::string raw_bounds_as_string () const;
 
-  std::string bounds_as_string () const
-  {
-    return "bounds:[" + raw_bounds_as_string () + "]";
-  }
+  std::string bounds_as_string () const;
 
 protected:
-  void add_bound (TypeBoundPredicate predicate)
-  {
-    specified_bounds.push_back (predicate);
-  }
+  void add_bound (TypeBoundPredicate predicate);
 
   std::vector<TypeBoundPredicate> specified_bounds;
 };
@@ -1005,6 +937,48 @@ public:
 protected:
   std::vector<SubstitutionParamMapping> substitutions;
   SubstitutionArgumentMappings used_arguments;
+};
+
+class TypeBoundPredicate
+{
+public:
+  TypeBoundPredicate (DefId reference, Location locus);
+
+  std::string as_string () const;
+
+  const Resolver::TraitReference *get () const;
+
+  Location get_locus () const { return locus; }
+
+  std::string get_name () const;
+
+  // check that this predicate is object-safe see:
+  // https://doc.rust-lang.org/reference/items/traits.html#object-safety
+  bool is_object_safe (bool emit_error, Location locus) const;
+
+  void apply_generic_arguments (HIR::GenericArgs *generic_args);
+
+  bool contains_item (const std::string &search) const;
+
+  TypeBoundPredicateItem
+  lookup_associated_item (const std::string &search) const;
+
+  HIR::GenericArgs *get_generic_args () { return args; }
+
+  const HIR::GenericArgs *get_generic_args () const { return args; }
+
+  bool has_generic_args () const
+  {
+    if (args == nullptr)
+      return false;
+
+    return args->has_generic_args ();
+  }
+
+private:
+  DefId reference;
+  Location locus;
+  HIR::GenericArgs *args;
 };
 
 // https://doc.rust-lang.org/nightly/nightly-rustc/rustc_middle/ty/struct.VariantDef.html
