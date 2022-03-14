@@ -10409,6 +10409,27 @@ build_cxx_call (tree fn, int nargs, tree *argarray,
       if (!check_builtin_function_arguments (EXPR_LOCATION (fn), vNULL, fndecl,
 					     orig_fndecl, nargs, argarray))
 	return error_mark_node;
+      else if (fndecl_built_in_p (fndecl, BUILT_IN_CLEAR_PADDING))
+	{
+	  tree arg0 = argarray[0];
+	  STRIP_NOPS (arg0);
+	  if (TREE_CODE (arg0) == ADDR_EXPR
+	      && DECL_P (TREE_OPERAND (arg0, 0))
+	      && same_type_ignoring_top_level_qualifiers_p
+			(TREE_TYPE (TREE_TYPE (argarray[0])),
+			 TREE_TYPE (TREE_TYPE (arg0))))
+	    /* For __builtin_clear_padding (&var) we know the type
+	       is for a complete object, so there is no risk in clearing
+	       padding that is reused in some derived class member.  */;
+	  else if (!trivially_copyable_p (TREE_TYPE (TREE_TYPE (argarray[0]))))
+	    {
+	      error_at (EXPR_LOC_OR_LOC (argarray[0], input_location),
+			"argument %u in call to function %qE "
+			"has pointer to a non-trivially-copyable type (%qT)",
+			1, fndecl, TREE_TYPE (argarray[0]));
+	      return error_mark_node;
+	    }
+	}
     }
 
   if (VOID_TYPE_P (TREE_TYPE (fn)))
