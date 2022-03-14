@@ -1,3 +1,11 @@
+2022-03-13  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2022-03-08  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/104811
+	* gfortran.dg/minmaxloc_16.f90: New test.
+
 2022-03-11  Michael Meissner  <meissner@the-meissners.org>
 
 	PR target/99708

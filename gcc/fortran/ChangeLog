@@ -1,3 +1,13 @@
+2022-03-13  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2022-03-08  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/104811
+	* frontend-passes.c (optimize_minmaxloc): Do not attempt
+	frontend-optimization of MINLOC/MAXLOC for character arrays, as
+	there is no suitable code yet for inline expansion.
+
 2022-02-23  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:
