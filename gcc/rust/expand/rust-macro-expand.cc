@@ -379,10 +379,9 @@ MacroExpander::expand_crate ()
       // mark for stripping if required
       item->accept_vis (attr_visitor);
 
-      auto fragment = take_expanded_fragment ();
+      auto fragment = take_expanded_fragment (attr_visitor);
       if (fragment.should_expand ())
 	{
-	  fragment.accept_vis (attr_visitor);
 	  // Remove the current expanded invocation
 	  it = items.erase (it);
 	  for (auto &node : fragment.get_nodes ())
