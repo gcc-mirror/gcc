@@ -1,3 +1,7 @@
+2022-03-13  Tobias Burnus  <tobias@codesourcery.com>
+
+	* libgomp.texi: Fix typo.
+
 2022-03-12  Thomas Schwinge  <thomas@codesourcery.com>
 
 	PR middle-end/100280

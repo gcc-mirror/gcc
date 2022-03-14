@@ -1,3 +1,9 @@
+2022-03-13  Tobias Burnus  <tobias@codesourcery.com>
+
+	* doc/invoke.texi: Fix typos.
+	* doc/tm.texi.in: Remove duplicated word.
+	* doc/tm.texi: Regenerate.
+
 2022-03-12  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR target/104829

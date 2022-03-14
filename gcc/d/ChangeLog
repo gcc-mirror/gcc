@@ -1,3 +1,12 @@
+2022-03-13  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* dmd/MERGE: Merge upstream dmd 02a3fafc6.
+	* dmd/VERSION: Update version to v2.099.0.
+	* imports.cc (ImportVisitor::visit (EnumDeclaration *)): Don't cache
+	decl in front-end AST node.
+	(ImportVisitor::visit (AggregateDeclaration *)): Likewise.
+	(ImportVisitor::visit (ClassDeclaration *)): Likewise.
+
 2022-03-11  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* imports.cc (imported_decls): Define.

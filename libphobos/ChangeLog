@@ -1,3 +1,8 @@
+2022-03-13  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* libdruntime/MERGE: Merge upstream druntime 26b58167.
+	* src/MERGE: Merge upstream phobos 16cb085b5.
+
 2022-03-11  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR d/103528
