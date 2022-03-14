@@ -29,7 +29,7 @@ msgstr ""
 "Project-Id-Version: gcc 12.1-b20220213\n"
 "Report-Msgid-Bugs-To: https://gcc.gnu.org/bugs/\n"
 "POT-Creation-Date: 2022-02-11 23:10+0000\n"
-"PO-Revision-Date: 2022-03-06 17:03+0100\n"
+"PO-Revision-Date: 2022-03-13 08:42+0100\n"
 "Last-Translator: Göran Uddeborg <goeran@uddeborg.se>\n"
 "Language-Team: Swedish <tp-sv@listor.tp-sv.se>\n"
 "Language: sv\n"
@@ -7095,10 +7095,9 @@ msgid "Use ldcw/ldcd coherent cache-control hint."
 msgstr "Använd koherent cache-styrningstipsen ldcw/ldcd."
 
 #: config/pa/pa.opt:54
-#, fuzzy, no-c-format
-#| msgid "Equivalent to -mgpopt=local."
+#, no-c-format
 msgid "Disable FP regs.  Equivalent to -msoft-float."
-msgstr "Ekvivalent med -gpopt=local."
+msgstr "Avaktivera FP-register. Ekvivalent med -msoft-float."
 
 #: config/pa/pa.opt:58
 #, no-c-format
@@ -7156,10 +7155,9 @@ msgid "Use software floating point."
 msgstr "Använd mjukvaruflyttal."
 
 #: config/pa/pa.opt:148
-#, fuzzy, no-c-format
-#| msgid "Use software floating point comparisons."
+#, no-c-format
 msgid "Use software integer multiplication."
-msgstr "Använd flyttalsjämförelser i programvara."
+msgstr "Använd heltalsmultiplikation i programvara."
 
 #: config/pa/pa.opt:156
 #, no-c-format
@@ -7377,16 +7375,16 @@ msgid "Specify the version of the ptx ISA to use."
 msgstr "Ange versionen av ptx-ISA att använda."
 
 #: config/nvptx/nvptx.opt:80
-#, fuzzy, no-c-format
-#| msgid "Known PTX ISA versions (for use with the -misa= option):"
+#, no-c-format
 msgid "Known PTX versions (for use with the -mptx= option):"
-msgstr "Kända PTX ISA-versioner (att användas med flaggan -misa=):"
+msgstr "Kända PTX-versioner (att användas med flaggan -mptx=):"
 
+# Felet i originalet är rapporterat:
+# https://gcc.gnu.org/bugzilla/show_bug.cgi?id=104818
 #: config/nvptx/nvptx.opt:93
-#, fuzzy, no-c-format
-#| msgid "Specify the version of the ptx ISA to use."
+#, no-c-format
 msgid "Specify the version of the ptx version to use."
-msgstr "Ange versionen av ptx-ISA att använda."
+msgstr "Ange versionen av ptx att använda."
 
 #: config/vxworks.opt:36
 #, no-c-format
@@ -8154,10 +8152,9 @@ msgid "Generate code which uses the core registers only (r0-r14)."
 msgstr "Generera kod som endast använder kärnregister (r0-r14)."
 
 #: config/arm/arm.opt:341
-#, fuzzy, no-c-format
-#| msgid "Use an immediate to offset from the stack protector guard register, sp_el0. This option is for use with fstack-protector-strong and not for use in user-land code."
+#, no-c-format
 msgid "Use an immediate to offset from the TLS register. This option is for use with fstack-protector-guard=tls and not for use in user-land code."
-msgstr "Använd en omedelbar för att få avstånd från stackskyddsvaktregistret, sp_el0.  Denna flagga skall användas med fstack-protector-strong och är inte till för kod i användarmarken."
+msgstr "Använd en omedelbar för att få avstånd från TLS-registret.  Denna flagga skall användas med fstack-protector-guard=tls och är inte till för kod i användarmarken."
 
 #: config/sparc/sparc.opt:30 config/sparc/sparc.opt:34
 #: config/visium/visium.opt:37
@@ -8726,10 +8723,9 @@ msgid "Fuse dependent pairs of add or vaddudm instructions for better performanc
 msgstr "Smält samman par av add- och vaddudm-instruktioner för bättre prestanda på power10."
 
 #: config/rs6000/rs6000.opt:515
-#, fuzzy, no-c-format
-#| msgid "Fuse certain integer operations together for better performance on power10."
+#, no-c-format
 msgid "Fuse certain store operations together for better performance on power10."
-msgstr "Smält samman vissa heltalsoperationer för bättre prestanda på power10."
+msgstr "Smält samman vissa lagringsoperationer för bättre prestanda på power10."
 
 #: config/rs6000/rs6000.opt:519
 #, no-c-format
@@ -8827,22 +8823,19 @@ msgid "Generate code that will run in privileged state."
 msgstr "Generera kod som kommer köra i priviligierat tillstånd."
 
 #: config/rs6000/rs6000.opt:641
-#, fuzzy, no-c-format
-#| msgid "Generate (do not generate) MMA instructions."
+#, no-c-format
 msgid "Generate (do not generate) code that uses the XXSPLTIW instruction."
-msgstr "Generera (generera inte) MMA-instruktioner."
+msgstr "Generera (generera inte) kod som använder XXSPLTIW-instruktionen."
 
 #: config/rs6000/rs6000.opt:645
-#, fuzzy, no-c-format
-#| msgid "Generate (do not generate) MMA instructions."
+#, no-c-format
 msgid "Generate (do not generate) code that uses the XXSPLTIDP instruction."
-msgstr "Generera (generera inte) MMA-instruktioner."
+msgstr "Generera (generera inte) kod som använder XXSPLTIDP-instruktionen."
 
 #: config/rs6000/rs6000.opt:649
-#, fuzzy, no-c-format
-#| msgid "Generate (do not generate) MMA instructions."
+#, no-c-format
 msgid "Generate (do not generate) code that uses the LXVKQ instruction."
-msgstr "Generera (generera inte) MMA-instruktioner."
+msgstr "Generera (generera inte) kod som använder LXVKQ-instruktionen."
 
 #: config/rs6000/rs6000.opt:653
 #, no-c-format
@@ -9197,10 +9190,9 @@ msgid "Specify the code model used for accessing memory addresses.  Specifying l
 msgstr "Ange kodmodellen som skall användas för att komma åt minnesadresser. Att ange large möjliggör generering av binärer med stora globala avståndstabeller. Som standard är värdet small."
 
 #: config/or1k/or1k.opt:77
-#, fuzzy, no-c-format
-#| msgid "Known cmodel types (for use with the -mcmodel= option):"
+#, no-c-format
 msgid "Known code model types (for use with the -mcmodel= option):"
-msgstr "Kända cmodel-typer (att användas med flaggan -mcmodel=):"
+msgstr "Kända kodmodelltyper (att användas med flaggan -mcmodel=):"
 
 #: config/or1k/or1k.opt:87
 #, no-c-format
@@ -11365,22 +11357,19 @@ msgid "Generate all necessary information for BPF Compile Once - Run Everywhere.
 msgstr "Generera all nödvändig information för BPF Compile Once – Run Everywhere."
 
 #: config/bpf/bpf.opt:139
-#, fuzzy, no-c-format
-#| msgid "Enable conditional move instruction usage."
+#, no-c-format
 msgid "Enable extra conditional-branch instructions j(s)lt and j(s)le."
-msgstr "Aktivera användning av villkorliga flyttinstruktioner."
+msgstr "Aktivera extra instruktioner för villkorliga grenar j(s)lt och j(s)le."
 
 #: config/bpf/bpf.opt:143
-#, fuzzy, no-c-format
-#| msgid "Enable MUL instructions."
+#, no-c-format
 msgid "Enable 32-bit ALU instructions."
-msgstr "Använd MUL-instruktioner."
+msgstr "Använd 32-bitars ALU-instruktioner."
 
 #: config/bpf/bpf.opt:147
-#, fuzzy, no-c-format
-#| msgid "Enable atomic instructions."
+#, no-c-format
 msgid "Enable 32-bit jump instructions."
-msgstr "Använd atomära instruktioner."
+msgstr "Använd 32-bitars hoppinstruktioner."
 
 #: config/mips/mips.opt:32
 #, no-c-format
@@ -12398,10 +12387,9 @@ msgid "Optimize for debugging experience rather than speed or size."
 msgstr "Optimera för bekväm felsökning snarare än storlek eller hastighet."
 
 #: common.opt:484
-#, fuzzy, no-c-format
-#| msgid "Optimize for space rather than speed."
+#, no-c-format
 msgid "Optimize for space aggressively rather than speed."
-msgstr "Optimera för storlek istället för hastighet."
+msgstr "Optimera aggressivt för storlek istället för hastighet."
 
 #: common.opt:524
 #, no-c-format
@@ -12434,10 +12422,9 @@ msgid "Warn about inappropriate attribute usage."
 msgstr "Varna för felaktig användning av attribut."
 
 #: common.opt:565
-#, fuzzy, no-c-format
-#| msgid "wrong number of arguments specified for %qE attribute"
+#, no-c-format
 msgid "Do not warn about specified attributes."
-msgstr "fel antal argument angivet för attributet %qE"
+msgstr "Varna inte för angivna attribut."
 
 #: common.opt:569 common.opt:573
 #, no-c-format
@@ -13250,10 +13237,9 @@ msgid "Perform a number of minor, expensive optimizations."
 msgstr "Utför ett antal smärre, dyra optimeringar."
 
 #: common.opt:1560
-#, fuzzy, no-c-format
-#| msgid "-fexcess-precision=[fast|standard]\tSpecify handling of excess floating-point precision."
+#, no-c-format
 msgid "-fexcess-precision=[fast|standard|16]\tSpecify handling of excess floating-point precision."
-msgstr "-fexcess-precision=[fast|standard]\tAnge hantering av överskjutande precision på flyttal."
+msgstr "-fexcess-precision=[fast|standard|16]\tAnge hantering av överskjutande precision på flyttal."
 
 #: common.opt:1578
 #, no-c-format
@@ -13581,10 +13567,9 @@ msgid "-fira-algorithm=[CB|priority]\tSet the used IRA algorithm."
 msgstr "-fira-algorithm=[CB|priority]\tBestäm den använda IRA-algoritmen."
 
 #: common.opt:1962
-#, fuzzy, no-c-format
-#| msgid "Assume strict aliasing rules apply."
+#, no-c-format
 msgid "Assume strict aliasing rules apply across (uninlined) function boundaries."
-msgstr "Anta att strikta aliasregler gäller."
+msgstr "Anta att strikta aliasregler gäller över (ej inline:ade) funktionsgränser."
 
 #: common.opt:1975
 #, no-c-format
@@ -13742,10 +13727,9 @@ msgid "Move loop invariant computations out of loops."
 msgstr "Flytta slinginvarianta beräkningar ut från slingor."
 
 #: common.opt:2143
-#, fuzzy, no-c-format
-#| msgid "Align the start of loops."
+#, no-c-format
 msgid "Move stores out of loops."
-msgstr "Justera starten av slingor."
+msgstr "Flytta ut lagringar ur slingor."
 
 #: common.opt:2147
 #, no-c-format
@@ -13768,10 +13752,9 @@ msgid "Support synchronous non-call exceptions."
 msgstr "Stöd synkrona icke-anropsundantag."
 
 #: common.opt:2166
-#, fuzzy, no-c-format
-#| msgid "-foffload=<targets>=<options>\tSpecify offloading targets and options for them."
+#, no-c-format
 msgid "-foffload-options=<targets>=<options>\tSpecify options for the offloading targets."
-msgstr "-foffload=<mål>=<flaggor>\tAnge mål att lasta av till och flaggor för dem."
+msgstr "-foffload-options=<mål>=<flaggor>\tAnge flaggor för mål att lasta av till."
 
 #: common.opt:2170
 #, no-c-format
@@ -13944,10 +13927,9 @@ msgid "Remove prefix from absolute path before mangling name for -fprofile-gener
 msgstr "Ta bort prefix från absoluta sökvägar före mangling av namn för -fprofile-generate= och -fprofile-use=."
 
 #: common.opt:2348
-#, fuzzy, no-c-format
-#| msgid "-ffile-prefix-map=<old>=<new>\tMap one directory name to another in compilation result."
+#, no-c-format
 msgid "-fprofile-prefix-map=<old>=<new>\tMap one directory name to another in GCOV coverage result."
-msgstr "-ffile-prefix-map=<gammalt>=<nytt>\tÖversätt ett katalognamn till ett annat i kompileringsresultatet."
+msgstr "-fprofile-prefix-map=<gammalt>=<nytt>\tÖversätt ett katalognamn till ett annat i GCC-täckningsresultatet."
 
 #: common.opt:2352
 #, no-c-format
@@ -14650,10 +14632,9 @@ msgid "Use the lld LLVM linker instead of the default linker."
 msgstr "Använd lld LLVM-länkaren istället för standardlänkaren."
 
 #: common.opt:3055
-#, fuzzy, no-c-format
-#| msgid "Use the gold linker instead of the default linker."
+#, no-c-format
 msgid "Use the Modern linker (MOLD) linker instead of the default linker."
-msgstr "Använd gold-länkaren istället för standardlänkaren."
+msgstr "Använd länkaren ”Modern linker” (MOLD) istället för standardlänkaren."
 
 #: common.opt:3065
 #, no-c-format
@@ -14801,16 +14782,14 @@ msgid "Record DW_AT_decl_column and DW_AT_call_column in DWARF."
 msgstr "Spara DW_AT_decl_column och DW_AT_call_column i DWARF."
 
 #: common.opt:3276
-#, fuzzy, no-c-format
-#| msgid "Generate debug information in default format."
+#, no-c-format
 msgid "Generate CTF debug information at default level."
-msgstr "Generera felsökningsinformation i standardformat."
+msgstr "Generera CTF-felsökningsinformation på standardnivå."
 
 #: common.opt:3280
-#, fuzzy, no-c-format
-#| msgid "Generate debug information in default format."
+#, no-c-format
 msgid "Generate BTF debug information at default level."
-msgstr "Generera felsökningsinformation i standardformat."
+msgstr "Generera BTF-felsökningsinformation på standardnivå."
 
 #: common.opt:3284
 #, no-c-format
@@ -15138,16 +15117,14 @@ msgid "Maximum number of basic blocks before EVRP uses a sparse cache."
 msgstr "Maximalt antal grundblock före EVRP använder en gles cache."
 
 #: params.opt:135
-#, fuzzy, no-c-format
-#| msgid "Maximum number of basic blocks before EVRP uses a sparse cache."
+#, no-c-format
 msgid "Maximum number of outgoing edges in a switch before EVRP will not process it."
-msgstr "Maximalt antal grundblock före EVRP använder en gles cache."
+msgstr "Maximalt antal utgående bågar i en switch före EVRP inte kommer bearbeta den."
 
 #: params.opt:139
-#, fuzzy, no-c-format
-#| msgid "--param=evrp-mode=[legacy|ranger|legacy-first|ranger-first|ranger-trace|ranger-debug|trace|debug] Specifies the mode Early VRP should operate in."
+#, no-c-format
 msgid "--param=evrp-mode=[legacy|ranger|legacy-first|ranger-first] Specifies the mode Early VRP should operate in."
-msgstr "--param=evrp-mode=[legacy|ranger|legacy-first|ranger-first|ranger-trace|ranger-debug|trace|debug] Anger läget Early VRP skall fungera i."
+msgstr "--param=evrp-mode=[legacy|ranger|legacy-first|ranger-first] Anger läget Early VRP skall fungera i."
 
 #: params.opt:158
 #, no-c-format
@@ -15596,10 +15573,9 @@ msgid "Maximum number of fields in a structure before pointer analysis treats th
 msgstr "Maximalt antal fält i en post före pekaranalys behandlar posten som en enda variabel."
 
 #: params.opt:522
-#, fuzzy, no-c-format
-#| msgid "Maximum number of basic blocks on a finite state automaton jump thread path."
+#, no-c-format
 msgid "Maximum number of basic blocks on a jump thread path."
-msgstr "Maximalt antal grundblock i en ändlig tillståndsmaskins hopptrådsvägar."
+msgstr "Maximalt antal grundblock i en hopptrådsväg."
 
 #: params.opt:526
 #, no-c-format
@@ -15943,10 +15919,9 @@ msgid "--param=openacc-kernels=[decompose|parloops]\tSpecify mode of OpenACC 'ke
 msgstr "--param=openacc-kernels=[decompose|parloops]\tAnge läge för hantering av OpenACC ”kernels”-kontruktioner."
 
 #: params.opt:819
-#, fuzzy, no-c-format
-#| msgid "--param=openacc-kernels=[decompose|parloops]\tSpecify mode of OpenACC 'kernels' constructs handling."
+#, no-c-format
 msgid "--param=openacc-privatization=[quiet|noisy]\tSpecify mode of OpenACC privatization diagnostics."
-msgstr "--param=openacc-kernels=[decompose|parloops]\tAnge läge för hantering av OpenACC ”kernels”-kontruktioner."
+msgstr "--param=openacc-privatization=[quiet|noisy]\tAnge läge för OpenACC:s privatiseringsmeddelanden."
 
 #: params.opt:832
 #, no-c-format
@@ -16009,10 +15984,9 @@ msgid "Maximum depth of logical expression evaluation ranger will look through w
 msgstr "Maximalt djup på beräkningsintervallare av logiska uttryck kommer att titta igenom vid beräkning av utgående bågintervall."
 
 #: params.opt:920
-#, fuzzy, no-c-format
-#| msgid "Maximum number of queries into the alias oracle per store."
+#, no-c-format
 msgid "Maximum number of relations the oracle will register in a basic block."
-msgstr "Maximalt antal frågor till aliasoraklet per lagring."
+msgstr "Maximalt antal ralationer oraklet kommer registrera i ett grundblock."
 
 #: params.opt:924
 #, no-c-format
@@ -16185,10 +16159,9 @@ msgid "Maximum number of escape points tracked by modref per SSA-name."
 msgstr "Maximalt antal flyktpunkter spårade av modref per SSA-namn."
 
 #: params.opt:1060
-#, fuzzy, no-c-format
-#| msgid "Maximum number of times that an insn could be scheduled."
+#, no-c-format
 msgid "Maximum number of times a given range is adjusted during the dataflow."
-msgstr "Maximalt antal gånger som en instruktion kan schemaläggas."
+msgstr "Maximalt antal gånger som ett angivet interval justeras under dataflödet."
 
 #: params.opt:1064
 #, no-c-format
@@ -16326,16 +16299,14 @@ msgid "The maximum factor which the loop vectorizer applies to the cost of state
 msgstr "Den maximala faktorn som slingvektoriseraren använder på kostnaden av satser i en inre sliga relativt slingan som vektoriseras."
 
 #: params.opt:1181
-#, fuzzy, no-c-format
-#| msgid "--param=evrp-mode=[legacy|ranger|legacy-first|ranger-first|ranger-trace|ranger-debug|trace|debug] Specifies the mode Early VRP should operate in."
+#, no-c-format
 msgid "--param=vrp1-mode=[vrp|ranger] Specifies the mode VRP1 should operate in."
-msgstr "--param=evrp-mode=[legacy|ranger|legacy-first|ranger-first|ranger-trace|ranger-debug|trace|debug] Anger läget Early VRP skall fungera i."
+msgstr "--param=vrp1-mode=[vrp|ranger] Anger läget VRP1 skall fungera i."
 
 #: params.opt:1185
-#, fuzzy, no-c-format
-#| msgid "--param=evrp-mode=[legacy|ranger|legacy-first|ranger-first|ranger-trace|ranger-debug|trace|debug] Specifies the mode Early VRP should operate in."
+#, no-c-format
 msgid "--param=vrp2-mode=[vrp|ranger] Specifies the mode VRP2 should operate in."
-msgstr "--param=evrp-mode=[legacy|ranger|legacy-first|ranger-first|ranger-trace|ranger-debug|trace|debug] Anger läget Early VRP skall fungera i."
+msgstr "--param=vrp2-mode=[vrp|ranger] Anger läget VRP2 skall fungera i."
 
 #: cfgrtl.cc:2797
 msgid "flow control insn inside a basic block"
@@ -16433,24 +16404,14 @@ msgid "compilation terminated due to -Wfatal-errors.\n"
 msgstr "kompilering avslutad på grund av -Wfatal-errors.\n"
 
 #: diagnostic.cc:671
-#, fuzzy, c-format
-#| msgid ""
-#| "Please submit a full bug report,\n"
-#| "with preprocessed source if appropriate.\n"
+#, c-format
 msgid "Please submit a full bug report, with preprocessed source.\n"
-msgstr ""
-"Var vänlig och skicka in en komplett felrapport,\n"
-"om möjligt med preprocessad källfil.\n"
+msgstr "Var vänlig och skicka in en komplett felrapport, med preprocessad källfil.\n"
 
 #: diagnostic.cc:674
-#, fuzzy, c-format
-#| msgid ""
-#| "Please submit a full bug report,\n"
-#| "with preprocessed source if appropriate.\n"
+#, c-format
 msgid "Please submit a full bug report, with preprocessed source (by using -freport-bug).\n"
-msgstr ""
-"Var vänlig och skicka in en komplett felrapport,\n"
-"om möjligt med preprocessad källfil.\n"
+msgstr "Var vänlig och skicka in en komplett felrapport, med preprocessad källfil (genom att använda -freport-bug).\n"
 
 #: diagnostic.cc:678
 #, c-format
@@ -16504,10 +16465,9 @@ msgid "%s:%d: confused by earlier errors, bailing out\n"
 msgstr "%s:%d: förvirrad av tidigare fel, hoppar ut\n"
 
 #: diagnostic.cc:1997
-#, fuzzy, c-format
-#| msgid "Internal compiler error: Error reporting routines re-entered.\n"
+#, c-format
 msgid "internal compiler error: error reporting routines re-entered.\n"
-msgstr "Internt kompilatorfel: Felhanteringsrutiner återanropade.\n"
+msgstr "internt kompilatorfel: felhanteringsrutiner återanropade.\n"
 
 #: diagnostic.cc:2028 diagnostic.cc:2047
 #, gcc-internal-format, gfc-internal-format
@@ -16678,10 +16638,8 @@ msgid "  -dumpmachine             Display the compiler's target processor.\n"
 msgstr "  -dumpmachine             Visa kompilatorns målprocessor.\n"
 
 #: gcc.cc:3770
-#, fuzzy
-#| msgid "-foffload=<targets>=<options>\tSpecify offloading targets and options for them."
 msgid "  -foffload=<targets>      Specify offloading targets.\n"
-msgstr "-foffload=<mål>=<flaggor>\tAnge mål att lasta av till och flaggor för dem."
+msgstr "  -foffload=<mål>          Ange mål att lasta av till.\n"
 
 #: gcc.cc:3771
 msgid "  -print-search-dirs       Display the directories in the compiler's search path.\n"
@@ -17142,10 +17100,9 @@ msgstr ""
 "Fel på översättningen rapporteras till <tp-sv@listor.tp-sv.se>\n"
 
 #: gcov-tool.cc:528
-#, fuzzy, c-format
-#| msgid "Copyright %s 2021 Free Software Foundation, Inc.\n"
+#, c-format
 msgid "Copyright %s 2022 Free Software Foundation, Inc.\n"
-msgstr "Copyright %s 2021 Free Software Foundation, Inc.\n"
+msgstr "Copyright %s 2022 Free Software Foundation, Inc.\n"
 
 #: gcov.cc:925
 #, c-format
@@ -19806,10 +19763,9 @@ msgid "expected %<}%>"
 msgstr "%<}%> förväntades"
 
 #: c/c-parser.cc:18525 cp/parser.cc:41012
-#, fuzzy, gcc-internal-format
-#| msgid "expected %<delete%>"
+#, gcc-internal-format
 msgid "expected %<else%>"
-msgstr "%<delete%> förväntades"
+msgstr "%<else%> förväntades"
 
 #: c/c-parser.cc:20069 c/c-parser.cc:20058 cp/parser.cc:43252
 #, gcc-internal-format
@@ -21016,10 +20972,8 @@ msgid "complex arguments must have floating-point type"
 msgstr "komplexa argument måste ha flyttalstyp"
 
 #: go/gofrontend/expressions.cc:11235
-#, fuzzy
-#| msgid "function result count mismatch"
 msgid "type conversion result count mismatch"
-msgstr "funktionsresultatsräknare stämmer inte"
+msgstr "typkonverteringsresultaträknare stämmer inte"
 
 #: go/gofrontend/expressions.cc:11249 go/gofrontend/expressions.cc:12686
 #: go/gofrontend/expressions.cc:13122
@@ -21365,10 +21319,9 @@ msgstr "profileringsstöd för CR16"
 #. We don't want to use gcc_assert for everything, as that can be
 #. compiled out.
 #: config/cris/cris.h:42
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "CRIS-port assertion failed: "
+#, gcc-internal-format, gfc-internal-format
 msgid "CRIS-port assertion failed: %s"
-msgstr "CRIS-port-försäkran misslyckades: "
+msgstr "CRIS-port-försäkran misslyckades: %s"
 
 #. Node: Caller Saves
 #. (no definitions)
@@ -21377,10 +21330,9 @@ msgstr "CRIS-port-försäkran misslyckades: "
 #. TARGET_ASM_FUNCTION_EPILOGUE.
 #. Node: Profiling
 #: config/cris/cris.h:662
-#, fuzzy, gcc-internal-format
-#| msgid "no FUNCTION_PROFILER for CRIS"
+#, gcc-internal-format
 msgid "no %<FUNCTION_PROFILER%> for CRIS"
-msgstr "ingen FUNCTION_PROFILER för CRIS"
+msgstr "ingen %<FUNCTION_PROFILER%> för CRIS"
 
 #. If the environment variable DJDIR is not defined, then DJGPP is not        installed correctly and GCC will quickly become confused with the        default prefix settings. Report the problem now so the user doesn't        receive deceptive "file not found" error messages later.
 #. DJDIR is automatically defined by the DJGPP environment config            file pointed to by the environment variable DJGPP. Examine DJGPP            to try and figure out what's wrong.
@@ -21495,10 +21447,9 @@ msgid "%<-mcmodel%> incompatible with other toc options"
 msgstr "%<-mcmodel%> är inkompatibel med andra toc-flaggor"
 
 #: config/rs6000/aix73.h:37
-#, fuzzy, gcc-internal-format
-#| msgid "soft-float and long-double-128 are incompatible"
+#, gcc-internal-format
 msgid "%<soft-float%> and long-double-128 are incompatible"
-msgstr "soft-float och long-double-128 är inkompatibla"
+msgstr "%<soft-float%> och long-double-128 är inkompatibla"
 
 #: config/rs6000/rtems.h:114 config/rs6000/rs6000.cc:3507
 #, gcc-internal-format
@@ -21631,10 +21582,9 @@ msgid "argument %qs to %<-Waligned-new%> not recognized"
 msgstr "argumentet %qs till %<-Waligned-new%> är inte känt"
 
 #: c-family/c.opt:390
-#, fuzzy, gcc-internal-format
-#| msgid "argument %qs to %<-Waligned-new%> not recognized"
+#, gcc-internal-format
 msgid "argument %qs to %<-Wbidi-chars%> not recognized"
-msgstr "argumentet %qs till %<-Waligned-new%> är inte känt"
+msgstr "argumentet %qs till %<-Wbidi-chars%> är inte känt"
 
 #: c-family/c.opt:1085
 #, gcc-internal-format
@@ -21682,16 +21632,14 @@ msgid "unknown array bounds setting %qs"
 msgstr "okänd vektorgränsinställning %qs"
 
 #: d/lang.opt:235
-#, fuzzy, gcc-internal-format
-#| msgid "unknown array bounds setting %qs"
+#, gcc-internal-format
 msgid "unknown checkaction setting %qs"
-msgstr "okänd vektorgränsinställning %qs"
+msgstr "okänd checkaction-inställning %qs"
 
 #: d/lang.opt:291
-#, fuzzy, gcc-internal-format
-#| msgid "unknown TLS model %qs"
+#, gcc-internal-format
 msgid "unknown C++ standard %qs"
-msgstr "okänd TLS-modell %qs"
+msgstr "okänd C++-standard %qs"
 
 #: config/vms/vms.opt:42
 #, gcc-internal-format
@@ -21807,16 +21755,14 @@ msgid "unknown LTO partitioning model %qs"
 msgstr "okänd LTO-partitioneringsmodell %qs"
 
 #: common.opt:2162
-#, fuzzy, gcc-internal-format
-#| msgid "options or targets missing after %qs"
+#, gcc-internal-format
 msgid "targets missing after %qs"
-msgstr "flaggor eller mål saknas efter %qs"
+msgstr "mål saknas efter %qs"
 
 #: common.opt:2165
-#, fuzzy, gcc-internal-format
-#| msgid "options or targets missing after %qs"
+#, gcc-internal-format
 msgid "options or targets=options missing after %qs"
-msgstr "flaggor eller mål saknas efter %qs"
+msgstr "flaggor eller mål=flaggor saknas efter %qs"
 
 #: common.opt:2173
 #, gcc-internal-format
@@ -21854,10 +21800,9 @@ msgid "unknown vectorizer cost model %qs"
 msgstr "okänd kostnadsmodell för vektorisering %qs"
 
 #: common.opt:3144
-#, fuzzy, gcc-internal-format
-#| msgid "unrecognized ivar visibility value %qs"
+#, gcc-internal-format
 msgid "unrecognized automatic variable initialization type %qs"
-msgstr "okänt ivar-synlighetsvärde %qs"
+msgstr "okänd initiering av automatisk variabel av typen %qs"
 
 #: common.opt:3170
 #, gcc-internal-format
@@ -21875,28 +21820,24 @@ msgid "unknown evrp mode %qs"
 msgstr "okänt evrp-läge %qs"
 
 #: params.opt:893
-#, fuzzy, gcc-internal-format
-#| msgid "unknown evrp mode %qs"
+#, gcc-internal-format
 msgid "unknown ranger debug mode %qs"
-msgstr "okänt evrp-läge %qs"
+msgstr "okänt intervallarefelsökningsläge %qs"
 
 #: params.opt:1067
-#, fuzzy, gcc-internal-format
-#| msgid "unknown evrp mode %qs"
+#, gcc-internal-format
 msgid "unknown threader debug mode %qs"
-msgstr "okänt evrp-läge %qs"
+msgstr "okänt trådarfelsökningsläge %qs"
 
 #: params.opt:1188
-#, fuzzy, gcc-internal-format
-#| msgid "unknown evrp mode %qs"
+#, gcc-internal-format
 msgid "unknown vrp mode %qs"
-msgstr "okänt evrp-läge %qs"
+msgstr "okänt vrp-läge %qs"
 
 #: attribs.cc:254 attribs.cc:277 attribs.cc:290
-#, fuzzy, gcc-internal-format
-#| msgid "wrong type argument to unary minus"
+#, gcc-internal-format
 msgid "wrong argument to ignored attributes"
-msgstr "fel typ på argument till unärt minus"
+msgstr "fel typ på typargument till unärt minus"
 
 #: attribs.cc:255
 #, gcc-internal-format
@@ -22122,8 +22063,7 @@ msgid "AutoFDO profile magic number does not match"
 msgstr "AutoFDO-profilens magiska tal stämmer inte"
 
 #: auto-profile.cc:942
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "AutoFDO profile version %u does match %u"
+#, gcc-internal-format, gfc-internal-format
 msgid "AutoFDO profile version %u does not match %u"
 msgstr "AutoFDO-profilens version %u stämmer inte med %u"
 
@@ -22169,10 +22109,9 @@ msgstr "ogiltigt tredje argument till %<__builtin_prefetch%>; använder noll"
 
 #: builtins.cc:3713 gimple-fold.cc:2520 gimple-ssa-warn-access.cc:2541
 #: tree-ssa-strlen.cc:3192
-#, fuzzy, gcc-internal-format
-#| msgid "%K%qD specified bound %E equals destination size"
+#, gcc-internal-format
 msgid "%qD specified bound %E equals destination size"
-msgstr "%K%qD den angivna gränsen %E är lika med destinationsstorleken"
+msgstr "%qD den angivna gränsen %E är lika med destinationsstorleken"
 
 #: builtins.cc:4818 gimplify.cc:3513
 #, gcc-internal-format
@@ -22249,18 +22188,16 @@ msgstr "otillåtet argument 0 till %qs"
 #. All valid uses of __builtin_va_arg_pack () are removed during
 #. inlining.
 #: builtins.cc:7182 expr.cc:11501
-#, fuzzy, gcc-internal-format
-#| msgid "%Kinvalid use of %<__builtin_va_arg_pack ()%>"
+#, gcc-internal-format
 msgid "invalid use of %<__builtin_va_arg_pack ()%>"
-msgstr "%Kogiltig användning av %<__builtin_va_arg_pack ()%>"
+msgstr "ogiltig användning av %<__builtin_va_arg_pack ()%>"
 
 #. All valid uses of __builtin_va_arg_pack_len () are removed during
 #. inlining.
 #: builtins.cc:7188
-#, fuzzy, gcc-internal-format
-#| msgid "%Kinvalid use of %<__builtin_va_arg_pack_len ()%>"
+#, gcc-internal-format
 msgid "invalid use of %<__builtin_va_arg_pack_len ()%>"
-msgstr "%Kogiltig användning av %<__builtin_va_arg_pack_len ()%>"
+msgstr "ogiltig användning av %<__builtin_va_arg_pack_len ()%>"
 
 #: builtins.cc:7457
 #, gcc-internal-format
@@ -22303,16 +22240,14 @@ msgid "undefined behavior when second parameter of %<va_start%> is declared with
 msgstr "odefinierat beteende när andra parametern till %<va_start%> är deklarerad med lagringsklass %<register%>"
 
 #: builtins.cc:10079
-#, fuzzy, gcc-internal-format
-#| msgid "%Kfirst argument of %qD must be a pointer, second integer constant"
+#, gcc-internal-format
 msgid "first argument of %qD must be a pointer, second integer constant"
-msgstr "%Kförsta argumentet till %qD måste vara en pekare, det andra en heltalskonstant"
+msgstr "första argumentet till %qD måste vara en pekare, det andra en heltalskonstant"
 
 #: builtins.cc:10092
-#, fuzzy, gcc-internal-format
-#| msgid "%Klast argument of %qD is not integer constant between 0 and 3"
+#, gcc-internal-format
 msgid "last argument of %qD is not integer constant between 0 and 3"
-msgstr "%Ksista argumentet till %qD är inte en heltalskonstant mellan 0 och 3"
+msgstr "sista argumentet till %qD är inte en heltalskonstant mellan 0 och 3"
 
 #: calls.cc:1232
 #, gcc-internal-format, gfc-internal-format
@@ -22330,10 +22265,9 @@ msgid "passing too large argument on stack"
 msgstr "skickar för många argument på stacken"
 
 #: cfganal.cc:173
-#, fuzzy, gcc-internal-format
-#| msgid "%<verify_gimple%> failed"
+#, gcc-internal-format
 msgid "%<verify_marked_backedges%> failed"
-msgstr "%<verify_gimple%> misslyckades"
+msgstr "%<verify_marked_backedges%> misslyckades"
 
 #: cfgexpand.cc:1816
 #, gcc-internal-format
@@ -22479,10 +22413,9 @@ msgid "verify_flow_info: Missing count of block %i"
 msgstr "verify_flow_info: Saknat blockantal %i"
 
 #: cfghooks.cc:168
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "verify_flow_info: Duplicate edge %i->%i"
+#, gcc-internal-format, gfc-internal-format
 msgid "verify_flow_info: unallocated flag set on BB %d"
-msgstr "verify_flow_info: Dubblerad båge %i→%i"
+msgstr "verify_flow_info: oallokerad flagga satt i GB %d"
 
 #: cfghooks.cc:176
 #, gcc-internal-format, gfc-internal-format
@@ -22505,10 +22438,9 @@ msgid "verify_flow_info: Basic block %d succ edge is corrupted"
 msgstr "verify_flow_info: Grundblock %d efterföljarbåge är trasig"
 
 #: cfghooks.cc:215
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "verify_flow_info: Duplicate edge %i->%i"
+#, gcc-internal-format, gfc-internal-format
 msgid "verify_flow_info: unallocated edge flag set on %d -> %d"
-msgstr "verify_flow_info: Dubblerad båge %i→%i"
+msgstr "verify_flow_info: oallokerad bågflagga satt på %d → %d"
 
 #: cfghooks.cc:224
 #, gcc-internal-format, gfc-internal-format
@@ -23091,10 +23023,9 @@ msgid "malloc attribute should be used for a function that returns a pointer"
 msgstr "attributet malloc skall användas på en funktion som returnerar en pekare"
 
 #: cgraph.cc:3494
-#, fuzzy, gcc-internal-format
-#| msgid "sanitizer function attribute mismatch"
+#, gcc-internal-format
 msgid "semantic interposition mismatch"
-msgstr "rensningsfunktionsattributen stämmer inte"
+msgstr "semantisk interposition stämmer inte"
 
 #: cgraph.cc:3501
 #, gcc-internal-format, gfc-internal-format
@@ -23859,10 +23790,9 @@ msgid "internal consistency failure"
 msgstr "internt konsistensfel"
 
 #: emit-rtl.cc:4000
-#, fuzzy, gcc-internal-format
-#| msgid "ICE: emit_insn used where emit_jump_insn needed:\n"
+#, gcc-internal-format
 msgid "ICE: %<emit_insn%> used where %<emit_jump_insn%> needed:"
-msgstr "ICE: emit_insn använd där emit_jump_insn behövs:\n"
+msgstr "ICE: %<emit_insn%> använd där %<emit_jump_insn%> behövs:"
 
 #: errors.cc:133
 #, gcc-internal-format, gfc-internal-format
@@ -23950,16 +23880,14 @@ msgid "write of %wu-bit data outside the bound of destination object, data trunc
 msgstr "skrivning av %wu-bitsdata utanför gränsen för destinationsobjektet, data avhuggen till %wu bitar"
 
 #: expr.cc:11513
-#, fuzzy, gcc-internal-format
-#| msgid "%Kcall to %qs declared with attribute error: %s"
+#, gcc-internal-format
 msgid "call to %qs declared with attribute error: %s"
-msgstr "%Kanrop av %qs deklarerad med attributet error: %s"
+msgstr "anrop av %qs deklarerad med attributet error: %s"
 
 #: expr.cc:11527
-#, fuzzy, gcc-internal-format
-#| msgid "%Kcall to %qs declared with attribute warning: %s"
+#, gcc-internal-format
 msgid "call to %qs declared with attribute warning: %s"
-msgstr "%K anrop av %qs deklarerad med attributet warning: %s"
+msgstr "anrop av %qs deklarerad med attributet warning: %s"
 
 #: expr.cc:12565
 #, gcc-internal-format
@@ -24169,22 +24097,19 @@ msgid "unrecognized command-line option %qs"
 msgstr "okänd kommandoradsflagga %qs"
 
 #: gcc.cc:4027
-#, fuzzy, gcc-internal-format
-#| msgid "GCC is not configured to support %s as offload target"
+#, gcc-internal-format
 msgid "GCC is not configured to support %qs as %<-foffload=%> argument"
-msgstr "GCC är inte konfigurerat för att stödja %s som ett avlastningsmål"
+msgstr "GCC är inte konfigurerat för att stödja %qs som ett argument till %<-foffload=%>"
 
 #: gcc.cc:4034
-#, fuzzy, gcc-internal-format
-#| msgid "valid arguments are: %s; did you mean %qs?"
+#, gcc-internal-format
 msgid "valid %<-foffload=%> arguments are: %s; did you mean %qs?"
-msgstr "giltiga argument är: %s; menade du %qs?"
+msgstr "giltiga argument till %<-foffload=%> är: %s; menade du %qs?"
 
 #: gcc.cc:4037
-#, fuzzy, gcc-internal-format
-#| msgid "valid arguments are: %s"
+#, gcc-internal-format
 msgid "valid %<-foffload=%> arguments are: %s"
-msgstr "giltiga argument är: %s"
+msgstr "giltiga argument till %<-foffload=%> är: %s"
 
 #: gcc.cc:4057
 #, gcc-internal-format
@@ -24608,10 +24533,9 @@ msgid "cannot read PCH file: %m"
 msgstr "kan inte läsa PCH-fil: %m"
 
 #: ggc-common.cc:777
-#, fuzzy, gcc-internal-format
-#| msgid "gimplification failed"
+#, gcc-internal-format
 msgid "PCH allocation failure"
-msgstr "gimplification misslyckades"
+msgstr "PCH-allokering misslyckades"
 
 #: ggc-page.cc:1744
 #, gcc-internal-format
@@ -24624,40 +24548,34 @@ msgid "cannot write PCH file"
 msgstr "kan inte skriva PCH-fil"
 
 #: gimple-array-bounds.cc:291
-#, fuzzy, gcc-internal-format
-#| msgid "array subscript value %qE is outside the bounds of array type %qT"
+#, gcc-internal-format
 msgid "array subscript %E is outside array bounds of %qT"
-msgstr "vektorindexvärdet %qE är utanför gränserna för vektortypen %qT"
+msgstr "vektorindexet %E är utanför vektorgränserna för %qT"
 
 #: gimple-array-bounds.cc:317
-#, fuzzy, gcc-internal-format
-#| msgid "array subscript value %qE is outside the bounds of array type %qT"
+#, gcc-internal-format
 msgid "array subscript [%E, %E] is outside array bounds of %qT"
-msgstr "vektorindexvärdet %qE är utanför gränserna för vektortypen %qT"
+msgstr "vektorindexet [%E, %E] är utanför vektorgränserna för %qT"
 
 #: gimple-array-bounds.cc:327
-#, fuzzy, gcc-internal-format
-#| msgid "array subscript value %qE is outside the bounds of array type %qT"
+#, gcc-internal-format
 msgid "array subscript %E is above array bounds of %qT"
-msgstr "vektorindexvärdet %qE är utanför gränserna för vektortypen %qT"
+msgstr "vektorindexet %E är över vektorgränserna för %qT"
 
 #: gimple-array-bounds.cc:332
-#, fuzzy, gcc-internal-format
-#| msgid "array subscript value %qE is outside the bounds of array type %qT"
+#, gcc-internal-format
 msgid "array subscript %E is below array bounds of %qT"
-msgstr "vektorindexvärdet %qE är utanför gränserna för vektortypen %qT"
+msgstr "vektorindexet %E är under vektorgränserna för %qT"
 
 #: gimple-array-bounds.cc:338
-#, fuzzy, gcc-internal-format
-#| msgid "array subscript value %qE is outside the bounds of array type %qT"
+#, gcc-internal-format
 msgid "array subscript %E is outside the bounds of an interior zero-length array %qT"
-msgstr "vektorindexvärdet %qE är utanför gränserna för vektortypen %qT"
+msgstr "vektorindexet %E är utanför gränserna för en intern vektor med nollängd %qT"
 
 #: gimple-array-bounds.cc:340
-#, fuzzy, gcc-internal-format
-#| msgid "array subscript value %qE is outside the bounds of array type %qT"
+#, gcc-internal-format
 msgid "array subscript %qE is outside the bounds of an interior zero-length array %qT"
-msgstr "vektorindexvärdet %qE är utanför gränserna för vektortypen %qT"
+msgstr "vektorindexet %qE är utanför gränserna för en intern vektor med nollängd %qT"
 
 #: gimple-array-bounds.cc:374 gimple-array-bounds.cc:641
 #, gcc-internal-format
@@ -24665,28 +24583,24 @@ msgid "while referencing %qD"
 msgstr "vid referens av %qD"
 
 #: gimple-array-bounds.cc:376
-#, fuzzy, gcc-internal-format
-#| msgid "defined here"
+#, gcc-internal-format
 msgid "defined here %qD"
-msgstr "definierad här"
+msgstr "definierad här %qD"
 
 #: gimple-array-bounds.cc:497
-#, fuzzy, gcc-internal-format
-#| msgid "array subscript value %qE is outside the bounds of array type %qT"
+#, gcc-internal-format
 msgid "array subscript %wi is outside array bounds of %qT"
-msgstr "vektorindexvärdet %qE är utanför gränserna för vektortypen %qT"
+msgstr "vektorindexet %wi är utanför vektorgränserna för %qT"
 
 #: gimple-array-bounds.cc:502
-#, fuzzy, gcc-internal-format
-#| msgid "array subscript value %qE is outside the bounds of array type %qT"
+#, gcc-internal-format
 msgid "array subscript [%wi, %wi] is outside array bounds of %qT"
-msgstr "vektorindexvärdet %qE är utanför gränserna för vektortypen %qT"
+msgstr "vektorindexet [%wi, %wi] är utanför vektorgränserna för %qT"
 
 #: gimple-array-bounds.cc:517
-#, fuzzy, gcc-internal-format
-#| msgid "array subscript value %qE is outside the bounds of array type %qT"
+#, gcc-internal-format
 msgid "array subscript %<%T[%wi]%> is partly outside array bounds of %qT"
-msgstr "vektorindexvärdet %qE är utanför gränserna för vektortypen %qT"
+msgstr "vektorindexet %<%T[%wi]%> är delvis utanför vektorgränserna för %qT"
 
 #: gimple-array-bounds.cc:540
 #, gcc-internal-format
@@ -24694,16 +24608,14 @@ msgid "intermediate array offset %wi is outside array bounds of %qT"
 msgstr "mellanliggande vektorsavstånd %wi är utanför gränserna för vektorn %qT"
 
 #: gimple-array-bounds.cc:619
-#, fuzzy, gcc-internal-format
-#| msgid "array subscript value %qE is outside the bounds of array type %qT"
+#, gcc-internal-format
 msgid "array subscript %wi is below array bounds of %qT"
-msgstr "vektorindexvärdet %qE är utanför gränserna för vektortypen %qT"
+msgstr "vektorindexet %wi är under vektorgränserna för %qT"
 
 #: gimple-array-bounds.cc:633
-#, fuzzy, gcc-internal-format
-#| msgid "array subscript value %qE is outside the bounds of array type %qT"
+#, gcc-internal-format
 msgid "array subscript %wu is above array bounds of %qT"
-msgstr "vektorindexvärdet %qE är utanför gränserna för vektortypen %qT"
+msgstr "vektorindexet %wu är över vektorgränserna för %qT"
 
 #: gimple-fold.cc:2076 gimple-fold.cc:3127 gimple-ssa-warn-restrict.cc:2073
 #, gcc-internal-format
@@ -24711,28 +24623,24 @@ msgid "%qD source argument is the same as destination"
 msgstr "källargumentet %qD är samma som destinationen"
 
 #: gimple-fold.cc:2142
-#, fuzzy, gcc-internal-format
-#| msgid "%G%qD destination unchanged after copying no bytes from a string of length %E"
+#, gcc-internal-format
 msgid "%qD destination unchanged after copying no bytes from a string of length %E"
-msgstr "%G%qD destinationen är oförändrad efter att inga byte kopierades från en sträng av längden %E"
+msgstr "%qD destinationen är oförändrad efter att inga byte kopierades från en sträng av längden %E"
 
 #: gimple-fold.cc:2147
-#, fuzzy, gcc-internal-format
-#| msgid "%G%qD destination unchanged after copying no bytes"
+#, gcc-internal-format
 msgid "%qD destination unchanged after copying no bytes"
-msgstr "%G%qD destinationen är oförändrad efter att inga byte kopierades"
+msgstr "%qD destinationen är oförändrad efter att inga byte kopierades"
 
 #: gimple-fold.cc:2522 gimple-ssa-warn-access.cc:856
-#, fuzzy, gcc-internal-format
-#| msgid "%K%qD specified bound %E exceeds destination size %E"
+#, gcc-internal-format
 msgid "%qD specified bound %E exceeds destination size %E"
-msgstr "%K%qD: den angivna gränsen %E överskrider destinationsstorleken %E"
+msgstr "%qD: den angivna gränsen %E överskrider destinationsstorleken %E"
 
 #: gimple-fold.cc:2541
-#, fuzzy, gcc-internal-format
-#| msgid "%G%qD specified bound %E equals source length"
+#, gcc-internal-format
 msgid "%qD specified bound %E equals source length"
-msgstr "%G%qD angiven gräns %E är lika med källängden"
+msgstr "%qD angiven gräns %E är lika med källängden"
 
 #: gimple-fold.cc:4529 gimple-fold.cc:4733
 #, gcc-internal-format
@@ -24976,10 +24884,9 @@ msgid "%<%.*s%> directive writing %wu or more bytes into a region of size betwee
 msgstr "direktivet %<%.*s%> skrev %wu eller fler byte till en region med storlek mellan %wu och %wu"
 
 #: gimple-ssa-sprintf.cc:3155
-#, fuzzy, gcc-internal-format
-#| msgid "%G%<%.*s%> directive argument is null"
+#, gcc-internal-format
 msgid "%<%.*s%> directive argument is null"
-msgstr "%Gdirektivargumentet %<%.*s%> är null"
+msgstr "direktivargumentet %<%.*s%> är null"
 
 #: gimple-ssa-sprintf.cc:3233
 #, gcc-internal-format
@@ -25144,10 +25051,9 @@ msgid "specified bound range [%wu, %wu] exceeds %<INT_MAX%>"
 msgstr "angiven gränsintervall på [%wu, %wu] överskrider %<INT_MAX%>"
 
 #: gimple-ssa-sprintf.cc:4660
-#, fuzzy, gcc-internal-format
-#| msgid "%Gnull destination pointer"
+#, gcc-internal-format
 msgid "null destination pointer"
-msgstr "%Gnolldestinationspekare"
+msgstr "nolldestinationspekare"
 
 #: gimple-ssa-sprintf.cc:4677
 #, gcc-internal-format
@@ -25155,40 +25061,34 @@ msgid "specified bound %wu exceeds the size %wu of the destination object"
 msgstr "angiven gräns på %wu överskrider storleken %wu på destinationsobjektet"
 
 #: gimple-ssa-sprintf.cc:4689
-#, fuzzy, gcc-internal-format
-#| msgid "%Gnull format string"
+#, gcc-internal-format
 msgid "null format string"
-msgstr "%Gnollformatsträng"
+msgstr "nollformatsträng"
 
 #: gimple-ssa-warn-access.cc:172
-#, fuzzy, gcc-internal-format
-#| msgid "%K%qD specified bound %s exceeds maximum object size %E"
+#, gcc-internal-format
 msgid "%qD specified bound %s exceeds maximum object size %E"
-msgstr "%K%qD den angivna gränsen %s överskrider maximal objektstorlek %E"
+msgstr "%qD den angivna gränsen %s överskrider maximal objektstorlek %E"
 
 #: gimple-ssa-warn-access.cc:180
-#, fuzzy, gcc-internal-format
-#| msgid "%K%qD specified bound %s exceeds the size %E of unterminated array"
+#, gcc-internal-format
 msgid "%qD specified bound %s exceeds the size %E of unterminated array"
-msgstr "%K%qD angiven gräns på %s överskrider storleken %E på oavslutad vektor"
+msgstr "%qD angiven gräns på %s överskrider storleken %E på oavslutad vektor"
 
 #: gimple-ssa-warn-access.cc:183
-#, fuzzy, gcc-internal-format
-#| msgid "%K%qD specified bound %s may exceed the size of at most %E of unterminated array"
+#, gcc-internal-format
 msgid "%qD specified bound %s may exceed the size of at most %E of unterminated array"
-msgstr "%K%qD angivna gränsen %s kan överskrida storleken på högst %E av oavslutad vektor"
+msgstr "%qD angivna gränsen %s kan överskrida storleken på högst %E av oavslutad vektor"
 
 #: gimple-ssa-warn-access.cc:186
-#, fuzzy, gcc-internal-format
-#| msgid "%K%qD specified bound %s exceeds the size of at most %E of unterminated array"
+#, gcc-internal-format
 msgid "%qD specified bound %s exceeds the size of at most %E of unterminated array"
-msgstr "%K%qD angivna gränsen %s överskrider storleken på högst %E av oavslutad vektor"
+msgstr "%qD angivna gränsen %s överskrider storleken på högst %E av oavslutad vektor"
 
 #: gimple-ssa-warn-access.cc:194
-#, fuzzy, gcc-internal-format
-#| msgid "%K%qD argument missing terminating nul"
+#, gcc-internal-format
 msgid "%qD argument missing terminating nul"
-msgstr "%K%qD argumentet saknar avslutande nolltecken"
+msgstr "%qD argumentet saknar avslutande nolltecken"
 
 #: gimple-ssa-warn-access.cc:203
 #, gcc-internal-format
@@ -25216,16 +25116,14 @@ msgid "%qs argument missing terminating nul"
 msgstr "argumentet till %qs saknar avslutande nolltecken"
 
 #: gimple-ssa-warn-access.cc:488 gimple-ssa-warn-access.cc:729
-#, fuzzy, gcc-internal-format
-#| msgid "%K%qD specified bound %E exceeds maximum object size %E"
+#, gcc-internal-format
 msgid "%qD specified bound %E exceeds maximum object size %E"
-msgstr "%K%qD: den angivna gränsen %E överskrider maximal objektstorlek %E"
+msgstr "%qD: den angivna gränsen %E överskrider maximal objektstorlek %E"
 
 #: gimple-ssa-warn-access.cc:493 gimple-ssa-warn-access.cc:745
-#, fuzzy, gcc-internal-format
-#| msgid "%K%qD specified bound [%E, %E] exceeds maximum object size %E"
+#, gcc-internal-format
 msgid "%qD specified bound [%E, %E] exceeds maximum object size %E"
-msgstr "%K%qD angivna gränsen [%E, %E] överskrider maximal objektstorlek %E"
+msgstr "%qD angivna gränsen [%E, %E] överskrider maximal objektstorlek %E"
 
 #: gimple-ssa-warn-access.cc:641
 #, gcc-internal-format
@@ -25253,88 +25151,74 @@ msgid "argument %qD declared here"
 msgstr "argumentet %qD är deklarerat här"
 
 #: gimple-ssa-warn-access.cc:727
-#, fuzzy, gcc-internal-format
-#| msgid "%K%qD specified bound %E may exceed maximum object size %E"
+#, gcc-internal-format
 msgid "%qD specified bound %E may exceed maximum object size %E"
-msgstr "%K%qD den angivna gränsen %E kan överskrida maximal objektstorlek %E"
+msgstr "%qD den angivna gränsen %E kan överskrida maximal objektstorlek %E"
 
 #: gimple-ssa-warn-access.cc:734
-#, fuzzy, gcc-internal-format
-#| msgid "%Kspecified bound %E may exceed maximum object size %E"
+#, gcc-internal-format
 msgid "specified bound %E may exceed maximum object size %E"
-msgstr "%Kden angivna gränsen %E kan överskrida maximal objektstorlek %E"
+msgstr "den angivna gränsen %E kan överskrida maximal objektstorlek %E"
 
 #: gimple-ssa-warn-access.cc:736
-#, fuzzy, gcc-internal-format
-#| msgid "%Kspecified bound %E exceeds maximum object size %E"
+#, gcc-internal-format
 msgid "specified bound %E exceeds maximum object size %E"
-msgstr "%Kden angivna gränsen %E överskrider maximal objektstorlek %E"
+msgstr "den angivna gränsen %E överskrider maximal objektstorlek %E"
 
 #: gimple-ssa-warn-access.cc:743
-#, fuzzy, gcc-internal-format
-#| msgid "%K%qD specified bound [%E, %E] may exceed maximum object size %E"
+#, gcc-internal-format
 msgid "%qD specified bound [%E, %E] may exceed maximum object size %E"
-msgstr "%K%qD angivna gränsen [%E, %E] kan överskrida maximal objektstorlek %E"
+msgstr "%qD angivna gränsen [%E, %E] kan överskrida maximal objektstorlek %E"
 
 #: gimple-ssa-warn-access.cc:751
-#, fuzzy, gcc-internal-format
-#| msgid "%Kspecified bound [%E, %E] may exceed maximum object size %E"
+#, gcc-internal-format
 msgid "specified bound [%E, %E] may exceed maximum object size %E"
-msgstr "%Kangivna gränsen [%E, %E] kan överskrida maximal objektstorlek %E"
+msgstr "angivna gränsen [%E, %E] kan överskrida maximal objektstorlek %E"
 
 #: gimple-ssa-warn-access.cc:753
-#, fuzzy, gcc-internal-format
-#| msgid "%Kspecified bound [%E, %E] exceeds maximum object size %E"
+#, gcc-internal-format
 msgid "specified bound [%E, %E] exceeds maximum object size %E"
-msgstr "%Kangivna gränsen [%E, %E] överskrider maximal objektstorlek %E"
+msgstr "angivna gränsen [%E, %E] överskrider maximal objektstorlek %E"
 
 #: gimple-ssa-warn-access.cc:763
-#, fuzzy, gcc-internal-format
-#| msgid "%K%qD specified bound %E may exceed source size %E"
+#, gcc-internal-format
 msgid "%qD specified bound %E may exceed source size %E"
-msgstr "%K%qD den angivna gränsen %E kan överskrida källstorleken %E"
+msgstr "%qD den angivna gränsen %E kan överskrida källstorleken %E"
 
 #: gimple-ssa-warn-access.cc:765
-#, fuzzy, gcc-internal-format
-#| msgid "%K%qD specified bound %E exceeds source size %E"
+#, gcc-internal-format
 msgid "%qD specified bound %E exceeds source size %E"
-msgstr "%K%qD den angivna gränsen %E överskrider källstorleken %E"
+msgstr "%qD den angivna gränsen %E överskrider källstorleken %E"
 
 #: gimple-ssa-warn-access.cc:770
-#, fuzzy, gcc-internal-format
-#| msgid "%Kspecified bound %E may exceed source size %E"
+#, gcc-internal-format
 msgid "specified bound %E may exceed source size %E"
-msgstr "%Kden angivna gränsen %E överskrider källstorleken %E"
+msgstr "den angivna gränsen %E överskrider källstorleken %E"
 
 #: gimple-ssa-warn-access.cc:772
-#, fuzzy, gcc-internal-format
-#| msgid "%Kspecified bound %E exceeds source size %E"
+#, gcc-internal-format
 msgid "specified bound %E exceeds source size %E"
-msgstr "%Kden angivna gränsen %E överskrider källstorleken %E"
+msgstr "den angivna gränsen %E överskrider källstorleken %E"
 
 #: gimple-ssa-warn-access.cc:779
-#, fuzzy, gcc-internal-format
-#| msgid "%K%qD specified bound [%E, %E] may exceed source size %E"
+#, gcc-internal-format
 msgid "%qD specified bound [%E, %E] may exceed source size %E"
-msgstr "%K%qD angivna gränsen [%E, %E] kan överskrida källstorleken %E"
+msgstr "%qD angivna gränsen [%E, %E] kan överskrida källstorleken %E"
 
 #: gimple-ssa-warn-access.cc:781
-#, fuzzy, gcc-internal-format
-#| msgid "%K%qD specified bound [%E, %E] exceeds source size %E"
+#, gcc-internal-format
 msgid "%qD specified bound [%E, %E] exceeds source size %E"
-msgstr "%K%qD angivna gränsen [%E, %E] överskrider källstorleken %E"
+msgstr "%qD angivna gränsen [%E, %E] överskrider källstorleken %E"
 
 #: gimple-ssa-warn-access.cc:786
-#, fuzzy, gcc-internal-format
-#| msgid "%Kspecified bound [%E, %E] may exceed source size %E"
+#, gcc-internal-format
 msgid "specified bound [%E, %E] may exceed source size %E"
-msgstr "%Kden angivna gränsen [%E, %E] kan överskrida källstorleken %E"
+msgstr "den angivna gränsen [%E, %E] kan överskrida källstorleken %E"
 
 #: gimple-ssa-warn-access.cc:788
-#, fuzzy, gcc-internal-format
-#| msgid "%Kspecified bound [%E, %E] exceeds source size %E"
+#, gcc-internal-format
 msgid "specified bound [%E, %E] exceeds source size %E"
-msgstr "%Kden angivna gränsen [%E, %E] överskrider källstorleken %E"
+msgstr "den angivna gränsen [%E, %E] överskrider källstorleken %E"
 
 #: gimple-ssa-warn-access.cc:796
 #, gcc-internal-format
@@ -25342,88 +25226,74 @@ msgid "source object allocated here"
 msgstr "källobjektet är allokerat här"
 
 #: gimple-ssa-warn-access.cc:819
-#, fuzzy, gcc-internal-format
-#| msgid "%K%qD specified size %E may exceed maximum object size %E"
+#, gcc-internal-format
 msgid "%qD specified size %E may exceed maximum object size %E"
-msgstr "%K%qD den angivna storleken %E kan överskrida maximal objektstorlek %E"
+msgstr "%qD den angivna storleken %E kan överskrida maximal objektstorlek %E"
 
 #: gimple-ssa-warn-access.cc:821
-#, fuzzy, gcc-internal-format
-#| msgid "%K%qD specified size %E exceeds maximum object size %E"
+#, gcc-internal-format
 msgid "%qD specified size %E exceeds maximum object size %E"
-msgstr "%K%qD: den angivna storleken %E överskrider maximal objektstorlek %E"
+msgstr "%qD: den angivna storleken %E överskrider maximal objektstorlek %E"
 
 #: gimple-ssa-warn-access.cc:826
-#, fuzzy, gcc-internal-format
-#| msgid "%Kspecified size %E may exceed maximum object size %E"
+#, gcc-internal-format
 msgid "specified size %E may exceed maximum object size %E"
-msgstr "%Kden angivna storleken %E kan överskrida maximal objektstorlek %E"
+msgstr "den angivna storleken %E kan överskrida maximal objektstorlek %E"
 
 #: gimple-ssa-warn-access.cc:828
-#, fuzzy, gcc-internal-format
-#| msgid "%Kspecified size %E exceeds maximum object size %E"
+#, gcc-internal-format
 msgid "specified size %E exceeds maximum object size %E"
-msgstr "%Kden angivna storleken %E överskrider maximal objektstorlek %E"
+msgstr "den angivna storleken %E överskrider maximal objektstorlek %E"
 
 #: gimple-ssa-warn-access.cc:835
-#, fuzzy, gcc-internal-format
-#| msgid "%K%qD specified size between %E and %E may exceed maximum object size %E"
+#, gcc-internal-format
 msgid "%qD specified size between %E and %E may exceed maximum object size %E"
-msgstr "%K%qD den angivna storleken mellan %E och %E kan överskrida maximal objektstorlek %E"
+msgstr "%qD den angivna storleken mellan %E och %E kan överskrida maximal objektstorlek %E"
 
 #: gimple-ssa-warn-access.cc:837
-#, fuzzy, gcc-internal-format
-#| msgid "%K%qD specified size between %E and %E exceeds maximum object size %E"
+#, gcc-internal-format
 msgid "%qD specified size between %E and %E exceeds maximum object size %E"
-msgstr "%K%qD: den angivna storleken mellan %E och %E överskrider maximal objektstorlek %E"
+msgstr "%qD: den angivna storleken mellan %E och %E överskrider maximal objektstorlek %E"
 
 #: gimple-ssa-warn-access.cc:842
-#, fuzzy, gcc-internal-format
-#| msgid "%Kspecified size between %E and %E may exceed maximum object size %E"
+#, gcc-internal-format
 msgid "specified size between %E and %E may exceed maximum object size %E"
-msgstr "%Kden angivna storleken mellan %E och %E kan överskrida maximal objektstorlek %E"
+msgstr "den angivna storleken mellan %E och %E kan överskrida maximal objektstorlek %E"
 
 #: gimple-ssa-warn-access.cc:844
-#, fuzzy, gcc-internal-format
-#| msgid "%Kspecified size between %E and %E exceeds maximum object size %E"
+#, gcc-internal-format
 msgid "specified size between %E and %E exceeds maximum object size %E"
-msgstr "%Kden angivna storleken mellan %E och %E överskrider maximal objektstorlek %E"
+msgstr "den angivna storleken mellan %E och %E överskrider maximal objektstorlek %E"
 
 #: gimple-ssa-warn-access.cc:854
-#, fuzzy, gcc-internal-format
-#| msgid "%K%qD specified bound %E may exceed destination size %E"
+#, gcc-internal-format
 msgid "%qD specified bound %E may exceed destination size %E"
-msgstr "%K%qD den angivna gränsen %E kan överskrida destinationsstorleken %E"
+msgstr "%qD den angivna gränsen %E kan överskrida destinationsstorleken %E"
 
 #: gimple-ssa-warn-access.cc:861
-#, fuzzy, gcc-internal-format
-#| msgid "%Kspecified bound %E may exceed destination size %E"
+#, gcc-internal-format
 msgid "specified bound %E may exceed destination size %E"
-msgstr "%Kden angivna gränsen %E kan överskrida destinationsstorleken %E"
+msgstr "den angivna gränsen %E kan överskrida destinationsstorleken %E"
 
 #: gimple-ssa-warn-access.cc:863
-#, fuzzy, gcc-internal-format
-#| msgid "%Kspecified bound %E exceeds destination size %E"
+#, gcc-internal-format
 msgid "specified bound %E exceeds destination size %E"
-msgstr "%Kden angivna gränsen %E överskrider destinationsstorleken %E"
+msgstr "den angivna gränsen %E överskrider destinationsstorleken %E"
 
 #: gimple-ssa-warn-access.cc:870
-#, fuzzy, gcc-internal-format
-#| msgid "%K%qD specified bound [%E, %E] may exceed destination size %E"
+#, gcc-internal-format
 msgid "%qD specified bound [%E, %E] may exceed destination size %E"
-msgstr "%K%qD den angivna gränsen [%E, %E] kan överskrida destinationsstorleken %E"
+msgstr "%qD den angivna gränsen [%E, %E] kan överskrida destinationsstorleken %E"
 
 #: gimple-ssa-warn-access.cc:872
-#, fuzzy, gcc-internal-format
-#| msgid "%K%qD specified bound [%E, %E] exceeds destination size %E"
+#, gcc-internal-format
 msgid "%qD specified bound [%E, %E] exceeds destination size %E"
-msgstr "%K%qD den angivna gränsen [%E, %E] överskrider destinationsstorleken %E"
+msgstr "%qD den angivna gränsen [%E, %E] överskrider destinationsstorleken %E"
 
 #: gimple-ssa-warn-access.cc:877 gimple-ssa-warn-access.cc:879
-#, fuzzy, gcc-internal-format
-#| msgid "%Kspecified bound [%E, %E] exceeds destination size %E"
+#, gcc-internal-format
 msgid "specified bound [%E, %E] exceeds destination size %E"
-msgstr "%Kden angivna gränsen [%E, %E] överskrider destinationsstorleken %E"
+msgstr "den angivna gränsen [%E, %E] överskrider destinationsstorleken %E"
 
 #: gimple-ssa-warn-access.cc:888
 #, gcc-internal-format
@@ -25431,112 +25301,94 @@ msgid "destination object allocated here"
 msgstr "destinationsobjektet är allokerat här"
 
 #: gimple-ssa-warn-access.cc:932
-#, fuzzy, gcc-internal-format
-#| msgid "%K%qD may access %E byte in a region of size %E"
+#, gcc-internal-format
 msgid "%qD may access %E byte in a region of size %E"
-msgstr "%K%qD kan komma åt %E byte i en region av storlek %E"
+msgstr "%qD kan komma åt %E byte i en region av storlek %E"
 
 #: gimple-ssa-warn-access.cc:934
-#, fuzzy, gcc-internal-format
-#| msgid "%K%qD accessing %E byte in a region of size %E"
+#, gcc-internal-format
 msgid "%qD accessing %E byte in a region of size %E"
-msgstr "%K%qD kommer åt %E byte i en region av storlek %E"
+msgstr "%qD kommer åt %E byte i en region av storlek %E"
 
 #: gimple-ssa-warn-access.cc:937
-#, fuzzy, gcc-internal-format
-#| msgid "%K%qD may access %E bytes in a region of size %E"
+#, gcc-internal-format
 msgid "%qD may access %E bytes in a region of size %E"
-msgstr "%K%qD kan komma åt %E byte i en region av storlek %E"
+msgstr "%qD kan komma åt %E byte i en region av storlek %E"
 
 #: gimple-ssa-warn-access.cc:939
-#, fuzzy, gcc-internal-format
-#| msgid "%K%qD accessing %E bytes in a region of size %E"
+#, gcc-internal-format
 msgid "%qD accessing %E bytes in a region of size %E"
-msgstr "%K%qD kommer åt %E byte i en region av storlek %E"
+msgstr "%qD kommer åt %E byte i en region av storlek %E"
 
 #: gimple-ssa-warn-access.cc:944
-#, fuzzy, gcc-internal-format
-#| msgid "%Kmay access %E byte in a region of size %E"
+#, gcc-internal-format
 msgid "may access %E byte in a region of size %E"
-msgstr "%Kkan komma åt %E byte i en region av storlek %E"
+msgstr "kan komma åt %E byte i en region av storlek %E"
 
 #: gimple-ssa-warn-access.cc:946
-#, fuzzy, gcc-internal-format
-#| msgid "%Kaccessing %E byte in a region of size %E"
+#, gcc-internal-format
 msgid "accessing %E byte in a region of size %E"
-msgstr "%Kkommer åt %E byte i en region av storlek %E"
+msgstr "kommer åt %E byte i en region av storlek %E"
 
 #: gimple-ssa-warn-access.cc:949
-#, fuzzy, gcc-internal-format
-#| msgid "%Kmay access %E bytes in a region of size %E"
+#, gcc-internal-format
 msgid "may access %E bytes in a region of size %E"
-msgstr "%Kkan komma åt %E byte i en region av storlek %E"
+msgstr "kan komma åt %E byte i en region av storlek %E"
 
 #: gimple-ssa-warn-access.cc:951
-#, fuzzy, gcc-internal-format
-#| msgid "%Kaccessing %E bytes in a region of size %E"
+#, gcc-internal-format
 msgid "accessing %E bytes in a region of size %E"
-msgstr "%Kkommer åt %E byte i en region av storlek %E"
+msgstr "kommer åt %E byte i en region av storlek %E"
 
 #: gimple-ssa-warn-access.cc:960
-#, fuzzy, gcc-internal-format
-#| msgid "%K%qD may access %E or more bytes in a region of size %E"
+#, gcc-internal-format
 msgid "%qD may access %E or more bytes in a region of size %E"
-msgstr "%K%qD kan komma åt %E eller fler byte i en region av storlek %E"
+msgstr "%qD kan komma åt %E eller fler byte i en region av storlek %E"
 
 #: gimple-ssa-warn-access.cc:962
-#, fuzzy, gcc-internal-format
-#| msgid "%K%qD accessing %E or more bytes in a region of size %E"
+#, gcc-internal-format
 msgid "%qD accessing %E or more bytes in a region of size %E"
-msgstr "%K%qD kommer åt %E eller fler byte i en region av storlek %E"
+msgstr "%qD kommer åt %E eller fler byte i en region av storlek %E"
 
 #: gimple-ssa-warn-access.cc:967
-#, fuzzy, gcc-internal-format
-#| msgid "%Kmay access %E or more bytes in a region of size %E"
+#, gcc-internal-format
 msgid "may access %E or more bytes in a region of size %E"
-msgstr "%Kkan komma åt %E eller fler byte i en region av storlek %E"
+msgstr "kan komma åt %E eller fler byte i en region av storlek %E"
 
 #: gimple-ssa-warn-access.cc:969
-#, fuzzy, gcc-internal-format
-#| msgid "%Kaccessing %E or more bytes in a region of size %E"
+#, gcc-internal-format
 msgid "accessing %E or more bytes in a region of size %E"
-msgstr "%Kkommer åt %E eller fler byte i en region av storlek %E"
+msgstr "kommer åt %E eller fler byte i en region av storlek %E"
 
 #: gimple-ssa-warn-access.cc:977
-#, fuzzy, gcc-internal-format
-#| msgid "%K%qD may access between %E and %E bytes in a region of size %E"
+#, gcc-internal-format
 msgid "%qD may access between %E and %E bytes in a region of size %E"
-msgstr "%K%qD kan komma åt mellan %E och %E byte i en region av storlek %E"
+msgstr "%qD kan komma åt mellan %E och %E byte i en region av storlek %E"
 
 #: gimple-ssa-warn-access.cc:979
-#, fuzzy, gcc-internal-format
-#| msgid "%K%qD accessing between %E and %E bytes in a region of size %E"
+#, gcc-internal-format
 msgid "%qD accessing between %E and %E bytes in a region of size %E"
-msgstr "%K%qD kommer åt mellan %E och %E byte i en region av storlek %E"
+msgstr "%qD kommer åt mellan %E och %E byte i en region av storlek %E"
 
 #: gimple-ssa-warn-access.cc:984
-#, fuzzy, gcc-internal-format
-#| msgid "%Kmay access between %E and %E bytes in a region of size %E"
+#, gcc-internal-format
 msgid "may access between %E and %E bytes in a region of size %E"
-msgstr "%Kkan komma åt mellan %E och %E byte i en region av storlek %E"
+msgstr "kan komma åt mellan %E och %E byte i en region av storlek %E"
 
 #: gimple-ssa-warn-access.cc:986
-#, fuzzy, gcc-internal-format
-#| msgid "%Kaccessing between %E and %E bytes in a region of size %E"
+#, gcc-internal-format
 msgid "accessing between %E and %E bytes in a region of size %E"
-msgstr "%Kkommer åt mellan %E och %E byte i en region av storlek %E"
+msgstr "kommer åt mellan %E och %E byte i en region av storlek %E"
 
 #: gimple-ssa-warn-access.cc:998
-#, fuzzy, gcc-internal-format
-#| msgid "%K%qD may write %E byte into a region of size %E"
+#, gcc-internal-format
 msgid "%qD may write %E byte into a region of size %E"
-msgstr "%K%qD kan skriva %E byte till en region med storlek %E"
+msgstr "%qD kan skriva %E byte till en region med storlek %E"
 
 #: gimple-ssa-warn-access.cc:1000
-#, fuzzy, gcc-internal-format
-#| msgid "%K%qD writing %E byte into a region of size %E overflows the destination"
+#, gcc-internal-format
 msgid "%qD writing %E byte into a region of size %E overflows the destination"
-msgstr "%K%qD att skriva %E byte till en region av storlek %E spiller över destinationen"
+msgstr "%qD att skriva %E byte till en region av storlek %E spiller över destinationen"
 
 #: gimple-ssa-warn-access.cc:1003
 #, fuzzy, gcc-internal-format
