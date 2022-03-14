@@ -755,7 +755,7 @@ path_range_query::range_of_stmt (irange &r, gimple *stmt, tree)
 {
   tree type = gimple_range_type (stmt);
 
-  if (!irange::supports_type_p (type))
+  if (!type || !irange::supports_type_p (type))
     return false;
 
   // If resolving unknowns, fold the statement making use of any

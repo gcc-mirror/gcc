@@ -81,7 +81,7 @@ gimple_range_type (const gimple *s)
 	    type = TREE_TYPE (type);
 	}
     }
-  if (irange::supports_type_p (type))
+  if (type && irange::supports_type_p (type))
     return type;
   return NULL_TREE;
 }

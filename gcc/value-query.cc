@@ -249,7 +249,8 @@ range_query::get_tree_range (irange &r, tree expr, gimple *stmt)
   if (UNARY_CLASS_P (expr))
     {
       range_operator *op = range_op_handler (TREE_CODE (expr), type);
-      if (op)
+      tree op0_type = TREE_TYPE (TREE_OPERAND (expr, 0));
+      if (op && irange::supports_type_p (op0_type))
 	{
 	  int_range_max r0;
 	  range_of_expr (r0, TREE_OPERAND (expr, 0), stmt);
