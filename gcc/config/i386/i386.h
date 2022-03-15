@@ -2848,10 +2848,10 @@ extern enum attr_cpu ix86_schedule;
 #define NUM_X86_64_MS_CLOBBERED_REGS 12
 #endif
 
-/* __builtin_eh_return can't handle stack realignment, so restrict to
-   general regs in 32-bit libgcc functions that call it.  */
+/* __builtin_eh_return can't handle stack realignment, so disable MMX/SSE
+   in 32-bit libgcc functions that call it.  */
 #ifndef __x86_64__
-#define LIBGCC2_UNWIND_ATTRIBUTE __attribute__((target ("general-regs-only")))
+#define LIBGCC2_UNWIND_ATTRIBUTE __attribute__((target ("no-mmx,no-sse")))
 #endif
 
 /*
