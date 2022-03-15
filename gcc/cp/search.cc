@@ -941,8 +941,6 @@ struct lookup_field_info {
   tree ambiguous;
   /* If nonzero, we are looking for types, not data members.  */
   int want_type;
-  /* If something went wrong, a message indicating what.  */
-  const char *errstr;
 };
 
 /* True for a class member means that it is shared between all objects
@@ -1055,7 +1053,6 @@ lookup_field_r (tree binfo, void *data)
 	  /* Add the new value.  */
 	  lfi->ambiguous = tree_cons (NULL_TREE, nval, lfi->ambiguous);
 	  TREE_TYPE (lfi->ambiguous) = error_mark_node;
-	  lfi->errstr = G_("request for member %qD is ambiguous");
 	}
     }
   else
@@ -1127,8 +1124,6 @@ lookup_member (tree xbasetype, tree name, int protect, bool want_type,
      checks.  Whereas rval is only set if a proper (not hidden)
      non-function member is found.  */
 
-  const char *errstr = 0;
-
   if (name == error_mark_node
       || xbasetype == NULL_TREE
       || xbasetype == error_mark_node)
@@ -1172,7 +1167,6 @@ lookup_member (tree xbasetype, tree name, int protect, bool want_type,
   rval_binfo = lfi.rval_binfo;
   if (rval_binfo)
     type = BINFO_TYPE (rval_binfo);
-  errstr = lfi.errstr;
 
   /* If we are not interested in ambiguities, don't report them;
      just return NULL_TREE.  */
@@ -1186,6 +1180,19 @@ lookup_member (tree xbasetype, tree name, int protect, bool want_type,
       else
 	protect = 0;
     }
+
+  if (protect == 1 && lfi.ambiguous)
+    {
+      if (complain & tf_error)
+	{
+	  error ("request for member %qD is ambiguous", name);
+	  print_candidates (lfi.ambiguous);
+	}
+      return error_mark_node;
+    }
+
+  if (!rval)
+    return NULL_TREE;
 
   /* [class.access]
 
@@ -1206,8 +1213,7 @@ lookup_member (tree xbasetype, tree name, int protect, bool want_type,
 
     only the first call to "f" is valid.  However, if the function is
     static, we can check.  */
-  if (rval && protect 
-      && !really_overloaded_fn (rval))
+  if (protect && !really_overloaded_fn (rval))
     {
       tree decl = is_overloaded_fn (rval) ? get_first_fn (rval) : rval;
       decl = strip_using_decl (decl);
@@ -1216,21 +1222,10 @@ lookup_member (tree xbasetype, tree name, int protect, bool want_type,
 	  && !DECL_NONSTATIC_MEMBER_FUNCTION_P (decl)
 	  && !perform_or_defer_access_check (basetype_path, decl, decl,
 					     complain, afi))
-	rval = error_mark_node;
+	return error_mark_node;
     }
 
-  if (errstr && protect)
-    {
-      if (complain & tf_error)
-	{
-	  error (errstr, name, type);
-	  if (lfi.ambiguous)
-	    print_candidates (lfi.ambiguous);
-	}
-      rval = error_mark_node;
-    }
-
-  if (rval && is_overloaded_fn (rval)
+  if (is_overloaded_fn (rval)
       /* Don't use a BASELINK for class-scope deduction guides since
 	 they're not actually member functions.  */
       && !dguide_name_p (name))
