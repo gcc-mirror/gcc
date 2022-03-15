@@ -7812,7 +7812,9 @@ package body Exp_Ch9 is
 
          Hdle := New_List (Build_Abort_Block_Handler (Loc));
 
-         Prepend_To (Astats, Build_Runtime_Call (Loc, RE_Abort_Undefer));
+         if Abort_Allowed then
+            Prepend_To (Astats, Build_Runtime_Call (Loc, RE_Abort_Undefer));
+         end if;
 
          Abortable_Block :=
            Make_Block_Statement (Loc,
