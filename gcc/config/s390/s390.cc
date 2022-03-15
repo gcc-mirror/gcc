@@ -8545,6 +8545,7 @@ s390_issue_rate (void)
     case PROCESSOR_2827_ZEC12:
     case PROCESSOR_2964_Z13:
     case PROCESSOR_3906_Z14:
+    case PROCESSOR_8561_Z15:
     case PROCESSOR_3931_Z16:
     default:
       return 1;
