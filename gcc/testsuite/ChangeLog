@@ -1,3 +1,36 @@
+2022-03-14  Roger Sayle  <roger@nextmovesoftware.com>
+	    Uroš Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/pr98335.c: Skip this test if tuning for i486
+	or pentium, and not optimizing for size.
+
+2022-03-14  Xi Ruoyao  <xry111@mengyan1223.wang>
+
+	* c-c++-common/asan/global-overflow-1.c: Skip for MIPS with some
+	optimization levels because inaccurate debug info is causing
+	dg-output mismatch on line numbers.
+	* g++.dg/asan/large-func-test-1.C: Likewise.
+
+2022-03-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/104778
+	* gcc.target/powerpc/pr104778.c: New test.
+
+2022-03-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/102586
+	* g++.dg/cpp2a/builtin-clear-padding1.C: New test.
+
+2022-03-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/99754
+	* gcc.target/i386/pr99754-1.c: New test.
+	* gcc.target/i386/pr99754-2.c: New test.
+
+2022-03-14  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr104666.c: New test.
+
 2022-03-12  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/104641

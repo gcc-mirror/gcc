@@ -1,3 +1,62 @@
+2022-03-14  Roger Sayle  <roger@nextmovesoftware.com>
+	    Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (peephole2 xorl;movb -> movzbl): Disable
+	transformation when *zero_extend<mode>si2 is not available.
+
+2022-03-14  Xi Ruoyao  <xry111@mengyan1223.wang>
+
+	* config/mips/mips.h (SUBTARGET_SHADOW_OFFSET): Define.
+	* config/mips/mips.cc (mips_option_override): Make
+	-fsanitize=address imply -fasynchronous-unwind-tables.  This is
+	needed by libasan for stack backtrace on MIPS.
+	(mips_asan_shadow_offset): Return SUBTARGET_SHADOW_OFFSET.
+
+2022-03-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/104778
+	* lra.cc (lra_substitute_pseudo): For debug_p mode, simplify
+	SUBREG, ZERO_EXTEND, SIGN_EXTEND, FLOAT or UNSIGNED_FLOAT if recursive
+	call simplified the first operand into VOIDmode constant.
+
+2022-03-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/102586
+	* doc/extend.texi (__builtin_clear_padding): Clearify that for C++
+	argument type should be pointer to trivially-copyable type unless it
+	is address of a variable or parameter.
+
+2022-03-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/99754
+	* config/i386/emmintrin.h (_mm_loadu_si32): Put loaded value into
+	first 	rather than last element of the vector, use __m32_u to do
+	a really unaligned load, use just 0 instead of (int)0.
+	(_mm_loadu_si16): Put loaded value into first rather than last
+	element of the vector, use __m16_u to do a really unaligned load,
+	use just 0 instead of (short)0.
+
+2022-03-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR other/104899
+	* config/bfin/bfin.cc (bfin_handle_longcall_attribute): Fix a typo
+	in diagnostic message - cannott -> cannot.  Use %< and %> around
+	names of attribute.  Avoid too long line.
+	* range-op.cc (operator_logical_and::op1_range): Fix up a typo
+	in comment - cannott -> cannot.  Use 2 spaces after . instead of one.
+
+2022-03-14  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/104666
+	* config/i386/i386-expand.cc
+	(ix86_check_builtin_isa_match):	New func.
+	(ix86_expand_builtin): Move code to
+	ix86_check_builtin_isa_match and call it.
+	* config/i386/i386-protos.h
+	(ix86_check_builtin_isa_match): Declare.
+	* config/i386/i386.cc (ix86_gimple_fold_builtin): Don't fold
+	builtin into gimple when isa mismatches.
+
 2022-03-13  Tobias Burnus  <tobias@codesourcery.com>
 
 	* doc/invoke.texi: Fix typos.

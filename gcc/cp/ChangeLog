@@ -1,3 +1,10 @@
+2022-03-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/102586
+	* call.cc (build_cxx_call): Diagnose __builtin_clear_padding where
+	first argument's type is pointer to non-trivially-copyable type unless
+	it is address of a variable or parameter.
+
 2022-03-12  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/104641
