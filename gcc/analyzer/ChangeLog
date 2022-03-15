@@ -1,3 +1,56 @@
+2022-03-10  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/104863
+	* constraint-manager.cc (constraint_manager::add_constraint):
+	Refresh the EC IDs when adding constraints implied by offsets.
+
+2022-03-10  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/104793
+	* analyzer.h (class pending_note): New forward decl.
+	* diagnostic-manager.cc (saved_diagnostic::saved_diagnostic):
+	Initialize m_notes.
+	(saved_diagnostic::operator==): Compare m_notes.
+	(saved_diagnostic::add_note): New.
+	(saved_diagnostic::emit_any_notes): New.
+	(diagnostic_manager::add_note): New.
+	(diagnostic_manager::emit_saved_diagnostic): Call emit_any_notes
+	after emitting the warning.
+	* diagnostic-manager.h (saved_diagnostic::add_note): New decl.
+	(saved_diagnostic::emit_any_notes): New decl.
+	(saved_diagnostic::m_notes): New field.
+	(diagnostic_manager::add_note): New decl.
+	* engine.cc (impl_region_model_context::add_note): New.
+	* exploded-graph.h (impl_region_model_context::add_note): New
+	decl.
+	* pending-diagnostic.h (class pending_note): New.
+	(class pending_note_subclass): New template.
+	* region-model.cc (class reason_attr_access): New.
+	(check_external_function_for_access_attr): Add class
+	annotating_ctxt and use it when checking region.
+	(noop_region_model_context::add_note): New.
+	* region-model.h (region_model_context::add_note): New vfunc.
+	(noop_region_model_context::add_note): New decl.
+	(class region_model_context_decorator): New.
+	(class note_adding_context): New.
+
+2022-03-10  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/104793
+	* region-model.cc
+	(region_model::check_external_function_for_access_attr): New.
+	(region_model::handle_unrecognized_call): Call it.
+	* region-model.h
+	(region_model::check_external_function_for_access_attr): New decl.
+	(region_model::handle_unrecognized_call): New decl.
+
+2022-03-10  David Malcolm  <dmalcolm@redhat.com>
+
+	* sm-taint.cc (taint_state_machine::check_for_tainted_size_arg):
+	Avoid generating duplicate saved_diagnostics by only handling the
+	rdwr_map entry for the ptrarg, not the duplicate entry for the
+	sizarg.
+
 2022-03-07  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/101983

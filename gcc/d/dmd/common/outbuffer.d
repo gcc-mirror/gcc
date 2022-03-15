@@ -662,6 +662,8 @@ struct OutBuffer
         return cast(char)data[i];
     }
 
+    alias opDollar = length;
+
     /***********************************
      * Extract the data as a slice and take ownership of it.
      *
@@ -878,4 +880,37 @@ unittest
 
     s = unsignedToTempString(29, buf[], 16);
     assert(s == "1d");
+}
+
+unittest
+{
+    OutBuffer buf;
+    buf.writeUTF8(0x0000_0011);
+    buf.writeUTF8(0x0000_0111);
+    buf.writeUTF8(0x0000_1111);
+    buf.writeUTF8(0x0001_1111);
+    buf.writeUTF8(0x0010_0000);
+    assert(buf[] == "\x11\U00000111\U00001111\U00011111\U00100000");
+
+    buf.reset();
+    buf.writeUTF16(0x0000_0011);
+    buf.writeUTF16(0x0010_FFFF);
+    assert(buf[] == cast(string) "\u0011\U0010FFFF"w);
+}
+
+unittest
+{
+    OutBuffer buf;
+    buf.doindent = true;
+
+    const(char)[] s = "abc";
+    buf.writestring(s);
+    buf.level += 1;
+    buf.indent();
+    buf.writestring("abs");
+
+    assert(buf[] == "abc\tabs");
+
+    buf.setsize(4);
+    assert(buf.length == 4);
 }

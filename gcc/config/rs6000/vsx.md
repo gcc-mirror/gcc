@@ -5033,7 +5033,7 @@
 ;; generate the vextsd2q instruction.
 (define_insn_and_split "extendditi2"
   [(set (match_operand:TI 0 "register_operand" "=r,r,v,v,v")
-	(sign_extend:TI (match_operand:DI 1 "input_operand" "r,m,r,wa,Z")))
+	(sign_extend:TI (match_operand:DI 1 "input_operand" "r,m,b,wa,Z")))
    (clobber (reg:DI CA_REGNO))]
   "TARGET_POWERPC64 && TARGET_POWER10"
   "#"

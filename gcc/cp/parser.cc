@@ -4111,8 +4111,6 @@ cp_parser_skip_to_pragma_eol (cp_parser* parser, cp_token *pragma_tok)
 
   if (pragma_tok)
     {
-      /* Ensure that the pragma is not parsed again.  */
-      cp_lexer_purge_tokens_after (parser->lexer, pragma_tok);
       parser->lexer->in_pragma = false;
       if (parser->lexer->in_omp_attribute_pragma
 	  && cp_lexer_next_token_is (parser->lexer, CPP_EOF))
@@ -18674,7 +18672,10 @@ cp_parser_template_name (cp_parser* parser,
 	  return error_mark_node;
 	}
       else if ((!DECL_P (decl) && !is_overloaded_fn (decl))
-	       || TREE_CODE (decl) == USING_DECL)
+	       || TREE_CODE (decl) == USING_DECL
+	       /* cp_parser_template_id can only handle some TYPE_DECLs.  */
+	       || (TREE_CODE (decl) == TYPE_DECL
+		   && TREE_CODE (TREE_TYPE (decl)) != TYPENAME_TYPE))
 	/* Repeat the lookup at instantiation time.  */
 	decl = identifier;
     }

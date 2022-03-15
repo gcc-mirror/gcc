@@ -405,10 +405,56 @@ compute_trims (ao_ref *ref, sbitmap live, int *trim_head, int *trim_tail,
   int first_live = bitmap_first_set_bit (live);
   *trim_head = first_live - first_orig;
 
-  /* If more than a word remains, then make sure to keep the
-     starting point at least word aligned.  */
-  if (last_live - first_live > UNITS_PER_WORD)
-    *trim_head &= ~(UNITS_PER_WORD - 1);
+  /* If REF is aligned, try to maintain this alignment if it reduces
+     the number of (power-of-two sized aligned) writes to memory.  */
+  unsigned int align_bits;
+  unsigned HOST_WIDE_INT bitpos;
+  if ((*trim_head || *trim_tail)
+      && last_live - first_live >= 2
+      && ao_ref_alignment (ref, &align_bits, &bitpos)
+      && align_bits >= 32
+      && bitpos == 0
+      && align_bits % BITS_PER_UNIT == 0)
+    {
+      unsigned int align_units = align_bits / BITS_PER_UNIT;
+      if (align_units > 16)
+	align_units = 16;
+      while ((first_live | (align_units - 1)) > (unsigned int)last_live)
+	align_units >>= 1;
+
+      if (*trim_head)
+	{
+	  unsigned int pos = first_live & (align_units - 1);
+	  for (unsigned int i = 1; i <= align_units; i <<= 1)
+	    {
+	      unsigned int mask = ~(i - 1);
+	      unsigned int bytes = align_units - (pos & mask);
+	      if (wi::popcount (bytes) <= 1)
+		{
+		  *trim_head &= mask;
+		  break;
+		}
+	    }
+	}
+
+      if (*trim_tail)
+	{
+	  unsigned int pos = last_live & (align_units - 1);
+	  for (unsigned int i = 1; i <= align_units; i <<= 1)
+	    {
+	      int mask = i - 1;
+	      unsigned int bytes = (pos | mask) + 1;
+	      if ((last_live | mask) > (last_live + *trim_tail))
+		break;
+	      if (wi::popcount (bytes) <= 1)
+		{
+		  unsigned int extra = (last_live | mask) - last_live;
+		  *trim_tail -= extra;
+		  break;
+		}
+	    }
+	}
+    }
 
   if ((*trim_head || *trim_tail)
       && dump_file && (dump_flags & TDF_DETAILS))

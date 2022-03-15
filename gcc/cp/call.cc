@@ -6023,6 +6023,17 @@ perfect_candidate_p (z_candidate *cand)
   return true;
 }
 
+/* True iff one of CAND's argument conversions is NULL.  */
+
+static bool
+missing_conversion_p (const z_candidate *cand)
+{
+  for (unsigned i = 0; i < cand->num_convs; ++i)
+    if (!cand->convs[i])
+      return true;
+  return false;
+}
+
 /* Add each of the viable functions in FNS (a FUNCTION_DECL or
    OVERLOAD) to the CANDIDATES, returning an updated list of
    CANDIDATES.  The ARGS are the arguments provided to the call;
@@ -6200,7 +6211,7 @@ add_candidates (tree fns, tree first_arg, const vec<tree, va_gc> *args,
 
       if (cand->viable == -1
 	  && shortcut_bad_convs
-	  && !cand->convs[cand->reversed () ? 0 : cand->num_convs - 1])
+	  && missing_conversion_p (cand))
 	{
 	  /* This candidate has been tentatively marked non-strictly viable,
 	     and we didn't compute all argument conversions for it (having
@@ -10398,6 +10409,27 @@ build_cxx_call (tree fn, int nargs, tree *argarray,
       if (!check_builtin_function_arguments (EXPR_LOCATION (fn), vNULL, fndecl,
 					     orig_fndecl, nargs, argarray))
 	return error_mark_node;
+      else if (fndecl_built_in_p (fndecl, BUILT_IN_CLEAR_PADDING))
+	{
+	  tree arg0 = argarray[0];
+	  STRIP_NOPS (arg0);
+	  if (TREE_CODE (arg0) == ADDR_EXPR
+	      && DECL_P (TREE_OPERAND (arg0, 0))
+	      && same_type_ignoring_top_level_qualifiers_p
+			(TREE_TYPE (TREE_TYPE (argarray[0])),
+			 TREE_TYPE (TREE_TYPE (arg0))))
+	    /* For __builtin_clear_padding (&var) we know the type
+	       is for a complete object, so there is no risk in clearing
+	       padding that is reused in some derived class member.  */;
+	  else if (!trivially_copyable_p (TREE_TYPE (TREE_TYPE (argarray[0]))))
+	    {
+	      error_at (EXPR_LOC_OR_LOC (argarray[0], input_location),
+			"argument %u in call to function %qE "
+			"has pointer to a non-trivially-copyable type (%qT)",
+			1, fndecl, TREE_TYPE (argarray[0]));
+	      return error_mark_node;
+	    }
+	}
     }
 
   if (VOID_TYPE_P (TREE_TYPE (fn)))

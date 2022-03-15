@@ -245,8 +245,6 @@ extern (C++) class Dsymbol : ASTNode
     /// C++ namespace this symbol belongs to
     CPPNamespaceDeclaration cppnamespace;
     Symbol* csym;           // symbol for code generator
-    Symbol* isym;           // import version of csym
-    const(char)* comment;   // documentation comment for this Dsymbol
     const Loc loc;          // where defined
     Scope* _scope;          // !=null means context to use for semantic()
     const(char)* prettystring;  // cached value of toPrettyChars()
@@ -256,10 +254,6 @@ extern (C++) class Dsymbol : ASTNode
 
     DeprecatedDeclaration depdecl;           // customized deprecation message
     UserAttributeDeclaration userAttribDecl;    // user defined attributes
-
-    // !=null means there's a ddoc unittest associated with this symbol
-    // (only use this with ddoc)
-    UnitTestDeclaration ddocUnittest;
 
     final extern (D) this()
     {
@@ -811,7 +805,7 @@ extern (C++) class Dsymbol : ASTNode
             Dsymbol s2 = sds.symtabLookup(this,ident);
 
             // If using C tag/prototype/forward declaration rules
-            if (sc.flags & SCOPE.Cfile)
+            if (sc.flags & SCOPE.Cfile && !this.isImport())
             {
                 if (handleTagSymbols(*sc, this, s2, sds))
                     return;
@@ -1214,16 +1208,64 @@ extern (C++) class Dsymbol : ASTNode
      */
     void addComment(const(char)* comment)
     {
-        //if (comment)
-        //    printf("adding comment '%s' to symbol %p '%s'\n", comment, this, toChars());
-        if (!this.comment)
-            this.comment = comment;
-        else if (comment && strcmp(cast(char*)comment, cast(char*)this.comment) != 0)
+        if (!comment || !*comment)
+            return;
+
+        //printf("addComment '%s' to Dsymbol %p '%s'\n", comment, this, toChars());
+        void* h = cast(void*)this;      // just the pointer is the key
+        auto p = h in commentHashTable;
+        if (!p)
+        {
+            commentHashTable[h] = comment;
+            return;
+        }
+        if (strcmp(*p, comment) != 0)
         {
             // Concatenate the two
-            this.comment = Lexer.combineComments(this.comment.toDString(), comment.toDString(), true);
+            *p = Lexer.combineComments((*p).toDString(), comment.toDString(), true);
         }
     }
+
+    /// get documentation comment for this Dsymbol
+    final const(char)* comment()
+    {
+        //printf("getcomment: %p '%s'\n", this, this.toChars());
+        if (auto p = cast(void*)this in commentHashTable)
+        {
+            //printf("comment: '%s'\n", *p);
+            return *p;
+        }
+        return null;
+    }
+
+    /* Shell around addComment() to avoid disruption for the moment */
+    final void comment(const(char)* comment) { addComment(comment); }
+
+    private extern (D) __gshared const(char)*[void*] commentHashTable;
+
+
+    /**********************************
+     * Get ddoc unittest associated with this symbol.
+     * (only use this with ddoc)
+     * Returns: ddoc unittest, null if none
+     */
+    final UnitTestDeclaration ddocUnittest()
+    {
+        if (auto p = cast(void*)this in ddocUnittestHashTable)
+            return *p;
+        return null;
+    }
+
+    /**********************************
+     * Set ddoc unittest associated with this symbol.
+     */
+    final void ddocUnittest(UnitTestDeclaration utd)
+    {
+        ddocUnittestHashTable[cast(void*)this] = utd;
+    }
+
+    private extern (D) __gshared UnitTestDeclaration[void*] ddocUnittestHashTable;
+
 
     /****************************************
      * Returns true if this symbol is defined in a non-root module without instantiation.
@@ -1245,6 +1287,18 @@ extern (C++) class Dsymbol : ASTNode
             }
         }
         return false;
+    }
+
+    /**
+     * Deinitializes the global state of the compiler.
+     *
+     * This can be used to restore the state set by `_init` to its original
+     * state.
+     */
+    static void deinitialize()
+    {
+        commentHashTable = commentHashTable.init;
+        ddocUnittestHashTable = ddocUnittestHashTable.init;
     }
 
     /************

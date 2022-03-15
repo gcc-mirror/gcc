@@ -1025,12 +1025,13 @@ dom_valueize (tree t)
    additional equivalences that are valid on edge E.  */
 static void
 back_propagate_equivalences (tree lhs, edge e,
-			     class const_and_copies *const_and_copies)
+			     class const_and_copies *const_and_copies,
+			     bitmap *domby)
 {
   use_operand_p use_p;
   imm_use_iterator iter;
-  bitmap domby = NULL;
   basic_block dest = e->dest;
+  bool domok = (dom_info_state (CDI_DOMINATORS) == DOM_OK);
 
   /* Iterate over the uses of LHS to see if any dominate E->dest.
      If so, they may create useful equivalences too.
@@ -1053,27 +1054,38 @@ back_propagate_equivalences (tree lhs, edge e,
       if (!lhs2 || TREE_CODE (lhs2) != SSA_NAME)
 	continue;
 
-      /* Profiling has shown the domination tests here can be fairly
-	 expensive.  We get significant improvements by building the
-	 set of blocks that dominate BB.  We can then just test
-	 for set membership below.
-
-	 We also initialize the set lazily since often the only uses
-	 are going to be in the same block as DEST.  */
-      if (!domby)
+      if (domok)
 	{
-	  domby = BITMAP_ALLOC (NULL);
-	  basic_block bb = get_immediate_dominator (CDI_DOMINATORS, dest);
-	  while (bb)
-	    {
-	      bitmap_set_bit (domby, bb->index);
-	      bb = get_immediate_dominator (CDI_DOMINATORS, bb);
-	    }
+	  if (!dominated_by_p (CDI_DOMINATORS, dest, gimple_bb (use_stmt)))
+	    continue;
 	}
+      else
+	{
+	  /* Profiling has shown the domination tests here can be fairly
+	     expensive when the fast indexes are not computed.
+	     We get significant improvements by building the
+	     set of blocks that dominate BB.  We can then just test
+	     for set membership below.
 
-      /* This tests if USE_STMT does not dominate DEST.  */
-      if (!bitmap_bit_p (domby, gimple_bb (use_stmt)->index))
-	continue;
+	     We also initialize the set lazily since often the only uses
+	     are going to be in the same block as DEST.  */
+
+	  if (!*domby)
+	    {
+	      *domby = BITMAP_ALLOC (NULL);
+	      bitmap_tree_view (*domby);
+	      basic_block bb = get_immediate_dominator (CDI_DOMINATORS, dest);
+	      while (bb)
+		{
+		  bitmap_set_bit (*domby, bb->index);
+		  bb = get_immediate_dominator (CDI_DOMINATORS, bb);
+		}
+	    }
+
+	  /* This tests if USE_STMT does not dominate DEST.  */
+	  if (!bitmap_bit_p (*domby, gimple_bb (use_stmt)->index))
+	    continue;
+	}
 
       /* At this point USE_STMT dominates DEST and may result in a
 	 useful equivalence.  Try to simplify its RHS to a constant
@@ -1083,9 +1095,6 @@ back_propagate_equivalences (tree lhs, edge e,
       if (res && (TREE_CODE (res) == SSA_NAME || is_gimple_min_invariant (res)))
 	record_equality (lhs2, res, const_and_copies);
     }
-
-  if (domby)
-    BITMAP_FREE (domby);
 }
 
 /* Record into CONST_AND_COPIES and AVAIL_EXPRS_STACK any equivalences implied
@@ -1110,6 +1119,7 @@ record_temporary_equivalences (edge e,
       for (i = 0; edge_info->cond_equivalences.iterate (i, &eq); ++i)
 	avail_exprs_stack->record_cond (eq);
 
+      bitmap domby = NULL;
       edge_info::equiv_pair *seq;
       for (i = 0; edge_info->simple_equivalences.iterate (i, &seq); ++i)
 	{
@@ -1146,8 +1156,10 @@ record_temporary_equivalences (edge e,
 	  /* Any equivalence found for LHS may result in additional
 	     equivalences for other uses of LHS that we have already
 	     processed.  */
-	  back_propagate_equivalences (lhs, e, const_and_copies);
+	  back_propagate_equivalences (lhs, e, const_and_copies, &domby);
 	}
+      if (domby)
+	BITMAP_FREE (domby);
     }
 }
 

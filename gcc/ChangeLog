@@ -1,3 +1,272 @@
+2022-03-14  Roger Sayle  <roger@nextmovesoftware.com>
+	    Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (peephole2 xorl;movb -> movzbl): Disable
+	transformation when *zero_extend<mode>si2 is not available.
+
+2022-03-14  Xi Ruoyao  <xry111@mengyan1223.wang>
+
+	* config/mips/mips.h (SUBTARGET_SHADOW_OFFSET): Define.
+	* config/mips/mips.cc (mips_option_override): Make
+	-fsanitize=address imply -fasynchronous-unwind-tables.  This is
+	needed by libasan for stack backtrace on MIPS.
+	(mips_asan_shadow_offset): Return SUBTARGET_SHADOW_OFFSET.
+
+2022-03-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/104778
+	* lra.cc (lra_substitute_pseudo): For debug_p mode, simplify
+	SUBREG, ZERO_EXTEND, SIGN_EXTEND, FLOAT or UNSIGNED_FLOAT if recursive
+	call simplified the first operand into VOIDmode constant.
+
+2022-03-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/102586
+	* doc/extend.texi (__builtin_clear_padding): Clearify that for C++
+	argument type should be pointer to trivially-copyable type unless it
+	is address of a variable or parameter.
+
+2022-03-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/99754
+	* config/i386/emmintrin.h (_mm_loadu_si32): Put loaded value into
+	first 	rather than last element of the vector, use __m32_u to do
+	a really unaligned load, use just 0 instead of (int)0.
+	(_mm_loadu_si16): Put loaded value into first rather than last
+	element of the vector, use __m16_u to do a really unaligned load,
+	use just 0 instead of (short)0.
+
+2022-03-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR other/104899
+	* config/bfin/bfin.cc (bfin_handle_longcall_attribute): Fix a typo
+	in diagnostic message - cannott -> cannot.  Use %< and %> around
+	names of attribute.  Avoid too long line.
+	* range-op.cc (operator_logical_and::op1_range): Fix up a typo
+	in comment - cannott -> cannot.  Use 2 spaces after . instead of one.
+
+2022-03-14  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/104666
+	* config/i386/i386-expand.cc
+	(ix86_check_builtin_isa_match):	New func.
+	(ix86_expand_builtin): Move code to
+	ix86_check_builtin_isa_match and call it.
+	* config/i386/i386-protos.h
+	(ix86_check_builtin_isa_match): Declare.
+	* config/i386/i386.cc (ix86_gimple_fold_builtin): Don't fold
+	builtin into gimple when isa mismatches.
+
+2022-03-13  Tobias Burnus  <tobias@codesourcery.com>
+
+	* doc/invoke.texi: Fix typos.
+	* doc/tm.texi.in: Remove duplicated word.
+	* doc/tm.texi: Regenerate.
+
+2022-03-12  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/104829
+	* config/rs6000/rs6000.cc (rs6000_machine_from_flags): Don't output
+	"ppc" and "ppc64" based on rs6000_cpu.
+
+2022-03-12  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR middle-end/100280
+	PR middle-end/104892
+	* omp-oacc-kernels-decompose.cc (omp_oacc_kernels_decompose_1):
+	Remove special handling of 'GOMP_MAP_FORCE_TOFROM'.
+
+2022-03-12  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR middle-end/100280
+	PR middle-end/104086
+	* omp-oacc-kernels-decompose.cc (omp_oacc_kernels_decompose_1):
+	Mark variables used in 'present' clauses as addressable.
+	* omp-low.cc (scan_sharing_clauses) <OMP_CLAUSE_MAP>: Gracefully
+	handle duplicate 'OMP_CLAUSE_MAP_DECL_MAKE_ADDRESSABLE'.
+
+2022-03-12  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR other/65095
+	* tree-core.h (user_omp_claus_code_name): Declare function.
+	* tree.cc (user_omp_clause_code_name): New function.
+
+2022-03-12  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR middle-end/98420
+	* match.pd (minus @0 @0): Additional checks for -fno-rounding-math
+	(the defaut) or -fno-signed-zeros.
+
+2022-03-12   Michael Meissner  <meissner@linux.ibm.com>
+
+	PR target/104868
+	* config/rs6000/vsx.md (extendditi2): Use a 'b' constraint when
+	moving from a GPR register to an Altivec register.
+
+2022-03-11  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR tree-optimization/98335
+	* config/i386/i386.md (peephole2): Eliminate redundant insv.
+	Combine movl followed by movb.  Transform xorl followed by
+	a suitable movb or movw into the equivalent movz[bw]l.
+
+2022-03-11  Roger Sayle  <roger@nextmovesoftware.com>
+	    Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/98335
+	* builtins.cc (get_object_alignment_2): Export.
+	* builtins.h (get_object_alignment_2): Likewise.
+	* tree-ssa-alias.cc (ao_ref_alignment): New.
+	* tree-ssa-alias.h (ao_ref_alignment): Declare.
+	* tree-ssa-dse.cc (compute_trims): Improve logic deciding whether
+	to align head/tail, writing more bytes but using fewer store insns.
+
+2022-03-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/104880
+	* tree-ssa.cc (execute_update_address_taken): Remember if we
+	optimistically made something not addressable and
+	prepare to undo it.
+
+2022-03-11  Richard Biener  <rguenther@suse.de>
+
+	PR target/104762
+	* config/i386/i386.cc (ix86_builtin_vectorization_cost): Do not
+	cost the first lane of SSE pieces as inserts for vec_construct.
+
+2022-03-10  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR c++/84964
+	* calls.cc (expand_call): Ignore stack adjustments after sorry.
+
+2022-03-10  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR target/103074
+	* lra-constraints.cc (split_reg): Set up
+	check_and_force_assignment_correctness_p when splitting hard
+	register live range.
+
+2022-03-10  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/104813
+	* ipa-cp.cc (create_specialized_node): Move removal of
+	self-recursive calls from callers vector before refrence
+	adjustments.
+
+2022-03-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/102943
+	* gimple-range-cache.cc (sbr_sparse_bitmap::bitvec):
+	Make a bitmap_head.
+	(sbr_sparse_bitmap::sbr_sparse_bitmap): Adjust and switch
+	to tree view.
+	(sbr_sparse_bitmap::set_bb_range): Adjust.
+	(sbr_sparse_bitmap::get_bb_range): Likewise.
+
+2022-03-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/102943
+	* tree-ssa-dom.cc (back_propagate_equivalences): Only
+	populate the dominance bitmap if fast queries are not
+	available.  Use a tree view bitmap.
+	(record_temporary_equivalences): Cache the dominance bitmap
+	across all equivalences on the edge.
+
+2022-03-10  Tom de Vries  <tdevries@suse.de>
+
+	PR target/104840
+	* config/nvptx/nvptx.md (define_attr "predicable"): Use no,yes instead
+	of false,true.
+
+2022-03-10  Tom de Vries  <tdevries@suse.de>
+
+	PR target/104783
+	* config/nvptx/nvptx.cc (nvptx_init_unisimt_predicate)
+	(nvptx_output_unisimt_switch): Handle unisimt_outside_simt_predicate.
+	(nvptx_get_unisimt_outside_simt_predicate): New function.
+	(predicate_insn): New function, factored out of ...
+	(nvptx_reorg_uniform_simt): ... here.  Predicate all emitted insns.
+	* config/nvptx/nvptx.h (struct machine_function): Add
+	unisimt_outside_simt_predicate field.
+	* config/nvptx/nvptx.md (define_insn "nvptx_warpsync")
+	(define_insn "nvptx_uniform_warp_check"): Make predicable.
+
+2022-03-10  Tom de Vries  <tdevries@suse.de>
+
+	* config/nvptx/nvptx.cc (nvptx_unisimt_handle_set): Handle unused
+	result.
+
+2022-03-10  Tom de Vries  <tdevries@suse.de>
+
+	PR target/104815
+	* config/nvptx/nvptx.cc (nvptx_print_operand): Handle 'x' operand
+	modifier.
+	* config/nvptx/nvptx.md: Use %x0 destination operand in atom insns.
+
+2022-03-10  Tom de Vries  <tdevries@suse.de>
+
+	* config/nvptx/nvptx.md (define_insn "atomic_fetch_<logic><mode>"):
+	Emit atom.and.b64 instead of atom.b64.and.
+
+2022-03-10  Tom de Vries  <tdevries@suse.de>
+
+	* config/nvptx/t-nvptx (MULTILIB_EXTRA_OPTS): Move mptx=3.1 ...
+	(MULTILIB_OPTIONS): ... here.
+
+2022-03-10  Tom de Vries  <tdevries@suse.de>
+
+	PR target/104758
+	* config/nvptx/nvptx.opt (misa): Set default to sm_30.
+	* config/nvptx/t-nvptx (MULTILIB_EXTRA_OPTS): Remove misa=sm_30.
+
+2022-03-10  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR middle-end/90115
+	PR middle-end/102330
+	PR middle-end/104774
+	* omp-low.cc (oacc_privatization_candidate_p)
+	(oacc_privatization_scan_clause_chain)
+	(oacc_privatization_scan_decl_chain, lower_oacc_private_marker):
+	Analyze 'lookup_decl'-translated DECL.
+
+2022-03-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/99708
+	* config/rs6000/rs6000.h (enum rs6000_builtin_type_index): Remove
+	RS6000_BTI_ptr_ieee128_float and RS6000_BTI_ptr_ibm128_float.
+	(ptr_ieee128_float_type_node, ptr_ibm128_float_type_node): Remove.
+	* config/rs6000/rs6000-builtin.cc (rs6000_type_string): Return
+	"**NULL**" if type_node is NULL first.  Handle
+	ieee128_float_type_node.
+	(rs6000_init_builtins): Don't initialize ptr_ieee128_float_type_node
+	and ptr_ibm128_float_type_node.  Set ibm128_float_type_node and
+	ieee128_float_type_node to NULL rather than long_double_type_node if
+	they aren't supported.  Do support __ibm128 even if
+	!TARGET_FLOAT128_TYPE when long double is double double.
+	(rs6000_expand_builtin): Error if bif_is_ibm128 and
+	!ibm128_float_type_node.  Remap RS6000_BIF_{,UN}PACK_IF to
+	RS6000_BIF_{,UN}PACK_TF much earlier and only use bif_is_ibm128 check
+	for it.
+	* config/rs6000/rs6000-c.cc (rs6000_target_modify_macros): Define
+	__SIZEOF_FLOAT128__ here and only iff __float128 macro is defined.
+	(rs6000_cpu_cpp_builtins): Don't define __SIZEOF_FLOAT128__ here.
+	Define __SIZEOF_IBM128__=16 if ieee128_float_type_node is non-NULL.
+	Formatting fix.
+	* config/rs6000/rs6000-gen-builtins.cc: Document ibm128 attribute.
+	(struct attrinfo): Add isibm128 member.
+	(TYPE_MAP_SIZE): Remove.
+	(type_map): Use [] instead of [TYPE_MAP_SIZE].  For "if" use
+	ibm128_float_type_node only if it is non-NULL, otherwise fall back
+	to long_double_type_node.  Remove "pif" entry.
+	(parse_bif_attrs): Handle ibm128 attribute and print it for debugging.
+	(write_decls): Output bif_ibm128_bit and bif_is_ibm128.
+	(write_type_node): Use sizeof type_map / sizeof type_map[0]
+	instead of TYPE_MAP_SIZE.
+	(write_bif_static_init): Handle isibm128.
+	* config/rs6000/rs6000-builtins.def: Document ibm128 attribute.
+	(__builtin_pack_ibm128, __builtin_unpack_ibm128): Add ibm128
+	attribute.
+
 2022-03-09  Richard Biener  <rguenther@suse.de>
 
 	* cfgexpand.cc (expand_gimple_asm): Special-case MEM_REF

@@ -152,7 +152,7 @@ static tree coerce_innermost_template_parms (tree, tree, tree, tsubst_flags_t,
 					      bool, bool);
 static void tsubst_enum	(tree, tree, tree);
 static bool check_instantiated_args (tree, tree, tsubst_flags_t);
-static int check_non_deducible_conversion (tree, tree, int, int,
+static int check_non_deducible_conversion (tree, tree, unification_kind_t, int,
 					   struct conversion **, bool);
 static int maybe_adjust_types_for_deduction (tree, unification_kind_t,
 					     tree*, tree*, tree);
@@ -14896,7 +14896,10 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 		&& VAR_HAD_UNKNOWN_BOUND (t)
 		&& type != error_mark_node)
 	      type = strip_array_domain (type);
-	    type = tsubst (type, args, complain, in_decl);
+	    tsubst_flags_t tcomplain = complain;
+	    if (VAR_P (t))
+	      tcomplain |= tf_tst_ok;
+	    type = tsubst (type, args, tcomplain, in_decl);
 	    /* Substituting the type might have recursively instantiated this
 	       same alias (c++/86171).  */
 	    if (gen_tmpl && DECL_ALIAS_TEMPLATE_P (gen_tmpl)
@@ -15582,6 +15585,9 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
   bool fndecl_type = (complain & tf_fndecl_type);
   complain &= ~tf_fndecl_type;
 
+  bool tst_ok = (complain & tf_tst_ok);
+  complain &= ~tf_tst_ok;
+
   if (type
       && code != TYPENAME_TYPE
       && code != TEMPLATE_TYPE_PARM
@@ -16169,8 +16175,10 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	      return error_mark_node;
 	  }
 
-	f = make_typename_type (ctx, f, typename_type,
-				complain | tf_keep_type_decl);
+	tsubst_flags_t tcomplain = complain | tf_keep_type_decl;
+	if (tst_ok)
+	  tcomplain |= tf_tst_ok;
+	f = make_typename_type (ctx, f, typename_type, tcomplain);
 	if (f == error_mark_node)
 	  return f;
 	if (TREE_CODE (f) == TYPE_DECL)
@@ -17077,7 +17085,10 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
     case CONVERT_EXPR:
     case NOP_EXPR:
       {
-	tree type = tsubst (TREE_TYPE (t), args, complain, in_decl);
+	tsubst_flags_t tcomplain = complain;
+	if (code == CAST_EXPR)
+	  tcomplain |= tf_tst_ok;
+	tree type = tsubst (TREE_TYPE (t), args, tcomplain, in_decl);
 	tree op0 = tsubst_copy (TREE_OPERAND (t, 0), args, complain, in_decl);
 	return build1 (code, type, op0);
       }
@@ -20100,7 +20111,10 @@ tsubst_copy_and_build (tree t,
 	tree type;
 	tree op, r = NULL_TREE;
 
-	type = tsubst (TREE_TYPE (t), args, complain, in_decl);
+	tsubst_flags_t tcomplain = complain;
+	if (TREE_CODE (t) == CAST_EXPR)
+	  tcomplain |= tf_tst_ok;
+	type = tsubst (TREE_TYPE (t), args, tcomplain, in_decl);
 	if (integral_constant_expression_p
 	    && !cast_valid_in_integral_constant_expression_p (type))
 	  {
@@ -21060,12 +21074,15 @@ tsubst_copy_and_build (tree t,
 	vec<constructor_elt, va_gc> *n;
 	constructor_elt *ce;
 	unsigned HOST_WIDE_INT idx;
-	tree type = tsubst (TREE_TYPE (t), args, complain, in_decl);
 	bool process_index_p;
         int newlen;
         bool need_copy_p = false;
 	tree r;
 
+	tsubst_flags_t tcomplain = complain;
+	if (COMPOUND_LITERAL_P (t))
+	  tcomplain |= tf_tst_ok;
+	tree type = tsubst (TREE_TYPE (t), args, tcomplain, in_decl);
 	if (type == error_mark_node)
 	  RETURN (error_mark_node);
 
@@ -22287,7 +22304,7 @@ maybe_adjust_types_for_deduction (tree tparms,
    unify_one_argument.  */
 
 static int
-check_non_deducible_conversion (tree parm, tree arg, int strict,
+check_non_deducible_conversion (tree parm, tree arg, unification_kind_t strict,
 				int flags, struct conversion **conv_p,
 				bool explain_p)
 {
@@ -22307,7 +22324,7 @@ check_non_deducible_conversion (tree parm, tree arg, int strict,
       if (can_convert_arg (type, parm, NULL_TREE, flags, complain))
 	return unify_success (explain_p);
     }
-  else if (strict != DEDUCE_EXACT)
+  else if (strict == DEDUCE_CALL)
     {
       bool ok = false;
       tree conv_arg = TYPE_P (arg) ? NULL_TREE : arg;

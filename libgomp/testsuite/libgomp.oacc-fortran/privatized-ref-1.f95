@@ -78,7 +78,7 @@ contains
     !$acc loop collapse(2) gang private(t1) ! { dg-line l_loop[incr c_loop] }
     ! { dg-note {variable 'i' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_loop$c_loop }
     ! { dg-note {variable 'j' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_loop$c_loop }
-    ! { dg-note {variable 't1' in 'private' clause potentially has improper OpenACC privatization level: 'parm_decl'} "" { target *-*-* } l_loop$c_loop }
+    ! { dg-note {variable 't1' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_loop$c_loop }
     do i=0,255
       do j=1,256
         t1 = (i * 256 + j) * 97
@@ -103,7 +103,7 @@ contains
     do i=0,255
       !$acc loop worker private(t1) ! { dg-line l_loop[incr c_loop] }
       ! { dg-note {variable 'j' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_loop$c_loop }
-      ! { dg-note {variable 't1' in 'private' clause potentially has improper OpenACC privatization level: 'parm_decl'} "" { target *-*-* } l_loop$c_loop }
+      ! { dg-note {variable 't1' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_loop$c_loop }
       do j=1,256
         t1 = (i * 256 + j) * 99
         res(i * 256 + j) = t1
@@ -127,7 +127,7 @@ contains
     do i=0,255
       !$acc loop vector private(t1) ! { dg-line l_loop[incr c_loop] }
       ! { dg-note {variable 'j' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_loop$c_loop }
-      ! { dg-note {variable 't1' in 'private' clause potentially has improper OpenACC privatization level: 'parm_decl'} "" { target *-*-* } l_loop$c_loop }
+      ! { dg-note {variable 't1' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_loop$c_loop }
       do j=1,256
         t1 = (i * 256 + j) * 101
         res(i * 256 + j) = t1
@@ -149,7 +149,7 @@ contains
     !$acc loop collapse(2) gang worker vector private(t1) ! { dg-line l_loop[incr c_loop] }
     ! { dg-note {variable 'i' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_loop$c_loop }
     ! { dg-note {variable 'j' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_loop$c_loop }
-    ! { dg-note {variable 't1' in 'private' clause potentially has improper OpenACC privatization level: 'parm_decl'} "" { target *-*-* } l_loop$c_loop }
+    ! { dg-note {variable 't1' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_loop$c_loop }
     do i=0,255
       do j=1,256
         t1 = (i * 256 + j) * 103

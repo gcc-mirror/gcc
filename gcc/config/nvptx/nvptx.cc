@@ -1364,6 +1364,13 @@ nvptx_init_unisimt_predicate (FILE *file)
       int master = REGNO (cfun->machine->unisimt_master);
       int pred = REGNO (cfun->machine->unisimt_predicate);
       fprintf (file, "\t\tld.shared.u32 %%r%d, [%%r%d];\n", master, loc);
+      if (cfun->machine->unisimt_outside_simt_predicate)
+	{
+	  int pred_outside_simt
+	    = REGNO (cfun->machine->unisimt_outside_simt_predicate);
+	  fprintf (file, "\t\tsetp.eq.u32 %%r%d, %%r%d, 0;\n",
+		   pred_outside_simt, master);
+	}
       fprintf (file, "\t\tmov.u32 %%ustmp0, %%laneid;\n");
       /* Compute 'master lane index' as 'laneid & __nvptx_uni[tid.y]'.  */
       fprintf (file, "\t\tand.b32 %%r%d, %%r%d, %%ustmp0;\n", master, master);
@@ -1589,6 +1596,13 @@ nvptx_output_unisimt_switch (FILE *file, bool entering)
   fprintf (file, "\t{\n");
   fprintf (file, "\t\t.reg.u32 %%ustmp2;\n");
   fprintf (file, "\t\tmov.u32 %%ustmp2, %d;\n", entering ? -1 : 0);
+  if (cfun->machine->unisimt_outside_simt_predicate)
+    {
+      int pred_outside_simt
+	= REGNO (cfun->machine->unisimt_outside_simt_predicate);
+      fprintf (file, "\t\tmov.pred %%r%d, %d;\n", pred_outside_simt,
+	       entering ? 0 : 1);
+    }
   if (!crtl->is_leaf)
     {
       int loc = REGNO (cfun->machine->unisimt_location);
@@ -2835,7 +2849,8 @@ nvptx_mem_maybe_shared_p (const_rtx x)
    S -- print a shuffle kind specified by CONST_INT
    t -- print a type opcode suffix, promoting QImode to 32 bits
    T -- print a type size in bits
-   u -- print a type opcode suffix without promotions.  */
+   u -- print a type opcode suffix without promotions.
+   x -- print a destination operand that may also be a bit bucket.  */
 
 static void
 nvptx_print_operand (FILE *file, rtx x, int code)
@@ -2863,6 +2878,14 @@ nvptx_print_operand (FILE *file, rtx x, int code)
 
   switch (code)
     {
+    case 'x':
+      if (current_output_insn != NULL
+	  && find_reg_note (current_output_insn, REG_UNUSED, x) != NULL_RTX)
+	{
+	  fputs ("_", file);
+	  return;
+	}
+      goto common;
     case 'B':
       if (SYMBOL_REF_P (XEXP (x, 0)))
 	switch (SYMBOL_DATA_AREA (XEXP (x, 0)))
@@ -3233,6 +3256,13 @@ nvptx_get_unisimt_predicate ()
   return pred ? pred : pred = gen_reg_rtx (BImode);
 }
 
+static rtx
+nvptx_get_unisimt_outside_simt_predicate ()
+{
+  rtx &pred = cfun->machine->unisimt_outside_simt_predicate;
+  return pred ? pred : pred = gen_reg_rtx (BImode);
+}
+
 /* Return true if given call insn references one of the functions provided by
    the CUDA runtime: malloc, free, vprintf.  */
 
@@ -3265,7 +3295,9 @@ static bool
 nvptx_unisimt_handle_set (rtx set, rtx_insn *insn, rtx master)
 {
   rtx reg;
-  if (GET_CODE (set) == SET && REG_P (reg = SET_DEST (set)))
+  if (GET_CODE (set) == SET
+      && REG_P (reg = SET_DEST (set))
+      && find_reg_note (insn, REG_UNUSED, reg) == NULL_RTX)
     {
       emit_insn_after (nvptx_gen_shuffle (reg, reg, master, SHUFFLE_IDX),
 		       insn);
@@ -3273,6 +3305,16 @@ nvptx_unisimt_handle_set (rtx set, rtx_insn *insn, rtx master)
     }
 
   return false;
+}
+
+static void
+predicate_insn (rtx_insn *insn, rtx pred)
+{
+  rtx pat = PATTERN (insn);
+  pred = gen_rtx_NE (BImode, pred, const0_rtx);
+  pat = gen_rtx_COND_EXEC (VOIDmode, pred, pat);
+  bool changed_p = validate_change (insn, &PATTERN (insn), pat, false);
+  gcc_assert (changed_p);
 }
 
 /* Adjust code for uniform-simt code generation variant by making atomics and
@@ -3341,10 +3383,16 @@ nvptx_reorg_uniform_simt ()
 	}
 
       rtx pred = nvptx_get_unisimt_predicate ();
-      pred = gen_rtx_NE (BImode, pred, const0_rtx);
-      pat = gen_rtx_COND_EXEC (VOIDmode, pred, pat);
-      bool changed_p = validate_change (insn, &PATTERN (insn), pat, false);
-      gcc_assert (changed_p);
+      predicate_insn (insn, pred);
+
+      pred = NULL_RTX;
+      for (rtx_insn *post = NEXT_INSN (insn); post != next;
+	   post = NEXT_INSN (post))
+	{
+	  if (pred == NULL_RTX)
+	    pred = nvptx_get_unisimt_outside_simt_predicate ();
+	  predicate_insn (post, pred);
+	}
     }
 }
 

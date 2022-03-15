@@ -1,3 +1,8 @@
+2022-03-11  Tobias Burnus  <tobias@codesourcery.com>
+
+	* trans-openmp.cc (gfc_trans_omp_clauses, gfc_omp_finish_clause):
+	Obtain size for mapping only if allocatable array is allocated.
+
 2022-03-09  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/104849

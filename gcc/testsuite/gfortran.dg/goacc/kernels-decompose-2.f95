@@ -40,7 +40,15 @@ program main
   integer, parameter :: N = 10
   integer :: a(N), b(N), c(N)
 
-  !$acc kernels
+  !$acc kernels ! { dg-line l_compute[incr c_compute] }
+  ! { dg-note {OpenACC 'kernels' decomposition: variable 'z' in 'copy' clause requested to be made addressable} {} { target *-*-* } l_compute$c_compute }
+  !   { dg-note {variable 'z' made addressable} {} { target *-*-* } l_compute$c_compute }
+  ! { dg-note {OpenACC 'kernels' decomposition: variable 'y_l' in 'copy' clause requested to be made addressable} {} { target *-*-* } l_compute$c_compute }
+  !   { dg-note {variable 'y_l' made addressable} {} { target *-*-* } l_compute$c_compute }
+  ! { dg-note {OpenACC 'kernels' decomposition: variable 'y' in 'copy' clause requested to be made addressable} {} { target *-*-* } l_compute$c_compute }
+  !   { dg-note {variable 'y' made addressable} {} { target *-*-* } l_compute$c_compute }
+  ! { dg-note {OpenACC 'kernels' decomposition: variable 'x' in 'copy' clause requested to be made addressable} {} { target *-*-* } l_compute$c_compute }
+  !   { dg-note {variable 'x' made addressable} {} { target *-*-* } l_compute$c_compute }
   ! { dg-note {beginning 'gang-single' part in OpenACC 'kernels' region} {} { target *-*-* } .+1 }
   x = 0
   y = 0
@@ -51,6 +59,8 @@ program main
   !$acc end kernels
 
   !$acc kernels ! { dg-line l_compute[incr c_compute] }
+  ! { dg-note {OpenACC 'kernels' decomposition: variable 'i' in 'copy' clause requested to be made addressable} {} { target *-*-* } l_compute$c_compute }
+  !   { dg-note {variable 'i' made addressable} {} { target *-*-* } l_compute$c_compute }
   ! { dg-optimized {assigned OpenACC gang loop parallelism} {} { target *-*-* } l_compute$c_compute }
   ! { dg-note {beginning 'parloops' part in OpenACC 'kernels' region} {} { target *-*-* } .+1 }
   do i = 1, N
@@ -66,7 +76,9 @@ program main
      b(i) = a(N - i + 1)
   end do
 
-  !$acc kernels
+  !$acc kernels ! { dg-line l_compute[incr c_compute] }
+  ! { dg-note {OpenACC 'kernels' decomposition: variable 'z' in 'copy' clause requested to be made addressable} {} { target *-*-* } l_compute$c_compute }
+  !   { dg-note {variable 'z' already made addressable} {} { target *-*-* } l_compute$c_compute }
   !$acc loop ! { dg-line l_loop_i[incr c_loop_i] }
   ! { dg-note {forwarded loop nest in OpenACC 'kernels' region to 'parloops' for analysis} {} { target *-*-* } l_loop_i$c_loop_i }
   ! { dg-note {variable 'i' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} {} { target *-*-* } l_loop_i$c_loop_i }
@@ -104,6 +116,8 @@ program main
   !$acc end kernels
 
   !$acc kernels ! { dg-line l_compute[incr c_compute] }
+  ! { dg-note {OpenACC 'kernels' decomposition: variable 'y' in 'copy' clause requested to be made addressable} {} { target *-*-* } l_compute$c_compute }
+  !   { dg-note {variable 'y' already made addressable} {} { target *-*-* } l_compute$c_compute }
   !TODO What does this mean?
   !TODO { dg-optimized "assigned OpenACC worker vector loop parallelism" "" { target *-*-* } l_compute$c_compute }
   !$acc loop independent ! { dg-line l_loop_i[incr c_loop_i] }
@@ -141,6 +155,8 @@ program main
   !$acc end kernels
 
   !$acc kernels ! { dg-line l_compute[incr c_compute] }
+  ! { dg-note {OpenACC 'kernels' decomposition: variable 'y' in 'copy' clause requested to be made addressable} {} { target *-*-* } l_compute$c_compute }
+  !   { dg-note {variable 'y' already made addressable} {} { target *-*-* } l_compute$c_compute }
   ! { dg-bogus "\[Ww\]arning: region contains gang partitioned code but is not gang partitioned" "TODO 'kernels'" { xfail *-*-* } l_compute$c_compute }
   y = f_g (a(5)) ! { dg-line l_part[incr c_part] }
   !TODO If such a construct is placed in its own part (like it is, here), can't this actually use gang paralelism, instead of "gang-single"?
@@ -156,7 +172,11 @@ program main
   end do
   !$acc end kernels
 
-  !$acc kernels
+  !$acc kernels ! { dg-line l_compute[incr c_compute] }
+  ! { dg-note {OpenACC 'kernels' decomposition: variable 'z' in 'copy' clause requested to be made addressable} {} { target *-*-* } l_compute$c_compute }
+  !   { dg-note {variable 'z' already made addressable} {} { target *-*-* } l_compute$c_compute }
+  ! { dg-note {OpenACC 'kernels' decomposition: variable 'y' in 'copy' clause requested to be made addressable} {} { target *-*-* } l_compute$c_compute }
+  !   { dg-note {variable 'y' already made addressable} {} { target *-*-* } l_compute$c_compute }
   ! { dg-note {beginning 'gang-single' part in OpenACC 'kernels' region} {} { target *-*-* } .+1 }
   y = 3
 

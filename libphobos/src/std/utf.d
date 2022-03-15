@@ -1209,6 +1209,15 @@ do
     assert("ë"w.decode(i) == 'ë' && i == 1);
 }
 
+@safe pure unittest // https://issues.dlang.org/show_bug.cgi?id=22867
+{
+    import std.conv : hexString;
+    string data = hexString!"f787a598";
+    size_t offset = 0;
+    try data.decode(offset);
+    catch (UTFException ex) assert(offset == 0);
+}
+
 /++
     `decodeFront` is a variant of $(LREF decode) which specifically decodes
     the first code point. Unlike $(LREF decode), `decodeFront` accepts any
@@ -1671,7 +1680,6 @@ if (
                 }
             }
 
-            index += i + 1;
             static if (i == 3)
             {
                 if (d > dchar.max)
@@ -1682,6 +1690,8 @@ if (
                         throw invalidUTF();
                 }
             }
+
+            index += i + 1;
             return d;
         }
     }

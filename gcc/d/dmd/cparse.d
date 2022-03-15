@@ -22,6 +22,7 @@ import dmd.identifier;
 import dmd.lexer;
 import dmd.parse;
 import dmd.errors;
+import dmd.root.array;
 import dmd.root.filename;
 import dmd.common.outbuffer;
 import dmd.root.rmem;
@@ -38,6 +39,24 @@ final class CParser(AST) : Parser!AST
     bool addFuncName;           /// add declaration of __func__ to function symbol table
     bool importBuiltins;        /// seen use of C compiler builtins, so import __builtins;
 
+    private
+    {
+        structalign_t packalign;        // current state of #pragma pack alignment
+
+        // #pragma pack stack
+        Array!Identifier* records;      // identifers (or null)
+        Array!structalign_t* packs;     // parallel alignment values
+    }
+
+    /** C allows declaring a function with a typedef:
+     *   typedef int (myfunc)(); myfunc fun;
+     * but we need to distinguish `fun` being a function as opposed to a variable in the
+     * parse pass. This is accomplished by having a simple symbol table of typedefs
+     * where we know, by syntax, if they are function types or non-function types.
+     * funcTypeIds is the symbol table, of the identifiers of typedefs of function types.
+     */
+    AST.Identifiers funcTypeIds;  /// Identifiers in this are typedefs of function types
+
     extern (D) this(TARGET)(AST.Module _module, const(char)[] input, bool doDocComment,
                             const ref TARGET target)
     {
@@ -47,6 +66,7 @@ final class CParser(AST) : Parser!AST
         mod = _module;
         linkage = LINK.c;
         Ccompile = true;
+        this.packalign.setDefault();
 
         // Configure sizes for C `long`, `long double`, `wchar_t`, ...
         this.boolsize = target.boolsize;
@@ -130,6 +150,7 @@ final class CParser(AST) : Parser!AST
 
         //printf("cparseStatement()\n");
 
+        const funcTypeIdsLengthSave = funcTypeIds.length;
         auto symbolsSave = symbols;
         if (!(flags & (ParseStatementFlags.scope_ | ParseStatementFlags.curlyScope)))
             symbols = new AST.Dsymbols();
@@ -572,6 +593,7 @@ final class CParser(AST) : Parser!AST
         if (pEndloc)
             *pEndloc = prevloc;
         symbols = symbolsSave;
+        funcTypeIds.setDim(funcTypeIdsLengthSave);
         return s;
     }
 
@@ -1551,6 +1573,7 @@ final class CParser(AST) : Parser!AST
             return;
         }
 
+        const funcTypeIdsLengthSave = funcTypeIds.length;
         auto symbolsSave = symbols;
         Specifier specifier;
         specifier.packalign = this.packalign;
@@ -1660,11 +1683,13 @@ final class CParser(AST) : Parser!AST
                 t.value == TOK.leftCurly)  // start of compound-statement
             {
                 auto s = cparseFunctionDefinition(id, dt.isTypeFunction(), specifier);
+                funcTypeIds.setDim(funcTypeIdsLengthSave);
                 symbols = symbolsSave;
                 symbols.push(s);
                 return;
             }
             AST.Dsymbol s = null;
+            funcTypeIds.setDim(funcTypeIdsLengthSave);
             symbols = symbolsSave;
             if (!symbols)
                 symbols = new AST.Dsymbols;     // lazilly create it
@@ -1722,6 +1747,10 @@ final class CParser(AST) : Parser!AST
                         }
                     }
                 }
+                else if (isFunctionTypedef(dt))
+                {
+                    funcTypeIds.push(id);       // remember function typedefs
+                }
                 if (isalias)
                     s = new AST.AliasDeclaration(token.loc, id, dt);
             }
@@ -1743,7 +1772,8 @@ final class CParser(AST) : Parser!AST
                 }
                 // declare the symbol
                 assert(id);
-                if (dt.isTypeFunction())
+
+                if (isFunctionTypedef(dt))
                 {
                     if (hasInitializer)
                         error("no initializer for function declaration");
@@ -4544,6 +4574,239 @@ final class CParser(AST) : Parser!AST
             s = new AST.AlignDeclaration(s.loc, specifier.packalign, decls);
         }
         return s;
+    }
+
+    /********************************
+     * Determines if type t is a function type.
+     * Make this work without needing semantic analysis.
+     * Params:
+     *  t = type to test
+     * Returns:
+     *  true if it represents a function
+     */
+    bool isFunctionTypedef(AST.Type t)
+    {
+        //printf("isFunctionTypedef() %s\n", t.toChars());
+        if (t.isTypeFunction())
+            return true;
+        if (auto tid = t.isTypeIdentifier())
+        {
+            /* Scan array of typedef identifiers that are an alias for
+             * a function type
+             */
+            foreach (ftid; funcTypeIds[])
+            {
+                if (tid.ident == ftid)
+                {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    //}
+
+    /******************************************************************************/
+    /********************************* Directive Parser ***************************/
+    //{
+
+    override bool parseSpecialTokenSequence()
+    {
+        Token n;
+        scan(&n);
+        if (n.value == TOK.int32Literal)
+        {
+            poundLine(n, true);
+            return true;
+        }
+        if (n.value == TOK.identifier)
+        {
+            if (n.ident == Id.line)
+            {
+                poundLine(n, false);
+                return true;
+            }
+            else if (n.ident == Id.__pragma)
+            {
+                pragmaDirective(scanloc);
+                return true;
+            }
+        }
+        error("C preprocessor directive `#%s` is not supported", n.toChars());
+        return false;
+    }
+
+    /*********************************************
+     * C11 6.10.6 Pragma directive
+     * # pragma pp-tokens(opt) new-line
+     * The C preprocessor sometimes leaves pragma directives in
+     * the preprocessed output. Ignore them.
+     * Upon return, p is at start of next line.
+     */
+    private void pragmaDirective(const ref Loc loc)
+    {
+        Token n;
+        scan(&n);
+        if (n.value == TOK.identifier && n.ident == Id.pack)
+            return pragmaPack(loc);
+        skipToNextLine();
+    }
+
+    /*********
+     * # pragma pack
+     * https://gcc.gnu.org/onlinedocs/gcc-4.4.4/gcc/Structure_002dPacking-Pragmas.html
+     * https://docs.microsoft.com/en-us/cpp/preprocessor/pack
+     * Scanner is on the `pack`
+     * Params:
+     *  startloc = location to use for error messages
+     */
+    private void pragmaPack(const ref Loc startloc)
+    {
+        const loc = startloc;
+        Token n;
+        scan(&n);
+        if (n.value != TOK.leftParenthesis)
+        {
+            error(loc, "left parenthesis expected to follow `#pragma pack`");
+            skipToNextLine();
+            return;
+        }
+
+        void closingParen()
+        {
+            if (n.value != TOK.rightParenthesis)
+            {
+                error(loc, "right parenthesis expected to close `#pragma pack(`");
+            }
+            skipToNextLine();
+        }
+
+        void setPackAlign(ref const Token t)
+        {
+            const n = t.unsvalue;
+            if (n < 1 || n & (n - 1) || ushort.max < n)
+                error(loc, "pack must be an integer positive power of 2, not 0x%llx", cast(ulong)n);
+            packalign.set(cast(uint)n);
+            packalign.setPack(true);
+        }
+
+        scan(&n);
+
+        if (!records)
+        {
+            records = new Array!Identifier;
+            packs = new Array!structalign_t;
+        }
+
+        /* # pragma pack ( show )
+         */
+        if (n.value == TOK.identifier && n.ident == Id.show)
+        {
+            if (packalign.isDefault())
+                warning(startloc, "current pack attribute is default");
+            else
+                warning(startloc, "current pack attribute is %d", packalign.get());
+            scan(&n);
+            return closingParen();
+        }
+        /* # pragma pack ( push )
+         * # pragma pack ( push , identifier )
+         * # pragma pack ( push , integer )
+         * # pragma pack ( push , identifier , integer )
+         */
+        if (n.value == TOK.identifier && n.ident == Id.push)
+        {
+            scan(&n);
+            Identifier record = null;
+            if (n.value == TOK.comma)
+            {
+                scan(&n);
+                if (n.value == TOK.identifier)
+                {
+                    record = n.ident;
+                    scan(&n);
+                    if (n.value == TOK.comma)
+                    {
+                        scan(&n);
+                        if (n.value == TOK.int32Literal)
+                        {
+                            setPackAlign(n);
+                            scan(&n);
+                        }
+                        else
+                            error(loc, "alignment value expected, not `%s`", n.toChars());
+                    }
+                }
+                else if (n.value == TOK.int32Literal)
+                {
+                    setPackAlign(n);
+                    scan(&n);
+                }
+                else
+                    error(loc, "alignment value expected, not `%s`", n.toChars());
+            }
+            this.records.push(record);
+            this.packs.push(packalign);
+            return closingParen();
+        }
+        /* # pragma pack ( pop )
+         * # pragma pack ( pop PopList )
+         * PopList :
+         *    , IdentifierOrInteger
+         *    , IdentifierOrInteger PopList
+         * IdentifierOrInteger:
+         *      identifier
+         *      integer
+         */
+        if (n.value == TOK.identifier && n.ident == Id.pop)
+        {
+            scan(&n);
+            while (n.value == TOK.comma)
+            {
+                scan(&n);
+                if (n.value == TOK.identifier)
+                {
+                    for (size_t len = this.records.length; len; --len)
+                    {
+                        if ((*this.records)[len - 1] == n.ident)
+                        {
+                            packalign = (*this.packs)[len - 1];
+                            this.records.setDim(len - 1);
+                            this.packs.setDim(len - 1);
+                            break;
+                        }
+                    }
+                    scan(&n);
+                }
+                else if (n.value == TOK.int32Literal)
+                {
+                    setPackAlign(n);
+                    this.records.push(null);
+                    this.packs.push(packalign);
+                    scan(&n);
+                }
+            }
+            return closingParen();
+        }
+        /* # pragma pack ( integer )
+         */
+        if (n.value == TOK.int32Literal)
+        {
+            setPackAlign(n);
+            scan(&n);
+            return closingParen();
+        }
+        /* # pragma pack ( )
+         */
+        if (n.value == TOK.rightParenthesis)
+        {
+            packalign.setDefault();
+            return closingParen();
+        }
+
+        error(loc, "unrecognized `#pragma pack(%s)`", n.toChars());
+        skipToNextLine();
     }
 
     //}

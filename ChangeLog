@@ -1,3 +1,8 @@
+2022-03-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* configure.ac: Fix incorrect option in comment.
+	* configure: Regenerate.
+
 2022-03-09  Hans-Peter Nilsson  <hp@axis.com>
 
 	* Makefile.def (dependencies): Make configure-sim depend on

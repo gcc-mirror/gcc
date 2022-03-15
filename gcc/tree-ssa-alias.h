@@ -119,6 +119,8 @@ extern alias_set_type ao_ref_alias_set (ao_ref *);
 extern alias_set_type ao_ref_base_alias_set (ao_ref *);
 extern tree ao_ref_alias_ptr_type (ao_ref *);
 extern tree ao_ref_base_alias_ptr_type (ao_ref *);
+extern bool ao_ref_alignment (ao_ref *, unsigned int *,
+			      unsigned HOST_WIDE_INT *);
 extern bool ptr_deref_may_alias_global_p (tree);
 extern bool ptr_derefs_may_alias_p (tree, tree);
 extern bool ptrs_compare_unequal (tree, tree);

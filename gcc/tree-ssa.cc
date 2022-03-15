@@ -1742,6 +1742,7 @@ execute_update_addresses_taken (void)
   auto_bitmap addresses_taken;
   auto_bitmap not_reg_needs;
   auto_bitmap suitable_for_renaming;
+  bool optimistic_not_addressable = false;
   tree var;
   unsigned i;
 
@@ -1770,6 +1771,8 @@ execute_update_addresses_taken (void)
 		  gimple_call_set_arg (stmt, 1, null_pointer_node);
 		  gimple_ior_addresses_taken (addresses_taken, stmt);
 		  gimple_call_set_arg (stmt, 1, arg);
+		  /* Remember we have to check again below.  */
+		  optimistic_not_addressable = true;
 		}
 	      else if (is_asan_mark_p (stmt)
 		       || gimple_call_internal_p (stmt, IFN_GOMP_SIMT_ENTER))
@@ -1873,7 +1876,8 @@ execute_update_addresses_taken (void)
 
   /* Operand caches need to be recomputed for operands referencing the updated
      variables and operands need to be rewritten to expose bare symbols.  */
-  if (!bitmap_empty_p (suitable_for_renaming))
+  if (!bitmap_empty_p (suitable_for_renaming)
+      || optimistic_not_addressable)
     {
       FOR_EACH_BB_FN (bb, cfun)
 	for (gimple_stmt_iterator gsi = gsi_start_bb (bb); !gsi_end_p (gsi);)
@@ -2064,12 +2068,18 @@ execute_update_addresses_taken (void)
 		if (optimize_atomic_compare_exchange_p (stmt))
 		  {
 		    tree expected = gimple_call_arg (stmt, 1);
-		    if (bitmap_bit_p (suitable_for_renaming,
-				      DECL_UID (TREE_OPERAND (expected, 0))))
+		    tree decl = TREE_OPERAND (expected, 0);
+		    if (bitmap_bit_p (suitable_for_renaming, DECL_UID (decl)))
 		      {
 			fold_builtin_atomic_compare_exchange (&gsi);
 			continue;
 		      }
+		    else if (!TREE_ADDRESSABLE (decl))
+		      /* If there are partial defs of the decl we may
+			 have cleared the addressable bit but set
+			 DECL_NOT_GIMPLE_REG_P.  We have to restore
+			 TREE_ADDRESSABLE here.  */
+		      TREE_ADDRESSABLE (decl) = 1;
 		  }
 		else if (is_asan_mark_p (stmt))
 		  {

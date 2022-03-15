@@ -2140,6 +2140,12 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
 
         Module.dprogress++;
 
+        // @@@DEPRECATED_2.110@@@ https://dlang.org/deprecate.html#scope%20as%20a%20type%20constraint
+        // Deprecated in 2.100
+        // Make an error in 2.110
+        if (sc.stc & STC.scope_)
+            deprecation(ed.loc, "`scope` as a type constraint is deprecated.  Use `scope` at the usage site.");
+
         Scope* sce;
         if (ed.isAnonymous())
             sce = sc;
@@ -3085,6 +3091,25 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
             return null;
         }
 
+        if (sc.flags & SCOPE.Cfile)
+        {
+            /* C11 allows a function to be declared with a typedef, D does not.
+             */
+            if (auto ti = funcdecl.type.isTypeIdentifier())
+            {
+                auto tj = ti.typeSemantic(funcdecl.loc, sc);
+                if (auto tjf = tj.isTypeFunction())
+                {
+                    /* Copy the type instead of just pointing to it,
+                     * as we don't merge function types
+                     */
+                    auto tjf2 = new TypeFunction(tjf.parameterList, tjf.next, tjf.linkage);
+                    funcdecl.type = tjf2;
+                    funcdecl.originalType = tjf2;
+                }
+            }
+        }
+
         if (!getFunctionType(funcdecl))
             return;
 
@@ -3550,6 +3575,15 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
 
             default:
                 {
+                    if (vi >= cd.vtbl.length)
+                    {
+                        /* the derived class cd doesn't have its vtbl[] allocated yet.
+                         * https://issues.dlang.org/show_bug.cgi?id=21008
+                         */
+                        funcdecl.error("circular reference to class `%s`", cd.toChars());
+                        funcdecl.errors = true;
+                        return;
+                    }
                     FuncDeclaration fdv = cd.baseClass.vtbl[vi].isFuncDeclaration();
                     FuncDeclaration fdc = cd.vtbl[vi].isFuncDeclaration();
                     // This function is covariant with fdv
@@ -4625,6 +4659,12 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
             sd.deferred.semantic2(sc);
             sd.deferred.semantic3(sc);
         }
+
+        // @@@DEPRECATED_2.110@@@ https://dlang.org/deprecate.html#scope%20as%20a%20type%20constraint
+        // Deprecated in 2.100
+        // Make an error in 2.110
+        if (sd.storage_class & STC.scope_)
+            deprecation(sd.loc, "`scope` as a type constraint is deprecated.  Use `scope` at the usage site.");
     }
 
     void interfaceSemantic(ClassDeclaration cd)
@@ -5283,12 +5323,11 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
         }
         //printf("-ClassDeclaration.dsymbolSemantic(%s), type = %p, sizeok = %d, this = %p\n", toChars(), type, sizeok, this);
 
-        // @@@DEPRECATED_2.097@@@ https://dlang.org/deprecate.html#scope%20as%20a%20type%20constraint
-        // Deprecated in 2.087
-        // Make an error in 2.091
+        // @@@DEPRECATED_2.110@@@ https://dlang.org/deprecate.html#scope%20as%20a%20type%20constraint
+        // Deprecated in 2.100
+        // Make an error in 2.110
         // Don't forget to remove code at https://github.com/dlang/dmd/blob/b2f8274ba76358607fc3297a1e9f361480f9bcf9/src/dmd/dsymbolsem.d#L1032-L1036
-        if (0 &&          // deprecation disabled for now to accommodate existing extensive use
-            cldec.storage_class & STC.scope_)
+        if (cldec.storage_class & STC.scope_)
             deprecation(cldec.loc, "`scope` as a type constraint is deprecated.  Use `scope` at the usage site.");
     }
 

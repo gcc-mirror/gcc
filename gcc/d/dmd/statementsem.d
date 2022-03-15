@@ -866,7 +866,6 @@ package (dmd) extern (C++) final class StatementSemanticVisitor : Visitor
                             assert(t.ty == Tdelegate);
                             tfld = cast(TypeFunction)t.nextOf();
                         }
-                        //printf("tfld = %s\n", tfld.toChars());
                     }
                 }
             }
@@ -1442,12 +1441,12 @@ package (dmd) extern (C++) final class StatementSemanticVisitor : Visitor
         /* Call:
          *      _aApply(aggr, flde)
          */
-        __gshared const(char)** fntab =
+        static immutable fntab =
         [
          "cc", "cw", "cd",
          "wc", "cc", "wd",
          "dc", "dw", "dd"
-         ];
+        ];
 
         const(size_t) BUFFER_LEN = 7 + 1 + 2 + dim.sizeof * 3 + 1;
         char[BUFFER_LEN] fdname;
@@ -1470,7 +1469,7 @@ package (dmd) extern (C++) final class StatementSemanticVisitor : Visitor
                 assert(0);
         }
         const(char)* r = (fs.op == TOK.foreach_reverse_) ? "R" : "";
-        int j = sprintf(fdname.ptr, "_aApply%s%.*s%llu", r, 2, fntab[flag], cast(ulong)dim);
+        int j = sprintf(fdname.ptr, "_aApply%s%.*s%llu", r, 2, fntab[flag].ptr, cast(ulong)dim);
         assert(j < BUFFER_LEN);
 
         FuncDeclaration fdapply;
@@ -2475,68 +2474,66 @@ package (dmd) extern (C++) final class StatementSemanticVisitor : Visitor
             Expression initialExp = cs.exp;
 
             // The switch'ed value has errors and doesn't provide the actual type
-            // Don't touch the case to not replace it with an `ErrorExp` even if it is valid
+            // Omit the cast to enable further semantic (exluding the check for matching types)
             if (sw.condition.type && !sw.condition.type.isTypeError())
-            {
                 cs.exp = cs.exp.implicitCastTo(sc, sw.condition.type);
-                cs.exp = cs.exp.optimize(WANTvalue | WANTexpand);
+            cs.exp = cs.exp.optimize(WANTvalue | WANTexpand);
 
-                Expression e = cs.exp;
-                // Remove all the casts the user and/or implicitCastTo may introduce
-                // otherwise we'd sometimes fail the check below.
-                while (e.op == EXP.cast_)
-                    e = (cast(CastExp)e).e1;
+            Expression e = cs.exp;
+            // Remove all the casts the user and/or implicitCastTo may introduce
+            // otherwise we'd sometimes fail the check below.
+            while (e.op == EXP.cast_)
+                e = (cast(CastExp)e).e1;
 
-                /* This is where variables are allowed as case expressions.
-                */
-                if (e.op == EXP.variable)
+            /* This is where variables are allowed as case expressions.
+            */
+            if (e.op == EXP.variable)
+            {
+                VarExp ve = cast(VarExp)e;
+                VarDeclaration v = ve.var.isVarDeclaration();
+                Type t = cs.exp.type.toBasetype();
+                if (v && (t.isintegral() || t.ty == Tclass))
                 {
-                    VarExp ve = cast(VarExp)e;
-                    VarDeclaration v = ve.var.isVarDeclaration();
-                    Type t = cs.exp.type.toBasetype();
-                    if (v && (t.isintegral() || t.ty == Tclass))
+                    /* Flag that we need to do special code generation
+                    * for this, i.e. generate a sequence of if-then-else
+                    */
+                    sw.hasVars = 1;
+
+                    /* TODO check if v can be uninitialized at that point.
+                    */
+                    if (!v.isConst() && !v.isImmutable())
                     {
-                        /* Flag that we need to do special code generation
-                        * for this, i.e. generate a sequence of if-then-else
-                        */
-                        sw.hasVars = 1;
+                        cs.error("`case` variables have to be `const` or `immutable`");
+                    }
 
-                        /* TODO check if v can be uninitialized at that point.
-                        */
-                        if (!v.isConst() && !v.isImmutable())
-                        {
-                            cs.error("`case` variables have to be `const` or `immutable`");
-                        }
+                    if (sw.isFinal)
+                    {
+                        cs.error("`case` variables not allowed in `final switch` statements");
+                        errors = true;
+                    }
 
-                        if (sw.isFinal)
+                    /* Find the outermost scope `scx` that set `sw`.
+                    * Then search scope `scx` for a declaration of `v`.
+                    */
+                    for (Scope* scx = sc; scx; scx = scx.enclosing)
+                    {
+                        if (scx.enclosing && scx.enclosing.sw == sw)
+                            continue;
+                        assert(scx.sw == sw);
+
+                        if (!scx.search(cs.exp.loc, v.ident, null))
                         {
-                            cs.error("`case` variables not allowed in `final switch` statements");
+                            cs.error("`case` variable `%s` declared at %s cannot be declared in `switch` body",
+                                v.toChars(), v.loc.toChars());
                             errors = true;
                         }
-
-                        /* Find the outermost scope `scx` that set `sw`.
-                        * Then search scope `scx` for a declaration of `v`.
-                        */
-                        for (Scope* scx = sc; scx; scx = scx.enclosing)
-                        {
-                            if (scx.enclosing && scx.enclosing.sw == sw)
-                                continue;
-                            assert(scx.sw == sw);
-
-                            if (!scx.search(cs.exp.loc, v.ident, null))
-                            {
-                                cs.error("`case` variable `%s` declared at %s cannot be declared in `switch` body",
-                                    v.toChars(), v.loc.toChars());
-                                errors = true;
-                            }
-                            break;
-                        }
-                        goto L1;
+                        break;
                     }
+                    goto L1;
                 }
-                else
-                    cs.exp = cs.exp.ctfeInterpret();
             }
+            else
+                cs.exp = cs.exp.ctfeInterpret();
 
             if (StringExp se = cs.exp.toStringExp())
                 cs.exp = se;

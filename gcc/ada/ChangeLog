@@ -1,3 +1,9 @@
+2022-03-10  Richard Biener  <rguenther@suse.de>
+
+	PR ada/104861
+	* gcc-interface/Makefile.in (target_noncanonical): Substitute.
+	(OSCONS_CPP): Pass target_noncanonical as TARGET.
+
 2022-02-13  Maciej W. Rozycki  <macro@orcam.me.uk>
 
 	PR ada/98724

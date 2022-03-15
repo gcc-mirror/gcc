@@ -799,8 +799,15 @@ all_symbols_read_handler (void)
       char *arg;
       char *offload_objects_file_name;
       struct plugin_offload_file *ofld;
+      const char *suffix = ".ofldlist";
 
-      offload_objects_file_name = make_temp_file (".ofldlist");
+      if (save_temps && link_output_name)
+	{
+	  suffix += skip_in_suffix;
+	  offload_objects_file_name = concat (link_output_name, suffix, NULL);
+	}
+      else
+	offload_objects_file_name = make_temp_file (suffix);
       check (offload_objects_file_name, LDPL_FATAL,
 	     "Failed to generate a temporary file name");
       f = fopen (offload_objects_file_name, "w");

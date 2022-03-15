@@ -2,7 +2,8 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/dephexstrings.d(8): Error: Built-in hex string literals are obsolete, use `std.conv.hexString!"60"` instead.
+fail_compilation/dephexstrings.d(9): Error: semicolon expected following auto declaration, not `"60"`
+fail_compilation/dephexstrings.d(9): Error: declaration expected, not `"60"`
 ---
 */
 enum xstr = x"60";

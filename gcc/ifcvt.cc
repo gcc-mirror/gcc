@@ -5251,12 +5251,15 @@ find_if_case_1 (basic_block test_bb, edge then_edge, edge else_edge)
   if ((BB_END (then_bb)
        && JUMP_P (BB_END (then_bb))
        && CROSSING_JUMP_P (BB_END (then_bb)))
-      || (BB_END (test_bb)
-	  && JUMP_P (BB_END (test_bb))
+      || (JUMP_P (BB_END (test_bb))
 	  && CROSSING_JUMP_P (BB_END (test_bb)))
       || (BB_END (else_bb)
 	  && JUMP_P (BB_END (else_bb))
 	  && CROSSING_JUMP_P (BB_END (else_bb))))
+    return FALSE;
+
+  /* Verify test_bb ends in a conditional jump with no other side-effects.  */
+  if (!onlyjump_p (BB_END (test_bb)))
     return FALSE;
 
   /* THEN has one successor.  */
@@ -5372,12 +5375,15 @@ find_if_case_2 (basic_block test_bb, edge then_edge, edge else_edge)
   if ((BB_END (then_bb)
        && JUMP_P (BB_END (then_bb))
        && CROSSING_JUMP_P (BB_END (then_bb)))
-      || (BB_END (test_bb)
-	  && JUMP_P (BB_END (test_bb))
+      || (JUMP_P (BB_END (test_bb))
 	  && CROSSING_JUMP_P (BB_END (test_bb)))
       || (BB_END (else_bb)
 	  && JUMP_P (BB_END (else_bb))
 	  && CROSSING_JUMP_P (BB_END (else_bb))))
+    return FALSE;
+
+  /* Verify test_bb ends in a conditional jump with no other side-effects.  */
+  if (!onlyjump_p (BB_END (test_bb)))
     return FALSE;
 
   /* ELSE has one successor.  */
