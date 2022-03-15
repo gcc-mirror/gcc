@@ -165,6 +165,10 @@ static const struct riscv_ext_version riscv_ext_version_table[] =
   {"zksh",  ISA_SPEC_CLASS_NONE, 1, 0},
   {"zkt",   ISA_SPEC_CLASS_NONE, 1, 0},
 
+  {"zk",    ISA_SPEC_CLASS_NONE, 1, 0},
+  {"zkn",   ISA_SPEC_CLASS_NONE, 1, 0},
+  {"zks",   ISA_SPEC_CLASS_NONE, 1, 0},
+
   {"zve32x", ISA_SPEC_CLASS_NONE, 1, 0},
   {"zve32f", ISA_SPEC_CLASS_NONE, 1, 0},
   {"zve32d", ISA_SPEC_CLASS_NONE, 1, 0},
