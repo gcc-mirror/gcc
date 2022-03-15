@@ -2325,6 +2325,8 @@ determine_specialization (tree template_id,
 		continue;
 	      if (freq)
 		{
+		  /* C++20 CA104: Substitute directly into the
+		     constraint-expression.  */
 		  tree fargs = DECL_TI_ARGS (fn);
 		  tsubst_flags_t complain = tf_none;
 		  freq = tsubst_constraint (freq, fargs, complain, fn);
