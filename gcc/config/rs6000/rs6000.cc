@@ -5804,20 +5804,28 @@ rs6000_machine_from_flags (void)
   if (rs6000_cpu == PROCESSOR_MPCCORE)
     return "\"821\"";
 
+#if 0
+  /* This (and ppc64 below) are disabled here (for now at least) because
+     PROCESSOR_POWERPC, PROCESSOR_POWERPC64, and PROCESSOR_COMMON
+     are #define'd as some of these.  Untangling that is a job for later.  */
+
   /* 600 series and 700 series, "classic" */
   if (rs6000_cpu == PROCESSOR_PPC601 || rs6000_cpu == PROCESSOR_PPC603
       || rs6000_cpu == PROCESSOR_PPC604 || rs6000_cpu == PROCESSOR_PPC604e
-      || rs6000_cpu == PROCESSOR_PPC750 || rs6000_cpu == PROCESSOR_POWERPC)
+      || rs6000_cpu == PROCESSOR_PPC750)
     return "ppc";
+#endif
 
   /* Classic with AltiVec, "G4" */
   if (rs6000_cpu == PROCESSOR_PPC7400 || rs6000_cpu == PROCESSOR_PPC7450)
     return "\"7450\"";
 
+#if 0
   /* The older 64-bit CPUs */
   if (rs6000_cpu == PROCESSOR_PPC620 || rs6000_cpu == PROCESSOR_PPC630
-      || rs6000_cpu == PROCESSOR_RS64A || rs6000_cpu == PROCESSOR_POWERPC64)
+      || rs6000_cpu == PROCESSOR_RS64A)
     return "ppc64";
+#endif
 
   HOST_WIDE_INT flags = rs6000_isa_flags;
 

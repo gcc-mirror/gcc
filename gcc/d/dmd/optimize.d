@@ -338,9 +338,9 @@ Expression Expression_optimize(Expression e, int result, bool keepLvalue)
     void visitTuple(TupleExp e)
     {
         expOptimize(e.e0, WANTvalue);
-        for (size_t i = 0; i < e.exps.dim; i++)
+        foreach (ref ex; (*e.exps)[])
         {
-            expOptimize((*e.exps)[i], WANTvalue);
+            expOptimize(ex, WANTvalue);
         }
     }
 
@@ -349,9 +349,9 @@ Expression Expression_optimize(Expression e, int result, bool keepLvalue)
         if (e.elements)
         {
             expOptimize(e.basis, result & WANTexpand);
-            for (size_t i = 0; i < e.elements.dim; i++)
+            foreach (ref ex; (*e.elements)[])
             {
-                expOptimize((*e.elements)[i], result & WANTexpand);
+                expOptimize(ex, result & WANTexpand);
             }
         }
     }
@@ -359,9 +359,9 @@ Expression Expression_optimize(Expression e, int result, bool keepLvalue)
     void visitAssocArrayLiteral(AssocArrayLiteralExp e)
     {
         assert(e.keys.dim == e.values.dim);
-        for (size_t i = 0; i < e.keys.dim; i++)
+        foreach (i, ref ekey; (*e.keys)[])
         {
-            expOptimize((*e.keys)[i], result & WANTexpand);
+            expOptimize(ekey, result & WANTexpand);
             expOptimize((*e.values)[i], result & WANTexpand);
         }
     }
@@ -374,9 +374,9 @@ Expression Expression_optimize(Expression e, int result, bool keepLvalue)
         e.stageflags |= stageOptimize;
         if (e.elements)
         {
-            for (size_t i = 0; i < e.elements.dim; i++)
+            foreach (ref ex; (*e.elements)[])
             {
-                expOptimize((*e.elements)[i], result & WANTexpand);
+                expOptimize(ex, result & WANTexpand);
             }
         }
         e.stageflags = old;
@@ -647,9 +647,9 @@ Expression Expression_optimize(Expression e, int result, bool keepLvalue)
         // Optimize parameters
         if (e.arguments)
         {
-            for (size_t i = 0; i < e.arguments.dim; i++)
+            foreach (ref arg; (*e.arguments)[])
             {
-                expOptimize((*e.arguments)[i], WANTvalue);
+                expOptimize(arg, WANTvalue);
             }
         }
     }
@@ -663,16 +663,16 @@ Expression Expression_optimize(Expression e, int result, bool keepLvalue)
         if (e.arguments)
         {
             Type t1 = e.e1.type.toBasetype();
-            if (t1.ty == Tdelegate)
-                t1 = t1.nextOf();
+            if (auto td = t1.isTypeDelegate())
+                t1 = td.next;
             // t1 can apparently be void for __ArrayDtor(T) calls
             if (auto tf = t1.isTypeFunction())
             {
-                for (size_t i = 0; i < e.arguments.dim; i++)
+                foreach (i, ref arg; (*e.arguments)[])
                 {
                     Parameter p = tf.parameterList[i];
                     bool keep = p && p.isReference();
-                    expOptimize((*e.arguments)[i], WANTvalue, keep);
+                    expOptimize(arg, WANTvalue, keep);
                 }
             }
         }
@@ -719,14 +719,17 @@ Expression Expression_optimize(Expression e, int result, bool keepLvalue)
             }
         }
 
+        // Returning e.e1 with changing its type
+        void returnE_e1()
+        {
+            ret = (e1old == e.e1 ? e.e1.copy() : e.e1);
+            ret.type = e.type;
+        }
+
         if (e.e1.op == EXP.structLiteral && e.e1.type.implicitConvTo(e.type) >= MATCH.constant)
         {
             //printf(" returning2 %s\n", e.e1.toChars());
-        L1:
-            // Returning e1 with changing its type
-            ret = (e1old == e.e1 ? e.e1.copy() : e.e1);
-            ret.type = e.type;
-            return;
+            return returnE_e1();
         }
         /* The first test here is to prevent infinite loops
          */
@@ -738,7 +741,7 @@ Expression Expression_optimize(Expression e, int result, bool keepLvalue)
         if (e.e1.op == EXP.null_ && (e.type.ty == Tpointer || e.type.ty == Tclass || e.type.ty == Tarray))
         {
             //printf(" returning3 %s\n", e.e1.toChars());
-            goto L1;
+            return returnE_e1();
         }
         if (e.type.ty == Tclass && e.e1.type.ty == Tclass)
         {
@@ -750,7 +753,7 @@ Expression Expression_optimize(Expression e, int result, bool keepLvalue)
             if (cdfrom.errors || cdto.errors)
                 return error();
             if (cdto == ClassDeclaration.object && !cdfrom.isInterfaceDeclaration())
-                goto L1;    // can always convert a class to Object
+                return returnE_e1();    // can always convert a class to Object
             // Need to determine correct offset before optimizing away the cast.
             // https://issues.dlang.org/show_bug.cgi?id=16980
             cdfrom.size(e.loc);
@@ -760,13 +763,13 @@ Expression Expression_optimize(Expression e, int result, bool keepLvalue)
             if (cdto.isBaseOf(cdfrom, &offset) && offset == 0)
             {
                 //printf(" returning4 %s\n", e.e1.toChars());
-                goto L1;
+                return returnE_e1();
             }
         }
         if (e.e1.type.mutableOf().unSharedOf().equals(e.to.mutableOf().unSharedOf()))
         {
             //printf(" returning5 %s\n", e.e1.toChars());
-            goto L1;
+            return returnE_e1();
         }
         if (e.e1.isConst())
         {
@@ -781,7 +784,7 @@ Expression Expression_optimize(Expression e, int result, bool keepLvalue)
                         return error();
 
                     if (esz == e1sz)
-                        goto L1;
+                        return returnE_e1();
                 }
                 return;
             }
@@ -1065,7 +1068,7 @@ Expression Expression_optimize(Expression e, int result, bool keepLvalue)
         // Don't optimize to an array literal element directly in case an lvalue is requested
         if (keepLvalue && ex.op == EXP.arrayLiteral)
             return;
-        ret = Index(e.type, ex, e.e2).copy();
+        ret = Index(e.type, ex, e.e2, e.indexIsInBounds).copy();
         if (CTFEExp.isCantExp(ret) || (!ret.isErrorExp() && keepLvalue && !ret.isLvalue()))
             ret = e;
     }

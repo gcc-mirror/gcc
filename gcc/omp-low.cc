@@ -1501,11 +1501,14 @@ scan_sharing_clauses (tree clauses, omp_context *ctx)
 	    {
 	      gcc_checking_assert (DECL_P (decl));
 
-	      gcc_checking_assert (!TREE_ADDRESSABLE (decl));
-	      if (!make_addressable_vars)
-		make_addressable_vars = BITMAP_ALLOC (NULL);
-	      bitmap_set_bit (make_addressable_vars, DECL_UID (decl));
-	      TREE_ADDRESSABLE (decl) = 1;
+	      bool decl_addressable = TREE_ADDRESSABLE (decl);
+	      if (!decl_addressable)
+		{
+		  if (!make_addressable_vars)
+		    make_addressable_vars = BITMAP_ALLOC (NULL);
+		  bitmap_set_bit (make_addressable_vars, DECL_UID (decl));
+		  TREE_ADDRESSABLE (decl) = 1;
+		}
 
 	      if (dump_enabled_p ())
 		{
@@ -1517,10 +1520,16 @@ scan_sharing_clauses (tree clauses, omp_context *ctx)
 # pragma GCC diagnostic push
 # pragma GCC diagnostic ignored "-Wformat"
 #endif
-		  dump_printf_loc (MSG_NOTE, d_u_loc,
-				   "variable %<%T%>"
-				   " made addressable\n",
-				   decl);
+		  if (!decl_addressable)
+		    dump_printf_loc (MSG_NOTE, d_u_loc,
+				     "variable %<%T%>"
+				     " made addressable\n",
+				     decl);
+		  else
+		    dump_printf_loc (MSG_NOTE, d_u_loc,
+				     "variable %<%T%>"
+				     " already made addressable\n",
+				     decl);
 #if __GNUC__ >= 10
 # pragma GCC diagnostic pop
 #endif

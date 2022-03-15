@@ -233,7 +233,7 @@ called_as_built_in (tree node)
    If ADDR_P is true we are taking the address of the memory reference EXP
    and thus cannot rely on the access taking place.  */
 
-static bool
+bool
 get_object_alignment_2 (tree exp, unsigned int *alignp,
 			unsigned HOST_WIDE_INT *bitposp, bool addr_p)
 {

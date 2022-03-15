@@ -2283,6 +2283,7 @@ extern const char * built_in_names[(int) END_BUILTINS];
 /* Number of operands and names for each OMP_CLAUSE node.  */
 extern unsigned const char omp_clause_num_ops[];
 extern const char * const omp_clause_code_name[];
+extern const char *user_omp_clause_code_name (tree, bool);
 
 /* A vector of all translation-units.  */
 extern GTY (()) vec<tree, va_gc> *all_translation_units;

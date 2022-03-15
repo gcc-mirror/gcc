@@ -1,3 +1,10 @@
+2022-03-12  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR other/65095
+	* c-typeck.cc (handle_omp_array_sections_1)
+	(c_oacc_check_attachments): Call 'user_omp_clause_code_name'
+	instead of 'c_omp_map_clause_name'.
+
 2022-03-09  Joseph Myers  <joseph@codesourcery.com>
 
 	* c-typeck.cc (function_types_compatible_p): Do not handle C2X

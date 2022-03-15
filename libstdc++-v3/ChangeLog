@@ -1,3 +1,9 @@
+2022-03-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/104875
+	* src/c++11/codecvt.cc (read_utf8_code_point): Use char32_t to
+	hold octets that will be left-shifted.
+
 2022-03-10  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/104870

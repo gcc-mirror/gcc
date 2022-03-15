@@ -4511,6 +4511,9 @@ pass_waccess::check_dangling_stores (basic_block bb,
       if (!stmt)
 	break;
 
+      if (warning_suppressed_p (stmt, OPT_Wdangling_pointer_))
+	continue;
+
       if (is_gimple_call (stmt)
 	  && !(gimple_call_flags (stmt) & (ECF_CONST | ECF_PURE)))
 	/* Avoid looking before nonconst, nonpure calls since those might
@@ -4536,10 +4539,16 @@ pass_waccess::check_dangling_stores (basic_block bb,
 	}
       else if (TREE_CODE (lhs_ref.ref) == SSA_NAME)
 	{
-	  /* Avoid looking at or before stores into unknown objects.  */
 	  gimple *def_stmt = SSA_NAME_DEF_STMT (lhs_ref.ref);
 	  if (!gimple_nop_p (def_stmt))
+	    /* Avoid looking at or before stores into unknown objects.  */
 	    return;
+
+	  tree var = SSA_NAME_VAR (lhs_ref.ref);
+	  if (TREE_CODE (var) == PARM_DECL && DECL_BY_REFERENCE (var))
+	    /* Avoid by-value arguments transformed into by-reference.  */
+	    continue;
+
 	}
       else if (TREE_CODE (lhs_ref.ref) == MEM_REF)
 	{
@@ -4572,6 +4581,8 @@ pass_waccess::check_dangling_stores (basic_block bb,
 		      "storing the address of local variable %qD in %qE",
 		      rhs_ref.ref, lhs))
 	{
+	  suppress_warning (stmt, OPT_Wdangling_pointer_);
+
 	  location_t loc = DECL_SOURCE_LOCATION (rhs_ref.ref);
 	  inform (loc, "%qD declared here", rhs_ref.ref);
 

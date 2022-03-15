@@ -497,7 +497,7 @@ bool checkConstructorEscape(Scope* sc, CallExp ce, bool gag)
     {
         Expression arg = (*ce.arguments)[i];
         if (!arg.type.hasPointers())
-            return false;
+            continue;
 
         //printf("\targ[%d]: %s\n", i, arg.toChars());
 
@@ -620,7 +620,7 @@ bool checkAssignEscape(Scope* sc, Expression e, bool gag)
                 return false;
             if (va == fd.vthis) // `this` of a non-static member function is considered to be the first parameter
                 return true;
-            if (fd.parameters && fd.parameters.length && (*fd.parameters)[0] == va) // va is first parameter
+            if (!fd.vthis && fd.parameters && fd.parameters.length && (*fd.parameters)[0] == va) // va is first parameter
                 return true;
         }
         return false;
@@ -1029,7 +1029,6 @@ bool checkNewEscape(Scope* sc, Expression e, bool gag)
                  */
                 !(p.parent == sc.func))
             {
-                // Only look for errors if in module listed on command line
                 if (global.params.useDIP1000 == FeatureState.enabled   // https://issues.dlang.org/show_bug.cgi?id=17029
                     && sc.func.setUnsafe())     // https://issues.dlang.org/show_bug.cgi?id=20868
                 {
@@ -1095,7 +1094,6 @@ bool checkNewEscape(Scope* sc, Expression e, bool gag)
             continue;
 
         // https://dlang.org/spec/function.html#return-ref-parameters
-        // Only look for errors if in module listed on command line
         if (p == sc.func)
         {
             //printf("escaping reference to local ref variable %s\n", v.toChars());
@@ -1246,7 +1244,6 @@ private bool checkReturnEscapeImpl(Scope* sc, Expression e, bool refs, bool gag)
                 !(!refs && sc.func.isFuncDeclaration().getLevel(pfunc, sc.intypeof) > 0)
                )
             {
-                // Only look for errors if in module listed on command line
                 // https://issues.dlang.org/show_bug.cgi?id=17029
                 if (global.params.useDIP1000 == FeatureState.enabled && sc.func.setUnsafe())
                 {
@@ -1278,11 +1275,7 @@ private bool checkReturnEscapeImpl(Scope* sc, Expression e, bool refs, bool gag)
     {
         if (log)
         {
-            printf("byref `%s`\n", v.toChars());
-            if (v.storage_class & STC.return_) printf(" return");
-            if (v.storage_class & STC.ref_)    printf(" ref");
-            if (v.storage_class & STC.scope_)  printf(" scope");
-            printf("\n");
+            printf("byref `%s` %s\n", v.toChars(), toChars(buildScopeRef(v.storage_class)));
         }
 
         // 'featureState' tells us whether to emit an error or a deprecation,
@@ -1714,9 +1707,10 @@ void escapeByValue(Expression e, EscapeByResults* er, bool live = false)
                     {
                         Parameter p = tf.parameterList[i - j];
                         const stc = tf.parameterStorageClass(null, p);
-                        if ((stc & (STC.scope_)) && (stc & STC.return_))
+                        ScopeRef psr = buildScopeRef(stc);
+                        if (psr == ScopeRef.ReturnScope || psr == ScopeRef.Ref_ReturnScope)
                             arg.accept(this);
-                        else if ((stc & (STC.ref_)) && (stc & STC.return_))
+                        else if (psr == ScopeRef.ReturnRef || psr == ScopeRef.ReturnRef_Scope)
                         {
                             if (tf.isref)
                             {
@@ -1974,9 +1968,10 @@ void escapeByRef(Expression e, EscapeByResults* er, bool live = false)
                         {
                             Parameter p = tf.parameterList[i - j];
                             const stc = tf.parameterStorageClass(null, p);
-                            if ((stc & (STC.out_ | STC.ref_)) && (stc & STC.return_))
+                            ScopeRef psr = buildScopeRef(stc);
+                            if (psr == ScopeRef.ReturnRef || psr == ScopeRef.ReturnRef_Scope)
                                 arg.accept(this);
-                            else if ((stc & STC.scope_) && (stc & STC.return_))
+                            else if (psr == ScopeRef.ReturnScope || psr == ScopeRef.Ref_ReturnScope)
                             {
                                 if (auto de = arg.isDelegateExp())
                                 {

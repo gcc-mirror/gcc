@@ -229,13 +229,16 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 /* Simplify x - x.
    This is unsafe for certain floats even in non-IEEE formats.
    In IEEE, it is unsafe because it does wrong for NaNs.
+   PR middle-end/98420: x - x may be -0.0 with FE_DOWNWARD.
    Also note that operand_equal_p is always false if an operand
    is volatile.  */
 (simplify
  (minus @0 @0)
  (if (!FLOAT_TYPE_P (type)
       || (!tree_expr_maybe_nan_p (@0)
-	  && !tree_expr_maybe_infinite_p (@0)))
+	  && !tree_expr_maybe_infinite_p (@0)
+	  && (!HONOR_SIGN_DEPENDENT_ROUNDING (type)
+	      || !HONOR_SIGNED_ZEROS (type))))
   { build_zero_cst (type); }))
 (simplify
  (pointer_diff @@0 @0)

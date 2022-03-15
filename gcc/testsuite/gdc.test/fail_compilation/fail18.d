@@ -1,7 +1,7 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail18.d(14): Error: need upper and lower bound to slice pointer
+fail_compilation/fail18.d(14): Error: upper and lower bounds are needed to slice a pointer
 ---
 */
 

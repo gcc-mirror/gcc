@@ -133,7 +133,6 @@ enum class TOK : unsigned char
     // Leaf operators
     identifier,
     string_,
-    hexadecimalString,
     this_,
     super_,
     error,

@@ -245,7 +245,7 @@ The OpenMP 4.5 specification is fully supported.
       device memory mapped by an array section @tab P @tab
 @item Mapping of Fortran pointer and allocatable variables, including pointer
       and allocatable components of variables
-      @tab P @tab Mapping of vars with allocatable components unspported
+      @tab P @tab Mapping of vars with allocatable components unsupported
 @item @code{defaultmap} extensions @tab Y @tab
 @item @code{declare mapper} directive @tab N @tab
 @item @code{omp_get_supported_active_levels} routine @tab Y @tab

@@ -5195,7 +5195,7 @@ handle_omp_array_sections_1 (tree c, tree t, vec<tree> &types,
 	{
 	  error_at (OMP_CLAUSE_LOCATION (c),
 		    "expected single pointer in %qs clause",
-		    c_omp_map_clause_name (c, ort == C_ORT_ACC));
+		    user_omp_clause_code_name (c, ort == C_ORT_ACC));
 	  return error_mark_node;
 	}
     }
@@ -6653,7 +6653,7 @@ cp_oacc_check_attachments (tree c)
       if (TREE_CODE (type) != POINTER_TYPE)
 	{
 	  error_at (OMP_CLAUSE_LOCATION (c), "expected pointer in %qs clause",
-		    c_omp_map_clause_name (c, true));
+		    user_omp_clause_code_name (c, true));
 	  return true;
 	}
     }
@@ -12197,7 +12197,7 @@ finish_unary_fold_expr (tree expr, int op, tree_code dir)
 
   /* Build the fold expression.  */
   tree code = build_int_cstu (integer_type_node, abs (op));
-  tree fold = build_min_nt_loc (UNKNOWN_LOCATION, dir, code, pack);
+  tree fold = build_min_nt_loc (input_location, dir, code, pack);
   FOLD_EXPR_MODIFY_P (fold) = (op < 0);
   TREE_TYPE (fold) = build_dependent_operator_type (NULL_TREE,
 						    FOLD_EXPR_OP (fold),
@@ -12226,7 +12226,7 @@ finish_binary_fold_expr (tree pack, tree init, int op, tree_code dir)
 {
   pack = make_pack_expansion (pack);
   tree code = build_int_cstu (integer_type_node, abs (op));
-  tree fold = build_min_nt_loc (UNKNOWN_LOCATION, dir, code, pack, init);
+  tree fold = build_min_nt_loc (input_location, dir, code, pack, init);
   FOLD_EXPR_MODIFY_P (fold) = (op < 0);
   TREE_TYPE (fold) = build_dependent_operator_type (NULL_TREE,
 						    FOLD_EXPR_OP (fold),

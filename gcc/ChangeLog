@@ -1,3 +1,139 @@
+2022-03-14  Roger Sayle  <roger@nextmovesoftware.com>
+	    Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (peephole2 xorl;movb -> movzbl): Disable
+	transformation when *zero_extend<mode>si2 is not available.
+
+2022-03-14  Xi Ruoyao  <xry111@mengyan1223.wang>
+
+	* config/mips/mips.h (SUBTARGET_SHADOW_OFFSET): Define.
+	* config/mips/mips.cc (mips_option_override): Make
+	-fsanitize=address imply -fasynchronous-unwind-tables.  This is
+	needed by libasan for stack backtrace on MIPS.
+	(mips_asan_shadow_offset): Return SUBTARGET_SHADOW_OFFSET.
+
+2022-03-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/104778
+	* lra.cc (lra_substitute_pseudo): For debug_p mode, simplify
+	SUBREG, ZERO_EXTEND, SIGN_EXTEND, FLOAT or UNSIGNED_FLOAT if recursive
+	call simplified the first operand into VOIDmode constant.
+
+2022-03-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/102586
+	* doc/extend.texi (__builtin_clear_padding): Clearify that for C++
+	argument type should be pointer to trivially-copyable type unless it
+	is address of a variable or parameter.
+
+2022-03-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/99754
+	* config/i386/emmintrin.h (_mm_loadu_si32): Put loaded value into
+	first 	rather than last element of the vector, use __m32_u to do
+	a really unaligned load, use just 0 instead of (int)0.
+	(_mm_loadu_si16): Put loaded value into first rather than last
+	element of the vector, use __m16_u to do a really unaligned load,
+	use just 0 instead of (short)0.
+
+2022-03-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR other/104899
+	* config/bfin/bfin.cc (bfin_handle_longcall_attribute): Fix a typo
+	in diagnostic message - cannott -> cannot.  Use %< and %> around
+	names of attribute.  Avoid too long line.
+	* range-op.cc (operator_logical_and::op1_range): Fix up a typo
+	in comment - cannott -> cannot.  Use 2 spaces after . instead of one.
+
+2022-03-14  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/104666
+	* config/i386/i386-expand.cc
+	(ix86_check_builtin_isa_match):	New func.
+	(ix86_expand_builtin): Move code to
+	ix86_check_builtin_isa_match and call it.
+	* config/i386/i386-protos.h
+	(ix86_check_builtin_isa_match): Declare.
+	* config/i386/i386.cc (ix86_gimple_fold_builtin): Don't fold
+	builtin into gimple when isa mismatches.
+
+2022-03-13  Tobias Burnus  <tobias@codesourcery.com>
+
+	* doc/invoke.texi: Fix typos.
+	* doc/tm.texi.in: Remove duplicated word.
+	* doc/tm.texi: Regenerate.
+
+2022-03-12  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/104829
+	* config/rs6000/rs6000.cc (rs6000_machine_from_flags): Don't output
+	"ppc" and "ppc64" based on rs6000_cpu.
+
+2022-03-12  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR middle-end/100280
+	PR middle-end/104892
+	* omp-oacc-kernels-decompose.cc (omp_oacc_kernels_decompose_1):
+	Remove special handling of 'GOMP_MAP_FORCE_TOFROM'.
+
+2022-03-12  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR middle-end/100280
+	PR middle-end/104086
+	* omp-oacc-kernels-decompose.cc (omp_oacc_kernels_decompose_1):
+	Mark variables used in 'present' clauses as addressable.
+	* omp-low.cc (scan_sharing_clauses) <OMP_CLAUSE_MAP>: Gracefully
+	handle duplicate 'OMP_CLAUSE_MAP_DECL_MAKE_ADDRESSABLE'.
+
+2022-03-12  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR other/65095
+	* tree-core.h (user_omp_claus_code_name): Declare function.
+	* tree.cc (user_omp_clause_code_name): New function.
+
+2022-03-12  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR middle-end/98420
+	* match.pd (minus @0 @0): Additional checks for -fno-rounding-math
+	(the defaut) or -fno-signed-zeros.
+
+2022-03-12   Michael Meissner  <meissner@linux.ibm.com>
+
+	PR target/104868
+	* config/rs6000/vsx.md (extendditi2): Use a 'b' constraint when
+	moving from a GPR register to an Altivec register.
+
+2022-03-11  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR tree-optimization/98335
+	* config/i386/i386.md (peephole2): Eliminate redundant insv.
+	Combine movl followed by movb.  Transform xorl followed by
+	a suitable movb or movw into the equivalent movz[bw]l.
+
+2022-03-11  Roger Sayle  <roger@nextmovesoftware.com>
+	    Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/98335
+	* builtins.cc (get_object_alignment_2): Export.
+	* builtins.h (get_object_alignment_2): Likewise.
+	* tree-ssa-alias.cc (ao_ref_alignment): New.
+	* tree-ssa-alias.h (ao_ref_alignment): Declare.
+	* tree-ssa-dse.cc (compute_trims): Improve logic deciding whether
+	to align head/tail, writing more bytes but using fewer store insns.
+
+2022-03-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/104880
+	* tree-ssa.cc (execute_update_address_taken): Remember if we
+	optimistically made something not addressable and
+	prepare to undo it.
+
+2022-03-11  Richard Biener  <rguenther@suse.de>
+
+	PR target/104762
+	* config/i386/i386.cc (ix86_builtin_vectorization_cost): Do not
+	cost the first lane of SSE pieces as inserts for vec_construct.
+
 2022-03-10  Roger Sayle  <roger@nextmovesoftware.com>
 
 	PR c++/84964

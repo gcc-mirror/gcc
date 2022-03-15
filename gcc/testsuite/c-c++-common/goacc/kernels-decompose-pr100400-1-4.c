@@ -18,6 +18,8 @@ foo (void)
 {
   /* { dg-bogus {sorry, unimplemented: 'gimple_debug' not yet supported} {} { target *-*-* } .+1 } suppressed via '-fcompare-debug'.  */
 #pragma acc kernels /* { dg-line l_compute1 } */
+  /* { dg-note {OpenACC 'kernels' decomposition: variable 'p' in 'copy' clause requested to be made addressable} {} { target *-*-* } l_compute1 }
+     { dg-note {variable 'p' made addressable} {} { target *-*-* xfail c++ } l_compute1 } */
   /* { dg-note {variable 'c' declared in block is candidate for adjusting OpenACC privatization level} {} { xfail c++ } l_compute1 } */
   /* { dg-note {variable 'c\.0' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} {} { xfail c++ } l_compute1 } */
   {

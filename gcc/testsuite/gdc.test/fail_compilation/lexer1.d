@@ -1,8 +1,8 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/lexer1.d(30): Error: Built-in hex string literals are obsolete, use `std.conv.hexString!"01 02 03"w` instead.
-fail_compilation/lexer1.d(30): Error: declaration expected, not `x"01 02 03"w`
+fail_compilation/lexer1.d(30): Error: no identifier for declarator `x`
+fail_compilation/lexer1.d(30): Error: declaration expected, not `"01 02 03"w`
 fail_compilation/lexer1.d(31): Error: declaration expected, not `2147483649U`
 fail_compilation/lexer1.d(32): Error: declaration expected, not `0.1`
 fail_compilation/lexer1.d(33): Error: declaration expected, not `0.1f`

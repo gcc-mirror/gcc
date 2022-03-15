@@ -13,6 +13,7 @@ include:
 
 License: Boost License 1.0
 Authors: Paul Backus
+Source: $(PHOBOSSRC std/sumtype.d)
 +/
 module std.sumtype;
 

@@ -2015,8 +2015,39 @@ lra_substitute_pseudo (rtx *loc, int old_regno, rtx new_reg, bool subreg_p,
     {
       if (fmt[i] == 'e')
 	{
-	  if (lra_substitute_pseudo (&XEXP (x, i), old_regno,
-				     new_reg, subreg_p, debug_p))
+	  if (debug_p
+	      && i == 0
+	      && (code == SUBREG
+		  || code == ZERO_EXTEND
+		  || code == SIGN_EXTEND
+		  || code == FLOAT
+		  || code == UNSIGNED_FLOAT))
+	    {
+	      rtx y = XEXP (x, 0);
+	      if (lra_substitute_pseudo (&y, old_regno,
+					 new_reg, subreg_p, debug_p))
+		{
+		  result = true;
+		  if (CONST_SCALAR_INT_P (y))
+		    {
+		      if (code == SUBREG)
+			y = simplify_subreg (GET_MODE (x), y,
+					     GET_MODE (SUBREG_REG (x)),
+					     SUBREG_BYTE (x));
+		      else
+			y = simplify_unary_operation (code, GET_MODE (x), y,
+						      GET_MODE (XEXP (x, 0)));
+		      if (y)
+			*loc = y;
+		      else
+			*loc = gen_rtx_CLOBBER (GET_MODE (x), const0_rtx);
+		    }
+		  else
+		    XEXP (x, 0) = y;
+		}
+	    }
+	  else if (lra_substitute_pseudo (&XEXP (x, i), old_regno,
+					  new_reg, subreg_p, debug_p))
 	    result = true;
 	}
       else if (fmt[i] == 'E')
