@@ -806,6 +806,8 @@ decl_or_type_attrs (tree node)
 	return attrs;
 
       tree type = TREE_TYPE (node);
+      if (type == error_mark_node)
+	return NULL_TREE;
       return TYPE_ATTRIBUTES (type);
     }
 
