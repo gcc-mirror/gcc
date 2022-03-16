@@ -41,6 +41,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "file-prefix-map.h"
 #include "cgraph.h"
 #include "omp-general.h"
+#include "opts.h"
 
 /* Forward declarations.  */
 
@@ -2756,8 +2757,43 @@ cp_fold (tree x)
 
     case CALL_EXPR:
       {
-	int sv = optimize, nw = sv;
 	tree callee = get_callee_fndecl (x);
+
+	/* "Inline" calls to std::move/forward and other cast-like functions
+	   by simply folding them into a corresponding cast to their return
+	   type.  This is cheaper than relying on the middle end to do so, and
+	   also means we avoid generating useless debug info for them at all.
+
+	   At this point the argument has already been converted into a
+	   reference, so it suffices to use a NOP_EXPR to express the
+	   cast.  */
+	if ((OPTION_SET_P (flag_fold_simple_inlines)
+	     ? flag_fold_simple_inlines
+	     : !flag_no_inline)
+	    && call_expr_nargs (x) == 1
+	    && decl_in_std_namespace_p (callee)
+	    && DECL_NAME (callee) != NULL_TREE
+	    && (id_equal (DECL_NAME (callee), "move")
+		|| id_equal (DECL_NAME (callee), "forward")
+		|| id_equal (DECL_NAME (callee), "addressof")
+		/* This addressof equivalent is used heavily in libstdc++.  */
+		|| id_equal (DECL_NAME (callee), "__addressof")
+		|| id_equal (DECL_NAME (callee), "as_const")))
+	  {
+	    r = CALL_EXPR_ARG (x, 0);
+	    /* Check that the return and argument types are sane before
+	       folding.  */
+	    if (INDIRECT_TYPE_P (TREE_TYPE (x))
+		&& INDIRECT_TYPE_P (TREE_TYPE (r)))
+	      {
+		if (!same_type_p (TREE_TYPE (x), TREE_TYPE (r)))
+		  r = build_nop (TREE_TYPE (x), r);
+		x = cp_fold (r);
+		break;
+	      }
+	  }
+
+	int sv = optimize, nw = sv;
 
 	/* Some built-in function calls will be evaluated at compile-time in
 	   fold ().  Set optimize to 1 when folding __builtin_constant_p inside

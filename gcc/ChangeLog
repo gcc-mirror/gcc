@@ -1,3 +1,43 @@
+2022-03-15  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/104923
+	* config/rs6000/predicates.md (mma_disassemble_output_operand): Restrict
+	acceptable MEM addresses.
+
+2022-03-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/91229
+	* config/riscv/riscv.cc (riscv_pass_aggregate_in_fpr_pair_p,
+	riscv_pass_aggregate_in_fpr_and_gpr_p): Pass OPT_Wpsabi instead of 0
+	to warning calls.
+
+2022-03-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/104890
+	* config/i386/i386.h (LIBGCC2_UNWIND_ATTRIBUTE): Use no-mmx,no-sse
+	instead of general-regs-only.
+
+2022-03-15  Roger Sayle  <roger@nextmovesoftware.com>
+	    Marc Glisse  <marc.glisse@inria.fr>
+	    Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/101895
+	* match.pd (vec_same_elem_p): Handle CONSTRUCTOR_EXPR def.
+	(plus (vec_perm (mult ...) ...) ...): New reordering simplification.
+
+2022-03-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/104814
+	* ifcvt.cc (find_if_case_1, find_if_case_2): Punt if test_bb doesn't
+	end with onlyjump_p.  Assume BB_END (test_bb) is always non-NULL.
+
+2022-03-15  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/104436
+	* gimple-ssa-warn-access.cc (pass_waccess::check_dangling_stores):
+	Check for warning suppression.  Avoid by-value arguments transformed
+	into by-transparent-reference.
+
 2022-03-14  Roger Sayle  <roger@nextmovesoftware.com>
 	    Uroš Bizjak  <ubizjak@gmail.com>
 

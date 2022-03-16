@@ -1160,10 +1160,28 @@ types_match (tree t1, tree t2)
    non-SSA_NAME (ie constants) and zero uses to cope with uses
    that aren't linked up yet.  */
 
-static inline bool
-single_use (tree t)
+static bool
+single_use (const_tree) ATTRIBUTE_PURE;
+
+static bool
+single_use (const_tree t)
 {
-  return TREE_CODE (t) != SSA_NAME || has_zero_uses (t) || has_single_use (t);
+  if (TREE_CODE (t) != SSA_NAME)
+    return true;
+
+  /* Inline return has_zero_uses (t) || has_single_use (t);  */
+  const ssa_use_operand_t *const head = &(SSA_NAME_IMM_USE_NODE (t));
+  const ssa_use_operand_t *ptr;
+  bool single = false;
+
+  for (ptr = head->next; ptr != head; ptr = ptr->next)
+    if (USE_STMT(ptr) && !is_gimple_debug (USE_STMT (ptr)))
+      {
+        if (single)
+          return false;
+	single = true;
+      }
+  return true;
 }
 
 /* Return true if math operations should be canonicalized,
