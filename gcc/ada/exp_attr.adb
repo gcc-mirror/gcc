@@ -26,6 +26,7 @@
 with Aspects;        use Aspects;
 with Atree;          use Atree;
 with Checks;         use Checks;
+with Debug;          use Debug;
 with Einfo;          use Einfo;
 with Einfo.Entities; use Einfo.Entities;
 with Einfo.Utils;    use Einfo.Utils;
@@ -1792,23 +1793,30 @@ package body Exp_Attr is
          Push_Scope (Scope (Loop_Id));
       end if;
 
-      --  The analysis of the conditional block takes care of the constant
-      --  declaration.
+      --  Analyze constant declaration with simple value propagation disabled,
+      --  because the values at the loop entry might be different than the
+      --  values at the occurrence of Loop_Entry attribute.
 
-      if Present (Result) then
-         Rewrite (Loop_Stmt, Result);
-         Analyze (Loop_Stmt);
+      declare
+         Save_Debug_Flag_MM : constant Boolean := Debug_Flag_MM;
+      begin
+         Debug_Flag_MM := True;
 
-      --  The conditional block was analyzed when a previous 'Loop_Entry was
-      --  expanded. There is no point in reanalyzing the block, simply analyze
-      --  the declaration of the constant.
-
-      else
          if Present (Aux_Decl) then
             Analyze (Aux_Decl);
          end if;
 
          Analyze (Temp_Decl);
+
+         Debug_Flag_MM := Save_Debug_Flag_MM;
+      end;
+
+      --  If the conditional block has just been created, then analyze it;
+      --  otherwise it was analyzed when a previous 'Loop_Entry was expanded.
+
+      if Present (Result) then
+         Rewrite (Loop_Stmt, Result);
+         Analyze (Loop_Stmt);
       end if;
 
       Rewrite (N, New_Occurrence_Of (Temp_Id, Loc));
