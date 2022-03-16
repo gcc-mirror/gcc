@@ -2605,7 +2605,7 @@ maybe_warn_shift_overflow (location_t loc, tree op0, tree op1)
   unsigned int prec0 = TYPE_PRECISION (type0);
 
   /* Left-hand operand must be signed.  */
-  if (TYPE_UNSIGNED (type0) || cxx_dialect >= cxx20)
+  if (TYPE_OVERFLOW_WRAPS (type0) || cxx_dialect >= cxx20)
     return false;
 
   unsigned int min_prec = (wi::min_precision (wi::to_wide (op0), SIGNED)

@@ -4445,7 +4445,11 @@ void destroy(bool initialize = true, T)(T obj) if (is(T == class))
         }
     }
     else
-        rt_finalize(cast(void*)obj);
+    {
+        // Bypass overloaded opCast
+        auto ptr = (() @trusted => *cast(void**) &obj)();
+        rt_finalize(ptr);
+    }
 }
 
 /// ditto
@@ -4705,6 +4709,18 @@ nothrow unittest
     auto c = new C;
     destroy(c);
     assert(C.dtorCount == 1);
+}
+
+// https://issues.dlang.org/show_bug.cgi?id=22832
+nothrow unittest
+{
+    static struct A {}
+    static class B
+    {
+        A opCast(T : A)() { return A(); }
+    }
+
+    destroy(B.init);
 }
 
 /// ditto

@@ -254,7 +254,7 @@ namespace
     const size_t avail = from.size();
     if (avail == 0)
       return incomplete_mb_character;
-    unsigned char c1 = from[0];
+    char32_t c1 = (unsigned char) from[0];
     // https://en.wikipedia.org/wiki/UTF-8#Sample_code
     if (c1 < 0x80)
     {
@@ -267,7 +267,7 @@ namespace
     {
       if (avail < 2)
 	return incomplete_mb_character;
-      unsigned char c2 = from[1];
+      char32_t c2 = (unsigned char) from[1];
       if ((c2 & 0xC0) != 0x80)
 	return invalid_mb_sequence;
       char32_t c = (c1 << 6) + c2 - 0x3080;
@@ -279,12 +279,12 @@ namespace
     {
       if (avail < 3)
 	return incomplete_mb_character;
-      unsigned char c2 = from[1];
+      char32_t c2 = (unsigned char) from[1];
       if ((c2 & 0xC0) != 0x80)
 	return invalid_mb_sequence;
       if (c1 == 0xE0 && c2 < 0xA0) // overlong
 	return invalid_mb_sequence;
-      unsigned char c3 = from[2];
+      char32_t c3 = (unsigned char) from[2];
       if ((c3 & 0xC0) != 0x80)
 	return invalid_mb_sequence;
       char32_t c = (c1 << 12) + (c2 << 6) + c3 - 0xE2080;
@@ -296,17 +296,17 @@ namespace
     {
       if (avail < 4)
 	return incomplete_mb_character;
-      unsigned char c2 = from[1];
+      char32_t c2 = (unsigned char) from[1];
       if ((c2 & 0xC0) != 0x80)
 	return invalid_mb_sequence;
       if (c1 == 0xF0 && c2 < 0x90) // overlong
 	return invalid_mb_sequence;
       if (c1 == 0xF4 && c2 >= 0x90) // > U+10FFFF
       return invalid_mb_sequence;
-      unsigned char c3 = from[2];
+      char32_t c3 = (unsigned char) from[2];
       if ((c3 & 0xC0) != 0x80)
 	return invalid_mb_sequence;
-      unsigned char c4 = from[3];
+      char32_t c4 = (unsigned char) from[3];
       if ((c4 & 0xC0) != 0x80)
 	return invalid_mb_sequence;
       char32_t c = (c1 << 18) + (c2 << 12) + (c3 << 6) + c4 - 0x3C82080;

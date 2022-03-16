@@ -4111,8 +4111,6 @@ cp_parser_skip_to_pragma_eol (cp_parser* parser, cp_token *pragma_tok)
 
   if (pragma_tok)
     {
-      /* Ensure that the pragma is not parsed again.  */
-      cp_lexer_purge_tokens_after (parser->lexer, pragma_tok);
       parser->lexer->in_pragma = false;
       if (parser->lexer->in_omp_attribute_pragma
 	  && cp_lexer_next_token_is (parser->lexer, CPP_EOF))
@@ -7958,7 +7956,6 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
 static cp_expr
 cp_parser_parenthesized_expression_list_elt (cp_parser *parser, bool cast_p,
 					     bool allow_expansion_p,
-					     bool fold_expr_p,
 					     bool *non_constant_p)
 {
   cp_expr expr (NULL_TREE);
@@ -7984,9 +7981,6 @@ cp_parser_parenthesized_expression_list_elt (cp_parser *parser, bool cast_p,
     }
   else
     expr = cp_parser_assignment_expression (parser, /*pidk=*/NULL, cast_p);
-
-  if (fold_expr_p)
-    expr = instantiate_non_dependent_expr (expr);
 
   /* If we have an ellipsis, then this is an expression expansion.  */
   if (allow_expansion_p
@@ -8053,8 +8047,6 @@ cp_parser_postfix_open_square_expression (cp_parser *parser,
 							       false,
 							       /*allow_exp_p=*/
 							       true,
-							       /*fold_expr_p=*/
-							       false,
 							       /*non_cst_p=*/
 							       NULL);
 
@@ -8424,7 +8416,6 @@ cp_parser_parenthesized_expression_list (cp_parser* parser,
 					 bool wrap_locations_p)
 {
   vec<tree, va_gc> *expression_list;
-  bool fold_expr_p = is_attribute_list != non_attr;
   tree identifier = NULL_TREE;
   bool saved_greater_than_is_operator_p;
 
@@ -8467,7 +8458,6 @@ cp_parser_parenthesized_expression_list (cp_parser* parser,
 	    expr
 	      = cp_parser_parenthesized_expression_list_elt (parser, cast_p,
 							     allow_expansion_p,
-							     fold_expr_p,
 							     non_constant_p);
 
 	    if (wrap_locations_p)
@@ -16148,8 +16138,9 @@ cp_parser_linkage_specification (cp_parser* parser, tree prefix_attr)
   /* Transform the literal into an identifier.  If the literal is a
      wide-character string, or contains embedded NULs, then we can't
      handle it as the user wants.  */
-  if (strlen (TREE_STRING_POINTER (linkage))
-      != (size_t) (TREE_STRING_LENGTH (linkage) - 1))
+  if (linkage == error_mark_node
+      || strlen (TREE_STRING_POINTER (linkage))
+	 != (size_t) (TREE_STRING_LENGTH (linkage) - 1))
     {
       cp_parser_error (parser, "invalid linkage-specification");
       /* Assume C++ linkage.  */
@@ -18681,7 +18672,10 @@ cp_parser_template_name (cp_parser* parser,
 	  return error_mark_node;
 	}
       else if ((!DECL_P (decl) && !is_overloaded_fn (decl))
-	       || TREE_CODE (decl) == USING_DECL)
+	       || TREE_CODE (decl) == USING_DECL
+	       /* cp_parser_template_id can only handle some TYPE_DECLs.  */
+	       || (TREE_CODE (decl) == TYPE_DECL
+		   && TREE_CODE (TREE_TYPE (decl)) != TYPENAME_TYPE))
 	/* Repeat the lookup at instantiation time.  */
 	decl = identifier;
     }
@@ -32126,8 +32120,9 @@ cp_parser_late_parsing_for_member (cp_parser* parser, tree member_function)
   maybe_begin_member_template_processing (member_function);
 
   /* If the body of the function has not yet been parsed, parse it
-     now.  */
-  if (DECL_PENDING_INLINE_P (member_function))
+     now.  Except if the tokens have been purged (PR c++/39751).  */
+  if (DECL_PENDING_INLINE_P (member_function)
+      && !DECL_PENDING_INLINE_INFO (member_function)->first->purged_p)
     {
       tree function_scope;
       cp_token_cache *tokens;
@@ -39432,8 +39427,8 @@ cp_parser_omp_clause_map (cp_parser *parser, tree list)
       else
 	{
 	  cp_parser_error (parser, "%<#pragma omp target%> with "
-				   "modifier other than %<always%> or %<close%>"
-				   "on %<map%> clause");
+				   "modifier other than %<always%> or "
+				   "%<close%> on %<map%> clause");
 	  cp_parser_skip_to_closing_parenthesis (parser,
 						 /*recovering=*/true,
 						 /*or_comma=*/false,
@@ -48217,7 +48212,8 @@ synthesize_implicit_template_parm  (cp_parser *parser, tree constr)
      function template is equivalent to an explicit template.
 
      Note that DECL_ARTIFICIAL is used elsewhere for template parameters.  */
-  DECL_VIRTUAL_P (TREE_VALUE (new_parm)) = true;
+  if (TREE_VALUE (new_parm) != error_mark_node)
+    DECL_VIRTUAL_P (TREE_VALUE (new_parm)) = true;
 
   // Chain the new parameter to the list of implicit parameters.
   if (parser->implicit_template_parms)

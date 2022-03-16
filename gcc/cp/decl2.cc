@@ -1314,6 +1314,7 @@ is_late_template_attribute (tree attr, tree decl)
 	       /* But some attributes specifically apply to templates.  */
 	       && !is_attribute_p ("abi_tag", name)
 	       && !is_attribute_p ("deprecated", name)
+	       && !is_attribute_p ("unavailable", name)
 	       && !is_attribute_p ("visibility", name))
 	return true;
       else
@@ -5737,6 +5738,9 @@ decl_dependent_p (tree decl)
 bool
 mark_single_function (tree expr, tsubst_flags_t complain)
 {
+  expr = maybe_undo_parenthesized_ref (expr);
+  expr = tree_strip_any_location_wrapper (expr);
+
   if (is_overloaded_fn (expr) == 1
       && !mark_used (expr, complain)
       && (complain & tf_error))

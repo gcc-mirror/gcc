@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -march=haswell -mno-avx512f -mtune-ctrl=avx256_move_by_pieces" } */
+/* { dg-options "-O2 -mincoming-stack-boundary=4 -march=haswell -mno-avx512f -mtune-ctrl=avx256_move_by_pieces" } */
 
 struct _Unwind_Context
 {

@@ -5279,6 +5279,7 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
                     // The mangling change only works for D mangling
                 }
 
+                if (!(sc.flags & SCOPE.Cfile))
                 {
                     /* https://issues.dlang.org/show_bug.cgi?id=21272
                      * If we are in a foreach body we need to extract the
@@ -7057,19 +7058,10 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
                     return setError();
             }
         }
-        else if (exp.e1.op == EXP.call)
+        else if (auto ce = exp.e1.isCallExp())
         {
-            CallExp ce = cast(CallExp)exp.e1;
-            if (ce.e1.type.ty == Tfunction)
-            {
-                TypeFunction tf = cast(TypeFunction)ce.e1.type;
-                if (tf.isref && sc.func && !sc.intypeof && !(sc.flags & SCOPE.debug_)
-                    && tf.next.hasPointers() && sc.func.setUnsafe())
-                {
-                    exp.error("cannot take address of `ref return` of `%s()` in `@safe` function `%s`",
-                        ce.e1.toChars(), sc.func.toChars());
-                }
-            }
+            if (!checkAddressCall(sc, ce, "take address of"))
+                return setError();
         }
         else if (exp.e1.op == EXP.index)
         {
@@ -7800,7 +7792,7 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
             return setError();
 
         Type t1b = exp.e1.type.toBasetype();
-        if (t1b.ty == Tpointer)
+        if (auto tp = t1b.isTypePointer())
         {
             if (t1b.isPtrToFunction())
             {
@@ -7809,7 +7801,27 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
             }
             if (!exp.lwr || !exp.upr)
             {
-                exp.error("need upper and lower bound to slice pointer");
+                exp.error("upper and lower bounds are needed to slice a pointer");
+                if (auto ad = isAggregate(tp.next.toBasetype()))
+                {
+                    auto s = search_function(ad, Id.index);
+                    if (!s) s = search_function(ad, Id.slice);
+                    if (s)
+                    {
+                        auto fd = s.isFuncDeclaration();
+                        if ((fd && !fd.getParameterList().length) || s.isTemplateDeclaration())
+                        {
+                            exp.errorSupplemental(
+                                "pointer `%s` points to an aggregate that defines an `%s`, perhaps you meant `(*%s)[]`",
+                                exp.e1.toChars(),
+                                s.ident.toChars(),
+                                exp.e1.toChars()
+                            );
+                        }
+
+                    }
+                }
+
                 return setError();
             }
             if (sc.func && !sc.intypeof && !(sc.flags & SCOPE.debug_) && sc.func.setUnsafe())
@@ -7842,6 +7854,12 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
                     }
 
                     if (v && !checkAddressVar(sc, exp.e1, v))
+                        return setError();
+                }
+                // https://issues.dlang.org/show_bug.cgi?id=22539
+                if (auto ce = exp.e1.isCallExp())
+                {
+                    if (!checkAddressCall(sc, ce, "slice static array of"))
                         return setError();
                 }
             }
@@ -8446,7 +8464,8 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
                 if (length)
                 {
                     auto bounds = IntRange(SignExtendedNumber(0), SignExtendedNumber(length - 1));
-                    exp.indexIsInBounds = bounds.contains(getIntRange(exp.e2));
+                    // OR it in, because it might already be set for C array indexing
+                    exp.indexIsInBounds |= bounds.contains(getIntRange(exp.e2));
                 }
             }
         }
@@ -12938,6 +12957,38 @@ bool checkAddressVar(Scope* sc, Expression exp, VarDeclaration v)
                 exp.error("cannot take address of %s `%s` in `@safe` function `%s`", p, v.toChars(), sc.func.toChars());
                 return false;
             }
+        }
+    }
+    return true;
+}
+
+/****************************************************
+ * Determine if the address of a `ref return` value of
+ * a function call with type `tf` can be taken safely.
+ *
+ * This is currently stricter than necessary: it can be safe to take the
+ * address of a `ref` with pointer type when the pointer isn't `scope`, but
+ * that involves inspecting the function arguments and parameter types, which
+ * is left as a future enhancement.
+ *
+ * Params:
+ *      sc = context
+ *      ce = function call in question
+ *      action = for the error message, how the pointer is taken, e.g. "slice static array of"
+ * Returns:
+ *      `true` if ok, `false` for error
+ */
+private bool checkAddressCall(Scope* sc, CallExp ce, const(char)* action)
+{
+    if (auto tf = ce.e1.type.isTypeFunction())
+    {
+        if (tf.isref && sc.func && !sc.intypeof && !(sc.flags & SCOPE.debug_)
+            && tf.next.hasPointers() && sc.func.setUnsafe())
+        {
+            ce.error("cannot %s `ref return` of `%s()` in `@safe` function `%s`",
+                action, ce.e1.toChars(), sc.func.toChars());
+            ce.errorSupplemental("return type `%s` has pointers that may be `scope`", tf.next.toChars());
+            return false;
         }
     }
     return true;

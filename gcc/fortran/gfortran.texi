@@ -1093,7 +1093,7 @@ variable.
 
 The maximum number of bytes of user data in a subrecord is 2147483639
 (2 GiB - 9) for a four-byte record marker.  This limit can be lowered
-with the @option{-fmax-subrecord-length} option, altough this is
+with the @option{-fmax-subrecord-length} option, although this is
 rarely useful. If the length of a logical record exceeds this limit,
 the data is distributed among several subrecords.
 

@@ -2918,8 +2918,8 @@ riscv_pass_aggregate_in_fpr_pair_p (const_tree type,
 
   if ((n_old != n_new) && (warned == 0))
     {
-      warning (0, "ABI for flattened struct with zero-length bit-fields "
-	       "changed in GCC 10");
+      warning (OPT_Wpsabi, "ABI for flattened struct with zero-length "
+			   "bit-fields changed in GCC 10");
       warned = 1;
     }
 
@@ -2960,8 +2960,8 @@ riscv_pass_aggregate_in_fpr_and_gpr_p (const_tree type,
 	   && (num_int_old != num_int_new || num_float_old != num_float_new)))
       && (warned == 0))
     {
-      warning (0, "ABI for flattened struct with zero-length bit-fields "
-	       "changed in GCC 10");
+      warning (OPT_Wpsabi, "ABI for flattened struct with zero-length "
+			   "bit-fields changed in GCC 10");
       warned = 1;
     }
 
@@ -4984,7 +4984,7 @@ riscv_option_override (void)
     target_flags |= MASK_FDIV;
 
   /* Handle -mtune, use -mcpu if -mtune is not given, and use default -mtune
-     if -mtune and -mcpu both not not given.  */
+     if -mtune and -mcpu both not given.  */
   cpu = riscv_parse_tune (riscv_tune_string ? riscv_tune_string :
 			  (riscv_cpu_string ? riscv_cpu_string :
 			   RISCV_TUNE_STRING_DEFAULT));

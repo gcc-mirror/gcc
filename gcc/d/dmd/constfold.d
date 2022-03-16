@@ -1230,7 +1230,7 @@ UnionExp ArrayLength(Type type, Expression e1)
 
 /* Also return EXP.cantExpression if this fails
  */
-UnionExp Index(Type type, Expression e1, Expression e2)
+UnionExp Index(Type type, Expression e1, Expression e2, bool indexIsInBounds)
 {
     UnionExp ue = void;
     Loc loc = e1.loc;
@@ -1255,8 +1255,9 @@ UnionExp Index(Type type, Expression e1, Expression e2)
         TypeSArray tsa = cast(TypeSArray)e1.type.toBasetype();
         uinteger_t length = tsa.dim.toInteger();
         uinteger_t i = e2.toInteger();
-        if (i >= length)
+        if (i >= length && (e1.op == EXP.arrayLiteral || !indexIsInBounds))
         {
+            // C code only checks bounds if an ArrayLiteralExp
             e1.error("array index %llu is out of bounds `%s[0 .. %llu]`", i, e1.toChars(), length);
             emplaceExp!(ErrorExp)(&ue);
         }

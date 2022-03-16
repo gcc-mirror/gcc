@@ -7382,6 +7382,10 @@ vectorize_slp_instance_root_stmt (slp_tree node, slp_instance instance)
 	  gimple *child_stmt = SLP_TREE_VEC_STMTS (node)[0];
 	  tree vect_lhs = gimple_get_lhs (child_stmt);
 	  tree root_lhs = gimple_get_lhs (instance->root_stmts[0]->stmt);
+	  if (!useless_type_conversion_p (TREE_TYPE (root_lhs),
+					  TREE_TYPE (vect_lhs)))
+	    vect_lhs = build1 (VIEW_CONVERT_EXPR, TREE_TYPE (root_lhs),
+			       vect_lhs);
 	  rstmt = gimple_build_assign (root_lhs, vect_lhs);
 	}
       else if (SLP_TREE_NUMBER_OF_VEC_STMTS (node) > 1)
@@ -7392,6 +7396,9 @@ vectorize_slp_instance_root_stmt (slp_tree node, slp_instance instance)
 	  vec<constructor_elt, va_gc> *v;
 	  vec_alloc (v, nelts);
 
+	  /* A CTOR can handle V16HI composition from VNx8HI so we
+	     do not need to convert vector elements if the types
+	     do not match.  */
 	  FOR_EACH_VEC_ELT (SLP_TREE_VEC_STMTS (node), j, child_stmt)
 	    CONSTRUCTOR_APPEND_ELT (v, NULL_TREE,
 				    gimple_get_lhs (child_stmt));

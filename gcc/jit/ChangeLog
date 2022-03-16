@@ -1,3 +1,7 @@
+2022-03-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* libgccjit.h: Fix up duplicated word issue in a comment.
+
 2022-01-17  Martin Liska  <mliska@suse.cz>
 
 	* config-lang.in: Rename .c names to .cc.

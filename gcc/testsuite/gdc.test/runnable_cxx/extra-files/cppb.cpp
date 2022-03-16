@@ -4,6 +4,30 @@
 #include <exception>
 #include <cstdarg>
 
+#if _WIN32 // otherwise defined in C header files!
+// https://issues.dlang.org/show_bug.cgi?id=18955
+namespace std
+{
+    template<typename Char>
+    struct char_traits
+    {
+    };
+    template<typename Char>
+    class allocator
+    {
+    };
+    template<typename Char, typename Traits, typename Alloc>
+    class basic_string
+    {
+    };
+    typedef basic_string<char, char_traits<char>, allocator<char> > string;
+}
+#else // if POSIX
+
+#include <string>
+
+#endif // _WIN32
+
 #include "cppb.h"
 
 /**************************************/
@@ -317,10 +341,9 @@ size_t getoffset13161a()
 
 /****************************************************/
 
-#if __linux__ || __APPLE__ || __FreeBSD__ || __DragonFly__
+#if __linux__
 #include <memory>
 #include <vector>
-#include <string>
 
 #if __linux__
 template struct std::allocator<int>;
@@ -902,26 +925,6 @@ void A18966::foo() { calledOverloads[i++] = 'A'; }
 
 B18966::B18966() { foo(); }
 void B18966::foo() { calledOverloads[i++] = 'B'; }
-
-#if _WIN32 // otherwise defined in C header files!
-// https://issues.dlang.org/show_bug.cgi?id=18955
-namespace std
-{
-    template<typename Char>
-    struct char_traits
-    {
-    };
-    template<typename Char>
-    class allocator
-    {
-    };
-    template<typename Char, typename Traits, typename Alloc>
-    class basic_string
-    {
-    };
-    typedef basic_string<char, char_traits<char>, allocator<char> > string;
-}
-#endif // _WIN32
 
 void callback18955(const std::string& s);
 

@@ -18,8 +18,8 @@ program task_detach_1
   !$omp task detach(x) mergeable ! { dg-error "'DETACH' clause at \\\(1\\\) must not be used together with 'MERGEABLE' clause" }
   !$omp end task
 
-  !$omp task detach(z) ! { dg-error "'z' at \\\(1\\\) should be of type integer\\\(kind=omp_event_handle_kind\\\)" }
-  !$omp end task ! { dg-error "Unexpected !\\\$OMP END TASK statement at \\\(1\\\)" }
+  !$omp task detach(z) ! { dg-error "'z' at \\\(1\\\) should be a scalar of type integer\\\(kind=omp_event_handle_kind\\\)" }
+  !$omp end task
   
   !$omp task detach (x) firstprivate (x) ! { dg-error "DETACH event handle 'x' in FIRSTPRIVATE clause at \\\(1\\\)" }
   !$omp end task

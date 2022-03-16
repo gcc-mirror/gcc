@@ -842,7 +842,7 @@ gcc_jit_context_new_global (gcc_jit_context *ctxt,
    set to the corresponding value in `values`.  `fields` and `values`
    are paired by index.
 
-   Each value has to have have the same unqualified type as the field
+   Each value has to have the same unqualified type as the field
    it is applied to.
 
    A NULL value element  in `values` is a shorthand for zero initialization
@@ -892,7 +892,7 @@ gcc_jit_context_new_struct_constructor (gcc_jit_context *ctxt,
    `value` specifies what value to set the corresponding field to.
    If `value` is NULL, zero initialization will be used.
 
-   Each value has to have have the same unqualified type as the field
+   Each value has to have the same unqualified type as the field
    it is applied to.
 
    `field` need to be the same objects that were used

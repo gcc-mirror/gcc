@@ -959,7 +959,7 @@ void access_ref::add_offset (const offset_int &min, const offset_int &max)
 	 (which may be greater than MAX_OBJECT_SIZE).
 	 The lower bound is either the sum of the current offset and
 	 MIN when abs(MAX) is greater than the former, or zero otherwise.
-	 Zero because then then inverted range includes the negative of
+	 Zero because then the inverted range includes the negative of
 	 the lower bound.  */
       offset_int maxoff = wi::to_offset (TYPE_MAX_VALUE (ptrdiff_type_node));
       offrng[1] = maxoff;

@@ -1731,6 +1731,10 @@ Support dynamic initialization of thread-local variables in a different translat
 fexternal-templates
 C++ ObjC++ WarnRemoved
 
+ffold-simple-inlines
+C++ ObjC++ Optimization Var(flag_fold_simple_inlines)
+Fold calls to simple inline functions.
+
 ffor-scope
 C++ ObjC++ WarnRemoved
 

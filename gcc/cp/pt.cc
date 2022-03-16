@@ -152,7 +152,7 @@ static tree coerce_innermost_template_parms (tree, tree, tree, tsubst_flags_t,
 					      bool, bool);
 static void tsubst_enum	(tree, tree, tree);
 static bool check_instantiated_args (tree, tree, tsubst_flags_t);
-static int check_non_deducible_conversion (tree, tree, int, int,
+static int check_non_deducible_conversion (tree, tree, unification_kind_t, int,
 					   struct conversion **, bool);
 static int maybe_adjust_types_for_deduction (tree, unification_kind_t,
 					     tree*, tree*, tree);
@@ -3817,7 +3817,7 @@ expand_integer_pack (tree call, tree args, tsubst_flags_t complain,
   tree hi = tsubst_copy_and_build (ohi, args, complain, in_decl,
 				   false/*fn*/, true/*int_cst*/);
 
-  if (value_dependent_expression_p (hi))
+  if (instantiation_dependent_expression_p (hi))
     {
       if (hi != ohi)
 	{
@@ -6274,8 +6274,6 @@ redeclare_class_template (tree type, tree parms, tree cons)
     {
       tree tmpl_parm;
       tree parm;
-      tree tmpl_default;
-      tree parm_default;
 
       if (TREE_VEC_ELT (tmpl_parms, i) == error_mark_node
           || TREE_VEC_ELT (parms, i) == error_mark_node)
@@ -6286,8 +6284,6 @@ redeclare_class_template (tree type, tree parms, tree cons)
 	return false;
 
       parm = TREE_VALUE (TREE_VEC_ELT (parms, i));
-      tmpl_default = TREE_PURPOSE (TREE_VEC_ELT (tmpl_parms, i));
-      parm_default = TREE_PURPOSE (TREE_VEC_ELT (parms, i));
 
       /* TMPL_PARM and PARM can be either TYPE_DECL, PARM_DECL, or
 	 TEMPLATE_DECL.  */
@@ -6303,7 +6299,7 @@ redeclare_class_template (tree type, tree parms, tree cons)
 	{
 	  auto_diagnostic_group d;
 	  error ("template parameter %q+#D", tmpl_parm);
-	  inform (input_location, "redeclared here as %q#D", parm);
+	  inform (DECL_SOURCE_LOCATION (parm), "redeclared here as %q#D", parm);
 	  return false;
 	}
 
@@ -6321,28 +6317,6 @@ redeclare_class_template (tree type, tree parms, tree cons)
 	  return false;
 	}
 
-      if (tmpl_default != NULL_TREE && parm_default != NULL_TREE)
-	{
-	  /* We have in [temp.param]:
-
-	     A template-parameter may not be given default arguments
-	     by two different declarations in the same scope.  */
-	  auto_diagnostic_group d;
-	  error_at (input_location, "redefinition of default argument for %q#D", parm);
-	  inform (DECL_SOURCE_LOCATION (tmpl_parm),
-		  "original definition appeared here");
-	  return false;
-	}
-
-      if (parm_default != NULL_TREE)
-	/* Update the previous template parameters (which are the ones
-	   that will really count) with the new default value.  */
-	TREE_PURPOSE (TREE_VEC_ELT (tmpl_parms, i)) = parm_default;
-      else if (tmpl_default != NULL_TREE)
-	/* Update the new parameters, too; they'll be used as the
-	   parameters for any members.  */
-	TREE_PURPOSE (TREE_VEC_ELT (parms, i)) = tmpl_default;
-
       /* Give each template template parm in this redeclaration a
 	 DECL_CONTEXT of the template for which they are a parameter.  */
       if (TREE_CODE (parm) == TEMPLATE_DECL)
@@ -6351,6 +6325,9 @@ redeclare_class_template (tree type, tree parms, tree cons)
 	  DECL_CONTEXT (parm) = tmpl;
 	}
     }
+
+  if (!merge_default_template_args (parms, tmpl_parms, /*class_p=*/true))
+    return false;
 
   tree ci = get_constraints (tmpl);
   tree req1 = ci ? CI_TEMPLATE_REQS (ci) : NULL_TREE;
@@ -6372,9 +6349,7 @@ redeclare_class_template (tree type, tree parms, tree cons)
 
 /* The actual substitution part of instantiate_non_dependent_expr_sfinae,
    to be used when the caller has already checked
-   (processing_template_decl
-    && !instantiation_dependent_expression_p (expr)
-    && potential_constant_expression (expr))
+    !instantiation_dependent_uneval_expression_p (expr)
    and cleared processing_template_decl.  */
 
 tree
@@ -6388,8 +6363,7 @@ instantiate_non_dependent_expr_internal (tree expr, tsubst_flags_t complain)
 				/*integral_constant_expression_p=*/true);
 }
 
-/* Simplify EXPR if it is a non-dependent expression.  Returns the
-   (possibly simplified) expression.  */
+/* Instantiate the non-dependent expression EXPR.  */
 
 tree
 instantiate_non_dependent_expr_sfinae (tree expr, tsubst_flags_t complain)
@@ -6397,16 +6371,10 @@ instantiate_non_dependent_expr_sfinae (tree expr, tsubst_flags_t complain)
   if (expr == NULL_TREE)
     return NULL_TREE;
 
-  /* If we're in a template, but EXPR isn't value dependent, simplify
-     it.  We're supposed to treat:
-
-       template <typename T> void f(T[1 + 1]);
-       template <typename T> void f(T[2]);
-
-     as two declarations of the same function, for example.  */
-  if (processing_template_decl
-      && is_nondependent_constant_expression (expr))
+  if (processing_template_decl)
     {
+      /* The caller should have checked this already.  */
+      gcc_checking_assert (!instantiation_dependent_uneval_expression_p (expr));
       processing_template_decl_sentinel s;
       expr = instantiate_non_dependent_expr_internal (expr, complain);
     }
@@ -6419,8 +6387,8 @@ instantiate_non_dependent_expr (tree expr)
   return instantiate_non_dependent_expr_sfinae (expr, tf_error);
 }
 
-/* Like instantiate_non_dependent_expr, but return NULL_TREE rather than
-   an uninstantiated expression.  */
+/* Like instantiate_non_dependent_expr, but return NULL_TREE if the
+   expression is dependent or non-constant.  */
 
 tree
 instantiate_non_dependent_or_null (tree expr)
@@ -7316,7 +7284,7 @@ convert_nontype_argument (tree type, tree expr, tsubst_flags_t complain)
   if (non_dep)
     expr = instantiate_non_dependent_expr_internal (expr, complain);
 
-  const bool val_dep_p = value_dependent_expression_p (expr);
+  bool val_dep_p = value_dependent_expression_p (expr);
   if (val_dep_p)
     expr = canonicalize_expr_argument (expr, complain);
   else
@@ -7357,6 +7325,8 @@ convert_nontype_argument (tree type, tree expr, tsubst_flags_t complain)
 	  expr = maybe_constant_value (expr, NULL_TREE,
 				       /*manifestly_const_eval=*/true);
 	  expr = convert_from_reference (expr);
+	  /* EXPR may have become value-dependent.  */
+	  val_dep_p = value_dependent_expression_p (expr);
 	}
       else if (TYPE_PTR_OR_PTRMEM_P (type))
 	{
@@ -14926,7 +14896,10 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 		&& VAR_HAD_UNKNOWN_BOUND (t)
 		&& type != error_mark_node)
 	      type = strip_array_domain (type);
-	    type = tsubst (type, args, complain, in_decl);
+	    tsubst_flags_t tcomplain = complain;
+	    if (VAR_P (t))
+	      tcomplain |= tf_tst_ok;
+	    type = tsubst (type, args, tcomplain, in_decl);
 	    /* Substituting the type might have recursively instantiated this
 	       same alias (c++/86171).  */
 	    if (gen_tmpl && DECL_ALIAS_TEMPLATE_P (gen_tmpl)
@@ -15612,6 +15585,9 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
   bool fndecl_type = (complain & tf_fndecl_type);
   complain &= ~tf_fndecl_type;
 
+  bool tst_ok = (complain & tf_tst_ok);
+  complain &= ~tf_tst_ok;
+
   if (type
       && code != TYPENAME_TYPE
       && code != TEMPLATE_TYPE_PARM
@@ -16199,8 +16175,10 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	      return error_mark_node;
 	  }
 
-	f = make_typename_type (ctx, f, typename_type,
-				complain | tf_keep_type_decl);
+	tsubst_flags_t tcomplain = complain | tf_keep_type_decl;
+	if (tst_ok)
+	  tcomplain |= tf_tst_ok;
+	f = make_typename_type (ctx, f, typename_type, tcomplain);
 	if (f == error_mark_node)
 	  return f;
 	if (TREE_CODE (f) == TYPE_DECL)
@@ -17107,7 +17085,10 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
     case CONVERT_EXPR:
     case NOP_EXPR:
       {
-	tree type = tsubst (TREE_TYPE (t), args, complain, in_decl);
+	tsubst_flags_t tcomplain = complain;
+	if (code == CAST_EXPR)
+	  tcomplain |= tf_tst_ok;
+	tree type = tsubst (TREE_TYPE (t), args, tcomplain, in_decl);
 	tree op0 = tsubst_copy (TREE_OPERAND (t, 0), args, complain, in_decl);
 	return build1 (code, type, op0);
       }
@@ -20130,7 +20111,10 @@ tsubst_copy_and_build (tree t,
 	tree type;
 	tree op, r = NULL_TREE;
 
-	type = tsubst (TREE_TYPE (t), args, complain, in_decl);
+	tsubst_flags_t tcomplain = complain;
+	if (TREE_CODE (t) == CAST_EXPR)
+	  tcomplain |= tf_tst_ok;
+	type = tsubst (TREE_TYPE (t), args, tcomplain, in_decl);
 	if (integral_constant_expression_p
 	    && !cast_valid_in_integral_constant_expression_p (type))
 	  {
@@ -21090,12 +21074,15 @@ tsubst_copy_and_build (tree t,
 	vec<constructor_elt, va_gc> *n;
 	constructor_elt *ce;
 	unsigned HOST_WIDE_INT idx;
-	tree type = tsubst (TREE_TYPE (t), args, complain, in_decl);
 	bool process_index_p;
         int newlen;
         bool need_copy_p = false;
 	tree r;
 
+	tsubst_flags_t tcomplain = complain;
+	if (COMPOUND_LITERAL_P (t))
+	  tcomplain |= tf_tst_ok;
+	tree type = tsubst (TREE_TYPE (t), args, tcomplain, in_decl);
 	if (type == error_mark_node)
 	  RETURN (error_mark_node);
 
@@ -22317,7 +22304,7 @@ maybe_adjust_types_for_deduction (tree tparms,
    unify_one_argument.  */
 
 static int
-check_non_deducible_conversion (tree parm, tree arg, int strict,
+check_non_deducible_conversion (tree parm, tree arg, unification_kind_t strict,
 				int flags, struct conversion **conv_p,
 				bool explain_p)
 {
@@ -22337,7 +22324,7 @@ check_non_deducible_conversion (tree parm, tree arg, int strict,
       if (can_convert_arg (type, parm, NULL_TREE, flags, complain))
 	return unify_success (explain_p);
     }
-  else if (strict != DEDUCE_EXACT)
+  else if (strict == DEDUCE_CALL)
     {
       bool ok = false;
       tree conv_arg = TYPE_P (arg) ? NULL_TREE : arg;
@@ -26602,8 +26589,7 @@ instantiate_decl (tree d, bool defer_ok, bool expl_inst_class_mem_p)
 	      const_init
 		= DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (code_pattern);
 	      cp_finish_decl (d, init, /*init_const_expr_p=*/const_init,
-			      /*asmspec_tree=*/NULL_TREE,
-			      LOOKUP_ONLYCONVERTING);
+			      /*asmspec_tree=*/NULL_TREE, 0);
 	    }
 	  if (enter_context)
 	    pop_nested_class ();
@@ -26976,9 +26962,7 @@ tsubst_enum (tree tag, tree newtag, tree args)
   DECL_SOURCE_LOCATION (TYPE_NAME (newtag))
     = DECL_SOURCE_LOCATION (TYPE_NAME (tag));
   TREE_DEPRECATED (newtag) = TREE_DEPRECATED (tag);
-  /* We don't need to propagate TREE_UNAVAILABLE here, because it is, unlike
-     deprecated, applied at instantiation time rather than template
-     definition time.  */
+  TREE_UNAVAILABLE (newtag) = TREE_UNAVAILABLE (tag);
 }
 
 /* DECL is a FUNCTION_DECL that is a template specialization.  Return
@@ -30049,7 +30033,7 @@ do_class_deduction (tree ptype, tree tmpl, tree init,
 
    OUTER_TARGS is used during template argument deduction (context == adc_unify)
    to properly substitute the result.  It's also used in the adc_unify and
-   adc_requirement contexts to communicate the the necessary template arguments
+   adc_requirement contexts to communicate the necessary template arguments
    to satisfaction.  OUTER_TARGS is ignored in other contexts.
 
    For partial-concept-ids, extra args may be appended to the list of deduced

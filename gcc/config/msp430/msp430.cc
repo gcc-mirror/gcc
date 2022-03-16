@@ -2744,7 +2744,7 @@ msp430_expand_delay_cycles (rtx arg)
 
   if (GET_CODE (arg) != CONST_INT)
     {
-      error ("%<__delay_cycles()%> only takes constant arguments");
+      error ("%<__delay_cycles%> only takes constant arguments");
       return NULL_RTX;
     }
 

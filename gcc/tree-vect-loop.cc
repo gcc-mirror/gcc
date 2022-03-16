@@ -8175,6 +8175,14 @@ vectorizable_induction (loop_vec_info loop_vinfo,
       return false;
     }
 
+  if (FLOAT_TYPE_P (vectype) && !param_vect_induction_float)
+    {
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			 "floating point induction vectorization disabled\n");
+      return false;
+    }
+
   step_expr = STMT_VINFO_LOOP_PHI_EVOLUTION_PART (stmt_info);
   gcc_assert (step_expr != NULL_TREE);
   tree step_vectype = get_same_sized_vectype (TREE_TYPE (step_expr), vectype);

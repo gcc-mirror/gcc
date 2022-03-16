@@ -2420,7 +2420,7 @@ gfc_ref_dimen_size (gfc_array_ref *ar, int dimen, mpz_t *result, mpz_t *end)
 	  gfc_free_expr(stride_expr);
 	}
 
-      /* Calculate the number of elements via gfc_dep_differce, but only if
+      /* Calculate the number of elements via gfc_dep_difference, but only if
 	 start and end are both supplied in the reference or the array spec.
 	 This is to guard against strange but valid code like
 

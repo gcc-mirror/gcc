@@ -801,14 +801,14 @@ template<typename T>
     char leading_hexit;
     if constexpr (has_implicit_leading_bit)
       {
-	const unsigned nibble = effective_mantissa >> rounded_mantissa_bits;
+	const auto nibble = unsigned(effective_mantissa >> rounded_mantissa_bits);
 	__glibcxx_assert(nibble <= 2);
 	leading_hexit = '0' + nibble;
 	effective_mantissa &= ~(mantissa_t{0b11} << rounded_mantissa_bits);
       }
     else
       {
-	const unsigned nibble = effective_mantissa >> (rounded_mantissa_bits-4);
+	const auto nibble = unsigned(effective_mantissa >> (rounded_mantissa_bits-4));
 	__glibcxx_assert(nibble < 16);
 	leading_hexit = "0123456789abcdef"[nibble];
 	effective_mantissa &= ~(mantissa_t{0b1111} << (rounded_mantissa_bits-4));
@@ -853,7 +853,7 @@ template<typename T>
 	while (effective_mantissa != 0)
 	  {
 	    nibble_offset -= 4;
-	    const unsigned nibble = effective_mantissa >> nibble_offset;
+	    const auto nibble = unsigned(effective_mantissa >> nibble_offset);
 	    __glibcxx_assert(nibble < 16);
 	    *first++ = "0123456789abcdef"[nibble];
 	    ++written_hexits;

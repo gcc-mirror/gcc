@@ -3543,7 +3543,7 @@ gfc_dump_c_prototypes (gfc_namespace *ns, FILE *file)
   gfc_traverse_ns (ns, write_interop_decl);
 }
 
-/* Loop over all global symbols, writing out their declrations.  */
+/* Loop over all global symbols, writing out their declarations.  */
 
 void
 gfc_dump_external_c_prototypes (FILE * file)

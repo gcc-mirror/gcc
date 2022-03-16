@@ -891,7 +891,7 @@ taint_state_machine::check_for_tainted_size_arg (sm_context *sm_ctxt,
     return;
 
   /* Initialize a map of attribute access specifications for arguments
-     to the function function call.  */
+     to the function call.  */
   rdwr_map rdwr_idx;
   init_attr_rdwr_indices (&rdwr_idx, TYPE_ATTRIBUTES (fntype));
 
@@ -902,6 +902,10 @@ taint_state_machine::check_for_tainted_size_arg (sm_context *sm_ctxt,
     {
       const attr_access* access = rdwr_idx.get (argno);
       if (!access)
+	continue;
+
+      /* Ignore any duplicate entry in the map for the size argument.  */
+      if (access->ptrarg != argno)
 	continue;
 
       if (access->sizarg == UINT_MAX)

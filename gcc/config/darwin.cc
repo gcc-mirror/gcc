@@ -3621,7 +3621,7 @@ tree
 darwin_fold_builtin (tree fndecl, int n_args, tree *argp,
 		     bool ARG_UNUSED (ignore))
 {
-  unsigned int fcode = DECL_MD_FUNCTION_CODE (fndecl);
+  int fcode = DECL_MD_FUNCTION_CODE (fndecl);
 
   if (fcode == darwin_builtin_cfstring)
     {

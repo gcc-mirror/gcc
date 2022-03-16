@@ -1693,7 +1693,7 @@ function_types_compatible_p (const_tree f1, const_tree f2,
 
   if (args1 == NULL_TREE)
     {
-      if (flag_isoc2x ? stdarg_p (f2) : !self_promoting_args_p (args2))
+      if (!self_promoting_args_p (args2))
 	return 0;
       /* If one of these types comes from a non-prototype fn definition,
 	 compare that with the other type's arglist.
@@ -1706,7 +1706,7 @@ function_types_compatible_p (const_tree f1, const_tree f2,
     }
   if (args2 == NULL_TREE)
     {
-      if (flag_isoc2x ? stdarg_p (f1) : !self_promoting_args_p (args1))
+      if (!self_promoting_args_p (args1))
 	return 0;
       if (TYPE_ACTUAL_ARG_TYPES (f2)
 	  && type_lists_compatible_p (args1, TYPE_ACTUAL_ARG_TYPES (f2),
@@ -12213,7 +12213,8 @@ build_binary_op (location_t location, enum tree_code code,
 	{
 	  doing_shift = true;
 	  if (TREE_CODE (op0) == INTEGER_CST
-	      && tree_int_cst_sgn (op0) < 0)
+	      && tree_int_cst_sgn (op0) < 0
+	      && !TYPE_OVERFLOW_WRAPS (type0))
 	    {
 	      /* Don't reject a left shift of a negative value in a context
 		 where a constant expression is needed in C90.  */
@@ -13372,7 +13373,7 @@ handle_omp_array_sections_1 (tree c, tree t, vec<tree> &types,
 	{
 	  error_at (OMP_CLAUSE_LOCATION (c),
 		    "expected single pointer in %qs clause",
-		    c_omp_map_clause_name (c, ort == C_ORT_ACC));
+		    user_omp_clause_code_name (c, ort == C_ORT_ACC));
 	  return error_mark_node;
 	}
     }
@@ -14095,7 +14096,7 @@ c_oacc_check_attachments (tree c)
       if (TREE_CODE (TREE_TYPE (t)) != POINTER_TYPE)
 	{
 	  error_at (OMP_CLAUSE_LOCATION (c), "expected pointer in %qs clause",
-		    c_omp_map_clause_name (c, true));
+		    user_omp_clause_code_name (c, true));
 	  return true;
 	}
     }

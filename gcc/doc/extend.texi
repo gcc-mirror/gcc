@@ -13993,6 +13993,11 @@ bits that are padding bits for all the union members.
 This built-in-function is useful if the padding bits of an object might
 have intederminate values and the object representation needs to be
 bitwise compared to some other object, for example for atomic operations.
+
+For C++, @var{ptr} argument type should be pointer to trivially-copyable
+type, unless the argument is address of a variable or parameter, because
+otherwise it isn't known if the type isn't just a base class whose padding
+bits are reused or laid out differently in a derived class.
 @end deftypefn
 
 @deftypefn {Built-in Function} @var{type} __builtin_bit_cast (@var{type}, @var{arg})

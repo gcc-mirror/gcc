@@ -1,3 +1,259 @@
+2022-03-15  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/103177
+	* search.cc (lookup_field_info::errstr): Remove this data
+	member.
+	(lookup_field_r): Don't set errstr.
+	(lookup_member): Check ambiguity before checking access.
+	Simplify accordingly after errstr removal.  Exit early upon
+	error or empty result.
+
+2022-03-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/104623
+	* parser.cc (cp_parser_skip_to_pragma_eol): Don't purge any tokens.
+
+2022-03-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/102586
+	* call.cc (build_cxx_call): Diagnose __builtin_clear_padding where
+	first argument's type is pointer to non-trivially-copyable type unless
+	it is address of a variable or parameter.
+
+2022-03-12  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/104641
+	* cp-tree.h (tsubst_flags::tf_tst_ok): New flag.
+	* decl.cc (make_typename_type): Allow a typename-specifier to
+	resolve to a template when tf_tst_ok, in which case return
+	a CTAD placeholder for the template.
+	* pt.cc (tsubst_decl) <case VAR_DECL>: Set tf_tst_ok when
+	substituting the type.
+	(tsubst): Clear tf_tst_ok and remember if it was set.
+	<case TYPENAME_TYPE>: Pass tf_tst_ok to make_typename_type
+	appropriately.
+	(tsubst_copy) <case CAST_EXPR>: Set tf_tst_ok when substituting
+	the type.
+	(tsubst_copy_and_build) <case CAST_EXPR>: Likewise.
+	<case CONSTRUCTOR>: Likewise.
+
+2022-03-12  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/104622
+	* call.cc (missing_conversion_p): Define.
+	(add_candidates): Use it.
+	* pt.cc (check_non_deducible_conversion): Change type of strict
+	parameter to unification_kind_t and directly test for DEDUCE_CALL.
+
+2022-03-12  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/104527
+	* constraint.cc (normalize_atom): Set
+	ATOMIC_CONSTR_EXPR_FROM_CONCEPT_P appropriately.
+	(get_mapped_args):  Make static, adjust parameters.  Always
+	return a vector whose depth corresponds to the template depth of
+	the context of the atomic constraint expression.  Micro-optimize
+	by passing false as exact to safe_grow_cleared and by collapsing
+	a multi-level depth-one argument vector.
+	(satisfy_atom): Adjust call to get_mapped_args and
+	diagnose_atomic_constraint.
+	(diagnose_atomic_constraint): Replace map parameter with an args
+	parameter.
+	* cp-tree.h (ATOMIC_CONSTR_EXPR_FROM_CONCEPT_P): Define.
+	(get_mapped_args): Remove declaration.
+
+2022-03-12  Patrick Palka  <ppalka@redhat.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	PR c++/98644
+	* constexpr.cc (mark_non_constant): Define, split out from ...
+	(cxx_eval_outermost_constant_expr): ... here.
+	(maybe_constant_value): Use it.
+
+2022-03-12  Patrick Palka  <ppalka@redhat.com>
+
+	* semantics.cc (finish_unary_fold_expr): Use input_location
+	instead of UNKNOWN_LOCATION.
+	(finish_binary_fold_expr): Likewise.
+
+2022-03-12  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR other/65095
+	* semantics.cc (handle_omp_array_sections_1)
+	(cp_oacc_check_attachments): Call 'user_omp_clause_code_name'
+	instead of 'c_omp_map_clause_name'.
+
+2022-03-10  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/104608
+	* parser.cc (cp_parser_template_name): Repeat lookup of
+	TYPE_DECLs.
+
+2022-03-10  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/104752
+	* semantics.cc (finish_compound_literal): Disallow auto{x} for
+	is_constrained_auto.
+	* typeck2.cc (build_functional_cast_1): Likewise.
+
+2022-03-10  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/104846
+	* decl.cc (grokdeclarator): Check FUNC_OR_METHOD_TYPE_P before giving
+	data member errors.
+
+2022-03-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/103460
+	* decl.cc (grok_op_properties): Allow variadic operator[] for
+	C++23.
+
+2022-03-10  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR c++/95999
+	* decl.cc (finish_enum_value_list): If VALUE isn't an INTEGER_CST
+	consider it to be zero (i.e. treat it like error_mark_node).
+	(build_enumerator): Likewise, if PREV_VALUE isn't an INTEGER_CST,
+	set VALUE to error_mark_node.
+
+2022-03-10  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR c++/39751
+	* parser.cc (cp_parser_late_parsing_for_member): Confirm the token
+	stream hasn't been purged before processing DECL_PENDING_INLINE.
+
+2022-03-09  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/104823
+	* except.cc (build_noexcept_spec): Strengthen dependence check
+	to instantiation_dependent_expression_p.
+	* parser.cc (cp_parser_parenthesized_expression_list_elt):
+	Remove fold_expr_p parameter, and don't call
+	instantiate_non_dependent_expr.
+	(cp_parser_parenthesized_expression_list): Adjust accordingly.
+	* pt.cc (expand_integer_pack): Strengthen dependence check
+	to instantiation_dependent_expression_p.
+	(instantiate_non_dependent_expr_internal): Adjust comment.
+	(instantiate_non_dependent_expr_sfinae): Likewise.  Drop
+	the potentially-constant check, and relax and turn the
+	dependence check into a checking assert.
+	(instantiate_non_dependent_or_null): Adjust comment.
+	* semantics.cc (finish_decltype_type): Keep
+	processing_template_decl cleared after calling
+	instantiate_non_dependent_expr_sfinae.
+
+2022-03-09  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/102137
+	PR c++/87820
+	* cp-tree.h (is_copy_initialization): Declare.
+	* decl.cc (cp_finish_decl): Set LOOKUP_ONLYCONVERTING
+	when is_copy_initialization is true.
+	* init.cc (build_aggr_init): Split out copy-initialization
+	check into ...
+	(is_copy_initialization): ... here.
+	* pt.cc (instantiate_decl): Pass 0 instead of
+	LOOKUP_ONLYCONVERTING as flags to cp_finish_decl.
+
+2022-03-09  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/65396
+	* cp-tree.h (merge_default_template_args): Declare.
+	* decl.cc (merge_default_template_args): Define, factored out
+	from redeclare_class_template.
+	(duplicate_decls): Use it when merging member function template
+	and free function declarations.
+	* pt.cc (redeclare_class_template): Factor out default argument
+	merging logic into merge_default_template_args.  Improve location
+	of a note when there's a template parameter kind mismatch.
+
+2022-03-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/104711
+	* constexpr.cc (cxx_eval_check_shift_p): Use TYPE_OVERFLOW_WRAPS
+	instead of TYPE_UNSIGNED.
+	* typeck.cc (cp_build_binary_op): Don't emit
+	-Wshift-negative-value warning if TYPE_OVERFLOW_WRAPS.
+
+2022-03-08  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR c++/96440
+	* decl.cc (start_decl): Defend against prefix_attributes being
+	error_mark_node.
+
+2022-03-08  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR c++/96437
+	* parser.cc (synthesize_implicit_template_parm): Check that
+	TREE_VALUE (new_parm) isn't error_mark_node before setting its
+	DECL_VIRTUAL_P.
+
+2022-03-08  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR c++/96329
+	* parser.cc (cp_parser_linkage_specification): Treat the case where
+	linkage is error_mark_node as "invalid linkage-specification".
+
+2022-03-08  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/104108
+	* pt.cc (convert_nontype_argument): Recompute
+	value_dependent_expression_p after build_converted_constant_expr.
+
+2022-03-08  Marek Polacek  <polacek@redhat.com>
+
+	* decl2.cc (is_late_template_attribute): Do not defer attribute
+	unavailable.
+	* pt.cc (tsubst_enum): Set TREE_UNAVAILABLE.
+
+2022-03-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/104806
+	* search.cc (lookup_field_fuzzy_info::fuzzy_lookup_field): Ignore
+	identifiers with space at the end.
+
+2022-03-07  Jason Merrill  <jason@redhat.com>
+
+	PR c++/104618
+	* decl2.cc (mark_single_function): Look through parens and location
+	wrapper.
+	* typeck.cc (cp_build_addr_expr_1): Not here.
+
+2022-03-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* parser.cc (cp_parser_omp_clause_map): Add missing space in string
+	literal.
+
+2022-03-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* cvt.cc: Fix up duplicated word issue in a comment.
+	* pt.cc: Likewise.
+	* module.cc: Likewise.
+	* coroutines.cc: Likewise.
+
+2022-03-04  Nathan Sidwell  <nathan@acm.org>
+
+	* mangle.cc (is_std_substitution): Check global module.
+	(is_std_substitution_char): Return bool.
+
+2022-03-04  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-tree.h (mangle_identifier): Replace with ...
+	(mangle_module_component): ... this.
+	* mangle.cc (dump_substitution_candidates): Adjust.
+	(add_substitution): Likewise.
+	(find_substitution): Likewise.
+	(unmangled_name_p): Likewise.
+	(mangle_module_substitution): Reimplement.
+	(mangle_module_component): New.
+	(write_module, maybe_write_module): Adjust.
+	(write_name): Drop modules here.
+	(write_unqualified): Do them here instead.
+	(mangle_global_init): Adjust.
+	* module.cc (module_state::mangle): Adjust.
+	(mangle_module): Likewise.
+	(get_originating_module): Adjust.
+
 2022-02-28  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/104682

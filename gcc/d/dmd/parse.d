@@ -1971,7 +1971,6 @@ class Parser(AST) : Lexer
         case TOK.wcharLiteral:
         case TOK.dcharLiteral:
         case TOK.string_:
-        case TOK.hexadecimalString:
         case TOK.file:
         case TOK.fileFullPath:
         case TOK.line:
@@ -5623,7 +5622,6 @@ LagainStc:
         case TOK.true_:
         case TOK.false_:
         case TOK.string_:
-        case TOK.hexadecimalString:
         case TOK.leftParenthesis:
         case TOK.cast_:
         case TOK.mul:
@@ -7106,7 +7104,6 @@ LagainStc:
                     case TOK.wcharLiteral:
                     case TOK.dcharLiteral:
                     case TOK.string_:
-                    case TOK.hexadecimalString:
                     case TOK.file:
                     case TOK.fileFullPath:
                     case TOK.line:
@@ -7987,7 +7984,6 @@ LagainStc:
             break;
 
         case TOK.string_:
-        case TOK.hexadecimalString:
             {
                 // cat adjacent strings
                 auto s = token.ustring;
@@ -7997,7 +7993,7 @@ LagainStc:
                 {
                     const prev = token;
                     nextToken();
-                    if (token.value == TOK.string_ || token.value == TOK.hexadecimalString)
+                    if (token.value == TOK.string_)
                     {
                         if (token.postfix)
                         {

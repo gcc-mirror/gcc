@@ -1824,7 +1824,7 @@ expand_one_await_expression (tree *stmt, tree *await_expr, void *d)
       cp_walk_tree (await_init, co_await_find_in_subtree, &aw_expr_ptr, NULL))
     expand_one_await_expression (await_init, aw_expr_ptr, d);
 
-  /* Expand any more await expressions in the the original statement.  */
+  /* Expand any more await expressions in the original statement.  */
   if (cp_walk_tree (revised, co_await_find_in_subtree, &aw_expr_ptr, NULL))
     expand_one_await_expression (revised, aw_expr_ptr, d);
 
