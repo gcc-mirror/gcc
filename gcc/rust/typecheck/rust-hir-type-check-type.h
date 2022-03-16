@@ -247,8 +247,7 @@ public:
 
 		  auto &type_path = b->get_path ();
 		  TraitReference *trait = resolve_trait_path (type_path);
-		  TyTy::TypeBoundPredicate predicate (
-		    trait->get_mappings ().get_defid (), b->get_locus ());
+		  TyTy::TypeBoundPredicate predicate (*trait, b->get_locus ());
 
 		  auto &final_seg = type_path.get_final_segment ();
 		  if (final_seg->is_generic_segment ())
@@ -318,8 +317,7 @@ public:
 
 	      auto &type_path = b->get_path ();
 	      TraitReference *trait = resolve_trait_path (type_path);
-	      TyTy::TypeBoundPredicate predicate (
-		trait->get_mappings ().get_defid (), b->get_locus ());
+	      TyTy::TypeBoundPredicate predicate (*trait, b->get_locus ());
 
 	      auto &final_seg = type_path.get_final_segment ();
 	      if (final_seg->is_generic_segment ())

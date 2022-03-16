@@ -550,8 +550,7 @@ TypeCheckType::visit (HIR::TraitObjectType &type)
 
       auto &type_path = trait_bound.get_path ();
       TraitReference *trait = resolve_trait_path (type_path);
-      TyTy::TypeBoundPredicate predicate (trait->get_mappings ().get_defid (),
-					  trait_bound.get_locus ());
+      TyTy::TypeBoundPredicate predicate (*trait, trait_bound.get_locus ());
       auto &final_seg = type_path.get_final_segment ();
       if (final_seg->is_generic_segment ())
 	{

@@ -79,8 +79,8 @@ public:
 	rust_assert (!trait_reference->is_error ());
 
 	// setup the bound
-	TyTy::TypeBoundPredicate predicate (
-	  trait_reference->get_mappings ().get_defid (), ref->get_locus ());
+	TyTy::TypeBoundPredicate predicate (*trait_reference,
+					    ref->get_locus ());
 	auto &final_seg = ref->get_final_segment ();
 	if (final_seg->is_generic_segment ())
 	  {

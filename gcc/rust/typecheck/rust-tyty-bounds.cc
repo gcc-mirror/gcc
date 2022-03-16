@@ -67,17 +67,38 @@ TypeCheckBase::resolve_trait_path (HIR::TypePath &path)
 
 namespace TyTy {
 
-TypeBoundPredicate::TypeBoundPredicate (DefId reference, Location locus)
-  : reference (reference), locus (locus), args (nullptr)
+TypeBoundPredicate::TypeBoundPredicate (
+  const Resolver::TraitReference &trait_reference, Location locus)
+  : SubstitutionRef (trait_reference.get_trait_substs (),
+		     SubstitutionArgumentMappings::error ()),
+    reference (trait_reference.get_mappings ().get_defid ()), locus (locus),
+    args (nullptr), error_flag (false)
 {}
+
+TypeBoundPredicate::TypeBoundPredicate (
+  DefId reference, std::vector<SubstitutionParamMapping> substitutions,
+  Location locus)
+  : SubstitutionRef (std::move (substitutions),
+		     SubstitutionArgumentMappings::error ()),
+    reference (reference), locus (locus), args (nullptr), error_flag (false)
+{}
+
+TypeBoundPredicate::TypeBoundPredicate (const TypeBoundPredicate &other)
+  : SubstitutionRef ({}, other.used_arguments), reference (other.reference),
+    locus (other.locus), args (other.args), error_flag (other.error_flag)
+{
+  substitutions.clear ();
+  if (!other.is_error ())
+    {
+      for (const auto &p : other.get_substs ())
+	substitutions.push_back (p.clone ());
+    }
+}
 
 std::string
 TypeBoundPredicate::as_string () const
 {
-  return get ()->as_string ()
-	 + (has_generic_args ()
-	      ? std::string ("<") + args->as_string () + std::string (">")
-	      : "");
+  return get ()->as_string () + subst_as_string ();
 }
 
 const Resolver::TraitReference *
@@ -183,6 +204,25 @@ TypeBoundPredicateItem::get_tyty_for_receiver (
 
   return resolved;
 }
+bool
+TypeBoundPredicate::is_error () const
+{
+  auto context = Resolver::TypeCheckContext::get ();
+
+  Resolver::TraitReference *ref = nullptr;
+  bool ok = context->lookup_trait_reference (reference, &ref);
+
+  return !ok || error_flag;
+}
+
+BaseType *
+TypeBoundPredicate::handle_substitions (SubstitutionArgumentMappings mappings)
+{
+  gcc_unreachable ();
+  return nullptr;
+}
+
+// trait item reference
 
 const Resolver::TraitItemReference *
 TypeBoundPredicateItem::get_raw_item () const

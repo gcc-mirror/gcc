@@ -939,10 +939,17 @@ protected:
   SubstitutionArgumentMappings used_arguments;
 };
 
-class TypeBoundPredicate
+class TypeBoundPredicate : public SubstitutionRef
 {
 public:
-  TypeBoundPredicate (DefId reference, Location locus);
+  TypeBoundPredicate (const Resolver::TraitReference &trait_reference,
+		      Location locus);
+
+  TypeBoundPredicate (DefId reference,
+		      std::vector<SubstitutionParamMapping> substitutions,
+		      Location locus);
+
+  TypeBoundPredicate (const TypeBoundPredicate &other);
 
   std::string as_string () const;
 
@@ -975,10 +982,17 @@ public:
     return args->has_generic_args ();
   }
 
+  // WARNING THIS WILL ALWAYS RETURN NULLPTR
+  BaseType *
+  handle_substitions (SubstitutionArgumentMappings mappings) override final;
+
+  bool is_error () const;
+
 private:
   DefId reference;
   Location locus;
   HIR::GenericArgs *args;
+  bool error_flag;
 };
 
 // https://doc.rust-lang.org/nightly/nightly-rustc/rustc_middle/ty/struct.VariantDef.html

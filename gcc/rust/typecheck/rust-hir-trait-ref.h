@@ -407,7 +407,7 @@ public:
 
   bool trait_has_generics () const { return !trait_substs.empty (); }
 
-  const std::vector<TyTy::SubstitutionParamMapping> &get_trait_substs () const
+  std::vector<TyTy::SubstitutionParamMapping> get_trait_substs () const
   {
     return trait_substs;
   }
