@@ -3341,10 +3341,6 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
       else
 	{
 	  cookie_size = NULL_TREE;
-	  /* No size arithmetic necessary, so the size check is
-	     not needed. */
-	  if (outer_nelts_check != NULL && inner_size == 1)
-	    outer_nelts_check = NULL_TREE;
 	}
       /* Perform the overflow check.  */
       tree errval = TYPE_MAX_VALUE (sizetype);
@@ -3402,10 +3398,6 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
       if (!(array_p && TYPE_VEC_NEW_USES_COOKIE (elt_type)))
 	{
 	  cookie_size = NULL_TREE;
-	  /* No size arithmetic necessary, so the size check is
-	     not needed. */
-	  if (outer_nelts_check != NULL && inner_size == 1)
-	    outer_nelts_check = NULL_TREE;
 	}
 
       alloc_call = build_operator_new_call (fnname, placement,
