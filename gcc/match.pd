@@ -4743,7 +4743,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  (simplify
   (cmp @0 @0)
   (if (! FLOAT_TYPE_P (TREE_TYPE (@0))
-       || ! HONOR_NANS (@0))
+       || ! tree_expr_maybe_nan_p (@0))
    { constant_boolean_node (true, type); }
    (if (cmp != EQ_EXPR
 	/* With -ftrapping-math conversion to EQ loses an exception.  */
@@ -4755,7 +4755,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (cmp @0 @0)
   (if (cmp != NE_EXPR
        || ! FLOAT_TYPE_P (TREE_TYPE (@0))
-       || ! HONOR_NANS (@0))
+       || ! tree_expr_maybe_nan_p (@0))
    { constant_boolean_node (false, type); })))
 (for cmp (unle unge uneq)
  (simplify
@@ -4767,7 +4767,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (unordered @0 @0)))
 (simplify
  (ltgt @0 @0)
- (if (!flag_trapping_math)
+ (if (!flag_trapping_math || !tree_expr_maybe_nan_p (@0))
   { constant_boolean_node (false, type); }))
 
 /* x == ~x -> false */
