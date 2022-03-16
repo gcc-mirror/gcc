@@ -18368,10 +18368,16 @@ ix86_gimple_fold_builtin (gimple_stmt_iterator *gsi)
 	}
       break;
 
+    case IX86_BUILTIN_BLENDVPD:
+      /* blendvpd is under sse4.1 but pcmpgtq is under sse4.2,
+	 w/o sse4.2, it's veclowered to scalar operations and
+	 not combined back.  */
+      if (!TARGET_SSE4_2)
+	break;
+      /* FALLTHRU.  */
     case IX86_BUILTIN_PBLENDVB128:
     case IX86_BUILTIN_PBLENDVB256:
     case IX86_BUILTIN_BLENDVPS:
-    case IX86_BUILTIN_BLENDVPD:
     case IX86_BUILTIN_BLENDVPS256:
     case IX86_BUILTIN_BLENDVPD256:
       gcc_assert (n_args == 3);
