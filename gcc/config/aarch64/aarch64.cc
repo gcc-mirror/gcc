@@ -3971,7 +3971,7 @@ aarch64_load_symref_appropriately (rtx dest, rtx imm,
 	if (can_create_pseudo_p ())
 	  tmp_reg = gen_reg_rtx (mode);
 
-	emit_move_insn (tmp_reg, gen_rtx_HIGH (mode, imm));
+	emit_move_insn (tmp_reg, gen_rtx_HIGH (mode, copy_rtx (imm)));
 	emit_insn (gen_add_losym (dest, tmp_reg, imm));
 	return;
       }
