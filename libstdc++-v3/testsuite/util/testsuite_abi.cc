@@ -499,6 +499,19 @@ compare_symbols(const char* baseline_file, const char* test_file,
 	  else
 	    undesignated.push_back(stest);
 	}
+      // See PR libstdc++/103407 -  abi_check FAILs on Solaris
+      else if (stest.type == symbol::function
+		 && stest.name.compare(0, 23, "_ZSt10from_charsPKcS0_R") == 0
+		 && stest.name.find_first_of("def", 23) == 23
+		 && (stest.version_name == "GLIBCXX_3.4.29"
+		       || stest.version_name == "GLIBCXX_3.4.30"))
+	{
+	  stest.status = symbol::undesignated;
+	  if (!check_version(stest, false))
+	    incompatible.push_back(symbol_pair(stest, stest));
+	  else
+	    undesignated.push_back(stest);
+	}
       else
 	{
 	  stest.status = symbol::added;
