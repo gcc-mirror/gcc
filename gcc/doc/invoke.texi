@@ -3124,6 +3124,16 @@ On targets that support symbol aliases, the default is
 @option{-fextern-tls-init}.  On targets that do not support symbol
 aliases, the default is @option{-fno-extern-tls-init}.
 
+@item -ffold-simple-inlines
+@itemx -fno-fold-simple-inlines
+@opindex ffold-simple-inlines
+@opindex fno-fold-simple-inlines
+Permit the C++ frontend to fold calls to @code{std::move}, @code{std::forward},
+@code{std::addressof} and @code{std::as_const}.  In contrast to inlining, this
+means no debug information will be generated for such calls.  Since these
+functions are rarely interesting to debug, this flag is enabled by default
+unless @option{-fno-inline} is active.
+
 @item -fno-gnu-keywords
 @opindex fno-gnu-keywords
 @opindex fgnu-keywords
