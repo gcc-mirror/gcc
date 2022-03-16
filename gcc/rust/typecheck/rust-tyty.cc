@@ -201,11 +201,16 @@ BaseType::inherit_bounds (
 const BaseType *
 BaseType::get_root () const
 {
-  const BaseType *root = this;
-  while (root->get_kind () == TyTy::REF)
+  const TyTy::BaseType *root = this;
+  if (get_kind () == TyTy::REF)
     {
       const ReferenceType *r = static_cast<const ReferenceType *> (root);
-      root = r->get_base ();
+      root = r->get_base ()->get_root ();
+    }
+  else if (get_kind () == TyTy::POINTER)
+    {
+      const PointerType *r = static_cast<const PointerType *> (root);
+      root = r->get_base ()->get_root ();
     }
   return root;
 }
@@ -543,11 +548,11 @@ SubstitutionRef::get_mappings_from_generic_args (HIR::GenericArgs &args)
       rust_error_at (
 	r,
 	"generic item takes at least %lu type arguments but %lu were supplied",
-	substitutions.size (), args.get_type_args ().size ());
+	(min_required_substitutions () - offs), args.get_type_args ().size ());
       return SubstitutionArgumentMappings::error ();
     }
 
-  std::vector<SubstitutionArg> mappings;
+  std::vector<SubstitutionArg> mappings = used_arguments.get_mappings ();
   for (auto &arg : args.get_type_args ())
     {
       BaseType *resolved = Resolver::TypeCheckType::Resolve (arg.get ());
@@ -2351,7 +2356,7 @@ ParamType::handle_substitions (SubstitutionArgumentMappings mappings)
 
   SubstitutionArg arg = SubstitutionArg::error ();
   bool ok = mappings.get_argument_for_symbol (this, &arg);
-  if (ok)
+  if (ok && !arg.is_error ())
     p->set_ty_ref (arg.get_tyty ()->get_ref ());
 
   return p;

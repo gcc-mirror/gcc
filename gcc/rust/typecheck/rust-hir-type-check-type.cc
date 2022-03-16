@@ -84,11 +84,6 @@ TypeCheckType::visit (HIR::TypePath &path)
 	}
 
       translated = SubstMapper::Resolve (path_type, path.get_locus (), &args);
-      if (translated->get_kind () != TyTy::TypeKind::ERROR
-	  && mappings != nullptr)
-	{
-	  check_for_unconstrained (args.get_type_args ());
-	}
     }
   else if (!args.is_empty ())
     {
@@ -548,26 +543,11 @@ TypeCheckType::visit (HIR::TraitObjectType &type)
       HIR::TypeParamBound &b = *bound.get ();
       HIR::TraitBound &trait_bound = static_cast<HIR::TraitBound &> (b);
 
-      auto &type_path = trait_bound.get_path ();
-      TraitReference *trait = resolve_trait_path (type_path);
-      TyTy::TypeBoundPredicate predicate (*trait, trait_bound.get_locus ());
-      auto &final_seg = type_path.get_final_segment ();
-      if (final_seg->is_generic_segment ())
-	{
-	  auto final_generic_seg
-	    = static_cast<HIR::TypePathSegmentGeneric *> (final_seg.get ());
-	  if (final_generic_seg->has_generic_args ())
-	    {
-	      HIR::GenericArgs &generic_args
-		= final_generic_seg->get_generic_args ();
+      TyTy::TypeBoundPredicate predicate
+	= get_predicate_from_bound (trait_bound.get_path ());
 
-	      // this is applying generic arguments to a trait
-	      // reference
-	      predicate.apply_generic_arguments (&generic_args);
-	    }
-	}
-
-      if (predicate.is_object_safe (true, type.get_locus ()))
+      if (!predicate.is_error ()
+	  && predicate.is_object_safe (true, type.get_locus ()))
 	specified_bounds.push_back (std::move (predicate));
     }
 

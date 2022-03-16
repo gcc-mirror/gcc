@@ -57,12 +57,9 @@ class TypeCheckType : public TypeCheckBase
   using Rust::Resolver::TypeCheckBase::visit;
 
 public:
-  static TyTy::BaseType *
-  Resolve (HIR::Type *type,
-	   std::vector<TyTy::SubstitutionParamMapping> *subst_mappings
-	   = nullptr)
+  static TyTy::BaseType *Resolve (HIR::Type *type)
   {
-    TypeCheckType resolver (type->get_mappings ().get_hirid (), subst_mappings);
+    TypeCheckType resolver (type->get_mappings ().get_hirid ());
     type->accept_vis (resolver);
     rust_assert (resolver.translated != nullptr);
     resolver.context->insert_type (type->get_mappings (), resolver.translated);
@@ -159,42 +156,9 @@ public:
   void visit (HIR::TraitObjectType &type) override;
 
 private:
-  TypeCheckType (HirId id,
-		 std::vector<TyTy::SubstitutionParamMapping> *subst_mappings)
-    : TypeCheckBase (), subst_mappings (subst_mappings),
-      translated (new TyTy::ErrorType (id))
+  TypeCheckType (HirId id)
+    : TypeCheckBase (), translated (new TyTy::ErrorType (id))
   {}
-
-  void
-  check_for_unconstrained (std::vector<std::unique_ptr<HIR::Type>> &type_args)
-  {
-    std::map<std::string, Location> param_location_map;
-    std::set<std::string> param_tys;
-
-    if (subst_mappings != nullptr)
-      {
-	for (auto &mapping : *subst_mappings)
-	  {
-	    std::string sym = mapping.get_param_ty ()->get_symbol ();
-	    param_tys.insert (sym);
-	    param_location_map[sym] = mapping.get_generic_param ().get_locus ();
-	  }
-      }
-
-    std::set<std::string> args;
-    for (auto &arg : type_args)
-      args.insert (arg->as_string ());
-
-    for (auto &exp : param_tys)
-      {
-	bool used = args.find (exp) != args.end ();
-	if (!used)
-	  {
-	    Location locus = param_location_map.at (exp);
-	    rust_error_at (locus, "unconstrained type parameter");
-	  }
-      }
-  }
 
   TyTy::BaseType *resolve_root_path (HIR::TypePath &path, size_t *offset,
 				     NodeId *root_resolved_node_id);
@@ -205,7 +169,6 @@ private:
     TyTy::BaseType *tyseg, const Analysis::NodeMapping &expr_mappings,
     Location expr_locus);
 
-  std::vector<TyTy::SubstitutionParamMapping> *subst_mappings;
   TyTy::BaseType *translated;
 };
 
@@ -245,28 +208,10 @@ public:
 		  HIR::TraitBound *b
 		    = static_cast<HIR::TraitBound *> (bound.get ());
 
-		  auto &type_path = b->get_path ();
-		  TraitReference *trait = resolve_trait_path (type_path);
-		  TyTy::TypeBoundPredicate predicate (*trait, b->get_locus ());
-
-		  auto &final_seg = type_path.get_final_segment ();
-		  if (final_seg->is_generic_segment ())
-		    {
-		      auto final_generic_seg
-			= static_cast<HIR::TypePathSegmentGeneric *> (
-			  final_seg.get ());
-		      if (final_generic_seg->has_generic_args ())
-			{
-			  HIR::GenericArgs &generic_args
-			    = final_generic_seg->get_generic_args ();
-
-			  // this is applying generic arguments to a trait
-			  // reference
-			  predicate.apply_generic_arguments (&generic_args);
-			}
-		    }
-
-		  specified_bounds.push_back (std::move (predicate));
+		  TyTy::TypeBoundPredicate predicate
+		    = get_predicate_from_bound (b->get_path ());
+		  if (!predicate.is_error ())
+		    specified_bounds.push_back (std::move (predicate));
 		}
 		break;
 
@@ -315,28 +260,10 @@ public:
 	      HIR::TraitBound *b
 		= static_cast<HIR::TraitBound *> (bound.get ());
 
-	      auto &type_path = b->get_path ();
-	      TraitReference *trait = resolve_trait_path (type_path);
-	      TyTy::TypeBoundPredicate predicate (*trait, b->get_locus ());
-
-	      auto &final_seg = type_path.get_final_segment ();
-	      if (final_seg->is_generic_segment ())
-		{
-		  auto final_generic_seg
-		    = static_cast<HIR::TypePathSegmentGeneric *> (
-		      final_seg.get ());
-		  if (final_generic_seg->has_generic_args ())
-		    {
-		      HIR::GenericArgs &generic_args
-			= final_generic_seg->get_generic_args ();
-
-		      // this is applying generic arguments to a trait
-		      // reference
-		      predicate.apply_generic_arguments (&generic_args);
-		    }
-		}
-
-	      specified_bounds.push_back (std::move (predicate));
+	      TyTy::TypeBoundPredicate predicate
+		= get_predicate_from_bound (b->get_path ());
+	      if (!predicate.is_error ())
+		specified_bounds.push_back (std::move (predicate));
 	    }
 	    break;
 

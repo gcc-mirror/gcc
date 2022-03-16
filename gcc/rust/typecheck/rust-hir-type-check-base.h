@@ -47,6 +47,14 @@ protected:
 
   TraitReference *resolve_trait_path (HIR::TypePath &);
 
+  TyTy::TypeBoundPredicate get_predicate_from_bound (HIR::TypePath &path);
+
+  bool check_for_unconstrained (
+    const std::vector<TyTy::SubstitutionParamMapping> &params_to_constrain,
+    const TyTy::SubstitutionArgumentMappings &constraint_a,
+    const TyTy::SubstitutionArgumentMappings &constraint_b,
+    const TyTy::BaseType *reference);
+
   Analysis::Mappings *mappings;
   Resolver *resolver;
   TypeCheckContext *context;

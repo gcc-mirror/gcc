@@ -551,7 +551,13 @@ public:
     : generic (other.generic), param (other.param)
   {}
 
-  std::string as_string () const { return param->get_name (); }
+  std::string as_string () const
+  {
+    if (param == nullptr)
+      return "nullptr";
+
+    return param->get_name ();
+  }
 
   bool fill_param_ty (BaseType &type, Location locus);
 
@@ -615,7 +621,9 @@ public:
 
   BaseType *get_tyty () { return argument; }
 
-  const SubstitutionParamMapping *get_param_mapping () { return param; }
+  const BaseType *get_tyty () const { return argument; }
+
+  const SubstitutionParamMapping *get_param_mapping () const { return param; }
 
   static SubstitutionArg error () { return SubstitutionArg (nullptr, nullptr); }
 
@@ -634,7 +642,8 @@ public:
 
   std::string as_string () const
   {
-    return param->as_string () + ":" + argument->as_string ();
+    return param->as_string ()
+	   + (argument != nullptr ? ":" + argument->as_string () : "");
   }
 
 private:
@@ -712,7 +721,11 @@ public:
 
   size_t size () const { return mappings.size (); }
 
+  bool is_empty () const { return size () == 0; }
+
   std::vector<SubstitutionArg> &get_mappings () { return mappings; }
+
+  const std::vector<SubstitutionArg> &get_mappings () const { return mappings; }
 
   std::string as_string () const
   {
@@ -951,6 +964,10 @@ public:
 
   TypeBoundPredicate (const TypeBoundPredicate &other);
 
+  TypeBoundPredicate &operator= (const TypeBoundPredicate &other);
+
+  static TypeBoundPredicate error ();
+
   std::string as_string () const;
 
   const Resolver::TraitReference *get () const;
@@ -970,17 +987,11 @@ public:
   TypeBoundPredicateItem
   lookup_associated_item (const std::string &search) const;
 
-  HIR::GenericArgs *get_generic_args () { return args; }
+  HIR::GenericArgs *get_generic_args () { return &args; }
 
-  const HIR::GenericArgs *get_generic_args () const { return args; }
+  const HIR::GenericArgs *get_generic_args () const { return &args; }
 
-  bool has_generic_args () const
-  {
-    if (args == nullptr)
-      return false;
-
-    return args->has_generic_args ();
-  }
+  bool has_generic_args () const { return args.has_generic_args (); }
 
   // WARNING THIS WILL ALWAYS RETURN NULLPTR
   BaseType *
@@ -988,10 +999,12 @@ public:
 
   bool is_error () const;
 
+  bool requires_generic_args () const;
+
 private:
   DefId reference;
   Location locus;
-  HIR::GenericArgs *args;
+  HIR::GenericArgs args;
   bool error_flag;
 };
 

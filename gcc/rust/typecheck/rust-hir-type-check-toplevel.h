@@ -468,9 +468,8 @@ public:
 	ResolveWhereClauseItem::Resolve (*where_clause_item.get ());
       }
 
-    auto self
-      = TypeCheckType::Resolve (impl_block.get_type ().get (), &substitutions);
-    if (self == nullptr || self->get_kind () == TyTy::TypeKind::ERROR)
+    auto self = TypeCheckType::Resolve (impl_block.get_type ().get ());
+    if (self->get_kind () == TyTy::TypeKind::ERROR)
       return;
 
     for (auto &impl_item : impl_block.get_impl_items ())

@@ -63,6 +63,37 @@ TypeCheckBase::resolve_trait_path (HIR::TypePath &path)
   return TraitResolver::Resolve (path);
 }
 
+TyTy::TypeBoundPredicate
+TypeCheckBase::get_predicate_from_bound (HIR::TypePath &type_path)
+{
+  TraitReference *trait = resolve_trait_path (type_path);
+  if (trait->is_error ())
+    return TyTy::TypeBoundPredicate::error ();
+
+  TyTy::TypeBoundPredicate predicate (*trait, type_path.get_locus ());
+  HIR::GenericArgs args
+    = HIR::GenericArgs::create_empty (type_path.get_locus ());
+
+  auto &final_seg = type_path.get_final_segment ();
+  if (final_seg->is_generic_segment ())
+    {
+      auto final_generic_seg
+	= static_cast<HIR::TypePathSegmentGeneric *> (final_seg.get ());
+      if (final_generic_seg->has_generic_args ())
+	{
+	  args = final_generic_seg->get_generic_args ();
+	}
+    }
+
+  if (predicate.requires_generic_args ())
+    {
+      // this is applying generic arguments to a trait reference
+      predicate.apply_generic_arguments (&args);
+    }
+
+  return predicate;
+}
+
 } // namespace Resolver
 
 namespace TyTy {
@@ -72,7 +103,7 @@ TypeBoundPredicate::TypeBoundPredicate (
   : SubstitutionRef (trait_reference.get_trait_substs (),
 		     SubstitutionArgumentMappings::error ()),
     reference (trait_reference.get_mappings ().get_defid ()), locus (locus),
-    args (nullptr), error_flag (false)
+    args (HIR::GenericArgs::create_empty ()), error_flag (false)
 {}
 
 TypeBoundPredicate::TypeBoundPredicate (
@@ -80,7 +111,8 @@ TypeBoundPredicate::TypeBoundPredicate (
   Location locus)
   : SubstitutionRef (std::move (substitutions),
 		     SubstitutionArgumentMappings::error ()),
-    reference (reference), locus (locus), args (nullptr), error_flag (false)
+    reference (reference), locus (locus),
+    args (HIR::GenericArgs::create_empty ()), error_flag (false)
 {}
 
 TypeBoundPredicate::TypeBoundPredicate (const TypeBoundPredicate &other)
@@ -93,6 +125,33 @@ TypeBoundPredicate::TypeBoundPredicate (const TypeBoundPredicate &other)
       for (const auto &p : other.get_substs ())
 	substitutions.push_back (p.clone ());
     }
+}
+
+TypeBoundPredicate &
+TypeBoundPredicate::operator= (const TypeBoundPredicate &other)
+{
+  reference = other.reference;
+  locus = other.locus;
+  args = other.args;
+  error_flag = other.error_flag;
+  used_arguments = other.used_arguments;
+
+  substitutions.clear ();
+  if (!other.is_error ())
+    {
+      for (const auto &p : other.get_substs ())
+	substitutions.push_back (p.clone ());
+    }
+
+  return *this;
+}
+
+TypeBoundPredicate
+TypeBoundPredicate::error ()
+{
+  auto p = TypeBoundPredicate (UNKNOWN_DEFID, {}, Location ());
+  p.error_flag = true;
+  return p;
 }
 
 std::string
@@ -139,8 +198,19 @@ TypeBoundPredicate::is_object_safe (bool emit_error, Location locus) const
 void
 TypeBoundPredicate::apply_generic_arguments (HIR::GenericArgs *generic_args)
 {
-  args = generic_args;
-  // TODO verify these arguments are valid and not too many were added
+  // we need to get the substitutions argument mappings but also remember that
+  // we have an implicit Self argument which we must be careful to respect
+  rust_assert (used_arguments.is_empty ());
+  rust_assert (!substitutions.empty ());
+
+  // we setup a dummy implict self argument
+  SubstitutionArg placeholder_self (&substitutions.front (), nullptr);
+  used_arguments.get_mappings ().push_back (std::move (placeholder_self));
+
+  // now actually perform a substitution
+  used_arguments = get_mappings_from_generic_args (*generic_args);
+  error_flag |= used_arguments.is_error ();
+  args = *generic_args;
 }
 
 bool
@@ -220,6 +290,15 @@ TypeBoundPredicate::handle_substitions (SubstitutionArgumentMappings mappings)
 {
   gcc_unreachable ();
   return nullptr;
+}
+
+bool
+TypeBoundPredicate::requires_generic_args () const
+{
+  if (is_error ())
+    return false;
+
+  return substitutions.size () > 1 && args.is_empty ();
 }
 
 // trait item reference
