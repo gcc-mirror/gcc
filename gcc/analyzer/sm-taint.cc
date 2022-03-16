@@ -180,6 +180,11 @@ public:
 
   const char *get_kind () const FINAL OVERRIDE { return "tainted_array_index"; }
 
+  int get_controlling_option () const FINAL OVERRIDE
+  {
+    return OPT_Wanalyzer_tainted_array_index;
+  }
+
   bool emit (rich_location *rich_loc) FINAL OVERRIDE
   {
     diagnostic_metadata m;
@@ -190,19 +195,19 @@ public:
       default:
 	gcc_unreachable ();
       case BOUNDS_NONE:
-	return warning_meta (rich_loc, m, OPT_Wanalyzer_tainted_array_index,
+	return warning_meta (rich_loc, m, get_controlling_option (),
 			     "use of attacker-controlled value %qE"
 			     " in array lookup without bounds checking",
 			     m_arg);
 	break;
       case BOUNDS_UPPER:
-	return warning_meta (rich_loc, m, OPT_Wanalyzer_tainted_array_index,
+	return warning_meta (rich_loc, m, get_controlling_option (),
 			     "use of attacker-controlled value %qE"
 			     " in array lookup without checking for negative",
 			     m_arg);
 	break;
       case BOUNDS_LOWER:
-	return warning_meta (rich_loc, m, OPT_Wanalyzer_tainted_array_index,
+	return warning_meta (rich_loc, m, get_controlling_option (),
 			     "use of attacker-controlled value %qE"
 			     " in array lookup without upper-bounds checking",
 			     m_arg);
@@ -248,6 +253,11 @@ public:
 
   const char *get_kind () const FINAL OVERRIDE { return "tainted_offset"; }
 
+  int get_controlling_option () const FINAL OVERRIDE
+  {
+    return OPT_Wanalyzer_tainted_offset;
+  }
+
   bool emit (rich_location *rich_loc) FINAL OVERRIDE
   {
     diagnostic_metadata m;
@@ -259,19 +269,19 @@ public:
 	default:
 	  gcc_unreachable ();
 	case BOUNDS_NONE:
-	  return warning_meta (rich_loc, m, OPT_Wanalyzer_tainted_offset,
+	  return warning_meta (rich_loc, m, get_controlling_option (),
 			       "use of attacker-controlled value %qE as offset"
 			       " without bounds checking",
 			       m_arg);
 	  break;
 	case BOUNDS_UPPER:
-	  return warning_meta (rich_loc, m, OPT_Wanalyzer_tainted_offset,
+	  return warning_meta (rich_loc, m, get_controlling_option (),
 			       "use of attacker-controlled value %qE as offset"
 			       " without lower-bounds checking",
 			       m_arg);
 	  break;
 	case BOUNDS_LOWER:
-	  return warning_meta (rich_loc, m, OPT_Wanalyzer_tainted_offset,
+	  return warning_meta (rich_loc, m, get_controlling_option (),
 			       "use of attacker-controlled value %qE as offset"
 			       " without upper-bounds checking",
 			       m_arg);
@@ -283,17 +293,17 @@ public:
 	default:
 	  gcc_unreachable ();
 	case BOUNDS_NONE:
-	  return warning_meta (rich_loc, m, OPT_Wanalyzer_tainted_offset,
+	  return warning_meta (rich_loc, m, get_controlling_option (),
 			       "use of attacker-controlled value as offset"
 			       " without bounds checking");
 	  break;
 	case BOUNDS_UPPER:
-	  return warning_meta (rich_loc, m, OPT_Wanalyzer_tainted_offset,
+	  return warning_meta (rich_loc, m, get_controlling_option (),
 			       "use of attacker-controlled value as offset"
 			       " without lower-bounds checking");
 	  break;
 	case BOUNDS_LOWER:
-	  return warning_meta (rich_loc, m, OPT_Wanalyzer_tainted_offset,
+	  return warning_meta (rich_loc, m, get_controlling_option (),
 			       "use of attacker-controlled value as offset"
 			       " without upper-bounds checking");
 	  break;
@@ -353,6 +363,11 @@ public:
 
   const char *get_kind () const OVERRIDE { return "tainted_size"; }
 
+  int get_controlling_option () const FINAL OVERRIDE
+  {
+    return OPT_Wanalyzer_tainted_size;
+  }
+
   bool emit (rich_location *rich_loc) OVERRIDE
   {
     diagnostic_metadata m;
@@ -362,19 +377,19 @@ public:
       default:
 	gcc_unreachable ();
       case BOUNDS_NONE:
-	return warning_meta (rich_loc, m, OPT_Wanalyzer_tainted_size,
+	return warning_meta (rich_loc, m, get_controlling_option (),
 			     "use of attacker-controlled value %qE as size"
 			     " without bounds checking",
 			     m_arg);
 	break;
       case BOUNDS_UPPER:
-	return warning_meta (rich_loc, m, OPT_Wanalyzer_tainted_size,
+	return warning_meta (rich_loc, m, get_controlling_option (),
 			     "use of attacker-controlled value %qE as size"
 			     " without lower-bounds checking",
 			     m_arg);
 	break;
       case BOUNDS_LOWER:
-	return warning_meta (rich_loc, m, OPT_Wanalyzer_tainted_size,
+	return warning_meta (rich_loc, m, get_controlling_option (),
 			     "use of attacker-controlled value %qE as size"
 			     " without upper-bounds checking",
 			     m_arg);
@@ -455,18 +470,23 @@ public:
 
   const char *get_kind () const FINAL OVERRIDE { return "tainted_divisor"; }
 
+  int get_controlling_option () const FINAL OVERRIDE
+  {
+    return OPT_Wanalyzer_tainted_divisor;
+  }
+
   bool emit (rich_location *rich_loc) FINAL OVERRIDE
   {
     diagnostic_metadata m;
     /* CWE-369: "Divide By Zero".  */
     m.add_cwe (369);
     if (m_arg)
-      return warning_meta (rich_loc, m, OPT_Wanalyzer_tainted_divisor,
+      return warning_meta (rich_loc, m, get_controlling_option (),
 			   "use of attacker-controlled value %qE as divisor"
 			   " without checking for zero",
 			   m_arg);
     else
-      return warning_meta (rich_loc, m, OPT_Wanalyzer_tainted_divisor,
+      return warning_meta (rich_loc, m, get_controlling_option (),
 			   "use of attacker-controlled value as divisor"
 			   " without checking for zero");
   }
@@ -503,6 +523,11 @@ public:
     return "tainted_allocation_size";
   }
 
+  int get_controlling_option () const FINAL OVERRIDE
+  {
+    return OPT_Wanalyzer_tainted_allocation_size;
+  }
+
   bool emit (rich_location *rich_loc) FINAL OVERRIDE
   {
     diagnostic_metadata m;
@@ -515,22 +540,19 @@ public:
 	default:
 	  gcc_unreachable ();
 	case BOUNDS_NONE:
-	  return warning_meta (rich_loc, m,
-			       OPT_Wanalyzer_tainted_allocation_size,
+	  return warning_meta (rich_loc, m, get_controlling_option (),
 			       "use of attacker-controlled value %qE as"
 			       " allocation size without bounds checking",
 			       m_arg);
 	  break;
 	case BOUNDS_UPPER:
-	  return warning_meta (rich_loc, m,
-			       OPT_Wanalyzer_tainted_allocation_size,
+	  return warning_meta (rich_loc, m, get_controlling_option (),
 			       "use of attacker-controlled value %qE as"
 			       " allocation size without lower-bounds checking",
 			       m_arg);
 	  break;
 	case BOUNDS_LOWER:
-	  return warning_meta (rich_loc, m,
-			       OPT_Wanalyzer_tainted_allocation_size,
+	  return warning_meta (rich_loc, m, get_controlling_option (),
 			       "use of attacker-controlled value %qE as"
 			       " allocation size without upper-bounds checking",
 			     m_arg);
@@ -542,22 +564,19 @@ public:
 	default:
 	  gcc_unreachable ();
 	case BOUNDS_NONE:
-	  return warning_meta (rich_loc, m,
-			       OPT_Wanalyzer_tainted_allocation_size,
+	  return warning_meta (rich_loc, m, get_controlling_option (),
 			       "use of attacker-controlled value as"
 			       " allocation size without bounds"
 			       " checking");
 	  break;
 	case BOUNDS_UPPER:
-	  return warning_meta (rich_loc, m,
-			       OPT_Wanalyzer_tainted_allocation_size,
+	  return warning_meta (rich_loc, m, get_controlling_option (),
 			       "use of attacker-controlled value as"
 			       " allocation size without lower-bounds"
 			       " checking");
 	  break;
 	case BOUNDS_LOWER:
-	  return warning_meta (rich_loc, m,
-			       OPT_Wanalyzer_tainted_allocation_size,
+	  return warning_meta (rich_loc, m, get_controlling_option (),
 			       "use of attacker-controlled value as"
 			       " allocation size without upper-bounds"
 			       " checking");

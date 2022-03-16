@@ -479,6 +479,21 @@ public:
 	    && m_src_region == other.m_src_region);
   }
 
+  int get_controlling_option () const FINAL OVERRIDE
+  {
+    switch (m_pkind)
+      {
+      default:
+	gcc_unreachable ();
+      case POISON_KIND_UNINIT:
+	return OPT_Wanalyzer_use_of_uninitialized_value;
+      case POISON_KIND_FREED:
+	return OPT_Wanalyzer_use_after_free;
+      case POISON_KIND_POPPED_STACK:
+	return OPT_Wanalyzer_use_of_pointer_in_stale_stack_frame;
+      }
+  }
+
   bool emit (rich_location *rich_loc) FINAL OVERRIDE
   {
     switch (m_pkind)
@@ -489,8 +504,7 @@ public:
 	{
 	  diagnostic_metadata m;
 	  m.add_cwe (457); /* "CWE-457: Use of Uninitialized Variable".  */
-	  return warning_meta (rich_loc, m,
-			       OPT_Wanalyzer_use_of_uninitialized_value,
+	  return warning_meta (rich_loc, m, get_controlling_option (),
 			       "use of uninitialized value %qE",
 			       m_expr);
 	}
@@ -499,8 +513,7 @@ public:
 	{
 	  diagnostic_metadata m;
 	  m.add_cwe (416); /* "CWE-416: Use After Free".  */
-	  return warning_meta (rich_loc, m,
-			       OPT_Wanalyzer_use_after_free,
+	  return warning_meta (rich_loc, m, get_controlling_option (),
 			       "use after %<free%> of %qE",
 			       m_expr);
 	}
@@ -509,8 +522,7 @@ public:
 	{
 	  /* TODO: which CWE?  */
 	  return warning_at
-	    (rich_loc,
-	     OPT_Wanalyzer_use_of_pointer_in_stale_stack_frame,
+	    (rich_loc, get_controlling_option (),
 	     "dereferencing pointer %qE to within stale stack frame",
 	     m_expr);
 	}
@@ -571,9 +583,14 @@ public:
 	    && same_tree_p (m_count_cst, other.m_count_cst));
   }
 
+  int get_controlling_option () const FINAL OVERRIDE
+  {
+    return OPT_Wanalyzer_shift_count_negative;
+  }
+
   bool emit (rich_location *rich_loc) FINAL OVERRIDE
   {
-    return warning_at (rich_loc, OPT_Wanalyzer_shift_count_negative,
+    return warning_at (rich_loc, get_controlling_option (),
 		       "shift by negative count (%qE)", m_count_cst);
   }
 
@@ -613,9 +630,14 @@ public:
 	    && same_tree_p (m_count_cst, other.m_count_cst));
   }
 
+  int get_controlling_option () const FINAL OVERRIDE
+  {
+    return OPT_Wanalyzer_shift_count_overflow;
+  }
+
   bool emit (rich_location *rich_loc) FINAL OVERRIDE
   {
-    return warning_at (rich_loc, OPT_Wanalyzer_shift_count_overflow,
+    return warning_at (rich_loc, get_controlling_option (),
 		       "shift by count (%qE) >= precision of type (%qi)",
 		       m_count_cst, m_operand_precision);
   }
@@ -1095,6 +1117,11 @@ class dump_path_diagnostic
   : public pending_diagnostic_subclass<dump_path_diagnostic>
 {
 public:
+  int get_controlling_option () const FINAL OVERRIDE
+  {
+    return 0;
+  }
+
   bool emit (rich_location *richloc) FINAL OVERRIDE
   {
     inform (richloc, "path");
@@ -2534,6 +2561,11 @@ public:
 	    && m_decl == other.m_decl);
   }
 
+  int get_controlling_option () const FINAL OVERRIDE
+  {
+    return OPT_Wanalyzer_write_to_const;
+  }
+
   bool emit (rich_location *rich_loc) FINAL OVERRIDE
   {
     auto_diagnostic_group d;
@@ -2541,15 +2573,15 @@ public:
     switch (m_reg->get_kind ())
       {
       default:
-	warned = warning_at (rich_loc, OPT_Wanalyzer_write_to_const,
+	warned = warning_at (rich_loc, get_controlling_option (),
 			     "write to %<const%> object %qE", m_decl);
 	break;
       case RK_FUNCTION:
-	warned = warning_at (rich_loc, OPT_Wanalyzer_write_to_const,
+	warned = warning_at (rich_loc, get_controlling_option (),
 			     "write to function %qE", m_decl);
 	break;
       case RK_LABEL:
-	warned = warning_at (rich_loc, OPT_Wanalyzer_write_to_const,
+	warned = warning_at (rich_loc, get_controlling_option (),
 			     "write to label %qE", m_decl);
 	break;
       }
@@ -2597,9 +2629,14 @@ public:
     return m_reg == other.m_reg;
   }
 
+  int get_controlling_option () const FINAL OVERRIDE
+  {
+    return OPT_Wanalyzer_write_to_string_literal;
+  }
+
   bool emit (rich_location *rich_loc) FINAL OVERRIDE
   {
-    return warning_at (rich_loc, OPT_Wanalyzer_write_to_string_literal,
+    return warning_at (rich_loc, get_controlling_option (),
 		       "write to string literal");
     /* Ideally we would show the location of the STRING_CST as well,
        but it is not available at this point.  */

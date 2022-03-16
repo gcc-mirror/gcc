@@ -1526,10 +1526,15 @@ public:
     m_setjmp_point (setjmp_point), m_stack_pop_event (NULL)
   {}
 
+  int get_controlling_option () const FINAL OVERRIDE
+  {
+    return OPT_Wanalyzer_stale_setjmp_buffer;
+  }
+
   bool emit (rich_location *richloc) FINAL OVERRIDE
   {
     return warning_at
-      (richloc, OPT_Wanalyzer_stale_setjmp_buffer,
+      (richloc, get_controlling_option (),
        "%qs called after enclosing function of %qs has returned",
        get_user_facing_name (m_longjmp_call),
        get_user_facing_name (m_setjmp_call));

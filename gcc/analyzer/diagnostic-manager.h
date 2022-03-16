@@ -179,6 +179,7 @@ private:
   engine *m_eng;
   auto_delete_vec<saved_diagnostic> m_saved_diagnostics;
   const int m_verbosity;
+  int m_num_disabled_diagnostics;
 };
 
 } // namespace ana
