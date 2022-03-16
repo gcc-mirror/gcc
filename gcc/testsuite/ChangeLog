@@ -1,3 +1,41 @@
+2022-03-15  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/95000
+	* gcc.dg/analyzer/pr95000-1.c: New test.
+
+2022-03-15  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/104923
+	* gcc.target/powerpc/pr104923.c: New test.
+
+2022-03-15  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/103177
+	* g++.dg/lookup/ambig6.C: New test.
+
+2022-03-15  Roger Sayle  <roger@nextmovesoftware.com>
+	    Marc Glisse  <marc.glisse@inria.fr>
+	    Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/101895
+	* gcc.target/i386/pr101895.c: New test case.
+
+2022-03-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/104623
+	* g++.dg/gomp/pr104623.C: New test.
+
+2022-03-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/104814
+	* gcc.c-torture/execute/pr104814.c: New test.
+
+2022-03-15  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/104436
+	* c-c++-common/Wdangling-pointer-8.c: New test.
+	* g++.dg/warn/Wdangling-pointer-5.C: New test.
+
 2022-03-14  Roger Sayle  <roger@nextmovesoftware.com>
 	    Uroš Bizjak  <ubizjak@gmail.com>
 

@@ -1,3 +1,7 @@
+2022-03-15  David Malcolm  <dmalcolm@redhat.com>
+
+	* store.cc (store::store): Presize m_cluster_map.
+
 2022-03-10  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/104863

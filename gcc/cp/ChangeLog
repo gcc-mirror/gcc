@@ -1,3 +1,18 @@
+2022-03-15  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/103177
+	* search.cc (lookup_field_info::errstr): Remove this data
+	member.
+	(lookup_field_r): Don't set errstr.
+	(lookup_member): Check ambiguity before checking access.
+	Simplify accordingly after errstr removal.  Exit early upon
+	error or empty result.
+
+2022-03-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/104623
+	* parser.cc (cp_parser_skip_to_pragma_eol): Don't purge any tokens.
+
 2022-03-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/102586
