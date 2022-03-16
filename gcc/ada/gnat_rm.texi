@@ -11028,10 +11028,13 @@ to the value an expression had upon entry to the subprogram. The
 relevant loop is either identified by the given loop name, or it is the
 innermost enclosing loop when no loop name is given.
 
-A @code{Loop_Entry} attribute can only occur within a
-@code{Loop_Variant} or @code{Loop_Invariant} pragma. A common use of
-@code{Loop_Entry} is to compare the current value of objects with their
-initial value at loop entry, in a @code{Loop_Invariant} pragma.
+A @code{Loop_Entry} attribute can only occur within an @code{Assert},
+@code{Assert_And_Cut}, @code{Assume}, @code{Loop_Variant} or @code{Loop_Invariant} pragma.
+In addition, such a pragma must be one of the items in the sequence
+of statements of a loop body, or nested inside block statements that
+appear in the sequence of statements of a loop body.
+A common use of @code{Loop_Entry} is to compare the current value of objects with
+their initial value at loop entry, in a @code{Loop_Invariant} pragma.
 
 The effect of using @code{X'Loop_Entry} is the same as declaring
 a constant initialized with the initial value of @code{X} at loop
