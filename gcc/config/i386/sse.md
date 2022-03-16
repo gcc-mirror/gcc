@@ -1601,7 +1601,7 @@
 	  (vec_select:<ssescalarmode>
 	    (match_operand:VI8F_128 1 "nonimmediate_operand" "vm")
 	    (parallel [(const_int 0)]))
-	  (match_operand:<ssescalarmode> 2 Â"const0_operand" "C")))]
+	  (match_operand:<ssescalarmode> 2 "const0_operand" "C")))]
   "TARGET_SSE2"
   "%vmovq\t{%1, %0|%0, %q1}"
   [(set_attr "type" "ssemov")
