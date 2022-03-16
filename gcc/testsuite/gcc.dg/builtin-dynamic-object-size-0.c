@@ -8,6 +8,15 @@ void *
 __attribute__ ((alloc_size (1)))
 __attribute__ ((__nothrow__ , __leaf__))
 __attribute__ ((noinline))
+alloc_func_long (long sz)
+{
+  return __builtin_malloc (sz);
+}
+
+void *
+__attribute__ ((alloc_size (1)))
+__attribute__ ((__nothrow__ , __leaf__))
+__attribute__ ((noinline))
 alloc_func (size_t sz)
 {
   return __builtin_malloc (sz);
@@ -142,6 +151,16 @@ test_builtin_malloc_condphi5 (size_t sz, int cond, char *c)
 
   size_t ret = __builtin_dynamic_object_size (cond ? c : (void *) &a, 0);
   __builtin_free (a);
+  return ret;
+}
+
+long
+__attribute__ ((noinline))
+test_builtin_malloc_long (long sz, long off)
+{
+  char *a = alloc_func_long (sz);
+  char *dest = a + off;
+  long ret = __builtin_dynamic_object_size (dest, 0);
   return ret;
 }
 
@@ -418,6 +437,9 @@ main (int argc, char **argv)
   if (test_builtin_malloc_condphi4 (128, 0) != sizeof (void *))
     FAIL ();
   if (test_builtin_malloc_condphi5 (128, 0, argv[0]) != -1)
+    FAIL ();
+  long x = 42;
+  if (test_builtin_malloc_long (x, 0) != x)
     FAIL ();
   if (test_calloc (2048, 4) != 2048 * 4)
     FAIL ();

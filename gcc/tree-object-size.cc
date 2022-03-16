@@ -784,10 +784,7 @@ alloc_object_size (const gcall *call, int object_size_type)
   else if (arg1 >= 0)
     bytes = fold_convert (sizetype, gimple_call_arg (call, arg1));
 
-  if (bytes)
-    return STRIP_NOPS (bytes);
-
-  return size_unknown (object_size_type);
+  return bytes ? bytes : size_unknown (object_size_type);
 }
 
 
