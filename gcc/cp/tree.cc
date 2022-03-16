@@ -1778,7 +1778,18 @@ strip_typedefs (tree t, bool *remove_attributes, unsigned int flags)
 	if (TYPE_P (pat))
 	  {
 	    type = strip_typedefs (pat, remove_attributes, flags);
-	    if (type != pat)
+	    /* Empty packs can thwart our efforts here.  Consider
+
+		template <typename T, typename... Ts>
+		using IsOneOf = disjunction<is_same<T, Ts>...>;
+
+	      where IsOneOf seemingly uses all of its template parameters in
+	      its expansion (and does not expand a pack from the enclosing
+	      class), so the alias is not marked as complex.  However, it may
+	      be used as in "IsOneOf<Ts>", where Ts is an empty parameter pack,
+	      and stripping it down into "disjunction<>" here would exclude the
+	      Ts pack, resulting in an error.  */
+	    if (type != pat && uses_parameter_packs (type))
 	      {
 		result = copy_node (t);
 		PACK_EXPANSION_PATTERN (result) = type;
