@@ -1168,27 +1168,21 @@ lookup_member (tree xbasetype, tree name, int protect, bool want_type,
   if (rval_binfo)
     type = BINFO_TYPE (rval_binfo);
 
-  /* If we are not interested in ambiguities, don't report them;
-     just return NULL_TREE.  */
-  if (!protect && lfi.ambiguous)
-    return NULL_TREE;
-
-  if (protect == 2)
+  if (lfi.ambiguous)
     {
-      if (lfi.ambiguous)
-	return lfi.ambiguous;
-      else
-	protect = 0;
-    }
-
-  if (protect == 1 && lfi.ambiguous)
-    {
-      if (complain & tf_error)
+      if (protect == 0)
+	return NULL_TREE;
+      else if (protect == 1)
 	{
-	  error ("request for member %qD is ambiguous", name);
-	  print_candidates (lfi.ambiguous);
+	  if (complain & tf_error)
+	    {
+	      error ("request for member %qD is ambiguous", name);
+	      print_candidates (lfi.ambiguous);
+	    }
+	  return error_mark_node;
 	}
-      return error_mark_node;
+      else if (protect == 2)
+	return lfi.ambiguous;
     }
 
   if (!rval)
@@ -1213,7 +1207,7 @@ lookup_member (tree xbasetype, tree name, int protect, bool want_type,
 
     only the first call to "f" is valid.  However, if the function is
     static, we can check.  */
-  if (protect && !really_overloaded_fn (rval))
+  if (protect == 1 && !really_overloaded_fn (rval))
     {
       tree decl = is_overloaded_fn (rval) ? get_first_fn (rval) : rval;
       decl = strip_using_decl (decl);
