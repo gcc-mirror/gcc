@@ -1,3 +1,5 @@
+/* { dg-additional-options "--param=openacc-kernels=decompose" }
+
 /* { dg-additional-options "-fopt-info-omp-note" } */
 
 /* { dg-additional-options "--param=openacc-privatization=noisy" }
@@ -21,10 +23,11 @@ void
 f_acc_kernels (void)
 {
 #pragma acc kernels
-  /* { dg-note {variable 'i' declared in block is candidate for adjusting OpenACC privatization level} "" { target *-*-* } .-1 }
-     { dg-note {variable 'i' ought to be adjusted for OpenACC privatization level: 'gang'} "" { target *-*-* } .-2 } */
+  /* { dg-note {variable 'i' declared in block is candidate for adjusting OpenACC privatization level} "" { target *-*-* } .-1 } */
   {
     int i;
+    /* { dg-note {beginning 'gang-single' part in OpenACC 'kernels' region} "" { target c } .+3 }
+       { dg-note {beginning 'gang-single' part in OpenACC 'kernels' region} "" { target c++ } .+1 } */
 #pragma omp atomic write
     i = 0;
   }

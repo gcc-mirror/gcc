@@ -1,5 +1,7 @@
 ! { dg-options "-fopenacc -fdump-tree-omplower" }
 
+! { dg-additional-options "--param=openacc-kernels=decompose" }
+
 ! { dg-additional-options "-fopt-info-omp-all" }
 
 ! { dg-additional-options "--param=openacc-privatization=noisy" }
@@ -28,7 +30,11 @@ program main
      a(i) = b(i) + c
   end do
   !$acc kernels ! { dg-line l2 }
+  ! { dg-note {OpenACC 'kernels' decomposition: variable 'i' in 'copy' clause requested to be made addressable} {} { target *-*-* } l2 }
+  !   { dg-note {variable 'i' made addressable} {} { target *-*-* } l2 }
+  ! { dg-note {variable 'c\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} {} { target *-*-* } l2 }
   ! { dg-optimized {assigned OpenACC seq loop parallelism} {} { target *-*-* } l2 }
+  ! { dg-note {beginning 'parloops' part in OpenACC 'kernels' region} {} { target *-*-* } .+1 }
   do i = 1, n
      x(i) = y(i) + c
   end do
@@ -39,10 +45,14 @@ end program main
 ! { dg-final { scan-tree-dump-times "omp target oacc_parallel .*map\\(tofrom:b \\\[len: 400\\\]\\\)" 1 "omplower" } }
 ! { dg-final { scan-tree-dump-times "omp target oacc_parallel .*map\\(tofrom:c \\\[len: 4\\\]\\)" 1 "omplower" } }
 
-! { dg-final { scan-tree-dump-times "omp target oacc_kernels .*map\\(force_tofrom:i \\\[len: 4\\\]\\)" 1 "omplower" } }
-! { dg-final { scan-tree-dump-times "omp target oacc_kernels .*map\\(tofrom:x \\\[len: 400\\\]\\)" 1 "omplower" } }
-! { dg-final { scan-tree-dump-times "omp target oacc_kernels .*map\\(tofrom:y \\\[len: 400\\\]\\\)" 1 "omplower" } }
-! { dg-final { scan-tree-dump-times "omp target oacc_kernels .*map\\(force_tofrom:c \\\[len: 4\\\]\\)" 1 "omplower" } }
+! { dg-final { scan-tree-dump-times "omp target oacc_data_kernels .*map\\(force_tofrom:i \\\[len: 4\\\]\\)" 1 "omplower" } }
+!   { dg-final { scan-tree-dump-times "omp target oacc_kernels .*map\\(force_present:i \\\[len: 4\\\]\\)" 1 "omplower" } }
+! { dg-final { scan-tree-dump-times "omp target oacc_data_kernels .*map\\(tofrom:x \\\[len: 400\\\]\\)" 1 "omplower" } }
+!   { dg-final { scan-tree-dump-times "omp target oacc_kernels .*map\\(force_present:x \\\[len: 400\\\]\\)" 1 "omplower" } }
+! { dg-final { scan-tree-dump-times "omp target oacc_data_kernels .*map\\(tofrom:y \\\[len: 400\\\]\\\)" 1 "omplower" } }
+!   { dg-final { scan-tree-dump-times "omp target oacc_kernels .*map\\(force_present:y \\\[len: 400\\\]\\\)" 1 "omplower" } }
+! { dg-final { scan-tree-dump-times "omp target oacc_data_kernels .*map\\(force_tofrom:c \\\[len: 4\\\]\\)" 1 "omplower" } }
+!   { dg-final { scan-tree-dump-times "omp target oacc_kernels .*map\\(force_present:c \\\[len: 4\\\]\\)" 1 "omplower" } }
 
 ! Expecting no mapping of un-referenced common-blocks variables
 

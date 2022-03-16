@@ -1,5 +1,7 @@
 /* Test dispatch of events to callbacks.  */
 
+/* { dg-additional-options "--param=openacc-kernels=decompose" } */
+
 /* { dg-additional-options "-fopt-info-omp-all" }
    { dg-additional-options "-foffload=-fopt-info-omp-all" } */
 
@@ -74,7 +76,7 @@ static void cb_enqueue_launch_start (acc_prof_info *prof_info, acc_event_info *e
   assert (prof_info->device_type == acc_device_type);
   assert (prof_info->device_number == acc_device_num);
   assert (prof_info->thread_id == -1);
-  assert (prof_info->async == acc_async_sync);
+  assert (prof_info->async == acc_async_noval);
   assert (prof_info->async_queue == prof_info->async);
   assert (prof_info->src_file == NULL);
   assert (prof_info->func_name == NULL);
@@ -181,10 +183,13 @@ int main()
 #define N 100
     int x[N];
 #pragma acc kernels /* { dg-line l_compute[incr c_compute] } */
-    /* { dg-note {variable 'i' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} {} { target *-*-* } l_compute$c_compute } */
+    /* { dg-note {OpenACC 'kernels' decomposition: variable 'i' declared in block requested to be made addressable} {} { target *-*-* } l_compute$c_compute }
+       { dg-note {variable 'i' made addressable} {} { target *-*-* } l_compute$c_compute } */
+    /* { dg-note {variable 'i' declared in block is candidate for adjusting OpenACC privatization level} {} { target *-*-* } l_compute$c_compute } */
     /* { dg-optimized {assigned OpenACC seq loop parallelism} {} { target { ! __OPTIMIZE__ } } l_compute$c_compute }
        { dg-optimized {assigned OpenACC gang loop parallelism} {} { target __OPTIMIZE__ } l_compute$c_compute } */
     {
+      /* { dg-note {beginning 'parloops' part in OpenACC 'kernels' region} {} { target *-*-* } .+1 } */
       for (int i = 0; i < N; ++i)
 	x[i] = i * i;
     }
@@ -208,11 +213,14 @@ int main()
     int x[N];
 #pragma acc kernels /* { dg-line l_compute[incr c_compute] } */ \
   num_gangs (30) num_workers (3) vector_length (5)
-    /* { dg-note {variable 'i' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} {} { target *-*-* } l_compute$c_compute } */
+    /* { dg-note {OpenACC 'kernels' decomposition: variable 'i' declared in block requested to be made addressable} {} { target *-*-* } l_compute$c_compute }
+       { dg-note {variable 'i' made addressable} {} { target *-*-* } l_compute$c_compute } */
+    /* { dg-note {variable 'i' declared in block is candidate for adjusting OpenACC privatization level} {} { target *-*-* } l_compute$c_compute } */
     /* { dg-warning {using 'vector_length \(32\)', ignoring 5} {} { target { __OPTIMIZE__ && openacc_nvidia_accel_selected } } l_compute$c_compute } */
     /* { dg-optimized {assigned OpenACC seq loop parallelism} {} { target { ! __OPTIMIZE__ } } l_compute$c_compute }
        { dg-optimized {assigned OpenACC gang loop parallelism} {} { target __OPTIMIZE__ } l_compute$c_compute } */
     {
+      /* { dg-note {beginning 'parloops' part in OpenACC 'kernels' region} {} { target *-*-* } .+1 } */
       for (int i = 0; i < N; ++i)
 	x[i] = i * i;
     }
@@ -236,11 +244,14 @@ int main()
     int x[N];
 #pragma acc kernels /* { dg-line l_compute[incr c_compute] } */ \
   num_gangs (num_gangs) num_workers (num_workers) vector_length (vector_length)
-    /* { dg-note {variable 'i' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} {} { target *-*-* } l_compute$c_compute } */
+    /* { dg-note {OpenACC 'kernels' decomposition: variable 'i' declared in block requested to be made addressable} {} { target *-*-* } l_compute$c_compute }
+       { dg-note {variable 'i' made addressable} {} { target *-*-* } l_compute$c_compute } */
+    /* { dg-note {variable 'i' declared in block is candidate for adjusting OpenACC privatization level} {} { target *-*-* } l_compute$c_compute } */
     /* { dg-warning {using 'vector_length \(32\)', ignoring runtime setting} {} { target { __OPTIMIZE__ && openacc_nvidia_accel_selected } } l_compute$c_compute } */
     /* { dg-optimized {assigned OpenACC seq loop parallelism} {} { target { ! __OPTIMIZE__ } } l_compute$c_compute }
        { dg-optimized {assigned OpenACC gang loop parallelism} {} { target __OPTIMIZE__ } l_compute$c_compute } */
     {
+      /* { dg-note {beginning 'parloops' part in OpenACC 'kernels' region} {} { target *-*-* } .+1 } */
       for (int i = 0; i < N; ++i)
 	x[i] = i * i;
     }
