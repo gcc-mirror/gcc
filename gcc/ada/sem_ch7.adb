@@ -1491,6 +1491,7 @@ package body Sem_Ch7 is
                   Prim_List : constant Elist_Id :=
                      Collect_Primitive_Operations (Defining_Identifier (Decl));
 
+                  E       : Entity_Id;
                   Ne_Id   : Entity_Id;
                   Op_Decl : Node_Id;
                   Op_Id   : Entity_Id;
@@ -1517,16 +1518,39 @@ package body Sem_Ch7 is
                         pragma Assert (Ekind (Ne_Id) = E_Function
                           and then Corresponding_Equality (Ne_Id) = Op_Id);
 
+                        E := First_Private_Entity (Id);
+
                         --  Move them from the private part of the entity list
                         --  up to the end of the visible part of the same list.
 
                         Remove_Entity (Op_Id);
                         Remove_Entity (Ne_Id);
 
-                        Link_Entities
-                          (Prev_Entity (First_Private_Entity (Id)), Op_Id);
+                        Link_Entities (Prev_Entity (E), Op_Id);
                         Link_Entities (Op_Id, Ne_Id);
-                        Link_Entities (Ne_Id, First_Private_Entity (Id));
+                        Link_Entities (Ne_Id, E);
+
+                        --  And if the private part contains another equality
+                        --  operator, move the equality operator to after it
+                        --  in the homonym chain, so that all its next homonyms
+                        --  in the same scope, if any, also are in the visible
+                        --  part. This is relied upon to resolve expanded names
+                        --  in Collect_Interps for example.
+
+                        while Present (E) loop
+                           exit when Ekind (E) = E_Function
+                             and then Chars (E) = Name_Op_Eq;
+
+                           Next_Entity (E);
+                        end loop;
+
+                        if Present (E) then
+                           Remove_Homonym (Op_Id);
+
+                           Set_Homonym (Op_Id, Homonym (E));
+                           Set_Homonym (E, Op_Id);
+                        end if;
+
                         exit;
                      end if;
 
