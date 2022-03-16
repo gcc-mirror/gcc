@@ -34,7 +34,6 @@ with Elists;         use Elists;
 with Errout;         use Errout;
 with Exp_Ch11;       use Exp_Ch11;
 with Exp_Util;       use Exp_Util;
-with Expander;       use Expander;
 with Inline;         use Inline;
 with Lib;            use Lib;
 with Namet;          use Namet;
@@ -2390,10 +2389,7 @@ package body Exp_Prag is
          Set_Pragma_Argument_Associations (N, A);
       end if;
 
-      --  Process the arguments of the pragma and expand them. Expanding an
-      --  entity reference is a noop, except in a protected operation, where
-      --  a reference may have to be transformed into a reference to the
-      --  corresponding prival. Are there other pragmas that require this ???
+      --  Process the arguments of the pragma
 
       Rip := False;
       Assoc := First (Pragma_Argument_Associations (N));
@@ -2401,8 +2397,6 @@ package body Exp_Prag is
          --  The back end may need to take the address of the object
 
          Set_Address_Taken (Entity (Expression (Assoc)));
-
-         Expand (Expression (Assoc));
 
          --  If any of the objects have a freeze node, it must appear before
          --  pragma Inspection_Point, otherwise the entity won't be elaborated
