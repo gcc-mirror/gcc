@@ -1514,6 +1514,7 @@ public:
     EXTERN,
     TRAIT,
     IMPL,
+    TRAIT_IMPL,
   };
 
 private:
@@ -1526,6 +1527,7 @@ private:
   std::unique_ptr<ExternalItem> external_item;
   std::unique_ptr<TraitItem> trait_item;
   std::unique_ptr<InherentImplItem> impl_item;
+  std::unique_ptr<TraitImplItem> trait_impl_item;
 
 public:
   SingleASTNode (std::unique_ptr<Expr> expr)
@@ -1550,6 +1552,10 @@ public:
 
   SingleASTNode (std::unique_ptr<InherentImplItem> item)
     : kind (IMPL), impl_item (std::move (item))
+  {}
+
+  SingleASTNode (std::unique_ptr<TraitImplItem> trait_impl_item)
+    : kind (TRAIT_IMPL), trait_impl_item (std::move (trait_impl_item))
   {}
 
   SingleASTNode (SingleASTNode const &other)
@@ -1579,6 +1585,10 @@ public:
 
       case IMPL:
 	impl_item = other.impl_item->clone_inherent_impl_item ();
+	break;
+
+      case TRAIT_IMPL:
+	trait_impl_item = other.trait_impl_item->clone_trait_impl_item ();
 	break;
       }
   }
@@ -1610,6 +1620,10 @@ public:
 
       case IMPL:
 	impl_item = other.impl_item->clone_inherent_impl_item ();
+	break;
+
+      case TRAIT_IMPL:
+	trait_impl_item = other.trait_impl_item->clone_trait_impl_item ();
 	break;
       }
     return *this;
@@ -1679,6 +1693,12 @@ public:
     return std::move (impl_item);
   }
 
+  std::unique_ptr<TraitImplItem> take_trait_impl_item ()
+  {
+    rust_assert (!is_error ());
+    return std::move (trait_impl_item);
+  }
+
   void accept_vis (ASTVisitor &vis)
   {
     switch (kind)
@@ -1706,6 +1726,10 @@ public:
       case IMPL:
 	impl_item->accept_vis (vis);
 	break;
+
+      case TRAIT_IMPL:
+	trait_impl_item->accept_vis (vis);
+	break;
       }
   }
 
@@ -1725,6 +1749,8 @@ public:
 	return trait_item == nullptr;
       case IMPL:
 	return impl_item == nullptr;
+      case TRAIT_IMPL:
+	return trait_impl_item == nullptr;
       }
 
     gcc_unreachable ();
@@ -1747,6 +1773,8 @@ public:
 	return "Trait Item: " + trait_item->as_string ();
       case IMPL:
 	return "Impl Item: " + impl_item->as_string ();
+      case TRAIT_IMPL:
+	return "Trait Impl Item: " + impl_item->as_string ();
       }
 
     gcc_unreachable ();

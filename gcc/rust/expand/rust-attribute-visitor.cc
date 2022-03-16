@@ -2549,8 +2549,12 @@ AttrVisitor::visit (AST::TraitImpl &impl)
   if (impl.has_where_clause ())
     expand_where_clause (impl.get_where_clause ());
 
-  // strip trait impl items if required
-  expand_pointer_allow_strip (impl.get_impl_items ());
+  std::function<std::unique_ptr<AST::TraitImplItem> (AST::SingleASTNode)>
+    extractor
+    = [] (AST::SingleASTNode node) { return node.take_trait_impl_item (); };
+
+  expand_macro_children (MacroExpander::TRAIT_IMPL, impl.get_impl_items (),
+			 extractor);
 }
 void
 AttrVisitor::visit (AST::ExternalStaticItem &item)

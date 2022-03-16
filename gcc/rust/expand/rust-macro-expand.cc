@@ -860,6 +860,22 @@ transcribe_many_impl_items (Parser<MacroInvocLexer> &parser, TokenId &delimiter)
 }
 
 /**
+ * Transcribe 0 or more trait impl items from a macro invocation
+ *
+ * @param parser Parser to extract items from
+ * @param delimiter Id of the token on which parsing should stop
+ */
+static std::vector<AST::SingleASTNode>
+transcribe_many_trait_impl_items (Parser<MacroInvocLexer> &parser,
+				  TokenId &delimiter)
+{
+  return parse_many (parser, delimiter, [&parser] () {
+    auto item = parser.parse_trait_impl_item ();
+    return AST::SingleASTNode (std::move (item));
+  });
+}
+
+/**
  * Transcribe 0 or more statements from a macro invocation
  *
  * @param parser Parser to extract statements from
@@ -931,6 +947,9 @@ transcribe_context (MacroExpander::ContextType ctx,
       break;
     case MacroExpander::ContextType::IMPL:
       return transcribe_many_impl_items (parser, last_token_id);
+      break;
+    case MacroExpander::ContextType::TRAIT_IMPL:
+      return transcribe_many_trait_impl_items (parser, last_token_id);
       break;
     case MacroExpander::ContextType::EXTERN:
       return transcribe_many_ext (parser, last_token_id);
