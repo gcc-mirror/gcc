@@ -1,5 +1,11 @@
 ! { dg-options "-fopenacc -fdump-tree-omplower" }
 
+! { dg-additional-options "-fopt-info-omp-all" }
+
+! { dg-additional-options "--param=openacc-privatization=noisy" }
+! Prune a few: uninteresting, and potentially varying depending on GCC configuration (data types):
+! { dg-prune-output {note: variable 'D\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} }
+
 module consts
   integer, parameter :: n = 100
 end module consts
@@ -15,11 +21,14 @@ program main
   common /KERNELS_BLOCK/ x, y, z
 
   c = 1.0
-  !$acc parallel loop copy(/BLOCK/)
+  !$acc parallel loop copy(/BLOCK/) ! { dg-line l1 }
+  ! { dg-note {variable 'i' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} {} { target *-*-* } l1 }
+  ! { dg-optimized {assigned OpenACC gang vector loop parallelism} {} { target *-*-* } l1 }
   do i = 1, n
      a(i) = b(i) + c
   end do
-  !$acc kernels
+  !$acc kernels ! { dg-line l2 }
+  ! { dg-optimized {assigned OpenACC seq loop parallelism} {} { target *-*-* } l2 }
   do i = 1, n
      x(i) = y(i) + c
   end do
