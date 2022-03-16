@@ -193,7 +193,8 @@ private:
       }
 
     TraitReference trait_object (trait_reference, item_refs,
-				 std::move (super_traits));
+				 std::move (super_traits),
+				 std::move (substitutions));
     context->insert_trait_reference (
       trait_reference->get_mappings ().get_defid (), std::move (trait_object));
 
