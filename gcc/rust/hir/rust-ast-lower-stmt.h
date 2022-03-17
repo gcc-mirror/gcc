@@ -45,14 +45,6 @@ public:
     return resolver.translated;
   }
 
-  void visit (AST::MacroInvocation &invoc) override
-  {
-    rust_fatal_error (
-      invoc.get_locus (),
-      "macro expansion failed: No macro invocation should get lowered to HIR "
-      "as they should disappear during expansion");
-  }
-
   void visit (AST::ExprStmtWithBlock &stmt) override
   {
     HIR::ExprWithBlock *expr

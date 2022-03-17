@@ -41,6 +41,7 @@ enum Kind
 {
   UNKNOWN,
   MACRO_RULES_DEFINITION,
+  MACRO_INVOCATION,
 };
 
 // Abstract base class for all AST elements
@@ -900,7 +901,7 @@ protected:
 class ExprWithoutBlock;
 
 // Base expression AST node - abstract
-class Expr
+class Expr : public Node
 {
 public:
   // Unique pointer custom clone function
@@ -1073,7 +1074,7 @@ protected:
 class TraitBound;
 
 // Base class for types as represented in AST - abstract
-class Type
+class Type : public Node
 {
 public:
   // Unique pointer custom clone function

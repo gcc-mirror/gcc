@@ -507,6 +507,8 @@ public:
     return ExprWithoutBlock::get_node_id ();
   }
 
+  Kind get_ast_kind () const override { return Kind::MACRO_INVOCATION; }
+
   NodeId get_macro_node_id () const { return node_id; }
 
   MacroInvocData &get_invoc_data () { return invoc_data; }

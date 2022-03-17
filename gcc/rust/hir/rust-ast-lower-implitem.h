@@ -52,14 +52,6 @@ public:
     return resolver.translated;
   }
 
-  void visit (AST::MacroInvocation &invoc) override
-  {
-    rust_fatal_error (
-      invoc.get_locus (),
-      "macro expansion failed: No macro invocation should get lowered to HIR "
-      "as they should disappear during expansion");
-  }
-
   void visit (AST::TypeAlias &alias) override
   {
     std::vector<std::unique_ptr<HIR::WhereClauseItem> > where_clause_items;
@@ -314,14 +306,6 @@ public:
     item->accept_vis (resolver);
     rust_assert (resolver.translated != nullptr);
     return resolver.translated;
-  }
-
-  void visit (AST::MacroInvocation &invoc) override
-  {
-    rust_fatal_error (
-      invoc.get_locus (),
-      "macro expansion failed: No macro invocation should get lowered to HIR "
-      "as they should disappear during expansion");
   }
 
   void visit (AST::TraitItemFunc &func) override

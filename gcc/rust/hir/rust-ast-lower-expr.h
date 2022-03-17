@@ -100,14 +100,6 @@ public:
     return resolver.translated;
   }
 
-  void visit (AST::MacroInvocation &expr) override
-  {
-    rust_fatal_error (
-      expr.get_locus (),
-      "macro expansion failed: No macro invocation should get lowered to HIR "
-      "as they should disappear during expansion");
-  }
-
   void visit (AST::TupleIndexExpr &expr) override
   {
     HIR::Expr *tuple_expr
