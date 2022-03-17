@@ -181,19 +181,37 @@ class TraitReference
 public:
   TraitReference (const HIR::Trait *hir_trait_ref,
 		  std::vector<TraitItemReference> item_refs,
-		  std::vector<const TraitReference *> super_traits)
+		  std::vector<const TraitReference *> super_traits,
+		  std::vector<TyTy::SubstitutionParamMapping> substs)
     : hir_trait_ref (hir_trait_ref), item_refs (item_refs),
       super_traits (super_traits)
-  {}
+  {
+    trait_substs.clear ();
+    trait_substs.reserve (substs.size ());
+    for (const auto &p : substs)
+      trait_substs.push_back (p.clone ());
+  }
 
   TraitReference (TraitReference const &other)
-    : hir_trait_ref (other.hir_trait_ref), item_refs (other.item_refs)
-  {}
+    : hir_trait_ref (other.hir_trait_ref), item_refs (other.item_refs),
+      super_traits (other.super_traits)
+  {
+    trait_substs.clear ();
+    trait_substs.reserve (other.trait_substs.size ());
+    for (const auto &p : other.trait_substs)
+      trait_substs.push_back (p.clone ());
+  }
 
   TraitReference &operator= (TraitReference const &other)
   {
     hir_trait_ref = other.hir_trait_ref;
     item_refs = other.item_refs;
+    super_traits = other.super_traits;
+
+    trait_substs.clear ();
+    trait_substs.reserve (other.trait_substs.size ());
+    for (const auto &p : other.trait_substs)
+      trait_substs.push_back (p.clone ());
 
     return *this;
   }
@@ -201,7 +219,10 @@ public:
   TraitReference (TraitReference &&other) = default;
   TraitReference &operator= (TraitReference &&other) = default;
 
-  static TraitReference error () { return TraitReference (nullptr, {}, {}); }
+  static TraitReference error ()
+  {
+    return TraitReference (nullptr, {}, {}, {});
+  }
 
   bool is_error () const { return hir_trait_ref == nullptr; }
 
@@ -384,10 +405,18 @@ public:
     return is_safe;
   }
 
+  bool trait_has_generics () const { return !trait_substs.empty (); }
+
+  std::vector<TyTy::SubstitutionParamMapping> get_trait_substs () const
+  {
+    return trait_substs;
+  }
+
 private:
   const HIR::Trait *hir_trait_ref;
   std::vector<TraitItemReference> item_refs;
   std::vector<const TraitReference *> super_traits;
+  std::vector<TyTy::SubstitutionParamMapping> trait_substs;
 };
 
 class AssociatedImplTrait

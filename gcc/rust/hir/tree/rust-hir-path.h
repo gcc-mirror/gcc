@@ -133,8 +133,7 @@ public:
 
   GenericArgs (std::vector<Lifetime> lifetime_args,
 	       std::vector<std::unique_ptr<Type> > type_args,
-	       std::vector<GenericArgsBinding> binding_args,
-	       Location locus = Location ())
+	       std::vector<GenericArgsBinding> binding_args, Location locus)
     : lifetime_args (std::move (lifetime_args)),
       type_args (std::move (type_args)),
       binding_args (std::move (binding_args)), locus (locus)
@@ -471,7 +470,7 @@ public:
 		       has_separating_scope_resolution, locus),
       generic_args (GenericArgs (std::move (lifetime_args),
 				 std::move (type_args),
-				 std::move (binding_args)))
+				 std::move (binding_args), locus))
   {}
 
   std::string as_string () const override;

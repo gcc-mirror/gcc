@@ -70,7 +70,7 @@ public:
 	  }
       }
 
-    std::vector<TyTy::TypeBoundPredicate> specified_bounds;
+    auto specified_bound = TyTy::TypeBoundPredicate::error ();
     TraitReference *trait_reference = &TraitReference::error_node ();
     if (impl_block.has_trait_ref ())
       {
@@ -78,26 +78,7 @@ public:
 	trait_reference = TraitResolver::Resolve (*ref.get ());
 	rust_assert (!trait_reference->is_error ());
 
-	// setup the bound
-	TyTy::TypeBoundPredicate predicate (
-	  trait_reference->get_mappings ().get_defid (), ref->get_locus ());
-	auto &final_seg = ref->get_final_segment ();
-	if (final_seg->is_generic_segment ())
-	  {
-	    auto final_generic_seg
-	      = static_cast<HIR::TypePathSegmentGeneric *> (final_seg.get ());
-	    if (final_generic_seg->has_generic_args ())
-	      {
-		HIR::GenericArgs &generic_args
-		  = final_generic_seg->get_generic_args ();
-
-		// this is applying generic arguments to a trait
-		// reference
-		predicate.apply_generic_arguments (&generic_args);
-	      }
-	  }
-
-	specified_bounds.push_back (std::move (predicate));
+	specified_bound = get_predicate_from_bound (*ref.get ());
       }
 
     TyTy::BaseType *self = nullptr;
@@ -108,11 +89,25 @@ public:
 		       "failed to resolve Self for ImplBlock");
 	return;
       }
+
     // inherit the bounds
-    self->inherit_bounds (specified_bounds);
+    if (!specified_bound.is_error ())
+      self->inherit_bounds ({specified_bound});
 
+    // check for any unconstrained type-params
+    const TyTy::SubstitutionArgumentMappings trait_constraints
+      = specified_bound.get_substitution_arguments ();
+    const TyTy::SubstitutionArgumentMappings impl_constraints
+      = GetUsedSubstArgs::From (self);
+
+    bool impl_block_has_unconstrained_typarams
+      = check_for_unconstrained (substitutions, trait_constraints,
+				 impl_constraints, self);
+    if (impl_block_has_unconstrained_typarams)
+      return;
+
+    // validate the impl items
     bool is_trait_impl_block = !trait_reference->is_error ();
-
     std::vector<const TraitItemReference *> trait_item_refs;
     for (auto &impl_item : impl_block.get_impl_items ())
       {

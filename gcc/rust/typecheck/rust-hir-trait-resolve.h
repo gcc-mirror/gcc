@@ -150,8 +150,13 @@ private:
 
     // They also inherit themselves as a bound this enables a trait item to
     // reference other Self::trait_items
+    std::vector<TyTy::SubstitutionParamMapping> self_subst_copy;
+    for (auto &sub : substitutions)
+      self_subst_copy.push_back (sub.clone ());
+
     specified_bounds.push_back (
       TyTy::TypeBoundPredicate (trait_reference->get_mappings ().get_defid (),
+				std::move (self_subst_copy),
 				trait_reference->get_locus ()));
 
     std::vector<const TraitReference *> super_traits;
@@ -168,8 +173,8 @@ private:
 		// FIXME this might be recursive we need a check for that
 
 		TraitReference *trait = resolve_trait_path (b->get_path ());
-		TyTy::TypeBoundPredicate predicate (
-		  trait->get_mappings ().get_defid (), bound->get_locus ());
+		TyTy::TypeBoundPredicate predicate (*trait,
+						    bound->get_locus ());
 
 		specified_bounds.push_back (std::move (predicate));
 		super_traits.push_back (predicate.get ());
@@ -193,7 +198,8 @@ private:
       }
 
     TraitReference trait_object (trait_reference, item_refs,
-				 std::move (super_traits));
+				 std::move (super_traits),
+				 std::move (substitutions));
     context->insert_trait_reference (
       trait_reference->get_mappings ().get_defid (), std::move (trait_object));
 
