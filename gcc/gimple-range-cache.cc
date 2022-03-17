@@ -33,6 +33,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "attribs.h"
 #include "gimple-iterator.h"
 #include "gimple-walk.h"
+#include "cfganal.h"
 
 #define DEBUG_RANGE_CACHE (dump_file					\
 			   && (param_ranger_debug & RANGER_DEBUG_CACHE))
@@ -1398,61 +1399,107 @@ ranger_cache::fill_block_cache (tree name, basic_block bb, basic_block def_bb)
 }
 
 
-// Check to see if we can simply get the range from the dominator.
+// Get the range of NAME from dominators of BB and return it in R.
 
 bool
-ranger_cache::range_from_dom (irange &r, tree name, basic_block bb)
+ranger_cache::range_from_dom (irange &r, tree name, basic_block start_bb)
 {
-  gcc_checking_assert (dom_info_available_p (CDI_DOMINATORS));
+  if (!dom_info_available_p (CDI_DOMINATORS))
+    return false;
 
   // Search back to the definition block or entry block.
   basic_block def_bb = gimple_bb (SSA_NAME_DEF_STMT (name));
   if (def_bb == NULL)
     def_bb = ENTRY_BLOCK_PTR_FOR_FN (cfun);
 
+  basic_block bb;
+  basic_block prev_bb = start_bb;
   // Flag if we encounter a block with non-null set.
   bool non_null = false;
-  for (bb = get_immediate_dominator (CDI_DOMINATORS, bb);
-       bb && bb != def_bb;
-       bb = get_immediate_dominator (CDI_DOMINATORS, bb))
+
+  // Range on entry to the DEF block should not be queried.
+  gcc_checking_assert (start_bb != def_bb);
+  m_workback.truncate (0);
+
+  // Default value is global range.
+  get_global_range (r, name);
+
+  // Search until a value is found, pushing outgoing edges encountered.
+  for (bb = get_immediate_dominator (CDI_DOMINATORS, start_bb);
+       bb;
+       prev_bb = bb, bb = get_immediate_dominator (CDI_DOMINATORS, bb))
     {
-      // If there is an outgoing range, the on-entry value won't work.
+      if (!non_null)
+	non_null |= m_non_null.non_null_deref_p (name, bb, false);
+
+      // This block has an outgoing range.
       if (m_gori.has_edge_range_p (name, bb))
 	{
-	  // Check if we can seed this block with a dominator value. THis will
-	  // prevent the ache from being filled back further than this.
-	  if (bb != def_bb && range_from_dom (r, name, bb))
-	    m_on_entry.set_bb_range (name, bb, r);
-	  return false;
+	  // Only outgoing ranges to single_pred blocks are dominated by
+	  // outgoing edge ranges, so only those need to be considered.
+	  edge e = find_edge (bb, prev_bb);
+	  if (e && single_pred_p (prev_bb))
+	    m_workback.quick_push (prev_bb);
 	}
 
-      // Flag if we see a non-null reference during this walk.
-      if (m_non_null.non_null_deref_p (name, bb, false))
-	non_null = true;
+      if (def_bb == bb)
+	break;
 
-      // If range-on-entry is set in this block, it can be used.
       if (m_on_entry.get_bb_range (r, name, bb))
+	break;
+    }
+
+  if (DEBUG_RANGE_CACHE)
+    {
+      fprintf (dump_file, "CACHE: BB %d DOM query, found ", start_bb->index);
+      r.dump (dump_file);
+      if (bb)
+	fprintf (dump_file, " at BB%d\n", bb->index);
+      else
+	fprintf (dump_file, " at function top\n");
+    }
+
+  // Now process any outgoing edges that we seen along the way.
+  while (m_workback.length () > 0)
+    {
+      int_range_max edge_range;
+      prev_bb = m_workback.pop ();
+      edge e = single_pred_edge (prev_bb);
+      bb = e->src;
+
+      if (m_gori.outgoing_edge_range_p (edge_range, e, name, *this))
 	{
-	  // Apply non-null if appropriate.
-	  if (r.varying_p () && non_null)
+	  r.intersect (edge_range);
+	  if (r.varying_p () && ((e->flags & (EDGE_EH | EDGE_ABNORMAL)) == 0))
 	    {
-	      gcc_checking_assert (POINTER_TYPE_P (TREE_TYPE (name)));
-	      r.set_nonzero (TREE_TYPE (name));
+	      if (m_non_null.non_null_deref_p (name, bb, false))
+		{
+		  gcc_checking_assert (POINTER_TYPE_P (TREE_TYPE (name)));
+		  r.set_nonzero (TREE_TYPE (name));
+		}
 	    }
-	  return true;
+	  if (DEBUG_RANGE_CACHE)
+	    {
+	      fprintf (dump_file, "CACHE: Adjusted edge range for %d->%d : ",
+		       bb->index, prev_bb->index);
+	      r.dump (dump_file);
+	      fprintf (dump_file, "\n");
+	    }
 	}
     }
-  // If this is the def block, and NAME is an export, then this value
-  // cannot be used.
-  if (bb == def_bb && m_gori.has_edge_range_p (name, bb))
-    return false;
 
-  // Otherwise choose the global value and use it.
-  get_global_range (r, name);
-  if (r.varying_p () && non_null)
+  // Apply non-null if appropriate.
+  if (non_null && r.varying_p ()
+      && !has_abnormal_call_or_eh_pred_edge_p (start_bb))
     {
       gcc_checking_assert (POINTER_TYPE_P (TREE_TYPE (name)));
       r.set_nonzero (TREE_TYPE (name));
+    }
+  if (DEBUG_RANGE_CACHE)
+    {
+      fprintf (dump_file, "CACHE: Range for DOM returns : ");
+      r.dump (dump_file);
+      fprintf (dump_file, "\n");
     }
   return true;
 }
