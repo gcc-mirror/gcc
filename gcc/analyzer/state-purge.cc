@@ -499,11 +499,12 @@ state_purge_annotator::add_node_annotations (graphviz_out *gv,
    /* Different in-edges mean different names need purging.
       Determine which points to dump.  */
    auto_vec<function_point> points;
-   if (n.entry_p ())
+   if (n.entry_p () || n.m_returning_call)
      points.safe_push (function_point::before_supernode (&n, NULL));
    else
      for (auto inedge : n.m_preds)
        points.safe_push (function_point::before_supernode (&n, inedge));
+   points.safe_push (function_point::after_supernode (&n));
 
    for (auto & point : points)
      {
