@@ -1,3 +1,8 @@
+2022-03-17  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* c-typeck.cc (handle_omp_array_sections_1): Add check to ensure
+	that clause is a map.
+
 2022-06-17  Chung-Lin Tang  <cltang@codesourcery.com>
 
 	Backport from mainline:
