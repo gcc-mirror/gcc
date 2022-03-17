@@ -440,8 +440,6 @@ public:
 
   void visit (HIR::TypeAlias &type) override
   {
-    // resolved_trait_item = trait_reference.lookup_trait_item (
-    //   type.get_new_type_name (), TraitItemReference::TraitItemType::TYPE);
     trait_reference.lookup_trait_item_by_type (
       type.get_new_type_name (), TraitItemReference::TraitItemType::TYPE,
       &resolved_trait_item);
