@@ -249,7 +249,8 @@ public:
     BYTE_STRING,
     INT,
     FLOAT,
-    BOOL
+    BOOL,
+    ERROR
   };
 
 private:
@@ -274,11 +275,11 @@ public:
 
   static Literal create_error ()
   {
-    return Literal ("", CHAR, PrimitiveCoreType::CORETYPE_UNKNOWN);
+    return Literal ("", ERROR, PrimitiveCoreType::CORETYPE_UNKNOWN);
   }
 
   // Returns whether literal is in an invalid state.
-  bool is_error () const { return value_as_string == ""; }
+  bool is_error () const { return type == ERROR; }
 };
 
 /* Forward decl - definition moved to rust-expr.h as it requires LiteralExpr to
