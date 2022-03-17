@@ -645,7 +645,7 @@ program_point::get_next () const
 	return after_supernode (get_supernode (), get_call_string ());
     case PK_BEFORE_STMT:
       {
-	unsigned next_idx = get_stmt_idx ();
+	unsigned next_idx = get_stmt_idx () + 1;
 	if (next_idx < get_supernode ()->m_stmts.length ())
 	  return before_stmt (get_supernode (), next_idx, get_call_string ());
 	else
