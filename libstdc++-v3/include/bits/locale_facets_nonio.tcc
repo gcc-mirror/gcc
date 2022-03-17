@@ -78,32 +78,33 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       char* __grouping = 0;
       _CharT* __curr_symbol = 0;
       _CharT* __positive_sign = 0;
-      _CharT* __negative_sign = 0;     
+      _CharT* __negative_sign = 0;
+      size_t __sz;
       __try
 	{
 	  const string& __g = __mp.grouping();
-	  _M_grouping_size = __g.size();
-	  __grouping = new char[_M_grouping_size];
-	  __g.copy(__grouping, _M_grouping_size);
+	  __sz = _M_grouping_size = __g.size();
+	  __grouping = new char[__sz];
+	  __g.copy(__grouping, __sz);
 	  _M_use_grouping = (_M_grouping_size
 			     && static_cast<signed char>(__grouping[0]) > 0
 			     && (__grouping[0]
 				 != __gnu_cxx::__numeric_traits<char>::__max));
 
 	  const basic_string<_CharT>& __cs = __mp.curr_symbol();
-	  _M_curr_symbol_size = __cs.size();
-	  __curr_symbol = new _CharT[_M_curr_symbol_size];
-	  __cs.copy(__curr_symbol, _M_curr_symbol_size);
+	  __sz = _M_curr_symbol_size = __cs.size();
+	  __curr_symbol = new _CharT[__sz];
+	  __cs.copy(__curr_symbol, __sz);
 
 	  const basic_string<_CharT>& __ps = __mp.positive_sign();
-	  _M_positive_sign_size = __ps.size();
-	  __positive_sign = new _CharT[_M_positive_sign_size];
-	  __ps.copy(__positive_sign, _M_positive_sign_size);
+	  __sz = _M_positive_sign_size = __ps.size();
+	  __positive_sign = new _CharT[__sz];
+	  __ps.copy(__positive_sign, __sz);
 
 	  const basic_string<_CharT>& __ns = __mp.negative_sign();
-	  _M_negative_sign_size = __ns.size();
-	  __negative_sign = new _CharT[_M_negative_sign_size];
-	  __ns.copy(__negative_sign, _M_negative_sign_size);
+	  __sz = _M_negative_sign_size = __ns.size();
+	  __negative_sign = new _CharT[__sz];
+	  __ns.copy(__negative_sign, __sz);
 
 	  _M_pos_format = __mp.pos_format();
 	  _M_neg_format = __mp.neg_format();
