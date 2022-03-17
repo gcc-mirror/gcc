@@ -5837,7 +5837,8 @@ handle_omp_array_sections_1 (tree c, tree t, vec<tree> &types,
 	      tree d_length = TREE_OPERAND (d, 2);
 	      if (d_length == NULL_TREE || !integer_onep (d_length))
 		{
-		  if (ort == C_ORT_ACC)
+		  if (ort == C_ORT_ACC
+		      && OMP_CLAUSE_CODE (c) == OMP_CLAUSE_MAP)
 		    {
 		      while (TREE_CODE (d) == TREE_LIST)
 			d = TREE_CHAIN (d);
