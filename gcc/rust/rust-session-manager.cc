@@ -542,6 +542,11 @@ Session::parse_file (const char *filename)
 
   rust_debug ("\033[0;31mSUCCESSFULLY PARSED CRATE \033[0m");
 
+  // If -fsyntax-only was passed, we can just skip the remaining passes.
+  // Parsing errors are already emitted in `parse_crate()`
+  if (flag_syntax_only)
+    return;
+
   // register plugins pipeline stage
   register_plugins (parsed_crate);
   rust_debug ("\033[0;31mSUCCESSFULLY REGISTERED PLUGINS \033[0m");
