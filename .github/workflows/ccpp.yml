@@ -46,7 +46,15 @@ jobs:
     - name: Build
       run: |
            cd gccrs-build; \
-           make -j $(nproc)
+           LC_ALL=C make -j $(nproc) > log 2>&1;
+           
+    - name: Build logs
+      run: cat gccrs-build/log
+
+    - name: Check for new warnings
+      run: |
+           grep 'warning:' gccrs-build/log | sort > log_warnings;
+           diff -U0 .github/bors_log_expected_warnings log_warnings 
 
     - name: Run Tests
       run: |
