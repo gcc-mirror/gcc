@@ -6997,17 +6997,17 @@ gimplify_target_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
 
   if (init)
     {
-      tree cleanup = NULL_TREE;
+      gimple_seq init_pre_p = NULL;
 
       /* TARGET_EXPR temps aren't part of the enclosing block, so add it
 	 to the temps list.  Handle also variable length TARGET_EXPRs.  */
       if (!poly_int_tree_p (DECL_SIZE (temp)))
 	{
 	  if (!TYPE_SIZES_GIMPLIFIED (TREE_TYPE (temp)))
-	    gimplify_type_sizes (TREE_TYPE (temp), pre_p);
+	    gimplify_type_sizes (TREE_TYPE (temp), &init_pre_p);
 	  /* FIXME: this is correct only when the size of the type does
 	     not depend on expressions evaluated in init.  */
-	  gimplify_vla_decl (temp, pre_p);
+	  gimplify_vla_decl (temp, &init_pre_p);
 	}
       else
 	{
@@ -7022,12 +7022,14 @@ gimplify_target_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
       /* If TARGET_EXPR_INITIAL is void, then the mere evaluation of the
 	 expression is supposed to initialize the slot.  */
       if (VOID_TYPE_P (TREE_TYPE (init)))
-	ret = gimplify_expr (&init, pre_p, post_p, is_gimple_stmt, fb_none);
+	ret = gimplify_expr (&init, &init_pre_p, post_p, is_gimple_stmt,
+			     fb_none);
       else
 	{
 	  tree init_expr = build2 (INIT_EXPR, void_type_node, temp, init);
 	  init = init_expr;
-	  ret = gimplify_expr (&init, pre_p, post_p, is_gimple_stmt, fb_none);
+	  ret = gimplify_expr (&init, &init_pre_p, post_p, is_gimple_stmt,
+			       fb_none);
 	  init = NULL;
 	  ggc_free (init_expr);
 	}
@@ -7037,18 +7039,9 @@ gimplify_target_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
 	  TARGET_EXPR_INITIAL (targ) = NULL_TREE;
 	  return GS_ERROR;
 	}
-      if (init)
-	gimplify_and_add (init, pre_p);
 
-      /* If needed, push the cleanup for the temp.  */
-      if (TARGET_EXPR_CLEANUP (targ))
-	{
-	  if (CLEANUP_EH_ONLY (targ))
-	    gimple_push_cleanup (temp, TARGET_EXPR_CLEANUP (targ),
-				 CLEANUP_EH_ONLY (targ), pre_p);
-	  else
-	    cleanup = TARGET_EXPR_CLEANUP (targ);
-	}
+      if (init)
+	gimplify_and_add (init, &init_pre_p);
 
       /* Add a clobber for the temporary going out of scope, like
 	 gimplify_bind_expr.  */
@@ -7079,8 +7072,13 @@ gimplify_target_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
 		}
 	    }
 	}
-      if (cleanup)
-	gimple_push_cleanup (temp, cleanup, false, pre_p);
+
+      gimple_seq_add_seq (pre_p, init_pre_p);
+
+      /* If needed, push the cleanup for the temp.  */
+      if (TARGET_EXPR_CLEANUP (targ))
+	gimple_push_cleanup (temp, TARGET_EXPR_CLEANUP (targ),
+			     CLEANUP_EH_ONLY (targ), pre_p);
 
       /* Only expand this once.  */
       TREE_OPERAND (targ, 3) = init;
