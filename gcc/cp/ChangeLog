@@ -1,3 +1,15 @@
+2022-03-16  Patrick Palka  <ppalka@redhat.com>
+
+	* search.cc (lookup_member): Simplify by handling all values
+	of protect together in the ambiguous case.  Don't modify protect.
+
+2022-03-16  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/96780
+	* cp-gimplify.cc (cp_fold) <case CALL_EXPR>: Fold calls to
+	std::move/forward and other cast-like functions into simple
+	casts.
+
 2022-03-15  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/103177

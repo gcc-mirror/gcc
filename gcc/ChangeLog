@@ -1,3 +1,85 @@
+2022-03-16  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* config/i386/sse.md: Delete corrupt character/typo.
+
+2022-03-16  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR target/94680
+	* config/i386/sse.md (sse2_movq128): New define_expand to
+	preserve previous named instruction.
+	(*sse2_movq128_<mode>): Renamed from sse2_movq128, and
+	generalized to VI8F_128 (both V2DI and V2DF).
+
+2022-03-16  Siddhesh Poyarekar  <siddhesh@gotplt.org>
+
+	PR tree-optimization/104941
+	* tree-object-size.cc (size_for_offset): Make useless conversion
+	check lighter and assign result of fold_convert to OFFSET.
+
+2022-03-16  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/104890
+	* config/i386/x86gprintrin.h: Also check _SOFT_FLOAT before
+	pushing target("general-regs-only").
+
+2022-03-16  Kito Cheng  <kito.cheng@sifive.com>
+
+	* common/config/riscv/riscv-common.cc (riscv_ext_version_table):
+	Add version info for zk, zks and zkn.
+
+2022-03-16  LiaoShihua  <shihua@iscas.ac.cn>
+
+	* common/config/riscv/riscv-common.cc
+	(riscv_combine_info): New.
+	(riscv_subset_list::handle_combine_ext): Combine back into zk to
+	maintain the canonical order in isa strings.
+	(riscv_subset_list::parse): Ditto.
+	* config/riscv/riscv-subset.h (handle_combine_ext): New.
+
+2022-03-16  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/102008
+	* passes.def: Move the added code sinking pass before the
+	preceeding phiopt pass.
+
+2022-03-16  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/96780
+	* doc/invoke.texi (C++ Dialect Options): Document
+	-ffold-simple-inlines.
+
+2022-03-16  Siddhesh Poyarekar  <siddhesh@gotplt.org>
+
+	PR tree-optimization/104942
+	* tree-object-size.cc (alloc_object_size): Remove STRIP_NOPS.
+
+2022-03-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/104910
+	* config/aarch64/aarch64.cc (aarch64_load_symref_appropriately): Copy
+	imm rtx.
+
+2022-03-16  Roger Sayle  <roger@nextmovesoftware.com>
+	    Richard Biener  <rguenther@suse.de>
+
+	* gimple-match-head.cc (single_use): Implement inline using a
+	single loop.
+
+2022-03-16  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* match.pd (X CMP X -> true): Test tree_expr_maybe_nan_p
+	instead of HONOR_NANS.
+	(X LTGT X -> false): Enable if X is not tree_expr_maybe_nan_p, as
+	this can't trap/signal.
+
+2022-03-16  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/104946
+	* config/i386/i386-builtin.def (BDESC): Add
+	CODE_FOR_sse4_1_blendvpd for IX86_BUILTIN_BLENDVPD.
+	* config/i386/i386.cc (ix86_gimple_fold_builtin): Don't fold
+	__builtin_ia32_blendvpd w/o sse4.2
+
 2022-03-15  Peter Bergner  <bergner@linux.ibm.com>
 
 	PR target/104923

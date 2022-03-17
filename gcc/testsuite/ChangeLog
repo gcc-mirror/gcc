@@ -1,3 +1,65 @@
+2022-03-16  Christophe Lyon  <christophe.lyon@arm.com>
+	    Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR c/98198
+	* gcc.dg/pr98198.c: New test case.
+
+2022-03-16  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR target/94680
+	* gcc.target/i386/sse2-pr94680-2.c: New stricter V2DF test case.
+
+2022-03-16  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/analyzer/many-disabled-diagnostics.c: New test.
+	* gcc.dg/plugin/analyzer_gil_plugin.c
+	(gil_diagnostic::get_controlling_option): New.
+	(double_save_thread::emit): Use it.
+	(fncall_without_gil::emit): Likewise.
+	(pyobject_usage_without_gil::emit): Likewise.
+
+2022-03-16  Siddhesh Poyarekar  <siddhesh@gotplt.org>
+
+	PR tree-optimization/104941
+	* gcc.dg/builtin-dynamic-object-size-0.c (S1, S2): New structs.
+	(test_alloc_nested_structs, g): New functions.
+	(main): Call test_alloc_nested_structs.
+
+2022-03-16  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/104890
+	* gcc.target/i386/pr104890.c: New test.
+
+2022-03-16  LiaoShihua  <shihua@iscas.ac.cn>
+
+	* gcc.target/riscv/predef-17.c: New test.
+
+2022-03-16  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/102008
+	* gcc.target/aarch64/pr102008.c: New testcase.
+
+2022-03-16  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/96780
+	* g++.dg/opt/pr96780.C: New test.
+
+2022-03-16  Siddhesh Poyarekar  <siddhesh@gotplt.org>
+
+	PR tree-optimization/104942
+	* gcc.dg/builtin-dynamic-object-size-0.c (alloc_func_long,
+	test_builtin_malloc_long): New functions.
+	(main): Use it.
+
+2022-03-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/104910
+	* gcc.dg/pr104910.c: New test.
+
+2022-03-16  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/sse4_1-blendvpd-1.c: New test.
+
 2022-03-15  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/95000

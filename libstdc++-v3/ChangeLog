@@ -1,3 +1,26 @@
+2022-03-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/103407
+	* config/abi/pre/gnu.ver: Make version for std::from_chars
+	depend on HAVE_USELOCALE macro.
+	* testsuite/util/testsuite_abi.cc (compare_symbols): Treat
+	std::from_chars for floating-point types as undesignated if
+	not found in the baseline symbols file.
+
+2022-03-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/charconv (__cpp_lib_to_chars): Only define when
+	both from_chars and to_chars are supported for floating-point
+	types.
+	(from_chars, to_chars): Adjust preprocessor conditions guarding
+	declarations.
+	* include/std/version (__cpp_lib_to_chars): Adjust condition to
+	match <charconv> definition.
+	* src/c++17/floating_from_chars.cc (from_chars_strtod): New
+	function template.
+	(from_chars): Simplify preprocessor checks and use
+	from_chars_strtod when appropriate.
+
 2022-03-14  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/104875

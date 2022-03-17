@@ -1,3 +1,14 @@
+2022-03-16  Christophe Lyon  <christophe.lyon@arm.com>
+	    Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR c/98198
+	* c-attribs.cc (decl_or_type_attrs): Add error_mark_node check.
+
+2022-03-16  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/96780
+	* c.opt: Add -ffold-simple-inlines.
+
 2022-03-13  Tobias Burnus  <tobias@codesourcery.com>
 
 	* c-target.def (check_string_object_format_arg): Fix description typo.
