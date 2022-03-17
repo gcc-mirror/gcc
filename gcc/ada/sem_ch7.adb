@@ -1813,9 +1813,13 @@ package body Sem_Ch7 is
 
       --  If this is a package associated with a generic instance or formal
       --  package, then the private declarations of each of the generic's
-      --  parents must be installed at this point.
+      --  parents must be installed at this point, but not if this is the
+      --  abbreviated instance created to check a formal package, see the
+      --  same condition in Analyze_Package_Instantiation.
 
-      if Is_Generic_Instance (Id) then
+      if Is_Generic_Instance (Id)
+        and then not Is_Abbreviated_Instance (Id)
+      then
          Install_Parent_Private_Declarations (Id);
       end if;
 
