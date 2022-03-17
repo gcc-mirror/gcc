@@ -67,6 +67,16 @@ ASTLoweringBlock::visit (AST::BlockExpr &expr)
 
   for (auto &s : expr.get_statements ())
     {
+      if (s->get_ast_kind () == AST::Kind::MACRO_RULES_DEFINITION)
+	continue;
+
+      if (s->get_ast_kind () == AST::Kind::MACRO_INVOCATION)
+	rust_fatal_error (
+	  s->get_locus (),
+	  "macro invocations should not get lowered to HIR - At "
+	  "this point in "
+	  "the pipeline, they should all have been expanded");
+
       if (block_did_terminate)
 	rust_warning_at (s->get_locus (), 0, "unreachable statement");
 

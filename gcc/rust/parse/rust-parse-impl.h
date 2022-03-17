@@ -6034,9 +6034,10 @@ Parser<ManagedTokenSource>::parse_named_function_param (
 // Parses a statement (will further disambiguate any statement).
 template <typename ManagedTokenSource>
 std::unique_ptr<AST::Stmt>
-Parser<ManagedTokenSource>::parse_stmt ()
+Parser<ManagedTokenSource>::parse_stmt (bool allow_no_semi)
 {
   // quick exit for empty statement
+  // FIXME: Can we have empty statements without semicolons? Just nothing?
   const_TokenPtr t = lexer.peek_token ();
   if (t->get_id () == SEMICOLON)
     {
@@ -6058,7 +6059,7 @@ Parser<ManagedTokenSource>::parse_stmt ()
     {
     case LET:
       // let statement
-      return parse_let_stmt (std::move (outer_attrs));
+      return parse_let_stmt (std::move (outer_attrs), allow_no_semi);
     case PUB:
     case MOD:
     case EXTERN_TOK:
@@ -6113,7 +6114,7 @@ Parser<ManagedTokenSource>::parse_stmt ()
       // TODO: find out how to disable gcc "implicit fallthrough" warning
     default:
       // fallback: expression statement
-      return parse_expr_stmt (std::move (outer_attrs));
+      return parse_expr_stmt (std::move (outer_attrs), allow_no_semi);
       break;
     }
 }
@@ -6121,7 +6122,8 @@ Parser<ManagedTokenSource>::parse_stmt ()
 // Parses a let statement.
 template <typename ManagedTokenSource>
 std::unique_ptr<AST::LetStmt>
-Parser<ManagedTokenSource>::parse_let_stmt (AST::AttrVec outer_attrs)
+Parser<ManagedTokenSource>::parse_let_stmt (AST::AttrVec outer_attrs,
+					    bool allow_no_semi)
 {
   Location locus = lexer.peek_token ()->get_locus ();
   skip_token (LET);
@@ -6176,12 +6178,12 @@ Parser<ManagedTokenSource>::parse_let_stmt (AST::AttrVec outer_attrs)
 	}
     }
 
-  if (!skip_token (SEMICOLON))
+  if (!maybe_skip_token (SEMICOLON) && !allow_no_semi)
     {
       // skip after somewhere
       return nullptr;
-      /* TODO: how wise is it to ditch a mostly-valid let statement just because
-       * a semicolon is missing? */
+      /* TODO: how wise is it to ditch a mostly-valid let statement just
+       * because a semicolon is missing? */
     }
 
   return std::unique_ptr<AST::LetStmt> (
@@ -7016,7 +7018,8 @@ Parser<ManagedTokenSource>::parse_method ()
  * block statement). */
 template <typename ManagedTokenSource>
 std::unique_ptr<AST::ExprStmt>
-Parser<ManagedTokenSource>::parse_expr_stmt (AST::AttrVec outer_attrs)
+Parser<ManagedTokenSource>::parse_expr_stmt (AST::AttrVec outer_attrs,
+					     bool allow_no_semi)
 {
   /* potential thoughts - define new virtual method "has_block()" on expr. parse
    * expr and then determine whether semicolon is needed as a result of this
@@ -7055,7 +7058,8 @@ Parser<ManagedTokenSource>::parse_expr_stmt (AST::AttrVec outer_attrs)
 	  }
 	else
 	  {
-	    return parse_expr_stmt_without_block (std::move (outer_attrs));
+	    return parse_expr_stmt_without_block (std::move (outer_attrs),
+						  allow_no_semi);
 	  }
       }
       case UNSAFE: {
@@ -7068,7 +7072,8 @@ Parser<ManagedTokenSource>::parse_expr_stmt (AST::AttrVec outer_attrs)
 	  }
 	else
 	  {
-	    return parse_expr_stmt_without_block (std::move (outer_attrs));
+	    return parse_expr_stmt_without_block (std::move (outer_attrs),
+						  allow_no_semi);
 	  }
       }
     default:
@@ -7076,7 +7081,8 @@ Parser<ManagedTokenSource>::parse_expr_stmt (AST::AttrVec outer_attrs)
       /* TODO: if possible, be more selective about possible expr without block
        * initial tokens in order to prevent more syntactical errors at parse
        * time. */
-      return parse_expr_stmt_without_block (std::move (outer_attrs));
+      return parse_expr_stmt_without_block (std::move (outer_attrs),
+					    allow_no_semi);
     }
 }
 
@@ -7192,7 +7198,7 @@ Parser<ManagedTokenSource>::parse_expr_stmt_with_block (
 template <typename ManagedTokenSource>
 std::unique_ptr<AST::ExprStmtWithoutBlock>
 Parser<ManagedTokenSource>::parse_expr_stmt_without_block (
-  AST::AttrVec outer_attrs)
+  AST::AttrVec outer_attrs, bool allow_no_semi)
 {
   /* TODO: maybe move more logic for expr without block in here for better error
    * handling */
@@ -7217,7 +7223,7 @@ Parser<ManagedTokenSource>::parse_expr_stmt_without_block (
     }
 
   // skip semicolon at end that is required
-  if (!skip_token (SEMICOLON))
+  if (!maybe_skip_token (SEMICOLON) && !allow_no_semi)
     {
       // skip somewhere?
       return nullptr;
@@ -12217,6 +12223,18 @@ bool
 Parser<ManagedTokenSource>::skip_token (TokenId token_id)
 {
   return expect_token (token_id) != const_TokenPtr ();
+}
+
+/* Checks if current token has inputted id - skips it and returns true if so,
+ * returns false otherwise without diagnosing an error */
+template <typename ManagedTokenSource>
+bool
+Parser<ManagedTokenSource>::maybe_skip_token (TokenId token_id)
+{
+  if (lexer.peek_token ()->get_id () != token_id)
+    return false;
+  else
+    return skip_token (token_id);
 }
 
 /* Checks the current token - if id is same as expected, skips and returns it,

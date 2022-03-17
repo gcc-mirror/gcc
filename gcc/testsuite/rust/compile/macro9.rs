@@ -12,6 +12,7 @@ fn main() -> i32 {
     let b = add!(15);
     let b = add!(15 14); // { dg-error "Failed to match any rule within macro" }
     let b = add!(15, 14,); // { dg-error "Failed to match any rule within macro" }
+                           // { dg-error "found unexpected token" "" { target *-*-* } .-1 }
 
     0
 }

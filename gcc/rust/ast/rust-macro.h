@@ -441,6 +441,8 @@ public:
     is_builtin_rule = true;
   }
 
+  Kind get_ast_kind () const override { return Kind::MACRO_RULES_DEFINITION; }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
@@ -504,6 +506,8 @@ public:
   {
     return ExprWithoutBlock::get_node_id ();
   }
+
+  Kind get_ast_kind () const override { return Kind::MACRO_INVOCATION; }
 
   NodeId get_macro_node_id () const { return node_id; }
 

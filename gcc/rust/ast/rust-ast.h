@@ -36,6 +36,28 @@ namespace AST {
 class ASTVisitor;
 using AttrVec = std::vector<Attribute>;
 
+// The available kinds of AST Nodes
+enum Kind
+{
+  UNKNOWN,
+  MACRO_RULES_DEFINITION,
+  MACRO_INVOCATION,
+};
+
+// Abstract base class for all AST elements
+class Node
+{
+public:
+  /**
+   * Get the kind of Node this is. This is used to differentiate various AST
+   * elements with very little overhead when extracting the derived type through
+   * static casting is not necessary.
+   */
+  // FIXME: Mark this as `= 0` in the future to make sure every node implements
+  // it
+  virtual Kind get_ast_kind () const { return Kind::UNKNOWN; }
+};
+
 // Delimiter types - used in macros and whatever.
 enum DelimType
 {
@@ -814,7 +836,7 @@ class MetaListNameValueStr;
 
 /* Base statement abstract class. Note that most "statements" are not allowed in
  * top-level module scope - only a subclass of statements called "items" are. */
-class Stmt
+class Stmt : public Node
 {
 public:
   // Unique pointer custom clone function
@@ -880,7 +902,7 @@ protected:
 class ExprWithoutBlock;
 
 // Base expression AST node - abstract
-class Expr
+class Expr : public Node
 {
 public:
   // Unique pointer custom clone function
@@ -1053,7 +1075,7 @@ protected:
 class TraitBound;
 
 // Base class for types as represented in AST - abstract
-class Type
+class Type : public Node
 {
 public:
   // Unique pointer custom clone function
