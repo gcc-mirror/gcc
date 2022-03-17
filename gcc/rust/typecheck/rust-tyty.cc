@@ -201,6 +201,7 @@ BaseType::inherit_bounds (
 const BaseType *
 BaseType::get_root () const
 {
+  // FIXME this needs to be it its own visitor class with a vector adjustments
   const TyTy::BaseType *root = this;
   if (get_kind () == TyTy::REF)
     {
@@ -212,6 +213,19 @@ BaseType::get_root () const
       const PointerType *r = static_cast<const PointerType *> (root);
       root = r->get_base ()->get_root ();
     }
+
+  // these are an unsize
+  else if (get_kind () == TyTy::SLICE)
+    {
+      const SliceType *r = static_cast<const SliceType *> (root);
+      root = r->get_element_type ()->get_root ();
+    }
+  // else if (get_kind () == TyTy::ARRAY)
+  //   {
+  //     const ArrayType *r = static_cast<const ArrayType *> (root);
+  //     root = r->get_element_type ()->get_root ();
+  //   }
+
   return root;
 }
 
