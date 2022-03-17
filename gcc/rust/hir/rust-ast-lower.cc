@@ -67,6 +67,9 @@ ASTLoweringBlock::visit (AST::BlockExpr &expr)
 
   for (auto &s : expr.get_statements ())
     {
+      if (s->get_ast_kind () == AST::Kind::MACRO_RULES_DEFINITION)
+	continue;
+
       if (block_did_terminate)
 	rust_warning_at (s->get_locus (), 0, "unreachable statement");
 
