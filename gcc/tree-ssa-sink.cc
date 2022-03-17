@@ -822,14 +822,21 @@ class pass_sink_code : public gimple_opt_pass
 {
 public:
   pass_sink_code (gcc::context *ctxt)
-    : gimple_opt_pass (pass_data_sink_code, ctxt)
+    : gimple_opt_pass (pass_data_sink_code, ctxt), unsplit_edges (false)
   {}
 
   /* opt_pass methods: */
   virtual bool gate (function *) { return flag_tree_sink != 0; }
   virtual unsigned int execute (function *);
   opt_pass *clone (void) { return new pass_sink_code (m_ctxt); }
+  void set_pass_param (unsigned n, bool param)
+    {
+      gcc_assert (n == 0);
+      unsplit_edges = param;
+    }
 
+private:
+  bool unsplit_edges;
 }; // class pass_sink_code
 
 unsigned int
@@ -837,11 +844,13 @@ pass_sink_code::execute (function *fun)
 {
   loop_optimizer_init (LOOPS_NORMAL);
   split_edges_for_insertion ();
+  /* Arrange for the critical edge splitting to be undone if requested.  */
+  unsigned todo = unsplit_edges ? TODO_cleanup_cfg : 0;
   connect_infinite_loops_to_exit ();
   memset (&sink_stats, 0, sizeof (sink_stats));
   calculate_dominance_info (CDI_DOMINATORS);
   calculate_dominance_info (CDI_POST_DOMINATORS);
-  unsigned todo = sink_code_in_bb (EXIT_BLOCK_PTR_FOR_FN (fun));
+  todo |= sink_code_in_bb (EXIT_BLOCK_PTR_FOR_FN (fun));
   statistics_counter_event (fun, "Sunk statements", sink_stats.sunk);
   statistics_counter_event (fun, "Commoned stores", sink_stats.commoned);
   free_dominance_info (CDI_POST_DOMINATORS);
