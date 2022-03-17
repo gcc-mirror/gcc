@@ -287,10 +287,17 @@ struct MacroExpander
     expanded_fragment = std::move (fragment);
   }
 
-  AST::ASTFragment take_expanded_fragment ()
+  AST::ASTFragment take_expanded_fragment (AST::ASTVisitor &vis)
   {
     AST::ASTFragment old_fragment = std::move (expanded_fragment);
     expanded_fragment = AST::ASTFragment::create_empty ();
+
+    for (auto &node : old_fragment.get_nodes ())
+      {
+	expansion_depth++;
+	node.accept_vis (vis);
+	expansion_depth--;
+      }
 
     return old_fragment;
   }

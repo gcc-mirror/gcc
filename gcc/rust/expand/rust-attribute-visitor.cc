@@ -315,7 +315,6 @@ AttrVisitor::visit (AST::MacroInvocation &macro_invoc)
   // I don't think any macro token trees can be stripped in any way
 
   // TODO: maybe have cfg! macro stripping behaviour here?
-
   if (macro_invoc.has_semicolon ())
     expander.expand_invoc_semi (macro_invoc);
   else
@@ -532,23 +531,17 @@ AttrVisitor::visit (AST::ArithmeticOrLogicalExpr &expr)
    * with outer expr */
   auto &l_expr = expr.get_left_expr ();
   l_expr->accept_vis (*this);
-  auto l_fragment = expander.take_expanded_fragment ();
+  auto l_fragment = expander.take_expanded_fragment (*this);
   if (l_fragment.should_expand ())
-    {
-      l_fragment.accept_vis (*this);
-      l_expr = l_fragment.take_expression_fragment ();
-    }
+    l_expr = l_fragment.take_expression_fragment ();
 
   /* should syntactically not have outer attributes, though this may
    * not have worked in practice */
   auto &r_expr = expr.get_right_expr ();
   r_expr->accept_vis (*this);
-  auto r_fragment = expander.take_expanded_fragment ();
+  auto r_fragment = expander.take_expanded_fragment (*this);
   if (r_fragment.should_expand ())
-    {
-      r_fragment.accept_vis (*this);
-      r_expr = r_fragment.take_expression_fragment ();
-    }
+    r_expr = r_fragment.take_expression_fragment ();
 
   // ensure that they are not marked for strip
   if (expr.get_left_expr ()->is_marked_for_strip ())
@@ -666,23 +659,17 @@ AttrVisitor::visit (AST::CompoundAssignmentExpr &expr)
    * with outer expr */
   auto &l_expr = expr.get_left_expr ();
   l_expr->accept_vis (*this);
-  auto l_frag = expander.take_expanded_fragment ();
+  auto l_frag = expander.take_expanded_fragment (*this);
   if (l_frag.should_expand ())
-    {
-      l_frag.accept_vis (*this);
-      l_expr = l_frag.take_expression_fragment ();
-    }
+    l_expr = l_frag.take_expression_fragment ();
 
   /* should syntactically not have outer attributes, though this may
    * not have worked in practice */
   auto &r_expr = expr.get_right_expr ();
   r_expr->accept_vis (*this);
-  auto r_frag = expander.take_expanded_fragment ();
+  auto r_frag = expander.take_expanded_fragment (*this);
   if (r_frag.should_expand ())
-    {
-      r_frag.accept_vis (*this);
-      r_expr = r_frag.take_expression_fragment ();
-    }
+    r_expr = r_frag.take_expression_fragment ();
 
   // ensure that they are not marked for strip
   if (expr.get_left_expr ()->is_marked_for_strip ())
@@ -1033,10 +1020,9 @@ AttrVisitor::visit (AST::CallExpr &expr)
 
       stmt->accept_vis (*this);
 
-      auto fragment = expander.take_expanded_fragment ();
+      auto fragment = expander.take_expanded_fragment (*this);
       if (fragment.should_expand ())
 	{
-	  fragment.accept_vis (*this);
 	  // Remove the current expanded invocation
 	  it = params.erase (it);
 	  for (auto &node : fragment.get_nodes ())
@@ -1157,10 +1143,9 @@ AttrVisitor::visit (AST::BlockExpr &expr)
 
       stmt->accept_vis (*this);
 
-      auto fragment = expander.take_expanded_fragment ();
+      auto fragment = expander.take_expanded_fragment (*this);
       if (fragment.should_expand ())
 	{
-	  fragment.accept_vis (*this);
 	  // Remove the current expanded invocation
 	  it = stmts.erase (it);
 	  for (auto &node : fragment.get_nodes ())
@@ -1182,12 +1167,9 @@ AttrVisitor::visit (AST::BlockExpr &expr)
       auto &tail_expr = expr.get_tail_expr ();
 
       tail_expr->accept_vis (*this);
-      auto fragment = expander.take_expanded_fragment ();
+      auto fragment = expander.take_expanded_fragment (*this);
       if (fragment.should_expand ())
-	{
-	  fragment.accept_vis (*this);
-	  tail_expr = fragment.take_expression_fragment ();
-	}
+	tail_expr = fragment.take_expression_fragment ();
 
       if (tail_expr->is_marked_for_strip ())
 	expr.strip_tail_expr ();
@@ -3031,12 +3013,9 @@ AttrVisitor::visit (AST::LetStmt &stmt)
 		       "cannot strip expression in this position - outer "
 		       "attributes not allowed");
 
-      auto fragment = expander.take_expanded_fragment ();
+      auto fragment = expander.take_expanded_fragment (*this);
       if (fragment.should_expand ())
-	{
-	  fragment.accept_vis (*this);
-	  init_expr = fragment.take_expression_fragment ();
-	}
+	init_expr = fragment.take_expression_fragment ();
     }
 }
 void
