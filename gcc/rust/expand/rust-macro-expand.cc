@@ -786,7 +786,6 @@ parse_many (Parser<MacroInvocLexer> &parser, TokenId &delimiter,
 	    std::function<AST::SingleASTNode ()> parse_fn)
 {
   std::vector<AST::SingleASTNode> nodes;
-
   while (true)
     {
       if (parser.peek_current_token ()->get_id () == delimiter)
@@ -810,6 +809,68 @@ transcribe_many_items (Parser<MacroInvocLexer> &parser, TokenId &delimiter)
 {
   return parse_many (parser, delimiter, [&parser] () {
     auto item = parser.parse_item (true);
+    return AST::SingleASTNode (std::move (item));
+  });
+}
+
+/**
+ * Transcribe 0 or more external items from a macro invocation
+ *
+ * @param parser Parser to extract items from
+ * @param delimiter Id of the token on which parsing should stop
+ */
+static std::vector<AST::SingleASTNode>
+transcribe_many_ext (Parser<MacroInvocLexer> &parser, TokenId &delimiter)
+{
+  return parse_many (parser, delimiter, [&parser] () {
+    auto item = parser.parse_external_item ();
+    return AST::SingleASTNode (std::move (item));
+  });
+}
+
+/**
+ * Transcribe 0 or more trait items from a macro invocation
+ *
+ * @param parser Parser to extract items from
+ * @param delimiter Id of the token on which parsing should stop
+ */
+static std::vector<AST::SingleASTNode>
+transcribe_many_trait_items (Parser<MacroInvocLexer> &parser,
+			     TokenId &delimiter)
+{
+  return parse_many (parser, delimiter, [&parser] () {
+    auto item = parser.parse_trait_item ();
+    return AST::SingleASTNode (std::move (item));
+  });
+}
+
+/**
+ * Transcribe 0 or more impl items from a macro invocation
+ *
+ * @param parser Parser to extract items from
+ * @param delimiter Id of the token on which parsing should stop
+ */
+static std::vector<AST::SingleASTNode>
+transcribe_many_impl_items (Parser<MacroInvocLexer> &parser, TokenId &delimiter)
+{
+  return parse_many (parser, delimiter, [&parser] () {
+    auto item = parser.parse_inherent_impl_item ();
+    return AST::SingleASTNode (std::move (item));
+  });
+}
+
+/**
+ * Transcribe 0 or more trait impl items from a macro invocation
+ *
+ * @param parser Parser to extract items from
+ * @param delimiter Id of the token on which parsing should stop
+ */
+static std::vector<AST::SingleASTNode>
+transcribe_many_trait_impl_items (Parser<MacroInvocLexer> &parser,
+				  TokenId &delimiter)
+{
+  return parse_many (parser, delimiter, [&parser] () {
+    auto item = parser.parse_trait_impl_item ();
     return AST::SingleASTNode (std::move (item));
   });
 }
@@ -845,6 +906,60 @@ transcribe_expression (Parser<MacroInvocLexer> &parser)
   return {AST::SingleASTNode (std::move (expr))};
 }
 
+static std::vector<AST::SingleASTNode>
+transcribe_on_delimiter (Parser<MacroInvocLexer> &parser, bool semicolon,
+			 AST::DelimType delimiter, TokenId last_token_id)
+{
+  if (semicolon || delimiter == AST::DelimType::CURLY)
+    return transcribe_many_stmts (parser, last_token_id);
+  else
+    return transcribe_expression (parser);
+} // namespace Rust
+
+static std::vector<AST::SingleASTNode>
+transcribe_context (MacroExpander::ContextType ctx,
+		    Parser<MacroInvocLexer> &parser, bool semicolon,
+		    AST::DelimType delimiter, TokenId last_token_id)
+{
+  // The flow-chart in order to choose a parsing function is as follows:
+  //
+  // [switch special context]
+  //     -- Item --> parser.parse_item();
+  //     -- Trait --> parser.parse_trait_item();
+  //     -- Impl --> parser.parse_impl_item();
+  //     -- Extern --> parser.parse_extern_item();
+  //     -- None --> [has semicolon?]
+  //                 -- Yes --> parser.parse_stmt();
+  //                 -- No --> [switch invocation.delimiter()]
+  //                             -- { } --> parser.parse_stmt();
+  //                             -- _ --> parser.parse_expr(); // once!
+
+  // If there is a semicolon OR we are expanding a MacroInvocationSemi, then
+  // we can parse multiple items. Otherwise, parse *one* expression
+
+  switch (ctx)
+    {
+    case MacroExpander::ContextType::ITEM:
+      return transcribe_many_items (parser, last_token_id);
+      break;
+    case MacroExpander::ContextType::TRAIT:
+      return transcribe_many_trait_items (parser, last_token_id);
+      break;
+    case MacroExpander::ContextType::IMPL:
+      return transcribe_many_impl_items (parser, last_token_id);
+      break;
+    case MacroExpander::ContextType::TRAIT_IMPL:
+      return transcribe_many_trait_impl_items (parser, last_token_id);
+      break;
+    case MacroExpander::ContextType::EXTERN:
+      return transcribe_many_ext (parser, last_token_id);
+      break;
+    default:
+      return transcribe_on_delimiter (parser, semicolon, delimiter,
+				      last_token_id);
+    }
+}
+
 AST::ASTFragment
 MacroExpander::transcribe_rule (
   AST::MacroRule &match_rule, AST::DelimTokenTree &invoc_token_tree,
@@ -864,18 +979,15 @@ MacroExpander::transcribe_rule (
   std::vector<std::unique_ptr<AST::Token>> substituted_tokens
     = substitute_context.substitute_tokens ();
 
+  // handy for debugging
+  // for (auto &tok : substituted_tokens)
+  //   rust_debug ("[tok] %s", tok->as_string ().c_str ());
+
   // parse it to an ASTFragment
   MacroInvocLexer lex (std::move (substituted_tokens));
   Parser<MacroInvocLexer> parser (std::move (lex));
 
-  // handy for debugging
-  // for (auto &tok : substituted_tokens)
-  //   {
-  //     rust_debug ("tok: [%s]", tok->as_string ().c_str ());
-  //   }
-
   auto last_token_id = TokenId::RIGHT_CURLY;
-  std::vector<AST::SingleASTNode> nodes;
 
   // this is used so we can check that we delimit the stream correctly.
   switch (transcribe_tree.get_delim_type ())
@@ -905,33 +1017,9 @@ MacroExpander::transcribe_rule (
   //   as a statement (either via ExpressionStatement or
   //   MacroInvocationWithSemi)
 
-  // The flow-chart in order to choose a parsing function is as follows:
-  //
-  // [is in item context?]
-  //     -- Yes --> parser.parse_item();
-  //     -- No --> [has semicolon?]
-  //                 -- Yes --> parser.parse_stmt();
-  //                 -- No --> [switch invocation.delimiter()]
-  //                             -- { } --> parser.parse_stmt();
-  //                             -- _ --> parser.parse_expr();
-
-  // If there is a semicolon OR we are expanding a MacroInvocationSemi, then
-  // we can parse multiple items. Otherwise, parse *one* expression
-
-  if (ctx == ContextType::ITEM)
-    nodes = transcribe_many_items (parser, last_token_id);
-  else if (semicolon)
-    nodes = transcribe_many_stmts (parser, last_token_id);
-  else
-    switch (invoc_token_tree.get_delim_type ())
-      {
-      case AST::CURLY:
-	nodes = transcribe_many_stmts (parser, last_token_id);
-	break;
-      default:
-	nodes = transcribe_expression (parser);
-	break;
-      }
+  auto nodes
+    = transcribe_context (ctx, parser, semicolon,
+			  invoc_token_tree.get_delim_type (), last_token_id);
 
   // emit any errors
   if (parser.has_errors ())

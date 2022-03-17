@@ -40,6 +40,54 @@ public:
   void expand_trait_function_decl (AST::TraitFunctionDecl &decl);
   void expand_trait_method_decl (AST::TraitMethodDecl &decl);
 
+  /**
+   * Expand a set of values, erasing them if they are marked for strip, and
+   * replacing them with expanded macro nodes if necessary.
+   * This function is slightly different from `expand_pointer_allow_strip` as
+   * it can only be called in certain expansion contexts - where macro
+   * invocations are allowed.
+   *
+   * @param ctx Context to use for macro expansion
+   * @param values Iterable reference over values to replace or erase
+   * @param extractor Function to call when replacing values with the content
+   * 		of an expanded AST node
+   */
+  template <typename T, typename U>
+  void expand_macro_children (MacroExpander::ContextType ctx, T &values,
+			      std::function<U (AST::SingleASTNode)> extractor)
+  {
+    expander.push_context (ctx);
+
+    for (auto it = values.begin (); it != values.end ();)
+      {
+	auto &value = *it;
+
+	// mark for stripping if required
+	value->accept_vis (*this);
+
+	auto fragment = expander.take_expanded_fragment (*this);
+	if (fragment.should_expand ())
+	  {
+	    it = values.erase (it);
+	    for (auto &node : fragment.get_nodes ())
+	      {
+		it = values.insert (it, extractor (node));
+		it++;
+	      }
+	  }
+	else if (value->is_marked_for_strip ())
+	  {
+	    it = values.erase (it);
+	  }
+	else
+	  {
+	    ++it;
+	  }
+      }
+
+    expander.pop_context ();
+  }
+
   template <typename T> void expand_pointer_allow_strip (T &values)
   {
     for (auto it = values.begin (); it != values.end ();)
@@ -48,11 +96,14 @@ public:
 
 	// mark for stripping if required
 	value->accept_vis (*this);
-
 	if (value->is_marked_for_strip ())
-	  it = values.erase (it);
+	  {
+	    it = values.erase (it);
+	  }
 	else
-	  ++it;
+	  {
+	    ++it;
+	  }
       }
   }
 

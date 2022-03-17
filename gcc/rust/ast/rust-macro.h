@@ -460,6 +460,7 @@ class MacroInvocation : public TypeNoBounds,
 			public TraitItem,
 			public TraitImplItem,
 			public InherentImplItem,
+			public ExternalItem,
 			public ExprWithoutBlock
 {
   std::vector<Attribute> outer_attrs;
@@ -533,6 +534,11 @@ protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
   MacroInvocation *clone_type_no_bounds_impl () const final override
+  {
+    return clone_macro_invocation_impl ();
+  }
+
+  MacroInvocation *clone_external_item_impl () const final override
   {
     return clone_macro_invocation_impl ();
   }
