@@ -1,3 +1,48 @@
+2022-03-16  Qing Zhao  <qing.zhao@oracle.com>
+
+	PR middle-end/100775
+	* gcc.target/arm/pr100775.c: New test.
+
+2022-03-16  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-03-09  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/104786
+	* gcc.dg/pr104786.c: New testcase.
+
+2022-03-16  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-02-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/104511
+	* gcc.dg/pr104511.c: New testcase.
+
+2022-03-16  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-02-09  Richard Biener  <rguenther@suse.de>
+
+	PR target/104453
+	* gcc.target/i386/pr104453.c: New testcase.
+
+2022-03-16  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-02-07  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/104402
+	* gcc.dg/torture/pr104402.c: New testcase.
+
+2022-03-16  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-02-03  Richard Biener  <rguenther@suse.de>
+
+	PR debug/104337
+	* gcc.dg/debug/pr104337.c: New testcase.
+
 2022-03-13  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:

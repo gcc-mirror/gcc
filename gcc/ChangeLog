@@ -1,3 +1,65 @@
+2022-03-16  Qing Zhao  <qing.zhao@oracle.com>
+
+	PR middle-end/100775
+	* function.c (gen_call_used_regs_seq): Call
+	df_update_exit_block_uses when updating df.
+
+2022-03-16  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-03-09  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/104786
+	* cfgexpand.c (expand_asm_stmt): Do not generate a copy
+	for VLAs without an upper size bound.
+
+2022-03-16  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-02-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/104511
+	* tree-ssa-forwprop.c (simplify_vector_constructor): Avoid
+	touching DFP <-> FP conversions.
+
+2022-03-16  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-02-09  Richard Biener  <rguenther@suse.de>
+
+	PR target/104453
+	* config/i386/i386.c (ix86_gimple_fold_builtin): Guard shift
+	folding for NULL LHS.
+
+2022-03-16  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-02-07  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/104402
+	* gimple-expr.c (is_gimple_condexpr): _Complex typed
+	compares are not valid.
+	* tree-cfg.c (verify_gimple_assign_ternary): For COND_EXPR
+	check is_gimple_condexpr.
+
+2022-03-16  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-02-03  Richard Biener  <rguenther@suse.de>
+
+	PR debug/104337
+	* tree-nrv.c (pass_nrv::execute): Remove tieing result and found
+	together via DECL_ABSTRACT_ORIGIN.
+
+2022-03-16  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-02-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/103641
+	* tree-vect-patterns.c (vect_synth_mult_by_constant):
+	Pass the vector mode to choose_mult_variant.
+
 2022-03-11  Michael Meissner  <meissner@the-meissners.org>
 
 	PR target/99708
