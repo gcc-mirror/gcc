@@ -1,3 +1,12 @@
+2022-03-16  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-02-09  Richard Biener  <rguenther@suse.de>
+
+	PR target/104453
+	* config/i386/i386.c (ix86_gimple_fold_builtin): Guard shift
+	folding for NULL LHS.
+
 2022-02-18  Richard Biener  <rguenther@suse.de>
 
 	Backported from master:
