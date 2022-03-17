@@ -1240,7 +1240,7 @@ public:
     : BaseCmp (base, emit_errors), base (base)
   {}
 
-  void visit (const ReferenceType &type) override
+  void visit (const PointerType &type) override
   {
     auto base_type = base->get_base ();
     auto other_base_type = type.get_base ();
