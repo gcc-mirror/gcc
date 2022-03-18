@@ -26,6 +26,17 @@ class SubstituteCtx
   std::vector<std::unique_ptr<AST::Token>> &macro;
   std::map<std::string, MatchedFragmentContainer> &fragments;
 
+  /**
+   * Find the repetition amount to use when expanding a repetition, and
+   * check that all fragments used respect that repetition amount
+   *
+   * @param pattern_start Start of the repetition pattern
+   * @param pattern_end End of the repetition pattern
+   * @param repeat_amount Reference to fill with the matched repetition amount
+   */
+  bool check_repetition_amount (size_t pattern_start, size_t pattern_end,
+				size_t &repeat_amount);
+
 public:
   SubstituteCtx (std::vector<std::unique_ptr<AST::Token>> &input,
 		 std::vector<std::unique_ptr<AST::Token>> &macro,
