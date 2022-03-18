@@ -951,7 +951,7 @@ ranger_cache::get_global_range (irange &r, tree name, bool &current_p)
   // If the existing value was not current, mark it as always current.
   if (!current_p)
     m_temporal->set_always_current (name);
-  return current_p;
+  return had_global;
 }
 
 //  Set the global range of NAME to R and give it a timestamp.
