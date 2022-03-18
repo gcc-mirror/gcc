@@ -6626,6 +6626,11 @@ reshape_init_class (tree type, reshape_iter *d, bool first_initializer_p,
 	      return error_mark_node;
 	    }
 
+	  if (!field && ANON_AGGR_TYPE_P (type))
+	    /* Apparently the designator isn't for a member of this anonymous
+	       struct, so head back to the enclosing class.  */
+	    break;
+
 	  if (!field || TREE_CODE (field) != FIELD_DECL)
 	    {
 	      if (complain & tf_error)
