@@ -7856,6 +7856,8 @@ package body Exp_Ch6 is
          declare
             Typ : constant Entity_Id := Scope (DTC_Entity (Subp));
 
+            L : List_Id;
+
          begin
             --  Handle private overridden primitives
 
@@ -7895,8 +7897,17 @@ package body Exp_Ch6 is
                      Register_Predefined_DT_Entry (Subp);
                   end if;
 
-                  Insert_Actions_After (N,
-                    Register_Primitive (Loc, Prim => Subp));
+                  L := Register_Primitive (Loc, Prim => Subp);
+
+                  if Is_Empty_List (L) then
+                     null;
+
+                  elsif No (Actions (N)) then
+                     Set_Actions (N, L);
+
+                  else
+                     Append_List (L, Actions (N));
+                  end if;
                end if;
             end if;
          end;

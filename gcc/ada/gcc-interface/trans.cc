@@ -9045,6 +9045,11 @@ process_freeze_entity (Node_Id gnat_node)
   if (kind == E_Class_Wide_Type)
     return;
 
+  /* Likewise for the entities internally used by the front-end to register
+     primitives covering abstract interfaces, see Expand_N_Freeze_Entity.  */
+  if (Is_Subprogram (gnat_entity) && Present (Interface_Alias (gnat_entity)))
+    return;
+
   /* Check for an old definition if this isn't an object with address clause,
      since the saved GCC tree is the address expression in that case.  */
   gnu_old
