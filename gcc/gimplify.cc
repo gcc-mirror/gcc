@@ -13178,7 +13178,6 @@ gimplify_omp_for (tree *expr_p, gimple_seq *pre_p)
   gfor = gimple_build_omp_for (for_body, kind, OMP_FOR_CLAUSES (orig_for_stmt),
 			       TREE_VEC_LENGTH (OMP_FOR_INIT (for_stmt)),
 			       for_pre_body);
-  gimple_set_location (gfor, EXPR_LOCATION (*expr_p));
   if (orig_for_stmt != for_stmt)
     gimple_omp_for_set_combined_p (gfor, true);
   if (gimplify_omp_ctxp
@@ -13359,10 +13358,11 @@ gimplify_omp_for (tree *expr_p, gimple_seq *pre_p)
       *gtask_clauses_ptr = NULL_TREE;
       *gforo_clauses_ptr = NULL_TREE;
       BITMAP_FREE (lastprivate_uids);
+      gimple_set_location (gfor, input_location);
       g = gimple_build_bind (NULL_TREE, gfor, NULL_TREE);
       g = gimple_build_omp_task (g, task_clauses, NULL_TREE, NULL_TREE,
 				 NULL_TREE, NULL_TREE, NULL_TREE);
-      gimple_set_location (g, EXPR_LOCATION (*expr_p));
+      gimple_set_location (g, input_location);
       gimple_omp_task_set_taskloop_p (g, true);
       g = gimple_build_bind (NULL_TREE, g, NULL_TREE);
       gomp_for *gforo
