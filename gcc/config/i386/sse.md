@@ -6576,7 +6576,7 @@
    (match_operand:QI 4 "register_operand")]
   "TARGET_AVX512FP16 && <round_mode512bit_condition>"
 {
-  rtx op0, op1;
+  rtx op0, op1, dest;
 
   if (<round_embedded_complex>)
     emit_insn (gen_avx512fp16_fmaddcsh_v8hf_mask<round_expand_name> (
@@ -6586,26 +6586,15 @@
     emit_insn (gen_avx512fp16_fmaddcsh_v8hf_mask (operands[0],
       operands[1], operands[2], operands[3], operands[4]));
 
-  if (TARGET_AVX512VL)
-  {
-    op0 = lowpart_subreg (V4SFmode, operands[0], V8HFmode);
-    op1 = lowpart_subreg (V4SFmode, operands[1], V8HFmode);
-    emit_insn (gen_avx512vl_loadv4sf_mask (op0, op0, op1, operands[4]));
-  }
-  else
-  {
-    rtx mask, tmp, vec_mask;
-    mask = lowpart_subreg (SImode, operands[4], QImode),
-    tmp = gen_reg_rtx (SImode);
-    emit_insn (gen_ashlsi3 (tmp, mask, GEN_INT (31)));
-    vec_mask = gen_reg_rtx (V4SImode);
-    emit_insn (gen_rtx_SET (vec_mask, CONST0_RTX (V4SImode)));
-    emit_insn (gen_vec_setv4si_0 (vec_mask, vec_mask, tmp));
-    vec_mask = lowpart_subreg (V4SFmode, vec_mask, V4SImode);
-    op0 = lowpart_subreg (V4SFmode, operands[0], V8HFmode);
-    op1 = lowpart_subreg (V4SFmode, operands[1], V8HFmode);
-    emit_insn (gen_sse4_1_blendvps (op0, op1, op0, vec_mask));
-  }
+  op0 = lowpart_subreg (V4SFmode, force_reg (V8HFmode, operands[0]),
+			V8HFmode);
+  if (!MEM_P (operands[1]))
+    operands[1] = force_reg (V8HFmode, operands[1]);
+  op1 = lowpart_subreg (V4SFmode, operands[1], V8HFmode);
+  dest = gen_reg_rtx (V4SFmode);
+  emit_insn (gen_avx512f_movsf_mask (dest, op1, op0, op1, operands[4]));
+  emit_move_insn (operands[0], lowpart_subreg (V8HFmode, dest,
+					       V4SFmode));
   DONE;
 })
 
@@ -6631,7 +6620,7 @@
    (match_operand:QI 4 "register_operand")]
   "TARGET_AVX512FP16 && <round_mode512bit_condition>"
 {
-  rtx op0, op1;
+  rtx op0, op1, dest;
 
   if (<round_embedded_complex>)
     emit_insn (gen_avx512fp16_fcmaddcsh_v8hf_mask<round_expand_name> (
@@ -6641,26 +6630,15 @@
     emit_insn (gen_avx512fp16_fcmaddcsh_v8hf_mask (operands[0],
       operands[1], operands[2], operands[3], operands[4]));
 
-  if (TARGET_AVX512VL)
-  {
-    op0 = lowpart_subreg (V4SFmode, operands[0], V8HFmode);
-    op1 = lowpart_subreg (V4SFmode, operands[1], V8HFmode);
-    emit_insn (gen_avx512vl_loadv4sf_mask (op0, op0, op1, operands[4]));
-  }
-  else
-  {
-    rtx mask, tmp, vec_mask;
-    mask = lowpart_subreg (SImode, operands[4], QImode),
-    tmp = gen_reg_rtx (SImode);
-    emit_insn (gen_ashlsi3 (tmp, mask, GEN_INT (31)));
-    vec_mask = gen_reg_rtx (V4SImode);
-    emit_insn (gen_rtx_SET (vec_mask, CONST0_RTX (V4SImode)));
-    emit_insn (gen_vec_setv4si_0 (vec_mask, vec_mask, tmp));
-    vec_mask = lowpart_subreg (V4SFmode, vec_mask, V4SImode);
-    op0 = lowpart_subreg (V4SFmode, operands[0], V8HFmode);
-    op1 = lowpart_subreg (V4SFmode, operands[1], V8HFmode);
-    emit_insn (gen_sse4_1_blendvps (op0, op1, op0, vec_mask));
-  }
+  op0 = lowpart_subreg (V4SFmode, force_reg (V8HFmode, operands[0]),
+			V8HFmode);
+  if (!MEM_P (operands[1]))
+    operands[1] = force_reg (V8HFmode, operands[1]);
+  op1 = lowpart_subreg (V4SFmode, operands[1], V8HFmode);
+  dest = gen_reg_rtx (V4SFmode);
+  emit_insn (gen_avx512f_movsf_mask (dest, op1, op0, op1, operands[4]));
+  emit_move_insn (operands[0], lowpart_subreg (V8HFmode, dest,
+					       V4SFmode));
   DONE;
 })
 
