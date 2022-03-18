@@ -185,8 +185,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     /// Construct with a copy of @p __value as the contained object.
     template <typename _Tp, typename _VTp = _Decay_if_not_any<_Tp>,
 	      typename _Mgr = _Manager<_VTp>,
-	      typename = _Require<__not_<__is_in_place_type<_VTp>>,
-				  is_copy_constructible<_VTp>>>
+	      enable_if_t<is_copy_constructible_v<_VTp>
+			  && !__is_in_place_type_v<_VTp>, bool> = true>
       any(_Tp&& __value)
       : _M_manager(&_Mgr::_S_manage)
       {
