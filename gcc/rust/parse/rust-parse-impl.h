@@ -22,6 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "rust-diagnostics.h"
 #include "util/rust-make-unique.h"
+#include <algorithm>
 
 namespace Rust {
 // Left binding powers of operations.
@@ -1767,6 +1768,13 @@ Parser<ManagedTokenSource>::parse_macro_matcher ()
 	  return AST::MacroMatcher::create_error (t->get_locus ());
 	}
 
+      if (matches.size () > 0)
+	{
+	  auto &last_match = matches.back ();
+	  if (!is_match_compatible (*last_match, *match))
+	    return AST::MacroMatcher::create_error (match->get_match_locus ());
+	}
+
       matches.push_back (std::move (match));
 
       // DEBUG
@@ -1955,8 +1963,9 @@ Parser<ManagedTokenSource>::parse_macro_match_fragment ()
   if (t == nullptr)
     return nullptr;
 
-  AST::MacroFragSpec frag = AST::get_frag_spec_from_str (t->get_str ());
-  if (frag == AST::INVALID)
+  AST::MacroFragSpec frag
+    = AST::MacroFragSpec::get_frag_spec_from_str (t->get_str ());
+  if (frag.is_error ())
     {
       Error error (t->get_locus (),
 		   "invalid fragment specifier %qs in fragment macro match",

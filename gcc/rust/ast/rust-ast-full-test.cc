@@ -76,45 +76,6 @@ get_string_in_delims (std::string str_input, DelimType delim_type)
   gcc_unreachable ();
 }
 
-// Converts a frag spec enum item to a string form.
-std::string
-frag_spec_to_str (MacroFragSpec frag_spec)
-{
-  switch (frag_spec)
-    {
-    case BLOCK:
-      return "block";
-    case EXPR:
-      return "expr";
-    case IDENT:
-      return "ident";
-    case ITEM:
-      return "item";
-    case LIFETIME:
-      return "lifetime";
-    case LITERAL:
-      return "literal";
-    case META:
-      return "meta";
-    case PAT:
-      return "pat";
-    case PATH:
-      return "path";
-    case STMT:
-      return "stmt";
-    case TT:
-      return "tt";
-    case TY:
-      return "ty";
-    case VIS:
-      return "vis";
-    case INVALID:
-      return "INVALID_FRAG_SPEC";
-    default:
-      return "ERROR_MARK_STRING - unknown frag spec";
-    }
-}
-
 enum AttrMode
 {
   OUTER,
@@ -2396,7 +2357,7 @@ LifetimeParam::as_string () const
 std::string
 MacroMatchFragment::as_string () const
 {
-  return "$" + ident + ": " + frag_spec_to_str (frag_spec);
+  return "$" + ident + ": " + frag_spec.as_string ();
 }
 
 std::string
