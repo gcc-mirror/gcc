@@ -157,14 +157,14 @@ package body Exp_Ch7 is
    -- Finalization Management --
    -----------------------------
 
-   --  This part describe how Initialization/Adjustment/Finalization procedures
-   --  are generated and called. Two cases must be considered, types that are
-   --  Controlled (Is_Controlled flag set) and composite types that contain
-   --  controlled components (Has_Controlled_Component flag set). In the first
-   --  case the procedures to call are the user-defined primitive operations
-   --  Initialize/Adjust/Finalize. In the second case, GNAT generates
-   --  Deep_Initialize, Deep_Adjust and Deep_Finalize that are in charge
-   --  of calling the former procedures on the controlled components.
+   --  This part describes how Initialization/Adjustment/Finalization
+   --  procedures are generated and called. Two cases must be considered: types
+   --  that are Controlled (Is_Controlled flag set) and composite types that
+   --  contain controlled components (Has_Controlled_Component flag set). In
+   --  the first case the procedures to call are the user-defined primitive
+   --  operations Initialize/Adjust/Finalize. In the second case, GNAT
+   --  generates Deep_Initialize, Deep_Adjust and Deep_Finalize that are in
+   --  charge of calling the former procedures on the controlled components.
 
    --  For records with Has_Controlled_Component set, a hidden "controller"
    --  component is inserted. This controller component contains its own
