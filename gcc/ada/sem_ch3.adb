@@ -4572,11 +4572,15 @@ package body Sem_Ch3 is
             null;
 
          --  Do not generate a predicate check if the initialization expression
-         --  is a type conversion because the conversion has been subjected to
-         --  the same check. This is a small optimization which avoid redundant
+         --  is a type conversion whose target subtype statically matches the
+         --  object's subtype because the conversion has been subjected to the
+         --  same check. This is a small optimization which avoids redundant
          --  checks.
 
-         elsif Present (E) and then Nkind (E) = N_Type_Conversion then
+         elsif Present (E)
+           and then Nkind (E) in N_Type_Conversion
+           and then Subtypes_Statically_Match (Etype (Subtype_Mark (E)), T)
+         then
             null;
 
          else

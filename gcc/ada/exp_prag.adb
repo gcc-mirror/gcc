@@ -285,7 +285,7 @@ package body Exp_Prag is
       --  expression is not usually the best choice here, because it points to
       --  the location of the topmost tree node, which may be an operator in
       --  the middle of the source text of the expression. For example, it gets
-      --  located on the last AND keyword in a chain of boolean expressiond
+      --  located on the last AND keyword in a chain of boolean expressions
       --  AND'ed together. It is best to put the message on the first character
       --  of the condition, which is the effect of the First_Node call here.
       --  This source location is used to build the default exception message,
