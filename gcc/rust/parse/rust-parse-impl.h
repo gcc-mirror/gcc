@@ -1832,6 +1832,56 @@ Parser<ManagedTokenSource>::parse_macro_match ()
 	const_TokenPtr t2 = lexer.peek_token (1);
 	switch (t2->get_id ())
 	  {
+	  case ABSTRACT:
+	  case AS:
+	  case ASYNC:
+	  case BECOME:
+	  case BOX:
+	  case BREAK:
+	  case CONST:
+	  case CONTINUE:
+	  case CRATE:
+	  case DO:
+	  case DYN:
+	  case ELSE:
+	  case ENUM_TOK:
+	  case EXTERN_TOK:
+	  case FALSE_LITERAL:
+	  case FINAL_TOK:
+	  case FN_TOK:
+	  case FOR:
+	  case IF:
+	  case IMPL:
+	  case IN:
+	  case LET:
+	  case LOOP:
+	  case MACRO:
+	  case MATCH_TOK:
+	  case MOD:
+	  case MOVE:
+	  case MUT:
+	  case OVERRIDE_TOK:
+	  case PRIV:
+	  case PUB:
+	  case REF:
+	  case RETURN_TOK:
+	  case SELF_ALIAS:
+	  case SELF:
+	  case STATIC_TOK:
+	  case STRUCT_TOK:
+	  case SUPER:
+	  case TRAIT:
+	  case TRUE_LITERAL:
+	  case TRY:
+	  case TYPE:
+	  case TYPEOF:
+	  case UNSAFE:
+	  case UNSIZED:
+	  case USE:
+	  case VIRTUAL:
+	  case WHERE:
+	  case WHILE:
+	  case YIELD:
 	  case IDENTIFIER:
 	    // macro fragment
 	    return parse_macro_match_fragment ();
@@ -1877,8 +1927,14 @@ Parser<ManagedTokenSource>::parse_macro_match_fragment ()
   Location fragment_locus = lexer.peek_token ()->get_locus ();
   skip_token (DOLLAR_SIGN);
 
-  const_TokenPtr ident_tok = expect_token (IDENTIFIER);
-  if (ident_tok == nullptr)
+  Identifier ident = "";
+  auto identifier = lexer.peek_token ();
+  if (identifier->has_str ())
+    ident = identifier->get_str ();
+  else
+    ident = std::string (token_id_to_str (identifier->get_id ()));
+
+  if (ident.empty ())
     {
       Error error (lexer.peek_token ()->get_locus (),
 		   "missing identifier in macro match fragment");
@@ -1886,7 +1942,7 @@ Parser<ManagedTokenSource>::parse_macro_match_fragment ()
 
       return nullptr;
     }
-  Identifier ident = ident_tok->get_str ();
+  skip_token (identifier->get_id ());
 
   if (!skip_token (COLON))
     {
