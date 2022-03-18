@@ -649,7 +649,6 @@ private:
   bool done_end_of_file ();
 
   void add_error (Error error) { error_table.push_back (std::move (error)); }
-  void clear_errors () { error_table.clear (); }
 
 public:
   // Construct parser with specified "managed" token source.
@@ -668,6 +667,8 @@ public:
 
   // Returns whether any parsing errors have occurred.
   bool has_errors () const { return !error_table.empty (); }
+  // Remove all parsing errors from the table
+  void clear_errors () { error_table.clear (); }
 
   // Get a reference to the list of errors encountered
   std::vector<Error> &get_errors () { return error_table; }

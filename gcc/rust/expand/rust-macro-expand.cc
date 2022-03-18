@@ -505,9 +505,6 @@ MacroExpander::match_fragment (Parser<MacroInvocLexer> &parser,
       return false;
     }
 
-  for (const auto &error : parser.get_errors ())
-    error.emit_error ();
-
   // it matches if the parser did not produce errors trying to parse that type
   // of item
   return !parser.has_errors ();
@@ -714,7 +711,13 @@ MacroExpander::match_n_matches (Parser<MacroInvocLexer> &parser,
   bool did_meet_lo_bound = match_amount >= lo_bound;
   bool did_meet_hi_bound = hi_bound ? match_amount <= hi_bound : true;
 
-  return did_meet_lo_bound && did_meet_hi_bound;
+  // If the end-result is valid, then we can clear the parse errors: Since
+  // repetitions are parsed eagerly, it is okay to fail in some cases
+  auto res = did_meet_lo_bound && did_meet_hi_bound;
+  if (res)
+    parser.clear_errors ();
+
+  return res;
 }
 
 bool
