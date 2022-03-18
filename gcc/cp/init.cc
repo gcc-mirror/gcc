@@ -2931,33 +2931,17 @@ std_placement_new_fn_p (tree alloc_fn)
 }
 
 /* For element type ELT_TYPE, return the appropriate type of the heap object
-   containing such element(s).  COOKIE_SIZE is NULL or the size of cookie
-   in bytes.  FULL_SIZE is NULL if it is unknown how big the heap allocation
-   will be, otherwise size of the heap object.  If COOKIE_SIZE is NULL,
-   return array type ELT_TYPE[FULL_SIZE / sizeof(ELT_TYPE)], otherwise return
+   containing such element(s).  COOKIE_SIZE is the size of cookie in bytes.
+   Return
    struct { size_t[COOKIE_SIZE/sizeof(size_t)]; ELT_TYPE[N]; }
-   where N is nothing (flexible array member) if FULL_SIZE is NULL, otherwise
-   it is computed such that the size of the struct fits into FULL_SIZE.  */
+   where N is nothing (flexible array member) if ITYPE2 is NULL, otherwise
+   the array has ITYPE2 as its TYPE_DOMAIN.  */
 
 tree
-build_new_constexpr_heap_type (tree elt_type, tree cookie_size, tree full_size)
+build_new_constexpr_heap_type (tree elt_type, tree cookie_size, tree itype2)
 {
-  gcc_assert (cookie_size == NULL_TREE || tree_fits_uhwi_p (cookie_size));
-  gcc_assert (full_size == NULL_TREE || tree_fits_uhwi_p (full_size));
-  unsigned HOST_WIDE_INT csz = cookie_size ? tree_to_uhwi (cookie_size) : 0;
-  tree itype2 = NULL_TREE;
-  if (full_size)
-    {
-      unsigned HOST_WIDE_INT fsz = tree_to_uhwi (full_size);
-      gcc_assert (fsz >= csz);
-      fsz -= csz;
-      fsz /= int_size_in_bytes (elt_type);
-      itype2 = build_index_type (size_int (fsz - 1));
-      if (!cookie_size)
-	return build_cplus_array_type (elt_type, itype2);
-    }
-  else
-    gcc_assert (cookie_size);
+  gcc_assert (tree_fits_uhwi_p (cookie_size));
+  unsigned HOST_WIDE_INT csz = tree_to_uhwi (cookie_size);
   csz /= int_size_in_bytes (sizetype);
   tree itype1 = build_index_type (size_int (csz - 1));
   tree atype1 = build_cplus_array_type (sizetype, itype1);
@@ -3408,6 +3392,12 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
 	    outer_nelts_check = NULL_TREE;
 	}
 
+      /* If size is zero e.g. due to type having zero size, try to
+	 preserve outer_nelts for constant expression evaluation
+	 purposes.  */
+      if (integer_zerop (size) && outer_nelts)
+	size = build2 (MULT_EXPR, TREE_TYPE (size), size, outer_nelts);
+
       alloc_call = build_operator_new_call (fnname, placement,
 					    &size, &cookie_size,
 					    align_arg, outer_nelts_check,
@@ -3484,7 +3474,7 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
     }
 
   if (cookie_size)
-    alloc_call = maybe_wrap_new_for_constexpr (alloc_call, elt_type,
+    alloc_call = maybe_wrap_new_for_constexpr (alloc_call, type,
 					       cookie_size);
 
   /* In the simple case, we can stop now.  */
