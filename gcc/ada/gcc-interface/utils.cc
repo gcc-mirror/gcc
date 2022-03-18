@@ -107,6 +107,7 @@ static tree handle_flatten_attribute (tree *, tree, tree, int, bool *);
 static tree handle_used_attribute (tree *, tree, tree, int, bool *);
 static tree handle_cold_attribute (tree *, tree, tree, int, bool *);
 static tree handle_hot_attribute (tree *, tree, tree, int, bool *);
+static tree handle_simd_attribute (tree *, tree, tree, int, bool *);
 static tree handle_target_attribute (tree *, tree, tree, int, bool *);
 static tree handle_target_clones_attribute (tree *, tree, tree, int, bool *);
 static tree handle_vector_size_attribute (tree *, tree, tree, int, bool *);
@@ -185,6 +186,8 @@ const struct attribute_spec gnat_internal_attribute_table[] =
     handle_cold_attribute, attr_cold_hot_exclusions },
   { "hot",          0, 0,  true,  false, false, false,
     handle_hot_attribute, attr_cold_hot_exclusions },
+  { "simd",         0, 1,  true,  false, false, false,
+    handle_simd_attribute, NULL },
   { "target",       1, -1, true,  false, false, false,
     handle_target_attribute, NULL },
   { "target_clones",1, -1, true,  false, false, false,
@@ -6870,6 +6873,54 @@ handle_hot_attribute (tree *node, tree name, tree ARG_UNUSED (args),
       || TREE_CODE (*node) == LABEL_DECL)
     {
       /* Attribute hot processing is done later with lookup_attribute.  */
+    }
+  else
+    {
+      warning (OPT_Wattributes, "%qE attribute ignored", name);
+      *no_add_attrs = true;
+    }
+
+  return NULL_TREE;
+}
+
+/* Handle a "simd" attribute.  */
+
+static tree
+handle_simd_attribute (tree *node, tree name, tree args, int, bool *no_add_attrs)
+{
+  if (TREE_CODE (*node) == FUNCTION_DECL)
+    {
+      tree t = get_identifier ("omp declare simd");
+      tree attr = NULL_TREE;
+      if (args)
+	{
+	  tree id = TREE_VALUE (args);
+
+	  if (TREE_CODE (id) != STRING_CST)
+	    {
+	      error ("attribute %qE argument not a string", name);
+	      *no_add_attrs = true;
+	      return NULL_TREE;
+	    }
+
+	  if (strcmp (TREE_STRING_POINTER (id), "notinbranch") == 0)
+	    attr = build_omp_clause (DECL_SOURCE_LOCATION (*node),
+				     OMP_CLAUSE_NOTINBRANCH);
+	  else if (strcmp (TREE_STRING_POINTER (id), "inbranch") == 0)
+	    attr = build_omp_clause (DECL_SOURCE_LOCATION (*node),
+				     OMP_CLAUSE_INBRANCH);
+	  else
+	    {
+	      error ("only %<inbranch%> and %<notinbranch%> flags are "
+		     "allowed for %<__simd__%> attribute");
+	      *no_add_attrs = true;
+	      return NULL_TREE;
+	    }
+	}
+
+      DECL_ATTRIBUTES (*node)
+	= tree_cons (t, build_tree_list (NULL_TREE, attr),
+		     DECL_ATTRIBUTES (*node));
     }
   else
     {

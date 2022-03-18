@@ -4002,6 +4002,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	  {
 	    gnu_decl = gnu_type;
 	    gnu_type = TREE_TYPE (gnu_decl);
+	    process_attributes (&gnu_decl, &attr_list, true, gnat_entity);
 	    break;
 	  }
 
@@ -6864,7 +6865,9 @@ prepend_one_attribute_pragma (struct attrib **attr_list, Node_Id gnat_pragma)
 
       const char *const p = TREE_STRING_POINTER (gnu_arg1);
       const bool string_args
-	= strcmp (p, "target") == 0 || strcmp (p, "target_clones") == 0;
+	= strcmp (p, "simd") == 0
+	  || strcmp (p, "target") == 0
+	  || strcmp (p, "target_clones") == 0;
       gnu_arg1 = get_identifier (p);
       if (IDENTIFIER_LENGTH (gnu_arg1) == 0)
 	return;
