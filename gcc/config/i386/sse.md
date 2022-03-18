@@ -6723,7 +6723,7 @@
 	  (match_dup 2)
 	  (const_int 3)))]
   "TARGET_AVX512FP16"
-  "v<complexopname>sh\t{<round_scalarcz_mask_op4>%2, %1, %0<mask_scalarcz_operand4>|%0<mask_scalarcz_operand4>, %1, %2<round_scalarcz_maskcz_mask_op4>}"
+  "v<complexopname>sh\t{<round_scalarcz_mask_op4>%2, %1, %0<mask_scalarcz_operand4>|%0<mask_scalarcz_operand4>, %1, %2<round_scalarcz_mask_op4>}"
   [(set_attr "type" "ssemuladd")
    (set_attr "mode" "V8HF")])
 
