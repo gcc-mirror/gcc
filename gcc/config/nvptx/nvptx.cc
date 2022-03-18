@@ -7156,7 +7156,7 @@ nvptx_cannot_force_const_mem (machine_mode mode ATTRIBUTE_UNUSED,
 static bool
 nvptx_scalar_mode_supported_p (scalar_mode mode)
 {
-  if (mode == HFmode && TARGET_SM53)
+  if (nvptx_experimental && mode == HFmode && TARGET_SM53)
     return true;
 
   return default_scalar_mode_supported_p (mode);
@@ -7165,7 +7165,7 @@ nvptx_scalar_mode_supported_p (scalar_mode mode)
 static bool
 nvptx_libgcc_floating_mode_supported_p (scalar_float_mode mode)
 {
-  if (mode == HFmode && TARGET_SM53)
+  if (nvptx_experimental && mode == HFmode && TARGET_SM53)
     return true;
 
   return default_libgcc_floating_mode_supported_p (mode);
