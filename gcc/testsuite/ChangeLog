@@ -1,3 +1,36 @@
+2022-03-17  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR target/86722
+	PR tree-optimization/90356
+	* gcc.target/i386/pr86722.c: New test case.
+	* gcc.target/i386/pr90356.c: New test case.
+
+2022-03-17  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/104960
+	* gcc.dg/gimplefe-37.c: Adjust to allow either the true
+	or false edge to have a forwarder.
+
+2022-03-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/103984
+	* g++.dg/opt/pr103984.C: New test.
+
+2022-03-17  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* c-c++-common/goacc-gomp/nesting-1.c: Enhance.
+	* c-c++-common/goacc/kernels-loop-g.c: Likewise.
+	* c-c++-common/goacc/nesting-1.c: Likewise.
+	* gcc.dg/goacc/nested-function-1.c: Likewise.
+	* gfortran.dg/goacc/common-block-3.f90: Likewise.
+	* gfortran.dg/goacc/nested-function-1.f90: Likewise.
+
+2022-03-17  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR middle-end/90115
+	* c-c++-common/goacc-gomp/nesting-1.c: Enhance.
+	* gfortran.dg/goacc/common-block-3.f90: Likewise.
+
 2022-03-16  Christophe Lyon  <christophe.lyon@arm.com>
 	    Roger Sayle  <roger@nextmovesoftware.com>
 

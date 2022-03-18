@@ -1,3 +1,20 @@
+2022-03-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/92546
+	* include/bits/fs_path.h (path::make_preferred): Use
+	handwritten loop instead of std::replace.
+
+2022-03-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR middle-end/104966
+	* include/bits/locale_facets_nonio.tcc
+	(__moneypunct_cache::_M_cache): Replace try-catch with RAII and
+	make all string copies before any stores to *this.
+
+2022-03-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/util/testsuite_character.h: Fix comment.
+
 2022-03-16  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/103407

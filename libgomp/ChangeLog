@@ -1,3 +1,16 @@
+2022-03-17  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/acc_prof-kernels-1.c:
+	Enhance.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-loop-g.c: Likewise.
+	* testsuite/libgomp.oacc-fortran/if-1.f90: Likewise.
+
+2022-03-17  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR middle-end/90115
+	* testsuite/libgomp.oacc-c-c++-common/acc_prof-kernels-1.c: Enhance.
+	* testsuite/libgomp.oacc-fortran/if-1.f90: Likewise.
+
 2022-03-16  Marcel Vollweiler  <marcel@codesourcery.com>
 
 	* fortran.c (omp_set_num_teams_8_): Call omp_set_num_teams instead of

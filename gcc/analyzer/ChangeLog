@@ -1,3 +1,14 @@
+2022-03-17  David Malcolm  <dmalcolm@redhat.com>
+
+	* state-purge.cc (state_purge_annotator::add_node_annotations):
+	Avoid duplicate before-supernode annotations when returning from
+	an interprocedural call.  Show after-supernode annotations.
+
+2022-03-17  David Malcolm  <dmalcolm@redhat.com>
+
+	* program-point.cc (program_point::get_next): Fix missing
+	increment of index.
+
 2022-03-16  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/104955

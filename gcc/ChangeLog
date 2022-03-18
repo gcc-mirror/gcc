@@ -1,3 +1,35 @@
+2022-03-17  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR target/86722
+	PR tree-optimization/90356
+	* config/i386/i386.md (*movtf_internal): Don't guard
+	standard_sse_constant_p clause by optimize_function_for_size_p.
+	(*movdf_internal): Likewise.
+	(*movsf_internal): Likewise.
+
+2022-03-17  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/102943
+	* gimple-range-cache.cc (ranger_cache::range_from_dom): Find range via
+	dominators and apply intermediary outgoing edge ranges.
+
+2022-03-17  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/104960
+	* passes.def: Add pass parameter to pass_sink_code, mark
+	last one to unsplit edges.
+	* tree-ssa-sink.cc (pass_sink_code::set_pass_param): New.
+	(pass_sink_code::execute): Always execute TODO_cleanup_cfg
+	when we need to unsplit edges.
+
+2022-03-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/103984
+	* gimplify.cc (gimplify_target_expr): Gimplify type sizes and
+	TARGET_EXPR_INITIAL into a temporary sequence, then push clobbers
+	and asan unpoisioning, then append the temporary sequence and
+	finally the TARGET_EXPR_CLEANUP clobbers.
+
 2022-03-16  Roger Sayle  <roger@nextmovesoftware.com>
 
 	* config/i386/sse.md: Delete corrupt character/typo.
