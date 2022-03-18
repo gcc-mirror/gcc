@@ -1619,6 +1619,13 @@ package body Freeze is
          DTW_Spec := Build_Overriding_Spec (Par_Prim, R);
          DTW_Id   := Defining_Entity (DTW_Spec);
 
+         --  Clear the not-overriding indicator since the DTW wrapper overrides
+         --  its wrapped subprogram; required because if present in the parent
+         --  primitive, given that Build_Overriding_Spec inherits it, we report
+         --  spurious errors.
+
+         Set_Must_Not_Override (DTW_Spec, False);
+
          --  Add minimal decoration of fields
 
          Mutate_Ekind (DTW_Id, Ekind (Par_Prim));
