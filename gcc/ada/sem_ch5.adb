@@ -2316,7 +2316,7 @@ package body Sem_Ch5 is
                           Defining_Identifier => S,
                           Subtype_Indication  => New_Copy_Tree (Subt));
             begin
-               Insert_Before (Parent (Parent (N)), Decl);
+               Insert_Action (N, Decl);
                Analyze (Decl);
                Rewrite (Subt, New_Occurrence_Of (S, Sloc (Subt)));
             end;
