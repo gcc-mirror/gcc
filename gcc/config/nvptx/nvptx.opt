@@ -88,3 +88,6 @@ Target Var(nvptx_comment) Init(1) Undocumented
 
 malias
 Target Var(nvptx_alias) Init(0) Undocumented
+
+mexperimental
+Target Var(nvptx_experimental) Init(0) Undocumented
