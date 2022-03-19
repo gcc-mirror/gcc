@@ -1,3 +1,29 @@
+2022-03-18  Peter Bergner  <bergner@linux.ibm.com>
+
+	Backported from master:
+	2022-03-15  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/104923
+	* gcc.target/powerpc/pr104923.c: New test.
+
+2022-03-18  Peter Bergner  <bergner@linux.ibm.com>
+
+	Backported from master:
+	2022-03-04  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/87496
+	PR target/104208
+	* gcc.target/powerpc/pr104208-1.c: New test.
+	* gcc.target/powerpc/pr104208-2.c: Likewise.
+	* gcc.target/powerpc/pr87496-2.c: Swap long double options to trigger
+	the expected error.
+	* gcc.target/powerpc/pr87496-3.c: Likewise.
+
+2022-03-18  Cui,Lili  <lili.cui@intel.com>
+
+	PR target/104963
+	* gcc.target/i386/pr104963.c: New test case.
+
 2022-03-16  Qing Zhao  <qing.zhao@oracle.com>
 
 	PR middle-end/100775
