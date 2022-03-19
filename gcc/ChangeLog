@@ -1,3 +1,18 @@
+2022-03-18  Peter Bergner  <bergner@linux.ibm.com>
+
+	Backported from master:
+	2022-03-04  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/87496
+	PR target/104208
+	* config/rs6000/rs6000.c (rs6000_option_override_internal): Make the
+	ISA 2.06 requirement for -mabi=ieeelongdouble conditional on
+	-mlong-double-128.
+	Move the -mabi=ieeelongdouble and -mabi=ibmlongdouble error checking
+	from here...
+	* common/config/rs6000/rs6000-common.c (rs6000_handle_option):
+	... to here.
+
 2022-03-16  Richard Biener  <rguenther@suse.de>
 
 	Backported from master:
