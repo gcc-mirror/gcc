@@ -1,3 +1,19 @@
+2022-03-18  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/103039
+	* testsuite/libgomp.fortran/associate4.f90: New test.
+
+2022-03-18  Tom de Vries  <tdevries@suse.de>
+
+	PR target/104952
+	* testsuite/libgomp.c/pr104952-1.c: New test.
+	* testsuite/libgomp.c/pr104952-2.c: New test.
+
+2022-03-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/linux/affinity.c (gomp_affinity_init_numa_domains): Move seen
+	variable next to pl variable.
+
 2022-03-17  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* testsuite/libgomp.oacc-c-c++-common/acc_prof-kernels-1.c:

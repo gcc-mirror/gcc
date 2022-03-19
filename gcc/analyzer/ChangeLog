@@ -1,3 +1,92 @@
+2022-03-18  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/104943
+	PR analyzer/104954
+	PR analyzer/103533
+	* analyzer.h (class state_purge_per_decl): New forward decl.
+	* engine.cc (impl_run_checkers): Pass region_model_manager to
+	state_purge_map ctor.
+	* program-point.cc (function_point::final_stmt_p): New.
+	(function_point::get_next): New.
+	* program-point.h (function_point::final_stmt_p): New decl.
+	(function_point::get_next): New decl.
+	* program-state.cc (program_state::prune_for_point): Generalize to
+	purge local decls as well as SSA names.
+	(program_state::can_purge_base_region_p): New.
+	* program-state.h (program_state::can_purge_base_region_p): New
+	decl.
+	* region-model.cc (struct append_ssa_names_cb_data): Rename to...
+	(struct append_regions_cb_data): ...this.
+	(region_model::get_ssa_name_regions_for_current_frame): Rename
+	to...
+	(region_model::get_regions_for_current_frame): ...this, updating
+	for other renamings.
+	(region_model::append_ssa_names_cb): Rename to...
+	(region_model::append_regions_cb): ...this, and drop the requirement
+	that the subregion be a SSA name.
+	* region-model.h (struct append_ssa_names_cb_data): Rename decl
+	to...
+	(struct append_regions_cb_data): ...this.
+	(region_model::get_ssa_name_regions_for_current_frame): Rename
+	decl to...
+	(region_model::get_regions_for_current_frame): ...this.
+	(region_model::append_ssa_names_cb): Rename decl to...
+	(region_model::append_regions_cb): ...this.
+	* state-purge.cc: Include "tristate.h", "selftest.h",
+	"analyzer/store.h", "analyzer/region-model.h", and
+	"gimple-walk.h".
+	(get_candidate_for_purging): New.
+	(class gimple_op_visitor): New.
+	(my_load_cb): New.
+	(my_store_cb): New.
+	(my_addr_cb): New.
+	(state_purge_map::state_purge_map): Add "mgr" param.  Update for
+	renamings.  Find uses of local variables.
+	(state_purge_map::~state_purge_map): Update for renaming of m_map
+	to m_ssa_map.  Clean up m_decl_map.
+	(state_purge_map::get_or_create_data_for_decl): New.
+	(state_purge_per_ssa_name::state_purge_per_ssa_name): Update for
+	inheriting from state_purge_per_tree.
+	(state_purge_per_ssa_name::add_to_worklist): Likewise.
+	(state_purge_per_decl::state_purge_per_decl): New.
+	(state_purge_per_decl::add_needed_at): New.
+	(state_purge_per_decl::add_pointed_to_at): New.
+	(state_purge_per_decl::process_worklists): New.
+	(state_purge_per_decl::add_to_worklist): New.
+	(same_binding_p): New.
+	(fully_overwrites_p): New.
+	(state_purge_per_decl::process_point_backwards): New.
+	(state_purge_per_decl::process_point_forwards): New.
+	(state_purge_per_decl::needed_at_point_p): New.
+	(state_purge_annotator::print_needed): Generalize to print local
+	decls as well as SSA names.
+	* state-purge.h (class state_purge_map): Update leading comment.
+	(state_purge_map::map_t): Rename to...
+	(state_purge_map::ssa_map_t): ...this.
+	(state_purge_map::iterator): Rename to...
+	(state_purge_map::ssa_iterator): ...this.
+	(state_purge_map::decl_map_t): New typedef.
+	(state_purge_map::decl_iterator): New typedef.
+	(state_purge_map::state_purge_map): Add "mgr" param.
+	(state_purge_map::get_data_for_ssa_name): Update for renaming.
+	(state_purge_map::get_any_data_for_decl): New.
+	(state_purge_map::get_or_create_data_for_decl): New decl.
+	(state_purge_map::begin): Rename to...
+	(state_purge_map::begin_ssas): ...this.
+	(state_purge_map::end): Rename to...
+	(state_purge_map::end_ssa): ...this.
+	(state_purge_map::begin_decls): New.
+	(state_purge_map::end_decls): New.
+	(state_purge_map::m_map): Rename to...
+	(state_purge_map::m_ssa_map): ...this.
+	(state_purge_map::m_decl_map): New field.
+	(class state_purge_per_tree): New class.
+	(class state_purge_per_ssa_name): Inherit from state_purge_per_tree.
+	(state_purge_per_ssa_name::get_function): Move to base class.
+	(state_purge_per_ssa_name::point_set_t): Likewise.
+	(state_purge_per_ssa_name::m_fun): Likewise.
+	(class state_purge_per_decl): New.
+
 2022-03-17  David Malcolm  <dmalcolm@redhat.com>
 
 	* state-purge.cc (state_purge_annotator::add_node_annotations):

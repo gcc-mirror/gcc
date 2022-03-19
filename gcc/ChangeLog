@@ -1,3 +1,50 @@
+2022-03-18  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/104961
+	* lra-assigns.cc (find_reload_regno_insns): Process reload pseudo clobber.
+
+2022-03-18  Jason Merrill  <jason@redhat.com>
+
+	* tree.h (IDENTIFIER_LENGTH): Add comment.
+
+2022-03-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/99578
+	PR middle-end/100680
+	PR tree-optimization/100834
+	* params.opt (--param=min-pagesize=): New parameter.
+	* pointer-query.cc
+	(compute_objsize_r) <case ARRAY_REF>: Formatting fix.
+	(compute_objsize_r) <case INTEGER_CST>: Use maximum object size instead
+	of zero for pointer constants equal or larger than min-pagesize.
+
+2022-03-18  Tom de Vries  <tdevries@suse.de>
+
+	* gimplify.cc (gimplify_omp_for): Set location using 'input_location'.
+	Set gfor location only when dealing with a OMP_TASKLOOP.
+
+2022-03-18  Tom de Vries  <tdevries@suse.de>
+
+	* gimplify.cc (gimplify_omp_for): Set taskloop location.
+
+2022-03-18  Tom de Vries  <tdevries@suse.de>
+
+	PR target/104952
+	* omp-low.cc (lower_rec_input_clauses): Make sure GOMP_SIMT_XCHG_BFLY
+	is executed unconditionally.
+
+2022-03-18  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/104974
+	* config/i386/i386.md (*movhi_internal): Set attr type from HI
+	to HF for alternative 12 under TARGET_AVX512FP16.
+
+2022-03-18  Cui,Lili  <lili.cui@intel.com>
+
+	PR target/104963
+	* config/i386/i386.h (PTA_SAPPHIRERAPIDS): change it to base on ICX.
+	* doc/invoke.texi: Update documents for Intel sapphirerapids.
+
 2022-03-17  Roger Sayle  <roger@nextmovesoftware.com>
 
 	PR target/86722

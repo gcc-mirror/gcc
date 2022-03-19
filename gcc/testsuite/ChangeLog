@@ -1,3 +1,84 @@
+2022-03-18  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/104943
+	PR analyzer/104954
+	PR analyzer/103533
+	* gcc.dg/analyzer/torture/boxed-ptr-1.c: Update expected number
+	of exploded nodes to reflect improvements in state purging.
+
+2022-03-18  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/104943
+	* gcc.dg/analyzer/boxed-malloc-1-29.c: New test.
+	* gcc.dg/analyzer/boxed-malloc-1.c: New test.
+	* gcc.dg/analyzer/taint-alloc-5.c: New test.
+	* gcc.dg/analyzer/torture/boxed-int-1.c: New test.
+	* gcc.dg/analyzer/torture/boxed-ptr-1.c: New test.
+
+2022-03-18  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/104961
+	* gcc.target/i386/pr104961.c: New.
+
+2022-03-18  Jason Merrill  <jason@redhat.com>
+
+	PR c++/92918
+	PR c++/104476
+	* g++.dg/cpp0x/pr85070.C: Remove expected error.
+	* g++.dg/lookup/using66a.C: New test.
+	* g++.dg/lookup/using67.C: New test.
+
+2022-03-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/99578
+	PR middle-end/100680
+	PR tree-optimization/100834
+	* gcc.dg/tree-ssa/pr99578-1.c: New test.
+	* gcc.dg/pr99578-1.c: New test.
+	* gcc.dg/pr99578-2.c: New test.
+	* gcc.dg/pr99578-3.c: New test.
+	* gcc.dg/pr100680.c: New test.
+	* gcc.dg/pr100834.c: New test.
+
+2022-03-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/104568
+	* g++.dg/cpp2a/constexpr-new22.C: New test.
+
+2022-03-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	* g++.dg/torture/pr104601.C: Include <vector>.
+
+2022-03-18  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/104008
+	* g++.dg/cpp0x/variadic-alias3.C: New test.
+	* g++.dg/cpp0x/variadic-alias4.C: New test.
+
+2022-03-18  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* g++.dg/modules/bad-mapper-1.C: Make dg- expressions that match the
+	diagnostics output by earlier Darwin too.
+
+2022-03-18  Tom de Vries  <tdevries@suse.de>
+
+	* c-c++-common/gomp/pr104968.c: New test.
+
+2022-03-18  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/103039
+	* gfortran.dg/gomp/associate1.f90: Update dg-error.
+	* gfortran.dg/gomp/associate2.f90: New test.
+
+2022-03-18  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr104974.c: New test.
+
+2022-03-18  Cui,Lili  <lili.cui@intel.com>
+
+	PR target/104963
+	* gcc.target/i386/pr104963.c: New test case.
+
 2022-03-17  Roger Sayle  <roger@nextmovesoftware.com>
 
 	PR target/86722

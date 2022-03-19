@@ -1,3 +1,80 @@
+2022-03-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/104242
+	* include/std/any (any(T&&)): Revert change to constraints.
+	* testsuite/20_util/any/cons/104242.cc: New test.
+
+2022-03-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/92546
+	* include/pstl/glue_algorithm_defs.h: Replace <functional> with
+	<bits/stl_pair.h>.
+	* include/pstl/utils.h: Replace <iterator> with <type_traits>.
+	(__pstl::__internal::__except_handler): Use std::__terminate
+	instead of std::terminate.
+	* src/c++17/fs_path.cc: Include <array>.
+	* testsuite/25_algorithms/adjacent_find/constexpr.cc: Include
+	<functional>.
+	* testsuite/25_algorithms/binary_search/constexpr.cc: Likewise.
+	* testsuite/25_algorithms/clamp/constrained.cc: Likewise.
+	* testsuite/25_algorithms/equal/constrained.cc: Likewise.
+	* testsuite/25_algorithms/for_each/constrained.cc: Likewise.
+	* testsuite/25_algorithms/includes/constrained.cc: Likewise.
+	* testsuite/25_algorithms/is_heap/constexpr.cc: Likewise.
+	* testsuite/25_algorithms/is_heap_until/constexpr.cc: Likewise.
+	* testsuite/25_algorithms/is_permutation/constrained.cc: Include
+	<iterator>.
+	* testsuite/25_algorithms/is_sorted/constexpr.cc: Include
+	<functional>.
+	* testsuite/25_algorithms/is_sorted_until/constexpr.cc:
+	Likewise.
+	* testsuite/25_algorithms/lexicographical_compare/constexpr.cc:
+	Likewise.
+	* testsuite/25_algorithms/lexicographical_compare/constrained.cc:
+	Likewise.
+	* testsuite/25_algorithms/lexicographical_compare_three_way/1.cc:
+	Include <array>.
+	* testsuite/25_algorithms/lower_bound/constexpr.cc: Include
+	<functional>.
+	* testsuite/25_algorithms/max/constrained.cc: Likewise.
+	* testsuite/25_algorithms/max_element/constrained.cc: Likewise.
+	* testsuite/25_algorithms/min/constrained.cc: Likewise.
+	* testsuite/25_algorithms/min_element/constrained.cc: Likewise.
+	* testsuite/25_algorithms/minmax_element/constrained.cc:
+	Likewise.
+	* testsuite/25_algorithms/mismatch/constexpr.cc: Likewise.
+	* testsuite/25_algorithms/move/93872.cc: Likewise.
+	* testsuite/25_algorithms/move_backward/93872.cc: Include
+	<iterator>.
+	* testsuite/25_algorithms/nth_element/constexpr.cc: Include
+	<functional>.
+	* testsuite/25_algorithms/partial_sort/constexpr.cc: Likewise.
+	* testsuite/25_algorithms/partial_sort_copy/constexpr.cc:
+	Likewise.
+	* testsuite/25_algorithms/search/constexpr.cc: Likewise.
+	* testsuite/25_algorithms/search_n/constrained.cc: Likewise.
+	* testsuite/25_algorithms/set_difference/constexpr.cc: Likewise.
+	* testsuite/25_algorithms/set_difference/constrained.cc:
+	Likewise.
+	* testsuite/25_algorithms/set_intersection/constexpr.cc:
+	Likewise.
+	* testsuite/25_algorithms/set_intersection/constrained.cc:
+	Likewise.
+	* testsuite/25_algorithms/set_symmetric_difference/constexpr.cc:
+	Likewise.
+	* testsuite/25_algorithms/set_union/constexpr.cc: Likewise.
+	* testsuite/25_algorithms/set_union/constrained.cc: Likewise.
+	* testsuite/25_algorithms/sort/constexpr.cc: Likewise.
+	* testsuite/25_algorithms/sort_heap/constexpr.cc: Likewise.
+	* testsuite/25_algorithms/transform/constrained.cc: Likewise.
+	* testsuite/25_algorithms/unique/constexpr.cc: Likewise.
+	* testsuite/25_algorithms/unique/constrained.cc: Likewise.
+	* testsuite/25_algorithms/unique_copy/constexpr.cc: Likewise.
+	* testsuite/25_algorithms/upper_bound/constexpr.cc: Likewise.
+	* testsuite/std/ranges/adaptors/elements.cc: Include <vector>.
+	* testsuite/std/ranges/adaptors/lazy_split.cc: Likewise.
+	* testsuite/std/ranges/adaptors/split.cc: Likewise.
+
 2022-03-17  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/92546
