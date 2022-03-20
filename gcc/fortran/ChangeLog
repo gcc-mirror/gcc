@@ -1,3 +1,14 @@
+2022-03-19  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2022-03-07  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/99585
+	PR fortran/104430
+	* trans-expr.c (conv_parent_component_references): Fix comment;
+	simplify comparison.
+	(gfc_maybe_dereference_var): Avoid d referencing a nonpointer.
+
 2022-03-17   Michael Meissner  <meissner@linux.ibm.com>
 
 	PR fortran/96983
