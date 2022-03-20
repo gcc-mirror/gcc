@@ -1,3 +1,30 @@
+2022-03-19  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* diagnostic.cc (diagnostic_cc_tests): Rename to...
+	(c_diagnostic_cc_tests): ...this.
+	* opt-problem.cc (opt_problem_cc_tests): Rename to...
+	(c_opt_problem_cc_tests): ...this.
+	* selftest-run-tests.cc (selftest::run_tests): No longer run
+	opt_problem_cc_tests or diagnostic_cc_tests.
+	* selftest.h (diagnostic_cc_tests): Remove declaration.
+	(opt_problem_cc_tests): Likewise.
+
+2022-03-19  Marc Nieper-Wißkirchen  <marc@nieper-wisskirchen.de>
+
+	PR jit/63854
+	* hash-traits.h (struct typed_const_free_remove): New.
+	(struct free_string_hash): New.
+	* pass_manager.h: Use free_string_hash.
+	* passes.cc (pass_manager::register_pass_name): Use free_string_hash.
+	(pass_manager::~pass_manager): Delete allocated m_name_to_pass_map.
+
+2022-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/104971
+	* config/i386/i386-expand.cc
+	(ix86_expand_builtin) <case IX86_BUILTIN_READ_FLAGS>: If ignore,
+	don't push/pop anything and just return const0_rtx.
+
 2022-03-18  Vladimir N. Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/104961

@@ -1,3 +1,13 @@
+2022-03-19  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/104228
+	PR fortran/104570
+	* parse.cc (parse_associate): Use a new distinct gfc_charlen if the
+	copied type has one whose length is not known to be constant.
+	* resolve.cc (resolve_assoc_var): Reset charlen if it’s shared with
+	the associate target regardless of the expression type.
+	Don’t reinitialize charlen if it’s deferred.
+
 2022-03-18  Tobias Burnus  <tobias@codesourcery.com>
 
 	PR fortran/103039

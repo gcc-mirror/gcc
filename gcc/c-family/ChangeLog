@@ -1,3 +1,16 @@
+2022-03-19  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* c-common.cc (c_family_tests): Call the new tests.
+	* c-common.h (c_diagnostic_tests): Declare.
+	(c_opt_problem_cc_tests): Likewise.
+
+2022-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/101515
+	* c-pretty-print.cc (c_fold_indirect_ref_for_warn): For C++ don't
+	return COMPONENT_REFs with FIELD_DECLs whose containing scope can't
+	be printed.
+
 2022-03-16  Christophe Lyon  <christophe.lyon@arm.com>
 	    Roger Sayle  <roger@nextmovesoftware.com>
 
