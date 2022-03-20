@@ -13436,56 +13436,40 @@ package body Sem_Ch13 is
    -----------------------------------
 
    function Has_Compatible_Representation
-     (Target_Type, Operand_Type : Entity_Id) return Boolean
+     (Target_Typ, Operand_Typ : Entity_Id) return Boolean
    is
-      T1 : constant Entity_Id := Underlying_Type (Target_Type);
-      T2 : constant Entity_Id := Underlying_Type (Operand_Type);
+      --  The subtype-specific representation attributes (Size and Alignment)
+      --  do not affect representation from the point of view of this function.
+
+      T1 : constant Entity_Id := Implementation_Base_Type (Target_Typ);
+      T2 : constant Entity_Id := Implementation_Base_Type (Operand_Typ);
 
    begin
-      --  A quick check, if base types are the same, then we definitely have
-      --  the same representation, because the subtype specific representation
-      --  attributes (Size and Alignment) do not affect representation from
-      --  the point of view of this test.
+      --  Return true immediately for the same base type
 
-      if Base_Type (T1) = Base_Type (T2) then
+      if T1 = T2 then
          return True;
-
-      elsif Is_Private_Type (Base_Type (T2))
-        and then Base_Type (T1) = Full_View (Base_Type (T2))
-      then
-         return True;
-
-      --  If T2 is a generic actual it is declared as a subtype, so
-      --  check against its base type.
-
-      elsif Is_Generic_Actual_Type (T1)
-        and then Has_Compatible_Representation (Base_Type (T1), T2)
-      then
-         return True;
-      end if;
 
       --  Tagged types always have the same representation, because it is not
       --  possible to specify different representations for common fields.
 
-      if Is_Tagged_Type (T1) then
+      elsif Is_Tagged_Type (T1) then
          return True;
-      end if;
 
       --  Representations are definitely different if conventions differ
 
-      if Convention (T1) /= Convention (T2) then
+      elsif Convention (T1) /= Convention (T2) then
          return False;
-      end if;
 
       --  Representations are different if component alignments or scalar
       --  storage orders differ.
 
-      if (Is_Record_Type (T1) or else Is_Array_Type (T1))
-            and then
-         (Is_Record_Type (T2) or else Is_Array_Type (T2))
-        and then
-         (Component_Alignment (T1) /= Component_Alignment (T2)
-           or else Reverse_Storage_Order (T1) /= Reverse_Storage_Order (T2))
+      elsif (Is_Record_Type (T1) or else Is_Array_Type (T1))
+              and then
+            (Is_Record_Type (T2) or else Is_Array_Type (T2))
+        and then (Component_Alignment (T1) /= Component_Alignment (T2)
+                   or else
+                  Reverse_Storage_Order (T1) /= Reverse_Storage_Order (T2))
       then
          return False;
       end if;
@@ -13512,11 +13496,10 @@ package body Sem_Ch13 is
          then
             return True;
          end if;
-      end if;
 
-      --  For records, representations are different if reorderings differ
+      --  For records, representations are different if reordering differs
 
-      if Is_Record_Type (T1)
+      elsif Is_Record_Type (T1)
         and then Is_Record_Type (T2)
         and then No_Reordering (T1) /= No_Reordering (T2)
       then
