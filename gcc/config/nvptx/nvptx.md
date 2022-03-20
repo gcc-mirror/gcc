@@ -2280,13 +2280,14 @@
   {
     const char *insns[] = {
       "{",
-      "\\t"	      ".reg.b32"	"\\t" "act;",
-      "%.\\t"	      "vote.ballot.b32" "\\t" "act,1;",
-      "\\t"	      ".reg.pred"	"\\t" "do_abort;",
-      "\\t"	      "mov.pred"	"\\t" "do_abort,0;",
-      "%.\\t"	      "setp.ne.b32"	"\\t" "do_abort,act,0xffffffff;",
-      "@ do_abort\\t" "trap;",
-      "@ do_abort\\t" "exit;",
+      "\\t"		  ".reg.b32"	    "\\t" "%%r_act;",
+      "%.\\t"		  "vote.ballot.b32" "\\t" "%%r_act,1;",
+      "\\t"		  ".reg.pred"	    "\\t" "%%r_do_abort;",
+      "\\t"		  "mov.pred"	    "\\t" "%%r_do_abort,0;",
+      "%.\\t"		  "setp.ne.b32"	    "\\t" "%%r_do_abort,%%r_act,"
+						  "0xffffffff;",
+      "@ %%r_do_abort\\t" "trap;",
+      "@ %%r_do_abort\\t" "exit;",
       "}",
       NULL
     };
