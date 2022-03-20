@@ -6582,9 +6582,13 @@ package body Freeze is
                end if;
             end if;
 
-            --  Special processing for objects created by object declaration
+            --  Special processing for objects created by object declaration;
+            --  we protect the call to Declaration_Node against entities of
+            --  expressions replaced by the frontend with an N_Raise_CE node.
 
-            if Nkind (Declaration_Node (E)) = N_Object_Declaration then
+            if Ekind (E) in E_Constant | E_Variable
+              and then Nkind (Declaration_Node (E)) = N_Object_Declaration
+            then
                Freeze_Object_Declaration (E);
             end if;
 
