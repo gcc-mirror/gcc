@@ -1059,6 +1059,18 @@
    (V4DF "V8SF") (V2DF "V4SF")
    (V32HF "V16SF") (V16HF "V8SF") (V8HF "V4SF")])
 
+(define_mode_attr ssePSmodelower
+  [(V16SI "v16sf") (V8DF "v16sf")
+   (V16SF "v16sf") (V8DI "v16sf")
+   (V64QI "v16sf") (V32QI "v8sf") (V16QI "v4sf")
+   (V32HI "v16sf") (V16HI "v8sf") (V8HI "v4sf")
+   (V8SI "v8sf") (V4SI "v4sf")
+   (V4DI "v8sf") (V2DI "v4sf")
+   (V4TI "v16sf") (V2TI "v8sf") (V1TI "v4sf")
+   (V8SF "v8sf") (V4SF "v4sf")
+   (V4DF "v8sf") (V2DF "v4sf")
+   (V32HF "v16sf") (V16HF "v8sf") (V8HF "v4sf")])
+
 (define_mode_attr ssePSmode2
   [(V8DI "V8SF") (V4DI "V4SF")])
 
@@ -3617,6 +3629,9 @@
   operands[1] = force_reg (<ssebytemode>mode,
 			  gen_lowpart (<ssebytemode>mode, operands[1]));
   operands[2] = gen_lowpart (<ssebytemode>mode, operands[2]);
+
+  if (!MEM_P (operands[3]))
+    operands[3] = force_reg (<ssebytemode>mode, operands[3]);
   operands[3] = lowpart_subreg (<MODE>mode, operands[3], <ssebytemode>mode);
 })
 
@@ -6319,7 +6334,7 @@
    (match_operand:<avx512fmaskcmode> 4 "register_operand")]
   "TARGET_AVX512FP16 && <round_mode512bit_condition>"
 {
-  rtx op0, op1;
+  rtx op0, op1, dest;
   if (<round_embedded_complex>)
     emit_insn (gen_<avx512>_fmaddc_<mode>_mask<round_expand_name> (
       operands[0], operands[1], operands[2], operands[3],
@@ -6328,9 +6343,16 @@
     emit_insn (gen_<avx512>_fmaddc_<mode>_mask (operands[0],
       operands[1], operands[2], operands[3], operands[4]));
 
-  op0 = lowpart_subreg (<ssePSmode>mode, operands[0], <MODE>mode);
+  op0 = lowpart_subreg (<ssePSmode>mode,
+			force_reg (<MODE>mode, operands[0]),
+			<MODE>mode);
+  dest = gen_reg_rtx (<ssePSmode>mode);
+  if (!MEM_P (operands[1]))
+    operands[1] = force_reg (<MODE>mode, operands[1]);
   op1 = lowpart_subreg (<ssePSmode>mode, operands[1], <MODE>mode);
-  emit_insn (gen_<complexmove>_mask (op0, op0, op1, operands[4]));
+  emit_insn (gen_<complexmove>_mask (dest, op0, op1, operands[4]));
+  emit_move_insn (operands[0],
+		  lowpart_subreg (<MODE>mode, dest, <ssePSmode>mode));
   DONE;
 })
 
@@ -6356,7 +6378,7 @@
    (match_operand:<avx512fmaskcmode> 4 "register_operand")]
   "TARGET_AVX512FP16 && <round_mode512bit_condition>"
 {
-  rtx op0, op1;
+  rtx op0, op1, dest;
   if (<round_embedded_complex>)
     emit_insn (gen_<avx512>_fcmaddc_<mode>_mask<round_expand_name> (
       operands[0], operands[1], operands[2], operands[3],
@@ -6367,9 +6389,16 @@
       operands[1], operands[2], operands[3], operands[4]));
   }
 
-  op0 = lowpart_subreg (<ssePSmode>mode, operands[0], <MODE>mode);
+  op0 = lowpart_subreg (<ssePSmode>mode,
+			force_reg (<MODE>mode, operands[0]),
+			<MODE>mode);
+  dest = gen_reg_rtx (<ssePSmode>mode);
+  if (!MEM_P (operands[1]))
+    operands[1] = force_reg (<MODE>mode, operands[1]);
   op1 = lowpart_subreg (<ssePSmode>mode, operands[1], <MODE>mode);
-  emit_insn (gen_<complexmove>_mask (op0, op0, op1, operands[4]));
+  emit_insn (gen_<complexmove>_mask (dest, op0, op1, operands[4]));
+  emit_move_insn (operands[0],
+		  lowpart_subreg (<MODE>mode, dest, <ssePSmode>mode));
   DONE;
 })
 
@@ -6479,17 +6508,23 @@
 	     (match_operand:<ssePSmode> 2 "bcst_vector_operand") 0)
 	   (match_operand:VF_AVX512FP16VL 3 "vector_operand")]
 	   UNSPEC_COMPLEX_FMA))]
-  "TARGET_AVX512FP16"
+  "TARGET_AVX512FP16 && ix86_pre_reload_split ()"
   "#"
   "&& 1"
-  [(set (match_dup 0)
-	(unspec:<ssePSmode>
-	  [(match_dup 1) (match_dup 2) (match_dup 3)]
-	   UNSPEC_COMPLEX_FMA_PAIR))]
+  [(const_int 0)]
   {
-    operands[0] = lowpart_subreg (<ssePSmode>mode, operands[0], <MODE>mode);
+    if (!MEM_P (operands[1]))
+      operands[1] = force_reg (<MODE>mode, operands[1]);
+    if (!MEM_P (operands[3]))
+      operands[3] = force_reg (<MODE>mode, operands[3]);
     operands[1] = lowpart_subreg (<ssePSmode>mode, operands[1], <MODE>mode);
     operands[3] = lowpart_subreg (<ssePSmode>mode, operands[3], <MODE>mode);
+    rtx dest = gen_reg_rtx (<ssePSmode>mode);
+    emit_insn (gen_fma_fmaddc_<ssePSmodelower>_pair (dest, operands[1],
+						     operands[2], operands[3]));
+    emit_move_insn (operands[0],
+		    lowpart_subreg (<MODE>mode, dest, <ssePSmode>mode));
+    DONE;
   })
 
 (define_insn_and_split "fma_<mode>_fcmaddc_bcst"
@@ -6500,17 +6535,24 @@
 	     (match_operand:<ssePSmode> 2 "bcst_vector_operand") 0)
 	   (match_operand:VF_AVX512FP16VL 3 "vector_operand")]
 	   UNSPEC_COMPLEX_FCMA))]
-  "TARGET_AVX512FP16"
+  "TARGET_AVX512FP16 && ix86_pre_reload_split ()"
   "#"
   "&& 1"
-  [(set (match_dup 0)
-	(unspec:<ssePSmode>
-	  [(match_dup 1) (match_dup 2) (match_dup 3)]
-	   UNSPEC_COMPLEX_FCMA_PAIR))]
+  [(const_int 0)]
   {
-    operands[0] = lowpart_subreg (<ssePSmode>mode, operands[0], <MODE>mode);
+    if (!MEM_P (operands[1]))
+      operands[1] = force_reg (<MODE>mode, operands[1]);
+    if (!MEM_P (operands[3]))
+      operands[3] = force_reg (<MODE>mode, operands[3]);
     operands[1] = lowpart_subreg (<ssePSmode>mode, operands[1], <MODE>mode);
     operands[3] = lowpart_subreg (<ssePSmode>mode, operands[3], <MODE>mode);
+    rtx dest = gen_reg_rtx (<ssePSmode>mode);
+    emit_insn (gen_fma_fcmaddc_<ssePSmodelower>_pair (dest, operands[1],
+						      operands[2],
+						      operands[3]));
+    emit_move_insn (operands[0],
+		    lowpart_subreg (<MODE>mode, dest, <ssePSmode>mode));
+    DONE;
   })
 
 (define_insn "<avx512>_<complexopname>_<mode>_mask<round_name>"
@@ -6650,7 +6692,7 @@
    (match_operand:QI 4 "register_operand")]
   "TARGET_AVX512FP16 && <round_mode512bit_condition>"
 {
-  rtx op0, op1;
+  rtx dest, op0, op1;
 
   if (<round_embedded_complex>)
     emit_insn (gen_avx512fp16_fcmaddcsh_v8hf_mask<round_expand_name> (
@@ -6660,9 +6702,15 @@
     emit_insn (gen_avx512fp16_fcmaddcsh_v8hf_mask (operands[0],
       operands[1], operands[2], operands[3], operands[4]));
 
-  op0 = lowpart_subreg (V4SFmode, operands[0], V8HFmode);
+  dest = gen_reg_rtx (V4SFmode);
+  op0 = lowpart_subreg (V4SFmode,
+			force_reg (V8HFmode, operands[0]),
+			V8HFmode);
+  if (!MEM_P (operands[3]))
+    operands[3] = force_reg (V8HFmode, operands[3]);
   op1 = lowpart_subreg (V4SFmode, operands[3], V8HFmode);
-  emit_insn (gen_sse_movss (op0, op1, op0));
+  emit_insn (gen_sse_movss (dest, op1, op0));
+  emit_move_insn (operands[0], lowpart_subreg (V8HFmode, dest, V4SFmode));
   DONE;
 })
 
@@ -6674,7 +6722,7 @@
    (match_operand:QI 4 "register_operand")]
   "TARGET_AVX512FP16 && <round_mode512bit_condition>"
 {
-  rtx op0, op1;
+  rtx dest, op0, op1;
 
   if (<round_embedded_complex>)
     emit_insn (gen_avx512fp16_fmaddcsh_v8hf_mask<round_expand_name> (
@@ -6684,9 +6732,15 @@
     emit_insn (gen_avx512fp16_fmaddcsh_v8hf_mask (operands[0],
       operands[1], operands[2], operands[3], operands[4]));
 
-  op0 = lowpart_subreg (V4SFmode, operands[0], V8HFmode);
+  dest = gen_reg_rtx (V4SFmode);
+  op0 = lowpart_subreg (V4SFmode,
+			force_reg (V8HFmode, operands[0]),
+			V8HFmode);
+  if (!MEM_P (operands[3]))
+    operands[3] = force_reg (V8HFmode, operands[3]);
   op1 = lowpart_subreg (V4SFmode, operands[3], V8HFmode);
-  emit_insn (gen_sse_movss (op0, op1, op0));
+  emit_insn (gen_sse_movss (dest, op1, op0));
+  emit_move_insn (operands[0], lowpart_subreg (V8HFmode, dest, V4SFmode));
   DONE;
 })
 
@@ -6796,9 +6850,10 @@
 	  (match_operand:VI4_128_8_256 1 "vector_operand")))]
   "TARGET_AVX512FP16 && TARGET_AVX512VL"
 {
-  operands[0] = lowpart_subreg (V8HFmode, operands[0], V4HFmode);
-  emit_insn (gen_avx512fp16_float<floatunssuffix><mode>v4hf2 (operands[0],
+  rtx dest = gen_reg_rtx (V8HFmode);
+  emit_insn (gen_avx512fp16_float<floatunssuffix><mode>v4hf2 (dest,
 							      operands[1]));
+  emit_move_insn (operands[0], lowpart_subreg (V4HFmode, dest, V8HFmode));
   DONE;
 })
 
@@ -6871,9 +6926,10 @@
 	  (match_operand:V2DI 1 "vector_operand")))]
   "TARGET_AVX512FP16 && TARGET_AVX512VL"
 {
-  operands[0] = lowpart_subreg (V8HFmode, operands[0], V2HFmode);
-  emit_insn (gen_avx512fp16_float<floatunssuffix>v2div2hf2 (operands[0],
+  rtx dest = gen_reg_rtx (V8HFmode);
+  emit_insn (gen_avx512fp16_float<floatunssuffix>v2div2hf2 (dest,
 							    operands[1]));
+  emit_move_insn (operands[0], lowpart_subreg (V2HFmode, dest, V8HFmode));
   DONE;
 })
 
@@ -7004,7 +7060,9 @@
 {
   if (!MEM_P (operands[1]))
     {
-      operands[1] = lowpart_subreg (V8HFmode, operands[1], V4HFmode);
+      operands[1] = lowpart_subreg (V8HFmode,
+				    force_reg (V4HFmode, operands[1]),
+				    V4HFmode);
       emit_insn (gen_avx512fp16_fix<fixunssuffix>_trunc<mode>2 (operands[0],
 								operands[1]));
       DONE;
@@ -7041,7 +7099,9 @@
 {
   if (!MEM_P (operands[1]))
     {
-      operands[1] = lowpart_subreg (V8HFmode, operands[1], V2HFmode);
+      operands[1] = lowpart_subreg (V8HFmode,
+				    force_reg (V2HFmode, operands[1]),
+				    V2HFmode);
       emit_insn (gen_avx512fp16_fix<fixunssuffix>_truncv2di2 (operands[0],
 							      operands[1]));
       DONE;
@@ -7120,7 +7180,9 @@
 {
   if (!MEM_P (operands[1]))
     {
-      operands[1] = lowpart_subreg (V8HFmode, operands[1], V4HFmode);
+      operands[1] = lowpart_subreg (V8HFmode,
+				    force_reg (V4HFmode, operands[1]),
+				    V4HFmode);
       emit_insn (gen_avx512fp16_float_extend_ph<mode>2
 		 (operands[0], operands[1]));
       DONE;
@@ -7157,7 +7219,9 @@
 {
   if (!MEM_P (operands[1]))
     {
-      operands[1] = lowpart_subreg (V8HFmode, operands[1], V2HFmode);
+      operands[1] = lowpart_subreg (V8HFmode,
+				    force_reg (V2HFmode, operands[1]),
+				    V2HFmode);
       emit_insn (gen_avx512fp16_float_extend_phv2df2
 		 (operands[0], operands[1]));
       DONE;
@@ -7207,8 +7271,10 @@
 	(float_truncate:V4HF (match_operand:VF4_128_8_256 1 "vector_operand")))]
   "TARGET_AVX512FP16 && TARGET_AVX512VL"
 {
-  operands[0] = lowpart_subreg (V8HFmode, operands[0], V4HFmode);
-  emit_insn (gen_avx512fp16_trunc<mode>v4hf2 (operands[0], operands[1]));
+  rtx dest = gen_reg_rtx (V8HFmode);
+
+  emit_insn (gen_avx512fp16_trunc<mode>v4hf2 (dest, operands[1]));
+  emit_move_insn (operands[0], lowpart_subreg (V4HFmode, dest, V8HFmode));
   DONE;
 })
 
@@ -7286,8 +7352,9 @@
 	(float_truncate:V2HF (match_operand:V2DF 1 "vector_operand")))]
   "TARGET_AVX512FP16 && TARGET_AVX512VL"
 {
-  operands[0] = lowpart_subreg (V8HFmode, operands[0], V2HFmode);
-  emit_insn (gen_avx512fp16_truncv2dfv2hf2 (operands[0], operands[1]));
+  rtx dest = gen_reg_rtx (V8HFmode);
+  emit_insn (gen_avx512fp16_truncv2dfv2hf2 (dest, operands[1]));
+  emit_move_insn (operands[0], lowpart_subreg (V2HFmode, dest, V8HFmode));
   DONE;
 })
 
@@ -13384,7 +13451,9 @@
   "&& 1"
   [(set (match_dup 0)
 	(truncate:V16HI (match_dup 1)))]
-  "operands[1] = lowpart_subreg (V16SImode, operands[1], V32HImode);")
+  "operands[1] = lowpart_subreg (V16SImode,
+				 force_reg (V32HImode, operands[1]),
+				  V32HImode);")
 
 (define_insn_and_split "*avx512bw_permvar_truncv16siv16hi_1_hf"
   [(set (match_operand:V16HF 0 "nonimmediate_operand")
@@ -13408,8 +13477,18 @@
   [(set (match_dup 0)
 	(truncate:V16HI (match_dup 1)))]
 {
-  operands[0] = lowpart_subreg (V16HImode, operands[0], V16HFmode);
-  operands[1] = lowpart_subreg (V16SImode, operands[1], V32HImode);
+  operands[1] = lowpart_subreg (V16SImode,
+				force_reg (V32HImode, operands[1]),
+				V32HImode);
+  if (MEM_P (operands[0]))
+    operands[0] = lowpart_subreg (V16HImode, operands[0], V16HFmode);
+  else
+    {
+      rtx op0 = gen_reg_rtx (V16HImode);
+      emit_insn (gen_truncv16siv16hi2 (op0, operands[1]));
+      emit_move_insn (operands[0], lowpart_subreg (V16HFmode, op0, V16HImode));
+      DONE;
+    }
 })
 
 
@@ -13429,7 +13508,9 @@
   "&& 1"
   [(set (match_dup 0)
 	(truncate:V8HI (match_dup 1)))]
-  "operands[1] = lowpart_subreg (V8SImode, operands[1], V16HImode);")
+  "operands[1] = lowpart_subreg (V8SImode,
+				 force_reg (V16HImode, operands[1]),
+				 V16HImode);")
 
 (define_insn_and_split "*avx512f_permvar_truncv8siv8hi_1_hf"
   [(set (match_operand:V8HF 0 "nonimmediate_operand")
@@ -13449,8 +13530,18 @@
   [(set (match_dup 0)
 	(truncate:V8HI (match_dup 1)))]
 {
-  operands[0] = lowpart_subreg (V8HImode, operands[0], V8HFmode);
-  operands[1] = lowpart_subreg (V8SImode, operands[1], V16HImode);
+  operands[1] = lowpart_subreg (V8SImode,
+				force_reg (V16HImode, operands[1]),
+				V16HImode);
+  if (MEM_P (operands[0]))
+    operands[0] = lowpart_subreg (V8HImode, operands[0], V8HFmode);
+  else
+    {
+      rtx op0 = gen_reg_rtx (V8HImode);
+      emit_insn (gen_truncv8siv8hi2 (op0, operands[1]));
+      emit_move_insn (operands[0], lowpart_subreg (V8HFmode, op0, V8HImode));
+      DONE;
+    }
 })
 
 (define_insn_and_split "*avx512f_vpermvar_truncv8div8si_1"
@@ -13469,7 +13560,9 @@
   "&& 1"
   [(set (match_dup 0)
 	(truncate:V8SI (match_dup 1)))]
-  "operands[1] = lowpart_subreg (V8DImode, operands[1], V16SImode);")
+  "operands[1] = lowpart_subreg (V8DImode,
+				 force_reg (V16SImode, operands[1]),
+				 V16SImode);")
 
 (define_insn "avx512f_<code><pmov_src_lower><mode>2_mask"
   [(set (match_operand:PMOV_DST_MODE_1 0 "nonimmediate_operand" "=v,m")
@@ -13539,7 +13632,9 @@
   "&& 1"
   [(set (match_dup 0)
 	(truncate:V32QI (match_dup 1)))]
-  "operands[1] = lowpart_subreg (V32HImode, operands[1], V64QImode);")
+  "operands[1] = lowpart_subreg (V32HImode,
+				 force_reg (V64QImode, operands[1]),
+				 V64QImode);")
 
 (define_insn "avx512bw_<code>v32hiv32qi2_mask"
   [(set (match_operand:V32QI 0 "nonimmediate_operand" "=v,m")
@@ -13607,7 +13702,9 @@
   "&& 1"
   [(set (match_dup 0)
 	(truncate:V16QI (match_dup 1)))]
-  "operands[1] = lowpart_subreg (V16HImode, operands[1], V32QImode);")
+  "operands[1] = lowpart_subreg (V16HImode,
+				 force_reg (V32QImode, operands[1]),
+				 V32QImode);")
 
 (define_insn_and_split "*avx512f_permvar_truncv4div4si_1"
   [(set (match_operand:V4SI 0 "nonimmediate_operand")
@@ -13623,7 +13720,9 @@
   "&& 1"
   [(set (match_dup 0)
 	(truncate:V4SI (match_dup 1)))]
-  "operands[1] = lowpart_subreg (V4DImode, operands[1], V8SImode);")
+  "operands[1] = lowpart_subreg (V4DImode,
+				 force_reg (V8SImode, operands[1]),
+				 V8SImode);")
 
 (define_insn "<avx512>_<code><ssedoublemodelower><mode>2_mask"
   [(set (match_operand:PMOV_DST_MODE_2 0 "nonimmediate_operand" "=v,m")
@@ -13701,7 +13800,9 @@
   [(const_int 0)]
 {
   rtx op1 = gen_reg_rtx (V8QImode);
-  operands[1] = lowpart_subreg (V8HImode, operands[1], V16QImode);
+  operands[1] = lowpart_subreg (V8HImode,
+				force_reg (V16QImode, operands[1]),
+				V16QImode);
   emit_insn (gen_truncv8hiv8qi2 (op1, operands[1]));
   emit_move_insn (operands[0], lowpart_subreg (DImode, op1, V8QImode));
   DONE;
@@ -14079,7 +14180,9 @@
   [(const_int 0)]
 {
   rtx op1 = gen_reg_rtx (V4HImode);
-  operands[1] = lowpart_subreg (V4SImode, operands[1], V16QImode);
+  operands[1] = lowpart_subreg (V4SImode,
+				force_reg (V16QImode, operands[1]),
+				V16QImode);
   emit_insn (gen_truncv4siv4hi2 (op1, operands[1]));
   emit_move_insn (operands[0], lowpart_subreg (DImode, op1, V4HImode));
   DONE;
@@ -14326,7 +14429,9 @@
   [(const_int 0)]
 {
   rtx op1 = gen_reg_rtx (V2SImode);
-  operands[1] = lowpart_subreg (V2DImode, operands[1], V4SImode);
+  operands[1] = lowpart_subreg (V2DImode,
+				force_reg (V4SImode, operands[1]),
+				V4SImode);
   emit_insn (gen_truncv2div2si2 (op1, operands[1]));
   emit_move_insn (operands[0], lowpart_subreg (DImode, op1, V2SImode));
   DONE;
@@ -15360,8 +15465,12 @@
       || (<MODE_SIZE> < 64
 	  && ((TARGET_AVX512VNNI && TARGET_AVX512VL) || TARGET_AVXVNNI)))
     {
-      operands[1] = lowpart_subreg (<sseunpackmode>mode, operands[1], <MODE>mode);
-      operands[2] = lowpart_subreg (<sseunpackmode>mode, operands[2], <MODE>mode);
+      operands[1] = lowpart_subreg (<sseunpackmode>mode,
+				    force_reg (<MODE>mode, operands[1]),
+				    <MODE>mode);
+      operands[2] = lowpart_subreg (<sseunpackmode>mode,
+				    force_reg (<MODE>mode, operands[2]),
+				    <MODE>mode);
       emit_insn (gen_rtx_SET (operands[0], operands[3]));
       emit_insn (gen_vpdpwssd_<SDOT_VPDP_SUF> (operands[0], operands[3],
 					       operands[1], operands[2]));
@@ -21376,11 +21485,12 @@
      emit_insn (gen_avx2_pblend<ssemodesuffix> (tmp, operands[1],
 						operands[2], blendw_idx));
 
-     operands[0] = lowpart_subreg (V8SImode, operands[0], <MODE>mode);
+     rtx op0 = gen_reg_rtx (V8SImode);
      tmp = lowpart_subreg (V8SImode, tmp, <MODE>mode);
      operands[1] = lowpart_subreg (V8SImode, operands[1], <MODE>mode);
-     emit_insn (gen_avx2_pblenddv8si (operands[0], operands[1],
+     emit_insn (gen_avx2_pblenddv8si (op0, operands[1],
 				      tmp, blendd_idx));
+     emit_move_insn (operands[0], lowpart_subreg (<MODE>mode, op0, V8SImode));
   }
 
   DONE;
@@ -24205,7 +24315,9 @@
 	  vec_perm_builder sel (4, 4, 1);
 	  sel.quick_grow (4);
 	  rtx arg0, arg1;
-	  rtx op1 = lowpart_subreg (V4SImode, operands[1], V2DImode);
+	  rtx op1 = lowpart_subreg (V4SImode,
+				    force_reg (V2DImode, operands[1]),
+				    V2DImode);
 	  rtx target = gen_reg_rtx (V4SImode);
 	  if (UINTVAL (operands[2]) >= 63)
 	    {
@@ -24271,9 +24383,11 @@
 	  else
 	    {
 	      rtx temp = gen_reg_rtx (V4SImode);
-	      emit_insn (gen_ashrv4si3 (temp, lowpart_subreg (V4SImode,
-							      operands[1],
-							      V2DImode),
+	      emit_insn (gen_ashrv4si3 (temp,
+					lowpart_subreg (V4SImode,
+							force_reg (V2DImode,
+								   operands[1]),
+							V2DImode),
 					GEN_INT (31)));
 	      zero_or_all_ones = gen_reg_rtx (V4SImode);
 	      emit_insn (gen_sse2_pshufd_1 (zero_or_all_ones, temp,
@@ -27768,8 +27882,12 @@
     ||((TARGET_AVX512VNNI && TARGET_AVX512VL)
 	    || TARGET_AVXVNNI))"
 {
-  operands[1] = lowpart_subreg (<VI1SI>mode, operands[1], <MODE>mode);
-  operands[2] = lowpart_subreg (<VI1SI>mode, operands[2], <MODE>mode);
+  operands[1] = lowpart_subreg (<VI1SI>mode,
+				force_reg (<MODE>mode, operands[1]),
+				<MODE>mode);
+  operands[2] = lowpart_subreg (<VI1SI>mode,
+				force_reg (<MODE>mode, operands[2]),
+				<MODE>mode);
   emit_insn (gen_rtx_SET (operands[0], operands[3]));
   emit_insn (gen_vpdpbusd_<vi1si> (operands[0], operands[3],
 				  operands[1], operands[2]));
