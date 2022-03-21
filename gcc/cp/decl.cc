@@ -6598,8 +6598,9 @@ reshape_init_class (tree type, reshape_iter *d, bool first_initializer_p,
     {
       tree field_init;
       constructor_elt *old_cur = d->cur;
+      bool direct_desig = false;
 
-      /* Handle designated initializers, as an extension.  */
+      /* Handle C++20 designated initializers.  */
       if (d->cur->index)
 	{
 	  if (d->cur->index == error_mark_node)
@@ -6617,7 +6618,10 @@ reshape_init_class (tree type, reshape_iter *d, bool first_initializer_p,
 		}
 	    }
 	  else if (TREE_CODE (d->cur->index) == IDENTIFIER_NODE)
-	    field = get_class_binding (type, d->cur->index);
+	    {
+	      field = get_class_binding (type, d->cur->index);
+	      direct_desig = true;
+	    }
 	  else
 	    {
 	      if (complain & tf_error)
@@ -6669,6 +6673,7 @@ reshape_init_class (tree type, reshape_iter *d, bool first_initializer_p,
 		  break;
 	      gcc_assert (aafield);
 	      field = aafield;
+	      direct_desig = false;
 	    }
 	}
 
@@ -6683,9 +6688,32 @@ reshape_init_class (tree type, reshape_iter *d, bool first_initializer_p,
 	   assumed to correspond to no elements of the initializer list.  */
 	goto continue_;
 
-      field_init = reshape_init_r (TREE_TYPE (field), d,
-				   /*first_initializer_p=*/NULL_TREE,
-				   complain);
+      if (direct_desig)
+	{
+	  /* The designated field F is initialized from this one element:
+	     Temporarily clear the designator so a recursive reshape_init_class
+	     doesn't try to find it again in F, and adjust d->end so we don't
+	     try to use the next initializer to initialize another member of F.
+
+	     Note that we don't want these changes if we found the designator
+	     inside an anon aggr above; we leave them alone to implement:
+
+	     "If the element is an anonymous union member and the initializer
+	     list is a brace-enclosed designated- initializer-list, the element
+	     is initialized by the designated-initializer-list { D }, where D
+	     is the designated- initializer-clause naming a member of the
+	     anonymous union member."  */
+	  auto end_ = make_temp_override (d->end, d->cur + 1);
+	  auto idx_ = make_temp_override (d->cur->index, NULL_TREE);
+	  field_init = reshape_init_r (TREE_TYPE (field), d,
+				       /*first_initializer_p=*/NULL_TREE,
+				       complain);
+	}
+      else
+	field_init = reshape_init_r (TREE_TYPE (field), d,
+				     /*first_initializer_p=*/NULL_TREE,
+				     complain);
+
       if (field_init == error_mark_node)
 	return error_mark_node;
 
@@ -6941,6 +6969,15 @@ reshape_init_r (tree type, reshape_iter *d, tree first_initializer_p,
 	     to handle initialization of arrays and similar.  */
 	  else if (COMPOUND_LITERAL_P (stripped_init))
 	    gcc_assert (!BRACE_ENCLOSED_INITIALIZER_P (stripped_init));
+	  /* If we have an unresolved designator, we need to find the member it
+	     designates within TYPE, so proceed to the routines below.  For
+	     FIELD_DECL or INTEGER_CST designators, we're already initializing
+	     the designated element.  */
+	  else if (d->cur->index
+		   && TREE_CODE (d->cur->index) == IDENTIFIER_NODE)
+	    /* Brace elision with designators is only permitted for anonymous
+	       aggregates.  */
+	    gcc_checking_assert (ANON_AGGR_TYPE_P (type));
 	  /* A CONSTRUCTOR of the target's type is a previously
 	     digested initializer.  */
 	  else if (same_type_ignoring_top_level_qualifiers_p (type, init_type))
