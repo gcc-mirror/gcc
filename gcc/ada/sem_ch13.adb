@@ -13539,6 +13539,16 @@ package body Sem_Ch13 is
          if Is_Packed (T1) /= Is_Packed (T2) then
             return False;
 
+         --  If the operand type is derived from the target type and no clause
+         --  has been given after the derivation, then the representations are
+         --  the same since the derived type inherits that of the parent type.
+
+         elsif Is_Derived_Type (T2)
+           and then Etype (T2) = T1
+           and then not Has_Record_Rep_Clause (T2)
+         then
+            return True;
+
          --  Otherwise we must check components. Typ2 maybe a constrained
          --  subtype with fewer components, so we compare the components
          --  of the base types.
