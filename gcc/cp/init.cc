@@ -4395,6 +4395,7 @@ build_vec_init (tree base, tree maxindex, tree init,
   if (init
       && TREE_CODE (atype) == ARRAY_TYPE
       && TREE_CONSTANT (maxindex)
+      && !vla_type_p (type)
       && (from_array == 2
 	  ? vec_copy_assign_is_trivial (inner_elt_type, init)
 	  : !TYPE_NEEDS_CONSTRUCTING (type))
