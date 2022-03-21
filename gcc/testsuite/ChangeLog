@@ -1,3 +1,7 @@
+2022-03-20  Jeff Law  <jeffreyalaw@gmail.com>
+
+	* gcc.target/s390/arch13/sel-1.c: Adjust expected output.
+
 2022-03-19  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/104228
