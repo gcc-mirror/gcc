@@ -6631,7 +6631,9 @@ reshape_init_class (tree type, reshape_iter *d, bool first_initializer_p,
 
 	  if (TREE_CODE (d->cur->index) == FIELD_DECL)
 	    {
-	      /* We already reshaped this.  */
+	      /* We already reshaped this; we should have returned early from
+		 reshape_init.  */
+	      gcc_checking_assert (false);
 	      if (field != d->cur->index)
 		{
 		  if (tree id = DECL_NAME (d->cur->index))
@@ -7066,6 +7068,10 @@ reshape_init (tree type, tree init, tsubst_flags_t complain)
   /* An empty constructor does not need reshaping, and it is always a valid
      initializer.  */
   if (vec_safe_is_empty (v))
+    return init;
+
+  if ((*v)[0].index && TREE_CODE ((*v)[0].index) == FIELD_DECL)
+    /* Already reshaped.  */
     return init;
 
   /* Brace elision is not performed for a CONSTRUCTOR representing
