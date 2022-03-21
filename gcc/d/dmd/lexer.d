@@ -371,6 +371,12 @@ class Lexer
                                 'd';
                     return;
                 }
+                else if (p[1] == '8' && p[2] == '\"') // C UTF-8 string literal
+                {
+                    p += 2;
+                    escapeStringConstant(t);
+                    return;
+                }
                 goto case_ident;
 
             case 'r':
@@ -1979,8 +1985,8 @@ class Lexer
                 if (base <= 10 && n > 0 && (isalpha(p[1]) || p[1] == '_' || p[1] & 0x80))
                 {
                     if (Ccompile && base == 10 &&
-                        (p[1] == 'f' || p[1] == 'F' || p[1] == 'l' || p[1] == 'L'))
-                        goto Lreal;  // if `1.f` or `1.L`
+                        (p[1] == 'e' || p[1] == 'E' || p[1] == 'f' || p[1] == 'F' || p[1] == 'l' || p[1] == 'L'))
+                        goto Lreal;  // if `1.e6` or `1.f` or `1.L`
                     goto Ldone; // if ".identifier" or ".unicode"
                 }
                 if (base == 16 && (!ishex(p[1]) || p[1] == '_' || p[1] & 0x80))
@@ -2495,8 +2501,10 @@ class Lexer
             }
         }
         const isLong = (result == TOK.float80Literal || result == TOK.imaginary80Literal);
-        if (isOutOfRange && !isLong)
+        if (isOutOfRange && !isLong && (!Ccompile || hex))
         {
+            /* C11 6.4.4.2 doesn't actually care if it is not representable if it is not hex
+             */
             const char* suffix = (result == TOK.float32Literal || result == TOK.imaginary32Literal) ? "f" : "";
             error(scanloc, "number `%s%s` is not representable", sbufptr, suffix);
         }

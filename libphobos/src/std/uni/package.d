@@ -9824,7 +9824,7 @@ dchar toLower(dchar c)
 
 /++
     Creates a new array which is identical to `s` except that all of its
-    characters are converted to lowercase (by preforming Unicode lowercase mapping).
+    characters are converted to lowercase (by performing Unicode lowercase mapping).
     If none of `s` characters were affected, then `s` itself is returned if `s` is a
     `string`-like type.
 
@@ -10028,7 +10028,7 @@ dchar toUpper(dchar c)
 
 /++
     Allocates a new array which is identical to `s` except that all of its
-    characters are converted to uppercase (by preforming Unicode uppercase mapping).
+    characters are converted to uppercase (by performing Unicode uppercase mapping).
     If none of `s` characters were affected, then `s` itself is returned if `s`
     is a `string`-like type.
 

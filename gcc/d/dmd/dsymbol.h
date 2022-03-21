@@ -223,7 +223,7 @@ public:
     virtual void importAll(Scope *sc);
     virtual Dsymbol *search(const Loc &loc, Identifier *ident, int flags = IgnoreNone);
     virtual bool overloadInsert(Dsymbol *s);
-    virtual d_uns64 size(const Loc &loc);
+    virtual uinteger_t size(const Loc &loc);
     virtual bool isforwardRef();
     virtual AggregateDeclaration *isThis();     // is a 'this' required to access the member
     virtual bool isExport() const;              // is Dsymbol exported?

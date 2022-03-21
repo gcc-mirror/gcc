@@ -73,14 +73,10 @@ struct ActualBuffer final
 template <typename T>
 struct A final
 {
-    // Ignoring var x alignment 0
     T x;
-    // Ignoring var Enum alignment 0
     enum : int32_t { Enum = 42 };
 
-    // Ignoring var GsharedNum alignment 0
     static int32_t GsharedNum;
-    // Ignoring var MemNum alignment 0
     const int32_t MemNum;
     void foo();
     A()
@@ -91,8 +87,6 @@ struct A final
 template <typename T>
 struct NotInstantiated final
 {
-    // Ignoring var noInit alignment 0
-    // Ignoring var missingSem alignment 0
     NotInstantiated()
     {
     }
@@ -113,7 +107,6 @@ struct B final
 template <typename T>
 struct Foo final
 {
-    // Ignoring var val alignment 0
     T val;
     Foo()
     {
@@ -123,7 +116,6 @@ struct Foo final
 template <typename T>
 struct Bar final
 {
-    // Ignoring var v alignment 0
     Foo<T > v;
     Bar()
     {
@@ -141,9 +133,7 @@ struct Array final
     void get() const;
     template <typename T>
     bool opCast() const;
-    // Ignoring var i alignment 0
     typename T::Member i;
-    // Ignoring var j alignment 0
     typename Outer::Member::Nested j;
     void visit(typename T::Member::Nested i);
     Array()
@@ -159,7 +149,6 @@ extern A<A<int32_t > > aaint;
 template <typename T>
 class Parent
 {
-    // Ignoring var parentMember alignment 0
 public:
     T parentMember;
     void parentFinal();
@@ -169,7 +158,6 @@ public:
 template <typename T>
 class Child final : public Parent<T >
 {
-    // Ignoring var childMember alignment 0
 public:
     T childMember;
     void parentVirtual();
@@ -207,14 +195,10 @@ extern HasMixinsTemplate<bool > hmti;
 template <typename T>
 struct NotAA final
 {
-    // Ignoring var length alignment 0
     enum : int32_t { length = 12 };
 
-    // Ignoring var buffer alignment 0
     T buffer[length];
-    // Ignoring var otherBuffer alignment 0
     T otherBuffer[SomeOtherLength];
-    // Ignoring var calcBuffer alignment 0
     T calcBuffer[foo(1)];
     NotAA()
     {
@@ -224,9 +208,7 @@ struct NotAA final
 template <typename Buffer>
 struct BufferTmpl final
 {
-    // Ignoring var buffer alignment 0
     Buffer buffer;
-    // Ignoring var buffer2 alignment 0
     Buffer buffer2;
     BufferTmpl()
     {

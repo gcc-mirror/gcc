@@ -343,10 +343,9 @@ UnionExp copyLiteral(Expression e)
                 {
                     auto tsa = v.type.isTypeSArray();
                     auto len = cast(size_t)tsa.dim.toInteger();
-                    UnionExp uex = void;
-                    m = createBlockDuplicatedArrayLiteral(&uex, e.loc, v.type, m, len);
-                    if (m == uex.exp())
-                        m = uex.copy();
+                    m = createBlockDuplicatedArrayLiteral(&ue, e.loc, v.type, m, len);
+                    if (m == ue.exp())
+                        m = ue.copy();
                 }
             }
             el = m;
@@ -583,10 +582,9 @@ ArrayLiteralExp createBlockDuplicatedArrayLiteral(UnionExp* pue, const ref Loc l
         // If it is a multidimensional array literal, do it recursively
         auto tsa = type.nextOf().isTypeSArray();
         const len = cast(size_t)tsa.dim.toInteger();
-        UnionExp ue = void;
-        elem = createBlockDuplicatedArrayLiteral(&ue, loc, type.nextOf(), elem, len);
-        if (elem == ue.exp())
-            elem = ue.copy();
+        elem = createBlockDuplicatedArrayLiteral(pue, loc, type.nextOf(), elem, len);
+        if (elem == pue.exp())
+            elem = pue.copy();
     }
 
     // Buzilla 15681
@@ -791,9 +789,8 @@ bool pointToSameMemoryBlock(Expression agg1, Expression agg2)
 }
 
 // return e1 - e2 as an integer, or error if not possible
-UnionExp pointerDifference(const ref Loc loc, Type type, Expression e1, Expression e2)
+Expression pointerDifference(UnionExp* pue, const ref Loc loc, Type type, Expression e1, Expression e2)
 {
-    UnionExp ue = void;
     dinteger_t ofs1, ofs2;
     Expression agg1 = getAggregateFromPointer(e1, &ofs1);
     Expression agg2 = getAggregateFromPointer(e2, &ofs2);
@@ -801,39 +798,38 @@ UnionExp pointerDifference(const ref Loc loc, Type type, Expression e1, Expressi
     {
         Type pointee = (cast(TypePointer)agg1.type).next;
         const sz = pointee.size();
-        emplaceExp!(IntegerExp)(&ue, loc, (ofs1 - ofs2) * sz, type);
+        emplaceExp!(IntegerExp)(pue, loc, (ofs1 - ofs2) * sz, type);
     }
     else if (agg1.op == EXP.string_ && agg2.op == EXP.string_ &&
              (cast(StringExp)agg1).peekString().ptr == (cast(StringExp)agg2).peekString().ptr)
     {
         Type pointee = (cast(TypePointer)agg1.type).next;
         const sz = pointee.size();
-        emplaceExp!(IntegerExp)(&ue, loc, (ofs1 - ofs2) * sz, type);
+        emplaceExp!(IntegerExp)(pue, loc, (ofs1 - ofs2) * sz, type);
     }
     else if (agg1.op == EXP.symbolOffset && agg2.op == EXP.symbolOffset &&
              (cast(SymOffExp)agg1).var == (cast(SymOffExp)agg2).var)
     {
-        emplaceExp!(IntegerExp)(&ue, loc, ofs1 - ofs2, type);
+        emplaceExp!(IntegerExp)(pue, loc, ofs1 - ofs2, type);
     }
     else
     {
         error(loc, "`%s - %s` cannot be interpreted at compile time: cannot subtract pointers to two different memory blocks", e1.toChars(), e2.toChars());
-        emplaceExp!(CTFEExp)(&ue, EXP.cantExpression);
+        emplaceExp!(CTFEExp)(pue, EXP.cantExpression);
     }
-    return ue;
+    return pue.exp();
 }
 
 // Return eptr op e2, where eptr is a pointer, e2 is an integer,
 // and op is EXP.add or EXP.min
-UnionExp pointerArithmetic(const ref Loc loc, EXP op, Type type, Expression eptr, Expression e2)
+Expression pointerArithmetic(UnionExp* pue, const ref Loc loc, EXP op, Type type, Expression eptr, Expression e2)
 {
-    UnionExp ue;
     if (eptr.type.nextOf().ty == Tvoid)
     {
         error(loc, "cannot perform arithmetic on `void*` pointers at compile time");
     Lcant:
-        emplaceExp!(CTFEExp)(&ue, EXP.cantExpression);
-        return ue;
+        emplaceExp!(CTFEExp)(pue, EXP.cantExpression);
+        return pue.exp();
     }
     if (eptr.op == EXP.address)
         eptr = (cast(AddrExp)eptr).e1;
@@ -885,10 +881,10 @@ UnionExp pointerArithmetic(const ref Loc loc, EXP op, Type type, Expression eptr
     }
     if (agg1.op == EXP.symbolOffset)
     {
-        emplaceExp!(SymOffExp)(&ue, loc, (cast(SymOffExp)agg1).var, indx * sz);
-        SymOffExp se = cast(SymOffExp)ue.exp();
+        emplaceExp!(SymOffExp)(pue, loc, (cast(SymOffExp)agg1).var, indx * sz);
+        SymOffExp se = cast(SymOffExp)pue.exp();
         se.type = type;
-        return ue;
+        return pue.exp();
     }
     if (agg1.op != EXP.arrayLiteral && agg1.op != EXP.string_)
     {
@@ -903,17 +899,17 @@ UnionExp pointerArithmetic(const ref Loc loc, EXP op, Type type, Expression eptr
                 ctfeEmplaceExp!IntegerExp(loc, indx, Type.tsize_t),
                 ctfeEmplaceExp!IntegerExp(loc, indx + dim, Type.tsize_t));
         se.type = type.toBasetype().nextOf();
-        emplaceExp!(AddrExp)(&ue, loc, se);
-        ue.exp().type = type;
-        return ue;
+        emplaceExp!(AddrExp)(pue, loc, se);
+        pue.exp().type = type;
+        return pue.exp();
     }
     // Create a CTFE pointer &agg1[indx]
     auto ofs = ctfeEmplaceExp!IntegerExp(loc, indx, Type.tsize_t);
     Expression ie = ctfeEmplaceExp!IndexExp(loc, agg1, ofs);
     ie.type = type.toBasetype().nextOf(); // https://issues.dlang.org/show_bug.cgi?id=13992
-    emplaceExp!(AddrExp)(&ue, loc, ie);
-    ue.exp().type = type;
-    return ue;
+    emplaceExp!(AddrExp)(pue, loc, ie);
+    pue.exp().type = type;
+    return pue.exp();
 }
 
 // Return 1 if true, 0 if false
@@ -1755,9 +1751,8 @@ Expression assignAssocArrayElement(const ref Loc loc, AssocArrayLiteralExp aae, 
 /// Given array literal oldval of type ArrayLiteralExp or StringExp, of length
 /// oldlen, change its length to newlen. If the newlen is longer than oldlen,
 /// all new elements will be set to the default initializer for the element type.
-UnionExp changeArrayLiteralLength(const ref Loc loc, TypeArray arrayType, Expression oldval, size_t oldlen, size_t newlen)
+Expression changeArrayLiteralLength(UnionExp* pue, const ref Loc loc, TypeArray arrayType, Expression oldval, size_t oldlen, size_t newlen)
 {
-    UnionExp ue;
     Type elemType = arrayType.next;
     assert(elemType);
     Expression defaultElem = elemType.defaultInitLiteral(loc);
@@ -1794,8 +1789,8 @@ UnionExp changeArrayLiteralLength(const ref Loc loc, TypeArray arrayType, Expres
                 assert(0);
             }
         }
-        emplaceExp!(StringExp)(&ue, loc, s[0 .. newlen * oldse.sz], newlen, oldse.sz);
-        StringExp se = cast(StringExp)ue.exp();
+        emplaceExp!(StringExp)(pue, loc, s[0 .. newlen * oldse.sz], newlen, oldse.sz);
+        StringExp se = cast(StringExp)pue.exp();
         se.type = arrayType;
         se.sz = oldse.sz;
         se.committed = oldse.committed;
@@ -1823,11 +1818,11 @@ UnionExp changeArrayLiteralLength(const ref Loc loc, TypeArray arrayType, Expres
             foreach (size_t i; copylen .. newlen)
                 (*elements)[i] = defaultElem;
         }
-        emplaceExp!(ArrayLiteralExp)(&ue, loc, arrayType, elements);
-        ArrayLiteralExp aae = cast(ArrayLiteralExp)ue.exp();
+        emplaceExp!(ArrayLiteralExp)(pue, loc, arrayType, elements);
+        ArrayLiteralExp aae = cast(ArrayLiteralExp)pue.exp();
         aae.ownedByCtfe = OwnedBy.ctfe;
     }
-    return ue;
+    return pue.exp();
 }
 
 /*************************** CTFE Sanity Checks ***************************/

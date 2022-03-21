@@ -20,38 +20,12 @@ import dmd.identifier;
 enum package_d  = "package." ~ mars_ext;
 enum package_di = "package." ~ hdr_ext;
 
-extern(C++) struct FileManager
+struct FileManager
 {
     private StringTable!(FileBuffer*) files;
     private __gshared bool initialized = false;
 
 nothrow:
-    extern(D) private FileBuffer* readToFileBuffer(const(char)[] filename)
-    {
-        if (!initialized)
-            FileManager._init();
-
-        auto readResult = File.read(filename);
-        if (readResult.success)
-        {
-            FileBuffer* fb;
-            if (auto val = files.lookup(filename))
-                fb = val.value;
-
-            if (!fb)
-                fb = FileBuffer.create();
-
-            fb.data = readResult.extractSlice();
-
-            return files.insert(filename, fb) == null ? null : fb;
-        }
-        else
-        {
-            return null;
-        }
-
-    }
-
     /********************************************
     * Look for the source file if it's different from filename.
     * Look for .di, .d, directory, and along global.path.
@@ -63,7 +37,7 @@ nothrow:
     *      the found file name or
     *      `null` if it is not different from filename.
     */
-    extern(D) static const(char)[] lookForSourceFile(const char[] filename, const char*[] path)
+    static const(char)[] lookForSourceFile(const char[] filename, const char*[] path)
     {
         //printf("lookForSourceFile(`%.*s`)\n", cast(int)filename.length, filename.ptr);
         /* Search along path[] for .di file, then .d file, then .i file, then .c file.
@@ -74,6 +48,9 @@ nothrow:
         scope(exit) FileName.free(sdi.ptr);
 
         const sd = FileName.forceExt(filename, mars_ext);
+        // Special file name representing `stdin`, always assume its presence
+        if (sd == "__stdin.d")
+            return sd;
         if (FileName.exists(sd) == 1)
             return sd;
         scope(exit) FileName.free(sd.ptr);
@@ -164,33 +141,35 @@ nothrow:
      * Returns: the loaded source file if it was found in memory,
      *      otherwise `null`
      */
-    extern(D) FileBuffer* lookup(FileName filename)
+    const(FileBuffer)* lookup(FileName filename)
     {
         if (!initialized)
             FileManager._init();
 
-        if (auto val = files.lookup(filename.toString))
+        const name = filename.toString;
+        if (auto val = files.lookup(name))
+            return val.value;
+
+        if (name == "__stdin.d")
         {
-            // There is a chance that the buffer could've been
-            // stolen by a reader with extractSlice, so we should
-            // try and do our reading logic if that happens.
-            if (val !is null && val.value.data !is null)
-            {
-                return val.value;
-            }
+            auto buffer = new FileBuffer(readFromStdin().extractSlice());
+            if (this.files.insert(name, buffer) is null)
+                assert(0, "stdin: Insert after lookup failure should never return `null`");
+            return buffer;
         }
 
-        const name = filename.toString;
-        auto res = FileName.exists(name);
-        if (res == 1)
-            return readToFileBuffer(name);
+        if (FileName.exists(name) != 1)
+            return null;
 
-        return null;
-    }
+        auto readResult = File.read(name);
+        if (!readResult.success)
+            return null;
 
-    extern(C++) FileBuffer* lookup(const(char)* filename)
-    {
-        return lookup(FileName(filename.toDString));
+        FileBuffer* fb = new FileBuffer(readResult.extractSlice());
+        if (files.insert(name, fb) is null)
+            assert(0, "Insert after lookup failure should never return `null`");
+
+        return fb;
     }
 
     /**
@@ -201,15 +180,15 @@ nothrow:
      * Returns: the loaded source file if it was found in memory,
      *      otherwise `null`
      */
-    extern(D) const(char)[][] getLines(FileName file)
+    const(char)[][] getLines(FileName file)
     {
         if (!initialized)
             FileManager._init();
 
         const(char)[][] lines;
-        if (FileBuffer* buffer = lookup(file))
+        if (const buffer = lookup(file))
         {
-            ubyte[] slice = buffer.data[0 .. buffer.data.length];
+            const slice = buffer.data[0 .. buffer.data.length];
             size_t start, end;
             ubyte c;
             for (auto i = 0; i < slice.length; i++)
@@ -260,7 +239,7 @@ nothrow:
      *
      * Returns: The FileBuffer added, or null
      */
-    extern(D) FileBuffer* add(FileName filename, FileBuffer* filebuffer)
+    FileBuffer* add(FileName filename, FileBuffer* filebuffer)
     {
         if (!initialized)
             FileManager._init();
@@ -269,19 +248,10 @@ nothrow:
         return val == null ? null : val.value;
     }
 
-    extern(C++) FileBuffer* add(const(char)* filename, FileBuffer* filebuffer)
-    {
-        if (!initialized)
-            FileManager._init();
-
-        auto val = files.insert(filename.toDString, filebuffer);
-        return val == null ? null : val.value;
-    }
-
     __gshared fileManager = FileManager();
 
     // Initialize the global FileManager singleton
-    extern(C++) static __gshared void _init()
+    private void _init()
     {
         if (!initialized)
         {
@@ -294,4 +264,47 @@ nothrow:
     {
         files._init();
     }
+}
+
+private FileBuffer readFromStdin() nothrow
+{
+    import core.stdc.stdio;
+    import dmd.errors;
+    import dmd.root.rmem;
+
+    enum bufIncrement = 128 * 1024;
+    size_t pos = 0;
+    size_t sz = bufIncrement;
+
+    ubyte* buffer = null;
+    for (;;)
+    {
+        buffer = cast(ubyte*)mem.xrealloc(buffer, sz + 4); // +2 for sentinel and +2 for lexer
+
+        // Fill up buffer
+        do
+        {
+            assert(sz > pos);
+            size_t rlen = fread(buffer + pos, 1, sz - pos, stdin);
+            pos += rlen;
+            if (ferror(stdin))
+            {
+                import core.stdc.errno;
+                error(Loc.initial, "cannot read from stdin, errno = %d", errno);
+                fatal();
+            }
+            if (feof(stdin))
+            {
+                // We're done
+                assert(pos < sz + 2);
+                buffer[pos .. pos + 4] = '\0';
+                return FileBuffer(buffer[0 .. pos]);
+            }
+        } while (pos < sz);
+
+        // Buffer full, expand
+        sz += bufIncrement;
+    }
+
+    assert(0);
 }

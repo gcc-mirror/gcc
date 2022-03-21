@@ -146,7 +146,7 @@ int blockExit(Statement s, FuncDeclaration func, bool mustNotThrow)
                             else if (sd && (!sd.statement.hasCode() || sd.statement.isCaseStatement() || sd.statement.isErrorStatement()))
                             {
                             }
-                            else if (!func.getModule().isCFile)
+                            else if (func.getModule().filetype != FileType.c)
                             {
                                 const(char)* gototype = s.isCaseStatement() ? "case" : "default";
                                 s.error("switch case fallthrough - use 'goto %s;' if intended", gototype);

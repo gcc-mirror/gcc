@@ -1894,7 +1894,7 @@ Expression castTo(Expression e, Scope* sc, Type t, Type att = null)
         if (e.committed && tb.ty == Tsarray && typeb.ty == Tarray)
         {
             se = e.copy().isStringExp();
-            d_uns64 szx = tb.nextOf().size();
+            uinteger_t szx = tb.nextOf().size();
             assert(szx <= 255);
             se.sz = cast(ubyte)szx;
             se.len = cast(size_t)tb.isTypeSArray().dim.toInteger();
@@ -2059,7 +2059,7 @@ Expression castTo(Expression e, Scope* sc, Type t, Type att = null)
                 }
 
                 {
-                    d_uns64 szx = tb.nextOf().size();
+                    uinteger_t szx = tb.nextOf().size();
                     assert(szx <= 255);
                     se.setData(buffer.extractSlice().ptr, newlen, cast(ubyte)szx);
                 }
@@ -2742,7 +2742,7 @@ Expression scaleFactor(BinExp be, Scope* sc)
         // Replace (ptr + int) with (ptr + (int * stride))
         Type t = Type.tptrdiff_t;
 
-        d_uns64 stride = t1b.nextOf().size(be.loc);
+        uinteger_t stride = t1b.nextOf().size(be.loc);
         if (!t.equals(t2b))
             be.e2 = be.e2.castTo(sc, t);
         eoff = be.e2;
@@ -2757,7 +2757,7 @@ Expression scaleFactor(BinExp be, Scope* sc)
         Type t = Type.tptrdiff_t;
         Expression e;
 
-        d_uns64 stride = t2b.nextOf().size(be.loc);
+        uinteger_t stride = t2b.nextOf().size(be.loc);
         if (!t.equals(t1b))
             e = be.e1.castTo(sc, t);
         else

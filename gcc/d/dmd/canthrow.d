@@ -246,7 +246,7 @@ private CT Dsymbol_canThrow(Dsymbol s, FuncDeclaration func, bool mustNotThrow)
         if (vd.storage_class & STC.manifest)
         {
         }
-        else if (vd.isStatic() || vd.storage_class & (STC.extern_ | STC.tls | STC.gshared))
+        else if (vd.isStatic() || vd.storage_class & (STC.extern_ | STC.gshared))
         {
         }
         else

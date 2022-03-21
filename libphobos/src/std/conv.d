@@ -1153,7 +1153,7 @@ if (!(isImplicitlyConvertible!(S, T) &&
 }
 
 // https://issues.dlang.org/show_bug.cgi?id=16108
-@system unittest
+@safe unittest
 {
     static struct A
     {
@@ -1341,12 +1341,12 @@ if (is (T == immutable) && isExactSomeString!T && is(S == enum))
     assert(to!string(a) == "[1.5, 2.5]");
 }
 
-@system unittest
+@safe unittest
 {
     // Conversion representing class object with string
     class A
     {
-        override string toString() const { return "an A"; }
+        override string toString() @safe const { return "an A"; }
     }
     A a;
     assert(to!string(a) == "null");
@@ -1354,7 +1354,7 @@ if (is (T == immutable) && isExactSomeString!T && is(S == enum))
     assert(to!string(a) == "an A");
 
     // https://issues.dlang.org/show_bug.cgi?id=7660
-    class C { override string toString() const { return "C"; } }
+    class C { override string toString() @safe const { return "C"; } }
     struct S { C c; alias c this; }
     S s; s.c = new C();
     assert(to!string(s) == "C");
@@ -1739,10 +1739,10 @@ if (!isImplicitlyConvertible!(S, T) && isAssociativeArray!S &&
     foreach (k1, v1; value)
     {
         // Cast values temporarily to Unqual!V2 to store them to result variable
-        result[to!K2(k1)] = cast(Unqual!V2) to!V2(v1);
+        result[to!K2(k1)] = to!(Unqual!V2)(v1);
     }
     // Cast back to original type
-    return cast(T) result;
+    return () @trusted { return cast(T) result; }();
 }
 
 @safe unittest
@@ -3105,7 +3105,7 @@ if (isSomeString!Source && !is(Source == enum) &&
  *     A $(LREF ConvException) if `source` is empty, if no number could be
  *     parsed, or if an overflow occurred.
  */
-auto parse(Target, Source, Flag!"doCount" doCount = No.doCount)(ref Source source)
+auto parse(Target, Source, Flag!"doCount" doCount = No.doCount)(ref scope Source source)
 if (isInputRange!Source && isSomeChar!(ElementType!Source) && !is(Source == enum) &&
     isFloatingPoint!Target && !is(Target == enum))
 {
@@ -3120,6 +3120,13 @@ if (isInputRange!Source && isSomeChar!(ElementType!Source) && !is(Source == enum
     else
     {
         alias p = source;
+    }
+
+    void advanceSource() @trusted
+    {
+        // p is assigned from source.representation above so the cast is valid
+        static if (isNarrowString!Source)
+            source = cast(Source) p;
     }
 
     static immutable real[14] negtab =
@@ -3137,6 +3144,7 @@ if (isInputRange!Source && isSomeChar!(ElementType!Source) && !is(Source == enum
     }
 
     enforce(!p.empty, bailOut());
+
 
     size_t count = 0;
     bool sign = false;
@@ -3168,8 +3176,7 @@ if (isInputRange!Source && isSomeChar!(ElementType!Source) && !is(Source == enum
         // skip past the last 'f'
         ++count;
         p.popFront();
-        static if (isNarrowString!Source)
-            source = cast(Source) p;
+        advanceSource();
         static if (doCount)
         {
             return tuple!("data", "count")(sign ? -Target.infinity : Target.infinity, count);
@@ -3189,8 +3196,7 @@ if (isInputRange!Source && isSomeChar!(ElementType!Source) && !is(Source == enum
         p.popFront();
         if (p.empty)
         {
-            static if (isNarrowString!Source)
-                source = cast(Source) p;
+            advanceSource();
             static if (doCount)
             {
                 return tuple!("data", "count")(cast (Target) (sign ? -0.0 : 0.0), count);
@@ -3222,8 +3228,7 @@ if (isInputRange!Source && isSomeChar!(ElementType!Source) && !is(Source == enum
         // skip past the last 'n'
         ++count;
         p.popFront();
-        static if (isNarrowString!Source)
-            source = cast(Source) p;
+        advanceSource();
         static if (doCount)
         {
             return tuple!("data", "count")(Target.nan, count);
@@ -3418,8 +3423,7 @@ if (isInputRange!Source && isSomeChar!(ElementType!Source) && !is(Source == enum
     // if overflow occurred
     enforce(ldval != real.infinity, new ConvException("Range error"));
 
-    static if (isNarrowString!Source)
-        source = cast(Source) p;
+    advanceSource();
     static if (doCount)
     {
         return tuple!("data", "count")(cast (Target) (sign ? -ldval : ldval), count);
@@ -3429,6 +3433,7 @@ if (isInputRange!Source && isSomeChar!(ElementType!Source) && !is(Source == enum
         return cast (Target) (sign ? -ldval : ldval);
     }
 }
+
 
 ///
 @safe unittest

@@ -314,3 +314,4 @@ Tuple *isTuple(RootObject *o);
 Parameter *isParameter(RootObject *o);
 TemplateParameter *isTemplateParameter(RootObject *o);
 bool isError(const RootObject *const o);
+void printTemplateStats();
