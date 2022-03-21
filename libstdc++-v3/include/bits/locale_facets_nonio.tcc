@@ -1465,7 +1465,7 @@ _GLIBCXX_END_NAMESPACE_LDBL_OR_CXX11
       ctype<_CharT> const& __ctype = use_facet<ctype<_CharT> >(__loc);
       __err = ios_base::goodbit;
       bool __use_state = false;
-#if __GNUC__ >= 5
+#if __GNUC__ >= 5 && !defined(__clang__)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wpmf-conversions"
       // Nasty hack.  The C++ standard mandates that get invokes the do_get
