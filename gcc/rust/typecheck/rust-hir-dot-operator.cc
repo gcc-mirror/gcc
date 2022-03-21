@@ -40,6 +40,21 @@ MethodResolver::Probe (const TyTy::BaseType *receiver,
       if (autoderef_flag)
 	return MethodCandidate::get_error ();
 
+      // try unsize
+      Adjustment unsize = Adjuster::try_unsize_type (r);
+      if (!unsize.is_error ())
+	{
+	  adjustments.push_back (unsize);
+	  auto unsize_r = unsize.get_expected ();
+	  auto res = Try (unsize_r, segment_name, adjustments);
+	  if (!res.is_error ())
+	    {
+	      return res;
+	    }
+
+	  adjustments.pop_back ();
+	}
+
       Adjustment deref
 	= Adjuster::try_deref_type (r, Analysis::RustLangItem::ItemType::DEREF);
       if (!deref.is_error ())
