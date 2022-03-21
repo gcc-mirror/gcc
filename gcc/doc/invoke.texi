@@ -15132,6 +15132,9 @@ when evaluating outgoing edge ranges.
 @item relation-block-limit
 Maximum number of relations the oracle will register in a basic block.
 
+@item min-pagesize
+Minimum page size for warning purposes.
+
 @item openacc-kernels
 Specify mode of OpenACC `kernels' constructs handling.
 With @option{--param=openacc-kernels=decompose}, OpenACC `kernels'
