@@ -670,6 +670,16 @@ static const struct cpu_regmove_cost neoversen2_regmove_cost =
   2 /* FP2FP  */
 };
 
+static const struct cpu_regmove_cost neoversev1_regmove_cost =
+{
+  1, /* GP2GP  */
+  /* Spilling to int<->fp instead of memory is recommended so set
+     realistic costs compared to memmov_cost.  */
+  3, /* GP2FP  */
+  2, /* FP2GP  */
+  2 /* FP2FP  */
+};
+
 static const struct cpu_regmove_cost demeter_regmove_cost =
 {
   1, /* GP2GP  */
@@ -2063,13 +2073,13 @@ static const struct tune_params neoversev1_tunings =
 {
   &cortexa76_extra_costs,
   &neoversev1_addrcost_table,
-  &generic_regmove_cost,
+  &neoversev1_regmove_cost,
   &neoversev1_vector_cost,
   &generic_branch_cost,
   &generic_approx_modes,
   SVE_256, /* sve_width  */
   { 4, /* load_int.  */
-    1, /* store_int.  */
+    2, /* store_int.  */
     6, /* load_fp.  */
     2, /* store_fp.  */
     6, /* load_pred.  */
@@ -2200,13 +2210,13 @@ static const struct tune_params neoverse512tvb_tunings =
 {
   &cortexa76_extra_costs,
   &neoversev1_addrcost_table,
-  &generic_regmove_cost,
+  &neoversev1_regmove_cost,
   &neoverse512tvb_vector_cost,
   &generic_branch_cost,
   &generic_approx_modes,
   SVE_128 | SVE_256, /* sve_width  */
   { 4, /* load_int.  */
-    1, /* store_int.  */
+    2, /* store_int.  */
     6, /* load_fp.  */
     2, /* store_fp.  */
     6, /* load_pred.  */
