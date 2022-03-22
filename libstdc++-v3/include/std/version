@@ -177,6 +177,9 @@
 #define __cpp_lib_atomic_float 201711L
 #define __cpp_lib_atomic_ref 201806L
 #define __cpp_lib_atomic_value_initialization 201911L
+#if __has_builtin(__builtin_bit_cast)
+# define __cpp_lib_bit_cast 201806L
+#endif
 #define __cpp_lib_bitops 201907L
 #define __cpp_lib_bounded_array_traits 201902L
 // __cpp_lib_char8_t is defined in <bits/c++config.h>
@@ -209,9 +212,6 @@
 # endif
 #endif
 #define __cpp_lib_bind_front 201907L
-#if __has_builtin(__builtin_bit_cast)
-# define __cpp_lib_bit_cast 201806L
-#endif
 // FIXME: #define __cpp_lib_execution 201902L
 #define __cpp_lib_integer_comparison_functions 202002L
 #define __cpp_lib_constexpr_algorithms 201806L
@@ -272,8 +272,10 @@
 #if __cplusplus > 202002L
 // c++2b
 #define __cpp_lib_is_scoped_enum 202011L
+#if _GLIBCXX_HOSTED
 #define __cpp_lib_string_contains 202011L
 #define __cpp_lib_to_underlying 202102L
+#endif
 #endif // C++2b
 #endif // C++20
 #endif // C++17
