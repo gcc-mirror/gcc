@@ -1788,8 +1788,8 @@ altivec_resolve_overloaded_builtin (location_t loc, tree fndecl,
 	{
 	  if (TYPE_READONLY (TREE_TYPE (type))
 	      && !TYPE_READONLY (TREE_TYPE (decl_type)))
-	    warning (0, "passing argument %d of %qE discards const qualifier "
-		     "from pointer target type", n + 1, fndecl);
+	    warning (0, "passing argument %d of %qE discards %<const%> "
+		     "qualifier from pointer target type", n + 1, fndecl);
 	  type = build_qualified_type (TREE_TYPE (type), 0);
 	  type = build_pointer_type (type);
 	  arg = fold_convert (type, arg);
