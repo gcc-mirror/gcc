@@ -5665,6 +5665,21 @@ lookup_using_decl (tree scope, name_lookup &lookup)
 	lookup.value = lookup_member (binfo, lookup.name, /*protect=*/2,
 				      /*want_type=*/false, tf_none);
 
+      /* If the lookup in the base contains a dependent using, this
+	 using is also dependent.  */
+      if (!dependent_p && lookup.value)
+	{
+	  tree val = lookup.value;
+	  if (tree fns = maybe_get_fns (val))
+	    val = fns;
+	  for (tree f: lkp_range (val))
+	    if (TREE_CODE (f) == USING_DECL && DECL_DEPENDENT_P (f))
+	      {
+		dependent_p = true;
+		break;
+	      }
+	}
+
       if (!depscope && b_kind < bk_proper_base)
 	{
 	  if (cxx_dialect >= cxx20 && lookup.value
