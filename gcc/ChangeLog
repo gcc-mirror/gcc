@@ -1,3 +1,13 @@
+2022-03-21  H.J. Lu  <hjl.tools@gmail.com>
+
+	Backported from master:
+	2022-03-21  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/104998
+	* common/config/i386/cpuinfo.h (get_available_features): Pass
+	0x19 to __cpuid for bit_AESKLE.  Enable FEATURE_AESKLE only if
+	bit_AESKLE is set.
+
 2022-03-18  Peter Bergner  <bergner@linux.ibm.com>
 
 	Backported from master:

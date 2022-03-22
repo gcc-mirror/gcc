@@ -1,3 +1,12 @@
+2022-03-21  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	Backported from master:
+	2022-03-21  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/105004
+	* d-codegen.cc (build_struct_literal): Use complex_expr to build
+	complex expressions from __c_complex types.
+
 2021-12-10  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	Backported from master:
