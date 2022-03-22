@@ -108,6 +108,9 @@
 #ifdef _GLIBCXX_HAVE_BUILTIN_HAS_UNIQ_OBJ_REP
 # define __cpp_lib_has_unique_object_representations 201606L
 #endif
+#ifdef __GCC_DESTRUCTIVE_SIZE
+# define __cpp_lib_hardware_interference_size 201703L
+#endif
 #ifdef _GLIBCXX_HAVE_BUILTIN_IS_AGGREGATE
 # define __cpp_lib_is_aggregate 201703L
 #endif
@@ -142,9 +145,6 @@
 #define __cpp_lib_filesystem 201703L
 #define __cpp_lib_gcd 201606L
 #define __cpp_lib_gcd_lcm 201606L
-#ifdef __GCC_DESTRUCTIVE_SIZE
-# define __cpp_lib_hardware_interference_size 201703L
-#endif
 #define __cpp_lib_hypot 201603L
 #define __cpp_lib_invoke 201411L
 #define __cpp_lib_lcm 201606L
@@ -188,6 +188,9 @@
 #define __cpp_lib_atomic_float 201711L
 #define __cpp_lib_atomic_ref 201806L
 #define __cpp_lib_atomic_value_initialization 201911L
+#if __has_builtin(__builtin_bit_cast)
+# define __cpp_lib_bit_cast 201806L
+#endif
 #define __cpp_lib_bitops 201907L
 #define __cpp_lib_bounded_array_traits 201902L
 // __cpp_lib_char8_t is defined in <bits/c++config.h>
@@ -202,7 +205,15 @@
 #ifdef _GLIBCXX_HAVE_IS_CONSTANT_EVALUATED
 # define __cpp_lib_is_constant_evaluated 201811L
 #endif
+#if __has_builtin(__is_layout_compatible) \
+  && __has_builtin(__builtin_is_corresponding_member)
+# define __cpp_lib_is_layout_compatible 201907L
+#endif
 #define __cpp_lib_is_nothrow_convertible 201806L
+#if __has_builtin(__is_pointer_interconvertible_base_of) \
+ && __has_builtin(__builtin_is_pointer_interconvertible_with_class)
+# define __cpp_lib_is_pointer_interconvertible 201907L
+#endif
 #define __cpp_lib_remove_cvref 201711L
 #if __has_builtin(__builtin_source_location)
 # define __cpp_lib_source_location 201907L
@@ -224,9 +235,6 @@
 # endif
 #endif
 #define __cpp_lib_bind_front 201907L
-#if __has_builtin(__builtin_bit_cast)
-# define __cpp_lib_bit_cast 201806L
-#endif
 // FIXME: #define __cpp_lib_execution 201902L
 #define __cpp_lib_integer_comparison_functions 202002L
 #define __cpp_lib_constexpr_algorithms 201806L
@@ -254,14 +262,6 @@
 #define __cpp_lib_interpolate 201902L
 #ifdef _GLIBCXX_HAS_GTHREADS
 # define __cpp_lib_jthread 201911L
-#endif
-#if __has_builtin(__is_layout_compatible) \
-  && __has_builtin(__builtin_is_corresponding_member)
-# define __cpp_lib_is_layout_compatible 201907L
-#endif
-#if __has_builtin(__is_pointer_interconvertible_base_of) \
- && __has_builtin(__builtin_is_pointer_interconvertible_with_class)
-# define __cpp_lib_is_pointer_interconvertible 201907L
 #endif
 #if __cpp_lib_atomic_wait
 # define __cpp_lib_latch 201907L
@@ -300,12 +300,14 @@
 
 #if __cplusplus > 202002L
 // c++2b
-#define __cpp_lib_adaptor_iterator_pair_constructor 202106L
 #define __cpp_lib_byteswap 202110L
 #define __cpp_lib_constexpr_typeinfo 202106L
+#define __cpp_lib_is_scoped_enum 202011L
+
+#if _GLIBCXX_HOSTED
+#define __cpp_lib_adaptor_iterator_pair_constructor 202106L
 #define __cpp_lib_invoke_r 202106L
 #define __cpp_lib_ios_noreplace 202200L
-#define __cpp_lib_is_scoped_enum 202011L
 #if __cpp_lib_concepts
 # define __cpp_lib_monadic_optional 202110L
 #endif
@@ -321,6 +323,7 @@
 # define __cpp_lib_string_resize_and_overwrite 202110L
 #endif
 #define __cpp_lib_to_underlying 202102L
+#endif
 #endif // C++2b
 #endif // C++20
 #endif // C++17
