@@ -1297,7 +1297,13 @@ static const struct tune_params generic_tunings =
   &generic_branch_cost,
   &generic_approx_modes,
   SVE_NOT_IMPLEMENTED, /* sve_width  */
-  4, /* memmov_cost  */
+  { 4, /* load_int.  */
+    4, /* store_int.  */
+    4, /* load_fp.  */
+    4, /* store_fp.  */
+    4, /* load_pred.  */
+    4 /* store_pred.  */
+  }, /* memmov_cost.  */
   2, /* issue_rate  */
   (AARCH64_FUSE_AES_AESMC | AARCH64_FUSE_CMP_BRANCH), /* fusible_ops  */
   "16:12",	/* function_align.  */
@@ -1326,7 +1332,13 @@ static const struct tune_params cortexa35_tunings =
   &generic_branch_cost,
   &generic_approx_modes,
   SVE_NOT_IMPLEMENTED, /* sve_width  */
-  4, /* memmov_cost  */
+  { 4, /* load_int.  */
+    4, /* store_int.  */
+    4, /* load_fp.  */
+    4, /* store_fp.  */
+    4, /* load_pred.  */
+    4 /* store_pred.  */
+  }, /* memmov_cost.  */
   1, /* issue_rate  */
   (AARCH64_FUSE_AES_AESMC | AARCH64_FUSE_MOV_MOVK | AARCH64_FUSE_ADRP_ADD
    | AARCH64_FUSE_MOVK_MOVK | AARCH64_FUSE_ADRP_LDR), /* fusible_ops  */
@@ -1353,7 +1365,13 @@ static const struct tune_params cortexa53_tunings =
   &generic_branch_cost,
   &generic_approx_modes,
   SVE_NOT_IMPLEMENTED, /* sve_width  */
-  4, /* memmov_cost  */
+  { 4, /* load_int.  */
+    4, /* store_int.  */
+    4, /* load_fp.  */
+    4, /* store_fp.  */
+    4, /* load_pred.  */
+    4 /* store_pred.  */
+  }, /* memmov_cost.  */
   2, /* issue_rate  */
   (AARCH64_FUSE_AES_AESMC | AARCH64_FUSE_MOV_MOVK | AARCH64_FUSE_ADRP_ADD
    | AARCH64_FUSE_MOVK_MOVK | AARCH64_FUSE_ADRP_LDR), /* fusible_ops  */
@@ -1380,7 +1398,13 @@ static const struct tune_params cortexa57_tunings =
   &generic_branch_cost,
   &generic_approx_modes,
   SVE_NOT_IMPLEMENTED, /* sve_width  */
-  4, /* memmov_cost  */
+  { 4, /* load_int.  */
+    4, /* store_int.  */
+    4, /* load_fp.  */
+    4, /* store_fp.  */
+    4, /* load_pred.  */
+    4 /* store_pred.  */
+  }, /* memmov_cost.  */
   3, /* issue_rate  */
   (AARCH64_FUSE_AES_AESMC | AARCH64_FUSE_MOV_MOVK | AARCH64_FUSE_ADRP_ADD
    | AARCH64_FUSE_MOVK_MOVK), /* fusible_ops  */
@@ -1407,7 +1431,13 @@ static const struct tune_params cortexa72_tunings =
   &generic_branch_cost,
   &generic_approx_modes,
   SVE_NOT_IMPLEMENTED, /* sve_width  */
-  4, /* memmov_cost  */
+  { 4, /* load_int.  */
+    4, /* store_int.  */
+    4, /* load_fp.  */
+    4, /* store_fp.  */
+    4, /* load_pred.  */
+    4 /* store_pred.  */
+  }, /* memmov_cost.  */
   3, /* issue_rate  */
   (AARCH64_FUSE_AES_AESMC | AARCH64_FUSE_MOV_MOVK | AARCH64_FUSE_ADRP_ADD
    | AARCH64_FUSE_MOVK_MOVK), /* fusible_ops  */
@@ -1434,7 +1464,13 @@ static const struct tune_params cortexa73_tunings =
   &generic_branch_cost,
   &generic_approx_modes,
   SVE_NOT_IMPLEMENTED, /* sve_width  */
-  4, /* memmov_cost.  */
+  { 4, /* load_int.  */
+    4, /* store_int.  */
+    4, /* load_fp.  */
+    4, /* store_fp.  */
+    4, /* load_pred.  */
+    4 /* store_pred.  */
+  }, /* memmov_cost.  */
   2, /* issue_rate.  */
   (AARCH64_FUSE_AES_AESMC | AARCH64_FUSE_MOV_MOVK | AARCH64_FUSE_ADRP_ADD
    | AARCH64_FUSE_MOVK_MOVK | AARCH64_FUSE_ADRP_LDR), /* fusible_ops  */
@@ -1463,7 +1499,13 @@ static const struct tune_params exynosm1_tunings =
   &generic_branch_cost,
   &exynosm1_approx_modes,
   SVE_NOT_IMPLEMENTED, /* sve_width  */
-  4,	/* memmov_cost  */
+  { 4, /* load_int.  */
+    4, /* store_int.  */
+    4, /* load_fp.  */
+    4, /* store_fp.  */
+    4, /* load_pred.  */
+    4 /* store_pred.  */
+  }, /* memmov_cost.  */
   3,	/* issue_rate  */
   (AARCH64_FUSE_AES_AESMC), /* fusible_ops  */
   "4",	/* function_align.  */
@@ -1489,7 +1531,13 @@ static const struct tune_params thunderxt88_tunings =
   &generic_branch_cost,
   &generic_approx_modes,
   SVE_NOT_IMPLEMENTED, /* sve_width  */
-  6, /* memmov_cost  */
+  { 6, /* load_int.  */
+    6, /* store_int.  */
+    6, /* load_fp.  */
+    6, /* store_fp.  */
+    6, /* load_pred.  */
+    6 /* store_pred.  */
+  }, /* memmov_cost.  */
   2, /* issue_rate  */
   AARCH64_FUSE_ALU_BRANCH, /* fusible_ops  */
   "8",	/* function_align.  */
@@ -1515,7 +1563,13 @@ static const struct tune_params thunderx_tunings =
   &generic_branch_cost,
   &generic_approx_modes,
   SVE_NOT_IMPLEMENTED, /* sve_width  */
-  6, /* memmov_cost  */
+  { 6, /* load_int.  */
+    6, /* store_int.  */
+    6, /* load_fp.  */
+    6, /* store_fp.  */
+    6, /* load_pred.  */
+    6 /* store_pred.  */
+  }, /* memmov_cost.  */
   2, /* issue_rate  */
   AARCH64_FUSE_ALU_BRANCH, /* fusible_ops  */
   "8",	/* function_align.  */
@@ -1542,7 +1596,13 @@ static const struct tune_params tsv110_tunings =
   &generic_branch_cost,
   &generic_approx_modes,
   SVE_NOT_IMPLEMENTED, /* sve_width  */
-  4,    /* memmov_cost  */
+  { 4, /* load_int.  */
+    4, /* store_int.  */
+    4, /* load_fp.  */
+    4, /* store_fp.  */
+    4, /* load_pred.  */
+    4 /* store_pred.  */
+  }, /* memmov_cost.  */
   4,    /* issue_rate  */
   (AARCH64_FUSE_AES_AESMC | AARCH64_FUSE_ALU_BRANCH
    | AARCH64_FUSE_ALU_CBZ), /* fusible_ops  */
@@ -1569,7 +1629,13 @@ static const struct tune_params xgene1_tunings =
   &generic_branch_cost,
   &xgene1_approx_modes,
   SVE_NOT_IMPLEMENTED, /* sve_width  */
-  6, /* memmov_cost  */
+  { 6, /* load_int.  */
+    6, /* store_int.  */
+    6, /* load_fp.  */
+    6, /* store_fp.  */
+    6, /* load_pred.  */
+    6 /* store_pred.  */
+  }, /* memmov_cost.  */
   4, /* issue_rate  */
   AARCH64_FUSE_NOTHING, /* fusible_ops  */
   "16",	/* function_align.  */
@@ -1595,7 +1661,13 @@ static const struct tune_params emag_tunings =
   &generic_branch_cost,
   &xgene1_approx_modes,
   SVE_NOT_IMPLEMENTED,
-  6, /* memmov_cost  */
+  { 6, /* load_int.  */
+    6, /* store_int.  */
+    6, /* load_fp.  */
+    6, /* store_fp.  */
+    6, /* load_pred.  */
+    6 /* store_pred.  */
+  }, /* memmov_cost.  */
   4, /* issue_rate  */
   AARCH64_FUSE_NOTHING, /* fusible_ops  */
   "16",	/* function_align.  */
@@ -1621,7 +1693,13 @@ static const struct tune_params qdf24xx_tunings =
   &generic_branch_cost,
   &generic_approx_modes,
   SVE_NOT_IMPLEMENTED, /* sve_width  */
-  4, /* memmov_cost  */
+  { 4, /* load_int.  */
+    4, /* store_int.  */
+    4, /* load_fp.  */
+    4, /* store_fp.  */
+    4, /* load_pred.  */
+    4 /* store_pred.  */
+  }, /* memmov_cost.  */
   4, /* issue_rate  */
   (AARCH64_FUSE_MOV_MOVK | AARCH64_FUSE_ADRP_ADD
    | AARCH64_FUSE_MOVK_MOVK), /* fuseable_ops  */
@@ -1650,7 +1728,13 @@ static const struct tune_params saphira_tunings =
   &generic_branch_cost,
   &generic_approx_modes,
   SVE_NOT_IMPLEMENTED, /* sve_width  */
-  4, /* memmov_cost  */
+  { 4, /* load_int.  */
+    4, /* store_int.  */
+    4, /* load_fp.  */
+    4, /* store_fp.  */
+    4, /* load_pred.  */
+    4 /* store_pred.  */
+  }, /* memmov_cost.  */
   4, /* issue_rate  */
   (AARCH64_FUSE_MOV_MOVK | AARCH64_FUSE_ADRP_ADD
    | AARCH64_FUSE_MOVK_MOVK), /* fuseable_ops  */
@@ -1677,7 +1761,13 @@ static const struct tune_params thunderx2t99_tunings =
   &generic_branch_cost,
   &generic_approx_modes,
   SVE_NOT_IMPLEMENTED, /* sve_width  */
-  4, /* memmov_cost.  */
+  { 4, /* load_int.  */
+    4, /* store_int.  */
+    4, /* load_fp.  */
+    4, /* store_fp.  */
+    4, /* load_pred.  */
+    4 /* store_pred.  */
+  }, /* memmov_cost.  */
   4, /* issue_rate.  */
   (AARCH64_FUSE_ALU_BRANCH | AARCH64_FUSE_AES_AESMC
    | AARCH64_FUSE_ALU_CBZ), /* fusible_ops  */
@@ -1704,7 +1794,13 @@ static const struct tune_params thunderx3t110_tunings =
   &generic_branch_cost,
   &generic_approx_modes,
   SVE_NOT_IMPLEMENTED, /* sve_width  */
-  4, /* memmov_cost.  */
+  { 4, /* load_int.  */
+    4, /* store_int.  */
+    4, /* load_fp.  */
+    4, /* store_fp.  */
+    4, /* load_pred.  */
+    4 /* store_pred.  */
+  }, /* memmov_cost.  */
   6, /* issue_rate.  */
   (AARCH64_FUSE_ALU_BRANCH | AARCH64_FUSE_AES_AESMC
    | AARCH64_FUSE_ALU_CBZ), /* fusible_ops  */
@@ -1731,7 +1827,13 @@ static const struct tune_params neoversen1_tunings =
   &generic_branch_cost,
   &generic_approx_modes,
   SVE_NOT_IMPLEMENTED, /* sve_width  */
-  4, /* memmov_cost  */
+  { 4, /* load_int.  */
+    2, /* store_int.  */
+    5, /* load_fp.  */
+    2, /* store_fp.  */
+    4, /* load_pred.  */
+    4 /* store_pred.  */
+  }, /* memmov_cost.  */
   3, /* issue_rate  */
   (AARCH64_FUSE_AES_AESMC | AARCH64_FUSE_CMP_BRANCH), /* fusible_ops  */
   "32:16",	/* function_align.  */
@@ -1757,7 +1859,13 @@ static const struct tune_params ampere1_tunings =
   &generic_branch_cost,
   &generic_approx_modes,
   SVE_NOT_IMPLEMENTED, /* sve_width  */
-  4, /* memmov_cost  */
+  { 4, /* load_int.  */
+    4, /* store_int.  */
+    4, /* load_fp.  */
+    4, /* store_fp.  */
+    4, /* load_pred.  */
+    4 /* store_pred.  */
+  }, /* memmov_cost.  */
   4, /* issue_rate  */
   (AARCH64_FUSE_ADRP_ADD | AARCH64_FUSE_AES_AESMC |
    AARCH64_FUSE_MOV_MOVK | AARCH64_FUSE_MOVK_MOVK |
@@ -1932,7 +2040,13 @@ static const struct tune_params neoversev1_tunings =
   &generic_branch_cost,
   &generic_approx_modes,
   SVE_256, /* sve_width  */
-  4, /* memmov_cost  */
+  { 4, /* load_int.  */
+    1, /* store_int.  */
+    6, /* load_fp.  */
+    2, /* store_fp.  */
+    6, /* load_pred.  */
+    1 /* store_pred.  */
+  }, /* memmov_cost.  */
   3, /* issue_rate  */
   (AARCH64_FUSE_AES_AESMC | AARCH64_FUSE_CMP_BRANCH), /* fusible_ops  */
   "32:16",	/* function_align.  */
@@ -2063,7 +2177,13 @@ static const struct tune_params neoverse512tvb_tunings =
   &generic_branch_cost,
   &generic_approx_modes,
   SVE_128 | SVE_256, /* sve_width  */
-  4, /* memmov_cost  */
+  { 4, /* load_int.  */
+    1, /* store_int.  */
+    6, /* load_fp.  */
+    2, /* store_fp.  */
+    6, /* load_pred.  */
+    1 /* store_pred.  */
+  }, /* memmov_cost.  */
   3, /* issue_rate  */
   (AARCH64_FUSE_AES_AESMC | AARCH64_FUSE_CMP_BRANCH), /* fusible_ops  */
   "32:16",	/* function_align.  */
@@ -2245,7 +2365,13 @@ static const struct tune_params neoversen2_tunings =
   &generic_branch_cost,
   &generic_approx_modes,
   SVE_128, /* sve_width  */
-  4, /* memmov_cost  */
+  { 4, /* load_int.  */
+    1, /* store_int.  */
+    6, /* load_fp.  */
+    2, /* store_fp.  */
+    6, /* load_pred.  */
+    1 /* store_pred.  */
+  }, /* memmov_cost.  */
   3, /* issue_rate  */
   (AARCH64_FUSE_AES_AESMC | AARCH64_FUSE_CMP_BRANCH), /* fusible_ops  */
   "32:16",	/* function_align.  */
@@ -2274,7 +2400,13 @@ static const struct tune_params a64fx_tunings =
   &generic_branch_cost,
   &generic_approx_modes,
   SVE_512, /* sve_width  */
-  4, /* memmov_cost  */
+  { 4, /* load_int.  */
+    4, /* store_int.  */
+    4, /* load_fp.  */
+    4, /* store_fp.  */
+    4, /* load_pred.  */
+    4 /* store_pred.  */
+  }, /* memmov_cost.  */
   7, /* issue_rate  */
   (AARCH64_FUSE_AES_AESMC | AARCH64_FUSE_CMP_BRANCH), /* fusible_ops  */
   "32",	/* function_align.  */
@@ -14659,12 +14791,28 @@ aarch64_register_move_cost (machine_mode mode,
   return regmove_cost->FP2FP;
 }
 
+/* Implements TARGET_MEMORY_MOVE_COST.  */
 static int
-aarch64_memory_move_cost (machine_mode mode ATTRIBUTE_UNUSED,
-			  reg_class_t rclass ATTRIBUTE_UNUSED,
-			  bool in ATTRIBUTE_UNUSED)
+aarch64_memory_move_cost (machine_mode mode, reg_class_t rclass_i, bool in)
 {
-  return aarch64_tune_params.memmov_cost;
+  enum reg_class rclass = (enum reg_class) rclass_i;
+  if (GET_MODE_CLASS (mode) == MODE_VECTOR_BOOL
+      ? reg_classes_intersect_p (rclass, PR_REGS)
+      : reg_class_subset_p (rclass, PR_REGS))
+    return (in
+	    ? aarch64_tune_params.memmov_cost.load_pred
+	    : aarch64_tune_params.memmov_cost.store_pred);
+
+  if (VECTOR_MODE_P (mode) || FLOAT_MODE_P (mode)
+      ? reg_classes_intersect_p (rclass, FP_REGS)
+      : reg_class_subset_p (rclass, FP_REGS))
+    return (in
+	    ? aarch64_tune_params.memmov_cost.load_fp
+	    : aarch64_tune_params.memmov_cost.store_fp);
+
+  return (in
+	  ? aarch64_tune_params.memmov_cost.load_int
+	  : aarch64_tune_params.memmov_cost.store_int);
 }
 
 /* Implement TARGET_INIT_BUILTINS.  */
