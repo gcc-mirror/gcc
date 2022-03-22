@@ -37,7 +37,7 @@
 #include <bits/atomic_lockfree_defines.h>
 #include <bits/move.h>
 
-#if __cplusplus > 201703L
+#if __cplusplus > 201703L && _GLIBCXX_HOSTED
 #include <bits/atomic_wait.h>
 #endif
 
