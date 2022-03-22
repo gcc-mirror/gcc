@@ -7815,7 +7815,7 @@ Array_type::finish_backend_element(Gogo* gogo)
 // Return an expression for a pointer to the values in ARRAY.
 
 Expression*
-Array_type::get_value_pointer(Gogo*, Expression* array, bool is_lvalue) const
+Array_type::get_value_pointer(Gogo*, Expression* array) const
 {
   if (this->length() != NULL)
     {
@@ -7828,25 +7828,6 @@ Array_type::get_value_pointer(Gogo*, Expression* array, bool is_lvalue) const
     }
 
   // Slice.
-
-  if (is_lvalue)
-    {
-      Temporary_reference_expression* tref =
-          array->temporary_reference_expression();
-      Var_expression* ve = array->var_expression();
-      if (tref != NULL)
-        {
-          tref = tref->copy()->temporary_reference_expression();
-          tref->set_is_lvalue();
-          array = tref;
-        }
-      else if (ve != NULL)
-        {
-          ve = new Var_expression(ve->named_object(), ve->location());
-          array = ve;
-        }
-    }
-
   return Expression::make_slice_info(array,
                                      Expression::SLICE_INFO_VALUE_POINTER,
                                      array->location());
