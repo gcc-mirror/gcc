@@ -2,4 +2,4 @@
 
 /* { dg-do compile } */
 /* { dg-options "-march=amd -m32" } */
-/* { dg-error "bad value .'amd'. for '-march=' switch"  "" { target *-*-* } 0 } */
+/* { dg-error "bad value 'amd' for '-march=' switch"  "" { target *-*-* } 0 } */
