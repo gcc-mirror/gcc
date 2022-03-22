@@ -52,11 +52,17 @@ jobs:
       run: |
            cd gccrs-build; \
            make -j $(nproc) 2>&1 | tee log
-           
+
     - name: Check for new warnings
       run: |
-           grep 'warning:' gccrs-build/log | sort > log_warnings;
-           diff -U0 .github/bors_log_expected_warnings log_warnings 
+           cd gccrs-build
+           < log grep 'warning: ' | sort > log_warnings
+           if diff -U0 ../.github/bors_log_expected_warnings log_warnings; then
+               :
+           else
+               echo 'See <https://github.com/Rust-GCC/gccrs/pull/1026>.'
+               exit 1
+           fi >&2
 
     - name: Run Tests
       run: |
