@@ -1,3 +1,7 @@
+2022-03-21  Qian Jianhua  <qianjh@cn.fujitsu.com>
+
+	* c-ada-spec.cc: Change array length
+
 2022-03-19  Arthur Cohen  <arthur.cohen@embecosm.com>
 
 	* c-common.cc (c_family_tests): Call the new tests.

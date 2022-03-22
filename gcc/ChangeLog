@@ -1,3 +1,88 @@
+2022-03-21  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/105000
+	* common/config/i386/i386-common.cc
+	(OPTION_MASK_ISA2_GENERAL_REGS_ONLY_UNSET): Replace
+	OPTION_MASK_ISA2_AVX512F_UNSET with OPTION_MASK_ISA2_SSE_UNSET.
+
+2022-03-21  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/104998
+	* common/config/i386/cpuinfo.h (get_available_features): Pass
+	0x19 to __cpuid for bit_AESKLE.  Enable FEATURE_AESKLE only if
+	bit_AESKLE is set.
+
+2022-03-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR middle-end/104869
+	* rtl-ssa/accesses.h (clobber_group::prev_clobber): Declare.
+	(clobber_group::next_clobber): Likewise.
+	(def_lookup::prev_def): Rename to...
+	(def_lookup::last_def_of_prev_group): ...this.
+	(def_lookup::next_def): Rename to...
+	(def_lookup::first_def_of_next_group): ...this.
+	(def_lookup::matching_or_prev_def): Rename to...
+	(def_lookup::matching_set_or_last_def_of_prev_group): ...this.
+	(def_lookup::matching_or_next_def): Rename to...
+	(def_lookup::matching_set_or_first_def_of_next_group): ...this.
+	(def_lookup::prev_def): New function, taking the lookup insn as
+	argument.
+	(def_lookup::next_def): Likewise.
+	* rtl-ssa/member-fns.inl (def_lookup::prev_def): Rename to...
+	(def_lookup::last_def_of_prev_group): ...this.
+	(def_lookup::next_def): Rename to...
+	(def_lookup::first_def_of_next_group): ...this.
+	(def_lookup::matching_or_prev_def): Rename to...
+	(def_lookup::matching_set_or_last_def_of_prev_group): ...this.
+	(def_lookup::matching_or_next_def): Rename to...
+	(def_lookup::matching_set_or_first_def_of_next_group): ...this.
+	* rtl-ssa/movement.h (restrict_movement_for_dead_range): Update after
+	above renaming.
+	* rtl-ssa/accesses.cc (clobber_group::prev_clobber): New function.
+	(clobber_group::next_clobber): Likewise.
+	(def_lookup::prev_def): Likewise.
+	(def_lookup::next_def): Likewise.
+	(function_info::make_use_available): Pass the lookup insn to
+	def_lookup::prev_def and def_lookup::next_def.
+
+2022-03-21  Martin Liska  <mliska@suse.cz>
+
+	* doc/invoke.texi: Document min-pagesize parameter.
+
+2022-03-21  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-loop-niter.cc (estimate_numbers_of_iterations): Dump
+	we are estimating niter of loop.
+
+2022-03-21  Kito Cheng  <kito.cheng@sifive.com>
+
+	* common/config/riscv/riscv-common.cc (riscv_ext_flag_table):
+	Update flag name and mask name.
+	* config/riscv/riscv-c.cc (riscv_cpu_cpp_builtins): Define
+	misc macro for vector extensions.
+	* config/riscv/riscv-opts.h (MASK_VECTOR_EEW_32): Rename to ...
+	(MASK_VECTOR_ELEN_32): ... this.
+	(MASK_VECTOR_EEW_64): Rename to ...
+	(MASK_VECTOR_ELEN_64): ... this.
+	(MASK_VECTOR_EEW_FP_32): Rename to ...
+	(MASK_VECTOR_ELEN_FP_32): ... this.
+	(MASK_VECTOR_EEW_FP_64): Rename to ...
+	(MASK_VECTOR_ELEN_FP_64): ... this.
+	(TARGET_VECTOR_ELEN_32): New.
+	(TARGET_VECTOR_ELEN_64): Ditto.
+	(TARGET_VECTOR_ELEN_FP_32): Ditto.
+	(TARGET_VECTOR_ELEN_FP_64): Ditto.
+	(TARGET_MIN_VLEN): Ditto.
+	* config/riscv/riscv.opt (riscv_vector_eew_flags): Rename to ...
+	(riscv_vector_elen_flags): ... this.
+
+2022-03-21  Hongyu Wang  <hongyu.wang@intel.com>
+
+	PR target/104977
+	* config/i386/sse.md
+	(avx512fp16_fma<complexopname>sh_v8hf<mask_scalarcz_name><round_scalarcz_name>):
+	Correct round operand for intel dialect.
+
 2022-03-19  Arthur Cohen  <arthur.cohen@embecosm.com>
 
 	* diagnostic.cc (diagnostic_cc_tests): Rename to...

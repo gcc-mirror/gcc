@@ -1,3 +1,24 @@
+2022-03-21  Jason Merrill  <jason@redhat.com>
+
+	PR c++/58646
+	* init.cc (build_vec_init): Check for vla element type.
+
+2022-03-21  Jason Merrill  <jason@redhat.com>
+
+	PR c++/103337
+	PR c++/102740
+	PR c++/103299
+	PR c++/102538
+	* decl.cc (reshape_init_class): Avoid looking for designator
+	after we found it.
+	(reshape_init_r): Keep looking for designator.
+
+2022-03-21  Jason Merrill  <jason@redhat.com>
+
+	PR c++/101767
+	* decl.cc (reshape_init_class): Back out of anon struct
+	if a designator doesn't match.
+
 2022-03-18  Jason Merrill  <jason@redhat.com>
 
 	PR c++/92918

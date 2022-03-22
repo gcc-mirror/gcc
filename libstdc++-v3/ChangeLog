@@ -1,3 +1,9 @@
+2022-03-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libstdc++/104990
+	* include/bits/locale_facets_nonio.tcc (get): Don't check if do_get
+	isn't overloaded if __clang__ is defined.
+
 2022-03-18  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/104242
