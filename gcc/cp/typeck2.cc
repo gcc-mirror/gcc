@@ -1433,10 +1433,15 @@ massage_init_elt (tree type, tree init, int nested, int flags,
     new_flags |= LOOKUP_AGGREGATE_PAREN_INIT;
   init = digest_init_r (type, init, nested ? 2 : 1, new_flags, complain);
   /* When we defer constant folding within a statement, we may want to
-     defer this folding as well.  */
-  tree t = fold_non_dependent_init (init, complain);
-  if (TREE_CONSTANT (t))
-    init = t;
+     defer this folding as well.  Don't call this on CONSTRUCTORs because
+     their elements have already been folded, and we must avoid folding
+     the result of get_nsdmi.  */
+  if (TREE_CODE (init) != CONSTRUCTOR)
+    {
+      tree t = fold_non_dependent_init (init, complain);
+      if (TREE_CONSTANT (t))
+	init = t;
+    }
   return init;
 }
 
