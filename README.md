@@ -202,6 +202,45 @@ Please see the [Contributing to GCC](https://gcc.gnu.org/contribute.html) guide 
 Not all contributions must be code; we would love to see new test cases or bugs and issues to be reported. 
 Feel free to add any comments on open PRs
 
+
+## Continuous Integration
+
+When submitting (or updating) a [GitHub Pull Request](https://github.com/Rust-GCC/gccrs/pull/),
+several automated checks are run.
+Generally, a "green status" is necessary before merge.
+
+
+### Compiler Diagnostics
+
+That is, here, diagnostics emitted by the "initial" compiler used to build GCC/Rust.
+
+If building a native toolchain,
+GCC by default does a 3-stage bootstrap build (<https://gcc.gnu.org/install/configure.html>).
+In addition to making sure that GCC is able to reproduce itself bit-by-bit,
+this also means that stages 2+ are built with `-Werror`
+(turning most _warning_ into _error_ diagnostics; see `--enable-werror`,
+possibly enabled by default).
+This helps to catch a good number of bugs, because it enforces that GCC compiles without compiler diagnostics;
+it's a requirement for upstream patch submission (<https://gcc.gnu.org/contribute.html#testing>).
+
+GCC generally is only expected to be "warning-clean" without `--disable-bootstrap`
+(that is, default `--enable-bootstrap` for a native build),
+and not for the initial stage where it's using the "initial" compiler -- otherwise
+we're at the mercy of whatever "initial" compiler we're using.
+Doing a `--disable-bootstrap` build is much faster, of course, so we're often doing that:
+for example, per the instructions above, or in the standard CI.
+With that, we're missing out on the aspect that _enforces that GCC compiles without compiler diagnostics_.
+
+To encounter that, the default CI has a [_check for new warnings_ step](https://github.com/Rust-GCC/gccrs/pull/1026)
+that verifies in the CI `--disable-bootstrap` build configuration that no new warnings are introduced.
+If that step fails, it usually points out a new _warning_ you've introduced erroneously, and should address.
+Occasionally it means that simply the `.github/bors_log_expected_warnings` file needs to be updated,
+for example if due to any kind of "environmental changes" (for example, CI "initial" compiler changes).
+Unless diligently reproducing the CI configuration (in particular "initial" compiler, GCC version),
+it's not really feasible to reproduce this check locally.
+If in doubt, do a local `--enable-bootstrap` build, or submit your changes, and wait for the CI system's results.
+
+
 ## Community
 
 We can be found on all usual Rust channels such as Zulip, but we also have our own channels:
