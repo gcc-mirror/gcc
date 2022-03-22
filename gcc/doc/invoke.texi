@@ -421,14 +421,13 @@ Objective-C and Objective-C++ Dialects}.
 -fanalyzer-checker=@var{name} @gol
 -fno-analyzer-feasibility @gol
 -fanalyzer-fine-grained @gol
--fanalyzer-state-merge @gol
--fanalyzer-state-purge @gol
+-fno-analyzer-state-merge @gol
+-fno-analyzer-state-purge @gol
 -fanalyzer-transitivity @gol
 -fanalyzer-verbose-edges @gol
 -fanalyzer-verbose-state-changes @gol
 -fanalyzer-verbosity=@var{level} @gol
 -fdump-analyzer @gol
--fdump-analyzer-stderr @gol
 -fdump-analyzer-callgraph @gol
 -fdump-analyzer-exploded-graph @gol
 -fdump-analyzer-exploded-nodes @gol
@@ -438,6 +437,7 @@ Objective-C and Objective-C++ Dialects}.
 -fdump-analyzer-feasibility @gol
 -fdump-analyzer-json @gol
 -fdump-analyzer-state-purge @gol
+-fdump-analyzer-stderr @gol
 -fdump-analyzer-supergraph @gol
 -Wno-analyzer-double-fclose @gol
 -Wno-analyzer-double-free @gol
@@ -9659,22 +9659,24 @@ Enabling this option effectively enables the following warnings:
 -Wanalyzer-free-of-non-heap @gol
 -Wanalyzer-malloc-leak @gol
 -Wanalyzer-mismatching-deallocation @gol
--Wanalyzer-possible-null-argument @gol
--Wanalyzer-possible-null-dereference @gol
 -Wanalyzer-null-argument @gol
 -Wanalyzer-null-dereference @gol
+-Wanalyzer-possible-null-argument @gol
+-Wanalyzer-possible-null-dereference @gol
 -Wanalyzer-shift-count-negative @gol
 -Wanalyzer-shift-count-overflow @gol
 -Wanalyzer-stale-setjmp-buffer @gol
+@ignore
 -Wanalyzer-tainted-allocation-size @gol
 -Wanalyzer-tainted-array-index @gol
 -Wanalyzer-tainted-divisor @gol
 -Wanalyzer-tainted-offset @gol
 -Wanalyzer-tainted-size @gol
+@end ignore
 -Wanalyzer-unsafe-call-within-signal-handler @gol
 -Wanalyzer-use-after-free @gol
--Wanalyzer-use-of-uninitialized-value @gol
 -Wanalyzer-use-of-pointer-in-stale-stack-frame @gol
+-Wanalyzer-use-of-uninitialized-value @gol
 -Wanalyzer-write-to-const @gol
 -Wanalyzer-write-to-string-literal @gol
 }
@@ -10014,6 +10016,25 @@ Some checkers are disabled by default (even with @option{-fanalyzer}),
 such as the @code{taint} checker that implements
 @option{-Wanalyzer-tainted-array-index}, and this option is required
 to enable them.
+
+@emph{Note:} currently, @option{-fanalyzer-checker=taint} disables the
+following warnings from @option{-fanalyzer}:
+
+@gccoptlist{ @gol
+-Wanalyzer-double-fclose @gol
+-Wanalyzer-double-free @gol
+-Wanalyzer-exposure-through-output-file @gol
+-Wanalyzer-file-leak @gol
+-Wanalyzer-free-of-non-heap @gol
+-Wanalyzer-malloc-leak @gol
+-Wanalyzer-mismatching-deallocation @gol
+-Wanalyzer-null-argument @gol
+-Wanalyzer-null-dereference @gol
+-Wanalyzer-possible-null-argument @gol
+-Wanalyzer-possible-null-dereference @gol
+-Wanalyzer-unsafe-call-within-signal-handler @gol
+-Wanalyzer-use-after-free @gol
+}
 
 @item -fno-analyzer-feasibility
 @opindex fanalyzer-feasibility
