@@ -963,6 +963,20 @@ transcribe_context (MacroExpander::ContextType ctx,
     }
 }
 
+static std::string
+tokens_to_str (std::vector<std::unique_ptr<AST::Token>> &tokens)
+{
+  std::string str;
+  if (!tokens.empty ())
+    {
+      str += tokens[0]->as_string ();
+      for (size_t i = 1; i < tokens.size (); i++)
+	str += " " + tokens[i]->as_string ();
+    }
+
+  return str;
+}
+
 AST::ASTFragment
 MacroExpander::transcribe_rule (
   AST::MacroRule &match_rule, AST::DelimTokenTree &invoc_token_tree,
@@ -982,9 +996,8 @@ MacroExpander::transcribe_rule (
   std::vector<std::unique_ptr<AST::Token>> substituted_tokens
     = substitute_context.substitute_tokens ();
 
-  // handy for debugging
-  // for (auto &tok : substituted_tokens)
-  //   rust_debug ("[tok] %s", tok->as_string ().c_str ());
+  rust_debug ("substituted tokens: %s",
+	      tokens_to_str (substituted_tokens).c_str ());
 
   // parse it to an ASTFragment
   MacroInvocLexer lex (std::move (substituted_tokens));
