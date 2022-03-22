@@ -48,13 +48,11 @@ jobs:
                --enable-multilib
 
     - name: Build
+      shell: bash
       run: |
            cd gccrs-build; \
-           make -j $(nproc) > log 2>&1
+           make -j $(nproc) 2>&1 | tee log
            
-    - name: Build logs
-      run: cat gccrs-build/log
-
     - name: Check for new warnings
       run: |
            grep 'warning:' gccrs-build/log | sort > log_warnings;
