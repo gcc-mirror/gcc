@@ -3068,6 +3068,7 @@ expand_call (tree exp, rtx target, int ignore)
   for (pass = try_tail_call ? 0 : 1; pass < 2; pass++)
     {
       int sibcall_failure = 0;
+      bool normal_failure = false;
       /* We want to emit any pending stack adjustments before the tail
 	 recursion "call".  That way we know any adjustment after the tail
 	 recursion call can be ignored if we indeed use the tail
@@ -3448,7 +3449,10 @@ expand_call (tree exp, rtx target, int ignore)
 	        {
 	          sorry ("passing too large argument on stack");
 		  /* Don't worry about stack clean-up.  */
-		  flags |= ECF_NORETURN;
+		  if (pass == 0)
+		    sibcall_failure = 1;
+		  else
+		    normal_failure = true;
 		  continue;
 		}
 
@@ -3905,9 +3909,12 @@ expand_call (tree exp, rtx target, int ignore)
 
 	  /* Verify that we've deallocated all the stack we used.  */
 	  gcc_assert ((flags & ECF_NORETURN)
+		      || normal_failure
 		      || known_eq (old_stack_allocated,
 				   stack_pointer_delta
 				   - pending_stack_adjust));
+	  if (normal_failure)
+	    normal_call_insns = NULL;
 	}
 
       /* If something prevents making this a sibling call,
