@@ -30,18 +30,14 @@ SubstituteCtx::substitute_metavar (std::unique_ptr<AST::Token> &metavar)
   return expanded;
 }
 
-std::vector<std::unique_ptr<AST::Token>>
-SubstituteCtx::substitute_repetition (
-  size_t pattern_start, size_t pattern_end,
-  std::unique_ptr<AST::Token> separator_token)
+bool
+SubstituteCtx::check_repetition_amount (size_t pattern_start,
+					size_t pattern_end,
+					size_t &expected_repetition_amount)
 {
-  rust_assert (pattern_end < macro.size ());
+  bool first_fragment_found = false;
+  bool is_valid = true;
 
-  std::vector<std::unique_ptr<AST::Token>> expanded;
-
-  // Find the first fragment and get the amount of repetitions that we should
-  // perform
-  size_t repeat_amount = 0;
   for (size_t i = pattern_start; i < pattern_end; i++)
     {
       if (macro.at (i)->get_id () == DOLLAR_SIGN)
@@ -59,17 +55,48 @@ SubstituteCtx::substitute_repetition (
 		  rust_error_at (frag_token->get_locus (),
 				 "metavar %s used in repetition does not exist",
 				 frag_token->get_str ().c_str ());
-		  // FIXME:
-		  return expanded;
+
+		  is_valid = false;
 		}
 
-	      // FIXME: Refactor, ugly
-	      repeat_amount = it->second.get_match_amount ();
+	      size_t repeat_amount = it->second.get_match_amount ();
+	      if (!first_fragment_found)
+		{
+		  first_fragment_found = true;
+		  expected_repetition_amount = repeat_amount;
+		}
+	      else
+		{
+		  if (repeat_amount != expected_repetition_amount)
+		    {
+		      rust_error_at (
+			frag_token->get_locus (),
+			"different amount of matches used in merged "
+			"repetitions: expected %ld, got %ld",
+			expected_repetition_amount, repeat_amount);
+		      is_valid = false;
+		    }
+		}
 	    }
 	}
     }
 
+  return is_valid;
+}
+
+std::vector<std::unique_ptr<AST::Token>>
+SubstituteCtx::substitute_repetition (
+  size_t pattern_start, size_t pattern_end,
+  std::unique_ptr<AST::Token> separator_token)
+{
+  rust_assert (pattern_end < macro.size ());
+
+  size_t repeat_amount = 0;
+  if (!check_repetition_amount (pattern_start, pattern_end, repeat_amount))
+    return {};
+
   rust_debug ("repetition amount to use: %lu", repeat_amount);
+  std::vector<std::unique_ptr<AST::Token>> expanded;
   std::vector<std::unique_ptr<AST::Token>> new_macro;
 
   // We want to generate a "new macro" to substitute with. This new macro
