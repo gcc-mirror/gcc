@@ -11,6 +11,10 @@ on:
 jobs:
   build-and-check:
 
+    env:
+      # Force locale, in particular for reproducible results re '.github/bors_log_expected_warnings' (see below).
+      LC_ALL: C
+
     runs-on: ubuntu-latest
 
     steps:
@@ -46,7 +50,7 @@ jobs:
     - name: Build
       run: |
            cd gccrs-build; \
-           LC_ALL=C make -j $(nproc) > log 2>&1;
+           make -j $(nproc) > log 2>&1
            
     - name: Build logs
       run: cat gccrs-build/log
