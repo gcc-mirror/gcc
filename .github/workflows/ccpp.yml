@@ -13,7 +13,7 @@ jobs:
 
     env:
       # Force locale, in particular for reproducible results re '.github/bors_log_expected_warnings' (see below).
-      LC_ALL: C
+      LC_ALL: C.UTF-8
 
     runs-on: ubuntu-latest
 
