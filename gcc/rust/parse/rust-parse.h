@@ -702,6 +702,18 @@ private:
 std::string
 extract_module_path (const AST::AttrVec &inner_attrs,
 		     const AST::AttrVec &outer_attrs, const std::string &name);
+
+/**
+ * Check if a MacroMatch is allowed to follow the last parsed MacroMatch.
+ *
+ * @param last_match Last matcher parsed before the current match
+ * @param match Current matcher to check
+ *
+ * @return true if the follow-up is valid, false otherwise
+ */
+bool
+is_match_compatible (AST::MacroMatch &last_match,
+		     AST::MacroMatch &current_match);
 } // namespace Rust
 
 // as now template, include implementations of all methods

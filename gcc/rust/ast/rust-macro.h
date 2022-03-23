@@ -28,60 +28,128 @@ namespace AST {
 // Decls as definitions moved to rust-ast.h
 class MacroItem;
 
-enum MacroFragSpec
+class MacroFragSpec
 {
-  BLOCK,
-  EXPR,
-  IDENT,
-  ITEM,
-  LIFETIME,
-  LITERAL,
-  META,
-  PAT,
-  PATH,
-  STMT,
-  TT,
-  TY,
-  VIS,
-  INVALID // not really a specifier, but used to mark invalid one passed in
-};
+public:
+  enum Kind
+  {
+    BLOCK,
+    EXPR,
+    IDENT,
+    ITEM,
+    LIFETIME,
+    LITERAL,
+    META,
+    PAT,
+    PATH,
+    STMT,
+    TT,
+    TY,
+    VIS,
+    INVALID // not really a specifier, but used to mark invalid one passed in
+  };
 
-inline MacroFragSpec
-get_frag_spec_from_str (std::string str)
-{
-  if (str == "block")
-    return BLOCK;
-  else if (str == "expr")
-    return EXPR;
-  else if (str == "ident")
-    return IDENT;
-  else if (str == "item")
-    return ITEM;
-  else if (str == "lifetime")
-    return LIFETIME;
-  else if (str == "literal")
-    return LITERAL;
-  else if (str == "meta")
-    return META;
-  else if (str == "pat")
-    return PAT;
-  else if (str == "path")
-    return PATH;
-  else if (str == "stmt")
-    return STMT;
-  else if (str == "tt")
-    return TT;
-  else if (str == "ty")
-    return TY;
-  else if (str == "vis")
-    return VIS;
-  else
-    {
-      // error_at("invalid string '%s' used as fragment specifier",
-      // str->c_str());
-      return INVALID;
-    }
-}
+  MacroFragSpec (Kind kind) : kind (kind) {}
+
+  static MacroFragSpec get_frag_spec_from_str (const std::string &str)
+  {
+    if (str == "block")
+      return MacroFragSpec (BLOCK);
+    else if (str == "expr")
+      return MacroFragSpec (EXPR);
+    else if (str == "ident")
+      return MacroFragSpec (IDENT);
+    else if (str == "item")
+      return MacroFragSpec (ITEM);
+    else if (str == "lifetime")
+      return MacroFragSpec (LIFETIME);
+    else if (str == "literal")
+      return MacroFragSpec (LITERAL);
+    else if (str == "meta")
+      return MacroFragSpec (META);
+    else if (str == "pat" || str == "pat_param")
+      return MacroFragSpec (PAT);
+    else if (str == "path")
+      return MacroFragSpec (PATH);
+    else if (str == "stmt")
+      return MacroFragSpec (STMT);
+    else if (str == "tt")
+      return MacroFragSpec (TT);
+    else if (str == "ty")
+      return MacroFragSpec (TY);
+    else if (str == "vis")
+      return MacroFragSpec (VIS);
+    else
+      {
+	// error_at("invalid string '%s' used as fragment specifier",
+	// str->c_str()));
+	return MacroFragSpec (INVALID);
+      }
+  }
+
+  Kind get_kind () const { return kind; }
+  bool is_error () const { return kind == Kind::INVALID; }
+
+  // Converts a frag spec enum item to a string form.
+  std::string as_string () const
+  {
+    switch (kind)
+      {
+      case BLOCK:
+	return "block";
+      case EXPR:
+	return "expr";
+      case IDENT:
+	return "ident";
+      case ITEM:
+	return "item";
+      case LIFETIME:
+	return "lifetime";
+      case LITERAL:
+	return "literal";
+      case META:
+	return "meta";
+      case PAT:
+	return "pat";
+      case PATH:
+	return "path";
+      case STMT:
+	return "stmt";
+      case TT:
+	return "tt";
+      case TY:
+	return "ty";
+      case VIS:
+	return "vis";
+      case INVALID:
+	return "INVALID_FRAG_SPEC";
+      default:
+	return "ERROR_MARK_STRING - unknown frag spec";
+      }
+  }
+
+  bool has_follow_set_restrictions ()
+  {
+    switch (kind)
+      {
+      case EXPR:
+      case STMT:
+	// FIXME: Add the following cases once we can handle them properly
+	// in `is_match_compatible()`
+	// case PAT:
+	// // case PAT_PARAM: FIXME: Doesn't <metavar>:pat_param exist?
+	// case PATH:
+	// case TY:
+	// case VIS:
+	return true;
+      default:
+	return false;
+      }
+  }
+
+private:
+  Kind kind;
+};
 
 // A macro match that has an identifier and fragment spec
 class MacroMatchFragment : public MacroMatch
@@ -96,12 +164,17 @@ public:
   {}
 
   // Returns whether macro match fragment is in an error state.
-  bool is_error () const { return frag_spec == INVALID; }
+  bool is_error () const
+  {
+    return frag_spec.get_kind () == MacroFragSpec::INVALID;
+  }
 
   // Creates an error state macro match fragment.
   static MacroMatchFragment create_error (Location locus)
   {
-    return MacroMatchFragment (std::string (""), INVALID, locus);
+    return MacroMatchFragment (std::string (""),
+			       MacroFragSpec (MacroFragSpec::Kind::INVALID),
+			       locus);
   }
 
   std::string as_string () const override;

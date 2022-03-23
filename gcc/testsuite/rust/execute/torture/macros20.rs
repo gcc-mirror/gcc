@@ -1,6 +1,6 @@
 macro_rules! add {
-    ($e:expr big_tok $($es:expr) big_tok *) => {
-        $e + add!($($es) big_tok *)
+    ($e:expr , $($es:expr) , *) => {
+        $e + add!($($es) , *)
     };
     ($e:expr) => {
         $e
@@ -8,7 +8,7 @@ macro_rules! add {
 }
 
 fn main() -> i32 {
-    let a = add!(15 big_tok 2 big_tok 9); // 26
+    let a = add!(15, 2, 9); // 26
 
     a - 26
 }

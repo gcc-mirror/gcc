@@ -439,7 +439,7 @@ bool
 MacroExpander::match_fragment (Parser<MacroInvocLexer> &parser,
 			       AST::MacroMatchFragment &fragment)
 {
-  switch (fragment.get_frag_spec ())
+  switch (fragment.get_frag_spec ().get_kind ())
     {
     case AST::MacroFragSpec::EXPR:
       parser.parse_expr ();
