@@ -2081,7 +2081,7 @@ region_model::get_lvalue_1 (path_var pv, region_model_context *ctxt) const
 	int stack_index = pv.m_stack_depth;
 	const frame_region *frame = get_frame_at_index (stack_index);
 	gcc_assert (frame);
-	return frame->get_region_for_local (m_mgr, expr);
+	return frame->get_region_for_local (m_mgr, expr, ctxt);
       }
 
     case COMPONENT_REF:
@@ -3696,20 +3696,11 @@ void
 region_model::update_for_return_gcall (const gcall *call_stmt,
 				       region_model_context *ctxt)
 {
-  /* Get the region for the result of the call, within the caller frame.  */
-  const region *result_dst_reg = NULL;
+  /* Get the lvalue for the result of the call, passing it to pop_frame,
+     so that pop_frame can determine the region with respect to the
+     *caller* frame.  */
   tree lhs = gimple_call_lhs (call_stmt);
-  if (lhs)
-    {
-      /* Normally we access the top-level frame, which is:
-         path_var (expr, get_stack_depth () - 1)
-         whereas here we need the caller frame, hence "- 2" here.  */
-      gcc_assert (get_stack_depth () >= 2);
-      result_dst_reg = get_lvalue (path_var (lhs, get_stack_depth () - 2),
-           			   ctxt);
-    }
-
-  pop_frame (result_dst_reg, NULL, ctxt);
+  pop_frame (lhs, NULL, ctxt);
 }
 
 /* Extract calling information from the superedge and update the model for the 
@@ -3928,8 +3919,9 @@ region_model::get_current_function () const
 
 /* Pop the topmost frame_region from this region_model's stack;
 
-   If RESULT_DST_REG is non-null, copy any return value from the frame
-   into RESULT_DST_REG's region.
+   If RESULT_LVALUE is non-null, copy any return value from the frame
+   into the corresponding region (evaluated with respect to the *caller*
+   frame, rather than the called frame).
    If OUT_RESULT is non-null, copy any return value from the frame
    into *OUT_RESULT.
 
@@ -3938,7 +3930,7 @@ region_model::get_current_function () const
    POISON_KIND_POPPED_STACK svalues.  */
 
 void
-region_model::pop_frame (const region *result_dst_reg,
+region_model::pop_frame (tree result_lvalue,
 			 const svalue **out_result,
 			 region_model_context *ctxt)
 {
@@ -3948,17 +3940,24 @@ region_model::pop_frame (const region *result_dst_reg,
   const frame_region *frame_reg = m_current_frame;
   tree fndecl = m_current_frame->get_function ()->decl;
   tree result = DECL_RESULT (fndecl);
+  const svalue *retval = NULL;
   if (result && TREE_TYPE (result) != void_type_node)
     {
-      const svalue *retval = get_rvalue (result, ctxt);
-      if (result_dst_reg)
-	set_value (result_dst_reg, retval, ctxt);
+      retval = get_rvalue (result, ctxt);
       if (out_result)
 	*out_result = retval;
     }
 
   /* Pop the frame.  */
   m_current_frame = m_current_frame->get_calling_frame ();
+
+  if (result_lvalue && retval)
+    {
+      /* Compute result_dst_reg using RESULT_LVALUE *after* popping
+	 the frame, but before poisoning pointers into the old frame.  */
+      const region *result_dst_reg = get_lvalue (result_lvalue, ctxt);
+      set_value (result_dst_reg, retval, ctxt);
+    }
 
   unbind_region_and_descendents (frame_reg,POISON_KIND_POPPED_STACK);
 }
@@ -4366,8 +4365,8 @@ rejected_ranges_constraint::dump_to_pp (pretty_printer *pp) const
 
 /* engine's ctor.  */
 
-engine::engine (logger *logger)
-: m_mgr (logger)
+engine::engine (const supergraph *sg, logger *logger)
+: m_sg (sg), m_mgr (logger)
 {
 }
 
@@ -5138,16 +5137,20 @@ test_stack_frames ()
   tree a = build_decl (UNKNOWN_LOCATION, PARM_DECL,
 		       get_identifier ("a"),
 		       integer_type_node);
+  DECL_CONTEXT (a) = parent_fndecl;
   tree b = build_decl (UNKNOWN_LOCATION, PARM_DECL,
 		       get_identifier ("b"),
 		       integer_type_node);
+  DECL_CONTEXT (b) = parent_fndecl;
   /* "x" and "y" in a child frame.  */
   tree x = build_decl (UNKNOWN_LOCATION, PARM_DECL,
 		       get_identifier ("x"),
 		       integer_type_node);
+  DECL_CONTEXT (x) = child_fndecl;
   tree y = build_decl (UNKNOWN_LOCATION, PARM_DECL,
 		       get_identifier ("y"),
 		       integer_type_node);
+  DECL_CONTEXT (y) = child_fndecl;
 
   /* "p" global.  */
   tree p = build_global_decl ("p", ptr_type_node);
@@ -5258,6 +5261,7 @@ test_get_representative_path_var ()
   tree n = build_decl (UNKNOWN_LOCATION, PARM_DECL,
 		       get_identifier ("n"),
 		       integer_type_node);
+  DECL_CONTEXT (n) = fndecl;
 
   region_model_manager mgr;
   test_region_model_context ctxt;
@@ -5470,12 +5474,14 @@ test_state_merging ()
   tree a = build_decl (UNKNOWN_LOCATION, PARM_DECL,
 		       get_identifier ("a"),
 		       integer_type_node);
+  DECL_CONTEXT (a) = test_fndecl;
   tree addr_of_a = build1 (ADDR_EXPR, ptr_type_node, a);
 
   /* Param "q", a pointer.  */
   tree q = build_decl (UNKNOWN_LOCATION, PARM_DECL,
 		       get_identifier ("q"),
 		       ptr_type_node);
+  DECL_CONTEXT (q) = test_fndecl;
 
   program_point point (program_point::origin ());
   region_model_manager mgr;

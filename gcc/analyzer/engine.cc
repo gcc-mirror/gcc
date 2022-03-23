@@ -5717,10 +5717,10 @@ impl_run_checkers (logger *logger)
   FOR_EACH_FUNCTION_WITH_GIMPLE_BODY (node)
     node->get_untransformed_body ();
 
-  engine eng (logger);
-
   /* Create the supergraph.  */
   supergraph sg (logger);
+
+  engine eng (&sg, logger);
 
   state_purge_map *purge_map = NULL;
 

@@ -312,8 +312,10 @@ public:
   int get_index () const { return m_index; }
   int get_stack_depth () const { return m_index + 1; }
 
-  const decl_region *get_region_for_local (region_model_manager *mgr,
-					   tree expr) const;
+  const decl_region *
+  get_region_for_local (region_model_manager *mgr,
+			tree expr,
+			const region_model_context *ctxt) const;
 
   unsigned get_num_locals () const { return m_locals.elements (); }
 

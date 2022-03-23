@@ -334,6 +334,15 @@ struct link
   boxed_ptr m_ptr;
 };
 
+boxed_ptr test_29 (void)
+{
+  boxed_ptr res = boxed_malloc (sizeof (struct link));
+  if (!res.value)
+    return boxed_null;
+  ((struct link *)res.value)->m_ptr = boxed_malloc (sizeof (struct link));
+  return res;
+}
+
 void test_31 (void)
 {
   struct link tmp;
