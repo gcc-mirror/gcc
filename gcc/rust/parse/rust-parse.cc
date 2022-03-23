@@ -105,8 +105,8 @@ contains (std::vector<T> &vec, T elm)
  */
 
 template <typename T>
-static T *
-get_back_ptr (std::vector<std::unique_ptr<T>> &values)
+static const T *
+get_back_ptr (const std::vector<std::unique_ptr<T>> &values)
 {
   if (values.empty ())
     return nullptr;
@@ -115,8 +115,8 @@ get_back_ptr (std::vector<std::unique_ptr<T>> &values)
 }
 
 template <typename T>
-static T *
-get_front_ptr (std::vector<std::unique_ptr<T>> &values)
+static const T *
+get_front_ptr (const std::vector<std::unique_ptr<T>> &values)
 {
   if (values.empty ())
     return nullptr;
@@ -151,8 +151,8 @@ peculiar_fragment_match_compatible_fragment (
 }
 
 static bool
-peculiar_fragment_match_compatible (AST::MacroMatchFragment &last_match,
-				    AST::MacroMatch &match)
+peculiar_fragment_match_compatible (const AST::MacroMatchFragment &last_match,
+				    const AST::MacroMatch &match)
 {
   static std::unordered_map<AST::MacroFragSpec::Kind, std::vector<TokenId>>
     follow_set
@@ -208,7 +208,7 @@ peculiar_fragment_match_compatible (AST::MacroMatchFragment &last_match,
   switch (match.get_macro_match_type ())
     {
       case AST::MacroMatch::Tok: {
-	auto tok = static_cast<AST::Token *> (&match);
+	auto tok = static_cast<const AST::Token *> (&match);
 	if (contains (allowed_toks, tok->get_id ()))
 	  return true;
 	kind_str = "token `"
@@ -218,7 +218,8 @@ peculiar_fragment_match_compatible (AST::MacroMatchFragment &last_match,
       }
       break;
       case AST::MacroMatch::Repetition: {
-	auto repetition = static_cast<AST::MacroMatchRepetition *> (&match);
+	auto repetition
+	  = static_cast<const AST::MacroMatchRepetition *> (&match);
 	auto &matches = repetition->get_matches ();
 	auto first_frag = get_front_ptr (matches);
 	if (first_frag)
@@ -226,7 +227,7 @@ peculiar_fragment_match_compatible (AST::MacroMatchFragment &last_match,
 	break;
       }
       case AST::MacroMatch::Matcher: {
-	auto matcher = static_cast<AST::MacroMatcher *> (&match);
+	auto matcher = static_cast<const AST::MacroMatcher *> (&match);
 	auto first_token = matcher->get_delim_type ();
 	TokenId delim_id;
 	switch (first_token)
@@ -250,7 +251,7 @@ peculiar_fragment_match_compatible (AST::MacroMatchFragment &last_match,
       }
       case AST::MacroMatch::Fragment: {
 	auto last_spec = last_match.get_frag_spec ();
-	auto fragment = static_cast<AST::MacroMatchFragment *> (&match);
+	auto fragment = static_cast<const AST::MacroMatchFragment *> (&match);
 	if (last_spec.has_follow_set_fragment_restrictions ())
 	  return peculiar_fragment_match_compatible_fragment (
 	    last_spec, fragment->get_frag_spec (), match.get_match_locus ());
@@ -273,9 +274,10 @@ peculiar_fragment_match_compatible (AST::MacroMatchFragment &last_match,
 }
 
 bool
-is_match_compatible (AST::MacroMatch &last_match, AST::MacroMatch &match)
+is_match_compatible (const AST::MacroMatch &last_match,
+		     const AST::MacroMatch &match)
 {
-  AST::MacroMatch *new_last = nullptr;
+  const AST::MacroMatch *new_last = nullptr;
 
   // We want to "extract" the concerning matches. In cases such as matchers and
   // repetitions, we actually store multiple matchers, but are only concerned
@@ -290,7 +292,8 @@ is_match_compatible (AST::MacroMatch &last_match, AST::MacroMatch &match)
       // last match (or its actual last component), and it is a fragment, it
       // may contain some follow up restrictions.
       case AST::MacroMatch::Fragment: {
-	auto fragment = static_cast<AST::MacroMatchFragment *> (&last_match);
+	auto fragment
+	  = static_cast<const AST::MacroMatchFragment *> (&last_match);
 	if (fragment->get_frag_spec ().has_follow_set_restrictions ())
 	  return peculiar_fragment_match_compatible (*fragment, match);
 	else
@@ -300,7 +303,7 @@ is_match_compatible (AST::MacroMatch &last_match, AST::MacroMatch &match)
 	// A repetition on the left hand side means we want to make sure the
 	// last match of the repetition is compatible with the new match
 	auto repetition
-	  = static_cast<AST::MacroMatchRepetition *> (&last_match);
+	  = static_cast<const AST::MacroMatchRepetition *> (&last_match);
 	new_last = get_back_ptr (repetition->get_matches ());
 	// If there are no matches in the matcher, then it can be followed by
 	// anything

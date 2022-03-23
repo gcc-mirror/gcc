@@ -291,6 +291,10 @@ public:
   MacroRepOp get_op () const { return op; }
   const std::unique_ptr<MacroRepSep> &get_sep () const { return sep; }
   std::vector<std::unique_ptr<MacroMatch> > &get_matches () { return matches; }
+  const std::vector<std::unique_ptr<MacroMatch> > &get_matches () const
+  {
+    return matches;
+  }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -366,6 +370,10 @@ public:
 
   DelimType get_delim_type () const { return delim_type; }
   std::vector<std::unique_ptr<MacroMatch> > &get_matches () { return matches; }
+  const std::vector<std::unique_ptr<MacroMatch> > &get_matches () const
+  {
+    return matches;
+  }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather

@@ -1750,6 +1750,10 @@ Parser<ManagedTokenSource>::parse_macro_matcher ()
 
   // parse actual macro matches
   std::vector<std::unique_ptr<AST::MacroMatch>> matches;
+  // Set of possible preceding macro matches to make sure follow-set
+  // restrictions are respected.
+  // TODO: Consider using std::reference_wrapper instead of raw pointers?
+  std::vector<const AST::MacroMatch *> last_matches;
 
   t = lexer.peek_token ();
   // parse token trees until the initial delimiter token is found again
@@ -1770,9 +1774,30 @@ Parser<ManagedTokenSource>::parse_macro_matcher ()
 
       if (matches.size () > 0)
 	{
-	  auto &last_match = matches.back ();
-	  if (!is_match_compatible (*last_match, *match))
-	    return AST::MacroMatcher::create_error (match->get_match_locus ());
+	  const auto *last_match = matches.back ().get ();
+
+	  // We want to check if we are dealing with a zeroable repetition
+	  bool zeroable = false;
+	  if (last_match->get_macro_match_type ()
+	      == AST::MacroMatch::MacroMatchType::Repetition)
+	    {
+	      auto repetition
+		= static_cast<const AST::MacroMatchRepetition *> (last_match);
+
+	      if (repetition->get_op ()
+		  != AST::MacroMatchRepetition::MacroRepOp::ONE_OR_MORE)
+		zeroable = true;
+	    }
+
+	  if (!zeroable)
+	    last_matches.clear ();
+
+	  last_matches.emplace_back (last_match);
+
+	  for (auto last : last_matches)
+	    if (!is_match_compatible (*last, *match))
+	      return AST::MacroMatcher::create_error (
+		match->get_match_locus ());
 	}
 
       matches.push_back (std::move (match));
