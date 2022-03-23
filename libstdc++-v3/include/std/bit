@@ -73,6 +73,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     [[nodiscard]]
     constexpr _To
     bit_cast(const _From& __from) noexcept
+#ifdef __cpp_concepts
+    requires (sizeof(_To) == sizeof(_From))
+      && __is_trivially_copyable(_To) && __is_trivially_copyable(_From)
+#endif
     {
       return __builtin_bit_cast(_To, __from);
     }
