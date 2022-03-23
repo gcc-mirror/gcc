@@ -1,3 +1,160 @@
+2022-03-22  Tom de Vries  <tdevries@suse.de>
+
+	PR target/104925
+	* config/nvptx/nvptx.md (define_insn "nvptx_uniform_warp_check"):
+	Use % as register prefix.
+
+2022-03-22  Tom de Vries  <tdevries@suse.de>
+
+	* config/nvptx/nvptx.cc (nvptx_scalar_mode_supported_p)
+	(nvptx_libgcc_floating_mode_supported_p): Only enable HFmode for
+	mexperimental.
+
+2022-03-22  Tom de Vries  <tdevries@suse.de>
+
+	* config/nvptx/nvptx.opt (mexperimental): New option.
+
+2022-03-22  Tom de Vries  <tdevries@suse.de>
+
+	PR target/104957
+	* config/nvptx/nvptx-protos.h (nvptx_asm_output_def_from_decls): Declare.
+	* config/nvptx/nvptx.cc (write_fn_proto_1): Don't add function marker
+	for alias.
+	(SET_ASM_OP, NVPTX_ASM_OUTPUT_DEF): New macro def.
+	(nvptx_asm_output_def_from_decls): New function.
+	* config/nvptx/nvptx.h (ASM_OUTPUT_DEF): New macro def, define to
+	gcc_unreachable ().
+	(ASM_OUTPUT_DEF_FROM_DECLS): New macro def, define to
+	nvptx_asm_output_def_from_decls.
+	* config/nvptx/nvptx.opt (malias): New opt.
+
+2022-03-22  Tom de Vries  <tdevries@suse.de>
+
+	PR target/104916
+	PR target/104783
+	* config/nvptx/nvptx.md (define_expand "omp_simt_exit"): Emit warp
+	sync (or uniform warp check for mptx < 6.0).
+
+2022-03-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/105012
+	* tree-if-conv.cc (ifcvt_local_dce): Only call
+	dse_classify_store when we have a VDEF.
+
+2022-03-22  Martin Liska  <mliska@suse.cz>
+
+	PR target/104902
+	* config/nvptx/nvptx.cc (handle_ptx_version_option):
+	Fix option wrapping in an error message.
+
+2022-03-22  Martin Liska  <mliska@suse.cz>
+
+	PR target/104903
+	* config/rs6000/rs6000-c.cc (altivec_resolve_overloaded_builtin):
+	Wrap const keyword.
+
+2022-03-22  Martin Liska  <mliska@suse.cz>
+
+	* config/v850/v850-c.cc (pop_data_area): Fix typo in pragma
+	name.
+
+2022-03-22  Martin Liska  <mliska@suse.cz>
+
+	PR target/104898
+	* config/rs6000/rs6000.cc (rs6000_option_override_internal):
+	Use %qs instead of (%qs).
+
+2022-03-22  Martin Liska  <mliska@suse.cz>
+
+	PR target/104898
+	* config/i386/i386-options.cc (ix86_option_override_internal):
+	  Use '%qs' instead of '(%qs)'.
+
+2022-03-22  Martin Liska  <mliska@suse.cz>
+
+	PR target/104898
+	* config/aarch64/aarch64.cc (aarch64_handle_attr_arch):
+	Use 'qs' and remove usage '(%qs)'.
+	(aarch64_handle_attr_cpu): Likewise.
+	(aarch64_handle_attr_tune): Likewise.
+	(aarch64_handle_attr_isa_flags): Likewise.
+
+2022-03-22  Tamar Christina  <tamar.christina@arm.com>
+	    Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* config/aarch64/aarch64.cc (neoversev1_regmove_cost): New tuning
+	struct.
+	(neoversev1_tunings): Use neoversev1_regmove_cost and update store_int
+	cost.
+	(neoverse512tvb_tunings): Likewise.
+
+2022-03-22  Tamar Christina  <tamar.christina@arm.com>
+	    Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* config/aarch64/aarch64.cc (demeter_addrcost_table,
+	demeter_regmove_cost, demeter_advsimd_vector_cost,
+	demeter_sve_vector_cost, demeter_scalar_issue_info,
+	demeter_advsimd_issue_info, demeter_sve_issue_info,
+	demeter_vec_issue_info, demeter_vector_cost,
+	demeter_tunings): New tuning structs.
+	(aarch64_ve_op_count::rename_cycles_per_iter): Enable for demeter
+	tuning.
+	* config/aarch64/aarch64-cores.def: Add entry for demeter.
+	* config/aarch64/aarch64-tune.md (tune): Add demeter to list.
+
+2022-03-22  Tamar Christina  <tamar.christina@arm.com>
+	    Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* config/aarch64/aarch64-protos.h (struct cpu_memmov_cost): New struct.
+	(struct tune_params): Change type of memmov_cost to use cpu_memmov_cost.
+	* config/aarch64/aarch64.cc (aarch64_memory_move_cost): Update all
+	tunings to use cpu_memmov_cost struct.
+
+2022-03-22  Tamar Christina  <tamar.christina@arm.com>
+	    Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* config/aarch64/aarch64.cc (neoversen2_addrcost_table,
+	neoversen2_regmove_cost, neoversen2_advsimd_vector_cost,
+	neoversen2_sve_vector_cost, neoversen2_scalar_issue_info,
+	neoversen2_advsimd_issue_info, neoversen2_sve_issue_info,
+	neoversen2_vec_issue_info, neoversen2_tunings): New structs.
+	(neoversen2_tunings): Use new structs and update tuning flags.
+	(aarch64_vec_op_count::rename_cycles_per_iter): Enable for neoversen2
+	tuning.
+
+2022-03-22  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* config/aarch64/aarch64.h (AARCH64_FL_FOR_ARCH9): Add FP16 feature
+	bit.
+
+2022-03-22  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/104982
+	* config/i386/i386.md (*jcc_bt<mode>_mask): Extend the
+	following splitter to reversed condition.
+
+2022-03-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/104989
+	* calls.cc (expand_call): Don't set ECF_NORETURN in flags after
+	sorry for passing too large argument, instead set sibcall_failure
+	for pass == 0, or a new normal_failure flag otherwise.  If
+	normal_failure is set, don't assert all stack has been deallocated
+	at the end and throw away the whole insn sequence.
+
+2022-03-22  Qian Jianhua  <qianjh@cn.fujitsu.com>
+
+	* print-tree.cc: Change array length
+
+2022-03-22  Hongyu Wang  <hongyu.wang@intel.com>
+
+	PR target/104978
+	* config/i386/sse.md
+	(avx512fp16_fmaddcsh_v8hf_mask1<round_expand_name):
+	Use avx512f_movsf_mask instead of vmovaps or vblend, and
+	force_reg before lowpart_subreg.
+	(avx512fp16_fcmaddcsh_v8hf_mask1<round_expand_name): Likewise.
+
 2022-03-21  H.J. Lu  <hjl.tools@gmail.com>
 
 	PR target/105000

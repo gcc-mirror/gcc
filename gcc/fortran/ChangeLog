@@ -1,3 +1,9 @@
+2022-03-22  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/104999
+	* simplify.cc (gfc_simplify_cshift): Ensure temporary holding
+	source array stride is initialized.
+
 2022-03-19  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/104228

@@ -1,3 +1,8 @@
+2022-03-22  Hans-Peter Nilsson  <hp@axis.com>
+
+	* testsuite/20_util/from_chars/6.cc (test01) [FE_DOWNWARD]:
+	Conditionalize call to fesetround.
+
 2022-03-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR libstdc++/104990

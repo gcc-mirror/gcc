@@ -1,3 +1,73 @@
+2022-03-22  Marek Polacek  <polacek@redhat.com>
+
+	PR c/82283
+	PR c/84685
+	* gcc.dg/Wmissing-field-initializers-1.c: New test.
+	* gcc.dg/Wmissing-field-initializers-2.c: New test.
+	* gcc.dg/Wmissing-field-initializers-3.c: New test.
+	* gcc.dg/Wmissing-field-initializers-4.c: New test.
+	* gcc.dg/Wmissing-field-initializers-5.c: New test.
+
+2022-03-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/102489
+	* g++.dg/coroutines/pr102489.C: New test.
+
+2022-03-22  Tom de Vries  <tdevries@suse.de>
+
+	* gcc.target/nvptx/float16-1.c: Add additional-options -mexperimental.
+	* gcc.target/nvptx/float16-2.c: Same.
+	* gcc.target/nvptx/float16-3.c: Same.
+	* gcc.target/nvptx/float16-4.c: Same.
+	* gcc.target/nvptx/float16-5.c: Same.
+	* gcc.target/nvptx/float16-6.c: Same.
+
+2022-03-22  Tom de Vries  <tdevries@suse.de>
+
+	PR target/104957
+	* gcc.target/nvptx/alias-1.c: New test.
+	* gcc.target/nvptx/alias-2.c: New test.
+	* gcc.target/nvptx/alias-3.c: New test.
+	* gcc.target/nvptx/alias-4.c: New test.
+	* gcc.target/nvptx/nvptx.exp
+	(check_effective_target_runtime_ptx_isa_version_6_3): New proc.
+
+2022-03-22  Martin Liska  <mliska@suse.cz>
+
+	PR target/104898
+	* gcc.target/i386/pr99753.c: Update test.
+	* gcc.target/i386/spellcheck-options-1.c: Likewise.
+	* gcc.target/i386/spellcheck-options-2.c: Likewise.
+	* gcc.target/i386/spellcheck-options-4.c: Likewise.
+
+2022-03-22  Martin Liska  <mliska@suse.cz>
+
+	PR target/104898
+	* gcc.target/aarch64/branch-protection-attr.c:
+	Use 'qs' and remove usage '(%qs)'.
+	* gcc.target/aarch64/spellcheck_1.c: Likewise.
+	* gcc.target/aarch64/spellcheck_2.c: Likewise.
+	* gcc.target/aarch64/spellcheck_3.c: Likewise.
+
+2022-03-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/102645
+	* gcc.c-torture/compile/pr102645.c: New test.
+
+2022-03-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/104989
+	* g++.dg/other/pr104989.C: New test.
+
+2022-03-22  Hongyu Wang  <hongyu.wang@intel.com>
+
+	PR target/104978
+	* gcc.target/i386/avx512fp16-vfcmaddcsh-1a.c: Adjust asm scan.
+	* gcc.target/i386/avx512fp16-vfmaddcsh-1a.c: Ditto.
+	* gcc.target/i386/avx512fp16-vfcmaddcsh-1c.c: Removed.
+	* gcc.target/i386/avx512fp16-vfmaddcsh-1c.c: Ditto.
+	* gcc.target/i386/pr104978.c: New test.
+
 2022-03-21  H.J. Lu  <hjl.tools@gmail.com>
 
 	PR target/105000
