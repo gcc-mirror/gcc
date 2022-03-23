@@ -674,16 +674,16 @@ find_match_gcov_info (struct gcov_info **array, int size,
 }
 
 /* Merge the list of gcov_info objects from SRC_PROFILE to TGT_PROFILE.
-   Return 0 on success: without mismatch.
-   Reutrn 1 on error.  */
+   Return the list of merged gcov_info objects.  Return NULL if the list is
+   empty.  */
 
-int
+struct gcov_info *
 gcov_profile_merge (struct gcov_info *tgt_profile, struct gcov_info *src_profile,
                     int w1, int w2)
 {
   struct gcov_info *gi_ptr;
   struct gcov_info **tgt_infos;
-  struct gcov_info *tgt_tail;
+  struct gcov_info **tgt_tail;
   struct gcov_info **in_src_not_tgt;
   unsigned tgt_cnt = 0, src_cnt = 0;
   unsigned unmatch_info_cnt = 0;
@@ -703,7 +703,10 @@ gcov_profile_merge (struct gcov_info *tgt_profile, struct gcov_info *src_profile
   for (gi_ptr = tgt_profile, i = 0; gi_ptr; gi_ptr = gi_ptr->next, i++)
     tgt_infos[i] = gi_ptr;
 
-  tgt_tail = tgt_infos[tgt_cnt - 1];
+  if (tgt_cnt)
+     tgt_tail = &tgt_infos[tgt_cnt - 1]->next;
+  else
+     tgt_tail = &tgt_profile;
 
   /* First pass on tgt_profile, we multiply w1 to all counters.  */
   if (w1 > 1)
@@ -732,14 +735,14 @@ gcov_profile_merge (struct gcov_info *tgt_profile, struct gcov_info *src_profile
       gi_ptr = in_src_not_tgt[i];
       gcov_merge (gi_ptr, gi_ptr, w2 - 1);
       gi_ptr->next = NULL;
-      tgt_tail->next = gi_ptr;
-      tgt_tail = gi_ptr;
+      *tgt_tail = gi_ptr;
+      tgt_tail = &gi_ptr->next;
     }
 
   free (in_src_not_tgt);
   free (tgt_infos);
 
-  return 0;
+  return tgt_profile;
 }
 
 typedef gcov_type (*counter_op_fn) (gcov_type, void*, void*);

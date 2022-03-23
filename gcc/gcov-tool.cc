@@ -40,7 +40,8 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #endif
 #include <getopt.h>
 
-extern int gcov_profile_merge (struct gcov_info*, struct gcov_info*, int, int);
+extern struct gcov_info *gcov_profile_merge (struct gcov_info*,
+					     struct gcov_info*, int, int);
 extern int gcov_profile_overlap (struct gcov_info*, struct gcov_info*);
 extern int gcov_profile_normalize (struct gcov_info*, gcov_type);
 extern int gcov_profile_scale (struct gcov_info*, float, int, int);
@@ -141,26 +142,18 @@ profile_merge (const char *d1, const char *d2, const char *out, int w1, int w2)
 {
   struct gcov_info *d1_profile;
   struct gcov_info *d2_profile;
-  int ret;
+  struct gcov_info *merged_profile;
 
   d1_profile = gcov_read_profile_dir (d1, 0);
-  if (!d1_profile)
-    return 1;
+  d2_profile = gcov_read_profile_dir (d2, 0);
 
-  if (d2)
-    {
-      d2_profile = gcov_read_profile_dir (d2, 0);
-      if (!d2_profile)
-        return 1;
+  /* The actual merge: we overwrite to d1_profile.  */
+  merged_profile = gcov_profile_merge (d1_profile, d2_profile, w1, w2);
 
-      /* The actual merge: we overwrite to d1_profile.  */
-      ret = gcov_profile_merge (d1_profile, d2_profile, w1, w2);
-
-      if (ret)
-        return ret;
-    }
-
-  gcov_output_files (out, d1_profile);
+  if (merged_profile)
+    gcov_output_files (out, merged_profile);
+  else if (verbose)
+    fnotice (stdout, "no profile files were merged\n");
 
   return 0;
 }
