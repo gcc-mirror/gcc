@@ -852,8 +852,11 @@ gnat_pushdecl (tree decl, Node_Id gnat_node)
   if (!deferred_decl_context)
     DECL_CONTEXT (decl) = context;
 
-  suppress_warning (decl, all_warnings,
-		    No (gnat_node) || Warnings_Off (gnat_node));
+  /* Disable warnings for compiler-generated entities or explicit request.  */
+  if (No (gnat_node)
+      || !Comes_From_Source (gnat_node)
+      || Warnings_Off (gnat_node))
+    suppress_warning (decl);
 
   /* Set the location of DECL and emit a declaration for it.  */
   if (Present (gnat_node) && !renaming_from_instantiation_p (gnat_node))
