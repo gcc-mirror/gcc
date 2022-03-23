@@ -896,6 +896,11 @@ maybe_rewrite_identifier (const char *ptr)
 	}
       copy[off] = valid;
     }
+  if (copy)
+    {
+      match = IDENTIFIER_POINTER (get_identifier (copy));
+      free (copy);
+    }
   return match;
 #else
   return ptr;
@@ -919,9 +924,7 @@ validize_symbol_for_target (symtab_node *node)
     {
       symtab->change_decl_assembler_name (decl, get_identifier (name2));
       if (node->lto_file_data)
-	lto_record_renamed_decl (node->lto_file_data, name,
-				 IDENTIFIER_POINTER
-				 (DECL_ASSEMBLER_NAME (decl)));
+	lto_record_renamed_decl (node->lto_file_data, name, name2);
     }
 }
 
@@ -934,12 +937,12 @@ static hash_map<const char *, unsigned> *lto_clone_numbers;
 static bool
 privatize_symbol_name_1 (symtab_node *node, tree decl)
 {
-  const char *name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
+  const char *name0 = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
 
-  if (must_not_rename (node, name))
+  if (must_not_rename (node, name0))
     return false;
 
-  name = maybe_rewrite_identifier (name);
+  const char *name = maybe_rewrite_identifier (name0);
   unsigned &clone_number = lto_clone_numbers->get_or_insert (name);
   symtab->change_decl_assembler_name (decl,
 				      clone_function_name (
@@ -947,7 +950,7 @@ privatize_symbol_name_1 (symtab_node *node, tree decl)
   clone_number++;
 
   if (node->lto_file_data)
-    lto_record_renamed_decl (node->lto_file_data, name,
+    lto_record_renamed_decl (node->lto_file_data, name0,
 			     IDENTIFIER_POINTER
 			     (DECL_ASSEMBLER_NAME (decl)));
 
