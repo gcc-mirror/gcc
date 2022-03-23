@@ -477,9 +477,12 @@ MacroExpander::match_fragment (Parser<MacroInvocLexer> &parser,
       parser.parse_visibility ();
       break;
 
-    case AST::MacroFragSpec::STMT:
-      parser.parse_stmt (/* allow_no_semi */ true);
-      break;
+      case AST::MacroFragSpec::STMT: {
+	auto restrictions = ParseRestrictions ();
+	restrictions.consume_semi = false;
+	parser.parse_stmt (restrictions);
+	break;
+      }
 
     case AST::MacroFragSpec::LIFETIME:
       parser.parse_lifetime_params ();
@@ -887,11 +890,14 @@ transcribe_many_trait_impl_items (Parser<MacroInvocLexer> &parser,
 static std::vector<AST::SingleASTNode>
 transcribe_many_stmts (Parser<MacroInvocLexer> &parser, TokenId &delimiter)
 {
+  auto restrictions = ParseRestrictions ();
+  restrictions.consume_semi = false;
+
   // FIXME: This is invalid! It needs to also handle cases where the macro
   // transcriber is an expression, but since the macro call is followed by
   // a semicolon, it's a valid ExprStmt
-  return parse_many (parser, delimiter, [&parser] () {
-    auto stmt = parser.parse_stmt (/* allow_no_semi */ true);
+  return parse_many (parser, delimiter, [&parser, restrictions] () {
+    auto stmt = parser.parse_stmt (restrictions);
     return AST::SingleASTNode (std::move (stmt));
   });
 }

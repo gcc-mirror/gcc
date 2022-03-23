@@ -81,6 +81,7 @@ struct ParseRestrictions
   bool entered_from_unary = false;
   bool expr_can_be_null = false;
   bool expr_can_be_stmt = false;
+  bool consume_semi = true;
 };
 
 // Parser implementation for gccrs.
@@ -129,11 +130,9 @@ public:
    *    | LetStatement
    *    | ExpressionStatement
    *    | MacroInvocationSemi
-   *
-   * @param allow_no_semi Allow the parser to not parse a semicolon after
-   * 		the statement without erroring out
    */
-  std::unique_ptr<AST::Stmt> parse_stmt (bool allow_no_semi = false);
+  std::unique_ptr<AST::Stmt> parse_stmt (ParseRestrictions restrictions
+					 = ParseRestrictions ());
   std::unique_ptr<AST::Type> parse_type ();
   std::unique_ptr<AST::ExternalItem> parse_external_item ();
   std::unique_ptr<AST::TraitItem> parse_trait_item ();
@@ -616,14 +615,17 @@ private:
    * 		semicolon to follow it
    */
   std::unique_ptr<AST::LetStmt> parse_let_stmt (AST::AttrVec outer_attrs,
-						bool allow_no_semi = false);
+						ParseRestrictions restrictions
+						= ParseRestrictions ());
   std::unique_ptr<AST::ExprStmt> parse_expr_stmt (AST::AttrVec outer_attrs,
-						  bool allow_no_semi = false);
+						  ParseRestrictions restrictions
+						  = ParseRestrictions ());
   std::unique_ptr<AST::ExprStmtWithBlock>
   parse_expr_stmt_with_block (AST::AttrVec outer_attrs);
   std::unique_ptr<AST::ExprStmtWithoutBlock>
   parse_expr_stmt_without_block (AST::AttrVec outer_attrs,
-				 bool allow_no_semi = false);
+				 ParseRestrictions restrictions
+				 = ParseRestrictions ());
   ExprOrStmt parse_stmt_or_expr_without_block ();
   ExprOrStmt parse_stmt_or_expr_with_block (AST::AttrVec outer_attrs);
   ExprOrStmt parse_macro_invocation_maybe_semi (AST::AttrVec outer_attrs);

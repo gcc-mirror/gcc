@@ -6100,7 +6100,7 @@ Parser<ManagedTokenSource>::parse_named_function_param (
 // Parses a statement (will further disambiguate any statement).
 template <typename ManagedTokenSource>
 std::unique_ptr<AST::Stmt>
-Parser<ManagedTokenSource>::parse_stmt (bool allow_no_semi)
+Parser<ManagedTokenSource>::parse_stmt (ParseRestrictions restrictions)
 {
   // quick exit for empty statement
   // FIXME: Can we have empty statements without semicolons? Just nothing?
@@ -6125,7 +6125,7 @@ Parser<ManagedTokenSource>::parse_stmt (bool allow_no_semi)
     {
     case LET:
       // let statement
-      return parse_let_stmt (std::move (outer_attrs), allow_no_semi);
+      return parse_let_stmt (std::move (outer_attrs), restrictions);
     case PUB:
     case MOD:
     case EXTERN_TOK:
@@ -6180,7 +6180,7 @@ Parser<ManagedTokenSource>::parse_stmt (bool allow_no_semi)
       // TODO: find out how to disable gcc "implicit fallthrough" warning
     default:
       // fallback: expression statement
-      return parse_expr_stmt (std::move (outer_attrs), allow_no_semi);
+      return parse_expr_stmt (std::move (outer_attrs), restrictions);
       break;
     }
 }
@@ -6189,7 +6189,7 @@ Parser<ManagedTokenSource>::parse_stmt (bool allow_no_semi)
 template <typename ManagedTokenSource>
 std::unique_ptr<AST::LetStmt>
 Parser<ManagedTokenSource>::parse_let_stmt (AST::AttrVec outer_attrs,
-					    bool allow_no_semi)
+					    ParseRestrictions restrictions)
 {
   Location locus = lexer.peek_token ()->get_locus ();
   skip_token (LET);
@@ -6244,13 +6244,9 @@ Parser<ManagedTokenSource>::parse_let_stmt (AST::AttrVec outer_attrs,
 	}
     }
 
-  if (!maybe_skip_token (SEMICOLON) && !allow_no_semi)
-    {
-      // skip after somewhere
+  if (restrictions.consume_semi)
+    if (!skip_token (SEMICOLON))
       return nullptr;
-      /* TODO: how wise is it to ditch a mostly-valid let statement just
-       * because a semicolon is missing? */
-    }
 
   return std::unique_ptr<AST::LetStmt> (
     new AST::LetStmt (std::move (pattern), std::move (expr), std::move (type),
@@ -7085,7 +7081,7 @@ Parser<ManagedTokenSource>::parse_method ()
 template <typename ManagedTokenSource>
 std::unique_ptr<AST::ExprStmt>
 Parser<ManagedTokenSource>::parse_expr_stmt (AST::AttrVec outer_attrs,
-					     bool allow_no_semi)
+					     ParseRestrictions restrictions)
 {
   /* potential thoughts - define new virtual method "has_block()" on expr. parse
    * expr and then determine whether semicolon is needed as a result of this
@@ -7125,7 +7121,7 @@ Parser<ManagedTokenSource>::parse_expr_stmt (AST::AttrVec outer_attrs,
 	else
 	  {
 	    return parse_expr_stmt_without_block (std::move (outer_attrs),
-						  allow_no_semi);
+						  restrictions);
 	  }
       }
       case UNSAFE: {
@@ -7139,7 +7135,7 @@ Parser<ManagedTokenSource>::parse_expr_stmt (AST::AttrVec outer_attrs,
 	else
 	  {
 	    return parse_expr_stmt_without_block (std::move (outer_attrs),
-						  allow_no_semi);
+						  restrictions);
 	  }
       }
     default:
@@ -7148,7 +7144,7 @@ Parser<ManagedTokenSource>::parse_expr_stmt (AST::AttrVec outer_attrs,
        * initial tokens in order to prevent more syntactical errors at parse
        * time. */
       return parse_expr_stmt_without_block (std::move (outer_attrs),
-					    allow_no_semi);
+					    restrictions);
     }
 }
 
@@ -7264,7 +7260,7 @@ Parser<ManagedTokenSource>::parse_expr_stmt_with_block (
 template <typename ManagedTokenSource>
 std::unique_ptr<AST::ExprStmtWithoutBlock>
 Parser<ManagedTokenSource>::parse_expr_stmt_without_block (
-  AST::AttrVec outer_attrs, bool allow_no_semi)
+  AST::AttrVec outer_attrs, ParseRestrictions restrictions)
 {
   /* TODO: maybe move more logic for expr without block in here for better error
    * handling */
@@ -7273,7 +7269,6 @@ Parser<ManagedTokenSource>::parse_expr_stmt_without_block (
   std::unique_ptr<AST::ExprWithoutBlock> expr = nullptr;
   Location locus = lexer.peek_token ()->get_locus ();
 
-  auto restrictions = ParseRestrictions ();
   restrictions.expr_can_be_stmt = true;
 
   expr = parse_expr_without_block (std::move (outer_attrs), restrictions);
@@ -7288,12 +7283,9 @@ Parser<ManagedTokenSource>::parse_expr_stmt_without_block (
       return nullptr;
     }
 
-  // skip semicolon at end that is required
-  if (!maybe_skip_token (SEMICOLON) && !allow_no_semi)
-    {
-      // skip somewhere?
+  if (restrictions.consume_semi)
+    if (!skip_token (SEMICOLON))
       return nullptr;
-    }
 
   return std::unique_ptr<AST::ExprStmtWithoutBlock> (
     new AST::ExprStmtWithoutBlock (std::move (expr), locus));
