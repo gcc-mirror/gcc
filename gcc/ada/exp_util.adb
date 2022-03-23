@@ -12781,7 +12781,6 @@ package body Exp_Util is
             | N_Block_Statement
             | N_Entry_Body
             | N_Package_Body
-            | N_Protected_Body
             | N_Subprogram_Body
             | N_Task_Body
          =>
