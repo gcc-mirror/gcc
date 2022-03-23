@@ -8638,30 +8638,6 @@ gnat_gimplify_expr (tree *expr_p, gimple_seq *pre_p,
 
   switch (TREE_CODE (expr))
     {
-    case NULL_EXPR:
-      /* If this is an aggregate type, build a null pointer of the appropriate
-	 type and dereference it.  */
-      if (AGGREGATE_TYPE_P (type)
-	  || TREE_CODE (type) == UNCONSTRAINED_ARRAY_TYPE)
-	*expr_p = build_unary_op (INDIRECT_REF, NULL_TREE,
-				  convert (build_pointer_type (type),
-					   integer_zero_node));
-      /* Otherwise, just make a VAR_DECL.  */
-      else
-	{
-	  *expr_p = create_tmp_var (type, NULL);
-	  suppress_warning (*expr_p);
-	}
-
-      gimplify_and_add (TREE_OPERAND (expr, 0), pre_p);
-      return GS_OK;
-
-    case UNCONSTRAINED_ARRAY_REF:
-      /* We should only do this if we are just elaborating for side-effects,
-	 but we can't know that yet.  */
-      *expr_p = TREE_OPERAND (*expr_p, 0);
-      return GS_OK;
-
     case ADDR_EXPR:
       op = TREE_OPERAND (expr, 0);
 
@@ -8695,8 +8671,7 @@ gnat_gimplify_expr (tree *expr_p, gimple_seq *pre_p,
 	    else
 	      op = inner;
 	  }
-
-      return GS_UNHANDLED;
+      break;
 
     case CALL_EXPR:
       /* If we are passing a constant fat pointer CONSTRUCTOR, make sure it is
@@ -8720,8 +8695,62 @@ gnat_gimplify_expr (tree *expr_p, gimple_seq *pre_p,
 		*(CALL_EXPR_ARGP (expr) + i) = tree_output_constant_def (arg);
 	    }
 	}
+      break;
 
-      return GS_UNHANDLED;
+    case DECL_EXPR:
+      op = DECL_EXPR_DECL (expr);
+
+      /* The expressions for the RM bounds must be gimplified to ensure that
+	 they are properly elaborated.  See gimplify_decl_expr.  */
+      if ((TREE_CODE (op) == TYPE_DECL || TREE_CODE (op) == VAR_DECL)
+	  && !TYPE_SIZES_GIMPLIFIED (TREE_TYPE (op))
+	  && (INTEGRAL_TYPE_P (TREE_TYPE (op))
+	      || SCALAR_FLOAT_TYPE_P (TREE_TYPE (op))))
+	{
+	  tree type = TYPE_MAIN_VARIANT (TREE_TYPE (op)), t, val;
+
+	  val = TYPE_RM_MIN_VALUE (type);
+	  if (val)
+	    {
+	      gimplify_one_sizepos (&val, pre_p);
+	      for (t = type; t; t = TYPE_NEXT_VARIANT (t))
+		SET_TYPE_RM_MIN_VALUE (t, val);
+	    }
+
+	  val = TYPE_RM_MAX_VALUE (type);
+	  if (val)
+	    {
+	      gimplify_one_sizepos (&val, pre_p);
+	      for (t = type; t; t = TYPE_NEXT_VARIANT (t))
+		SET_TYPE_RM_MAX_VALUE (t, val);
+	    }
+	}
+      break;
+
+    case NULL_EXPR:
+      /* If this is an aggregate type, build a null pointer of the appropriate
+	 type and dereference it.  */
+      if (AGGREGATE_TYPE_P (type)
+	  || TREE_CODE (type) == UNCONSTRAINED_ARRAY_TYPE)
+	*expr_p = build_unary_op (INDIRECT_REF, NULL_TREE,
+				  convert (build_pointer_type (type),
+					   integer_zero_node));
+
+      /* Otherwise, just make a VAR_DECL.  */
+      else
+	{
+	  *expr_p = create_tmp_var (type, NULL);
+	   suppress_warning (*expr_p);
+	}
+
+      gimplify_and_add (TREE_OPERAND (expr, 0), pre_p);
+      return GS_OK;
+
+    case UNCONSTRAINED_ARRAY_REF:
+      /* We should only do this if we are just elaborating for side effects,
+	 but we can't know that yet.  */
+      *expr_p = TREE_OPERAND (*expr_p, 0);
+      return GS_OK;
 
     case VIEW_CONVERT_EXPR:
       op = TREE_OPERAND (expr, 0);
@@ -8742,53 +8771,13 @@ gnat_gimplify_expr (tree *expr_p, gimple_seq *pre_p,
 	  TREE_OPERAND (expr, 0) = new_var;
 	  return GS_OK;
 	}
-
-      return GS_UNHANDLED;
-
-    case DECL_EXPR:
-      op = DECL_EXPR_DECL (expr);
-
-      /* The expressions for the RM bounds must be gimplified to ensure that
-	 they are properly elaborated.  See gimplify_decl_expr.  */
-      if ((TREE_CODE (op) == TYPE_DECL || TREE_CODE (op) == VAR_DECL)
-	  && !TYPE_SIZES_GIMPLIFIED (TREE_TYPE (op)))
-	switch (TREE_CODE (TREE_TYPE (op)))
-	  {
-	  case INTEGER_TYPE:
-	  case ENUMERAL_TYPE:
-	  case BOOLEAN_TYPE:
-	  case REAL_TYPE:
-	    {
-	      tree type = TYPE_MAIN_VARIANT (TREE_TYPE (op)), t, val;
-
-	      val = TYPE_RM_MIN_VALUE (type);
-	      if (val)
-		{
-		  gimplify_one_sizepos (&val, pre_p);
-		  for (t = type; t; t = TYPE_NEXT_VARIANT (t))
-		    SET_TYPE_RM_MIN_VALUE (t, val);
-		}
-
-	      val = TYPE_RM_MAX_VALUE (type);
-	      if (val)
-		{
-		  gimplify_one_sizepos (&val, pre_p);
-		  for (t = type; t; t = TYPE_NEXT_VARIANT (t))
-		    SET_TYPE_RM_MAX_VALUE (t, val);
-		}
-
-	    }
-	    break;
-
-	  default:
-	    break;
-	  }
-
-      /* ... fall through ... */
+      break;
 
     default:
-      return GS_UNHANDLED;
+      break;
     }
+
+  return GS_UNHANDLED;
 }
 
 /* Generate GIMPLE in place for the statement at *STMT_P.  */
