@@ -1873,9 +1873,9 @@ compparms (const_tree parms1, const_tree parms2)
 }
 
 
-/* Process a sizeof or alignof expression where the operand is a
-   type. STD_ALIGNOF indicates whether an alignof has C++11 (minimum alignment)
-   or GNU (preferred alignment) semantics; it is ignored if op is
+/* Process a sizeof or alignof expression where the operand is a type.
+   STD_ALIGNOF indicates whether an alignof has C++11 (minimum alignment)
+   or GNU (preferred alignment) semantics; it is ignored if OP is
    SIZEOF_EXPR.  */
 
 tree
@@ -1898,6 +1898,13 @@ cxx_sizeof_or_alignof_type (location_t loc, tree type, enum tree_code op,
 	}
       else
 	return error_mark_node;
+    }
+  else if (VOID_TYPE_P (type) && std_alignof)
+    {
+      if (complain)
+	error_at (loc, "invalid application of %qs to a void type",
+		  OVL_OP_INFO (false, op)->name);
+      return error_mark_node;
     }
 
   bool dependent_p = dependent_type_p (type);
@@ -2132,11 +2139,13 @@ cxx_alignas_expr (tree e)
     /* [dcl.align]/3:
        
 	   When the alignment-specifier is of the form
-	   alignas(type-id ), it shall have the same effect as
-	   alignas(alignof(type-id )).  */
+	   alignas(type-id), it shall have the same effect as
+	   alignas(alignof(type-id)).  */
 
     return cxx_sizeof_or_alignof_type (input_location,
-				       e, ALIGNOF_EXPR, true, false);
+				       e, ALIGNOF_EXPR,
+				       /*std_alignof=*/true,
+				       /*complain=*/true);
   
   /* If we reach this point, it means the alignas expression if of
      the form "alignas(assignment-expression)", so we should follow
