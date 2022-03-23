@@ -129,12 +129,9 @@ impl_region_model_context::warn (pending_diagnostic *d)
       return false;
     }
   if (m_eg)
-    {
-      m_eg->get_diagnostic_manager ().add_diagnostic
-	(m_enode_for_diag, m_enode_for_diag->get_supernode (),
-	 m_stmt, m_stmt_finder, d);
-      return true;
-    }
+    return m_eg->get_diagnostic_manager ().add_diagnostic
+      (m_enode_for_diag, m_enode_for_diag->get_supernode (),
+       m_stmt, m_stmt_finder, d);
   else
     {
       delete d;
