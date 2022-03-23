@@ -14,14 +14,14 @@ typedef __int128 ti;
 uv1ti ashl_v1ti(uv1ti x, unsigned int i) { return x << i; }
 uv1ti lshr_v1ti(uv1ti x, unsigned int i) { return x >> i; }
 sv1ti ashr_v1ti(sv1ti x, unsigned int i) { return x >> i; }
-uv1ti rotr_v1ti(uv1ti x, unsigned int i) { return (x >> i) | (x << (128-i)); }
-uv1ti rotl_v1ti(uv1ti x, unsigned int i) { return (x << i) | (x >> (128-i)); }
+uv1ti rotr_v1ti(uv1ti x, unsigned int i) { return (x >> i) | (x << (-i&127)); }
+uv1ti rotl_v1ti(uv1ti x, unsigned int i) { return (x << i) | (x >> (-i&127)); }
 
 uti ashl_ti(uti x, unsigned int i) { return x << i; }
 uti lshr_ti(uti x, unsigned int i) { return x >> i; }
 sti ashr_ti(sti x, unsigned int i) { return x >> i; }
-uti rotr_ti(uti x, unsigned int i) { return (x >> i) | (x << (128-i)); }
-uti rotl_ti(uti x, unsigned int i) { return (x << i) | (x >> (128-i)); }
+uti rotr_ti(uti x, unsigned int i) { return (x >> i) | (x << (-i&127)); }
+uti rotl_ti(uti x, unsigned int i) { return (x << i) | (x >> (-i&127)); }
 
 void test(ti x)
 {
