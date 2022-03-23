@@ -128,19 +128,29 @@ public:
       }
   }
 
-  bool has_follow_set_restrictions ()
+  bool has_follow_set_restrictions () const
   {
     switch (kind)
       {
       case EXPR:
       case STMT:
-	// FIXME: Add the following cases once we can handle them properly
-	// in `is_match_compatible()`
-	// case PAT:
-	// // case PAT_PARAM: FIXME: Doesn't <metavar>:pat_param exist?
-	// case PATH:
-	// case TY:
-	// case VIS:
+      case PAT:
+      case PATH:
+      case TY:
+      case VIS:
+	return true;
+      default:
+	return false;
+      }
+  }
+
+  bool has_follow_set_fragment_restrictions () const
+  {
+    switch (kind)
+      {
+      case PAT:
+      case TY:
+      case VIS:
 	return true;
       default:
 	return false;
@@ -188,7 +198,7 @@ public:
   }
 
   Identifier get_ident () const { return ident; }
-  MacroFragSpec get_frag_spec () const { return frag_spec; }
+  const MacroFragSpec &get_frag_spec () const { return frag_spec; }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather

@@ -93,15 +93,83 @@ extract_module_path (const AST::AttrVec &inner_attrs,
   return path;
 }
 
+template <typename T>
+static bool
+contains (std::vector<T> &vec, T elm)
+{
+  return std::find (vec.begin (), vec.end (), elm) != vec.end ();
+}
+
+static bool
+peculiar_fragment_match_compatible_fragment (
+  const AST::MacroFragSpec &last_spec, const AST::MacroFragSpec &spec,
+  Location match_locus)
+{
+  static std::unordered_map<AST::MacroFragSpec::Kind,
+			    std::vector<AST::MacroFragSpec::Kind>>
+    fragment_follow_set
+    = {{AST::MacroFragSpec::PATH, {AST::MacroFragSpec::BLOCK}},
+       {AST::MacroFragSpec::TY, {AST::MacroFragSpec::BLOCK}},
+       {AST::MacroFragSpec::VIS,
+	{AST::MacroFragSpec::IDENT, AST::MacroFragSpec::TY,
+	 AST::MacroFragSpec::PATH}}};
+
+  auto is_valid
+    = contains (fragment_follow_set[last_spec.get_kind ()], spec.get_kind ());
+
+  if (!is_valid)
+    rust_error_at (
+      match_locus,
+      "fragment specifier %<%s%> is not allowed after %<%s%> fragments",
+      spec.as_string ().c_str (), last_spec.as_string ().c_str ());
+
+  return is_valid;
+}
+
 static bool
 peculiar_fragment_match_compatible (AST::MacroMatchFragment &last_match,
 				    AST::MacroMatch &match)
 {
   static std::unordered_map<AST::MacroFragSpec::Kind, std::vector<TokenId>>
-    follow_set = {
-      {AST::MacroFragSpec::EXPR, {MATCH_ARROW, COMMA, SEMICOLON}},
-      {AST::MacroFragSpec::STMT, {MATCH_ARROW, COMMA, SEMICOLON}},
-    };
+    follow_set
+    = {{AST::MacroFragSpec::EXPR, {MATCH_ARROW, COMMA, SEMICOLON}},
+       {AST::MacroFragSpec::STMT, {MATCH_ARROW, COMMA, SEMICOLON}},
+       {AST::MacroFragSpec::PAT, {MATCH_ARROW, COMMA, EQUAL, PIPE, IF, IN}},
+       {AST::MacroFragSpec::PATH,
+	{MATCH_ARROW, COMMA, EQUAL, PIPE, SEMICOLON, COLON, RIGHT_ANGLE,
+	 RIGHT_SHIFT, LEFT_SQUARE, LEFT_CURLY, AS, WHERE}},
+       {AST::MacroFragSpec::TY,
+	{MATCH_ARROW, COMMA, EQUAL, PIPE, SEMICOLON, COLON, RIGHT_ANGLE,
+	 RIGHT_SHIFT, LEFT_SQUARE, LEFT_CURLY, AS, WHERE}},
+       {AST::MacroFragSpec::VIS,
+	{
+	  COMMA,
+	  IDENTIFIER /* FIXME: Other than `priv` */,
+	  LEFT_PAREN,
+	  LEFT_SQUARE,
+	  EXCLAM,
+	  ASTERISK,
+	  AMP,
+	  LOGICAL_AND,
+	  QUESTION_MARK,
+	  LIFETIME,
+	  LEFT_ANGLE,
+	  LEFT_SHIFT,
+	  SUPER,
+	  SELF,
+	  SELF_ALIAS,
+	  EXTERN_TOK,
+	  CRATE,
+	  UNDERSCORE,
+	  FOR,
+	  IMPL,
+	  FN_TOK,
+	  UNSAFE,
+	  TYPEOF,
+	  DYN
+	  // FIXME: Add Non kw identifiers
+	  // FIXME: Add $crate as valid
+	}}};
 
   Location error_locus = match.get_match_locus ();
 
@@ -117,9 +185,7 @@ peculiar_fragment_match_compatible (AST::MacroMatchFragment &last_match,
 	auto tok = static_cast<AST::Token *> (&match);
 	auto &allowed_toks
 	  = follow_set[last_match.get_frag_spec ().get_kind ()];
-	auto is_valid = std::find (allowed_toks.begin (), allowed_toks.end (),
-				   tok->get_id ())
-			!= allowed_toks.end ();
+	auto is_valid = contains (allowed_toks, tok->get_id ());
 	if (!is_valid)
 	  // FIXME: Add hint about allowed fragments
 	  rust_error_at (tok->get_match_locus (),
@@ -143,10 +209,17 @@ peculiar_fragment_match_compatible (AST::MacroMatchFragment &last_match,
 	  error_locus = matches.front ()->get_match_locus ();
 	break;
       }
-    default:
+      case AST::MacroMatch::Fragment: {
+	auto last_spec = last_match.get_frag_spec ();
+	auto fragment = static_cast<AST::MacroMatchFragment *> (&match);
+	if (last_spec.has_follow_set_fragment_restrictions ())
+	  return peculiar_fragment_match_compatible_fragment (
+	    last_spec, fragment->get_frag_spec (), match.get_match_locus ());
+      }
       break;
     }
 
+  // FIXME: Improve error message
   rust_error_at (error_locus, "fragment not allowed after %<%s%> fragment",
 		 last_match.get_frag_spec ().as_string ().c_str ());
 
@@ -213,16 +286,7 @@ is_match_compatible (AST::MacroMatch &last_match, AST::MacroMatch &match)
 	  return true;
 	break;
       }
-      case AST::MacroMatch::Matcher: {
-	// Likewise for another matcher
-	auto matcher = static_cast<AST::MacroMatcher *> (&last_match);
-	new_last = get_back_ptr (matcher->get_matches ());
-	// If there are no matches in the matcher, then it can be followed by
-	// anything
-	if (!new_last)
-	  return true;
-	break;
-      }
+    case AST::MacroMatch::Matcher:
     case AST::MacroMatch::Tok:
       return true;
     }
