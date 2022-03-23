@@ -424,6 +424,32 @@ lto_wpa_write_files (void)
   timevar_pop (TV_WHOPR_WPA_IO);
 }
 
+/* Create artificial pointers for "omp declare target link" vars.  */
+
+static void
+offload_handle_link_vars (void)
+{
+#ifdef ACCEL_COMPILER
+  varpool_node *var;
+  FOR_EACH_VARIABLE (var)
+    if (lookup_attribute ("omp declare target link",
+			  DECL_ATTRIBUTES (var->decl)))
+      {
+	tree type = build_pointer_type (TREE_TYPE (var->decl));
+	tree link_ptr_var = build_decl (UNKNOWN_LOCATION, VAR_DECL,
+					clone_function_name (var->decl,
+							     "linkptr"), type);
+	TREE_USED (link_ptr_var) = 1;
+	TREE_STATIC (link_ptr_var) = 1;
+	TREE_PUBLIC (link_ptr_var) = TREE_PUBLIC (var->decl);
+	DECL_ARTIFICIAL (link_ptr_var) = 1;
+	SET_DECL_ASSEMBLER_NAME (link_ptr_var, DECL_NAME (link_ptr_var));
+	SET_DECL_VALUE_EXPR (var->decl, build_simple_mem_ref (link_ptr_var));
+	DECL_HAS_VALUE_EXPR_P (var->decl) = 1;
+      }
+#endif
+}
+
 /* Perform whole program analysis (WPA) on the callgraph and write out the
    optimization plan.  */
 
@@ -516,6 +542,7 @@ do_whole_program_analysis (void)
      to globals with hidden visibility because they are accessed from multiple
      partitions.  */
   lto_promote_cross_file_statics ();
+  offload_handle_link_vars ();
   if (dump_file)
      dump_end (partition_dump_id, dump_file);
   dump_file = NULL;
@@ -547,32 +574,6 @@ do_whole_program_analysis (void)
     print_lto_report_1 ();
   if (mem_report_wpa)
     dump_memory_report ("Final");
-}
-
-/* Create artificial pointers for "omp declare target link" vars.  */
-
-static void
-offload_handle_link_vars (void)
-{
-#ifdef ACCEL_COMPILER
-  varpool_node *var;
-  FOR_EACH_VARIABLE (var)
-    if (lookup_attribute ("omp declare target link",
-			  DECL_ATTRIBUTES (var->decl)))
-      {
-	tree type = build_pointer_type (TREE_TYPE (var->decl));
-	tree link_ptr_var = build_decl (UNKNOWN_LOCATION, VAR_DECL,
-					clone_function_name (var->decl,
-							     "linkptr"), type);
-	TREE_USED (link_ptr_var) = 1;
-	TREE_STATIC (link_ptr_var) = 1;
-	TREE_PUBLIC (link_ptr_var) = TREE_PUBLIC (var->decl);
-	DECL_ARTIFICIAL (link_ptr_var) = 1;
-	SET_DECL_ASSEMBLER_NAME (link_ptr_var, DECL_NAME (link_ptr_var));
-	SET_DECL_VALUE_EXPR (var->decl, build_simple_mem_ref (link_ptr_var));
-	DECL_HAS_VALUE_EXPR_P (var->decl) = 1;
-      }
-#endif
 }
 
 unsigned int
@@ -641,7 +642,10 @@ lto_main (void)
 
 	  materialize_cgraph ();
 	  if (!flag_ltrans)
-	    lto_promote_statics_nonwpa ();
+	    {
+	      lto_promote_statics_nonwpa ();
+	      offload_handle_link_vars ();
+	    }
 
 	  /* Annotate the CU DIE and mark the early debug phase as finished.  */
 	  debuginfo_early_start ();
