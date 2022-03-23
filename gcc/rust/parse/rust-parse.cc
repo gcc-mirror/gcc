@@ -172,6 +172,8 @@ peculiar_fragment_match_compatible (AST::MacroMatchFragment &last_match,
 	}}};
 
   Location error_locus = match.get_match_locus ();
+  std::string kind_str = "fragment";
+  auto &allowed_toks = follow_set[last_match.get_frag_spec ().get_kind ()];
 
   // There are two behaviors to handle here: If the follow-up match is a token,
   // we want to check if it is allowed.
@@ -183,16 +185,12 @@ peculiar_fragment_match_compatible (AST::MacroMatchFragment &last_match,
     {
       case AST::MacroMatch::Tok: {
 	auto tok = static_cast<AST::Token *> (&match);
-	auto &allowed_toks
-	  = follow_set[last_match.get_frag_spec ().get_kind ()];
-	auto is_valid = contains (allowed_toks, tok->get_id ());
-	if (!is_valid)
-	  // FIXME: Add hint about allowed fragments
-	  rust_error_at (tok->get_match_locus (),
-			 "token %<%s%> is not allowed after %<%s%> fragment",
-			 tok->get_str ().c_str (),
-			 last_match.get_frag_spec ().as_string ().c_str ());
-	return is_valid;
+	if (contains (allowed_toks, tok->get_id ()))
+	  return true;
+	kind_str = "token `"
+		   + std::string (get_token_description (tok->get_id ())) + "`";
+	error_locus = tok->get_match_locus ();
+	break;
       }
       break;
       case AST::MacroMatch::Repetition: {
@@ -219,9 +217,16 @@ peculiar_fragment_match_compatible (AST::MacroMatchFragment &last_match,
       break;
     }
 
-  // FIXME: Improve error message
-  rust_error_at (error_locus, "fragment not allowed after %<%s%> fragment",
+  rust_error_at (error_locus, "%s is not allowed after %<%s%> fragment",
+		 kind_str.c_str (),
 		 last_match.get_frag_spec ().as_string ().c_str ());
+  auto allowed_toks_str
+    = "`" + std::string (get_token_description (allowed_toks[0])) + "`";
+  for (size_t i = 1; i < allowed_toks.size (); i++)
+    allowed_toks_str
+      += ", `" + std::string (get_token_description (allowed_toks[i])) + "`";
+
+  rust_inform (error_locus, "allowed tokens are %s", allowed_toks_str.c_str ());
 
   return false;
 }
