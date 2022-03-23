@@ -906,4 +906,15 @@ private:
 } // namespace AST
 } // namespace Rust
 
+/* <https://stackoverflow.com/a/35304501> */
+namespace std {
+template <> struct hash<Rust::AST::MacroFragSpec::Kind>
+{
+  size_t operator() (const Rust::AST::MacroFragSpec::Kind &t) const noexcept
+  {
+    return size_t (t);
+  }
+};
+} // namespace std
+
 #endif
