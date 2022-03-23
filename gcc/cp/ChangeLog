@@ -1,3 +1,48 @@
+2022-03-22  Jason Merrill  <jason@redhat.com>
+
+	PR c++/103186
+	* pt.c (defarg_inst): Use tree_vec_map_cache_hasher.
+	(defarg_insts_for): New.
+	(tsubst_default_argument): Adjust.
+
+2022-03-22  Jason Merrill  <jason@redhat.com>
+
+	PR c++/103057
+	* pt.c (tsubst_aggr_type): Call tsubst for alias template
+	specialization.
+
+2022-03-22  Jason Merrill  <jason@redhat.com>
+
+	PR c++/59950
+	* call.c (build_over_call): Use cp_build_indirect_ref.
+
+2022-03-22  Jason Merrill  <jason@redhat.com>
+
+	PR c++/101095
+	* cp-objcp-common.c (cp_common_init_ts): Mark types as types.
+	(cp_tree_size): Remove redundant entries.
+
+2022-03-22  Jason Merrill  <jason@redhat.com>
+
+	PR c++/58646
+	* init.c (build_vec_init): Check for vla element type.
+
+2022-03-22  Jason Merrill  <jason@redhat.com>
+
+	PR c++/103337
+	PR c++/102740
+	PR c++/103299
+	PR c++/102538
+	* decl.c (reshape_init_class): Avoid looking for designator
+	after we found it.
+	(reshape_init_r): Keep looking for designator.
+
+2022-03-22  Jason Merrill  <jason@redhat.com>
+
+	PR c++/101767
+	* decl.c (reshape_init_class): Back out of anon struct
+	if a designator doesn't match.
+
 2022-02-28  Marek Polacek  <polacek@redhat.com>
 
 	Backported from master:

@@ -1,3 +1,27 @@
+2022-03-22  H.J. Lu  <hjl.tools@gmail.com>
+
+	Backported from master:
+	2022-03-21  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/105000
+	* common/config/i386/i386-common.c
+	(OPTION_MASK_ISA2_GENERAL_REGS_ONLY_UNSET): Replace
+	OPTION_MASK_ISA2_AVX512F_UNSET with OPTION_MASK_ISA2_SSE_UNSET.
+
+2022-03-22  H.J. Lu  <hjl.tools@gmail.com>
+
+	Backported from master:
+	2022-03-16  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/104890
+	* config/i386/x86gprintrin.h: Also check _SOFT_FLOAT before
+	pushing target("general-regs-only").
+
+2022-03-22  Jason Merrill  <jason@redhat.com>
+
+	* tree.h (struct tree_vec_map_cache_hasher): Move from...
+	* tree.c (struct tree_vec_map_cache_hasher): ...here.
+
 2022-03-21  H.J. Lu  <hjl.tools@gmail.com>
 
 	Backported from master:
