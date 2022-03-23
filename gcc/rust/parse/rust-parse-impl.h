@@ -20,9 +20,9 @@ along with GCC; see the file COPYING3.  If not see
 /* DO NOT INCLUDE ANYWHERE - this is automatically included with rust-parse.h
  * This is also the reason why there are no include guards. */
 
+#define INCLUDE_ALGORITHM
 #include "rust-diagnostics.h"
 #include "util/rust-make-unique.h"
-#include <algorithm>
 
 namespace Rust {
 // Left binding powers of operations.
