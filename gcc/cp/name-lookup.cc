@@ -5667,7 +5667,7 @@ lookup_using_decl (tree scope, name_lookup &lookup)
 
       /* If the lookup in the base contains a dependent using, this
 	 using is also dependent.  */
-      if (!dependent_p && lookup.value)
+      if (!dependent_p && lookup.value && dependent_type_p (scope))
 	{
 	  tree val = lookup.value;
 	  if (tree fns = maybe_get_fns (val))
