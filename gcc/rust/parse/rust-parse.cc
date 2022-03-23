@@ -100,6 +100,30 @@ contains (std::vector<T> &vec, T elm)
   return std::find (vec.begin (), vec.end (), elm) != vec.end ();
 }
 
+/**
+ * Avoid UB by calling .front() and .back() on empty containers...
+ */
+
+template <typename T>
+static T *
+get_back_ptr (std::vector<std::unique_ptr<T>> &values)
+{
+  if (values.empty ())
+    return nullptr;
+
+  return values.back ().get ();
+}
+
+template <typename T>
+static T *
+get_front_ptr (std::vector<std::unique_ptr<T>> &values)
+{
+  if (values.empty ())
+    return nullptr;
+
+  return values.front ().get ();
+}
+
 static bool
 peculiar_fragment_match_compatible_fragment (
   const AST::MacroFragSpec &last_spec, const AST::MacroFragSpec &spec,
@@ -196,8 +220,9 @@ peculiar_fragment_match_compatible (AST::MacroMatchFragment &last_match,
       case AST::MacroMatch::Repetition: {
 	auto repetition = static_cast<AST::MacroMatchRepetition *> (&match);
 	auto &matches = repetition->get_matches ();
-	if (!matches.empty ())
-	  error_locus = matches.front ()->get_match_locus ();
+	auto first_frag = get_front_ptr (matches);
+	if (first_frag)
+	  return peculiar_fragment_match_compatible (last_match, *first_frag);
 	break;
       }
       case AST::MacroMatch::Matcher: {
@@ -229,30 +254,6 @@ peculiar_fragment_match_compatible (AST::MacroMatchFragment &last_match,
   rust_inform (error_locus, "allowed tokens are %s", allowed_toks_str.c_str ());
 
   return false;
-}
-
-/**
- * Avoid UB by calling .front() and .back() on empty containers...
- */
-
-template <typename T>
-static T *
-get_back_ptr (std::vector<std::unique_ptr<T>> &values)
-{
-  if (values.empty ())
-    return nullptr;
-
-  return values.back ().get ();
-}
-
-template <typename T>
-static T *
-get_front_ptr (std::vector<std::unique_ptr<T>> &values)
-{
-  if (values.empty ())
-    return nullptr;
-
-  return values.front ().get ();
 }
 
 bool
