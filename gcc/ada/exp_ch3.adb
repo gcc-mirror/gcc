@@ -6102,8 +6102,7 @@ package body Exp_Ch3 is
          Par_Id := Base_Type (Full_View (Par_Id));
       end if;
 
-      if Nkind (Type_Definition (Original_Node (N))) =
-                                                   N_Derived_Type_Definition
+      if Nkind (Type_Definition (N)) = N_Derived_Type_Definition
         and then not Is_Tagged_Type (Def_Id)
         and then Present (Freeze_Node (Par_Id))
         and then Present (TSS_Elist (Freeze_Node (Par_Id)))
