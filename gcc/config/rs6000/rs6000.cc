@@ -4345,8 +4345,8 @@ rs6000_option_override_internal (bool global_init_p)
 	    rs6000_veclib_handler = rs6000_builtin_vectorized_libmass;
 	  else
 	    {
-	      error ("unknown vectorization library ABI type %qs for "
-		     "%qs switch", rs6000_veclibabi_name, "-mveclibabi=");
+	      error ("unknown vectorization library ABI type in "
+		     "%<-mveclibabi=%s%>", rs6000_veclibabi_name);
 	      ret = false;
 	    }
 	}
