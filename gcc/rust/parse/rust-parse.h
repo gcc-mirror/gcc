@@ -142,6 +142,7 @@ public:
   std::vector<std::unique_ptr<AST::LifetimeParam> > parse_lifetime_params ();
   AST::Visibility parse_visibility ();
   std::unique_ptr<AST::IdentifierPattern> parse_identifier_pattern ();
+  std::unique_ptr<AST::TokenTree> parse_token_tree ();
 
 private:
   void skip_after_semicolon ();
@@ -188,7 +189,6 @@ private:
 
   // Token tree or macro related
   AST::DelimTokenTree parse_delim_token_tree ();
-  std::unique_ptr<AST::TokenTree> parse_token_tree ();
   std::unique_ptr<AST::MacroRulesDefinition>
   parse_macro_rules_def (AST::AttrVec outer_attrs);
   std::unique_ptr<AST::MacroInvocation>

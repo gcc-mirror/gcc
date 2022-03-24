@@ -497,10 +497,8 @@ MacroExpander::match_fragment (Parser<MacroInvocLexer> &parser,
       gcc_unreachable ();
       break;
 
-      // what is TT?
     case AST::MacroFragSpec::TT:
-      // parser.parse_token_tree() ?
-      gcc_unreachable ();
+      parser.parse_token_tree ();
       break;
 
       // i guess we just ignore invalid and just error out

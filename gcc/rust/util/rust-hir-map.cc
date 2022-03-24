@@ -751,6 +751,8 @@ Mappings::insert_macro_def (AST::MacroRulesDefinition *macro)
       {"assert", MacroBuiltin::assert},
       {"file", MacroBuiltin::file},
       {"column", MacroBuiltin::column},
+      {"include_bytes", MacroBuiltin::include_bytes},
+      {"include_str", MacroBuiltin::include_str},
     };
 
   auto builtin = builtin_macros.find (macro->get_rule_name ());
