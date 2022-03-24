@@ -6723,17 +6723,18 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 	  }
 
 	if (VAR_P (r)
-	    && (TREE_STATIC (r) || CP_DECL_THREAD_LOCAL_P (r))
+	    && (TREE_STATIC (r)
+		|| (CP_DECL_THREAD_LOCAL_P (r) && !DECL_REALLY_EXTERN (r)))
 	    /* Allow __FUNCTION__ etc.  */
 	    && !DECL_ARTIFICIAL (r))
 	  {
 	    if (!ctx->quiet)
 	      {
 		if (CP_DECL_THREAD_LOCAL_P (r))
-		  error_at (loc, "control passes through declaration of %qD "
+		  error_at (loc, "control passes through definition of %qD "
 				 "with thread storage duration", r);
 		else
-		  error_at (loc, "control passes through declaration of %qD "
+		  error_at (loc, "control passes through definition of %qD "
 				 "with static storage duration", r);
 	      }
 	    *non_constant_p = true;
@@ -9188,17 +9189,17 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
       tmp = DECL_EXPR_DECL (t);
       if (VAR_P (tmp) && !DECL_ARTIFICIAL (tmp))
 	{
-	  if (CP_DECL_THREAD_LOCAL_P (tmp))
+	  if (CP_DECL_THREAD_LOCAL_P (tmp) && !DECL_REALLY_EXTERN (tmp))
 	    {
 	      if (flags & tf_error)
-		error_at (DECL_SOURCE_LOCATION (tmp), "%qD declared "
+		error_at (DECL_SOURCE_LOCATION (tmp), "%qD defined "
 			  "%<thread_local%> in %<constexpr%> context", tmp);
 	      return false;
 	    }
 	  else if (TREE_STATIC (tmp))
 	    {
 	      if (flags & tf_error)
-		error_at (DECL_SOURCE_LOCATION (tmp), "%qD declared "
+		error_at (DECL_SOURCE_LOCATION (tmp), "%qD defined "
 			  "%<static%> in %<constexpr%> context", tmp);
 	      return false;
 	    }
