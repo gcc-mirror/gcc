@@ -252,7 +252,6 @@ testsuite		Rainer Orth		<ro@CeBiTec.Uni-Bielefeld.DE>
 testsuite		Mike Stump		<mikestump@comcast.net>
 register allocation	Vladimir Makarov	<vmakarov@redhat.com>
 gdbhooks.py		David Malcolm		<dmalcolm@redhat.com>
-SLSR			Bill Schmidt		<wschmidt@linux.ibm.com>
 jit			David Malcolm		<dmalcolm@redhat.com>
 gen* on machine desc	Richard Sandiford	<rdsandiford@googlemail.com>
 static analyzer		David Malcolm		<dmalcolm@redhat.com>
@@ -720,6 +719,7 @@ Gaius Mulley					<gaiusmod2@gmail.com>
 Siddhesh Poyarekar				<siddhesh@gotplt.org>
 Navid Rahimi					<navidrahimi@microsoft.com>
 Trevor Saunders					<tbsaunde+gcc@tbsaunde.org>
+Bill Schmidt					<bill.schmidt@fastmail.com>
 Nathan Sidwell					<nathan@acm.org>
 Edward Smith-Rowland				<esmithrowland@gmail.com>
 Petter Tomner					<tomner@kth.se>
