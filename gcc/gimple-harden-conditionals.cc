@@ -509,10 +509,16 @@ pass_harden_compares::execute (function *fun)
 	gsi_insert_before (&gsi_split, asgnck, GSI_SAME_STMT);
 
 	/* We wish to insert a cond_expr after the compare, so arrange
-	   for it to be at the end of a block if it isn't.  */
-	if (!gsi_end_p (gsi_split))
+	   for it to be at the end of a block if it isn't, and for it
+	   to have a single successor in case there's more than
+	   one, as in PR104975.  */
+	if (!gsi_end_p (gsi_split)
+	    || !single_succ_p (gsi_bb (gsi_split)))
 	  {
-	    gsi_prev (&gsi_split);
+	    if (!gsi_end_p (gsi_split))
+	      gsi_prev (&gsi_split);
+	    else
+	      gsi_split = gsi_last_bb (gsi_bb (gsi_split));
 	    basic_block obb = gsi_bb (gsi_split);
 	    basic_block nbb = split_block (obb, gsi_stmt (gsi_split))->dest;
 	    gsi_next (&gsi_split);
