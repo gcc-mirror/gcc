@@ -4221,6 +4221,7 @@ simplify_using_ranges::simplify_using_ranges (range_query *query,
 simplify_using_ranges::~simplify_using_ranges ()
 {
   cleanup_edges_and_switches ();
+  m_flag_set_edges.release ();
 }
 
 /* Simplify STMT using ranges if possible.  */

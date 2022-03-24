@@ -297,6 +297,11 @@ enum chain_type
 
 typedef struct chain
 {
+  chain (chain_type t) : type (t), op (ERROR_MARK), rslt_type (NULL_TREE),
+    ch1 (NULL), ch2 (NULL), length (0), init_seq (NULL), fini_seq (NULL),
+    has_max_use_after (false), all_always_accessed (false), combined (false),
+    inv_store_elimination (false) {}
+
   /* Type of the chain.  */
   enum chain_type type;
 
@@ -362,6 +367,8 @@ enum ref_step_type
 
 struct component
 {
+  component (bool es) : eliminate_store_p (es), next (NULL) {}
+
   /* The references in the component.  */
   auto_vec<dref> refs;
 
@@ -698,7 +705,7 @@ pcom_worker::release_chain (chain_p chain)
   if (chain->fini_seq)
     gimple_seq_discard (chain->fini_seq);
 
-  free (chain);
+  delete chain;
 }
 
 /* Frees CHAINS.  */
@@ -723,7 +730,7 @@ release_components (struct component *comps)
   for (act = comps; act; act = next)
     {
       next = act->next;
-      XDELETE (act);
+      delete act;
     }
 }
 
@@ -1023,9 +1030,8 @@ pcom_worker::split_data_refs_to_components ()
       comp = comps[ca];
       if (!comp)
 	{
-	  comp = XCNEW (struct component);
-	  comp->refs.create (comp_size[ca]);
-	  comp->eliminate_store_p = eliminate_store_p;
+	  comp = new component (eliminate_store_p);
+	  comp->refs.reserve_exact (comp_size[ca]);
 	  comps[ca] = comp;
 	}
 
@@ -1142,7 +1148,7 @@ pcom_worker::filter_suitable_components (struct component *comps)
 	  *comp = act->next;
 	  FOR_EACH_VEC_ELT (act->refs, i, ref)
 	    free (ref);
-	  XDELETE (act);
+	  delete act;
 	}
     }
 
@@ -1255,11 +1261,9 @@ add_ref_to_chain (chain_p chain, dref ref)
 static chain_p
 make_invariant_chain (struct component *comp)
 {
-  chain_p chain = XCNEW (struct chain);
+  chain_p chain = new struct chain (CT_INVARIANT);
   unsigned i;
   dref ref;
-
-  chain->type = CT_INVARIANT;
 
   chain->all_always_accessed = true;
 
@@ -1280,9 +1284,8 @@ make_invariant_chain (struct component *comp)
 static chain_p
 make_rooted_chain (dref ref, enum chain_type type)
 {
-  chain_p chain = XCNEW (struct chain);
+  chain_p chain = new struct chain (type);
 
-  chain->type = type;
   chain->refs.safe_push (ref);
   chain->all_always_accessed = ref->always_accessed;
   ref->distance = 0;
@@ -2873,8 +2876,7 @@ pcom_worker::combine_chains (chain_p ch1, chain_p ch2)
   if (swap)
     std::swap (ch1, ch2);
 
-  new_chain = XCNEW (struct chain);
-  new_chain->type = CT_COMBINATION;
+  new_chain = new struct chain (CT_COMBINATION);
   new_chain->op = op;
   new_chain->ch1 = ch1;
   new_chain->ch2 = ch2;
