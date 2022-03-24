@@ -1,3 +1,10 @@
+2022-03-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/101636
+	PR tree-optimization/104782
+	* c-c++-common/torture/pr101636.c: Likewise.
+	* gcc.dg/vect/pr104782.c: New testcase.
+
 2022-03-22  H.J. Lu  <hjl.tools@gmail.com>
 
 	Backported from master:

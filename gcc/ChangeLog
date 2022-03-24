@@ -1,3 +1,16 @@
+2022-03-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/101636
+	PR tree-optimization/104782
+	* tree-vect-slp.c (vect_slp_analyze_operations): Make sure
+	the CTOR is vectorized with an expected type.
+
+2022-03-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/104931
+	* match.pd ((ptr) (x p+ y) p+ z -> (ptr) (x p+ (y + z))): New GENERIC
+	simplification.
+
 2022-03-22  H.J. Lu  <hjl.tools@gmail.com>
 
 	Backported from master:
