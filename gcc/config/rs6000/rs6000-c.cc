@@ -1686,6 +1686,10 @@ find_instance (bool *unsupported_builtin, ovlddata **instance,
 
   ovlddata *inst = *instance;
   gcc_assert (inst != NULL);
+  /* It is possible for an instance to require a data type that isn't
+     defined on this target, in which case inst->fntype will be NULL.  */
+  if (!inst->fntype)
+    return error_mark_node;
   tree fntype = rs6000_builtin_info[inst->bifid].fntype;
   tree parmtype0 = TREE_VALUE (TYPE_ARG_TYPES (fntype));
   tree parmtype1 = TREE_VALUE (TREE_CHAIN (TYPE_ARG_TYPES (fntype)));
