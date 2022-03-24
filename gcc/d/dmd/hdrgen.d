@@ -2843,7 +2843,6 @@ string stcToString(ref StorageClass stc)
         SCstring(STC.pure_, Token.toString(TOK.pure_)),
         SCstring(STC.ref_, Token.toString(TOK.ref_)),
         SCstring(STC.return_, Token.toString(TOK.return_)),
-        SCstring(STC.tls, "__thread"),
         SCstring(STC.gshared, Token.toString(TOK.gshared)),
         SCstring(STC.nogc, "@nogc"),
         SCstring(STC.live, "@live"),

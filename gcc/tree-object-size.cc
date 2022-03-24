@@ -1477,14 +1477,19 @@ parm_object_size (struct object_size_info *osi, tree var)
   tree typesize = TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (parm)));
   tree sz = NULL_TREE;
 
-  if (access && access->sizarg != UINT_MAX)
+  /* If we have an explicit access attribute with a usable size argument... */
+  if (access && access->sizarg != UINT_MAX && !access->internal_p
+      /* ... and either PARM is void * or has a type that is complete and has a
+	 constant size... */
+      && ((typesize && poly_int_tree_p (typesize))
+	  || (!typesize && VOID_TYPE_P (TREE_TYPE (TREE_TYPE (parm))))))
     {
       tree fnargs = DECL_ARGUMENTS (fndecl);
       tree arg = NULL_TREE;
       unsigned argpos = 0;
 
-      /* Walk through the parameters to pick the size parameter and safely
-	 scale it by the type size.  */
+      /* ... then walk through the parameters to pick the size parameter and
+	 safely scale it by the type size if needed.  */
       for (arg = fnargs; arg; arg = TREE_CHAIN (arg), ++argpos)
 	if (argpos == access->sizarg && INTEGRAL_TYPE_P (TREE_TYPE (arg)))
 	  {

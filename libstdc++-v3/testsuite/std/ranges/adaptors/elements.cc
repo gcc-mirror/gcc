@@ -20,9 +20,10 @@
 
 #include <algorithm>
 #include <ranges>
+#include <tuple>
+#include <vector>
 #include <testsuite_hooks.h>
 #include <testsuite_iterators.h>
-#include <tuple>
 
 namespace ranges = std::ranges;
 namespace views = ranges::views;

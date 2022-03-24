@@ -1,0 +1,6 @@
+T(0,float a;int:0;float b;,F(0,a,42.0f,43.125f)F(0,b,-17.5f,35.75f))
+T(1,float a;int:0;,F(1,a,1.0f,17.125f))
+T(2,int:0;float a;,F(2,a,2.25f,16.5f))
+T(3,double a;long long:0;double b;,F(3,a,42.0,43.125)F(3,b,-17.5,35.75))
+T(4,double a;long long:0;,F(4,a,1.0,17.125))
+T(5,long long:0;double a;,F(5,a,2.25,16.5))

@@ -650,6 +650,12 @@ LD
 FGREP
 SED
 LIBTOOL
+LTO_PLUGIN_USE_SYMVER_SUN_FALSE
+LTO_PLUGIN_USE_SYMVER_SUN_TRUE
+LTO_PLUGIN_USE_SYMVER_GNU_FALSE
+LTO_PLUGIN_USE_SYMVER_GNU_TRUE
+LTO_PLUGIN_USE_SYMVER_FALSE
+LTO_PLUGIN_USE_SYMVER_TRUE
 get_gcc_base_ver
 real_target_noncanonical
 accel_dir_suffix
@@ -5908,6 +5914,100 @@ if test "${with_gcc_major_version_only+set}" = set; then :
 fi
 
 
+
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether symbol versioning is supported" >&5
+$as_echo_n "checking whether symbol versioning is supported... " >&6; }
+lto_plugin_use_symver=no
+if test x$gcc_no_link = xyes; then
+  # If we cannot link, we cannot build shared libraries, so do not use
+  # symbol versioning.
+  lto_plugin_use_symver=no
+else
+  save_LDFLAGS="$LDFLAGS"
+  LDFLAGS="$LDFLAGS -fPIC -shared -Wl,--version-script,./conftest.map"
+  cat > conftest.map <<EOF
+{
+  global: *foo*; bar; local: *;
+};
+EOF
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+int foo;
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  lto_plugin_use_symver=gnu
+else
+  lto_plugin_use_symver=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+  if test x$lto_plugin_use_symver = xno; then
+    case "$target_os" in
+      solaris2*)
+	LDFLAGS="$save_LDFLAGS"
+	LDFLAGS="$LDFLAGS -fPIC -shared -Wl,-M,./conftest.map"
+	# Sun ld cannot handle wildcards and treats all entries as undefined.
+	cat > conftest.map <<EOF
+{
+  global: foo; local: *;
+};
+EOF
+	cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+int foo;
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  lto_plugin_use_symver=sun
+else
+  lto_plugin_use_symver=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+	  ;;
+    esac
+  fi
+  LDFLAGS="$save_LDFLAGS"
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $lto_plugin_use_symver" >&5
+$as_echo "$lto_plugin_use_symver" >&6; }
+ if test "x$lto_plugin_use_symver" != xno; then
+  LTO_PLUGIN_USE_SYMVER_TRUE=
+  LTO_PLUGIN_USE_SYMVER_FALSE='#'
+else
+  LTO_PLUGIN_USE_SYMVER_TRUE='#'
+  LTO_PLUGIN_USE_SYMVER_FALSE=
+fi
+
+ if test "x$lto_plugin_use_symver" = xgnu; then
+  LTO_PLUGIN_USE_SYMVER_GNU_TRUE=
+  LTO_PLUGIN_USE_SYMVER_GNU_FALSE='#'
+else
+  LTO_PLUGIN_USE_SYMVER_GNU_TRUE='#'
+  LTO_PLUGIN_USE_SYMVER_GNU_FALSE=
+fi
+
+ if test "x$lto_plugin_use_symver" = xsun; then
+  LTO_PLUGIN_USE_SYMVER_SUN_TRUE=
+  LTO_PLUGIN_USE_SYMVER_SUN_FALSE='#'
+else
+  LTO_PLUGIN_USE_SYMVER_SUN_TRUE='#'
+  LTO_PLUGIN_USE_SYMVER_SUN_FALSE=
+fi
 
 
 case `pwd` in
@@ -11981,7 +12081,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11984 "configure"
+#line 12084 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -12087,7 +12187,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 12090 "configure"
+#line 12190 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -12556,6 +12656,18 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${am__fastdepCC_TRUE}" && test -z "${am__fastdepCC_FALSE}"; then
   as_fn_error $? "conditional \"am__fastdepCC\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${LTO_PLUGIN_USE_SYMVER_TRUE}" && test -z "${LTO_PLUGIN_USE_SYMVER_FALSE}"; then
+  as_fn_error $? "conditional \"LTO_PLUGIN_USE_SYMVER\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${LTO_PLUGIN_USE_SYMVER_GNU_TRUE}" && test -z "${LTO_PLUGIN_USE_SYMVER_GNU_FALSE}"; then
+  as_fn_error $? "conditional \"LTO_PLUGIN_USE_SYMVER_GNU\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${LTO_PLUGIN_USE_SYMVER_SUN_TRUE}" && test -z "${LTO_PLUGIN_USE_SYMVER_SUN_FALSE}"; then
+  as_fn_error $? "conditional \"LTO_PLUGIN_USE_SYMVER_SUN\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 

@@ -73,7 +73,7 @@ SIZE(libat_test_and_set) (UTYPE *mptr, int smodel)
 				     __ATOMIC_RELAXED, __ATOMIC_RELAXED));
 
   post_barrier (smodel);
-  return woldval != 0;
+  return (woldval & ((UTYPE) ~(UTYPE) 0 << shift)) != 0;
 }
 
 #define DONE 1

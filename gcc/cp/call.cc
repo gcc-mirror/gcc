@@ -9939,7 +9939,7 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
 		    obj_arg = TREE_OPERAND (addr, 0);
 		}
 	    }
-	  call = cxx_constant_value (call, obj_arg);
+	  call = cxx_constant_value_sfinae (call, obj_arg, complain);
 	  if (obj_arg && !error_operand_p (call))
 	    call = build2 (INIT_EXPR, void_type_node, obj_arg, call);
 	  call = convert_from_reference (call);

@@ -142,7 +142,7 @@ int f1_20682(return scope ref D d) @safe
     return d.pos;
 }
 
-ref int f2_20682(return scope ref D d) @safe
+ref int f2_20682(return ref scope D d) @safe
 {
     return d.pos;
 }

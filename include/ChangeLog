@@ -1,3 +1,9 @@
+2022-03-19  Tiezhu Yang  <yangtiezhu@loongson.cn>
+
+	* floatformat.h (floatformat_ieee_quad_big): Renamed from
+	floatformat_ia64_quad_big.
+	(floatformat_ieee_quad_little): Similarly.
+
 2021-12-12  Jonathan Wakely  <jwakely@redhat.com>
 
 	* unique-ptr.h: Removed.

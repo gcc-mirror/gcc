@@ -214,6 +214,17 @@ function_point::get_location () const
     return UNKNOWN_LOCATION;
 }
 
+/* Return true if this function_point is a before_stmt for
+   the final stmt in its supernode.  */
+
+bool
+function_point::final_stmt_p () const
+{
+  if (m_kind != PK_BEFORE_STMT)
+    return false;
+  return m_stmt_idx == get_supernode ()->m_stmts.length () - 1;
+}
+
 /* Create a function_point representing the entrypoint of function FUN.  */
 
 function_point
@@ -625,6 +636,35 @@ function_point::next_stmt ()
     }
 }
 
+/* For those function points for which there is a uniquely-defined
+   successor, return it.  */
+
+function_point
+function_point::get_next () const
+{
+  switch (get_kind ())
+    {
+    default:
+      gcc_unreachable ();
+    case PK_ORIGIN:
+    case PK_AFTER_SUPERNODE:
+      gcc_unreachable (); /* Not uniquely defined.  */
+    case PK_BEFORE_SUPERNODE:
+      if (get_supernode ()->m_stmts.length () > 0)
+	return before_stmt (get_supernode (), 0);
+      else
+	return after_supernode (get_supernode ());
+    case PK_BEFORE_STMT:
+      {
+	unsigned next_idx = get_stmt_idx () + 1;
+	if (next_idx < get_supernode ()->m_stmts.length ())
+	  return before_stmt (get_supernode (), next_idx);
+	else
+	  return after_supernode (get_supernode ());
+      }
+    }
+}
+
 /* For those program points for which there is a uniquely-defined
    successor, return it.  */
 
@@ -645,7 +685,7 @@ program_point::get_next () const
 	return after_supernode (get_supernode (), get_call_string ());
     case PK_BEFORE_STMT:
       {
-	unsigned next_idx = get_stmt_idx ();
+	unsigned next_idx = get_stmt_idx () + 1;
 	if (next_idx < get_supernode ()->m_stmts.length ())
 	  return before_stmt (get_supernode (), next_idx, get_call_string ());
 	else

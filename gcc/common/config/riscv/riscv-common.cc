@@ -1116,16 +1116,16 @@ static const riscv_ext_flag_table_t riscv_ext_flag_table[] =
   {"zve64f",   &gcc_options::x_target_flags, MASK_VECTOR},
   {"zve64d",   &gcc_options::x_target_flags, MASK_VECTOR},
 
-  /* We don't need to put complete EEW/EEW_FP info here, due to the
+  /* We don't need to put complete ELEN/ELEN_FP info here, due to the
      implication relation of vector extension.
-     e.g. v -> zve64d ... zve32x, so v has set MASK_VECTOR_EEW_FP_64,
-     MASK_VECTOR_EEW_FP_32, MASK_VECTOR_EEW_64 and MASK_VECTOR_EEW_32
+     e.g. v -> zve64d ... zve32x, so v has set MASK_VECTOR_ELEN_FP_64,
+     MASK_VECTOR_ELEN_FP_32, MASK_VECTOR_ELEN_64 and MASK_VECTOR_ELEN_32
      due to the extension implication.  */
-  {"zve32x",   &gcc_options::x_riscv_vector_eew_flags, MASK_VECTOR_EEW_32},
-  {"zve32f",   &gcc_options::x_riscv_vector_eew_flags, MASK_VECTOR_EEW_FP_32},
-  {"zve64x",   &gcc_options::x_riscv_vector_eew_flags, MASK_VECTOR_EEW_64},
-  {"zve64f",   &gcc_options::x_riscv_vector_eew_flags, MASK_VECTOR_EEW_FP_32},
-  {"zve64d",   &gcc_options::x_riscv_vector_eew_flags, MASK_VECTOR_EEW_FP_64},
+  {"zve32x",   &gcc_options::x_riscv_vector_elen_flags, MASK_VECTOR_ELEN_32},
+  {"zve32f",   &gcc_options::x_riscv_vector_elen_flags, MASK_VECTOR_ELEN_FP_32},
+  {"zve64x",   &gcc_options::x_riscv_vector_elen_flags, MASK_VECTOR_ELEN_64},
+  {"zve64f",   &gcc_options::x_riscv_vector_elen_flags, MASK_VECTOR_ELEN_FP_32},
+  {"zve64d",   &gcc_options::x_riscv_vector_elen_flags, MASK_VECTOR_ELEN_FP_64},
 
   {"zvl32b",    &gcc_options::x_riscv_zvl_flags, MASK_ZVL32B},
   {"zvl64b",    &gcc_options::x_riscv_zvl_flags, MASK_ZVL64B},

@@ -507,6 +507,18 @@ struct cpu_prefetch_tune
   const int default_opt_level;
 };
 
+/* Model the costs for loads/stores for the register allocators so that it can
+   do more accurate spill heuristics.  */
+struct cpu_memmov_cost
+{
+  int load_int;
+  int store_int;
+  int load_fp;
+  int store_fp;
+  int load_pred;
+  int store_pred;
+};
+
 struct tune_params
 {
   const struct cpu_cost_table *insn_extra_cost;
@@ -519,7 +531,8 @@ struct tune_params
      or SVE_NOT_IMPLEMENTED if not applicable.  Only used for tuning
      decisions, does not disable VLA vectorization.  */
   unsigned int sve_width;
-  int memmov_cost;
+  /* Structure used by reload to cost spills.  */
+  struct cpu_memmov_cost memmov_cost;
   int issue_rate;
   unsigned int fusible_ops;
   const char *function_align;

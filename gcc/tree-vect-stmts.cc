@@ -9480,7 +9480,7 @@ vectorizable_load (vec_info *vinfo,
 					  memory_access_type);
     }
 
-  vec<tree> vec_offsets = vNULL;
+  auto_vec<tree> vec_offsets;
   auto_vec<tree> vec_masks;
   if (mask)
     {

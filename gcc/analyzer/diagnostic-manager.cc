@@ -874,9 +874,11 @@ diagnostic_manager::diagnostic_manager (logger *logger, engine *eng,
 {
 }
 
-/* Queue pending_diagnostic D at ENODE for later emission.  */
+/* Queue pending_diagnostic D at ENODE for later emission.
+   Return true/false signifying if the diagnostic was actually added.
+   Take ownership of D (or delete it).  */
 
-void
+bool
 diagnostic_manager::add_diagnostic (const state_machine *sm,
 				    exploded_node *enode,
 				    const supernode *snode, const gimple *stmt,
@@ -907,7 +909,7 @@ diagnostic_manager::add_diagnostic (const state_machine *sm,
 				d->get_kind ());
 	  delete d;
 	  m_num_disabled_diagnostics++;
-	  return;
+	  return false;
 	}
     }
 
@@ -920,18 +922,22 @@ diagnostic_manager::add_diagnostic (const state_machine *sm,
     log ("adding saved diagnostic %i at SN %i to EN %i: %qs",
 	 sd->get_index (),
 	 snode->m_index, enode->m_index, d->get_kind ());
+  return true;
 }
 
-/* Queue pending_diagnostic D at ENODE for later emission.  */
+/* Queue pending_diagnostic D at ENODE for later emission.
+   Return true/false signifying if the diagnostic was actually added.
+   Take ownership of D (or delete it).  */
 
-void
+bool
 diagnostic_manager::add_diagnostic (exploded_node *enode,
 				    const supernode *snode, const gimple *stmt,
 				    stmt_finder *finder,
 				    pending_diagnostic *d)
 {
   gcc_assert (enode);
-  add_diagnostic (NULL, enode, snode, stmt, finder, NULL_TREE, NULL, 0, d);
+  return add_diagnostic (NULL, enode, snode, stmt, finder, NULL_TREE,
+			 NULL, 0, d);
 }
 
 /* Add PN to the most recent saved_diagnostic.  */

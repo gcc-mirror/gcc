@@ -381,6 +381,22 @@ test_parmsz_simple (void *obj, size_t sz)
 }
 
 size_t
+__attribute__ ((access (__read_write__, 2, 1)))
+__attribute__ ((noinline))
+test_parmsz_simple2 (size_t sz, char obj[])
+{
+  return __builtin_dynamic_object_size (obj, 0);
+}
+
+/* Implicitly constructed access attributes not supported yet.  */
+size_t
+__attribute__ ((noinline))
+test_parmsz_simple3 (size_t sz, char obj[sz])
+{
+  return __builtin_dynamic_object_size (obj, 0);
+}
+
+size_t
 __attribute__ ((noinline))
 __attribute__ ((access (__read_write__, 1, 2)))
 test_parmsz (void *obj, size_t sz, size_t off)
@@ -410,6 +426,38 @@ __attribute__ ((noinline))
 test_parmsz_unknown (void *obj, void *unknown, size_t sz, int cond)
 {
   return __builtin_dynamic_object_size (cond ? obj : unknown, 0);
+}
+
+struct S;
+size_t
+__attribute__ ((access (__read_write__, 1, 2)))
+__attribute__ ((noinline))
+test_parmsz_extern (struct S *obj, size_t sz)
+{
+  return __builtin_dynamic_object_size (obj, 0);
+}
+
+/* Implicitly constructed access attributes not supported yet.  */
+size_t
+__attribute__ ((noinline))
+test_parmsz_internal (size_t sz, double obj[][sz])
+{
+  return __builtin_dynamic_object_size (obj, 0);
+}
+
+size_t
+__attribute__ ((access (__read_write__, 2, 1)))
+__attribute__ ((noinline))
+test_parmsz_internal2 (size_t sz, double obj[][sz])
+{
+  return __builtin_dynamic_object_size (obj, 0);
+}
+
+size_t
+__attribute__ ((noinline))
+test_parmsz_internal3 (size_t sz1, size_t sz2, double obj[sz1][sz2])
+{
+  return __builtin_dynamic_object_size (obj, 0);
 }
 
 /* Loops.  */
@@ -532,8 +580,21 @@ main (int argc, char **argv)
   if (test_parmsz_simple (argv[0], __builtin_strlen (argv[0]) + 1)
       != __builtin_strlen (argv[0]) + 1)
     FAIL ();
+  if (test_parmsz_simple2 (__builtin_strlen (argv[0]) + 1, argv[0])
+      != __builtin_strlen (argv[0]) + 1)
+    FAIL ();
+  /* Only explicitly added access attributes are supported for now.  */
+  if (test_parmsz_simple3 (__builtin_strlen (argv[0]) + 1, argv[0]) != -1)
+    FAIL ();
   int arr[42];
   if (test_parmsz_scaled (arr, 42) != sizeof (arr))
+    FAIL ();
+  if (test_parmsz_scaled (arr, 40) != 40 * sizeof (int))
+    FAIL ();
+  /* __bdos cannot see the actual size of ARR, so it will return what it was
+     passed.  Fortunately though the overflow warnings see this caller side and
+     warns of the problematic size.  */
+  if (test_parmsz_scaled (arr, 44) != 44 * sizeof (int)) /* { dg-warning "-Wstringop-overflow=" } */
     FAIL ();
   if (test_parmsz_unknown (argv[0], argv[0], __builtin_strlen (argv[0]) + 1, 0)
       != -1)
@@ -549,6 +610,16 @@ main (int argc, char **argv)
 		   __builtin_strlen (argv[0]) + 2) != 0)
     FAIL ();
   if (test_parmsz_scaled_off (arr, 42, 2) != 40 * sizeof (int))
+    FAIL ();
+  struct S *s;
+  if (test_parmsz_extern (s, 42) != -1)
+    FAIL ();
+  double obj[4][4];
+  if (test_parmsz_internal (4, obj) != -1)
+    FAIL ();
+  if (test_parmsz_internal2 (4, obj) != -1)
+    FAIL ();
+  if (test_parmsz_internal3 (4, 4, obj) != -1)
     FAIL ();
   if (test_loop (arr, 42, 0, 32, 1) != 10 * sizeof (int))
     FAIL ();

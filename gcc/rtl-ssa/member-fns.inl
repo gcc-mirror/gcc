@@ -401,7 +401,7 @@ def_mux::set () const
 }
 
 inline def_info *
-def_lookup::prev_def () const
+def_lookup::last_def_of_prev_group () const
 {
   if (!mux)
     return nullptr;
@@ -413,7 +413,7 @@ def_lookup::prev_def () const
 }
 
 inline def_info *
-def_lookup::next_def () const
+def_lookup::first_def_of_next_group () const
 {
   if (!mux)
     return nullptr;
@@ -433,19 +433,19 @@ def_lookup::matching_set () const
 }
 
 inline def_info *
-def_lookup::matching_or_prev_def () const
+def_lookup::matching_set_or_last_def_of_prev_group () const
 {
   if (set_info *set = matching_set ())
     return set;
-  return prev_def ();
+  return last_def_of_prev_group ();
 }
 
 inline def_info *
-def_lookup::matching_or_next_def () const
+def_lookup::matching_set_or_first_def_of_next_group () const
 {
   if (set_info *set = matching_set ())
     return set;
-  return next_def ();
+  return first_def_of_next_group ();
 }
 
 inline insn_note::insn_note (insn_note_kind kind)

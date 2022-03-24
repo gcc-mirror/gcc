@@ -1,3 +1,13 @@
+2022-03-22  Marek Polacek  <polacek@redhat.com>
+
+	PR c/82283
+	PR c/84685
+	* c-typeck.cc (struct initializer_stack): Add 'designated' member.
+	(start_init): Set it.
+	(finish_init): Restore constructor_designated.
+	(push_init_level): Set constructor_designated to the value of
+	constructor_designated in the upper constructor_stack.
+
 2022-03-12  Thomas Schwinge  <thomas@codesourcery.com>
 
 	PR other/65095

@@ -20,6 +20,7 @@
 
 #include <algorithm>
 #include <array>
+#include <functional>
 
 // heap
 constexpr std::array<int, 23>

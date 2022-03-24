@@ -425,7 +425,7 @@ extern(C++) void gendocfile(Module m)
         dc.copyright.nooutput = 1;
         m.macrotable.define("COPYRIGHT", dc.copyright.body_);
     }
-    if (m.isDocFile)
+    if (m.filetype == FileType.ddoc)
     {
         const ploc = m.md ? &m.md.loc : &m.loc;
         const loc = Loc(ploc.filename ? ploc.filename : srcfilename.ptr,
@@ -4991,7 +4991,7 @@ private void highlightText(Scope* sc, Dsymbols* a, Loc loc, ref OutBuffer buf, s
 
         default:
             leadingBlank = false;
-            if (sc._module.isDocFile || inCode)
+            if (sc._module.filetype == FileType.ddoc || inCode)
                 break;
             const start = cast(char*)buf[].ptr + i;
             if (isIdStart(start))

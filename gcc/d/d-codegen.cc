@@ -1161,7 +1161,7 @@ build_struct_literal (tree type, vec <constructor_elt, va_gc> *init)
   if (COMPLEX_FLOAT_TYPE_P (type))
     {
       gcc_assert (vec_safe_length (init) == 2);
-      return build_complex (type, (*init)[0].value, (*init)[1].value);
+      return complex_expr (type, (*init)[0].value, (*init)[1].value);
     }
 
   vec <constructor_elt, va_gc> *ve = NULL;

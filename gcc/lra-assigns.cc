@@ -1706,7 +1706,8 @@ find_reload_regno_insns (int regno, rtx_insn * &start, rtx_insn * &finish)
 {
   unsigned int uid;
   bitmap_iterator bi;
-  int n = 0;
+  int insns_num = 0;
+  bool clobber_p = false;
   rtx_insn *prev_insn, *next_insn;
   rtx_insn *start_insn = NULL, *first_insn = NULL, *second_insn = NULL;
   
@@ -1714,28 +1715,32 @@ find_reload_regno_insns (int regno, rtx_insn * &start, rtx_insn * &finish)
     {
       if (start_insn == NULL)
 	start_insn = lra_insn_recog_data[uid]->insn;
-      n++;
+      if (GET_CODE (PATTERN (lra_insn_recog_data[uid]->insn)) == CLOBBER)
+	clobber_p = true;
+      else
+	insns_num++;
     }
-  /* For reload pseudo we should have at most 3 insns referring for
+  /* For reload pseudo we should have at most 3 insns besides clobber referring for
      it: input/output reload insns and the original insn.  */
-  if (n > 3)
+  if (insns_num > 3)
     return false;
-  if (n > 1)
+  if (clobber_p)
+    insns_num++;
+  if (insns_num > 1)
     {
       for (prev_insn = PREV_INSN (start_insn),
 	     next_insn = NEXT_INSN (start_insn);
-	   n != 1 && (prev_insn != NULL || next_insn != NULL); )
+	   insns_num != 1 && (prev_insn != NULL || next_insn != NULL); )
 	{
-	  if (prev_insn != NULL && first_insn == NULL)
+	  if (prev_insn != NULL)
 	    {
-	      if (! bitmap_bit_p (&lra_reg_info[regno].insn_bitmap,
-				  INSN_UID (prev_insn)))
-		prev_insn = PREV_INSN (prev_insn);
-	      else
+	      if (bitmap_bit_p (&lra_reg_info[regno].insn_bitmap,
+				INSN_UID (prev_insn)))
 		{
 		  first_insn = prev_insn;
-		  n--;
+		  insns_num--;
 		}
+		prev_insn = PREV_INSN (prev_insn);
 	    }
 	  if (next_insn != NULL && second_insn == NULL)
 	    {
@@ -1745,11 +1750,11 @@ find_reload_regno_insns (int regno, rtx_insn * &start, rtx_insn * &finish)
 	      else
 		{
 		  second_insn = next_insn;
-		  n--;
+		  insns_num--;
 		}
 	    }
 	}
-      if (n > 1)
+      if (insns_num > 1)
 	return false;
     }
   start = first_insn != NULL ? first_insn : start_insn;

@@ -619,31 +619,31 @@ UnionExp Shr(const ref Loc loc, Type type, Expression e1, Expression e2)
     switch (e1.type.toBasetype().ty)
     {
     case Tint8:
-        value = cast(d_int8)value >> count;
+        value = cast(byte)value >> count;
         break;
     case Tuns8:
     case Tchar:
-        value = cast(d_uns8)value >> count;
+        value = cast(ubyte)value >> count;
         break;
     case Tint16:
-        value = cast(d_int16)value >> count;
+        value = cast(short)value >> count;
         break;
     case Tuns16:
     case Twchar:
-        value = cast(d_uns16)value >> count;
+        value = cast(ushort)value >> count;
         break;
     case Tint32:
-        value = cast(d_int32)value >> count;
+        value = cast(int)value >> count;
         break;
     case Tuns32:
     case Tdchar:
-        value = cast(d_uns32)value >> count;
+        value = cast(uint)value >> count;
         break;
     case Tint64:
-        value = cast(d_int64)value >> count;
+        value = cast(long)value >> count;
         break;
     case Tuns64:
-        value = cast(d_uns64)value >> count;
+        value = cast(ulong)value >> count;
         break;
     case Terror:
         emplaceExp!(ErrorExp)(&ue);
@@ -1106,31 +1106,31 @@ UnionExp Cast(const ref Loc loc, Type type, Type to, Expression e1)
             switch (typeb.ty)
             {
             case Tint8:
-                result = cast(d_int8)cast(sinteger_t)r;
+                result = cast(byte)cast(sinteger_t)r;
                 break;
             case Tchar:
             case Tuns8:
-                result = cast(d_uns8)cast(dinteger_t)r;
+                result = cast(ubyte)cast(dinteger_t)r;
                 break;
             case Tint16:
-                result = cast(d_int16)cast(sinteger_t)r;
+                result = cast(short)cast(sinteger_t)r;
                 break;
             case Twchar:
             case Tuns16:
-                result = cast(d_uns16)cast(dinteger_t)r;
+                result = cast(ushort)cast(dinteger_t)r;
                 break;
             case Tint32:
-                result = cast(d_int32)r;
+                result = cast(int)r;
                 break;
             case Tdchar:
             case Tuns32:
-                result = cast(d_uns32)r;
+                result = cast(uint)r;
                 break;
             case Tint64:
-                result = cast(d_int64)r;
+                result = cast(long)r;
                 break;
             case Tuns64:
-                result = cast(d_uns64)r;
+                result = cast(ulong)r;
                 break;
             default:
                 assert(0);
@@ -1348,14 +1348,6 @@ UnionExp Slice(Type type, Expression e1, Expression lwr, Expression upr)
         }
     }
 
-    static bool sliceBoundsCheck(uinteger_t lwr, uinteger_t upr, uinteger_t newlwr, uinteger_t newupr) pure
-    {
-        assert(lwr <= upr);
-        return !(newlwr <= newupr &&
-                 lwr <= newlwr &&
-                 newupr <= upr);
-    }
-
     if (e1.op == EXP.string_ && lwr.op == EXP.int64 && upr.op == EXP.int64)
     {
         StringExp es1 = cast(StringExp)e1;
@@ -1393,6 +1385,16 @@ UnionExp Slice(Type type, Expression e1, Expression lwr, Expression upr)
     else
         cantExp(ue);
     return ue;
+}
+
+/* Check whether slice `[newlwr .. newupr]` is in the range `[lwr .. upr]`
+ */
+bool sliceBoundsCheck(uinteger_t lwr, uinteger_t upr, uinteger_t newlwr, uinteger_t newupr) pure
+{
+    assert(lwr <= upr);
+    return !(newlwr <= newupr &&
+             lwr <= newlwr &&
+             newupr <= upr);
 }
 
 /* Set a slice of char/integer array literal 'existingAE' from a string 'newval'.

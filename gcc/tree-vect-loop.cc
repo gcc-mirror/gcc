@@ -5466,7 +5466,8 @@ vect_create_epilog_for_reduction (loop_vec_info loop_vinfo,
   
   scalar_dest = gimple_get_lhs (orig_stmt_info->stmt);
   scalar_type = TREE_TYPE (scalar_dest);
-  scalar_results.create (group_size); 
+  scalar_results.truncate (0);
+  scalar_results.reserve_exact (group_size);
   new_scalar_dest = vect_create_destination_var (scalar_dest, NULL);
   bitsize = TYPE_SIZE (scalar_type);
 

@@ -1,3 +1,225 @@
+2022-03-23  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/104979
+	* engine.cc (impl_run_checkers): Create the engine after the
+	supergraph, and pass the supergraph to the engine.
+	* region-model.cc (region_model::get_lvalue_1): Pass ctxt to
+	frame_region::get_region_for_local.
+	(region_model::update_for_return_gcall): Pass the lvalue for the
+	result to pop_frame as a tree, rather than as a region.
+	(region_model::pop_frame): Update for above change, determining
+	the destination region after the frame is popped and thus with
+	respect to the caller frame rather than the called frame.
+	Likewise, set the value of the region to the return value after
+	the frame is popped.
+	(engine::engine): Add supergraph pointer.
+	(selftest::test_stack_frames): Set the DECL_CONTECT of PARM_DECLs.
+	(selftest::test_get_representative_path_var): Likewise.
+	(selftest::test_state_merging): Likewise.
+	* region-model.h (region_model::pop_frame): Convert first param
+	from a const region * to a tree.
+	(engine::engine): Add param "sg".
+	(engine::m_sg): New field.
+	* region.cc: Include "analyzer/sm.h" and
+	"analyzer/program-state.h".
+	(frame_region::get_region_for_local): Add "ctxt" param.
+	Add assertions that VAR_DECLs are locals, and that expr is for the
+	correct function.
+	* region.h (frame_region::get_region_for_local): Add "ctxt" param.
+
+2022-03-23  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/105017
+	* sm-taint.cc (taint_diagnostic::subclass_equal_p): Check
+	m_has_bounds as well as m_arg.
+	(tainted_allocation_size::subclass_equal_p): Chain up to base
+	class implementation.  Also check m_mem_space.
+	(tainted_allocation_size::emit): Add note showing stack-based vs
+	heap-based allocations.
+
+2022-03-23  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/104997
+	* diagnostic-manager.cc (diagnostic_manager::add_diagnostic):
+	Convert return type from "void" to "bool", reporting success vs
+	failure to caller, for both overloads.
+	* diagnostic-manager.h (diagnostic_manager::add_diagnostic):
+	Likewise.
+	* engine.cc (impl_region_model_context::warn): Propagate return
+	value from diagnostic_manager::add_diagnostic.
+
+2022-03-18  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/104943
+	PR analyzer/104954
+	PR analyzer/103533
+	* analyzer.h (class state_purge_per_decl): New forward decl.
+	* engine.cc (impl_run_checkers): Pass region_model_manager to
+	state_purge_map ctor.
+	* program-point.cc (function_point::final_stmt_p): New.
+	(function_point::get_next): New.
+	* program-point.h (function_point::final_stmt_p): New decl.
+	(function_point::get_next): New decl.
+	* program-state.cc (program_state::prune_for_point): Generalize to
+	purge local decls as well as SSA names.
+	(program_state::can_purge_base_region_p): New.
+	* program-state.h (program_state::can_purge_base_region_p): New
+	decl.
+	* region-model.cc (struct append_ssa_names_cb_data): Rename to...
+	(struct append_regions_cb_data): ...this.
+	(region_model::get_ssa_name_regions_for_current_frame): Rename
+	to...
+	(region_model::get_regions_for_current_frame): ...this, updating
+	for other renamings.
+	(region_model::append_ssa_names_cb): Rename to...
+	(region_model::append_regions_cb): ...this, and drop the requirement
+	that the subregion be a SSA name.
+	* region-model.h (struct append_ssa_names_cb_data): Rename decl
+	to...
+	(struct append_regions_cb_data): ...this.
+	(region_model::get_ssa_name_regions_for_current_frame): Rename
+	decl to...
+	(region_model::get_regions_for_current_frame): ...this.
+	(region_model::append_ssa_names_cb): Rename decl to...
+	(region_model::append_regions_cb): ...this.
+	* state-purge.cc: Include "tristate.h", "selftest.h",
+	"analyzer/store.h", "analyzer/region-model.h", and
+	"gimple-walk.h".
+	(get_candidate_for_purging): New.
+	(class gimple_op_visitor): New.
+	(my_load_cb): New.
+	(my_store_cb): New.
+	(my_addr_cb): New.
+	(state_purge_map::state_purge_map): Add "mgr" param.  Update for
+	renamings.  Find uses of local variables.
+	(state_purge_map::~state_purge_map): Update for renaming of m_map
+	to m_ssa_map.  Clean up m_decl_map.
+	(state_purge_map::get_or_create_data_for_decl): New.
+	(state_purge_per_ssa_name::state_purge_per_ssa_name): Update for
+	inheriting from state_purge_per_tree.
+	(state_purge_per_ssa_name::add_to_worklist): Likewise.
+	(state_purge_per_decl::state_purge_per_decl): New.
+	(state_purge_per_decl::add_needed_at): New.
+	(state_purge_per_decl::add_pointed_to_at): New.
+	(state_purge_per_decl::process_worklists): New.
+	(state_purge_per_decl::add_to_worklist): New.
+	(same_binding_p): New.
+	(fully_overwrites_p): New.
+	(state_purge_per_decl::process_point_backwards): New.
+	(state_purge_per_decl::process_point_forwards): New.
+	(state_purge_per_decl::needed_at_point_p): New.
+	(state_purge_annotator::print_needed): Generalize to print local
+	decls as well as SSA names.
+	* state-purge.h (class state_purge_map): Update leading comment.
+	(state_purge_map::map_t): Rename to...
+	(state_purge_map::ssa_map_t): ...this.
+	(state_purge_map::iterator): Rename to...
+	(state_purge_map::ssa_iterator): ...this.
+	(state_purge_map::decl_map_t): New typedef.
+	(state_purge_map::decl_iterator): New typedef.
+	(state_purge_map::state_purge_map): Add "mgr" param.
+	(state_purge_map::get_data_for_ssa_name): Update for renaming.
+	(state_purge_map::get_any_data_for_decl): New.
+	(state_purge_map::get_or_create_data_for_decl): New decl.
+	(state_purge_map::begin): Rename to...
+	(state_purge_map::begin_ssas): ...this.
+	(state_purge_map::end): Rename to...
+	(state_purge_map::end_ssa): ...this.
+	(state_purge_map::begin_decls): New.
+	(state_purge_map::end_decls): New.
+	(state_purge_map::m_map): Rename to...
+	(state_purge_map::m_ssa_map): ...this.
+	(state_purge_map::m_decl_map): New field.
+	(class state_purge_per_tree): New class.
+	(class state_purge_per_ssa_name): Inherit from state_purge_per_tree.
+	(state_purge_per_ssa_name::get_function): Move to base class.
+	(state_purge_per_ssa_name::point_set_t): Likewise.
+	(state_purge_per_ssa_name::m_fun): Likewise.
+	(class state_purge_per_decl): New.
+
+2022-03-17  David Malcolm  <dmalcolm@redhat.com>
+
+	* state-purge.cc (state_purge_annotator::add_node_annotations):
+	Avoid duplicate before-supernode annotations when returning from
+	an interprocedural call.  Show after-supernode annotations.
+
+2022-03-17  David Malcolm  <dmalcolm@redhat.com>
+
+	* program-point.cc (program_point::get_next): Fix missing
+	increment of index.
+
+2022-03-16  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/104955
+	* diagnostic-manager.cc (get_emission_location): New.
+	(diagnostic_manager::diagnostic_manager): Initialize
+	m_num_disabled_diagnostics.
+	(diagnostic_manager::add_diagnostic): Reject diagnostics that
+	will eventually be rejected due to being disabled.
+	(diagnostic_manager::emit_saved_diagnostics): Log the number
+	of disabled diagnostics.
+	(diagnostic_manager::emit_saved_diagnostic): Split out logic for
+	determining emission location to get_emission_location.
+	* diagnostic-manager.h
+	(diagnostic_manager::m_num_disabled_diagnostics): New field.
+	* engine.cc (stale_jmp_buf::get_controlling_option): New.
+	(stale_jmp_buf::emit): Use it.
+	* pending-diagnostic.h
+	(pending_diagnostic::get_controlling_option): New vfunc.
+	* region-model.cc
+	(poisoned_value_diagnostic::get_controlling_option): New.
+	(poisoned_value_diagnostic::emit): Use it.
+	(shift_count_negative_diagnostic::get_controlling_option): New.
+	(shift_count_negative_diagnostic::emit): Use it.
+	(shift_count_overflow_diagnostic::get_controlling_option): New.
+	(shift_count_overflow_diagnostic::emit): Use it.
+	(dump_path_diagnostic::get_controlling_option): New.
+	(dump_path_diagnostic::emit): Use it.
+	(write_to_const_diagnostic::get_controlling_option): New.
+	(write_to_const_diagnostic::emit): Use it.
+	(write_to_string_literal_diagnostic::get_controlling_option): New.
+	(write_to_string_literal_diagnostic::emit): Use it.
+	* sm-file.cc (double_fclose::get_controlling_option): New.
+	(double_fclose::emit): Use it.
+	(file_leak::get_controlling_option): New.
+	(file_leak::emit): Use it.
+	* sm-malloc.cc (mismatching_deallocation::get_controlling_option):
+	New.
+	(mismatching_deallocation::emit): Use it.
+	(double_free::get_controlling_option): New.
+	(double_free::emit): Use it.
+	(possible_null_deref::get_controlling_option): New.
+	(possible_null_deref::emit): Use it.
+	(possible_null_arg::get_controlling_option): New.
+	(possible_null_arg::emit): Use it.
+	(null_deref::get_controlling_option): New.
+	(null_deref::emit): Use it.
+	(null_arg::get_controlling_option): New.
+	(null_arg::emit): Use it.
+	(use_after_free::get_controlling_option): New.
+	(use_after_free::emit): Use it.
+	(malloc_leak::get_controlling_option): New.
+	(malloc_leak::emit): Use it.
+	(free_of_non_heap::get_controlling_option): New.
+	(free_of_non_heap::emit): Use it.
+	* sm-pattern-test.cc (pattern_match::get_controlling_option): New.
+	(pattern_match::emit): Use it.
+	* sm-sensitive.cc
+	(exposure_through_output_file::get_controlling_option): New.
+	(exposure_through_output_file::emit): Use it.
+	* sm-signal.cc (signal_unsafe_call::get_controlling_option): New.
+	(signal_unsafe_call::emit): Use it.
+	* sm-taint.cc (tainted_array_index::get_controlling_option): New.
+	(tainted_array_index::emit): Use it.
+	(tainted_offset::get_controlling_option): New.
+	(tainted_offset::emit): Use it.
+	(tainted_size::get_controlling_option): New.
+	(tainted_size::emit): Use it.
+	(tainted_divisor::get_controlling_option): New.
+	(tainted_divisor::emit): Use it.
+	(tainted_allocation_size::get_controlling_option): New.
+	(tainted_allocation_size::emit): Use it.
+
 2022-03-15  David Malcolm  <dmalcolm@redhat.com>
 
 	* store.cc (store::store): Presize m_cluster_map.

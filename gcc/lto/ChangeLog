@@ -1,3 +1,14 @@
+2022-03-23  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR middle-end/104285
+	* lto-partition.cc (maybe_rewrite_identifier): Use get_identifier
+	for the returned string to be usable as hash key.
+	(validize_symbol_for_target): Hence, use return value directly.
+	(privatize_symbol_name_1): Track maybe_rewrite_identifier renames.
+	* lto.cc (offload_handle_link_vars): Move function up before ...
+	(do_whole_program_analysis): Call it after static renamings.
+	(lto_main): Move call after static renamings.
+
 2022-02-04  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/90348

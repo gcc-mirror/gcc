@@ -129,12 +129,9 @@ impl_region_model_context::warn (pending_diagnostic *d)
       return false;
     }
   if (m_eg)
-    {
-      m_eg->get_diagnostic_manager ().add_diagnostic
-	(m_enode_for_diag, m_enode_for_diag->get_supernode (),
-	 m_stmt, m_stmt_finder, d);
-      return true;
-    }
+    return m_eg->get_diagnostic_manager ().add_diagnostic
+      (m_enode_for_diag, m_enode_for_diag->get_supernode (),
+       m_stmt, m_stmt_finder, d);
   else
     {
       delete d;
@@ -5720,15 +5717,15 @@ impl_run_checkers (logger *logger)
   FOR_EACH_FUNCTION_WITH_GIMPLE_BODY (node)
     node->get_untransformed_body ();
 
-  engine eng (logger);
-
   /* Create the supergraph.  */
   supergraph sg (logger);
+
+  engine eng (&sg, logger);
 
   state_purge_map *purge_map = NULL;
 
   if (flag_analyzer_state_purge)
-    purge_map = new state_purge_map (sg, logger);
+    purge_map = new state_purge_map (sg, eng.get_model_manager (), logger);
 
   if (flag_dump_analyzer_supergraph)
     {

@@ -20,6 +20,7 @@
 
 #include <list>
 #include <algorithm>
+#include <functional>
 #include <testsuite_hooks.h>
 #include <testsuite_iterators.h>
 

@@ -1080,6 +1080,7 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
 
 /* Define fields and accessors for some special-purpose tree nodes.  */
 
+/* As with STRING_CST, in C terms this is sizeof, not strlen.  */
 #define IDENTIFIER_LENGTH(NODE) \
   (IDENTIFIER_NODE_CHECK (NODE)->identifier.id.len)
 #define IDENTIFIER_POINTER(NODE) \

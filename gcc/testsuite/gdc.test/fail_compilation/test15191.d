@@ -56,7 +56,7 @@ int* addrOfRefGlobal()
 }
 
 // Slice:
-ref int*[1] identityArr(ref return scope int*[1] x)
+ref int*[1] identityArr(return ref scope int*[1] x)
 {
 	return x;
 }

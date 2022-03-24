@@ -1,9 +1,9 @@
 /* TEST_OUTPUT:
 ---
 fail_compilation/pull12941.d(110): Error: `pull12941.foo` called with argument types `(int*)` matches both:
-fail_compilation/pull12941.d(101):     `pull12941.foo(ref return scope int* p)`
+fail_compilation/pull12941.d(101):     `pull12941.foo(return ref scope int* p)`
 and:
-fail_compilation/pull12941.d(102):     `pull12941.foo(out return scope int* p)`
+fail_compilation/pull12941.d(102):     `pull12941.foo(return out scope int* p)`
 fail_compilation/pull12941.d(111): Error: function `pull12941.bar(return scope int* p)` is not callable using argument types `(int)`
 fail_compilation/pull12941.d(111):        cannot pass argument `1` of type `int` to parameter `return scope int* p`
 fail_compilation/pull12941.d(112): Error: function `pull12941.abc(return ref int* p)` is not callable using argument types `(int)`

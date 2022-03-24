@@ -278,7 +278,8 @@ extern unsigned aarch64_architecture_version;
 #define AARCH64_FL_FOR_ARCH8_R     \
   (AARCH64_FL_FOR_ARCH8_4 | AARCH64_FL_V8_R)
 #define AARCH64_FL_FOR_ARCH9       \
-  (AARCH64_FL_FOR_ARCH8_5 | AARCH64_FL_SVE | AARCH64_FL_SVE2 | AARCH64_FL_V9)
+  (AARCH64_FL_FOR_ARCH8_5 | AARCH64_FL_SVE | AARCH64_FL_SVE2 | AARCH64_FL_V9 \
+   | AARCH64_FL_F16)
 
 /* Macros to test ISA flags.  */
 

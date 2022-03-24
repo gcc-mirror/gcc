@@ -71,7 +71,6 @@ struct IntRange;
     #define STCnodtor             0x10000000ULL    /// do not run destructor
     #define STCnothrow            0x20000000ULL    /// `nothrow` meaning never throws exceptions
     #define STCpure               0x40000000ULL    /// `pure` function
-    #define STCtls                0x80000000ULL    /// thread local
 
     #define STCalias              0x100000000ULL    /// `alias` parameter
     #define STCshared             0x200000000ULL    /// accessible from multiple threads
@@ -123,7 +122,7 @@ public:
     DString mangleOverride;     // overridden symbol with pragma(mangle, "...")
 
     const char *kind() const;
-    d_uns64 size(const Loc &loc);
+    uinteger_t size(const Loc &loc);
 
     Dsymbol *search(const Loc &loc, Identifier *ident, int flags = SearchLocalsOnly);
 

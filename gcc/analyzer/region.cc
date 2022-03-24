@@ -59,6 +59,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "analyzer/store.h"
 #include "analyzer/region.h"
 #include "analyzer/region-model.h"
+#include "analyzer/sm.h"
+#include "analyzer/program-state.h"
 
 #if ENABLE_ANALYZER
 
@@ -842,13 +844,49 @@ frame_region::dump_to_pp (pretty_printer *pp, bool simple) const
 
 const decl_region *
 frame_region::get_region_for_local (region_model_manager *mgr,
-				    tree expr) const
+				    tree expr,
+				    const region_model_context *ctxt) const
 {
-  // TODO: could also check that VAR_DECLs are locals
-  gcc_assert (TREE_CODE (expr) == PARM_DECL
-	      || TREE_CODE (expr) == VAR_DECL
-	      || TREE_CODE (expr) == SSA_NAME
-	      || TREE_CODE (expr) == RESULT_DECL);
+  if (CHECKING_P)
+    {
+      /* Verify that EXPR is a local or SSA name, and that it's for the
+	 correct function for this stack frame.  */
+      gcc_assert (TREE_CODE (expr) == PARM_DECL
+		  || TREE_CODE (expr) == VAR_DECL
+		  || TREE_CODE (expr) == SSA_NAME
+		  || TREE_CODE (expr) == RESULT_DECL);
+      switch (TREE_CODE (expr))
+	{
+	default:
+	  gcc_unreachable ();
+	case VAR_DECL:
+	  gcc_assert (!is_global_var (expr));
+	  /* Fall through.  */
+	case PARM_DECL:
+	case RESULT_DECL:
+	  gcc_assert (DECL_CONTEXT (expr) == m_fun->decl);
+	  break;
+	case SSA_NAME:
+	  {
+	    if (tree var = SSA_NAME_VAR (expr))
+	      {
+		if (DECL_P (var))
+		  gcc_assert (DECL_CONTEXT (var) == m_fun->decl);
+	      }
+	    else if (ctxt)
+	      if (const extrinsic_state *ext_state = ctxt->get_ext_state ())
+		if (const supergraph *sg
+		    = ext_state->get_engine ()->get_supergraph ())
+		  {
+		    const gimple *def_stmt = SSA_NAME_DEF_STMT (expr);
+		    const supernode *snode
+		      = sg->get_supernode_for_stmt (def_stmt);
+		    gcc_assert (snode->get_function () == m_fun);
+		  }
+	  }
+	  break;
+	}
+    }
 
   /* Ideally we'd use mutable here.  */
   map_t &mutable_locals = const_cast <map_t &> (m_locals);

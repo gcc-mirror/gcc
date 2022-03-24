@@ -19811,7 +19811,7 @@ fold_targs_r (tree targs, tsubst_flags_t complain)
 	       && !glvalue_p (elt)
 	       && !TREE_CONSTANT (elt))
 	{
-	  elt = cxx_constant_value_sfinae (elt, complain);
+	  elt = cxx_constant_value_sfinae (elt, NULL_TREE, complain);
 	  if (elt == error_mark_node)
 	    return false;
 	}

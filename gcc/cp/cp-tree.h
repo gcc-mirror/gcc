@@ -6677,6 +6677,7 @@ extern tree build_vfn_ref			(tree, tree);
 extern tree get_vtable_decl			(tree, int);
 extern bool add_method				(tree, tree, bool);
 extern tree declared_access			(tree);
+extern bool maybe_push_used_methods		(tree);
 extern tree currently_open_class		(tree);
 extern tree currently_open_derived_class	(tree);
 extern tree outermost_open_class		(void);
@@ -6719,6 +6720,7 @@ extern tree in_class_defaulted_default_constructor (tree);
 extern bool user_provided_p			(tree);
 extern bool type_has_user_provided_constructor  (tree);
 extern bool type_has_non_user_provided_default_constructor (tree);
+extern bool type_has_default_ctor_to_be_synthesized (tree);
 extern bool vbase_has_user_provided_move_assign (tree);
 extern tree default_init_uninitialized_part (tree);
 extern bool trivial_default_constructor_is_constexpr (tree);
@@ -8241,6 +8243,7 @@ extern tree fold_builtin_source_location	(location_t);
 
 /* in name-lookup.cc */
 extern tree strip_using_decl                    (tree);
+extern void diagnose_name_conflict		(tree, tree);
 
 /* Tell the binding oracle what kind of binding we are looking for.  */
 
@@ -8412,7 +8415,7 @@ extern bool require_constant_expression (tree);
 extern bool require_rvalue_constant_expression (tree);
 extern bool require_potential_rvalue_constant_expression (tree);
 extern tree cxx_constant_value			(tree, tree = NULL_TREE);
-extern tree cxx_constant_value_sfinae		(tree, tsubst_flags_t);
+extern tree cxx_constant_value_sfinae		(tree, tree, tsubst_flags_t);
 extern void cxx_constant_dtor			(tree, tree);
 extern tree cxx_constant_init			(tree, tree = NULL_TREE);
 extern tree maybe_constant_value		(tree, tree = NULL_TREE, bool = false);
