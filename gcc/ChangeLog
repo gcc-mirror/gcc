@@ -1,3 +1,57 @@
+2022-03-23  Richard Biener  <rguenther@suse.de>
+
+	PR target/102125
+	* gimple-fold.cc (gimple_fold_builtin_memory_op): Allow the
+	use of movmisalign when either the source or destination
+	decl is properly aligned.
+
+2022-03-23  Richard Biener  <rguenther@suse.de>
+
+	PR rtl-optimization/105028
+	* ira-color.cc (form_threads_from_copies): Remove unnecessary
+	copying of the sorted_copies tail.
+
+2022-03-23  Martin Liska  <mliska@suse.cz>
+
+	* config/rs6000/rs6000-c.cc (altivec_resolve_overloaded_builtin):
+	Use %qs in format.
+	* config/rs6000/rs6000.cc (rs6000_option_override_internal):
+	Reword the error message.
+
+2022-03-23  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/104976
+	* config/i386/sse.md (ssePSmodelower): New.
+	(*avx_cmp<mode>3_ltint_not): Force_reg operand before
+	lowpart_subreg to avoid NULL_RTX.
+	(<avx512>_fmaddc_<mode>_mask1<round_expand_name>,
+	<avx512>_fcmaddc_<mode>_mask1<round_expand_name>,
+	fma_<mode>_fmaddc_bcst, fma_<mode>_fcmaddc_bcst,
+	<avx512>_<complexopname>_<mode>_mask<round_name>,
+	avx512fp16_fcmaddcsh_v8hf_mask1<round_expand_name>,
+	avx512fp16_fcmaddcsh_v8hf_mask3<round_expand_name>,
+	avx512fp16_fmaddcsh_v8hf_mask3<round_expand_name>,
+	avx512fp16_fmaddcsh_v8hf_mask3<round_expand_name>,
+	float<floatunssuffix><mode>v4hf2,
+	float<floatunssuffix>v2div2hf2,
+	fix<fixunssuffix>_truncv4hf<mode>2,
+	fix<fixunssuffix>_truncv2hfv2di2, extendv4hf<mode>2,
+	extendv2hfv2df2,
+	trunc<mode>v4hf2,truncv2dfv2hf2,
+	*avx512bw_permvar_truncv16siv16hi_1,
+	*avx512bw_permvar_truncv16siv16hi_1_hf,
+	*avx512f_permvar_truncv8siv8hi_1,
+	*avx512f_permvar_truncv8siv8hi_1_hf,
+	*avx512f_vpermvar_truncv8div8si_1,
+	*avx512f_permvar_truncv32hiv32qi_1,
+	*avx512f_permvar_truncv16hiv16qi_1,
+	*avx512f_permvar_truncv4div4si_1,
+	*avx512f_pshufb_truncv8hiv8qi_1,
+	*avx512f_pshufb_truncv4siv4hi_1,
+	*avx512f_pshufd_truncv2div2si_1,
+	sdot_prod<mode>, avx2_pblend<ssemodesuffix>_1,
+	ashrv2di3,ashrv2di3,usdot_prod<mode>): Ditto.
+
 2022-03-22  Tom de Vries  <tdevries@suse.de>
 
 	PR target/104925

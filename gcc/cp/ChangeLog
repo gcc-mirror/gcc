@@ -1,3 +1,21 @@
+2022-03-23  Jason Merrill  <jason@redhat.com>
+
+	PR c++/103337
+	* decl.cc (reshape_single_init): New.
+	(reshape_init_class): Use it.
+
+2022-03-23  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105006
+	* name-lookup.cc (lookup_using_decl): Check that scope is
+	a dependent type before looking for dependent using.
+
+2022-03-23  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105006
+	* name-lookup.cc (lookup_using_decl): Set DECL_DEPENDENT_P if lookup
+	finds a dependent using.
+
 2022-03-21  Jason Merrill  <jason@redhat.com>
 
 	PR c++/58646

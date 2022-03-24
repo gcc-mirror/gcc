@@ -1,3 +1,34 @@
+2022-03-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/105027
+	* include/std/bit (bit_cast): Add constraints.
+	* testsuite/26_numerics/bit/bit.cast/105027.cc: New test.
+
+2022-03-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/version [!_GLIBCXX_HOSTED]
+	(__cpp_lib_hardware_interference_size): Define for freestanding.
+	(__cpp_lib_bit_cast): Likewise.
+	(__cpp_lib_is_layout_compatible): Likewise.
+	(__cpp_lib_is_pointer_interconvertible): Likewise.
+	(__cpp_lib_adaptor_iterator_pair_constructor): Do not define for
+	freestanding.
+	(__cpp_lib_invoke_r): Likewise.
+	(__cpp_lib_ios_noreplace): Likewise.
+	(__cpp_lib_monadic_optional): Likewise.
+	(__cpp_lib_move_only_function): Likewise.
+	(__cpp_lib_spanstream): Likewise.
+	(__cpp_lib_stacktrace): Likewise.
+	(__cpp_lib_string_contains): Likewise.
+	(__cpp_lib_string_resize_and_overwrite): Likewise.
+	(__cpp_lib_to_underlying): Likewise.
+
+2022-03-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/105021
+	* include/bits/atomic_base.h [!_GLIBCXX_HOSTED]: Do not include
+	<bits/atomic_wait.h> for freestanding.
+
 2022-03-22  Hans-Peter Nilsson  <hp@axis.com>
 
 	* testsuite/20_util/from_chars/6.cc (test01) [FE_DOWNWARD]:

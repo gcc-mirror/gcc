@@ -1,3 +1,53 @@
+2022-03-23  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/104979
+	* engine.cc (impl_run_checkers): Create the engine after the
+	supergraph, and pass the supergraph to the engine.
+	* region-model.cc (region_model::get_lvalue_1): Pass ctxt to
+	frame_region::get_region_for_local.
+	(region_model::update_for_return_gcall): Pass the lvalue for the
+	result to pop_frame as a tree, rather than as a region.
+	(region_model::pop_frame): Update for above change, determining
+	the destination region after the frame is popped and thus with
+	respect to the caller frame rather than the called frame.
+	Likewise, set the value of the region to the return value after
+	the frame is popped.
+	(engine::engine): Add supergraph pointer.
+	(selftest::test_stack_frames): Set the DECL_CONTECT of PARM_DECLs.
+	(selftest::test_get_representative_path_var): Likewise.
+	(selftest::test_state_merging): Likewise.
+	* region-model.h (region_model::pop_frame): Convert first param
+	from a const region * to a tree.
+	(engine::engine): Add param "sg".
+	(engine::m_sg): New field.
+	* region.cc: Include "analyzer/sm.h" and
+	"analyzer/program-state.h".
+	(frame_region::get_region_for_local): Add "ctxt" param.
+	Add assertions that VAR_DECLs are locals, and that expr is for the
+	correct function.
+	* region.h (frame_region::get_region_for_local): Add "ctxt" param.
+
+2022-03-23  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/105017
+	* sm-taint.cc (taint_diagnostic::subclass_equal_p): Check
+	m_has_bounds as well as m_arg.
+	(tainted_allocation_size::subclass_equal_p): Chain up to base
+	class implementation.  Also check m_mem_space.
+	(tainted_allocation_size::emit): Add note showing stack-based vs
+	heap-based allocations.
+
+2022-03-23  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/104997
+	* diagnostic-manager.cc (diagnostic_manager::add_diagnostic):
+	Convert return type from "void" to "bool", reporting success vs
+	failure to caller, for both overloads.
+	* diagnostic-manager.h (diagnostic_manager::add_diagnostic):
+	Likewise.
+	* engine.cc (impl_region_model_context::warn): Propagate return
+	value from diagnostic_manager::add_diagnostic.
+
 2022-03-18  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/104943

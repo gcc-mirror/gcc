@@ -1,3 +1,51 @@
+2022-03-23  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/104979
+	* gcc.dg/analyzer/boxed-malloc-1-29.c: Deleted test, moving the
+	now fixed test_29 to...
+	* gcc.dg/analyzer/boxed-malloc-1.c: ...here.
+	* gcc.dg/analyzer/stale-frame-1.c: Add test coverage.
+
+2022-03-23  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/103560
+	* gfortran.dg/include_14.f90: Update dg-warning.
+	* gfortran.dg/include_17.f90: Likewise.
+	* gfortran.dg/include_18.f90: Likewise.
+	* gfortran.dg/include_6.f90: Update dg-*.
+
+2022-03-23  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105006
+	* g++.dg/template/using30.C: New test.
+
+2022-03-23  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/105017
+	* gcc.dg/analyzer/taint-alloc-1.c: Add expected messages relating
+	to heap vs stack.
+
+2022-03-23  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/104997
+	* gcc.dg/analyzer/write-to-string-literal-4-disabled.c: New test,
+	adapted from write-to-string-literal-4.c.
+
+2022-03-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/102986
+	* gcc.target/i386/sse2-v1ti-shift-3.c (rotr_v1ti, rotl_v1ti, rotr_ti,
+	rotl_ti): Use -i&127 instead of 128-i to avoid UB on i == 0.
+
+2022-03-23  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr104976.c: New test.
+	* gcc.target/i386/avx512fp16-vfcmaddcph-1a.c: Scan either
+	vblendps or masked vmovaps.
+	* gcc.target/i386/avx512fp16-vfmaddcph-1a.c: Ditto
+	* gcc.target/i386/avx512fp16vl-vfcmaddcph-1a.c: Ditto.
+	* gcc.target/i386/avx512fp16vl-vfmaddcph-1a.c: Ditto.
+
 2022-03-22  Marek Polacek  <polacek@redhat.com>
 
 	PR c/82283

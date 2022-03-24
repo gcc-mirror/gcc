@@ -1,3 +1,13 @@
+2022-03-23  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR middle-end/104285
+	* testsuite/libgomp.c++/target-same-name-2-a.C: New test.
+	* testsuite/libgomp.c++/target-same-name-2-b.C: New test.
+	* testsuite/libgomp.c++/target-same-name-2.C: New test.
+	* testsuite/libgomp.c-c++-common/target-same-name-1-a.c: New test.
+	* testsuite/libgomp.c-c++-common/target-same-name-1-b.c: New test.
+	* testsuite/libgomp.c-c++-common/target-same-name-1.c: New test.
+
 2022-03-22  Tom de Vries  <tdevries@suse.de>
 
 	PR target/104916
