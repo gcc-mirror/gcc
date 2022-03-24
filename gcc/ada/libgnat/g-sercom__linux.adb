@@ -318,6 +318,7 @@ package body GNAT.Serial_Communications is
    begin
       if Port.H /= -1 then
          Res := close (int (Port.H));
+         Port.H := -1;
       end if;
    end Close;
 
