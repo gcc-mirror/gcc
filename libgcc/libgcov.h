@@ -343,7 +343,6 @@ extern int __gcov_execve (const char *, char  *const [], char *const [])
   ATTRIBUTE_HIDDEN;
 
 /* Functions that only available in libgcov.  */
-GCOV_LINKAGE int gcov_open (const char */*name*/) ATTRIBUTE_HIDDEN;
 GCOV_LINKAGE void gcov_write_summary (gcov_unsigned_t /*tag*/,
                                       const struct gcov_summary *)
     ATTRIBUTE_HIDDEN;

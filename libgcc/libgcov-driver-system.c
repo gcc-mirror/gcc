@@ -309,7 +309,7 @@ gcov_exit_open_gcda_file (struct gcov_info *gi_ptr,
 
   gf->filename = replace_filename_variables (gf->filename);
 
-  if (!gcov_open (gf->filename))
+  if (!gcov_open (gf->filename, 0))
     {
       /* Open failed likely due to missed directory.
          Create directory and retry to open file. */
@@ -318,7 +318,7 @@ gcov_exit_open_gcda_file (struct gcov_info *gi_ptr,
           fprintf (stderr, "profiling:%s:Skip\n", gf->filename);
           return -1;
         }
-      if (!gcov_open (gf->filename))
+      if (!gcov_open (gf->filename, 0))
         {
           fprintf (stderr, "profiling:%s:Cannot open\n", gf->filename);
           return -1;

@@ -89,15 +89,8 @@ from_file (gcov_unsigned_t value)
    Return zero on failure, non-zero on success.  */
 
 GCOV_LINKAGE int
-#if IN_LIBGCOV
-gcov_open (const char *name)
-#else
 gcov_open (const char *name, int mode)
-#endif
 {
-#if IN_LIBGCOV
-  int mode = 0;
-#endif
 #if GCOV_LOCKED
   struct flock s_flock;
   int fd;

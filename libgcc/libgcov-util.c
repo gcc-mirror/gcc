@@ -268,7 +268,7 @@ read_gcda_file (const char *filename)
     k_ctrs_mask[i] = 0;
   k_ctrs_types = 0;
 
-  if (!gcov_open (filename))
+  if (!gcov_open (filename, 1))
     {
       fnotice (stderr, "%s:cannot open\n", filename);
       return NULL;
