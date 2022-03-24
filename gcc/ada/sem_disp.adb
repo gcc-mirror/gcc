@@ -508,12 +508,11 @@ package body Sem_Disp is
          return Empty;
 
       --  The dispatching type and the primitive operation must be defined in
-      --  the same scope, except in the case of internal operations and formal
-      --  abstract subprograms.
+      --  the same scope, except in the case of abstract formal subprograms.
 
-      elsif ((Scope (Subp) = Scope (Tagged_Type) or else Is_Internal (Subp))
-               and then (not Is_Generic_Type (Tagged_Type)
-                          or else not Comes_From_Source (Subp)))
+      elsif (Scope (Subp) = Scope (Tagged_Type)
+              and then (not Is_Generic_Type (Tagged_Type)
+                         or else not Comes_From_Source (Subp)))
         or else
           (Is_Formal_Subprogram (Subp) and then Is_Abstract_Subprogram (Subp))
         or else
