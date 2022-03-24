@@ -342,10 +342,6 @@ Wno-alloca-larger-than
 C ObjC C++ LTO ObjC++ Alias(Walloca-larger-than=,18446744073709551615EiB,none) Warning
 Disable Walloca-larger-than= warning.  Equivalent to Walloca-larger-than=<SIZE_MAX> or larger.
 
-Warray-bounds
-LangEnabledBy(C ObjC C++ LTO ObjC++)
-; in common.opt
-
 Warray-bounds=
 LangEnabledBy(C ObjC C++ LTO ObjC++,Wall,1,0)
 ; in common.opt
