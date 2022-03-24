@@ -58,7 +58,6 @@ namespace const_cast
 template <typename register_>
 struct S final
 {
-    // Ignoring var x alignment 0
     register_ x;
     S()
     {
@@ -104,7 +103,6 @@ extern void user(Alias<Base* >* i);
 template <typename typename_>
 struct InvalidNames final
 {
-    // Ignoring var register alignment 0
     typename_ register_;
     void foo(typename_ and_);
     InvalidNames()

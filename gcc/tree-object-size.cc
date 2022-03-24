@@ -371,8 +371,8 @@ size_for_offset (tree sz, tree offset, tree wholesize = NULL_TREE)
     }
 
   /* Safe to convert now, since a valid net offset should be non-negative.  */
-  if (!types_compatible_p (TREE_TYPE (offset), sizetype))
-    fold_convert (sizetype, offset);
+  if (!useless_type_conversion_p (sizetype, TREE_TYPE (offset)))
+    offset = fold_convert (sizetype, offset);
 
   if (TREE_CODE (offset) == INTEGER_CST)
     {
@@ -784,10 +784,7 @@ alloc_object_size (const gcall *call, int object_size_type)
   else if (arg1 >= 0)
     bytes = fold_convert (sizetype, gimple_call_arg (call, arg1));
 
-  if (bytes)
-    return STRIP_NOPS (bytes);
-
-  return size_unknown (object_size_type);
+  return bytes ? bytes : size_unknown (object_size_type);
 }
 
 

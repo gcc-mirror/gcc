@@ -1304,7 +1304,7 @@ extern(C++) Type typeSemantic(Type type, const ref Loc loc, Scope* sc)
             // default arg must be an lvalue
             if (isRefOrOut && !isAuto &&
                 !(global.params.previewIn && (fparam.storageClass & STC.in_)) &&
-                !(global.params.rvalueRefParam))
+                global.params.rvalueRefParam != FeatureState.enabled)
                 e = e.toLvalue(sc, e);
 
             fparam.defaultArg = e;
@@ -1504,16 +1504,6 @@ extern(C++) Type typeSemantic(Type type, const ref Loc loc, Scope* sc)
 
                 /* Scope attribute is not necessary if the parameter type does not have pointers
                  */
-                /* Constructors are treated as if they are being returned through the hidden parameter,
-                 * which is by ref, and the ref there is ignored.
-                 */
-                const returnByRef = tf.isref && !tf.isctor;
-                if (!returnByRef && isRefReturnScope(fparam.storageClass))
-                {
-                    /* if `ref return scope`, evaluate to `ref` `return scope`
-                     */
-                    fparam.storageClass |= STC.returnScope;
-                }
                 const sr = buildScopeRef(fparam.storageClass);
                 switch (sr)
                 {
@@ -1532,17 +1522,6 @@ extern(C++) Type typeSemantic(Type type, const ref Loc loc, Scope* sc)
 
                     default:
                         break;
-                }
-
-                /* now set STC.returnScope based only on tf.isref. This is inconsistent, as mentioned above,
-                 * but necessary for compatibility for now.
-                 */
-                fparam.storageClass &= ~STC.returnScope;
-                if (!tf.isref && isRefReturnScope(fparam.storageClass))
-                {
-                    /* if `ref return scope`, evaluate to `ref` `return scope`
-                     */
-                    fparam.storageClass |= STC.returnScope;
                 }
 
                 // Remove redundant storage classes for type, they are already applied
@@ -2411,7 +2390,7 @@ Expression getProperty(Type t, Scope* scope_, const ref Loc loc, Identifier iden
         }
         if (ident == Id.__sizeof)
         {
-            d_uns64 sz = mt.size(loc);
+            const sz = mt.size(loc);
             if (sz == SIZE_INVALID)
                 return ErrorExp.get();
             e = new IntegerExp(loc, sz, Type.tsize_t);

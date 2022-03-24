@@ -29,7 +29,7 @@ msgstr ""
 "Project-Id-Version: gcc 12.1-b20220213\n"
 "Report-Msgid-Bugs-To: https://gcc.gnu.org/bugs/\n"
 "POT-Creation-Date: 2022-02-11 23:10+0000\n"
-"PO-Revision-Date: 2022-03-13 08:42+0100\n"
+"PO-Revision-Date: 2022-03-20 13:14+0100\n"
 "Last-Translator: Göran Uddeborg <goeran@uddeborg.se>\n"
 "Language-Team: Swedish <tp-sv@listor.tp-sv.se>\n"
 "Language: sv\n"
@@ -25391,232 +25391,193 @@ msgid "%qD writing %E byte into a region of size %E overflows the destination"
 msgstr "%qD att skriva %E byte till en region av storlek %E spiller över destinationen"
 
 #: gimple-ssa-warn-access.cc:1003
-#, fuzzy, gcc-internal-format
-#| msgid "%K%qD may write %E bytes into a region of size %E"
+#, gcc-internal-format
 msgid "%qD may write %E bytes into a region of size %E"
-msgstr "%K%qD kan skriva %E byte till en region med storlek %E"
+msgstr "%qD kan skriva %E byte till en region med storlek %E"
 
 #: gimple-ssa-warn-access.cc:1005
-#, fuzzy, gcc-internal-format
-#| msgid "%K%qD writing %E bytes into a region of size %E overflows the destination"
+#, gcc-internal-format
 msgid "%qD writing %E bytes into a region of size %E overflows the destination"
-msgstr "%K%qD att skriva %E byte till en region av storlek %E spiller över destinationen"
+msgstr "%qD att skriva %E byte till en region av storlek %E spiller över destinationen"
 
 #: gimple-ssa-warn-access.cc:1010
-#, fuzzy, gcc-internal-format
-#| msgid "%Kmay write %E byte into a region of size %E"
+#, gcc-internal-format
 msgid "may write %E byte into a region of size %E"
-msgstr "%Kkan skriva %E byte till en region med storlek %E"
+msgstr "kan skriva %E byte till en region med storlek %E"
 
 #: gimple-ssa-warn-access.cc:1012
-#, fuzzy, gcc-internal-format
-#| msgid "%Kwriting %E byte into a region of size %E overflows the destination"
+#, gcc-internal-format
 msgid "writing %E byte into a region of size %E overflows the destination"
-msgstr "%Katt skriva %E byte till en region av storlek %E spiller över destinationen"
+msgstr "att skriva %E byte till en region av storlek %E spiller över destinationen"
 
 #: gimple-ssa-warn-access.cc:1015
-#, fuzzy, gcc-internal-format
-#| msgid "%Kmay write %E bytes into a region of size %E"
+#, gcc-internal-format
 msgid "may write %E bytes into a region of size %E"
-msgstr "%Kkan skriva %E byte till en region med storlek %E"
+msgstr "kan skriva %E byte till en region med storlek %E"
 
 #: gimple-ssa-warn-access.cc:1017
-#, fuzzy, gcc-internal-format
-#| msgid "%Kwriting %E bytes into a region of size %E overflows the destination"
+#, gcc-internal-format
 msgid "writing %E bytes into a region of size %E overflows the destination"
-msgstr "%Katt skriva %E byte till en region av storlek %E spiller över destinationen"
+msgstr "att skriva %E byte till en region av storlek %E spiller över destinationen"
 
 #: gimple-ssa-warn-access.cc:1026
-#, fuzzy, gcc-internal-format
-#| msgid "%K%qD may write %E or more bytes into a region of size %E"
+#, gcc-internal-format
 msgid "%qD may write %E or more bytes into a region of size %E"
-msgstr "%K%qD kan skriva %E eller fler byte till en region av storlek %E"
+msgstr "%qD kan skriva %E eller fler byte till en region av storlek %E"
 
 #: gimple-ssa-warn-access.cc:1028 gimple-ssa-warn-access.cc:1399
-#, fuzzy, gcc-internal-format
-#| msgid "%K%qD writing %E or more bytes into a region of size %E overflows the destination"
+#, gcc-internal-format
 msgid "%qD writing %E or more bytes into a region of size %E overflows the destination"
-msgstr "%K%qD: att skriva %E eller fler byte till en region av storlek %E spiller över destinationen"
+msgstr "%qD: att skriva %E eller fler byte till en region av storlek %E spiller över destinationen"
 
 #: gimple-ssa-warn-access.cc:1034
-#, fuzzy, gcc-internal-format
-#| msgid "%Kmay write %E or more bytes into a region of size %E"
+#, gcc-internal-format
 msgid "may write %E or more bytes into a region of size %E"
-msgstr "%Kkan skriva %E eller fler byte till en region av storlek %E"
+msgstr "kan skriva %E eller fler byte till en region av storlek %E"
 
 #: gimple-ssa-warn-access.cc:1036 gimple-ssa-warn-access.cc:1404
-#, fuzzy, gcc-internal-format
-#| msgid "%Kwriting %E or more bytes into a region of size %E overflows the destination"
+#, gcc-internal-format
 msgid "writing %E or more bytes into a region of size %E overflows the destination"
-msgstr "%Katt skriva %E eller fler byte till en region av storlek %E spiller över destinationen"
+msgstr "att skriva %E eller fler byte till en region av storlek %E spiller över destinationen"
 
 #: gimple-ssa-warn-access.cc:1045
-#, fuzzy, gcc-internal-format
-#| msgid "%K%qD may write between %E and %E bytes into a region of size %E"
+#, gcc-internal-format
 msgid "%qD may write between %E and %E bytes into a region of size %E"
-msgstr "%K%qD kan skriva mellan %E och %E byte till en region av storlek %E"
+msgstr "%qD kan skriva mellan %E och %E byte till en region av storlek %E"
 
 #: gimple-ssa-warn-access.cc:1047
-#, fuzzy, gcc-internal-format
-#| msgid "%K%qD writing between %E and %E bytes into a region of size %E overflows the destination"
+#, gcc-internal-format
 msgid "%qD writing between %E and %E bytes into a region of size %E overflows the destination"
-msgstr "%K%qD: att skriva mellan %E och %E byte till en region av storlek %E spiller över destinationen"
+msgstr "%qD: att skriva mellan %E och %E byte till en region av storlek %E spiller över destinationen"
 
 #: gimple-ssa-warn-access.cc:1053
-#, fuzzy, gcc-internal-format
-#| msgid "%Kmay write between %E and %E bytes into a region of size %E"
+#, gcc-internal-format
 msgid "may write between %E and %E bytes into a region of size %E"
-msgstr "%Kkan skriva mellan %E och %E byte till en region av storlek %E"
+msgstr "kan skriva mellan %E och %E byte till en region av storlek %E"
 
 #: gimple-ssa-warn-access.cc:1055
-#, fuzzy, gcc-internal-format
-#| msgid "%Kwriting between %E and %E bytes into a region of size %E overflows the destination"
+#, gcc-internal-format
 msgid "writing between %E and %E bytes into a region of size %E overflows the destination"
-msgstr "%Katt skriva mellan %E och %E byte till en region av storlek %E spiller över destinationen"
+msgstr "att skriva mellan %E och %E byte till en region av storlek %E spiller över destinationen"
 
 #: gimple-ssa-warn-access.cc:1069
-#, fuzzy, gcc-internal-format
-#| msgid "%K%qD may read %E byte from a region of size %E"
+#, gcc-internal-format
 msgid "%qD may read %E byte from a region of size %E"
-msgstr "%K%qD kan läsa %E byte från en region av storlek %E"
+msgstr "%qD kan läsa %E byte från en region av storlek %E"
 
 #: gimple-ssa-warn-access.cc:1071
-#, fuzzy, gcc-internal-format
-#| msgid "%K%qD reading %E byte from a region of size %E"
+#, gcc-internal-format
 msgid "%qD reading %E byte from a region of size %E"
-msgstr "%K%qD läser %E byte från en region av storlek %E"
+msgstr "%qD läser %E byte från en region av storlek %E"
 
 #: gimple-ssa-warn-access.cc:1074
-#, fuzzy, gcc-internal-format
-#| msgid "%K%qD may read %E bytes from a region of size %E"
+#, gcc-internal-format
 msgid "%qD may read %E bytes from a region of size %E"
-msgstr "%K%qD kan läsa %E byte från en region av storlek %E"
+msgstr "%qD kan läsa %E byte från en region av storlek %E"
 
 #: gimple-ssa-warn-access.cc:1076
-#, fuzzy, gcc-internal-format
-#| msgid "%K%qD reading %E bytes from a region of size %E"
+#, gcc-internal-format
 msgid "%qD reading %E bytes from a region of size %E"
-msgstr "%K%qD läser %E byte från en region av storlek %E"
+msgstr "%qD läser %E byte från en region av storlek %E"
 
 #: gimple-ssa-warn-access.cc:1082
-#, fuzzy, gcc-internal-format
-#| msgid "%Kmay read %E byte from a region of size %E"
+#, gcc-internal-format
 msgid "may read %E byte from a region of size %E"
-msgstr "%Kkan läsa %E byte från en region av storlek %E"
+msgstr "kan läsa %E byte från en region av storlek %E"
 
 #: gimple-ssa-warn-access.cc:1084
-#, fuzzy, gcc-internal-format
-#| msgid "%Kreading %E byte from a region of size %E"
+#, gcc-internal-format
 msgid "reading %E byte from a region of size %E"
-msgstr "%Kläser %E byte från en region av storlek %E"
+msgstr "läser %E byte från en region av storlek %E"
 
 #: gimple-ssa-warn-access.cc:1087
-#, fuzzy, gcc-internal-format
-#| msgid "%Kmay read %E bytes from a region of size %E"
+#, gcc-internal-format
 msgid "may read %E bytes from a region of size %E"
-msgstr "%Kkan läsa %E byte från en region av storlek %E"
+msgstr "kan läsa %E byte från en region av storlek %E"
 
 #: gimple-ssa-warn-access.cc:1089
-#, fuzzy, gcc-internal-format
-#| msgid "%Kreading %E bytes from a region of size %E"
+#, gcc-internal-format
 msgid "reading %E bytes from a region of size %E"
-msgstr "%Kläser %E byte från en region av storlek %E"
+msgstr "läser %E byte från en region av storlek %E"
 
 #: gimple-ssa-warn-access.cc:1098
-#, fuzzy, gcc-internal-format
-#| msgid "%K%qD may read %E or more bytes from a region of size %E"
+#, gcc-internal-format
 msgid "%qD may read %E or more bytes from a region of size %E"
-msgstr "%K%qD kan läsa %E eller fler byte från en region av storlek %E"
+msgstr "%qD kan läsa %E eller fler byte från en region av storlek %E"
 
 #: gimple-ssa-warn-access.cc:1100
-#, fuzzy, gcc-internal-format
-#| msgid "%K%qD reading %E or more bytes from a region of size %E"
+#, gcc-internal-format
 msgid "%qD reading %E or more bytes from a region of size %E"
-msgstr "%K%qD läser %E eller fler byte till en region av storlek %E"
+msgstr "%qD läser %E eller fler byte till en region av storlek %E"
 
 #: gimple-ssa-warn-access.cc:1105
-#, fuzzy, gcc-internal-format
-#| msgid "%Kmay read %E or more bytes from a region of size %E"
+#, gcc-internal-format
 msgid "may read %E or more bytes from a region of size %E"
-msgstr "%Kkan läsa %E eller fler byte från en region av storlek %E"
+msgstr "kan läsa %E eller fler byte från en region av storlek %E"
 
 #: gimple-ssa-warn-access.cc:1107
-#, fuzzy, gcc-internal-format
-#| msgid "%Kreading %E or more bytes from a region of size %E"
+#, gcc-internal-format
 msgid "reading %E or more bytes from a region of size %E"
-msgstr "%Kläser %E eller fler byte till en region av storlek %E"
+msgstr "läser %E eller fler byte till en region av storlek %E"
 
 #: gimple-ssa-warn-access.cc:1115
-#, fuzzy, gcc-internal-format
-#| msgid "%K%qD may read between %E and %E bytes from a region of size %E"
+#, gcc-internal-format
 msgid "%qD may read between %E and %E bytes from a region of size %E"
-msgstr "%K%qD kan läsa mellan %E och %E byte från en region av storlek %E"
+msgstr "%qD kan läsa mellan %E och %E byte från en region av storlek %E"
 
 #: gimple-ssa-warn-access.cc:1117
-#, fuzzy, gcc-internal-format
-#| msgid "%K%qD reading between %E and %E bytes from a region of size %E"
+#, gcc-internal-format
 msgid "%qD reading between %E and %E bytes from a region of size %E"
-msgstr "%K%qD läser mellan %E och %E byte från en region av storlek %E"
+msgstr "%qD läser mellan %E och %E byte från en region av storlek %E"
 
 #: gimple-ssa-warn-access.cc:1122
-#, fuzzy, gcc-internal-format
-#| msgid "%Kmay read between %E and %E bytes from a region of size %E"
+#, gcc-internal-format
 msgid "may read between %E and %E bytes from a region of size %E"
-msgstr "%Kkan läsa mellan %E och %E byte från en region av storlek %E"
+msgstr "kan läsa mellan %E och %E byte från en region av storlek %E"
 
 #: gimple-ssa-warn-access.cc:1124
-#, fuzzy, gcc-internal-format
-#| msgid "%Kreading between %E and %E bytes from a region of size %E"
+#, gcc-internal-format
 msgid "reading between %E and %E bytes from a region of size %E"
-msgstr "%Kläser mellan %E och %E byte från en region av storlek %E"
+msgstr "läser mellan %E och %E byte från en region av storlek %E"
 
 #: gimple-ssa-warn-access.cc:1139
-#, fuzzy, gcc-internal-format
-#| msgid "%K%qD expecting %E byte in a region of size %E"
-#| msgid_plural "%K%qD expecting %E bytes in a region of size %E"
+#, gcc-internal-format
 msgid "%qD expecting %E byte in a region of size %E"
 msgid_plural "%qD expecting %E bytes in a region of size %E"
-msgstr[0] "%K%qD förväntar sig %E byte i en region av storlek %E"
-msgstr[1] "%K%qD förväntar sig %E byte i en region av storlek %E"
+msgstr[0] "%qD förväntar sig %E byte i en region av storlek %E"
+msgstr[1] "%qD förväntar sig %E byte i en region av storlek %E"
 
 #: gimple-ssa-warn-access.cc:1144
-#, fuzzy, gcc-internal-format
-#| msgid "%Kexpecting %E byte in a region of size %E"
-#| msgid_plural "%Kexpecting %E bytes in a region of size %E"
+#, gcc-internal-format
 msgid "expecting %E byte in a region of size %E"
 msgid_plural "expecting %E bytes in a region of size %E"
-msgstr[0] "%Kförväntar sig %E byte från en region av storlek %E"
-msgstr[1] "%Kförväntar sig %E byte från en region av storlek %E"
+msgstr[0] "förväntar sig %E byte från en region av storlek %E"
+msgstr[1] "förväntar sig %E byte från en region av storlek %E"
 
 #: gimple-ssa-warn-access.cc:1152
-#, fuzzy, gcc-internal-format
-#| msgid "%K%qD expecting %E or more bytes in a region of size %E"
+#, gcc-internal-format
 msgid "%qD expecting %E or more bytes in a region of size %E"
-msgstr "%K%qD förväntar sig %E eller fler byte i en region av storlek %E"
+msgstr "%qD förväntar sig %E eller fler byte i en region av storlek %E"
 
 #: gimple-ssa-warn-access.cc:1156
-#, fuzzy, gcc-internal-format
-#| msgid "%Kexpecting %E or more bytes in a region of size %E"
+#, gcc-internal-format
 msgid "expecting %E or more bytes in a region of size %E"
-msgstr "%Kförväntar sig %E eller fler byte i en region av storlek %E"
+msgstr "förväntar sig %E eller fler byte i en region av storlek %E"
 
 #: gimple-ssa-warn-access.cc:1163
-#, fuzzy, gcc-internal-format
-#| msgid "%K%qD expecting between %E and %E bytes in a region of size %E"
+#, gcc-internal-format
 msgid "%qD expecting between %E and %E bytes in a region of size %E"
-msgstr "%K%qD förväntar sig mellan %E och %E byte i en region av storlek %E"
+msgstr "%qD förväntar sig mellan %E och %E byte i en region av storlek %E"
 
 #: gimple-ssa-warn-access.cc:1167
-#, fuzzy, gcc-internal-format
-#| msgid "%Kexpecting between %E and %E bytes in a region of size %E"
+#, gcc-internal-format
 msgid "expecting between %E and %E bytes in a region of size %E"
-msgstr "%Kförväntar sig mellan %E och %E byte i en region av storlek %E"
+msgstr "förväntar sig mellan %E och %E byte i en region av storlek %E"
 
 #: gimple-ssa-warn-access.cc:2023
-#, fuzzy, gcc-internal-format
-#| msgid "%K%qD called on pointer %qE with nonzero offset%s"
+#, gcc-internal-format
 msgid "%qD called on pointer %qE with nonzero offset%s"
-msgstr "%K%qD anropad på pekaren %qE med nollskilt avstånd%s"
+msgstr "%qD anropad på pekaren %qE med nollskilt avstånd%s"
 
 #: gimple-ssa-warn-access.cc:2038 gimple-ssa-warn-access.cc:3768
 #, gcc-internal-format
@@ -25634,46 +25595,39 @@ msgid "obtained here"
 msgstr "erhållen här"
 
 #: gimple-ssa-warn-access.cc:2251
-#, fuzzy, gcc-internal-format
-#| msgid "%Kargument %i value %qE is negative"
+#, gcc-internal-format
 msgid "argument %i value %qE is negative"
-msgstr "%Kargument %i:s värde %qE är negativt"
+msgstr "argument %i:s värde %qE är negativt"
 
 #: gimple-ssa-warn-access.cc:2268
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "%Kargument %i value is zero"
+#, gcc-internal-format, gfc-internal-format
 msgid "argument %i value is zero"
-msgstr "%Kargument %i:s värde är noll"
+msgstr "argument %i:s värde är noll"
 
 #: gimple-ssa-warn-access.cc:2286
-#, fuzzy, gcc-internal-format
-#| msgid "%Kargument %i value %qE exceeds maximum object size %E"
+#, gcc-internal-format
 msgid "argument %i value %qE exceeds maximum object size %E"
-msgstr "%Kargument %i:s värde %qE överskrider maximal objektstorlek %E"
+msgstr "argument %i:s värde %qE överskrider maximal objektstorlek %E"
 
 #: gimple-ssa-warn-access.cc:2300
-#, fuzzy, gcc-internal-format
-#| msgid "%Kargument %i range [%E, %E] is negative"
+#, gcc-internal-format
 msgid "argument %i range [%E, %E] is negative"
-msgstr "%Kargument %i:s intervall [%E, %E] är negativt"
+msgstr "argument %i:s intervall [%E, %E] är negativt"
 
 #: gimple-ssa-warn-access.cc:2307
-#, fuzzy, gcc-internal-format
-#| msgid "%Kargument %i range [%E, %E] exceeds maximum object size %E"
+#, gcc-internal-format
 msgid "argument %i range [%E, %E] exceeds maximum object size %E"
-msgstr "%Kargument %i:s intervall [%E, %E] överskrider maximal objektstorlek %E"
+msgstr "argument %i:s intervall [%E, %E] överskrider maximal objektstorlek %E"
 
 #: gimple-ssa-warn-access.cc:2337
-#, fuzzy, gcc-internal-format
-#| msgid "%Kproduct %<%E * %E%> of arguments %i and %i exceeds %<SIZE_MAX%>"
+#, gcc-internal-format
 msgid "product %<%E * %E%> of arguments %i and %i exceeds %<SIZE_MAX%>"
-msgstr "%Kprodukten %<%E * %E%> av argument %i och %i överskrider %<SIZE_MAX%>"
+msgstr "produkten %<%E * %E%> av argument %i och %i överskrider %<SIZE_MAX%>"
 
 #: gimple-ssa-warn-access.cc:2343
-#, fuzzy, gcc-internal-format
-#| msgid "%Kproduct %<%E * %E%> of arguments %i and %i exceeds maximum object size %E"
+#, gcc-internal-format
 msgid "product %<%E * %E%> of arguments %i and %i exceeds maximum object size %E"
-msgstr "%Kprodukten %<%E * %E%> av argument %i och %i överskrider maximal objektstorlek %E"
+msgstr "produkten %<%E * %E%> av argument %i och %i överskrider maximal objektstorlek %E"
 
 #: gimple-ssa-warn-access.cc:2354 gimple-ssa-warn-access.cc:2357
 #, gcc-internal-format
@@ -25691,82 +25645,69 @@ msgid "in a call to allocation function %qD declared here"
 msgstr "i ett anrop av allokeringsfunktionen %qD deklarerad här"
 
 #: gimple-ssa-warn-access.cc:2817
-#, fuzzy, gcc-internal-format
-#| msgid "unknown architecture specifier in memory model to builtin"
+#, gcc-internal-format
 msgid "unknown architecture specifier in memory model %wi for %qD"
-msgstr "okänd arkitekturspecificerare i minnesmodellen till inbyggd"
+msgstr "okänd arkitekturspecificerare i minnesmodell %wi för %qD"
 
 #: gimple-ssa-warn-access.cc:2908
-#, fuzzy, gcc-internal-format
-#| msgid "invalid memory model argument %d of %qE"
+#, gcc-internal-format
 msgid "invalid memory model %qs for %qD"
-msgstr "ogiltig minnesmodellsargument %d till %qE"
+msgstr "ogiltig minnesmodell %qs för %qD"
 
 #: gimple-ssa-warn-access.cc:2912
-#, fuzzy, gcc-internal-format
-#| msgid "invalid memory model argument %d of %qE"
+#, gcc-internal-format
 msgid "invalid memory model %wi for %qD"
-msgstr "ogiltig minnesmodellsargument %d till %qE"
+msgstr "ogiltig minnesmodell %wi för %qD"
 
 #: gimple-ssa-warn-access.cc:2927 gimple-ssa-warn-access.cc:2979
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "valid arguments are: %s"
+#, gcc-internal-format, gfc-internal-format
 msgid "valid models are %s"
-msgstr "giltiga argument är: %s"
+msgstr "giltiga modeller är %s"
 
 #: gimple-ssa-warn-access.cc:2940
-#, fuzzy, gcc-internal-format
-#| msgid "invalid memory model argument %d of %qE"
+#, gcc-internal-format
 msgid "invalid failure memory model %qs for %qD"
-msgstr "ogiltig minnesmodellsargument %d till %qE"
+msgstr "ogiltig felminnesmodell %qs för %qD"
 
 #: gimple-ssa-warn-access.cc:2945
-#, fuzzy, gcc-internal-format
-#| msgid "valid feature names are: %s; did you mean %qs?"
+#, gcc-internal-format
 msgid "valid failure models are %qs, %qs, %qs, %qs"
-msgstr "giltiga funktionsnamn är: %s; menade du %qs?"
+msgstr "giltiga felmodeller är: %qs, %qs, %qs, %qs"
 
 #: gimple-ssa-warn-access.cc:2960
-#, fuzzy, gcc-internal-format
-#| msgid "failure memory model cannot be stronger than success memory model for %<__atomic_compare_exchange%>"
+#, gcc-internal-format
 msgid "failure memory model %qs cannot be stronger than success memory model %qs for %qD"
-msgstr "felminnesmodellen kan inte vara starkare än den lyckade minnesmodellen för %<__atomic_compare_exchange%>"
+msgstr "felminnesmodell %qs kan inte vara starkare än den lyckad minnesmodell %qs för %qD"
 
 #: gimple-ssa-warn-access.cc:2986
-#, fuzzy, gcc-internal-format
-#| msgid "failure memory model cannot be stronger than success memory model for %<__atomic_compare_exchange%>"
+#, gcc-internal-format
 msgid "failure memory model %wi cannot be stronger than success memory model %wi for %qD"
-msgstr "felminnesmodellen kan inte vara starkare än den lyckade minnesmodellen för %<__atomic_compare_exchange%>"
+msgstr "felminnesmodell %wi kan inte vara starkare än den lyckad minnesmodell %wi för %qD"
 
 #: gimple-ssa-warn-access.cc:3417
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "%Kbound argument %i value %s is negative for a variable length array argument %i of type %s"
+#, gcc-internal-format, gfc-internal-format
 msgid "bound argument %i value %s is negative for a variable length array argument %i of type %s"
-msgstr "%1$Kvärdet %3$s på det bundna argumentet %2$i är negativt för ett vektorargument %4$i av typ %5$s med variabel längd"
+msgstr "värdet %2$s på det bundna argumentet %1$i är negativt för ett vektorargument %3$i av typ %4$s med variabel längd"
 
 #: gimple-ssa-warn-access.cc:3425
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "%Kargument %i value %s is negative"
+#, gcc-internal-format, gfc-internal-format
 msgid "argument %i value %s is negative"
-msgstr "%Kargument %i:s värde %s är negativt"
+msgstr "argument %i:s värde %s är negativt"
 
 #: gimple-ssa-warn-access.cc:3475
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "%Kargument %i of variable length array %s is null but the corresponding bound argument %i value is %s"
+#, gcc-internal-format, gfc-internal-format
 msgid "argument %i of variable length array %s is null but the corresponding bound argument %i value is %s"
-msgstr "%Kargument %i till vektorn %s med variabel längd är null men värdet på det motsvarande bundna argumentet %i är %s"
+msgstr "argument %i till vektorn %s med variabel längd är null men värdet på det motsvarande bundna argumentet %i är %s"
 
 #: gimple-ssa-warn-access.cc:3484
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "%Kargument %i is null but the corresponding size argument %i value is %s"
+#, gcc-internal-format, gfc-internal-format
 msgid "argument %i is null but the corresponding size argument %i value is %s"
-msgstr "%Kargument %i är null men värdet på det motsvarande storleksargumentet %i är %s"
+msgstr "argument %i är null men värdet på det motsvarande storleksargumentet %i är %s"
 
 #: gimple-ssa-warn-access.cc:3495
-#, fuzzy, gcc-internal-format
-#| msgid "%Kargument %i to %<%T[static %E]%> is null where non-null expected"
+#, gcc-internal-format
 msgid "argument %i to %<%T[static %E]%> is null where non-null expected"
-msgstr "%Kargument %i till %<%T[static %E]%> är null där icke-null förväntades"
+msgstr "argument %i till %<%T[static %E]%> är null där icke-null förväntades"
 
 #: gimple-ssa-warn-access.cc:3558
 #, gcc-internal-format
@@ -25794,16 +25735,14 @@ msgid "in a call with type %qT"
 msgstr "i ett anrop med typen %qT"
 
 #: gimple-ssa-warn-access.cc:3690
-#, fuzzy, gcc-internal-format
-#| msgid "%K%qD called on unallocated object %qD"
+#, gcc-internal-format
 msgid "%qD called on unallocated object %qD"
-msgstr "%K%qD anropat på ett oallokerat objekt %qD"
+msgstr "%qD anropat på ett oallokerat objekt %qD"
 
 #: gimple-ssa-warn-access.cc:3707
-#, fuzzy, gcc-internal-format
-#| msgid "%K%qD called on a pointer to an unallocated object %qE"
+#, gcc-internal-format
 msgid "%qD called on a pointer to an unallocated object %qE"
-msgstr "%K%qD anropat på en pekare till ett oallokerat objekt %qE"
+msgstr "%qD anropat på en pekare till ett oallokerat objekt %qE"
 
 #: gimple-ssa-warn-access.cc:3716
 #, gcc-internal-format
@@ -25811,46 +25750,39 @@ msgid "assigned here"
 msgstr "tilldelad här"
 
 #: gimple-ssa-warn-access.cc:3749
-#, fuzzy, gcc-internal-format
-#| msgid "%K%qD called on pointer returned from a mismatched allocation function"
+#, gcc-internal-format
 msgid "%qD called on pointer returned from a mismatched allocation function"
-msgstr "%K%qD anropad på en pekare returnerad från en allokeringsfunktion som inte stämmer"
+msgstr "%qD anropad på en pekare returnerad från en allokeringsfunktion som inte stämmer"
 
 #: gimple-ssa-warn-access.cc:3758
-#, fuzzy, gcc-internal-format
-#| msgid "%K%qD called on pointer to an unallocated object"
+#, gcc-internal-format
 msgid "%qD called on pointer to an unallocated object"
-msgstr "%K%qD anropad på en pekare till ett oallokerat objekt"
+msgstr "%qD anropad på en pekare till ett oallokerat objekt"
 
 #: gimple-ssa-warn-access.cc:3915
-#, fuzzy, gcc-internal-format
-#| msgid "Cray pointer %qs in %s clause at %L"
+#, gcc-internal-format
 msgid "pointer %qE may be used after %qD"
-msgstr "Cray-pekare %qs i %s-klausul vid %L"
+msgstr "pekaren %qE kan användas efter %qD"
 
 #: gimple-ssa-warn-access.cc:3916
-#, fuzzy, gcc-internal-format
-#| msgid "Cray pointer %qs in %s clause at %L"
+#, gcc-internal-format
 msgid "pointer %qE used after %qD"
-msgstr "Cray-pekare %qs i %s-klausul vid %L"
+msgstr "pekaren %qE används efter %qD"
 
 #: gimple-ssa-warn-access.cc:3920
-#, fuzzy, gcc-internal-format
-#| msgid "alignment may not be specified for %q+D"
+#, gcc-internal-format
 msgid "pointer may be used after %qD"
-msgstr "minnesjustering kan inte anges för %q+D"
+msgstr "pekaren kan användas efter %qD"
 
 #: gimple-ssa-warn-access.cc:3921
-#, fuzzy, gcc-internal-format
-#| msgid "unused parameter %qD"
+#, gcc-internal-format
 msgid "pointer used after %qD"
-msgstr "oanvänd parameter %qD"
+msgstr "pekaren använd efter %qD"
 
 #: gimple-ssa-warn-access.cc:3925
-#, fuzzy, gcc-internal-format
-#| msgid "in call to %qD, declared here"
+#, gcc-internal-format
 msgid "call to %qD here"
-msgstr "i anrop av %qD, deklarerad här"
+msgstr "anrop av %qD här"
 
 #: gimple-ssa-warn-access.cc:3940
 #, gcc-internal-format
@@ -25858,22 +25790,19 @@ msgid "dangling pointer %qE to %qD may be used"
 msgstr "hängande pekare %qE till %qD kan användas"
 
 #: gimple-ssa-warn-access.cc:3941
-#, fuzzy, gcc-internal-format
-#| msgid "invalid pointer mode %qs"
+#, gcc-internal-format
 msgid "using dangling pointer %qE to %qD"
-msgstr "ogiltigt pekarläge %qs"
+msgstr "använder den hängande pekaren %qE till %qD"
 
 #: gimple-ssa-warn-access.cc:3946
-#, fuzzy, gcc-internal-format
-#| msgid "assuming pointer to member %qD"
+#, gcc-internal-format
 msgid "dangling pointer to %qD may be used"
-msgstr "antar pekare till medlem %qD"
+msgstr "hängande pekare till %qD kan användas"
 
 #: gimple-ssa-warn-access.cc:3947
-#, fuzzy, gcc-internal-format
-#| msgid "invalid pointer mode %qs"
+#, gcc-internal-format
 msgid "using a dangling pointer to %qD"
-msgstr "ogiltigt pekarläge %qs"
+msgstr "använder en hängande pekare till %qD"
 
 #: gimple-ssa-warn-access.cc:3950 gimple-ssa-warn-access.cc:4582
 #: gimple-ssa-warn-restrict.cc:1823 tree-ssa-uninit.cc:900
@@ -25903,58 +25832,49 @@ msgid "dangling pointer to an unnamed temporary may be used"
 msgstr "hängande pekare till en namnlös temporär kan användas"
 
 #: gimple-ssa-warn-access.cc:3968
-#, fuzzy, gcc-internal-format
-#| msgid "plugin cannot register an unnamed pass"
+#, gcc-internal-format
 msgid "using a dangling pointer to an unnamed temporary"
-msgstr "insticksmodulen kan inte registrera ett namnlöst pass"
+msgstr "använder en hängande pekare till en namnlös temporär"
 
 #: gimple-ssa-warn-access.cc:3972
-#, fuzzy, gcc-internal-format
-#| msgid "unnamed class defined here"
+#, gcc-internal-format
 msgid "unnamed temporary defined here"
-msgstr "den namnlösa klassen är definierad här"
+msgstr "den namnlösa temporären är definierad här"
 
 #: gimple-ssa-warn-access.cc:4062
-#, fuzzy, gcc-internal-format
-#| msgid "%K%qD called on pointer returned from a mismatched allocation function"
+#, gcc-internal-format
 msgid "%qD called on pointer %qE passed to mismatched allocation function %qD"
-msgstr "%K%qD anropad på en pekare returnerad från en allokeringsfunktion som inte stämmer"
+msgstr "%qD anropad på pekaren %qE som skickas till en allokeringsfunktion som inte stämmer %qD"
 
 #: gimple-ssa-warn-access.cc:4067
-#, fuzzy, gcc-internal-format
-#| msgid "%K%qD called on pointer returned from a mismatched allocation function"
+#, gcc-internal-format
 msgid "%qD called on a pointer passed to mismatched reallocation function %qD"
-msgstr "%K%qD anropad på en pekare returnerad från en allokeringsfunktion som inte stämmer"
+msgstr "%qD anropad på en pekare skickad till en omallokeringsfunktion som inte stämmer %qD"
 
 #: gimple-ssa-warn-access.cc:4073
-#, fuzzy, gcc-internal-format
-#| msgid "  in call to %qD"
+#, gcc-internal-format
 msgid "call to %qD"
-msgstr "  i anrop till %qD"
+msgstr "anrop till %qD"
 
 #: gimple-ssa-warn-access.cc:4578
-#, fuzzy, gcc-internal-format
-#| msgid "address of local variable %qD returned"
+#, gcc-internal-format
 msgid "storing the address of local variable %qD in %qE"
-msgstr "adress till lokal variabel %qD returnerad"
+msgstr "lagrar adressen till den lokala variabeln %qD i %qE"
 
 #: gimple-ssa-warn-alloca.cc:285
-#, fuzzy, gcc-internal-format
-#| msgid "%Guse of %<alloca%>"
+#, gcc-internal-format
 msgid "use of %<alloca%>"
-msgstr "%Ganvändning av %<alloca%>"
+msgstr "användning av %<alloca%>"
 
 #: gimple-ssa-warn-alloca.cc:324
-#, fuzzy, gcc-internal-format
-#| msgid "%Gargument to variable-length array may be too large"
+#, gcc-internal-format
 msgid "argument to variable-length array may be too large"
-msgstr "%Gargumentet till en vektor med variabel längd kan vara för stort"
+msgstr "argumentet till en vektor med variabel längd kan vara för stort"
 
 #: gimple-ssa-warn-alloca.cc:326
-#, fuzzy, gcc-internal-format
-#| msgid "%Gargument to %<alloca%> may be too large"
+#, gcc-internal-format
 msgid "argument to %<alloca%> may be too large"
-msgstr "%Gargumentet till %<alloca%> kan vara för stort"
+msgstr "argumentet till %<alloca%> kan vara för stort"
 
 #: gimple-ssa-warn-alloca.cc:331
 #, gcc-internal-format
@@ -25962,16 +25882,14 @@ msgid "limit is %wu bytes, but argument may be as large as %s"
 msgstr "gränsen är %wu byte, men argumentet kan vara så stort som %s"
 
 #: gimple-ssa-warn-alloca.cc:343
-#, fuzzy, gcc-internal-format
-#| msgid "%Gargument to variable-length array is too large"
+#, gcc-internal-format
 msgid "argument to variable-length array is too large"
-msgstr "%Gargumentet till en vektor med variabel längd är för stort"
+msgstr "argumentet till en vektor med variabel längd är för stort"
 
 #: gimple-ssa-warn-alloca.cc:345
-#, fuzzy, gcc-internal-format
-#| msgid "%Gargument to %<alloca%> is too large"
+#, gcc-internal-format
 msgid "argument to %<alloca%> is too large"
-msgstr "%Gargumentet till %<alloca%> är för stort"
+msgstr "argumentet till %<alloca%> är för stort"
 
 #: gimple-ssa-warn-alloca.cc:349
 #, gcc-internal-format
@@ -25979,199 +25897,161 @@ msgid "limit is %wu bytes, but argument is %s"
 msgstr "gränsen är %wu byte, men argumentet är %s"
 
 #: gimple-ssa-warn-alloca.cc:361
-#, fuzzy, gcc-internal-format
-#| msgid "%Gunbounded use of variable-length array"
+#, gcc-internal-format
 msgid "unbounded use of variable-length array"
-msgstr "%Gobegränsad användning av vektor med variabel längd"
+msgstr "obegränsad användning av vektor med variabel längd"
 
 #: gimple-ssa-warn-alloca.cc:362
-#, fuzzy, gcc-internal-format
-#| msgid "%Gunbounded use of %<alloca%>"
+#, gcc-internal-format
 msgid "unbounded use of %<alloca%>"
-msgstr "%Gobegränsad användning av %<alloca%>"
+msgstr "obegränsad användning av %<alloca%>"
 
 #: gimple-ssa-warn-alloca.cc:367
-#, fuzzy, gcc-internal-format
-#| msgid "%Guse of %<alloca%> within a loop"
+#, gcc-internal-format
 msgid "use of %<alloca%> within a loop"
-msgstr "%Ganvändning av %<alloca%> inuti en slinga"
+msgstr "användning av %<alloca%> inuti en slinga"
 
 #: gimple-ssa-warn-alloca.cc:372
-#, fuzzy, gcc-internal-format
-#| msgid "%Gargument to variable-length array is zero"
+#, gcc-internal-format
 msgid "argument to variable-length array is zero"
-msgstr "%Gargumentet till en vektor med variabel längd är noll"
+msgstr "argumentet till en vektor med variabel längd är noll"
 
 #: gimple-ssa-warn-alloca.cc:374
-#, fuzzy, gcc-internal-format
-#| msgid "%Gargument to %<alloca%> is zero"
+#, gcc-internal-format
 msgid "argument to %<alloca%> is zero"
-msgstr "%Gargumentet till %<alloca%> är noll"
+msgstr "argumentet till %<alloca%> är noll"
 
 #: gimple-ssa-warn-restrict.cc:1491
-#, fuzzy, gcc-internal-format
-#| msgid "%G%qD accessing %wu byte at offsets %s and %s overlaps %wu byte at offset %s"
+#, gcc-internal-format
 msgid "%qD accessing %wu byte at offsets %s and %s overlaps %wu byte at offset %s"
-msgstr "%G%qD åtkomst av %wu byte på avstånden %s och %s överlappar %wu byte på avståndet %s"
+msgstr "%qD åtkomst av %wu byte på avstånden %s och %s överlappar %wu byte på avståndet %s"
 
 #: gimple-ssa-warn-restrict.cc:1493
-#, fuzzy, gcc-internal-format
-#| msgid "%G%qD accessing %wu byte at offsets %s and %s overlaps %wu bytes at offset %s"
+#, gcc-internal-format
 msgid "%qD accessing %wu byte at offsets %s and %s overlaps %wu bytes at offset %s"
-msgstr "%G%qD åtkomst av %wu byte på avstånden %s och %s överlappar %wu byte på avståndet %s"
+msgstr "%qD åtkomst av %wu byte på avstånden %s och %s överlappar %wu byte på avståndet %s"
 
 #: gimple-ssa-warn-restrict.cc:1497
-#, fuzzy, gcc-internal-format
-#| msgid "%G%qD accessing %wu bytes at offsets %s and %s overlaps %wu byte at offset %s"
+#, gcc-internal-format
 msgid "%qD accessing %wu bytes at offsets %s and %s overlaps %wu byte at offset %s"
-msgstr "%G%qD åtkomst av %wu byte på avstånden %s och %s överlappar %wu byte på avståndet %s"
+msgstr "%qD åtkomst av %wu byte på avstånden %s och %s överlappar %wu byte på avståndet %s"
 
 #: gimple-ssa-warn-restrict.cc:1499
-#, fuzzy, gcc-internal-format
-#| msgid "%G%qD accessing %wu bytes at offsets %s and %s overlaps %wu bytes at offset %s"
+#, gcc-internal-format
 msgid "%qD accessing %wu bytes at offsets %s and %s overlaps %wu bytes at offset %s"
-msgstr "%G%qD åtkomst av %wu byte på avstånden %s och %s överlappar %wu byte på avståndet %s"
+msgstr "%qD åtkomst av %wu byte på avstånden %s och %s överlappar %wu byte på avståndet %s"
 
 #: gimple-ssa-warn-restrict.cc:1506
-#, fuzzy, gcc-internal-format
-#| msgid "%G%qD accessing %wu byte at offsets %s and %s overlaps between %wu and %wu bytes at offset %s"
-#| msgid_plural "%G%qD accessing %wu bytes at offsets %s and %s overlaps between %wu and %wu bytes at offset %s"
+#, gcc-internal-format
 msgid "%qD accessing %wu byte at offsets %s and %s overlaps between %wu and %wu bytes at offset %s"
 msgid_plural "%qD accessing %wu bytes at offsets %s and %s overlaps between %wu and %wu bytes at offset %s"
-msgstr[0] "%G%qD åtkomst av %wu byte på avstånden %s och %s överlappar mellan %wu och %wu byte på avståndet %s"
-msgstr[1] "%G%qD åtkomst av %wu byte på avstånden %s och %s överlappar mellan %wu och %wu byte på avståndet %s"
+msgstr[0] "%qD åtkomst av %wu byte på avstånden %s och %s överlappar mellan %wu och %wu byte på avståndet %s"
+msgstr[1] "%qD åtkomst av %wu byte på avstånden %s och %s överlappar mellan %wu och %wu byte på avståndet %s"
 
 #: gimple-ssa-warn-restrict.cc:1516
-#, fuzzy, gcc-internal-format
-#| msgid "%G%qD accessing %wu byte at offsets %s and %s overlaps %wu or more bytes at offset %s"
-#| msgid_plural "%G%qD accessing %wu bytes at offsets %s and %s overlaps %wu or more bytes at offset %s"
+#, gcc-internal-format
 msgid "%qD accessing %wu byte at offsets %s and %s overlaps %wu or more bytes at offset %s"
 msgid_plural "%qD accessing %wu bytes at offsets %s and %s overlaps %wu or more bytes at offset %s"
-msgstr[0] "%G%qD åtkomst av %wu byte på avstånden %s och %s överlappar %wu eller fler byte på avståndet %s"
-msgstr[1] "%G%qD åtkomst av %wu byte på avstånden %s och %s överlappar %wu eller fler byte på avståndet %s"
+msgstr[0] "%qD åtkomst av %wu byte på avstånden %s och %s överlappar %wu eller fler byte på avståndet %s"
+msgstr[1] "%qD åtkomst av %wu byte på avstånden %s och %s överlappar %wu eller fler byte på avståndet %s"
 
 #: gimple-ssa-warn-restrict.cc:1529
-#, fuzzy, gcc-internal-format
-#| msgid "%G%qD accessing between %wu and %wu bytes at offsets %s and %s overlaps %wu byte at offset %s"
-#| msgid_plural "%G%qD accessing between %wu and %wu bytes at offsets %s and %s overlaps %wu bytes at offset %s"
+#, gcc-internal-format
 msgid "%qD accessing between %wu and %wu bytes at offsets %s and %s overlaps %wu byte at offset %s"
 msgid_plural "%qD accessing between %wu and %wu bytes at offsets %s and %s overlaps %wu bytes at offset %s"
-msgstr[0] "%G%qD åtkomst mellan %wu och %wu byte på avstånden %s och %s överlappar %wu byte på avståndet %s"
-msgstr[1] "%G%qD åtkomst mellan %wu och %wu byte på avstånden %s och %s överlappar %wu byte på avståndet %s"
+msgstr[0] "%qD åtkomst mellan %wu och %wu byte på avstånden %s och %s överlappar %wu byte på avståndet %s"
+msgstr[1] "%qD åtkomst mellan %wu och %wu byte på avstånden %s och %s överlappar %wu byte på avståndet %s"
 
 #: gimple-ssa-warn-restrict.cc:1539
-#, fuzzy, gcc-internal-format
-#| msgid "%G%qD accessing between %wu and %wu bytes at offsets %s and %s overlaps between %wu and %wu bytes at offset %s"
+#, gcc-internal-format
 msgid "%qD accessing between %wu and %wu bytes at offsets %s and %s overlaps between %wu and %wu bytes at offset %s"
-msgstr "%G%qD åtkomst mellan %wu och %wu byte på avstånden %s och %s överlappar mellan %wu och %wu byte på avståndet %s"
+msgstr "%qD åtkomst mellan %wu och %wu byte på avstånden %s och %s överlappar mellan %wu och %wu byte på avståndet %s"
 
 #: gimple-ssa-warn-restrict.cc:1547
-#, fuzzy, gcc-internal-format
-#| msgid "%G%qD accessing between %wu and %wu bytes at offsets %s and %s overlaps %wu or more bytes at offset %s"
+#, gcc-internal-format
 msgid "%qD accessing between %wu and %wu bytes at offsets %s and %s overlaps %wu or more bytes at offset %s"
-msgstr "%G%qD åtkomst av mellan %wu och %wu byte på avstånden %s och %s överlappar %wu eller fler byte på avståndet %s"
+msgstr "%qD åtkomst av mellan %wu och %wu byte på avstånden %s och %s överlappar %wu eller fler byte på avståndet %s"
 
 #: gimple-ssa-warn-restrict.cc:1560
-#, fuzzy, gcc-internal-format
-#| msgid "%G%qD accessing %wu or more bytes at offsets %s and %s overlaps %wu byte at offset %s"
-#| msgid_plural "%G%qD accessing %wu or more bytes at offsets %s and %s overlaps %wu bytes at offset %s"
+#, gcc-internal-format
 msgid "%qD accessing %wu or more bytes at offsets %s and %s overlaps %wu byte at offset %s"
 msgid_plural "%qD accessing %wu or more bytes at offsets %s and %s overlaps %wu bytes at offset %s"
-msgstr[0] "%G%qD åtkomst av %wu eller fler byte på avstånden %s och %s överlappar %wu byte på avståndet %s"
-msgstr[1] "%G%qD åtkomst av %wu eller fler byte på avstånden %s och %s överlappar %wu byte på avståndet %s"
+msgstr[0] "%qD åtkomst av %wu eller fler byte på avstånden %s och %s överlappar %wu byte på avståndet %s"
+msgstr[1] "%qD åtkomst av %wu eller fler byte på avstånden %s och %s överlappar %wu byte på avståndet %s"
 
 #: gimple-ssa-warn-restrict.cc:1568
-#, fuzzy, gcc-internal-format
-#| msgid "%G%qD accessing %wu or more bytes at offsets %s and %s overlaps between %wu and %wu bytes at offset %s"
+#, gcc-internal-format
 msgid "%qD accessing %wu or more bytes at offsets %s and %s overlaps between %wu and %wu bytes at offset %s"
-msgstr "%G%qD åtkomst av %wu eller fler byte på avstånden %s och %s överlappar mellan %wu och %wu byte på avståndet %s"
+msgstr "%qD åtkomst av %wu eller fler byte på avstånden %s och %s överlappar mellan %wu och %wu byte på avståndet %s"
 
 #: gimple-ssa-warn-restrict.cc:1575
-#, fuzzy, gcc-internal-format
-#| msgid "%G%qD accessing %wu or more bytes at offsets %s and %s overlaps %wu or more bytes at offset %s"
+#, gcc-internal-format
 msgid "%qD accessing %wu or more bytes at offsets %s and %s overlaps %wu or more bytes at offset %s"
-msgstr "%G%qD åtkomst av %wu eller fler byte på avstånden %s och %s överlappar %wu eller fler byte på avståndet %s"
+msgstr "%qD åtkomst av %wu eller fler byte på avstånden %s och %s överlappar %wu eller fler byte på avståndet %s"
 
 #: gimple-ssa-warn-restrict.cc:1603
-#, fuzzy, gcc-internal-format
-#| msgid "%G%qD accessing %wu byte may overlap %wu byte"
-#| msgid_plural "%G%qD accessing %wu bytes may overlap %wu byte"
+#, gcc-internal-format
 msgid "%qD accessing %wu byte may overlap %wu byte"
 msgid_plural "%qD accessing %wu bytes may overlap %wu byte"
-msgstr[0] "%G%qD åtkomst av %wu byte kan överlappa %wu byte"
-msgstr[1] "%G%qD åtkomst av %wu byte kan överlappa %wu byte"
+msgstr[0] "%qD åtkomst av %wu byte kan överlappa %wu byte"
+msgstr[1] "%qD åtkomst av %wu byte kan överlappa %wu byte"
 
 #: gimple-ssa-warn-restrict.cc:1610
-#, fuzzy, gcc-internal-format
-#| msgid "%G%qD accessing %wu byte at offsets %s and %s may overlap %wu byte at offset %s"
-#| msgid_plural "%G%qD accessing %wu bytes at offsets %s and %s may overlap %wu byte at offset %s"
+#, gcc-internal-format
 msgid "%qD accessing %wu byte at offsets %s and %s may overlap %wu byte at offset %s"
 msgid_plural "%qD accessing %wu bytes at offsets %s and %s may overlap %wu byte at offset %s"
-msgstr[0] "%G%qD åtkomst av %wu byte på avstånden %s och %s kan överlappa %wu byte på avståndet %s"
-msgstr[1] "%G%qD åtkomst av %wu byte på avstånden %s och %s kan överlappa %wu byte på avståndet %s"
+msgstr[0] "%qD åtkomst av %wu byte på avstånden %s och %s kan överlappa %wu byte på avståndet %s"
+msgstr[1] "%qD åtkomst av %wu byte på avstånden %s och %s kan överlappa %wu byte på avståndet %s"
 
 #: gimple-ssa-warn-restrict.cc:1621
-#, fuzzy, gcc-internal-format
-#| msgid "%G%qD accessing %wu byte may overlap up to %wu bytes"
-#| msgid_plural "%G%qD accessing %wu bytes may overlap up to %wu bytes"
+#, gcc-internal-format
 msgid "%qD accessing %wu byte may overlap up to %wu bytes"
 msgid_plural "%qD accessing %wu bytes may overlap up to %wu bytes"
-msgstr[0] "%G%qD åtkomst av %wu byte kan överlappa upp till %wu byte"
-msgstr[1] "%G%qD åtkomst av %wu byte kan överlappa upp till %wu byte"
+msgstr[0] "%qD åtkomst av %wu byte kan överlappa upp till %wu byte"
+msgstr[1] "%qD åtkomst av %wu byte kan överlappa upp till %wu byte"
 
 #: gimple-ssa-warn-restrict.cc:1628
-#, fuzzy, gcc-internal-format
-#| msgid "%G%qD accessing %wu byte at offsets %s and %s may overlap up to %wu bytes at offset %s"
-#| msgid_plural "%G%qD accessing %wu bytes at offsets %s and %s may overlap up to %wu bytes at offset %s"
+#, gcc-internal-format
 msgid "%qD accessing %wu byte at offsets %s and %s may overlap up to %wu bytes at offset %s"
 msgid_plural "%qD accessing %wu bytes at offsets %s and %s may overlap up to %wu bytes at offset %s"
-msgstr[0] "%G%qD åtkomst av %wu byte på avstånden %s och %s kan överlappa upp till %wu byte på avståndet %s"
-msgstr[1] "%G%qD åtkomst av %wu byte på avstånden %s och %s kan överlappa upp till %wu byte på avståndet %s"
+msgstr[0] "%qD åtkomst av %wu byte på avstånden %s och %s kan överlappa upp till %wu byte på avståndet %s"
+msgstr[1] "%qD åtkomst av %wu byte på avstånden %s och %s kan överlappa upp till %wu byte på avståndet %s"
 
 #: gimple-ssa-warn-restrict.cc:1641
-#, fuzzy, gcc-internal-format
-#| msgid "%G%qD accessing between %wu and %wu bytes may overlap %wu byte"
-#| msgid_plural "%G%qD accessing between %wu and %wu bytes may overlap up to %wu bytes"
+#, gcc-internal-format
 msgid "%qD accessing between %wu and %wu bytes may overlap %wu byte"
 msgid_plural "%qD accessing between %wu and %wu bytes may overlap up to %wu bytes"
-msgstr[0] "%G%qD åtkomst mellan %wu och %wu byte kan överlappa %wu byte"
-msgstr[1] "%G%qD åtkomst mellan %wu och %wu byte kan överlappa %wu byte"
+msgstr[0] "%qD åtkomst mellan %wu och %wu byte kan överlappa %wu byte"
+msgstr[1] "%qD åtkomst mellan %wu och %wu byte kan överlappa %wu byte"
 
 #: gimple-ssa-warn-restrict.cc:1648
-#, fuzzy, gcc-internal-format
-#| msgid "%G%qD accessing between %wu and %wu bytes at offsets %s and %s may overlap %wu byte at offset %s"
-#| msgid_plural "%G%qD accessing between %wu and %wu bytes at offsets %s and %s may overlap up to %wu bytes at offset %s"
+#, gcc-internal-format
 msgid "%qD accessing between %wu and %wu bytes at offsets %s and %s may overlap %wu byte at offset %s"
 msgid_plural "%qD accessing between %wu and %wu bytes at offsets %s and %s may overlap up to %wu bytes at offset %s"
-msgstr[0] "%G%qD åtkomst mellan %wu och %wu byte på avstånden %s och %s kan överlappa %wu byte på avståndet %s"
-msgstr[1] "%G%qD åtkomst mellan %wu och %wu byte på avstånden %s och %s kan överlappa %wu byte på avståndet %s"
+msgstr[0] "%qD åtkomst mellan %wu och %wu byte på avstånden %s och %s kan överlappa %wu byte på avståndet %s"
+msgstr[1] "%qD åtkomst mellan %wu och %wu byte på avstånden %s och %s kan överlappa %wu byte på avståndet %s"
 
 #: gimple-ssa-warn-restrict.cc:1660
-#, fuzzy, gcc-internal-format
-#| msgid "%G%qD accessing %wu or more bytes at offsets %s and %s may overlap %wu byte at offset %s"
-#| msgid_plural "%G%qD accessing %wu or more bytes at offsets %s and %s may overlap up to %wu bytes at offset %s"
+#, gcc-internal-format
 msgid "%qD accessing %wu or more bytes at offsets %s and %s may overlap %wu byte at offset %s"
 msgid_plural "%qD accessing %wu or more bytes at offsets %s and %s may overlap up to %wu bytes at offset %s"
-msgstr[0] "%G%qD åtkomst av %wu eller fler byte på avstånden %s och %s kan överlappa %wu byte på avståndet %s"
-msgstr[1] "%G%qD åtkomst av %wu eller fler byte på avstånden %s och %s kan överlappa %wu byte på avståndet %s"
+msgstr[0] "%qD åtkomst av %wu eller fler byte på avstånden %s och %s kan överlappa %wu byte på avståndet %s"
+msgstr[1] "%qD åtkomst av %wu eller fler byte på avstånden %s och %s kan överlappa %wu byte på avståndet %s"
 
 #: gimple-ssa-warn-restrict.cc:1706
-#, fuzzy, gcc-internal-format
-#| msgid "%G%qD specified bound %wu exceeds maximum object size %wu"
+#, gcc-internal-format
 msgid "%qD specified bound %wu exceeds maximum object size %wu"
-msgstr "%G%qD angiven gräns på %wu överskrider maximal objektstorlek %wu"
+msgstr "%qD angiven gräns på %wu överskrider maximal objektstorlek %wu"
 
 #: gimple-ssa-warn-restrict.cc:1712
-#, fuzzy, gcc-internal-format
-#| msgid "%G%qD specified bound between %wu and %wu exceeds maximum object size %wu"
+#, gcc-internal-format
 msgid "%qD specified bound between %wu and %wu exceeds maximum object size %wu"
-msgstr "%G%qD den angivna gränsen mellan %wu och %wu överskrider maximal objektstorlek %wu"
+msgstr "%qD den angivna gränsen mellan %wu och %wu överskrider maximal objektstorlek %wu"
 
 #: gimple-ssa-warn-restrict.cc:1773
-#, fuzzy, gcc-internal-format
-#| msgid "%G%qD pointer overflow between offset %s and size %s accessing array %qD with type %qT"
+#, gcc-internal-format
 msgid "%qD pointer overflow between offset %s and size %s accessing array %qD with type %qT"
-msgstr "%G%qD pekarspill mellan avstånd %s och storlek %s vid åtkomst av vektorn %qD av typ %qT"
+msgstr "%qD pekarspill mellan avstånd %s och storlek %s vid åtkomst av vektorn %qD av typ %qT"
 
 #: gimple-ssa-warn-restrict.cc:1778 c-family/c-warn.cc:3753
 #, gcc-internal-format
@@ -26179,64 +26059,54 @@ msgid "array %qD declared here"
 msgstr "vektorn %qD är deklarerad här"
 
 #: gimple-ssa-warn-restrict.cc:1783 gimple-ssa-warn-restrict.cc:1789
-#, fuzzy, gcc-internal-format
-#| msgid "%G%qD pointer overflow between offset %s and size %s"
+#, gcc-internal-format
 msgid "%qD pointer overflow between offset %s and size %s"
-msgstr "%G%qD pekarspill mellan avstånd %s och storlek %s"
+msgstr "%qD pekarspill mellan avstånd %s och storlek %s"
 
 #: gimple-ssa-warn-restrict.cc:1806
-#, fuzzy, gcc-internal-format
-#| msgid "%G%qD forming offset %s is out of the bounds [0, %wu] of object %qD with type %qT"
+#, gcc-internal-format
 msgid "%qD forming offset %s is out of the bounds [0, %wu] of object %qD with type %qT"
-msgstr "%G%qD formande avstånd %s är utanför gränserna [0, %wu] för objekt %qD med typen %qT"
+msgstr "%qD formande avstånd %s är utanför gränserna [0, %wu] för objekt %qD med typen %qT"
 
 #: gimple-ssa-warn-restrict.cc:1809
-#, fuzzy, gcc-internal-format
-#| msgid "%G%qD offset %s is out of the bounds [0, %wu] of object %qD with type %qT"
+#, gcc-internal-format
 msgid "%qD offset %s is out of the bounds [0, %wu] of object %qD with type %qT"
-msgstr "%G%qD avstånd %s är utanför gränserna [0, %wu] för objekt %qD med typen %qT"
+msgstr "%qD avstånd %s är utanför gränserna [0, %wu] för objekt %qD med typen %qT"
 
 #: gimple-ssa-warn-restrict.cc:1815
-#, fuzzy, gcc-internal-format
-#| msgid "%G%qD forming offset %s is out of the bounds of object %qD with type %qT"
+#, gcc-internal-format
 msgid "%qD forming offset %s is out of the bounds of object %qD with type %qT"
-msgstr "%G%qD formande avstånd %s är utanför gränserna för objekt %qD med typen %qT"
+msgstr "%qD formande avstånd %s är utanför gränserna för objekt %qD med typen %qT"
 
 #: gimple-ssa-warn-restrict.cc:1817
-#, fuzzy, gcc-internal-format
-#| msgid "%G%qD offset %s is out of the bounds of object %qD with type %qT"
+#, gcc-internal-format
 msgid "%qD offset %s is out of the bounds of object %qD with type %qT"
-msgstr "%G%qD på avståndet %s är utanför gränserna för objekt %qD med typen %qT"
+msgstr "%qD på avståndet %s är utanför gränserna för objekt %qD med typen %qT"
 
 #: gimple-ssa-warn-restrict.cc:1830
-#, fuzzy, gcc-internal-format
-#| msgid "%G%qD forming offset %s is out of the bounds [0, %wu]"
+#, gcc-internal-format
 msgid "%qD forming offset %s is out of the bounds [0, %wu]"
-msgstr "%G%qD formande avstånd %s är utanför gränserna [0, %wu]"
+msgstr "%qD formande avstånd %s är utanför gränserna [0, %wu]"
 
 #: gimple-ssa-warn-restrict.cc:1832
-#, fuzzy, gcc-internal-format
-#| msgid "%G%qD offset %s is out of the bounds [0, %wu]"
+#, gcc-internal-format
 msgid "%qD offset %s is out of the bounds [0, %wu]"
-msgstr "%G%qD avstånd %s är utanför gränserna [0, %wu]"
+msgstr "%qD avstånd %s är utanför gränserna [0, %wu]"
 
 #: gimple-ssa-warn-restrict.cc:1838
-#, fuzzy, gcc-internal-format
-#| msgid "%G%qD forming offset %s is out of bounds"
+#, gcc-internal-format
 msgid "%qD forming offset %s is out of bounds"
-msgstr "%G%qD formande avstånd %s är utanför gränsen"
+msgstr "%qD formande avstånd %s är utanför gränsen"
 
 #: gimple-ssa-warn-restrict.cc:1839
-#, fuzzy, gcc-internal-format
-#| msgid "%G%qD offset %s is out of bounds"
+#, gcc-internal-format
 msgid "%qD offset %s is out of bounds"
-msgstr "%G%qD avstånd %s är utanför gränsen"
+msgstr "%qD avstånd %s är utanför gränsen"
 
 #: gimple-ssa-warn-restrict.cc:1851
-#, fuzzy, gcc-internal-format
-#| msgid "%G%qD offset %s from the object at %qE is out of the bounds of %qT"
+#, gcc-internal-format
 msgid "%qD offset %s from the object at %qE is out of the bounds of %qT"
-msgstr "%G%qD avstånd %s från objektet vid %qE är utanför gränserna för %qT"
+msgstr "%qD avstånd %s från objektet vid %qE är utanför gränserna för %qT"
 
 #: gimple-ssa-warn-restrict.cc:1859 gimple-ssa-warn-restrict.cc:1880
 #, gcc-internal-format
@@ -26244,10 +26114,9 @@ msgid "subobject %qD declared here"
 msgstr "underobjekt %qD är deklarerat här"
 
 #: gimple-ssa-warn-restrict.cc:1869
-#, fuzzy, gcc-internal-format
-#| msgid "%G%qD offset %s from the object at %qE is out of the bounds of referenced subobject %qD with type %qT at offset %wi"
+#, gcc-internal-format
 msgid "%qD offset %s from the object at %qE is out of the bounds of referenced subobject %qD with type %qT at offset %wi"
-msgstr "%G%qD avstånd %s från objektet vid %qE är utanför gränserna för refererat underobjekt %qD med typen %qT på avståndet %wi"
+msgstr "%qD avstånd %s från objektet vid %qE är utanför gränserna för refererat underobjekt %qD med typen %qT på avståndet %wi"
 
 #: gimple-streamer-in.cc:207
 #, gcc-internal-format, gfc-internal-format
@@ -26255,16 +26124,14 @@ msgid "bytecode stream: unknown GIMPLE statement tag %s"
 msgstr "bytekodström: okänd GIMPLE-satstagg %s"
 
 #: gimple-warn-recursion.cc:183
-#, fuzzy, gcc-internal-format
-#| msgid "circular pointer delegation detected"
+#, gcc-internal-format
 msgid "infinite recursion detected"
-msgstr "cirkulär pekardelegering detekterad"
+msgstr "oändlig rekursion detekterad"
 
 #: gimple-warn-recursion.cc:190
-#, fuzzy, gcc-internal-format
-#| msgid "recursive inlining"
+#, gcc-internal-format
 msgid "recursive call"
-msgstr "rekursiv inline:ing"
+msgstr "rekursivt anrop"
 
 #: gimple.cc:1292
 #, gcc-internal-format, gfc-internal-format
@@ -26439,10 +26306,9 @@ msgid "%<task%> reduction modifier on a construct with a %<nowait%> clause"
 msgstr "reduktionsmodifieraren %<task%> på en konstruktion med en klausul %<nowait%>"
 
 #: gimplify.cc:9156
-#, fuzzy, gcc-internal-format
-#| msgid "invalid %<task%> reduction modifier on construct other than %<parallel%>, %qs or %<sections%>"
+#, gcc-internal-format
 msgid "invalid %<task%> reduction modifier on construct other than %<parallel%>, %qs, %<sections%> or %<scope%>"
-msgstr "felaktig reduktionsmodifierare %<task%> på en annan konstruktion än %<parallel%>, %qs eller %<sections%>"
+msgstr "felaktig reduktionsmodifierare %<task%> på en annan konstruktion än %<parallel%>, %qs, %<sections%> eller %<scope%>"
 
 #: gimplify.cc:9167 gimplify.cc:9173 gimplify.cc:9179 gimplify.cc:9185
 #: gimplify.cc:9191 gimplify.cc:13522
@@ -26481,10 +26347,9 @@ msgid "expected %qs %<if%> clause modifier rather than %qs"
 msgstr "%qs %<if%>-klausulmodifierare förväntades snarare än %qs"
 
 #: gimplify.cc:10551
-#, fuzzy, gcc-internal-format
-#| msgid "more than one %<depend%> clause with %<source%> modifier on an %<ordered%> construct"
+#, gcc-internal-format
 msgid "%<device%> clause with %<ancestor%> is only allowed on %<target%> construct"
-msgstr "mer än en %<depend%>-klausul med %<source%>-modifierare på en %<ordered%>-konstruktion"
+msgstr "%<device%>-klausul med %<ancestor%> är endast tillåtet på en %<target%>-konstruktion"
 
 #: gimplify.cc:10567
 #, gcc-internal-format
@@ -26547,10 +26412,9 @@ msgid "%qs clause may not appear on non-rectangular %qs"
 msgstr "%qs-klausul får inte förekomma på en ickerektangulär %qs"
 
 #: gimplify.cc:12621
-#, fuzzy, gcc-internal-format
-#| msgid "invalid type for iteration variable %qE"
+#, gcc-internal-format
 msgid "threadprivate iteration variable %qD"
-msgstr "ogiltig typ för iterationsvariabeln %qE"
+msgstr "trådprivat iterationsvariabel %qD"
 
 #: gimplify.cc:12652 gimplify.cc:12760
 #, gcc-internal-format
@@ -26987,10 +26851,9 @@ msgid "name %qs differs from name %qs defined in another translation unit"
 msgstr "namnet %qs skiljer från namnet %qs som är definierat i en annan översättningsenhet"
 
 #: ipa-devirt.cc:4268
-#, fuzzy, gcc-internal-format
-#| msgid "name %qs is defined to %wd while another translation unit defines it as %wd"
+#, gcc-internal-format
 msgid "name %qs is defined as %u-bit while another translation unit defines it as %u-bit"
-msgstr "namnet %qs är definierat till %wd medan en annan översättningsenhet definierar det som %wd"
+msgstr "namnet %qs är definierat som %u-bitars medan en annan översättningsenhet definierar det som %u-bitars"
 
 #: ipa-devirt.cc:4277
 #, gcc-internal-format
@@ -27068,16 +26931,14 @@ msgid "IPA-SRA access verification failed"
 msgstr "IPA-SRA åtkomstverifiering misslyckades"
 
 #: ipa-sra.cc:2496
-#, fuzzy, gcc-internal-format
-#| msgid "Function %qs, parameter %u, has IPA-SRA accesses which overlap"
+#, gcc-internal-format
 msgid "function %qs, parameter %u, has IPA-SRA accesses which overlap"
-msgstr "Funktionen %qs, parametern %u, har IPA-SRA-åtkomst som överlappar"
+msgstr "funktionen %qs, parameter %u, har IPA-SRA-åtkomst som överlappar"
 
 #: ipa-sra.cc:2499
-#, fuzzy, gcc-internal-format
-#| msgid "Function %s, parameter %u, is used but does not have any certain IPA-SRA access"
+#, gcc-internal-format
 msgid "function %qs, parameter %u, is used but does not have any certain IPA-SRA access"
-msgstr "Funktionen %s, parameter %u, används men har inte någon säker IPA-SRA-åtkomst"
+msgstr "funktionen %qs, parameter %u, används men har inte någon säker IPA-SRA-åtkomst"
 
 #: ira.cc:2434 ira.cc:2456
 #, gcc-internal-format
@@ -27443,10 +27304,9 @@ msgid "invalid OpenMP non-rectangular loop step; %<(%E - %E) * %E%> is not a mul
 msgstr "felaktig OpenMP ickerektangulärt slingsteg; %<(%E - %E) * %E%> är inte en multipel av slinga %d steg %qE"
 
 #: omp-expand.cc:9995
-#, fuzzy, gcc-internal-format
-#| msgid "%<-pipe%> not supported"
+#, gcc-internal-format
 msgid "%<ancestor%> not yet supported"
-msgstr "%<-pipe%> stödjs inte"
+msgstr "%<ancestor%> stödjs inte ännu"
 
 #: omp-general.cc:1111
 #, gcc-internal-format
@@ -27649,28 +27509,24 @@ msgid "%<%s %s%> construct not closely nested inside of %qs"
 msgstr "%<%s %s%>-konstruktion inte nära innesluten inuti %qs"
 
 #: omp-low.cc:3494
-#, fuzzy, gcc-internal-format
-#| msgid "barrier region may not be closely nested inside of work-sharing, %<loop%>, %<critical%>, %<ordered%>, %<master%>, explicit %<task%> or %<taskloop%> region"
+#, gcc-internal-format
 msgid "barrier region may not be closely nested inside of work-sharing, %<loop%>, %<critical%>, %<ordered%>, %<master%>, %<masked%>, explicit %<task%> or %<taskloop%> region"
-msgstr "barriärregion får inte vara nära innesluten inuti en arbetsdelande, %<loop%>, %<critical%>, %<ordered%>, %<master%>, explicit %<task%> eller %<taskloop%> region"
+msgstr "barriärregion får inte vara nära innesluten inuti en arbetsdelande, %<loop%>, %<critical%>, %<ordered%>, %<master%>, %<masked%>, explicit %<task%> eller %<taskloop%> region"
 
 #: omp-low.cc:3501
-#, fuzzy, gcc-internal-format
-#| msgid "work-sharing region may not be closely nested inside of work-sharing, %<loop%>, %<critical%>, %<ordered%>, %<master%>, explicit %<task%> or %<taskloop%> region"
+#, gcc-internal-format
 msgid "work-sharing region may not be closely nested inside of work-sharing, %<loop%>, %<critical%>, %<ordered%>, %<master%>, %<masked%>, explicit %<task%> or %<taskloop%> region"
-msgstr "arbetsdelande region får inte vara nära innesluten inuti arbetsdelande, %<loop%>, %<critical%>, %<ordered%>, %<master%>, explicit %<task%> eller %<taskloop%> region"
+msgstr "arbetsdelande region får inte vara nära innesluten inuti arbetsdelande, %<loop%>, %<critical%>, %<ordered%>, %<master%>, %<masked%>, explicit %<task%> eller %<taskloop%> region"
 
 #: omp-low.cc:3532
-#, fuzzy, gcc-internal-format
-#| msgid "%<master%> region may not be closely nested inside of work-sharing, %<loop%>, explicit %<task%> or %<taskloop%> region"
+#, gcc-internal-format
 msgid "%qs region may not be closely nested inside of work-sharing, %<loop%>, explicit %<task%> or %<taskloop%> region"
-msgstr "en %<master%>-region får inte vara nära innesluten inuti arbetsdelande, %<loop%>, explicit %<task%> eller %<taskloop%> region"
+msgstr "en %qs-region får inte vara nära innesluten inuti arbetsdelande, %<loop%>, explicit %<task%> eller %<taskloop%> region"
 
 #: omp-low.cc:3567
-#, fuzzy, gcc-internal-format
-#| msgid "barrier region may not be closely nested inside of work-sharing, %<loop%>, %<critical%>, %<ordered%>, %<master%>, explicit %<task%> or %<taskloop%> region"
+#, gcc-internal-format
 msgid "%<scope%> region may not be closely nested inside of work-sharing, %<loop%>, explicit %<task%>, %<taskloop%>, %<critical%>, %<ordered%>, %<master%>, or %<masked%> region"
-msgstr "barriärregion får inte vara nära innesluten inuti en arbetsdelande, %<loop%>, %<critical%>, %<ordered%>, %<master%>, explicit %<task%> eller %<taskloop%> region"
+msgstr "en %<scope%>-region får inte vara nära innesluten inuti en arbetsdelande, %<loop%>, explicit %<task%>, %<taskloop%>, %<critical%>, %<ordered%>, %<master%> eller %<masked%>-region"
 
 #: omp-low.cc:3592 omp-low.cc:3749 c-family/c-omp.cc:729
 #, gcc-internal-format
@@ -27748,16 +27604,14 @@ msgid "OpenMP runtime API call %qD in a region with %<order(concurrent)%> clause
 msgstr "OpenMP-körtids-API-anrop %qD i en region med en %<order(concurrent)%>-klausul"
 
 #: omp-low.cc:4132
-#, fuzzy, gcc-internal-format
-#| msgid "%<bind(teams)%> on a %<loop%> region not strictly nested inside of a %<teams%> region"
+#, gcc-internal-format
 msgid "OpenMP runtime API call %qD strictly nested in a %<teams%> region"
-msgstr "%<bind(teams)%> på en %<loop%>-region som inte är strikt nästad inuti en %<teams%>-region"
+msgstr "OpenMP-körtids-API-anrop %qD som är strikt nästad inuti en %<teams%>-region"
 
 #: omp-low.cc:4144
-#, fuzzy, gcc-internal-format
-#| msgid "OpenMP runtime API call %qD in a region with %<order(concurrent)%> clause"
+#, gcc-internal-format
 msgid "OpenMP runtime API call %qD in a region with %<device(ancestor)%> clause"
-msgstr "OpenMP-körtids-API-anrop %qD i en region med en %<order(concurrent)%>-klausul"
+msgstr "OpenMP-körtids-API-anrop %qD i en region med en %<device(ancestor)%>-klausul"
 
 #: omp-low.cc:9800
 #, gcc-internal-format
@@ -27798,22 +27652,19 @@ msgid "%<gang%> loop in %<gang-single%> region"
 msgstr "%<gang%>-slinga i %<gang-single%>-region"
 
 #: omp-oacc-kernels-decompose.cc:480
-#, fuzzy, gcc-internal-format
-#| msgid "cannot dereference %qE in %qs clause"
+#, gcc-internal-format
 msgid "cannot honor conflicting %qs clause"
-msgstr "det går inte att dereferera %qE i en %qs-klausul"
+msgstr "det går inte att följa motstridiga %qs-klausuler"
 
 #: omp-oacc-kernels-decompose.cc:483
-#, fuzzy, gcc-internal-format
-#| msgid "location of the previous reduction for %qE"
+#, gcc-internal-format
 msgid "location of the previous clause in the same loop nest"
-msgstr "platsen för den tidigare reduktionen för %qE"
+msgstr "platsen för den tidigare klausulen i samma slingnästning"
 
 #: omp-oacc-kernels-decompose.cc:562
-#, fuzzy, gcc-internal-format
-#| msgid "argument not permitted on %qs clause"
+#, gcc-internal-format
 msgid "argument not permitted on %qs clause in OpenACC %<kernels%> region with a %qs clause"
-msgstr "argument är inte tillåtna på %qs-klausulen"
+msgstr "argument är inte tillåtna på %qs-klausulen i en OpenACC %<kernels%>-region med en %qs-klausul"
 
 #: omp-oacc-kernels-decompose.cc:566
 #, gcc-internal-format
@@ -27921,22 +27772,19 @@ msgid "indirect jumps are not available on this target"
 msgstr "indirekta hopp är inte tillgängliga på denna målarkitektur"
 
 #: optinfo-emit-json.cc:113
-#, fuzzy, gcc-internal-format
-#| msgid "Cannot open module file %qs for writing at %C: %s"
+#, gcc-internal-format
 msgid "cannot open file %qs for writing optimization records"
-msgstr "Kan inte öppna modulfilen %qs för skrivning vid %C: %s"
+msgstr "kan inte öppna filen %qs för att skriva optimeringsposter"
 
 #: optinfo-emit-json.cc:121
-#, fuzzy, gcc-internal-format
-#| msgid "error writing to %s: %m"
+#, gcc-internal-format
 msgid "error writing optimization records to %qs: %s"
-msgstr "fel vid skrivning till %s: %m"
+msgstr "fel vid skrivning av optimeringsposter till %qs: %s"
 
 #: optinfo-emit-json.cc:130
-#, fuzzy, gcc-internal-format
-#| msgid "Perform cross-jumping optimization."
+#, gcc-internal-format
 msgid "error closing optimization records %qs"
-msgstr "Utför optimering för korshopp."
+msgstr "fel när optimeringsposter %qs stängdes"
 
 #: opts-common.cc:1379
 #, gcc-internal-format
@@ -27964,22 +27812,19 @@ msgid "argument to %qs is not between %d and %d"
 msgstr "argument till %qs är inte mellan %d och %d"
 
 #: opts-common.cc:1471
-#, fuzzy, gcc-internal-format
-#| msgid "invalid argument %qs to %qs"
+#, gcc-internal-format
 msgid "invalid argument in option %qs"
-msgstr "ogiltigt argument %qs till %qs"
+msgstr "ogiltigt argument i flaggan %qs"
 
 #: opts-common.cc:1473
-#, fuzzy, gcc-internal-format
-#| msgid "attribute %qs specified multiple times"
+#, gcc-internal-format
 msgid "%qs specified multiple times in the same option"
-msgstr "attributet %qs angivet flera gånger"
+msgstr "%qs angivet flera gånger i samma flagga"
 
 #: opts-common.cc:1476
-#, fuzzy, gcc-internal-format
-#| msgid "FPX fast and compact options cannot be specified together"
+#, gcc-internal-format
 msgid "%qs is mutually exclusive with %qs and cannot be specified together"
-msgstr "Snabba och kompakta FPX-flaggor kan inte användas tillsammans"
+msgstr "%qs är ömsesidigt uteslutande med %qs och kan inte användas tillsammans"
 
 #: opts-common.cc:1498
 #, gcc-internal-format
@@ -28039,10 +27884,9 @@ msgid "unrecognized command-line option %<-fopt-info-%s%>"
 msgstr "okänd kommandoradsflagga %<-fopt-info-%s%>"
 
 #: opts-global.cc:420 opts-global.cc:429
-#, fuzzy, gcc-internal-format
-#| msgid "plugin support is disabled; configure with --enable-plugin"
+#, gcc-internal-format
 msgid "plugin support is disabled; configure with %<--enable-plugin%>"
-msgstr "stöd för insticksmoduler är avaktiverat.  Konfigurera med --enable-plugin"
+msgstr "stöd för insticksmoduler är avaktiverat; konfigurera med %<--enable-plugin%>"
 
 #: opts-global.cc:454
 #, gcc-internal-format
@@ -28075,10 +27919,9 @@ msgid "%<-femit-struct-debug-detailed=dir:...%> must allow at least as much as %
 msgstr "%<-femit-struct-debug-detailed=kat:...%> måste tillåta åtminstone så mycket som %<-femit-struct-debug-detailed=ind:...%>"
 
 #: opts.cc:725
-#, fuzzy, gcc-internal-format
-#| msgid "argument to %<-O%> should be a non-negative integer, %<g%>, %<s%> or %<fast%>"
+#, gcc-internal-format
 msgid "argument to %<-O%> should be a non-negative integer, %<g%>, %<s%>, %<z%> or %<fast%>"
-msgstr "argumentet till %<-O%> skall vara ett ickenegativt heltal, %<g%>, %<s%> eller %<fast%>"
+msgstr "argumentet till %<-O%> skall vara ett ickenegativt heltal, %<g%>, %<s%>, %<z%> eller %<fast%>"
 
 #: opts.cc:831 opts.cc:837 opts.cc:843 opts.cc:849 opts.cc:860 opts.cc:870
 #: opts.cc:876 opts.cc:882 opts.cc:888 opts.cc:894 opts.cc:900 opts.cc:906
@@ -28089,10 +27932,9 @@ msgid "%qs is incompatible with %qs"
 msgstr "%qs är inkompatibel med %qs"
 
 #: opts.cc:925
-#, fuzzy, gcc-internal-format
-#| msgid "%<iterator%> modifier incompatible with %qs"
+#, gcc-internal-format
 msgid "%<-fipa-modref%> is incompatible with %qs"
-msgstr "modifieraren %<iterator%> är inkompatibel med %qs"
+msgstr "%<-fipa-modref%> är inkompatibel med %qs"
 
 #: opts.cc:1005
 #, gcc-internal-format
@@ -28315,10 +28157,9 @@ msgid "debug output level %qs is too high"
 msgstr "felsökningsnivå %qs är för hög"
 
 #: opts.cc:3364
-#, fuzzy, gcc-internal-format
-#| msgid "unrecognized debug output level %qs"
+#, gcc-internal-format
 msgid "unrecognized btf debug output level %qs"
-msgstr "okänd felsökningsnivå %qs"
+msgstr "okänd btf-felsökningsnivå %qs"
 
 #: opts.cc:3381
 #, gcc-internal-format
@@ -28563,28 +28404,24 @@ msgid "source object of size %s allocated by %qE"
 msgstr "källobjektet med storlek %s allokerad av %qE"
 
 #: pointer-query.cc:1245
-#, fuzzy, gcc-internal-format
-#| msgid "at offset %s into source object %qE of size %s"
+#, gcc-internal-format
 msgid "at offset %s into object %qE of size %s"
-msgstr "vid avståndet %s till källobjekt %qE med storlek %s"
+msgstr "vid avståndet %s in i objektet %qE med storlek %s"
 
 #: pointer-query.cc:1248
-#, fuzzy, gcc-internal-format
-#| msgid "source object %qE of size %s"
+#, gcc-internal-format
 msgid "object %qE of size %s"
-msgstr "källobjekt %qE av storlek %s"
+msgstr "objektet %qE med storlek %s"
 
 #: pointer-query.cc:1255
-#, fuzzy, gcc-internal-format
-#| msgid "at offset %s into source object of size %s allocated by %qE"
+#, gcc-internal-format
 msgid "at offset %s into object of size %s allocated by %qE"
-msgstr "vid avståndet %s in i källobjektet med storlek %s allokerat av %qE"
+msgstr "vid avståndet %s in i objektet med storlek %s allokerat av %qE"
 
 #: pointer-query.cc:1258
-#, fuzzy, gcc-internal-format
-#| msgid "source object of size %s allocated by %qE"
+#, gcc-internal-format
 msgid "object of size %s allocated by %qE"
-msgstr "källobjektet med storlek %s allokerad av %qE"
+msgstr "objektet med storlek %s allokerad av %qE"
 
 #: predict.cc:2523
 #, gcc-internal-format
@@ -29314,10 +29151,9 @@ msgid "%<-f%sleading-underscore%> not supported on this target machine"
 msgstr "%<-f%sleading-underscore%> stödjs inte på denna målmaskin"
 
 #: toplev.cc:1388
-#, fuzzy, gcc-internal-format
-#| msgid "variable tracking requested, but not supported by this debug format"
+#, gcc-internal-format
 msgid "CTF debug info requested, but not supported for %qs frontend"
-msgstr "variabel spårning begärd, men stödjs inte av detta felsökningsformat"
+msgstr "CTF-felsökningsinformation begärd, men stödjs inte för framänden %qs"
 
 #: toplev.cc:1406
 #, gcc-internal-format
@@ -29325,10 +29161,9 @@ msgid "could not close zeroed insn dump file %qs: %m"
 msgstr "det gick inte att stänga nollställd instruktionsdumpfil %qs: %m"
 
 #: toplev.cc:1420
-#, fuzzy, gcc-internal-format
-#| msgid "STABS debugging information for Ada is obsolete and not supported anymore"
+#, gcc-internal-format
 msgid "STABS debugging information is obsolete and not supported anymore"
-msgstr "STABS-felsökningsinformation för Ada är föråldrat och stödjs inte längre"
+msgstr "STABS-felsökningsinformation är föråldrat och stödjs inte längre"
 
 #: toplev.cc:1457
 #, gcc-internal-format
@@ -29902,10 +29737,9 @@ msgid "%qs LHS in clobber statement"
 msgstr "%qs vänstersida i clobber-sats"
 
 #: tree-cfg.cc:4525
-#, fuzzy, gcc-internal-format
-#| msgid "%qs LHS in clobber statement"
+#, gcc-internal-format
 msgid "%qs LHS in assignment statement"
-msgstr "%qs vänstersida i clobber-sats"
+msgstr "%qs vänstersida i tilldelningssats"
 
 #: tree-cfg.cc:4544
 #, gcc-internal-format
@@ -29953,10 +29787,9 @@ msgid "%qs with an always-false condition"
 msgstr "%qs med villkor som alltid är falskt"
 
 #: tree-cfg.cc:4722
-#, fuzzy, gcc-internal-format
-#| msgid "%qs LHS in clobber statement"
+#, gcc-internal-format
 msgid "%qs RHS in assignment statement"
-msgstr "%qs vänstersida i clobber-sats"
+msgstr "%qs högersida i tilldelningssats"
 
 #: tree-cfg.cc:4779
 #, gcc-internal-format
@@ -30149,16 +29982,14 @@ msgid "EH landing pad label %qD is not first in a sequence of labels in bb %d"
 msgstr "EH-landningsplatteetiketten %qD är inte den första i en sekvens av etiketter för gb %d"
 
 #: tree-cfg.cc:5635
-#, fuzzy, gcc-internal-format
-#| msgid "Label %qs at %C doesn't match IF label %qs"
+#, gcc-internal-format
 msgid "label %qD to block does not match in bb %d"
-msgstr "Etiketten %qs vid %C stämmer inte med IF-etikett %qs"
+msgstr "etiketten %qD till block stämmer inte i gb %d"
 
 #: tree-cfg.cc:5642
-#, fuzzy, gcc-internal-format
-#| msgid "field %qD has incomplete type %qT"
+#, gcc-internal-format
 msgid "label %qD has incorrect context in bb %d"
-msgstr "fältet %qD har den ofullständiga typen %qT"
+msgstr "etiketten %qD har ofullständig kontext i gb %d"
 
 #: tree-cfg.cc:5655
 #, gcc-internal-format, gfc-internal-format
@@ -30166,10 +29997,9 @@ msgid "control flow in the middle of basic block %d"
 msgstr "flödesstyrning mitt i grundblock %d"
 
 #: tree-cfg.cc:5665
-#, fuzzy, gcc-internal-format
-#| msgid "control flow in the middle of basic block %d"
+#, gcc-internal-format
 msgid "label %qD in the middle of basic block %d"
-msgstr "flödesstyrning mitt i grundblock %d"
+msgstr "etiketten %qD mitt i grundblock %d"
 
 #: tree-cfg.cc:5687
 #, gcc-internal-format, gfc-internal-format
@@ -30496,43 +30326,35 @@ msgid "statement volatile flag not up to date"
 msgstr "satsens volatile-flagga är inte aktuell"
 
 #: tree-ssa-strlen.cc:2144
-#, fuzzy, gcc-internal-format
-#| msgid "%G%qD writing one too many bytes into a region of a size that depends on %<strlen%>"
+#, gcc-internal-format
 msgid "%qD writing one too many bytes into a region of a size that depends on %<strlen%>"
-msgstr "%G%qD: skriver en byte för mycket till en region av en storlek som beror på %<strlen%>"
+msgstr "%qD: skriver en byte för mycket till en region av en storlek som beror på %<strlen%>"
 
 #: tree-ssa-strlen.cc:2148
-#, fuzzy, gcc-internal-format
-#| msgid "%Gwriting one too many bytes into a region of a size that depends on %<strlen%>"
+#, gcc-internal-format
 msgid "writing one too many bytes into a region of a size that depends on %<strlen%>"
-msgstr "%Gskriver en byte för mycket till en region av en storlek som beror på %<strlen%>"
+msgstr "skriver en byte för mycket till en region av en storlek som beror på %<strlen%>"
 
 #: tree-ssa-strlen.cc:2157
-#, fuzzy, gcc-internal-format
-#| msgid "%G%qD writing %wu byte into a region of size %wu"
-#| msgid_plural "%G%qD writing %wu bytes into a region of size %wu"
+#, gcc-internal-format
 msgid "%qD writing %wu byte into a region of size %wu"
 msgid_plural "%qD writing %wu bytes into a region of size %wu"
-msgstr[0] "%G%qD skriver %wu byte till en region med storlek %wu"
-msgstr[1] "%G%qD skriver %wu byte till en region med storlek %wu"
+msgstr[0] "%qD skriver %wu byte till en region med storlek %wu"
+msgstr[1] "%qD skriver %wu byte till en region med storlek %wu"
 
 #: tree-ssa-strlen.cc:2165
-#, fuzzy, gcc-internal-format
-#| msgid "%Gwriting %wu byte into a region of size %wu"
-#| msgid_plural "%Gwriting %wu bytes into a region of size %wu"
+#, gcc-internal-format
 msgid "writing %wu byte into a region of size %wu"
 msgid_plural "writing %wu bytes into a region of size %wu"
-msgstr[0] "%Gskriver %wu byte till en region med storlek %wu"
-msgstr[1] "%Gskriver %wu byte till en region med storlek %wu"
+msgstr[0] "skriver %wu byte till en region med storlek %wu"
+msgstr[1] "skriver %wu byte till en region med storlek %wu"
 
 #: tree-ssa-strlen.cc:2175
-#, fuzzy, gcc-internal-format
-#| msgid "%G%qD writing %wu byte into a region of size between %wu and %wu"
-#| msgid_plural "%G%qD writing %wu bytes into a region of size between %wu and %wu"
+#, gcc-internal-format
 msgid "%qD writing %wu byte into a region of size between %wu and %wu"
 msgid_plural "%qD writing %wu bytes into a region of size between %wu and %wu"
-msgstr[0] "%G%qD skriver %wu byte till en region med storlek mellan %wu och %wu"
-msgstr[1] "%G%qD skriver %wu byte till en region av storlek mellan %wu och %wu"
+msgstr[0] "%qD skriver %wu byte till en region med storlek mellan %wu och %wu"
+msgstr[1] "%qD skriver %wu byte till en region av storlek mellan %wu och %wu"
 
 #: tree-ssa-strlen.cc:2183
 #, fuzzy, gcc-internal-format

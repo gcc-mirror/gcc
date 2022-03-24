@@ -1579,7 +1579,7 @@ dump_ada_function_declaration (pretty_printer *buffer, tree func,
   tree type = TREE_TYPE (func);
   tree arg = TYPE_ARG_TYPES (type);
   tree t;
-  char buf[17];
+  char buf[18];
   int num, num_args = 0, have_args = true, have_ellipsis = false;
 
   /* Compute number of arguments.  */

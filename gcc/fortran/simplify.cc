@@ -2134,6 +2134,7 @@ gfc_simplify_cshift (gfc_expr *array, gfc_expr *shift, gfc_expr *dim)
 
   resultvec = XCNEWVEC (gfc_expr *, arraysize);
 
+  sstride[0] = 0;
   extent[0] = 1;
   count[0] = 0;
 

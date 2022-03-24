@@ -987,18 +987,17 @@ package (dmd) extern (C++) final class StatementSemanticVisitor : Visitor
                 if (dim == 2)
                 {
                     Parameter p = (*fs.parameters)[0];
-                    auto var = new VarDeclaration(loc, p.type.mutableOf(), Identifier.generateId("__key"), null);
-                    var.storage_class |= STC.temp | STC.foreach_;
-                    if (var.storage_class & (STC.ref_ | STC.out_))
-                        var.storage_class |= STC.nodtor;
+                    fs.key = new VarDeclaration(loc, p.type.mutableOf(), Identifier.generateId("__key"), null);
+                    fs.key.storage_class |= STC.temp | STC.foreach_;
+                    if (fs.key.isReference())
+                        fs.key.storage_class |= STC.nodtor;
 
-                    fs.key = var;
                     if (p.storageClass & STC.ref_)
                     {
-                        if (var.type.constConv(p.type) == MATCH.nomatch)
+                        if (fs.key.type.constConv(p.type) == MATCH.nomatch)
                         {
                             fs.error("key type mismatch, `%s` to `ref %s`",
-                                     var.type.toChars(), p.type.toChars());
+                                     fs.key.type.toChars(), p.type.toChars());
                             return retError();
                         }
                     }
@@ -1008,7 +1007,7 @@ package (dmd) extern (C++) final class StatementSemanticVisitor : Visitor
                         IntRange dimrange = getIntRange(ta.dim);
                         // https://issues.dlang.org/show_bug.cgi?id=12504
                         dimrange.imax = SignExtendedNumber(dimrange.imax.value-1);
-                        if (!IntRange.fromType(var.type).contains(dimrange))
+                        if (!IntRange.fromType(fs.key.type).contains(dimrange))
                         {
                             fs.error("index type `%s` cannot cover index range 0..%llu",
                                      p.type.toChars(), ta.dim.toInteger());
@@ -1020,17 +1019,15 @@ package (dmd) extern (C++) final class StatementSemanticVisitor : Visitor
                 // Now declare the value
                 {
                     Parameter p = (*fs.parameters)[dim - 1];
-                    auto var = new VarDeclaration(loc, p.type, p.ident, null);
-                    var.storage_class |= STC.foreach_;
-                    var.storage_class |= p.storageClass & (STC.scope_ | STC.IOR | STC.TYPECTOR);
-                    if (var.isReference())
-                        var.storage_class |= STC.nodtor;
-
-                    fs.value = var;
-                    if (var.storage_class & STC.ref_)
+                    fs.value = new VarDeclaration(loc, p.type, p.ident, null);
+                    fs.value.storage_class |= STC.foreach_;
+                    fs.value.storage_class |= p.storageClass & (STC.scope_ | STC.IOR | STC.TYPECTOR);
+                    if (fs.value.isReference())
                     {
+                        fs.value.storage_class |= STC.nodtor;
+
                         if (fs.aggr.checkModifiable(sc2, ModifyFlags.noError) == Modifiable.initialization)
-                            var.setInCtorOnly = true;
+                            fs.value.setInCtorOnly = true;
 
                         Type t = tab.nextOf();
                         if (t.constConv(p.type) == MATCH.nomatch)
@@ -1053,7 +1050,7 @@ package (dmd) extern (C++) final class StatementSemanticVisitor : Visitor
                  */
                 auto id = Identifier.generateId("__r");
                 auto ie = new ExpInitializer(loc, new SliceExp(loc, fs.aggr, null, null));
-                const valueIsRef = cast(bool) ((*fs.parameters)[dim - 1].storageClass & STC.ref_);
+                const valueIsRef = (*fs.parameters)[$ - 1].isReference();
                 VarDeclaration tmp;
                 if (fs.aggr.op == EXP.arrayLiteral && !valueIsRef)
                 {

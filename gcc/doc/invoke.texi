@@ -3124,6 +3124,16 @@ On targets that support symbol aliases, the default is
 @option{-fextern-tls-init}.  On targets that do not support symbol
 aliases, the default is @option{-fno-extern-tls-init}.
 
+@item -ffold-simple-inlines
+@itemx -fno-fold-simple-inlines
+@opindex ffold-simple-inlines
+@opindex fno-fold-simple-inlines
+Permit the C++ frontend to fold calls to @code{std::move}, @code{std::forward},
+@code{std::addressof} and @code{std::as_const}.  In contrast to inlining, this
+means no debug information will be generated for such calls.  Since these
+functions are rarely interesting to debug, this flag is enabled by default
+unless @option{-fno-inline} is active.
+
 @item -fno-gnu-keywords
 @opindex fno-gnu-keywords
 @opindex fgnu-keywords
@@ -15121,6 +15131,9 @@ when evaluating outgoing edge ranges.
 
 @item relation-block-limit
 Maximum number of relations the oracle will register in a basic block.
+
+@item min-pagesize
+Minimum page size for warning purposes.
 
 @item openacc-kernels
 Specify mode of OpenACC `kernels' constructs handling.
@@ -31278,11 +31291,12 @@ AVX512VP2INTERSECT and KEYLOCKER instruction set support.
 Intel sapphirerapids CPU with 64-bit extensions, MOVBE, MMX, SSE, SSE2, SSE3,
 SSSE3, SSE4.1, SSE4.2, POPCNT, CX16, SAHF, FXSR, AVX, XSAVE, PCLMUL, FSGSBASE,
 RDRND, F16C, AVX2, BMI, BMI2, LZCNT, FMA, MOVBE, HLE, RDSEED, ADCX, PREFETCHW,
-AES, CLFLUSHOPT, XSAVEC, XSAVES, SGX, AVX512F, CLWB, AVX512VL, AVX512BW,
-AVX512DQ, AVX512CD, AVX512VNNI, AVX512BF16 MOVDIRI, MOVDIR64B,
-AVX512VP2INTERSECT, ENQCMD, CLDEMOTE, PTWRITE, WAITPKG, SERIALIZE, TSXLDTRK,
-UINTR, AMX-BF16, AMX-TILE, AMX-INT8, AVX-VNNI and AVX512FP16 instruction set
-support.
+AES, CLFLUSHOPT, XSAVEC, XSAVES, SGX, AVX512F, AVX512VL, AVX512BW, AVX512DQ,
+AVX512CD, PKU, AVX512VBMI, AVX512IFMA, SHA, AVX512VNNI, GFNI, VAES, AVX512VBMI2
+VPCLMULQDQ, AVX512BITALG, RDPID, AVX512VPOPCNTDQ, PCONFIG, WBNOINVD, CLWB,
+MOVDIRI, MOVDIR64B, AVX512VP2INTERSECT, ENQCMD, CLDEMOTE, PTWRITE, WAITPKG,
+SERIALIZE, TSXLDTRK, UINTR, AMX-BF16, AMX-TILE, AMX-INT8, AVX-VNNI, AVX512FP16
+and AVX512BF16 instruction set support.
 
 @item alderlake
 Intel Alderlake CPU with 64-bit extensions, MOVBE, MMX, SSE, SSE2, SSE3, SSSE3,

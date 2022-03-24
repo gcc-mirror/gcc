@@ -779,11 +779,11 @@ get_available_features (struct __processor_model *cpu_model,
   /* Get Advanced Features at level 0x19 (eax = 0x19).  */
   if (max_cpuid_level >= 0x19)
     {
-      set_feature (FEATURE_AESKLE);
-      __cpuid (19, eax, ebx, ecx, edx);
+      __cpuid (0x19, eax, ebx, ecx, edx);
       /* Check if OS support keylocker.  */
       if (ebx & bit_AESKLE)
 	{
+	  set_feature (FEATURE_AESKLE);
 	  if (ebx & bit_WIDEKL)
 	    set_feature (FEATURE_WIDEKL);
 	  if (has_kl)

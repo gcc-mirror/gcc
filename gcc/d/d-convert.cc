@@ -518,8 +518,8 @@ convert_expr (tree exp, Type *etype, Type *totype)
       else if (tbtype->ty == TY::Tarray)
 	{
 	  /* Assume tvoid->size() == 1.  */
-	  d_uns64 fsize = ebtype->nextOf ()->toBasetype ()->size ();
-	  d_uns64 tsize = tbtype->nextOf ()->toBasetype ()->size ();
+	  dinteger_t fsize = ebtype->nextOf ()->toBasetype ()->size ();
+	  dinteger_t tsize = tbtype->nextOf ()->toBasetype ()->size ();
 
 	  if (fsize != tsize)
 	    {

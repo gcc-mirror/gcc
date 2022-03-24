@@ -81,6 +81,12 @@ public:
 class gil_diagnostic : public pending_diagnostic
 {
 public:
+  /* There isn't a warning ID for us to use.  */
+  int get_controlling_option () const FINAL OVERRIDE
+  {
+    return 0;
+  }
+
   location_t fixup_location (location_t loc) const FINAL OVERRIDE
   {
     /* Ideally we'd check for specific macros here, and only
@@ -133,7 +139,7 @@ class double_save_thread : public gil_diagnostic
 
   bool emit (rich_location *rich_loc) FINAL OVERRIDE
   {
-    return warning_at (rich_loc, 0,
+    return warning_at (rich_loc, get_controlling_option (),
 		       "nested usage of %qs", "Py_BEGIN_ALLOW_THREADS");
   }
 
@@ -173,14 +179,13 @@ class fncall_without_gil : public gil_diagnostic
   bool emit (rich_location *rich_loc) FINAL OVERRIDE
   {
     auto_diagnostic_group d;
-    /* There isn't a warning ID for use to use.  */
     if (m_callee_fndecl)
-      return warning_at (rich_loc, 0,
+      return warning_at (rich_loc, get_controlling_option (),
 			 "use of PyObject as argument %i of %qE"
 			 " without the GIL",
 			 m_arg_idx + 1, m_callee_fndecl);
     else
-      return warning_at (rich_loc, 0,
+      return warning_at (rich_loc, get_controlling_option (),
 			 "use of PyObject as argument %i of call"
 			 " without the GIL",
 			 m_arg_idx + 1, m_callee_fndecl);
@@ -225,8 +230,7 @@ class pyobject_usage_without_gil : public gil_diagnostic
   bool emit (rich_location *rich_loc) FINAL OVERRIDE
   {
     auto_diagnostic_group d;
-    /* There isn't a warning ID for use to use.  */
-    return warning_at (rich_loc, 0,
+    return warning_at (rich_loc, get_controlling_option (),
 		       "use of PyObject %qE without the GIL", m_expr);
   }
 

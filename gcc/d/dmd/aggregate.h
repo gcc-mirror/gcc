@@ -124,7 +124,7 @@ public:
     size_t nonHiddenFields();
     bool determineSize(const Loc &loc);
     virtual void finalizeSize() = 0;
-    d_uns64 size(const Loc &loc);
+    uinteger_t size(const Loc &loc);
     bool fill(const Loc &loc, Expressions *elements, bool ctorinit);
     Type *getType();
     bool isDeprecated() const;         // is aggregate deprecated?

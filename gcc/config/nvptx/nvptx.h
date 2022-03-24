@@ -315,6 +315,23 @@ struct GTY(()) machine_function
   ((VALUE) = GET_MODE_BITSIZE ((MODE)), 2)
 
 #define SUPPORTS_WEAK 1
+
+/* The documentation states that ASM_OUTPUT_DEF_FROM_DECLS is used in
+   preference to ASM_OUTPUT_DEF if the tree nodes are available.  However, we
+   need the tree nodes to emit the prototype, so at this point it's not clear
+   how we can support ASM_OUTPUT_DEF.  Still, we need to define it, or
+   ASM_OUTPUT_DEF_FROM_DECLS is ignored.  For now, assert, and once we run
+   into it possibly improve by somehow emitting the prototype elsewhere, or
+   emitting a reasonable error message.  */
+#define ASM_OUTPUT_DEF(FILE,LABEL1,LABEL2)	\
+  do						\
+    {						\
+      gcc_unreachable ();			\
+    }						\
+  while (0)
+#define ASM_OUTPUT_DEF_FROM_DECLS(STREAM, NAME, VALUE)	\
+  nvptx_asm_output_def_from_decls (STREAM, NAME, VALUE)
+
 #define NO_DOT_IN_LABEL
 #define ASM_COMMENT_START "//"
 

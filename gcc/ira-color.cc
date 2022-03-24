@@ -2348,58 +2348,43 @@ form_threads_from_copies (int cp_num)
 {
   ira_allocno_t a, thread1, thread2;
   ira_copy_t cp;
-  int i, n;
 
   qsort (sorted_copies, cp_num, sizeof (ira_copy_t), copy_freq_compare_func);
   /* Form threads processing copies, most frequently executed
      first.  */
-  for (; cp_num != 0;)
+  for (int i = 0; i < cp_num; i++)
     {
-      for (i = 0; i < cp_num; i++)
+      cp = sorted_copies[i];
+      thread1 = ALLOCNO_COLOR_DATA (cp->first)->first_thread_allocno;
+      thread2 = ALLOCNO_COLOR_DATA (cp->second)->first_thread_allocno;
+      if (thread1 == thread2)
+	continue;
+      if (! allocno_thread_conflict_p (thread1, thread2))
 	{
-	  cp = sorted_copies[i];
-	  thread1 = ALLOCNO_COLOR_DATA (cp->first)->first_thread_allocno;
-	  thread2 = ALLOCNO_COLOR_DATA (cp->second)->first_thread_allocno;
-	  if (thread1 == thread2)
-	    continue;
-	  if (! allocno_thread_conflict_p (thread1, thread2))
+	  if (internal_flag_ira_verbose > 3 && ira_dump_file != NULL)
+	    fprintf
+		(ira_dump_file,
+		 "        Forming thread by copy %d:a%dr%d-a%dr%d (freq=%d):\n",
+		 cp->num, ALLOCNO_NUM (cp->first), ALLOCNO_REGNO (cp->first),
+		 ALLOCNO_NUM (cp->second), ALLOCNO_REGNO (cp->second),
+		 cp->freq);
+	  merge_threads (thread1, thread2);
+	  if (internal_flag_ira_verbose > 3 && ira_dump_file != NULL)
 	    {
-	      if (internal_flag_ira_verbose > 3 && ira_dump_file != NULL)
-		fprintf
-		  (ira_dump_file,
-		   "        Forming thread by copy %d:a%dr%d-a%dr%d (freq=%d):\n",
-		   cp->num, ALLOCNO_NUM (cp->first), ALLOCNO_REGNO (cp->first),
-		   ALLOCNO_NUM (cp->second), ALLOCNO_REGNO (cp->second),
-		   cp->freq);
-	      merge_threads (thread1, thread2);
-	      if (internal_flag_ira_verbose > 3 && ira_dump_file != NULL)
-		{
-		  thread1 = ALLOCNO_COLOR_DATA (thread1)->first_thread_allocno;
-		  fprintf (ira_dump_file, "          Result (freq=%d): a%dr%d(%d)",
-			   ALLOCNO_COLOR_DATA (thread1)->thread_freq,
-			   ALLOCNO_NUM (thread1), ALLOCNO_REGNO (thread1),
-			   ALLOCNO_FREQ (thread1));
-		  for (a = ALLOCNO_COLOR_DATA (thread1)->next_thread_allocno;
-		       a != thread1;
-		       a = ALLOCNO_COLOR_DATA (a)->next_thread_allocno)
-		    fprintf (ira_dump_file, " a%dr%d(%d)",
-			     ALLOCNO_NUM (a), ALLOCNO_REGNO (a),
-			     ALLOCNO_FREQ (a));
-		  fprintf (ira_dump_file, "\n");
-		}
-	      i++;
-	      break;
+	      thread1 = ALLOCNO_COLOR_DATA (thread1)->first_thread_allocno;
+	      fprintf (ira_dump_file, "          Result (freq=%d): a%dr%d(%d)",
+		       ALLOCNO_COLOR_DATA (thread1)->thread_freq,
+		       ALLOCNO_NUM (thread1), ALLOCNO_REGNO (thread1),
+		       ALLOCNO_FREQ (thread1));
+	      for (a = ALLOCNO_COLOR_DATA (thread1)->next_thread_allocno;
+		   a != thread1;
+		   a = ALLOCNO_COLOR_DATA (a)->next_thread_allocno)
+		fprintf (ira_dump_file, " a%dr%d(%d)",
+			 ALLOCNO_NUM (a), ALLOCNO_REGNO (a),
+			 ALLOCNO_FREQ (a));
+	      fprintf (ira_dump_file, "\n");
 	    }
 	}
-      /* Collect the rest of copies.  */
-      for (n = 0; i < cp_num; i++)
-	{
-	  cp = sorted_copies[i];
-	  if (ALLOCNO_COLOR_DATA (cp->first)->first_thread_allocno
-	      != ALLOCNO_COLOR_DATA (cp->second)->first_thread_allocno)
-	    sorted_copies[n++] = cp;
-	}
-      cp_num = n;
     }
 }
 

@@ -849,19 +849,36 @@ private:
   const feasibility_problem *m_feasibility_problem;
 };
 
+/* Determine the emission location for PD at STMT in FUN.  */
+
+static location_t
+get_emission_location (const gimple *stmt, function *fun,
+		       const pending_diagnostic &pd)
+{
+  location_t loc = get_stmt_location (stmt, fun);
+
+  /* Allow the pending_diagnostic to fix up the location.  */
+  loc = pd.fixup_location (loc);
+
+  return loc;
+}
+
 /* class diagnostic_manager.  */
 
 /* diagnostic_manager's ctor.  */
 
 diagnostic_manager::diagnostic_manager (logger *logger, engine *eng,
 					int verbosity)
-: log_user (logger), m_eng (eng), m_verbosity (verbosity)
+: log_user (logger), m_eng (eng), m_verbosity (verbosity),
+  m_num_disabled_diagnostics (0)
 {
 }
 
-/* Queue pending_diagnostic D at ENODE for later emission.  */
+/* Queue pending_diagnostic D at ENODE for later emission.
+   Return true/false signifying if the diagnostic was actually added.
+   Take ownership of D (or delete it).  */
 
-void
+bool
 diagnostic_manager::add_diagnostic (const state_machine *sm,
 				    exploded_node *enode,
 				    const supernode *snode, const gimple *stmt,
@@ -877,6 +894,25 @@ diagnostic_manager::add_diagnostic (const state_machine *sm,
      through the exploded_graph to the diagnostic.  */
   gcc_assert (enode);
 
+  /* If this warning is ultimately going to be rejected by a -Wno-analyzer-*
+     flag, reject it now.
+     We can only do this for diagnostics where we already know the stmt,
+     and thus can determine the emission location.  */
+  if (stmt)
+    {
+      location_t loc = get_emission_location (stmt, snode->m_fun, *d);
+      int option = d->get_controlling_option ();
+      if (!warning_enabled_at (loc, option))
+	{
+	  if (get_logger ())
+	    get_logger ()->log ("rejecting disabled warning %qs",
+				d->get_kind ());
+	  delete d;
+	  m_num_disabled_diagnostics++;
+	  return false;
+	}
+    }
+
   saved_diagnostic *sd
     = new saved_diagnostic (sm, enode, snode, stmt, finder, var, sval,
 			    state, d, m_saved_diagnostics.length ());
@@ -886,18 +922,22 @@ diagnostic_manager::add_diagnostic (const state_machine *sm,
     log ("adding saved diagnostic %i at SN %i to EN %i: %qs",
 	 sd->get_index (),
 	 snode->m_index, enode->m_index, d->get_kind ());
+  return true;
 }
 
-/* Queue pending_diagnostic D at ENODE for later emission.  */
+/* Queue pending_diagnostic D at ENODE for later emission.
+   Return true/false signifying if the diagnostic was actually added.
+   Take ownership of D (or delete it).  */
 
-void
+bool
 diagnostic_manager::add_diagnostic (exploded_node *enode,
 				    const supernode *snode, const gimple *stmt,
 				    stmt_finder *finder,
 				    pending_diagnostic *d)
 {
   gcc_assert (enode);
-  add_diagnostic (NULL, enode, snode, stmt, finder, NULL_TREE, NULL, 0, d);
+  return add_diagnostic (NULL, enode, snode, stmt, finder, NULL_TREE,
+			 NULL, 0, d);
 }
 
 /* Add PN to the most recent saved_diagnostic.  */
@@ -1186,6 +1226,7 @@ diagnostic_manager::emit_saved_diagnostics (const exploded_graph &eg)
   LOG_SCOPE (get_logger ());
   auto_timevar tv (TV_ANALYZER_DIAGNOSTICS);
   log ("# saved diagnostics: %i", m_saved_diagnostics.length ());
+  log ("# disabled diagnostics: %i", m_num_disabled_diagnostics);
   if (get_logger ())
     {
       unsigned i;
@@ -1265,11 +1306,10 @@ diagnostic_manager::emit_saved_diagnostic (const exploded_graph &eg,
 
   emission_path.prepare_for_emission (sd.m_d);
 
-  location_t loc = get_stmt_location (sd.m_stmt, sd.m_snode->m_fun);
+  location_t loc
+    = get_emission_location (sd.m_stmt, sd.m_snode->m_fun, *sd.m_d);
 
-  /* Allow the pending_diagnostic to fix up the primary location
-     and any locations for events.  */
-  loc = sd.m_d->fixup_location (loc);
+  /* Allow the pending_diagnostic to fix up the locations of events.  */
   emission_path.fixup_locations (sd.m_d);
 
   gcc_rich_location rich_loc (loc);

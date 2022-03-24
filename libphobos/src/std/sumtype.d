@@ -234,7 +234,7 @@ import std.meta : anySatisfy, allSatisfy;
 import std.traits : hasElaborateCopyConstructor, hasElaborateDestructor;
 import std.traits : isAssignable, isCopyable, isStaticArray, isRvalueAssignable;
 import std.traits : ConstOf, ImmutableOf, InoutOf, TemplateArgsOf;
-import std.traits : CommonType;
+import std.traits : CommonType, DeducedParameterType;
 import std.typecons : ReplaceTypeUnless;
 import std.typecons : Flag;
 
@@ -359,6 +359,10 @@ public:
 
         /// ditto
         this(immutable(T) value) immutable;
+
+        /// ditto
+        this(Value)(Value value) inout
+        if (is(Value == DeducedParameterType!(inout(T))));
     }
 
     static foreach (tid, T; Types)
@@ -413,6 +417,25 @@ public:
         else
         {
             @disable this(immutable(T) value) immutable;
+        }
+
+        static if (isCopyable!(inout(T)))
+        {
+            static if (IndexOf!(inout(T), Map!(InoutOf, Types)) == tid)
+            {
+                /// ditto
+                this(Value)(Value value) inout
+                if (is(Value == DeducedParameterType!(inout(T))))
+                {
+                    __traits(getMember, storage, Storage.memberName!T) = value;
+                    tag = tid;
+                }
+            }
+        }
+        else
+        {
+            @disable this(Value)(Value value) inout
+            if (is(Value == DeducedParameterType!(inout(T))));
         }
     }
 
@@ -1552,6 +1575,16 @@ version (D_BetterC) {} else
     }
 
     SumType!Value s;
+}
+
+// Construction of inout-qualified SumTypes
+// https://issues.dlang.org/show_bug.cgi?id=22901
+@safe unittest
+{
+    static inout(SumType!(int[])) example(inout(int[]) arr)
+    {
+        return inout(SumType!(int[]))(arr);
+    }
 }
 
 /// True if `T` is an instance of the `SumType` template, otherwise false.

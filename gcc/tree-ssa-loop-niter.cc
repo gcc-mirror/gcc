@@ -4374,6 +4374,9 @@ estimate_numbers_of_iterations (class loop *loop)
   if (loop->estimate_state != EST_NOT_COMPUTED)
     return;
 
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    fprintf (dump_file, "Estimating # of iterations of loop %d\n", loop->num);
+
   loop->estimate_state = EST_AVAILABLE;
 
   /* If we have a measured profile, use it to estimate the number of

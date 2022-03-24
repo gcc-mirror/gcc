@@ -157,9 +157,14 @@ public:
 
   const char *get_kind () const FINAL OVERRIDE { return "double_fclose"; }
 
+  int get_controlling_option () const FINAL OVERRIDE
+  {
+    return OPT_Wanalyzer_double_fclose;
+  }
+
   bool emit (rich_location *rich_loc) FINAL OVERRIDE
   {
-    return warning_at (rich_loc, OPT_Wanalyzer_double_fclose,
+    return warning_at (rich_loc, get_controlling_option (),
 		       "double %<fclose%> of FILE %qE",
 		       m_arg);
   }
@@ -197,6 +202,11 @@ public:
 
   const char *get_kind () const FINAL OVERRIDE { return "file_leak"; }
 
+  int get_controlling_option () const FINAL OVERRIDE
+  {
+    return OPT_Wanalyzer_file_leak;
+  }
+
   bool emit (rich_location *rich_loc) FINAL OVERRIDE
   {
     diagnostic_metadata m;
@@ -204,11 +214,11 @@ public:
        Effective Lifetime". */
     m.add_cwe (775);
     if (m_arg)
-      return warning_meta (rich_loc, m, OPT_Wanalyzer_file_leak,
+      return warning_meta (rich_loc, m, get_controlling_option (),
 			   "leak of FILE %qE",
 			   m_arg);
     else
-      return warning_meta (rich_loc, m, OPT_Wanalyzer_file_leak,
+      return warning_meta (rich_loc, m, get_controlling_option (),
 			   "leak of FILE");
   }
 

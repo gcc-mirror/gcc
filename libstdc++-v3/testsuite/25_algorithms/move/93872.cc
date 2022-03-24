@@ -19,6 +19,7 @@
 // { dg-do compile { target c++2a } }
 
 #include <algorithm>
+#include <functional>
 
 struct X
 {

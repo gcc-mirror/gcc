@@ -2032,7 +2032,8 @@ store::store ()
 /* store's copy ctor.  */
 
 store::store (const store &other)
-: m_called_unknown_fn (other.m_called_unknown_fn)
+: m_cluster_map (other.m_cluster_map.elements ()),
+  m_called_unknown_fn (other.m_called_unknown_fn)
 {
   for (cluster_map_t::iterator iter = other.m_cluster_map.begin ();
        iter != other.m_cluster_map.end ();

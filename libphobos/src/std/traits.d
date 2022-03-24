@@ -9080,3 +9080,43 @@ enum isCopyable(S) = __traits(isCopyable, S);
     static assert(isCopyable!int);
     static assert(isCopyable!(int[]));
 }
+
+/**
+ * The parameter type deduced by IFTI when an expression of type T is passed as
+ * an argument to a template function.
+ *
+ * For all types other than pointer and slice types, `DeducedParameterType!T`
+ * is the same as `T`. For pointer and slice types, it is `T` with the
+ * outer-most layer of qualifiers dropped.
+ */
+package(std) template DeducedParameterType(T)
+{
+    static if (is(T == U*, U) || is(T == U[], U))
+        alias DeducedParameterType = Unqual!T;
+    else
+        alias DeducedParameterType = T;
+}
+
+@safe unittest
+{
+    static assert(is(DeducedParameterType!(const(int)) == const(int)));
+    static assert(is(DeducedParameterType!(const(int[2])) == const(int[2])));
+
+    static assert(is(DeducedParameterType!(const(int*)) == const(int)*));
+    static assert(is(DeducedParameterType!(const(int[])) == const(int)[]));
+}
+
+@safe unittest
+{
+    static struct NoCopy
+    {
+        @disable this(this);
+    }
+
+    static assert(is(DeducedParameterType!NoCopy == NoCopy));
+}
+
+@safe unittest
+{
+    static assert(is(DeducedParameterType!(inout(int[])) == inout(int)[]));
+}

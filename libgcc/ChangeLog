@@ -1,3 +1,11 @@
+2022-03-19  Sergei Trofimovich  <slyfox at gentoo dot org>
+
+	PR libgcc/86224
+	* config/m68k/lb1sf68.S (__mulsi3_internal): Internal, hidden alias
+	for __mulsi3.
+	(__udivsi3_internal, __divsi3_internal): Similarly.
+	(__umodsi3, __modsi3): Use the internal function names.
+
 2022-03-09  Tobias Burnus  <tobias@codesourcery.com>
 
 	PR target/102215

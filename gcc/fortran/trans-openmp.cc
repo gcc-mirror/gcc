@@ -808,6 +808,11 @@ gfc_omp_clause_copy_ctor (tree clause, tree dest, tree src)
   gcc_assert (OMP_CLAUSE_CODE (clause) == OMP_CLAUSE_FIRSTPRIVATE
 	      || OMP_CLAUSE_CODE (clause) == OMP_CLAUSE_LINEAR);
 
+  /* Privatize pointer, only; cf. gfc_omp_predetermined_sharing. */
+  if (DECL_P (OMP_CLAUSE_DECL (clause))
+      && GFC_DECL_ASSOCIATE_VAR_P (OMP_CLAUSE_DECL (clause)))
+    return build2 (MODIFY_EXPR, TREE_TYPE (dest), dest, src);
+
   if (DECL_ARTIFICIAL (OMP_CLAUSE_DECL (clause))
       && DECL_LANG_SPECIFIC (OMP_CLAUSE_DECL (clause))
       && GFC_DECL_SAVED_DESCRIPTOR (OMP_CLAUSE_DECL (clause)))
@@ -1320,6 +1325,11 @@ gfc_omp_clause_dtor (tree clause, tree decl)
 {
   tree type = TREE_TYPE (decl), tem;
   tree decl_type = TREE_TYPE (OMP_CLAUSE_DECL (clause));
+
+  /* Only pointer was privatized; cf. gfc_omp_clause_copy_ctor. */
+  if (DECL_P (OMP_CLAUSE_DECL (clause))
+      && GFC_DECL_ASSOCIATE_VAR_P (OMP_CLAUSE_DECL (clause)))
+    return NULL_TREE;
 
   if (DECL_ARTIFICIAL (OMP_CLAUSE_DECL (clause))
       && DECL_LANG_SPECIFIC (OMP_CLAUSE_DECL (clause))

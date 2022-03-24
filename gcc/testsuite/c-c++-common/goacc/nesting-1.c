@@ -1,3 +1,5 @@
+/* { dg-additional-options "--param=openacc-kernels=decompose" } */
+
 /* { dg-additional-options "-fopt-info-all-omp" } */
 
 /* { dg-additional-options "--param=openacc-privatization=noisy" } */
@@ -32,11 +34,13 @@ void
 f_acc_kernels (void)
 {
 #pragma acc kernels /* { dg-line l_compute[incr c_compute] } */
-  /* { dg-optimized {assigned OpenACC seq loop parallelism} {} { target *-*-* } l_compute$c_compute } */
+  /* { dg-note {variable 'i\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} {} { target *-*-* } l_compute$c_compute } */
   {
 #pragma acc loop /* { dg-line l_loop_i[incr c_loop_i] } */
+    /* { dg-note {forwarded loop nest in OpenACC 'kernels' region to 'parloops' for analysis} {} { target *-*-* } l_loop_i$c_loop_i } */
     /* { dg-note {variable 'i\.[0-9]+' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} {} { target *-*-* } l_loop_i$c_loop_i } */
     /* { dg-note {variable 'i' in 'private' clause is candidate for adjusting OpenACC privatization level} {} { target *-*-* } l_loop_i$c_loop_i } */
+    /* { dg-optimized {assigned OpenACC seq loop parallelism} {} { target *-*-* } l_loop_i$c_loop_i } */
     for (i = 0; i < 2; ++i)
       ;
   }
@@ -63,15 +67,17 @@ f_acc_data (void)
     }
 
 #pragma acc kernels /* { dg-line l_compute[incr c_compute] } */
-    /* { dg-optimized {assigned OpenACC seq loop parallelism} {} { target *-*-* } l_compute$c_compute } */
+    /* { dg-note {beginning 'gang-single' part in OpenACC 'kernels' region} {} { target *-*-* } l_compute$c_compute } */
     ;
 
 #pragma acc kernels /* { dg-line l_compute[incr c_compute] } */
-    /* { dg-optimized {assigned OpenACC seq loop parallelism} {} { target *-*-* } l_compute$c_compute } */
+    /* { dg-note {variable 'i\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} {} { target *-*-* } l_compute$c_compute } */
     {
 #pragma acc loop /* { dg-line l_loop_i[incr c_loop_i] } */
+      /* { dg-note {forwarded loop nest in OpenACC 'kernels' region to 'parloops' for analysis} {} { target *-*-* } l_loop_i$c_loop_i } */
       /* { dg-note {variable 'i\.[0-9]+' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} {} { target *-*-* } l_loop_i$c_loop_i } */
       /* { dg-note {variable 'i' in 'private' clause is candidate for adjusting OpenACC privatization level} {} { target *-*-* } l_loop_i$c_loop_i } */
+      /* { dg-optimized {assigned OpenACC seq loop parallelism} {} { target *-*-* } l_loop_i$c_loop_i } */
       for (i = 0; i < 2; ++i)
 	;
     }
@@ -102,15 +108,17 @@ f_acc_data (void)
       }
 
 #pragma acc kernels /* { dg-line l_compute[incr c_compute] } */
-      /* { dg-optimized {assigned OpenACC seq loop parallelism} {} { target *-*-* } l_compute$c_compute } */
+      /* { dg-note {beginning 'gang-single' part in OpenACC 'kernels' region} {} { target *-*-* } l_compute$c_compute } */
       ;
 
 #pragma acc kernels /* { dg-line l_compute[incr c_compute] } */
-      /* { dg-optimized {assigned OpenACC seq loop parallelism} {} { target *-*-* } l_compute$c_compute } */
+      /* { dg-note {variable 'i\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} {} { target *-*-* } l_compute$c_compute } */
       {
 #pragma acc loop /* { dg-line l_loop_i[incr c_loop_i] } */
+	/* { dg-note {forwarded loop nest in OpenACC 'kernels' region to 'parloops' for analysis} {} { target *-*-* } l_loop_i$c_loop_i } */
 	/* { dg-note {variable 'i\.[0-9]+' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} {} { target *-*-* } l_loop_i$c_loop_i } */
 	/* { dg-note {variable 'i' in 'private' clause is candidate for adjusting OpenACC privatization level} {} { target *-*-* } l_loop_i$c_loop_i } */
+	/* { dg-optimized {assigned OpenACC seq loop parallelism} {} { target *-*-* } l_loop_i$c_loop_i } */
 	for (i = 0; i < 2; ++i)
 	  ;
       }

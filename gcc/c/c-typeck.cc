@@ -8438,6 +8438,7 @@ struct initializer_stack
   char top_level;
   char require_constant_value;
   char require_constant_elements;
+  char designated;
   rich_location *missing_brace_richloc;
 };
 
@@ -8464,6 +8465,7 @@ start_init (tree decl, tree asmspec_tree ATTRIBUTE_UNUSED, int top_level,
   p->top_level = constructor_top_level;
   p->next = initializer_stack;
   p->missing_brace_richloc = richloc;
+  p->designated = constructor_designated;
   initializer_stack = p;
 
   constructor_decl = decl;
@@ -8522,6 +8524,7 @@ finish_init (void)
   require_constant_value = p->require_constant_value;
   require_constant_elements = p->require_constant_elements;
   constructor_stack = p->constructor_stack;
+  constructor_designated = p->designated;
   constructor_range_stack = p->constructor_range_stack;
   constructor_elements = p->elements;
   spelling = p->spelling;
@@ -8731,7 +8734,9 @@ push_init_level (location_t loc, int implicit,
   constructor_depth = SPELLING_DEPTH ();
   constructor_elements = NULL;
   constructor_incremental = 1;
-  constructor_designated = 0;
+  /* If the upper initializer is designated, then mark this as
+     designated too to prevent bogus warnings.  */
+  constructor_designated = p->designated;
   constructor_pending_elts = 0;
   if (!implicit)
     {
@@ -8756,9 +8761,6 @@ push_init_level (location_t loc, int implicit,
 	  push_member_name (constructor_fields);
 	  constructor_depth++;
 	}
-      /* If upper initializer is designated, then mark this as
-	 designated too to prevent bogus warnings.  */
-      constructor_designated = p->designated;
     }
   else if (TREE_CODE (constructor_type) == ARRAY_TYPE)
     {

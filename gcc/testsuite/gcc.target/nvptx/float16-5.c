@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -ffast-math -misa=sm_53 -mptx=_" } */
+/* { dg-additional-options "-mexperimental" } */
 
 _Float16 a;
 _Float16 b;

@@ -65,9 +65,7 @@ enum class ExternDEnum
 template <>
 struct ExternDStructTemplate final
 {
-    // Ignoring var i alignment 0
     int32_t i;
-    // Ignoring var d alignment 0
     double d;
     ExternDStructTemplate()
     {
@@ -131,7 +129,7 @@ struct ExternCppStruct final
         st()
     {
     }
-    ExternCppStruct(ExternDStruct s, ExternDEnum e = (ExternDEnum)0, ExternDStructTemplate< > st = ExternDStructTemplate< >(0, NAN)) :
+    ExternCppStruct(ExternDStruct s, ExternDEnum e = (ExternDEnum)0, ExternDStructTemplate< > st = ExternDStructTemplate< >()) :
         s(s),
         e(e),
         st(st)

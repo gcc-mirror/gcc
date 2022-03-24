@@ -716,7 +716,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
 
         if (dsym.storage_class & STC.scope_)
         {
-            StorageClass stc = dsym.storage_class & (STC.static_ | STC.extern_ | STC.manifest | STC.tls | STC.gshared);
+            StorageClass stc = dsym.storage_class & (STC.static_ | STC.extern_ | STC.manifest | STC.gshared);
             if (stc)
             {
                 OutBuffer buf;
@@ -733,7 +733,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
             }
         }
 
-        if (dsym.storage_class & (STC.static_ | STC.extern_ | STC.manifest | STC.templateparameter | STC.tls | STC.gshared | STC.ctfe))
+        if (dsym.storage_class & (STC.static_ | STC.extern_ | STC.manifest | STC.templateparameter | STC.gshared | STC.ctfe))
         {
         }
         else
@@ -794,7 +794,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
 
         if (dsym.type.hasWild())
         {
-            if (dsym.storage_class & (STC.static_ | STC.extern_ | STC.tls | STC.gshared | STC.manifest | STC.field) || dsym.isDataseg())
+            if (dsym.storage_class & (STC.static_ | STC.extern_ | STC.gshared | STC.manifest | STC.field) || dsym.isDataseg())
             {
                 dsym.error("only parameters or stack based variables can be `inout`");
             }
@@ -841,7 +841,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
         FuncDeclaration fd = parent.isFuncDeclaration();
         if (dsym.type.isscope() && !(dsym.storage_class & STC.nodtor))
         {
-            if (dsym.storage_class & (STC.field | STC.out_ | STC.ref_ | STC.static_ | STC.manifest | STC.tls | STC.gshared) || !fd)
+            if (dsym.storage_class & (STC.field | STC.out_ | STC.ref_ | STC.static_ | STC.manifest | STC.gshared) || !fd)
             {
                 dsym.error("globals, statics, fields, manifest constants, ref and out parameters cannot be `scope`");
             }
@@ -871,7 +871,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
                 }
             }
             else if (!dsym._init &&
-                     !(dsym.storage_class & (STC.static_ | STC.extern_ | STC.tls | STC.gshared | STC.manifest | STC.field | STC.parameter)) &&
+                     !(dsym.storage_class & (STC.static_ | STC.extern_ | STC.gshared | STC.manifest | STC.field | STC.parameter)) &&
                      dsym.type.hasVoidInitPointers())
             {
                 if (sc.func.setUnsafe())
@@ -891,7 +891,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
             dsym.error("manifest constants must have initializers");
 
         bool isBlit = false;
-        d_uns64 sz;
+        uinteger_t sz;
         if (sc.flags & SCOPE.Cfile && !dsym._init)
         {
             addDefaultCInitializer(dsym);
@@ -977,7 +977,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
             {
                 // If local variable, use AssignExp to handle all the various
                 // possibilities.
-                if (fd && !(dsym.storage_class & (STC.manifest | STC.static_ | STC.tls | STC.gshared | STC.extern_)) && !dsym._init.isVoidInitializer())
+                if (fd && !(dsym.storage_class & (STC.manifest | STC.static_ | STC.gshared | STC.extern_)) && !dsym._init.isVoidInitializer())
                 {
                     //printf("fd = '%s', var = '%s'\n", fd.toChars(), toChars());
                     if (!ei)
@@ -1476,7 +1476,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
         if (scd.decl)
         {
             sc = sc.push();
-            sc.stc &= ~(STC.auto_ | STC.scope_ | STC.static_ | STC.tls | STC.gshared);
+            sc.stc &= ~(STC.auto_ | STC.scope_ | STC.static_ | STC.gshared);
             sc.inunion = scd.isunion ? scd : null;
             sc.flags = 0;
             for (size_t i = 0; i < scd.decl.dim; i++)
@@ -4233,21 +4233,41 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
          */
         if (scd.isInstantiated() && scd.semanticRun < PASS.semantic)
         {
-            /* Add this prefix to the function:
-             *      static int gate;
-             *      if (++gate != 1) return;
-             * Note that this is not thread safe; should not have threads
-             * during static construction.
+            /* Add this prefix to the constructor:
+             * ```
+             * static int gate;
+             * if (++gate != 1) return;
+             * ```
+             * or, for shared constructor:
+             * ```
+             * shared int gate;
+             * if (core.atomic.atomicOp!"+="(gate, 1) != 1) return;
+             * ```
              */
+            const bool isShared = !!scd.isSharedStaticCtorDeclaration();
             auto v = new VarDeclaration(Loc.initial, Type.tint32, Id.gate, null);
-            v.storage_class = STC.temp | (scd.isSharedStaticCtorDeclaration() ? STC.static_ : STC.tls);
+            v.storage_class = STC.temp | STC.static_ | (isShared ? STC.shared_ : 0);
 
             auto sa = new Statements();
             Statement s = new ExpStatement(Loc.initial, v);
             sa.push(s);
 
-            Expression e = new IdentifierExp(Loc.initial, v.ident);
-            e = new AddAssignExp(Loc.initial, e, IntegerExp.literal!1);
+            Expression e;
+            if (isShared)
+            {
+                e = doAtomicOp("+=", v.ident, IntegerExp.literal!(1));
+                if (e is null)
+                {
+                    scd.error("shared static constructor within a template require `core.atomic : atomicOp` to be present");
+                    return;
+                }
+            }
+            else
+            {
+                e = new AddAssignExp(
+                    Loc.initial, new IdentifierExp(Loc.initial, v.ident), IntegerExp.literal!1);
+            }
+
             e = new EqualExp(EXP.notEqual, Loc.initial, e, IntegerExp.literal!1);
             s = new IfStatement(Loc.initial, null, e, new ReturnStatement(Loc.initial, null), null, Loc.initial);
 
@@ -4309,22 +4329,41 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
          */
         if (sdd.isInstantiated() && sdd.semanticRun < PASS.semantic)
         {
-            /* Add this prefix to the function:
-             *      static int gate;
-             *      if (--gate != 0) return;
-             * Increment gate during constructor execution.
-             * Note that this is not thread safe; should not have threads
-             * during static destruction.
+            /* Add this prefix to the constructor:
+             * ```
+             * static int gate;
+             * if (--gate != 0) return;
+             * ```
+             * or, for shared constructor:
+             * ```
+             * shared int gate;
+             * if (core.atomic.atomicOp!"-="(gate, 1) != 0) return;
+             * ```
              */
+            const bool isShared = !!sdd.isSharedStaticDtorDeclaration();
             auto v = new VarDeclaration(Loc.initial, Type.tint32, Id.gate, null);
-            v.storage_class = STC.temp | (sdd.isSharedStaticDtorDeclaration() ? STC.static_ : STC.tls);
+            v.storage_class = STC.temp | STC.static_ | (isShared ? STC.shared_ : 0);
 
             auto sa = new Statements();
             Statement s = new ExpStatement(Loc.initial, v);
             sa.push(s);
 
-            Expression e = new IdentifierExp(Loc.initial, v.ident);
-            e = new AddAssignExp(Loc.initial, e, IntegerExp.literal!(-1));
+            Expression e;
+            if (isShared)
+            {
+                e = doAtomicOp("-=", v.ident, IntegerExp.literal!(1));
+                if (e is null)
+                {
+                    sdd.error("shared static destructo within a template require `core.atomic : atomicOp` to be present");
+                    return;
+                }
+            }
+            else
+            {
+                e = new AddAssignExp(
+                    Loc.initial, new IdentifierExp(Loc.initial, v.ident), IntegerExp.literal!(-1));
+            }
+
             e = new EqualExp(EXP.notEqual, Loc.initial, e, IntegerExp.literal!0);
             s = new IfStatement(Loc.initial, null, e, new ReturnStatement(Loc.initial, null), null, Loc.initial);
 
@@ -6832,4 +6871,49 @@ bool determineFields(AggregateDeclaration ad)
         ad.sizeok = Sizeok.fwd;
 
     return true;
+}
+
+/// Do an atomic operation (currently tailored to [shared] static ctors|dtors) needs
+private CallExp doAtomicOp (string op, Identifier var, Expression arg)
+{
+    __gshared Import imp = null;
+    __gshared Identifier[1] id;
+
+    assert(op == "-=" || op == "+=");
+
+    const loc = Loc.initial;
+
+    // Below code is similar to `loadStdMath` (used for `^^` operator)
+    if (!imp)
+    {
+        id[0] = Id.core;
+        auto s = new Import(Loc.initial, id[], Id.atomic, null, true);
+        // Module.load will call fatal() if there's no std.math available.
+        // Gag the error here, pushing the error handling to the caller.
+        uint errors = global.startGagging();
+        s.load(null);
+        if (s.mod)
+        {
+            s.mod.importAll(null);
+            s.mod.dsymbolSemantic(null);
+        }
+        global.endGagging(errors);
+        imp = s;
+    }
+    // Module couldn't be loaded
+    if (imp.mod is null)
+        return null;
+
+    Objects* tiargs = new Objects(1);
+    (*tiargs)[0] = new StringExp(loc, op);
+
+    Expressions* args = new Expressions(2);
+    (*args)[0] = new IdentifierExp(loc, var);
+    (*args)[1] = arg;
+
+    auto sc = new ScopeExp(loc, imp.mod);
+    auto dti = new DotTemplateInstanceExp(
+        loc, sc, Id.atomicOp, tiargs);
+
+    return CallExp.create(loc, dti, args);
 }

@@ -274,6 +274,7 @@ Expression castCallAmbiguity(Expression e, Scope* sc)
 
 bool cFuncEquivalence(TypeFunction tf1, TypeFunction tf2)
 {
+    //printf("cFuncEquivalence()\n  %s\n  %s\n", tf1.toChars(), tf2.toChars());
     if (tf1.equals(tf2))
         return true;
 
@@ -284,22 +285,31 @@ bool cFuncEquivalence(TypeFunction tf1, TypeFunction tf2)
     if (tf1.parameterList.length == 0 && tf2.parameterList.length == 0)
         return true;
 
-    if (!tf1.parameterList.hasIdentifierList &&
-        !tf2.parameterList.hasIdentifierList)
-        return false;   // both functions are prototyped
-
-    // Otherwise ignore variadicness, as K+R functions are all variadic
-
     if (!tf1.nextOf().equals(tf2.nextOf()))
         return false;   // function return types don't match
 
     if (tf1.parameterList.length != tf2.parameterList.length)
         return false;
 
+    if (!tf1.parameterList.hasIdentifierList && !tf2.parameterList.hasIdentifierList) // if both are prototyped
+    {
+        if (tf1.parameterList.varargs != tf2.parameterList.varargs)
+            return false;
+    }
+
     foreach (i, fparam ; tf1.parameterList)
     {
         Type t1 = fparam.type;
         Type t2 = tf2.parameterList[i].type;
+
+        /* Strip off head const.
+         * Not sure if this is C11, but other compilers treat
+         * `void fn(int)` and `fn(const int x)`
+         * as equivalent.
+         */
+        t1 = t1.mutableOf();
+        t2 = t2.mutableOf();
+
         if (!t1.equals(t2))
             return false;
     }

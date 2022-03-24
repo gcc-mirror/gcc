@@ -162,6 +162,12 @@ class pending_diagnostic
  public:
   virtual ~pending_diagnostic () {}
 
+  /* Vfunc to get the command-line option used when emitting the diagnostic,
+     or zero if there is none.
+     Used by diagnostic_manager for early rejection of diagnostics (to avoid
+     having to generate feasible execution paths for them).  */
+  virtual int get_controlling_option () const = 0;
+
   /* Vfunc for emitting the diagnostic.  The rich_location will have been
      populated with a diagnostic_path.
      Return true if a diagnostic is actually emitted.  */

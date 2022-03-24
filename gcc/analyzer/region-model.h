@@ -494,7 +494,7 @@ private:
   auto_delete_vec<region> m_managed_dynamic_regions;
 };
 
-struct append_ssa_names_cb_data;
+struct append_regions_cb_data;
 
 /* Helper class for handling calls to functions with known behavior.
    Implemented in region-model-impl-calls.c.  */
@@ -658,7 +658,7 @@ class region_model
 			    region_model_context *ctxt);
   const frame_region *get_current_frame () const { return m_current_frame; }
   function * get_current_function () const;
-  void pop_frame (const region *result_dst,
+  void pop_frame (tree result_lvalue,
 		  const svalue **out_result,
 		  region_model_context *ctxt);
   int get_stack_depth () const;
@@ -756,10 +756,9 @@ class region_model
   tree get_fndecl_for_call (const gcall *call,
 			    region_model_context *ctxt);
 
-  void get_ssa_name_regions_for_current_frame
-    (auto_vec<const decl_region *> *out) const;
-  static void append_ssa_names_cb (const region *base_reg,
-				   struct append_ssa_names_cb_data *data);
+  void get_regions_for_current_frame (auto_vec<const decl_region *> *out) const;
+  static void append_regions_cb (const region *base_reg,
+				 struct append_regions_cb_data *data);
 
   const svalue *get_store_value (const region *reg,
 				 region_model_context *ctxt) const;
@@ -1263,14 +1262,15 @@ private:
 class engine
 {
 public:
-  engine (logger *logger = NULL);
+  engine (const supergraph *sg = NULL, logger *logger = NULL);
+  const supergraph *get_supergraph () { return m_sg; }
   region_model_manager *get_model_manager () { return &m_mgr; }
 
   void log_stats (logger *logger) const;
 
 private:
+  const supergraph *m_sg;
   region_model_manager m_mgr;
-
 };
 
 } // namespace ana

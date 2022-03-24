@@ -11,7 +11,7 @@
 #define _PSTL_UTILS_H
 
 #include <new>
-#include <iterator>
+#include <type_traits>
 
 namespace __pstl
 {
@@ -32,7 +32,7 @@ __except_handler(_Fp __f)
     }
     catch (...)
     {
-        std::terminate(); // Good bye according to the standard [algorithms.parallel.exceptions]
+        std::__terminate(); // Good bye according to the standard [algorithms.parallel.exceptions]
     }
 }
 

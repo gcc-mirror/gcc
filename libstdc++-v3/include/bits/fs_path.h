@@ -52,7 +52,6 @@
 
 #if defined(_WIN32) && !defined(__CYGWIN__)
 # define _GLIBCXX_FILESYSTEM_IS_WINDOWS 1
-# include <algorithm>
 #endif
 
 namespace std _GLIBCXX_VISIBILITY(default)
@@ -1060,8 +1059,12 @@ namespace __detail
   path::make_preferred()
   {
 #ifdef _GLIBCXX_FILESYSTEM_IS_WINDOWS
-    std::replace(_M_pathname.begin(), _M_pathname.end(), L'/',
-		 preferred_separator);
+    auto __pos = _M_pathname.find(L'/');
+    while (__pos != _M_pathname.npos)
+      {
+	_M_pathname[__pos] = preferred_separator;
+	__pos = _M_pathname.find(L'/', __pos);
+      }
 #endif
     return *this;
   }

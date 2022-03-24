@@ -86,7 +86,6 @@ struct ExternDStructRequired final
 template <typename T>
 struct ExternDTemplStruct final
 {
-    // Ignoring var member alignment 0
     T member;
     ExternDTemplStruct()
     {
@@ -129,7 +128,6 @@ extern TemplClass<int32_t >* templClass;
 template <typename T>
 class TemplClass
 {
-    // Ignoring var member alignment 0
 public:
     T member;
 };
@@ -139,7 +137,6 @@ extern TemplStruct<int32_t >* templStruct;
 template <typename T>
 class TemplStruct
 {
-    // Ignoring var member alignment 0
 public:
     T member;
 };

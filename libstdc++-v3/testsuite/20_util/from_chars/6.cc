@@ -30,7 +30,9 @@ test01()
 #if __cpp_lib_to_chars >= 201611L
 #if _GLIBCXX_USE_C99_FENV_TR1
   double d;
+#ifdef FE_DOWNWARD
   std::fesetround(FE_DOWNWARD);
+#endif
   const std::string s = "0.099999999999999999999999999";
   auto res = std::from_chars(s.data(), s.data() + s.length(), d);
   VERIFY( res.ec == std::errc{} );

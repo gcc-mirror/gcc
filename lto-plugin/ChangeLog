@@ -1,3 +1,17 @@
+2022-03-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR lto/102426
+	* configure.ac (LTO_PLUGIN_USE_SYMVER, LTO_PLUGIN_USE_SYMVER_GNU,
+	LTO_PLUGIN_USE_SYMVER_SUN): New test for symbol versioning support.
+	* Makefile.am (version_arg, version_dep): Set conditionally based
+	on LTO_PLUGIN_USE_SYMVER*.
+	(liblto_plugin_la_LDFLAGS): Use $(version_arg) instead of
+	-export-symbols-regex onload.
+	(liblto_plugin_la_DEPENDENCIES): Depend on $(version_dep).
+	* lto-plugin.map: New file.
+	* configure: Regenerated.
+	* Makefile.in: Regenerated.
+
 2022-03-11  Tobias Burnus  <tobias@codesourcery.com>
 
 	* lto-plugin.c (all_symbols_read_handler): With -save-temps, use

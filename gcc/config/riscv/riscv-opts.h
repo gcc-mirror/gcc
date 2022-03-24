@@ -105,10 +105,19 @@ enum stack_protector_guard {
 #define TARGET_ZKSH   ((riscv_zk_subext & MASK_ZKSH) != 0)
 #define TARGET_ZKT    ((riscv_zk_subext & MASK_ZKT) != 0)
 
-#define MASK_VECTOR_EEW_32    (1 << 0)
-#define MASK_VECTOR_EEW_64    (1 << 1)
-#define MASK_VECTOR_EEW_FP_32 (1 << 2)
-#define MASK_VECTOR_EEW_FP_64 (1 << 3)
+#define MASK_VECTOR_ELEN_32    (1 << 0)
+#define MASK_VECTOR_ELEN_64    (1 << 1)
+#define MASK_VECTOR_ELEN_FP_32 (1 << 2)
+#define MASK_VECTOR_ELEN_FP_64 (1 << 3)
+
+#define TARGET_VECTOR_ELEN_32 \
+  ((riscv_vector_elen_flags & MASK_VECTOR_ELEN_32) != 0)
+#define TARGET_VECTOR_ELEN_64 \
+  ((riscv_vector_elen_flags & MASK_VECTOR_ELEN_64) != 0)
+#define TARGET_VECTOR_ELEN_FP_32 \
+  ((riscv_vector_elen_flags & MASK_VECTOR_ELEN_FP_32) != 0)
+#define TARGET_VECTOR_ELEN_FP_64 \
+  ((riscv_vector_elen_flags & MASK_VECTOR_ELEN_FP_64) != 0)
 
 #define MASK_ZVL32B    (1 <<  0)
 #define MASK_ZVL64B    (1 <<  1)
@@ -135,5 +144,13 @@ enum stack_protector_guard {
 #define TARGET_ZVL16384B ((riscv_zvl_flags & MASK_ZVL16384B) != 0)
 #define TARGET_ZVL32768B ((riscv_zvl_flags & MASK_ZVL32768B) != 0)
 #define TARGET_ZVL65536B ((riscv_zvl_flags & MASK_ZVL65536B) != 0)
+
+/* Bit of riscv_zvl_flags will set contintuly, N-1 bit will set if N-bit is
+   set, e.g. MASK_ZVL64B has set then MASK_ZVL32B is set, so we can use
+   popcount to caclulate the minimal VLEN.  */
+#define TARGET_MIN_VLEN \
+  ((riscv_zvl_flags == 0) \
+   ? 0 \
+   : 32 << (__builtin_popcount (riscv_zvl_flags) - 1))
 
 #endif /* ! GCC_RISCV_OPTS_H */

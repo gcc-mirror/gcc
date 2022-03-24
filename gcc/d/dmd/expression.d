@@ -1797,7 +1797,7 @@ extern (C++) final class IntegerExp : Expression
     {
         super(Loc.initial, EXP.int64, __traits(classInstanceSize, IntegerExp));
         this.type = Type.tint32;
-        this.value = cast(d_int32)value;
+        this.value = cast(int)value;
     }
 
     static IntegerExp create(const ref Loc loc, dinteger_t value, Type type)
@@ -1838,8 +1838,8 @@ extern (C++) final class IntegerExp : Expression
         const val = normalize(ty, value);
         value = val;
         return (ty == Tuns64)
-            ? real_t(cast(d_uns64)val)
-            : real_t(cast(d_int64)val);
+            ? real_t(cast(ulong)val)
+            : real_t(cast(long)val);
     }
 
     override real_t toImaginary()
@@ -1895,38 +1895,38 @@ extern (C++) final class IntegerExp : Expression
             break;
 
         case Tint8:
-            result = cast(d_int8)value;
+            result = cast(byte)value;
             break;
 
         case Tchar:
         case Tuns8:
-            result = cast(d_uns8)value;
+            result = cast(ubyte)value;
             break;
 
         case Tint16:
-            result = cast(d_int16)value;
+            result = cast(short)value;
             break;
 
         case Twchar:
         case Tuns16:
-            result = cast(d_uns16)value;
+            result = cast(ushort)value;
             break;
 
         case Tint32:
-            result = cast(d_int32)value;
+            result = cast(int)value;
             break;
 
         case Tdchar:
         case Tuns32:
-            result = cast(d_uns32)value;
+            result = cast(uint)value;
             break;
 
         case Tint64:
-            result = cast(d_int64)value;
+            result = cast(long)value;
             break;
 
         case Tuns64:
-            result = cast(d_uns64)value;
+            result = cast(ulong)value;
             break;
 
         case Tpointer:

@@ -18,11 +18,24 @@ libexecsub_LTLIBRARIES = liblto_plugin.la
 gcc_build_dir = @gcc_build_dir@
 in_gcc_libs = $(foreach lib, $(libexecsub_LTLIBRARIES), $(gcc_build_dir)/$(lib))
 
+if LTO_PLUGIN_USE_SYMVER
+if LTO_PLUGIN_USE_SYMVER_GNU
+version_arg = -Wl,--version-script=$(srcdir)/lto-plugin.map
+endif
+if LTO_PLUGIN_USE_SYMVER_SUN
+version_arg = -Wl,-M,$(srcdir)/lto-plugin.map
+endif
+version_dep = $(srcdir)/lto-plugin.map
+else
+version_arg = -export-symbols-regex onload
+version_dep =
+endif
+
 liblto_plugin_la_SOURCES = lto-plugin.c
 # Note that we intentionally override the bindir supplied by ACX_LT_HOST_FLAGS.
 liblto_plugin_la_LDFLAGS = $(AM_LDFLAGS) \
 	$(lt_host_flags) -module -avoid-version -bindir $(libexecsubdir) \
-	-export-symbols-regex onload
+	$(version_arg)
 # Can be simplified when libiberty becomes a normal convenience library.
 libiberty = $(with_libiberty)/libiberty.a
 libiberty_noasan = $(with_libiberty)/noasan/libiberty.a
@@ -36,7 +49,8 @@ liblto_plugin_la_LDFLAGS += \
 	$(if $(wildcard $(libiberty_pic)),,-Wc,$(libiberty)))
 liblto_plugin_la_DEPENDENCIES = \
 	$(if $(wildcard $(libiberty_noasan)),$(libiberty_noasan), \
-	$(if $(wildcard $(libiberty_pic)),$(libiberty_pic),))
+	$(if $(wildcard $(libiberty_pic)),$(libiberty_pic),)) \
+	$(version_dep)
 LTLDFLAGS = $(shell $(SHELL) $(top_srcdir)/../libtool-ldflags $(LDFLAGS))
 liblto_plugin_la_LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \

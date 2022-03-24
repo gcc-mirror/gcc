@@ -33,6 +33,7 @@
 
 #include <filesystem>
 #include <algorithm>
+#include <array>
 #include <bits/stl_uninitialized.h>
 
 namespace fs = std::filesystem;

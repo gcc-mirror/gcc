@@ -65,6 +65,7 @@ extern "C" __ieee128 __strtoieee128(const char*, char**);
     && __SIZE_WIDTH__ >= 32
 # define USE_LIB_FAST_FLOAT 1
 # if __LDBL_MANT_DIG__ == __DBL_MANT_DIG__
+// No need to use strtold.
 #  undef USE_STRTOD_FOR_FROM_CHARS
 # endif
 #endif
@@ -420,6 +421,33 @@ namespace
     return true;
   }
 #endif
+
+  template<typename T>
+  from_chars_result
+  from_chars_strtod(const char* first, const char* last, T& value,
+		    chars_format fmt) noexcept
+  {
+    errc ec = errc::invalid_argument;
+#if _GLIBCXX_USE_CXX11_ABI
+    buffer_resource mr;
+    pmr::string buf(&mr);
+#else
+    string buf;
+    if (!reserve_string(buf))
+      return make_result(first, 0, {}, ec);
+#endif
+    size_t len = 0;
+    __try
+      {
+	if (const char* pat = pattern(first, last, fmt, buf)) [[likely]]
+	  len = from_chars_impl(pat, value, ec);
+      }
+    __catch (const std::bad_alloc&)
+      {
+	fmt = chars_format{};
+      }
+    return make_result(first, len, fmt, ec);
+  }
 #endif // USE_STRTOD_FOR_FROM_CHARS
 
 #if _GLIBCXX_FLOAT_IS_IEEE_BINARY32 && _GLIBCXX_DOUBLE_IS_IEEE_BINARY64
@@ -793,35 +821,15 @@ from_chars_result
 from_chars(const char* first, const char* last, float& value,
 	   chars_format fmt) noexcept
 {
-#if _GLIBCXX_FLOAT_IS_IEEE_BINARY32 && _GLIBCXX_DOUBLE_IS_IEEE_BINARY64
+#if USE_LIB_FAST_FLOAT
   if (fmt == chars_format::hex)
     return __floating_from_chars_hex(first, last, value);
   else
     {
-      static_assert(USE_LIB_FAST_FLOAT);
       return fast_float::from_chars(first, last, value, fmt);
     }
 #else
-  errc ec = errc::invalid_argument;
-#if _GLIBCXX_USE_CXX11_ABI
-  buffer_resource mr;
-  pmr::string buf(&mr);
-#else
-  string buf;
-  if (!reserve_string(buf))
-    return make_result(first, 0, {}, ec);
-#endif
-  size_t len = 0;
-  __try
-    {
-      if (const char* pat = pattern(first, last, fmt, buf)) [[likely]]
-	len = from_chars_impl(pat, value, ec);
-    }
-  __catch (const std::bad_alloc&)
-    {
-      fmt = chars_format{};
-    }
-  return make_result(first, len, fmt, ec);
+  return from_chars_strtod(first, last, value, fmt);
 #endif
 }
 
@@ -829,35 +837,15 @@ from_chars_result
 from_chars(const char* first, const char* last, double& value,
 	   chars_format fmt) noexcept
 {
-#if _GLIBCXX_FLOAT_IS_IEEE_BINARY32 && _GLIBCXX_DOUBLE_IS_IEEE_BINARY64
+#if USE_LIB_FAST_FLOAT
   if (fmt == chars_format::hex)
     return __floating_from_chars_hex(first, last, value);
   else
     {
-      static_assert(USE_LIB_FAST_FLOAT);
       return fast_float::from_chars(first, last, value, fmt);
     }
 #else
-  errc ec = errc::invalid_argument;
-#if _GLIBCXX_USE_CXX11_ABI
-  buffer_resource mr;
-  pmr::string buf(&mr);
-#else
-  string buf;
-  if (!reserve_string(buf))
-    return make_result(first, 0, {}, ec);
-#endif
-  size_t len = 0;
-  __try
-    {
-      if (const char* pat = pattern(first, last, fmt, buf)) [[likely]]
-	len = from_chars_impl(pat, value, ec);
-    }
-  __catch (const std::bad_alloc&)
-    {
-      fmt = chars_format{};
-    }
-  return make_result(first, len, fmt, ec);
+  return from_chars_strtod(first, last, value, fmt);
 #endif
 }
 
@@ -865,41 +853,23 @@ from_chars_result
 from_chars(const char* first, const char* last, long double& value,
 	   chars_format fmt) noexcept
 {
-#if _GLIBCXX_FLOAT_IS_IEEE_BINARY32 && _GLIBCXX_DOUBLE_IS_IEEE_BINARY64 \
-  && ! USE_STRTOD_FOR_FROM_CHARS
+#if ! USE_STRTOD_FOR_FROM_CHARS
+  // Either long double is the same as double, or we can't use strtold.
+  // In the latter case, this might give an incorrect result (e.g. values
+  // out of range of double give an error, even if they fit in long double).
   double dbl_value;
   from_chars_result result;
   if (fmt == chars_format::hex)
     result = __floating_from_chars_hex(first, last, dbl_value);
   else
     {
-      static_assert(USE_LIB_FAST_FLOAT);
       result = fast_float::from_chars(first, last, dbl_value, fmt);
     }
   if (result.ec == errc{})
     value = dbl_value;
   return result;
 #else
-  errc ec = errc::invalid_argument;
-#if _GLIBCXX_USE_CXX11_ABI
-  buffer_resource mr;
-  pmr::string buf(&mr);
-#else
-  string buf;
-  if (!reserve_string(buf))
-    return make_result(first, 0, {}, ec);
-#endif
-  size_t len = 0;
-  __try
-    {
-      if (const char* pat = pattern(first, last, fmt, buf)) [[likely]]
-	len = from_chars_impl(pat, value, ec);
-    }
-  __catch (const std::bad_alloc&)
-    {
-      fmt = chars_format{};
-    }
-  return make_result(first, len, fmt, ec);
+  return from_chars_strtod(first, last, value, fmt);
 #endif
 }
 
@@ -918,20 +888,8 @@ from_chars_result
 from_chars(const char* first, const char* last, __ieee128& value,
 	   chars_format fmt) noexcept
 {
-  buffer_resource mr;
-  pmr::string buf(&mr);
-  size_t len = 0;
-  errc ec = errc::invalid_argument;
-  __try
-    {
-      if (const char* pat = pattern(first, last, fmt, buf)) [[likely]]
-	len = from_chars_impl(pat, value, ec);
-    }
-  __catch (const std::bad_alloc&)
-    {
-      fmt = chars_format{};
-    }
-  return make_result(first, len, fmt, ec);
+  // fast_float doesn't support IEEE binary128 format, but we can use strtold.
+  return from_chars_strtod(first, last, value, fmt);
 }
 #endif
 

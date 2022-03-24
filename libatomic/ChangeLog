@@ -1,3 +1,27 @@
+2022-03-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/104688
+	* Makefile.am (IFUNC_OPTIONS): Change on x86_64 to -mcx16 -mcx16.
+	(libatomic_la_LIBADD): Add $(addsuffix _16_2_.lo,$(SIZEOBJS)) for
+	x86_64.
+	* Makefile.in: Regenerated.
+	* config/x86/host-config.h (IFUNC_COND_1): For x86_64 define to
+	both AVX and CMPXCHG16B bits.
+	(IFUNC_COND_2): Define.
+	(IFUNC_NCOND): For x86_64 define to 2 * (N == 16).
+	(MAYBE_HAVE_ATOMIC_CAS_16, MAYBE_HAVE_ATOMIC_EXCHANGE_16,
+	MAYBE_HAVE_ATOMIC_LDST_16): Define to IFUNC_COND_2 rather than
+	IFUNC_COND_1.
+	(HAVE_ATOMIC_CAS_16): Redefine to 1 whenever IFUNC_ALT != 0.
+	(HAVE_ATOMIC_LDST_16): Redefine to 1 whenever IFUNC_ALT == 1.
+	(atomic_compare_exchange_n): Define whenever IFUNC_ALT != 0
+	on x86_64 for N == 16.
+	(__atomic_load_n, __atomic_store_n): Redefine whenever IFUNC_ALT == 1
+	on x86_64 for N == 16.
+	(atomic_load_n, atomic_store_n): New functions.
+	* config/x86/init.c (__libat_feat1_init): On x86_64 clear bit_AVX
+	if CPU vendor is not Intel.
+
 2022-02-03  David Seifert  <soap@gentoo.org>
 	    Jakub Jelinek  <jakub@redhat.com>
 

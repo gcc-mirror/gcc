@@ -360,7 +360,11 @@ accept_from (char *arg ATTRIBUTE_UNUSED)
   hints.ai_next = NULL;
 
   struct addrinfo *addrs = NULL;
-  if (int e = getaddrinfo (slash == arg ? NULL : arg, "0", &hints, &addrs))
+  /* getaddrinfo requires either hostname or servname to be non-null, so that we must
+     set a port number (to cover the case that the string passed contains just /NN).
+     Use an arbitrary in-range port number, but avoiding "0" which triggers a bug on
+     some BSD variants.  */
+  if (int e = getaddrinfo (slash == arg ? NULL : arg, "1", &hints, &addrs))
     {
       noisy ("cannot resolve '%s': %s", arg, gai_strerror (e));
       ok = false;

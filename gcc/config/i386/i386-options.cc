@@ -2212,8 +2212,8 @@ ix86_option_override_internal (bool main_args_p,
   if (i == pta_size)
     {
       error (main_args_p
-	     ? G_("bad value (%qs) for %<-march=%> switch")
-	     : G_("bad value (%qs) for %<target(\"arch=\")%> attribute"),
+	     ? G_("bad value %qs for %<-march=%> switch")
+	     : G_("bad value %qs for %<target(\"arch=\")%> attribute"),
 	     opts->x_ix86_arch_string);
 
       auto_vec <const char *> candidates;
@@ -2292,8 +2292,8 @@ ix86_option_override_internal (bool main_args_p,
   if (ix86_tune_specified && i == pta_size)
     {
       error (main_args_p
-	     ? G_("bad value (%qs) for %<-mtune=%> switch")
-	     : G_("bad value (%qs) for %<target(\"tune=\")%> attribute"),
+	     ? G_("bad value %qs for %<-mtune=%> switch")
+	     : G_("bad value %qs for %<target(\"tune=\")%> attribute"),
 	     opts->x_ix86_tune_string);
 
       auto_vec <const char *> candidates;

@@ -6782,8 +6782,10 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 		  gfc_error ("Cray pointee %qs in SHARED clause at %L",
 			    n->sym->name, &n->where);
 		if (n->sym->attr.associate_var)
-		  gfc_error ("ASSOCIATE name %qs in SHARED clause at %L",
-			     n->sym->name, &n->where);
+		  gfc_error ("Associate name %qs in SHARED clause at %L",
+			     n->sym->attr.select_type_temporary
+			     ? n->sym->assoc->target->symtree->n.sym->name
+			     : n->sym->name, &n->where);
 		if (omp_clauses->detach
 		    && n->sym == omp_clauses->detach->symtree->n.sym)
 		  gfc_error ("DETACH event handle %qs in SHARED clause at %L",
@@ -7163,8 +7165,10 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 		  gfc_error ("Cray pointee %qs in %s clause at %L",
 			    n->sym->name, name, &n->where);
 		if (n->sym->attr.associate_var)
-		  gfc_error ("ASSOCIATE name %qs in %s clause at %L",
-			     n->sym->name, name, &n->where);
+		  gfc_error ("Associate name %qs in %s clause at %L",
+			     n->sym->attr.select_type_temporary
+			     ? n->sym->assoc->target->symtree->n.sym->name
+			     : n->sym->name, name, &n->where);
 		if (list != OMP_LIST_PRIVATE && is_reduction)
 		  {
 		    if (n->sym->attr.proc_pointer)

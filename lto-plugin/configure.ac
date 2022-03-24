@@ -50,6 +50,43 @@ AC_SUBST(real_target_noncanonical)
 # Determine what GCC version number to use in filesystem paths.
 GCC_BASE_VER
 
+AC_MSG_CHECKING([whether symbol versioning is supported])
+lto_plugin_use_symver=no
+if test x$gcc_no_link = xyes; then
+  # If we cannot link, we cannot build shared libraries, so do not use
+  # symbol versioning.
+  lto_plugin_use_symver=no
+else
+  save_LDFLAGS="$LDFLAGS"
+  LDFLAGS="$LDFLAGS -fPIC -shared -Wl,--version-script,./conftest.map"
+  cat > conftest.map <<EOF
+{
+  global: *foo*; bar; local: *;
+};
+EOF
+  AC_TRY_LINK([int foo;],[],[lto_plugin_use_symver=gnu],[lto_plugin_use_symver=no])
+  if test x$lto_plugin_use_symver = xno; then
+    case "$target_os" in
+      solaris2*)
+	LDFLAGS="$save_LDFLAGS"
+	LDFLAGS="$LDFLAGS -fPIC -shared -Wl,-M,./conftest.map"
+	# Sun ld cannot handle wildcards and treats all entries as undefined.
+	cat > conftest.map <<EOF
+{
+  global: foo; local: *;
+};
+EOF
+	AC_TRY_LINK([int foo;],[],[lto_plugin_use_symver=sun],[lto_plugin_use_symver=no])
+	  ;;
+    esac
+  fi
+  LDFLAGS="$save_LDFLAGS"
+fi
+AC_MSG_RESULT($lto_plugin_use_symver)
+AM_CONDITIONAL(LTO_PLUGIN_USE_SYMVER, [test "x$lto_plugin_use_symver" != xno])
+AM_CONDITIONAL(LTO_PLUGIN_USE_SYMVER_GNU, [test "x$lto_plugin_use_symver" = xgnu])
+AM_CONDITIONAL(LTO_PLUGIN_USE_SYMVER_SUN, [test "x$lto_plugin_use_symver" = xsun])
+
 AM_PROG_LIBTOOL
 ACX_LT_HOST_FLAGS
 AC_SUBST(target_noncanonical)

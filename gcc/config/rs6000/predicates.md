@@ -1277,10 +1277,15 @@
 (define_predicate "mma_disassemble_output_operand"
   (match_code "reg,subreg,mem")
 {
+  if (MEM_P (op))
+    {
+      rtx  addr = XEXP (op, 0);
+      return indexed_or_indirect_address (addr, mode)
+	     || quad_address_p (addr, mode, false);
+    }
+
   if (SUBREG_P (op))
     op = SUBREG_REG (op);
-  if (!REG_P (op))
-    return true;
 
   return vsx_register_operand (op, mode);
 })
