@@ -1512,8 +1512,10 @@ extern tree braced_lists_to_strings (tree, tree);
 namespace selftest {
   /* Declarations for specific families of tests within c-family,
      by source file, in alphabetical order.  */
+  extern void c_diagnostic_cc_tests (void);
   extern void c_format_cc_tests (void);
   extern void c_indentation_cc_tests (void);
+  extern void c_opt_problem_cc_tests (void);
   extern void c_pretty_print_cc_tests (void);
   extern void c_spellcheck_cc_tests (void);
 

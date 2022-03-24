@@ -22,6 +22,6 @@ main (int argc)
 
 
 /* { dg-final { scan-tree-dump-times "<bb \[0-9\]> \\\[count: 3" 2 "optimized" } } */
-/* { dg-final { scan-tree-dump-times "<bb \[0-9\]> \\\[count: 2" 1 "optimized" } } */
+/* { dg-final { scan-tree-dump-times "<bb \[0-9\]> \\\[count: \[12\]" 1 "optimized" } } */
 /* { dg-final { scan-tree-dump-times "goto <bb \[0-9\]>; \\\[33\\\.33%\\\]" 1 "optimized" } } */
 /* { dg-final { scan-tree-dump-times "goto <bb \[0-9\]>; \\\[66\\\.67%\\\]" 1 "optimized" } } */

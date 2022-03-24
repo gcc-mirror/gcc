@@ -760,6 +760,11 @@ public:
     return "mismatching_deallocation";
   }
 
+  int get_controlling_option () const FINAL OVERRIDE
+  {
+    return OPT_Wanalyzer_mismatching_deallocation;
+  }
+
   bool emit (rich_location *rich_loc) FINAL OVERRIDE
   {
     auto_diagnostic_group d;
@@ -767,13 +772,13 @@ public:
     m.add_cwe (762); /* CWE-762: Mismatched Memory Management Routines.  */
     if (const deallocator *expected_dealloc
 	  = m_expected_deallocators->maybe_get_single ())
-      return warning_meta (rich_loc, m, OPT_Wanalyzer_mismatching_deallocation,
+      return warning_meta (rich_loc, m, get_controlling_option (),
 			   "%qE should have been deallocated with %qs"
 			   " but was deallocated with %qs",
 			   m_arg, expected_dealloc->m_name,
 			   m_actual_dealloc->m_name);
     else
-      return warning_meta (rich_loc, m, OPT_Wanalyzer_mismatching_deallocation,
+      return warning_meta (rich_loc, m, get_controlling_option (),
 			   "%qs called on %qE returned from a mismatched"
 			   " allocation function",
 			   m_actual_dealloc->m_name, m_arg);
@@ -834,12 +839,17 @@ public:
 
   const char *get_kind () const FINAL OVERRIDE { return "double_free"; }
 
+  int get_controlling_option () const FINAL OVERRIDE
+  {
+    return OPT_Wanalyzer_double_free;
+  }
+
   bool emit (rich_location *rich_loc) FINAL OVERRIDE
   {
     auto_diagnostic_group d;
     diagnostic_metadata m;
     m.add_cwe (415); /* CWE-415: Double Free.  */
-    return warning_meta (rich_loc, m, OPT_Wanalyzer_double_free,
+    return warning_meta (rich_loc, m, get_controlling_option (),
 			 "double-%qs of %qE", m_funcname, m_arg);
   }
 
@@ -925,13 +935,17 @@ public:
 
   const char *get_kind () const FINAL OVERRIDE { return "possible_null_deref"; }
 
+  int get_controlling_option () const FINAL OVERRIDE
+  {
+    return OPT_Wanalyzer_possible_null_dereference;
+  }
+
   bool emit (rich_location *rich_loc) FINAL OVERRIDE
   {
     /* CWE-690: Unchecked Return Value to NULL Pointer Dereference.  */
     diagnostic_metadata m;
     m.add_cwe (690);
-    return warning_meta (rich_loc, m,
-			 OPT_Wanalyzer_possible_null_dereference,
+    return warning_meta (rich_loc, m, get_controlling_option (),
 			 "dereference of possibly-NULL %qE", m_arg);
   }
 
@@ -1010,6 +1024,10 @@ public:
 	    && m_arg_idx == sub_other.m_arg_idx);
   }
 
+  int get_controlling_option () const FINAL OVERRIDE
+  {
+    return OPT_Wanalyzer_possible_null_argument;
+  }
 
   bool emit (rich_location *rich_loc) FINAL OVERRIDE
   {
@@ -1018,7 +1036,7 @@ public:
     diagnostic_metadata m;
     m.add_cwe (690);
     bool warned
-      = warning_meta (rich_loc, m, OPT_Wanalyzer_possible_null_argument,
+      = warning_meta (rich_loc, m, get_controlling_option (),
 		      "use of possibly-NULL %qE where non-null expected",
 		      m_arg);
     if (warned)
@@ -1058,13 +1076,17 @@ public:
 
   const char *get_kind () const FINAL OVERRIDE { return "null_deref"; }
 
+  int get_controlling_option () const FINAL OVERRIDE
+  {
+    return OPT_Wanalyzer_null_dereference;
+  }
+
   bool emit (rich_location *rich_loc) FINAL OVERRIDE
   {
     /* CWE-476: NULL Pointer Dereference.  */
     diagnostic_metadata m;
     m.add_cwe (476);
-    return warning_meta (rich_loc, m,
-			 OPT_Wanalyzer_null_dereference,
+    return warning_meta (rich_loc, m, get_controlling_option (),
 			 "dereference of NULL %qE", m_arg);
   }
 
@@ -1106,6 +1128,11 @@ public:
 	    && m_arg_idx == sub_other.m_arg_idx);
   }
 
+  int get_controlling_option () const FINAL OVERRIDE
+  {
+    return OPT_Wanalyzer_null_argument;
+  }
+
   bool emit (rich_location *rich_loc) FINAL OVERRIDE
   {
     /* CWE-476: NULL Pointer Dereference.  */
@@ -1115,10 +1142,10 @@ public:
 
     bool warned;
     if (zerop (m_arg))
-      warned = warning_meta (rich_loc, m, OPT_Wanalyzer_null_argument,
+      warned = warning_meta (rich_loc, m, get_controlling_option (),
 			     "use of NULL where non-null expected");
     else
-      warned = warning_meta (rich_loc, m, OPT_Wanalyzer_null_argument,
+      warned = warning_meta (rich_loc, m, get_controlling_option (),
 			     "use of NULL %qE where non-null expected",
 			     m_arg);
     if (warned)
@@ -1159,12 +1186,17 @@ public:
 
   const char *get_kind () const FINAL OVERRIDE { return "use_after_free"; }
 
+  int get_controlling_option () const FINAL OVERRIDE
+  {
+    return OPT_Wanalyzer_use_after_free;
+  }
+
   bool emit (rich_location *rich_loc) FINAL OVERRIDE
   {
     /* CWE-416: Use After Free.  */
     diagnostic_metadata m;
     m.add_cwe (416);
-    return warning_meta (rich_loc, m, OPT_Wanalyzer_use_after_free,
+    return warning_meta (rich_loc, m, get_controlling_option (),
 			 "use after %<%s%> of %qE",
 			 m_deallocator->m_name, m_arg);
   }
@@ -1248,15 +1280,20 @@ public:
 
   const char *get_kind () const FINAL OVERRIDE { return "malloc_leak"; }
 
+  int get_controlling_option () const FINAL OVERRIDE
+  {
+    return OPT_Wanalyzer_malloc_leak;
+  }
+
   bool emit (rich_location *rich_loc) FINAL OVERRIDE
   {
     diagnostic_metadata m;
     m.add_cwe (401);
     if (m_arg)
-      return warning_meta (rich_loc, m, OPT_Wanalyzer_malloc_leak,
+      return warning_meta (rich_loc, m, get_controlling_option (),
 			   "leak of %qE", m_arg);
     else
-      return warning_meta (rich_loc, m, OPT_Wanalyzer_malloc_leak,
+      return warning_meta (rich_loc, m, get_controlling_option (),
 			   "leak of %qs", "<unknown>");
   }
 
@@ -1316,6 +1353,11 @@ public:
 	    && m_freed_reg == other.m_freed_reg);
   }
 
+  int get_controlling_option () const FINAL OVERRIDE
+  {
+    return OPT_Wanalyzer_free_of_non_heap;
+  }
+
   bool emit (rich_location *rich_loc) FINAL OVERRIDE
   {
     auto_diagnostic_group d;
@@ -1330,13 +1372,13 @@ public:
       case MEMSPACE_CODE:
       case MEMSPACE_GLOBALS:
       case MEMSPACE_READONLY_DATA:
-	return warning_meta (rich_loc, m, OPT_Wanalyzer_free_of_non_heap,
+	return warning_meta (rich_loc, m, get_controlling_option (),
 			     "%<%s%> of %qE which points to memory"
 			     " not on the heap",
 			     m_funcname, m_arg);
 	break;
       case MEMSPACE_STACK:
-	return warning_meta (rich_loc, m, OPT_Wanalyzer_free_of_non_heap,
+	return warning_meta (rich_loc, m, get_controlling_option (),
 			     "%<%s%> of %qE which points to memory"
 			     " on the stack",
 			     m_funcname, m_arg);

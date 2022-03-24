@@ -4,6 +4,7 @@
 
 #include <algorithm>
 #include <optional>
+#include <vector>
 
 inline std::optional<int>
 foo (std::vector<int>::iterator b, std::vector<int>::iterator c,

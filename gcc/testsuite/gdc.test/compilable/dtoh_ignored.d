@@ -62,11 +62,9 @@ private:
 template <typename T>
 struct WithImaginaryTemplate final
 {
-    // Ignoring var member alignment 0
     float member;
     // Ignored function onReturn because its return type cannot be mapped to C++
     // Ignored function onParam because one of its parameters has type `ifloat` which cannot be mapped to C++
-    // Ignoring var onVariable alignment 0
     // Ignored variable onVariable because its type cannot be mapped to C++
     WithImaginaryTemplate()
     {

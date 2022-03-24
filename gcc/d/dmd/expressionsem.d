@@ -1992,7 +1992,7 @@ private bool functionParameters(const ref Loc loc, Scope* sc,
             }
             else if (p.storageClass & STC.ref_)
             {
-                if (global.params.rvalueRefParam &&
+                if (global.params.rvalueRefParam == FeatureState.enabled &&
                     !arg.isLvalue() &&
                     targ.isCopyable())
                 {   /* allow rvalues to be passed to ref parameters by copying
@@ -7118,6 +7118,8 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
             return;
         }
 
+        exp.e1 = exp.e1.arrayFuncConv(sc);
+
         Type tb = exp.e1.type.toBasetype();
         switch (tb.ty)
         {
@@ -7440,6 +7442,9 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
             result = e;
             return;
         }
+
+        if (exp.to && !exp.to.isTypeSArray() && !exp.to.isTypeFunction())
+            exp.e1 = exp.e1.arrayFuncConv(sc);
 
         // for static alias this: https://issues.dlang.org/show_bug.cgi?id=17684
         if (exp.e1.op == EXP.type)
@@ -10336,7 +10341,7 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
 
                 // Need to divide the result by the stride
                 // Replace (ptr - ptr) with (ptr - ptr) / stride
-                d_int64 stride;
+                long stride;
 
                 // make sure pointer types are compatible
                 if (Expression ex = typeCombine(exp, sc))
@@ -10351,7 +10356,7 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
                 {
                     e = new IntegerExp(exp.loc, 0, Type.tptrdiff_t);
                 }
-                else if (stride == cast(d_int64)SIZE_INVALID)
+                else if (stride == cast(long)SIZE_INVALID)
                     e = ErrorExp.get();
                 else
                 {
@@ -12573,6 +12578,13 @@ Expression semanticY(DotIdExp exp, Scope* sc, int flag)
         const naturalAlignment = exp.e1.type.alignsize();
         const actualAlignment = explicitAlignment.isDefault() ? naturalAlignment : explicitAlignment.get();
         Expression e = new IntegerExp(exp.loc, actualAlignment, Type.tsize_t);
+        return e;
+    }
+    else if (sc.flags & SCOPE.Cfile && exp.ident == Id.__sizeof && exp.e1.isStringExp())
+    {
+        // Sizeof string literal includes the terminating 0
+        auto se = exp.e1.isStringExp();
+        Expression e = new IntegerExp(exp.loc, (se.len + 1) * se.sz, Type.tsize_t);
         return e;
     }
     else

@@ -247,12 +247,12 @@ extern (C++) class StorageClassDeclaration : AttribDeclaration
          */
         if (stc & (STC.auto_ | STC.scope_ | STC.static_ | STC.extern_ | STC.manifest))
             scstc &= ~(STC.auto_ | STC.scope_ | STC.static_ | STC.extern_ | STC.manifest);
-        if (stc & (STC.auto_ | STC.scope_ | STC.static_ | STC.tls | STC.manifest | STC.gshared))
-            scstc &= ~(STC.auto_ | STC.scope_ | STC.static_ | STC.tls | STC.manifest | STC.gshared);
+        if (stc & (STC.auto_ | STC.scope_ | STC.static_ | STC.manifest | STC.gshared))
+            scstc &= ~(STC.auto_ | STC.scope_ | STC.static_ | STC.manifest | STC.gshared);
         if (stc & (STC.const_ | STC.immutable_ | STC.manifest))
             scstc &= ~(STC.const_ | STC.immutable_ | STC.manifest);
-        if (stc & (STC.gshared | STC.shared_ | STC.tls))
-            scstc &= ~(STC.gshared | STC.shared_ | STC.tls);
+        if (stc & (STC.gshared | STC.shared_))
+            scstc &= ~(STC.gshared | STC.shared_);
         if (stc & (STC.safe | STC.trusted | STC.system))
             scstc &= ~(STC.safe | STC.trusted | STC.system);
         scstc |= stc;

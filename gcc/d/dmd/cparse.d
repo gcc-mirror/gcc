@@ -48,14 +48,16 @@ final class CParser(AST) : Parser!AST
         Array!structalign_t* packs;     // parallel alignment values
     }
 
-    /** C allows declaring a function with a typedef:
-     *   typedef int (myfunc)(); myfunc fun;
-     * but we need to distinguish `fun` being a function as opposed to a variable in the
-     * parse pass. This is accomplished by having a simple symbol table of typedefs
-     * where we know, by syntax, if they are function types or non-function types.
-     * funcTypeIds is the symbol table, of the identifiers of typedefs of function types.
+    /* C cannot be parsed without determining if an identifier is a type or a variable.
+     * For expressions like `(T)-3`, is it a cast or a minus expression?
+     * It also occurs with `typedef int (F)(); F fun;`
+     * but to build the AST we need to distinguish `fun` being a function as opposed to a variable.
+     * To fix, build a symbol table for the typedefs.
+     * Symbol table of typedefs indexed by Identifier cast to void*.
+     * 1. if an identifier is a typedef, then it will return a non-null Type
+     * 2. if an identifier is not a typedef, then it will return null
      */
-    AST.Identifiers funcTypeIds;  /// Identifiers in this are typedefs of function types
+    Array!(void*) typedefTab;  /// Array of AST.Type[Identifier], typedef's indexed by Identifier
 
     extern (D) this(TARGET)(AST.Module _module, const(char)[] input, bool doDocComment,
                             const ref TARGET target)
@@ -97,6 +99,7 @@ final class CParser(AST) : Parser!AST
     {
         //printf("cparseTranslationUnit()\n");
         symbols = new AST.Dsymbols();
+        typedefTab.push(null);  // C11 6.2.1-3 symbol table for "file scope"
         while (1)
         {
             if (token.value == TOK.endOfFile)
@@ -114,6 +117,10 @@ final class CParser(AST) : Parser!AST
                     auto s = new AST.Import(Loc.initial, null, Id.builtins, null, false);
                     wrap.push(s);
                 }
+
+                // end of file scope
+                typedefTab.pop();
+                assert(typedefTab.length == 0);
 
                 return wrap;
             }
@@ -150,10 +157,17 @@ final class CParser(AST) : Parser!AST
 
         //printf("cparseStatement()\n");
 
-        const funcTypeIdsLengthSave = funcTypeIds.length;
+        const typedefTabLengthSave = typedefTab.length;
         auto symbolsSave = symbols;
+        if (flags & ParseStatementFlags.scope_)
+        {
+            typedefTab.push(null);      // introduce new block scope
+        }
+
         if (!(flags & (ParseStatementFlags.scope_ | ParseStatementFlags.curlyScope)))
+        {
             symbols = new AST.Dsymbols();
+        }
 
         switch (token.value)
         {
@@ -593,7 +607,7 @@ final class CParser(AST) : Parser!AST
         if (pEndloc)
             *pEndloc = prevloc;
         symbols = symbolsSave;
-        funcTypeIds.setDim(funcTypeIdsLengthSave);
+        typedefTab.setDim(typedefTabLengthSave);
         return s;
     }
 
@@ -1002,8 +1016,18 @@ final class CParser(AST) : Parser!AST
     {
         if (token.value == TOK.leftParenthesis)
         {
+            auto tk = peek(&token);
+            if (tk.value == TOK.identifier &&
+                !isTypedef(tk.ident) &&
+                peek(tk).value == TOK.rightParenthesis)
+            {
+                // ( identifier ) is an expression
+                return cparseUnaryExp();
+            }
+
             // If ( type-name )
             auto pt = &token;
+
             if (isCastExpression(pt))
             {
                 // Expression may be either a cast or a compound literal, which
@@ -1573,7 +1597,7 @@ final class CParser(AST) : Parser!AST
             return;
         }
 
-        const funcTypeIdsLengthSave = funcTypeIds.length;
+        const typedefTabLengthSave = typedefTab.length;
         auto symbolsSave = symbols;
         Specifier specifier;
         specifier.packalign = this.packalign;
@@ -1683,13 +1707,13 @@ final class CParser(AST) : Parser!AST
                 t.value == TOK.leftCurly)  // start of compound-statement
             {
                 auto s = cparseFunctionDefinition(id, dt.isTypeFunction(), specifier);
-                funcTypeIds.setDim(funcTypeIdsLengthSave);
+                typedefTab.setDim(typedefTabLengthSave);
                 symbols = symbolsSave;
                 symbols.push(s);
                 return;
             }
             AST.Dsymbol s = null;
-            funcTypeIds.setDim(funcTypeIdsLengthSave);
+            typedefTab.setDim(typedefTabLengthSave);
             symbols = symbolsSave;
             if (!symbols)
                 symbols = new AST.Dsymbols;     // lazilly create it
@@ -1747,12 +1771,9 @@ final class CParser(AST) : Parser!AST
                         }
                     }
                 }
-                else if (isFunctionTypedef(dt))
-                {
-                    funcTypeIds.push(id);       // remember function typedefs
-                }
                 if (isalias)
                     s = new AST.AliasDeclaration(token.loc, id, dt);
+                insertTypedefToTypedefTab(id, dt);       // remember typedefs
             }
             else if (id)
             {
@@ -1791,6 +1812,8 @@ final class CParser(AST) : Parser!AST
                         initializer = new AST.VoidInitializer(token.loc);
                     s = new AST.VarDeclaration(token.loc, dt, id, initializer, specifiersToSTC(level, specifier));
                 }
+                if (level != LVL.global)
+                    insertIdToTypedefTab(id);   // non-typedef declarations can hide typedefs in outer scopes
             }
             if (s !is null)
             {
@@ -1868,6 +1891,10 @@ final class CParser(AST) : Parser!AST
      */
     AST.Dsymbol cparseFunctionDefinition(Identifier id, AST.TypeFunction ft, ref Specifier specifier)
     {
+        /* Start function scope
+         */
+        typedefTab.push(null);
+
         if (token.value != TOK.leftCurly)       // if not start of a compound-statement
         {
             // Do declaration-list
@@ -1930,6 +1957,8 @@ final class CParser(AST) : Parser!AST
         const locFunc = token.loc;
 
         auto body = cparseStatement(ParseStatementFlags.curly);  // don't start a new scope; continue with parameter scope
+        typedefTab.pop();                                        // end of function scope
+
         auto fd = new AST.FuncDeclaration(locFunc, prevloc, id, specifiersToSTC(LVL.global, specifier), ft, specifier.noreturn);
 
         if (addFuncName)
@@ -2737,6 +2766,16 @@ final class CParser(AST) : Parser!AST
             return AST.ParameterList(parameters, AST.VarArg.variadic, varargsStc);
         }
 
+        /* Create function prototype scope
+         */
+        typedefTab.push(null);
+
+        AST.ParameterList finish()
+        {
+            typedefTab.pop();
+            return AST.ParameterList(parameters, varargs, varargsStc);
+        }
+
         /* The check for identifier-list comes later,
          * when doing the trailing declaration-list (opt)
          */
@@ -2752,7 +2791,7 @@ final class CParser(AST) : Parser!AST
                 varargs = AST.VarArg.variadic;  // C-style variadics
                 nextToken();
                 check(TOK.rightParenthesis);
-                return AST.ParameterList(parameters, varargs, varargsStc);
+                return finish();
             }
 
             Specifier specifier;
@@ -2777,7 +2816,7 @@ final class CParser(AST) : Parser!AST
             check(TOK.comma);
         }
         nextToken();
-        return AST.ParameterList(parameters, varargs, varargsStc);
+        return finish();
     }
 
     /***********************************
@@ -4121,12 +4160,14 @@ final class CParser(AST) : Parser!AST
      *    ( expression )
      * Params:
      *    pt = starting token, updated to one past end of constant-expression if true
-     *    afterParenType = true if already seen ( type-name )
+     *    afterParenType = true if already seen `( type-name )`
      * Returns:
      *    true if matches ( type-name ) ...
      */
     private bool isCastExpression(ref Token* pt, bool afterParenType = false)
     {
+        enum log = false;
+        if (log) printf("isCastExpression(tk: `%s`, afterParenType: %d)\n", token.toChars(pt.value), afterParenType);
         auto t = pt;
         switch (t.value)
         {
@@ -4144,19 +4185,23 @@ final class CParser(AST) : Parser!AST
                 {
                     // ( type-name ) { initializer-list }
                     if (!isInitializer(tk))
+                    {
                         return false;
+                    }
                     t = tk;
                     break;
                 }
 
                 if (tk.value == TOK.leftParenthesis && peek(tk).value == TOK.rightParenthesis)
+                {
                     return false;    // (type-name)() is not a cast (it might be a function call)
+                }
 
                 if (!isCastExpression(tk, true))
                 {
                     if (afterParenType) // could be ( type-name ) ( unary-expression )
                         goto default;   // where unary-expression also matched type-name
-                    return false;
+                    return true;
                 }
                 // ( type-name ) cast-expression
                 t = tk;
@@ -4164,11 +4209,14 @@ final class CParser(AST) : Parser!AST
 
             default:
                 if (!afterParenType || !isUnaryExpression(t, afterParenType))
+                {
                     return false;
+                }
                 // if we've already seen ( type-name ), then this is a cast
                 break;
         }
         pt = t;
+        if (log) printf("isCastExpression true\n");
         return true;
     }
 
@@ -4576,9 +4624,14 @@ final class CParser(AST) : Parser!AST
         return s;
     }
 
+    //}
+
+    /******************************************************************************/
+    /************************** typedefTab symbol table ***************************/
+    //{
+
     /********************************
      * Determines if type t is a function type.
-     * Make this work without needing semantic analysis.
      * Params:
      *  t = type to test
      * Returns:
@@ -4591,18 +4644,82 @@ final class CParser(AST) : Parser!AST
             return true;
         if (auto tid = t.isTypeIdentifier())
         {
-            /* Scan array of typedef identifiers that are an alias for
-             * a function type
-             */
-            foreach (ftid; funcTypeIds[])
+            auto pt = lookupTypedef(tid.ident);
+            if (pt && *pt)
             {
-                if (tid.ident == ftid)
-                {
-                    return true;
-                }
+                return (*pt).isTypeFunction() !is null;
             }
         }
         return false;
+    }
+
+    /********************************
+     * Determine if `id` is a symbol for a Typedef.
+     * Params:
+     *  id = possible typedef
+     * Returns:
+     *  true if id is a Type
+     */
+    bool isTypedef(Identifier id)
+    {
+        auto pt = lookupTypedef(id);
+        return (pt && *pt);
+    }
+
+    /*******************************
+     * Add `id` to typedefTab[], but only if it will mask an existing typedef.
+     * Params: id = identifier for non-typedef symbol
+     */
+    void insertIdToTypedefTab(Identifier id)
+    {
+        //printf("insertIdToTypedefTab(id: %s) level %d\n", id.toChars(), cast(int)typedefTab.length - 1);
+        if (isTypedef(id))  // if existing typedef
+        {
+            /* Add id as null, so we can later distinguish it from a non-null typedef
+             */
+            auto tab = cast(void*[void*])(typedefTab[$ - 1]);
+            tab[cast(void*)id] = cast(void*)null;
+        }
+    }
+
+    /*******************************
+     * Add `id` to typedefTab[]
+     * Params:
+     *  id = identifier for typedef symbol
+     *  t = type of the typedef symbol
+     */
+    void insertTypedefToTypedefTab(Identifier id, AST.Type t)
+    {
+        //printf("insertTypedefToTypedefTab(id: %s, t: %s) level %d\n", id.toChars(), t ? t.toChars() : "null".ptr, cast(int)typedefTab.length - 1);
+        if (auto tid = t.isTypeIdentifier())
+        {
+            // Try to resolve the TypeIdentifier to its type
+            auto pt = lookupTypedef(tid.ident);
+            if (pt && *pt)
+                t = *pt;
+        }
+        auto tab = cast(void*[void*])(typedefTab[$ - 1]);
+        tab[cast(void*)id] = cast(void*)t;
+        typedefTab[$ - 1] = cast(void*)tab;
+    }
+
+    /*********************************
+     * Lookup id in typedefTab[].
+     * Returns:
+     *  if not found, then null.
+     *  if found, then Type*. Deferencing it will yield null if it is not
+     *  a typedef, and a type if it is a typedef.
+     */
+    AST.Type* lookupTypedef(Identifier id)
+    {
+        foreach_reverse (tab; typedefTab[])
+        {
+            if (auto pt = cast(void*)id in cast(void*[void*])tab)
+            {
+                return cast(AST.Type*)pt;
+            }
+        }
+        return null; // not found
     }
 
     //}

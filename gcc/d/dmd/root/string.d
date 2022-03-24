@@ -201,10 +201,10 @@ int dstrcmp()( scope const char[] s1, scope const char[] s2 ) @trusted
 unittest
 {
     assert(dstrcmp("Fraise", "Fraise")      == 0);
-    assert(dstrcmp("Baguette", "Croissant") == -1);
-    assert(dstrcmp("Croissant", "Baguette") == 1);
+    assert(dstrcmp("Baguette", "Croissant") < 0);
+    assert(dstrcmp("Croissant", "Baguette") > 0);
 
-    static assert(dstrcmp("Baguette", "Croissant") == -1);
+    static assert(dstrcmp("Baguette", "Croissant") < 0);
 
     // UTF-8 decoding for the CT variant
     assert(dstrcmp("안녕하세요!", "안녕하세요!") == 0);

@@ -3549,8 +3549,8 @@ finish_member_declaration (tree decl)
     }
 
   if (TREE_CODE (decl) == USING_DECL)
-    /* For now, ignore class-scope USING_DECLS, so that debugging
-       backends do not see them. */
+    /* Avoid debug info for class-scope USING_DECLS for now, we'll
+       call cp_emit_debug_info_for_using later. */
     DECL_IGNORED_P (decl) = 1;
 
   /* Check for bare parameter packs in the non-static data member
@@ -3578,6 +3578,7 @@ finish_member_declaration (tree decl)
   /* Enter the DECL into the scope of the class, if the class
      isn't a closure (whose fields are supposed to be unnamed).  */
   else if (CLASSTYPE_LAMBDA_EXPR (current_class_type)
+	   || maybe_push_used_methods (decl)
 	   || pushdecl_class_level (decl))
     add = true;
 

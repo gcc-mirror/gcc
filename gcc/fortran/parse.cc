@@ -4924,6 +4924,24 @@ parse_associate (void)
 	 in case of association to a derived-type.  */
       sym->ts = a->target->ts;
 
+      /* Don’t share the character length information between associate
+	 variable and target if the length is not a compile-time constant,
+	 as we don’t want to touch some other character length variable when
+	 we try to initialize the associate variable’s character length
+	 variable.
+	 We do it here rather than later so that expressions referencing the
+	 associate variable will automatically have the correctly setup length
+	 information.  If we did it at resolution stage the expressions would
+	 use the original length information, and the variable a new different
+	 one, but only the latter one would be correctly initialized at
+	 translation stage, and the former one would need some additional setup
+	 there.  */
+      if (sym->ts.type == BT_CHARACTER
+	  && sym->ts.u.cl
+	  && !(sym->ts.u.cl->length
+	       && sym->ts.u.cl->length->expr_type == EXPR_CONSTANT))
+	sym->ts.u.cl = gfc_new_charlen (gfc_current_ns, NULL);
+
       /* Check if the target expression is array valued.  This cannot always
 	 be done by looking at target.rank, because that might not have been
 	 set yet.  Therefore traverse the chain of refs, looking for the last

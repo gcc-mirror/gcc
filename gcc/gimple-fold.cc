@@ -1254,7 +1254,11 @@ gimple_fold_builtin_memory_op (gimple_stmt_iterator *gsi,
 	    srcvar = fold_build2 (MEM_REF, desttype, src, off0);
 	  else
 	    {
-	      if (STRICT_ALIGNMENT)
+	      enum machine_mode mode = TYPE_MODE (desttype);
+	      if ((mode == BLKmode && STRICT_ALIGNMENT)
+		  || (targetm.slow_unaligned_access (mode, src_align)
+		      && (optab_handler (movmisalign_optab, mode)
+			  == CODE_FOR_nothing)))
 		return false;
 	      srctype = build_aligned_type (TYPE_MAIN_VARIANT (desttype),
 					    src_align);
@@ -1267,7 +1271,11 @@ gimple_fold_builtin_memory_op (gimple_stmt_iterator *gsi,
 	    destvar = fold_build2 (MEM_REF, srctype, dest, off0);
 	  else
 	    {
-	      if (STRICT_ALIGNMENT)
+	      enum machine_mode mode = TYPE_MODE (srctype);
+	      if ((mode == BLKmode && STRICT_ALIGNMENT)
+		  || (targetm.slow_unaligned_access (mode, dest_align)
+		      && (optab_handler (movmisalign_optab, mode)
+			  == CODE_FOR_nothing)))
 		return false;
 	      desttype = build_aligned_type (TYPE_MAIN_VARIANT (srctype),
 					     dest_align);

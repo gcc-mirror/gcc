@@ -77,6 +77,7 @@
 #include "opts.h"
 #include "tree-pretty-print.h"
 #include "rtl-iter.h"
+#include "cgraph.h"
 
 /* This file should be included last.  */
 #include "target-def.h"
@@ -300,8 +301,8 @@ handle_ptx_version_option (void)
     = first_ptx_version_supporting_sm ((enum ptx_isa) ptx_isa_option);
 
   if (ptx_version_option < first)
-    error ("PTX version (-mptx) needs to be at least %s to support selected"
-	   " -misa (sm_%s)", ptx_version_to_string (first),
+    error ("PTX version (%<-mptx%>) needs to be at least %s to support selected"
+	   " %<-misa%> (sm_%s)", ptx_version_to_string (first),
 	   sm_version_to_string ((enum ptx_isa)ptx_isa_option));
 }
 
@@ -968,7 +969,8 @@ static void
 write_fn_proto_1 (std::stringstream &s, bool is_defn,
 		  const char *name, const_tree decl)
 {
-  write_fn_marker (s, is_defn, TREE_PUBLIC (decl), name);
+  if (lookup_attribute ("alias", DECL_ATTRIBUTES (decl)) == NULL)
+    write_fn_marker (s, is_defn, TREE_PUBLIC (decl), name);
 
   /* PTX declaration.  */
   if (DECL_EXTERNAL (decl))
@@ -7154,7 +7156,7 @@ nvptx_cannot_force_const_mem (machine_mode mode ATTRIBUTE_UNUSED,
 static bool
 nvptx_scalar_mode_supported_p (scalar_mode mode)
 {
-  if (mode == HFmode && TARGET_SM53)
+  if (nvptx_experimental && mode == HFmode && TARGET_SM53)
     return true;
 
   return default_scalar_mode_supported_p (mode);
@@ -7163,7 +7165,7 @@ nvptx_scalar_mode_supported_p (scalar_mode mode)
 static bool
 nvptx_libgcc_floating_mode_supported_p (scalar_float_mode mode)
 {
-  if (mode == HFmode && TARGET_SM53)
+  if (nvptx_experimental && mode == HFmode && TARGET_SM53)
     return true;
 
   return default_libgcc_floating_mode_supported_p (mode);
@@ -7392,6 +7394,76 @@ nvptx_mem_local_p (rtx mem)
 
   return false;
 }
+
+/* Define locally, for use in NVPTX_ASM_OUTPUT_DEF.  */
+#define SET_ASM_OP ".alias "
+
+/* Define locally, for use in nvptx_asm_output_def_from_decls.  Add NVPTX_
+   prefix to avoid clash with ASM_OUTPUT_DEF from nvptx.h.
+   Copy of ASM_OUTPUT_DEF from defaults.h, with added terminating
+   semicolon.  */
+#define NVPTX_ASM_OUTPUT_DEF(FILE,LABEL1,LABEL2)	\
+  do							\
+    {							\
+      fprintf ((FILE), "%s", SET_ASM_OP);		\
+      assemble_name (FILE, LABEL1);			\
+      fprintf (FILE, ",");				\
+      assemble_name (FILE, LABEL2);			\
+      fprintf (FILE, ";\n");				\
+    }							\
+  while (0)
+
+void
+nvptx_asm_output_def_from_decls (FILE *stream, tree name, tree value)
+{
+  if (nvptx_alias == 0 || !TARGET_PTX_6_3)
+    {
+      /* Copied from assemble_alias.  */
+      error_at (DECL_SOURCE_LOCATION (name),
+		"alias definitions not supported in this configuration");
+      TREE_ASM_WRITTEN (name) = 1;
+      return;
+    }
+
+  if (lookup_attribute ("weak", DECL_ATTRIBUTES (name)))
+    {
+      /* Prevent execution FAILs for gcc.dg/globalalias.c and
+	 gcc.dg/pr77587.c.  */
+      error_at (DECL_SOURCE_LOCATION (name),
+		"weak alias definitions not supported in this configuration");
+      TREE_ASM_WRITTEN (name) = 1;
+      return;
+    }
+
+  /* Ptx also doesn't support value having weak linkage, but we can't detect
+     that here, so we'll end up with:
+     "error: Function test with .weak scope cannot be aliased".
+     See gcc.dg/localalias.c.  */
+
+  if (TREE_CODE (name) != FUNCTION_DECL)
+    {
+      error_at (DECL_SOURCE_LOCATION (name),
+		"non-function alias definitions not supported"
+		" in this configuration");
+      TREE_ASM_WRITTEN (name) = 1;
+      return;
+    }
+
+  if (!cgraph_node::get (name)->referred_to_p ())
+    /* Prevent "Internal error: reference to deleted section".  */
+    return;
+
+  std::stringstream s;
+  write_fn_proto (s, false, get_fnname_from_decl (name), name);
+  fputs (s.str ().c_str (), stream);
+
+  tree id = DECL_ASSEMBLER_NAME (name);
+  NVPTX_ASM_OUTPUT_DEF (stream, IDENTIFIER_POINTER (id),
+			IDENTIFIER_POINTER (value));
+}
+
+#undef NVPTX_ASM_OUTPUT_DEF
+#undef SET_ASM_OP
 
 #undef TARGET_OPTION_OVERRIDE
 #define TARGET_OPTION_OVERRIDE nvptx_option_override

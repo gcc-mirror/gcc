@@ -130,7 +130,7 @@ fail_compilation/retscope2.d(721): Error: returning `s.get1()` escapes a referen
 
 struct S700
 {
-    @safe S700* get1() return scope
+    @safe S700* get1() scope return
     {
         return &this;
     }

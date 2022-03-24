@@ -7,7 +7,7 @@ fail_compilation/test17422.d(23): Error: scope variable `p` may not be returned
 */
 struct RC
 {
-    Object get() return scope @trusted
+    Object get() return @trusted
     {
         return cast(Object) &store[0];
     }

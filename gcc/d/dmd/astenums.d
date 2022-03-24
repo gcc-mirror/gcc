@@ -430,3 +430,12 @@ enum PINLINE : ubyte
     never,    /// never inline
     always,   /// always inline
 }
+
+/// Source file type
+enum FileType : ubyte
+{
+    d,    /// normal D source file
+    dhdr, /// D header file (.di)
+    ddoc, /// Ddoc documentation file (.dd)
+    c,    /// C source file
+}

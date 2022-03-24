@@ -6743,7 +6743,10 @@ lower_rec_input_clauses (tree clauses, gimple_seq *ilist, gimple_seq *dlist,
 			  x = build_call_expr_internal_loc
 			    (UNKNOWN_LOCATION, IFN_GOMP_SIMT_XCHG_BFLY,
 			     TREE_TYPE (ivar), 2, ivar, simt_lane);
-			  x = build2 (code, TREE_TYPE (ivar), ivar, x);
+			  /* Make sure x is evaluated unconditionally.  */
+			  tree bfly_var = create_tmp_var (TREE_TYPE (ivar));
+			  gimplify_assign (bfly_var, x, &llist[2]);
+			  x = build2 (code, TREE_TYPE (ivar), ivar, bfly_var);
 			  gimplify_assign (ivar, x, &llist[2]);
 			}
 		      tree ivar2 = ivar;

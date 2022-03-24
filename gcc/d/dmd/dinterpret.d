@@ -1886,7 +1886,7 @@ public:
         {
             // Check for unsupported type painting operations
             Type elemtype = (cast(TypeArray)val.type).next;
-            d_uns64 elemsize = elemtype.size();
+            const elemsize = elemtype.size();
 
             // It's OK to cast from fixed length to fixed length array, eg &int[n] to int[d]*.
             if (val.type.ty == Tsarray && pointee.ty == Tsarray && elemsize == pointee.nextOf().size())
@@ -2981,8 +2981,7 @@ public:
             Expression e2 = interpret(&ue2, e.e2, istate);
             if (exceptionOrCant(e2))
                 return;
-            *pue = pointerDifference(e.loc, e.type, e1, e2);
-            result = (*pue).exp();
+            result = pointerDifference(pue, e.loc, e.type, e1, e2);
             return;
         }
         if (e.e1.type.ty == Tpointer && e.e2.type.isintegral())
@@ -2995,8 +2994,7 @@ public:
             Expression e2 = interpret(&ue2, e.e2, istate);
             if (exceptionOrCant(e2))
                 return;
-            *pue = pointerArithmetic(e.loc, e.op, e.type, e1, e2);
-            result = (*pue).exp();
+            result = pointerArithmetic(pue, e.loc, e.op, e.type, e1, e2);
             return;
         }
         if (e.e2.type.ty == Tpointer && e.e1.type.isintegral() && e.op == EXP.add)
@@ -3009,8 +3007,7 @@ public:
             Expression e2 = interpret(&ue2, e.e2, istate);
             if (exceptionOrCant(e2))
                 return;
-            *pue = pointerArithmetic(e.loc, e.op, e.type, e2, e1);
-            result = (*pue).exp();
+            result = pointerArithmetic(pue, e.loc, e.op, e.type, e2, e1);
             return;
         }
         if (e.e1.type.ty == Tpointer || e.e2.type.ty == Tpointer)
@@ -3041,7 +3038,7 @@ public:
         if (e.op == EXP.rightShift || e.op == EXP.leftShift || e.op == EXP.unsignedRightShift)
         {
             const sinteger_t i2 = e2.toInteger();
-            const d_uns64 sz = e1.type.size() * 8;
+            const uinteger_t sz = e1.type.size() * 8;
             if (i2 < 0 || i2 >= sz)
             {
                 e.error("shift by %lld is outside the range 0..%llu", i2, cast(ulong)sz - 1);
@@ -3602,7 +3599,9 @@ public:
                       e.op == EXP.plusPlus ||
                       e.op == EXP.minusMinus))
             {
-                newval = pointerArithmetic(e.loc, e.op, e.type, oldval, newval).copy();
+                newval = pointerArithmetic(pue, e.loc, e.op, e.type, oldval, newval).copy();
+                if (newval == pue.exp())
+                    newval = pue.copy();
             }
             else
             {
@@ -3675,7 +3674,9 @@ public:
             UnionExp utmp = void;
             oldval = resolveSlice(oldval, &utmp);
 
-            newval = changeArrayLiteralLength(e.loc, cast(TypeArray)t, oldval, oldlen, newlen).copy();
+            newval = changeArrayLiteralLength(pue, e.loc, cast(TypeArray)t, oldval, oldlen, newlen);
+            if (newval == pue.exp())
+                newval = pue.copy();
 
             e1 = assignToLvalue(e, e1, newval);
             if (exceptionOrCant(e1))
@@ -3994,61 +3995,18 @@ public:
             //   aggregate[] = newval
             //   aggregate[low..upp] = newval
             // ------------------------------
-            version (all) // should be move in interpretAssignCommon as the evaluation of e1
-            {
-                Expression oldval = interpretRegion(se.e1, istate);
+            aggregate = interpretRegion(se.e1, istate);
+            lowerbound = se.lwr ? se.lwr.toInteger() : 0;
+            upperbound = se.upr ? se.upr.toInteger() : resolveArrayLength(aggregate);
 
-                // Set the $ variable
-                uinteger_t dollar = resolveArrayLength(oldval);
-                if (se.lengthVar)
-                {
-                    Expression dollarExp = ctfeEmplaceExp!IntegerExp(e1.loc, dollar, Type.tsize_t);
-                    ctfeGlobals.stack.push(se.lengthVar);
-                    setValue(se.lengthVar, dollarExp);
-                }
-                Expression lwr = interpretRegion(se.lwr, istate);
-                if (exceptionOrCantInterpret(lwr))
-                {
-                    if (se.lengthVar)
-                        ctfeGlobals.stack.pop(se.lengthVar);
-                    return lwr;
-                }
-                Expression upr = interpretRegion(se.upr, istate);
-                if (exceptionOrCantInterpret(upr))
-                {
-                    if (se.lengthVar)
-                        ctfeGlobals.stack.pop(se.lengthVar);
-                    return upr;
-                }
-                if (se.lengthVar)
-                    ctfeGlobals.stack.pop(se.lengthVar); // $ is defined only in [L..U]
-
-                const dim = dollar;
-                lowerbound = lwr ? lwr.toInteger() : 0;
-                upperbound = upr ? upr.toInteger() : dim;
-
-                if (lowerbound < 0 || dim < upperbound)
-                {
-                    e.error("array bounds `[0..%llu]` exceeded in slice `[%llu..%llu]`",
-                        ulong(dim), ulong(lowerbound), ulong(upperbound));
-                    return CTFEExp.cantexp;
-                }
-            }
-            aggregate = oldval;
-            firstIndex = lowerbound;
-
+            // Slice of a slice --> change the bounds
             if (auto oldse = aggregate.isSliceExp())
             {
-                // Slice of a slice --> change the bounds
-                if (oldse.upr.toInteger() < upperbound + oldse.lwr.toInteger())
-                {
-                    e.error("slice `[%llu..%llu]` exceeds array bounds `[0..%llu]`",
-                        ulong(lowerbound), ulong(upperbound), oldse.upr.toInteger() - oldse.lwr.toInteger());
-                    return CTFEExp.cantexp;
-                }
                 aggregate = oldse.e1;
                 firstIndex = lowerbound + oldse.lwr.toInteger();
             }
+            else
+                firstIndex = lowerbound;
         }
         else
         {
@@ -5520,7 +5478,7 @@ public:
             assert(agg.op == EXP.arrayLiteral || agg.op == EXP.string_);
             dinteger_t len = ArrayLength(Type.tsize_t, agg).exp().toInteger();
             //Type *pointee = ((TypePointer *)agg.type)->next;
-            if (iupr > (len + 1) || iupr < ilwr)
+            if (sliceBoundsCheck(0, len, ilwr, iupr))
             {
                 e.error("pointer slice `[%lld..%lld]` exceeds allocated memory block `[0..%lld]`", ilwr, iupr, len);
                 result = CTFEExp.cantexp;
@@ -5624,9 +5582,9 @@ public:
             //  aggregate[lo1..up1][lwr..upr] ---> aggregate[lwr'..upr']
             uinteger_t lo1 = se.lwr.toInteger();
             uinteger_t up1 = se.upr.toInteger();
-            if (ilwr > iupr || iupr > up1 - lo1)
+            if (sliceBoundsCheck(0, up1 - lo1, ilwr, iupr))
             {
-                e.error("slice `[%llu..%llu]` exceeds array bounds `[%llu..%llu]`", ilwr, iupr, lo1, up1);
+                e.error("slice `[%llu..%llu]` exceeds array bounds `[0..%llu]`", ilwr, iupr, up1 - lo1);
                 result = CTFEExp.cantexp;
                 return;
             }
@@ -5641,7 +5599,7 @@ public:
         }
         if (e1.op == EXP.arrayLiteral || e1.op == EXP.string_)
         {
-            if (iupr < ilwr || dollar < iupr)
+            if (sliceBoundsCheck(0, dollar, ilwr, iupr))
             {
                 e.error("slice `[%lld..%lld]` exceeds array bounds `[0..%lld]`", ilwr, iupr, dollar);
                 result = CTFEExp.cantexp;

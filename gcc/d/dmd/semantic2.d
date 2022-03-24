@@ -330,11 +330,14 @@ private extern(C++) final class Semantic2Visitor : Visitor
         // gets imported, it is unaffected by context.
         Scope* sc = Scope.createGlobal(mod); // create root scope
         //printf("Module = %p\n", sc.scopesym);
-        // Pass 2 semantic routines: do initializers and function bodies
-        for (size_t i = 0; i < mod.members.dim; i++)
+        if (mod.members)
         {
-            Dsymbol s = (*mod.members)[i];
-            s.semantic2(sc);
+            // Pass 2 semantic routines: do initializers and function bodies
+            for (size_t i = 0; i < mod.members.dim; i++)
+            {
+                Dsymbol s = (*mod.members)[i];
+                s.semantic2(sc);
+            }
         }
         if (mod.userAttribDecl)
         {

@@ -107,7 +107,7 @@ public:
 
   json::object *to_json () const;
 
-  void add_diagnostic (const state_machine *sm,
+  bool add_diagnostic (const state_machine *sm,
 		       exploded_node *enode,
 		       const supernode *snode, const gimple *stmt,
 		       stmt_finder *finder,
@@ -116,7 +116,7 @@ public:
 		       state_machine::state_t state,
 		       pending_diagnostic *d);
 
-  void add_diagnostic (exploded_node *enode,
+  bool add_diagnostic (exploded_node *enode,
 		       const supernode *snode, const gimple *stmt,
 		       stmt_finder *finder,
 		       pending_diagnostic *d);
@@ -179,6 +179,7 @@ private:
   engine *m_eng;
   auto_delete_vec<saved_diagnostic> m_saved_diagnostics;
   const int m_verbosity;
+  int m_num_disabled_diagnostics;
 };
 
 } // namespace ana

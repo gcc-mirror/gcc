@@ -22,6 +22,7 @@
 #include <ranges>
 #include <string>
 #include <string_view>
+#include <vector>
 #include <testsuite_hooks.h>
 #include <testsuite_iterators.h>
 

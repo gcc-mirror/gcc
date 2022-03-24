@@ -13556,6 +13556,9 @@ rdseed_step:
       return target;
 
     case IX86_BUILTIN_READ_FLAGS:
+      if (ignore)
+	return const0_rtx;
+
       emit_insn (gen_push (gen_rtx_REG (word_mode, FLAGS_REG)));
 
       if (optimize

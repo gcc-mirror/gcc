@@ -942,17 +942,17 @@ nothrow:
         switch (value)
         {
         case TOK.int32Literal:
-            sprintf(&buffer[0], "%d", cast(d_int32)intvalue);
+            sprintf(&buffer[0], "%d", cast(int)intvalue);
             break;
         case TOK.uns32Literal:
         case TOK.wcharLiteral:
         case TOK.dcharLiteral:
         case TOK.wchar_tLiteral:
-            sprintf(&buffer[0], "%uU", cast(d_uns32)unsvalue);
+            sprintf(&buffer[0], "%uU", cast(uint)unsvalue);
             break;
         case TOK.charLiteral:
         {
-            const v = cast(d_int32)intvalue;
+            const v = cast(int)intvalue;
             if (v >= ' ' && v <= '~')
                 sprintf(&buffer[0], "'%c'", v);
             else
