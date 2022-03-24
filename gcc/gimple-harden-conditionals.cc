@@ -126,14 +126,11 @@ detach_value (location_t loc, gimple_stmt_iterator *gsip, tree val)
       return val;
     }
 
-  /* Create a SSA "copy" of VAL.  This could be an anonymous
-     temporary, but it's nice to have it named after the corresponding
-     variable.  Alas, when VAL is a DECL_BY_REFERENCE RESULT_DECL,
-     setting (a copy of) it would be flagged by checking, so we don't
-     use copy_ssa_name: we create an anonymous SSA name, and then give
-     it the same identifier (rather than decl) as VAL.  */
+  /* Create a SSA "copy" of VAL.  It would be nice to have it named
+     after the corresponding variable, but sharing the same decl is
+     problematic when VAL is a DECL_BY_REFERENCE RESULT_DECL, and
+     copying just the identifier hits -fcompare-debug failures.  */
   tree ret = make_ssa_name (TREE_TYPE (val));
-  SET_SSA_NAME_VAR_OR_IDENTIFIER (ret, SSA_NAME_IDENTIFIER (val));
 
   /* Some modes won't fit in general regs, so we fall back to memory
      for them.  ??? It would be ideal to try to identify an alternate,
