@@ -165,6 +165,7 @@ enum PrimitiveCoreType
   RS_TOKEN_KEYWORD (CONST, "const")                                            \
   RS_TOKEN_KEYWORD (CONTINUE, "continue")                                      \
   RS_TOKEN_KEYWORD (CRATE, "crate")                                            \
+  /* FIXME: Do we need to add $crate (DOLLAR_CRATE) as a reserved kw? */       \
   RS_TOKEN_KEYWORD (DO, "do") /* unused */                                     \
   RS_TOKEN_KEYWORD (DYN, "dyn")                                                \
   RS_TOKEN_KEYWORD (ELSE, "else")                                              \
