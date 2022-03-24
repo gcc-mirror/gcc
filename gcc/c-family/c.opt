@@ -1377,9 +1377,9 @@ Wunused-const-variable=
 C ObjC C++ ObjC++ Joined RejectNegative UInteger Var(warn_unused_const_variable) Warning LangEnabledBy(C ObjC,Wunused-variable, 1, 0) IntegerRange(0, 2)
 Warn when a const variable is unused.
 
-# Defining these options here in addition to common.opt is necessary
-# in order for the default -Wall setting of -Wuse-after-free=2 to take
-# effect.
+; Defining these options here in addition to common.opt is necessary
+; in order for the default -Wall setting of -Wuse-after-free=2 to take
+; effect.
 
 Wuse-after-free
 LangEnabledBy(C ObjC C++ LTO ObjC++)
