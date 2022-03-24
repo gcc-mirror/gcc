@@ -864,6 +864,7 @@ ranger_cache::ranger_cache (int not_executable_flag)
 {
   m_workback.create (0);
   m_workback.safe_grow_cleared (last_basic_block_for_fn (cfun));
+  m_workback.truncate (0);
   m_temporal = new temporal_cache;
   // If DOM info is available, spawn an oracle as well.
   if (dom_info_available_p (CDI_DOMINATORS))
@@ -1008,10 +1009,12 @@ ranger_cache::range_of_def (irange &r, tree name, basic_block bb)
     }
 }
 
-// Get the range of NAME as it occurs on entry to block BB.
+// Get the range of NAME as it occurs on entry to block BB.  Use MODE for
+// lookups.
 
 void
-ranger_cache::entry_range (irange &r, tree name, basic_block bb)
+ranger_cache::entry_range (irange &r, tree name, basic_block bb,
+			   enum rfd_mode mode)
 {
   if (bb == ENTRY_BLOCK_PTR_FOR_FN (cfun))
     {
@@ -1022,13 +1025,16 @@ ranger_cache::entry_range (irange &r, tree name, basic_block bb)
   // Look for the on-entry value of name in BB from the cache.
   // Otherwise pick up the best available global value.
   if (!m_on_entry.get_bb_range (r, name, bb))
-    range_of_def (r, name);
+    if (!range_from_dom (r, name, bb, mode))
+      range_of_def (r, name);
 }
 
-// Get the range of NAME as it occurs on exit from block BB.
+// Get the range of NAME as it occurs on exit from block BB.  Use MODE for
+// lookups.
 
 void
-ranger_cache::exit_range (irange &r, tree name, basic_block bb)
+ranger_cache::exit_range (irange &r, tree name, basic_block bb,
+			  enum rfd_mode mode)
 {
   if (bb == ENTRY_BLOCK_PTR_FOR_FN (cfun))
     {
@@ -1041,8 +1047,25 @@ ranger_cache::exit_range (irange &r, tree name, basic_block bb)
   if (def_bb == bb)
     range_of_def (r, name, bb);
   else
-    entry_range (r, name, bb);
- }
+    entry_range (r, name, bb, mode);
+}
+
+// Get the range of NAME on edge E using MODE, return the result in R.
+// Always returns a range and true.
+
+bool
+ranger_cache::edge_range (irange &r, edge e, tree name, enum rfd_mode mode)
+{
+  exit_range (r, name, e->src, mode);
+  // If this is not an abnormal edge, check for a non-null exit.
+  if ((e->flags & (EDGE_EH | EDGE_ABNORMAL)) == 0)
+    m_non_null.adjust_range (r, name, e->src, false);
+  int_range_max er;
+  if (m_gori.outgoing_edge_range_p (er, e, name, *this))
+    r.intersect (er);
+  return true;
+}
+
 
 
 // Implement range_of_expr.
@@ -1063,31 +1086,21 @@ ranger_cache::range_of_expr (irange &r, tree name, gimple *stmt)
   if (bb == def_bb)
     range_of_def (r, name, bb);
   else
-    entry_range (r, name, bb);
+    entry_range (r, name, bb, RFD_NONE);
   return true;
 }
 
 
-// Implement range_on_edge.  Always return the best available range.
+// Implement range_on_edge.  Always return the best available range using
+// the current cache values.
 
- bool
- ranger_cache::range_on_edge (irange &r, edge e, tree expr)
- {
-   if (gimple_range_ssa_p (expr))
-    {
-      exit_range (r, expr, e->src);
-      // If this is not an abnormal edge, check for a non-null exit.
-      if ((e->flags & (EDGE_EH | EDGE_ABNORMAL)) == 0)
-	m_non_null.adjust_range (r, expr, e->src, false);
-      int_range_max edge_range;
-      if (m_gori.outgoing_edge_range_p (edge_range, e, expr, *this))
-	r.intersect (edge_range);
-      return true;
-    }
-
+bool
+ranger_cache::range_on_edge (irange &r, edge e, tree expr)
+{
+  if (gimple_range_ssa_p (expr))
+    return edge_range (r, e, expr, RFD_NONE);
   return get_tree_range (r, expr, NULL);
 }
-
 
 // Return a static range for NAME on entry to basic block BB in R.  If
 // calc is true, fill any cache entries required between BB and the
@@ -1281,19 +1294,11 @@ ranger_cache::fill_block_cache (tree name, basic_block bb, basic_block def_bb)
   // At this point we shouldn't be looking at the def, entry or exit block.
   gcc_checking_assert (bb != def_bb && bb != ENTRY_BLOCK_PTR_FOR_FN (cfun) &&
 		       bb != EXIT_BLOCK_PTR_FOR_FN (cfun));
+  gcc_checking_assert (m_workback.length () == 0);
 
   // If the block cache is set, then we've already visited this block.
   if (m_on_entry.bb_range_p (name, bb))
     return;
-
-  // Visit each block back to the DEF.  Initialize each one to UNDEFINED.
-  // m_visited at the end will contain all the blocks that we needed to set
-  // the range_on_entry cache for.
-  m_workback.truncate (0);
-  m_workback.quick_push (bb);
-  undefined.set_undefined ();
-  m_on_entry.set_bb_range (name, bb, undefined);
-  gcc_checking_assert (m_update->empty_p ());
 
   if (DEBUG_RANGE_CACHE)
     {
@@ -1302,9 +1307,8 @@ ranger_cache::fill_block_cache (tree name, basic_block bb, basic_block def_bb)
       fprintf (dump_file, " : ");
     }
 
-  // If there are dominators, check if a dominators can supply the range.
-  if (dom_info_available_p (CDI_DOMINATORS)
-      && range_from_dom (block_result, name, bb))
+  // Check if a dominators can supply the range.
+  if (range_from_dom (block_result, name, bb, RFD_FILL))
     {
       m_on_entry.set_bb_range (name, bb, block_result);
       if (DEBUG_RANGE_CACHE)
@@ -1313,8 +1317,17 @@ ranger_cache::fill_block_cache (tree name, basic_block bb, basic_block def_bb)
 	  block_result.dump (dump_file);
 	  fprintf (dump_file, "\n");
 	}
+      gcc_checking_assert (m_workback.length () == 0);
       return;
     }
+
+  // Visit each block back to the DEF.  Initialize each one to UNDEFINED.
+  // m_visited at the end will contain all the blocks that we needed to set
+  // the range_on_entry cache for.
+  m_workback.quick_push (bb);
+  undefined.set_undefined ();
+  m_on_entry.set_bb_range (name, bb, undefined);
+  gcc_checking_assert (m_update->empty_p ());
 
   while (m_workback.length () > 0)
     {
@@ -1399,12 +1412,14 @@ ranger_cache::fill_block_cache (tree name, basic_block bb, basic_block def_bb)
 }
 
 
-// Get the range of NAME from dominators of BB and return it in R.
+// Get the range of NAME from dominators of BB and return it in R.  Search the
+// dominator tree based on MODE.
 
 bool
-ranger_cache::range_from_dom (irange &r, tree name, basic_block start_bb)
+ranger_cache::range_from_dom (irange &r, tree name, basic_block start_bb,
+			      enum rfd_mode mode)
 {
-  if (!dom_info_available_p (CDI_DOMINATORS))
+  if (mode == RFD_NONE || !dom_info_available_p (CDI_DOMINATORS))
     return false;
 
   // Search back to the definition block or entry block.
@@ -1419,7 +1434,7 @@ ranger_cache::range_from_dom (irange &r, tree name, basic_block start_bb)
 
   // Range on entry to the DEF block should not be queried.
   gcc_checking_assert (start_bb != def_bb);
-  m_workback.truncate (0);
+  unsigned start_limit = m_workback.length ();
 
   // Default value is global range.
   get_global_range (r, name);
@@ -1436,10 +1451,36 @@ ranger_cache::range_from_dom (irange &r, tree name, basic_block start_bb)
       if (m_gori.has_edge_range_p (name, bb))
 	{
 	  // Only outgoing ranges to single_pred blocks are dominated by
-	  // outgoing edge ranges, so only those need to be considered.
+	  // outgoing edge ranges, so those can be simply adjusted on the fly.
 	  edge e = find_edge (bb, prev_bb);
 	  if (e && single_pred_p (prev_bb))
 	    m_workback.quick_push (prev_bb);
+	  else if (mode == RFD_FILL)
+	    {
+	      // Multiple incoming edges, so recursively satisfy this block,
+	      // store the range, then calculate the incoming range for PREV_BB.
+	      if (def_bb != bb)
+		{
+		  range_from_dom (r, name, bb, RFD_FILL);
+		  // If the range can't be store, don't try to accumulate
+		  // the range in PREV_BB due to excessive recalculations.
+		  if (!m_on_entry.set_bb_range (name, bb, r))
+		    break;
+		}
+	      // With the dominator set, we should be able to cheaply query
+	      // each incoming edge now and accumulate the results.
+	      r.set_undefined ();
+	      edge_iterator ei;
+	      int_range_max er;
+	      FOR_EACH_EDGE (e, ei, prev_bb->preds)
+		{
+		  edge_range (er, e, name, RFD_READ_ONLY);
+		  r.union_ (er);
+		}
+	      // Set the cache in PREV_BB so it is not calculated again.
+	      m_on_entry.set_bb_range (name, prev_bb, r);
+	      break;
+	    }
 	}
 
       if (def_bb == bb)
@@ -1460,16 +1501,16 @@ ranger_cache::range_from_dom (irange &r, tree name, basic_block start_bb)
     }
 
   // Now process any outgoing edges that we seen along the way.
-  while (m_workback.length () > 0)
+  while (m_workback.length () > start_limit)
     {
-      int_range_max edge_range;
+      int_range_max er;
       prev_bb = m_workback.pop ();
       edge e = single_pred_edge (prev_bb);
       bb = e->src;
 
-      if (m_gori.outgoing_edge_range_p (edge_range, e, name, *this))
+      if (m_gori.outgoing_edge_range_p (er, e, name, *this))
 	{
-	  r.intersect (edge_range);
+	  r.intersect (er);
 	  if (r.varying_p () && ((e->flags & (EDGE_EH | EDGE_ABNORMAL)) == 0))
 	    {
 	      if (m_non_null.non_null_deref_p (name, bb, false))
@@ -1518,7 +1559,7 @@ ranger_cache::update_to_nonnull (basic_block bb, tree name)
       // Update the on-entry cache for BB to be non-zero.  Note this can set
       // the on entry value in the DEF block, which can override the def.
       int_range_max r;
-      exit_range (r, name, bb);
+      exit_range (r, name, bb, RFD_READ_ONLY);
       if (r.varying_p ())
 	{
 	  r.set_nonzero (type);
