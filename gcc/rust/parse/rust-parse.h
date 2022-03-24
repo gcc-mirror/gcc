@@ -143,6 +143,7 @@ public:
   AST::Visibility parse_visibility ();
   std::unique_ptr<AST::IdentifierPattern> parse_identifier_pattern ();
   std::unique_ptr<AST::TokenTree> parse_token_tree ();
+  AST::Attribute parse_attribute_body ();
 
 private:
   void skip_after_semicolon ();
@@ -162,7 +163,6 @@ private:
   AST::Attribute parse_inner_attribute ();
   AST::AttrVec parse_outer_attributes ();
   AST::Attribute parse_outer_attribute ();
-  AST::Attribute parse_attribute_body ();
   std::unique_ptr<AST::AttrInput> parse_attr_input ();
   AST::Attribute parse_doc_comment ();
 

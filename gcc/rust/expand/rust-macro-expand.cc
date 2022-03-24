@@ -490,11 +490,7 @@ MacroExpander::match_fragment (Parser<MacroInvocLexer> &parser,
 
       // is meta attributes?
     case AST::MacroFragSpec::META:
-      // parser.parse_inner_attribute ?
-      // parser.parse_outer_attribute ?
-      // parser.parse_attribute_body ?
-      // parser.parse_doc_comment ?
-      gcc_unreachable ();
+      parser.parse_attribute_body ();
       break;
 
     case AST::MacroFragSpec::TT:
