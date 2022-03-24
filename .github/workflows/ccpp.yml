@@ -84,3 +84,45 @@ jobs:
             else \
               exit 0; \
             fi
+
+  build-and-check-older-gcc:
+
+    runs-on: ubuntu-18.04
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Install Deps
+      run: |
+          sudo apt-get update;
+          sudo apt-get install -y \
+                  automake \
+                  autoconf \
+                  libtool \
+                  autogen \
+                  bison \
+                  flex \
+                  libgmp3-dev \
+                  libmpfr-dev \
+                  libmpc-dev \
+                  build-essential \
+                  gcc-4.8 \
+                  g++-4.8 \
+                  gcc-4.8-multilib \
+                  g++-4.8-multilib \
+                  dejagnu
+
+    - name: Configure
+      run: |
+           mkdir -p gccrs-build;
+           cd gccrs-build;
+           ../configure \
+               CC='gcc-4.8' \
+               CXX='g++-4.8' \
+               --enable-languages=rust \
+               --disable-bootstrap \
+               --enable-multilib
+
+    - name: Build
+      shell: bash
+      run: |
+           make -C gccrs-build -j $(nproc)
