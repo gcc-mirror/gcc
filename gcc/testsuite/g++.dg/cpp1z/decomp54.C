@@ -3,9 +3,9 @@
 // { dg-options "" }
 
 extern int a[];
-auto [b] { a };	// { dg-error "has incomplete type" }
+auto [b] { a };	// { dg-error "incomplete" }
 		// { dg-warning "only available with" "" { target c++14_down } .-1 }
-auto [c] = a;	// { dg-error "has incomplete type" }
+auto [c] = a;	// { dg-error "incomplete" }
 		// { dg-warning "only available with" "" { target c++14_down } .-1 }
 extern int d[0];
 auto [e] { d };	// { dg-error "too many initializers for" }

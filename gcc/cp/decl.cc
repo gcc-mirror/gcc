@@ -8129,6 +8129,17 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
 	  TREE_TYPE (decl) = error_mark_node;
 	  return;
 	}
+      /* As in start_decl_1, complete so TREE_READONLY is set properly.  */
+      if (!processing_template_decl
+	  && !type_uses_auto (type)
+	  && !COMPLETE_TYPE_P (complete_type (type)))
+	{
+	  error_at (location_of (decl),
+		    "deduced type %qT for %qD is incomplete", type, decl);
+	  cxx_incomplete_type_inform (type);
+	  TREE_TYPE (decl) = error_mark_node;
+	  return;
+	}
       cp_apply_type_quals_to_decl (cp_type_quals (type), decl);
     }
 
