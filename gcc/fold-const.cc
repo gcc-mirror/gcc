@@ -3357,8 +3357,11 @@ operand_compare::operand_equal_p (const_tree arg0, const_tree arg1,
 		    tree field0 = TREE_OPERAND (arg0, 1);
 		    tree field1 = TREE_OPERAND (arg1, 1);
 
-		    if (!operand_equal_p (DECL_FIELD_OFFSET (field0),
-					  DECL_FIELD_OFFSET (field1), flags)
+		    /* Non-FIELD_DECL operands can appear in C++ templates.  */
+		    if (TREE_CODE (field0) != FIELD_DECL
+			|| TREE_CODE (field1) != FIELD_DECL
+			|| !operand_equal_p (DECL_FIELD_OFFSET (field0),
+					     DECL_FIELD_OFFSET (field1), flags)
 			|| !operand_equal_p (DECL_FIELD_BIT_OFFSET (field0),
 					     DECL_FIELD_BIT_OFFSET (field1),
 					     flags))
