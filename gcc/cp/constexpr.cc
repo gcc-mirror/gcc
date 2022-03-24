@@ -7960,10 +7960,10 @@ cxx_constant_value (tree t, tree decl)
 /* As above, but respect SFINAE.  */
 
 tree
-cxx_constant_value_sfinae (tree t, tsubst_flags_t complain)
+cxx_constant_value_sfinae (tree t, tree decl, tsubst_flags_t complain)
 {
   bool sfinae = !(complain & tf_error);
-  tree r = cxx_eval_outermost_constant_expr (t, sfinae, true, true);
+  tree r = cxx_eval_outermost_constant_expr (t, sfinae, true, true, false, decl);
   if (sfinae && !TREE_CONSTANT (r))
     r = error_mark_node;
   return r;
