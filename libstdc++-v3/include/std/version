@@ -306,6 +306,7 @@
 
 #if _GLIBCXX_HOSTED
 #define __cpp_lib_adaptor_iterator_pair_constructor 202106L
+#define __cpp_lib_expected 202202L
 #define __cpp_lib_invoke_r 202106L
 #define __cpp_lib_ios_noreplace 202200L
 #if __cpp_lib_concepts

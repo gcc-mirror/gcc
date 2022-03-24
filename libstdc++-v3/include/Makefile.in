@@ -400,6 +400,7 @@ std_headers = \
 	${std_srcdir}/coroutine \
 	${std_srcdir}/deque \
 	${std_srcdir}/execution \
+	${std_srcdir}/expected \
 	${std_srcdir}/filesystem \
 	${std_srcdir}/forward_list \
 	${std_srcdir}/fstream \
