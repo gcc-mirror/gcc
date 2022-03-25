@@ -20221,12 +20221,12 @@
    (set_attr "mode" "TI")])
 
 (define_insn_and_split "ssse3_ph<plusminus_mnemonic>wv4hi3"
-  [(set (match_operand:V4HI 0 "register_operand" "=y,x,Yv")
+  [(set (match_operand:V4HI 0 "register_operand" "=y,x,x")
 	(ssse3_plusminus:V4HI
 	  (vec_select:V4HI
 	    (vec_concat:V8HI
-	      (match_operand:V4HI 1 "register_operand" "0,0,Yv")
-	      (match_operand:V4HI 2 "register_mmxmem_operand" "ym,x,Yv"))
+	      (match_operand:V4HI 1 "register_operand" "0,0,x")
+	      (match_operand:V4HI 2 "register_mmxmem_operand" "ym,x,x"))
 	    (parallel
 	      [(const_int 0) (const_int 2) (const_int 4) (const_int 6)]))
 	  (vec_select:V4HI
@@ -20308,12 +20308,12 @@
    (set_attr "mode" "TI")])
 
 (define_insn_and_split "ssse3_ph<plusminus_mnemonic>dv2si3"
-  [(set (match_operand:V2SI 0 "register_operand" "=y,x,Yv")
+  [(set (match_operand:V2SI 0 "register_operand" "=y,x,x")
 	(plusminus:V2SI
 	  (vec_select:V2SI
 	    (vec_concat:V4SI
-	      (match_operand:V2SI 1 "register_operand" "0,0,Yv")
-	      (match_operand:V2SI 2 "register_mmxmem_operand" "ym,x,Yv"))
+	      (match_operand:V2SI 1 "register_operand" "0,0,x")
+	      (match_operand:V2SI 2 "register_mmxmem_operand" "ym,x,x"))
 	    (parallel [(const_int 0) (const_int 2)]))
 	  (vec_select:V2SI
 	    (vec_concat:V4SI (match_dup 1) (match_dup 2))
@@ -20811,10 +20811,10 @@
    (set_attr "mode" "<sseinsnmode>")])
 
 (define_insn "ssse3_psign<mode>3"
-  [(set (match_operand:MMXMODEI 0 "register_operand" "=y,x,Yv")
+  [(set (match_operand:MMXMODEI 0 "register_operand" "=y,x,x")
 	(unspec:MMXMODEI
-	  [(match_operand:MMXMODEI 1 "register_operand" "0,0,Yv")
-	   (match_operand:MMXMODEI 2 "register_mmxmem_operand" "ym,x,Yv")]
+	  [(match_operand:MMXMODEI 1 "register_operand" "0,0,x")
+	   (match_operand:MMXMODEI 2 "register_mmxmem_operand" "ym,x,x")]
 	  UNSPEC_PSIGN))]
   "(TARGET_MMX || TARGET_MMX_WITH_SSE) && TARGET_SSSE3"
   "@
