@@ -207,7 +207,6 @@ extern Boolean In_Extended_Main_Code_Unit	(Entity_Id);
 #define Enable_128bit_Types		opt__enable_128bit_types
 #define Exception_Extra_Info		opt__exception_extra_info
 #define Exception_Locations_Suppressed	opt__exception_locations_suppressed
-#define Exception_Mechanism		opt__exception_mechanism
 #define Generate_SCO_Instance_Table	opt__generate_sco_instance_table
 #define GNAT_Mode			opt__gnat_mode
 #define List_Representation_Info	opt__list_representation_info
@@ -218,10 +217,6 @@ typedef enum {
   Ada_83, Ada_95, Ada_2005, Ada_2012, Ada_2022, Ada_With_Extensions
 } Ada_Version_Type;
 
-typedef enum {
-  Back_End_ZCX, Back_End_SJLJ
-} Exception_Mechanism_Type;
-
 extern Ada_Version_Type Ada_Version;
 extern Boolean Assume_No_Invalid_Values;
 extern Boolean Back_End_Inlining;
@@ -229,7 +224,6 @@ extern Boolean Debug_Generated_Code;
 extern Boolean Enable_128bit_Types;
 extern Boolean Exception_Extra_Info;
 extern Boolean Exception_Locations_Suppressed;
-extern Exception_Mechanism_Type Exception_Mechanism;
 extern Boolean Generate_SCO_Instance_Table;
 extern Boolean GNAT_Mode;
 extern Int List_Representation_Info;
@@ -645,12 +639,6 @@ B Is_Floating_Point_Type                      (E Id);
 #define Is_Record_Type einfo__utils__is_record_type
 B Is_Record_Type                      (E Id);
 
-#define Has_DIC einfo__utils__has_dic
-B Has_DIC (E Id);
-
-#define Has_Invariants einfo__utils__has_invariants
-B Has_Invariants (E Id);
-
 #define Is_Full_Access einfo__utils__is_full_access
 B Is_Full_Access (E Id);
 
@@ -667,12 +655,6 @@ E Next_Stored_Discriminant (E Id);
 // Parameter_Mode really returns Formal_Kind, but that is not visible, because
 // fe.h is included before einfo.h.
 Entity_Kind Parameter_Mode (E Id);
-
-#define Is_List_Member einfo__utils__is_list_member
-B Is_List_Member (N Node);
-
-#define List_Containing einfo__utils__list_containing
-S List_Containing (N Node);
 
 // The following is needed because Convention in Sem_Util is a renaming
 // of Basic_Convention.

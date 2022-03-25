@@ -85,8 +85,6 @@ package body Exp_Ch11 is
       pragma Unreferenced (Blk_Id);
    begin
       pragma Assert (Present (Entity (At_End_Proc (HSS))));
-      pragma Assert (No (Exception_Handlers (HSS)));
-      return;
    end Expand_At_End_Handler;
 
    -------------------------------

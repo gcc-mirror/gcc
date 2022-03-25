@@ -1043,8 +1043,7 @@ begin -- Gen_IL.Gen.Gen_Nodes
 
    Cc (N_Raise_Statement, N_Statement_Other_Than_Procedure_Call,
        (Sy (Name, Node_Id, Default_Empty),
-        Sy (Expression, Node_Id, Default_Empty),
-        Sm (From_At_End, Flag)));
+        Sy (Expression, Node_Id, Default_Empty)));
 
    Cc (N_Raise_When_Statement, N_Statement_Other_Than_Procedure_Call,
        (Sy (Name, Node_Id, Default_Empty),

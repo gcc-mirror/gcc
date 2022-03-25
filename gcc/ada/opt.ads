@@ -585,16 +585,11 @@ package Opt is
       --  Similar to Back_End_ZCX with respect to the front-end processing
       --  of regular and AT-END handlers. A setjmp/longjmp scheme is used to
       --  propagate and setup handler contexts on regular execution paths.
-   pragma Convention (C, Exception_Mechanism_Type);
-
-   --  WARNING: There is a matching C declaration of this type in fe.h
 
    Exception_Mechanism : Exception_Mechanism_Type := Back_End_SJLJ;
    --  GNAT
    --  Set to the appropriate value depending on the flags in system.ads
-   --  (ZCX_By_Default). The C convention is there to allow access by gigi.
-
-   --  WARNING: There is a matching C declaration of this variable in fe.h
+   --  (ZCX_By_Default).
 
    function ZCX_Exceptions return Boolean;
    function SJLJ_Exceptions return Boolean;
