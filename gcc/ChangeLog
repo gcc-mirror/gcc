@@ -1,3 +1,52 @@
+2022-03-24  Alexandre Oliva  <oliva@adacore.com>
+
+	PR debug/104564
+	* gimple-harden-conditionals.cc (detach_value): Keep temps
+	anonymous.
+
+2022-03-24  Alexandre Oliva  <oliva@adacore.com>
+
+	PR middle-end/104975
+	* gimple-harden-conditionals.cc
+	(pass_harden_compares::execute): Force split in case of
+	multiple edges.
+
+2022-03-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/105035
+	* fold-const.cc (operand_equal_p) <case COMPONENT_REF>: If either
+	field0 or field1 is not a FIELD_DECL, return false.
+
+2022-03-24  Richard Biener  <rguenther@suse.de>
+
+	* tree-predcom.cc (chain::chain): Add CTOR.
+	(component::component): Likewise.
+	(pcom_worker::release_chain): Use delete.
+	(release_components): Likewise.
+	(pcom_worker::filter_suitable_components): Likewise.
+	(pcom_worker::split_data_refs_to_components): Use new.
+	(make_invariant_chain): Likewise.
+	(make_rooted_chain): Likewise.
+	(pcom_worker::combine_chains): Likewise.
+	* tree-vect-loop.cc (vect_create_epilog_for_reduction):
+	Make sure to release previously constructed scalar_results.
+	* tree-vect-stmts.cc (vectorizable_load): Use auto_vec
+	for vec_offsets.
+	* vr-values.cc (simplify_using_ranges::~simplify_using_ranges):
+	Release m_flag_set_edges.
+
+2022-03-24  Siddhesh Poyarekar  <siddhesh@gotplt.org>
+
+	PR tree-optimization/104970
+	* tree-object-size.cc (parm_object_size): Restrict size
+	computation scenarios to explicit access attributes.
+
+2022-03-24  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/104967
+	* config/rs6000/rs6000-c.cc (find_instance): Skip instances with null
+	function types.
+
 2022-03-23  Richard Biener  <rguenther@suse.de>
 
 	PR target/102125

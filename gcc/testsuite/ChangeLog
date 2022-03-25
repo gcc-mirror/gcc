@@ -1,3 +1,83 @@
+2022-03-24  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/104284
+	* g++.dg/cpp1y/constexpr-104284-1.C: New test.
+	* g++.dg/cpp1y/constexpr-104284-2.C: New test.
+	* g++.dg/cpp1y/constexpr-104284-3.C: New test.
+	* g++.dg/cpp1y/constexpr-104284-4.C: New test.
+
+2022-03-24  Jason Merrill  <jason@redhat.com>
+
+	PR c++/96645
+	* g++.dg/ext/is_constructible3.C: Expect error.
+	* g++.dg/ext/is_constructible7.C: New test.
+
+2022-03-24  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/102990
+	* g++.dg/cpp0x/nsdmi-template22.C: New test.
+	* g++.dg/cpp0x/nsdmi-template23.C: New test.
+
+2022-03-24  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/104620
+	* g++.dg/cpp23/consteval-if2.C: XFAIL two dg-error tests where
+	the argument to the non-constant non-dependent consteval call is
+	wrapped by NON_DEPENDENT_EXPR.
+	* g++.dg/cpp2a/consteval30.C: New test.
+
+2022-03-24  Alexandre Oliva  <oliva@adacore.com>
+
+	PR debug/104564
+	* c-c++-common/torture/harden-comp.c: Adjust.
+	* c-c++-common/torture/harden-cond.c: Adjust.
+
+2022-03-24  Alexandre Oliva  <oliva@adacore.com>
+
+	PR middle-end/104975
+	* gcc.dg/pr104975.c: New.
+
+2022-03-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/102024
+	* gcc.dg/compat/pr102024_main.c: New test.
+	* gcc.dg/compat/pr102024_test.h: New test.
+	* gcc.dg/compat/pr102024_x.c: New test.
+	* gcc.dg/compat/pr102024_y.c: New test.
+	* g++.dg/compat/pr102024_main.C: New test.
+	* g++.dg/compat/pr102024_test.h: New test.
+	* g++.dg/compat/pr102024_x.C: New test.
+	* g++.dg/compat/pr102024_y.C: New test.
+
+2022-03-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/105035
+	* g++.dg/warn/Wduplicated-cond2.C: New test.
+
+2022-03-24  Siddhesh Poyarekar  <siddhesh@gotplt.org>
+
+	PR tree-optimization/104970
+	* gcc.dg/builtin-dynamic-object-size-0.c (test_parmsz_simple2,
+	test_parmsz_simple3, test_parmsz_extern, test_parmsz_internal,
+	test_parmsz_internal2, test_parmsz_internal3): New tests.
+	(main): Use them.
+
+2022-03-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/104994
+	* g++.dg/diagnostic/constexpr1.C: Change expected diagnostic wording
+	from declared to defined.
+	* g++.dg/cpp23/constexpr-nonlit1.C: Likewise.
+	(garply): Change dg-error into dg-bogus.
+	* g++.dg/cpp23/constexpr-nonlit2.C: Change expected diagnostic wording
+	from declaration to definition.
+	* g++.dg/cpp23/constexpr-nonlit6.C: Change expected diagnostic wording
+	from declared to defined.
+	* g++.dg/cpp23/constexpr-nonlit7.C: New test.
+	* g++.dg/cpp2a/constexpr-try5.C: Change expected diagnostic wording
+	from declared to defined.
+	* g++.dg/cpp2a/consteval3.C: Likewise.
+
 2022-03-23  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/104979

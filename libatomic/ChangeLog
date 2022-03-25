@@ -1,3 +1,8 @@
+2022-03-24  Tom de Vries  <tdevries@suse.de>
+
+	PR target/105011
+	* tas_n.c (libat_test_and_set): Fix return value.
+
 2022-03-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/104688

@@ -1,3 +1,45 @@
+2022-03-24  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/104284
+	* decl.cc (check_initializer): Don't call build_aggr_init in
+	a template.
+
+2022-03-24  Jason Merrill  <jason@redhat.com>
+
+	PR c++/96645
+	* cp-tree.h (type_has_default_ctor_to_be_synthesized): Declare.
+	* class.cc (type_has_default_ctor_to_be_synthesized): New.
+	(type_has_non_user_provided_default_constructor_1): Support it.
+	(type_has_non_user_provided_default_constructor): Now a wrapper.
+	* method.cc (complain_about_unparsed_dmi): New.
+	(constructible_expr): Call it.
+
+2022-03-24  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/102990
+	* typeck2.cc (massage_init_elt): Avoid folding CONSTRUCTORs.
+
+2022-03-24  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/104620
+	* call.cc (build_over_call): Use cxx_constant_value_sfinae
+	instead of cxx_constant_value to evaluate a consteval call.
+	* constexpr.cc (cxx_constant_value_sfinae): Add decl parameter
+	and pass it to cxx_eval_outermost_constant_expr.
+	* cp-tree.h (cxx_constant_value_sfinae): Add decl parameter.
+	* pt.cc (fold_targs_r): Pass NULL_TREE as decl parameter to
+	cxx_constant_value_sfinae.
+
+2022-03-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/104994
+	* constexpr.cc (cxx_eval_constant_expression): Don't diagnose passing
+	through extern thread_local declarations.  Change wording from
+	declaration to definition.
+	(potential_constant_expression_1): Don't diagnose extern thread_local
+	declarations.  Change wording from declared to defined.
+	* decl.cc (start_decl): Likewise.
+
 2022-03-23  Jason Merrill  <jason@redhat.com>
 
 	PR c++/103337

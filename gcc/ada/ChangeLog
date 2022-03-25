@@ -1,3 +1,9 @@
+2022-03-24  Pascal Obry  <obry@adacore.com>
+
+	PR ada/104767
+	* libgnat/g-sercom__mingw.adb (Close): Reset port handle to -1.
+	* libgnat/g-sercom__linux.adb (Close): Likewise.
+
 2022-03-10  Richard Biener  <rguenther@suse.de>
 
 	PR ada/104861
