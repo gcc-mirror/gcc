@@ -1791,7 +1791,7 @@ strip_typedefs (tree t, bool *remove_attributes, unsigned int flags)
 	      Ts pack, resulting in an error.  */
 	    if (type != pat && uses_parameter_packs (type))
 	      {
-		result = copy_node (t);
+		result = build_distinct_type_copy (t);
 		PACK_EXPANSION_PATTERN (result) = type;
 	      }
 	  }
