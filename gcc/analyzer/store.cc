@@ -1823,7 +1823,8 @@ binding_cluster::make_unknown_relative_to (const binding_cluster *other,
 	{
 	  const region *base_reg
 	    = region_sval->get_pointee ()->get_base_region ();
-	  if (!base_reg->symbolic_for_unknown_ptr_p ())
+	  if (base_reg->tracked_p ()
+	      && !base_reg->symbolic_for_unknown_ptr_p ())
 	    {
 	      binding_cluster *c = out_store->get_or_create_cluster (base_reg);
 	      c->mark_as_escaped ();
@@ -2384,10 +2385,16 @@ store::set_value (store_manager *mgr, const region *lhs_reg,
 	  mark_as_escaped (ptr_base_reg);
 	}
     }
-  else
+  else if (lhs_base_reg->tracked_p ())
     {
       lhs_cluster = get_or_create_cluster (lhs_base_reg);
       lhs_cluster->bind (mgr, lhs_reg, rhs_sval);
+    }
+  else
+    {
+      /* Reject attempting to bind values into an untracked region;
+	 merely invalidate values below.  */
+      lhs_cluster = NULL;
     }
 
   /* Bindings to a cluster can affect other clusters if a symbolic
@@ -2564,7 +2571,8 @@ void
 store::fill_region (store_manager *mgr, const region *reg, const svalue *sval)
 {
   const region *base_reg = reg->get_base_region ();
-  if (base_reg->symbolic_for_unknown_ptr_p ())
+  if (base_reg->symbolic_for_unknown_ptr_p ()
+      || !base_reg->tracked_p ())
     return;
   binding_cluster *cluster = get_or_create_cluster (base_reg);
   cluster->fill_region (mgr, reg, sval);
@@ -2587,7 +2595,8 @@ store::mark_region_as_unknown (store_manager *mgr, const region *reg,
 			       uncertainty_t *uncertainty)
 {
   const region *base_reg = reg->get_base_region ();
-  if (base_reg->symbolic_for_unknown_ptr_p ())
+  if (base_reg->symbolic_for_unknown_ptr_p ()
+      || !base_reg->tracked_p ())
     return;
   binding_cluster *cluster = get_or_create_cluster (base_reg);
   cluster->mark_region_as_unknown (mgr, reg, uncertainty);
