@@ -704,8 +704,9 @@ public:
 
   // Call OperatorExpr constructor to initialise left_expr
   AssignmentExpr (std::unique_ptr<Expr> value_to_assign_to,
-		  std::unique_ptr<Expr> value_to_assign, Location locus)
-    : OperatorExpr (std::move (value_to_assign_to), std::vector<Attribute> (),
+		  std::unique_ptr<Expr> value_to_assign,
+		  std::vector<Attribute> outer_attribs, Location locus)
+    : OperatorExpr (std::move (value_to_assign_to), std::move (outer_attribs),
 		    locus),
       right_expr (std::move (value_to_assign))
   {}
