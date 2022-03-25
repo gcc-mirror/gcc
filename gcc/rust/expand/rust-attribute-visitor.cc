@@ -628,8 +628,12 @@ AttrVisitor::visit (AST::TypeCastExpr &expr)
 void
 AttrVisitor::visit (AST::AssignmentExpr &expr)
 {
-  /* outer attributes never allowed before these. while cannot strip
-   * two direct descendant expressions, can strip ones below that */
+  expander.expand_cfg_attrs (expr.get_outer_attrs ());
+  if (expander.fails_cfg_with_expand (expr.get_outer_attrs ()))
+    {
+      expr.mark_for_strip ();
+      return;
+    }
 
   /* should have no possibility for outer attrs as would be parsed
    * with outer expr */

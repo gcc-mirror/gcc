@@ -11719,7 +11719,7 @@ Parser<ManagedTokenSource>::parse_stmt_or_expr_without_block ()
 	  {
 	    // should be expr without block
 	    std::unique_ptr<AST::ExprWithoutBlock> expr
-	      = parse_expr_without_block ();
+	      = parse_expr_without_block (std::move (outer_attrs));
 
 	    if (lexer.peek_token ()->get_id () == SEMICOLON)
 	      {
@@ -11764,7 +11764,7 @@ Parser<ManagedTokenSource>::parse_stmt_or_expr_without_block ()
 	  // FIXME: old code was good until composability was required
 	  // return parse_path_based_stmt_or_expr(std::move(outer_attrs));
 	  std::unique_ptr<AST::ExprWithoutBlock> expr
-	    = parse_expr_without_block ();
+	    = parse_expr_without_block (std::move (outer_attrs));
 
 	  if (lexer.peek_token ()->get_id () == SEMICOLON)
 	    {
@@ -11787,7 +11787,7 @@ Parser<ManagedTokenSource>::parse_stmt_or_expr_without_block ()
 	 * expression then make it statement if semi afterwards */
 
 	std::unique_ptr<AST::ExprWithoutBlock> expr
-	  = parse_expr_without_block ();
+	  = parse_expr_without_block (std::move (outer_attrs));
 
 	if (lexer.peek_token ()->get_id () == SEMICOLON)
 	  {
@@ -12462,7 +12462,7 @@ Parser<ManagedTokenSource>::parse_expr (int right_binding_power,
 
   // parse null denotation (unary part of expression)
   std::unique_ptr<AST::Expr> expr
-    = null_denotation (current_token, std::move (outer_attrs), restrictions);
+    = null_denotation (current_token, {}, restrictions);
 
   if (expr == nullptr)
     {
@@ -12477,8 +12477,8 @@ Parser<ManagedTokenSource>::parse_expr (int right_binding_power,
       current_token = lexer.peek_token ();
       lexer.skip_token ();
 
-      expr = left_denotation (current_token, std::move (expr), AST::AttrVec (),
-			      restrictions);
+      expr = left_denotation (current_token, std::move (expr),
+			      std::move (outer_attrs), restrictions);
 
       if (expr == nullptr)
 	{
@@ -13811,7 +13811,7 @@ template <typename ManagedTokenSource>
 std::unique_ptr<AST::AssignmentExpr>
 Parser<ManagedTokenSource>::parse_assig_expr (
   const_TokenPtr tok ATTRIBUTE_UNUSED, std::unique_ptr<AST::Expr> left,
-  AST::AttrVec outer_attrs ATTRIBUTE_UNUSED, ParseRestrictions restrictions)
+  AST::AttrVec outer_attrs, ParseRestrictions restrictions)
 {
   // parse RHS (as tok has already been consumed in parse_expression)
   std::unique_ptr<AST::Expr> right
@@ -13824,7 +13824,8 @@ Parser<ManagedTokenSource>::parse_assig_expr (
   Location locus = left->get_locus ();
 
   return std::unique_ptr<AST::AssignmentExpr> (
-    new AST::AssignmentExpr (std::move (left), std::move (right), locus));
+    new AST::AssignmentExpr (std::move (left), std::move (right),
+			     std::move (outer_attrs), locus));
 }
 
 /* Returns the left binding power for the given CompoundAssignmentExpr type.
