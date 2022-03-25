@@ -16140,12 +16140,12 @@
    (set_attr "mode" "TI")])
 
 (define_insn_and_split "ssse3_ph<plusminus_mnemonic>wv4hi3"
-  [(set (match_operand:V4HI 0 "register_operand" "=y,x,Yv")
+  [(set (match_operand:V4HI 0 "register_operand" "=y,x,x")
 	(vec_concat:V4HI
 	  (vec_concat:V2HI
 	    (ssse3_plusminus:HI
 	      (vec_select:HI
-		(match_operand:V4HI 1 "register_operand" "0,0,Yv")
+		(match_operand:V4HI 1 "register_operand" "0,0,x")
 		(parallel [(const_int 0)]))
 	      (vec_select:HI (match_dup 1) (parallel [(const_int 1)])))
 	    (ssse3_plusminus:HI
@@ -16154,7 +16154,7 @@
 	  (vec_concat:V2HI
 	    (ssse3_plusminus:HI
 	      (vec_select:HI
-		(match_operand:V4HI 2 "register_mmxmem_operand" "ym,x,Yv")
+		(match_operand:V4HI 2 "register_mmxmem_operand" "ym,x,x")
 		(parallel [(const_int 0)]))
 	      (vec_select:HI (match_dup 2) (parallel [(const_int 1)])))
 	    (ssse3_plusminus:HI
@@ -16265,16 +16265,16 @@
    (set_attr "mode" "TI")])
 
 (define_insn_and_split "ssse3_ph<plusminus_mnemonic>dv2si3"
-  [(set (match_operand:V2SI 0 "register_operand" "=y,x,Yv")
+  [(set (match_operand:V2SI 0 "register_operand" "=y,x,x")
 	(vec_concat:V2SI
 	  (plusminus:SI
 	    (vec_select:SI
-	      (match_operand:V2SI 1 "register_operand" "0,0,Yv")
+	      (match_operand:V2SI 1 "register_operand" "0,0,x")
 	      (parallel [(const_int 0)]))
 	    (vec_select:SI (match_dup 1) (parallel [(const_int 1)])))
 	  (plusminus:SI
 	    (vec_select:SI
-	      (match_operand:V2SI 2 "register_mmxmem_operand" "ym,x,Yv")
+	      (match_operand:V2SI 2 "register_mmxmem_operand" "ym,x,x")
 	      (parallel [(const_int 0)]))
 	    (vec_select:SI (match_dup 2) (parallel [(const_int 1)])))))]
   "(TARGET_MMX || TARGET_MMX_WITH_SSE) && TARGET_SSSE3"
@@ -16727,10 +16727,10 @@
    (set_attr "mode" "<sseinsnmode>")])
 
 (define_insn "ssse3_psign<mode>3"
-  [(set (match_operand:MMXMODEI 0 "register_operand" "=y,x,Yv")
+  [(set (match_operand:MMXMODEI 0 "register_operand" "=y,x,x")
 	(unspec:MMXMODEI
-	  [(match_operand:MMXMODEI 1 "register_operand" "0,0,Yv")
-	   (match_operand:MMXMODEI 2 "register_mmxmem_operand" "ym,x,Yv")]
+	  [(match_operand:MMXMODEI 1 "register_operand" "0,0,x")
+	   (match_operand:MMXMODEI 2 "register_mmxmem_operand" "ym,x,x")]
 	  UNSPEC_PSIGN))]
   "(TARGET_MMX || TARGET_MMX_WITH_SSE) && TARGET_SSSE3"
   "@
