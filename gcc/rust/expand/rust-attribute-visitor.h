@@ -71,8 +71,12 @@ public:
 	    it = values.erase (it);
 	    for (auto &node : fragment.get_nodes ())
 	      {
-		it = values.insert (it, extractor (node));
-		it++;
+		auto new_node = extractor (node);
+		if (new_node != nullptr && !new_node->is_marked_for_strip ())
+		  {
+		    it = values.insert (it, std::move (new_node));
+		    it++;
+		  }
 	      }
 	  }
 	else if (value->is_marked_for_strip ())
