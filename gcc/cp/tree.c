@@ -1745,7 +1745,7 @@ strip_typedefs (tree t, bool *remove_attributes, unsigned int flags)
 	    type = strip_typedefs (pat, remove_attributes, flags);
 	    if (type != pat)
 	      {
-		result = copy_node (t);
+		result = build_distinct_type_copy (t);
 		PACK_EXPANSION_PATTERN (result) = type;
 	      }
 	  }
