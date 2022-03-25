@@ -679,10 +679,10 @@ get_nsdmi (tree member, bool in_ctor, tsubst_flags_t complain)
   if (simple_target)
     init = TARGET_EXPR_INITIAL (init);
   init = break_out_target_exprs (init, /*loc*/true);
-  if (in_ctor && init && TREE_CODE (init) == TARGET_EXPR)
-    /* This expresses the full initialization, prevent perform_member_init from
-       calling another constructor (58162).  */
-    TARGET_EXPR_DIRECT_INIT_P (init) = true;
+  if (init && TREE_CODE (init) == TARGET_EXPR)
+    /* In a constructor, this expresses the full initialization, prevent
+       perform_member_init from calling another constructor (58162).  */
+    TARGET_EXPR_DIRECT_INIT_P (init) = in_ctor;
   if (simple_target && TREE_CODE (init) != CONSTRUCTOR)
     /* Now put it back so C++17 copy elision works.  */
     init = get_target_expr (init);
