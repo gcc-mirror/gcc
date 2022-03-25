@@ -1526,6 +1526,15 @@ dump_ada_import (pretty_printer *buffer, tree t, int spc)
 
   newline_and_indent (buffer, spc + 5);
 
+  tree sec = lookup_attribute ("section", DECL_ATTRIBUTES (t));
+  if (sec)
+    {
+      pp_string (buffer, "Linker_Section => \"");
+      pp_string (buffer, TREE_STRING_POINTER (TREE_VALUE (TREE_VALUE (sec))));
+      pp_string (buffer, "\", ");
+      newline_and_indent (buffer, spc + 5);
+    }
+
   pp_string (buffer, "External_Name => \"");
 
   if (is_stdcall)
@@ -2179,10 +2188,11 @@ dump_ada_node (pretty_printer *buffer, tree node, tree type, int spc,
 	}
       else
 	{
-	  const unsigned int quals = TYPE_QUALS (TREE_TYPE (node));
+	  tree ref_type = TREE_TYPE (node);
+	  const unsigned int quals = TYPE_QUALS (ref_type);
 	  bool is_access = false;
 
-	  if (VOID_TYPE_P (TREE_TYPE (node)))
+	  if (VOID_TYPE_P (ref_type))
 	    {
 	      if (!name_only)
 		pp_string (buffer, "new ");
@@ -2197,9 +2207,8 @@ dump_ada_node (pretty_printer *buffer, tree node, tree type, int spc,
 	  else
 	    {
 	      if (TREE_CODE (node) == POINTER_TYPE
-		  && TREE_CODE (TREE_TYPE (node)) == INTEGER_TYPE
-		  && id_equal (DECL_NAME (TYPE_NAME (TREE_TYPE (node))),
-			       "char"))
+		  && TREE_CODE (ref_type) == INTEGER_TYPE
+		  && id_equal (DECL_NAME (TYPE_NAME (ref_type)), "char"))
 		{
 		  if (!name_only)
 		    pp_string (buffer, "new ");
@@ -2214,28 +2223,11 @@ dump_ada_node (pretty_printer *buffer, tree node, tree type, int spc,
 		}
 	      else
 		{
-		  tree type_name = TYPE_NAME (TREE_TYPE (node));
-
-		  /* Generate "access <type>" instead of "access <subtype>"
-		     if the subtype comes from another file, because subtype
-		     declarations do not contribute to the limited view of a
-		     package and thus subtypes cannot be referenced through
-		     a limited_with clause.  */
-		  if (type_name
-		      && TREE_CODE (type_name) == TYPE_DECL
-		      && DECL_ORIGINAL_TYPE (type_name)
-		      && TYPE_NAME (DECL_ORIGINAL_TYPE (type_name)))
-		    {
-		      const expanded_location xloc
-			= expand_location (decl_sloc (type_name, false));
-		      if (xloc.line
-			  && xloc.file
-			  && xloc.file != current_source_file)
-			type_name = DECL_ORIGINAL_TYPE (type_name);
-		    }
+		  tree stub = TYPE_STUB_DECL (ref_type);
+		  tree type_name = TYPE_NAME (ref_type);
 
 		  /* For now, handle access-to-access as System.Address.  */
-		  if (TREE_CODE (TREE_TYPE (node)) == POINTER_TYPE)
+		  if (TREE_CODE (ref_type) == POINTER_TYPE)
 		    {
 		      if (package_prefix)
 			{
@@ -2251,7 +2243,7 @@ dump_ada_node (pretty_printer *buffer, tree node, tree type, int spc,
 
 		  if (!package_prefix)
 		    pp_string (buffer, "access");
-		  else if (AGGREGATE_TYPE_P (TREE_TYPE (node)))
+		  else if (AGGREGATE_TYPE_P (ref_type))
 		    {
 		      if (!type || TREE_CODE (type) != FUNCTION_DECL)
 			{
@@ -2281,12 +2273,41 @@ dump_ada_node (pretty_printer *buffer, tree node, tree type, int spc,
 			pp_string (buffer, "all ");
 		    }
 
-		  if (RECORD_OR_UNION_TYPE_P (TREE_TYPE (node)) && type_name)
-		    dump_ada_node (buffer, type_name, TREE_TYPE (node), spc,
-				   is_access, true);
-		  else
-		    dump_ada_node (buffer, TREE_TYPE (node), TREE_TYPE (node),
-				   spc, false, true);
+		  /* If this is the anonymous original type of a typedef'ed
+		     type, then use the name of the latter.  */
+		  if (!type_name
+		      && stub
+		      && DECL_CHAIN (stub)
+		      && TREE_CODE (DECL_CHAIN (stub)) == TYPE_DECL
+		      && DECL_ORIGINAL_TYPE (DECL_CHAIN (stub)) == ref_type)
+		    ref_type = TREE_TYPE (DECL_CHAIN (stub));
+
+		  /* Generate "access <type>" instead of "access <subtype>"
+		     if the subtype comes from another file, because subtype
+		     declarations do not contribute to the limited view of a
+		     package and thus subtypes cannot be referenced through
+		     a limited_with clause.  */
+		  else if (is_access)
+		    while (type_name
+			   && TREE_CODE (type_name) == TYPE_DECL
+			   && DECL_ORIGINAL_TYPE (type_name)
+			   && TYPE_NAME (DECL_ORIGINAL_TYPE (type_name)))
+		      {
+			const expanded_location xloc
+			  = expand_location (decl_sloc (type_name, false));
+			if (xloc.line
+			    && xloc.file
+			    && xloc.file != current_source_file)
+			  {
+			    ref_type = DECL_ORIGINAL_TYPE (type_name);
+			    type_name = TYPE_NAME (ref_type);
+			  }
+			else
+			  break;
+		      }
+
+		  dump_ada_node (buffer, ref_type, ref_type, spc, is_access,
+				 true);
 		}
 	    }
 	}
@@ -2361,10 +2382,8 @@ dump_ada_node (pretty_printer *buffer, tree node, tree type, int spc,
 	      else
 		pp_string (buffer, "address");
 	    }
-	  break;
 	}
-
-      if (name_only)
+      else if (name_only)
 	dump_ada_decl_name (buffer, node, limited_access);
       else
 	{
