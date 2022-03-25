@@ -1740,6 +1740,47 @@ store_manager::log_stats (logger *logger, bool show_objs) const
 		m_symbolic_binding_key_mgr);
 }
 
+/* Emit a warning showing DECL_REG->tracked_p () for use in DejaGnu tests
+   (using -fdump-analyzer-untracked).  */
+
+static void
+dump_untracked_region (const decl_region *decl_reg)
+{
+  tree decl = decl_reg->get_decl ();
+  if (TREE_CODE (decl) != VAR_DECL)
+    return;
+  warning_at (DECL_SOURCE_LOCATION (decl), 0,
+	      "track %qD: %s",
+	      decl, (decl_reg->tracked_p () ? "yes" : "no"));
+}
+
+/* Implementation of -fdump-analyzer-untracked.  */
+
+void
+region_model_manager::dump_untracked_regions () const
+{
+  for (auto iter : m_globals_map)
+    {
+      const decl_region *decl_reg = iter.second;
+      dump_untracked_region (decl_reg);
+    }
+  for (auto frame_iter : m_frame_regions)
+    {
+      const frame_region *frame_reg = frame_iter.second;
+      frame_reg->dump_untracked_regions ();
+    }
+}
+
+void
+frame_region::dump_untracked_regions () const
+{
+  for (auto iter : m_locals)
+    {
+      const decl_region *decl_reg = iter.second;
+      dump_untracked_region (decl_reg);
+    }
+}
+
 } // namespace ana
 
 #endif /* #if ENABLE_ANALYZER */

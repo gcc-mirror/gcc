@@ -2654,6 +2654,9 @@ store::get_or_create_cluster (const region *base_reg)
   /* We shouldn't create clusters for dereferencing an UNKNOWN ptr.  */
   gcc_assert (!base_reg->symbolic_for_unknown_ptr_p ());
 
+  /* We shouldn't create clusters for base regions that aren't trackable.  */
+  gcc_assert (base_reg->tracked_p ());
+
   if (binding_cluster **slot = m_cluster_map.get (base_reg))
     return *slot;
 
@@ -2742,7 +2745,8 @@ store::mark_as_escaped (const region *base_reg)
   gcc_assert (base_reg);
   gcc_assert (base_reg->get_base_region () == base_reg);
 
-  if (base_reg->symbolic_for_unknown_ptr_p ())
+  if (base_reg->symbolic_for_unknown_ptr_p ()
+      || !base_reg->tracked_p ())
     return;
 
   binding_cluster *cluster = get_or_create_cluster (base_reg);

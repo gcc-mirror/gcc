@@ -349,6 +349,8 @@ public:
 
   logger *get_logger () const { return m_logger; }
 
+  void dump_untracked_regions () const;
+
 private:
   bool too_complex_p (const complexity &c) const;
   bool reject_if_too_complex (svalue *sval);

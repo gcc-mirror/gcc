@@ -267,7 +267,8 @@ region_model::on_asm_stmt (const gasm *stmt, region_model_context *ctxt)
        iter != reachable_regs.end_mutable_base_regs (); ++iter)
     {
       const region *base_reg = *iter;
-      if (base_reg->symbolic_for_unknown_ptr_p ())
+      if (base_reg->symbolic_for_unknown_ptr_p ()
+	  || !base_reg->tracked_p ())
 	continue;
 
       binding_cluster *cluster = m_store.get_or_create_cluster (base_reg);

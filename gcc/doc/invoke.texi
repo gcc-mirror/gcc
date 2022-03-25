@@ -439,6 +439,7 @@ Objective-C and Objective-C++ Dialects}.
 -fdump-analyzer-state-purge @gol
 -fdump-analyzer-stderr @gol
 -fdump-analyzer-supergraph @gol
+-fdump-analyzer-untracked @gol
 -Wno-analyzer-double-fclose @gol
 -Wno-analyzer-double-free @gol
 -Wno-analyzer-exposure-through-output-file @gol
@@ -10211,6 +10212,10 @@ GraphViz to @file{@var{file}.supergraph.dot} and to
 control flow graphs in the program, with interprocedural edges for
 calls and returns.  The second dump contains annotations showing nodes
 in the ``exploded graph'' and diagnostics associated with them.
+
+@item -fdump-analyzer-untracked
+@opindex fdump-analyzer-untracked
+Emit custom warnings with internal details intended for analyzer developers.
 
 @end table
 

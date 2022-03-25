@@ -1167,6 +1167,94 @@ decl_region::get_svalue_for_initializer (region_model_manager *mgr) const
   return m.get_rvalue (path_var (init, 0), NULL);
 }
 
+/* Subroutine of symnode_requires_tracking_p; return true if REF
+   within CONTEXT_FNDECL might imply that we should be tracking the
+   value of a decl.  */
+
+static bool
+ipa_ref_requires_tracking (const ipa_ref *ref, tree context_fndecl)
+{
+  /* If we have a load/store/alias of the symbol, then we'll track
+     the decl's value.  */
+  if (ref->use != IPA_REF_ADDR)
+    return true;
+
+  if (ref->stmt == NULL)
+    return true;
+
+  switch (ref->stmt->code)
+    {
+    default:
+      return true;
+    case GIMPLE_CALL:
+      {
+	cgraph_node *context_cnode = cgraph_node::get (context_fndecl);
+	cgraph_edge *edge = context_cnode->get_edge (ref->stmt);
+	if (!edge)
+	  return true;
+	if (edge->callee == NULL)
+	  return true; /* e.g. call through function ptr.  */
+	if (edge->callee->definition)
+	  return true;
+	/* If we get here, then this ref is a pointer passed to
+	   a function we don't have the definition for.  */
+	return false;
+      }
+      break;
+    case GIMPLE_ASM:
+      {
+	const gasm *asm_stmt = as_a <const gasm *> (ref->stmt);
+	if (gimple_asm_noutputs (asm_stmt) > 0)
+	  return true;
+	if (gimple_asm_nclobbers (asm_stmt) > 0)
+	  return true;
+	/* If we get here, then this ref is the decl being passed
+	   by pointer to asm with no outputs.  */
+	return false;
+      }
+      break;
+    }
+}
+
+/* Determine if the decl for SYMNODE should have binding_clusters
+   in our state objects; return false to optimize away tracking
+   certain decls in our state objects, as an optimization.  */
+
+static bool
+symnode_requires_tracking_p (symtab_node *symnode)
+{
+  gcc_assert (symnode);
+  if (symnode->externally_visible)
+    return true;
+  tree context_fndecl = DECL_CONTEXT (symnode->decl);
+  if (context_fndecl == NULL)
+    return true;
+  if (TREE_CODE (context_fndecl) != FUNCTION_DECL)
+    return true;
+  for (auto ref : symnode->ref_list.referring)
+    if (ipa_ref_requires_tracking (ref, context_fndecl))
+      return true;
+
+  /* If we get here, then we don't have uses of this decl that require
+     tracking; we never read from it or write to it explicitly.  */
+  return false;
+}
+
+/* Subroutine of decl_region ctor: determine whether this decl_region
+   can have binding_clusters; return false to optimize away tracking
+   of certain decls in our state objects, as an optimization.  */
+
+bool
+decl_region::calc_tracked_p (tree decl)
+{
+  /* Precondition of symtab_node::get.  */
+  if (TREE_CODE (decl) == VAR_DECL
+      && (TREE_STATIC (decl) || DECL_EXTERNAL (decl) || in_lto_p))
+    if (symtab_node *symnode = symtab_node::get (decl))
+      return symnode_requires_tracking_p (symnode);
+  return true;
+}
+
 /* class field_region : public region.  */
 
 /* Implementation of region::dump_to_pp vfunc for field_region.  */
