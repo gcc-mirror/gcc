@@ -9667,13 +9667,6 @@ Enabling this option effectively enables the following warnings:
 -Wanalyzer-shift-count-negative @gol
 -Wanalyzer-shift-count-overflow @gol
 -Wanalyzer-stale-setjmp-buffer @gol
-@ignore
--Wanalyzer-tainted-allocation-size @gol
--Wanalyzer-tainted-array-index @gol
--Wanalyzer-tainted-divisor @gol
--Wanalyzer-tainted-offset @gol
--Wanalyzer-tainted-size @gol
-@end ignore
 -Wanalyzer-unsafe-call-within-signal-handler @gol
 -Wanalyzer-use-after-free @gol
 -Wanalyzer-use-of-pointer-in-stale-stack-frame @gol
@@ -9681,6 +9674,13 @@ Enabling this option effectively enables the following warnings:
 -Wanalyzer-write-to-const @gol
 -Wanalyzer-write-to-string-literal @gol
 }
+@ignore
+-Wanalyzer-tainted-allocation-size @gol
+-Wanalyzer-tainted-array-index @gol
+-Wanalyzer-tainted-divisor @gol
+-Wanalyzer-tainted-offset @gol
+-Wanalyzer-tainted-size @gol
+@end ignore
 
 This option is only available if GCC was configured with analyzer
 support enabled.
