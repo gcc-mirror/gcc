@@ -6000,8 +6000,14 @@ vect_create_epilog_for_reduction (loop_vec_info loop_vinfo,
      the loop exit phi node.  */
   if (REDUC_GROUP_FIRST_ELEMENT (stmt_info))
     {
-      stmt_vec_info dest_stmt_info
-	= vect_orig_stmt (SLP_TREE_SCALAR_STMTS (slp_node)[group_size - 1]);
+      /* The last statement in the reduction chain produces the live-out
+	 value.  Note SLP optimization can shuffle scalar stmts to
+	 optimize permutations so we have to search for the last stmt.  */
+      stmt_vec_info dest_stmt_info;
+      FOR_EACH_VEC_ELT (SLP_TREE_SCALAR_STMTS (slp_node), k, dest_stmt_info)
+	if (!REDUC_GROUP_NEXT_ELEMENT (dest_stmt_info))
+	  break;
+      dest_stmt_info = vect_orig_stmt (dest_stmt_info);
       scalar_dest = gimple_assign_lhs (dest_stmt_info->stmt);
       group_size = 1;
     }
