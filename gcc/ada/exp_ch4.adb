@@ -5135,6 +5135,30 @@ package body Exp_Ch4 is
                         Set_Expression (N, New_Occurrence_Of (Typ, Loc));
                      end if;
 
+                     --  When the designated subtype is unconstrained and
+                     --  the allocator specifies a constrained subtype (or
+                     --  such a subtype has been created, such as above by
+                     --  Build_Default_Subtype), associate that subtype with
+                     --  the dereference of the allocator's access value.
+                     --  This is needed by the back end for cases where
+                     --  the access type has a Designated_Storage_Model,
+                     --  to support allocation of a host object of the right
+                     --  size for passing to the initialization procedure.
+
+                     if not Is_Constrained (Dtyp)
+                       and then Is_Constrained (Typ)
+                     then
+                        declare
+                           Init_Deref : constant Node_Id :=
+                             Unqual_Conv (Init_Arg1);
+                        begin
+                           pragma Assert
+                             (Nkind (Init_Deref) = N_Explicit_Dereference);
+
+                           Set_Actual_Designated_Subtype (Init_Deref, Typ);
+                        end;
+                     end if;
+
                      Discr := First_Elmt (Discriminant_Constraint (Typ));
                      while Present (Discr) loop
                         Nod := Node (Discr);

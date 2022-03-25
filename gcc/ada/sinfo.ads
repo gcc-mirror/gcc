@@ -816,12 +816,15 @@ package Sinfo is
 
    --  Actual_Designated_Subtype
    --    Present in N_Free_Statement and N_Explicit_Dereference nodes. If gigi
-   --    needs to known the dynamic constrained subtype of the designated
-   --    object, this attribute is set to that type. This is done for
-   --    N_Free_Statements for access-to-classwide types and access to
-   --    unconstrained packed array types, and for N_Explicit_Dereference when
-   --    the designated type is an unconstrained packed array and the
-   --    dereference is the prefix of a 'Size attribute reference.
+   --    needs to know the dynamic constrained subtype of the designated
+   --    object, this attribute is set to that subtype. This is done for
+   --    N_Free_Statements for access-to-classwide types and access-to-
+   --    unconstrained packed array types. For N_Explicit_Dereference,
+   --    this is done in two circumstances: 1) when the designated type is
+   --    an unconstrained packed array and the dereference is the prefix of
+   --    a 'Size attribute reference, or 2) when the dereference node is
+   --    created for the expansion of an allocator with a subtype_indication
+   --    and the designated subtype is an unconstrained discriminated type.
 
    --  Address_Warning_Posted
    --    Present in N_Attribute_Definition nodes. Set to indicate that we have
@@ -7313,9 +7316,14 @@ package Sinfo is
       --  Specification
       --  Default_Name (set to Empty if no subprogram default)
       --  Box_Present
+      --  Expression (set to Empty if no expression present)
 
-      --  Note: if no subprogram default is present, then Name is set
+      --  Note: If no subprogram default is present, then Name is set
       --  to Empty, and Box_Present is False.
+
+      --  Note: The Expression field is only used for the GNAT extension
+      --  that allows a FORMAL_CONCRETE_SUBPROGRAM_DECLARATION to specify
+      --  an expression default for generic formal functions.
 
       --------------------------------------------------
       -- 12.6  Formal Abstract Subprogram Declaration --
@@ -7338,12 +7346,16 @@ package Sinfo is
       -- 12.6  Subprogram Default --
       ------------------------------
 
-      --  SUBPROGRAM_DEFAULT ::= DEFAULT_NAME | <>
+      --  SUBPROGRAM_DEFAULT ::= DEFAULT_NAME | <> | (EXPRESSION)
 
       --  There is no separate node in the tree for a subprogram default.
       --  Instead the parent (N_Formal_Concrete_Subprogram_Declaration
       --  or N_Formal_Abstract_Subprogram_Declaration) node contains the
       --  default name or box indication, as needed.
+
+      --  Note: The syntax "(EXPRESSION)" is a GNAT extension, and allows
+      --  a FORMAL_CONCRETE_SUBPROGRAM_DECLARATION to specify an expression
+      --  default for formal functions, in analogy with expression_functions.
 
       ------------------------
       -- 12.6  Default Name --
