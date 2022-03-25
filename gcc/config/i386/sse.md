@@ -28364,8 +28364,8 @@
 
 ;; KEYLOCKER
 (define_insn "loadiwkey"
-  [(unspec_volatile:V2DI [(match_operand:V2DI 0 "register_operand" "v")
-			  (match_operand:V2DI 1 "register_operand" "v")
+  [(unspec_volatile:V2DI [(match_operand:V2DI 0 "register_operand" "x")
+			  (match_operand:V2DI 1 "register_operand" "x")
 			  (match_operand:V2DI 2 "register_operand" "Yz")
 			  (match_operand:SI   3 "register_operand" "a")]
 			 UNSPECV_LOADIWKEY)
@@ -28498,7 +28498,7 @@
    (UNSPECV_AESENC256KLU8 "enc256kl")])
 
 (define_insn "aes<aesklvariant>u8"
-  [(set (match_operand:V2DI 0 "register_operand" "=v")
+  [(set (match_operand:V2DI 0 "register_operand" "=x")
 	(unspec_volatile:V2DI [(match_operand:V2DI 1 "register_operand" "0")
 			       (match_operand:BLK   2 "memory_operand" "m")]
 			      AESDECENCKL))
