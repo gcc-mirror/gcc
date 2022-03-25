@@ -1,5 +1,6 @@
 /* { dg-do run { target { powerpc*-*-* } } } */
-/* { dg-options "-O2 -std=c99" } */
+/* { dg-options "-O2 -std=c99 -mdejagnu-cpu=power9" } */
+/* { dg-require-effective-target p9vector_hw } */
 
 #ifdef DEBUG
 #include <stdio.h>
