@@ -5014,6 +5014,7 @@ gfc_trans_omp_critical (gfc_code *code)
     name = get_identifier (code->ext.omp_clauses->critical_name);
   gfc_start_block (&block);
   stmt = make_node (OMP_CRITICAL);
+  SET_EXPR_LOCATION (stmt, gfc_get_location (&code->loc));
   TREE_TYPE (stmt) = void_type_node;
   OMP_CRITICAL_BODY (stmt) = gfc_trans_code (code->block->next);
   OMP_CRITICAL_NAME (stmt) = name;
@@ -5046,6 +5047,7 @@ gfc_trans_omp_do (gfc_code *code, gfc_exec_op op, stmtblock_t *pblock,
   unsigned ix;
   vec<tree, va_heap, vl_embed> *saved_doacross_steps = doacross_steps;
   gfc_expr_list *tile = do_clauses ? do_clauses->tile_list : clauses->tile_list;
+  gfc_code *orig_code = code;
 
   /* Both collapsed and tiled loops are lowered the same way.  In
      OpenACC, those clauses are not compatible, so prioritize the tile
@@ -5400,6 +5402,7 @@ gfc_trans_omp_do (gfc_code *code, gfc_exec_op op, stmtblock_t *pblock,
     default: gcc_unreachable ();
     }
 
+  SET_EXPR_LOCATION (stmt, gfc_get_location (&orig_code->loc));
   TREE_TYPE (stmt) = void_type_node;
   OMP_FOR_BODY (stmt) = gfc_finish_block (&body);
   OMP_FOR_CLAUSES (stmt) = omp_clauses;
@@ -5672,6 +5675,7 @@ gfc_trans_omp_masked (gfc_code *code, gfc_omp_clauses *clauses)
   gfc_start_block (&block);
   tree omp_clauses = gfc_trans_omp_clauses (&block, clauses, code->loc);
   tree stmt = make_node (OMP_MASKED);
+  SET_EXPR_LOCATION (stmt, gfc_get_location (&code->loc));
   TREE_TYPE (stmt) = void_type_node;
   OMP_MASKED_BODY (stmt) = body;
   OMP_MASKED_CLAUSES (stmt) = omp_clauses;
@@ -6446,6 +6450,7 @@ gfc_trans_omp_do_simd (gfc_code *code, stmtblock_t *pblock,
   if (flag_openmp)
     {
       stmt = make_node (OMP_FOR);
+      SET_EXPR_LOCATION (stmt, gfc_get_location (&code->loc));
       TREE_TYPE (stmt) = void_type_node;
       OMP_FOR_BODY (stmt) = body;
       OMP_FOR_CLAUSES (stmt) = omp_do_clauses;
@@ -6618,6 +6623,7 @@ gfc_trans_omp_scope (gfc_code *code)
   tree omp_clauses = gfc_trans_omp_clauses (&block, code->ext.omp_clauses,
 					    code->loc);
   tree stmt = make_node (OMP_SCOPE);
+  SET_EXPR_LOCATION (stmt, gfc_get_location (&code->loc));
   TREE_TYPE (stmt) = void_type_node;
   OMP_SCOPE_BODY (stmt) = body;
   OMP_SCOPE_CLAUSES (stmt) = omp_clauses;
@@ -6693,6 +6699,7 @@ gfc_trans_omp_taskgroup (gfc_code *code)
   gfc_start_block (&block);
   tree body = gfc_trans_code (code->block->next);
   tree stmt = make_node (OMP_TASKGROUP);
+  SET_EXPR_LOCATION (stmt, gfc_get_location (&code->loc));
   TREE_TYPE (stmt) = void_type_node;
   OMP_TASKGROUP_BODY (stmt) = body;
   OMP_TASKGROUP_CLAUSES (stmt) = gfc_trans_omp_clauses (&block,
@@ -6713,6 +6720,7 @@ gfc_trans_omp_taskwait (gfc_code *code)
   stmtblock_t block;
   gfc_start_block (&block);
   tree stmt = make_node (OMP_TASK);
+  SET_EXPR_LOCATION (stmt, gfc_get_location (&code->loc));
   TREE_TYPE (stmt) = void_type_node;
   OMP_TASK_BODY (stmt) = NULL_TREE;
   OMP_TASK_CLAUSES (stmt) = gfc_trans_omp_clauses (&block,
@@ -6790,6 +6798,7 @@ gfc_trans_omp_distribute (gfc_code *code, gfc_omp_clauses *clausesa)
   if (flag_openmp)
     {
       tree distribute = make_node (OMP_DISTRIBUTE);
+      SET_EXPR_LOCATION (distribute, gfc_get_location (&code->loc));
       TREE_TYPE (distribute) = void_type_node;
       OMP_FOR_BODY (distribute) = stmt;
       OMP_FOR_CLAUSES (distribute) = omp_clauses;
@@ -7010,6 +7019,7 @@ gfc_trans_omp_taskloop (gfc_code *code, gfc_exec_op op)
   if (flag_openmp)
     {
       tree taskloop = make_node (OMP_TASKLOOP);
+      SET_EXPR_LOCATION (taskloop, gfc_get_location (&code->loc));
       TREE_TYPE (taskloop) = void_type_node;
       OMP_FOR_BODY (taskloop) = stmt;
       OMP_FOR_CLAUSES (taskloop) = omp_clauses;
@@ -7055,6 +7065,7 @@ gfc_trans_omp_master_masked_taskloop (gfc_code *code, gfc_exec_op op)
 					    &clausesa[GFC_OMP_SPLIT_MASKED],
 					    code->loc);
       tree msk = make_node (OMP_MASKED);
+      SET_EXPR_LOCATION (msk, gfc_get_location (&code->loc));
       TREE_TYPE (msk) = void_type_node;
       OMP_MASKED_BODY (msk) = stmt;
       OMP_MASKED_CLAUSES (msk) = clauses;
