@@ -227,9 +227,25 @@ peculiar_fragment_match_compatible (AST::MacroMatchFragment &last_match,
       }
       case AST::MacroMatch::Matcher: {
 	auto matcher = static_cast<AST::MacroMatcher *> (&match);
-	auto &matches = matcher->get_matches ();
-	if (!matches.empty ())
-	  error_locus = matches.front ()->get_match_locus ();
+	auto first_token = matcher->get_delim_type ();
+	TokenId delim_id;
+	switch (first_token)
+	  {
+	  case AST::PARENS:
+	    delim_id = LEFT_PAREN;
+	    break;
+	  case AST::SQUARE:
+	    delim_id = LEFT_SQUARE;
+	    break;
+	  case AST::CURLY:
+	    delim_id = LEFT_CURLY;
+	    break;
+	  }
+	if (contains (allowed_toks, delim_id))
+	  return true;
+	kind_str = "token `" + std::string (get_token_description (delim_id))
+		   + "` at start of matcher";
+	error_locus = matcher->get_match_locus ();
 	break;
       }
       case AST::MacroMatch::Fragment: {
