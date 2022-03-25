@@ -10266,6 +10266,8 @@ uniform_vector_p (const_tree vec)
       if (i != nelts)
 	return NULL_TREE;
 
+      if (TREE_CODE (first) == CONSTRUCTOR || TREE_CODE (first) == VECTOR_CST)
+	return uniform_vector_p (first);
       return first;
     }
 
