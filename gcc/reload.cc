@@ -3635,9 +3635,11 @@ find_reloads (rtx_insn *insn, int replace, int ind_levels, int live_known,
 		 a hard reg and this alternative accepts some
 		 register, see if the class that we want is a subset
 		 of the preferred class for this register.  If not,
-		 but it intersects that class, use the preferred class
-		 instead.  If it does not intersect the preferred
-		 class, show that usage of this alternative should be
+		 but it intersects that class, we'd like to use the
+		 intersection, but the best we can do is to use the
+		 preferred class, if it is instead a subset of the
+		 class we want in this alternative.  If we can't use
+		 it, show that usage of this alternative should be
 		 discouraged; it will be discouraged more still if the
 		 register is `preferred or nothing'.  We do this
 		 because it increases the chance of reusing our spill
@@ -3664,9 +3666,10 @@ find_reloads (rtx_insn *insn, int replace, int ind_levels, int live_known,
 		  if (! reg_class_subset_p (this_alternative[i],
 					    preferred_class[i]))
 		    {
-		      /* Since we don't have a way of forming the intersection,
-			 we just do something special if the preferred class
-			 is a subset of the class we have; that's the most
+		      /* Since we don't have a way of forming a register
+			 class for the intersection, we just do
+			 something special if the preferred class is a
+			 subset of the class we have; that's the most
 			 common case anyway.  */
 		      if (reg_class_subset_p (preferred_class[i],
 					      this_alternative[i]))
