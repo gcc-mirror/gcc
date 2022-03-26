@@ -4,6 +4,25 @@
 	considering the intersection of register classes then tweaking the
 	regclass for the current alternative or rejecting it.
 
+2022-03-25  Christophe Lyon  <christohe.lyon@arm.com>
+
+	PR target/104882
+	Revert
+	2021-06-11  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* config/arm/mve.md (mve_vec_unpack<US>_lo_<mode>): Delete.
+	(mve_vec_unpack<US>_hi_<mode>): Delete.
+	(@mve_vec_pack_trunc_lo_<mode>): Delete.
+	(mve_vmovntq_<supf><mode>): Remove '@' prefix.
+	* config/arm/neon.md (vec_unpack<US>_hi_<mode>): Move back
+	from vec-common.md.
+	(vec_unpack<US>_lo_<mode>): Likewise.
+	(vec_pack_trunc_<mode>): Rename from
+	neon_quad_vec_pack_trunc_<mode>.
+	* config/arm/vec-common.md (vec_unpack<US>_hi_<mode>): Delete.
+	(vec_unpack<US>_lo_<mode>): Delete.
+	(vec_pack_trunc_<mode>): Delete.
+
 2022-03-25  Vladimir N. Makarov  <vmakarov@redhat.com>
 
 	PR middle-end/104971

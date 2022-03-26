@@ -29,6 +29,15 @@
 	PR testsuite/105055
 	* gcc.target/i386/pr95483-1.c: Replace -msse with -msse2.
 
+2022-03-25  Christophe Lyon  <christohe.lyon@arm.com>
+
+	PR target/104882
+	* gcc.target/arm/simd/mve-vclz.c: Update expected results.
+	* gcc.target/arm/simd/mve-vshl.c: Likewise.
+	* gcc.target/arm/simd/mve-vec-pack.c: Delete.
+	* gcc.target/arm/simd/mve-vec-unpack.c: Delete.
+	* gcc.target/arm/simd/pr104882.c: New test.
+
 2022-03-25  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/105053
