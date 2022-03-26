@@ -459,23 +459,23 @@ C++ ObjC++ Var(warn_cxx20_compat) Warning LangEnabledBy(C++ ObjC++,Wall)
 Warn about C++ constructs whose meaning differs between ISO C++ 2017 and ISO C++ 2020.
 
 Wc++11-extensions
-C++ ObjC++ Var(warn_cxx11_extensions) Warning LangEnabledBy(C++ ObjC++) Init(1)
+C++ ObjC++ Var(warn_cxx11_extensions) Warning Init(1)
 Warn about C++11 constructs in code compiled with an older standard.
 
 Wc++14-extensions
-C++ ObjC++ Var(warn_cxx14_extensions) Warning LangEnabledBy(C++ ObjC++) Init(1)
+C++ ObjC++ Var(warn_cxx14_extensions) Warning Init(1)
 Warn about C++14 constructs in code compiled with an older standard.
 
 Wc++17-extensions
-C++ ObjC++ Var(warn_cxx17_extensions) Warning LangEnabledBy(C++ ObjC++) Init(1)
+C++ ObjC++ Var(warn_cxx17_extensions) Warning Init(1)
 Warn about C++17 constructs in code compiled with an older standard.
 
 Wc++20-extensions
-C++ ObjC++ Var(warn_cxx20_extensions) Warning LangEnabledBy(C++ ObjC++) Init(1)
+C++ ObjC++ Var(warn_cxx20_extensions) Warning Init(1)
 Warn about C++20 constructs in code compiled with an older standard.
 
 Wc++23-extensions
-C++ ObjC++ Var(warn_cxx23_extensions) Warning LangEnabledBy(C++ ObjC++) Init(1)
+C++ ObjC++ Var(warn_cxx23_extensions) Warning Init(1)
 Warn about C++23 constructs in code compiled with an older standard.
 
 Wcast-function-type
