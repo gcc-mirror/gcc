@@ -30,7 +30,8 @@ current_timestamp = datetime.datetime.now().strftime('%Y%m%d\n')
 IGNORED_COMMITS = (
         'c2be82058fb40f3ae891c68d185ff53e07f14f45',
         '04a040d907a83af54e0a98bdba5bfabc0ef4f700',
-        '2e96b5f14e4025691b57d2301d71aa6092ed44bc')
+        '2e96b5f14e4025691b57d2301d71aa6092ed44bc',
+        '3ab5c8cd03d92bf4ec41e351820349d92fbc40c4')
 
 
 def read_timestamp(path):
