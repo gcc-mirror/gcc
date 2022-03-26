@@ -1,3 +1,8 @@
+2022-03-26  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc-changelog/git_update_version.py: Add
+	3ab5c8cd03d92bf4ec41e351820349d92fbc40c4 to ignored commits.
+
 2022-03-10  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR other/102664

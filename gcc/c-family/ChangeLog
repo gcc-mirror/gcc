@@ -1,3 +1,12 @@
+2022-03-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-ada-spec.cc (dump_ada_import): Deal with the "section" attribute
+	(dump_ada_node) <POINTER_TYPE>: Do not modify and pass the name, but
+	the referenced type instead.  Deal with the anonymous original type
+	of a typedef'ed type.  In the actual access case, follow the chain
+	of external subtypes.
+	<TYPE_DECL>: Tidy up control flow.
+
 2022-03-21  Qian Jianhua  <qianjh@cn.fujitsu.com>
 
 	* c-ada-spec.cc: Change array length

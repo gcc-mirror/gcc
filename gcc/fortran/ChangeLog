@@ -1,3 +1,11 @@
+2022-03-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/103691
+	* trans-array.cc (gfc_conv_array_initializer): If TYPE_MAX_VALUE is
+	smaller than TYPE_MIN_VALUE (i.e. empty array), ignore the
+	initializer; if TYPE_MIN_VALUE is equal to TYPE_MAX_VALUE, use just
+	the TYPE_MIN_VALUE as index instead of RANGE_EXPR.
+
 2022-03-23  Tobias Burnus  <tobias@codesourcery.com>
 
 	PR fortran/103560

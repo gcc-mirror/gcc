@@ -1,3 +1,8 @@
+2022-03-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/bit (bit_cast, byteswap, endian): Add doxygen
+	comments.
+
 2022-03-23  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/105027

@@ -1,3 +1,45 @@
+2022-03-26  Hans-Peter Nilsson  <hp@axis.com>
+
+	* reload.cc (find_reloads): Align comment with code where
+	considering the intersection of register classes then tweaking the
+	regclass for the current alternative or rejecting it.
+
+2022-03-25  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR middle-end/104971
+	* lra-lives.cc (process_bb_lives): Check hard_regs_live for hard
+	regs to clear remove_p flag.
+
+2022-03-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/105053
+	* tree-vect-loop.cc (vect_create_epilog_for_reduction): Pick
+	the correct live-out stmt for a reduction chain.
+
+2022-03-25  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/105049
+	* tree.cc (uniform_vector_p): Recurse for VECTOR_CST or
+	CONSTRUCTOR first elements.
+
+2022-03-25  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR analyzer/103533
+	* doc/invoke.texi (Static Analyzer Options): Move
+	@ignore block after @gccoptlist's '}' for 'make pdf'.
+
+2022-03-25  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/104954
+	* doc/invoke.texi (Static Analyzer Options): Add
+	-fdump-analyzer-untracked.
+
+2022-03-25  Avinash Sonawane  <rootkea@gmail.com>
+
+	PR analyzer/103533
+	* doc/invoke.texi: Document that enabling taint analyzer
+	checker disables some warnings from `-fanalyzer`.
+
 2022-03-24  Alexandre Oliva  <oliva@adacore.com>
 
 	PR debug/104564

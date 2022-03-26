@@ -1,3 +1,17 @@
+2022-03-26  Jakub Jelinek  <jakub@redhat.com>
+
+	* parser.cc (cp_parser_postfix_expression)
+	<case RID_BILTIN_CONVERTVECTOR, case RID_BUILTIN_BIT_CAST>: Don't
+	return cp_build_{vec,convert,bit_cast} result right away, instead
+	set postfix_expression to it and break.
+
+2022-03-25  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/104944
+	* typeck.cc (cxx_sizeof_or_alignof_type): Diagnose alignof(void).
+	(cxx_alignas_expr): Call cxx_sizeof_or_alignof_type with
+	complain == true.
+
 2022-03-24  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/104284

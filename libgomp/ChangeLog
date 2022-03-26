@@ -1,3 +1,11 @@
+2022-03-25  Tom de Vries  <tdevries@suse.de>
+
+	PR libgomp/105042
+	* testsuite/libgomp.oacc-c-c++-common/parallel-dims.c: Reduce
+	execution time.
+	* testsuite/libgomp.oacc-c-c++-common/vred2d-128.c: Same.
+	* testsuite/libgomp.oacc-fortran/parallel-dims.f90: Same.
+
 2022-03-23  Tobias Burnus  <tobias@codesourcery.com>
 
 	PR middle-end/104285

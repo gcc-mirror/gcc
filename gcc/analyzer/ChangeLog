@@ -1,3 +1,31 @@
+2022-03-25  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/104954
+	* analyzer.opt (-fdump-analyzer-untracked): New option.
+	* engine.cc (impl_run_checkers): Handle it.
+	* region-model-asm.cc (region_model::on_asm_stmt): Don't attempt
+	to clobber regions with !tracked_p ().
+	* region-model-manager.cc (dump_untracked_region): New.
+	(region_model_manager::dump_untracked_regions): New.
+	(frame_region::dump_untracked_regions): New.
+	* region-model.h (region_model_manager::dump_untracked_regions):
+	New decl.
+	* region.cc (ipa_ref_requires_tracking): New.
+	(symnode_requires_tracking_p): New.
+	(decl_region::calc_tracked_p): New.
+	* region.h (region::tracked_p): New vfunc.
+	(frame_region::dump_untracked_regions): New decl.
+	(class decl_region): Note that this is also used fo SSA names.
+	(decl_region::decl_region): Initialize m_tracked.
+	(decl_region::tracked_p): New.
+	(decl_region::calc_tracked_p): New decl.
+	(decl_region::m_tracked): New.
+	* store.cc (store::get_or_create_cluster): Assert that we
+	don't try to create clusters for base regions that aren't
+	trackable.
+	(store::mark_as_escaped): Don't mark base regions that we're not
+	tracking.
+
 2022-03-23  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/104979

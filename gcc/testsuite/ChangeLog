@@ -1,3 +1,58 @@
+2022-03-26  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/builtin-convertvector-3.c: New test.
+	* g++.dg/cpp2a/bit-cast15.C: New test.
+
+2022-03-25  Peter Bergner  <bergner@linux.ibm.com>
+
+	* g++.dg/pr65240-1.C: Use -mdejagnu-cpu=.  Remove dg-skip-if.
+	* g++.dg/pr65240-2.C: Likewise.
+	* g++.dg/pr65240-3.C: Likewise.
+	* g++.dg/pr65240-4.C: Likewise.
+	* g++.dg/pr65242.C: Likewise.
+	* g++.dg/pr67211.C: Likewise.
+	* g++.dg/pr69667.C: Likewise.
+	* g++.dg/pr71294.C: Likewise.
+	* g++.dg/pr84279.C: Likewise.
+	* g++.dg/torture/ppc-ldst-array.C: Likewise.
+	* gfortran.dg/nint_p7.f90: Likewise.
+	* gfortran.dg/pr102860.f90: Likewise.
+	* gcc.target/powerpc/fusion.c: Use -mdejagnu-cpu= and -mdejagnu-tune=.
+	* gcc.target/powerpc/fusion2.c: Likewise.
+	* gcc.target/powerpc/int_128bit-runnable.c: Use -mdejagnu-cpu=.
+	* gcc.target/powerpc/test_mffsl.c: Likewise.
+	* gfortran.dg/pr47614.f: Likewise.
+	* gfortran.dg/pr58968.f: Likewise.
+
+2022-03-25  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR testsuite/105055
+	* gcc.target/i386/pr95483-1.c: Replace -msse with -msse2.
+
+2022-03-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/105053
+	* g++.dg/vect/pr105053.cc: New testcase.
+
+2022-03-25  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/104944
+	* g++.dg/cpp0x/alignas20.C: New test.
+
+2022-03-25  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/105049
+	* gcc.dg/pr105049.c: New testcase.
+
+2022-03-25  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/104954
+	* gcc.dg/analyzer/asm-x86-dyndbg-1.c: New test.
+	* gcc.dg/analyzer/asm-x86-dyndbg-2.c: New test.
+	* gcc.dg/analyzer/many-unused-locals.c: New test.
+	* gcc.dg/analyzer/untracked-1.c: New test.
+	* gcc.dg/analyzer/unused-local-1.c: New test.
+
 2022-03-24  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/104284
