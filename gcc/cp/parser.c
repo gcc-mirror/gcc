@@ -7162,8 +7162,10 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
 	}
 	/* Look for the closing `)'.  */
 	parens.require_close (parser);
-	return cp_build_vec_convert (expression, type_location, type,
-				     tf_warning_or_error);
+	postfix_expression
+	  = cp_build_vec_convert (expression, type_location, type,
+				  tf_warning_or_error);
+	break;
       }
 
     default:
