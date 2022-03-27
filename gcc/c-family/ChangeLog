@@ -1,3 +1,7 @@
+2022-03-26  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* c.opt: Properly quote comment.
+
 2022-03-25  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* c-ada-spec.cc (dump_ada_import): Deal with the "section" attribute

@@ -1,3 +1,30 @@
+2022-03-26  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR middle-end/104885
+	* calls.cc (mark_stack_region_used): Check that the region
+	is within the allocated size of stack_usage_map.
+
+2022-03-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/103775
+	* recog.cc (check_invalid_inc_dec): New function.
+	(insn_invalid_p): Return 1 if REG_INC operand overlaps
+	any stored REGs.
+
+2022-03-26  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/105058
+	* config/i386/sse.md (loadiwkey): Replace "v" with "x".
+	(aes<aesklvariant>u8): Likewise.
+
+2022-03-26  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/105052
+	* config/i386/sse.md (ssse3_ph<plusminus_mnemonic>wv4hi3):
+	Replace "Yv" with "x".
+	(ssse3_ph<plusminus_mnemonic>dv2si3): Likewise.
+	(ssse3_psign<mode>3): Likewise.
+
 2022-03-26  Hans-Peter Nilsson  <hp@axis.com>
 
 	* reload.cc (find_reloads): Align comment with code where

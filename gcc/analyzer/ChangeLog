@@ -1,3 +1,12 @@
+2022-03-26  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/105057
+	* store.cc (binding_cluster::make_unknown_relative_to): Reject
+	attempts to create a cluster for untracked base regions.
+	(store::set_value): Likewise.
+	(store::fill_region): Likewise.
+	(store::mark_region_as_unknown): Likewise.
+
 2022-03-25  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/104954

@@ -1,5 +1,30 @@
 2022-03-26  Jakub Jelinek  <jakub@redhat.com>
 
+	PR rtl-optimization/103775
+	* gcc.dg/pr103775.c: New test.
+
+2022-03-26  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/105050
+	* g++.dg/cpp1y/constexpr-105050.C: New test.
+
+2022-03-26  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/103455
+	* g++.dg/overload/builtin6.C: New test.
+
+2022-03-26  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/105057
+	* gcc.dg/analyzer/fread-2.c: New test, as a regression test for
+	ICE in store::set_value on untracked base region.
+	* gcc.dg/analyzer/memset-2.c: Likewise, for ICE in
+	store::fill_region.
+	* gcc.dg/analyzer/strcpy-2.c: Likewise, for ICE in
+	store::mark_region_as_unknown.
+
+2022-03-26  Jakub Jelinek  <jakub@redhat.com>
+
 	* c-c++-common/builtin-convertvector-3.c: New test.
 	* g++.dg/cpp2a/bit-cast15.C: New test.
 

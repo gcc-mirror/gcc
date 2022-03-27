@@ -1,3 +1,16 @@
+2022-03-26  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/105050
+	* constexpr.cc (potential_constant_expression_1) <case IF_STMT>:
+	Clarify error message when a if-stmt is non-constant because its
+	branches are non-constant.
+
+2022-03-26  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/103455
+	* call.cc (add_builtin_candidate) <case MEMBER_REF>: Test
+	CLASS_TYPE_P instead of MAYBE_CLASS_TYPE_P.
+
 2022-03-26  Jakub Jelinek  <jakub@redhat.com>
 
 	* parser.cc (cp_parser_postfix_expression)
