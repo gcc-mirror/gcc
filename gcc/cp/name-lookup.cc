@@ -3476,6 +3476,9 @@ push_local_extern_decl_alias (tree decl)
 	      && CP_DECL_THREAD_LOCAL_P (decl)
 	      && alias != error_mark_node)
 	    set_decl_tls_model (alias, DECL_TLS_MODEL (decl));
+
+	  /* Adjust visibility.  */
+	  determine_visibility (alias);
 	}
     }
 
