@@ -20758,9 +20758,9 @@
 })
 
 (define_insn_and_split "*ssse3_pshufbv8qi3"
-  [(set (match_operand:V8QI 0 "register_operand" "=y,x,Yv")
-	(unspec:V8QI [(match_operand:V8QI 1 "register_operand" "0,0,Yv")
-		      (match_operand:V8QI 2 "register_mmxmem_operand" "ym,x,Yv")
+  [(set (match_operand:V8QI 0 "register_operand" "=y,x,Yw")
+	(unspec:V8QI [(match_operand:V8QI 1 "register_operand" "0,0,Yw")
+		      (match_operand:V8QI 2 "register_mmxmem_operand" "ym,x,Yw")
 		      (match_operand:V4SI 4 "reg_or_const_vector_operand"
 					  "i,3,3")]
 		     UNSPEC_PSHUFB))
