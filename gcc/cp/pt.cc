@@ -17021,6 +17021,9 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	      /* When rewriting a constructor into a deduction guide, a
 		 non-dependent name can become dependent, so memtmpl<args>
 		 becomes context::template memtmpl<args>.  */
+	      if (DECL_TYPE_TEMPLATE_P (t))
+		return make_unbound_class_template (context, DECL_NAME (t),
+						    NULL_TREE, complain);
 	      tree type = tsubst (TREE_TYPE (t), args, complain, in_decl);
 	      return build_qualified_name (type, context, DECL_NAME (t),
 					   /*template*/true);
