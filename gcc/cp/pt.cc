@@ -16590,12 +16590,20 @@ tsubst_qualified_id (tree qualified_id, tree args,
 
   if (dependent_scope_p (scope))
     {
-      if (is_template)
-	expr = build_min_nt_loc (loc, TEMPLATE_ID_EXPR, expr, template_args);
-      tree r = build_qualified_name (NULL_TREE, scope, expr,
-				     QUALIFIED_NAME_IS_TEMPLATE (qualified_id));
-      REF_PARENTHESIZED_P (r) = REF_PARENTHESIZED_P (qualified_id);
-      return r;
+      if (TREE_CODE (expr) == SCOPE_REF)
+	/* We built one in tsubst_baselink.  */
+	gcc_checking_assert (same_type_p (scope, TREE_OPERAND (expr, 0)));
+      else
+	{
+	  if (is_template)
+	    expr = build_min_nt_loc (loc, TEMPLATE_ID_EXPR, expr,
+				     template_args);
+	  expr = build_qualified_name (NULL_TREE, scope, expr,
+				       QUALIFIED_NAME_IS_TEMPLATE
+				       (qualified_id));
+	}
+      REF_PARENTHESIZED_P (expr) = REF_PARENTHESIZED_P (qualified_id);
+      return expr;
     }
 
   if (!BASELINK_P (name) && !DECL_P (expr))
@@ -27334,6 +27342,7 @@ instantiation_dependent_scope_ref_p (tree t)
 {
   if (DECL_P (TREE_OPERAND (t, 1))
       && CLASS_TYPE_P (TREE_OPERAND (t, 0))
+      && !dependent_scope_p (TREE_OPERAND (t, 0))
       && !unknown_base_ref_p (t)
       && accessible_in_template_p (TREE_OPERAND (t, 0),
 				   TREE_OPERAND (t, 1)))
