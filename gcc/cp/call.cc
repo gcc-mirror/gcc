@@ -8958,6 +8958,7 @@ make_base_init_ok (tree exp)
        call target.  It would be possible to splice in the appropriate
        arguments, but probably not worth the complexity.  */
     return false;
+  mark_used (fn);
   AGGR_INIT_EXPR_FN (exp) = build_address (fn);
   return true;
 }
