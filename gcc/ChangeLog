@@ -1,3 +1,14 @@
+2022-03-26  H.J. Lu  <hjl.tools@gmail.com>
+
+	Backported from master:
+	2022-03-26  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/105052
+	* config/i386/sse.md (ssse3_ph<plusminus_mnemonic>wv4hi3):
+	Replace "Yv" with "x".
+	(ssse3_ph<plusminus_mnemonic>dv2si3): Likewise.
+	(ssse3_psign<mode>3): Likewise.
+
 2022-03-18  Peter Bergner  <bergner@linux.ibm.com>
 
 	Backported from master:
