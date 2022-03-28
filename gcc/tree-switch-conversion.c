@@ -1493,7 +1493,7 @@ case_bit_test::cmp (const void *p1, const void *p2)
 
 void
 bit_test_cluster::emit (tree index_expr, tree index_type,
-			tree, basic_block default_bb, location_t)
+			tree, basic_block default_bb, location_t loc)
 {
   case_bit_test test[m_max_case_bit_tests] = { {} };
   unsigned int i, j, k;
@@ -1587,9 +1587,9 @@ bit_test_cluster::emit (tree index_expr, tree index_type,
   gsi = gsi_last_bb (m_case_bb);
 
   /* idx = (unsigned)x - minval.  */
-  idx = fold_convert (unsigned_index_type, index_expr);
-  idx = fold_build2 (MINUS_EXPR, unsigned_index_type, idx,
-		     fold_convert (unsigned_index_type, minval));
+  idx = fold_convert_loc (loc, unsigned_index_type, index_expr);
+  idx = fold_build2_loc (loc, MINUS_EXPR, unsigned_index_type, idx,
+			 fold_convert_loc (loc, unsigned_index_type, minval));
   idx = force_gimple_operand_gsi (&gsi, idx,
 				  /*simple=*/true, NULL_TREE,
 				  /*before=*/true, GSI_SAME_STMT);
@@ -1602,17 +1602,17 @@ bit_test_cluster::emit (tree index_expr, tree index_type,
 				    fold_convert (unsigned_index_type, range),
 				    /*simple=*/true, NULL_TREE,
 				    /*before=*/true, GSI_SAME_STMT);
-      tmp = fold_build2 (GT_EXPR, boolean_type_node, idx, range);
+      tmp = fold_build2_loc (loc, GT_EXPR, boolean_type_node, idx, range);
       basic_block new_bb
 	= hoist_edge_and_branch_if_true (&gsi, tmp, default_bb,
-					 profile_probability::unlikely ());
+					 profile_probability::unlikely (), loc);
       gsi = gsi_last_bb (new_bb);
     }
 
   /* csui = (1 << (word_mode) idx) */
   csui = make_ssa_name (word_type_node);
-  tmp = fold_build2 (LSHIFT_EXPR, word_type_node, word_mode_one,
-		     fold_convert (word_type_node, idx));
+  tmp = fold_build2_loc (loc, LSHIFT_EXPR, word_type_node, word_mode_one,
+			 fold_convert_loc (loc, word_type_node, idx));
   tmp = force_gimple_operand_gsi (&gsi, tmp,
 				  /*simple=*/false, NULL_TREE,
 				  /*before=*/true, GSI_SAME_STMT);
@@ -1630,13 +1630,15 @@ bit_test_cluster::emit (tree index_expr, tree index_type,
 							 bt_range);
       bt_range -= test[k].bits;
       tmp = wide_int_to_tree (word_type_node, test[k].mask);
-      tmp = fold_build2 (BIT_AND_EXPR, word_type_node, csui, tmp);
+      tmp = fold_build2_loc (loc, BIT_AND_EXPR, word_type_node, csui, tmp);
       tmp = force_gimple_operand_gsi (&gsi, tmp,
 				      /*simple=*/true, NULL_TREE,
 				      /*before=*/true, GSI_SAME_STMT);
-      tmp = fold_build2 (NE_EXPR, boolean_type_node, tmp, word_mode_zero);
+      tmp = fold_build2_loc (loc, NE_EXPR, boolean_type_node,
+			     tmp, word_mode_zero);
       basic_block new_bb
-	= hoist_edge_and_branch_if_true (&gsi, tmp, test[k].target_bb, prob);
+	= hoist_edge_and_branch_if_true (&gsi, tmp, test[k].target_bb,
+					 prob, loc);
       gsi = gsi_last_bb (new_bb);
     }
 
@@ -1666,7 +1668,8 @@ bit_test_cluster::emit (tree index_expr, tree index_type,
 basic_block
 bit_test_cluster::hoist_edge_and_branch_if_true (gimple_stmt_iterator *gsip,
 						 tree cond, basic_block case_bb,
-						 profile_probability prob)
+						 profile_probability prob,
+						 location_t loc)
 {
   tree tmp;
   gcond *cond_stmt;
@@ -1680,6 +1683,7 @@ bit_test_cluster::hoist_edge_and_branch_if_true (gimple_stmt_iterator *gsip,
   tmp = force_gimple_operand_gsi (gsip, cond, /*simple=*/true, NULL,
 				  /*before=*/true, GSI_SAME_STMT);
   cond_stmt = gimple_build_cond_from_tree (tmp, NULL_TREE, NULL_TREE);
+  gimple_set_location (cond_stmt, loc);
   gsi_insert_before (gsip, cond_stmt, GSI_SAME_STMT);
 
   e_false = split_block (split_bb, cond_stmt);
