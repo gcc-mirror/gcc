@@ -294,17 +294,15 @@ gcov_write_filename (const char *filename)
 
   gcov_write_string (filename);
 }
-#endif
 
 /* Move to a given position in a gcov file.  */
 
-GCOV_LINKAGE void
+static void
 gcov_seek (gcov_position_t base)
 {
   fseek (gcov_var.file, base, SEEK_SET);
 }
 
-#if !IN_LIBGCOV
 /* Write a tag TAG and reserve space for the record length. Return a
    value to be used for gcov_write_length.  */
 

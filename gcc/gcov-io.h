@@ -340,9 +340,9 @@ struct gcov_summary
 /* Functions for reading and writing gcov files. In libgcov you can
    open the file for reading then writing. Elsewhere you can open the
    file either for reading or for writing. When reading a file you may
-   use the gcov_read_* functions, gcov_sync, gcov_position, &
-   gcov_error. When writing a file you may use the gcov_write
-   functions, gcov_seek & gcov_error. When a file is to be rewritten
+   use the gcov_read_* functions, gcov_sync, gcov_position, and
+   gcov_error. When writing a file you may use the gcov_write*
+   functions and gcov_error. When a file is to be rewritten
    you use the functions for reading, then gcov_rewrite then the
    functions for writing.  Your file may become corrupted if you break
    these invariants.  */

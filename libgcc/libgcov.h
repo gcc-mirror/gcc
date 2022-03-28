@@ -115,7 +115,6 @@ typedef unsigned gcov_type_unsigned __attribute__ ((mode (QI)));
 #define gcov_open __gcov_open
 #define gcov_close __gcov_close
 #define gcov_position __gcov_position
-#define gcov_seek __gcov_seek
 #define gcov_rewrite __gcov_rewrite
 #define gcov_is_error __gcov_is_error
 #define gcov_write_unsigned __gcov_write_unsigned
@@ -346,7 +345,6 @@ extern int __gcov_execve (const char *, char  *const [], char *const [])
 GCOV_LINKAGE void gcov_write_summary (gcov_unsigned_t /*tag*/,
                                       const struct gcov_summary *)
     ATTRIBUTE_HIDDEN;
-GCOV_LINKAGE void gcov_seek (gcov_position_t /*position*/) ATTRIBUTE_HIDDEN;
 GCOV_LINKAGE void gcov_rewrite (void) ATTRIBUTE_HIDDEN;
 
 /* "Counts" stored in gcda files can be a real counter value, or
