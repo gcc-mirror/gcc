@@ -35,12 +35,21 @@ AttrVisitor::expand_struct_fields (std::vector<AST::StructField> &fields)
 	  continue;
 	}
 
+      expander.push_context (MacroExpander::ContextType::TYPE);
+
       // expand sub-types of type, but can't strip type itself
       auto &type = field.get_field_type ();
       type->accept_vis (*this);
+
+      auto t_fragment = expander.take_expanded_fragment (*this);
+      if (t_fragment.should_expand ())
+	type = t_fragment.take_type_fragment ();
+
       if (type->is_marked_for_strip ())
 	rust_error_at (type->get_locus (),
 		       "cannot strip type in this position");
+
+      expander.pop_context ();
 
       // if nothing else happens, increment
       ++it;
@@ -77,6 +86,8 @@ AttrVisitor::expand_tuple_fields (std::vector<AST::TupleField> &fields)
 void
 AttrVisitor::expand_function_params (std::vector<AST::FunctionParam> &params)
 {
+  expander.push_context (MacroExpander::ContextType::TYPE);
+
   for (auto it = params.begin (); it != params.end ();)
     {
       auto &param = *it;
@@ -98,6 +109,11 @@ AttrVisitor::expand_function_params (std::vector<AST::FunctionParam> &params)
 
       auto &type = param.get_type ();
       type->accept_vis (*this);
+
+      auto t_fragment = expander.take_expanded_fragment (*this);
+      if (t_fragment.should_expand ())
+	type = t_fragment.take_type_fragment ();
+
       if (type->is_marked_for_strip ())
 	rust_error_at (type->get_locus (),
 		       "cannot strip type in this position");
@@ -105,27 +121,40 @@ AttrVisitor::expand_function_params (std::vector<AST::FunctionParam> &params)
       // increment
       ++it;
     }
+
+  expander.pop_context ();
 }
 
 void
 AttrVisitor::expand_generic_args (AST::GenericArgs &args)
 {
   // lifetime args can't be expanded
+  // FIXME: Can we have macro invocations for lifetimes?
+
+  expander.push_context (MacroExpander::ContextType::TYPE);
 
   // expand type args - strip sub-types only
   for (auto &type : args.get_type_args ())
     {
       type->accept_vis (*this);
+      auto t_fragment = expander.take_expanded_fragment (*this);
+      if (t_fragment.should_expand ())
+	type = t_fragment.take_type_fragment ();
+
       if (type->is_marked_for_strip ())
 	rust_error_at (type->get_locus (),
 		       "cannot strip type in this position");
     }
 
+  expander.pop_context ();
+
+  // FIXME: Can we have macro invocations in generic type bindings?
   // expand binding args - strip sub-types only
   for (auto &binding : args.get_binding_args ())
     {
       auto &type = binding.get_type ();
       type->accept_vis (*this);
+
       if (type->is_marked_for_strip ())
 	rust_error_at (type->get_locus (),
 		       "cannot strip type in this position");
@@ -135,8 +164,17 @@ AttrVisitor::expand_generic_args (AST::GenericArgs &args)
 void
 AttrVisitor::expand_qualified_path_type (AST::QualifiedPathType &path_type)
 {
+  expander.push_context (MacroExpander::ContextType::TYPE);
+
   auto &type = path_type.get_type ();
   type->accept_vis (*this);
+
+  auto t_fragment = expander.take_expanded_fragment (*this);
+  if (t_fragment.should_expand ())
+    type = t_fragment.take_type_fragment ();
+
+  expander.pop_context ();
+
   if (type->is_marked_for_strip ())
     rust_error_at (type->get_locus (), "cannot strip type in this position");
 
@@ -174,11 +212,19 @@ AttrVisitor::AttrVisitor::expand_closure_params (
 
       if (param.has_type_given ())
 	{
+	  expander.push_context (MacroExpander::ContextType::TYPE);
 	  auto &type = param.get_type ();
 	  type->accept_vis (*this);
+
+	  auto t_fragment = expander.take_expanded_fragment (*this);
+	  if (t_fragment.should_expand ())
+	    type = t_fragment.take_type_fragment ();
+
 	  if (type->is_marked_for_strip ())
 	    rust_error_at (type->get_locus (),
 			   "cannot strip type in this position");
+
+	  expander.pop_context ();
 	}
 
       // increment if found nothing else so far
@@ -191,11 +237,19 @@ AttrVisitor::expand_self_param (AST::SelfParam &self_param)
 {
   if (self_param.has_type ())
     {
+      expander.push_context (MacroExpander::ContextType::TYPE);
       auto &type = self_param.get_type ();
       type->accept_vis (*this);
+
+      auto t_fragment = expander.take_expanded_fragment (*this);
+      if (t_fragment.should_expand ())
+	type = t_fragment.take_type_fragment ();
+
       if (type->is_marked_for_strip ())
 	rust_error_at (type->get_locus (),
 		       "cannot strip type in this position");
+
+      expander.pop_context ();
     }
   /* TODO: maybe check for invariants being violated - e.g. both type and
    * lifetime? */
@@ -222,11 +276,20 @@ AttrVisitor::expand_trait_function_decl (AST::TraitFunctionDecl &decl)
 
   if (decl.has_return_type ())
     {
+      expander.push_context (MacroExpander::ContextType::TYPE);
+
       auto &return_type = decl.get_return_type ();
       return_type->accept_vis (*this);
+
+      auto r_fragment = expander.take_expanded_fragment (*this);
+      if (r_fragment.should_expand ())
+	return_type = r_fragment.take_type_fragment ();
+
       if (return_type->is_marked_for_strip ())
 	rust_error_at (return_type->get_locus (),
 		       "cannot strip type in this position");
+
+      expander.pop_context ();
     }
 
   if (decl.has_where_clause ())
@@ -251,11 +314,20 @@ AttrVisitor::expand_trait_method_decl (AST::TraitMethodDecl &decl)
 
   if (decl.has_return_type ())
     {
+      expander.push_context (MacroExpander::ContextType::TYPE);
+
       auto &return_type = decl.get_return_type ();
       return_type->accept_vis (*this);
+
+      auto r_fragment = expander.take_expanded_fragment (*this);
+      if (r_fragment.should_expand ())
+	return_type = r_fragment.take_type_fragment ();
+
       if (return_type->is_marked_for_strip ())
 	rust_error_at (return_type->get_locus (),
 		       "cannot strip type in this position");
+
+      expander.pop_context ();
     }
 
   if (decl.has_where_clause ())
@@ -368,11 +440,20 @@ AttrVisitor::visit (AST::TypePathSegmentFunction &segment)
 
   if (type_path_function.has_return_type ())
     {
+      expander.push_context (MacroExpander::ContextType::TYPE);
+
       auto &return_type = type_path_function.get_return_type ();
       return_type->accept_vis (*this);
+
+      auto r_fragment = expander.take_expanded_fragment (*this);
+      if (r_fragment.should_expand ())
+	return_type = r_fragment.take_type_fragment ();
+
       if (return_type->is_marked_for_strip ())
 	rust_error_at (return_type->get_locus (),
 		       "cannot strip type in this position");
+
+      expander.pop_context ();
     }
 }
 void
@@ -1176,11 +1257,20 @@ AttrVisitor::visit (AST::ClosureExprInnerTyped &expr)
    * allowed by spec */
   expand_closure_params (expr.get_params ());
 
+  expander.push_context (MacroExpander::ContextType::TYPE);
+
   // can't strip return type, but can strip sub-types
   auto &type = expr.get_return_type ();
   type->accept_vis (*this);
+
+  auto t_fragment = expander.take_expanded_fragment (*this);
+  if (t_fragment.should_expand ())
+    type = t_fragment.take_type_fragment ();
+
   if (type->is_marked_for_strip ())
     rust_error_at (type->get_locus (), "cannot strip type in this position");
+
+  expander.pop_context ();
 
   // can't strip expression itself, but can strip sub-expressions
   auto &definition_block = expr.get_definition_block ();
@@ -1928,11 +2018,19 @@ AttrVisitor::visit (AST::TypeParam &param)
 
   if (param.has_type ())
     {
+      expander.push_context (MacroExpander::ContextType::TYPE);
       auto &type = param.get_type ();
       type->accept_vis (*this);
+
+      auto t_fragment = expander.take_expanded_fragment (*this);
+      if (t_fragment.should_expand ())
+	type = t_fragment.take_type_fragment ();
+
       if (type->is_marked_for_strip ())
 	rust_error_at (type->get_locus (),
 		       "cannot strip type in this position");
+
+      expander.pop_context ();
     }
 }
 void
@@ -1945,10 +2043,19 @@ AttrVisitor::visit (AST::TypeBoundWhereClauseItem &item)
 {
   // for lifetimes shouldn't require
 
+  expander.push_context (MacroExpander::ContextType::TYPE);
+
   auto &type = item.get_type ();
   type->accept_vis (*this);
+
+  auto t_fragment = expander.take_expanded_fragment (*this);
+  if (t_fragment.should_expand ())
+    type = t_fragment.take_type_fragment ();
+
   if (type->is_marked_for_strip ())
     rust_error_at (type->get_locus (), "cannot strip type in this position");
+
+  expander.pop_context ();
 
   // don't strip directly, only components of bounds
   for (auto &bound : item.get_type_param_bounds ())
@@ -1980,11 +2087,20 @@ AttrVisitor::visit (AST::Method &method)
 
   if (method.has_return_type ())
     {
+      expander.push_context (MacroExpander::ContextType::TYPE);
+
       auto &return_type = method.get_return_type ();
       return_type->accept_vis (*this);
+
+      auto r_fragment = expander.take_expanded_fragment (*this);
+      if (r_fragment.should_expand ())
+	return_type = r_fragment.take_type_fragment ();
+
       if (return_type->is_marked_for_strip ())
 	rust_error_at (return_type->get_locus (),
 		       "cannot strip type in this position");
+
+      expander.pop_context ();
     }
 
   if (method.has_where_clause ())
@@ -2093,11 +2209,20 @@ AttrVisitor::visit (AST::Function &function)
 
   if (function.has_return_type ())
     {
+      expander.push_context (MacroExpander::ContextType::TYPE);
+
       auto &return_type = function.get_return_type ();
       return_type->accept_vis (*this);
+
+      auto t_fragment = expander.take_expanded_fragment (*this);
+      if (t_fragment.should_expand ())
+	return_type = t_fragment.take_type_fragment ();
+
       if (return_type->is_marked_for_strip ())
 	rust_error_at (return_type->get_locus (),
 		       "cannot strip type in this position");
+
+      expander.pop_context ();
     }
 
   if (function.has_where_clause ())
@@ -2297,11 +2422,20 @@ AttrVisitor::visit (AST::ConstantItem &const_item)
       return;
     }
 
+  expander.push_context (MacroExpander::ContextType::TYPE);
+
   // strip any sub-types
   auto &type = const_item.get_type ();
   type->accept_vis (*this);
+
+  auto t_fragment = expander.take_expanded_fragment (*this);
+  if (t_fragment.should_expand ())
+    type = t_fragment.take_type_fragment ();
+
   if (type->is_marked_for_strip ())
     rust_error_at (type->get_locus (), "cannot strip type in this position");
+
+  expander.pop_context ();
 
   /* strip any internal sub-expressions - expression itself isn't
    * allowed to have external attributes in this position so can't be
@@ -2324,11 +2458,20 @@ AttrVisitor::visit (AST::StaticItem &static_item)
       return;
     }
 
+  expander.push_context (MacroExpander::ContextType::TYPE);
+
   // strip any sub-types
   auto &type = static_item.get_type ();
   type->accept_vis (*this);
+
+  auto t_fragment = expander.take_expanded_fragment (*this);
+  if (t_fragment.should_expand ())
+    type = t_fragment.take_type_fragment ();
+
   if (type->is_marked_for_strip ())
     rust_error_at (type->get_locus (), "cannot strip type in this position");
+
+  expander.pop_context ();
 
   /* strip any internal sub-expressions - expression itself isn't
    * allowed to have external attributes in this position so can't be
@@ -2403,11 +2546,20 @@ AttrVisitor::visit (AST::TraitItemConst &item)
       return;
     }
 
+  expander.push_context (MacroExpander::ContextType::TYPE);
+
   // strip any sub-types
   auto &type = item.get_type ();
   type->accept_vis (*this);
+
+  auto t_fragment = expander.take_expanded_fragment (*this);
+  if (t_fragment.should_expand ())
+    type = t_fragment.take_type_fragment ();
+
   if (type->is_marked_for_strip ())
     rust_error_at (type->get_locus (), "cannot strip type in this position");
+
+  expander.pop_context ();
 
   /* strip any internal sub-expressions - expression itself isn't
    * allowed to have external attributes in this position so can't be
@@ -2502,10 +2654,19 @@ AttrVisitor::visit (AST::InherentImpl &impl)
   for (auto &param : impl.get_generic_params ())
     param->accept_vis (*this);
 
+  expander.push_context (MacroExpander::ContextType::TYPE);
+
   auto &type = impl.get_type ();
   type->accept_vis (*this);
+
+  auto t_fragment = expander.take_expanded_fragment (*this);
+  if (t_fragment.should_expand ())
+    type = t_fragment.take_type_fragment ();
+
   if (type->is_marked_for_strip ())
     rust_error_at (type->get_locus (), "cannot strip type in this position");
+
+  expander.pop_context ();
 
   if (impl.has_where_clause ())
     expand_where_clause (impl.get_where_clause ());
@@ -2539,10 +2700,19 @@ AttrVisitor::visit (AST::TraitImpl &impl)
   for (auto &param : impl.get_generic_params ())
     param->accept_vis (*this);
 
+  expander.push_context (MacroExpander::ContextType::TYPE);
+
   auto &type = impl.get_type ();
   type->accept_vis (*this);
+
+  auto t_fragment = expander.take_expanded_fragment (*this);
+  if (t_fragment.should_expand ())
+    type = t_fragment.take_type_fragment ();
+
   if (type->is_marked_for_strip ())
     rust_error_at (type->get_locus (), "cannot strip type in this position");
+
+  expander.pop_context ();
 
   auto &trait_path = impl.get_trait_path ();
   visit (trait_path);
@@ -2571,10 +2741,19 @@ AttrVisitor::visit (AST::ExternalStaticItem &item)
       return;
     }
 
+  expander.push_context (MacroExpander::ContextType::TYPE);
+
   auto &type = item.get_type ();
   type->accept_vis (*this);
+
+  auto t_fragment = expander.take_expanded_fragment (*this);
+  if (t_fragment.should_expand ())
+    type = t_fragment.take_type_fragment ();
+
   if (type->is_marked_for_strip ())
     rust_error_at (type->get_locus (), "cannot strip type in this position");
+
+  expander.pop_context ();
 }
 void
 AttrVisitor::visit (AST::ExternalFunctionItem &item)
@@ -2606,11 +2785,20 @@ AttrVisitor::visit (AST::ExternalFunctionItem &item)
 	  continue;
 	}
 
+      expander.push_context (MacroExpander::ContextType::TYPE);
+
       auto &type = param.get_type ();
       type->accept_vis (*this);
+
+      auto t_fragment = expander.take_expanded_fragment (*this);
+      if (t_fragment.should_expand ())
+	type = t_fragment.take_type_fragment ();
+
       if (type->is_marked_for_strip ())
 	rust_error_at (type->get_locus (),
 		       "cannot strip type in this position");
+
+      expander.pop_context ();
 
       // increment if nothing else happens
       ++it;
@@ -2624,16 +2812,26 @@ AttrVisitor::visit (AST::ExternalFunctionItem &item)
 
   if (item.has_return_type ())
     {
+      expander.push_context (MacroExpander::ContextType::TYPE);
+
       auto &return_type = item.get_return_type ();
       return_type->accept_vis (*this);
+
+      auto r_fragment = expander.take_expanded_fragment (*this);
+      if (r_fragment.should_expand ())
+	return_type = r_fragment.take_type_fragment ();
+
       if (return_type->is_marked_for_strip ())
 	rust_error_at (return_type->get_locus (),
 		       "cannot strip type in this position");
+
+      expander.pop_context ();
     }
 
   if (item.has_where_clause ())
     expand_where_clause (item.get_where_clause ());
 }
+
 void
 AttrVisitor::visit (AST::ExternBlock &block)
 {
@@ -2991,11 +3189,20 @@ AttrVisitor::visit (AST::LetStmt &stmt)
   // similar for type
   if (stmt.has_type ())
     {
+      expander.push_context (MacroExpander::ContextType::TYPE);
+
       auto &type = stmt.get_type ();
       type->accept_vis (*this);
+
+      auto t_fragment = expander.take_expanded_fragment (*this);
+      if (t_fragment.should_expand ())
+	type = t_fragment.take_type_fragment ();
+
       if (type->is_marked_for_strip ())
 	rust_error_at (type->get_locus (),
 		       "cannot strip type in this position");
+
+      expander.pop_context ();
     }
 
   /* strip any internal sub-expressions - expression itself isn't
@@ -3190,11 +3397,20 @@ AttrVisitor::visit (AST::BareFunctionType &type)
 	  continue;
 	}
 
+      expander.push_context (MacroExpander::ContextType::TYPE);
+
       auto &type = param.get_type ();
       type->accept_vis (*this);
+
+      auto t_fragment = expander.take_expanded_fragment (*this);
+      if (t_fragment.should_expand ())
+	type = t_fragment.take_type_fragment ();
+
       if (type->is_marked_for_strip ())
 	rust_error_at (type->get_locus (),
 		       "cannot strip type in this position");
+
+      expander.pop_context ();
 
       // increment if nothing else happens
       ++it;
@@ -3205,6 +3421,9 @@ AttrVisitor::visit (AST::BareFunctionType &type)
 
   if (type.has_return_type ())
     {
+      // FIXME: Can we have type expansion in this position?
+      // In that case, we need to handle AST::TypeNoBounds on top of just
+      // AST::Types
       auto &return_type = type.get_return_type ();
       return_type->accept_vis (*this);
       if (return_type->is_marked_for_strip ())
