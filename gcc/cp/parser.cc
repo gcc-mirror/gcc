@@ -29964,7 +29964,8 @@ cp_parser_requires_expression (cp_parser *parser)
       scope_sentinel ()
       {
 	++cp_unevaluated_operand;
-	begin_scope (sk_block, NULL_TREE);
+	begin_scope (sk_function_parms, NULL_TREE);
+	current_binding_level->requires_expression = true;
       }
 
       ~scope_sentinel ()
@@ -48082,7 +48083,7 @@ static tree
 synthesize_implicit_template_parm  (cp_parser *parser, tree constr)
 {
   /* A requires-clause is not a function and cannot have placeholders.  */
-  if (current_binding_level->kind == sk_block)
+  if (current_binding_level->requires_expression)
     {
       error ("placeholder type not allowed in this context");
       return error_mark_node;

@@ -309,7 +309,10 @@ struct GTY(()) cp_binding_level {
   /* true for SK_FUNCTION_PARMS of immediate functions.  */
   unsigned immediate_fn_ctx_p : 1;
 
-  /* 22 bits left to fill a 32-bit word.  */
+  /* True for SK_FUNCTION_PARMS of a requires-expression.  */
+  unsigned requires_expression: 1;
+
+  /* 21 bits left to fill a 32-bit word.  */
 };
 
 /* The binding level currently in effect.  */
