@@ -2850,16 +2850,14 @@ package body Exp_Ch7 is
                 Left_Opnd  => New_Occurrence_Of (Fin_Mas_Id, Loc),
                 Right_Opnd => Make_Null (Loc));
 
-            --  For constrained or tagged results escalate the condition to
+            --  For unconstrained or tagged results, escalate the condition to
             --  include the allocation format. Generate:
 
             --    if BIPallocform > Secondary_Stack'Pos
             --      and then BIPfinalizationmaster /= null
             --    then
 
-            if not Is_Constrained (Func_Typ)
-              or else Is_Tagged_Type (Func_Typ)
-            then
+            if Needs_BIP_Alloc_Form (Func_Id) then
                declare
                   Alloc : constant Entity_Id :=
                             Build_In_Place_Formal (Func_Id, BIP_Alloc_Form);
