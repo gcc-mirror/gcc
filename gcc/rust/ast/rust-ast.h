@@ -1800,7 +1800,7 @@ public:
       case IMPL:
 	return "Impl Item: " + impl_item->as_string ();
       case TRAIT_IMPL:
-	return "Trait Impl Item: " + impl_item->as_string ();
+	return "Trait Impl Item: " + trait_impl_item->as_string ();
       case TYPE:
 	return "Type: " + type->as_string ();
       }
