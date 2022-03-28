@@ -165,7 +165,7 @@ star_prefix_regex = re.compile(r'\t\*(?P<spaces>\ *)(?P<content>.*)')
 end_of_location_regex = re.compile(r'[\[<(:]')
 item_empty_regex = re.compile(r'\t(\* \S+ )?\(\S+\):\s*$')
 item_parenthesis_regex = re.compile(r'\t(\*|\(\S+\):)')
-revert_regex = re.compile(r'This reverts commit (?P<hash>[0-9a-f]+).$')
+revert_regex = re.compile(r'This reverts commit (?P<hash>[0-9a-f]+)\.$')
 cherry_pick_regex = re.compile(r'cherry picked from commit (?P<hash>\w+)')
 
 LINE_LIMIT = 100
