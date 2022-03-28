@@ -1164,7 +1164,7 @@ package body Sem_Ch12 is
       function Matching_Actual
         (F   : Entity_Id;
          A_F : Entity_Id) return Node_Id;
-      --  Find actual that corresponds to a given a formal parameter. If the
+      --  Find actual that corresponds to a given formal parameter. If the
       --  actuals are positional, return the next one, if any. If the actuals
       --  are named, scan the parameter associations to find the right one.
       --  A_F is the corresponding entity in the analyzed generic, which is
@@ -2063,7 +2063,7 @@ package body Sem_Ch12 is
 
                         procedure Check_Generic_Parent is
                            Inst : constant Node_Id :=
-                                    Next (Unit_Declaration_Node (Actual));
+                                    Get_Unit_Instantiation_Node (Actual);
                            Par  : Entity_Id;
 
                         begin
