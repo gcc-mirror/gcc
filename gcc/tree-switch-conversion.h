@@ -429,7 +429,8 @@ public:
   static basic_block hoist_edge_and_branch_if_true (gimple_stmt_iterator *gsip,
 						    tree cond,
 						    basic_block case_bb,
-						    profile_probability prob);
+						    profile_probability prob,
+						    location_t);
 
   /* Return whether bit test expansion is allowed.  */
   static inline bool is_enabled (void)
