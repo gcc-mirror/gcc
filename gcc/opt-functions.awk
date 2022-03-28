@@ -388,7 +388,7 @@ function lang_enabled_by(enabledby_langs, enabledby_name, enabledby_posarg, enab
         with_args = ""
     } else {
         print "#error " opts[i] " LangEnabledBy("enabledby_langs","enabledby_name", " \
-            enabledby_posarg", " enabledby_negargs                  \
+            enabledby_posarg", " enabledby_negarg \
             ") with three arguments, it should have either 2 or 4"
     }
 
@@ -397,7 +397,7 @@ function lang_enabled_by(enabledby_langs, enabledby_name, enabledby_posarg, enab
         enabledby_index = opt_numbers[enabledby_array[k]];
         if (enabledby_index == "") {
              print "#error " opts[i] " LangEnabledBy("enabledby_langs","enabledby_name", " \
-                 enabledby_posarg", " enabledby_negargs"), unknown option '" enabledby_name "'"
+                 enabledby_posarg", " enabledby_negarg"), unknown option '" enabledby_name "'"
         } else {
             for (j = 1; j <= n_enabledby_arg_langs; j++) {
                  lang_name = lang_sanitized_name(enabledby_arg_langs[j]);
