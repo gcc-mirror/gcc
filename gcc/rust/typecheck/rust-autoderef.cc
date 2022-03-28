@@ -98,6 +98,27 @@ Adjuster::try_raw_deref_type (const TyTy::BaseType *ty)
   return Adjustment (Adjustment::AdjustmentType::INDIRECTION, infered);
 }
 
+Adjustment
+Adjuster::try_unsize_type (const TyTy::BaseType *ty)
+{
+  bool is_valid_type = ty->get_kind () == TyTy::TypeKind::ARRAY;
+  if (!is_valid_type)
+    return Adjustment::get_error ();
+
+  auto mappings = Analysis::Mappings::get ();
+  auto context = TypeCheckContext::get ();
+
+  const auto ref_base = static_cast<const TyTy::ArrayType *> (ty);
+  auto slice_elem = ref_base->get_element_type ();
+
+  auto slice
+    = new TyTy::SliceType (mappings->get_next_hir_id (), ty->get_ident ().locus,
+			   TyTy::TyVar (slice_elem->get_ref ()));
+  context->insert_implicit_type (slice);
+
+  return Adjustment (Adjustment::AdjustmentType::INDIRECTION, slice);
+}
+
 static bool
 resolve_operator_overload_fn (
   Analysis::RustLangItem::ItemType lang_item_type, const TyTy::BaseType *ty,

@@ -1204,6 +1204,10 @@ HIRCompileBase::resolve_adjustements (
 	case Resolver::Adjustment::AdjustmentType::INDIRECTION:
 	  e = resolve_indirection_adjustment (adjustment, e, locus);
 	  break;
+
+	case Resolver::Adjustment::AdjustmentType::UNSIZE:
+	  e = resolve_unsized_adjustment (adjustment, e, locus);
+	  break;
 	}
     }
 
@@ -1255,6 +1259,32 @@ HIRCompileBase::resolve_indirection_adjustment (
   return ctx->get_backend ()->indirect_expression (expected_type, expression,
 						   true, /* known_valid*/
 						   locus);
+}
+
+tree
+HIRCompileBase::resolve_unsized_adjustment (Resolver::Adjustment &adjustment,
+					    tree expression, Location locus)
+{
+  // assumes this is an array
+  tree expr_type = TREE_TYPE (expression);
+  rust_assert (TREE_CODE (expr_type) == ARRAY_TYPE);
+
+  // takes an array and returns a fat-pointer so this becomes a constructor
+  // expression
+  rust_assert (adjustment.get_expected ()->get_kind ()
+	       == TyTy::TypeKind::SLICE);
+  tree fat_pointer
+    = TyTyResolveCompile::compile (ctx, adjustment.get_expected ());
+
+  // make a constructor for this
+  tree data = address_expression (expression, locus);
+
+  // fetch the size from the domain
+  tree domain = TYPE_DOMAIN (expr_type);
+  tree size = TYPE_MAX_VALUE (domain);
+
+  return ctx->get_backend ()->constructor_expression (fat_pointer, false,
+						      {data, size}, -1, locus);
 }
 
 void

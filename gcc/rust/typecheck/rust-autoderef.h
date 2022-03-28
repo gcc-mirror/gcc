@@ -36,6 +36,7 @@ public:
     DEREF,
     DEREF_MUT,
     INDIRECTION,
+    UNSIZE,
   };
 
   // ctor for all adjustments except derefs
@@ -78,6 +79,8 @@ public:
 	return "DEREF_MUT";
       case AdjustmentType::INDIRECTION:
 	return "INDIRECTION";
+      case AdjustmentType::UNSIZE:
+	return "UNSIZE";
       }
     gcc_unreachable ();
     return "";
@@ -134,6 +137,8 @@ public:
 		  Analysis::RustLangItem::ItemType deref_lang_item);
 
   static Adjustment try_raw_deref_type (const TyTy::BaseType *ty);
+
+  static Adjustment try_unsize_type (const TyTy::BaseType *ty);
 
 private:
   const TyTy::BaseType *base;

@@ -72,6 +72,9 @@ protected:
   tree resolve_indirection_adjustment (Resolver::Adjustment &adjustment,
 				       tree expression, Location locus);
 
+  tree resolve_unsized_adjustment (Resolver::Adjustment &adjustment,
+				   tree expression, Location locus);
+
   static void setup_attributes_on_fndecl (
     tree fndecl, bool is_main_entry_point, HIR::Visibility &visibility,
     const HIR::FunctionQualifiers &qualifiers, const AST::AttrVec &attrs);

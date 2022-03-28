@@ -84,6 +84,13 @@ TypeCheckContext::insert_type (const Analysis::NodeMapping &mappings,
 }
 
 void
+TypeCheckContext::insert_implicit_type (TyTy::BaseType *type)
+{
+  rust_assert (type != nullptr);
+  resolved[type->get_ref ()] = type;
+}
+
+void
 TypeCheckContext::insert_implicit_type (HirId id, TyTy::BaseType *type)
 {
   rust_assert (type != nullptr);
