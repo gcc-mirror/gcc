@@ -28815,6 +28815,12 @@ finish_concept_definition (cp_expr id, tree init)
       return error_mark_node;
     }
 
+  if (current_template_depth > 1)
+    {
+      error_at (loc, "concept %qE has multiple template parameter lists", *id);
+      return error_mark_node;
+    }
+
   /* Initially build the concept declaration; its type is bool.  */
   tree decl = build_lang_decl_loc (loc, CONCEPT_DECL, *id, boolean_type_node);
   DECL_CONTEXT (decl) = current_scope ();
