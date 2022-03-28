@@ -98,11 +98,57 @@ for (i = 0; i < n_opts; i++) {
 
     enabledby_arg = opt_args("LangEnabledBy", flags[i]);
     if (enabledby_arg != "") {
-        enabledby_langs = nth_arg(0, enabledby_arg);
-        enabledby_name = nth_arg(1, enabledby_arg);
-        enabledby_posarg = nth_arg(2, enabledby_arg);
-	enabledby_negarg = nth_arg(3, enabledby_arg);
-        lang_enabled_by(enabledby_langs, enabledby_name, enabledby_posarg, enabledby_negarg);
+	enabledby_n_args = n_args(enabledby_arg)
+	if (enabledby_n_args != 2 \
+	    && enabledby_n_args != 4) {
+	    print "#error " opts[i] " LangEnabledBy(" enabledby_arg ") must specify two or four arguments"
+	}
+
+	enabledby_langs = nth_arg(0, enabledby_arg);
+	if (enabledby_langs == "")
+	    print "#error " opts[i] " LangEnabledBy(" enabledby_arg ") must specify LANGUAGE"
+	enabledby_opt = nth_arg(1, enabledby_arg);
+	if (enabledby_opt == "")
+	    print "#error " opts[i] " LangEnabledBy(" enabledby_arg ") must specify OPT"
+
+	enabledby_posarg_negarg = ""
+	if (enabledby_n_args == 4) {
+	    enabledby_posarg = nth_arg(2, enabledby_arg);
+	    enabledby_negarg = nth_arg(3, enabledby_arg);
+	    if (enabledby_posarg == "" \
+		|| enabledby_negarg == "")
+		print "#error " opts[i] " LangEnabledBy(" enabledby_arg ") with four arguments must specify POSARG and NEGARG"
+	    else
+		enabledby_posarg_negarg = "," enabledby_posarg "," enabledby_negarg
+	}
+
+	n_enabledby_arg_langs = split(enabledby_langs, enabledby_arg_langs, " ");
+	n_enabledby_array = split(enabledby_opt, enabledby_array, " \\|\\| ");
+	for (k = 1; k <= n_enabledby_array; k++) {
+	    enabledby_index = opt_numbers[enabledby_array[k]];
+	    if (enabledby_index == "") {
+		print "#error " opts[i] " LangEnabledBy(" enabledby_arg "), unknown option '" enabledby_opt "'"
+		continue
+	    }
+
+	    for (j = 1; j <= n_enabledby_arg_langs; j++) {
+		lang_name = enabledby_arg_langs[j]
+		lang_index = lang_numbers[lang_name];
+		if (lang_index == "") {
+		    print "#error " opts[i] " LangEnabledBy(" enabledby_arg "), unknown language '" lang_name "'"
+		    continue
+		}
+
+		lang_name = lang_sanitized_name(lang_name);
+
+		if (enables[lang_name,enabledby_array[k]] == "") {
+		    enabledby[lang_name,n_enabledby_lang[lang_index]] = enabledby_array[k];
+		    n_enabledby_lang[lang_index]++;
+		}
+		enables[lang_name,enabledby_array[k]] \
+		    = enables[lang_name,enabledby_array[k]] opts[i] enabledby_posarg_negarg ";";
+	    }
+	}
     }
 
     if (flag_set_p("Param", flags[i]) && !(opts[i] ~ "^-param="))
