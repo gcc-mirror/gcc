@@ -1039,6 +1039,7 @@ gimple_fold_builtin_memory_op (gimple_stmt_iterator *gsi,
 							  new_stmt);
 			  gimple_assign_set_lhs (new_stmt, srcmem);
 			  gimple_set_vuse (new_stmt, gimple_vuse (stmt));
+			  gimple_set_location (new_stmt, loc);
 			  gsi_insert_before (gsi, new_stmt, GSI_SAME_STMT);
 			}
 		      if (dest_align < GET_MODE_ALIGNMENT (mode))
