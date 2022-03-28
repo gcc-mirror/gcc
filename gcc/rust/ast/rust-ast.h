@@ -1827,6 +1827,18 @@ private:
   std::vector<SingleASTNode> nodes;
   bool fragment_is_error;
 
+  /**
+   * We need to make a special case for Expression and Type fragments as only
+   * one Node will be extracted from the `nodes` vector
+   */
+
+  bool is_single_fragment () const { return nodes.size () == 1; }
+
+  bool is_single_fragment_kind (SingleASTNode::NodeType kind) const
+  {
+    return is_single_fragment () && nodes[0].get_kind () == kind;
+  }
+
 public:
   ASTFragment (std::vector<SingleASTNode> nodes, bool fragment_is_error = false)
     : nodes (std::move (nodes)), fragment_is_error (fragment_is_error)
@@ -1867,21 +1879,16 @@ public:
 
   bool should_expand () const { return !is_error () && !nodes.empty (); }
 
-  /**
-   * We need to make a special case for Expression fragments as only one
-   * Node will be extracted from the `nodes` vector
-   */
-
-  bool is_expression_fragment () const
-  {
-    return nodes.size () == 1
-	   && nodes[0].get_kind () == SingleASTNode::NodeType::EXPRESSION;
-  }
-
   std::unique_ptr<Expr> take_expression_fragment ()
   {
-    rust_assert (is_expression_fragment ());
+    rust_assert (is_single_fragment_kind (SingleASTNode::NodeType::EXPRESSION));
     return nodes[0].take_expr ();
+  }
+
+  std::unique_ptr<Type> take_type_fragment ()
+  {
+    rust_assert (is_single_fragment_kind (SingleASTNode::NodeType::TYPE));
+    return nodes[0].take_type ();
   }
 
   void accept_vis (ASTVisitor &vis)
