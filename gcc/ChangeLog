@@ -1,3 +1,9 @@
+2022-03-27  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/105068
+	* config/i386/sse.md (*ssse3_pshufbv8qi3): Replace "Yv" with
+	"Yw".
+
 2022-03-26  Roger Sayle  <roger@nextmovesoftware.com>
 
 	PR middle-end/104885

@@ -1,3 +1,8 @@
+2022-03-27  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/105068
+	* gcc.target/i386/pr105068.c: New test.
+
 2022-03-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/103775

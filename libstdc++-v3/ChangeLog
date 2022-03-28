@@ -1,3 +1,23 @@
+2022-03-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/doxygen/user.cfg.in: Add new header.
+	* include/Makefile.am: Likewise.
+	* include/Makefile.in: Regenerate.
+	* include/precompiled/stdc++.h: Add new header.
+	* include/std/version (__cpp_lib_expected): Define.
+	* libsupc++/exception [__cplusplus > 202002] (unexpected)
+	(unexpected_handler, set_unexpected): Do not declare for C++23.
+	* include/std/expected: New file.
+	* testsuite/20_util/expected/assign.cc: New test.
+	* testsuite/20_util/expected/cons.cc: New test.
+	* testsuite/20_util/expected/illformed_neg.cc: New test.
+	* testsuite/20_util/expected/observers.cc: New test.
+	* testsuite/20_util/expected/requirements.cc: New test.
+	* testsuite/20_util/expected/swap.cc: New test.
+	* testsuite/20_util/expected/synopsis.cc: New test.
+	* testsuite/20_util/expected/unexpected.cc: New test.
+	* testsuite/20_util/expected/version.cc: New test.
+
 2022-03-25  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/std/bit (bit_cast, byteswap, endian): Add doxygen
