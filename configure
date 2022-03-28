@@ -811,11 +811,9 @@ enable_pgo_build
 with_mpc
 with_mpc_include
 with_mpc_lib
-with_mpfr_dir
 with_mpfr
 with_mpfr_include
 with_mpfr_lib
-with_gmp_dir
 with_gmp
 with_gmp_include
 with_gmp_lib
@@ -1588,14 +1586,12 @@ Optional Packages:
                           --with-mpc-lib=PATH/lib
   --with-mpc-include=PATH specify directory for installed MPC include files
   --with-mpc-lib=PATH     specify directory for the installed MPC library
-  --with-mpfr-dir=PATH    this option has been REMOVED
   --with-mpfr=PATH        specify prefix directory for installed MPFR package.
                           Equivalent to --with-mpfr-include=PATH/include plus
                           --with-mpfr-lib=PATH/lib
   --with-mpfr-include=PATH
                           specify directory for installed MPFR include files
   --with-mpfr-lib=PATH    specify directory for the installed MPFR library
-  --with-gmp-dir=PATH     this option has been REMOVED
   --with-gmp=PATH         specify prefix directory for the installed GMP
                           package. Equivalent to
                           --with-gmp-include=PATH/include plus
@@ -3768,7 +3764,7 @@ case "${target}" in
   *-*-dragonfly*)
     ;;
   *-*-freebsd*)
-    if test "x$with_gmp" = x && test "x$with_gmp_dir" = x \
+    if test "x$with_gmp" = x \
 	&& ! test -d ${srcdir}/gmp \
 	&& test -f /usr/local/include/gmp.h; then
       with_gmp=/usr/local
@@ -7999,14 +7995,6 @@ fi
 # Specify a location for mpfr
 # check for this first so it ends up on the link line before gmp.
 
-# Check whether --with-mpfr-dir was given.
-if test "${with_mpfr_dir+set}" = set; then :
-  withval=$with_mpfr_dir; as_fn_error $? "The --with-mpfr-dir=PATH option has been removed.
-Use --with-mpfr=PATH or --with-mpfr-include=PATH plus --with-mpfr-lib=PATH" "$LINENO" 5
-fi
-
-
-
 # Check whether --with-mpfr was given.
 if test "${with_mpfr+set}" = set; then :
   withval=$with_mpfr;
@@ -8051,14 +8039,6 @@ if test "x$with_mpfr$with_mpfr_include$with_mpfr_lib" = x && test -d ${srcdir}/m
 fi
 
 # Specify a location for gmp
-
-# Check whether --with-gmp-dir was given.
-if test "${with_gmp_dir+set}" = set; then :
-  withval=$with_gmp_dir; as_fn_error $? "The --with-gmp-dir=PATH option has been removed.
-Use --with-gmp=PATH or --with-gmp-include=PATH plus --with-gmp-lib=PATH" "$LINENO" 5
-fi
-
-
 
 # Check whether --with-gmp was given.
 if test "${with_gmp+set}" = set; then :
