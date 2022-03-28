@@ -22297,15 +22297,52 @@
    (set_attr "prefix" "orig,orig,maybe_evex")
    (set_attr "mode" "TI")])
 
+(define_insn "*sse4_1_<code>v2qiv2di2<mask_name>_1"
+  [(set (match_operand:V2DI 0 "register_operand" "=v")
+	(any_extend:V2DI
+	 (match_operand:V2QI 1 "memory_operand" "m")))]
+  "TARGET_SSE4_1 && <mask_avx512vl_condition>"
+  "%vpmov<extsuffix>bq\t{%1, %0<mask_operand2>|%0<mask_operand2>, %1}"
+  [(set_attr "type" "ssemov")
+   (set_attr "prefix_extra" "1")
+   (set_attr "prefix" "maybe_evex")
+   (set_attr "mode" "TI")])
+
 (define_expand "<insn>v2qiv2di2"
   [(set (match_operand:V2DI 0 "register_operand")
 	(any_extend:V2DI
-	  (match_operand:V2QI 1 "register_operand")))]
+	 (match_operand:V2QI 1 "nonimmediate_operand")))]
   "TARGET_SSE4_1"
 {
-  rtx op1 = force_reg (V2QImode, operands[1]);
-  op1 = lowpart_subreg (V16QImode, op1, V2QImode);
-  emit_insn (gen_sse4_1_<code>v2qiv2di2 (operands[0], op1));
+  if (!MEM_P (operands[1]))
+    {
+      rtx op1 = force_reg (V2QImode, operands[1]);
+      op1 = lowpart_subreg (V16QImode, op1, V2QImode);
+      emit_insn (gen_sse4_1_<code>v2qiv2di2 (operands[0], op1));
+      DONE;
+    }
+})
+
+(define_insn_and_split "*sse4_1_zero_extendv2qiv2di2_2"
+  [(set (match_operand:V2DI 0 "register_operand")
+	(zero_extend:V2DI
+	 (vec_select:V2QI
+	  (subreg:V16QI
+	   (vec_merge:V8_128
+	    (vec_duplicate:V8_128
+	     (match_operand:<ssescalarmode> 1 "nonimmediate_operand"))
+	    (match_operand:V8_128 2 "const0_operand")
+	    (const_int 1)) 0)
+	  (parallel [(const_int 0) (const_int 1)]))))]
+  "TARGET_SSE4_1 && ix86_pre_reload_split ()"
+  "#"
+  "&& 1"
+  [(const_int 0)]
+{
+  if (!MEM_P (operands[1]))
+    operands[1] = force_reg (<ssescalarmode>mode, operands[1]);
+  operands[1] = lowpart_subreg (V2QImode, operands[1], <ssescalarmode>mode);
+  emit_insn (gen_zero_extendv2qiv2di2 (operands[0], operands[1]));
   DONE;
 })
 
