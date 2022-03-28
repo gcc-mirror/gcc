@@ -3967,6 +3967,31 @@ package body Sem_Ch8 is
                  ("implicit operation& is not visible (RM 8.3 (15))",
                   Nam, Old_S);
             end if;
+
+         --  Check whether an expanded name used for the renamed subprogram
+         --  begins with the same name as the renaming itself, and if so,
+         --  issue an error about the prefix being hidden by the renaming.
+         --  We exclude generic instances from this checking, since such
+         --  normally illegal renamings can be constructed when expanding
+         --  instantiations.
+
+         elsif Nkind (Nam) = N_Expanded_Name then
+            declare
+               function Ult_Expanded_Prefix (N : Node_Id) return Node_Id is
+                 (if Nkind (N) /= N_Expanded_Name
+                  then N
+                  else Ult_Expanded_Prefix (Prefix (N)));
+               --  Returns the ultimate prefix of an expanded name
+
+            begin
+               if Chars (Entity (Ult_Expanded_Prefix (Nam))) = Chars (New_S)
+                 and then not In_Instance
+               then
+                  Error_Msg_Sloc := Sloc (N);
+                  Error_Msg_NE
+                    ("& is hidden by declaration#", Nam, New_S);
+               end if;
+            end;
          end if;
 
          Set_Convention (New_S, Convention (Old_S));
