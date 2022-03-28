@@ -2250,9 +2250,9 @@ last_stmt_in_scope (gimple *stmt)
     }
 }
 
-/* Collect interesting labels in LABELS and return the statement preceding
-   another case label, or a user-defined label.  Store a location useful
-   to give warnings at *PREVLOC (usually the location of the returned
+/* Collect labels that may fall through into LABELS and return the statement
+   preceding another case label, or a user-defined label.  Store a location
+   useful to give warnings at *PREVLOC (usually the location of the returned
    statement or of its surrounding scope).  */
 
 static gimple *
@@ -2331,8 +2331,12 @@ collect_fallthrough_labels (gimple_stmt_iterator *gsi_p,
 	  if (gsi_end_p (*gsi_p))
 	    break;
 
-	  struct label_entry l = { false_lab, if_loc };
-	  labels->safe_push (l);
+	  /* A dead label can't fall through.  */
+	  if (!UNUSED_LABEL_P (false_lab))
+	    {
+	      struct label_entry l = { false_lab, if_loc };
+	      labels->safe_push (l);
+	    }
 
 	  /* Go to the last statement of the then branch.  */
 	  gsi_prev (gsi_p);
@@ -2359,6 +2363,17 @@ collect_fallthrough_labels (gimple_stmt_iterator *gsi_p,
 		  labels->safe_push (l);
 		}
 	    }
+	  /* This case is about
+	      if (1 != 0) goto <D.2022>; else goto <D.2023>;
+	      <D.2022>:
+	      n = n + 1; // #1
+	      <D.2023>:  // #2
+	      <D.1988>:  // #3
+	     where #2 is UNUSED_LABEL_P and we want to warn about #1 falling
+	     through to #3.  So set PREV to #1.  */
+	  else if (UNUSED_LABEL_P (false_lab))
+	    prev = gsi_stmt (*gsi_p);
+
 	  /* And move back.  */
 	  gsi_next (gsi_p);
 	}
@@ -4461,9 +4476,19 @@ gimplify_cond_expr (tree *expr_p, gimple_seq *pre_p, fallback_t fallback)
       if (TREE_OPERAND (expr, 1) == NULL_TREE
 	  && !have_else_clause_p
 	  && TREE_OPERAND (expr, 2) != NULL_TREE)
-	label_cont = label_true;
+	{
+	  /* For if (0) {} else { code; } tell -Wimplicit-fallthrough
+	     handling that label_cont == label_true can be only reached
+	     through fallthrough from { code; }.  */
+	  if (integer_zerop (COND_EXPR_COND (expr)))
+	    UNUSED_LABEL_P (label_true) = 1;
+	  label_cont = label_true;
+	}
       else
 	{
+	  bool then_side_effects
+	    = (TREE_OPERAND (expr, 1)
+	       && TREE_SIDE_EFFECTS (TREE_OPERAND (expr, 1)));
 	  gimplify_seq_add_stmt (&seq, gimple_build_label (label_true));
 	  have_then_clause_p = gimplify_stmt (&TREE_OPERAND (expr, 1), &seq);
 	  /* For if (...) { code; } else {} or
@@ -4476,6 +4501,16 @@ gimplify_cond_expr (tree *expr_p, gimple_seq *pre_p, fallback_t fallback)
 	    {
 	      gimple *g;
 	      label_cont = create_artificial_label (UNKNOWN_LOCATION);
+
+	      /* For if (0) { non-side-effect-code } else { code }
+		 tell -Wimplicit-fallthrough handling that label_cont can
+		 be only reached through fallthrough from { code }.  */
+	      if (integer_zerop (COND_EXPR_COND (expr)))
+		{
+		  UNUSED_LABEL_P (label_true) = 1;
+		  if (!then_side_effects)
+		    UNUSED_LABEL_P (label_cont) = 1;
+		}
 
 	      g = gimple_build_goto (label_cont);
 
@@ -4493,6 +4528,13 @@ gimplify_cond_expr (tree *expr_p, gimple_seq *pre_p, fallback_t fallback)
     }
   if (!have_else_clause_p)
     {
+      /* For if (1) { code } or if (1) { code } else { non-side-effect-code }
+	 tell -Wimplicit-fallthrough handling that label_false can be only
+	 reached through fallthrough from { code }.  */
+      if (integer_nonzerop (COND_EXPR_COND (expr))
+	  && (TREE_OPERAND (expr, 2) == NULL_TREE
+	      || !TREE_SIDE_EFFECTS (TREE_OPERAND (expr, 2))))
+	UNUSED_LABEL_P (label_false) = 1;
       gimplify_seq_add_stmt (&seq, gimple_build_label (label_false));
       have_else_clause_p = gimplify_stmt (&TREE_OPERAND (expr, 2), &seq);
     }
