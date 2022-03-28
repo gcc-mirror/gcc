@@ -44,7 +44,7 @@ echo
 cat <<EOF
 Enum
 Name(ptx_isa) Type(int)
-Known PTX ISA versions (for use with the -misa= option):
+Known PTX ISA target architectures (for use with the -misa= option):
 EOF
 
 # Separator.

@@ -23,7 +23,8 @@ s-nvptx-gen-h: $(srcdir)/config/nvptx/nvptx-sm.def
 	$(STAMP) s-nvptx-gen-h
 
 $(srcdir)/config/nvptx/nvptx-gen.opt: s-nvptx-gen-opt; @true
-s-nvptx-gen-opt: $(srcdir)/config/nvptx/nvptx-sm.def
+s-nvptx-gen-opt: $(srcdir)/config/nvptx/nvptx-sm.def \
+  $(srcdir)/config/nvptx/gen-opt.sh
 	$(SHELL) $(srcdir)/config/nvptx/gen-opt.sh "$(srcdir)/config/nvptx" \
 	  > tmp-nvptx-gen.opt
 	$(SHELL) $(srcdir)/../move-if-change \
