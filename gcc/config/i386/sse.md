@@ -20764,7 +20764,7 @@
 		      (match_operand:V4SI 4 "reg_or_const_vector_operand"
 					  "i,3,3")]
 		     UNSPEC_PSHUFB))
-   (clobber (match_scratch:V4SI 3 "=X,&x,&Yv"))]
+   (clobber (match_scratch:V4SI 3 "=X,&x,&Yw"))]
   "(TARGET_MMX || TARGET_MMX_WITH_SSE) && TARGET_SSSE3"
   "@
    pshufb\t{%2, %0|%0, %2}
