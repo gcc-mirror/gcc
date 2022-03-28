@@ -451,6 +451,7 @@ GNATRTL_NONTASKING_OBJS= \
   g-exptty$(objext) \
   g-flocon$(objext) \
   g-forstr$(objext) \
+  g-gfmafu$(objext) \
   g-graphs$(objext) \
   g-heasor$(objext) \
   g-hesora$(objext) \
@@ -897,7 +898,7 @@ ATOMICS_TARGET_PAIRS = \
 ATOMICS_BUILTINS_TARGET_PAIRS = \
   s-atocou.adb<libgnat/s-atocou__builtin.adb
 
-# Special version of units for x86 and x86-64 platforms.
+# Special version of units for x86 and x86-64 platforms
 
 X86_TARGET_PAIRS = \
   a-nuauco.ads<libgnat/a-nuauco__x86.ads \
@@ -907,7 +908,14 @@ X86_64_TARGET_PAIRS = \
   a-nuauco.ads<libgnat/a-nuauco__x86.ads \
   s-atocou.adb<libgnat/s-atocou__builtin.adb
 
-# Implementation of symbolic traceback based on dwarf
+# Special version of units for platforms with SIMD math functions
+
+SIMD_PATH_TARGET_PAIRS = \
+  a-nalofl.ads<libgnat/a-nalofl__simd.ads \
+  a-nuaufl.ads<libgnat/a-nuaufl__simd.ads
+
+# Implementation of symbolic traceback based on DWARF
+
 TRASYM_DWARF_UNIX_PAIRS = \
   s-trasym.adb<libgnat/s-trasym__dwarf.adb \
   s-mmosin.ads<libgnat/s-mmosin__unix.ads \
@@ -919,12 +927,17 @@ TRASYM_DWARF_MINGW_PAIRS = \
   s-mmosin.ads<libgnat/s-mmosin__mingw.ads \
   s-mmosin.adb<libgnat/s-mmosin__mingw.adb
 
-TRASYM_DWARF_COMMON_OBJS = s-objrea$(objext) s-dwalin$(objext) s-mmap$(objext) \
+TRASYM_DWARF_COMMON_OBJS = \
+  s-objrea$(objext) \
+  s-dwalin$(objext) \
+  s-mmap$(objext)   \
   s-mmosin$(objext)
 
 TRASYM_DWARF_UNIX_OBJS = $(TRASYM_DWARF_COMMON_OBJS) s-mmauni$(objext)
 
 TRASYM_DWARF_MINGW_OBJS = $(TRASYM_DWARF_COMMON_OBJS)
+
+# Support for 128-bit types
 
 GNATRTL_128BIT_PAIRS = \
   a-decima.ads<libgnat/a-decima__128.ads \
@@ -944,7 +957,6 @@ GNATRTL_128BIT_PAIRS = \
   s-scaval.ads<libgnat/s-scaval__128.ads \
   s-scaval.adb<libgnat/s-scaval__128.adb
 
-# Objects needed for 128-bit types
 GNATRTL_128BIT_OBJS = \
   s-arit128$(objext) \
   s-casi128$(objext) \
@@ -2621,6 +2633,7 @@ ifeq ($(strip $(filter-out %x86_64 linux%,$(target_cpu) $(target_os))),)
   s-tsmona.adb<libgnat/s-tsmona__linux.adb \
   $(ATOMICS_TARGET_PAIRS) \
   $(X86_64_TARGET_PAIRS) \
+  $(SIMD_PATH_TARGET_PAIRS) \
   $(GNATRTL_128BIT_PAIRS) \
   system.ads<libgnat/system-linux-x86.ads
 
@@ -2665,6 +2678,7 @@ ifeq ($(strip $(filter-out %x32 linux%,$(target_cpu) $(target_os))),)
   s-tsmona.adb<libgnat/s-tsmona__linux.adb \
   $(ATOMICS_TARGET_PAIRS) \
   $(X86_64_TARGET_PAIRS) \
+  $(SIMD_PATH_TARGET_PAIRS) \
   $(GNATRTL_128BIT_PAIRS) \
   system.ads<libgnat/system-linux-x86.ads
 

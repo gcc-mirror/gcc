@@ -269,7 +269,8 @@ package body Sem_Ch7 is
          --  declaration. Examine all declarations in list Decls in reverse
          --  and determine whether one such referencer exists. All entities
          --  in the range Last (Decls) .. Referencer are hidden from external
-         --  visibility.
+         --  visibility. In_Nested_Instance is true if we are inside a package
+         --  instance that has a body.
 
          function Scan_Subprogram_Ref (N : Node_Id) return Traverse_Result;
          --  Determine whether a node denotes a reference to a subprogram
@@ -282,8 +283,7 @@ package body Sem_Ch7 is
          --  tree traversal.
 
          procedure Scan_Subprogram_Refs (Node : Node_Id);
-         --  If we haven't already traversed Node, then mark it and traverse
-         --  it.
+         --  If we haven't already traversed Node, then mark and traverse it.
 
          --------------------
          -- Has_Referencer --
@@ -294,15 +294,16 @@ package body Sem_Ch7 is
             In_Nested_Instance                      : Boolean;
             Has_Outer_Referencer_Of_Non_Subprograms : Boolean) return Boolean
          is
-            Decl    : Node_Id;
-            Decl_Id : Entity_Id;
-            Spec    : Node_Id;
-
             Has_Referencer_Of_Non_Subprograms : Boolean :=
                                        Has_Outer_Referencer_Of_Non_Subprograms;
             --  Set if an inlined subprogram body was detected as a referencer.
             --  In this case, we do not return True immediately but keep hiding
             --  subprograms from external visibility.
+
+            Decl        : Node_Id;
+            Decl_Id     : Entity_Id;
+            In_Instance : Boolean;
+            Spec        : Node_Id;
 
          begin
             if No (Decls) then
@@ -331,16 +332,22 @@ package body Sem_Ch7 is
                   --  and hide more entities from external visibility.
 
                   if not Is_Generic_Unit (Decl_Id) then
+                     if In_Nested_Instance then
+                        In_Instance := True;
+                     elsif Is_Generic_Instance (Decl_Id) then
+                        In_Instance :=
+                          Has_Completion (Decl_Id)
+                            or else Unit_Requires_Body (Generic_Parent (Spec));
+                     else
+                        In_Instance := False;
+                     end if;
+
                      if Has_Referencer (Private_Declarations (Spec),
-                                        In_Nested_Instance
-                                          or else
-                                        Is_Generic_Instance (Decl_Id),
+                                        In_Instance,
                                         Has_Referencer_Of_Non_Subprograms)
                        or else
                         Has_Referencer (Visible_Declarations (Spec),
-                                        In_Nested_Instance
-                                          or else
-                                        Is_Generic_Instance (Decl_Id),
+                                        In_Instance,
                                         Has_Referencer_Of_Non_Subprograms)
                      then
                         return True;
@@ -473,6 +480,11 @@ package body Sem_Ch7 is
                                    | N_Object_Renaming_Declaration
                then
                   Decl_Id := Defining_Entity (Decl);
+
+                  --  We cannot say anything for objects declared in nested
+                  --  instances because instantiations are not done yet so the
+                  --  bodies are not visible and could contain references to
+                  --  them.
 
                   if not In_Nested_Instance
                     and then not Is_Imported (Decl_Id)

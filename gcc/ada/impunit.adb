@@ -279,6 +279,7 @@ package body Impunit is
     ("g-exptty", F),  -- GNAT.Expect.TTY
     ("g-flocon", F),  -- GNAT.Float_Control
     ("g-forstr", F),  -- GNAT.Formatted_String
+    ("g-gfmafu", F),  -- GNAT.Generic_Fast_Math_Functions
     ("g-graphs", F),  -- GNAT.Graphs
     ("g-heasor", F),  -- GNAT.Heap_Sort
     ("g-hesora", F),  -- GNAT.Heap_Sort_A

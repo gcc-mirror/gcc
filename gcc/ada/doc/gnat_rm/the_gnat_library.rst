@@ -1302,6 +1302,24 @@ output. Some generic routines are provided to be able to use types
 derived from Integer, Float or enumerations as values for the
 formatted string.
 
+.. _`GNAT.Generic_Fast_Math_Functions_(g-gfmafu.ads)`:
+
+``GNAT.Generic_Fast_Math_Functions`` (:file:`g-gfmafu.ads`)
+===========================================================
+
+.. index:: GNAT.Generic_Fast_Math_Functions (g-gfmafu.ads)
+
+.. index:: Mathematical functions
+
+Provides direct access to the underlying implementation of the common
+mathematical functions, generally from the system mathematical library.
+This differs from ``Ada.Numerics.Generic_Elementary_Functions`` in that
+the implementation may deviate from the semantics specified for these
+functions in the Reference Manual, for example ``Numerics.Argument_Error``
+is not raised. On selected platforms, some of these functions may also
+have a vector implementation that can be automatically used by the
+compiler when auto-vectorization is enabled.
+
 .. _`GNAT.Heap_Sort_(g-heasor.ads)`:
 
 ``GNAT.Heap_Sort`` (:file:`g-heasor.ads`)
