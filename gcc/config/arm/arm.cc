@@ -6194,7 +6194,7 @@ arm_pcs_from_attribute (tree attr)
    specification, DECL is the specific declartion.  DECL may be null if
    the call could be indirect or if this is a library call.  */
 static enum arm_pcs
-arm_get_pcs_model (const_tree type, const_tree decl)
+arm_get_pcs_model (const_tree type, const_tree decl ATTRIBUTE_UNUSED)
 {
   bool user_convention = false;
   enum arm_pcs user_pcs = arm_pcs_default;
@@ -6228,6 +6228,14 @@ arm_get_pcs_model (const_tree type, const_tree decl)
 	return ARM_PCS_AAPCS;
       else if (user_convention)
 	return user_pcs;
+#if 0
+      /* Unfortunately, this is not safe and can lead to wrong code
+	 being generated (PR96882).  Not all calls into the back-end
+	 pass the DECL, so it is unsafe to make any PCS-changing
+	 decisions based on it.  In particular the RETURN_IN_MEMORY
+	 hook is only ever passed a TYPE.  This needs revisiting to
+	 see if there are any partial improvements that can be
+	 re-enabled.  */
       else if (decl && flag_unit_at_a_time)
 	{
 	  /* Local functions never leak outside this compilation unit,
@@ -6239,6 +6247,7 @@ arm_get_pcs_model (const_tree type, const_tree decl)
 	  if (local_info_node && local_info_node->local)
 	    return ARM_PCS_AAPCS_LOCAL;
 	}
+#endif
     }
   else if (user_convention && user_pcs != arm_pcs_default)
     sorry ("PCS variant");
