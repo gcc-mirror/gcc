@@ -1493,8 +1493,8 @@ ifeq ($(strip $(filter-out arm% linux-androideabi,$(target_cpu) $(target_os))),)
   LIBRARY_VERSION := $(LIB_VERSION)
 endif
 
-# AARCH64 QNX
-ifeq ($(strip $(filter-out aarch64 %qnx,$(target_cpu) $(target_os))),)
+# ARM and AARCH64 QNX
+ifeq ($(strip $(filter-out arm aarch64 %qnx,$(target_cpu) $(target_os))),)
   LIBGNAT_TARGET_PAIRS = \
   a-intnam.ads<libgnarl/a-intnam__qnx.ads \
   a-nallfl.ads<libgnat/a-nallfl__wraplf.ads \
@@ -1511,21 +1511,28 @@ ifeq ($(strip $(filter-out aarch64 %qnx,$(target_cpu) $(target_os))),)
   g-soliop.ads<libgnat/g-soliop__qnx.ads \
   $(ATOMICS_TARGET_PAIRS) \
   $(ATOMICS_BUILTINS_TARGET_PAIRS) \
-  $(GNATRTL_128BIT_PAIRS) \
-  system.ads<libgnat/system-qnx-aarch64.ads
+  system.ads<libgnat/system-qnx-arm.ads
 
   TOOLS_TARGET_PAIRS = indepsw.adb<indepsw-gnu.adb
 
-  EXTRA_GNATRTL_NONTASKING_OBJS = $(GNATRTL_128BIT_OBJS)
   EXTRA_GNATRTL_TASKING_OBJS=s-qnx.o
-  EXTRA_LIBGNAT_OBJS+=sigtramp-qnx.o
+  ifeq ($(strip $(filter-out arm%, $(target_cpu))),)
+     EH_MECHANISM=-arm
+     SIGTRAMP_OBJ=sigtramp-arm-qnx.o
+  else
+     EH_MECHANISM=-gcc
+     SIGTRAMP_OBJ=sigtramp-qnx.o
+     LIBGNAT_TARGET_PAIRS += $(GNATRTL_128BIT_PAIRS)
+     EXTRA_GNATRTL_NONTASKING_OBJS = $(GNATRTL_128BIT_OBJS)
+     # Temporarily restrict shared library build to aarch64 (V303-025)
+     GNATLIB_SHARED = gnatlib-shared-dual
+  endif
+  EXTRA_LIBGNAT_OBJS+=$(SIGTRAMP_OBJ)
   EXTRA_LIBGNAT_SRCS+=sigtramp.h
-  EH_MECHANISM=-gcc
 
   SO_OPTS= -shared-libgcc -Wl,-soname,
   MISCLIB= -lsocket
   THREADSLIB=
-  GNATLIB_SHARED = gnatlib-shared-dual
   LIBRARY_VERSION := $(LIB_VERSION)
 endif
 

@@ -5,7 +5,7 @@
 --                               S Y S T E M                                --
 --                                                                          --
 --                                 S p e c                                  --
---                         (QNX/Aarch64 Version)                            --
+--                        (QNX-ARM/AARCH64 Version)                         --
 --                                                                          --
 --          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
