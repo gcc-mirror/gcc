@@ -11,6 +11,7 @@ typedef struct boxed_int { int value; } boxed_int;
 extern void extern_fn (struct st *);
 static void __attribute__((noinline)) internal_fn (struct st *) {}
 extern int extern_get_int (void);
+extern void extern_fn_char_ptr (const char *);
 
 void test_0 (void)
 {
@@ -96,4 +97,9 @@ int test_12 (void (*fnptr) (struct st *))
 {
   static struct st s12 = { __FILE__, __LINE__ }; /* { dg-warning "track 's12': yes" } */
   fnptr (&s12);
+}
+
+void test_13 (void)
+{
+  extern_fn_char_ptr (__func__); /* { dg-warning "track '__func__': no" } */
 }
