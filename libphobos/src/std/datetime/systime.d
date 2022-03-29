@@ -390,6 +390,33 @@ public:
                            hnsecsToUnixEpoch;
                 }
             }
+            else version (Hurd)
+            {
+                static if (clockType == ClockType.second)
+                    return unixTimeToStdTime(core.stdc.time.time(null));
+                else
+                {
+                    import core.sys.hurd.time : CLOCK_REALTIME_COARSE;
+                    import core.sys.posix.time : clock_gettime, CLOCK_REALTIME;
+                    static if (clockType == ClockType.coarse)       alias clockArg = CLOCK_REALTIME_COARSE;
+                    else static if (clockType == ClockType.normal)  alias clockArg = CLOCK_REALTIME;
+                    else static if (clockType == ClockType.precise) alias clockArg = CLOCK_REALTIME;
+                    else static assert(0, "Previous static if is wrong.");
+                    timespec ts = void;
+                    immutable error = clock_gettime(clockArg, &ts);
+                    // Posix clock_gettime called with a valid address and valid clock_id is only
+                    // permitted to fail if the number of seconds does not fit in time_t. If tv_sec
+                    // is long or larger overflow won't happen before 292 billion years A.D.
+                    static if (ts.tv_sec.max < long.max)
+                    {
+                        if (error)
+                            throw new TimeException("Call to clock_gettime() failed");
+                    }
+                    return convert!("seconds", "hnsecs")(ts.tv_sec) +
+                           ts.tv_nsec / 100 +
+                           hnsecsToUnixEpoch;
+                }
+            }
             else static assert(0, "Unsupported OS");
         }
         else static assert(0, "Unsupported OS");
@@ -693,7 +720,7 @@ public:
 
         Returns: The `this` of this `SysTime`.
       +/
-    ref SysTime opAssign()(auto ref const(SysTime) rhs) return scope @safe pure nothrow
+    ref SysTime opAssign()(auto ref const(SysTime) rhs) scope return @safe pure nothrow
     {
         _stdTime = rhs._stdTime;
         _timezone = rhs._timezone;

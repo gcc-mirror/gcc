@@ -2935,19 +2935,18 @@ struct Gcx
         else version (linux)
         {
             // clone() fits better as we don't want to do anything but scanning in the child process.
-            // no fork-handlera are called, so we can avoid deadlocks due to malloc locks. Probably related:
+            // no fork-handlers are called, so we can avoid deadlocks due to malloc locks. Probably related:
             //  https://sourceware.org/bugzilla/show_bug.cgi?id=4737
             import core.sys.linux.sched : clone;
             import core.sys.posix.signal : SIGCHLD;
-            enum CLONE_CHILD_CLEARTID = 0x00200000; /* Register exit futex and memory */
-            const flags = CLONE_CHILD_CLEARTID | SIGCHLD; // child thread id not needed
+            const flags = SIGCHLD; // exit signal
             scope int delegate() scope dg = &child_mark;
             extern(C) static int wrap_delegate(void* arg)
             {
                 auto dg = cast(int delegate() scope*)arg;
                 return (*dg)();
             }
-            char[256] stackbuf; // enough stack space for clone() to place some info for the child without stomping the parent stack
+            ubyte[256] stackbuf; // enough stack space for clone() to place some info for the child without stomping the parent stack
             auto stack = stackbuf.ptr + (isStackGrowingDown ? stackbuf.length : 0);
             auto pid = clone(&wrap_delegate, stack, flags, &dg);
         }
@@ -2957,7 +2956,6 @@ struct Gcx
             auto pid = fork();
             fork_needs_lock = true;
         }
-        assert(pid != -1);
         switch (pid)
         {
             case -1: // fork() failed, retry without forking
@@ -3028,7 +3026,7 @@ struct Gcx
         //printf("\tpool address range = %p .. %p\n", minAddr, maxAddr);
 
         version (COLLECT_FORK)
-            bool doFork = shouldFork;
+            alias doFork = shouldFork;
         else
             enum doFork = false;
 
@@ -3083,6 +3081,7 @@ Lmark:
                     final switch (forkResult)
                     {
                         case ChildStatus.error:
+                            // fork() failed, retry without forking
                             disableFork();
                             goto Lmark;
                         case ChildStatus.running:

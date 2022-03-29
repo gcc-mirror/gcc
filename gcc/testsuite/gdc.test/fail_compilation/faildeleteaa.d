@@ -1,7 +1,8 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/faildeleteaa.d(11): Error: The `delete` keyword is obsolete.  Use `object.destroy()` (and `core.memory.GC.free()` if applicable) instead.
+fail_compilation/faildeleteaa.d(12): Error: the `delete` keyword is obsolete
+fail_compilation/faildeleteaa.d(12):        use `object.destroy()` (and `core.memory.GC.free()` if applicable) instead
 ---
 */
 

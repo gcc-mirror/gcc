@@ -19,4 +19,3 @@ void main()
     void[] v;
     immutable x = f(v);
 }
-

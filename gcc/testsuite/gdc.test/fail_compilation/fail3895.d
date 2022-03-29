@@ -11,4 +11,3 @@ void main() {
     float[] otherStuff;
     otherStuff ~= stuff;
 }
-

@@ -15,4 +15,3 @@ void test()
     Object o;
     auto ti = o.classinfo;
 }
-

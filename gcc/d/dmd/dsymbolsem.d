@@ -231,7 +231,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
 
     override void visit(AliasThis dsym)
     {
-        if (dsym.semanticRun != PASS.init)
+        if (dsym.semanticRun != PASS.initial)
             return;
 
         if (dsym._scope)
@@ -346,7 +346,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
             printf("linkage = %d\n", dsym.linkage);
             //if (strcmp(toChars(), "mul") == 0) assert(0);
         }
-        //if (semanticRun > PASS.init)
+        //if (semanticRun > PASS.initial)
         //    return;
         //semanticRun = PSSsemantic;
 
@@ -417,7 +417,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
             }
             //printf("inferring type for %s with init %s\n", dsym.toChars(), dsym._init.toChars());
             dsym._init = dsym._init.inferType(sc);
-            dsym.type = dsym._init.initializerToExpression().type;
+            dsym.type = dsym._init.initializerToExpression(null, (sc.flags & SCOPE.Cfile) != 0).type;
             if (needctfe)
                 sc = sc.endCTFE();
 
@@ -527,7 +527,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
              * and add those.
              */
             size_t nelems = Parameter.dim(tt.arguments);
-            Expression ie = (dsym._init && !dsym._init.isVoidInitializer()) ? dsym._init.initializerToExpression() : null;
+            Expression ie = (dsym._init && !dsym._init.isVoidInitializer()) ? dsym._init.initializerToExpression(null, (sc.flags & SCOPE.Cfile) != 0) : null;
             if (ie)
                 ie = ie.expressionSemantic(sc);
             if (nelems > 0 && ie)
@@ -987,12 +987,12 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
                         if (ai && tb.ty == Taarray)
                             e = ai.toAssocArrayLiteral();
                         else
-                            e = dsym._init.initializerToExpression();
+                            e = dsym._init.initializerToExpression(null, (sc.flags & SCOPE.Cfile) != 0);
                         if (!e)
                         {
                             // Run semantic, but don't need to interpret
                             dsym._init = dsym._init.initializerSemantic(sc, dsym.type, INITnointerpret);
-                            e = dsym._init.initializerToExpression();
+                            e = dsym._init.initializerToExpression(null, (sc.flags & SCOPE.Cfile) != 0);
                             if (!e)
                             {
                                 dsym.error("is not a static and cannot have static initializer");
@@ -1162,23 +1162,6 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
         dsym.edtor = dsym.callScopeDtor(sc);
         if (dsym.edtor)
         {
-            /* If dsym is a local variable, who's type is a struct with a scope destructor,
-             * then make dsym scope, too.
-             */
-            if (global.params.useDIP1000 == FeatureState.enabled &&
-                !(dsym.storage_class & (STC.parameter | STC.temp | STC.field | STC.in_ | STC.foreach_ | STC.result | STC.manifest)) &&
-                !dsym.isDataseg() &&
-                !dsym.doNotInferScope &&
-                dsym.type.hasPointers())
-            {
-                auto tv = dsym.type.baseElemOf();
-                if (tv.ty == Tstruct &&
-                    tv.isTypeStruct().sym.dtor.storage_class & STC.scope_)
-                {
-                    dsym.storage_class |= STC.scope_;
-                }
-            }
-
             if (sc.func && dsym.storage_class & (STC.static_ | STC.gshared))
                 dsym.edtor = dsym.edtor.expressionSemantic(sc._module._scope);
             else
@@ -1256,7 +1239,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
     override void visit(Import imp)
     {
         //printf("Import::semantic('%s') %s\n", toPrettyChars(), id.toChars());
-        if (imp.semanticRun > PASS.init)
+        if (imp.semanticRun > PASS.initial)
             return;
 
         if (imp._scope)
@@ -1433,7 +1416,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
 
     void attribSemantic(AttribDeclaration ad)
     {
-        if (ad.semanticRun != PASS.init)
+        if (ad.semanticRun != PASS.initial)
             return;
         ad.semanticRun = PASS.semantic;
         Dsymbols* d = ad.include(sc);
@@ -1776,7 +1759,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
                     }
                     else if (auto f = s.isFuncDeclaration())
                     {
-                        f.isCrtCtorDtor |= isCtor ? 1 : 2;
+                        f.flags |= isCtor ? FUNCFLAG.CRTCtor : FUNCFLAG.CRTDtor;
                         return 1;
                     }
                     else
@@ -1990,7 +1973,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
 
     override void visit(Module m)
     {
-        if (m.semanticRun != PASS.init)
+        if (m.semanticRun != PASS.initial)
             return;
         //printf("+Module::semantic(this = %p, '%s'): parent = %p\n", this, toChars(), parent);
         m.semanticRun = PASS.semantic;
@@ -2099,7 +2082,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
                     deferDsymbolSemantic(ed, scx);
                     Module.dprogress = dprogress_save;
                     //printf("\tdeferring %s\n", toChars());
-                    ed.semanticRun = PASS.init;
+                    ed.semanticRun = PASS.initial;
                     return;
                 }
                 else
@@ -2503,7 +2486,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
             printf("sc.stc = %llx\n", sc.stc);
             printf("sc.module = %s\n", sc._module.toChars());
         }
-        if (tempdecl.semanticRun != PASS.init)
+        if (tempdecl.semanticRun != PASS.initial)
             return; // semantic() already run
 
         if (tempdecl._scope)
@@ -2648,11 +2631,11 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
             printf("+TemplateMixin.dsymbolSemantic('%s', this=%p)\n", tm.toChars(), tm);
             fflush(stdout);
         }
-        if (tm.semanticRun != PASS.init)
+        if (tm.semanticRun != PASS.initial)
         {
             // When a class/struct contains mixin members, and is done over
             // because of forward references, never reach here so semanticRun
-            // has been reset to PASS.init.
+            // has been reset to PASS.initial.
             static if (LOG)
             {
                 printf("\tsemantic done\n");
@@ -2678,7 +2661,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
          */
         if (!tm.findTempDecl(sc) || !tm.semanticTiargs(sc) || !tm.findBestMatch(sc, null))
         {
-            if (tm.semanticRun == PASS.init) // forward reference had occurred
+            if (tm.semanticRun == PASS.initial) // forward reference had occurred
             {
                 //printf("forward reference - deferring\n");
                 return deferDsymbolSemantic(tm, scx);
@@ -2865,7 +2848,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
 
     override void visit(Nspace ns)
     {
-        if (ns.semanticRun != PASS.init)
+        if (ns.semanticRun != PASS.initial)
             return;
         static if (LOG)
         {
@@ -2989,7 +2972,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
             printf("type: %p, %s\n", funcdecl.type, funcdecl.type.toChars());
         }
 
-        if (funcdecl.semanticRun != PASS.init && funcdecl.isFuncLiteralDeclaration())
+        if (funcdecl.semanticRun != PASS.initial && funcdecl.isFuncLiteralDeclaration())
         {
             /* Member functions that have return types that are
              * forward references can have semantic() run more than
@@ -3023,7 +3006,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
         AggregateDeclaration ad = funcdecl.isThis();
         // Don't nest structs b/c of generated methods which should not access the outer scopes.
         // https://issues.dlang.org/show_bug.cgi?id=16627
-        if (ad && !funcdecl.generated)
+        if (ad && !funcdecl.isGenerated())
         {
             funcdecl.storage_class |= ad.storage_class & (STC.TYPECTOR | STC.synchronized_);
             ad.makeNested();
@@ -3061,12 +3044,12 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
             funcdecl.inlining = pragmadecl.evalPragmaInline(sc);
 
         // check pragma(crt_constructor)
-        if (funcdecl.isCrtCtorDtor)
+        if (funcdecl.flags & (FUNCFLAG.CRTCtor | FUNCFLAG.CRTDtor))
         {
             if (funcdecl.linkage != LINK.c)
             {
                 funcdecl.error("must be `extern(C)` for `pragma(%s)`",
-                    funcdecl.isCrtCtorDtor == 1 ? "crt_constructor".ptr : "crt_destructor".ptr);
+                    (funcdecl.flags & FUNCFLAG.CRTCtor) ? "crt_constructor".ptr : "crt_destructor".ptr);
             }
         }
 
@@ -3293,7 +3276,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
             if (sc.scopesym && sc.scopesym.isAggregateDeclaration())
                 funcdecl.error("`static` member has no `this` to which `return` can apply");
             else
-                error(funcdecl.loc, "Top-level function `%s` has no `this` to which `return` can apply", funcdecl.toChars());
+                error(funcdecl.loc, "top-level function `%s` has no `this` to which `return` can apply", funcdecl.toChars());
         }
 
         if (funcdecl.isAbstract() && !funcdecl.isVirtual())
@@ -3524,7 +3507,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
                 else
                 {
                     //printf("\tintroducing function %s\n", funcdecl.toChars());
-                    funcdecl.introducing = 1;
+                    funcdecl.flags |= FUNCFLAG.introducing;
                     if (cd.classKind == ClassKind.cpp && target.cpp.reverseOverloads)
                     {
                         /* Overloaded functions with same name are grouped and in reverse order.
@@ -3916,8 +3899,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
             }
         }
 
-        if (funcdecl.isMain())
-            funcdecl.checkDmain();       // Check main() parameters and return type
+        funcdecl.checkMain();       // Check main() parameters and return type
 
         /* Purity and safety can be inferred for some functions by examining
          * the function body.
@@ -4525,7 +4507,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
 
         if (sd.errors)
             sd.type = Type.terror;
-        if (sd.semanticRun == PASS.init)
+        if (sd.semanticRun == PASS.initial)
             sd.type = sd.type.addSTC(sc.stc | sd.storage_class);
         sd.type = sd.type.typeSemantic(sd.loc, sc);
         if (auto ts = sd.type.isTypeStruct())
@@ -4539,7 +4521,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
         // Ungag errors when not speculative
         Ungag ungag = sd.ungagSpeculative();
 
-        if (sd.semanticRun == PASS.init)
+        if (sd.semanticRun == PASS.initial)
         {
             sd.visibility = sc.visibility;
 
@@ -4747,7 +4729,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
 
         if (cldec.errors)
             cldec.type = Type.terror;
-        if (cldec.semanticRun == PASS.init)
+        if (cldec.semanticRun == PASS.initial)
             cldec.type = cldec.type.addSTC(sc.stc | cldec.storage_class);
         cldec.type = cldec.type.typeSemantic(cldec.loc, sc);
         if (auto tc = cldec.type.isTypeClass())
@@ -4761,7 +4743,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
         // Ungag errors when not speculative
         Ungag ungag = cldec.ungagSpeculative();
 
-        if (cldec.semanticRun == PASS.init)
+        if (cldec.semanticRun == PASS.initial)
         {
             cldec.visibility = sc.visibility;
 
@@ -5259,7 +5241,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
 
                 auto ctor = new CtorDeclaration(cldec.loc, Loc.initial, 0, tf);
                 ctor.storage_class |= STC.inference;
-                ctor.generated = true;
+                ctor.flags |= FUNCFLAG.generated;
                 ctor.fbody = new CompoundStatement(Loc.initial, new Statements());
 
                 cldec.members.push(ctor);
@@ -5416,7 +5398,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
         // Ungag errors when not speculative
         Ungag ungag = idec.ungagSpeculative();
 
-        if (idec.semanticRun == PASS.init)
+        if (idec.semanticRun == PASS.initial)
         {
             idec.visibility = sc.visibility;
 
@@ -5750,7 +5732,7 @@ void templateInstanceSemantic(TemplateInstance tempinst, Scope* sc, Expressions*
         }
         return;
     }
-    if (tempinst.semanticRun != PASS.init)
+    if (tempinst.semanticRun != PASS.initial)
     {
         static if (LOG)
         {
@@ -5761,7 +5743,7 @@ void templateInstanceSemantic(TemplateInstance tempinst, Scope* sc, Expressions*
             global.gag = 0;
         tempinst.error(tempinst.loc, "recursive template expansion");
         if (tempinst.gagged)
-            tempinst.semanticRun = PASS.init;
+            tempinst.semanticRun = PASS.initial;
         else
             tempinst.inst = tempinst;
         tempinst.errors = true;
@@ -5800,7 +5782,7 @@ void templateInstanceSemantic(TemplateInstance tempinst, Scope* sc, Expressions*
         {
             // https://issues.dlang.org/show_bug.cgi?id=13220
             // Roll back status for later semantic re-running
-            tempinst.semanticRun = PASS.init;
+            tempinst.semanticRun = PASS.initial;
         }
         else
             tempinst.inst = tempinst;
@@ -6034,7 +6016,7 @@ void templateInstanceSemantic(TemplateInstance tempinst, Scope* sc, Expressions*
 
     // Create our own scope for the template parameters
     Scope* _scope = tempdecl._scope;
-    if (tempdecl.semanticRun == PASS.init)
+    if (tempdecl.semanticRun == PASS.initial)
     {
         tempinst.error("template instantiation `%s` forward references template declaration `%s`", tempinst.toChars(), tempdecl.toChars());
         return;
@@ -6332,7 +6314,7 @@ Laftersemantic:
                 target_symbol_list.remove(target_symbol_list_idx);
                 tempinst.memberOf = null;                    // no longer a member
             }
-            tempinst.semanticRun = PASS.init;
+            tempinst.semanticRun = PASS.initial;
             tempinst.inst = null;
             tempinst.symtab = null;
         }
@@ -6495,10 +6477,10 @@ void aliasSemantic(AliasDeclaration ds, Scope* sc)
 
     // Ungag errors when not instantiated DeclDefs scope alias
     auto ungag = Ungag(global.gag);
-    //printf("%s parent = %s, gag = %d, instantiated = %d\n", toChars(), parent, global.gag, isInstantiated());
-    if (ds.parent && global.gag && !ds.isInstantiated() && !ds.toParent2().isFuncDeclaration())
+    //printf("%s parent = %s, gag = %d, instantiated = %d\n", ds.toChars(), ds.parent.toChars(), global.gag, ds.isInstantiated() !is null);
+    if (ds.parent && global.gag && !ds.isInstantiated() && !ds.toParent2().isFuncDeclaration() && (sc.minst || sc.tinst))
     {
-        //printf("%s type = %s\n", toPrettyChars(), type.toChars());
+        //printf("%s type = %s\n", ds.toPrettyChars(), ds.type.toChars());
         global.gag = 0;
     }
 
@@ -6572,13 +6554,13 @@ void aliasSemantic(AliasDeclaration ds, Scope* sc)
     }
     if (s) // it's a symbolic alias
     {
-        //printf("alias %s resolved to %s %s\n", toChars(), s.kind(), s.toChars());
+        //printf("alias %s resolved to %s %s\n", ds.toChars(), s.kind(), s.toChars());
         ds.type = null;
         ds.aliassym = s;
     }
     else    // it's a type alias
     {
-        //printf("alias %s resolved to type %s\n", toChars(), type.toChars());
+        //printf("alias %s resolved to type %s\n", ds.toChars(), ds.type.toChars());
         ds.type = ds.type.typeSemantic(ds.loc, sc);
         ds.aliassym = null;
     }

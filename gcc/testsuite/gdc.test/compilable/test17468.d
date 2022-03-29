@@ -9,4 +9,3 @@ struct S
         }
 }
 const S CONST_S = S("/tmp".ptr);
-

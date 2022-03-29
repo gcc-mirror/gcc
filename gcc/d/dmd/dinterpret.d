@@ -535,7 +535,7 @@ private Expression interpretFunction(UnionExp* pue, FuncDeclaration fd, InterSta
     istatex.caller = istate;
     istatex.fd = fd;
 
-    if (fd.isThis2)
+    if (fd.hasDualContext())
     {
         Expression arg0 = thisarg;
         if (arg0 && arg0.type.ty == Tstruct)
@@ -678,7 +678,7 @@ private Expression interpretFunction(UnionExp* pue, FuncDeclaration fd, InterSta
         e = CTFEExp.voidexp;
     if (tf.isref && e.op == EXP.variable && e.isVarExp().var == fd.vthis)
         e = thisarg;
-    if (tf.isref && fd.isThis2 && e.op == EXP.index)
+    if (tf.isref && fd.hasDualContext() && e.op == EXP.index)
     {
         auto ie = e.isIndexExp();
         auto pe = ie.e1.isPtrExp();
@@ -944,7 +944,7 @@ public:
             if (auto eaddr = e.isAddrExp())
                 x = eaddr.e1;
             VarDeclaration v;
-            while (x.op == EXP.variable && (v = (cast(VarExp)x).var.isVarDeclaration()) !is null)
+            while (x.op == EXP.variable && (v = x.isVarExp().var.isVarDeclaration()) !is null)
             {
                 if (v.storage_class & STC.ref_)
                 {
@@ -1526,7 +1526,7 @@ public:
         }
         while ((*boss.value.elements)[next].op == EXP.classReference)
         {
-            boss = cast(ClassReferenceExp)(*boss.value.elements)[next];
+            boss = (*boss.value.elements)[next].isClassReferenceExp();
         }
         (*boss.value.elements)[next] = collateral;
         return oldest;
@@ -1752,7 +1752,7 @@ public:
             if (istate && istate.fd.vthis)
             {
                 result = ctfeEmplaceExp!VarExp(e.loc, istate.fd.vthis);
-                if (istate.fd.isThis2)
+                if (istate.fd.hasDualContext())
                 {
                     result = ctfeEmplaceExp!PtrExp(e.loc, result);
                     result.type = Type.tvoidptr.sarrayOf(2);
@@ -1768,15 +1768,15 @@ public:
         result = ctfeGlobals.stack.getThis();
         if (result)
         {
-            if (istate && istate.fd.isThis2)
+            if (istate && istate.fd.hasDualContext())
             {
                 assert(result.op == EXP.address);
-                result = (cast(AddrExp)result).e1;
+                result = result.isAddrExp().e1;
                 assert(result.op == EXP.arrayLiteral);
-                result = (*(cast(ArrayLiteralExp)result).elements)[0];
+                result = (*result.isArrayLiteralExp().elements)[0];
                 if (e.type.ty == Tstruct)
                 {
-                    result = (cast(AddrExp)result).e1;
+                    result = result.isAddrExp().e1;
                 }
                 return;
             }
@@ -1873,7 +1873,9 @@ public:
         {
             fromType = (cast(TypeArray)e.var.type).next;
         }
-        if (e.var.isDataseg() && ((e.offset == 0 && isSafePointerCast(e.var.type, pointee)) || (fromType && isSafePointerCast(fromType, pointee))))
+        if (e.var.isDataseg() && ((e.offset == 0 && isSafePointerCast(e.var.type, pointee)) ||
+                                  (fromType && isSafePointerCast(fromType, pointee)) ||
+                                  (e.var.isCsymbol() && e.offset + pointee.size() <= e.var.type.size())))
         {
             result = e;
             return;
@@ -1980,7 +1982,7 @@ public:
             if (decl.isDataseg()) {
                 // Normally this is already done by optimize()
                 // Do it here in case optimize(WANTvalue) wasn't run before CTFE
-                emplaceExp!(SymOffExp)(pue, e.loc, (cast(VarExp)e.e1).var, 0);
+                emplaceExp!(SymOffExp)(pue, e.loc, e.e1.isVarExp().var, 0);
                 result = pue.exp();
                 result.type = e.type;
                 return;
@@ -2399,7 +2401,7 @@ public:
                 return;
             }
 
-            ClassDeclaration cd = (cast(ClassReferenceExp)result).originalClass();
+            ClassDeclaration cd = result.isClassReferenceExp().originalClass();
             assert(cd);
 
             emplaceExp!(TypeidExp)(pue, e.loc, cd.type);
@@ -2487,7 +2489,7 @@ public:
             else
             {
                 // segfault bug 6250
-                assert(exp.op != EXP.index || (cast(IndexExp)exp).e1 != e);
+                assert(exp.op != EXP.index || exp.isIndexExp().e1 != e);
 
                 ex = interpretRegion(exp, istate);
                 if (exceptionOrCant(ex))
@@ -2521,7 +2523,7 @@ public:
                 return;
             }
             emplaceExp!(ArrayLiteralExp)(pue, e.loc, e.type, basis, expsx);
-            auto ale = cast(ArrayLiteralExp)pue.exp();
+            auto ale = pue.exp().isArrayLiteralExp();
             ale.ownedByCtfe = OwnedBy.ctfe;
             result = ale;
         }
@@ -2705,7 +2707,7 @@ public:
                 return;
             }
             emplaceExp!(StructLiteralExp)(pue, e.loc, e.sd, expsx);
-            auto sle = cast(StructLiteralExp)pue.exp();
+            auto sle = pue.exp().isStructLiteralExp();
             sle.type = e.type;
             sle.ownedByCtfe = OwnedBy.ctfe;
             sle.origin = e.origin;
@@ -2737,7 +2739,7 @@ public:
             foreach (ref element; *elements)
                 element = copyLiteral(elem).copy();
             emplaceExp!(ArrayLiteralExp)(pue, loc, newtype, elements);
-            auto ae = cast(ArrayLiteralExp)pue.exp();
+            auto ae = pue.exp().isArrayLiteralExp();
             ae.ownedByCtfe = OwnedBy.ctfe;
             return ae;
         }
@@ -2959,7 +2961,7 @@ public:
             result = e; // optimize: reuse this CTFE reference
         else
         {
-            auto edt = cast(DotTypeExp)e.copy();
+            auto edt = e.copy().isDotTypeExp();
             edt.e1 = (e1 == ue.exp()) ? e1.copy() : e1; // don't return pointer to ue
             result = edt;
         }
@@ -3335,7 +3337,7 @@ public:
             if (exceptionOrCant(newval))
                 return;
 
-            VarDeclaration v = (cast(VarExp)e1).var.isVarDeclaration();
+            VarDeclaration v = e1.isVarExp().var.isVarDeclaration();
             setValue(v, newval);
 
             // Get the value to return. Note that 'newval' is an Lvalue,
@@ -3351,7 +3353,7 @@ public:
         {
             while (e1.op == EXP.cast_)
             {
-                CastExp ce = cast(CastExp)e1;
+                CastExp ce = e1.isCastExp();
                 e1 = ce.e1;
             }
         }
@@ -3362,7 +3364,7 @@ public:
         AssocArrayLiteralExp existingAA = null;
         Expression lastIndex = null;
         Expression oldval = null;
-        if (e1.op == EXP.index && (cast(IndexExp)e1).e1.type.toBasetype().ty == Taarray)
+        if (e1.op == EXP.index && e1.isIndexExp().e1.type.toBasetype().ty == Taarray)
         {
             // ---------------------------------------
             //      Deal with AA index assignment
@@ -3374,12 +3376,12 @@ public:
              * (2) If the ultimate AA is null, no insertion happens at all. Instead,
              *     we create nested AA literals, and change it into a assignment.
              */
-            IndexExp ie = cast(IndexExp)e1;
+            IndexExp ie = e1.isIndexExp();
             int depth = 0; // how many nested AA indices are there?
-            while (ie.e1.op == EXP.index && (cast(IndexExp)ie.e1).e1.type.toBasetype().ty == Taarray)
+            while (ie.e1.op == EXP.index && ie.e1.isIndexExp().e1.type.toBasetype().ty == Taarray)
             {
                 assert(ie.modifiable);
-                ie = cast(IndexExp)ie.e1;
+                ie = ie.e1.isIndexExp();
                 ++depth;
             }
 
@@ -3392,7 +3394,7 @@ public:
                 // Normal case, ultimate parent AA already exists
                 // We need to walk from the deepest index up, checking that an AA literal
                 // already exists on each level.
-                lastIndex = interpretRegion((cast(IndexExp)e1).e2, istate);
+                lastIndex = interpretRegion(e1.isIndexExp().e2, istate);
                 lastIndex = resolveSlice(lastIndex); // only happens with AA assignment
                 if (exceptionOrCant(lastIndex))
                     return;
@@ -3400,9 +3402,9 @@ public:
                 while (depth > 0)
                 {
                     // Walk the syntax tree to find the indexExp at this depth
-                    IndexExp xe = cast(IndexExp)e1;
+                    IndexExp xe = e1.isIndexExp();
                     foreach (d; 0 .. depth)
-                        xe = cast(IndexExp)xe.e1;
+                        xe = xe.e1.isIndexExp();
 
                     Expression ekey = interpretRegion(xe.e2, istate);
                     if (exceptionOrCant(ekey))
@@ -3450,9 +3452,9 @@ public:
                 oldval = copyLiteral(e.e1.type.defaultInitLiteral(e.loc)).copy();
 
                 Expression newaae = oldval;
-                while (e1.op == EXP.index && (cast(IndexExp)e1).e1.type.toBasetype().ty == Taarray)
+                while (e1.op == EXP.index && e1.isIndexExp().e1.type.toBasetype().ty == Taarray)
                 {
-                    Expression ekey = interpretRegion((cast(IndexExp)e1).e2, istate);
+                    Expression ekey = interpretRegion(e1.isIndexExp().e2, istate);
                     if (exceptionOrCant(ekey))
                         return;
                     ekey = resolveSlice(ekey); // only happens with AA assignment
@@ -3463,7 +3465,7 @@ public:
                     valuesx.push(newaae);
 
                     auto aae = ctfeEmplaceExp!AssocArrayLiteralExp(e.loc, keysx, valuesx);
-                    aae.type = (cast(IndexExp)e1).e1.type;
+                    aae.type = e1.isIndexExp().e1.type;
                     aae.ownedByCtfe = OwnedBy.ctfe;
                     if (!existingAA)
                     {
@@ -3471,7 +3473,7 @@ public:
                         lastIndex = ekey;
                     }
                     newaae = aae;
-                    e1 = (cast(IndexExp)e1).e1;
+                    e1 = e1.isIndexExp().e1;
                 }
 
                 // We must set to aggregate with newaae
@@ -3521,11 +3523,11 @@ public:
             if (exceptionOrCant(e1))
                 return;
 
-            if (e1.op == EXP.index && (cast(IndexExp)e1).e1.type.toBasetype().ty == Taarray)
+            if (e1.op == EXP.index && e1.isIndexExp().e1.type.toBasetype().ty == Taarray)
             {
-                IndexExp ie = cast(IndexExp)e1;
+                IndexExp ie = e1.isIndexExp();
                 assert(ie.e1.op == EXP.assocArrayLiteral);
-                existingAA = cast(AssocArrayLiteralExp)ie.e1;
+                existingAA = ie.e1.isAssocArrayLiteralExp();
                 lastIndex = ie.e2;
             }
         }
@@ -3657,7 +3659,7 @@ public:
 
             // We have changed it into a reference assignment
             // Note that returnValue is still the new length.
-            e1 = (cast(ArrayLengthExp)e1).e1;
+            e1 = e1.isArrayLengthExp().e1;
             Type t = e1.type.toBasetype();
             if (t.ty != Tarray)
             {
@@ -3733,8 +3735,8 @@ public:
                 if (auto dve = e1x.isDotVarExp())
                 {
                     auto ex = dve.e1;
-                    auto sle = ex.op == EXP.structLiteral ? (cast(StructLiteralExp)ex)
-                             : ex.op == EXP.classReference ? (cast(ClassReferenceExp)ex).value
+                    auto sle = ex.op == EXP.structLiteral ? ex.isStructLiteralExp()
+                             : ex.op == EXP.classReference ? ex.isClassReferenceExp().value
                              : null;
                     auto v = dve.var.isVarDeclaration();
                     if (!sle || !v)
@@ -3792,10 +3794,10 @@ public:
              *  e.v = newval
              */
             auto ex = dve.e1;
-            auto sle = ex.op == EXP.structLiteral ? (cast(StructLiteralExp)ex)
-                     : ex.op == EXP.classReference ? (cast(ClassReferenceExp)ex).value
+            auto sle = ex.op == EXP.structLiteral ? ex.isStructLiteralExp()
+                     : ex.op == EXP.classReference ? ex.isClassReferenceExp().value
                      : null;
-            auto v = (cast(DotVarExp)e1).var.isVarDeclaration();
+            auto v = e1.isDotVarExp().var.isVarDeclaration();
             if (!sle || !v)
             {
                 e.error("CTFE internal error: dotvar assignment");
@@ -3808,7 +3810,7 @@ public:
             }
 
             int fieldi = ex.op == EXP.structLiteral ? findFieldIndexByName(sle.sd, v)
-                       : (cast(ClassReferenceExp)ex).findFieldIndexByName(v);
+                       : ex.isClassReferenceExp().findFieldIndexByName(v);
             if (fieldi == -1)
             {
                 e.error("CTFE internal error: cannot find field `%s` in `%s`", v.toChars(), ex.toChars());
@@ -3865,7 +3867,7 @@ public:
                 return CTFEExp.cantexp;
             }
 
-            ArrayLiteralExp existingAE = cast(ArrayLiteralExp)aggregate;
+            ArrayLiteralExp existingAE = aggregate.isArrayLiteralExp();
             if (existingAE.ownedByCtfe != OwnedBy.ctfe)
             {
                 e.error("cannot modify read-only constant `%s`", existingAE.toChars());
@@ -3920,8 +3922,8 @@ public:
             assert(oldval.op == EXP.arrayLiteral);
             assert(newval.op == EXP.arrayLiteral);
 
-            Expressions* oldelems = (cast(ArrayLiteralExp)oldval).elements;
-            Expressions* newelems = (cast(ArrayLiteralExp)newval).elements;
+            Expressions* oldelems = oldval.isArrayLiteralExp().elements;
+            Expressions* newelems = newval.isArrayLiteralExp().elements;
             assert(oldelems.dim == newelems.dim);
 
             Type elemtype = oldval.type.nextOf();
@@ -4124,7 +4126,7 @@ public:
 
             if (newval.op == EXP.slice && !isBlockAssignment)
             {
-                auto se = cast(SliceExp)newval;
+                auto se = newval.isSliceExp();
                 auto aggr2 = se.e1;
                 const srclower = se.lwr.toInteger();
                 const srcupper = se.upr.toInteger();
@@ -4140,7 +4142,7 @@ public:
                     // https://issues.dlang.org/show_bug.cgi?id=14024
                     assert(aggr2.op == EXP.arrayLiteral);
                     Expressions* oldelems = existingAE.elements;
-                    Expressions* newelems = (cast(ArrayLiteralExp)aggr2).elements;
+                    Expressions* newelems = aggr2.isArrayLiteralExp().elements;
 
                     Type elemtype = aggregate.type.nextOf();
                     bool needsPostblit = e.e2.isLvalue();
@@ -4213,13 +4215,13 @@ public:
                 /* Mixed slice: it was initialized as an array literal of chars/integers.
                  * Now a slice of it is being set with a string.
                  */
-                sliceAssignArrayLiteralFromString(existingAE, cast(StringExp)newval, cast(size_t)firstIndex);
+                sliceAssignArrayLiteralFromString(existingAE, newval.isStringExp(), cast(size_t)firstIndex);
                 return newval;
             }
             if (newval.op == EXP.arrayLiteral && !isBlockAssignment)
             {
                 Expressions* oldelems = existingAE.elements;
-                Expressions* newelems = (cast(ArrayLiteralExp)newval).elements;
+                Expressions* newelems = newval.isArrayLiteralExp().elements;
                 Type elemtype = existingAE.type.nextOf();
                 bool needsPostblit = e.op != EXP.blit && e.e2.isLvalue();
                 foreach (j, newelem; *newelems)
@@ -4264,7 +4266,7 @@ public:
                         if (!directblk && (*w)[k].op == EXP.arrayLiteral)
                         {
                             // Multidimensional array block assign
-                            if (Expression ex = assignTo(cast(ArrayLiteralExp)(*w)[k]))
+                            if (Expression ex = assignTo((*w)[k].isArrayLiteralExp()))
                                 return ex;
                         }
                         else if (refCopy)
@@ -4420,7 +4422,7 @@ public:
         while (e.op == EXP.not)
         {
             ret *= -1;
-            e = (cast(NotExp)e).e1;
+            e = e.isNotExp().e1;
         }
         switch (e.op)
         {
@@ -4430,8 +4432,8 @@ public:
             goto case; /+ fall through +/
         case EXP.greaterThan:
         case EXP.greaterOrEqual:
-            *p1 = (cast(BinExp)e).e1;
-            *p2 = (cast(BinExp)e).e2;
+            *p1 = e.isBinExp().e1;
+            *p2 = e.isBinExp().e2;
             if (!(isPointer((*p1).type) && isPointer((*p2).type)))
                 ret = 0;
             break;
@@ -4898,7 +4900,7 @@ public:
             }
         }
 
-        if (fd && fd.semanticRun >= PASS.semantic3done && fd.semantic3Errors)
+        if (fd && fd.semanticRun >= PASS.semantic3done && fd.hasSemantic3Errors())
         {
             e.error("CTFE failed because of previous errors in `%s`", fd.toChars());
             result = CTFEExp.cantexp;
@@ -5201,7 +5203,7 @@ public:
             // Pointer to a non-array variable
             if (agg.op == EXP.symbolOffset)
             {
-                e.error("mutable variable `%s` cannot be %s at compile time, even through a pointer", cast(char*)(modify ? "modified" : "read"), (cast(SymOffExp)agg).var.toChars());
+                e.error("mutable variable `%s` cannot be %s at compile time, even through a pointer", cast(char*)(modify ? "modified" : "read"), agg.isSymOffExp().var.toChars());
                 return false;
             }
 
@@ -5285,7 +5287,7 @@ public:
                 e.error("index %llu exceeds array length %llu", index, iupr - ilwr);
                 return false;
             }
-            *pagg = (cast(SliceExp)e1).e1;
+            *pagg = e1.isSliceExp().e1;
             *pidx = index + ilwr;
         }
         else
@@ -5377,7 +5379,7 @@ public:
             assert(e1.op == EXP.assocArrayLiteral);
             UnionExp e2tmp = void;
             e2 = resolveSlice(e2, &e2tmp);
-            result = findKeyInAA(e.loc, cast(AssocArrayLiteralExp)e1, e2);
+            result = findKeyInAA(e.loc, e1.isAssocArrayLiteralExp(), e2);
             if (!result)
             {
                 e.error("key `%s` not found in associative array `%s`", e2.toChars(), e.e1.toChars());
@@ -5637,7 +5639,7 @@ public:
         }
 
         e1 = resolveSlice(e1);
-        result = findKeyInAA(e.loc, cast(AssocArrayLiteralExp)e2, e1);
+        result = findKeyInAA(e.loc, e2.isAssocArrayLiteralExp(), e1);
         if (exceptionOrCant(result))
             return;
         if (!result)
@@ -5742,7 +5744,7 @@ public:
                 return;
             }
 
-            auto cre = cast(ClassReferenceExp)result;
+            auto cre = result.isClassReferenceExp();
             auto cd = cre.originalClass();
 
             // Find dtor(s) in inheritance chain
@@ -5859,10 +5861,10 @@ public:
                 result = pue.exp();
                 return;
             }
-            if (e1.op == EXP.index && !(cast(IndexExp)e1).e1.type.equals(e1.type))
+            if (e1.op == EXP.index && !e1.isIndexExp().e1.type.equals(e1.type))
             {
                 // type painting operation
-                IndexExp ie = cast(IndexExp)e1;
+                IndexExp ie = e1.isIndexExp();
                 if (castBackFromVoid)
                 {
                     // get the original type. For strings, it's just the type...
@@ -5870,7 +5872,7 @@ public:
                     // ..but for arrays of type void*, it's the type of the element
                     if (ie.e1.op == EXP.arrayLiteral && ie.e2.op == EXP.int64)
                     {
-                        ArrayLiteralExp ale = cast(ArrayLiteralExp)ie.e1;
+                        ArrayLiteralExp ale = ie.e1.isArrayLiteralExp();
                         const indx = cast(size_t)ie.e2.toInteger();
                         if (indx < ale.elements.dim)
                         {
@@ -5912,7 +5914,7 @@ public:
                 {
                     // &val[idx]
                     dinteger_t dim = (cast(TypeSArray)pointee.toBasetype()).dim.toInteger();
-                    IndexExp ie = cast(IndexExp)ae.e1;
+                    IndexExp ie = ae.e1.isIndexExp();
                     Expression lwr = ie.e2;
                     Expression upr = ctfeEmplaceExp!IntegerExp(ie.e2.loc, ie.e2.toInteger() + dim, Type.tsize_t);
 
@@ -5938,7 +5940,7 @@ public:
                 if (auto ve = e1.isVarExp())
                     emplaceExp!(VarExp)(pue, e.loc, ve.var);
                 else
-                    emplaceExp!(SymOffExp)(pue, e.loc, (cast(SymOffExp)e1).var, (cast(SymOffExp)e1).offset);
+                    emplaceExp!(SymOffExp)(pue, e.loc, e1.isSymOffExp().var, e1.isSymOffExp().offset);
                 result = pue.exp();
                 result.type = e.to;
                 return;
@@ -5966,7 +5968,7 @@ public:
         {
             // Note that the slice may be void[], so when checking for dangerous
             // casts, we need to use the original type, which is se.e1.
-            SliceExp se = cast(SliceExp)e1;
+            SliceExp se = e1.isSliceExp();
             if (!isSafePointerCast(se.e1.type.nextOf(), e.to.nextOf()))
             {
                 e.error("array cast from `%s` to `%s` is not supported at compile time", se.e1.type.toChars(), e.to.toChars());
@@ -6086,7 +6088,7 @@ public:
         {
             if (ae.e1.op == EXP.address && ae.e2.op == EXP.int64)
             {
-                AddrExp ade = cast(AddrExp)ae.e1;
+                AddrExp ade = ae.e1.isAddrExp();
                 Expression ex = interpretRegion(ade.e1, istate);
                 if (exceptionOrCant(ex))
                     return;
@@ -6131,7 +6133,7 @@ public:
         }
 
         // *(&x) ==> x
-        result = (cast(AddrExp)result).e1;
+        result = result.isAddrExp().e1;
 
         if (result.op == EXP.slice && e.type.toBasetype().ty == Tsarray)
         {
@@ -6211,8 +6213,8 @@ public:
         // We can't use getField, because it makes a copy
         if (ex.op == EXP.classReference)
         {
-            se = (cast(ClassReferenceExp)ex).value;
-            i = (cast(ClassReferenceExp)ex).findFieldIndexByName(v);
+            se = ex.isClassReferenceExp().value;
+            i = ex.isClassReferenceExp().findFieldIndexByName(v);
         }
         else if (ex.op == EXP.typeid_)
         {
@@ -6233,7 +6235,7 @@ public:
         }
         else
         {
-            se = cast(StructLiteralExp)ex;
+            se = ex.isStructLiteralExp();
             i = findFieldIndexByName(se.sd, v);
         }
         if (i == -1)
@@ -6540,7 +6542,7 @@ private Expression scrubReturnValue(const ref Loc loc, Expression e)
 
     if (e.op == EXP.classReference)
     {
-        StructLiteralExp sle = (cast(ClassReferenceExp)e).value;
+        StructLiteralExp sle = e.isClassReferenceExp().value;
         if (auto ex = scrubSE(sle))
             return ex;
     }
@@ -6620,7 +6622,7 @@ private Expression scrubCacheValue(Expression e)
 
     if (e.op == EXP.classReference)
     {
-        if (auto ex = scrubSE((cast(ClassReferenceExp)e).value))
+        if (auto ex = scrubSE(e.isClassReferenceExp().value))
             return ex;
     }
     else if (auto sle = e.isStructLiteralExp())
@@ -6767,14 +6769,14 @@ private Expression copyRegionExp(Expression e)
         case EXP.vector:
         case EXP.dotVariable:
         {
-            UnaExp ue = cast(UnaExp)e;
+            UnaExp ue = e.isUnaExp();
             ue.e1 = copyRegionExp(ue.e1);
             break;
         }
 
         case EXP.index:
         {
-            BinExp be = cast(BinExp)e;
+            BinExp be = e.isBinExp();
             be.e1 = copyRegionExp(be.e1);
             be.e2 = copyRegionExp(be.e2);
             break;
@@ -6939,7 +6941,7 @@ private Expression interpret_aaApply(UnionExp* pue, InterState* istate, Expressi
 
     Expressions args = Expressions(numParams);
 
-    AssocArrayLiteralExp ae = cast(AssocArrayLiteralExp)aa;
+    AssocArrayLiteralExp ae = aa.isAssocArrayLiteralExp();
     if (!ae.keys || ae.keys.dim == 0)
         return ctfeEmplaceExp!IntegerExp(deleg.loc, 0, Type.tsize_t);
     Expression eresult;
@@ -7298,7 +7300,7 @@ private Expression evaluateIfBuiltin(UnionExp* pue, InterState* istate, const re
         {
             // At present, the constructors just copy their arguments into the struct.
             // But we might need some magic if stack tracing gets added to druntime.
-            StructLiteralExp se = (cast(ClassReferenceExp)pthis).value;
+            StructLiteralExp se = pthis.isClassReferenceExp().value;
             assert(arguments.dim <= se.elements.dim);
             foreach (i, arg; *arguments)
             {

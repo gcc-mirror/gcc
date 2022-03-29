@@ -10,4 +10,3 @@ struct Target
     OS os = defaultTargetOS();
     @property isPOSIX() scope @nogc { }
 }
-

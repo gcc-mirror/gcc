@@ -301,7 +301,7 @@ FuncDeclaration buildOpAssign(StructDeclaration sd, Scope* sc)
     auto tf = new TypeFunction(ParameterList(fparams), sd.handleType(), LINK.d, stc | STC.ref_);
     auto fop = new FuncDeclaration(declLoc, Loc.initial, Id.assign, stc, tf);
     fop.storage_class |= STC.inference;
-    fop.generated = true;
+    fop.flags  |= FUNCFLAG.generated;
     Expression e;
     if (stc & STC.disable)
     {
@@ -575,7 +575,7 @@ FuncDeclaration buildXopEquals(StructDeclaration sd, Scope* sc)
     tf = tf.addSTC(STC.const_).toTypeFunction();
     Identifier id = Id.xopEquals;
     auto fop = new FuncDeclaration(declLoc, Loc.initial, id, 0, tf);
-    fop.generated = true;
+    fop.flags |= FUNCFLAG.generated;
     fop.parent = sd;
     Expression e1 = new IdentifierExp(loc, Id.This);
     Expression e2 = new IdentifierExp(loc, Id.p);
@@ -644,13 +644,13 @@ FuncDeclaration buildXopCmp(StructDeclaration sd, Scope* sc)
                 switch (e.op)
                 {
                 case EXP.overloadSet:
-                    s = (cast(OverExp)e).vars;
+                    s = e.isOverExp().vars;
                     break;
                 case EXP.scope_:
-                    s = (cast(ScopeExp)e).sds;
+                    s = e.isScopeExp().sds;
                     break;
                 case EXP.variable:
-                    s = (cast(VarExp)e).var;
+                    s = e.isVarExp().var;
                     break;
                 default:
                     break;
@@ -696,7 +696,7 @@ FuncDeclaration buildXopCmp(StructDeclaration sd, Scope* sc)
     tf = tf.addSTC(STC.const_).toTypeFunction();
     Identifier id = Id.xopCmp;
     auto fop = new FuncDeclaration(declLoc, Loc.initial, id, 0, tf);
-    fop.generated = true;
+    fop.flags |= FUNCFLAG.generated;
     fop.parent = sd;
     Expression e1 = new IdentifierExp(loc, Id.This);
     Expression e2 = new IdentifierExp(loc, Id.p);
@@ -814,7 +814,7 @@ FuncDeclaration buildXtoHash(StructDeclaration sd, Scope* sc)
     auto tf = new TypeFunction(ParameterList(parameters), Type.thash_t, LINK.d, STC.nothrow_ | STC.trusted);
     Identifier id = Id.xtoHash;
     auto fop = new FuncDeclaration(declLoc, Loc.initial, id, STC.static_, tf);
-    fop.generated = true;
+    fop.flags |= FUNCFLAG.generated;
 
     /* Do memberwise hashing.
      *
@@ -937,13 +937,13 @@ void buildDtors(AggregateDeclaration ad, Scope* sc)
                 if (stc & STC.safe)
                     stc = (stc & ~STC.safe) | STC.trusted;
 
-                ex = new SliceExp(loc, ex, new IntegerExp(loc, 0, Type.tsize_t),
+                SliceExp se = new SliceExp(loc, ex, new IntegerExp(loc, 0, Type.tsize_t),
                                            new IntegerExp(loc, n, Type.tsize_t));
                 // Prevent redundant bounds check
-                (cast(SliceExp)ex).upperIsInBounds = true;
-                (cast(SliceExp)ex).lowerIsLessThanUpper = true;
+                se.upperIsInBounds = true;
+                se.lowerIsLessThanUpper = true;
 
-                ex = new CallExp(loc, new IdentifierExp(loc, Id.__ArrayDtor), ex);
+                ex = new CallExp(loc, new IdentifierExp(loc, Id.__ArrayDtor), se);
             }
             e = Expression.combine(ex, e); // combine in reverse order
         }
@@ -952,7 +952,7 @@ void buildDtors(AggregateDeclaration ad, Scope* sc)
         {
             //printf("Building __fieldDtor(), %s\n", e.toChars());
             auto dd = new DtorDeclaration(declLoc, Loc.initial, stc, Id.__fieldDtor);
-            dd.generated = true;
+            dd.flags |= FUNCFLAG.generated;
             dd.storage_class |= STC.inference;
             dd.fbody = new ExpStatement(loc, e);
             ad.members.push(dd);
@@ -1008,7 +1008,7 @@ void buildDtors(AggregateDeclaration ad, Scope* sc)
             e = Expression.combine(e, ce);
         }
         auto dd = new DtorDeclaration(declLoc, Loc.initial, stc, Id.__aggrDtor);
-        dd.generated = true;
+        dd.flags |= FUNCFLAG.generated;
         dd.storage_class |= STC.inference;
         dd.fbody = new ExpStatement(loc, e);
         ad.members.push(dd);
@@ -1079,7 +1079,7 @@ private DtorDeclaration buildWindowsCppDtor(AggregateDeclaration ad, DtorDeclara
     stmts.push(new ExpStatement(loc, call));
     stmts.push(new ReturnStatement(loc, new CastExp(loc, new ThisExp(loc), Type.tvoidptr)));
     func.fbody = new CompoundStatement(loc, stmts);
-    func.generated = true;
+    func.flags |= FUNCFLAG.generated;
 
     auto sc2 = sc.push();
     sc2.stc &= ~STC.static_; // not a static destructor
@@ -1127,7 +1127,7 @@ private DtorDeclaration buildExternDDtor(AggregateDeclaration ad, Scope* sc)
     auto call = new CallExp(dtor.loc, dtor, null);
     call.directcall = true;                   // non-virtual call Class.__dtor();
     func.fbody = new ExpStatement(dtor.loc, call);
-    func.generated = true;
+    func.flags |= FUNCFLAG.generated;
     func.storage_class |= STC.inference;
 
     auto sc2 = sc.push();
@@ -1403,7 +1403,7 @@ FuncDeclaration buildPostBlit(StructDeclaration sd, Scope* sc)
         //printf("Building __fieldPostBlit()\n");
         checkShared();
         auto dd = new PostBlitDeclaration(declLoc, Loc.initial, stc, Id.__fieldPostblit);
-        dd.generated = true;
+        dd.flags |= FUNCFLAG.generated;
         dd.storage_class |= STC.inference | STC.scope_;
         dd.fbody = (stc & STC.disable) ? null : new CompoundStatement(loc, postblitCalls);
         sd.postblits.shift(dd);
@@ -1441,7 +1441,7 @@ FuncDeclaration buildPostBlit(StructDeclaration sd, Scope* sc)
 
         checkShared();
         auto dd = new PostBlitDeclaration(declLoc, Loc.initial, stc, Id.__aggrPostblit);
-        dd.generated = true;
+        dd.flags |= FUNCFLAG.generated;
         dd.storage_class |= STC.inference;
         dd.fbody = new ExpStatement(loc, e);
         sd.members.push(dd);
@@ -1504,7 +1504,7 @@ private CtorDeclaration generateCopyCtorDeclaration(StructDeclaration sd, const 
     auto ccd = new CtorDeclaration(sd.loc, Loc.initial, STC.ref_, tf, true);
     ccd.storage_class |= funcStc;
     ccd.storage_class |= STC.inference;
-    ccd.generated = true;
+    ccd.flags |= FUNCFLAG.generated;
     return ccd;
 }
 
@@ -1691,5 +1691,3 @@ bool buildCopyCtor(StructDeclaration sd, Scope* sc)
     }
     return true;
 }
-
-

@@ -15,6 +15,7 @@ import core.stdc.stdint;
 import dmd.root.array;
 import dmd.root.filename;
 import dmd.common.outbuffer;
+import dmd.file_manager;
 import dmd.identifier;
 
 /// Defines a setting for how compiler warnings and deprecations are handled
@@ -329,6 +330,9 @@ extern (C++) struct Global
     bool hasMainFunction; /// Whether a main function has already been compiled in (for -main switch)
     uint varSequenceNumber = 1; /// Relative lifetime of `VarDeclaration` within a function, used for `scope` checks
 
+    /// Cache files read from disk
+    FileManager fileManager;
+
     enum recursionLimit = 500; /// number of recursive template expansions before abort
 
   nothrow:
@@ -383,6 +387,7 @@ extern (C++) struct Global
 
     extern (C++) void _init()
     {
+        this.fileManager = new FileManager();
         version (MARS)
         {
             vendor = "Digital Mars D";

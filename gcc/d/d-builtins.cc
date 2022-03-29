@@ -484,6 +484,15 @@ d_init_versions (void)
   if (global.params.useAssert == CHECKENABLEon)
     VersionCondition::addPredefinedGlobalIdent ("assert");
 
+  if (global.params.useIn == CHECKENABLEon)
+    VersionCondition::addPredefinedGlobalIdent("D_PreConditions");
+
+  if (global.params.useOut == CHECKENABLEon)
+    VersionCondition::addPredefinedGlobalIdent("D_PostConditions");
+
+  if (global.params.useInvariants == CHECKENABLEon)
+    VersionCondition::addPredefinedGlobalIdent("D_Invariants");
+
   if (global.params.useArrayBounds == CHECKENABLEoff)
     VersionCondition::addPredefinedGlobalIdent ("D_NoBoundsChecks");
 

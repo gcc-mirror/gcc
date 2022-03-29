@@ -9,4 +9,3 @@ public void func(T)()
 {
         assert(false, "Blah");
 }
-

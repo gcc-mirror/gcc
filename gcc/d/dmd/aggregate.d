@@ -547,7 +547,7 @@ extern (C++) abstract class AggregateDeclaration : ScopeDsymbol
         if (overflow) assert(0);
 
         // Skip no-op for noreturn without custom aligment
-        if (memsize != 0 || !alignment.isDefault())
+        if (memalignsize != 0 || !alignment.isDefault())
             alignmember(alignment, memalignsize, &ofs);
 
         uint memoffset = ofs;
@@ -570,7 +570,7 @@ extern (C++) abstract class AggregateDeclaration : ScopeDsymbol
          * definitions exposed some issues in their TypeInfo generation in DMD.
          * Related PR: https://github.com/dlang/dmd/pull/13312
          */
-        if (semanticRun == PASS.init && !isInterfaceDeclaration())
+        if (semanticRun == PASS.initial && !isInterfaceDeclaration())
         {
             auto stc = storage_class;
             if (_scope)
@@ -747,7 +747,7 @@ extern (C++) abstract class AggregateDeclaration : ScopeDsymbol
                 extern (C++) static int fp(Dsymbol s, void* ctxt)
                 {
                     auto f = s.isCtorDeclaration();
-                    if (f && f.semanticRun == PASS.init)
+                    if (f && f.semanticRun == PASS.initial)
                         f.dsymbolSemantic(null);
                     return 0;
                 }

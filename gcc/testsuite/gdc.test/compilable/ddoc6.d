@@ -22,4 +22,3 @@ void main()
 C:\code\d\bugs>dmd -D -o- 148_1.d
 148_1.d(6): Error: static if conditional cannot be at global scope
 +/
-

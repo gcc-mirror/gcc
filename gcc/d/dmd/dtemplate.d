@@ -1173,7 +1173,7 @@ extern (C++) final class TemplateDeclaration : ScopeDsymbol
 
                 fd = new FuncDeclaration(fd.loc, fd.endloc, fd.ident, fd.storage_class, tf);
                 fd.parent = ti;
-                fd.inferRetType = true;
+                fd.flags |= FUNCFLAG.inferRetType;
 
                 // Shouldn't run semantic on default arguments and return type.
                 foreach (ref param; *tf.parameterList.parameters)
@@ -2827,13 +2827,13 @@ void functionResolve(ref MatchAccumulator m, Dsymbol dstart, Loc loc, Scope* sc,
         if (!sc)
             sc = td._scope; // workaround for Type.aliasthisOf
 
-        if (td.semanticRun == PASS.init && td._scope)
+        if (td.semanticRun == PASS.initial && td._scope)
         {
             // Try to fix forward reference. Ungag errors while doing so.
             Ungag ungag = td.ungagSpeculative();
             td.dsymbolSemantic(td._scope);
         }
-        if (td.semanticRun == PASS.init)
+        if (td.semanticRun == PASS.initial)
         {
             .error(loc, "forward reference to template `%s`", td.toChars());
         Lerror:
@@ -2851,7 +2851,7 @@ void functionResolve(ref MatchAccumulator m, Dsymbol dstart, Loc loc, Scope* sc,
                 tiargs = new Objects();
             auto ti = new TemplateInstance(loc, td, tiargs);
             Objects dedtypes = Objects(td.parameters.dim);
-            assert(td.semanticRun != PASS.init);
+            assert(td.semanticRun != PASS.initial);
             MATCH mta = td.matchWithInstance(sc, ti, &dedtypes, fargs, 0);
             //printf("matchWithInstance = %d\n", mta);
             if (mta == MATCH.nomatch || mta < ta_last)   // no match or less match
@@ -6425,7 +6425,7 @@ extern (C++) class TemplateInstance : ScopeDsymbol
                 if (!td)
                     return 0;
 
-                if (td.semanticRun == PASS.init)
+                if (td.semanticRun == PASS.initial)
                 {
                     if (td._scope)
                     {
@@ -6433,7 +6433,7 @@ extern (C++) class TemplateInstance : ScopeDsymbol
                         Ungag ungag = td.ungagSpeculative();
                         td.dsymbolSemantic(td._scope);
                     }
-                    if (td.semanticRun == PASS.init)
+                    if (td.semanticRun == PASS.initial)
                     {
                         error("`%s` forward references template declaration `%s`",
                             toChars(), td.toChars());
@@ -6786,7 +6786,7 @@ extern (C++) class TemplateInstance : ScopeDsymbol
                 (*tiargs)[j] = sa;
 
                 TemplateDeclaration td = sa.isTemplateDeclaration();
-                if (td && td.semanticRun == PASS.init && td.literal)
+                if (td && td.semanticRun == PASS.initial && td.literal)
                 {
                     td.dsymbolSemantic(sc);
                 }
@@ -6915,7 +6915,7 @@ extern (C++) class TemplateInstance : ScopeDsymbol
 
                 dedtypes.setDim(td.parameters.dim);
                 dedtypes.zero();
-                assert(td.semanticRun != PASS.init);
+                assert(td.semanticRun != PASS.initial);
 
                 MATCH m = td.matchWithInstance(sc, this, &dedtypes, fargs, 0);
                 //printf("matchWithInstance = %d\n", m);
@@ -7093,7 +7093,7 @@ extern (C++) class TemplateInstance : ScopeDsymbol
     extern (D) final bool needsTypeInference(Scope* sc, int flag = 0)
     {
         //printf("TemplateInstance.needsTypeInference() %s\n", toChars());
-        if (semanticRun != PASS.init)
+        if (semanticRun != PASS.initial)
             return false;
 
         uint olderrs = global.errors;
@@ -7174,7 +7174,7 @@ extern (C++) class TemplateInstance : ScopeDsymbol
                      */
                     dedtypes.setDim(td.parameters.dim);
                     dedtypes.zero();
-                    if (td.semanticRun == PASS.init)
+                    if (td.semanticRun == PASS.initial)
                     {
                         if (td._scope)
                         {
@@ -7182,7 +7182,7 @@ extern (C++) class TemplateInstance : ScopeDsymbol
                             Ungag ungag = td.ungagSpeculative();
                             td.dsymbolSemantic(td._scope);
                         }
-                        if (td.semanticRun == PASS.init)
+                        if (td.semanticRun == PASS.initial)
                         {
                             error("`%s` forward references template declaration `%s`", toChars(), td.toChars());
                             return 1;
@@ -7740,13 +7740,13 @@ extern (C++) final class TemplateMixin : TemplateInstance
                 if (!td)
                     return 0;
 
-                if (td.semanticRun == PASS.init)
+                if (td.semanticRun == PASS.initial)
                 {
                     if (td._scope)
                         td.dsymbolSemantic(td._scope);
                     else
                     {
-                        semanticRun = PASS.init;
+                        semanticRun = PASS.initial;
                         return 1;
                     }
                 }

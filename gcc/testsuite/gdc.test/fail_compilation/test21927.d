@@ -2,8 +2,8 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/test21927.d(17): Error: invalid `foreach` aggregate `this.T2(Args2...)`
-fail_compilation/test21927.d(18): Error: invalid `foreach` aggregate `this.T2!()`
+fail_compilation/test21927.d(17): Error: invalid `foreach` aggregate `this.T2(Args2...)` of type `void`
+fail_compilation/test21927.d(18): Error: invalid `foreach` aggregate `this.T2!()` of type `void`
 ---
 */
 

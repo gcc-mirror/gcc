@@ -82,7 +82,9 @@ public:
     int32_t a;
     C* c;
     virtual void foo();
-    extern "C" virtual void bar();
+private:
+    virtual void __vtable_slot_0();
+public:
     virtual void baz(int32_t x = 42);
     struct
     {
@@ -116,7 +118,7 @@ public:
     {
     public:
         int32_t x;
-        A* this;
+        A* outer;
     };
 
     typedef Inner I;
@@ -146,8 +148,8 @@ public:
 
 class Parent
 {
-    virtual void __vtable_slot_0();
     virtual void __vtable_slot_1();
+    virtual void __vtable_slot_2();
 public:
     virtual void foo();
 };

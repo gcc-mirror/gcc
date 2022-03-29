@@ -8,4 +8,3 @@ void main()
 {
     scope a = b!"c";
 }
-

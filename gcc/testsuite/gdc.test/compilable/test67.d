@@ -9,4 +9,3 @@ interface I
 interface SubI : I
 {
 }
-

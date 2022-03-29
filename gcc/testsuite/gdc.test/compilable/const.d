@@ -37,5 +37,3 @@ static assert(6.0 % 4.0 == 2);
 static assert(6.0i % 2.0i == 0);
 static assert(6.0i % 3.0i == 0);
 static assert(6.0i % 4.0i == 2i);
-
-

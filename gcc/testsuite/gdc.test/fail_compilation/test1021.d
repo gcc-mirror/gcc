@@ -167,5 +167,3 @@ void test5c()
     S5c s;
     foo5(s, s);
 }
-
-

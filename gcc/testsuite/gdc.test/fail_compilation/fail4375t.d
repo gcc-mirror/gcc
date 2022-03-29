@@ -16,4 +16,3 @@ unittest {  // disallowed
     else
         assert(53);
 }
-

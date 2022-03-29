@@ -504,6 +504,16 @@ Expression Expression_optimize(Expression e, int result, bool keepLvalue)
                     {
                         eint = ei;
                     }
+                    else if (auto se = ep.e1.isSymOffExp())
+                    {
+                        if (!se.var.isReference() &&
+                            !se.var.isImportedSymbol() &&
+                            se.var.isDataseg())
+                        {
+                            var = se.var.isVarDeclaration();
+                            offset += se.offset;
+                        }
+                    }
                 }
                 return false;
             }
@@ -531,7 +541,7 @@ Expression Expression_optimize(Expression e, int result, bool keepLvalue)
         if (auto ae = e.e1.isIndexExp())
         {
             // Convert &array[n] to &array+n
-            if (ae.e2.op == EXP.int64 && ae.e1.isVarExp())
+            if (ae.e2.isIntegerExp() && ae.e1.isVarExp())
             {
                 sinteger_t index = ae.e2.toInteger();
                 VarExp ve = ae.e1.isVarExp();
@@ -541,8 +551,13 @@ Expression Expression_optimize(Expression e, int result, bool keepLvalue)
                     sinteger_t dim = ts.dim.toInteger();
                     if (index < 0 || index >= dim)
                     {
-                        e.error("array index %lld is out of bounds `[0..%lld]`", index, dim);
-                        return error();
+                        /* 0 for C static arrays means size is unknown, no need to check
+                         */
+                        if (!(dim == 0 && ve.var.isCsymbol()))
+                        {
+                            e.error("array index %lld is out of bounds `[0..%lld]`", index, dim);
+                            return error();
+                        }
                     }
 
                     import core.checkedint : mulu;
@@ -555,6 +570,33 @@ Expression Expression_optimize(Expression e, int result, bool keepLvalue)
                     }
 
                     ret = new SymOffExp(e.loc, ve.var, offset);
+                    ret.type = e.type;
+                    return;
+                }
+            }
+            // Convert &((a.b)[n]) to (&a.b)+n
+            else if (ae.e2.isIntegerExp() && ae.e1.isDotVarExp())
+            {
+                sinteger_t index = ae.e2.toInteger();
+                DotVarExp ve = ae.e1.isDotVarExp();
+                if (ve.type.isTypeSArray() && ve.var.isField() && ve.e1.isPtrExp())
+                {
+                    TypeSArray ts = ve.type.isTypeSArray();
+                    sinteger_t dim = ts.dim.toInteger();
+                    if (index < 0 || index >= dim)
+                    {
+                        /* 0 for C static arrays means size is unknown, no need to check
+                         */
+                        if (!(dim == 0 && ve.var.isCsymbol()))
+                        {
+                            e.error("array index %lld is out of bounds `[0..%lld]`", index, dim);
+                            return error();
+                        }
+                    }
+
+                    auto pe = new AddrExp(e.loc, ve);
+                    pe.type = e.type;
+                    ret = new AddExp(e.loc, pe, ae.e2);
                     ret.type = e.type;
                     return;
                 }

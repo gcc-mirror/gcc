@@ -285,7 +285,7 @@ bool cFuncEquivalence(TypeFunction tf1, TypeFunction tf2)
     if (tf1.parameterList.length == 0 && tf2.parameterList.length == 0)
         return true;
 
-    if (!tf1.nextOf().equals(tf2.nextOf()))
+    if (!cTypeEquivalence(tf1.next, tf2.next))
         return false;   // function return types don't match
 
     if (tf1.parameterList.length != tf2.parameterList.length)
@@ -317,4 +317,41 @@ bool cFuncEquivalence(TypeFunction tf1, TypeFunction tf2)
     //printf("t1: %s\n", tf1.toChars());
     //printf("t2: %s\n", tf2.toChars());
     return true;
+}
+
+/*******************************
+ * Types haven't been merged yet, because we haven't done
+ * semantic() yet.
+ * But we still need to see if t1 and t2 are the same type.
+ * Params:
+ *      t1 = first type
+ *      t2 = second type
+ * Returns:
+ *      true if they are equivalent types
+ */
+bool cTypeEquivalence(Type t1, Type t2)
+{
+    if (t1.equals(t2))
+        return true;    // that was easy
+
+    if (t1.ty != t2.ty || t1.mod != t2.mod)
+        return false;
+
+    if (auto tp = t1.isTypePointer())
+        return cTypeEquivalence(tp.next, t2.nextOf());
+
+    if (auto ta = t1.isTypeSArray())
+        // Bug: should check array dimension
+        return cTypeEquivalence(ta.next, t2.nextOf());
+
+    if (auto ts = t1.isTypeStruct())
+        return ts.sym is t2.isTypeStruct().sym;
+
+    if (auto te = t1.isTypeEnum())
+        return te.sym is t2.isTypeEnum().sym;
+
+    if (auto tf = t1.isTypeFunction())
+        return cFuncEquivalence(tf, tf.isTypeFunction());
+
+    return false;
 }

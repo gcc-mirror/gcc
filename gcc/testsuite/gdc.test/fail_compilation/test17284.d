@@ -17,4 +17,3 @@ union U { C c; int i; }
 }
 
 pragma(msg, typeof(func!U));
-

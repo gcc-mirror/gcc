@@ -36,4 +36,3 @@ void main()
     f(s1.s.tupleof); // OK
     f((s1.s).tupleof); // Error: need 'this' to access member s
 }
-

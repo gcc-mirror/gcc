@@ -23,4 +23,3 @@ struct S0(T)
 }
 
 alias B = S0!int;
-

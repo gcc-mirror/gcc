@@ -7,4 +7,3 @@ void test()
     enum x = __traits(parent, imports.bug8922).stringof;
     static assert(x == "package imports");
 }
-

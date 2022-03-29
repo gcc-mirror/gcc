@@ -96,7 +96,7 @@ extern (C++) final class EnumDeclaration : ScopeDsymbol
 
     override void setScope(Scope* sc)
     {
-        if (semanticRun > PASS.init)
+        if (semanticRun > PASS.initial)
             return;
         ScopeDsymbol.setScope(sc);
     }
@@ -162,6 +162,9 @@ extern (C++) final class EnumDeclaration : ScopeDsymbol
         //printf("EnumDeclaration::getDefaultValue() %p %s\n", this, toChars());
         if (defaultval)
             return defaultval;
+
+        if (isCsymbol())
+            return memtype.defaultInit(loc, true);
 
         if (_scope)
             dsymbolSemantic(this, _scope);

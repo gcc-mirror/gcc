@@ -57,4 +57,3 @@ struct S16082
         return aliasthis;  // Line 20
     }
 }
-

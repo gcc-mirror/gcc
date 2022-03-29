@@ -958,7 +958,7 @@ public:
 	/* If returning via NRVO, just refer to the DECL_RESULT; this differs
 	   from using NULL_TREE in that it indicates that we care about the
 	   value of the DECL_RESULT.  */
-	if (this->func_->nrvo_can && this->func_->nrvo_var)
+	if (this->func_->isNRVO () && this->func_->nrvo_var)
 	  {
 	    add_stmt (return_expr (decl));
 	    return;

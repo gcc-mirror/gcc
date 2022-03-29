@@ -1080,10 +1080,11 @@ Initializer inferType(Initializer init, Scope* sc)
  * Params:
  *      init = `Initializer` AST node
  *      itype = if not `null`, type to coerce expression to
+ *      isCfile = default initializers are different with C
  * Returns:
  *      `Expression` created, `null` if cannot, `ErrorExp` for other errors
  */
-extern (C++) Expression initializerToExpression(Initializer init, Type itype = null)
+extern (C++) Expression initializerToExpression(Initializer init, Type itype = null, const bool isCfile = false)
 {
     Expression visitVoid(VoidInitializer)
     {
@@ -1204,7 +1205,7 @@ extern (C++) Expression initializerToExpression(Initializer init, Type itype = n
                 if (!init.type) // don't know what type to use
                     return null;
                 if (!defaultInit)
-                    defaultInit = (cast(TypeNext)t).next.defaultInit(Loc.initial);
+                    defaultInit = (cast(TypeNext)t).next.defaultInit(Loc.initial, isCfile);
                 element = defaultInit;
             }
         }

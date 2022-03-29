@@ -24,4 +24,3 @@ void test() @safe
         global = x;
     }
 }
-

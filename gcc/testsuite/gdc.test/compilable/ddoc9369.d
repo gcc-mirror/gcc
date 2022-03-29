@@ -13,6 +13,3 @@ writeln(&a);
 ---
 */
 void foo() { }
-
-
-

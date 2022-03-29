@@ -19,6 +19,8 @@
 // Can't include arraytypes.h here, need to declare these directly.
 template <typename TYPE> struct Array;
 
+class FileManager;
+
 typedef unsigned char Diagnostic;
 enum
 {
@@ -291,6 +293,8 @@ struct Global
 
     bool hasMainFunction;
     unsigned varSequenceNumber;
+
+    FileManager* fileManager;
 
     /* Start gagging. Return the current number of gagged errors
      */

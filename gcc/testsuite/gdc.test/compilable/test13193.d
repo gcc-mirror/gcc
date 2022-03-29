@@ -123,4 +123,3 @@ void bindFunc() {ssllib.getSymbol();}
     bindFunc();
     bindFunc(); /* 100 */
 }
-

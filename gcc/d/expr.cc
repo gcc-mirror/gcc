@@ -1441,7 +1441,7 @@ public:
 	gcc_assert (e->e1->op == EXP::variable);
 
 	VarDeclaration *v = e->e1->isVarExp ()->var->isVarDeclaration ();
-	gcc_assert (v && v->onstack);
+	gcc_assert (v && v->onstack ());
 
 	libcall_fn libcall = tb1->isClassHandle ()->isInterfaceDeclaration ()
 	  ? LIBCALL_CALLINTERFACEFINALIZER : LIBCALL_CALLFINALIZER;

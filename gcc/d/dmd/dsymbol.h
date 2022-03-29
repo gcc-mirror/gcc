@@ -111,7 +111,7 @@ struct Visibility
  */
 enum class PASS : uint8_t
 {
-    init,           // initial state
+    initial,        // initial state
     semantic,       // semantic() started
     semanticdone,   // semantic() done
     semantic2,      // semantic2() started

@@ -211,7 +211,8 @@ package (dmd) extern (C++) final class StatementSemanticVisitor : Visitor
             if (f.checkForwardRef(s.exp.loc))
                 s.exp = ErrorExp.get();
         }
-        if (discardValue(s.exp))
+
+        if (!(sc.flags & SCOPE.Cfile) && discardValue(s.exp))
             s.exp = ErrorExp.get();
 
         s.exp = s.exp.optimize(WANTvalue);
@@ -728,12 +729,12 @@ package (dmd) extern (C++) final class StatementSemanticVisitor : Visitor
         Dsymbol sapply = null;                  // the inferred opApply() or front() function
         if (!inferForeachAggregate(sc, fs.op == TOK.foreach_, fs.aggr, sapply))
         {
-            const(char)* msg = "";
-            if (fs.aggr.type && isAggregate(fs.aggr.type))
-            {
-                msg = ", define `opApply()`, range primitives, or use `.tupleof`";
-            }
-            fs.error("invalid `foreach` aggregate `%s`%s", oaggr.toChars(), msg);
+            assert(oaggr.type);
+
+            fs.error("invalid `foreach` aggregate `%s` of type `%s`", oaggr.toChars(), oaggr.type.toPrettyChars());
+            if (isAggregate(fs.aggr.type))
+                fs.loc.errorSupplemental("maybe define `opApply()`, range primitives, or use `.tupleof`");
+
             return setError();
         }
 
@@ -2310,12 +2311,12 @@ package (dmd) extern (C++) final class StatementSemanticVisitor : Visitor
                 needswitcherror = true;
         }
 
-        if (!sc.sw.sdefault && !(sc.flags & SCOPE.Cfile) &&
+        if (!sc.sw.sdefault &&
             (!ss.isFinal || needswitcherror || global.params.useAssert == CHECKENABLE.on))
         {
             ss.hasNoDefault = 1;
 
-            if (!ss.isFinal && (!ss._body || !ss._body.isErrorStatement()))
+            if (!ss.isFinal && (!ss._body || !ss._body.isErrorStatement()) && !(sc.flags & SCOPE.Cfile))
                 ss.error("`switch` statement without a `default`; use `final switch` or add `default: assert(0);` or add `default: break;`");
 
             // Generate runtime error if the default is hit
@@ -2323,7 +2324,11 @@ package (dmd) extern (C++) final class StatementSemanticVisitor : Visitor
             CompoundStatement cs;
             Statement s;
 
-            if (global.params.useSwitchError == CHECKENABLE.on &&
+            if (sc.flags & SCOPE.Cfile)
+            {
+                s = new BreakStatement(ss.loc, null);   // default for C is `default: break;`
+            }
+            else if (global.params.useSwitchError == CHECKENABLE.on &&
                 global.params.checkAction != CHECKACTION.halt)
             {
                 if (global.params.checkAction == CHECKACTION.C)
@@ -2365,7 +2370,7 @@ package (dmd) extern (C++) final class StatementSemanticVisitor : Visitor
             ss._body = cs;
         }
 
-        if (ss.checkLabel())
+        if (!(sc.flags & SCOPE.Cfile) && ss.checkLabel())
         {
             sc.pop();
             return setError();
@@ -3840,7 +3845,7 @@ package (dmd) extern (C++) final class StatementSemanticVisitor : Visitor
                 fd.gotos = new GotoStatements();
             fd.gotos.push(gs);
         }
-        else if (gs.checkLabel())
+        else if (!(sc.flags & SCOPE.Cfile) && gs.checkLabel())
             return setError();
 
         result = gs;
@@ -3916,12 +3921,10 @@ package (dmd) extern (C++) final class StatementSemanticVisitor : Visitor
         }
 
         assert(sc.func);
-        // use setImpure/setGC when the deprecation cycle is over
-        PURE purity;
-        if (!(cas.stc & STC.pure_) && (purity = sc.func.isPureBypassingInference()) != PURE.impure && purity != PURE.fwdref)
-            cas.deprecation("`asm` statement is assumed to be impure - mark it with `pure` if it is not");
-        if (!(cas.stc & STC.nogc) && sc.func.isNogcBypassingInference())
-            cas.deprecation("`asm` statement is assumed to use the GC - mark it with `@nogc` if it does not");
+        if (!(cas.stc & STC.pure_) && sc.func.setImpure())
+            cas.error("`asm` statement is assumed to be impure - mark it with `pure` if it is not");
+        if (!(cas.stc & STC.nogc) && sc.func.setGC())
+            cas.error("`asm` statement is assumed to use the GC - mark it with `@nogc` if it does not");
         if (!(cas.stc & (STC.trusted | STC.safe)) && sc.func.setUnsafe())
             cas.error("`asm` statement is assumed to be `@system` - mark it with `@trusted` if it is not");
 

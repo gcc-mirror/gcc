@@ -170,7 +170,7 @@ FuncDeclaration hasThis(Scope* sc)
         {
             return null;
         }
-        if (!fd.isNested() || fd.isThis() || (fd.isThis2 && fd.isMember2()))
+        if (!fd.isNested() || fd.isThis() || (fd.hasDualContext() && fd.isMember2()))
             break;
 
         Dsymbol parent = fd.parent;
@@ -187,7 +187,7 @@ FuncDeclaration hasThis(Scope* sc)
         fd = parent.isFuncDeclaration();
     }
 
-    if (!fd.isThis() && !(fd.isThis2 && fd.isMember2()))
+    if (!fd.isThis() && !(fd.hasDualContext() && fd.isMember2()))
     {
         return null;
     }
@@ -1210,7 +1210,7 @@ extern (C++) abstract class Expression : ASTNode
                 scope bool function(DtorDeclaration) check, const string checkName
     ) {
         auto dd = f.isDtorDeclaration();
-        if (!dd || !dd.generated)
+        if (!dd || !dd.isGenerated())
             return;
 
         // DtorDeclaration without parents should fail at an earlier stage
@@ -1227,7 +1227,7 @@ extern (C++) abstract class Expression : ASTNode
         }
 
         dd.loc.errorSupplemental("%s`%s.~this` is %.*s because of the following field's destructors:",
-                            dd.generated ? "generated " : "".ptr,
+                            dd.isGenerated() ? "generated " : "".ptr,
                             ad.toChars,
                             cast(int) checkName.length, checkName.ptr);
 
@@ -1258,7 +1258,7 @@ extern (C++) abstract class Expression : ASTNode
             {
                 field.loc.errorSupplemental(" - %s %s", field.type.toChars(), field.toChars());
 
-                if (fieldSd.dtor.generated)
+                if (fieldSd.dtor.isGenerated())
                     checkOverridenDtor(sc, fieldSd.dtor, check, checkName);
                 else
                     fieldSd.dtor.loc.errorSupplemental("   %.*s `%s.~this` is declared here",
@@ -1288,7 +1288,7 @@ extern (C++) abstract class Expression : ASTNode
             return false; // magic variable never violates pure and safe
         if (v.isImmutable())
             return false; // always safe and pure to access immutables...
-        if (v.isConst() && !v.isRef() && (v.isDataseg() || v.isParameter()) && v.type.implicitConvTo(v.type.immutableOf()))
+        if (v.isConst() && !v.isReference() && (v.isDataseg() || v.isParameter()) && v.type.implicitConvTo(v.type.immutableOf()))
             return false; // or const global/parameter values which have no mutable indirections
         if (v.storage_class & STC.manifest)
             return false; // ...or manifest constants
@@ -3461,7 +3461,7 @@ extern (C++) final class ScopeExp : Expression
             //assert(ti.needsTypeInference(sc));
             if (ti.tempdecl &&
                 ti.semantictiargsdone &&
-                ti.semanticRun == PASS.init)
+                ti.semanticRun == PASS.initial)
             {
                 error("partial %s `%s` has no type", sds.kind(), toChars());
                 return true;
@@ -3859,7 +3859,7 @@ extern (C++) final class FuncExp : Expression
     {
         if (td)
             return new FuncExp(loc, td.syntaxCopy(null));
-        else if (fd.semanticRun == PASS.init)
+        else if (fd.semanticRun == PASS.initial)
             return new FuncExp(loc, fd.syntaxCopy(null));
         else // https://issues.dlang.org/show_bug.cgi?id=13481
              // Prevent multiple semantic analysis of lambda body.
@@ -4950,7 +4950,7 @@ extern (C++) final class DotTemplateInstanceExp : UnaExp
         // Same logic as ScopeExp.checkType()
         if (ti.tempdecl &&
             ti.semantictiargsdone &&
-            ti.semanticRun == PASS.init)
+            ti.semanticRun == PASS.initial)
         {
             error("partial %s `%s` has no type", ti.kind(), toChars());
             return true;
@@ -4962,7 +4962,7 @@ extern (C++) final class DotTemplateInstanceExp : UnaExp
     {
         if (ti.tempdecl &&
             ti.semantictiargsdone &&
-            ti.semanticRun == PASS.init)
+            ti.semanticRun == PASS.initial)
 
             error("partial %s `%s` has no value", ti.kind(), toChars());
         else

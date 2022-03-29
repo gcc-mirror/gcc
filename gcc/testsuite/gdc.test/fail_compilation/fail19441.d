@@ -46,4 +46,3 @@ void main()
         assert(wrap[0].s.test());  // failure
     }
 }
-

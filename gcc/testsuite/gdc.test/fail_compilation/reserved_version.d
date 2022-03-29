@@ -116,6 +116,7 @@ fail_compilation/reserved_version.d(217): Error: version identifier `AVR` is res
 fail_compilation/reserved_version.d(218): Error: version identifier `D_PreConditions` is reserved and cannot be set
 fail_compilation/reserved_version.d(219): Error: version identifier `D_PostConditions` is reserved and cannot be set
 fail_compilation/reserved_version.d(220): Error: version identifier `D_ProfileGC` is reserved and cannot be set
+fail_compilation/reserved_version.d(221): Error: version identifier `D_Invariants` is reserved and cannot be set
 ---
 */
 
@@ -238,6 +239,7 @@ version = AVR;
 version = D_PreConditions;
 version = D_PostConditions;
 version = D_ProfileGC;
+version = D_Invariants;
 
 // This should work though
 debug = DigitalMars;

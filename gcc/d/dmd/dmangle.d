@@ -991,10 +991,6 @@ public:
         if (stc & STC.returninferred)
             stc &= ~(STC.return_ | STC.returninferred);
 
-        // 'return inout ref' is the same as 'inout ref'
-        if ((stc & (STC.return_ | STC.wild)) == (STC.return_ | STC.wild))
-            stc &= ~STC.return_;
-
         // much like hdrgen.stcToBuffer()
         string rrs;
         const isout = (stc & STC.out_) != 0;
@@ -1365,5 +1361,3 @@ extern (D) const(char)[] externallyMangledIdentifier(Declaration d)
     }
     return null;
 }
-
-

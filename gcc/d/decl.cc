@@ -791,7 +791,7 @@ public:
 	  return;
       }
 
-    if (d->semantic3Errors)
+    if (d->hasSemantic3Errors ())
       return;
 
     if (d->isNested ())
@@ -805,7 +805,7 @@ public:
 	      break;
 
 	    /* Parent failed to compile, but errors were gagged.  */
-	    if (fdp->semantic3Errors)
+	    if (fdp->hasSemantic3Errors ())
 	      return;
 	  }
       }
@@ -921,15 +921,6 @@ public:
 	  }
       }
 
-    /* May change cfun->static_chain.  */
-    build_closure (d);
-
-    if (d->vresult)
-      declare_local_var (d->vresult);
-
-    if (d->v_argptr)
-      push_stmt_list ();
-
     /* Named return value optimisation support for D.
        Implemented by overriding all the RETURN_EXPRs and replacing all
        occurrences of VAR with the RESULT_DECL for the function.
@@ -951,7 +942,7 @@ public:
 	else
 	  d->shidden = resdecl;
 
-	if (d->nrvo_can && d->nrvo_var)
+	if (d->isNRVO () && d->nrvo_var)
 	  {
 	    tree var = get_symbol_decl (d->nrvo_var);
 
@@ -965,6 +956,15 @@ public:
 	    SET_DECL_LANG_NRVO (var, d->shidden);
 	  }
       }
+
+    /* May change cfun->static_chain.  */
+    build_closure (d);
+
+    if (d->vresult)
+      declare_local_var (d->vresult);
+
+    if (d->v_argptr)
+      push_stmt_list ();
 
     build_function_body (d);
 
@@ -1284,26 +1284,26 @@ get_symbol_decl (Declaration *decl)
       /* In [pragma/crtctor], Annotates a function so it is run after the C
 	 runtime library is initialized and before the D runtime library is
 	 initialized.  */
-      if (fd->isCrtCtorDtor == 1)
+      if (fd->isCrtCtor ())
 	{
 	  DECL_STATIC_CONSTRUCTOR (decl->csym) = 1;
 	  decl_init_priority_insert (decl->csym, DEFAULT_INIT_PRIORITY);
 	}
-      else if (fd->isCrtCtorDtor == 2)
+      else if (fd->isCrtDtor ())
 	{
 	  DECL_STATIC_DESTRUCTOR (decl->csym) = 1;
 	  decl_fini_priority_insert (decl->csym, DEFAULT_INIT_PRIORITY);
-       	}
+	}
 
       /* Function was declared `naked'.  */
-      if (fd->naked)
+      if (fd->isNaked ())
 	{
 	  insert_decl_attribute (decl->csym, "naked");
 	  DECL_NO_INSTRUMENT_FUNCTION_ENTRY_EXIT (decl->csym) = 1;
 	}
 
       /* Mark compiler generated functions as artificial.  */
-      if (fd->generated)
+      if (fd->isGenerated ())
 	DECL_ARTIFICIAL (decl->csym) = 1;
 
       /* Ensure and require contracts are lexically nested in the function they
@@ -1486,19 +1486,25 @@ get_decl_tree (Declaration *decl)
   if (vd == NULL || fd == NULL)
     return t;
 
-  /* Get the named return value.  */
-  if (DECL_LANG_NRVO (t))
-    return DECL_LANG_NRVO (t);
-
   /* Get the closure holding the var decl.  */
   if (DECL_LANG_FRAME_FIELD (t))
     {
       FuncDeclaration *parent = vd->toParent2 ()->isFuncDeclaration ();
       tree frame_ref = get_framedecl (fd, parent);
 
-      return component_ref (build_deref (frame_ref),
-			    DECL_LANG_FRAME_FIELD (t));
+      tree field = component_ref (build_deref (frame_ref),
+				  DECL_LANG_FRAME_FIELD (t));
+      /* Frame field can also be a reference to the DECL_RESULT of a function.
+	 Dereference it to get the value.  */
+      if (DECL_LANG_NRVO (t))
+	field = build_deref (field);
+
+      return field;
     }
+
+  /* Get the named return value.  */
+  if (DECL_LANG_NRVO (t))
+    return DECL_LANG_NRVO (t);
 
   /* Get the non-local `this' value by going through parent link
      of nested classes, this routine pretty much undoes what

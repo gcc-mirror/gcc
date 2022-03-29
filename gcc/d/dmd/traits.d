@@ -80,10 +80,10 @@ private Dsymbol getDsymbolWithoutExpCtx(RootObject oarg)
 {
     if (auto e = isExpression(oarg))
     {
-        if (e.op == EXP.dotVariable)
-            return (cast(DotVarExp)e).var;
-        if (e.op == EXP.dotTemplateDeclaration)
-            return (cast(DotTemplateExp)e).td;
+        if (auto dve = e.isDotVarExp())
+            return dve.var;
+        if (auto dte = e.isDotTemplateExp())
+            return dte.td;
     }
     return getDsymbol(oarg);
 }
@@ -833,7 +833,7 @@ Expression semanticTraits(TraitsExp e, Scope* sc)
                 e.error("argument `%s` has no visibility", o.toChars());
             return ErrorExp.get();
         }
-        if (s.semanticRun == PASS.init)
+        if (s.semanticRun == PASS.initial)
             s.dsymbolSemantic(null);
 
         auto protName = visibilityToString(s.visible().kind); // TODO: How about package(names)
@@ -1053,9 +1053,9 @@ Expression semanticTraits(TraitsExp e, Scope* sc)
         }
         else if (e.ident == Id.getMember)
         {
-            if (ex.op == EXP.dotIdentifier)
+            if (auto die = ex.isDotIdExp())
                 // Prevent semantic() from replacing Symbol with its initializer
-                (cast(DotIdExp)ex).wantsym = true;
+                die.wantsym = true;
             ex = ex.expressionSemantic(scx);
             return ex;
         }
@@ -2101,13 +2101,14 @@ Expression semanticTraits(TraitsExp e, Scope* sc)
             return ErrorExp.get();
         }
 
-        if (sc.func is null)
+        auto fd = sc.getEnclosingFunction();
+        if (!fd)
         {
             e.error("`__traits(parameters)` may only be used inside a function");
             return ErrorExp.get();
         }
-        assert(sc.func && sc.parent.isFuncDeclaration());
-        auto tf = sc.parent.isFuncDeclaration.type.isTypeFunction();
+
+        auto tf = fd.type.isTypeFunction();
         assert(tf);
         auto exps = new Expressions(0);
         int addParameterDG(size_t idx, Parameter x)
@@ -2162,7 +2163,7 @@ private bool isSame(RootObject o1, RootObject o2, Scope* sc)
         {
             if (ea.op == EXP.function_)
             {
-                if (auto fe = cast(FuncExp)ea)
+                if (auto fe = ea.isFuncExp())
                     return fe.fd;
             }
         }

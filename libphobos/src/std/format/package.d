@@ -1589,7 +1589,7 @@ char[] sformat(alias fmt, Args...)(char[] buf, Args args)
 if (isSomeString!(typeof(fmt)))
 {
     alias e = checkFormatException!(fmt, Args);
-    static assert(!e, e.msg);
+    static assert(!e, e);
     return .sformat(buf, fmt, args);
 }
 

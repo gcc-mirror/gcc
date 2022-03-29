@@ -137,9 +137,9 @@ public:
 
     override void visit(DeleteExp e)
     {
-        if (e.e1.op == EXP.variable)
+        if (VarExp ve = e.e1.isVarExp())
         {
-            VarDeclaration v = (cast(VarExp)e.e1).var.isVarDeclaration();
+            VarDeclaration v = ve.var.isVarDeclaration();
             if (v && v.onstack)
                 return; // delete for scope allocated class object
         }

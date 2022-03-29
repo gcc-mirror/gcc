@@ -3880,4 +3880,3 @@ IntRange getIntRange(Expression e)
         case EXP.negate             : return visitNeg(e.isNegExp());
     }
 }
-

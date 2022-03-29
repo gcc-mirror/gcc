@@ -10,5 +10,3 @@ enum int c6491 = 4;
 
 /// test
 void bug6491a(int a = ddoc6491.c6491, string b = core.cpuid.vendor);
-
-
