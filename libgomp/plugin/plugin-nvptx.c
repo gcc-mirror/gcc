@@ -1281,6 +1281,17 @@ GOMP_OFFLOAD_fini_device (int n)
   return true;
 }
 
+/* Indicate which GOMP_REQUIRES_* features are supported.  */
+
+bool
+GOMP_OFFLOAD_supported_features (unsigned int *mask)
+{
+  *mask &= ~(GOMP_REQUIRES_UNIFIED_ADDRESS
+	     | GOMP_REQUIRES_UNIFIED_SHARED_MEMORY);
+
+  return (*mask == 0);
+}
+
 /* Return the libgomp version number we're compatible with.  There is
    no requirement for cross-version compatibility.  */
 

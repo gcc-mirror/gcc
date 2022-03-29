@@ -1,3 +1,8 @@
+2022-03-29  Andrew Stubbs  <ams@codesourcery.com>
+
+	* plugin/plugin-nvptx.c (GOMP_OFFLOAD_supported_features): Allow
+	GOMP_REQUIRES_UNIFIED_ADDRESS and GOMP_REQUIRES_UNIFIED_SHARED_MEMORY.
+
 2022-03-11  Andrew Stubbs  <ams@codesourcery.com>
 
 	* config/linux/allocator.c (always_pinned_mode): New variable.
