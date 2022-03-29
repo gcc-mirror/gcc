@@ -985,6 +985,15 @@
    (V32HI "V32HI") (V64QI "V64QI")
    (V32QI "V32QI") (V16QI "V16QI")])
 
+;; Mapping of vector modes to an V*HImode of the same size
+(define_mode_attr ssewvecmode
+  [(V8DI "V32HI") (V4DI "V16HI") (V2DI "V8HI")
+   (V16SI "V32HI") (V8SI "V16HI") (V4SI "V8HI")])
+
+(define_mode_attr ssewvecmodelower
+  [(V8DI "v32hi") (V4DI "v16hi") (V2DI "v8hi")
+   (V16SI "v32hi") (V8SI "v16hi") (V4SI "v8hi")])
+
 (define_mode_attr sseintvecmode2
   [(V8DF "XI") (V4DF "OI") (V2DF "TI")
    (V8SF "OI") (V4SF "TI")
@@ -1193,6 +1202,11 @@
   [(V8HI "V16QI") (V4SI "V8HI") (V2DI "V4SI")
    (V16HI "V32QI") (V8SI "V16HI") (V4DI "V8SI")
    (V32HI "V64QI") (V16SI "V32HI") (V8DI "V16SI")])
+
+(define_mode_attr ssepackmodelower
+  [(V8HI "v16qi") (V4SI "v8hi") (V2DI "v4si")
+   (V16HI "v32qi") (V8SI "v16hi") (V4DI "v8si")
+   (V32HI "v64qi") (V16SI "v32hi") (V8DI "v16si")])
 
 ;; Mapping of the max integer size for xop rotate immediate constraint
 (define_mode_attr sserotatemax
@@ -10681,6 +10695,46 @@
    (set_attr "prefix" "evex")
    (set_attr "mode" "HF")])
 
+(define_insn_and_split "*vec_set<mode>_0_zero_extendhi"
+  [(set (match_operand:VI48_AVX512F 0 "register_operand")
+	(vec_merge:VI48_AVX512F
+	 (vec_duplicate:VI48_AVX512F
+	  (zero_extend:<ssescalarmode>
+	    (match_operand:HI 1 "nonimmediate_operand")))
+	 (match_operand:VI48_AVX512F 2 "const0_operand")
+	 (const_int 1)))]
+  "TARGET_AVX512FP16 && ix86_pre_reload_split ()"
+  "#"
+  "&& 1"
+  [(const_int 0)]
+{
+  rtx dest = gen_reg_rtx (<ssewvecmode>mode);
+  emit_insn (gen_vec_set<ssewvecmodelower>_0 (dest,
+					      CONST0_RTX (<ssewvecmode>mode),
+					      operands[1]));
+  emit_move_insn (operands[0],
+		  lowpart_subreg (<MODE>mode, dest, <ssewvecmode>mode));
+  DONE;
+})
+
+(define_insn_and_split "*vec_setv2di_0_zero_extendhi_1"
+  [(set (match_operand:V2DI 0 "register_operand")
+	(vec_concat:V2DI
+	  (zero_extend:DI
+	    (match_operand:HI 1 "nonimmediate_operand"))
+	  (const_int 0)))]
+  "TARGET_AVX512FP16 && ix86_pre_reload_split ()"
+  "#"
+  "&& 1"
+  [(const_int 0)]
+{
+  rtx dest = gen_reg_rtx (V8HImode);
+  emit_insn (gen_vec_setv8hi_0 (dest, CONST0_RTX (V8HImode), operands[1]));
+  emit_move_insn (operands[0],
+		  lowpart_subreg (V2DImode, dest, V8HImode));
+  DONE;
+})
+
 (define_insn "avx512fp16_movsh"
   [(set (match_operand:V8HF 0 "register_operand" "=v")
 	(vec_merge:V8HF
@@ -10749,6 +10803,46 @@
 	      (symbol_ref "TARGET_INTER_UNIT_MOVES_TO_VEC")
 	   ]
 	   (symbol_ref "true")))])
+
+(define_insn_and_split "*vec_set<mode>_0_zero_extendsi"
+  [(set (match_operand:VI8 0 "register_operand")
+	(vec_merge:VI8
+	 (vec_duplicate:VI8
+	  (zero_extend:DI
+	    (match_operand:SI 1 "nonimmediate_operand")))
+	 (match_operand:VI8 2 "const0_operand")
+	 (const_int 1)))]
+  "TARGET_SSE2 && ix86_pre_reload_split ()"
+  "#"
+  "&& 1"
+  [(const_int 0)]
+{
+  rtx dest = gen_reg_rtx (<ssepackmode>mode);
+  emit_insn (gen_vec_set<ssepackmodelower>_0 (dest,
+					      CONST0_RTX (<ssepackmode>mode),
+					      operands[1]));
+  emit_move_insn (operands[0],
+		  lowpart_subreg (<MODE>mode, dest, <ssepackmode>mode));
+  DONE;
+})
+
+(define_insn_and_split "*vec_setv2di_0_zero_extendsi_1"
+  [(set (match_operand:V2DI 0 "register_operand")
+	(vec_concat:V2DI
+	  (zero_extend:DI
+	    (match_operand:SI 1 "nonimmediate_operand"))
+	  (const_int 0)))]
+  "TARGET_SSE2 && ix86_pre_reload_split ()"
+  "#"
+  "&& 1"
+  [(const_int 0)]
+{
+  rtx dest = gen_reg_rtx (V4SImode);
+  emit_insn (gen_vec_setv4si_0 (dest, CONST0_RTX (V4SImode), operands[1]));
+  emit_move_insn (operands[0],
+		  lowpart_subreg (V2DImode, dest, V4SImode));
+  DONE;
+})
 
 (define_insn "sse4_1_insertps"
   [(set (match_operand:V4SF 0 "register_operand" "=Yr,*x,v")
