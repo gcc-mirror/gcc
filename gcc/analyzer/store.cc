@@ -1843,12 +1843,14 @@ binding_cluster::mark_as_escaped ()
 
 /* If this cluster has escaped (by this call, or by an earlier one, or
    by being an external param), then unbind all values and mark it
-   as "touched", so that it has an unknown value, rather than an
-   initial_svalue.  */
+   as "touched", so that it has a conjured value, rather than an
+   initial_svalue.
+   Use P to purge state involving conjured_svalues.  */
 
 void
 binding_cluster::on_unknown_fncall (const gcall *call,
-				    store_manager *mgr)
+				    store_manager *mgr,
+				    const conjured_purge &p)
 {
   if (m_escaped)
     {
@@ -1857,25 +1859,27 @@ binding_cluster::on_unknown_fncall (const gcall *call,
       /* Bind it to a new "conjured" value using CALL.  */
       const svalue *sval
 	= mgr->get_svalue_manager ()->get_or_create_conjured_svalue
-	    (m_base_region->get_type (), call, m_base_region);
+	    (m_base_region->get_type (), call, m_base_region, p);
       bind (mgr, m_base_region, sval);
 
       m_touched = true;
     }
 }
 
-/* Mark this cluster as having been clobbered by STMT.  */
+/* Mark this cluster as having been clobbered by STMT.
+   Use P to purge state involving conjured_svalues.  */
 
 void
 binding_cluster::on_asm (const gasm *stmt,
-			 store_manager *mgr)
+			 store_manager *mgr,
+			 const conjured_purge &p)
 {
   m_map.empty ();
 
   /* Bind it to a new "conjured" value using CALL.  */
   const svalue *sval
     = mgr->get_svalue_manager ()->get_or_create_conjured_svalue
-    (m_base_region->get_type (), stmt, m_base_region);
+    (m_base_region->get_type (), stmt, m_base_region, p);
   bind (mgr, m_base_region, sval);
 
   m_touched = true;
@@ -2766,13 +2770,14 @@ store::mark_as_escaped (const region *base_reg)
    (either in this fncall, or in a prior one).  */
 
 void
-store::on_unknown_fncall (const gcall *call, store_manager *mgr)
+store::on_unknown_fncall (const gcall *call, store_manager *mgr,
+			  const conjured_purge &p)
 {
   m_called_unknown_fn = true;
 
   for (cluster_map_t::iterator iter = m_cluster_map.begin ();
        iter != m_cluster_map.end (); ++iter)
-    (*iter).second->on_unknown_fncall (call, mgr);
+    (*iter).second->on_unknown_fncall (call, mgr, p);
 }
 
 /* Return true if a non-const pointer to BASE_REG (or something within it)

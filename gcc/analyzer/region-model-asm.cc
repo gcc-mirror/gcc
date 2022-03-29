@@ -272,7 +272,8 @@ region_model::on_asm_stmt (const gasm *stmt, region_model_context *ctxt)
 	continue;
 
       binding_cluster *cluster = m_store.get_or_create_cluster (base_reg);
-      cluster->on_asm (stmt, m_mgr->get_store_manager ());
+      cluster->on_asm (stmt, m_mgr->get_store_manager (),
+		       conjured_purge (this, ctxt));
     }
 
   /* Update the outputs.  */
@@ -292,8 +293,9 @@ region_model::on_asm_stmt (const gasm *stmt, region_model_context *ctxt)
 	{
 	  sval = m_mgr->get_or_create_conjured_svalue (TREE_TYPE (dst_expr),
 						       stmt,
-						       dst_reg);
-	  purge_state_involving (sval, ctxt);
+						       dst_reg,
+						       conjured_purge (this,
+								       ctxt));
 	}
       set_value (dst_reg, sval, ctxt);
     }

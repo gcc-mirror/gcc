@@ -1169,17 +1169,38 @@ region_model_manager::get_or_create_compound_svalue (tree type,
   return compound_sval;
 }
 
+/* class conjured_purge.  */
+
+/* Purge state relating to SVAL.  */
+
+void
+conjured_purge::purge (const conjured_svalue *sval) const
+{
+  m_model->purge_state_involving (sval, m_ctxt);
+}
+
 /* Return the svalue * of type TYPE for the value conjured for ID_REG
-   at STMT, creating it if necessary.  */
+   at STMT, creating it if necessary.
+   Use P to purge existing state from the svalue, for the case where a
+   conjured_svalue would be reused along an execution path.  */
 
 const svalue *
 region_model_manager::get_or_create_conjured_svalue (tree type,
 						     const gimple *stmt,
-						     const region *id_reg)
+						     const region *id_reg,
+						     const conjured_purge &p)
 {
   conjured_svalue::key_t key (type, stmt, id_reg);
   if (conjured_svalue **slot = m_conjured_values_map.get (key))
-    return *slot;
+    {
+      const conjured_svalue *sval = *slot;
+      /* We're reusing an existing conjured_svalue, perhaps from a different
+	 state within this analysis, or perhaps from an earlier state on this
+	 execution path.  For the latter, purge any state involving the "new"
+	 svalue from the current program_state.  */
+      p.purge (sval);
+      return sval;
+    }
   conjured_svalue *conjured_sval
     = new conjured_svalue (type, stmt, id_reg);
   RETURN_UNKNOWN_IF_TOO_COMPLEX (conjured_sval);
