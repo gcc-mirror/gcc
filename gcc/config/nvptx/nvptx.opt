@@ -56,6 +56,10 @@ misa=
 Target RejectNegative ToLower Joined Enum(ptx_isa) Var(ptx_isa_option) Init(PTX_ISA_SM30)
 Specify the PTX ISA target architecture to use.
 
+march=
+Target RejectNegative Joined Alias(misa=)
+Alias:
+
 Enum
 Name(ptx_version) Type(int)
 Known PTX ISA versions (for use with the -mptx= option):
