@@ -2397,8 +2397,9 @@ resolve_elemental_actual (gfc_expr *expr, gfc_code *c)
   if (rank > 0 && esym && expr == NULL)
     for (eformal = esym->formal, arg = arg0; arg && eformal;
 	 arg = arg->next, eformal = eformal->next)
-      if ((eformal->sym->attr.intent == INTENT_OUT
-	   || eformal->sym->attr.intent == INTENT_INOUT)
+      if (eformal->sym
+	  && (eformal->sym->attr.intent == INTENT_OUT
+	      || eformal->sym->attr.intent == INTENT_INOUT)
 	  && arg->expr && arg->expr->rank == 0)
 	{
 	  gfc_error ("Actual argument at %L for INTENT(%s) dummy %qs of "
