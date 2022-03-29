@@ -6283,6 +6283,7 @@ aapcs_vfp_cum_init (CUMULATIVE_ARGS *pcum  ATTRIBUTE_UNUSED,
       a HFA or HVA.  */
 const unsigned int WARN_PSABI_EMPTY_CXX17_BASE = 1U << 0;
 const unsigned int WARN_PSABI_NO_UNIQUE_ADDRESS = 1U << 1;
+const unsigned int WARN_PSABI_ZERO_WIDTH_BITFIELD = 1U << 2;
 
 /* Walk down the type tree of TYPE counting consecutive base elements.
    If *MODEP is VOIDmode, then set it to the first valid floating point
@@ -6435,6 +6436,28 @@ aapcs_vfp_sub_candidate (const_tree type, machine_mode *modep,
 		    continue;
 		  }
 	      }
+	    /* A zero-width bitfield may affect layout in some
+	       circumstances, but adds no members.  The determination
+	       of whether or not a type is an HFA is performed after
+	       layout is complete, so if the type still looks like an
+	       HFA afterwards, it is still classed as one.  This is
+	       potentially an ABI break for the hard-float ABI.  */
+	    else if (DECL_BIT_FIELD (field)
+		     && integer_zerop (DECL_SIZE (field)))
+	      {
+		/* Prior to GCC-12 these fields were striped early,
+		   hiding them from the back-end entirely and
+		   resulting in the correct behaviour for argument
+		   passing.  Simulate that old behaviour without
+		   generating a warning.  */
+		if (DECL_FIELD_CXX_ZERO_WIDTH_BIT_FIELD (field))
+		  continue;
+		if (warn_psabi_flags)
+		  {
+		    *warn_psabi_flags |= WARN_PSABI_ZERO_WIDTH_BITFIELD;
+		    continue;
+		  }
+	      }
 
 	    sub_count = aapcs_vfp_sub_candidate (TREE_TYPE (field), modep,
 						 warn_psabi_flags);
@@ -6547,8 +6570,10 @@ aapcs_vfp_is_call_or_return_candidate (enum arm_pcs pcs_variant,
 	      && ((alt = aapcs_vfp_sub_candidate (type, &new_mode, NULL))
 		  != ag_count))
 	    {
-	      const char *url
+	      const char *url10
 		= CHANGES_ROOT_URL "gcc-10/changes.html#empty_base";
+	      const char *url12
+		= CHANGES_ROOT_URL "gcc-12/changes.html#zero_width_bitfields";
 	      gcc_assert (alt == -1);
 	      last_reported_type_uid = uid;
 	      /* Use TYPE_MAIN_VARIANT to strip any redundant const
@@ -6557,12 +6582,16 @@ aapcs_vfp_is_call_or_return_candidate (enum arm_pcs pcs_variant,
 		inform (input_location, "parameter passing for argument of "
 			"type %qT with %<[[no_unique_address]]%> members "
 			"changed %{in GCC 10.1%}",
-			TYPE_MAIN_VARIANT (type), url);
+			TYPE_MAIN_VARIANT (type), url10);
 	      else if (warn_psabi_flags & WARN_PSABI_EMPTY_CXX17_BASE)
 		inform (input_location, "parameter passing for argument of "
 			"type %qT when C++17 is enabled changed to match "
 			"C++14 %{in GCC 10.1%}",
-			TYPE_MAIN_VARIANT (type), url);
+			TYPE_MAIN_VARIANT (type), url10);
+	      else if (warn_psabi_flags & WARN_PSABI_ZERO_WIDTH_BITFIELD)
+		inform (input_location, "parameter passing for argument of "
+			"type %qT changed %{in GCC 12.1%}",
+			TYPE_MAIN_VARIANT (type), url12);
 	    }
 	  *count = ag_count;
 	}
