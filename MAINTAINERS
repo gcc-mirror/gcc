@@ -83,6 +83,8 @@ i386 vector ISA extns	Kirill Yukhin		<kirill.yukhin@gmail.com>
 i386 vector ISA extns	Hongtao Liu		<hongtao.liu@intel.com>
 iq2000 port		Nick Clifton		<nickc@redhat.com>
 lm32 port		Sebastien Bourdeauducq	<sebastien@milkymist.org>
+LoongArch port		Chenghua Xu		<xuchenghua@loongson.cn>
+LoongArch port		Lulu Cheng		<chenglulu@loongson.cn>
 m32r port		Nick Clifton		<nickc@redhat.com>
 m68k port (?)		Jeff Law		<jeffreyalaw@gmail.com>
 m68k port		Andreas Schwab		<schwab@linux-m68k.org>
