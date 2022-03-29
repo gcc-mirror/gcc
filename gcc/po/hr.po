@@ -2,22 +2,26 @@
 # Copyright (C) 2012 Free Software Foundation, Inc.
 # This file is distributed under the same license as the gcc package.
 #
-# Tomislav Krznar <tomislav.krznar@gmail.com>, 2012.
+# Tomislav Krznar <tomislav.krznar@gmail.com>, 2012, 2022.
+# Božidar Putanec <bozidarp@yahoo.com>, 2022.
 msgid ""
 msgstr ""
-"Project-Id-Version: gcc 4.7.1\n"
+"Project-Id-Version: gcc-12.1-b20220213\n"
 "Report-Msgid-Bugs-To: https://gcc.gnu.org/bugs/\n"
 "POT-Creation-Date: 2022-02-11 23:10+0000\n"
-"PO-Revision-Date: 2012-07-05 15:49+0200\n"
-"Last-Translator: Tomislav Krznar <tomislav.krznar@gmail.com>\n"
+"PO-Revision-Date: 2022-03-28 15:16-0700\n"
+"Last-Translator: Božidar Putanec <bozidarp@yahoo.com>\n"
 "Language-Team: Croatian <lokalizacija@linux.hr>\n"
 "Language: hr\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Bugs: Report translation errors to the Language-Team address.\n"
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
-"X-Generator: Lokalize 1.4\n"
+"X-Bugs: Report translation errors to the Language-Team address.\n"
+"X-Generator: Poedit 3.0.1\n"
+"X-Poedit-Basepath: ../sources/gcc-12-20220213\n"
+"X-Poedit-Bookmarks: 13750,0,-1,-1,-1,-1,-1,-1,-1,-1\n"
+"X-Poedit-SearchPath-0: .\n"
 
 #: cif-code.def:39
 msgid "function not considered for inlining"
@@ -76,10 +80,8 @@ msgid "call is unlikely and code size would grow"
 msgstr ""
 
 #: cif-code.def:88
-#, fuzzy
-#| msgid "optimizing for size and code size would grow"
 msgid "call is considered never executed and code size would grow"
-msgstr "optimiziram za veličinu i veličina koda može narasti"
+msgstr "smatra se da poziv nikada nije izvršen i veličina koda će rasti"
 
 #: cif-code.def:92
 msgid "function not declared inline and code size would grow"
@@ -130,10 +132,8 @@ msgid "function has external linkage when the user requests only inlining static
 msgstr ""
 
 #: cif-code.def:144
-#, fuzzy
-#| msgid "unrecoverable error"
 msgid "unreachable"
-msgstr "greška, nemoguć oporavak"
+msgstr "nedostupno"
 
 #. The remainder are real diagnostic types.
 #: diagnostic.def:33
@@ -154,7 +154,7 @@ msgstr "greška: "
 
 #: diagnostic.def:36
 msgid "sorry, unimplemented: "
-msgstr "žao mi je, nije implementirano: "
+msgstr "žao nam je, nije implementirano: "
 
 #: diagnostic.def:37
 msgid "warning: "
@@ -162,7 +162,7 @@ msgstr "upozorenje: "
 
 #: diagnostic.def:38
 msgid "anachronism: "
-msgstr ""
+msgstr "anakronizam: "
 
 #: diagnostic.def:39
 msgid "note: "
@@ -176,17 +176,17 @@ msgstr "debug: "
 #. a range of events within a path.
 #: diagnostic.def:44
 msgid "path: "
-msgstr ""
+msgstr "staza: "
 
 #. These two would be re-classified as DK_WARNING or DK_ERROR, so the
 #. prefix does not matter.
 #: diagnostic.def:48
 msgid "pedwarn: "
-msgstr ""
+msgstr "pedwarn: "
 
 #: diagnostic.def:49
 msgid "permerror: "
-msgstr ""
+msgstr "permerror: "
 
 #: config/i386/djgpp.h:143
 #, c-format
@@ -195,104 +195,86 @@ msgstr ""
 
 #. The remainder are real diagnostic types.
 #: fortran/gfc-diagnostic.def:33
-#, fuzzy
-#| msgid "fatal error: "
 msgid "Fatal Error"
-msgstr "fatalna greška: "
+msgstr "Fatalna greška"
 
 #. This is like DK_ICE, but backtrace is not printed.  Used in the driver
 #. when reporting fatal signal in the compiler.
 #: fortran/gfc-diagnostic.def:34 fortran/gfc-diagnostic.def:50
-#, fuzzy
-#| msgid "internal compiler error: "
 msgid "internal compiler error"
-msgstr "interna greška kompajlera: "
+msgstr "interna greška kompajlera"
 
 #: fortran/gfc-diagnostic.def:35
-#, fuzzy
-#| msgid "error: "
 msgid "Error"
-msgstr "greška: "
+msgstr "Greška"
 
 #: fortran/gfc-diagnostic.def:36
-#, fuzzy
-#| msgid "sorry, unimplemented: "
 msgid "sorry, unimplemented"
-msgstr "žao mi je, nije implementirano: "
+msgstr "žao nam je, nije implementirano: "
 
 #: fortran/gfc-diagnostic.def:37
-#, fuzzy
-#| msgid "warning: "
 msgid "Warning"
-msgstr "upozorenje: "
+msgstr "Upozorenje"
 
 #: fortran/gfc-diagnostic.def:38
 msgid "anachronism"
-msgstr ""
+msgstr "anakronizam"
 
 #: fortran/gfc-diagnostic.def:39
-#, fuzzy
-#| msgid "note: "
 msgid "note"
-msgstr "napomena: "
+msgstr "napomena"
 
 #: fortran/gfc-diagnostic.def:40
-#, fuzzy
-#| msgid "debug: "
 msgid "debug"
-msgstr "debug: "
+msgstr "debug"
 
 #. These two would be re-classified as DK_WARNING or DK_ERROR, so the
 #. prefix does not matter.
 #: fortran/gfc-diagnostic.def:43
 msgid "pedwarn"
-msgstr ""
+msgstr "pedwarn (pedantno upozorenje)"
 
 #: fortran/gfc-diagnostic.def:44
-#, fuzzy
-#| msgid "error: "
 msgid "permerror"
-msgstr "greška: "
+msgstr "permerror (trajna pogreška)"
 
 #. This one is just for counting DK_WARNING promoted to DK_ERROR
 #. due to -Werror and -Werror=warning.
 #: fortran/gfc-diagnostic.def:47
-#, fuzzy
-#| msgid "error: "
 msgid "error"
-msgstr "greška: "
+msgstr "greška"
 
 #: gcc.cc:829 gcc.cc:833 gcc.cc:888
 msgid "-gz is not supported in this configuration"
-msgstr ""
+msgstr "-gz nije podržan u ovoj konfiguraciji"
 
 #: gcc.cc:839 gcc.cc:899
 msgid "-gz=zlib is not supported in this configuration"
-msgstr ""
+msgstr "-gz=zlib nije podržan u ovoj konfiguraciji"
 
 #: gcc.cc:1092
 msgid "-fuse-linker-plugin is not supported in this configuration"
-msgstr ""
+msgstr "-fuse-linker-plugin nije podržan u ovoj konfiguraciji"
 
 #: gcc.cc:1108
 msgid "cannot specify -static with -fsanitize=address"
-msgstr ""
+msgstr "-static ne možete specificirati s -fsanitize=address"
 
 #: gcc.cc:1110
 msgid "cannot specify -static with -fsanitize=hwaddress"
-msgstr ""
+msgstr "-static ne možete specificirati -fsanitize=hwaddress"
 
 #: gcc.cc:1112
 msgid "cannot specify -static with -fsanitize=thread"
-msgstr ""
+msgstr "-static ne možete specificirati -fsanitize=thread"
 
 #: gcc.cc:1134
 msgid "-fvtable-verify=std is not supported in this configuration"
-msgstr ""
+msgstr "-fvtable-verify=std nije podržan u ovoj konfiguraciji"
 
 #: gcc.cc:1136
 msgid "-fvtable-verify=preinit is not supported in this configuration"
-msgstr ""
+msgstr "-fvtable-verify=preinit nije podržan u ovoj konfiguraciji"
 
 #: gcc.cc:1273 ada/gcc-interface/lang-specs.h:37
 msgid "-pg and -fomit-frame-pointer are incompatible"
@@ -374,7 +356,7 @@ msgstr ""
 
 #: config/sol2.h:449
 msgid "-pie is not supported in this configuration"
-msgstr ""
+msgstr "-pie nije podržan u ovoj konfiguraciji"
 
 #: config/vxworks.h:204
 msgid "-Xbind-now and -Xbind-lazy are incompatible"
@@ -383,7 +365,7 @@ msgstr ""
 #: config/aarch64/aarch64-freebsd.h:37 config/arm/freebsd.h:49
 #: config/riscv/freebsd.h:44
 msgid "consider using `-pg' instead of `-p' with gprof (1)"
-msgstr ""
+msgstr "razmislite o korištenju „-pg“ umjesto „-p“ s gprof (1)"
 
 #: config/arc/arc.h:68 config/mips/mips.h:1475
 msgid "may not use both -EB and -EL"
@@ -399,7 +381,7 @@ msgstr ""
 
 #: config/cris/cris.h:168
 msgid "do not specify both -march=... and -mcpu=..."
-msgstr ""
+msgstr "nemojte istovremeno specificirati -march=... i -mcpu=..."
 
 #: config/i386/cygwin-w64.h:64 config/i386/cygwin.h:138
 #: config/i386/mingw-w64.h:103 config/i386/mingw32.h:160
@@ -468,7 +450,7 @@ msgstr ""
 
 #: config/rs6000/freebsd64.h:114
 msgid "consider using `-pg' instead of `-p' with gprof(1)"
-msgstr ""
+msgstr "razmislite o korištenju „-pg“ umjesto „-p“ s gprof(1)"
 
 #: config/rs6000/rs6000.h:167
 msgid "Missing -mcpu option in ASM_CPU_SPEC?"
@@ -496,7 +478,7 @@ msgstr ""
 
 #: config/sparc/linux64.h:142
 msgid "-fsanitize=address is not supported in this configuration"
-msgstr ""
+msgstr "-fsanitize=address nije podržan u ovoj konfiguraciji"
 
 #: config/sparc/linux64.h:156 config/sparc/linux64.h:162
 #: config/sparc/netbsd-elf.h:108 config/sparc/netbsd-elf.h:117
@@ -3021,10 +3003,9 @@ msgid "When \"signed\" or \"unsigned\" is not given make the bitfield signed."
 msgstr ""
 
 #: c-family/c.opt:2053 ada/gcc-interface/lang.opt:85
-#, fuzzy, no-c-format
-#| msgid "enabled by default"
+#, no-c-format
 msgid "Make \"char\" signed by default."
-msgstr "uobičajeno omogućeno"
+msgstr "Čini da je \"char\" zadano potpisan (default)"
 
 #: c-family/c.opt:2057
 #, no-c-format
@@ -3072,10 +3053,9 @@ msgid "When \"signed\" or \"unsigned\" is not given make the bitfield unsigned."
 msgstr ""
 
 #: c-family/c.opt:2135 ada/gcc-interface/lang.opt:89
-#, fuzzy, no-c-format
-#| msgid "enabled by default"
+#, no-c-format
 msgid "Make \"char\" unsigned by default."
-msgstr "uobičajeno omogućeno"
+msgstr "Čini da je \"char\" zadano nepotpisan (default)"
 
 #: c-family/c.opt:2139
 #, no-c-format
@@ -10616,14 +10596,9 @@ msgid "Specify how many read/write ports for n9/n10 cores.  The value should be 
 msgstr ""
 
 #: config/nds32/nds32.opt:425
-#, fuzzy, no-c-format
-#| msgid ""
-#| "\n"
-#| "ldd output with constructors/destructors.\n"
+#, no-c-format
 msgid "Enable constructor/destructor feature."
-msgstr ""
-"\n"
-"izlaz ldd-a s konstruktorima/destruktorima.\n"
+msgstr "Omogući značajku konstruktor/destruktor."
 
 #: config/nds32/nds32.opt:429
 #, no-c-format
@@ -11531,10 +11506,9 @@ msgid "Work around an early 4300 hardware bug."
 msgstr ""
 
 #: config/mips/mips.opt:198
-#, fuzzy, no-c-format
-#| msgid "options enabled: "
+#, no-c-format
 msgid "FP exceptions are enabled."
-msgstr "omogućene opcije: "
+msgstr "Omogućene su iznimke s pomičnim zarezom (floating point)"
 
 #: config/mips/mips.opt:202
 #, no-c-format
@@ -12357,10 +12331,9 @@ msgid "Provide bash completion for options starting with provided string."
 msgstr ""
 
 #: common.opt:297
-#, fuzzy, no-c-format
-#| msgid "  --help                   Display this information\n"
+#, no-c-format
 msgid "Display this information."
-msgstr "  --help                   Prikaži ove informacije\n"
+msgstr "Pokaže ove informacije."
 
 #: common.opt:301
 #, no-c-format
@@ -14928,10 +14901,9 @@ msgid "-imultiarch <dir>\tSet <dir> to be the multiarch include subdirectory."
 msgstr ""
 
 #: common.opt:3433
-#, fuzzy, no-c-format
-#| msgid "  -o <file>                Place the output into <file>\n"
+#, no-c-format
 msgid "-o <file>\tPlace output into <file>."
-msgstr "  -o <datoteka>            Spremi izlaz u <datoteka>\n"
+msgstr "-o <file>\tSmjesti (upiše) izlaz u <file>."
 
 #: common.opt:3437
 #, no-c-format
@@ -14964,10 +14936,9 @@ msgid "Suppress warnings."
 msgstr ""
 
 #: common.opt:3537
-#, fuzzy, no-c-format
-#| msgid "  -shared                  Create a shared library\n"
+#, no-c-format
 msgid "Create a shared library."
-msgstr "  -shared                  Napravi dijeljenu biblioteku\n"
+msgstr "Stvori zajedničku (dijeljenu) biblioteku."
 
 #: common.opt:3589
 #, no-c-format
@@ -15095,10 +15066,9 @@ msgid "The smallest number of different values for which it is best to use a jum
 msgstr ""
 
 #: params.opt:111
-#, fuzzy, no-c-format
-#| msgid "Probability that COMDAT function will be shared with different compilation unit"
+#, no-c-format
 msgid "Probability that COMDAT function will be shared with different compilation unit."
-msgstr "Vjerojatnost da će se COMDAT funkcija dijeliti s drugom kompilacijskom jedinicom"
+msgstr "Vjerojatnost da će COMDAT funkcija biti dijeljena s različitom kompilacijskom jedinicom."
 
 #: params.opt:115
 #, no-c-format
@@ -15276,10 +15246,9 @@ msgid "How much can given compilation unit grow because of the interprocedural c
 msgstr ""
 
 #: params.opt:270
-#, fuzzy, no-c-format
-#| msgid "The size of function body to be considered large"
+#, no-c-format
 msgid "The size of translation unit that IPA-CP pass considers large."
-msgstr "Veličina tijela funkcije koja se smatra velikom"
+msgstr "Veličina jedinice prijevoda koju IPA-CP prolaz smatra velikom."
 
 #: params.opt:274
 #, no-c-format
@@ -15407,16 +15376,14 @@ msgid "Maximal growth due to inlining of large function (in percent)."
 msgstr ""
 
 #: params.opt:382
-#, fuzzy, no-c-format
-#| msgid "The size of function body to be considered large"
+#, no-c-format
 msgid "The size of function body to be considered large."
-msgstr "Veličina tijela funkcije koja se smatra velikom"
+msgstr "Veličina tijela funkcije koja se smatra velikom."
 
 #: params.opt:386
-#, fuzzy, no-c-format
-#| msgid "The size of stack frame to be considered large"
+#, no-c-format
 msgid "The size of stack frame to be considered large."
-msgstr "Veličina okvira stoga koja se smatra velikom"
+msgstr "Veličina okvira stoga koja se smatra velikim."
 
 #: params.opt:390
 #, no-c-format
@@ -15424,10 +15391,9 @@ msgid "Maximal stack frame growth due to inlining (in percent)."
 msgstr ""
 
 #: params.opt:394
-#, fuzzy, no-c-format
-#| msgid "The size of function body to be considered large"
+#, no-c-format
 msgid "The size of translation unit to be considered large."
-msgstr "Veličina tijela funkcije koja se smatra velikom"
+msgstr "Veličina jedinice prijevoda koja se smatra velikom."
 
 #: params.opt:398
 #, no-c-format
@@ -15550,10 +15516,9 @@ msgid "The maximum length of path considered in cse."
 msgstr ""
 
 #: params.opt:494
-#, fuzzy, no-c-format
-#| msgid "The maximum amount of memory to be allocated by GCSE"
+#, no-c-format
 msgid "The maximum memory locations recorded by cselib."
-msgstr "Najveća količina memorije koju će alocirati GCSE"
+msgstr "Maksimalni broj memorijskih lokacija zabilježenih s cselib."
 
 #: params.opt:498
 #, no-c-format
@@ -15601,10 +15566,9 @@ msgid "The maximum ratio of insertions to deletions of expressions in GCSE."
 msgstr ""
 
 #: params.opt:534
-#, fuzzy, no-c-format
-#| msgid "The maximum amount of memory to be allocated by GCSE"
+#, no-c-format
 msgid "The maximum amount of memory to be allocated by GCSE, in kilobytes."
-msgstr "Najveća količina memorije koju će alocirati GCSE"
+msgstr "Maksimalna količina memorije koju GCSE dodijeli, u kilobajtima."
 
 #: params.opt:538
 #, no-c-format
@@ -16336,7 +16300,7 @@ msgstr ""
 #: collect-utils.cc:206
 #, c-format
 msgid "[cannot find %s]"
-msgstr "[ne mogu naći %s]"
+msgstr "[nije moguće naći %s]"
 
 #: collect2.cc:1557
 #, c-format
@@ -16370,7 +16334,7 @@ msgstr[2] ""
 #: collect2.cc:1825
 #, c-format
 msgid "[Leaving %s]\n"
-msgstr "[Napuštam %s]\n"
+msgstr "[Napuštamo %s]\n"
 
 #: collect2.cc:2055
 #, c-format
@@ -16410,38 +16374,22 @@ msgstr ""
 #: diagnostic.cc:622
 #, c-format
 msgid "compilation terminated due to -fmax-errors=%u.\n"
-msgstr "kompajliranje prekinuto zbog -fmax-errors=%u.\n"
+msgstr "kompilacija je prekinuta zbog -fmax-errors=%u.\n"
 
 #: diagnostic.cc:650
 #, c-format
 msgid "compilation terminated due to -Wfatal-errors.\n"
-msgstr "kompajliranje prekinuto zbog -Wfatal-errors.\n"
+msgstr "kompilacija je prekinuta zbog -Wfatal-errors.\n"
 
 #: diagnostic.cc:671
-#, fuzzy, c-format
-#| msgid ""
-#| "Please submit a full bug report,\n"
-#| "with preprocessed source if appropriate.\n"
-#| "See %s for instructions.\n"
+#, c-format
 msgid "Please submit a full bug report, with preprocessed source.\n"
-msgstr ""
-"Molim pošaljite prijavu greške,\n"
-"s pretprocesiranim izvornim kodom\n"
-"ako je moguće.\n"
-"Pogledajte %s za upute.\n"
+msgstr "Pošaljite cjelovito izvješće o grešci, s prethodno obrađenim izvorom.\n"
 
 #: diagnostic.cc:674
-#, fuzzy, c-format
-#| msgid ""
-#| "Please submit a full bug report,\n"
-#| "with preprocessed source if appropriate.\n"
-#| "See %s for instructions.\n"
+#, c-format
 msgid "Please submit a full bug report, with preprocessed source (by using -freport-bug).\n"
-msgstr ""
-"Molim pošaljite prijavu greške,\n"
-"s pretprocesiranim izvornim kodom\n"
-"ako je moguće.\n"
-"Pogledajte %s za upute.\n"
+msgstr "Pošaljite cjelovito izvješće o grešci, s prethodno obrađenim izvorom (koristeći -freport-bug).\n"
 
 #: diagnostic.cc:678
 #, c-format
@@ -16456,7 +16404,7 @@ msgstr ""
 #: diagnostic.cc:689
 #, c-format
 msgid "compilation terminated.\n"
-msgstr "kompajliranje prekinuto.\n"
+msgstr "kompilacija je prekinuta.\n"
 
 #: diagnostic.cc:783
 msgid "                 from"
@@ -16492,13 +16440,12 @@ msgstr ""
 #: diagnostic.cc:1362
 #, c-format
 msgid "%s:%d: confused by earlier errors, bailing out\n"
-msgstr "%s:%d: zbunjen prethodnim greškama, odustajem\n"
+msgstr "%s:%d: zbunjeni prethodnim greškama, odustajemo\n"
 
 #: diagnostic.cc:1997
-#, fuzzy, c-format
-#| msgid "Internal compiler error: Error reporting routines re-entered.\n"
+#, c-format
 msgid "internal compiler error: error reporting routines re-entered.\n"
-msgstr "Interna greška kompajlera: Ponovni ulazak u potprograme za prijavu grešaka.\n"
+msgstr "Interna greška kompajlera: rutine za prijavu grešaka iznova prozvane.\n"
 
 #: diagnostic.cc:2028 diagnostic.cc:2047
 #, gcc-internal-format, gfc-internal-format
@@ -16507,15 +16454,15 @@ msgstr ""
 
 #: final.cc:1113
 msgid "negative insn length"
-msgstr "negativna insn duljina"
+msgstr "negativna duljina instrukcije"
 
 #: final.cc:2861
 msgid "could not split insn"
-msgstr "ne mogu razdvojiti insn"
+msgstr "nije moguće razdijeliti instrukciju"
 
 #: final.cc:3228
 msgid "invalid 'asm': "
-msgstr "neispravni „asm”: "
+msgstr "nevaljani „asm“: "
 
 #: final.cc:3361
 #, c-format
@@ -16535,7 +16482,7 @@ msgstr ""
 #: final.cc:3546 final.cc:3587
 #, c-format
 msgid "operand number out of range"
-msgstr "broj operanada je izvan granica"
+msgstr "broj operanda je izvan granica"
 
 #: final.cc:3604
 #, c-format
@@ -16545,7 +16492,7 @@ msgstr "neispravni %%-kod"
 #: final.cc:3638
 #, c-format
 msgid "'%%l' operand isn't a label"
-msgstr "operand „%%l” nije oznaka"
+msgstr "operand „%%l“ nije oznaka"
 
 #. We can't handle floating point constants;
 #. PRINT_OPERAND must handle them.
@@ -16560,7 +16507,7 @@ msgstr ""
 #: config/pdp11/pdp11.cc:1872
 #, c-format
 msgid "invalid expression as operand"
-msgstr "neispravni izraz kao operand"
+msgstr "nevaljani izraz kao operand"
 
 #: gcc.cc:119
 #, c-format
@@ -16626,235 +16573,202 @@ msgstr "Opcije:\n"
 
 #: gcc.cc:3759
 msgid "  -pass-exit-codes         Exit with highest error code from a phase.\n"
-msgstr ""
+msgstr "  -pass-exit-codes         iziđe s najvišim kodom greške u fazi\n"
 
 #: gcc.cc:3760
-#, fuzzy
-#| msgid "  --help                   Display this information\n"
 msgid "  --help                   Display this information.\n"
-msgstr "  --help                   Prikaži ove informacije\n"
+msgstr "  --help                   ova prikazana pomoć\n"
 
 #: gcc.cc:3761
-#, fuzzy
-#| msgid "  --help                   Display this information\n"
 msgid "  --target-help            Display target specific command line options.\n"
-msgstr "  --help                   Prikaži ove informacije\n"
+msgstr "  --target-help            specifične opcije naredbenog retka za cilj\n"
 
 #: gcc.cc:3762
 msgid "  --help={common|optimizers|params|target|warnings|[^]{joined|separate|undocumented}}[,...].\n"
 msgstr ""
 
 #: gcc.cc:3763
-#, fuzzy
-#| msgid "  --help                   Display this information\n"
 msgid "                           Display specific types of command line options.\n"
-msgstr "  --help                   Prikaži ove informacije\n"
+msgstr "                           Pokaže specifične vrste opcija naredbenog retka.\n"
 
 #: gcc.cc:3765
 msgid "  (Use '-v --help' to display command line options of sub-processes).\n"
-msgstr ""
+msgstr "  (Koristite „-v --help“ za prikaz opcija potprocesa).\n"
 
 #: gcc.cc:3766
-#, fuzzy
-#| msgid "  --version                Display compiler version information\n"
 msgid "  --version                Display compiler version information.\n"
-msgstr "  --version                Prikaži informacije o inačici kompajlera\n"
+msgstr "  --version                informacije o inačici kompajlera\n"
 
 #: gcc.cc:3767
-#, fuzzy
-#| msgid "  -dumpversion             Display the version of the compiler\n"
 msgid "  -dumpspecs               Display all of the built in spec strings.\n"
-msgstr "  -dumpversion             Prikaži inačicu kompajlera\n"
+msgstr "  -dumpspecs               svi ugrađeni specifikacijski stringovi\n"
 
 #: gcc.cc:3768
-#, fuzzy
-#| msgid "  -dumpversion             Display the version of the compiler\n"
 msgid "  -dumpversion             Display the version of the compiler.\n"
-msgstr "  -dumpversion             Prikaži inačicu kompajlera\n"
+msgstr "  -dumpversion             inačica kompajlera\n"
 
 #: gcc.cc:3769
-#, fuzzy
-#| msgid "  -dumpversion             Display the version of the compiler\n"
 msgid "  -dumpmachine             Display the compiler's target processor.\n"
-msgstr "  -dumpversion             Prikaži inačicu kompajlera\n"
+msgstr "  -dumpmachine             ciljni procesor kompajlera\n"
 
 #: gcc.cc:3770
 msgid "  -foffload=<targets>      Specify offloading targets.\n"
-msgstr ""
+msgstr "  -foffload=<targets>      spcificira offloading targets (ciljeve)\n"
 
 #: gcc.cc:3771
-#, fuzzy
-#| msgid "  -dumpversion             Display the version of the compiler\n"
 msgid "  -print-search-dirs       Display the directories in the compiler's search path.\n"
-msgstr "  -dumpversion             Prikaži inačicu kompajlera\n"
+msgstr "  -print-search-dirs       direktoriji na stazi pretraživanja kompajlera\n"
 
 #: gcc.cc:3772
 msgid "  -print-libgcc-file-name  Display the name of the compiler's companion library.\n"
-msgstr ""
+msgstr "  -print-libgcc-file-name  ime popratne biblioteke kompajlera\n"
 
 #: gcc.cc:3773
 msgid "  -print-file-name=<lib>   Display the full path to library <lib>.\n"
-msgstr ""
+msgstr "  -print-file-name=<lib>   potpuna staza do biblioteke <lib>\n"
 
 #: gcc.cc:3774
 msgid "  -print-prog-name=<prog>  Display the full path to compiler component <prog>.\n"
-msgstr ""
+msgstr "  -print-prog-name=<prog>  potpuna staza do <prog> komponente kompajlera\n"
 
 #: gcc.cc:3775
 msgid ""
 "  -print-multiarch         Display the target's normalized GNU triplet, used as\n"
 "                           a component in the library path.\n"
 msgstr ""
+"  -print-multiarch         ciljni normalizirani GNU triplet, koji se koristi\n"
+"                             kao komponenta staze do biblioteke\n"
+"\n"
 
 #: gcc.cc:3778
 msgid "  -print-multi-directory   Display the root directory for versions of libgcc.\n"
-msgstr ""
+msgstr "  -print-multi-directory   root direktorij za inačice od libgcc\n"
 
 #: gcc.cc:3779
 msgid ""
 "  -print-multi-lib         Display the mapping between command line options and\n"
 "                           multiple library search directories.\n"
 msgstr ""
+"  -print-multi-lib         mapiranje između opcija naredbenog retka i\n"
+"                             višestrukih direktorija za traženje biblioteka\n"
 
 #: gcc.cc:3782
 msgid "  -print-multi-os-directory Display the relative path to OS libraries.\n"
-msgstr ""
+msgstr "  -print-multi-os-directory relativne staze do OS biblioteka\n"
 
 #: gcc.cc:3783
-#, fuzzy
-#| msgid "  -dumpversion             Display the version of the compiler\n"
 msgid "  -print-sysroot           Display the target libraries directory.\n"
-msgstr "  -dumpversion             Prikaži inačicu kompajlera\n"
+msgstr "  -print-sysroot           direktorij ciljnih biblioteka\n"
 
 #: gcc.cc:3784
 msgid "  -print-sysroot-headers-suffix Display the sysroot suffix used to find headers.\n"
-msgstr ""
+msgstr "  -print-sysroot-headers-suffix sysroot sufiks koji se koristi da nađe zaglavlja\n"
 
 #: gcc.cc:3785
 msgid "  -Wa,<options>            Pass comma-separated <options> on to the assembler.\n"
-msgstr ""
+msgstr "  -Wa,<options>            proslijedi zarezom odvojene <options> asembleru\n"
 
 #: gcc.cc:3786
 msgid "  -Wp,<options>            Pass comma-separated <options> on to the preprocessor.\n"
-msgstr ""
+msgstr "  -Wp,<options>            proslijedi zarezom odvojene <options> pretprocesoru\n"
 
 #: gcc.cc:3787
 msgid "  -Wl,<options>            Pass comma-separated <options> on to the linker.\n"
-msgstr ""
+msgstr "  -Wl,<options>            proslijedi zarezom odvojene <options> linkeru\n"
 
 #: gcc.cc:3788
 msgid "  -Xassembler <arg>        Pass <arg> on to the assembler.\n"
-msgstr ""
+msgstr "  -Xassembler <arg>        proslijedi <arg> asembleru\n"
 
 #: gcc.cc:3789
 msgid "  -Xpreprocessor <arg>     Pass <arg> on to the preprocessor.\n"
-msgstr ""
+msgstr "  -Xpreprocessor <arg>     proslijedi <arg> pretprocesoru\n"
 
 #: gcc.cc:3790
 msgid "  -Xlinker <arg>           Pass <arg> on to the linker.\n"
-msgstr ""
+msgstr "  -Xlinker <arg>           proslijedi <arg> linkeru\n"
 
 #: gcc.cc:3791
-#, fuzzy
-#| msgid "  -pipe                    Use pipes rather than intermediate files\n"
 msgid "  -save-temps              Do not delete intermediate files.\n"
-msgstr "  -pipe                    Koristi cjevovode umjesto posrednih datoteka\n"
+msgstr "  -save-temps              ne briše posredne datoteke\n"
 
 #: gcc.cc:3792
 msgid "  -save-temps=<arg>        Do not delete intermediate files.\n"
-msgstr ""
+msgstr "  -save-temps=<arg>        ne briše posredne datoteke\n"
 
 #: gcc.cc:3793
 msgid ""
 "  -no-canonical-prefixes   Do not canonicalize paths when building relative\n"
 "                           prefixes to other gcc components.\n"
 msgstr ""
+"  -no-canonical-prefixes   ne kanonizira staze kad gradi relativne prefikse\n"
+"                             drugim gcc komponentama\n"
 
 #: gcc.cc:3796
-#, fuzzy
-#| msgid "  -pipe                    Use pipes rather than intermediate files\n"
 msgid "  -pipe                    Use pipes rather than intermediate files.\n"
-msgstr "  -pipe                    Koristi cjevovode umjesto posrednih datoteka\n"
+msgstr "  -pipe                    koristi cijevi umjesto posrednih datoteka\n"
 
 #: gcc.cc:3797
-#, fuzzy
-#| msgid "  -time                    Time the execution of each subprocess\n"
 msgid "  -time                    Time the execution of each subprocess.\n"
-msgstr "  -time                    Vrijeme izvršavanja svakog potprocesa\n"
+msgstr "  -time                    mjeri vrijem izvršavanja svakog potprocesa\n"
 
 #: gcc.cc:3798
-#, fuzzy
-#| msgid "  -o <file>                Place the output into <file>\n"
 msgid "  -specs=<file>            Override built-in specs with the contents of <file>.\n"
-msgstr "  -o <datoteka>            Spremi izlaz u <datoteka>\n"
+msgstr "  -specs=<file>            nadjača ugrađene specifikacije sa sadržajem od <file>\n"
 
 #: gcc.cc:3799
 msgid "  -std=<standard>          Assume that the input sources are for <standard>.\n"
-msgstr ""
+msgstr "  -std=<standard>          pretpostavi da su ulazni izvori za <standard>\n"
 
 #: gcc.cc:3800
-#, fuzzy
-#| msgid ""
-#| "  --sysroot=<directory>    Use <directory> as the root directory for headers\n"
-#| "                           and libraries\n"
 msgid ""
 "  --sysroot=<directory>    Use <directory> as the root directory for headers\n"
 "                           and libraries.\n"
 msgstr ""
-"  --sysroot=<direktorij>   Koristi <direktorij> kao korijenski direktorij\n"
-"                           za zaglavlja i biblioteke\n"
+"  --sysroot=<directory>    koristi <directory> kao root direktorij za zaglavlja\n"
+"                             i biblioteke\n"
 
 #: gcc.cc:3803
 msgid "  -B <directory>           Add <directory> to the compiler's search paths.\n"
-msgstr ""
+msgstr "  -B <directory>           doda <directory> stazama koje pretražuje kompajler\n"
 
 #: gcc.cc:3804
-#, fuzzy
-#| msgid "  -v                       Display the programs invoked by the compiler\n"
 msgid "  -v                       Display the programs invoked by the compiler.\n"
-msgstr "  -v                       Prikaži programe koje poziva kompajler\n"
+msgstr "  -v                       izlista programe pokrenute (pozvane) kompajlerom\n"
 
 #: gcc.cc:3805
-#, fuzzy
-#| msgid "  -###                     Like -v but options quoted and commands not executed\n"
 msgid "  -###                     Like -v but options quoted and commands not executed.\n"
-msgstr ""
-"  -###                     Kao -v ali prikaži opcije pod navodnicima i\n"
-"                           naredbe koje se ne izvršavaju\n"
+msgstr "  -###                     isto kao -v ali navede opcije i neizvršene naredbe\n"
 
 #: gcc.cc:3806
-#, fuzzy
-#| msgid "  -v                       Display the programs invoked by the compiler\n"
 msgid "  -E                       Preprocess only; do not compile, assemble or link.\n"
-msgstr "  -v                       Prikaži programe koje poziva kompajler\n"
+msgstr ""
+"  -E                       samo pretprocesi; ne kompilira, ne asemblira,\n"
+"                             ne linka\n"
 
 #: gcc.cc:3807
 msgid "  -S                       Compile only; do not assemble or link.\n"
-msgstr ""
+msgstr "  -S                       samo kompilira; ne asemblira, ne linka\n"
 
 #: gcc.cc:3808
-#, fuzzy
-#| msgid "  -h, --help                      Print this help, then exit\n"
 msgid "  -c                       Compile and assemble, but do not link.\n"
-msgstr "  -h, --help                      Ispiši ovu pomoć, zatim izađi\n"
+msgstr "  -c                       kompilira i asemblira, ali ne linka\n"
 
 #: gcc.cc:3809
-#, fuzzy
-#| msgid "  -o <file>                Place the output into <file>\n"
 msgid "  -o <file>                Place the output into <file>.\n"
-msgstr "  -o <datoteka>            Spremi izlaz u <datoteka>\n"
+msgstr "  -o <file>                zapiše izlaz u datoteku <file>\n"
 
 #: gcc.cc:3810
 msgid ""
 "  -pie                     Create a dynamically linked position independent\n"
 "                           executable.\n"
 msgstr ""
+"  -pie                     stvori dinamički linkanu (position independent)\n"
+"                             izvršnu datoteku\n"
 
 #: gcc.cc:3812
-#, fuzzy
-#| msgid "  -shared                  Create a shared library\n"
 msgid "  -shared                  Create a shared library.\n"
-msgstr "  -shared                  Napravi dijeljenu biblioteku\n"
+msgstr "  -shared                  stvori zajedničku (dijeljenu) biblioteku\n"
 
 #: gcc.cc:3813
 msgid ""
@@ -16872,36 +16786,40 @@ msgid ""
 " passed on to the various sub-processes invoked by %s.  In order to pass\n"
 " other options on to these processes the -W<letter> options must be used.\n"
 msgstr ""
+"\n"
+"Opcije koje započinju s -g, -f, -m, -O, -W, or --param se automatski proslijede\n"
+" raznim potprocesima pokrenutim s %s. Da bi proslijedili ostale opcije na te\n"
+" potprocese, morate koristiti -W<letter>.\n"
 
 #: gcc.cc:6789
 #, c-format
 msgid "Processing spec (%s), which is '%s'\n"
-msgstr ""
+msgstr "Obrađujemo specifikaciju (%s), koja je „%s“\n"
 
 #: gcc.cc:7550
 #, c-format
 msgid "Target: %s\n"
-msgstr ""
+msgstr "Cilj: %s\n"
 
 #: gcc.cc:7551
 #, c-format
 msgid "Configured with: %s\n"
-msgstr ""
+msgstr "Konfiguriran s: %s\n"
 
 #: gcc.cc:7565
 #, c-format
 msgid "Thread model: %s\n"
-msgstr ""
+msgstr "Model dretve: %s\n"
 
 #: gcc.cc:7566
 #, c-format
 msgid "Supported LTO compression algorithms: zlib"
-msgstr ""
+msgstr "Podržani algoritam kompresije: zlib"
 
 #: gcc.cc:7568
 #, c-format
 msgid " zstd"
-msgstr ""
+msgstr " zstd"
 
 #: gcc.cc:7570 gcov.cc:1510 gcov.cc:1568 gcov.cc:1580 gcov.cc:2894
 #, c-format
@@ -16916,7 +16834,7 @@ msgstr "gcc inačica %s %s\n"
 #: gcc.cc:7584
 #, c-format
 msgid "gcc driver version %s %sexecuting gcc version %s\n"
-msgstr ""
+msgstr "inačica drajvera %s %s izvršava gcc inačicu %s\n"
 
 #: gcc.cc:7657 gcc.cc:7867
 #, c-format
@@ -16931,12 +16849,12 @@ msgstr ""
 #: gcc.cc:8642
 #, c-format
 msgid "install: %s%s\n"
-msgstr ""
+msgstr "instalacija: %s%s\n"
 
 #: gcc.cc:8645
 #, c-format
 msgid "programs: %s\n"
-msgstr ""
+msgstr "programi: %s\n"
 
 #: gcc.cc:8647
 #, c-format
@@ -16950,7 +16868,7 @@ msgid ""
 "For bug reporting instructions, please see:\n"
 msgstr ""
 "\n"
-"Za upute o prijavljivanju grešaka, molim pogledajte:\n"
+"Za upute o prijavljivanju grešaka pogledajte:\n"
 
 #: gcc.cc:8780 gcov-tool.cc:527
 #, c-format
@@ -16980,6 +16898,10 @@ msgid ""
 "==============\n"
 "\n"
 msgstr ""
+"\n"
+"Opcije linkera\n"
+"==============\n"
+"\n"
 
 #: gcc.cc:9128
 #, c-format
@@ -16987,6 +16909,8 @@ msgid ""
 "Use \"-Wl,OPTION\" to pass \"OPTION\" to the linker.\n"
 "\n"
 msgstr ""
+"Koristite „-Wl,OPCIJA“ da proslijedite „OPCIJA“ linkeru.\n"
+"\n"
 
 #: gcc.cc:10543
 #, c-format
@@ -16995,6 +16919,9 @@ msgid ""
 "=================\n"
 "\n"
 msgstr ""
+"Opcije asemblera\n"
+"=================\n"
+"\n"
 
 #: gcc.cc:10544
 #, c-format
@@ -17002,97 +16929,93 @@ msgid ""
 "Use \"-Wa,OPTION\" to pass \"OPTION\" to the assembler.\n"
 "\n"
 msgstr ""
+"Koristite „-Wa,OPCIJA“ da proslijedite „OPCIJA“ asembleru.\n"
+"\n"
 
 #: gcov-tool.cc:175
 #, c-format
 msgid "  merge [options] <dir1> <dir2>         Merge coverage file contents\n"
-msgstr ""
+msgstr "  merge [opcije] <dir1> <dir2>         spoji sadržaj datoteka pokrivenosti\n"
 
 #: gcov-tool.cc:176 gcov-tool.cc:271
-#, fuzzy, c-format
-#| msgid "  -n, --no-output                 Do not create an output file\n"
+#, c-format
 msgid "    -o, --output <dir>                  Output directory\n"
-msgstr "  -n, --no-output                 Nemoj raditi izlazne datoteke\n"
+msgstr "    -o, --output <dir>                  direktorij za izlaz podataka\n"
 
 #: gcov-tool.cc:177 gcov-tool.cc:273 gcov-tool.cc:425
-#, fuzzy, c-format
-#| msgid "  -v, --version                   Print version number, then exit\n"
+#, c-format
 msgid "    -v, --verbose                       Verbose mode\n"
-msgstr "  -v, --version                   Ispiši broj inačice, zatim izađi\n"
+msgstr "    -v, --verbose                       opširnije informacije\n"
 
 #: gcov-tool.cc:178
 #, c-format
 msgid "    -w, --weight <w1,w2>                Set weights (float point values)\n"
-msgstr ""
+msgstr "    -w, --weight <w1,w2>                postavi skale (float point values)\n"
 
 #: gcov-tool.cc:194
 #, c-format
 msgid "Merge subcomand usage:"
-msgstr ""
+msgstr "Uporaba podnaredbe merge:"
 
 #: gcov-tool.cc:269
 #, c-format
 msgid "  rewrite [options] <dir>               Rewrite coverage file contents\n"
-msgstr ""
+msgstr "  rewrite [opcije] <dir>                prepiše sadržaj datoteke pokrivenosti\n"
 
 #: gcov-tool.cc:270
 #, c-format
 msgid "    -n, --normalize <int64_t>           Normalize the profile\n"
-msgstr ""
+msgstr "    -n, --normalize <int64_t>           normalizira profil\n"
 
 #: gcov-tool.cc:272
 #, c-format
 msgid "    -s, --scale <float or simple-frac>  Scale the profile counters\n"
-msgstr ""
+msgstr "    -s, --scale <float ili simple-frac>  skalira profiliranje brojila\n"
 
 #: gcov-tool.cc:290
 #, c-format
 msgid "Rewrite subcommand usage:"
-msgstr ""
+msgstr "Uporaba podnaredbe rewrite:"
 
 #: gcov-tool.cc:329
 #, c-format
 msgid "scaling cannot co-exist with normalization, skipping\n"
-msgstr ""
+msgstr "skaliranje ne može koegzistirati s normalizacijom, preskačemo\n"
 
 #: gcov-tool.cc:342 gcov-tool.cc:352
 #, c-format
 msgid "incorrect format in scaling, using 1/1\n"
-msgstr ""
+msgstr "nekorektni format u skaliranju, koristimo 1/1\n"
 
 #: gcov-tool.cc:362
 #, c-format
 msgid "normalization cannot co-exist with scaling\n"
-msgstr ""
+msgstr "normalizacija ne može koegzistirati sa skaliranjem\n"
 
 #: gcov-tool.cc:419
 #, c-format
 msgid "  overlap [options] <dir1> <dir2>       Compute the overlap of two profiles\n"
-msgstr ""
+msgstr "  overlap [opcije] <dir1> <dir2>        računa preklapanje dvaju profila\n"
 
 #: gcov-tool.cc:420
-#, fuzzy, c-format
-#| msgid "  -h, --help                      Print this help, then exit\n"
+#, c-format
 msgid "    -f, --function                      Print function level info\n"
-msgstr "  -h, --help                      Ispiši ovu pomoć, zatim izađi\n"
+msgstr "    -f, --function                      ispiše informaciju razine funkcije\n"
 
 #: gcov-tool.cc:421
-#, fuzzy, c-format
-#| msgid "  -h, --help                      Print this help, then exit\n"
+#, c-format
 msgid "    -F, --fullname                      Print full filename\n"
-msgstr "  -h, --help                      Ispiši ovu pomoć, zatim izađi\n"
+msgstr "    -F, --fullname                      ispiše potpuno ime datoteke\n"
 
 #: gcov-tool.cc:422
-#, fuzzy, c-format
-#| msgid "  -h, --help                      Print this help, then exit\n"
+#, c-format
 msgid "    -h, --hotonly                       Only print info for hot objects/functions\n"
-msgstr "  -h, --help                      Ispiši ovu pomoć, zatim izađi\n"
+msgstr ""
 
 #: gcov-tool.cc:423
-#, fuzzy, c-format
-#| msgid "  -h, --help                      Print this help, then exit\n"
+#, c-format
 msgid "    -o, --object                        Print object level info\n"
-msgstr "  -h, --help                      Ispiši ovu pomoć, zatim izađi\n"
+msgstr "    -o, --object                        ispiše informacije razine objekta\n"
 
 #: gcov-tool.cc:424
 #, c-format
@@ -17102,18 +17025,15 @@ msgstr ""
 #: gcov-tool.cc:444
 #, c-format
 msgid "Overlap subcomand usage:"
-msgstr ""
+msgstr "Uporaba podnaredbe overlap:"
 
 #: gcov-tool.cc:510
-#, fuzzy, c-format
-#| msgid ""
-#| "Usage: gcov [OPTION]... SOURCE|OBJ...\n"
-#| "\n"
+#, c-format
 msgid ""
 "Usage: %s [OPTION]... SUB_COMMAND [OPTION]...\n"
 "\n"
 msgstr ""
-"Uporaba: gcov [OPCIJA]... IZVOR|OBJ...\n"
+"Uporaba: %s [OPCIJA]... PODNAREDBA [OPCIJA]...\n"
 "\n"
 
 #: gcov-tool.cc:511
@@ -17122,18 +17042,18 @@ msgid ""
 "Offline tool to handle gcda counts\n"
 "\n"
 msgstr ""
+"Samostalni (vanjski) alat za rad s gcda brojilom\n"
+"\n"
 
 #: gcov-tool.cc:512
-#, fuzzy, c-format
-#| msgid "  -h, --help                      Print this help, then exit\n"
+#, c-format
 msgid "  -h, --help                            Print this help, then exit\n"
-msgstr "  -h, --help                      Ispiši ovu pomoć, zatim izađi\n"
+msgstr "  -h, --help                            ispiše ovu pomoć, pa iziđe\n"
 
 #: gcov-tool.cc:513
-#, fuzzy, c-format
-#| msgid "  -v, --version                   Print version number, then exit\n"
+#, c-format
 msgid "  -v, --version                         Print version number, then exit\n"
-msgstr "  -v, --version                   Ispiši broj inačice, zatim izađi\n"
+msgstr "  -v, --version                         ispiše broj inačice, pa iziđe\n"
 
 #: gcov-tool.cc:517 gcov.cc:956
 #, c-format
@@ -17149,18 +17069,15 @@ msgstr ""
 #: gcov-tool.cc:528
 #, c-format
 msgid "Copyright %s 2022 Free Software Foundation, Inc.\n"
-msgstr ""
+msgstr "Copyright %s 2022 Free Software Foundation, Inc.\n"
 
 #: gcov.cc:925
-#, fuzzy, c-format
-#| msgid ""
-#| "Usage: gcov [OPTION]... SOURCE|OBJ...\n"
-#| "\n"
+#, c-format
 msgid ""
 "Usage: gcov [OPTION...] SOURCE|OBJ...\n"
 "\n"
 msgstr ""
-"Uporaba: gcov [OPCIJA]... IZVOR|OBJ...\n"
+"Uporaba: gcov [OPCIJA...] IZVOR|OBJ...\n"
 "\n"
 
 #: gcov.cc:926
@@ -17169,43 +17086,47 @@ msgid ""
 "Print code coverage information.\n"
 "\n"
 msgstr ""
+"Pokaže podatke o pokrivenosti kȏda.\n"
+"\n"
 
 #: gcov.cc:927
 #, c-format
 msgid "  -a, --all-blocks                Show information for every basic block\n"
-msgstr "  -a, --all-blocks                Prikaži informacije za svaki temeljni blok\n"
+msgstr "  -a, --all-blocks                pokaže podatke za svaki temeljni blok\n"
 
 #: gcov.cc:928
 #, c-format
 msgid "  -b, --branch-probabilities      Include branch probabilities in output\n"
 msgstr ""
+"  -b, --branch-probabilities      uključi vjerojatnost grananja na izlazu\n"
+"\n"
 
 #: gcov.cc:929
 #, c-format
 msgid ""
 "  -c, --branch-counts             Output counts of branches taken\n"
 "                                    rather than percentages\n"
-msgstr ""
+msgstr "  -c, --branch-counts             ispiše količine (broj) grana a ne postotak\n"
 
 #: gcov.cc:931
 #, c-format
 msgid "  -d, --display-progress          Display progress information\n"
-msgstr "  -d, --display-progress          Prikaži podatke o napredovanju\n"
+msgstr "  -d, --display-progress          pokaže podatke o napredovanju\n"
 
 #: gcov.cc:932
 #, c-format
 msgid "  -D, --debug\t\t\t    Display debugging dumps\n"
-msgstr ""
+msgstr "  -D, --debug\t\t\t    pokaže dijagnostičke podatke\n"
 
 #: gcov.cc:933
 #, c-format
 msgid "  -f, --function-summaries        Output summaries for each function\n"
-msgstr "  -f, --function-summaries        Ispiši sažetke svake funkcije\n"
+msgstr "  -f, --function-summaries        ispiše sažetke za svaku funkciju\n"
 
 #: gcov.cc:934
 #, c-format
 msgid "  -h, --help                      Print this help, then exit\n"
-msgstr "  -h, --help                      Ispiši ovu pomoć, zatim izađi\n"
+msgstr "  -h, --help                      ispiše ovu pomoć, pa iziđe\n"
 
 #: gcov.cc:935
 #, c-format
@@ -17213,104 +17134,108 @@ msgid ""
 "  -j, --json-format               Output JSON intermediate format\n"
 "                                    into .gcov.json.gz file\n"
 msgstr ""
+"  -j, --json-format               izlaz zapiše .gcov.json.gz datoteku\n"
+"                                    u JSON (intermediate) formatu\n"
 
 #: gcov.cc:937
 #, c-format
 msgid "  -H, --human-readable            Output human readable numbers\n"
-msgstr ""
+msgstr "  -H, --human-readable            ispis brojaka u lako čitljivom obliku\n"
 
 #: gcov.cc:938
-#, fuzzy, c-format
-#| msgid "  -n, --no-output                 Do not create an output file\n"
+#, c-format
 msgid "  -k, --use-colors                Emit colored output\n"
-msgstr "  -n, --no-output                 Nemoj raditi izlazne datoteke\n"
+msgstr "  -k, --use-colors                koristi obojeni ispis\n"
 
 #: gcov.cc:939
 #, c-format
 msgid ""
 "  -l, --long-file-names           Use long output file names for included\n"
 "                                    source files\n"
-msgstr ""
+msgstr "  -l, --long-file-names           ispiše puna imena uključenih izvornih kódova\n"
 
 #: gcov.cc:941
 #, c-format
 msgid "  -m, --demangled-names           Output demangled function names\n"
 msgstr ""
+"  -m, --demangled-names           ispiše dešifrirana imena funkcija\n"
+"\n"
 
 #: gcov.cc:942
 #, c-format
 msgid "  -n, --no-output                 Do not create an output file\n"
-msgstr "  -n, --no-output                 Nemoj raditi izlazne datoteke\n"
+msgstr "  -n, --no-output                 ne proizvodi izlazne datoteke\n"
 
 #: gcov.cc:943
 #, c-format
 msgid "  -o, --object-directory DIR|FILE Search for object files in DIR or called FILE\n"
 msgstr ""
+"  -o, --object-directory DIR|FILE traži objektne datoteke u direktoriju DIR\n"
+"                                    ili u pozvanoj datoteci FILE\n"
 
 #: gcov.cc:944
 #, c-format
 msgid "  -p, --preserve-paths            Preserve all pathname components\n"
-msgstr ""
+msgstr "  -p, --preserve-paths            sačuva (spremi) sve komponente imena staze\n"
 
 #: gcov.cc:945
 #, c-format
 msgid "  -q, --use-hotness-colors        Emit perf-like colored output for hot lines\n"
-msgstr ""
+msgstr "  -q, --use-hotness-colors        oboji izlaz u perf-stilu za vruće retke\n"
 
 #: gcov.cc:946
 #, c-format
 msgid "  -r, --relative-only             Only show data for relative sources\n"
-msgstr ""
+msgstr "  -r, --relative-only             pokaže podatke samo za relativne izvore\n"
 
 #: gcov.cc:947
 #, c-format
 msgid "  -s, --source-prefix DIR         Source prefix to elide\n"
-msgstr ""
+msgstr "  -s, --source-prefix DIR         izostavi prefiks izvora\n"
 
 #: gcov.cc:948
-#, fuzzy, c-format
-#| msgid "  -n, --no-output                 Do not create an output file\n"
+#, c-format
 msgid "  -t, --stdout                    Output to stdout instead of a file\n"
-msgstr "  -n, --no-output                 Nemoj raditi izlazne datoteke\n"
+msgstr "  -n, --no-output                 ne proizvodi izlazne datoteke\n"
 
 #: gcov.cc:949
 #, c-format
 msgid "  -u, --unconditional-branches    Show unconditional branch counts too\n"
-msgstr ""
+msgstr "  -u, --unconditional-branches    pokaže i bezuvjetnu količinu (broj) grana\n"
 
 #: gcov.cc:950
 #, c-format
 msgid "  -v, --version                   Print version number, then exit\n"
-msgstr "  -v, --version                   Ispiši broj inačice, zatim izađi\n"
+msgstr "  -v, --version                   ispiše broj inačice, pa iziđe\n"
 
 #: gcov.cc:951
-#, fuzzy, c-format
-#| msgid "  -v, --version                   Print version number, then exit\n"
+#, c-format
 msgid "  -w, --verbose                   Print verbose informations\n"
-msgstr "  -v, --version                   Ispiši broj inačice, zatim izađi\n"
+msgstr "  -w, --verbose                   ispisuje opširnije informacije\n"
 
 #: gcov.cc:952
 #, c-format
 msgid "  -x, --hash-filenames            Hash long pathnames\n"
-msgstr ""
+msgstr "  -x, --hash-filenames            hašira (hash) dugačka imena staza\n"
 
 #: gcov.cc:953
-#, fuzzy, c-format
-#| msgid "Options:\n"
+#, c-format
 msgid ""
 "\n"
 "Obsolete options:\n"
-msgstr "Opcije:\n"
+msgstr ""
+"\n"
+"Zastarjele opcije:\n"
 
 #: gcov.cc:954
 #, c-format
 msgid "  -i, --json-format               Replaced with -j, --json-format\n"
-msgstr ""
+msgstr "  -i, --json-format               zamijenjeno s -j, --json-format\n"
 
 #: gcov.cc:955
 #, c-format
 msgid "  -j, --human-readable            Replaced with -H, --human-readable\n"
-msgstr ""
+msgstr "  -j, --human-readable            zamijenjeno s -H, --human-readable\n"
 
 #: gcov.cc:966
 #, c-format
@@ -17320,167 +17245,162 @@ msgstr "gcov %s%s\n"
 #: gcov.cc:1354
 #, c-format
 msgid "'%s' file is already processed\n"
-msgstr ""
+msgstr "„%s“ datoteka je već obrađena\n"
 
 #: gcov.cc:1470 gcov.cc:1599
 #, c-format
 msgid "Creating '%s'\n"
-msgstr "Stvaram „%s”\n"
+msgstr "Stvaramo „%s”\n"
 
 #: gcov.cc:1474
 #, c-format
 msgid "Error writing output file '%s'\n"
-msgstr ""
+msgstr "Greška pri pisanju izlazne datoteke „%s“\n"
 
 #: gcov.cc:1482
 #, c-format
 msgid "Could not open output file '%s'\n"
-msgstr "Ne mogu otvoriti izlaznu datoteku „%s”\n"
+msgstr "Nije moguće otvoriti izlaznu datoteku „%s“\n"
 
 #: gcov.cc:1489
 #, c-format
 msgid "Removing '%s'\n"
-msgstr "Uklanjam „%s”\n"
+msgstr "Uklanjamo „%s”\n"
 
 #: gcov.cc:1604
-#, fuzzy, c-format
-#| msgid "Could not open output file '%s'\n"
+#, c-format
 msgid "Cannot open JSON output file %s\n"
-msgstr "Ne mogu otvoriti izlaznu datoteku „%s”\n"
+msgstr "Nije moguće otvoriti izlaznu JSON datoteku %s\n"
 
 #: gcov.cc:1613
-#, fuzzy, c-format
-#| msgid "Could not open output file '%s'\n"
+#, c-format
 msgid "Error writing JSON output file %s\n"
-msgstr "Ne mogu otvoriti izlaznu datoteku „%s”\n"
+msgstr "Nije moguće zapisati izlaznu JSON datoteku %s\n"
 
 #: gcov.cc:1778
 #, c-format
 msgid "%s:source file is newer than notes file '%s'\n"
-msgstr ""
+msgstr "%s:izvorni kȏd je noviji od datoteke s bilješkama „%s“\n"
 
 #: gcov.cc:1783
-#, fuzzy, c-format
-#| msgid "(the message is only displayed one per source file)\n"
+#, c-format
 msgid "(the message is displayed only once per source file)\n"
-msgstr "(ova poruka se prikazuje samo jednom za datoteku koda)\n"
+msgstr "(ova se poruka prikazuje samo jednom po izvornom kȏdu )\n"
 
 #: gcov.cc:1803
-#, fuzzy, c-format
-#| msgid "Cannot open source file %s\n"
+#, c-format
 msgid "%s:cannot open notes file\n"
-msgstr "Ne mogu otvoriti datoteku koda %s\n"
+msgstr "%s:nije moguće otvoriti datoteku s bilješkama\n"
 
 #: gcov.cc:1810
-#, fuzzy, c-format
-#| msgid "%s:not a gcov data file\n"
+#, c-format
 msgid "%s:not a gcov notes file\n"
-msgstr "%s:nije gcov podatkovna datoteka\n"
+msgstr "%s:nije gcov datoteka s bilješkama\n"
 
 #: gcov.cc:1824
 #, c-format
 msgid "%s:version '%.4s', prefer '%.4s'\n"
-msgstr ""
+msgstr "%s:inačica '%.4s', ali preferira se '%.4s'\n"
 
 #: gcov.cc:1877
 #, c-format
 msgid "%s:already seen blocks for '%s'\n"
-msgstr ""
+msgstr "%s:već viđeni blokovi za „%s“\n"
 
 #: gcov.cc:1993 gcov.cc:2107
 #, c-format
 msgid "%s:corrupted\n"
-msgstr ""
+msgstr "%s:oštećen\n"
 
 #: gcov.cc:2001
 #, c-format
 msgid "%s:no functions found\n"
-msgstr "%s:nisu pronađene funkcije\n"
+msgstr "%s:nijedna funkcija nije pronađena\n"
 
 #: gcov.cc:2019
 #, c-format
 msgid "%s:cannot open data file, assuming not executed\n"
-msgstr ""
+msgstr "%s:nije moguće otvoriti, pretpostavljamo da ne radi\n"
 
 #: gcov.cc:2026
 #, c-format
 msgid "%s:not a gcov data file\n"
-msgstr "%s:nije gcov podatkovna datoteka\n"
+msgstr "%s:nije gcov datoteka\n"
 
 #: gcov.cc:2040
 #, c-format
 msgid "%s:version '%.4s', prefer version '%.4s'\n"
-msgstr ""
+msgstr "%s:inačica '%.4s', preferira se '%.4s'\n"
 
 #: gcov.cc:2047
 #, c-format
 msgid "%s:stamp mismatch with notes file\n"
-msgstr ""
+msgstr "%s:nepodudaranje pečata s bilješkama\n"
 
 #: gcov.cc:2084
 #, c-format
 msgid "%s:profile mismatch for '%s'\n"
-msgstr ""
+msgstr "%s:nepodudaranje profila za „%s“\n"
 
 #: gcov.cc:2106
 #, c-format
 msgid "%s:overflowed\n"
-msgstr "%s:preljev\n"
+msgstr "%s:prelijevanje\n"
 
 #: gcov.cc:2154
 #, c-format
 msgid "%s:'%s' lacks entry and/or exit blocks\n"
-msgstr "%s:„%s” nema ulazni ili izlazni blok\n"
+msgstr "%s:„%s“ nema ulazne i/ili izlazne blokove\n"
 
 #: gcov.cc:2159
 #, c-format
 msgid "%s:'%s' has arcs to entry block\n"
-msgstr ""
+msgstr "%s:„%s“ ima lukove do ulaznog bloka\n"
 
 #: gcov.cc:2167
 #, c-format
 msgid "%s:'%s' has arcs from exit block\n"
-msgstr ""
+msgstr "%s:„%s“ ima lukove od izlaznog bloka\n"
 
 #: gcov.cc:2376
 #, c-format
 msgid "%s:graph is unsolvable for '%s'\n"
-msgstr ""
+msgstr "%s:graf je nerješiv za „%s“\n"
 
 #: gcov.cc:2492
 #, c-format
 msgid "Lines executed:%s of %d\n"
-msgstr "Izvršeno redaka:%s od %d\n"
+msgstr "Izvršeno %s od %d\n"
 
 #: gcov.cc:2495
 #, c-format
 msgid "No executable lines\n"
-msgstr ""
+msgstr "Nema izvršivih redaka\n"
 
 #: gcov.cc:2503 gcov.cc:2512
 #, c-format
 msgid "%s '%s'\n"
-msgstr "%s '%s'\n"
+msgstr "%s „%s“\n"
 
 #: gcov.cc:2519
 #, c-format
 msgid "Branches executed:%s of %d\n"
-msgstr ""
+msgstr "Izvršene %s grana od %d\n"
 
 #: gcov.cc:2523
 #, c-format
 msgid "Taken at least once:%s of %d\n"
-msgstr ""
+msgstr "%s uzeto barem jednom od %d grana\n"
 
 #: gcov.cc:2529
 #, c-format
 msgid "No branches\n"
-msgstr ""
+msgstr "Nema grana\n"
 
 #: gcov.cc:2531
 #, c-format
 msgid "Calls executed:%s of %d\n"
-msgstr "Izvršeno poziva:%s od %d\n"
+msgstr "Izvršeno %s poziva od %d\n"
 
 #: gcov.cc:2535
 #, c-format
@@ -17495,27 +17415,27 @@ msgstr "%s:nema redaka za „%s”\n"
 #: gcov.cc:2874
 #, c-format
 msgid "call   %2d returned %s\n"
-msgstr ""
+msgstr "poziv   %2d vratio %s\n"
 
 #: gcov.cc:2879
 #, c-format
 msgid "call   %2d never executed\n"
-msgstr ""
+msgstr "poziv   %2d nikada izvršen\n"
 
 #: gcov.cc:2884
 #, c-format
 msgid "branch %2d taken %s%s"
-msgstr ""
+msgstr "grana %2d uzeta %s%s"
 
 #: gcov.cc:2889
 #, c-format
 msgid "branch %2d never executed"
-msgstr ""
+msgstr "grana %2d nikada izvršena"
 
 #: gcov.cc:2892
 #, c-format
 msgid " (BB %d)"
-msgstr ""
+msgstr " (BB %d)"
 
 #: gcov.cc:2899
 #, c-format
@@ -17530,7 +17450,7 @@ msgstr ""
 #: gcov.cc:3154
 #, c-format
 msgid "Cannot open source file %s\n"
-msgstr "Ne mogu otvoriti datoteku koda %s\n"
+msgstr "Nije moguće otvoriti izvorni kȏd %s\n"
 
 #: gcse.cc:2578
 msgid "PRE disabled"
@@ -17578,7 +17498,7 @@ msgstr "„"
 #. Closing quotation mark.
 #: intl.cc:65
 msgid "'"
-msgstr "”"
+msgstr "“"
 
 #: langhooks.cc:384
 msgid "At top level:"
@@ -17675,10 +17595,9 @@ msgid " No options with the desired characteristics were found\n"
 msgstr " Nisu pronađene opcije sa željenim svojstvima\n"
 
 #: opts.cc:1783
-#, fuzzy, c-format
-#| msgid " None found.  Use --help=%s to show *all* the options supported by the %s front-end\n"
+#, c-format
 msgid " None found.  Use --help=%s to show *all* the options supported by the %s front-end.\n"
-msgstr " Ništa nije pronađeno.  Koristite --help=%s za prikaz *svih* opcija koje podržava sučelje %s\n"
+msgstr " Nijedan nije nađen. Koristite --help=%s za ispis *svih* opcija koje podržava %s front-end sučelje.\n"
 
 #: opts.cc:1789
 #, c-format
@@ -17691,10 +17610,12 @@ msgid ""
 "  Known valid arguments for %s option:\n"
 "   "
 msgstr ""
+"  Znani valjani argument za %s opciju:\n"
+"   "
 
 #: opts.cc:1884
 msgid "The following options are target specific"
-msgstr ""
+msgstr "Sljedeće opcije su specifične za cilj"
 
 #: opts.cc:1887
 msgid "The following options control compiler warning messages"
@@ -17702,17 +17623,15 @@ msgstr "Sljedeće opcije upravljaju porukama upozorenja kompajlera"
 
 #: opts.cc:1890
 msgid "The following options control optimizations"
-msgstr "Sljedeće opcije upravljaju optimizacijama"
+msgstr "Sljedeće opcije upravljaju s optimiranjem"
 
 #: opts.cc:1893 opts.cc:1933
 msgid "The following options are language-independent"
 msgstr "Sljedeće opcije su neovisne o jeziku"
 
 #: opts.cc:1896
-#, fuzzy
-#| msgid "The following options control optimizations"
 msgid "The following options control parameters"
-msgstr "Sljedeće opcije upravljaju optimizacijama"
+msgstr "Sljedeće opcije upravljaju s parametrima"
 
 #: opts.cc:1902
 msgid "The following options are specific to just the language "
@@ -17790,24 +17709,20 @@ msgstr "insn ne zadovoljava svoja ograničenja:"
 #: targhooks.cc:2157
 #, c-format
 msgid "created and used with differing settings of '%s'"
-msgstr "napravljeno i korišteno s različitim postavkama „%s”"
+msgstr "stvoren i korišten s različitim postavkama „%s”"
 
 #: targhooks.cc:2172
-#, fuzzy
-#| msgid "created and used with different settings of -fpic"
 msgid "created and used with different settings of %<-fpic%>"
-msgstr "napravljeno i korišteno s različitim postavkama -fpic"
+msgstr "stvoren i korišten s različitim postavkama %<-fpic%>"
 
 #: targhooks.cc:2174
-#, fuzzy
-#| msgid "created and used with different settings of -fpie"
 msgid "created and used with different settings of %<-fpie%>"
-msgstr "napravljeno i korišteno s različitim postavkama -fpie"
+msgstr "stvoren i korišten s različitim postavkama of %<-fpie%>"
 
 #: toplev.cc:318
 #, c-format
 msgid "unrecoverable error"
-msgstr "greška, nemoguć oporavak"
+msgstr "nepopravljiva greška"
 
 #: toplev.cc:611
 #, c-format
@@ -17816,18 +17731,19 @@ msgid ""
 "%s\tcompiled by GNU C version %s, "
 msgstr ""
 "%s%s%s %sinačica %s (%s)\n"
-"%s\tkompajlirao GNU C inačica %s, "
+"%s\tkompilirano s GNU C inačica %s, "
 
 #: toplev.cc:613
 #, c-format
 msgid "%s%s%s %sversion %s (%s) compiled by CC, "
-msgstr "%s%s%s %sinačica %s (%s) kompajlirao CC, "
+msgstr "%s%s%s %sinačica %s (%s) kompilirao CC, "
 
 #: toplev.cc:617
-#, fuzzy, c-format
-#| msgid "GMP version %s, MPFR version %s, MPC version %s\n"
+#, c-format
 msgid "GMP version %s, MPFR version %s, MPC version %s, isl version %s\n"
-msgstr "GMP inačica %s, MPFR inačica %s, MPC inačica %s\n"
+msgstr ""
+"GMP inačica %s, MPFR inačica %s, MPC inačica %s, isl inačica %s\n"
+"\n"
 
 #: toplev.cc:619
 #, c-format
@@ -18161,27 +18077,24 @@ msgid "missing operand"
 msgstr ""
 
 #: config/aarch64/aarch64.cc:11294
-#, fuzzy, c-format
-#| msgid "invalid %%-code"
+#, c-format
 msgid "invalid constant"
-msgstr "neispravni %%-kod"
+msgstr "nevaljana konstanta"
 
 #: config/aarch64/aarch64.cc:11297
-#, fuzzy, c-format
-#| msgid "invalid expression as operand"
+#, c-format
 msgid "invalid operand"
-msgstr "neispravni izraz kao operand"
+msgstr "nevaljani operand"
 
 #: config/aarch64/aarch64.cc:11425 config/aarch64/aarch64.cc:11430
 #, c-format
 msgid "invalid operand prefix '%%%c'"
-msgstr ""
+msgstr "nevaljani prefiks operanda „%%%c“"
 
 #: config/aarch64/aarch64.cc:11450
-#, fuzzy, c-format
-#| msgid "invalid 'asm': "
+#, c-format
 msgid "invalid address mode"
-msgstr "neispravni „asm”: "
+msgstr "nevaljani način adresiranja"
 
 #: config/aarch64/aarch64.cc:25851 config/arm/arm.cc:33859
 msgid "invalid conversion from type %<bfloat16_t%>"
@@ -18293,65 +18206,59 @@ msgid "invalid operand address"
 msgstr ""
 
 #: config/arc/arc.cc:4517
-#, fuzzy, c-format
-#| msgid "invalid %%-code"
+#, c-format
 msgid "invalid operand to %%Z code"
-msgstr "neispravni %%-kod"
+msgstr "nevaljani operand za %%Z kȏd"
 
 #: config/arc/arc.cc:4525
-#, fuzzy, c-format
-#| msgid "invalid %%-code"
+#, c-format
 msgid "invalid operand to %%z code"
-msgstr "neispravni %%-kod"
+msgstr "nevaljani operand za %%z kȏd"
 
 #: config/arc/arc.cc:4533
-#, fuzzy, c-format
-#| msgid "invalid %%-code"
+#, c-format
 msgid "invalid operands to %%c code"
-msgstr "neispravni %%-kod"
+msgstr "nevaljani operandi za %%c kȏd"
 
 #: config/arc/arc.cc:4541
-#, fuzzy, c-format
-#| msgid "invalid %%-code"
+#, c-format
 msgid "invalid operand to %%M code"
-msgstr "neispravni %%-kod"
+msgstr "nevaljani operandi za %%M kȏd"
 
 #: config/arc/arc.cc:4549 config/m32r/m32r.cc:2086
 #, c-format
 msgid "invalid operand to %%p code"
-msgstr ""
+msgstr "nevaljani operand za %%p kȏd"
 
 #: config/arc/arc.cc:4560 config/m32r/m32r.cc:2079
 #, c-format
 msgid "invalid operand to %%s code"
-msgstr ""
+msgstr "nevaljani operand za %%s kȏd"
 
 #: config/arc/arc.cc:4708 config/m32r/m32r.cc:2112
 #, c-format
 msgid "invalid operand to %%R code"
-msgstr ""
+msgstr "nevaljani operand za %%R kȏd"
 
 #: config/arc/arc.cc:4784 config/m32r/m32r.cc:2135
 #, c-format
 msgid "invalid operand to %%H/%%L code"
-msgstr ""
+msgstr "nevaljani operand za %%H%%L kȏd"
 
 #: config/arc/arc.cc:4852 config/m32r/m32r.cc:2206
 #, c-format
 msgid "invalid operand to %%U code"
-msgstr ""
+msgstr "nevaljani operand za %%U kȏd"
 
 #: config/arc/arc.cc:4864
-#, fuzzy, c-format
-#| msgid "invalid %%-code"
+#, c-format
 msgid "invalid operand to %%V code"
-msgstr "neispravni %%-kod"
+msgstr "nevaljani operand za %%V kȏd"
 
 #: config/arc/arc.cc:4921
-#, fuzzy, c-format
-#| msgid "invalid %%-code"
+#, c-format
 msgid "invalid operand to %%O code"
-msgstr "neispravni %%-kod"
+msgstr "nevaljani operand za %%O kȏd"
 
 #. Unknown flag.
 #. Undocumented flag.
@@ -18360,13 +18267,12 @@ msgstr "neispravni %%-kod"
 #: config/sparc/sparc.cc:9636
 #, c-format
 msgid "invalid operand output code"
-msgstr ""
+msgstr "nevaljani izlazni kȏd operanda"
 
 #: config/arc/arc.cc:6487
-#, fuzzy, c-format
-#| msgid "invalid expression as operand"
+#, c-format
 msgid "invalid UNSPEC as operand: %d"
-msgstr "neispravni izraz kao operand"
+msgstr "nevaljani UNSPEC kao operand: %d"
 
 #: config/arc/arc.cc:6703
 msgid "unrecognized supposed constant"
@@ -18524,10 +18430,8 @@ msgid "invalid const_double operand"
 msgstr ""
 
 #: config/bpf/bpf.cc:921
-#, fuzzy
-#| msgid "invalid expression as operand"
 msgid "invalid address in operand"
-msgstr "neispravni izraz kao operand"
+msgstr "nevaljana adresa kao operand"
 
 #. Fallthrough.
 #: config/bpf/bpf.cc:928
@@ -18756,10 +18660,9 @@ msgstr ""
 #: config/gcn/gcn.cc:5860 config/gcn/gcn.cc:5883 config/gcn/gcn.cc:5915
 #: config/gcn/gcn.cc:5931 config/gcn/gcn.cc:5946 config/gcn/gcn.cc:5965
 #: config/gcn/gcn.cc:6041 config/gcn/gcn.cc:6237 config/gcn/gcn.cc:6352
-#, fuzzy, c-format
-#| msgid "invalid %%-code"
+#, c-format
 msgid "invalid operand %%xn code"
-msgstr "neispravni %%-kod"
+msgstr "nevaljani operand %%xn kȏd"
 
 #: config/gcn/gcn.cc:6340
 #, c-format
@@ -18794,27 +18697,24 @@ msgid "invalid use of asm flag output"
 msgstr ""
 
 #: config/i386/i386.cc:13121
-#, fuzzy, c-format
-#| msgid "invalid expression as operand"
+#, c-format
 msgid "invalid operand size for operand code 'O'"
-msgstr "neispravni izraz kao operand"
+msgstr "nevaljana veličina operanda za operand kȏd 'O'"
 
 #: config/i386/i386.cc:13156
-#, fuzzy, c-format
-#| msgid "invalid expression as operand"
+#, c-format
 msgid "invalid operand size for operand code 'z'"
-msgstr "neispravni izraz kao operand"
+msgstr "nevaljana veličina operanda za operand kȏd 'z'"
 
 #: config/i386/i386.cc:13225
 #, c-format
 msgid "invalid operand type used with operand code 'Z'"
-msgstr ""
+msgstr "nevaljana vrsta operanda korištena s operandom kod „Z“"
 
 #: config/i386/i386.cc:13230
-#, fuzzy, c-format
-#| msgid "invalid expression as operand"
+#, c-format
 msgid "invalid operand size for operand code 'Z'"
-msgstr "neispravni izraz kao operand"
+msgstr "nevaljana veličina operanda za operand kȏd 'Z'"
 
 #: config/i386/i386.cc:13307
 #, c-format
@@ -18867,10 +18767,9 @@ msgid "invalid constraints for operand"
 msgstr ""
 
 #: config/i386/i386.cc:13768
-#, fuzzy, c-format
-#| msgid "invalid %%-code"
+#, c-format
 msgid "invalid vector immediate"
-msgstr "neispravni %%-kod"
+msgstr "nevaljana vektorska konstanta"
 
 #: config/i386/i386.cc:16847
 msgid "unknown insn mode"
@@ -19069,16 +18968,14 @@ msgid "invalid operand prefix"
 msgstr ""
 
 #: config/msp430/msp430.cc:4376
-#, fuzzy, c-format
-#| msgid "invalid expression as operand"
+#, c-format
 msgid "invalid zero extract"
-msgstr "neispravni izraz kao operand"
+msgstr "nevaljani nulo ekstrakt"
 
 #: config/or1k/or1k.cc:1154 config/or1k/or1k.cc:1162
-#, fuzzy, c-format
-#| msgid "invalid %%-code"
+#, c-format
 msgid "invalid relocation"
-msgstr "neispravni %%-kod"
+msgstr "nevaljana relokacija"
 
 #: config/or1k/or1k.cc:1256
 #, c-format
@@ -19187,10 +19084,9 @@ msgid "Bad 128-bit move"
 msgstr ""
 
 #: config/rs6000/rs6000.cc:13674
-#, fuzzy, c-format
-#| msgid "invalid %%-code"
+#, c-format
 msgid "invalid %%A value"
-msgstr "neispravni %%-kod"
+msgstr "nevaljana %%A vrijednost"
 
 #: config/rs6000/rs6000.cc:13683 config/xtensa/xtensa.cc:2403
 #, c-format
@@ -19198,10 +19094,9 @@ msgid "invalid %%D value"
 msgstr ""
 
 #: config/rs6000/rs6000.cc:13698
-#, fuzzy, c-format
-#| msgid "invalid %%-code"
+#, c-format
 msgid "invalid %%e value"
-msgstr "neispravni %%-kod"
+msgstr "nevaljana %%e vrijednost"
 
 #: config/rs6000/rs6000.cc:13719
 #, c-format
@@ -19249,10 +19144,9 @@ msgid "invalid %%q value"
 msgstr ""
 
 #: config/rs6000/rs6000.cc:13943
-#, fuzzy, c-format
-#| msgid "invalid %%-code"
+#, c-format
 msgid "invalid %%t value"
-msgstr "neispravni %%-kod"
+msgstr "nevaljani %%t kȏd"
 
 #: config/rs6000/rs6000.cc:13960
 #, c-format
@@ -19270,10 +19164,9 @@ msgid "invalid %%v value"
 msgstr ""
 
 #: config/rs6000/rs6000.cc:14036
-#, fuzzy, c-format
-#| msgid "invalid %%-code"
+#, c-format
 msgid "invalid %%V value"
-msgstr "neispravni %%-kod"
+msgstr "nevaljana %%V vrijednost"
 
 #: config/rs6000/rs6000.cc:14053 config/xtensa/xtensa.cc:2467
 #, c-format
@@ -19281,10 +19174,9 @@ msgid "invalid %%x value"
 msgstr ""
 
 #: config/rs6000/rs6000.cc:14110
-#, fuzzy, c-format
-#| msgid "invalid %%-code"
+#, c-format
 msgid "invalid %%z value"
-msgstr "neispravni %%-kod"
+msgstr "nevaljani %%z kȏd"
 
 #: config/rs6000/rs6000.cc:14179
 #, c-format
@@ -19706,7 +19598,7 @@ msgstr ""
 #: cp/parser.cc:15233 cp/parser.cc:32259 cp/parser.cc:32872
 #, gcc-internal-format
 msgid "expected %<;%>"
-msgstr "očekujem %<;%>"
+msgstr "očekivano je %<;%>"
 
 #: c/c-parser.cc:3049 c/c-parser.cc:4019 c/c-parser.cc:4214 c/c-parser.cc:4279
 #: c/c-parser.cc:4337 c/c-parser.cc:4699 c/c-parser.cc:4720 c/c-parser.cc:4729
@@ -19727,7 +19619,7 @@ msgstr "očekujem %<;%>"
 #: c/c-parser.cc:7124 cp/parser.cc:32920
 #, gcc-internal-format
 msgid "expected %<)%>"
-msgstr "očekujem %<)%>"
+msgstr "očekivano je %<)%>"
 
 #: c/c-parser.cc:4108 c/c-parser.cc:4840 c/c-parser.cc:4988 c/c-parser.cc:5014
 #: c/c-parser.cc:5015 c/c-parser.cc:5429 c/c-parser.cc:5465 c/c-parser.cc:7223
@@ -19735,11 +19627,11 @@ msgstr "očekujem %<)%>"
 #: c/c-parser.cc:13216 c/gimple-parser.cc:1740 cp/parser.cc:32884
 #, gcc-internal-format
 msgid "expected %<]%>"
-msgstr "očekujem %<]%>"
+msgstr "očekivano je %<]%>"
 
 #: c/c-parser.cc:4317
 msgid "expected %<;%>, %<,%> or %<)%>"
-msgstr "očekujem %<;%>, %<,%> ili %<)%>"
+msgstr "očekivano je %<;%>, %<,%> ili %<)%>"
 
 #. Look for the two `(' tokens.
 #: c/c-parser.cc:4749 c/c-parser.cc:4754 c/c-parser.cc:13796
@@ -19753,13 +19645,13 @@ msgstr "očekujem %<;%>, %<,%> ili %<)%>"
 #: c/gimple-parser.cc:2293 c/c-parser.cc:13618 cp/parser.cc:32875
 #, gcc-internal-format
 msgid "expected %<(%>"
-msgstr "očekujem %<(%>"
+msgstr "očekivano je %<(%>"
 
 #: c/c-parser.cc:4984 c/c-parser.cc:4986 c/c-parser.cc:13133
 #: cp/parser.cc:32887 cp/parser.cc:36617 go/gofrontend/embed.cc:439
 #, gcc-internal-format
 msgid "expected %<[%>"
-msgstr "očekujem %<[%>"
+msgstr "očekivano je %<[%>"
 
 #: c/c-parser.cc:5600 c/c-parser.cc:11708 c/c-parser.cc:18404
 #: c/c-parser.cc:18490 c/c-parser.cc:19142 c/c-parser.cc:20024
@@ -19768,7 +19660,7 @@ msgstr "očekujem %<[%>"
 #: cp/parser.cc:20871 cp/parser.cc:32881 go/gofrontend/embed.cc:370
 #, gcc-internal-format
 msgid "expected %<{%>"
-msgstr "očekujem %<{%>"
+msgstr "očekivano je %<{%>"
 
 #: c/c-parser.cc:5890 c/c-parser.cc:5899 c/c-parser.cc:7656 c/c-parser.cc:8745
 #: c/c-parser.cc:11472 c/c-parser.cc:11868 c/c-parser.cc:11932
@@ -19782,12 +19674,12 @@ msgstr "očekujem %<{%>"
 #: cp/parser.cc:37466 cp/parser.cc:38341 go/gofrontend/embed.cc:403
 #, gcc-internal-format
 msgid "expected %<:%>"
-msgstr "očekujem %<:%>"
+msgstr "očekivano je %<:%>"
 
 #: c/c-parser.cc:6681 cp/parser.cc:32801
 #, gcc-internal-format
 msgid "expected %<while%>"
-msgstr "očekujem %<while%>"
+msgstr "očekivano je %<while%>"
 
 #: c/c-parser.cc:8504 c/c-parser.cc:8696 c/c-parser.cc:9164 c/c-parser.cc:9207
 #: c/c-parser.cc:9345 c/c-parser.cc:10094 c/c-parser.cc:14621
@@ -19796,27 +19688,27 @@ msgstr "očekujem %<while%>"
 #: c/gimple-parser.cc:1525 cp/parser.cc:32257 cp/parser.cc:32890
 #, gcc-internal-format
 msgid "expected %<,%>"
-msgstr "očekujem %<,%>"
+msgstr "očekivano je %<,%>"
 
 #: c/c-parser.cc:9061
 msgid "expected %<.%>"
-msgstr "očekujem %<.%>"
+msgstr "očekivano je %<.%>"
 
 #: c/c-parser.cc:10931 c/c-parser.cc:10963 c/c-parser.cc:11203
 #: cp/parser.cc:35167 cp/parser.cc:35188
 #, gcc-internal-format
 msgid "expected %<@end%>"
-msgstr "očekujem %<@end%>"
+msgstr "očekivano je %<@end%>"
 
 #: c/c-parser.cc:11621 c/gimple-parser.cc:1355 cp/parser.cc:32899
 #, gcc-internal-format
 msgid "expected %<>%>"
-msgstr "očekujem %<>%>"
+msgstr "očekivano je %<>%>"
 
 #: c/c-parser.cc:15157 c/c-parser.cc:16391 cp/parser.cc:32923
 #, gcc-internal-format
 msgid "expected %<,%> or %<)%>"
-msgstr "očekujem %<,%> ili %<)%>"
+msgstr "očekivano je %<,%> ili %<)%>"
 
 #. All following cases are statements with LHS.
 #: c/c-parser.cc:15907 c/c-parser.cc:18297 c/c-parser.cc:18344
@@ -19826,7 +19718,7 @@ msgstr "očekujem %<,%> ili %<)%>"
 #: cp/parser.cc:32902 cp/parser.cc:40914 cp/parser.cc:41087
 #, gcc-internal-format
 msgid "expected %<=%>"
-msgstr "očekujem %<=%>"
+msgstr "očekivano je %<=%>"
 
 #: c/c-parser.cc:18432 c/c-parser.cc:18512 c/c-parser.cc:18866
 #: c/c-parser.cc:19190 c/gimple-parser.cc:1573 c/gimple-parser.cc:1605
@@ -19834,13 +19726,12 @@ msgstr "očekujem %<=%>"
 #: cp/parser.cc:35377
 #, gcc-internal-format
 msgid "expected %<}%>"
-msgstr "očekujem %<}%>"
+msgstr "očekivano je %<}%>"
 
 #: c/c-parser.cc:18525 cp/parser.cc:41012
-#, fuzzy, gcc-internal-format
-#| msgid "expected %<while%>"
+#, gcc-internal-format
 msgid "expected %<else%>"
-msgstr "očekujem %<while%>"
+msgstr "očekivano %<else%>"
 
 #: c/c-parser.cc:20069 c/c-parser.cc:20058 cp/parser.cc:43252
 #, gcc-internal-format
@@ -19862,10 +19753,9 @@ msgstr ""
 
 #: c/gimple-parser.cc:2343 c/gimple-parser.cc:2370 c/gimple-parser.cc:2209
 #: c/gimple-parser.cc:2246
-#, fuzzy, gcc-internal-format
-#| msgid "expected %<while%>"
+#, gcc-internal-format
 msgid "expected label"
-msgstr "očekujem %<while%>"
+msgstr "očekivana je oznaka"
 
 #: cp/call.cc:4007
 msgid "candidate:"
@@ -20901,10 +20791,9 @@ msgstr ""
 
 #: go/gofrontend/expressions.cc:5221 c/c-parser.cc:15820 c/c-parser.cc:15827
 #: cp/parser.cc:38961 cp/parser.cc:38968
-#, fuzzy, gcc-internal-format
-#| msgid "expected end of line"
+#, gcc-internal-format
 msgid "expected integer"
-msgstr "očekujem kraj retka"
+msgstr "očekivan je cijeli broj"
 
 #: go/gofrontend/expressions.cc:7000
 msgid "invalid comparison of nil with nil"
@@ -21598,10 +21487,9 @@ msgid "mismatching parens"
 msgstr ""
 
 #: jit/docs/examples/tut05-bf.c:310
-#, fuzzy, gcc-internal-format
-#| msgid "failed to open %s"
+#, gcc-internal-format
 msgid "unable to open file"
-msgstr "nisam uspio otvoriti %s"
+msgstr "nije moguće otvoriti datoteku"
 
 #: fortran/lang.opt:428
 #, gcc-internal-format
@@ -21614,10 +21502,9 @@ msgid "Unrecognized option to floating-point init value: %qs"
 msgstr ""
 
 #: fortran/lang.opt:784
-#, fuzzy, gcc-internal-format
-#| msgid "unrecognizable insn:"
+#, gcc-internal-format
 msgid "Unrecognized option: %qs"
-msgstr "neprepoznati insn:"
+msgstr "Neprepoznata opcija: %qs"
 
 #: c-family/c.opt:43 c-family/c.opt:46 c-family/c.opt:181
 #, gcc-internal-format
@@ -21954,10 +21841,9 @@ msgid "wrong number of arguments specified for %qE attribute"
 msgstr ""
 
 #: attribs.cc:733
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "expected %<@end%>"
+#, gcc-internal-format, gfc-internal-format
 msgid "expected %i or more, found %i"
-msgstr "očekujem %<@end%>"
+msgstr "očekivano je %i ili više, pronađeno %i"
 
 #: attribs.cc:736
 #, gcc-internal-format, gfc-internal-format
@@ -22125,16 +22011,14 @@ msgid "offset exceeds 16 bytes"
 msgstr ""
 
 #: auto-profile.cc:863
-#, fuzzy, gcc-internal-format
-#| msgid "expected %<.%>"
+#, gcc-internal-format
 msgid "Not expected TAG."
-msgstr "očekujem %<.%>"
+msgstr "TAG nije očekivan."
 
 #: auto-profile.cc:928
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Cannot open source file %s\n"
+#, gcc-internal-format, gfc-internal-format
 msgid "cannot open profile file %s"
-msgstr "Ne mogu otvoriti datoteku koda %s\n"
+msgstr "nije moguće otvoriti profil datoteku %s"
 
 #: auto-profile.cc:934
 #, gcc-internal-format
@@ -22329,10 +22213,9 @@ msgid "last argument of %qD is not integer constant between 0 and 3"
 msgstr ""
 
 #: calls.cc:1232
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "[cannot find %s]"
+#, gcc-internal-format, gfc-internal-format
 msgid "cannot tail-call: %s"
-msgstr "[ne mogu naći %s]"
+msgstr "nije moguće tail-call: %s"
 
 #: calls.cc:2728
 #, gcc-internal-format
@@ -23445,10 +23328,9 @@ msgid "nodes with unreleased memory found"
 msgstr ""
 
 #: collect-utils.cc:106
-#, fuzzy, gcc-internal-format
-#| msgid "can't get program status"
+#, gcc-internal-format
 msgid "cannot get program status: %m"
-msgstr "ne mogu dohvatiti stanje programa"
+msgstr "nije moguće dobiti stanje programa: %m"
 
 #: collect-utils.cc:120
 #, gcc-internal-format, gfc-internal-format
@@ -23476,17 +23358,15 @@ msgid "could not close response file %s"
 msgstr ""
 
 #: collect-utils.cc:221
-#, fuzzy, gcc-internal-format
-#| msgid "[cannot find %s]"
+#, gcc-internal-format
 msgid "cannot find %qs"
-msgstr "[ne mogu naći %s]"
+msgstr "nije moguće naći %qs"
 
 #: collect-utils.cc:225 collect2.cc:2385 collect2.cc:2555 gcc.cc:3413
 #: gcc.cc:7704
-#, fuzzy, gcc-internal-format
-#| msgid "pex_init failed"
+#, gcc-internal-format
 msgid "%<pex_init%> failed: %m"
-msgstr "pex_init nije uspio"
+msgstr "%<pex_init%> neuspješan: %m"
 
 #: collect-utils.cc:234 collect2.cc:2394 collect2.cc:2563 gcc.cc:2697
 #, gcc-internal-format
@@ -23494,10 +23374,9 @@ msgid "%s: %m"
 msgstr ""
 
 #: collect2.cc:613
-#, fuzzy, gcc-internal-format
-#| msgid "environment variable COLLECT_GCC must be set"
+#, gcc-internal-format
 msgid "environment variable %<COLLECT_LTO_WRAPPER%> must be set"
-msgstr "varijabla okoline COLLECT_GCC mora biti postavljena "
+msgstr "varijabla okoline %<COLLECT_LTO_WRAPPER%> mora imati postavku"
 
 #: collect2.cc:756
 #, gcc-internal-format, gfc-internal-format
@@ -23522,10 +23401,9 @@ msgstr ""
 
 #: collect2.cc:1324 graph.cc:55 lto-wrapper.cc:1707 lto-wrapper.cc:1763
 #: toplev.cc:1556 objc/objc-act.cc:461
-#, fuzzy, gcc-internal-format
-#| msgid "[cannot find %s]"
+#, gcc-internal-format
 msgid "cannot open %s: %m"
-msgstr "[ne mogu naći %s]"
+msgstr "nije moguće otvoriti %s: %m"
 
 #: collect2.cc:1444
 #, gcc-internal-format
@@ -23550,10 +23428,9 @@ msgid "%s: %s"
 msgstr ""
 
 #: collect2.cc:2359
-#, fuzzy, gcc-internal-format
-#| msgid "[cannot find %s]"
+#, gcc-internal-format
 msgid "cannot find %<nm%>"
-msgstr "[ne mogu naći %s]"
+msgstr "nije moguće naći %<nm%>"
 
 #: collect2.cc:2407
 #, gcc-internal-format
@@ -23571,10 +23448,9 @@ msgid "fini function found in object %s"
 msgstr ""
 
 #: collect2.cc:2530
-#, fuzzy, gcc-internal-format
-#| msgid "[cannot find %s]"
+#, gcc-internal-format
 msgid "cannot find %<ldd%>"
-msgstr "[ne mogu naći %s]"
+msgstr "nije moguće naći %<ldd%>"
 
 #: collect2.cc:2576
 #, gcc-internal-format
@@ -23802,10 +23678,9 @@ msgid "global constructors not supported on this target"
 msgstr ""
 
 #: diagnostic.cc:2163
-#, fuzzy, gcc-internal-format
-#| msgid "debug: "
+#, gcc-internal-format
 msgid "debug path"
-msgstr "debug: "
+msgstr "staza za debug (dijagnostiku)"
 
 #: dominance.cc:1170
 #, gcc-internal-format, gfc-internal-format
@@ -24078,10 +23953,9 @@ msgid "function returns an aggregate"
 msgstr ""
 
 #: gcc.cc:2201
-#, fuzzy, gcc-internal-format
-#| msgid "Cannot open source file %s\n"
+#, gcc-internal-format
 msgid "cannot open nested response file"
-msgstr "Ne mogu otvoriti datoteku koda %s\n"
+msgstr "nije moguće otvoriti ugniježđenu datoteku odgovora"
 
 #: gcc.cc:2238
 #, gcc-internal-format
@@ -24105,10 +23979,9 @@ msgstr ""
 
 #. This leaves DESC open, but the OS will save us.
 #: gcc.cc:2306
-#, fuzzy, gcc-internal-format
-#| msgid "Cannot open source file %s\n"
+#, gcc-internal-format
 msgid "cannot read spec file %qs: %m"
-msgstr "Ne mogu otvoriti datoteku koda %s\n"
+msgstr "nije moguće otvoriti spec datoteku %qs: %m"
 
 #: gcc.cc:2400 gcc.cc:2421
 #, gcc-internal-format, gfc-internal-format
@@ -24182,10 +24055,9 @@ msgid "%s signal terminated program %s"
 msgstr ""
 
 #: gcc.cc:3985 opts-common.cc:1544 opts-common.cc:1576
-#, fuzzy, gcc-internal-format
-#| msgid "unrecognizable insn:"
+#, gcc-internal-format
 msgid "unrecognized command-line option %qs"
-msgstr "neprepoznati insn:"
+msgstr "neprepoznat opcija na naredbenom retku %qs"
 
 #: gcc.cc:4027
 #, gcc-internal-format
@@ -24379,7 +24251,7 @@ msgstr ""
 #: gcc.cc:8867
 #, gcc-internal-format
 msgid "cannot specify %<-o%> with %<-c%>, %<-S%> or %<-E%> with multiple files"
-msgstr ""
+msgstr "%<-o%> with %<-c%>, %<-S%> or %<-E%> ne možete specificirati s više datoteka"
 
 #: gcc.cc:8909
 #, gcc-internal-format, gfc-internal-format
@@ -24510,10 +24382,9 @@ msgid "error in removing %s"
 msgstr ""
 
 #: gcov-tool.cc:104
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "ignoring duplicate directory \"%s\"\n"
+#, gcc-internal-format, gfc-internal-format
 msgid "Cannot make directory %s"
-msgstr "zanemarujem direktorij duplikat „%s”\n"
+msgstr "Nije moguće napraviti direktorij %s"
 
 #: gcov-tool.cc:112
 #, gcc-internal-format
@@ -24521,10 +24392,9 @@ msgid "Cannot get current directory name"
 msgstr ""
 
 #: gcov-tool.cc:116 gcov-tool.cc:130
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "ignoring duplicate directory \"%s\"\n"
+#, gcc-internal-format, gfc-internal-format
 msgid "Cannot change directory to %s"
-msgstr "zanemarujem direktorij duplikat „%s”\n"
+msgstr "Nije se moguće premjestiti (change) u direktorij %s"
 
 #: gcov-tool.cc:123
 #, gcc-internal-format, gfc-internal-format
@@ -24766,10 +24636,9 @@ msgid "null pointer dereference"
 msgstr ""
 
 #: gimple-ssa-isolate-paths.cc:413
-#, fuzzy, gcc-internal-format
-#| msgid "function body not available"
+#, gcc-internal-format
 msgid "function may return address of local variable"
-msgstr "tijelo funkcije nije dostupno"
+msgstr "funkcija može vratiti adresu lokalne varijable"
 
 #: gimple-ssa-isolate-paths.cc:414 c/c-typeck.cc:10987
 #, gcc-internal-format
@@ -27217,10 +27086,9 @@ msgid "Cgraph edge statement index not found"
 msgstr ""
 
 #: lto-streamer-in.cc:1215
-#, fuzzy, gcc-internal-format
-#| msgid "operand number out of range"
+#, gcc-internal-format
 msgid "Reference statement index out of range"
-msgstr "broj operanada je izvan granica"
+msgstr "Index referente izjave je izvan granica"
 
 #: lto-streamer-in.cc:1219
 #, gcc-internal-format
@@ -27273,10 +27141,9 @@ msgid "bytecode stream in file %qs generated with LTO version %d.%d instead of t
 msgstr ""
 
 #: lto-wrapper.cc:131
-#, fuzzy, gcc-internal-format
-#| msgid "deleting LTRANS file %s"
+#, gcc-internal-format
 msgid "deleting LTRANS file %s: %m"
-msgstr "uklanjam LTRANS datoteku %s"
+msgstr "uklanjam LTRANS datoteku %s: %m"
 
 #: lto-wrapper.cc:324
 #, gcc-internal-format, gfc-internal-format
@@ -27329,23 +27196,20 @@ msgid "installation error, cannot find %<crtoffloadtable.o%>"
 msgstr ""
 
 #: lto-wrapper.cc:1436
-#, fuzzy, gcc-internal-format
-#| msgid "environment variable COLLECT_GCC must be set"
+#, gcc-internal-format
 msgid "environment variable %<COLLECT_GCC%> must be set"
-msgstr "varijabla okoline COLLECT_GCC mora biti postavljena "
+msgstr "varijabla okoline %<COLLECT_GCC%> mora biti postavljena"
 
 #: lto-wrapper.cc:1440
-#, fuzzy, gcc-internal-format
-#| msgid "environment variable COLLECT_GCC_OPTIONS must be set"
+#, gcc-internal-format
 msgid "environment variable %<COLLECT_GCC_OPTIONS%> must be set"
-msgstr "varijabla okoline COLLECT_GCC_OPTIONS mora biti postavljena"
+msgstr "varijabla okoline %<COLLECT_GCC_OPTIONS%> mora biti postavljena"
 
 #: lto-wrapper.cc:1710 lto-wrapper.cc:1768 c-family/c-pch.cc:213
 #: c-family/c-pch.cc:248 c-family/c-pch.cc:286
-#, fuzzy, gcc-internal-format
-#| msgid "[cannot find %s]"
+#, gcc-internal-format
 msgid "cannot read %s: %m"
-msgstr "[ne mogu naći %s]"
+msgstr "nije moguće čitati %s: %m"
 
 #: lto-wrapper.cc:1737
 #, gcc-internal-format, gfc-internal-format
@@ -27353,16 +27217,14 @@ msgid "invalid format of %s"
 msgstr ""
 
 #: lto-wrapper.cc:1903
-#, fuzzy, gcc-internal-format
-#| msgid "fopen: %s"
+#, gcc-internal-format
 msgid "%<fopen%>: %s: %m"
-msgstr "fopen: %s"
+msgstr "%<fopen%>: %s: %m"
 
 #: lto-wrapper.cc:1920
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Could not open output file '%s'\n"
+#, gcc-internal-format, gfc-internal-format
 msgid "corrupted ltrans output file %s"
-msgstr "Ne mogu otvoriti izlaznu datoteku „%s”\n"
+msgstr "oštećeni izlazna datoteka ltrans %s"
 
 #: lto-wrapper.cc:1962
 #, gcc-internal-format, gfc-internal-format
@@ -27370,10 +27232,9 @@ msgid "using serial compilation of %d LTRANS jobs"
 msgstr ""
 
 #: lto-wrapper.cc:2135
-#, fuzzy, gcc-internal-format
-#| msgid "pex_init failed"
+#, gcc-internal-format
 msgid "%<atexit%> failed"
-msgstr "pex_init nije uspio"
+msgstr "%<atexit%> neuspješan"
 
 #: multiple_target.cc:76
 #, gcc-internal-format
@@ -27631,10 +27492,9 @@ msgid "%<%s taskgroup%> construct not closely nested inside of %<taskgroup%> reg
 msgstr ""
 
 #: omp-low.cc:3459
-#, fuzzy, gcc-internal-format
-#| msgid "invalid 'asm': "
+#, gcc-internal-format
 msgid "invalid arguments"
-msgstr "neispravni „asm”: "
+msgstr "nevaljani argumenti"
 
 #: omp-low.cc:3465
 #, gcc-internal-format
@@ -27880,10 +27740,9 @@ msgid "insufficient partitioning available to parallelize loop"
 msgstr ""
 
 #: omp-simd-clone.cc:197
-#, fuzzy, gcc-internal-format
-#| msgid "ignoring duplicate directory \"%s\"\n"
+#, gcc-internal-format
 msgid "ignoring large linear step"
-msgstr "zanemarujem direktorij duplikat „%s”\n"
+msgstr "ignoriramo veliki linearni korak"
 
 #: omp-simd-clone.cc:203
 #, gcc-internal-format
@@ -27906,10 +27765,9 @@ msgid "indirect jumps are not available on this target"
 msgstr ""
 
 #: optinfo-emit-json.cc:113
-#, fuzzy, gcc-internal-format
-#| msgid "Failed to open file %s for writing state: %s"
+#, gcc-internal-format
 msgid "cannot open file %qs for writing optimization records"
-msgstr "Nisam uspio otvoriti datoteku %s za pisanje stanja: %s"
+msgstr "nije uspjelo otvoriti datoteku %qs za pisanje optimizacijskih zapisa"
 
 #: optinfo-emit-json.cc:121
 #, gcc-internal-format
@@ -27987,10 +27845,9 @@ msgid "argument to %qs is bigger than %d"
 msgstr ""
 
 #: opts-common.cc:1962
-#, fuzzy, gcc-internal-format
-#| msgid "malformed COLLECT_GCC_OPTIONS"
+#, gcc-internal-format
 msgid "malformed %<COLLECT_GCC_OPTIONS%>"
-msgstr "izobličen COLLECT_GCC_OPTIONS"
+msgstr "deformirani %<COLLECT_GCC_OPTIONS%>"
 
 #: opts-global.cc:102
 #, gcc-internal-format
@@ -28484,10 +28341,9 @@ msgid "cannot find %s in plugin %s: %s"
 msgstr ""
 
 #: plugin.cc:735
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "failed to open %s"
+#, gcc-internal-format, gfc-internal-format
 msgid "failed to initialize plugin %s"
-msgstr "nisam uspio otvoriti %s"
+msgstr "nije uspjelo inicijalizirati plugin %s"
 
 #: plugin.cc:1009
 #, gcc-internal-format
@@ -28592,7 +28448,7 @@ msgstr ""
 #: read-rtl-function.cc:265
 #, gcc-internal-format, gfc-internal-format
 msgid "insn with UID %i not found for operand %i (`%s') of insn %i"
-msgstr ""
+msgstr "insn s UID-om %i nnije pronađen za operand %i („%s“) od insn %i"
 
 #: read-rtl-function.cc:269
 #, gcc-internal-format, gfc-internal-format
@@ -28615,15 +28471,14 @@ msgid "more than one 'crtl' directive"
 msgstr ""
 
 #: read-rtl-function.cc:985
-#, fuzzy, gcc-internal-format
-#| msgid "unrecognizable insn:"
+#, gcc-internal-format
 msgid "unrecognized enum value: %qs"
-msgstr "neprepoznati insn:"
+msgstr "neprepoznati enum vrijednost: %qs"
 
 #: read-rtl-function.cc:1141 read-rtl-function.cc:1200
 #, gcc-internal-format, gfc-internal-format
 msgid "was expecting `%s'"
-msgstr ""
+msgstr "očekivali smo „%s“"
 
 #: read-rtl-function.cc:1594
 #, gcc-internal-format, gfc-internal-format
@@ -29148,10 +29003,9 @@ msgid "symtab_node::verify failed"
 msgstr ""
 
 #: symtab.cc:1381
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "invalid expression as operand"
+#, gcc-internal-format, gfc-internal-format
 msgid "invalid order in asm node %i"
-msgstr "neispravni izraz kao operand"
+msgstr "krivi poredak u asm čvoru %i"
 
 #: symtab.cc:1405
 #, gcc-internal-format
@@ -29204,10 +29058,9 @@ msgid "%<#pragma GCC target%> is not supported for this machine"
 msgstr ""
 
 #: toplev.cc:721
-#, fuzzy, gcc-internal-format
-#| msgid "Failed to open file %s for writing state: %s"
+#, gcc-internal-format
 msgid "cannot open %qs for writing: %m"
-msgstr "Nisam uspio otvoriti datoteku %s za pisanje stanja: %s"
+msgstr "nije moguće otvoriti %qs za pisanje: %m"
 
 #: toplev.cc:740
 #, gcc-internal-format
@@ -29235,10 +29088,9 @@ msgid "stack usage is %wu bytes"
 msgstr ""
 
 #: toplev.cc:975
-#, fuzzy, gcc-internal-format
-#| msgid "Failed to open file %s for writing state: %s"
+#, gcc-internal-format
 msgid "cannot open %s for writing: %m"
-msgstr "Nisam uspio otvoriti datoteku %s za pisanje stanja: %s"
+msgstr "nije moguće otvoriti %s za pisanje: %m"
 
 #: toplev.cc:1251
 #, gcc-internal-format
@@ -29526,10 +29378,9 @@ msgid "non-scalar %qs"
 msgstr ""
 
 #: tree-cfg.cc:3070
-#, fuzzy, gcc-internal-format
-#| msgid "invalid expression as operand"
+#, gcc-internal-format
 msgid "invalid position or size operand to %qs"
-msgstr "neispravni izraz kao operand"
+msgstr "nevaljana pozicija ili veličina operanda za %qs"
 
 #: tree-cfg.cc:3076
 #, gcc-internal-format
@@ -29577,10 +29428,9 @@ msgid "type mismatch in %qs"
 msgstr ""
 
 #: tree-cfg.cc:3173
-#, fuzzy, gcc-internal-format
-#| msgid "invalid expression as operand"
+#, gcc-internal-format
 msgid "invalid %qs offset operator"
-msgstr "neispravni izraz kao operand"
+msgstr "nevaljani offset operator %qs"
 
 #: tree-cfg.cc:3197
 #, gcc-internal-format
@@ -29593,16 +29443,14 @@ msgid "conversion of register to a different size in %qs"
 msgstr ""
 
 #: tree-cfg.cc:3225 tree-cfg.cc:3251
-#, fuzzy, gcc-internal-format
-#| msgid "invalid expression as operand"
+#, gcc-internal-format
 msgid "invalid address operand in %qs"
-msgstr "neispravni izraz kao operand"
+msgstr "nevaljani adresni operator za %qs"
 
 #: tree-cfg.cc:3232 tree-cfg.cc:3258
-#, fuzzy, gcc-internal-format
-#| msgid "invalid expression as operand"
+#, gcc-internal-format
 msgid "invalid offset operand in %qs"
-msgstr "neispravni izraz kao operand"
+msgstr "nevaljani offset operand u %qs"
 
 #: tree-cfg.cc:3239 tree-cfg.cc:3265
 #, gcc-internal-format
@@ -29796,10 +29644,9 @@ msgid "invalid non-vector operands to %qs"
 msgstr ""
 
 #: tree-cfg.cc:3975
-#, fuzzy, gcc-internal-format
-#| msgid "invalid expression as operand"
+#, gcc-internal-format
 msgid "invalid (pointer) operands %qs"
-msgstr "neispravni izraz kao operand"
+msgstr "nevaljani (pointer) operandi %qs"
 
 #: tree-cfg.cc:4198
 #, gcc-internal-format
@@ -30371,10 +30218,9 @@ msgid "%s from %s called in %s"
 msgstr ""
 
 #: tree-profile.cc:624
-#, fuzzy, gcc-internal-format
-#| msgid "invalid expression as operand"
+#, gcc-internal-format
 msgid "invalid regular expression %qs in %qs"
-msgstr "neispravni izraz kao operand"
+msgstr "nevaljani regularni izraz %qs u %qs"
 
 #: tree-profile.cc:714
 #, gcc-internal-format
@@ -31410,7 +31256,7 @@ msgstr ""
 #: varasm.cc:6193 varasm.cc:6315
 #, gcc-internal-format
 msgid "%qs is not supported in this configuration"
-msgstr ""
+msgstr "%qs nije podržan u ovoj konfiguraciji"
 
 #: varasm.cc:6221
 #, gcc-internal-format
@@ -33405,7 +33251,7 @@ msgstr ""
 #: c-family/c-format.cc:3573
 #, gcc-internal-format
 msgid "grave accent %<`%> in format"
-msgstr ""
+msgstr "dijakritički znak (grave accent) %<`%> u formatu `"
 
 #: c-family/c-format.cc:3575
 #, gcc-internal-format
@@ -33875,10 +33721,9 @@ msgid "%qD specified in %<allocate%> clause but not in an explicit privatization
 msgstr ""
 
 #: c-family/c-omp.cc:2831 c-family/c-omp.cc:2846
-#, fuzzy, gcc-internal-format
-#| msgid "%s:no functions found\n"
+#, gcc-internal-format
 msgid "%qD is not a function argument"
-msgstr "%s:nisu pronađene funkcije\n"
+msgstr "%qD nije argument funkcije"
 
 #: c-family/c-opts.cc:341
 #, gcc-internal-format
@@ -34031,10 +33876,9 @@ msgid "cannot write to %s: %m"
 msgstr ""
 
 #: c-family/c-pch.cc:183
-#, fuzzy, gcc-internal-format
-#| msgid "[cannot find %s]"
+#, gcc-internal-format
 msgid "cannot write %s: %m"
-msgstr "[ne mogu naći %s]"
+msgstr "nije moguće pisati %s: %m"
 
 #: c-family/c-pch.cc:392
 #, gcc-internal-format
@@ -35411,10 +35255,9 @@ msgid "valid arguments are: %s"
 msgstr ""
 
 #: common/config/arm/arm-common.cc:418 common/config/arm/arm-common.cc:472
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "unrecognizable insn:"
+#, gcc-internal-format, gfc-internal-format
 msgid "unrecognized %s target: %s"
-msgstr "neprepoznati insn:"
+msgstr "neprepoznati %s cilj: %s"
 
 #: common/config/arm/arm-common.cc:508
 #, gcc-internal-format
@@ -35734,10 +35577,9 @@ msgid "could not understand %<kern.osversion%> %q.*s"
 msgstr ""
 
 #: config/darwin-driver.cc:232
-#, fuzzy, gcc-internal-format
-#| msgid "collect2 version %s\n"
+#, gcc-internal-format
 msgid "could not understand version %qs"
-msgstr "collect2 inačica %s\n"
+msgstr "nije bilo moguće shvatiti inačicu %qs"
 
 #: config/darwin-driver.cc:306
 #, gcc-internal-format
@@ -35865,10 +35707,9 @@ msgid "embedded NUL in CFString literal"
 msgstr ""
 
 #: config/host-darwin.cc:107
-#, fuzzy, gcc-internal-format
-#| msgid "function body not available"
+#, gcc-internal-format
 msgid "PCH memory not available %m"
-msgstr "tijelo funkcije nije dostupno"
+msgstr "PCH memorija nije dostupna %m"
 
 #: config/sol2-c.cc:91 config/sol2-c.cc:107
 #, gcc-internal-format
@@ -36336,10 +36177,9 @@ msgid "the %qE attribute cannot be applied to an SVE function type"
 msgstr ""
 
 #: config/aarch64/aarch64.cc:2265 config/aarch64/aarch64.cc:2279
-#, fuzzy, gcc-internal-format
-#| msgid "expected %<,%> or %<)%>"
+#, gcc-internal-format
 msgid "unexpected %<%s%> after %<%s%>"
-msgstr "očekujem %<,%> ili %<)%>"
+msgstr "očekivano je %<%s%> after %<%s%>"
 
 #: config/aarch64/aarch64.cc:2732
 #, gcc-internal-format
@@ -36431,10 +36271,9 @@ msgid "tuning string missing in option (%s)"
 msgstr ""
 
 #: config/aarch64/aarch64.cc:16437
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "%s:unknown function '%u'\n"
+#, gcc-internal-format, gfc-internal-format
 msgid "unknown tuning option (%s)"
-msgstr "%s:nepoznata funkcija „%u”\n"
+msgstr "nepoznata tuning opcija (%s)"
 
 #: config/aarch64/aarch64.cc:16605 config/riscv/riscv.cc:5061
 #, gcc-internal-format
@@ -37849,7 +37688,7 @@ msgstr ""
 #: config/bfin/bfin.cc:2393 config/m68k/m68k.cc:590
 #, gcc-internal-format
 msgid "cannot specify both %<-msep-data%> and %<-mid-shared-library%>"
-msgstr ""
+msgstr "ne možete specificirati %<-msep-data%> i %<-mid-shared-library%> zajedno"
 
 #: config/bfin/bfin.cc:2413
 #, gcc-internal-format
@@ -37917,18 +37756,14 @@ msgid "too many function arguments for eBPF"
 msgstr ""
 
 #: config/bpf/bpf.cc:785 config/bpf/bpf.cc:787
-#, fuzzy, gcc-internal-format
-#| msgid "%d constructor found\n"
-#| msgid_plural "%d constructors found\n"
+#, gcc-internal-format
 msgid "no constructors"
-msgstr "%d konstruktor pronađen\n"
+msgstr "nijedan konstruktor nije pronađen"
 
 #: config/bpf/bpf.cc:803 config/bpf/bpf.cc:805
-#, fuzzy, gcc-internal-format
-#| msgid "%d destructor found\n"
-#| msgid_plural "%d destructors found\n"
+#, gcc-internal-format
 msgid "no destructors"
-msgstr "%d destruktor pronađen\n"
+msgstr "nema destruktora"
 
 #: config/bpf/bpf.cc:857
 #, gcc-internal-format
@@ -38233,10 +38068,9 @@ msgid "using %<num_workers (%d)%>, ignoring %d"
 msgstr ""
 
 #: config/gcn/gcn.cc:5091 config/gcn/gcn.cc:5118
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "operand number out of range"
+#, gcc-internal-format, gfc-internal-format
 msgid "offload dimension out of range (%d)"
-msgstr "broj operanada je izvan granica"
+msgstr "dimenzija rasterećenja (offload) je izvan granica (%d)"
 
 #: config/gcn/gcn.cc:5591
 #, gcc-internal-format
@@ -38245,10 +38079,9 @@ msgstr ""
 
 #: config/gcn/mkoffload.cc:165 config/i386/intelmic-mkoffload.cc:73
 #: config/nvptx/mkoffload.cc:88
-#, fuzzy, gcc-internal-format
-#| msgid "deleting LTRANS file %s"
+#, gcc-internal-format
 msgid "deleting file %s: %m"
-msgstr "uklanjam LTRANS datoteku %s"
+msgstr "uklanjamo datoteku %s: %m"
 
 #: config/gcn/mkoffload.cc:771 config/nvptx/mkoffload.cc:365
 #, gcc-internal-format
@@ -38256,10 +38089,9 @@ msgid "environment variable COLLECT_GCC_OPTIONS must be set"
 msgstr "varijabla okoline COLLECT_GCC_OPTIONS mora biti postavljena"
 
 #: config/gcn/mkoffload.cc:830 config/nvptx/mkoffload.cc:422
-#, fuzzy, gcc-internal-format
-#| msgid "environment variable COLLECT_GCC must be set"
+#, gcc-internal-format
 msgid "COLLECT_GCC must be set."
-msgstr "varijabla okoline COLLECT_GCC mora biti postavljena "
+msgstr "COLLECT_GCC mora biti postavljena."
 
 #: config/gcn/mkoffload.cc:876 config/i386/intelmic-mkoffload.cc:606
 #, gcc-internal-format, gfc-internal-format
@@ -38268,10 +38100,9 @@ msgstr ""
 
 #: config/gcn/mkoffload.cc:899 config/i386/intelmic-mkoffload.cc:625
 #: config/nvptx/mkoffload.cc:493
-#, fuzzy, gcc-internal-format
-#| msgid "unrecognizable insn:"
+#, gcc-internal-format
 msgid "unrecognizable argument of option "
-msgstr "neprepoznati insn:"
+msgstr "neprepoznati argument opcije"
 
 #: config/gcn/mkoffload.cc:947
 #, gcc-internal-format
@@ -38281,10 +38112,9 @@ msgstr ""
 #: config/gcn/mkoffload.cc:1021 config/gcn/mkoffload.cc:1145
 #: config/i386/intelmic-mkoffload.cc:260 config/i386/intelmic-mkoffload.cc:335
 #: config/i386/intelmic-mkoffload.cc:387 config/nvptx/mkoffload.cc:557
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "[cannot find %s]"
+#, gcc-internal-format, gfc-internal-format
 msgid "cannot open '%s'"
-msgstr "[ne mogu naći %s]"
+msgstr "nije moguće otvoriti „%s“"
 
 #: config/gcn/mkoffload.cc:1141
 #, gcc-internal-format
@@ -39234,10 +39064,9 @@ msgid "%<-fexcess-precision=16%> is not compatible with %<-mfpmath=387%>"
 msgstr ""
 
 #: config/i386/intelmic-mkoffload.cc:601
-#, fuzzy, gcc-internal-format
-#| msgid "environment variable COLLECT_GCC must be set"
+#, gcc-internal-format
 msgid "COLLECT_GCC must be set"
-msgstr "varijabla okoline COLLECT_GCC mora biti postavljena "
+msgstr "COLLECT_GCC mora biti postavljena "
 
 #: config/i386/intelmic-mkoffload.cc:641
 #, gcc-internal-format
@@ -40048,10 +39877,9 @@ msgid "invalid argument to built-in function %s"
 msgstr ""
 
 #: config/nds32/nds32-intrinsic.cc:131
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "operand number out of range"
+#, gcc-internal-format, gfc-internal-format
 msgid "constant argument out of range for %s"
-msgstr "broj operanada je izvan granica"
+msgstr "argument konstanta je izvan granica za %s"
 
 #: config/nds32/nds32-intrinsic.cc:1003
 #, gcc-internal-format
@@ -40372,10 +40200,9 @@ msgid "either %<-fopenacc%> or %<-fopenmp%> must be set"
 msgstr ""
 
 #: config/nvptx/mkoffload.cc:596
-#, fuzzy, gcc-internal-format
-#| msgid "Cannot open source file %s\n"
+#, gcc-internal-format
 msgid "cannot open intermediate ptx file"
-msgstr "Ne mogu otvoriti datoteku koda %s\n"
+msgstr "nije moguće privremenu ptx datoteku"
 
 #: config/nvptx/nvptx.cc:206
 #, gcc-internal-format
@@ -40438,10 +40265,9 @@ msgid "variable %qD adjusted for OpenACC privatization level: %qs"
 msgstr ""
 
 #: config/or1k/or1k.cc:1311
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "expected %<@end%>"
+#, gcc-internal-format, gfc-internal-format
 msgid "unexpected operand: %d"
-msgstr "očekujem %<@end%>"
+msgstr "očekivano je operand: %d"
 
 #: config/pa/pa.cc:529
 #, gcc-internal-format
@@ -40459,10 +40285,9 @@ msgid "%<-g%> is only supported when using GAS on this processor"
 msgstr ""
 
 #: config/pa/pa.cc:540
-#, fuzzy, gcc-internal-format
-#| msgid "options enabled: "
+#, gcc-internal-format
 msgid "%<-g%> option disabled"
-msgstr "omogućene opcije: "
+msgstr "opcije %<-g%> su omemogućene"
 
 #: config/pru/pru-passes.cc:111
 #, gcc-internal-format
@@ -40866,7 +40691,7 @@ msgstr ""
 #: config/rs6000/rs6000-c.cc:2017
 #, gcc-internal-format
 msgid "%qs is not supported in this compiler configuration"
-msgstr ""
+msgstr "%qs nije podržan u ovoj konfiguraciji"
 
 #: config/rs6000/rs6000-call.cc:387
 #, gcc-internal-format
@@ -43667,7 +43492,7 @@ msgstr ""
 #: c/c-parser.cc:1324 cp/parser.cc:32926
 #, gcc-internal-format
 msgid "expected end of line"
-msgstr "očekujem kraj retka"
+msgstr "očekivan je kraj retka"
 
 #: c/c-parser.cc:1643
 #, gcc-internal-format
@@ -44144,10 +43969,9 @@ msgid "%qE is not a valid %<asm%> qualifier"
 msgstr ""
 
 #: c/c-parser.cc:7132
-#, fuzzy, gcc-internal-format
-#| msgid "expected %<,%> or %<)%>"
+#, gcc-internal-format
 msgid "expected %<:%> or %<)%>"
-msgstr "očekujem %<,%> ili %<)%>"
+msgstr "očekivano je %<:%> ili %<)%>"
 
 #: c/c-parser.cc:7431 cp/parser.cc:4487
 #, gcc-internal-format
@@ -44584,10 +44408,9 @@ msgid "expected %<=%> after Objective-C %qE"
 msgstr ""
 
 #: c/c-parser.cc:12124 cp/parser.cc:36063
-#, fuzzy, gcc-internal-format
-#| msgid "expected end of line"
+#, gcc-internal-format
 msgid "expected %qE selector name"
-msgstr "očekujem kraj retka"
+msgstr "očekivano je ime selektora za %qE"
 
 #: c/c-parser.cc:12140 cp/parser.cc:36082
 #, gcc-internal-format
@@ -44656,10 +44479,9 @@ msgid "expression must be integral"
 msgstr ""
 
 #: c/c-parser.cc:13256 c/c-parser.cc:13268
-#, fuzzy, gcc-internal-format
-#| msgid "expected %<,%> or %<)%>"
+#, gcc-internal-format
 msgid "expected %<)%> or %<,%>"
-msgstr "očekujem %<,%> ili %<)%>"
+msgstr "očekivano %<)%> or %<,%>"
 
 #: c/c-parser.cc:13419 c/c-parser.cc:23098
 #, gcc-internal-format
@@ -44677,29 +44499,25 @@ msgid "collapse argument needs positive constant integer expression"
 msgstr ""
 
 #: c/c-parser.cc:13560 cp/parser.cc:37315
-#, fuzzy, gcc-internal-format
-#| msgid "expected %<,%> or %<)%>"
+#, gcc-internal-format
 msgid "expected %<none%> or %<present%>"
-msgstr "očekujem %<,%> ili %<)%>"
+msgstr "očekivano je %<none%> ili %<present%>"
 
 #: c/c-parser.cc:13562 cp/parser.cc:37317
-#, fuzzy, gcc-internal-format
-#| msgid "expected %<;%>, %<,%> or %<)%>"
+#, gcc-internal-format
 msgid "expected %<none%>, %<shared%>, %<private%> or %<firstprivate%>"
-msgstr "očekujem %<;%>, %<,%> ili %<)%>"
+msgstr "očekivano je %<none%>, %<shared%>, %<private%> ili %<firstprivate%>"
 
 #: c/c-parser.cc:13683 cp/parser.cc:37429
-#, fuzzy, gcc-internal-format
-#| msgid "expected %<;%>, %<,%> or %<)%>"
+#, gcc-internal-format
 msgid "expected %<data%>, %<update%>, %<enter%> or %<exit%>"
-msgstr "očekujem %<;%>, %<,%> ili %<)%>"
+msgstr "očekivano je %<data%>, %<update%>, %<enter%> ili %<exit%>"
 
 #: c/c-parser.cc:13703 c/c-parser.cc:20890 c/c-parser.cc:20976
 #: cp/parser.cc:37447 cp/parser.cc:44061 cp/parser.cc:44152
-#, fuzzy, gcc-internal-format
-#| msgid "expected %<;%>"
+#, gcc-internal-format
 msgid "expected %<data%>"
-msgstr "očekujem %<;%>"
+msgstr "očekivano je %<data%>"
 
 #: c/c-parser.cc:13756 cp/parser.cc:37502
 #, gcc-internal-format
@@ -44760,10 +44578,9 @@ msgid "expected %<alloc%>, %<to%>, %<from%>, %<tofrom%>, %<firstprivate%>, %<non
 msgstr ""
 
 #: c/c-parser.cc:14223 cp/parser.cc:37878
-#, fuzzy, gcc-internal-format
-#| msgid "expected %<;%>, %<,%> or %<)%>"
+#, gcc-internal-format
 msgid "expected %<scalar%>, %<aggregate%> or %<pointer%>"
-msgstr "očekujem %<;%>, %<,%> ili %<)%>"
+msgstr "očekivano je %<scalar%>, %<aggregate%> ili %<pointer%>"
 
 #: c/c-parser.cc:14289 cp/parser.cc:37947
 #, gcc-internal-format
@@ -44792,10 +44609,9 @@ msgid "too many %<static%> arguments"
 msgstr ""
 
 #: c/c-parser.cc:14484 cp/parser.cc:37042
-#, fuzzy, gcc-internal-format
-#| msgid "expected %<@end%>"
+#, gcc-internal-format
 msgid "unexpected argument"
-msgstr "očekujem %<@end%>"
+msgstr "neočekivani argument"
 
 #: c/c-parser.cc:14651 cp/semantics.cc:8614
 #, gcc-internal-format
@@ -44803,23 +44619,20 @@ msgid "%<tile%> argument needs positive integral constant"
 msgstr ""
 
 #: c/c-parser.cc:14726 cp/parser.cc:38000
-#, fuzzy, gcc-internal-format
-#| msgid "expected %<,%> or %<)%>"
+#, gcc-internal-format
 msgid "expected %<reproducible%> or %<unconstrained%>"
-msgstr "očekujem %<,%> ili %<)%>"
+msgstr "%<scalar%>, %<aggregate%> or %<pointer%>"
 
 #: c/c-parser.cc:14735 c/c-parser.cc:14741 cp/parser.cc:38009
 #: cp/parser.cc:38019
-#, fuzzy, gcc-internal-format
-#| msgid "expected %<@end%>"
+#, gcc-internal-format
 msgid "expected %<concurrent%>"
-msgstr "očekujem %<@end%>"
+msgstr "očekivano je %<concurrent%>"
 
 #: c/c-parser.cc:14777 cp/parser.cc:38059
-#, fuzzy, gcc-internal-format
-#| msgid "expected %<;%>, %<,%> or %<)%>"
+#, gcc-internal-format
 msgid "expected %<teams%>, %<parallel%> or %<thread%>"
-msgstr "očekujem %<;%>, %<,%> ili %<)%>"
+msgstr "očekivano je %<teams%>, %<parallel%> ili %<thread%>"
 
 #: c/c-parser.cc:14830 cp/parser.cc:38127
 #, gcc-internal-format
@@ -44877,10 +44690,9 @@ msgid "%<aligned%> clause alignment expression must be positive constant integer
 msgstr ""
 
 #: c/c-parser.cc:15526
-#, fuzzy, gcc-internal-format
-#| msgid "expected %<,%> or %<)%>"
+#, gcc-internal-format
 msgid "expected %<allocator%> or %<align%>"
-msgstr "očekujem %<,%> ili %<)%>"
+msgstr "očekivano je %<allocator%> ili %<align%>"
 
 #: c/c-parser.cc:15533
 #, gcc-internal-format
@@ -44919,10 +44731,9 @@ msgstr ""
 
 #: c/c-parser.cc:16135 cp/parser.cc:39340 cp/parser.cc:39662
 #: cp/parser.cc:39712
-#, fuzzy, gcc-internal-format
-#| msgid "invalid expression as operand"
+#, gcc-internal-format
 msgid "invalid depend kind"
-msgstr "neispravni izraz kao operand"
+msgstr "nevaljana vrsta ovisnosti"
 
 #: c/c-parser.cc:16205 cp/parser.cc:39410
 #, gcc-internal-format
@@ -44940,10 +44751,9 @@ msgid "%<#pragma omp target%> with modifier other than %<always%> or %<close%>on
 msgstr ""
 
 #: c/c-parser.cc:16251 cp/parser.cc:39465
-#, fuzzy, gcc-internal-format
-#| msgid "invalid 'asm': "
+#, gcc-internal-format
 msgid "invalid map kind"
-msgstr "neispravni „asm”: "
+msgstr "nevaljana vrsta dodjele"
 
 #: c/c-parser.cc:16303 cp/parser.cc:39524
 #, gcc-internal-format
@@ -44951,10 +44761,9 @@ msgid "%<ancestor%> device modifier not preceded by %<requires%> directive with 
 msgstr ""
 
 #: c/c-parser.cc:16315 cp/parser.cc:39535
-#, fuzzy, gcc-internal-format
-#| msgid "expected %<,%> or %<)%>"
+#, gcc-internal-format
 msgid "expected %<ancestor%> or %<device_num%>"
-msgstr "očekujem %<,%> ili %<)%>"
+msgstr "očekivano je %<ancestor%> ili %<device_num%>"
 
 #: c/c-parser.cc:16338 cp/semantics.cc:7500
 #, gcc-internal-format
@@ -44972,10 +44781,9 @@ msgid "invalid proc_bind kind"
 msgstr ""
 
 #: c/c-parser.cc:16494
-#, fuzzy, gcc-internal-format
-#| msgid "expected %<;%>, %<,%> or %<)%>"
+#, gcc-internal-format
 msgid "expected %<host%>, %<nohost%> or %<any%>"
-msgstr "očekujem %<;%>, %<,%> ili %<)%>"
+msgstr "očekivano je %<host%>, %<nohost%> ili %<any%>"
 
 #: c/c-parser.cc:16571 cp/semantics.cc:7900
 #, gcc-internal-format
@@ -45049,10 +44857,9 @@ msgid "variable %qD used more than once with %<#pragma acc declare%>"
 msgstr ""
 
 #: c/c-parser.cc:17420 cp/parser.cc:44747
-#, fuzzy, gcc-internal-format
-#| msgid "expected %<,%> or %<)%>"
+#, gcc-internal-format
 msgid "expected %<data%> after %<#pragma acc %s%>"
-msgstr "očekujem %<,%> ili %<)%>"
+msgstr "očekivano je %<data%> iza %<#pragma acc %s%>"
 
 #: c/c-parser.cc:17436 cp/parser.cc:44764
 #, gcc-internal-format
@@ -45065,10 +44872,9 @@ msgid "%qE has not been declared"
 msgstr ""
 
 #: c/c-parser.cc:17690
-#, fuzzy, gcc-internal-format
-#| msgid "expected end of line"
+#, gcc-internal-format
 msgid "expected function name"
-msgstr "očekujem kraj retka"
+msgstr "očekivano je ime funkcije"
 
 #: c/c-parser.cc:17708 cp/parser.cc:46982
 #, gcc-internal-format
@@ -45101,10 +44907,9 @@ msgid "%<#pragma acc update%> must contain at least one %<device%> or %<host%> o
 msgstr ""
 
 #: c/c-parser.cc:17902 cp/parser.cc:40440
-#, fuzzy, gcc-internal-format
-#| msgid "expected %<;%>"
+#, gcc-internal-format
 msgid "expected %<allocator%>"
-msgstr "očekujem %<;%>"
+msgstr "očekivano je <allocator%>"
 
 #: c/c-parser.cc:17918
 #, gcc-internal-format
@@ -45117,16 +44922,14 @@ msgid "%<#pragma omp allocate%> not yet supported"
 msgstr ""
 
 #: c/c-parser.cc:18075 cp/parser.cc:40592
-#, fuzzy, gcc-internal-format
-#| msgid "expected %<;%>, %<,%> or %<)%>"
+#, gcc-internal-format
 msgid "expected %<read%>, %<write%>, %<update%>, or %<capture%> clause"
-msgstr "očekujem %<;%>, %<,%> ili %<)%>"
+msgstr "očekivano je %<read%>, %<write%>, %<update%>, ili %<capture%> naredba"
 
 #: c/c-parser.cc:18114 cp/parser.cc:40631
-#, fuzzy, gcc-internal-format
-#| msgid "expected %<;%>, %<,%> or %<)%>"
+#, gcc-internal-format
 msgid "expected %<seq_cst%>, %<acquire%> or %<relaxed%>"
-msgstr "očekujem %<;%>, %<,%> ili %<)%>"
+msgstr "očekivano je %<seq_cst%>, %<acquire%> ili %<relaxed%>"
 
 #: c/c-parser.cc:18138 cp/parser.cc:40660
 #, gcc-internal-format
@@ -45166,10 +44969,9 @@ msgid "%<#pragma omp atomic write%> incompatible with %<acquire%> clause"
 msgstr ""
 
 #: c/c-parser.cc:18393 cp/parser.cc:40892
-#, fuzzy, gcc-internal-format
-#| msgid "expected %<,%> or %<)%>"
+#, gcc-internal-format
 msgid "expected %<==%> comparison in %<if%> condition"
-msgstr "očekujem %<,%> ili %<)%>"
+msgstr "očekivan je %<==%> usporedba u uvjetu %<if%>"
 
 #: c/c-parser.cc:18400 cp/parser.cc:40899
 #, gcc-internal-format
@@ -45183,10 +44985,9 @@ msgid "invalid form of %<#pragma omp atomic compare%>"
 msgstr ""
 
 #: c/c-parser.cc:18484 cp/parser.cc:40975
-#, fuzzy, gcc-internal-format
-#| msgid "expected %<while%>"
+#, gcc-internal-format
 msgid "unexpected %<else%>"
-msgstr "očekujem %<while%>"
+msgstr "očekivano je %<else%>"
 
 #: c/c-parser.cc:18544 cp/parser.cc:41412
 #, gcc-internal-format
@@ -45219,22 +45020,19 @@ msgid "%<depobj%> expression is not lvalue expression"
 msgstr ""
 
 #: c/c-parser.cc:19034 cp/parser.cc:41567
-#, fuzzy, gcc-internal-format
-#| msgid "expected %<;%>, %<,%> or %<)%>"
+#, gcc-internal-format
 msgid "expected %<in%>, %<out%>, %<inout%> or %<mutexinoutset%>"
-msgstr "očekujem %<;%>, %<,%> ili %<)%>"
+msgstr "očekivano je %<in%>, %<out%>, %<inout%> ili %<mutexinoutset%>"
 
 #: c/c-parser.cc:19046 cp/parser.cc:41583
-#, fuzzy, gcc-internal-format
-#| msgid "expected %<;%>, %<,%> or %<)%>"
+#, gcc-internal-format
 msgid "expected %<depend%>, %<destroy%> or %<update%> clause"
-msgstr "očekujem %<;%>, %<,%> ili %<)%>"
+msgstr "očekivano je %<depend%>, %<destroy%> ili %<update%> naredba"
 
 #: c/c-parser.cc:19084 cp/parser.cc:41623
-#, fuzzy, gcc-internal-format
-#| msgid "expected %<;%>, %<,%> or %<)%>"
+#, gcc-internal-format
 msgid "expected %<seq_cst%>, %<acq_rel%>, %<release%> or %<acquire%>"
-msgstr "očekujem %<;%>, %<,%> ili %<)%>"
+msgstr "očekivano je %<seq_cst%>, %<acq_rel%>, %<release%> ili %<acquire%>"
 
 #: c/c-parser.cc:19092 cp/parser.cc:41631
 #, gcc-internal-format
@@ -45247,16 +45045,14 @@ msgid "expected %<(%> or end of line"
 msgstr ""
 
 #: c/c-parser.cc:19176 cp/parser.cc:42350
-#, fuzzy, gcc-internal-format
-#| msgid "expected %<,%> or %<)%>"
+#, gcc-internal-format
 msgid "expected %<inclusive%> or %<exclusive%> clause"
-msgstr "očekujem %<,%> ili %<)%>"
+msgstr "očekivano je %<inclusive%> ili %<exclusive%> naredba"
 
 #: c/c-parser.cc:19181 cp/parser.cc:42356
-#, fuzzy, gcc-internal-format
-#| msgid "expected %<,%> or %<)%>"
+#, gcc-internal-format
 msgid "expected %<#pragma omp scan%>"
-msgstr "očekujem %<,%> ili %<)%>"
+msgstr "očekivano je %<#pragma omp scan%>"
 
 #: c/c-parser.cc:19237 cp/parser.cc:42407
 #, gcc-internal-format
@@ -45304,16 +45100,14 @@ msgid "%<#pragma omp ordered%> with %<depend%> clause may only be used in compou
 msgstr ""
 
 #: c/c-parser.cc:20190 cp/parser.cc:43380
-#, fuzzy, gcc-internal-format
-#| msgid "expected %<,%> or %<)%>"
+#, gcc-internal-format
 msgid "expected %<for%> after %qs"
-msgstr "očekujem %<,%> ili %<)%>"
+msgstr "očekivano je %<for%> iza %qs"
 
 #: c/c-parser.cc:20532 cp/parser.cc:43724
-#, fuzzy, gcc-internal-format
-#| msgid "expected %<;%>"
+#, gcc-internal-format
 msgid "expected %<point%>"
-msgstr "očekujem %<;%>"
+msgstr "očekivano je %<point%>"
 
 #: c/c-parser.cc:20787 cp/parser.cc:43999
 #, gcc-internal-format
@@ -45416,10 +45210,9 @@ msgid "expected %<construct%>, %<device%>, %<implementation%> or %<user%>"
 msgstr ""
 
 #: c/c-parser.cc:21808 cp/parser.cc:45538
-#, fuzzy, gcc-internal-format
-#| msgid "expected %<;%>"
+#, gcc-internal-format
 msgid "expected %<match%>"
-msgstr "očekujem %<;%>"
+msgstr "očekivano je %<match%>"
 
 #: c/c-parser.cc:21828
 #, gcc-internal-format
@@ -45457,16 +45250,14 @@ msgid "directive with only %<device_type%> clauses ignored"
 msgstr ""
 
 #: c/c-parser.cc:22076 cp/parser.cc:45929
-#, fuzzy, gcc-internal-format
-#| msgid "expected %<;%>"
+#, gcc-internal-format
 msgid "expected %<target%>"
-msgstr "očekujem %<;%>"
+msgstr "očekivano je %<target%>"
 
 #: c/c-parser.cc:22083 cp/parser.cc:45936
-#, fuzzy, gcc-internal-format
-#| msgid "expected %<while%>"
+#, gcc-internal-format
 msgid "expected %<declare%>"
-msgstr "očekujem %<while%>"
+msgstr "očekivano je %<declare%>"
 
 #: c/c-parser.cc:22089 cp/parser.cc:45943
 #, gcc-internal-format
@@ -45514,10 +45305,9 @@ msgid "expected %<omp_priv%> or function-name"
 msgstr ""
 
 #: c/c-parser.cc:22349
-#, fuzzy, gcc-internal-format
-#| msgid "expected %<(%>"
+#, gcc-internal-format
 msgid "expected function-name %<(%>"
-msgstr "očekujem %<(%>"
+msgstr "očekivano je function-name %<(%>"
 
 #: c/c-parser.cc:22368
 #, gcc-internal-format
@@ -45525,16 +45315,14 @@ msgid "one of the initializer call arguments should be %<&omp_priv%>"
 msgstr ""
 
 #: c/c-parser.cc:22499 cp/parser.cc:46431
-#, fuzzy, gcc-internal-format
-#| msgid "expected %<;%>, %<,%> or %<)%>"
+#, gcc-internal-format
 msgid "expected %<simd%>, %<reduction%>, %<target%> or %<variant%>"
-msgstr "očekujem %<;%>, %<,%> ili %<)%>"
+msgstr "očekivano je %<simd%>, %<reduction%>, %<target%> ili %<variant%>"
 
 #: c/c-parser.cc:22566 cp/parser.cc:46497
-#, fuzzy, gcc-internal-format
-#| msgid "expected %<;%>, %<,%> or %<)%>"
+#, gcc-internal-format
 msgid "expected %<seq_cst%>, %<relaxed%> or %<acq_rel%>"
-msgstr "očekujem %<;%>, %<,%> ili %<)%>"
+msgstr "očekivano je %<seq_cst%>, %<relaxed%> ili %<acq_rel%>"
 
 #: c/c-parser.cc:22595 cp/parser.cc:46532
 #, gcc-internal-format
@@ -45577,16 +45365,14 @@ msgid "variable sized type %qT in %<reduction%> clause"
 msgstr ""
 
 #: c/c-parser.cc:22837 cp/parser.cc:46650
-#, fuzzy, gcc-internal-format
-#| msgid "expected %<;%>, %<,%> or %<)%>"
+#, gcc-internal-format
 msgid "expected %<at%>, %<severity%> or %<message%> clause"
-msgstr "očekujem %<;%>, %<,%> ili %<)%>"
+msgstr "očekivano je %<at%>, %<severity%> ili %<message%> naredba"
 
 #: c/c-parser.cc:22870 cp/parser.cc:46685
-#, fuzzy, gcc-internal-format
-#| msgid "expected %<,%> or %<)%>"
+#, gcc-internal-format
 msgid "expected %qs or %qs"
-msgstr "očekujem %<,%> ili %<)%>"
+msgstr "očekivano je %qs ili %qs"
 
 #: c/c-parser.cc:22927 cp/parser.cc:46747
 #, gcc-internal-format
@@ -47127,10 +46913,9 @@ msgid "step expression refers to outer iterator %qD"
 msgstr ""
 
 #: c/c-typeck.cc:14097 cp/semantics.cc:6665
-#, fuzzy, gcc-internal-format
-#| msgid "expected end of line"
+#, gcc-internal-format
 msgid "expected pointer in %qs clause"
-msgstr "očekujem kraj retka"
+msgstr "očekivana je kazaljka (pointer) u %qs naredbi"
 
 #: c/c-typeck.cc:14185 cp/semantics.cc:6746
 #, gcc-internal-format
@@ -47451,10 +47236,9 @@ msgid "C++ requires promoted type, not enum type, in %<va_arg%>"
 msgstr ""
 
 #: c/gimple-parser.cc:166
-#, fuzzy, gcc-internal-format
-#| msgid "expected end of line"
+#, gcc-internal-format
 msgid "expected frequency quality"
-msgstr "očekujem kraj retka"
+msgstr "očekivana je frekvencija"
 
 #: c/gimple-parser.cc:175
 #, gcc-internal-format
@@ -47462,10 +47246,9 @@ msgid "unknown profile quality"
 msgstr ""
 
 #: c/gimple-parser.cc:187
-#, fuzzy, gcc-internal-format
-#| msgid "expected end of line"
+#, gcc-internal-format
 msgid "expected frequency value"
-msgstr "očekujem kraj retka"
+msgstr "očekivana je vrijednost frekvencije"
 
 #: c/gimple-parser.cc:326
 #, gcc-internal-format
@@ -47473,16 +47256,14 @@ msgid "edge not found"
 msgstr ""
 
 #: c/gimple-parser.cc:478 c/gimple-parser.cc:484
-#, fuzzy, gcc-internal-format
-#| msgid "expected end of line"
+#, gcc-internal-format
 msgid "expected block index"
-msgstr "očekujem kraj retka"
+msgstr "očekivan je indeks bloka"
 
 #: c/gimple-parser.cc:492
-#, fuzzy, gcc-internal-format
-#| msgid "invalid %%-code"
+#, gcc-internal-format
 msgid "invalid block index"
-msgstr "neispravni %%-kod"
+msgstr "nevaljani indeks bloka"
 
 #: c/gimple-parser.cc:503
 #, gcc-internal-format
@@ -47490,10 +47271,9 @@ msgid "expected block specifier"
 msgstr ""
 
 #: c/gimple-parser.cc:521
-#, fuzzy, gcc-internal-format
-#| msgid "expected end of line"
+#, gcc-internal-format
 msgid "expected loop number"
-msgstr "očekujem kraj retka"
+msgstr "očekivan je broj petlje"
 
 #: c/gimple-parser.cc:539
 #, gcc-internal-format
@@ -47501,10 +47281,9 @@ msgid "unknown block specifier"
 msgstr ""
 
 #: c/gimple-parser.cc:552 c/gimple-parser.cc:1964
-#, fuzzy, gcc-internal-format
-#| msgid "expected end of line"
+#, gcc-internal-format
 msgid "expected count value"
-msgstr "očekujem kraj retka"
+msgstr "očekivana je vrijednost za količinu (broj)"
 
 #: c/gimple-parser.cc:575 c/gimple-parser.cc:662
 #, gcc-internal-format
@@ -47522,10 +47301,9 @@ msgid "invalid source block specification"
 msgstr ""
 
 #: c/gimple-parser.cc:886
-#, fuzzy, gcc-internal-format
-#| msgid "expected end of line"
+#, gcc-internal-format
 msgid "unexpected RHS for assignment"
-msgstr "očekujem kraj retka"
+msgstr "neočekivani RHS za dodjeliti"
 
 #: c/gimple-parser.cc:990
 #, gcc-internal-format
@@ -47548,10 +47326,9 @@ msgid "%<!%> not valid in GIMPLE"
 msgstr ""
 
 #: c/gimple-parser.cc:1192 c/gimple-parser.cc:1529
-#, fuzzy, gcc-internal-format
-#| msgid "expected end of line"
+#, gcc-internal-format
 msgid "expected constant offset"
-msgstr "očekujem kraj retka"
+msgstr "očekivani je stalni (constant) odmak (offset)"
 
 #: c/gimple-parser.cc:1253
 #, gcc-internal-format
@@ -47574,22 +47351,19 @@ msgid "expecting internal function name"
 msgstr ""
 
 #: c/gimple-parser.cc:1323
-#, fuzzy, gcc-internal-format
-#| msgid "%s:unknown function '%u'\n"
+#, gcc-internal-format
 msgid "unknown internal function %qE"
-msgstr "%s:nepoznata funkcija „%u”\n"
+msgstr "nepoznata interna funkcija %qE"
 
 #: c/gimple-parser.cc:1461
-#, fuzzy, gcc-internal-format
-#| msgid "invalid expression as operand"
+#, gcc-internal-format
 msgid "invalid type of %<__MEM%> operand"
-msgstr "neispravni izraz kao operand"
+msgstr "nevaljana vrsta operanda %<__MEM%>"
 
 #: c/gimple-parser.cc:1523
-#, fuzzy, gcc-internal-format
-#| msgid "expected end of line"
+#, gcc-internal-format
 msgid "expected constant size"
-msgstr "očekujem kraj retka"
+msgstr "očekivana je veličina konstante"
 
 #: c/gimple-parser.cc:1561 c/gimple-parser.cc:1591 c/gimple-parser.cc:1631
 #: c/gimple-parser.cc:1639 c/gimple-parser.cc:1648
@@ -47618,22 +47392,19 @@ msgid "dereference of non-pointer"
 msgstr ""
 
 #: c/gimple-parser.cc:1945
-#, fuzzy, gcc-internal-format
-#| msgid "expected end of line"
+#, gcc-internal-format
 msgid "expected pass name"
-msgstr "očekujem kraj retka"
+msgstr ""
 
 #: c/gimple-parser.cc:1984
-#, fuzzy, gcc-internal-format
-#| msgid "invalid %%-code"
+#, gcc-internal-format
 msgid "invalid operation"
-msgstr "neispravni %%-kod"
+msgstr "Interna greška: invalid operation"
 
 #: c/gimple-parser.cc:2130
-#, fuzzy, gcc-internal-format
-#| msgid "compilation terminated.\n"
+#, gcc-internal-format
 msgid "comparison required"
-msgstr "kompajliranje prekinuto.\n"
+msgstr "potrebna je usporedba"
 
 #: c/gimple-parser.cc:2182
 #, gcc-internal-format
@@ -47641,10 +47412,9 @@ msgid "%<catch%> is not supported"
 msgstr ""
 
 #: c/gimple-parser.cc:2184
-#, fuzzy, gcc-internal-format
-#| msgid "expected %<,%> or %<)%>"
+#, gcc-internal-format
 msgid "expected %<finally%> or %<catch%>"
-msgstr "očekujem %<,%> ili %<)%>"
+msgstr "očekivano je %<finally%> ili %<catch%>"
 
 #: c/gimple-parser.cc:2228 c/gimple-parser.cc:2265
 #, gcc-internal-format
@@ -47657,10 +47427,9 @@ msgid "expected else statement"
 msgstr ""
 
 #: c/gimple-parser.cc:2379
-#, fuzzy, gcc-internal-format
-#| msgid "expected end of line"
+#, gcc-internal-format
 msgid "expected case label"
-msgstr "očekujem kraj retka"
+msgstr "Interna greška: expected case label"
 
 #. A bad conversion for 'this' must be discarding cv-quals.
 #: cp/call.cc:3785
@@ -47887,10 +47656,9 @@ msgid "%<operator[]%> in %<%E[%E]%>"
 msgstr ""
 
 #: cp/call.cc:5194
-#, fuzzy, gcc-internal-format
-#| msgid "%s\n"
+#, gcc-internal-format
 msgid "%qs"
-msgstr "%s\n"
+msgstr "%qs"
 
 #: cp/call.cc:5197
 #, gcc-internal-format
@@ -49781,10 +49549,9 @@ msgid "%qE does not satisfy return-type-requirement, because"
 msgstr ""
 
 #: cp/constraint.cc:2089
-#, fuzzy, gcc-internal-format
-#| msgid "insn does not satisfy its constraints:"
+#, gcc-internal-format
 msgid "%qE does not satisfy return-type-requirement"
-msgstr "insn ne zadovoljava svoja ograničenja:"
+msgstr "%qE ne zadovoljava „return-type-requirement“"
 
 #: cp/constraint.cc:2100
 #, gcc-internal-format
@@ -50122,13 +49889,12 @@ msgstr ""
 #: cp/coroutines.cc:2552
 #, gcc-internal-format
 msgid "duplicate info for %qE"
-msgstr ""
+msgstr "dvostruke informacije za %qE"
 
 #: cp/coroutines.cc:3703
-#, fuzzy, gcc-internal-format
-#| msgid "invalid expression as operand"
+#, gcc-internal-format
 msgid "await expressions are not permitted in handlers"
-msgstr "neispravni izraz kao operand"
+msgstr "„await“ izraz nije dopušten u rukovateljima (handlers)"
 
 #: cp/coroutines.cc:3934
 #, gcc-internal-format
@@ -50213,10 +49979,9 @@ msgid "%<std::source_location::__impl%> does not contain only non-static data me
 msgstr ""
 
 #: cp/cp-gimplify.cc:3212
-#, fuzzy, gcc-internal-format
-#| msgid "Creating '%s'\n"
+#, gcc-internal-format
 msgid "evaluating %qs"
-msgstr "Stvaram „%s”\n"
+msgstr "procjenjujemo %qs"
 
 #: cp/cvt.cc:92
 msgid "cannot convert from incomplete type %qH to %qI"
@@ -52922,10 +52687,9 @@ msgid "a concept cannot be a member function"
 msgstr ""
 
 #: cp/decl.cc:13853 cp/decl.cc:14199
-#, fuzzy, gcc-internal-format
-#| msgid "[cannot find %s]"
+#, gcc-internal-format
 msgid "%qD cannot be %qs"
-msgstr "[ne mogu naći %s]"
+msgstr "%qD ne može bit %qs"
 
 #: cp/decl.cc:13862
 #, gcc-internal-format
@@ -53549,10 +53313,9 @@ msgid "no conversion operators declared"
 msgstr ""
 
 #: cp/decl2.cc:810
-#, fuzzy, gcc-internal-format
-#| msgid "%s:no functions found\n"
+#, gcc-internal-format
 msgid "no functions named %qD"
-msgstr "%s:nisu pronađene funkcije\n"
+msgstr "nema funkcije nazvane %qD"
 
 #: cp/decl2.cc:812
 #, gcc-internal-format
@@ -53870,10 +53633,9 @@ msgid "use of deleted function %qD"
 msgstr ""
 
 #: cp/decl2.cc:5840
-#, fuzzy, gcc-internal-format
-#| msgid "insn does not satisfy its constraints:"
+#, gcc-internal-format
 msgid "use of function %qD with unsatisfied constraints"
-msgstr "insn ne zadovoljava svoja ograničenja:"
+msgstr "funkcija %qD se koristi s nezadovoljenim ograničenjima"
 
 #: cp/decl2.cc:5872
 #, gcc-internal-format
@@ -54713,16 +54475,14 @@ msgid "failed %s mapper %qs line %u"
 msgstr ""
 
 #: cp/mapper-client.cc:308
-#, fuzzy, gcc-internal-format
-#| msgid "failed to open %s"
+#, gcc-internal-format
 msgid "failed %s mapper %qs"
-msgstr "nisam uspio otvoriti %s"
+msgstr "neuspješni %s „mapper“ %ss"
 
 #: cp/mapper-client.cc:320
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "failed to open %s"
+#, gcc-internal-format, gfc-internal-format
 msgid "failed mapper handshake %s"
-msgstr "nisam uspio otvoriti %s"
+msgstr ""
 
 #: cp/mapper-client.cc:354
 #, gcc-internal-format, gfc-internal-format
@@ -55072,16 +54832,14 @@ msgid "compiled module file is %qs"
 msgstr ""
 
 #: cp/module.cc:17385 cp/module.cc:17390
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "collect2 version %s\n"
+#, gcc-internal-format, gfc-internal-format
 msgid "compiled module is %sversion %s"
-msgstr "collect2 inačica %s\n"
+msgstr "kompilirani modul je %sversion %s"
 
 #: cp/module.cc:17396
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "collect2 version %s\n"
+#, gcc-internal-format, gfc-internal-format
 msgid "compiler is %sversion %s%s%s"
-msgstr "collect2 inačica %s\n"
+msgstr "kompajler je %sversion %s%s%s"
 
 #: cp/module.cc:17426
 #, gcc-internal-format
@@ -55134,10 +54892,9 @@ msgid "failed to read compiled module cluster %u: %s"
 msgstr ""
 
 #: cp/module.cc:18162
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "failed to open %s"
+#, gcc-internal-format, gfc-internal-format
 msgid "failed to read compiled module: %s"
-msgstr "nisam uspio otvoriti %s"
+msgstr "nije uspjelo pročitati kompilirani modul: %s"
 
 #: cp/module.cc:18172
 #, gcc-internal-format
@@ -55155,16 +54912,14 @@ msgid "returning to the gate for a mechanical issue"
 msgstr ""
 
 #: cp/module.cc:18670
-#, fuzzy, gcc-internal-format
-#| msgid "Creating '%s'\n"
+#, gcc-internal-format
 msgid "reading CMI %qs"
-msgstr "Stvaram „%s”\n"
+msgstr "čitamo CMI %qs"
 
 #: cp/module.cc:18814
-#, fuzzy, gcc-internal-format
-#| msgid "failed to open %s"
+#, gcc-internal-format
 msgid "failed to load binding %<%E%s%E%>"
-msgstr "nisam uspio otvoriti %s"
+msgstr "nije uspjelo učitati vezanja %<%E%s%E%>"
 
 #: cp/module.cc:18815
 #, gcc-internal-format
@@ -55182,10 +54937,9 @@ msgid "during load of binding %<%E%s%E@%s%>"
 msgstr ""
 
 #: cp/module.cc:18881
-#, fuzzy, gcc-internal-format
-#| msgid "failed to open %s"
+#, gcc-internal-format
 msgid "failed to load pendings for %<%E%s%E%>"
-msgstr "nisam uspio otvoriti %s"
+msgstr "nije uspjelo učitati jedinice na čekanju za %<%E%s%E%>"
 
 #: cp/module.cc:18885
 #, gcc-internal-format
@@ -55290,10 +55044,9 @@ msgid "not writing module %qs due to errors"
 msgstr ""
 
 #: cp/module.cc:19902
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "failed to open %s"
+#, gcc-internal-format, gfc-internal-format
 msgid "failed to write compiled module: %s"
-msgstr "nisam uspio otvoriti %s"
+msgstr "nije uspjelo zapisati kompilirani modul: %s"
 
 #: cp/module.cc:20039
 #, gcc-internal-format
@@ -55311,11 +55064,9 @@ msgid "%q#D conflicts with a previous declaration"
 msgstr ""
 
 #: cp/name-lookup.cc:2898
-#, fuzzy, gcc-internal-format
-#| msgid "%d constructor found\n"
-#| msgid_plural "%d constructors found\n"
+#, gcc-internal-format
 msgid "%q#D hides constructor for %q#D"
-msgstr "%d konstruktor pronađen\n"
+msgstr "%q#D skriva konstruktora za %q#D"
 
 #: cp/name-lookup.cc:3047
 #, gcc-internal-format
@@ -55353,10 +55104,9 @@ msgid "%s %<%s(%E)%> %p %d"
 msgstr ""
 
 #: cp/name-lookup.cc:4236
-#, fuzzy, gcc-internal-format
-#| msgid "%s %s%s\n"
+#, gcc-internal-format
 msgid "%s %s %p %d"
-msgstr "%s %s%s\n"
+msgstr "%s %s %p %d"
 
 #: cp/name-lookup.cc:4848
 #, gcc-internal-format
@@ -55980,16 +55730,14 @@ msgid "expected binary operator"
 msgstr ""
 
 #: cp/parser.cc:5387
-#, fuzzy, gcc-internal-format
-#| msgid "Unexpected type..."
+#, gcc-internal-format
 msgid "expected ..."
-msgstr "Neočekivana vrsta..."
+msgstr "očekujemo ..."
 
 #: cp/parser.cc:5399
-#, fuzzy, gcc-internal-format
-#| msgid "invalid expression as operand"
+#, gcc-internal-format
 msgid "binary expression in operand of fold-expression"
-msgstr "neispravni izraz kao operand"
+msgstr "binarni izraz u operandu od „fold-expression“"
 
 #: cp/parser.cc:5404
 #, gcc-internal-format
@@ -56565,10 +56313,9 @@ msgid "expected jump-statement"
 msgstr ""
 
 #: cp/parser.cc:14523
-#, fuzzy, gcc-internal-format
-#| msgid "expected end of line"
+#, gcc-internal-format
 msgid "expected module-name"
-msgstr "očekujem kraj retka"
+msgstr "očekivano je ime modula"
 
 #: cp/parser.cc:14558
 #, gcc-internal-format
@@ -56847,10 +56594,9 @@ msgid "expected empty string after %<operator%> keyword"
 msgstr ""
 
 #: cp/parser.cc:17373
-#, fuzzy, gcc-internal-format
-#| msgid "invalid expression as operand"
+#, gcc-internal-format
 msgid "invalid encoding prefix in literal operator"
-msgstr "neispravni izraz kao operand"
+msgstr "nevaljani prefiks kodiranja u doslovnom (literal) operatoru"
 
 #: cp/parser.cc:17407
 #, gcc-internal-format
@@ -57030,10 +56776,9 @@ msgid "concept defined here"
 msgstr ""
 
 #: cp/parser.cc:20060
-#, fuzzy, gcc-internal-format
-#| msgid "expected %<,%> or %<)%>"
+#, gcc-internal-format
 msgid "expected %<auto%> or %<decltype(auto)%> after %qE"
-msgstr "očekujem %<,%> ili %<)%>"
+msgstr "očekivano je %<auto%> ili %<decltype(auto)%> iza %qE"
 
 #: cp/parser.cc:20067
 #, gcc-internal-format
@@ -57534,7 +57279,7 @@ msgstr ""
 #: cp/parser.cc:26410
 #, gcc-internal-format
 msgid "cannot specify %<override%> for a class"
-msgstr ""
+msgstr "ne možete specificirati %<override%> za klasu"
 
 #: cp/parser.cc:26418
 #, gcc-internal-format
@@ -57595,10 +57340,9 @@ msgid "ISO C++ forbids typename key in template template parameter; use %<-std=c
 msgstr ""
 
 #: cp/parser.cc:26769
-#, fuzzy, gcc-internal-format
-#| msgid "expected %<,%> or %<)%>"
+#, gcc-internal-format
 msgid "expected %<class%> or %<typename%>"
-msgstr "očekujem %<,%> ili %<)%>"
+msgstr "očekivano je %<class%> ili %<typename%>"
 
 #: cp/parser.cc:27019
 #, gcc-internal-format
@@ -57716,10 +57460,9 @@ msgid "types may not be defined in exception-declarations"
 msgstr ""
 
 #: cp/parser.cc:28802
-#, fuzzy, gcc-internal-format
-#| msgid "expected end of line"
+#, gcc-internal-format
 msgid "expected OpenMP directive name"
-msgstr "očekujem kraj retka"
+msgstr "očekivano je ime direktive OpenMP"
 
 #: cp/parser.cc:28811
 #, gcc-internal-format
@@ -57727,10 +57470,9 @@ msgid "expected attribute argument as balanced token sequence"
 msgstr ""
 
 #: cp/parser.cc:28856
-#, fuzzy, gcc-internal-format
-#| msgid "expected %<,%> or %<)%>"
+#, gcc-internal-format
 msgid "expected %<directive%> or %<sequence%>"
-msgstr "očekujem %<,%> ili %<)%>"
+msgstr "očekivano je %<directive%> ili %<sequence%>"
 
 #: cp/parser.cc:28955
 #, gcc-internal-format
@@ -57759,10 +57501,9 @@ msgid "attribute %qs specified multiple times"
 msgstr ""
 
 #: cp/parser.cc:29165
-#, fuzzy, gcc-internal-format
-#| msgid "expected %<,%> or %<)%>"
+#, gcc-internal-format
 msgid "expected attribute before %<...%>"
-msgstr "očekujem %<,%> ili %<)%>"
+msgstr "očekivan je atribut ispred %<...%>"
 
 #: cp/parser.cc:29225
 #, gcc-internal-format
@@ -57999,10 +57740,9 @@ msgid "expected %<throw%>"
 msgstr ""
 
 #: cp/parser.cc:32840
-#, fuzzy, gcc-internal-format
-#| msgid "expected %<;%>"
+#, gcc-internal-format
 msgid "expected %<auto%>"
-msgstr "očekujem %<;%>"
+msgstr "očekivano je %<auto%>"
 
 #: cp/parser.cc:32843
 #, gcc-internal-format
@@ -58035,10 +57775,9 @@ msgid "expected %<__transaction_relaxed%>"
 msgstr ""
 
 #: cp/parser.cc:32861
-#, fuzzy, gcc-internal-format
-#| msgid "expected %<@end%>"
+#, gcc-internal-format
 msgid "expected %<co_yield%>"
-msgstr "očekujem %<@end%>"
+msgstr "očekivano je %<co_yield%>"
 
 #: cp/parser.cc:32893
 #, gcc-internal-format
@@ -59736,22 +59475,19 @@ msgid "placeholder constraints not satisfied"
 msgstr ""
 
 #: cp/pt.cc:30247
-#, fuzzy, gcc-internal-format
-#| msgid "insn does not satisfy its constraints:"
+#, gcc-internal-format
 msgid "deduced initializer does not satisfy placeholder constraints"
-msgstr "insn ne zadovoljava svoja ograničenja:"
+msgstr "izvedeni inicijalizator ne zadovoljava ograničenja zamjenskih znakova"
 
 #: cp/pt.cc:30251
-#, fuzzy, gcc-internal-format
-#| msgid "insn does not satisfy its constraints:"
+#, gcc-internal-format
 msgid "deduced return type does not satisfy placeholder constraints"
-msgstr "insn ne zadovoljava svoja ograničenja:"
+msgstr "izvedena vrsta vraćanja ne zadovoljava ograničenja zamjenskih znakova"
 
 #: cp/pt.cc:30255
-#, fuzzy, gcc-internal-format
-#| msgid "insn does not satisfy its constraints:"
+#, gcc-internal-format
 msgid "deduced expression type does not satisfy placeholder constraints"
-msgstr "insn ne zadovoljava svoja ograničenja:"
+msgstr "izvedena vrsta izraza ne zadovoljava ograničenja zamjenskih znakova"
 
 #: cp/pt.cc:30395
 #, gcc-internal-format
@@ -61646,10 +61382,9 @@ msgid "invalid cast to abstract class type %qT"
 msgstr ""
 
 #: cp/typeck2.cc:209
-#, fuzzy, gcc-internal-format
-#| msgid "invalid expression as operand"
+#, gcc-internal-format
 msgid "invalid new-expression of abstract class type %qT"
-msgstr "neispravni izraz kao operand"
+msgstr "nevaljani new-izraz apstraktne klase vrste %qT"
 
 #: cp/typeck2.cc:212
 #, gcc-internal-format
@@ -62255,10 +61990,9 @@ msgid "missing or corrupt object.d"
 msgstr ""
 
 #: d/types.cc:720
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "invalid expression as operand"
+#, gcc-internal-format, gfc-internal-format
 msgid "invalid expression for static array dimension: %s"
-msgstr "neispravni izraz kao operand"
+msgstr "nevaljani izraz za statičko polje (array) dimenzije: %s"
 
 #: fortran/arith.cc:47
 #, gcc-internal-format, gfc-internal-format
@@ -63854,10 +63588,9 @@ msgid "To enable preprocessing, use %<-cpp%>"
 msgstr ""
 
 #: fortran/cpp.cc:580 fortran/cpp.cc:591 fortran/cpp.cc:719
-#, fuzzy, gcc-internal-format
-#| msgid "Could not open output file '%s'\n"
+#, gcc-internal-format
 msgid "opening output file %qs: %s"
-msgstr "Ne mogu otvoriti izlaznu datoteku „%s”\n"
+msgstr "otvaramo izlaznu datoteku %qs: %s"
 
 #: fortran/data.cc:65
 #, gcc-internal-format, gfc-internal-format
@@ -65273,10 +65006,9 @@ msgid "Unexpected character in variable list at %C"
 msgstr ""
 
 #: fortran/decl.cc:8837
-#, fuzzy, gcc-internal-format
-#| msgid "expected %<(%>"
+#, gcc-internal-format
 msgid "Expected %<(%> at %C"
-msgstr "očekujem %<(%>"
+msgstr "Očekivano je %<(%> pri %C"
 
 #: fortran/decl.cc:8851 fortran/decl.cc:8891
 #, gcc-internal-format, gfc-internal-format
@@ -65530,10 +65262,9 @@ msgid "ABSTRACT type at %C"
 msgstr ""
 
 #: fortran/decl.cc:10200
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "failed to close state file %s [%s]"
+#, gcc-internal-format, gfc-internal-format
 msgid "Failed to create structure type '%s' at %C"
-msgstr "nisam uspio zatvoriti datoteku stanja %s [%s]"
+msgstr "Nije uspjelo stvoriti strukturu tipa „%s“ pri %C"
 
 #: fortran/decl.cc:10206
 #, gcc-internal-format
@@ -65751,10 +65482,9 @@ msgid "GENERIC at %C must be inside a derived-type CONTAINS"
 msgstr ""
 
 #: fortran/decl.cc:11390
-#, fuzzy, gcc-internal-format
-#| msgid "expected %<:%>"
+#, gcc-internal-format
 msgid "Expected %<::%> at %C"
-msgstr "očekujem %<:%>"
+msgstr "Očekivano je %<::%> pri %C"
 
 #: fortran/decl.cc:11402
 #, gcc-internal-format, gfc-internal-format
@@ -65767,10 +65497,9 @@ msgid "Malformed GENERIC statement at %C"
 msgstr ""
 
 #: fortran/decl.cc:11434
-#, fuzzy, gcc-internal-format
-#| msgid "expected %<=%>"
+#, gcc-internal-format
 msgid "Expected %<=>%> at %C"
-msgstr "očekujem %<=%>"
+msgstr "Očekivano je %<=>%> pri %C"
 
 #: fortran/decl.cc:11470
 #, gcc-internal-format
@@ -65818,10 +65547,9 @@ msgid "Expected module procedure name at %C"
 msgstr ""
 
 #: fortran/decl.cc:11639
-#, fuzzy, gcc-internal-format
-#| msgid "expected %<,%>"
+#, gcc-internal-format
 msgid "Expected %<,%> at %C"
-msgstr "očekujem %<,%>"
+msgstr "Očekivano je %<,%> pri %C"
 
 #: fortran/decl.cc:11645
 #, gcc-internal-format
@@ -66618,10 +66346,9 @@ msgid "Removing call to impure function at %L"
 msgstr ""
 
 #: fortran/frontend-passes.cc:1356 fortran/frontend-passes.cc:1395
-#, fuzzy, gcc-internal-format
-#| msgid "invalid expression as operand"
+#, gcc-internal-format
 msgid "bad expression"
-msgstr "neispravni izraz kao operand"
+msgstr "loši izraz"
 
 #: fortran/frontend-passes.cc:1391
 #, gcc-internal-format
@@ -68595,10 +68322,9 @@ msgid "Association target at %L cannot be a BOZ literal constant"
 msgstr ""
 
 #: fortran/match.cc:1972
-#, fuzzy, gcc-internal-format
-#| msgid "expected %<,%> or %<)%>"
+#, gcc-internal-format
 msgid "Expected %<)%> or %<,%> at %C"
-msgstr "očekujem %<,%> ili %<)%>"
+msgstr "Očekivano je %<)%> ili %<,%> pri %C"
 
 #: fortran/match.cc:1990
 #, gcc-internal-format, gfc-internal-format
@@ -69551,34 +69277,29 @@ msgid "write_symtree(): Symbol not written"
 msgstr ""
 
 #: fortran/module.cc:6489
-#, fuzzy, gcc-internal-format
-#| msgid "Failed to open file %s for writing state: %s"
+#, gcc-internal-format
 msgid "Cannot open module file %qs for writing at %C: %s"
-msgstr "Nisam uspio otvoriti datoteku %s za pisanje stanja: %s"
+msgstr "Nije moguće otvoriti modul datoteku %qs za pisanje pri %C: %s"
 
 #: fortran/module.cc:6510
-#, fuzzy, gcc-internal-format
-#| msgid "Failed to open file %s for writing state: %s"
+#, gcc-internal-format
 msgid "Error writing module file %qs for writing: %s"
-msgstr "Nisam uspio otvoriti datoteku %s za pisanje stanja: %s"
+msgstr "Greška pri zapisivanju modul datoteke %qs za pisanje: %s"
 
 #: fortran/module.cc:6521
-#, fuzzy, gcc-internal-format
-#| msgid "Cannot open source file %s\n"
+#, gcc-internal-format
 msgid "Cannot delete module file %qs: %s"
-msgstr "Ne mogu otvoriti datoteku koda %s\n"
+msgstr "Nije moguće izbrisati modul datoteku %qs: %s"
 
 #: fortran/module.cc:6524
-#, fuzzy, gcc-internal-format
-#| msgid "Cannot open source file %s\n"
+#, gcc-internal-format
 msgid "Cannot rename module file %qs to %qs: %s"
-msgstr "Ne mogu otvoriti datoteku koda %s\n"
+msgstr "Nije moguće preimenovati modul datoteku %qs u %qs: %s"
 
 #: fortran/module.cc:6530
-#, fuzzy, gcc-internal-format
-#| msgid "could not write to temporary file %s"
+#, gcc-internal-format
 msgid "Cannot delete temporary module file %qs: %s"
-msgstr "ne mogu pisati u privremenu datoteku %s"
+msgstr "Nije moguće izbrisati privremenu modul datoteku %qs: %s"
 
 #: fortran/module.cc:6587
 #, gcc-internal-format
@@ -69661,10 +69382,9 @@ msgid "IEEE_ARITHMETIC module at %C"
 msgstr ""
 
 #: fortran/module.cc:7347
-#, fuzzy, gcc-internal-format
-#| msgid "Failed to open file %s for writing state: %s"
+#, gcc-internal-format
 msgid "Cannot open module file %qs for reading at %C: %s"
-msgstr "Nisam uspio otvoriti datoteku %s za pisanje stanja: %s"
+msgstr "Nije moguće otvoriti modul datoteku %qs za čitanje pri %C: %s"
 
 #: fortran/module.cc:7350
 #, gcc-internal-format
@@ -69697,10 +69417,9 @@ msgid "Cannot USE a module that is currently built"
 msgstr ""
 
 #: fortran/openmp.cc:68 fortran/openmp.cc:6028
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Unexpected type..."
+#, gcc-internal-format, gfc-internal-format
 msgid "Unexpected junk at %C"
-msgstr "Neočekivana vrsta..."
+msgstr "Neočekivano smeće pri %C"
 
 #: fortran/openmp.cc:349
 #, gcc-internal-format, gfc-internal-format
@@ -69794,16 +69513,14 @@ msgid "Duplicated %qs clause at %L"
 msgstr ""
 
 #: fortran/openmp.cc:1402
-#, fuzzy, gcc-internal-format
-#| msgid "expected %<,%> or %<)%>"
+#, gcc-internal-format
 msgid "Expected %<(%> after %qs at %C"
-msgstr "očekujem %<,%> ili %<)%>"
+msgstr "Očekivano je %<(%> iza %qs pri %C"
 
 #: fortran/openmp.cc:1409
-#, fuzzy, gcc-internal-format
-#| msgid "invalid expression as operand"
+#, gcc-internal-format
 msgid "Invalid expression after %<%s(%> at %C"
-msgstr "neispravni izraz kao operand"
+msgstr "Nevaljani izraz iza %<%s(%> pri %C"
 
 #: fortran/openmp.cc:1471
 #, gcc-internal-format, gfc-internal-format
@@ -69811,10 +69528,9 @@ msgid "Clause expected at %C after trailing comma"
 msgstr ""
 
 #: fortran/openmp.cc:1533
-#, fuzzy, gcc-internal-format
-#| msgid "expected %<:%>"
+#, gcc-internal-format
 msgid "Expected %<:%> at %C"
-msgstr "očekujem %<:%>"
+msgstr "Očekivano je %<:%> pri %C"
 
 #: fortran/openmp.cc:1576
 #, gcc-internal-format, gfc-internal-format
@@ -70027,10 +69743,9 @@ msgid "Unexpected junk after $OMP CRITICAL statement at %C"
 msgstr ""
 
 #: fortran/openmp.cc:3765
-#, fuzzy, gcc-internal-format
-#| msgid "expected %<,%> or %<)%>"
+#, gcc-internal-format
 msgid "Expected %<( depobj )%> at %C"
-msgstr "očekujem %<,%> ili %<)%>"
+msgstr "Očekivano je %<( depobj )%> pri %C"
 
 #: fortran/openmp.cc:3781
 #, gcc-internal-format
@@ -70194,10 +69909,9 @@ msgstr ""
 
 #: fortran/openmp.cc:4734 fortran/openmp.cc:4879 fortran/openmp.cc:4978
 #: fortran/openmp.cc:5045
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "expected %<(%>"
+#, gcc-internal-format, gfc-internal-format
 msgid "expected '(' at %C"
-msgstr "očekujem %<(%>"
+msgstr "očekivano je '(' at %C"
 
 #: fortran/openmp.cc:4742
 #, gcc-internal-format, gfc-internal-format
@@ -70211,16 +69925,14 @@ msgstr ""
 
 #: fortran/openmp.cc:4756 fortran/openmp.cc:4869 fortran/openmp.cc:5026
 #: fortran/openmp.cc:5054
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "expected %<)%>"
+#, gcc-internal-format, gfc-internal-format
 msgid "expected ')' at %C"
-msgstr "očekujem %<)%>"
+msgstr "očekivano je ')' pri %C"
 
 #: fortran/openmp.cc:4762
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "expected %<:%>"
+#, gcc-internal-format, gfc-internal-format
 msgid "expected : at %C"
-msgstr "očekujem %<:%>"
+msgstr "očekivano je : pri %C"
 
 #: fortran/openmp.cc:4779
 #, gcc-internal-format, gfc-internal-format
@@ -70228,10 +69940,9 @@ msgid "property must be constant integer expression or string literal at %C"
 msgstr ""
 
 #: fortran/openmp.cc:4799
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "expected end of line"
+#, gcc-internal-format, gfc-internal-format
 msgid "expected identifier at %C"
-msgstr "očekujem kraj retka"
+msgstr "očekivano je identifikator pri %C"
 
 #: fortran/openmp.cc:4818
 #, gcc-internal-format, gfc-internal-format
@@ -70259,28 +69970,24 @@ msgid "expected 'construct', 'device', 'implementation' or 'user' at %C"
 msgstr ""
 
 #: fortran/openmp.cc:4934
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "expected %<=%>"
+#, gcc-internal-format, gfc-internal-format
 msgid "expected '=' at %C"
-msgstr "očekujem %<=%>"
+msgstr "očekivano je '=' pri %C"
 
 #: fortran/openmp.cc:4941
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "expected %<{%>"
+#, gcc-internal-format, gfc-internal-format
 msgid "expected '{' at %C"
-msgstr "očekujem %<{%>"
+msgstr "očekivano je '{' pri %C"
 
 #: fortran/openmp.cc:4956
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "expected %<}%>"
+#, gcc-internal-format, gfc-internal-format
 msgid "expected '}' at %C"
-msgstr "očekujem %<}%>"
+msgstr "očekivano je '}' pri %C"
 
 #: fortran/openmp.cc:4985
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "expected end of line"
+#, gcc-internal-format, gfc-internal-format
 msgid "expected name at %C"
-msgstr "očekujem kraj retka"
+msgstr "očekivano je ime pri %C"
 
 #: fortran/openmp.cc:4996
 #, gcc-internal-format, gfc-internal-format
@@ -71344,7 +71051,7 @@ msgstr ""
 #: fortran/options.cc:690
 #, gcc-internal-format
 msgid "%<-static-libgfortran%> is not supported in this configuration"
-msgstr ""
+msgstr "%<-static-libgfortran%> nije podržan u ovoj konfiguraciji"
 
 #: fortran/options.cc:713
 #, gcc-internal-format, gfc-internal-format
@@ -71447,10 +71154,9 @@ msgid "%s statement at %C cannot follow %s statement at %L"
 msgstr ""
 
 #: fortran/parse.cc:3063
-#, fuzzy, gcc-internal-format
-#| msgid "expected end of line"
+#, gcc-internal-format
 msgid "Unexpected end of file in %qs"
-msgstr "očekujem kraj retka"
+msgstr "Neočekivani kraj datoteke u %qs"
 
 #: fortran/parse.cc:3098
 #, gcc-internal-format
@@ -71573,16 +71279,14 @@ msgid "Noncoarray component %s at %L of type EVENT_TYPE or with subcomponent of 
 msgstr ""
 
 #: fortran/parse.cc:3426
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "failed to open %s"
+#, gcc-internal-format, gfc-internal-format
 msgid "failed to create map component '%s'"
-msgstr "nisam uspio otvoriti %s"
+msgstr ""
 
 #: fortran/parse.cc:3459
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "failed to open %s"
+#, gcc-internal-format, gfc-internal-format
 msgid "failed to create union component '%s'"
-msgstr "nisam uspio otvoriti %s"
+msgstr ""
 
 #: fortran/parse.cc:3514
 #, gcc-internal-format, gfc-internal-format
@@ -74939,10 +74643,9 @@ msgid "Include directory %qs: %s"
 msgstr ""
 
 #: fortran/scanner.cc:313
-#, fuzzy, gcc-internal-format
-#| msgid "ignoring nonexistent directory \"%s\"\n"
+#, gcc-internal-format
 msgid "Nonexistent include directory %qs"
-msgstr "zanemarujem nepostojeći direktorij „%s”\n"
+msgstr "nepostojeći „include“ direktorij „%qs”"
 
 #: fortran/scanner.cc:318
 #, gcc-internal-format
@@ -75020,22 +74723,19 @@ msgid "File %qs is being included recursively"
 msgstr ""
 
 #: fortran/scanner.cc:2563
-#, fuzzy, gcc-internal-format
-#| msgid "Cannot open source file %s\n"
+#, gcc-internal-format
 msgid "Cannot open file %qs"
-msgstr "Ne mogu otvoriti datoteku koda %s\n"
+msgstr "Nije moguće otvoriti datoteku %qs"
 
 #: fortran/scanner.cc:2573
-#, fuzzy, gcc-internal-format
-#| msgid "Cannot open source file %s\n"
+#, gcc-internal-format
 msgid "Cannot open included file %qs"
-msgstr "Ne mogu otvoriti datoteku koda %s\n"
+msgstr "Nije moguće otvoriti „included“ datoteku %qs"
 
 #: fortran/scanner.cc:2575
-#, fuzzy, gcc-internal-format
-#| msgid "Cannot open source file %s\n"
+#, gcc-internal-format
 msgid "Cannot open pre-included file %qs"
-msgstr "Ne mogu otvoriti datoteku koda %s\n"
+msgstr "Nije moguće otvoriti „pre-included“ datoteku %qs"
 
 #: fortran/scanner.cc:2583 fortran/scanner.cc:2585
 #, gcc-internal-format
@@ -75416,7 +75116,7 @@ msgstr ""
 #: fortran/symbol.cc:200
 #, gcc-internal-format, gfc-internal-format
 msgid "Cannot specify IMPLICIT at %C after IMPLICIT NONE"
-msgstr ""
+msgstr "Ne možete specificirati IMPLICIT pri %C iza IMPLICIT NONE"
 
 #: fortran/symbol.cc:210
 #, gcc-internal-format
@@ -75795,10 +75495,9 @@ msgid "Symbol %qs is used before it is typed at %L"
 msgstr ""
 
 #: fortran/target-memory.cc:137
-#, fuzzy, gcc-internal-format
-#| msgid "invalid expression as operand"
+#, gcc-internal-format
 msgid "Invalid expression in gfc_element_size."
-msgstr "neispravni izraz kao operand"
+msgstr "Nevaljani izraz u „gfc_element_size“."
 
 #: fortran/target-memory.cc:361
 #, gcc-internal-format
@@ -76075,16 +75774,14 @@ msgid "optional class parameter"
 msgstr ""
 
 #: fortran/trans-openmp.cc:3388
-#, fuzzy, gcc-internal-format
-#| msgid "invalid expression as operand"
+#, gcc-internal-format
 msgid "unhandled expression type"
-msgstr "neispravni izraz kao operand"
+msgstr "neobrađena vrsta izraza"
 
 #: fortran/trans-openmp.cc:3542
-#, fuzzy, gcc-internal-format
-#| msgid "invalid expression as operand"
+#, gcc-internal-format
 msgid "unhandled expression"
-msgstr "neispravni izraz kao operand"
+msgstr "neobrađeni izraz"
 
 #: fortran/trans-openmp.cc:7248
 #, gcc-internal-format
@@ -76122,10 +75819,9 @@ msgid "The base procedure at %L must have an explicit interface"
 msgstr ""
 
 #: fortran/trans-openmp.cc:7665
-#, fuzzy, gcc-internal-format
-#| msgid "[cannot find %s]"
+#, gcc-internal-format
 msgid "Cannot find symbol %qs"
-msgstr "[ne mogu naći %s]"
+msgstr "Nije moguće naći simbol %qs"
 
 #: fortran/trans-openmp.cc:7676
 #, gcc-internal-format
@@ -76238,10 +75934,9 @@ msgid "invalid embedcfg: not a JSON object"
 msgstr ""
 
 #: go/gofrontend/embed.cc:285
-#, fuzzy, gcc-internal-format
-#| msgid "invalid expression as operand"
+#, gcc-internal-format
 msgid "invalid embedcfg: missing Patterns"
-msgstr "neispravni izraz kao operand"
+msgstr "nevaljani embedcfg: nedostaje Patterns"
 
 #: go/gofrontend/embed.cc:290
 #, gcc-internal-format
@@ -76279,16 +75974,14 @@ msgid "empty file"
 msgstr ""
 
 #: go/gofrontend/embed.cc:391 go/gofrontend/embed.cc:520
-#, fuzzy, gcc-internal-format
-#| msgid "expected %<;%>"
+#, gcc-internal-format
 msgid "expected %<\"%>"
-msgstr "očekujem %<;%>"
+msgstr "očekivan je %<\"%>"
 
 #: go/gofrontend/embed.cc:474
-#, fuzzy, gcc-internal-format
-#| msgid "expected %<,%> or %<)%>"
+#, gcc-internal-format
 msgid "expected %<,%> or %<]%>"
-msgstr "očekujem %<,%> ili %<)%>"
+msgstr "očekivano je %<,%> ili %<]%>"
 
 #: go/gofrontend/embed.cc:506
 #, gcc-internal-format
@@ -76307,22 +76000,19 @@ msgid "invalid hex digit"
 msgstr ""
 
 #: go/gofrontend/embed.cc:604
-#, fuzzy, gcc-internal-format
-#| msgid "unrecognizable insn:"
+#, gcc-internal-format
 msgid "unrecognized string escape"
-msgstr "neprepoznati insn:"
+msgstr "neprepoznata maska (escape) stringa"
 
 #: go/gofrontend/embed.cc:625
-#, fuzzy, gcc-internal-format
-#| msgid "expected end of line"
+#, gcc-internal-format
 msgid "extraneous data at end of file"
-msgstr "očekujem kraj retka"
+msgstr "dodatni čudni podaci na kraju datoteke"
 
 #: go/gofrontend/embed.cc:645
-#, fuzzy, gcc-internal-format
-#| msgid "expected %<;%>"
+#, gcc-internal-format
 msgid "unexpected EOF"
-msgstr "očekujem %<;%>"
+msgstr "neočekivani EOF"
 
 #: jit/dummy-frontend.cc:207 lto/lto-lang.cc:310
 #, gcc-internal-format
@@ -76415,10 +76105,9 @@ msgid "Level not found, use none, slim, blocks, vops."
 msgstr ""
 
 #: lto/lto-dump.cc:273
-#, fuzzy, gcc-internal-format
-#| msgid "%s:no functions found\n"
+#, gcc-internal-format
 msgid "Function not found."
-msgstr "%s:nisu pronađene funkcije\n"
+msgstr "Funkcija nije pronađena."
 
 #: lto/lto-dump.cc:350 lto/lto-dump.cc:360
 #, gcc-internal-format
@@ -76461,10 +76150,9 @@ msgid "min partition size cannot be greater than max partition size"
 msgstr ""
 
 #: lto/lto-symtab.cc:169
-#, fuzzy, gcc-internal-format
-#| msgid "%s terminated with signal %d [%s]"
+#, gcc-internal-format
 msgid "%qD is defined with tls model %s"
-msgstr "%s prekinut signalom %d [%s]"
+msgstr "%qD je definiran s TLS modelom %s"
 
 #: lto/lto-symtab.cc:171
 #, gcc-internal-format, gfc-internal-format
@@ -76537,10 +76225,9 @@ msgid "%<lto_obj_file_open()%> failed"
 msgstr ""
 
 #: lto/lto.cc:199
-#, fuzzy, gcc-internal-format
-#| msgid "pex_init failed"
+#, gcc-internal-format
 msgid "waitpid failed"
-msgstr "pex_init nije uspio"
+msgstr "waitpid neuspješan"
 
 #: lto/lto.cc:202
 #, gcc-internal-format
@@ -77284,10 +76971,9 @@ msgid "cannot find interface declaration for %qE, superclass of %qE"
 msgstr ""
 
 #: objc/objc-act.cc:7001
-#, fuzzy, gcc-internal-format
-#| msgid "function body not available"
+#, gcc-internal-format
 msgid "class %qE is not available"
-msgstr "tijelo funkcije nije dostupno"
+msgstr "klasa %qE nije dostupna"
 
 #: objc/objc-act.cc:7034
 #, gcc-internal-format
