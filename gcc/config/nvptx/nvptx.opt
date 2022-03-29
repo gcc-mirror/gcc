@@ -60,6 +60,57 @@ march=
 Target RejectNegative Joined Alias(misa=)
 Alias:
 
+march-map=sm_30
+Target RejectNegative Alias(misa=,sm_30)
+
+march-map=sm_32
+Target RejectNegative Alias(misa=,sm_30)
+
+march-map=sm_35
+Target RejectNegative Alias(misa=,sm_35)
+
+march-map=sm_37
+Target RejectNegative Alias(misa=,sm_35)
+
+march-map=sm_50
+Target RejectNegative Alias(misa=,sm_35)
+
+march-map=sm_52
+Target RejectNegative Alias(misa=,sm_35)
+
+march-map=sm_53
+Target RejectNegative Alias(misa=,sm_53)
+
+march-map=sm_60
+Target RejectNegative Alias(misa=,sm_53)
+
+march-map=sm_61
+Target RejectNegative Alias(misa=,sm_53)
+
+march-map=sm_62
+Target RejectNegative Alias(misa=,sm_53)
+
+march-map=sm_70
+Target RejectNegative Alias(misa=,sm_70)
+
+march-map=sm_72
+Target RejectNegative Alias(misa=,sm_70)
+
+march-map=sm_75
+Target RejectNegative Alias(misa=,sm_75)
+
+march-map=sm_80
+Target RejectNegative Alias(misa=,sm_80)
+
+march-map=sm_86
+Target RejectNegative Alias(misa=,sm_80)
+
+march-map=sm_87
+Target RejectNegative Alias(misa=,sm_80)
+
+march-map=sm_90
+Target RejectNegative Alias(misa=,sm_80)
+
 Enum
 Name(ptx_version) Type(int)
 Known PTX ISA versions (for use with the -mptx= option):
