@@ -27540,18 +27540,31 @@ These options are defined for Nvidia PTX:
 Ignored, but preserved for backward compatibility.  Only 64-bit ABI is
 supported.
 
-@item -misa=@var{ISA-string}
+@item -march=@var{architecture-string}
 @opindex march
-Generate code for given the specified PTX ISA (e.g.@: @samp{sm_35}).  ISA
-strings must be lower-case.  Valid ISA strings include @samp{sm_30} and
-@samp{sm_35}.  The default ISA is sm_35.
+Generate code for the specified PTX ISA target architecture
+(e.g.@: @samp{sm_35}).  Valid architecture strings are @samp{sm_30},
+@samp{sm_35}, @samp{sm_53}, @samp{sm_70}, @samp{sm_75} and
+@samp{sm_80}.  The default target architecture is sm_30.
+
+@item -misa=@var{architecture-string}
+@opindex misa
+Alias of @option{-march=}.
+
+@item -march-map=@var{architecture-string}
+@opindex march
+Select the closest available @option{-march=} value that is not more
+capable.  For instance, for @option{-march-map=sm_50} select
+@option{-march=sm_35}, and for @option{-march-map=sm_53} select
+@option{-march=sm_53}.
 
 @item -mptx=@var{version-string}
 @opindex mptx
-Generate code for given the specified PTX version (e.g.@: @samp{7.0}).
+Generate code for the specified PTX ISA version (e.g.@: @samp{7.0}).
 Valid version strings include @samp{3.1}, @samp{6.0}, @samp{6.3}, and
-@samp{7.0}.  The default PTX version is 6.0, unless a higher minimal
-version is required for specified PTX ISA via option @option{-misa=}.
+@samp{7.0}.  The default PTX ISA version is 6.0, unless a higher
+version is required for specified PTX ISA target architecture via
+option @option{-march=}.
 
 @item -mmainkernel
 @opindex mmainkernel
