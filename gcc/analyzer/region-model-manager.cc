@@ -1770,6 +1770,13 @@ dump_untracked_region (const decl_region *decl_reg)
   tree decl = decl_reg->get_decl ();
   if (TREE_CODE (decl) != VAR_DECL)
     return;
+  /* For now, don't emit the status of decls in the constant pool, to avoid
+     differences in DejaGnu test results between targets that use these vs
+     those that don't.
+     (Eventually these decls should probably be untracked and we should test
+     for that, but that's not stage 4 material).  */
+  if (DECL_IN_CONSTANT_POOL (decl))
+    return;
   warning_at (DECL_SOURCE_LOCATION (decl), 0,
 	      "track %qD: %s",
 	      decl, (decl_reg->tracked_p () ? "yes" : "no"));
