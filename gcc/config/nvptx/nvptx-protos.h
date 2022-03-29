@@ -44,6 +44,7 @@ extern void nvptx_cpu_cpp_builtins (void);
 extern void nvptx_register_pragmas (void);
 extern unsigned int nvptx_data_alignment (const_tree, unsigned int);
 extern void nvptx_asm_output_def_from_decls (FILE *, tree, tree);
+extern unsigned int ptx_version_to_number (enum ptx_version, bool);
 
 #ifdef RTX_CODE
 extern void nvptx_expand_oacc_fork (unsigned);
