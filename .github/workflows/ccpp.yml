@@ -85,7 +85,7 @@ jobs:
               exit 0; \
             fi
 
-  build-and-check-older-gcc:
+  build-and-check-gcc-48:
 
     runs-on: ubuntu-18.04
     steps:
@@ -126,3 +126,26 @@ jobs:
       shell: bash
       run: |
            make -C gccrs-build -j $(nproc)
+
+    - name: Run Tests
+      run: |
+           cd gccrs-build; \
+           make check-rust
+
+    - name: Archive check-rust results
+      uses: actions/upload-artifact@v2
+      with:
+        name: check-rust-logs-4.8
+        path: |
+          gccrs-build/gcc/testsuite/rust/
+
+    - name: Check regressions
+      run: |
+           cd gccrs-build; \
+           if grep -e "unexpected" -e "unresolved" gcc/testsuite/rust/rust.sum;\
+           then \
+              echo "some tests are not correct"; \
+              exit 1; \
+            else \
+              exit 0; \
+            fi
