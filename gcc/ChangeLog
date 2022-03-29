@@ -1,3 +1,31 @@
+2022-03-28  H.J. Lu  <hjl.tools@gmail.com>
+
+	Backported from master:
+	2022-03-27  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/105068
+	* config/i386/sse.md (*ssse3_pshufbv8qi3): Replace "Yv" with
+	"Yw".
+
+2022-03-28  Kito Cheng  <kito.cheng@sifive.com>
+
+	Backported from master:
+	2021-11-09  Kito Cheng  <kito.cheng@sifive.com>
+
+	PR target/102957
+	* common/config/riscv/riscv-common.c (multi_letter_subset_rank): Remove
+	assertion for Z*-ext.
+
+2022-03-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/99754
+	* config/i386/emmintrin.h (_mm_loadu_si32): Put loaded value into
+	first 	rather than last element of the vector, use __m32_u to do
+	a really unaligned load, use just 0 instead of (int)0.
+	(_mm_loadu_si16): Put loaded value into first rather than last
+	element of the vector, use __m16_u to do a really unaligned load,
+	use just 0 instead of (short)0.
+
 2022-03-26  H.J. Lu  <hjl.tools@gmail.com>
 
 	Backported from master:

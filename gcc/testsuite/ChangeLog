@@ -1,3 +1,54 @@
+2022-03-28  Jason Merrill  <jason@redhat.com>
+
+	PR c++/104107
+	PR c++/95036
+	* g++.dg/cpp0x/alias-decl-ttp2.C: New test.
+	* g++.dg/cpp1z/ttp2.C: New test.
+
+2022-03-28  Jason Merrill  <jason@redhat.com>
+
+	PR c++/99445
+	PR c++/103769
+	* g++.dg/cpp0x/variadic-alias5.C: New test.
+
+2022-03-28  Jason Merrill  <jason@redhat.com>
+
+	PR c++/104847
+	* g++.dg/abi/mangle-union1.C: New test.
+
+2022-03-28  Jason Merrill  <jason@redhat.com>
+
+	PR c++/102045
+	* g++.dg/cpp1z/aggr-base12.C: New test.
+
+2022-03-28  Jason Merrill  <jason@redhat.com>
+
+	PR c++/103968
+	* g++.dg/cpp0x/alias-decl-mem1.C: New test.
+
+2022-03-28  Jason Merrill  <jason@redhat.com>
+
+	PR c++/102123
+	* g++.dg/cpp1z/class-deduction110.C: New test.
+
+2022-03-28  Jason Merrill  <jason@redhat.com>
+
+	PR c++/103291
+	* g++.dg/ext/visibility/visibility-local-extern1.C: New test.
+
+2022-03-28  Kito Cheng  <kito.cheng@sifive.com>
+
+	Backported from master:
+	2021-11-09  Kito Cheng  <kito.cheng@sifive.com>
+
+	* gcc.target/riscv/pr102957.c: New.
+
+2022-03-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/99754
+	* gcc.target/i386/pr99754-1.c: New test.
+	* gcc.target/i386/pr99754-2.c: New test.
+
 2022-03-26  H.J. Lu  <hjl.tools@gmail.com>
 
 	Backported from master:
