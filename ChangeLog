@@ -1,3 +1,8 @@
+2022-03-28  Tom Tromey  <tromey@adacore.com>
+
+	* configure.ac: Remove --with-mpfr-dir and --with-gmp-dir.
+	* configure: Rebuild.
+
 2022-03-24  Bill Schmidt  <bill.schmidt@gmail.com>
 
 	* MAINTAINERS: Change my information.

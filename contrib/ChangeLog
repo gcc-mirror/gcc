@@ -1,3 +1,11 @@
+2022-03-28  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_commit.py: Match trailing dot literally.
+
+2022-03-28  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_commit.py: Make the parsing stricter.
+
 2022-03-26  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc-changelog/git_update_version.py: Add

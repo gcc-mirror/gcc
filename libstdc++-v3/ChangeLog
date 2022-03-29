@@ -1,3 +1,14 @@
+2022-03-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/20_util/optional/monadic/and_then.cc: Fix typo.
+	* testsuite/20_util/optional/monadic/transform.cc: Likewise.
+	* testsuite/22_locale/codecvt/always_noconv/char/1.cc: Likewise.
+	* testsuite/22_locale/codecvt/encoding/char/1.cc: Likewise.
+	* testsuite/22_locale/codecvt/in/char/1.cc: Likewise.
+	* testsuite/22_locale/codecvt/max_length/char/1.cc: Likewise.
+	* testsuite/22_locale/codecvt/out/char/1.cc: Likewise.
+	* testsuite/22_locale/codecvt/unshift/char/1.cc: Likewise.
+
 2022-03-27  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/doxygen/user.cfg.in: Add new header.

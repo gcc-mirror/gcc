@@ -1,3 +1,76 @@
+2022-03-28  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/105067
+	* g++.dg/cpp2a/concepts-err4.C: New test.
+
+2022-03-28  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/105064
+	* g++.dg/cpp2a/concepts-friend9.C: New test.
+
+2022-03-28  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105003
+	PR c++/104008
+	PR c++/102869
+	* g++.dg/cpp0x/variadic-alias6.C: New test.
+	* g++.dg/cpp0x/variadic-alias7.C: New test.
+
+2022-03-28  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/104308
+	* gcc.dg/analyzer/pr104308.c: New test.
+	* gcc.dg/uninit-40.c (foo): Update expression in expected message.
+
+2022-03-28  Jason Merrill  <jason@redhat.com>
+
+	PR c++/102071
+	* g++.dg/cpp1z/aligned-new9.C: New test.
+
+2022-03-28  Jason Merrill  <jason@redhat.com>
+
+	PR c++/103291
+	* g++.dg/ext/visibility/visibility-local-extern1.C: New test.
+
+2022-03-28  Jason Merrill  <jason@redhat.com>
+
+	PR c++/102123
+	* g++.dg/cpp1z/class-deduction110.C: New test.
+
+2022-03-28  Jason Merrill  <jason@redhat.com>
+
+	PR c++/103968
+	* g++.dg/cpp0x/alias-decl-mem1.C: New test.
+
+2022-03-28  Jason Merrill  <jason@redhat.com>
+
+	PR c++/103943
+	* g++.dg/cpp1z/class-deduction109.C: New test.
+
+2022-03-28  Jason Merrill  <jason@redhat.com>
+
+	PR c++/102045
+	* g++.dg/cpp1z/aggr-base12.C: New test.
+
+2022-03-28  Jason Merrill  <jason@redhat.com>
+
+	PR c++/104847
+	* g++.dg/abi/mangle-union1.C: New test.
+
+2022-03-28  Jason Merrill  <jason@redhat.com>
+
+	PR c++/99445
+	PR c++/103769
+	* g++.dg/cpp0x/variadic-alias5.C: New test.
+
+2022-03-28  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr105066.c: New test.
+
+2022-03-28  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/torture/pr100786.c: Add dg-require alias.
+
 2022-03-27  H.J. Lu  <hjl.tools@gmail.com>
 
 	PR target/105068

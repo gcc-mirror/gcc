@@ -1,3 +1,61 @@
+2022-03-28  Indu Bhagat  <indu.bhagat@oracle.com>
+
+	* ctfout.cc (ctf_preprocess): Use ctfc_get_num_ctf_vars instead.
+	(output_ctf_vars): Likewise.
+
+2022-03-28  Jason Merrill  <jason@redhat.com>
+
+	PR c++/59426
+	* doc/extend.texi: Refer to __is_trivial instead of __is_pod.
+
+2022-03-28  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/105068
+	* config/i386/sse.md (*ssse3_pshufbv8qi3): Also replace "Yv" with
+	"Yw" in clobber.
+
+2022-03-28  Tom de Vries  <tdevries@suse.de>
+
+	PR target/104818
+	* config/nvptx/gen-opt.sh (ptx_isa): Improve help text.
+	* config/nvptx/nvptx-gen.opt: Regenerate.
+	* config/nvptx/nvptx.opt (misa, mptx, ptx_version): Improve help text.
+	* config/nvptx/t-nvptx (s-nvptx-gen-opt): Add missing dependency on
+	gen-opt.sh.
+
+2022-03-28  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/104308
+	* gimple-fold.cc (gimple_fold_builtin_memory_op): When optimizing
+	to loads then stores, set the location of the new load stmt.
+
+2022-03-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/105070
+	* tree-switch-conversion.h
+	(bit_test_cluster::hoist_edge_and_branch_if_true): Add location
+	argument.
+	* tree-switch-conversion.cc
+	(bit_test_cluster::hoist_edge_and_branch_if_true): Annotate
+	cond with location.
+	(bit_test_cluster::emit): Annotate all generated expressions
+	with location.
+
+2022-03-28  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* config/aarch64/aarch64-cores.def: Update Neoverse N2 core entry.
+
+2022-03-28  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/105066
+	* config/i386/sse.md (vec_set<mode>_0): Change attr "isa" of
+	alternative 4 from sse4_noavx to noavx.
+
+2022-03-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/105056
+	* tree-predcom.cc (component::component): Initialize also comp_step.
+
 2022-03-27  H.J. Lu  <hjl.tools@gmail.com>
 
 	PR target/105068

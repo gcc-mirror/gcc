@@ -1,3 +1,77 @@
+2022-03-28  Jason Merrill  <jason@redhat.com>
+
+	* pt.cc (determine_specialization): Add comment.
+
+2022-03-28  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/105067
+	* pt.cc (finish_concept_definition): Check that a concept is
+	declared with exactly one template parameter list.
+
+2022-03-28  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/105064
+	* constraint.cc (maybe_substitute_reqs_for): Don't assume
+	DECL_TEMPLATE_INFO is available.
+
+2022-03-28  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105003
+	PR c++/104008
+	PR c++/102869
+	* pt.cc (complex_alias_template_r): walk_tree callback,	replacing
+	uses_all_template_parms_r, complex_pack_expansion_r.
+	(complex_alias_template_p): Adjust.
+	* tree.cc (strip_typedefs): Revert r12-7710 change.
+
+2022-03-28  Jason Merrill  <jason@redhat.com>
+
+	PR c++/102071
+	* init.cc (build_new_1): Include cookie in alignment.  Omit
+	constexpr wrapper from alloc_call.
+
+2022-03-28  Jason Merrill  <jason@redhat.com>
+
+	PR c++/103291
+	* name-lookup.cc (push_local_extern_decl_alias): Call
+	determine_visibility.
+
+2022-03-28  Jason Merrill  <jason@redhat.com>
+
+	PR c++/102123
+	* pt.cc (tsubst_copy): Use make_unbound_class_template for rewriting
+	a type template reference.
+
+2022-03-28  Jason Merrill  <jason@redhat.com>
+
+	PR c++/103968
+	* pt.cc (value_dependent_expression_p): Check
+	has_value_dependent_address for conversion to reference.
+
+2022-03-28  Jason Merrill  <jason@redhat.com>
+
+	PR c++/103943
+	* pt.cc (tsubst_qualified_id): Handle getting SCOPE_REF from
+	tsubst_baselink.
+	(instantiation_dependent_scope_ref_p): Check dependent_scope_p.
+
+2022-03-28  Jason Merrill  <jason@redhat.com>
+
+	PR c++/102045
+	* call.cc (make_base_init_ok): Call make_used.
+
+2022-03-28  Jason Merrill  <jason@redhat.com>
+
+	PR c++/104847
+	* mangle.cc (write_expression): Don't write a union designator when
+	undigested.
+
+2022-03-28  Jason Merrill  <jason@redhat.com>
+
+	PR c++/99445
+	PR c++/103769
+	* tree.cc (strip_typedefs): Use build_distinct_type_copy.
+
 2022-03-26  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/105050

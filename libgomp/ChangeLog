@@ -1,3 +1,9 @@
+2022-03-28  Tom de Vries  <tdevries@suse.de>
+
+	* plugin/configfrag.ac: Use /$(libexecdir:\$(exec_prefix)/%=%)/
+	instead of /libexec/.
+	* configure: Regenerate.
+
 2022-03-25  Tom de Vries  <tdevries@suse.de>
 
 	PR libgomp/105042
