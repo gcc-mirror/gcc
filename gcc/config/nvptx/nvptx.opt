@@ -25,7 +25,8 @@
 
 m64
 Target RejectNegative Mask(ABI64)
-Generate code for a 64-bit ABI.
+Ignored, but preserved for backward compatibility.  Only 64-bit ABI is
+supported.
 
 mmainkernel
 Target RejectNegative
