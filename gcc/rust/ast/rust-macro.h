@@ -469,7 +469,7 @@ class MacroRulesDefinition : public MacroItem
   static ASTFragment dummy_builtin (Location, MacroInvocData &)
   {
     gcc_unreachable ();
-    return ASTFragment::create_empty ();
+    return ASTFragment::create_error ();
   }
 
   /* NOTE: in rustc, macro definitions are considered (and parsed as) a type

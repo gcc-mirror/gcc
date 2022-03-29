@@ -141,7 +141,7 @@ MacroBuiltin::assert (Location invoc_locus, AST::MacroInvocData &invoc)
 {
   rust_debug ("assert!() called");
 
-  return AST::ASTFragment::create_empty ();
+  return AST::ASTFragment::create_error ();
 }
 
 AST::ASTFragment
