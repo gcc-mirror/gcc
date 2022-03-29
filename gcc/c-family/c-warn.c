@@ -1300,7 +1300,7 @@ conversion_warning (location_t loc, tree type, tree expr, tree result)
 	tree op1 = TREE_OPERAND (expr, 1);
 	tree op2 = TREE_OPERAND (expr, 2);
 
-	return (conversion_warning (loc, type, op1, result)
+	return ((op1 && conversion_warning (loc, type, op1, result))
 		|| conversion_warning (loc, type, op2, result));
       }
 
