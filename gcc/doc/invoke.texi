@@ -27547,6 +27547,10 @@ Generate code for the specified PTX ISA target architecture
 @samp{sm_35}, @samp{sm_53}, @samp{sm_70}, @samp{sm_75} and
 @samp{sm_80}.  The default target architecture is sm_30.
 
+This option sets the value of the preprocessor macro
+@code{__PTX_SM__}; for instance, for @samp{sm_35}, it has the value
+@samp{350}.
+
 @item -misa=@var{architecture-string}
 @opindex misa
 Alias of @option{-march=}.
@@ -27565,6 +27569,11 @@ Valid version strings include @samp{3.1}, @samp{6.0}, @samp{6.3}, and
 @samp{7.0}.  The default PTX ISA version is 6.0, unless a higher
 version is required for specified PTX ISA target architecture via
 option @option{-march=}.
+
+This option sets the values of the preprocessor macros
+@code{__PTX_ISA_VERSION_MAJOR__} and @code{__PTX_ISA_VERSION_MINOR__};
+for instance, for @samp{3.1} the macros have the values @samp{3} and
+@samp{1}, respectively.
 
 @item -mmainkernel
 @opindex mmainkernel
