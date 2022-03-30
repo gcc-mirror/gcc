@@ -184,9 +184,11 @@ package body Freeze is
    --  the designated type. Otherwise freezing the access type does not freeze
    --  the designated type.
 
-   function Should_Freeze_Type (Typ : Entity_Id; E : Entity_Id) return Boolean;
-   --  If Typ is in the current scope or in an instantiation, then return True.
-   --  ???Expression functions (represented by E) shouldn't freeze types in
+   function Should_Freeze_Type
+     (Typ : Entity_Id; E : Entity_Id; N : Node_Id) return Boolean;
+   --  If Typ is in the current scope, then return True.
+   --  N is a node whose source location corresponds to the freeze point.
+   --  ??? Expression functions (represented by E) shouldn't freeze types in
    --  general, but our current expansion and freezing model requires an early
    --  freezing when the dispatch table is needed or when building an aggregate
    --  with a subtype of Typ, so return True also in this case.
@@ -198,7 +200,7 @@ package body Freeze is
    ------------------------
 
    function Should_Freeze_Type
-     (Typ : Entity_Id; E : Entity_Id) return Boolean
+     (Typ : Entity_Id; E : Entity_Id; N : Node_Id) return Boolean
    is
       function Is_Dispatching_Call_Or_Aggregate
         (N : Node_Id) return Traverse_Result;
@@ -244,7 +246,8 @@ package body Freeze is
 
    begin
       return Within_Scope (Typ, Current_Scope)
-        or else In_Instance
+        or else (Nkind (N) = N_Subprogram_Renaming_Declaration
+                 and then Present (Corresponding_Formal_Spec (N)))
         or else (Present (Decl)
                  and then Nkind (Decl) = N_Expression_Function
                  and then Need_Dispatch_Table (Expression (Decl)) = Abandon);
@@ -4606,7 +4609,7 @@ package body Freeze is
             end if;
 
             if not From_Limited_With (F_Type)
-              and then Should_Freeze_Type (F_Type, E)
+              and then Should_Freeze_Type (F_Type, E, N)
             then
                Freeze_And_Append (F_Type, N, Result);
             end if;
@@ -4786,7 +4789,7 @@ package body Freeze is
                Set_Etype (E, R_Type);
             end if;
 
-            if Should_Freeze_Type (R_Type, E) then
+            if Should_Freeze_Type (R_Type, E, N) then
                Freeze_And_Append (R_Type, N, Result);
             end if;
 
