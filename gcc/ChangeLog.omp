@@ -1,3 +1,8 @@
+2022-03-31  Abid Qadeer  <abidh@codesourcery.com>
+
+	* omp-low.cc (lower_omp_allocate): Move allocate declaration
+	inside loop.  Set it to false at the end of condition.
+
 2022-03-30  Andrew Stubbs  <ams@codesourcery.com>
 
 	* omp-builtins.def (BUILT_IN_GOMP_ENABLE_PINNED_MODE): New.

@@ -9310,13 +9310,13 @@ lower_omp_allocate (gimple_stmt_iterator *gsi_p, omp_context *ctx)
   int kind = gimple_omp_allocate_kind (st);
   gcc_assert (kind == GF_OMP_ALLOCATE_KIND_ALLOCATE
 	      || kind == GF_OMP_ALLOCATE_KIND_FREE);
-  bool allocate = (kind == GF_OMP_ALLOCATE_KIND_ALLOCATE);
 
   for (tree c = clauses; c; c = OMP_CLAUSE_CHAIN (c))
     {
       if (OMP_CLAUSE_CODE (c) != OMP_CLAUSE_ALLOCATOR)
 	continue;
 
+      bool allocate = (kind == GF_OMP_ALLOCATE_KIND_ALLOCATE);
       /* The allocate directives that appear in a target region must specify
 	 an allocator clause unless a requires directive with the
 	 dynamic_allocators clause is present in the same compilation unit.  */
@@ -9377,6 +9377,10 @@ lower_omp_allocate (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 		  gimple_call_set_lhs (g, gimple_call_lhs (gs));
 		  gimple_set_location (g, gimple_location (stmt));
 		  gsi_replace (&gsi, g, true);
+		  /* The malloc call has been replaced.  Now see if there is
+		     any free call due to deallocate statement and replace
+		     that too.  */
+		  allocate = false;
 		}
 	    }
 	  else
