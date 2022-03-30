@@ -735,6 +735,101 @@ gcov_profile_merge (struct gcov_info *tgt_profile, struct gcov_info *src_profile
   return tgt_profile;
 }
 
+/* Deserialize gcov_info objects and associated filenames from the file
+   specified by FILENAME to create a profile list.  When FILENAME is NULL, read
+   from stdin.  Return the profile list.  */
+
+struct gcov_info *
+deserialize_profiles (const char *filename)
+{
+  read_profile_dir_init ();
+
+  while (true)
+    {
+      unsigned version;
+      const char *filename_of_info;
+      struct gcov_info *obj_info;
+
+      if (!gcov_magic (gcov_read_unsigned (), GCOV_FILENAME_MAGIC))
+	{
+	  if (gcov_is_error () != 2)
+	    fnotice (stderr, "%s:not a gcfn stream\n", filename);
+	  break;
+	}
+
+      version = gcov_read_unsigned ();
+      if (version != GCOV_VERSION)
+	{
+	  fnotice (stderr, "%s:incorrect gcov version %d vs %d \n",
+		   filename, version, GCOV_VERSION);
+	  break;
+	}
+
+      filename_of_info = gcov_read_string ();
+      if (!filename_of_info)
+	{
+	  fnotice (stderr, "%s:no filename in gcfn stream\n",
+		   filename);
+	  break;
+	}
+
+      obj_info = read_gcda_file (filename);
+      if (!obj_info)
+	break;
+
+      obj_info->filename = filename_of_info;
+    }
+
+  return gcov_info_head;
+}
+
+/* For each profile of the list specified by SRC_PROFILE, read the GCDA file of
+   the profile.  If a GCDA file exists, add the profile to a list.  Return the
+   profile list.  */
+
+struct gcov_info *
+get_target_profiles_for_merge (struct gcov_info *src_profile)
+{
+  struct gcov_info *gi_ptr;
+
+  read_profile_dir_init ();
+
+  for (gi_ptr = src_profile; gi_ptr; gi_ptr = gi_ptr->next)
+    if (gcov_open (gi_ptr->filename, 1))
+      {
+	(void)read_gcda_file (gi_ptr->filename);
+	gcov_close ();
+      }
+
+  return gcov_info_head;
+}
+
+/* Deserialize gcov_info objects and associated filenames from the file
+   specified by FILENAME to create a source profile list.  When FILENAME is
+   NULL, read from stdin.  Use the filenames of the source profile list to get
+   a target profile list.  Merge the source profile list into the target
+   profile list using weights W1 and W2.  Return the list of merged gcov_info
+   objects.  Return NULL if the list is empty.  */
+
+struct gcov_info *
+gcov_profile_merge_stream (const char *filename, int w1, int w2)
+{
+  struct gcov_info *tgt_profile;
+  struct gcov_info *src_profile;
+
+  if (!gcov_open (filename, 1))
+    {
+      fnotice (stderr, "%s:cannot open\n", filename);
+      return NULL;
+    }
+
+  src_profile = deserialize_profiles (filename ? filename : "<stdin>");
+  gcov_close ();
+  tgt_profile = get_target_profiles_for_merge (src_profile);
+
+  return gcov_profile_merge (tgt_profile, src_profile, w1, w2);
+}
+
 typedef gcov_type (*counter_op_fn) (gcov_type, void*, void*);
 
 /* Performing FN upon arc counters.  */
