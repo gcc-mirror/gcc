@@ -4632,6 +4632,7 @@ case "${target}" in
 		case "${with_isa_spec}" in
 		""|default|2.2)
 			tm_defines="${tm_defines} TARGET_DEFAULT_ISA_SPEC=ISA_SPEC_CLASS_2P2"
+			with_isa_spec=2.2
 			;;
 		20191213 | 201912)
 			tm_defines="${tm_defines} TARGET_DEFAULT_ISA_SPEC=ISA_SPEC_CLASS_20191213"
