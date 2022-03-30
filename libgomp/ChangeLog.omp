@@ -1,3 +1,8 @@
+2022-03-31  Abid Qadeer  <abidh@codesourcery.com>
+
+	* testsuite/libgomp.fortran/allocate-2.f90: Remove commented lines.
+	Add deallocate.  Remove omp_atk_pool_size trait.
+
 2022-03-29  Andrew Stubbs  <ams@codesourcery.com>
 
 	* plugin/plugin-nvptx.c (GOMP_OFFLOAD_supported_features): Allow
