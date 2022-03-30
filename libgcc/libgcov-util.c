@@ -268,17 +268,10 @@ read_gcda_file (const char *filename)
     k_ctrs_mask[i] = 0;
   k_ctrs_types = 0;
 
-  if (!gcov_open (filename, 1))
-    {
-      fnotice (stderr, "%s:cannot open\n", filename);
-      return NULL;
-    }
-
   /* Read magic.  */
   if (!gcov_magic (gcov_read_unsigned (), GCOV_DATA_MAGIC))
     {
       fnotice (stderr, "%s:not a gcov data file\n", filename);
-      gcov_close ();
       return NULL;
     }
 
@@ -287,7 +280,6 @@ read_gcda_file (const char *filename)
   if (version != GCOV_VERSION)
     {
       fnotice (stderr, "%s:incorrect gcov version %d vs %d \n", filename, version, GCOV_VERSION);
-      gcov_close ();
       return NULL;
     }
 
@@ -379,7 +371,6 @@ read_gcda_file (const char *filename)
     }
 
   read_gcda_finalize (obj_info);
-  gcov_close ();
 
   return obj_info;
 }
@@ -412,7 +403,14 @@ ftw_read_file (const char *filename,
   if (verbose)
     fnotice (stderr, "reading file: %s\n", filename);
 
+  if (!gcov_open (filename, 1))
+    {
+      fnotice (stderr, "%s:cannot open\n", filename);
+      return 0;
+    }
+
   (void)read_gcda_file (xstrdup (filename));
+  gcov_close ();
 
   return 0;
 }
