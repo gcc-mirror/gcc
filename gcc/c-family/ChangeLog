@@ -1,3 +1,25 @@
+2022-03-29  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/101515
+	* c-pretty-print.c (c_fold_indirect_ref_for_warn): For C++ don't
+	return COMPONENT_REFs with FIELD_DECLs whose containing scope can't
+	be printed.
+
+2022-03-29  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-03-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/104711
+	* c-opts.c (c_common_post_options): Don't enable
+	-Wshift-negative-value from -Wextra for C++20 or later.
+	* c-ubsan.c (ubsan_instrument_shift): Adjust comments.
+	* c-warn.c (maybe_warn_shift_overflow): Use TYPE_OVERFLOW_WRAPS
+	instead of TYPE_UNSIGNED.
+
 2022-02-19  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:

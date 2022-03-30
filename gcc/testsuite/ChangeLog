@@ -1,3 +1,235 @@
+2022-03-29  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-03-26  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/builtin-convertvector-3.c: New test.
+	* g++.dg/cpp2a/bit-cast15.C: New test.
+
+2022-03-29  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-03-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/105035
+	* g++.dg/warn/Wduplicated-cond2.C: New test.
+
+2022-03-29  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-03-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/104994
+	* g++.dg/cpp23/constexpr-nonlit7.C: New test.
+
+2022-03-29  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/104971
+	* gcc.target/i386/pr104971.c: New test.
+
+2022-03-29  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/101515
+	* g++.dg/warn/pr101515.C: New test.
+
+2022-03-29  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-03-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/99578
+	PR middle-end/100680
+	PR tree-optimization/100834
+	* gcc.dg/tree-ssa/pr99578-1.c: New test.
+	* gcc.dg/pr99578-1.c: New test.
+	* gcc.dg/pr99578-2.c: New test.
+	* gcc.dg/pr99578-3.c: New test.
+	* gcc.dg/pr100680.c: New test.
+	* gcc.dg/pr100834.c: New test.
+
+2022-03-29  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-03-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/104568
+	* g++.dg/cpp2a/constexpr-new22.C: New test.
+
+2022-03-29  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-03-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/104910
+	* gcc.dg/pr104910.c: New test.
+
+2022-03-29  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-03-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/104814
+	* gcc.c-torture/execute/pr104814.c: New test.
+
+2022-03-29  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-03-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/104711
+	* c-c++-common/Wshift-negative-value-1.c: Remove
+	dg-additional-options, instead in target selectors of each diagnostic
+	check for exact C++ versions where it should be diagnosed.
+	* c-c++-common/Wshift-negative-value-2.c: Likewise.
+	* c-c++-common/Wshift-negative-value-3.c: Likewise.
+	* c-c++-common/Wshift-negative-value-4.c: Likewise.
+	* c-c++-common/Wshift-negative-value-7.c: New test.
+	* c-c++-common/Wshift-negative-value-8.c: New test.
+	* c-c++-common/Wshift-negative-value-9.c: New test.
+	* c-c++-common/Wshift-negative-value-10.c: New test.
+	* c-c++-common/Wshift-overflow-1.c: Remove
+	dg-additional-options, instead in target selectors of each diagnostic
+	check for exact C++ versions where it should be diagnosed.
+	* c-c++-common/Wshift-overflow-2.c: Likewise.
+	* c-c++-common/Wshift-overflow-5.c: Likewise.
+	* c-c++-common/Wshift-overflow-6.c: Likewise.
+	* c-c++-common/Wshift-overflow-7.c: Likewise.
+	* c-c++-common/Wshift-overflow-8.c: New test.
+	* c-c++-common/Wshift-overflow-9.c: New test.
+	* c-c++-common/Wshift-overflow-10.c: New test.
+	* c-c++-common/Wshift-overflow-11.c: New test.
+	* c-c++-common/Wshift-overflow-12.c: New test.
+
+2022-03-29  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-03-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/104806
+	* g++.dg/spellcheck-pr104806.C: New test.
+
+2022-03-29  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-03-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/104775
+	* gcc.target/s390/pr104775.c: New test.
+
+2022-03-29  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-02-25  Jakub Jelinek  <jakub@redhat.com>
+		    Marc Glisse  <marc.glisse@inria.fr>
+
+	PR tree-optimization/104675
+	* gcc.dg/pr104675-3.c : New test.
+
+2022-03-29  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-02-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/104681
+	* g++.dg/opt/pr104681.C: New test.
+
+2022-03-29  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-02-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/104674
+	* gcc.target/i386/pr104674.c: New test.
+
+2022-03-29  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-02-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/104675
+	* gcc.dg/pr104675-1.c: New test.
+	* gcc.dg/pr104675-2.c: New test.
+
+2022-03-29  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-02-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/104601
+	* g++.dg/torture/pr104601.C: New test.
+
+2022-03-29  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-02-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/102656
+	* g++.dg/asan/pr102656.C: New test.
+
+2022-03-29  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2022-03-22  Marek Polacek  <polacek@redhat.com>
+
+	PR c/82283
+	PR c/84685
+	* gcc.dg/Wmissing-field-initializers-1.c: New test.
+	* gcc.dg/Wmissing-field-initializers-2.c: New test.
+	* gcc.dg/Wmissing-field-initializers-3.c: New test.
+	* gcc.dg/Wmissing-field-initializers-4.c: New test.
+	* gcc.dg/Wmissing-field-initializers-5.c: New test.
+
+2022-03-29  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2022-03-25  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/104944
+	* g++.dg/cpp0x/alignas20.C: New test.
+
+2022-03-29  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2022-03-24  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/104284
+	* g++.dg/cpp1y/constexpr-104284-1.C: New test.
+	* g++.dg/cpp1y/constexpr-104284-2.C: New test.
+	* g++.dg/cpp1y/constexpr-104284-3.C: New test.
+	* g++.dg/cpp1y/constexpr-104284-4.C: New test.
+
+2022-03-29  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2022-03-08  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/104108
+	* g++.dg/cpp0x/alias-decl-74.C: New test.
+
+2022-03-29  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2022-03-24  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/102990
+	* g++.dg/cpp0x/nsdmi-template22.C: New test.
+	* g++.dg/cpp0x/nsdmi-template23.C: New test.
+
+2022-03-29  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2021-07-14  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/101371
+	* g++.dg/cpp1y/constexpr-101371-2.C: New test.
+	* g++.dg/cpp1y/constexpr-101371.C: New test.
+
 2022-03-28  Jason Merrill  <jason@redhat.com>
 
 	PR c++/104107

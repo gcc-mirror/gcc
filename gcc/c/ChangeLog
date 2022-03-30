@@ -1,3 +1,26 @@
+2022-03-29  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-03-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/104711
+	* c-fold.c (c_fully_fold_internal): Don't emit
+	-Wshift-negative-value warning if TYPE_OVERFLOW_WRAPS.
+	* c-typeck.c (build_binary_op): Likewise.
+
+2022-03-29  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2022-03-22  Marek Polacek  <polacek@redhat.com>
+
+	PR c/82283
+	PR c/84685
+	* c-typeck.c (struct initializer_stack): Add 'designated' member.
+	(start_init): Set it.
+	(finish_init): Restore constructor_designated.
+	(push_init_level): Set constructor_designated to the value of
+	constructor_designated in the upper constructor_stack.
+
 2022-01-24  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:

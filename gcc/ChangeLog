@@ -1,3 +1,142 @@
+2022-03-29  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-03-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/105035
+	* fold-const.c (operand_equal_p) <case COMPONENT_REF>: If either
+	field0 or field1 is not a FIELD_DECL, return false.
+
+2022-03-29  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/104971
+	* config/i386/i386-expand.c
+	(ix86_expand_builtin) <case IX86_BUILTIN_READ_FLAGS>: If ignore,
+	don't push/pop anything and just return const0_rtx.
+
+2022-03-29  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-03-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/99578
+	PR middle-end/100680
+	PR tree-optimization/100834
+	* params.opt (--param=min-pagesize=): New parameter.
+	* builtins.c (compute_objsize_r) <case INTEGER_CST>: Use maximum
+	object size instead of zero for pointer constants equal or larger
+	than min-pagesize.
+
+2022-03-29  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-03-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/104910
+	* config/aarch64/aarch64.c (aarch64_load_symref_appropriately): Copy
+	imm rtx.
+
+2022-03-29  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-03-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/104814
+	* ifcvt.c (find_if_case_1, find_if_case_2): Punt if test_bb doesn't
+	end with onlyjump_p.  Assume BB_END (test_bb) is always non-NULL.
+
+2022-03-29  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-03-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/104711
+	* doc/invoke.texi (-Wextra): Document that -Wshift-negative-value
+	is enabled by it only for C++11 to C++17 rather than for C++03 or
+	later.
+	(-Wshift-negative-value): Similarly (except here we stated
+	that it is enabled for C++11 or later).
+
+2022-03-29  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-03-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/104775
+	* config/s390/s390.md (*cmp_and_trap_unsigned_int<mode>): Use
+	S constraint instead of T in the last alternative.
+
+2022-03-29  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-03-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/104589
+	* cfgrtl.c (fixup_reorder_chain): Use loc_equal instead of direct
+	INSN_LOCATION comparison with goto_locus.
+
+2022-03-29  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-02-25  Jakub Jelinek  <jakub@redhat.com>
+		    Marc Glisse  <marc.glisse@inria.fr>
+
+	PR tree-optimization/104675
+	* match.pd (t * 2U / 2 -> t & (~0 / 2), t / 2U * 2 -> t & ~1):
+	Restrict simplifications to INTEGRAL_TYPE_P.
+
+2022-03-29  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-02-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/104681
+	* config/rs6000/vector.md (movmisalign<mode>): Use rs6000_emit_move.
+
+2022-03-29  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-02-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/104674
+	* config/i386/i386.h (enum ix86_stack_slot): Add SLOT_FLOATxFDI_387.
+	* config/i386/i386.md (splitter to floatdi<mode>2_i387_with_xmm): Use
+	SLOT_FLOATxFDI_387 rather than SLOT_TEMP.
+
+2022-03-29  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-02-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/104675
+	* match.pd (-A - 1 -> ~A, -1 - A -> ~A): Don't simplify for
+	COMPLEX_TYPE.
+
+2022-03-29  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-02-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/104601
+	* tree-ssa-sccvn.c (visit_reference_op_call): For calls with
+	non-SSA_NAME lhs value number vdef to itself instead of e.g. the
+	vuse value number.
+
+2022-03-29  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-02-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/102656
+	* asan.c (instrument_derefs): If inner is a RESULT_DECL and access is
+	known to be within bounds, treat it like automatic variables.
+	If instrumenting access and inner is {VAR,PARM,RESULT}_DECL from
+	current function and !TREE_STATIC which is not TREE_ADDRESSABLE, mark
+	it addressable.
+
 2022-03-28  H.J. Lu  <hjl.tools@gmail.com>
 
 	Backported from master:
