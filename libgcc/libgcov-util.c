@@ -301,6 +301,9 @@ read_gcda_file (const char *filename)
   num_fn_info = 0;
   curr_fn_info = 0;
 
+  /* Prepend to global gcov info list.  */
+  obj_info->next = gcov_info_head;
+  gcov_info_head = obj_info;
 
   /* Read stamp.  */
   obj_info->stamp = gcov_read_unsigned ();
@@ -392,7 +395,6 @@ ftw_read_file (const char *filename,
 {
   int filename_len;
   int suffix_len;
-  struct gcov_info *obj_info;
 
   /* Only read regular files.  */
   if (type != FTW_F)
@@ -410,12 +412,7 @@ ftw_read_file (const char *filename,
   if (verbose)
     fnotice (stderr, "reading file: %s\n", filename);
 
-  obj_info = read_gcda_file (xstrdup (filename));
-  if (!obj_info)
-    return 0;
-
-  obj_info->next = gcov_info_head;
-  gcov_info_head = obj_info;
+  (void)read_gcda_file (xstrdup (filename));
 
   return 0;
 }
