@@ -284,7 +284,10 @@ protected:
       return;
 
     if (!receiver->can_eq (impl_block_ty, false))
-      return;
+      {
+	if (!impl_block_ty->can_eq (receiver, false))
+	  return;
+      }
 
     // lets visit the impl_item
     item->accept_vis (*this);
