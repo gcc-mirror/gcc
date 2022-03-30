@@ -6274,10 +6274,17 @@ mips_callee_copies (cumulative_args_t, const function_arg_info &arg)
 
    For n32 & n64, a structure with one or two fields is returned in
    floating-point registers as long as every field has a floating-point
-   type.  */
+   type.
+
+   The C++ FE used to remove zero-width bit-fields in GCC 11 and earlier.
+   To make a proper diagnostic, this function will set
+   HAS_CXX_ZERO_WIDTH_BF to true once a C++ zero-width bit-field shows up,
+   and then ignore it. Then the caller can determine if this zero-width
+   bit-field will make a difference and emit a -Wpsabi inform.  */
 
 static int
-mips_fpr_return_fields (const_tree valtype, tree *fields)
+mips_fpr_return_fields (const_tree valtype, tree *fields,
+			bool *has_cxx_zero_width_bf)
 {
   tree field;
   int i;
@@ -6293,6 +6300,12 @@ mips_fpr_return_fields (const_tree valtype, tree *fields)
     {
       if (TREE_CODE (field) != FIELD_DECL)
 	continue;
+
+      if (DECL_FIELD_CXX_ZERO_WIDTH_BIT_FIELD (field))
+	{
+	  *has_cxx_zero_width_bf = true;
+	  continue;
+	}
 
       if (!SCALAR_FLOAT_TYPE_P (TREE_TYPE (field)))
 	return 0;
@@ -6318,12 +6331,14 @@ mips_fpr_return_fields (const_tree valtype, tree *fields)
 static bool
 mips_return_in_msb (const_tree valtype)
 {
-  tree fields[2];
+  if (!TARGET_NEWABI || !TARGET_BIG_ENDIAN || !AGGREGATE_TYPE_P (valtype))
+    return false;
 
-  return (TARGET_NEWABI
-	  && TARGET_BIG_ENDIAN
-	  && AGGREGATE_TYPE_P (valtype)
-	  && mips_fpr_return_fields (valtype, fields) == 0);
+  tree fields[2];
+  bool has_cxx_zero_width_bf = false;
+  return (mips_fpr_return_fields (valtype, fields,
+				  &has_cxx_zero_width_bf) == 0
+	  || has_cxx_zero_width_bf);
 }
 
 /* Return true if the function return value MODE will get returned in a
@@ -6418,8 +6433,35 @@ mips_function_value_1 (const_tree valtype, const_tree fn_decl_or_type,
 	 return values, promote the mode here too.  */
       mode = promote_function_mode (valtype, mode, &unsigned_p, func, 1);
 
+      bool has_cxx_zero_width_bf = false;
+      int use_fpr = mips_fpr_return_fields (valtype, fields,
+					    &has_cxx_zero_width_bf);
+      if (TARGET_HARD_FLOAT
+	  && warn_psabi
+	  && has_cxx_zero_width_bf
+	  && use_fpr != 0)
+	{
+	  static unsigned last_reported_type_uid;
+	  unsigned uid = TYPE_UID (TYPE_MAIN_VARIANT (valtype));
+	  if (uid != last_reported_type_uid)
+	    {
+	      static const char *url
+		= CHANGES_ROOT_URL
+		  "gcc-12/changes.html#zero_width_bitfields";
+	      inform (input_location,
+		      "the ABI for returning a value containing "
+		      "zero-width bit-fields but otherwise an aggregate "
+		      "with only one or two floating-point fields was "
+		      "changed in GCC %{12.1%}", url);
+	      last_reported_type_uid = uid;
+	    }
+	}
+
+      if (has_cxx_zero_width_bf)
+	use_fpr = 0;
+
       /* Handle structures whose fields are returned in $f0/$f2.  */
-      switch (mips_fpr_return_fields (valtype, fields))
+      switch (use_fpr)
 	{
 	case 1:
 	  return mips_return_fpr_single (mode,
