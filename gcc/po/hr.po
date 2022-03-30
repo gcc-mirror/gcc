@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: gcc-12.1-b20220213\n"
 "Report-Msgid-Bugs-To: https://gcc.gnu.org/bugs/\n"
 "POT-Creation-Date: 2022-02-11 23:10+0000\n"
-"PO-Revision-Date: 2022-03-28 15:16-0700\n"
+"PO-Revision-Date: 2022-03-29 18:03-0700\n"
 "Last-Translator: Božidar Putanec <bozidarp@yahoo.com>\n"
 "Language-Team: Croatian <lokalizacija@linux.hr>\n"
 "Language: hr\n"
@@ -18,7 +18,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
 "X-Bugs: Report translation errors to the Language-Team address.\n"
-"X-Generator: Poedit 3.0.1\n"
+"X-Generator: Lokalize 21.12.3\n"
 "X-Poedit-Basepath: ../sources/gcc-12-20220213\n"
 "X-Poedit-Bookmarks: 13750,0,-1,-1,-1,-1,-1,-1,-1,-1\n"
 "X-Poedit-SearchPath-0: .\n"
@@ -81,7 +81,7 @@ msgstr ""
 
 #: cif-code.def:88
 msgid "call is considered never executed and code size would grow"
-msgstr "smatra se da poziv nikada nije izvršen i veličina koda će rasti"
+msgstr "smatra se da poziv nikada nije izvršen i veličina kȏda će rasti"
 
 #: cif-code.def:92
 msgid "function not declared inline and code size would grow"
@@ -16454,11 +16454,11 @@ msgstr ""
 
 #: final.cc:1113
 msgid "negative insn length"
-msgstr "negativna duljina instrukcije"
+msgstr "negativna insn duljina"
 
 #: final.cc:2861
 msgid "could not split insn"
-msgstr "nije moguće razdijeliti instrukciju"
+msgstr "nije moguće razdijeliti insn"
 
 #: final.cc:3228
 msgid "invalid 'asm': "
@@ -16487,7 +16487,7 @@ msgstr "broj operanda je izvan granica"
 #: final.cc:3604
 #, c-format
 msgid "invalid %%-code"
-msgstr "neispravni %%-kod"
+msgstr "neispravni %%-kȏd"
 
 #: final.cc:3638
 #, c-format
@@ -16573,7 +16573,7 @@ msgstr "Opcije:\n"
 
 #: gcc.cc:3759
 msgid "  -pass-exit-codes         Exit with highest error code from a phase.\n"
-msgstr "  -pass-exit-codes         iziđe s najvišim kodom greške u fazi\n"
+msgstr "  -pass-exit-codes         iziđe s najvišim kȏdom greške u fazi\n"
 
 #: gcc.cc:3760
 msgid "  --help                   Display this information.\n"
@@ -16581,19 +16581,19 @@ msgstr "  --help                   ova prikazana pomoć\n"
 
 #: gcc.cc:3761
 msgid "  --target-help            Display target specific command line options.\n"
-msgstr "  --target-help            specifične opcije naredbenog retka za cilj\n"
+msgstr "  --target-help            pokaže opcije naredbenog retka specifične za cilj\n"
 
 #: gcc.cc:3762
 msgid "  --help={common|optimizers|params|target|warnings|[^]{joined|separate|undocumented}}[,...].\n"
-msgstr ""
+msgstr "  --help={common|optimizers|params|target|warnings|[^]{joined|separate|undocumented}}[,...].\n"
 
 #: gcc.cc:3763
 msgid "                           Display specific types of command line options.\n"
-msgstr "                           Pokaže specifične vrste opcija naredbenog retka.\n"
+msgstr "                           pokaže specifične vrste opcija naredbenog retka.\n"
 
 #: gcc.cc:3765
 msgid "  (Use '-v --help' to display command line options of sub-processes).\n"
-msgstr "  (Koristite „-v --help“ za prikaz opcija potprocesa).\n"
+msgstr "  (Koristite „-v --help“ za ispis opcija naredbenog retka za potprocese).\n"
 
 #: gcc.cc:3766
 msgid "  --version                Display compiler version information.\n"
@@ -16601,7 +16601,7 @@ msgstr "  --version                informacije o inačici kompajlera\n"
 
 #: gcc.cc:3767
 msgid "  -dumpspecs               Display all of the built in spec strings.\n"
-msgstr "  -dumpspecs               svi ugrađeni specifikacijski stringovi\n"
+msgstr "  -dumpspecs               pokaže sve ugrađene specifikacijske stringove\n"
 
 #: gcc.cc:3768
 msgid "  -dumpversion             Display the version of the compiler.\n"
@@ -16609,19 +16609,19 @@ msgstr "  -dumpversion             inačica kompajlera\n"
 
 #: gcc.cc:3769
 msgid "  -dumpmachine             Display the compiler's target processor.\n"
-msgstr "  -dumpmachine             ciljni procesor kompajlera\n"
+msgstr "  -dumpmachine             pokaže ciljani procesor kompajlera\n"
 
 #: gcc.cc:3770
 msgid "  -foffload=<targets>      Specify offloading targets.\n"
-msgstr "  -foffload=<targets>      spcificira offloading targets (ciljeve)\n"
+msgstr "  -foffload=<targets>      specificira offloading <targets> ciljeve\n"
 
 #: gcc.cc:3771
 msgid "  -print-search-dirs       Display the directories in the compiler's search path.\n"
-msgstr "  -print-search-dirs       direktoriji na stazi pretraživanja kompajlera\n"
+msgstr "  -print-search-dirs       pokaže direktorije na stazi pretraživanja kompajlera\n"
 
 #: gcc.cc:3772
 msgid "  -print-libgcc-file-name  Display the name of the compiler's companion library.\n"
-msgstr "  -print-libgcc-file-name  ime popratne biblioteke kompajlera\n"
+msgstr "  -print-libgcc-file-name  pokaže ime popratne biblioteke kompajlera\n"
 
 #: gcc.cc:3773
 msgid "  -print-file-name=<lib>   Display the full path to library <lib>.\n"
@@ -16636,65 +16636,66 @@ msgid ""
 "  -print-multiarch         Display the target's normalized GNU triplet, used as\n"
 "                           a component in the library path.\n"
 msgstr ""
-"  -print-multiarch         ciljni normalizirani GNU triplet, koji se koristi\n"
-"                             kao komponenta staze do biblioteke\n"
-"\n"
+"  -print-multiarch         pokaže ciljani normalizirani GNU triplet koji se\n"
+"                             koristi kao komponenta staze do biblioteke\n"
 
 #: gcc.cc:3778
 msgid "  -print-multi-directory   Display the root directory for versions of libgcc.\n"
-msgstr "  -print-multi-directory   root direktorij za inačice od libgcc\n"
+msgstr "  -print-multi-directory   ispiše root direktorij za inačice od libgcc\n"
 
 #: gcc.cc:3779
 msgid ""
 "  -print-multi-lib         Display the mapping between command line options and\n"
 "                           multiple library search directories.\n"
 msgstr ""
-"  -print-multi-lib         mapiranje između opcija naredbenog retka i\n"
+"  -print-multi-lib         pokaže mapiranje između opcija naredbenog retka i\n"
 "                             višestrukih direktorija za traženje biblioteka\n"
 
 #: gcc.cc:3782
 msgid "  -print-multi-os-directory Display the relative path to OS libraries.\n"
-msgstr "  -print-multi-os-directory relativne staze do OS biblioteka\n"
+msgstr "  -print-multi-os-directory pokaže relativne staze do OS biblioteka\n"
 
 #: gcc.cc:3783
 msgid "  -print-sysroot           Display the target libraries directory.\n"
-msgstr "  -print-sysroot           direktorij ciljnih biblioteka\n"
+msgstr "  -print-sysroot           direktorij ciljanih biblioteka\n"
 
 #: gcc.cc:3784
 msgid "  -print-sysroot-headers-suffix Display the sysroot suffix used to find headers.\n"
-msgstr "  -print-sysroot-headers-suffix sysroot sufiks koji se koristi da nađe zaglavlja\n"
+msgstr ""
+"  -print-sysroot-headers-suffix pokaže sysroot sufiks koji se koristi\n"
+"                                  za traženje zaglavlja\n"
 
 #: gcc.cc:3785
 msgid "  -Wa,<options>            Pass comma-separated <options> on to the assembler.\n"
-msgstr "  -Wa,<options>            proslijedi zarezom odvojene <options> asembleru\n"
+msgstr "  -Wa,<options>            preda zarezom odvojene opcije <options> asembleru\n"
 
 #: gcc.cc:3786
 msgid "  -Wp,<options>            Pass comma-separated <options> on to the preprocessor.\n"
-msgstr "  -Wp,<options>            proslijedi zarezom odvojene <options> pretprocesoru\n"
+msgstr "  -Wp,<options>            preda zarezom odvojene opcije <options> pretprocesoru\n"
 
 #: gcc.cc:3787
 msgid "  -Wl,<options>            Pass comma-separated <options> on to the linker.\n"
-msgstr "  -Wl,<options>            proslijedi zarezom odvojene <options> linkeru\n"
+msgstr "  -Wl,<options>            preda zarezom odvojene opcije <options> linkeru\n"
 
 #: gcc.cc:3788
 msgid "  -Xassembler <arg>        Pass <arg> on to the assembler.\n"
-msgstr "  -Xassembler <arg>        proslijedi <arg> asembleru\n"
+msgstr "  -Xassembler <arg>        preda argumente <arg> asembleru\n"
 
 #: gcc.cc:3789
 msgid "  -Xpreprocessor <arg>     Pass <arg> on to the preprocessor.\n"
-msgstr "  -Xpreprocessor <arg>     proslijedi <arg> pretprocesoru\n"
+msgstr "  -Xpreprocessor <arg>     preda argumente <arg> pretprocesoru\n"
 
 #: gcc.cc:3790
 msgid "  -Xlinker <arg>           Pass <arg> on to the linker.\n"
-msgstr "  -Xlinker <arg>           proslijedi <arg> linkeru\n"
+msgstr "  -Xlinker <arg>           preda argumente <arg> linkeru\n"
 
 #: gcc.cc:3791
 msgid "  -save-temps              Do not delete intermediate files.\n"
-msgstr "  -save-temps              ne briše posredne datoteke\n"
+msgstr "  -save-temps              ne briše privremene datoteke\n"
 
 #: gcc.cc:3792
 msgid "  -save-temps=<arg>        Do not delete intermediate files.\n"
-msgstr "  -save-temps=<arg>        ne briše posredne datoteke\n"
+msgstr "  -save-temps=<arg>        ne briše privremene datoteke\n"
 
 #: gcc.cc:3793
 msgid ""
@@ -16706,15 +16707,15 @@ msgstr ""
 
 #: gcc.cc:3796
 msgid "  -pipe                    Use pipes rather than intermediate files.\n"
-msgstr "  -pipe                    koristi cijevi umjesto posrednih datoteka\n"
+msgstr "  -pipe                    koristi cijevi umjesto privremenih datoteka\n"
 
 #: gcc.cc:3797
 msgid "  -time                    Time the execution of each subprocess.\n"
-msgstr "  -time                    mjeri vrijem izvršavanja svakog potprocesa\n"
+msgstr "  -time                    mjeri vrijeme izvršavanja svakog potprocesa\n"
 
 #: gcc.cc:3798
 msgid "  -specs=<file>            Override built-in specs with the contents of <file>.\n"
-msgstr "  -specs=<file>            nadjača ugrađene specifikacije sa sadržajem od <file>\n"
+msgstr "  -specs=<file>            ugrađene specifikacije prepiše sadržajem od <file>\n"
 
 #: gcc.cc:3799
 msgid "  -std=<standard>          Assume that the input sources are for <standard>.\n"
@@ -16763,7 +16764,7 @@ msgid ""
 "  -pie                     Create a dynamically linked position independent\n"
 "                           executable.\n"
 msgstr ""
-"  -pie                     stvori dinamički linkanu (position independent)\n"
+"  -pie                     stvori dinamički linkanu poziciono neovisnu\n"
 "                             izvršnu datoteku\n"
 
 #: gcc.cc:3812
@@ -16777,6 +16778,10 @@ msgid ""
 "                           'none' means revert to the default behavior of\n"
 "                           guessing the language based on the file's extension.\n"
 msgstr ""
+"  -x <language>            Specificirajte jezik sljedećih ulaznih datoteka.\n"
+"                            Dopušteni jezici uključuju: c c++ asembler none\n"
+"                            „none“ znači povratak na zadano ponašanje pogađanja\n"
+"                            jezika na temelju ekstenzije datoteke.\n"
 
 #: gcc.cc:3820
 #, c-format
@@ -16789,7 +16794,7 @@ msgstr ""
 "\n"
 "Opcije koje započinju s -g, -f, -m, -O, -W, or --param se automatski proslijede\n"
 " raznim potprocesima pokrenutim s %s. Da bi proslijedili ostale opcije na te\n"
-" potprocese, morate koristiti -W<letter>.\n"
+" potprocese, morate koristiti opciju -W<letter>.\n"
 
 #: gcc.cc:6789
 #, c-format
@@ -16839,12 +16844,12 @@ msgstr "inačica drajvera %s %s izvršava gcc inačicu %s\n"
 #: gcc.cc:7657 gcc.cc:7867
 #, c-format
 msgid "The bug is not reproducible, so it is likely a hardware or OS problem.\n"
-msgstr ""
+msgstr "Greška se ne može reproducirati, pa je vjerojatno problem hardvera ili OS-a.\n"
 
 #: gcc.cc:7791
 #, c-format
 msgid "Preprocessed source stored into %s file, please attach this to your bugreport.\n"
-msgstr ""
+msgstr "Prethodno obrađeni izvorni kȏd spremljen je u datoteku %s, priložite ovo svom izvješću o greškama.\n"
 
 #: gcc.cc:8642
 #, c-format
@@ -16886,7 +16891,7 @@ msgid ""
 "warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n"
 "\n"
 msgstr ""
-"Ovo je slobodan softver; pogledajte kod za upute o kopiranju.  NEMA\n"
+"Ovo je slobodan softver; pogledajte kȏd za upute o kopiranju.  NEMA\n"
 "jamstava; čak ni za TRGOVINSKU PRIKLADNOST ili ODGOVARANJE ODREĐENOJ SVRSI.\n"
 "\n"
 
@@ -16955,7 +16960,7 @@ msgstr "    -w, --weight <w1,w2>                postavi skale (float point value
 #: gcov-tool.cc:194
 #, c-format
 msgid "Merge subcomand usage:"
-msgstr "Uporaba podnaredbe merge:"
+msgstr "Uporaba podnaredbe „merge“:"
 
 #: gcov-tool.cc:269
 #, c-format
@@ -16975,7 +16980,7 @@ msgstr "    -s, --scale <float ili simple-frac>  skalira profiliranje brojila\n"
 #: gcov-tool.cc:290
 #, c-format
 msgid "Rewrite subcommand usage:"
-msgstr "Uporaba podnaredbe rewrite:"
+msgstr "Uporaba podnaredbe „rewrite“:"
 
 #: gcov-tool.cc:329
 #, c-format
@@ -17005,27 +17010,29 @@ msgstr "    -f, --function                      ispiše informaciju razine funkc
 #: gcov-tool.cc:421
 #, c-format
 msgid "    -F, --fullname                      Print full filename\n"
-msgstr "    -F, --fullname                      ispiše potpuno ime datoteke\n"
+msgstr "    -F, --fullname                      ispiše puno ime datoteke\n"
 
 #: gcov-tool.cc:422
 #, c-format
 msgid "    -h, --hotonly                       Only print info for hot objects/functions\n"
 msgstr ""
+"    -h, --hotonly                       informacije ispiše samo vruće\n"
+"                                          objekte/funkcije\n"
 
 #: gcov-tool.cc:423
 #, c-format
 msgid "    -o, --object                        Print object level info\n"
-msgstr "    -o, --object                        ispiše informacije razine objekta\n"
+msgstr "    -o, --object                        ispiše informacije razinu objekta\n"
 
 #: gcov-tool.cc:424
 #, c-format
 msgid "    -t <float>, --hot_threshold <float> Set the threshold for hotness\n"
-msgstr ""
+msgstr "    -t <float>, --hot_threshold <float> postavite prag „vrućine“\n"
 
 #: gcov-tool.cc:444
 #, c-format
 msgid "Overlap subcomand usage:"
-msgstr "Uporaba podnaredbe overlap:"
+msgstr "Uporaba podnaredbe „overlap“:"
 
 #: gcov-tool.cc:510
 #, c-format
@@ -17086,7 +17093,7 @@ msgid ""
 "Print code coverage information.\n"
 "\n"
 msgstr ""
-"Pokaže podatke o pokrivenosti kȏda.\n"
+"Ispiše podatke o pokrivenosti kȏda.\n"
 "\n"
 
 #: gcov.cc:927
@@ -17186,17 +17193,17 @@ msgstr "  -q, --use-hotness-colors        oboji izlaz u perf-stilu za vruće ret
 #: gcov.cc:946
 #, c-format
 msgid "  -r, --relative-only             Only show data for relative sources\n"
-msgstr "  -r, --relative-only             pokaže podatke samo za relativne izvore\n"
+msgstr "  -r, --relative-only             pokaže samo podatke za relativne izvore\n"
 
 #: gcov.cc:947
 #, c-format
 msgid "  -s, --source-prefix DIR         Source prefix to elide\n"
-msgstr "  -s, --source-prefix DIR         izostavi prefiks izvora\n"
+msgstr "  -s, --source-prefix DIR         izostavi prefiks izvornog kȏda\n"
 
 #: gcov.cc:948
 #, c-format
 msgid "  -t, --stdout                    Output to stdout instead of a file\n"
-msgstr "  -n, --no-output                 ne proizvodi izlazne datoteke\n"
+msgstr "  -t, --stdout                    izlaz na stdout umjesto u datoteku\n"
 
 #: gcov.cc:949
 #, c-format
@@ -17285,7 +17292,7 @@ msgstr "%s:izvorni kȏd je noviji od datoteke s bilješkama „%s“\n"
 #: gcov.cc:1783
 #, c-format
 msgid "(the message is displayed only once per source file)\n"
-msgstr "(ova se poruka prikazuje samo jednom po izvornom kȏdu )\n"
+msgstr "(ova poruka se ispiše samo jedamput po izvornom kȏdu)\n"
 
 #: gcov.cc:1803
 #, c-format
@@ -17300,7 +17307,7 @@ msgstr "%s:nije gcov datoteka s bilješkama\n"
 #: gcov.cc:1824
 #, c-format
 msgid "%s:version '%.4s', prefer '%.4s'\n"
-msgstr "%s:inačica '%.4s', ali preferira se '%.4s'\n"
+msgstr "%s:inačica „%.4s“, ali preferira se „%.4s“\n"
 
 #: gcov.cc:1877
 #, c-format
@@ -17330,7 +17337,7 @@ msgstr "%s:nije gcov datoteka\n"
 #: gcov.cc:2040
 #, c-format
 msgid "%s:version '%.4s', prefer version '%.4s'\n"
-msgstr "%s:inačica '%.4s', preferira se '%.4s'\n"
+msgstr "%s:inačica „%.4s“, ali preferira se „%.4s“\n"
 
 #: gcov.cc:2047
 #, c-format
@@ -17385,7 +17392,7 @@ msgstr "%s „%s“\n"
 #: gcov.cc:2519
 #, c-format
 msgid "Branches executed:%s of %d\n"
-msgstr "Izvršene %s grana od %d\n"
+msgstr "Izvršeno %s grana od %d\n"
 
 #: gcov.cc:2523
 #, c-format
@@ -17415,12 +17422,12 @@ msgstr "%s:nema redaka za „%s”\n"
 #: gcov.cc:2874
 #, c-format
 msgid "call   %2d returned %s\n"
-msgstr "poziv   %2d vratio %s\n"
+msgstr "poziv   %2d vratio je %s\n"
 
 #: gcov.cc:2879
 #, c-format
 msgid "call   %2d never executed\n"
-msgstr "poziv   %2d nikada izvršen\n"
+msgstr "poziv   %2d nikada nije izvršen\n"
 
 #: gcov.cc:2884
 #, c-format
@@ -17430,7 +17437,7 @@ msgstr "grana %2d uzeta %s%s"
 #: gcov.cc:2889
 #, c-format
 msgid "branch %2d never executed"
-msgstr "grana %2d nikada izvršena"
+msgstr "grana %2d nikada nije izvršena"
 
 #: gcov.cc:2892
 #, c-format
@@ -17440,12 +17447,12 @@ msgstr " (BB %d)"
 #: gcov.cc:2899
 #, c-format
 msgid "unconditional %2d taken %s\n"
-msgstr ""
+msgstr "bezuvjetno %2d uzeto %s\n"
 
 #: gcov.cc:2902
 #, c-format
 msgid "unconditional %2d never executed\n"
-msgstr ""
+msgstr "bezuvjetno %2d nikada nije izvršeno\n"
 
 #: gcov.cc:3154
 #, c-format
@@ -17463,17 +17470,17 @@ msgstr "GCSE onemogućen"
 #: incpath.cc:77
 #, c-format
 msgid "ignoring duplicate directory \"%s\"\n"
-msgstr "zanemarujem direktorij duplikat „%s”\n"
+msgstr "ignoriramo duplikat direktorija „%s”\n"
 
 #: incpath.cc:80
 #, c-format
 msgid "  as it is a non-system directory that duplicates a system directory\n"
-msgstr "  jer nije direktorij sustava, a duplikat je direktorija sustava\n"
+msgstr "  jer nije direktorij sustava koji duplicira direktorij sustava\n"
 
 #: incpath.cc:84
 #, c-format
 msgid "ignoring nonexistent directory \"%s\"\n"
-msgstr "zanemarujem nepostojeći direktorij „%s”\n"
+msgstr "ignoriramo nepostojeći direktorij „%s”\n"
 
 #: incpath.cc:391
 #, c-format
@@ -17502,30 +17509,30 @@ msgstr "“"
 
 #: langhooks.cc:384
 msgid "At top level:"
-msgstr ""
+msgstr "Vrhovna razina:"
 
 #: langhooks.cc:400 cp/error.cc:3623
 #, c-format
 msgid "In member function %qs"
-msgstr ""
+msgstr "U funkciji člana %qs"
 
 #: langhooks.cc:404 cp/error.cc:3626
 #, c-format
 msgid "In function %qs"
-msgstr ""
+msgstr "U funkciji %qs"
 
 #: langhooks.cc:449 cp/error.cc:3576
 msgid "    inlined from %qs at %r%s:%d:%d%R"
-msgstr ""
+msgstr "    umetnuto od %qs pri %r%s:%d:%d%R"
 
 #: langhooks.cc:454 cp/error.cc:3581
 msgid "    inlined from %qs at %r%s:%d%R"
-msgstr ""
+msgstr "    umetnuto od %qs pri %r%s:%d%R"
 
 #: langhooks.cc:460 cp/error.cc:3587
 #, c-format
 msgid "    inlined from %qs"
-msgstr ""
+msgstr "    umetnuto od %qs"
 
 #: lra-assigns.cc:1837 reload1.cc:2073
 msgid "this is the insn:"
@@ -17533,44 +17540,44 @@ msgstr "ovo je insn:"
 
 #: lra-constraints.cc:3142
 msgid "unable to generate reloads for impossible constraints:"
-msgstr ""
+msgstr "nije moguće generirati ponovna učitavanja za nemoguća ograničenja:"
 
 #: lra-constraints.cc:4168 reload.cc:3841
 msgid "unable to generate reloads for:"
-msgstr ""
+msgstr "nije moguće generirati ponovno učitavanje za:"
 
 #. What to print when a switch has no documentation.
 #: opts.cc:313
 msgid "This option lacks documentation."
-msgstr ""
+msgstr "Ova opcija nije dokumentirana."
 
 #: opts.cc:314
 msgid "Uses of this option are diagnosed."
-msgstr ""
+msgstr "Upotreba ove opcije je dijagnosticirana."
 
 #: opts.cc:1577
 #, c-format
 msgid "Same as %s%s (or, in negated form, %s%s)."
-msgstr ""
+msgstr "Isto kao %s%s (ili, u negiranom obliku, %s%s)."
 
 #: opts.cc:1582
 #, c-format
 msgid "Same as %s%s."
-msgstr ""
+msgstr "Isto kao %s%s."
 
 #: opts.cc:1587
 #, c-format
 msgid "Same as %s."
-msgstr ""
+msgstr "Isto kao %s."
 
 #: opts.cc:1595
 #, c-format
 msgid "%s  Same as %s."
-msgstr ""
+msgstr "%s je identično s %s."
 
 #: opts.cc:1658
 msgid "[available in "
-msgstr ""
+msgstr "[dostupno u "
 
 #: opts.cc:1690
 msgid "[default]"
@@ -17579,7 +17586,7 @@ msgstr "[zadano]"
 #: opts.cc:1699
 #, c-format
 msgid "%llu bytes"
-msgstr ""
+msgstr "%llu bajta"
 
 #: opts.cc:1736
 msgid "[enabled]"
@@ -17623,7 +17630,7 @@ msgstr "Sljedeće opcije upravljaju porukama upozorenja kompajlera"
 
 #: opts.cc:1890
 msgid "The following options control optimizations"
-msgstr "Sljedeće opcije upravljaju s optimiranjem"
+msgstr "Sljedeće opcije upravljaju s optimizacijama"
 
 #: opts.cc:1893 opts.cc:1933
 msgid "The following options are language-independent"
@@ -17647,25 +17654,25 @@ msgstr "Sljedeće opcije nisu dokumentirane"
 
 #: opts.cc:1917
 msgid "The following options take separate arguments"
-msgstr "Sljedeće opcije primaju odvojene argumente"
+msgstr "Sljedeće opcije uzimaju odvojene argumente"
 
 #: opts.cc:1919
 msgid "The following options take joined arguments"
-msgstr "Sljedeće opcije primaju spojene argumente"
+msgstr "Sljedeće opcije uzimaju spojene argumente"
 
 #: opts.cc:1931
 msgid "The following options are language-related"
-msgstr "Sljedeće opcije su vezane uz jezik"
+msgstr "Sljedeće opcije se odnose na jezik"
 
 #: passes.cc:1832
 #, c-format
 msgid "during %s pass: %s\n"
-msgstr ""
+msgstr "tijekom %s prolaza: %s\n"
 
 #: passes.cc:1837
 #, c-format
 msgid "dump file: %s\n"
-msgstr ""
+msgstr "istovari datoteku: %s\n"
 
 #: plugin.cc:926
 msgid "Event"
@@ -17673,30 +17680,30 @@ msgstr "Događaj"
 
 #: plugin.cc:926
 msgid "Plugins"
-msgstr "Priključci"
+msgstr "Plugini"
 
 #: plugin.cc:958
 #, c-format
 msgid "*** WARNING *** there are active plugins, do not report this as a bug unless you can reproduce it without enabling any plugins.\n"
-msgstr "*** UPOZORENJE *** neki priključci su aktivni, nemojte prijavljivati kao grešku ako ju ne možete ponoviti bez omogućivanja priključaka.\n"
+msgstr "*** UPOZORENJE *** neki plugini su aktivni, nemojte prijaviti ovo kao grešku osim ako ju ne možete reproducirati bez omogućavanja plugina.\n"
 
 #: postreload-gcse.cc:1355
 msgid "using simple load CSE after register allocation"
-msgstr ""
+msgstr "Nakon mapiranja registra koristi se jednostavan CSE"
 
 #. It's the compiler's fault.
 #: reload1.cc:5994
 msgid "could not find a spill register"
-msgstr ""
+msgstr "nije pronađen registar prelijevanja"
 
 #. It's the compiler's fault.
 #: reload1.cc:7876
 msgid "VOIDmode on an output"
-msgstr ""
+msgstr "VOIDmode na izlazu"
 
 #: reload1.cc:8609
 msgid "failure trying to reload:"
-msgstr ""
+msgstr "ponovno učitavanje nije uspjelo:"
 
 #: rtl-error.cc:116
 msgid "unrecognizable insn:"
@@ -17748,30 +17755,30 @@ msgstr ""
 #: toplev.cc:619
 #, c-format
 msgid "%s%swarning: %s header version %s differs from library version %s.\n"
-msgstr ""
+msgstr "%s%supozorenje: %s inačica zaglavlja %s različita je od inačice biblioteke %s\n"
 
 #: toplev.cc:621
 #, c-format
 msgid "%s%sGGC heuristics: --param ggc-min-expand=%d --param ggc-min-heapsize=%d\n"
-msgstr ""
+msgstr "%s%sGGC heuristika: --param ggc-min-expand=%d --param ggc-min-heapsize=%d\n"
 
 #: tree-diagnostic-path.cc:257 tree-diagnostic.cc:290 c/c-decl.cc:6073
 #: c/c-typeck.cc:7894 cp/error.cc:1165 c-family/c-pretty-print.cc:424
 #, gcc-internal-format
 msgid "<anonymous>"
-msgstr ""
+msgstr "<anonymous>"
 
 #: c-family/c-format.cc:437
 msgid "format"
-msgstr ""
+msgstr "format"
 
 #: c-family/c-format.cc:438
 msgid "field width specifier"
-msgstr ""
+msgstr "specifikacija širine polja"
 
 #: c-family/c-format.cc:439
 msgid "field precision specifier"
-msgstr ""
+msgstr "specifikacija preciznosti polja"
 
 #: c-family/c-format.cc:558 c-family/c-format.cc:582
 #: config/i386/msformat-c.cc:45
@@ -17791,7 +17798,7 @@ msgstr ""
 #: c-family/c-format.cc:559 c-family/c-format.cc:583 c-family/c-format.cc:614
 #: config/i386/msformat-c.cc:46
 msgid "the '+' printf flag"
-msgstr ""
+msgstr " "
 
 #: c-family/c-format.cc:560 c-family/c-format.cc:584 c-family/c-format.cc:615
 #: c-family/c-format.cc:655 config/i386/msformat-c.cc:47
@@ -17845,33 +17852,33 @@ msgstr ""
 #: c-family/c-format.cc:656 c-family/c-format.cc:684 config/sol2-c.cc:43
 #: config/i386/msformat-c.cc:51 config/i386/msformat-c.cc:68
 msgid "field width"
-msgstr ""
+msgstr "širina polja"
 
 #: c-family/c-format.cc:565 c-family/c-format.cc:587 config/sol2-c.cc:43
 #: config/i386/msformat-c.cc:51
 msgid "field width in printf format"
-msgstr ""
+msgstr "širina polja u printf formatu"
 
 #: c-family/c-format.cc:566 c-family/c-format.cc:588 c-family/c-format.cc:617
 #: config/i386/msformat-c.cc:52
 msgid "precision"
-msgstr ""
+msgstr "preciznost"
 
 #: c-family/c-format.cc:566 c-family/c-format.cc:588 c-family/c-format.cc:617
 #: config/i386/msformat-c.cc:52
 msgid "precision in printf format"
-msgstr ""
+msgstr "preciznost u printf formatu"
 
 #: c-family/c-format.cc:567 c-family/c-format.cc:589 c-family/c-format.cc:618
 #: c-family/c-format.cc:634 c-family/c-format.cc:687 config/sol2-c.cc:44
 #: config/i386/msformat-c.cc:53 config/i386/msformat-c.cc:69
 msgid "length modifier"
-msgstr ""
+msgstr "modifikator dužine"
 
 #: c-family/c-format.cc:567 c-family/c-format.cc:589 c-family/c-format.cc:618
 #: config/sol2-c.cc:44 config/i386/msformat-c.cc:53
 msgid "length modifier in printf format"
-msgstr ""
+msgstr "modifikator dužine u prinf formatu"
 
 #: c-family/c-format.cc:616
 msgid "'q' flag"
@@ -17883,11 +17890,11 @@ msgstr ""
 
 #: c-family/c-format.cc:630 config/i386/msformat-c.cc:66
 msgid "assignment suppression"
-msgstr ""
+msgstr "ukidanje dodjele"
 
 #: c-family/c-format.cc:630 config/i386/msformat-c.cc:66
 msgid "the assignment suppression scanf feature"
-msgstr ""
+msgstr "ukidanje dodjele scanf značajke"
 
 #: c-family/c-format.cc:631 config/i386/msformat-c.cc:67
 msgid "'a' flag"
@@ -17979,7 +17986,7 @@ msgstr ""
 
 #: c-family/c-format.cc:678
 msgid "fill character in strfmon format"
-msgstr ""
+msgstr "znak za ispunjavanje i strfmon formatu"
 
 #: c-family/c-format.cc:679
 msgid "the '^' strfmon flag"
@@ -18011,7 +18018,7 @@ msgstr ""
 
 #: c-family/c-format.cc:684
 msgid "field width in strfmon format"
-msgstr ""
+msgstr "širina poljau u strfmon formatu"
 
 #: c-family/c-format.cc:685
 msgid "left precision"
@@ -18041,7 +18048,7 @@ msgstr ""
 #: config/aarch64/aarch64.cc:10978
 #, c-format
 msgid "unsupported operand for code '%c'"
-msgstr ""
+msgstr "nepodržani operand za kȏd „%c“"
 
 #: config/aarch64/aarch64.cc:10987 config/aarch64/aarch64.cc:11000
 #: config/aarch64/aarch64.cc:11012 config/aarch64/aarch64.cc:11023
@@ -18053,13 +18060,13 @@ msgstr ""
 #: config/pru/pru.cc:1752 config/pru/pru.cc:1824
 #, c-format
 msgid "invalid operand for '%%%c'"
-msgstr ""
+msgstr "nevaljani operand za „%%%c“"
 
 #: config/aarch64/aarch64.cc:11091 config/aarch64/aarch64.cc:11102
 #: config/aarch64/aarch64.cc:11257 config/aarch64/aarch64.cc:11268
 #, c-format
 msgid "invalid vector constant"
-msgstr ""
+msgstr "nevaljana vektorska konstanta"
 
 #: config/aarch64/aarch64.cc:11114 config/aarch64/aarch64.cc:11126
 #, c-format
@@ -18069,12 +18076,12 @@ msgstr ""
 #: config/aarch64/aarch64.cc:11143
 #, c-format
 msgid "incompatible register operand for '%%%c'"
-msgstr ""
+msgstr "nekompatibilan operand registra za „%%%c“"
 
 #: config/aarch64/aarch64.cc:11209 config/arm/arm.cc:24405
 #, c-format
 msgid "missing operand"
-msgstr ""
+msgstr "nedostaje operand"
 
 #: config/aarch64/aarch64.cc:11294
 #, c-format
@@ -18098,99 +18105,99 @@ msgstr "nevaljani način adresiranja"
 
 #: config/aarch64/aarch64.cc:25851 config/arm/arm.cc:33859
 msgid "invalid conversion from type %<bfloat16_t%>"
-msgstr ""
+msgstr "nevaljana konverzija od vrste %<bfloat16_t%>"
 
 #: config/aarch64/aarch64.cc:25853 config/arm/arm.cc:33861
 msgid "invalid conversion to type %<bfloat16_t%>"
-msgstr ""
+msgstr "nevaljana konverzija u vrstu %<bfloat16_t%>"
 
 #: config/aarch64/aarch64.cc:25868 config/aarch64/aarch64.cc:25884
 #: config/arm/arm.cc:33876 config/arm/arm.cc:33892
 msgid "operation not permitted on type %<bfloat16_t%>"
-msgstr ""
+msgstr "nedopuštena operacija na vrsti %<bfloat16_t%>"
 
 #: config/aarch64/aarch64.cc:25892
 msgid "cannot combine GNU and SVE vectors in a binary operation"
-msgstr ""
+msgstr "ne mogu se kombinirati GNU i SVE vektori u binarnoj operaciji"
 
 #: config/alpha/alpha.cc:5076 config/i386/i386.cc:13519
 #: config/rs6000/rs6000.cc:14232 config/sparc/sparc.cc:9357
 #, c-format
 msgid "'%%&' used without any local dynamic TLS references"
-msgstr ""
+msgstr "„%%&“ je upotrebljen bez ikakve dinamičke TLS referencije"
 
 #: config/alpha/alpha.cc:5134 config/bfin/bfin.cc:1428
 #, c-format
 msgid "invalid %%J value"
-msgstr ""
+msgstr "nevaljana %%J vrijednost"
 
 #: config/alpha/alpha.cc:5164 config/ia64/ia64.cc:5577
 #: config/or1k/or1k.cc:1249
 #, c-format
 msgid "invalid %%r value"
-msgstr ""
+msgstr "nevaljana %%r vrijednos"
 
 #: config/alpha/alpha.cc:5174 config/ia64/ia64.cc:5531
 #: config/rs6000/rs6000.cc:13926 config/xtensa/xtensa.cc:2460
 #, c-format
 msgid "invalid %%R value"
-msgstr ""
+msgstr "nevaljana %%R vrijednost"
 
 #: config/alpha/alpha.cc:5180 config/rs6000/rs6000.cc:13846
 #: config/xtensa/xtensa.cc:2427
 #, c-format
 msgid "invalid %%N value"
-msgstr ""
+msgstr "nevaljana %%N vrijednost"
 
 #: config/alpha/alpha.cc:5188 config/rs6000/rs6000.cc:13874
 #, c-format
 msgid "invalid %%P value"
-msgstr ""
+msgstr "nevaljana %%P vrijednost"
 
 #: config/alpha/alpha.cc:5196
 #, c-format
 msgid "invalid %%h value"
-msgstr ""
+msgstr "nevaljana %%h vrijednost"
 
 #: config/alpha/alpha.cc:5204 config/xtensa/xtensa.cc:2453
 #, c-format
 msgid "invalid %%L value"
-msgstr ""
+msgstr "nevaljana %%L vrijednost"
 
 #: config/alpha/alpha.cc:5223
 #, c-format
 msgid "invalid %%m value"
-msgstr ""
+msgstr "nevaljana %%m vrijednost"
 
 #: config/alpha/alpha.cc:5229
 #, c-format
 msgid "invalid %%M value"
-msgstr ""
+msgstr "nevaljana %%M vrijednost"
 
 #: config/alpha/alpha.cc:5266
 #, c-format
 msgid "invalid %%U value"
-msgstr ""
+msgstr "nevaljana %%U vrijednost"
 
 #: config/alpha/alpha.cc:5274 config/rs6000/rs6000.cc:13934
 #, c-format
 msgid "invalid %%s value"
-msgstr ""
+msgstr "nevaljana %%s vrijednost"
 
 #: config/alpha/alpha.cc:5285
 #, c-format
 msgid "invalid %%C value"
-msgstr ""
+msgstr "nevaljana %%C vrijednost"
 
 #: config/alpha/alpha.cc:5322 config/rs6000/rs6000.cc:13710
 #, c-format
 msgid "invalid %%E value"
-msgstr ""
+msgstr "nevaljana %%E vrijednost"
 
 #: config/alpha/alpha.cc:5347 config/alpha/alpha.cc:5397
 #, c-format
 msgid "unknown relocation unspec"
-msgstr ""
+msgstr "nepoznata relokacija unspec"
 
 #: config/alpha/alpha.cc:5356 config/cr16/cr16.cc:1572 config/gcn/gcn.cc:6050
 #: config/gcn/gcn.cc:6059 config/gcn/gcn.cc:6119 config/gcn/gcn.cc:6127
@@ -18198,12 +18205,12 @@ msgstr ""
 #: config/gcn/gcn.cc:6331 config/gcn/gcn.cc:6442 config/rs6000/rs6000.cc:14237
 #, c-format
 msgid "invalid %%xn code"
-msgstr ""
+msgstr "nevaljani %%xn kȏd"
 
 #: config/alpha/alpha.cc:5462
 #, c-format
 msgid "invalid operand address"
-msgstr ""
+msgstr "nevaljani operand adrese"
 
 #: config/arc/arc.cc:4517
 #, c-format
@@ -18276,29 +18283,29 @@ msgstr "nevaljani UNSPEC kao operand: %d"
 
 #: config/arc/arc.cc:6703
 msgid "unrecognized supposed constant"
-msgstr ""
+msgstr "neprepoznata pretpostavljena konstanta"
 
 #: config/arm/arm.cc:20769 config/arm/arm.cc:20794 config/arm/arm.cc:20804
 #: config/arm/arm.cc:20813 config/arm/arm.cc:20822
 #, c-format
 msgid "invalid shift operand"
-msgstr ""
+msgstr "nevaljai operand pomaka (shift)"
 
 #: config/arm/arm.cc:23678 config/arm/arm.cc:23696
 #, c-format
 msgid "predicated Thumb instruction"
-msgstr ""
+msgstr "predviđena Thumb instrukcija"
 
 #: config/arm/arm.cc:23684
 #, c-format
 msgid "predicated instruction in conditional sequence"
-msgstr ""
+msgstr "predviđena instrukcija u uvjetnoj sekvenciji"
 
 #: config/arm/arm.cc:23802 config/arm/arm.cc:23815 config/arm/arm.cc:23840
 #: config/nios2/nios2.cc:3081
 #, c-format
 msgid "Unsupported operand for code '%c'"
-msgstr ""
+msgstr "Nepodržani operand za kȏd „%c“"
 
 #: config/arm/arm.cc:23917 config/arm/arm.cc:23939 config/arm/arm.cc:23949
 #: config/arm/arm.cc:23959 config/arm/arm.cc:23969 config/arm/arm.cc:24008
@@ -18312,105 +18319,105 @@ msgstr ""
 #: config/bfin/bfin.cc:1492 config/nds32/nds32.cc:3543
 #, c-format
 msgid "invalid operand for code '%c'"
-msgstr ""
+msgstr "nevaljani operand za kȏd „%c“"
 
 #: config/arm/arm.cc:24021
 #, c-format
 msgid "instruction never executed"
-msgstr ""
+msgstr "instrukcija nije nikada izvršena"
 
 #. Former Maverick support, removed after GCC-4.7.
 #: config/arm/arm.cc:24042
 #, c-format
 msgid "obsolete Maverick format code '%c'"
-msgstr ""
+msgstr "zastarjela Maverick format kȏd „%c“"
 
 #: config/avr/avr.cc:2642
 #, c-format
 msgid "address operand requires constraint for X, Y, or Z register"
-msgstr ""
+msgstr "operand adrese zahtjeva ograničenje za for X, Y, ili Z registar"
 
 #: config/avr/avr.cc:2825
 msgid "operands to %T/%t must be reg + const_int:"
-msgstr ""
+msgstr "operandi za %T/%t moraju biti reg + const_int:"
 
 #: config/avr/avr.cc:2875 config/avr/avr.cc:2942
 msgid "bad address, not an I/O address:"
-msgstr ""
+msgstr "loša adresa, nije U/I (I/O) adresa:"
 
 #: config/avr/avr.cc:2884
 msgid "bad address, not a constant:"
-msgstr ""
+msgstr "loša adresa, nije konstanta:"
 
 #: config/avr/avr.cc:2902 config/avr/avr.cc:2909
 msgid "bad address, not (reg+disp):"
-msgstr ""
+msgstr "loša adresa, nije (reg+disp):"
 
 #: config/avr/avr.cc:2916
 msgid "bad address, not post_inc or pre_dec:"
-msgstr ""
+msgstr "loša adresa, nije post_inc ili pre_dec:"
 
 #: config/avr/avr.cc:2928
 msgid "internal compiler error.  Bad address:"
-msgstr ""
+msgstr "interna greška kompajlera. Loša adresa:"
 
 #: config/avr/avr.cc:2961
 #, c-format
 msgid "Unsupported code '%c' for fixed-point:"
-msgstr ""
+msgstr "Nepodržani kȏd „%c“ za nepomični zarez (fixed-point):"
 
 #: config/avr/avr.cc:2969
 msgid "internal compiler error.  Unknown mode:"
-msgstr ""
+msgstr "interna greška kompajlera. Nepozat način rada:"
 
 #: config/avr/avr.cc:3866 config/avr/avr.cc:4810 config/avr/avr.cc:5257
 msgid "invalid insn:"
-msgstr ""
+msgstr "nevaljani insn:"
 
 #: config/avr/avr.cc:3920 config/avr/avr.cc:4032 config/avr/avr.cc:4090
 #: config/avr/avr.cc:4142 config/avr/avr.cc:4161 config/avr/avr.cc:4353
 #: config/avr/avr.cc:4661 config/avr/avr.cc:4946 config/avr/avr.cc:5150
 #: config/avr/avr.cc:5314 config/avr/avr.cc:5407 config/avr/avr.cc:5606
 msgid "incorrect insn:"
-msgstr ""
+msgstr "netočni insn:"
 
 #: config/avr/avr.cc:4177 config/avr/avr.cc:4452 config/avr/avr.cc:4732
 #: config/avr/avr.cc:5018 config/avr/avr.cc:5196 config/avr/avr.cc:5463
 #: config/avr/avr.cc:5664
 msgid "unknown move insn:"
-msgstr ""
+msgstr "nepoznati insn za pomicanje, kopiranje:"
 
 #: config/avr/avr.cc:6131
 msgid "bad shift insn:"
-msgstr ""
+msgstr "loš pomak (shift) insn:"
 
 #: config/avr/avr.cc:6239 config/avr/avr.cc:6722 config/avr/avr.cc:7139
 msgid "internal compiler error.  Incorrect shift:"
-msgstr ""
+msgstr "interna greška kompajlera. Netočni pomak (shift):"
 
 #: config/avr/avr.cc:8547
 msgid "unsupported fixed-point conversion"
-msgstr ""
+msgstr "nepodržana konverzija nepomičnog zareza (fixed-point conversion)"
 
 #: config/avr/avr.cc:9916
 msgid "variable"
-msgstr ""
+msgstr "varijabla"
 
 #: config/avr/avr.cc:9921
 msgid "function parameter"
-msgstr ""
+msgstr "parametar funkcije"
 
 #: config/avr/avr.cc:9926
 msgid "structure field"
-msgstr ""
+msgstr "strukturno polje"
 
 #: config/avr/avr.cc:9932
 msgid "return type of function"
-msgstr ""
+msgstr "vrsta vrijednosti koju funkcija vrati"
 
 #: config/avr/avr.cc:9937
 msgid "pointer"
-msgstr ""
+msgstr "kazaljka (pointer)"
 
 #: config/avr/driver-avr.cc:50
 #, c-format
@@ -18418,6 +18425,8 @@ msgid ""
 "Running spec function '%s' with %d args\n"
 "\n"
 msgstr ""
+"Nepoznata spec funkcija „%s“ s %d argumentima\n"
+"\n"
 
 #: config/bfin/bfin.cc:1390
 #, c-format
@@ -18431,7 +18440,7 @@ msgstr ""
 
 #: config/bpf/bpf.cc:921
 msgid "invalid address in operand"
-msgstr "nevaljana adresa kao operand"
+msgstr "nevaljana adresa u operandu"
 
 #. Fallthrough.
 #: config/bpf/bpf.cc:928
@@ -18699,72 +18708,72 @@ msgstr ""
 #: config/i386/i386.cc:13121
 #, c-format
 msgid "invalid operand size for operand code 'O'"
-msgstr "nevaljana veličina operanda za operand kȏd 'O'"
+msgstr "nevaljana veličina operanda za operand kȏd „O“"
 
 #: config/i386/i386.cc:13156
 #, c-format
 msgid "invalid operand size for operand code 'z'"
-msgstr "nevaljana veličina operanda za operand kȏd 'z'"
+msgstr "nevaljana veličina operanda za operand kȏd „z“"
 
 #: config/i386/i386.cc:13225
 #, c-format
 msgid "invalid operand type used with operand code 'Z'"
-msgstr "nevaljana vrsta operanda korištena s operandom kod „Z“"
+msgstr "nevaljana vrsta operanda korištena s operandom kȏda „Z“"
 
 #: config/i386/i386.cc:13230
 #, c-format
 msgid "invalid operand size for operand code 'Z'"
-msgstr "nevaljana veličina operanda za operand kȏd 'Z'"
+msgstr "nevaljana veličina operanda za operand kȏd „Z“"
 
 #: config/i386/i386.cc:13307
 #, c-format
 msgid "operand is not a condition code, invalid operand code 'Y'"
-msgstr ""
+msgstr "operand nije kȏd uvjeta, nevaljani operand kȏd „Y“"
 
 #: config/i386/i386.cc:13386
 #, c-format
 msgid "operand is not a condition code, invalid operand code 'D'"
-msgstr ""
+msgstr "operand nije kȏd uvjeta, nevaljani operand kȏd „D“"
 
 #: config/i386/i386.cc:13404
 #, c-format
 msgid "operand is not a condition code, invalid operand code '%c'"
-msgstr ""
+msgstr "operand nije kȏd uvjeta, nevaljani operand kȏd „%c“"
 
 #: config/i386/i386.cc:13417
 #, c-format
 msgid "operand is not an offsettable memory reference, invalid operand code 'H'"
-msgstr ""
+msgstr "operand nije pokretljiva (offsettable) referencija memorije, nevaljani operand kȏd „H“"
 
 #: config/i386/i386.cc:13432
 #, c-format
 msgid "operand is not an integer, invalid operand code 'K'"
-msgstr ""
+msgstr "operand nije cijeli broj, nevaljani operand kȏd „K“"
 
 #: config/i386/i386.cc:13460
 #, c-format
 msgid "operand is not a specific integer, invalid operand code 'r'"
-msgstr ""
+msgstr "operand nije određeni cijeli broj, nevaljani operand kȏd „r“"
 
 #: config/i386/i386.cc:13478
 #, c-format
 msgid "operand is not an integer, invalid operand code 'R'"
-msgstr ""
+msgstr "operand nije cijeli broj, nevaljani operand kȏd „R“"
 
 #: config/i386/i386.cc:13501
 #, c-format
 msgid "operand is not a specific integer, invalid operand code 'R'"
-msgstr ""
+msgstr "operand nije određeni cijeli broj, nevaljani operand kȏd „R“"
 
 #: config/i386/i386.cc:13605
 #, c-format
 msgid "invalid operand code '%c'"
-msgstr ""
+msgstr "nevaljani operand kȏd „%c“"
 
 #: config/i386/i386.cc:13667 config/i386/i386.cc:14056
 #, c-format
 msgid "invalid constraints for operand"
-msgstr ""
+msgstr "nevaljano ograničenje za operand"
 
 #: config/i386/i386.cc:13768
 #, c-format
@@ -18773,7 +18782,7 @@ msgstr "nevaljana vektorska konstanta"
 
 #: config/i386/i386.cc:16847
 msgid "unknown insn mode"
-msgstr ""
+msgstr "nepoznati insn način"
 
 #: config/ia64/ia64.cc:5459
 #, c-format
@@ -18832,7 +18841,7 @@ msgstr ""
 
 #: config/m32r/m32r.cc:2144
 msgid "bad insn for 'A'"
-msgstr ""
+msgstr "loš insn za „A“"
 
 #: config/m32r/m32r.cc:2191
 #, c-format
@@ -28448,7 +28457,7 @@ msgstr ""
 #: read-rtl-function.cc:265
 #, gcc-internal-format, gfc-internal-format
 msgid "insn with UID %i not found for operand %i (`%s') of insn %i"
-msgstr "insn s UID-om %i nnije pronađen za operand %i („%s“) od insn %i"
+msgstr "insn s UID-om %i nije pronađen za operand %i („%s“) od insn %i"
 
 #: read-rtl-function.cc:269
 #, gcc-internal-format, gfc-internal-format
@@ -44924,7 +44933,7 @@ msgstr ""
 #: c/c-parser.cc:18075 cp/parser.cc:40592
 #, gcc-internal-format
 msgid "expected %<read%>, %<write%>, %<update%>, or %<capture%> clause"
-msgstr "očekivano je %<read%>, %<write%>, %<update%>, ili %<capture%> naredba"
+msgstr "očekivano je %<read%>, %<write%>, %<update%>, ili %<capture%> klauzula"
 
 #: c/c-parser.cc:18114 cp/parser.cc:40631
 #, gcc-internal-format
@@ -45027,7 +45036,7 @@ msgstr "očekivano je %<in%>, %<out%>, %<inout%> ili %<mutexinoutset%>"
 #: c/c-parser.cc:19046 cp/parser.cc:41583
 #, gcc-internal-format
 msgid "expected %<depend%>, %<destroy%> or %<update%> clause"
-msgstr "očekivano je %<depend%>, %<destroy%> ili %<update%> naredba"
+msgstr "očekivano je %<depend%>, %<destroy%> ili %<update%> klauzula"
 
 #: c/c-parser.cc:19084 cp/parser.cc:41623
 #, gcc-internal-format
@@ -45047,7 +45056,7 @@ msgstr ""
 #: c/c-parser.cc:19176 cp/parser.cc:42350
 #, gcc-internal-format
 msgid "expected %<inclusive%> or %<exclusive%> clause"
-msgstr "očekivano je %<inclusive%> ili %<exclusive%> naredba"
+msgstr "očekivano je %<inclusive%> ili %<exclusive%> klauzula"
 
 #: c/c-parser.cc:19181 cp/parser.cc:42356
 #, gcc-internal-format
@@ -45367,7 +45376,7 @@ msgstr ""
 #: c/c-parser.cc:22837 cp/parser.cc:46650
 #, gcc-internal-format
 msgid "expected %<at%>, %<severity%> or %<message%> clause"
-msgstr "očekivano je %<at%>, %<severity%> ili %<message%> naredba"
+msgstr "očekivano je %<at%>, %<severity%> ili %<message%> klauzula"
 
 #: c/c-parser.cc:22870 cp/parser.cc:46685
 #, gcc-internal-format
@@ -46915,7 +46924,7 @@ msgstr ""
 #: c/c-typeck.cc:14097 cp/semantics.cc:6665
 #, gcc-internal-format
 msgid "expected pointer in %qs clause"
-msgstr "očekivana je kazaljka (pointer) u %qs naredbi"
+msgstr "očekivana je kazaljka (pointer) u %qs klauzuli"
 
 #: c/c-typeck.cc:14185 cp/semantics.cc:6746
 #, gcc-internal-format
