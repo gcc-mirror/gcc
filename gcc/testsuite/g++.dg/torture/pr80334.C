@@ -1,4 +1,8 @@
-// { dg-do run }
+// This used to be dg-do run testcase, but it is invalid at runtime:
+// trying to do a placement new of A which is 16-byte sized and aligned
+// into a 16-byte buffer at offset 17 bytes from 16-byte aligned address
+// is UB.
+// { dg-do compile }
 
 struct A { alignas(16) char c; };
 struct B { A unpacked; char d; } __attribute__((packed));
