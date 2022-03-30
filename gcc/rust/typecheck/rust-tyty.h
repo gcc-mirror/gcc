@@ -717,7 +717,7 @@ public:
     return true;
   }
 
-  Location get_locus () { return locus; }
+  Location get_locus () const { return locus; }
 
   size_t size () const { return mappings.size (); }
 
@@ -946,6 +946,11 @@ public:
 
   virtual BaseType *handle_substitions (SubstitutionArgumentMappings mappings)
     = 0;
+
+  SubstitutionArgumentMappings get_used_arguments () const
+  {
+    return used_arguments;
+  }
 
 protected:
   std::vector<SubstitutionParamMapping> substitutions;
