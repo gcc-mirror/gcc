@@ -15688,9 +15688,7 @@ omp_enable_pinned_mode ()
   push_struct_function (decl);
   init_tree_ssa (cfun);
 
-  tree callname = get_identifier ("GOMP_enable_pinned_mode");
-  tree calldecl = build_decl (UNKNOWN_LOCATION, FUNCTION_DECL, callname,
-			      voidfntype);
+  tree calldecl = builtin_decl_explicit (BUILT_IN_GOMP_ENABLE_PINNED_MODE);
   gcall *call = gimple_build_call (calldecl, 0);
 
   gimple_seq seq = NULL;

@@ -1,3 +1,9 @@
+2022-03-30  Andrew Stubbs  <ams@codesourcery.com>
+
+	* omp-builtins.def (BUILT_IN_GOMP_ENABLE_PINNED_MODE): New.
+	* omp-low.cc (omp_enable_pinned_mode): Use
+	BUILT_IN_GOMP_ENABLE_PINNED_MODE.
+
 2022-03-11  Andrew Stubbs <ams@codesourcery.com>
 
 	Backport of the patch posted at
