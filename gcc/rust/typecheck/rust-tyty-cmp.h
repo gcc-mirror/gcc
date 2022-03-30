@@ -43,15 +43,18 @@ public:
 	    return ok;
 	  }
       }
-    else if (other->get_kind () == TypeKind::PLACEHOLDER)
+    if (other->get_kind () == TypeKind::PLACEHOLDER)
       {
 	const PlaceholderType *p = static_cast<const PlaceholderType *> (other);
 	if (p->can_resolve ())
 	  {
-	    const BaseType *resolved = p->resolve ();
-	    resolved->accept_vis (*this);
-	    return ok;
+	    other = p->resolve ();
 	  }
+      }
+    if (other->get_kind () == TypeKind::PROJECTION)
+      {
+	const ProjectionType *p = static_cast<const ProjectionType *> (other);
+	other = p->get ();
       }
 
     other->accept_vis (*this);
