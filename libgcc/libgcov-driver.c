@@ -410,6 +410,23 @@ dump_counter (gcov_type counter,
     dump_unsigned (0, dump_fn, arg);
 }
 
+/* Dump the STRING using the DUMP handler called with ARG.  */
+
+static inline void
+dump_string (const char *string,
+	     void (*dump_fn) (const void *, unsigned, void *),
+	     void *arg)
+{
+  unsigned length = 0;
+
+  if (string)
+    length = strlen (string) + 1;
+
+  dump_unsigned (length, dump_fn, arg);
+  if (string)
+    (*dump_fn) (string, length, arg);
+}
+
 #define MAX(X,Y) ((X) > (Y) ? (X) : (Y))
 
 /* Store all TOP N counters where each has a dynamic length.  */
@@ -768,7 +785,7 @@ __gcov_init (struct gcov_info *info)
 
 #ifdef NEED_L_GCOV_INFO_TO_GCDA
 /* Convert the gcov info to a gcda data stream.  It is intended for
-   free-standing environments which do not support the C library file I/O.  */
+   freestanding environments which do not support the C library file I/O.  */
 
 void
 __gcov_info_to_gcda (const struct gcov_info *gi_ptr,
@@ -779,5 +796,18 @@ __gcov_info_to_gcda (const struct gcov_info *gi_ptr,
 {
   (*filename_fn) (gi_ptr->filename, arg);
   write_one_data (gi_ptr, NULL, dump_fn, allocate_fn, arg);
+}
+
+/* Convert the filename to a gcfn data stream.  It is intended for
+   freestanding environments which do not support the C library file I/O.  */
+
+void
+__gcov_filename_to_gcfn (const char *filename,
+			 void (*dump_fn) (const void *, unsigned, void *),
+			 void *arg)
+{
+  dump_unsigned (GCOV_FILENAME_MAGIC, dump_fn, arg);
+  dump_unsigned (GCOV_VERSION, dump_fn, arg);
+  dump_string (filename, dump_fn, arg);
 }
 #endif /* NEED_L_GCOV_INFO_TO_GCDA */

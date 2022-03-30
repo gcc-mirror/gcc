@@ -60,14 +60,21 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
    	file : int32:magic int32:version int32:stamp record*
 
-   The magic ident is different for the notes and the data files.  The
-   magic ident is used to determine the endianness of the file, when
-   reading.  The version is the same for both files and is derived
-   from gcc's version number. The stamp value is used to synchronize
-   note and data files and to synchronize merging within a data
-   file. It need not be an absolute time stamp, merely a ticker that
-   increments fast enough and cycles slow enough to distinguish
-   different compile/run/compile cycles.
+   A filename header may be used to provide a filename for the data in
+   a stream of data to support gcov in freestanding environments.  This
+   header is used by the merge-stream subcommand of the gcov-tool.  The
+   format of the filename header is
+
+	filename-header : int32:magic int32:version string
+
+   The magic ident is different for the notes and the data files as
+   well as the filename header.  The magic ident is used to determine
+   the endianness of the file, when reading.  The version is the same
+   for both files and is derived from gcc's version number. The stamp
+   value is used to synchronize note and data files and to synchronize
+   merging within a data file. It need not be an absolute time stamp,
+   merely a ticker that increments fast enough and cycles slow enough
+   to distinguish different compile/run/compile cycles.
 
    Although the ident and version are formally 32 bit numbers, they
    are derived from 4 character ASCII strings.  The version number
@@ -228,6 +235,7 @@ typedef uint64_t gcov_type_unsigned;
 /* File magic. Must not be palindromes.  */
 #define GCOV_DATA_MAGIC ((gcov_unsigned_t)0x67636461) /* "gcda" */
 #define GCOV_NOTE_MAGIC ((gcov_unsigned_t)0x67636e6f) /* "gcno" */
+#define GCOV_FILENAME_MAGIC ((gcov_unsigned_t)0x6763666e) /* "gcfn" */
 
 #include "version.h"
 
