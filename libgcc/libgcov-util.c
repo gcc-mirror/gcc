@@ -296,16 +296,11 @@ read_gcda_file (const char *filename)
              sizeof (struct gcov_ctr_info) * GCOV_COUNTERS, 1);
 
   obj_info->version = version;
+  obj_info->filename = filename;
   obstack_init (&fn_info);
   num_fn_info = 0;
   curr_fn_info = 0;
-  {
-    size_t len = strlen (filename) + 1;
-    char *str_dup = (char*) xmalloc (len);
 
-    memcpy (str_dup, filename, len);
-    obj_info->filename = str_dup;
-  }
 
   /* Read stamp.  */
   obj_info->stamp = gcov_read_unsigned ();
@@ -415,7 +410,7 @@ ftw_read_file (const char *filename,
   if (verbose)
     fnotice (stderr, "reading file: %s\n", filename);
 
-  obj_info = read_gcda_file (filename);
+  obj_info = read_gcda_file (xstrdup (filename));
   if (!obj_info)
     return 0;
 
