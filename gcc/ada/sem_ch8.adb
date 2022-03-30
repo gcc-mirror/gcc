@@ -3975,7 +3975,7 @@ package body Sem_Ch8 is
          --  normally illegal renamings can be constructed when expanding
          --  instantiations.
 
-         elsif Nkind (Nam) = N_Expanded_Name then
+         elsif Nkind (Nam) = N_Expanded_Name and then not In_Instance then
             declare
                function Ult_Expanded_Prefix (N : Node_Id) return Node_Id is
                  (if Nkind (N) /= N_Expanded_Name
@@ -3985,7 +3985,6 @@ package body Sem_Ch8 is
 
             begin
                if Chars (Entity (Ult_Expanded_Prefix (Nam))) = Chars (New_S)
-                 and then not In_Instance
                then
                   Error_Msg_Sloc := Sloc (N);
                   Error_Msg_NE
