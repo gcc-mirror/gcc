@@ -364,10 +364,9 @@ protected:
     PathProbeCandidate::TraitItemCandidate trait_item_candidate{trait_ref,
 								trait_item_ref,
 								impl};
-    PathProbeCandidate candidate{candidate_type,
-				 trait_item_tyty,
-				 trait_ref->get_locus (),
-				 {trait_item_candidate}};
+
+    PathProbeCandidate candidate{candidate_type, trait_item_tyty,
+				 trait_ref->get_locus (), trait_item_candidate};
     candidates.push_back (std::move (candidate));
   }
 
@@ -409,10 +408,9 @@ protected:
     PathProbeCandidate::TraitItemCandidate trait_item_candidate{trait_ref,
 								trait_item_ref,
 								nullptr};
-    PathProbeCandidate candidate{candidate_type,
-				 trait_item_tyty,
+    PathProbeCandidate candidate{candidate_type, trait_item_tyty,
 				 trait_item_ref->get_locus (),
-				 {trait_item_candidate}};
+				 trait_item_candidate};
     candidates.push_back (std::move (candidate));
   }
 

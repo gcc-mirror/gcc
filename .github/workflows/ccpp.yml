@@ -84,3 +84,68 @@ jobs:
             else \
               exit 0; \
             fi
+
+  build-and-check-gcc-48:
+
+    runs-on: ubuntu-18.04
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Install Deps
+      run: |
+          sudo apt-get update;
+          sudo apt-get install -y \
+                  automake \
+                  autoconf \
+                  libtool \
+                  autogen \
+                  bison \
+                  flex \
+                  libgmp3-dev \
+                  libmpfr-dev \
+                  libmpc-dev \
+                  build-essential \
+                  gcc-4.8 \
+                  g++-4.8 \
+                  gcc-4.8-multilib \
+                  g++-4.8-multilib \
+                  dejagnu
+
+    - name: Configure
+      run: |
+           mkdir -p gccrs-build;
+           cd gccrs-build;
+           ../configure \
+               CC='gcc-4.8' \
+               CXX='g++-4.8' \
+               --enable-languages=rust \
+               --disable-bootstrap \
+               --enable-multilib
+
+    - name: Build
+      shell: bash
+      run: |
+           make -C gccrs-build -j $(nproc)
+
+    - name: Run Tests
+      run: |
+           cd gccrs-build; \
+           make check-rust
+
+    - name: Archive check-rust results
+      uses: actions/upload-artifact@v2
+      with:
+        name: check-rust-logs-4.8
+        path: |
+          gccrs-build/gcc/testsuite/rust/
+
+    - name: Check regressions
+      run: |
+           cd gccrs-build; \
+           if grep -e "unexpected" -e "unresolved" gcc/testsuite/rust/rust.sum;\
+           then \
+              echo "some tests are not correct"; \
+              exit 1; \
+            else \
+              exit 0; \
+            fi
