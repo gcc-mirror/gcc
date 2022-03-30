@@ -1,3 +1,115 @@
+2022-03-29  David Malcolm  <dmalcolm@redhat.com>
+
+	PR testsuite/105085
+	* gcc.dg/analyzer/untracked-1.c: Add further test coverage.
+
+2022-03-29  Harald Anlauf  <anlauf@gmx.de>
+	    Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/104571
+	* gfortran.dg/pr104571.f90: New test.
+
+2022-03-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	* lib/g++-dg.exp: Update comments.
+	* lib/g++.exp (gpp_std_list): Check for an existing value before
+	setting it to an empty list.
+
+2022-03-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	* g++.dg/cpp0x/noexcept06.C: Disable for C++23.
+
+2022-03-29  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/50549
+	* gfortran.dg/char_pointer_assign_7.f90: New test.
+
+2022-03-29  Marek Polacek  <polacek@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/103597
+	* c-c++-common/Wimplicit-fallthrough-39.c: New test.
+
+2022-03-29  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/71637
+	* c-c++-common/Wmisleading-indentation-6.c: New test.
+
+2022-03-29  Richard Earnshaw  <rearnsha@arm.com>
+
+	* gcc.target/aarch64/aapcs64/test_28.c: New test.
+
+2022-03-29  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/102024
+	* gcc.target/arm/aapcs/vfp26.c: New test.
+
+2022-03-29  Tom de Vries  <tdevries@suse.de>
+
+	PR target/104857
+	* gcc.target/nvptx/ptx31.c: New test.
+	* gcc.target/nvptx/ptx60.c: New test.
+	* gcc.target/nvptx/ptx63.c: New test.
+	* gcc.target/nvptx/ptx70.c: New test.
+
+2022-03-29  Tom de Vries  <tdevries@suse.de>
+
+	PR target/104714
+	* gcc.target/nvptx/march-map.c: New test.
+
+2022-03-29  Tom de Vries  <tdevries@suse.de>
+
+	* gcc.target/nvptx/main.c: New test.
+	* gcc.target/nvptx/march.c: New test.
+
+2022-03-29  Chenghua Xu  <xuchenghua@loongson.cn>
+	    Lulu Cheng  <chenglulu@loongson.cn>
+
+	* g++.dg/cpp0x/constexpr-rom.C: Add build options for LoongArch.
+	* g++.old-deja/g++.abi/ptrmem.C: Add LoongArch support.
+	* g++.old-deja/g++.pt/ptrmem6.C: xfail for LoongArch.
+	* gcc.dg/20020312-2.c: Add LoongArch support.
+	* c-c++-common/zero-scratch-regs-10.c: Like wise
+	* c-c++-common/zero-scratch-regs-11.c: Like wise
+	* c-c++-common/zero-scratch-regs-8.c: Like wise
+	* c-c++-common/zero-scratch-regs-9.c: Like wise
+	* gcc.dg/loop-8.c: Skip on LoongArch.
+	* gcc.dg/torture/stackalign/builtin-apply-2.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-fre-3.c: Likewise.
+	* go.test/go-test.exp: Define the LoongArch target.
+	* lib/target-supports.exp: Like wise.
+	* gcc.target/loongarch/loongarch.exp: New file.
+	* gcc.target/loongarch/tst-asm-const.c: Like wise.
+	* gcc.target/loongarch/larch-builtin.c: Like wise.
+
+2022-03-29  Marc Poulhiès  <poulhies@adacore.com>
+
+	* gcc.target/i386/pr103275.c: Add missing
+	dg-require-effective-target for checking fpic.
+
+2022-03-29  Marc Poulhiès  <poulhies@adacore.com>
+
+	* gcc.target/i386/pr97521.c: Add -Wno-psabi to dg-options.
+	* gcc.dg/analyzer/pr96713.c: Likewise.
+
+2022-03-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/105080
+	* gcc.dg/pr105080.c: New testcase.
+
+2022-03-29  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/analyzer/pr105087-1.c: New test.
+	* gcc.dg/analyzer/pr105087-2.c: New test.
+	* gcc.dg/analyzer/vasprintf-1.c: New test.
+
+2022-03-29  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/105074
+	* gcc.dg/analyzer/pr105074.c: New test.
+	* gcc.dg/analyzer/untracked-1.c (extern_fn_char_ptr): New decl.
+	(test_13): New.
+
 2022-03-28  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/105067

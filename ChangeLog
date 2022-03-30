@@ -1,3 +1,14 @@
+2022-03-29  Chenghua Xu  <xuchenghua@loongson.cn>
+
+	* MAINTAINERS: (CPU Port Maintainers): Add myself and
+	Lulu as LoongArch port maintainer.
+
+2022-03-29  Chenghua Xu  <xuchenghua@loongson.cn>
+	    Lulu Cheng  <chenglulu@loongson.cn>
+
+	* configure.ac: Add LoongArch tuples.
+	* configure: Regenerate.
+
 2022-03-28  Tom Tromey  <tromey@adacore.com>
 
 	* configure.ac: Remove --with-mpfr-dir and --with-gmp-dir.

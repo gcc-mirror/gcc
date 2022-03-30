@@ -1,3 +1,55 @@
+2022-03-29  David Malcolm  <dmalcolm@redhat.com>
+
+	PR testsuite/105085
+	* region-model-manager.cc (dump_untracked_region): Skip decls in
+	the constant pool.
+
+2022-03-29  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/105087
+	* analyzer.h (class conjured_purge): New forward decl.
+	* region-model-asm.cc (region_model::on_asm_stmt): Add
+	conjured_purge param to calls binding_cluster::on_asm and
+	region_model_manager::get_or_create_conjured_svalue.
+	* region-model-impl-calls.cc
+	(call_details::get_or_create_conjured_svalue): Likewise for call
+	to region_model_manager::get_or_create_conjured_svalue.
+	(region_model::impl_call_fgets): Remove call to
+	region_model::purge_state_involving, as this is now done
+	implicitly by call_details::get_or_create_conjured_svalue.
+	(region_model::impl_call_fread): Likewise.
+	(region_model::impl_call_strchr): Pass conjured_purge param to
+	call to region_model_manager::get_or_create_conjured_svalue.
+	* region-model-manager.cc (conjured_purge::purge): New.
+	(region_model_manager::get_or_create_conjured_svalue): Add
+	param "p".  Use it to purge state when reusing an existing
+	conjured_svalue.
+	* region-model.cc (region_model::on_call_pre): Replace call to
+	region_model::purge_state_involving with passing conjured_purge
+	to region_model_manager::get_or_create_conjured_svalue.
+	(region_model::handle_unrecognized_call): Pass conjured_purge to
+	store::on_unknown_fncall.
+	* region-model.h
+	(region_model_manager::get_or_create_conjured_svalue): Add param
+	"p".
+	* store.cc (binding_cluster::on_unknown_fncall): Likewise.  Pass
+	it on to region_model_manager::get_or_create_conjured_svalue.
+	(binding_cluster::on_asm): Likewise.
+	(store::on_unknown_fncall): Add param "p" and pass it on to
+	binding_cluster::on_unknown_fncall.
+	* store.h (binding_cluster::on_unknown_fncall): Add param p.
+	(binding_cluster::on_asm): Likewise.
+	(store::on_unknown_fncall): Likewise.
+	* svalue.h (class conjured_purge): New.
+
+2022-03-29  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/105074
+	* region.cc (ipa_ref_requires_tracking): Drop "context_fndecl",
+	instead using the ref->referring to get the cgraph node of the
+	caller.
+	(symnode_requires_tracking_p): Likewise.
+
 2022-03-26  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/105057

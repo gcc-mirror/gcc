@@ -1,3 +1,149 @@
+2022-03-29  Marek Polacek  <polacek@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/103597
+	* gimplify.cc (collect_fallthrough_labels): Don't push UNUSED_LABEL_Ps
+	into labels.  Maybe set prev to the statement preceding UNUSED_LABEL_P.
+	(gimplify_cond_expr): Set UNUSED_LABEL_P.
+	* tree.h (UNUSED_LABEL_P): New.
+
+2022-03-29   Michael Meissner  <meissner@linux.ibm.com>
+
+	* config/rs6000/vsx.md (vsx_extract_<mode>): Allow destination to
+	be any VSX register.
+
+2022-03-29  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/102024
+	* config/aarch64/aarch64.cc (aapcs_vfp_sub_candidate): Handle
+	zero-sized bit-fields.  Detect cases where a warning may be needed.
+	(aarch64_vfp_is_call_or_return_candidate): Emit a note if a
+	zero-sized bit-field has caused parameter passing to change.
+
+2022-03-29  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/102024
+	* config/arm/arm.cc (aapcs_vfp_sub_candidate): Handle zero-sized
+	bit-fields.  Detect cases where a warning may be needed.
+	(aapcs_vfp_is_call_or_return_candidate): Emit a note if
+	a zero-sized bit-field has caused parameter passing to change.
+
+2022-03-29  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/96882
+	* config/arm/arm.cc (arm_get_pcs_model): Disable selection of
+	ARM_PCS_AAPCS_LOCAL.
+
+2022-03-29  Tom de Vries  <tdevries@suse.de>
+
+	PR target/104857
+	* config/nvptx/nvptx-c.cc (nvptx_cpu_cpp_builtins): Emit
+	__PTX_ISA_VERSION_MAJOR__ and __PTX_ISA_VERSION_MINOR__.
+	* config/nvptx/nvptx.cc (ptx_version_to_number): New function.
+	* config/nvptx/nvptx-protos.h (ptx_version_to_number): Declare.
+
+2022-03-29  Tom de Vries  <tdevries@suse.de>
+
+	* config/nvptx/nvptx.opt (m64): Update help text to reflect that it
+	is ignored.
+
+2022-03-29  Tom de Vries  <tdevries@suse.de>
+
+	PR target/104714
+	* config/nvptx/nvptx.opt (march-map=*): Add aliases.
+
+2022-03-29  Jan Hubicka  <hubicka@ucw.cz>
+
+	* config/i386/i386-builtins.cc (ix86_vectorize_builtin_gather): Test
+	TARGET_USE_GATHER_2PARTS and TARGET_USE_GATHER_4PARTS.
+	* config/i386/i386.h (TARGET_USE_GATHER_2PARTS): New macro.
+	(TARGET_USE_GATHER_4PARTS): New macro.
+	* config/i386/x86-tune.def (X86_TUNE_USE_GATHER_2PARTS): New tune
+	(X86_TUNE_USE_GATHER_4PARTS): New tune
+
+2022-03-29  Tom de Vries  <tdevries@suse.de>
+
+	* config/nvptx/nvptx.opt (march): Add alias of misa.
+
+2022-03-29  Chenghua Xu  <xuchenghua@loongson.cn>
+	    Lulu Cheng  <chenglulu@loongson.cn>
+
+	* doc/install.texi: Add LoongArch options section.
+	* doc/invoke.texi: Add LoongArch options section.
+	* doc/md.texi: Add LoongArch options section.
+
+2022-03-29  Chenghua Xu  <xuchenghua@loongson.cn>
+	    Lulu Cheng  <chenglulu@loongson.cn>
+
+	* config/loongarch/loongarch-c.cc
+
+2022-03-29  Chenghua Xu  <xuchenghua@loongson.cn>
+	    Lulu Cheng  <chenglulu@loongson.cn>
+
+	* config/loongarch/larchintrin.h: New file.
+	* config/loongarch/loongarch-builtins.cc: New file.
+
+2022-03-29  Chenghua Xu  <xuchenghua@loongson.cn>
+	    Lulu Cheng  <chenglulu@loongson.cn>
+
+	* config/host-linux.cc: Add LoongArch support.
+	* config/loongarch/loongarch-protos.h: New file.
+	* config/loongarch/loongarch-tune.h: Likewise.
+	* config/loongarch/loongarch.cc: Likewise.
+	* config/loongarch/loongarch.h: Likewise.
+
+2022-03-29  Chenghua Xu  <xuchenghua@loongson.cn>
+	    Lulu Cheng  <chenglulu@loongson.cn>
+
+	* config/loongarch/constraints.md: New file.
+	* config/loongarch/generic.md: New file.
+	* config/loongarch/la464.md: New file.
+	* config/loongarch/loongarch-ftypes.def: New file.
+	* config/loongarch/loongarch-modes.def: New file.
+	* config/loongarch/loongarch.md: New file.
+	* config/loongarch/predicates.md: New file.
+	* config/loongarch/sync.md: New file.
+
+2022-03-29  Chenghua Xu  <xuchenghua@loongson.cn>
+	    Lulu Cheng  <chenglulu@loongson.cn>
+
+	* configure: Regenerate file.
+
+2022-03-29  Chenghua Xu  <xuchenghua@loongson.cn>
+	    Lulu Cheng  <chenglulu@loongson.cn>
+
+	* common/config/loongarch/loongarch-common.cc: New file.
+	* config/loongarch/genopts/genstr.sh: New file.
+	* config/loongarch/genopts/loongarch-strings: New file.
+	* config/loongarch/genopts/loongarch.opt.in: New file.
+	* config/loongarch/loongarch-str.h: New file.
+	* config/loongarch/gnu-user.h: New file.
+	* config/loongarch/linux.h: New file.
+	* config/loongarch/loongarch-cpu.cc: New file.
+	* config/loongarch/loongarch-cpu.h: New file.
+	* config/loongarch/loongarch-def.c: New file.
+	* config/loongarch/loongarch-def.h: New file.
+	* config/loongarch/loongarch-driver.cc: New file.
+	* config/loongarch/loongarch-driver.h: New file.
+	* config/loongarch/loongarch-opts.cc: New file.
+	* config/loongarch/loongarch-opts.h: New file.
+	* config/loongarch/loongarch.opt: New file.
+	* config/loongarch/t-linux: New file.
+	* config/loongarch/t-loongarch: New file.
+	* config.gcc: Add LoongArch support.
+	* configure.ac: Add LoongArch support.
+
+2022-03-29  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* opt-functions.awk (lang_enabled_by): Fix 'enabledby_negargs'
+	typo.
+
+2022-03-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/105080
+	* tree-ssa-strlen.cc (printf_strlen_execute): Always init
+	loops and SCEV.
+
 2022-03-28  Indu Bhagat  <indu.bhagat@oracle.com>
 
 	* ctfout.cc (ctf_preprocess): Use ctfc_get_num_ctf_vars instead.

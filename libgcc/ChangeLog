@@ -1,3 +1,21 @@
+2022-03-29  Chenghua Xu  <xuchenghua@loongson.cn>
+	    Lulu Cheng  <chenglulu@loongson.cn>
+
+	* configure: Regenerate file.
+
+2022-03-29  Chenghua Xu  <xuchenghua@loongson.cn>
+	    Lulu Cheng  <chenglulu@loongson.cn>
+
+	* config/loongarch/crtfastmath.c: New file.
+	* config/loongarch/linux-unwind.h: Like wise.
+	* config/loongarch/sfp-machine.h: Like wise.
+	* config/loongarch/t-crtstuff: Like wise.
+	* config/loongarch/t-loongarch: Like wise.
+	* config/loongarch/t-loongarch64: Like wise.
+	* config/loongarch/t-softfp-tf: Like wise.
+	* config.host: Add LoongArch tuples.
+	* configure.ac: Add LoongArch support.
+
 2022-03-19  Sergei Trofimovich  <slyfox at gentoo dot org>
 
 	PR libgcc/86224

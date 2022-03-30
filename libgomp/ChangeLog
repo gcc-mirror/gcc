@@ -1,3 +1,8 @@
+2022-03-29  Chenghua Xu  <xuchenghua@loongson.cn>
+	    Lulu Cheng  <chenglulu@loongson.cn>
+
+	* configure.tgt: Add LoongArch triplet.
+
 2022-03-28  Tom de Vries  <tdevries@suse.de>
 
 	* plugin/configfrag.ac: Use /$(libexecdir:\$(exec_prefix)/%=%)/
