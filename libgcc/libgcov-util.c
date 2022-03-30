@@ -384,8 +384,8 @@ ftw_read_file (const char *filename,
                const struct stat *status ATTRIBUTE_UNUSED,
                int type)
 {
-  int filename_len;
-  int suffix_len;
+  size_t filename_len;
+  size_t suffix_len;
 
   /* Only read regular files.  */
   if (type != FTW_F)
