@@ -3873,7 +3873,8 @@ package body Sem_Res is
                   --  selector_name in selected_component or as a choice in
                   --  component_association.
 
-                  if Is_Object (Id)
+                  if Present (Id)
+                    and then Is_Object (Id)
                     and then Ekind (Id) not in E_Component | E_Discriminant
                     and then Is_Effectively_Volatile_For_Reading (Id)
                     and then
