@@ -21942,6 +21942,65 @@ ix86_seh_fixup_eh_fallthru (void)
       emit_insn_after (gen_nops (const1_rtx), insn);
     }
 }
+/* Split vector load from parm_decl to elemental loads to avoid STLF
+   stalls.  */
+static void
+ix86_split_stlf_stall_load ()
+{
+  rtx_insn* insn, *start = get_insns ();
+  unsigned window = 0;
+
+  for (insn = start; insn; insn = NEXT_INSN (insn))
+    {
+      if (!NONDEBUG_INSN_P (insn))
+	continue;
+      window++;
+      /* Insert 64 vaddps %xmm18, %xmm19, %xmm20(no dependence between each
+	 other, just emulate for pipeline) before stalled load, stlf stall
+	 case is as fast as no stall cases on CLX.
+	 Since CFG is freed before machine_reorg, just do a rough
+	 calculation of the window according to the layout.  */
+      if (window > (unsigned) x86_stlf_window_ninsns)
+	return;
+
+      if (any_uncondjump_p (insn)
+	  || ANY_RETURN_P (PATTERN (insn))
+	  || CALL_P (insn))
+	return;
+
+      rtx set = single_set (insn);
+      if (!set)
+	continue;
+      rtx src = SET_SRC (set);
+      if (!MEM_P (src)
+	  /* Only handle V2DFmode load since it doesn't need any scratch
+	     register.  */
+	  || GET_MODE (src) != E_V2DFmode
+	  || !MEM_EXPR (src)
+	  || TREE_CODE (get_base_address (MEM_EXPR (src))) != PARM_DECL)
+	continue;
+
+      rtx zero = CONST0_RTX (V2DFmode);
+      rtx dest = SET_DEST (set);
+      rtx m = adjust_address (src, DFmode, 0);
+      rtx loadlpd = gen_sse2_loadlpd (dest, zero, m);
+      emit_insn_before (loadlpd, insn);
+      m = adjust_address (src, DFmode, 8);
+      rtx loadhpd = gen_sse2_loadhpd (dest, dest, m);
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	{
+	  fputs ("Due to potential STLF stall, split instruction:\n",
+		 dump_file);
+	  print_rtl_single (dump_file, insn);
+	  fputs ("To:\n", dump_file);
+	  print_rtl_single (dump_file, loadlpd);
+	  print_rtl_single (dump_file, loadhpd);
+	}
+      PATTERN (insn) = loadhpd;
+      INSN_CODE (insn) = -1;
+      gcc_assert (recog_memoized (insn) != -1);
+    }
+}
 
 /* Implement machine specific optimizations.  We implement padding of returns
    for K8 CPUs and pass to avoid 4 jumps in the single 16 byte window.  */
@@ -21957,6 +22016,8 @@ ix86_reorg (void)
 
   if (optimize && optimize_function_for_speed_p (cfun))
     {
+      if (TARGET_SSE2)
+	ix86_split_stlf_stall_load ();
       if (TARGET_PAD_SHORT_FUNCTION)
 	ix86_pad_short_function ();
       else if (TARGET_PAD_RETURNS)
