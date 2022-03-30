@@ -50,6 +50,14 @@ struct DefId
     return ((uint64_t) this->crateNum << 32 | this->localDefId)
 	   < ((uint64_t) other.crateNum << 32 | other.localDefId);
   }
+
+  std::string as_string () const
+  {
+    std::string buf;
+    buf += std::to_string (crateNum);
+    buf += std::to_string (localDefId);
+    return buf;
+  }
 };
 
 #define UNKNOWN_CREATENUM ((uint32_t) (0))
