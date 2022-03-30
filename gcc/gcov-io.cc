@@ -35,7 +35,12 @@ struct gcov_var
   int error;			/* < 0 overflow, > 0 disk error.  */
   int mode;			/* < 0 writing, > 0 reading.  */
   int endian;			/* Swap endianness.  */
+#ifdef IN_GCOV_TOOL
+  gcov_position_t pos;		/* File position for stdin support.  */
+#endif
 } gcov_var;
+
+#define GCOV_MODE_STDIN 2
 
 /* Save the current position in the gcov file.  */
 /* We need to expose this function when compiling for gcov-tool.  */
@@ -45,6 +50,10 @@ static inline
 gcov_position_t
 gcov_position (void)
 {
+#ifdef IN_GCOV_TOOL
+  if (gcov_var.mode == GCOV_MODE_STDIN)
+    return gcov_var.pos;
+#endif
   return ftell (gcov_var.file);
 }
 
@@ -107,6 +116,16 @@ gcov_open (const char *name, int mode)
   gcov_var.error = 0;
 #if !IN_LIBGCOV || defined (IN_GCOV_TOOL)
   gcov_var.endian = 0;
+#endif
+#ifdef IN_GCOV_TOOL
+  gcov_var.pos = 0;
+  if (!name)
+    {
+      gcov_nonruntime_assert (gcov_var.mode > 0);
+      gcov_var.file = stdin;
+      gcov_var.mode = GCOV_MODE_STDIN;
+      return 1;
+    }
 #endif
 #if GCOV_LOCKED
   if (mode > 0)
@@ -190,6 +209,11 @@ gcov_open (const char *name, int mode)
 GCOV_LINKAGE int
 gcov_close (void)
 {
+#ifdef IN_GCOV_TOOL
+  if (gcov_var.file == stdin)
+    gcov_var.file = 0;
+  else
+#endif
   if (gcov_var.file)
     {
       if (fclose (gcov_var.file))
@@ -363,6 +387,9 @@ gcov_read_bytes (void *buffer, unsigned count)
   if (read != 1)
     return NULL;
 
+#ifdef IN_GCOV_TOOL
+  gcov_var.pos += count;
+#endif
   return buffer;
 }
 
@@ -499,6 +526,17 @@ gcov_sync (gcov_position_t base, gcov_unsigned_t length)
 {
   gcov_nonruntime_assert (gcov_var.mode > 0);
   base += length;
+#ifdef IN_GCOV_TOOL
+  if (gcov_var.mode == GCOV_MODE_STDIN)
+    {
+      while (gcov_var.pos < base)
+	{
+	  ++gcov_var.pos;
+	  (void)fgetc (gcov_var.file);
+	}
+      return;
+    }
+#endif
   fseek (gcov_var.file, base, SEEK_SET);
 }
 #endif
