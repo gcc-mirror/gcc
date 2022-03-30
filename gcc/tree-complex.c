@@ -569,7 +569,8 @@ set_component_ssa_name (tree ssa_name, bool imag_p, tree value)
     {
       /* Replace an anonymous base value with the variable from cvc_lookup.
 	 This should result in better debug info.  */
-      if (SSA_NAME_VAR (ssa_name)
+      if (!SSA_NAME_IS_DEFAULT_DEF (value)
+	  && SSA_NAME_VAR (ssa_name)
 	  && (!SSA_NAME_VAR (value) || DECL_IGNORED_P (SSA_NAME_VAR (value)))
 	  && !DECL_IGNORED_P (SSA_NAME_VAR (ssa_name)))
 	{
