@@ -661,10 +661,10 @@ package body Exp_Aggr is
 
                   declare
                      UI : constant Uint :=
-                            Expr_Value (Hi) - Expr_Value (Lo) + 1;
+                            (Expr_Value (Hi) - Expr_Value (Lo) + 1) * Siz;
                   begin
                      if UI_Is_In_Int_Range (UI) then
-                        return Siz * UI_To_Int (UI);
+                        return UI_To_Int (UI);
                      else
                         return Int'Last;
                      end if;
