@@ -292,3 +292,7 @@ Constant memmove size in bytes above which to start using MOPS sequence.
 -param=aarch64-mops-memset-size-threshold=
 Target Joined UInteger Var(aarch64_mops_memset_size_threshold) Init(256) Param
 Constant memset size in bytes from which to start using MOPS sequence.
+
+-param=aarch64-vect-unroll-limit=
+Target Joined UInteger Var(aarch64_vect_unroll_limit) Init(4) Param
+Limit how much the autovectorizer may unroll a loop.

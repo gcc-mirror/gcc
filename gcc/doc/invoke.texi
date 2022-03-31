@@ -15239,6 +15239,12 @@ If this parameter is set to @var{n}, GCC will not use this heuristic
 for loops that are known to execute in fewer than @var{n} Advanced
 SIMD iterations.
 
+@item aarch64-vect-unroll-limit
+The vectorizer will use available tuning information to determine whether it
+would be beneficial to unroll the main vectorized loop and by how much.  This
+parameter set's the upper bound of how much the vectorizer will unroll the main
+loop.  The default value is four.
+
 @end table
 
 @end table
