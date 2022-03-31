@@ -1,3 +1,23 @@
+2022-03-30  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/101030
+	* c-warn.cc (conversion_warning) <case COND_EXPR>: Don't call
+	conversion_warning when OP1 is null.
+
+2022-03-30  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* c.opt (Wc++11-extensions, Wc++14-extensions, Wc++17-extensions)
+	(Wc++20-extensions, Wc++23-extensions): Remove 'LangEnabledBy'
+	option properties.
+
+2022-03-30  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* c.opt (Wuse-after-free): Remove.
+
+2022-03-30  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* c.opt (Warray-bounds): Remove.
+
 2022-03-26  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* c.opt: Properly quote comment.

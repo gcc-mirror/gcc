@@ -1,3 +1,75 @@
+2022-03-30  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/100892
+	* gfortran.dg/associated_target_8.f90: New test.
+
+2022-03-30  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR middle-end/105032
+	* gcc.target/i386/pr105032.c: New.
+
+2022-03-30  Jakub Jelinek  <jakub@redhat.com>
+
+	Revert:
+	2022-03-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/80334
+	PR target/102772
+	* g++.dg/torture/pr80334.C: Change from dg-do run to dg-do compile.
+
+2022-03-30  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/101030
+	* g++.dg/ext/cond5.C: New test.
+
+2022-03-30  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/100474
+	* g++.dg/cpp2a/concepts-traits3.C: New test.
+
+2022-03-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/80334
+	PR target/102772
+	* g++.dg/torture/pr80334.C: Change from dg-do run to dg-do compile.
+
+2022-03-30  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/93280
+	PR c++/104583
+	* g++.dg/cpp0x/nsdmi-list7.C: New test.
+	* g++.dg/cpp0x/nsdmi-list8.C: New test.
+
+2022-03-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/105093
+	* g++.dg/ubsan/pr105093.C: New test.
+
+2022-03-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/105094
+	* gcc.dg/pr105094.c: New test.
+
+2022-03-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/105092
+	* g++.dg/gomp/pr105092.C: New test.
+
+2022-03-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/105061
+	* g++.dg/concepts/pr105061.C: New test.
+
+2022-03-30  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc.dg/analyzer/strndup-1.c: Add *-*-vxworks* to no-strndup
+	in libc.
+
+2022-03-30  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc.dg/weak/typeof-2.c: Add arm*-*-* to targets that may
+	place the call target in a constant pool.
+
 2022-03-29  David Malcolm  <dmalcolm@redhat.com>
 
 	PR testsuite/105085

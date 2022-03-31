@@ -1,3 +1,8 @@
+2022-03-30  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/100892
+	* check.cc (gfc_check_associated): Avoid NULL pointer dereference.
+
 2022-03-29  Harald Anlauf  <anlauf@gmx.de>
 	    Steven G. Kargl  <kargl@gcc.gnu.org>
 

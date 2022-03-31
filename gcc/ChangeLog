@@ -1,3 +1,50 @@
+2022-03-30  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	* config/rs6000/rs6000-builtins.def (NEG_V16QI): Move to [altivec]
+	stanza.
+	(NEG_V4SF): Likewise.
+	(NEG_V4SI): Likewise.
+	(NEG_V8HI): Likewise.
+	(NEG_V2DF): Move to [vsx] stanza.
+	(NEG_V2DI): Likewise.
+
+2022-03-30  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR middle-end/105032
+	* lra-assigns.cc (find_reload_regno_insns): Modify loop condition.
+
+2022-03-30  Tom de Vries  <tdevries@suse.de>
+	    Tobias Burnus  <tobias@codesourcery.com>
+
+	* doc/invoke.texi (march): Document __PTX_SM__.
+	 (mptx): Document __PTX_ISA_VERSION_MAJOR__ and
+	 __PTX_ISA_VERSION_MINOR__.
+
+2022-03-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/105093
+	* ubsan.cc (instrument_object_size): If t is equal to inner and
+	is a decl other than global var, punt.  When emitting call to
+	UBSAN_OBJECT_SIZE ifn, make sure base is addressable.
+
+2022-03-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/105094
+	* gimple-ssa-store-merging.cc (mem_valid_for_store_merging): Punt if
+	bitsize <= 0 rather than just == 0.
+
+2022-03-30  Tom de Vries  <tdevries@suse.de>
+
+	* doc/invoke.texi (misa, mptx): Update.
+	(march, march-map): Add.
+
+2022-03-30  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* opt-functions.awk (n_args): New function.
+	(lang_enabled_by): Merge function into...
+	* optc-gen.awk <END>: ... sole user here.
+	Improve diagnostics.
+
 2022-03-29  Marek Polacek  <polacek@redhat.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 
