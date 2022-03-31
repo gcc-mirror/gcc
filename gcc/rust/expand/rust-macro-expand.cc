@@ -195,7 +195,7 @@ MacroExpander::expand_invoc (AST::MacroInvocation &invoc)
   bool ok = mappings->lookup_macro_def (resolved_node, &rules_def);
   rust_assert (ok);
 
-  auto fragment = AST::ASTFragment::create_empty ();
+  auto fragment = AST::ASTFragment::create_error ();
 
   if (rules_def->is_builtin ())
     fragment
@@ -236,7 +236,7 @@ MacroExpander::expand_invoc_semi (AST::MacroInvocation &invoc)
   bool ok = mappings->lookup_macro_def (resolved_node, &rules_def);
   rust_assert (ok);
 
-  auto fragment = AST::ASTFragment::create_empty ();
+  auto fragment = AST::ASTFragment::create_error ();
 
   if (rules_def->is_builtin ())
     fragment
@@ -781,7 +781,7 @@ MacroExpander::match_repetition (Parser<MacroInvocLexer> &parser,
 /**
  * Helper function to refactor calling a parsing function 0 or more times
  */
-static std::vector<AST::SingleASTNode>
+static AST::ASTFragment
 parse_many (Parser<MacroInvocLexer> &parser, TokenId &delimiter,
 	    std::function<AST::SingleASTNode ()> parse_fn)
 {
@@ -795,7 +795,7 @@ parse_many (Parser<MacroInvocLexer> &parser, TokenId &delimiter,
       nodes.emplace_back (std::move (node));
     }
 
-  return nodes;
+  return AST::ASTFragment (std::move (nodes));
 }
 
 /**
@@ -804,7 +804,7 @@ parse_many (Parser<MacroInvocLexer> &parser, TokenId &delimiter,
  * @param parser Parser to extract items from
  * @param delimiter Id of the token on which parsing should stop
  */
-static std::vector<AST::SingleASTNode>
+static AST::ASTFragment
 transcribe_many_items (Parser<MacroInvocLexer> &parser, TokenId &delimiter)
 {
   return parse_many (parser, delimiter, [&parser] () {
@@ -819,7 +819,7 @@ transcribe_many_items (Parser<MacroInvocLexer> &parser, TokenId &delimiter)
  * @param parser Parser to extract items from
  * @param delimiter Id of the token on which parsing should stop
  */
-static std::vector<AST::SingleASTNode>
+static AST::ASTFragment
 transcribe_many_ext (Parser<MacroInvocLexer> &parser, TokenId &delimiter)
 {
   return parse_many (parser, delimiter, [&parser] () {
@@ -834,7 +834,7 @@ transcribe_many_ext (Parser<MacroInvocLexer> &parser, TokenId &delimiter)
  * @param parser Parser to extract items from
  * @param delimiter Id of the token on which parsing should stop
  */
-static std::vector<AST::SingleASTNode>
+static AST::ASTFragment
 transcribe_many_trait_items (Parser<MacroInvocLexer> &parser,
 			     TokenId &delimiter)
 {
@@ -850,7 +850,7 @@ transcribe_many_trait_items (Parser<MacroInvocLexer> &parser,
  * @param parser Parser to extract items from
  * @param delimiter Id of the token on which parsing should stop
  */
-static std::vector<AST::SingleASTNode>
+static AST::ASTFragment
 transcribe_many_impl_items (Parser<MacroInvocLexer> &parser, TokenId &delimiter)
 {
   return parse_many (parser, delimiter, [&parser] () {
@@ -865,7 +865,7 @@ transcribe_many_impl_items (Parser<MacroInvocLexer> &parser, TokenId &delimiter)
  * @param parser Parser to extract items from
  * @param delimiter Id of the token on which parsing should stop
  */
-static std::vector<AST::SingleASTNode>
+static AST::ASTFragment
 transcribe_many_trait_impl_items (Parser<MacroInvocLexer> &parser,
 				  TokenId &delimiter)
 {
@@ -881,7 +881,7 @@ transcribe_many_trait_impl_items (Parser<MacroInvocLexer> &parser,
  * @param parser Parser to extract statements from
  * @param delimiter Id of the token on which parsing should stop
  */
-static std::vector<AST::SingleASTNode>
+static AST::ASTFragment
 transcribe_many_stmts (Parser<MacroInvocLexer> &parser, TokenId &delimiter)
 {
   auto restrictions = ParseRestrictions ();
@@ -901,12 +901,12 @@ transcribe_many_stmts (Parser<MacroInvocLexer> &parser, TokenId &delimiter)
  *
  * @param parser Parser to extract statements from
  */
-static std::vector<AST::SingleASTNode>
+static AST::ASTFragment
 transcribe_expression (Parser<MacroInvocLexer> &parser)
 {
   auto expr = parser.parse_expr ();
 
-  return {AST::SingleASTNode (std::move (expr))};
+  return AST::ASTFragment ({std::move (expr)});
 }
 
 /**
@@ -914,15 +914,15 @@ transcribe_expression (Parser<MacroInvocLexer> &parser)
  *
  * @param parser Parser to extract statements from
  */
-static std::vector<AST::SingleASTNode>
+static AST::ASTFragment
 transcribe_type (Parser<MacroInvocLexer> &parser)
 {
-  auto expr = parser.parse_type ();
+  auto type = parser.parse_type ();
 
-  return {AST::SingleASTNode (std::move (expr))};
+  return AST::ASTFragment ({std::move (type)});
 }
 
-static std::vector<AST::SingleASTNode>
+static AST::ASTFragment
 transcribe_on_delimiter (Parser<MacroInvocLexer> &parser, bool semicolon,
 			 AST::DelimType delimiter, TokenId last_token_id)
 {
@@ -932,7 +932,7 @@ transcribe_on_delimiter (Parser<MacroInvocLexer> &parser, bool semicolon,
     return transcribe_expression (parser);
 } // namespace Rust
 
-static std::vector<AST::SingleASTNode>
+static AST::ASTFragment
 transcribe_context (MacroExpander::ContextType ctx,
 		    Parser<MacroInvocLexer> &parser, bool semicolon,
 		    AST::DelimType delimiter, TokenId last_token_id)
@@ -1049,7 +1049,7 @@ MacroExpander::transcribe_rule (
   //   as a statement (either via ExpressionStatement or
   //   MacroInvocationWithSemi)
 
-  auto nodes
+  auto fragment
     = transcribe_context (ctx, parser, semicolon,
 			  invoc_token_tree.get_delim_type (), last_token_id);
 
@@ -1072,6 +1072,6 @@ MacroExpander::transcribe_rule (
 		     "tokens here and after are unparsed");
     }
 
-  return AST::ASTFragment (std::move (nodes));
+  return fragment;
 }
 } // namespace Rust

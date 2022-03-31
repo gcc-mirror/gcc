@@ -200,7 +200,7 @@ struct MacroExpander
   MacroExpander (AST::Crate &crate, ExpansionCfg cfg, Session &session)
     : cfg (cfg), crate (crate), session (session),
       sub_stack (SubstitutionScope ()),
-      expanded_fragment (AST::ASTFragment::create_empty ()),
+      expanded_fragment (AST::ASTFragment::create_error ()),
       resolver (Resolver::Resolver::get ()),
       mappings (Analysis::Mappings::get ())
   {}
@@ -295,7 +295,7 @@ struct MacroExpander
   AST::ASTFragment take_expanded_fragment (AST::ASTVisitor &vis)
   {
     AST::ASTFragment old_fragment = std::move (expanded_fragment);
-    expanded_fragment = AST::ASTFragment::create_empty ();
+    expanded_fragment = AST::ASTFragment::create_error ();
 
     for (auto &node : old_fragment.get_nodes ())
       {

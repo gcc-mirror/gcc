@@ -1871,13 +1871,12 @@ public:
     return *this;
   }
 
-  static ASTFragment create_empty () { return ASTFragment ({}); }
   static ASTFragment create_error () { return ASTFragment ({}, true); }
 
   std::vector<SingleASTNode> &get_nodes () { return nodes; }
   bool is_error () const { return fragment_is_error; }
 
-  bool should_expand () const { return !is_error () && !nodes.empty (); }
+  bool should_expand () const { return !is_error (); }
 
   std::unique_ptr<Expr> take_expression_fragment ()
   {
