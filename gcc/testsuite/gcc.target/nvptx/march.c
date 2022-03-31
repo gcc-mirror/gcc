@@ -1,4 +1,4 @@
-/* { dg-options "-march=sm_30"} */
+/* { dg-options "-march=sm_30" } */
 
 #include "main.c"
 
