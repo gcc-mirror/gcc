@@ -1246,6 +1246,8 @@ dump_decl (cxx_pretty_printer *pp, tree t, int flags)
 	      || flags & TFF_CLASS_KEY_OR_ENUM))
 	{
 	  pp_cxx_ws_string (pp, "using");
+	  if (! (flags & TFF_UNQUALIFIED_NAME))
+	    dump_scope (pp, CP_DECL_CONTEXT (t), flags);
 	  dump_decl (pp, DECL_NAME (t), flags);
 	  pp_cxx_whitespace (pp);
 	  pp_cxx_ws_string (pp, "=");
