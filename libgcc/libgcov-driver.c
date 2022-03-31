@@ -595,14 +595,14 @@ write_one_data (const struct gcov_info *gi_ptr,
 static void
 dump_one_gcov (struct gcov_info *gi_ptr, struct gcov_filename *gf,
 	       unsigned run_counted ATTRIBUTE_UNUSED,
-	       gcov_type run_max ATTRIBUTE_UNUSED)
+	       gcov_type run_max ATTRIBUTE_UNUSED, int mode)
 {
   struct gcov_summary summary = {};
   int error;
   gcov_unsigned_t tag;
   fn_buffer = 0;
 
-  error = gcov_exit_open_gcda_file (gi_ptr, gf);
+  error = gcov_exit_open_gcda_file (gi_ptr, gf, mode);
   if (error == -1)
     return;
 
@@ -649,13 +649,13 @@ read_fatal:;
 
 /* Dump all the coverage counts for the program. It first computes program
    summary and then traverses gcov_list list and dumps the gcov_info
-   objects one by one.  */
+   objects one by one.  Use MODE to open files.  */
 
 #if !IN_GCOV_TOOL
 static
 #endif
 void
-gcov_do_dump (struct gcov_info *list, int run_counted)
+gcov_do_dump (struct gcov_info *list, int run_counted, int mode)
 {
   struct gcov_info *gi_ptr;
   struct gcov_filename gf;
@@ -678,7 +678,7 @@ gcov_do_dump (struct gcov_info *list, int run_counted)
   /* Now merge each file.  */
   for (gi_ptr = list; gi_ptr; gi_ptr = gi_ptr->next)
     {
-      dump_one_gcov (gi_ptr, &gf, run_counted, run_max);
+      dump_one_gcov (gi_ptr, &gf, run_counted, run_max, mode);
       free (gf.filename);
     }
 
@@ -701,7 +701,7 @@ __gcov_dump_one (struct gcov_root *root)
   if (root->dumped)
     return;
 
-  gcov_do_dump (root->list, root->run_counted);
+  gcov_do_dump (root->list, root->run_counted, 0);
   
   root->dumped = 1;
   root->run_counted = 1;
