@@ -405,7 +405,7 @@ ftw_read_file (const char *filename,
 
   if (!gcov_open (filename, 1))
     {
-      fnotice (stderr, "%s:cannot open\n", filename);
+      fnotice (stderr, "%s:cannot open:%s\n", filename, xstrerror (errno));
       return 0;
     }
 
@@ -819,7 +819,7 @@ gcov_profile_merge_stream (const char *filename, int w1, int w2)
 
   if (!gcov_open (filename, 1))
     {
-      fnotice (stderr, "%s:cannot open\n", filename);
+      fnotice (stderr, "%s:cannot open:%s\n", filename, xstrerror (errno));
       return NULL;
     }
 
