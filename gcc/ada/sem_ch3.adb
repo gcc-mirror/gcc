@@ -11047,6 +11047,14 @@ package body Sem_Ch3 is
          Subp := Node (Elmt);
          Alias_Subp := Alias (Subp);
 
+         --  If the parent type is untagged, then no overriding error checks
+         --  are needed (such as in the case of an implicit full type for
+         --  a derived type whose parent is an untagged private type with
+         --  a tagged full type).
+
+         if not Is_Tagged_Type (Etype (T)) then
+            null;
+
          --  Inherited subprograms are identified by the fact that they do not
          --  come from source, and the associated source location is the
          --  location of the first subtype of the derived type.
@@ -11065,7 +11073,7 @@ package body Sem_Ch3 is
          --  overriding in Ada 2005, but wrappers need to be built for them
          --  (see exp_ch3, Build_Controlling_Function_Wrappers).
 
-         if Is_Null_Extension (T)
+         elsif Is_Null_Extension (T)
            and then Has_Controlling_Result (Subp)
            and then Ada_Version >= Ada_2005
            and then Present (Alias_Subp)
