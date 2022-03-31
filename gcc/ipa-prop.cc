@@ -4181,6 +4181,20 @@ propagate_controlled_uses (struct cgraph_edge *cs)
 	  int d = ipa_get_controlled_uses (old_root_info, i);
 	  int c = rdesc->refcount;
 	  rdesc->refcount = combine_controlled_uses_counters (c, d);
+	  if (rdesc->refcount != IPA_UNDESCRIBED_USE
+	      && ipa_get_param_load_dereferenced (old_root_info, i))
+	    {
+	      tree cst = ipa_get_jf_constant (jf);
+	      gcc_checking_assert (TREE_CODE (cst) == ADDR_EXPR
+				   && (TREE_CODE (TREE_OPERAND (cst, 0))
+				       == VAR_DECL));
+	      symtab_node *n = symtab_node::get (TREE_OPERAND (cst, 0));
+	      new_root->create_reference (n, IPA_REF_LOAD, NULL);
+	      if (dump_file)
+		fprintf (dump_file, "ipa-prop: Address IPA constant will reach "
+			 "a load so adding LOAD reference from %s to %s.\n",
+			 new_root->dump_name (), n->dump_name ());
+	    }
 	  if (rdesc->refcount == 0)
 	    {
 	      tree cst = ipa_get_jf_constant (jf);
@@ -4193,20 +4207,8 @@ propagate_controlled_uses (struct cgraph_edge *cs)
 	      symtab_node *n = symtab_node::get (TREE_OPERAND (cst, 0));
 	      if (n)
 		{
-		  struct cgraph_node *clone;
-		  bool removed = remove_described_reference (n, rdesc);
-		  /* The reference might have been removed by IPA-CP.  */
-		  if (removed
-		      && ipa_get_param_load_dereferenced (old_root_info, i))
-		    {
-		      new_root->create_reference (n, IPA_REF_LOAD, NULL);
-		      if (dump_file)
-			fprintf (dump_file, "ipa-prop: ...replaced it with "
-				 "LOAD one from %s to %s.\n",
-				 new_root->dump_name (), n->dump_name ());
-		    }
-
-		  clone = cs->caller;
+		  remove_described_reference (n, rdesc);
+		  cgraph_node *clone = cs->caller;
 		  while (clone->inlined_to
 			 && clone->ipcp_clone
 			 && clone != rdesc->cs->caller)
