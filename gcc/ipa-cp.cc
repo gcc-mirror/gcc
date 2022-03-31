@@ -6154,8 +6154,32 @@ decide_whether_version_node (struct cgraph_node *node)
 	{
 	  ipcp_value<tree> *val;
 	  for (val = lat->values; val; val = val->next)
-	    ret |= decide_about_value (node, i, -1, val, &avals,
-				       &self_gen_clones);
+	    {
+	      /* If some values generated for self-recursive calls with
+		 arithmetic jump functions fall outside of the known
+		 value_range for the parameter, we can skip them.  VR interface
+		 supports this only for integers now.  */
+	      if (TREE_CODE (val->value) == INTEGER_CST
+		  && !plats->m_value_range.bottom_p ()
+		  && !plats->m_value_range.m_vr.contains_p (val->value))
+		{
+		  /* This can happen also if a constant present in the source
+		     code falls outside of the range of parameter's type, so we
+		     cannot assert.  */
+		  if (dump_file && (dump_flags & TDF_DETAILS))
+		    {
+		      fprintf (dump_file, " - skipping%s value ",
+			       val->self_recursion_generated_p ()
+			       ? " self_recursion_generated" : "");
+		      print_ipcp_constant_value (dump_file, val->value);
+		      fprintf (dump_file, " because it is outside known "
+			       "value range.\n");
+		    }
+		  continue;
+		}
+	      ret |= decide_about_value (node, i, -1, val, &avals,
+					 &self_gen_clones);
+	    }
 	}
 
       if (!plats->aggs_bottom)
