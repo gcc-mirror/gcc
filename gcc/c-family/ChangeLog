@@ -1,3 +1,12 @@
+2022-03-30  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2022-03-30  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/101030
+	* c-warn.c (conversion_warning) <case COND_EXPR>: Don't call
+	conversion_warning when OP1 is null.
+
 2022-03-29  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:

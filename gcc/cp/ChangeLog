@@ -1,3 +1,13 @@
+2022-03-30  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-03-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/105061
+	* parser.c (cp_parser_template_introduction): If member_p, temporarily
+	clear parser->colon_corrects_to_scope_p around tentative parsing of
+	nested name specifier.
+
 2022-03-29  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:

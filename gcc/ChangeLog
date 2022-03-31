@@ -1,3 +1,88 @@
+2022-03-30  H.J. Lu  <hjl.tools@gmail.com>
+
+	Backported from master:
+	2022-03-28  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/105068
+	* config/i386/sse.md (*ssse3_pshufbv8qi3): Also replace "Yv" with
+	"Yw" in clobber.
+
+2022-03-30  Kito Cheng  <kito.cheng@sifive.com>
+
+	* config.gcc (riscv*-*-*): Set right default isa spec.
+
+2022-03-30  Kito Cheng  <kito.cheng@sifive.com>
+
+	Backported from master:
+	2021-10-28  Kito Cheng  <kito.cheng@sifive.com>
+
+	* config/riscv/arch-canonicalize (CANONICAL_ORDER): Add `i` to
+	CANONICAL_ORDER.
+
+2022-03-30  Maciej W. Rozycki  <macro@embecosm.com>
+
+	Backported from master:
+	2021-11-03  Maciej W. Rozycki  <macro@embecosm.com>
+
+	* config/riscv/riscv.c (riscv_class_max_nregs): Swap the
+	arguments to `reg_class_subset_p'.
+
+2022-03-30  Kito Cheng  <kito.cheng@sifive.com>
+
+	Backported from master:
+	2021-11-11  Kito Cheng  <kito.cheng@sifive.com>
+
+	* common/config/riscv/riscv-common.c (riscv_subset_list::to_string): Fix
+	wrong marco checking.
+
+2022-03-30  Maciej W. Rozycki  <macro@embecosm.com>
+
+	Backported from master:
+	2022-01-18  Maciej W. Rozycki  <macro@embecosm.com>
+
+	* common/config/riscv/riscv-common.c
+	(riscv_subset_list::parse_multiletter_ext): Move pointer
+	arithmetic ahead of `free'.
+
+2022-03-30  Kito Cheng  <kito.cheng@sifive.com>
+
+	Backported from master:
+	2022-01-24  Kito Cheng  <kito.cheng@sifive.com>
+
+	* common/config/riscv/riscv-common.c (riscv_subset_list::to_string):
+	Skip zicsr and zifencei if I-ext is 2.0.
+
+2022-03-30  Kito Cheng  <kito.cheng@sifive.com>
+
+	Backported from master:
+	2022-02-05  Kito Cheng  <kito.cheng@sifive.com>
+
+	* configure.ac: Fix detection for zifencei support.
+	* configure: Regenerate.
+
+2022-03-30  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-03-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/105093
+	* ubsan.c (instrument_object_size): If t is equal to inner and
+	is a decl other than global var, punt.  When emitting call to
+	UBSAN_OBJECT_SIZE ifn, make sure base is addressable.
+
+2022-03-30  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-03-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/105094
+	* gimple-ssa-store-merging.c (mem_valid_for_store_merging): Punt if
+	bitsize <= 0 rather than just == 0.
+
+2022-03-30  Martin Liska  <mliska@suse.cz>
+
+	* lto-streamer.h (LTO_minor_version): Bump it.
+
 2022-03-29  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:
