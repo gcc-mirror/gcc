@@ -419,7 +419,7 @@ Driver Alias(symbolic)
 
 -target-help
 Common Driver
-Alias for --help=target.
+Display target specific command line options (including assembler and linker options).
 
 -time
 Driver Alias(time)
