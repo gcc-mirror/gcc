@@ -910,7 +910,8 @@ mark_addressable (tree x)
     x = TREE_OPERAND (x, 0);
   while (handled_component_p (x))
     x = TREE_OPERAND (x, 0);
-  if (TREE_CODE (x) == MEM_REF
+  if ((TREE_CODE (x) == MEM_REF
+       || TREE_CODE (x) == TARGET_MEM_REF)
       && TREE_CODE (TREE_OPERAND (x, 0)) == ADDR_EXPR)
     x = TREE_OPERAND (TREE_OPERAND (x, 0), 0);
   if (!VAR_P (x)
