@@ -813,7 +813,7 @@ substitute_and_fold_dom_walker::before_dom_children (basic_block bb)
       tree lhs = gimple_get_lhs (stmt);
       if (lhs && TREE_CODE (lhs) == SSA_NAME)
 	{
-	  tree sprime = substitute_and_fold_engine->value_of_expr (lhs, stmt);
+	  tree sprime = substitute_and_fold_engine->value_of_stmt (stmt, lhs);
 	  if (sprime
 	      && sprime != lhs
 	      && may_propagate_copy (lhs, sprime)
