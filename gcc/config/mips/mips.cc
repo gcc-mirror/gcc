@@ -6042,11 +6042,27 @@ mips_function_arg (cumulative_args_t cum_v, const function_arg_info &arg)
 	  for (i = 0; i < info.reg_words; i++)
 	    {
 	      rtx reg;
+	      bool zero_width_field_abi_change = false;
 
 	      for (; field; field = DECL_CHAIN (field))
-		if (TREE_CODE (field) == FIELD_DECL
-		    && int_bit_position (field) >= bitpos)
-		  break;
+		{
+		  if (TREE_CODE (field) != FIELD_DECL)
+		    continue;
+
+		  /* Ignore zero-width fields.  And, if the ignored
+		     field is not a C++ zero-width bit-field, it may be
+		     an ABI change.  */
+		  if (DECL_FIELD_CXX_ZERO_WIDTH_BIT_FIELD (field))
+		    continue;
+		  if (integer_zerop (DECL_SIZE (field)))
+		    {
+		      zero_width_field_abi_change = true;
+		      continue;
+		    }
+
+		  if (int_bit_position (field) >= bitpos)
+		    break;
+		}
 
 	      if (field
 		  && int_bit_position (field) == bitpos
@@ -6054,7 +6070,29 @@ mips_function_arg (cumulative_args_t cum_v, const function_arg_info &arg)
 		  && TYPE_PRECISION (TREE_TYPE (field)) == BITS_PER_WORD)
 		reg = gen_rtx_REG (DFmode, FP_ARG_FIRST + info.reg_offset + i);
 	      else
-		reg = gen_rtx_REG (DImode, GP_ARG_FIRST + info.reg_offset + i);
+		{
+		  reg = gen_rtx_REG (DImode,
+				     GP_ARG_FIRST + info.reg_offset + i);
+		  zero_width_field_abi_change = false;
+		}
+
+	      if (zero_width_field_abi_change && warn_psabi)
+		{
+		  static unsigned last_reported_type_uid;
+		  unsigned uid = TYPE_UID (TYPE_MAIN_VARIANT (arg.type));
+		  if (uid != last_reported_type_uid)
+		    {
+		      static const char *url
+			= CHANGES_ROOT_URL
+			  "gcc-12/changes.html#mips_zero_width_fields";
+		      inform (input_location,
+			      "the ABI for passing a value containing "
+			      "zero-width fields before an adjacent "
+			      "64-bit floating-point field was changed "
+			      "in GCC %{12.1%}", url);
+		      last_reported_type_uid = uid;
+		    }
+		}
 
 	      XVECEXP (ret, 0, i)
 		= gen_rtx_EXPR_LIST (VOIDmode, reg,
