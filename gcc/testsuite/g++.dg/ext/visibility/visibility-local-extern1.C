@@ -1,6 +1,7 @@
 // PR c++/103291
 // { dg-additional-options -fpic }
 // { dg-final { scan-assembler-not "@GOTPCREL" } }
+// { dg-require-effective-target fpic }
 
 #pragma GCC visibility push(hidden)
 
