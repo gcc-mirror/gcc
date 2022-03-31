@@ -2123,6 +2123,8 @@ instrument_object_size (gimple_stmt_iterator *gsi, tree t, bool is_lhs)
 	   || TREE_CODE (inner) == RESULT_DECL)
 	  && DECL_REGISTER (inner))
 	return;
+      if (t == inner && !is_global_var (t))
+	return;
       base = inner;
     }
   else if (TREE_CODE (inner) == MEM_REF)
@@ -2218,6 +2220,11 @@ instrument_object_size (gimple_stmt_iterator *gsi, tree t, bool is_lhs)
 	    return;
 	}
     }
+
+  if (DECL_P (base)
+      && decl_function_context (base) == current_function_decl
+      && !TREE_ADDRESSABLE (base))
+    mark_addressable (base);
 
   if (bos_stmt && gimple_call_builtin_p (bos_stmt, BUILT_IN_OBJECT_SIZE))
     ubsan_create_edge (bos_stmt);

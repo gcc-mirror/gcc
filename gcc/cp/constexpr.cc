@@ -9439,7 +9439,12 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
 	    }
 	}
       if (flags & tf_error)
-	error_at (loc, "expression %qE is not a constant expression", t);
+	{
+	  if (TREE_CODE (t) == IF_STMT)
+	    error_at (loc, "neither branch of %<if%> is a constant expression");
+	  else
+	    error_at (loc, "expression %qE is not a constant expression", t);
+	}
       return false;
 
     case VEC_INIT_EXPR:

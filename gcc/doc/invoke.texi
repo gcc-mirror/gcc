@@ -421,14 +421,13 @@ Objective-C and Objective-C++ Dialects}.
 -fanalyzer-checker=@var{name} @gol
 -fno-analyzer-feasibility @gol
 -fanalyzer-fine-grained @gol
--fanalyzer-state-merge @gol
--fanalyzer-state-purge @gol
+-fno-analyzer-state-merge @gol
+-fno-analyzer-state-purge @gol
 -fanalyzer-transitivity @gol
 -fanalyzer-verbose-edges @gol
 -fanalyzer-verbose-state-changes @gol
 -fanalyzer-verbosity=@var{level} @gol
 -fdump-analyzer @gol
--fdump-analyzer-stderr @gol
 -fdump-analyzer-callgraph @gol
 -fdump-analyzer-exploded-graph @gol
 -fdump-analyzer-exploded-nodes @gol
@@ -438,7 +437,9 @@ Objective-C and Objective-C++ Dialects}.
 -fdump-analyzer-feasibility @gol
 -fdump-analyzer-json @gol
 -fdump-analyzer-state-purge @gol
+-fdump-analyzer-stderr @gol
 -fdump-analyzer-supergraph @gol
+-fdump-analyzer-untracked @gol
 -Wno-analyzer-double-fclose @gol
 -Wno-analyzer-double-free @gol
 -Wno-analyzer-exposure-through-output-file @gol
@@ -994,6 +995,16 @@ Objective-C and Objective-C++ Dialects}.
 @emph{LM32 Options}
 @gccoptlist{-mbarrel-shift-enabled  -mdivide-enabled  -mmultiply-enabled @gol
 -msign-extend-enabled  -muser-enabled}
+
+@emph{LoongArch Options}
+@gccoptlist{-march=@var{cpu-type}  -mtune=@var{cpu-type} -mabi=@var{base-abi-type} @gol
+-mfpu=@var{fpu-type} -msoft-float -msingle-float -mdouble-float @gol
+-mbranch-cost=@var{n}  -mcheck-zero-division -mno-check-zero-division @gol
+-mcond-move-int  -mno-cond-move-int @gol
+-mcond-move-float  -mno-cond-move-float @gol
+-memcpy  -mno-memcpy -mstrict-align -mno-strict-align @gol
+-mmax-inline-memcpy-size=@var{n} @gol
+-mcmodel=@var{code-model}}
 
 @emph{M32R/D Options}
 @gccoptlist{-m32r2  -m32rx  -m32r @gol
@@ -9659,25 +9670,27 @@ Enabling this option effectively enables the following warnings:
 -Wanalyzer-free-of-non-heap @gol
 -Wanalyzer-malloc-leak @gol
 -Wanalyzer-mismatching-deallocation @gol
--Wanalyzer-possible-null-argument @gol
--Wanalyzer-possible-null-dereference @gol
 -Wanalyzer-null-argument @gol
 -Wanalyzer-null-dereference @gol
+-Wanalyzer-possible-null-argument @gol
+-Wanalyzer-possible-null-dereference @gol
 -Wanalyzer-shift-count-negative @gol
 -Wanalyzer-shift-count-overflow @gol
 -Wanalyzer-stale-setjmp-buffer @gol
+-Wanalyzer-unsafe-call-within-signal-handler @gol
+-Wanalyzer-use-after-free @gol
+-Wanalyzer-use-of-pointer-in-stale-stack-frame @gol
+-Wanalyzer-use-of-uninitialized-value @gol
+-Wanalyzer-write-to-const @gol
+-Wanalyzer-write-to-string-literal @gol
+}
+@ignore
 -Wanalyzer-tainted-allocation-size @gol
 -Wanalyzer-tainted-array-index @gol
 -Wanalyzer-tainted-divisor @gol
 -Wanalyzer-tainted-offset @gol
 -Wanalyzer-tainted-size @gol
--Wanalyzer-unsafe-call-within-signal-handler @gol
--Wanalyzer-use-after-free @gol
--Wanalyzer-use-of-uninitialized-value @gol
--Wanalyzer-use-of-pointer-in-stale-stack-frame @gol
--Wanalyzer-write-to-const @gol
--Wanalyzer-write-to-string-literal @gol
-}
+@end ignore
 
 This option is only available if GCC was configured with analyzer
 support enabled.
@@ -10015,6 +10028,25 @@ such as the @code{taint} checker that implements
 @option{-Wanalyzer-tainted-array-index}, and this option is required
 to enable them.
 
+@emph{Note:} currently, @option{-fanalyzer-checker=taint} disables the
+following warnings from @option{-fanalyzer}:
+
+@gccoptlist{ @gol
+-Wanalyzer-double-fclose @gol
+-Wanalyzer-double-free @gol
+-Wanalyzer-exposure-through-output-file @gol
+-Wanalyzer-file-leak @gol
+-Wanalyzer-free-of-non-heap @gol
+-Wanalyzer-malloc-leak @gol
+-Wanalyzer-mismatching-deallocation @gol
+-Wanalyzer-null-argument @gol
+-Wanalyzer-null-dereference @gol
+-Wanalyzer-possible-null-argument @gol
+-Wanalyzer-possible-null-dereference @gol
+-Wanalyzer-unsafe-call-within-signal-handler @gol
+-Wanalyzer-use-after-free @gol
+}
+
 @item -fno-analyzer-feasibility
 @opindex fanalyzer-feasibility
 @opindex fno-analyzer-feasibility
@@ -10190,6 +10222,10 @@ GraphViz to @file{@var{file}.supergraph.dot} and to
 control flow graphs in the program, with interprocedural edges for
 calls and returns.  The second dump contains annotations showing nodes
 in the ``exploded graph'' and diagnostics associated with them.
+
+@item -fdump-analyzer-untracked
+@opindex fdump-analyzer-untracked
+Emit custom warnings with internal details intended for analyzer developers.
 
 @end table
 
@@ -18879,6 +18915,7 @@ platform.
 * HPPA Options::
 * IA-64 Options::
 * LM32 Options::
+* LoongArch Options::
 * M32C Options::
 * M32R/D Options::
 * M680x0 Options::
@@ -24394,6 +24431,195 @@ Enable user-defined instructions.
 
 @end table
 
+@node LoongArch Options
+@subsection LoongArch Options
+@cindex LoongArch Options
+
+These command-line options are defined for LoongArch targets:
+
+@table @gcctabopt
+@item -march=@var{cpu-type}
+@opindex -march
+Generate instructions for the machine type @var{cpu-type}.  In contrast to
+@option{-mtune=@var{cpu-type}}, which merely tunes the generated code
+for the specified @var{cpu-type}, @option{-march=@var{cpu-type}} allows GCC
+to generate code that may not run at all on processors other than the one
+indicated.  Specifying @option{-march=@var{cpu-type}} implies
+@option{-mtune=@var{cpu-type}}, except where noted otherwise.
+
+The choices for @var{cpu-type} are:
+
+@table @samp
+@item native
+This selects the CPU to generate code for at compilation time by determining
+the processor type of the compiling machine.  Using @option{-march=native}
+enables all instruction subsets supported by the local machine (hence
+the result might not run on different machines).  Using @option{-mtune=native}
+produces code optimized for the local machine under the constraints
+of the selected instruction set.
+@item loongarch64
+A generic CPU with 64-bit extensions.
+@item la464
+LoongArch LA464 CPU with LBT, LSX, LASX, LVZ.
+@end table
+
+@item -mtune=@var{cpu-type}
+@opindex mtune
+Optimize the output for the given processor, specified by microarchitecture
+name.
+
+@item -mabi=@var{base-abi-type}
+@opindex mabi
+Generate code for the specified calling convention.
+@var{base-abi-type} can be one of:
+@table @samp
+@item lp64d
+Uses 64-bit general purpose registers and 32/64-bit floating-point
+registers for parameter passing.  Data model is LP64, where @samp{int}
+is 32 bits, while @samp{long int} and pointers are 64 bits.
+@item lp64f
+Uses 64-bit general purpose registers and 32-bit floating-point
+registers for parameter passing.  Data model is LP64, where @samp{int}
+is 32 bits, while @samp{long int} and pointers are 64 bits.
+@item lp64s
+Uses 64-bit general purpose registers and no floating-point
+registers for parameter passing.  Data model is LP64, where @samp{int}
+is 32 bits, while @samp{long int} and pointers are 64 bits.
+@end table
+
+@item -mfpu=@var{fpu-type}
+@opindex mfpu
+Generate code for the specified FPU type, which can be one of:
+@table @samp
+@item 64
+Allow the use of hardware floating-point instructions for 32-bit
+and 64-bit operations.
+@item 32
+Allow the use of hardware floating-point instructions for 32-bit
+operations.
+@item none
+@item 0
+Prevent the use of hardware floating-point instructions.
+@end table
+
+@item -msoft-float
+@opindex msoft-float
+Force @option{-mfpu=none} and prevents the use of floating-point
+registers for parameter passing.  This option may change the target
+ABI.
+
+@item -msingle-float
+@opindex -msingle-float
+Force @option{-mfpu=32} and allow the use of 32-bit floating-point
+registers for parameter passing.  This option may change the target
+ABI.
+
+@item -mdouble-float
+@opindex -mdouble-float
+Force @option{-mfpu=64} and allow the use of 32/64-bit floating-point
+registers for parameter passing.  This option may change the target
+ABI.
+
+@item -mbranch-cost=@var{n}
+@opindex -mbranch-cost
+Set the cost of branches to roughly @var{n} instructions.
+
+@item -mcheck-zero-division
+@itemx -mno-check-zero-divison
+@opindex -mcheck-zero-division
+Trap (do not trap) on integer division by zero.  The default is
+@option{-mcheck-zero-division}.
+
+@item -mcond-move-int
+@itemx -mno-cond-move-int
+@opindex -mcond-move-int
+Conditional moves for integral data in general-purpose registers
+are enabled (disabled).  The default is @option{-mcond-move-int}.
+
+@item -mcond-move-float
+@itemx -mno-cond-move-float
+@opindex -mcond-move-float
+Conditional moves for floating-point registers are enabled (disabled).
+The default is @option{-mcond-move-float}.
+
+@item -mmemcpy
+@itemx -mno-memcpy
+@opindex -mmemcpy
+Force (do not force) the use of @code{memcpy} for non-trivial block moves.
+The default is @option{-mno-memcpy}, which allows GCC to inline most
+constant-sized copies.  Setting optimization level to @option{-Os} also
+forces the use of @code{memcpy}, but @option{-mno-memcpy} may override this
+behavior if explicitly specified, regardless of the order these options on
+the command line.
+
+@item -mstrict-align
+@itemx -mno-strict-align
+@opindex -mstrict-align
+Avoid or allow generating memory accesses that may not be aligned on a natural
+object boundary as described in the architecture specification. The default is
+@option{-mno-strict-align}.
+
+@item -msmall-data-limit=@var{number}
+@opindex -msmall-data-limit
+Put global and static data smaller than @var{number} bytes into a special
+section (on some targets).  The default value is 0.
+
+@item -mmax-inline-memcpy-size=@var{n}
+@opindex -mmax-inline-memcpy-size
+Inline all block moves (such as calls to @code{memcpy} or structure copies)
+less than or equal to @var{n} bytes.  The default value of @var{n} is 1024.
+
+@item -mcmodel=@var{code-model}
+Set the code model to one of:
+@table @samp
+@item tiny-static
+@itemize @bullet
+@item
+local symbol and global strong symbol: The data section must be within +/-2MiB addressing space.
+The text section must be within +/-128MiB addressing space.
+@item
+global weak symbol: The got table must be within +/-2GiB addressing space.
+@end itemize
+
+@item tiny
+@itemize @bullet
+@item
+local symbol: The data section must be within +/-2MiB addressing space.
+The text section must be within +/-128MiB
+addressing space.
+@item
+global symbol: The got table must be within +/-2GiB addressing space.
+@end itemize
+
+@item normal
+@itemize @bullet
+@item
+local symbol: The data section must be within +/-2GiB addressing space.
+The text section must be within +/-128MiB addressing space.
+@item
+global symbol: The got table must be within +/-2GiB addressing space.
+@end itemize
+
+@item large
+@itemize @bullet
+@item
+local symbol: The data section must be within +/-2GiB addressing space.
+The text section must be within +/-128GiB addressing space.
+@item
+global symbol: The got table must be within +/-2GiB addressing space.
+@end itemize
+
+@item extreme(Not implemented yet)
+@itemize @bullet
+@item
+local symbol: The data and text section must be within +/-8EiB addressing space.
+@item
+global symbol: The data got table must be within +/-8EiB addressing space.
+@end itemize
+@end table
+The default code model is @code{normal}.
+@end table
+
 @node M32C Options
 @subsection M32C Options
 @cindex M32C options
@@ -27314,18 +27540,40 @@ These options are defined for Nvidia PTX:
 Ignored, but preserved for backward compatibility.  Only 64-bit ABI is
 supported.
 
-@item -misa=@var{ISA-string}
+@item -march=@var{architecture-string}
 @opindex march
-Generate code for given the specified PTX ISA (e.g.@: @samp{sm_35}).  ISA
-strings must be lower-case.  Valid ISA strings include @samp{sm_30} and
-@samp{sm_35}.  The default ISA is sm_35.
+Generate code for the specified PTX ISA target architecture
+(e.g.@: @samp{sm_35}).  Valid architecture strings are @samp{sm_30},
+@samp{sm_35}, @samp{sm_53}, @samp{sm_70}, @samp{sm_75} and
+@samp{sm_80}.  The default target architecture is sm_30.
+
+This option sets the value of the preprocessor macro
+@code{__PTX_SM__}; for instance, for @samp{sm_35}, it has the value
+@samp{350}.
+
+@item -misa=@var{architecture-string}
+@opindex misa
+Alias of @option{-march=}.
+
+@item -march-map=@var{architecture-string}
+@opindex march
+Select the closest available @option{-march=} value that is not more
+capable.  For instance, for @option{-march-map=sm_50} select
+@option{-march=sm_35}, and for @option{-march-map=sm_53} select
+@option{-march=sm_53}.
 
 @item -mptx=@var{version-string}
 @opindex mptx
-Generate code for given the specified PTX version (e.g.@: @samp{7.0}).
+Generate code for the specified PTX ISA version (e.g.@: @samp{7.0}).
 Valid version strings include @samp{3.1}, @samp{6.0}, @samp{6.3}, and
-@samp{7.0}.  The default PTX version is 6.0, unless a higher minimal
-version is required for specified PTX ISA via option @option{-misa=}.
+@samp{7.0}.  The default PTX ISA version is 6.0, unless a higher
+version is required for specified PTX ISA target architecture via
+option @option{-march=}.
+
+This option sets the values of the preprocessor macros
+@code{__PTX_ISA_VERSION_MAJOR__} and @code{__PTX_ISA_VERSION_MINOR__};
+for instance, for @samp{3.1} the macros have the values @samp{3} and
+@samp{1}, respectively.
 
 @item -mmainkernel
 @opindex mmainkernel

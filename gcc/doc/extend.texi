@@ -25144,7 +25144,7 @@ Requires: @code{type} shall be a complete type, (possibly cv-qualified)
 
 @item __has_trivial_assign (type)
 If @code{type} is @code{const}- qualified or is a reference type then
-the trait is @code{false}.  Otherwise if @code{__is_pod (type)} is
+the trait is @code{false}.  Otherwise if @code{__is_trivial (type)} is
 @code{true} then the trait is @code{true}, else if @code{type} is
 a cv-qualified class or union type with a trivial copy assignment
 ([class.copy]) then the trait is @code{true}, else it is @code{false}.
@@ -25152,7 +25152,7 @@ Requires: @code{type} shall be a complete type, (possibly cv-qualified)
 @code{void}, or an array of unknown bound.
 
 @item __has_trivial_copy (type)
-If @code{__is_pod (type)} is @code{true} or @code{type} is a reference
+If @code{__is_trivial (type)} is @code{true} or @code{type} is a reference
 type then the trait is @code{true}, else if @code{type} is a cv class
 or union type with a trivial copy constructor ([class.copy]) then the trait
 is @code{true}, else it is @code{false}.  Requires: @code{type} shall be
@@ -25160,7 +25160,7 @@ a complete type, (possibly cv-qualified) @code{void}, or an array of unknown
 bound.
 
 @item __has_trivial_constructor (type)
-If @code{__is_pod (type)} is @code{true} then the trait is @code{true},
+If @code{__is_trivial (type)} is @code{true} then the trait is @code{true},
 else if @code{type} is a cv-qualified class or union type (or array thereof)
 with a trivial default constructor ([class.ctor]) then the trait is @code{true},
 else it is @code{false}.
@@ -25168,7 +25168,7 @@ Requires: @code{type} shall be a complete type, (possibly cv-qualified)
 @code{void}, or an array of unknown bound.
 
 @item __has_trivial_destructor (type)
-If @code{__is_pod (type)} is @code{true} or @code{type} is a reference type
+If @code{__is_trivial (type)} is @code{true} or @code{type} is a reference type
 then the trait is @code{true}, else if @code{type} is a cv class or union
 type (or array thereof) with a trivial destructor ([class.dtor]) then
 the trait is @code{true}, else it is @code{false}.

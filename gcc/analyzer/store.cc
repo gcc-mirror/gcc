@@ -1823,7 +1823,8 @@ binding_cluster::make_unknown_relative_to (const binding_cluster *other,
 	{
 	  const region *base_reg
 	    = region_sval->get_pointee ()->get_base_region ();
-	  if (!base_reg->symbolic_for_unknown_ptr_p ())
+	  if (base_reg->tracked_p ()
+	      && !base_reg->symbolic_for_unknown_ptr_p ())
 	    {
 	      binding_cluster *c = out_store->get_or_create_cluster (base_reg);
 	      c->mark_as_escaped ();
@@ -1842,12 +1843,14 @@ binding_cluster::mark_as_escaped ()
 
 /* If this cluster has escaped (by this call, or by an earlier one, or
    by being an external param), then unbind all values and mark it
-   as "touched", so that it has an unknown value, rather than an
-   initial_svalue.  */
+   as "touched", so that it has a conjured value, rather than an
+   initial_svalue.
+   Use P to purge state involving conjured_svalues.  */
 
 void
 binding_cluster::on_unknown_fncall (const gcall *call,
-				    store_manager *mgr)
+				    store_manager *mgr,
+				    const conjured_purge &p)
 {
   if (m_escaped)
     {
@@ -1856,25 +1859,27 @@ binding_cluster::on_unknown_fncall (const gcall *call,
       /* Bind it to a new "conjured" value using CALL.  */
       const svalue *sval
 	= mgr->get_svalue_manager ()->get_or_create_conjured_svalue
-	    (m_base_region->get_type (), call, m_base_region);
+	    (m_base_region->get_type (), call, m_base_region, p);
       bind (mgr, m_base_region, sval);
 
       m_touched = true;
     }
 }
 
-/* Mark this cluster as having been clobbered by STMT.  */
+/* Mark this cluster as having been clobbered by STMT.
+   Use P to purge state involving conjured_svalues.  */
 
 void
 binding_cluster::on_asm (const gasm *stmt,
-			 store_manager *mgr)
+			 store_manager *mgr,
+			 const conjured_purge &p)
 {
   m_map.empty ();
 
   /* Bind it to a new "conjured" value using CALL.  */
   const svalue *sval
     = mgr->get_svalue_manager ()->get_or_create_conjured_svalue
-    (m_base_region->get_type (), stmt, m_base_region);
+    (m_base_region->get_type (), stmt, m_base_region, p);
   bind (mgr, m_base_region, sval);
 
   m_touched = true;
@@ -2384,10 +2389,16 @@ store::set_value (store_manager *mgr, const region *lhs_reg,
 	  mark_as_escaped (ptr_base_reg);
 	}
     }
-  else
+  else if (lhs_base_reg->tracked_p ())
     {
       lhs_cluster = get_or_create_cluster (lhs_base_reg);
       lhs_cluster->bind (mgr, lhs_reg, rhs_sval);
+    }
+  else
+    {
+      /* Reject attempting to bind values into an untracked region;
+	 merely invalidate values below.  */
+      lhs_cluster = NULL;
     }
 
   /* Bindings to a cluster can affect other clusters if a symbolic
@@ -2564,7 +2575,8 @@ void
 store::fill_region (store_manager *mgr, const region *reg, const svalue *sval)
 {
   const region *base_reg = reg->get_base_region ();
-  if (base_reg->symbolic_for_unknown_ptr_p ())
+  if (base_reg->symbolic_for_unknown_ptr_p ()
+      || !base_reg->tracked_p ())
     return;
   binding_cluster *cluster = get_or_create_cluster (base_reg);
   cluster->fill_region (mgr, reg, sval);
@@ -2587,7 +2599,8 @@ store::mark_region_as_unknown (store_manager *mgr, const region *reg,
 			       uncertainty_t *uncertainty)
 {
   const region *base_reg = reg->get_base_region ();
-  if (base_reg->symbolic_for_unknown_ptr_p ())
+  if (base_reg->symbolic_for_unknown_ptr_p ()
+      || !base_reg->tracked_p ())
     return;
   binding_cluster *cluster = get_or_create_cluster (base_reg);
   cluster->mark_region_as_unknown (mgr, reg, uncertainty);
@@ -2653,6 +2666,9 @@ store::get_or_create_cluster (const region *base_reg)
 
   /* We shouldn't create clusters for dereferencing an UNKNOWN ptr.  */
   gcc_assert (!base_reg->symbolic_for_unknown_ptr_p ());
+
+  /* We shouldn't create clusters for base regions that aren't trackable.  */
+  gcc_assert (base_reg->tracked_p ());
 
   if (binding_cluster **slot = m_cluster_map.get (base_reg))
     return *slot;
@@ -2742,7 +2758,8 @@ store::mark_as_escaped (const region *base_reg)
   gcc_assert (base_reg);
   gcc_assert (base_reg->get_base_region () == base_reg);
 
-  if (base_reg->symbolic_for_unknown_ptr_p ())
+  if (base_reg->symbolic_for_unknown_ptr_p ()
+      || !base_reg->tracked_p ())
     return;
 
   binding_cluster *cluster = get_or_create_cluster (base_reg);
@@ -2753,13 +2770,14 @@ store::mark_as_escaped (const region *base_reg)
    (either in this fncall, or in a prior one).  */
 
 void
-store::on_unknown_fncall (const gcall *call, store_manager *mgr)
+store::on_unknown_fncall (const gcall *call, store_manager *mgr,
+			  const conjured_purge &p)
 {
   m_called_unknown_fn = true;
 
   for (cluster_map_t::iterator iter = m_cluster_map.begin ();
        iter != m_cluster_map.end (); ++iter)
-    (*iter).second->on_unknown_fncall (call, mgr);
+    (*iter).second->on_unknown_fncall (call, mgr, p);
 }
 
 /* Return true if a non-const pointer to BASE_REG (or something within it)

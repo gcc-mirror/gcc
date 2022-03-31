@@ -367,7 +367,8 @@ enum ref_step_type
 
 struct component
 {
-  component (bool es) : eliminate_store_p (es), next (NULL) {}
+  component (bool es) : comp_step (RS_ANY), eliminate_store_p (es),
+    next (NULL) {}
 
   /* The references in the component.  */
   auto_vec<dref> refs;

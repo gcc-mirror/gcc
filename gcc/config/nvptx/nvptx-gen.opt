@@ -21,7 +21,7 @@
 
 Enum
 Name(ptx_isa) Type(int)
-Known PTX ISA versions (for use with the -misa= option):
+Known PTX ISA target architectures (for use with the -misa= option):
 
 EnumValue
 Enum(ptx_isa) String(sm_30) Value(PTX_ISA_SM30)

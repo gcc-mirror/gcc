@@ -473,9 +473,9 @@ mangle_path (char const *base)
 /* We need to expose the below function when compiling for gcov-tool.  */
 
 #if !IN_LIBGCOV || defined (IN_GCOV_TOOL)
-/* Read string from coverage file. Returns a pointer to a static
-   buffer, or NULL on empty string. You must copy the string before
-   calling another gcov function.  */
+/* Read string from coverage file.  Allocate the buffer for the string
+   from the heap or die.  Return a pointer to the string, or NULL on
+   empty string.  */
 
 GCOV_LINKAGE const char *
 gcov_read_string (void)

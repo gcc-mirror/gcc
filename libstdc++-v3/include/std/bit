@@ -69,6 +69,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #define __cpp_lib_bit_cast 201806L
 
   /// Create a value of type `To` from the bits of `from`.
+  /**
+   * @tparam _To   A trivially-copyable type.
+   * @param __from A trivially-copyable object of the same size as `_To`.
+   * @return       An object of type `_To`.
+   * @since C++20
+   */
   template<typename _To, typename _From>
     [[nodiscard]]
     constexpr _To
@@ -86,6 +92,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #define __cpp_lib_byteswap 202110L
 
   /// Reverse order of bytes in the object representation of `value`.
+  /**
+   * @tparam _Tp     An integral type.
+   * @param __value  An object of integer type.
+   * @return         An object of the same type, with the bytes reversed.
+   * @since C++23
+   */
   template<typename _Tp>
     [[nodiscard]]
     constexpr enable_if_t<is_integral<_Tp>::value, _Tp>
@@ -444,7 +456,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #define __cpp_lib_endian 201907L
 
-  /// Byte order
+  /// Byte order constants
+  /**
+   * The platform endianness can be checked by comparing `std::endian::native`
+   * to one of `std::endian::big` or `std::endian::little`.
+   *
+   * @since C++20
+   */
   enum class endian
   {
     little = __ORDER_LITTLE_ENDIAN__,

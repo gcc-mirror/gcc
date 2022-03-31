@@ -1,3 +1,56 @@
+2022-03-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/18_support/exception/38732.cc: Disable for C++23.
+	* testsuite/18_support/headers/exception/synopsis.cc: Likewise.
+	* testsuite/18_support/unexpected_handler.cc: Likewise.
+
+2022-03-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	* libsupc++/compare (_Strong_order) [!__cpp_using_enum]: Add
+	static data members for _Fp_fmt enumerators.
+
+2022-03-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/version (__cpp_lib_variant): Fix conditions to
+	match <variant>.
+	(__cpp_lib_expected): Fix condition to match <expected>.
+
+2022-03-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/20_util/optional/monadic/and_then.cc: Fix typo.
+	* testsuite/20_util/optional/monadic/transform.cc: Likewise.
+	* testsuite/22_locale/codecvt/always_noconv/char/1.cc: Likewise.
+	* testsuite/22_locale/codecvt/encoding/char/1.cc: Likewise.
+	* testsuite/22_locale/codecvt/in/char/1.cc: Likewise.
+	* testsuite/22_locale/codecvt/max_length/char/1.cc: Likewise.
+	* testsuite/22_locale/codecvt/out/char/1.cc: Likewise.
+	* testsuite/22_locale/codecvt/unshift/char/1.cc: Likewise.
+
+2022-03-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/doxygen/user.cfg.in: Add new header.
+	* include/Makefile.am: Likewise.
+	* include/Makefile.in: Regenerate.
+	* include/precompiled/stdc++.h: Add new header.
+	* include/std/version (__cpp_lib_expected): Define.
+	* libsupc++/exception [__cplusplus > 202002] (unexpected)
+	(unexpected_handler, set_unexpected): Do not declare for C++23.
+	* include/std/expected: New file.
+	* testsuite/20_util/expected/assign.cc: New test.
+	* testsuite/20_util/expected/cons.cc: New test.
+	* testsuite/20_util/expected/illformed_neg.cc: New test.
+	* testsuite/20_util/expected/observers.cc: New test.
+	* testsuite/20_util/expected/requirements.cc: New test.
+	* testsuite/20_util/expected/swap.cc: New test.
+	* testsuite/20_util/expected/synopsis.cc: New test.
+	* testsuite/20_util/expected/unexpected.cc: New test.
+	* testsuite/20_util/expected/version.cc: New test.
+
+2022-03-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/bit (bit_cast, byteswap, endian): Add doxygen
+	comments.
+
 2022-03-23  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/105027

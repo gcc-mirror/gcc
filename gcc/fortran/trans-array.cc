@@ -6267,10 +6267,17 @@ gfc_conv_array_initializer (tree type, gfc_expr * expr)
       else
 	gfc_conv_structure (&se, expr, 1);
 
-      CONSTRUCTOR_APPEND_ELT (v, build2 (RANGE_EXPR, gfc_array_index_type,
-					 TYPE_MIN_VALUE (TYPE_DOMAIN (type)),
-					 TYPE_MAX_VALUE (TYPE_DOMAIN (type))),
-			      se.expr);
+      if (tree_int_cst_lt (TYPE_MAX_VALUE (TYPE_DOMAIN (type)),
+			   TYPE_MIN_VALUE (TYPE_DOMAIN (type))))
+	break;
+      else if (tree_int_cst_equal (TYPE_MIN_VALUE (TYPE_DOMAIN (type)),
+				   TYPE_MAX_VALUE (TYPE_DOMAIN (type))))
+	range = TYPE_MIN_VALUE (TYPE_DOMAIN (type));
+      else
+	range = build2 (RANGE_EXPR, gfc_array_index_type,
+			TYPE_MIN_VALUE (TYPE_DOMAIN (type)),
+			TYPE_MAX_VALUE (TYPE_DOMAIN (type)));
+      CONSTRUCTOR_APPEND_ELT (v, range, se.expr);
       break;
 
     case EXPR_ARRAY:

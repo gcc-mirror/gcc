@@ -1,6 +1,6 @@
 C PR rtl-optimization/58968.f
 C { dg-do compile { target powerpc*-*-* } }
-C { dg-options "-mcpu=power7 -O3 -w -ffast-math  -funroll-loops" }
+C { dg-options "-mdejagnu-cpu=power7 -O3 -w -ffast-math  -funroll-loops" }
       SUBROUTINE MAKTABS(IW,SOME,LBOX1,LBOX2,LBOX3,NSPACE,NA,NB,
      *            LBST,X,
      *            NX,IAMA,IAMI,IBMA,IBMI,MNUM,IDIM,MSTA,IBO,

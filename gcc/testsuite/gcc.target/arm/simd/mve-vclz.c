@@ -21,9 +21,8 @@ FUNC(u, uint, 16, clz)
 FUNC(s, int, 8, clz)
 FUNC(u, uint, 8, clz)
 
-/* 16 and 8-bit versions still use 32-bit intermediate temporaries, so for
-   instance instead of using vclz.i8, we need 4 vclz.i32, leading to a total of
-   14 vclz.i32 expected in this testcase.  */
-/* { dg-final { scan-assembler-times {vclz\.i32  q[0-9]+, q[0-9]+} 14 } } */
+/* 16 and 8-bit versions are not vectorized because they need pack/unpack
+   patterns since __builtin_clz uses 32-bit parameter and return value.  */
+/* { dg-final { scan-assembler-times {vclz\.i32  q[0-9]+, q[0-9]+} 2 } } */
 /* { dg-final { scan-assembler-times {vclz\.i16  q[0-9]+, q[0-9]+} 2 { xfail *-*-* } } } */
 /* { dg-final { scan-assembler-times {vclz\.i8  q[0-9]+, q[0-9]+} 2 { xfail *-*-* } } } */

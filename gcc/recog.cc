@@ -329,6 +329,17 @@ canonicalize_change_group (rtx_insn *insn, rtx x)
     return false;
 }
 
+/* Check if REG_INC argument in *data overlaps a stored REG.  */
+
+static void
+check_invalid_inc_dec (rtx reg, const_rtx, void *data)
+{
+  rtx *pinc = (rtx *) data;
+  if (*pinc == NULL_RTX || MEM_P (reg))
+    return;
+  if (reg_overlap_mentioned_p (reg, *pinc))
+    *pinc = NULL_RTX;
+}
 
 /* This subroutine of apply_change_group verifies whether the changes to INSN
    were valid; i.e. whether INSN can still be recognized.
@@ -385,6 +396,17 @@ insn_invalid_p (rtx_insn *insn, bool in_group)
       if (! constrain_operands (1, get_preferred_alternatives (insn)))
 	return 1;
     }
+
+  /* Punt if REG_INC argument overlaps some stored REG.  */
+  for (rtx link = FIND_REG_INC_NOTE (insn, NULL_RTX);
+       link; link = XEXP (link, 1))
+    if (REG_NOTE_KIND (link) == REG_INC)
+      {
+	rtx reg = XEXP (link, 0);
+	note_stores (insn, check_invalid_inc_dec, &reg);
+	if (reg == NULL_RTX)
+	  return 1;
+      }
 
   INSN_CODE (insn) = icode;
   return 0;

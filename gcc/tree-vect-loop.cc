@@ -5271,9 +5271,17 @@ vect_create_epilog_for_reduction (loop_vec_info loop_vinfo,
     /* All statements produce live-out values.  */
     live_out_stmts = SLP_TREE_SCALAR_STMTS (slp_node);
   else if (slp_node)
-    /* The last statement in the reduction chain produces the live-out
-       value.  */
-    single_live_out_stmt[0] = SLP_TREE_SCALAR_STMTS (slp_node)[group_size - 1];
+    {
+      /* The last statement in the reduction chain produces the live-out
+	 value.  Note SLP optimization can shuffle scalar stmts to
+	 optimize permutations so we have to search for the last stmt.  */
+      for (k = 0; k < group_size; ++k)
+	if (!REDUC_GROUP_NEXT_ELEMENT (SLP_TREE_SCALAR_STMTS (slp_node)[k]))
+	  {
+	    single_live_out_stmt[0] = SLP_TREE_SCALAR_STMTS (slp_node)[k];
+	    break;
+	  }
+    }
 
   unsigned vec_num;
   int ncopies;

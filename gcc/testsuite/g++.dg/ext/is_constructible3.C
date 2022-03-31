@@ -8,7 +8,7 @@ struct A {
     B() = default;
   };
 
-  static constexpr bool v = __is_constructible (B); // { dg-error "member initializer" }
+  static constexpr bool v = __is_constructible (B);
 
 };
 

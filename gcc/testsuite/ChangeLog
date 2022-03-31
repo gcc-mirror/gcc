@@ -1,3 +1,434 @@
+2022-03-30  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/100892
+	* gfortran.dg/associated_target_8.f90: New test.
+
+2022-03-30  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR middle-end/105032
+	* gcc.target/i386/pr105032.c: New.
+
+2022-03-30  Jakub Jelinek  <jakub@redhat.com>
+
+	Revert:
+	2022-03-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/80334
+	PR target/102772
+	* g++.dg/torture/pr80334.C: Change from dg-do run to dg-do compile.
+
+2022-03-30  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/101030
+	* g++.dg/ext/cond5.C: New test.
+
+2022-03-30  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/100474
+	* g++.dg/cpp2a/concepts-traits3.C: New test.
+
+2022-03-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/80334
+	PR target/102772
+	* g++.dg/torture/pr80334.C: Change from dg-do run to dg-do compile.
+
+2022-03-30  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/93280
+	PR c++/104583
+	* g++.dg/cpp0x/nsdmi-list7.C: New test.
+	* g++.dg/cpp0x/nsdmi-list8.C: New test.
+
+2022-03-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/105093
+	* g++.dg/ubsan/pr105093.C: New test.
+
+2022-03-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/105094
+	* gcc.dg/pr105094.c: New test.
+
+2022-03-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/105092
+	* g++.dg/gomp/pr105092.C: New test.
+
+2022-03-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/105061
+	* g++.dg/concepts/pr105061.C: New test.
+
+2022-03-30  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc.dg/analyzer/strndup-1.c: Add *-*-vxworks* to no-strndup
+	in libc.
+
+2022-03-30  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc.dg/weak/typeof-2.c: Add arm*-*-* to targets that may
+	place the call target in a constant pool.
+
+2022-03-29  David Malcolm  <dmalcolm@redhat.com>
+
+	PR testsuite/105085
+	* gcc.dg/analyzer/untracked-1.c: Add further test coverage.
+
+2022-03-29  Harald Anlauf  <anlauf@gmx.de>
+	    Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/104571
+	* gfortran.dg/pr104571.f90: New test.
+
+2022-03-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	* lib/g++-dg.exp: Update comments.
+	* lib/g++.exp (gpp_std_list): Check for an existing value before
+	setting it to an empty list.
+
+2022-03-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	* g++.dg/cpp0x/noexcept06.C: Disable for C++23.
+
+2022-03-29  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/50549
+	* gfortran.dg/char_pointer_assign_7.f90: New test.
+
+2022-03-29  Marek Polacek  <polacek@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/103597
+	* c-c++-common/Wimplicit-fallthrough-39.c: New test.
+
+2022-03-29  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/71637
+	* c-c++-common/Wmisleading-indentation-6.c: New test.
+
+2022-03-29  Richard Earnshaw  <rearnsha@arm.com>
+
+	* gcc.target/aarch64/aapcs64/test_28.c: New test.
+
+2022-03-29  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/102024
+	* gcc.target/arm/aapcs/vfp26.c: New test.
+
+2022-03-29  Tom de Vries  <tdevries@suse.de>
+
+	PR target/104857
+	* gcc.target/nvptx/ptx31.c: New test.
+	* gcc.target/nvptx/ptx60.c: New test.
+	* gcc.target/nvptx/ptx63.c: New test.
+	* gcc.target/nvptx/ptx70.c: New test.
+
+2022-03-29  Tom de Vries  <tdevries@suse.de>
+
+	PR target/104714
+	* gcc.target/nvptx/march-map.c: New test.
+
+2022-03-29  Tom de Vries  <tdevries@suse.de>
+
+	* gcc.target/nvptx/main.c: New test.
+	* gcc.target/nvptx/march.c: New test.
+
+2022-03-29  Chenghua Xu  <xuchenghua@loongson.cn>
+	    Lulu Cheng  <chenglulu@loongson.cn>
+
+	* g++.dg/cpp0x/constexpr-rom.C: Add build options for LoongArch.
+	* g++.old-deja/g++.abi/ptrmem.C: Add LoongArch support.
+	* g++.old-deja/g++.pt/ptrmem6.C: xfail for LoongArch.
+	* gcc.dg/20020312-2.c: Add LoongArch support.
+	* c-c++-common/zero-scratch-regs-10.c: Like wise
+	* c-c++-common/zero-scratch-regs-11.c: Like wise
+	* c-c++-common/zero-scratch-regs-8.c: Like wise
+	* c-c++-common/zero-scratch-regs-9.c: Like wise
+	* gcc.dg/loop-8.c: Skip on LoongArch.
+	* gcc.dg/torture/stackalign/builtin-apply-2.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-fre-3.c: Likewise.
+	* go.test/go-test.exp: Define the LoongArch target.
+	* lib/target-supports.exp: Like wise.
+	* gcc.target/loongarch/loongarch.exp: New file.
+	* gcc.target/loongarch/tst-asm-const.c: Like wise.
+	* gcc.target/loongarch/larch-builtin.c: Like wise.
+
+2022-03-29  Marc Poulhiès  <poulhies@adacore.com>
+
+	* gcc.target/i386/pr103275.c: Add missing
+	dg-require-effective-target for checking fpic.
+
+2022-03-29  Marc Poulhiès  <poulhies@adacore.com>
+
+	* gcc.target/i386/pr97521.c: Add -Wno-psabi to dg-options.
+	* gcc.dg/analyzer/pr96713.c: Likewise.
+
+2022-03-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/105080
+	* gcc.dg/pr105080.c: New testcase.
+
+2022-03-29  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/analyzer/pr105087-1.c: New test.
+	* gcc.dg/analyzer/pr105087-2.c: New test.
+	* gcc.dg/analyzer/vasprintf-1.c: New test.
+
+2022-03-29  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/105074
+	* gcc.dg/analyzer/pr105074.c: New test.
+	* gcc.dg/analyzer/untracked-1.c (extern_fn_char_ptr): New decl.
+	(test_13): New.
+
+2022-03-28  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/105067
+	* g++.dg/cpp2a/concepts-err4.C: New test.
+
+2022-03-28  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/105064
+	* g++.dg/cpp2a/concepts-friend9.C: New test.
+
+2022-03-28  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105003
+	PR c++/104008
+	PR c++/102869
+	* g++.dg/cpp0x/variadic-alias6.C: New test.
+	* g++.dg/cpp0x/variadic-alias7.C: New test.
+
+2022-03-28  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/104308
+	* gcc.dg/analyzer/pr104308.c: New test.
+	* gcc.dg/uninit-40.c (foo): Update expression in expected message.
+
+2022-03-28  Jason Merrill  <jason@redhat.com>
+
+	PR c++/102071
+	* g++.dg/cpp1z/aligned-new9.C: New test.
+
+2022-03-28  Jason Merrill  <jason@redhat.com>
+
+	PR c++/103291
+	* g++.dg/ext/visibility/visibility-local-extern1.C: New test.
+
+2022-03-28  Jason Merrill  <jason@redhat.com>
+
+	PR c++/102123
+	* g++.dg/cpp1z/class-deduction110.C: New test.
+
+2022-03-28  Jason Merrill  <jason@redhat.com>
+
+	PR c++/103968
+	* g++.dg/cpp0x/alias-decl-mem1.C: New test.
+
+2022-03-28  Jason Merrill  <jason@redhat.com>
+
+	PR c++/103943
+	* g++.dg/cpp1z/class-deduction109.C: New test.
+
+2022-03-28  Jason Merrill  <jason@redhat.com>
+
+	PR c++/102045
+	* g++.dg/cpp1z/aggr-base12.C: New test.
+
+2022-03-28  Jason Merrill  <jason@redhat.com>
+
+	PR c++/104847
+	* g++.dg/abi/mangle-union1.C: New test.
+
+2022-03-28  Jason Merrill  <jason@redhat.com>
+
+	PR c++/99445
+	PR c++/103769
+	* g++.dg/cpp0x/variadic-alias5.C: New test.
+
+2022-03-28  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr105066.c: New test.
+
+2022-03-28  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/torture/pr100786.c: Add dg-require alias.
+
+2022-03-27  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/105068
+	* gcc.target/i386/pr105068.c: New test.
+
+2022-03-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/103775
+	* gcc.dg/pr103775.c: New test.
+
+2022-03-26  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/105050
+	* g++.dg/cpp1y/constexpr-105050.C: New test.
+
+2022-03-26  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/103455
+	* g++.dg/overload/builtin6.C: New test.
+
+2022-03-26  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/105057
+	* gcc.dg/analyzer/fread-2.c: New test, as a regression test for
+	ICE in store::set_value on untracked base region.
+	* gcc.dg/analyzer/memset-2.c: Likewise, for ICE in
+	store::fill_region.
+	* gcc.dg/analyzer/strcpy-2.c: Likewise, for ICE in
+	store::mark_region_as_unknown.
+
+2022-03-26  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/builtin-convertvector-3.c: New test.
+	* g++.dg/cpp2a/bit-cast15.C: New test.
+
+2022-03-25  Peter Bergner  <bergner@linux.ibm.com>
+
+	* g++.dg/pr65240-1.C: Use -mdejagnu-cpu=.  Remove dg-skip-if.
+	* g++.dg/pr65240-2.C: Likewise.
+	* g++.dg/pr65240-3.C: Likewise.
+	* g++.dg/pr65240-4.C: Likewise.
+	* g++.dg/pr65242.C: Likewise.
+	* g++.dg/pr67211.C: Likewise.
+	* g++.dg/pr69667.C: Likewise.
+	* g++.dg/pr71294.C: Likewise.
+	* g++.dg/pr84279.C: Likewise.
+	* g++.dg/torture/ppc-ldst-array.C: Likewise.
+	* gfortran.dg/nint_p7.f90: Likewise.
+	* gfortran.dg/pr102860.f90: Likewise.
+	* gcc.target/powerpc/fusion.c: Use -mdejagnu-cpu= and -mdejagnu-tune=.
+	* gcc.target/powerpc/fusion2.c: Likewise.
+	* gcc.target/powerpc/int_128bit-runnable.c: Use -mdejagnu-cpu=.
+	* gcc.target/powerpc/test_mffsl.c: Likewise.
+	* gfortran.dg/pr47614.f: Likewise.
+	* gfortran.dg/pr58968.f: Likewise.
+
+2022-03-25  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR testsuite/105055
+	* gcc.target/i386/pr95483-1.c: Replace -msse with -msse2.
+
+2022-03-25  Christophe Lyon  <christohe.lyon@arm.com>
+
+	PR target/104882
+	* gcc.target/arm/simd/mve-vclz.c: Update expected results.
+	* gcc.target/arm/simd/mve-vshl.c: Likewise.
+	* gcc.target/arm/simd/mve-vec-pack.c: Delete.
+	* gcc.target/arm/simd/mve-vec-unpack.c: Delete.
+	* gcc.target/arm/simd/pr104882.c: New test.
+
+2022-03-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/105053
+	* g++.dg/vect/pr105053.cc: New testcase.
+
+2022-03-25  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/104944
+	* g++.dg/cpp0x/alignas20.C: New test.
+
+2022-03-25  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/105049
+	* gcc.dg/pr105049.c: New testcase.
+
+2022-03-25  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/104954
+	* gcc.dg/analyzer/asm-x86-dyndbg-1.c: New test.
+	* gcc.dg/analyzer/asm-x86-dyndbg-2.c: New test.
+	* gcc.dg/analyzer/many-unused-locals.c: New test.
+	* gcc.dg/analyzer/untracked-1.c: New test.
+	* gcc.dg/analyzer/unused-local-1.c: New test.
+
+2022-03-24  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/104284
+	* g++.dg/cpp1y/constexpr-104284-1.C: New test.
+	* g++.dg/cpp1y/constexpr-104284-2.C: New test.
+	* g++.dg/cpp1y/constexpr-104284-3.C: New test.
+	* g++.dg/cpp1y/constexpr-104284-4.C: New test.
+
+2022-03-24  Jason Merrill  <jason@redhat.com>
+
+	PR c++/96645
+	* g++.dg/ext/is_constructible3.C: Expect error.
+	* g++.dg/ext/is_constructible7.C: New test.
+
+2022-03-24  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/102990
+	* g++.dg/cpp0x/nsdmi-template22.C: New test.
+	* g++.dg/cpp0x/nsdmi-template23.C: New test.
+
+2022-03-24  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/104620
+	* g++.dg/cpp23/consteval-if2.C: XFAIL two dg-error tests where
+	the argument to the non-constant non-dependent consteval call is
+	wrapped by NON_DEPENDENT_EXPR.
+	* g++.dg/cpp2a/consteval30.C: New test.
+
+2022-03-24  Alexandre Oliva  <oliva@adacore.com>
+
+	PR debug/104564
+	* c-c++-common/torture/harden-comp.c: Adjust.
+	* c-c++-common/torture/harden-cond.c: Adjust.
+
+2022-03-24  Alexandre Oliva  <oliva@adacore.com>
+
+	PR middle-end/104975
+	* gcc.dg/pr104975.c: New.
+
+2022-03-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/102024
+	* gcc.dg/compat/pr102024_main.c: New test.
+	* gcc.dg/compat/pr102024_test.h: New test.
+	* gcc.dg/compat/pr102024_x.c: New test.
+	* gcc.dg/compat/pr102024_y.c: New test.
+	* g++.dg/compat/pr102024_main.C: New test.
+	* g++.dg/compat/pr102024_test.h: New test.
+	* g++.dg/compat/pr102024_x.C: New test.
+	* g++.dg/compat/pr102024_y.C: New test.
+
+2022-03-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/105035
+	* g++.dg/warn/Wduplicated-cond2.C: New test.
+
+2022-03-24  Siddhesh Poyarekar  <siddhesh@gotplt.org>
+
+	PR tree-optimization/104970
+	* gcc.dg/builtin-dynamic-object-size-0.c (test_parmsz_simple2,
+	test_parmsz_simple3, test_parmsz_extern, test_parmsz_internal,
+	test_parmsz_internal2, test_parmsz_internal3): New tests.
+	(main): Use them.
+
+2022-03-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/104994
+	* g++.dg/diagnostic/constexpr1.C: Change expected diagnostic wording
+	from declared to defined.
+	* g++.dg/cpp23/constexpr-nonlit1.C: Likewise.
+	(garply): Change dg-error into dg-bogus.
+	* g++.dg/cpp23/constexpr-nonlit2.C: Change expected diagnostic wording
+	from declaration to definition.
+	* g++.dg/cpp23/constexpr-nonlit6.C: Change expected diagnostic wording
+	from declared to defined.
+	* g++.dg/cpp23/constexpr-nonlit7.C: New test.
+	* g++.dg/cpp2a/constexpr-try5.C: Change expected diagnostic wording
+	from declared to defined.
+	* g++.dg/cpp2a/consteval3.C: Likewise.
+
 2022-03-23  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/104979

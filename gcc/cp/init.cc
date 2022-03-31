@@ -679,10 +679,10 @@ get_nsdmi (tree member, bool in_ctor, tsubst_flags_t complain)
   if (simple_target)
     init = TARGET_EXPR_INITIAL (init);
   init = break_out_target_exprs (init, /*loc*/true);
-  if (in_ctor && init && TREE_CODE (init) == TARGET_EXPR)
-    /* This expresses the full initialization, prevent perform_member_init from
-       calling another constructor (58162).  */
-    TARGET_EXPR_DIRECT_INIT_P (init) = true;
+  if (init && TREE_CODE (init) == TARGET_EXPR)
+    /* In a constructor, this expresses the full initialization, prevent
+       perform_member_init from calling another constructor (58162).  */
+    TARGET_EXPR_DIRECT_INIT_P (init) = in_ctor;
   if (simple_target && TREE_CODE (init) != CONSTRUCTOR)
     /* Now put it back so C++17 copy elision works.  */
     init = get_target_expr (init);
@@ -3284,7 +3284,13 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
 
   tree align_arg = NULL_TREE;
   if (type_has_new_extended_alignment (elt_type))
-    align_arg = build_int_cst (align_type_node, TYPE_ALIGN_UNIT (elt_type));
+    {
+      unsigned align = TYPE_ALIGN_UNIT (elt_type);
+      /* Also consider the alignment of the cookie, if any.  */
+      if (TYPE_VEC_NEW_USES_COOKIE (elt_type))
+	align = MAX (align, TYPE_ALIGN_UNIT (size_type_node));
+      align_arg = build_int_cst (align_type_node, align);
+    }
 
   alloc_fn = NULL_TREE;
 
@@ -3473,18 +3479,19 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
 	}
     }
 
+  alloc_expr = alloc_call;
   if (cookie_size)
-    alloc_call = maybe_wrap_new_for_constexpr (alloc_call, type,
+    alloc_expr = maybe_wrap_new_for_constexpr (alloc_expr, type,
 					       cookie_size);
 
   /* In the simple case, we can stop now.  */
   pointer_type = build_pointer_type (type);
   if (!cookie_size && !is_initialized && !member_delete_p)
-    return build_nop (pointer_type, alloc_call);
+    return build_nop (pointer_type, alloc_expr);
 
   /* Store the result of the allocation call in a variable so that we can
      use it more than once.  */
-  alloc_expr = get_target_expr (alloc_call);
+  alloc_expr = get_target_expr (alloc_expr);
   alloc_node = TARGET_EXPR_SLOT (alloc_expr);
 
   /* Strip any COMPOUND_EXPRs from ALLOC_CALL.  */

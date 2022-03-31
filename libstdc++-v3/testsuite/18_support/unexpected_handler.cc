@@ -16,7 +16,7 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-options "-Wno-deprecated-declarations" }
-// { dg-do run { target c++11 } }
+// { dg-do run { target { c++11 && { ! c++23 } } } }
 
 // D.11 Violating exception-specifications
 

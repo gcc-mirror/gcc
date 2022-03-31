@@ -677,12 +677,25 @@ namespace std
 	// TODO: _Bfloat16,
       };
 
+#ifndef __cpp_using_enum
+      // XXX Remove these once 'using enum' support is ubiquitous.
+      static constexpr _Fp_fmt _Binary16 = _Fp_fmt::_Binary16;
+      static constexpr _Fp_fmt _Binary32 = _Fp_fmt::_Binary32;
+      static constexpr _Fp_fmt _Binary64 = _Fp_fmt::_Binary64;
+      static constexpr _Fp_fmt _Binary128 = _Fp_fmt::_Binary128;
+      static constexpr _Fp_fmt _X86_80bit = _Fp_fmt::_X86_80bit;
+      static constexpr _Fp_fmt _M68k_80bit = _Fp_fmt::_M68k_80bit;
+      static constexpr _Fp_fmt _Dbldbl = _Fp_fmt::_Dbldbl;
+#endif
+
       // Identify the format used by a floating-point type.
       template<typename _Tp>
 	static consteval _Fp_fmt
 	_S_fp_fmt() noexcept
 	{
+#ifdef __cpp_using_enum
 	  using enum _Fp_fmt;
+#endif
 
 	  // Identify these formats first, then assume anything else is IEEE.
 	  // N.B. ARM __fp16 alternative format can be handled as binary16.
@@ -810,7 +823,9 @@ namespace std
 	    return __builtin_bit_cast(int16_t, __val);
 	  else
 	    {
+#ifdef __cpp_using_enum
 	      using enum _Fp_fmt;
+#endif
 	      constexpr auto __fmt = _S_fp_fmt<_Tp>();
 	      if constexpr (__fmt == _X86_80bit || __fmt == _M68k_80bit)
 		{
@@ -862,7 +877,9 @@ namespace std
 	  if (__ix == __iy)
 	    return strong_ordering::equal; // All bits are equal, we're done.
 
+#ifdef __cpp_using_enum
 	  using enum _Fp_fmt;
+#endif
 	  constexpr auto __fmt = _S_fp_fmt<_Tp>();
 
 	  if constexpr (__fmt == _Dbldbl) // double-double

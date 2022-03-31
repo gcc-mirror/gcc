@@ -1306,6 +1306,27 @@ template <> struct default_hash_traits<compound_svalue::key_t>
 
 namespace ana {
 
+/* A bundle of state for purging information from a program_state about
+   a conjured_svalue.  We pass this whenever calling
+   get_or_create_conjured_svalue, so that if the program_state already
+   has information about this conjured_svalue on an execution path, we
+   can purge that information, to avoid the analyzer confusing the two
+   values as being the same.  */
+
+class conjured_purge
+{
+public:
+  conjured_purge (region_model *model, region_model_context *ctxt)
+  : m_model (model), m_ctxt (ctxt)
+  {
+  }
+  void purge (const conjured_svalue *sval) const;
+
+private:
+  region_model *m_model;
+  region_model_context *m_ctxt;
+};
+
 /* A defined value arising from a statement, where we want to identify a
    particular unknown value, rather than resorting to the unknown_value
    singleton, so that the value can have sm-state.

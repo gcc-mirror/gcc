@@ -2,8 +2,7 @@
 /* { dg-skip-if "" { powerpc*-*-darwin* } } */
 /* { dg-require-effective-target powerpc_p8vector_ok } */
 /* { dg-require-effective-target fpic } */
-/* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power8" } } */
-/* { dg-options "-O3 -mcpu=power8 -g -fPIC -fvisibility=hidden -fstack-protector-strong" } */
+/* { dg-options "-O3 -mdejagnu-cpu=power8 -g -fPIC -fvisibility=hidden -fstack-protector-strong" } */
 
 template <typename, typename T> struct E { T e; };
 struct J {

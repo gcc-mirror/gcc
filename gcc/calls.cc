@@ -201,7 +201,8 @@ mark_stack_region_used (poly_uint64 lower_bound, poly_uint64 upper_bound)
 {
   unsigned HOST_WIDE_INT const_lower, const_upper;
   const_lower = constant_lower_bound (lower_bound);
-  if (upper_bound.is_constant (&const_upper))
+  if (upper_bound.is_constant (&const_upper)
+      && const_upper <= highest_outgoing_arg_in_use)
     for (unsigned HOST_WIDE_INT i = const_lower; i < const_upper; ++i)
       stack_usage_map[i] = 1;
   else

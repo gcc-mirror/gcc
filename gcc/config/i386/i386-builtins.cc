@@ -1785,7 +1785,12 @@ ix86_vectorize_builtin_gather (const_tree mem_vectype,
   bool si;
   enum ix86_builtins code;
 
-  if (! TARGET_AVX2 || !TARGET_USE_GATHER)
+  if (! TARGET_AVX2
+      || (known_eq (TYPE_VECTOR_SUBPARTS (mem_vectype), 2u)
+	  ? !TARGET_USE_GATHER_2PARTS
+	  : (known_eq (TYPE_VECTOR_SUBPARTS (mem_vectype), 4u)
+	     ? !TARGET_USE_GATHER_4PARTS
+	     : !TARGET_USE_GATHER)))
     return NULL_TREE;
 
   if ((TREE_CODE (index_type) != INTEGER_TYPE

@@ -1905,6 +1905,7 @@ execute_update_addresses_taken (void)
 					? REALPART_EXPR : IMAGPART_EXPR,
 					TREE_TYPE (other),
 					TREE_OPERAND (lhs, 0));
+		    suppress_warning (lrhs);
 		    gimple *load = gimple_build_assign (other, lrhs);
 		    location_t loc = gimple_location (stmt);
 		    gimple_set_location (load, loc);

@@ -1324,8 +1324,9 @@ region_model::on_call_pre (const gcall *call, region_model_context *ctxt,
 	     use a conjured value, and purge any prior state involving that
 	     value (in case this is in a loop).  */
 	  sval = m_mgr->get_or_create_conjured_svalue (TREE_TYPE (lhs), call,
-						       lhs_region);
-	  purge_state_involving (sval, ctxt);
+						       lhs_region,
+						       conjured_purge (this,
+								       ctxt));
 	}
       set_value (lhs_region, sval, ctxt);
     }
@@ -1802,7 +1803,8 @@ region_model::handle_unrecognized_call (const gcall *call,
 
   /* Update bindings for all clusters that have escaped, whether above,
      or previously.  */
-  m_store.on_unknown_fncall (call, m_mgr->get_store_manager ());
+  m_store.on_unknown_fncall (call, m_mgr->get_store_manager (),
+			     conjured_purge (this, ctxt));
 
   /* Purge dynamic extents from any regions that have escaped mutably:
      realloc could have been called on them.  */

@@ -70,6 +70,7 @@ class region;
   class string_region;
   class bit_range_region;
 class region_model_manager;
+class conjured_purge;
 struct model_merger;
 class store_manager;
 class store;

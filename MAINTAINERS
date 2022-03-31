@@ -83,6 +83,8 @@ i386 vector ISA extns	Kirill Yukhin		<kirill.yukhin@gmail.com>
 i386 vector ISA extns	Hongtao Liu		<hongtao.liu@intel.com>
 iq2000 port		Nick Clifton		<nickc@redhat.com>
 lm32 port		Sebastien Bourdeauducq	<sebastien@milkymist.org>
+LoongArch port		Chenghua Xu		<xuchenghua@loongson.cn>
+LoongArch port		Lulu Cheng		<chenglulu@loongson.cn>
 m32r port		Nick Clifton		<nickc@redhat.com>
 m68k port (?)		Jeff Law		<jeffreyalaw@gmail.com>
 m68k port		Andreas Schwab		<schwab@linux-m68k.org>
@@ -252,7 +254,6 @@ testsuite		Rainer Orth		<ro@CeBiTec.Uni-Bielefeld.DE>
 testsuite		Mike Stump		<mikestump@comcast.net>
 register allocation	Vladimir Makarov	<vmakarov@redhat.com>
 gdbhooks.py		David Malcolm		<dmalcolm@redhat.com>
-SLSR			Bill Schmidt		<wschmidt@linux.ibm.com>
 jit			David Malcolm		<dmalcolm@redhat.com>
 gen* on machine desc	Richard Sandiford	<rdsandiford@googlemail.com>
 static analyzer		David Malcolm		<dmalcolm@redhat.com>
@@ -720,6 +721,7 @@ Gaius Mulley					<gaiusmod2@gmail.com>
 Siddhesh Poyarekar				<siddhesh@gotplt.org>
 Navid Rahimi					<navidrahimi@microsoft.com>
 Trevor Saunders					<tbsaunde+gcc@tbsaunde.org>
+Bill Schmidt					<bill.schmidt@fastmail.com>
 Nathan Sidwell					<nathan@acm.org>
 Edward Smith-Rowland				<esmithrowland@gmail.com>
 Petter Tomner					<tomner@kth.se>

@@ -2747,6 +2747,32 @@ Memory addressed using the small base register ($sb).
 $r1h
 @end table
 
+@item LoongArch---@file{config/loongarch/constraints.md}
+@table @code
+@item f
+A floating-point register (if available).
+@item k
+A memory operand whose address is formed by a base register and
+(optionally scaled) index register.
+@item l
+A signed 16-bit constant.
+@item m
+A memory operand whose address is formed by a base register and offset
+that is suitable for use in instructions with the same addressing mode
+as @code{st.w} and @code{ld.w}.
+@item I
+A signed 12-bit constant (for arithmetic instructions).
+@item K
+An unsigned 12-bit constant (for logic instructions).
+@item ZB
+An address that is held in a general-purpose register.
+The offset is zero.
+@item ZC
+A memory operand whose address is formed by a base register and offset
+that is suitable for use in instructions with the same addressing mode
+as @code{ll.w} and @code{sc.w}.
+@end table
+
 @item MicroBlaze---@file{config/microblaze/constraints.md}
 @table @code
 @item d

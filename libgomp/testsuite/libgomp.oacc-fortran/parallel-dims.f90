@@ -5,6 +5,9 @@
 ! { dg-do run }
 ! { dg-prune-output "command-line option '-fintrinsic-modules-path=.*' is valid for Fortran but not for C" }
 
+! { dg-additional-options "-DEXPENSIVE" { target run_expensive_tests } }
+! { dg-additional-options "-cpp" }
+
 ! { dg-additional-options "-fopt-info-note-omp" }
 ! { dg-additional-options "--param=openacc-privatization=noisy" }
 ! { dg-additional-options "-foffload=-fopt-info-note-omp" }
@@ -44,6 +47,13 @@ program main
   integer :: vectors_actual
   integer :: i, j, k
 
+
+#ifdef EXPENSIVE
+  integer, parameter :: N = 100
+#else
+  integer, parameter :: N = 50
+#endif
+
   call acc_init (acc_device_default)
 
   ! OpenACC parallel construct.
@@ -69,7 +79,7 @@ program main
   !$acc serial &
   !$acc   reduction (min: gangs_min, workers_min, vectors_min) reduction (max: gangs_max, workers_max, vectors_max) ! { dg-warning "using .vector_length \\(32\\)., ignoring 1" "" { target openacc_nvidia_accel_selected } }
   ! { dg-note {variable 'D\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } .-1 }
-  do i = 100, -99, -1
+  do i = N, -(N-1), -1
      gangs_min = acc_gang ();
      gangs_max = acc_gang ();
      workers_min = acc_worker ();
@@ -108,14 +118,14 @@ program main
   end if
   !$acc loop gang reduction (min: gangs_min, workers_min, vectors_min) reduction (max: gangs_max, workers_max, vectors_max)
   ! { dg-note {variable 'i' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } .-1 }
-  do i = 100, -99, -1
+  do i = N, -(N-1), -1
      !$acc loop worker reduction (min: gangs_min, workers_min, vectors_min) reduction (max: gangs_max, workers_max, vectors_max)
      ! { dg-note {variable 'j' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } .-1 }
      ! { dg-note {variable 'D\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } .-2 }
-     do j = 100, -99, -1
+     do j = N, -(N-1), -1
         !$acc loop vector reduction (min: gangs_min, workers_min, vectors_min) reduction (max: gangs_max, workers_max, vectors_max)
         ! { dg-note {variable 'k' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } .-1 }
-        do k = 100 * vectors_actual, -99 * vectors_actual, -1
+        do k = N * vectors_actual, -(N-1) * vectors_actual, -1
            gangs_min = acc_gang ();
            gangs_max = acc_gang ();
            workers_min = acc_worker ();

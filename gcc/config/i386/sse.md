@@ -10617,9 +10617,9 @@
   [(set (attr "isa")
 	(cond [(eq_attr "alternative" "0,1,2")
 		 (const_string "avx512fp16")
-	       (eq_attr "alternative" "3")
+	       (eq_attr "alternative" "3,4")
 		 (const_string "noavx")
-	       (eq_attr "alternative" "4,5,6")
+	       (eq_attr "alternative" "5,6")
 		 (const_string "sse4_noavx")
 	       (eq_attr "alternative" "7,8,9")
 		 (const_string "avx")
@@ -20221,12 +20221,12 @@
    (set_attr "mode" "TI")])
 
 (define_insn_and_split "ssse3_ph<plusminus_mnemonic>wv4hi3"
-  [(set (match_operand:V4HI 0 "register_operand" "=y,x,Yv")
+  [(set (match_operand:V4HI 0 "register_operand" "=y,x,x")
 	(ssse3_plusminus:V4HI
 	  (vec_select:V4HI
 	    (vec_concat:V8HI
-	      (match_operand:V4HI 1 "register_operand" "0,0,Yv")
-	      (match_operand:V4HI 2 "register_mmxmem_operand" "ym,x,Yv"))
+	      (match_operand:V4HI 1 "register_operand" "0,0,x")
+	      (match_operand:V4HI 2 "register_mmxmem_operand" "ym,x,x"))
 	    (parallel
 	      [(const_int 0) (const_int 2) (const_int 4) (const_int 6)]))
 	  (vec_select:V4HI
@@ -20308,12 +20308,12 @@
    (set_attr "mode" "TI")])
 
 (define_insn_and_split "ssse3_ph<plusminus_mnemonic>dv2si3"
-  [(set (match_operand:V2SI 0 "register_operand" "=y,x,Yv")
+  [(set (match_operand:V2SI 0 "register_operand" "=y,x,x")
 	(plusminus:V2SI
 	  (vec_select:V2SI
 	    (vec_concat:V4SI
-	      (match_operand:V2SI 1 "register_operand" "0,0,Yv")
-	      (match_operand:V2SI 2 "register_mmxmem_operand" "ym,x,Yv"))
+	      (match_operand:V2SI 1 "register_operand" "0,0,x")
+	      (match_operand:V2SI 2 "register_mmxmem_operand" "ym,x,x"))
 	    (parallel [(const_int 0) (const_int 2)]))
 	  (vec_select:V2SI
 	    (vec_concat:V4SI (match_dup 1) (match_dup 2))
@@ -20758,13 +20758,13 @@
 })
 
 (define_insn_and_split "*ssse3_pshufbv8qi3"
-  [(set (match_operand:V8QI 0 "register_operand" "=y,x,Yv")
-	(unspec:V8QI [(match_operand:V8QI 1 "register_operand" "0,0,Yv")
-		      (match_operand:V8QI 2 "register_mmxmem_operand" "ym,x,Yv")
+  [(set (match_operand:V8QI 0 "register_operand" "=y,x,Yw")
+	(unspec:V8QI [(match_operand:V8QI 1 "register_operand" "0,0,Yw")
+		      (match_operand:V8QI 2 "register_mmxmem_operand" "ym,x,Yw")
 		      (match_operand:V4SI 4 "reg_or_const_vector_operand"
 					  "i,3,3")]
 		     UNSPEC_PSHUFB))
-   (clobber (match_scratch:V4SI 3 "=X,&x,&Yv"))]
+   (clobber (match_scratch:V4SI 3 "=X,&x,&Yw"))]
   "(TARGET_MMX || TARGET_MMX_WITH_SSE) && TARGET_SSSE3"
   "@
    pshufb\t{%2, %0|%0, %2}
@@ -20811,10 +20811,10 @@
    (set_attr "mode" "<sseinsnmode>")])
 
 (define_insn "ssse3_psign<mode>3"
-  [(set (match_operand:MMXMODEI 0 "register_operand" "=y,x,Yv")
+  [(set (match_operand:MMXMODEI 0 "register_operand" "=y,x,x")
 	(unspec:MMXMODEI
-	  [(match_operand:MMXMODEI 1 "register_operand" "0,0,Yv")
-	   (match_operand:MMXMODEI 2 "register_mmxmem_operand" "ym,x,Yv")]
+	  [(match_operand:MMXMODEI 1 "register_operand" "0,0,x")
+	   (match_operand:MMXMODEI 2 "register_mmxmem_operand" "ym,x,x")]
 	  UNSPEC_PSIGN))]
   "(TARGET_MMX || TARGET_MMX_WITH_SSE) && TARGET_SSSE3"
   "@
@@ -28364,8 +28364,8 @@
 
 ;; KEYLOCKER
 (define_insn "loadiwkey"
-  [(unspec_volatile:V2DI [(match_operand:V2DI 0 "register_operand" "v")
-			  (match_operand:V2DI 1 "register_operand" "v")
+  [(unspec_volatile:V2DI [(match_operand:V2DI 0 "register_operand" "x")
+			  (match_operand:V2DI 1 "register_operand" "x")
 			  (match_operand:V2DI 2 "register_operand" "Yz")
 			  (match_operand:SI   3 "register_operand" "a")]
 			 UNSPECV_LOADIWKEY)
@@ -28498,7 +28498,7 @@
    (UNSPECV_AESENC256KLU8 "enc256kl")])
 
 (define_insn "aes<aesklvariant>u8"
-  [(set (match_operand:V2DI 0 "register_operand" "=v")
+  [(set (match_operand:V2DI 0 "register_operand" "=x")
 	(unspec_volatile:V2DI [(match_operand:V2DI 1 "register_operand" "0")
 			       (match_operand:BLK   2 "memory_operand" "m")]
 			      AESDECENCKL))

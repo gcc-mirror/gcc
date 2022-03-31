@@ -1504,7 +1504,7 @@ gfc_check_associated (gfc_expr *pointer, gfc_expr *target)
      argument of intrinsic inquiry functions.  */
   if (pointer->rank != -1 && !rank_check (target, 0, pointer->rank))
     t = false;
-  if (target->rank > 0)
+  if (target->rank > 0 && target->ref)
     {
       for (i = 0; i < target->rank; i++)
 	if (target->ref->u.ar.dimen_type[i] == DIMEN_VECTOR)
