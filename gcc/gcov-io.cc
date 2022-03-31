@@ -29,10 +29,20 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 static gcov_unsigned_t *gcov_read_words (void *buffer, unsigned);
 
+/* Indicates the last gcov file access error or that no error occurred
+   so far.  */
+enum gcov_file_error
+{
+  GCOV_FILE_COUNTER_OVERFLOW = -1,
+  GCOV_FILE_NO_ERROR = 0,
+  GCOV_FILE_WRITE_ERROR = 1,
+  GCOV_FILE_EOF = 2
+};
+
 struct gcov_var
 {
   FILE *file;
-  int error;			/* < 0 overflow, > 0 disk error.  */
+  enum gcov_file_error error;
   int mode;			/* < 0 writing, > 0 reading.  */
   int endian;			/* Swap endianness.  */
 #ifdef IN_GCOV_TOOL
@@ -113,7 +123,7 @@ gcov_open (const char *name, int mode)
 #endif
 
   gcov_nonruntime_assert (!gcov_var.file);
-  gcov_var.error = 0;
+  gcov_var.error = GCOV_FILE_NO_ERROR;
 #if !IN_LIBGCOV || defined (IN_GCOV_TOOL)
   gcov_var.endian = 0;
 #endif
@@ -217,7 +227,7 @@ gcov_close (void)
   if (gcov_var.file)
     {
       if (fclose (gcov_var.file))
-	gcov_var.error = 1;
+	gcov_var.error = GCOV_FILE_WRITE_ERROR;
 
       gcov_var.file = 0;
     }
@@ -253,7 +263,7 @@ gcov_write (const void *data, unsigned length)
 {
   gcov_unsigned_t r = fwrite (data, length, 1, gcov_var.file);
   if (r != 1)
-    gcov_var.error = 1;
+    gcov_var.error = GCOV_FILE_WRITE_ERROR;
 }
 
 /* Write unsigned VALUE to coverage file.  */
@@ -263,7 +273,7 @@ gcov_write_unsigned (gcov_unsigned_t value)
 {
   gcov_unsigned_t r = fwrite (&value, sizeof (value), 1, gcov_var.file);
   if (r != 1)
-    gcov_var.error = 1;
+    gcov_var.error = GCOV_FILE_WRITE_ERROR;
 }
 
 #if !IN_LIBGCOV
@@ -283,7 +293,7 @@ gcov_write_string (const char *string)
     {
       gcov_unsigned_t r = fwrite (string, length, 1, gcov_var.file);
       if (r != 1)
-	gcov_var.error = 1;
+	gcov_var.error = GCOV_FILE_WRITE_ERROR;
     }
 }
 #endif
@@ -385,7 +395,11 @@ gcov_read_bytes (void *buffer, unsigned count)
 
   unsigned read = fread (buffer, count, 1, gcov_var.file);
   if (read != 1)
-    return NULL;
+    {
+      if (feof (gcov_var.file))
+	gcov_var.error = GCOV_FILE_EOF;
+      return NULL;
+    }
 
 #ifdef IN_GCOV_TOOL
   gcov_var.pos += count;
@@ -434,7 +448,7 @@ gcov_read_counter (void)
   if (sizeof (value) > sizeof (gcov_unsigned_t))
     value |= ((gcov_type) from_file (buffer[1])) << 32;
   else if (buffer[1])
-    gcov_var.error = -1;
+    gcov_var.error = GCOV_FILE_COUNTER_OVERFLOW;
 
   return value;
 }
