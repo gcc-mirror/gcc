@@ -909,6 +909,19 @@ transcribe_expression (Parser<MacroInvocLexer> &parser)
   return {AST::SingleASTNode (std::move (expr))};
 }
 
+/**
+ * Transcribe one type from a macro invocation
+ *
+ * @param parser Parser to extract statements from
+ */
+static std::vector<AST::SingleASTNode>
+transcribe_type (Parser<MacroInvocLexer> &parser)
+{
+  auto expr = parser.parse_type ();
+
+  return {AST::SingleASTNode (std::move (expr))};
+}
+
 static std::vector<AST::SingleASTNode>
 transcribe_on_delimiter (Parser<MacroInvocLexer> &parser, bool semicolon,
 			 AST::DelimType delimiter, TokenId last_token_id)
@@ -956,6 +969,9 @@ transcribe_context (MacroExpander::ContextType ctx,
       break;
     case MacroExpander::ContextType::EXTERN:
       return transcribe_many_ext (parser, last_token_id);
+      break;
+    case MacroExpander::ContextType::TYPE:
+      return transcribe_type (parser);
       break;
     default:
       return transcribe_on_delimiter (parser, semicolon, delimiter,

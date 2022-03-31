@@ -188,6 +188,7 @@ struct MacroExpander
     ITEM,
     BLOCK,
     EXTERN,
+    TYPE,
     TRAIT,
     IMPL,
     TRAIT_IMPL,
