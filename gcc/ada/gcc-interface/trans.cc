@@ -3848,11 +3848,11 @@ Subprogram_Body_to_gnu (Node_Id gnat_node)
      specification has appeared before for this body, then the identifier
      occurring in that specification will also be a defining identifier and all
      the calls to this subprogram will point to that specification.  */
-  Entity_Id gnat_subprog_id
+  Entity_Id gnat_subprog
     = (Present (Corresponding_Spec (gnat_node))
        ? Corresponding_Spec (gnat_node) : Defining_Entity (gnat_node));
   /* The FUNCTION_DECL node corresponding to the subprogram spec.   */
-  tree gnu_subprog_decl;
+  tree gnu_subprog;
   /* Its RESULT_DECL node.  */
   tree gnu_result_decl;
   /* Its FUNCTION_TYPE node.  */
@@ -3866,11 +3866,8 @@ Subprogram_Body_to_gnu (Node_Id gnat_node)
   struct language_function *gnu_subprog_language;
   vec<parm_attr, va_gc> *cache;
 
-  /* If this is a generic object or if it has been eliminated,
-     ignore it.  */
-  if (Ekind (gnat_subprog_id) == E_Generic_Procedure
-      || Ekind (gnat_subprog_id) == E_Generic_Function
-      || Is_Eliminated (gnat_subprog_id))
+  /* If this is a generic subprogram or it has been eliminated, ignore it.  */
+  if (Is_Generic_Subprogram (gnat_subprog) || Is_Eliminated (gnat_subprog))
     return;
 
   /* If this subprogram acts as its own spec, define it.  Otherwise, just get
@@ -3879,13 +3876,13 @@ Subprogram_Body_to_gnu (Node_Id gnat_node)
      treat it as not being defined in that case.  Such a subprogram cannot
      have an address clause or a freeze node, so this test is safe, though it
      does disable some otherwise-useful error checking.  */
-  gnu_subprog_decl
-    = gnat_to_gnu_entity (gnat_subprog_id, NULL_TREE,
+  gnu_subprog
+    = gnat_to_gnu_entity (gnat_subprog, NULL_TREE,
 			  Acts_As_Spec (gnat_node)
-			  && !present_gnu_tree (gnat_subprog_id));
-  DECL_FUNCTION_IS_DEF (gnu_subprog_decl) = true;
-  gnu_result_decl = DECL_RESULT (gnu_subprog_decl);
-  gnu_subprog_type = TREE_TYPE (gnu_subprog_decl);
+			  && !present_gnu_tree (gnat_subprog));
+  DECL_FUNCTION_IS_DEF (gnu_subprog) = true;
+  gnu_result_decl = DECL_RESULT (gnu_subprog);
+  gnu_subprog_type = TREE_TYPE (gnu_subprog);
   gnu_cico_list = TYPE_CI_CO_LIST (gnu_subprog_type);
   if (gnu_cico_list && TREE_VALUE (gnu_cico_list) == void_type_node)
     gnu_return_var_elmt = gnu_cico_list;
@@ -3900,25 +3897,25 @@ Subprogram_Body_to_gnu (Node_Id gnat_node)
     }
 
   /* Set the line number in the decl to correspond to that of the body.  */
-  if (DECL_IGNORED_P (gnu_subprog_decl))
+  if (DECL_IGNORED_P (gnu_subprog))
     locus = UNKNOWN_LOCATION;
-  else if (!Sloc_to_locus (Sloc (gnat_node), &locus, false, gnu_subprog_decl))
+  else if (!Sloc_to_locus (Sloc (gnat_node), &locus, false, gnu_subprog))
     locus = input_location;
-  DECL_SOURCE_LOCATION (gnu_subprog_decl) = locus;
+  DECL_SOURCE_LOCATION (gnu_subprog) = locus;
 
   /* Try to create a bona-fide thunk and hand it over to the middle-end.  */
-  if (Is_Thunk (gnat_subprog_id)
-      && maybe_make_gnu_thunk (gnat_subprog_id, gnu_subprog_decl))
+  if (Is_Thunk (gnat_subprog)
+      && maybe_make_gnu_thunk (gnat_subprog, gnu_subprog))
     return;
 
   /* Initialize the information structure for the function.  */
-  allocate_struct_function (gnu_subprog_decl, false);
+  allocate_struct_function (gnu_subprog, false);
   gnu_subprog_language = ggc_cleared_alloc<language_function> ();
-  DECL_STRUCT_FUNCTION (gnu_subprog_decl)->language = gnu_subprog_language;
-  DECL_STRUCT_FUNCTION (gnu_subprog_decl)->function_start_locus = locus;
+  DECL_STRUCT_FUNCTION (gnu_subprog)->language = gnu_subprog_language;
+  DECL_STRUCT_FUNCTION (gnu_subprog)->function_start_locus = locus;
   set_cfun (NULL);
 
-  begin_subprog_body (gnu_subprog_decl);
+  begin_subprog_body (gnu_subprog);
 
   /* If there are copy-in/copy-out parameters, we need to ensure that they are
      properly copied out by the return statement.  We do this by making a new
@@ -3946,7 +3943,7 @@ Subprogram_Body_to_gnu (Node_Id gnat_node)
 	    = create_var_decl (get_identifier ("RETVAL"), NULL_TREE,
 			       gnu_return_type, NULL_TREE,
 			       false, false, false, false, false,
-			       true, false, NULL, gnat_subprog_id);
+			       true, false, NULL, gnat_subprog);
 	  TREE_VALUE (gnu_return_var_elmt) = gnu_return_var;
 	}
 
@@ -3957,7 +3954,7 @@ Subprogram_Body_to_gnu (Node_Id gnat_node)
 	 put it into TYPE_CI_CO_LIST, which must contain an empty entry too.
 	 We can match up the entries because TYPE_CI_CO_LIST is in the order
 	 of the parameters.  */
-      for (gnat_param = First_Formal_With_Extras (gnat_subprog_id);
+      for (gnat_param = First_Formal_With_Extras (gnat_subprog);
 	   Present (gnat_param);
 	   gnat_param = Next_Formal_With_Extras (gnat_param))
 	if (!present_gnu_tree (gnat_param))
@@ -3999,7 +3996,7 @@ Subprogram_Body_to_gnu (Node_Id gnat_node)
   /* Attempt setting the end_locus of our GCC body tree, typically a BIND_EXPR,
      then the end_locus of our GCC subprogram declaration tree.  */
   set_end_locus_from_node (gnu_result, gnat_node);
-  set_end_locus_from_node (gnu_subprog_decl, gnat_node);
+  set_end_locus_from_node (gnu_subprog, gnat_node);
 
   /* If we populated the parameter attributes cache, we need to make sure that
      the cached expressions are evaluated on all the possible paths leading to
@@ -4097,7 +4094,7 @@ Subprogram_Body_to_gnu (Node_Id gnat_node)
 
   /* On SEH targets, install an exception handler around the main entry
      point to catch unhandled exceptions.  */
-  if (DECL_NAME (gnu_subprog_decl) == main_identifier_node
+  if (DECL_NAME (gnu_subprog) == main_identifier_node
       && targetm_common.except_unwind_info (&global_options) == UI_SEH)
     {
       tree t;
@@ -4119,7 +4116,7 @@ Subprogram_Body_to_gnu (Node_Id gnat_node)
 
   /* Finally annotate the parameters and disconnect the trees for parameters
      that we have turned into variables since they are now unusable.  */
-  for (gnat_param = First_Formal_With_Extras (gnat_subprog_id);
+  for (gnat_param = First_Formal_With_Extras (gnat_subprog);
        Present (gnat_param);
        gnat_param = Next_Formal_With_Extras (gnat_param))
     {
@@ -4141,7 +4138,7 @@ Subprogram_Body_to_gnu (Node_Id gnat_node)
      a Named Return Value, finalize the optimization.  */
   if (optimize && !optimize_debug && gnu_subprog_language->named_ret_val)
     {
-      finalize_nrv (gnu_subprog_decl,
+      finalize_nrv (gnu_subprog,
 		    gnu_subprog_language->named_ret_val,
 		    gnu_subprog_language->other_ret_val,
 		    gnu_subprog_language->gnat_ret);
@@ -4151,10 +4148,10 @@ Subprogram_Body_to_gnu (Node_Id gnat_node)
 
   /* If this is an inlined external function that has been marked uninlinable,
      drop the body and stop there.  Otherwise compile the body.  */
-  if (DECL_EXTERNAL (gnu_subprog_decl) && DECL_UNINLINABLE (gnu_subprog_decl))
-    DECL_SAVED_TREE (gnu_subprog_decl) = NULL_TREE;
+  if (DECL_EXTERNAL (gnu_subprog) && DECL_UNINLINABLE (gnu_subprog))
+    DECL_SAVED_TREE (gnu_subprog) = NULL_TREE;
   else
-    rest_of_subprog_body_compilation (gnu_subprog_decl);
+    rest_of_subprog_body_compilation (gnu_subprog);
 }
 
 /* The type of an atomic access.  */
@@ -9224,31 +9221,29 @@ process_decls (List_Id gnat_decls, List_Id gnat_decls2,
 	      record_code_position
 		(Proper_Body (Unit (Library_Unit (gnat_decl))));
 
-	    /* We defer most subprogram bodies to the second pass.  */
+	    /* We defer most subprogram bodies to the second pass.  For bodies
+	       that act as their own specs and stubs, the entity itself must be
+	       elaborated in the first pass, because it may be used in other
+	       declarations.  */
 	    else if (Nkind (gnat_decl) == N_Subprogram_Body)
 	      {
 		if (Acts_As_Spec (gnat_decl))
 		  {
-		    Node_Id gnat_subprog_id = Defining_Entity (gnat_decl);
+		    Entity_Id gnat_subprog = Defining_Entity (gnat_decl);
 
-		    if (Ekind (gnat_subprog_id) != E_Generic_Procedure
-			&& Ekind (gnat_subprog_id) != E_Generic_Function)
-		      gnat_to_gnu_entity (gnat_subprog_id, NULL_TREE, true);
+		    if (!Is_Generic_Subprogram (gnat_subprog))
+		      gnat_to_gnu_entity (gnat_subprog, NULL_TREE, true);
 		  }
 	      }
 
-	    /* For bodies and stubs that act as their own specs, the entity
-	       itself must be elaborated in the first pass, because it may
-	       be used in other declarations.  */
 	    else if (Nkind (gnat_decl) == N_Subprogram_Body_Stub)
 	      {
-		Node_Id gnat_subprog_id
+		Entity_Id gnat_subprog
 		  = Defining_Entity (Specification (gnat_decl));
 
-		    if (Ekind (gnat_subprog_id) != E_Subprogram_Body
-			&& Ekind (gnat_subprog_id) != E_Generic_Procedure
-			&& Ekind (gnat_subprog_id) != E_Generic_Function)
-		      gnat_to_gnu_entity (gnat_subprog_id, NULL_TREE, true);
+		if (!Is_Generic_Subprogram (gnat_subprog)
+		    && Ekind (gnat_subprog) != E_Subprogram_Body)
+		  gnat_to_gnu_entity (gnat_subprog, NULL_TREE, true);
 	      }
 
 	    /* Concurrent stubs stand for the corresponding subprogram bodies,
