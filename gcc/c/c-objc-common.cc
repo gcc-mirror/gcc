@@ -394,3 +394,12 @@ c_get_alias_set (tree t)
 
   return c_common_get_alias_set (t);
 }
+
+/* In C there are no invisible parameters like in C++ (this, in-charge, VTT,
+   etc.).  */
+
+int
+maybe_adjust_arg_pos_for_attribute (const_tree)
+{
+  return 0;
+}

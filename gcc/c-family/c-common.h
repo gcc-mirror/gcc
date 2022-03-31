@@ -1049,6 +1049,7 @@ extern tree finish_label_address_expr (tree, location_t);
 extern tree lookup_label (tree);
 extern tree lookup_name (tree);
 extern bool lvalue_p (const_tree);
+extern int maybe_adjust_arg_pos_for_attribute (const_tree);
 
 extern bool vector_targets_convertible_p (const_tree t1, const_tree t2);
 extern bool vector_types_convertible_p (const_tree t1, const_tree t2, bool emit_lax_note);
@@ -1493,7 +1494,7 @@ enum posargflags {
   POSARG_ELLIPSIS = 2
 };
 
-extern tree positional_argument (const_tree, const_tree, tree, tree_code,
+extern tree positional_argument (const_tree, const_tree, tree &, tree_code,
 				 int = 0, int = posargflags ());
 
 extern enum flt_eval_method
