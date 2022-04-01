@@ -2209,12 +2209,14 @@ package Sem_Util is
    --  Given a tagged type, returns True if argument is a type extension
    --  that introduces no new components (discriminant or nondiscriminant).
    --  Ignore_Privacy should be True for use in implementing dynamic semantics.
+   --  Cannot be called with class-wide types.
 
    function Is_Null_Extension_Of
      (Descendant, Ancestor : Entity_Id) return Boolean;
    --  Given two tagged types, the first a descendant of the second,
    --  returns True if every component of Descendant is inherited
    --  (directly or indirectly) from Ancestor. Privacy is ignored.
+   --  Cannot be called with class-wide types.
 
    function Is_Null_Record_Definition (Record_Def : Node_Id) return Boolean;
    --  Returns True for an N_Record_Definition node that has no user-defined

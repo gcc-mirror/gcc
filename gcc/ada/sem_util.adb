@@ -19279,6 +19279,8 @@ package body Sem_Util is
       Type_Decl : Node_Id;
       Type_Def  : Node_Id;
    begin
+      pragma Assert (not Is_Class_Wide_Type (T));
+
       if Ignore_Privacy then
          Type_Decl := Parent (Underlying_Type (Base_Type (T)));
       else
@@ -19311,7 +19313,10 @@ package body Sem_Util is
         := Underlying_Type (Base_Type (Ancestor));
       Descendant_Type : Entity_Id := Underlying_Type (Base_Type (Descendant));
    begin
+      pragma Assert (not Is_Class_Wide_Type (Descendant));
+      pragma Assert (not Is_Class_Wide_Type (Ancestor));
       pragma Assert (Descendant_Type /= Ancestor_Type);
+
       while Descendant_Type /= Ancestor_Type loop
          if not Is_Null_Extension
                   (Descendant_Type, Ignore_Privacy => True)

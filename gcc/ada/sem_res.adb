@@ -559,7 +559,12 @@ package body Sem_Res is
 
          Set_Etype (Call, Etype (Callee));
 
-         if Base_Type (Etype (Call)) /= Base_Type (Typ) then
+         --  Conversion not needed if the result type of the call is class-wide
+         --  or if the result type matches the context type.
+
+         if not Is_Class_Wide_Type (Typ)
+           and then Base_Type (Etype (Call)) /= Base_Type (Typ)
+         then
             --  Conversion may be needed in case of an inherited
             --  aspect of a derived type. For a null extension, we
             --  use a null extension aggregate instead because the

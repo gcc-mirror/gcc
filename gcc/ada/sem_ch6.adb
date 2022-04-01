@@ -9867,7 +9867,8 @@ package body Sem_Ch6 is
                  and then Ada_Version >= Ada_2005
                  and then not Comes_From_Source (E)
                  and then Has_Controlling_Result (E)
-                 and then Is_Null_Extension (Etype (E))
+                 and then (not Is_Class_Wide_Type (Etype (E))
+                            and then Is_Null_Extension (Etype (E)))
                  and then Comes_From_Source (Spec)
                then
                   Set_Has_Completion (E, False);
@@ -11265,7 +11266,8 @@ package body Sem_Ch6 is
 
             function Overrides_Private_Part_Op return Boolean is
                Over_Decl : constant Node_Id :=
-                             Unit_Declaration_Node (Overridden_Operation (S));
+                             Unit_Declaration_Node
+                               (Ultimate_Alias (Overridden_Operation (S)));
                Subp_Decl : constant Node_Id := Unit_Declaration_Node (S);
 
             begin
