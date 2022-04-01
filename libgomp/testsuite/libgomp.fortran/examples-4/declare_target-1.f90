@@ -1,4 +1,16 @@
 ! { dg-do run }
+! { dg-additional-options "-cpp" }
+! Reduced from 25 to 23, otherwise execution runs out of thread stack on
+! Nvidia Titan V.
+! Reduced from 23 to 22, otherwise execution runs out of thread stack on
+! Nvidia T400 (2GB variant), when run with GOMP_NVPTX_JIT=-O0.
+! Reduced from 22 to 20, otherwise execution runs out of thread stack on
+! Nvidia RTX A2000 (6GB variant), when run with GOMP_NVPTX_JIT=-O0.
+! { dg-additional-options "-DREC_DEPTH=20" { target { offload_target_nvptx } } } */
+
+#ifndef REC_DEPTH
+#define REC_DEPTH 25
+#endif
 
 module e_53_1_mod
   integer :: THRESHOLD = 20
@@ -27,9 +39,5 @@ end module
 program e_53_1
   use e_53_1_mod, only : fib, fib_wrapper
   if (fib (15) /= fib_wrapper (15)) stop 1
-  ! Reduced from 25 to 23, otherwise execution runs out of thread stack on
-  ! Nvidia Titan V.
-  ! Reduced from 23 to 22, otherwise execution runs out of thread stack on
-  ! Nvidia T400 (2GB variant), when run with GOMP_NVPTX_JIT=-O0.
-  if (fib (22) /= fib_wrapper (22)) stop 2
+  if (fib (REC_DEPTH) /= fib_wrapper (REC_DEPTH)) stop 2
 end program

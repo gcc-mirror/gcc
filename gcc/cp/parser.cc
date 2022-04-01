@@ -2701,6 +2701,8 @@ static tree cp_parser_late_parse_one_default_arg
   (cp_parser *, tree, tree, tree);
 static void cp_parser_late_parsing_nsdmi
   (cp_parser *, tree);
+static bool cp_parser_early_parsing_nsdmi
+  (cp_parser *, tree);
 static void cp_parser_late_parsing_default_args
   (cp_parser *, tree);
 static tree cp_parser_sizeof_operand
@@ -7525,8 +7527,10 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
 	}
 	/* Look for the closing `)'.  */
 	parens.require_close (parser);
-	return cp_build_vec_convert (expression, type_location, type,
-				     tf_warning_or_error);
+	postfix_expression
+	  = cp_build_vec_convert (expression, type_location, type,
+				  tf_warning_or_error);
+	break;
       }
 
     case RID_BUILTIN_BIT_CAST:
@@ -7551,8 +7555,10 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
 	expression = cp_parser_assignment_expression (parser);
 	/* Look for the closing `)'.  */
 	parens.require_close (parser);
-	return cp_build_bit_cast (type_location, type, expression,
-				  tf_warning_or_error);
+	postfix_expression
+	  = cp_build_bit_cast (type_location, type, expression,
+			       tf_warning_or_error);
+	break;
       }
 
     default:
@@ -27474,7 +27480,8 @@ cp_parser_member_declaration (cp_parser* parser)
 	      if (DECL_DECLARES_FUNCTION_P (decl))
 		cp_parser_save_default_args (parser, STRIP_TEMPLATE (decl));
 	      else if (TREE_CODE (decl) == FIELD_DECL
-		       && DECL_INITIAL (decl))
+		       && DECL_INITIAL (decl)
+		       && !cp_parser_early_parsing_nsdmi (parser, decl))
 		/* Add DECL to the queue of NSDMI to be parsed later.  */
 		vec_safe_push (unparsed_nsdmis, decl);
 	    }
@@ -31413,8 +31420,14 @@ cp_parser_template_introduction (cp_parser* parser, bool member_p)
   tree saved_scope = parser->scope;
   tree saved_object_scope = parser->object_scope;
   tree saved_qualifying_scope = parser->qualifying_scope;
+  bool saved_colon_corrects_to_scope_p = parser->colon_corrects_to_scope_p;
 
   cp_token *start_token = cp_lexer_peek_token (parser->lexer);
+
+  /* In classes don't parse valid unnamed bitfields as invalid
+     template introductions.  */
+  if (member_p)
+    parser->colon_corrects_to_scope_p = false;
 
   /* Look for the optional `::' operator.  */
   cp_parser_global_scope_opt (parser,
@@ -31436,6 +31449,7 @@ cp_parser_template_introduction (cp_parser* parser, bool member_p)
   parser->scope = saved_scope;
   parser->object_scope = saved_object_scope;
   parser->qualifying_scope = saved_qualifying_scope;
+  parser->colon_corrects_to_scope_p = saved_colon_corrects_to_scope_p;
 
   if (concept_name == error_mark_node
       || (seen_error () && !concept_definition_p (tmpl_decl)))
@@ -32279,6 +32293,29 @@ cp_parser_late_parsing_nsdmi (cp_parser *parser, tree field)
   maybe_end_member_template_processing ();
 
   DECL_INITIAL (field) = def;
+}
+
+/* If the DEFERRED_PARSE for FIELD is safe to parse immediately, do so.
+   Returns true if deferred parsing is no longer needed.  */
+
+static bool
+cp_parser_early_parsing_nsdmi (cp_parser *parser, tree field)
+{
+  tree init = DECL_INITIAL (field);
+  if (TREE_CODE (init) != DEFERRED_PARSE)
+    return true;
+
+  cp_token_cache *tokens = DEFPARSE_TOKENS (init);
+  for (cp_token *p = tokens->first; p != tokens->last; ++p)
+    if (p->type == CPP_NAME
+	|| p->keyword == RID_THIS
+	|| p->keyword == RID_OPERATOR)
+      /* There's a name to look up or 'this', give up.  */
+      return false;
+
+  /* It's trivial, parse now.  */
+  cp_parser_late_parsing_nsdmi (parser, field);
+  return true;
 }
 
 /* FN is a FUNCTION_DECL which may contains a parameter with an

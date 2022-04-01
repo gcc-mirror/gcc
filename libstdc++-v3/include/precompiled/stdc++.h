@@ -153,5 +153,6 @@
 #endif
 
 #if __cplusplus > 202002L
+#include <expected>
 #include <spanstream>
 #endif

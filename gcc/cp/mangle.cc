@@ -3363,7 +3363,7 @@ write_expression (tree expr)
 		  {
 		    if (i > last_nonzero)
 		      break;
-		    if (TREE_CODE (etype) == UNION_TYPE)
+		    if (!undigested && TREE_CODE (etype) == UNION_TYPE)
 		      {
 			/* Express the active member as a designator.  */
 			write_string ("di");

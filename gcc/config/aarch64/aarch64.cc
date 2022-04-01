@@ -15637,10 +15637,15 @@ private:
   unsigned int adjust_body_cost (loop_vec_info, const aarch64_vector_costs *,
 				 unsigned int);
   bool prefer_unrolled_loop () const;
+  unsigned int determine_suggested_unroll_factor ();
 
   /* True if we have performed one-time initialization based on the
      vec_info.  */
   bool m_analyzed_vinfo = false;
+
+  /* This loop uses an average operation that is not supported by SVE, but is
+     supported by Advanced SIMD and SVE2.  */
+  bool m_has_avg = false;
 
   /* - If M_VEC_FLAGS is zero then we're costing the original scalar code.
      - If M_VEC_FLAGS & VEC_ADVSIMD is nonzero then we're costing Advanced
@@ -16642,6 +16647,21 @@ aarch64_vector_costs::add_stmt_cost (int count, vect_cost_for_stmt kind,
 	 as one iteration of the SVE loop.  */
       if (where == vect_body && m_unrolled_advsimd_niters)
 	m_unrolled_advsimd_stmts += count * m_unrolled_advsimd_niters;
+
+      /* Detect the use of an averaging operation.  */
+      gimple *stmt = stmt_info->stmt;
+      if (is_gimple_call (stmt)
+	  && gimple_call_internal_p (stmt))
+	{
+	  switch (gimple_call_internal_fn (stmt))
+	    {
+	    case IFN_AVG_FLOOR:
+	    case IFN_AVG_CEIL:
+	      m_has_avg = true;
+	    default:
+	      break;
+	    }
+	}
     }
   return record_stmt_cost (stmt_info, where, (count * stmt_cost).ceil ());
 }
@@ -16723,6 +16743,68 @@ adjust_body_cost_sve (const aarch64_vec_op_count *ops,
     }
 
   return sve_cycles_per_iter;
+}
+
+unsigned int
+aarch64_vector_costs::determine_suggested_unroll_factor ()
+{
+  bool sve = m_vec_flags & VEC_ANY_SVE;
+  /* If we are trying to unroll an Advanced SIMD main loop that contains
+     an averaging operation that we do not support with SVE and we might use a
+     predicated epilogue, we need to be conservative and block unrolling as
+     this might lead to a less optimal loop for the first and only epilogue
+     using the original loop's vectorization factor.
+     TODO: Remove this constraint when we add support for multiple epilogue
+     vectorization.  */
+  if (!sve && !TARGET_SVE2 && m_has_avg)
+    return 1;
+
+  unsigned int max_unroll_factor = 1;
+  for (auto vec_ops : m_ops)
+    {
+      aarch64_simd_vec_issue_info const *vec_issue
+	= vec_ops.simd_issue_info ();
+      if (!vec_issue)
+	return 1;
+      /* Limit unroll factor to a value adjustable by the user, the default
+	 value is 4. */
+      unsigned int unroll_factor = aarch64_vect_unroll_limit;
+      unsigned int factor
+       = vec_ops.reduction_latency > 1 ? vec_ops.reduction_latency : 1;
+      unsigned int temp;
+
+      /* Sanity check, this should never happen.  */
+      if ((vec_ops.stores + vec_ops.loads + vec_ops.general_ops) == 0)
+	return 1;
+
+      /* Check stores.  */
+      if (vec_ops.stores > 0)
+	{
+	  temp = CEIL (factor * vec_issue->stores_per_cycle,
+		       vec_ops.stores);
+	  unroll_factor = MIN (unroll_factor, temp);
+	}
+
+      /* Check loads + stores.  */
+      if (vec_ops.loads > 0)
+	{
+	  temp = CEIL (factor * vec_issue->loads_stores_per_cycle,
+		       vec_ops.loads + vec_ops.stores);
+	  unroll_factor = MIN (unroll_factor, temp);
+	}
+
+      /* Check general ops.  */
+      if (vec_ops.general_ops > 0)
+	{
+	  temp = CEIL (factor * vec_issue->general_ops_per_cycle,
+		       vec_ops.general_ops);
+	  unroll_factor = MIN (unroll_factor, temp);
+	 }
+      max_unroll_factor = MAX (max_unroll_factor, unroll_factor);
+    }
+
+  /* Make sure unroll factor is power of 2.  */
+  return 1 << ceil_log2 (max_unroll_factor);
 }
 
 /* BODY_COST is the cost of a vector loop body.  Adjust the cost as necessary
@@ -16861,8 +16943,11 @@ aarch64_vector_costs::finish_cost (const vector_costs *uncast_scalar_costs)
   if (loop_vinfo
       && m_vec_flags
       && aarch64_use_new_vector_costs_p ())
-    m_costs[vect_body] = adjust_body_cost (loop_vinfo, scalar_costs,
-					   m_costs[vect_body]);
+    {
+      m_costs[vect_body] = adjust_body_cost (loop_vinfo, scalar_costs,
+					     m_costs[vect_body]);
+      m_suggested_unroll_factor = determine_suggested_unroll_factor ();
+    }
 
   /* Apply the heuristic described above m_stp_sequence_cost.  Prefer
      the scalar code in the event of a tie, since there is more chance
@@ -19917,6 +20002,7 @@ aarch64_member_type_forces_blk (const_tree field_or_array, machine_mode mode)
       a HFA or HVA.  */
 const unsigned int WARN_PSABI_EMPTY_CXX17_BASE = 1U << 0;
 const unsigned int WARN_PSABI_NO_UNIQUE_ADDRESS = 1U << 1;
+const unsigned int WARN_PSABI_ZERO_WIDTH_BITFIELD = 1U << 2;
 
 /* Walk down the type tree of TYPE counting consecutive base elements.
    If *MODEP is VOIDmode, then set it to the first valid floating point
@@ -20070,6 +20156,28 @@ aapcs_vfp_sub_candidate (const_tree type, machine_mode *modep,
 		if (warn_psabi_flags)
 		  {
 		    *warn_psabi_flags |= flag;
+		    continue;
+		  }
+	      }
+	    /* A zero-width bitfield may affect layout in some
+	       circumstances, but adds no members.  The determination
+	       of whether or not a type is an HFA is performed after
+	       layout is complete, so if the type still looks like an
+	       HFA afterwards, it is still classed as one.  This is
+	       potentially an ABI break for the hard-float ABI.  */
+	    else if (DECL_BIT_FIELD (field)
+		     && integer_zerop (DECL_SIZE (field)))
+	      {
+		/* Prior to GCC-12 these fields were striped early,
+		   hiding them from the back-end entirely and
+		   resulting in the correct behaviour for argument
+		   passing.  Simulate that old behaviour without
+		   generating a warning.  */
+		if (DECL_FIELD_CXX_ZERO_WIDTH_BIT_FIELD (field))
+		  continue;
+		if (warn_psabi_flags)
+		  {
+		    *warn_psabi_flags |= WARN_PSABI_ZERO_WIDTH_BITFIELD;
 		    continue;
 		  }
 	      }
@@ -20273,8 +20381,10 @@ aarch64_vfp_is_call_or_return_candidate (machine_mode mode,
 	      && ((alt = aapcs_vfp_sub_candidate (type, &new_mode, NULL))
 		  != ag_count))
 	    {
-	      const char *url
+	      const char *url10
 		= CHANGES_ROOT_URL "gcc-10/changes.html#empty_base";
+	      const char *url12
+		= CHANGES_ROOT_URL "gcc-12/changes.html#zero_width_bitfields";
 	      gcc_assert (alt == -1);
 	      last_reported_type_uid = uid;
 	      /* Use TYPE_MAIN_VARIANT to strip any redundant const
@@ -20283,12 +20393,16 @@ aarch64_vfp_is_call_or_return_candidate (machine_mode mode,
 		inform (input_location, "parameter passing for argument of "
 			"type %qT with %<[[no_unique_address]]%> members "
 			"changed %{in GCC 10.1%}",
-			TYPE_MAIN_VARIANT (type), url);
+			TYPE_MAIN_VARIANT (type), url10);
 	      else if (warn_psabi_flags & WARN_PSABI_EMPTY_CXX17_BASE)
 		inform (input_location, "parameter passing for argument of "
 			"type %qT when C++17 is enabled changed to match "
 			"C++14 %{in GCC 10.1%}",
-			TYPE_MAIN_VARIANT (type), url);
+			TYPE_MAIN_VARIANT (type), url10);
+	      else if (warn_psabi_flags & WARN_PSABI_ZERO_WIDTH_BITFIELD)
+		inform (input_location, "parameter passing for argument of "
+			"type %qT changed %{in GCC 12.1%}",
+			TYPE_MAIN_VARIANT (type), url12);
 	    }
 
 	  if (is_ha != NULL) *is_ha = true;

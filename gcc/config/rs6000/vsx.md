@@ -3397,15 +3397,12 @@
 ;; Optimize cases were we can do a simple or direct move.
 ;; Or see if we can avoid doing the move at all
 
-;; There are some unresolved problems with reload that show up if an Altivec
-;; register was picked.  Limit the scalar value to FPRs for now.
-
 (define_insn "vsx_extract_<mode>"
-  [(set (match_operand:<VS_scalar> 0 "gpc_reg_operand" "=d, d,  wr, wr")
+  [(set (match_operand:<VS_scalar> 0 "gpc_reg_operand" "=wa, wa, wr, wr")
 	(vec_select:<VS_scalar>
-	 (match_operand:VSX_D 1 "gpc_reg_operand"      "wa, wa, wa, wa")
+	 (match_operand:VSX_D 1 "gpc_reg_operand"       "wa, wa, wa, wa")
 	 (parallel
-	  [(match_operand:QI 2 "const_0_to_1_operand"  "wD, n,  wD, n")])))]
+	  [(match_operand:QI 2 "const_0_to_1_operand"   "wD, n,  wD, n")])))]
   "VECTOR_MEM_VSX_P (<MODE>mode)"
 {
   int element = INTVAL (operands[2]);

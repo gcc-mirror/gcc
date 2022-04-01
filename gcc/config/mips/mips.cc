@@ -12254,10 +12254,22 @@ mips_expand_prologue (void)
 	      /* Insert the RIPL into our copy of SR (k1) as the new IPL.  */
 	      if (!cfun->machine->keep_interrupts_masked_p
 		  && cfun->machine->int_mask == INT_MASK_EIC)
-		emit_insn (gen_insvsi (gen_rtx_REG (SImode, K1_REG_NUM),
-				       GEN_INT (6),
+		{
+		  emit_insn (gen_insvsi (gen_rtx_REG (SImode, K1_REG_NUM),
+				       TARGET_MCU ? GEN_INT (7) : GEN_INT (6),
 				       GEN_INT (SR_IPL),
 				       gen_rtx_REG (SImode, K0_REG_NUM)));
+		  if (TARGET_MCU)
+		    {
+		      emit_insn (gen_lshrsi3 (gen_rtx_REG (SImode, K0_REG_NUM),
+					gen_rtx_REG (SImode, K0_REG_NUM),
+					GEN_INT (7)));
+		      emit_insn (gen_insvsi (gen_rtx_REG (SImode, K1_REG_NUM),
+				       GEN_INT (1),
+				       GEN_INT (SR_IPL+8),
+				       gen_rtx_REG (SImode, K0_REG_NUM)));
+		    }
+		}
 
 	      /* Clear all interrupt mask bits up to and including the
 		 handler's interrupt line.  */

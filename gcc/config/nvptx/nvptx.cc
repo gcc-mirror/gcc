@@ -272,6 +272,28 @@ ptx_version_to_string (enum ptx_version v)
     }
 }
 
+unsigned int
+ptx_version_to_number (enum ptx_version v, bool major_p)
+{
+  switch (v)
+    {
+    case PTX_VERSION_3_0:
+      return major_p ? 3 : 0;
+    case PTX_VERSION_3_1:
+      return major_p ? 3 : 1;
+    case PTX_VERSION_4_2:
+      return major_p ? 4 : 2;
+    case PTX_VERSION_6_0:
+      return major_p ? 6 : 0;
+    case PTX_VERSION_6_3:
+      return major_p ? 6 : 3;
+    case PTX_VERSION_7_0:
+      return major_p ? 7 : 0;
+    default:
+      gcc_unreachable ();
+    }
+}
+
 static const char *
 sm_version_to_string (enum ptx_isa sm)
 {

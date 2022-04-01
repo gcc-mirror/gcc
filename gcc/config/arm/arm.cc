@@ -6194,7 +6194,7 @@ arm_pcs_from_attribute (tree attr)
    specification, DECL is the specific declartion.  DECL may be null if
    the call could be indirect or if this is a library call.  */
 static enum arm_pcs
-arm_get_pcs_model (const_tree type, const_tree decl)
+arm_get_pcs_model (const_tree type, const_tree decl ATTRIBUTE_UNUSED)
 {
   bool user_convention = false;
   enum arm_pcs user_pcs = arm_pcs_default;
@@ -6228,6 +6228,14 @@ arm_get_pcs_model (const_tree type, const_tree decl)
 	return ARM_PCS_AAPCS;
       else if (user_convention)
 	return user_pcs;
+#if 0
+      /* Unfortunately, this is not safe and can lead to wrong code
+	 being generated (PR96882).  Not all calls into the back-end
+	 pass the DECL, so it is unsafe to make any PCS-changing
+	 decisions based on it.  In particular the RETURN_IN_MEMORY
+	 hook is only ever passed a TYPE.  This needs revisiting to
+	 see if there are any partial improvements that can be
+	 re-enabled.  */
       else if (decl && flag_unit_at_a_time)
 	{
 	  /* Local functions never leak outside this compilation unit,
@@ -6239,6 +6247,7 @@ arm_get_pcs_model (const_tree type, const_tree decl)
 	  if (local_info_node && local_info_node->local)
 	    return ARM_PCS_AAPCS_LOCAL;
 	}
+#endif
     }
   else if (user_convention && user_pcs != arm_pcs_default)
     sorry ("PCS variant");
@@ -6274,6 +6283,7 @@ aapcs_vfp_cum_init (CUMULATIVE_ARGS *pcum  ATTRIBUTE_UNUSED,
       a HFA or HVA.  */
 const unsigned int WARN_PSABI_EMPTY_CXX17_BASE = 1U << 0;
 const unsigned int WARN_PSABI_NO_UNIQUE_ADDRESS = 1U << 1;
+const unsigned int WARN_PSABI_ZERO_WIDTH_BITFIELD = 1U << 2;
 
 /* Walk down the type tree of TYPE counting consecutive base elements.
    If *MODEP is VOIDmode, then set it to the first valid floating point
@@ -6426,6 +6436,28 @@ aapcs_vfp_sub_candidate (const_tree type, machine_mode *modep,
 		    continue;
 		  }
 	      }
+	    /* A zero-width bitfield may affect layout in some
+	       circumstances, but adds no members.  The determination
+	       of whether or not a type is an HFA is performed after
+	       layout is complete, so if the type still looks like an
+	       HFA afterwards, it is still classed as one.  This is
+	       potentially an ABI break for the hard-float ABI.  */
+	    else if (DECL_BIT_FIELD (field)
+		     && integer_zerop (DECL_SIZE (field)))
+	      {
+		/* Prior to GCC-12 these fields were striped early,
+		   hiding them from the back-end entirely and
+		   resulting in the correct behaviour for argument
+		   passing.  Simulate that old behaviour without
+		   generating a warning.  */
+		if (DECL_FIELD_CXX_ZERO_WIDTH_BIT_FIELD (field))
+		  continue;
+		if (warn_psabi_flags)
+		  {
+		    *warn_psabi_flags |= WARN_PSABI_ZERO_WIDTH_BITFIELD;
+		    continue;
+		  }
+	      }
 
 	    sub_count = aapcs_vfp_sub_candidate (TREE_TYPE (field), modep,
 						 warn_psabi_flags);
@@ -6538,8 +6570,10 @@ aapcs_vfp_is_call_or_return_candidate (enum arm_pcs pcs_variant,
 	      && ((alt = aapcs_vfp_sub_candidate (type, &new_mode, NULL))
 		  != ag_count))
 	    {
-	      const char *url
+	      const char *url10
 		= CHANGES_ROOT_URL "gcc-10/changes.html#empty_base";
+	      const char *url12
+		= CHANGES_ROOT_URL "gcc-12/changes.html#zero_width_bitfields";
 	      gcc_assert (alt == -1);
 	      last_reported_type_uid = uid;
 	      /* Use TYPE_MAIN_VARIANT to strip any redundant const
@@ -6548,12 +6582,16 @@ aapcs_vfp_is_call_or_return_candidate (enum arm_pcs pcs_variant,
 		inform (input_location, "parameter passing for argument of "
 			"type %qT with %<[[no_unique_address]]%> members "
 			"changed %{in GCC 10.1%}",
-			TYPE_MAIN_VARIANT (type), url);
+			TYPE_MAIN_VARIANT (type), url10);
 	      else if (warn_psabi_flags & WARN_PSABI_EMPTY_CXX17_BASE)
 		inform (input_location, "parameter passing for argument of "
 			"type %qT when C++17 is enabled changed to match "
 			"C++14 %{in GCC 10.1%}",
-			TYPE_MAIN_VARIANT (type), url);
+			TYPE_MAIN_VARIANT (type), url10);
+	      else if (warn_psabi_flags & WARN_PSABI_ZERO_WIDTH_BITFIELD)
+		inform (input_location, "parameter passing for argument of "
+			"type %qT changed %{in GCC 12.1%}",
+			TYPE_MAIN_VARIANT (type), url12);
 	    }
 	  *count = ag_count;
 	}

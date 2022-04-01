@@ -5811,6 +5811,9 @@ impl_run_checkers (logger *logger)
   if (flag_dump_analyzer_json)
     dump_analyzer_json (sg, eg);
 
+  if (flag_dump_analyzer_untracked)
+    eng.get_model_manager ()->dump_untracked_regions ();
+
   delete purge_map;
 }
 

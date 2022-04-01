@@ -2325,6 +2325,8 @@ determine_specialization (tree template_id,
 		continue;
 	      if (freq)
 		{
+		  /* C++20 CA104: Substitute directly into the
+		     constraint-expression.  */
 		  tree fargs = DECL_TI_ARGS (fn);
 		  tsubst_flags_t complain = tf_none;
 		  freq = tsubst_constraint (freq, fargs, complain, fn);
@@ -6460,10 +6462,7 @@ alias_template_specialization_p (const_tree t,
   return NULL_TREE;
 }
 
-/* An alias template is complex from a SFINAE perspective if a template-id
-   using that alias can be ill-formed when the expansion is not, as with
-   the void_t template.  We determine this by checking whether the
-   expansion for the alias template uses all its template parameters.  */
+/* Data structure for complex_alias_template_*.  */
 
 struct uses_all_template_parms_data
 {
@@ -6471,31 +6470,36 @@ struct uses_all_template_parms_data
   bool *seen;
 };
 
-static int
-uses_all_template_parms_r (tree t, void *data_)
+/* walk_tree callback for complex_alias_template_p.  */
+
+static tree
+complex_alias_template_r (tree *tp, int *walk_subtrees, void *data_)
 {
-  struct uses_all_template_parms_data &data
-    = *(struct uses_all_template_parms_data*)data_;
-  tree idx = get_template_parm_index (t);
+  tree t = *tp;
+  auto &data = *(struct uses_all_template_parms_data*)data_;
 
-  if (TEMPLATE_PARM_LEVEL (idx) == data.level)
-    data.seen[TEMPLATE_PARM_IDX (idx)] = true;
-  return 0;
-}
+  switch (TREE_CODE (t))
+    {
+    case TEMPLATE_TYPE_PARM:
+    case TEMPLATE_PARM_INDEX:
+    case TEMPLATE_TEMPLATE_PARM:
+    case BOUND_TEMPLATE_TEMPLATE_PARM:
+      {
+	tree idx = get_template_parm_index (t);
+	if (TEMPLATE_PARM_LEVEL (idx) == data.level)
+	  data.seen[TEMPLATE_PARM_IDX (idx)] = true;
+      }
 
-/* for_each_template_parm any_fn callback for complex_alias_template_p.  */
+    default:;
+    }
 
-static int
-complex_pack_expansion_r (tree t, void *data_)
-{
+  if (!PACK_EXPANSION_P (t))
+    return 0;
+
   /* An alias template with a pack expansion that expands a pack from the
      enclosing class needs to be considered complex, to avoid confusion with
      the same pack being used as an argument to the alias's own template
      parameter (91966).  */
-  if (!PACK_EXPANSION_P (t))
-    return 0;
-  struct uses_all_template_parms_data &data
-    = *(struct uses_all_template_parms_data*)data_;
   for (tree pack = PACK_EXPANSION_PARAMETER_PACKS (t); pack;
        pack = TREE_CHAIN (pack))
     {
@@ -6505,10 +6509,33 @@ complex_pack_expansion_r (tree t, void *data_)
       int idx, level;
       template_parm_level_and_index (parm_pack, &level, &idx);
       if (level < data.level)
-	return 1;
+	return t;
+
+      /* Consider the expanded packs to be used outside the expansion...  */
+      data.seen[idx] = true;
     }
+
+  /* ...but don't walk into the pattern.  Consider PR104008:
+
+     template <typename T, typename... Ts>
+     using IsOneOf = disjunction<is_same<T, Ts>...>;
+
+     where IsOneOf seemingly uses all of its template parameters in its
+     expansion (and does not expand a pack from the enclosing class), so the
+     alias was not marked as complex.  However, if it is used like
+     "IsOneOf<T>", the empty pack for Ts means that T no longer appears in the
+     expansion.  So only Ts is considered used by the pack expansion.  */
+  *walk_subtrees = false;
+
   return 0;
 }
+
+/* An alias template is complex from a SFINAE perspective if a template-id
+   using that alias can be ill-formed when the expansion is not, as with
+   the void_t template.
+
+   Returns 1 if always complex, 0 if not complex, -1 if complex iff any of the
+   template arguments are empty packs.  */
 
 static bool
 complex_alias_template_p (const_tree tmpl)
@@ -6530,8 +6557,7 @@ complex_alias_template_p (const_tree tmpl)
   for (int i = 0; i < len; ++i)
     data.seen[i] = false;
 
-  if (for_each_template_parm (pat, uses_all_template_parms_r, &data,
-			      NULL, true, complex_pack_expansion_r))
+  if (cp_walk_tree_without_duplicates (&pat, complex_alias_template_r, &data))
     return true;
   for (int i = 0; i < len; ++i)
     if (!data.seen[i])
@@ -16590,12 +16616,20 @@ tsubst_qualified_id (tree qualified_id, tree args,
 
   if (dependent_scope_p (scope))
     {
-      if (is_template)
-	expr = build_min_nt_loc (loc, TEMPLATE_ID_EXPR, expr, template_args);
-      tree r = build_qualified_name (NULL_TREE, scope, expr,
-				     QUALIFIED_NAME_IS_TEMPLATE (qualified_id));
-      REF_PARENTHESIZED_P (r) = REF_PARENTHESIZED_P (qualified_id);
-      return r;
+      if (TREE_CODE (expr) == SCOPE_REF)
+	/* We built one in tsubst_baselink.  */
+	gcc_checking_assert (same_type_p (scope, TREE_OPERAND (expr, 0)));
+      else
+	{
+	  if (is_template)
+	    expr = build_min_nt_loc (loc, TEMPLATE_ID_EXPR, expr,
+				     template_args);
+	  expr = build_qualified_name (NULL_TREE, scope, expr,
+				       QUALIFIED_NAME_IS_TEMPLATE
+				       (qualified_id));
+	}
+      REF_PARENTHESIZED_P (expr) = REF_PARENTHESIZED_P (qualified_id);
+      return expr;
     }
 
   if (!BASELINK_P (name) && !DECL_P (expr))
@@ -17013,6 +17047,9 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	      /* When rewriting a constructor into a deduction guide, a
 		 non-dependent name can become dependent, so memtmpl<args>
 		 becomes context::template memtmpl<args>.  */
+	      if (DECL_TYPE_TEMPLATE_P (t))
+		return make_unbound_class_template (context, DECL_NAME (t),
+						    NULL_TREE, complain);
 	      tree type = tsubst (TREE_TYPE (t), args, complain, in_decl);
 	      return build_qualified_name (type, context, DECL_NAME (t),
 					   /*template*/true);
@@ -17538,6 +17575,8 @@ tsubst_omp_clause_decl (tree decl, tree args, tsubst_flags_t complain,
 	      *tp = copy_node (it);
 	      TREE_VEC_ELT (*tp, 0)
 		= tsubst_decl (TREE_VEC_ELT (it, 0), args, complain);
+	      DECL_CONTEXT (TREE_VEC_ELT (*tp, 0)) = current_function_decl;
+	      pushdecl (TREE_VEC_ELT (*tp, 0));
 	      TREE_VEC_ELT (*tp, 1)
 		= tsubst_expr (TREE_VEC_ELT (it, 1), args, complain, in_decl,
 			       /*integral_constant_expression_p=*/false);
@@ -27334,6 +27373,7 @@ instantiation_dependent_scope_ref_p (tree t)
 {
   if (DECL_P (TREE_OPERAND (t, 1))
       && CLASS_TYPE_P (TREE_OPERAND (t, 0))
+      && !dependent_scope_p (TREE_OPERAND (t, 0))
       && !unknown_base_ref_p (t)
       && accessible_in_template_p (TREE_OPERAND (t, 0),
 				   TREE_OPERAND (t, 1)))
@@ -27439,6 +27479,10 @@ value_dependent_expression_p (tree expression)
 
 	if (TREE_CODE (expression) == TREE_LIST)
 	  return any_value_dependent_elements_p (expression);
+
+	if (TREE_CODE (type) == REFERENCE_TYPE
+	    && has_value_dependent_address (expression))
+	  return true;
 
 	return value_dependent_expression_p (expression);
       }
@@ -28772,6 +28816,12 @@ finish_concept_definition (cp_expr id, tree init)
   if (TYPE_P (current_scope()) || !DECL_NAMESPACE_SCOPE_P (current_scope ()))
     {
       error_at (loc, "concept %qE not in namespace scope", *id);
+      return error_mark_node;
+    }
+
+  if (current_template_depth > 1)
+    {
+      error_at (loc, "concept %qE has multiple template parameter lists", *id);
       return error_mark_node;
     }
 

@@ -858,6 +858,7 @@ INPUT                  = @srcdir@/doc/doxygen/doxygroups.cc \
                          include/concepts \
                          include/condition_variable \
                          include/deque \
+                         include/expected \
                          include/filesystem \
                          include/forward_list \
                          include/fstream \

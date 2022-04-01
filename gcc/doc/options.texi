@@ -175,6 +175,17 @@ used instead of the option's name and the text to the right of the
 tab forms the help text.  This allows you to elaborate on what type
 of argument the option takes.
 
+There is no support for different help texts for different languages.
+If an option is supported for multiple languages, use a generic
+description that is correct for all of them.
+
+If an option has multiple option definition records (in different
+front ends' @file{*.opt} files, and/or @file{gcc/common.opt}, for
+example), convention is to not duplicate the help text for each of
+them, but instead put a comment like @code{; documented in common.opt}
+in place of the help text for all but one of the multiple option
+definition records.
+
 @item
 A target mask record.  These records have one field of the form
 @samp{Mask(@var{x})}.  The options-processing script will automatically

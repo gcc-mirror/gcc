@@ -250,4 +250,8 @@ fdump-analyzer-supergraph
 Common RejectNegative Var(flag_dump_analyzer_supergraph)
 Dump the analyzer supergraph to a SRCFILE.supergraph.dot file.
 
+fdump-analyzer-untracked
+Common RejectNegative Var(flag_dump_analyzer_untracked)
+Emit custom warnings with internal details intended for analyzer developers.
+
 ; This comment is to ensure we retain the blank line above.

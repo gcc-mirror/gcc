@@ -4940,7 +4940,7 @@ mem_valid_for_store_merging (tree mem, poly_uint64 *pbitsize,
   tree base_addr = get_inner_reference (mem, &bitsize, &bitpos, &offset, &mode,
 					&unsignedp, &reversep, &volatilep);
   *pbitsize = bitsize;
-  if (known_eq (bitsize, 0))
+  if (known_le (bitsize, 0))
     return NULL_TREE;
 
   if (TREE_CODE (mem) == COMPONENT_REF

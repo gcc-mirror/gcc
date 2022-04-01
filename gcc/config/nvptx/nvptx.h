@@ -29,10 +29,24 @@
 
 #define STARTFILE_SPEC "%{mmainkernel:crt0.o}"
 
-/* Default needs to be in sync with default for misa in nvptx.opt.
-   We add a default here to work around a hard-coded sm_30 default in
-   nvptx-as.  */
-#define ASM_SPEC "%{misa=*:-m %*; :-m sm_35}%{misa=sm_30:--no-verify}"
+/* Newer versions of CUDA no longer support sm_30, and nvptx-tools as
+   currently doesn't handle that gracefully when verifying
+   ( https://github.com/MentorEmbedded/nvptx-tools/issues/30 ).  Work around
+   this by verifying with sm_35 when having misa=sm_30 (either implicitly
+   or explicitly).  */
+#define ASM_SPEC				\
+  "%{"						\
+  /* Explict misa=sm_30.  */			\
+  "misa=sm_30:-m sm_35"				\
+  /* Separator.	 */				\
+  "; "						\
+  /* Catch-all.	 */				\
+  "misa=*:-m %*"				\
+  /* Separator.	 */				\
+  "; "						\
+  /* Implicit misa=sm_30.  */			\
+  ":-m sm_35"					\
+  "}"
 
 #define TARGET_CPU_CPP_BUILTINS() nvptx_cpu_cpp_builtins ()
 

@@ -197,6 +197,11 @@ public:
 
   bool symbolic_for_unknown_ptr_p () const;
 
+  /* For most base regions it makes sense to track the bindings of the region
+     within the store.  As an optimization, some are not tracked (to avoid
+     bloating the store object with redundant binding clusters).  */
+  virtual bool tracked_p () const { return true; }
+
   const complexity &get_complexity () const { return m_complexity; }
 
   bool is_named_decl_p (const char *decl_name) const;
@@ -318,6 +323,9 @@ public:
 			const region_model_context *ctxt) const;
 
   unsigned get_num_locals () const { return m_locals.elements (); }
+
+  /* Implemented in region-model-manager.cc.  */
+  void dump_untracked_regions () const;
 
  private:
   const frame_region *m_calling_frame;
@@ -633,13 +641,15 @@ template <> struct default_hash_traits<symbolic_region::key_t>
 namespace ana {
 
 /* Concrete region subclass representing the memory occupied by a
-   variable (whether for a global or a local).  */
+   variable (whether for a global or a local).
+   Also used for representing SSA names, as if they were locals.  */
 
 class decl_region : public region
 {
 public:
   decl_region (unsigned id, const region *parent, tree decl)
-  : region (complexity (parent), id, parent, TREE_TYPE (decl)), m_decl (decl)
+  : region (complexity (parent), id, parent, TREE_TYPE (decl)), m_decl (decl),
+    m_tracked (calc_tracked_p (decl))
   {}
 
   enum region_kind get_kind () const FINAL OVERRIDE { return RK_DECL; }
@@ -647,6 +657,8 @@ public:
   dyn_cast_decl_region () const FINAL OVERRIDE { return this; }
 
   void dump_to_pp (pretty_printer *pp, bool simple) const FINAL OVERRIDE;
+
+  bool tracked_p () const FINAL OVERRIDE { return m_tracked; }
 
   tree get_decl () const { return m_decl; }
   int get_stack_depth () const;
@@ -657,7 +669,15 @@ public:
   const svalue *get_svalue_for_initializer (region_model_manager *mgr) const;
 
 private:
+  static bool calc_tracked_p (tree decl);
+
   tree m_decl;
+
+  /* Cached result of calc_tracked_p, so that we can quickly determine when
+     we don't to track a binding_cluster for this decl (to avoid bloating
+     store objects).
+     This can be debugged using -fdump-analyzer-untracked.  */
+  bool m_tracked;
 };
 
 } // namespace ana

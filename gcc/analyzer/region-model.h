@@ -277,7 +277,8 @@ public:
   const svalue *get_or_create_compound_svalue (tree type,
 					       const binding_map &map);
   const svalue *get_or_create_conjured_svalue (tree type, const gimple *stmt,
-					       const region *id_reg);
+					       const region *id_reg,
+					       const conjured_purge &p);
   const svalue *
   get_or_create_asm_output_svalue (tree type,
 				   const gasm *asm_stmt,
@@ -348,6 +349,8 @@ public:
   void end_checking_feasibility (void) { m_checking_feasibility = false; }
 
   logger *get_logger () const { return m_logger; }
+
+  void dump_untracked_regions () const;
 
 private:
   bool too_complex_p (const complexity &c) const;

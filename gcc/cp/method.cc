@@ -2056,6 +2056,28 @@ assignable_expr (tree to, tree from)
   return r;
 }
 
+/* An unparsed default member initializer prevents calling a defaulted default
+   constructor; make checking std::is_constructible ill-formed until the DMI
+   has been parsed, to avoid caching the wrong value.  */
+
+static bool
+complain_about_unparsed_dmi (tree t)
+{
+  if (type_has_default_ctor_to_be_synthesized (t)
+      && TYPE_HAS_COMPLEX_DFLT (t))
+    for (tree f = TYPE_FIELDS (t); f; f = DECL_CHAIN (f))
+      if (TREE_CODE (f) == FIELD_DECL
+	  && DECL_INITIAL (f)
+	  && TREE_CODE (DECL_INITIAL (f)) == DEFERRED_PARSE)
+	{
+	  error ("default member initializer for %qD required by %qs before "
+		 "the end of its enclosing class", f, "std::is_constructible");
+	  inform (location_of (f), "defined here");
+	  return true;
+	}
+  return false;
+}
+
 /* The predicate condition for a template specialization
    is_constructible<T, Args...> shall be satisfied if and only if the
    following variable definition would be well-formed for some invented
@@ -2070,6 +2092,8 @@ constructible_expr (tree to, tree from)
   cp_unevaluated cp_uneval_guard;
   if (CLASS_TYPE_P (to))
     {
+      if (!from && complain_about_unparsed_dmi (to))
+	return error_mark_node;
       tree ctype = to;
       vec<tree, va_gc> *args = NULL;
       if (!TYPE_REF_P (to))

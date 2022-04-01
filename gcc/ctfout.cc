@@ -287,7 +287,7 @@ ctf_preprocess (ctf_container_ref ctfc)
       ctfc->ctfc_gobjts_list = ggc_vec_alloc<ctf_dvdef_t*>(num_global_objts);
     }
 
-  size_t num_ctf_vars = ctfc->ctfc_vars->elements ();
+  size_t num_ctf_vars = ctfc_get_num_ctf_vars (ctfc);
   if (num_ctf_vars)
     {
       ctf_dvd_preprocess_arg_t dvd_arg;
@@ -597,7 +597,7 @@ static void
 output_ctf_vars (ctf_container_ref ctfc)
 {
   size_t i;
-  size_t num_ctf_vars = ctfc->ctfc_vars->elements ();
+  size_t num_ctf_vars = ctfc_get_num_ctf_vars (ctfc);
   if (num_ctf_vars)
     {
       /* Iterate over the list of sorted vars and output the asm.  */

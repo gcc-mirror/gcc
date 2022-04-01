@@ -1169,17 +1169,38 @@ region_model_manager::get_or_create_compound_svalue (tree type,
   return compound_sval;
 }
 
+/* class conjured_purge.  */
+
+/* Purge state relating to SVAL.  */
+
+void
+conjured_purge::purge (const conjured_svalue *sval) const
+{
+  m_model->purge_state_involving (sval, m_ctxt);
+}
+
 /* Return the svalue * of type TYPE for the value conjured for ID_REG
-   at STMT, creating it if necessary.  */
+   at STMT, creating it if necessary.
+   Use P to purge existing state from the svalue, for the case where a
+   conjured_svalue would be reused along an execution path.  */
 
 const svalue *
 region_model_manager::get_or_create_conjured_svalue (tree type,
 						     const gimple *stmt,
-						     const region *id_reg)
+						     const region *id_reg,
+						     const conjured_purge &p)
 {
   conjured_svalue::key_t key (type, stmt, id_reg);
   if (conjured_svalue **slot = m_conjured_values_map.get (key))
-    return *slot;
+    {
+      const conjured_svalue *sval = *slot;
+      /* We're reusing an existing conjured_svalue, perhaps from a different
+	 state within this analysis, or perhaps from an earlier state on this
+	 execution path.  For the latter, purge any state involving the "new"
+	 svalue from the current program_state.  */
+      p.purge (sval);
+      return sval;
+    }
   conjured_svalue *conjured_sval
     = new conjured_svalue (type, stmt, id_reg);
   RETURN_UNKNOWN_IF_TOO_COMPLEX (conjured_sval);
@@ -1738,6 +1759,54 @@ store_manager::log_stats (logger *logger, bool show_objs) const
 		m_concrete_binding_key_mgr);
   log_uniq_map (logger, show_objs, "symbolic_binding",
 		m_symbolic_binding_key_mgr);
+}
+
+/* Emit a warning showing DECL_REG->tracked_p () for use in DejaGnu tests
+   (using -fdump-analyzer-untracked).  */
+
+static void
+dump_untracked_region (const decl_region *decl_reg)
+{
+  tree decl = decl_reg->get_decl ();
+  if (TREE_CODE (decl) != VAR_DECL)
+    return;
+  /* For now, don't emit the status of decls in the constant pool, to avoid
+     differences in DejaGnu test results between targets that use these vs
+     those that don't.
+     (Eventually these decls should probably be untracked and we should test
+     for that, but that's not stage 4 material).  */
+  if (DECL_IN_CONSTANT_POOL (decl))
+    return;
+  warning_at (DECL_SOURCE_LOCATION (decl), 0,
+	      "track %qD: %s",
+	      decl, (decl_reg->tracked_p () ? "yes" : "no"));
+}
+
+/* Implementation of -fdump-analyzer-untracked.  */
+
+void
+region_model_manager::dump_untracked_regions () const
+{
+  for (auto iter : m_globals_map)
+    {
+      const decl_region *decl_reg = iter.second;
+      dump_untracked_region (decl_reg);
+    }
+  for (auto frame_iter : m_frame_regions)
+    {
+      const frame_region *frame_reg = frame_iter.second;
+      frame_reg->dump_untracked_regions ();
+    }
+}
+
+void
+frame_region::dump_untracked_regions () const
+{
+  for (auto iter : m_locals)
+    {
+      const decl_region *decl_reg = iter.second;
+      dump_untracked_region (decl_reg);
+    }
 }
 
 } // namespace ana

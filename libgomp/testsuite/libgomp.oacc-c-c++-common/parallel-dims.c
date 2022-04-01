@@ -1,6 +1,8 @@
 /* OpenACC parallelism dimensions clauses: num_gangs, num_workers,
    vector_length.  */
 
+/* { dg-additional-options "-DEXPENSIVE" { target run_expensive_tests } } */
+
 /* { dg-additional-options "--param=openacc-kernels=decompose" } */
 
 /* { dg-additional-options "-fopt-info-all-omp" }
@@ -49,6 +51,11 @@ static int acc_vector ()
   return __builtin_goacc_parlevel_id (GOMP_DIM_VECTOR);
 }
 
+#ifdef EXPENSIVE
+#define N 100
+#else
+#define N 50
+#endif
 
 int main ()
 {
@@ -76,7 +83,7 @@ int main ()
     {
       /* We're actually executing with num_gangs (1).  */
       gangs_actual = 1;
-      for (int i = 100 * gangs_actual; i > -100 * gangs_actual; --i)
+      for (int i = N * gangs_actual; i > -N * gangs_actual; --i)
 	{
 	  gangs_min = gangs_max = acc_gang ();
 	  workers_min = workers_max = acc_worker ();
@@ -115,7 +122,7 @@ int main ()
   reduction (min: gangs_min, workers_min, vectors_min) reduction (max: gangs_max, workers_max, vectors_max)
       /* { dg-note {variable 'i' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} {} { target *-*-* } l_loop_i$c_loop_i } */
       /* { dg-optimized {assigned OpenACC gang loop parallelism} {} { target *-*-* } l_loop_i$c_loop_i } */
-      for (int i = 100 * gangs_actual; i > -100 * gangs_actual; --i)
+      for (int i = N * gangs_actual; i > -N * gangs_actual; --i)
 	{
 	  gangs_min = gangs_max = acc_gang ();
 	  workers_min = workers_max = acc_worker ();
@@ -154,7 +161,7 @@ int main ()
   reduction (min: gangs_min, workers_min, vectors_min) reduction (max: gangs_max, workers_max, vectors_max)
       /* { dg-note {variable 'i' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} {} { target *-*-* } l_loop_i$c_loop_i } */
       /* { dg-optimized {assigned OpenACC worker loop parallelism} {} { target *-*-* } l_loop_i$c_loop_i } */
-      for (int i = 100 * workers_actual; i > -100 * workers_actual; --i)
+      for (int i = N * workers_actual; i > -N * workers_actual; --i)
 	{
 	  gangs_min = gangs_max = acc_gang ();
 	  workers_min = workers_max = acc_worker ();
@@ -200,7 +207,7 @@ int main ()
   reduction (min: gangs_min, workers_min, vectors_min) reduction (max: gangs_max, workers_max, vectors_max)
       /* { dg-note {variable 'i' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} {} { target *-*-* } l_loop_i$c_loop_i } */
       /* { dg-optimized {assigned OpenACC vector loop parallelism} {} { target *-*-* } l_loop_i$c_loop_i } */
-      for (int i = 100 * vectors_actual; i > -100 * vectors_actual; --i)
+      for (int i = N * vectors_actual; i > -N * vectors_actual; --i)
 	{
 	  gangs_min = gangs_max = acc_gang ();
 	  workers_min = workers_max = acc_worker ();
@@ -250,7 +257,7 @@ int main ()
 	}
       /* As we're executing GR not GP, don't multiply with a "gangs_actual"
 	 factor.  */
-      for (int i = 100 /* * gangs_actual */; i > -100 /* * gangs_actual */; --i)
+      for (int i = N /* * gangs_actual */; i > -N /* * gangs_actual */; --i)
 	{
 	  gangs_min = gangs_max = acc_gang ();
 	  workers_min = workers_max = acc_worker ();
@@ -291,7 +298,7 @@ int main ()
   reduction (min: gangs_min, workers_min, vectors_min) reduction (max: gangs_max, workers_max, vectors_max)
       /* { dg-note {variable 'i' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} {} { target *-*-* } l_loop_i$c_loop_i } */
       /* { dg-optimized {assigned OpenACC gang loop parallelism} {} { target *-*-* } l_loop_i$c_loop_i } */
-      for (int i = 100 * gangs_actual; i > -100 * gangs_actual; --i)
+      for (int i = N * gangs_actual; i > -N * gangs_actual; --i)
 	{
 	  gangs_min = gangs_max = acc_gang ();
 	  workers_min = workers_max = acc_worker ();
@@ -348,7 +355,7 @@ int main ()
   reduction (min: gangs_min, workers_min, vectors_min) reduction (max: gangs_max, workers_max, vectors_max)
       /* { dg-note {variable 'i' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} {} { target *-*-* } l_loop_i$c_loop_i } */
       /* { dg-optimized {assigned OpenACC worker loop parallelism} {} { target *-*-* } l_loop_i$c_loop_i } */
-      for (int i = 100 * workers_actual; i > -100 * workers_actual; --i)
+      for (int i = N * workers_actual; i > -N * workers_actual; --i)
 	{
 	  gangs_min = gangs_max = acc_gang ();
 	  workers_min = workers_max = acc_worker ();
@@ -411,7 +418,7 @@ int main ()
   reduction (min: gangs_min, workers_min, vectors_min) reduction (max: gangs_max, workers_max, vectors_max)
       /* { dg-note {variable 'i' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} {} { target *-*-* } l_loop_i$c_loop_i } */
       /* { dg-optimized {assigned OpenACC worker loop parallelism} {} { target *-*-* } l_loop_i$c_loop_i } */
-      for (int i = 100 * workers_actual; i > -100 * workers_actual; --i)
+      for (int i = N * workers_actual; i > -N * workers_actual; --i)
 	{
 	  gangs_min = gangs_max = acc_gang ();
 	  workers_min = workers_max = acc_worker ();
@@ -468,7 +475,7 @@ int main ()
   reduction (min: gangs_min, workers_min, vectors_min) reduction (max: gangs_max, workers_max, vectors_max)
       /* { dg-note {variable 'i' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} {} { target *-*-* } l_loop_i$c_loop_i } */
       /* { dg-optimized {assigned OpenACC vector loop parallelism} {} { target *-*-* } l_loop_i$c_loop_i } */
-      for (int i = 100 * vectors_actual; i > -100 * vectors_actual; --i)
+      for (int i = N * vectors_actual; i > -N * vectors_actual; --i)
 	{
 	  gangs_min = gangs_max = acc_gang ();
 	  workers_min = workers_max = acc_worker ();
@@ -528,7 +535,7 @@ int main ()
   reduction (min: gangs_min, workers_min, vectors_min) reduction (max: gangs_max, workers_max, vectors_max)
       /* { dg-note {variable 'i' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} {} { target *-*-* } l_loop_i$c_loop_i } */
       /* { dg-optimized {assigned OpenACC vector loop parallelism} {} { target *-*-* } l_loop_i$c_loop_i } */
-      for (int i = 100 * vectors_actual; i > -100 * vectors_actual; --i)
+      for (int i = N * vectors_actual; i > -N * vectors_actual; --i)
 	{
 	  gangs_min = gangs_max = acc_gang ();
 	  workers_min = workers_max = acc_worker ();
@@ -602,20 +609,20 @@ int main ()
       /* { dg-note {variable 'i' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} {} { target *-*-* } l_loop_i$c_loop_i } */
       /* { dg-note {variable 'j' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} {} { target *-*-* } l_loop_i$c_loop_i } */
       /* { dg-optimized {assigned OpenACC gang loop parallelism} {} { target *-*-* } l_loop_i$c_loop_i } */
-      for (int i = 100 * gangs_actual; i > -100 * gangs_actual; --i)
+      for (int i = N * gangs_actual; i > -N * gangs_actual; --i)
 #pragma acc loop /* { dg-line l_loop_j[incr c_loop_j] } */ \
   worker \
   reduction (min: gangs_min, workers_min, vectors_min) reduction (max: gangs_max, workers_max, vectors_max)
 	/* { dg-note {variable 'j' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} {} { target *-*-* } l_loop_j$c_loop_j } */
 	/* { dg-note {variable 'k' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} {} { target *-*-* } l_loop_j$c_loop_j } */
 	/* { dg-optimized {assigned OpenACC worker loop parallelism} {} { target *-*-* } l_loop_j$c_loop_j } */
-	for (int j = 100 * workers_actual; j > -100 * workers_actual; --j)
+	for (int j = N * workers_actual; j > -N * workers_actual; --j)
 #pragma acc loop /* { dg-line l_loop_k[incr c_loop_k] } */ \
   vector \
   reduction (min: gangs_min, workers_min, vectors_min) reduction (max: gangs_max, workers_max, vectors_max)
 	  /* { dg-note {variable 'k' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} {} { target *-*-* } l_loop_k$c_loop_k } */
 	  /* { dg-optimized {assigned OpenACC vector loop parallelism} {} { target *-*-* } l_loop_k$c_loop_k } */
-	  for (int k = 100 * vectors_actual; k > -100 * vectors_actual; --k)
+	  for (int k = N * vectors_actual; k > -N * vectors_actual; --k)
 	    {
 	      gangs_min = gangs_max = acc_gang ();
 	      workers_min = workers_max = acc_worker ();
@@ -664,7 +671,7 @@ int main ()
       /* { dg-note {variable 'i' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} {} { target *-*-* } l_loop_i$c_loop_i } */
       /* { dg-note {variable 'i' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} {} { target *-*-* } l_loop_i$c_loop_i } */
       /* { dg-optimized {assigned OpenACC seq loop parallelism} {} { target *-*-* } l_loop_i$c_loop_i } */
-      for (int i = 100; i > -100; --i)
+      for (int i = N; i > -N; --i)
 	{
 	  /* This is to make the loop unparallelizable.  */
 	  asm volatile ("" : : : "memory");
@@ -714,7 +721,7 @@ int main ()
       /* { dg-note {variable 'i' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} {} { target *-*-* } l_loop_i$c_loop_i } */
       /* { dg-note {variable 'i' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} {} { target *-*-* } l_loop_i$c_loop_i } */
       /* { dg-optimized {assigned OpenACC seq loop parallelism} {} { target *-*-* } l_loop_i$c_loop_i } */
-      for (int i = 100; i > -100; --i)
+      for (int i = N; i > -N; --i)
 	{
 	  /* This is to make the loop unparallelizable.  */
 	  asm volatile ("" : : : "memory");
@@ -745,7 +752,7 @@ int main ()
     /* { dg-note {variable 'i' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} {} { target *-*-* } l_compute$c_compute } */
     /* { dg-warning {using 'vector_length \(32\)', ignoring 1} {} { target openacc_nvidia_accel_selected } l_compute$c_compute } */
     {
-      for (int i = 100; i > -100; i--)
+      for (int i = N; i > -N; i--)
 	{
 	  gangs_min = gangs_max = acc_gang ();
 	  workers_min = workers_max = acc_worker ();
@@ -789,20 +796,20 @@ int main ()
       /* { dg-note {variable 'i' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} {} { target *-*-* } l_loop_i$c_loop_i } */
       /* { dg-note {variable 'j' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} {} { target *-*-* } l_loop_i$c_loop_i } */
       /* { dg-optimized {assigned OpenACC gang loop parallelism} {} { target *-*-* } l_loop_i$c_loop_i } */
-      for (int i = 100; i > -100; i--)
+      for (int i = N; i > -N; i--)
 #pragma acc loop /* { dg-line l_loop_j[incr c_loop_j] } */ \
   worker \
   reduction (min: gangs_min, workers_min, vectors_min) reduction (max: gangs_max, workers_max, vectors_max)
 	/* { dg-note {variable 'j' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} {} { target *-*-* } l_loop_j$c_loop_j } */
 	/* { dg-note {variable 'k' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} {} { target *-*-* } l_loop_j$c_loop_j } */
 	/* { dg-optimized {assigned OpenACC worker loop parallelism} {} { target *-*-* } l_loop_j$c_loop_j } */
-	for (int j = 100; j > -100; j--)
+	for (int j = N; j > -N; j--)
 #pragma acc loop /* { dg-line l_loop_k[incr c_loop_k] } */ \
   vector \
   reduction (min: gangs_min, workers_min, vectors_min) reduction (max: gangs_max, workers_max, vectors_max)
 	  /* { dg-note {variable 'k' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} {} { target *-*-* } l_loop_k$c_loop_k } */
 	  /* { dg-optimized {assigned OpenACC vector loop parallelism} {} { target *-*-* } l_loop_k$c_loop_k } */
-	  for (int k = 100 * vectors_actual; k > -100 * vectors_actual; k--)
+	  for (int k = N * vectors_actual; k > -N * vectors_actual; k--)
 	    {
 	      gangs_min = gangs_max = acc_gang ();
 	      workers_min = workers_max = acc_worker ();

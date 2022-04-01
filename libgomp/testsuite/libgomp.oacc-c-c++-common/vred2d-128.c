@@ -1,10 +1,16 @@
 /* Test large vector lengths.  */
 
+/* { dg-additional-options "-DEXPENSIVE" { target run_expensive_tests } } */
+
 /* { dg-additional-options -Wuninitialized } */
 
 #include <assert.h>
 
+#ifdef EXPENSIVE
 #define n 10000
+#else
+#define n 2500
+#endif
 int a1[n], a2[n];
 
 #define gentest(name, outer, inner)		\

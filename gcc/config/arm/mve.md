@@ -535,26 +535,6 @@
   [(set_attr "type" "mve_move")
 ])
 
-(define_insn "mve_vec_unpack<US>_lo_<mode>"
-  [(set (match_operand:<V_unpack> 0 "register_operand" "=w")
-	(SE:<V_unpack> (vec_select:<V_HALF>
-			  (match_operand:MVE_3 1 "register_operand" "w")
-			  (match_operand:MVE_3 2 "vect_par_constant_low" ""))))]
-  "TARGET_HAVE_MVE"
-  "vmovlb.<US>%#<V_sz_elem> %q0, %q1"
-  [(set_attr "type" "mve_move")]
-)
-
-(define_insn "mve_vec_unpack<US>_hi_<mode>"
-  [(set (match_operand:<V_unpack> 0 "register_operand" "=w")
-	(SE:<V_unpack> (vec_select:<V_HALF>
-			  (match_operand:MVE_3 1 "register_operand" "w")
-			  (match_operand:MVE_3 2 "vect_par_constant_high" ""))))]
-  "TARGET_HAVE_MVE"
-  "vmovlt.<US>%#<V_sz_elem> %q0, %q1"
-  [(set_attr "type" "mve_move")]
-)
-
 ;;
 ;; [vcvtpq_s, vcvtpq_u])
 ;;
@@ -2219,23 +2199,10 @@
   [(set_attr "type" "mve_move")
 ])
 
-;; vmovnb pattern used by the vec_pack_trunc expander to avoid the
-;; need for an uninitialized input operand.
-(define_insn "@mve_vec_pack_trunc_lo_<mode>"
-  [
-   (set (match_operand:<V_narrow_pack> 0 "s_register_operand" "=w")
-	(unspec:<V_narrow_pack> [(match_operand:MVE_5 1 "s_register_operand" "w")]
-	 VMOVNBQ_S))
-  ]
-  "TARGET_HAVE_MVE"
-  "vmovnb.i%#<V_sz_elem>	%q0, %q1"
-  [(set_attr "type" "mve_move")
-])
-
 ;;
 ;; [vmovntq_s, vmovntq_u])
 ;;
-(define_insn "@mve_vmovntq_<supf><mode>"
+(define_insn "mve_vmovntq_<supf><mode>"
   [
    (set (match_operand:<V_narrow_pack> 0 "s_register_operand" "=w")
 	(unspec:<V_narrow_pack> [(match_operand:<V_narrow_pack> 1 "s_register_operand" "0")
