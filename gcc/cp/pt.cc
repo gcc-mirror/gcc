@@ -6637,6 +6637,18 @@ get_underlying_template (tree tmpl)
       if (!comp_template_args (TI_ARGS (tinfo), alias_args))
 	break;
 
+      /* Are any default template arguments equivalent?  */
+      tree aparms = INNERMOST_TEMPLATE_PARMS (DECL_TEMPLATE_PARMS (tmpl));
+      tree uparms = INNERMOST_TEMPLATE_PARMS (DECL_TEMPLATE_PARMS (underlying));
+      const int nparms = TREE_VEC_LENGTH (aparms);
+      for (int i = 0; i < nparms; ++i)
+	{
+	  tree adefarg = TREE_PURPOSE (TREE_VEC_ELT (aparms, i));
+	  tree udefarg = TREE_PURPOSE (TREE_VEC_ELT (uparms, i));
+	  if (!template_args_equal (adefarg, udefarg))
+	    goto top_break;
+	}
+
       /* If TMPL adds or changes any constraints, it isn't equivalent.  I think
 	 it's appropriate to treat a less-constrained alias as equivalent.  */
       if (!at_least_as_constrained (underlying, tmpl))
@@ -6645,6 +6657,7 @@ get_underlying_template (tree tmpl)
       /* Alias is equivalent.  Strip it and repeat.  */
       tmpl = underlying;
     }
+  top_break:;
 
   return tmpl;
 }
