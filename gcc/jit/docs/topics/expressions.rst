@@ -24,7 +24,7 @@ Rvalues
 -------
 .. type:: gcc_jit_rvalue
 
-A :c:type:`gcc_jit_rvalue *` is an expression that can be computed.
+A :c:type:`gcc_jit_rvalue` is an expression that can be computed.
 
 It can be simple, e.g.:
 
@@ -602,7 +602,7 @@ Function calls
               gcc_jit_rvalue_set_bool_require_tail_call (gcc_jit_rvalue *call,\
                                                          int require_tail_call)
 
-   Given an :c:type:`gcc_jit_rvalue *` for a call created through
+   Given an :c:type:`gcc_jit_rvalue` for a call created through
    :c:func:`gcc_jit_context_new_call` or
    :c:func:`gcc_jit_context_new_call_through_ptr`, mark/clear the
    call as needing tail-call optimization.  The optimizer will
@@ -721,8 +721,8 @@ where the rvalue is computed by reading from the storage area.
 
       #ifdef LIBGCCJIT_HAVE_gcc_jit_lvalue_set_tls_model
 
-.. function:: void
-              gcc_jit_lvalue_set_link_section (gcc_jit_lvalue *lvalue,
+.. function:: void\
+              gcc_jit_lvalue_set_link_section (gcc_jit_lvalue *lvalue,\
                                                const char *section_name)
 
    Set the link section of a variable.
