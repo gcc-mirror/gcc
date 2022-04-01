@@ -3995,6 +3995,24 @@ package body Exp_Attr is
       when Attribute_Img =>
          Exp_Imgv.Expand_Image_Attribute (N);
 
+      -----------
+      -- Index --
+      -----------
+
+      --  Transforms 'Index attribute into a reference to the second formal of
+      --  the wrapper built for an entry family that has contract cases (see
+      --  Exp_Ch9.Build_Contract_Wrapper).
+
+      when Attribute_Index => Index : declare
+         Entry_Id  : constant Entity_Id := Entity (Pref);
+         Entry_Idx : constant Entity_Id :=
+                       Next_Entity
+                         (First_Entity (Contract_Wrapper (Entry_Id)));
+      begin
+         Rewrite (N, New_Occurrence_Of (Entry_Idx, Loc));
+         Analyze_And_Resolve (N, Typ);
+      end Index;
+
       -----------------
       -- Initialized --
       -----------------

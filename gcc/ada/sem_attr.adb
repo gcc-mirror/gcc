@@ -176,6 +176,7 @@ package body Sem_Attr is
    Attribute_22 : constant Attribute_Class_Array := Attribute_Class_Array'(
       Attribute_Enum_Rep                     |
       Attribute_Enum_Val                     => True,
+      Attribute_Index                        => True,
       Attribute_Preelaborable_Initialization => True,
       others                                 => False);
 
@@ -275,6 +276,15 @@ package body Sem_Attr is
       --  'Wide_Wide_Image. The routine checks that the prefix is valid and
       --  sets the type of the attribute to the one specified by Str_Typ (e.g.
       --  Standard_String for 'Image and Standard_Wide_String for 'Wide_Image).
+
+      procedure Analyze_Index_Attribute
+        (Legal   : out Boolean;
+         Spec_Id : out Entity_Id);
+      --  Processing for attribute 'Index. It checks that the attribute appears
+      --  in a pre/postcondition-like aspect or pragma associated with an entry
+      --  family. Flag Legal is set when the above criteria are met. Spec_Id
+      --  denotes the entity of the wrapper of the entry family or Empty if
+      --  the attribute is illegal.
 
       procedure Bad_Attribute_For_Predicate;
       --  Output error message for use of a predicate (First, Last, Range) not
@@ -1584,6 +1594,178 @@ package body Sem_Attr is
             Check_Restriction (No_Fixed_IO, P);
          end if;
       end Analyze_Image_Attribute;
+
+      -----------------------------
+      -- Analyze_Index_Attribute --
+      -----------------------------
+
+      procedure Analyze_Index_Attribute
+        (Legal   : out Boolean;
+         Spec_Id : out Entity_Id)
+      is
+         procedure Check_Placement_In_Check (Prag : Node_Id);
+         --  Verify that the attribute appears within pragma Check that mimics
+         --  a postcondition.
+
+         procedure Placement_Error;
+         pragma No_Return (Placement_Error);
+         --  Emit a general error when the attributes does not appear in a
+         --  precondition or postcondition aspect or pragma, and then raises
+         --  Bad_Attribute to avoid any further semantic processing.
+
+         ------------------------------
+         -- Check_Placement_In_Check --
+         ------------------------------
+
+         procedure Check_Placement_In_Check (Prag : Node_Id) is
+            Args : constant List_Id := Pragma_Argument_Associations (Prag);
+            Nam  : constant Name_Id := Chars (Get_Pragma_Arg (First (Args)));
+
+         begin
+            --  The "Name" argument of pragma Check denotes a precondition or
+            --  postcondition.
+
+            if Nam in Name_Post
+                    | Name_Postcondition
+                    | Name_Pre
+                    | Name_Precondition
+                    | Name_Refined_Post
+            then
+               null;
+
+            --  Otherwise the placement of the attribute is illegal
+
+            else
+               Placement_Error;
+            end if;
+         end Check_Placement_In_Check;
+
+         ---------------------
+         -- Placement_Error --
+         ---------------------
+
+         procedure Placement_Error is
+         begin
+            Error_Attr
+              ("attribute % can only appear in pre- or postcondition", P);
+         end Placement_Error;
+
+         --  Local variables
+
+         Prag      : Node_Id;
+         Prag_Nam  : Name_Id;
+         Subp_Decl : Node_Id;
+
+      --  Start of processing for Analyze_Index_Attribute
+
+      begin
+         --  Assume that the attribute is illegal
+
+         Legal   := False;
+         Spec_Id := Empty;
+
+         --  Skip processing during preanalysis of class-wide preconditions and
+         --  postconditions since at this stage the expression is not installed
+         --  yet on its definite context.
+
+         if Inside_Class_Condition_Preanalysis then
+            Legal   := True;
+            Spec_Id := Current_Scope;
+            return;
+         end if;
+
+         --  Traverse the parent chain to find the aspect or pragma where the
+         --  attribute resides.
+
+         Prag := N;
+         while Present (Prag) loop
+            if Nkind (Prag) in N_Aspect_Specification | N_Pragma then
+               exit;
+
+            --  Prevent the search from going too far
+
+            elsif Is_Body_Or_Package_Declaration (Prag) then
+               exit;
+            end if;
+
+            Prag := Parent (Prag);
+         end loop;
+
+         --  The attribute is allowed to appear only in precondition and
+         --  postcondition-like aspects or pragmas.
+
+         if Nkind (Prag) in N_Aspect_Specification | N_Pragma then
+            if Nkind (Prag) = N_Aspect_Specification then
+               Prag_Nam := Chars (Identifier (Prag));
+            else
+               Prag_Nam := Pragma_Name (Prag);
+            end if;
+
+            if Prag_Nam = Name_Check then
+               Check_Placement_In_Check (Prag);
+
+            elsif Prag_Nam in Name_Post
+                            | Name_Postcondition
+                            | Name_Pre
+                            | Name_Precondition
+                            | Name_Refined_Post
+            then
+               null;
+
+            else
+               Placement_Error;
+               return;
+            end if;
+
+         --  Otherwise the placement of the attribute is illegal
+
+         else
+            Placement_Error;
+            return;
+         end if;
+
+         --  Find the related subprogram subject to the aspect or pragma
+
+         if Nkind (Prag) = N_Aspect_Specification then
+            Subp_Decl := Parent (Prag);
+         else
+            Subp_Decl := Find_Related_Declaration_Or_Body (Prag);
+         end if;
+
+         --  The aspect or pragma where the attribute resides should be
+         --  associated with a subprogram declaration or a body since the
+         --  analysis of pre-/postconditions of entry and entry families is
+         --  performed in their wrapper subprogram. If this is not the case,
+         --  then the aspect or pragma is illegal and no further analysis is
+         --  required.
+
+         if Nkind (Subp_Decl) not in N_Subprogram_Body
+                                   | N_Subprogram_Declaration
+         then
+            return;
+         end if;
+
+         Spec_Id := Unique_Defining_Entity (Subp_Decl);
+
+         --  If we get here and Spec_Id denotes the entity of the entry wrapper
+         --  (or the postcondition procedure of the entry wrapper) then the
+         --  attribute is legal.
+
+         if Is_Entry_Wrapper (Spec_Id) then
+            Legal := True;
+
+         elsif Chars (Spec_Id) = Name_uPostconditions
+           and then Is_Entry_Wrapper (Scope (Spec_Id))
+         then
+            Spec_Id := Scope (Spec_Id);
+            Legal   := True;
+
+         --  Otherwise the attribute is illegal and we return Empty
+
+         else
+            Spec_Id := Empty;
+         end if;
+      end Analyze_Index_Attribute;
 
       ---------------------------------
       -- Bad_Attribute_For_Predicate --
@@ -4278,6 +4460,55 @@ package body Sem_Attr is
          Check_Object_Reference (P);
          Check_Object_Reference (E1);
          Set_Etype (N, Standard_Boolean);
+
+      -----------
+      -- Index --
+      -----------
+
+      when Attribute_Index => Index : declare
+         Ent     : Entity_Id;
+         Legal   : Boolean;
+         Spec_Id : Entity_Id;
+
+      begin
+         Check_E0;
+         Analyze_Index_Attribute (Legal, Spec_Id);
+
+         if not Legal or else No (Spec_Id) then
+            Error_Attr ("attribute % must apply to entry family", P);
+            return;
+         end if;
+
+         --  Legality checks
+
+         if Nkind (P) in N_Identifier | N_Expanded_Name then
+            Ent := Entity (P);
+
+            if Ekind (Ent) /= E_Entry_Family then
+               Error_Attr
+                 ("attribute % must apply to entry family", P);
+
+            --  Analysis of pre/postconditions of an entry [family] occurs when
+            --  the conditions are relocated to the contract wrapper procedure
+            --  (see subprogram Build_Contract_Wrapper).
+
+            elsif Contract_Wrapper (Ent) /= Spec_Id then
+               Error_Attr
+                 ("attribute % must apply to current entry family", P);
+            end if;
+
+         elsif Nkind (P) in N_Indexed_Component
+                          | N_Selected_Component
+         then
+            Error_Attr
+              ("attribute % must apply to current entry family", P);
+
+         else
+            Error_Attr ("invalid entry family name", N);
+         end if;
+
+         Set_Etype (N, Entry_Index_Type (Ent));
+      end Index;
 
       -----------------------
       -- Has_Tagged_Values --
@@ -10595,6 +10826,7 @@ package body Sem_Attr is
          | Attribute_First_Bit
          | Attribute_Img
          | Attribute_Input
+         | Attribute_Index
          | Attribute_Initialized
          | Attribute_Last_Bit
          | Attribute_Library_Level
@@ -12086,6 +12318,24 @@ package body Sem_Attr is
 
          when Attribute_Enabled =>
             null;
+
+         -----------
+         -- Index --
+         -----------
+
+         when Attribute_Index =>
+            if Nkind (P) = N_Indexed_Component
+              and then Is_Entity_Name (Prefix (P))
+            then
+               declare
+                  Indx : constant Node_Id   := First (Expressions (P));
+                  Fam  : constant Entity_Id := Entity (Prefix (P));
+
+               begin
+                  Resolve (Indx, Entry_Index_Type (Fam));
+                  Apply_Scalar_Range_Check (Indx, Entry_Index_Type (Fam));
+               end;
+            end if;
 
          ----------------
          -- Loop_Entry --

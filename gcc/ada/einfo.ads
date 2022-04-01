@@ -2599,7 +2599,8 @@ package Einfo is
 --       test for the need to replace references in Exp_Ch2.
 
 --    Is_Entry_Wrapper
---       Defined on wrappers created for entries that have precondition aspects
+--       Defined on wrappers created for entries that have precondition or
+--       postcondition aspects.
 
 --    Is_Enumeration_Type (synthesized)
 --       Defined in all entities, true for enumeration types and subtypes
