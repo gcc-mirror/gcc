@@ -5122,6 +5122,13 @@ DEFHOOK
 that could conceivably contain values that are useful to an attacker.\n\
 Return the set of registers that were actually cleared.\n\
 \n\
+For most targets, the returned set of registers is a subset of\n\
+@var{selected_regs}, however, for some of the targets (for example MIPS),\n\
+clearing some registers that are in the @var{selected_regs} requires\n\
+clearing other call used registers that are not in the @var{selected_regs},\n\
+under such situation, the returned set of registers must be a subset of all\n\
+call used registers.\n\
+\n\
 The default implementation uses normal move instructions to zero\n\
 all the registers in @var{selected_regs}.  Define this hook if the\n\
 target has more efficient ways of zeroing certain registers,\n\

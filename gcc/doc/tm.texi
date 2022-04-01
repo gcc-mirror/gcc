@@ -12330,6 +12330,13 @@ This target hook emits instructions to zero the subset of @var{selected_regs}
 that could conceivably contain values that are useful to an attacker.
 Return the set of registers that were actually cleared.
 
+For most targets, the returned set of registers is a subset of
+@var{selected_regs}, however, for some of the targets (for example MIPS),
+clearing some registers that are in the @var{selected_regs} requires
+clearing other call used registers that are not in the @var{selected_regs},
+under such situation, the returned set of registers must be a subset of all
+call used registers.
+
 The default implementation uses normal move instructions to zero
 all the registers in @var{selected_regs}.  Define this hook if the
 target has more efficient ways of zeroing certain registers,

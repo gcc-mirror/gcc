@@ -3753,16 +3753,17 @@ zero_all_vector_registers (HARD_REG_SET need_zeroed_hardregs)
    needs to be cleared, the whole stack should be cleared.  However,
    x87 stack registers that hold the return value should be excluded.
    x87 returns in the top (two for complex values) register, so
-   num_of_st should be 7/6 when x87 returns, otherwise it will be 8.  */
+   num_of_st should be 7/6 when x87 returns, otherwise it will be 8.
+   return the value of num_of_st.  */
 
 
-static bool
+static int
 zero_all_st_registers (HARD_REG_SET need_zeroed_hardregs)
 {
 
   /* If the FPU is disabled, no need to zero all st registers.  */
   if (! (TARGET_80387 || TARGET_FLOAT_RETURNS_IN_80387))
-    return false;
+    return 0;
 
   unsigned int num_of_st = 0;
   for (unsigned int regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
@@ -3774,7 +3775,7 @@ zero_all_st_registers (HARD_REG_SET need_zeroed_hardregs)
       }
 
   if (num_of_st == 0)
-    return false;
+    return 0;
 
   bool return_with_x87 = false;
   return_with_x87 = (crtl->return_rtx
@@ -3802,7 +3803,7 @@ zero_all_st_registers (HARD_REG_SET need_zeroed_hardregs)
       insn = emit_insn (gen_rtx_SET (st_reg, st_reg));
       add_reg_note (insn, REG_DEAD, st_reg);
     }
-  return true;
+  return num_of_st;
 }
 
 
@@ -3851,7 +3852,7 @@ ix86_zero_call_used_regs (HARD_REG_SET need_zeroed_hardregs)
 {
   HARD_REG_SET zeroed_hardregs;
   bool all_sse_zeroed = false;
-  bool all_st_zeroed = false;
+  int all_st_zeroed_num = 0;
   bool all_mm_zeroed = false;
 
   CLEAR_HARD_REG_SET (zeroed_hardregs);
@@ -3881,9 +3882,17 @@ ix86_zero_call_used_regs (HARD_REG_SET need_zeroed_hardregs)
   if (!exit_with_mmx_mode)
     /* x87 exit mode, we should zero all st registers together.  */
     {
-      all_st_zeroed = zero_all_st_registers (need_zeroed_hardregs);
-      if (all_st_zeroed)
-	SET_HARD_REG_BIT (zeroed_hardregs, FIRST_STACK_REG);
+      all_st_zeroed_num = zero_all_st_registers (need_zeroed_hardregs);
+
+      if (all_st_zeroed_num > 0)
+	for (unsigned int regno = FIRST_STACK_REG; regno <= LAST_STACK_REG; regno++)
+	  /* x87 stack registers that hold the return value should be excluded.
+	     x87 returns in the top (two for complex values) register.  */
+	  if (all_st_zeroed_num == 8
+	      || !((all_st_zeroed_num >= 6 && regno == REGNO (crtl->return_rtx))
+		   || (all_st_zeroed_num == 6
+		       && (regno == (REGNO (crtl->return_rtx) + 1)))))
+	    SET_HARD_REG_BIT (zeroed_hardregs, regno);
     }
   else
     /* MMX exit mode, check whether we can zero all mm registers.  */

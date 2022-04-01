@@ -5892,7 +5892,9 @@ gen_call_used_regs_seq (rtx_insn *ret, unsigned int zero_regs_type)
   df_simulate_one_insn_backwards (bb, ret, live_out);
 
   HARD_REG_SET selected_hardregs;
+  HARD_REG_SET all_call_used_regs;
   CLEAR_HARD_REG_SET (selected_hardregs);
+  CLEAR_HARD_REG_SET (all_call_used_regs);
   for (unsigned int regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
     {
       if (!crtl->abi->clobbers_full_reg_p (regno))
@@ -5901,6 +5903,13 @@ gen_call_used_regs_seq (rtx_insn *ret, unsigned int zero_regs_type)
 	continue;
       if (REGNO_REG_SET_P (live_out, regno))
 	continue;
+#ifdef LEAF_REG_REMAP
+      if (crtl->uses_only_leaf_regs && LEAF_REG_REMAP (regno) < 0)
+	continue;
+#endif
+      /* This is a call used register that is dead at return.  */
+      SET_HARD_REG_BIT (all_call_used_regs, regno);
+
       if (only_gpr
 	  && !TEST_HARD_REG_BIT (reg_class_contents[GENERAL_REGS], regno))
 	continue;
@@ -5908,10 +5917,6 @@ gen_call_used_regs_seq (rtx_insn *ret, unsigned int zero_regs_type)
 	continue;
       if (only_arg && !FUNCTION_ARG_REGNO_P (regno))
 	continue;
-#ifdef LEAF_REG_REMAP
-      if (crtl->uses_only_leaf_regs && LEAF_REG_REMAP (regno) < 0)
-	continue;
-#endif
 
       /* Now this is a register that we might want to zero.  */
       SET_HARD_REG_BIT (selected_hardregs, regno);
@@ -5925,6 +5930,15 @@ gen_call_used_regs_seq (rtx_insn *ret, unsigned int zero_regs_type)
   HARD_REG_SET zeroed_hardregs;
   start_sequence ();
   zeroed_hardregs = targetm.calls.zero_call_used_regs (selected_hardregs);
+
+  /* For most targets, the returned set of registers is a subset of
+     selected_hardregs, however, for some of the targets (for example MIPS),
+     clearing some registers that are in selected_hardregs requires clearing
+     other call used registers that are not in the selected_hardregs, under
+     such situation, the returned set of registers must be a subset of
+     all call used registers.  */
+  gcc_assert (hard_reg_set_subset_p (zeroed_hardregs, all_call_used_regs));
+
   rtx_insn *seq = get_insns ();
   end_sequence ();
   if (seq)
