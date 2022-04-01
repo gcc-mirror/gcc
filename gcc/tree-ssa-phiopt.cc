@@ -1395,10 +1395,21 @@ value_replacement (basic_block cond_bb, basic_block middle_bb,
 
   gimple *assign = gsi_stmt (gsi);
   if (!is_gimple_assign (assign)
-      || gimple_assign_rhs_class (assign) != GIMPLE_BINARY_RHS
       || (!INTEGRAL_TYPE_P (TREE_TYPE (arg0))
 	  && !POINTER_TYPE_P (TREE_TYPE (arg0))))
     return 0;
+
+  if (gimple_assign_rhs_class (assign) != GIMPLE_BINARY_RHS)
+    {
+      /* If last stmt of the middle_bb is a conversion, handle it like
+	 a preparation statement through constant evaluation with
+	 checking for UB.  */
+      enum tree_code sc = gimple_assign_rhs_code (assign);
+      if (CONVERT_EXPR_CODE_P (sc))
+	assign = NULL;
+      else
+	return 0;
+    }
 
   /* Punt if there are (degenerate) PHIs in middle_bb, there should not be.  */
   if (!gimple_seq_empty_p (phi_nodes (middle_bb)))
@@ -1430,7 +1441,8 @@ value_replacement (basic_block cond_bb, basic_block middle_bb,
   int prep_cnt;
   for (prep_cnt = 0; ; prep_cnt++)
     {
-      gsi_prev_nondebug (&gsi);
+      if (prep_cnt || assign)
+	gsi_prev_nondebug (&gsi);
       if (gsi_end_p (gsi))
 	break;
 
@@ -1450,7 +1462,8 @@ value_replacement (basic_block cond_bb, basic_block middle_bb,
 	  || !INTEGRAL_TYPE_P (TREE_TYPE (lhs))
 	  || !INTEGRAL_TYPE_P (TREE_TYPE (rhs1))
 	  || !single_imm_use (lhs, &use_p, &use_stmt)
-	  || use_stmt != (prep_cnt ? prep_stmt[prep_cnt - 1] : assign))
+	  || ((prep_cnt || assign)
+	      && use_stmt != (prep_cnt ? prep_stmt[prep_cnt - 1] : assign)))
 	return 0;
       switch (gimple_assign_rhs_code (g))
 	{
@@ -1483,10 +1496,6 @@ value_replacement (basic_block cond_bb, basic_block middle_bb,
 	 >= 3 * estimate_num_insns (cond, &eni_time_weights))
     return 0;
 
-  tree lhs = gimple_assign_lhs (assign);
-  tree rhs1 = gimple_assign_rhs1 (assign);
-  tree rhs2 = gimple_assign_rhs2 (assign);
-  enum tree_code code_def = gimple_assign_rhs_code (assign);
   tree cond_lhs = gimple_cond_lhs (cond);
   tree cond_rhs = gimple_cond_rhs (cond);
 
@@ -1516,16 +1525,39 @@ value_replacement (basic_block cond_bb, basic_block middle_bb,
 	return 0;
     }
 
+  tree lhs, rhs1, rhs2;
+  enum tree_code code_def;
+  if (assign)
+    {
+      lhs = gimple_assign_lhs (assign);
+      rhs1 = gimple_assign_rhs1 (assign);
+      rhs2 = gimple_assign_rhs2 (assign);
+      code_def = gimple_assign_rhs_code (assign);
+    }
+  else
+    {
+      gcc_assert (prep_cnt > 0);
+      lhs = cond_lhs;
+      rhs1 = NULL_TREE;
+      rhs2 = NULL_TREE;
+      code_def = ERROR_MARK;
+    }
+
   if (((code == NE_EXPR && e1 == false_edge)
 	|| (code == EQ_EXPR && e1 == true_edge))
       && arg0 == lhs
-      && ((arg1 == rhs1
-	   && operand_equal_for_phi_arg_p (rhs2, cond_lhs)
-	   && neutral_element_p (code_def, cond_rhs, true))
-	  || (arg1 == rhs2
+      && ((assign == NULL
+	   && operand_equal_for_phi_arg_p (arg1, cond_rhs))
+	  || (assign
+	      && arg1 == rhs1
+	      && operand_equal_for_phi_arg_p (rhs2, cond_lhs)
+	      && neutral_element_p (code_def, cond_rhs, true))
+	  || (assign
+	      && arg1 == rhs2
 	      && operand_equal_for_phi_arg_p (rhs1, cond_lhs)
 	      && neutral_element_p (code_def, cond_rhs, false))
-	  || (operand_equal_for_phi_arg_p (arg1, cond_rhs)
+	  || (assign
+	      && operand_equal_for_phi_arg_p (arg1, cond_rhs)
 	      && ((operand_equal_for_phi_arg_p (rhs2, cond_lhs)
 		   && absorbing_element_p (code_def, cond_rhs, true, rhs2))
 		  || (operand_equal_for_phi_arg_p (rhs1, cond_lhs)
@@ -1555,8 +1587,11 @@ value_replacement (basic_block cond_bb, basic_block middle_bb,
 	  gsi_from = gsi_for_stmt (prep_stmt[i]);
 	  gsi_move_before (&gsi_from, &gsi);
 	}
-      gsi_from = gsi_for_stmt (assign);
-      gsi_move_before (&gsi_from, &gsi);
+      if (assign)
+	{
+	  gsi_from = gsi_for_stmt (assign);
+	  gsi_move_before (&gsi_from, &gsi);
+	}
       replace_phi_edge_with_variable (cond_bb, e1, phi, lhs);
       return 2;
     }
