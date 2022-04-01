@@ -1,6 +1,7 @@
 /* { dg-do link } */
-/* { dg-do run { target runtime_ptx_isa_version_6_3 } } */
-/* { dg-options "-save-temps -malias -mptx=6.3" } */
+/* { dg-do run { target runtime_ptx_alias } } */
+/* { dg-options "-save-temps" } */
+/* { dg-add-options ptx_alias } */
 
 int v;
 
