@@ -24266,8 +24266,9 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict,
 	      && !(strict & UNIFY_ALLOW_INTEGER)
 	      && TEMPLATE_PARM_LEVEL (parm) <= TMPL_ARGS_DEPTH (targs))
 	    {
-	      /* Deduce it from the non-type argument.  */
-	      tree atype = TREE_TYPE (arg);
+	      /* Deduce it from the non-type argument.  As above, ignore
+		 top-level quals here too.  */
+	      tree atype = cv_unqualified (TREE_TYPE (arg));
 	      RECUR_AND_CHECK_FAILURE (tparms, targs,
 				       tparm, atype,
 				       UNIFY_ALLOW_NONE, explain_p);
