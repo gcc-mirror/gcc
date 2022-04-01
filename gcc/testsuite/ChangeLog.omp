@@ -1,3 +1,8 @@
+2022-04-02  Andrew Stubbs  <ams@codesourcery.com>
+
+	* c-c++-common/gomp/usm-2.c: Add omp_target_alloc.
+	* c-c++-common/gomp/usm-3.c: Add omp_target_alloc.
+
 2022-03-11  Andrew Stubbs <ams@codesourcery.com>
 
 	Backport of the patch posted at
