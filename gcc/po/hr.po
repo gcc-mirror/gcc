@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: gcc-12.1-b20220213\n"
 "Report-Msgid-Bugs-To: https://gcc.gnu.org/bugs/\n"
 "POT-Creation-Date: 2022-02-11 23:10+0000\n"
-"PO-Revision-Date: 2022-03-29 18:03-0700\n"
+"PO-Revision-Date: 2022-03-31 16:55-0700\n"
 "Last-Translator: Božidar Putanec <bozidarp@yahoo.com>\n"
 "Language-Team: Croatian <lokalizacija@linux.hr>\n"
 "Language: hr\n"
@@ -18,7 +18,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
 "X-Bugs: Report translation errors to the Language-Team address.\n"
-"X-Generator: Lokalize 21.12.3\n"
+"X-Generator: Lokalize 22.07.70\n"
 "X-Poedit-Basepath: ../sources/gcc-12-20220213\n"
 "X-Poedit-Bookmarks: 13750,0,-1,-1,-1,-1,-1,-1,-1,-1\n"
 "X-Poedit-SearchPath-0: .\n"
@@ -154,7 +154,7 @@ msgstr "greška: "
 
 #: diagnostic.def:36
 msgid "sorry, unimplemented: "
-msgstr "žao nam je, nije implementirano: "
+msgstr "nije implementirano: "
 
 #: diagnostic.def:37
 msgid "warning: "
@@ -210,7 +210,7 @@ msgstr "Greška"
 
 #: fortran/gfc-diagnostic.def:36
 msgid "sorry, unimplemented"
-msgstr "žao nam je, nije implementirano: "
+msgstr "nije implementirano: "
 
 #: fortran/gfc-diagnostic.def:37
 msgid "Warning"
@@ -1147,7 +1147,7 @@ msgstr ""
 #: common.opt:3258 common.opt:3262 common.opt:3266
 #, no-c-format
 msgid "Does nothing.  Preserved for backward compatibility."
-msgstr ""
+msgstr "Ne radi ništa. Zadržano radi kompatibilnosti s ranijim inačicama."
 
 #: fortran/lang.opt:864
 #, no-c-format
@@ -1192,7 +1192,7 @@ msgstr ""
 #: c-family/c.opt:182
 #, no-c-format
 msgid "-A<question>=<answer>\tAssert the <answer> to <question>.  Putting '-' before <question> disables the <answer> to <question>."
-msgstr ""
+msgstr "-A<question>=<answer>\tPrihvati <answer> na <question>. Crticom „-“ ispred <question> onemogućuje se <answer> na <question>."
 
 #: c-family/c.opt:186
 #, no-c-format
@@ -1202,12 +1202,12 @@ msgstr ""
 #: c-family/c.opt:190
 #, no-c-format
 msgid "Do not discard comments in macro expansions."
-msgstr ""
+msgstr "Ne odbacuje (ne briše) komentare u makro proširenjima."
 
 #: c-family/c.opt:194
 #, no-c-format
 msgid "-D<macro>[=<val>]\tDefine a <macro> with <val> as its value.  If just <macro> is given, <val> is taken to be 1."
-msgstr ""
+msgstr "-D<macro>[=<val>]\tDefinira <macro> s vrijednošću <val>. Ako je dȃn samo <macro>, uzima se da je vrijednost <val>=1."
 
 #: c-family/c.opt:201
 #, no-c-format
@@ -1669,7 +1669,7 @@ msgstr ""
 #: c-family/c.opt:651
 #, no-c-format
 msgid "This switch is deprecated; use -Werror=implicit-function-declaration instead."
-msgstr ""
+msgstr "taj šalter je zastario; koristite -Werror=implicit-function-declaration"
 
 #: c-family/c.opt:655
 #, no-c-format
@@ -1719,7 +1719,7 @@ msgstr ""
 #: c-family/c.opt:695
 #, no-c-format
 msgid "Warn about function calls with format strings that write past the end of the destination region.  Same as -Wformat-overflow=1."
-msgstr ""
+msgstr "Upozori na pozive funkcija s format stingovima koji pišu iza kraja područja odredišta. Isto kao -Wformat-overflow=1."
 
 #: c-family/c.opt:700
 #, no-c-format
@@ -1734,7 +1734,7 @@ msgstr ""
 #: c-family/c.opt:708
 #, no-c-format
 msgid "Warn about calls to snprintf and similar functions that truncate output. Same as -Wformat-truncation=1."
-msgstr ""
+msgstr "Upozori na pozivanje snprintf i sličnih funkcija koje skraćuju izlaz. Isto kao  -Wformat-truncation=1."
 
 #: c-family/c.opt:713
 #, no-c-format
@@ -2299,7 +2299,7 @@ msgstr ""
 #: c-family/c.opt:1234
 #, no-c-format
 msgid "Warn if a local declaration hides an instance variable."
-msgstr ""
+msgstr "Upozori ako lokalna deklaracija skriva varijablu instance."
 
 #: c-family/c.opt:1238 c-family/c.opt:1242
 #, no-c-format
@@ -7193,7 +7193,7 @@ msgstr ""
 #: config/v850/v850.opt:71
 #, no-c-format
 msgid "Same as: -mep -mprolog-function."
-msgstr ""
+msgstr "Isto kao: -mep -mprolog-function."
 
 #: config/v850/v850.opt:75
 #, no-c-format
@@ -11873,7 +11873,7 @@ msgstr ""
 #: config/arc/arc.opt:42
 #, no-c-format
 msgid "Same as -mA6."
-msgstr ""
+msgstr "Isto kao -mA6."
 
 #: config/arc/arc.opt:46
 #, no-c-format
@@ -11888,7 +11888,7 @@ msgstr ""
 #: config/arc/arc.opt:54
 #, no-c-format
 msgid "Same as -mA7."
-msgstr ""
+msgstr "Isto kao -mA7."
 
 #: config/arc/arc.opt:58
 #, no-c-format
@@ -12338,7 +12338,7 @@ msgstr "Pokaže ove informacije."
 #: common.opt:301
 #, no-c-format
 msgid "--help=<class>\tDisplay descriptions of a specific class of options.  <class> is one or more of optimizers, target, warnings, undocumented, params."
-msgstr ""
+msgstr "--help=<class>\tPokaže opise specične klase opcija. <class> je jedan ili više elemenata iz optimizers, target, warnings, undocumented, params."
 
 #: common.opt:422
 #, no-c-format
@@ -12358,7 +12358,7 @@ msgstr ""
 #: common.opt:476
 #, no-c-format
 msgid "Optimize for speed disregarding exact standards compliance."
-msgstr ""
+msgstr "Optimizira za brzinu zanemarujući točnu usklađenost sa standardima."
 
 #: common.opt:480
 #, no-c-format
@@ -12373,12 +12373,12 @@ msgstr ""
 #: common.opt:524
 #, no-c-format
 msgid "This switch is deprecated; use -Wextra instead."
-msgstr ""
+msgstr "taj šalter je zastario; koristite -Wextra"
 
 #: common.opt:537
 #, no-c-format
 msgid "Warn about returning structures, unions or arrays."
-msgstr ""
+msgstr "Upozori na vraćene strukture, unija ili polja."
 
 #: common.opt:541
 #, no-c-format
@@ -12388,7 +12388,7 @@ msgstr ""
 #: common.opt:545 common.opt:549
 #, no-c-format
 msgid "Warn if an array is accessed out of bounds."
-msgstr ""
+msgstr "Upozori ako je polje dohvaćeno izvan granica."
 
 #: common.opt:553 common.opt:557
 #, no-c-format
@@ -12398,7 +12398,7 @@ msgstr ""
 #: common.opt:561
 #, no-c-format
 msgid "Warn about inappropriate attribute usage."
-msgstr ""
+msgstr "Upozori na neprikladnu upotrebu atributa."
 
 #: common.opt:565
 #, no-c-format
@@ -12408,17 +12408,17 @@ msgstr ""
 #: common.opt:569 common.opt:573
 #, no-c-format
 msgid "Warn about type safety and similar errors and mismatches in declarations with alias attributes."
-msgstr ""
+msgstr "Upozori na sigurnost vrste i slične pogreške i nepodudarnosti u deklaracijama s atributima aliasa."
 
 #: common.opt:577
 #, no-c-format
 msgid "Warn when profiling instrumentation was requested, but could not be applied to a certain function."
-msgstr ""
+msgstr "Upozori kada je zatražena instrumentacija za profiliranje, ali se nije mogla primijeniti na određenu funkciju."
 
 #: common.opt:582 common.opt:586
 #, no-c-format
 msgid "Warn about pointer casts which increase alignment."
-msgstr ""
+msgstr "Upozori kada transformacije pokazivača (pointer casts) povećavaju poravnanje."
 
 #: common.opt:590
 #, no-c-format
@@ -12428,7 +12428,7 @@ msgstr ""
 #: common.opt:594
 #, no-c-format
 msgid "Warn about uses of __attribute__((warning)) declarations."
-msgstr ""
+msgstr "Upozori na upotrebu deklaracija __attribute__((warning))."
 
 #: common.opt:598
 #, no-c-format
@@ -12438,7 +12438,7 @@ msgstr ""
 #: common.opt:602
 #, no-c-format
 msgid "Warn about uses of __attribute__((deprecated)) declarations."
-msgstr ""
+msgstr "Upozori na upotrebu deklaracija __attribute__((deprecated))."
 
 #: common.opt:606
 #, no-c-format
@@ -12553,7 +12553,7 @@ msgstr ""
 #: common.opt:715
 #, no-c-format
 msgid "Warn when one variable shadows another.  Same as -Wshadow=global."
-msgstr ""
+msgstr "Upozori na jedna varijabla zasijeni neku drugu varijablu. Isko kao -Wshadow=global."
 
 #: common.opt:719
 #, no-c-format
@@ -12728,217 +12728,217 @@ msgstr ""
 #: common.opt:886
 #, no-c-format
 msgid "-aux-info <file>\tEmit declaration information into <file>."
-msgstr ""
+msgstr "-aux-info <file>\tinformacije o deklaraciji pošalje u datoteku <file>"
 
 #: common.opt:899
 #, no-c-format
 msgid "-d<letters>\tEnable dumps from specific passes of the compiler."
-msgstr ""
+msgstr "-d<letters>\tomogući dumpove specifičnih prolaza kompajlera"
 
 #: common.opt:903
 #, no-c-format
 msgid "-dumpbase <file>\tSet the file basename to be used for dumps."
-msgstr ""
+msgstr "-dumpbase <file>\tpostavi osnovicu imena dump datoteke"
 
 #: common.opt:907
 #, no-c-format
 msgid "-dumpbase-ext .<ext>    Drop a trailing .<ext> from the dump basename to name auxiliary output files."
-msgstr ""
+msgstr "-dumpbase-ext .<ext>    izostavi ekstenziju .<ext> iz osnovice dump datoteke za imenovanje pomoćnih izlaznih datoteka"
 
 #: common.opt:911
 #, no-c-format
 msgid "-dumpdir <dir>\tSet the directory name to be used for dumps."
-msgstr ""
+msgstr "-dumpdir <dir>\tpostavi ime direktorija za dumpove"
 
 #: common.opt:1009
 #, no-c-format
 msgid "The version of the C++ ABI in use."
-msgstr ""
+msgstr "inačica C++ ABI koja se koristi"
 
 #: common.opt:1013
 #, no-c-format
 msgid "Aggressively optimize loops using language constraints."
-msgstr ""
+msgstr "agresivno optimizira petlje koristeći jezična ograničenja"
 
 #: common.opt:1017
 #, no-c-format
 msgid "Align the start of functions."
-msgstr ""
+msgstr "poravna početak funkcija"
 
 #: common.opt:1027
 #, no-c-format
 msgid "Align labels which are only reached by jumping."
-msgstr ""
+msgstr "oravna one oznake do kojih se može doći samo sa skakanjem"
 
 #: common.opt:1034
 #, no-c-format
 msgid "Align all labels."
-msgstr ""
+msgstr "poravna sve oznake"
 
 #: common.opt:1041
 #, no-c-format
 msgid "Align the start of loops."
-msgstr ""
+msgstr "poravna početak petlji"
 
 #: common.opt:1048
 #, no-c-format
 msgid "Allow the compiler to introduce new data races on stores."
-msgstr ""
+msgstr "dopusti kompajleru uvesti novu konkurenciju podataka (data races) pri pohrani"
 
 #: common.opt:1052
 #, no-c-format
 msgid "Enable static analysis pass."
-msgstr ""
+msgstr "omogući statičku analizu prolaza"
 
 #: common.opt:1072
 #, no-c-format
 msgid "Select what to sanitize."
-msgstr ""
+msgstr "odaberite što treba počistiti."
 
 #: common.opt:1076
 #, no-c-format
 msgid "Select type of coverage sanitization."
-msgstr ""
+msgstr "odaberite vrstu pokrivenosti čišćenja"
 
 #: common.opt:1089
 #, no-c-format
 msgid "-fasan-shadow-offset=<number>\tUse custom shadow memory offset."
-msgstr ""
+msgstr "-fasan-shadow-offset=number>\tkoristite određeni odmak=<number> za shadow memoriju."
 
 #: common.opt:1093
 #, no-c-format
 msgid "-fsanitize-sections=<sec1,sec2,...>\tSanitize global variables in user-defined sections."
-msgstr ""
+msgstr "-fsanitize-sections=<sec1,sec2,...>\tčisti globalne varijable u sekcijama definiranim korisnikom"
 
 #: common.opt:1098
 #, no-c-format
 msgid "After diagnosing undefined behavior attempt to continue execution."
-msgstr ""
+msgstr "pokuša nastaviti izvršavanje nakon dijagnosticiranja nedefiniranog ponašanja"
 
 #: common.opt:1102
 #, no-c-format
 msgid "This switch is deprecated; use -fsanitize-recover= instead."
-msgstr ""
+msgstr "taj šalter je zastario; koristite -fsanitize-recover= instead"
 
 #: common.opt:1109
 #, no-c-format
 msgid "Use trap instead of a library function for undefined behavior sanitization."
-msgstr ""
+msgstr "koristi klopku umjesto funkcije biblioteke za čišćenje nedefiniranog ponašanja"
 
 #: common.opt:1113
 #, no-c-format
 msgid "Generate unwind tables that are exact at each instruction boundary."
-msgstr ""
+msgstr "generira unwind tablice koje leže točno na svakoj granici naredbe"
 
 #: common.opt:1117
 #, no-c-format
 msgid "Generate auto-inc/dec instructions."
-msgstr ""
+msgstr "generira auto-inc/dec naredbe"
 
 #: common.opt:1121
 #, no-c-format
 msgid "Use sample profile information for call graph node weights. The default profile file is fbdata.afdo in 'pwd'."
-msgstr ""
+msgstr "upotrebi podatke iz uzorka profila za težine čvorova grafa poziva. Zadana datoteka s profilom je fbdata.afdo u „pwd“"
 
 #: common.opt:1126
 #, no-c-format
 msgid "Use sample profile information for call graph node weights. The profile file is specified in the argument."
-msgstr ""
+msgstr "upotrebi podatke iz uzorka profila za težine čvorova grafa poziva. Datoteka s profilom je specificirana argumentom"
 
 #: common.opt:1135
 #, no-c-format
 msgid "Generate code to check bounds before indexing arrays."
-msgstr ""
+msgstr "generira kȏd za provjeru granica prije indeksiranja polja"
 
 #: common.opt:1139
 #, no-c-format
 msgid "Replace add, compare, branch with branch on count register."
-msgstr ""
+msgstr "zamijeni add, usporedi, zamijeni granu s granom pomoću registra za brojanje"
 
 #: common.opt:1143
 #, no-c-format
 msgid "Use profiling information for branch probabilities."
-msgstr ""
+msgstr "koristi informacije o profiliranju za vjerojatnosti grana"
 
 #: common.opt:1159
 #, no-c-format
 msgid "Output callgraph information on a per-file basis."
-msgstr ""
+msgstr "ispiše informacije o grafovima poziva za svaku datoteku"
 
 #: common.opt:1163
 #, no-c-format
 msgid "Output callgraph information on a per-file basis with decorations."
-msgstr ""
+msgstr "ispiše informacije o grafovima poziva za svaku datoteku s dekoracijama"
 
 #: common.opt:1167
 #, no-c-format
 msgid "-fcall-saved-<register>\tMark <register> as being preserved across functions."
-msgstr ""
+msgstr "-fcall-saved-<register>\toznači <register> kao rezerviran u svim funkcijama"
 
 #: common.opt:1171
 #, no-c-format
 msgid "-fcall-used-<register>\tMark <register> as being corrupted by function calls."
-msgstr ""
+msgstr "-fcall-used-<register>\toznači <register> kao oštećen pozivima funkcija"
 
 #: common.opt:1178
 #, no-c-format
 msgid "Save registers around function calls."
-msgstr ""
+msgstr "sačuva registre oko pozivanja funkcija"
 
 #: common.opt:1182
 #, no-c-format
 msgid "This switch is deprecated; do not use."
-msgstr ""
+msgstr "taj šalter je zastario; nemojte ga koristiti"
 
 #: common.opt:1186
 #, no-c-format
 msgid "Check the return value of new in C++."
-msgstr ""
+msgstr "provjeri vraćenu vrijdnost operatora „new“ u C++"
 
 #: common.opt:1190 common.opt:1194
 #, no-c-format
 msgid "Perform internal consistency checkings."
-msgstr ""
+msgstr "izvrši internu provjeru konzistentnosti"
 
 #: common.opt:1198
 #, no-c-format
 msgid "Enable code hoisting."
-msgstr ""
+msgstr "omogući podizanje kȏda"
 
 #: common.opt:1202
 #, no-c-format
 msgid "Looks for opportunities to reduce stack adjustments and stack references."
-msgstr ""
+msgstr "traži prilike za smanjenje prilagodbi stògova i referenci na stȏg"
 
 #: common.opt:1206
 #, no-c-format
 msgid "Put uninitialized globals in the common section."
-msgstr ""
+msgstr "smjesti neinicijalizirane globalne simbole u „common“ sekciju"
 
 #: common.opt:1214
 #, no-c-format
 msgid "-fcompare-debug[=<opts>]\tCompile with and without e.g. -gtoggle, and compare the final-insns dump."
-msgstr ""
+msgstr "-fcompare-debug[=<opts>]\tkompilira s i bez, npr. -gtoggle, i usporedi „final-insns“ dump"
 
 #: common.opt:1218
 #, no-c-format
 msgid "Run only the second compilation of -fcompare-debug."
-msgstr ""
+msgstr "pokreni samo drugu kompilaciju od -fcompare-debug"
 
 #: common.opt:1222
 #, no-c-format
 msgid "Perform comparison elimination after register allocation has finished."
-msgstr ""
+msgstr "izvrši eliminaciju usporedbi nakon dodjele registra"
 
 #: common.opt:1226
 #, no-c-format
 msgid "Do not perform optimizations increasing noticeably stack usage."
-msgstr ""
+msgstr "ne radi optimizacije koje značajno povećavaju korištenje stògova"
 
 #: common.opt:1230
 #, no-c-format
 msgid "Perform a register copy-propagation optimization pass."
-msgstr ""
+msgstr "izvede register copy-propagation optimizacijski prolaz"
 
 #: common.opt:1234
 #, no-c-format
@@ -13333,7 +13333,7 @@ msgstr ""
 #: common.opt:1719 common.opt:1727 common.opt:2914
 #, no-c-format
 msgid "Enable loop nest transforms.  Same as -floop-nest-optimize."
-msgstr ""
+msgstr "Omogući transformacije ugniježđenja petlje. Isto kao -floop-next-optimize."
 
 #: common.opt:1723
 #, no-c-format
@@ -14258,7 +14258,7 @@ msgstr ""
 #: common.opt:2694
 #, no-c-format
 msgid "Insert stack checking code into the program.  Same as -fstack-check=specific."
-msgstr ""
+msgstr "Umetne kȏd za provjeru stȏga u program. Isto kao -fstack-check=specific."
 
 #: common.opt:2698
 #, no-c-format
@@ -14568,7 +14568,7 @@ msgstr ""
 #: common.opt:3015
 #, no-c-format
 msgid "Same as -fassociative-math for expressions which include division."
-msgstr ""
+msgstr "Isto kao -fassociative-math za izraze koju uključuju dijeljenje."
 
 #: common.opt:3023
 #, no-c-format
@@ -17147,12 +17147,12 @@ msgstr ""
 #: gcov.cc:937
 #, c-format
 msgid "  -H, --human-readable            Output human readable numbers\n"
-msgstr "  -H, --human-readable            ispis brojaka u lako čitljivom obliku\n"
+msgstr "  -H, --human-readable            pokaže brojke u lako čitljivom obliku\n"
 
 #: gcov.cc:938
 #, c-format
 msgid "  -k, --use-colors                Emit colored output\n"
-msgstr "  -k, --use-colors                koristi obojeni ispis\n"
+msgstr "  -k, --use-colors                oboji izlazne poruke\n"
 
 #: gcov.cc:939
 #, c-format
@@ -17218,7 +17218,7 @@ msgstr "  -v, --version                   ispiše broj inačice, pa iziđe\n"
 #: gcov.cc:951
 #, c-format
 msgid "  -w, --verbose                   Print verbose informations\n"
-msgstr "  -w, --verbose                   ispisuje opširnije informacije\n"
+msgstr "  -w, --verbose                   daje opširnije informacije\n"
 
 #: gcov.cc:952
 #, c-format
@@ -17604,7 +17604,7 @@ msgstr " Nisu pronađene opcije sa željenim svojstvima\n"
 #: opts.cc:1783
 #, c-format
 msgid " None found.  Use --help=%s to show *all* the options supported by the %s front-end.\n"
-msgstr " Nijedan nije nađen. Koristite --help=%s za ispis *svih* opcija koje podržava %s front-end sučelje.\n"
+msgstr " Nijedan nije nađen. Koristite --help=%s za ispis *all* opcija koje podržava %s front-end sučelje.\n"
 
 #: opts.cc:1789
 #, c-format
@@ -22291,7 +22291,7 @@ msgstr ""
 #: cfgexpand.cc:3005
 #, gcc-internal-format
 msgid "the value of the stack pointer after an %<asm%> statement must be the same as it was before the statement"
-msgstr ""
+msgstr "Vrijednost pokazivača stȏga nakon naredbe %<asm%> mora biti ista kao prije naredbe"
 
 #: cfgexpand.cc:3075
 #, gcc-internal-format
@@ -24096,7 +24096,7 @@ msgstr ""
 #: gcc.cc:4967 toplev.cc:717
 #, gcc-internal-format
 msgid "input file %qs is the same as output file"
-msgstr ""
+msgstr "ulazna datoteka %qs je ista kao izlazna datoteka"
 
 #: gcc.cc:4972
 #, gcc-internal-format
@@ -24592,7 +24592,7 @@ msgstr ""
 #: gimple-fold.cc:2076 gimple-fold.cc:3127 gimple-ssa-warn-restrict.cc:2073
 #, gcc-internal-format
 msgid "%qD source argument is the same as destination"
-msgstr ""
+msgstr "izvorni argument %qD je isti kao i odredište"
 
 #: gimple-fold.cc:2142
 #, gcc-internal-format
@@ -26536,7 +26536,7 @@ msgstr ""
 #: ipa-devirt.cc:666
 #, gcc-internal-format
 msgid "variable of same assembler name as the virtual table is defined in another translation unit"
-msgstr ""
+msgstr "varijabla s istim imenom asemblera kao i virtualna tablica definirana je u drugoj prijevodnoj jedinici"
 
 #: ipa-devirt.cc:707
 #, gcc-internal-format
@@ -46924,7 +46924,7 @@ msgstr ""
 #: c/c-typeck.cc:14097 cp/semantics.cc:6665
 #, gcc-internal-format
 msgid "expected pointer in %qs clause"
-msgstr "očekivana je kazaljka (pointer) u %qs klauzuli"
+msgstr "očekivan je pokazivač (pointer) u %qs klauzuli"
 
 #: c/c-typeck.cc:14185 cp/semantics.cc:6746
 #, gcc-internal-format
@@ -49711,7 +49711,7 @@ msgstr ""
 #: cp/constraint.cc:3629
 #, gcc-internal-format
 msgid "  %qT is not the same as %qT"
-msgstr ""
+msgstr "  %qT nije ista vrsta kao %qT"
 
 #: cp/constraint.cc:3632
 #, gcc-internal-format
@@ -51675,7 +51675,7 @@ msgstr ""
 #: cp/decl.cc:10187
 #, gcc-internal-format
 msgid "deduction guide %qD must have the same access as %qT"
-msgstr ""
+msgstr "deduction guide %qD mora imati isti pristup kao %qT"
 
 #: cp/decl.cc:10193
 #, gcc-internal-format
@@ -65308,7 +65308,7 @@ msgstr ""
 #: fortran/decl.cc:10360
 #, gcc-internal-format
 msgid "Structure name %qs at %C cannot be the same as an intrinsic type"
-msgstr ""
+msgstr "Ime strukture %qs pri %C ne može biti isto kao intrinsična vrsta"
 
 #: fortran/decl.cc:10523
 #, gcc-internal-format, gfc-internal-format
@@ -65323,7 +65323,7 @@ msgstr ""
 #: fortran/decl.cc:10565
 #, gcc-internal-format
 msgid "Type name %qs at %C cannot be the same as an intrinsic type"
-msgstr ""
+msgstr "Ime vrste %qs pri %C ne može biti isto kao intrinsična vrsta"
 
 #: fortran/decl.cc:10576
 #, gcc-internal-format
@@ -65518,7 +65518,7 @@ msgstr ""
 #: fortran/decl.cc:11478
 #, gcc-internal-format
 msgid "Binding at %C must have the same access as already defined binding %qs"
-msgstr ""
+msgstr "Vezanje pri %C mora imati isti pristup kao već definirano vezanje %qs"
 
 #: fortran/decl.cc:11526
 #, gcc-internal-format, gfc-internal-format
@@ -66967,7 +66967,7 @@ msgstr ""
 #: fortran/interface.cc:3881
 #, gcc-internal-format
 msgid "Same actual argument associated with INTENT(%s) argument %qs and INTENT(%s) argument %qs at %L"
-msgstr ""
+msgstr "Isti stvarni argument pridružen s INTENT(%s) argumentom %qs i INTENT(%s) argumentom %qs na %L"
 
 #: fortran/interface.cc:3911
 #, gcc-internal-format
@@ -71350,7 +71350,7 @@ msgstr ""
 #: fortran/parse.cc:3832
 #, gcc-internal-format
 msgid "Name %qs of ABSTRACT INTERFACE at %C cannot be the same as an intrinsic type"
-msgstr ""
+msgstr "Ime %qs od ABSTRACT INTERFACE pri %C ne može biti isto kao intrinsična vrsta"
 
 #: fortran/parse.cc:3866
 #, gcc-internal-format, gfc-internal-format
@@ -73150,7 +73150,7 @@ msgstr ""
 #: fortran/resolve.cc:8173
 #, gcc-internal-format
 msgid "%qs must not appear in the array specification at %L in the same ALLOCATE statement where it is itself allocated"
-msgstr ""
+msgstr "%qs se ne smije pojaviti u specifikaciji polja pri %L u istoj ALLOCATE izjavi gdje je i sam dodijeljen"
 
 #: fortran/resolve.cc:8188
 #, gcc-internal-format, gfc-internal-format
@@ -76982,7 +76982,7 @@ msgstr ""
 #: objc/objc-act.cc:7001
 #, gcc-internal-format
 msgid "class %qE is not available"
-msgstr "klasa %qE nije dostupna"
+msgstr "class %qE nije dostupna"
 
 #: objc/objc-act.cc:7034
 #, gcc-internal-format
