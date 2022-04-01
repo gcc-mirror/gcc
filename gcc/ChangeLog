@@ -1,3 +1,105 @@
+2022-03-31  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	PR target/104004
+	* config/rs6000/rs6000-builtins.def (MFFSL): Mark nosoft.
+	(MTFSB0): Likewise.
+	(MTFSB1): Likewise.
+	(SET_FPSCR_RN): Likewise.
+	(SET_FPSCR_DRN): Mark nosoft and no32bit.
+
+2022-03-31  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* doc/options.texi (Option file format): Clarifications around
+	option definition records' help texts.
+
+2022-03-31  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* optc-gen.awk <END>: Fix "Multiple different help strings" error
+	diagnostic.
+
+2022-03-31  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* config/aarch64/aarch64.cc (aarch64_vector_costs): Define
+	determine_suggested_unroll_factor and m_has_avg.
+	(determine_suggested_unroll_factor): New function.
+	(aarch64_vector_costs::add_stmt_cost): Check for a qualifying pattern
+	to set m_nosve_pattern.
+	(aarch64_vector_costs::finish_costs): Use
+	determine_suggested_unroll_factor.
+	* config/aarch64/aarch64.opt (aarch64-vect-unroll-limit): New.
+	* doc/invoke.texi: (aarch64-vect-unroll-limit): Document new option.
+
+2022-03-31  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/103083
+	* ipa-prop.h (ipa_ancestor_jf_data): New flag keep_null;
+	(ipa_get_jf_ancestor_keep_null): New function.
+	* ipa-prop.cc (ipa_set_ancestor_jf): Initialize keep_null field of the
+	ancestor function.
+	(compute_complex_assign_jump_func): Pass false to keep_null
+	parameter of ipa_set_ancestor_jf.
+	(compute_complex_ancestor_jump_func): Pass true to keep_null
+	parameter of ipa_set_ancestor_jf.
+	(update_jump_functions_after_inlining): Carry over keep_null from the
+	original ancestor jump-function or merge them.
+	(ipa_write_jump_function): Stream keep_null flag.
+	(ipa_read_jump_function): Likewise.
+	(ipa_print_node_jump_functions_for_edge): Print the new flag.
+	* ipa-cp.cc (class ipcp_bits_lattice): Make various getters const.  New
+	member function known_nonzero_p.
+	(ipcp_bits_lattice::known_nonzero_p): New.
+	(ipcp_bits_lattice::meet_with_1): New parameter drop_all_ones,
+	observe it.
+	(ipcp_bits_lattice::meet_with): Likewise.
+	(propagate_bits_across_jump_function): Simplify.  Pass true in
+	drop_all_ones when it is necessary.
+	(propagate_aggs_across_jump_function): Take care of keep_null
+	flag.
+	(ipa_get_jf_ancestor_result): Propagate NULL accross keep_null
+	jump functions.
+
+2022-03-31  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/102513
+	* ipa-cp.cc (decide_whether_version_node): Skip scalar values
+	which do not fit the known value_range.
+
+2022-03-31  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/103171
+	* ipa-prop.cc (propagate_controlled_uses): Add a LOAD reference
+	always when an ADDR_EXPR constant is known to reach a load because
+	of inlining, not just when removing an ADDR reference.
+
+2022-03-31  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/105109
+	* tree-ssa.cc (execute_update_addresses_taken): Suppress
+	diagnostics on the load of the other complex component.
+
+2022-03-31  Tom de Vries  <tdevries@suse.de>
+
+	* config/nvptx/nvptx.h (ASM_SPEC): Use "-m sm_35" for -misa=sm_30.
+
+2022-03-31  Richard Biener  <rguenther@suse.de>
+
+	PR rtl-optimization/105091
+	* gimple-expr.cc (mark_addressable): Handle TARGET_MEM_REF
+	bases.
+
+2022-03-31  Richard Biener  <rguenther@suse.de>
+
+	Revert:
+	2021-09-13  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/102125
+	* gimple-fold.c (gimple_fold_builtin_memory_op): Allow folding
+	memcpy if the size is not more than MOVE_MAX * MOVE_RATIO.
+
+2022-03-31  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* gcov-io.cc (gcov_read_string): Reword documentation comment.
+
 2022-03-30  Bill Schmidt  <wschmidt@linux.ibm.com>
 
 	* config/rs6000/rs6000-builtins.def (NEG_V16QI): Move to [altivec]

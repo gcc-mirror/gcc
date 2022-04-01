@@ -1,3 +1,37 @@
+2022-03-31  Martin Jambor  <mjambor@suse.cz>
+
+	* gcc.dg/ipa/pr103083-1.c: New test.
+	* gcc.dg/ipa/pr103083-2.c: Likewise.
+
+2022-03-31  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/102513
+	* gcc.dg/ipa/pr102513.c: New test.
+
+2022-03-31  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/103171
+	* gcc.dg/ipa/remref-6.c: Adjust dump scan string.
+	* gcc.dg/ipa/remref-7.c: New test.
+	* gcc.dg/lto/pr103171_0.c: New test.
+	* gcc.dg/lto/pr103171_1.c: Likewise.
+
+2022-03-31  Tom de Vries  <tdevries@suse.de>
+
+	* gcc.target/nvptx/march.c: Add missing space in dg-options line.
+
+2022-03-31  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/105109
+	* gcc.dg/uninit-pr105109.c: New testcase.
+
+2022-03-31  Jason Merrill  <jason@redhat.com>
+
+	PR c++/96645
+	* g++.dg/cpp0x/nsdmi10.C: Now OK.
+	* g++.dg/ext/is_constructible3.C: Likewise.
+	* g++.dg/ext/is_constructible7.C: Likewise.
+
 2022-03-30  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/100892

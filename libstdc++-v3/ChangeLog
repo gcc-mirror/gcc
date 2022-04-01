@@ -1,3 +1,7 @@
+2022-03-31  Jonathan Wakely  <jwakely@redhat.com>
+
+	* libsupc++/new_opa.cc (aligned_alloc): Add comment.
+
 2022-03-29  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/18_support/exception/38732.cc: Disable for C++23.
