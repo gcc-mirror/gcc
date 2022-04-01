@@ -2344,6 +2344,9 @@ duplicate_decls (tree newdecl, tree olddecl, bool hiding, bool was_hidden)
 	      for (parm = DECL_ARGUMENTS (old_result); parm;
 		   parm = DECL_CHAIN (parm))
 		DECL_CONTEXT (parm) = old_result;
+
+	      if (tree fc = DECL_FRIEND_CONTEXT (new_result))
+		SET_DECL_FRIEND_CONTEXT (old_result, fc);
 	    }
 	}
 
@@ -2667,6 +2670,8 @@ duplicate_decls (tree newdecl, tree olddecl, bool hiding, bool was_hidden)
 	     otherwise it is a DECL_FRIEND_CONTEXT.  */
 	  if (DECL_VIRTUAL_P (newdecl))
 	    SET_DECL_THUNKS (newdecl, DECL_THUNKS (olddecl));
+	  else if (tree fc = DECL_FRIEND_CONTEXT (newdecl))
+	    SET_DECL_FRIEND_CONTEXT (olddecl, fc);
 	}
       else if (VAR_P (newdecl))
 	{
