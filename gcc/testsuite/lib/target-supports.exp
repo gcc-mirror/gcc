@@ -3935,6 +3935,18 @@ proc check_effective_target_arm_soft_ok { } {
 	} "-mfloat-abi=soft"]
 }
 
+# Return 1 if this is an ARM target supporting -mfloat-abi=soft even
+# for linking.  Some multilibs may be incompatible with this option,
+# and some linkers may reject incompatible options.
+
+proc check_effective_target_arm_soft_ok_link { } {
+    return [check_no_compiler_messages arm_soft_ok_link executable {
+	#include <stdint.h>
+	int dummy;
+	int main (void) { return 0; }
+	} "-mfloat-abi=soft"]
+}
+
 # Return 1 if this is an ARM target supporting -mfpu=vfp with an
 # appropriate abi.
 
