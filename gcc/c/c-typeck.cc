@@ -1055,7 +1055,7 @@ comptypes (tree type1, tree type2)
 /* Like comptypes, but if it returns non-zero because enum and int are
    compatible, it sets *ENUM_AND_INT_P to true.  */
 
-static int
+int
 comptypes_check_enum_int (tree type1, tree type2, bool *enum_and_int_p)
 {
   const struct tagged_tu_seen_cache * tagged_tu_seen_base1 = tagged_tu_seen_base;

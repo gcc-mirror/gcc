@@ -685,6 +685,7 @@ extern tree require_complete_type (location_t, tree);
 extern bool same_translation_unit_p (const_tree, const_tree);
 extern int comptypes (tree, tree);
 extern int comptypes_check_different_types (tree, tree, bool *);
+extern int comptypes_check_enum_int (tree, tree, bool *);
 extern bool c_vla_type_p (const_tree);
 extern bool c_mark_addressable (tree, bool = false);
 extern void c_incomplete_type_error (location_t, const_tree, const_tree);

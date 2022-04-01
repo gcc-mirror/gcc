@@ -638,6 +638,10 @@ Wenum-conversion
 C ObjC C++ ObjC++ Var(warn_enum_conversion) Init(0) Warning LangEnabledBy(C ObjC,Wextra)
 Warn about implicit conversion of enum types.
 
+Wenum-int-mismatch
+C ObjC Var(warn_enum_int_mismatch) Warning LangEnabledBy(C ObjC,Wall || Wc++-compat)
+Warn about enum/integer type mismatches.
+
 Werror
 C ObjC C++ ObjC++
 ; Documented in common.opt

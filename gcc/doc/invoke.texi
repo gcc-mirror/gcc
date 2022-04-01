@@ -349,6 +349,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wno-div-by-zero  -Wdouble-promotion @gol
 -Wduplicated-branches  -Wduplicated-cond @gol
 -Wempty-body  -Wno-endif-labels  -Wenum-compare  -Wenum-conversion @gol
+-Wenum-int-mismatch @gol
 -Werror  -Werror=*  -Wexpansion-to-defined  -Wfatal-errors @gol
 -Wfloat-conversion  -Wfloat-equal  -Wformat  -Wformat=2 @gol
 -Wno-format-contains-nul  -Wno-format-extra-args  @gol
@@ -5759,6 +5760,7 @@ Options} and @ref{Objective-C and Objective-C++ Dialect Options}.
 -Wdangling-pointer=2  @gol
 -Wduplicate-decl-specifier @r{(C and Objective-C only)} @gol
 -Wenum-compare @r{(in C/ObjC; this is on by default in C++)} @gol
+-Wenum-int-mismatch @r{(C and Objective-C only)} @gol
 -Wformat   @gol
 -Wformat-overflow  @gol
 -Wformat-truncation  @gol
@@ -8734,6 +8736,25 @@ enabled by @option{-Wall}.
 Warn when a value of enumerated type is implicitly converted to a 
 different enumerated type.  This warning is enabled by @option{-Wextra}
 in C@.
+
+@item -Wenum-int-mismatch @r{(C and Objective-C only)}
+@opindex Wenum-int-mismatch
+@opindex Wno-enum-int-mismatch
+Warn about mismatches between an enumerated type and an integer type in
+declarations.  For example:
+
+@smallexample
+enum E @{ l = -1, z = 0, g = 1 @};
+int foo(void);
+enum E foo(void);
+@end smallexample
+
+In C, an enumerated type is compatible with @code{char}, a signed
+integer type, or an unsigned integer type.  However, since the choice
+of the underlying type of an enumerated type is implementation-defined,
+such mismatches may cause portability issues.  In C++, such mismatches
+are an error.  In C, this warning is enabled by @option{-Wall} and
+@option{-Wc++-compat}.
 
 @item -Wjump-misses-init @r{(C, Objective-C only)}
 @opindex Wjump-misses-init

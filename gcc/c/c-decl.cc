@@ -1993,9 +1993,12 @@ diagnose_mismatched_decls (tree newdecl, tree olddecl,
 
   bool pedwarned = false;
   bool warned = false;
+  bool enum_and_int_p = false;
   auto_diagnostic_group d;
 
-  if (!comptypes (oldtype, newtype))
+  int comptypes_result = comptypes_check_enum_int (oldtype, newtype,
+						   &enum_and_int_p);
+  if (!comptypes_result)
     {
       if (TREE_CODE (olddecl) == FUNCTION_DECL
 	  && fndecl_built_in_p (olddecl, BUILT_IN_NORMAL)
@@ -2137,6 +2140,13 @@ diagnose_mismatched_decls (tree newdecl, tree olddecl,
 	  return false;
 	}
     }
+  /* Warn about enum/integer type mismatches.  They are compatible types
+     (C2X 6.7.2.2/5), but may pose portability problems.  */
+  else if (enum_and_int_p && TREE_CODE (newdecl) != TYPE_DECL)
+    warned = warning_at (DECL_SOURCE_LOCATION (newdecl),
+			 OPT_Wenum_int_mismatch,
+			 "conflicting types for %q+D due to enum/integer "
+			 "mismatch; have %qT", newdecl, newtype);
 
   /* Redeclaration of a type is a constraint violation (6.7.2.3p1),
      but silently ignore the redeclaration if either is in a system
@@ -2146,7 +2156,6 @@ diagnose_mismatched_decls (tree newdecl, tree olddecl,
   if (TREE_CODE (newdecl) == TYPE_DECL)
     {
       bool types_different = false;
-      int comptypes_result;
 
       comptypes_result
 	= comptypes_check_different_types (oldtype, newtype, &types_different);
