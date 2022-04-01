@@ -1,3 +1,8 @@
+2022-04-02  Andrew Stubbs  <ams@codesourcery.com>
+
+	* omp-low.cc (usm_transform): Transform omp_target_alloc and
+	omp_target_free.
+
 2022-03-31  Abid Qadeer  <abidh@codesourcery.com>
 
 	* omp-low.cc (lower_omp_allocate): Move allocate declaration

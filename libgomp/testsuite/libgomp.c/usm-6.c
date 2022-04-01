@@ -4,6 +4,8 @@
 #include <stdint.h>
 #include <stdlib.h>
 
+#include <omp.h>
+
 /* On old systems, the declaraition may not be present in stdlib.h which
    will generate a warning.  This function is going to be replaced with
    omp_aligned_alloc so the purpose of this declaration is to avoid that
@@ -19,7 +21,8 @@ main ()
   int *b = (int *) calloc(sizeof(int), 3);
   int *c = (int *) realloc(NULL, sizeof(int) * 4);
   int *d = (int *) aligned_alloc(32, sizeof(int));
-  if (!a || !b || !c || !d)
+  int *e = (int *) omp_target_alloc(sizeof(int), 1);
+  if (!a || !b || !c || !d || !e)
     __builtin_abort ();
 
   a[0] = 42;
@@ -36,6 +39,7 @@ main ()
   uintptr_t b_p = (uintptr_t)b;
   uintptr_t c_p = (uintptr_t)c;
   uintptr_t d_p = (uintptr_t)d;
+  uintptr_t e_p = (uintptr_t)e;
 
   if (d_p & 31 != 0)
     __builtin_abort ();
@@ -52,9 +56,12 @@ main ()
 	__builtin_abort ();
       if (d_p != (uintptr_t)d)
 	__builtin_abort ();
+      if (e_p != (uintptr_t)e)
+	__builtin_abort ();
       a[0] = 72;
       b[0] = 82;
       c[0] = 92;
+      e[0] = 102;
     }
 
 #pragma omp target
@@ -74,10 +81,12 @@ main ()
 
   if (a[0] != 72 || a[1] != 73
       || b[0] != 82 || b[1] != 83
-      || c[0] != 92 || c[1] != 93)
+      || c[0] != 92 || c[1] != 93
+      || e[0] != 102)
 	__builtin_abort ();
   free(a);
   free(b);
   free(c);
+  omp_target_free(e, 1);
   return 0;
 }

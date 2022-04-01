@@ -16143,7 +16143,8 @@ usm_transform (gimple_stmt_iterator *gsi_p, bool *,
 	    if ((strcmp (name, "malloc") == 0)
 		 || (fndecl_built_in_p (fndecl, BUILT_IN_NORMAL)
 		     && DECL_FUNCTION_CODE (fndecl) == BUILT_IN_MALLOC)
-		 || DECL_IS_REPLACEABLE_OPERATOR_NEW_P (fndecl))
+		 || DECL_IS_REPLACEABLE_OPERATOR_NEW_P (fndecl)
+		 || strcmp (name, "omp_target_alloc") == 0)
 	      {
 		  tree omp_alloc_type
 		    = build_function_type_list (ptr_type_node, size_type_node,
@@ -16215,7 +16216,8 @@ usm_transform (gimple_stmt_iterator *gsi_p, bool *,
 		       || (fndecl_built_in_p (fndecl, BUILT_IN_NORMAL)
 			   && DECL_FUNCTION_CODE (fndecl) == BUILT_IN_FREE)
 		       || (DECL_IS_OPERATOR_DELETE_P (fndecl)
-			   && DECL_IS_REPLACEABLE_OPERATOR (fndecl)))
+			   && DECL_IS_REPLACEABLE_OPERATOR (fndecl))
+		       || strcmp (name, "omp_target_free") == 0)
 	      {
 		tree omp_free_type
 		  = build_function_type_list (void_type_node, ptr_type_node,
