@@ -1724,7 +1724,8 @@ find_reload_regno_insns (int regno, rtx_insn * &start, rtx_insn * &finish)
     {
       for (prev_insn = PREV_INSN (start_insn),
 	     next_insn = NEXT_INSN (start_insn);
-	   n != 1 && (prev_insn != NULL || next_insn != NULL); )
+	   n != 1 && ((prev_insn != NULL && first_insn == NULL)
+		      || (next_insn != NULL && second_insn == NULL)); )
 	{
 	  if (prev_insn != NULL && first_insn == NULL)
 	    {
