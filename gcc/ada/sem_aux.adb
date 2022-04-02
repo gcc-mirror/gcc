@@ -1059,15 +1059,7 @@ package body Sem_Aux is
             end if;
 
          else
-            declare
-               Utyp : constant Entity_Id := Underlying_Type (Btype);
-            begin
-               if No (Utyp) then
-                  return False;
-               else
-                  return Is_Immutably_Limited_Type (Utyp);
-               end if;
-            end;
+            return False;
          end if;
 
       elsif Is_Concurrent_Type (Btype) then

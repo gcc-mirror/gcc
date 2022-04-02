@@ -1566,17 +1566,18 @@ package body Sem_Ch6 is
 
             --  Check RM 6.5 (5.9/3)
 
-            if Has_Aliased then
+            if Has_Aliased and then not Is_Immutably_Limited_Type (R_Type) then
                if Ada_Version < Ada_2012
                  and then Warn_On_Ada_2012_Compatibility
                then
                   Error_Msg_N
-                    ("ALIASED only allowed for limited return objects "
-                     & "in Ada 2012?y?", N);
+                    ("ALIASED only allowed for immutably limited return " &
+                     "objects in Ada 2012?y?", N);
 
-               elsif not Is_Limited_View (R_Type) then
+               else
                   Error_Msg_N
-                    ("ALIASED only allowed for limited return objects", N);
+                    ("ALIASED only allowed for immutably limited return " &
+                     "objects", N);
                end if;
             end if;
 
