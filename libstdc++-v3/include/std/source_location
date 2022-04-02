@@ -43,6 +43,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   {
   private:
     using uint_least32_t = __UINT_LEAST32_TYPE__;
+    struct __impl
+    {
+      const char* _M_file_name;
+      const char* _M_function_name;
+      unsigned _M_line;
+      unsigned _M_column;
+    };
     using __builtin_ret_type = decltype(__builtin_source_location());
 
   public:
@@ -76,14 +83,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { return _M_impl ? _M_impl->_M_function_name : ""; }
 
   private:
-    struct __impl
-    {
-      const char* _M_file_name;
-      const char* _M_function_name;
-      unsigned _M_line;
-      unsigned _M_column;
-    };
-
     const __impl* _M_impl = nullptr;
   };
 
