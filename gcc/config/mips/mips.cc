@@ -6054,7 +6054,8 @@ mips_function_arg (cumulative_args_t cum_v, const function_arg_info &arg)
 		     an ABI change.  */
 		  if (DECL_FIELD_CXX_ZERO_WIDTH_BIT_FIELD (field))
 		    continue;
-		  if (integer_zerop (DECL_SIZE (field)))
+		  if (DECL_SIZE (field)
+		      && integer_zerop (DECL_SIZE (field)))
 		    {
 		      zero_width_field_abi_change = true;
 		      continue;
