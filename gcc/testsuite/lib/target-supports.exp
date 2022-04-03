@@ -7549,6 +7549,19 @@ proc check_effective_target_vect_aligned_arrays { } {
     return $et_vect_aligned_arrays
 }
 
+# Return 1 if the biggest alignment required by target is 1 * BITS_PER_UNIT.
+# In such case the target does not impose any alignment constraints.
+
+proc check_effective_target_no_alignment_constraints { } {
+    return [check_runtime_nocache no_alignment_constraints {
+        int
+        main (void)
+        {
+          return __BIGGEST_ALIGNMENT__ == 1 ? 0 : 1;
+        }
+    }]
+}
+
 # Return 1 if types of size 32 bit or less are naturally aligned
 # (aligned to their type-size), 0 otherwise.
 #

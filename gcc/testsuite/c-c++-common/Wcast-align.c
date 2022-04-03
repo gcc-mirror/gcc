@@ -16,8 +16,8 @@ struct t { double x; } *q;
 void
 foo (void)
 {
-  y = (c *) x;  /* { dg-warning "7:cast \[^\n\r]* required alignment of target type" } */
-  z = (d *) x;  /* { dg-warning "7:cast \[^\n\r]* required alignment of target type" } */
+  y = (c *) x;  /* { dg-warning "7:cast \[^\n\r]* required alignment of target type" "" { target { ! no_alignment_constraints } } } */
+  z = (d *) x;  /* { dg-warning "7:cast \[^\n\r]* required alignment of target type" "" { target { ! no_alignment_constraints } } } */
   (long long *) p;  /* { dg-bogus "alignment" } */
   (double *) q;     /* { dg-bogus "alignment" } */
 }

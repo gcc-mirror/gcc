@@ -2,7 +2,7 @@
    are at least some alignment constraints).  */
 /* { dg-do compile } */
 /* { dg-options "-std=c11 -pedantic-errors" } */
-/* { dg-skip-if "no alignment constraints" { "avr-*-*" } } */
+/* { dg-skip-if "no alignment constraints" { no_alignment_constraints } } */
 
 #include <stddef.h>
 
