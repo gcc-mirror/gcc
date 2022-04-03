@@ -43376,9 +43376,9 @@ quarter:
 	      else
 		{
 		  word = expand_simple_binop (word_mode, ASHIFT, word, shift,
-					      word, 1, OPTAB_LIB_WIDEN);
+					      NULL_RTX, 1, OPTAB_LIB_WIDEN);
 		  word = expand_simple_binop (word_mode, IOR, word, elt,
-					      word, 1, OPTAB_LIB_WIDEN);
+					      NULL_RTX, 1, OPTAB_LIB_WIDEN);
 		}
 	    }
 
