@@ -1891,16 +1891,7 @@ start_function (FuncDeclaration *fd)
      modules not in this compilation, or thunk aliases.  */
   TemplateInstance *ti = fd->isInstantiated ();
   if (ti && ti->needsCodegen ())
-    {
-      /* Warn about templates instantiated in this compilation.  */
-      if (ti == fd->parent)
-	{
-	  warning (OPT_Wtemplates, "%s %qs instantiated",
-		   ti->kind (), ti->toPrettyChars (false));
-	}
-
-      DECL_EXTERNAL (fndecl) = 0;
-    }
+    DECL_EXTERNAL (fndecl) = 0;
   else
     {
       Module *md = fd->getModule ();
