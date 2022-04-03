@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-skip-if "Cannot access arbitrary stack frames" { arm*-*-* amdgpu-*-* avr-*-* hppa*-*-* ia64-*-* visium-*-* csky-*-* msp430-*-* cris-*-* mmix-*-* } } */
+/* { dg-skip-if "Cannot access arbitrary stack frames" { arm*-*-* amdgpu-*-* avr-*-* hppa*-*-* ia64-*-* visium-*-* csky-*-* msp430-*-* cris-*-* mmix-*-* pru-*-* } } */
 /* { dg-options "-Werror" } */
 /* { dg-additional-options "-mbackchain" { target { s390*-*-* } } } */
 
