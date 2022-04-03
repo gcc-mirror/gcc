@@ -236,4 +236,20 @@ MacroBuiltin::include_str (Location invoc_locus, AST::MacroInvocData &invoc)
   return AST::ASTFragment ({node});
 }
 
+/* Expand builtin macro compile_error!("error"), which forces a compile error
+   during the compile time. */
+AST::ASTFragment
+MacroBuiltin::compile_error (Location invoc_locus, AST::MacroInvocData &invoc)
+{
+  auto lit_expr
+    = parse_single_string_literal (invoc.get_delim_tok_tree (), invoc_locus);
+  if (lit_expr == nullptr)
+    return AST::ASTFragment::create_error ();
+
+  std::string error_string = lit_expr->as_string ();
+  rust_error_at (invoc_locus, "%s", error_string.c_str ());
+
+  return AST::ASTFragment::create_error ();
+}
+
 } // namespace Rust
