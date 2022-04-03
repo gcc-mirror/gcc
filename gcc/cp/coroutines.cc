@@ -1148,10 +1148,13 @@ finish_co_await_expr (location_t kw, tree expr)
      extraneous warnings during substitution.  */
   suppress_warning (current_function_decl, OPT_Wreturn_type);
 
-  /* If we don't know the promise type, we can't proceed, build the
-     co_await with the expression unchanged.  */
-  tree functype = TREE_TYPE (current_function_decl);
-  if (dependent_type_p (functype) || type_dependent_expression_p (expr))
+  /* Defer expansion when we are processing a template.
+     FIXME: If the coroutine function's type is not dependent, and the operand
+     is not dependent, we should determine the type of the co_await expression
+     using the DEPENDENT_EXPR wrapper machinery.  That allows us to determine
+     the subexpression type, but leave its operand unchanged and then
+     instantiate it later.  */
+  if (processing_template_decl)
     {
       tree aw_expr = build5_loc (kw, CO_AWAIT_EXPR, unknown_type_node, expr,
 				 NULL_TREE, NULL_TREE, NULL_TREE,
@@ -1222,10 +1225,9 @@ finish_co_yield_expr (location_t kw, tree expr)
      extraneous warnings during substitution.  */
   suppress_warning (current_function_decl, OPT_Wreturn_type);
 
-  /* If we don't know the promise type, we can't proceed, build the
-     co_await with the expression unchanged.  */
-  tree functype = TREE_TYPE (current_function_decl);
-  if (dependent_type_p (functype) || type_dependent_expression_p (expr))
+  /* Defer expansion when we are processing a template; see FIXME in the
+     co_await code.  */
+  if (processing_template_decl)
     return build2_loc (kw, CO_YIELD_EXPR, unknown_type_node, expr, NULL_TREE);
 
   if (!coro_promise_type_found_p (current_function_decl, kw))
@@ -1307,10 +1309,9 @@ finish_co_return_stmt (location_t kw, tree expr)
       && check_for_bare_parameter_packs (expr))
     return error_mark_node;
 
-  /* If we don't know the promise type, we can't proceed, build the
-     co_return with the expression unchanged.  */
-  tree functype = TREE_TYPE (current_function_decl);
-  if (dependent_type_p (functype) || type_dependent_expression_p (expr))
+  /* Defer expansion when we are processing a template; see FIXME in the
+     co_await code.  */
+  if (processing_template_decl)
     {
       /* co_return expressions are always void type, regardless of the
 	 expression type.  */
