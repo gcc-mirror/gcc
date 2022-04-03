@@ -53,7 +53,7 @@ package body System.Secondary_Stack is
    --  in order to avoid depending on the binder. Their values are set by the
    --  binder.
 
-   Binder_SS_Count : Natural;
+   Binder_SS_Count : Natural := 0;
    pragma Export (Ada, Binder_SS_Count, "__gnat_binder_ss_count");
    --  The number of secondary stacks in the pool created by the binder
 

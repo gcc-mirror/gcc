@@ -80,12 +80,6 @@ package body Bindgen is
    --  domains just before calling the main procedure from the environment
    --  task.
 
-   System_Secondary_Stack_Package_In_Closure : Boolean := False;
-   --  Flag indicating whether the unit System.Secondary_Stack is in the
-   --  closure of the partition. This is set by Resolve_Binder_Options, and
-   --  is used to initialize the package in cases where the run-time brings
-   --  in package but the secondary stack is not used.
-
    System_Tasking_Restricted_Stages_Used : Boolean := False;
    --  Flag indicating whether the unit System.Tasking.Restricted.Stages is in
    --  the closure of the partition. This is set by Resolve_Binder_Options,
@@ -612,33 +606,27 @@ package body Bindgen is
                  """__gnat_initialize_stack_limit"");");
          end if;
 
-         if System_Secondary_Stack_Package_In_Closure then
-            --  System.Secondary_Stack is in the closure of the program
-            --  because the program uses the secondary stack or the restricted
-            --  run-time is unconditionally calling SS_Init. In both cases,
-            --  SS_Init needs to know the number of secondary stacks created by
-            --  the binder.
-
+         if Num_Sec_Stacks > 0 then
             WBI ("      Binder_Sec_Stacks_Count : Natural;");
             WBI ("      pragma Import (Ada, Binder_Sec_Stacks_Count, " &
                  """__gnat_binder_ss_count"");");
             WBI ("");
+         end if;
 
-            --  Import secondary stack pool variables if the secondary stack
-            --  used. They are not referenced otherwise.
+         --  Import secondary stack pool variables if the secondary stack is
+         --  used. They are not referenced otherwise.
 
-            if Sec_Stack_Used then
-               WBI ("      Default_Secondary_Stack_Size : " &
-                    "System.Parameters.Size_Type;");
-               WBI ("      pragma Import (C, Default_Secondary_Stack_Size, " &
-                    """__gnat_default_ss_size"");");
+         if Sec_Stack_Used then
+            WBI ("      Default_Secondary_Stack_Size : " &
+                 "System.Parameters.Size_Type;");
+            WBI ("      pragma Import (C, Default_Secondary_Stack_Size, " &
+                 """__gnat_default_ss_size"");");
 
-               WBI ("      Default_Sized_SS_Pool : System.Address;");
-               WBI ("      pragma Import (Ada, Default_Sized_SS_Pool, " &
-                    """__gnat_default_ss_pool"");");
+            WBI ("      Default_Sized_SS_Pool : System.Address;");
+            WBI ("      pragma Import (Ada, Default_Sized_SS_Pool, " &
+                 """__gnat_default_ss_pool"");");
 
-               WBI ("");
-            end if;
+            WBI ("");
          end if;
 
          WBI ("   begin");
@@ -686,46 +674,36 @@ package body Bindgen is
          --  Generate the default-sized secondary stack pool if the secondary
          --  stack is used by the program.
 
-         if System_Secondary_Stack_Package_In_Closure then
-            if Sec_Stack_Used then
-               --  Elaborate the body of the binder to initialize the default-
-               --  sized secondary stack pool.
+         if Sec_Stack_Used then
+            --  Elaborate the body of the binder to initialize the default-
+            --  sized secondary stack pool.
 
-               WBI ("");
-               WBI ("      " & Get_Ada_Main_Name & "'Elab_Body;");
+            WBI ("");
+            WBI ("      " & Get_Ada_Main_Name & "'Elab_Body;");
 
-               --  Generate the default-sized secondary stack pool and set the
-               --  related secondary stack globals.
+            --  Generate the default-sized secondary stack pool and set the
+            --  related secondary stack globals.
 
-               Set_String ("      Default_Secondary_Stack_Size := ");
+            Set_String ("      Default_Secondary_Stack_Size := ");
 
-               if Opt.Default_Sec_Stack_Size /= Opt.No_Stack_Size then
-                  Set_Int (Opt.Default_Sec_Stack_Size);
-               else
-                  Set_String
-                    ("System.Parameters.Runtime_Default_Sec_Stack_Size");
-               end if;
-
-               Set_Char (';');
-               Write_Statement_Buffer;
-
-               Set_String ("      Binder_Sec_Stacks_Count := ");
-               Set_Int (Num_Sec_Stacks);
-               Set_Char (';');
-               Write_Statement_Buffer;
-
-               WBI ("      Default_Sized_SS_Pool := " &
-                      "Sec_Default_Sized_Stacks'Address;");
-               WBI ("");
-
+            if Opt.Default_Sec_Stack_Size /= Opt.No_Stack_Size then
+               Set_Int (Opt.Default_Sec_Stack_Size);
             else
-               --  The presence of System.Secondary_Stack in the closure of the
-               --  program implies the restricted run-time is unconditionally
-               --  calling SS_Init. Let SS_Init know that no stacks were
-               --  created.
-
-               WBI ("      Binder_Sec_Stacks_Count := 0;");
+               Set_String
+                 ("System.Parameters.Runtime_Default_Sec_Stack_Size");
             end if;
+
+            Set_Char (';');
+            Write_Statement_Buffer;
+
+            Set_String ("      Binder_Sec_Stacks_Count := ");
+            Set_Int (Num_Sec_Stacks);
+            Set_Char (';');
+            Write_Statement_Buffer;
+
+            WBI ("      Default_Sized_SS_Pool := " &
+                   "Sec_Default_Sized_Stacks'Address;");
+            WBI ("");
          end if;
 
       --  Normal case (standard library not suppressed). Set all global values
@@ -3275,12 +3253,6 @@ package body Bindgen is
          --  Ditto for the use of restrictions
 
          Check_Package (System_Restrictions_Used, "system.restrictions%s");
-
-         --  Ditto for the use of System.Secondary_Stack
-
-         Check_Package
-           (System_Secondary_Stack_Package_In_Closure,
-            "system.secondary_stack%s");
 
          --  Ditto for use of an SMP bareboard runtime
 
