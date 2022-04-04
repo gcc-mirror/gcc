@@ -1,3 +1,16 @@
+2022-04-03  Benno Evers  <benno.evers@tenzir.com>
+	    Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/103328
+	* coroutines.cc (morph_fn_to_coro): Reset
+	current_binding_level->blocks.
+
+2022-04-01  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/105110
+	* pt.cc (unify) <case TEMPLATE_PARM_INDEX>: Drop cv-quals from
+	the argument type of an NTTP before deducing from it.
+
 2022-03-31  Jason Merrill  <jason@redhat.com>
 
 	PR c++/96645

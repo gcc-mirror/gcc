@@ -1,3 +1,14 @@
+2022-04-01  Tom de Vries  <tdevries@suse.de>
+
+	* testsuite/libgomp.fortran/examples-4/declare_target-1.f90: Define
+	and use REC_DEPTH.
+	* testsuite/libgomp.fortran/examples-4/declare_target-2.f90: Same.
+
+2022-04-01  Tom de Vries  <tdevries@suse.de>
+
+	* testsuite/libgomp.oacc-c-c++-common/vector-length-128-7.c: Fix
+	num_workers check.
+
 2022-03-29  Chenghua Xu  <xuchenghua@loongson.cn>
 	    Lulu Cheng  <chenglulu@loongson.cn>
 

@@ -1,3 +1,80 @@
+2022-04-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/105123
+	* gcc.target/i386/pr105123.c: New test.
+
+2022-04-03  Benno Evers  <benno.evers@tenzir.com>
+	    Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/103328
+	* g++.dg/coroutines/pr103328.C: New test.
+
+2022-04-02  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* gdc.dg/nrvo1.d: New test.
+
+2022-04-02  Xi Ruoyao  <xry111@mengyan1223.wang>
+
+	* gcc.target/mips/pr102024-4.c: New test.
+
+2022-04-02  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc.dg/fixed-point/composite-type.c: Add -Wno-array-parameter.
+
+2022-04-01  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/105110
+	* g++.dg/cpp2a/nontype-class52.C: New test.
+
+2022-04-01  Xi Ruoyao  <xry111@mengyan1223.wang>
+
+	PR target/102024
+	* gcc.target/mips/pr102024-1.c: New test.
+	* gcc.target/mips/pr102024-2.c: New test.
+	* gcc.target/mips/pr102024-3.c: New test.
+
+2022-04-01  Xi Ruoyao  <xry111@mengyan1223.wang>
+
+	PR target/102024
+	* g++.target/mips/mips.exp: New test supporting file.
+	* g++.target/mips/pr102024.C: New test.
+
+2022-04-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/104645
+	* gcc.dg/tree-ssa/pr104645.c: New test.
+
+2022-04-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/102024
+	* gcc.dg/compat/pr102024_test.h: Add further tests with zero sized
+	structures and arrays.
+	* g++.dg/compat/pr102024_test.h: Add further tests with zero sized
+	arrays.
+
+2022-04-01  Tom de Vries  <tdevries@suse.de>
+
+	* gcc.target/nvptx/nvptx.exp
+	(check_effective_target_runtime_ptx_isa_version_6_3): Rename and
+	generalize to ...
+	(check_effective_target_runtime_ptx_isa_version_at_least): .. this.
+	(check_effective_target_default_ptx_isa_version_at_least)
+	(check_effective_target_runtime_ptx_alias, add_options_for_ptx_alias):
+	New proc.
+	* gcc.target/nvptx/alias-1.c: Use "target runtime_ptx_alias" and
+	"dg-add-options ptx_alias".
+	* gcc.target/nvptx/alias-2.c: Same.
+	* gcc.target/nvptx/alias-3.c: Same.
+	* gcc.target/nvptx/alias-4.c: Same.
+
+2022-04-01  Alexandre Oliva  <oliva@adacore.com>
+
+	* lib/target-supports.exp
+	(check_effective_target_arm_soft_ok_link): New.
+	* gcc.target/arm/size-optimization-ieee-1.c: Use it.
+	* gcc.target/arm/size-optimization-ieee-2.c: Likewise.
+	* gcc.target/arm/size-optimization-ieee-3.c: Likewise.
+
 2022-03-31  Martin Jambor  <mjambor@suse.cz>
 
 	* gcc.dg/ipa/pr103083-1.c: New test.

@@ -1,3 +1,30 @@
+2022-04-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libstdc++/105128
+	* include/std/source_location (std::source_location::__impl): Move
+	definition before using __builtin_ret_type.
+
+2022-04-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/utility (unreachable): Define for C++23.
+	* include/std/version (__cpp_lib_unreachable): Define.
+	* src/c++11/debug.cc (__glibcxx_assert_fail): Check for valid
+	arguments. Handle only the function being given.
+	* testsuite/20_util/unreachable/1.cc: New test.
+	* testsuite/20_util/unreachable/version.cc: New test.
+
+2022-04-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/experimental/bits/fs_fwd.h (copy_file): Remove
+	incorrect noexcept from declaration.
+	* include/experimental/bits/fs_path.h (path::begin, path::end):
+	Add noexcept to declarations, to match definitions.
+
+2022-04-01  Timm Bäder  <tbaeder@redhat.com>
+
+	* include/bits/fs_ops.h: Fix filename in Doxygen comment.
+	* include/experimental/bits/fs_ops.h: Likewise.
+
 2022-03-31  Jonathan Wakely  <jwakely@redhat.com>
 
 	* libsupc++/new_opa.cc (aligned_alloc): Add comment.

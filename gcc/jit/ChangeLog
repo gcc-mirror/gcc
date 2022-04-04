@@ -1,3 +1,16 @@
+2022-04-01  David Malcolm  <dmalcolm@redhat.com>
+
+	* docs/topics/expressions.rst: Fix formatting.
+	* docs/topics/types.rst: Likewise.
+	* docs/_build/texinfo/libgccjit.texi: Regenerate
+
+2022-04-01  Petter Tomner  <tomner@kth.se>
+
+	* docs/topics/compatibility.rst: Add 19 tag
+	* docs/topics/compilation.rst: Linking
+	* docs/topics/contexts.rst: Linking example
+	* docs/topics/expressions.rst: Fix formatting and dropped 's'
+
 2022-03-07  Jakub Jelinek  <jakub@redhat.com>
 
 	* libgccjit.h: Fix up duplicated word issue in a comment.

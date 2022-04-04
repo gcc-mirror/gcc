@@ -1,3 +1,31 @@
+2022-04-03  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-lang.cc: Include dmd/template.h.
+	(d_parse_file): Call printTemplateStats when vtemplates is set.
+	* decl.cc (start_function): Remove OPT_Wtemplates warning.
+	* lang.opt (Wtemplates): Remove.
+
+2022-04-02  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* dmd/MERGE: Merge upstream dmd 47871363d.
+	* d-builtins.cc (d_init_versions): Add predefined version identifiers
+	D_PreConditions, D_PostConditions, and D_Invariants.
+	* d-codegen.cc (d_build_call): Update for new front-end interface.
+	(build_frame_type): Generate reference field for NRVO variables with
+	nested references.
+	(build_closure): Generate assignment of return address to closure.
+	* d-tree.h (DECL_INSTANTIATED): Use DECL_LANG_FLAG_2.
+	(bind_expr): Remove.
+	* decl.cc (DeclVisitor::visit (FuncDeclaration *)): Update for new
+	front-end interface.
+	(get_symbol_decl): Likewise.
+	(get_decl_tree): Check DECL_LANG_FRAME_FIELD before DECL_LANG_NRVO.
+	Dereference the field when both are set.
+	* expr.cc (ExprVisitor::visit (DeleteExp *)): Update for new front-end
+	interface.
+	* modules.cc (get_internal_fn): Likewise.
+	* toir.cc (IRVisitor::visit (ReturnStatement *)): Likewise.
+
 2022-03-21  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	PR d/105004

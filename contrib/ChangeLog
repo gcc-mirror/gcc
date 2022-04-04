@@ -1,3 +1,7 @@
+2022-04-04  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_update_version.py: Ignore the revision.
+
 2022-03-31  Jakub Jelinek  <jakub@redhat.com>
 	    Joseph Myers  <joseph@codesourcery.com>
 

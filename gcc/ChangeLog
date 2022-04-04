@@ -1,3 +1,60 @@
+2022-04-03  Jeff Law  <jeffreyalaw@gmail.com>
+
+	PR target/104987
+	* config/iq2000/iq2000.md (bbi): New attribute,  default to no.
+	(delay slot descripts): Use different delay slot description when
+	the insn as the "bbi" attribute.
+	(bbi, bbin patterns): Set the bbi attribute to yes.
+
+2022-04-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/105123
+	* config/i386/i386-expand.cc (ix86_expand_vector_init_general): Avoid
+	using word as target for expand_simple_binop when doing ASHIFT and
+	IOR.
+
+2022-04-02  Xi Ruoyao  <xry111@mengyan1223.wang>
+
+	* config/mips/mips.cc (mips_function_arg): Check if DECL_SIZE is
+	NULL before dereferencing it.
+
+2022-04-01  Qing Zhao  <qing.zhao@oracle.com>
+
+	* config/i386/i386.cc (zero_all_st_registers): Return the value of
+	num_of_st.
+	(ix86_zero_call_used_regs): Update zeroed_hardregs set according to
+	the return value of zero_all_st_registers.
+	* doc/tm.texi: Update the documentation of TARGET_ZERO_CALL_USED_REGS.
+	* function.cc (gen_call_used_regs_seq): Add an assertion.
+	* target.def: Update the documentation of TARGET_ZERO_CALL_USED_REGS.
+
+2022-04-01  Xi Ruoyao  <xry111@mengyan1223.wang>
+
+	PR target/102024
+	* config/mips/mips.cc (mips_function_arg): Ignore zero-width
+	fields, and inform if it causes a psABI change.
+
+2022-04-01  Xi Ruoyao  <xry111@mengyan1223.wang>
+
+	PR target/102024
+	* config/mips/mips.cc (mips_fpr_return_fields): Detect C++
+	zero-width bit-fields and set up an indicator.
+	(mips_return_in_msb): Adapt for mips_fpr_return_fields change.
+	(mips_function_value_1): Diagnose when the presense of a C++
+	zero-width bit-field changes function returning in GCC 12.
+
+2022-04-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/104645
+	* tree-ssa-phiopt.cc (value_replacement): If assign has
+	CONVERT_EXPR_CODE_P rhs_code, treat it like a preparation
+	statement with constant evaluation.
+
+2022-04-01  YunQiang Su  <yunqiang.su@cipunited.com>
+
+	* config/mips/mips.cc (mips_expand_prologue):
+	  IPL is 8bit for MCU ASE.
+
 2022-03-31  Bill Schmidt  <wschmidt@linux.ibm.com>
 
 	PR target/104004
