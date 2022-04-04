@@ -6133,6 +6133,9 @@ vectorizable_operation (vec_info *vinfo,
                              "use not simple.\n");
 	  return false;
 	}
+      if (vectype2
+	  && maybe_ne (nunits_out, TYPE_VECTOR_SUBPARTS (vectype2)))
+	return false;
     }
   if (op_type == ternary_op)
     {
@@ -6144,6 +6147,9 @@ vectorizable_operation (vec_info *vinfo,
                              "use not simple.\n");
 	  return false;
 	}
+      if (vectype3
+	  && maybe_ne (nunits_out, TYPE_VECTOR_SUBPARTS (vectype3)))
+	return false;
     }
 
   /* Multiple types in SLP are handled by creating the appropriate number of
