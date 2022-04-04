@@ -1,3 +1,16 @@
+2022-04-03  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-04-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/105123
+	* gcc.target/i386/pr105123.c: New test.
+
+2022-04-01  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR middle-end/105032
+	* gcc.target/i386/pr105032.c: New.
+
 2022-03-30  Marek Polacek  <polacek@redhat.com>
 
 	Backported from master:
