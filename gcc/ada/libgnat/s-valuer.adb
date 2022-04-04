@@ -645,7 +645,14 @@ package body System.Value_R is
 
       Ptr.all := Index;
       Scan_Exponent (Str, Ptr, Max, Expon, Real => True);
-      Scale := Scale + Expon;
+
+      --  Handle very large exponents like Scan_Exponent
+
+      if Expon < Integer'First / 10 or else Expon > Integer'Last / 10 then
+         Scale := Expon;
+      else
+         Scale := Scale + Expon;
+      end if;
 
       --  Here is where we check for a bad based number
 
