@@ -645,6 +645,7 @@ package body System.Value_U is
 
       Scan_Exponent (Str, Ptr, Max, Expon);
 
+      pragma Assert (Ptr.all = Raw_Unsigned_Last_Ghost (Str, Ptr_Old, Max));
       pragma Assert
         (if Starts_As_Exponent_Format_Ghost (Str (First_Exp .. Max))
          then Expon = Scan_Exponent_Ghost (Str (First_Exp .. Max)));
