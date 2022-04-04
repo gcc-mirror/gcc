@@ -34,6 +34,8 @@ s-aarch64-tune-md: $(srcdir)/config/aarch64/gentune.sh \
 		$(srcdir)/config/aarch64/aarch64-tune.md
 	$(STAMP) s-aarch64-tune-md
 
+s-mddeps: s-aarch64-tune-md
+
 aarch64-builtins.o: $(srcdir)/config/aarch64/aarch64-builtins.cc $(CONFIG_H) \
   $(SYSTEM_H) coretypes.h $(TM_H) \
   $(RTL_H) $(TREE_H) expr.h $(TM_P_H) $(RECOG_H) langhooks.h \
