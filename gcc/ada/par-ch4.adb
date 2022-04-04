@@ -1682,6 +1682,7 @@ package body Ch4 is
 
       case Start_Token is
          when Tok_Left_Bracket =>
+
             Set_Component_Associations (Aggregate_Node, Assoc_List);
             Set_Is_Homogeneous_Aggregate (Aggregate_Node);
             T_Right_Bracket;

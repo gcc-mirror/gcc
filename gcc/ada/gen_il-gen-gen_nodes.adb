@@ -509,6 +509,7 @@ begin -- Gen_IL.Gen.Gen_Nodes
 
    Cc (N_Delta_Aggregate, N_Subexpr,
        (Sy (Expression, Node_Id, Default_Empty),
+        Sy (Is_Homogeneous_Aggregate, Flag),
         Sy (Component_Associations, List_Id, Default_No_List)));
 
    Cc (N_Extension_Aggregate, N_Subexpr,

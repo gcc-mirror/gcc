@@ -3291,6 +3291,15 @@ package body Sem_Aggr is
       if Is_Array_Type (Typ) then
          Resolve_Delta_Array_Aggregate (N, Typ);
       else
+
+         --  Delta aggregates for record types must use parentheses,
+         --  not square brackets.
+
+         if Is_Homogeneous_Aggregate (N) then
+            Error_Msg_N
+              ("delta aggregates for record types must use (), not '[']", N);
+         end if;
+
          Resolve_Delta_Record_Aggregate (N, Typ);
       end if;
 
@@ -4916,7 +4925,7 @@ package body Sem_Aggr is
       if Nkind (N) = N_Aggregate
         and then Is_Homogeneous_Aggregate (N)
       then
-         Error_Msg_N ("record aggregate must use () and not '[']", N);
+         Error_Msg_N ("record aggregate must use (), not '[']", N);
          return;
       end if;
 
