@@ -29909,8 +29909,6 @@ do_class_deduction (tree ptype, tree tmpl, tree init,
       && CLASS_PLACEHOLDER_TEMPLATE (TREE_TYPE (init)) == tmpl)
     return cp_build_qualified_type (TREE_TYPE (init), cp_type_quals (ptype));
 
-  /* Look through alias templates that just rename another template.  */
-  tmpl = get_underlying_template (tmpl);
   if (!ctad_template_p (tmpl))
     {
       if (complain & tf_error)
@@ -29920,14 +29918,32 @@ do_class_deduction (tree ptype, tree tmpl, tree init,
   else if (cxx_dialect < cxx20 && DECL_ALIAS_TEMPLATE_P (tmpl))
     {
       if (complain & tf_error)
-	error ("alias template deduction only available "
-	       "with %<-std=c++20%> or %<-std=gnu++20%>");
-      return error_mark_node;
+	{
+	  /* Be permissive with equivalent alias templates.  */
+	  tree u = get_underlying_template (tmpl);
+	  diagnostic_t dk = (u == tmpl) ? DK_ERROR : DK_PEDWARN;
+	  bool complained
+	    = emit_diagnostic (dk, input_location, 0,
+			       "alias template deduction only available "
+			       "with %<-std=c++20%> or %<-std=gnu++20%>");
+	  if (u == tmpl)
+	    return error_mark_node;
+	  else if (complained)
+	    {
+	      inform (input_location, "use %qD directly instead", u);
+	      tmpl = u;
+	    }
+	}
+      else
+	return error_mark_node;
     }
 
   /* Wait until the initializer is non-dependent.  */
   if (type_dependent_expression_p (init))
     return ptype;
+
+  /* Don't bother with the alias rules for an equivalent template.  */
+  tmpl = get_underlying_template (tmpl);
 
   tree type = TREE_TYPE (tmpl);
 
