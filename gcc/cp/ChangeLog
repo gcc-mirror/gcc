@@ -5,6 +5,28 @@
 	* coroutines.cc (morph_fn_to_coro): Reset
 	current_binding_level->blocks.
 
+2022-04-01  Jason Merrill  <jason@redhat.com>
+
+	Revert:
+	2022-03-31  Jason Merrill  <jason@redhat.com>
+
+	PR c++/96645
+	* parser.cc (cp_parser_early_parsing_nsdmi): New.
+	(cp_parser_member_declaration): Call it.
+
+2022-04-01  Jason Merrill  <jason@redhat.com>
+
+	Revert:
+	2022-03-24  Jason Merrill  <jason@redhat.com>
+
+	PR c++/96645
+	* cp-tree.h (type_has_default_ctor_to_be_synthesized): Declare.
+	* class.cc (type_has_default_ctor_to_be_synthesized): New.
+	(type_has_non_user_provided_default_constructor_1): Support it.
+	(type_has_non_user_provided_default_constructor): Now a wrapper.
+	* method.cc (complain_about_unparsed_dmi): New.
+	(constructible_expr): Call it.
+
 2022-04-01  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/105110

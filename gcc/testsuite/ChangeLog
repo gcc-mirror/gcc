@@ -21,6 +21,25 @@
 
 	* gcc.dg/fixed-point/composite-type.c: Add -Wno-array-parameter.
 
+2022-04-01  Jason Merrill  <jason@redhat.com>
+
+	Revert:
+	2022-03-31  Jason Merrill  <jason@redhat.com>
+
+	PR c++/96645
+	* g++.dg/cpp0x/nsdmi10.C: Now OK.
+	* g++.dg/ext/is_constructible3.C: Likewise.
+	* g++.dg/ext/is_constructible7.C: Likewise.
+
+2022-04-01  Jason Merrill  <jason@redhat.com>
+
+	Revert:
+	2022-03-24  Jason Merrill  <jason@redhat.com>
+
+	PR c++/96645
+	* g++.dg/ext/is_constructible3.C: Expect error.
+	* g++.dg/ext/is_constructible7.C: New test.
+
 2022-04-01  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/105110
