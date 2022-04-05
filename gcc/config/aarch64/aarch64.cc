@@ -24531,17 +24531,15 @@ aarch64_expand_cpymem_mops (rtx *operands)
 {
   if (!TARGET_MOPS)
     return false;
-  rtx addr_dst = XEXP (operands[0], 0);
-  rtx addr_src = XEXP (operands[1], 0);
-  rtx sz_reg = operands[2];
 
-  if (!REG_P (sz_reg))
-    sz_reg = force_reg (DImode, sz_reg);
-  if (!REG_P (addr_dst))
-    addr_dst = force_reg (DImode, addr_dst);
-  if (!REG_P (addr_src))
-    addr_src = force_reg (DImode, addr_src);
-  emit_insn (gen_aarch64_cpymemdi (addr_dst, addr_src, sz_reg));
+  /* All three registers are changed by the instruction, so each one
+     must be a fresh pseudo.  */
+  rtx dst_addr = copy_to_mode_reg (Pmode, XEXP (operands[0], 0));
+  rtx src_addr = copy_to_mode_reg (Pmode, XEXP (operands[1], 0));
+  rtx dst_mem = replace_equiv_address (operands[0], dst_addr);
+  rtx src_mem = replace_equiv_address (operands[1], src_addr);
+  rtx sz_reg = copy_to_mode_reg (DImode, operands[2]);
+  emit_insn (gen_aarch64_cpymemdi (dst_mem, src_mem, sz_reg));
 
   return true;
 }
@@ -24718,17 +24716,15 @@ aarch64_expand_setmem_mops (rtx *operands)
   if (!TARGET_MOPS)
     return false;
 
-  rtx addr_dst = XEXP (operands[0], 0);
-  rtx sz_reg = operands[1];
+  /* The first two registers are changed by the instruction, so both
+     of them must be a fresh pseudo.  */
+  rtx dst_addr = copy_to_mode_reg (Pmode, XEXP (operands[0], 0));
+  rtx dst_mem = replace_equiv_address (operands[0], dst_addr);
+  rtx sz_reg = copy_to_mode_reg (DImode, operands[1]);
   rtx val = operands[2];
-
-  if (!REG_P (sz_reg))
-   sz_reg = force_reg (DImode, sz_reg);
-  if (!REG_P (addr_dst))
-   addr_dst = force_reg (DImode, addr_dst);
-  if (!REG_P (val) && val != CONST0_RTX (QImode))
-   val = force_reg (QImode, val);
-  emit_insn (gen_aarch64_setmemdi (addr_dst, val, sz_reg));
+  if (val != CONST0_RTX (QImode))
+    val = force_reg (QImode, val);
+  emit_insn (gen_aarch64_setmemdi (dst_mem, val, sz_reg));
   return true;
 }
 
