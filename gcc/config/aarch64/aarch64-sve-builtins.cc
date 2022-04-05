@@ -1352,13 +1352,17 @@ function_resolver::infer_vector_or_tuple_type (unsigned int argno,
 			" expects a single SVE vector rather than a tuple",
 			actual, argno + 1, fndecl);
 	    else if (size_i == 0 && type_i != VECTOR_TYPE_svbool_t)
-	      error_at (location, "passing single vector %qT to argument %d"
-			" of %qE, which expects a tuple of %d vectors",
-			actual, argno + 1, fndecl, num_vectors);
+	      /* num_vectors is always != 1, so the singular isn't needed.  */
+	      error_n (location, num_vectors, "%qT%d%qE%d",
+		       "passing single vector %qT to argument %d"
+		       " of %qE, which expects a tuple of %d vectors",
+		       actual, argno + 1, fndecl, num_vectors);
 	    else
-	      error_at (location, "passing %qT to argument %d of %qE, which"
-			" expects a tuple of %d vectors", actual, argno + 1,
-			fndecl, num_vectors);
+	      /* num_vectors is always != 1, so the singular isn't needed.  */
+	      error_n (location, num_vectors, "%qT%d%qE%d",
+		       "passing %qT to argument %d of %qE, which"
+		       " expects a tuple of %d vectors", actual, argno + 1,
+		       fndecl, num_vectors);
 	    return NUM_TYPE_SUFFIXES;
 	  }
       }
