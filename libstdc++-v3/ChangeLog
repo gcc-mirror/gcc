@@ -1,3 +1,179 @@
+2022-04-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-02-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	* python/libstdcxx/v6/printers.py (StdErrorCodePrinter): Replace
+	code that call cat->name() on std::error_category objects.
+	Identify known categories by symbol name and use a hardcoded
+	name. Print error code values as enumerators where appopriate.
+	* testsuite/libstdc++-prettyprinters/cxx11.cc: Adjust expected
+	name of custom category. Check io_errc and future_errc errors.
+
+2022-04-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-03-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/105027
+	* include/std/bit (bit_cast): Add constraints.
+	* testsuite/26_numerics/bit/bit.cast/105027.cc: New test.
+
+2022-04-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-04-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/experimental/bits/fs_fwd.h (copy_file): Remove
+	incorrect noexcept from declaration.
+	* include/experimental/bits/fs_path.h (path::begin, path::end):
+	Add noexcept to declarations, to match definitions.
+
+2022-04-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-02-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/experimental/filesystem/operations/create_directories.cc:
+	Adjust expected results for Windows.
+
+2022-04-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-02-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/27_io/filesystem/iterators/error_reporting.cc: Use
+	autoconf macro to check whether d_type is present.
+	* testsuite/experimental/filesystem/iterators/error_reporting.cc:
+	Likewise.
+
+2022-04-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-02-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++17/fs_dir.cc (recursive_directory_iterator::increment):
+	Reset state to past-the-end iterator on error.
+	(fs::recursive_directory_iterator::pop(error_code&)): Likewise.
+	(fs::recursive_directory_iterator::pop()): Check _M_dirs before
+	it might get reset.
+	* src/filesystem/dir.cc (recursive_directory_iterator): Likewise,
+	for the TS implementation.
+	* testsuite/27_io/filesystem/iterators/error_reporting.cc: New test.
+	* testsuite/experimental/filesystem/iterators/error_reporting.cc: New test.
+
+2022-04-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-01-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/alloc_traits.h (allocator_traits<allocator<void>>):
+	Use std::_Construct for construct.
+
+2022-04-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-02-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/experimental/bits/fs_ops.h (fs::copy_file): Remove
+	noexcept.
+	(fs::create_directories): Likewise.
+	(fs::remove_all): Likewise.
+	* src/filesystem/ops.cc (fs::copy_file): Remove noexcept.
+	(fs::create_directories): Likewise.
+	(fs::remove_all): Likewise.
+
+2022-04-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-02-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/fs_fwd.h (filesystem::perms): Fix comment.
+
+2022-04-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-01-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/103650
+	* include/Makefile.am: Rename LT_OBJDIR and STDC_HEADERS.
+	* include/Makefile.in: Regenerate.
+	* testsuite/17_intro/headers/c++1998/103650.cc: New test.
+
+2022-04-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-01-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/104098
+	* include/bits/stl_iterator.h (reverse_iterator): Check
+	__cpp_lib_concepts instead of __cplusplus.
+
+2022-04-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-01-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	* configure.ac (GLIBCXX_ENABLE_DEBUG_FLAGS): Remove -gdwarf-4
+	from default flags.
+	* configure: Regenerate.
+
+2022-04-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-01-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/status_cxx2020.xml: Use final C++20 option
+	names.
+	* doc/html/manual/status.html: Regenerate.
+
+2022-04-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-02-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/allocator.h: Qualify std::allocator_traits in
+	deprecated warnings.
+	* libsupc++/exception (uncaught_exception): Add suggestion to
+	deprecated warning.
+
+2022-04-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-02-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/104542
+	* include/bits/uses_allocator_args.h (make_obj_using_allocator)
+	(uninitialized_construct_using_allocator): Add constexpr.
+	* testsuite/20_util/uses_allocator/make_obj.cc: Check constexpr.
+	* testsuite/20_util/uses_allocator/uninitialized_construct.cc: New test.
+
+2022-04-04  Timm Bäder  <tbaeder@redhat.com>
+
+	Backported from master:
+	2022-04-01  Timm Bäder  <tbaeder@redhat.com>
+
+	* include/bits/fs_ops.h: Fix filename in Doxygen comment.
+	* include/experimental/bits/fs_ops.h: Likewise.
+
+2022-04-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-03-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/uses_allocator_args.h: Remove incorrect copyright
+	notice.
+
+2022-04-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-02-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/104301
+	* acinclude.m4 (GLIBCXX_ENABLE_CSTDIO): Print different messages
+	for stdio_pure and stdio_posix options.
+	* configure: Regenerate.
+
 2022-02-17  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:
