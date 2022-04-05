@@ -138,6 +138,8 @@ struct GTY(()) ipa_ancestor_jf_data
   int formal_id;
   /* Flag with the same meaning like agg_preserve in ipa_pass_through_data.  */
   unsigned agg_preserved : 1;
+  /* When set, the operation should not have any effect on NULL pointers.  */
+  unsigned keep_null : 1;
 };
 
 /* A jump function for an aggregate part at a given offset, which describes how
@@ -431,6 +433,17 @@ ipa_get_jf_ancestor_type_preserved (struct ipa_jump_func *jfunc)
 {
   gcc_checking_assert (jfunc->type == IPA_JF_ANCESTOR);
   return jfunc->value.ancestor.agg_preserved;
+}
+
+/* Return if jfunc represents an operation whether we first check the formal
+   parameter for non-NULLness unless it does not matter because the offset is
+   zero anyway.  */
+
+static inline bool
+ipa_get_jf_ancestor_keep_null (struct ipa_jump_func *jfunc)
+{
+  gcc_checking_assert (jfunc->type == IPA_JF_ANCESTOR);
+  return jfunc->value.ancestor.keep_null;
 }
 
 /* Summary describing a single formal parameter.  */

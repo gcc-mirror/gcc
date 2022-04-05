@@ -275,17 +275,18 @@ public:
 class ipcp_bits_lattice
 {
 public:
-  bool bottom_p () { return m_lattice_val == IPA_BITS_VARYING; }
-  bool top_p () { return m_lattice_val == IPA_BITS_UNDEFINED; }
-  bool constant_p () { return m_lattice_val == IPA_BITS_CONSTANT; }
+  bool bottom_p () const { return m_lattice_val == IPA_BITS_VARYING; }
+  bool top_p () const { return m_lattice_val == IPA_BITS_UNDEFINED; }
+  bool constant_p () const { return m_lattice_val == IPA_BITS_CONSTANT; }
   bool set_to_bottom ();
   bool set_to_constant (widest_int, widest_int);
+  bool known_nonzero_p () const;
 
-  widest_int get_value () { return m_value; }
-  widest_int get_mask () { return m_mask; }
+  widest_int get_value () const { return m_value; }
+  widest_int get_mask () const { return m_mask; }
 
   bool meet_with (ipcp_bits_lattice& other, unsigned, signop,
-		  enum tree_code, tree);
+		  enum tree_code, tree, bool);
 
   bool meet_with (widest_int, widest_int, unsigned);
 
@@ -299,7 +300,7 @@ private:
      value is known to be constant.  */
   widest_int m_value, m_mask;
 
-  bool meet_with_1 (widest_int, widest_int, unsigned);
+  bool meet_with_1 (widest_int, widest_int, unsigned, bool);
   void get_value_and_mask (tree, widest_int *, widest_int *);
 };
 
@@ -1015,6 +1016,16 @@ ipcp_bits_lattice::set_to_constant (widest_int value, widest_int mask)
   return true;
 }
 
+/* Return true if any of the known bits are non-zero.  */
+
+bool
+ipcp_bits_lattice::known_nonzero_p () const
+{
+  if (!constant_p ())
+    return false;
+  return wi::ne_p (wi::bit_and (wi::bit_not (m_mask), m_value), 0);
+}
+
 /* Convert operand to value, mask form.  */
 
 void
@@ -1037,16 +1048,19 @@ ipcp_bits_lattice::get_value_and_mask (tree operand, widest_int *valuep, widest_
 /* Meet operation, similar to ccp_lattice_meet, we xor values
    if this->value, value have different values at same bit positions, we want
    to drop that bit to varying. Return true if mask is changed.
-   This function assumes that the lattice value is in CONSTANT state  */
+   This function assumes that the lattice value is in CONSTANT state.  If
+   DROP_ALL_ONES, mask out any known bits with value one afterwards.  */
 
 bool
 ipcp_bits_lattice::meet_with_1 (widest_int value, widest_int mask,
-				unsigned precision)
+				unsigned precision, bool drop_all_ones)
 {
   gcc_assert (constant_p ());
 
   widest_int old_mask = m_mask;
   m_mask = (m_mask | mask) | (m_value ^ value);
+  if (drop_all_ones)
+    m_mask |= m_value;
   m_value &= ~m_mask;
 
   if (wi::sext (m_mask, precision) == -1)
@@ -1072,16 +1086,18 @@ ipcp_bits_lattice::meet_with (widest_int value, widest_int mask,
       return set_to_constant (value, mask);
     }
 
-  return meet_with_1 (value, mask, precision);
+  return meet_with_1 (value, mask, precision, false);
 }
 
 /* Meet bits lattice with the result of bit_value_binop (other, operand)
    if code is binary operation or bit_value_unop (other) if code is unary op.
-   In the case when code is nop_expr, no adjustment is required. */
+   In the case when code is nop_expr, no adjustment is required.  If
+   DROP_ALL_ONES, mask out any known bits with value one afterwards.  */
 
 bool
 ipcp_bits_lattice::meet_with (ipcp_bits_lattice& other, unsigned precision,
-			      signop sgn, enum tree_code code, tree operand)
+			      signop sgn, enum tree_code code, tree operand,
+			      bool drop_all_ones)
 {
   if (other.bottom_p ())
     return set_to_bottom ();
@@ -1120,12 +1136,18 @@ ipcp_bits_lattice::meet_with (ipcp_bits_lattice& other, unsigned precision,
 
   if (top_p ())
     {
+      if (drop_all_ones)
+	{
+	  adjusted_mask |= adjusted_value;
+	  adjusted_value &= ~adjusted_mask;
+	}
       if (wi::sext (adjusted_mask, precision) == -1)
 	return set_to_bottom ();
       return set_to_constant (adjusted_value, adjusted_mask);
     }
   else
-    return meet_with_1 (adjusted_value, adjusted_mask, precision);
+    return meet_with_1 (adjusted_value, adjusted_mask, precision,
+			drop_all_ones);
 }
 
 /* Mark bot aggregate and scalar lattices as containing an unknown variable,
@@ -1362,6 +1384,9 @@ ipa_get_jf_ancestor_result (struct ipa_jump_func *jfunc, tree input)
 		     fold_build2 (MEM_REF, TREE_TYPE (TREE_TYPE (input)), input,
 				  build_int_cst (ptr_type_node, byte_offset)));
     }
+  else if (ipa_get_jf_ancestor_keep_null (jfunc)
+	   && zerop (input))
+    return input;
   else
     return NULL_TREE;
 }
@@ -2317,6 +2342,7 @@ propagate_bits_across_jump_function (cgraph_edge *cs, int idx,
       tree operand = NULL_TREE;
       enum tree_code code;
       unsigned src_idx;
+      bool keep_null = false;
 
       if (jfunc->type == IPA_JF_PASS_THROUGH)
 	{
@@ -2329,7 +2355,9 @@ propagate_bits_across_jump_function (cgraph_edge *cs, int idx,
 	{
 	  code = POINTER_PLUS_EXPR;
 	  src_idx = ipa_get_jf_ancestor_formal_id (jfunc);
-	  unsigned HOST_WIDE_INT offset = ipa_get_jf_ancestor_offset (jfunc) / BITS_PER_UNIT;
+	  unsigned HOST_WIDE_INT offset
+	    = ipa_get_jf_ancestor_offset (jfunc) / BITS_PER_UNIT;
+	  keep_null = (ipa_get_jf_ancestor_keep_null (jfunc) || !offset);
 	  operand = build_int_cstu (size_type_node, offset);
 	}
 
@@ -2346,18 +2374,17 @@ propagate_bits_across_jump_function (cgraph_edge *cs, int idx,
 	 result of x & 0xff == 0xff, which gets computed during ccp1 pass
 	 and we store it in jump function during analysis stage.  */
 
-      if (src_lats->bits_lattice.bottom_p ()
-	  && jfunc->bits)
-	return dest_lattice->meet_with (jfunc->bits->value, jfunc->bits->mask,
-					precision);
-      else
-	return dest_lattice->meet_with (src_lats->bits_lattice, precision, sgn,
-					code, operand);
+      if (!src_lats->bits_lattice.bottom_p ())
+	{
+	  bool drop_all_ones
+	    = keep_null && !src_lats->bits_lattice.known_nonzero_p ();
+
+	  return dest_lattice->meet_with (src_lats->bits_lattice, precision,
+					  sgn, code, operand, drop_all_ones);
+	}
     }
 
-  else if (jfunc->type == IPA_JF_ANCESTOR)
-    return dest_lattice->set_to_bottom ();
-  else if (jfunc->bits)
+  if (jfunc->bits)
     return dest_lattice->meet_with (jfunc->bits->value, jfunc->bits->mask,
 				    precision);
   else
