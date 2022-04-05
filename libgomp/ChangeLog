@@ -1,3 +1,9 @@
+2022-04-04  Tom de Vries  <tdevries@suse.de>
+
+	* testsuite/libgomp.fortran/examples-4/declare_target-1.f90: Use
+	on_device_arch_nvptx instead of offload_target_nvptx.
+	* testsuite/libgomp.fortran/examples-4/declare_target-2.f90: Same.
+
 2022-04-01  Tom de Vries  <tdevries@suse.de>
 
 	* testsuite/libgomp.fortran/examples-4/declare_target-1.f90: Define

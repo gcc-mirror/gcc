@@ -1,3 +1,32 @@
+2022-04-04  Alex Coplan  <alex.coplan@arm.com>
+
+	* doc/match-and-simplify.texi: Fix typos.
+
+2022-04-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/105144
+	* config/aarch64/t-aarch64 (s-aarch64-tune-md): Do move-if-change
+	only if configured with --enable-maintainer-mode, otherwise compare
+	tmp-aarch64-tune.md with $(srcdir)/config/aarch64/aarch64-tune.md and
+	if they differ, emit a message and fail.
+
+2022-04-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/105144
+	* config/aarch64/t-aarch64 (s-mddeps): Depend on s-aarch64-tune-md.
+	* config/aarch64/aarch64-tune.md: Regenerated.
+
+2022-04-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/105132
+	* tree-vect-stmts.cc (vectorizable_operation): Check that
+	the input vectors have the same number of elements.
+
+2022-04-04  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/105140
+	* fold-const.cc (fold_convertible_p): Allow a TYPE_P arg.
+
 2022-04-03  Jeff Law  <jeffreyalaw@gmail.com>
 
 	PR target/104987

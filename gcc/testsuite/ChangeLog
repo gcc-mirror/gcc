@@ -1,3 +1,31 @@
+2022-04-04  Jason Merrill  <jason@redhat.com>
+
+	PR c++/101894
+	* g++.dg/lookup/friend22.C: New test.
+
+2022-04-04  Jason Merrill  <jason@redhat.com>
+
+	PR c++/103852
+	DR 1286
+	* g++.dg/cpp0x/alias-decl-dr1286a.C: Default args now matter.
+	* g++.dg/cpp1z/class-deduction-alias1.C: New test.
+
+2022-04-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/105132
+	* gcc.dg/torture/pr105132.c: New testcase.
+
+2022-04-04  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/105140
+	* gcc.dg/pr105140.c: New testcase.
+
+2022-04-04  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/104740
+	* gdc.dg/simd_ctfe.d: Compile with target avx_runtime or
+	vect_sizes_16B_8B.
+
 2022-04-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/105123

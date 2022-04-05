@@ -1,3 +1,14 @@
+2022-04-04  Jason Merrill  <jason@redhat.com>
+
+	PR c++/101894
+	* decl.cc (duplicate_decls): Copy DECL_FRIEND_CONTEXT.
+
+2022-04-04  Jason Merrill  <jason@redhat.com>
+
+	PR c++/103852
+	DR 1286
+	* pt.cc (get_underlying_template): Compare default template args.
+
 2022-04-03  Benno Evers  <benno.evers@tenzir.com>
 	    Iain Sandoe  <iain@sandoe.co.uk>
 
