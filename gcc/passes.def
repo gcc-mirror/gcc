@@ -45,7 +45,6 @@ along with GCC; see the file COPYING3.  If not see
   NEXT_PASS (pass_warn_function_return);
   NEXT_PASS (pass_coroutine_early_expand_ifns);
   NEXT_PASS (pass_expand_omp);
-  NEXT_PASS (pass_walloca, /*strict_mode_p=*/true);
   NEXT_PASS (pass_build_cgraph_edges);
   TERMINATE_PASS_LIST (all_lowering_passes)
 
@@ -57,6 +56,7 @@ along with GCC; see the file COPYING3.  If not see
   PUSH_INSERT_PASSES_WITHIN (pass_build_ssa_passes)
       NEXT_PASS (pass_fixup_cfg);
       NEXT_PASS (pass_build_ssa);
+      NEXT_PASS (pass_walloca, /*strict_mode_p=*/true);
       NEXT_PASS (pass_warn_printf);
       NEXT_PASS (pass_warn_nonnull_compare);
       NEXT_PASS (pass_early_warn_uninitialized);
