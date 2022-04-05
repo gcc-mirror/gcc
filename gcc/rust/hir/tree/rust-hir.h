@@ -45,6 +45,41 @@ class HIRTypeVisitor;
 // forward decl for use in token tree method
 class Token;
 
+// Kind for downcasting various HIR nodes to other base classes when visiting
+// them
+enum BaseKind
+{
+  /* class ExternalItem */
+  EXTERNAL,
+  /* class TraitItem */
+  TRAIT_ITEM,
+  /* class VisItem */
+  VIS_ITEM,
+  /* class Item */
+  ITEM,
+  /* class ImplItem */
+  IMPL,
+  /* class Type */
+  TYPE,
+  /* class Stmt */
+  STMT,
+  /* class Expr */
+  EXPR,
+  /* class Pattern */
+  PATTERN,
+};
+
+class Node
+{
+public:
+  /**
+   * Get the kind of HIR node we are dealing with. This is useful for
+   * downcasting to more precise types when necessary, i.e going from an `Item*`
+   * to a `VisItem*`
+   */
+  virtual BaseKind get_hir_kind () = 0;
+};
+
 // A literal - value with a type. Used in LiteralExpr and LiteralPattern.
 struct Literal
 {
@@ -91,7 +126,7 @@ public:
 
 /* Base statement abstract class. Note that most "statements" are not allowed in
  * top-level module scope - only a subclass of statements called "items" are. */
-class Stmt
+class Stmt : public Node
 {
 public:
   // Unique pointer custom clone function
@@ -99,6 +134,8 @@ public:
   {
     return std::unique_ptr<Stmt> (clone_stmt_impl ());
   }
+
+  BaseKind get_hir_kind () override { return STMT; }
 
   virtual ~Stmt () {}
 
@@ -138,6 +175,8 @@ public:
     return std::unique_ptr<Item> (clone_item_impl ());
   }
 
+  BaseKind get_hir_kind () override { return ITEM; }
+
   std::string as_string () const override;
 
   /* Adds crate names to the vector passed by reference, if it can
@@ -171,7 +210,7 @@ protected:
 class ExprWithoutBlock;
 
 // Base expression HIR node - abstract
-class Expr
+class Expr : public Node
 {
   AST::AttrVec outer_attrs;
   Analysis::NodeMapping mappings;
@@ -212,6 +251,8 @@ public:
     Ident,
     Path,
   };
+
+  BaseKind get_hir_kind () override final { return EXPR; }
 
   const AST::AttrVec &get_outer_attrs () const { return outer_attrs; }
 
@@ -358,7 +399,7 @@ protected:
 };
 
 // Pattern base HIR node
-class Pattern
+class Pattern : public Node
 {
 public:
   enum PatternType
@@ -375,6 +416,8 @@ public:
     GROUPED,
     SLICE,
   };
+
+  BaseKind get_hir_kind () override final { return PATTERN; }
 
   // Unique pointer custom clone function
   std::unique_ptr<Pattern> clone_pattern () const
@@ -406,7 +449,7 @@ protected:
 class TraitBound;
 
 // Base class for types as represented in HIR - abstract
-class Type
+class Type : public Node
 {
 public:
   // Unique pointer custom clone function
@@ -417,6 +460,8 @@ public:
 
   // virtual destructor
   virtual ~Type () {}
+
+  BaseKind get_hir_kind () override final { return TYPE; }
 
   virtual std::string as_string () const = 0;
 
@@ -686,7 +731,7 @@ protected:
 };
 
 // Item used in trait declarations - abstract base class
-class TraitItem
+class TraitItem : public Node
 {
 public:
   enum TraitItemKind
@@ -695,6 +740,8 @@ public:
     CONST,
     TYPE
   };
+
+  BaseKind get_hir_kind () override final { return TRAIT_ITEM; }
 
 protected:
   // Constructor
@@ -728,7 +775,7 @@ public:
   virtual const AST::AttrVec &get_outer_attrs () const = 0;
 };
 
-class ImplItem
+class ImplItem : public Node
 {
 public:
   enum ImplItemType
@@ -739,6 +786,8 @@ public:
   };
 
   virtual ~ImplItem () {}
+
+  BaseKind get_hir_kind () override final { return IMPL; }
 
   // Unique pointer custom clone function
   std::unique_ptr<ImplItem> clone_inherent_impl_item () const

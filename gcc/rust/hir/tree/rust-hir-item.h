@@ -621,6 +621,8 @@ protected:
 public:
   using HIR::Stmt::accept_vis;
 
+  BaseKind get_hir_kind () override final { return VIS_ITEM; }
+
   /* Does the item have some kind of public visibility (non-default
    * visibility)? */
   bool has_visibility () const { return !visibility.is_error (); }
@@ -2744,7 +2746,7 @@ protected:
 };
 
 // Abstract base class for an item used inside an extern block
-class ExternalItem
+class ExternalItem : public Node
 {
   Analysis::NodeMapping mappings;
   AST::AttrVec outer_attrs;
@@ -2754,6 +2756,8 @@ class ExternalItem
 
 public:
   virtual ~ExternalItem () {}
+
+  BaseKind get_hir_kind () override final { return EXTERNAL; }
 
   // Returns whether item has outer attributes.
   bool has_outer_attrs () const { return !outer_attrs.empty (); }
