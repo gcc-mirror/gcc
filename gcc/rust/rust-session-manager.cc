@@ -311,8 +311,9 @@ Session::init ()
   // setup backend to GCC GIMPLE
   backend = rust_get_backend ();
 
-  // set the default crate name
-  options.set_crate_name (kDefaultCrateName);
+  // set the default crate name if crate name was unset
+  if (options.crate_name.empty ())
+    options.set_crate_name (kDefaultCrateName);
 }
 
 /* Initialise default options. Actually called before handle_option, unlike init
