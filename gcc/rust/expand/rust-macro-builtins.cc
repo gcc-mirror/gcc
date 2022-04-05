@@ -34,17 +34,12 @@ make_string (Location locus, std::string value)
 			  PrimitiveCoreType::CORETYPE_STR, {}, locus));
 }
 
-/* Parse a single string literal from the given delimited token tree,
-   and return the LiteralExpr for it. Allow for an optional trailing comma,
-   but otherwise enforce that these are the only tokens.  */
+/* Match the end token of a macro given the start delimiter of the macro */
 
-std::unique_ptr<AST::LiteralExpr>
-parse_single_string_literal (AST::DelimTokenTree &invoc_token_tree,
-			     Location invoc_locus)
+static inline TokenId
+macro_end_token (AST::DelimTokenTree &invoc_token_tree,
+		 Parser<MacroInvocLexer> &parser)
 {
-  MacroInvocLexer lex (invoc_token_tree.to_token_stream ());
-  Parser<MacroInvocLexer> parser (std::move (lex));
-
   auto last_token_id = TokenId::RIGHT_CURLY;
   switch (invoc_token_tree.get_delim_type ())
     {
@@ -62,6 +57,22 @@ parse_single_string_literal (AST::DelimTokenTree &invoc_token_tree,
       rust_assert (parser.skip_token (LEFT_SQUARE));
       break;
     }
+
+  return last_token_id;
+}
+
+/* Parse a single string literal from the given delimited token tree,
+   and return the LiteralExpr for it. Allow for an optional trailing comma,
+   but otherwise enforce that these are the only tokens.  */
+
+std::unique_ptr<AST::LiteralExpr>
+parse_single_string_literal (AST::DelimTokenTree &invoc_token_tree,
+			     Location invoc_locus)
+{
+  MacroInvocLexer lex (invoc_token_tree.to_token_stream ());
+  Parser<MacroInvocLexer> parser (std::move (lex));
+
+  auto last_token_id = macro_end_token (invoc_token_tree, parser);
 
   std::unique_ptr<AST::LiteralExpr> lit_expr = nullptr;
 
@@ -250,6 +261,46 @@ MacroBuiltin::compile_error (Location invoc_locus, AST::MacroInvocData &invoc)
   rust_error_at (invoc_locus, "%s", error_string.c_str ());
 
   return AST::ASTFragment::create_error ();
+}
+
+/* Expand builtin macro concat!(), which joins all the literal parameters
+   into a string with no delimiter. */
+
+AST::ASTFragment
+MacroBuiltin::concat (Location invoc_locus, AST::MacroInvocData &invoc)
+{
+  auto invoc_token_tree = invoc.get_delim_tok_tree ();
+  MacroInvocLexer lex (invoc_token_tree.to_token_stream ());
+  Parser<MacroInvocLexer> parser (std::move (lex));
+  auto str = std::string ();
+  bool has_error = false;
+
+  auto last_token_id = macro_end_token (invoc_token_tree, parser);
+
+  /* NOTE: concat! could accept no argument, so we don't have any checks here */
+  while (parser.peek_current_token ()->get_id () != last_token_id)
+    {
+      auto lit_expr = parser.parse_literal_expr ();
+      if (lit_expr)
+	{
+	  str += lit_expr->as_string ();
+	}
+      else
+	{
+	  rust_error_at (parser.peek_current_token ()->get_locus (),
+			 "argument must be a constant literal");
+	  has_error = true;
+	}
+      parser.maybe_skip_token (COMMA);
+    }
+
+  parser.skip_token (last_token_id);
+
+  if (has_error)
+    return AST::ASTFragment::create_error ();
+
+  auto node = AST::SingleASTNode (make_string (invoc_locus, str));
+  return AST::ASTFragment ({node});
 }
 
 } // namespace Rust
