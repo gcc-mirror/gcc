@@ -25,6 +25,7 @@
 #include "rust-ast-resolve.h"
 #include "rust-ast-lower.h"
 #include "rust-hir-type-check.h"
+#include "rust-privacy-check.h"
 #include "rust-tycheck-dump.h"
 #include "rust-compile.h"
 #include "rust-cfg-parser.h"
@@ -608,6 +609,9 @@ Session::parse_file (const char *filename)
 
   if (saw_errors ())
     return;
+
+  // privacy pass
+  Privacy::Resolver::resolve (hir);
 
   // do compile to gcc generic
   Compile::Context ctx (backend);

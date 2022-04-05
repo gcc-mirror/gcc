@@ -89,6 +89,9 @@ GRS_OBJS = \
     rust/rust-ast-resolve-expr.o \
     rust/rust-ast-resolve-type.o \
     rust/rust-hir-type-check.o \
+    rust/rust-privacy-check.o \
+    rust/rust-privacy-ctx.o \
+    rust/rust-reachability.o \
     rust/rust-tyty.o \
     rust/rust-tyctx.o \
     rust/rust-tyty-bounds.o \
@@ -278,6 +281,7 @@ RUST_INCLUDES = -I $(srcdir)/rust \
 	-I $(srcdir)/rust/resolve \
 	-I $(srcdir)/rust/util \
 	-I $(srcdir)/rust/typecheck \
+	-I $(srcdir)/rust/privacy \
 	-I $(srcdir)/rust/lint
 
 # add files that require cross-folder includes - currently rust-lang.o, rust-lex.o
@@ -336,6 +340,11 @@ rust/%.o: rust/resolve/%.cc
 
 # build rust/typecheck files in rust folder
 rust/%.o: rust/typecheck/%.cc
+	$(COMPILE) $(RUST_CXXFLAGS) $(RUST_INCLUDES) $<
+	$(POSTCOMPILE)
+
+# build rust/privacy files in rust folder
+rust/%.o: rust/privacy/%.cc
 	$(COMPILE) $(RUST_CXXFLAGS) $(RUST_INCLUDES) $<
 	$(POSTCOMPILE)
 
