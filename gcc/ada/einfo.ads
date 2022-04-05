@@ -3106,11 +3106,6 @@ package Einfo is
 --       Present in functions and procedures. Set for generated predicate
 --       functions.
 
---    Is_Predicate_Function_M
---       Present in functions and procedures. Set for special version of
---       predicate function generated for use in membership tests, where
---       raise expressions are transformed to return False.
-
 --    Is_Preelaborated
 --       Defined in all entities, set in E_Package and E_Generic_Package
 --       entities to which a pragma Preelaborate is applied, and also in
@@ -4010,8 +4005,9 @@ package Einfo is
 --       Defined in all types. Set for types for which (Has_Predicates is True)
 --       and for which a predicate procedure has been built that tests that the
 --       specified predicates are True. Contains the entity for the function
---       which takes a single argument of the given type, and returns True if
---       the predicate holds and False if it does not.
+--       which takes a single argument of the given type (and sometimes an
+--       additional Boolean parameter), and returns True if the predicate
+--       holds and False if it does not.
 --
 --       Note: flag Has_Predicate does not imply that Predicate_Function is set
 --       to a non-empty entity; this happens, for example, for itypes created
@@ -4024,11 +4020,14 @@ package Einfo is
 --       Note: the reason this is marked as a synthesized attribute is that the
 --       way this is stored is as an element of the Subprograms_For_Type field.
 
---    Predicate_Function_M (synthesized)
---       Defined in all types. Present only if Predicate_Function is present,
---       and only if the predicate function has Raise_Expression nodes. It
---       is the special version created for membership tests, where if one of
---       these raise expressions is executed, the result is to return False.
+--    Predicate_Expression
+--      Defined on functions. For the defining identifier of the subprogram
+--      declaration (not of the subprogram body) of a predicate function,
+--      yields the expression for the noninherited portion of the given
+--      predicate (except in the case where the inherited portion is
+--      non-empty and the non-inherited portion is empty, in which case the
+--      expression for the inherited portion is returned). Otherwise yields
+--      empty.
 
 --    Predicated_Parent
 --       Defined on itypes created by subtype indications, when the parent
@@ -5115,7 +5114,6 @@ package Einfo is
    --    Partial_DIC_Procedure               (synth)
    --    Partial_Invariant_Procedure         (synth)
    --    Predicate_Function                  (synth)
-   --    Predicate_Function_M                (synth)
    --    Root_Type                           (synth)
    --    Size_Clause                         (synth)
 
@@ -5591,7 +5589,6 @@ package Einfo is
    --    Is_Machine_Code_Subprogram           (non-generic case only)
    --    Is_Partial_Invariant_Procedure       (non-generic case only)
    --    Is_Predicate_Function                (non-generic case only)
-   --    Is_Predicate_Function_M              (non-generic case only)
    --    Is_Primitive
    --    Is_Primitive_Wrapper                 (non-generic case only)
    --    Is_Private_Descendant
@@ -5956,7 +5953,6 @@ package Einfo is
    --    Is_Partial_DIC_Procedure             (synth) (non-generic case only)
    --    Is_Partial_Invariant_Procedure       (non-generic case only)
    --    Is_Predicate_Function                (non-generic case only)
-   --    Is_Predicate_Function_M              (non-generic case only)
    --    Is_Primitive
    --    Is_Primitive_Wrapper                 (non-generic case only)
    --    Is_Private_Descendant

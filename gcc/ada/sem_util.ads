@@ -2930,6 +2930,26 @@ package Sem_Util is
    --  Typ, taking into account Predicates_Ignored and
    --  Predicate_Checks_Suppressed.
 
+   function Predicate_Failure_Expression
+    (Typ : Entity_Id; Inherited_OK : Boolean) return Node_Id;
+   --  If the given type or subtype is subject to a Predicate_Failure
+   --  aspect specification, then returns the specified expression.
+   --  Otherwise, if Inherited_OK is False then returns Empty.
+   --  Otherwise, if Typ denotes a subtype or a derived type then
+   --  returns the result of recursing on the ancestor subtype.
+   --  Otherwise, returns Empty.
+
+   function Predicate_Function_Needs_Membership_Parameter (Typ : Entity_Id)
+     return Boolean is
+     (Present (Predicate_Failure_Expression (Typ, Inherited_OK => True)));
+   --  The predicate function for some, but not all, subtypes needs to
+   --  know whether the predicate is being evaluated as part of a membership
+   --  test. The predicate function for such a subtype takes an additional
+   --  boolean to convey this information. This function returns True if this
+   --  additional parameter is needed. More specifically, this function
+   --  returns true if the Predicate_Failure aspect is specified for the
+   --  given subtype or for any of its "ancestor" subtypes.
+
    function Predicate_Tests_On_Arguments (Subp : Entity_Id) return Boolean;
    --  Subp is the entity for a subprogram call. This function returns True if
    --  predicate tests are required for the arguments in this call (this is the

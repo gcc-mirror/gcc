@@ -9927,9 +9927,10 @@ package body Exp_Util is
    --  Ghost mode.
 
    function Make_Predicate_Call
-     (Typ  : Entity_Id;
-      Expr : Node_Id;
-      Mem  : Boolean := False) return Node_Id
+     (Typ         : Entity_Id;
+      Expr        : Node_Id;
+      Static_Mem  : Boolean := False;
+      Dynamic_Mem : Node_Id := Empty) return Node_Id
    is
       Loc : constant Source_Ptr := Sloc (Expr);
 
@@ -9937,9 +9938,9 @@ package body Exp_Util is
       Saved_IGR : constant Node_Id         := Ignored_Ghost_Region;
       --  Save the Ghost-related attributes to restore on exit
 
-      Call    : Node_Id;
-      Func_Id : Entity_Id;
-
+      Call         : Node_Id;
+      Func_Id      : Entity_Id;
+      Param_Assocs : List_Id;
    begin
       Func_Id := Predicate_Function (Typ);
       pragma Assert (Present (Func_Id));
@@ -9948,12 +9949,6 @@ package body Exp_Util is
       --  ensure that the call is properly marked as Ghost.
 
       Set_Ghost_Mode (Typ);
-
-      --  Call special membership version if requested and available
-
-      if Mem and then Present (Predicate_Function_M (Typ)) then
-         Func_Id := Predicate_Function_M (Typ);
-      end if;
 
       --  Case of calling normal predicate function
 
@@ -9964,17 +9959,25 @@ package body Exp_Util is
       --  extensions are involved.
 
       if Is_Tagged_Type (Typ) then
-         Call :=
-           Make_Function_Call (Loc,
-             Name                   => New_Occurrence_Of (Func_Id, Loc),
-             Parameter_Associations =>
-               New_List (OK_Convert_To (Typ, Relocate_Node (Expr))));
+         Param_Assocs := New_List (OK_Convert_To (Typ, Relocate_Node (Expr)));
       else
-         Call :=
-           Make_Function_Call (Loc,
-             Name                   => New_Occurrence_Of (Func_Id, Loc),
-             Parameter_Associations => New_List (Relocate_Node (Expr)));
+         Param_Assocs := New_List (Relocate_Node (Expr));
       end if;
+
+      if Predicate_Function_Needs_Membership_Parameter (Typ) then
+         --  Pass in parameter indicating whether this call is for a
+         --  membership test.
+         Append ((if Present (Dynamic_Mem)
+                    then Dynamic_Mem
+                    else New_Occurrence_Of
+                           (Boolean_Literals (Static_Mem), Loc)),
+                 Param_Assocs);
+      end if;
+
+      Call :=
+        Make_Function_Call (Loc,
+          Name                   => New_Occurrence_Of (Func_Id, Loc),
+          Parameter_Associations => Param_Assocs);
 
       Restore_Ghost_Region (Saved_GM, Saved_IGR);
 
@@ -9990,161 +9993,6 @@ package body Exp_Util is
       Expr : Node_Id) return Node_Id
    is
       Loc : constant Source_Ptr := Sloc (Expr);
-
-      procedure Add_Failure_Expression (Args : List_Id);
-      --  Add the failure expression of pragma Predicate_Failure (if any) to
-      --  list Args.
-
-      ----------------------------
-      -- Add_Failure_Expression --
-      ----------------------------
-
-      procedure Add_Failure_Expression (Args : List_Id) is
-         function Failure_Expression return Node_Id;
-         pragma Inline (Failure_Expression);
-         --  Find aspect or pragma Predicate_Failure that applies to type Typ
-         --  and return its expression. Return Empty if no such annotation is
-         --  available.
-
-         function Is_OK_PF_Aspect (Asp : Node_Id) return Boolean;
-         pragma Inline (Is_OK_PF_Aspect);
-         --  Determine whether aspect Asp is a suitable Predicate_Failure
-         --  aspect that applies to type Typ.
-
-         function Is_OK_PF_Pragma (Prag : Node_Id) return Boolean;
-         pragma Inline (Is_OK_PF_Pragma);
-         --  Determine whether pragma Prag is a suitable Predicate_Failure
-         --  pragma that applies to type Typ.
-
-         procedure Replace_Subtype_Reference (N : Node_Id);
-         --  Replace the current instance of type Typ denoted by N with
-         --  expression Expr.
-
-         ------------------------
-         -- Failure_Expression --
-         ------------------------
-
-         function Failure_Expression return Node_Id is
-            Item : Node_Id;
-
-         begin
-            --  The management of the rep item chain involves "inheritance" of
-            --  parent type chains. If a parent [sub]type is already subject to
-            --  pragma Predicate_Failure, then the pragma will also appear in
-            --  the chain of the child [sub]type, which in turn may possess a
-            --  pragma of its own. Avoid order-dependent issues by inspecting
-            --  the rep item chain directly. Note that routine Get_Pragma may
-            --  return a parent pragma.
-
-            Item := First_Rep_Item (Typ);
-            while Present (Item) loop
-
-               --  Predicate_Failure appears as an aspect
-
-               if Nkind (Item) = N_Aspect_Specification
-                 and then Is_OK_PF_Aspect (Item)
-               then
-                  return Expression (Item);
-
-               --  Predicate_Failure appears as a pragma
-
-               elsif Nkind (Item) = N_Pragma
-                 and then Is_OK_PF_Pragma (Item)
-               then
-                  return
-                    Get_Pragma_Arg
-                      (Next (First (Pragma_Argument_Associations (Item))));
-               end if;
-
-               Next_Rep_Item (Item);
-            end loop;
-
-            return Empty;
-         end Failure_Expression;
-
-         ---------------------
-         -- Is_OK_PF_Aspect --
-         ---------------------
-
-         function Is_OK_PF_Aspect (Asp : Node_Id) return Boolean is
-         begin
-            --  To qualify, the aspect must apply to the type subjected to the
-            --  predicate check.
-
-            return
-              Chars (Identifier (Asp)) = Name_Predicate_Failure
-                and then Present (Entity (Asp))
-                and then Entity (Asp) = Typ;
-         end Is_OK_PF_Aspect;
-
-         ---------------------
-         -- Is_OK_PF_Pragma --
-         ---------------------
-
-         function Is_OK_PF_Pragma (Prag : Node_Id) return Boolean is
-            Args    : constant List_Id := Pragma_Argument_Associations (Prag);
-            Typ_Arg : Node_Id;
-
-         begin
-            --  Nothing to do when the pragma does not denote Predicate_Failure
-
-            if Pragma_Name (Prag) /= Name_Predicate_Failure then
-               return False;
-
-            --  Nothing to do when the pragma lacks arguments, in which case it
-            --  is illegal.
-
-            elsif Is_Empty_List (Args) then
-               return False;
-            end if;
-
-            Typ_Arg := Get_Pragma_Arg (First (Args));
-
-            --  To qualify, the local name argument of the pragma must denote
-            --  the type subjected to the predicate check.
-
-            return
-              Is_Entity_Name (Typ_Arg)
-                and then Present (Entity (Typ_Arg))
-                and then Entity (Typ_Arg) = Typ;
-         end Is_OK_PF_Pragma;
-
-         --------------------------------
-         --  Replace_Subtype_Reference --
-         --------------------------------
-
-         procedure Replace_Subtype_Reference (N : Node_Id) is
-         begin
-            Rewrite (N, New_Copy_Tree (Expr));
-         end Replace_Subtype_Reference;
-
-         procedure Replace_Subtype_References is
-           new Replace_Type_References_Generic (Replace_Subtype_Reference);
-
-         --  Local variables
-
-         PF_Expr : constant Node_Id := Failure_Expression;
-         Expr    : Node_Id;
-
-      --  Start of processing for Add_Failure_Expression
-
-      begin
-         if Present (PF_Expr) then
-
-            --  Replace any occurrences of the current instance of the type
-            --  with the object subjected to the predicate check.
-
-            Expr := New_Copy_Tree (PF_Expr);
-            Replace_Subtype_References (Expr, Typ);
-
-            --  The failure expression appears as the third argument of the
-            --  Check pragma.
-
-            Append_To (Args,
-              Make_Pragma_Argument_Association (Loc,
-                Expression => Expr));
-         end if;
-      end Add_Failure_Expression;
 
       --  Local variables
 
@@ -10187,8 +10035,6 @@ package body Exp_Util is
 
       --  If the subtype is subject to pragma Predicate_Failure, add the
       --  failure expression as an additional parameter.
-
-      Add_Failure_Expression (Args);
 
       return
         Make_Pragma (Loc,
@@ -14339,7 +14185,6 @@ package body Exp_Util is
 
          elsif Get_TSS_Name (S) /= TSS_Null
            and then not Is_Predicate_Function (S)
-           and then not Is_Predicate_Function_M (S)
          then
             return False;
          end if;

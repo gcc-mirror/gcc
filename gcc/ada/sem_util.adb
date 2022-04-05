@@ -16892,6 +16892,8 @@ package body Sem_Util is
 
             elsif Nkind (P) = N_Aspect_Specification
               and then Nkind (Parent (P)) = N_Subtype_Declaration
+              and then Underlying_Type (Defining_Identifier (Parent (P))) =
+                       Underlying_Type (Typ)
             then
                return True;
 
@@ -16899,7 +16901,14 @@ package body Sem_Util is
               and then Get_Pragma_Id (P) in Pragma_Predicate
                                           | Pragma_Predicate_Failure
             then
-               return True;
+               declare
+                  Arg : constant Entity_Id :=
+                    Entity (Expression (Get_Argument (P)));
+               begin
+                  if Underlying_Type (Arg) = Underlying_Type (Typ) then
+                     return True;
+                  end if;
+               end;
             end if;
 
             P := Parent (P);
@@ -16933,7 +16942,6 @@ package body Sem_Util is
            and then Ekind (Scope (Entity (N))) in E_Function | E_Procedure
            and then
              (Is_Predicate_Function (Scope (Entity (N)))
-               or else Is_Predicate_Function_M (Scope (Entity (N)))
                or else Is_Invariant_Procedure (Scope (Entity (N)))
                or else Is_Partial_Invariant_Procedure (Scope (Entity (N)))
                or else Is_DIC_Procedure (Scope (Entity (N))));
@@ -26540,6 +26548,69 @@ package body Sem_Util is
    end Predicate_Enabled;
 
    ----------------------------------
+   -- Predicate_Failure_Expression --
+   ----------------------------------
+
+   function Predicate_Failure_Expression
+    (Typ : Entity_Id; Inherited_OK : Boolean) return Node_Id
+   is
+      PF_Aspect : constant Node_Id :=
+        Find_Aspect (Typ, Aspect_Predicate_Failure);
+   begin
+      --  Check for Predicate_Failure aspect specification via an
+      --  aspect_specification (as opposed to via a pragma).
+
+      if Present (PF_Aspect) then
+         if Inherited_OK or else Entity (PF_Aspect) = Typ then
+            return Expression (PF_Aspect);
+         else
+            return Empty;
+         end if;
+      end if;
+
+      --  Check for Predicate_Failure aspect specification via a pragma.
+
+      declare
+         Rep_Item : Node_Id := First_Rep_Item (Typ);
+      begin
+         while Present (Rep_Item) loop
+            if Nkind (Rep_Item) = N_Pragma
+               and then Get_Pragma_Id (Rep_Item) = Pragma_Predicate_Failure
+            then
+               declare
+                  Arg1 : constant Node_Id :=
+                    Get_Pragma_Arg
+                      (First (Pragma_Argument_Associations (Rep_Item)));
+                  Arg2 : constant Node_Id :=
+                    Get_Pragma_Arg
+                      (Next (First (Pragma_Argument_Associations (Rep_Item))));
+               begin
+                  if Inherited_OK or else
+                     (Nkind (Arg1) in N_Has_Entity
+                      and then Entity (Arg1) = Typ)
+                  then
+                     return Arg2;
+                  end if;
+               end;
+            end if;
+
+            Next_Rep_Item (Rep_Item);
+         end loop;
+      end;
+
+      --  If we are interested in an inherited Predicate_Failure aspect
+      --  and we have an ancestor to inherit from, then recursively check
+      --  for that case.
+
+      if Inherited_OK and then Present (Nearest_Ancestor (Typ)) then
+         return Predicate_Failure_Expression (Nearest_Ancestor (Typ),
+                                              Inherited_OK => True);
+      end if;
+
+      return Empty;
+   end Predicate_Failure_Expression;
+
+   ----------------------------------
    -- Predicate_Tests_On_Arguments --
    ----------------------------------
 
@@ -26574,9 +26645,7 @@ package body Sem_Util is
       --  would cause infinite recursion.
 
       elsif Ekind (Subp) = E_Function
-        and then (Is_Predicate_Function   (Subp)
-                    or else
-                  Is_Predicate_Function_M (Subp))
+        and then Is_Predicate_Function (Subp)
       then
          return False;
 
@@ -27029,9 +27098,7 @@ package body Sem_Util is
      (Typ      : Entity_Id;
       From_Typ : Entity_Id)
    is
-      Pred_Func   : Entity_Id;
-      Pred_Func_M : Entity_Id;
-
+      Pred_Func : Entity_Id;
    begin
       if Present (Typ) and then Present (From_Typ) then
          pragma Assert (Is_Type (Typ) and then Is_Type (From_Typ));
@@ -27044,7 +27111,6 @@ package body Sem_Util is
          end if;
 
          Pred_Func   := Predicate_Function (From_Typ);
-         Pred_Func_M := Predicate_Function_M (From_Typ);
 
          --  The setting of the attributes is intentionally conservative. This
          --  prevents accidental clobbering of enabled attributes.
@@ -27055,10 +27121,6 @@ package body Sem_Util is
 
          if Present (Pred_Func) and then No (Predicate_Function (Typ)) then
             Set_Predicate_Function (Typ, Pred_Func);
-         end if;
-
-         if Present (Pred_Func_M) and then No (Predicate_Function_M (Typ)) then
-            Set_Predicate_Function_M (Typ, Pred_Func_M);
          end if;
       end if;
    end Propagate_Predicate_Attributes;

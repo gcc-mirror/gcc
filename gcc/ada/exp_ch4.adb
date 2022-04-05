@@ -6962,7 +6962,9 @@ package body Exp_Ch4 is
            and then Nkind (Rop) /= N_Range
          then
             if not In_Range_Check then
-               R_Op := Make_Predicate_Call (Rtyp, Lop, Mem => True);
+               --  Indicate via Static_Mem parameter that this predicate
+               --  evaluation is for a membership test.
+               R_Op := Make_Predicate_Call (Rtyp, Lop, Static_Mem => True);
             else
                R_Op := New_Occurrence_Of (Standard_True, Loc);
             end if;
