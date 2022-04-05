@@ -462,7 +462,7 @@
 		    (const_string "TI"))
 	    (eq_attr "alternative" "5")
 	      (cond [(match_test "TARGET_AVX512FP16")
-		       (const_string "HI")
+		       (const_string "HF")
 		     (match_test "TARGET_AVX")
 		       (const_string "TI")
 		     (ior (not (match_test "TARGET_SSE2"))
