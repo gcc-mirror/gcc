@@ -14261,7 +14261,7 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 
 	    type = TREE_TYPE (ovar);
 	    if (lang_hooks.decls.omp_array_data (ovar, true))
-	      var = lang_hooks.decls.omp_array_data (ovar, false);
+	      var = lang_hooks.decls.omp_array_data (var, false);
 	    else if ((OMP_CLAUSE_CODE (c) == OMP_CLAUSE_USE_DEVICE_ADDR
 		      && !omp_is_reference (ovar)
 		      && !omp_is_allocatable_or_ptr (ovar))
