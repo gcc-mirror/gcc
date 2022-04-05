@@ -28,8 +28,8 @@ namespace Privacy {
  */
 enum ReachLevel
 {
-  Private,
-  Public,
+  Unreachable,
+  Reachable,
 };
 
 class PrivacyContext

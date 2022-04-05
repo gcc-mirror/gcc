@@ -37,7 +37,7 @@ class ReachabilityVisitor : public HIR::HIRVisItemVisitor
 {
 public:
   ReachabilityVisitor (PrivacyContext &ctx)
-    : current_level (ReachLevel::Private), ctx (ctx)
+    : current_level (ReachLevel::Unreachable), ctx (ctx)
   {}
 
   virtual void visit (HIR::Module &mod);
