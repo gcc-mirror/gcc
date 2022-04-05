@@ -63,9 +63,6 @@
 ;; Iterator for all 16-bit scalar floating point modes (HF, BF)
 (define_mode_iterator HFBF [HF BF])
 
-;; Iterator for all scalar floating point modes (HF, SF, DF and TF)
-(define_mode_iterator GPF_TF_F16 [HF SF DF TF])
-
 ;; Iterator for all scalar floating point modes suitable for moving, including
 ;; special BF type (HF, SF, DF, TF and BF)
 (define_mode_iterator GPF_TF_F16_MOV [HF BF SF DF TF])
