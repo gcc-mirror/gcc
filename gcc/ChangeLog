@@ -1,3 +1,86 @@
+2022-04-05  David Malcolm  <dmalcolm@redhat.com>
+
+	* doc/extend.texi (Common Function Attributes): Document that
+	'access' does not imply 'nonnull'.
+
+2022-04-05  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/105139
+	* config/i386/mmx.md (*movv2qi_internal):
+	Change insn mode of alternative 5 to HF for TARGET_AVX512FP16.
+
+2022-04-05  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.md (aarch64_cpymemdi): Turn into a
+	define_expand and turn operands 0 and 1 from REGs to MEMs.
+	(*aarch64_cpymemdi): New pattern.
+	(aarch64_setmemdi): Turn into a define_expand and turn operand 0
+	from a REG to a MEM.
+	(*aarch64_setmemdi): New pattern.
+	* config/aarch64/aarch64.cc (aarch64_expand_cpymem_mops): Use
+	copy_to_mode_reg on all three registers.  Replace the original
+	MEM addresses rather than creating wild reads and writes.
+	(aarch64_expand_setmem_mops): Likewise for the size and for the
+	destination memory and address.
+
+2022-04-05  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/103147
+	* config/aarch64/aarch64-protos.h (aarch64_simd_switcher): New class.
+	* config/aarch64/aarch64-sve-builtins.h (sve_switcher): Inherit
+	from aarch64_simd_switcher.
+	* config/aarch64/aarch64-builtins.cc (aarch64_simd_tuple_modes):
+	New variable.
+	(aarch64_lookup_simd_builtin_type): Use it instead of TYPE_MODE.
+	(register_tuple_type): Add more asserts.  Expect the alignment
+	of the structure to be subject to flag_pack_struct and
+	maximum_field_alignment.  Set aarch64_simd_tuple_modes.
+	(aarch64_simd_switcher::aarch64_simd_switcher): New function.
+	(aarch64_simd_switcher::~aarch64_simd_switcher): Likewise.
+	(handle_arm_neon_h): Hold an aarch64_simd_switcher throughout.
+	(aarch64_general_init_builtins): Hold an aarch64_simd_switcher
+	while calling aarch64_init_simd_builtins.
+	* config/aarch64/aarch64-sve-builtins.cc (sve_switcher::sve_switcher)
+	(sve_switcher::~sve_switcher): Remove code now performed by
+	aarch64_simd_switcher.
+
+2022-04-05  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/104897
+	* config/aarch64/aarch64-sve-builtins.cc
+	(function_resolver::infer_vector_or_tuple_type): Use error_n
+	for "%d vectors" messages.
+
+2022-04-05  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* omp-low.cc (lower_omp_target): Use outer context looked-up 'var' as
+	argument to lang_hooks.decls.omp_array_data, instead of 'ovar' from
+	current clause.
+
+2022-04-05  Richard Biener  <rguenther@suse.de>
+
+	PR c/105151
+	* passes.def (pass_walloca): Move early instance into
+	pass_build_ssa_passes to make SSA form available.
+
+2022-04-05  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/101908
+	* config/i386/i386.cc (ix86_split_stlf_stall_load): New
+	function
+	(ix86_reorg): Call ix86_split_stlf_stall_load.
+	* config/i386/i386.opt (-param=x86-stlf-window-ninsns=): New
+	param.
+
+2022-04-05  Alexandre Oliva  <oliva@adacore.com>
+
+	* targhooks.cc (default_zero_call_used_regs): Attempt to group
+	regs that the target refuses to use in their natural modes.
+	(zcur_select_mode_rtx): New.
+	* regs.h (struct target_regs): Add x_hard_regno_max_nregs.
+	(hard_regno_max_nregs): Define.
+	* reginfo.cc (init_reg_modes_target): Set hard_regno_max_nregs.
+
 2022-04-04  Alex Coplan  <alex.coplan@arm.com>
 
 	* doc/match-and-simplify.texi: Fix typos.

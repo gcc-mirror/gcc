@@ -1,3 +1,17 @@
+2022-04-05  Jason Merrill  <jason@redhat.com>
+
+	PR c++/103852
+	DR 1286
+	* pt.cc (do_class_deduction): Pedwarn for renaming alias in C++17.
+
+2022-04-05  Jason Merrill  <jason@redhat.com>
+
+	PR c++/101677
+	* name-lookup.h (struct cp_binding_level): Add requires_expression
+	bit-field.
+	* parser.cc (cp_parser_requires_expression): Set it.
+	(synthesize_implicit_template_parm): Check it.
+
 2022-04-04  Jason Merrill  <jason@redhat.com>
 
 	PR c++/101894

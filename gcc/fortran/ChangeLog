@@ -1,3 +1,21 @@
+2022-04-05  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* trans-openmp.cc (gfc_split_omp_clauses): Fix mask for
+	EXEC_OMP_MASKED_TASKLOOP.
+
+2022-04-05  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/104210
+	* arith.cc (eval_intrinsic): Avoid NULL pointer dereference.
+	(gfc_zero_size_array): Likewise.
+
+2022-04-05  Harald Anlauf  <anlauf@gmx.de>
+	    Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/105138
+	* intrinsic.cc (gfc_is_intrinsic): When a symbol refers to a
+	RECURSIVE procedure, it cannot be an INTRINSIC.
+
 2022-03-30  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/100892

@@ -1,3 +1,7 @@
+2022-04-05  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* testsuite/libgomp.fortran/use_device_ptr-4.f90: New testcase.
+
 2022-04-04  Tom de Vries  <tdevries@suse.de>
 
 	* testsuite/libgomp.fortran/examples-4/declare_target-1.f90: Use

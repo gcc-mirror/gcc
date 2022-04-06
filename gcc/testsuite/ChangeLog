@@ -1,3 +1,98 @@
+2022-04-05  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* gfortran.dg/gomp/masked-taskloop.f90: New.
+
+2022-04-05  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/105139
+	* gcc.target/i386/pr105139.c: New test.
+
+2022-04-05  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/104210
+	* gfortran.dg/pr104210.f90: New test.
+
+2022-04-05  Harald Anlauf  <anlauf@gmx.de>
+	    Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/105138
+	* gfortran.dg/recursive_reference_3.f90: New test.
+
+2022-04-05  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/mops_4.c: New test.
+
+2022-04-05  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/103147
+	* gcc.target/aarch64/pr103147-1.c: New test.
+	* gcc.target/aarch64/pr103147-2.c: Likewise.
+	* gcc.target/aarch64/pr103147-3.c: Likewise.
+	* gcc.target/aarch64/pr103147-4.c: Likewise.
+	* gcc.target/aarch64/pr103147-5.c: Likewise.
+	* gcc.target/aarch64/pr103147-6.c: Likewise.
+	* gcc.target/aarch64/pr103147-7.c: Likewise.
+	* gcc.target/aarch64/pr103147-8.c: Likewise.
+	* gcc.target/aarch64/pr103147-9.c: Likewise.
+	* gcc.target/aarch64/pr103147-10.c: Likewise.
+	* g++.target/aarch64/pr103147-1.C: Likewise.
+	* g++.target/aarch64/pr103147-2.C: Likewise.
+	* g++.target/aarch64/pr103147-3.C: Likewise.
+	* g++.target/aarch64/pr103147-4.C: Likewise.
+	* g++.target/aarch64/pr103147-5.C: Likewise.
+	* g++.target/aarch64/pr103147-6.C: Likewise.
+	* g++.target/aarch64/pr103147-7.C: Likewise.
+	* g++.target/aarch64/pr103147-8.C: Likewise.
+	* g++.target/aarch64/pr103147-9.C: Likewise.
+	* g++.target/aarch64/pr103147-10.C: Likewise.
+
+2022-04-05  Jason Merrill  <jason@redhat.com>
+
+	PR c++/103852
+	DR 1286
+	* g++.dg/cpp1z/class-deduction-alias1.C: Expect warning.
+
+2022-04-05  Jason Merrill  <jason@redhat.com>
+
+	PR c++/101677
+	* g++.dg/cpp2a/concepts-pr67178.C: Adjust error.
+	* g++.dg/cpp2a/concepts-requires28.C: New test.
+
+2022-04-05  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp0x/noexcept34.C: Allow more wording variation.
+
+2022-04-05  Richard Biener  <rguenther@suse.de>
+
+	PR c/105151
+	* gcc.dg/gimplefe-error-14.c: New testcase.
+
+2022-04-05  Robin Dapp  <rdapp@linux.ibm.com>
+
+	* gcc.target/s390/zvector/vec-double-compile.c: Expect vl
+	  instead of vc*.
+	* gcc.target/s390/zvector/vec-float-compile.c: Dito.
+	* gcc.target/s390/zvector/vec-signed-compile.c: Dito.
+	* gcc.target/s390/zvector/vec-unsigned-compile.c: Dito.
+
+2022-04-05  Robin Dapp  <rdapp@linux.ibm.com>
+
+	* gcc.target/s390/ifcvt-two-insns-bool.c: Change nle to h.
+	* gcc.target/s390/ifcvt-two-insns-int.c: Dito.
+	* gcc.target/s390/ifcvt-two-insns-long.c: Dito.
+
+2022-04-05  Robin Dapp  <rdapp@linux.ibm.com>
+
+	* gcc.dg/Wuse-after-free-2.c:
+	Add -fno-tree-loop-distribute-patterns in order to avoid
+	rawmemchr.
+
+2022-04-05  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr101908-1.c: New test.
+	* gcc.target/i386/pr101908-2.c: New test.
+	* gcc.target/i386/pr101908-3.c: New test.
+
 2022-04-04  Jason Merrill  <jason@redhat.com>
 
 	PR c++/101894
