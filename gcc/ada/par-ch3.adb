@@ -2788,7 +2788,7 @@ package body Ch3 is
             else
                P_Index_Subtype_Def_With_Fixed_Lower_Bound (Subtype_Mark_Node);
 
-               Error_Msg_GNAT_Extension ("fixed-lower-bound array");
+               Error_Msg_GNAT_Extension ("fixed-lower-bound array", Token_Ptr);
             end if;
 
             exit when Token = Tok_Right_Paren or else Token = Tok_Of;
@@ -2857,7 +2857,8 @@ package body Ch3 is
                      P_Index_Subtype_Def_With_Fixed_Lower_Bound
                        (Subtype_Mark_Node);
 
-                     Error_Msg_GNAT_Extension ("fixed-lower-bound array");
+                     Error_Msg_GNAT_Extension
+                       ("fixed-lower-bound array", Token_Ptr);
                   end if;
 
                   exit when Token = Tok_Right_Paren or else Token = Tok_Of;
@@ -3359,7 +3360,7 @@ package body Ch3 is
             --  later during analysis), and scan to the next token.
 
             if Token = Tok_Box then
-               Error_Msg_GNAT_Extension ("fixed-lower-bound array");
+               Error_Msg_GNAT_Extension ("fixed-lower-bound array", Token_Ptr);
 
                Expr_Node := Empty;
                Scan;

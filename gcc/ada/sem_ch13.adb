@@ -2601,10 +2601,8 @@ package body Sem_Ch13 is
                         Aspect);
 
                   elsif Is_Imported_Intrinsic then
-                     Error_Msg_N
-                       ("aspect % on intrinsic function is an extension: " &
-                        "use -gnatX",
-                        Aspect);
+                     Error_Msg_GNAT_Extension
+                       ("aspect % on intrinsic function", Sloc (Aspect));
 
                   else
                      Error_Msg_N
@@ -4411,11 +4409,7 @@ package body Sem_Ch13 is
 
                when Aspect_Designated_Storage_Model =>
                   if not Extensions_Allowed then
-                     Error_Msg_N
-                       ("aspect only allowed if extensions enabled",
-                        Aspect);
-                     Error_Msg_N
-                       ("\unit must be compiled with -gnatX switch", Aspect);
+                     Error_Msg_GNAT_Extension ("aspect %", Sloc (Aspect));
 
                   elsif not Is_Type (E)
                     or else Ekind (E) /= E_Access_Type
@@ -4430,11 +4424,7 @@ package body Sem_Ch13 is
 
                when Aspect_Storage_Model_Type =>
                   if not Extensions_Allowed then
-                     Error_Msg_N
-                       ("aspect only allowed if extensions enabled",
-                        Aspect);
-                     Error_Msg_N
-                       ("\unit must be compiled with -gnatX switch", Aspect);
+                     Error_Msg_GNAT_Extension ("aspect %", Sloc (Aspect));
 
                   elsif not Is_Type (E)
                     or else not Is_Immutably_Limited_Type (E)

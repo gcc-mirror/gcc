@@ -896,12 +896,19 @@ package body Errout is
    -- Error_Msg_GNAT_Extension --
    ------------------------------
 
-   procedure Error_Msg_GNAT_Extension (Extension : String) is
-      Loc : constant Source_Ptr := Token_Ptr;
+   procedure Error_Msg_GNAT_Extension (Extension : String; Loc : Source_Ptr) is
    begin
       if not Extensions_Allowed then
-         Error_Msg (Extension & " is a 'G'N'A'T specific extension", Loc);
-         Error_Msg ("\unit must be compiled with -gnatX switch", Loc);
+         Error_Msg (Extension & " is a 'G'N'A'T-specific extension", Loc);
+
+         if No (Ada_Version_Pragma) then
+            Error_Msg ("\unit must be compiled with -gnatX "
+                       & "or use pragma Extensions_Allowed (On)", Loc);
+         else
+            Error_Msg_Sloc := Sloc (Ada_Version_Pragma);
+            Error_Msg ("\incompatible with Ada version set#", Loc);
+            Error_Msg ("\must use pragma Extensions_Allowed (On)", Loc);
+         end if;
       end if;
    end Error_Msg_GNAT_Extension;
 

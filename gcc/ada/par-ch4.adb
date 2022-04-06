@@ -1783,9 +1783,8 @@ package body Ch4 is
                      Box_With_Identifier_Present := True;
                      Scan; -- past ">"
                   else
-                     Error_Msg
-                       ("Identifier within box only supported under -gnatX",
-                        Token_Ptr);
+                     Error_Msg_GNAT_Extension
+                       ("identifier within box", Token_Ptr);
                      Box_Present := True;
                      --  Avoid cascading errors by ignoring the identifier
                   end if;
@@ -1816,10 +1815,8 @@ package body Ch4 is
                Id := P_Defining_Identifier;
 
                if not Extensions_Allowed then
-                  Error_Msg
-                    ("IS following component association"
-                       & " only supported under -gnatX",
-                     Token_Ptr);
+                  Error_Msg_GNAT_Extension
+                    ("IS following component association", Token_Ptr);
                elsif Box_With_Identifier_Present then
                   Error_Msg
                     ("Both identifier-in-box and trailing identifier"
