@@ -6318,12 +6318,21 @@ mips_callee_copies (cumulative_args_t, const function_arg_info &arg)
    The C++ FE used to remove zero-width bit-fields in GCC 11 and earlier.
    To make a proper diagnostic, this function will set
    HAS_CXX_ZERO_WIDTH_BF to true once a C++ zero-width bit-field shows up,
-   and then ignore it. Then the caller can determine if this zero-width
-   bit-field will make a difference and emit a -Wpsabi inform.  */
+   and then ignore it.
+
+   We had failed to ignore C++17 empty bases in GCC 7, 8, 9, 10, and 11.
+   This caused an ABI incompatibility between C++14 and C++17.  This is
+   fixed now and to make a proper diagnostic, this function will set
+   HAS_CXX17_EMPTY_BASE to true once a C++17 empty base shows up, and
+   then ignore it.
+
+   The caller should use the value of HAS_CXX17_EMPTY_BASE and/or
+   HAS_CXX_ZERO_WIDTH_BF to emit a proper -Wpsabi inform.  */
 
 static int
 mips_fpr_return_fields (const_tree valtype, tree *fields,
-			bool *has_cxx_zero_width_bf)
+			bool *has_cxx_zero_width_bf,
+			bool *has_cxx17_empty_base)
 {
   tree field;
   int i;
@@ -6339,6 +6348,12 @@ mips_fpr_return_fields (const_tree valtype, tree *fields,
     {
       if (TREE_CODE (field) != FIELD_DECL)
 	continue;
+
+      if (cxx17_empty_base_field_p (field))
+	{
+	  *has_cxx17_empty_base = true;
+	  continue;
+	}
 
       if (DECL_FIELD_CXX_ZERO_WIDTH_BIT_FIELD (field))
 	{
@@ -6375,8 +6390,13 @@ mips_return_in_msb (const_tree valtype)
 
   tree fields[2];
   bool has_cxx_zero_width_bf = false;
+
+  /* Its value is not used.  */
+  bool has_cxx17_empty_base = false;
+
   return (mips_fpr_return_fields (valtype, fields,
-				  &has_cxx_zero_width_bf) == 0
+				  &has_cxx_zero_width_bf,
+				  &has_cxx17_empty_base) == 0
 	  || has_cxx_zero_width_bf);
 }
 
@@ -6473,11 +6493,18 @@ mips_function_value_1 (const_tree valtype, const_tree fn_decl_or_type,
       mode = promote_function_mode (valtype, mode, &unsigned_p, func, 1);
 
       bool has_cxx_zero_width_bf = false;
+      bool has_cxx17_empty_base = false;
       int use_fpr = mips_fpr_return_fields (valtype, fields,
-					    &has_cxx_zero_width_bf);
+					    &has_cxx_zero_width_bf,
+					    &has_cxx17_empty_base);
+
+      /* If has_cxx_zero_width_bf and has_cxx17_empty_base are both
+	 true, it *happens* that there is no ABI change.  So we won't
+	 inform in this case.  */
       if (TARGET_HARD_FLOAT
 	  && warn_psabi
 	  && has_cxx_zero_width_bf
+	  && !has_cxx17_empty_base
 	  && use_fpr != 0)
 	{
 	  static unsigned last_reported_type_uid;
@@ -6498,6 +6525,27 @@ mips_function_value_1 (const_tree valtype, const_tree fn_decl_or_type,
 
       if (has_cxx_zero_width_bf)
 	use_fpr = 0;
+
+      if (TARGET_HARD_FLOAT
+	  && warn_psabi
+	  && use_fpr != 0
+	  && has_cxx17_empty_base)
+	{
+	  static unsigned last_reported_type_uid;
+	  unsigned uid = TYPE_UID (TYPE_MAIN_VARIANT (valtype));
+	  if (uid != last_reported_type_uid)
+	    {
+	      static const char *url
+		= CHANGES_ROOT_URL
+		  "gcc-12/changes.html#mips_cxx17_empty_bases";
+	      inform (input_location,
+		      "the ABI for returning a value with C++17 empty "
+		      "bases but otherwise an aggregate with only one or "
+		      "two floating-point fields was changed in GCC "
+		      "%{12.1%}", url);
+	      last_reported_type_uid = uid;
+	    }
+	}
 
       /* Handle structures whose fields are returned in $f0/$f2.  */
       switch (use_fpr)
