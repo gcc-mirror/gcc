@@ -30091,7 +30091,7 @@ do_class_deduction (tree ptype, tree tmpl, tree init,
 
   /* If CTAD succeeded but the type doesn't have any explicit deduction
      guides, this deduction might not be what the user intended.  */
-  if (fndecl != error_mark_node && !any_dguides_p)
+  if (fndecl != error_mark_node && !any_dguides_p && (complain & tf_warning))
     {
       if ((!DECL_IN_SYSTEM_HEADER (fndecl)
 	   || global_dc->dc_warn_system_headers)
