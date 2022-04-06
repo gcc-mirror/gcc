@@ -434,8 +434,6 @@ PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
 PERL = @PERL@
 PLUGIN_GCN = @PLUGIN_GCN@
-PLUGIN_GCN_CPPFLAGS = @PLUGIN_GCN_CPPFLAGS@
-PLUGIN_GCN_LDFLAGS = @PLUGIN_GCN_LDFLAGS@
 PLUGIN_GCN_LIBS = @PLUGIN_GCN_LIBS@
 PLUGIN_NVPTX = @PLUGIN_NVPTX@
 PLUGIN_NVPTX_CPPFLAGS = @PLUGIN_NVPTX_CPPFLAGS@
@@ -574,12 +572,12 @@ libgomp_la_SOURCES = alloc.c atomic.c barrier.c critical.c env.c \
 # AMD GCN plugin
 @PLUGIN_GCN_TRUE@libgomp_plugin_gcn_version_info = -version-info $(libtool_VERSION)
 @PLUGIN_GCN_TRUE@libgomp_plugin_gcn_la_SOURCES = plugin/plugin-gcn.c
-@PLUGIN_GCN_TRUE@libgomp_plugin_gcn_la_CPPFLAGS = $(AM_CPPFLAGS) $(PLUGIN_GCN_CPPFLAGS) \
+@PLUGIN_GCN_TRUE@libgomp_plugin_gcn_la_CPPFLAGS = $(AM_CPPFLAGS) \
 @PLUGIN_GCN_TRUE@	-D_GNU_SOURCE
 
-@PLUGIN_GCN_TRUE@libgomp_plugin_gcn_la_LDFLAGS =  \
-@PLUGIN_GCN_TRUE@	$(libgomp_plugin_gcn_version_info) \
-@PLUGIN_GCN_TRUE@	$(lt_host_flags) $(PLUGIN_GCN_LDFLAGS)
+@PLUGIN_GCN_TRUE@libgomp_plugin_gcn_la_LDFLAGS = $(libgomp_plugin_gcn_version_info) \
+@PLUGIN_GCN_TRUE@	$(lt_host_flags)
+
 @PLUGIN_GCN_TRUE@libgomp_plugin_gcn_la_LIBADD = libgomp.la $(PLUGIN_GCN_LIBS)
 @PLUGIN_GCN_TRUE@libgomp_plugin_gcn_la_LIBTOOLFLAGS = --tag=disable-static
 nodist_noinst_HEADERS = libgomp_f.h
