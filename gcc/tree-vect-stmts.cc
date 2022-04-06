@@ -1690,7 +1690,8 @@ static tree permute_vec_elements (vec_info *, tree, tree, tree, stmt_vec_info,
    as well as whether the target does.
 
    VLS_TYPE says whether the statement is a load or store and VECTYPE
-   is the type of the vector being loaded or stored.  MEMORY_ACCESS_TYPE
+   is the type of the vector being loaded or stored.  SLP_NODE is the SLP
+   node that contains the statement, or null if none.  MEMORY_ACCESS_TYPE
    says how the load or store is going to be implemented and GROUP_SIZE
    is the number of load or store statements in the containing group.
    If the access is a gather load or scatter store, GS_INFO describes
@@ -1703,17 +1704,23 @@ static tree permute_vec_elements (vec_info *, tree, tree, tree, stmt_vec_info,
 
 static void
 check_load_store_for_partial_vectors (loop_vec_info loop_vinfo, tree vectype,
+				      slp_tree slp_node,
 				      vec_load_store_type vls_type,
 				      int group_size,
 				      vect_memory_access_type
 				      memory_access_type,
-				      unsigned int ncopies,
 				      gather_scatter_info *gs_info,
 				      tree scalar_mask)
 {
   /* Invariant loads need no special support.  */
   if (memory_access_type == VMAT_INVARIANT)
     return;
+
+  unsigned int nvectors;
+  if (slp_node)
+    nvectors = SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node);
+  else
+    nvectors = vect_get_num_copies (loop_vinfo, vectype);
 
   vec_loop_masks *masks = &LOOP_VINFO_MASKS (loop_vinfo);
   machine_mode vecmode = TYPE_MODE (vectype);
@@ -1732,7 +1739,8 @@ check_load_store_for_partial_vectors (loop_vec_info loop_vinfo, tree vectype,
 	  LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo) = false;
 	  return;
 	}
-      vect_record_loop_mask (loop_vinfo, masks, ncopies, vectype, scalar_mask);
+      vect_record_loop_mask (loop_vinfo, masks, nvectors, vectype,
+			     scalar_mask);
       return;
     }
 
@@ -1754,7 +1762,8 @@ check_load_store_for_partial_vectors (loop_vec_info loop_vinfo, tree vectype,
 	  LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo) = false;
 	  return;
 	}
-      vect_record_loop_mask (loop_vinfo, masks, ncopies, vectype, scalar_mask);
+      vect_record_loop_mask (loop_vinfo, masks, nvectors, vectype,
+			     scalar_mask);
       return;
     }
 
@@ -1784,7 +1793,7 @@ check_load_store_for_partial_vectors (loop_vec_info loop_vinfo, tree vectype,
   /* We might load more scalars than we need for permuting SLP loads.
      We checked in get_group_load_store_type that the extra elements
      don't leak into a new vector.  */
-  auto get_valid_nvectors = [] (poly_uint64 size, poly_uint64 nunits)
+  auto group_memory_nvectors = [](poly_uint64 size, poly_uint64 nunits)
   {
     unsigned int nvectors;
     if (can_div_away_from_zero_p (size, nunits, &nvectors))
@@ -1799,7 +1808,7 @@ check_load_store_for_partial_vectors (loop_vec_info loop_vinfo, tree vectype,
   if (targetm.vectorize.get_mask_mode (vecmode).exists (&mask_mode)
       && can_vec_mask_load_store_p (vecmode, mask_mode, is_load))
     {
-      unsigned int nvectors = get_valid_nvectors (group_size * vf, nunits);
+      nvectors = group_memory_nvectors (group_size * vf, nunits);
       vect_record_loop_mask (loop_vinfo, masks, nvectors, vectype, scalar_mask);
       using_partial_vectors_p = true;
     }
@@ -1807,7 +1816,7 @@ check_load_store_for_partial_vectors (loop_vec_info loop_vinfo, tree vectype,
   machine_mode vmode;
   if (get_len_load_store_mode (vecmode, is_load).exists (&vmode))
     {
-      unsigned int nvectors = get_valid_nvectors (group_size * vf, nunits);
+      nvectors = group_memory_nvectors (group_size * vf, nunits);
       vec_loop_lens *lens = &LOOP_VINFO_LENS (loop_vinfo);
       unsigned factor = (vecmode == vmode) ? 1 : GET_MODE_UNIT_SIZE (vecmode);
       vect_record_loop_len (loop_vinfo, lens, nvectors, vectype, factor);
@@ -7571,9 +7580,10 @@ vectorizable_store (vec_info *vinfo,
 
       if (loop_vinfo
 	  && LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo))
-	check_load_store_for_partial_vectors (loop_vinfo, vectype, vls_type,
-					      group_size, memory_access_type,
-					      ncopies, &gs_info, mask);
+	check_load_store_for_partial_vectors (loop_vinfo, vectype, slp_node,
+					      vls_type, group_size,
+					      memory_access_type, &gs_info,
+					      mask);
 
       if (slp_node
 	  && !vect_maybe_update_slp_op_vectype (SLP_TREE_CHILDREN (slp_node)[0],
@@ -8921,9 +8931,10 @@ vectorizable_load (vec_info *vinfo,
 
       if (loop_vinfo
 	  && LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo))
-	check_load_store_for_partial_vectors (loop_vinfo, vectype, VLS_LOAD,
-					      group_size, memory_access_type,
-					      ncopies, &gs_info, mask);
+	check_load_store_for_partial_vectors (loop_vinfo, vectype, slp_node,
+					      VLS_LOAD, group_size,
+					      memory_access_type, &gs_info,
+					      mask);
 
       if (dump_enabled_p ()
 	  && memory_access_type != VMAT_ELEMENTWISE
