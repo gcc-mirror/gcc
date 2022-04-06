@@ -1,3 +1,11 @@
+2022-04-06  Thomas Schwinge  <thomas@codesourcery.com>
+
+	Backport from mainline:
+	2022-04-06  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* doc/install.texi: Don't document '--with-hsa-runtime',
+	'--with-hsa-runtime-include', '--with-hsa-runtime-lib'.
+
 2022-05-06  Marcel Vollweiler  <marcel@codesourcery.com>
 
 	Backport from mainline:

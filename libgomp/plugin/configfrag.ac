@@ -91,35 +91,6 @@ AC_SUBST(PLUGIN_NVPTX_CPPFLAGS)
 AC_SUBST(PLUGIN_NVPTX_LDFLAGS)
 AC_SUBST(PLUGIN_NVPTX_LIBS)
 
-# Look for HSA run-time, its includes and libraries
-
-HSA_RUNTIME_INCLUDE=
-HSA_RUNTIME_LIB=
-AC_SUBST(HSA_RUNTIME_INCLUDE)
-AC_SUBST(HSA_RUNTIME_LIB)
-
-AC_ARG_WITH(hsa-runtime,
-	[AS_HELP_STRING([--with-hsa-runtime=PATH],
-		[specify prefix directory for installed HSA run-time package.
-		 Equivalent to --with-hsa-runtime-include=PATH/include
-		 plus --with-hsa-runtime-lib=PATH/lib])])
-AC_ARG_WITH(hsa-runtime-include,
-	[AS_HELP_STRING([--with-hsa-runtime-include=PATH],
-		[specify directory for installed HSA run-time include files])])
-AC_ARG_WITH(hsa-runtime-lib,
-	[AS_HELP_STRING([--with-hsa-runtime-lib=PATH],
-		[specify directory for the installed HSA run-time library])])
-if test "x$with_hsa_runtime" != x; then
-  HSA_RUNTIME_INCLUDE=$with_hsa_runtime/include
-  HSA_RUNTIME_LIB=$with_hsa_runtime/lib
-fi
-if test "x$with_hsa_runtime_include" != x; then
-  HSA_RUNTIME_INCLUDE=$with_hsa_runtime_include
-fi
-if test "x$with_hsa_runtime_lib" != x; then
-  HSA_RUNTIME_LIB=$with_hsa_runtime_lib
-fi
-
 PLUGIN_GCN=0
 PLUGIN_GCN_LIBS=
 AC_SUBST(PLUGIN_GCN)

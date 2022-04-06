@@ -3,6 +3,17 @@
 	Backport from mainline:
 	2022-04-06  Thomas Schwinge  <thomas@codesourcery.com>
 
+	* plugin/configfrag.ac: Remove '--with-hsa-runtime',
+	'--with-hsa-runtime-include', '--with-hsa-runtime-lib' processing.
+	* Makefile.in: Regenerate.
+	* configure: Likewise.
+	* testsuite/Makefile.in: Likewise.
+
+2022-04-06  Thomas Schwinge  <thomas@codesourcery.com>
+
+	Backport from mainline:
+	2022-04-06  Thomas Schwinge  <thomas@codesourcery.com>
+
 	* plugin/Makefrag.am (libgomp_plugin_gcn_la_CPPFLAGS): Don't
 	consider 'PLUGIN_GCN_CPPFLAGS'.
 	(libgomp_plugin_gcn_la_LDFLAGS): Don't consider

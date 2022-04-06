@@ -675,8 +675,6 @@ offload_targets
 offload_plugins
 PLUGIN_GCN_LIBS
 PLUGIN_GCN
-HSA_RUNTIME_LIB
-HSA_RUNTIME_INCLUDE
 PLUGIN_NVPTX_LIBS
 PLUGIN_NVPTX_LDFLAGS
 PLUGIN_NVPTX_CPPFLAGS
@@ -834,9 +832,6 @@ enable_maintainer_mode
 with_cuda_driver
 with_cuda_driver_include
 with_cuda_driver_lib
-with_hsa_runtime
-with_hsa_runtime_include
-with_hsa_runtime_lib
 enable_linux_futex
 enable_tls
 enable_symvers
@@ -1518,16 +1513,6 @@ Optional Packages:
                           files
   --with-cuda-driver-lib=PATH
                           specify directory for the installed CUDA driver
-                          library
-  --with-hsa-runtime=PATH specify prefix directory for installed HSA run-time
-                          package. Equivalent to
-                          --with-hsa-runtime-include=PATH/include plus
-                          --with-hsa-runtime-lib=PATH/lib
-  --with-hsa-runtime-include=PATH
-                          specify directory for installed HSA run-time include
-                          files
-  --with-hsa-runtime-lib=PATH
-                          specify directory for the installed HSA run-time
                           library
   --with-gcc-major-version-only
                           use only GCC major number in filesystem paths
@@ -11429,7 +11414,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11432 "configure"
+#line 11417 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11535,7 +11520,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11538 "configure"
+#line 11523 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -15235,42 +15220,6 @@ PLUGIN_NVPTX_DYNAMIC=0
 
 
 
-
-# Look for HSA run-time, its includes and libraries
-
-HSA_RUNTIME_INCLUDE=
-HSA_RUNTIME_LIB=
-
-
-
-
-# Check whether --with-hsa-runtime was given.
-if test "${with_hsa_runtime+set}" = set; then :
-  withval=$with_hsa_runtime;
-fi
-
-
-# Check whether --with-hsa-runtime-include was given.
-if test "${with_hsa_runtime_include+set}" = set; then :
-  withval=$with_hsa_runtime_include;
-fi
-
-
-# Check whether --with-hsa-runtime-lib was given.
-if test "${with_hsa_runtime_lib+set}" = set; then :
-  withval=$with_hsa_runtime_lib;
-fi
-
-if test "x$with_hsa_runtime" != x; then
-  HSA_RUNTIME_INCLUDE=$with_hsa_runtime/include
-  HSA_RUNTIME_LIB=$with_hsa_runtime/lib
-fi
-if test "x$with_hsa_runtime_include" != x; then
-  HSA_RUNTIME_INCLUDE=$with_hsa_runtime_include
-fi
-if test "x$with_hsa_runtime_lib" != x; then
-  HSA_RUNTIME_LIB=$with_hsa_runtime_lib
-fi
 
 PLUGIN_GCN=0
 PLUGIN_GCN_LIBS=
