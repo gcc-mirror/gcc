@@ -1,6 +1,5 @@
 set cuda_driver_include "@CUDA_DRIVER_INCLUDE@"
 set cuda_driver_lib "@CUDA_DRIVER_LIB@"
-set hsa_runtime_lib "@HSA_RUNTIME_LIB@"
 
 set offload_plugins "@offload_plugins@"
 set offload_targets "@offload_targets@"
