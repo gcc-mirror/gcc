@@ -1,5 +1,5 @@
 // { dg-do compile }
-// { dg-options "-mabi=64 -mhard-float" }
+// { dg-options "-mabi=64 -mhard-float -ffat-lto-objects" }
 
 struct __attribute__((aligned(16))) test {
   int x[0];
