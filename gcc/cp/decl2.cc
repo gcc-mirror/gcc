@@ -1336,7 +1336,7 @@ splice_template_attributes (tree *attr_p, tree decl)
   tree late_attrs = NULL_TREE;
   tree *q = &late_attrs;
 
-  if (!p)
+  if (!p || *p == error_mark_node)
     return NULL_TREE;
 
   for (; *p; )
@@ -1631,7 +1631,7 @@ void
 cplus_decl_attributes (tree *decl, tree attributes, int flags)
 {
   if (*decl == NULL_TREE || *decl == void_type_node
-      || *decl == error_mark_node)
+      || *decl == error_mark_node || attributes == error_mark_node)
     return;
 
   /* Add implicit "omp declare target" attribute if requested.  */
@@ -1668,7 +1668,7 @@ cplus_decl_attributes (tree *decl, tree attributes, int flags)
 
   cp_check_const_attributes (attributes);
 
-  if ((flag_openmp || flag_openmp_simd) && attributes != error_mark_node)
+  if (flag_openmp || flag_openmp_simd)
     {
       bool diagnosed = false;
       for (tree *pa = &attributes; *pa; )
