@@ -5970,8 +5970,12 @@ repropagate_negates (void)
   FOR_EACH_VEC_ELT (plus_negates, i, negate)
     {
       gimple *user = get_single_immediate_use (negate);
-
       if (!user || !is_gimple_assign (user))
+	continue;
+
+      tree negateop = gimple_assign_rhs1 (SSA_NAME_DEF_STMT (negate));
+      if (TREE_CODE (negateop) == SSA_NAME
+	  && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (negateop))
 	continue;
 
       /* The negate operand can be either operand of a PLUS_EXPR
@@ -5996,9 +6000,9 @@ repropagate_negates (void)
 	  if (gimple_assign_rhs2 (user) == negate)
 	    {
 	      tree rhs1 = gimple_assign_rhs1 (user);
-	      tree rhs2 = gimple_assign_rhs1 (SSA_NAME_DEF_STMT (negate));
 	      gimple_stmt_iterator gsi = gsi_for_stmt (user);
-	      gimple_assign_set_rhs_with_ops (&gsi, MINUS_EXPR, rhs1, rhs2);
+	      gimple_assign_set_rhs_with_ops (&gsi, MINUS_EXPR, rhs1,
+					      negateop);
 	      update_stmt (user);
 	    }
 	}
@@ -6007,21 +6011,20 @@ repropagate_negates (void)
 	  if (gimple_assign_rhs1 (user) == negate)
 	    {
 	      /* We have
-	           x = -a
+		   x = -negateop
 		   y = x - b
 		 which we transform into
-		   x = a + b
+		   x = negateop + b
 		   y = -x .
 		 This pushes down the negate which we possibly can merge
 		 into some other operation, hence insert it into the
 		 plus_negates vector.  */
 	      gimple *feed = SSA_NAME_DEF_STMT (negate);
-	      tree a = gimple_assign_rhs1 (feed);
 	      tree b = gimple_assign_rhs2 (user);
 	      gimple_stmt_iterator gsi = gsi_for_stmt (feed);
 	      gimple_stmt_iterator gsi2 = gsi_for_stmt (user);
 	      tree x = make_ssa_name (TREE_TYPE (gimple_assign_lhs (feed)));
-	      gimple *g = gimple_build_assign (x, PLUS_EXPR, a, b);
+	      gimple *g = gimple_build_assign (x, PLUS_EXPR, negateop, b);
 	      gsi_insert_before (&gsi2, g, GSI_SAME_STMT);
 	      gimple_assign_set_rhs_with_ops (&gsi2, NEGATE_EXPR, x);
 	      user = gsi_stmt (gsi2);
@@ -6032,13 +6035,11 @@ repropagate_negates (void)
 	    }
 	  else
 	    {
-	      /* Transform "x = -a; y = b - x" into "y = b + a", getting
-	         rid of one operation.  */
-	      gimple *feed = SSA_NAME_DEF_STMT (negate);
-	      tree a = gimple_assign_rhs1 (feed);
+	      /* Transform "x = -negateop; y = b - x" into "y = b + negateop",
+		 getting rid of one operation.  */
 	      tree rhs1 = gimple_assign_rhs1 (user);
 	      gimple_stmt_iterator gsi = gsi_for_stmt (user);
-	      gimple_assign_set_rhs_with_ops (&gsi, PLUS_EXPR, rhs1, a);
+	      gimple_assign_set_rhs_with_ops (&gsi, PLUS_EXPR, rhs1, negateop);
 	      update_stmt (gsi_stmt (gsi));
 	    }
 	}
