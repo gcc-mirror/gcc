@@ -6440,6 +6440,8 @@ vectorizable_operation (vec_info *vinfo,
 	  new_temp = make_ssa_name (vec_dest, new_stmt);
 	  gimple_assign_set_lhs (new_stmt, new_temp);
 	  vect_finish_stmt_generation (vinfo, stmt_info, new_stmt, gsi);
+	  if (using_emulated_vectors_p)
+	    suppress_warning (new_stmt, OPT_Wvector_operation_performance);
 
 	  /* Enter the combined value into the vector cond hash so we don't
 	     AND it with a loop mask again.  */
