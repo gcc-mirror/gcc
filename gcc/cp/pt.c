@@ -29567,7 +29567,7 @@ do_class_deduction (tree ptype, tree tmpl, tree init,
 
   /* If CTAD succeeded but the type doesn't have any explicit deduction
      guides, this deduction might not be what the user intended.  */
-  if (call != error_mark_node && !any_dguides_p)
+  if (call != error_mark_node && !any_dguides_p && (complain & tf_warning))
     {
       tree fndecl = cp_get_callee_fndecl_nofold (call);
       if (fndecl != NULL_TREE
