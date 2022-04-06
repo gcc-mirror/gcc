@@ -382,7 +382,7 @@ struct undo
   struct undo *next;
   enum undo_kind kind;
   union { rtx r; int i; machine_mode m; struct insn_link *l; } old_contents;
-  union { rtx *r; int *i; struct insn_link **l; } where;
+  union { rtx *r; int *i; int regno; struct insn_link **l; } where;
 };
 
 /* Record a bunch of changes to be undone, up to MAX_UNDO of them.
@@ -761,10 +761,11 @@ do_SUBST_INT (int *into, int newval)
    well.  */
 
 static void
-do_SUBST_MODE (rtx *into, machine_mode newval)
+subst_mode (int regno, machine_mode newval)
 {
   struct undo *buf;
-  machine_mode oldval = GET_MODE (*into);
+  rtx reg = regno_reg_rtx[regno];
+  machine_mode oldval = GET_MODE (reg);
 
   if (oldval == newval)
     return;
@@ -775,14 +776,12 @@ do_SUBST_MODE (rtx *into, machine_mode newval)
     buf = XNEW (struct undo);
 
   buf->kind = UNDO_MODE;
-  buf->where.r = into;
+  buf->where.regno = regno;
   buf->old_contents.m = oldval;
-  adjust_reg_mode (*into, newval);
+  adjust_reg_mode (reg, newval);
 
   buf->next = undobuf.undos, undobuf.undos = buf;
 }
-
-#define SUBST_MODE(INTO, NEWVAL)  do_SUBST_MODE (&(INTO), (NEWVAL))
 
 /* Similar to SUBST, but NEWVAL is a LOG_LINKS expression.  */
 
@@ -3186,7 +3185,7 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
 		    newpat_dest = gen_rtx_REG (compare_mode, regno);
 		  else
 		    {
-		      SUBST_MODE (regno_reg_rtx[regno], compare_mode);
+		      subst_mode (regno, compare_mode);
 		      newpat_dest = regno_reg_rtx[regno];
 		    }
 		}
@@ -3576,7 +3575,7 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
 		ni2dest = gen_rtx_REG (new_mode, REGNO (i2dest));
 	      else
 		{
-		  SUBST_MODE (regno_reg_rtx[REGNO (i2dest)], new_mode);
+		  subst_mode (REGNO (i2dest), new_mode);
 		  ni2dest = regno_reg_rtx[REGNO (i2dest)];
 		}
 
@@ -3712,7 +3711,7 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
 		newdest = gen_rtx_REG (split_mode, REGNO (i2dest));
 	      else
 		{
-		  SUBST_MODE (regno_reg_rtx[REGNO (i2dest)], split_mode);
+		  subst_mode (REGNO (i2dest), split_mode);
 		  newdest = regno_reg_rtx[REGNO (i2dest)];
 		}
 	    }
@@ -4082,7 +4081,7 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
       for (undo = undobuf.undos; undo; undo = undo->next)
 	if (undo->kind == UNDO_MODE)
 	  {
-	    rtx reg = *undo->where.r;
+	    rtx reg = regno_reg_rtx[undo->where.regno];
 	    machine_mode new_mode = GET_MODE (reg);
 	    machine_mode old_mode = undo->old_contents.m;
 
@@ -4755,7 +4754,8 @@ undo_to_marker (void *marker)
 	  *undo->where.i = undo->old_contents.i;
 	  break;
 	case UNDO_MODE:
-	  adjust_reg_mode (*undo->where.r, undo->old_contents.m);
+	  adjust_reg_mode (regno_reg_rtx[undo->where.regno],
+			   undo->old_contents.m);
 	  break;
 	case UNDO_LINKS:
 	  *undo->where.l = undo->old_contents.l;
@@ -6819,7 +6819,7 @@ simplify_set (rtx x)
 		new_dest = gen_rtx_REG (compare_mode, regno);
 	      else
 		{
-		  SUBST_MODE (regno_reg_rtx[regno], compare_mode);
+		  subst_mode (regno, compare_mode);
 		  new_dest = regno_reg_rtx[regno];
 		}
 
