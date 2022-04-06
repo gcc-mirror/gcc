@@ -54,7 +54,28 @@ const char *kHIRDumpFile = "gccrs.hir.dump";
 const char *kHIRTypeResolutionDumpFile = "gccrs.type-resolution.dump";
 const char *kTargetOptionsDumpFile = "gccrs.target-options.dump";
 
-const std::string kDefaultCrateName = "example";
+const std::string kDefaultCrateName = "rust_out";
+
+static std::string
+infer_crate_name (const std::string filename)
+{
+  if (filename == "-")
+    return kDefaultCrateName;
+
+  std::string crate = std::string (filename);
+  size_t path_sep = crate.find_last_of (file_separator);
+
+  // find the base filename
+  if (path_sep != std::string::npos)
+    crate.erase (0, path_sep + 1);
+
+  // find the file stem name (remove file extension)
+  size_t ext_position = crate.find_last_of ('.');
+  if (ext_position != std::string::npos)
+    crate.erase (ext_position);
+
+  return crate;
+}
 
 // Implicitly enable a target_feature (and recursively enable dependencies).
 void
@@ -311,10 +332,6 @@ Session::init ()
 
   // setup backend to GCC GIMPLE
   backend = rust_get_backend ();
-
-  // set the default crate name if crate name was unset
-  if (options.crate_name.empty ())
-    options.set_crate_name (kDefaultCrateName);
 }
 
 /* Initialise default options. Actually called before handle_option, unlike init
@@ -479,6 +496,25 @@ Session::enable_dump (std::string arg)
 void
 Session::parse_files (int num_files, const char **files)
 {
+  rust_assert (num_files > 0);
+
+  if (options.crate_name.empty ())
+    {
+      /* HACK: We use the first file to infer the crate name, which might be
+       * incorrect: since rustc only allows one file to be supplied in the
+       * command-line */
+      auto crate_name = infer_crate_name (files[0]);
+      rust_debug_loc (Location (), "inferred crate name: %s",
+		      crate_name.c_str ());
+      if (!options.set_crate_name (crate_name))
+	{
+	  rust_inform (Location (),
+		       "crate name inferred from the input file %<%s%>",
+		       files[0]);
+	  return;
+	}
+    }
+
   auto mappings = Analysis::Mappings::get ();
   CrateNum crate_num = mappings->setup_crate_mappings (options.crate_name);
   mappings->set_current_crate (crate_num);
