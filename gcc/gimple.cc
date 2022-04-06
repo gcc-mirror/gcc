@@ -2788,6 +2788,10 @@ gimple_builtin_call_types_compatible_p (const gimple *stmt, tree fndecl)
 {
   gcc_checking_assert (DECL_BUILT_IN_CLASS (fndecl) != NOT_BUILT_IN);
 
+  if (DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_NORMAL)
+    if (tree decl = builtin_decl_explicit (DECL_FUNCTION_CODE (fndecl)))
+      fndecl = decl;
+
   tree ret = gimple_call_lhs (stmt);
   if (ret
       && !useless_type_conversion_p (TREE_TYPE (ret),
@@ -2841,12 +2845,7 @@ gimple_call_builtin_p (const gimple *stmt)
   if (is_gimple_call (stmt)
       && (fndecl = gimple_call_fndecl (stmt)) != NULL_TREE
       && DECL_BUILT_IN_CLASS (fndecl) != NOT_BUILT_IN)
-    {
-      if (DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_NORMAL)
-	if (tree decl = builtin_decl_explicit (DECL_FUNCTION_CODE (fndecl)))
-	  fndecl = decl;
-      return gimple_builtin_call_types_compatible_p (stmt, fndecl);
-    }
+    return gimple_builtin_call_types_compatible_p (stmt, fndecl);
   return false;
 }
 
@@ -2859,12 +2858,7 @@ gimple_call_builtin_p (const gimple *stmt, enum built_in_class klass)
   if (is_gimple_call (stmt)
       && (fndecl = gimple_call_fndecl (stmt)) != NULL_TREE
       && DECL_BUILT_IN_CLASS (fndecl) == klass)
-    {
-      if (klass == BUILT_IN_NORMAL)
-	if (tree decl = builtin_decl_explicit (DECL_FUNCTION_CODE (fndecl)))
-	  fndecl = decl;
-      return gimple_builtin_call_types_compatible_p (stmt, fndecl);
-    }
+    return gimple_builtin_call_types_compatible_p (stmt, fndecl);
   return false;
 }
 
@@ -2877,11 +2871,7 @@ gimple_call_builtin_p (const gimple *stmt, enum built_in_function code)
   if (is_gimple_call (stmt)
       && (fndecl = gimple_call_fndecl (stmt)) != NULL_TREE
       && fndecl_built_in_p (fndecl, code))
-    {
-      if (tree decl = builtin_decl_explicit (DECL_FUNCTION_CODE (fndecl)))
-	fndecl = decl;
-      return gimple_builtin_call_types_compatible_p (stmt, fndecl);
-    }
+    return gimple_builtin_call_types_compatible_p (stmt, fndecl);
   return false;
 }
 
@@ -2898,14 +2888,10 @@ gimple_call_combined_fn (const gimple *stmt)
 	return as_combined_fn (gimple_call_internal_fn (call));
 
       tree fndecl = gimple_call_fndecl (stmt);
-      if (fndecl && fndecl_built_in_p (fndecl, BUILT_IN_NORMAL))
-	{
-	  tree decl = builtin_decl_explicit (DECL_FUNCTION_CODE (fndecl));
-	  if (!decl)
-	    decl = fndecl;
-	  if (gimple_builtin_call_types_compatible_p (stmt, decl))
-	    return as_combined_fn (DECL_FUNCTION_CODE (fndecl));
-	}
+      if (fndecl
+	  && fndecl_built_in_p (fndecl, BUILT_IN_NORMAL)
+	  && gimple_builtin_call_types_compatible_p (stmt, fndecl))
+	return as_combined_fn (DECL_FUNCTION_CODE (fndecl));
     }
   return CFN_LAST;
 }
