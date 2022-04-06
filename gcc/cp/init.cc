@@ -2811,6 +2811,11 @@ warn_placement_new_too_small (tree type, tree nelts, tree size, tree oper)
   if (!objsize)
     return;
 
+  /* We can only draw conclusions if ref.deref == -1,
+     i.e. oper is the address of the object.  */
+  if (ref.deref != -1)
+    return;
+
   offset_int bytes_avail = wi::to_offset (objsize);
   offset_int bytes_need;
 

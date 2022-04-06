@@ -2299,9 +2299,10 @@ compute_objsize_r (tree ptr, gimple *stmt, bool addr, int ostype,
       if (!compute_objsize_r (ref, stmt, addr, ostype, pref, snlim, qry))
 	return false;
 
-      /* Clear DEREF since the offset is being applied to the target
-	 of the dereference.  */
-      pref->deref = 0;
+      /* The below only makes sense if the offset is being applied to the
+	 address of the object.  */
+      if (pref->deref != -1)
+	return false;
 
       offset_int orng[2];
       tree off = pref->eval (TREE_OPERAND (ptr, 1));
