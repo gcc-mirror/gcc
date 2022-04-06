@@ -15247,6 +15247,14 @@ loop.  The default value is four.
 
 @end table
 
+The following choices of @var{name} are available on i386 and x86_64 targets:
+
+@table @gcctabopt
+@item x86-stlf-window-ninsns
+Instructions number above which STFL stall penalty can be compensated.
+
+@end table
+
 @end table
 
 @node Instrumentation Options
