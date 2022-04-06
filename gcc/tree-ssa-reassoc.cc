@@ -5185,17 +5185,26 @@ swap_ops_for_binary_stmt (const vec<operand_entry *> &ops,
 }
 
 /* If definition of RHS1 or RHS2 dominates STMT, return the later of those
-   two definitions, otherwise return STMT.  */
+   two definitions, otherwise return STMT.  Sets INSERT_BEFORE to indicate
+   whether RHS1 op RHS2 can be inserted before or needs to be inserted
+   after the returned stmt.  */
 
 static inline gimple *
-find_insert_point (gimple *stmt, tree rhs1, tree rhs2)
+find_insert_point (gimple *stmt, tree rhs1, tree rhs2, bool &insert_before)
 {
+  insert_before = true;
   if (TREE_CODE (rhs1) == SSA_NAME
       && reassoc_stmt_dominates_stmt_p (stmt, SSA_NAME_DEF_STMT (rhs1)))
-    stmt = SSA_NAME_DEF_STMT (rhs1);
+    {
+      stmt = SSA_NAME_DEF_STMT (rhs1);
+      insert_before = false;
+    }
   if (TREE_CODE (rhs2) == SSA_NAME
       && reassoc_stmt_dominates_stmt_p (stmt, SSA_NAME_DEF_STMT (rhs2)))
-    stmt = SSA_NAME_DEF_STMT (rhs2);
+    {
+      stmt = SSA_NAME_DEF_STMT (rhs2);
+      insert_before = false;
+    }
   return stmt;
 }
 
@@ -5207,7 +5216,8 @@ insert_stmt_before_use (gimple *stmt, gimple *stmt_to_insert)
   gcc_assert (is_gimple_assign (stmt_to_insert));
   tree rhs1 = gimple_assign_rhs1 (stmt_to_insert);
   tree rhs2 = gimple_assign_rhs2 (stmt_to_insert);
-  gimple *insert_point = find_insert_point (stmt, rhs1, rhs2);
+  bool insert_before;
+  gimple *insert_point = find_insert_point (stmt, rhs1, rhs2, insert_before);
   gimple_stmt_iterator gsi = gsi_for_stmt (insert_point);
   gimple_set_uid (stmt_to_insert, gimple_uid (insert_point));
 
@@ -5215,7 +5225,7 @@ insert_stmt_before_use (gimple *stmt, gimple *stmt_to_insert)
      the point where operand rhs1 or rhs2 is defined. In this case,
      stmt_to_insert has to be inserted afterwards. This would
      only happen when the stmt insertion point is flexible. */
-  if (stmt == insert_point)
+  if (insert_before)
     gsi_insert_before (&gsi, stmt_to_insert, GSI_NEW_STMT);
   else
     insert_stmt_after (stmt_to_insert, insert_point);
@@ -5275,22 +5285,25 @@ rewrite_expr_tree (gimple *stmt, enum tree_code rhs_code, unsigned int opindex,
 	     return lhs), force creation of a new SSA_NAME.  */
 	  if (changed || ((rhs1 != oe2->op || rhs2 != oe1->op) && opindex))
 	    {
+	      bool insert_before;
 	      gimple *insert_point
-		= find_insert_point (stmt, oe1->op, oe2->op);
+		= find_insert_point (stmt, oe1->op, oe2->op, insert_before);
 	      lhs = make_ssa_name (TREE_TYPE (lhs));
 	      stmt
 		= gimple_build_assign (lhs, rhs_code,
 				       oe1->op, oe2->op);
 	      gimple_set_uid (stmt, uid);
 	      gimple_set_visited (stmt, true);
-	      if (insert_point == gsi_stmt (gsi))
+	      if (insert_before)
 		gsi_insert_before (&gsi, stmt, GSI_SAME_STMT);
 	      else
 		insert_stmt_after (stmt, insert_point);
 	    }
 	  else
 	    {
-	      gcc_checking_assert (find_insert_point (stmt, oe1->op, oe2->op)
+	      bool insert_before;
+	      gcc_checking_assert (find_insert_point (stmt, oe1->op, oe2->op,
+						      insert_before)
 				   == stmt);
 	      gimple_assign_set_rhs1 (stmt, oe1->op);
 	      gimple_assign_set_rhs2 (stmt, oe2->op);
@@ -5346,21 +5359,25 @@ rewrite_expr_tree (gimple *stmt, enum tree_code rhs_code, unsigned int opindex,
 	{
 	  gimple_stmt_iterator gsi = gsi_for_stmt (stmt);
 	  unsigned int uid = gimple_uid (stmt);
-	  gimple *insert_point = find_insert_point (stmt, new_rhs1, oe->op);
+	  bool insert_before;
+	  gimple *insert_point = find_insert_point (stmt, new_rhs1, oe->op,
+						    insert_before);
 
 	  lhs = make_ssa_name (TREE_TYPE (lhs));
 	  stmt = gimple_build_assign (lhs, rhs_code,
 				      new_rhs1, oe->op);
 	  gimple_set_uid (stmt, uid);
 	  gimple_set_visited (stmt, true);
-	  if (insert_point == gsi_stmt (gsi))
+	  if (insert_before)
 	    gsi_insert_before (&gsi, stmt, GSI_SAME_STMT);
 	  else
 	    insert_stmt_after (stmt, insert_point);
 	}
       else
 	{
-	  gcc_checking_assert (find_insert_point (stmt, new_rhs1, oe->op)
+	  bool insert_before;
+	  gcc_checking_assert (find_insert_point (stmt, new_rhs1, oe->op,
+						  insert_before)
 			       == stmt);
 	  gimple_assign_set_rhs1 (stmt, new_rhs1);
 	  gimple_assign_set_rhs2 (stmt, oe->op);
