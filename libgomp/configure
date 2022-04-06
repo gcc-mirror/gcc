@@ -674,8 +674,6 @@ offload_additional_options
 offload_targets
 offload_plugins
 PLUGIN_GCN_LIBS
-PLUGIN_GCN_LDFLAGS
-PLUGIN_GCN_CPPFLAGS
 PLUGIN_GCN
 HSA_RUNTIME_LIB
 HSA_RUNTIME_INCLUDE
@@ -11431,7 +11429,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11434 "configure"
+#line 11432 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11537,7 +11535,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11540 "configure"
+#line 11538 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -15275,11 +15273,7 @@ if test "x$with_hsa_runtime_lib" != x; then
 fi
 
 PLUGIN_GCN=0
-PLUGIN_GCN_CPPFLAGS=
-PLUGIN_GCN_LDFLAGS=
 PLUGIN_GCN_LIBS=
-
-
 
 
 
