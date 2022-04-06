@@ -41,7 +41,11 @@
 #include "oacc-int.h"
 
 #include <pthread.h>
-#include <cuda.h>
+#if PLUGIN_NVPTX_DYNAMIC
+# include "cuda/cuda.h"
+#else
+# include <cuda.h>
+#endif
 #include <stdbool.h>
 #include <limits.h>
 #include <string.h>

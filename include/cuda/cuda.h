@@ -1,4 +1,4 @@
-/* CUDA API description.
+/* CUDA Driver API description.
    Copyright (C) 2017-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -22,9 +22,8 @@ a copy of the GCC Runtime Library Exception along with this program;
 see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.
 
-This header provides the minimum amount of typedefs, enums and function
-declarations to be able to compile plugin-nvptx.c if cuda.h and
-libcuda.so.1 are not available.  */
+This header provides parts of the CUDA Driver API, without having to rely on
+the proprietary CUDA toolkit.  */
 
 #ifndef GCC_CUDA_H
 #define GCC_CUDA_H
