@@ -97,8 +97,6 @@ HSA_RUNTIME_INCLUDE=
 HSA_RUNTIME_LIB=
 AC_SUBST(HSA_RUNTIME_INCLUDE)
 AC_SUBST(HSA_RUNTIME_LIB)
-HSA_RUNTIME_CPPFLAGS=
-HSA_RUNTIME_LDFLAGS=
 
 AC_ARG_WITH(hsa-runtime,
 	[AS_HELP_STRING([--with-hsa-runtime=PATH],
@@ -120,12 +118,6 @@ if test "x$with_hsa_runtime_include" != x; then
 fi
 if test "x$with_hsa_runtime_lib" != x; then
   HSA_RUNTIME_LIB=$with_hsa_runtime_lib
-fi
-if test "x$HSA_RUNTIME_INCLUDE" != x; then
-  HSA_RUNTIME_CPPFLAGS=-I$HSA_RUNTIME_INCLUDE
-fi
-if test "x$HSA_RUNTIME_LIB" != x; then
-  HSA_RUNTIME_LDFLAGS=-L$HSA_RUNTIME_LIB
 fi
 
 PLUGIN_GCN=0
@@ -224,8 +216,6 @@ if test x"$enable_offload_targets" != x; then
 	      *)
 		tgt_plugin=gcn
 		PLUGIN_GCN=$tgt
-		PLUGIN_GCN_CPPFLAGS=$HSA_RUNTIME_CPPFLAGS
-		PLUGIN_GCN_LDFLAGS="$HSA_RUNTIME_LDFLAGS"
 		PLUGIN_GCN_LIBS="-ldl"
 		PLUGIN_GCN=1
 		;;
