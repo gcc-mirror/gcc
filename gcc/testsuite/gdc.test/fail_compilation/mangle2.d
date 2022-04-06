@@ -39,4 +39,3 @@ __gshared extern pragma(mangle, "test\09") ubyte test9_5_e;
 //\xff chars
 __gshared pragma(mangle, "test\xff9") ubyte test9_6;
 __gshared extern pragma(mangle, "test\xff9") ubyte test9_6_e;
-

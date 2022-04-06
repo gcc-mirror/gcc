@@ -711,7 +711,7 @@ Expression op_overload(Expression e, Scope* sc, EXP* pop = null)
                 if (s)
                 {
                     functionResolve(m, s, e.loc, sc, tiargs, e.e1.type, &args2);
-                    if (m.lastf && (m.lastf.errors || m.lastf.semantic3Errors))
+                    if (m.lastf && (m.lastf.errors || m.lastf.hasSemantic3Errors()))
                     {
                         return ErrorExp.get();
                     }
@@ -720,7 +720,7 @@ Expression op_overload(Expression e, Scope* sc, EXP* pop = null)
                 if (s_r)
                 {
                     functionResolve(m, s_r, e.loc, sc, tiargs, e.e2.type, &args1);
-                    if (m.lastf && (m.lastf.errors || m.lastf.semantic3Errors))
+                    if (m.lastf && (m.lastf.errors || m.lastf.hasSemantic3Errors()))
                     {
                         return ErrorExp.get();
                     }
@@ -793,7 +793,7 @@ Expression op_overload(Expression e, Scope* sc, EXP* pop = null)
                         if (s_r)
                         {
                             functionResolve(m, s_r, e.loc, sc, tiargs, e.e1.type, &args2);
-                            if (m.lastf && (m.lastf.errors || m.lastf.semantic3Errors))
+                            if (m.lastf && (m.lastf.errors || m.lastf.hasSemantic3Errors()))
                             {
                                 return ErrorExp.get();
                             }
@@ -802,7 +802,7 @@ Expression op_overload(Expression e, Scope* sc, EXP* pop = null)
                         if (s)
                         {
                             functionResolve(m, s, e.loc, sc, tiargs, e.e2.type, &args1);
-                            if (m.lastf && (m.lastf.errors || m.lastf.semantic3Errors))
+                            if (m.lastf && (m.lastf.errors || m.lastf.hasSemantic3Errors()))
                             {
                                 return ErrorExp.get();
                             }
@@ -1250,7 +1250,7 @@ Expression op_overload(Expression e, Scope* sc, EXP* pop = null)
                 if (s)
                 {
                     functionResolve(m, s, e.loc, sc, tiargs, e.e1.type, &args2);
-                    if (m.lastf && (m.lastf.errors || m.lastf.semantic3Errors))
+                    if (m.lastf && (m.lastf.errors || m.lastf.hasSemantic3Errors()))
                     {
                         return ErrorExp.get();
                     }
@@ -1344,7 +1344,7 @@ private Expression compare_overload(BinExp e, Scope* sc, Identifier id, EXP* pop
         if (s)
         {
             functionResolve(m, s, e.loc, sc, tiargs, e.e1.type, &args2);
-            if (m.lastf && (m.lastf.errors || m.lastf.semantic3Errors))
+            if (m.lastf && (m.lastf.errors || m.lastf.hasSemantic3Errors()))
                 return ErrorExp.get();
         }
         FuncDeclaration lastf = m.lastf;
@@ -1352,7 +1352,7 @@ private Expression compare_overload(BinExp e, Scope* sc, Identifier id, EXP* pop
         if (s_r)
         {
             functionResolve(m, s_r, e.loc, sc, tiargs, e.e2.type, &args1);
-            if (m.lastf && (m.lastf.errors || m.lastf.semantic3Errors))
+            if (m.lastf && (m.lastf.errors || m.lastf.hasSemantic3Errors()))
                 return ErrorExp.get();
         }
         if (m.count > 1)

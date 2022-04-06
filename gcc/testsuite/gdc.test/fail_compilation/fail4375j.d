@@ -18,4 +18,3 @@ void main() {
     else
         assert(120);
 }
-

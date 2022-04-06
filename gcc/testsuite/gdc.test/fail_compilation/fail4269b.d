@@ -11,4 +11,3 @@ struct A {
     B blah;
     void foo(B b){}
 }
-

@@ -6,4 +6,3 @@ struct D(E)
     }
 
 }
-

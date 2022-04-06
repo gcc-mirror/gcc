@@ -12,4 +12,3 @@ void main() {
     immutable a = foo();
     pragma(msg, a);
 }
-

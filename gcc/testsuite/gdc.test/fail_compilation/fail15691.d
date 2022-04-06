@@ -20,5 +20,3 @@ void main()
             bc: 4, // line 20
         };
 }
-
-

@@ -4,7 +4,8 @@
 
 import core.stdc.stdio;
 
-extern (C) int main(char** argv, int argc) {
+extern (C) int main()
+{
     printf("hello world\n");
     int[3] a;
     foo(a[], 3);

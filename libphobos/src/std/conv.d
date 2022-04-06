@@ -2850,7 +2850,7 @@ do
     static if (isNarrowString!Source)
     {
         import std.string : representation;
-        auto s = source.representation;
+        scope s = source.representation;
     }
     else
     {
@@ -2898,7 +2898,7 @@ do
     }
 
     static if (isNarrowString!Source)
-        source = cast(Source) s;
+        source = source[$ - s.length .. $];
 
     static if (doCount)
     {
@@ -3105,7 +3105,7 @@ if (isSomeString!Source && !is(Source == enum) &&
  *     A $(LREF ConvException) if `source` is empty, if no number could be
  *     parsed, or if an overflow occurred.
  */
-auto parse(Target, Source, Flag!"doCount" doCount = No.doCount)(ref scope Source source)
+auto parse(Target, Source, Flag!"doCount" doCount = No.doCount)(ref Source source)
 if (isInputRange!Source && isSomeChar!(ElementType!Source) && !is(Source == enum) &&
     isFloatingPoint!Target && !is(Target == enum))
 {
@@ -3115,18 +3115,17 @@ if (isInputRange!Source && isSomeChar!(ElementType!Source) && !is(Source == enum
     static if (isNarrowString!Source)
     {
         import std.string : representation;
-        auto p = source.representation;
+        scope p = source.representation;
     }
     else
     {
         alias p = source;
     }
 
-    void advanceSource() @trusted
+    void advanceSource()
     {
-        // p is assigned from source.representation above so the cast is valid
         static if (isNarrowString!Source)
-            source = cast(Source) p;
+            source = source[$ - p.length .. $];
     }
 
     static immutable real[14] negtab =
@@ -5982,4 +5981,15 @@ if ((radix == 2 || radix == 8 || radix == 10 || radix == 16) &&
             assert(original[i .. original.length - i].tupleof == r.tupleof);
         }
     }
+}
+
+// Converts an unsigned integer to a compile-time string constant.
+package enum toCtString(ulong n) = n.stringof[0 .. $ - "LU".length];
+
+// Check that .stringof does what we expect, since it's not guaranteed by the
+// language spec.
+@safe /*@betterC*/ unittest
+{
+    assert(toCtString!0 == "0");
+    assert(toCtString!123456 == "123456");
 }

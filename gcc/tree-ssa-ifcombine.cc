@@ -561,7 +561,8 @@ ifcombine_ifandif (basic_block inner_cond_bb, bool inner_inv,
 					    gimple_cond_rhs (inner_cond),
 					    outer_cond_code,
 					    gimple_cond_lhs (outer_cond),
-					    gimple_cond_rhs (outer_cond))))
+					    gimple_cond_rhs (outer_cond),
+					    gimple_bb (outer_cond))))
 	{
 	  tree t1, t2;
 	  gimple_stmt_iterator gsi;

@@ -19,7 +19,7 @@ tries to address several issues.
     gimplifying via force_gimple_operand
 @end enumerate
 
-To address these the project introduces a simple domain specific language
+To address these the project introduces a simple domain-specific language
 to write expression simplifications from which code targeting GIMPLE
 and GENERIC is auto-generated.  The GENERIC variant follows the
 fold_buildN API while for the GIMPLE variant and to address 2) new
@@ -40,7 +40,7 @@ APIs are introduced.
 @deftypefnx {GIMPLE function} tree gimple_simplify (enum built_in_function, tree, tree, gimple_seq *, tree (*)(tree))
 @deftypefnx {GIMPLE function} tree gimple_simplify (enum built_in_function, tree, tree, tree, gimple_seq *, tree (*)(tree))
 @deftypefnx {GIMPLE function} tree gimple_simplify (enum built_in_function, tree, tree, tree, tree, gimple_seq *, tree (*)(tree))
-The main GIMPLE API entry to the expression simplifications mimicing
+The main GIMPLE API entry to the expression simplifications mimicking
 that of the GENERIC fold_@{unary,binary,ternary@} functions.
 @end deftypefn
 
@@ -57,7 +57,7 @@ a valueization hook:
 @end deftypefn
 
 
-Ontop of these a @code{fold_buildN}-like API for GIMPLE is introduced:
+On top of these a @code{fold_buildN}-like API for GIMPLE is introduced:
 
 @deftypefn {GIMPLE function} tree gimple_build (gimple_seq *, location_t, enum tree_code, tree, tree, tree (*valueize) (tree) = NULL);
 @deftypefnx {GIMPLE function} tree gimple_build (gimple_seq *, location_t, enum tree_code, tree, tree, tree, tree (*valueize) (tree) = NULL);
@@ -78,9 +78,9 @@ and simplification is performed using the optional valueization hook.
 @section The Language
 @cindex The Language
 
-The language to write expression simplifications in resembles other
-domain-specific languages GCC uses.  Thus it is lispy.  Lets start
-with an example from the match.pd file:
+The language in which to write expression simplifications resembles
+other domain-specific languages GCC uses.  Thus it is lispy.  Let's
+start with an example from the match.pd file:
 
 @smallexample
 (simplify
@@ -100,7 +100,7 @@ function code names in all-caps, like @code{BUILT_IN_SQRT}.
 
 @code{@@n} denotes a so-called capture.  It captures the operand and lets
 you refer to it in other places of the match-and-simplify.  In the
-above example it is refered to in the replacement expression.  Captures
+above example it is referred to in the replacement expression.  Captures
 are @code{@@} followed by a number or an identifier.
 
 @smallexample
@@ -110,10 +110,10 @@ are @code{@@} followed by a number or an identifier.
 @end smallexample
 
 In this example @code{@@0} is mentioned twice which constrains the matched
-expression to have two equal operands.  Usually matches are constraint
-to equal types.  If operands may be constants and conversions are involved
+expression to have two equal operands.  Usually matches are constrained
+to equal types.  If operands may be constants and conversions are involved,
 matching by value might be preferred in which case use @code{@@@@0} to
-denote a by value match and the specific operand you want to refer to
+denote a by-value match and the specific operand you want to refer to
 in the result part.  This example also introduces
 operands written in C code.  These can be used in the expression
 replacements and are supposed to evaluate to a tree node which has to
@@ -129,7 +129,7 @@ be a valid GIMPLE operand (so you cannot generate expressions in C code).
 Here @code{@@0} captures the first operand of the trunc_mod expression
 which is also predicated with @code{integer_zerop}.  Expression operands
 may be either expressions, predicates or captures.  Captures
-can be unconstrained or capture expresions or predicates.
+can be unconstrained or capture expressions or predicates.
 
 This example introduces an optional operand of simplify,
 the if-expression.  This condition is evaluated after the
@@ -219,9 +219,9 @@ Captures can also be used for capturing results of sub-expressions.
 @end smallexample
 
 In the above example, @code{@@2} captures the result of the expression
-@code{(addr @@0)}.  For outermost expression only its type can be captured,
-and the keyword @code{type} is reserved for this purpose.  The above
-example also gives a way to conditionalize patterns to only apply
+@code{(addr @@0)}.  For the outermost expression only its type can be
+captured, and the keyword @code{type} is reserved for this purpose.  The
+above example also gives a way to conditionalize patterns to only apply
 to @code{GIMPLE} or @code{GENERIC} by means of using the pre-defined
 preprocessor macros @code{GIMPLE} and @code{GENERIC} and using
 preprocessor directives.
@@ -314,9 +314,9 @@ and use them in @code{for} operator lists where they get expanded.
 So this example iterates over @code{plus}, @code{minus}, @code{mult}
 and @code{trunc_div}.
 
-Using operator lists can also remove the need to explicitely write
+Using operator lists can also remove the need to explicitly write
 a @code{for}.  All operator list uses that appear in a @code{simplify}
-or @code{match} pattern in operator positions will implicitely
+or @code{match} pattern in operator positions will implicitly
 be added to a new @code{for}.  For example
 
 @smallexample
@@ -359,7 +359,7 @@ type of a generated expression with the @code{:type} syntax where
 @code{type} needs to be an identifier that refers to the desired type.
 Usually the types of the generated result expressions are
 determined from the context, but sometimes like in the above case
-it is required that you specify them explicitely.
+it is required that you specify them explicitly.
 
 Another modifier for generated expressions is @code{!} which
 tells the machinery to only consider the simplification in case
@@ -402,7 +402,7 @@ The support for @code{?} marking extends to all unary operations
 including predicates you declare yourself with @code{match}.
 
 Predicates available from the GCC middle-end need to be made
-available explicitely via @code{define_predicates}:
+available explicitly via @code{define_predicates}:
 
 @smallexample
 (define_predicates

@@ -27,4 +27,3 @@ struct Where
 }
 
 struct WhereField(FieldType) {}
-

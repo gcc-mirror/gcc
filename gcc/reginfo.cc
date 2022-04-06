@@ -441,10 +441,15 @@ init_reg_modes_target (void)
 {
   int i, j;
 
+  this_target_regs->x_hard_regno_max_nregs = 1;
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
     for (j = 0; j < MAX_MACHINE_MODE; j++)
-      this_target_regs->x_hard_regno_nregs[i][j]
-	= targetm.hard_regno_nregs (i, (machine_mode) j);
+      {
+	unsigned char nregs = targetm.hard_regno_nregs (i, (machine_mode) j);
+	this_target_regs->x_hard_regno_nregs[i][j] = nregs;
+	if (nregs > this_target_regs->x_hard_regno_max_nregs)
+	  this_target_regs->x_hard_regno_max_nregs = nregs;
+      }
 
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
     {

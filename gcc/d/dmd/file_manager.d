@@ -20,10 +20,15 @@ import dmd.identifier;
 enum package_d  = "package." ~ mars_ext;
 enum package_di = "package." ~ hdr_ext;
 
-struct FileManager
+final class FileManager
 {
     private StringTable!(FileBuffer*) files;
-    private __gshared bool initialized = false;
+
+    ///
+    public this () nothrow
+    {
+        this.files._init();
+    }
 
 nothrow:
     /********************************************
@@ -143,9 +148,6 @@ nothrow:
      */
     const(FileBuffer)* lookup(FileName filename)
     {
-        if (!initialized)
-            FileManager._init();
-
         const name = filename.toString;
         if (auto val = files.lookup(name))
             return val.value;
@@ -182,9 +184,6 @@ nothrow:
      */
     const(char)[][] getLines(FileName file)
     {
-        if (!initialized)
-            FileManager._init();
-
         const(char)[][] lines;
         if (const buffer = lookup(file))
         {
@@ -241,28 +240,8 @@ nothrow:
      */
     FileBuffer* add(FileName filename, FileBuffer* filebuffer)
     {
-        if (!initialized)
-            FileManager._init();
-
         auto val = files.insert(filename.toString, filebuffer);
         return val == null ? null : val.value;
-    }
-
-    __gshared fileManager = FileManager();
-
-    // Initialize the global FileManager singleton
-    private void _init()
-    {
-        if (!initialized)
-        {
-            fileManager.initialize();
-            initialized = true;
-        }
-    }
-
-    void initialize()
-    {
-        files._init();
     }
 }
 

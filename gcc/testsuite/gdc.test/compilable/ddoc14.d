@@ -92,6 +92,3 @@ pure nothrow auto mAutoPrefix(ref P p) { return p; } /// 7
 auto mAutoTemplateSuffix(alias T)(ref T t) pure nothrow { return p; } /// 9
 pure nothrow:
 V mColon(lazy P p) {} /// 10
-
-
-

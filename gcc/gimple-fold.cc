@@ -6537,22 +6537,27 @@ same_bool_result_p (const_tree op1, const_tree op2)
 
 static tree
 and_comparisons_1 (tree type, enum tree_code code1, tree op1a, tree op1b,
-		   enum tree_code code2, tree op2a, tree op2b);
+		   enum tree_code code2, tree op2a, tree op2b, basic_block);
 static tree
 and_var_with_comparison (tree type, tree var, bool invert,
-			 enum tree_code code2, tree op2a, tree op2b);
+			 enum tree_code code2, tree op2a, tree op2b,
+			 basic_block);
 static tree
 and_var_with_comparison_1 (tree type, gimple *stmt,
-			   enum tree_code code2, tree op2a, tree op2b);
+			   enum tree_code code2, tree op2a, tree op2b,
+			   basic_block);
 static tree
 or_comparisons_1 (tree, enum tree_code code1, tree op1a, tree op1b,
-		  enum tree_code code2, tree op2a, tree op2b);
+		  enum tree_code code2, tree op2a, tree op2b,
+		  basic_block);
 static tree
 or_var_with_comparison (tree, tree var, bool invert,
-			enum tree_code code2, tree op2a, tree op2b);
+			enum tree_code code2, tree op2a, tree op2b,
+			basic_block);
 static tree
 or_var_with_comparison_1 (tree, gimple *stmt,
-			  enum tree_code code2, tree op2a, tree op2b);
+			  enum tree_code code2, tree op2a, tree op2b,
+			  basic_block);
 
 /* Helper function for and_comparisons_1:  try to simplify the AND of the
    ssa variable VAR with the comparison specified by (OP2A CODE2 OP2B).
@@ -6561,7 +6566,8 @@ or_var_with_comparison_1 (tree, gimple *stmt,
 
 static tree
 and_var_with_comparison (tree type, tree var, bool invert,
-			 enum tree_code code2, tree op2a, tree op2b)
+			 enum tree_code code2, tree op2a, tree op2b,
+			 basic_block outer_cond_bb)
 {
   tree t;
   gimple *stmt = SSA_NAME_DEF_STMT (var);
@@ -6576,9 +6582,10 @@ and_var_with_comparison (tree type, tree var, bool invert,
   if (invert)
     t = or_var_with_comparison_1 (type, stmt,
 				  invert_tree_comparison (code2, false),
-				  op2a, op2b);
+				  op2a, op2b, outer_cond_bb);
   else
-    t = and_var_with_comparison_1 (type, stmt, code2, op2a, op2b);
+    t = and_var_with_comparison_1 (type, stmt, code2, op2a, op2b,
+				   outer_cond_bb);
   return canonicalize_bool (t, invert);
 }
 
@@ -6588,7 +6595,8 @@ and_var_with_comparison (tree type, tree var, bool invert,
 
 static tree
 and_var_with_comparison_1 (tree type, gimple *stmt,
-			   enum tree_code code2, tree op2a, tree op2b)
+			   enum tree_code code2, tree op2a, tree op2b,
+			   basic_block outer_cond_bb)
 {
   tree var = gimple_assign_lhs (stmt);
   tree true_test_var = NULL_TREE;
@@ -6623,7 +6631,7 @@ and_var_with_comparison_1 (tree type, gimple *stmt,
 				  gimple_assign_rhs2 (stmt),
 				  code2,
 				  op2a,
-				  op2b);
+				  op2b, outer_cond_bb);
       if (t)
 	return t;
     }
@@ -6655,12 +6663,12 @@ and_var_with_comparison_1 (tree type, gimple *stmt,
 	return (is_and
 		? boolean_false_node
 		: and_var_with_comparison (type, inner2, false, code2, op2a,
-					   op2b));
+					   op2b, outer_cond_bb));
       else if (inner2 == false_test_var)
 	return (is_and
 		? boolean_false_node
 		: and_var_with_comparison (type, inner1, false, code2, op2a,
-					   op2b));
+					   op2b, outer_cond_bb));
 
       /* Next, redistribute/reassociate the AND across the inner tests.
 	 Compute the first partial result, (inner1 AND (op2a code op2b))  */
@@ -6670,7 +6678,8 @@ and_var_with_comparison_1 (tree type, gimple *stmt,
 	  && (t = maybe_fold_and_comparisons (type, gimple_assign_rhs_code (s),
 					      gimple_assign_rhs1 (s),
 					      gimple_assign_rhs2 (s),
-					      code2, op2a, op2b)))
+					      code2, op2a, op2b,
+					      outer_cond_bb)))
 	{
 	  /* Handle the AND case, where we are reassociating:
 	     (inner1 AND inner2) AND (op2a code2 op2b)
@@ -6702,7 +6711,8 @@ and_var_with_comparison_1 (tree type, gimple *stmt,
 	  && (t = maybe_fold_and_comparisons (type, gimple_assign_rhs_code (s),
 					      gimple_assign_rhs1 (s),
 					      gimple_assign_rhs2 (s),
-					      code2, op2a, op2b)))
+					      code2, op2a, op2b,
+					      outer_cond_bb)))
 	{
 	  /* Handle the AND case, where we are reassociating:
 	     (inner1 AND inner2) AND (op2a code2 op2b)
@@ -6756,7 +6766,8 @@ and_var_with_comparison_1 (tree type, gimple *stmt,
 
 static tree
 and_comparisons_1 (tree type, enum tree_code code1, tree op1a, tree op1b,
-		   enum tree_code code2, tree op2a, tree op2b)
+		   enum tree_code code2, tree op2a, tree op2b,
+		   basic_block outer_cond_bb)
 {
   tree truth_type = truth_type_for (TREE_TYPE (op1a));
 
@@ -6800,7 +6811,7 @@ and_comparisons_1 (tree type, enum tree_code code1, tree op1a, tree op1b,
 	case GIMPLE_ASSIGN:
 	  /* Try to simplify by copy-propagating the definition.  */
 	  return and_var_with_comparison (type, op1a, invert, code2, op2a,
-					  op2b);
+					  op2b, outer_cond_bb);
 
 	case GIMPLE_PHI:
 	  /* If every argument to the PHI produces the same result when
@@ -6851,7 +6862,8 @@ and_comparisons_1 (tree type, enum tree_code code1, tree op1a, tree op1b,
 					     gimple_bb (stmt)))
 			return NULL_TREE;
 		      temp = and_var_with_comparison (type, arg, invert, code2,
-						      op2a, op2b);
+						      op2a, op2b,
+						      outer_cond_bb);
 		      if (!temp)
 			return NULL_TREE;
 		      else if (!result)
@@ -6872,6 +6884,25 @@ and_comparisons_1 (tree type, enum tree_code code1, tree op1a, tree op1b,
   return NULL_TREE;
 }
 
+static basic_block fosa_bb;
+static tree
+follow_outer_ssa_edges (tree val)
+{
+  if (TREE_CODE (val) == SSA_NAME
+      && !SSA_NAME_IS_DEFAULT_DEF (val))
+    {
+      basic_block def_bb = gimple_bb (SSA_NAME_DEF_STMT (val));
+      if (!def_bb
+	  || def_bb == fosa_bb
+	  || (dom_info_available_p (CDI_DOMINATORS)
+	      && (def_bb == fosa_bb
+		  || dominated_by_p (CDI_DOMINATORS, fosa_bb, def_bb))))
+	return val;
+      return NULL_TREE;
+    }
+  return val;
+}
+
 /* Helper function for maybe_fold_and_comparisons and maybe_fold_or_comparisons
    : try to simplify the AND/OR of the ssa variable VAR with the comparison
    specified by (OP2A CODE2 OP2B) from match.pd.  Return NULL_EXPR if we can't
@@ -6884,7 +6915,8 @@ maybe_fold_comparisons_from_match_pd (tree type, enum tree_code code,
 				      enum tree_code code1,
 				      tree op1a, tree op1b,
 				      enum tree_code code2, tree op2a,
-				      tree op2b)
+				      tree op2b,
+				      basic_block outer_cond_bb)
 {
   /* Allocate gimple stmt1 on the stack.  */
   gassign *stmt1
@@ -6893,6 +6925,7 @@ maybe_fold_comparisons_from_match_pd (tree type, enum tree_code code,
   gimple_assign_set_rhs_code (stmt1, code1);
   gimple_assign_set_rhs1 (stmt1, op1a);
   gimple_assign_set_rhs2 (stmt1, op1b);
+  gimple_set_bb (stmt1, NULL);
 
   /* Allocate gimple stmt2 on the stack.  */
   gassign *stmt2
@@ -6901,6 +6934,7 @@ maybe_fold_comparisons_from_match_pd (tree type, enum tree_code code,
   gimple_assign_set_rhs_code (stmt2, code2);
   gimple_assign_set_rhs1 (stmt2, op2a);
   gimple_assign_set_rhs2 (stmt2, op2b);
+  gimple_set_bb (stmt2, NULL);
 
   /* Allocate SSA names(lhs1) on the stack.  */
   tree lhs1 = (tree)XALLOCA (tree_ssa_name);
@@ -6922,7 +6956,9 @@ maybe_fold_comparisons_from_match_pd (tree type, enum tree_code code,
   gimple_match_op op (gimple_match_cond::UNCOND, code,
 		      type, gimple_assign_lhs (stmt1),
 		      gimple_assign_lhs (stmt2));
-  if (op.resimplify (NULL, follow_all_ssa_edges))
+  fosa_bb = outer_cond_bb;
+  if (op.resimplify (NULL, (!outer_cond_bb
+			    ? follow_all_ssa_edges : follow_outer_ssa_edges)))
     {
       if (gimple_simplified_result_is_gimple_val (&op))
 	{
@@ -6959,17 +6995,20 @@ maybe_fold_comparisons_from_match_pd (tree type, enum tree_code code,
 tree
 maybe_fold_and_comparisons (tree type,
 			    enum tree_code code1, tree op1a, tree op1b,
-			    enum tree_code code2, tree op2a, tree op2b)
+			    enum tree_code code2, tree op2a, tree op2b,
+			    basic_block outer_cond_bb)
 {
-  if (tree t = and_comparisons_1 (type, code1, op1a, op1b, code2, op2a, op2b))
+  if (tree t = and_comparisons_1 (type, code1, op1a, op1b, code2, op2a, op2b,
+				  outer_cond_bb))
     return t;
 
-  if (tree t = and_comparisons_1 (type, code2, op2a, op2b, code1, op1a, op1b))
+  if (tree t = and_comparisons_1 (type, code2, op2a, op2b, code1, op1a, op1b,
+				  outer_cond_bb))
     return t;
 
   if (tree t = maybe_fold_comparisons_from_match_pd (type, BIT_AND_EXPR, code1,
 						     op1a, op1b, code2, op2a,
-						     op2b))
+						     op2b, outer_cond_bb))
     return t;
 
   return NULL_TREE;
@@ -6982,7 +7021,8 @@ maybe_fold_and_comparisons (tree type,
 
 static tree
 or_var_with_comparison (tree type, tree var, bool invert,
-			enum tree_code code2, tree op2a, tree op2b)
+			enum tree_code code2, tree op2a, tree op2b,
+			basic_block outer_cond_bb)
 {
   tree t;
   gimple *stmt = SSA_NAME_DEF_STMT (var);
@@ -6997,9 +7037,10 @@ or_var_with_comparison (tree type, tree var, bool invert,
   if (invert)
     t = and_var_with_comparison_1 (type, stmt,
 				   invert_tree_comparison (code2, false),
-				   op2a, op2b);
+				   op2a, op2b, outer_cond_bb);
   else
-    t = or_var_with_comparison_1 (type, stmt, code2, op2a, op2b);
+    t = or_var_with_comparison_1 (type, stmt, code2, op2a, op2b,
+				  outer_cond_bb);
   return canonicalize_bool (t, invert);
 }
 
@@ -7009,7 +7050,8 @@ or_var_with_comparison (tree type, tree var, bool invert,
 
 static tree
 or_var_with_comparison_1 (tree type, gimple *stmt,
-			  enum tree_code code2, tree op2a, tree op2b)
+			  enum tree_code code2, tree op2a, tree op2b,
+			  basic_block outer_cond_bb)
 {
   tree var = gimple_assign_lhs (stmt);
   tree true_test_var = NULL_TREE;
@@ -7042,9 +7084,7 @@ or_var_with_comparison_1 (tree type, gimple *stmt,
       tree t = or_comparisons_1 (type, innercode,
 				 gimple_assign_rhs1 (stmt),
 				 gimple_assign_rhs2 (stmt),
-				 code2,
-				 op2a,
-				 op2b);
+				 code2, op2a, op2b, outer_cond_bb);
       if (t)
 	return t;
     }
@@ -7076,12 +7116,12 @@ or_var_with_comparison_1 (tree type, gimple *stmt,
 	return (is_or
 		? boolean_true_node
 		: or_var_with_comparison (type, inner2, false, code2, op2a,
-					  op2b));
+					  op2b, outer_cond_bb));
       else if (inner2 == false_test_var)
 	return (is_or
 		? boolean_true_node
 		: or_var_with_comparison (type, inner1, false, code2, op2a,
-					  op2b));
+					  op2b, outer_cond_bb));
       
       /* Next, redistribute/reassociate the OR across the inner tests.
 	 Compute the first partial result, (inner1 OR (op2a code op2b))  */
@@ -7091,7 +7131,8 @@ or_var_with_comparison_1 (tree type, gimple *stmt,
 	  && (t = maybe_fold_or_comparisons (type, gimple_assign_rhs_code (s),
 					     gimple_assign_rhs1 (s),
 					     gimple_assign_rhs2 (s),
-					     code2, op2a, op2b)))
+					     code2, op2a, op2b,
+					     outer_cond_bb)))
 	{
 	  /* Handle the OR case, where we are reassociating:
 	     (inner1 OR inner2) OR (op2a code2 op2b)
@@ -7123,7 +7164,8 @@ or_var_with_comparison_1 (tree type, gimple *stmt,
 	  && (t = maybe_fold_or_comparisons (type, gimple_assign_rhs_code (s),
 					     gimple_assign_rhs1 (s),
 					     gimple_assign_rhs2 (s),
-					     code2, op2a, op2b)))
+					     code2, op2a, op2b,
+					     outer_cond_bb)))
 	{
 	  /* Handle the OR case, where we are reassociating:
 	     (inner1 OR inner2) OR (op2a code2 op2b)
@@ -7178,7 +7220,8 @@ or_var_with_comparison_1 (tree type, gimple *stmt,
 
 static tree
 or_comparisons_1 (tree type, enum tree_code code1, tree op1a, tree op1b,
-		  enum tree_code code2, tree op2a, tree op2b)
+		  enum tree_code code2, tree op2a, tree op2b,
+		  basic_block outer_cond_bb)
 {
   tree truth_type = truth_type_for (TREE_TYPE (op1a));
 
@@ -7222,7 +7265,7 @@ or_comparisons_1 (tree type, enum tree_code code1, tree op1a, tree op1b,
 	case GIMPLE_ASSIGN:
 	  /* Try to simplify by copy-propagating the definition.  */
 	  return or_var_with_comparison (type, op1a, invert, code2, op2a,
-					 op2b);
+					 op2b, outer_cond_bb);
 
 	case GIMPLE_PHI:
 	  /* If every argument to the PHI produces the same result when
@@ -7273,7 +7316,7 @@ or_comparisons_1 (tree type, enum tree_code code1, tree op1a, tree op1b,
 					     gimple_bb (stmt)))
 			return NULL_TREE;
 		      temp = or_var_with_comparison (type, arg, invert, code2,
-						     op2a, op2b);
+						     op2a, op2b, outer_cond_bb);
 		      if (!temp)
 			return NULL_TREE;
 		      else if (!result)
@@ -7304,17 +7347,20 @@ or_comparisons_1 (tree type, enum tree_code code1, tree op1a, tree op1b,
 tree
 maybe_fold_or_comparisons (tree type,
 			   enum tree_code code1, tree op1a, tree op1b,
-			   enum tree_code code2, tree op2a, tree op2b)
+			   enum tree_code code2, tree op2a, tree op2b,
+			   basic_block outer_cond_bb)
 {
-  if (tree t = or_comparisons_1 (type, code1, op1a, op1b, code2, op2a, op2b))
+  if (tree t = or_comparisons_1 (type, code1, op1a, op1b, code2, op2a, op2b,
+				 outer_cond_bb))
     return t;
 
-  if (tree t = or_comparisons_1 (type, code2, op2a, op2b, code1, op1a, op1b))
+  if (tree t = or_comparisons_1 (type, code2, op2a, op2b, code1, op1a, op1b,
+				 outer_cond_bb))
     return t;
 
   if (tree t = maybe_fold_comparisons_from_match_pd (type, BIT_IOR_EXPR, code1,
 						     op1a, op1b, code2, op2a,
-						     op2b))
+						     op2b, outer_cond_bb))
     return t;
 
   return NULL_TREE;

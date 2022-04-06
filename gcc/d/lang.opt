@@ -138,10 +138,6 @@ Wspeculative
 D
 Warn from speculative compiles such as __traits(compiles).
 
-Wtemplates
-D
-; Documented in C
-
 Wunknown-pragmas
 D Var(warn_unknown_pragmas) LangEnabledBy(D, Wextra)
 ; Documented in C

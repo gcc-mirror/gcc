@@ -1,3 +1,12 @@
+2022-04-02  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* libdruntime/MERGE: Merge upstream druntime c52e28b7.
+	* libdruntime/Makefile.am (DRUNTIME_DSOURCES_OPENBSD): Add
+	core/sys/openbsd/pwd.d.
+	* libdruntime/Makefile.in: Regenerate.
+	* src/MERGE: Merge upstream phobos 99e9c1b77.
+	* testsuite/libphobos.exceptions/message_with_null.d: New test.
+
 2022-03-21  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	PR d/104911

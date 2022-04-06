@@ -5415,11 +5415,10 @@ type_has_user_provided_or_explicit_constructor (tree t)
 
 /* Returns true iff class T has a non-user-provided (i.e. implicitly
    declared or explicitly defaulted in the class body) default
-   constructor.  If SYNTH, only return true if it hasn't been
-   implicitly defined yet.  */
+   constructor.  */
 
-static bool
-type_has_non_user_provided_default_constructor_1 (tree t, bool synth)
+bool
+type_has_non_user_provided_default_constructor (tree t)
 {
   if (!TYPE_HAS_DEFAULT_CONSTRUCTOR (t))
     return false;
@@ -5432,26 +5431,10 @@ type_has_non_user_provided_default_constructor_1 (tree t, bool synth)
       if (TREE_CODE (fn) == FUNCTION_DECL
 	  && default_ctor_p (fn)
 	  && !user_provided_p (fn))
-	{
-	  if (synth)
-	    return !DECL_INITIAL (fn);
-	  return true;
-	}
+	return true;
     }
 
   return false;
-}
-
-bool
-type_has_non_user_provided_default_constructor (tree t)
-{
-  return type_has_non_user_provided_default_constructor_1 (t, false);
-}
-
-bool
-type_has_default_ctor_to_be_synthesized (tree t)
-{
-  return type_has_non_user_provided_default_constructor_1 (t, true);
 }
 
 /* TYPE is being used as a virtual base, and has a non-trivial move

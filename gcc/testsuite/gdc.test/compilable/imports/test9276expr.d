@@ -12,4 +12,3 @@ class Node
 class Expression : Node
 {
 }
-

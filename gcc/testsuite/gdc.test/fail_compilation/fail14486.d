@@ -3,18 +3,30 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail14486.d(35): Error: The `delete` keyword is obsolete.  Use `object.destroy()` (and `core.memory.GC.free()` if applicable) instead.
-fail_compilation/fail14486.d(36): Error: The `delete` keyword is obsolete.  Use `object.destroy()` (and `core.memory.GC.free()` if applicable) instead.
-fail_compilation/fail14486.d(41): Error: The `delete` keyword is obsolete.  Use `object.destroy()` (and `core.memory.GC.free()` if applicable) instead.
-fail_compilation/fail14486.d(42): Error: The `delete` keyword is obsolete.  Use `object.destroy()` (and `core.memory.GC.free()` if applicable) instead.
-fail_compilation/fail14486.d(47): Error: The `delete` keyword is obsolete.  Use `object.destroy()` (and `core.memory.GC.free()` if applicable) instead.
-fail_compilation/fail14486.d(48): Error: The `delete` keyword is obsolete.  Use `object.destroy()` (and `core.memory.GC.free()` if applicable) instead.
-fail_compilation/fail14486.d(53): Error: The `delete` keyword is obsolete.  Use `object.destroy()` (and `core.memory.GC.free()` if applicable) instead.
-fail_compilation/fail14486.d(54): Error: The `delete` keyword is obsolete.  Use `object.destroy()` (and `core.memory.GC.free()` if applicable) instead.
-fail_compilation/fail14486.d(59): Error: The `delete` keyword is obsolete.  Use `object.destroy()` (and `core.memory.GC.free()` if applicable) instead.
-fail_compilation/fail14486.d(60): Error: The `delete` keyword is obsolete.  Use `object.destroy()` (and `core.memory.GC.free()` if applicable) instead.
-fail_compilation/fail14486.d(65): Error: The `delete` keyword is obsolete.  Use `object.destroy()` (and `core.memory.GC.free()` if applicable) instead.
-fail_compilation/fail14486.d(66): Error: The `delete` keyword is obsolete.  Use `object.destroy()` (and `core.memory.GC.free()` if applicable) instead.
+fail_compilation/fail14486.d(47): Error: the `delete` keyword is obsolete
+fail_compilation/fail14486.d(47):        use `object.destroy()` (and `core.memory.GC.free()` if applicable) instead
+fail_compilation/fail14486.d(48): Error: the `delete` keyword is obsolete
+fail_compilation/fail14486.d(48):        use `object.destroy()` (and `core.memory.GC.free()` if applicable) instead
+fail_compilation/fail14486.d(53): Error: the `delete` keyword is obsolete
+fail_compilation/fail14486.d(53):        use `object.destroy()` (and `core.memory.GC.free()` if applicable) instead
+fail_compilation/fail14486.d(54): Error: the `delete` keyword is obsolete
+fail_compilation/fail14486.d(54):        use `object.destroy()` (and `core.memory.GC.free()` if applicable) instead
+fail_compilation/fail14486.d(59): Error: the `delete` keyword is obsolete
+fail_compilation/fail14486.d(59):        use `object.destroy()` (and `core.memory.GC.free()` if applicable) instead
+fail_compilation/fail14486.d(60): Error: the `delete` keyword is obsolete
+fail_compilation/fail14486.d(60):        use `object.destroy()` (and `core.memory.GC.free()` if applicable) instead
+fail_compilation/fail14486.d(65): Error: the `delete` keyword is obsolete
+fail_compilation/fail14486.d(65):        use `object.destroy()` (and `core.memory.GC.free()` if applicable) instead
+fail_compilation/fail14486.d(66): Error: the `delete` keyword is obsolete
+fail_compilation/fail14486.d(66):        use `object.destroy()` (and `core.memory.GC.free()` if applicable) instead
+fail_compilation/fail14486.d(71): Error: the `delete` keyword is obsolete
+fail_compilation/fail14486.d(71):        use `object.destroy()` (and `core.memory.GC.free()` if applicable) instead
+fail_compilation/fail14486.d(72): Error: the `delete` keyword is obsolete
+fail_compilation/fail14486.d(72):        use `object.destroy()` (and `core.memory.GC.free()` if applicable) instead
+fail_compilation/fail14486.d(77): Error: the `delete` keyword is obsolete
+fail_compilation/fail14486.d(77):        use `object.destroy()` (and `core.memory.GC.free()` if applicable) instead
+fail_compilation/fail14486.d(78): Error: the `delete` keyword is obsolete
+fail_compilation/fail14486.d(78):        use `object.destroy()` (and `core.memory.GC.free()` if applicable) instead
 ---
 */
 

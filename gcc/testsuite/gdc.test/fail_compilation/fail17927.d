@@ -11,8 +11,8 @@ fail_compilation/fail17927.d(23): Error: scope variable `ptr` may not be returne
 
 struct String {
     const(char)* mem1() const scope @safe { return ptr; }
-
-    inout(char)* mem2() inout scope @safe { return ptr; } // no error because `ref inout` implies `return`
+    // https://issues.dlang.org/show_bug.cgi?id=22027
+    inout(char)* mem2() inout scope @safe { return ptr; }
 
     char* ptr;
 }
@@ -21,4 +21,3 @@ struct String {
 const(char)* foo1(scope const(char)* ptr) @safe { return ptr; }
 
 inout(char)* foo2(scope inout(char)* ptr) @safe { return ptr; }
-

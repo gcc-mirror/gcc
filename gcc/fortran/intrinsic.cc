@@ -1164,6 +1164,7 @@ gfc_is_intrinsic (gfc_symbol* sym, int subroutine_flag, locus loc)
 
   /* Check for attributes which prevent the symbol from being INTRINSIC.  */
   if (sym->attr.external || sym->attr.contained
+      || sym->attr.recursive
       || sym->attr.if_source == IFSRC_IFBODY)
     return false;
 

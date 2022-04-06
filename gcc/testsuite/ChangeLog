@@ -1,3 +1,256 @@
+2022-04-05  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* gfortran.dg/gomp/masked-taskloop.f90: New.
+
+2022-04-05  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/105139
+	* gcc.target/i386/pr105139.c: New test.
+
+2022-04-05  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/104210
+	* gfortran.dg/pr104210.f90: New test.
+
+2022-04-05  Harald Anlauf  <anlauf@gmx.de>
+	    Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/105138
+	* gfortran.dg/recursive_reference_3.f90: New test.
+
+2022-04-05  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/mops_4.c: New test.
+
+2022-04-05  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/103147
+	* gcc.target/aarch64/pr103147-1.c: New test.
+	* gcc.target/aarch64/pr103147-2.c: Likewise.
+	* gcc.target/aarch64/pr103147-3.c: Likewise.
+	* gcc.target/aarch64/pr103147-4.c: Likewise.
+	* gcc.target/aarch64/pr103147-5.c: Likewise.
+	* gcc.target/aarch64/pr103147-6.c: Likewise.
+	* gcc.target/aarch64/pr103147-7.c: Likewise.
+	* gcc.target/aarch64/pr103147-8.c: Likewise.
+	* gcc.target/aarch64/pr103147-9.c: Likewise.
+	* gcc.target/aarch64/pr103147-10.c: Likewise.
+	* g++.target/aarch64/pr103147-1.C: Likewise.
+	* g++.target/aarch64/pr103147-2.C: Likewise.
+	* g++.target/aarch64/pr103147-3.C: Likewise.
+	* g++.target/aarch64/pr103147-4.C: Likewise.
+	* g++.target/aarch64/pr103147-5.C: Likewise.
+	* g++.target/aarch64/pr103147-6.C: Likewise.
+	* g++.target/aarch64/pr103147-7.C: Likewise.
+	* g++.target/aarch64/pr103147-8.C: Likewise.
+	* g++.target/aarch64/pr103147-9.C: Likewise.
+	* g++.target/aarch64/pr103147-10.C: Likewise.
+
+2022-04-05  Jason Merrill  <jason@redhat.com>
+
+	PR c++/103852
+	DR 1286
+	* g++.dg/cpp1z/class-deduction-alias1.C: Expect warning.
+
+2022-04-05  Jason Merrill  <jason@redhat.com>
+
+	PR c++/101677
+	* g++.dg/cpp2a/concepts-pr67178.C: Adjust error.
+	* g++.dg/cpp2a/concepts-requires28.C: New test.
+
+2022-04-05  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp0x/noexcept34.C: Allow more wording variation.
+
+2022-04-05  Richard Biener  <rguenther@suse.de>
+
+	PR c/105151
+	* gcc.dg/gimplefe-error-14.c: New testcase.
+
+2022-04-05  Robin Dapp  <rdapp@linux.ibm.com>
+
+	* gcc.target/s390/zvector/vec-double-compile.c: Expect vl
+	  instead of vc*.
+	* gcc.target/s390/zvector/vec-float-compile.c: Dito.
+	* gcc.target/s390/zvector/vec-signed-compile.c: Dito.
+	* gcc.target/s390/zvector/vec-unsigned-compile.c: Dito.
+
+2022-04-05  Robin Dapp  <rdapp@linux.ibm.com>
+
+	* gcc.target/s390/ifcvt-two-insns-bool.c: Change nle to h.
+	* gcc.target/s390/ifcvt-two-insns-int.c: Dito.
+	* gcc.target/s390/ifcvt-two-insns-long.c: Dito.
+
+2022-04-05  Robin Dapp  <rdapp@linux.ibm.com>
+
+	* gcc.dg/Wuse-after-free-2.c:
+	Add -fno-tree-loop-distribute-patterns in order to avoid
+	rawmemchr.
+
+2022-04-05  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr101908-1.c: New test.
+	* gcc.target/i386/pr101908-2.c: New test.
+	* gcc.target/i386/pr101908-3.c: New test.
+
+2022-04-04  Jason Merrill  <jason@redhat.com>
+
+	PR c++/101894
+	* g++.dg/lookup/friend22.C: New test.
+
+2022-04-04  Jason Merrill  <jason@redhat.com>
+
+	PR c++/103852
+	DR 1286
+	* g++.dg/cpp0x/alias-decl-dr1286a.C: Default args now matter.
+	* g++.dg/cpp1z/class-deduction-alias1.C: New test.
+
+2022-04-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/105132
+	* gcc.dg/torture/pr105132.c: New testcase.
+
+2022-04-04  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/105140
+	* gcc.dg/pr105140.c: New testcase.
+
+2022-04-04  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/104740
+	* gdc.dg/simd_ctfe.d: Compile with target avx_runtime or
+	vect_sizes_16B_8B.
+
+2022-04-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/105123
+	* gcc.target/i386/pr105123.c: New test.
+
+2022-04-03  Benno Evers  <benno.evers@tenzir.com>
+	    Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/103328
+	* g++.dg/coroutines/pr103328.C: New test.
+
+2022-04-02  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* gdc.dg/nrvo1.d: New test.
+
+2022-04-02  Xi Ruoyao  <xry111@mengyan1223.wang>
+
+	* gcc.target/mips/pr102024-4.c: New test.
+
+2022-04-02  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc.dg/fixed-point/composite-type.c: Add -Wno-array-parameter.
+
+2022-04-01  Jason Merrill  <jason@redhat.com>
+
+	Revert:
+	2022-03-31  Jason Merrill  <jason@redhat.com>
+
+	PR c++/96645
+	* g++.dg/cpp0x/nsdmi10.C: Now OK.
+	* g++.dg/ext/is_constructible3.C: Likewise.
+	* g++.dg/ext/is_constructible7.C: Likewise.
+
+2022-04-01  Jason Merrill  <jason@redhat.com>
+
+	Revert:
+	2022-03-24  Jason Merrill  <jason@redhat.com>
+
+	PR c++/96645
+	* g++.dg/ext/is_constructible3.C: Expect error.
+	* g++.dg/ext/is_constructible7.C: New test.
+
+2022-04-01  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/105110
+	* g++.dg/cpp2a/nontype-class52.C: New test.
+
+2022-04-01  Xi Ruoyao  <xry111@mengyan1223.wang>
+
+	PR target/102024
+	* gcc.target/mips/pr102024-1.c: New test.
+	* gcc.target/mips/pr102024-2.c: New test.
+	* gcc.target/mips/pr102024-3.c: New test.
+
+2022-04-01  Xi Ruoyao  <xry111@mengyan1223.wang>
+
+	PR target/102024
+	* g++.target/mips/mips.exp: New test supporting file.
+	* g++.target/mips/pr102024.C: New test.
+
+2022-04-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/104645
+	* gcc.dg/tree-ssa/pr104645.c: New test.
+
+2022-04-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/102024
+	* gcc.dg/compat/pr102024_test.h: Add further tests with zero sized
+	structures and arrays.
+	* g++.dg/compat/pr102024_test.h: Add further tests with zero sized
+	arrays.
+
+2022-04-01  Tom de Vries  <tdevries@suse.de>
+
+	* gcc.target/nvptx/nvptx.exp
+	(check_effective_target_runtime_ptx_isa_version_6_3): Rename and
+	generalize to ...
+	(check_effective_target_runtime_ptx_isa_version_at_least): .. this.
+	(check_effective_target_default_ptx_isa_version_at_least)
+	(check_effective_target_runtime_ptx_alias, add_options_for_ptx_alias):
+	New proc.
+	* gcc.target/nvptx/alias-1.c: Use "target runtime_ptx_alias" and
+	"dg-add-options ptx_alias".
+	* gcc.target/nvptx/alias-2.c: Same.
+	* gcc.target/nvptx/alias-3.c: Same.
+	* gcc.target/nvptx/alias-4.c: Same.
+
+2022-04-01  Alexandre Oliva  <oliva@adacore.com>
+
+	* lib/target-supports.exp
+	(check_effective_target_arm_soft_ok_link): New.
+	* gcc.target/arm/size-optimization-ieee-1.c: Use it.
+	* gcc.target/arm/size-optimization-ieee-2.c: Likewise.
+	* gcc.target/arm/size-optimization-ieee-3.c: Likewise.
+
+2022-03-31  Martin Jambor  <mjambor@suse.cz>
+
+	* gcc.dg/ipa/pr103083-1.c: New test.
+	* gcc.dg/ipa/pr103083-2.c: Likewise.
+
+2022-03-31  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/102513
+	* gcc.dg/ipa/pr102513.c: New test.
+
+2022-03-31  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/103171
+	* gcc.dg/ipa/remref-6.c: Adjust dump scan string.
+	* gcc.dg/ipa/remref-7.c: New test.
+	* gcc.dg/lto/pr103171_0.c: New test.
+	* gcc.dg/lto/pr103171_1.c: Likewise.
+
+2022-03-31  Tom de Vries  <tdevries@suse.de>
+
+	* gcc.target/nvptx/march.c: Add missing space in dg-options line.
+
+2022-03-31  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/105109
+	* gcc.dg/uninit-pr105109.c: New testcase.
+
+2022-03-31  Jason Merrill  <jason@redhat.com>
+
+	PR c++/96645
+	* g++.dg/cpp0x/nsdmi10.C: Now OK.
+	* g++.dg/ext/is_constructible3.C: Likewise.
+	* g++.dg/ext/is_constructible7.C: Likewise.
+
 2022-03-30  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/100892

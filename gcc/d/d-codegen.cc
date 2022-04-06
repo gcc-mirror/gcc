@@ -2207,9 +2207,9 @@ d_build_call (TypeFunction *tf, tree callable, tree object,
 			      build_address (targ));
 	    }
 
-  	  /* Type `noreturn` is a terminator, as no other arguments can possibly
-  	     be evaluated after it.  */
-  	  if (TREE_TYPE (targ) == noreturn_type_node)
+	  /* Type `noreturn` is a terminator, as no other arguments can possibly
+	     be evaluated after it.  */
+	  if (TREE_TYPE (targ) == noreturn_type_node)
 	    noreturn_call = true;
 
 	  vec_safe_push (args, targ);
@@ -2690,9 +2690,15 @@ build_frame_type (tree ffi, FuncDeclaration *fd)
       DECL_NONADDRESSABLE_P (field) = !TREE_ADDRESSABLE (vsym);
       TREE_THIS_VOLATILE (field) = TREE_THIS_VOLATILE (vsym);
 
-      /* Can't do nrvo if the variable is put in a frame.  */
-      if (fd->nrvo_can && fd->nrvo_var == v)
-	fd->nrvo_can = 0;
+      if (DECL_LANG_NRVO (vsym))
+	{
+	  /* Store the nrvo variable in the frame by reference.  */
+	  TREE_TYPE (field) = build_reference_type (TREE_TYPE (field));
+
+	  /* Can't do nrvo if the variable is put in a closure, since what the
+	     return slot points to may no longer exist.  */
+	  gcc_assert (!FRAMEINFO_IS_CLOSURE (ffi));
+	}
 
       if (FRAMEINFO_IS_CLOSURE (ffi))
 	{
@@ -2769,13 +2775,17 @@ build_closure (FuncDeclaration *fd)
   for (size_t i = 0; i < fd->closureVars.length; i++)
     {
       VarDeclaration *v = fd->closureVars[i];
-
-      if (!v->isParameter ())
-	continue;
-
       tree vsym = get_symbol_decl (v);
 
+      if (TREE_CODE (vsym) != PARM_DECL && !DECL_LANG_NRVO (vsym))
+	continue;
+
       tree field = component_ref (decl_ref, DECL_LANG_FRAME_FIELD (vsym));
+
+      /* Variable is an alias for the NRVO slot, store the reference.  */
+      if (DECL_LANG_NRVO (vsym))
+	vsym = build_address (DECL_LANG_NRVO (vsym));
+
       tree expr = modify_expr (field, vsym);
       add_stmt (expr);
     }

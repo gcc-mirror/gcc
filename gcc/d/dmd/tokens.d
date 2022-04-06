@@ -245,6 +245,7 @@ enum TOK : ubyte
     arrow,      // ->
     colonColon, // ::
     wchar_tLiteral,
+    endOfLine,  // \n, \r, \u2028, \u2029
     whitespace,
 
     // C only keywords
@@ -851,6 +852,7 @@ extern (C++) struct Token
         TOK.wcharLiteral: "wcharv",
         TOK.dcharLiteral: "dcharv",
         TOK.wchar_tLiteral: "wchar_tv",
+        TOK.endOfLine: "\\n",
         TOK.whitespace: "whitespace",
 
         // C only keywords
@@ -945,20 +947,19 @@ nothrow:
             sprintf(&buffer[0], "%d", cast(int)intvalue);
             break;
         case TOK.uns32Literal:
-        case TOK.wcharLiteral:
-        case TOK.dcharLiteral:
         case TOK.wchar_tLiteral:
             sprintf(&buffer[0], "%uU", cast(uint)unsvalue);
             break;
+        case TOK.wcharLiteral:
+        case TOK.dcharLiteral:
         case TOK.charLiteral:
-        {
-            const v = cast(int)intvalue;
-            if (v >= ' ' && v <= '~')
-                sprintf(&buffer[0], "'%c'", v);
-            else
-                sprintf(&buffer[0], "'\\x%02x'", v);
+            {
+                OutBuffer buf;
+                buf.writeSingleCharLiteral(cast(dchar) intvalue);
+                buf.writeByte('\0');
+                p = buf.extractSlice().ptr;
+            }
             break;
-        }
         case TOK.int64Literal:
             sprintf(&buffer[0], "%lldL", cast(long)intvalue);
             break;
@@ -1090,7 +1091,7 @@ void writeCharLiteral(ref OutBuffer buf, dchar c)
             buf.writeByte('\\');
             goto default;
         default:
-            if (c <= 0x7F)
+            if (c <= 0xFF)
             {
                 if (isprint(c))
                     buf.writeByte(c);
@@ -1113,4 +1114,41 @@ unittest
         writeCharLiteral(buf, d);
     }
     assert(buf.extractSlice() == `a\n\r\t\b\f\0\x11\u7233\U00017233`);
+}
+
+/**
+ * Write a single-quoted character literal
+ *
+ * Useful for printing '' char literals in e.g. error messages, ddoc, or the `.stringof` property
+ *
+ * Params:
+ *   buf = buffer to append character in
+ *   c = code point to write
+ */
+nothrow
+void writeSingleCharLiteral(ref OutBuffer buf, dchar c)
+{
+    buf.writeByte('\'');
+    if (c == '\'')
+        buf.writeByte('\\');
+
+    if (c == '"')
+        buf.writeByte('"');
+    else
+        writeCharLiteral(buf, c);
+
+    buf.writeByte('\'');
+}
+
+unittest
+{
+    OutBuffer buf;
+    writeSingleCharLiteral(buf, '\'');
+    assert(buf.extractSlice() == `'\''`);
+    buf.reset();
+    writeSingleCharLiteral(buf, '"');
+    assert(buf.extractSlice() == `'"'`);
+    buf.reset();
+    writeSingleCharLiteral(buf, '\n');
+    assert(buf.extractSlice() == `'\n'`);
 }

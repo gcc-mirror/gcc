@@ -7,4 +7,3 @@ fail_compilation/dephexstrings.d(9): Error: declaration expected, not `"60"`
 ---
 */
 enum xstr = x"60";
-

@@ -357,6 +357,8 @@ ipa_print_node_jump_functions_for_edge (FILE *f, struct cgraph_edge *cs)
 		   jump_func->value.ancestor.offset);
 	  if (jump_func->value.ancestor.agg_preserved)
 	    fprintf (f, ", agg_preserved");
+	  if (jump_func->value.ancestor.keep_null)
+	    fprintf (f, ", keep_null");
 	  fprintf (f, "\n");
 	}
 
@@ -601,12 +603,13 @@ ipa_set_jf_arith_pass_through (struct ipa_jump_func *jfunc, int formal_id,
 
 static void
 ipa_set_ancestor_jf (struct ipa_jump_func *jfunc, HOST_WIDE_INT offset,
-		     int formal_id, bool agg_preserved)
+		     int formal_id, bool agg_preserved, bool keep_null)
 {
   jfunc->type = IPA_JF_ANCESTOR;
   jfunc->value.ancestor.formal_id = formal_id;
   jfunc->value.ancestor.offset = offset;
   jfunc->value.ancestor.agg_preserved = agg_preserved;
+  jfunc->value.ancestor.keep_null = keep_null;
 }
 
 /* Get IPA BB information about the given BB.  FBI is the context of analyzis
@@ -1438,7 +1441,8 @@ compute_complex_assign_jump_func (struct ipa_func_body_info *fbi,
   index = ipa_get_param_decl_index (info, SSA_NAME_VAR (ssa));
   if (index >= 0 && param_type && POINTER_TYPE_P (param_type))
     ipa_set_ancestor_jf (jfunc, offset,  index,
-			 parm_ref_data_pass_through_p (fbi, index, call, ssa));
+			 parm_ref_data_pass_through_p (fbi, index, call, ssa),
+			 false);
 }
 
 /* Extract the base, offset and MEM_REF expression from a statement ASSIGN if
@@ -1564,7 +1568,8 @@ compute_complex_ancestor_jump_func (struct ipa_func_body_info *fbi,
     }
 
   ipa_set_ancestor_jf (jfunc, offset, index,
-		       parm_ref_data_pass_through_p (fbi, index, call, parm));
+		       parm_ref_data_pass_through_p (fbi, index, call, parm),
+		       true);
 }
 
 /* Inspect the given TYPE and return true iff it has the same structure (the
@@ -3250,6 +3255,7 @@ update_jump_functions_after_inlining (struct cgraph_edge *cs,
 	      dst->value.ancestor.offset += src->value.ancestor.offset;
 	      dst->value.ancestor.agg_preserved &=
 		src->value.ancestor.agg_preserved;
+	      dst->value.ancestor.keep_null |= src->value.ancestor.keep_null;
 	    }
 	  else
 	    ipa_set_jf_unknown (dst);
@@ -3327,7 +3333,8 @@ update_jump_functions_after_inlining (struct cgraph_edge *cs,
 		    ipa_set_ancestor_jf (dst,
 					 ipa_get_jf_ancestor_offset (src),
 					 ipa_get_jf_ancestor_formal_id (src),
-					 agg_p);
+					 agg_p,
+					 ipa_get_jf_ancestor_keep_null (src));
 		    break;
 		  }
 		default:
@@ -4181,6 +4188,20 @@ propagate_controlled_uses (struct cgraph_edge *cs)
 	  int d = ipa_get_controlled_uses (old_root_info, i);
 	  int c = rdesc->refcount;
 	  rdesc->refcount = combine_controlled_uses_counters (c, d);
+	  if (rdesc->refcount != IPA_UNDESCRIBED_USE
+	      && ipa_get_param_load_dereferenced (old_root_info, i))
+	    {
+	      tree cst = ipa_get_jf_constant (jf);
+	      gcc_checking_assert (TREE_CODE (cst) == ADDR_EXPR
+				   && (TREE_CODE (TREE_OPERAND (cst, 0))
+				       == VAR_DECL));
+	      symtab_node *n = symtab_node::get (TREE_OPERAND (cst, 0));
+	      new_root->create_reference (n, IPA_REF_LOAD, NULL);
+	      if (dump_file)
+		fprintf (dump_file, "ipa-prop: Address IPA constant will reach "
+			 "a load so adding LOAD reference from %s to %s.\n",
+			 new_root->dump_name (), n->dump_name ());
+	    }
 	  if (rdesc->refcount == 0)
 	    {
 	      tree cst = ipa_get_jf_constant (jf);
@@ -4193,20 +4214,8 @@ propagate_controlled_uses (struct cgraph_edge *cs)
 	      symtab_node *n = symtab_node::get (TREE_OPERAND (cst, 0));
 	      if (n)
 		{
-		  struct cgraph_node *clone;
-		  bool removed = remove_described_reference (n, rdesc);
-		  /* The reference might have been removed by IPA-CP.  */
-		  if (removed
-		      && ipa_get_param_load_dereferenced (old_root_info, i))
-		    {
-		      new_root->create_reference (n, IPA_REF_LOAD, NULL);
-		      if (dump_file)
-			fprintf (dump_file, "ipa-prop: ...replaced it with "
-				 "LOAD one from %s to %s.\n",
-				 new_root->dump_name (), n->dump_name ());
-		    }
-
-		  clone = cs->caller;
+		  remove_described_reference (n, rdesc);
+		  cgraph_node *clone = cs->caller;
 		  while (clone->inlined_to
 			 && clone->ipcp_clone
 			 && clone != rdesc->cs->caller)
@@ -4758,6 +4767,7 @@ ipa_write_jump_function (struct output_block *ob,
       streamer_write_uhwi (ob, jump_func->value.ancestor.formal_id);
       bp = bitpack_create (ob->main_stream);
       bp_pack_value (&bp, jump_func->value.ancestor.agg_preserved, 1);
+      bp_pack_value (&bp, jump_func->value.ancestor.keep_null, 1);
       streamer_write_bitpack (&bp);
       break;
     default:
@@ -4883,7 +4893,9 @@ ipa_read_jump_function (class lto_input_block *ib,
 	int formal_id = streamer_read_uhwi (ib);
 	struct bitpack_d bp = streamer_read_bitpack (ib);
 	bool agg_preserved = bp_unpack_value (&bp, 1);
-	ipa_set_ancestor_jf (jump_func, offset, formal_id, agg_preserved);
+	bool keep_null = bp_unpack_value (&bp, 1);
+	ipa_set_ancestor_jf (jump_func, offset, formal_id, agg_preserved,
+			     keep_null);
 	break;
       }
     default:

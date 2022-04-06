@@ -13,4 +13,3 @@ void test()
     int i;
     auto ti = typeid(i);
 }
-

@@ -202,6 +202,9 @@ struct target_regs {
      registers that a given machine mode occupies.  */
   unsigned char x_hard_regno_nregs[FIRST_PSEUDO_REGISTER][MAX_MACHINE_MODE];
 
+  /* The max value found in x_hard_regno_nregs.  */
+  unsigned char x_hard_regno_max_nregs;
+
   /* For each hard register, the widest mode object that it can contain.
      This will be a MODE_INT mode if the register can hold integers.  Otherwise
      it will be a MODE_FLOAT or a MODE_CC mode, whichever is valid for the
@@ -235,6 +238,8 @@ extern struct target_regs *this_target_regs;
 #else
 #define this_target_regs (&default_target_regs)
 #endif
+#define hard_regno_max_nregs \
+  (this_target_regs->x_hard_regno_max_nregs)
 #define reg_raw_mode \
   (this_target_regs->x_reg_raw_mode)
 #define have_regs_of_mode \

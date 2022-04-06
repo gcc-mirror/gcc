@@ -2652,6 +2652,14 @@ The mode is intended to be used as a means to help validate the expected
 object size, for example in functions that call @code{__builtin_object_size}.
 @xref{Object Size Checking}.
 
+Note that the @code{access} attribute merely specifies how an object
+referenced by the pointer argument can be accessed; it does not imply that
+an access @strong{will} happen.  Also, the @code{access} attribute does not
+imply the attribute @code{nonnull}; it may be appropriate to add both attributes
+at the declaration of a function that unconditionally manipulates a buffer via
+a pointer argument.  See the @code{nonnull} attribute for more information and
+caveats.
+
 @item alias ("@var{target}")
 @cindex @code{alias} function attribute
 The @code{alias} attribute causes the declaration to be emitted as an alias

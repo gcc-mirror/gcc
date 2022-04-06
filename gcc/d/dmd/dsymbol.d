@@ -190,7 +190,7 @@ struct Visibility
 
 enum PASS : ubyte
 {
-    init,           // initial state
+    initial,        // initial state
     semantic,       // semantic() started
     semanticdone,   // semantic() done
     semantic2,      // semantic2() started
@@ -249,7 +249,7 @@ extern (C++) class Dsymbol : ASTNode
     Scope* _scope;          // !=null means context to use for semantic()
     const(char)* prettystring;  // cached value of toPrettyChars()
     bool errors;            // this symbol failed to pass semantic()
-    PASS semanticRun = PASS.init;
+    PASS semanticRun = PASS.initial;
     ushort localNum;        /// perturb mangled name to avoid collisions with those in FuncDeclaration.localsymtab
 
     DeprecatedDeclaration depdecl;           // customized deprecation message
@@ -621,7 +621,7 @@ extern (C++) class Dsymbol : ASTNode
         static bool has2This(Dsymbol s)
         {
             if (auto f = s.isFuncDeclaration())
-                return f.isThis2;
+                return f.hasDualContext();
             if (auto ad = s.isAggregateDeclaration())
                 return ad.vthis2 !is null;
             return false;
@@ -2399,6 +2399,7 @@ Dsymbol handleTagSymbols(ref Scope sc, Dsymbol s, Dsymbol s2, ScopeDsymbol sds)
 {
     enum log = false;
     if (log) printf("handleTagSymbols('%s') add %p existing %p\n", s.toChars(), s, s2);
+    if (log) printf("  add %s %s, existing %s %s\n", s.kind(), s.toChars(), s2.kind(), s2.toChars());
     auto sd = s.isScopeDsymbol(); // new declaration
     auto sd2 = s2.isScopeDsymbol(); // existing declaration
 
@@ -2457,6 +2458,7 @@ Dsymbol handleTagSymbols(ref Scope sc, Dsymbol s, Dsymbol s2, ScopeDsymbol sds)
         sc._module.tagSymTab[cast(void*)s] = s2;
         return s;
     }
+    // neither s2 nor s is a tag
     if (log) printf(" collision\n");
     return null;
 }
@@ -2483,6 +2485,7 @@ Dsymbol handleSymbolRedeclarations(ref Scope sc, Dsymbol s, Dsymbol s2, ScopeDsy
 {
     enum log = false;
     if (log) printf("handleSymbolRedeclarations('%s')\n", s.toChars());
+    if (log) printf("  add %s %s, existing %s %s\n", s.kind(), s.toChars(), s2.kind(), s2.toChars());
 
     static Dsymbol collision()
     {
@@ -2552,8 +2555,16 @@ Dsymbol handleSymbolRedeclarations(ref Scope sc, Dsymbol s, Dsymbol s2, ScopeDsy
 
         if (fd.fbody)                   // fd is the definition
         {
+            if (log) printf(" replace existing with new\n");
             sds.symtab.update(fd);      // replace fd2 in symbol table with fd
             fd.overnext = fd2;
+
+            /* If fd2 is covering a tag symbol, then fd has to cover the same one
+             */
+            auto ps = cast(void*)fd2 in sc._module.tagSymTab;
+            if (ps)
+                sc._module.tagSymTab[cast(void*)fd] = *ps;
+
             return fd;
         }
 

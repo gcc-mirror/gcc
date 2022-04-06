@@ -2788,6 +2788,10 @@ gimple_builtin_call_types_compatible_p (const gimple *stmt, tree fndecl)
 {
   gcc_checking_assert (DECL_BUILT_IN_CLASS (fndecl) != NOT_BUILT_IN);
 
+  if (DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_NORMAL)
+    if (tree decl = builtin_decl_explicit (DECL_FUNCTION_CODE (fndecl)))
+      fndecl = decl;
+
   tree ret = gimple_call_lhs (stmt);
   if (ret
       && !useless_type_conversion_p (TREE_TYPE (ret),

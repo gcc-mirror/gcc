@@ -20,4 +20,3 @@ void main()
     globalField.getInnerField();
     anotherGlobalField.getInnerField();
 }
-

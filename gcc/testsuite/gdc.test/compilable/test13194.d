@@ -14,4 +14,3 @@ union U13194
 {
     static Object o = void;
 }
-

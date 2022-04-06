@@ -326,6 +326,7 @@
 # define __cpp_lib_string_resize_and_overwrite 202110L
 #endif
 #define __cpp_lib_to_underlying 202102L
+#define __cpp_lib_unreachable 202202L
 #endif
 #endif // C++2b
 #endif // C++20

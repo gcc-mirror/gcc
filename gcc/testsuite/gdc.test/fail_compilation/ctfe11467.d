@@ -49,4 +49,3 @@ int test11467d()
 }
 static assert(test11467c());
 static assert(test11467d());
-

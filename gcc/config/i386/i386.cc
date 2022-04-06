@@ -3753,16 +3753,17 @@ zero_all_vector_registers (HARD_REG_SET need_zeroed_hardregs)
    needs to be cleared, the whole stack should be cleared.  However,
    x87 stack registers that hold the return value should be excluded.
    x87 returns in the top (two for complex values) register, so
-   num_of_st should be 7/6 when x87 returns, otherwise it will be 8.  */
+   num_of_st should be 7/6 when x87 returns, otherwise it will be 8.
+   return the value of num_of_st.  */
 
 
-static bool
+static int
 zero_all_st_registers (HARD_REG_SET need_zeroed_hardregs)
 {
 
   /* If the FPU is disabled, no need to zero all st registers.  */
   if (! (TARGET_80387 || TARGET_FLOAT_RETURNS_IN_80387))
-    return false;
+    return 0;
 
   unsigned int num_of_st = 0;
   for (unsigned int regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
@@ -3774,7 +3775,7 @@ zero_all_st_registers (HARD_REG_SET need_zeroed_hardregs)
       }
 
   if (num_of_st == 0)
-    return false;
+    return 0;
 
   bool return_with_x87 = false;
   return_with_x87 = (crtl->return_rtx
@@ -3802,7 +3803,7 @@ zero_all_st_registers (HARD_REG_SET need_zeroed_hardregs)
       insn = emit_insn (gen_rtx_SET (st_reg, st_reg));
       add_reg_note (insn, REG_DEAD, st_reg);
     }
-  return true;
+  return num_of_st;
 }
 
 
@@ -3851,7 +3852,7 @@ ix86_zero_call_used_regs (HARD_REG_SET need_zeroed_hardregs)
 {
   HARD_REG_SET zeroed_hardregs;
   bool all_sse_zeroed = false;
-  bool all_st_zeroed = false;
+  int all_st_zeroed_num = 0;
   bool all_mm_zeroed = false;
 
   CLEAR_HARD_REG_SET (zeroed_hardregs);
@@ -3881,9 +3882,17 @@ ix86_zero_call_used_regs (HARD_REG_SET need_zeroed_hardregs)
   if (!exit_with_mmx_mode)
     /* x87 exit mode, we should zero all st registers together.  */
     {
-      all_st_zeroed = zero_all_st_registers (need_zeroed_hardregs);
-      if (all_st_zeroed)
-	SET_HARD_REG_BIT (zeroed_hardregs, FIRST_STACK_REG);
+      all_st_zeroed_num = zero_all_st_registers (need_zeroed_hardregs);
+
+      if (all_st_zeroed_num > 0)
+	for (unsigned int regno = FIRST_STACK_REG; regno <= LAST_STACK_REG; regno++)
+	  /* x87 stack registers that hold the return value should be excluded.
+	     x87 returns in the top (two for complex values) register.  */
+	  if (all_st_zeroed_num == 8
+	      || !((all_st_zeroed_num >= 6 && regno == REGNO (crtl->return_rtx))
+		   || (all_st_zeroed_num == 6
+		       && (regno == (REGNO (crtl->return_rtx) + 1)))))
+	    SET_HARD_REG_BIT (zeroed_hardregs, regno);
     }
   else
     /* MMX exit mode, check whether we can zero all mm registers.  */
@@ -21933,6 +21942,65 @@ ix86_seh_fixup_eh_fallthru (void)
       emit_insn_after (gen_nops (const1_rtx), insn);
     }
 }
+/* Split vector load from parm_decl to elemental loads to avoid STLF
+   stalls.  */
+static void
+ix86_split_stlf_stall_load ()
+{
+  rtx_insn* insn, *start = get_insns ();
+  unsigned window = 0;
+
+  for (insn = start; insn; insn = NEXT_INSN (insn))
+    {
+      if (!NONDEBUG_INSN_P (insn))
+	continue;
+      window++;
+      /* Insert 64 vaddps %xmm18, %xmm19, %xmm20(no dependence between each
+	 other, just emulate for pipeline) before stalled load, stlf stall
+	 case is as fast as no stall cases on CLX.
+	 Since CFG is freed before machine_reorg, just do a rough
+	 calculation of the window according to the layout.  */
+      if (window > (unsigned) x86_stlf_window_ninsns)
+	return;
+
+      if (any_uncondjump_p (insn)
+	  || ANY_RETURN_P (PATTERN (insn))
+	  || CALL_P (insn))
+	return;
+
+      rtx set = single_set (insn);
+      if (!set)
+	continue;
+      rtx src = SET_SRC (set);
+      if (!MEM_P (src)
+	  /* Only handle V2DFmode load since it doesn't need any scratch
+	     register.  */
+	  || GET_MODE (src) != E_V2DFmode
+	  || !MEM_EXPR (src)
+	  || TREE_CODE (get_base_address (MEM_EXPR (src))) != PARM_DECL)
+	continue;
+
+      rtx zero = CONST0_RTX (V2DFmode);
+      rtx dest = SET_DEST (set);
+      rtx m = adjust_address (src, DFmode, 0);
+      rtx loadlpd = gen_sse2_loadlpd (dest, zero, m);
+      emit_insn_before (loadlpd, insn);
+      m = adjust_address (src, DFmode, 8);
+      rtx loadhpd = gen_sse2_loadhpd (dest, dest, m);
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	{
+	  fputs ("Due to potential STLF stall, split instruction:\n",
+		 dump_file);
+	  print_rtl_single (dump_file, insn);
+	  fputs ("To:\n", dump_file);
+	  print_rtl_single (dump_file, loadlpd);
+	  print_rtl_single (dump_file, loadhpd);
+	}
+      PATTERN (insn) = loadhpd;
+      INSN_CODE (insn) = -1;
+      gcc_assert (recog_memoized (insn) != -1);
+    }
+}
 
 /* Implement machine specific optimizations.  We implement padding of returns
    for K8 CPUs and pass to avoid 4 jumps in the single 16 byte window.  */
@@ -21948,6 +22016,8 @@ ix86_reorg (void)
 
   if (optimize && optimize_function_for_speed_p (cfun))
     {
+      if (TARGET_SSE2)
+	ix86_split_stlf_stall_load ();
       if (TARGET_PAD_SHORT_FUNCTION)
 	ix86_pad_short_function ();
       else if (TARGET_PAD_RETURNS)

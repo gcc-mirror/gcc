@@ -191,7 +191,7 @@ struct SafeS
 
     ref SafeS foo3() return scope
     {
-        return this;
+        static SafeS s; return s;
     }
 
 	int* p;

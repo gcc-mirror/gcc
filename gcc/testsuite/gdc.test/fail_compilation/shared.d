@@ -91,7 +91,6 @@ fail_compilation/shared.d(2194): Error: direct access to shared `(new shared(K2)
 fail_compilation/shared.d(2202): Error: direct access to shared `c` is not allowed, see `core.atomic`
 fail_compilation/shared.d(2206): Error: function `shared.test_inference_2` function returns `shared` but cannot be inferred `ref`
 fail_compilation/shared.d(2208): Error: returning `c` escapes a reference to parameter `c`
-fail_compilation/shared.d(2208):        perhaps annotate the parameter with `return`
 fail_compilation/shared.d(2214): Error: function `shared.test_inference_3` function returns `shared` but cannot be inferred `ref`
 fail_compilation/shared.d(2216):        return value `getSharedObject()` is not an lvalue
 fail_compilation/shared.d(2222): Error: direct access to shared `a` is not allowed, see `core.atomic`
@@ -100,6 +99,7 @@ fail_compilation/shared.d(2222):        cannot implicitly convert `a` of type `s
 fail_compilation/shared.d(2222): Error: cannot implicitly convert expression `a` of type `shared(const(Object))` to `object.Object`
 ---
  */
+
 #line 2100
 // Derived from https://issues.dlang.org/show_bug.cgi?id=20908
 ref shared(int) test20908()

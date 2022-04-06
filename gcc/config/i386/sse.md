@@ -4923,11 +4923,14 @@
 	      ]
 	      (const_string "<ssevecmode>")))])
 
-(define_insn "*andnottf3"
-  [(set (match_operand:TF 0 "register_operand" "=x,x,v,v")
-	(and:TF
-	  (not:TF (match_operand:TF 1 "register_operand" "0,x,v,v"))
-	  (match_operand:TF 2 "vector_operand" "xBm,xm,vm,v")))]
+;; Modes for andnot3 not covered by VI and MODEF.
+(define_mode_iterator ANDNOT_MODE [TF V1TI])
+
+(define_insn "*andnot<mode>3"
+  [(set (match_operand:ANDNOT_MODE 0 "register_operand" "=x,x,v,v")
+	(and:ANDNOT_MODE
+	  (not:ANDNOT_MODE (match_operand:ANDNOT_MODE 1 "register_operand" "0,x,v,v"))
+	  (match_operand:ANDNOT_MODE 2 "vector_operand" "xBm,xm,vm,v")))]
   "TARGET_SSE"
 {
   char buf[128];

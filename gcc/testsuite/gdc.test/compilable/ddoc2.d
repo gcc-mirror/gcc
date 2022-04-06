@@ -39,4 +39,3 @@ class StreamException: Exception {
     /********** stars ***************/
     int stars;
 }
-

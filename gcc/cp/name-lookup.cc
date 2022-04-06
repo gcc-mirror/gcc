@@ -3249,6 +3249,10 @@ check_local_shadow (tree decl)
       enum opt_code warning_code;
       if (warn_shadow)
 	warning_code = OPT_Wshadow;
+      else if ((TREE_CODE (decl) == TYPE_DECL)
+	       ^ (TREE_CODE (old) == TYPE_DECL))
+	/* If exactly one is a type, they aren't compatible.  */
+	warning_code = OPT_Wshadow_local;
       else if ((TREE_TYPE (old)
 		&& TREE_TYPE (decl)
 		&& same_type_p (TREE_TYPE (old), TREE_TYPE (decl)))

@@ -692,9 +692,7 @@ bool checkAssignEscape(Scope* sc, Expression e, bool gag)
 
             // If va's lifetime encloses v's, then error
             if (va && !va.isDataseg() &&
-                (va.enclosesLifetimeOf(v) && !(v.storage_class & STC.temp) ||
-                 vaIsRef ||
-                 va.isReference() && !(v.storage_class & (STC.parameter | STC.temp))) &&
+                ((va.enclosesLifetimeOf(v) && !(v.storage_class & STC.temp)) || vaIsRef) &&
                 fd.setUnsafe())
             {
                 if (!gag)
@@ -793,7 +791,7 @@ bool checkAssignEscape(Scope* sc, Expression e, bool gag)
 
         // If va's lifetime encloses v's, then error
         if (va &&
-            (va.enclosesLifetimeOf(v) || (va.isRef() && !(va.storage_class & STC.temp)) || va.isDataseg()) &&
+            (va.enclosesLifetimeOf(v) || (va.isReference() && !(va.storage_class & STC.temp)) || va.isDataseg()) &&
             fd.setUnsafe())
         {
             if (!gag)
@@ -1284,27 +1282,24 @@ private bool checkReturnEscapeImpl(Scope* sc, Expression e, bool refs, bool gag)
         {
             if (!gag)
             {
-                const(char)* msg, supplemental;
-                if (v.storage_class & STC.parameter &&
-                    (v.type.hasPointers() || v.storage_class & STC.ref_))
-                {
-                    msg = "returning `%s` escapes a reference to parameter `%s`";
-                    supplemental = vsr == ScopeRef.Ref_ReturnScope
-                                              ? "perhaps remove `scope` parameter annotation so `return` applies to `ref`"
-                                              : v.ident is Id.This
-                                                    ? "perhaps annotate the function with `return`"
-                                                    : "perhaps annotate the parameter with `return`";
-                }
-                else
-                {
-                    msg = "returning `%s` escapes a reference to local variable `%s`";
-                    if (v.ident is Id.This)
-                        supplemental = "perhaps annotate the function with `return`";
-                }
+                const(char)* varKind = v.isParameter() ? "parameter" : "local variable";
+                previewErrorFunc(sc.isDeprecated(), featureState)(e.loc,
+                    "returning `%s` escapes a reference to %s `%s`", e.toChars(), varKind, v.toChars());
 
-                previewErrorFunc(sc.isDeprecated(), featureState)(e.loc, msg, e.toChars(), v.toChars());
-                if (supplemental)
-                    previewSupplementalFunc(sc.isDeprecated(), featureState)(e.loc, supplemental);
+                if (v.isParameter() && v.isReference())
+                {
+                    if (v.storage_class & STC.returnScope)
+                    {
+                        previewSupplementalFunc(sc.isDeprecated(), featureState)(v.loc,
+                            "perhaps change the `return scope` into `scope return`");
+                    }
+                    else
+                    {
+                        const(char)* annotateKind = (v.ident is Id.This) ? "function" : "parameter";
+                        previewSupplementalFunc(sc.isDeprecated(), featureState)(v.loc,
+                            "perhaps annotate the %s with `return`", annotateKind);
+                    }
+                }
             }
             result = true;
         }
@@ -1897,7 +1892,7 @@ void escapeByRef(Expression e, EscapeByResults* er, bool live = false)
 
         override void visit(ThisExp e)
         {
-            if (e.var && e.var.toParent2().isFuncDeclaration().isThis2)
+            if (e.var && e.var.toParent2().isFuncDeclaration().hasDualContext())
                 escapeByValue(e, er, live);
             else if (e.var)
                 er.byref.push(e.var);
@@ -2296,4 +2291,38 @@ bool isReferenceToMutable(Parameter p, Type t)
         return p.type.isMutable();
     }
     return isReferenceToMutable(p.type);
+}
+
+/**********************************
+* Determine if `va` has a lifetime that lasts past
+* the destruction of `v`
+* Params:
+*     va = variable assigned to
+*     v = variable being assigned
+* Returns:
+*     true if it does
+*/
+private bool enclosesLifetimeOf(const VarDeclaration va, const VarDeclaration v) pure
+{
+    assert(va.sequenceNumber != va.sequenceNumber.init);
+    assert(v.sequenceNumber != v.sequenceNumber.init);
+    return va.sequenceNumber < v.sequenceNumber;
+}
+
+/***************************************
+ * Add variable `v` to maybes[]
+ *
+ * When a maybescope variable `v` is assigned to a maybescope variable `va`,
+ * we cannot determine if `this` is actually scope until the semantic
+ * analysis for the function is completed. Thus, we save the data
+ * until then.
+ * Params:
+ *     v = an `STC.maybescope` variable that was assigned to `this`
+ */
+private void addMaybe(VarDeclaration va, VarDeclaration v)
+{
+    //printf("add %s to %s's list of dependencies\n", v.toChars(), toChars());
+    if (!va.maybes)
+        va.maybes = new VarDeclarations();
+    va.maybes.push(v);
 }

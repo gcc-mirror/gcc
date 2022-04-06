@@ -22,4 +22,3 @@ main()
     auto m2 = new immutable(Message)(2);
     m2.notifier = 3;
   }
-

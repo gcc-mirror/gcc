@@ -569,6 +569,11 @@ Additional command-line options
       gcc_jit_context_add_driver_option (ctxt, "-lm");
       gcc_jit_context_add_driver_option (ctxt, "-fuse-linker-plugin");
 
+      gcc_jit_context_add_driver_option (ctxt, "obj.o");
+
+      gcc_jit_context_add_driver_option (ctxt, "-L.");
+      gcc_jit_context_add_driver_option (ctxt, "-lwhatever");
+
    Note that only some options are likely to be meaningful; there is no
    "frontend" within libgccjit, so typically only those affecting
    assembler and linker are likely to be useful.

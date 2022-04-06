@@ -321,7 +321,7 @@ struct JSONValue
        (*a)[0] = "world";  // segmentation fault
        ---
      */
-    @property ref inout(JSONValue[]) array() return scope inout pure @system
+    @property ref inout(JSONValue[]) array() scope return inout pure @system
     {
         enforce!JSONException(type == JSONType.array,
                                 "JSONValue is not an array");

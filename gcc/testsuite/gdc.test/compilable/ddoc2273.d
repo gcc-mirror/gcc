@@ -34,4 +34,3 @@ template staticIndexOf(T, TList...) { alias int staticIndexOf; }
 alias staticIndexOf IndexOf;
 
 void main() { }
-

@@ -252,4 +252,3 @@ S16 ctest16(char x, S16 s, char y) {
 #if __cplusplus
 }
 #endif
-

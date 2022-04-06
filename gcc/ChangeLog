@@ -1,3 +1,274 @@
+2022-04-05  David Malcolm  <dmalcolm@redhat.com>
+
+	* doc/extend.texi (Common Function Attributes): Document that
+	'access' does not imply 'nonnull'.
+
+2022-04-05  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/105139
+	* config/i386/mmx.md (*movv2qi_internal):
+	Change insn mode of alternative 5 to HF for TARGET_AVX512FP16.
+
+2022-04-05  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.md (aarch64_cpymemdi): Turn into a
+	define_expand and turn operands 0 and 1 from REGs to MEMs.
+	(*aarch64_cpymemdi): New pattern.
+	(aarch64_setmemdi): Turn into a define_expand and turn operand 0
+	from a REG to a MEM.
+	(*aarch64_setmemdi): New pattern.
+	* config/aarch64/aarch64.cc (aarch64_expand_cpymem_mops): Use
+	copy_to_mode_reg on all three registers.  Replace the original
+	MEM addresses rather than creating wild reads and writes.
+	(aarch64_expand_setmem_mops): Likewise for the size and for the
+	destination memory and address.
+
+2022-04-05  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/103147
+	* config/aarch64/aarch64-protos.h (aarch64_simd_switcher): New class.
+	* config/aarch64/aarch64-sve-builtins.h (sve_switcher): Inherit
+	from aarch64_simd_switcher.
+	* config/aarch64/aarch64-builtins.cc (aarch64_simd_tuple_modes):
+	New variable.
+	(aarch64_lookup_simd_builtin_type): Use it instead of TYPE_MODE.
+	(register_tuple_type): Add more asserts.  Expect the alignment
+	of the structure to be subject to flag_pack_struct and
+	maximum_field_alignment.  Set aarch64_simd_tuple_modes.
+	(aarch64_simd_switcher::aarch64_simd_switcher): New function.
+	(aarch64_simd_switcher::~aarch64_simd_switcher): Likewise.
+	(handle_arm_neon_h): Hold an aarch64_simd_switcher throughout.
+	(aarch64_general_init_builtins): Hold an aarch64_simd_switcher
+	while calling aarch64_init_simd_builtins.
+	* config/aarch64/aarch64-sve-builtins.cc (sve_switcher::sve_switcher)
+	(sve_switcher::~sve_switcher): Remove code now performed by
+	aarch64_simd_switcher.
+
+2022-04-05  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/104897
+	* config/aarch64/aarch64-sve-builtins.cc
+	(function_resolver::infer_vector_or_tuple_type): Use error_n
+	for "%d vectors" messages.
+
+2022-04-05  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* omp-low.cc (lower_omp_target): Use outer context looked-up 'var' as
+	argument to lang_hooks.decls.omp_array_data, instead of 'ovar' from
+	current clause.
+
+2022-04-05  Richard Biener  <rguenther@suse.de>
+
+	PR c/105151
+	* passes.def (pass_walloca): Move early instance into
+	pass_build_ssa_passes to make SSA form available.
+
+2022-04-05  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/101908
+	* config/i386/i386.cc (ix86_split_stlf_stall_load): New
+	function
+	(ix86_reorg): Call ix86_split_stlf_stall_load.
+	* config/i386/i386.opt (-param=x86-stlf-window-ninsns=): New
+	param.
+
+2022-04-05  Alexandre Oliva  <oliva@adacore.com>
+
+	* targhooks.cc (default_zero_call_used_regs): Attempt to group
+	regs that the target refuses to use in their natural modes.
+	(zcur_select_mode_rtx): New.
+	* regs.h (struct target_regs): Add x_hard_regno_max_nregs.
+	(hard_regno_max_nregs): Define.
+	* reginfo.cc (init_reg_modes_target): Set hard_regno_max_nregs.
+
+2022-04-04  Alex Coplan  <alex.coplan@arm.com>
+
+	* doc/match-and-simplify.texi: Fix typos.
+
+2022-04-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/105144
+	* config/aarch64/t-aarch64 (s-aarch64-tune-md): Do move-if-change
+	only if configured with --enable-maintainer-mode, otherwise compare
+	tmp-aarch64-tune.md with $(srcdir)/config/aarch64/aarch64-tune.md and
+	if they differ, emit a message and fail.
+
+2022-04-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/105144
+	* config/aarch64/t-aarch64 (s-mddeps): Depend on s-aarch64-tune-md.
+	* config/aarch64/aarch64-tune.md: Regenerated.
+
+2022-04-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/105132
+	* tree-vect-stmts.cc (vectorizable_operation): Check that
+	the input vectors have the same number of elements.
+
+2022-04-04  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/105140
+	* fold-const.cc (fold_convertible_p): Allow a TYPE_P arg.
+
+2022-04-03  Jeff Law  <jeffreyalaw@gmail.com>
+
+	PR target/104987
+	* config/iq2000/iq2000.md (bbi): New attribute,  default to no.
+	(delay slot descripts): Use different delay slot description when
+	the insn as the "bbi" attribute.
+	(bbi, bbin patterns): Set the bbi attribute to yes.
+
+2022-04-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/105123
+	* config/i386/i386-expand.cc (ix86_expand_vector_init_general): Avoid
+	using word as target for expand_simple_binop when doing ASHIFT and
+	IOR.
+
+2022-04-02  Xi Ruoyao  <xry111@mengyan1223.wang>
+
+	* config/mips/mips.cc (mips_function_arg): Check if DECL_SIZE is
+	NULL before dereferencing it.
+
+2022-04-01  Qing Zhao  <qing.zhao@oracle.com>
+
+	* config/i386/i386.cc (zero_all_st_registers): Return the value of
+	num_of_st.
+	(ix86_zero_call_used_regs): Update zeroed_hardregs set according to
+	the return value of zero_all_st_registers.
+	* doc/tm.texi: Update the documentation of TARGET_ZERO_CALL_USED_REGS.
+	* function.cc (gen_call_used_regs_seq): Add an assertion.
+	* target.def: Update the documentation of TARGET_ZERO_CALL_USED_REGS.
+
+2022-04-01  Xi Ruoyao  <xry111@mengyan1223.wang>
+
+	PR target/102024
+	* config/mips/mips.cc (mips_function_arg): Ignore zero-width
+	fields, and inform if it causes a psABI change.
+
+2022-04-01  Xi Ruoyao  <xry111@mengyan1223.wang>
+
+	PR target/102024
+	* config/mips/mips.cc (mips_fpr_return_fields): Detect C++
+	zero-width bit-fields and set up an indicator.
+	(mips_return_in_msb): Adapt for mips_fpr_return_fields change.
+	(mips_function_value_1): Diagnose when the presense of a C++
+	zero-width bit-field changes function returning in GCC 12.
+
+2022-04-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/104645
+	* tree-ssa-phiopt.cc (value_replacement): If assign has
+	CONVERT_EXPR_CODE_P rhs_code, treat it like a preparation
+	statement with constant evaluation.
+
+2022-04-01  YunQiang Su  <yunqiang.su@cipunited.com>
+
+	* config/mips/mips.cc (mips_expand_prologue):
+	  IPL is 8bit for MCU ASE.
+
+2022-03-31  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	PR target/104004
+	* config/rs6000/rs6000-builtins.def (MFFSL): Mark nosoft.
+	(MTFSB0): Likewise.
+	(MTFSB1): Likewise.
+	(SET_FPSCR_RN): Likewise.
+	(SET_FPSCR_DRN): Mark nosoft and no32bit.
+
+2022-03-31  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* doc/options.texi (Option file format): Clarifications around
+	option definition records' help texts.
+
+2022-03-31  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* optc-gen.awk <END>: Fix "Multiple different help strings" error
+	diagnostic.
+
+2022-03-31  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* config/aarch64/aarch64.cc (aarch64_vector_costs): Define
+	determine_suggested_unroll_factor and m_has_avg.
+	(determine_suggested_unroll_factor): New function.
+	(aarch64_vector_costs::add_stmt_cost): Check for a qualifying pattern
+	to set m_nosve_pattern.
+	(aarch64_vector_costs::finish_costs): Use
+	determine_suggested_unroll_factor.
+	* config/aarch64/aarch64.opt (aarch64-vect-unroll-limit): New.
+	* doc/invoke.texi: (aarch64-vect-unroll-limit): Document new option.
+
+2022-03-31  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/103083
+	* ipa-prop.h (ipa_ancestor_jf_data): New flag keep_null;
+	(ipa_get_jf_ancestor_keep_null): New function.
+	* ipa-prop.cc (ipa_set_ancestor_jf): Initialize keep_null field of the
+	ancestor function.
+	(compute_complex_assign_jump_func): Pass false to keep_null
+	parameter of ipa_set_ancestor_jf.
+	(compute_complex_ancestor_jump_func): Pass true to keep_null
+	parameter of ipa_set_ancestor_jf.
+	(update_jump_functions_after_inlining): Carry over keep_null from the
+	original ancestor jump-function or merge them.
+	(ipa_write_jump_function): Stream keep_null flag.
+	(ipa_read_jump_function): Likewise.
+	(ipa_print_node_jump_functions_for_edge): Print the new flag.
+	* ipa-cp.cc (class ipcp_bits_lattice): Make various getters const.  New
+	member function known_nonzero_p.
+	(ipcp_bits_lattice::known_nonzero_p): New.
+	(ipcp_bits_lattice::meet_with_1): New parameter drop_all_ones,
+	observe it.
+	(ipcp_bits_lattice::meet_with): Likewise.
+	(propagate_bits_across_jump_function): Simplify.  Pass true in
+	drop_all_ones when it is necessary.
+	(propagate_aggs_across_jump_function): Take care of keep_null
+	flag.
+	(ipa_get_jf_ancestor_result): Propagate NULL accross keep_null
+	jump functions.
+
+2022-03-31  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/102513
+	* ipa-cp.cc (decide_whether_version_node): Skip scalar values
+	which do not fit the known value_range.
+
+2022-03-31  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/103171
+	* ipa-prop.cc (propagate_controlled_uses): Add a LOAD reference
+	always when an ADDR_EXPR constant is known to reach a load because
+	of inlining, not just when removing an ADDR reference.
+
+2022-03-31  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/105109
+	* tree-ssa.cc (execute_update_addresses_taken): Suppress
+	diagnostics on the load of the other complex component.
+
+2022-03-31  Tom de Vries  <tdevries@suse.de>
+
+	* config/nvptx/nvptx.h (ASM_SPEC): Use "-m sm_35" for -misa=sm_30.
+
+2022-03-31  Richard Biener  <rguenther@suse.de>
+
+	PR rtl-optimization/105091
+	* gimple-expr.cc (mark_addressable): Handle TARGET_MEM_REF
+	bases.
+
+2022-03-31  Richard Biener  <rguenther@suse.de>
+
+	Revert:
+	2021-09-13  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/102125
+	* gimple-fold.c (gimple_fold_builtin_memory_op): Allow folding
+	memcpy if the size is not more than MOVE_MAX * MOVE_RATIO.
+
+2022-03-31  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* gcov-io.cc (gcov_read_string): Reword documentation comment.
+
 2022-03-30  Bill Schmidt  <wschmidt@linux.ibm.com>
 
 	* config/rs6000/rs6000-builtins.def (NEG_V16QI): Move to [altivec]

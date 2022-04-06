@@ -27,4 +27,3 @@ struct A {
 }
 
 auto d = A.init.c;
-

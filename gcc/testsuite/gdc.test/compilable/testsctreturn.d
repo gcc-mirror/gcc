@@ -32,4 +32,3 @@ struct S
         return &i;
     }
 }
-

@@ -24,7 +24,7 @@ Rvalues
 -------
 .. type:: gcc_jit_rvalue
 
-A :c:type:`gcc_jit_rvalue *` is an expression that can be computed.
+A :c:type:`gcc_jit_rvalue` is an expression that can be computed.
 
 It can be simple, e.g.:
 
@@ -152,6 +152,7 @@ Constructor expressions
    their presence using:
 
    .. code-block:: c
+
      #ifdef LIBGCCJIT_HAVE_CTORS
 
 .. function:: gcc_jit_rvalue *\
@@ -186,6 +187,7 @@ Constructor expressions
    presence using:
 
    .. code-block:: c
+
      #ifdef LIBGCCJIT_HAVE_CTORS
 
 .. function:: gcc_jit_rvalue *\
@@ -194,7 +196,7 @@ Constructor expressions
 						      gcc_jit_type *type,\
 						      size_t num_values,\
 						      gcc_jit_field **fields,\
-						      gcc_jit_rvalue **value)
+						      gcc_jit_rvalue **values)
 
 
    Create a constructor for a struct as an rvalue.
@@ -235,6 +237,7 @@ Constructor expressions
    presence using:
 
    .. code-block:: c
+
      #ifdef LIBGCCJIT_HAVE_CTORS
 
 .. function:: gcc_jit_rvalue *\
@@ -265,6 +268,7 @@ Constructor expressions
    presence using:
 
    .. code-block:: c
+
      #ifdef LIBGCCJIT_HAVE_CTORS
 
 Vector expressions
@@ -598,7 +602,7 @@ Function calls
               gcc_jit_rvalue_set_bool_require_tail_call (gcc_jit_rvalue *call,\
                                                          int require_tail_call)
 
-   Given an :c:type:`gcc_jit_rvalue *` for a call created through
+   Given an :c:type:`gcc_jit_rvalue` for a call created through
    :c:func:`gcc_jit_context_new_call` or
    :c:func:`gcc_jit_context_new_call_through_ptr`, mark/clear the
    call as needing tail-call optimization.  The optimizer will
@@ -717,8 +721,8 @@ where the rvalue is computed by reading from the storage area.
 
       #ifdef LIBGCCJIT_HAVE_gcc_jit_lvalue_set_tls_model
 
-.. function:: void
-              gcc_jit_lvalue_set_link_section (gcc_jit_lvalue *lvalue,
+.. function:: void\
+              gcc_jit_lvalue_set_link_section (gcc_jit_lvalue *lvalue,\
                                                const char *section_name)
 
    Set the link section of a variable.
@@ -803,14 +807,14 @@ Global variables
       #ifdef LIBGCCJIT_HAVE_gcc_jit_global_set_initializer
 
 .. function:: gcc_jit_lvalue *\
-	      gcc_jit_global_set_initializer_rvalue (gcc_jit_lvalue *global,
+	      gcc_jit_global_set_initializer_rvalue (gcc_jit_lvalue *global,\
 	                                             gcc_jit_rvalue *init_value)
 
    Set the initial value of a global with an rvalue.
 
    The rvalue needs to be a constant expression, e.g. no function calls.
 
-   The global can't have the ``kind`` :ref:`GCC_JIT_GLOBAL_IMPORTED`.
+   The global can't have the ``kind`` :c:macro:`GCC_JIT_GLOBAL_IMPORTED`.
 
    As a non-comprehensive example it is OK to do the equivalent of:
 
@@ -822,8 +826,9 @@ Global variables
        const int baz = 3; /* rvalue from gcc_jit_context_rvalue_from_int.  */
        int boz = baz; /* rvalue from gcc_jit_lvalue_as_rvalue.  */
 
-   Use together with :ref:`gcc_jit_context_new_constructor` to
-   initialize structs, unions and arrays.
+   Use together with :c:func:`gcc_jit_context_new_struct_constructor`,
+   :c:func:`gcc_jit_context_new_union_constructor`, :c:func:`gcc_jit_context_new_array_constructor`
+   to initialize structs, unions and arrays.
 
    On success, returns the ``global`` parameter unchanged. Otherwise, ``NULL``.
 

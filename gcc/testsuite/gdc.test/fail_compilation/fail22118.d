@@ -33,4 +33,3 @@ struct S
         v.a = arg;   // this should not
     }
 }
-

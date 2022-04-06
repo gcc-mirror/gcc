@@ -9,4 +9,3 @@ void main()
 {
     auto fun = ref x;
 }
-

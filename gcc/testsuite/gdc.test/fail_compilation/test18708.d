@@ -60,5 +60,3 @@ class E : Exception
         super(msg, file, line);
     }
 }
-
-

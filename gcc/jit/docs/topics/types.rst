@@ -192,7 +192,7 @@ A compound type analagous to a C `struct`.
 
 A field within a :c:type:`gcc_jit_struct`.
 
-You can model C `struct` types by creating :c:type:`gcc_jit_struct *` and
+You can model C `struct` types by creating :c:type:`gcc_jit_struct` and
 :c:type:`gcc_jit_field` instances, in either order:
 
 * by creating the fields, then the structure.  For example, to model:
@@ -375,7 +375,7 @@ Reflection API
      Given a function type, return its number of parameters.
 
 .. function::  gcc_jit_type *\
-               gcc_jit_function_type_get_param_type (gcc_jit_function_type *function_type,
+               gcc_jit_function_type_get_param_type (gcc_jit_function_type *function_type,\
                                                      size_t index)
 
      Given a function type, return the type of the specified parameter.
@@ -417,7 +417,7 @@ Reflection API
      alignment qualifiers.
 
 .. function::  gcc_jit_field *\
-               gcc_jit_struct_get_field (gcc_jit_struct *struct_type,
+               gcc_jit_struct_get_field (gcc_jit_struct *struct_type,\
                                          size_t index)
 
      Get a struct field by index.

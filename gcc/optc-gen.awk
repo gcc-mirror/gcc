@@ -316,9 +316,12 @@ for (i = 0; i < n_opts; i++) {
 		flags[i + 1] = flags[i] " " flags[i + 1];
 		if (help[i + 1] == "")
 			help[i + 1] = help[i]
-		else if (help[i] != "" && help[i + 1] != help[i])
+		else if (help[i] != "" && help[i + 1] != help[i]) {
 			print "#error Multiple different help strings for " \
-				opts[i] ":\n\t" help[i] "\n\t" help[i + 1]
+				opts[i] ":"
+			print "#error   " help[i]
+			print "#error   " help[i + 1]
+		}
 				
 		i++;
 		back_chain[i] = "N_OPTS";

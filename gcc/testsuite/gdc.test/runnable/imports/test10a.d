@@ -6,4 +6,3 @@ void init()
 }
 
 int[1] it;
-

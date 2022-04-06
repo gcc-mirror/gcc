@@ -186,6 +186,32 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     constexpr underlying_type_t<_Tp>
     to_underlying(_Tp __value) noexcept
     { return static_cast<underlying_type_t<_Tp>>(__value); }
+
+#define __cpp_lib_unreachable 202202L
+  /// Informs the compiler that program control flow never reaches this point.
+  /**
+   * Evaluating a call to this function results in undefined behaviour.
+   * This can be used as an assertion informing the compiler that certain
+   * conditions are impossible, for when the compiler is unable to determine
+   * that by itself.
+   *
+   * For example, it can be used to prevent warnings about reaching the
+   * end of a non-void function without returning.
+   *
+   * @since C++23
+   */
+  [[noreturn,__gnu__::__always_inline__]]
+  inline void
+  unreachable()
+  {
+#ifdef _GLIBCXX_DEBUG
+    std::__glibcxx_assert_fail(nullptr, 0, "std::unreachable()", nullptr);
+#elif defined _GLIBCXX_ASSERTIONS
+    __builtin_trap();
+#else
+    __builtin_unreachable();
+#endif
+  }
 #endif // C++23
 #endif // C++20
 #endif // C++17

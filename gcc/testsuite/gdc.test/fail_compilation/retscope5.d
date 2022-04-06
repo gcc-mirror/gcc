@@ -23,4 +23,3 @@ void test() @safe
             p = &t.a; // should not compile
     }
 }
-

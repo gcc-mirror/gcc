@@ -231,7 +231,14 @@ getSiginfo(siginfo_t *info, void *context __attribute__((unused)))
 #elif defined(__alpha__) && defined(__linux__)
 	ret.sigpc = ((ucontext_t*)(context))->uc_mcontext.sc_pc;
 #elif defined(__PPC__) && defined(__linux__)
+	// For some reason different libc implementations use
+	// different names.
+#if defined(__PPC64__) || defined(__GLIBC__)
 	ret.sigpc = ((ucontext_t*)(context))->uc_mcontext.regs->nip;
+#else
+	// Assumed to be ppc32 musl.
+	ret.sigpc = ((ucontext_t*)(context))->uc_mcontext.gregs[32];
+#endif
 #elif defined(__PPC__) && defined(_AIX)
 	ret.sigpc = ((ucontext_t*)(context))->uc_mcontext.jmp_context.iar;
 #elif defined(__aarch64__) && defined(__linux__)
@@ -347,6 +354,7 @@ dumpregs(siginfo_t *info __attribute__((unused)), void *context __attribute__((u
 		mcontext_t *m = &((ucontext_t*)(context))->uc_mcontext;
 		int i;
 
+#if defined(__PPC64__) || defined(__GLIBC__)
 		for (i = 0; i < 32; i++)
 			runtime_printf("r%d %X\n", i, m->regs->gpr[i]);
 		runtime_printf("pc  %X\n", m->regs->nip);
@@ -355,6 +363,16 @@ dumpregs(siginfo_t *info __attribute__((unused)), void *context __attribute__((u
 		runtime_printf("lr  %X\n", m->regs->link);
 		runtime_printf("ctr %X\n", m->regs->ctr);
 		runtime_printf("xer %X\n", m->regs->xer);
+#else
+		for (i = 0; i < 32; i++)
+			runtime_printf("r%d %X\n", i, m->gregs[i]);
+		runtime_printf("pc  %X\n", m->gregs[32]);
+		runtime_printf("msr %X\n", m->gregs[33]);
+		runtime_printf("cr  %X\n", m->gregs[38]);
+		runtime_printf("lr  %X\n", m->gregs[36]);
+		runtime_printf("ctr %X\n", m->gregs[35]);
+		runtime_printf("xer %X\n", m->gregs[37]);
+#endif
 	  }
 #elif defined(__PPC__) && defined(_AIX)
 	  {

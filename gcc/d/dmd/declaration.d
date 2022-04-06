@@ -292,7 +292,7 @@ extern (C++) abstract class Declaration : Dsymbol
                  * postblit. Print the first field that has
                  * a disabled postblit.
                  */
-                if (postblit.generated)
+                if (postblit.isGenerated())
                 {
                     auto sd = p.isStructDeclaration();
                     assert(sd);
@@ -334,7 +334,7 @@ extern (C++) abstract class Declaration : Dsymbol
 
         if (auto ctor = isCtorDeclaration())
         {
-            if (ctor.isCpCtor && ctor.generated)
+            if (ctor.isCpCtor && ctor.isGenerated())
             {
                 .error(loc, "Generating an `inout` copy constructor for `struct %s` failed, therefore instances of it are uncopyable", parent.toPrettyChars());
                 return true;
@@ -1060,24 +1060,51 @@ extern (C++) class VarDeclaration : Declaration
     enum AdrOnStackNone = ~0u;
     uint ctfeAdrOnStack;
 
-    bool isargptr;                  // if parameter that _argptr points to
-    bool ctorinit;                  // it has been initialized in a ctor
-    bool iscatchvar;                // this is the exception object variable in catch() clause
-    bool isowner;                   // this is an Owner, despite it being `scope`
-    bool setInCtorOnly;             // field can only be set in a constructor, as it is const or immutable
+    // `bool` fields that are compacted into bit fields in a string mixin
+    private extern (D) static struct BitFields
+    {
+        bool isargptr;          /// if parameter that _argptr points to
+        bool ctorinit;          /// it has been initialized in a ctor
+        bool iscatchvar;        /// this is the exception object variable in catch() clause
+        bool isowner;           /// this is an Owner, despite it being `scope`
+        bool setInCtorOnly;     /// field can only be set in a constructor, as it is const or immutable
 
-    // Both these mean the var is not rebindable once assigned,
-    // and the destructor gets run when it goes out of scope
-    bool onstack;                   // it is a class that was allocated on the stack
+        /// It is a class that was allocated on the stack
+        ///
+        /// This means the var is not rebindable once assigned,
+        /// and the destructor gets run when it goes out of scope
+        bool onstack;
 
+        bool overlapped;        /// if it is a field and has overlapping
+        bool overlapUnsafe;     /// if it is an overlapping field and the overlaps are unsafe
+        bool doNotInferScope;   /// do not infer 'scope' for this variable
+        bool doNotInferReturn;  /// do not infer 'return' for this variable
+
+        bool isArgDtorVar;      /// temporary created to handle scope destruction of a function argument
+    }
+
+    private ushort bitFields;       // stores multiple booleans for BitFields
     byte canassign;                 // it can be assigned to
-    bool overlapped;                // if it is a field and has overlapping
-    bool overlapUnsafe;             // if it is an overlapping field and the overlaps are unsafe
-    bool doNotInferScope;           // do not infer 'scope' for this variable
-    bool doNotInferReturn;          // do not infer 'return' for this variable
     ubyte isdataseg;                // private data for isDataseg 0 unset, 1 true, 2 false
 
-    bool isArgDtorVar;              // temporary created to handle scope destruction of a function argument
+    // Generate getter and setter functions for `bitFields`
+    extern (D) mixin(() {
+        string result = "extern (C++) pure nothrow @nogc @safe final {";
+        foreach (size_t i, mem; __traits(allMembers, BitFields))
+        {
+            result ~= "
+            /// set or get the corresponding BitFields member
+            bool "~mem~"() const { return !!(bitFields & (1 << "~i.stringof~")); }
+            /// ditto
+            bool "~mem~"(bool v)
+            {
+                v ? (bitFields |= (1 << "~i.stringof~")) : (bitFields &= ~(1 << "~i.stringof~"));
+                return v;
+            }";
+        }
+        return result ~ "}";
+    }());
+
 
     final extern (D) this(const ref Loc loc, Type type, Identifier ident, Initializer _init, StorageClass storage_class = STC.undefined_)
     in
@@ -1641,64 +1668,6 @@ extern (C++) class VarDeclaration : Declaration
     override void accept(Visitor v)
     {
         v.visit(this);
-    }
-
-    /**********************************
-     * Determine if `this` has a lifetime that lasts past
-     * the destruction of `v`
-     * Params:
-     *  v = variable to test against
-     * Returns:
-     *  true if it does
-     */
-    final bool enclosesLifetimeOf(VarDeclaration v) const pure
-    {
-        // VarDeclaration's with these STC's need special treatment
-        enum special = STC.temp | STC.foreach_;
-
-        // Sequence numbers work when there are no special VarDeclaration's involved
-        if (!((this.storage_class | v.storage_class) & special))
-        {
-            assert(this.sequenceNumber != this.sequenceNumber.init);
-            assert(v.sequenceNumber != v.sequenceNumber.init);
-
-            return (this.sequenceNumber < v.sequenceNumber);
-        }
-
-        // Assume that semantic produces temporaries according to their lifetime
-        // (It won't create a temporary before the actual content)
-        if ((this.storage_class & special) && (v.storage_class & special))
-            return this.sequenceNumber < v.sequenceNumber;
-
-        // Fall back to lexical order
-        assert(this.loc != Loc.initial);
-        assert(v.loc != Loc.initial);
-
-        if (this.loc.linnum != v.loc.linnum)
-            return this.loc.linnum < v.loc.linnum;
-
-        if (this.loc.charnum != v.loc.charnum)
-            return this.loc.charnum < v.loc.charnum;
-
-        // Default fallback
-        return this.sequenceNumber < v.sequenceNumber;
-    }
-
-    /***************************************
-     * Add variable to maybes[].
-     * When a maybescope variable `v` is assigned to a maybescope variable `this`,
-     * we cannot determine if `this` is actually scope until the semantic
-     * analysis for the function is completed. Thus, we save the data
-     * until then.
-     * Params:
-     *  v = an STC.maybescope variable that was assigned to `this`
-     */
-    final void addMaybe(VarDeclaration v)
-    {
-        //printf("add %s to %s's list of dependencies\n", v.toChars(), toChars());
-        if (!maybes)
-            maybes = new VarDeclarations();
-        maybes.push(v);
     }
 }
 

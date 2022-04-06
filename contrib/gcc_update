@@ -86,7 +86,7 @@ gcc/config/arm/arm-tables.opt: gcc/config/arm/arm-cpus.in gcc/config/arm/parsecp
 gcc/config/c6x/c6x-tables.opt: gcc/config/c6x/c6x-isas.def gcc/config/c6x/genopt.sh
 gcc/config/c6x/c6x-sched.md: gcc/config/c6x/c6x-sched.md.in gcc/config/c6x/gensched.sh
 gcc/config/c6x/c6x-mult.md: gcc/config/c6x/c6x-mult.md.in gcc/config/c6x/genmult.sh
-gcc/config/loongarch/loongarch-str.h: gcc/config/loongarch/genopts/genstr.sh gcc/config/loongarch/genopts/loongarch-string
+gcc/config/loongarch/loongarch-str.h: gcc/config/loongarch/genopts/genstr.sh gcc/config/loongarch/genopts/loongarch-strings
 gcc/config/loongarch/loongarch.opt: gcc/config/loongarch/genopts/genstr.sh gcc/config/loongarch/genopts/loongarch.opt.in
 gcc/config/m68k/m68k-tables.opt: gcc/config/m68k/m68k-devices.def gcc/config/m68k/m68k-isas.def gcc/config/m68k/m68k-microarchs.def gcc/config/m68k/genopt.sh
 gcc/config/mips/mips-tables.opt: gcc/config/mips/mips-cpus.def gcc/config/mips/genopt.sh

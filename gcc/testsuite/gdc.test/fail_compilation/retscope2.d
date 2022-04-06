@@ -315,4 +315,3 @@ struct S1300
     int* oops;
 //    this(int* p) @safe { oops = p; }
 }
-
