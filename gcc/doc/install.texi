@@ -2329,18 +2329,6 @@ those are in separate optional packages and where the presence or absence
 of those optional packages should determine the actual supported offloading
 target set rather than the GCC configure-time selection.
 
-@item --with-hsa-runtime=@var{pathname}
-@itemx --with-hsa-runtime-include=@var{pathname}
-@itemx --with-hsa-runtime-lib=@var{pathname}
-
-If you configure GCC with offloading which uses an HSA run-time such as
-AMDGCN but do not have the HSA run-time library installed in a standard
-location then you can explicitly specify the directory where they are
-installed.  The @option{--with-hsa-runtime=@/@var{hsainstalldir}} option
-is a shorthand for
-@option{--with-hsa-runtime-lib=@/@var{hsainstalldir}/lib} and
-@option{--with-hsa-runtime-include=@/@var{hsainstalldir}/include}.
-
 @item --enable-cet
 @itemx --disable-cet
 Enable building target run-time libraries with control-flow
