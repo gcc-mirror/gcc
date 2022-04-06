@@ -15867,11 +15867,30 @@ rs6000_maybe_emit_maxc_minc (rtx dest, rtx op, rtx true_cond, rtx false_cond)
   rtx op1 = XEXP (op, 1);
   machine_mode compare_mode = GET_MODE (op0);
   machine_mode result_mode = GET_MODE (dest);
-  bool max_p = false;
 
   if (result_mode != compare_mode)
     return false;
 
+  /* See the comments of this function, it simply expects GE/GT/LE/LT in
+     the checks, but for the reversible equivalent UNLT/UNLE/UNGT/UNGE,
+     we need to do the reversions first to make the following checks
+     support fewer cases, like:
+
+	(a UNLT b) ? op1 : op2 =>  (a >= b) ? op2 : op1;
+	(a UNLE b) ? op1 : op2 =>  (a >  b) ? op2 : op1;
+	(a UNGT b) ? op1 : op2 =>  (a <= b) ? op2 : op1;
+	(a UNGE b) ? op1 : op2 =>  (a <  b) ? op2 : op1;
+
+     By the way, if we see these UNLT/UNLE/UNGT/UNGE it's guaranteed
+     that we have 4-way condition codes (LT/GT/EQ/UN), so we do not
+     have to check for fast-math or the like.  */
+  if (code == UNGE || code == UNGT || code == UNLE || code == UNLT)
+    {
+      code = reverse_condition_maybe_unordered (code);
+      std::swap (true_cond, false_cond);
+    }
+
+  bool max_p;
   if (code == GE || code == GT)
     max_p = true;
   else if (code == LE || code == LT)
