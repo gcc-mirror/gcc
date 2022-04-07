@@ -190,7 +190,12 @@ public:
   /* opt_pass methods: */
   virtual bool gate (function *)
     {
-      return aarch_bti_enabled ();
+      if (aarch_bti_enabled ())
+        {
+          aarch_bti_arch_check ();
+          return true;
+        }
+      return false;
     }
 
   virtual unsigned int execute (function *)

@@ -8933,6 +8933,10 @@ aarch64_return_address_signing_enabled (void)
 	      && known_ge (cfun->machine->frame.reg_offset[LR_REGNUM], 0)));
 }
 
+/* Only used by the arm backend.  */
+void aarch_bti_arch_check (void)
+{}
+
 /* Return TRUE if Branch Target Identification Mechanism is enabled.  */
 bool
 aarch_bti_enabled (void)

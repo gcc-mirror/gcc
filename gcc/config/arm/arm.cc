@@ -33122,11 +33122,67 @@ arm_current_function_pac_enabled_p (void)
               && !crtl->is_leaf));
 }
 
-/* Return TRUE if Branch Target Identification Mechanism is enabled.  */
-static bool
-aarch_bti_enabled ()
+/* Raise an error if the current target arch is not bti compatible.  */
+void aarch_bti_arch_check (void)
 {
+  if (!arm_arch8m_main)
+    error ("This architecture does not support branch protection instructions");
+}
+
+/* Return TRUE if Branch Target Identification Mechanism is enabled.  */
+bool
+aarch_bti_enabled (void)
+{
+  return aarch_enable_bti != 0;
+}
+
+/* Check if INSN is a BTI J insn.  */
+bool
+aarch_bti_j_insn_p (rtx_insn *insn)
+{
+  if (!insn || !INSN_P (insn))
+    return false;
+
+  rtx pat = PATTERN (insn);
+  return GET_CODE (pat) == UNSPEC_VOLATILE && XINT (pat, 1) == VUNSPEC_BTI_NOP;
+}
+
+/* Check if X (or any sub-rtx of X) is a PACIASP/PACIBSP instruction.  */
+bool
+aarch_pac_insn_p (rtx x)
+{
+  if (!x || !INSN_P (x))
+    return false;
+
+  rtx pat = PATTERN (x);
+
+  if (GET_CODE (pat) == SET)
+    {
+      rtx tmp = XEXP (pat, 1);
+      if (tmp
+	  && ((GET_CODE (tmp) == UNSPEC
+               && XINT (tmp, 1) == UNSPEC_PAC_NOP)
+              || (GET_CODE (tmp) == UNSPEC_VOLATILE
+                  && XINT (tmp, 1) == VUNSPEC_PACBTI_NOP)))
+	return true;
+    }
+
   return false;
+}
+
+ /* Target specific mapping for aarch_gen_bti_c and aarch_gen_bti_j.
+    For Arm, both of these map to a simple BTI instruction.  */
+
+rtx
+aarch_gen_bti_c (void)
+{
+  return gen_bti_nop ();
+}
+
+rtx
+aarch_gen_bti_j (void)
+{
+  return gen_bti_nop ();
 }
 
 /* Implement TARGET_SCHED_CAN_SPECULATE_INSN.  Return true if INSN can be

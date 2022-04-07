@@ -13009,6 +13009,13 @@
   "aut\t%|ip, %|lr, %|sp"
   [(set_attr "conds" "unconditional")])
 
+(define_insn "bti_nop"
+  [(unspec_volatile [(const_int 0)] VUNSPEC_BTI_NOP)]
+  "arm_arch8m_main"
+  "bti"
+  [(set_attr "conds" "unconditional")
+   (set_attr "type" "nop")])
+
 ;; Vector bits common to IWMMXT, Neon and MVE
 (include "vec-common.md")
 ;; Load the Intel Wireless Multimedia Extension patterns

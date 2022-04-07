@@ -42,6 +42,7 @@ extern int arm_no_early_alu_shift_value_dep (rtx, rtx);
 extern int arm_no_early_mul_dep (rtx, rtx);
 extern int arm_no_early_store_addr_dep (rtx, rtx);
 extern bool arm_rtx_shift_left_p (rtx);
+extern void aarch_bti_arch_check (void);
 extern bool aarch_bti_enabled (void);
 extern bool aarch_bti_j_insn_p (rtx_insn *);
 extern bool aarch_pac_insn_p (rtx);
