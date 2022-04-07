@@ -33,11 +33,15 @@ namespace Privacy {
 // to reach more and more nodes until nothing has changed anymore.
 // Do we need to reproduce this behavior? How long does it take to do this?
 
+/**
+ * The ReachabilityVisitor tries to reach all items possible in the crate,
+ * according to their privacy level.
+ */
 class ReachabilityVisitor : public HIR::HIRVisItemVisitor
 {
 public:
   ReachabilityVisitor (PrivacyContext &ctx)
-    : current_level (ReachLevel::Unreachable), ctx (ctx)
+    : current_level (ReachLevel::Reachable), ctx (ctx)
   {}
 
   virtual void visit (HIR::Module &mod);

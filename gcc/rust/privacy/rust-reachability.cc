@@ -65,17 +65,14 @@ void
 ReachabilityVisitor::visit (HIR::StructStruct &struct_item)
 {
   auto struct_reach = ReachLevel::Unreachable;
-  // FIXME: This feels very wrong. Should we check for `has_visibility`
-  // beforehand? Is it just private otherwise? Should the `HIR::Visibility` also
-  // keep variants for private items?
   if (struct_item.get_visibility ().is_public ())
-    struct_reach = ReachLevel::Reachable;
+    struct_reach = current_level;
 
   struct_reach
     = ctx.update_reachability (struct_item.get_mappings (), struct_reach);
 
-  // FIXME: We need to also visit the fields as they might have their own set
-  // of reachability levels
+  // FIXME: Do we need to also visit the fields as they might have their own set
+  // of reachability levels? Can they?
 
   for (auto &field : struct_item.get_fields ())
     ctx.update_reachability (field.get_mappings (), struct_reach);
