@@ -71,14 +71,32 @@ ReachabilityVisitor::visit (HIR::StructStruct &struct_item)
   struct_reach
     = ctx.update_reachability (struct_item.get_mappings (), struct_reach);
 
-  // FIXME: Do we need to also visit the fields as they might have their own set
-  // of reachability levels? Can they?
+  auto old_level = current_level;
+  current_level = struct_reach;
 
-  for (auto &field : struct_item.get_fields ())
-    ctx.update_reachability (field.get_mappings (), struct_reach);
+  if (struct_reach != ReachLevel::Unreachable)
+    {
+      for (auto &field : struct_item.get_fields ())
+	if (field.get_visibility ().is_public ())
+	  ctx.update_reachability (field.get_mappings (), struct_reach);
+
+      // for (auto &generic : struct_item.get_generic_params ())
+      // FIXME: How do we visit these generics's predicates with the
+      // reachability visitor?
+
+      // FIXME: How do we get each generic's predicates from here?
+      // TypeContext?
+
+      // for (auto &field : struct_item.get_fields ())
+      // if (field.get_visibility ().is_public ())
+      // FIXME: How do we visit these fields with the reachability
+      // visitor?
+    }
 
   // FIXME: How do we get the constructor from `struct_item`? We need to update
   // its visibility as well. Probably by keeping a reference to the TypeCtx?
+
+  current_level = old_level;
 }
 
 void
@@ -112,5 +130,8 @@ ReachabilityVisitor::visit (HIR::ImplBlock &impl)
 void
 ReachabilityVisitor::visit (HIR::ExternBlock &block)
 {}
+
+// FIXME: How can we visit Blocks in the current configuration? Have a full
+// visitor?
 } // namespace Privacy
 } // namespace Rust
