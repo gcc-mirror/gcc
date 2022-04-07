@@ -1,3 +1,8 @@
+2022-04-06  Alex Coplan  <alex.coplan@arm.com>
+
+	PR target/99977
+	* gcc.target/arm/pr99977.c: New test.
+
 2022-03-30  Martin Jambor  <mjambor@suse.cz>
 
 	Backported from master:
