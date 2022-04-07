@@ -42,6 +42,11 @@ extern int arm_no_early_alu_shift_value_dep (rtx, rtx);
 extern int arm_no_early_mul_dep (rtx, rtx);
 extern int arm_no_early_store_addr_dep (rtx, rtx);
 extern bool arm_rtx_shift_left_p (rtx);
+extern bool aarch_bti_enabled (void);
+extern bool aarch_bti_j_insn_p (rtx_insn *);
+extern bool aarch_pac_insn_p (rtx);
+extern rtx aarch_gen_bti_c (void);
+extern rtx aarch_gen_bti_j (void);
 
 /* RTX cost table definitions.  These are used when tuning for speed rather
    than for size and should reflect the _additional_ cost over the cost
