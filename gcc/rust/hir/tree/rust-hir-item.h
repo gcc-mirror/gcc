@@ -576,6 +576,9 @@ public:
   // Returns whether visibility is in an error state.
   bool is_error () const { return vis_type == ERROR; }
 
+  // Does the current visibility refer to a simple `pub <item>` entirely public
+  bool is_public () const { return vis_type == PUBLIC; }
+
   // Creates an error visibility.
   static Visibility create_error ()
   {
