@@ -83,6 +83,22 @@ frust-cfg=
 Rust Joined RejectNegative
 -frust-cfg=<name>             Set a config expansion option
 
+frust-edition=
+Rust Joined RejectNegative Enum(frust_edition) Var(flag_rust_edition)
+-frust-edition=[2015|2018|2021]             Choose which edition to use when compiling rust code
+
+Enum
+Name(frust_edition) Type(int) UnknownError(unknown rust edition %qs)
+
+EnumValue
+Enum(frust_edition) String(2015) Value(0)
+
+EnumValue
+Enum(frust_edition) String(2018) Value(1)
+
+EnumValue
+Enum(frust_edition) String(2021) Value(2)
+
 o
 Rust Joined Separate
 ; Documented in common.opt

@@ -373,6 +373,10 @@ Session::handle_option (
 	break;
       }
 
+    case OPT_frust_edition_:
+      options.set_edition (flag_rust_edition);
+      break;
+
     default:
       break;
     }
