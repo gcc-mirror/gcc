@@ -22,6 +22,7 @@
 
 #include "rust-linemap.h"
 #include "rust-backend.h"
+#include "safe-ctype.h"
 
 #include "config.h"
 #include "rust-system.h"

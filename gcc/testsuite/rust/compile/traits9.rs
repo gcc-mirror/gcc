@@ -1,3 +1,4 @@
+// { dg-additional-options -frust-crate=example }
 struct Foo(i32);
 trait Bar {
     fn baz(&self);

@@ -1,4 +1,4 @@
-// { dg-additional-options -fdump-tree-gimple }
+// { dg-additional-options "-fdump-tree-gimple -frust-crate=example" }
 
 struct Foo {
     a: u16,
