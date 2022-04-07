@@ -12913,6 +12913,13 @@
   "aut\t%|ip, %|lr, %|sp"
   [(set_attr "length" "4")])
 
+(define_insn "bti_nop"
+  [(unspec_volatile [(const_int 0)] UNSPEC_BTI_NOP)]
+  "arm_arch7 && arm_arch_cmse"
+  "bti"
+  [(set_attr "length" "4")
+   (set_attr "type" "mov_reg")])
+
 ;; Vector bits common to IWMMXT, Neon and MVE
 (include "vec-common.md")
 ;; Load the Intel Wireless Multimedia Extension patterns

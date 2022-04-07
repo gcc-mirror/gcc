@@ -162,6 +162,7 @@
   UNSPEC_PAC_NOP	; Represents PAC signing LR
   UNSPEC_PACBTI_NOP	; Represents PAC signing LR + valid landing pad
   UNSPEC_AUT_NOP	; Represents PAC verifying LR
+  UNSPEC_BTI_NOP	; Represent BTI
 ])
 
 

@@ -24,6 +24,8 @@
 
 #include "sbitmap.h"
 
+rtl_opt_pass *make_pass_insert_bti (gcc::context *ctxt);
+
 extern enum unwind_info_type arm_except_unwind_info (struct gcc_options *);
 extern int use_return_insn (int, rtx);
 extern bool use_simple_return_p (void);

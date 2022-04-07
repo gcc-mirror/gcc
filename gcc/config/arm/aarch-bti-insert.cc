@@ -41,6 +41,7 @@
 #include "cfgrtl.h"
 #include "tree-pass.h"
 #include "cgraph.h"
+#include "diagnostic-core.h"
 
 /* This pass enables the support for Branch Target Identification Mechanism for
    Arm/AArch64.  This is a security feature introduced in ARMv8.5-A
