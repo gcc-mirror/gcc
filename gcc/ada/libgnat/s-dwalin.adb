@@ -1360,6 +1360,7 @@ package body System.Dwarf_Lines is
    begin
       Success     := False;
       Info_Offset := 0;
+      Addr_Size   := 0;
 
       Read_Initial_Length (C.Aranges, Unit_Length, Is64);
 
