@@ -5898,6 +5898,7 @@ set_decl_namespace (tree decl, tree scope, bool friendp)
 
   tree found = NULL_TREE;
   bool hidden_p = false;
+  bool saw_template = false;
 
   for (lkp_iterator iter (old); iter; ++iter)
     {
@@ -5922,6 +5923,20 @@ set_decl_namespace (tree decl, tree scope, bool friendp)
 	  found = ofn;
 	  hidden_p = iter.hidden_p ();
 	}
+      else if (TREE_CODE (decl) == FUNCTION_DECL
+	       && TREE_CODE (ofn) == TEMPLATE_DECL)
+	saw_template = true;
+    }
+
+  if (!found && friendp && saw_template)
+    {
+      /* "[if no non-template match is found,] each remaining function template
+	 is replaced with the specialization chosen by deduction from the
+	 friend declaration or discarded if deduction fails."
+
+	 So tell check_explicit_specialization to look for a match.  */
+      SET_DECL_IMPLICIT_INSTANTIATION (decl);
+      return;
     }
 
   if (found)

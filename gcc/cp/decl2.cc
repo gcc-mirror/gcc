@@ -734,10 +734,14 @@ check_classfn (tree ctype, tree function, tree template_parms)
   tree pushed_scope = push_scope (ctype);
   tree matched = NULL_TREE;
   tree fns = get_class_binding (ctype, DECL_NAME (function));
-  
+  bool saw_template = false;
+
   for (ovl_iterator iter (fns); !matched && iter; ++iter)
     {
       tree fndecl = *iter;
+
+      if (TREE_CODE (fndecl) == TEMPLATE_DECL)
+	saw_template = true;
 
       /* A member template definition only matches a member template
 	 declaration.  */
@@ -786,6 +790,23 @@ check_classfn (tree ctype, tree function, tree template_parms)
 	  && (!DECL_TEMPLATE_SPECIALIZATION (function)
 	      || (DECL_TI_TEMPLATE (function) == DECL_TI_TEMPLATE (fndecl))))
 	matched = fndecl;
+    }
+
+  if (!matched && !is_template && saw_template
+      && !processing_template_decl && DECL_UNIQUE_FRIEND_P (function))
+    {
+      /* "[if no non-template match is found,] each remaining function template
+	 is replaced with the specialization chosen by deduction from the
+	 friend declaration or discarded if deduction fails."
+
+	 So ask check_explicit_specialization to find a matching template.  */
+      SET_DECL_IMPLICIT_INSTANTIATION (function);
+      tree spec = check_explicit_specialization (DECL_NAME (function),
+						 function, /* tcount */0,
+						 /* friend flag */4,
+						 /* attrlist */NULL_TREE);
+      if (spec != error_mark_node)
+	matched = spec;
     }
 
   if (!matched)

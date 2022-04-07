@@ -2863,7 +2863,9 @@ check_explicit_specialization (tree declarator,
 	  specialization = 1;
 	  SET_DECL_TEMPLATE_SPECIALIZATION (decl);
 	}
-      else if (TREE_CODE (declarator) == TEMPLATE_ID_EXPR)
+      else if (TREE_CODE (declarator) == TEMPLATE_ID_EXPR
+	       || (DECL_LANG_SPECIFIC (decl)
+		   && DECL_IMPLICIT_INSTANTIATION (decl)))
 	{
 	  if (is_friend)
 	    /* This could be something like:
