@@ -92,9 +92,11 @@ CompileItem::visit (HIR::ConstantItem &constant)
   rust_assert (ok);
 
   HIR::Expr *const_value_expr = constant.get_expr ();
+  ctx->push_const_context ();
   tree const_expr
     = compile_constant_item (ctx, resolved_type, canonical_path,
 			     const_value_expr, constant.get_locus ());
+  ctx->pop_const_context ();
 
   ctx->push_const (const_expr);
   ctx->insert_const_decl (constant.get_mappings ().get_hirid (), const_expr);

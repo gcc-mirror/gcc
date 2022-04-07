@@ -1163,19 +1163,54 @@ CompileExpr::array_copied_expr (Location expr_locus,
   unsigned HOST_WIDE_INT len
     = wi::ext (max - min + 1, precision, sign).to_uhwi ();
 
-  // create the constructor
-  size_t idx = 0;
-  std::vector<unsigned long> indexes;
-  std::vector<tree> constructor;
-  for (unsigned HOST_WIDE_INT i = 0; i < len; i++)
+  // In a const context we must initialize the entire array, which entails
+  // allocating for each element. If the user wants a huge array, we will OOM
+  // and die horribly.
+  if (ctx->const_context_p ())
     {
-      constructor.push_back (translated_expr);
-      indexes.push_back (idx++);
+      size_t idx = 0;
+      std::vector<unsigned long> indexes;
+      std::vector<tree> constructor;
+      for (unsigned HOST_WIDE_INT i = 0; i < len; i++)
+	{
+	  constructor.push_back (translated_expr);
+	  indexes.push_back (idx++);
+	}
+
+      return ctx->get_backend ()->array_constructor_expression (array_type,
+								indexes,
+								constructor,
+								expr_locus);
     }
 
-  return ctx->get_backend ()->array_constructor_expression (array_type, indexes,
-							    constructor,
-							    expr_locus);
+  else
+    {
+      // Create a new block scope in which to initialize the array
+      tree fndecl = NULL_TREE;
+      if (ctx->in_fn ())
+	fndecl = ctx->peek_fn ().fndecl;
+
+      std::vector<Bvariable *> locals;
+      tree enclosing_scope = ctx->peek_enclosing_scope ();
+      tree init_block
+	= ctx->get_backend ()->block (fndecl, enclosing_scope, locals,
+				      expr_locus, expr_locus);
+      ctx->push_block (init_block);
+
+      tree tmp;
+      tree stmts
+	= ctx->get_backend ()->array_initializer (fndecl, init_block,
+						  array_type, capacity_expr,
+						  translated_expr, &tmp,
+						  expr_locus);
+      ctx->add_statement (stmts);
+
+      tree block = ctx->pop_block ();
+
+      // The result is a compound expression which creates a temporary array,
+      // initializes all the elements in a loop, and then yeilds the array.
+      return ctx->get_backend ()->compound_expression (block, tmp, expr_locus);
+    }
 }
 
 tree
