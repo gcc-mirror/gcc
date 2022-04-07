@@ -1,3 +1,18 @@
+2022-04-07  Thomas Schwinge <thomas@codesourcery.com>
+
+	Backport from mainline:
+	2022-04-07  Thomas Schwinge <thomas@codesourcery.com>
+
+	* plugin/Makefrag.am: Handle 'PLUGIN_NVPTX_DYNAMIC'.
+	* plugin/configfrag.ac (PLUGIN_NVPTX_DYNAMIC): Change
+	'AC_DEFINE_UNQUOTED' into 'AM_CONDITIONAL'.
+	* plugin/plugin-nvptx.c: Split 'PLUGIN_NVPTX_DYNAMIC' into
+	'PLUGIN_NVPTX_INCLUDE_SYSTEM_CUDA_H' and
+	'PLUGIN_NVPTX_LINK_LIBCUDA'.
+	* Makefile.in: Regenerate.
+	* config.h.in: Likewise.
+	* configure: Likewise.
+
 2022-05-05  Thomas Schwinge  <thomas@codesourcery.com>
 
 	Backport from mainline:

@@ -41,7 +41,7 @@
 #include "oacc-int.h"
 
 #include <pthread.h>
-#if PLUGIN_NVPTX_DYNAMIC
+#ifndef PLUGIN_NVPTX_INCLUDE_SYSTEM_CUDA_H
 # include "cuda/cuda.h"
 #else
 # include <cuda.h>
@@ -85,7 +85,7 @@ CUresult cuOccupancyMaxPotentialBlockSize(int *, int *, CUfunction,
 
 #define DO_PRAGMA(x) _Pragma (#x)
 
-#if PLUGIN_NVPTX_DYNAMIC
+#ifndef PLUGIN_NVPTX_LINK_LIBCUDA
 # include <dlfcn.h>
 
 struct cuda_lib_s {

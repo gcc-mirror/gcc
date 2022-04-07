@@ -219,6 +219,5 @@ fi
 AC_DEFINE_UNQUOTED(OFFLOAD_PLUGINS, "$offload_plugins",
   [Define to offload plugins, separated by commas.])
 AM_CONDITIONAL([PLUGIN_NVPTX], [test $PLUGIN_NVPTX = 1])
-AC_DEFINE_UNQUOTED([PLUGIN_NVPTX_DYNAMIC], [$PLUGIN_NVPTX_DYNAMIC],
-  [Define to 1 if the NVIDIA plugin should dlopen libcuda.so.1, 0 if it should be linked against it.])
+AM_CONDITIONAL([PLUGIN_NVPTX_DYNAMIC], [test $PLUGIN_NVPTX_DYNAMIC = 1])
 AM_CONDITIONAL([PLUGIN_GCN], [test $PLUGIN_GCN = 1])
