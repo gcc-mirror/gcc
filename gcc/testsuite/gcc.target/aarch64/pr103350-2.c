@@ -1,4 +1,4 @@
-/* { dg-do run } */
+/* { dg-do run { target le } } */
 /* { dg-additional-options "-O2 -save-temps -fdump-rtl-ree-all -free -std=c99 -w" } */
 
 typedef unsigned char __attribute__((__vector_size__ (8))) v64u8;
