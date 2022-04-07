@@ -257,6 +257,7 @@
 			; instruction.
   VUNSPEC_PACBTI_NOP	; Represents PAC signing LR + valid landing pad
   VUNSPEC_AUT_NOP	; Represents PAC verifying LR
+  VUNSPEC_BTI_NOP	; Represent BTI
 ])
 
 ;; Enumerators for NEON unspecs.
