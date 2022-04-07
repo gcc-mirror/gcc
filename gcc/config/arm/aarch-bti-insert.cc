@@ -42,10 +42,11 @@
 #include "tree-pass.h"
 #include "cgraph.h"
 
-/* This pass enables the support for Branch Target Identification Mechanism
-   for AArch64.  This is a new security feature introduced in ARMv8.5-A
-   archtitecture.  A BTI instruction is used to guard against the execution
-   of instructions which are not the intended target of an indirect branch.
+/* This pass enables the support for Branch Target Identification Mechanism for
+   Arm/AArch64.  This is a security feature introduced in ARMv8.5-A
+   architecture and ARMv8.1-M.  A BTI instruction is used to guard against the
+   execution of instructions which are not the intended target of an indirect
+   branch.
 
    Outside of a guarded memory region, a BTI instruction executes as a NOP.
    Within a guarded memory region any target of an indirect branch must be
@@ -53,7 +54,8 @@
    branch is triggered in a non-guarded memory region).  An incompatibility
    generates a Branch Target Exception.
 
-   The compatibility of the BTI instruction is as follows:
+   The compatibility of the BTI instruction is as follows (AArch64
+   examples):
    BTI j : Can be a target of any indirect jump (BR Xn).
    BTI c : Can be a target of any indirect call (BLR Xn and BR X16/X17).
    BTI jc: Can be a target of any indirect call or indirect jump.
@@ -90,47 +92,6 @@ const pass_data pass_data_insert_bti =
   0, /* todo_flags_finish.  */
 };
 
-/* Check if X (or any sub-rtx of X) is a PACIASP/PACIBSP instruction.  */
-static bool
-aarch64_pac_insn_p (rtx x)
-{
-  if (!INSN_P (x))
-    return false;
-
-  subrtx_var_iterator::array_type array;
-  FOR_EACH_SUBRTX_VAR (iter, array, PATTERN (x), ALL)
-    {
-      rtx sub = *iter;
-      if (sub && GET_CODE (sub) == UNSPEC)
-	{
-	  int unspec_val = XINT (sub, 1);
-	  switch (unspec_val)
-	    {
-	    case UNSPEC_PACIASP:
-            /* fall-through.  */
-            case UNSPEC_PACIBSP:
-	      return true;
-
-	    default:
-	      return false;
-	    }
-	  iter.skip_subrtxes ();
-	}
-    }
-  return false;
-}
-
-/* Check if INSN is a BTI J insn.  */
-static bool
-aarch64_bti_j_insn_p (rtx_insn *insn)
-{
-  if (!insn || !INSN_P (insn))
-    return false;
-
-  rtx pat = PATTERN (insn);
-  return GET_CODE (pat) == UNSPEC_VOLATILE && XINT (pat, 1) == UNSPECV_BTI_J;
-}
-
 /* Insert the BTI instruction.  */
 /* This is implemented as a late RTL pass that runs before branch
    shortening and does the following.  */
@@ -155,7 +116,7 @@ rest_of_insert_bti (void)
 	       && (LABEL_PRESERVE_P (insn)
 		   || bb->flags & BB_NON_LOCAL_GOTO_TARGET))
 	    {
-	      bti_insn = gen_bti_j ();
+	      bti_insn = aarch_gen_bti_j ();
 	      emit_insn_after (bti_insn, insn);
 	      continue;
 	    }
@@ -177,10 +138,10 @@ rest_of_insert_bti (void)
 		    {
 		      label = as_a <rtx_insn *> (XEXP (RTVEC_ELT (vec, j), 0));
 		      rtx_insn *next = next_nonnote_nondebug_insn (label);
-		      if (aarch64_bti_j_insn_p (next))
+		      if (aarch_bti_j_insn_p (next))
 			continue;
 
-		      bti_insn = gen_bti_j ();
+		      bti_insn = aarch_gen_bti_j ();
 		      emit_insn_after (bti_insn, label);
 		    }
 		}
@@ -191,7 +152,7 @@ rest_of_insert_bti (void)
 	     will return.  */
 	  if (CALL_P (insn) && (find_reg_note (insn, REG_SETJMP, NULL)))
 	    {
-	      bti_insn = gen_bti_j ();
+	      bti_insn = aarch_gen_bti_j ();
 	      emit_insn_after (bti_insn, insn);
 	      continue;
 	    }
@@ -207,9 +168,9 @@ rest_of_insert_bti (void)
     {
       bb = ENTRY_BLOCK_PTR_FOR_FN (cfun)->next_bb;
       insn = BB_HEAD (bb);
-      if (!aarch64_pac_insn_p (get_first_nonnote_insn ()))
+      if (!aarch_pac_insn_p (get_first_nonnote_insn ()))
 	{
-	  bti_insn = gen_bti_c ();
+	  bti_insn = aarch_gen_bti_c ();
 	  emit_insn_before (bti_insn, insn);
 	}
     }
@@ -229,7 +190,7 @@ public:
   /* opt_pass methods: */
   virtual bool gate (function *)
     {
-      return aarch64_bti_enabled ();
+      return aarch_bti_enabled ();
     }
 
   virtual unsigned int execute (function *)
