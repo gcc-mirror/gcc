@@ -429,7 +429,7 @@ class name_lookup
 {
 public:
   typedef std::pair<tree, tree> using_pair;
-  typedef vec<using_pair, va_heap, vl_embed> using_queue;
+  typedef auto_vec<using_pair, 16> using_queue;
 
 public:
   tree name;	/* The identifier being looked for.  */
@@ -528,16 +528,8 @@ private:
   bool search_usings (tree scope);
 
 private:
-  using_queue *queue_namespace (using_queue *queue, int depth, tree scope);
-  using_queue *do_queue_usings (using_queue *queue, int depth,
-				vec<tree, va_gc> *usings);
-  using_queue *queue_usings (using_queue *queue, int depth,
-			     vec<tree, va_gc> *usings)
-  {
-    if (usings)
-      queue = do_queue_usings (queue, depth, usings);
-    return queue;
-  }
+  void queue_namespace (using_queue& queue, int depth, tree scope);
+  void queue_usings (using_queue& queue, int depth, vec<tree, va_gc> *usings);
 
 private:
   void add_fns (tree);
@@ -1084,39 +1076,35 @@ name_lookup::search_qualified (tree scope, bool usings)
 /* Add SCOPE to the unqualified search queue, recursively add its
    inlines and those via using directives.  */
 
-name_lookup::using_queue *
-name_lookup::queue_namespace (using_queue *queue, int depth, tree scope)
+void
+name_lookup::queue_namespace (using_queue& queue, int depth, tree scope)
 {
   if (see_and_mark (scope))
-    return queue;
+    return;
 
   /* Record it.  */
   tree common = scope;
   while (SCOPE_DEPTH (common) > depth)
     common = CP_DECL_CONTEXT (common);
-  vec_safe_push (queue, using_pair (common, scope));
+  queue.safe_push (using_pair (common, scope));
 
   /* Queue its inline children.  */
   if (vec<tree, va_gc> *inlinees = DECL_NAMESPACE_INLINEES (scope))
     for (unsigned ix = inlinees->length (); ix--;)
-      queue = queue_namespace (queue, depth, (*inlinees)[ix]);
+      queue_namespace (queue, depth, (*inlinees)[ix]);
 
   /* Queue its using targets.  */
-  queue = queue_usings (queue, depth, NAMESPACE_LEVEL (scope)->using_directives);
-
-  return queue;
+  queue_usings (queue, depth, NAMESPACE_LEVEL (scope)->using_directives);
 }
 
 /* Add the namespaces in USINGS to the unqualified search queue.  */
 
-name_lookup::using_queue *
-name_lookup::do_queue_usings (using_queue *queue, int depth,
-			      vec<tree, va_gc> *usings)
+void
+name_lookup::queue_usings (using_queue& queue, int depth, vec<tree, va_gc> *usings)
 {
-  for (unsigned ix = usings->length (); ix--;)
-    queue = queue_namespace (queue, depth, (*usings)[ix]);
-
-  return queue;
+  if (usings)
+    for (unsigned ix = usings->length (); ix--;)
+      queue_namespace (queue, depth, (*usings)[ix]);
 }
 
 /* Unqualified namespace lookup in SCOPE.
@@ -1128,15 +1116,12 @@ name_lookup::do_queue_usings (using_queue *queue, int depth,
 bool
 name_lookup::search_unqualified (tree scope, cp_binding_level *level)
 {
-  /* Make static to avoid continual reallocation.  We're not
-     recursive.  */
-  static using_queue *queue = NULL;
+  using_queue queue;
   bool found = false;
-  int length = vec_safe_length (queue);
 
   /* Queue local using-directives.  */
   for (; level->kind != sk_namespace; level = level->level_chain)
-    queue = queue_usings (queue, SCOPE_DEPTH (scope), level->using_directives);
+    queue_usings (queue, SCOPE_DEPTH (scope), level->using_directives);
 
   for (; !found; scope = CP_DECL_CONTEXT (scope))
     {
@@ -1144,19 +1129,19 @@ name_lookup::search_unqualified (tree scope, cp_binding_level *level)
       int depth = SCOPE_DEPTH (scope);
 
       /* Queue namespaces reachable from SCOPE. */
-      queue = queue_namespace (queue, depth, scope);
+      queue_namespace (queue, depth, scope);
 
       /* Search every queued namespace where SCOPE is the common
 	 ancestor.  Adjust the others.  */
-      unsigned ix = length;
+      unsigned ix = 0;
       do
 	{
-	  using_pair &pair = (*queue)[ix];
+	  using_pair &pair = queue[ix];
 	  while (pair.first == scope)
 	    {
 	      found |= search_namespace_only (pair.second);
-	      pair = queue->pop ();
-	      if (ix == queue->length ())
+	      pair = queue.pop ();
+	      if (ix == queue.length ())
 		goto done;
 	    }
 	  /* The depth is the same as SCOPE, find the parent scope.  */
@@ -1164,7 +1149,7 @@ name_lookup::search_unqualified (tree scope, cp_binding_level *level)
 	    pair.first = CP_DECL_CONTEXT (pair.first);
 	  ix++;
 	}
-      while (ix < queue->length ());
+      while (ix < queue.length ());
     done:;
       if (scope == global_namespace)
 	break;
@@ -1180,9 +1165,6 @@ name_lookup::search_unqualified (tree scope, cp_binding_level *level)
     }
 
   dedup (false);
-
-  /* Restore to incoming length.  */
-  vec_safe_truncate (queue, length);
 
   return found;
 }
