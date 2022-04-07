@@ -922,6 +922,7 @@ store_init_value (tree decl, tree init, vec<tree, va_gc>** cleanups, int flags)
      here it should have been digested into an actual value for the type.  */
   gcc_checking_assert (TREE_CODE (value) != CONSTRUCTOR
 		       || processing_template_decl
+		       || TREE_CODE (type) == VECTOR_TYPE
 		       || !TREE_HAS_CONSTRUCTOR (value));
 
   /* If the initializer is not a constant, fill in DECL_INITIAL with
