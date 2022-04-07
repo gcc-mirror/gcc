@@ -35,6 +35,7 @@
 #include "diagnostic.h"
 #include "input.h"
 #include "rust-target.h"
+#include "selftest.h"
 
 extern bool
 saw_errors (void);
@@ -55,9 +56,10 @@ const char *kHIRTypeResolutionDumpFile = "gccrs.type-resolution.dump";
 const char *kTargetOptionsDumpFile = "gccrs.target-options.dump";
 
 const std::string kDefaultCrateName = "rust_out";
+const size_t kMaxNameLength = 64;
 
 static std::string
-infer_crate_name (const std::string filename)
+infer_crate_name (const std::string &filename)
 {
   if (filename == "-")
     return kDefaultCrateName;
@@ -74,7 +76,40 @@ infer_crate_name (const std::string filename)
   if (ext_position != std::string::npos)
     crate.erase (ext_position);
 
+  // Replace all the '-' symbols with '_' per Rust rules
+  for (auto &c : crate)
+    {
+      if (c == '-')
+	c = '_';
+    }
   return crate;
+}
+
+bool
+CompileOptions::validate_crate_name (const std::string &crate_name)
+{
+  if (crate_name.empty ())
+    {
+      rust_error_at (Location (), "crate name cannot be empty");
+      return false;
+    }
+  if (crate_name.length () > kMaxNameLength)
+    {
+      rust_error_at (Location (), "crate name cannot exceed %ld characters",
+		     kMaxNameLength);
+      return false;
+    }
+  for (auto &c : crate_name)
+    {
+      if (!(ISALNUM (c) || c == '_'))
+	{
+	  rust_error_at (Location (),
+			 "invalid character %<%c%> in crate name: %<%s%>", c,
+			 crate_name.c_str ());
+	  return false;
+	}
+    }
+  return true;
 }
 
 // Implicitly enable a target_feature (and recursively enable dependencies).
@@ -496,21 +531,25 @@ Session::enable_dump (std::string arg)
 void
 Session::parse_files (int num_files, const char **files)
 {
-  rust_assert (num_files > 0);
-
   if (options.crate_name.empty ())
     {
       /* HACK: We use the first file to infer the crate name, which might be
        * incorrect: since rustc only allows one file to be supplied in the
        * command-line */
-      auto crate_name = infer_crate_name (files[0]);
-      rust_debug_loc (Location (), "inferred crate name: %s",
-		      crate_name.c_str ());
+      auto filename = "-";
+      if (num_files > 0)
+	filename = files[0];
+
+      auto crate_name = infer_crate_name (filename);
+      rust_debug ("inferred crate name: %s", crate_name.c_str ());
       if (!options.set_crate_name (crate_name))
 	{
-	  rust_inform (Location (),
-		       "crate name inferred from the input file %<%s%>",
-		       files[0]);
+	  // fake a linemapping so that we can show the filename
+	  linemap->start_file (filename, 0);
+	  linemap->start_line (0, 1);
+	  rust_inform (linemap->get_location (0),
+		       "crate name inferred from this file");
+	  linemap->stop ();
 	  return;
 	}
     }
@@ -1157,3 +1196,33 @@ TargetOptions::enable_implicit_feature_reqs (std::string feature)
  *  - code generation
  *  - link */
 } // namespace Rust
+
+#if CHECKING_P
+namespace selftest {
+void
+rust_crate_name_validation_test (void)
+{
+  ASSERT_TRUE (Rust::CompileOptions::validate_crate_name ("example"));
+  ASSERT_TRUE (Rust::CompileOptions::validate_crate_name ("abcdefg_1234"));
+  ASSERT_TRUE (Rust::CompileOptions::validate_crate_name ("1"));
+  // FIXME: The next test does not pass as of current implementation
+  // ASSERT_TRUE (Rust::CompileOptions::validate_crate_name ("惊吓"));
+  // NOTE: - is not allowed in the crate name ...
+  /*
+  ASSERT_FALSE (Rust::CompileOptions::validate_crate_name ("abcdefg-1234"));
+  ASSERT_FALSE (Rust::CompileOptions::validate_crate_name ("a+b"));
+  ASSERT_FALSE (Rust::CompileOptions::validate_crate_name ("/a+b/")); */
+
+  /* Tests for crate name inference */
+  ASSERT_EQ (Rust::infer_crate_name ("c.rs"), "c");
+  // NOTE: ... but - is allowed when in the filename
+  ASSERT_EQ (Rust::infer_crate_name ("a-b.rs"), "a_b");
+  ASSERT_EQ (Rust::infer_crate_name ("book.rs.txt"), "book.rs");
+#if defined(HAVE_DOS_BASED_FILE_SYSTEM)
+  ASSERT_EQ (Rust::infer_crate_name ("a\\c\\a-b.rs"), "a_b");
+#else
+  ASSERT_EQ (Rust::infer_crate_name ("a/c/a-b.rs"), "a_b");
+#endif
+}
+} // namespace selftest
+#endif // CHECKING_P

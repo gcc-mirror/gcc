@@ -42,8 +42,6 @@ namespace HIR {
 struct Crate;
 }
 
-const size_t kMaxNameLength = 64;
-
 /* Data related to target, most useful for conditional compilation and
  * whatever. */
 struct TargetOptions
@@ -217,43 +215,13 @@ struct CompileOptions
 
   /* Validate the crate name using the ASCII rules
    TODO: Support Unicode version of the rules */
-  bool validate_crate_name (const std::string &crate_name)
-  {
-    if (crate_name.empty ())
-      {
-	rust_error_at (Location (), "crate name cannot be empty");
-	return false;
-      }
-    if (crate_name.length () > kMaxNameLength)
-      {
-	rust_error_at (Location (), "crate name cannot exceed %ld characters",
-		       kMaxNameLength);
-	return false;
-      }
-    for (auto &c : crate_name)
-      {
-	if (!(ISALNUM (c) || c == '_' || c == '-'))
-	  {
-	    rust_error_at (Location (),
-			   "invalid character %<%c%> in crate name: %<%s%>", c,
-			   crate_name.c_str ());
-	    return false;
-	  }
-      }
-    return true;
-  }
+  static bool validate_crate_name (const std::string &crate_name);
 
   bool set_crate_name (std::string name)
   {
     if (!validate_crate_name (name))
       return false;
 
-    /* Replace all the '-' symbols with '_' per Rust rules */
-    for (auto &c : name)
-      {
-	if (c == '-')
-	  c = '_';
-      }
     crate_name = std::move (name);
     return true;
   }
@@ -342,5 +310,12 @@ private:
   bool handle_cfg_option (std::string &data);
 };
 } // namespace Rust
+
+#if CHECKING_P
+namespace selftest {
+extern void
+rust_crate_name_validation_test (void);
+}
+#endif // CHECKING_P
 
 #endif
