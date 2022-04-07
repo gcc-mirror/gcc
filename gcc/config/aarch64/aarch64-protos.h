@@ -904,7 +904,6 @@ void aarch64_register_pragmas (void);
 void aarch64_relayout_simd_types (void);
 void aarch64_reset_previous_fndecl (void);
 bool aarch64_return_address_signing_enabled (void);
-bool aarch64_bti_enabled (void);
 void aarch64_save_restore_target_globals (tree);
 void aarch64_addti_scratch_regs (rtx, rtx, rtx *,
 				 rtx *, rtx *,

@@ -179,7 +179,7 @@ aarch64_update_cpp_builtins (cpp_reader *pfile)
   aarch64_def_or_undef (TARGET_RNG, "__ARM_FEATURE_RNG", pfile);
   aarch64_def_or_undef (TARGET_MEMTAG, "__ARM_FEATURE_MEMORY_TAGGING", pfile);
 
-  aarch64_def_or_undef (aarch64_bti_enabled (),
+  aarch64_def_or_undef (aarch_bti_enabled (),
 			"__ARM_FEATURE_BTI_DEFAULT", pfile);
 
   cpp_undef (pfile, "__ARM_FEATURE_PAC_DEFAULT");
