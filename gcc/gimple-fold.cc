@@ -4747,7 +4747,7 @@ clear_padding_type (clear_padding_struct *buf, tree type,
 				      "have well defined padding bits for %qs",
 			    field, "__builtin_clear_padding");
 	      }
-	    else if (is_empty_type (TREE_TYPE (field)))
+	    else if (is_empty_type (ftype))
 	      continue;
 	    else
 	      {
@@ -4758,8 +4758,9 @@ clear_padding_type (clear_padding_struct *buf, tree type,
 		gcc_assert (pos >= 0 && fldsz >= 0 && pos >= cur_pos);
 		clear_padding_add_padding (buf, pos - cur_pos);
 		cur_pos = pos;
-		clear_padding_type (buf, TREE_TYPE (field),
-				    fldsz, for_auto_init);
+		if (tree asbase = lang_hooks.types.classtype_as_base (field))
+		  ftype = asbase;
+		clear_padding_type (buf, ftype, fldsz, for_auto_init);
 		cur_pos += fldsz;
 	      }
 	  }

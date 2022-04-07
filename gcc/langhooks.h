@@ -188,6 +188,11 @@ struct lang_hooks_for_types
   /* Returns a tree for the unit size of T excluding tail padding that
      might be used by objects inheriting from T.  */
   tree (*unit_size_without_reusable_padding) (tree);
+
+  /* Returns type corresponding to FIELD's type when FIELD is a C++ base class
+     i.e., type without virtual base classes or tail padding.  Returns
+     NULL_TREE otherwise.  */
+  tree (*classtype_as_base) (const_tree);
 };
 
 /* Language hooks related to decls and the symbol table.  */
