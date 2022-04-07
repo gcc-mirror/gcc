@@ -12866,6 +12866,11 @@ grokdeclarator (const cp_declarator *declarator,
 			    "type specifier", name);
 		return error_mark_node;
 	      }
+	    if (late_return_type && sfk == sfk_conversion)
+	      {
+		error ("a conversion function cannot have a trailing return type");
+		return error_mark_node;
+	      }
 	    type = splice_late_return_type (type, late_return_type);
 	    if (type == error_mark_node)
 	      return error_mark_node;
@@ -13030,8 +13035,6 @@ grokdeclarator (const cp_declarator *declarator,
 		    maybe_warn_cpp0x (CPP0X_EXPLICIT_CONVERSION);
 		    explicitp = 2;
 		  }
-		if (late_return_type_p)
-		  error ("a conversion function cannot have a trailing return type");
 	      }
 	    else if (sfk == sfk_deduction_guide)
 	      {
