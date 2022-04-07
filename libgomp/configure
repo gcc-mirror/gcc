@@ -667,6 +667,8 @@ OPT_LDFLAGS
 SECTION_LDFLAGS
 PLUGIN_GCN_FALSE
 PLUGIN_GCN_TRUE
+PLUGIN_NVPTX_DYNAMIC_FALSE
+PLUGIN_NVPTX_DYNAMIC_TRUE
 PLUGIN_NVPTX_FALSE
 PLUGIN_NVPTX_TRUE
 offload_additional_lib_paths
@@ -11412,7 +11414,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11415 "configure"
+#line 11417 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11518,7 +11520,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11521 "configure"
+#line 11523 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -15368,10 +15370,13 @@ else
   PLUGIN_NVPTX_FALSE=
 fi
 
-
-cat >>confdefs.h <<_ACEOF
-#define PLUGIN_NVPTX_DYNAMIC $PLUGIN_NVPTX_DYNAMIC
-_ACEOF
+ if test $PLUGIN_NVPTX_DYNAMIC = 1; then
+  PLUGIN_NVPTX_DYNAMIC_TRUE=
+  PLUGIN_NVPTX_DYNAMIC_FALSE='#'
+else
+  PLUGIN_NVPTX_DYNAMIC_TRUE='#'
+  PLUGIN_NVPTX_DYNAMIC_FALSE=
+fi
 
  if test $PLUGIN_GCN = 1; then
   PLUGIN_GCN_TRUE=
@@ -17138,6 +17143,10 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${PLUGIN_NVPTX_TRUE}" && test -z "${PLUGIN_NVPTX_FALSE}"; then
   as_fn_error $? "conditional \"PLUGIN_NVPTX\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${PLUGIN_NVPTX_DYNAMIC_TRUE}" && test -z "${PLUGIN_NVPTX_DYNAMIC_FALSE}"; then
+  as_fn_error $? "conditional \"PLUGIN_NVPTX_DYNAMIC\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${PLUGIN_GCN_TRUE}" && test -z "${PLUGIN_GCN_FALSE}"; then

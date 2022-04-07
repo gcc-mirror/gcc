@@ -35,8 +35,22 @@ libgomp_plugin_nvptx_la_CPPFLAGS = $(AM_CPPFLAGS) $(PLUGIN_NVPTX_CPPFLAGS)
 libgomp_plugin_nvptx_la_LDFLAGS = $(libgomp_plugin_nvptx_version_info) \
 	$(lt_host_flags)
 libgomp_plugin_nvptx_la_LDFLAGS += $(PLUGIN_NVPTX_LDFLAGS)
-libgomp_plugin_nvptx_la_LIBADD = libgomp.la $(PLUGIN_NVPTX_LIBS)
+libgomp_plugin_nvptx_la_LIBADD = libgomp.la
 libgomp_plugin_nvptx_la_LIBTOOLFLAGS = --tag=disable-static
+
+# Including the GCC-shipped 'include/cuda/cuda.h' vs. system <cuda.h>.
+if PLUGIN_NVPTX_DYNAMIC
+else
+libgomp_plugin_nvptx_la_CPPFLAGS += -DPLUGIN_NVPTX_INCLUDE_SYSTEM_CUDA_H
+endif
+
+# 'dlopen'ing the CUDA Driver library vs. linking it.
+if PLUGIN_NVPTX_DYNAMIC
+libgomp_plugin_nvptx_la_LIBADD += $(PLUGIN_NVPTX_LIBS)
+else
+libgomp_plugin_nvptx_la_CPPFLAGS += -DPLUGIN_NVPTX_LINK_LIBCUDA
+libgomp_plugin_nvptx_la_LIBADD += $(PLUGIN_NVPTX_LIBS)
+endif
 endif
 
 if PLUGIN_GCN
