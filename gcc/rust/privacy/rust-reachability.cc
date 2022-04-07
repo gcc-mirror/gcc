@@ -63,14 +63,14 @@ ReachabilityVisitor::visit (HIR::StructStruct &struct_item)
   if (struct_item.get_visibility ().get_vis_type () == HIR::Visibility::NONE)
     struct_reach = ReachLevel::Reachable;
 
-  // FIXME: Here we want to update only if the visibility is higher
-  ctx.insert_reachability (struct_item.get_mappings (), struct_reach);
+  struct_reach
+    = ctx.update_reachability (struct_item.get_mappings (), struct_reach);
 
   // FIXME: We need to also visit the fields as they might have their own set
   // of reachability levels
 
   for (auto &field : struct_item.get_fields ())
-    ctx.insert_reachability (field.get_mappings (), struct_reach);
+    ctx.update_reachability (field.get_mappings (), struct_reach);
 
   // FIXME: How do we get the constructor from `struct_item`? We need to update
   // its visibility as well. Probably by keeping a reference to the TypeCtx?

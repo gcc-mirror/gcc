@@ -17,19 +17,75 @@
 // <http://www.gnu.org/licenses/>.
 
 #include "rust-privacy-ctx.h"
+#include "selftest.h"
 
 namespace Rust {
 namespace Privacy {
-void
-PrivacyContext::insert_reachability (const Analysis::NodeMapping &mapping,
+static ReachLevel
+insert_if_higher (ReachLevel new_level,
+		  std::unordered_map<HirId, ReachLevel>::iterator &existing)
+{
+  if (new_level > existing->second)
+    existing->second = new_level;
+
+  return existing->second;
+}
+
+ReachLevel
+PrivacyContext::update_reachability (const Analysis::NodeMapping &mapping,
 				     ReachLevel reach)
-{}
+{
+  auto existing_reach = reachability_map.find (mapping.get_hirid ());
+  if (existing_reach != reachability_map.end ())
+    return insert_if_higher (reach, existing_reach);
+
+  reachability_map.insert ({mapping.get_hirid (), reach});
+  return reach;
+}
 
 const ReachLevel *
 PrivacyContext::lookup_reachability (const Analysis::NodeMapping &mapping)
 {
-  return nullptr;
-}
+  auto existing_reach = reachability_map.find (mapping.get_hirid ());
+  if (existing_reach == reachability_map.end ())
+    return nullptr;
 
+  return &existing_reach->second;
+}
 } // namespace Privacy
 } // namespace Rust
+
+#if CHECKING_P
+namespace selftest {
+static void
+update_reachability_test (void)
+{
+  auto ctx = Rust::Privacy::PrivacyContext ();
+  // Bogus values for the mappings
+  auto mapping = Rust::Analysis::NodeMapping (15, 15, 15, 15);
+
+  auto new_level
+    = ctx.update_reachability (mapping, Rust::Privacy::ReachLevel::Unreachable);
+
+  ASSERT_EQ (new_level, Rust::Privacy::ReachLevel::Unreachable);
+
+  ASSERT_TRUE (ctx.lookup_reachability (mapping));
+  ASSERT_EQ (*ctx.lookup_reachability (mapping),
+	     Rust::Privacy::ReachLevel::Unreachable);
+
+  new_level
+    = ctx.update_reachability (mapping, Rust::Privacy::ReachLevel::Reachable);
+
+  ASSERT_EQ (new_level, Rust::Privacy::ReachLevel::Reachable);
+  ASSERT_TRUE (ctx.lookup_reachability (mapping));
+  ASSERT_EQ (*ctx.lookup_reachability (mapping),
+	     Rust::Privacy::ReachLevel::Reachable);
+}
+
+void
+rust_privacy_ctx_test (void)
+{
+  update_reachability_test ();
+}
+} // namespace selftest
+#endif // !CHECKING_P

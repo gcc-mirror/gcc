@@ -16,6 +16,9 @@
 // along with GCC; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
+#ifndef RUST_PRIVACY_CTX_H
+#define RUST_PRIVACY_CTX_H
+
 #include "rust-hir-map.h"
 #include "rust-privacy-check.h"
 
@@ -36,13 +39,19 @@ class PrivacyContext
 {
 public:
   /**
-   * Insert a new resolved visibility for a given node
+   * Insert a new resolved visibility for a given node. If the node is already
+   * present in the reachability map, then its visibility will only be updated
+   * if the given visibility is higher.
    *
    * @param mappings Mappings of the node to store the reach level for
    * @param reach Level of reachability for the given node
+   *
+   * @return The new reachability level for this node. If this was the first
+   * time inserting this node, then return `reach`. Otherwise, return `reach` or
+   * the existing reach level if it was higher.
    */
-  void insert_reachability (const Analysis::NodeMapping &mapping,
-			    ReachLevel reach);
+  ReachLevel update_reachability (const Analysis::NodeMapping &mapping,
+				  ReachLevel reach);
 
   /**
    * Lookup the visibility of an already declared Node
@@ -59,3 +68,12 @@ private:
 };
 } // namespace Privacy
 } // namespace Rust
+
+#if CHECKING_P
+namespace selftest {
+void
+rust_privacy_ctx_test (void);
+}
+#endif // !CHECKING_P
+
+#endif // !RUST_PRIVACY_CTX_H
