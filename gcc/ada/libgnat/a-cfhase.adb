@@ -89,7 +89,8 @@ is
    procedure Set_Next (Node : in out Node_Type; Next : Count_Type);
    pragma Inline (Set_Next);
 
-   function Vet (Container : Set; Position : Cursor) return Boolean;
+   function Vet (Container : Set; Position : Cursor) return Boolean
+     with Inline;
 
    --------------------------
    -- Local Instantiations --
@@ -1506,6 +1507,10 @@ is
 
    function Vet (Container : Set; Position : Cursor) return Boolean is
    begin
+      if not Container_Checks'Enabled then
+         return True;
+      end if;
+
       if Position.Node = 0 then
          return True;
       end if;

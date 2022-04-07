@@ -51,7 +51,7 @@ package body Ada.Containers.Restricted_Doubly_Linked_Lists is
       Before    : Count_Type;
       New_Node  : Count_Type);
 
-   function Vet (Position : Cursor) return Boolean;
+   function Vet (Position : Cursor) return Boolean with Inline;
 
    ---------
    -- "=" --
@@ -1330,6 +1330,10 @@ package body Ada.Containers.Restricted_Doubly_Linked_Lists is
 
    function Vet (Position : Cursor) return Boolean is
    begin
+      if not Container_Checks'Enabled then
+         return True;
+      end if;
+
       if Position.Node = 0 then
          return Position.Container = null;
       end if;
