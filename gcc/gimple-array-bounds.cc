@@ -607,6 +607,8 @@ array_bounds_checker::check_mem_ref (location_t location, tree ref,
 
       if (TREE_CODE (reftype) == ARRAY_TYPE)
 	{
+	  if (TREE_CODE (TYPE_SIZE_UNIT (TREE_TYPE (reftype))) != INTEGER_CST)
+	    return false;
 	  /* Set to the size of the array element (and adjust below).  */
 	  eltsize = wi::to_offset (TYPE_SIZE_UNIT (TREE_TYPE (reftype)));
 	  /* Use log2 of size to convert the array byte size in to its
