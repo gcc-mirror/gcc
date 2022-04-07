@@ -1,3 +1,15 @@
+2022-04-06  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/102824
+	* docs/_build/texinfo/factorial.png: Move to...
+	* docs/_build/texinfo/libgccjit-figures/factorial.png: ...here.
+	* docs/_build/texinfo/factorial1.png: Move to...
+	* docs/_build/texinfo/libgccjit-figures/factorial1.png: ...here.
+	* docs/_build/texinfo/sum-of-squares.png: Move to...
+	* docs/_build/texinfo/libgccjit-figures/sum-of-squares.png: ...here.
+	* docs/_build/texinfo/sum-of-squares1.png: Move to...
+	* docs/_build/texinfo/libgccjit-figures/sum-of-squares1.png: ...here.
+
 2022-04-01  David Malcolm  <dmalcolm@redhat.com>
 
 	* docs/topics/expressions.rst: Fix formatting.

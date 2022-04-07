@@ -1,3 +1,75 @@
+2022-04-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/104668
+	* g++.dg/cpp0x/pr104668.C: New test.
+
+2022-04-06  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/105143
+	* g++.dg/cpp2a/nodiscard1.C: New test.
+	* g++.dg/warn/Wctad-maybe-unsupported4.C: New test.
+
+2022-04-06  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/105147
+	* gcc.dg/pr105140.c: Skip for powerpc*-*-*.
+
+2022-04-06  Jason Merrill  <jason@redhat.com>
+
+	PR c++/104702
+	* g++.dg/warn/Wunused-19.C: New test.
+
+2022-04-06  Xi Ruoyao  <xry111@mengyan1223.wang>
+
+	* g++.target/mips/cxx17_empty_base.C: New test.
+
+2022-04-06  Jason Merrill  <jason@redhat.com>
+
+	PR c++/100608
+	* g++.dg/warn/Wshadow-compatible-local-3.C: New test.
+
+2022-04-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/105173
+	* gcc.dg/pr105173.c: New testcase.
+
+2022-04-06  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/105166
+	* gcc.dg/torture/pr105166.c: New testcase.
+
+2022-04-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/105163
+	* gcc.dg/torture/pr105163.c: New testcase.
+
+2022-04-06  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/103761
+	* gcc.dg/vect/pr103761.c: New test.
+	* gcc.target/aarch64/sve/pr103761.c: Likewise.
+
+2022-04-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/105148
+	* gcc.dg/torture/pr105148.c: New testcase.
+
+2022-04-06  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* gcc.target/i386/sse2-v1ti-andnot.c: New test case.
+
+2022-04-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/105142
+	* g++.dg/torture/pr105142.C: New testcase.
+
+2022-04-06  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/105122
+	* gcc.dg/memcpy-6.c: Adjust.
+	* gcc.dg/strlenopt-73.c: Likewise.
+	* gcc.dg/strlenopt-80.c: Likewise.
+
 2022-04-05  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* gfortran.dg/gomp/masked-taskloop.f90: New.

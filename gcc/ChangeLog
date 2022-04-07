@@ -1,3 +1,124 @@
+2022-04-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/104985
+	* combine.cc (struct undo): Add where.regno member.
+	(do_SUBST_MODE): Rename to ...
+	(subst_mode): ... this.  Change first argument from rtx * into int,
+	operate on regno_reg_rtx[regno] and save regno into where.regno.
+	(SUBST_MODE): Remove.
+	(try_combine): Use subst_mode instead of SUBST_MODE, change first
+	argument from regno_reg_rtx[whatever] to whatever.  For UNDO_MODE, use
+	regno_reg_rtx[undo->where.regno] instead of *undo->where.r.
+	(undo_to_marker): For UNDO_MODE, use regno_reg_rtx[undo->where.regno]
+	instead of *undo->where.r.
+	(simplify_set): Use subst_mode instead of SUBST_MODE, change first
+	argument from regno_reg_rtx[whatever] to whatever.
+
+2022-04-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/105069
+	* config/sh/sh.opt (mdiv=): Add Save.
+
+2022-04-06  Martin Liska  <mliska@suse.cz>
+
+	PR driver/105096
+	* common.opt: Document properly based on what it does.
+	* gcc.cc (display_help): Unify with what we have in common.opt.
+	* opts.cc (common_handle_option): Do not print undocumented
+	options.
+
+2022-04-06  Xi Ruoyao  <xry111@mengyan1223.wang>
+
+	* config/mips/mips.cc (mips_fpr_return_fields): Ignore
+	cxx17_empty_base_field_p fields and set an indicator.
+	(mips_return_in_msb): Adjust for mips_fpr_return_fields change.
+	(mips_function_value_1): Inform psABI change about C++17 empty
+	bases.
+
+2022-04-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/105150
+	* gimple.cc (gimple_builtin_call_types_compatible_p): Use
+	builtin_decl_explicit here...
+	(gimple_call_builtin_p, gimple_call_combined_fn): ... rather than
+	here.
+
+2022-04-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/105173
+	* tree-ssa-reassoc.cc (find_insert_point): Get extra
+	insert_before output argument and compute it.
+	(insert_stmt_before_use): Adjust.
+	(rewrite_expr_tree): Likewise.
+
+2022-04-06  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/105166
+	* ipa-modref-tree.cc (modref_access_node::get_ao_ref ): Bail
+	out for non-pointer arguments.
+
+2022-04-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/105163
+	* tree-ssa-reassoc.cc (repropagate_negates): Avoid propagating
+	negated abnormals.
+
+2022-04-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/105150
+	* gimple.cc (gimple_call_builtin_p, gimple_call_combined_fn):
+	For BUILT_IN_NORMAL calls, call gimple_builtin_call_types_compatible_p
+	preferrably on builtin_decl_explicit decl rather than fndecl.
+	* tree-ssa-strlen.cc (valid_builtin_call): Don't call
+	gimple_builtin_call_types_compatible_p here.
+
+2022-04-06  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/103761
+	* tree-vect-stmts.cc (check_load_store_for_partial_vectors): Replace
+	the ncopies parameter with an slp_node parameter.  Calculate the
+	number of vectors based on it and vectype.  Rename lambda to
+	group_memory_nvectors.
+	(vectorizable_store, vectorizable_load): Update calls accordingly.
+
+2022-04-06  Martin Liska  <mliska@suse.cz>
+
+	* doc/invoke.texi: Document it.
+
+2022-04-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/105148
+	* tree-ssa-loop-ivopts.cc (idx_record_use): Walk raw operands
+	2 and 3 of ARRAY_REFs.
+
+2022-04-06  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* config/i386/sse.md (ANDNOT_MODE): New mode iterator for TF and V1TI.
+	(*andnottf3): Replace with...
+	(*andnot<mode>3): New define_insn using ANDNOT_MODE.
+
+2022-04-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/105142
+	* gimple-fold.h (maybe_fold_and_comparisons): Add defaulted
+	basic-block parameter.
+	(maybe_fold_or_comparisons): Likewise.
+	* gimple-fold.cc (follow_outer_ssa_edges): New.
+	(maybe_fold_comparisons_from_match_pd): Use follow_outer_ssa_edges
+	when an outer condition basic-block is specified.
+	(and_comparisons_1, and_var_with_comparison,
+	and_var_with_comparison_1, or_comparisons_1,
+	or_var_with_comparison, or_var_with_comparison_1): Receive and pass
+	down the outer condition basic-block.
+	* tree-ssa-ifcombine.cc (ifcombine_ifandif): Pass down the
+	basic-block of the outer condition.
+
+2022-04-06  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/105002
+	* config/rs6000/rs6000.cc (rs6000_maybe_emit_maxc_minc): Support more
+	comparison codes UNLT/UNLE/UNGT/UNGE.
+
 2022-04-05  David Malcolm  <dmalcolm@redhat.com>
 
 	* doc/extend.texi (Common Function Attributes): Document that

@@ -1,3 +1,28 @@
+2022-04-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/104668
+	* decl2.cc (splice_template_attributes): Return NULL if *p is
+	error_mark_node.
+	(cplus_decl_attributes): Return early if attributes is
+	error_mark_node.  Don't check that later.
+
+2022-04-06  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/105143
+	* pt.cc (do_class_deduction): Check complain before attempting
+	to issue a -Wctad-maybe-unsupported warning.
+
+2022-04-06  Jason Merrill  <jason@redhat.com>
+
+	PR c++/104702
+	* init.cc (build_vec_init): Use a reference for the result.
+
+2022-04-06  Jason Merrill  <jason@redhat.com>
+
+	PR c++/100608
+	* name-lookup.cc (check_local_shadow): Use -Wshadow=local
+	if exactly one of 'old' and 'decl' is a type.
+
 2022-04-05  Jason Merrill  <jason@redhat.com>
 
 	PR c++/103852
