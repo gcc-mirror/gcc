@@ -1510,7 +1510,6 @@ ifeq ($(strip $(filter-out arm aarch64 %qnx,$(target_cpu) $(target_os))),)
   LIBGNAT_TARGET_PAIRS = \
   a-intnam.ads<libgnarl/a-intnam__qnx.ads \
   a-nallfl.ads<libgnat/a-nallfl__wraplf.ads \
-  s-dorepr.adb<libgnat/s-dorepr__fma.adb \
   s-inmaop.adb<libgnarl/s-inmaop__posix.adb \
   s-intman.adb<libgnarl/s-intman__qnx.adb \
   s-osinte.adb<libgnarl/s-osinte__qnx.adb \
@@ -1534,6 +1533,10 @@ ifeq ($(strip $(filter-out arm aarch64 %qnx,$(target_cpu) $(target_os))),)
   else
      EH_MECHANISM=-gcc
      SIGTRAMP_OBJ=sigtramp-qnx.o
+     # "fma*" instructions not available for ARM fpu=vfpv3
+     # but not an issue on AARCH64.
+     LIBGNAT_TARGET_PAIRS += \
+       s-dorepr.adb<libgnat/s-dorepr__fma.adb
      LIBGNAT_TARGET_PAIRS += $(GNATRTL_128BIT_PAIRS)
      EXTRA_GNATRTL_NONTASKING_OBJS = $(GNATRTL_128BIT_OBJS)
      # Temporarily restrict shared library build to aarch64 (V303-025)
