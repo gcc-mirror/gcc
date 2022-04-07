@@ -3169,9 +3169,8 @@ package Sem_Util is
    --  This procedure has the same calling sequence as Set_Entity, but it
    --  performs additional checks as follows:
    --
-   --    If Style_Check is set, then it calls a style checking routine which
-   --    can check identifier spelling style. This procedure also takes care
-   --    of checking the restriction No_Implementation_Identifiers.
+   --    If Style_Check is set, then it calls a style checking routine that
+   --    can check identifier spelling style.
    --
    --    If restriction No_Abort_Statements is set, then it checks that the
    --    entity is not Ada.Task_Identification.Abort_Task.
