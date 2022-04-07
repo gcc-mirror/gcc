@@ -509,7 +509,8 @@ public:
 
   void remove_overlapping_bindings (store_manager *mgr,
 				    const binding_key *drop_key,
-				    uncertainty_t *uncertainty);
+				    uncertainty_t *uncertainty,
+				    bool always_overlap);
 
 private:
   void get_overlapping_bindings (const binding_key *key,
@@ -574,7 +575,9 @@ public:
   void purge_region (store_manager *mgr, const region *reg);
   void fill_region (store_manager *mgr, const region *reg, const svalue *sval);
   void zero_fill_region (store_manager *mgr, const region *reg);
-  void mark_region_as_unknown (store_manager *mgr, const region *reg,
+  void mark_region_as_unknown (store_manager *mgr,
+			       const region *reg_to_bind,
+			       const region *reg_for_overlap,
 			       uncertainty_t *uncertainty);
   void purge_state_involving (const svalue *sval,
 			      region_model_manager *sval_mgr);
@@ -765,7 +768,8 @@ public:
 			  region_model_manager *mgr);
 
 private:
-  void remove_overlapping_bindings (store_manager *mgr, const region *reg);
+  void remove_overlapping_bindings (store_manager *mgr, const region *reg,
+				    uncertainty_t *uncertainty);
   tristate eval_alias_1 (const region *base_reg_a,
 			 const region *base_reg_b) const;
 
