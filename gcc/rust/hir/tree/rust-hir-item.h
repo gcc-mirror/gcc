@@ -1463,6 +1463,8 @@ public:
   Analysis::NodeMapping get_mappings () const { return mappings; }
 
   Location get_locus () { return locus; }
+
+  Visibility &get_visibility () { return visibility; }
 };
 
 // Rust struct declaration with true struct type HIR node
