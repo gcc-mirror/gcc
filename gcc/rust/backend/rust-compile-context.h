@@ -250,6 +250,10 @@ public:
     fn_stack.push_back (fncontext{fn, ret_addr});
   }
   void pop_fn () { fn_stack.pop_back (); }
+
+  bool in_fn () { return fn_stack.size () != 0; }
+
+  // Note: it is undefined behavior to call peek_fn () if fn_stack is empty.
   fncontext peek_fn () { return fn_stack.back (); }
 
   void push_type (tree t) { type_decls.push_back (t); }
@@ -301,6 +305,14 @@ public:
     return pop;
   }
 
+  void push_const_context (void) { const_context++; }
+  void pop_const_context (void)
+  {
+    if (const_context > 0)
+      const_context--;
+  }
+  bool const_context_p (void) { return (const_context > 0); }
+
   std::string mangle_item (const TyTy::BaseType *ty,
 			   const Resolver::CanonicalPath &path) const
   {
@@ -341,6 +353,9 @@ private:
   std::vector<::Bvariable *> var_decls;
   std::vector<tree> const_decls;
   std::vector<tree> func_decls;
+
+  // Nonzero iff we are currently compiling something inside a constant context.
+  unsigned int const_context = 0;
 };
 
 } // namespace Compile
