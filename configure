@@ -622,6 +622,7 @@ CXX_FOR_TARGET
 CC_FOR_TARGET
 RANLIB_PLUGIN_OPTION
 AR_PLUGIN_OPTION
+PKG_CONFIG_PATH
 GDCFLAGS
 READELF
 OTOOL
@@ -13016,6 +13017,7 @@ fi
 
 
 GDCFLAGS=${GDCFLAGS-${CFLAGS}}
+
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for -plugin option" >&5
 $as_echo_n "checking for -plugin option... " >&6; }
