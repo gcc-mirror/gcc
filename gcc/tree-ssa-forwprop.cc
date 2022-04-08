@@ -2334,8 +2334,10 @@ simplify_bitfield_ref (gimple_stmt_iterator *gsi)
   gimple *stmt = gsi_stmt (*gsi);
   gimple *def_stmt;
   tree op, op0, op1;
-  tree elem_type;
-  unsigned idx, size;
+  tree elem_type, type;
+  tree p, m, tem;
+  unsigned HOST_WIDE_INT nelts, idx;
+  poly_uint64 size, elem_size;
   enum tree_code code;
 
   op = gimple_assign_rhs1 (stmt);
@@ -2353,42 +2355,71 @@ simplify_bitfield_ref (gimple_stmt_iterator *gsi)
   op1 = TREE_OPERAND (op, 1);
   code = gimple_assign_rhs_code (def_stmt);
   elem_type = TREE_TYPE (TREE_TYPE (op0));
-  if (TREE_TYPE (op) != elem_type)
-    return false;
+  type = TREE_TYPE (op);
+  /* Also hanlde vector type.
+   .i.e.
+   _7 = VEC_PERM_EXPR <_1, _1, { 2, 3, 2, 3 }>;
+   _11 = BIT_FIELD_REF <_7, 64, 0>;
 
-  size = TREE_INT_CST_LOW (TYPE_SIZE (elem_type));
+   to
+
+   _11 = BIT_FIELD_REF <_1, 64, 64>.  */
+
+  size = tree_to_poly_uint64 (TYPE_SIZE (type));
   if (maybe_ne (bit_field_size (op), size))
     return false;
 
-  if (code == VEC_PERM_EXPR
-      && constant_multiple_p (bit_field_offset (op), size, &idx))
+  elem_size = tree_to_poly_uint64 (TYPE_SIZE (elem_type));
+  if (code != VEC_PERM_EXPR
+      || !constant_multiple_p (bit_field_offset (op), elem_size, &idx))
+    return false;
+
+  m = gimple_assign_rhs3 (def_stmt);
+  if (TREE_CODE (m) != VECTOR_CST
+      || !VECTOR_CST_NELTS (m).is_constant (&nelts))
+    return false;
+
+  /* One element.  */
+  if (known_eq (size, elem_size))
+    idx = TREE_INT_CST_LOW (VECTOR_CST_ELT (m, idx));
+  else
     {
-      tree p, m, tem;
-      unsigned HOST_WIDE_INT nelts;
-      m = gimple_assign_rhs3 (def_stmt);
-      if (TREE_CODE (m) != VECTOR_CST
-	  || !VECTOR_CST_NELTS (m).is_constant (&nelts))
+      unsigned HOST_WIDE_INT nelts_op;
+      if (!constant_multiple_p (size, elem_size, &nelts_op)
+	  || !pow2p_hwi (nelts_op))
 	return false;
-      idx = TREE_INT_CST_LOW (VECTOR_CST_ELT (m, idx));
-      idx %= 2 * nelts;
-      if (idx < nelts)
+      unsigned start = TREE_INT_CST_LOW (vector_cst_elt (m, idx));
+      unsigned end = TREE_INT_CST_LOW (vector_cst_elt (m, idx + nelts_op - 1));
+      /* Be in the same vector.  */
+      if ((start < nelts) != (end < nelts))
+	return false;
+      for (unsigned HOST_WIDE_INT i = 1; i != nelts_op; i++)
 	{
-	  p = gimple_assign_rhs1 (def_stmt);
+	  /* Continuous area.  */
+	  if (TREE_INT_CST_LOW (vector_cst_elt (m, idx + i)) - 1
+	      != TREE_INT_CST_LOW (vector_cst_elt (m, idx + i - 1)))
+	    return false;
 	}
-      else
-	{
-	  p = gimple_assign_rhs2 (def_stmt);
-	  idx -= nelts;
-	}
-      tem = build3 (BIT_FIELD_REF, TREE_TYPE (op),
-		    unshare_expr (p), op1, bitsize_int (idx * size));
-      gimple_assign_set_rhs1 (stmt, tem);
-      fold_stmt (gsi);
-      update_stmt (gsi_stmt (*gsi));
-      return true;
+      /* Alignment not worse than before.  */
+      if (start % nelts_op)
+       return false;
+      idx = start;
     }
 
-  return false;
+  if (idx < nelts)
+    p = gimple_assign_rhs1 (def_stmt);
+  else
+    {
+      p = gimple_assign_rhs2 (def_stmt);
+      idx -= nelts;
+    }
+
+  tem = build3 (BIT_FIELD_REF, TREE_TYPE (op),
+		p, op1, bitsize_int (idx * elem_size));
+  gimple_assign_set_rhs1 (stmt, tem);
+  fold_stmt (gsi);
+  update_stmt (gsi_stmt (*gsi));
+  return true;
 }
 
 /* Determine whether applying the 2 permutations (mask1 then mask2)
