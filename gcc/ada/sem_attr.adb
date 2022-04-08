@@ -52,6 +52,7 @@ with Rident;         use Rident;
 with Rtsfind;        use Rtsfind;
 with Sdefault;
 with Sem;            use Sem;
+with Sem_Aggr;       use Sem_Aggr;
 with Sem_Aux;        use Sem_Aux;
 with Sem_Cat;        use Sem_Cat;
 with Sem_Ch6;        use Sem_Ch6;
@@ -8438,6 +8439,12 @@ package body Sem_Attr is
             or else (Is_Static_Expression (E2)
                       and then Is_Scalar_Type (Etype (E1))))
         and then Id /= Attribute_Descriptor_Size
+
+        --  If the front-end conjures up Integer'Pred (Integer'First)
+        --  as the high bound of a null array aggregate, then we don't
+        --  want to reject that as an illegal static expression.
+
+        and then not Is_Null_Array_Aggregate_High_Bound (N)
       then
          Static := True;
          Set_Is_Static_Expression (N, True);
@@ -9922,6 +9929,25 @@ package body Sem_Attr is
                   Warn => not Static);
 
                Check_Expressions;
+               return;
+
+            --  Rewrite the FE-constructed high bound of a null array
+            --  aggregate to raise CE.
+
+            elsif Is_Signed_Integer_Type (P_Type)
+              and then Expr_Value (E1) =
+                         Expr_Value (Type_Low_Bound (P_Base_Type))
+              and then Is_Null_Array_Aggregate_High_Bound (N)
+            then
+               Apply_Compile_Time_Constraint_Error
+                 (N, "Pred of `&''First`",
+                  CE_Overflow_Check_Failed,
+                  Ent  => P_Base_Type,
+                  Warn => True);
+
+               Rewrite (N, Make_Raise_Constraint_Error (Sloc (N),
+                             Reason => CE_Overflow_Check_Failed));
+               Set_Etype (N, P_Base_Type);
                return;
             end if;
 

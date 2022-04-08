@@ -1405,6 +1405,7 @@ package body Ch4 is
             Scan;   --  past ]
             Aggregate_Node := New_Node (N_Aggregate, Lparen_Sloc);
             Set_Expressions (Aggregate_Node, New_List);
+            Set_Component_Associations (Aggregate_Node, New_List);
             Set_Is_Homogeneous_Aggregate (Aggregate_Node);
             return Aggregate_Node;
          end if;

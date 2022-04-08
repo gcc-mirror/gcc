@@ -43,6 +43,7 @@ with Opt;            use Opt;
 with Par_SCO;        use Par_SCO;
 with Rtsfind;        use Rtsfind;
 with Sem;            use Sem;
+with Sem_Aggr;       use Sem_Aggr;
 with Sem_Aux;        use Sem_Aux;
 with Sem_Cat;        use Sem_Cat;
 with Sem_Ch3;        use Sem_Ch3;
@@ -6054,6 +6055,16 @@ package body Sem_Eval is
    ------------------
 
    procedure Out_Of_Range (N : Node_Id) is
+
+      --  If the FE conjures up an expression that would normally be
+      --  an illegal static expression (e.g., an integer literal with
+      --  a value outside of its base subtype), we don't want to
+      --  flag it as illegal; we only want a warning in such cases.
+
+      function Force_Warning return Boolean is
+        (if Comes_From_Source (Original_Node (N)) then False
+         elsif Nkind (Original_Node (N)) = N_Type_Conversion then True
+         else Is_Null_Array_Aggregate_High_Bound (N));
    begin
       --  If we have the static expression case, then this is an illegality
       --  in Ada 95 mode, except that in an instance, we never generate an
@@ -6093,9 +6104,7 @@ package body Sem_Eval is
             --  Determine if the out-of-range violation constitutes a warning
             --  or an error based on context, according to RM 4.9 (34/3).
 
-            if Nkind (Original_Node (N)) = N_Type_Conversion
-              and then not Comes_From_Source (Original_Node (N))
-            then
+            if Force_Warning then
                Apply_Compile_Time_Constraint_Error
                  (N, "value not in range of}??", CE_Range_Check_Failed);
             else
