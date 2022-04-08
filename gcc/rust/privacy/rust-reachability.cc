@@ -24,7 +24,7 @@ namespace Privacy {
 static HIR::VisItem *
 maybe_get_vis_item (std::unique_ptr<HIR::Item> &item)
 {
-  if (item->get_hir_kind () != HIR::VIS_ITEM)
+  if (item->get_hir_kind () != HIR::Node::VIS_ITEM)
     return nullptr;
 
   return static_cast<HIR::VisItem *> (item.get ());

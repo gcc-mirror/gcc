@@ -33,7 +33,7 @@ Resolver::resolve (HIR::Crate &crate)
   const auto &items = crate.items;
   for (auto &item : items)
     {
-      if (item->get_hir_kind () == HIR::VIS_ITEM)
+      if (item->get_hir_kind () == HIR::Node::VIS_ITEM)
 	{
 	  auto vis_item = static_cast<HIR::VisItem *> (item.get ());
 	  vis_item->accept_vis (visitor);

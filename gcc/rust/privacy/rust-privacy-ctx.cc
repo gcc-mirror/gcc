@@ -21,6 +21,7 @@
 
 namespace Rust {
 namespace Privacy {
+
 static ReachLevel
 insert_if_higher (ReachLevel new_level,
 		  std::unordered_map<HirId, ReachLevel>::iterator &existing)

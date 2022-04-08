@@ -45,33 +45,33 @@ class HIRTypeVisitor;
 // forward decl for use in token tree method
 class Token;
 
-// Kind for downcasting various HIR nodes to other base classes when visiting
-// them
-enum BaseKind
-{
-  /* class ExternalItem */
-  EXTERNAL,
-  /* class TraitItem */
-  TRAIT_ITEM,
-  /* class VisItem */
-  VIS_ITEM,
-  /* class Item */
-  ITEM,
-  /* class ImplItem */
-  IMPL,
-  /* class Type */
-  TYPE,
-  /* class Stmt */
-  STMT,
-  /* class Expr */
-  EXPR,
-  /* class Pattern */
-  PATTERN,
-};
-
 class Node
 {
 public:
+  // Kind for downcasting various HIR nodes to other base classes when visiting
+  // them
+  enum BaseKind
+  {
+    /* class ExternalItem */
+    EXTERNAL,
+    /* class TraitItem */
+    TRAIT_ITEM,
+    /* class VisItem */
+    VIS_ITEM,
+    /* class Item */
+    ITEM,
+    /* class ImplItem */
+    IMPL,
+    /* class Type */
+    TYPE,
+    /* class Stmt */
+    STMT,
+    /* class Expr */
+    EXPR,
+    /* class Pattern */
+    PATTERN,
+  };
+
   /**
    * Get the kind of HIR node we are dealing with. This is useful for
    * downcasting to more precise types when necessary, i.e going from an `Item*`
