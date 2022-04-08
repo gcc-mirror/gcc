@@ -1,3 +1,8 @@
+2022-04-07  Hans-Peter Nilsson  <hp@axis.com>
+
+	* testsuite/20_util/expected/requirements.cc: Correct minimal-size
+	test.
+
 2022-04-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR libstdc++/105128

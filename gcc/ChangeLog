@@ -1,3 +1,95 @@
+2022-04-07  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/104409
+	* config/aarch64/aarch64-builtins.cc (handle_arm_acle_h): New.
+	(aarch64_general_init_builtins): Move LS64 code.
+	* config/aarch64/aarch64-c.cc (aarch64_pragma_aarch64): Support
+	arm_acle.h
+	* config/aarch64/aarch64-protos.h (handle_arm_acle_h): New.
+	* config/aarch64/arm_acle.h: Add pragma GCC aarch64 "arm_acle.h".
+
+2022-04-07  Richard Biener  <rguenther@suse.de>
+	    Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/104303
+	* tree-ssa-alias.h (ptr_deref_may_alias_global_p,
+	ref_may_alias_global_p, ref_may_alias_global_p,
+	stmt_may_clobber_global_p, pt_solution_includes_global): Add
+	bool parameters indicating whether escaped locals should be
+	considered global.
+	* tree-ssa-structalias.cc (pt_solution_includes_global):
+	When the new escaped_nonlocal_p flag is true also consider
+	pt->vars_contains_escaped.
+	* tree-ssa-alias.cc (ptr_deref_may_alias_global_p):
+	Pass down new escaped_nonlocal_p flag.
+	(ref_may_alias_global_p): Likewise.
+	(stmt_may_clobber_global_p): Likewise.
+	(ref_may_alias_global_p_1): Likewise.  For decls also
+	query the escaped solution if true.
+	(ref_may_access_global_memory_p): Remove.
+	(modref_may_conflict): Use ref_may_alias_global_p with
+	escaped locals considered global.
+	(ref_maybe_used_by_stmt_p): Adjust.
+	* ipa-fnsummary.cc (points_to_local_or_readonly_memory_p):
+	Likewise.
+	* tree-ssa-dse.cc (dse_classify_store): Likewise.
+	* trans-mem.cc (thread_private_new_memory): Likewise, but
+	consider escaped locals global.
+	* tree-ssa-dce.cc (mark_stmt_if_obviously_necessary): Likewise.
+
+2022-04-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/105185
+	* tree-ssa-sccvn.cc (visit_reference_op_call): Simplify
+	modref query again.
+
+2022-04-07  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/104049
+	* config/aarch64/aarch64-simd.md
+	(aarch64_reduc_plus_internal<mode>): Fix RTL and rename to...
+	(reduc_plus_scal_<mode>): ... This.
+	(reduc_plus_scal_v4sf): Moved.
+	(aarch64_reduc_plus_internalv2si): Fix RTL and rename to...
+	(reduc_plus_scal_v2si): ... This.
+
+2022-04-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/102586
+	* langhooks.h (struct lang_hooks_for_types): Add classtype_as_base
+	langhook.
+	* langhooks-def.h (LANG_HOOKS_CLASSTYPE_AS_BASE): Define.
+	(LANG_HOOKS_FOR_TYPES_INITIALIZER): Add it.
+	* gimple-fold.cc (clear_padding_type): Use ftype instead of
+	TREE_TYPE (field) some more.  For artificial FIELD_DECLs without
+	name try the lang_hooks.types.classtype_as_base langhook and
+	if it returns non-NULL, use that instead of ftype for recursive call.
+
+2022-04-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/105150
+	* tree.cc (tree_builtin_call_types_compatible_p): New function.
+	(get_call_combined_fn): Use it.
+
+2022-04-07  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/105165
+	* tree-complex.cc (expand_complex_asm): Sorry for asm goto
+	_Complex outputs.
+
+2022-04-07  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/sse.md (<sse2_avx2>_andnot<mode>3_mask):
+	Removed.
+	(<sse>_andnot<mode>3<mask_name>): Disable V*HFmode patterns
+	for mask_applied.
+	(<code><mode>3<mask_name>): Ditto.
+	(*<code><mode>3<mask_name>): Ditto.
+	(VFB_128_256): Adjust condition of V8HF/V16HFmode according to
+	real instruction.
+	(VFB_512): Ditto.
+	(VFB): Ditto.
+
 2022-04-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/104985

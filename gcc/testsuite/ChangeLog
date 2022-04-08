@@ -1,3 +1,105 @@
+2022-04-07   Michael Meissner  <meissner@linux.ibm.com>
+
+	PR target/104253
+	* lib/target-supports.exp (check_ppc_float128_sw_available): Do
+	not run float128 tests on VxWorks.
+	(check_ppc_float128_hw_available): Likewise.
+	(check_effective_target_ppc_ieee128_ok): Likewise.
+
+2022-04-07  Tamar Christina  <tamar.christina@arm.com>
+
+	PR testsuite/105196
+	* gcc.dg/vect/complex/fast-math-complex-add-pattern-float.c: Remove slp1 check.
+
+2022-04-07  Richard Biener  <rguenther@suse.de>
+	    Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/104303
+	* gnat.dg/concat5.adb: New.
+	* gnat.dg/concat5_pkg1.adb: Likewise.
+	* gnat.dg/concat5_pkg1.ads: Likewise.
+	* gnat.dg/concat5_pkg2.adb: Likewise.
+	* gnat.dg/concat5_pkg2.ads: Likewise.
+
+2022-04-07  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/102208
+	* gcc.dg/analyzer/symbolic-9.c: New test.
+	* gcc.dg/analyzer/torture/leak-pr102308-1.c: New test.
+	* gcc.dg/analyzer/torture/leak-pr102308-2.c: New test.
+
+2022-04-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/105185
+	* gcc.dg/torture/pr105185.c: New testcase.
+
+2022-04-07  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/104049
+	* gcc.target/aarch64/vadd_reduc-1.c: New test.
+	* gcc.target/aarch64/vadd_reduc-2.c: New test.
+
+2022-04-07  Tamar Christina  <tamar.christina@arm.com>
+
+	PR testsuite/105095
+	* gcc.dg/vect/complex/fast-math-complex-add-double.c: Update for codegen.
+	* gcc.dg/vect/complex/fast-math-complex-add-float.c: Likewise.
+	* gcc.dg/vect/complex/fast-math-complex-add-half-float.c: Likewise.
+	* gcc.dg/vect/complex/fast-math-complex-add-pattern-double.c: Likewise.
+	* gcc.dg/vect/complex/fast-math-complex-add-pattern-float.c: Likewise.
+	* gcc.dg/vect/complex/fast-math-complex-add-pattern-half-float.c: Likewise.
+	* gcc.dg/vect/complex/fast-math-complex-mla-half-float.c: Likewise.
+	* gcc.dg/vect/complex/fast-math-complex-mls-double.c: Likewise.
+	* gcc.dg/vect/complex/fast-math-complex-mls-float.c: Likewise.
+	* gcc.dg/vect/complex/fast-math-complex-mls-half-float.c: Likewise.
+	* gcc.dg/vect/complex/fast-math-complex-mul-double.c: Likewise.
+	* gcc.dg/vect/complex/fast-math-complex-mul-float.c: Likewise.
+	* gcc.dg/vect/complex/fast-math-complex-mul-half-float.c: Likewise.
+	* gcc.dg/vect/vect.exp: Add extra letter to filter.
+
+2022-04-07  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc.target/aarch64/pr103350-1.c: Skip on BE.
+	* gcc.target/aarch64/pr103350-2.c: Likewise.
+
+2022-04-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/102586
+	* g++.dg/torture/builtin-clear-padding-5.C: New test.
+	* g++.dg/cpp2a/builtin-clear-padding1.C (bar): Uncomment one
+	call that is now accepted.
+
+2022-04-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/105150
+	* gcc.dg/pr105150.c: New test.
+
+2022-04-07  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/105165
+	* gcc.dg/pr105165.c: New testcase.
+
+2022-04-07  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	PR target/105147
+	* gcc.dg/pr105140.c: Skip for s390*-*-*.
+
+2022-04-07  Jason Merrill  <jason@redhat.com>
+
+	PR c++/101051
+	* g++.dg/cpp0x/trailing15.C: New test.
+
+2022-04-07  Jason Merrill  <jason@redhat.com>
+
+	PR c++/101717
+	* g++.dg/cpp1y/lambda-generic-this4.C: New test.
+
+2022-04-07  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105187
+	* gcc.c-torture/compile/20050113-1.c: Moved to...
+	* c-c++-common/torture/20050113-1.c: ...here.
+
 2022-04-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/104668

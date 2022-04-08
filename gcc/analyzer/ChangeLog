@@ -1,3 +1,33 @@
+2022-04-07  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/102208
+	* store.cc (binding_map::remove_overlapping_bindings): Add
+	"always_overlap" param, using it to generalize to the case where
+	we want to remove all bindings.  Update "uncertainty" logic to
+	only record maybe-bound values for cases where there is a symbolic
+	write involved.
+	(binding_cluster::mark_region_as_unknown): Split param "reg" into
+	"reg_to_bind" and "reg_for_overlap".
+	(binding_cluster::maybe_get_compound_binding): Pass "false" to
+	binding_map::remove_overlapping_bindings new "always_overlap" param.
+	(binding_cluster::remove_overlapping_bindings): Determine
+	"always_overlap" and pass it to
+	binding_map::remove_overlapping_bindings.
+	(store::set_value): Pass uncertainty to remove_overlapping_bindings
+	call.  Update for new param of
+	binding_cluster::mark_region_as_unknown, passing both the base
+	region of the iter_cluster, and the lhs_reg.
+	(store::mark_region_as_unknown): Update for new param of
+	binding_cluster::mark_region_as_unknown, passing "reg" for both.
+	(store::remove_overlapping_bindings): Add param "uncertainty", and
+	pass it on to call to
+	binding_cluster::remove_overlapping_bindings.
+	* store.h (binding_map::remove_overlapping_bindings): Add
+	"always_overlap" param.
+	(binding_cluster::mark_region_as_unknown): Split param "reg" into
+	"reg_to_bind" and "reg_for_overlap".
+	(store::remove_overlapping_bindings): Add param "uncertainty".
+
 2022-03-29  David Malcolm  <dmalcolm@redhat.com>
 
 	PR testsuite/105085
