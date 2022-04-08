@@ -1,3 +1,121 @@
+2022-04-07  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2022-04-06  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/105143
+	* g++.dg/cpp2a/nodiscard1.C: New test.
+	* g++.dg/warn/Wctad-maybe-unsupported4.C: New test.
+
+2022-04-07  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2022-03-28  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/105064
+	* g++.dg/cpp2a/concepts-friend9.C: New test.
+
+2022-04-07  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2022-02-17  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/104565
+	* g++.dg/template/non-dependent22.C: New test.
+
+2022-04-07  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2022-02-03  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/104079
+	* g++.dg/cpp0x/noexcept74.C: New test.
+	* g++.dg/cpp0x/noexcept74a.C: New test.
+
+2022-04-07  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2022-03-26  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/103455
+	* g++.dg/overload/builtin6.C: New test.
+
+2022-04-07  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2022-04-05  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/104210
+	* gfortran.dg/pr104210.f90: New test.
+
+2022-04-07  Jan Hubicka  <jh@suse.cz>
+
+	Backported from master:
+	2021-08-11  Jan Hubicka  <jh@suse.cz>
+
+	* c-c++-common/modref-dse.c: New test.
+
+2022-04-07  Benno Evers  <benno.evers@tenzir.com>
+
+	Backported from master:
+	2022-04-03  Benno Evers  <benno.evers@tenzir.com>
+		    Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/103328
+	* g++.dg/coroutines/pr103328.C: New test.
+
+2022-04-07  Martin Sebor  <msebor@redhat.com>
+
+	Backported from master:
+	2021-07-27  Martin Sebor  <msebor@redhat.com>
+
+	PR c/101585
+	* gcc.dg/Wvla-parameter-13.c: New test.
+
+2022-04-07  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	Backported from master:
+	2021-04-27  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR target/100106
+	* gcc.c-torture/compile/pr100106.c: New testcase.
+
+2022-04-07  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/104497
+	* c-c++-common/torture/pr104497.c: New testcase.
+
+2022-04-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/105053
+	* g++.dg/vect/pr105053.cc: New testcase.
+
+2022-04-07  Andrew Pinski  <apinski@marvell.com>
+
+	Backported from master:
+	2022-02-10  Andrew Pinski  <apinski@marvell.com>
+
+	PR target/104474
+	* gcc.target/aarch64/sve/pr104474-1.c: New test.
+	* gcc.target/aarch64/sve/pr104474-2.c: New test.
+	* gcc.target/aarch64/sve/pr104474-3.c: New test.
+
+2022-04-07  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-03-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/104880
+	* g++.dg/opt/pr104880.cc: New testcase.
+
+2022-04-07  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-04-07  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/105165
+	* gcc.dg/pr105165.c: New testcase.
+
 2022-04-04  Martin Jambor  <mjambor@suse.cz>
 
 	Backported from master:

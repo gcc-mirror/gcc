@@ -1,3 +1,104 @@
+2022-04-07  Jan Hubicka  <jh@suse.cz>
+
+	Backported from master:
+	2021-11-26  Jan Hubicka  <jh@suse.cz>
+
+	PR ipa/103432
+	* ipa-modref.c (update_escape_summary_1): Fix handling of min_flags.
+
+2022-04-07  Jan Hubicka  <jh@suse.cz>
+
+	Backported from master:
+	2021-08-11  Jan Hubicka  <hubicka@ucw.cz>
+		    Alexandre Oliva  <oliva@adacore.com>
+
+	* ipa-modref.c (modref_lattice::dump): Fix escape_point's min_flags
+	dumping.
+	(modref_lattice::merge_deref): Fix handling of indirect scape points.
+	(update_escape_summary_1): Likewise.
+	(update_escape_summary): Likewise.
+	(ipa_merge_modref_summary_after_inlining): Likewise.
+
+2022-04-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/99121
+	* gimple-array-bounds.cc (array_bounds_checker::check_mem_ref):
+	Bail out for non-constant type size.
+
+2022-04-07  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	Backported from master:
+	2021-04-27  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR target/100106
+	* simplify-rtx.c (simplify_context::simplify_subreg): Check the
+	memory alignment for the outer mode.
+
+2022-04-07  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/104497
+	* gimplify.c (gimplify_compound_lval): Make sure the
+	base is a non-register if needed and possible.
+
+2022-04-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/105053
+	* tree-vect-loop.c (vect_create_epilog_for_reduction): Pick
+	the correct live-out stmt for a reduction chain.
+
+2022-04-07  Andrew Pinski  <apinski@marvell.com>
+
+	Backported from master:
+	2022-02-10  Andrew Pinski  <apinski@marvell.com>
+
+	PR target/104474
+	* config/aarch64/aarch64.c
+	(aarch64_sve_expand_vector_init_handle_trailing_constants):
+	Use CONST0_RTX instead of const0_rtx for the non-constant elements.
+
+2022-04-07  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-03-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/105070
+	* tree-switch-conversion.h
+	(bit_test_cluster::hoist_edge_and_branch_if_true): Add location
+	argument.
+	* tree-switch-conversion.c
+	(bit_test_cluster::hoist_edge_and_branch_if_true): Annotate
+	cond with location.
+	(bit_test_cluster::emit): Annotate all generated expressions
+	with location.
+
+2022-04-07  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-03-23  Richard Biener  <rguenther@suse.de>
+
+	PR rtl-optimization/105028
+	* ira-color.c (form_threads_from_copies): Remove unnecessary
+	copying of the sorted_copies tail.
+
+2022-04-07  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-03-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/104880
+	* tree-ssa.c (execute_update_address_taken): Remember if we
+	optimistically made something not addressable and
+	prepare to undo it.
+
+2022-04-07  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-04-07  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/105165
+	* tree-complex.c (expand_complex_asm): Sorry for asm goto
+	_Complex outputs.
+
 2022-04-04  Martin Jambor  <mjambor@suse.cz>
 
 	Backported from master:

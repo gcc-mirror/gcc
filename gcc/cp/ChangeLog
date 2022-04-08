@@ -1,3 +1,63 @@
+2022-04-07  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2022-04-06  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/105143
+	* pt.c (do_class_deduction): Check complain before attempting
+	to issue a -Wctad-maybe-unsupported warning.
+
+2022-04-07  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2022-03-28  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/105064
+	* constraint.cc (maybe_substitute_reqs_for): Don't assume
+	DECL_TEMPLATE_INFO is available.
+
+2022-04-07  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2022-02-17  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/104565
+	* semantics.c (finish_compound_literal): Don't perform
+	non-dependent expr folding before calling check_narrowing.
+
+2022-04-07  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2022-02-03  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/104079
+	* pt.c (value_dependent_noexcept_spec_p): New predicate split
+	out from ...
+	(dependent_type_p_r): ... here.
+	(instantiation_dependent_r): Use value_dependent_noexcept_spec_p
+	to consider dependence of a noexcept-spec before C++17.
+	* tree.c (fixup_deferred_exception_variants): Clear
+	TYPE_DEPENDENT_P_VALID.
+
+2022-04-07  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2022-03-26  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/103455
+	* call.c (add_builtin_candidate) <case MEMBER_REF>: Test
+	CLASS_TYPE_P instead of MAYBE_CLASS_TYPE_P.
+
+2022-04-07  Benno Evers  <benno.evers@tenzir.com>
+
+	Backported from master:
+	2022-04-03  Benno Evers  <benno.evers@tenzir.com>
+		    Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/103328
+	* coroutines.cc (morph_fn_to_coro): Reset
+	current_binding_level->blocks.
+
 2022-03-30  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:
