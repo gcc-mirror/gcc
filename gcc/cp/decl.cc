@@ -14142,15 +14142,6 @@ grokdeclarator (const cp_declarator *declarator,
 		     So set it here.  */
 		  funcdef_flag = true;
 
-		if (template_class_depth (current_class_type) == 0)
-		  {
-		    decl = check_explicit_specialization
-		      (unqualified_id, decl, template_count,
-		       2 * funcdef_flag + 4);
-		    if (decl == error_mark_node)
-		      return error_mark_node;
-		  }
-
 		decl = do_friend (ctype, unqualified_id, decl,
 				  flags, funcdef_flag);
 		return decl;
