@@ -85,17 +85,20 @@ infer_crate_name (const std::string &filename)
   return crate;
 }
 
-bool
-CompileOptions::validate_crate_name (const std::string &crate_name)
+/* Validate the crate name using the ASCII rules
+   TODO: Support Unicode version of the rules */
+
+static bool
+validate_crate_name (const std::string &crate_name, Error &error)
 {
   if (crate_name.empty ())
     {
-      rust_error_at (Location (), "crate name cannot be empty");
+      error = Error (Location (), "crate name cannot be empty");
       return false;
     }
   if (crate_name.length () > kMaxNameLength)
     {
-      rust_error_at (Location (), "crate name cannot exceed %ld characters",
+      error = Error (Location (), "crate name cannot exceed %ld characters",
 		     kMaxNameLength);
       return false;
     }
@@ -103,7 +106,7 @@ CompileOptions::validate_crate_name (const std::string &crate_name)
     {
       if (!(ISALNUM (c) || c == '_'))
 	{
-	  rust_error_at (Location (),
+	  error = Error (Location (),
 			 "invalid character %<%c%> in crate name: %<%s%>", c,
 			 crate_name.c_str ());
 	  return false;
@@ -399,7 +402,16 @@ Session::handle_option (
     case OPT_frust_crate_:
       // set the crate name
       if (arg != nullptr)
-	ret = options.set_crate_name (arg);
+	{
+	  auto error = Error (Location (), std::string ());
+	  if ((ret = validate_crate_name (arg, error)))
+	    options.set_crate_name (arg);
+	  else
+	    {
+	      rust_assert (!error.message.empty ());
+	      error.emit_error ();
+	    }
+	}
       else
 	ret = false;
       break;
@@ -541,17 +553,20 @@ Session::parse_files (int num_files, const char **files)
 	filename = files[0];
 
       auto crate_name = infer_crate_name (filename);
+      Error error ((Location ()), std::string ());
       rust_debug ("inferred crate name: %s", crate_name.c_str ());
-      if (!options.set_crate_name (crate_name))
+      if (!validate_crate_name (crate_name, error))
 	{
 	  // fake a linemapping so that we can show the filename
 	  linemap->start_file (filename, 0);
 	  linemap->start_line (0, 1);
+	  error.emit_error ();
 	  rust_inform (linemap->get_location (0),
 		       "crate name inferred from this file");
 	  linemap->stop ();
 	  return;
 	}
+      options.set_crate_name (crate_name);
     }
 
   auto mappings = Analysis::Mappings::get ();
@@ -1202,16 +1217,17 @@ namespace selftest {
 void
 rust_crate_name_validation_test (void)
 {
-  ASSERT_TRUE (Rust::CompileOptions::validate_crate_name ("example"));
-  ASSERT_TRUE (Rust::CompileOptions::validate_crate_name ("abcdefg_1234"));
-  ASSERT_TRUE (Rust::CompileOptions::validate_crate_name ("1"));
+  auto error = Rust::Error (Location (), std::string ());
+  ASSERT_TRUE (Rust::validate_crate_name ("example", error));
+  ASSERT_TRUE (Rust::validate_crate_name ("abcdefg_1234", error));
+  ASSERT_TRUE (Rust::validate_crate_name ("1", error));
   // FIXME: The next test does not pass as of current implementation
   // ASSERT_TRUE (Rust::CompileOptions::validate_crate_name ("惊吓"));
   // NOTE: - is not allowed in the crate name ...
-  /*
-  ASSERT_FALSE (Rust::CompileOptions::validate_crate_name ("abcdefg-1234"));
-  ASSERT_FALSE (Rust::CompileOptions::validate_crate_name ("a+b"));
-  ASSERT_FALSE (Rust::CompileOptions::validate_crate_name ("/a+b/")); */
+
+  ASSERT_FALSE (Rust::validate_crate_name ("abcdefg-1234", error));
+  ASSERT_FALSE (Rust::validate_crate_name ("a+b", error));
+  ASSERT_FALSE (Rust::validate_crate_name ("/a+b/", error));
 
   /* Tests for crate name inference */
   ASSERT_EQ (Rust::infer_crate_name ("c.rs"), "c");

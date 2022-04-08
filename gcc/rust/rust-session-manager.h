@@ -213,17 +213,11 @@ struct CompileOptions
     enable_dump_option (DumpOption::TYPE_RESOLUTION_DUMP);
   }
 
-  /* Validate the crate name using the ASCII rules
-   TODO: Support Unicode version of the rules */
-  static bool validate_crate_name (const std::string &crate_name);
-
-  bool set_crate_name (std::string name)
+  void set_crate_name (std::string name)
   {
-    if (!validate_crate_name (name))
-      return false;
+    rust_assert (!name.empty ());
 
     crate_name = std::move (name);
-    return true;
   }
 
   void set_edition (int raw_edition)
