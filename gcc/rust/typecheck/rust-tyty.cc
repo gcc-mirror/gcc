@@ -266,6 +266,23 @@ TyVar::get_implicit_infer_var (Location locus)
   return TyVar (infer->get_ref ());
 }
 
+TyVar
+TyVar::subst_covariant_var (TyTy::BaseType *orig, TyTy::BaseType *subst)
+{
+  if (orig->get_kind () != TyTy::TypeKind::PARAM)
+    return TyVar (subst->get_ty_ref ());
+  else if (subst->get_kind () == TyTy::TypeKind::PARAM)
+    {
+      TyTy::ParamType *p = static_cast<TyTy::ParamType *> (subst);
+      if (p->resolve ()->get_kind () == TyTy::TypeKind::PARAM)
+	{
+	  return TyVar (subst->get_ty_ref ());
+	}
+    }
+
+  return TyVar (subst->get_ref ());
+}
+
 void
 InferType::accept_vis (TyVisitor &vis)
 {
@@ -442,10 +459,15 @@ SubstitutionParamMapping::need_substitution () const
 }
 
 bool
-SubstitutionParamMapping::fill_param_ty (BaseType &type, Location locus)
+SubstitutionParamMapping::fill_param_ty (
+  SubstitutionArgumentMappings &subst_mappings, Location locus)
 {
-  auto context = Resolver::TypeCheckContext::get ();
+  SubstitutionArg arg = SubstitutionArg::error ();
+  bool ok = subst_mappings.get_argument_for_symbol (get_param_ty (), &arg);
+  if (!ok)
+    return true;
 
+  TyTy::BaseType &type = *arg.get_tyty ();
   if (type.get_kind () == TyTy::TypeKind::INFER)
     {
       type.inherit_bounds (*param);
@@ -467,43 +489,9 @@ SubstitutionParamMapping::fill_param_ty (BaseType &type, Location locus)
       if (!param->bounds_compatible (type, locus, true))
 	return false;
 
-      // setup any associated type mappings for the specified bonds and this
-      // type
-      auto candidates = Resolver::TypeBoundsProbe::Probe (&type);
-      for (auto &specified_bound : param->get_specified_bounds ())
-	{
-	  const Resolver::TraitReference *specified_bound_ref
-	    = specified_bound.get ();
-
-	  // since the bounds_compatible check has occurred we should be able to
-	  // assert on finding the trait references
-	  HirId associated_impl_block_id = UNKNOWN_HIRID;
-	  bool found = false;
-	  for (auto &bound : candidates)
-	    {
-	      const Resolver::TraitReference *bound_trait_ref = bound.first;
-	      const HIR::ImplBlock *associated_impl = bound.second;
-
-	      found = specified_bound_ref->is_equal (*bound_trait_ref);
-	      if (found)
-		{
-		  rust_assert (associated_impl != nullptr);
-		  associated_impl_block_id
-		    = associated_impl->get_mappings ().get_hirid ();
-		  break;
-		}
-	    }
-
-	  if (found && associated_impl_block_id != UNKNOWN_HIRID)
-	    {
-	      Resolver::AssociatedImplTrait *lookup_associated = nullptr;
-	      bool found_impl_trait = context->lookup_associated_trait_impl (
-		associated_impl_block_id, &lookup_associated);
-
-	      if (found_impl_trait)
-		lookup_associated->setup_associated_types ();
-	    }
-	}
+      // recursively pass this down to all HRTB's
+      for (auto &bound : param->get_specified_bounds ())
+	bound.handle_substitions (subst_mappings);
 
       param->set_ty_ref (type.get_ref ());
     }
@@ -602,6 +590,7 @@ SubstitutionRef::get_mappings_from_generic_args (HIR::GenericArgs &args)
 							 args.get_locus ());
 	      resolved = Resolver::SubstMapperInternal::Resolve (resolved,
 								 intermediate);
+
 	      if (resolved->get_kind () == TypeKind::ERROR)
 		return SubstitutionArgumentMappings::error ();
 	    }
@@ -771,6 +760,65 @@ SubstitutionRef::solve_missing_mappings_from_this (SubstitutionRef &ref,
     }
 
   return SubstitutionArgumentMappings (resolved_mappings, locus);
+}
+
+bool
+SubstitutionRef::monomorphize ()
+{
+  auto context = Resolver::TypeCheckContext::get ();
+  for (const auto &subst : get_substs ())
+    {
+      const TyTy::ParamType *pty = subst.get_param_ty ();
+
+      if (!pty->can_resolve ())
+	continue;
+
+      const TyTy::BaseType *binding = pty->resolve ();
+      if (binding->get_kind () == TyTy::TypeKind::PARAM)
+	continue;
+
+      for (const auto &bound : pty->get_specified_bounds ())
+	{
+	  const Resolver::TraitReference *specified_bound_ref = bound.get ();
+
+	  // setup any associated type mappings for the specified bonds and this
+	  // type
+	  auto candidates = Resolver::TypeBoundsProbe::Probe (binding);
+
+	  Resolver::AssociatedImplTrait *associated_impl_trait = nullptr;
+	  for (auto &probed_bound : candidates)
+	    {
+	      const Resolver::TraitReference *bound_trait_ref
+		= probed_bound.first;
+	      const HIR::ImplBlock *associated_impl = probed_bound.second;
+
+	      HirId impl_block_id
+		= associated_impl->get_mappings ().get_hirid ();
+	      Resolver::AssociatedImplTrait *associated = nullptr;
+	      bool found_impl_trait
+		= context->lookup_associated_trait_impl (impl_block_id,
+							 &associated);
+	      rust_assert (found_impl_trait);
+
+	      bool found_trait
+		= specified_bound_ref->is_equal (*bound_trait_ref);
+	      bool found_self
+		= associated->get_self ()->can_eq (binding, false);
+	      if (found_trait && found_self)
+		{
+		  associated_impl_trait = associated;
+		  break;
+		}
+	    }
+
+	  if (associated_impl_trait != nullptr)
+	    {
+	      associated_impl_trait->setup_associated_types2 (binding, bound);
+	    }
+	}
+    }
+
+  return true;
 }
 
 void
@@ -951,7 +999,7 @@ ADTType::handle_substitions (SubstitutionArgumentMappings subst_mappings)
       bool ok
 	= subst_mappings.get_argument_for_symbol (sub.get_param_ty (), &arg);
       if (ok)
-	sub.fill_param_ty (*arg.get_tyty (), subst_mappings.get_locus ());
+	sub.fill_param_ty (subst_mappings, subst_mappings.get_locus ());
     }
 
   for (auto &variant : adt->get_variants ())
@@ -1059,6 +1107,7 @@ TupleType::handle_substitions (SubstitutionArgumentMappings mappings)
   auto mappings_table = Analysis::Mappings::get ();
 
   TupleType *tuple = static_cast<TupleType *> (clone ());
+  tuple->set_ref (mappings_table->get_next_hir_id ());
   tuple->set_ty_ref (mappings_table->get_next_hir_id ());
 
   for (size_t i = 0; i < tuple->fields.size (); i++)
@@ -1069,7 +1118,8 @@ TupleType::handle_substitions (SubstitutionArgumentMappings mappings)
 	  BaseType *concrete
 	    = Resolver::SubstMapperInternal::Resolve (field.get_tyty (),
 						      mappings);
-	  tuple->fields[i] = TyVar (concrete->get_ty_ref ());
+	  tuple->fields[i]
+	    = TyVar::subst_covariant_var (field.get_tyty (), concrete);
 	}
     }
 
@@ -1196,7 +1246,7 @@ FnType::handle_substitions (SubstitutionArgumentMappings subst_mappings)
 	= subst_mappings.get_argument_for_symbol (sub.get_param_ty (), &arg);
       if (ok)
 	{
-	  sub.fill_param_ty (*arg.get_tyty (), subst_mappings.get_locus ());
+	  sub.fill_param_ty (subst_mappings, subst_mappings.get_locus ());
 	}
     }
 
@@ -1538,7 +1588,7 @@ ArrayType::handle_substitions (SubstitutionArgumentMappings mappings)
   // might be &T or &ADT so this needs to be recursive
   auto base = ref->get_element_type ();
   BaseType *concrete = Resolver::SubstMapperInternal::Resolve (base, mappings);
-  ref->element_type = TyVar (concrete->get_ty_ref ());
+  ref->element_type = TyVar::subst_covariant_var (base, concrete);
 
   return ref;
 }
@@ -1627,7 +1677,7 @@ SliceType::handle_substitions (SubstitutionArgumentMappings mappings)
   // might be &T or &ADT so this needs to be recursive
   auto base = ref->get_element_type ();
   BaseType *concrete = Resolver::SubstMapperInternal::Resolve (base, mappings);
-  ref->element_type = TyVar (concrete->get_ty_ref ());
+  ref->element_type = TyVar::subst_covariant_var (base, concrete);
 
   return ref;
 }
@@ -2146,7 +2196,7 @@ ReferenceType::handle_substitions (SubstitutionArgumentMappings mappings)
   // might be &T or &ADT so this needs to be recursive
   auto base = ref->get_base ();
   BaseType *concrete = Resolver::SubstMapperInternal::Resolve (base, mappings);
-  ref->base = TyVar (concrete->get_ty_ref ());
+  ref->base = TyVar::subst_covariant_var (base, concrete);
 
   return ref;
 }
@@ -2232,7 +2282,7 @@ PointerType::handle_substitions (SubstitutionArgumentMappings mappings)
   // might be &T or &ADT so this needs to be recursive
   auto base = ref->get_base ();
   BaseType *concrete = Resolver::SubstMapperInternal::Resolve (base, mappings);
-  ref->base = TyVar (concrete->get_ty_ref ());
+  ref->base = TyVar::subst_covariant_var (base, concrete);
 
   return ref;
 }
@@ -2252,31 +2302,22 @@ ParamType::accept_vis (TyConstVisitor &vis) const
 std::string
 ParamType::as_string () const
 {
-  if (get_ref () == get_ty_ref ())
+  if (!can_resolve ())
     {
       return get_symbol () + " REF: " + std::to_string (get_ref ());
     }
 
-  auto context = Resolver::TypeCheckContext::get ();
-  BaseType *lookup = nullptr;
-  bool ok = context->lookup_type (get_ty_ref (), &lookup);
-  rust_assert (ok);
-
+  BaseType *lookup = resolve ();
   return get_symbol () + "=" + lookup->as_string ();
 }
 
 std::string
 ParamType::get_name () const
 {
-  if (get_ref () == get_ty_ref ())
+  if (!can_resolve ())
     return get_symbol ();
 
-  auto context = Resolver::TypeCheckContext::get ();
-  BaseType *lookup = nullptr;
-  bool ok = context->lookup_type (get_ty_ref (), &lookup);
-  rust_assert (ok);
-
-  return lookup->get_name ();
+  return resolve ()->get_name ();
 }
 
 BaseType *
@@ -2364,14 +2405,27 @@ ParamType::is_equal (const BaseType &other) const
 }
 
 ParamType *
-ParamType::handle_substitions (SubstitutionArgumentMappings mappings)
+ParamType::handle_substitions (SubstitutionArgumentMappings subst_mappings)
 {
-  ParamType *p = static_cast<ParamType *> (clone ());
-
   SubstitutionArg arg = SubstitutionArg::error ();
-  bool ok = mappings.get_argument_for_symbol (this, &arg);
-  if (ok && !arg.is_error ())
-    p->set_ty_ref (arg.get_tyty ()->get_ref ());
+  bool ok = subst_mappings.get_argument_for_symbol (this, &arg);
+  if (!ok || arg.is_error ())
+    return this;
+
+  ParamType *p = static_cast<ParamType *> (clone ());
+  subst_mappings.on_param_subst (*p, arg);
+
+  // there are two cases one where we substitute directly to a new PARAM and
+  // otherwise
+  if (arg.get_tyty ()->get_kind () == TyTy::TypeKind::PARAM)
+    {
+      p->set_ty_ref (arg.get_tyty ()->get_ref ());
+      return p;
+    }
+
+  // this is the new subst that this needs to pass
+  p->set_ref (mappings->get_next_hir_id ());
+  p->set_ty_ref (arg.get_tyty ()->get_ref ());
 
   return p;
 }
@@ -2658,7 +2712,7 @@ ProjectionType::handle_substitions (SubstitutionArgumentMappings subst_mappings)
       bool ok
 	= subst_mappings.get_argument_for_symbol (sub.get_param_ty (), &arg);
       if (ok)
-	sub.fill_param_ty (*arg.get_tyty (), subst_mappings.get_locus ());
+	sub.fill_param_ty (subst_mappings, subst_mappings.get_locus ());
     }
 
   auto fty = projection->base;
@@ -2935,17 +2989,7 @@ TypeCheckCallExpr::visit (FnType &type)
       return;
     }
 
-  if (type.get_return_type ()->get_kind () == TyTy::TypeKind::PLACEHOLDER)
-    {
-      const TyTy::PlaceholderType *p
-	= static_cast<const TyTy::PlaceholderType *> (type.get_return_type ());
-      if (p->can_resolve ())
-	{
-	  resolved = p->resolve ()->clone ();
-	  return;
-	}
-    }
-
+  type.monomorphize ();
   resolved = type.get_return_type ()->clone ();
 }
 
@@ -3050,6 +3094,7 @@ TypeCheckMethodCallExpr::visit (FnType &type)
       return;
     }
 
+  type.monomorphize ();
   resolved = type.get_return_type ()->clone ();
 }
 

@@ -79,6 +79,8 @@ public:
 	rust_assert (!trait_reference->is_error ());
 
 	specified_bound = get_predicate_from_bound (*ref.get ());
+	// FIXME error out maybe?
+	// if specified_Bound == TyTy::TypeBoundPredicate::error() ?
       }
 
     TyTy::BaseType *self = nullptr;

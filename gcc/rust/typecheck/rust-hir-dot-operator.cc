@@ -126,9 +126,11 @@ MethodResolver::Try (const TyTy::BaseType *r,
   PathProbeCandidate c = PathProbeCandidate::get_error ();
   const std::vector<TyTy::TypeBoundPredicate> &specified_bounds
     = r->get_specified_bounds ();
+  const std::vector<MethodResolver::predicate_candidate> predicate_items
+    = get_predicate_items (segment_name, *r, specified_bounds);
 
   // 1. try raw
-  MethodResolver raw (*r, segment_name, specified_bounds);
+  MethodResolver raw (*r, segment_name, predicate_items);
   c = raw.select ();
   if (!c.is_error ())
     {
@@ -139,7 +141,7 @@ MethodResolver::Try (const TyTy::BaseType *r,
   TyTy::ReferenceType *r1
     = new TyTy::ReferenceType (r->get_ref (), TyTy::TyVar (r->get_ref ()),
 			       Mutability::Imm);
-  MethodResolver imm_ref (*r1, segment_name, specified_bounds);
+  MethodResolver imm_ref (*r1, segment_name, predicate_items);
   c = imm_ref.select ();
   if (!c.is_error ())
     {
@@ -152,7 +154,7 @@ MethodResolver::Try (const TyTy::BaseType *r,
   TyTy::ReferenceType *r2
     = new TyTy::ReferenceType (r->get_ref (), TyTy::TyVar (r->get_ref ()),
 			       Mutability::Mut);
-  MethodResolver mut_ref (*r2, segment_name, specified_bounds);
+  MethodResolver mut_ref (*r2, segment_name, predicate_items);
   c = mut_ref.select ();
   if (!c.is_error ())
     {
@@ -288,27 +290,6 @@ MethodResolver::select ()
     TyTy::FnType *fntype;
   };
 
-  std::vector<precdicate_candidate> predicate_items;
-  for (auto &bound : specified_bounds)
-    {
-      TyTy::TypeBoundPredicateItem lookup
-	= bound.lookup_associated_item (segment_name.as_string ());
-      if (lookup.is_error ())
-	continue;
-
-      bool is_fn = lookup.get_raw_item ()->get_trait_item_type ()
-		   == TraitItemReference::TraitItemType::FN;
-      if (!is_fn)
-	continue;
-
-      TyTy::BaseType *ty = lookup.get_raw_item ()->get_tyty ();
-      rust_assert (ty->get_kind () == TyTy::TypeKind::FNDEF);
-      TyTy::FnType *fnty = static_cast<TyTy::FnType *> (ty);
-
-      precdicate_candidate candidate{lookup, fnty};
-      predicate_items.push_back (candidate);
-    }
-
   for (auto impl_item : inherent_impl_fns)
     {
       TyTy::FnType *fn = impl_item.ty;
@@ -342,9 +323,9 @@ MethodResolver::select ()
 	}
     }
 
-  for (auto predicate : predicate_items)
+  for (const auto &predicate : predicate_items)
     {
-      TyTy::FnType *fn = predicate.fntype;
+      const TyTy::FnType *fn = predicate.fntype;
       rust_assert (fn->is_method ());
 
       TyTy::BaseType *fn_self = fn->get_self_type ();
@@ -355,19 +336,40 @@ MethodResolver::select ()
 	  const TraitItemReference *trait_item
 	    = predicate.lookup.get_raw_item ();
 
-	  TyTy::BaseType *subst = predicate.lookup.get_tyty_for_receiver (
-	    receiver.get_root (),
-	    predicate.lookup.get_parent ()->get_generic_args ());
-
 	  PathProbeCandidate::TraitItemCandidate c{trait_ref, trait_item,
 						   nullptr};
 	  return PathProbeCandidate (
-	    PathProbeCandidate::CandidateType::TRAIT_FUNC, subst,
+	    PathProbeCandidate::CandidateType::TRAIT_FUNC, fn->clone (),
 	    trait_item->get_locus (), c);
 	}
     }
 
   return PathProbeCandidate::get_error ();
+}
+
+std::vector<MethodResolver::predicate_candidate>
+MethodResolver::get_predicate_items (
+  const HIR::PathIdentSegment &segment_name, const TyTy::BaseType &receiver,
+  const std::vector<TyTy::TypeBoundPredicate> &specified_bounds)
+{
+  std::vector<predicate_candidate> predicate_items;
+  for (auto &bound : specified_bounds)
+    {
+      TyTy::TypeBoundPredicateItem lookup
+	= bound.lookup_associated_item (segment_name.as_string ());
+      if (lookup.is_error ())
+	continue;
+
+      TyTy::BaseType *ty = lookup.get_tyty_for_receiver (&receiver);
+      if (ty->get_kind () == TyTy::TypeKind::FNDEF)
+	{
+	  TyTy::FnType *fnty = static_cast<TyTy::FnType *> (ty);
+	  predicate_candidate candidate{lookup, fnty};
+	  predicate_items.push_back (candidate);
+	}
+    }
+
+  return predicate_items;
 }
 
 } // namespace Resolver

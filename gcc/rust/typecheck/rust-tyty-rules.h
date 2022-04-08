@@ -60,10 +60,7 @@ public:
     if (other->get_kind () == TypeKind::PARAM)
       {
 	ParamType *p = static_cast<ParamType *> (other);
-	if (p->can_resolve ())
-	  {
-	    other = p->resolve ();
-	  }
+	other = p->resolve ();
       }
     else if (other->get_kind () == TypeKind::PLACEHOLDER)
       {
@@ -71,12 +68,14 @@ public:
 	if (p->can_resolve ())
 	  {
 	    other = p->resolve ();
+	    return get_base ()->unify (other);
 	  }
       }
     else if (other->get_kind () == TypeKind::PROJECTION)
       {
 	ProjectionType *p = static_cast<ProjectionType *> (other);
 	other = p->get ();
+	return get_base ()->unify (other);
       }
 
     other->accept_vis (*this);
@@ -1328,14 +1327,10 @@ public:
   // to handle the typing of the struct
   BaseType *unify (BaseType *other) override final
   {
-    if (base->get_ref () == base->get_ty_ref ())
+    if (!base->can_resolve ())
       return BaseRules::unify (other);
 
-    auto context = Resolver::TypeCheckContext::get ();
-    BaseType *lookup = nullptr;
-    bool ok = context->lookup_type (base->get_ty_ref (), &lookup);
-    rust_assert (ok);
-
+    auto lookup = base->resolve ();
     return lookup->unify (other);
   }
 

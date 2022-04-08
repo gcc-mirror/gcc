@@ -262,6 +262,8 @@ public:
     return hir_trait_ref->get_mappings ();
   }
 
+  DefId get_defid () const { return get_mappings ().get_defid (); }
+
   bool lookup_hir_trait_item (const HIR::TraitItem &item,
 			      TraitItemReference **ref)
   {
@@ -435,6 +437,9 @@ public:
   TyTy::BaseType *get_self () { return self; }
 
   void setup_associated_types ();
+
+  void setup_associated_types2 (const TyTy::BaseType *self,
+				const TyTy::TypeBoundPredicate &bound);
 
   void reset_associated_types ();
 

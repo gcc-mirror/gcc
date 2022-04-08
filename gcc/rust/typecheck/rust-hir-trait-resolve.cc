@@ -137,7 +137,7 @@ TraitItemReference::associated_type_set (TyTy::BaseType *ty)
   TyTy::PlaceholderType *placeholder
     = static_cast<TyTy::PlaceholderType *> (item_ty);
 
-  placeholder->set_associated_type (ty->get_ref ());
+  placeholder->set_associated_type (ty->get_ty_ref ());
 }
 
 void
@@ -171,6 +171,173 @@ AssociatedImplTrait::setup_associated_types ()
       return;
 
     resolved_trait_item->associated_type_set (lookup);
+  });
+  iter.go ();
+}
+
+void
+AssociatedImplTrait::setup_associated_types2 (
+  const TyTy::BaseType *self, const TyTy::TypeBoundPredicate &bound)
+{
+  // compute the constrained impl block generic arguments based on self and the
+  // higher ranked trait bound
+  TyTy::BaseType *receiver = self->clone ();
+
+  // impl<Y> SliceIndex<[Y]> for Range<usize>
+  // vs
+  // I: SliceIndex<[<integer>]> and Range<<integer>>
+  //
+  // we need to figure out what Y is
+
+  TyTy::BaseType *associated_self = get_self ();
+  rust_assert (associated_self->can_eq (self, false));
+
+  // grab the parameters
+  HIR::ImplBlock &impl_block = *get_impl_block ();
+  std::vector<TyTy::SubstitutionParamMapping> substitutions;
+  for (auto &generic_param : impl_block.get_generic_params ())
+    {
+      switch (generic_param.get ()->get_kind ())
+	{
+	case HIR::GenericParam::GenericKind::LIFETIME:
+	  // Skipping Lifetime completely until better handling.
+	  break;
+
+	  case HIR::GenericParam::GenericKind::TYPE: {
+	    TyTy::BaseType *l = nullptr;
+	    bool ok = context->lookup_type (
+	      generic_param->get_mappings ().get_hirid (), &l);
+	    if (ok && l->get_kind () == TyTy::TypeKind::PARAM)
+	      {
+		substitutions.push_back (TyTy::SubstitutionParamMapping (
+		  static_cast<HIR::TypeParam &> (*generic_param),
+		  static_cast<TyTy::ParamType *> (l)));
+	      }
+	  }
+	  break;
+	}
+    }
+
+  // generate inference variables for these bound arguments so we can compute
+  // their values
+  Location locus;
+  std::vector<TyTy::SubstitutionArg> args;
+  for (auto &p : substitutions)
+    {
+      if (p.needs_substitution ())
+	{
+	  TyTy::TyVar infer_var = TyTy::TyVar::get_implicit_infer_var (locus);
+	  args.push_back (TyTy::SubstitutionArg (&p, infer_var.get_tyty ()));
+	}
+      else
+	{
+	  args.push_back (
+	    TyTy::SubstitutionArg (&p, p.get_param_ty ()->resolve ()));
+	}
+    }
+
+  // this callback gives us the parameters that get substituted so we can
+  // compute the constrained type parameters for this impl block
+  std::map<std::string, HirId> param_mappings;
+  TyTy::ParamSubstCb param_subst_cb
+    = [&] (const TyTy::ParamType &p, const TyTy::SubstitutionArg &a) {
+	param_mappings[p.get_symbol ()] = a.get_tyty ()->get_ref ();
+      };
+
+  TyTy::SubstitutionArgumentMappings infer_arguments (std::move (args), locus,
+						      param_subst_cb);
+  TyTy::BaseType *impl_self_infer
+    = (associated_self->needs_generic_substitutions ())
+	? SubstMapperInternal::Resolve (associated_self, infer_arguments)
+	: associated_self;
+
+  // FIXME this needs to do a lookup for the trait-reference DefId instead of
+  // assuming its the first one in the list
+  rust_assert (associated_self->num_specified_bounds () > 0);
+  TyTy::TypeBoundPredicate &impl_predicate
+    = associated_self->get_specified_bounds ().at (0);
+
+  // infer the arguments on the predicate
+  std::vector<TyTy::BaseType *> impl_trait_predicate_args;
+  for (const auto &arg : impl_predicate.get_substs ())
+    {
+      const TyTy::ParamType *p = arg.get_param_ty ();
+      if (p->get_symbol ().compare ("Self") == 0)
+	continue;
+
+      TyTy::BaseType *r = p->resolve ();
+      r = SubstMapperInternal::Resolve (r, infer_arguments);
+      impl_trait_predicate_args.push_back (r);
+    }
+
+  // we need to unify the receiver with the impl-block Self so that we compute
+  // the type correctly as our receiver may be generic and we are inferring its
+  // generic arguments and this Self might be the concrete version or vice
+  // versa.
+  auto result = receiver->unify (impl_self_infer);
+  rust_assert (result->get_kind () != TyTy::TypeKind::ERROR);
+
+  // unify the bounds arguments
+  std::vector<TyTy::BaseType *> hrtb_bound_arguments;
+  for (const auto &arg : bound.get_substs ())
+    {
+      const TyTy::ParamType *p = arg.get_param_ty ();
+      if (p->get_symbol ().compare ("Self") == 0)
+	continue;
+
+      TyTy::BaseType *r = p->resolve ();
+      hrtb_bound_arguments.push_back (r);
+    }
+
+  rust_assert (impl_trait_predicate_args.size ()
+	       == hrtb_bound_arguments.size ());
+  for (size_t i = 0; i < impl_trait_predicate_args.size (); i++)
+    {
+      TyTy::BaseType *a = impl_trait_predicate_args.at (i);
+      TyTy::BaseType *b = hrtb_bound_arguments.at (i);
+
+      result = a->unify (b);
+      rust_assert (result->get_kind () != TyTy::TypeKind::ERROR);
+    }
+
+  // create the argument list
+  std::vector<TyTy::SubstitutionArg> associated_arguments;
+  for (auto &p : substitutions)
+    {
+      std::string symbol = p.get_param_ty ()->get_symbol ();
+      auto it = param_mappings.find (symbol);
+      rust_assert (it != param_mappings.end ());
+
+      HirId id = it->second;
+      TyTy::BaseType *argument = nullptr;
+      bool ok = context->lookup_type (id, &argument);
+      rust_assert (ok);
+
+      TyTy::SubstitutionArg arg (&p, argument);
+      associated_arguments.push_back (arg);
+    }
+
+  TyTy::SubstitutionArgumentMappings associated_type_args (
+    std::move (associated_arguments), locus);
+
+  ImplTypeIterator iter (*impl, [&] (HIR::TypeAlias &type) {
+    TraitItemReference *resolved_trait_item = nullptr;
+    bool ok = trait->lookup_trait_item (type.get_new_type_name (),
+					&resolved_trait_item);
+    if (!ok)
+      return;
+    if (resolved_trait_item->get_trait_item_type ()
+	!= TraitItemReference::TraitItemType::TYPE)
+      return;
+
+    TyTy::BaseType *lookup;
+    if (!context->lookup_type (type.get_mappings ().get_hirid (), &lookup))
+      return;
+
+    // this might be generic
+    TyTy::BaseType *substituted
+      = SubstMapperInternal::Resolve (lookup, associated_type_args);
+    resolved_trait_item->associated_type_set (substituted);
   });
   iter.go ();
 }

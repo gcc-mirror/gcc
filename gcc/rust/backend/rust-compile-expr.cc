@@ -747,8 +747,9 @@ CompileExpr::resolve_method_address (TyTy::FnType *fntype, HirId ref,
 
   auto root = receiver->get_root ();
   std::vector<Resolver::PathProbeCandidate> candidates
-    = Resolver::PathProbeType::Probe (root, segment, true, false, true);
-
+    = Resolver::PathProbeType::Probe (root, segment, true /* probe_impls */,
+				      false /* probe_bounds */,
+				      true /* ignore_mandatory_trait_items */);
   if (candidates.size () == 0)
     {
       // this means we are defaulting back to the trait_item if
@@ -776,12 +777,22 @@ CompileExpr::resolve_method_address (TyTy::FnType *fntype, HirId ref,
       rust_assert (candidates.size () == 1);
       auto &candidate = candidates.at (0);
       rust_assert (candidate.is_impl_candidate ());
+      rust_assert (candidate.ty->get_kind () == TyTy::TypeKind::FNDEF);
+      TyTy::FnType *candidate_call = static_cast<TyTy::FnType *> (candidate.ty);
 
       HIR::ImplItem *impl_item = candidate.item.impl.impl_item;
-      if (!fntype->has_subsititions_defined ())
+      if (!candidate_call->has_subsititions_defined ())
 	return CompileInherentImplItem::Compile (impl_item, ctx);
 
-      return CompileInherentImplItem::Compile (impl_item, ctx, fntype);
+      TyTy::BaseType *monomorphized = candidate_call;
+      if (candidate_call->needs_generic_substitutions ())
+	{
+	  TyTy::BaseType *infer_impl_call
+	    = candidate_call->infer_substitions (expr_locus);
+	  monomorphized = infer_impl_call->unify (fntype);
+	}
+
+      return CompileInherentImplItem::Compile (impl_item, ctx, monomorphized);
     }
 }
 

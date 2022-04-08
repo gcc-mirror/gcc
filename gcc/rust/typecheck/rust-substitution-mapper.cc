@@ -26,18 +26,30 @@ TyTy::BaseType *
 SubstMapperInternal::Resolve (TyTy::BaseType *base,
 			      TyTy::SubstitutionArgumentMappings &mappings)
 {
+  auto context = TypeCheckContext::get ();
+
   SubstMapperInternal mapper (base->get_ref (), mappings);
   base->accept_vis (mapper);
   rust_assert (mapper.resolved != nullptr);
 
   // insert these new implict types into the context
-  bool is_param = mapper.resolved->get_kind () == TyTy::TypeKind::PARAM;
-  if (!is_param)
+  TyTy::BaseType *unused = nullptr;
+  bool is_ty_available
+    = context->lookup_type (mapper.resolved->get_ty_ref (), &unused);
+  if (!is_ty_available)
     {
-      auto context = TypeCheckContext::get ();
       context->insert_type (
 	Analysis::NodeMapping (0, 0, mapper.resolved->get_ty_ref (), 0),
 	mapper.resolved);
+    }
+  bool is_ref_available
+    = context->lookup_type (mapper.resolved->get_ref (), &unused);
+  if (!is_ref_available)
+    {
+      context->insert_type (Analysis::NodeMapping (0, 0,
+						   mapper.resolved->get_ref (),
+						   0),
+			    mapper.resolved);
     }
 
   return mapper.resolved;
