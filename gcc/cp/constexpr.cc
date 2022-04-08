@@ -5008,7 +5008,8 @@ cxx_eval_vec_init (const constexpr_ctx *ctx, tree t,
   bool value_init = VEC_INIT_EXPR_VALUE_INIT (t);
   if (!init || !BRACE_ENCLOSED_INITIALIZER_P (init))
     ;
-  else if (CONSTRUCTOR_NELTS (init) == 0)
+  else if (CONSTRUCTOR_NELTS (init) == 0
+	   && !CP_AGGREGATE_TYPE_P (strip_array_types (atype)))
     {
       /* Handle {} as value-init.  */
       init = NULL_TREE;

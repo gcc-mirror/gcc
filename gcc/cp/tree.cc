@@ -740,7 +740,7 @@ build_cplus_new (tree type, tree init, tsubst_flags_t complain)
    constructor calls until gimplification time; now we only do it to set
    VEC_INIT_EXPR_IS_CONSTEXPR.
 
-   We assume that init is either NULL_TREE, void_type_node (indicating
+   We assume that init is either NULL_TREE, {}, void_type_node (indicating
    value-initialization), or another array to copy.  */
 
 static tree
@@ -752,7 +752,20 @@ build_vec_init_elt (tree type, tree init, tsubst_flags_t complain)
       || !CLASS_TYPE_P (inner_type))
     /* No interesting initialization to do.  */
     return integer_zero_node;
-  else if (init == void_type_node)
+  if (init && BRACE_ENCLOSED_INITIALIZER_P (init))
+    {
+      /* Even if init has initializers for some array elements,
+	 we're interested in the {}-init of trailing elements.	*/
+      if (CP_AGGREGATE_TYPE_P (inner_type))
+	{
+	  tree empty = build_constructor (init_list_type_node, nullptr);
+	  return digest_init (inner_type, empty, complain);
+	}
+      else
+	/* It's equivalent to value-init.  */
+	init = void_type_node;
+    }
+  if (init == void_type_node)
     return build_value_init (inner_type, complain);
 
   releasing_vec argvec;
@@ -808,9 +821,13 @@ build_vec_init_expr (tree type, tree init, tsubst_flags_t complain)
   TREE_SIDE_EFFECTS (init) = true;
   SET_EXPR_LOCATION (init, input_location);
 
-  if (cxx_dialect >= cxx11
-      && potential_constant_expression (elt_init))
-    VEC_INIT_EXPR_IS_CONSTEXPR (init) = true;
+  if (cxx_dialect >= cxx11)
+    {
+      bool cx = potential_constant_expression (elt_init);
+      if (BRACE_ENCLOSED_INITIALIZER_P (init))
+	cx &= potential_constant_expression (init);
+      VEC_INIT_EXPR_IS_CONSTEXPR (init) = cx;
+    }
   VEC_INIT_EXPR_VALUE_INIT (init) = value_init;
 
   return init;
