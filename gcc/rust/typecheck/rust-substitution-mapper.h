@@ -232,19 +232,22 @@ public:
   }
 
   // nothing to do for these
-  void visit (TyTy::InferType &) override { gcc_unreachable (); }
-  void visit (TyTy::FnPtr &) override { gcc_unreachable (); }
-  void visit (TyTy::BoolType &) override { gcc_unreachable (); }
-  void visit (TyTy::IntType &) override { gcc_unreachable (); }
-  void visit (TyTy::UintType &) override { gcc_unreachable (); }
-  void visit (TyTy::FloatType &) override { gcc_unreachable (); }
-  void visit (TyTy::USizeType &) override { gcc_unreachable (); }
-  void visit (TyTy::ISizeType &) override { gcc_unreachable (); }
-  void visit (TyTy::ErrorType &) override { gcc_unreachable (); }
-  void visit (TyTy::CharType &) override { gcc_unreachable (); }
-  void visit (TyTy::StrType &) override { gcc_unreachable (); }
-  void visit (TyTy::NeverType &) override { gcc_unreachable (); }
-  void visit (TyTy::DynamicObjectType &) override { gcc_unreachable (); }
+  void visit (TyTy::InferType &type) override { resolved = type.clone (); }
+  void visit (TyTy::FnPtr &type) override { resolved = type.clone (); }
+  void visit (TyTy::BoolType &type) override { resolved = type.clone (); }
+  void visit (TyTy::IntType &type) override { resolved = type.clone (); }
+  void visit (TyTy::UintType &type) override { resolved = type.clone (); }
+  void visit (TyTy::FloatType &type) override { resolved = type.clone (); }
+  void visit (TyTy::USizeType &type) override { resolved = type.clone (); }
+  void visit (TyTy::ISizeType &type) override { resolved = type.clone (); }
+  void visit (TyTy::ErrorType &type) override { resolved = type.clone (); }
+  void visit (TyTy::CharType &type) override { resolved = type.clone (); }
+  void visit (TyTy::StrType &type) override { resolved = type.clone (); }
+  void visit (TyTy::NeverType &type) override { resolved = type.clone (); }
+  void visit (TyTy::DynamicObjectType &type) override
+  {
+    resolved = type.clone ();
+  }
 
 private:
   SubstMapperInternal (HirId ref, TyTy::SubstitutionArgumentMappings &mappings)
