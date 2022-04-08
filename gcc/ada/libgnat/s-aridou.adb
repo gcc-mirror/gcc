@@ -133,7 +133,7 @@ is
      Post => Big_2xx'Result > 0;
    --  2**N as a big integer
 
-   function Big3 (X1, X2, X3 : Single_Uns) return Big_Integer is
+   function Big3 (X1, X2, X3 : Single_Uns) return Big_Natural is
      (Big_2xxSingle * Big_2xxSingle * Big (Double_Uns (X1))
                     + Big_2xxSingle * Big (Double_Uns (X2))
                                     + Big (Double_Uns (X3)))
@@ -208,20 +208,6 @@ is
      Ghost,
      Post => abs (X * Y) = abs X * abs Y;
 
-   procedure Lemma_Mult_Non_Negative (X, Y : Big_Integer)
-   with
-     Ghost,
-     Pre  => (X >= Big_0 and then Y >= Big_0)
-       or else (X <= Big_0 and then Y <= Big_0),
-     Post => X * Y >= Big_0;
-
-   procedure Lemma_Mult_Non_Positive (X, Y : Big_Integer)
-   with
-     Ghost,
-     Pre  => (X <= Big_0 and then Y >= Big_0)
-       or else (X >= Big_0 and then Y <= Big_0),
-     Post => X * Y <= Big_0;
-
    procedure Lemma_Abs_Rem_Commutation (X, Y : Big_Integer)
    with
      Ghost,
@@ -245,6 +231,12 @@ is
      Ghost,
      Pre  => M < N and then N < Double_Size,
      Post => Double_Uns'(2)**M < Double_Uns'(2)**N;
+
+   procedure Lemma_Concat_Definition (X, Y : Single_Uns)
+   with
+     Ghost,
+     Post => Big (X & Y) = Big_2xxSingle * Big (Double_Uns (X))
+                                         + Big (Double_Uns (Y));
 
    procedure Lemma_Deep_Mult_Commutation
      (Factor : Big_Integer;
@@ -288,6 +280,11 @@ is
      Ghost,
      Pre  => A * S = B * S + R and then S /= 0,
      Post => A = B + R / S;
+
+   procedure Lemma_Double_Big_2xxSingle
+   with
+     Ghost,
+     Post => Big_2xxSingle * Big_2xxSingle = Big_2xxDouble;
 
    procedure Lemma_Double_Shift (X : Double_Uns; S, S1 : Double_Uns)
    with
@@ -418,6 +415,20 @@ is
    with
      Ghost,
      Post => X * (Y + Z) = X * Y + X * Z;
+
+   procedure Lemma_Mult_Non_Negative (X, Y : Big_Integer)
+   with
+     Ghost,
+     Pre  => (X >= Big_0 and then Y >= Big_0)
+       or else (X <= Big_0 and then Y <= Big_0),
+     Post => X * Y >= Big_0;
+
+   procedure Lemma_Mult_Non_Positive (X, Y : Big_Integer)
+   with
+     Ghost,
+     Pre  => (X <= Big_0 and then Y >= Big_0)
+       or else (X >= Big_0 and then Y <= Big_0),
+     Post => X * Y <= Big_0;
 
    procedure Lemma_Neg_Div (X, Y : Big_Integer)
    with
@@ -552,6 +563,7 @@ is
    procedure Lemma_Add_Commutation (X : Double_Uns; Y : Single_Uns) is null;
    procedure Lemma_Add_One (X : Double_Uns) is null;
    procedure Lemma_Bounded_Powers_Of_2_Increasing (M, N : Natural) is null;
+   procedure Lemma_Concat_Definition (X, Y : Single_Uns) is null;
    procedure Lemma_Deep_Mult_Commutation
      (Factor : Big_Integer;
       X, Y   : Single_Uns)
@@ -566,6 +578,7 @@ is
    procedure Lemma_Div_Ge (X, Y, Z : Big_Integer) is null;
    procedure Lemma_Div_Lt (X, Y, Z : Big_Natural) is null;
    procedure Lemma_Div_Eq (A, B, S, R : Big_Integer) is null;
+   procedure Lemma_Double_Big_2xxSingle is null;
    procedure Lemma_Double_Shift (X : Double_Uns; S, S1 : Double_Uns) is null;
    procedure Lemma_Double_Shift (X : Single_Uns; S, S1 : Natural) is null;
    procedure Lemma_Double_Shift_Right (X : Double_Uns; S, S1 : Double_Uns)
@@ -929,10 +942,18 @@ is
                pragma Assert (Big (Double_Uns'(Yhi * Zhi)) >= 1);
                if Yhi > 1 or else Zhi > 1 then
                   pragma Assert (Big (Double_Uns'(Yhi * Zhi)) > 1);
+                  pragma Assert (if X = Double_Int'First and then Round then
+                                    Mult > Big_2xxDouble);
                elsif Zlo > 0 then
                   pragma Assert (Big (Double_Uns'(Yhi * Zlo)) > 0);
+                  pragma Assert (if X = Double_Int'First and then Round then
+                                    Mult > Big_2xxDouble);
                elsif Ylo > 0 then
                   pragma Assert (Big (Double_Uns'(Ylo * Zhi)) > 0);
+                  pragma Assert (if X = Double_Int'First and then Round then
+                                    Mult > Big_2xxDouble);
+               else
+                  pragma Assert (not (X = Double_Int'First and then Round));
                end if;
                Prove_Quotient_Zero;
             end if;
@@ -976,6 +997,7 @@ is
       Lemma_Mult_Distribution (Big_2xxSingle,
                                Big (Double_Uns (Hi (T2))),
                                Big (Double_Uns (Lo (T2))));
+      Lemma_Double_Big_2xxSingle;
       pragma Assert
         (Mult = Big_2xxDouble * Big (Double_Uns (Hi (T2)))
               + Big_2xxSingle * Big (Double_Uns (Lo (T2)))
@@ -1890,7 +1912,14 @@ is
                         Big_2xx (Scale), Big_2xxDouble);
          Lemma_Lt_Mult (Big (Double_Uns (D (4))), Big_2xxSingle,
                         Big_2xx (Scale), Big_2xxDouble);
-         Lemma_Mult_Commutation (2 ** Scale, D (1) & D (2), T1);
+         declare
+            Two_xx_Scale : constant Double_Uns := Double_Uns'(2 ** Scale);
+            D12          : constant Double_Uns := D (1) & D (2);
+         begin
+            pragma Assert (Big_2xx (Scale) * Big (D12) < Big_2xxDouble);
+            pragma Assert (Big (Two_xx_Scale) * Big (D12) < Big_2xxDouble);
+            Lemma_Mult_Commutation (Two_xx_Scale, D12, T1);
+         end;
          declare
             Big_D12 : constant Big_Integer :=
               Big_2xx (Scale) * Big (D (1) & D (2));
@@ -1954,6 +1983,10 @@ is
          pragma Assert
            (Big (Double_Uns (Hi (T3))) + Big (Double_Uns (Hi (T2))) =
               Big (Double_Uns (S1)));
+         pragma Assert
+           (Big_2xxSingle * Big_2xxSingle * Big (Double_Uns (Hi (T2)))
+            + Big_2xxSingle * Big_2xxSingle * Big (Double_Uns (Hi (T3)))
+            = Big_2xxSingle * Big_2xxSingle * Big (Double_Uns (S1)));
       end Prove_Multiplication;
 
       -----------------------------
@@ -2092,6 +2125,9 @@ is
          Lemma_Div_Lt (Big (T1), Big_2xxSingle, Big (Double_Uns (Zlo)));
          Lemma_Div_Commutation (T1, Double_Uns (Zlo));
          Lemma_Lo_Is_Ident (T1 / Zlo);
+         pragma Assert
+           (Big (T2) <= Big_2xxSingle * (Big (Double_Uns (Zlo)) - 1)
+                                      + Big (Double_Uns (D (4))));
          Lemma_Div_Lt (Big (T2), Big_2xxSingle, Big (Double_Uns (Zlo)));
          Lemma_Div_Commutation (T2, Double_Uns (Zlo));
          Lemma_Lo_Is_Ident (T2 / Zlo);
@@ -2304,6 +2340,9 @@ is
          --  First normalize the divisor so that it has the leading bit on.
          --  We do this by finding the appropriate left shift amount.
 
+         Lemma_Lt_Commutation (D (1) & D (2), Zu);
+         pragma Assert (Mult < Big_2xxDouble * Big (Zu));
+
          Shift := Single_Size;
          Mask  := Single_Uns'Last;
          Scale := 0;
@@ -2376,6 +2415,8 @@ is
                procedure Prove_Shift_Progress is null;
 
             begin
+               pragma Assert (Mask = Shift_Left (Single_Uns'Last,
+                              Single_Size - Shift_Prev));
                Prove_Power;
 
                Shift := Shift / 2;
@@ -2470,6 +2511,16 @@ is
                                           + Big (Double_Uns (D (3))),
             Big3 (D (1), D (2), D (3)),
             Big (Double_Uns (D (4))));
+         Lemma_Concat_Definition (D (1), D (2));
+         Lemma_Double_Big_2xxSingle;
+         Lemma_Substitution
+           (Mult * Big_2xx (Scale), Big_2xxSingle * Big_2xxSingle,
+              Big_2xxSingle * Big (Double_Uns (D (1)))
+                            + Big (Double_Uns (D (2))),
+              Big (D (1) & D (2)),
+              Big_2xxSingle * Big (Double_Uns (D (3)))
+                            + Big (Double_Uns (D (4))));
+         pragma Assert (Big (D (1) & D (2)) < Big (Zu));
 
          --  Loop to compute quotient digits, runs twice for Qd (1) and Qd (2)
 
