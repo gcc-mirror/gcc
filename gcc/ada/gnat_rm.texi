@@ -14333,14 +14333,6 @@ then values of the type are implicitly initialized to zero. This
 happens both for objects of the packed type, and for objects that have a
 subcomponent of the packed type.
 
-@quotation
-
-“An implementation should support Address clauses for imported
-subprograms.”
-@end quotation
-
-Followed.
-
 @geindex Address clauses
 
 @node RM 13 3 14-19 Address Clauses,RM 13 3 29-35 Alignment Clauses,RM 13 2 6-8 Packed Types,Implementation Advice
