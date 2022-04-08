@@ -6,7 +6,7 @@
  *                                                                          *
  *                         Asm Implementation File                          *
  *                                                                          *
- *           Copyright (C) 2015-2022, Free Software Foundation, Inc.        *
+ *         Copyright (C) 2011-2022, Free Software Foundation, Inc.          *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -33,49 +33,44 @@
  * ARM-QNX version of the __gnat_sigtramp service *
  **************************************************/
 
+#include <signal.h>
 #include <ucontext.h>
 
 #include "sigtramp.h"
 /* See sigtramp.h for a general explanation of functionality.  */
 
-/* ----------------------
-   -- General comments --
-   ----------------------
+/* -------------------------------------------
+   -- Prototypes for our internal asm stubs --
+   -------------------------------------------
 
-   Stubs are generated from toplevel asms,
-   The general idea is to establish CFA as the sigcontext
-   and state where to find the registers as offsets from there.
+   Eventhough our symbols will remain local, the prototype claims "extern"
+   and not "static" to prevent compiler complaints about a symbol used but
+   never defined.  */
 
-   Note that the registers we "restore" here are those to which we have
-   direct access through the system sigcontext structure, which includes
-   only a partial set of the non-volatiles ABI-wise.  */
-
-/* -----------------------------------------
-   -- Protypes for our internal asm stubs --
-   -----------------------------------------
-
-   The registers are expected to be at SIGCONTEXT + 12 (reference the
-   sicontext structure in asm/sigcontext.h which describes the first
-   3 * 4byte fields.)  Even though our symbols will remain local, the
-   prototype claims "extern" and not "static" to prevent compiler complaints
-   about a symbol used but never defined.  */
-
-/* sigtramp stub providing unwind info for common registers.  */
+/* sigtramp stub providing ARM unwinding info for common registers.  */
 
 extern void __gnat_sigtramp_common
-  (int signo, void *siginfo, void *sigcontext,
-   __sigtramphandler_t * handler);
+(int signo, void *siginfo, void *sigcontext,
+ __sigtramphandler_t * handler, void * sc_pregs);
+
+/* -------------------------------------
+   -- Common interface implementation --
+   -------------------------------------
+
+   We enforce optimization to minimize the overhead of the extra layer.  */
 
 void __gnat_sigtramp (int signo, void *si, void *sc,
-                      __sigtramphandler_t * handler)
+		      __sigtramphandler_t * handler)
      __attribute__((optimize(2)));
 
-void __gnat_sigtramp (int signo, void *si, void *ucontext,
-                      __sigtramphandler_t * handler)
+void __gnat_sigtramp (int signo, void *si, void *sc,
+		      __sigtramphandler_t * handler)
 {
-  struct sigcontext *mcontext = &((ucontext_t *) ucontext)->uc_mcontext;
+  mcontext_t *mcontext = &((ucontext_t *) sc)->uc_mcontext;
 
-  __gnat_sigtramp_common (signo, si, mcontext, handler);
+  /* Pass MCONTEXT in the fifth position so that the assembly code can find
+     it at the same stack location as SC_PREGS.  */
+  __gnat_sigtramp_common (signo, si, mcontext, handler, &mcontext->cpu);
 }
 
 /* asm string construction helpers.  */
@@ -98,27 +93,25 @@ void __gnat_sigtramp (int signo, void *si, void *ucontext,
 /* Trampoline body block
    ---------------------  */
 
+/* The 5 arguments passed to __gnat_sigtramp_common are located in:
+   - r0-r2: arguments to pass on to the actual handler
+   - r3: the actual handler
+   - sp: the address of the reg set to restore
+   All we have to do then is to instruct the unwinder to restore the registers
+   from the value in VSP. Unwinder instructions are executed backwards, so we
+   1- instruct to pop r2 from the VSP (.save {r2})
+   2- move the VSP to the address pointed to by r2 (.movsp r2)
+   3- restore all registers from there. (.save {r0-r15})
+   Once the unwinding instructions are set, we just need to call the handler
+   as r0-r2 are already properly set.
+*/
 #define SIGTRAMP_BODY \
 CR("") \
-TCR("# Allocate frame and also save r2 which is the argument register") \
-TCR("# containing the sigcontext, so that we can restore it during") \
-TCR("# unwinding and thereby load the rest of the desired context.") \
-TCR("stmfd	sp!, {r2, r3, lr}") \
-TCR("# The unwinder undo's these operations in reverse order so starting") \
-TCR("# from bottom, restore r2 from the current vsp location, move r2 into") \
-TCR("# the vsp, add 12 bytes to get the start of the register save area") \
-TCR("# then restore the 15 general purpose registers of the frame which") \
-TCR("# raised the signal.") \
 TCR(".save {r0-r15}") \
-TCR(".pad #12") \
 TCR(".movsp r2") \
 TCR(".save {r2}") \
-TCR("# Call the real handler. The signo, siginfo and sigcontext") \
-TCR("# arguments are the same as those we received in r0, r1 and r2.") \
 TCR("blx	r3") \
-TCR("# Restore our callee-saved items, release our frame and return") \
-TCR("# (should never get here!).") \
-TCR("ldmfd	sp, {r2, r3, pc}")
+TCR("# No return here.")
 
 /* Symbol definition block
    -----------------------  */
