@@ -1254,7 +1254,6 @@ static gphi *
 find_looparound_phi (class loop *loop, dref ref, dref root)
 {
   tree name, init, init_ref;
-  gphi *phi = NULL;
   gimple *init_stmt;
   edge latch = loop_latch_edge (loop);
   struct data_reference init_dr;
@@ -1272,14 +1271,19 @@ find_looparound_phi (class loop *loop, dref ref, dref root)
   if (!name)
     return NULL;
 
+  tree entry_vuse = NULL_TREE;
+  gphi *phi = NULL;
   for (psi = gsi_start_phis (loop->header); !gsi_end_p (psi); gsi_next (&psi))
     {
-      phi = psi.phi ();
-      if (PHI_ARG_DEF_FROM_EDGE (phi, latch) == name)
+      gphi *p = psi.phi ();
+      if (PHI_ARG_DEF_FROM_EDGE (p, latch) == name)
+	phi = p;
+      else if (virtual_operand_p (gimple_phi_result (p)))
+	entry_vuse = PHI_ARG_DEF_FROM_EDGE (p, loop_preheader_edge (loop));
+      if (phi && entry_vuse)
 	break;
     }
-
-  if (gsi_end_p (psi))
+  if (!phi || !entry_vuse)
     return NULL;
 
   init = PHI_ARG_DEF_FROM_EDGE (phi, loop_preheader_edge (loop));
@@ -1306,6 +1310,30 @@ find_looparound_phi (class loop *loop, dref ref, dref root)
 
   if (!valid_initializer_p (&init_dr, ref->distance + 1, root->ref))
     return NULL;
+
+  /* Make sure nothing clobbers the location we re-use the initial value
+     from.  */
+  if (entry_vuse != gimple_vuse (init_stmt))
+    {
+      ao_ref ref;
+      ao_ref_init (&ref, init_ref);
+      unsigned limit = param_sccvn_max_alias_queries_per_access;
+      tree vdef = entry_vuse;
+      do
+	{
+	  gimple *def = SSA_NAME_DEF_STMT (vdef);
+	  if (limit-- == 0 || gimple_code (def) == GIMPLE_PHI)
+	    return NULL;
+	  if (stmt_may_clobber_ref_p_1 (def, &ref))
+	    /* When the stmt is an assign to init_ref we could in theory
+	       use its RHS for the initial value of the looparound PHI
+	       we replace in prepare_initializers_chain, but we have
+	       no convenient place to store this info at the moment.  */
+	    return NULL;
+	  vdef = gimple_vuse (def);
+	}
+      while (vdef != gimple_vuse (init_stmt));
+    }
 
   return phi;
 }
