@@ -18053,6 +18053,9 @@ aarch64_validate_mtune (const char *str, const struct processor **res)
   return false;
 }
 
+static_assert (TARGET_CPU_generic < TARGET_CPU_MASK,
+	       "TARGET_CPU_NBITS is big enough");
+
 /* Return the CPU corresponding to the enum CPU.
    If it doesn't specify a cpu, return the default.  */
 
@@ -18062,12 +18065,12 @@ aarch64_get_tune_cpu (enum aarch64_processor cpu)
   if (cpu != aarch64_none)
     return &all_cores[cpu];
 
-  /* The & 0x3f is to extract the bottom 6 bits that encode the
-     default cpu as selected by the --with-cpu GCC configure option
+  /* The & TARGET_CPU_MASK is to extract the bottom TARGET_CPU_NBITS bits that
+     encode the default cpu as selected by the --with-cpu GCC configure option
      in config.gcc.
      ???: The whole TARGET_CPU_DEFAULT and AARCH64_CPU_DEFAULT_FLAGS
      flags mechanism should be reworked to make it more sane.  */
-  return &all_cores[TARGET_CPU_DEFAULT & 0x3f];
+  return &all_cores[TARGET_CPU_DEFAULT & TARGET_CPU_MASK];
 }
 
 /* Return the architecture corresponding to the enum ARCH.
@@ -18079,7 +18082,8 @@ aarch64_get_arch (enum aarch64_arch arch)
   if (arch != aarch64_no_arch)
     return &all_architectures[arch];
 
-  const struct processor *cpu = &all_cores[TARGET_CPU_DEFAULT & 0x3f];
+  const struct processor *cpu
+    = &all_cores[TARGET_CPU_DEFAULT & TARGET_CPU_MASK];
 
   return &all_architectures[cpu->arch];
 }
@@ -18166,7 +18170,7 @@ aarch64_override_options (void)
 	{
 	  /* Get default configure-time CPU.  */
 	  selected_cpu = aarch64_get_tune_cpu (aarch64_none);
-	  aarch64_isa_flags = TARGET_CPU_DEFAULT >> 6;
+	  aarch64_isa_flags = TARGET_CPU_DEFAULT >> TARGET_CPU_NBITS;
 	}
 
       if (selected_tune)

@@ -4261,7 +4261,7 @@ case "${target}" in
 				ext_val=`echo $ext_val | sed -e 's/[a-z0-9]\+//'`
 			  done
 
-			  ext_mask="(("$ext_mask") << 6)"
+			  ext_mask="(("$ext_mask") << TARGET_CPU_NBITS)"
 			  if [ x"$base_id" != x ]; then
 				target_cpu_cname="TARGET_CPU_$base_id | $ext_mask"
 			  fi
