@@ -522,6 +522,9 @@ package body System.Value_U is
                   Uval := Base;
                   Base := 10;
                   pragma Assert (Ptr.all = Last_Num_Init + 1);
+                  pragma Assert
+                    (if Starts_As_Based then P = Last_Num_Based + 1);
+                  pragma Assert (not Is_Based);
                   pragma Assert (if not Overflow then Uval = Init_Val.Value);
                   exit;
                end if;
@@ -569,16 +572,16 @@ package body System.Value_U is
                   end if;
                end if;
 
-               Lemma_Scan_Digit
-                 (Str, P, Last_Num_Based, Digit, Base, Old_Uval, Uval,
-                  Based_Val, Old_Overflow, Overflow);
-
                --  If at end of string with no base char, not a based number
                --  but we signal Constraint_Error and set the pointer past
                --  the end of the field, since this is what the ACVC tests
                --  seem to require, see CE3704N, line 204.
 
                P := P + 1;
+
+               Lemma_Scan_Digit
+                 (Str, P - 1, Last_Num_Based, Digit, Base, Old_Uval, Uval,
+                  Based_Val, Old_Overflow, Overflow);
 
                if P > Max then
                   Ptr.all := P;
@@ -590,6 +593,7 @@ package body System.Value_U is
                if Str (P) = Base_Char then
                   Ptr.all := P + 1;
                   pragma Assert (Ptr.all = Last_Num_Based + 2);
+                  pragma Assert (Is_Based);
                   pragma Assert
                     (if not Overflow then
                        Based_Val = Scan_Based_Number_Ghost
