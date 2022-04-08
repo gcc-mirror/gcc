@@ -95,7 +95,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     class bad_expected_access : public bad_expected_access<void> {
     public:
       explicit
-      bad_expected_access(_Er __e) : _M_val(__e) { }
+      bad_expected_access(_Er __e) : _M_val(std::move(__e)) { }
 
       // XXX const char* what() const noexcept override;
 
