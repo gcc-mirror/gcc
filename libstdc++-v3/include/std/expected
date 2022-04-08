@@ -1104,6 +1104,7 @@ namespace __expected
 		std::construct_at(__builtin_addressof(_M_unex),
 				  std::move(__x._M_unex)); // might throw
 		std::destroy_at(__builtin_addressof(__x._M_unex));
+		_M_has_value = false;
 		__x._M_has_value = true;
 	      }
 	  }
@@ -1115,6 +1116,7 @@ namespace __expected
 				  std::move(_M_unex)); // might throw
 		std::destroy_at(__builtin_addressof(_M_unex));
 		_M_has_value = true;
+		__x._M_has_value = false;
 	      }
 	    else
 	      {

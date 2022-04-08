@@ -27,19 +27,19 @@ test_swap()
   VERIFY( e3.error() == 4 );
   VERIFY( e4.error() == 3 );
 
-  std::expected<int, int> v1(1), v2(2);
-  std::expected<int, int> v3(std::unexpect, 3), v4(std::unexpect, 4);
+  std::expected<void, int> v1, v2;
+  std::expected<void, int> v3(std::unexpect, 3), v4(std::unexpect, 4);
 
   swap(v1, v2);
-  VERIFY( v1.value() == 2 );
-  VERIFY( v2.value() == 1 );
+  VERIFY( v1.has_value() );
+  VERIFY( v2.has_value() );
   swap(v1, v3);
   VERIFY( ! v1.has_value() );
   VERIFY( v1.error() == 3 );
-  VERIFY( v3.value() == 2 );
+  VERIFY( v3.has_value() );
   swap(v1, v3);
   VERIFY( ! v3.has_value() );
-  VERIFY( v1.value() == 2 );
+  VERIFY( v1.has_value() );
   VERIFY( v3.error() == 3 );
   swap(v3, v4);
   VERIFY( ! v3.has_value() );
