@@ -1,4 +1,5 @@
 /* PR c/17297 */
+/* { dg-additional-options "-Wno-psabi" } */
 
 typedef float V2SF __attribute__ ((vector_size (8)));
 
