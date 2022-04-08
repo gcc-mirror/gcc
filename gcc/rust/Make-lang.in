@@ -140,7 +140,7 @@ check_rust_parallelize = 10
 # was specified as a configure option.
 rust.srcextra:
 
-rust.all.cross:
+rust.all.cross: gccrs$(exeext)
 
 # idk what this does but someone used it
 rust.start.encap: gccrs$(exeext)
