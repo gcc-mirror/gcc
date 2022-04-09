@@ -412,4 +412,58 @@ MacroBuiltin::cfg (Location invoc_locus, AST::MacroInvocData &invoc)
   return AST::ASTFragment ({literal_exp});
 }
 
+/* Expand builtin macro include!(), which includes a source file at the current
+ scope compile time. */
+
+AST::ASTFragment
+MacroBuiltin::include (Location invoc_locus, AST::MacroInvocData &invoc)
+{
+  /* Get target filename from the macro invocation, which is treated as a path
+     relative to the include!-ing file (currently being compiled).  */
+  auto lit_expr
+    = parse_single_string_literal (invoc.get_delim_tok_tree (), invoc_locus);
+  if (lit_expr == nullptr)
+    return AST::ASTFragment::create_error ();
+
+  std::string target_filename
+    = source_relative_path (lit_expr->as_string (), invoc_locus);
+
+  RAIIFile target_file (target_filename.c_str ());
+  Linemap *linemap = Session::get_instance ().linemap;
+
+  if (target_file.get_raw () == nullptr)
+    {
+      rust_error_at (lit_expr->get_locus (), "cannot open included file %s: %m",
+		     target_filename.c_str ());
+      return AST::ASTFragment::create_error ();
+    }
+
+  rust_debug ("Attempting to parse included file %s", target_filename.c_str ());
+
+  Lexer lex (target_filename.c_str (), std::move (target_file), linemap);
+  Parser<Lexer> parser (std::move (lex));
+
+  auto parsed_items = parser.parse_items ();
+  bool has_error = !parser.get_errors ().empty ();
+
+  for (const auto &error : parser.get_errors ())
+    error.emit_error ();
+
+  if (has_error)
+    {
+      // inform the user that the errors above are from a included file
+      rust_inform (invoc_locus, "included from here");
+      return AST::ASTFragment::create_error ();
+    }
+
+  std::vector<AST::SingleASTNode> nodes{};
+  for (auto &item : parsed_items)
+    {
+      AST::SingleASTNode node (std::move (item));
+      nodes.push_back (node);
+    }
+
+  return AST::ASTFragment (nodes);
+}
+
 } // namespace Rust
