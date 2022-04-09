@@ -739,6 +739,7 @@ GNATRTL_NONTASKING_OBJS= \
   s-regpat$(objext) \
   s-resfil$(objext) \
   s-restri$(objext) \
+  s-retsta$(objext) \
   s-rident$(objext) \
   s-rpc$(objext)    \
   s-scaval$(objext) \

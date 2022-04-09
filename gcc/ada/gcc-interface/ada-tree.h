@@ -577,5 +577,6 @@ do {						   \
 
 /* Small kludge to be able to define Ada built-in functions locally.
    We overload them on top of the C++ coroutines builtin functions.  */
-#define BUILT_IN_LIKELY   BUILT_IN_CORO_PROMISE
-#define BUILT_IN_UNLIKELY BUILT_IN_CORO_RESUME
+#define BUILT_IN_LIKELY      BUILT_IN_CORO_PROMISE
+#define BUILT_IN_UNLIKELY    BUILT_IN_CORO_RESUME
+#define BUILT_IN_RETURN_SLOT BUILT_IN_CORO_DESTROY

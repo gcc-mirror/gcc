@@ -4537,7 +4537,10 @@ package body Exp_Ch4 is
          if Present (Pool) then
             Set_Storage_Pool (N, Pool);
 
-            if Is_RTE (Pool, RE_SS_Pool) then
+            if Is_RTE (Pool, RE_RS_Pool) then
+               Set_Procedure_To_Call (N, RTE (RE_RS_Allocate));
+
+            elsif Is_RTE (Pool, RE_SS_Pool) then
                Check_Restriction (No_Secondary_Stack, N);
                Set_Procedure_To_Call (N, RTE (RE_SS_Allocate));
 

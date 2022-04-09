@@ -186,6 +186,7 @@ procedure Gnat1drv is
          Building_Static_Dispatch_Tables := False;
          Minimize_Expression_With_Actions := True;
          Expand_Nonbinary_Modular_Ops := True;
+         Back_End_Return_Slot := False;
 
          --  Set operating mode to Generate_Code to benefit from full front-end
          --  expansion (e.g. generics).
@@ -724,6 +725,12 @@ procedure Gnat1drv is
 
       else
          Back_End_Handles_Limited_Types := False;
+      end if;
+
+      --  Return slot support is disabled if -gnatd_r is specified
+
+      if Debug_Flag_Underscore_R then
+         Back_End_Return_Slot := False;
       end if;
 
       --  If the inlining level has not been set by the user, compute it from

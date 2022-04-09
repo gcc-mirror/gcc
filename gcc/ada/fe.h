@@ -298,14 +298,14 @@ extern Boolean Compile_Time_Known_Value	(Node_Id);
 #define Is_Expression_Function		sem_util__is_expression_function
 #define Is_Variable_Size_Record 	sem_util__is_variable_size_record
 #define Next_Actual			sem_util__next_actual
-#define Requires_Transient_Scope	sem_util__requires_transient_scope
+#define Returns_On_Secondary_Stack	sem_util__returns_on_secondary_stack
 
-extern Entity_Id Defining_Entity	(Node_Id);
-extern Node_Id First_Actual		(Node_Id);
-extern Boolean Is_Expression_Function	(Entity_Id);
-extern Boolean Is_Variable_Size_Record 	(Entity_Id);
-extern Node_Id Next_Actual		(Node_Id);
-extern Boolean Requires_Transient_Scope	(Entity_Id);
+extern Entity_Id Defining_Entity		(Node_Id);
+extern Node_Id First_Actual			(Node_Id);
+extern Boolean Is_Expression_Function		(Entity_Id);
+extern Boolean Is_Variable_Size_Record 		(Entity_Id);
+extern Node_Id Next_Actual			(Node_Id);
+extern Boolean Returns_On_Secondary_Stack	(Entity_Id);
 
 /* sinfo: */
 

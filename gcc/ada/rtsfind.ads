@@ -428,6 +428,7 @@ package Rtsfind is
       System_Put_Images,
       System_Put_Task_Images,
       System_Relative_Delays,
+      System_Return_Stack,
       System_RPC,
       System_Scalar_Values,
       System_Secondary_Stack,
@@ -1842,6 +1843,9 @@ package Rtsfind is
      RE_Tk_Union,                        -- System.Partition_Interface
 
      RO_RD_Delay_For,                    -- System.Relative_Delays
+
+     RE_RS_Allocate,                     -- System.Return_Stack
+     RE_RS_Pool,                         -- System.Return_Stack
 
      RE_IS_Is1,                          -- System.Scalar_Values
      RE_IS_Is2,                          -- System.Scalar_Values
@@ -3535,6 +3539,9 @@ package Rtsfind is
 
      RO_RD_Delay_For                     => System_Relative_Delays,
 
+     RE_RS_Allocate                      => System_Return_Stack,
+     RE_RS_Pool                          => System_Return_Stack,
+
      RE_Do_Apc                           => System_RPC,
      RE_Do_Rpc                           => System_RPC,
      RE_Params_Stream_Type               => System_RPC,
@@ -4021,6 +4028,7 @@ package Rtsfind is
       System_Fat_LLF          => True,
       System_Fat_SFlt         => True,
       System_Machine_Code     => True,
+      System_Return_Stack     => True,
       System_Secondary_Stack  => True,
       System_Storage_Elements => True,
       System_Task_Info        => True,

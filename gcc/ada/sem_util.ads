@@ -672,11 +672,10 @@ package Sem_Util is
    --  Current_Scope is returned. The returned value is Empty if this is called
    --  from a library package which is not within any subprogram.
 
-   function CW_Or_Has_Controlled_Part (T : Entity_Id) return Boolean;
-   --  True if T is a class-wide type, or if it has controlled parts ("part"
-   --  means T or any of its subcomponents). Same as Needs_Finalization, except
-   --  when pragma Restrictions (No_Finalization) applies, in which case we
-   --  know that class-wide objects do not contain controlled parts.
+   function CW_Or_Needs_Finalization (Typ : Entity_Id) return Boolean;
+   --  True if Typ is a class-wide type or requires finalization actions. Same
+   --  as Needs_Finalization except with pragma Restrictions (No_Finalization),
+   --  in which case we know that class-wide objects do not need finalization.
 
    function Deepest_Type_Access_Level
      (Typ             : Entity_Id;
@@ -3048,14 +3047,12 @@ package Sem_Util is
    --  This is used as a defense mechanism against ill-formed trees caused by
    --  previous errors (particularly in -gnatq mode).
 
-   function Requires_Transient_Scope (Id : Entity_Id) return Boolean;
-   --  Id is a type entity. The result is True when temporaries of this type
-   --  need to be wrapped in a transient scope to be reclaimed properly when a
-   --  secondary stack is in use. Examples of types requiring such wrapping are
-   --  controlled types and variable-sized types including unconstrained
-   --  arrays.
-
-   --  WARNING: There is a matching C declaration of this subprogram in fe.h
+   function Requires_Transient_Scope (Typ : Entity_Id) return Boolean;
+   --  Return true if temporaries of Typ need to be wrapped in a transient
+   --  scope, either because they are allocated on the secondary stack or
+   --  finalization actions must be generated before the next instruction.
+   --  Examples of types requiring such wrapping are variable-sized types,
+   --  including unconstrained arrays, and controlled types.
 
    procedure Reset_Analyzed_Flags (N : Node_Id);
    --  Reset the Analyzed flags in all nodes of the tree whose root is N
@@ -3063,6 +3060,12 @@ package Sem_Util is
    procedure Restore_SPARK_Mode (Mode : SPARK_Mode_Type; Prag : Node_Id);
    --  Set the current SPARK_Mode to Mode and SPARK_Mode_Pragma to Prag. This
    --  routine must be used in tandem with Set_SPARK_Mode.
+
+   function Returns_On_Secondary_Stack (Id : Entity_Id) return Boolean;
+   --  Return true if functions whose result type is Id must return on the
+   --  secondary stack, i.e. allocate the return object on this stack.
+
+   --  WARNING: There is a matching C declaration of this subprogram in fe.h
 
    function Returns_Unconstrained_Type (Subp : Entity_Id) return Boolean;
    --  Return true if Subp is a function that returns an unconstrained type

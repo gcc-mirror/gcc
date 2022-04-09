@@ -6808,13 +6808,18 @@ package body Sem_Util is
 
    procedure Compute_Returns_By_Ref (Func : Entity_Id) is
       Typ  : constant Entity_Id := Etype (Func);
-      Utyp : constant Entity_Id := Underlying_Type (Typ);
 
    begin
       if Is_Limited_View (Typ) then
          Set_Returns_By_Ref (Func);
 
-      elsif Present (Utyp) and then CW_Or_Has_Controlled_Part (Utyp) then
+      --  For class-wide types and types which both need finalization and are
+      --  returned on the secondary stack, the secondary stack allocation is
+      --  done by the front end, see Expand_Simple_Function_Return.
+
+      elsif Returns_On_Secondary_Stack (Typ)
+        and then CW_Or_Needs_Finalization (Underlying_Type (Typ))
+      then
          Set_Returns_By_Ref (Func);
       end if;
    end Compute_Returns_By_Ref;
@@ -7294,14 +7299,14 @@ package body Sem_Util is
       end if;
    end Current_Subprogram;
 
-   -------------------------------
-   -- CW_Or_Has_Controlled_Part --
-   -------------------------------
+   ------------------------------
+   -- CW_Or_Needs_Finalization --
+   ------------------------------
 
-   function CW_Or_Has_Controlled_Part (T : Entity_Id) return Boolean is
+   function CW_Or_Needs_Finalization (Typ : Entity_Id) return Boolean is
    begin
-      return Is_Class_Wide_Type (T) or else Needs_Finalization (T);
-   end CW_Or_Has_Controlled_Part;
+      return Is_Class_Wide_Type (Typ) or else Needs_Finalization (Typ);
+   end CW_Or_Needs_Finalization;
 
    -------------------------------
    -- Deepest_Type_Access_Level --
@@ -27301,11 +27306,61 @@ package body Sem_Util is
    -- Requires_Transient_Scope --
    ------------------------------
 
-   --  A transient scope is required when variable-sized temporaries are
-   --  allocated on the secondary stack, or when finalization actions must be
-   --  generated before the next instruction.
+   function Requires_Transient_Scope (Typ : Entity_Id) return Boolean is
+   begin
+      return Returns_On_Secondary_Stack (Typ) or else Needs_Finalization (Typ);
+   end Requires_Transient_Scope;
 
-   function Requires_Transient_Scope (Id : Entity_Id) return Boolean is
+   --------------------------
+   -- Reset_Analyzed_Flags --
+   --------------------------
+
+   procedure Reset_Analyzed_Flags (N : Node_Id) is
+      function Clear_Analyzed (N : Node_Id) return Traverse_Result;
+      --  Function used to reset Analyzed flags in tree. Note that we do
+      --  not reset Analyzed flags in entities, since there is no need to
+      --  reanalyze entities, and indeed, it is wrong to do so, since it
+      --  can result in generating auxiliary stuff more than once.
+
+      --------------------
+      -- Clear_Analyzed --
+      --------------------
+
+      function Clear_Analyzed (N : Node_Id) return Traverse_Result is
+      begin
+         if Nkind (N) not in N_Entity then
+            Set_Analyzed (N, False);
+         end if;
+
+         return OK;
+      end Clear_Analyzed;
+
+      procedure Reset_Analyzed is new Traverse_Proc (Clear_Analyzed);
+
+   --  Start of processing for Reset_Analyzed_Flags
+
+   begin
+      Reset_Analyzed (N);
+   end Reset_Analyzed_Flags;
+
+   ------------------------
+   -- Restore_SPARK_Mode --
+   ------------------------
+
+   procedure Restore_SPARK_Mode
+     (Mode : SPARK_Mode_Type;
+      Prag : Node_Id)
+   is
+   begin
+      SPARK_Mode        := Mode;
+      SPARK_Mode_Pragma := Prag;
+   end Restore_SPARK_Mode;
+
+   ---------------------------------
+   --  Returns_On_Secondary_Stack --
+   ---------------------------------
+
+   function Returns_On_Secondary_Stack (Id : Entity_Id) return Boolean is
       pragma Assert (if Present (Id) then Ekind (Id) in E_Void | Type_Kind);
 
       function Caller_Known_Size_Record (Typ : Entity_Id) return Boolean;
@@ -27317,11 +27372,6 @@ package body Sem_Util is
       --  of this type. ???Currently, this is overly conservative (the array
       --  could be nested inside some other record that is constrained by
       --  nondiscriminants). That is, the recursive calls are too conservative.
-
-      procedure Ensure_Minimum_Decoration (Typ : Entity_Id);
-      --  If Typ is not frozen then add to Typ the minimum decoration required
-      --  by Requires_Transient_Scope to reliably provide its functionality;
-      --  otherwise no action is performed.
 
       function Large_Max_Size_Mutable (Typ : Entity_Id) return Boolean;
       --  Returns True if Typ is a nonlimited record with defaulted
@@ -27377,46 +27427,6 @@ package body Sem_Util is
 
          return True;
       end Caller_Known_Size_Record;
-
-      -------------------------------
-      -- Ensure_Minimum_Decoration --
-      -------------------------------
-
-      procedure Ensure_Minimum_Decoration (Typ : Entity_Id) is
-         Comp : Entity_Id;
-      begin
-         --  Do not set Has_Controlled_Component on a class-wide equivalent
-         --  type. See Make_CW_Equivalent_Type.
-
-         if not Is_Frozen (Typ)
-           and then Is_Base_Type (Typ)
-           and then (Is_Record_Type (Typ)
-                       or else Is_Concurrent_Type (Typ)
-                       or else Is_Incomplete_Or_Private_Type (Typ))
-           and then not Is_Class_Wide_Equivalent_Type (Typ)
-         then
-            Comp := First_Component (Typ);
-            while Present (Comp) loop
-               if Has_Controlled_Component (Etype (Comp))
-                 or else
-                   (Chars (Comp) /= Name_uParent
-                      and then Is_Controlled (Etype (Comp)))
-                 or else
-                   (Is_Protected_Type (Etype (Comp))
-                      and then
-                        Present (Corresponding_Record_Type (Etype (Comp)))
-                      and then
-                        Has_Controlled_Component
-                          (Corresponding_Record_Type (Etype (Comp))))
-               then
-                  Set_Has_Controlled_Component (Typ);
-                  exit;
-               end if;
-
-               Next_Component (Comp);
-            end loop;
-         end if;
-      end Ensure_Minimum_Decoration;
 
       ------------------------------
       -- Large_Max_Size_Mutable --
@@ -27502,7 +27512,7 @@ package body Sem_Util is
 
       Typ : constant Entity_Id := Underlying_Type (Id);
 
-   --  Start of processing for Requires_Transient_Scope
+   --  Start of processing for Returns_On_Secondary_Stack
 
    begin
       --  This is a private type which is not completed yet. This can only
@@ -27512,8 +27522,6 @@ package body Sem_Util is
       if No (Typ) then
          return False;
       end if;
-
-      Ensure_Minimum_Decoration (Id);
 
       --  Do not expand transient scope for non-existent procedure return or
       --  string literal types.
@@ -27529,20 +27537,23 @@ package body Sem_Util is
       elsif Ekind (Typ) = E_Record_Subtype
         and then Present (Cloned_Subtype (Typ))
       then
-         return Requires_Transient_Scope (Cloned_Subtype (Typ));
+         return Returns_On_Secondary_Stack (Cloned_Subtype (Typ));
 
       --  Functions returning specific tagged types may dispatch on result, so
       --  their returned value is allocated on the secondary stack, even in the
       --  definite case. We must treat nondispatching functions the same way,
       --  because access-to-function types can point at both, so the calling
-      --  conventions must be compatible. Is_Tagged_Type includes controlled
-      --  types and class-wide types. Controlled type temporaries need
-      --  finalization.
+      --  conventions must be compatible.
 
-      --  ???It's not clear why we need to return noncontrolled types with
-      --  controlled components on the secondary stack.
+      elsif Is_Tagged_Type (Typ) then
+         return True;
 
-      elsif Is_Tagged_Type (Typ) or else Has_Controlled_Component (Typ) then
+      --  If the return slot of the back end cannot be accessed, then there
+      --  is no way to call Adjust at the right time for the return object if
+      --  the type needs finalization, so the return object must be allocated
+      --  on the secondary stack.
+
+      elsif not Back_End_Return_Slot and then Needs_Finalization (Typ) then
          return True;
 
       --  Untagged definite subtypes are known size. This includes all
@@ -27571,52 +27582,7 @@ package body Sem_Util is
          pragma Assert (Is_Array_Type (Typ) and not Is_Definite_Subtype (Typ));
          return True;
       end if;
-   end Requires_Transient_Scope;
-
-   --------------------------
-   -- Reset_Analyzed_Flags --
-   --------------------------
-
-   procedure Reset_Analyzed_Flags (N : Node_Id) is
-      function Clear_Analyzed (N : Node_Id) return Traverse_Result;
-      --  Function used to reset Analyzed flags in tree. Note that we do
-      --  not reset Analyzed flags in entities, since there is no need to
-      --  reanalyze entities, and indeed, it is wrong to do so, since it
-      --  can result in generating auxiliary stuff more than once.
-
-      --------------------
-      -- Clear_Analyzed --
-      --------------------
-
-      function Clear_Analyzed (N : Node_Id) return Traverse_Result is
-      begin
-         if Nkind (N) not in N_Entity then
-            Set_Analyzed (N, False);
-         end if;
-
-         return OK;
-      end Clear_Analyzed;
-
-      procedure Reset_Analyzed is new Traverse_Proc (Clear_Analyzed);
-
-   --  Start of processing for Reset_Analyzed_Flags
-
-   begin
-      Reset_Analyzed (N);
-   end Reset_Analyzed_Flags;
-
-   ------------------------
-   -- Restore_SPARK_Mode --
-   ------------------------
-
-   procedure Restore_SPARK_Mode
-     (Mode : SPARK_Mode_Type;
-      Prag : Node_Id)
-   is
-   begin
-      SPARK_Mode        := Mode;
-      SPARK_Mode_Pragma := Prag;
-   end Restore_SPARK_Mode;
+   end Returns_On_Secondary_Stack;
 
    --------------------------------
    -- Returns_Unconstrained_Type --

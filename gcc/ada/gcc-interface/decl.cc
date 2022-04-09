@@ -5838,10 +5838,8 @@ gnat_to_gnu_subprog_type (Entity_Id gnat_subprog, bool definition,
 	  return_unconstrained_p = true;
 	}
 
-      /* Likewise, if the return type requires a transient scope, the return
-	 value will also be allocated on the secondary stack so the actual
-	 return type is the reference type.  */
-      else if (Requires_Transient_Scope (gnat_return_type))
+      /* This is for the other types returned on the secondary stack.  */
+      else if (Returns_On_Secondary_Stack (gnat_return_type))
 	{
 	  gnu_return_type = build_reference_type (gnu_return_type);
 	  return_unconstrained_p = true;

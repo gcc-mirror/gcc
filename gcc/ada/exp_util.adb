@@ -897,6 +897,11 @@ package body Exp_Util is
       if No (Pool_Id) then
          return;
 
+      --  Do not process allocations from the return stack
+
+      elsif Is_RTE (Pool_Id, RE_RS_Pool) then
+         return;
+
       --  Do not process allocations on / deallocations from the secondary
       --  stack, except for access types used to implement indirect temps.
 
@@ -12108,7 +12113,7 @@ package body Exp_Util is
       elsif Nkind (Exp) = N_Unchecked_Type_Conversion
         and then not Safe_Unchecked_Type_Conversion (Exp)
       then
-         if CW_Or_Has_Controlled_Part (Exp_Type) then
+         if CW_Or_Needs_Finalization (Exp_Type) then
 
             --  Use a renaming to capture the expression, rather than create
             --  a controlled temporary.
