@@ -1,3 +1,29 @@
+2022-04-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/105198
+	* gcc.dg/torture/pr105198.c: New testcase.
+
+2022-04-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/105187
+	* c-c++-common/torture/20050113-1.c: Add dg-additional-options
+	-Wno-psabi.
+
+2022-04-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/105149
+	* gcc.dg/pr105149.c: New test.
+
+2022-04-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/105189
+	* g++.dg/torture/pr105189.C: New test.
+
+2022-04-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/105175
+	* gcc.dg/pr105175.c: New testcase.
+
 2022-04-07   Michael Meissner  <meissner@linux.ibm.com>
 
 	PR target/104253

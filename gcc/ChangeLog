@@ -1,3 +1,41 @@
+2022-04-08  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	PR target/105157
+	* config.gcc: Shift ext_mask by TARGET_CPU_NBITS.
+	* config/aarch64/aarch64.h (TARGET_CPU_NBITS): New macro.
+	(TARGET_CPU_MASK): Likewise.
+	(TARGET_CPU_DEFAULT): Use TARGET_CPU_NBITS.
+	* config/aarch64/aarch64.cc (aarch64_get_tune_cpu): Use TARGET_CPU_MASK.
+	(aarch64_get_arch): Likewise.
+	(aarch64_override_options): Use TARGET_CPU_NBITS.
+
+2022-04-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/105198
+	* tree-predcom.cc (find_looparound_phi): Check whether
+	the found memory location of the entry value is clobbered
+	inbetween the value we want to use and loop entry.
+
+2022-04-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/105189
+	* fold-const.cc (make_range_step): Fix up handling of
+	(unsigned) x +[low, -] ranges for signed x if low fits into
+	typeof (x).
+
+2022-04-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/105175
+	* tree-vect-stmts.cc (vectorizable_operation): Suppress
+	-Wvector-operation-performance if using emulated vectors.
+	* tree-vect-generic.cc (expand_vector_piecewise): Do not diagnose
+	-Wvector-operation-performance when suppressed.
+	(expand_vector_parallel): Likewise.
+	(expand_vector_comparison): Likewise.
+	(expand_vector_condition): Likewise.
+	(lower_vec_perm): Likewise.
+	(expand_vector_conversion): Likewise.
+
 2022-04-07  Tamar Christina  <tamar.christina@arm.com>
 
 	PR target/104409

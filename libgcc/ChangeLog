@@ -1,3 +1,7 @@
+2022-04-08  Sergei Trofimovich  <siarheit@google.com>
+
+	* config/ia64/fde-glibc.c: Make a no-op in inhibit_libc mode.
+
 2022-03-29  Chenghua Xu  <xuchenghua@loongson.cn>
 	    Lulu Cheng  <chenglulu@loongson.cn>
 

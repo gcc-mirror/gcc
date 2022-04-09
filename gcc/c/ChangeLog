@@ -1,3 +1,8 @@
+2022-04-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/105149
+	* c-typeck.cc (c_build_va_arg): Reject function types.
+
 2022-03-22  Marek Polacek  <polacek@redhat.com>
 
 	PR c/82283

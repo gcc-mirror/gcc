@@ -1,3 +1,25 @@
+2022-04-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/105153
+	* include/std/expected
+	(expected<void,E>::expected(expected<U,G>&&)): Fix constraints.
+	* testsuite/20_util/expected/cons.cc: Check constructor.
+
+2022-04-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/105154
+	* include/std/expected (expected<void, E>::swap): Set
+	_M_has_value to false for objects that previously had a value.
+	* testsuite/20_util/expected/swap.cc: Fix test to check void
+	specialization.
+
+2022-04-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/105146
+	* include/std/expected (bad_expected_access): Move constructor
+	parameter.
+	* testsuite/20_util/expected/bad.cc: New test.
+
 2022-04-07  Hans-Peter Nilsson  <hp@axis.com>
 
 	* testsuite/20_util/expected/requirements.cc: Correct minimal-size
