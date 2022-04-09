@@ -1,3 +1,12 @@
+2022-04-08  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2021-05-27  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/99893
+	PR c++/103885
+	* tree.c (cp_walk_subtrees) <case STATIC_ASSERT>: New case.
+
 2022-04-07  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:

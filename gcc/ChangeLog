@@ -1,3 +1,13 @@
+2022-04-08  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-04-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/105198
+	* tree-predcom.c (find_looparound_phi): Check whether
+	the found memory location of the entry value is clobbered
+	inbetween the value we want to use and loop entry.
+
 2022-04-07  Jan Hubicka  <jh@suse.cz>
 
 	Backported from master:

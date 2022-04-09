@@ -1,3 +1,20 @@
+2022-04-08  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2021-05-27  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/99893
+	PR c++/103885
+	* g++.dg/cpp0x/static_assert17.C: New test.
+
+2022-04-08  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-04-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/105198
+	* gcc.dg/torture/pr105198.c: New testcase.
+
 2022-04-07  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:
