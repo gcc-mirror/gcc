@@ -1,3 +1,42 @@
+2022-04-09  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/103892
+	* gcc.dg/analyzer/pr103892.c: New test.
+	* gcc.dg/analyzer/pr96841.c: Drop redundant
+	-Wno-analyzer-too-complex.
+
+2022-04-09  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/103376
+	* gcc.c-torture/compile/pr103376.c: New test.
+
+2022-04-09  Jan Hubicka  <hubicka@ucw.cz>
+
+	* gcc.dg/ipa/pr105160.c: New test.
+
+2022-04-09  Xi Ruoyao  <xry111@mengyan1223.wang>
+
+	* gcc.dg/stack-usage-1.c: Adjust for LoongArch LP64.
+
+2022-04-09  Xi Ruoyao  <xry111@mengyan1223.wang>
+
+	* gcc.dg/builtin-apply2.c (dg-skip-if): Add loongarch*-*-*.
+
+2022-04-09  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105191
+	PR c++/92385
+	* g++.dg/cpp0x/constexpr-array28.C: New test.
+
+2022-04-09  Jason Merrill  <jason@redhat.com>
+
+	PR c++/91618
+	PR c++/96604
+	* g++.dg/cpp0x/friend7.C: Remove xfail.
+	* g++.dg/template/friend72.C: New test.
+	* g++.dg/template/friend72a.C: New test.
+	* g++.dg/template/friend73.C: New test.
+
 2022-04-08  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/105198

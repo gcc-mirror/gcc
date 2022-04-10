@@ -1,3 +1,14 @@
+2022-04-09  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/103376
+	* cgraphunit.cc (cgraph_node::analyze): update semantic_interposition
+	flag.
+
+2022-04-09  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-modref.cc (ipa_merge_modref_summary_after_inlining): Propagate
+	nondeterministic and side_effects flags.
+
 2022-04-08  Andre Vieira  <andre.simoesdiasvieira@arm.com>
 
 	PR target/105157

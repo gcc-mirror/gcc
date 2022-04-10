@@ -1,3 +1,22 @@
+2022-04-09  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105191
+	PR c++/92385
+	* tree.cc (build_vec_init_elt): Do {}-init for aggregates.
+	* constexpr.cc (cxx_eval_vec_init): Only treat {} as value-init
+	for non-aggregate types.
+	(build_vec_init_expr): Also check constancy of explicit
+	initializer elements.
+
+2022-04-09  Jason Merrill  <jason@redhat.com>
+
+	PR c++/91618
+	PR c++/96604
+	* name-lookup.cc (set_decl_namespace): Set
+	DECL_IMPLICIT_INSTANTIATION if no non-template match.
+	* pt.cc (check_explicit_specialization): Check it.
+	* decl2.cc (check_classfn): Call it.
+
 2022-04-07  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/99479

@@ -1,3 +1,21 @@
+2022-04-09  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/103892
+	* region-model-manager.cc
+	(region_model_manager::get_unknown_symbolic_region): New,
+	extracted from...
+	(region_model_manager::get_field_region): ...here.
+	(region_model_manager::get_element_region): Use it here.
+	(region_model_manager::get_offset_region): Likewise.
+	(region_model_manager::get_sized_region): Likewise.
+	(region_model_manager::get_cast_region): Likewise.
+	(region_model_manager::get_bit_range): Likewise.
+	* region-model.h
+	(region_model_manager::get_unknown_symbolic_region): New decl.
+	* region.cc (symbolic_region::symbolic_region): Handle sval_ptr
+	having NULL type.
+	(symbolic_region::dump_to_pp): Handle having NULL type.
+
 2022-04-07  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/102208
