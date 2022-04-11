@@ -1298,10 +1298,31 @@ predicate_bbs (loop_p loop)
 	  tree c2;
 	  edge true_edge, false_edge;
 	  location_t loc = gimple_location (stmt);
-	  tree c = build2_loc (loc, gimple_cond_code (stmt),
-				    boolean_type_node,
-				    gimple_cond_lhs (stmt),
-				    gimple_cond_rhs (stmt));
+	  tree c;
+	  /* gcc.dg/fold-bopcond-1.c shows that despite all forwprop passes
+	     conditions can remain unfolded because of multiple uses so
+	     try to re-fold here, especially to get precision changing
+	     conversions sorted out.  Do not simply fold the stmt since
+	     this is analysis only.  When conditions were embedded in
+	     COND_EXPRs those were folded separately before folding the
+	     COND_EXPR but as they are now outside we have to make sure
+	     to fold them.  Do it here - another opportunity would be to
+	     fold predicates as they are inserted.  */
+	  gimple_match_op cexpr (gimple_match_cond::UNCOND,
+				 gimple_cond_code (stmt),
+				 boolean_type_node,
+				 gimple_cond_lhs (stmt),
+				 gimple_cond_rhs (stmt));
+	  if (cexpr.resimplify (NULL, follow_all_ssa_edges)
+	      && cexpr.code.is_tree_code ()
+	      && TREE_CODE_CLASS ((tree_code)cexpr.code) == tcc_comparison)
+	    c = build2_loc (loc, (tree_code)cexpr.code, boolean_type_node,
+			    cexpr.ops[0], cexpr.ops[1]);
+	  else
+	    c = build2_loc (loc, gimple_cond_code (stmt),
+			    boolean_type_node,
+			    gimple_cond_lhs (stmt),
+			    gimple_cond_rhs (stmt));
 
 	  /* Add new condition into destination's predicate list.  */
 	  extract_true_false_edges_from_block (gimple_bb (stmt),

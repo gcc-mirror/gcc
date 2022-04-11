@@ -6613,9 +6613,9 @@ expand_omp_simd (struct omp_region *region, struct omp_for_data *fd)
       altn2 = create_tmp_var (TREE_TYPE (altv));
       expand_omp_build_assign (&gsi, altn2, t);
       tree t2 = fold_convert (TREE_TYPE (fd->loop.v), n2);
+      t2 = fold_build2 (fd->loop.cond_code, boolean_type_node, fd->loop.v, t2);
       t2 = force_gimple_operand_gsi (&gsi, t2, true, NULL_TREE,
 				     true, GSI_SAME_STMT);
-      t2 = fold_build2 (fd->loop.cond_code, boolean_type_node, fd->loop.v, t2);
       gassign *g = gimple_build_assign (altn2, COND_EXPR, t2, altn2,
 					build_zero_cst (TREE_TYPE (altv)));
       gsi_insert_before (&gsi, g, GSI_SAME_STMT);
@@ -6989,10 +6989,10 @@ expand_omp_simd (struct omp_region *region, struct omp_for_data *fd)
 	      tree t2 = fold_convert (TREE_TYPE (fd->loops[i + 1].v),
 				      fd->loops[i + 1].m2
 				      ? n2v : fd->loops[i + 1].n2);
-	      t2 = force_gimple_operand_gsi (&gsi, t2, true, NULL_TREE,
-					     true, GSI_SAME_STMT);
 	      t2 = fold_build2 (fd->loops[i + 1].cond_code, boolean_type_node,
 				fd->loops[i + 1].v, t2);
+	      t2 = force_gimple_operand_gsi (&gsi, t2, true, NULL_TREE,
+					     true, GSI_SAME_STMT);
 	      gassign *g
 		= gimple_build_assign (altn2, COND_EXPR, t2, altn2,
 				       build_zero_cst (TREE_TYPE (altv)));
@@ -8978,6 +8978,7 @@ expand_omp_atomic_cas (basic_block load_bb, tree addr,
   tree cond_op1, cond_op2;
   if (cond_stmt)
     {
+      /* We should now always get a separate cond_stmt.  */
       if (!operand_equal_p (cond, gimple_assign_lhs (cond_stmt)))
 	return false;
       cond_op1 = gimple_assign_rhs1 (cond_stmt);

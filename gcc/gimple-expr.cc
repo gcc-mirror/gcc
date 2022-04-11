@@ -622,7 +622,7 @@ is_gimple_condexpr (tree t)
 {
   /* Always split out _Complex type compares since complex lowering
      doesn't handle this case.  */
-  return is_gimple_condexpr_1 (t, true, false);
+  return is_gimple_val (t);
 }
 
 /* Like is_gimple_condexpr, but does not allow T to trap.  */

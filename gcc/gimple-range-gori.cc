@@ -1319,17 +1319,21 @@ gori_compute::condexpr_adjust (irange &r1, irange &r2, gimple *, tree cond,
   tree ssa2 = gimple_range_ssa_p (op2);
   if (!ssa1 && !ssa2)
     return false;
-  if (!COMPARISON_CLASS_P (cond))
+  if (TREE_CODE (cond) != SSA_NAME)
     return false;
-  tree type = TREE_TYPE (TREE_OPERAND (cond, 0));
-  if (!range_compatible_p (type, TREE_TYPE (TREE_OPERAND (cond, 1))))
+  gassign *cond_def = dyn_cast <gassign *> (SSA_NAME_DEF_STMT (cond));
+  if (!cond_def
+      || TREE_CODE_CLASS (gimple_assign_rhs_code (cond_def)) != tcc_comparison)
     return false;
-  range_operator *hand = range_op_handler (TREE_CODE (cond), type);
+  tree type = TREE_TYPE (gimple_assign_rhs1 (cond_def));
+  if (!range_compatible_p (type, TREE_TYPE (gimple_assign_rhs2 (cond_def))))
+    return false;
+  range_operator *hand = range_op_handler (gimple_assign_rhs_code (cond_def), type);
   if (!hand)
     return false;
 
-  tree c1 = gimple_range_ssa_p (TREE_OPERAND (cond, 0));
-  tree c2 = gimple_range_ssa_p (TREE_OPERAND (cond, 1));
+  tree c1 = gimple_range_ssa_p (gimple_assign_rhs1 (cond_def));
+  tree c2 = gimple_range_ssa_p (gimple_assign_rhs2 (cond_def));
 
   // Only solve if there is one SSA name in the condition.
   if ((!c1 && !c2) || (c1 && c2))
@@ -1337,8 +1341,8 @@ gori_compute::condexpr_adjust (irange &r1, irange &r2, gimple *, tree cond,
 
   // Pick up the current values of each part of the condition.
   int_range_max cl, cr;
-  src.get_operand (cl, TREE_OPERAND (cond, 0));
-  src.get_operand (cr, TREE_OPERAND (cond, 1));
+  src.get_operand (cl, gimple_assign_rhs1 (cond_def));
+  src.get_operand (cr, gimple_assign_rhs2 (cond_def));
 
   tree cond_name = c1 ? c1 : c2;
   gimple *def_stmt = SSA_NAME_DEF_STMT (cond_name);

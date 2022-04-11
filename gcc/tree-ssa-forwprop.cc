@@ -610,7 +610,7 @@ forward_propagate_into_cond (gimple_stmt_iterator *gsi_p)
     }
 
   if (tmp
-      && is_gimple_condexpr (tmp))
+      && is_gimple_val (tmp))
     {
       if (dump_file)
 	{
