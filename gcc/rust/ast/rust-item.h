@@ -632,7 +632,7 @@ public:
     : public_vis_type (public_vis_type), in_path (std::move (in_path))
   {}
 
-  PublicVisType get_public_vis_type () { return public_vis_type; }
+  PublicVisType get_public_vis_type () const { return public_vis_type; }
 
   // Returns whether visibility is in an error state.
   bool is_error () const
@@ -884,6 +884,8 @@ public:
 
   FunctionQualifiers get_qualifiers () { return qualifiers; }
 
+  const Visibility &get_visibility () const { return vis; }
+
 protected:
   /* Use covariance to implement clone function as returning this object
    * rather than base */
@@ -941,8 +943,8 @@ public:
   std::string as_string () const override;
 
   // TODO: this mutable getter seems really dodgy. Think up better way.
-  Visibility &get_vis () { return visibility; }
-  const Visibility &get_vis () const { return visibility; }
+  Visibility &get_visibility () { return visibility; }
+  const Visibility &get_visibility () const { return visibility; }
 
   std::vector<Attribute> &get_outer_attrs () { return outer_attrs; }
   const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
@@ -1896,7 +1898,7 @@ public:
     return field_type;
   }
 
-  Visibility get_visibility () const { return visibility; }
+  const Visibility &get_visibility () const { return visibility; }
 
   NodeId get_node_id () const { return node_id; }
 };
@@ -2029,6 +2031,8 @@ public:
   std::string as_string () const;
 
   NodeId get_node_id () const { return node_id; }
+
+  const Visibility &get_visibility () const { return visibility; }
 
   Location get_locus () const { return locus; }
 
@@ -3921,6 +3925,8 @@ public:
 
   Identifier get_identifier () const { return item_name; }
 
+  const Visibility &get_visibility () const { return visibility; }
+
   bool is_mut () const { return has_mut; }
 
 protected:
@@ -4082,6 +4088,8 @@ public:
   }
 
   Location get_locus () const { return locus; }
+
+  const Visibility &get_visibility () const { return visibility; }
 
   ExternalFunctionItem (
     Identifier item_name,

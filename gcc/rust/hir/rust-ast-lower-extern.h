@@ -21,6 +21,7 @@
 
 #include "rust-ast-lower-base.h"
 #include "rust-ast-lower-type.h"
+#include "rust-ast-lower.h"
 
 namespace Rust {
 namespace HIR {
@@ -39,7 +40,7 @@ public:
 
   void visit (AST::ExternalStaticItem &item) override
   {
-    HIR::Visibility vis = HIR::Visibility::create_public ();
+    HIR::Visibility vis = translate_visibility (item.get_visibility ());
     HIR::Type *static_type
       = ASTLoweringType::translate (item.get_type ().get ());
 
@@ -65,7 +66,7 @@ public:
   {
     std::vector<std::unique_ptr<HIR::WhereClauseItem> > where_clause_items;
     HIR::WhereClause where_clause (std::move (where_clause_items));
-    HIR::Visibility vis = HIR::Visibility::create_public ();
+    HIR::Visibility vis = translate_visibility (function.get_visibility ());
 
     std::vector<std::unique_ptr<HIR::GenericParam> > generic_params;
     if (function.has_generics ())

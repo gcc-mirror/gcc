@@ -582,14 +582,6 @@ public:
     return Visibility (ERROR, AST::SimplePath::create_empty ());
   }
 
-  // Creates a public visibility.
-  // FIXME: Remove this function: We should not be calling it anymore and
-  // instead we should be using `translate_visibility`
-  static Visibility create_public ()
-  {
-    return Visibility (ERROR, AST::SimplePath::create_empty ());
-  }
-
   VisType get_vis_type () const { return vis_type; }
 
   std::string as_string () const;

@@ -85,7 +85,7 @@ public:
 
   void visit (AST::ConstantItem &constant) override
   {
-    HIR::Visibility vis = HIR::Visibility::create_public ();
+    HIR::Visibility vis = translate_visibility (constant.get_visibility ());
 
     HIR::Type *type = ASTLoweringType::translate (constant.get_type ().get ());
     HIR::Expr *expr = ASTLoweringExpr::translate (constant.get_expr ().get ());
@@ -148,12 +148,12 @@ public:
 
     std::vector<std::unique_ptr<HIR::WhereClauseItem>> where_clause_items;
     HIR::WhereClause where_clause (std::move (where_clause_items));
-    HIR::Visibility vis = HIR::Visibility::create_public ();
+    HIR::Visibility vis = translate_visibility (struct_decl.get_visibility ());
 
     std::vector<HIR::TupleField> fields;
     for (AST::TupleField &field : struct_decl.get_fields ())
       {
-	HIR::Visibility vis = HIR::Visibility::create_public ();
+	HIR::Visibility vis = translate_visibility (field.get_visibility ());
 	HIR::Type *type
 	  = ASTLoweringType::translate (field.get_field_type ().get ());
 
@@ -199,13 +199,13 @@ public:
 
     std::vector<std::unique_ptr<HIR::WhereClauseItem>> where_clause_items;
     HIR::WhereClause where_clause (std::move (where_clause_items));
-    HIR::Visibility vis = HIR::Visibility::create_public ();
+    HIR::Visibility vis = translate_visibility (struct_decl.get_visibility ());
 
     bool is_unit = struct_decl.is_unit_struct ();
     std::vector<HIR::StructField> fields;
     for (AST::StructField &field : struct_decl.get_fields ())
       {
-	HIR::Visibility vis = HIR::Visibility::create_public ();
+	HIR::Visibility vis = translate_visibility (field.get_visibility ());
 	HIR::Type *type
 	  = ASTLoweringType::translate (field.get_field_type ().get ());
 
@@ -255,12 +255,12 @@ public:
 
     std::vector<std::unique_ptr<HIR::WhereClauseItem>> where_clause_items;
     HIR::WhereClause where_clause (std::move (where_clause_items));
-    HIR::Visibility vis = HIR::Visibility::create_public ();
+    HIR::Visibility vis = translate_visibility (union_decl.get_visibility ());
 
     std::vector<HIR::StructField> variants;
     for (AST::StructField &variant : union_decl.get_variants ())
       {
-	HIR::Visibility vis = HIR::Visibility::create_public ();
+	HIR::Visibility vis = translate_visibility (variant.get_visibility ());
 	HIR::Type *type
 	  = ASTLoweringType::translate (variant.get_field_type ().get ());
 
@@ -308,7 +308,7 @@ public:
 
     std::vector<std::unique_ptr<HIR::WhereClauseItem>> where_clause_items;
     HIR::WhereClause where_clause (std::move (where_clause_items));
-    HIR::Visibility vis = HIR::Visibility::create_public ();
+    HIR::Visibility vis = translate_visibility (enum_decl.get_visibility ());
 
     // bool is_unit = enum_decl.is_zero_variant ();
     std::vector<std::unique_ptr<HIR::EnumItem>> items;
@@ -358,7 +358,7 @@ public:
     HIR::WhereClause where_clause (std::move (where_clause_items));
     HIR::FunctionQualifiers qualifiers
       = lower_qualifiers (function.get_qualifiers ());
-    HIR::Visibility vis = HIR::Visibility::create_public ();
+    HIR::Visibility vis = translate_visibility (function.get_visibility ());
 
     // need
     std::vector<std::unique_ptr<HIR::GenericParam>> generic_params;
