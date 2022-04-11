@@ -632,6 +632,8 @@ public:
     : public_vis_type (public_vis_type), in_path (std::move (in_path))
   {}
 
+  PublicVisType get_public_vis_type () { return public_vis_type; }
+
   // Returns whether visibility is in an error state.
   bool is_error () const
   {
@@ -684,6 +686,7 @@ public:
   }
 
   std::string as_string () const;
+  const SimplePath &get_path () const { return in_path; }
 
 protected:
   // Clone function implementation - not currently virtual but may be if

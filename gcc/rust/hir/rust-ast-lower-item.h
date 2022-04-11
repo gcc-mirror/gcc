@@ -21,6 +21,7 @@
 
 #include "rust-diagnostics.h"
 
+#include "rust-ast-lower.h"
 #include "rust-ast-lower-base.h"
 #include "rust-ast-lower-enumitem.h"
 #include "rust-ast-lower-type.h"
@@ -59,7 +60,7 @@ public:
 				   mappings->get_next_localdef_id (crate_num));
 
     // should be lowered from module.get_vis()
-    HIR::Visibility vis = HIR::Visibility::create_public ();
+    HIR::Visibility vis = translate_visibility (module.get_visibility ());
 
     auto items = std::vector<std::unique_ptr<Item>> ();
 
@@ -99,7 +100,7 @@ public:
       }
 
     HIR::WhereClause where_clause (std::move (where_clause_items));
-    HIR::Visibility vis = HIR::Visibility::create_public ();
+    HIR::Visibility vis = translate_visibility (alias.get_visibility ());
 
     std::vector<std::unique_ptr<HIR::GenericParam>> generic_params;
     if (alias.has_generics ())
@@ -146,7 +147,7 @@ public:
       }
 
     HIR::WhereClause where_clause (std::move (where_clause_items));
-    HIR::Visibility vis = HIR::Visibility::create_public ();
+    HIR::Visibility vis = translate_visibility (struct_decl.get_visibility ());
 
     std::vector<HIR::TupleField> fields;
     for (AST::TupleField &field : struct_decl.get_fields ())
@@ -154,7 +155,8 @@ public:
 	if (field.get_field_type ()->is_marked_for_strip ())
 	  continue;
 
-	HIR::Visibility vis = HIR::Visibility::create_public ();
+	// FIXME: How do we get the visibility from here?
+	HIR::Visibility vis = translate_visibility (field.get_visibility ());
 	HIR::Type *type
 	  = ASTLoweringType::translate (field.get_field_type ().get ());
 
@@ -209,7 +211,8 @@ public:
       }
 
     HIR::WhereClause where_clause (std::move (where_clause_items));
-    HIR::Visibility vis = HIR::Visibility::create_public ();
+
+    HIR::Visibility vis = translate_visibility (struct_decl.get_visibility ());
 
     bool is_unit = struct_decl.is_unit_struct ();
     std::vector<HIR::StructField> fields;
@@ -218,7 +221,7 @@ public:
 	if (field.get_field_type ()->is_marked_for_strip ())
 	  continue;
 
-	HIR::Visibility vis = HIR::Visibility::create_public ();
+	HIR::Visibility vis = translate_visibility (field.get_visibility ());
 	HIR::Type *type
 	  = ASTLoweringType::translate (field.get_field_type ().get ());
 
@@ -276,7 +279,7 @@ public:
       }
 
     HIR::WhereClause where_clause (std::move (where_clause_items));
-    HIR::Visibility vis = HIR::Visibility::create_public ();
+    HIR::Visibility vis = translate_visibility (enum_decl.get_visibility ());
 
     // bool is_unit = enum_decl.is_zero_variant ();
     std::vector<std::unique_ptr<HIR::EnumItem>> items;
@@ -326,7 +329,7 @@ public:
 	  std::unique_ptr<HIR::WhereClauseItem> (i));
       }
     HIR::WhereClause where_clause (std::move (where_clause_items));
-    HIR::Visibility vis = HIR::Visibility::create_public ();
+    HIR::Visibility vis = translate_visibility (union_decl.get_visibility ());
 
     std::vector<HIR::StructField> variants;
     for (AST::StructField &variant : union_decl.get_variants ())
@@ -334,7 +337,8 @@ public:
 	if (variant.get_field_type ()->is_marked_for_strip ())
 	  continue;
 
-	HIR::Visibility vis = HIR::Visibility::create_public ();
+	// FIXME: Does visibility apply here?
+	HIR::Visibility vis = translate_visibility (variant.get_visibility ());
 	HIR::Type *type
 	  = ASTLoweringType::translate (variant.get_field_type ().get ());
 
@@ -375,7 +379,7 @@ public:
 
   void visit (AST::StaticItem &var) override
   {
-    HIR::Visibility vis = HIR::Visibility::create_public ();
+    HIR::Visibility vis = translate_visibility (var.get_visibility ());
 
     HIR::Type *type = ASTLoweringType::translate (var.get_type ().get ());
     HIR::Expr *expr = ASTLoweringExpr::translate (var.get_expr ().get ());
@@ -401,7 +405,7 @@ public:
 
   void visit (AST::ConstantItem &constant) override
   {
-    HIR::Visibility vis = HIR::Visibility::create_public ();
+    HIR::Visibility vis = translate_visibility (constant.get_visibility ());
 
     HIR::Type *type = ASTLoweringType::translate (constant.get_type ().get ());
     HIR::Expr *expr = ASTLoweringExpr::translate (constant.get_expr ().get ());
@@ -441,7 +445,7 @@ public:
     HIR::WhereClause where_clause (std::move (where_clause_items));
     HIR::FunctionQualifiers qualifiers
       = lower_qualifiers (function.get_qualifiers ());
-    HIR::Visibility vis = HIR::Visibility::create_public ();
+    HIR::Visibility vis = translate_visibility (function.get_visibility ());
 
     // need
     std::vector<std::unique_ptr<HIR::GenericParam>> generic_params;
@@ -530,7 +534,7 @@ public:
       }
 
     HIR::WhereClause where_clause (std::move (where_clause_items));
-    HIR::Visibility vis = HIR::Visibility::create_public ();
+    HIR::Visibility vis = translate_visibility (impl_block.get_visibility ());
 
     std::vector<std::unique_ptr<HIR::GenericParam>> generic_params;
     if (impl_block.has_generics ())
@@ -619,7 +623,7 @@ public:
       }
     HIR::WhereClause where_clause (std::move (where_clause_items));
 
-    HIR::Visibility vis = HIR::Visibility::create_public ();
+    HIR::Visibility vis = translate_visibility (trait.get_visibility ());
 
     std::vector<std::unique_ptr<HIR::GenericParam>> generic_params;
     if (trait.has_generics ())
@@ -692,7 +696,7 @@ public:
 	  std::unique_ptr<HIR::WhereClauseItem> (i));
       }
     HIR::WhereClause where_clause (std::move (where_clause_items));
-    HIR::Visibility vis = HIR::Visibility::create_public ();
+    HIR::Visibility vis = translate_visibility (impl_block.get_visibility ());
 
     std::vector<std::unique_ptr<HIR::GenericParam>> generic_params;
     if (impl_block.has_generics ())
@@ -774,7 +778,7 @@ public:
 
   void visit (AST::ExternBlock &extern_block) override
   {
-    HIR::Visibility vis = HIR::Visibility::create_public ();
+    HIR::Visibility vis = translate_visibility (extern_block.get_visibility ());
 
     std::vector<std::unique_ptr<HIR::ExternalItem>> extern_items;
     for (auto &item : extern_block.get_extern_items ())
