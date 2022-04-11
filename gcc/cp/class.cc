@@ -7723,17 +7723,14 @@ finish_struct (tree t, tree attributes)
 	 lookup not to fail or recurse into bases.  This isn't added
 	 to the template decl list so we drop this at instantiation
 	 time.  */
-      if (!get_class_binding_direct (t, assign_op_identifier, false))
-	{
-	  tree ass_op = build_lang_decl (USING_DECL, assign_op_identifier,
-					 NULL_TREE);
-	  DECL_CONTEXT (ass_op) = t;
-	  USING_DECL_SCOPE (ass_op) = t;
-	  DECL_DEPENDENT_P (ass_op) = true;
-	  DECL_ARTIFICIAL (ass_op) = true;
-	  DECL_CHAIN (ass_op) = TYPE_FIELDS (t);
-	  TYPE_FIELDS (t) = ass_op;
-	}
+      tree ass_op = build_lang_decl (USING_DECL, assign_op_identifier,
+				     NULL_TREE);
+      DECL_CONTEXT (ass_op) = t;
+      USING_DECL_SCOPE (ass_op) = t;
+      DECL_DEPENDENT_P (ass_op) = true;
+      DECL_ARTIFICIAL (ass_op) = true;
+      DECL_CHAIN (ass_op) = TYPE_FIELDS (t);
+      TYPE_FIELDS (t) = ass_op;
 
       TYPE_SIZE (t) = bitsize_zero_node;
       TYPE_SIZE_UNIT (t) = size_zero_node;
