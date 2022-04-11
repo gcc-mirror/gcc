@@ -4278,6 +4278,8 @@ c_common_nodes_and_builtins (void)
       sprintf (name, "__int%d__", int_n_data[i].bitsize);
       record_builtin_type ((enum rid)(RID_FIRST_INT_N + i), name,
 			   int_n_trees[i].signed_type);
+      ridpointers[RID_FIRST_INT_N + i]
+	= DECL_NAME (TYPE_NAME (int_n_trees[i].signed_type));
 
       sprintf (name, "__int%d unsigned", int_n_data[i].bitsize);
       record_builtin_type (RID_MAX, name, int_n_trees[i].unsigned_type);
