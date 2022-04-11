@@ -4717,7 +4717,7 @@ case "${target}" in
 		esac
 		PYTHON=`which python || which python3 || which python2`
 		if test "x${PYTHON}" != x; then
-			with_arch=`${PYTHON} ${srcdir}/config/riscv/arch-canonicalize ${with_arch}`
+			with_arch=`${PYTHON} ${srcdir}/config/riscv/arch-canonicalize -misa-spec=${with_isa_spec} ${with_arch}`
 		fi
 		tm_defines="${tm_defines} TARGET_RISCV_DEFAULT_ARCH=${with_arch}"
 
@@ -4766,6 +4766,7 @@ case "${target}" in
 			case "${target}" in
 			riscv*-*-elf*)
 				if ${srcdir}/config/riscv/multilib-generator \
+					-misa-spec=${with_isa_spec} \
 					`echo ${with_multilib_generator} | sed 's/;/ /g'`\
 					> t-multilib-config;
 				then
