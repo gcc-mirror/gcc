@@ -237,15 +237,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static basic_stacktrace
       current(const allocator_type& __alloc = allocator_type()) noexcept
       {
-	auto __state = stacktrace_entry::_S_init();
 	basic_stacktrace __ret(__alloc);
-	if (!__ret._M_reserve(64)) [[unlikely]]
-	  return __ret;
-
-	if (__glibcxx_backtrace_simple(__state, 1, _S_curr_cb(),
-				       nullptr, std::__addressof(__ret)))
-	  __ret._M_clear();
-
+	if (auto __cb = __ret._M_prepare()) [[likely]]
+	  {
+	    auto __state = stacktrace_entry::_S_init();
+	    if (__glibcxx_backtrace_simple(__state, 1, __cb, nullptr,
+					   std::__addressof(__ret)))
+	      __ret._M_clear();
+	  }
 	return __ret;
       }
 
@@ -254,16 +253,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       current(size_type __skip,
 	      const allocator_type& __alloc = allocator_type()) noexcept
       {
-	auto __state = stacktrace_entry::_S_init();
 	basic_stacktrace __ret(__alloc);
 	if (__skip >= __INT_MAX__) [[unlikely]]
 	  return __ret;
-	if (!__ret._M_reserve(64)) [[unlikely]]
-	  return __ret;
-
-	if (__glibcxx_backtrace_simple(__state, __skip + 1, _S_curr_cb(),
-				       nullptr, std::__addressof(__ret)))
-	  __ret._M_clear();
+	if (auto __cb = __ret._M_prepare()) [[likely]]
+	  {
+	    auto __state = stacktrace_entry::_S_init();
+	    if (__glibcxx_backtrace_simple(__state, __skip + 1, __cb, nullptr,
+					   std::__addressof(__ret)))
+	      __ret._M_clear();
+	  }
 
 	return __ret;
       }
@@ -275,19 +274,22 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       {
 	__glibcxx_assert(__skip <= (size_type(-1) - __max_depth));
 
-	auto __state = stacktrace_entry::_S_init();
 	basic_stacktrace __ret(__alloc);
-	if (__max_depth == 0 || __skip >= __INT_MAX__) [[unlikely]]
+	if (__max_depth == 0) [[unlikely]]
 	  return __ret;
-	if (!__ret._M_reserve(std::min<int>(__max_depth, 64))) [[unlikely]]
+	if (__skip >= __INT_MAX__) [[unlikely]]
 	  return __ret;
-
-	if (__glibcxx_backtrace_simple(__state, __skip + 1, _S_curr_cb(),
-				       nullptr, std::__addressof(__ret)))
-	  __ret._M_clear();
-	else if (__ret.size() > __max_depth)
-	  __ret.resize(__max_depth);
-
+	if (auto __cb = __ret._M_prepare(__max_depth)) [[likely]]
+	  {
+	    auto __state = stacktrace_entry::_S_init();
+	    int __err = __glibcxx_backtrace_simple(__state, __skip + 1, __cb,
+						   nullptr,
+						   std::__addressof(__ret));
+	    if (__err < 0)
+	      __ret._M_clear();
+	    else if (__ret.size() > __max_depth)
+	      __ret._M_impl._M_size = __max_depth;
+	  }
 	return __ret;
       }
 
@@ -524,12 +526,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 
     private:
-      bool
-      _M_reserve(size_type __n) noexcept
-      {
-	return _M_impl._M_allocate(_M_alloc, __n) != nullptr;
-      }
-
+      // Precondition: _M_capacity != 0
       bool
       _M_push_back(const value_type& __x) noexcept
       {
@@ -543,18 +540,37 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_M_impl._M_deallocate(_M_alloc);
       }
 
-      static auto
-      _S_curr_cb() noexcept
+      // Precondition: __max_depth != 0
+      auto
+      _M_prepare(size_type __max_depth = -1) noexcept
       -> int (*) (void*, uintptr_t)
       {
-	return [](void* __data, uintptr_t __pc) {
+	auto __cb = +[](void* __data, uintptr_t __pc) {
 	  auto& __s = *static_cast<basic_stacktrace*>(__data);
 	  stacktrace_entry __f;
 	  __f._M_pc = __pc;
-	  if (__s._M_push_back(__f))
-	    return 0;
-	  return 1;
+	  if (__s._M_push_back(__f)) [[likely]]
+	    return 0; // continue tracing
+	  return -1; // stop tracing due to error
 	};
+
+	if (__max_depth > 128)
+	  __max_depth = 64; // soft limit, _M_push_back will reallocate
+	else
+	  __cb = [](void* __data, uintptr_t __pc) {
+	    auto& __s = *static_cast<basic_stacktrace*>(__data);
+	    stacktrace_entry __f;
+	    __f._M_pc = __pc;
+	    if (__s.size() == __s._M_impl._M_capacity) [[unlikely]]
+	      return 1; // stop tracing due to reaching max depth
+	    if (__s._M_push_back(__f)) [[likely]]
+	      return 0; // continue tracing
+	    return -1; // stop tracing due to error
+	  };
+
+	if (_M_impl._M_allocate(_M_alloc, __max_depth)) [[likely]]
+	  return __cb;
+	return nullptr;
       }
 
       struct _Impl
@@ -573,24 +589,22 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  return std::min(__size_max, __alloc_max);
 	}
 
-	// Precondition: _M_frames == nullptr
+	// Precondition: _M_frames == nullptr && __n != 0
 	pointer
 	_M_allocate(allocator_type& __alloc, size_type __n) noexcept
 	{
-	  __try
+	  if (__n <= _S_max_size(__alloc)) [[likely]]
 	    {
-	      if (0 < __n && __n <= _S_max_size(__alloc)) [[likely]]
+	      __try
 		{
 		  _M_frames = __alloc.allocate(__n);
 		  _M_capacity = __n;
 		  return _M_frames;
 		}
+	      __catch (...)
+		{
+		}
 	    }
-	  __catch (...)
-	    {
-	    }
-	  _M_frames = nullptr;
-	  _M_capacity = 0;
 	  return nullptr;;
 	}
 
@@ -612,11 +626,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  _M_size = 0;
 	}
 
+	// Precondition: _M_capacity != 0
 	bool
 	_M_push_back(allocator_type& __alloc,
 		     const stacktrace_entry& __f) noexcept
 	{
-	  if (_M_size == _M_capacity)
+	  if (_M_size == _M_capacity) [[unlikely]]
 	    {
 	      _Impl __tmp;
 	      if (auto __f = __tmp._M_allocate(__alloc, _M_capacity * 2))
@@ -624,13 +639,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      else
 		return false;
 	      _M_deallocate(__alloc);
-	      std::swap(*this, __tmp);
+	      *this = __tmp;
 	    }
 	  stacktrace_entry* __addr = std::to_address(_M_frames + _M_size++);
 	  std::construct_at(__addr, __f);
 	  return true;
 	}
-
       };
 
       [[no_unique_address]] allocator_type  _M_alloc{};
