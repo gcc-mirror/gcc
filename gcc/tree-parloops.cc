@@ -3070,7 +3070,7 @@ gen_parallel_loop (class loop *loop,
 	= force_gimple_operand (many_iterations_cond, &stmts, false, NULL_TREE);
       if (stmts)
 	gsi_insert_seq_on_edge_immediate (loop_preheader_edge (loop), stmts);
-      if (!is_gimple_condexpr (many_iterations_cond))
+      if (!is_gimple_condexpr_for_cond (many_iterations_cond))
 	{
 	  many_iterations_cond
 	    = force_gimple_operand (many_iterations_cond, &stmts,

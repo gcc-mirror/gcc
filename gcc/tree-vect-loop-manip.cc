@@ -1260,8 +1260,8 @@ slpeel_add_loop_guard (basic_block guard_bb, tree cond,
   enter_e->flags |= EDGE_FALSE_VALUE;
   gsi = gsi_last_bb (guard_bb);
 
-  cond = force_gimple_operand_1 (cond, &gimplify_stmt_list, is_gimple_condexpr,
-				 NULL_TREE);
+  cond = force_gimple_operand_1 (cond, &gimplify_stmt_list,
+				 is_gimple_condexpr_for_cond, NULL_TREE);
   if (gimplify_stmt_list)
     gsi_insert_seq_after (&gsi, gimplify_stmt_list, GSI_NEW_STMT);
 
@@ -3478,8 +3478,8 @@ vect_loop_versioning (loop_vec_info loop_vinfo,
     {
       gimple_seq tem = NULL;
       cond_expr = force_gimple_operand_1 (unshare_expr (cond_expr),
-					  &tem,
-					  is_gimple_condexpr, NULL_TREE);
+					  &tem, is_gimple_condexpr_for_cond,
+					  NULL_TREE);
       gimple_seq_add_seq (&cond_expr_stmt_list, tem);
     }
 
@@ -3521,7 +3521,7 @@ vect_loop_versioning (loop_vec_info loop_vinfo,
 
   cond_expr = force_gimple_operand_1 (unshare_expr (cond_expr),
 				      &gimplify_stmt_list,
-				      is_gimple_condexpr, NULL_TREE);
+				      is_gimple_condexpr_for_cond, NULL_TREE);
   gimple_seq_add_seq (&cond_expr_stmt_list, gimplify_stmt_list);
 
   /* Compute the outermost loop cond_expr and cond_expr_stmt_list are

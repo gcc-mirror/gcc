@@ -1681,7 +1681,8 @@ loop_versioning::version_loop (class loop *loop)
 
   /* Convert the condition into a suitable gcond.  */
   gimple_seq stmts = NULL;
-  cond = force_gimple_operand_1 (cond, &stmts, is_gimple_condexpr, NULL_TREE);
+  cond = force_gimple_operand_1 (cond, &stmts, is_gimple_condexpr_for_cond,
+				 NULL_TREE);
 
   /* Version the loop.  */
   initialize_original_copy_tables ();
