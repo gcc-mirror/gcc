@@ -2889,7 +2889,8 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
 	  else
 	    {
 	      result = *ctx->global->values.get (res);
-	      if (result == NULL_TREE && !*non_constant_p)
+	      if (result == NULL_TREE && !*non_constant_p
+		  && !DECL_DESTRUCTOR_P (fun))
 		{
 		  if (!ctx->quiet)
 		    error ("%<constexpr%> call flows off the end "
