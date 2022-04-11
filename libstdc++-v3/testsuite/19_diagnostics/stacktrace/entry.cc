@@ -36,7 +36,8 @@ test_members()
   VERIFY( e1 != e2 );
   VERIFY( e1.description() == e2.description() );
   VERIFY( e1.source_file() == e2.source_file() );
-  VERIFY( e1.source_line() != e2.source_line() );
+  VERIFY( e1.source_line() == (__LINE__ - 5) );
+  VERIFY( e2.source_line() == (__LINE__ - 5) );
 
   std::stacktrace_entry e3 = []{
     return std::stacktrace::current().at(0);
@@ -44,10 +45,10 @@ test_members()
   VERIFY( e1 != e3 );
   VERIFY( e1.description() != e3.description() );
   VERIFY( e1.source_file() == e3.source_file() );
-  VERIFY( e1.source_line() != e3.source_line() );
+  VERIFY( e3.source_line() == (__LINE__ - 5) );
 }
 
 int main()
 {
-  test_constexpr();
+  test_members();
 }

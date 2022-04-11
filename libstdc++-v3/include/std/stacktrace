@@ -36,6 +36,7 @@
 #include <bits/stl_algo.h>
 #include <bits/stl_iterator.h>
 #include <bits/stl_uninitialized.h>
+#include <ext/numeric_traits.h>
 #include <cxxabi.h>
 
 struct __glibcxx_backtrace_state;
@@ -232,19 +233,42 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       // [stacktrace.basic.ctor], creation and assignment
 
+      [[__gnu__::__noinline__]]
       static basic_stacktrace
       current(const allocator_type& __alloc = allocator_type()) noexcept
       {
-	return current(0, size_type(-1), __alloc);
+	auto __state = stacktrace_entry::_S_init();
+	basic_stacktrace __ret(__alloc);
+	if (!__ret._M_reserve(64)) [[unlikely]]
+	  return __ret;
+
+	if (__glibcxx_backtrace_simple(__state, 1, _S_curr_cb(),
+				       nullptr, std::__addressof(__ret)))
+	  __ret._M_clear();
+
+	return __ret;
       }
 
+      [[__gnu__::__noinline__]]
       static basic_stacktrace
       current(size_type __skip,
 	      const allocator_type& __alloc = allocator_type()) noexcept
       {
-	return current(__skip, size_type(-1), __alloc);
+	auto __state = stacktrace_entry::_S_init();
+	basic_stacktrace __ret(__alloc);
+	if (__skip >= __INT_MAX__) [[unlikely]]
+	  return __ret;
+	if (!__ret._M_reserve(64)) [[unlikely]]
+	  return __ret;
+
+	if (__glibcxx_backtrace_simple(__state, __skip + 1, _S_curr_cb(),
+				       nullptr, std::__addressof(__ret)))
+	  __ret._M_clear();
+
+	return __ret;
       }
 
+      [[__gnu__::__noinline__]]
       static basic_stacktrace
       current(size_type __skip, size_type __max_depth,
 	      const allocator_type& __alloc = allocator_type()) noexcept
@@ -253,23 +277,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 	auto __state = stacktrace_entry::_S_init();
 	basic_stacktrace __ret(__alloc);
-	if (!__ret._M_reserve(std::min<int>(__max_depth, 64)))
+	if (__max_depth == 0 || __skip >= __INT_MAX__) [[unlikely]]
+	  return __ret;
+	if (!__ret._M_reserve(std::min<int>(__max_depth, 64))) [[unlikely]]
 	  return __ret;
 
-	auto __cb = [](void* __data, uintptr_t __pc) {
-	  auto& __s = *static_cast<basic_stacktrace*>(__data);
-	  stacktrace_entry __f;
-	  __f._M_pc = __pc;
-	  if (__s._M_push_back(__f))
-	    return 0;
-	  return 1;
-	};
+	if (__glibcxx_backtrace_simple(__state, __skip + 1, _S_curr_cb(),
+				       nullptr, std::__addressof(__ret)))
+	  __ret._M_clear();
+	else if (__ret.size() > __max_depth)
+	  __ret.resize(__max_depth);
 
-	if (__glibcxx_backtrace_simple(__state, __skip, +__cb, nullptr,
-				       std::__addressof(__ret)))
-	  {
-	    __ret._M_clear();
-	  }
 	return __ret;
       }
 
@@ -443,7 +461,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       [[nodiscard]] bool empty() const noexcept { return size() == 0; }
       size_type size() const noexcept { return _M_impl._M_size; }
-      size_type max_size() const noexcept { return size_type(-1); }
+
+      size_type
+      max_size() const noexcept
+      { return _Impl::_S_max_size(_M_impl._M_alloc); }
 
       const_reference
       operator[](size_type __n) const noexcept
@@ -507,6 +528,20 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_M_impl._M_deallocate(_M_alloc);
       }
 
+      static auto
+      _S_curr_cb() noexcept
+      -> int (*) (void*, uintptr_t)
+      {
+	return [](void* __data, uintptr_t __pc) {
+	  auto& __s = *static_cast<basic_stacktrace*>(__data);
+	  stacktrace_entry __f;
+	  __f._M_pc = __pc;
+	  if (__s._M_push_back(__f))
+	    return 0;
+	  return 1;
+	};
+      }
+
       struct _Impl
       {
 	using pointer = typename _AllocTraits::pointer;
@@ -515,21 +550,33 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	size_type _M_size     = 0;
 	size_type _M_capacity = 0;
 
+	static size_type
+	_S_max_size(const allocator_type& __alloc) noexcept
+	{
+	  const size_t __size_max = __gnu_cxx::__int_traits<size_type>::__max;
+	  const size_t __alloc_max = _AllocTraits::max_size(__alloc);
+	  return std::min(__size_max, __alloc_max);
+	}
+
 	// Precondition: _M_frames == nullptr
 	pointer
 	_M_allocate(allocator_type& __alloc, size_type __n) noexcept
 	{
 	  __try
 	    {
-	      _M_frames = __n ? __alloc.allocate(__n) : nullptr;
-	      _M_capacity = __n;
+	      if (0 < __n && __n <= _S_max_size(__alloc)) [[unlikely]]
+		{
+		  _M_frames = __alloc.allocate(__n);
+		  _M_capacity = __n;
+		  return _M_frames;
+		}
 	    }
 	  __catch (...)
 	    {
-	      _M_frames = nullptr;
-	      _M_capacity = 0;
 	    }
-	  return _M_frames;
+	  _M_frames = nullptr;
+	  _M_capacity = 0;
+	  return nullptr;;
 	}
 
 	void
