@@ -208,6 +208,13 @@ is
      Ghost,
      Post => abs (X * Y) = abs X * abs Y;
 
+   procedure Lemma_Abs_Range (X : Big_Integer)
+   with
+     Ghost,
+     Pre  => In_Double_Int_Range (X),
+     Post => abs (X) <= Big_2xxDouble_Minus_1
+       and then In_Double_Int_Range (-abs (X));
+
    procedure Lemma_Abs_Rem_Commutation (X, Y : Big_Integer)
    with
      Ghost,
@@ -301,6 +308,20 @@ is
      Post => Shift_Left (Shift_Left (X, S), S1) = Shift_Left (X, S + S1);
 
    procedure Lemma_Double_Shift (X : Double_Uns; S, S1 : Natural)
+   with
+     Ghost,
+     Pre  => S <= Double_Size - S1,
+     Post => Shift_Left (Shift_Left (X, S), S1) = Shift_Left (X, S + S1);
+
+   procedure Lemma_Double_Shift_Left (X : Double_Uns; S, S1 : Double_Uns)
+   with
+     Ghost,
+     Pre  => S <= Double_Uns (Double_Size)
+       and then S1 <= Double_Uns (Double_Size),
+     Post => Shift_Left (Shift_Left (X, Natural (S)), Natural (S1)) =
+             Shift_Left (X, Natural (S + S1));
+
+   procedure Lemma_Double_Shift_Left (X : Double_Uns; S, S1 : Natural)
    with
      Ghost,
      Pre  => S <= Double_Size - S1,
@@ -505,6 +526,13 @@ is
      Pre  => A = B * Q + R and then R < B,
      Post => Q = A / B and then R = A rem B;
 
+   procedure Lemma_Shift_Left (X : Double_Uns; Shift : Natural)
+   with
+     Ghost,
+     Pre  => Shift < Double_Size
+       and then Big (X) * Big_2xx (Shift) < Big_2xxDouble,
+     Post => Big (Shift_Left (X, Shift)) = Big (X) * Big_2xx (Shift);
+
    procedure Lemma_Shift_Right (X : Double_Uns; Shift : Natural)
    with
      Ghost,
@@ -560,10 +588,10 @@ is
    procedure Inline_Le3 (X1, X2, X3, Y1, Y2, Y3 : Single_Uns) is null;
    procedure Lemma_Abs_Commutation (X : Double_Int) is null;
    procedure Lemma_Abs_Mult_Commutation (X, Y : Big_Integer) is null;
+   procedure Lemma_Abs_Range (X : Big_Integer) is null;
    procedure Lemma_Add_Commutation (X : Double_Uns; Y : Single_Uns) is null;
    procedure Lemma_Add_One (X : Double_Uns) is null;
    procedure Lemma_Bounded_Powers_Of_2_Increasing (M, N : Natural) is null;
-   procedure Lemma_Concat_Definition (X, Y : Single_Uns) is null;
    procedure Lemma_Deep_Mult_Commutation
      (Factor : Big_Integer;
       X, Y   : Single_Uns)
@@ -581,6 +609,8 @@ is
    procedure Lemma_Double_Big_2xxSingle is null;
    procedure Lemma_Double_Shift (X : Double_Uns; S, S1 : Double_Uns) is null;
    procedure Lemma_Double_Shift (X : Single_Uns; S, S1 : Natural) is null;
+   procedure Lemma_Double_Shift_Left (X : Double_Uns; S, S1 : Double_Uns)
+   is null;
    procedure Lemma_Double_Shift_Right (X : Double_Uns; S, S1 : Double_Uns)
    is null;
    procedure Lemma_Ge_Commutation (A, B : Double_Uns) is null;
@@ -949,6 +979,7 @@ is
                   pragma Assert (if X = Double_Int'First and then Round then
                                     Mult > Big_2xxDouble);
                elsif Ylo > 0 then
+                  pragma Assert (Double_Uns'(Ylo * Zhi) > 0);
                   pragma Assert (Big (Double_Uns'(Ylo * Zhi)) > 0);
                   pragma Assert (if X = Double_Int'First and then Round then
                                     Mult > Big_2xxDouble);
@@ -1024,15 +1055,24 @@ is
             pragma Assert (Big (Double_Uns (Hi (T2))) >= 1);
             pragma Assert (Big (Double_Uns (Lo (T2))) >= 0);
             pragma Assert (Big (Double_Uns (Lo (T1))) >= 0);
+            pragma Assert (Mult >= Big_2xxDouble * Big (Double_Uns (Hi (T2))));
             pragma Assert (Mult >= Big_2xxDouble);
             if Hi (T2) > 1 then
                pragma Assert (Big (Double_Uns (Hi (T2))) > 1);
+               pragma Assert (if X = Double_Int'First and then Round then
+                                 Mult > Big_2xxDouble);
             elsif Lo (T2) > 0 then
                pragma Assert (Big (Double_Uns (Lo (T2))) > 0);
+               pragma Assert (if X = Double_Int'First and then Round then
+                                 Mult > Big_2xxDouble);
             elsif Lo (T1) > 0 then
                pragma Assert (Double_Uns (Lo (T1)) > 0);
                Lemma_Gt_Commutation (Double_Uns (Lo (T1)), 0);
                pragma Assert (Big (Double_Uns (Lo (T1))) > 0);
+               pragma Assert (if X = Double_Int'First and then Round then
+                                 Mult > Big_2xxDouble);
+            else
+               pragma Assert (not (X = Double_Int'First and then Round));
             end if;
             Prove_Quotient_Zero;
          end if;
@@ -1172,6 +1212,18 @@ is
       end if;
    end Lemma_Abs_Rem_Commutation;
 
+   -----------------------------
+   -- Lemma_Concat_Definition --
+   -----------------------------
+
+   procedure Lemma_Concat_Definition (X, Y : Single_Uns) is
+      Hi : constant Double_Uns := Shift_Left (Double_Uns (X), Single_Size);
+      Lo : constant Double_Uns := Double_Uns (Y);
+   begin
+      pragma Assert (Hi = Double_Uns'(2 ** Single_Size) * Double_Uns (X));
+      pragma Assert ((Hi or Lo) = Hi + Lo);
+   end Lemma_Concat_Definition;
+
    ------------------------
    -- Lemma_Double_Shift --
    ------------------------
@@ -1184,6 +1236,19 @@ is
       pragma Assert (Shift_Left (X, S + S1)
         = Shift_Left (X, Natural (Double_Uns (S + S1))));
    end Lemma_Double_Shift;
+
+   -----------------------------
+   -- Lemma_Double_Shift_Left --
+   -----------------------------
+
+   procedure Lemma_Double_Shift_Left (X : Double_Uns; S, S1 : Natural) is
+   begin
+      Lemma_Double_Shift_Left (X, Double_Uns (S), Double_Uns (S1));
+      pragma Assert (Shift_Left (Shift_Left (X, S), S1)
+        = Shift_Left (Shift_Left (X, S), Natural (Double_Uns (S1))));
+      pragma Assert (Shift_Left (X, S + S1)
+        = Shift_Left (X, Natural (Double_Uns (S + S1))));
+   end Lemma_Double_Shift_Left;
 
    ------------------------------
    -- Lemma_Double_Shift_Right --
@@ -1328,15 +1393,78 @@ is
       Lemma_Neg_Rem (X, Y);
    end Lemma_Rem_Abs;
 
+   ----------------------
+   -- Lemma_Shift_Left --
+   ----------------------
+
+   procedure Lemma_Shift_Left (X : Double_Uns; Shift : Natural) is
+
+      procedure Lemma_Mult_Pow2 (X : Double_Uns; I : Natural)
+      with
+        Ghost,
+        Pre  => I < Double_Size - 1,
+        Post => X * Double_Uns'(2) ** I * Double_Uns'(2)
+          = X * Double_Uns'(2) ** (I + 1);
+
+      procedure Lemma_Mult_Pow2 (X : Double_Uns; I : Natural) is
+         Mul1 : constant Double_Uns := Double_Uns'(2) ** I;
+         Mul2 : constant Double_Uns := Double_Uns'(2);
+         Left : constant Double_Uns := X * Mul1 * Mul2;
+      begin
+         pragma Assert (Left = X * (Mul1 * Mul2));
+         pragma Assert (Mul1 * Mul2 = Double_Uns'(2) ** (I + 1));
+      end Lemma_Mult_Pow2;
+
+      XX : Double_Uns := X;
+
+   begin
+      for J in 1 .. Shift loop
+         declare
+            Cur_XX : constant Double_Uns := XX;
+         begin
+            XX := Shift_Left (XX, 1);
+            pragma Assert (XX = Cur_XX * Double_Uns'(2));
+            Lemma_Mult_Pow2 (X, J - 1);
+         end;
+         Lemma_Double_Shift_Left (X, J - 1, 1);
+         pragma Loop_Invariant (XX = Shift_Left (X, J));
+         pragma Loop_Invariant (XX = X * Double_Uns'(2) ** J);
+      end loop;
+   end Lemma_Shift_Left;
+
    -----------------------
    -- Lemma_Shift_Right --
    -----------------------
 
    procedure Lemma_Shift_Right (X : Double_Uns; Shift : Natural) is
+
+      procedure Lemma_Div_Pow2 (X : Double_Uns; I : Natural)
+      with
+        Ghost,
+        Pre  => I < Double_Size - 1,
+        Post => X / Double_Uns'(2) ** I / Double_Uns'(2)
+          = X / Double_Uns'(2) ** (I + 1);
+
+      procedure Lemma_Div_Pow2 (X : Double_Uns; I : Natural) is
+         Div1 : constant Double_Uns := Double_Uns'(2) ** I;
+         Div2 : constant Double_Uns := Double_Uns'(2);
+         Left : constant Double_Uns := X / Div1 / Div2;
+      begin
+         pragma Assert (Left = X / (Div1 * Div2));
+         pragma Assert (Div1 * Div2 = Double_Uns'(2) ** (I + 1));
+      end Lemma_Div_Pow2;
+
       XX : Double_Uns := X;
+
    begin
       for J in 1 .. Shift loop
-         XX := Shift_Right (XX, 1);
+         declare
+            Cur_XX : constant Double_Uns := XX;
+         begin
+            XX := Shift_Right (XX, 1);
+            pragma Assert (XX = Cur_XX / Double_Uns'(2));
+            Lemma_Div_Pow2 (X, J - 1);
+         end;
          Lemma_Double_Shift_Right (X, J - 1, 1);
          pragma Loop_Invariant (XX = Shift_Right (X, J));
          pragma Loop_Invariant (XX = X / Double_Uns'(2) ** J);
@@ -1607,6 +1735,7 @@ is
                              "Intentional Unsigned->Signed conversion");
          else
             Prove_Neg_Int;
+            Lemma_Abs_Range (Big (X) * Big (Y));
             return To_Neg_Int (T2);
          end if;
       else -- X < 0
@@ -1617,6 +1746,7 @@ is
                              "Intentional Unsigned->Signed conversion");
          else
             Prove_Neg_Int;
+            Lemma_Abs_Range (Big (X) * Big (Y));
             return To_Neg_Int (T2);
          end if;
       end if;
@@ -1901,6 +2031,9 @@ is
 
       procedure Prove_Dividend_Scaling is
       begin
+         Lemma_Shift_Left (D (1) & D (2), Scale);
+         Lemma_Shift_Left (Double_Uns (D (3)), Scale);
+         Lemma_Shift_Left (Double_Uns (D (4)), Scale);
          Lemma_Hi_Lo (D (1) & D (2), D (1), D (2));
          pragma Assert (Mult * Big_2xx (Scale) =
            Big_2xxSingle
@@ -2116,6 +2249,7 @@ is
          pragma Assert (Double_Uns (Lo (T1 rem Zlo)) = T1 rem Zlo);
          Lemma_Hi_Lo (T2, Lo (T1 rem Zlo), D (4));
          pragma Assert (T1 rem Zlo + Double_Uns'(1) <= Double_Uns (Zlo));
+         Lemma_Ge_Commutation (Double_Uns (Zlo), T1 rem Zlo + Double_Uns'(1));
          Lemma_Add_Commutation (T1 rem Zlo, 1);
          pragma Assert (Big (T1 rem Zlo) + 1 <= Big (Double_Uns (Zlo)));
          Lemma_Div_Definition (T2, Zlo, T2 / Zlo, Ru);
@@ -2567,6 +2701,21 @@ is
                elsif D (J) = Zhi then
                   Qd (J) := Single_Uns'Last;
 
+                  Lemma_Concat_Definition (D (J), D (J + 1));
+                  pragma Assert (Big_2xxSingle > Big (Double_Uns (D (J + 2))));
+                  pragma Assert (Big3 (D (J), D (J + 1), 0) + Big_2xxSingle
+                                 > Big3 (D (J), D (J + 1), D (J + 2)));
+                  pragma Assert (Big (Double_Uns'(0)) = 0);
+                  pragma Assert (Big (D (J) & D (J + 1)) * Big_2xxSingle =
+                    Big_2xxSingle * (Big_2xxSingle * Big (Double_Uns (D (J)))
+                                              + Big (Double_Uns (D (J + 1)))));
+                  pragma Assert (Big (D (J) & D (J + 1)) * Big_2xxSingle =
+                    Big_2xxSingle * Big_2xxSingle * Big (Double_Uns (D (J)))
+                               + Big_2xxSingle * Big (Double_Uns (D (J + 1))));
+                  pragma Assert (Big (D (J) & D (J + 1)) * Big_2xxSingle
+                                 = Big3 (D (J), D (J + 1), 0));
+                  pragma Assert ((Big (D (J) & D (J + 1)) + 1) * Big_2xxSingle
+                                 = Big3 (D (J), D (J + 1), 0) + Big_2xxSingle);
                   Lemma_Gt_Mult (Big (Zu), Big (D (J) & D (J + 1)) + 1,
                                  Big_2xxSingle,
                                  Big3 (D (J), D (J + 1), D (J + 2)));
@@ -2617,6 +2766,8 @@ is
                   pragma Loop_Invariant (Qd (J)'Initialized);
                   pragma Loop_Invariant
                     (Big3 (S1, S2, S3) = Big (Double_Uns (Qd (J))) * Big (Zu));
+                  pragma Loop_Invariant
+                    (Big3 (S1, S2, S3) > Big3 (D (J), D (J + 1), D (J + 2)));
                   pragma Assert (Big3 (S1, S2, S3) > 0);
                   if Qd (J) = 0 then
                      pragma Assert (Big3 (S1, S2, S3) = 0);
@@ -2632,6 +2783,9 @@ is
                     (Big3 (S1, S2, S3) >
                        Big3 (D (J), D (J + 1), D (J + 2)) - Big (Zu));
                   Lemma_Subtract_Commutation (Double_Uns (Qd (J)), 1);
+                  pragma Assert (Double_Uns (Qd (J)) - Double_Uns'(1)
+                                 = Double_Uns (Qd (J) - 1));
+                  pragma Assert (Big (Double_Uns'(1)) = 1);
                   Lemma_Substitution (Big3 (S1, S2, S3), Big (Zu),
                                       Big (Double_Uns (Qd (J))) - 1,
                                       Big (Double_Uns (Qd (J) - 1)), 0);
@@ -2660,8 +2814,7 @@ is
 
                pragma Assert (Big3 (D (J), D (J + 1), D (J + 2)) < Big (Zu));
                if D (J) > 0 then
-                  pragma Assert
-                    (Big_2xxSingle * Big_2xxSingle = Big_2xxDouble);
+                  Lemma_Double_Big_2xxSingle;
                   pragma Assert (Big3 (D (J), D (J + 1), D (J + 2)) =
                     Big_2xxSingle
                       * Big_2xxSingle * Big (Double_Uns (D (J)))
@@ -2671,9 +2824,22 @@ is
                     Big_2xxDouble * Big (Double_Uns (D (J)))
                   + Big_2xxSingle * Big (Double_Uns (D (J + 1)))
                                   + Big (Double_Uns (D (J + 2))));
+                  pragma Assert (Big_2xxSingle >= 0);
+                  pragma Assert (Big (Double_Uns (D (J + 1))) >= 0);
+                  pragma Assert
+                    (Big_2xxSingle * Big (Double_Uns (D (J + 1))) >= 0);
+                  pragma Assert
+                    (Big_2xxSingle * Big (Double_Uns (D (J + 1)))
+                                   + Big (Double_Uns (D (J + 2))) >= 0);
                   pragma Assert (Big3 (D (J), D (J + 1), D (J + 2)) >=
                                    Big_2xxDouble * Big (Double_Uns (D (J))));
                   Lemma_Ge_Commutation (Double_Uns (D (J)), Double_Uns'(1));
+                  Lemma_Ge_Mult (Big (Double_Uns (D (J))),
+                                 Big (Double_Uns'(1)),
+                                 Big_2xxDouble,
+                                 Big (Double_Uns'(1)) * Big_2xxDouble);
+                  pragma Assert
+                    (Big_2xxDouble * Big (Double_Uns'(1)) = Big_2xxDouble);
                   pragma Assert
                     (Big3 (D (J), D (J + 1), D (J + 2)) >= Big_2xxDouble);
                   pragma Assert (False);
@@ -3039,6 +3205,7 @@ is
             begin
                pragma Assert (Ru = Double_Uns (X) - Double_Uns (Y));
                if Ru < 2 ** (Double_Size - 1) then  --  R >= 0
+                  pragma Assert (To_Uns (Y) <= To_Uns (X));
                   Lemma_Subtract_Double_Uns (X => Y, Y => X);
                   pragma Assert (Ru = Double_Uns (X - Y));
 
