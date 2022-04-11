@@ -1,3 +1,37 @@
+2022-04-10  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2022-04-05  Harald Anlauf  <anlauf@gmx.de>
+		    Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/105138
+	* intrinsic.c (gfc_is_intrinsic): When a symbol refers to a
+	RECURSIVE procedure, it cannot be an INTRINSIC.
+
+2022-04-10  Mikael Morin  <mikael@gcc.gnu.org>
+
+	Backported from master:
+	2022-03-19  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/104228
+	PR fortran/104570
+	* parse.c (parse_associate): Use a new distinct gfc_charlen if the
+	copied type has one whose length is not known to be constant.
+	* resolve.c (resolve_assoc_var): Reset charlen if it’s shared with
+	the associate target regardless of the expression type.
+	Don’t reinitialize charlen if it’s deferred.
+
+2022-04-10  Mikael Morin  <mikael@gcc.gnu.org>
+
+	Backported from master:
+	2022-02-13  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/104228
+	* resolve.c (resolve_assoc_var): Also create a new character
+	length for non-dummy associate targets.
+	* trans-stmt.c (trans_associate_var): Initialize character length
+	even if no temporary is used for the associate variable.
+
 2022-04-07  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:
