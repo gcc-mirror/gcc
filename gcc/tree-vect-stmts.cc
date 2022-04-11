@@ -10512,7 +10512,7 @@ vectorizable_condition (vec_info *vinfo,
 	      bool honor_nans = HONOR_NANS (TREE_TYPE (cond.op0));
 	      tree_code orig_code = cond.code;
 	      cond.code = invert_tree_comparison (cond.code, honor_nans);
-	      if (loop_vinfo->scalar_cond_masked_set.contains (cond))
+	      if (!masked && loop_vinfo->scalar_cond_masked_set.contains (cond))
 		{
 		  masks = &LOOP_VINFO_MASKS (loop_vinfo);
 		  cond_code = cond.code;
