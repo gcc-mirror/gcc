@@ -301,7 +301,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { }
 
       basic_stacktrace(const basic_stacktrace& __other) noexcept
-      : basic_stacktrace(__other, __other._M_alloc)
+      : basic_stacktrace(__other,
+	  _AllocTraits::select_on_container_copy_construction(__other._M_alloc))
       { }
 
       basic_stacktrace(basic_stacktrace&& __other) noexcept
@@ -326,13 +327,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       : _M_alloc(__alloc)
       {
 	if constexpr (_Allocator::is_always_equal::value)
-	  {
-	    _M_impl = std::__exchange(__other._M_impl, {});
-	  }
+	  _M_impl = std::__exchange(__other._M_impl, {});
 	else if (_M_alloc == __other._M_alloc)
-	  {
-	    _M_impl = std::__exchange(__other._M_impl, {});
-	  }
+	  _M_impl = std::__exchange(__other._M_impl, {});
+	else if (const auto __s = __other._M_impl._M_size)
+	  if (auto __f = _M_impl._M_allocate(_M_alloc, __s))
+	    {
+	      std::uninitialized_copy_n(__other.begin(), __s, __f);
+	      _M_impl._M_size = __s;
+	    }
       }
 
       basic_stacktrace&
@@ -361,9 +364,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    // Need to allocate new storage.
 	    _M_clear();
 
-	    // Use the allocator we will have after this function returns.
-	    auto& __alloc = __pocca ? __other._M_alloc : _M_alloc;
-	    if (auto __f = _M_impl._M_allocate(__alloc, __s))
+	    if constexpr (__pocca)
+	      _M_alloc = __other._M_alloc;
+
+	    if (auto __f = _M_impl._M_allocate(_M_alloc, __s))
 	      {
 		std::uninitialized_copy_n(__other.begin(), __s, __f);
 		_M_impl._M_size = __s;
@@ -376,10 +380,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    auto __to = std::copy_n(__other.begin(), __s, begin());
 	    std::destroy(__to, end());
 	    _M_impl._M_size = __s;
-	  }
 
-	if constexpr (__pocca)
-	  _M_alloc = __other._M_alloc;
+	    if constexpr (__pocca)
+	      _M_alloc = __other._M_alloc;
+	  }
 
 	return *this;
       }
@@ -397,19 +401,26 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  std::swap(_M_impl, __other._M_impl);
 	else if (_M_alloc == __other._M_alloc)
 	  std::swap(_M_impl, __other._M_impl);
-	else
+	else if constexpr (__pocma)
 	  {
-	    const auto __s = __other.size();
+	    // Free current storage and take ownership of __other's storage.
+	    _M_clear();
+	    _M_impl = std::__exchange(__other._M_impl, {});
+	  }
+	else // Allocators are unequal and don't propagate.
+	  {
+	    const size_type __s = __other.size();
 
-	    if constexpr (__pocma || _M_impl._M_capacity < __s)
+	    if (_M_impl._M_capacity < __s)
 	      {
 		// Need to allocate new storage.
 		_M_clear();
 
-		// Use the allocator we will have after this function returns.
-		auto& __alloc = __pocma ? __other._M_alloc : _M_alloc;
-		if (auto __f = _M_impl._M_allocate(__alloc, __s))
-		  std::uninitialized_copy_n(__other.begin(), __s, __f);
+		if (auto __f = _M_impl._M_allocate(_M_alloc, __s))
+		  {
+		    std::uninitialized_copy_n(__other.begin(), __s, __f);
+		    _M_impl._M_size = __s;
+		  }
 	      }
 	    else
 	      {
@@ -420,8 +431,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		auto __to = std::copy(__first, __mid, begin());
 		__to = std::uninitialized_copy(__mid, __last, __to);
 		std::destroy(__to, end());
+		_M_impl._M_size = __s;
 	      }
-	    _M_impl._M_size = __s;
 	  }
 
 	if constexpr (__pocma)
@@ -503,9 +514,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       void
       swap(basic_stacktrace& __other) noexcept
       {
-	std::swap(_M_impl. __other._M_impl);
+	std::swap(_M_impl, __other._M_impl);
 	if constexpr (_AllocTraits::propagate_on_container_swap::value)
 	  std::swap(_M_alloc, __other._M_alloc);
+	else if constexpr (!_AllocTraits::is_always_equal::value)
+	  {
+	    __glibcxx_assert(_M_alloc == __other._M_alloc);
+	  }
       }
 
     private:
