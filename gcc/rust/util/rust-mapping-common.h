@@ -55,6 +55,7 @@ struct DefId
   {
     std::string buf;
     buf += std::to_string (crateNum);
+    buf += " "; // or anything else
     buf += std::to_string (localDefId);
     return buf;
   }
