@@ -184,6 +184,13 @@ struct CompileOptions
   bool enable_test = false;
   bool debug_assertions = false;
   bool proc_macro = false;
+  enum Edition
+  {
+    E2015 = 0,
+    E2018,
+    E2021,
+  } edition
+    = E2015;
 
   bool dump_option_enabled (DumpOption option) const
   {
@@ -210,6 +217,11 @@ struct CompileOptions
     // TODO: validate the crate name?
     crate_name = std::move (name);
     return true;
+  }
+
+  void set_edition (int raw_edition)
+  {
+    edition = static_cast<Edition> (raw_edition);
   }
 };
 
