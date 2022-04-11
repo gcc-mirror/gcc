@@ -37,8 +37,7 @@ HIRCompileBase::setup_attributes_on_fndecl (
 {
   // if its the main fn or pub visibility mark its as DECL_PUBLIC
   // please see https://github.com/Rust-GCC/gccrs/pull/137
-  bool is_pub
-    = visibility.get_vis_type () != HIR::Visibility::PublicVisType::NONE;
+  bool is_pub = visibility.get_vis_type () == HIR::Visibility::VisType::PUBLIC;
   if (is_main_entry_point || is_pub)
     {
       TREE_PUBLIC (fndecl) = 1;

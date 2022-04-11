@@ -84,9 +84,8 @@ CompileTraitItem::visit (HIR::TraitItemFunc &func)
     &canonical_path);
   rust_assert (ok);
 
-  // FIXME
-  HIR::Visibility vis (HIR::Visibility::PublicVisType::NONE,
-		       AST::SimplePath::create_empty ());
+  // FIXME: Get from lowering the item's visibility instead
+  auto vis = HIR::Visibility::create_public ();
   HIR::TraitFunctionDecl &function = func.get_decl ();
   tree fndecl
     = compile_function (ctx, function.get_function_name (),

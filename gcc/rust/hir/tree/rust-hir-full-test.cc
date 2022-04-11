@@ -118,18 +118,12 @@ Crate::as_string () const
 std::string
 Visibility::as_string () const
 {
-  switch (public_vis_type)
+  switch (vis_type)
     {
-    case NONE:
-      return std::string ("pub");
-    case CRATE:
-      return std::string ("pub(crate)");
-    case SELF:
-      return std::string ("pub(self)");
-    case SUPER:
-      return std::string ("pub(super)");
-    case IN_PATH:
-      return std::string ("pub(in ") + in_path.as_string () + std::string (")");
+    case PRIVATE:
+      return std::string ("private");
+    case PUBLIC:
+      return std::string ("pub(in ") + path.as_string () + std::string (")");
     default:
       gcc_unreachable ();
     }
