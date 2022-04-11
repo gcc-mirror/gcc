@@ -4682,7 +4682,6 @@ build_operator_new_call (tree fnname, vec<tree, va_gc> **args,
 
      we disregard block-scope declarations of "operator new".  */
   fns = lookup_name_real (fnname, 0, 1, /*block_p=*/false, 0, 0);
-  fns = lookup_arg_dependent (fnname, fns, *args);
 
   if (align_arg)
     {
