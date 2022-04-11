@@ -20,6 +20,9 @@
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
 
+# TODO: Extract riscv_subset_t from riscv-common.cc and make it can be compiled
+#       standalone to replace this script, that also prevents us implementing
+#       that twice and keep sync again and again.
 
 from __future__ import print_function
 import sys
@@ -35,21 +38,30 @@ LONG_EXT_PREFIXES = ['z', 's', 'h', 'x']
 # IMPLIED_EXT(ext) -> implied extension list.
 #
 IMPLIED_EXT = {
-  "d" : ["f"],
-  "zk" : ["zkn"],
-  "zk" : ["zkr"],
-  "zk" : ["zkt"],
-  "zkn" : ["zbkb"],
-  "zkn" : ["zbkc"],
-  "zkn" : ["zbkx"],
-  "zkn" : ["zkne"],
-  "zkn" : ["zknd"],
-  "zkn" : ["zknh"],
-  "zks" : ["zbkb"],
-  "zks" : ["zbkc"],
-  "zks" : ["zbkx"],
-  "zks" : ["zksed"],
-  "zks" : ["zksh"],
+  "d" : ["f", "zicsr"],
+  "f" : ["zicsr"],
+  "zk" : ["zkn", "zkr", "zkt"],
+  "zkn" : ["zbkb", "zbkc", "zbkx", "zkne", "zknd", "zknh"],
+  "zks" : ["zbkb", "zbkc", "zbkx", "zksed", "zksh"],
+
+  "v" : ["zvl128b", "zve64d"],
+  "zve32x" : ["zvl32b"],
+  "zve64x" : ["zve32x", "zvl64b"],
+  "zve32f" : ["f", "zve32x"],
+  "zve64f" : ["f", "zve32f", "zve64x"],
+  "zve64d" : ["d", "zve64f"],
+
+  "zvl64b" : ["zvl32b"],
+  "zvl128b" : ["zvl64b"],
+  "zvl256b" : ["zvl128b"],
+  "zvl512b" : ["zvl256b"],
+  "zvl1024b" : ["zvl512b"],
+  "zvl2048b" : ["zvl1024b"],
+  "zvl4096b" : ["zvl2048b"],
+  "zvl8192b" : ["zvl4096b"],
+  "zvl16384b" : ["zvl8192b"],
+  "zvl32768b" : ["zvl16384b"],
+  "zvl65536b" : ["zvl32768b"],
 }
 
 def arch_canonicalize(arch):
@@ -77,12 +89,16 @@ def arch_canonicalize(arch):
   #
   # Handle implied extensions.
   #
-  for ext in std_exts + long_exts:
-    if ext in IMPLIED_EXT:
-      implied_exts = IMPLIED_EXT[ext]
-      for implied_ext in implied_exts:
-        if implied_ext not in std_exts + long_exts:
-          long_exts.append(implied_ext)
+  any_change = True
+  while any_change:
+    any_change = False
+    for ext in std_exts + long_exts:
+      if ext in IMPLIED_EXT:
+        implied_exts = IMPLIED_EXT[ext]
+        for implied_ext in implied_exts:
+          if implied_ext not in std_exts + long_exts:
+            long_exts.append(implied_ext)
+            any_change = True
 
   # Single letter extension might appear in the long_exts list,
   # becasue we just append extensions list to the arch string.
