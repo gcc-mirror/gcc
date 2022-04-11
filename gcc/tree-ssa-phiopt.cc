@@ -1454,6 +1454,7 @@ value_replacement (basic_block cond_bb, basic_block middle_bb,
 		  imm_use_iterator imm_iter;
 		  tree phires = gimple_phi_result (phi);
 		  tree temp = NULL_TREE;
+		  bool reset_p = false;
 
 		  /* Add # DEBUG D#1 => arg != carg ? arg : oarg.  */
 		  FOR_EACH_IMM_USE_STMT (use_stmt, imm_iter, phires)
@@ -1462,6 +1463,16 @@ value_replacement (basic_block cond_bb, basic_block middle_bb,
 			continue;
 		      if (temp == NULL_TREE)
 			{
+			  if (!single_pred_p (middle_bb)
+			      || EDGE_COUNT (gimple_bb (phi)->preds) != 2)
+			    {
+			      /* But only if middle_bb has a single
+				 predecessor and phi bb has two, otherwise
+				 we could use a SSA_NAME not usable in that
+				 place or wrong-debug.  */
+			      reset_p = true;
+			      break;
+			    }
 			  gimple_stmt_iterator gsi
 			    = gsi_after_labels (gimple_bb (phi));
 			  tree type = TREE_TYPE (phires);
@@ -1476,6 +1487,8 @@ value_replacement (basic_block cond_bb, basic_block middle_bb,
 			replace_exp (use_p, temp);
 		      update_stmt (use_stmt);
 		    }
+		  if (reset_p)
+		    reset_debug_uses (phi);
 		}
 	    }
 	  if (equal_p)
