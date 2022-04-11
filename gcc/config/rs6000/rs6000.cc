@@ -25678,10 +25678,19 @@ rs6000_sibcall_aix (rtx value, rtx func_desc, rtx tlsarg, rtx cookie)
   rtx r12 = NULL_RTX;
   rtx func_addr = func_desc;
 
-  gcc_assert (INTVAL (cookie) == 0);
-
   if (global_tlsarg)
     tlsarg = global_tlsarg;
+
+  /* Handle longcall attributes.  */
+  if (INTVAL (cookie) & CALL_LONG && SYMBOL_REF_P (func_desc))
+    {
+      /* PCREL can do a sibling call to a longcall function
+	 because we don't need to restore the TOC register.  */
+      gcc_assert (rs6000_pcrel_p ());
+      func_desc = rs6000_longcall_ref (func_desc, tlsarg);
+    }
+  else
+    gcc_assert (INTVAL (cookie) == 0);
 
   /* For ELFv2, r12 and CTR need to hold the function address
      for an indirect call.  */
