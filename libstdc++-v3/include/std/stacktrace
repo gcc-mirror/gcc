@@ -579,7 +579,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	{
 	  __try
 	    {
-	      if (0 < __n && __n <= _S_max_size(__alloc)) [[unlikely]]
+	      if (0 < __n && __n <= _S_max_size(__alloc)) [[likely]]
 		{
 		  _M_frames = __alloc.allocate(__n);
 		  _M_capacity = __n;
