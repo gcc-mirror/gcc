@@ -13460,7 +13460,7 @@ There are also built-in versions of the ISO C99 functions
 @code{expl}, @code{fabsf}, @code{fabsl}, @code{floorf}, @code{floorl},
 @code{fmodf}, @code{fmodl}, @code{frexpf}, @code{frexpl}, @code{ldexpf},
 @code{ldexpl}, @code{log10f}, @code{log10l}, @code{logf}, @code{logl},
-@code{modfl}, @code{modf}, @code{powf}, @code{powl}, @code{sinf},
+@code{modfl}, @code{modff}, @code{powf}, @code{powl}, @code{sinf},
 @code{sinhf}, @code{sinhl}, @code{sinl}, @code{sqrtf}, @code{sqrtl},
 @code{tanf}, @code{tanhf}, @code{tanhl} and @code{tanl}
 that are recognized in any mode since ISO C90 reserves these names for
