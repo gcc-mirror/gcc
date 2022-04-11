@@ -672,7 +672,7 @@ free_lang_data_in_decl (tree decl, class free_lang_data_d *fld)
         }
     }
   /* We need to keep field decls associated with their trees. Otherwise tree
-     merging may merge some fileds and keep others disjoint wich in turn will
+     merging may merge some fields and keep others disjoint which in turn will
      not do well with TREE_CHAIN pointers linking them.
 
      Also do not drop containing types for virtual methods and tables because
