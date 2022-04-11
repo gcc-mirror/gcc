@@ -609,7 +609,17 @@ set_cleanup_locs (tree stmts, location_t loc)
 {
   if (TREE_CODE (stmts) == CLEANUP_STMT)
     {
-      protected_set_expr_location (CLEANUP_EXPR (stmts), loc);
+      tree t = CLEANUP_EXPR (stmts);
+      protected_set_expr_location (t, loc);
+      /* Avoid locus differences for C++ cdtor calls depending on whether
+	 cdtor_returns_this: a conversion to void is added to discard the return
+	 value, and this conversion ends up carrying the location, and when it
+	 gets discarded, the location is lost.  So hold it in the call as
+	 well.  */
+      if (TREE_CODE (t) == NOP_EXPR
+	  && TREE_TYPE (t) == void_type_node
+	  && TREE_CODE (TREE_OPERAND (t, 0)) == CALL_EXPR)
+	protected_set_expr_location (TREE_OPERAND (t, 0), loc);
       set_cleanup_locs (CLEANUP_BODY (stmts), loc);
     }
   else if (TREE_CODE (stmts) == STATEMENT_LIST)
