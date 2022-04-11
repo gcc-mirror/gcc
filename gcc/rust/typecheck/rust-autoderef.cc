@@ -116,7 +116,7 @@ Adjuster::try_unsize_type (const TyTy::BaseType *ty)
 			   TyTy::TyVar (slice_elem->get_ref ()));
   context->insert_implicit_type (slice);
 
-  return Adjustment (Adjustment::AdjustmentType::INDIRECTION, slice);
+  return Adjustment (Adjustment::AdjustmentType::UNSIZE, slice);
 }
 
 static bool

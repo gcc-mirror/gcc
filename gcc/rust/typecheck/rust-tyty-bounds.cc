@@ -41,7 +41,10 @@ TypeBoundsProbe::scan ()
 	return true;
 
       if (!receiver->can_eq (impl_type, false))
-	return true;
+	{
+	  if (!impl_type->can_eq (receiver, false))
+	    return true;
+	}
 
       possible_trait_paths.push_back ({impl->get_trait_ref ().get (), impl});
       return true;

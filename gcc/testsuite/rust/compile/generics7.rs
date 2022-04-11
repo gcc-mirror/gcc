@@ -15,7 +15,7 @@ impl Foo<char> {
 }
 
 impl<T> Foo<T> {
-    fn bar(self) -> T { // { dg-error "duplicate definitions with name bar" }
+    fn bar(self) -> T {
         self.a
     }
 }

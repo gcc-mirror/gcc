@@ -11,6 +11,9 @@ static const std::string kMangledSubstBegin = "$LT$";
 static const std::string kMangledSubstEnd = "$GT$";
 static const std::string kMangledSpace = "$u20$";
 static const std::string kMangledRef = "$RF$";
+static const std::string kMangledPtr = "$BP$";
+static const std::string kMangledLeftSqParen = "$u5b$";	 // [
+static const std::string kMangledRightSqParen = "$u5d$"; // ]
 static const std::string kQualPathBegin = "_" + kMangledSubstBegin;
 
 namespace Rust {
@@ -29,8 +32,15 @@ legacy_mangle_name (const std::string &name)
   // <example::Bar as example::A>::fooA:
   // _ZN43_$LT$example..Bar$u20$as$u20$example..A$GT$4fooA17hfc615fa76c7db7a0E:
   //
+  // core::ptr::const_ptr::<impl *const T>::cast:
+  // _ZN4core3ptr9const_ptr33_$LT$impl$u20$$BP$const$u20$T$GT$4cast17hb79f4617226f1d55E:
+  //
+  // core::ptr::const_ptr::<impl *const [T]>::as_ptr:
+  // _ZN4core3ptr9const_ptr43_$LT$impl$u20$$BP$const$u20$$u5b$T$u5d$$GT$6as_ptr17he16e0dcd9473b04fE:
+  //
   // example::Foo<T>::new:
   // _ZN7example12Foo$LT$T$GT$3new17h9a2aacb7fd783515E:
+
   std::string buffer;
   for (size_t i = 0; i < name.size (); i++)
     {
@@ -47,6 +57,12 @@ legacy_mangle_name (const std::string &name)
 	m = kMangledSubstBegin;
       else if (c == '>')
 	m = kMangledSubstEnd;
+      else if (c == '*')
+	m = kMangledPtr;
+      else if (c == '[')
+	m = kMangledLeftSqParen;
+      else if (c == ']')
+	m = kMangledRightSqParen;
       else if (c == ':')
 	{
 	  rust_assert (i + 1 < name.size ());

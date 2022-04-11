@@ -886,8 +886,6 @@ public:
     ok = true;
   }
 
-  void visit (const ParamType &type) override { ok = true; }
-
 private:
   const BaseType *get_base () const override { return base; }
   const ArrayType *base;
@@ -916,8 +914,6 @@ public:
     ok = true;
   }
 
-  void visit (const ParamType &type) override { ok = true; }
-
 private:
   const BaseType *get_base () const override { return base; }
   const SliceType *base;
@@ -938,8 +934,6 @@ public:
   {
     ok = type.get_infer_kind () == InferType::InferTypeKind::GENERAL;
   }
-
-  void visit (const ParamType &type) override { ok = true; }
 
 private:
   const BaseType *get_base () const override { return base; }
@@ -965,8 +959,6 @@ public:
     ok = type.get_int_kind () == base->get_int_kind ();
   }
 
-  void visit (const ParamType &type) override { ok = true; }
-
 private:
   const BaseType *get_base () const override { return base; }
   const IntType *base;
@@ -991,8 +983,6 @@ public:
     ok = type.get_uint_kind () == base->get_uint_kind ();
   }
 
-  void visit (const ParamType &type) override { ok = true; }
-
 private:
   const BaseType *get_base () const override { return base; }
   const UintType *base;
@@ -1016,8 +1006,6 @@ public:
   {
     ok = type.get_float_kind () == base->get_float_kind ();
   }
-
-  void visit (const ParamType &type) override { ok = true; }
 
 private:
   const BaseType *get_base () const override { return base; }
@@ -1120,8 +1108,6 @@ public:
     ok = true;
   }
 
-  void visit (const ParamType &type) override { ok = true; }
-
 private:
   const BaseType *get_base () const override { return base; }
   const TupleType *base;
@@ -1142,8 +1128,6 @@ public:
   }
 
   void visit (const USizeType &type) override { ok = true; }
-
-  void visit (const ParamType &type) override { ok = true; }
 
 private:
   const BaseType *get_base () const override { return base; }
@@ -1166,8 +1150,6 @@ public:
 
   void visit (const ISizeType &type) override { ok = true; }
 
-  void visit (const ParamType &type) override { ok = true; }
-
 private:
   const BaseType *get_base () const override { return base; }
   const ISizeType *base;
@@ -1188,8 +1170,6 @@ public:
   }
 
   void visit (const CharType &type) override { ok = true; }
-
-  void visit (const ParamType &type) override { ok = true; }
 
 private:
   const BaseType *get_base () const override { return base; }
@@ -1365,8 +1345,6 @@ public:
 
   void visit (const StrType &type) override { ok = true; }
 
-  void visit (const ParamType &type) override { ok = true; }
-
 private:
   const BaseType *get_base () const override { return base; }
   const StrType *base;
@@ -1382,8 +1360,6 @@ public:
   {}
 
   void visit (const NeverType &type) override { ok = true; }
-
-  void visit (const ParamType &type) override { ok = true; }
 
 private:
   const BaseType *get_base () const override { return base; }
@@ -1477,8 +1453,6 @@ public:
     Location ref_locus = mappings->lookup_location (type.get_ref ());
     ok = base->bounds_compatible (type, ref_locus, false);
   }
-
-  void visit (const ParamType &type) override { ok = true; }
 
 private:
   const BaseType *get_base () const override { return base; }

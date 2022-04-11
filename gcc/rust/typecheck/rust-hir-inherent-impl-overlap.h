@@ -123,7 +123,26 @@ public:
 	      continue;
 
 	    if (query->can_eq (candidate, false))
-	      possible_collision (it->second, iy->second);
+	      {
+		// we might be in the case that we have:
+		//
+		// *const T vs *const [T]
+		//
+		// so lets use an equality check when the
+		// candidates are both generic to be sure we dont emit a false
+		// positive
+
+		bool a = query->is_concrete ();
+		bool b = candidate->is_concrete ();
+		bool both_generic = !a && !b;
+		if (both_generic)
+		  {
+		    if (!query->is_equal (*candidate))
+		      continue;
+		  }
+
+		possible_collision (it->second, iy->second);
+	      }
 	  }
       }
   }
@@ -152,8 +171,8 @@ public:
   void collision_detected (HIR::ImplItem *query, HIR::ImplItem *dup,
 			   const std::string &name)
   {
-    RichLocation r (query->get_locus ());
-    r.add_range (dup->get_locus ());
+    RichLocation r (dup->get_locus ());
+    r.add_range (query->get_locus ());
     rust_error_at (r, "duplicate definitions with name %s", name.c_str ());
   }
 
