@@ -820,6 +820,8 @@ package Exp_Util is
    --  Determine whether object Id is related to an expanded return statement.
    --  The case concerned is "return Id.all;".
 
+   --  WARNING: There is a matching C declaration of this subprogram in fe.h
+
    function Is_Renamed_Object (N : Node_Id) return Boolean;
    --  Returns True if the node N is a renamed object. An expression is
    --  considered to be a renamed object if either it is the Name of an object

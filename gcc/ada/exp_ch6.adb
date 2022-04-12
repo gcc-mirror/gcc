@@ -4899,8 +4899,8 @@ package body Exp_Ch6 is
       --  the return type is limited, then the context is initialization and
       --  different processing applies. If the call is to a protected function,
       --  the expansion above will call Expand_Call recursively. Otherwise the
-      --  function call is transformed into a temporary which obtains the
-      --  result from the secondary stack.
+      --  function call is transformed into a reference to the result that has
+      --  been built either on the return or the secondary stack.
 
       if Needs_Finalization (Etype (Subp)) then
          if not Is_Build_In_Place_Function_Call (Call_Node)
@@ -7369,7 +7369,7 @@ package body Exp_Ch6 is
 
          if Present (Utyp)
            and then Needs_Finalization (Utyp)
-           and then not (Nkind (Exp) = N_Function_Call
+           and then not (Exp_Is_Function_Call
                           and then Needs_Finalization (Exp_Typ))
          then
             declare

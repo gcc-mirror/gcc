@@ -109,18 +109,13 @@ package body Exp_Ch7 is
    --  pass the address of a constrained object as the target object for the
    --  function result.
 
-   --  By allocating tagged results in the secondary stack a number of
+   --  By always allocating tagged results in the secondary stack, a couple of
    --  implementation difficulties are avoided:
 
-   --    - If it is a dispatching function call, the computation of the size of
-   --      the result is possible but complex from the outside.
+   --    - If this is a dispatching function call, the computation of the size
+   --      of the result is possible but complex from the outside.
 
-   --    - If the returned type is controlled, the assignment of the returned
-   --      value to the anonymous object involves an Adjust, and we have no
-   --      easy way to access the anonymous object created by the back end.
-
-   --    - If the returned type is class-wide, this is an unconstrained type
-   --      anyway.
+   --    - If the result type is class-wide, it is unconstrained anyway.
 
    --  Furthermore, the small loss in efficiency which is the result of this
    --  decision is not such a big deal because functions returning tagged types

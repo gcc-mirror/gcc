@@ -183,9 +183,11 @@ extern Boolean Is_Init_Proc		(Entity_Id);
 /* exp_util: */
 
 #define Is_Fully_Repped_Tagged_Type	exp_util__is_fully_repped_tagged_type
+#define Is_Related_To_Func_Return	exp_util__is_related_to_func_return
 #define Find_Interface_Tag		exp_util__find_interface_tag
 
-extern Boolean Is_Fully_Repped_Tagged_Type      (Entity_Id);
+extern Boolean Is_Fully_Repped_Tagged_Type	(Entity_Id);
+extern Boolean Is_Related_To_Func_Return	(Entity_Id);
 extern Entity_Id Find_Interface_Tag		(Entity_Id, Entity_Id);
 
 /* lib: */
