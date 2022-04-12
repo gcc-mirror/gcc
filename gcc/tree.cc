@@ -12961,6 +12961,8 @@ component_ref_size (tree ref, special_array_member *sam /* = NULL */)
      to struct types with flexible array members.  */
   if (memsize)
     {
+      if (!tree_fits_poly_int64_p (memsize))
+	return NULL_TREE;
       poly_int64 memsz64 = memsize ? tree_to_poly_int64 (memsize) : 0;
       if (known_lt (baseoff, memsz64))
 	{
