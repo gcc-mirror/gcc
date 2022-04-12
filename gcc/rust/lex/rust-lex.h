@@ -23,10 +23,6 @@
 #include "rust-buffered-queue.h"
 #include "rust-token.h"
 
-#include <cstdio>
-#include <utility>
-#include <tuple>
-
 namespace Rust {
 // Simple wrapper for FILE* that simplifies destruction.
 struct RAIIFile

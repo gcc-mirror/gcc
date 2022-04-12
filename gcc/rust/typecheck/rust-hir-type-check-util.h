@@ -19,7 +19,7 @@
 #ifndef RUST_HIR_TYPE_CHECK_UTIL_H
 #define RUST_HIR_TYPE_CHECK_UTIL_H
 
-#include <functional>
+#include "rust-system.h"
 #include "rust-hir-visitor.h"
 
 namespace Rust {

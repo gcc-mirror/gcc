@@ -19,9 +19,6 @@
 #ifndef RUST_BUFFERED_QUEUE_H
 #define RUST_BUFFERED_QUEUE_H
 
-#include <vector>
-#include <utility>
-
 #include "rust-system.h"
 
 namespace Rust {

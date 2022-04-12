@@ -22,9 +22,6 @@
 #ifndef RUST_INLINE_VISITOR
 #define RUST_INLINE_VISITOR
 
-#include <utility>
-#include <type_traits>
-
 namespace Rust {
 
 // Wrapper for the target Visitor we're matching against.

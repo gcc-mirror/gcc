@@ -59,6 +59,12 @@
  * of the `Mappings` class.
  */
 
+/* If assert is defined as a macro this file will not parse, so undefine this
+   before continuing.  */
+#ifdef assert
+#undef assert
+#endif
+
 namespace Rust {
 class MacroBuiltin
 {

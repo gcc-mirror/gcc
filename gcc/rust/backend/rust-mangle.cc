@@ -1,7 +1,6 @@
 #include "rust-mangle.h"
 #include "fnv-hash.h"
 #include "rust-base62.h"
-#include <algorithm>
 
 // FIXME: Rename those to legacy_*
 static const std::string kMangledSymbolPrefix = "_ZN";

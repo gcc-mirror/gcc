@@ -19,9 +19,6 @@
 #ifndef RUST_TOKEN_H
 #define RUST_TOKEN_H
 
-#include <string>
-#include <memory>
-
 #include "rust-linemap.h"
 #include "rust-codepoint.h"
 

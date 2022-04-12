@@ -17,7 +17,7 @@
 #ifndef RUST_ABI_OPTIONS_H
 #define RUST_ABI_OPTIONS_H
 
-#include <string>
+#include "rust-system.h"
 
 namespace Rust {
 

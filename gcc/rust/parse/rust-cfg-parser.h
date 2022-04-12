@@ -18,10 +18,8 @@ along with GCC; see the file COPYING3.  If not see
 #define RUST_CFG_PARSER_H
 
 #include "config.h"
-#include "system.h"
+#include "rust-system.h"
 #include "coretypes.h"
-
-#include <string>
 
 namespace Rust {
 /**
