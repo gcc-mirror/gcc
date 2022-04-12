@@ -1,3 +1,27 @@
+2022-04-11  Kito Cheng  <kito.cheng@sifive.com>
+
+	Backported from master:
+	2022-04-11  Kito Cheng  <kito.cheng@sifive.com>
+
+	PR target/104853
+	* config.gcc: Pass -misa-spec to arch-canonicalize and
+	multilib-generator.
+	* config/riscv/arch-canonicalize: Adding -misa-spec option.
+	(SUPPORTED_ISA_SPEC): New.
+	(arch_canonicalize): New argument `isa_spec`.
+	Handle multiple ISA spec versions.
+	* config/riscv/multilib-generator: Adding -misa-spec option.
+
+2022-04-11  Kito Cheng  <kito.cheng@sifive.com>
+
+	Backported from master:
+	2021-08-16  Kito Cheng  <kito.cheng@sifive.com>
+
+	* config/riscv/multilib-generator: Support code model option for
+	multi-lib.
+	* doc/install.texi: Add document of new option for
+	--with-multilib-generator.
+
 2022-04-08  Richard Biener  <rguenther@suse.de>
 
 	Backported from master:
