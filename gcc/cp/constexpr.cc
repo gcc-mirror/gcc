@@ -5718,6 +5718,7 @@ cxx_eval_store_expression (const constexpr_ctx *ctx, tree t,
   releasing_vec ctors, indexes;
   auto_vec<int> index_pos_hints;
   bool activated_union_member_p = false;
+  bool empty_base = false;
   while (!refs->is_empty ())
     {
       if (*valp == NULL_TREE)
@@ -5759,7 +5760,7 @@ cxx_eval_store_expression (const constexpr_ctx *ctx, tree t,
       no_zero_init = CONSTRUCTOR_NO_CLEARING (*valp);
 
       enum tree_code code = TREE_CODE (type);
-      type = refs->pop();
+      tree reftype = refs->pop();
       tree index = refs->pop();
 
       if (code == RECORD_TYPE && is_empty_field (index))
@@ -5768,7 +5769,12 @@ cxx_eval_store_expression (const constexpr_ctx *ctx, tree t,
 	   fields, which confuses the middle-end.  The code below will notice
 	   that we don't have a CONSTRUCTOR for our inner target and just
 	   return init.  */
-	break;
+	{
+	  empty_base = true;
+	  break;
+	}
+
+      type = reftype;
 
       if (code == UNION_TYPE && CONSTRUCTOR_NELTS (*valp)
 	  && CONSTRUCTOR_ELT (*valp, 0)->index != index)
@@ -5902,44 +5908,41 @@ cxx_eval_store_expression (const constexpr_ctx *ctx, tree t,
 	}
     }
 
+  if (*non_constant_p)
+    return t;
+
   /* Don't share a CONSTRUCTOR that might be changed later.  */
   init = unshare_constructor (init);
 
-  if (*valp && TREE_CODE (*valp) == CONSTRUCTOR
-      && TREE_CODE (init) == CONSTRUCTOR)
+  gcc_checking_assert (!*valp || (same_type_ignoring_top_level_qualifiers_p
+				  (TREE_TYPE (*valp), type)));
+  if (empty_base || !(same_type_ignoring_top_level_qualifiers_p
+		      (TREE_TYPE (init), type)))
     {
-      /* An outer ctx->ctor might be pointing to *valp, so replace
-	 its contents.  */
-      if (!same_type_ignoring_top_level_qualifiers_p (TREE_TYPE (init),
-						      TREE_TYPE (*valp)))
-	{
-	  /* For initialization of an empty base, the original target will be
-	   *(base*)this, evaluation of which resolves to the object
-	   argument, which has the derived type rather than the base type.  In
-	   this situation, just evaluate the initializer and return, since
-	   there's no actual data to store.  */
-	  gcc_assert (is_empty_class (TREE_TYPE (init)));
-	  return lval ? target : init;
-	}
-      CONSTRUCTOR_ELTS (*valp) = CONSTRUCTOR_ELTS (init);
-      TREE_CONSTANT (*valp) = TREE_CONSTANT (init);
-      TREE_SIDE_EFFECTS (*valp) = TREE_SIDE_EFFECTS (init);
-      CONSTRUCTOR_NO_CLEARING (*valp)
-	= CONSTRUCTOR_NO_CLEARING (init);
-    }
-  else if (TREE_CODE (init) == CONSTRUCTOR
-	   && !same_type_ignoring_top_level_qualifiers_p (TREE_TYPE (init),
-							  type))
-    {
-      /* See above on initialization of empty bases.  */
-      gcc_assert (is_empty_class (TREE_TYPE (init)) && !lval);
+      /* For initialization of an empty base, the original target will be
+       *(base*)this, evaluation of which resolves to the object
+       argument, which has the derived type rather than the base type.  In
+       this situation, just evaluate the initializer and return, since
+       there's no actual data to store, and we didn't build a CONSTRUCTOR.  */
+      empty_base = true;
+      gcc_assert (is_empty_class (TREE_TYPE (init)));
       if (!*valp)
 	{
 	  /* But do make sure we have something in *valp.  */
 	  *valp = build_constructor (type, nullptr);
 	  CONSTRUCTOR_NO_CLEARING (*valp) = no_zero_init;
 	}
-      return init;
+    }
+  else if (*valp && TREE_CODE (*valp) == CONSTRUCTOR
+	   && TREE_CODE (init) == CONSTRUCTOR)
+    {
+      /* An outer ctx->ctor might be pointing to *valp, so replace
+	 its contents.  */
+      CONSTRUCTOR_ELTS (*valp) = CONSTRUCTOR_ELTS (init);
+      TREE_CONSTANT (*valp) = TREE_CONSTANT (init);
+      TREE_SIDE_EFFECTS (*valp) = TREE_SIDE_EFFECTS (init);
+      CONSTRUCTOR_NO_CLEARING (*valp)
+	= CONSTRUCTOR_NO_CLEARING (init);
     }
   else
     *valp = init;
@@ -5958,7 +5961,7 @@ cxx_eval_store_expression (const constexpr_ctx *ctx, tree t,
 	   constructor of a delegating constructor).  Leave it up to the
 	   caller that set 'this' to set TREE_READONLY appropriately.  */
 	gcc_checking_assert (same_type_ignoring_top_level_qualifiers_p
-			     (TREE_TYPE (target), type));
+			     (TREE_TYPE (target), type) || empty_base);
       else
 	TREE_READONLY (*valp) = true;
     }
@@ -5980,9 +5983,7 @@ cxx_eval_store_expression (const constexpr_ctx *ctx, tree t,
 	  CONSTRUCTOR_NO_CLEARING (elt) = false;
       }
 
-  if (*non_constant_p)
-    return t;
-  else if (lval)
+  if (lval)
     return target;
   else
     return init;
