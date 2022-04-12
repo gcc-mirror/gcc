@@ -104,7 +104,7 @@ public:
   void insert_type (const Analysis::NodeMapping &mappings,
 		    TyTy::BaseType *type);
   void insert_implicit_type (TyTy::BaseType *type);
-  bool lookup_type (HirId id, TyTy::BaseType **type);
+  bool lookup_type (HirId id, TyTy::BaseType **type) const;
 
   void insert_implicit_type (HirId id, TyTy::BaseType *type);
 

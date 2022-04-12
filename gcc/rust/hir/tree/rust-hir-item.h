@@ -576,6 +576,9 @@ public:
   // Returns whether visibility is in an error state.
   bool is_error () const { return vis_type == ERROR; }
 
+  // Does the current visibility refer to a simple `pub <item>` entirely public
+  bool is_public () const { return vis_type == PUBLIC; }
+
   // Creates an error visibility.
   static Visibility create_error ()
   {
@@ -620,6 +623,8 @@ protected:
 
 public:
   using HIR::Stmt::accept_vis;
+
+  BaseKind get_hir_kind () override final { return VIS_ITEM; }
 
   /* Does the item have some kind of public visibility (non-default
    * visibility)? */
@@ -1458,6 +1463,8 @@ public:
   Analysis::NodeMapping get_mappings () const { return mappings; }
 
   Location get_locus () { return locus; }
+
+  Visibility &get_visibility () { return visibility; }
 };
 
 // Rust struct declaration with true struct type HIR node
@@ -2744,7 +2751,7 @@ protected:
 };
 
 // Abstract base class for an item used inside an extern block
-class ExternalItem
+class ExternalItem : public Node
 {
   Analysis::NodeMapping mappings;
   AST::AttrVec outer_attrs;
@@ -2754,6 +2761,8 @@ class ExternalItem
 
 public:
   virtual ~ExternalItem () {}
+
+  BaseKind get_hir_kind () override final { return EXTERNAL; }
 
   // Returns whether item has outer attributes.
   bool has_outer_attrs () const { return !outer_attrs.empty (); }

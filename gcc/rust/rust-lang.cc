@@ -32,8 +32,10 @@
 #include "convert.h"
 #include "langhooks.h"
 #include "langhooks-def.h"
+
 #include "selftest.h"
 #include "rust-cfg-parser.h"
+#include "rust-privacy-ctx.h"
 
 #include <mpfr.h>
 // note: header files must be in this order or else forward declarations don't
@@ -455,6 +457,7 @@ run_rust_tests ()
   // Call tests for the rust frontend here
   simple_assert ();
   rust_cfg_parser_test ();
+  rust_privacy_ctx_test ();
 }
 } // namespace selftest
 

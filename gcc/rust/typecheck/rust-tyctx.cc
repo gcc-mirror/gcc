@@ -98,7 +98,7 @@ TypeCheckContext::insert_implicit_type (HirId id, TyTy::BaseType *type)
 }
 
 bool
-TypeCheckContext::lookup_type (HirId id, TyTy::BaseType **type)
+TypeCheckContext::lookup_type (HirId id, TyTy::BaseType **type) const
 {
   auto it = resolved.find (id);
   if (it == resolved.end ())
