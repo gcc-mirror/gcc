@@ -352,3 +352,12 @@ value from one type to another:
 register name of a variable:
 
   * :func:`gcc_jit_lvalue_set_register_name`
+
+.. _LIBGCCJIT_ABI_23:
+
+``LIBGCCJIT_ABI_23``
+--------------------
+``LIBGCCJIT_ABI_23`` covers the addition of an API entrypoint to hide stderr
+logs:
+
+  * :func:`gcc_jit_context_set_bool_print_errors_to_stderr`

@@ -293,6 +293,24 @@ gcc_jit_context_set_bool_allow_unreachable_blocks (gcc_jit_context *ctxt,
    tested for with #ifdef.  */
 #define LIBGCCJIT_HAVE_gcc_jit_context_set_bool_allow_unreachable_blocks
 
+/* By default, libgccjit will print errors to stderr.
+
+   This option can be used to disable the printing.
+
+   This entrypoint was added in LIBGCCJIT_ABI_23; you can test for
+   its presence using
+     #ifdef LIBGCCJIT_HAVE_gcc_jit_context_set_bool_print_errors_to_stderr
+*/
+
+extern void
+gcc_jit_context_set_bool_print_errors_to_stderr (gcc_jit_context *ctxt,
+						 int enabled);
+
+/* Pre-canned feature macro to indicate the presence of
+   gcc_jit_context_set_bool_print_errors_to_stderr.  This can be
+   tested for with #ifdef.  */
+#define LIBGCCJIT_HAVE_gcc_jit_context_set_bool_print_errors_to_stderr
+
 /* Implementation detail:
    libgccjit internally generates assembler, and uses "driver" code
    for converting it to other formats (e.g. shared libraries).

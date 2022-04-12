@@ -3501,6 +3501,23 @@ gcc_jit_context_set_bool_allow_unreachable_blocks (gcc_jit_context *ctxt,
    gcc::jit::recording::context::set_inner_bool_option method in
    jit-recording.cc.  */
 
+void
+gcc_jit_context_set_bool_print_errors_to_stderr (gcc_jit_context *ctxt,
+						 int enabled)
+{
+  RETURN_IF_FAIL (ctxt, NULL, NULL, "NULL context");
+  JIT_LOG_FUNC (ctxt->get_logger ());
+  ctxt->set_inner_bool_option (
+    gcc::jit::INNER_BOOL_OPTION_PRINT_ERRORS_TO_STDERR,
+    enabled);
+}
+
+/* Public entrypoint.  See description in libgccjit.h.
+
+   After error-checking, the real work is done by the
+   gcc::jit::recording::context::set_inner_bool_option method in
+   jit-recording.cc.  */
+
 extern void
 gcc_jit_context_set_bool_use_external_driver (gcc_jit_context *ctxt,
 					      int bool_value)

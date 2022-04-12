@@ -592,6 +592,7 @@ recording::context::context (context *parent_ctxt)
       memset (m_int_options, 0, sizeof (m_int_options));
       memset (m_bool_options, 0, sizeof (m_bool_options));
       memset (m_inner_bool_options, 0, sizeof (m_inner_bool_options));
+      m_inner_bool_options[INNER_BOOL_OPTION_PRINT_ERRORS_TO_STDERR] = true;
     }
 
   memset (m_basic_types, 0, sizeof (m_basic_types));
@@ -1571,15 +1572,20 @@ recording::context::add_error_va (location *loc, const char *fmt, va_list ap)
   if (!ctxt_progname)
     ctxt_progname = "libgccjit.so";
 
-  if (loc)
-    fprintf (stderr, "%s: %s: error: %s\n",
-	     ctxt_progname,
-	     loc->get_debug_string (),
-	     errmsg);
-  else
-    fprintf (stderr, "%s: error: %s\n",
-	     ctxt_progname,
-	     errmsg);
+  bool print_errors_to_stderr =
+      get_inner_bool_option (INNER_BOOL_OPTION_PRINT_ERRORS_TO_STDERR);
+  if (print_errors_to_stderr)
+  {
+    if (loc)
+      fprintf (stderr, "%s: %s: error: %s\n",
+	       ctxt_progname,
+	       loc->get_debug_string (),
+	       errmsg);
+    else
+      fprintf (stderr, "%s: error: %s\n",
+	       ctxt_progname,
+	       errmsg);
+  }
 
   if (!m_error_count)
     {
@@ -1707,7 +1713,8 @@ static const char * const
 static const char * const
  inner_bool_option_reproducer_strings[NUM_INNER_BOOL_OPTIONS] = {
   "gcc_jit_context_set_bool_allow_unreachable_blocks",
-  "gcc_jit_context_set_bool_use_external_driver"
+  "gcc_jit_context_set_bool_use_external_driver",
+  "gcc_jit_context_set_bool_print_errors_to_stderr",
 };
 
 /* Write the current value of all options to the log file (if any).  */
