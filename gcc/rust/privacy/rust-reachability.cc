@@ -20,20 +20,28 @@
 
 namespace Rust {
 namespace Privacy {
+
+static HIR::VisItem *
+maybe_get_vis_item (std::unique_ptr<HIR::Item> &item)
+{
+  if (item->get_hir_kind () != HIR::VIS_ITEM)
+    return nullptr;
+
+  return static_cast<HIR::VisItem *> (item.get ());
+}
+
 void
 ReachabilityVisitor::visit (HIR::Module &mod)
 {
   for (auto &item : mod.get_items ())
     {
-      // FIXME: How do we refactor this pattern into something more ergonomic?
-      // FIXME: Add helper functions
       // FIXME: Is that what we want to do? Yes? Only visit the items with
       // visibility?
-      if (item->get_hir_kind () == HIR::VIS_ITEM)
-	{
-	  auto vis_item = static_cast<HIR::VisItem *> (item.get ());
-	  vis_item->accept_vis (*this);
-	}
+      //
+      // Imagine if we had `maybe_get_vis_item(item)?->accept_vis(*this)` ;)
+      auto vis_item = maybe_get_vis_item (item);
+      if (vis_item)
+	vis_item->accept_vis (*this);
     }
 }
 
@@ -60,7 +68,7 @@ ReachabilityVisitor::visit (HIR::StructStruct &struct_item)
   // FIXME: This feels very wrong. Should we check for `has_visibility`
   // beforehand? Is it just private otherwise? Should the `HIR::Visibility` also
   // keep variants for private items?
-  if (struct_item.get_visibility ().get_vis_type () == HIR::Visibility::NONE)
+  if (struct_item.get_visibility ().is_public ())
     struct_reach = ReachLevel::Reachable;
 
   struct_reach
