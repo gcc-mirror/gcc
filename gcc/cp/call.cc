@@ -1680,8 +1680,19 @@ direct_reference_binding (tree type, conversion *conv)
        because the types "int *" and "const int *const" are
        reference-related and we were binding both directly and they
        had the same rank.  To break it up, we add a ck_qual under the
-       ck_ref_bind so that conversion sequence ranking chooses #1.  */
-    conv = build_conv (ck_qual, t, conv);
+       ck_ref_bind so that conversion sequence ranking chooses #1.
+
+       We strip_top_quals here which is also what standard_conversion
+       does.  Failure to do so would confuse comp_cv_qual_signature
+       into thinking that in
+
+	 void f(const int * const &); // #1
+	 void f(const int *); // #2
+	 int *x;
+	 f(x);
+
+       #2 is a better match than #1 even though they're ambiguous (97296).  */
+    conv = build_conv (ck_qual, strip_top_quals (t), conv);
 
   return build_conv (ck_ref_bind, type, conv);
 }
