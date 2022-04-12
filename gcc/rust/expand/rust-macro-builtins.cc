@@ -287,9 +287,12 @@ MacroBuiltin::concat (Location invoc_locus, AST::MacroInvocData &invoc)
 	}
       else
 	{
-	  rust_error_at (parser.peek_current_token ()->get_locus (),
+	  auto current_token = parser.peek_current_token ();
+	  rust_error_at (current_token->get_locus (),
 			 "argument must be a constant literal");
 	  has_error = true;
+	  // Just crash if the current token can't be skipped
+	  rust_assert (parser.skip_token (current_token->get_id ()));
 	}
       parser.maybe_skip_token (COMMA);
     }
