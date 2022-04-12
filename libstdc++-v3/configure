@@ -681,8 +681,8 @@ BACKTRACE_SUPPORTS_THREADS
 BACKTRACE_USES_MALLOC
 BACKTRACE_SUPPORTED
 BACKTRACE_CPPFLAGS
-VIEW_FILE
 ALLOC_FILE
+VIEW_FILE
 FORMAT_FILE
 ENABLE_FILESYSTEM_TS_FALSE
 ENABLE_FILESYSTEM_TS_TRUE
@@ -16190,7 +16190,7 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
 
     ac_save_CXXFLAGS="$CXXFLAGS"
 
-        cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+                cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
     #if ! defined __GCC_HAVE_SYNC_COMPARE_AND_SWAP_2
@@ -77463,11 +77463,6 @@ elf64) elfsize=64 ;;
 esac
 BACKTRACE_CPPFLAGS="$BACKTRACE_CPPFLAGS -DBACKTRACE_ELF_SIZE=$elfsize"
 
-  ALLOC_FILE=alloc.lo
-
-  VIEW_FILE=read.lo
-
-
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether to build libbacktrace support" >&5
 $as_echo_n "checking whether to build libbacktrace support... " >&6; }
   if test "$enable_libstdcxx_backtrace" == "auto"; then
@@ -77475,7 +77470,55 @@ $as_echo_n "checking whether to build libbacktrace support... " >&6; }
   fi
   if test "$enable_libstdcxx_backtrace" == "yes"; then
     BACKTRACE_SUPPORTED=1
-    BACKTRACE_USES_MALLOC=1
+
+    for ac_header in sys/mman.h
+do :
+  ac_fn_c_check_header_mongrel "$LINENO" "sys/mman.h" "ac_cv_header_sys_mman_h" "$ac_includes_default"
+if test "x$ac_cv_header_sys_mman_h" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_SYS_MMAN_H 1
+_ACEOF
+
+fi
+
+done
+
+    case "${host}" in
+      *-*-msdosdjgpp) # DJGPP has sys/man.h, but no mmap
+	have_mmap=no ;;
+      *-*-*)
+	have_mmap="$ac_cv_header_sys_mman_h" ;;
+    esac
+
+    if test "$have_mmap" = "no"; then
+      VIEW_FILE=read.lo
+      ALLOC_FILE=alloc.lo
+    else
+      VIEW_FILE=mmapio.lo
+      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+    #include <sys/mman.h>
+    #if !defined(MAP_ANONYMOUS) && !defined(MAP_ANON)
+      #error no MAP_ANONYMOUS
+    #endif
+
+_ACEOF
+if ac_fn_c_try_cpp "$LINENO"; then :
+  ALLOC_FILE=mmap.lo
+else
+  ALLOC_FILE=alloc.lo
+fi
+rm -f conftest.err conftest.i conftest.$ac_ext
+    fi
+
+
+
+    BACKTRACE_USES_MALLOC=0
+    if test "$ALLOC_FILE" = "alloc.lo"; then
+      BACKTRACE_USES_MALLOC=1
+    fi
+
     if test "$ac_has_gthreads" = "yes"; then
       BACKTRACE_SUPPORTS_THREADS=1
     else
