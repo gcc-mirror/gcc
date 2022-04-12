@@ -2793,20 +2793,14 @@ package body Exp_Ch9 is
                 Expression => Make_Integer_Literal (Loc, 1));
 
          else
-            pragma Assert (Present (Ret));
+            --  Ranges are in increasing order, so last one doesn't need guard
 
-            if Nkind (Ret) = N_If_Statement then
-
-               --  Ranges are in increasing order, so last one doesn't need
-               --  guard.
-
-               declare
-                  Nod : constant Node_Id := Last (Elsif_Parts (Ret));
-               begin
-                  Remove (Nod);
-                  Set_Else_Statements (Ret, Then_Statements (Nod));
-               end;
-            end if;
+            declare
+               Nod : constant Node_Id := Last (Elsif_Parts (Ret));
+            begin
+               Remove (Nod);
+               Set_Else_Statements (Ret, Then_Statements (Nod));
+            end;
          end if;
       end if;
 
