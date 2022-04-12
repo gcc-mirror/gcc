@@ -291,7 +291,6 @@ public:
       }
 
     auto root = receiver_tyty->get_root ();
-    bool receiver_is_type_param = root->get_kind () == TyTy::TypeKind::PARAM;
     if (root->get_kind () == TyTy::TypeKind::ADT)
       {
 	const TyTy::ADTType *adt = static_cast<const TyTy::ADTType *> (root);
@@ -346,28 +345,21 @@ public:
 	  }
       }
 
-    if (!receiver_is_type_param)
+    // apply any remaining generic arguments
+    if (expr.get_method_name ().has_generic_args ())
       {
-	// apply any remaining generic arguments
-	if (expr.get_method_name ().has_generic_args ())
-	  {
-	    HIR::GenericArgs &args
-	      = expr.get_method_name ().get_generic_args ();
-	    lookup = SubstMapper::Resolve (lookup,
-					   expr.get_method_name ().get_locus (),
-					   &args);
-	    if (lookup->get_kind () == TyTy::TypeKind::ERROR)
-	      return;
-	  }
-	else if (lookup->needs_generic_substitutions ())
-	  {
-	    lookup
-	      = SubstMapper::InferSubst (lookup,
-					 expr.get_method_name ().get_locus ());
-	  }
+	HIR::GenericArgs &args = expr.get_method_name ().get_generic_args ();
+	lookup
+	  = SubstMapper::Resolve (lookup, expr.get_method_name ().get_locus (),
+				  &args);
+	if (lookup->get_kind () == TyTy::TypeKind::ERROR)
+	  return;
       }
-
-    // ADT expected but got PARAM
+    else if (lookup->needs_generic_substitutions ())
+      {
+	lookup = SubstMapper::InferSubst (lookup,
+					  expr.get_method_name ().get_locus ());
+      }
 
     TyTy::BaseType *function_ret_tyty
       = TyTy::TypeCheckMethodCallExpr::go (lookup, expr, adjusted_self,

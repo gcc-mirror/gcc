@@ -48,22 +48,32 @@ public:
 				bool autoderef_flag = false);
 
 protected:
+  struct predicate_candidate
+  {
+    TyTy::TypeBoundPredicateItem lookup;
+    TyTy::FnType *fntype;
+  };
+
   static MethodCandidate Try (const TyTy::BaseType *r,
 			      const HIR::PathIdentSegment &segment_name,
 			      std::vector<Adjustment> &adjustments);
 
+  static std::vector<predicate_candidate> get_predicate_items (
+    const HIR::PathIdentSegment &segment_name, const TyTy::BaseType &receiver,
+    const std::vector<TyTy::TypeBoundPredicate> &specified_bounds);
+
   PathProbeCandidate select ();
 
-  MethodResolver (const TyTy::BaseType &receiver,
-		  const HIR::PathIdentSegment &segment_name,
-		  const std::vector<TyTy::TypeBoundPredicate> &specified_bounds)
+  MethodResolver (
+    const TyTy::BaseType &receiver, const HIR::PathIdentSegment &segment_name,
+    const std::vector<MethodResolver::predicate_candidate> &predicate_items)
     : receiver (receiver), segment_name (segment_name),
-      specified_bounds (specified_bounds)
+      predicate_items (predicate_items)
   {}
 
   const TyTy::BaseType &receiver;
   const HIR::PathIdentSegment &segment_name;
-  const std::vector<TyTy::TypeBoundPredicate> &specified_bounds;
+  const std::vector<MethodResolver::predicate_candidate> &predicate_items;
 };
 
 } // namespace Resolver

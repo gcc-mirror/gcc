@@ -390,7 +390,6 @@ TypeCheckExpr::resolve_operator_overload (
   rust_assert (fn->is_method ());
 
   auto root = lhs->get_root ();
-  bool receiver_is_type_param = root->get_kind () == TyTy::TypeKind::PARAM;
   if (root->get_kind () == TyTy::TypeKind::ADT)
     {
       const TyTy::ADTType *adt = static_cast<const TyTy::ADTType *> (root);
@@ -446,13 +445,8 @@ TypeCheckExpr::resolve_operator_overload (
     }
 
   // handle generics
-  if (!receiver_is_type_param)
-    {
-      if (lookup->needs_generic_substitutions ())
-	{
-	  lookup = SubstMapper::InferSubst (lookup, expr.get_locus ());
-	}
-    }
+  if (lookup->needs_generic_substitutions ())
+    lookup = SubstMapper::InferSubst (lookup, expr.get_locus ());
 
   // type check the arguments if required
   TyTy::FnType *type = static_cast<TyTy::FnType *> (lookup);
@@ -469,6 +463,10 @@ TypeCheckExpr::resolve_operator_overload (
       auto fnparam = type->param_at (1);
       fnparam.second->unify (rhs); // typecheck the rhs
     }
+
+  rust_assert (lookup->get_kind () == TyTy::TypeKind::FNDEF);
+  fn = static_cast<TyTy::FnType *> (lookup);
+  fn->monomorphize ();
 
   // get the return type
   TyTy::BaseType *function_ret_tyty = type->get_return_type ()->clone ();

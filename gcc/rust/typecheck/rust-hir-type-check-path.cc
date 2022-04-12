@@ -45,8 +45,8 @@ TypeCheckExpr::visit (HIR::QualifiedPathInExpression &expr)
     }
 
   // Resolve the trait now
-  TraitReference *trait_ref
-    = TraitResolver::Resolve (*qual_path_type.get_trait ().get ());
+  std::unique_ptr<HIR::TypePath> &trait_path_ref = qual_path_type.get_trait ();
+  TraitReference *trait_ref = TraitResolver::Resolve (*trait_path_ref.get ());
   if (trait_ref->is_error ())
     return;
 
@@ -58,6 +58,14 @@ TypeCheckExpr::visit (HIR::QualifiedPathInExpression &expr)
   // projection type
   if (expr.get_segments ().empty ())
     return;
+
+  // get the predicate for the bound
+  auto specified_bound = get_predicate_from_bound (*trait_path_ref.get ());
+  if (specified_bound.is_error ())
+    return;
+
+  // inherit the bound
+  root->inherit_bounds ({specified_bound});
 
   // we need resolve to the impl block
   NodeId impl_resolved_id = UNKNOWN_NODEID;
