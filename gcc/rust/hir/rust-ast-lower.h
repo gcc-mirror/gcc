@@ -32,6 +32,14 @@ namespace HIR {
 bool
 struct_field_name_exists (std::vector<HIR::StructField> &fields,
 			  HIR::StructField &new_field);
+
+/**
+ * Lowers a Visibility from the AST into an HIR Visibility, desugaring it in
+ * the process
+ */
+Visibility
+translate_visibility (const AST::Visibility &vis);
+
 class ASTLowering
 {
 public:

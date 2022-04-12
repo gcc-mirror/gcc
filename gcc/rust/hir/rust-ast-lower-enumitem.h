@@ -19,6 +19,7 @@
 #ifndef RUST_AST_LOWER_ENUMITEM
 #define RUST_AST_LOWER_ENUMITEM
 
+#include "rust-ast-lower.h"
 #include "rust-diagnostics.h"
 
 #include "rust-ast-lower-base.h"
@@ -51,7 +52,7 @@ public:
     if (item.has_visibility ())
       rust_error_at (item.get_locus (),
 		     "visibility qualifier %qs not allowed on enum item",
-		     item.get_vis ().as_string ().c_str ());
+		     item.get_visibility ().as_string ().c_str ());
 
     translated = new HIR::EnumItem (mapping, item.get_identifier (),
 				    item.get_outer_attrs (), item.get_locus ());
@@ -73,12 +74,12 @@ public:
     if (item.has_visibility ())
       rust_error_at (item.get_locus (),
 		     "visibility qualifier %qs not allowed on enum item",
-		     item.get_vis ().as_string ().c_str ());
+		     item.get_visibility ().as_string ().c_str ());
 
     std::vector<HIR::TupleField> fields;
     for (auto &field : item.get_tuple_fields ())
       {
-	HIR::Visibility vis = HIR::Visibility::create_public ();
+	HIR::Visibility vis = translate_visibility (field.get_visibility ());
 	HIR::Type *type
 	  = ASTLoweringType::translate (field.get_field_type ().get ());
 
@@ -117,12 +118,12 @@ public:
     if (item.has_visibility ())
       rust_error_at (item.get_locus (),
 		     "visibility qualifier %qs not allowed on enum item",
-		     item.get_vis ().as_string ().c_str ());
+		     item.get_visibility ().as_string ().c_str ());
 
     std::vector<HIR::StructField> fields;
     for (auto &field : item.get_struct_fields ())
       {
-	HIR::Visibility vis = HIR::Visibility::create_public ();
+	HIR::Visibility vis = translate_visibility (field.get_visibility ());
 	HIR::Type *type
 	  = ASTLoweringType::translate (field.get_field_type ().get ());
 
@@ -165,7 +166,7 @@ public:
     if (item.has_visibility ())
       rust_error_at (item.get_locus (),
 		     "visibility qualifier %qs not allowed on enum item",
-		     item.get_vis ().as_string ().c_str ());
+		     item.get_visibility ().as_string ().c_str ());
 
     HIR::Expr *expr = ASTLoweringExpr::translate (item.get_expr ().get ());
     translated

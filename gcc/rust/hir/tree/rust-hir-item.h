@@ -553,91 +553,38 @@ public:
 struct Visibility
 {
 public:
-  enum PublicVisType
+  enum VisType
   {
-    NONE,
-    CRATE,
-    SELF,
-    SUPER,
-    IN_PATH
+    PRIVATE,
+    PUBLIC,
+    ERROR,
   };
 
 private:
-  // if vis is public, one of these
-  PublicVisType public_vis_type;
-  // Only assigned if public_vis_type is IN_PATH
-  AST::SimplePath in_path;
+  VisType vis_type;
+  AST::SimplePath path;
 
   // should this store location info?
 
 public:
   // Creates a Visibility - TODO make constructor protected or private?
-  Visibility (PublicVisType public_vis_type, AST::SimplePath in_path)
-    : public_vis_type (public_vis_type), in_path (std::move (in_path))
+  Visibility (VisType vis_type,
+	      AST::SimplePath path = AST::SimplePath::create_empty ())
+    : vis_type (vis_type), path (std::move (path))
   {}
 
   // Returns whether visibility is in an error state.
-  bool is_error () const
-  {
-    return public_vis_type == IN_PATH && in_path.is_empty ();
-  }
+  bool is_error () const { return vis_type == ERROR; }
 
   // Creates an error visibility.
   static Visibility create_error ()
   {
-    return Visibility (IN_PATH, AST::SimplePath::create_empty ());
+    return Visibility (ERROR, AST::SimplePath::create_empty ());
   }
 
-  // Unique pointer custom clone function
-  /*std::unique_ptr<Visibility> clone_visibility() const {
-      return std::unique_ptr<Visibility>(clone_visibility_impl());
-  }*/
-
-  /* TODO: think of a way to only allow valid Visibility states - polymorphism
-   * is one idea but may be too resource-intensive. */
-
-  // Creates a public visibility with no further features/arguments.
-  static Visibility create_public ()
-  {
-    return Visibility (NONE, AST::SimplePath::create_empty ());
-  }
-
-  // Creates a public visibility with crate-relative paths or whatever.
-  static Visibility create_crate ()
-  {
-    return Visibility (CRATE, AST::SimplePath::create_empty ());
-  }
-
-  // Creates a public visibility with self-relative paths or whatever.
-  static Visibility create_self ()
-  {
-    return Visibility (SELF, AST::SimplePath::create_empty ());
-  }
-
-  // Creates a public visibility with parent module-relative paths or
-  // whatever.
-  static Visibility create_super ()
-  {
-    return Visibility (SUPER, AST::SimplePath::create_empty ());
-  }
-
-  // Creates a public visibility with a given path or whatever.
-  static Visibility create_in_path (AST::SimplePath in_path)
-  {
-    return Visibility (IN_PATH, std::move (in_path));
-  }
-
-  PublicVisType get_vis_type () const { return public_vis_type; }
+  VisType get_vis_type () const { return vis_type; }
 
   std::string as_string () const;
-
-protected:
-  // Clone function implementation - not currently virtual but may be if
-  // polymorphism used
-  /*virtual*/ Visibility *clone_visibility_impl () const
-  {
-    return new Visibility (*this);
-  }
 };
 
 // Item that supports visibility - abstract base class

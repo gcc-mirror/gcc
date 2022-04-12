@@ -56,7 +56,7 @@ public:
   {
     std::vector<std::unique_ptr<HIR::WhereClauseItem> > where_clause_items;
     HIR::WhereClause where_clause (std::move (where_clause_items));
-    HIR::Visibility vis = HIR::Visibility::create_public ();
+    HIR::Visibility vis = translate_visibility (alias.get_visibility ());
 
     std::vector<std::unique_ptr<HIR::GenericParam> > generic_params;
     if (alias.has_generics ())
@@ -87,7 +87,7 @@ public:
 
   void visit (AST::ConstantItem &constant) override
   {
-    HIR::Visibility vis = HIR::Visibility::create_public ();
+    HIR::Visibility vis = translate_visibility (constant.get_visibility ());
 
     HIR::Type *type = ASTLoweringType::translate (constant.get_type ().get ());
     HIR::Expr *expr = ASTLoweringExpr::translate (constant.get_expr ().get ());
@@ -120,7 +120,7 @@ public:
     HIR::WhereClause where_clause (std::move (where_clause_items));
     HIR::FunctionQualifiers qualifiers
       = lower_qualifiers (function.get_qualifiers ());
-    HIR::Visibility vis = HIR::Visibility::create_public ();
+    HIR::Visibility vis = translate_visibility (function.get_visibility ());
 
     // need
     std::vector<std::unique_ptr<HIR::GenericParam> > generic_params;
@@ -204,7 +204,7 @@ public:
     HIR::WhereClause where_clause (std::move (where_clause_items));
     HIR::FunctionQualifiers qualifiers
       = lower_qualifiers (method.get_qualifiers ());
-    HIR::Visibility vis = HIR::Visibility::create_public ();
+    HIR::Visibility vis = translate_visibility (method.get_visibility ());
 
     // need
     std::vector<std::unique_ptr<HIR::GenericParam> > generic_params;
