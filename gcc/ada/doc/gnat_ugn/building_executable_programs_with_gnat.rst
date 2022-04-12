@@ -6015,10 +6015,10 @@ Debugging Control
 
 :switch:`-gnatx`
   Normally the compiler generates full cross-referencing information in
-  the :file:`ALI` file. This information is used by a number of tools,
-  including ``gnatfind`` and ``gnatxref``. The :switch:`-gnatx` switch
-  suppresses this information. This saves some space and may slightly
-  speed up compilation, but means that these tools cannot be used.
+  the :file:`ALI` file. This information is used by a number of tools.
+  The :switch:`-gnatx` switch suppresses this information. This saves some space
+  and may slightly speed up compilation, but means that tools depending
+  on this information cannot be used.
 
 
 .. index:: -fgnat-encodings  (gcc)

@@ -3197,8 +3197,7 @@ if any of these units are modified.
 
 @item 
 Cross-reference data. Contains information on all entities referenced
-in the unit. Used by tools like @code{gnatxref} and @code{gnatfind} to
-provide cross-reference information.
+in the unit. Used by some tools to provide cross-reference information.
 @end itemize
 
 For a full detailed description of the format of the @code{ALI} file,
@@ -3505,8 +3504,8 @@ be @code{adalib}).
 You can also specify a new default path to the run-time library at compilation
 time with the switch @code{--RTS=rts-path}. You can thus choose / change
 the run-time library you want your program to be compiled with. This switch is
-recognized by @code{gcc}, @code{gnatmake}, @code{gnatbind},
-@code{gnatls}, @code{gnatfind} and @code{gnatxref}.
+recognized by @code{gcc}, @code{gnatmake}, @code{gnatbind}, @code{gnatls}, and all
+project aware tools.
 
 It is possible to install a library before or after the standard GNAT
 library, by reordering the lines in the configuration files. In general, a
@@ -15077,10 +15076,10 @@ types in package Standard.
 @item @code{-gnatx}
 
 Normally the compiler generates full cross-referencing information in
-the @code{ALI} file. This information is used by a number of tools,
-including @code{gnatfind} and @code{gnatxref}. The @code{-gnatx} switch
-suppresses this information. This saves some space and may slightly
-speed up compilation, but means that these tools cannot be used.
+the @code{ALI} file. This information is used by a number of tools.
+The @code{-gnatx} switch suppresses this information. This saves some space
+and may slightly speed up compilation, but means that tools depending
+on this information cannot be used.
 @end table
 
 @geindex -fgnat-encodings (gcc)
