@@ -5933,6 +5933,12 @@ cxx_eval_store_expression (const constexpr_ctx *ctx, tree t,
     {
       /* See above on initialization of empty bases.  */
       gcc_assert (is_empty_class (TREE_TYPE (init)) && !lval);
+      if (!*valp)
+	{
+	  /* But do make sure we have something in *valp.  */
+	  *valp = build_constructor (type, nullptr);
+	  CONSTRUCTOR_NO_CLEARING (*valp) = no_zero_init;
+	}
       return init;
     }
   else
