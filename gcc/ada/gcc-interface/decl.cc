@@ -630,6 +630,17 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
       break;
 
     case E_Constant:
+      /* If this is a constant related to a return in a function returning by
+	 invisible reference without expression, get the return object.  */
+      if (Is_Related_To_Func_Return (gnat_entity)
+	  && current_function_decl
+	  && TREE_ADDRESSABLE (TREE_TYPE (current_function_decl))
+	  && !gnu_expr)
+	{
+	  gnu_decl = DECL_RESULT (current_function_decl);
+	  break;
+	}
+
       /* Ignore constant definitions already marked with the error node.  See
 	 the N_Object_Declaration case of gnat_to_gnu for the rationale.  */
       if (definition

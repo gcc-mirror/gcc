@@ -5281,6 +5281,15 @@ Call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target,
 		   && return_slot_opt_for_pure_call_p (gnu_target, gnu_call))
 	    op_code = INIT_EXPR;
 
+	  /* If this is the initialization of a return object in a function
+	     returning by invisible reference, we can always use the return
+	     slot optimization.  */
+	  else if (TREE_CODE (gnu_target) == INDIRECT_REF
+		   && TREE_CODE (TREE_OPERAND (gnu_target, 0)) == RESULT_DECL
+		   && current_function_decl
+		   && TREE_ADDRESSABLE (TREE_TYPE (current_function_decl)))
+	    op_code = INIT_EXPR;
+
 	  else
 	    op_code = MODIFY_EXPR;
 
@@ -6379,6 +6388,39 @@ gnat_to_gnu (Node_Id gnat_node)
 	       && !Is_Constrained (Etype (gnat_temp)))
 	      || Is_Concurrent_Type (Etype (gnat_temp))))
 	break;
+
+      /* If this is a constant related to a return initialized by a reference
+	 to a function call in a function returning by invisible reference:
+
+	   type Ann is access all Result_Type;
+	   Rnn : constant Ann := Func'reference;
+	   [...]
+	   return Rnn.all;
+
+	 then elide the temporary by forwarding the return object to Func:
+
+	   *<retval> = Func (); [return slot optimization]
+	   [...]
+	   return <retval>;
+
+	 That's necessary if the result type needs finalization because the
+	 temporary would never be adjusted as Expand_Simple_Function_Return
+	 also elides the temporary in this case.  */
+      if (Ekind (gnat_temp) == E_Constant
+	  && Is_Related_To_Func_Return (gnat_temp)
+	  && Nkind (Expression (gnat_node)) == N_Reference
+	  && Nkind (Prefix (Expression (gnat_node))) == N_Function_Call
+	  && current_function_decl
+	  && TREE_ADDRESSABLE (TREE_TYPE (current_function_decl)))
+	{
+	  gnu_result = gnat_to_gnu_entity (gnat_temp, NULL_TREE, true);
+	  gnu_result = build_unary_op (INDIRECT_REF, NULL_TREE, gnu_result);
+	  gnu_result
+	    = Call_to_gnu (Prefix (Expression (gnat_node)),
+			   &gnu_result_type, gnu_result,
+			   NOT_ATOMIC, false);
+	  break;
+	}
 
       if (Present (Expression (gnat_node))
 	  && !(kind == N_Object_Declaration && No_Initialization (gnat_node))
