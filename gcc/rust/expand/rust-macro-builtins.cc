@@ -306,4 +306,74 @@ MacroBuiltin::concat (Location invoc_locus, AST::MacroInvocData &invoc)
   return AST::ASTFragment ({node});
 }
 
+/* Expand builtin macro env!(), which inspects an environment variable at
+   compile time. */
+
+AST::ASTFragment
+MacroBuiltin::env (Location invoc_locus, AST::MacroInvocData &invoc)
+{
+  auto invoc_token_tree = invoc.get_delim_tok_tree ();
+  MacroInvocLexer lex (invoc_token_tree.to_token_stream ());
+  Parser<MacroInvocLexer> parser (std::move (lex));
+
+  auto last_token_id = macro_end_token (invoc_token_tree, parser);
+
+  if (parser.peek_current_token ()->get_id () != STRING_LITERAL)
+    {
+      if (parser.peek_current_token ()->get_id () == last_token_id)
+	rust_error_at (invoc_locus, "env! takes 1 or 2 arguments");
+      else
+	rust_error_at (parser.peek_current_token ()->get_locus (),
+		       "argument must be a string literal");
+      return AST::ASTFragment::create_error ();
+    }
+
+  auto lit_expr = parser.parse_literal_expr ();
+  auto comma_skipped = parser.maybe_skip_token (COMMA);
+
+  std::unique_ptr<AST::LiteralExpr> error_expr = nullptr;
+
+  if (parser.peek_current_token ()->get_id () != last_token_id)
+    {
+      if (!comma_skipped)
+	{
+	  rust_error_at (parser.peek_current_token ()->get_locus (),
+			 "expected token: %<,%>");
+	  return AST::ASTFragment::create_error ();
+	}
+      if (parser.peek_current_token ()->get_id () != STRING_LITERAL)
+	{
+	  rust_error_at (parser.peek_current_token ()->get_locus (),
+			 "argument must be a string literal");
+	  return AST::ASTFragment::create_error ();
+	}
+
+      error_expr = parser.parse_literal_expr ();
+      parser.maybe_skip_token (COMMA);
+    }
+
+  if (parser.peek_current_token ()->get_id () != last_token_id)
+    {
+      rust_error_at (invoc_locus, "env! takes 1 or 2 arguments");
+      return AST::ASTFragment::create_error ();
+    }
+
+  parser.skip_token (last_token_id);
+
+  auto env_value = getenv (lit_expr->as_string ().c_str ());
+
+  if (env_value == nullptr)
+    {
+      if (error_expr == nullptr)
+	rust_error_at (invoc_locus, "environment variable %qs not defined",
+		       lit_expr->as_string ().c_str ());
+      else
+	rust_error_at (invoc_locus, "%s", error_expr->as_string ().c_str ());
+      return AST::ASTFragment::create_error ();
+    }
+
+  auto node = AST::SingleASTNode (make_string (invoc_locus, env_value));
+  return AST::ASTFragment ({node});
+}
+
 } // namespace Rust
