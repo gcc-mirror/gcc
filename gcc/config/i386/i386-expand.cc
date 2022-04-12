@@ -17036,7 +17036,8 @@ ix86_emit_fp_unordered_jump (rtx label)
 
 /* Output code to perform an sinh XFmode calculation.  */
 
-void ix86_emit_i387_sinh (rtx op0, rtx op1)
+void
+ix86_emit_i387_sinh (rtx op0, rtx op1)
 {
   rtx e1 = gen_reg_rtx (XFmode);
   rtx e2 = gen_reg_rtx (XFmode);
@@ -17084,7 +17085,8 @@ void ix86_emit_i387_sinh (rtx op0, rtx op1)
 
 /* Output code to perform an cosh XFmode calculation.  */
 
-void ix86_emit_i387_cosh (rtx op0, rtx op1)
+void
+ix86_emit_i387_cosh (rtx op0, rtx op1)
 {
   rtx e1 = gen_reg_rtx (XFmode);
   rtx e2 = gen_reg_rtx (XFmode);
@@ -17106,7 +17108,8 @@ void ix86_emit_i387_cosh (rtx op0, rtx op1)
 
 /* Output code to perform an tanh XFmode calculation.  */
 
-void ix86_emit_i387_tanh (rtx op0, rtx op1)
+void
+ix86_emit_i387_tanh (rtx op0, rtx op1)
 {
   rtx e1 = gen_reg_rtx (XFmode);
   rtx e2 = gen_reg_rtx (XFmode);
@@ -17152,7 +17155,8 @@ void ix86_emit_i387_tanh (rtx op0, rtx op1)
 
 /* Output code to perform an asinh XFmode calculation.  */
 
-void ix86_emit_i387_asinh (rtx op0, rtx op1)
+void
+ix86_emit_i387_asinh (rtx op0, rtx op1)
 {
   rtx e1 = gen_reg_rtx (XFmode);
   rtx e2 = gen_reg_rtx (XFmode);
@@ -17204,7 +17208,8 @@ void ix86_emit_i387_asinh (rtx op0, rtx op1)
 
 /* Output code to perform an acosh XFmode calculation.  */
 
-void ix86_emit_i387_acosh (rtx op0, rtx op1)
+void
+ix86_emit_i387_acosh (rtx op0, rtx op1)
 {
   rtx e1 = gen_reg_rtx (XFmode);
   rtx e2 = gen_reg_rtx (XFmode);
@@ -17230,7 +17235,8 @@ void ix86_emit_i387_acosh (rtx op0, rtx op1)
 
 /* Output code to perform an atanh XFmode calculation.  */
 
-void ix86_emit_i387_atanh (rtx op0, rtx op1)
+void
+ix86_emit_i387_atanh (rtx op0, rtx op1)
 {
   rtx e1 = gen_reg_rtx (XFmode);
   rtx e2 = gen_reg_rtx (XFmode);
@@ -17281,7 +17287,8 @@ void ix86_emit_i387_atanh (rtx op0, rtx op1)
 
 /* Output code to perform a log1p XFmode calculation.  */
 
-void ix86_emit_i387_log1p (rtx op0, rtx op1)
+void
+ix86_emit_i387_log1p (rtx op0, rtx op1)
 {
   rtx_code_label *label1 = gen_label_rtx ();
   rtx_code_label *label2 = gen_label_rtx ();
@@ -17325,7 +17332,8 @@ void ix86_emit_i387_log1p (rtx op0, rtx op1)
 }
 
 /* Emit code for round calculation.  */
-void ix86_emit_i387_round (rtx op0, rtx op1)
+void
+ix86_emit_i387_round (rtx op0, rtx op1)
 {
   machine_mode inmode = GET_MODE (op1);
   machine_mode outmode = GET_MODE (op0);
@@ -17439,7 +17447,8 @@ void ix86_emit_i387_round (rtx op0, rtx op1)
 /* Output code to perform a Newton-Rhapson approximation of a single precision
    floating point divide [http://en.wikipedia.org/wiki/N-th_root_algorithm].  */
 
-void ix86_emit_swdivsf (rtx res, rtx a, rtx b, machine_mode mode)
+void
+ix86_emit_swdivsf (rtx res, rtx a, rtx b, machine_mode mode)
 {
   rtx x0, x1, e0, e1;
 
@@ -17490,7 +17499,8 @@ void ix86_emit_swdivsf (rtx res, rtx a, rtx b, machine_mode mode)
 /* Output code to perform a Newton-Rhapson approximation of a
    single precision floating point [reciprocal] square root.  */
 
-void ix86_emit_swsqrtsf (rtx res, rtx a, machine_mode mode, bool recip)
+void
+ix86_emit_swsqrtsf (rtx res, rtx a, machine_mode mode, bool recip)
 {
   rtx x0, e0, e1, e2, e3, mthree, mhalf;
   REAL_VALUE_TYPE r;
@@ -23245,9 +23255,10 @@ ix86_expand_divmod_libfunc (rtx libfunc, machine_mode mode,
   *rem_p = rem;
 }
 
-void ix86_expand_atomic_fetch_op_loop (rtx target, rtx mem, rtx val,
-				       enum rtx_code code, bool after,
-				       bool doubleword)
+void
+ix86_expand_atomic_fetch_op_loop (rtx target, rtx mem, rtx val,
+				  enum rtx_code code, bool after,
+				  bool doubleword)
 {
   rtx old_reg, new_reg, old_mem, success;
   machine_mode mode = GET_MODE (target);
@@ -23291,10 +23302,11 @@ void ix86_expand_atomic_fetch_op_loop (rtx target, rtx mem, rtx val,
    it will be relaxed to an atomic load + compare, and skip
    cmpxchg instruction if mem != exp_input.  */
 
-void ix86_expand_cmpxchg_loop (rtx *ptarget_bool, rtx target_val,
-			       rtx mem, rtx exp_input, rtx new_input,
-			       rtx mem_model, bool doubleword,
-			       rtx_code_label *loop_label)
+void
+ix86_expand_cmpxchg_loop (rtx *ptarget_bool, rtx target_val,
+			  rtx mem, rtx exp_input, rtx new_input,
+			  rtx mem_model, bool doubleword,
+			  rtx_code_label *loop_label)
 {
   rtx_code_label *cmp_label = NULL;
   rtx_code_label *done_label = NULL;

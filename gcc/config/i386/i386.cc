@@ -6524,7 +6524,8 @@ ix86_initial_elimination_offset (int from, int to)
 }
 
 /* Emits a warning for unsupported msabi to sysv pro/epilogues.  */
-void warn_once_call_ms2sysv_xlogues (const char *feature)
+void
+warn_once_call_ms2sysv_xlogues (const char *feature)
 {
   static bool warned_once = false;
   if (!warned_once)
