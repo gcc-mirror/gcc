@@ -2121,7 +2121,7 @@ Parser<ManagedTokenSource>::parse_visibility ()
   // check for no visibility
   if (lexer.peek_token ()->get_id () != PUB)
     {
-      return AST::Visibility::create_error ();
+      return AST::Visibility::create_private ();
     }
 
   lexer.skip_token ();

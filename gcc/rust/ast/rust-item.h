@@ -609,41 +609,44 @@ protected:
 struct Visibility
 {
 public:
-  enum PublicVisType
+  enum VisType
   {
-    NONE,
-    CRATE,
-    SELF,
-    SUPER,
-    IN_PATH
+    PRIV,
+    PUB,
+    PUB_CRATE,
+    PUB_SELF,
+    PUB_SUPER,
+    PUB_IN_PATH
   };
 
 private:
-  // if vis is public, one of these
-  PublicVisType public_vis_type;
-  // Only assigned if public_vis_type is IN_PATH
+  VisType vis_type;
+  // Only assigned if vis_type is IN_PATH
   SimplePath in_path;
 
   // should this store location info?
 
 public:
   // Creates a Visibility - TODO make constructor protected or private?
-  Visibility (PublicVisType public_vis_type, SimplePath in_path)
-    : public_vis_type (public_vis_type), in_path (std::move (in_path))
+  Visibility (VisType vis_type, SimplePath in_path)
+    : vis_type (vis_type), in_path (std::move (in_path))
   {}
 
-  PublicVisType get_public_vis_type () const { return public_vis_type; }
+  VisType get_public_vis_type () const { return vis_type; }
 
   // Returns whether visibility is in an error state.
   bool is_error () const
   {
-    return public_vis_type == IN_PATH && in_path.is_empty ();
+    return vis_type == PUB_IN_PATH && in_path.is_empty ();
   }
+
+  // Returns whether visibility is public or not.
+  bool is_public () const { return vis_type != PRIV && !is_error (); }
 
   // Creates an error visibility.
   static Visibility create_error ()
   {
-    return Visibility (IN_PATH, SimplePath::create_empty ());
+    return Visibility (PUB_IN_PATH, SimplePath::create_empty ());
   }
 
   // Unique pointer custom clone function
@@ -657,32 +660,38 @@ public:
   // Creates a public visibility with no further features/arguments.
   static Visibility create_public ()
   {
-    return Visibility (NONE, SimplePath::create_empty ());
+    return Visibility (PUB, SimplePath::create_empty ());
   }
 
   // Creates a public visibility with crate-relative paths or whatever.
   static Visibility create_crate ()
   {
-    return Visibility (CRATE, SimplePath::create_empty ());
+    return Visibility (PUB_CRATE, SimplePath::create_empty ());
   }
 
   // Creates a public visibility with self-relative paths or whatever.
   static Visibility create_self ()
   {
-    return Visibility (SELF, SimplePath::create_empty ());
+    return Visibility (PUB_SELF, SimplePath::create_empty ());
   }
 
   // Creates a public visibility with parent module-relative paths or
   // whatever.
   static Visibility create_super ()
   {
-    return Visibility (SUPER, SimplePath::create_empty ());
+    return Visibility (PUB_SUPER, SimplePath::create_empty ());
+  }
+
+  // Creates a private visibility
+  static Visibility create_private ()
+  {
+    return Visibility (PRIV, SimplePath::create_empty ());
   }
 
   // Creates a public visibility with a given path or whatever.
   static Visibility create_in_path (SimplePath in_path)
   {
-    return Visibility (IN_PATH, std::move (in_path));
+    return Visibility (PUB_IN_PATH, std::move (in_path));
   }
 
   std::string as_string () const;
@@ -938,7 +947,7 @@ protected:
 public:
   /* Does the item have some kind of public visibility (non-default
    * visibility)? */
-  bool has_visibility () const { return !visibility.is_error (); }
+  bool has_visibility () const { return visibility.is_public (); }
 
   std::string as_string () const override;
 
