@@ -1637,8 +1637,16 @@ find_last_decl (tree decl)
 	  if (TREE_CODE (*iter) == OVERLOAD)
 	    continue;
 
-	  if (decls_match (decl, *iter, /*record_decls=*/false))
-	    return *iter;
+	  tree d = *iter;
+
+	  /* We can't compare versions in the middle of processing the
+	     attribute that has the version.  */
+	  if (TREE_CODE (d) == FUNCTION_DECL
+	      && DECL_FUNCTION_VERSIONED (d))
+	    return NULL_TREE;
+
+	  if (decls_match (decl, d, /*record_decls=*/false))
+	    return d;
 	}
       return NULL_TREE;
     }
