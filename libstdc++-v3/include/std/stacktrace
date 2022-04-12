@@ -289,7 +289,20 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    if (__err < 0)
 	      __ret._M_clear();
 	    else if (__ret.size() > __max_depth)
-	      __ret._M_impl._M_resize(__max_depth, __ret._M_alloc);
+	      {
+		__ret._M_impl._M_resize(__max_depth, __ret._M_alloc);
+
+		if (__ret._M_impl._M_capacity / 2 >= __max_depth)
+		  {
+		    // shrink to fit
+		    _Impl __tmp = __ret._M_impl._M_clone(__ret._M_alloc);
+		    if (__tmp._M_capacity)
+		      {
+			__ret._M_clear();
+			__ret._M_impl = __tmp;
+		      }
+		  }
+	      }
 	  }
 	return __ret;
       }
