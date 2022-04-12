@@ -24,6 +24,7 @@
 #include "rust-hir-expr.h"
 #include "rust-hir-stmt.h"
 #include "rust-hir-item.h"
+#include "rust-hir-type-check.h"
 
 namespace Rust {
 namespace Privacy {

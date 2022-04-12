@@ -17,6 +17,7 @@
 // <http://www.gnu.org/licenses/>.
 
 #include "rust-reachability.h"
+#include "rust-tyty.h"
 
 namespace Rust {
 namespace Privacy {
@@ -80,12 +81,34 @@ ReachabilityVisitor::visit (HIR::StructStruct &struct_item)
 	if (field.get_visibility ().is_public ())
 	  ctx.update_reachability (field.get_mappings (), struct_reach);
 
-      // for (auto &generic : struct_item.get_generic_params ())
-      // FIXME: How do we visit these generics's predicates with the
-      // reachability visitor?
+      for (auto &generic : struct_item.get_generic_params ())
+	{
+	  switch (generic->get_kind ())
+	    {
+	    case HIR::GenericParam::LIFETIME:
+	      break;
+	    case HIR::GenericParam::TYPE:
+	      TyTy::BaseType *generic_ty = nullptr;
+	      rust_assert (
+		ty_ctx.lookup_type (generic->get_mappings ().get_hirid (),
+				    &generic_ty));
 
-      // FIXME: How do we get each generic's predicates from here?
-      // TypeContext?
+	      if (generic_ty->get_kind () == TyTy::PARAM)
+		{
+		  auto generic_param
+		    = static_cast<TyTy::ParamType *> (generic_ty);
+		  for (const auto &bound :
+		       generic_param->get_specified_bounds ())
+		    {
+		      const auto trait = bound.get ()->get_hir_trait_ref ();
+		      ctx.update_reachability (trait->get_mappings (),
+					       struct_reach);
+		    }
+		}
+
+	      break;
+	    }
+	}
 
       // for (auto &field : struct_item.get_fields ())
       // if (field.get_visibility ().is_public ())

@@ -25,6 +25,7 @@
 #include "rust-hir-expr.h"
 #include "rust-hir-stmt.h"
 #include "rust-hir-item.h"
+#include "rust-hir-type-check.h"
 
 namespace Rust {
 namespace Privacy {
@@ -40,8 +41,9 @@ namespace Privacy {
 class ReachabilityVisitor : public HIR::HIRVisItemVisitor
 {
 public:
-  ReachabilityVisitor (PrivacyContext &ctx)
-    : current_level (ReachLevel::Reachable), ctx (ctx)
+  ReachabilityVisitor (PrivacyContext &ctx,
+		       const ::Rust::Resolver::TypeCheckContext &ty_ctx)
+    : current_level (ReachLevel::Reachable), ctx (ctx), ty_ctx (ty_ctx)
   {}
 
   virtual void visit (HIR::Module &mod);
@@ -62,6 +64,7 @@ public:
 private:
   ReachLevel current_level;
   PrivacyContext &ctx;
+  const ::Rust::Resolver::TypeCheckContext &ty_ctx;
 };
 } // namespace Privacy
 } // namespace Rust
