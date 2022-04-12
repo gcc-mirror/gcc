@@ -69,4 +69,17 @@ struct DefId
 
 } // namespace Rust
 
+namespace std {
+template <> struct hash<Rust::DefId>
+{
+  size_t operator() (const Rust::DefId &id) const noexcept
+  {
+    // TODO: Check if we can improve performance by having a better hash
+    // algorithm for `DefId`s
+    return hash<uint32_t> () (hash<uint32_t> () (id.crateNum)
+			      + hash<uint32_t> () (id.localDefId));
+  }
+};
+} // namespace std
+
 #endif // RUST_MAPPING_COMMON

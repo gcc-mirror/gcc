@@ -24,7 +24,7 @@ namespace Privacy {
 
 static ReachLevel
 insert_if_higher (ReachLevel new_level,
-		  std::unordered_map<HirId, ReachLevel>::iterator &existing)
+		  std::unordered_map<DefId, ReachLevel>::iterator &existing)
 {
   if (new_level > existing->second)
     existing->second = new_level;
@@ -36,18 +36,19 @@ ReachLevel
 PrivacyContext::update_reachability (const Analysis::NodeMapping &mapping,
 				     ReachLevel reach)
 {
-  auto existing_reach = reachability_map.find (mapping.get_hirid ());
+  auto def_id = mapping.get_defid ();
+  auto existing_reach = reachability_map.find (def_id);
   if (existing_reach != reachability_map.end ())
     return insert_if_higher (reach, existing_reach);
 
-  reachability_map.insert ({mapping.get_hirid (), reach});
+  reachability_map.insert ({def_id, reach});
   return reach;
 }
 
 const ReachLevel *
 PrivacyContext::lookup_reachability (const Analysis::NodeMapping &mapping)
 {
-  auto existing_reach = reachability_map.find (mapping.get_hirid ());
+  auto existing_reach = reachability_map.find (mapping.get_defid ());
   if (existing_reach == reachability_map.end ())
     return nullptr;
 

@@ -64,7 +64,7 @@ public:
   const ReachLevel *lookup_reachability (const Analysis::NodeMapping &mapping);
 
 private:
-  std::unordered_map<HirId, ReachLevel> reachability_map;
+  std::unordered_map<DefId, ReachLevel> reachability_map;
 };
 } // namespace Privacy
 } // namespace Rust
