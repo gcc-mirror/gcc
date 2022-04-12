@@ -23,8 +23,6 @@
 #include "rust-linemap.h"
 #include "safe-ctype.h"
 
-#include <sstream> // for ostringstream
-
 namespace Rust {
 // TODO: move to separate compilation unit?
 // overload += for uint32_t to allow 32-bit encoded utf-8 to be added

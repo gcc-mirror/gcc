@@ -1,8 +1,6 @@
 #ifndef RUST_MAKE_UNIQUE_H
 #define RUST_MAKE_UNIQUE_H
 
-#include <memory>
-
 namespace Rust {
 
 template <typename T, typename... Ts>

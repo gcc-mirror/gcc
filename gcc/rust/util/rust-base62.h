@@ -19,7 +19,7 @@
 #ifndef RUST_BASE62_H
 #define RUST_BASE62_H
 
-#include <string>
+#include "rust-system.h"
 
 namespace Rust {
 

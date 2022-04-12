@@ -23,9 +23,6 @@
 
 #include "rust-ast.h"
 
-#include <string>
-#include <vector>
-
 namespace Rust {
 namespace AST {
 

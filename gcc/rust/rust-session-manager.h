@@ -24,7 +24,7 @@
 #include "rust-backend.h"
 
 #include "config.h"
-#include "system.h"
+#include "rust-system.h"
 #include "coretypes.h"
 #include "options.h"
 

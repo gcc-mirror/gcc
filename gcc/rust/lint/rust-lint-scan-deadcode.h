@@ -19,7 +19,6 @@
 #ifndef RUST_HIR_SCAN_DEADCODE
 #define RUST_HIR_SCAN_DEADCODE
 
-#include <set>
 #include "rust-hir-full-decls.h"
 #include "rust-hir-map.h"
 #include "rust-lint-marklive.h"

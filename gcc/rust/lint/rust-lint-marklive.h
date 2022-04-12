@@ -19,7 +19,6 @@
 #ifndef RUST_HIR_LIVENESS
 #define RUST_HIR_LIVENESS
 
-#include <set>
 #include "rust-hir-full-decls.h"
 #include "rust-hir-map.h"
 #include "rust-lint-marklive-base.h"

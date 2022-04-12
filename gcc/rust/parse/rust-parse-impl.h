@@ -11923,8 +11923,7 @@ Parser<ManagedTokenSource>::parse_path_based_stmt_or_expr (
 		std::unique_ptr<AST::MacroInvocation> stmt (
 		  new AST::MacroInvocation (std::move (invoc_data),
 					    std::move (outer_attrs),
-					    stmt_or_expr_loc),
-		  true);
+					    stmt_or_expr_loc, true));
 		return ExprOrStmt (std::move (stmt));
 	      }
 
@@ -11932,8 +11931,7 @@ Parser<ManagedTokenSource>::parse_path_based_stmt_or_expr (
 	    std::unique_ptr<AST::MacroInvocation> expr (
 	      new AST::MacroInvocation (std::move (invoc_data),
 					std::move (outer_attrs),
-					stmt_or_expr_loc),
-	      false);
+					stmt_or_expr_loc, false));
 	    return ExprOrStmt (std::move (expr));
 	  }
 	else
@@ -12244,8 +12242,8 @@ Parser<ManagedTokenSource>::parse_macro_invocation_maybe_semi (
 
 	  std::unique_ptr<AST::MacroInvocation> stmt (
 	    new AST::MacroInvocation (std::move (invoc_data),
-				      std::move (outer_attrs), macro_locus),
-	    true);
+				      std::move (outer_attrs), macro_locus,
+				      true));
 	  return ExprOrStmt (std::move (stmt));
 	}
 

@@ -41,6 +41,8 @@
 #include <deque>
 #include <functional>
 #include <memory>
+#include <utility>
+#include <fstream>
 
 // Rust frontend requires C++11 minimum, so will have unordered_map and set
 #include <unordered_map>

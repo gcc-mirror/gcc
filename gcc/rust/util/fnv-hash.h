@@ -19,9 +19,6 @@
 #ifndef RUST_FNV_HASH_H
 #define RUST_FNV_HASH_H
 
-#include <cstdint>
-#include <cstddef>
-
 namespace Rust {
 namespace Hash {
 

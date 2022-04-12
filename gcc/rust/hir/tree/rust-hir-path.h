@@ -21,9 +21,6 @@
 
 #include "rust-hir.h"
 
-#include <string>
-#include <vector>
-
 namespace Rust {
 namespace HIR {
 

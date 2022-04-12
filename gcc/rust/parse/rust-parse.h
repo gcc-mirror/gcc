@@ -40,6 +40,11 @@ struct ExprOrStmt
   // statement constructor
   ExprOrStmt (std::unique_ptr<AST::Stmt> stmt) : stmt (std::move (stmt)) {}
 
+  // macro constructor
+  ExprOrStmt (std::unique_ptr<AST::MacroInvocation> macro)
+    : expr (std::move (macro))
+  {}
+
   // Returns whether this object is in an error state.
   bool is_error () const
   {

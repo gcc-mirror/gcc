@@ -18,8 +18,6 @@
 
 #include "rust-base62.h"
 
-#include <algorithm>
-
 namespace Rust {
 
 std::string

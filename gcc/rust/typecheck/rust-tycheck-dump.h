@@ -22,9 +22,6 @@
 #include "rust-hir-type-check-base.h"
 #include "rust-hir-full.h"
 
-#include <fstream>
-#include <sstream>
-
 namespace Rust {
 namespace Resolver {
 
