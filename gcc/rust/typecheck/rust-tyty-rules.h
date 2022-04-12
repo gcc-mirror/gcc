@@ -867,6 +867,18 @@ public:
 		       TyVar (base_resolved->get_ref ()));
   }
 
+  void visit (InferType &type) override
+  {
+    if (type.get_infer_kind () != InferType::InferTypeKind::GENERAL)
+      {
+	BaseRules::visit (type);
+	return;
+      }
+
+    resolved = base->clone ();
+    resolved->set_ref (type.get_ref ());
+  }
+
 private:
   BaseType *get_base () override { return base; }
 
@@ -894,6 +906,18 @@ public:
     resolved = new SliceType (type.get_ref (), type.get_ty_ref (),
 			      type.get_ident ().locus,
 			      TyVar (base_resolved->get_ref ()));
+  }
+
+  void visit (InferType &type) override
+  {
+    if (type.get_infer_kind () != InferType::InferTypeKind::GENERAL)
+      {
+	BaseRules::visit (type);
+	return;
+      }
+
+    resolved = base->clone ();
+    resolved->set_ref (type.get_ref ());
   }
 
 private:
@@ -1140,6 +1164,18 @@ public:
 				    type.get_ident ().locus, fields);
   }
 
+  void visit (InferType &type) override
+  {
+    if (type.get_infer_kind () != InferType::InferTypeKind::GENERAL)
+      {
+	BaseRules::visit (type);
+	return;
+      }
+
+    resolved = base->clone ();
+    resolved->set_ref (type.get_ref ());
+  }
+
 private:
   BaseType *get_base () override { return base; }
 
@@ -1263,6 +1299,18 @@ public:
 				  base->mutability ());
   }
 
+  void visit (InferType &type) override
+  {
+    if (type.get_infer_kind () != InferType::InferTypeKind::GENERAL)
+      {
+	BaseRules::visit (type);
+	return;
+      }
+
+    resolved = base->clone ();
+    resolved->set_ref (type.get_ref ());
+  }
+
 private:
   BaseType *get_base () override { return base; }
 
@@ -1301,6 +1349,18 @@ public:
     resolved = new PointerType (base->get_ref (), base->get_ty_ref (),
 				TyVar (base_resolved->get_ref ()),
 				base->mutability ());
+  }
+
+  void visit (InferType &type) override
+  {
+    if (type.get_infer_kind () != InferType::InferTypeKind::GENERAL)
+      {
+	BaseRules::visit (type);
+	return;
+      }
+
+    resolved = base->clone ();
+    resolved->set_ref (type.get_ref ());
   }
 
 private:
