@@ -289,7 +289,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    if (__err < 0)
 	      __ret._M_clear();
 	    else if (__ret.size() > __max_depth)
-	      __ret._M_impl._M_size = __max_depth;
+	      __ret._M_impl._M_resize(__max_depth, __ret._M_alloc);
 	  }
 	return __ret;
       }
@@ -318,11 +318,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       : _M_alloc(__alloc)
       {
 	if (const auto __s = __other._M_impl._M_size)
-	  if (auto __f = _M_impl._M_allocate(_M_alloc, __s))
-	    {
-	      std::uninitialized_copy_n(__other.begin(), __s, __f);
-	      _M_impl._M_size = __s;
-	    }
+	  _M_impl = __other._M_impl._M_clone(_M_alloc);
       }
 
       basic_stacktrace(basic_stacktrace&& __other,
@@ -334,11 +330,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	else if (_M_alloc == __other._M_alloc)
 	  _M_impl = std::__exchange(__other._M_impl, {});
 	else if (const auto __s = __other._M_impl._M_size)
-	  if (auto __f = _M_impl._M_allocate(_M_alloc, __s))
-	    {
-	      std::uninitialized_copy_n(__other.begin(), __s, __f);
-	      _M_impl._M_size = __s;
-	    }
+	  _M_impl = __other._M_impl._M_clone(_M_alloc);
       }
 
       basic_stacktrace&
@@ -370,19 +362,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    if constexpr (__pocca)
 	      _M_alloc = __other._M_alloc;
 
-	    if (auto __f = _M_impl._M_allocate(_M_alloc, __s))
-	      {
-		std::uninitialized_copy_n(__other.begin(), __s, __f);
-		_M_impl._M_size = __s;
-	      }
+	    _M_impl = __other._M_impl._M_clone(_M_alloc);
 	  }
 	else
 	  {
-	    // Current storage is large enough and can be freed by whichever
-	    // allocator we will have after this function returns.
-	    auto __to = std::copy_n(__other.begin(), __s, begin());
-	    std::destroy(__to, end());
-	    _M_impl._M_size = __s;
+	    // Current storage is large enough.
+	    _M_impl._M_resize(0, _M_alloc);
+	    _M_impl._M_assign(__other._M_impl, _M_alloc);
 
 	    if constexpr (__pocca)
 	      _M_alloc = __other._M_alloc;
@@ -418,23 +404,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      {
 		// Need to allocate new storage.
 		_M_clear();
-
-		if (auto __f = _M_impl._M_allocate(_M_alloc, __s))
-		  {
-		    std::uninitialized_copy_n(__other.begin(), __s, __f);
-		    _M_impl._M_size = __s;
-		  }
+		_M_impl = __other._M_impl._M_clone(_M_alloc);
 	      }
 	    else
 	      {
 		// Current storage is large enough.
-		auto __first = __other.begin();
-		auto __mid = __first + std::min(__s, _M_impl._M_size);
-		auto __last = __other.end();
-		auto __to = std::copy(__first, __mid, begin());
-		__to = std::uninitialized_copy(__mid, __last, __to);
-		std::destroy(__to, end());
-		_M_impl._M_size = __s;
+		_M_impl._M_resize(0, _M_alloc);
+		_M_impl._M_assign(__other._M_impl, _M_alloc);
 	      }
 	  }
 
@@ -527,7 +503,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 
     private:
-      // Precondition: _M_capacity != 0
       bool
       _M_push_back(const value_type& __x) noexcept
       {
@@ -537,7 +512,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       void
       _M_clear() noexcept
       {
-	_M_impl._M_destroy();
+	_M_impl._M_resize(0, _M_alloc);
 	_M_impl._M_deallocate(_M_alloc);
       }
 
@@ -647,31 +622,58 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #undef _GLIBCXX_OPERATOR_DELETE
 #undef _GLIBCXX_OPERATOR_NEW
 
+	// Precondition: __n <= _M_size
 	void
-	_M_destroy() noexcept
+	_M_resize(size_type __n, allocator_type& __alloc) noexcept
 	{
-	  std::destroy_n(_M_frames, _M_size);
-	  _M_size = 0;
+	  for (size_type __i = __n; __i < _M_size; ++__i)
+	    _AllocTraits::destroy(__alloc, &_M_frames[__i]);
+	  _M_size = __n;
 	}
 
-	// Precondition: _M_capacity != 0
 	bool
 	_M_push_back(allocator_type& __alloc,
 		     const stacktrace_entry& __f) noexcept
 	{
 	  if (_M_size == _M_capacity) [[unlikely]]
 	    {
-	      _Impl __tmp;
-	      if (auto __f = __tmp._M_allocate(__alloc, _M_capacity * 2))
-		std::uninitialized_copy_n(_M_frames, _M_size, __f);
-	      else
+	      _Impl __tmp = _M_xclone(_M_capacity ? _M_capacity : 8, __alloc);
+	      if (!__tmp._M_capacity) [[unlikely]]
 		return false;
+	      _M_resize(0, __alloc);
 	      _M_deallocate(__alloc);
 	      *this = __tmp;
 	    }
 	  stacktrace_entry* __addr = std::to_address(_M_frames + _M_size++);
-	  std::construct_at(__addr, __f);
+	  _AllocTraits::construct(__alloc, __addr, __f);
 	  return true;
+	}
+
+	// Precondition: _M_size != 0
+	_Impl
+	_M_clone(allocator_type& __alloc) const noexcept
+	{
+	  return _M_xclone(_M_size, __alloc);
+	}
+
+	// Precondition: _M_size != 0 || __extra != 0
+	_Impl
+	_M_xclone(size_type __extra, allocator_type& __alloc) const noexcept
+	{
+	  _Impl __i;
+	  if (__i._M_allocate(__alloc, _M_size + __extra)) [[likely]]
+	    __i._M_assign(*this, __alloc);
+	  return __i;
+	}
+
+	// Precondition: _M_capacity >= __other._M_size
+	void
+	_M_assign(const _Impl& __other, allocator_type& __alloc) noexcept
+	{
+	  std::__uninitialized_copy_a(__other._M_frames,
+				      __other._M_frames + __other._M_size,
+				      _M_frames, __alloc);
+	  _M_size = __other._M_size;
 	}
       };
 
