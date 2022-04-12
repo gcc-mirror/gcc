@@ -237,6 +237,38 @@ get_tree_node_for_type (enum gcc_jit_types type_)
     case GCC_JIT_TYPE_UNSIGNED_INT:
       return unsigned_type_node;
 
+    case GCC_JIT_TYPE_UINT8_T:
+      return unsigned_intQI_type_node;
+    case GCC_JIT_TYPE_UINT16_T:
+      return uint16_type_node;
+    case GCC_JIT_TYPE_UINT32_T:
+      return uint32_type_node;
+    case GCC_JIT_TYPE_UINT64_T:
+      return uint64_type_node;
+    case GCC_JIT_TYPE_UINT128_T:
+      if (targetm.scalar_mode_supported_p (TImode))
+	return uint128_type_node;
+
+      add_error (NULL, "gcc_jit_types value unsupported on this target: %i",
+		 type_);
+      return NULL;
+
+    case GCC_JIT_TYPE_INT8_T:
+      return intQI_type_node;
+    case GCC_JIT_TYPE_INT16_T:
+      return intHI_type_node;
+    case GCC_JIT_TYPE_INT32_T:
+      return intSI_type_node;
+    case GCC_JIT_TYPE_INT64_T:
+      return intDI_type_node;
+    case GCC_JIT_TYPE_INT128_T:
+      if (targetm.scalar_mode_supported_p (TImode))
+	return intTI_type_node;
+
+      add_error (NULL, "gcc_jit_types value unsupported on this target: %i",
+		 type_);
+      return NULL;
+
     case GCC_JIT_TYPE_LONG:
       return long_integer_type_node;
     case GCC_JIT_TYPE_UNSIGNED_LONG:
@@ -268,6 +300,9 @@ get_tree_node_for_type (enum gcc_jit_types type_)
       return complex_long_double_type_node;
     }
 
+  add_error (NULL, "unrecognized (enum gcc_jit_types) value: %i",
+	     type_);
+
   return NULL;
 }
 
@@ -280,10 +315,7 @@ get_type (enum gcc_jit_types type_)
 {
   tree type_node = get_tree_node_for_type (type_);
   if (type_node == NULL)
-    {
-      add_error (NULL, "unrecognized (enum gcc_jit_types) value: %i", type_);
-      return NULL;
-    }
+    return NULL;
 
   return new type (type_node);
 }

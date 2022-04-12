@@ -352,6 +352,17 @@ compatible_types (gcc::jit::recording::type *ltype,
   return ltype->accepts_writes_from (rtype);
 }
 
+/* Public entrypoint wrapping compatible_types.  */
+
+int
+gcc_jit_compatible_types (gcc_jit_type *ltype,
+			  gcc_jit_type *rtype)
+{
+  RETURN_VAL_IF_FAIL (ltype, 0, NULL, NULL, "NULL ltype");
+  RETURN_VAL_IF_FAIL (rtype, 0, NULL, NULL, "NULL rtype");
+  return compatible_types (ltype, rtype);
+}
+
 /* Public entrypoint for acquiring a gcc_jit_context.
    Note that this creates a new top-level context; contrast with
    gcc_jit_context_new_child_context below.
@@ -456,7 +467,7 @@ gcc_jit_context_get_type (gcc_jit_context *ctxt,
   JIT_LOG_FUNC (ctxt->get_logger ());
   RETURN_NULL_IF_FAIL_PRINTF1 (
     (type >= GCC_JIT_TYPE_VOID
-     && type <= GCC_JIT_TYPE_FILE_PTR),
+     && type < NUM_GCC_JIT_TYPES),
     ctxt, NULL,
     "unrecognized value for enum gcc_jit_types: %i", type);
 
@@ -521,6 +532,22 @@ gcc_jit_type_get_volatile (gcc_jit_type *type)
   RETURN_NULL_IF_FAIL (type, NULL, NULL, "NULL type");
 
   return (gcc_jit_type *)type->get_volatile ();
+}
+
+/* Public entrypoint.  See description in libgccjit.h.
+
+   After error-checking, the real work is done by the
+   gcc::jit::recording::type::get_size method, in
+   jit-recording.cc.  */
+
+ssize_t
+gcc_jit_type_get_size (gcc_jit_type *type)
+{
+  RETURN_VAL_IF_FAIL (type, -1, NULL, NULL, "NULL type");
+  RETURN_VAL_IF_FAIL
+    (type->is_int (), -1, NULL, NULL,
+     "only getting the size of an integer type is supported for now");
+  return type->get_size ();
 }
 
 /* Public entrypoint.  See description in libgccjit.h.
@@ -2119,7 +2146,8 @@ gcc_jit_context_new_binary_op (gcc_jit_context *ctxt,
   RETURN_NULL_IF_FAIL (a, ctxt, loc, "NULL a");
   RETURN_NULL_IF_FAIL (b, ctxt, loc, "NULL b");
   RETURN_NULL_IF_FAIL_PRINTF4 (
-    a->get_type ()->unqualified () == b->get_type ()->unqualified (),
+    compatible_types (a->get_type ()->unqualified (),
+		      b->get_type ()->unqualified ()),
     ctxt, loc,
     "mismatching types for binary op:"
     " a: %s (type: %s) b: %s (type: %s)",

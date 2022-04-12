@@ -243,3 +243,9 @@ LIBGCCJIT_ABI_19 {
     gcc_jit_context_new_union_constructor;
     gcc_jit_global_set_initializer_rvalue;
 } LIBGCCJIT_ABI_18;
+
+LIBGCCJIT_ABI_20 {
+  global:
+    gcc_jit_compatible_types;
+    gcc_jit_type_get_size;
+} LIBGCCJIT_ABI_19;

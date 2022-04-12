@@ -1,3 +1,4 @@
+#include <stdint.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <stddef.h>
@@ -28,6 +29,21 @@ struct zoo
 
   long long m_long_long;
   unsigned long long m_unsigned_long_long;
+
+  uint8_t m_u8;
+  uint16_t m_u16;
+  uint32_t m_u32;
+  uint64_t m_u64;
+
+  int8_t m_i8;
+  int16_t m_i16;
+  int32_t m_i32;
+  int64_t m_i64;
+
+#ifdef __SIZEOF_INT128__
+  __uint128_t m_u128;
+  __int128_t m_i128;
+#endif
 
   int m_sized_int_type;
 
@@ -101,6 +117,31 @@ create_code (gcc_jit_context *ctxt, void *user_data)
   gcc_jit_field *field_m_unsigned_long_long =
     CREATE_FIELD (GCC_JIT_TYPE_UNSIGNED_LONG_LONG, "m_unsigned_long_long");
 
+  gcc_jit_field *field_m_u8 =
+    CREATE_FIELD (GCC_JIT_TYPE_UINT8_T, "m_u8");
+  gcc_jit_field *field_m_u16 =
+    CREATE_FIELD (GCC_JIT_TYPE_UINT16_T, "m_u16");
+  gcc_jit_field *field_m_u32 =
+    CREATE_FIELD (GCC_JIT_TYPE_UINT32_T, "m_u32");
+  gcc_jit_field *field_m_u64 =
+    CREATE_FIELD (GCC_JIT_TYPE_UINT64_T, "m_u64");
+
+  gcc_jit_field *field_m_i8 =
+    CREATE_FIELD (GCC_JIT_TYPE_INT8_T, "m_i8");
+  gcc_jit_field *field_m_i16 =
+    CREATE_FIELD (GCC_JIT_TYPE_INT16_T, "m_i16");
+  gcc_jit_field *field_m_i32 =
+    CREATE_FIELD (GCC_JIT_TYPE_INT32_T, "m_i32");
+  gcc_jit_field *field_m_i64 =
+    CREATE_FIELD (GCC_JIT_TYPE_INT64_T, "m_i64");
+
+#ifdef __SIZEOF_INT128__
+  gcc_jit_field *field_m_u128 =
+    CREATE_FIELD (GCC_JIT_TYPE_UINT128_T, "m_u128");
+  gcc_jit_field *field_m_i128 =
+    CREATE_FIELD (GCC_JIT_TYPE_INT128_T, "m_i128");
+#endif
+
   /* Signed int type with sizeof (int): */
   gcc_jit_type *sized_int_type =
     gcc_jit_context_get_int_type (ctxt, sizeof (int), 1);
@@ -146,6 +187,21 @@ create_code (gcc_jit_context *ctxt, void *user_data)
 
     field_m_long_long,
     field_m_unsigned_long_long,
+
+    field_m_u8,
+    field_m_u16,
+    field_m_u32,
+    field_m_u64,
+
+    field_m_i8,
+    field_m_i16,
+    field_m_i32,
+    field_m_i64,
+
+#ifdef __SIZEOF_INT128__
+    field_m_u128,
+    field_m_i128,
+#endif
 
     field_m_sized_int_type,
 
@@ -266,6 +322,61 @@ create_code (gcc_jit_context *ctxt, void *user_data)
       gcc_jit_context_get_type (ctxt, GCC_JIT_TYPE_UNSIGNED_LONG_LONG),
       123456789))
 
+  ASSIGN(field_m_u8,
+    gcc_jit_context_new_rvalue_from_int (
+      ctxt,
+      gcc_jit_context_get_type (ctxt, GCC_JIT_TYPE_UINT8_T),
+      123))
+  ASSIGN(field_m_u16,
+    gcc_jit_context_new_rvalue_from_int (
+      ctxt,
+      gcc_jit_context_get_type (ctxt, GCC_JIT_TYPE_UINT16_T),
+      12345))
+  ASSIGN(field_m_u32,
+    gcc_jit_context_new_rvalue_from_int (
+      ctxt,
+      gcc_jit_context_get_type (ctxt, GCC_JIT_TYPE_UINT32_T),
+      123456789))
+  ASSIGN(field_m_u64,
+    gcc_jit_context_new_rvalue_from_int (
+      ctxt,
+      gcc_jit_context_get_type (ctxt, GCC_JIT_TYPE_UINT64_T),
+      123456789))
+
+  ASSIGN(field_m_i8,
+    gcc_jit_context_new_rvalue_from_int (
+      ctxt,
+      gcc_jit_context_get_type (ctxt, GCC_JIT_TYPE_INT8_T),
+      -1))
+  ASSIGN(field_m_i16,
+    gcc_jit_context_new_rvalue_from_int (
+      ctxt,
+      gcc_jit_context_get_type (ctxt, GCC_JIT_TYPE_INT16_T),
+      -2))
+  ASSIGN(field_m_i32,
+    gcc_jit_context_new_rvalue_from_int (
+      ctxt,
+      gcc_jit_context_get_type (ctxt, GCC_JIT_TYPE_INT32_T),
+      -3))
+  ASSIGN(field_m_i64,
+    gcc_jit_context_new_rvalue_from_int (
+      ctxt,
+      gcc_jit_context_get_type (ctxt, GCC_JIT_TYPE_INT64_T),
+      -4))
+
+#ifdef __SIZEOF_INT128__
+  ASSIGN(field_m_u128,
+    gcc_jit_context_new_rvalue_from_int (
+      ctxt,
+      gcc_jit_context_get_type (ctxt, GCC_JIT_TYPE_UINT128_T),
+      123456789))
+  ASSIGN(field_m_i128,
+    gcc_jit_context_new_rvalue_from_int (
+      ctxt,
+      gcc_jit_context_get_type (ctxt, GCC_JIT_TYPE_INT128_T),
+      -5))
+#endif
+
   ASSIGN(field_m_sized_int_type,
     gcc_jit_context_new_rvalue_from_int (
       ctxt,
@@ -347,6 +458,21 @@ verify_code (gcc_jit_context *ctxt, gcc_jit_result *result)
   CHECK_VALUE (z.m_long_long, -42);
   CHECK_VALUE (z.m_unsigned_long_long, 123456789);
 
+  CHECK_VALUE (z.m_u8, 123);
+  CHECK_VALUE (z.m_u16, 12345);
+  CHECK_VALUE (z.m_u32, 123456789);
+  CHECK_VALUE (z.m_u64, 123456789);
+
+  CHECK_VALUE (z.m_i8, -1);
+  CHECK_VALUE (z.m_i16, -2);
+  CHECK_VALUE (z.m_i32, -3);
+  CHECK_VALUE (z.m_i64, -4);
+
+#ifdef __SIZEOF_INT128__
+  CHECK_VALUE (z.m_u128, 123456789);
+  CHECK_VALUE (z.m_i128, -5);
+#endif
+
   CHECK_VALUE (z.m_sized_int_type, 500);
 
   CHECK_VALUE (z.m_float, 3.141f);
@@ -358,4 +484,9 @@ verify_code (gcc_jit_context *ctxt, gcc_jit_result *result)
   CHECK_VALUE (z.m_size_t, sizeof (struct zoo));
 
   CHECK_VALUE (z.m_FILE_ptr, stderr);
+
+  if (sizeof(long) == 8)
+    CHECK (gcc_jit_compatible_types (
+      gcc_jit_context_get_type (ctxt, GCC_JIT_TYPE_LONG),
+      gcc_jit_context_get_type (ctxt, GCC_JIT_TYPE_INT64_T)));
 }

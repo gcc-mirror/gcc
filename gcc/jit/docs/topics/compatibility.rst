@@ -314,3 +314,23 @@ of a global with an rvalue and to use constructors:
   * :func:`gcc_jit_context_new_struct_constructor`
   * :func:`gcc_jit_context_new_union_constructor`
   * :func:`gcc_jit_global_set_initializer_rvalue`
+
+.. _LIBGCCJIT_ABI_20:
+
+``LIBGCCJIT_ABI_20``
+-----------------------
+``LIBGCCJIT_ABI_20`` covers the addition of sized integer types, including
+128-bit integers and helper functions for types:
+
+  * :func:`gcc_jit_compatible_types`
+  * :func:`gcc_jit_type_get_size`
+  * :c:macro:`GCC_JIT_TYPE_UINT8_T`
+  * :c:macro:`GCC_JIT_TYPE_UINT16_T`
+  * :c:macro:`GCC_JIT_TYPE_UINT32_T`
+  * :c:macro:`GCC_JIT_TYPE_UINT64_T`
+  * :c:macro:`GCC_JIT_TYPE_UINT128_T`
+  * :c:macro:`GCC_JIT_TYPE_INT8_T`
+  * :c:macro:`GCC_JIT_TYPE_INT16_T`
+  * :c:macro:`GCC_JIT_TYPE_INT32_T`
+  * :c:macro:`GCC_JIT_TYPE_INT64_T`
+  * :c:macro:`GCC_JIT_TYPE_INT128_T`
