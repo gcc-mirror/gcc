@@ -46,6 +46,14 @@ public:
     : current_level (ReachLevel::Reachable), ctx (ctx), ty_ctx (ty_ctx)
   {}
 
+  /**
+   * Visit all the predicates of all the generic types of a given item, marking
+   * them as reachable or not.
+   */
+  void visit_generic_predicates (
+    const std::vector<std::unique_ptr<HIR::GenericParam>> &generics,
+    ReachLevel item_reach);
+
   virtual void visit (HIR::Module &mod);
   virtual void visit (HIR::ExternCrate &crate);
   virtual void visit (HIR::UseDeclaration &use_decl);

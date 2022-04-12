@@ -32,6 +32,38 @@ maybe_get_vis_item (std::unique_ptr<HIR::Item> &item)
 }
 
 void
+ReachabilityVisitor::visit_generic_predicates (
+  const std::vector<std::unique_ptr<HIR::GenericParam>> &generics,
+  ReachLevel item_reach)
+{
+  if (item_reach == ReachLevel::Unreachable)
+    return;
+
+  for (auto &generic : generics)
+    {
+      if (generic->get_kind () == HIR::GenericParam::TYPE)
+	{
+	  TyTy::BaseType *generic_ty = nullptr;
+	  rust_assert (
+	    ty_ctx.lookup_type (generic->get_mappings ().get_hirid (),
+				&generic_ty));
+
+	  // FIXME: Can we really get anything else than a TyTy::PARAM here?
+	  // Should we change this to an assertion instead?
+	  if (generic_ty->get_kind () == TyTy::PARAM)
+	    {
+	      auto generic_param = static_cast<TyTy::ParamType *> (generic_ty);
+	      for (const auto &bound : generic_param->get_specified_bounds ())
+		{
+		  const auto trait = bound.get ()->get_hir_trait_ref ();
+		  ctx.update_reachability (trait->get_mappings (), item_reach);
+		}
+	    }
+	}
+    }
+}
+
+void
 ReachabilityVisitor::visit (HIR::Module &mod)
 {
   for (auto &item : mod.get_items ())
@@ -75,41 +107,10 @@ ReachabilityVisitor::visit (HIR::StructStruct &struct_item)
   auto old_level = current_level;
   current_level = struct_reach;
 
+  visit_generic_predicates (struct_item.get_generic_params (), struct_reach);
+
   if (struct_reach != ReachLevel::Unreachable)
     {
-      for (auto &field : struct_item.get_fields ())
-	if (field.get_visibility ().is_public ())
-	  ctx.update_reachability (field.get_mappings (), struct_reach);
-
-      for (auto &generic : struct_item.get_generic_params ())
-	{
-	  switch (generic->get_kind ())
-	    {
-	    case HIR::GenericParam::LIFETIME:
-	      break;
-	    case HIR::GenericParam::TYPE:
-	      TyTy::BaseType *generic_ty = nullptr;
-	      rust_assert (
-		ty_ctx.lookup_type (generic->get_mappings ().get_hirid (),
-				    &generic_ty));
-
-	      if (generic_ty->get_kind () == TyTy::PARAM)
-		{
-		  auto generic_param
-		    = static_cast<TyTy::ParamType *> (generic_ty);
-		  for (const auto &bound :
-		       generic_param->get_specified_bounds ())
-		    {
-		      const auto trait = bound.get ()->get_hir_trait_ref ();
-		      ctx.update_reachability (trait->get_mappings (),
-					       struct_reach);
-		    }
-		}
-
-	      break;
-	    }
-	}
-
       for (auto &field : struct_item.get_fields ())
 	if (field.get_visibility ().is_public ())
 	  ctx.update_reachability (field.get_field_type ()->get_mappings (),
