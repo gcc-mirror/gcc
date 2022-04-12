@@ -3774,6 +3774,7 @@ extern bool resize_reg_info (void);
 extern void free_reg_info (void);
 extern void init_subregs_of_mode (void);
 extern void finish_subregs_of_mode (void);
+extern void reginfo_cc_finalize (void);
 
 /* recog.cc */
 extern rtx extract_asm_operands (rtx);

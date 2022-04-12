@@ -761,6 +761,26 @@ where the rvalue is computed by reading from the storage area.
 
       #ifdef LIBGCCJIT_HAVE_gcc_jit_lvalue_set_link_section
 
+.. function:: void\
+              gcc_jit_lvalue_set_register_name (gcc_jit_lvalue *lvalue,\
+                                                const char *reg_name);
+
+   Set the register name of a variable.
+   The parameter ``reg_name`` must be non-NULL. Analogous to:
+
+   .. code-block:: c
+
+     register int variable asm ("r12");
+
+   in C.
+
+   This entrypoint was added in :ref:`LIBGCCJIT_ABI_22`; you can test for
+   its presence using
+
+   .. code-block:: c
+
+      #ifdef LIBGCCJIT_HAVE_gcc_jit_lvalue_set_register_name
+
 Global variables
 ****************
 

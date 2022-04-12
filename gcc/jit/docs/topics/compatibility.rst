@@ -343,3 +343,12 @@ of a global with an rvalue and to use constructors:
 value from one type to another:
 
   * :func:`gcc_jit_context_new_bitcast`
+
+.. _LIBGCCJIT_ABI_22:
+
+``LIBGCCJIT_ABI_22``
+--------------------
+``LIBGCCJIT_ABI_22`` covers the addition of an API entrypoint to set the
+register name of a variable:
+
+  * :func:`gcc_jit_lvalue_set_register_name`

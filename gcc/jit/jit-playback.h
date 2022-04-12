@@ -24,6 +24,7 @@ along with GCC; see the file COPYING3.  If not see
 #include <utility> // for std::pair
 
 #include "timevar.h"
+#include "varasm.h"
 
 #include "jit-recording.h"
 
@@ -704,6 +705,14 @@ public:
   set_link_section (const char* name)
   {
     set_decl_section_name (as_tree (), name);
+  }
+
+  void
+  set_register_name (const char* reg_name)
+  {
+    set_user_assembler_name (as_tree (), reg_name);
+    DECL_REGISTER (as_tree ()) = 1;
+    DECL_HARD_REGISTER (as_tree ()) = 1;
   }
 
 private:

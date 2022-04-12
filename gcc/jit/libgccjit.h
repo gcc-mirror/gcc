@@ -1320,6 +1320,18 @@ extern void
 gcc_jit_lvalue_set_link_section (gcc_jit_lvalue *lvalue,
 			    const char *section_name);
 
+#define LIBGCCJIT_HAVE_gcc_jit_lvalue_set_register_name
+
+/* Make this variable a register variable and set its register name.
+
+   This API entrypoint was added in LIBGCCJIT_ABI_22; you can test for its
+   presence using
+     #ifdef LIBGCCJIT_HAVE_gcc_jit_lvalue_set_register_name
+*/
+void
+gcc_jit_lvalue_set_register_name (gcc_jit_lvalue *lvalue,
+				  const char *reg_name);
+
 extern gcc_jit_lvalue *
 gcc_jit_function_new_local (gcc_jit_function *func,
 			    gcc_jit_location *loc,

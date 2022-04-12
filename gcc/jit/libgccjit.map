@@ -255,3 +255,8 @@ LIBGCCJIT_ABI_21 {
   global:
     gcc_jit_context_new_bitcast;
 } LIBGCCJIT_ABI_20;
+
+LIBGCCJIT_ABI_22 {
+  global:
+    gcc_jit_lvalue_set_register_name;
+} LIBGCCJIT_ABI_21;
