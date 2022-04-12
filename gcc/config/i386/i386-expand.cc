@@ -17291,6 +17291,11 @@ void ix86_emit_i387_log1p (rtx op0, rtx op1)
   rtx cst, cstln2, cst1;
   rtx_insn *insn;
 
+  /* The emit_jump call emits pending stack adjust, make sure it is emitted
+     before the conditional jump, otherwise the stack adjustment will be
+     only conditional.  */
+  do_pending_stack_adjust ();
+
   cst = const_double_from_real_value
     (REAL_VALUE_ATOF ("0.29289321881345247561810596348408353", XFmode), XFmode);
   cstln2 = force_reg (XFmode, standard_80387_constant_rtx (4)); /* fldln2 */
