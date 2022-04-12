@@ -2378,6 +2378,7 @@ toplev::finalize (void)
   gcse_cc_finalize ();
   ipa_cp_cc_finalize ();
   ira_costs_cc_finalize ();
+  tree_cc_finalize ();
 
   /* save_decoded_options uses opts_obstack, so these must
      be cleaned up together.  */

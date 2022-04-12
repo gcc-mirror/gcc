@@ -2436,6 +2436,28 @@ gcc_jit_context_new_cast (gcc_jit_context *ctxt,
 /* Public entrypoint.  See description in libgccjit.h.
 
    After error-checking, the real work is done by the
+   gcc::jit::recording::context::new_bitcast method in jit-recording.c.  */
+
+gcc_jit_rvalue *
+gcc_jit_context_new_bitcast (gcc_jit_context *ctxt,
+			     gcc_jit_location *loc,
+			     gcc_jit_rvalue *rvalue,
+			     gcc_jit_type *type)
+{
+  RETURN_NULL_IF_FAIL (ctxt, NULL, loc, "NULL context");
+  JIT_LOG_FUNC (ctxt->get_logger ());
+  /* LOC can be NULL.  */
+  RETURN_NULL_IF_FAIL (rvalue, ctxt, loc, "NULL rvalue");
+  RETURN_NULL_IF_FAIL (type, ctxt, loc, "NULL type");
+  /* We cannot check if the size of rvalue matches the size of type here, so
+   we'll do it at playback. */
+
+  return static_cast <gcc_jit_rvalue *> (ctxt->new_bitcast (loc, rvalue, type));
+}
+
+/* Public entrypoint.  See description in libgccjit.h.
+
+   After error-checking, the real work is done by the
    gcc::jit::recording::context::new_array_access method in
    jit-recording.cc.  */
 

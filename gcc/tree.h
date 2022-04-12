@@ -5401,6 +5401,7 @@ extern bool real_minus_onep (const_tree);
 extern void init_ttree (void);
 extern void build_common_tree_nodes (bool);
 extern void build_common_builtin_nodes (void);
+extern void tree_cc_finalize (void);
 extern tree build_nonstandard_integer_type (unsigned HOST_WIDE_INT, int);
 extern tree build_nonstandard_boolean_type (unsigned HOST_WIDE_INT);
 extern tree build_range_type (tree, tree, tree);

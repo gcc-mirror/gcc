@@ -653,6 +653,25 @@ Type-coercion
      * int <-> bool
      * P*  <-> Q*, for pointer types P and Q
 
+.. function:: gcc_jit_rvalue *\
+              gcc_jit_context_new_bitcast (gcc_jit_context *ctxt,\
+                                           gcc_jit_location *loc,\
+                                           gcc_jit_rvalue *rvalue,\
+                                           gcc_jit_type *type)
+
+   Given an rvalue of T, bitcast it to another type, meaning that this will
+   generate a new rvalue by interpreting the bits of ``rvalue`` to the layout
+   of ``type``.
+
+   The type of rvalue must be the same size as the size of ``type``.
+
+   This entrypoint was added in :ref:`LIBGCCJIT_ABI_21`; you can test for
+   its presence using
+
+   .. code-block:: c
+
+      #ifdef LIBGCCJIT_HAVE_gcc_jit_context_new_bitcast
+
 Lvalues
 -------
 

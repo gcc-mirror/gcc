@@ -334,3 +334,12 @@ of a global with an rvalue and to use constructors:
   * :c:macro:`GCC_JIT_TYPE_INT32_T`
   * :c:macro:`GCC_JIT_TYPE_INT64_T`
   * :c:macro:`GCC_JIT_TYPE_INT128_T`
+
+.. _LIBGCCJIT_ABI_21:
+
+``LIBGCCJIT_ABI_21``
+--------------------
+``LIBGCCJIT_ABI_21`` covers the addition of an API entrypoint to bitcast a
+value from one type to another:
+
+  * :func:`gcc_jit_context_new_bitcast`

@@ -205,6 +205,11 @@ public:
 	    rvalue *expr,
 	    type *type_);
 
+  rvalue *
+  new_bitcast (location *loc,
+	       rvalue *expr,
+	       type *type_);
+
   lvalue *
   new_array_access (location *loc,
 		    rvalue *ptr,
@@ -1689,6 +1694,33 @@ public:
 	location *loc,
 	rvalue *a,
 	type *type_)
+  : rvalue (ctxt, loc, type_),
+    m_rvalue (a)
+  {}
+
+  void replay_into (replayer *r) FINAL OVERRIDE;
+
+  void visit_children (rvalue_visitor *v) FINAL OVERRIDE;
+
+private:
+  string * make_debug_string () FINAL OVERRIDE;
+  void write_reproducer (reproducer &r) FINAL OVERRIDE;
+  enum precedence get_precedence () const FINAL OVERRIDE
+  {
+    return PRECEDENCE_CAST;
+  }
+
+private:
+  rvalue *m_rvalue;
+};
+
+class bitcast : public rvalue
+{
+public:
+  bitcast (context *ctxt,
+	   location *loc,
+	   rvalue *a,
+	   type *type_)
   : rvalue (ctxt, loc, type_),
     m_rvalue (a)
   {}

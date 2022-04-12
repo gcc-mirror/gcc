@@ -1246,6 +1246,22 @@ recording::context::new_cast (recording::location *loc,
   return result;
 }
 
+/* Create a recording::bitcast instance and add it to this context's list
+   of mementos.
+
+   Implements the post-error-checking part of
+   gcc_jit_context_new_bitcast.  */
+
+recording::rvalue *
+recording::context::new_bitcast (location *loc,
+				 rvalue *expr,
+				 type *type_)
+{
+  recording::rvalue *result = new bitcast (this, loc, expr, type_);
+  record (result);
+  return result;
+}
+
 /* Create a recording::call instance and add it to this context's list
    of mementos.
 
@@ -5875,6 +5891,56 @@ recording::cast::write_reproducer (reproducer &r)
 	   "                              %s, /* gcc_jit_location *loc */\n"
 	   "                              %s, /* gcc_jit_rvalue *rvalue */\n"
 	   "                              %s); /* gcc_jit_type *type */\n",
+	   id,
+	   r.get_identifier (get_context ()),
+	   r.get_identifier (m_loc),
+	   r.get_identifier_as_rvalue (m_rvalue),
+	   r.get_identifier_as_type (get_type ()));
+}
+
+/* Implementation of pure virtual hook recording::memento::replay_into
+   for recording::bitcast.  */
+
+void
+recording::bitcast::replay_into (replayer *r)
+{
+  set_playback_obj (r->new_bitcast (playback_location (r, m_loc),
+				    m_rvalue->playback_rvalue (),
+				    get_type ()->playback_type ()));
+}
+
+/* Implementation of pure virtual hook recording::rvalue::visit_children
+   for recording::bitcast.  */
+void
+recording::bitcast::visit_children (rvalue_visitor *v)
+{
+  v->visit (m_rvalue);
+}
+
+/* Implementation of recording::memento::make_debug_string for
+   casts.  */
+
+recording::string *
+recording::bitcast::make_debug_string ()
+{
+  enum precedence prec = get_precedence ();
+  return string::from_printf (m_ctxt,
+			      "bitcast(%s, %s)",
+			      m_rvalue->get_debug_string_parens (prec),
+			      get_type ()->get_debug_string ());
+}
+
+/* Implementation of recording::memento::write_reproducer for casts.  */
+
+void
+recording::bitcast::write_reproducer (reproducer &r)
+{
+  const char *id = r.make_identifier (this, "rvalue");
+  r.write ("  gcc_jit_rvalue *%s =\n"
+	   "    gcc_jit_context_new_bitcast (%s,\n"
+	   "                                 %s, /* gcc_jit_location *loc */\n"
+	   "                                 %s, /* gcc_jit_rvalue *rvalue */\n"
+	   "                                 %s); /* gcc_jit_type *type */\n",
 	   id,
 	   r.get_identifier (get_context ()),
 	   r.get_identifier (m_loc),

@@ -1234,6 +1234,21 @@ gcc_jit_context_new_cast (gcc_jit_context *ctxt,
 			  gcc_jit_rvalue *rvalue,
 			  gcc_jit_type *type);
 
+/* Reinterpret a value as another type.
+
+#define LIBGCCJIT_HAVE_gcc_jit_context_new_bitcast
+
+   The types must be of the same size.
+
+   This API entrypoint was added in LIBGCCJIT_ABI_21; you can test for its
+   presence using
+     #ifdef LIBGCCJIT_HAVE_gcc_jit_context_new_bitcast  */
+extern gcc_jit_rvalue *
+gcc_jit_context_new_bitcast (gcc_jit_context *ctxt,
+			     gcc_jit_location *loc,
+			     gcc_jit_rvalue *rvalue,
+			     gcc_jit_type *type);
+
 extern gcc_jit_lvalue *
 gcc_jit_context_new_array_access (gcc_jit_context *ctxt,
 				  gcc_jit_location *loc,

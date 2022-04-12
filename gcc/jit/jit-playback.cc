@@ -1422,6 +1422,36 @@ new_cast (playback::location *loc,
   return new rvalue (this, t_cast);
 }
 
+/* Construct a playback::rvalue instance (wrapping a tree) for a
+   bitcast.  */
+
+playback::rvalue *
+playback::context::
+new_bitcast (location *loc,
+	     rvalue *expr,
+	     type *type_)
+{
+  tree expr_size = TYPE_SIZE (expr->get_type ()->as_tree ());
+  tree type_size = TYPE_SIZE (type_->as_tree ());
+  tree t_expr = expr->as_tree ();
+  tree t_dst_type = type_->as_tree ();
+  if (expr_size != type_size)
+  {
+    active_playback_ctxt->add_error (loc,
+      "bitcast with types of different sizes");
+    fprintf (stderr, "input expression (size: %ld):\n",
+      tree_to_uhwi (expr_size));
+    debug_tree (t_expr);
+    fprintf (stderr, "requested type (size: %ld):\n",
+      tree_to_uhwi (type_size));
+    debug_tree (t_dst_type);
+  }
+  tree t_bitcast = build1 (VIEW_CONVERT_EXPR, t_dst_type, t_expr);
+  if (loc)
+    set_tree_location (t_bitcast, loc);
+  return new rvalue (this, t_bitcast);
+}
+
 /* Construct a playback::lvalue instance (wrapping a tree) for an
    array access.  */
 

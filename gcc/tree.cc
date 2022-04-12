@@ -6985,6 +6985,15 @@ build_reference_type (tree to_type)
   (HOST_BITS_PER_WIDE_INT > 64 ? HOST_BITS_PER_WIDE_INT : 64)
 static GTY(()) tree nonstandard_integer_type_cache[2 * MAX_INT_CACHED_PREC + 2];
 
+static void
+clear_nonstandard_integer_type_cache (void)
+{
+  for (size_t i = 0 ; i < 2 * MAX_INT_CACHED_PREC + 2 ; i++)
+  {
+    nonstandard_integer_type_cache[i] = NULL;
+  }
+}
+
 /* Builds a signed or unsigned integer type of precision PRECISION.
    Used for C bitfields whose precision does not match that of
    built-in target types.  */
@@ -14673,6 +14682,12 @@ get_target_clone_attr_len (tree arglist)
   if (argnum <= 1)
     return -1;
   return str_len_sum;
+}
+
+void
+tree_cc_finalize (void)
+{
+  clear_nonstandard_integer_type_cache ();
 }
 
 #if CHECKING_P
