@@ -1,3 +1,67 @@
+2022-04-11  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/104894
+	* config/rs6000/rs6000.cc (rs6000_sibcall_aix): Handle pcrel sibcalls
+	to longcall functions.
+
+2022-04-11  Jason Merrill  <jason@redhat.com>
+
+	* ipa-free-lang-data.cc (free_lang_data_in_decl): Fix typos.
+
+2022-04-11  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/105213
+	PR target/103623
+	* config/rs6000/rs6000.md (unpack<mode>_nodm): Add m,r,i alternative.
+
+2022-04-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/105218
+	* tree-ssa-phiopt.cc (value_replacement): If middle_bb has
+	more than one predecessor or phi's bb more than 2 predecessors,
+	reset phi result uses instead of adding a debug temp.
+
+2022-04-11  Kito Cheng  <kito.cheng@sifive.com>
+
+	PR target/104853
+	* config.gcc: Pass -misa-spec to arch-canonicalize and
+	multilib-generator.
+	* config/riscv/arch-canonicalize: Adding -misa-spec option.
+	(SUPPORTED_ISA_SPEC): New.
+	(arch_canonicalize): New argument `isa_spec`.
+	Handle multiple ISA spec versions.
+	* config/riscv/multilib-generator: Adding -misa-spec option.
+
+2022-04-11  Kito Cheng  <kito.cheng@sifive.com>
+
+	* config/riscv/arch-canonicalize: Add TODO item.
+	(IMPLIED_EXT): Sync.
+	(arch_canonicalize): Checking until no change.
+
+2022-04-11  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/105197
+	* tree-vect-stmts.cc (vectorizable_condition): Prevent cond swap when
+	not masked.
+
+2022-04-11  Jason Merrill  <jason@redhat.com>
+
+	PR c++/100370
+	* pointer-query.cc (compute_objsize_r) [POINTER_PLUS_EXPR]: Require
+	deref == -1.
+
+2022-04-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/104639
+	* tree-ssa-phiopt.cc: Include tree-ssa-propagate.h.
+	(value_replacement): Optimize (x != cst1 ? x : cst2) != cst3
+	into x != cst3.
+
+2022-04-11  Jeff Law  <jeffreyalaw@gmail.com>
+
+	* config/bfin/bfin.md (rol_one): Fix pattern to indicate the
+	sign bit of the source ends up in CC.
+
 2022-04-09  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/103376

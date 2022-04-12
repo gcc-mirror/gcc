@@ -1,3 +1,51 @@
+2022-04-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/stacktrace (basic_stacktrace::_Impl::_M_allocate):
+	Change [[unlikely]] attribute to [[likely]].
+
+2022-04-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/105031
+	* include/std/stacktrace (basic_stacktrace::basic_stacktrace):
+	Fix allocator usage in constructors.
+	(basic_stacktrace::operator=(const basic_stacktrace&)): Do not
+	try to reallocate using const allocator.
+	(basic_stacktrace::operator=(basic_stacktrace&&)): Fix
+	if-constexpr with non-constant condition. Do not allocate new
+	storage if allocator propagates. Do not set _M_size if
+	allocation fails.
+	(basic_stacktrace::swap(basic_stacktrace&)): Fix typo. Add
+	assertion that non-propagating allocators are equal.
+	* testsuite/19_diagnostics/stacktrace/stacktrace.cc: New test.
+
+2022-04-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/stacktrace (basic_stacktrace::current): Duplicate
+	implementation into each overload. Add noinline attribute and
+	skip current frame.
+	(basic_stacktrace::max_size()): Call _Impl::_S_max_size.
+	(basic_stacktrace::_S_curr_cb()): New function defining lambda.
+	(basic_stacktrace::_Impl::_S_max_size): New function defining
+	maximum size in terms of allocator and size_type.
+	(basic_stacktrace::_Impl::_M_allocate): Check against
+	max_size().
+	* testsuite/19_diagnostics/stacktrace/entry.cc: Call function
+	for non-constexpr checks. Check line number is correct.
+
+2022-04-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/20_util/stacktrace/entry.cc: Moved to...
+	* testsuite/19_diagnostics/stacktrace/entry.cc: ...here.
+	* testsuite/20_util/stacktrace/synopsis.cc: Moved to...
+	* testsuite/19_diagnostics/stacktrace/synopsis.cc: ...here.
+	* testsuite/20_util/stacktrace/version.cc: Moved to...
+	* testsuite/19_diagnostics/stacktrace/version.cc: ...here.
+
+2022-04-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/experimental/bits/fs_path.h (path): Define special
+	members after path::_Cmpt is complete.
+
 2022-04-08  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/105153

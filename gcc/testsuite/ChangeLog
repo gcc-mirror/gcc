@@ -1,3 +1,55 @@
+2022-04-11  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/104894
+	* gcc.target/powerpc/pr104894.c: New test.
+	* gcc.target/powerpc/pr104894-2.c: New test.
+
+2022-04-11  Jason Merrill  <jason@redhat.com>
+
+	PR c++/98249
+	* g++.dg/lookup/new3.C: New test.
+
+2022-04-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/105218
+	* gcc.dg/pr105218.c: New test.
+
+2022-04-11  Alexandre Oliva  <oliva@adacore.com>
+
+	PR target/104253
+	* gcc.target/powerpc/pr104253.c: Add missing dg- before
+	require-effective-target.  Prune warning about -mfloat128
+	possibly not being fully supported.
+
+2022-04-11  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/105197
+	* gcc.target/aarch64/sve/pr105197-1.c: New test.
+	* gcc.target/aarch64/sve/pr105197-2.c: New test.
+
+2022-04-11  Jason Merrill  <jason@redhat.com>
+
+	PR c++/100370
+	* g++.dg/warn/Wplacement-new-size-11.C: New test.
+
+2022-04-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/104639
+	* gcc.dg/tree-ssa/pr104639-1.c: New test.
+	* gcc.dg/tree-ssa/pr104639-2.c: New test.
+
+2022-04-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/105186
+	* c-c++-common/pr105186.c: New test.
+
+2022-04-11  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR testsuite/103196
+	* gcc.target/powerpc/p9-vec-length-epil-7.c: Add option
+	-fdisable-tree-cunroll.
+	* gcc.target/powerpc/p9-vec-length-full-7.c: Likewise.
+
 2022-04-10  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/105184

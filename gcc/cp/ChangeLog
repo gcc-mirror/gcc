@@ -1,3 +1,23 @@
+2022-04-11  Jason Merrill  <jason@redhat.com>
+
+	PR c++/98249
+	* call.cc (build_operator_new_call): Just look in ::.
+
+2022-04-11  Alexandre Oliva  <oliva@adacore.com>
+
+	* constexpr.cc (cxx_eval_call_expression): Disregard dtor
+	result.
+
+2022-04-11  Alexandre Oliva  <oliva@adacore.com>
+
+	* semantics.cc (set_cleanup_locs): Propagate locus to call
+	wrapped in cast-to-void.
+
+2022-04-11  Jason Merrill  <jason@redhat.com>
+
+	PR c++/100370
+	* init.cc (warn_placement_new_too_small): Check deref.
+
 2022-04-09  Jason Merrill  <jason@redhat.com>
 
 	PR c++/105191
