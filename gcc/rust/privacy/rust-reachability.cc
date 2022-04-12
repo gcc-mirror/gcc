@@ -110,14 +110,11 @@ ReachabilityVisitor::visit (HIR::StructStruct &struct_item)
 	    }
 	}
 
-      // for (auto &field : struct_item.get_fields ())
-      // if (field.get_visibility ().is_public ())
-      // FIXME: How do we visit these fields with the reachability
-      // visitor?
+      for (auto &field : struct_item.get_fields ())
+	if (field.get_visibility ().is_public ())
+	  ctx.update_reachability (field.get_field_type ()->get_mappings (),
+				   struct_reach);
     }
-
-  // FIXME: How do we get the constructor from `struct_item`? We need to update
-  // its visibility as well. Probably by keeping a reference to the TypeCtx?
 
   current_level = old_level;
 }
