@@ -2702,6 +2702,33 @@ gcc_jit_lvalue_set_link_section (gcc_jit_lvalue *lvalue,
 /* Public entrypoint.  See description in libgccjit.h.
 
    After error-checking, the real work is done by the
+   gcc::jit::recording::lvalue::get_alignment method in jit-recording.cc.  */
+
+unsigned
+gcc_jit_lvalue_get_alignment (gcc_jit_lvalue *lvalue)
+{
+  RETURN_VAL_IF_FAIL (lvalue, 0, NULL, NULL, "NULL lvalue");
+  return lvalue->get_alignment ();
+}
+
+/* Public entrypoint.  See description in libgccjit.h.
+
+   After error-checking, the real work is done by the
+   gcc::jit::recording::lvalue::set_alignment method in jit-recording.cc.  */
+
+void
+gcc_jit_lvalue_set_alignment (gcc_jit_lvalue *lvalue,
+			      unsigned bytes)
+{
+  RETURN_IF_FAIL (lvalue, NULL, NULL, "NULL lvalue");
+  RETURN_IF_FAIL ((bytes & (bytes - 1)) == 0, NULL, NULL,
+		  "alignment is not a power of 2");
+  lvalue->set_alignment (bytes);
+}
+
+/* Public entrypoint.  See description in libgccjit.h.
+
+   After error-checking, the real work is done by the
    gcc::jit::recording::lvalue::set_register_name method in jit-recording.cc.  */
 
 void

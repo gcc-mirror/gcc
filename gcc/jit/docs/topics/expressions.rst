@@ -781,6 +781,45 @@ where the rvalue is computed by reading from the storage area.
 
       #ifdef LIBGCCJIT_HAVE_gcc_jit_lvalue_set_register_name
 
+.. function:: void\
+              gcc_jit_lvalue_set_alignment (gcc_jit_lvalue *lvalue,\
+                                            unsigned bytes)
+
+   Set the alignment of a variable, in bytes.
+   Analogous to:
+
+   .. code-block:: c
+
+     int variable __attribute__((aligned (16)));
+
+   in C.
+
+   This entrypoint was added in :ref:`LIBGCCJIT_ABI_24`; you can test for
+   its presence using
+
+   .. code-block:: c
+
+      #ifdef LIBGCCJIT_HAVE_ALIGNMENT
+
+.. function:: unsigned\
+              gcc_jit_lvalue_get_alignment (gcc_jit_lvalue *lvalue)
+
+   Return the alignment of a variable set by ``gcc_jit_lvalue_set_alignment``.
+   Return 0 if the alignment was not set. Analogous to:
+
+   .. code-block:: c
+
+     _Alignof (variable)
+
+   in C.
+
+   This entrypoint was added in :ref:`LIBGCCJIT_ABI_24`; you can test for
+   its presence using
+
+   .. code-block:: c
+
+      #ifdef LIBGCCJIT_HAVE_ALIGNMENT
+
 Global variables
 ****************
 

@@ -361,3 +361,13 @@ register name of a variable:
 logs:
 
   * :func:`gcc_jit_context_set_bool_print_errors_to_stderr`
+
+.. _LIBGCCJIT_ABI_24:
+
+``LIBGCCJIT_ABI_24``
+--------------------
+``LIBGCCJIT_ABI_24`` covers the addition of functions to get and set the
+alignment of a variable:
+
+  * :func:`gcc_jit_lvalue_set_alignment`
+  * :func:`gcc_jit_lvalue_get_alignment`

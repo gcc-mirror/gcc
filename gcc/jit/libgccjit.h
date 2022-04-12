@@ -1267,6 +1267,25 @@ gcc_jit_context_new_bitcast (gcc_jit_context *ctxt,
 			     gcc_jit_rvalue *rvalue,
 			     gcc_jit_type *type);
 
+#define LIBGCCJIT_HAVE_ALIGNMENT
+
+/* Set the alignment of a variable.
+
+   This API entrypoint was added in LIBGCCJIT_ABI_24; you can test for its
+   presence using
+     #ifdef LIBGCCJIT_HAVE_ALIGNMENT  */
+extern void
+gcc_jit_lvalue_set_alignment (gcc_jit_lvalue *lvalue,
+			      unsigned bytes);
+
+/* Get the alignment of a variable.
+
+   This API entrypoint was added in LIBGCCJIT_ABI_24; you can test for its
+   presence using
+     #ifdef LIBGCCJIT_HAVE_ALIGNMENT  */
+extern unsigned
+gcc_jit_lvalue_get_alignment (gcc_jit_lvalue *lvalue);
+
 extern gcc_jit_lvalue *
 gcc_jit_context_new_array_access (gcc_jit_context *ctxt,
 				  gcc_jit_location *loc,

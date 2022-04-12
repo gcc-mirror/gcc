@@ -715,6 +715,13 @@ public:
     DECL_HARD_REGISTER (as_tree ()) = 1;
   }
 
+  void
+  set_alignment (int alignment)
+  {
+      SET_DECL_ALIGN (as_tree (), alignment * BITS_PER_UNIT);
+      DECL_USER_ALIGN (as_tree ()) = 1;
+  }
+
 private:
   bool mark_addressable (location *loc);
 };
