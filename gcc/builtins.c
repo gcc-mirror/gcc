@@ -2927,16 +2927,28 @@ expand_builtin_int_roundingfn_2 (tree exp, rtx target)
 	 BUILT_IN_IROUND and if __builtin_iround is called directly, emit
 	 a call to lround in the hope that the target provides at least some
 	 C99 functions.  This should result in the best user experience for
-	 not full C99 targets.  */
-      tree fallback_fndecl = mathfn_built_in_1
-	(TREE_TYPE (arg), as_combined_fn (fallback_fn), 0);
+	 not full C99 targets.
+	 As scalar float conversions with same mode are useless in GIMPLE,
+	 we can end up e.g. with _Float32 argument passed to float builtin,
+	 try to get the type from the builtin prototype first.  */
+      tree fallback_fndecl = NULL_TREE;
+      if (tree argtypes = TYPE_ARG_TYPES (TREE_TYPE (fndecl)))
+        fallback_fndecl
+          = mathfn_built_in_1 (TREE_VALUE (argtypes),
+			       as_combined_fn (fallback_fn), 0);
+      if (fallback_fndecl == NULL_TREE)
+	fallback_fndecl
+	  = mathfn_built_in_1 (TREE_TYPE (arg),
+			       as_combined_fn (fallback_fn), 0);
+      if (fallback_fndecl)
+	{
+	  exp = build_call_nofold_loc (EXPR_LOCATION (exp),
+				       fallback_fndecl, 1, arg);
 
-      exp = build_call_nofold_loc (EXPR_LOCATION (exp),
-				   fallback_fndecl, 1, arg);
-
-      target = expand_call (exp, NULL_RTX, target == const0_rtx);
-      target = maybe_emit_group_store (target, TREE_TYPE (exp));
-      return convert_to_mode (mode, target, 0);
+	  target = expand_call (exp, NULL_RTX, target == const0_rtx);
+	  target = maybe_emit_group_store (target, TREE_TYPE (exp));
+	  return convert_to_mode (mode, target, 0);
+	}
     }
 
   return expand_call (exp, target, target == const0_rtx);
