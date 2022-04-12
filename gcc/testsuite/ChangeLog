@@ -1,3 +1,13 @@
+2022-04-11  Alexandre Oliva  <oliva@adacore.com>
+
+	Backported from master:
+	2022-04-11  Alexandre Oliva  <oliva@adacore.com>
+
+	PR target/104253
+	* gcc.target/powerpc/pr104253.c: Add missing dg- before
+	require-effective-target.  Prune warning about -mfloat128
+	possibly not being fully supported.
+
 2022-04-05  Martin Jambor  <mjambor@suse.cz>
 
 	Backported from master:
