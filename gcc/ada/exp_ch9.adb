@@ -2800,6 +2800,15 @@ package body Exp_Ch9 is
             begin
                Remove (Nod);
                Set_Else_Statements (Ret, Then_Statements (Nod));
+
+               --  If Elsif_Parts becomes empty then remove it entirely, as
+               --  otherwise we would violate the invariant of If_Statement
+               --  node described in Sinfo.
+
+               if Is_Empty_List (Elsif_Parts (Ret)) then
+                  pragma Assert (Elsif_Parts (Ret) /= No_List);
+                  Set_Elsif_Parts (Ret, No_List);
+               end if;
             end;
          end if;
       end if;
