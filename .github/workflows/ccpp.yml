@@ -149,3 +149,57 @@ jobs:
             else \
               exit 0; \
             fi
+
+  build-and-check-clang-macos:
+
+    env:
+      # Force CC/CXX to be explicitly clang to make it clear which compiler is used
+      CC: clang
+      CXX: clang++
+
+    runs-on: macos-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Install Deps
+      run: |
+          brew install dejagnu mpfr libmpc gmp
+
+    - name: Configure
+      run: |
+           mkdir -p gccrs-build;
+           cd gccrs-build;
+           ../configure \
+               --enable-languages=rust \
+               --disable-bootstrap \
+               --enable-multilib \
+               --with-native-system-header-dir=/usr/include \
+               --with-sysroot=$(xcrun --show-sdk-path)
+
+    - name: Build
+      shell: bash
+      run: |
+           cd gccrs-build; \
+           make -j $(sysctl -n hw.ncpu) 2>&1 | tee log
+
+    - name: Run Tests
+      run: |
+           cd gccrs-build; \
+           make check-rust
+    - name: Archive check-rust results
+      uses: actions/upload-artifact@v2
+      with:
+        name: check-rust-logs-macos
+        path: |
+          gccrs-build/gcc/testsuite/rust/
+    - name: Check regressions
+      run: |
+           cd gccrs-build; \
+           if grep -e "unexpected" -e "unresolved" gcc/testsuite/rust/rust.sum;\
+           then \
+              echo "some tests are not correct"; \
+              exit 1; \
+            else \
+              exit 0; \
+            fi
