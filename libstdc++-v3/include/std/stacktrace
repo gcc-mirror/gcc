@@ -30,6 +30,7 @@
 
 #if __cplusplus > 202002L && _GLIBCXX_HAVE_STACKTRACE
 #include <compare>
+#include <new>
 #include <string>
 #include <sstream>
 #include <bits/stl_algobase.h>
@@ -589,23 +590,43 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  return std::min(__size_max, __alloc_max);
 	}
 
+#if __has_builtin(__builtin_operator_new) >= 201802L
+# define _GLIBCXX_OPERATOR_NEW __builtin_operator_new
+# define _GLIBCXX_OPERATOR_DELETE __builtin_operator_delete
+#else
+# define _GLIBCXX_OPERATOR_NEW ::operator new
+# define _GLIBCXX_OPERATOR_DELETE ::operator delete
+#endif
+
 	// Precondition: _M_frames == nullptr && __n != 0
 	pointer
 	_M_allocate(allocator_type& __alloc, size_type __n) noexcept
 	{
 	  if (__n <= _S_max_size(__alloc)) [[likely]]
 	    {
-	      __try
+	      if constexpr (is_same_v<allocator_type, allocator<value_type>>)
 		{
-		  _M_frames = __alloc.allocate(__n);
-		  _M_capacity = __n;
-		  return _M_frames;
+		  __n *= sizeof(value_type);
+		  void* const __p = _GLIBCXX_OPERATOR_NEW (__n, nothrow_t{});
+		  if (__p == nullptr) [[unlikely]]
+		    return nullptr;
+		  _M_frames = static_cast<pointer>(__p);
 		}
-	      __catch (...)
+	      else
 		{
+		  __try
+		    {
+		      _M_frames = __alloc.allocate(__n);
+		    }
+		  __catch (const std::bad_alloc&)
+		    {
+		      return nullptr;
+		    }
 		}
+	      _M_capacity = __n;
+	      return _M_frames;
 	    }
-	  return nullptr;;
+	  return nullptr;
 	}
 
 	void
@@ -613,11 +634,18 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	{
 	  if (_M_capacity)
 	    {
-	      __alloc.deallocate(_M_frames, _M_capacity);
+	      if constexpr (is_same_v<allocator_type, allocator<value_type>>)
+		_GLIBCXX_OPERATOR_DELETE (static_cast<void*>(_M_frames),
+					  _M_capacity * sizeof(value_type));
+	      else
+		__alloc.deallocate(_M_frames, _M_capacity);
 	      _M_frames = nullptr;
 	      _M_capacity = 0;
 	    }
 	}
+
+#undef _GLIBCXX_OPERATOR_DELETE
+#undef _GLIBCXX_OPERATOR_NEW
 
 	void
 	_M_destroy() noexcept
