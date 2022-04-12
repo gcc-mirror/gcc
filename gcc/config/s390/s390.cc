@@ -14873,7 +14873,6 @@ s390_get_sched_attrmask (rtx_insn *insn)
 	mask |= S390_SCHED_ATTR_MASK_GROUPOFTWO;
       break;
     case PROCESSOR_8561_Z15:
-    case PROCESSOR_3931_Z16:
       if (get_attr_z15_cracked (insn))
 	mask |= S390_SCHED_ATTR_MASK_CRACKED;
       if (get_attr_z15_expanded (insn))
@@ -14883,6 +14882,18 @@ s390_get_sched_attrmask (rtx_insn *insn)
       if (get_attr_z15_groupalone (insn))
 	mask |= S390_SCHED_ATTR_MASK_GROUPALONE;
       if (get_attr_z15_groupoftwo (insn))
+	mask |= S390_SCHED_ATTR_MASK_GROUPOFTWO;
+      break;
+    case PROCESSOR_3931_Z16:
+      if (get_attr_z16_cracked (insn))
+	mask |= S390_SCHED_ATTR_MASK_CRACKED;
+      if (get_attr_z16_expanded (insn))
+	mask |= S390_SCHED_ATTR_MASK_EXPANDED;
+      if (get_attr_z16_endgroup (insn))
+	mask |= S390_SCHED_ATTR_MASK_ENDGROUP;
+      if (get_attr_z16_groupalone (insn))
+	mask |= S390_SCHED_ATTR_MASK_GROUPALONE;
+      if (get_attr_z16_groupoftwo (insn))
 	mask |= S390_SCHED_ATTR_MASK_GROUPOFTWO;
       break;
     default:
@@ -14921,7 +14932,6 @@ s390_get_unit_mask (rtx_insn *insn, int *units)
 	mask |= 1 << 3;
       break;
     case PROCESSOR_8561_Z15:
-    case PROCESSOR_3931_Z16:
       *units = 4;
       if (get_attr_z15_unit_lsu (insn))
 	mask |= 1 << 0;
@@ -14930,6 +14940,17 @@ s390_get_unit_mask (rtx_insn *insn, int *units)
       if (get_attr_z15_unit_fxb (insn))
 	mask |= 1 << 2;
       if (get_attr_z15_unit_vfu (insn))
+	mask |= 1 << 3;
+      break;
+    case PROCESSOR_3931_Z16:
+      *units = 4;
+      if (get_attr_z16_unit_lsu (insn))
+	mask |= 1 << 0;
+      if (get_attr_z16_unit_fxa (insn))
+	mask |= 1 << 1;
+      if (get_attr_z16_unit_fxb (insn))
+	mask |= 1 << 2;
+      if (get_attr_z16_unit_vfu (insn))
 	mask |= 1 << 3;
       break;
     default:
@@ -14945,7 +14966,7 @@ s390_is_fpd (rtx_insn *insn)
     return false;
 
   return get_attr_z13_unit_fpd (insn) || get_attr_z14_unit_fpd (insn)
-    || get_attr_z15_unit_fpd (insn);
+    || get_attr_z15_unit_fpd (insn) || get_attr_z16_unit_fpd (insn);
 }
 
 static bool
@@ -14955,7 +14976,7 @@ s390_is_fxd (rtx_insn *insn)
     return false;
 
   return get_attr_z13_unit_fxd (insn) || get_attr_z14_unit_fxd (insn)
-    || get_attr_z15_unit_fxd (insn);
+    || get_attr_z15_unit_fxd (insn) || get_attr_z16_unit_fxd (insn);
 }
 
 /* Returns TRUE if INSN is a long-running instruction.  */
