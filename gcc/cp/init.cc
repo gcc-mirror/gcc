@@ -3292,7 +3292,7 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
     {
       unsigned align = TYPE_ALIGN_UNIT (elt_type);
       /* Also consider the alignment of the cookie, if any.  */
-      if (TYPE_VEC_NEW_USES_COOKIE (elt_type))
+      if (array_p && TYPE_VEC_NEW_USES_COOKIE (elt_type))
 	align = MAX (align, TYPE_ALIGN_UNIT (size_type_node));
       align_arg = build_int_cst (align_type_node, align);
     }
