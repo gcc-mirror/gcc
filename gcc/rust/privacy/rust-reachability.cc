@@ -31,6 +31,13 @@ maybe_get_vis_item (std::unique_ptr<HIR::Item> &item)
   return static_cast<HIR::VisItem *> (item.get ());
 }
 
+ReachLevel
+ReachabilityVisitor::get_reachability_level (
+  const HIR::Visibility &item_visibility)
+{
+  return item_visibility.is_public () ? current_level : ReachLevel::Unreachable;
+}
+
 void
 ReachabilityVisitor::visit_generic_predicates (
   const std::vector<std::unique_ptr<HIR::GenericParam>> &generics,
@@ -39,25 +46,21 @@ ReachabilityVisitor::visit_generic_predicates (
   if (item_reach == ReachLevel::Unreachable)
     return;
 
-  for (auto &generic : generics)
+  for (const auto &generic : generics)
     {
       if (generic->get_kind () == HIR::GenericParam::TYPE)
 	{
 	  TyTy::BaseType *generic_ty = nullptr;
-	  rust_assert (
-	    ty_ctx.lookup_type (generic->get_mappings ().get_hirid (),
-				&generic_ty));
+	  auto ok = ty_ctx.lookup_type (generic->get_mappings ().get_hirid (),
+					&generic_ty);
+	  rust_assert (ok);
+	  rust_assert (generic_ty->get_kind () == TyTy::PARAM);
 
-	  // FIXME: Can we really get anything else than a TyTy::PARAM here?
-	  // Should we change this to an assertion instead?
-	  if (generic_ty->get_kind () == TyTy::PARAM)
+	  auto generic_param = static_cast<TyTy::ParamType *> (generic_ty);
+	  for (const auto &bound : generic_param->get_specified_bounds ())
 	    {
-	      auto generic_param = static_cast<TyTy::ParamType *> (generic_ty);
-	      for (const auto &bound : generic_param->get_specified_bounds ())
-		{
-		  const auto trait = bound.get ()->get_hir_trait_ref ();
-		  ctx.update_reachability (trait->get_mappings (), item_reach);
-		}
+	      const auto trait = bound.get ()->get_hir_trait_ref ();
+	      ctx.update_reachability (trait->get_mappings (), item_reach);
 	    }
 	}
     }
@@ -88,18 +91,25 @@ ReachabilityVisitor::visit (HIR::UseDeclaration &use_decl)
 
 void
 ReachabilityVisitor::visit (HIR::Function &func)
-{}
+{
+  auto fn_reach = get_reachability_level (func.get_visibility ());
+
+  fn_reach = ctx.update_reachability (func.get_mappings (), fn_reach);
+  visit_generic_predicates (func.get_generic_params (), fn_reach);
+}
 
 void
 ReachabilityVisitor::visit (HIR::TypeAlias &type_alias)
-{}
+{
+  auto type_reach = get_reachability_level (type_alias.get_visibility ());
+
+  visit_generic_predicates (type_alias.get_generic_params (), type_reach);
+}
 
 void
 ReachabilityVisitor::visit (HIR::StructStruct &struct_item)
 {
-  auto struct_reach = ReachLevel::Unreachable;
-  if (struct_item.get_visibility ().is_public ())
-    struct_reach = current_level;
+  auto struct_reach = get_reachability_level (struct_item.get_visibility ());
 
   struct_reach
     = ctx.update_reachability (struct_item.get_mappings (), struct_reach);
@@ -126,11 +136,22 @@ ReachabilityVisitor::visit (HIR::TupleStruct &tuple_struct)
 
 void
 ReachabilityVisitor::visit (HIR::Enum &enum_item)
-{}
+{
+  auto enum_reach = get_reachability_level (enum_item.get_visibility ());
+
+  enum_reach = ctx.update_reachability (enum_item.get_mappings (), enum_reach);
+  visit_generic_predicates (enum_item.get_generic_params (), enum_reach);
+}
 
 void
 ReachabilityVisitor::visit (HIR::Union &union_item)
-{}
+{
+  auto union_reach = get_reachability_level (union_item.get_visibility ());
+
+  union_reach
+    = ctx.update_reachability (union_item.get_mappings (), union_reach);
+  visit_generic_predicates (union_item.get_generic_params (), union_reach);
+}
 
 void
 ReachabilityVisitor::visit (HIR::ConstantItem &const_item)
@@ -142,11 +163,21 @@ ReachabilityVisitor::visit (HIR::StaticItem &static_item)
 
 void
 ReachabilityVisitor::visit (HIR::Trait &trait)
-{}
+{
+  auto trait_reach = get_reachability_level (trait.get_visibility ());
+
+  trait_reach = ctx.update_reachability (trait.get_mappings (), trait_reach);
+  visit_generic_predicates (trait.get_generic_params (), trait_reach);
+}
 
 void
 ReachabilityVisitor::visit (HIR::ImplBlock &impl)
-{}
+{
+  auto impl_reach = get_reachability_level (impl.get_visibility ());
+
+  impl_reach = ctx.update_reachability (impl.get_mappings (), impl_reach);
+  visit_generic_predicates (impl.get_generic_params (), impl_reach);
+}
 
 void
 ReachabilityVisitor::visit (HIR::ExternBlock &block)

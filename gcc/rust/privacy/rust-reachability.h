@@ -54,6 +54,11 @@ public:
     const std::vector<std::unique_ptr<HIR::GenericParam>> &generics,
     ReachLevel item_reach);
 
+  /**
+   * Get the initial reach level for an item based on its visibility.
+   */
+  ReachLevel get_reachability_level (const HIR::Visibility &item_visibility);
+
   virtual void visit (HIR::Module &mod);
   virtual void visit (HIR::ExternCrate &crate);
   virtual void visit (HIR::UseDeclaration &use_decl);
