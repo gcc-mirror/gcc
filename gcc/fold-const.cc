@@ -2379,13 +2379,12 @@ build_zero_vector (tree type)
   return build_vector_from_val (type, t);
 }
 
-/* Returns true, if ARG, an operand or a type, is convertible to TYPE
-   using a NOP_EXPR.  */
+/* Returns true, if ARG is convertible to TYPE using a NOP_EXPR.  */
 
 bool
 fold_convertible_p (const_tree type, const_tree arg)
 {
-  const_tree orig = TYPE_P (arg) ? arg : TREE_TYPE (arg);
+  const_tree orig = TREE_TYPE (arg);
 
   if (type == orig)
     return true;
@@ -2417,7 +2416,7 @@ fold_convertible_p (const_tree type, const_tree arg)
       return (VECTOR_TYPE_P (orig)
 	      && known_eq (TYPE_VECTOR_SUBPARTS (type),
 			   TYPE_VECTOR_SUBPARTS (orig))
-	      && fold_convertible_p (TREE_TYPE (type), TREE_TYPE (orig)));
+	      && tree_int_cst_equal (TYPE_SIZE (type), TYPE_SIZE (orig)));
 
     default:
       return false;
