@@ -16470,7 +16470,8 @@ tsubst_baselink (tree baselink, tree object_type,
 
   tree binfo_type = BINFO_TYPE (BASELINK_BINFO (baselink));
   binfo_type = tsubst (binfo_type, args, complain, in_decl);
-  bool dependent_p = binfo_type != BINFO_TYPE (BASELINK_BINFO (baselink));
+  bool dependent_p = (binfo_type != BINFO_TYPE (BASELINK_BINFO (baselink))
+		      || optype != BASELINK_OPTYPE (baselink));
 
   if (dependent_p)
     {
