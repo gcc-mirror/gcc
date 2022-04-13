@@ -306,17 +306,19 @@ SimplePath::as_string () const
 std::string
 Visibility::as_string () const
 {
-  switch (public_vis_type)
+  switch (vis_type)
     {
-    case NONE:
+    case PRIV:
+      return std::string ("");
+    case PUB:
       return std::string ("pub");
-    case CRATE:
+    case PUB_CRATE:
       return std::string ("pub(crate)");
-    case SELF:
+    case PUB_SELF:
       return std::string ("pub(self)");
-    case SUPER:
+    case PUB_SUPER:
       return std::string ("pub(super)");
-    case IN_PATH:
+    case PUB_IN_PATH:
       return std::string ("pub(in ") + in_path.as_string () + std::string (")");
     default:
       gcc_unreachable ();

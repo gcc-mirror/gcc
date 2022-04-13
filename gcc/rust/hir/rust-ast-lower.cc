@@ -36,24 +36,21 @@ translate_visibility (const AST::Visibility &vis)
   if (vis.is_error ())
     return Visibility::create_error ();
 
-  // FIXME: ... And then use this?
-  // if (vis.is_private ())
-  //   return Visibility::create_private ();
-
   switch (vis.get_public_vis_type ())
     {
-    case AST::Visibility::NONE:
+    case AST::Visibility::PUB:
       return Visibility (Visibility::VisType::PUBLIC);
-    case AST::Visibility::SELF:
+    case AST::Visibility::PRIV:
+    case AST::Visibility::PUB_SELF:
       return Visibility (Visibility::VisType::PRIVATE);
     // Desugar pub(crate) into pub(in crate) and so on
-    case AST::Visibility::CRATE:
+    case AST::Visibility::PUB_CRATE:
       return Visibility (Visibility::PUBLIC,
 			 AST::SimplePath::from_str ("crate"));
-    case AST::Visibility::SUPER:
+    case AST::Visibility::PUB_SUPER:
       return Visibility (Visibility::PUBLIC,
 			 AST::SimplePath::from_str ("super"));
-    case AST::Visibility::IN_PATH:
+    case AST::Visibility::PUB_IN_PATH:
       return Visibility (Visibility::VisType::PUBLIC, vis.get_path ());
       break;
     }
