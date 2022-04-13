@@ -8976,4 +8976,22 @@ cp_emit_debug_info_for_using (tree t, tree context)
     }
 }
 
+/* True if D is a local declaration in dependent scope.  Assumes that it is
+   (part of) the current lookup result for its name.  */
+
+bool
+dependent_local_decl_p (tree d)
+{
+  if (!DECL_LOCAL_DECL_P (d))
+    return false;
+
+  cxx_binding *b = IDENTIFIER_BINDING (DECL_NAME (d));
+  cp_binding_level *l = b->scope;
+  while (!l->this_entity)
+    l = l->level_chain;
+  return uses_template_parms (l->this_entity);
+}
+
+
+
 #include "gt-cp-name-lookup.h"

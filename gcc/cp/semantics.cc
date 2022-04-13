@@ -2690,13 +2690,13 @@ finish_call_expr (tree fn, vec<tree, va_gc> **args, bool disallow_virtual,
 
   if (processing_template_decl)
     {
-      /* If FN is a local extern declaration or set thereof, look them up
-	 again at instantiation time.  */
+      /* If FN is a local extern declaration (or set thereof) in a template,
+	 look it up again at instantiation time.  */
       if (is_overloaded_fn (fn))
 	{
 	  tree ifn = get_first_fn (fn);
 	  if (TREE_CODE (ifn) == FUNCTION_DECL
-	      && DECL_LOCAL_DECL_P (ifn))
+	      && dependent_local_decl_p (ifn))
 	    orig_fn = DECL_NAME (ifn);
 	}
 
