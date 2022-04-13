@@ -337,9 +337,16 @@ cmp_cst (const_tree cst1, const_tree cst2)
 	return cmp_nelts_per_pattern;
       unsigned encoded_nelts = vector_cst_encoded_nelts (cst1);
       for (unsigned i = 0; i < encoded_nelts; i++)
-	if (int el_cmp = cmp_cst (VECTOR_CST_ENCODED_ELT (cst1, i),
-				  VECTOR_CST_ENCODED_ELT (cst2, i)))
-	  return el_cmp;
+	{
+	  const_tree elt1 = VECTOR_CST_ENCODED_ELT (cst1, i);
+	  const_tree elt2 = VECTOR_CST_ENCODED_ELT (cst2, i);
+	  int t1 = TYPE_UID (TREE_TYPE (elt1));
+	  int t2 = TYPE_UID (TREE_TYPE (elt2));
+	  if (int cmp_type = t1 - t2)
+	    return cmp_type;
+	  if (int el_cmp = cmp_cst (elt1, elt2))
+	    return el_cmp;
+	}
       return 0;
     }
 }
