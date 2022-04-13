@@ -8554,7 +8554,7 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
     {
       for (tree t : *cleanups)
 	{
-	  push_cleanup (decl, t, false);
+	  push_cleanup (NULL_TREE, t, false);
 	  /* As in initialize_local_var.  */
 	  wrap_temporary_cleanups (init, t);
 	}

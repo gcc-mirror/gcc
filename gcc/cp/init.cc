@@ -1066,7 +1066,7 @@ perform_member_init (tree member, tree init, hash_set<tree> &uninitialized)
       init = build2 (INIT_EXPR, type, decl, init);
       finish_expr_stmt (init);
       FOR_EACH_VEC_ELT (*cleanups, i, t)
-	push_cleanup (decl, t, false);
+	push_cleanup (NULL_TREE, t, false);
     }
   else if (type_build_ctor_call (type)
 	   || (init && CLASS_TYPE_P (strip_array_types (type))))
