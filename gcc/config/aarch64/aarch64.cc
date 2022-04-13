@@ -15637,7 +15637,7 @@ private:
   unsigned int adjust_body_cost (loop_vec_info, const aarch64_vector_costs *,
 				 unsigned int);
   bool prefer_unrolled_loop () const;
-  unsigned int determine_suggested_unroll_factor ();
+  unsigned int determine_suggested_unroll_factor (loop_vec_info);
 
   /* True if we have performed one-time initialization based on the
      vec_info.  */
@@ -16746,7 +16746,8 @@ adjust_body_cost_sve (const aarch64_vec_op_count *ops,
 }
 
 unsigned int
-aarch64_vector_costs::determine_suggested_unroll_factor ()
+aarch64_vector_costs::
+determine_suggested_unroll_factor (loop_vec_info loop_vinfo)
 {
   bool sve = m_vec_flags & VEC_ANY_SVE;
   /* If we are trying to unroll an Advanced SIMD main loop that contains
@@ -16760,6 +16761,7 @@ aarch64_vector_costs::determine_suggested_unroll_factor ()
     return 1;
 
   unsigned int max_unroll_factor = 1;
+  auto vf = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
   for (auto vec_ops : m_ops)
     {
       aarch64_simd_vec_issue_info const *vec_issue
@@ -16768,7 +16770,8 @@ aarch64_vector_costs::determine_suggested_unroll_factor ()
 	return 1;
       /* Limit unroll factor to a value adjustable by the user, the default
 	 value is 4. */
-      unsigned int unroll_factor = aarch64_vect_unroll_limit;
+      unsigned int unroll_factor = MIN (aarch64_vect_unroll_limit,
+					(int) known_alignment (vf));
       unsigned int factor
        = vec_ops.reduction_latency > 1 ? vec_ops.reduction_latency : 1;
       unsigned int temp;
@@ -16946,7 +16949,8 @@ aarch64_vector_costs::finish_cost (const vector_costs *uncast_scalar_costs)
     {
       m_costs[vect_body] = adjust_body_cost (loop_vinfo, scalar_costs,
 					     m_costs[vect_body]);
-      m_suggested_unroll_factor = determine_suggested_unroll_factor ();
+      m_suggested_unroll_factor
+	= determine_suggested_unroll_factor (loop_vinfo);
     }
 
   /* Apply the heuristic described above m_stp_sequence_cost.  Prefer
