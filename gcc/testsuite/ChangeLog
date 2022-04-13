@@ -1,3 +1,92 @@
+2022-04-12  Antoni Boucher  <bouanto@zoho.com>
+
+	PR jit/104293
+	* jit.dg/all-non-failing-tests.h: Mention
+	test-setting-alignment.
+	* jit.dg/test-setting-alignment.c: New test.
+
+2022-04-12  Antoni Boucher  <bouanto@zoho.com>
+
+	PR jit/104072
+	* jit.dg/all-non-failing-tests.h: Add new
+	test-register-variable.
+	* jit.dg/harness.h: Add -fdiagnostics-color=never to context's
+	command-line options.
+	* jit.dg/test-error-register-variable-bad-name.c: New test.
+	* jit.dg/test-error-register-variable-size-mismatch.c: New test.
+	* jit.dg/test-register-variable.c: New test.
+
+2022-04-12  Antoni Boucher  <bouanto@zoho.com>
+
+	PR jit/104071
+	* jit.dg/all-non-failing-tests.h: Add new test-bitcast.
+	* jit.dg/test-bitcast.c: New test.
+	* jit.dg/test-error-bad-bitcast.c: New test.
+	* jit.dg/test-error-bad-bitcast2.c: New test.
+
+2022-04-12  Antoni Boucher  <bouanto@zoho.com>
+
+	PR target/95325
+	* jit.dg/test-types.c: Add tests for sized integer types.
+
+2022-04-12  Jason Merrill  <jason@redhat.com>
+
+	PR c++/104669
+	* g++.target/i386/mv31.C: New test.
+
+2022-04-12  Jason Merrill  <jason@redhat.com>
+
+	PR c++/102071
+	* g++.dg/cpp1z/aligned-new9.C: Add single-object test.
+
+2022-04-12  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/103105
+	* g++.dg/cpp2a/concepts-requires29.C: New test.
+	* g++.dg/cpp2a/concepts-requires29a.C: New test.
+
+2022-04-12  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/101755
+	* gcc.target/arm/reg_equal_test.c: Convert to gimple test.  Restrict
+	to architectures with MOVW/MOVT.
+
+2022-04-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/105235
+	* g++.dg/opt/pr105235-1.C: New testcase.
+
+2022-04-12  Przemyslaw Wirkus  <Przemyslaw.Wirkus@arm.com>
+
+	PR target/104144
+	* gcc.target/arm/multilib.exp: Updated tests.
+
+2022-04-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/105226
+	* gcc.dg/pr105226.c: New testcase.
+
+2022-04-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/105214
+	* gcc.dg/asan/pr105214.c: New test.
+
+2022-04-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/105211
+	* gcc.dg/pr105211.c: New test.
+
+2022-04-12  Jason Merrill  <jason@redhat.com>
+
+	PR c++/104142
+	* g++.dg/opt/const7.C: New test.
+
+2022-04-12  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105223
+	PR c++/92918
+	* g++.dg/template/using31.C: New test.
+
 2022-04-11  Peter Bergner  <bergner@linux.ibm.com>
 
 	PR target/104894

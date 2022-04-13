@@ -1,3 +1,52 @@
+2022-04-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* acinclude.m4 (GLIBCXX_ENABLE_BACKTRACE): Check for mmap.
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+
+2022-04-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/stacktrace (basic_stacktrace::current): Reallocate
+	a smaller container if the unused capacity is larger than the
+	used size.
+
+2022-04-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/stacktrace (basic_stacktrace): Use _Impl::_M_clone
+	or _Impl::_M_assign to initialize elements in allocated storage.
+	(basic_stacktrace::_M_clear()): Use _Impl::_M_resize instead of
+	_Impl::_M_destroy.
+	(basic_stacktrace::_Impl::_M_destroy()): Replace with ...
+	(basic_stacktrace::_Impl::_M_resize(size_type, allocator&)): New
+	function.
+	(basic_stacktrace::_Impl::_M_push_back): Use _M_xclone. Construct
+	new element using allocator.
+	(basic_stacktrace::_Impl::_M_clone): New function.
+	(basic_stacktrace::_Impl::_M_xclone): New function.
+	(basic_stacktrace::_Impl::_M_assign): New function.
+
+2022-04-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/stacktrace (basic_stacktrace::_Impl::_M_allocate):
+	Use nothrow new instead of try block for std::allocator.
+	(basic_stacktrace::_Impl::_M_deallocate): Use delete for
+	std::allocator.
+
+2022-04-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/stacktrace (basic_stacktrace::current): Replace
+	calls to _M_reserve and _S_curr_cb with call to _M_prepare.
+	Check return value of backtrace_simple when max depth given.
+	(basic_stacktrace::_M_reserve): Remove.
+	(basic_stacktrace::_S_curr_cb): Remove.
+	(basic_stacktrace::_M_prepare(size_type)): New function to
+	reserve initial capacity and return callback.
+	(basic_stacktrace::_Impl::_M_allocate): Remove check for 0 < n
+	and remove redundant zeroing of _M_frames and _M_capacity.
+	(basic_stacktrace::_Impl::_M_push_back): Add [[unlikely]]
+	attribute. Assign _Impl instead of swapping.
+	* testsuite/19_diagnostics/stacktrace/current.cc: New test.
+
 2022-04-11  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/std/stacktrace (basic_stacktrace::_Impl::_M_allocate):

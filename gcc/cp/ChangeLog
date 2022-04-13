@@ -1,3 +1,31 @@
+2022-04-12  Jason Merrill  <jason@redhat.com>
+
+	PR c++/104669
+	* decl.cc (decls_match): Compare versions even if not recording.
+	(duplicate_decls): Propagate attributes to alias.
+	* decl2.cc (find_last_decl): Give up if versioned.
+
+2022-04-12  Jason Merrill  <jason@redhat.com>
+
+	PR c++/102071
+	* init.cc (build_new_1): Check array_p for alignment.
+
+2022-04-12  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/103105
+	* pt.cc (build_extra_args): Call preserve_args.
+
+2022-04-12  Jason Merrill  <jason@redhat.com>
+
+	PR c++/104142
+	* decl.cc (check_initializer): Check TREE_SIDE_EFFECTS.
+
+2022-04-12  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105223
+	PR c++/92918
+	* class.cc (finish_struct): Always using op=.
+
 2022-04-11  Jason Merrill  <jason@redhat.com>
 
 	PR c++/98249

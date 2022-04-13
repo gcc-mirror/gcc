@@ -1,3 +1,102 @@
+2022-04-12  Antoni Boucher  <bouanto@zoho.com>
+
+	PR jit/104293
+	* docs/_build/texinfo/libgccjit.texi: Regenerate.
+	* docs/topics/compatibility.rst (LIBGCCJIT_ABI_24): New ABI tag.
+	* docs/topics/expressions.rst: Add documentation for the
+	functions gcc_jit_lvalue_set_alignment and
+	gcc_jit_lvalue_get_alignment.
+	* jit-playback.h: New function (set_alignment).
+	* jit-recording.cc: New function (set_alignment).
+	* jit-recording.h: New functions (set_alignment, get_alignment)
+	and new field (m_alignment).
+	* libgccjit.cc: New functions (gcc_jit_lvalue_get_alignment,
+	gcc_jit_lvalue_set_alignment)
+	* libgccjit.h: New functions (gcc_jit_lvalue_get_alignment,
+	gcc_jit_lvalue_set_alignment)
+	* libgccjit.map (LIBGCCJIT_ABI_24): New ABI tag.
+
+2022-04-12  Antoni Boucher  <bouanto@zoho.com>
+
+	PR jit/104073
+	* docs/_build/texinfo/libgccjit.texi: Regenerate.
+	* docs/topics/compatibility.rst (LIBGCCJIT_ABI_23): New ABI tag.
+	* docs/topics/contexts.rst: Add documentation for the new
+	function gcc_jit_context_set_bool_print_errors_to_stderr.
+	* jit-common.h: New enum value
+	(INNER_BOOL_OPTION_PRINT_ERRORS_TO_STDERR).
+	* jit-recording.cc: Handle the new option
+	INNER_BOOL_OPTION_PRINT_ERRORS_TO_STDERR.
+	* libgccjit.cc: New function
+	(gcc_jit_context_set_bool_print_errors_to_stderr).
+	* libgccjit.h: New function
+	(gcc_jit_context_set_bool_print_errors_to_stderr).
+	* libgccjit.map (LIBGCCJIT_ABI_23): New ABI tag.
+
+2022-04-12  Antoni Boucher  <bouanto@zoho.com>
+
+	PR jit/104072
+	* docs/_build/texinfo/libgccjit.texi: Regenerate.
+	* docs/topics/compatibility.rst (LIBGCCJIT_ABI_22): New ABI tag.
+	* docs/topics/expressions.rst: Add documentation for the
+	function gcc_jit_lvalue_set_register_name.
+	* jit-playback.h: New function (set_register_name).
+	* jit-recording.cc: New function (set_register_name) and add
+	support for register variables.
+	* jit-recording.h: New field (m_reg_name) and new function
+	(set_register_name).
+	* libgccjit.cc: New function (gcc_jit_lvalue_set_register_name).
+	* libgccjit.h: New function (gcc_jit_lvalue_set_register_name).
+	* libgccjit.map (LIBGCCJIT_ABI_22): New ABI tag.
+
+2022-04-12  Antoni Boucher  <bouanto@zoho.com>
+
+	PR jit/104071
+	* docs/_build/texinfo/libgccjit.texi: Regenerate.
+	* docs/topics/compatibility.rst (LIBGCCJIT_ABI_21): New ABI tag.
+	* docs/topics/expressions.rst: Add documentation for the
+	function gcc_jit_context_new_bitcast.
+	* jit-playback.cc: New function (new_bitcast).
+	* jit-playback.h: New function (new_bitcast).
+	* jit-recording.cc: New functions (new_bitcast,
+	bitcast::replay_into, bitcast::visit_children,
+	bitcast::make_debug_string, bitcast::write_reproducer).
+	* jit-recording.h: New class (bitcast) and new function
+	(new_bitcast, bitcast::replay_into, bitcast::visit_children,
+	bitcast::make_debug_string, bitcast::write_reproducer,
+	bitcast::get_precedence).
+	* libgccjit.cc: New function (gcc_jit_context_new_bitcast)
+	* libgccjit.h: New function (gcc_jit_context_new_bitcast)
+	* libgccjit.map (LIBGCCJIT_ABI_21): New ABI tag.
+
+2022-04-12  Antoni Boucher  <bouanto@zoho.com>
+
+	PR target/95325
+	* docs/_build/texinfo/libgccjit.texi: Regenerate
+	* docs/topics/compatibility.rst (LIBGCCJIT_ABI_20): New ABI tag.
+	* docs/topics/types.rst: Add documentation for the new types
+	GCC_JIT_TYPE_UINT8_T, GCC_JIT_TYPE_UINT16_T,
+	GCC_JIT_TYPE_UINT32_T, GCC_JIT_TYPE_UINT64_T,
+	GCC_JIT_TYPE_UINT128_T, GCC_JIT_TYPE_INT8_T, GCC_JIT_TYPE_INT16_T,
+	GCC_JIT_TYPE_INT32_T, GCC_JIT_TYPE_INT64_T, GCC_JIT_TYPE_INT128_T and
+	new functions (gcc_jit_compatible_types, gcc_jit_type_get_size).
+	* jit-builtins.cc: Add support for BT_UINT128.
+	* jit-common.h: Update the value of NUM_GCC_JIT_TYPES.
+	* jit-playback.cc: Add support for the sized integer types.
+	* jit-recording.cc: Add support for the sized integer types.
+	* jit-recording.h: Add support for comparing integer types
+	and new function (is_signed).
+	* libgccjit.cc (gcc_jit_compatible_types): New.
+	(gcc_jit_type_get_size) New.
+	* libgccjit.h: New enum variants for gcc_jit_types
+	(GCC_JIT_TYPE_UINT8_T, GCC_JIT_TYPE_UINT16_T,
+	GCC_JIT_TYPE_UINT32_T, GCC_JIT_TYPE_UINT64_T,
+	GCC_JIT_TYPE_UINT128_T, GCC_JIT_TYPE_INT8_T,
+	GCC_JIT_TYPE_INT16_T, GCC_JIT_TYPE_INT32_T,
+	GCC_JIT_TYPE_INT64_T, GCC_JIT_TYPE_INT128_T) and new functions
+	(gcc_jit_compatible_types, gcc_jit_type_get_size).
+	* libgccjit.map (LIBGCCJIT_ABI_20): New ABI tag.
+
 2022-04-06  David Malcolm  <dmalcolm@redhat.com>
 
 	PR jit/102824

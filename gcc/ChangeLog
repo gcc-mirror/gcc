@@ -1,3 +1,137 @@
+2022-04-12  Antoni Boucher  <bouanto@zoho.com>
+
+	PR jit/104072
+	* reginfo.cc: New functions (clear_global_regs_cache,
+	reginfo_cc_finalize) to avoid an issue where compiling the same
+	code multiple times gives an error about assigning the same
+	register to 2 global variables.
+	* rtl.h: New function (reginfo_cc_finalize).
+	* toplev.cc: Call it.
+
+2022-04-12  Antoni Boucher  <bouanto@zoho.com>
+
+	PR jit/104071
+	* toplev.cc: Call the new function tree_cc_finalize in
+	toplev::finalize.
+	* tree.cc: New functions (clear_nonstandard_integer_type_cache
+	and tree_cc_finalize) to clear the cache of non-standard integer
+	types to avoid having issues with some optimizations of
+	bitcast where the SSA_NAME will have a size of a cached
+	integer type that should have been invalidated, causing a
+	comparison of integer constant to fail.
+	* tree.h: New function (tree_cc_finalize).
+
+2022-04-12  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR target/97348
+	* config/nvptx/nvptx.h (ASM_SPEC): Don't set.
+	* config/nvptx/nvptx.opt (misa): Adjust comment.
+
+2022-04-12  Thomas Schwinge  <thomas@codesourcery.com>
+
+	Revert:
+	2022-03-03  Tom de Vries  <tdevries@suse.de>
+
+	* config/nvptx/nvptx.h (ASM_SPEC): Add %{misa=sm_30:--no-verify}.
+
+2022-04-12  Thomas Schwinge  <thomas@codesourcery.com>
+
+	Revert:
+	2022-03-31  Tom de Vries  <tdevries@suse.de>
+
+	* config/nvptx/nvptx.h (ASM_SPEC): Use "-m sm_35" for -misa=sm_30.
+
+2022-04-12  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/104303
+	* tree-ssa-dce.cc (mark_stmt_if_obviously_necessary): Do not
+	include local escaped memory as obviously necessary stores.
+
+2022-04-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/105235
+	* tree-ssa-math-opts.cc (execute_cse_conv_1): Clean EH and
+	return whether the CFG changed.
+	(execute_cse_sincos_1): Adjust.
+
+2022-04-12  Przemyslaw Wirkus  <Przemyslaw.Wirkus@arm.com>
+
+	PR target/104144
+	* config/arm/t-aprofile (MULTI_ARCH_OPTS_A): Remove Armv9-a options.
+	(MULTI_ARCH_DIRS_A): Remove Armv9-a diretories.
+	(MULTILIB_REQUIRED): Don't require Armv9-a libraries.
+	(MULTILIB_MATCHES): Treat Armv9-a as equivalent to Armv8-a.
+	(MULTILIB_REUSE): Remove remap rules for Armv9-a.
+	* config/arm/t-multilib (v9_a_nosimd_variants): Delete.
+	(MULTILIB_MATCHES): Remove mappings for v9_a_nosimd_variants.
+
+2022-04-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/105232
+	* tree.cc (component_ref_size): Bail out for too large
+	or non-constant sizes.
+
+2022-04-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/105226
+	* tree-vect-loop-manip.cc (vect_loop_versioning): Verify
+	we can split the exit of an outer loop we choose to version.
+
+2022-04-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/i386/i386-expand.cc (ix86_emit_i387_sinh, ix86_emit_i387_cosh,
+	ix86_emit_i387_tanh, ix86_emit_i387_asinh, ix86_emit_i387_acosh,
+	ix86_emit_i387_atanh, ix86_emit_i387_log1p, ix86_emit_i387_round,
+	ix86_emit_swdivsf, ix86_emit_swsqrtsf,
+	ix86_expand_atomic_fetch_op_loop, ix86_expand_cmpxchg_loop):
+	Formatting fix.
+	* config/i386/i386.cc (warn_once_call_ms2sysv_xlogues): Likewise.
+
+2022-04-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/105214
+	* config/i386/i386-expand.cc (ix86_emit_i387_log1p): Call
+	do_pending_stack_adjust.
+
+2022-04-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/105211
+	* builtins.cc (expand_builtin_int_roundingfn_2): If mathfn_built_in_1
+	fails for TREE_TYPE (arg), retry it with
+	TREE_VALUE (TYPE_ARG_TYPES (TREE_TYPE (fndecl))) and if even that
+	fails, emit call normally.
+
+2022-04-12  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* common/config/s390/s390-common.cc: Rename PF_ARCH14 to PF_Z16.
+	* config.gcc: Add z16 as march/mtune switch.
+	* config/s390/driver-native.cc (s390_host_detect_local_cpu):
+	Recognize z16 with -march=native.
+	* config/s390/s390-opts.h (enum processor_type): Rename
+	PROCESSOR_ARCH14 to PROCESSOR_3931_Z16.
+	* config/s390/s390.cc (PROCESSOR_ARCH14): Rename to ...
+	(PROCESSOR_3931_Z16): ... throughout the file.
+	(s390_processor processor_table): Add z16 as cpu string.
+	* config/s390/s390.h (enum processor_flags): Rename PF_ARCH14 to
+	PF_Z16.
+	(TARGET_CPU_ARCH14): Rename to ...
+	(TARGET_CPU_Z16): ... this.
+	(TARGET_CPU_ARCH14_P): Rename to ...
+	(TARGET_CPU_Z16_P): ... this.
+	(TARGET_ARCH14): Rename to ...
+	(TARGET_Z16): ... this.
+	(TARGET_ARCH14_P): Rename to ...
+	(TARGET_Z16_P): ... this.
+	* config/s390/s390.md (cpu_facility): Rename arch14 to z16 and
+	check TARGET_Z16 instead of TARGET_ARCH14.
+	* config/s390/s390.opt: Add z16 to processor_type.
+	* doc/invoke.texi: Document z16 and arch14.
+
+2022-04-12  chenglulu  <chenglulu@loongson.cn>
+
+	* config/loongarch/loongarch.cc: Fix bug for
+	tmpdir-g++.dg-struct-layout-1/t033.
+
 2022-04-11  Peter Bergner  <bergner@linux.ibm.com>
 
 	PR target/104894
