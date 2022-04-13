@@ -51,7 +51,7 @@ jobs:
       shell: bash
       run: |
            cd gccrs-build; \
-           make -j $(nproc) 2>&1 | tee log
+           make -Otarget -j $(nproc) 2>&1 | tee log
 
     - name: Check for new warnings
       run: |
