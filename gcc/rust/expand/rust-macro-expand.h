@@ -226,11 +226,6 @@ struct MacroExpander
   bool fails_cfg (const AST::AttrVec &attr) const;
   bool fails_cfg_with_expand (AST::AttrVec &attrs) const;
 
-  // Expand the data of a cfg! macro.
-  void parse_macro_to_meta_item (AST::MacroInvocData &invoc);
-  // Get the literal representation of a cfg! macro.
-  AST::Literal expand_cfg_macro (AST::MacroInvocData &invoc);
-
   bool depth_exceeds_recursion_limit () const;
 
   bool try_match_rule (AST::MacroRule &match_rule,
