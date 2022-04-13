@@ -222,7 +222,9 @@ CXXLINK = \
 	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 	--mode=link $(CXX) \
 	$(VTV_CXXLINKFLAGS) \
-	$(OPT_LDFLAGS) $(SECTION_LDFLAGS) $(AM_CXXFLAGS) $(LTLDFLAGS) -o $@
+	$(OPT_LDFLAGS) $(SECTION_LDFLAGS) $(AM_CXXFLAGS) \
+	$(LTLDFLAGS) $(LTLIBICONV) \
+	-o $@
 
 # Symbol versioning for shared libraries.
 if ENABLE_SYMVERS
