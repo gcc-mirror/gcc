@@ -936,7 +936,7 @@ UnionExp Identity(EXP op, const ref Loc loc, Type type, Expression e1, Expressio
     {
         if (e1.type.isreal())
         {
-            cmp = RealIdentical(e1.toReal(), e2.toReal());
+            cmp = CTFloat.isIdentical(e1.toReal(), e2.toReal());
         }
         else if (e1.type.isimaginary())
         {

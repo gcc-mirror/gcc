@@ -1220,6 +1220,9 @@ extern(C++) Type typeSemantic(Type type, const ref Loc loc, Scope* sc)
             tf.islive = true;
 
         tf.linkage = sc.linkage;
+        if (tf.linkage == LINK.system)
+            tf.linkage = target.systemLinkage();
+
         version (none)
         {
             /* If the parent is @safe, then this function defaults to safe
@@ -2281,10 +2284,7 @@ RootObject compileTypeMixin(TypeMixin tm, Loc loc, Scope* sc)
         return null;
     }
 
-    Type t = o.isType();
-    Expression e = t ? t.typeToExpression() : o.isExpression();
-
-    return (!e && t) ? t : e;
+    return o;
 }
 
 
@@ -3619,11 +3619,30 @@ Expression dotExp(Type mt, Scope* sc, Expression e, Identifier ident, int flag)
                 e.error("`%s` is not an expression", e.toChars());
                 return ErrorExp.get();
             }
-            else if (checkUnsafeDotExp(sc, e, ident, flag))
+            else if (mt.dim.toUInteger() < 1 && checkUnsafeDotExp(sc, e, ident, flag))
             {
+                // .ptr on static array is @safe unless size is 0
+                // https://issues.dlang.org/show_bug.cgi?id=20853
                 return ErrorExp.get();
             }
             e = e.castTo(sc, e.type.nextOf().pointerTo());
+        }
+        else if (ident == Id._tupleof)
+        {
+            if (e.isTypeExp())
+            {
+                e.error("`.tupleof` cannot be used on type `%s`", mt.toChars);
+                return ErrorExp.get();
+            }
+            else
+            {
+                const length = cast(size_t)mt.dim.toUInteger();
+                auto exps = new Expressions();
+                exps.reserve(length);
+                foreach (i; 0 .. length)
+                    exps.push(new IndexExp(e.loc, e, new IntegerExp(e.loc, i, Type.tsize_t)));
+                e = new TupleExp(e.loc, exps);
+            }
         }
         else
         {

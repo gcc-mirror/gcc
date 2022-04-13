@@ -1660,6 +1660,7 @@ extern (C++) abstract class Expression : ASTNode
         inout(MixinExp)     isMixinExp() { return op == EXP.mixin_ ? cast(typeof(return))this : null; }
         inout(ImportExp)    isImportExp() { return op == EXP.import_ ? cast(typeof(return))this : null; }
         inout(AssertExp)    isAssertExp() { return op == EXP.assert_ ? cast(typeof(return))this : null; }
+        inout(ThrowExp)     isThrowExp() { return op == EXP.throw_ ? cast(typeof(return))this : null; }
         inout(DotIdExp)     isDotIdExp() { return op == EXP.dotIdentifier ? cast(typeof(return))this : null; }
         inout(DotTemplateExp) isDotTemplateExp() { return op == EXP.dotTemplateDeclaration ? cast(typeof(return))this : null; }
         inout(DotVarExp)    isDotVarExp() { return op == EXP.dotVariable ? cast(typeof(return))this : null; }
@@ -2684,7 +2685,7 @@ extern (C++) final class StringExp : Expression
         const len2 = se2.len;
 
         assert(this.sz == se2.sz, "Comparing string expressions of different sizes");
-        //printf("sz = %d, len1 = %d, len2 = %d\n", sz, (int)len1, (int)len2);
+        //printf("sz = %d, len1 = %d, len2 = %d\n", sz, cast(int)len1, cast(int)len2);
         if (len1 == len2)
         {
             switch (sz)

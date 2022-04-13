@@ -440,22 +440,33 @@ bool checkParamArgumentEscape(Scope* sc, FuncDeclaration fdc, Parameter par, Exp
  *      sc = used to determine current function and module
  *      firstArg = `ref` argument through which `arg` may be assigned
  *      arg = initializer for parameter
+ *      param = parameter declaration corresponding to `arg`
  *      gag = do not print error messages
  * Returns:
  *      `true` if assignment to `firstArg` would cause an error
  */
-bool checkParamArgumentReturn(Scope* sc, Expression firstArg, Expression arg, bool gag)
+bool checkParamArgumentReturn(Scope* sc, Expression firstArg, Expression arg, Parameter param, bool gag)
 {
     enum log = false;
     if (log) printf("checkParamArgumentReturn(firstArg: %s arg: %s)\n",
         firstArg.toChars(), arg.toChars());
     //printf("type = %s, %d\n", arg.type.toChars(), arg.type.hasPointers());
 
-    if (!arg.type.hasPointers())
+    if (!(param.storageClass & STC.return_))
         return false;
 
+    if (!arg.type.hasPointers() && !param.isReference())
+        return false;
+
+    // `byRef` needed for `assign(ref int* x, ref int i) {x = &i};`
+    // Note: taking address of scope pointer is not allowed
+    // `assign(ref int** x, return ref scope int* i) {x = &i};`
+    // Thus no return ref/return scope ambiguity here
+    const byRef = param.isReference() && !(param.storageClass & STC.scope_)
+        && !(param.storageClass & STC.returnScope); // fixme: it's possible to infer returnScope without scope with vaIsFirstRef
+
     scope e = new AssignExp(arg.loc, firstArg, arg);
-    return checkAssignEscape(sc, e, gag);
+    return checkAssignEscape(sc, e, gag, byRef);
 }
 
 /*****************************************************
@@ -496,23 +507,13 @@ bool checkConstructorEscape(Scope* sc, CallExp ce, bool gag)
     foreach (const i; 0 .. n)
     {
         Expression arg = (*ce.arguments)[i];
-        if (!arg.type.hasPointers())
-            continue;
-
         //printf("\targ[%d]: %s\n", i, arg.toChars());
 
         if (i - j < nparams && i >= j)
         {
             Parameter p = tf.parameterList[i - j];
-
-            if (p.storageClass & STC.return_)
-            {
-                /* Fake `dve.e1 = arg;` and look for scope violations
-                 */
-                scope e = new AssignExp(arg.loc, dve.e1, arg);
-                if (checkAssignEscape(sc, e, gag))
-                    return true;
-            }
+            if (checkParamArgumentReturn(sc, dve.e1, arg, p, gag))
+                return true;
         }
     }
 
@@ -529,13 +530,14 @@ bool checkConstructorEscape(Scope* sc, CallExp ce, bool gag)
  *      sc = used to determine current function and module
  *      e = `AssignExp` or `CatAssignExp` to check for any pointers to the stack
  *      gag = do not print error messages
+ *      byRef = set to `true` if `e1` of `e` gets assigned a reference to `e2`
  * Returns:
  *      `true` if pointers to the stack can escape via assignment
  */
-bool checkAssignEscape(Scope* sc, Expression e, bool gag)
+bool checkAssignEscape(Scope* sc, Expression e, bool gag, bool byRef)
 {
     enum log = false;
-    if (log) printf("checkAssignEscape(e: %s)\n", e.toChars());
+    if (log) printf("checkAssignEscape(e: %s, byRef: %d)\n", e.toChars(), byRef);
     if (e.op != EXP.assign && e.op != EXP.blit && e.op != EXP.construct &&
         e.op != EXP.concatenateAssign && e.op != EXP.concatenateElemAssign && e.op != EXP.concatenateDcharAssign)
         return false;
@@ -561,7 +563,10 @@ bool checkAssignEscape(Scope* sc, Expression e, bool gag)
 
     EscapeByResults er;
 
-    escapeByValue(e2, &er);
+    if (byRef)
+        escapeByRef(e2, &er);
+    else
+        escapeByValue(e2, &er);
 
     if (!er.byref.dim && !er.byvalue.dim && !er.byfunc.dim && !er.byexp.dim)
         return false;
@@ -789,8 +794,18 @@ bool checkAssignEscape(Scope* sc, Expression e, bool gag)
 
         Dsymbol p = v.toParent2();
 
+        if (vaIsFirstRef && v.isParameter() &&
+            !(v.storage_class & STC.return_) &&
+            fd.flags & FUNCFLAG.returnInprocess &&
+            p == fd)
+        {
+            //if (log) printf("inferring 'return' for parameter %s in function %s\n", v.toChars(), fd.toChars());
+            inferReturn(fd, v, /*returnScope:*/ false);
+        }
+
         // If va's lifetime encloses v's, then error
         if (va &&
+            !(vaIsFirstRef && (v.storage_class & STC.return_)) &&
             (va.enclosesLifetimeOf(v) || (va.isReference() && !(va.storage_class & STC.temp)) || va.isDataseg()) &&
             fd.setUnsafe())
         {

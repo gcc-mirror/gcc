@@ -4200,27 +4200,28 @@ extern (C++) final class TypeFunction : TypeNext
 
     // These flags can be accessed like `bool` properties,
     // getters and setters are generated for them
-    private enum FunctionFlag : uint
+    private extern (D) static struct BitFields
     {
-        none            = 0,
-        isnothrow       = 0x0001, // nothrow
-        isnogc          = 0x0002, // is @nogc
-        isproperty      = 0x0004, // can be called without parentheses
-        isref           = 0x0008, // returns a reference
-        isreturn        = 0x0010, // 'this' is returned by ref
-        isScopeQual     = 0x0020, // 'this' is scope
-        isreturninferred= 0x0040, // 'this' is return from inference
-        isscopeinferred = 0x0080, // 'this' is scope from inference
-        islive          = 0x0100, // is @live
-        incomplete      = 0x0200, // return type or default arguments removed
-        isInOutParam    = 0x0400, // inout on the parameters
-        isInOutQual     = 0x0800, // inout on the qualifier
-        isctor          = 0x1000, // the function is a constructor
-        isreturnscope   = 0x2000, // `this` is returned by value
+        bool isnothrow;        /// nothrow
+        bool isnogc;           /// is @nogc
+        bool isproperty;       /// can be called without parentheses
+        bool isref;            /// returns a reference
+        bool isreturn;         /// 'this' is returned by ref
+        bool isScopeQual;      /// 'this' is scope
+        bool isreturninferred; /// 'this' is return from inference
+        bool isscopeinferred;  /// 'this' is scope from inference
+        bool islive;           /// is @live
+        bool incomplete;       /// return type or default arguments removed
+        bool isInOutParam;     /// inout on the parameters
+        bool isInOutQual;      /// inout on the qualifier
+        bool isctor;           /// the function is a constructor
+        bool isreturnscope;    /// `this` is returned by value
     }
 
+    import dmd.common.bitfields : generateBitFields;
+    mixin(generateBitFields!(BitFields, ushort));
+
     LINK linkage;               // calling convention
-    FunctionFlag funcFlags;
     TRUST trust;                // level of trust
     PURE purity = PURE.impure;
     byte inuse;
@@ -4684,6 +4685,16 @@ extern (C++) final class TypeFunction : TypeNext
             match = MATCH.convert; // match ... with a "conversion" match level
         }
 
+        // https://issues.dlang.org/show_bug.cgi?id=22997
+        if (parameterList.varargs == VarArg.none && nparams > nargs && !parameterList[nargs].defaultArg)
+        {
+            OutBuffer buf;
+            buf.printf("too few arguments, expected `%d`, got `%d`", cast(int)nparams, cast(int)nargs);
+            if (pMessage)
+                *pMessage = buf.extractChars();
+            goto Nomatch;
+        }
+
         foreach (u, p; parameterList)
         {
             if (u == nargs)
@@ -5086,41 +5097,21 @@ extern (C++) final class TypeFunction : TypeNext
         return false;
     }
 
-    // Generate getter / setter functions for `FunctionFlag` members so they can be
-    // treated like regular `bool` fields, instead of requiring bit twiddling to read/write
-    extern (D) mixin(() {
-        string result = "extern(C++) pure nothrow @safe @nogc {";
-        foreach (string mem; __traits(allMembers, FunctionFlag))
-        {
-            result ~= "
-            /// set or get if the function has the FunctionFlag attribute of the same name
-            bool "~mem~"() const { return (funcFlags & FunctionFlag."~mem~") != 0; }
-            /// ditto
-            void "~mem~"(bool v)
-            {
-                if (v) funcFlags |= FunctionFlag."~mem~";
-                else funcFlags &= ~FunctionFlag."~mem~";
-            }";
-        }
-        return result ~ "}\n";
-    }());
 
     /// Returns: `true` the function is `isInOutQual` or `isInOutParam` ,`false` otherwise.
     bool iswild() const pure nothrow @safe @nogc
     {
-        return (funcFlags & (FunctionFlag.isInOutParam | FunctionFlag.isInOutQual)) != 0;
+        return isInOutParam || isInOutQual;
     }
 
     /// Returns: whether `this` function type has the same attributes (`@safe`,...) as `other`
     bool attributesEqual(const scope TypeFunction other) const pure nothrow @safe @nogc
     {
-        enum attributes = FunctionFlag.isnothrow
-                        | FunctionFlag.isnogc
-                        | FunctionFlag.islive;
-
         return this.trust == other.trust &&
                 this.purity == other.purity &&
-                (this.funcFlags & attributes) == (other.funcFlags & attributes);
+                this.isnothrow == other.isnothrow &&
+                this.isnogc == other.isnogc &&
+                this.islive == other.islive;
     }
 
     override void accept(Visitor v)

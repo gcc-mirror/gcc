@@ -19,6 +19,7 @@ import dmd.root.filename;
 import dmd.common.outbuffer;
 import dmd.root.string;
 
+nothrow:
 
 /**
  * Normalize path by turning forward slashes into backslashes
@@ -52,13 +53,13 @@ const(char)* toWinPath(const(char)* src)
  *   loc = The line number information from where the call originates
  *   filename = Path to file
  */
-FileBuffer readFile(Loc loc, const(char)* filename)
+Buffer readFile(Loc loc, const(char)* filename)
 {
     return readFile(loc, filename.toDString());
 }
 
 /// Ditto
-FileBuffer readFile(Loc loc, const(char)[] filename)
+Buffer readFile(Loc loc, const(char)[] filename)
 {
     auto result = File.read(filename);
     if (!result.success)
@@ -66,7 +67,7 @@ FileBuffer readFile(Loc loc, const(char)[] filename)
         error(loc, "error reading file `%.*s`", cast(int)filename.length, filename.ptr);
         fatal();
     }
-    return FileBuffer(result.extractSlice());
+    return Buffer(result.extractSlice());
 }
 
 

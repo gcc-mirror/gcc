@@ -10,6 +10,8 @@
  */
 module dmd.root.optional;
 
+nothrow:
+
 ///
 unittest
 {
@@ -44,6 +46,8 @@ extern (C++) struct Optional(T)
 
     /// whether `value` is set
     private bool present;
+
+  nothrow:
 
     /// Creates an `Optional` with the given value
     this(T value)

@@ -340,7 +340,6 @@ public:
         final switch (t.linkage)
         {
         case LINK.default_:
-        case LINK.system:
         case LINK.d:
             mc = 'F';
             break;
@@ -356,6 +355,8 @@ public:
         case LINK.objc:
             mc = 'Y';
             break;
+        case LINK.system:
+            assert(0);
         }
         buf.writeByte(mc);
 
@@ -1340,7 +1341,9 @@ extern (D) const(char)[] externallyMangledIdentifier(Declaration d)
     {
         if (d.linkage != LINK.d && d.localNum)
             d.error("the same declaration cannot be in multiple scopes with non-D linkage");
-        final switch (d.linkage)
+
+        const l = d.linkage == LINK.system ? target.systemLinkage() : d.linkage;
+        final switch (l)
         {
             case LINK.d:
                 break;
@@ -1354,9 +1357,10 @@ extern (D) const(char)[] externallyMangledIdentifier(Declaration d)
                 return p.toDString();
             }
             case LINK.default_:
-            case LINK.system:
                 d.error("forward declaration");
                 return d.ident.toString();
+            case LINK.system:
+                assert(0);
         }
     }
     return null;

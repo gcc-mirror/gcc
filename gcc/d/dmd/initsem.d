@@ -554,26 +554,39 @@ extern(C++) Initializer initializerSemantic(Initializer init, Scope* sc, ref Typ
                     i.exp = e.optimize(WANTvalue);
             }
         }
+        {
         // Look for the case of statically initializing an array
         // with a single member.
-        if (tb.ty == Tsarray && !tb.nextOf().equals(ti.toBasetype().nextOf()) && i.exp.implicitConvTo(tb.nextOf()))
+        auto tba = tb.isTypeSArray();
+        if (tba && !tba.next.equals(ti.toBasetype().nextOf()) && i.exp.implicitConvTo(tba.next))
         {
             /* If the variable is not actually used in compile time, array creation is
              * redundant. So delay it until invocation of toExpression() or toDt().
              */
             t = tb.nextOf();
         }
+
+        auto tta = t.isTypeSArray();
         if (i.exp.implicitConvTo(t))
         {
             i.exp = i.exp.implicitCastTo(sc, t);
+        }
+        else if (sc.flags & SCOPE.Cfile && i.exp.isStringExp() &&
+            tta && (tta.next.ty == Tint8 || tta.next.ty == Tuns8) &&
+            ti.ty == Tpointer && ti.nextOf().ty == Tchar)
+        {
+            /* unsigned char bbb[1] = "";
+             *   signed char ccc[1] = "";
+             */
+            i.exp = i.exp.castTo(sc, t);
         }
         else
         {
             // Look for mismatch of compile-time known length to emit
             // better diagnostic message, as same as AssignExp::semantic.
-            if (tb.ty == Tsarray && i.exp.implicitConvTo(tb.nextOf().arrayOf()) > MATCH.nomatch)
+            if (tba && i.exp.implicitConvTo(tba.next.arrayOf()) > MATCH.nomatch)
             {
-                uinteger_t dim1 = tb.isTypeSArray().dim.toInteger();
+                uinteger_t dim1 = tba.dim.toInteger();
                 uinteger_t dim2 = dim1;
                 if (auto ale = i.exp.isArrayLiteralExp())
                 {
@@ -595,6 +608,7 @@ extern(C++) Initializer initializerSemantic(Initializer init, Scope* sc, ref Typ
             i.exp = i.exp.implicitCastTo(sc, t);
             if (global.endGagging(errors))
                 currExp.error("cannot implicitly convert expression `%s` of type `%s` to `%s`", currExp.toChars(), et.toChars(), t.toChars());
+        }
         }
     L1:
         if (i.exp.op == EXP.error)
@@ -1059,7 +1073,7 @@ Initializer inferType(Initializer init, Scope* sc)
 
     Initializer visitC(CInitializer i)
     {
-        //printf(CInitializer::inferType()\n");
+        //printf("CInitializer.inferType()\n");
         error(i.loc, "TODO C inferType initializers not supported yet");
         return new ErrorInitializer();
     }
@@ -1331,6 +1345,10 @@ private bool hasNonConstPointers(Expression e)
     }
     if (auto ae = e.isAddrExp())
     {
+        if (ae.type.nextOf().isImmutable() || ae.type.nextOf().isConst())
+        {
+            return false;
+        }
         if (auto se = ae.e1.isStructLiteralExp())
         {
             if (!(se.stageflags & stageSearchPointers))

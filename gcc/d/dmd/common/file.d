@@ -25,6 +25,8 @@ import core.sys.posix.unistd;
 
 import dmd.common.string;
 
+nothrow:
+
 /**
 Encapsulated management of a memory-mapped file.
 
@@ -51,6 +53,8 @@ struct FileMapping(Datum)
     /// Name of underlying file, zero-terminated
     private const(char)* name;
     // state }
+
+  nothrow:
 
     /**
     Open `filename` and map it in memory. If `Datum` is `const`, opens for

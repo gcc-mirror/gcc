@@ -1083,28 +1083,11 @@ extern (C++) class VarDeclaration : Declaration
         bool isArgDtorVar;      /// temporary created to handle scope destruction of a function argument
     }
 
-    private ushort bitFields;       // stores multiple booleans for BitFields
+    import dmd.common.bitfields : generateBitFields;
+    mixin(generateBitFields!(BitFields, ushort));
+
     byte canassign;                 // it can be assigned to
     ubyte isdataseg;                // private data for isDataseg 0 unset, 1 true, 2 false
-
-    // Generate getter and setter functions for `bitFields`
-    extern (D) mixin(() {
-        string result = "extern (C++) pure nothrow @nogc @safe final {";
-        foreach (size_t i, mem; __traits(allMembers, BitFields))
-        {
-            result ~= "
-            /// set or get the corresponding BitFields member
-            bool "~mem~"() const { return !!(bitFields & (1 << "~i.stringof~")); }
-            /// ditto
-            bool "~mem~"(bool v)
-            {
-                v ? (bitFields |= (1 << "~i.stringof~")) : (bitFields &= ~(1 << "~i.stringof~"));
-                return v;
-            }";
-        }
-        return result ~ "}";
-    }());
-
 
     final extern (D) this(const ref Loc loc, Type type, Identifier ident, Initializer _init, StorageClass storage_class = STC.undefined_)
     in

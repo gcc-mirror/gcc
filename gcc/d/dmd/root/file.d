@@ -26,10 +26,14 @@ import dmd.root.string;
 import dmd.common.file;
 import dmd.common.string;
 
-/// Owns a (rmem-managed) file buffer.
-struct FileBuffer
+nothrow:
+
+/// Owns a (rmem-managed) buffer.
+struct Buffer
 {
     ubyte[] data;
+
+  nothrow:
 
     this(this) @disable;
 
@@ -54,7 +58,7 @@ struct File
     static struct ReadResult
     {
         bool success;
-        FileBuffer buffer;
+        Buffer buffer;
 
         /// Transfers ownership of the buffer to the caller.
         ubyte[] extractSlice() pure nothrow @nogc @safe

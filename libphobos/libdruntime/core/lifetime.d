@@ -1273,7 +1273,9 @@ void copyEmplace(S, T)(ref S source, ref T target) @system
         }
         else static if (__traits(hasCopyConstructor, T))
         {
-            emplace(cast(Unqual!(T)*) &target); // blit T.init
+            // https://issues.dlang.org/show_bug.cgi?id=22766
+            import core.internal.lifetime : emplaceInitializer;
+            emplaceInitializer(*(cast(Unqual!T*)&target));
             static if (__traits(isNested, T))
             {
                  // copy context pointer
@@ -1371,6 +1373,22 @@ void copyEmplace(S, T)(ref S source, ref T target) @system
 
     static assert(!__traits(compiles, copyEmplace(s, st)));
     static assert(!__traits(compiles, copyEmplace(ss, t)));
+}
+
+// https://issues.dlang.org/show_bug.cgi?id=22766
+@system pure nothrow @nogc unittest
+{
+    static struct S
+    {
+        @disable this();
+        this(int) @safe pure nothrow @nogc{}
+        this(ref const(S) other) @safe pure nothrow @nogc {}
+    }
+
+    S s1 = S(1);
+    S s2 = void;
+    copyEmplace(s1, s2);
+    assert(s2 == S(1));
 }
 
 version (DigitalMars) version (X86) version (Posix) version = DMD_X86_Posix;
