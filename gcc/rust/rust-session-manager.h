@@ -22,6 +22,7 @@
 
 #include "rust-linemap.h"
 #include "rust-backend.h"
+#include "safe-ctype.h"
 
 #include "config.h"
 #include "rust-system.h"
@@ -212,11 +213,11 @@ struct CompileOptions
     enable_dump_option (DumpOption::TYPE_RESOLUTION_DUMP);
   }
 
-  bool set_crate_name (std::string name)
+  void set_crate_name (std::string name)
   {
-    // TODO: validate the crate name?
+    rust_assert (!name.empty ());
+
     crate_name = std::move (name);
-    return true;
   }
 
   void set_edition (int raw_edition)
@@ -303,5 +304,12 @@ private:
   bool handle_cfg_option (std::string &data);
 };
 } // namespace Rust
+
+#if CHECKING_P
+namespace selftest {
+extern void
+rust_crate_name_validation_test (void);
+}
+#endif // CHECKING_P
 
 #endif

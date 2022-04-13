@@ -1,4 +1,4 @@
-// { dg-additional-options "-w -fdump-tree-gimple" }
+// { dg-additional-options "-w -fdump-tree-gimple -frust-crate=example" }
 struct Foo(i32);
 
 trait TR {

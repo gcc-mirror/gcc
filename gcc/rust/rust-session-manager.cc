@@ -35,6 +35,7 @@
 #include "diagnostic.h"
 #include "input.h"
 #include "rust-target.h"
+#include "selftest.h"
 
 extern bool
 saw_errors (void);
@@ -54,7 +55,65 @@ const char *kHIRDumpFile = "gccrs.hir.dump";
 const char *kHIRTypeResolutionDumpFile = "gccrs.type-resolution.dump";
 const char *kTargetOptionsDumpFile = "gccrs.target-options.dump";
 
-const std::string kDefaultCrateName = "example";
+const std::string kDefaultCrateName = "rust_out";
+const size_t kMaxNameLength = 64;
+
+static std::string
+infer_crate_name (const std::string &filename)
+{
+  if (filename == "-")
+    return kDefaultCrateName;
+
+  std::string crate = std::string (filename);
+  size_t path_sep = crate.find_last_of (file_separator);
+
+  // find the base filename
+  if (path_sep != std::string::npos)
+    crate.erase (0, path_sep + 1);
+
+  // find the file stem name (remove file extension)
+  size_t ext_position = crate.find_last_of ('.');
+  if (ext_position != std::string::npos)
+    crate.erase (ext_position);
+
+  // Replace all the '-' symbols with '_' per Rust rules
+  for (auto &c : crate)
+    {
+      if (c == '-')
+	c = '_';
+    }
+  return crate;
+}
+
+/* Validate the crate name using the ASCII rules
+   TODO: Support Unicode version of the rules */
+
+static bool
+validate_crate_name (const std::string &crate_name, Error &error)
+{
+  if (crate_name.empty ())
+    {
+      error = Error (Location (), "crate name cannot be empty");
+      return false;
+    }
+  if (crate_name.length () > kMaxNameLength)
+    {
+      error = Error (Location (), "crate name cannot exceed %ld characters",
+		     kMaxNameLength);
+      return false;
+    }
+  for (auto &c : crate_name)
+    {
+      if (!(ISALNUM (c) || c == '_'))
+	{
+	  error = Error (Location (),
+			 "invalid character %<%c%> in crate name: %<%s%>", c,
+			 crate_name.c_str ());
+	  return false;
+	}
+    }
+  return true;
+}
 
 // Implicitly enable a target_feature (and recursively enable dependencies).
 void
@@ -311,10 +370,6 @@ Session::init ()
 
   // setup backend to GCC GIMPLE
   backend = rust_get_backend ();
-
-  // set the default crate name if crate name was unset
-  if (options.crate_name.empty ())
-    options.set_crate_name (kDefaultCrateName);
 }
 
 /* Initialise default options. Actually called before handle_option, unlike init
@@ -347,7 +402,16 @@ Session::handle_option (
     case OPT_frust_crate_:
       // set the crate name
       if (arg != nullptr)
-	ret = options.set_crate_name (arg);
+	{
+	  auto error = Error (Location (), std::string ());
+	  if ((ret = validate_crate_name (arg, error)))
+	    options.set_crate_name (arg);
+	  else
+	    {
+	      rust_assert (!error.message.empty ());
+	      error.emit_error ();
+	    }
+	}
       else
 	ret = false;
       break;
@@ -479,6 +543,32 @@ Session::enable_dump (std::string arg)
 void
 Session::parse_files (int num_files, const char **files)
 {
+  if (options.crate_name.empty ())
+    {
+      /* HACK: We use the first file to infer the crate name, which might be
+       * incorrect: since rustc only allows one file to be supplied in the
+       * command-line */
+      auto filename = "-";
+      if (num_files > 0)
+	filename = files[0];
+
+      auto crate_name = infer_crate_name (filename);
+      Error error ((Location ()), std::string ());
+      rust_debug ("inferred crate name: %s", crate_name.c_str ());
+      if (!validate_crate_name (crate_name, error))
+	{
+	  // fake a linemapping so that we can show the filename
+	  linemap->start_file (filename, 0);
+	  linemap->start_line (0, 1);
+	  error.emit_error ();
+	  rust_inform (linemap->get_location (0),
+		       "crate name inferred from this file");
+	  linemap->stop ();
+	  return;
+	}
+      options.set_crate_name (crate_name);
+    }
+
   auto mappings = Analysis::Mappings::get ();
   CrateNum crate_num = mappings->setup_crate_mappings (options.crate_name);
   mappings->set_current_crate (crate_num);
@@ -1121,3 +1211,34 @@ TargetOptions::enable_implicit_feature_reqs (std::string feature)
  *  - code generation
  *  - link */
 } // namespace Rust
+
+#if CHECKING_P
+namespace selftest {
+void
+rust_crate_name_validation_test (void)
+{
+  auto error = Rust::Error (Location (), std::string ());
+  ASSERT_TRUE (Rust::validate_crate_name ("example", error));
+  ASSERT_TRUE (Rust::validate_crate_name ("abcdefg_1234", error));
+  ASSERT_TRUE (Rust::validate_crate_name ("1", error));
+  // FIXME: The next test does not pass as of current implementation
+  // ASSERT_TRUE (Rust::CompileOptions::validate_crate_name ("惊吓"));
+  // NOTE: - is not allowed in the crate name ...
+
+  ASSERT_FALSE (Rust::validate_crate_name ("abcdefg-1234", error));
+  ASSERT_FALSE (Rust::validate_crate_name ("a+b", error));
+  ASSERT_FALSE (Rust::validate_crate_name ("/a+b/", error));
+
+  /* Tests for crate name inference */
+  ASSERT_EQ (Rust::infer_crate_name ("c.rs"), "c");
+  // NOTE: ... but - is allowed when in the filename
+  ASSERT_EQ (Rust::infer_crate_name ("a-b.rs"), "a_b");
+  ASSERT_EQ (Rust::infer_crate_name ("book.rs.txt"), "book.rs");
+#if defined(HAVE_DOS_BASED_FILE_SYSTEM)
+  ASSERT_EQ (Rust::infer_crate_name ("a\\c\\a-b.rs"), "a_b");
+#else
+  ASSERT_EQ (Rust::infer_crate_name ("a/c/a-b.rs"), "a_b");
+#endif
+}
+} // namespace selftest
+#endif // CHECKING_P

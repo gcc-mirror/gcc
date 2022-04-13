@@ -458,6 +458,7 @@ run_rust_tests ()
   simple_assert ();
   rust_cfg_parser_test ();
   rust_privacy_ctx_test ();
+  rust_crate_name_validation_test ();
 }
 } // namespace selftest
 
