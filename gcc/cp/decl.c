@@ -8312,7 +8312,7 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
     {
       unsigned i; tree t;
       FOR_EACH_VEC_ELT (*cleanups, i, t)
-	push_cleanup (decl, t, false);
+	push_cleanup (NULL_TREE, t, false);
       release_tree_vector (cleanups);
     }
 
