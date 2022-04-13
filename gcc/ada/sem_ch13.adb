@@ -10487,7 +10487,13 @@ package body Sem_Ch13 is
                Second_Formal : constant Entity_Id :=
                  Next_Entity (Object_Entity);
             begin
-               if Present (PF_Expr) then
+               --  In GNATprove mode we are only interested in the predicate
+               --  expression itself and don't want a raise expression that
+               --  comes from the Predicate_Failure.
+
+               if Present (PF_Expr)
+                 and then not GNATprove_Mode
+               then
                   pragma Assert (Present (Second_Formal));
 
                   --  This is an ugly hack to cope with an ugly situation.
