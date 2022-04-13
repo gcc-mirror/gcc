@@ -643,10 +643,19 @@ AttrVisitor::visit (AST::ComparisonExpr &expr)
 
   /* should have no possibility for outer attrs as would be parsed
    * with outer expr */
-  expr.get_left_expr ()->accept_vis (*this);
+  auto &l_expr = expr.get_left_expr ();
+  l_expr->accept_vis (*this);
+  auto l_fragment = expander.take_expanded_fragment (*this);
+  if (l_fragment.should_expand ())
+    l_expr = l_fragment.take_expression_fragment ();
+
   /* should syntactically not have outer attributes, though this may
    * not have worked in practice */
-  expr.get_right_expr ()->accept_vis (*this);
+  auto &r_expr = expr.get_right_expr ();
+  r_expr->accept_vis (*this);
+  auto r_fragment = expander.take_expanded_fragment (*this);
+  if (r_fragment.should_expand ())
+    r_expr = r_fragment.take_expression_fragment ();
 
   // ensure that they are not marked for strip
   if (expr.get_left_expr ()->is_marked_for_strip ())
@@ -667,10 +676,19 @@ AttrVisitor::visit (AST::LazyBooleanExpr &expr)
 
   /* should have no possibility for outer attrs as would be parsed
    * with outer expr */
-  expr.get_left_expr ()->accept_vis (*this);
+  auto &l_expr = expr.get_left_expr ();
+  l_expr->accept_vis (*this);
+  auto l_fragment = expander.take_expanded_fragment (*this);
+  if (l_fragment.should_expand ())
+    l_expr = l_fragment.take_expression_fragment ();
+
   /* should syntactically not have outer attributes, though this may
    * not have worked in practice */
-  expr.get_right_expr ()->accept_vis (*this);
+  auto &r_expr = expr.get_right_expr ();
+  r_expr->accept_vis (*this);
+  auto r_fragment = expander.take_expanded_fragment (*this);
+  if (r_fragment.should_expand ())
+    r_expr = r_fragment.take_expression_fragment ();
 
   // ensure that they are not marked for strip
   if (expr.get_left_expr ()->is_marked_for_strip ())
@@ -718,10 +736,19 @@ AttrVisitor::visit (AST::AssignmentExpr &expr)
 
   /* should have no possibility for outer attrs as would be parsed
    * with outer expr */
-  expr.get_left_expr ()->accept_vis (*this);
+  auto &l_expr = expr.get_left_expr ();
+  l_expr->accept_vis (*this);
+  auto l_fragment = expander.take_expanded_fragment (*this);
+  if (l_fragment.should_expand ())
+    l_expr = l_fragment.take_expression_fragment ();
+
   /* should syntactically not have outer attributes, though this may
    * not have worked in practice */
-  expr.get_right_expr ()->accept_vis (*this);
+  auto &r_expr = expr.get_right_expr ();
+  r_expr->accept_vis (*this);
+  auto r_fragment = expander.take_expanded_fragment (*this);
+  if (r_fragment.should_expand ())
+    r_expr = r_fragment.take_expression_fragment ();
 
   // ensure that they are not marked for strip
   if (expr.get_left_expr ()->is_marked_for_strip ())
