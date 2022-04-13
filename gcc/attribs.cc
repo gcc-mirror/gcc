@@ -636,15 +636,20 @@ decl_attributes (tree *node, tree attributes, int flags,
       && !DECL_FUNCTION_SPECIFIC_OPTIMIZATION (*node))
     {
       DECL_FUNCTION_SPECIFIC_OPTIMIZATION (*node) = optimization_current_node;
-      tree cur_tree
-	= build_target_option_node (&global_options, &global_options_set);
-      tree old_tree = DECL_FUNCTION_SPECIFIC_TARGET (*node);
-      if (!old_tree)
-	old_tree = target_option_default_node;
-      /* The changes on optimization options can cause the changes in
-	 target options, update it accordingly if it's changed.  */
-      if (old_tree != cur_tree)
-	DECL_FUNCTION_SPECIFIC_TARGET (*node) = cur_tree;
+      /* Don't set DECL_FUNCTION_SPECIFIC_TARGET for targets that don't
+	 support #pragma GCC target or target attribute.  */
+      if (target_option_default_node)
+	{
+	  tree cur_tree
+	    = build_target_option_node (&global_options, &global_options_set);
+	  tree old_tree = DECL_FUNCTION_SPECIFIC_TARGET (*node);
+	  if (!old_tree)
+	    old_tree = target_option_default_node;
+	  /* The changes on optimization options can cause the changes in
+	     target options, update it accordingly if it's changed.  */
+	  if (old_tree != cur_tree)
+	    DECL_FUNCTION_SPECIFIC_TARGET (*node) = cur_tree;
+	}
     }
 
   /* If this is a function and the user used #pragma GCC target, add the
