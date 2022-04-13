@@ -16267,7 +16267,8 @@ public:
   {
     return (flag_openmp || flag_openmp_simd)
 	    && (flag_offload_memory == OFFLOAD_MEMORY_UNIFIED
-		|| omp_requires_mask & OMP_REQUIRES_UNIFIED_SHARED_MEMORY);
+		|| omp_requires_mask & OMP_REQUIRES_UNIFIED_SHARED_MEMORY
+		|| omp_requires_mask & OMP_REQUIRES_UNIFIED_ADDRESS);
   }
   virtual unsigned int execute (function *)
   {

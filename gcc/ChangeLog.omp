@@ -1,3 +1,7 @@
+2022-04-20  Andrew Stubbs  <ams@codesourcery.com>
+
+	* omp-low.cc: Do USM transformations for "unified_address".
+
 2022-04-02  Andrew Stubbs  <ams@codesourcery.com>
 
 	* omp-low.cc (usm_transform): Transform omp_target_alloc and

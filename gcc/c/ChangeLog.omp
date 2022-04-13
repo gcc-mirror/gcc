@@ -1,3 +1,8 @@
+2022-04-20  Andrew Stubbs  <ams@codesourcery.com>
+
+	* c-parser.cc (c_parser_omp_requires): Check requires unified_address
+	for conflict with -foffload-memory=shared.
+
 2022-03-10  Andrew Stubbs <ams@codesourcery.com>
 
 	Backport of the patch posted at

@@ -5557,6 +5557,12 @@ gfc_match_omp_requires (void)
 	  requires_clause = OMP_REQ_UNIFIED_ADDRESS;
 	  if (requires_clauses & OMP_REQ_UNIFIED_ADDRESS)
 	    goto duplicate_clause;
+
+	  if (flag_offload_memory != OFFLOAD_MEMORY_UNIFIED
+	      && flag_offload_memory != OFFLOAD_MEMORY_NONE)
+	    gfc_error_now ("unified_address at %C is incompatible with "
+			   "the selected -foffload-memory option");
+	  flag_offload_memory = OFFLOAD_MEMORY_UNIFIED;
 	}
       else if (gfc_match (clauses[2]) == MATCH_YES)
 	{
