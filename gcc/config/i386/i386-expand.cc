@@ -23405,6 +23405,7 @@ ix86_expand_cmpxchg_loop (rtx *ptarget_bool, rtx target_val,
 
     /* If mem is not expected, pause and loop back.  */
     emit_label (cmp_label);
+    emit_move_insn (target_val, new_mem);
     emit_insn (gen_pause ());
     emit_jump_insn (gen_jump (loop_label));
     emit_barrier ();
