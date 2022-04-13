@@ -2,14 +2,17 @@
 
 /* Test that ompx_pinned_mem_alloc fails correctly.  */
 
-#ifdef __linux__
-#include <sys/types.h>
-#include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
 
+#ifdef __linux__
+#include <sys/types.h>
+#include <unistd.h>
+
 #include <sys/mman.h>
 #include <sys/resource.h>
+
+#define PAGE_SIZE sysconf(_SC_PAGESIZE)
 
 int
 get_pinned_mem ()
@@ -44,6 +47,8 @@ set_pin_limit (int size)
     abort ();
 }
 #else
+#define PAGE_SIZE 10000*1024 /* unknown */
+
 int
 get_pinned_mem ()
 {
@@ -58,12 +63,12 @@ set_pin_limit ()
 
 #include <omp.h>
 
-/* This should be large enough to cover multiple pages.  */
-#define SIZE 10000*1024
-
 int
 main ()
 {
+  /* Allocate at least a page each time, but stay within the ulimit.  */
+  const int SIZE = PAGE_SIZE*4;
+
   /* Ensure that the limit is smaller than the allocation.  */
   set_pin_limit (SIZE/2);
 

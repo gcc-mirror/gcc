@@ -4,13 +4,23 @@
 
 /* Test that ompx_pinned_mem_alloc works.  */
 
-#ifdef __linux__
-#include <sys/types.h>
-#include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
 
+#ifdef __linux__
+#include <sys/types.h>
+#include <unistd.h>
+
 #include <sys/mman.h>
+#include <sys/resource.h>
+
+#define PAGE_SIZE sysconf(_SC_PAGESIZE)
+#define CHECK_SIZE(SIZE) { \
+  struct rlimit limit; \
+  if (getrlimit (RLIMIT_MEMLOCK, &limit) \
+      || limit.rlim_cur <= SIZE) \
+    fprintf (stderr, "unsufficient lockable memory; please increase ulimit\n"); \
+  }
 
 int
 get_pinned_mem ()
@@ -34,6 +44,9 @@ get_pinned_mem ()
   abort ();
 }
 #else
+#define PAGE_SIZE 1 /* unknown */
+#define CHECK_SIZE(SIZE) fprintf (stderr, "OS unsupported\n");
+
 int
 get_pinned_mem ()
 {
@@ -43,12 +56,13 @@ get_pinned_mem ()
 
 #include <omp.h>
 
-/* Allocate more than a page each time, but stay within the ulimit.  */
-#define SIZE 10*1024
-
 int
 main ()
 {
+  /* Allocate at least a page each time, but stay within the ulimit.  */
+  const int SIZE = PAGE_SIZE;
+  CHECK_SIZE (SIZE*3);
+
   // Sanity check
   if (get_pinned_mem () != 0)
     abort ();

@@ -2,14 +2,17 @@
 
 /* Test that pinned memory fails correctly, pool_size code path.  */
 
-#ifdef __linux__
-#include <sys/types.h>
-#include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
 
+#ifdef __linux__
+#include <sys/types.h>
+#include <unistd.h>
+
 #include <sys/mman.h>
 #include <sys/resource.h>
+
+#define PAGE_SIZE sysconf(_SC_PAGESIZE)
 
 int
 get_pinned_mem ()
@@ -45,6 +48,8 @@ set_pin_limit (int size)
 }
 #else
 int
+#define PAGE_SIZE 10000*1024 /* unknown */
+
 get_pinned_mem ()
 {
   return 0;
@@ -58,12 +63,12 @@ set_pin_limit ()
 
 #include <omp.h>
 
-/* This should be large enough to cover multiple pages.  */
-#define SIZE 10000*1024
-
 int
 main ()
 {
+  /* This needs to be large enough to cover multiple pages.  */
+  const int SIZE = PAGE_SIZE*4;
+
   /* Pinned memory, no fallback.  */
   const omp_alloctrait_t traits1[] = {
       { omp_atk_pinned, 1 },

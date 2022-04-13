@@ -5,11 +5,12 @@
 
 /* Test that pinned memory works.  */
 
+#include <stdio.h>
+#include <stdlib.h>
+
 #ifdef __linux__
 #include <sys/types.h>
 #include <unistd.h>
-#include <stdio.h>
-#include <stdlib.h>
 
 #include <sys/mman.h>
 
@@ -28,7 +29,6 @@ get_pinned_mem ()
       int val;
       if (sscanf (buf, "VmLck: %d", &val))
 	{
-	  printf ("lock %d\n", val);
 	  fclose (proc);
 	  return val;
 	}
@@ -46,9 +46,6 @@ get_pinned_mem ()
 #endif
 
 #include <omp.h>
-
-/* Allocate more than a page each time, but stay within the ulimit.  */
-#define SIZE 10*1024
 
 int
 main ()
