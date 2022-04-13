@@ -1,3 +1,13 @@
+2022-04-13  Andrew Stubbs  <ams@codesourcery.com>
+
+	* testsuite/libgomp.c/alloc-pinned-1.c: Autodetect page size.
+	* testsuite/libgomp.c/alloc-pinned-2.c: Likewise.
+	* testsuite/libgomp.c/alloc-pinned-3.c: Likewise.
+	* testsuite/libgomp.c/alloc-pinned-4.c: Likewise.
+	* testsuite/libgomp.c/alloc-pinned-5.c: Likewise.
+	* testsuite/libgomp.c/alloc-pinned-6.c: Likewise.
+	* testsuite/libgomp.c/alloc-pinned-7.c: Clean up.
+
 2022-04-02  Andrew Stubbs  <ams@codesourcery.com>
 
 	* testsuite/libgomp.c/usm-6.c: Add omp_target_alloc.
