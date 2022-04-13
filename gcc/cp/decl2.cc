@@ -1534,12 +1534,19 @@ cp_check_const_attributes (tree attributes)
   for (attr = attributes; attr; attr = TREE_CHAIN (attr))
     {
       tree arg;
+      /* As we implement alignas using gnu::aligned attribute and
+	 alignas argument is a constant expression, force manifestly
+	 constant evaluation of aligned attribute argument.  */
+      bool manifestly_const_eval
+	= is_attribute_p ("aligned", get_attribute_name (attr));
       for (arg = TREE_VALUE (attr); arg && TREE_CODE (arg) == TREE_LIST;
 	   arg = TREE_CHAIN (arg))
 	{
 	  tree expr = TREE_VALUE (arg);
 	  if (EXPR_P (expr))
-	    TREE_VALUE (arg) = fold_non_dependent_expr (expr);
+	    TREE_VALUE (arg)
+	      = fold_non_dependent_expr (expr, tf_warning_or_error,
+					 manifestly_const_eval);
 	}
     }
 }
