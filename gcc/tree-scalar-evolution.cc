@@ -3395,7 +3395,7 @@ expression_expensive_p (tree expr, hash_map<tree, uint64_t> &cache,
       call_expr_arg_iterator iter;
       /* Even though is_inexpensive_builtin might say true, we will get a
 	 library call for popcount when backend does not have an instruction
-	 to do so.  We consider this to be expenseive and generate
+	 to do so.  We consider this to be expensive and generate
 	 __builtin_popcount only when backend defines it.  */
       combined_fn cfn = get_call_combined_fn (expr);
       switch (cfn)
