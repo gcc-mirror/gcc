@@ -1,3 +1,124 @@
+2022-04-12  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2022-02-16  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/104507
+	* g++.dg/template/non-dependent21.C: New test.
+
+2022-04-12  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2022-02-08  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/103706
+	* g++.dg/cpp2a/concepts-lambda18.C: New test.
+
+2022-04-12  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2022-01-28  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/103341
+	* g++.dg/cpp2a/concepts-class4.C: New test.
+	* g++.dg/cpp2a/concepts-var-templ2.C: New test.
+
+2022-04-12  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2022-01-25  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/101532
+	PR c++/104225
+	* g++.dg/cpp0x/nsdmi-template21.C: New test.
+	* g++.dg/cpp0x/nsdmi-template21a.C: New test.
+
+2022-04-12  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2022-04-12  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/103105
+	* g++.dg/cpp2a/concepts-requires29.C: New test.
+	* g++.dg/cpp2a/concepts-requires29a.C: New test.
+
+2022-04-12  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2022-02-08  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/103706
+	* g++.dg/cpp2a/concepts-lambda19.C: New test.
+
+2022-04-12  Peter Bergner  <bergner@linux.ibm.com>
+
+	Backported from master:
+	2022-04-11  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/104894
+	* gcc.target/powerpc/pr104894.c: New test.
+	* gcc.target/powerpc/pr104894-2.c: New test.
+
+2022-04-12  Jason Merrill  <jason@redhat.com>
+
+	PR c++/98249
+	* g++.dg/lookup/new3.C: New test.
+
+2022-04-12  Jason Merrill  <jason@redhat.com>
+
+	PR c++/100608
+	* g++.dg/warn/Wshadow-compatible-local-3.C: New test.
+
+2022-04-12  Jason Merrill  <jason@redhat.com>
+
+	PR c++/101677
+	* g++.dg/cpp2a/concepts-pr67178.C: Adjust error.
+	* g++.dg/cpp2a/concepts-requires28.C: New test.
+
+2022-04-12  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105003
+	PR c++/104008
+	PR c++/102869
+	* g++.dg/cpp0x/variadic-alias6.C: New test.
+	* g++.dg/cpp0x/variadic-alias7.C: New test.
+
+2022-04-12  Jason Merrill  <jason@redhat.com>
+
+	PR c++/101894
+	* g++.dg/lookup/friend22.C: New test.
+
+2022-04-12  Jason Merrill  <jason@redhat.com>
+
+	PR c++/103943
+	* g++.dg/cpp1z/class-deduction109.C: New test.
+
+2022-04-12  Jason Merrill  <jason@redhat.com>
+
+	PR c++/101717
+	* g++.dg/cpp1y/lambda-generic-this4.C: New test.
+
+2022-04-12  Jason Merrill  <jason@redhat.com>
+
+	PR c++/101051
+	* g++.dg/cpp0x/trailing15.C: New test.
+
+2022-04-12  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-04-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/105235
+	* g++.dg/opt/pr105235-1.C: New testcase.
+
+2022-04-12  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-04-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/105226
+	* gcc.dg/pr105226.c: New testcase.
+
 2022-04-11  Alexandre Oliva  <oliva@adacore.com>
 
 	Backported from master:

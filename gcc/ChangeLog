@@ -1,3 +1,40 @@
+2022-04-12  Peter Bergner  <bergner@linux.ibm.com>
+
+	Backported from master:
+	2022-04-11  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/104894
+	* config/rs6000/rs6000.c (rs6000_sibcall_aix): Handle pcrel sibcalls
+	to longcall functions.
+
+2022-04-12  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-04-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/105235
+	* tree-ssa-math-opts.c (execute_cse_conv_1): Clean EH and
+	return whether the CFG changed.
+	(execute_cse_sincos_1): Adjust.
+
+2022-04-12  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-04-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/105232
+	* tree.c (component_ref_size): Bail out for too large
+	or non-constant sizes.
+
+2022-04-12  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-04-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/105226
+	* tree-vect-loop-manip.c (vect_loop_versioning): Verify
+	we can split the exit of an outer loop we choose to version.
+
 2022-04-11  Kito Cheng  <kito.cheng@sifive.com>
 
 	Backported from master:

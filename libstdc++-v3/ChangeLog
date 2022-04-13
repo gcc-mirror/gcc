@@ -1,3 +1,146 @@
+2022-04-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-01-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/100516
+	* include/bits/deque.tcc (_M_range_initialize<ForwardIterator>):
+	Add __builtin_unreachable to loop.
+	* testsuite/23_containers/deque/100516.cc: New test.
+
+2022-04-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-12-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/103630
+	* libsupc++/exception_ptr.h (exception_ptr): Fix exception
+	specifications on inline definitions.
+	(make_exception_ptr): Decay the template parameter. Use typeid
+	of the static type.
+	* testsuite/18_support/exception_ptr/103630.cc: New test.
+
+2022-04-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-03-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/105021
+	* include/bits/atomic_base.h [!_GLIBCXX_HOSTED]: Do not include
+	<bits/atomic_wait.h> for freestanding.
+
+2022-04-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-12-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/103638
+	* include/bits/atomic_timed_wait.h: Check _GLIBCXX_HAS_GTHREADS
+	before using std::mutex and std::__condvar.
+
+2022-04-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-10-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/variant (__detail::__variant::__as): Add missing
+	noexcept to first overload.
+
+2022-04-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-10-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/90943
+	* include/std/variant (__cpp_lib_variant): Update value.
+	(__detail::__variant::__as): New helpers implementing the
+	as-variant exposition-only function templates.
+	(visit, visit<R>): Use __as to upcast the variant parameters.
+	* include/std/version (__cpp_lib_variant): Update value.
+	* testsuite/20_util/variant/visit_inherited.cc: New test.
+
+2022-04-12  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2022-01-12  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/103955
+	* src/c++17/floating_to_chars.cc (__floating_to_chars_hex):
+	Track the excess precision separately from the effective
+	precision.  Avoid overflow in bounds check by splitting it into
+	two checks.
+	(__floating_to_chars_precision): Avoid overflow in bounds checks
+	similarly.
+	* testsuite/20_util/to_chars/103955.cc: New test.
+
+2022-04-12  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2021-10-21  Patrick Palka  <ppalka@redhat.com>
+
+	* include/bits/stl_iterator.h (common_iterator::__arrow_proxy):
+	Make fully constexpr as per LWG 3595.
+	(common_iterator::__postfix_proxy): Likewise.
+
+2022-04-12  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2021-10-21  Patrick Palka  <ppalka@redhat.com>
+
+	* include/std/ranges (split_view::base): Add forward_range
+	constraint as per LWG 3591.
+	(split_view::begin, lazy_split_view::end): Also check
+	simpleness of _Pattern as per LWG 3592.
+
+2022-04-12  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2021-10-21  Patrick Palka  <ppalka@redhat.com>
+
+	* include/std/ranges (join_view::__iter_cat::_S_iter_cat): Adjust
+	criteria for returning bidirectional_iterator_tag as per LWG 3535.
+	(join_view::_Iterator::_S_iter_concept): Likewise.
+
+2022-04-12  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2021-10-21  Patrick Palka  <ppalka@redhat.com>
+
+	* include/bits/ranges_base.h (viewable_range): Adjust as per
+	LWG 3481.
+	* testsuite/std/ranges/adaptors/all.cc (test07): New test.
+
+2022-04-12  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2021-10-19  Patrick Palka  <ppalka@redhat.com>
+
+	* include/std/ranges (iota_view::_Iterator::operator+): Adjust
+	definition as per LWG 3580.
+	(iota_view::_Iterator::operator-): Likewise.
+
+2022-04-12  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2021-10-19  Patrick Palka  <ppalka@redhat.com>
+
+	* include/bits/ranges_util.h
+	(__detail::__uses_nonqualification_pointer_conversion): Define
+	and use it ...
+	(__detail::__convertible_to_nonslicing): ... here, as per LWG 3470.
+	* testsuite/std/ranges/subrange/1.cc: New test.
+
+2022-04-12  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2021-10-19  Patrick Palka  <ppalka@redhat.com>
+
+	* include/std/ranges (iota_view::_Iterator): Befriend iota_view.
+	(iota_view::_Sentinel): Likewise.
+	(iota_view::iota_view): Add three overloads, each taking an
+	iterator/sentinel pair as per LWG 3523.
+	* testsuite/std/ranges/iota/iota_view.cc (test06): New test.
+
 2022-04-07  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:
