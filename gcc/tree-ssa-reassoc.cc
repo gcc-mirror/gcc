@@ -5857,7 +5857,9 @@ try_special_add_to_ops (vec<operand_entry *> *ops,
 	   && gimple_assign_rhs_code (def_stmt) == NEGATE_EXPR
 	   && !HONOR_SNANS (TREE_TYPE (op))
 	   && (!HONOR_SIGNED_ZEROS (TREE_TYPE (op))
-	       || !COMPLEX_FLOAT_TYPE_P (TREE_TYPE (op))))
+	       || !COMPLEX_FLOAT_TYPE_P (TREE_TYPE (op)))
+	   && (!FLOAT_TYPE_P (TREE_TYPE (op))
+	       || !DECIMAL_FLOAT_MODE_P (element_mode (op))))
     {
       tree rhs1 = gimple_assign_rhs1 (def_stmt);
       tree cst = build_minus_one_cst (TREE_TYPE (op));
