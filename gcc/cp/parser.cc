@@ -20041,7 +20041,16 @@ cp_parser_placeholder_type_specifier (cp_parser *parser, location_t loc,
   /* In a template parameter list, a type-parameter can be introduced
      by type-constraints alone.  */
   if (processing_template_parmlist && !placeholder)
-    return build_constrained_parameter (con, proto, args);
+    {
+      /* In a default argument we may not be creating new parameters.  */
+      if (parser->local_variables_forbidden_p & LOCAL_VARS_FORBIDDEN)
+	{
+	  /* If this assert turns out to be false, do error() instead.  */
+	  gcc_assert (tentative);
+	  return error_mark_node;
+	}
+      return build_constrained_parameter (con, proto, args);
+    }
 
   /* Diagnose issues placeholder issues.  */
   if (!flag_concepts_ts
