@@ -1588,7 +1588,7 @@ public:
 
   std::string as_string () const;
 
-  Analysis::NodeMapping get_mappings () { return mappings; }
+  Analysis::NodeMapping get_mappings () const { return mappings; }
 
   Location get_locus () const { return locus; }
 
@@ -1644,11 +1644,18 @@ protected:
 class EnumItem : public Item
 {
   Identifier variant_name;
-
   Location locus;
 
 public:
   virtual ~EnumItem () {}
+
+  enum EnumItemKind
+  {
+    Named,
+    Tuple,
+    Struct,
+    Discriminant,
+  };
 
   EnumItem (Analysis::NodeMapping mappings, Identifier variant_name,
 	    AST::AttrVec outer_attrs, Location locus)
@@ -1663,6 +1670,7 @@ public:
   }
 
   virtual std::string as_string () const override;
+  virtual EnumItemKind get_enum_item_kind () const { return Named; };
 
   // not pure virtual as not abstract
   void accept_vis (HIRFullVisitor &vis) override;
@@ -1686,6 +1694,11 @@ class EnumItemTuple : public EnumItem
 public:
   // Returns whether tuple enum item has tuple fields.
   bool has_tuple_fields () const { return !tuple_fields.empty (); }
+
+  EnumItemKind get_enum_item_kind () const override
+  {
+    return EnumItemKind::Tuple;
+  }
 
   EnumItemTuple (Analysis::NodeMapping mappings, Identifier variant_name,
 		 std::vector<TupleField> tuple_fields, AST::AttrVec outer_attrs,
@@ -1719,6 +1732,11 @@ class EnumItemStruct : public EnumItem
 public:
   // Returns whether struct enum item has struct fields.
   bool has_struct_fields () const { return !struct_fields.empty (); }
+
+  EnumItemKind get_enum_item_kind () const override
+  {
+    return EnumItemKind::Struct;
+  }
 
   EnumItemStruct (Analysis::NodeMapping mappings, Identifier variant_name,
 		  std::vector<StructField> struct_fields,
@@ -1776,6 +1794,11 @@ public:
   // move constructors
   EnumItemDiscriminant (EnumItemDiscriminant &&other) = default;
   EnumItemDiscriminant &operator= (EnumItemDiscriminant &&other) = default;
+
+  EnumItemKind get_enum_item_kind () const override
+  {
+    return EnumItemKind::Discriminant;
+  }
 
   std::string as_string () const override;
 
