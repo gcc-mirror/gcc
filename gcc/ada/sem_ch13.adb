@@ -10493,6 +10493,7 @@ package body Sem_Ch13 is
 
                if Present (PF_Expr)
                  and then not GNATprove_Mode
+                 and then not CodePeer_Mode
                then
                   pragma Assert (Present (Second_Formal));
 
