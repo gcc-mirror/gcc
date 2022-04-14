@@ -890,7 +890,7 @@ register_constexpr_fundef (tree fun, tree body)
       return NULL;
     }
 
-  if (DECL_CONSTRUCTOR_P (fun)
+  if (DECL_CONSTRUCTOR_P (fun) && !DECL_DEFAULTED_FN (fun)
       && cx_check_missing_mem_inits (DECL_CONTEXT (fun),
 				     massaged, !DECL_GENERATED_P (fun)))
     return NULL;
