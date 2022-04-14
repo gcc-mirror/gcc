@@ -4128,7 +4128,8 @@ build_user_type_conversion_1 (tree totype, tree expr, int flags,
 	     We represent this in the conversion sequence with an
 	     rvalue conversion, which means a constructor call.  */
 	  if (!TYPE_REF_P (totype)
-	      && (flag_elide_constructors || (flags & LOOKUP_ONLYCONVERTING))
+	      && cxx_dialect < cxx17
+	      && (flags & LOOKUP_ONLYCONVERTING)
 	      && !(convflags & LOOKUP_NO_TEMP_BIND))
 	    cand->second_conv
 	      = build_conv (ck_rvalue, totype, cand->second_conv);
@@ -7815,13 +7816,10 @@ convert_like_internal (conversion *convs, tree expr, tree fn, int argnum,
       break;
     };
 
-  tsubst_flags_t sub_complain = complain;
-  if (!flag_elide_constructors)
-    sub_complain &= ~tf_no_cleanup;
   expr = convert_like (next_conversion (convs), expr, fn, argnum,
 		       convs->kind == ck_ref_bind
 		       ? issue_conversion_warnings : false,
-		       c_cast_p, sub_complain);
+		       c_cast_p, complain & ~tf_no_cleanup);
   if (expr == error_mark_node)
     return error_mark_node;
 
