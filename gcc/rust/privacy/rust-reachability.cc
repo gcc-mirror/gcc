@@ -69,6 +69,9 @@ ReachabilityVisitor::visit_generic_predicates (
 void
 ReachabilityVisitor::visit (HIR::Module &mod)
 {
+  auto reach = get_reachability_level (mod.get_visibility ());
+  reach = ctx.update_reachability (mod.get_mappings (), reach);
+
   for (auto &item : mod.get_items ())
     {
       // FIXME: Is that what we want to do? Yes? Only visit the items with
@@ -83,11 +86,17 @@ ReachabilityVisitor::visit (HIR::Module &mod)
 
 void
 ReachabilityVisitor::visit (HIR::ExternCrate &crate)
-{}
+{
+  auto reach = get_reachability_level (crate.get_visibility ());
+  reach = ctx.update_reachability (crate.get_mappings (), reach);
+}
 
 void
 ReachabilityVisitor::visit (HIR::UseDeclaration &use_decl)
-{}
+{
+  auto reach = get_reachability_level (use_decl.get_visibility ());
+  reach = ctx.update_reachability (use_decl.get_mappings (), reach);
+}
 
 void
 ReachabilityVisitor::visit (HIR::Function &func)
@@ -155,11 +164,17 @@ ReachabilityVisitor::visit (HIR::Union &union_item)
 
 void
 ReachabilityVisitor::visit (HIR::ConstantItem &const_item)
-{}
+{
+  auto reach = get_reachability_level (const_item.get_visibility ());
+  reach = ctx.update_reachability (const_item.get_mappings (), reach);
+}
 
 void
 ReachabilityVisitor::visit (HIR::StaticItem &static_item)
-{}
+{
+  auto reach = get_reachability_level (static_item.get_visibility ());
+  reach = ctx.update_reachability (static_item.get_mappings (), reach);
+}
 
 void
 ReachabilityVisitor::visit (HIR::Trait &trait)
