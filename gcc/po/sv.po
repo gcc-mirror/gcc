@@ -1,4 +1,4 @@
-# Swedish messages for GCCs.
+# Swedish messages for Sc's.
 # Copyright © 2000, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022 Free Software Foundation, Inc.
 # This file is distributed under the same license as the gcc package.
 # Dennis Björklund <db@zigo.dhs.org>, 2000, 2001, 2002.
@@ -26,10 +26,10 @@
 # thunk			snutt
 msgid ""
 msgstr ""
-"Project-Id-Version: gcc 12.1-b20220213\n"
+"Project-Id-Version: gcc 12.1-b20220403\n"
 "Report-Msgid-Bugs-To: https://gcc.gnu.org/bugs/\n"
 "POT-Creation-Date: 2022-04-01 17:30+0000\n"
-"PO-Revision-Date: 2022-04-03 17:33+0200\n"
+"PO-Revision-Date: 2022-04-10 10:53+0200\n"
 "Last-Translator: Göran Uddeborg <goeran@uddeborg.se>\n"
 "Language-Team: Swedish <tp-sv@listor.tp-sv.se>\n"
 "Language: sv\n"
@@ -2724,10 +2724,9 @@ msgid "Support dynamic initialization of thread-local variables in a different t
 msgstr "Stöd dynamisk initiering av trådlokala variabler i en annan översättningsenhet."
 
 #: c-family/c.opt:1728
-#, fuzzy, no-c-format
-#| msgid "call to non-function %qD"
+#, no-c-format
 msgid "Fold calls to simple inline functions."
-msgstr "anrop av icke-funktion %qD"
+msgstr "Vikningsanrop till enkla inline-funktioner."
 
 #: c-family/c.opt:1735
 #, no-c-format
@@ -3546,10 +3545,9 @@ msgid "Add comments for ignored declarations in the generated C++ header."
 msgstr "Lägg till kommentarer om ignorerade deklarationer i det genererade C++-huvudet."
 
 #: d/lang.opt:280
-#, fuzzy, no-c-format
-#| msgid "-fdump-cxx-spec=<filename>\tWrite all declarations as C++ code to <file>."
+#, no-c-format
 msgid "-fdump-cxx-spec=<filename>\tWrite all declarations as C++ code to <filename>."
-msgstr "-fdump-cxx-spec=<filnamn>\tSkriv alla deklarationer com C++-kod till <fil>."
+msgstr "-fdump-cxx-spec=<filnamn>\tSkriv alla deklarationer com C++-kod till <filnamn>."
 
 #: d/lang.opt:284
 #, no-c-format
@@ -3637,10 +3635,9 @@ msgid "Use field-wise comparisons for struct equality."
 msgstr "Använd fältvisa jämförelser för postlikhet."
 
 #: d/lang.opt:373
-#, fuzzy, no-c-format
-#| msgid "When a symbol is resolved, check alias this scope before going to upper scopes."
+#, no-c-format
 msgid "When a symbol is resolved, check `alias this' scope before going to upper scopes."
-msgstr "När en symbol slås upp, kontrollera alias i denna räckvidd innan man går till övre räckvidder."
+msgstr "När en symbol slås upp, kontrollera ”alias this”-räckvidd innan man går till övre räckvidder."
 
 #: d/lang.opt:377
 #, no-c-format
@@ -4130,7 +4127,7 @@ msgstr "Dumpa analyserarens supergraf till en fil KÄLLFIL.supergraph.dot."
 #: analyzer/analyzer.opt:255
 #, no-c-format
 msgid "Emit custom warnings with internal details intended for analyzer developers."
-msgstr ""
+msgstr "Mata ut anpassade varningar med interna detaljer avsedda för analysatorutvecklare."
 
 #: config/vms/vms.opt:27
 #, no-c-format
@@ -5497,7 +5494,7 @@ msgstr "Konstant memset-storlek i byte över vilken MOPS-sekvenser skall använd
 #: config/aarch64/aarch64.opt:298
 #, no-c-format
 msgid "Limit how much the autovectorizer may unroll a loop."
-msgstr ""
+msgstr "Begränsa hur mycket autovektoriseraren får rulla ut en slinga."
 
 #: config/linux.opt:24
 #, no-c-format
@@ -7342,16 +7339,14 @@ msgid "Support multi-threading."
 msgstr "Stöd multitrådning."
 
 #: config/nvptx/nvptx-gen.opt:24
-#, fuzzy, no-c-format
-#| msgid "Known ARM architectures (for use with the -march= option):"
+#, no-c-format
 msgid "Known PTX ISA target architectures (for use with the -misa= option):"
-msgstr "Kända ARM-arkitekturer (att användas med flaggan -march=):"
+msgstr "Kända PTX ISA-målarkitekturer (att användas med flaggan -misa=):"
 
 #: config/nvptx/nvptx.opt:28
-#, fuzzy, no-c-format
-#| msgid "Does nothing. Preserved for backward compatibility."
+#, no-c-format
 msgid "Ignored, but preserved for backward compatibility.  Only 64-bit ABI is supported."
-msgstr "Gör ingenting.  Bevarad för bakåtkompatibilitet."
+msgstr "Ignorerad, men bevarad för bakåtkompatibilitet. Endast 64-bitars ABI stödjs."
 
 #: config/nvptx/nvptx.opt:33
 #, no-c-format
@@ -7384,35 +7379,29 @@ msgid "Generate code for OpenMP offloading: enables -msoft-stack and -muniform-s
 msgstr "Generera kod för OpenMP-avlastning: aktiverar -msoft-stack och -muniform-simt."
 
 #: config/nvptx/nvptx.opt:58
-#, fuzzy, no-c-format
-#| msgid "Specify the target architecture."
+#, no-c-format
 msgid "Specify the PTX ISA target architecture to use."
-msgstr "Ange målarkitekturen."
+msgstr "Ange PTX ISA-målarkitekturen att använda."
 
 #: config/nvptx/nvptx.opt:62
 #, no-c-format
 msgid "Alias:"
-msgstr ""
+msgstr "Alias:"
 
 #: config/nvptx/nvptx.opt:117
-#, fuzzy, no-c-format
-#| msgid "Known PTX versions (for use with the -mptx= option):"
+#, no-c-format
 msgid "Known PTX ISA versions (for use with the -mptx= option):"
-msgstr "Kända PTX-versioner (att användas med flaggan -mptx=):"
+msgstr "Kända PTX ISA-versioner (att användas med flaggan -mptx=):"
 
-# Felet i originalet är rapporterat:
-# https://gcc.gnu.org/bugzilla/show_bug.cgi?id=104818
 #: config/nvptx/nvptx.opt:136
-#, fuzzy, no-c-format
-#| msgid "Specify the version of the ptx version to use."
+#, no-c-format
 msgid "Specify the PTX ISA version to use."
-msgstr "Ange versionen av ptx att använda."
+msgstr "Ange PTX-ISA-versionen att använda."
 
 #: config/nvptx/nvptx.opt:140
-#, fuzzy, no-c-format
-#| msgid "Use fp registers."
+#, no-c-format
 msgid "Initialize ptx registers."
-msgstr "Använd fp-register."
+msgstr "Initiera ptx-register."
 
 #: config/vxworks.opt:36
 #, no-c-format
@@ -9140,18 +9129,17 @@ msgstr "Använd användardefinierade instruktioner."
 #: config/loongarch/loongarch.opt:47
 #, no-c-format
 msgid "Basic ISAs of LoongArch:"
-msgstr ""
+msgstr "Grundläggande ISA:er hos LoongArch:"
 
 #: config/loongarch/loongarch.opt:56
 #, no-c-format
 msgid "FPU types of LoongArch:"
-msgstr ""
+msgstr "FPU-typer hos LoongArch:"
 
 #: config/loongarch/loongarch.opt:69
-#, fuzzy, no-c-format
-#| msgid "-march=ISA\tGenerate code for the given ISA."
+#, no-c-format
 msgid "-mfpu=FPU\tGenerate code for the given FPU."
-msgstr "-march=ISA\tGenerera kod för den angivna ISA:n."
+msgstr "-mfpu=FPU\tGenerera kod för den angivna FPU:n."
 
 #: config/loongarch/loongarch.opt:76 config/mips/mips.opt:377
 #, no-c-format
@@ -9171,30 +9159,27 @@ msgstr "Tillåt flyttalsinstruktioner i hårdvara att täcka både 32-bitars och
 #: config/loongarch/loongarch.opt:90
 #, no-c-format
 msgid "LoongArch CPU types:"
-msgstr ""
+msgstr "LoongArch-CPU-typer:"
 
 #: config/loongarch/loongarch.opt:103
-#, fuzzy, no-c-format
-#| msgid "-march=ISA\tGenerate code for the given ISA."
+#, no-c-format
 msgid "-march=PROCESSOR\tGenerate code for the given PROCESSOR ISA."
-msgstr "-march=ISA\tGenerera kod för den angivna ISA:n."
+msgstr "-march=PROCESSOR\tGenerera kod för den angivna PROCESSOR-ISA:n."
 
 #: config/loongarch/loongarch.opt:107
-#, fuzzy, no-c-format
-#| msgid "-mtune=PROCESSOR\tOptimize the output for PROCESSOR."
+#, no-c-format
 msgid "-mtune=PROCESSOR\tGenerate optimized code for PROCESSOR."
-msgstr "-mtune=PROCESSOR\tOptimera utmatningen för PROCESSOR."
+msgstr "-mtune=PROCESSOR\tGenerera optimerad kod för PROCESSOR."
 
 #: config/loongarch/loongarch.opt:116
 #, no-c-format
 msgid "Base ABI types for LoongArch:"
-msgstr ""
+msgstr "Grund-ABI-typer för LoongArch:"
 
 #: config/loongarch/loongarch.opt:129
-#, fuzzy, no-c-format
-#| msgid "-mabi=ABI\tGenerate code that conforms to the given ABI."
+#, no-c-format
 msgid "-mabi=BASEABI\tGenerate code that conforms to the given BASEABI."
-msgstr "-mabi=ABI\tGenerera kod som följer det angivna ABI:et."
+msgstr "-mabi=BASABI\tGenerera kod som följer det angivna BASABI:et."
 
 #: config/loongarch/loongarch.opt:138 config/mips/mips.opt:71
 #, no-c-format
@@ -9209,22 +9194,22 @@ msgstr "Fånga heltalsdivision med noll."
 #: config/loongarch/loongarch.opt:146
 #, no-c-format
 msgid "Conditional moves for integral are enabled."
-msgstr ""
+msgstr "Villkorliga flyttningar för heltal är aktiverade."
 
 #: config/loongarch/loongarch.opt:150
 #, no-c-format
 msgid "Conditional moves for float are enabled."
-msgstr ""
+msgstr "Villkorliga flyttningar för flyttal är aktiverade."
 
 #: config/loongarch/loongarch.opt:154
 #, no-c-format
 msgid "Prevent optimizing block moves, which is also the default behavior of -Os."
-msgstr ""
+msgstr "Förhindra optimering av blockförflyttningar, vilket även är standardbeteendet hos -Os."
 
 #: config/loongarch/loongarch.opt:162
 #, no-c-format
 msgid "-mmax-inline-memcpy-size=SIZE\tSet the max size of memcpy to inline, default is 1024."
-msgstr ""
+msgstr "-mmax-inline-memcpy-size=STORLEK\tAnge den maximala stoleken att inline:a memcpy, standard är 1024."
 
 #: config/or1k/elf.opt:28
 #, no-c-format
@@ -12739,10 +12724,9 @@ msgid "Warn whenever a trampoline is generated."
 msgstr "Varna närhelst en trampolin genereras."
 
 #: common.opt:806
-#, fuzzy, no-c-format
-#| msgid "Warn about maybe uninitialized automatic variables."
+#, no-c-format
 msgid "Warn about cases where -ftrivial-auto-var-init cannot initialize an auto variable."
-msgstr "Varna för eventuellt oinitierade automatiska variabler."
+msgstr "Varna för fall där -ftrivial-auto-var-init inte kan initiera en auto-variabel."
 
 #: common.opt:810
 #, no-c-format
@@ -15326,8 +15310,7 @@ msgid "Recursive cloning only when the probability of call being executed exceed
 msgstr "Rekursiv kloning endast när sannolikheten för att ett anrop skall göras överskrider parametern."
 
 #: params.opt:254
-#, fuzzy, no-c-format
-#| msgid "When propagating IPA-CP effect estimates, multiply frequencies of recursive edges that that bring back an unchanged value by this factor."
+#, no-c-format
 msgid "When propagating IPA-CP effect estimates, multiply frequencies of recursive edges that bring back an unchanged value by this factor."
 msgstr "Vid propagering av IPA-CP-effektuppskattningar, multiplicera frekvenser för rekursiva bågar som för tillbaka ett oförändrat värde med denna faktor."
 
@@ -15692,8 +15675,7 @@ msgid "Maximum loop depth of a call which is considered for inlining functions c
 msgstr "Maximal slingdjup för ett anrop vilket övervägs för inline:ing av funktioner som endast anropas en gång."
 
 #: params.opt:554
-#, fuzzy, no-c-format
-#| msgid "Maximum combinaed size of caller and callee wich is inlined if callee is called once."
+#, no-c-format
 msgid "Maximum combined size of caller and callee which is inlined if callee is called once."
 msgstr "Maximal kombinerad storlek på anropare och anropad vilka inline:as om den anropade anropas en gång."
 
@@ -15776,7 +15758,7 @@ msgstr "Det maximala antalet försök att gå tillbaka schemaläggaren skall gö
 #: params.opt:618
 #, no-c-format
 msgid "Minimum page size for warning purposes."
-msgstr ""
+msgstr "Minsta sidstorlek för varningsändamål."
 
 #: params.opt:622
 #, no-c-format
@@ -16384,10 +16366,9 @@ msgid "The maximum factor which the loop vectorizer applies to the cost of state
 msgstr "Den maximala faktorn som slingvektoriseraren använder på kostnaden av satser i en inre sliga relativt slingan som vektoriseras."
 
 #: params.opt:1185
-#, fuzzy, no-c-format
-#| msgid "Enable loop vectorization on trees."
+#, no-c-format
 msgid "Enable loop vectorization of floating point inductions."
-msgstr "Aktivera slingvektorisering i träd."
+msgstr "Aktivera slingvektorisering av flyttalsinduktioner."
 
 #: params.opt:1189
 #, no-c-format
@@ -22758,7 +22739,7 @@ msgstr "slinga %d:s koppling är markerad som en del av en oreducerbar region"
 #: cfgloop.cc:1573
 #, gcc-internal-format
 msgid "loop %d%'s number of iterations %qE references the released SSA name %qE"
-msgstr ""
+msgstr "slinga %d:s antal iterationer %qE refererar det släppta SSA-namnet %qE"
 
 #: cfgloop.cc:1606
 #, gcc-internal-format, gfc-internal-format
@@ -26249,7 +26230,7 @@ msgstr "satsen kommer aldrig utföras"
 #: gimplify.cc:2132
 #, gcc-internal-format
 msgid "%qs cannot be initialized with%<-ftrivial-auto-var_init%>"
-msgstr ""
+msgstr "%qs får inte initieras med %<-ftrivial-auto-var_init%>"
 
 #: gimplify.cc:2524 gimplify.cc:2532
 #, gcc-internal-format
@@ -27780,10 +27761,9 @@ msgid "location of OpenACC %<kernels%>"
 msgstr "platsen för OpenACC %<kernels%>"
 
 #: omp-oacc-kernels-decompose.cc:1288
-#, fuzzy, gcc-internal-format
-#| msgid "%<ancestor%> not yet supported"
+#, gcc-internal-format
 msgid "%qs not yet supported"
-msgstr "%<ancestor%> stödjs inte ännu"
+msgstr "%qs stödjs inte ännu"
 
 #: omp-oacc-neuter-broadcast.cc:1764
 #, gcc-internal-format
@@ -28473,10 +28453,9 @@ msgid "failed to initialize plugin %s"
 msgstr "misslyckades att initiera insticksmodulen %s"
 
 #: plugin.cc:1009
-#, fuzzy, gcc-internal-format
-#| msgid "%<-iplugindir%> <dir> option not passed from the gcc driver"
+#, gcc-internal-format
 msgid "%<-iplugindir%> option not passed from the gcc driver"
-msgstr "flaggan %<-iplugindir%> <kat> skickas inte från gcc-drivrutin"
+msgstr "flaggan %<-iplugindir%> skickas inte från gcc-drivrutin"
 
 #: pointer-query.cc:1202
 #, gcc-internal-format
@@ -29376,16 +29355,14 @@ msgid "%qs is not supported for this target"
 msgstr "%qs stödjs inte för denna målarkitektur"
 
 #: toplev.cc:1685
-#, fuzzy, gcc-internal-format
-#| msgid "%<-fsanitize=address%> not supported for this target"
+#, gcc-internal-format
 msgid "%<-fsanitize=shadow-call-stack%> not supported in current platform"
-msgstr "%<-fsanitize=address%> stödjs inte för denna målarkitektur"
+msgstr "%<-fsanitize=shadow-call-stack%> stödjs inte för den aktuella plattformen"
 
 #: toplev.cc:1688
-#, fuzzy, gcc-internal-format
-#| msgid "%<-fsanitize-address-use-after-scope%> requires %<-fstack-reuse=none%> option"
+#, gcc-internal-format
 msgid "%<-fsanitize=shadow-call-stack%> requires %<-fno-exceptions%>"
-msgstr "%<-fsanitize-address-use-after-scope%> förutsätter flaggan %<-fstack-reuse=none%>"
+msgstr "%<-fsanitize=shadow-call-stack%> förutsätter %<-fno-exceptions%>"
 
 #: toplev.cc:2026
 #, gcc-internal-format
@@ -35602,10 +35579,9 @@ msgid "unknown switch %<-mlong-double-%s%>"
 msgstr "okänd flagga %<-mlong-double-%s%>"
 
 #: common/config/rs6000/rs6000-common.cc:234
-#, fuzzy, gcc-internal-format
-#| msgid "unknown switch %<-mlong-double-%s%>"
+#, gcc-internal-format
 msgid "option %<%s%> requires %<-mlong-double-128%>"
-msgstr "okänd flagga %<-mlong-double-%s%>"
+msgstr "flaggan %<%s%> förutsätter %<-mlong-double-128%>"
 
 #: common/config/rs6000/rs6000-common.cc:268
 #, gcc-internal-format
@@ -35839,10 +35815,9 @@ msgid "embedded NUL in CFString literal"
 msgstr "inbäddad NUL i CFString-litteral"
 
 #: config/host-darwin.cc:107
-#, fuzzy, gcc-internal-format
-#| msgid "PCH memory not available %m"
+#, gcc-internal-format
 msgid "PCH memory is not available: %m"
-msgstr "PCH-minne är inte tillgängligt %m"
+msgstr "PCH-minne är inte tillgängligt: %m"
 
 #: config/sol2-c.cc:91 config/sol2-c.cc:107
 #, gcc-internal-format
@@ -36433,7 +36408,7 @@ msgstr "%qs är inte ett giltigt avstånd i %qs"
 #: config/aarch64/aarch64.cc:17580
 #, gcc-internal-format
 msgid "%<-fsanitize=shadow-call-stack%> requires %<-ffixed-x18%>"
-msgstr ""
+msgstr "%<-fsanitize=shadow-call-stack%> kräver %<-ffixed-x18%>"
 
 #: config/aarch64/aarch64.cc:17670
 #, gcc-internal-format
@@ -36536,16 +36511,14 @@ msgid "missing name in %<target(\"arch=\")%> pragma or attribute"
 msgstr "namn saknas i pragmat eller attributet %<target(\"arch=\")%>"
 
 #: config/aarch64/aarch64.cc:18511
-#, fuzzy, gcc-internal-format
-#| msgid "invalid name (%qs) in %<target(\"arch=\")%> pragma or attribute"
+#, gcc-internal-format
 msgid "invalid name %qs in %<target(\"arch=\")%> pragma or attribute"
-msgstr "felaktigt namn (%qs) i pragmat eller attributet %<target(\"arch=\")%>"
+msgstr "felaktigt namn %qs i pragmat eller attributet %<target(\"arch=\")%>"
 
 #: config/aarch64/aarch64.cc:18515
-#, fuzzy, gcc-internal-format
-#| msgid "invalid feature modifier %s of value (%qs) in %<target()%> pragma or attribute"
+#, gcc-internal-format
 msgid "invalid feature modifier %s of value %qs in %<target()%> pragma or attribute"
-msgstr "felaktig funktionsmodifierare %s på värdet (%qs) i pragmat eller attributet %<target()%>"
+msgstr "felaktig funktionsmodifierare %s på värdet %qs i pragmat eller attributet %<target()%>"
 
 #: config/aarch64/aarch64.cc:18550
 #, gcc-internal-format
@@ -36553,16 +36526,14 @@ msgid "missing name in %<target(\"cpu=\")%> pragma or attribute"
 msgstr "namn saknas i pragmat eller attributet %<target(\"cpu=\")%>"
 
 #: config/aarch64/aarch64.cc:18553
-#, fuzzy, gcc-internal-format
-#| msgid "invalid name (%qs) in %<target(\"cpu=\")%> pragma or attribute"
+#, gcc-internal-format
 msgid "invalid name %qs in %<target(\"cpu=\")%> pragma or attribute"
-msgstr "felaktigt namn (%qs) i pragmat eller attributet %<target(\"cpu=\")%>"
+msgstr "felaktigt namn %qs i pragmat eller attributet %<target(\"cpu=\")%>"
 
 #: config/aarch64/aarch64.cc:18557 config/aarch64/aarch64.cc:18664
-#, fuzzy, gcc-internal-format
-#| msgid "invalid feature modifier %s of value (%qs) in %<target()%> pragma or attribute"
+#, gcc-internal-format
 msgid "invalid feature modifier %qs of value %qs in %<target()%> pragma or attribute"
-msgstr "felaktig funktionsmodifierare %s på värdet (%qs) i pragmat eller attributet %<target()%>"
+msgstr "felaktig funktionsmodifierare %s på värdet %qs i pragmat eller attributet %<target()%>"
 
 #: config/aarch64/aarch64.cc:18580
 #, gcc-internal-format
@@ -36570,16 +36541,14 @@ msgid "missing argument to %<target(\"branch-protection=\")%> pragma or attribut
 msgstr "argument saknas till pragmat eller attributet %<target(\"branch-protection=\")%>"
 
 #: config/aarch64/aarch64.cc:18584
-#, fuzzy, gcc-internal-format
-#| msgid "invalid protection type (%qs) in %<target(\"branch-protection=\")%> pragma or attribute"
+#, gcc-internal-format
 msgid "invalid protection type %qs in %<target(\"branch-protection=\")%> pragma or attribute"
-msgstr "felaktig skyddstyp (%qs) i pragmat eller attributet %<target(\"branch-protection=\")%>"
+msgstr "felaktig skyddstyp %qs i pragmat eller attributet %<target(\"branch-protection=\")%>"
 
 #: config/aarch64/aarch64.cc:18619
-#, fuzzy, gcc-internal-format
-#| msgid "invalid name (%qs) in %<target(\"tune=\")%> pragma or attribute"
+#, gcc-internal-format
 msgid "invalid name %qs in %<target(\"tune=\")%> pragma or attribute"
-msgstr "felaktigt namn (%qs) i pragmat eller attributet %<target(\"tune=\")%>"
+msgstr "felaktigt namn %qs i pragmat eller attributet %<target(\"tune=\")%>"
 
 #: config/aarch64/aarch64.cc:18660
 #, gcc-internal-format
@@ -36640,10 +36609,8 @@ msgid "parameter passing for argument of type %qT when C++17 is enabled changed 
 msgstr "parameterskickandet för argument av typen %qT när C++17 är aktiverat ändrades till att matcha C++14 %{i GCC 10.1%}"
 
 #: config/aarch64/aarch64.cc:20403 config/arm/arm.cc:6592
-#, fuzzy
-#| msgid "parameter passing for argument of type %qT changed in GCC 9.1"
 msgid "parameter passing for argument of type %qT changed %{in GCC 12.1%}"
-msgstr "parameterskickandet för argument av typen %qT ändrades i GCC 9.1"
+msgstr "parameterskickandet för argument av typen %qT ändrades %{i GCC 12.1%}"
 
 #: config/aarch64/aarch64.cc:21552 config/aarch64/aarch64.cc:21555
 #, gcc-internal-format
@@ -37107,28 +37074,24 @@ msgid "the range of mask should be in 0 to 255"
 msgstr "intervallet för masken skall vara i 0 till 255"
 
 #: config/arm/arm-builtins.cc:3924
-#, fuzzy, gcc-internal-format
-#| msgid "the range of count should be in 0 to 32; please check the intrinsic %<_mm_ror_pi16%> in code"
+#, gcc-internal-format
 msgid "the range of count should be in 0 to 32; please check the intrinsic %qs in code"
-msgstr "intervallet för antal skall vara inom 0 till 32; kontrollera den inbyggda %<_mm_ror_pi16%> i koden"
+msgstr "intervallet för antal skall vara inom 0 till 32; kontrollera den inbyggda %qs i koden"
 
 #: config/arm/arm-builtins.cc:3932
-#, fuzzy, gcc-internal-format
-#| msgid "the range of count should be in 0 to 64; please check the intrinsic %<_mm_ror_si64%> in code"
+#, gcc-internal-format
 msgid "the range of count should be in 0 to 16; please check the intrinsic %qs in code"
-msgstr "intervallet för antal skall vara inom 0 till 64; kontrollera den inbyggda %<_mm_ror_si64%> i koden"
+msgstr "intervallet för antal skall vara inom 0 till 16; kontrollera den inbyggda %qs i koden"
 
 #: config/arm/arm-builtins.cc:3940
-#, fuzzy, gcc-internal-format
-#| msgid "the range of count should be in 0 to 64; please check the intrinsic %<_mm_ror_si64%> in code"
+#, gcc-internal-format
 msgid "the range of count should be in 0 to 64; please check the intrinsic %qs in code"
-msgstr "intervallet för antal skall vara inom 0 till 64; kontrollera den inbyggda %<_mm_ror_si64%> i koden"
+msgstr "intervallet för antal skall vara inom 0 till 64; kontrollera den inbyggda %qs i koden"
 
 #: config/arm/arm-builtins.cc:4003
-#, fuzzy, gcc-internal-format
-#| msgid "the count should be no less than 0; please check the intrinsic %<_mm_srl_pi16%> in code"
+#, gcc-internal-format
 msgid "the count should be no less than 0; please check the intrinsic %qs in code"
-msgstr "antalet skall inte vara mindre än 0: kontrollera den inbyggda %<_mm_srl_pi16%> i koden"
+msgstr "antalet skall inte vara mindre än 0: kontrollera den inbyggda %qs i koden"
 
 #: config/arm/arm-c.cc:108
 #, gcc-internal-format
@@ -37281,10 +37244,9 @@ msgid "selected fp16 options are incompatible"
 msgstr "valda fp16-alternativ är inkompatibla"
 
 #: config/arm/arm.cc:3883
-#, fuzzy, gcc-internal-format
-#| msgid "%'-mstack-protector-guard=tls%' needs a hardware TLS register"
+#, gcc-internal-format
 msgid "%<-mstack-protector-guard=tls%> needs a hardware TLS register"
-msgstr "%'-mstack-protector-guard=tls%' behöver ett TLS-register i hårdvara"
+msgstr "%<-mstack-protector-guard=tls%> behöver ett TLS-register i hårdvara"
 
 #: config/arm/arm.cc:3903
 #, gcc-internal-format
@@ -37771,10 +37733,9 @@ msgid "multiple function type attributes specified"
 msgstr "flera funktionstypsattribut angivna"
 
 #: config/bfin/bfin.cc:4766
-#, fuzzy, gcc-internal-format
-#| msgid "cannott apply both longcall and shortcall attributes to the same function"
+#, gcc-internal-format
 msgid "cannot apply both %<longcall%> and %<shortcall%> attributes to the same function"
-msgstr "det går inte att tillämpa både attributet longcall och shortcall på samma funktion"
+msgstr "det går inte att tillämpa både attributet %<longcall%> och %<shortcall%> på samma funktion"
 
 #: config/bpf/bpf.cc:111
 #, gcc-internal-format
@@ -38209,16 +38170,14 @@ msgid "%<-mn%> is not supported for linux targets"
 msgstr "%<-mn%> stödjs inte på linux-mål"
 
 #: config/i386/host-cygwin.cc:64
-#, fuzzy, gcc-internal-format
-#| msgid "can%'t extend PCH file: %m"
+#, gcc-internal-format
 msgid "cannot extend PCH file: %m"
 msgstr "det går inte att utöka PCH-fil: %m"
 
 #: config/i386/host-cygwin.cc:75
-#, fuzzy, gcc-internal-format
-#| msgid "cannot get position in PCH file: %m"
+#, gcc-internal-format
 msgid "cannot set position in PCH file: %m"
-msgstr "kan inte avgöra position i PCH-fil: %m"
+msgstr "kan inte sätta position i PCH-fil: %m"
 
 #: config/i386/i386-builtins.cc:2058
 #, gcc-internal-format
@@ -38560,16 +38519,14 @@ msgid "CPU you selected does not support x86-64 instruction set"
 msgstr "CPU:n du valde stödjer inte instruktionsuppsättningen x86-64"
 
 #: config/i386/i386-options.cc:2215
-#, fuzzy, gcc-internal-format
-#| msgid "bad value (%qs) for %<-march=%> switch"
+#, gcc-internal-format
 msgid "bad value %qs for %<-march=%> switch"
-msgstr "felaktigt värde (%qs) till flaggan %<-march=%>"
+msgstr "felaktigt värde %qs till flaggan %<-march=%>"
 
 #: config/i386/i386-options.cc:2216
-#, fuzzy, gcc-internal-format
-#| msgid "bad value (%qs) for %<target(\"arch=\")%> attribute"
+#, gcc-internal-format
 msgid "bad value %qs for %<target(\"arch=\")%> attribute"
-msgstr "felaktigt värde (%qs) till attributet %<target(\"arch=\")%>"
+msgstr "felaktigt värde %qs till attributet %<target(\"arch=\")%>"
 
 #: config/i386/i386-options.cc:2238
 #, gcc-internal-format
@@ -38592,16 +38549,14 @@ msgid "valid arguments to %<target(\"arch=\")%> attribute are: %s"
 msgstr "giltiga argument till attributet %<target(\"arch=\")%> är: %s"
 
 #: config/i386/i386-options.cc:2295
-#, fuzzy, gcc-internal-format
-#| msgid "bad value %qs for %<-mtune%> switch"
+#, gcc-internal-format
 msgid "bad value %qs for %<-mtune=%> switch"
 msgstr "felaktigt värde %qs till flaggan %<-mtune=%>"
 
 #: config/i386/i386-options.cc:2296
-#, fuzzy, gcc-internal-format
-#| msgid "bad value (%qs) for %<target(\"tune=\")%> attribute"
+#, gcc-internal-format
 msgid "bad value %qs for %<target(\"tune=\")%> attribute"
-msgstr "felaktigt värde (%qs) till attributet %<target(\"tune=\")%>"
+msgstr "felaktigt värde %qs till attributet %<target(\"tune=\")%>"
 
 #: config/i386/i386-options.cc:2317
 #, gcc-internal-format
@@ -39041,16 +38996,14 @@ msgid "Dynamic Realign Argument Pointer (DRAP) not supported in interrupt servic
 msgstr "Dynamic Realign Argument Pointer (DRAP) stödjs inte i avbrottshanteringsrutiner.  Detta kan gås runt genom att undvika funktioner med sammansatta returvärden."
 
 #: config/i386/i386.cc:9458
-#, fuzzy, gcc-internal-format
-#| msgid "%qs attribute not supported in %<__builtin_has_attribute%>"
+#, gcc-internal-format
 msgid "Stack realignment not supported with %<__builtin_eh_return%>"
-msgstr "attributet %qs stödjs inte i %<__builtin_has_attribute%>"
+msgstr "Stackomjustering stödjs inte med %<__builtin_eh_return%>"
 
 #: config/i386/i386.cc:9463
-#, fuzzy, gcc-internal-format
-#| msgid "nested functions not supported on this target"
+#, gcc-internal-format
 msgid "regparm nested function not supported with %<__builtin_eh_return%>"
-msgstr "nästade funktioner stödjs inte på denna målarkitektur"
+msgstr "regparm-nästade funktioner stödjs inte med %<__builtin_eh_return%>"
 
 #: config/i386/i386.cc:9849
 #, gcc-internal-format
@@ -39219,90 +39172,85 @@ msgid "%<PRINT_OPERAND%> null pointer"
 msgstr "%<PRINT_OPERAND%> null-pekare"
 
 #: config/loongarch/loongarch-cpu.cc:111
-#, fuzzy, gcc-internal-format
-#| msgid "unknown core architecture %qs specified with %qs"
+#, gcc-internal-format
 msgid "unknown base architecture %<0x%x%>, %qs failed"
-msgstr "okänd kärnarkitektur %qs angiven till %qs"
+msgstr "okänd basarkitektur %<0x%x%>, %qs misslyckades"
 
 #: config/loongarch/loongarch-cpu.cc:138
 #, gcc-internal-format
 msgid "unknown FPU type %<0x%x%>, %qs failed"
-msgstr ""
+msgstr "okänd FPU-typ %<0x%x%>, %qs misslyckades"
 
 #: config/loongarch/loongarch-cpu.cc:189
 #, gcc-internal-format
 msgid "unknown processor ID %<0x%x%>, some tuning parameters will fall back to default"
-msgstr ""
+msgstr "okänd processor-ID %<0x%x%>, några trimningsparametrar kommer återställas till standardvärden"
 
 #: config/loongarch/loongarch-opts.cc:196
 #, gcc-internal-format
 msgid "%<-m%s%> overrides %<-m%s=%s%>, adjusting ABI to %qs"
-msgstr ""
+msgstr "%<-m%s%> åsidosätter %<-m%s=%s%>, justerar ABI:et till %qs"
 
 #: config/loongarch/loongarch-opts.cc:211
 #, gcc-internal-format
 msgid "ABI changed (%qs to %qs) while multilib is disabled"
-msgstr ""
+msgstr "ABI:et ändrat (%qs till %qs) medans multilib är avaktiverat"
 
 #: config/loongarch/loongarch-opts.cc:233
 #: config/loongarch/loongarch-opts.cc:238
-#, fuzzy, gcc-internal-format
-#| msgid "%qE does not constrain a type"
+#, gcc-internal-format
 msgid "%qs does not work on a cross compiler"
-msgstr "%qE begränsar inte en typ"
+msgstr "%qs fungerar inte med en korskompilator"
 
 #: config/loongarch/loongarch-opts.cc:278
-#, fuzzy, gcc-internal-format
-#| msgid "the %qs architecture does not support %<-m%s=2008%>"
+#, gcc-internal-format
 msgid "your native CPU architecture (%qs) does not support %qs ABI, falling back to %<-m%s=%s%>"
-msgstr "arkitekturen %qs stödjer inte %<-m%s=2008%>"
+msgstr "din egna CPU-arkitektur (%qs) stödjer inte ABI:et %qs, återgår till %<-m%s=%s%>"
 
 #: config/loongarch/loongarch-opts.cc:283
-#, fuzzy, gcc-internal-format
-#| msgid "the %qs architecture does not support %<-m%s=2008%>"
+#, gcc-internal-format
 msgid "default CPU architecture (%qs) does not support %qs ABI, falling back to %<-m%s=%s%>"
-msgstr "arkitekturen %qs stödjer inte %<-m%s=2008%>"
+msgstr "standard-CPU-arkitekturen (%qs) stödjer inte ABI:et %qs, återgår till %<-m%s=%s%>"
 
 #: config/loongarch/loongarch-opts.cc:314
 #, gcc-internal-format
 msgid "unable to implement ABI %qs with instruction set %qs"
-msgstr ""
+msgstr "kan inte implementera ABI %qs med instruktionsuppsättningen %qs"
 
 #: config/loongarch/loongarch-opts.cc:336
 #, gcc-internal-format
 msgid "ABI %qs cannot be implemented due to limited instruction set %qs, falling back to %qs"
-msgstr ""
+msgstr "ABI %qs kan inte implementeras på grund av den begränsade instruktionsuppsättningen %qs, återgår till %qs"
 
 #: config/loongarch/loongarch-opts.cc:347
 #, gcc-internal-format
 msgid "instruction set %qs cannot implement default ABI %qs, falling back to %qs"
-msgstr ""
+msgstr "instruktionsuppsättningen %qs kan inte implementera ABI %qs, återgår till %qs"
 
 #: config/loongarch/loongarch-opts.cc:352
 #, gcc-internal-format
 msgid "no multilib-enabled ABI (%qs) can be implemented with instruction set %qs, falling back to %qs"
-msgstr ""
+msgstr "inget multilib-aktivt ABI (%qs) kan implementeras med instruktionsuppsättningen %qs, återgår till %qs"
 
 #: config/loongarch/loongarch-opts.cc:368
 #, gcc-internal-format
 msgid "ABI %qs is not enabled at configure-time, the linker might report an error"
-msgstr ""
+msgstr "ABI %qs är aktiverades inte vid konfigurationstillfället, länkaren kan komma att rapportera ett fel"
 
 #: config/loongarch/loongarch-opts.cc:371
 #, gcc-internal-format, gfc-internal-format
 msgid "ABI with startfiles: %s"
-msgstr ""
+msgstr "ABI med startfiler: %s"
 
 #: config/loongarch/loongarch.cc:3458
 #, gcc-internal-format
 msgid "Normal symbol loading not implemented in extreme mode."
-msgstr ""
+msgstr "Normal symbolladdning är inte implementerad i extremt läge."
 
 #: config/loongarch/loongarch.cc:5507
-#, fuzzy, gcc-internal-format
-#| msgid "code model %s does not support PIC mode"
+#, gcc-internal-format
 msgid "code model %qs and %qs not support %s mode"
-msgstr "kodmodellen %s stödjer inte PIC-läge"
+msgstr "kodmodellerna %qs och %qs stödjer inte %s-läge"
 
 #: config/m32c/m32c-pragma.cc:54
 #, gcc-internal-format
@@ -39483,16 +39431,12 @@ msgid "argument to %qE attribute is not intstack"
 msgstr "argumentet till attributet %qE är inte intstack"
 
 #: config/mips/mips.cc:6089
-#, fuzzy
-#| msgid "the ABI of passing C structures with zero-width bit-fields has changed in GCC %{12.1%}"
 msgid "the ABI for passing a value containing zero-width fields before an adjacent 64-bit floating-point field was changed in GCC %{12.1%}"
-msgstr "ABI:et för att skicka C-poster med bitfält med nollbredd har ändrats i GCC %{12.1%}"
+msgstr "ABI:et för att skicka ett värde som innehåller fält med nollbredd före ett intillagandet 64-bitars flyttalsfält ändrades i GCC %{12.1%}"
 
 #: config/mips/mips.cc:6490
-#, fuzzy
-#| msgid "ELFv2 parameter passing for an argument containing zero-width bit fields but that is otherwise a homogeneous aggregate was corrected in GCC 12"
 msgid "the ABI for returning a value containing zero-width bit-fields but otherwise an aggregate with only one or two floating-point fields was changed in GCC %{12.1%}"
-msgstr "skickande av parametrar enligt ELFv2 för ett argument som innehåller bitfält med noll bredd men som i övrigt är ett homogent aggregat korrigerades i GCC 12"
+msgstr "ABI:et för att returnera ett värde som innehåller bitfält med noll bredd men i övrigt ett aggregat med endast ett eller två flyttalsfält ändrades i GCC %{12.1%}"
 
 #: config/mips/mips.cc:7831
 #, gcc-internal-format
@@ -40383,10 +40327,9 @@ msgid "option %s is not supported together with %<-fopenacc%>"
 msgstr "flaggan %s stödjs inte tillsammans med %<-fopenacc%>"
 
 #: config/nvptx/nvptx.cc:326
-#, fuzzy, gcc-internal-format
-#| msgid "PTX version (-mptx) needs to be at least %s to support selected -misa (sm_%s)"
+#, gcc-internal-format
 msgid "PTX version (%<-mptx%>) needs to be at least %s to support selected %<-misa%> (sm_%s)"
-msgstr "PTX-version (-mptx) behöver vara åtminstone %s för att stödja -misa (sm_%s)"
+msgstr "PTX-version (%<-mptx%>) behöver vara åtminstone %s för att stödja vald %<-misa%> (sm_%s)"
 
 #: config/nvptx/nvptx.cc:359
 #, gcc-internal-format
@@ -40439,16 +40382,14 @@ msgid "variable %qD adjusted for OpenACC privatization level: %qs"
 msgstr "variabeln %qD justerad för OpenACC privatiseringsnivå: %qs"
 
 #: config/nvptx/nvptx.cc:7455
-#, fuzzy, gcc-internal-format
-#| msgid "alias definitions not supported in this configuration"
+#, gcc-internal-format
 msgid "weak alias definitions not supported in this configuration"
-msgstr "aliasdefinitioner stödjs inte i denna konfiguration"
+msgstr "svaga aliasdefinitioner stödjs inte i denna konfiguration"
 
 #: config/nvptx/nvptx.cc:7468
-#, fuzzy, gcc-internal-format
-#| msgid "alias definitions not supported in this configuration"
+#, gcc-internal-format
 msgid "non-function alias definitions not supported in this configuration"
-msgstr "aliasdefinitioner stödjs inte i denna konfiguration"
+msgstr "aliasdefinitioner för annat än funktioner stödjs inte i denna konfiguration"
 
 #: config/or1k/or1k.cc:1311
 #, gcc-internal-format, gfc-internal-format
@@ -40782,10 +40723,9 @@ msgid "%qs requires %<long double%> to be IBM 128-bit format"
 msgstr "%qs kräver att %<long double%> är IBM:s 128-bitars format"
 
 #: config/rs6000/rs6000-builtin.cc:3429
-#, fuzzy, gcc-internal-format
-#| msgid "%qs requires VSX support"
+#, gcc-internal-format
 msgid "%qs requires %<__ibm128%> type support"
-msgstr "%qs behöver VSX-stöd"
+msgstr "%qs kräver %<__ibm128%>-typstöd"
 
 #: config/rs6000/rs6000-builtin.cc:3584
 #, gcc-internal-format, gfc-internal-format
@@ -40863,10 +40803,9 @@ msgid "%<vec_lvsr%> is deprecated for little endian; use assignment for unaligne
 msgstr "%<vec_lvsr%> bör undvikas för omvänd byteordning; använd tilldelning för ojusterade laddningar och lagringar"
 
 #: config/rs6000/rs6000-c.cc:1795
-#, fuzzy, gcc-internal-format
-#| msgid "passing argument %d of %qE discards %qv qualifier from pointer target type"
+#, gcc-internal-format
 msgid "passing argument %d of %qE discards %qs qualifier from pointer target type"
-msgstr "att skicka argument %d till %qE kastar %qv-kvalificerare från pekarmåltyp"
+msgstr "att skicka argument %d till %qE kastar %qs-kvalificerare från pekarmåltyp"
 
 #: config/rs6000/rs6000-c.cc:1881 config/rs6000/rs6000-c.cc:2037
 #, gcc-internal-format
@@ -41038,10 +40977,9 @@ msgid "%qs requires full ISA 3.0 support"
 msgstr "%qs behöver fullt ISA 3.0-stöd"
 
 #: config/rs6000/rs6000.cc:4348
-#, fuzzy, gcc-internal-format
-#| msgid "Known vectorization library ABIs (for use with the -mveclibabi= option):"
+#, gcc-internal-format
 msgid "unknown vectorization library ABI type in %<-mveclibabi=%s%>"
-msgstr "Kända ABI:er till vektoriseringsbibliotek (att användas med flaggan -mveclibabi=):"
+msgstr "okänd ABI-typ för vektoriseringsbibliotek i %<-mveclibabi=%s%>"
 
 #: config/rs6000/rs6000.cc:4361 config/rs6000/rs6000.cc:4376
 #, gcc-internal-format
@@ -41169,10 +41107,9 @@ msgid "multiple fast interrupt routines seen: %qE and %qE"
 msgstr "flera snabba avbrottsrutiner sedda: %qE och %qE"
 
 #: config/rx/rx.cc:2480
-#, fuzzy, gcc-internal-format
-#| msgid "invalid control register for mvtc: %d - using 'psw'"
+#, gcc-internal-format
 msgid "invalid control register %d for mvtc; using %<psw%>"
-msgstr "felaktigt styrregister för mvtc: %d – använder ”psw”"
+msgstr "felaktigt styrregister %d för mvtc; använder %<psw%>"
 
 #: config/rx/rx.cc:2602
 #, gcc-internal-format
@@ -41195,10 +41132,9 @@ msgid "RX FPU instructions do not support NaNs and infinities"
 msgstr "RX FPU-instruktioner stödjer inte NaN:er och oändligheter"
 
 #: config/s390/s390-c.cc:487
-#, fuzzy, gcc-internal-format
-#| msgid "builtin vec_step can only be used on vector types."
+#, gcc-internal-format
 msgid "builtin %qs can only be used on vector types"
-msgstr "inbyggd vec_step kan endast användas på vektortyper."
+msgstr "inbyggd %qs kan endast användas på vektortyper"
 
 #: config/s390/s390-c.cc:717 config/s390/s390.cc:922
 #, gcc-internal-format
@@ -41211,16 +41147,14 @@ msgid "valid values for builtin %qF argument %d are 64, 128, 256, 512, 1024, 204
 msgstr "giltiga värden till inbyggd %qF argument %d är 64, 128, 256, 512, 1024, 2048 och 4096"
 
 #: config/s390/s390-c.cc:909
-#, fuzzy, gcc-internal-format
-#| msgid "builtin %qF is for GCC internal use only."
+#, gcc-internal-format
 msgid "builtin %qF is for GCC internal use only"
-msgstr "inbyggd %qF är endast för GCC:s interna användning."
+msgstr "inbyggd %qF är endast för GCC:s interna användning"
 
 #: config/s390/s390-c.cc:917
-#, fuzzy, gcc-internal-format
-#| msgid "builtin %qF is deprecated."
+#, gcc-internal-format
 msgid "builtin %qF is deprecated"
-msgstr "inbyggd %qF bör undvikas."
+msgstr "inbyggd %qF bör undvikas"
 
 #: config/s390/s390-c.cc:921
 #, gcc-internal-format
@@ -41263,10 +41197,9 @@ msgid "%qs matching variant requires z15 or higher"
 msgstr "%qs-matchning kräver z15 eller högre"
 
 #: config/s390/s390-c.cc:1025
-#, fuzzy, gcc-internal-format
-#| msgid "%qs matching variant is deprecated."
+#, gcc-internal-format
 msgid "%qs matching variant is deprecated"
-msgstr "%qs-matchningsvariant bör undvikas."
+msgstr "%qs-matchningsvariant bör undvikas"
 
 #: config/s390/s390-c.cc:1065
 #, gcc-internal-format
@@ -41279,40 +41212,34 @@ msgid "constant argument %d for builtin %qF is invalid (%s)"
 msgstr "det konstanta argumentet %d till den inbyggda %qF är ogiltigt (%s)"
 
 #: config/s390/s390.cc:769
-#, fuzzy, gcc-internal-format
-#| msgid "constant argument %d for builtin %qF is out of range (0..%wu)"
+#, gcc-internal-format
 msgid "constant argument %d for builtin %qF is out of range (0-%wu)"
-msgstr "det konstanta argumentet %d till den inbyggda %qF ligger utanför intervallet (0..%wu)"
+msgstr "det konstanta argumentet %d till den inbyggda %qF ligger utanför intervallet (0-%wu)"
 
 #: config/s390/s390.cc:785
-#, fuzzy, gcc-internal-format
-#| msgid "constant argument %d for builtin %qF is out of range (%wd..%wd)"
+#, gcc-internal-format
 msgid "constant argument %d for builtin %qF is out of range (%wd-%wd)"
-msgstr "det konstanta argumentet %d till den inbyggda %qF ligger utanför intervallet (%wd..%wd)"
+msgstr "det konstanta argumentet %d till den inbyggda %qF ligger utanför intervallet (%wd-%wd)"
 
 #: config/s390/s390.cc:834
-#, fuzzy, gcc-internal-format
-#| msgid "builtin %qF is not supported without %<-mhtm%> (default with %<-march=zEC12%> and higher)."
+#, gcc-internal-format
 msgid "builtin %qF is not supported without %<-mhtm%> (default with %<-march=zEC12%> and higher)"
-msgstr "inbyggd %qF stödjs inte utan %<-mhtm%> (standard med %<-march=zEC12%> och högre)."
+msgstr "inbyggd %qF stödjs inte utan %<-mhtm%> (standard med %<-march=zEC12%> och högre)"
 
 #: config/s390/s390.cc:840
-#, fuzzy, gcc-internal-format
-#| msgid "builtin %qF requires %<-mvx%> (default with %<-march=z13%> and higher)."
+#, gcc-internal-format
 msgid "builtin %qF requires %<-mvx%> (default with %<-march=z13%> and higher)"
-msgstr "inbyggd %qF behöver %<-mvx%> (standard med %<-march=z13%> och högre)."
+msgstr "inbyggd %qF behöver %<-mvx%> (standard med %<-march=z13%> och högre)"
 
 #: config/s390/s390.cc:847
-#, fuzzy, gcc-internal-format
-#| msgid "Builtin %qF requires z14 or higher."
+#, gcc-internal-format
 msgid "Builtin %qF requires z14 or higher"
-msgstr "Inbyggd %qF kräver z14 eller högre."
+msgstr "Inbyggd %qF kräver z14 eller högre"
 
 #: config/s390/s390.cc:853
-#, fuzzy, gcc-internal-format
-#| msgid "Builtin %qF requires z15 or higher."
+#, gcc-internal-format
 msgid "Builtin %qF requires z15 or higher"
-msgstr "Inbyggd %qF kräver z15 eller högre."
+msgstr "Inbyggd %qF kräver z15 eller högre"
 
 #: config/s390/s390.cc:859
 #, gcc-internal-format
@@ -41351,16 +41278,14 @@ msgid "total size of local variables exceeds architecture limit"
 msgstr "totala storleken på lokala variabler överskrider arkitekturens gräns"
 
 #: config/s390/s390.cc:11465
-#, fuzzy, gcc-internal-format
-#| msgid "frame size of function %qs is %wd bytes exceeding user provided stack limit of %d bytes.  An unconditional trap is added."
+#, gcc-internal-format
 msgid "frame size of function %qs is %wd bytes exceeding user provided stack limit of %d bytes; an unconditional trap is added"
-msgstr "ramstorleken för funktionen %qs är %wd byte vilket överskrider användarens valda stackgräns på %d byte.  En ovillkorlig fälla läggs till."
+msgstr "ramstorleken för funktionen %qs är %wd byte vilket överskrider användarens valda stackgräns på %d byte; en ovillkorlig fälla läggs till"
 
 #: config/s390/s390.cc:11481
-#, fuzzy, gcc-internal-format
-#| msgid "frame size of function %qs is %wd bytes which is more than half the stack size. The dynamic check would not be reliable. No check emitted for this function."
+#, gcc-internal-format
 msgid "frame size of function %qs is %wd bytes which is more than half the stack size; the dynamic check would not be reliable; no check emitted for this function"
-msgstr "ramstorleken för funktionen %qs är %wd byte vilket är mer än hälften av stackstorleken.  Den dynamiska kontrollen skulle inte vara pålitlig.  Ingen kontroll läggs ut för denna funktion."
+msgstr "ramstorleken för funktionen %qs är %wd byte vilket är mer än hälften av stackstorleken; den dynamiska kontrollen skulle inte vara pålitlig.  Ingen kontroll läggs ut för denna funktion"
 
 #: config/s390/s390.cc:11509
 #, gcc-internal-format
@@ -41398,20 +41323,17 @@ msgid "hardware vector support not available with %<-msoft-float%>"
 msgstr "stöd för hårdvaruvektorer är inte tillgängligt med %<-msoft-float%>"
 
 #: config/s390/s390.cc:15560
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "hardware decimal floating point instructions not available on %s"
+#, gcc-internal-format, gfc-internal-format
 msgid "hardware decimal floating-point instructions not available on %s"
 msgstr "hårdvaruinstruktioner för decimala flyttal är inte tillgängliga på %s"
 
 #: config/s390/s390.cc:15564
-#, fuzzy, gcc-internal-format
-#| msgid "hardware decimal floating point instructions not available in ESA/390 mode"
+#, gcc-internal-format
 msgid "hardware decimal floating-point instructions not available in ESA/390 mode"
 msgstr "hårdvaruinstruktioner för decimalflyttal är inte tillgängliga i läget ESA/390"
 
 #: config/s390/s390.cc:15576
-#, fuzzy, gcc-internal-format
-#| msgid "%<-mhard-dfp%> can%'t be used in conjunction with %<-msoft-float%>"
+#, gcc-internal-format
 msgid "%<-mhard-dfp%> cannot be used in conjunction with %<-msoft-float%>"
 msgstr "%<-mhard-dfp%> kan inte användas tillsammans med %<-msoft-float%>"
 
@@ -41436,28 +41358,24 @@ msgid "%<-mstack-guard%> implies use of %<-mstack-size%>"
 msgstr "%<-mstack-guard%> implicerar användning av %<-mstack-size%>"
 
 #: config/s390/s390.cc:15609
-#, fuzzy, gcc-internal-format
-#| msgid "-mtpf-trace-hook-prologue-check requires integer in range 0..4095"
+#, gcc-internal-format
 msgid "%<-mtpf-trace-hook-prologue-check%> requires integer in range 0-4095"
-msgstr "-mtpf-trace-hook-prologue-check behöver ett heltal i intervallet 0..4095"
+msgstr "%<-mtpf-trace-hook-prologue-check%> behöver ett heltal i intervallet 0-4095"
 
 #: config/s390/s390.cc:15612
-#, fuzzy, gcc-internal-format
-#| msgid "-mtpf-trace-hook-prologue-target requires integer in range 0..4095"
+#, gcc-internal-format
 msgid "%<-mtpf-trace-hook-prologue-target%> requires integer in range 0-4095"
-msgstr "-mtpf-trace-hook-prologue-target behöver ett heltal i intervallet 0..4095"
+msgstr "%<-mtpf-trace-hook-prologue-target%> behöver ett heltal i intervallet 0-4095"
 
 #: config/s390/s390.cc:15615
-#, fuzzy, gcc-internal-format
-#| msgid "-mtpf-trace-hook-epilogue-check requires integer in range 0..4095"
+#, gcc-internal-format
 msgid "%<-mtpf-trace-hook-epilogue-check%> requires integer in range 0-4095"
-msgstr "-mtpf-trace-hook-epilogue-check behöver ett heltal i intervallet 0..4095"
+msgstr "%<-mtpf-trace-hook-epilogue-check%> behöver ett heltal i intervallet 0-4095"
 
 #: config/s390/s390.cc:15618
-#, fuzzy, gcc-internal-format
-#| msgid "-mtpf-trace-hook-epilogue-target requires integer in range 0..4095"
+#, gcc-internal-format
 msgid "%<-mtpf-trace-hook-epilogue-target%> requires integer in range 0-4095"
-msgstr "-mtpf-trace-hook-epilogue-target behöver ett heltal i intervallet 0..4095"
+msgstr "%<-mtpf-trace-hook-epilogue-target%> behöver ett heltal i intervallet 0-4095"
 
 #: config/s390/s390.cc:15671
 #, gcc-internal-format
@@ -41482,10 +41400,9 @@ msgstr "%<-mno-pic-data-is-text-relative%> kan inte användas utan %<-fpic%>/%<-
 
 #: config/s390/s390.cc:15906 config/s390/s390.cc:15956
 #: config/s390/s390.cc:15973
-#, fuzzy, gcc-internal-format
-#| msgid "attribute %qs argument %qs is unknown"
+#, gcc-internal-format
 msgid "attribute %<target%> argument %qs is unknown"
-msgstr "argument %2$qs till attribut %1$qs är okänt"
+msgstr "argument %qs till attribut %<target%> är okänt"
 
 #. Value is not allowed for the target attribute.
 #: config/s390/s390.cc:15912
@@ -41559,16 +41476,14 @@ msgid "local variable memory requirements exceed capacity"
 msgstr "behovet av minne för lokala variabler överskrider kapaciteten"
 
 #: config/stormy16/stormy16.cc:1215
-#, fuzzy, gcc-internal-format
-#| msgid "function_profiler support"
+#, gcc-internal-format
 msgid "%<function_profiler%> support"
-msgstr "stöd för function_profiler"
+msgstr "stöd för %<function_profiler%>"
 
 #: config/stormy16/stormy16.cc:1309
-#, fuzzy, gcc-internal-format
-#| msgid "cannot use va_start in interrupt function"
+#, gcc-internal-format
 msgid "cannot use %<va_start%> in interrupt function"
-msgstr "det går inte använda va_start i en avbrottsfunktion"
+msgstr "det går inte använda %<va_start%> i en avbrottsfunktion"
 
 #: config/stormy16/stormy16.cc:1880
 #, gcc-internal-format, gfc-internal-format
@@ -41581,10 +41496,9 @@ msgid "%<__BELOW100__%> attribute only applies to variables"
 msgstr "attributet %<__BELOW100__%> är bara tillämpbart på variabler"
 
 #: config/stormy16/stormy16.cc:2259
-#, fuzzy, gcc-internal-format
-#| msgid "__BELOW100__ attribute not allowed with auto storage class"
+#, gcc-internal-format
 msgid "%<__BELOW100__%> attribute not allowed with auto storage class"
-msgstr "attributet __BELOW100__ är inte tillåtet med lagringsklassen auto"
+msgstr "attributet %<__BELOW100__%> är inte tillåtet med lagringsklassen auto"
 
 #: config/tilegx/tilegx.cc:3581 config/tilepro/tilepro.cc:3129
 #, gcc-internal-format
@@ -41592,16 +41506,14 @@ msgid "operand must be an immediate of the right size"
 msgstr "operanden måste vara en omedelbar av rätt storlek"
 
 #: config/v850/v850-c.cc:67
-#, fuzzy, gcc-internal-format
-#| msgid "#pragma GHS endXXXX found without previous startXXX"
+#, gcc-internal-format
 msgid "%<#pragma%> GHS endXXX found without previous startXXX"
-msgstr "#pragma GHS endXXXX funnet utan föregående startXXX"
+msgstr "%<#pragma%> GHS endXXXX funnet utan föregående startXXX"
 
 #: config/v850/v850-c.cc:70
-#, fuzzy, gcc-internal-format
-#| msgid "#pragma GHS endXXX does not match previous startXXX"
+#, gcc-internal-format
 msgid "%<#pragma%> GHS endXXX does not match previous startXXX"
-msgstr "#pragma GHS endXXX stämmer inte med föregående startXXX"
+msgstr "%<#pragma%> GHS endXXX stämmer inte med föregående startXXX"
 
 #: config/v850/v850-c.cc:96
 #, gcc-internal-format
@@ -41614,10 +41526,9 @@ msgid "cannot set interrupt attribute: no such identifier"
 msgstr "det går inte att sätta avbrottsattribut: det finns ingen sådan identifierare"
 
 #: config/v850/v850-c.cc:153
-#, fuzzy, gcc-internal-format
-#| msgid "junk at end of #pragma ghs section"
+#, gcc-internal-format
 msgid "junk at end of %<#pragma%> ghs section"
-msgstr "skräp vid slutet av #pragma ghs-sektion"
+msgstr "skräp vid slutet av %<#pragma%> ghs-sektion"
 
 #: config/v850/v850-c.cc:170
 #, gcc-internal-format
@@ -41625,52 +41536,44 @@ msgid "unrecognized section name %qE"
 msgstr "okänt sektionsnamn %qE"
 
 #: config/v850/v850-c.cc:184
-#, fuzzy, gcc-internal-format
-#| msgid "malformed #pragma ghs section"
+#, gcc-internal-format
 msgid "malformed %<#pragma%> ghs section"
-msgstr "felformaterat #pragma ghs section"
+msgstr "felformaterat %<#pragma%> ghs section"
 
 #: config/v850/v850-c.cc:203
-#, fuzzy, gcc-internal-format
-#| msgid "junk at end of #pragma ghs interrupt"
+#, gcc-internal-format
 msgid "junk at end of %<#pragma%> ghs interrupt"
-msgstr "skräp vid slutet av #pragma ghs interrupt"
+msgstr "skräp vid slutet av %<#pragma%> ghs interrupt"
 
 #: config/v850/v850-c.cc:214
-#, fuzzy, gcc-internal-format
-#| msgid "junk at end of #pragma ghs starttda"
+#, gcc-internal-format
 msgid "junk at end of %<#pragma%> ghs starttda"
-msgstr "skräp vid slutet av #pragma ghs starttda"
+msgstr "skräp vid slutet av %<#pragma%> ghs starttda"
 
 #: config/v850/v850-c.cc:225
-#, fuzzy, gcc-internal-format
-#| msgid "junk at end of #pragma ghs startsda"
+#, gcc-internal-format
 msgid "junk at end of %<#pragma%> ghs startsda"
-msgstr "skräp vid slutet av #pragma ghs startsda"
+msgstr "skräp vid slutet av %<#pragma%> ghs startsda"
 
 #: config/v850/v850-c.cc:236
-#, fuzzy, gcc-internal-format
-#| msgid "junk at end of #pragma ghs startzda"
+#, gcc-internal-format
 msgid "junk at end of %<#pragma%> ghs startzda"
-msgstr "skräp vid slutet av #pragma ghs startzda"
+msgstr "skräp vid slutet av %<#pragma%> ghs startzda"
 
 #: config/v850/v850-c.cc:247
-#, fuzzy, gcc-internal-format
-#| msgid "junk at end of #pragma ghs endtda"
+#, gcc-internal-format
 msgid "junk at end of %<#pragma%> ghs endtda"
-msgstr "skräp vid slutet av #pragma ghs endtda"
+msgstr "skräp vid slutet av %<#pragma%> ghs endtda"
 
 #: config/v850/v850-c.cc:258
-#, fuzzy, gcc-internal-format
-#| msgid "junk at end of #pragma ghs endsda"
+#, gcc-internal-format
 msgid "junk at end of %<#pragma%> ghs endsda"
-msgstr "skräp vid slutet av #pragma ghs endsda"
+msgstr "skräp vid slutet av %<#pragma%> ghs endsda"
 
 #: config/v850/v850-c.cc:269
-#, fuzzy, gcc-internal-format
-#| msgid "junk at end of #pragma ghs endzda"
+#, gcc-internal-format
 msgid "junk at end of %<#pragma%> ghs endzda"
-msgstr "skräp vid slutet av #pragma ghs endzda"
+msgstr "skräp vid slutet av %<#pragma%> ghs endzda"
 
 #: config/v850/v850.cc:2046
 #, gcc-internal-format
@@ -41725,16 +41628,14 @@ msgid "an interrupt handler cannot be compiled with %<-muser-mode%>"
 msgstr "en avbrottshanterare kan inte kompileras med %<-muser-mode%>"
 
 #: config/vms/vms-c.cc:44
-#, fuzzy, gcc-internal-format
-#| msgid "junk at end of #pragma __nostandard"
+#, gcc-internal-format
 msgid "junk at end of %<#pragma __nostandard%>"
-msgstr "skräp vid slutet av #pragma __nostandard"
+msgstr "skräp vid slutet av %<#pragma __nostandard%>"
 
 #: config/vms/vms-c.cc:55
-#, fuzzy, gcc-internal-format
-#| msgid "junk at end of #pragma __standard"
+#, gcc-internal-format
 msgid "junk at end of %<#pragma __standard%>"
-msgstr "skräp vid slutet av #pragma __standard"
+msgstr "skräp vid slutet av %<#pragma __standard%>"
 
 #: config/vms/vms-c.cc:81
 #, gcc-internal-format
@@ -41788,10 +41689,9 @@ msgid "vms '#pragma __message' is ignored"
 msgstr "vms ”#pragma __message” ignoreras"
 
 #: config/vms/vms-c.cc:274 config/vms/vms-c.cc:280
-#, fuzzy, gcc-internal-format
-#| msgid "malformed '#pragma __extern_prefix', ignoring"
+#, gcc-internal-format
 msgid "malformed %<#pragma __extern_prefix%>, ignoring"
-msgstr "felformaterat ”#pragma __extern_prefix”, ignorerar"
+msgstr "felformaterat %<#pragma __extern_prefix%>, ignorerar"
 
 #: config/vms/vms-c.cc:313 config/vms/vms-c.cc:333
 #, gcc-internal-format
@@ -41819,10 +41719,9 @@ msgid "PIC is required but not supported with CONST16 instructions"
 msgstr "PIC krävs men stödjs inte med CONST16-instruktioner"
 
 #: config/xtensa/xtensa.cc:3664
-#, fuzzy, gcc-internal-format
-#| msgid "only uninitialized variables can be placed in a .bss section"
+#, gcc-internal-format
 msgid "only uninitialized variables can be placed in a %<.bss%> section"
-msgstr "endast oinitierade variabler kan placeras i en .bss-sektion"
+msgstr "endast oinitierade variabler kan placeras i en %<.bss%>-sektion"
 
 # Vissa felmeddelanden är roligare än andra! :-)
 #: ada/gcc-interface/misc.cc:155
@@ -41836,10 +41735,9 @@ msgid "%<-fexcess-precision=standard%> for Ada"
 msgstr "%<-fexcess-precision=standard%> för Ada"
 
 #: ada/gcc-interface/misc.cc:260
-#, fuzzy, gcc-internal-format
-#| msgid "%<-fexcess-precision=standard%> for Ada"
+#, gcc-internal-format
 msgid "%<-fexcess-precision=16%> for Ada"
-msgstr "%<-fexcess-precision=standard%> för Ada"
+msgstr "%<-fexcess-precision=16%> för Ada"
 
 #: ada/gcc-interface/trans.cc:332
 #, gcc-internal-format, gfc-internal-format
@@ -43241,10 +43139,9 @@ msgid "type %qT is too large"
 msgstr "typen %qT är för stor"
 
 #: c/c-decl.cc:8903
-#, fuzzy, gcc-internal-format
-#| msgid "reverse scalar storage order"
+#, gcc-internal-format
 msgid "type punning toggles scalar storage order"
-msgstr "omvänd lagringsordning för skalärer"
+msgstr "typstampning byter lagringsordning för skalärer"
 
 #: c/c-decl.cc:8970
 #, gcc-internal-format
@@ -44735,10 +44632,9 @@ msgid "expected %<none%> or %<present%>"
 msgstr "%<none%> eller %<present%> förväntades"
 
 #: c/c-parser.cc:13571 cp/parser.cc:37323
-#, fuzzy, gcc-internal-format
-#| msgid "expected %<simd%>, %<reduction%>, %<target%> or %<variant%>"
+#, gcc-internal-format
 msgid "expected %<none%>, %<shared%>, %<private%> or %<firstprivate%>"
-msgstr "%<simd%>, %<reduction%>, %<target%> eller %<variant%> förväntades"
+msgstr "%<none%>, %<shared%>, %<private%> eller %<firstprivate%> förväntades"
 
 #: c/c-parser.cc:13692 cp/parser.cc:37435
 #, gcc-internal-format
@@ -44851,10 +44747,9 @@ msgid "%<tile%> argument needs positive integral constant"
 msgstr "argumentet till %<tile%> behöver en positiv heltalskonstant"
 
 #: c/c-parser.cc:14735 cp/parser.cc:38006
-#, fuzzy, gcc-internal-format
-#| msgid "expected %<none%> or %<shared%>"
+#, gcc-internal-format
 msgid "expected %<reproducible%> or %<unconstrained%>"
-msgstr "%<none%> eller %<shared%> förväntades"
+msgstr "%<reproducible%> eller %<unconstrained%> förväntades"
 
 #: c/c-parser.cc:14744 c/c-parser.cc:14750 cp/parser.cc:38015
 #: cp/parser.cc:38025
