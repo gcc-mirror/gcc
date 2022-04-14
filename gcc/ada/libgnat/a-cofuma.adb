@@ -130,6 +130,13 @@ package body Ada.Containers.Functional_Maps with SPARK_Mode => Off is
       return True;
    end Elements_Equal_Except;
 
+   ---------------
+   -- Empty_Map --
+   ---------------
+
+   function Empty_Map return Map is
+      ((others =>  <>));
+
    ---------
    -- Get --
    ---------

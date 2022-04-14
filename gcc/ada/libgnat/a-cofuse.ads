@@ -215,6 +215,12 @@ package Ada.Containers.Functional_Sets with SPARK_Mode is
          and Container <= Add'Result
          and Included_Except (Add'Result, Container, Item);
 
+   function Empty_Set return Set with
+   --  Return an new empty set
+
+     Global => null,
+     Post   => Is_Empty (Empty_Set'Result);
+
    function Remove (Container : Set; Item : Element_Type) return Set with
    --  Return a new set containing all the elements of Container except E
 

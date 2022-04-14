@@ -243,6 +243,14 @@ package Ada.Containers.Functional_Maps with SPARK_Mode is
          and Container <= Add'Result
          and Keys_Included_Except (Add'Result, Container, New_Key);
 
+   function Empty_Map return Map with
+   --  Return an empty Map
+
+     Global => null,
+     Post   =>
+       Length (Empty_Map'Result) = 0
+         and Is_Empty (Empty_Map'Result);
+
    function Remove
      (Container : Map;
       Key       : Key_Type) return Map

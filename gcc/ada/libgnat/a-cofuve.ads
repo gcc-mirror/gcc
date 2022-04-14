@@ -343,6 +343,12 @@ package Ada.Containers.Functional_Vectors with SPARK_Mode is
    --  i.e. it does not contain pointers that could be used to alias mutable
    --  data).
 
+   function Empty_Sequence return Sequence with
+   --  Return an empty Sequence
+
+     Global => null,
+     Post   => Length (Empty_Sequence'Result) = 0;
+
    ---------------------------
    --  Iteration Primitives --
    ---------------------------
