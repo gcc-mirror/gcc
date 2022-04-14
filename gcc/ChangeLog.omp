@@ -1,3 +1,9 @@
+2022-04-14  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* graphite-oacc.cc (find_oacc_tail_marks): Check that data_dep is
+	non-NULL before testing it.
+	(reduction_use_in_outer_loop_p): Likewise.
+
 2022-05-12  Jakub Jelinek  <jakub@redhat.com>
 
 	Backport from mainline:

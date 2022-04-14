@@ -253,7 +253,7 @@ find_oacc_tail_marks (loop_p loop)
   tree data_dep = gimple_call_lhs (top_tail_mark);
   gimple *stmt = top_tail_mark;
 
-  while (has_single_use (data_dep))
+  while (data_dep && has_single_use (data_dep))
     {
       use_operand_p use_p;
       single_imm_use (data_dep, &use_p, &stmt);
@@ -313,7 +313,7 @@ reduction_use_in_outer_loop_p (gcall *call)
   /* The IFN_GOACC_REDUCTION_CALLS are linked in a chain through
      immediate uses. Move to the end of this chain. */
   gimple *stmt = call;
-  while (has_single_use (data_dep))
+  while (data_dep && has_single_use (data_dep))
     {
       use_operand_p use_p;
       single_imm_use (data_dep, &use_p, &stmt);
