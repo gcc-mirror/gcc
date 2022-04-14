@@ -183,6 +183,24 @@ lambda_function (tree lambda)
   return lambda;
 }
 
+/* True if EXPR is an expression whose type can be used directly in lambda
+   capture.  Not to be used for 'auto'.  */
+
+static bool
+type_deducible_expression_p (tree expr)
+{
+  if (!type_dependent_expression_p (expr))
+    return true;
+  if (BRACE_ENCLOSED_INITIALIZER_P (expr)
+      || TREE_CODE (expr) == EXPR_PACK_EXPANSION)
+    return false;
+  tree t = non_reference (TREE_TYPE (expr));
+  if (!t) return false;
+  while (TREE_CODE (t) == POINTER_TYPE)
+    t = TREE_TYPE (t);
+  return currently_open_class (t);
+}
+
 /* Returns the type to use for the FIELD_DECL corresponding to the
    capture of EXPR.  EXPLICIT_INIT_P indicates whether this is a
    C++14 init capture, and BY_REFERENCE_P indicates whether we're
@@ -211,7 +229,7 @@ lambda_capture_field_type (tree expr, bool explicit_init_p,
       else
 	type = do_auto_deduction (type, expr, auto_node);
     }
-  else if (type_dependent_expression_p (expr))
+  else if (!type_deducible_expression_p (expr))
     {
       type = cxx_make_type (DECLTYPE_TYPE);
       DECLTYPE_TYPE_EXPR (type) = expr;
