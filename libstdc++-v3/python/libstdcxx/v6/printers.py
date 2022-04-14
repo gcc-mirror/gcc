@@ -1626,6 +1626,43 @@ class StdErrorCodePrinter:
         return '%s = {%s: %s}' % (self.typename, name, strval)
 
 
+class StdSpanPrinter:
+    "Print a std::span"
+
+    class _iterator(Iterator):
+        def __init__(self, begin, size):
+            self.count = 0
+            self.begin = begin
+            self.size = size
+
+        def __iter__ (self):
+            return self
+
+        def __next__ (self):
+            if self.count == self.size:
+                raise StopIteration
+
+            count = self.count
+            self.count = self.count + 1
+            return '[%d]' % count, (self.begin + count).dereference()
+
+    def __init__(self, typename, val):
+        self.typename = typename
+        self.val = val
+        if val.type.template_argument(1) == gdb.parse_and_eval('static_cast<std::size_t>(-1)'):
+            self.size = val['_M_extent']['_M_extent_value']
+        else:
+            self.size = val.type.template_argument(1)
+
+    def to_string(self):
+        return '%s of length %d' % (self.typename, self.size)
+
+    def children(self):
+        return self._iterator(self.val['_M_ptr'], self.size)
+
+    def display_hint(self):
+        return 'array'
+
 # A "regular expression" printer which conforms to the
 # "SubPrettyPrinter" protocol from gdb.printing.
 class RxPrinter(object):
@@ -2138,6 +2175,7 @@ def build_libstdcxx_dictionary ():
     libstdcxx_printer.add_version('std::', 'partial_ordering', StdCmpCatPrinter)
     libstdcxx_printer.add_version('std::', 'weak_ordering', StdCmpCatPrinter)
     libstdcxx_printer.add_version('std::', 'strong_ordering', StdCmpCatPrinter)
+    libstdcxx_printer.add_version('std::', 'span', StdSpanPrinter)
 
     # Extensions.
     libstdcxx_printer.add_version('__gnu_cxx::', 'slist', StdSlistPrinter)
