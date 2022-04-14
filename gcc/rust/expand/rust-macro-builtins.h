@@ -89,6 +89,9 @@ public:
 
   static AST::ASTFragment concat (Location invoc_locus,
 				  AST::MacroInvocData &invoc);
+
+  static AST::ASTFragment env (Location invoc_locus,
+			       AST::MacroInvocData &invoc);
 };
 } // namespace Rust
 
