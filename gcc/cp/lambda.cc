@@ -195,10 +195,9 @@ type_deducible_expression_p (tree expr)
       || TREE_CODE (expr) == EXPR_PACK_EXPANSION)
     return false;
   tree t = non_reference (TREE_TYPE (expr));
-  if (!t) return false;
-  while (TREE_CODE (t) == POINTER_TYPE)
-    t = TREE_TYPE (t);
-  return currently_open_class (t);
+  return (t && TREE_CODE (t) != TYPE_PACK_EXPANSION
+	  && !WILDCARD_TYPE_P (t) && !LAMBDA_TYPE_P (t)
+	  && !type_uses_auto (t));
 }
 
 /* Returns the type to use for the FIELD_DECL corresponding to the
