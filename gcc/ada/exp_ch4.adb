@@ -14108,6 +14108,7 @@ package body Exp_Ch4 is
 
    procedure Narrow_Large_Operation (N : Node_Id) is
       Kind   : constant Node_Kind := Nkind (N);
+      Otyp   : constant Entity_Id := Etype (N);
       In_Rng : constant Boolean   := Kind = N_In;
       Binary : constant Boolean   := Kind in N_Binary_Op or else In_Rng;
       Compar : constant Boolean   := Kind in N_Op_Compare or else In_Rng;
@@ -14262,8 +14263,7 @@ package body Exp_Ch4 is
          --  Analyze it with the comparison type and checks suppressed since
          --  the conversions of the operands cannot overflow.
 
-         Analyze_And_Resolve
-           (N, Etype (Original_Node (N)), Suppress => Overflow_Check);
+         Analyze_And_Resolve (N, Otyp, Suppress => Overflow_Check);
 
       else
          --  Analyze it with the narrower type and checks suppressed, but only
