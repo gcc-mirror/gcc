@@ -12243,6 +12243,8 @@ grokdeclarator (const cp_declarator *declarator,
 	      pedwarn (loc, OPT_Wpedantic, "%qs specified with %qT",
 		       key, type);
 	      ok = !flag_pedantic_errors;
+	      type = DECL_ORIGINAL_TYPE (typedef_decl);
+	      typedef_decl = NULL_TREE;
 	    }
 	  else if (declspecs->decltype_p)
 	    error_at (loc, "%qs specified with %<decltype%>", key);
