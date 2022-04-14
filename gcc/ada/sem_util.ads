@@ -3453,6 +3453,18 @@ package Sem_Util is
    function Within_Scope (E : Entity_Id; S : Entity_Id) return Boolean;
    --  Returns True if entity E is declared within scope S
 
+   procedure Warn_On_Hiding_Entity
+     (N               : Node_Id;
+      Hidden, Visible : Entity_Id;
+      On_Use_Clause   : Boolean);
+   --  Warn on hiding of an entity, either because a new declaration hides
+   --  an entity directly visible or potentially visible through a use_clause
+   --  (On_Use_Clause = False), or because the entity would be potentially
+   --  visible through a use_clause if it was now hidden by a visible
+   --  declaration (On_Use_Clause = True). N is the node on which the warning
+   --  is potentially issued: it is the visible entity in the former case, and
+   --  the use_clause in the latter case.
+
    procedure Wrong_Type (Expr : Node_Id; Expected_Type : Entity_Id);
    --  Output error message for incorrectly typed expression. Expr is the node
    --  for the incorrectly typed construct (Etype (Expr) is the type found),

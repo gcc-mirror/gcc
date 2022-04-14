@@ -10326,6 +10326,11 @@ package body Sem_Ch8 is
 
                   --  Potentially use-visible entity remains hidden
 
+                  if Warn_On_Hiding then
+                     Warn_On_Hiding_Entity (N, Hidden => Id, Visible => Prev,
+                                            On_Use_Clause => True);
+                  end if;
+
                   goto Next_Usable_Entity;
 
                --  A use clause within an instance hides outer global entities,
