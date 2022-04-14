@@ -920,7 +920,8 @@ maybe_save_constexpr_fundef (tree fun)
   if (!potential && complain)
     require_potential_rvalue_constant_expression (massaged);
 
-  if (DECL_CONSTRUCTOR_P (fun) && potential)
+  if (DECL_CONSTRUCTOR_P (fun) && potential
+      && !DECL_DEFAULTED_FN (fun))
     {
       if (cx_check_missing_mem_inits (DECL_CONTEXT (fun),
 				      massaged, complain))
