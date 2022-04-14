@@ -3,9 +3,7 @@
 
 #include <optional>
 
-#ifndef __cpp_lib_monadic_optional
-# error "Feature test macro for monadic optional is missing in <optional>"
-#elif __cpp_lib_monadic_optional < 202110L
+#if __cpp_lib_optional < 202110L
 # error "Feature test macro for monadic optional has wrong value in <optional>"
 #endif
 
