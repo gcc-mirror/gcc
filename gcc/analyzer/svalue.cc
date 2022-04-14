@@ -651,6 +651,48 @@ svalue::all_zeroes_p () const
   return false;
 }
 
+/* If this svalue is a pointer, attempt to determine the base region it points
+   to.  Return NULL on any problems.  */
+
+const region *
+svalue::maybe_get_deref_base_region () const
+{
+  const svalue *iter = this;
+  while (1)
+    {
+      switch (iter->get_kind ())
+	{
+	default:
+	  return NULL;
+
+	case SK_REGION:
+	  {
+	    const region_svalue *region_sval
+	      = as_a <const region_svalue *> (iter);
+	    return region_sval->get_pointee ()->get_base_region ();
+	  }
+
+	case SK_BINOP:
+	  {
+	    const binop_svalue *binop_sval
+	      = as_a <const binop_svalue *> (iter);
+	    switch (binop_sval->get_op ())
+	      {
+	      case POINTER_PLUS_EXPR:
+		/* If we have a symbolic value expressing pointer arithmetic,
+		   use the LHS.  */
+		iter = binop_sval->get_arg0 ();
+		continue;
+
+	      default:
+		return NULL;
+	      }
+	    return NULL;
+	  }
+	}
+    }
+}
+
 /* class region_svalue : public svalue.  */
 
 /* Implementation of svalue::dump_to_pp vfunc for region_svalue.  */
