@@ -1440,10 +1440,10 @@ new_bitcast (location *loc,
     active_playback_ctxt->add_error (loc,
       "bitcast with types of different sizes");
     fprintf (stderr, "input expression (size: %ld):\n",
-      tree_to_uhwi (expr_size));
+      (long) tree_to_uhwi (expr_size));
     debug_tree (t_expr);
     fprintf (stderr, "requested type (size: %ld):\n",
-      tree_to_uhwi (type_size));
+      (long) tree_to_uhwi (type_size));
     debug_tree (t_dst_type);
   }
   tree t_bitcast = build1 (VIEW_CONVERT_EXPR, t_dst_type, t_expr);
