@@ -1,3 +1,66 @@
+2022-04-13  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/105254
+	* config/aarch64/aarch64.cc
+	(aarch64_vector_costs::determine_suggested_unroll_factor): Take a
+	loop_vec_info as argument.  Restrict the unroll factor to values
+	that divide the VF.
+	(aarch64_vector_costs::finish_cost): Update call accordingly.
+
+2022-04-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/105263
+	* tree-ssa-reassoc.cc (try_special_add_to_ops): Do not consume
+	negates in multiplication chains with DFP.
+
+2022-04-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/105253
+	* tree.cc (tree_builtin_call_types_compatible_p): If PROP_gimple,
+	use useless_type_conversion_p checks instead of TYPE_MAIN_VARIANT
+	comparisons or tree_nop_conversion_p checks.
+
+2022-04-13  Hongyu Wang  <hongyu.wang@intel.com>
+
+	PR target/103069
+	* config/i386/i386-expand.cc (ix86_expand_cmpxchg_loop):
+	  Add missing set to target_val at pause label.
+
+2022-04-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/105234
+	* attribs.cc (decl_attributes): Don't set
+	DECL_FUNCTION_SPECIFIC_TARGET if target_option_default_node is
+	NULL.
+
+2022-04-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/105250
+	* fold-const.cc (fold_convertible_p): Revert
+	r12-7979-geaaf77dd85c333, instead check for size equality
+	of the vector types involved.
+
+2022-04-13  Richard Biener  <rguenther@suse.de>
+
+	Revert:
+	2022-04-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/104912
+	* tree-vect-loop-manip.cc (vect_loop_versioning): Split
+	the cost model check to a separate BB to make sure it is
+	checked first and not combined with other version checks.
+
+2022-04-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/104912
+	* tree-vect-loop-manip.cc (vect_loop_versioning): Split
+	the cost model check to a separate BB to make sure it is
+	checked first and not combined with other version checks.
+
+2022-04-13  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree-scalar-evolution.cc (expression_expensive_p): Fix a comment typo.
+
 2022-04-12  Antoni Boucher  <bouanto@zoho.com>
 
 	PR jit/104072

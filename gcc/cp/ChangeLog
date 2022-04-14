@@ -1,3 +1,22 @@
+2022-04-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105245
+	PR c++/100111
+	* constexpr.cc (cxx_eval_store_expression): Build a CONSTRUCTOR
+	as needed in empty base handling.
+
+2022-04-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/105233
+	* decl2.cc (cp_check_const_attributes): For aligned attribute
+	pass manifestly_const_eval=true to fold_non_dependent_expr.
+
+2022-04-13  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/97296
+	* call.cc (direct_reference_binding): strip_top_quals when creating
+	a ck_qual.
+
 2022-04-12  Jason Merrill  <jason@redhat.com>
 
 	PR c++/104669

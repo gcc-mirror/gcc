@@ -1,3 +1,9 @@
+2022-04-13  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/105242
+	* match.cc (match_exit_cycle): Handle missing OMP LOOP, DO and SIMD
+	directives in the EXIT/CYCLE diagnostic.
+
 2022-04-10  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/105184

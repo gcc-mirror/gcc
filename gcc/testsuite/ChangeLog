@@ -1,3 +1,74 @@
+2022-04-13  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/105254
+	* g++.dg/vect/pr105254.cc: New test.
+
+2022-04-13  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/105242
+	* gfortran.dg/gomp/loop-exit.f90: New test.
+
+2022-04-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105245
+	PR c++/100111
+	* g++.dg/cpp1y/constexpr-empty2.C: Add -fno-elide-constructors.
+
+2022-04-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/105263
+	* gcc.dg/pr105263.c: New testcase.
+
+2022-04-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/105253
+	* gcc.target/i386/pr105253.c: New test.
+
+2022-04-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/105233
+	* g++.dg/cpp2a/is-constant-evaluated13.C: New test.
+
+2022-04-13  Martin Jambor  <mjambor@suse.cz>
+
+	PR testsuite/105183
+	* gcc.dg/ipa/remref-7.c: Add --param max-inline-insns-auto=100 to options.
+
+2022-04-13  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/97296
+	* g++.dg/cpp0x/ref-bind4.C: Add dg-error.
+	* g++.dg/cpp0x/ref-bind8.C: New test.
+
+2022-04-13  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/105259
+	* gcc.target/i386/auto-init-4.c: Adjust.
+
+2022-04-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/105234
+	* gcc.c-torture/compile/pr105234.c: New test.
+
+2022-04-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/105250
+	* gcc.dg/pr105250.c: New testcase.
+
+2022-04-13  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc.target/powerpc/pr60203.c: Skip on no 128-bit long double.
+
+2022-04-13  Alexandre Oliva  <oliva@adacore.com>
+
+	PR target/102146
+	* gcc.target/powerpc/pr56605.c: Accept SImode compare operand.
+
+2022-04-13  Xi Ruoyao  <xry111@mengyan1223.wang>
+
+	* gcc.target/mips/pr102024-4.c (dg-options): Add
+	-ffat-lto-objects.
+
 2022-04-12  Antoni Boucher  <bouanto@zoho.com>
 
 	PR jit/104293

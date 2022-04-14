@@ -1,3 +1,7 @@
+2022-04-13  Jakub Jelinek  <jakub@redhat.com>
+
+	* libgomp.texi: Fix a typo - mutexinouset -> mutexinoutset.
+
 2022-04-06  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* plugin/cuda/cuda.h: Remove file.
