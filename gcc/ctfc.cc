@@ -179,6 +179,40 @@ ctf_dvd_lookup (const ctf_container_ref ctfc, dw_die_ref die)
   return NULL;
 }
 
+/* Insert a dummy CTF variable into the list of variables to be ignored.  */
+
+static void
+ctf_dvd_ignore_insert (ctf_container_ref ctfc, ctf_dvdef_ref dvd)
+{
+  bool existed = false;
+  ctf_dvdef_ref entry = dvd;
+
+  ctf_dvdef_ref * item = ctfc->ctfc_ignore_vars->find_slot (entry, INSERT);
+  if (*item == NULL)
+     *item = dvd;
+  else
+    existed = true;
+  /* Duplicate variable records not expected to be inserted.  */
+  gcc_assert (!existed);
+}
+
+/* Lookup the dummy CTF variable given the DWARF die for the non-defining
+   decl to be ignored.  */
+
+bool
+ctf_dvd_ignore_lookup (const ctf_container_ref ctfc, dw_die_ref die)
+{
+  ctf_dvdef_t entry;
+  entry.dvd_key = die;
+
+  ctf_dvdef_ref * slot = ctfc->ctfc_ignore_vars->find_slot (&entry, NO_INSERT);
+
+  if (slot)
+    return true;
+
+  return false;
+}
+
 /* Append member definition to the list.  Member list is a singly-linked list
    with list start pointing to the head.  */
 
@@ -666,9 +700,10 @@ ctf_add_member_offset (ctf_container_ref ctfc, dw_die_ref sou,
 
 int
 ctf_add_variable (ctf_container_ref ctfc, const char * name, ctf_id_t ref,
-		  dw_die_ref die, unsigned int external_vis)
+		  dw_die_ref die, unsigned int external_vis,
+		  dw_die_ref die_var_decl)
 {
-  ctf_dvdef_ref dvd;
+  ctf_dvdef_ref dvd, dvd_ignore;
 
   gcc_assert (name);
 
@@ -680,6 +715,24 @@ ctf_add_variable (ctf_container_ref ctfc, const char * name, ctf_id_t ref,
       dvd->dvd_name = ctf_add_string (ctfc, name, &(dvd->dvd_name_offset));
       dvd->dvd_visibility = external_vis;
       dvd->dvd_type = ref;
+
+      /* If DW_AT_specification attribute exists, keep track of it as this is
+	 the non-defining declaration corresponding to the variable.  We will
+	 skip emitting CTF variable for such incomplete, non-defining
+	 declarations.
+	 There could be some non-defining declarations, however, for which a
+	 defining declaration does not show up in the same CU.  For such
+	 cases, the compiler continues to emit CTF variable record as
+	 usual.  */
+      if (die_var_decl)
+	{
+	  dvd_ignore = ggc_cleared_alloc<ctf_dvdef_t> ();
+	  dvd_ignore->dvd_key = die_var_decl;
+	  /* It's alright to leave other fields as zero.  No valid CTF
+	     variable will be added for these DW_TAG_variable DIEs.  */
+	  ctf_dvd_ignore_insert (ctfc, dvd_ignore);
+	}
+
       ctf_dvd_insert (ctfc, dvd);
 
       if (strcmp (name, ""))
@@ -900,6 +953,8 @@ new_ctf_container (void)
     = hash_table<ctfc_dtd_hasher>::create_ggc (100);
   tu_ctfc->ctfc_vars
     = hash_table<ctfc_dvd_hasher>::create_ggc (100);
+  tu_ctfc->ctfc_ignore_vars
+    = hash_table<ctfc_dvd_hasher>::create_ggc (10);
 
   return tu_ctfc;
 }
@@ -951,6 +1006,9 @@ ctfc_delete_container (ctf_container_ref ctfc)
 
       ctfc->ctfc_vars->empty ();
       ctfc->ctfc_types = NULL;
+
+      ctfc->ctfc_ignore_vars->empty ();
+      ctfc->ctfc_ignore_vars = NULL;
 
       ctfc_delete_strtab (&ctfc->ctfc_strtable);
       ctfc_delete_strtab (&ctfc->ctfc_aux_strtable);
