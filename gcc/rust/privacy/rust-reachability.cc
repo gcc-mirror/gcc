@@ -150,6 +150,38 @@ ReachabilityVisitor::visit (HIR::Enum &enum_item)
 
   enum_reach = ctx.update_reachability (enum_item.get_mappings (), enum_reach);
   visit_generic_predicates (enum_item.get_generic_params (), enum_reach);
+
+  for (const auto &variant : enum_item.get_variants ())
+    {
+      auto variant_reach
+	= ctx.update_reachability (variant->get_mappings (), enum_reach);
+
+      switch (variant->get_enum_item_kind ())
+	{
+	  case HIR::EnumItem::Tuple: {
+	    // Should we update the fields only if they are public? Similarly to
+	    // what we do in the ReachabilityVisitor for HIR::TupleStruct?
+	    auto tuple_variant
+	      = static_cast<HIR::EnumItemTuple *> (variant.get ());
+	    for (const auto &field : tuple_variant->get_tuple_fields ())
+	      ctx.update_reachability (field.get_mappings (), variant_reach);
+	    break;
+	  }
+	  case HIR::EnumItem::Struct: {
+	    // Should we update the fields only if they are public? Similarly to
+	    // what we do in the ReachabilityVisitor for HIR::StructStruct?
+	    auto struct_variant
+	      = static_cast<HIR::EnumItemStruct *> (variant.get ());
+	    for (const auto &field : struct_variant->get_struct_fields ())
+	      ctx.update_reachability (field.get_mappings (), variant_reach);
+	    break;
+	  }
+	// Nothing nested to visit in that case
+	case HIR::EnumItem::Named:
+	case HIR::EnumItem::Discriminant:
+	  break;
+	}
+    }
 }
 
 void
