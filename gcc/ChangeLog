@@ -1,3 +1,52 @@
+2022-04-13  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-04-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/105214
+	* config/i386/i386-expand.c (ix86_emit_i387_log1p): Call
+	do_pending_stack_adjust.
+
+2022-04-13  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-04-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/105211
+	* builtins.c (expand_builtin_int_roundingfn_2): If mathfn_built_in_1
+	fails for TREE_TYPE (arg), retry it with
+	TREE_VALUE (TYPE_ARG_TYPES (TREE_TYPE (fndecl))) and if even that
+	fails, emit call normally.
+
+2022-04-13  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-04-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/105189
+	* fold-const.c (make_range_step): Fix up handling of
+	(unsigned) x +[low, -] ranges for signed x if low fits into
+	typeof (x).
+
+2022-04-13  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-04-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/104985
+	* combine.c (struct undo): Add where.regno member.
+	(do_SUBST_MODE): Rename to ...
+	(subst_mode): ... this.  Change first argument from rtx * into int,
+	operate on regno_reg_rtx[regno] and save regno into where.regno.
+	(SUBST_MODE): Remove.
+	(try_combine): Use subst_mode instead of SUBST_MODE, change first
+	argument from regno_reg_rtx[whatever] to whatever.  For UNDO_MODE, use
+	regno_reg_rtx[undo->where.regno] instead of *undo->where.r.
+	(undo_to_marker): For UNDO_MODE, use regno_reg_rtx[undo->where.regno]
+	instead of *undo->where.r.
+	(simplify_set): Use subst_mode instead of SUBST_MODE, change first
+	argument from regno_reg_rtx[whatever] to whatever.
+
 2022-04-12  Peter Bergner  <bergner@linux.ibm.com>
 
 	Backported from master:

@@ -1,3 +1,35 @@
+2022-04-13  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-04-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/105214
+	* gcc.dg/asan/pr105214.c: New test.
+
+2022-04-13  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-04-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/105211
+	* gcc.dg/pr105211.c: New test.
+
+2022-04-13  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-04-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/105186
+	* c-c++-common/pr105186.c: New test.
+
+2022-04-13  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-04-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/105189
+	* g++.dg/torture/pr105189.C: New test.
+
 2022-04-12  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:
