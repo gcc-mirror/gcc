@@ -6955,7 +6955,8 @@ package body Sem_Res is
         and then Requires_Transient_Scope (Etype (Nam))
         and then not Is_Ignored_Ghost_Entity (Nam)
       then
-         Establish_Transient_Scope (N, Manage_Sec_Stack => True);
+         Establish_Transient_Scope
+           (N, Returns_On_Secondary_Stack (Etype (Nam)));
 
          --  If the call appears within the bounds of a loop, it will be
          --  rewritten and reanalyzed, nothing left to do here.
@@ -8535,7 +8536,8 @@ package body Sem_Res is
       elsif Expander_Active
         and then Requires_Transient_Scope (Etype (Nam))
       then
-         Establish_Transient_Scope (N, Manage_Sec_Stack => True);
+         Establish_Transient_Scope
+           (N, Returns_On_Secondary_Stack (Etype (Nam)));
       end if;
 
       --  Now we know that this is not a call to a function that returns an

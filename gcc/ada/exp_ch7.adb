@@ -10336,7 +10336,7 @@ package body Exp_Ch7 is
          --  reclamation is done by the caller.
 
          if Ekind (Curr_S) = E_Function
-           and then Requires_Transient_Scope (Etype (Curr_S))
+           and then Returns_On_Secondary_Stack (Etype (Curr_S))
          then
             null;
 

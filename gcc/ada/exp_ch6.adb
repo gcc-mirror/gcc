@@ -4927,10 +4927,11 @@ package body Exp_Ch6 is
            and then
              (Ekind (Current_Scope) /= E_Loop
                or else Nkind (Parent (Call_Node)) /= N_Function_Call
-               or else not Is_Build_In_Place_Function_Call
-                             (Parent (Call_Node)))
+               or else not
+                 Is_Build_In_Place_Function_Call (Parent (Call_Node)))
          then
-            Establish_Transient_Scope (Call_Node, Manage_Sec_Stack => True);
+            Establish_Transient_Scope
+              (Call_Node, Returns_On_Secondary_Stack (Etype (Subp)));
          end if;
       end if;
    end Expand_Call_Helper;
