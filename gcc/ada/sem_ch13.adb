@@ -10489,11 +10489,14 @@ package body Sem_Ch13 is
             begin
                --  In GNATprove mode we are only interested in the predicate
                --  expression itself and don't want a raise expression that
-               --  comes from the Predicate_Failure.
+               --  comes from the Predicate_Failure. Ditto for CodePeer.
+               --  And an illegal Predicate_Failure aspect can lead to cases
+               --  we want to avoid.
 
                if Present (PF_Expr)
                  and then not GNATprove_Mode
                  and then not CodePeer_Mode
+                 and then Serious_Errors_Detected = 0
                then
                   pragma Assert (Present (Second_Formal));
 
