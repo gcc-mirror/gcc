@@ -16193,6 +16193,9 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
                 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
+    #if defined __riscv
+    # error "Defaulting to mutex-based locks for ABI compatibility"
+    #endif
     #if ! defined __GCC_HAVE_SYNC_COMPARE_AND_SWAP_2
     # error "No 2-byte compare-and-swap"
     #elif ! defined __GCC_HAVE_SYNC_COMPARE_AND_SWAP_4
@@ -16240,7 +16243,7 @@ $as_echo "mutex" >&6; }
   # unnecessary for this test.
 
     cat > conftest.$ac_ext << EOF
-#line 16243 "configure"
+#line 16246 "configure"
 int main()
 {
   _Decimal32 d1;
@@ -16282,7 +16285,7 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
   # unnecessary for this test.
 
   cat > conftest.$ac_ext << EOF
-#line 16285 "configure"
+#line 16288 "configure"
 template<typename T1, typename T2>
   struct same
   { typedef T2 type; };
