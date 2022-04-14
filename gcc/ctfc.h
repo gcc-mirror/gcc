@@ -301,6 +301,8 @@ typedef struct GTY (()) ctf_container
   /* List of pre-processed CTF Variables.  CTF requires that the variables
      appear in the sorted order of their names.  */
   ctf_dvdef_t ** GTY ((length ("0"))) ctfc_vars_list;
+  /* Count of pre-processed CTF Variables in the list.  */
+  uint64_t ctfc_vars_list_count;
   /* List of pre-processed CTF types.  CTF requires that a shared type must
      appear before the type that uses it.  For the compiler, this means types
      are emitted in sorted order of their type IDs.  */

@@ -173,9 +173,7 @@ ctf_calc_num_vbytes (ctf_dtdef_ref ctftype)
 static void
 ctf_list_add_ctf_vars (ctf_container_ref ctfc, ctf_dvdef_ref var)
 {
-  /* FIXME - static may not fly with multiple CUs.  */
-  static int num_vars_added = 0;
-  ctfc->ctfc_vars_list[num_vars_added++] = var;
+  ctfc->ctfc_vars_list[ctfc->ctfc_vars_list_count++] = var;
 }
 
 /* Initialize the various sections and labels for CTF output.  */
