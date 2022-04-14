@@ -1439,16 +1439,20 @@ dump_decl (cxx_pretty_printer *pp, tree t, int flags)
 
     case USING_DECL:
       {
-	pp_cxx_ws_string (pp, "using");
-	tree scope = USING_DECL_SCOPE (t);
+	if (flags & TFF_DECL_SPECIFIERS)
+	  pp_cxx_ws_string (pp, "using");
 	bool variadic = false;
-	if (PACK_EXPANSION_P (scope))
+	if (!(flags & TFF_UNQUALIFIED_NAME))
 	  {
-	    scope = PACK_EXPANSION_PATTERN (scope);
-	    variadic = true;
+	    tree scope = USING_DECL_SCOPE (t);
+	    if (PACK_EXPANSION_P (scope))
+	      {
+		scope = PACK_EXPANSION_PATTERN (scope);
+		variadic = true;
+	      }
+	    dump_type (pp, scope, flags);
+	    pp_cxx_colon_colon (pp);
 	  }
-	dump_type (pp, scope, flags);
-	pp_cxx_colon_colon (pp);
 	dump_decl (pp, DECL_NAME (t), flags);
 	if (variadic)
 	  pp_cxx_ws_string (pp, "...");
