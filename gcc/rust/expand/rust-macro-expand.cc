@@ -25,50 +25,6 @@
 #include "rust-attribute-visitor.h"
 
 namespace Rust {
-void
-MacroExpander::parse_macro_to_meta_item (AST::MacroInvocData &invoc)
-{
-  // only parse if not already parsed
-  if (invoc.is_parsed ())
-    return;
-
-  std::unique_ptr<AST::AttrInputMetaItemContainer> converted_input (
-    invoc.get_delim_tok_tree ().parse_to_meta_item ());
-
-  if (converted_input == nullptr)
-    {
-      rust_debug ("DEBUG: failed to parse macro to meta item");
-      // TODO: do something now? is this an actual error?
-    }
-  else
-    {
-      std::vector<std::unique_ptr<AST::MetaItemInner>> meta_items (
-	std::move (converted_input->get_items ()));
-      invoc.set_meta_item_output (std::move (meta_items));
-    }
-}
-
-AST::Literal
-MacroExpander::expand_cfg_macro (AST::MacroInvocData &invoc)
-{
-  // only allow on cfg macros
-  if (invoc.get_path () != "cfg")
-    return AST::Literal::create_error ();
-
-  parse_macro_to_meta_item (invoc);
-
-  /* TODO: assuming that cfg! macros can only have one meta item inner, like cfg
-   * attributes */
-  if (invoc.get_meta_items ().size () != 1)
-    return AST::Literal::create_error ();
-
-  bool result = invoc.get_meta_items ()[0]->check_cfg_predicate (session);
-  if (result)
-    return AST::Literal ("true", AST::Literal::BOOL, CORETYPE_BOOL);
-  else
-    return AST::Literal ("false", AST::Literal::BOOL, CORETYPE_BOOL);
-}
-
 AST::ASTFragment
 MacroExpander::expand_decl_macro (Location invoc_locus,
 				  AST::MacroInvocData &invoc,

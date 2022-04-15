@@ -376,4 +376,40 @@ MacroBuiltin::env (Location invoc_locus, AST::MacroInvocData &invoc)
   return AST::ASTFragment ({node});
 }
 
+AST::ASTFragment
+MacroBuiltin::cfg (Location invoc_locus, AST::MacroInvocData &invoc)
+{
+  // only parse if not already parsed
+  if (!invoc.is_parsed ())
+    {
+      std::unique_ptr<AST::AttrInputMetaItemContainer> converted_input (
+	invoc.get_delim_tok_tree ().parse_to_meta_item ());
+
+      if (converted_input == nullptr)
+	{
+	  rust_debug ("DEBUG: failed to parse macro to meta item");
+	  // TODO: do something now? is this an actual error?
+	}
+      else
+	{
+	  std::vector<std::unique_ptr<AST::MetaItemInner>> meta_items (
+	    std::move (converted_input->get_items ()));
+	  invoc.set_meta_item_output (std::move (meta_items));
+	}
+    }
+
+  /* TODO: assuming that cfg! macros can only have one meta item inner, like cfg
+   * attributes */
+  if (invoc.get_meta_items ().size () != 1)
+    return AST::ASTFragment::create_error ();
+
+  bool result = invoc.get_meta_items ()[0]->check_cfg_predicate (
+    Session::get_instance ());
+  auto literal_exp = AST::SingleASTNode (std::unique_ptr<AST::Expr> (
+    new AST::LiteralExpr (result ? "true" : "false", AST::Literal::BOOL,
+			  PrimitiveCoreType::CORETYPE_BOOL, {}, invoc_locus)));
+
+  return AST::ASTFragment ({literal_exp});
+}
+
 } // namespace Rust
