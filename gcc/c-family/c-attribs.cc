@@ -2199,7 +2199,21 @@ handle_mode_attribute (tree *node, tree name, tree args,
 	  return NULL_TREE;
 	}
 
-      *node = build_qualified_type (typefm, TYPE_QUALS (type));
+      /* Copy any quals and attributes to the new type.  */
+      *node = build_type_attribute_qual_variant (typefm, TYPE_ATTRIBUTES (type),
+						 TYPE_QUALS (type));
+      if (TYPE_USER_ALIGN (type))
+	*node = build_aligned_type (*node, TYPE_ALIGN (type));
+
+      tree decl = node[2];
+      if (decl && TYPE_NAME (type) == decl)
+	{
+	  /* Set up the typedef all over again.  */
+	  DECL_ORIGINAL_TYPE (decl) = NULL_TREE;
+	  TREE_TYPE (decl) = *node;
+	  set_underlying_type (decl);
+	  *node = TREE_TYPE (decl);
+	}
     }
 
   return NULL_TREE;
