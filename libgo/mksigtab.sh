@@ -26,7 +26,6 @@ SIGLIST=""
 # Handle signals valid on all Unix systems.
 
 addsig() {
-    echo "	$1: $2,"
     # Get the signal number and add it to SIGLIST
     signum=`grep "const $1 = " gen-sysinfo.go | sed -e 's/.* = //'`
     if echo "$signum" | grep '^_SIG[A-Z0-9_]*$' >/dev/null 2>&1; then
@@ -34,7 +33,12 @@ addsig() {
         # This is needed for some MIPS signals defined as aliases of other signals
         signum=`grep "const $signum = " gen-sysinfo.go | sed -e 's/.* = //'`
     fi
-    SIGLIST=$SIGLIST"_${signum}_"
+    # Only add signal if the signal number isn't in the list yet.
+    # For example, musl libc uses signal 29 for both SIGIO and SIGPOLL.
+    if ! echo "$SIGLIST" | grep "_${signum}_" >/dev/null 2>&1; then
+        echo "	$1: $2,"
+        SIGLIST=$SIGLIST"_${signum}_"
+    fi
 }
 
 echo '	0:          {0, "SIGNONE: no trap"},'
