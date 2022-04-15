@@ -101,6 +101,8 @@ public:
 
   const TypeBoundPredicate *get_parent () const { return parent; }
 
+  Location get_locus () const;
+
 private:
   const TypeBoundPredicate *parent;
   const Resolver::TraitItemReference *trait_item_ref;
@@ -661,13 +663,16 @@ class SubstitutionArgumentMappings
 public:
   SubstitutionArgumentMappings (std::vector<SubstitutionArg> mappings,
 				Location locus,
-				ParamSubstCb param_subst_cb = nullptr)
-    : mappings (mappings), locus (locus), param_subst_cb (param_subst_cb)
+				ParamSubstCb param_subst_cb = nullptr,
+				bool trait_item_flag = false)
+    : mappings (mappings), locus (locus), param_subst_cb (param_subst_cb),
+      trait_item_flag (trait_item_flag)
   {}
 
   SubstitutionArgumentMappings (const SubstitutionArgumentMappings &other)
     : mappings (other.mappings), locus (other.locus),
-      param_subst_cb (other.param_subst_cb)
+      param_subst_cb (other.param_subst_cb),
+      trait_item_flag (other.trait_item_flag)
   {}
 
   SubstitutionArgumentMappings &
@@ -676,13 +681,14 @@ public:
     mappings = other.mappings;
     locus = other.locus;
     param_subst_cb = other.param_subst_cb;
+    trait_item_flag = other.trait_item_flag;
 
     return *this;
   }
 
   static SubstitutionArgumentMappings error ()
   {
-    return SubstitutionArgumentMappings ({}, Location (), nullptr);
+    return SubstitutionArgumentMappings ({}, Location (), nullptr, false);
   }
 
   bool is_error () const { return mappings.size () == 0; }
@@ -754,10 +760,15 @@ public:
     param_subst_cb (p, a);
   }
 
+  ParamSubstCb get_subst_cb () const { return param_subst_cb; }
+
+  bool trait_item_mode () const { return trait_item_flag; }
+
 private:
   std::vector<SubstitutionArg> mappings;
   Location locus;
   ParamSubstCb param_subst_cb;
+  bool trait_item_flag;
 };
 
 class SubstitutionRef
@@ -2296,8 +2307,9 @@ private:
 class ProjectionType : public BaseType, public SubstitutionRef
 {
 public:
-  ProjectionType (HirId ref, BaseType *base, Resolver::TraitReference *trait,
-		  DefId item, std::vector<SubstitutionParamMapping> subst_refs,
+  ProjectionType (HirId ref, BaseType *base,
+		  const Resolver::TraitReference *trait, DefId item,
+		  std::vector<SubstitutionParamMapping> subst_refs,
 		  SubstitutionArgumentMappings generic_arguments
 		  = SubstitutionArgumentMappings::error (),
 		  std::set<HirId> refs = std::set<HirId> ())
@@ -2310,7 +2322,7 @@ public:
   {}
 
   ProjectionType (HirId ref, HirId ty_ref, BaseType *base,
-		  Resolver::TraitReference *trait, DefId item,
+		  const Resolver::TraitReference *trait, DefId item,
 		  std::vector<SubstitutionParamMapping> subst_refs,
 		  SubstitutionArgumentMappings generic_arguments
 		  = SubstitutionArgumentMappings::error (),
@@ -2361,7 +2373,7 @@ public:
 
 private:
   BaseType *base;
-  Resolver::TraitReference *trait;
+  const Resolver::TraitReference *trait;
   DefId item;
 };
 

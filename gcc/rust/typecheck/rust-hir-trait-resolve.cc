@@ -128,7 +128,7 @@ TraitItemReference::resolve_item (HIR::TraitItemFunc &func)
 }
 
 void
-TraitItemReference::associated_type_set (TyTy::BaseType *ty)
+TraitItemReference::associated_type_set (TyTy::BaseType *ty) const
 {
   rust_assert (get_trait_item_type () == TraitItemType::TYPE);
 
@@ -141,7 +141,7 @@ TraitItemReference::associated_type_set (TyTy::BaseType *ty)
 }
 
 void
-TraitItemReference::associated_type_reset ()
+TraitItemReference::associated_type_reset () const
 {
   rust_assert (get_trait_item_type () == TraitItemType::TYPE);
 
