@@ -6995,6 +6995,8 @@ package body Sem_Ch8 is
                                            Standard_Standard)
                then
                   if not Error_Posted (N) then
+                     Error_Msg_NE
+                       ("& is not a visible entity of&", Prefix (N), Selector);
                      Error_Missing_With_Of_Known_Unit (Prefix (N));
                   end if;
 
