@@ -336,6 +336,10 @@ stream_out_histogram_value (struct output_block *ob, histogram_value hist)
 	/* Note that the IOR counter tracks pointer values and these can have
 	   sign bit set.  */
 	;
+      else if (hist->type == HIST_TYPE_INDIR_CALL && i == 0)
+	/* 'all' counter overflow is stored as a negative value. Individual
+	   counters and values are expected to be non-negative.  */
+	;
       else
 	gcc_assert (value >= 0);
 
