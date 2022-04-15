@@ -1,7 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -march=tigerlake -mno-sse" } */
-/* { dg-final { scan-assembler "jmp\tmemset" { target { ! ia32 } } } } */
-/* { dg-final { scan-assembler "call\tmemset" { target ia32 } } } */
+/* { dg-final { scan-assembler "jmp\t_?memset" { target { ! ia32 } } } } */
+/* { dg-final { scan-assembler "call\t_?memset" { target ia32 } } } */
 /* { dg-final { scan-assembler-not "rep stosb" } } */
 
 void
