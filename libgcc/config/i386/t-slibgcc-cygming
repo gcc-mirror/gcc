@@ -27,6 +27,9 @@ endif
 ifndef SHLIB_PTHREAD_LDFLAG
 SHLIB_PTHREAD_LDFLAG =
 endif
+ifndef SHLIB_MCFGTHREAD_LIBS
+SHLIB_MCFGTHREAD_LIBS =
+endif
 
 SHLIB_LINK = $(LN_S) -f $(SHLIB_MAP) $(SHLIB_MAP).def && \
 	if [ ! -d $(SHLIB_DIR) ]; then \
@@ -37,7 +40,8 @@ SHLIB_LINK = $(LN_S) -f $(SHLIB_MAP) $(SHLIB_MAP).def && \
 	$(SHLIB_MAP).def \
 	-Wl,--out-implib,$(SHLIB_DIR)/$(SHLIB_IMPLIB).tmp \
 	-o $(SHLIB_DIR)/$(SHLIB_SONAME).tmp @multilib_flags@ \
-	$(SHLIB_OBJS) ${SHLIB_PTHREAD_LDFLAG} $(SHLIB_LC) && \
+	$(SHLIB_OBJS) ${SHLIB_PTHREAD_LDFLAG} $(SHLIB_LC) \
+	$(SHLIB_MCFGTHREAD_LIBS) && \
 	if [ -f $(SHLIB_DIR)/$(SHLIB_SONAME) ]; then \
 	  mv -f $(SHLIB_DIR)/$(SHLIB_SONAME) \
 		$(SHLIB_DIR)/$(SHLIB_SONAME).backup; \

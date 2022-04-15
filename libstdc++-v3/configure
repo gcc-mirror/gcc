@@ -15855,6 +15855,7 @@ case $target_thread_file in
     tpf)	thread_header=config/s390/gthr-tpf.h ;;
     vxworks)	thread_header=config/gthr-vxworks.h ;;
     win32)	thread_header=config/i386/gthr-win32.h ;;
+    mcf)	thread_header=config/i386/gthr-mcf.h ;;
 esac
 
 
@@ -16062,7 +16063,7 @@ $as_echo "$glibcxx_cv_atomic_long_long" >&6; }
   # Fake what AC_TRY_COMPILE does.
 
     cat > conftest.$ac_ext << EOF
-#line 16065 "configure"
+#line 16066 "configure"
 int main()
 {
   typedef bool atomic_type;
@@ -16097,7 +16098,7 @@ $as_echo "$glibcxx_cv_atomic_bool" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 16100 "configure"
+#line 16101 "configure"
 int main()
 {
   typedef short atomic_type;
@@ -16132,7 +16133,7 @@ $as_echo "$glibcxx_cv_atomic_short" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 16135 "configure"
+#line 16136 "configure"
 int main()
 {
   // NB: _Atomic_word not necessarily int.
@@ -16168,7 +16169,7 @@ $as_echo "$glibcxx_cv_atomic_int" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 16171 "configure"
+#line 16172 "configure"
 int main()
 {
   typedef long long atomic_type;
@@ -16324,7 +16325,7 @@ $as_echo "mutex" >&6; }
   # unnecessary for this test.
 
     cat > conftest.$ac_ext << EOF
-#line 16327 "configure"
+#line 16328 "configure"
 int main()
 {
   _Decimal32 d1;
@@ -16366,7 +16367,7 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
   # unnecessary for this test.
 
   cat > conftest.$ac_ext << EOF
-#line 16369 "configure"
+#line 16370 "configure"
 template<typename T1, typename T2>
   struct same
   { typedef T2 type; };

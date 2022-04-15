@@ -2096,6 +2096,9 @@ i[34567]86-*-mingw* | x86_64-*-mingw*)
 	if test x$enable_threads = xposix ; then
 		tm_file="${tm_file} i386/mingw-pthread.h"
 	fi
+	if test x$enable_threads = xmcf ; then
+		tm_file="${tm_file} i386/mingw-mcfgthread.h"
+	fi
 	tm_file="${tm_file} i386/mingw32.h"
 	# This makes the logic if mingw's or the w64 feature set has to be used
 	case ${target} in
