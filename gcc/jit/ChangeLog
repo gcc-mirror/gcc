@@ -1,3 +1,8 @@
+2022-04-14  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* jit-playback.cc (new_bitcast): Cast values returned by tree_to_uhwi
+	to 'long' to match the print format.
+
 2022-04-12  Antoni Boucher  <bouanto@zoho.com>
 
 	PR jit/104293

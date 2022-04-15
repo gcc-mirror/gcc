@@ -1,3 +1,68 @@
+2022-04-14  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/105264
+	* gcc.dg/analyzer/torture/symbolic-10.c: New test.
+
+2022-04-14  Jason Merrill  <jason@redhat.com>
+
+	PR c++/104646
+	* g++.dg/cpp0x/constexpr-fno-elide-ctors1.C: New test.
+
+2022-04-14  Jason Merrill  <jason@redhat.com>
+
+	PR c++/82980
+	* g++.dg/cpp0x/lambda/lambda-current-inst1.C: New test.
+
+2022-04-14  Indu Bhagat  <indu.bhagat@oracle.com>
+
+	PR debug/105089
+	* gcc.dg/debug/ctf/ctf-array-2.c: Refactor testcase.  Move some
+	checks ...
+	* gcc.dg/debug/ctf/ctf-array-5.c: ... to here.
+	* gcc.dg/debug/ctf/ctf-variables-3.c: ... and here.  Add
+	additional checks for one CTF variable and one CTF object info
+	record.
+
+2022-04-14  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/105252
+	* gcc.dg/analyzer/pr105252.c: New test.
+
+2022-04-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/105247
+	* gcc.c-torture/compile/pr105247.c: New test.
+
+2022-04-14  Robin Dapp  <rdapp@linux.ibm.com>
+
+	* gcc.target/s390/pr80725.c: Add -Wno-int-to-pointer-cast.
+
+2022-04-14  Jason Merrill  <jason@redhat.com>
+
+	PR c++/65211
+	* g++.target/i386/vec-tmpl1.C: New test.
+
+2022-04-14  Jason Merrill  <jason@redhat.com>
+
+	PR c++/97219
+	* g++.dg/cpp1y/lambda-generic-local-fn1.C: New test.
+
+2022-04-14  Jason Merrill  <jason@redhat.com>
+
+	PR c++/101698
+	* g++.dg/template/conv19.C: New test.
+
+2022-04-14  Jason Merrill  <jason@redhat.com>
+
+	PR c++/101442
+	* g++.dg/cpp0x/initlist-nrv1.C: New test.
+
+2022-04-14  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105265
+	PR c++/100838
+	* g++.dg/cpp0x/initlist-new6.C: New test.
+
 2022-04-13  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR tree-optimization/105254

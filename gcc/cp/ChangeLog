@@ -1,3 +1,41 @@
+2022-04-14  Jason Merrill  <jason@redhat.com>
+
+	PR c++/104646
+	* constexpr.cc (maybe_save_constexpr_fundef): Don't do extra
+	checks for defaulted ctors.
+
+2022-04-14  Jason Merrill  <jason@redhat.com>
+
+	PR c++/82980
+	* lambda.cc (type_deducible_expression_p): New.
+	(lambda_capture_field_type): Check it.
+
+2022-04-14  Jason Merrill  <jason@redhat.com>
+
+	PR c++/65211
+	* pt.cc (tsubst_decl) [TYPE_DECL]: Copy TYPE_ALIGN.
+
+2022-04-14  Jason Merrill  <jason@redhat.com>
+
+	PR c++/97219
+	* name-lookup.cc (dependent_local_decl_p): New.
+	* cp-tree.h (dependent_local_decl_p): Declare.
+	* semantics.cc (finish_call_expr): Use it.
+	* pt.cc (tsubst_arg_types): Also substitute default args
+	for local externs.
+
+2022-04-14  Jason Merrill  <jason@redhat.com>
+
+	PR c++/101698
+	* pt.cc (tsubst_baselink): Also check dependent optype.
+
+2022-04-14  Jason Merrill  <jason@redhat.com>
+
+	PR c++/101442
+	* decl.cc (cp_finish_decl): Don't pass decl to push_cleanup.
+	* init.cc (perform_member_init): Likewise.
+	* semantics.cc (push_cleanup): Adjust comment.
+
 2022-04-13  Jason Merrill  <jason@redhat.com>
 
 	PR c++/105245

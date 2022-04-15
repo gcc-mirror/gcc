@@ -1,3 +1,18 @@
+2022-04-14  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/105264
+	* region-model-reachability.cc (reachable_regions::handle_parm):
+	Use maybe_get_deref_base_region rather than just region_svalue, to
+	handle pointer arithmetic also.
+	* svalue.cc (svalue::maybe_get_deref_base_region): New.
+	* svalue.h (svalue::maybe_get_deref_base_region): New decl.
+
+2022-04-14  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/105252
+	* svalue.cc (cmp_cst): When comparing VECTOR_CSTs, compare the
+	types of the encoded elements before calling cmp_cst on them.
+
 2022-04-09  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/103892

@@ -1,3 +1,51 @@
+2022-04-14  Indu Bhagat  <indu.bhagat@oracle.com>
+
+	PR debug/105089
+	* ctfc.cc (ctf_dvd_ignore_insert): New function.
+	(ctf_dvd_ignore_lookup): Likewise.
+	(ctf_add_variable): Keep track of non-defining decl DIEs.
+	(new_ctf_container): Initialize the new hash-table.
+	(ctfc_delete_container): Empty hash-table.
+	* ctfc.h (struct ctf_container): Add new hash-table.
+	(ctf_dvd_ignore_lookup): New declaration.
+	(ctf_add_variable): Add additional argument.
+	* ctfout.cc (ctf_dvd_preprocess_cb): Skip adding CTF variable
+	record for non-defining decl for which a defining decl exists
+	in the same TU.
+	(ctf_preprocess): Defer updating the number of global objts
+	until here.
+	(output_ctf_header): Use ctfc_vars_list_count as some CTF
+	variables may not make it to the final output.
+	(output_ctf_vars): Likewise.
+	* dwarf2ctf.cc (gen_ctf_variable): Skip generating CTF variable
+	if this is known to be a non-defining decl DIE.
+
+2022-04-14  Indu Bhagat  <indu.bhagat@oracle.com>
+
+	* ctfc.h (struct ctf_container): Introduce a new member.
+	* ctfout.cc (ctf_list_add_ctf_vars): Use it instead of static
+	variable.
+
+2022-04-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/105247
+	* simplify-rtx.cc (simplify_const_binary_operation): For shifts
+	or rotates by VOIDmode constant integer shift count use word_mode
+	for the operand if int_mode is narrower than word.
+
+2022-04-14  Robin Dapp  <rdapp@linux.ibm.com>
+
+	* config/s390/s390.cc (s390_get_sched_attrmask): Add z16.
+	(s390_get_unit_mask): Likewise.
+	(s390_is_fpd): Likewise.
+	(s390_is_fxd): Likewise.
+	* config/s390/s390.h (s390_tune_attr): Set max tune level to z16.
+	* config/s390/s390.md (z900,z990,z9_109,z9_ec,z10,z196,zEC12,z13,z14,z15):
+	Add z16.
+	(z900,z990,z9_109,z9_ec,z10,z196,zEC12,z13,z14,z15,z16):
+	Likewise.
+	* config/s390/3931.md: New file.
+
 2022-04-13  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR tree-optimization/105254

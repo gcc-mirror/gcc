@@ -1,3 +1,43 @@
+2022-04-14  Palmer Dabbelt  <palmer@rivosinc.com>
+
+	* acinclude.m4 (GLIBCXX_ENABLE_LOCK_POLICY): Force auto to mutex
+	for RISC-V.
+	* configure: Regenerate.
+
+2022-04-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/intro.xml: Fix comment.
+
+2022-04-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/precompiled/stdc++.h: Include <stacktrace> and
+	<stdatomic.h> for C++23.
+
+2022-04-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/105269
+	* include/bits/stl_vector.h (__cpp_lib_constexpr_vector):
+	Define.
+	* include/c_compatibility/stdatomic.h (__cpp_lib_stdatomic_h):
+	Define.
+	* include/std/optional (__cpp_lib_optional): Define new value
+	for C++23.
+	(__cpp_lib_monadic_optional): Remove.
+	* include/std/version (__cpp_lib_constexpr_vector): Define.
+	(__cpp_lib_stdatomic_h): Define.
+	(__cpp_lib_optional): Define new value for C++23.
+	(__cpp_lib_monadic_optional): Remove.
+	* testsuite/20_util/optional/monadic/and_then.cc: Adjust.
+	* testsuite/20_util/optional/requirements.cc: Adjust for C++23.
+	* testsuite/20_util/optional/version.cc: Likewise.
+	* testsuite/23_containers/vector/cons/constexpr.cc: Check
+	feature test macro.
+	* testsuite/29_atomics/headers/stdatomic.h/c_compat.cc:
+	Likewise.
+	* testsuite/20_util/optional/monadic/version.cc: Removed.
+	* testsuite/23_containers/vector/requirements/version.cc: New test.
+	* testsuite/29_atomics/headers/stdatomic.h/version.cc: New test.
+
 2022-04-12  Jonathan Wakely  <jwakely@redhat.com>
 
 	* acinclude.m4 (GLIBCXX_ENABLE_BACKTRACE): Check for mmap.
