@@ -3068,6 +3068,7 @@ package Sem_Util is
    --  previous errors (particularly in -gnatq mode).
 
    function Requires_Transient_Scope (Typ : Entity_Id) return Boolean;
+   pragma Inline (Requires_Transient_Scope);
    --  Return true if temporaries of Typ need to be wrapped in a transient
    --  scope, either because they are allocated on the secondary stack or
    --  finalization actions must be generated before the next instruction.
