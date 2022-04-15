@@ -1,3 +1,19 @@
+2022-04-14  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2021-08-18  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* mh-darwin: Require a non-shared host configuration to
+	enable  mdynamic-no-pic where that is supported.
+
+2022-04-14  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2021-07-09  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* mh-darwin: Make this specific to handling the
+	mdynamic-no-pic case.
+
 2021-07-28  Release Manager
 
 	* GCC 11.2.0 released.

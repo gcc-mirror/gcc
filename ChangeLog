@@ -1,3 +1,38 @@
+2022-04-14  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2021-11-16  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* configure: Regenerate.
+	* configure.ac: Ensure that PIC (shared) defaults are set
+	correctly for Darwin.
+
+2022-04-14  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2021-08-18  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* Makefile.in: Regenerate.
+	* Makefile.tpl: Make the state of the configured host
+	shared flag available to makefile fragements.
+
+2022-04-14  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* Makefile.def: Add dsymutil defs.
+	* Makefile.in: Regenerated.
+	* Makefile.tpl: Add dsymutil to flags.
+	* configure: Regenerated.
+	* configure.ac: Add dsymutil to target and build recipes.
+
+2022-04-14  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2021-07-09  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* configure: Regenerate.
+	* configure.ac: Adjust cases for which it is necessary to
+	include the Darwin host config fragment.
+
 2021-07-28  Release Manager
 
 	* GCC 11.2.0 released.

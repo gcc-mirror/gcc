@@ -1,3 +1,41 @@
+2022-04-14  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc.dg/torture/fp-int-convert-timode-3.c: Remove XFAIL.
+	* gcc.dg/torture/fp-int-convert-timode-4.c: Likewise.
+
+2022-04-14  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2021-09-19  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* jit.dg/jit.exp (fixed_local_execute): Amend the match and
+	exit conditions to cater for more platforms.
+
+2022-04-14  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2021-08-29  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc.dg/analyzer/strndup-1.c: Skip for Darwin versions
+	without strndup support in libc.
+
+2022-04-14  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2021-08-19  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* jit.dg/test-asm.c: Provide Mach-O fragment.
+	* jit.dg/test-asm.cc: Likewise.
+
+2022-04-14  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2021-08-19  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* jit.dg/harness.h: Include jit-dejagnu.h.
+	* jit.dg/jit.exp: Use -rdynamic conditionally on target
+	support, instead of unconditional -Wl,--export-dynamic.
+
 2022-04-13  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:
