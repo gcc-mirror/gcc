@@ -523,8 +523,7 @@ begin -- Gen_IL.Gen.Gen_Nodes
 
    Cc (N_Raise_Expression, N_Subexpr,
        (Sy (Name, Node_Id, Default_Empty),
-        Sy (Expression, Node_Id, Default_Empty),
-        Sm (Convert_To_Return_False, Flag)));
+        Sy (Expression, Node_Id, Default_Empty)));
 
    Cc (N_Range, N_Subexpr,
        (Sy (Low_Bound, Node_Id),
