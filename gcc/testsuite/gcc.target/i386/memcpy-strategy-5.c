@@ -1,7 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -march=tigerlake -mno-sse" } */
-/* { dg-final { scan-assembler "jmp\tmemcpy" { target { ! ia32 } } } } */
-/* { dg-final { scan-assembler "call\tmemcpy" { target ia32 } } } */
+/* { dg-final { scan-assembler "jmp\t_?memcpy" { target { ! ia32 } } } } */
+/* { dg-final { scan-assembler "call\t_?memcpy" { target ia32 } } } */
 /* { dg-final { scan-assembler-not "rep movsb" } } */
 
 void
