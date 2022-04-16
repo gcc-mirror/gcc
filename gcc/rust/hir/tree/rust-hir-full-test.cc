@@ -3108,6 +3108,22 @@ EnumItem::as_string () const
 {
   std::string str = Item::as_string ();
   str += variant_name;
+  str += " ";
+  switch (get_enum_item_kind ())
+    {
+    case Named:
+      str += "[Named variant]";
+      break;
+    case Tuple:
+      str += "[Tuple variant]";
+      break;
+    case Struct:
+      str += "[Struct variant]";
+      break;
+    case Discriminant:
+      str += "[Discriminant variant]";
+      break;
+    }
 
   return str;
 }

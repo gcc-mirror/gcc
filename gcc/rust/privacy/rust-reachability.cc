@@ -69,6 +69,9 @@ ReachabilityVisitor::visit_generic_predicates (
 void
 ReachabilityVisitor::visit (HIR::Module &mod)
 {
+  auto reach = get_reachability_level (mod.get_visibility ());
+  reach = ctx.update_reachability (mod.get_mappings (), reach);
+
   for (auto &item : mod.get_items ())
     {
       // FIXME: Is that what we want to do? Yes? Only visit the items with
@@ -83,11 +86,17 @@ ReachabilityVisitor::visit (HIR::Module &mod)
 
 void
 ReachabilityVisitor::visit (HIR::ExternCrate &crate)
-{}
+{
+  auto reach = get_reachability_level (crate.get_visibility ());
+  reach = ctx.update_reachability (crate.get_mappings (), reach);
+}
 
 void
 ReachabilityVisitor::visit (HIR::UseDeclaration &use_decl)
-{}
+{
+  auto reach = get_reachability_level (use_decl.get_visibility ());
+  reach = ctx.update_reachability (use_decl.get_mappings (), reach);
+}
 
 void
 ReachabilityVisitor::visit (HIR::Function &func)
@@ -141,6 +150,38 @@ ReachabilityVisitor::visit (HIR::Enum &enum_item)
 
   enum_reach = ctx.update_reachability (enum_item.get_mappings (), enum_reach);
   visit_generic_predicates (enum_item.get_generic_params (), enum_reach);
+
+  for (const auto &variant : enum_item.get_variants ())
+    {
+      auto variant_reach
+	= ctx.update_reachability (variant->get_mappings (), enum_reach);
+
+      switch (variant->get_enum_item_kind ())
+	{
+	  case HIR::EnumItem::Tuple: {
+	    // Should we update the fields only if they are public? Similarly to
+	    // what we do in the ReachabilityVisitor for HIR::TupleStruct?
+	    auto tuple_variant
+	      = static_cast<HIR::EnumItemTuple *> (variant.get ());
+	    for (const auto &field : tuple_variant->get_tuple_fields ())
+	      ctx.update_reachability (field.get_mappings (), variant_reach);
+	    break;
+	  }
+	  case HIR::EnumItem::Struct: {
+	    // Should we update the fields only if they are public? Similarly to
+	    // what we do in the ReachabilityVisitor for HIR::StructStruct?
+	    auto struct_variant
+	      = static_cast<HIR::EnumItemStruct *> (variant.get ());
+	    for (const auto &field : struct_variant->get_struct_fields ())
+	      ctx.update_reachability (field.get_mappings (), variant_reach);
+	    break;
+	  }
+	// Nothing nested to visit in that case
+	case HIR::EnumItem::Named:
+	case HIR::EnumItem::Discriminant:
+	  break;
+	}
+    }
 }
 
 void
@@ -155,11 +196,17 @@ ReachabilityVisitor::visit (HIR::Union &union_item)
 
 void
 ReachabilityVisitor::visit (HIR::ConstantItem &const_item)
-{}
+{
+  auto reach = get_reachability_level (const_item.get_visibility ());
+  reach = ctx.update_reachability (const_item.get_mappings (), reach);
+}
 
 void
 ReachabilityVisitor::visit (HIR::StaticItem &static_item)
-{}
+{
+  auto reach = get_reachability_level (static_item.get_visibility ());
+  reach = ctx.update_reachability (static_item.get_mappings (), reach);
+}
 
 void
 ReachabilityVisitor::visit (HIR::Trait &trait)
