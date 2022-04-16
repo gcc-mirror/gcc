@@ -1,3 +1,29 @@
+2022-04-15  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/104858
+	* include/bits/ranges_algo.h (__minmax_fn): Avoid dereferencing
+	__first twice at the start.
+	* testsuite/25_algorithms/minmax/constrained.cc (test06): New test.
+
+2022-04-15  Patrick Palka  <ppalka@redhat.com>
+
+	* include/std/charconv (__from_chars_alnum_to_val_table): Define.
+	(__from_chars_alnum_to_val): Define.
+	(__from_chars_binary): Rename to ...
+	(__from_chars_pow2_base): ... this.  Generalize to handle any
+	power-of-two base using __from_chars_alnum_to_val.
+	(__from_chars_digit): Optimize digit recognition to a single
+	test instead of two tests.  Use [[__unlikely___]] attribute.
+	(__from_chars_alpha_to_num): Remove.
+	(__from_chars_alnum): Use __from_chars_alnum_to_val.  Use a
+	nested loop for the overflow case.  Maintain a lower bound
+	on the number of available bits in the result and use it to
+	omit the overflow check.
+	(from_chars): Adjust appropriately.
+	* src/c++17/floating_from_chars.cc (ascii_to_hexit): Remove.
+	(__floating_from_chars_hex): Use __from_chars_alnum_to_val
+	to recognize a hex digit instead.
+
 2022-04-14  Palmer Dabbelt  <palmer@rivosinc.com>
 
 	* acinclude.m4 (GLIBCXX_ENABLE_LOCK_POLICY): Force auto to mutex

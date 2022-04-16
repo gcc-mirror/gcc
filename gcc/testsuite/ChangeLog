@@ -1,3 +1,40 @@
+2022-04-15  Paul A. Clarke  <pc@us.ibm.com>
+
+	* g++.dg/debug/dwarf2/const2.C: Move to g++.target/powerpc.
+	* g++.dg/other/darwin-minversion-1.C: Likewise.
+	* g++.dg/eh/ppc64-sighandle-cr.C: Likewise.
+	* g++.dg/eh/simd-5.C: Likewise.
+	* g++.dg/eh/simd-4.C: Move to g++.target/powerpc, adjust dg directives.
+	* g++.dg/eh/uncaught3.C: Likewise.
+	* g++.dg/other/spu2vmx-1.C: Likewise.
+	* g++.target/powerpc/const2.C: New file.
+	* g++.target/powerpc/darwin-minversion-1.C: New file.
+	* g++.target/powerpc/ppc64-sighandle-cr.C: New file.
+	* g++.target/powerpc/simd-4.C: New file.
+	* g++.target/powerpc/simd-5.C: New file.
+	* g++.target/powerpc/spu2vmx-1.C: New file.
+	* g++.target/powerpc/uncaught3.C: New file.
+
+2022-04-15  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/105268
+	* g++.dg/concepts/variadic6.C: New test.
+
+2022-04-15  Hongyu Wang  <hongyu.wang@intel.com>
+
+	* gcc.target/i386/crc32-6.c: Adjust dg-error message.
+	* gcc.target/i386/crc32-7.c: New test.
+
+2022-04-15  Jason Merrill  <jason@redhat.com>
+
+	PR c++/102804
+	* g++.dg/ext/unsigned-typedef1.C: New test.
+
+2022-04-15  Jason Merrill  <jason@redhat.com>
+
+	PR c++/102987
+	* g++.dg/diagnostic/using1.C: New test.
+
 2022-04-14  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/105264

@@ -1,3 +1,8 @@
+2022-04-15  Hongyu Wang  <hongyu.wang@intel.com>
+
+	* config/i386/smmintrin.h: Correct target pragma from sse4.1
+	and sse4.2 to crc32 for crc32 intrinsics.
+
 2022-04-14  Indu Bhagat  <indu.bhagat@oracle.com>
 
 	PR debug/105089

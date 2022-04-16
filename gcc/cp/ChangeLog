@@ -1,3 +1,21 @@
+2022-04-15  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/105268
+	* parser.cc (cp_parser_placeholder_type_specifier): Return
+	error_mark_node when trying to build up a constrained parameter in
+	a default argument.
+
+2022-04-15  Jason Merrill  <jason@redhat.com>
+
+	PR c++/102804
+	* decl.cc (grokdeclarator): Drop typedef used with 'unsigned'.
+
+2022-04-15  Jason Merrill  <jason@redhat.com>
+
+	PR c++/102987
+	* error.cc (dump_expr): Handle USING_DECL.
+	[VIEW_CONVERT_EXPR]: Just look through location wrapper.
+
 2022-04-14  Jason Merrill  <jason@redhat.com>
 
 	PR c++/104646
