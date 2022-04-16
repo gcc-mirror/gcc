@@ -16008,7 +16008,6 @@ package body Sem_Prag is
                end loop Innr;
 
                if Citem = N then
-                  Set_Error_Posted (N);
                   Error_Pragma_Arg
                     ("argument of pragma% is not withed unit", Arg);
                end if;
