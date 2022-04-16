@@ -1,4 +1,4 @@
-// { dg-excess-errors "...." { xfail *-*-*-* } }
+// { dg-excess-errors "...." { xfail *-*-*-* *-*-* } }
 
 macro_rules! add {
     ($a:expr) => { $a };
