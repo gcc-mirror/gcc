@@ -5141,7 +5141,7 @@ the Win32 subsystem that provides a subset of POSIX.
 
 @subheading Intel 64-bit versions
 GCC contains support for x86-64 using the mingw-w64
-runtime library, available from @uref{https://mingw-w64.org/doku.php}.
+runtime library, available from @uref{https://www.mingw-w64.org/downloads/}.
 This library should be used with the target triple x86_64-pc-mingw32.
 
 @subheading Windows CE
