@@ -1,3 +1,7 @@
+2022-04-16  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/install.texi (Specific): Adjust mingw-w64 download link.
+
 2022-04-15  Hongyu Wang  <hongyu.wang@intel.com>
 
 	* config/i386/smmintrin.h: Correct target pragma from sse4.1
