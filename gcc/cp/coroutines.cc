@@ -3110,7 +3110,7 @@ maybe_promote_temps (tree *stmt, void *d)
 	 If the initializer is a conditional expression, we need to collect
 	 and declare any promoted variables nested within it.  DTORs for such
 	 variables must be run conditionally too.  */
-      if (t->var && DECL_NAME (t->var))
+      if (t->var)
 	{
 	  tree var = t->var;
 	  DECL_CHAIN (var) = vlist;
@@ -3311,7 +3311,7 @@ add_var_to_bind (tree& bind, tree var_type,
   tree b_vars = BIND_EXPR_VARS (bind);
   /* Build a variable to hold the condition, this will be included in the
      frame as a local var.  */
-  char *nam = xasprintf ("%s.%d", nam_root, nam_vers);
+  char *nam = xasprintf ("__%s_%d", nam_root, nam_vers);
   tree newvar = build_lang_decl (VAR_DECL, get_identifier (nam), var_type);
   free (nam);
   DECL_CHAIN (newvar) = b_vars;
@@ -3956,7 +3956,7 @@ register_local_var_uses (tree *stmt, int *do_subtree, void *d)
 	     scopes with identically named locals and still be able to
 	     identify them in the coroutine frame.  */
 	  tree lvname = DECL_NAME (lvar);
-	  char *buf;
+	  char *buf = NULL;
 
 	  /* The outermost bind scope contains the artificial variables that
 	     we inject to implement the coro state machine.  We want to be able
@@ -3966,14 +3966,14 @@ register_local_var_uses (tree *stmt, int *do_subtree, void *d)
 	  else if (lvname != NULL_TREE)
 	    buf = xasprintf ("%s_%u_%u", IDENTIFIER_POINTER (lvname),
 			     lvd->nest_depth, lvd->bind_indx);
-	  else
-	    buf = xasprintf ("_D%u_%u_%u", DECL_UID (lvar), lvd->nest_depth,
-			     lvd->bind_indx);
 	  /* TODO: Figure out if we should build a local type that has any
 	     excess alignment or size from the original decl.  */
-	  local_var.field_id
-	    = coro_make_frame_entry (lvd->field_list, buf, lvtype, lvd->loc);
-	  free (buf);
+	  if (buf)
+	    {
+	      local_var.field_id = coro_make_frame_entry (lvd->field_list, buf,
+							  lvtype, lvd->loc);
+	      free (buf);
+	    }
 	  /* We don't walk any of the local var sub-trees, they won't contain
 	     any bind exprs.  */
 	}
