@@ -21,6 +21,7 @@ jobs:
       -
         name: Login to DockerHub
         uses: docker/login-action@v1
+        if: github.repository == 'Rust-GCC/gccrs'
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
@@ -29,5 +30,5 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           context: .
-          push: true
+          push: ${{ github.repository == 'Rust-GCC/gccrs' }}
           tags: philberty/gccrs:latest
