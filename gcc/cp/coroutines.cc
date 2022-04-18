@@ -883,13 +883,14 @@ coro_diagnose_throwing_fn (tree fndecl)
 static bool
 coro_diagnose_throwing_final_aw_expr (tree expr)
 {
-  tree t = TARGET_EXPR_INITIAL (expr);
+  if (TREE_CODE (expr) == TARGET_EXPR)
+    expr = TARGET_EXPR_INITIAL (expr);
   tree fn = NULL_TREE;
-  if (TREE_CODE (t) == CALL_EXPR)
-    fn = CALL_EXPR_FN(t);
-  else if (TREE_CODE (t) == AGGR_INIT_EXPR)
-    fn = AGGR_INIT_EXPR_FN (t);
-  else if (TREE_CODE (t) == CONSTRUCTOR)
+  if (TREE_CODE (expr) == CALL_EXPR)
+    fn = CALL_EXPR_FN (expr);
+  else if (TREE_CODE (expr) == AGGR_INIT_EXPR)
+    fn = AGGR_INIT_EXPR_FN (expr);
+  else if (TREE_CODE (expr) == CONSTRUCTOR)
     return false;
   else
     {
