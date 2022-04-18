@@ -3901,8 +3901,8 @@ configure GCC@ for building a CR16 uclinux cross-compiler.
 @end html
 @anchor{cris}
 @heading CRIS
-CRIS is the CPU architecture in Axis Communications ETRAX system-on-a-chip
-series.  These are used in embedded applications.
+CRIS is a CPU architecture in Axis Communications systems-on-a-chip, for
+example the ETRAX series.  These are used in embedded applications.
 
 @ifnothtml
 @xref{CRIS Options,, CRIS Options, gcc, Using the GNU Compiler
@@ -3913,21 +3913,8 @@ See ``CRIS Options'' in the main manual
 @end ifhtml
 for a list of CRIS-specific options.
 
-There are a few different CRIS targets:
-@table @code
-@item cris-axis-elf
-Mainly for monolithic embedded systems.  Includes a multilib for the
-@samp{v10} core used in @samp{ETRAX 100 LX}.
-@item cris-axis-linux-gnu
-A GNU/Linux port for the CRIS architecture, currently targeting
-@samp{ETRAX 100 LX} by default.
-@end table
-
-Pre-packaged tools can be obtained from
-@uref{ftp://ftp.axis.com/@/pub/@/axis/@/tools/@/cris/@/compiler-kit/}.  More
-information about this platform is available at
-@uref{http://developer.axis.com/}.
-
+Use @samp{configure --target=cris-elf} to configure GCC@ for building
+a cross-compiler for CRIS.
 @html
 <hr />
 @end html
