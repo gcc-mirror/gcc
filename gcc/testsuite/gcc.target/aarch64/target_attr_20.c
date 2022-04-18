@@ -24,4 +24,4 @@ bar (void)
     }
 }
 
-/* { dg-final { scan-assembler-not "bl.*__aarch64_cas2_acq_rel" } } */
+/* { dg-final { scan-assembler-not "bl.*__aarch64_cas2_sync" } } */
