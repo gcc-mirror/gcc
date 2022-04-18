@@ -425,22 +425,24 @@ MacroBuiltin::include (Location invoc_locus, AST::MacroInvocData &invoc)
   if (lit_expr == nullptr)
     return AST::ASTFragment::create_error ();
 
-  std::string target_filename
+  std::string filename
     = source_relative_path (lit_expr->as_string (), invoc_locus);
+  auto target_filename
+    = Rust::Session::get_instance ().include_extra_file (std::move (filename));
 
-  RAIIFile target_file (target_filename.c_str ());
+  RAIIFile target_file (target_filename);
   Linemap *linemap = Session::get_instance ().linemap;
 
   if (target_file.get_raw () == nullptr)
     {
-      rust_error_at (lit_expr->get_locus (), "cannot open included file %s: %m",
-		     target_filename.c_str ());
+      rust_error_at (lit_expr->get_locus (),
+		     "cannot open included file %qs: %m", target_filename);
       return AST::ASTFragment::create_error ();
     }
 
-  rust_debug ("Attempting to parse included file %s", target_filename.c_str ());
+  rust_debug ("Attempting to parse included file %s", target_filename);
 
-  Lexer lex (target_filename.c_str (), std::move (target_file), linemap);
+  Lexer lex (target_filename, std::move (target_file), linemap);
   Parser<Lexer> parser (std::move (lex));
 
   auto parsed_items = parser.parse_items ();

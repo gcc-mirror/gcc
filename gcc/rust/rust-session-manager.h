@@ -235,6 +235,10 @@ struct Session
    * every file so eh. */
   std::string injected_crate_name;
 
+  /* extra files get included during late stages of compilation (e.g. macro
+   * expansion) */
+  std::vector<std::string> extra_files;
+
   // backend wrapper to GCC GENERIC
   Backend *backend;
 
@@ -266,6 +270,15 @@ public:
 		      const struct cl_option_handlers *handlers);
   void parse_files (int num_files, const char **files);
   void init_options ();
+
+  /* This function saves the filename data into the session manager using the
+   * `move` semantics, and returns a C-style string referencing the input
+   * std::string */
+  inline const char *include_extra_file (std::string filename)
+  {
+    extra_files.push_back (std::move (filename));
+    return extra_files.back ().c_str ();
+  }
 
 private:
   Session () = default;
