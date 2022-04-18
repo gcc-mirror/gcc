@@ -469,25 +469,37 @@ namespace __detail
       while (__i < __len && __first[__i] == '0')
 	++__i;
       const ptrdiff_t __leading_zeroes = __i;
+      if (__i >= __len) [[__unlikely__]]
+	{
+	  __first += __i;
+	  return true;
+	}
 
+      // Remember the leading significant digit value if necessary.
       unsigned char __leading_c = 0;
+      if (__base != 2)
+	{
+	  __leading_c = __from_chars_alnum_to_val<_DecOnly>(__first[__i]);
+	  // __glibcxx_assert(__leading_c != 0);
+	  if (__leading_c >= __base) [[__unlikely__]]
+	    {
+	      __first += __i;
+	      return true;
+	    }
+	  __val = __leading_c;
+	  ++__i;
+	}
+
       for (; __i < __len; ++__i)
 	{
 	  const unsigned char __c = __from_chars_alnum_to_val<_DecOnly>(__first[__i]);
 	  if (__c >= __base)
 	    break;
 	  __val = (__val << __log2_base) | __c;
-
-	  if (__i == __leading_zeroes)
-	    {
-	      // At the first iteration, remember the leading significant digit.
-	      // __glibcxx_assert(__leading_c == 0 && __c != 0);
-	      __leading_c = __c;
-	    }
 	}
       __first += __i;
       auto __significant_bits = (__i - __leading_zeroes) * __log2_base;
-      if (__base != 2 && __leading_c != 0)
+      if (__base != 2)
 	// Compensate for a leading significant digit that didn't use all
 	// of its available bits.
 	__significant_bits -= __log2_base - __bit_width(__leading_c);
