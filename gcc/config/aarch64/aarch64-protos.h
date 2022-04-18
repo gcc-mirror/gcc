@@ -787,7 +787,7 @@ bool aarch64_high_bits_all_ones_p (HOST_WIDE_INT);
 
 struct atomic_ool_names
 {
-    const char *str[5][4];
+    const char *str[5][5];
 };
 
 rtx aarch64_atomic_ool_func(machine_mode mode, rtx model_rtx,
