@@ -22678,14 +22678,14 @@ aarch64_emit_unlikely_jump (rtx insn)
   add_reg_br_prob_note (jump, profile_probability::very_unlikely ());
 }
 
-/* We store the names of the various atomic helpers in a 5x4 array.
+/* We store the names of the various atomic helpers in a 5x5 array.
    Return the libcall function given MODE, MODEL and NAMES.  */
 
 rtx
 aarch64_atomic_ool_func(machine_mode mode, rtx model_rtx,
 			const atomic_ool_names *names)
 {
-  memmodel model = memmodel_base (INTVAL (model_rtx));
+  memmodel model = memmodel_from_int (INTVAL (model_rtx));
   int mode_idx, model_idx;
 
   switch (mode)
@@ -22725,6 +22725,11 @@ aarch64_atomic_ool_func(machine_mode mode, rtx model_rtx,
     case MEMMODEL_SEQ_CST:
       model_idx = 3;
       break;
+    case MEMMODEL_SYNC_ACQUIRE:
+    case MEMMODEL_SYNC_RELEASE:
+    case MEMMODEL_SYNC_SEQ_CST:
+      model_idx = 4;
+      break;
     default:
       gcc_unreachable ();
     }
@@ -22737,7 +22742,8 @@ aarch64_atomic_ool_func(machine_mode mode, rtx model_rtx,
   { "__aarch64_" #B #N "_relax", \
     "__aarch64_" #B #N "_acq", \
     "__aarch64_" #B #N "_rel", \
-    "__aarch64_" #B #N "_acq_rel" }
+    "__aarch64_" #B #N "_acq_rel", \
+    "__aarch64_" #B #N "_sync" }
 
 #define DEF4(B)  DEF0(B, 1), DEF0(B, 2), DEF0(B, 4), DEF0(B, 8), \
 		 { NULL, NULL, NULL, NULL }
