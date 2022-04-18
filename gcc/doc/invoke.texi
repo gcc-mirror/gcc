@@ -854,12 +854,12 @@ Objective-C and Objective-C++ Dialects}.
 -msim  -msdata=@var{sdata-type}}
 
 @emph{CRIS Options}
-@gccoptlist{-mcpu=@var{cpu}  -march=@var{cpu}  -mtune=@var{cpu} @gol
--mmax-stack-frame=@var{n}  -melinux-stacksize=@var{n} @gol
+@gccoptlist{-mcpu=@var{cpu}  -march=@var{cpu}
+-mtune=@var{cpu} -mmax-stack-frame=@var{n} @gol
 -metrax4  -metrax100  -mpdebug  -mcc-init  -mno-side-effects @gol
 -mstack-align  -mdata-align  -mconst-align @gol
--m32-bit  -m16-bit  -m8-bit  -mno-prologue-epilogue  -mno-gotplt @gol
--melf  -maout  -melinux  -mlinux  -sim  -sim2 @gol
+-m32-bit  -m16-bit  -m8-bit  -mno-prologue-epilogue @gol
+-melf  -maout  -sim  -sim2 @gol
 -mmul-bug-workaround  -mno-mul-bug-workaround}
 
 @emph{CR16 Options}
@@ -22365,8 +22365,7 @@ These options are defined specifically for the CRIS ports.
 Generate code for the specified architecture.  The choices for
 @var{architecture-type} are @samp{v3}, @samp{v8} and @samp{v10} for
 respectively ETRAX@w{ }4, ETRAX@w{ }100, and ETRAX@w{ }100@w{ }LX@.
-Default is @samp{v0} except for cris-axis-linux-gnu, where the default is
-@samp{v10}.
+Default is @samp{v0}.
 
 @item -mtune=@var{architecture-type}
 @opindex mtune
@@ -22450,27 +22449,13 @@ option only together with visual inspection of the compiled code: no
 warnings or errors are generated when call-saved registers must be saved,
 or storage for local variables needs to be allocated.
 
-@item -mno-gotplt
-@itemx -mgotplt
-@opindex mno-gotplt
-@opindex mgotplt
-With @option{-fpic} and @option{-fPIC}, don't generate (do generate)
-instruction sequences that load addresses for functions from the PLT part
-of the GOT rather than (traditional on other architectures) calls to the
-PLT@.  The default is @option{-mgotplt}.
-
 @item -melf
 @opindex melf
-Legacy no-op option only recognized with the cris-axis-elf and
-cris-axis-linux-gnu targets.
-
-@item -mlinux
-@opindex mlinux
-Legacy no-op option only recognized with the cris-axis-linux-gnu target.
+Legacy no-op option.
 
 @item -sim
 @opindex sim
-This option, recognized for the cris-axis-elf, arranges
+This option arranges
 to link with input-output functions from a simulator library.  Code,
 initialized data and zero-initialized data are allocated consecutively.
 
