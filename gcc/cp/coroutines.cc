@@ -513,8 +513,14 @@ coro_promise_type_found_p (tree fndecl, location_t loc)
 		      coro_info->promise_type);
 	  inform (DECL_SOURCE_LOCATION (BASELINK_FUNCTIONS (has_ret_void)),
 		  "%<return_void%> declared here");
-	  inform (DECL_SOURCE_LOCATION (BASELINK_FUNCTIONS (has_ret_val)),
-		  "%<return_value%> declared here");
+	  has_ret_val = BASELINK_FUNCTIONS (has_ret_val);
+	  const char *message = "%<return_value%> declared here";
+	  if (TREE_CODE (has_ret_val) == OVERLOAD)
+	    {
+	      has_ret_val = OVL_FIRST (has_ret_val);
+	      message = "%<return_value%> first declared here";
+	    }
+	  inform (DECL_SOURCE_LOCATION (has_ret_val), message);
 	  coro_info->coro_co_return_error_emitted = true;
 	  return false;
 	}
