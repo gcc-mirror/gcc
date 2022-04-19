@@ -1305,7 +1305,7 @@ check-tail: check-recursive check-multi
 	if test "$$untested" -ne "0"; then \
 	  echo "# of untested testcases		$$untested" >> libgo.sum; \
 	fi; \
-	echo `echo $(GOC) | sed -e 's/ .*//'`  `$(GOC) -v 2>&1 | grep " version" | sed -n -e 's/.* \(version.*$$\)/\1/p'` >> libgo.sum; \
+	echo `echo $(GOC) | sed -e 's/ .*//'`  `$(GOC) -v 2>&1 | grep " version" | sed -n -e 's/.* \(version.*\)$$/\1/p'` >> libgo.sum; \
 	echo >> libgo.log; \
 	echo "runtest completed at `date`" >> libgo.log; \
 	if test "$$fail" -ne "0"; then \
