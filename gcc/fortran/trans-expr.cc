@@ -9194,8 +9194,8 @@ gfc_trans_structure_assign (tree dest, gfc_expr * expr, bool init, bool coarray)
   return gfc_finish_block (&block);
 }
 
-void
-gfc_conv_union_initializer (vec<constructor_elt, va_gc> *v,
+static void
+gfc_conv_union_initializer (vec<constructor_elt, va_gc> *&v,
                             gfc_component *un, gfc_expr *init)
 {
   gfc_constructor *ctor;
