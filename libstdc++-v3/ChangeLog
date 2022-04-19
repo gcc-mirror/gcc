@@ -1,3 +1,9 @@
+2022-04-18  Patrick Palka  <ppalka@redhat.com>
+
+	* include/std/charconv (__from_chars_pow2_base): Manually
+	unroll the first iteration of the main loop and simplify
+	accordingly.
+
 2022-04-15  Patrick Palka  <ppalka@redhat.com>
 
 	PR libstdc++/104858

@@ -1,3 +1,13 @@
+2022-04-18  Hans-Peter Nilsson  <hp@axis.com>
+
+	* doc/install.texi <CRIS>: Remove references to removed websites and
+	adjust for cris-*-elf being the only remaining toolchain.
+
+2022-04-18  Hans-Peter Nilsson  <hp@axis.com>
+
+	* doc/invoke.texi <CRIS>: Remove references to options for removed
+	subtarget cris-axis-linux-gnu and tweak wording accordingly.
+
 2022-04-16  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/install.texi (Specific): Adjust mingw-w64 download link.

@@ -1,3 +1,8 @@
+2022-04-18  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR testsuite/105266
+	* gcc.dg/pr105250.c: Skip for powerpc*-*-* and s390*-*-*.
+
 2022-04-15  Paul A. Clarke  <pc@us.ibm.com>
 
 	* g++.dg/debug/dwarf2/const2.C: Move to g++.target/powerpc.
