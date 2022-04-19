@@ -78,9 +78,9 @@ public:
 	trait_reference = TraitResolver::Resolve (*ref.get ());
 	rust_assert (!trait_reference->is_error ());
 
+	// we don't error out here see: gcc/testsuite/rust/compile/traits2.rs
+	// for example
 	specified_bound = get_predicate_from_bound (*ref.get ());
-	// FIXME error out maybe?
-	// if specified_Bound == TyTy::TypeBoundPredicate::error() ?
       }
 
     TyTy::BaseType *self = nullptr;
@@ -120,9 +120,9 @@ public:
 	    auto trait_item_ref
 	      = TypeCheckImplItemWithTrait::Resolve (&impl_block,
 						     impl_item.get (), self,
-						     *trait_reference,
+						     specified_bound,
 						     substitutions);
-	    trait_item_refs.push_back (trait_item_ref);
+	    trait_item_refs.push_back (trait_item_ref.get_raw_item ());
 	  }
       }
 
@@ -134,7 +134,7 @@ public:
 	// filter the missing impl_items
 	std::vector<std::reference_wrapper<const TraitItemReference>>
 	  missing_trait_items;
-	for (auto &trait_item_ref : trait_reference->get_trait_items ())
+	for (const auto &trait_item_ref : trait_reference->get_trait_items ())
 	  {
 	    bool found = false;
 	    for (auto implemented_trait_item : trait_item_refs)

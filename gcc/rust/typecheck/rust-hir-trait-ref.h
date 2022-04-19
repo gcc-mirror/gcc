@@ -137,9 +137,9 @@ public:
   // the trait will not be stored in its own map yet
   void on_resolved ();
 
-  void associated_type_set (TyTy::BaseType *ty);
+  void associated_type_set (TyTy::BaseType *ty) const;
 
-  void associated_type_reset ();
+  void associated_type_reset () const;
 
   bool is_object_safe () const;
 
@@ -286,6 +286,24 @@ public:
   bool lookup_trait_item_by_type (const std::string &ident,
 				  TraitItemReference::TraitItemType type,
 				  TraitItemReference **ref)
+  {
+    for (auto &item : item_refs)
+      {
+	if (item.get_trait_item_type () != type)
+	  continue;
+
+	if (ident.compare (item.get_identifier ()) == 0)
+	  {
+	    *ref = &item;
+	    return true;
+	  }
+      }
+    return false;
+  }
+
+  bool lookup_trait_item_by_type (const std::string &ident,
+				  TraitItemReference::TraitItemType type,
+				  const TraitItemReference **ref) const
   {
     for (auto &item : item_refs)
       {

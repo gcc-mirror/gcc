@@ -480,7 +480,7 @@ SubstitutionParamMapping::fill_param_ty (
 
   if (type.get_kind () == TypeKind::PARAM)
     {
-      delete param;
+      // delete param;
       param = static_cast<ParamType *> (type.clone ());
     }
   else
@@ -643,8 +643,9 @@ SubstitutionRef::adjust_mappings_for_this (
   if (resolved_mappings.empty ())
     return SubstitutionArgumentMappings::error ();
 
-  return SubstitutionArgumentMappings (resolved_mappings,
-				       mappings.get_locus ());
+  return SubstitutionArgumentMappings (resolved_mappings, mappings.get_locus (),
+				       mappings.get_subst_cb (),
+				       mappings.trait_item_mode ());
 }
 
 bool
@@ -2699,6 +2700,13 @@ ProjectionType::clone () const
 ProjectionType *
 ProjectionType::handle_substitions (SubstitutionArgumentMappings subst_mappings)
 {
+  // // do we really need to substitute this?
+  // if (base->needs_generic_substitutions () || base->contains_type_parameters
+  // ())
+  //   {
+  //     return this;
+  //   }
+
   ProjectionType *projection = static_cast<ProjectionType *> (clone ());
   projection->set_ty_ref (mappings->get_next_hir_id ());
   projection->used_arguments = subst_mappings;
@@ -2755,9 +2763,7 @@ ProjectionType::handle_substitions (SubstitutionArgumentMappings subst_mappings)
 	  return nullptr;
 	}
 
-      auto new_field = concrete->clone ();
-      new_field->set_ref (fty->get_ref ());
-      projection->base = new_field;
+      projection->base = concrete;
     }
 
   return projection;

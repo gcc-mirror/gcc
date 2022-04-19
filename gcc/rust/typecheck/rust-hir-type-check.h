@@ -211,8 +211,8 @@ public:
   void clear_associated_type_mapping (HirId id)
   {
     auto it = associated_type_mappings.find (id);
-    rust_assert (it != associated_type_mappings.end ());
-    associated_type_mappings.erase (it);
+    if (it != associated_type_mappings.end ())
+      associated_type_mappings.erase (it);
   }
 
   // lookup any associated type mappings, the out parameter of mapping is

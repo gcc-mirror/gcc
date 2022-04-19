@@ -208,7 +208,14 @@ public:
   void visit (TyTy::PlaceholderType &type) override
   {
     rust_assert (type.can_resolve ());
-    resolved = SubstMapperInternal::Resolve (type.resolve (), mappings);
+    if (mappings.trait_item_mode ())
+      {
+	resolved = type.resolve ();
+      }
+    else
+      {
+	resolved = SubstMapperInternal::Resolve (type.resolve (), mappings);
+      }
   }
 
   void visit (TyTy::ProjectionType &type) override

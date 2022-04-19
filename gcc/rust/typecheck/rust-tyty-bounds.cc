@@ -103,23 +103,28 @@ namespace TyTy {
 
 TypeBoundPredicate::TypeBoundPredicate (
   const Resolver::TraitReference &trait_reference, Location locus)
-  : SubstitutionRef (trait_reference.get_trait_substs (),
-		     SubstitutionArgumentMappings::error ()),
+  : SubstitutionRef ({}, SubstitutionArgumentMappings::error ()),
     reference (trait_reference.get_mappings ().get_defid ()), locus (locus),
     error_flag (false)
 {
+  substitutions.clear ();
+  for (const auto &p : trait_reference.get_trait_substs ())
+    substitutions.push_back (p.clone ());
+
   // we setup a dummy implict self argument
   SubstitutionArg placeholder_self (&get_substs ().front (), nullptr);
   used_arguments.get_mappings ().push_back (placeholder_self);
 }
 
 TypeBoundPredicate::TypeBoundPredicate (
-  DefId reference, std::vector<SubstitutionParamMapping> substitutions,
-  Location locus)
-  : SubstitutionRef (std::move (substitutions),
-		     SubstitutionArgumentMappings::error ()),
+  DefId reference, std::vector<SubstitutionParamMapping> subst, Location locus)
+  : SubstitutionRef ({}, SubstitutionArgumentMappings::error ()),
     reference (reference), locus (locus), error_flag (false)
 {
+  substitutions.clear ();
+  for (const auto &p : subst)
+    substitutions.push_back (p.clone ());
+
   // we setup a dummy implict self argument
   SubstitutionArg placeholder_self (&get_substs ().front (), nullptr);
   used_arguments.get_mappings ().push_back (placeholder_self);
@@ -131,7 +136,6 @@ TypeBoundPredicate::TypeBoundPredicate (const TypeBoundPredicate &other)
     error_flag (other.error_flag)
 {
   substitutions.clear ();
-
   for (const auto &p : other.get_substs ())
     substitutions.push_back (p.clone ());
 
@@ -143,8 +147,19 @@ TypeBoundPredicate::TypeBoundPredicate (const TypeBoundPredicate &other)
       mappings.push_back (std::move (arg));
     }
 
+  // we need to remap the argument mappings based on this copied constructor
+  std::vector<SubstitutionArg> copied_arg_mappings;
+  size_t i = 0;
+  for (const auto &m : other.used_arguments.get_mappings ())
+    {
+      TyTy::BaseType *argument
+	= m.get_tyty () == nullptr ? nullptr : m.get_tyty ()->clone ();
+      SubstitutionArg c (&substitutions.at (i++), argument);
+      copied_arg_mappings.push_back (std::move (c));
+    }
+
   used_arguments
-    = SubstitutionArgumentMappings (mappings,
+    = SubstitutionArgumentMappings (copied_arg_mappings,
 				    other.used_arguments.get_locus ());
 }
 
@@ -168,8 +183,19 @@ TypeBoundPredicate::operator= (const TypeBoundPredicate &other)
       mappings.push_back (std::move (arg));
     }
 
+  // we need to remap the argument mappings based on this copied constructor
+  std::vector<SubstitutionArg> copied_arg_mappings;
+  size_t i = 0;
+  for (const auto &m : other.used_arguments.get_mappings ())
+    {
+      TyTy::BaseType *argument
+	= m.get_tyty () == nullptr ? nullptr : m.get_tyty ()->clone ();
+      SubstitutionArg c (&substitutions.at (i++), argument);
+      copied_arg_mappings.push_back (std::move (c));
+    }
+
   used_arguments
-    = SubstitutionArgumentMappings (mappings,
+    = SubstitutionArgumentMappings (copied_arg_mappings,
 				    other.used_arguments.get_locus ());
 
   return *this;
@@ -204,16 +230,7 @@ TypeBoundPredicate::get () const
 std::string
 TypeBoundPredicate::get_name () const
 {
-  auto mappings = Analysis::Mappings::get ();
-  auto trait = get ();
-  auto nodeid = trait->get_mappings ().get_nodeid ();
-
-  const Resolver::CanonicalPath *p = nullptr;
-  if (mappings->lookup_canonical_path (mappings->get_current_crate (), nodeid,
-				       &p))
-    return p->get ();
-
-  return trait->get_name ();
+  return get ()->get_name ();
 }
 
 bool
@@ -285,15 +302,28 @@ TypeBoundPredicateItem::get_tyty_for_receiver (const TyTy::BaseType *receiver)
   if (is_associated_type)
     return trait_item_tyty;
 
-  SubstitutionArgumentMappings gargs = parent->get_substitution_arguments ();
-
   // set up the self mapping
+  SubstitutionArgumentMappings gargs = parent->get_substitution_arguments ();
   rust_assert (!gargs.is_empty ());
-  auto &sarg = gargs.get_mappings ().at (0);
-  SubstitutionArg self (sarg.get_param_mapping (), receiver->clone ());
-  gargs.get_mappings ()[0] = self;
 
-  return Resolver::SubstMapperInternal::Resolve (trait_item_tyty, gargs);
+  // setup the adjusted mappings
+  std::vector<SubstitutionArg> adjusted_mappings;
+  for (size_t i = 0; i < gargs.get_mappings ().size (); i++)
+    {
+      auto &mapping = gargs.get_mappings ().at (i);
+
+      bool is_implicit_self = i == 0;
+      TyTy::BaseType *argument
+	= is_implicit_self ? receiver->clone () : mapping.get_tyty ();
+
+      SubstitutionArg arg (mapping.get_param_mapping (), argument);
+      adjusted_mappings.push_back (std::move (arg));
+    }
+
+  SubstitutionArgumentMappings adjusted (adjusted_mappings, gargs.get_locus (),
+					 gargs.get_subst_cb (),
+					 true /* trait-mode-flag */);
+  return Resolver::SubstMapperInternal::Resolve (trait_item_tyty, adjusted);
 }
 bool
 TypeBoundPredicate::is_error () const
@@ -350,6 +380,12 @@ bool
 TypeBoundPredicateItem::needs_implementation () const
 {
   return !get_raw_item ()->is_optional ();
+}
+
+Location
+TypeBoundPredicateItem::get_locus () const
+{
+  return get_raw_item ()->get_locus ();
 }
 
 // TypeBoundsMappings
