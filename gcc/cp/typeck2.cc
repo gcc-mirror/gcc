@@ -1515,6 +1515,14 @@ process_init_constructor_array (tree type, tree init, int nested, int flags,
 	      strip_array_types (TREE_TYPE (ce->value)))));
 
       picflags |= picflag_from_initializer (ce->value);
+      /* Propagate CONSTRUCTOR_PLACEHOLDER_BOUNDARY to outer
+	 CONSTRUCTOR.  */
+      if (TREE_CODE (ce->value) == CONSTRUCTOR
+	  && CONSTRUCTOR_PLACEHOLDER_BOUNDARY (ce->value))
+	{
+	  CONSTRUCTOR_PLACEHOLDER_BOUNDARY (init) = 1;
+	  CONSTRUCTOR_PLACEHOLDER_BOUNDARY (ce->value) = 0;
+	}
     }
 
   /* No more initializers. If the array is unbounded, we are done. Otherwise,
@@ -1560,6 +1568,14 @@ process_init_constructor_array (tree type, tree init, int nested, int flags,
 	      }
 
 	    picflags |= picflag_from_initializer (next);
+	    /* Propagate CONSTRUCTOR_PLACEHOLDER_BOUNDARY to outer
+	       CONSTRUCTOR.  */
+	    if (TREE_CODE (next) == CONSTRUCTOR
+		&& CONSTRUCTOR_PLACEHOLDER_BOUNDARY (next))
+	      {
+		CONSTRUCTOR_PLACEHOLDER_BOUNDARY (init) = 1;
+		CONSTRUCTOR_PLACEHOLDER_BOUNDARY (next) = 0;
+	      }
 	    if (len > i+1)
 	      {
 		tree range = build2 (RANGE_EXPR, size_type_node,
@@ -1754,6 +1770,13 @@ process_init_constructor_record (tree type, tree init, int nested, int flags,
       if (fldtype != TREE_TYPE (field))
 	next = cp_convert_and_check (TREE_TYPE (field), next, complain);
       picflags |= picflag_from_initializer (next);
+      /* Propagate CONSTRUCTOR_PLACEHOLDER_BOUNDARY to outer CONSTRUCTOR.  */
+      if (TREE_CODE (next) == CONSTRUCTOR
+	  && CONSTRUCTOR_PLACEHOLDER_BOUNDARY (next))
+	{
+	  CONSTRUCTOR_PLACEHOLDER_BOUNDARY (init) = 1;
+	  CONSTRUCTOR_PLACEHOLDER_BOUNDARY (next) = 0;
+	}
       CONSTRUCTOR_APPEND_ELT (v, field, next);
     }
 
@@ -1894,6 +1917,14 @@ process_init_constructor_union (tree type, tree init, int nested, int flags,
     ce->value = massage_init_elt (TREE_TYPE (ce->index), ce->value, nested,
 				  flags, complain);
 
+  /* Propagate CONSTRUCTOR_PLACEHOLDER_BOUNDARY to outer CONSTRUCTOR.  */
+  if (ce->value
+      && TREE_CODE (ce->value) == CONSTRUCTOR
+      && CONSTRUCTOR_PLACEHOLDER_BOUNDARY (ce->value))
+    {
+      CONSTRUCTOR_PLACEHOLDER_BOUNDARY (init) = 1;
+      CONSTRUCTOR_PLACEHOLDER_BOUNDARY (ce->value) = 0;
+    }
   return picflag_from_initializer (ce->value);
 }
 
