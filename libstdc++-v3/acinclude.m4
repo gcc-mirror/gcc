@@ -5007,10 +5007,10 @@ esac
 BACKTRACE_CPPFLAGS="$BACKTRACE_CPPFLAGS -DBACKTRACE_ELF_SIZE=$elfsize"
 
   AC_MSG_CHECKING([whether to build libbacktrace support])
-  if test "$enable_libstdcxx_backtrace" == "auto"; then
+  if test "$enable_libstdcxx_backtrace" = "auto"; then
     enable_libstdcxx_backtrace=no
   fi
-  if test "$enable_libstdcxx_backtrace" == "yes"; then
+  if test "$enable_libstdcxx_backtrace" = "yes"; then
     BACKTRACE_SUPPORTED=1
 
     AC_CHECK_HEADERS(sys/mman.h)
@@ -5057,7 +5057,7 @@ BACKTRACE_CPPFLAGS="$BACKTRACE_CPPFLAGS -DBACKTRACE_ELF_SIZE=$elfsize"
     BACKTRACE_SUPPORTS_THREADS=0
   fi
   AC_MSG_RESULT($enable_libstdcxx_backtrace)
-  GLIBCXX_CONDITIONAL(ENABLE_BACKTRACE, [test "$enable_libstdcxx_backtrace" != no])
+  GLIBCXX_CONDITIONAL(ENABLE_BACKTRACE, [test "$enable_libstdcxx_backtrace" = yes])
 ])
 
 # Macros from the top-level gcc directory.

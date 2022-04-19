@@ -77468,10 +77468,10 @@ BACKTRACE_CPPFLAGS="$BACKTRACE_CPPFLAGS -DBACKTRACE_ELF_SIZE=$elfsize"
 
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether to build libbacktrace support" >&5
 $as_echo_n "checking whether to build libbacktrace support... " >&6; }
-  if test "$enable_libstdcxx_backtrace" == "auto"; then
+  if test "$enable_libstdcxx_backtrace" = "auto"; then
     enable_libstdcxx_backtrace=no
   fi
-  if test "$enable_libstdcxx_backtrace" == "yes"; then
+  if test "$enable_libstdcxx_backtrace" = "yes"; then
     BACKTRACE_SUPPORTED=1
 
     for ac_header in sys/mman.h
@@ -78563,7 +78563,7 @@ else
 fi
 
 
-    if test "$enable_libstdcxx_backtrace" != no; then
+    if test "$enable_libstdcxx_backtrace" = yes; then
   ENABLE_BACKTRACE_TRUE=
   ENABLE_BACKTRACE_FALSE='#'
 else
