@@ -110,6 +110,7 @@ GRS_OBJS = \
     rust/rust-hir-type-check-path.o \
     rust/rust-compile-intrinsic.o \
     rust/rust-compile-pattern.o \
+    rust/rust-compile-fnparam.o \
     rust/rust-base62.o \
     rust/rust-compile-item.o \
     rust/rust-compile-implitem.o \

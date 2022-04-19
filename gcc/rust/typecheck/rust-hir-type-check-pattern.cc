@@ -37,17 +37,19 @@ TypeCheckPattern::visit (HIR::TupleStructPattern &pattern)
 
   rust_assert (infered->get_kind () == TyTy::TypeKind::ADT);
   TyTy::ADTType *adt = static_cast<TyTy::ADTType *> (infered);
-  rust_assert (adt->is_enum ());
+  rust_assert (adt->number_of_variants () > 0);
 
-  // what variant is this?
-  HirId variant_id;
-  bool ok = context->lookup_variant_definition (
-    pattern.get_path ().get_mappings ().get_hirid (), &variant_id);
-  rust_assert (ok);
+  TyTy::VariantDef *variant = adt->get_variants ().at (0);
+  if (adt->is_enum ())
+    {
+      HirId variant_id = UNKNOWN_HIRID;
+      bool ok = context->lookup_variant_definition (
+	pattern.get_path ().get_mappings ().get_hirid (), &variant_id);
+      rust_assert (ok);
 
-  TyTy::VariantDef *variant = nullptr;
-  ok = adt->lookup_variant_by_id (variant_id, &variant);
-  rust_assert (ok);
+      ok = adt->lookup_variant_by_id (variant_id, &variant);
+      rust_assert (ok);
+    }
 
   // error[E0532]: expected tuple struct or tuple variant, found struct variant
   // `Foo::D`
@@ -121,17 +123,19 @@ TypeCheckPattern::visit (HIR::StructPattern &pattern)
 
   rust_assert (infered->get_kind () == TyTy::TypeKind::ADT);
   TyTy::ADTType *adt = static_cast<TyTy::ADTType *> (infered);
-  rust_assert (adt->is_enum ());
+  rust_assert (adt->number_of_variants () > 0);
 
-  // what variant is this?
-  HirId variant_id;
-  bool ok = context->lookup_variant_definition (
-    pattern.get_path ().get_mappings ().get_hirid (), &variant_id);
-  rust_assert (ok);
+  TyTy::VariantDef *variant = adt->get_variants ().at (0);
+  if (adt->is_enum ())
+    {
+      HirId variant_id = UNKNOWN_HIRID;
+      bool ok = context->lookup_variant_definition (
+	pattern.get_path ().get_mappings ().get_hirid (), &variant_id);
+      rust_assert (ok);
 
-  TyTy::VariantDef *variant = nullptr;
-  ok = adt->lookup_variant_by_id (variant_id, &variant);
-  rust_assert (ok);
+      ok = adt->lookup_variant_by_id (variant_id, &variant);
+      rust_assert (ok);
+    }
 
   // error[E0532]: expected tuple struct or tuple variant, found struct variant
   // `Foo::D`

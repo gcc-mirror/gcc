@@ -116,6 +116,9 @@ public:
 						       param_tyty));
 
 	context->insert_type (param.get_mappings (), param_tyty);
+
+	// FIXME do we need error checking for patterns here?
+	// see https://github.com/Rust-GCC/gccrs/issues/995
       }
 
     uint8_t flags = TyTy::FnType::FNTYPE_IS_EXTERN_FLAG;
@@ -297,6 +300,7 @@ public:
 						       param_tyty));
 
 	context->insert_type (param.get_mappings (), param_tyty);
+	TypeCheckPattern::Resolve (param.get_param_name (), param_tyty);
       }
 
     const CanonicalPath *canonical_path = nullptr;

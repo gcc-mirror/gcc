@@ -320,6 +320,7 @@ TraitItemReference::get_type_from_fn (/*const*/ HIR::TraitItemFunc &fn) const
 						     param_tyty));
 
       context->insert_type (param.get_mappings (), param_tyty);
+      TypeCheckPattern::Resolve (param.get_param_name (), param_tyty);
     }
 
   auto mappings = Analysis::Mappings::get ();

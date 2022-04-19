@@ -416,6 +416,7 @@ public:
 						       param_tyty));
 
 	context->insert_type (param.get_mappings (), param_tyty);
+	TypeCheckPattern::Resolve (param.get_param_name (), param_tyty);
       }
 
     const CanonicalPath *canonical_path = nullptr;

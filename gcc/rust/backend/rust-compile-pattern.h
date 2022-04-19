@@ -83,7 +83,7 @@ public:
   void visit (HIR::TuplePattern &) override {}
   void visit (HIR::WildcardPattern &) override {}
 
-private:
+protected:
   CompilePatternBindings (Context *ctx, tree match_scrutinee_expr)
     : HIRCompileBase (ctx), match_scrutinee_expr (match_scrutinee_expr)
   {}
