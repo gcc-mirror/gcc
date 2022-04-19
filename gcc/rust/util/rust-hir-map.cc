@@ -757,6 +757,7 @@ Mappings::insert_macro_def (AST::MacroRulesDefinition *macro)
       {"concat", MacroBuiltin::concat},
       {"env", MacroBuiltin::env},
       {"cfg", MacroBuiltin::cfg},
+      {"include", MacroBuiltin::include},
     };
 
   auto builtin = builtin_macros.find (macro->get_rule_name ());
