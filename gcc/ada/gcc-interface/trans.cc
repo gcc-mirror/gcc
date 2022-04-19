@@ -1220,10 +1220,13 @@ Identifier_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p)
 	gnat_result_type = Etype (gnat_node);
     }
 
-  /* Expand the type of this identifier first, in case it is an enumeral
-     literal, which only get made when the type is expanded.  There is no
-     order-of-elaboration issue here.  */
-  gnu_result_type = get_unpadded_type (gnat_result_type);
+  /* Expand the type of this identifier first if it is needed, in case it is an
+     enumeral literal, which only get made when the type is expanded.  There is
+     no order-of-elaboration issue here.  */
+  if (Is_Subprogram (gnat_entity))
+    gnu_result_type = NULL_TREE;
+  else
+    gnu_result_type = get_unpadded_type (gnat_result_type);
 
   /* If this is a non-imported elementary constant with an address clause,
      retrieve the value instead of a pointer to be dereferenced unless

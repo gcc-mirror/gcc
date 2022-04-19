@@ -346,10 +346,12 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
       && !present_gnu_tree (gnat_entity)
       && In_Extended_Main_Code_Unit (gnat_entity))
     {
-      /* Ensure that we are in a subprogram mentioned in the Scope chain of
+      /* Unless it's for an anonymous access type, whose scope is irrelevant,
+	 ensure that we are in a subprogram mentioned in the Scope chain of
 	 this entity, our current scope is global, or we encountered a task
 	 or entry (where we can't currently accurately check scoping).  */
-      if (!current_function_decl
+      if (Ekind (gnat_entity) == E_Anonymous_Access_Type
+	  || !current_function_decl
 	  || DECL_ELABORATION_PROC_P (current_function_decl))
 	{
 	  process_type (gnat_entity);
