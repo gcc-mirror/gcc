@@ -180,7 +180,8 @@ package body Sem_Ch13 is
 
    function Is_Predicate_Static
      (Expr : Node_Id;
-      Nam  : Name_Id) return Boolean;
+      Nam  : Name_Id;
+      Warn : Boolean := True) return Boolean;
    --  Given predicate expression Expr, tests if Expr is predicate-static in
    --  the sense of the rules in (RM 3.2.4 (15-24)). Occurrences of the type
    --  name in the predicate expression have been replaced by references to
@@ -205,6 +206,11 @@ package body Sem_Ch13 is
    --
    --  We can't allow this, otherwise we have predicate-static applying to a
    --  larger class than static expressions, which was never intended.
+   --
+   --  The Warn parameter is True iff this is not a recursive call. This
+   --  parameter is used to avoid generating warnings for subexpressions and
+   --  for cases where the predicate expression (as originally written by
+   --  the user, before any transformations) is a Boolean literal.
 
    procedure New_Put_Image_Subprogram
      (N    : Node_Id;
@@ -14000,7 +14006,8 @@ package body Sem_Ch13 is
 
    function Is_Predicate_Static
      (Expr : Node_Id;
-      Nam  : Name_Id) return Boolean
+      Nam  : Name_Id;
+      Warn : Boolean := True) return Boolean
    is
       function All_Static_Case_Alternatives (L : List_Id) return Boolean;
       --  Given a list of case expression alternatives, returns True if all
@@ -14050,13 +14057,42 @@ package body Sem_Ch13 is
       begin
          return (Nkind (N) = N_Identifier
                   and then Chars (N) = Nam
-                  and then Paren_Count (N) = 0)
-           or else Nkind (N) = N_Function_Call;
+                  and then Paren_Count (N) = 0);
       end Is_Type_Ref;
+
+      --  helper function for recursive calls
+      function Is_Predicate_Static_Aux (Expr : Node_Id) return Boolean is
+        (Is_Predicate_Static (Expr, Nam, Warn => False));
 
    --  Start of processing for Is_Predicate_Static
 
    begin
+      --   Handle cases like
+      --     subtype S is Integer with Static_Predicate =>
+      --       (Some_Integer_Variable in Integer) and then (S /= 0);
+      --   where the predicate (which should be rejected) might have been
+      --   transformed into just "(S /= 0)", which would appear to be
+      --   a predicate-static expression (and therefore legal).
+
+      if Original_Node (Expr) /= Expr then
+
+         --  Emit warnings for predicates that are always True or always False
+         --  and were not originally expressed as Boolean literals.
+
+         return Result : constant Boolean :=
+           Is_Predicate_Static_Aux (Original_Node (Expr))
+         do
+            if Result and then Warn and then Is_Entity_Name (Expr) then
+               if Entity (Expr) = Standard_True then
+                  Error_Msg_N ("predicate is redundant (always True)?", Expr);
+               elsif Entity (Expr) = Standard_False then
+                  Error_Msg_N
+                    ("predicate is unsatisfiable (always False)?", Expr);
+               end if;
+            end if;
+         end return;
+      end if;
+
       --  Predicate_Static means one of the following holds. Numbers are the
       --  corresponding paragraph numbers in (RM 3.2.4(16-22)).
 
@@ -14070,6 +14106,7 @@ package body Sem_Ch13 is
       --  for a static membership test.
 
       elsif Nkind (Expr) in N_Membership_Test
+        and then Is_Type_Ref (Left_Opnd (Expr))
         and then All_Membership_Choices_Static (Expr)
       then
          return True;
@@ -14115,11 +14152,11 @@ package body Sem_Ch13 is
       --  operand is predicate-static.
 
       elsif (Nkind (Expr) in N_Op_And | N_Op_Or | N_Op_Xor
-              and then Is_Predicate_Static (Left_Opnd (Expr), Nam)
-              and then Is_Predicate_Static (Right_Opnd (Expr), Nam))
+              and then Is_Predicate_Static_Aux (Left_Opnd (Expr))
+              and then Is_Predicate_Static_Aux (Right_Opnd (Expr)))
         or else
             (Nkind (Expr) = N_Op_Not
-              and then Is_Predicate_Static (Right_Opnd (Expr), Nam))
+              and then Is_Predicate_Static_Aux (Right_Opnd (Expr)))
       then
          return True;
 
@@ -14127,8 +14164,8 @@ package body Sem_Ch13 is
       --  predicate-static.
 
       elsif Nkind (Expr) in N_Short_Circuit
-        and then Is_Predicate_Static (Left_Opnd (Expr), Nam)
-        and then Is_Predicate_Static (Right_Opnd (Expr), Nam)
+        and then Is_Predicate_Static_Aux (Left_Opnd (Expr))
+        and then Is_Predicate_Static_Aux (Right_Opnd (Expr))
       then
          return True;
 
@@ -14157,12 +14194,6 @@ package body Sem_Ch13 is
         and then Is_Predicate_Function (Entity (Name (Expr)))
         and then Is_Scalar_Type (Etype (First_Entity (Entity (Name (Expr)))))
       then
-         return True;
-
-      elsif Is_Entity_Name (Expr)
-        and then Entity (Expr) = Standard_True
-      then
-         Error_Msg_N ("predicate is redundant (always True)?", Expr);
          return True;
 
       --  That's an exhaustive list of tests, all other cases are not
