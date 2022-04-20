@@ -3660,7 +3660,7 @@ package body Exp_Disp is
    --  replaced by gotos which jump to the end of the routine and restore the
    --  Ghost mode.
 
-   function Make_DT (Typ : Entity_Id; N : Node_Id := Empty) return List_Id is
+   function Make_DT (Typ : Entity_Id) return List_Id is
       Loc : constant Source_Ptr := Sloc (Typ);
 
       Max_Predef_Prims : constant Int :=
@@ -3677,23 +3677,6 @@ package body Exp_Disp is
       --  Extra nonexistent object of type Typ internally used to compute the
       --  offset to the components that reference secondary dispatch tables.
       --  Used to compute the offset of components located at fixed position.
-
-      procedure Check_Premature_Freezing
-        (Subp        : Entity_Id;
-         Tagged_Type : Entity_Id;
-         Typ         : Entity_Id);
-      --  Verify that all untagged types in the profile of a subprogram are
-      --  frozen at the point the subprogram is frozen. This enforces the rule
-      --  on RM 13.14 (14) as modified by AI05-019. At the point a subprogram
-      --  is frozen, enough must be known about it to build the activation
-      --  record for it, which requires at least that the size of all
-      --  parameters be known. Controlling arguments are by-reference,
-      --  and therefore the rule only applies to untagged types. Typical
-      --  violation of the rule involves an object declaration that freezes a
-      --  tagged type, when one of its primitive operations has a type in its
-      --  profile whose full view has not been analyzed yet. More complex cases
-      --  involve composite types that have one private unfrozen subcomponent.
-      --  Move this check to sem???
 
       procedure Export_DT (Typ : Entity_Id; DT : Entity_Id; Index : Nat := 0);
       --  Export the dispatch table DT of tagged type Typ. Required to generate
@@ -3732,103 +3715,6 @@ package body Exp_Disp is
 
       function Number_Of_Predefined_Prims (Typ : Entity_Id) return Nat;
       --  Returns the number of predefined primitives of Typ
-
-      ------------------------------
-      -- Check_Premature_Freezing --
-      ------------------------------
-
-      procedure Check_Premature_Freezing
-        (Subp        : Entity_Id;
-         Tagged_Type : Entity_Id;
-         Typ         : Entity_Id)
-      is
-         Comp : Entity_Id;
-
-         function Is_Actual_For_Formal_Incomplete_Type
-           (T : Entity_Id) return Boolean;
-         --  In Ada 2012, if a nested generic has an incomplete formal type,
-         --  the actual may be (and usually is) a private type whose completion
-         --  appears later. It is safe to build the dispatch table in this
-         --  case, gigi will have full views available.
-
-         ------------------------------------------
-         -- Is_Actual_For_Formal_Incomplete_Type --
-         ------------------------------------------
-
-         function Is_Actual_For_Formal_Incomplete_Type
-           (T : Entity_Id) return Boolean
-         is
-            Gen_Par : Entity_Id;
-            F       : Node_Id;
-
-         begin
-            if not Is_Generic_Instance (Current_Scope)
-              or else not Used_As_Generic_Actual (T)
-            then
-               return False;
-            else
-               Gen_Par := Generic_Parent (Parent (Current_Scope));
-            end if;
-
-            F :=
-              First
-                (Generic_Formal_Declarations
-                   (Unit_Declaration_Node (Gen_Par)));
-            while Present (F) loop
-               if Ekind (Defining_Identifier (F)) = E_Incomplete_Type then
-                  return True;
-               end if;
-
-               Next (F);
-            end loop;
-
-            return False;
-         end Is_Actual_For_Formal_Incomplete_Type;
-
-      --  Start of processing for Check_Premature_Freezing
-
-      begin
-         --  Note that if the type is a (subtype of) a generic actual, the
-         --  actual will have been frozen by the instantiation.
-
-         if Present (N)
-           and then Is_Private_Type (Typ)
-           and then No (Full_View (Typ))
-           and then not Has_Private_Declaration (Typ)
-           and then not Is_Generic_Type (Typ)
-           and then not Is_Tagged_Type (Typ)
-           and then not Is_Frozen (Typ)
-           and then not Is_Generic_Actual_Type (Typ)
-         then
-            Error_Msg_Sloc := Sloc (Subp);
-            Error_Msg_NE
-              ("declaration must appear after completion of type &", N, Typ);
-            Error_Msg_NE
-              ("\which is an untagged type in the profile of "
-               & "primitive operation & declared#", N, Subp);
-
-         else
-            Comp := Private_Component (Typ);
-
-            if not Is_Tagged_Type (Typ)
-              and then Present (Comp)
-              and then not Is_Frozen (Comp)
-              and then not Has_Private_Declaration (Comp)
-              and then not Is_Actual_For_Formal_Incomplete_Type (Comp)
-            then
-               Error_Msg_Sloc := Sloc (Subp);
-               Error_Msg_NE
-                 ("declaration must appear after completion of type &",
-                  N, Comp);
-               Error_Msg_Node_2 := Subp;
-               Error_Msg_Name_1 := Chars (Tagged_Type);
-               Error_Msg_NE
-                 ("\which is a component of untagged type& in the profile "
-                  & "of primitive & of type % that is frozen by the "
-                  & "declaration", N, Typ);
-            end if;
-         end if;
-      end Check_Premature_Freezing;
 
       ---------------
       -- Export_DT --
@@ -4584,55 +4470,31 @@ package body Exp_Disp is
       end if;
 
       --  Ensure that all the primitives are frozen. This is only required when
-      --  building static dispatch tables --- the primitives must be frozen to
-      --  be referenced (otherwise we have problems with the backend). It is
+      --  building static dispatch tables: the primitives must be frozen to be
+      --  referenced, otherwise we have problems with the back end. But this is
       --  not a requirement with nonstatic dispatch tables because in this case
-      --  we generate now an empty dispatch table; the extra code required to
-      --  register the primitives in the slots will be generated later --- when
-      --  each primitive is frozen (see Freeze_Subprogram).
+      --  we generate an empty dispatch table at this point and the extra code
+      --  required to register the primitives in their slot will be generated
+      --  later, when each primitive is frozen (see Freeze_Subprogram).
 
       if Building_Static_DT (Typ) then
          declare
-            Saved_FLLTT : constant Boolean :=
-                            Freezing_Library_Level_Tagged_Type;
-
-            Formal    : Entity_Id;
-            Frnodes   : List_Id;
+            F_List    : List_Id;
             Prim      : Entity_Id;
             Prim_Elmt : Elmt_Id;
 
          begin
-            Freezing_Library_Level_Tagged_Type := True;
-
             Prim_Elmt := First_Elmt (Primitive_Operations (Typ));
             while Present (Prim_Elmt) loop
-               Prim    := Node (Prim_Elmt);
-               Frnodes := Freeze_Entity (Prim, Typ);
+               Prim   := Node (Prim_Elmt);
+               F_List := Freeze_Entity (Prim, Typ, Do_Freeze_Profile => False);
 
-               --  We disable this check for abstract subprograms, given that
-               --  they cannot be called directly and thus the state of their
-               --  untagged formals is of no concern. The RM is unclear in any
-               --  case concerning the need for this check, and this topic may
-               --  go back to the ARG.
-
-               if not Is_Abstract_Subprogram (Prim) then
-                  Formal := First_Formal (Prim);
-                  while Present (Formal) loop
-                     Check_Premature_Freezing (Prim, Typ, Etype (Formal));
-                     Next_Formal (Formal);
-                  end loop;
-
-                  Check_Premature_Freezing (Prim, Typ, Etype (Prim));
-               end if;
-
-               if Present (Frnodes) then
-                  Append_List_To (Result, Frnodes);
+               if Present (F_List) then
+                  Append_List_To (Result, F_List);
                end if;
 
                Next_Elmt (Prim_Elmt);
             end loop;
-
-            Freezing_Library_Level_Tagged_Type := Saved_FLLTT;
          end;
       end if;
 

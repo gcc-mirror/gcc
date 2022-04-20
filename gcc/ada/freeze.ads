@@ -120,12 +120,6 @@ package Freeze is
    --  where the freeze node is preallocated at the point of declaration, so
    --  that the First_Subtype_Link field can be set.
 
-   Freezing_Library_Level_Tagged_Type : Boolean := False;
-   --  Flag used to indicate that we are freezing the primitives of a library
-   --  level tagged type. Used to disable checks on premature freezing.
-   --  More documentation needed??? why is this flag needed? what are these
-   --  checks? why do they need disabling in some cases?
-
    -----------------
    -- Subprograms --
    -----------------
