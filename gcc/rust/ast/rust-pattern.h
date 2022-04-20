@@ -1135,6 +1135,12 @@ protected:
 class TuplePatternItems
 {
 public:
+  enum TuplePatternItemType
+  {
+    MULTIPLE,
+    RANGED,
+  };
+
   virtual ~TuplePatternItems () {}
 
   // TODO: should this store location data?
@@ -1149,6 +1155,8 @@ public:
   virtual std::string as_string () const = 0;
 
   virtual void accept_vis (ASTVisitor &vis) = 0;
+
+  virtual TuplePatternItemType get_pattern_type () const = 0;
 
 protected:
   // pure virtual clone implementation
@@ -1234,6 +1242,11 @@ public:
     return patterns;
   }
 
+  TuplePatternItemType get_pattern_type () const override
+  {
+    return TuplePatternItemType::MULTIPLE;
+  }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
@@ -1310,6 +1323,11 @@ public:
   const std::vector<std::unique_ptr<Pattern> > &get_upper_patterns () const
   {
     return upper_patterns;
+  }
+
+  TuplePatternItemType get_pattern_type () const override
+  {
+    return TuplePatternItemType::RANGED;
   }
 
 protected:
