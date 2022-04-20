@@ -10,4 +10,3 @@ void main() {
 	auto fail = () => {};
 	auto ok = () => () {};
 }
-

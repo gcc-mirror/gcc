@@ -148,4 +148,3 @@ struct S4
         static assert(__traits(compiles, v = 1)); // multiple initialization
     }
 }
-

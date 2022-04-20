@@ -1633,14 +1633,14 @@ private @property Logger defaultSharedLoggerImpl() @trusted
     import std.concurrency : initOnce;
     initOnce!stdSharedDefaultLogger({
         auto buffer = cast(ubyte[]) _buffer;
-        return emplace!FileLogger(buffer, stderr, LogLevel.warning);
+        return emplace!FileLogger(buffer, stderr, LogLevel.info);
     }());
 
     return stdSharedDefaultLogger;
 }
 
 /** This property sets and gets the default `Logger`. Unless set to another
-logger by the user, the default logger's log level is LogLevel.warning.
+logger by the user, the default logger's log level is LogLevel.info.
 
 Example:
 -------------
@@ -2008,7 +2008,7 @@ version (StdUnittest) private void testFuncNames(Logger logger) @safe
 
     auto oldunspecificLogger = sharedLog;
 
-    assert(oldunspecificLogger.logLevel == LogLevel.warning,
+    assert(oldunspecificLogger.logLevel == LogLevel.info,
          to!string(oldunspecificLogger.logLevel));
 
     assert(l.logLevel == LogLevel.all);
@@ -3064,7 +3064,7 @@ private void trustedStore(T)(ref shared T dst, ref T src) @trusted
 {
     auto dl = cast(FileLogger) sharedLog;
     assert(dl !is null);
-    assert(dl.logLevel == LogLevel.warning);
+    assert(dl.logLevel == LogLevel.info);
     assert(globalLogLevel == LogLevel.all);
 
     auto tl = cast(StdForwardLogger) stdThreadLocalLog;

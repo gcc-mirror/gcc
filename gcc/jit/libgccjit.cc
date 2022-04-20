@@ -352,6 +352,17 @@ compatible_types (gcc::jit::recording::type *ltype,
   return ltype->accepts_writes_from (rtype);
 }
 
+/* Public entrypoint wrapping compatible_types.  */
+
+int
+gcc_jit_compatible_types (gcc_jit_type *ltype,
+			  gcc_jit_type *rtype)
+{
+  RETURN_VAL_IF_FAIL (ltype, 0, NULL, NULL, "NULL ltype");
+  RETURN_VAL_IF_FAIL (rtype, 0, NULL, NULL, "NULL rtype");
+  return compatible_types (ltype, rtype);
+}
+
 /* Public entrypoint for acquiring a gcc_jit_context.
    Note that this creates a new top-level context; contrast with
    gcc_jit_context_new_child_context below.
@@ -456,7 +467,7 @@ gcc_jit_context_get_type (gcc_jit_context *ctxt,
   JIT_LOG_FUNC (ctxt->get_logger ());
   RETURN_NULL_IF_FAIL_PRINTF1 (
     (type >= GCC_JIT_TYPE_VOID
-     && type <= GCC_JIT_TYPE_FILE_PTR),
+     && type < NUM_GCC_JIT_TYPES),
     ctxt, NULL,
     "unrecognized value for enum gcc_jit_types: %i", type);
 
@@ -521,6 +532,22 @@ gcc_jit_type_get_volatile (gcc_jit_type *type)
   RETURN_NULL_IF_FAIL (type, NULL, NULL, "NULL type");
 
   return (gcc_jit_type *)type->get_volatile ();
+}
+
+/* Public entrypoint.  See description in libgccjit.h.
+
+   After error-checking, the real work is done by the
+   gcc::jit::recording::type::get_size method, in
+   jit-recording.cc.  */
+
+ssize_t
+gcc_jit_type_get_size (gcc_jit_type *type)
+{
+  RETURN_VAL_IF_FAIL (type, -1, NULL, NULL, "NULL type");
+  RETURN_VAL_IF_FAIL
+    (type->is_int (), -1, NULL, NULL,
+     "only getting the size of an integer type is supported for now");
+  return type->get_size ();
 }
 
 /* Public entrypoint.  See description in libgccjit.h.
@@ -2119,7 +2146,8 @@ gcc_jit_context_new_binary_op (gcc_jit_context *ctxt,
   RETURN_NULL_IF_FAIL (a, ctxt, loc, "NULL a");
   RETURN_NULL_IF_FAIL (b, ctxt, loc, "NULL b");
   RETURN_NULL_IF_FAIL_PRINTF4 (
-    a->get_type ()->unqualified () == b->get_type ()->unqualified (),
+    compatible_types (a->get_type ()->unqualified (),
+		      b->get_type ()->unqualified ()),
     ctxt, loc,
     "mismatching types for binary op:"
     " a: %s (type: %s) b: %s (type: %s)",
@@ -2408,6 +2436,28 @@ gcc_jit_context_new_cast (gcc_jit_context *ctxt,
 /* Public entrypoint.  See description in libgccjit.h.
 
    After error-checking, the real work is done by the
+   gcc::jit::recording::context::new_bitcast method in jit-recording.c.  */
+
+gcc_jit_rvalue *
+gcc_jit_context_new_bitcast (gcc_jit_context *ctxt,
+			     gcc_jit_location *loc,
+			     gcc_jit_rvalue *rvalue,
+			     gcc_jit_type *type)
+{
+  RETURN_NULL_IF_FAIL (ctxt, NULL, loc, "NULL context");
+  JIT_LOG_FUNC (ctxt->get_logger ());
+  /* LOC can be NULL.  */
+  RETURN_NULL_IF_FAIL (rvalue, ctxt, loc, "NULL rvalue");
+  RETURN_NULL_IF_FAIL (type, ctxt, loc, "NULL type");
+  /* We cannot check if the size of rvalue matches the size of type here, so
+   we'll do it at playback. */
+
+  return static_cast <gcc_jit_rvalue *> (ctxt->new_bitcast (loc, rvalue, type));
+}
+
+/* Public entrypoint.  See description in libgccjit.h.
+
+   After error-checking, the real work is done by the
    gcc::jit::recording::context::new_array_access method in
    jit-recording.cc.  */
 
@@ -2647,6 +2697,47 @@ gcc_jit_lvalue_set_link_section (gcc_jit_lvalue *lvalue,
 {
   RETURN_IF_FAIL (section_name, NULL, NULL, "NULL section_name");
   lvalue->set_link_section (section_name);
+}
+
+/* Public entrypoint.  See description in libgccjit.h.
+
+   After error-checking, the real work is done by the
+   gcc::jit::recording::lvalue::get_alignment method in jit-recording.cc.  */
+
+unsigned
+gcc_jit_lvalue_get_alignment (gcc_jit_lvalue *lvalue)
+{
+  RETURN_VAL_IF_FAIL (lvalue, 0, NULL, NULL, "NULL lvalue");
+  return lvalue->get_alignment ();
+}
+
+/* Public entrypoint.  See description in libgccjit.h.
+
+   After error-checking, the real work is done by the
+   gcc::jit::recording::lvalue::set_alignment method in jit-recording.cc.  */
+
+void
+gcc_jit_lvalue_set_alignment (gcc_jit_lvalue *lvalue,
+			      unsigned bytes)
+{
+  RETURN_IF_FAIL (lvalue, NULL, NULL, "NULL lvalue");
+  RETURN_IF_FAIL ((bytes & (bytes - 1)) == 0, NULL, NULL,
+		  "alignment is not a power of 2");
+  lvalue->set_alignment (bytes);
+}
+
+/* Public entrypoint.  See description in libgccjit.h.
+
+   After error-checking, the real work is done by the
+   gcc::jit::recording::lvalue::set_register_name method in jit-recording.cc.  */
+
+void
+gcc_jit_lvalue_set_register_name (gcc_jit_lvalue *lvalue,
+				  const char *reg_name)
+{
+  RETURN_IF_FAIL (lvalue, NULL, NULL, "NULL lvalue");
+  RETURN_IF_FAIL (reg_name, NULL, NULL, "NULL reg_name");
+  lvalue->set_register_name (reg_name);
 }
 
 /* Public entrypoint.  See description in libgccjit.h.
@@ -3429,6 +3520,23 @@ gcc_jit_context_set_bool_allow_unreachable_blocks (gcc_jit_context *ctxt,
   ctxt->set_inner_bool_option (
     gcc::jit::INNER_BOOL_OPTION_ALLOW_UNREACHABLE_BLOCKS,
     bool_value);
+}
+
+/* Public entrypoint.  See description in libgccjit.h.
+
+   After error-checking, the real work is done by the
+   gcc::jit::recording::context::set_inner_bool_option method in
+   jit-recording.cc.  */
+
+void
+gcc_jit_context_set_bool_print_errors_to_stderr (gcc_jit_context *ctxt,
+						 int enabled)
+{
+  RETURN_IF_FAIL (ctxt, NULL, NULL, "NULL context");
+  JIT_LOG_FUNC (ctxt->get_logger ());
+  ctxt->set_inner_bool_option (
+    gcc::jit::INNER_BOOL_OPTION_PRINT_ERRORS_TO_STDERR,
+    enabled);
 }
 
 /* Public entrypoint.  See description in libgccjit.h.

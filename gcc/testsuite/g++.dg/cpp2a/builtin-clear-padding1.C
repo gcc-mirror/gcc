@@ -43,7 +43,7 @@ bar ()
   __builtin_clear_padding (&c2);
   __builtin_clear_padding (&c3);
   __builtin_clear_padding (&c4);
-//  __builtin_clear_padding (&c5);
+  __builtin_clear_padding (&c5);
   __builtin_clear_padding (&c6);
   __builtin_clear_padding (&c7);
   __builtin_clear_padding (&c8);

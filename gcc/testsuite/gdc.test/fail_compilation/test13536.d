@@ -23,4 +23,3 @@ void fun() @safe {
     u.sysDg = &s.sysMethod;
     u.safeDg();
 }
-

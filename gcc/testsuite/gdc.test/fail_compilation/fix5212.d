@@ -14,4 +14,3 @@ class Foo {
         args = args_;
     }
 }
-

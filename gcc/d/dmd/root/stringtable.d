@@ -224,7 +224,7 @@ public:
     }
 
     /// ditto
-    extern(D) int opApply(scope int delegate(const(StringValue!T)*) nothrow dg) nothrow
+    int opApply(scope int delegate(const(StringValue!T)*) nothrow dg) nothrow
     {
         foreach (const se; table)
         {

@@ -1400,7 +1400,7 @@ thread_private_new_memory (basic_block entry_block, tree x)
   /* Search DEF chain to find the original definition of this address.  */
   do
     {
-      if (ptr_deref_may_alias_global_p (x))
+      if (ptr_deref_may_alias_global_p (x, true))
 	{
 	  /* Address escapes.  This is not thread-private.  */
 	  retval = mem_non_local;

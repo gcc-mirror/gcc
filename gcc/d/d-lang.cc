@@ -33,6 +33,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "dmd/module.h"
 #include "dmd/mtype.h"
 #include "dmd/target.h"
+#include "dmd/template.h"
 
 #include "opts.h"
 #include "alias.h"
@@ -1305,6 +1306,9 @@ d_parse_file (void)
 		       d_option.deps_filename);
 	}
     }
+
+  if (global.params.vtemplates)
+    printTemplateStats ();
 
   /* Generate JSON files.  */
   if (global.params.doJsonGeneration)

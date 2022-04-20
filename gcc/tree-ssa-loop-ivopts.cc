@@ -2123,8 +2123,10 @@ idx_record_use (tree base, tree *idx,
   find_interesting_uses_op (data, *idx);
   if (TREE_CODE (base) == ARRAY_REF || TREE_CODE (base) == ARRAY_RANGE_REF)
     {
-      find_interesting_uses_op (data, array_ref_element_size (base));
-      find_interesting_uses_op (data, array_ref_low_bound (base));
+      if (TREE_OPERAND (base, 2))
+	find_interesting_uses_op (data, TREE_OPERAND (base, 2));
+      if (TREE_OPERAND (base, 3))
+	find_interesting_uses_op (data, TREE_OPERAND (base, 3));
     }
   return true;
 }

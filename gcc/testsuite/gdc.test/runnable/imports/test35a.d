@@ -36,4 +36,3 @@ template removeIf( Buf, Pred )
 	return removeIf_!(ElemTypeOf!(Buf), Pred).fn( buf, pred );
     }
 }
-

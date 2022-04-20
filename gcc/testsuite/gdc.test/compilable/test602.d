@@ -409,4 +409,3 @@ void test13321(bool b)
     x = Foo(1);
   EXIT:
 }
-

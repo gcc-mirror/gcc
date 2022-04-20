@@ -257,6 +257,7 @@
 #define __cpp_lib_constexpr_string_view 201811L
 #define __cpp_lib_constexpr_tuple 201811L
 #define __cpp_lib_constexpr_utility 201811L
+#define __cpp_lib_constexpr_vector 201907L
 #define __cpp_lib_erase_if 202002L
 #define __cpp_lib_generic_unordered_lookup 201811L
 #define __cpp_lib_interpolate 201902L
@@ -312,7 +313,8 @@
 #define __cpp_lib_invoke_r 202106L
 #define __cpp_lib_ios_noreplace 202200L
 #if __cpp_lib_concepts
-# define __cpp_lib_monadic_optional 202110L
+# undef __cpp_lib_optional
+# define __cpp_lib_optional 202110L
 #endif
 #define __cpp_lib_move_only_function 202110L
 #if __cpp_lib_span
@@ -321,6 +323,7 @@
 #if _GLIBCXX_HAVE_STACKTRACE
 # define __cpp_lib_stacktrace 202011L
 #endif
+#define __cpp_lib_stdatomic_h 202011L
 #define __cpp_lib_string_contains 202011L
 #if _GLIBCXX_USE_CXX11_ABI // Only supported with cxx11-abi
 # define __cpp_lib_string_resize_and_overwrite 202110L

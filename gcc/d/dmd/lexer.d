@@ -77,6 +77,7 @@ class Lexer
         bool doDocComment;      // collect doc comment information
         bool anyToken;          // seen at least one token
         bool commentToken;      // comments are TOK.comment's
+        bool tokenizeNewlines;  // newlines are turned into TOK.endOfLine's
 
         version (DMDLIB)
         {
@@ -107,8 +108,8 @@ class Lexer
         size_t endoffset, bool doDocComment, bool commentToken) pure
     {
         scanloc = Loc(filename, 1, 1);
-        //printf("Lexer::Lexer(%p,%d)\n",base,length);
-        //printf("lexer.filename = %s\n", filename);
+        // debug printf("Lexer::Lexer(%p)\n", base);
+        // debug printf("lexer.filename = %s\n", filename);
         token = Token.init;
         this.base = base;
         this.end = base + endoffset;
@@ -116,6 +117,7 @@ class Lexer
         line = p;
         this.doDocComment = doDocComment;
         this.commentToken = commentToken;
+        this.tokenizeNewlines = false;
         this.inTokenStringConstant = 0;
         this.lastDocLine = 0;
         //initKeywords();
@@ -227,6 +229,8 @@ class Lexer
 
     /****************************
      * Turn next token in buffer into a token.
+     * Params:
+     *  t = the token to set the resulting Token to
      */
     final void scan(Token* t)
     {
@@ -286,7 +290,15 @@ class Lexer
             case '\r':
                 p++;
                 if (*p != '\n') // if CR stands by itself
+                {
                     endOfLine();
+                    if (tokenizeNewlines)
+                    {
+                        t.value = TOK.endOfLine;
+                        tokenizeNewlines = false;
+                        return;
+                    }
+                }
                 version (DMDLIB)
                 {
                     if (whitespaceToken)
@@ -299,6 +311,12 @@ class Lexer
             case '\n':
                 p++;
                 endOfLine();
+                if (tokenizeNewlines)
+                {
+                    t.value = TOK.endOfLine;
+                    tokenizeNewlines = false;
+                    return;
+                }
                 version (DMDLIB)
                 {
                     if (whitespaceToken)
@@ -1045,6 +1063,10 @@ class Lexer
                 return;
             case '#':
                 {
+                    // https://issues.dlang.org/show_bug.cgi?id=22825
+                    // Special token sequences are terminated by newlines,
+                    // and should not be skipped over.
+                    this.tokenizeNewlines = true;
                     p++;
                     if (parseSpecialTokenSequence())
                         continue;
@@ -1064,6 +1086,12 @@ class Lexer
                         {
                             endOfLine();
                             p++;
+                            if (tokenizeNewlines)
+                            {
+                                t.value = TOK.endOfLine;
+                                tokenizeNewlines = false;
+                                return;
+                            }
                             continue;
                         }
                     }
@@ -2094,7 +2122,7 @@ class Lexer
                 // can't translate invalid octal value, just show a generic message
                 error("octal literals larger than 7 are no longer supported");
             else
-                error("octal literals `0%llo%.*s` are no longer supported, use `std.conv.octal!%llo%.*s` instead",
+                error("octal literals `0%llo%.*s` are no longer supported, use `std.conv.octal!\"%llo%.*s\"` instead",
                     n, cast(int)(p - psuffix), psuffix, n, cast(int)(p - psuffix), psuffix);
         }
         TOK result;
@@ -2607,16 +2635,19 @@ class Lexer
     {
         auto linnum = this.scanloc.linnum;
         const(char)* filespec = null;
-        const loc = this.loc();
         bool flags;
 
         if (!linemarker)
             scan(&tok);
         if (tok.value == TOK.int32Literal || tok.value == TOK.int64Literal)
         {
-            const lin = cast(int)(tok.unsvalue - 1);
-            if (lin != tok.unsvalue - 1)
-                error("line number `%lld` out of range", cast(ulong)tok.unsvalue);
+            const lin = cast(int)(tok.unsvalue);
+            if (lin != tok.unsvalue)
+            {
+                error(tok.loc, "line number `%lld` out of range", cast(ulong)tok.unsvalue);
+                skipToNextLine();
+                return;
+            }
             else
                 linnum = lin;
         }
@@ -2624,15 +2655,19 @@ class Lexer
         {
         }
         else
-            goto Lerr;
+        {
+            error(tok.loc, "positive integer argument expected following `#line`");
+            if (tok.value != TOK.endOfLine)
+                skipToNextLine();
+            return;
+        }
         while (1)
         {
-            switch (*p)
+            scan(&tok);
+            switch (tok.value)
             {
-            case 0:
-            case 0x1A:
-            case '\n':
-            Lnewline:
+            case TOK.endOfFile:
+            case TOK.endOfLine:
                 if (!inTokenStringConstant)
                 {
                     this.scanloc.linnum = linnum;
@@ -2640,93 +2675,40 @@ class Lexer
                         this.scanloc.filename = filespec;
                 }
                 return;
-            case '\r':
-                p++;
-                if (*p != '\n')
-                {
-                    p--;
-                    goto Lnewline;
-                }
-                continue;
-            case ' ':
-            case '\t':
-            case '\v':
-            case '\f':
-                p++;
-                continue; // skip white space
-            case '_':
+            case TOK.file:
                 if (filespec || flags)
                     goto Lerr;
-                if (memcmp(p, "__FILE__".ptr, 8) == 0)
+                filespec = mem.xstrdup(scanloc.filename);
+                continue;
+            case TOK.string_:
+                if (filespec || flags)
+                    goto Lerr;
+                if (tok.ptr[0] != '"' || tok.postfix != 0)
+                    goto Lerr;
+                filespec = tok.ustring;
+                continue;
+            case TOK.int32Literal:
+                if (!filespec)
+                    goto Lerr;
+                if (linemarker && tok.unsvalue >= 1 && tok.unsvalue <= 4)
                 {
-                    p += 8;
-                    filespec = mem.xstrdup(scanloc.filename);
+                    flags = true;   // linemarker flags seen
                     continue;
                 }
                 goto Lerr;
-            case '"':
-                if (filespec || flags)
-                    goto Lerr;
-                stringbuffer.setsize(0);
-                p++;
-                while (1)
-                {
-                    uint c;
-                    c = *p;
-                    switch (c)
-                    {
-                    case '\n':
-                    case '\r':
-                    case 0:
-                    case 0x1A:
-                        goto Lerr;
-                    case '"':
-                        stringbuffer.writeByte(0);
-                        filespec = mem.xstrdup(cast(const(char)*)stringbuffer[].ptr);
-                        p++;
-                        break;
-                    default:
-                        if (c & 0x80)
-                        {
-                            uint u = decodeUTF();
-                            if (u == PS || u == LS)
-                                goto Lerr;
-                        }
-                        stringbuffer.writeByte(c);
-                        p++;
-                        continue;
-                    }
-                    break;
-                }
-                continue;
-
-            case '1':
-            case '2':
-            case '3':
-            case '4':
-                if (!linemarker)
-                    goto Lerr;
-                flags = true;   // linemarker flags seen
-                ++p;
-                if ('0' <= *p && *p <= '9')
-                    goto Lerr;  // only one digit allowed
-                continue;
-
             default:
-                if (*p & 0x80)
-                {
-                    uint u = decodeUTF();
-                    if (u == PS || u == LS)
-                        goto Lnewline;
-                }
                 goto Lerr;
             }
         }
     Lerr:
-        if (linemarker)
-            error(loc, "# integer [\"filespec\"] { 1 | 2 | 3 | 4 }\\n expected");
-        else
-            error(loc, "#line integer [\"filespec\"]\\n expected");
+        if (filespec is null)
+            error(tok.loc, "invalid filename for `#line` directive");
+        else if (linemarker)
+            error(tok.loc, "invalid flag for line marker directive");
+        else if (!Ccompile)
+            error(tok.loc, "found `%s` when expecting new line following `#line` directive", tok.toChars());
+        if (tok.value != TOK.endOfLine)
+            skipToNextLine();
     }
 
     /***************************************
@@ -2768,6 +2750,7 @@ class Lexer
             break;
         }
         endOfLine();
+        tokenizeNewlines = false;
     }
 
     /********************************************
@@ -2943,7 +2926,7 @@ class Lexer
      */
     static const(char)* combineComments(const(char)[] c1, const(char)[] c2, bool newParagraph) pure
     {
-        //printf("Lexer::combineComments('%s', '%s', '%i')\n", c1, c2, newParagraph);
+        //debug printf("Lexer::combineComments('%*.s', '%*.s', '%i')\n", cast(int) c1.length, c1.ptr, cast(int) c2.length, c2.ptr, newParagraph);
         const(int) newParagraphSize = newParagraph ? 1 : 0; // Size of the combining '\n'
         if (!c1)
             return c2.ptr;
@@ -3004,7 +2987,7 @@ private struct TimeStampInfo
         if (auto p = getenv("SOURCE_DATE_EPOCH"))
         {
             if (!ct.parseDigits(p.toDString()))
-                error(loc, "Value of environment variable `SOURCE_DATE_EPOCH` should be a valid UNIX timestamp, not: `%s`", p);
+                error(loc, "value of environment variable `SOURCE_DATE_EPOCH` should be a valid UNIX timestamp, not: `%s`", p);
         }
         else
             .time(&ct);

@@ -30,5 +30,3 @@ void test4()
 {
     pragma(unrecognized, "string");
 }
-
-

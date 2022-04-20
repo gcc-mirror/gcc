@@ -489,6 +489,21 @@ Boolean options
 
       #ifdef LIBGCCJIT_HAVE_gcc_jit_context_set_bool_use_external_driver
 
+.. function:: void \
+              gcc_jit_context_set_bool_print_errors_to_stderr (gcc_jit_context *ctxt, \
+                                                                 int enabled)
+
+   By default, libgccjit will print errors to stderr.
+
+   This entrypoint can be used to disable the printing.
+
+   This entrypoint was added in :ref:`LIBGCCJIT_ABI_23`; you can test for
+   its presence using
+
+   .. code-block:: c
+
+      #ifdef LIBGCCJIT_HAVE_gcc_jit_context_set_bool_print_errors_to_stderr
+
 Integer options
 ***************
 

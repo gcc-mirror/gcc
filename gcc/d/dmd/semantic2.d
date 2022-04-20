@@ -478,7 +478,7 @@ private extern(C++) final class Semantic2Visitor : Visitor
         i.mod.semantic2(null);
         if (i.mod.needmoduleinfo)
         {
-            //printf("module5 %s because of %s\n", sc.module.toChars(), mod.toChars());
+            //printf("module5 %s because of %s\n", sc._module.toChars(), mod.toChars());
             if (sc)
                 sc._module.needmoduleinfo = 1;
         }

@@ -30,4 +30,3 @@ string getEnum(size_t count)
 mixin(getEnum(1087));
 
 void main() { }
-

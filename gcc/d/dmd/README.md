@@ -130,6 +130,8 @@ Note that these groups have no strict meaning, the category assignments are a bi
 | [impcnvtab.d](https://github.com/dlang/dmd/blob/master/src/dmd/impcnvtab.d)   | Define an implicit conversion table for basic types                                        |
 | [importc.d](https://github.com/dlang/dmd/blob/master/src/dmd/importc.d)       | Helpers specific to ImportC                                                                |
 | [sideeffect.d](https://github.com/dlang/dmd/blob/master/src/dmd/sideeffect.d) | Extract side-effects of expressions for certain lowerings.                                 |
+| [mustuse.d](https://github.com/dlang/dmd/blob/master/src/dmd/mustuse.d)       | Helpers related to the `@mustuse` attribute                                                |
+
 
 **Compile Time Function Execution (CTFE)**
 

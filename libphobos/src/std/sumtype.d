@@ -237,20 +237,10 @@ import std.traits : ConstOf, ImmutableOf, InoutOf, TemplateArgsOf;
 import std.traits : CommonType, DeducedParameterType;
 import std.typecons : ReplaceTypeUnless;
 import std.typecons : Flag;
+import std.conv : toCtString;
 
 /// Placeholder used to refer to the enclosing [SumType].
 struct This {}
-
-// Converts an unsigned integer to a compile-time string constant.
-private enum toCtString(ulong n) = n.stringof[0 .. $ - "LU".length];
-
-// Check that .stringof does what we expect, since it's not guaranteed by the
-// language spec.
-@safe unittest
-{
-    assert(toCtString!0 == "0");
-    assert(toCtString!123456 == "123456");
-}
 
 // True if a variable of type T can appear on the lhs of an assignment
 private enum isAssignableTo(T) =

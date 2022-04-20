@@ -11,4 +11,3 @@ void test()
     ub[] = cast(ubyte[4]) &i;
     //ub[] = (cast(ubyte*) &i)[0..4];
 }
-

@@ -1,3 +1,7 @@
+2022-04-06  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* cuda/cuda.h: New file.
+
 2022-03-19  Tiezhu Yang  <yangtiezhu@loongson.cn>
 
 	* floatformat.h (floatformat_ieee_quad_big): Renamed from

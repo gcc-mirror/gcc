@@ -23,4 +23,3 @@ void test2()
         return;
     }
 }
-

@@ -1069,11 +1069,14 @@ decls_match (tree newdecl, tree olddecl, bool record_versions /* = true */)
       if (types_match
 	  && !DECL_EXTERN_C_P (newdecl)
 	  && !DECL_EXTERN_C_P (olddecl)
-	  && record_versions
-	  && maybe_version_functions (newdecl, olddecl,
-				      (!DECL_FUNCTION_VERSIONED (newdecl)
-				       || !DECL_FUNCTION_VERSIONED (olddecl))))
-	return 0;
+	  && targetm.target_option.function_versions (newdecl, olddecl))
+	{
+	  if (record_versions)
+	    maybe_version_functions (newdecl, olddecl,
+				     (!DECL_FUNCTION_VERSIONED (newdecl)
+				      || !DECL_FUNCTION_VERSIONED (olddecl)));
+	  return 0;
+	}
     }
   else if (TREE_CODE (newdecl) == TEMPLATE_DECL)
     {
@@ -2344,6 +2347,9 @@ duplicate_decls (tree newdecl, tree olddecl, bool hiding, bool was_hidden)
 	      for (parm = DECL_ARGUMENTS (old_result); parm;
 		   parm = DECL_CHAIN (parm))
 		DECL_CONTEXT (parm) = old_result;
+
+	      if (tree fc = DECL_FRIEND_CONTEXT (new_result))
+		SET_DECL_FRIEND_CONTEXT (old_result, fc);
 	    }
 	}
 
@@ -2595,7 +2601,12 @@ duplicate_decls (tree newdecl, tree olddecl, bool hiding, bool was_hidden)
       else
 	{
 	  retrofit_lang_decl (newdecl);
-	  DECL_LOCAL_DECL_ALIAS (newdecl) = DECL_LOCAL_DECL_ALIAS (olddecl);
+	  tree alias = DECL_LOCAL_DECL_ALIAS (newdecl)
+	    = DECL_LOCAL_DECL_ALIAS (olddecl);
+	  DECL_ATTRIBUTES (alias)
+	    = (*targetm.merge_decl_attributes) (alias, newdecl);
+	  if (TREE_CODE (newdecl) == FUNCTION_DECL)
+	    merge_attribute_bits (newdecl, alias);
 	}
     }
 
@@ -2667,6 +2678,8 @@ duplicate_decls (tree newdecl, tree olddecl, bool hiding, bool was_hidden)
 	     otherwise it is a DECL_FRIEND_CONTEXT.  */
 	  if (DECL_VIRTUAL_P (newdecl))
 	    SET_DECL_THUNKS (newdecl, DECL_THUNKS (olddecl));
+	  else if (tree fc = DECL_FRIEND_CONTEXT (newdecl))
+	    SET_DECL_FRIEND_CONTEXT (olddecl, fc);
 	}
       else if (VAR_P (newdecl))
 	{
@@ -7439,6 +7452,10 @@ check_initializer (tree decl, tree init, int flags, vec<tree, va_gc> **cleanups)
   if (init && init != error_mark_node)
     init_code = build2 (INIT_EXPR, type, decl, init);
 
+  if (init_code && !TREE_SIDE_EFFECTS (init_code)
+      && init_code != error_mark_node)
+    init_code = NULL_TREE;
+
   if (init_code)
     {
       /* We might have set these in cp_finish_decl.  */
@@ -8537,7 +8554,7 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
     {
       for (tree t : *cleanups)
 	{
-	  push_cleanup (decl, t, false);
+	  push_cleanup (NULL_TREE, t, false);
 	  /* As in initialize_local_var.  */
 	  wrap_temporary_cleanups (init, t);
 	}
@@ -12226,6 +12243,8 @@ grokdeclarator (const cp_declarator *declarator,
 	      pedwarn (loc, OPT_Wpedantic, "%qs specified with %qT",
 		       key, type);
 	      ok = !flag_pedantic_errors;
+	      type = DECL_ORIGINAL_TYPE (typedef_decl);
+	      typedef_decl = NULL_TREE;
 	    }
 	  else if (declspecs->decltype_p)
 	    error_at (loc, "%qs specified with %<decltype%>", key);
@@ -12861,6 +12880,11 @@ grokdeclarator (const cp_declarator *declarator,
 			    "type specifier", name);
 		return error_mark_node;
 	      }
+	    if (late_return_type && sfk == sfk_conversion)
+	      {
+		error ("a conversion function cannot have a trailing return type");
+		return error_mark_node;
+	      }
 	    type = splice_late_return_type (type, late_return_type);
 	    if (type == error_mark_node)
 	      return error_mark_node;
@@ -13025,8 +13049,6 @@ grokdeclarator (const cp_declarator *declarator,
 		    maybe_warn_cpp0x (CPP0X_EXPLICIT_CONVERSION);
 		    explicitp = 2;
 		  }
-		if (late_return_type_p)
-		  error ("a conversion function cannot have a trailing return type");
 	      }
 	    else if (sfk == sfk_deduction_guide)
 	      {

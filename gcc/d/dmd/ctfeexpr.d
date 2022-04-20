@@ -232,11 +232,11 @@ bool needToCopyLiteral(const Expression expr)
         switch (e.op)
         {
         case EXP.arrayLiteral:
-            return (cast(ArrayLiteralExp)e).ownedByCtfe == OwnedBy.code;
+            return e.isArrayLiteralExp().ownedByCtfe == OwnedBy.code;
         case EXP.assocArrayLiteral:
-            return (cast(AssocArrayLiteralExp)e).ownedByCtfe == OwnedBy.code;
+            return e.isAssocArrayLiteralExp().ownedByCtfe == OwnedBy.code;
         case EXP.structLiteral:
-            return (cast(StructLiteralExp)e).ownedByCtfe == OwnedBy.code;
+            return e.isStructLiteralExp().ownedByCtfe == OwnedBy.code;
         case EXP.string_:
         case EXP.this_:
         case EXP.variable:
@@ -247,14 +247,14 @@ bool needToCopyLiteral(const Expression expr)
         case EXP.dotVariable:
         case EXP.slice:
         case EXP.cast_:
-            e = (cast(UnaExp)e).e1;
+            e = e.isUnaExp().e1;
             continue;
         case EXP.concatenate:
-            return needToCopyLiteral((cast(BinExp)e).e1) || needToCopyLiteral((cast(BinExp)e).e2);
+            return needToCopyLiteral(e.isBinExp().e1) || needToCopyLiteral(e.isBinExp().e2);
         case EXP.concatenateAssign:
         case EXP.concatenateElemAssign:
         case EXP.concatenateDcharAssign:
-            e = (cast(BinExp)e).e2;
+            e = e.isBinExp().e2;
             continue;
         default:
             return false;
@@ -286,7 +286,7 @@ UnionExp copyLiteral(Expression e)
         const slice = se.peekData();
         memcpy(s, slice.ptr, slice.length);
         emplaceExp!(StringExp)(&ue, se.loc, s[0 .. se.len * se.sz], se.len, se.sz);
-        StringExp se2 = cast(StringExp)ue.exp();
+        StringExp se2 = ue.exp().isStringExp();
         se2.committed = se.committed;
         se2.postfix = se.postfix;
         se2.type = se.type;
@@ -299,14 +299,14 @@ UnionExp copyLiteral(Expression e)
 
         emplaceExp!(ArrayLiteralExp)(&ue, e.loc, e.type, elements);
 
-        ArrayLiteralExp r = cast(ArrayLiteralExp)ue.exp();
+        ArrayLiteralExp r = ue.exp().isArrayLiteralExp();
         r.ownedByCtfe = OwnedBy.ctfe;
         return ue;
     }
     if (auto aae = e.isAssocArrayLiteralExp())
     {
         emplaceExp!(AssocArrayLiteralExp)(&ue, e.loc, copyLiteralArray(aae.keys), copyLiteralArray(aae.values));
-        AssocArrayLiteralExp r = cast(AssocArrayLiteralExp)ue.exp();
+        AssocArrayLiteralExp r = ue.exp().isAssocArrayLiteralExp();
         r.type = e.type;
         r.ownedByCtfe = OwnedBy.ctfe;
         return ue;
@@ -482,7 +482,7 @@ private UnionExp paintTypeOntoLiteralCopy(Type type, Expression lit)
         // just a ref to the keys and values.
         OwnedBy wasOwned = aae.ownedByCtfe;
         emplaceExp!(AssocArrayLiteralExp)(&ue, lit.loc, aae.keys, aae.values);
-        aae = cast(AssocArrayLiteralExp)ue.exp();
+        aae = ue.exp().isAssocArrayLiteralExp();
         aae.ownedByCtfe = wasOwned;
     }
     else
@@ -526,7 +526,7 @@ Expression resolveSlice(Expression e, UnionExp* pue = null)
  * It's very wasteful to resolve the slice when we only
  * need the length.
  */
-uinteger_t resolveArrayLength(const Expression e)
+uinteger_t resolveArrayLength(Expression e)
 {
     switch (e.op)
     {
@@ -538,7 +538,7 @@ uinteger_t resolveArrayLength(const Expression e)
 
         case EXP.slice:
         {
-            auto se = cast(SliceExp)e;
+            auto se = e.isSliceExp();
             const ilo = se.lwr.toInteger();
             const iup = se.upr.toInteger();
             return iup - ilo;
@@ -720,16 +720,16 @@ Expression getAggregateFromPointer(Expression e, dinteger_t* ofs)
         *ofs = soe.offset;
     if (auto dve = e.isDotVarExp())
     {
-        const ex = dve.e1;
+        auto ex = dve.e1;
         const v = dve.var.isVarDeclaration();
         assert(v);
         StructLiteralExp se = (ex.op == EXP.classReference)
-            ? (cast(ClassReferenceExp)ex).value
-            : cast(StructLiteralExp)ex;
+            ? ex.isClassReferenceExp().value
+            : ex.isStructLiteralExp();
 
         // We can't use getField, because it makes a copy
         const i = (ex.op == EXP.classReference)
-            ? (cast(ClassReferenceExp)ex).getFieldIndex(e.type, v.offset)
+            ? ex.isClassReferenceExp().getFieldIndex(e.type, v.offset)
             : se.getFieldIndex(e.type, v.offset);
         e = (*se.elements)[i];
     }
@@ -777,11 +777,11 @@ bool pointToSameMemoryBlock(Expression agg1, Expression agg2)
     }
     // Note that type painting can occur with VarExp, so we
     // must compare the variables being pointed to.
-    if (agg1.op == EXP.variable && agg2.op == EXP.variable && (cast(VarExp)agg1).var == (cast(VarExp)agg2).var)
+    if (agg1.op == EXP.variable && agg2.op == EXP.variable && agg1.isVarExp().var == agg2.isVarExp().var)
     {
         return true;
     }
-    if (agg1.op == EXP.symbolOffset && agg2.op == EXP.symbolOffset && (cast(SymOffExp)agg1).var == (cast(SymOffExp)agg2).var)
+    if (agg1.op == EXP.symbolOffset && agg2.op == EXP.symbolOffset && agg1.isSymOffExp().var == agg2.isSymOffExp().var)
     {
         return true;
     }
@@ -801,14 +801,14 @@ Expression pointerDifference(UnionExp* pue, const ref Loc loc, Type type, Expres
         emplaceExp!(IntegerExp)(pue, loc, (ofs1 - ofs2) * sz, type);
     }
     else if (agg1.op == EXP.string_ && agg2.op == EXP.string_ &&
-             (cast(StringExp)agg1).peekString().ptr == (cast(StringExp)agg2).peekString().ptr)
+             agg1.isStringExp().peekString().ptr == agg2.isStringExp().peekString().ptr)
     {
         Type pointee = (cast(TypePointer)agg1.type).next;
         const sz = pointee.size();
         emplaceExp!(IntegerExp)(pue, loc, (ofs1 - ofs2) * sz, type);
     }
     else if (agg1.op == EXP.symbolOffset && agg2.op == EXP.symbolOffset &&
-             (cast(SymOffExp)agg1).var == (cast(SymOffExp)agg2).var)
+             agg1.isSymOffExp().var == agg2.isSymOffExp().var)
     {
         emplaceExp!(IntegerExp)(pue, loc, ofs1 - ofs2, type);
     }
@@ -832,12 +832,12 @@ Expression pointerArithmetic(UnionExp* pue, const ref Loc loc, EXP op, Type type
         return pue.exp();
     }
     if (eptr.op == EXP.address)
-        eptr = (cast(AddrExp)eptr).e1;
+        eptr = eptr.isAddrExp().e1;
     dinteger_t ofs1;
     Expression agg1 = getAggregateFromPointer(eptr, &ofs1);
     if (agg1.op == EXP.symbolOffset)
     {
-        if ((cast(SymOffExp)agg1).var.type.ty != Tsarray)
+        if (agg1.isSymOffExp().var.type.ty != Tsarray)
         {
             error(loc, "cannot perform pointer arithmetic on arrays of unknown length at compile time");
             goto Lcant;
@@ -856,7 +856,7 @@ Expression pointerArithmetic(UnionExp* pue, const ref Loc loc, EXP op, Type type
     if (agg1.op == EXP.symbolOffset)
     {
         indx = ofs1 / sz;
-        len = (cast(TypeSArray)(cast(SymOffExp)agg1).var.type).dim.toInteger();
+        len = (cast(TypeSArray)agg1.isSymOffExp().var.type).dim.toInteger();
     }
     else
     {
@@ -881,8 +881,8 @@ Expression pointerArithmetic(UnionExp* pue, const ref Loc loc, EXP op, Type type
     }
     if (agg1.op == EXP.symbolOffset)
     {
-        emplaceExp!(SymOffExp)(pue, loc, (cast(SymOffExp)agg1).var, indx * sz);
-        SymOffExp se = cast(SymOffExp)pue.exp();
+        emplaceExp!(SymOffExp)(pue, loc, agg1.isSymOffExp().var, indx * sz);
+        SymOffExp se = pue.exp().isSymOffExp();
         se.type = type;
         return pue.exp();
     }
@@ -1016,7 +1016,7 @@ Expression paintFloatInt(UnionExp* pue, Expression fromVal, Type to)
 bool isCtfeComparable(Expression e)
 {
     if (e.op == EXP.slice)
-        e = (cast(SliceExp)e).e1;
+        e = e.isSliceExp().e1;
     if (e.isConst() != 1)
     {
         if (e.op == EXP.null_ || e.op == EXP.string_ || e.op == EXP.function_ || e.op == EXP.delegate_ || e.op == EXP.arrayLiteral || e.op == EXP.structLiteral || e.op == EXP.assocArrayLiteral || e.op == EXP.classReference)
@@ -1191,7 +1191,7 @@ private int ctfeRawCmp(const ref Loc loc, Expression e1, Expression e2, bool ide
     if (e1.op == EXP.classReference || e2.op == EXP.classReference)
     {
         if (e1.op == EXP.classReference && e2.op == EXP.classReference &&
-            (cast(ClassReferenceExp)e1).value == (cast(ClassReferenceExp)e2).value)
+            e1.isClassReferenceExp().value == e2.isClassReferenceExp().value)
             return 0;
         return 1;
     }
@@ -1199,8 +1199,8 @@ private int ctfeRawCmp(const ref Loc loc, Expression e1, Expression e2, bool ide
     {
         // printf("e1: %s\n", e1.toChars());
         // printf("e2: %s\n", e2.toChars());
-        Type t1 = isType((cast(TypeidExp)e1).obj);
-        Type t2 = isType((cast(TypeidExp)e2).obj);
+        Type t1 = isType(e1.isTypeidExp().obj);
+        Type t2 = isType(e2.isTypeidExp().obj);
         assert(t1);
         assert(t2);
         return t1 != t2;
@@ -1214,7 +1214,7 @@ private int ctfeRawCmp(const ref Loc loc, Expression e1, Expression e2, bool ide
         dinteger_t ofs1, ofs2;
         Expression agg1 = getAggregateFromPointer(e1, &ofs1);
         Expression agg2 = getAggregateFromPointer(e2, &ofs2);
-        if ((agg1 == agg2) || (agg1.op == EXP.variable && agg2.op == EXP.variable && (cast(VarExp)agg1).var == (cast(VarExp)agg2).var))
+        if ((agg1 == agg2) || (agg1.op == EXP.variable && agg2.op == EXP.variable && agg1.isVarExp().var == agg2.isVarExp().var))
         {
             if (ofs1 == ofs2)
                 return 0;
@@ -1232,13 +1232,13 @@ private int ctfeRawCmp(const ref Loc loc, Expression e1, Expression e2, bool ide
             return 0;
         assert(e1.op == EXP.delegate_ && e2.op == EXP.delegate_);
         // Same .funcptr. Do they have the same .ptr?
-        Expression ptr1 = (cast(DelegateExp)e1).e1;
-        Expression ptr2 = (cast(DelegateExp)e2).e1;
+        Expression ptr1 = e1.isDelegateExp().e1;
+        Expression ptr2 = e2.isDelegateExp().e1;
         dinteger_t ofs1, ofs2;
         Expression agg1 = getAggregateFromPointer(ptr1, &ofs1);
         Expression agg2 = getAggregateFromPointer(ptr2, &ofs2);
         // If they are EXP.variable, it means they are FuncDeclarations
-        if ((agg1 == agg2 && ofs1 == ofs2) || (agg1.op == EXP.variable && agg2.op == EXP.variable && (cast(VarExp)agg1).var == (cast(VarExp)agg2).var))
+        if ((agg1 == agg2 && ofs1 == ofs2) || (agg1.op == EXP.variable && agg2.op == EXP.variable && agg1.isVarExp().var == agg2.isVarExp().var))
         {
             return 0;
         }
@@ -1269,7 +1269,7 @@ private int ctfeRawCmp(const ref Loc loc, Expression e1, Expression e2, bool ide
         real_t r1 = e1.type.isreal() ? e1.toReal() : e1.toImaginary();
         real_t r2 = e1.type.isreal() ? e2.toReal() : e2.toImaginary();
         if (identity)
-            return !RealIdentical(r1, r2);
+            return !CTFloat.isIdentical(r1, r2);
         if (CTFloat.isNaN(r1) || CTFloat.isNaN(r2)) // if unordered
         {
             return 1;   // they are not equal
@@ -1291,8 +1291,8 @@ private int ctfeRawCmp(const ref Loc loc, Expression e1, Expression e2, bool ide
     }
     if (e1.op == EXP.structLiteral && e2.op == EXP.structLiteral)
     {
-        StructLiteralExp es1 = cast(StructLiteralExp)e1;
-        StructLiteralExp es2 = cast(StructLiteralExp)e2;
+        StructLiteralExp es1 = e1.isStructLiteralExp();
+        StructLiteralExp es2 = e2.isStructLiteralExp();
         // For structs, we only need to return 0 or 1 (< and > aren't legal).
         if (es1.sd != es2.sd)
             return 1;
@@ -1326,8 +1326,8 @@ private int ctfeRawCmp(const ref Loc loc, Expression e1, Expression e2, bool ide
     }
     if (e1.op == EXP.assocArrayLiteral && e2.op == EXP.assocArrayLiteral)
     {
-        AssocArrayLiteralExp es1 = cast(AssocArrayLiteralExp)e1;
-        AssocArrayLiteralExp es2 = cast(AssocArrayLiteralExp)e2;
+        AssocArrayLiteralExp es1 = e1.isAssocArrayLiteralExp();
+        AssocArrayLiteralExp es2 = e2.isAssocArrayLiteralExp();
         size_t dim = es1.keys.dim;
         if (es2.keys.dim != dim)
             return 1;
@@ -1394,12 +1394,12 @@ bool ctfeIdentity(const ref Loc loc, EXP op, Expression e1, Expression e2)
     }
     else if (e1.op == EXP.symbolOffset && e2.op == EXP.symbolOffset)
     {
-        SymOffExp es1 = cast(SymOffExp)e1;
-        SymOffExp es2 = cast(SymOffExp)e2;
+        SymOffExp es1 = e1.isSymOffExp();
+        SymOffExp es2 = e2.isSymOffExp();
         cmp = (es1.var == es2.var && es1.offset == es2.offset);
     }
     else if (e1.type.isreal())
-        cmp = RealIdentical(e1.toReal(), e2.toReal());
+        cmp = CTFloat.isIdentical(e1.toReal(), e2.toReal());
     else if (e1.type.isimaginary())
         cmp = RealIdentical(e1.toImaginary(), e2.toImaginary());
     else if (e1.type.iscomplex())
@@ -1443,8 +1443,8 @@ UnionExp ctfeCat(const ref Loc loc, Type type, Expression e1, Expression e2)
     if (e2.op == EXP.string_ && e1.op == EXP.arrayLiteral && t1.nextOf().isintegral())
     {
         // [chars] ~ string => string (only valid for CTFE)
-        StringExp es1 = cast(StringExp)e2;
-        ArrayLiteralExp es2 = cast(ArrayLiteralExp)e1;
+        StringExp es1 = e2.isStringExp();
+        ArrayLiteralExp es2 = e1.isArrayLiteralExp();
         const len = es1.len + es2.elements.dim;
         const sz = es1.sz;
         void* s = mem.xmalloc((len + 1) * sz);
@@ -1464,7 +1464,7 @@ UnionExp ctfeCat(const ref Loc loc, Type type, Expression e1, Expression e2)
         // Add terminating 0
         memset(cast(char*)s + len * sz, 0, sz);
         emplaceExp!(StringExp)(&ue, loc, s[0 .. len * sz], len, sz);
-        StringExp es = cast(StringExp)ue.exp();
+        StringExp es = ue.exp().isStringExp();
         es.committed = 0;
         es.type = type;
         return ue;
@@ -1473,8 +1473,8 @@ UnionExp ctfeCat(const ref Loc loc, Type type, Expression e1, Expression e2)
     {
         // string ~ [chars] => string (only valid for CTFE)
         // Concatenate the strings
-        StringExp es1 = cast(StringExp)e1;
-        ArrayLiteralExp es2 = cast(ArrayLiteralExp)e2;
+        StringExp es1 = e1.isStringExp();
+        ArrayLiteralExp es2 = e2.isArrayLiteralExp();
         const len = es1.len + es2.elements.dim;
         const sz = es1.sz;
         void* s = mem.xmalloc((len + 1) * sz);
@@ -1494,7 +1494,7 @@ UnionExp ctfeCat(const ref Loc loc, Type type, Expression e1, Expression e2)
         // Add terminating 0
         memset(cast(char*)s + len * sz, 0, sz);
         emplaceExp!(StringExp)(&ue, loc, s[0 .. len * sz], len, sz);
-        StringExp es = cast(StringExp)ue.exp();
+        StringExp es = ue.exp().isStringExp();
         es.sz = sz;
         es.committed = 0; //es1.committed;
         es.type = type;
@@ -1503,10 +1503,10 @@ UnionExp ctfeCat(const ref Loc loc, Type type, Expression e1, Expression e2)
     if (e1.op == EXP.arrayLiteral && e2.op == EXP.arrayLiteral && t1.nextOf().equals(t2.nextOf()))
     {
         //  [ e1 ] ~ [ e2 ] ---> [ e1, e2 ]
-        ArrayLiteralExp es1 = cast(ArrayLiteralExp)e1;
-        ArrayLiteralExp es2 = cast(ArrayLiteralExp)e2;
+        ArrayLiteralExp es1 = e1.isArrayLiteralExp();
+        ArrayLiteralExp es2 = e2.isArrayLiteralExp();
         emplaceExp!(ArrayLiteralExp)(&ue, es1.loc, type, copyLiteralArray(es1.elements));
-        es1 = cast(ArrayLiteralExp)ue.exp();
+        es1 = ue.exp().isArrayLiteralExp();
         es1.elements.insert(es1.elements.dim, copyLiteralArray(es2.elements));
         return ue;
     }
@@ -1594,7 +1594,7 @@ Expression ctfeCast(UnionExp* pue, const ref Loc loc, Type type, Type to, Expres
         // Disallow reinterpreting class casts. Do this by ensuring that
         // the original class can implicitly convert to the target class.
         // Also do not check 'alias this' for explicit cast expressions.
-        auto tclass = (cast(ClassReferenceExp)e).originalClass().type.isTypeClass();
+        auto tclass = e.isClassReferenceExp().originalClass().type.isTypeClass();
         auto match = explicitCast ? tclass.implicitConvToWithoutAliasThis(to.mutableOf())
                                   : tclass.implicitConvTo(to.mutableOf());
         if (match)
@@ -1665,9 +1665,9 @@ void assignInPlace(Expression dest, Expression src)
     if (dest.op == EXP.structLiteral)
     {
         assert(dest.op == src.op);
-        oldelems = (cast(StructLiteralExp)dest).elements;
-        newelems = (cast(StructLiteralExp)src).elements;
-        auto sd = (cast(StructLiteralExp)dest).sd;
+        oldelems = dest.isStructLiteralExp().elements;
+        newelems = src.isStructLiteralExp().elements;
+        auto sd = dest.isStructLiteralExp().sd;
         const nfields = sd.nonHiddenFields();
         const nvthis = sd.fields.dim - nfields;
         if (nvthis && oldelems.dim >= nfields && oldelems.dim < newelems.dim)
@@ -1676,22 +1676,22 @@ void assignInPlace(Expression dest, Expression src)
     }
     else if (dest.op == EXP.arrayLiteral && src.op == EXP.arrayLiteral)
     {
-        oldelems = (cast(ArrayLiteralExp)dest).elements;
-        newelems = (cast(ArrayLiteralExp)src).elements;
+        oldelems = dest.isArrayLiteralExp().elements;
+        newelems = src.isArrayLiteralExp().elements;
     }
     else if (dest.op == EXP.string_ && src.op == EXP.string_)
     {
-        sliceAssignStringFromString(cast(StringExp)dest, cast(StringExp)src, 0);
+        sliceAssignStringFromString(dest.isStringExp(), src.isStringExp(), 0);
         return;
     }
     else if (dest.op == EXP.arrayLiteral && src.op == EXP.string_)
     {
-        sliceAssignArrayLiteralFromString(cast(ArrayLiteralExp)dest, cast(StringExp)src, 0);
+        sliceAssignArrayLiteralFromString(dest.isArrayLiteralExp(), src.isStringExp(), 0);
         return;
     }
     else if (src.op == EXP.arrayLiteral && dest.op == EXP.string_)
     {
-        sliceAssignStringFromArrayLiteral(cast(StringExp)dest, cast(ArrayLiteralExp)src, 0);
+        sliceAssignStringFromArrayLiteral(dest.isStringExp(), src.isArrayLiteralExp(), 0);
         return;
     }
     else
@@ -1761,13 +1761,13 @@ Expression changeArrayLiteralLength(UnionExp* pue, const ref Loc loc, TypeArray 
     size_t indxlo = 0;
     if (oldval.op == EXP.slice)
     {
-        indxlo = cast(size_t)(cast(SliceExp)oldval).lwr.toInteger();
-        oldval = (cast(SliceExp)oldval).e1;
+        indxlo = cast(size_t)oldval.isSliceExp().lwr.toInteger();
+        oldval = oldval.isSliceExp().e1;
     }
     size_t copylen = oldlen < newlen ? oldlen : newlen;
     if (oldval.op == EXP.string_)
     {
-        StringExp oldse = cast(StringExp)oldval;
+        StringExp oldse = oldval.isStringExp();
         void* s = mem.xcalloc(newlen + 1, oldse.sz);
         const data = oldse.peekData();
         memcpy(s, data.ptr, copylen * oldse.sz);
@@ -1790,7 +1790,7 @@ Expression changeArrayLiteralLength(UnionExp* pue, const ref Loc loc, TypeArray 
             }
         }
         emplaceExp!(StringExp)(pue, loc, s[0 .. newlen * oldse.sz], newlen, oldse.sz);
-        StringExp se = cast(StringExp)pue.exp();
+        StringExp se = pue.exp().isStringExp();
         se.type = arrayType;
         se.sz = oldse.sz;
         se.committed = oldse.committed;
@@ -1801,7 +1801,7 @@ Expression changeArrayLiteralLength(UnionExp* pue, const ref Loc loc, TypeArray 
         if (oldlen != 0)
         {
             assert(oldval.op == EXP.arrayLiteral);
-            ArrayLiteralExp ae = cast(ArrayLiteralExp)oldval;
+            ArrayLiteralExp ae = oldval.isArrayLiteralExp();
             foreach (size_t i; 0 .. copylen)
                 (*elements)[i] = (*ae.elements)[indxlo + i];
         }
@@ -1819,7 +1819,7 @@ Expression changeArrayLiteralLength(UnionExp* pue, const ref Loc loc, TypeArray 
                 (*elements)[i] = defaultElem;
         }
         emplaceExp!(ArrayLiteralExp)(pue, loc, arrayType, elements);
-        ArrayLiteralExp aae = cast(ArrayLiteralExp)pue.exp();
+        ArrayLiteralExp aae = pue.exp().isArrayLiteralExp();
         aae.ownedByCtfe = OwnedBy.ctfe;
     }
     return pue.exp();
@@ -1874,14 +1874,14 @@ bool isCtfeValueValid(Expression newval)
         {
             // &struct.func or &clasinst.func
             // &nestedfunc
-            Expression ethis = (cast(DelegateExp)newval).e1;
-            return (ethis.op == EXP.structLiteral || ethis.op == EXP.classReference || ethis.op == EXP.variable && (cast(VarExp)ethis).var == (cast(DelegateExp)newval).func);
+            Expression ethis = newval.isDelegateExp().e1;
+            return (ethis.op == EXP.structLiteral || ethis.op == EXP.classReference || ethis.op == EXP.variable && ethis.isVarExp().var == newval.isDelegateExp().func);
         }
 
         case EXP.symbolOffset:
         {
             // function pointer, or pointer to static variable
-            Declaration d = (cast(SymOffExp)newval).var;
+            Declaration d = newval.isSymOffExp().var;
             return d.isFuncDeclaration() || d.isDataseg();
         }
 
@@ -1894,7 +1894,7 @@ bool isCtfeValueValid(Expression newval)
         case EXP.address:
         {
             // e1 should be a CTFE reference
-            Expression e1 = (cast(AddrExp)newval).e1;
+            Expression e1 = newval.isAddrExp().e1;
             return tb.ty == Tpointer &&
             (
                 (e1.op == EXP.structLiteral || e1.op == EXP.arrayLiteral) && isCtfeValueValid(e1) ||
@@ -1908,7 +1908,7 @@ bool isCtfeValueValid(Expression newval)
         case EXP.slice:
         {
             // e1 should be an array aggregate
-            const SliceExp se = cast(SliceExp)newval;
+            const SliceExp se = newval.isSliceExp();
             assert(se.lwr && se.lwr.op == EXP.int64);
             assert(se.upr && se.upr.op == EXP.int64);
             return (tb.ty == Tarray || tb.ty == Tsarray) && (se.e1.op == EXP.string_ || se.e1.op == EXP.arrayLiteral);
@@ -1932,7 +1932,7 @@ bool isCtfeReferenceValid(Expression newval)
 
         case EXP.variable:
         {
-            const VarDeclaration v = (cast(VarExp)newval).var.isVarDeclaration();
+            const VarDeclaration v = newval.isVarExp().var.isVarDeclaration();
             assert(v);
             // Must not be a reference to a reference
             return true;
@@ -1940,13 +1940,13 @@ bool isCtfeReferenceValid(Expression newval)
 
         case EXP.index:
         {
-            const Expression eagg = (cast(IndexExp)newval).e1;
+            const Expression eagg = newval.isIndexExp().e1;
             return eagg.op == EXP.string_ || eagg.op == EXP.arrayLiteral || eagg.op == EXP.assocArrayLiteral;
         }
 
         case EXP.dotVariable:
         {
-            Expression eagg = (cast(DotVarExp)newval).e1;
+            Expression eagg = newval.isDotVarExp().e1;
             return (eagg.op == EXP.structLiteral || eagg.op == EXP.classReference) && isCtfeValueValid(eagg);
         }
 
@@ -1968,19 +1968,19 @@ void showCtfeExpr(Expression e, int level = 0)
     ClassDeclaration cd = null;
     if (e.op == EXP.structLiteral)
     {
-        elements = (cast(StructLiteralExp)e).elements;
-        sd = (cast(StructLiteralExp)e).sd;
+        elements = e.isStructLiteralExp().elements;
+        sd = e.isStructLiteralExp().sd;
         printf("STRUCT type = %s %p:\n", e.type.toChars(), e);
     }
     else if (e.op == EXP.classReference)
     {
-        elements = (cast(ClassReferenceExp)e).value.elements;
-        cd = (cast(ClassReferenceExp)e).originalClass();
-        printf("CLASS type = %s %p:\n", e.type.toChars(), (cast(ClassReferenceExp)e).value);
+        elements = e.isClassReferenceExp().value.elements;
+        cd = e.isClassReferenceExp().originalClass();
+        printf("CLASS type = %s %p:\n", e.type.toChars(), e.isClassReferenceExp().value);
     }
     else if (e.op == EXP.arrayLiteral)
     {
-        elements = (cast(ArrayLiteralExp)e).elements;
+        elements = e.isArrayLiteralExp().elements;
         printf("ARRAY LITERAL type=%s %p:\n", e.type.toChars(), e);
     }
     else if (e.op == EXP.assocArrayLiteral)
@@ -1994,19 +1994,19 @@ void showCtfeExpr(Expression e, int level = 0)
     else if (e.op == EXP.slice)
     {
         printf("SLICE %p: %s\n", e, e.toChars());
-        showCtfeExpr((cast(SliceExp)e).e1, level + 1);
+        showCtfeExpr(e.isSliceExp().e1, level + 1);
     }
     else if (e.op == EXP.variable)
     {
         printf("VAR %p %s\n", e, e.toChars());
-        VarDeclaration v = (cast(VarExp)e).var.isVarDeclaration();
+        VarDeclaration v = e.isVarExp().var.isVarDeclaration();
         if (v && getValue(v))
             showCtfeExpr(getValue(v), level + 1);
     }
     else if (e.op == EXP.address)
     {
         // This is potentially recursive. We mustn't try to print the thing we're pointing to.
-        printf("POINTER %p to %p: %s\n", e, (cast(AddrExp)e).e1, e.toChars());
+        printf("POINTER %p to %p: %s\n", e, e.isAddrExp().e1, e.toChars());
     }
     else
         printf("VALUE %p: %s\n", e, e.toChars());
@@ -2086,7 +2086,7 @@ UnionExp voidInitLiteral(Type t, VarDeclaration var)
             (*elements)[i] = elem;
         }
         emplaceExp!(ArrayLiteralExp)(&ue, var.loc, tsa, elements);
-        ArrayLiteralExp ae = cast(ArrayLiteralExp)ue.exp();
+        ArrayLiteralExp ae = ue.exp().isArrayLiteralExp();
         ae.ownedByCtfe = OwnedBy.ctfe;
     }
     else if (t.ty == Tstruct)
@@ -2098,7 +2098,7 @@ UnionExp voidInitLiteral(Type t, VarDeclaration var)
             (*exps)[i] = voidInitLiteral(ts.sym.fields[i].type, ts.sym.fields[i]).copy();
         }
         emplaceExp!(StructLiteralExp)(&ue, var.loc, ts.sym, exps);
-        StructLiteralExp se = cast(StructLiteralExp)ue.exp();
+        StructLiteralExp se = ue.exp().isStructLiteralExp();
         se.type = ts;
         se.ownedByCtfe = OwnedBy.ctfe;
     }

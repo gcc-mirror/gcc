@@ -3524,7 +3524,8 @@ vect_loop_versioning (loop_vec_info loop_vinfo,
 	outermost = superloop_at_depth (loop, 1);
       /* And avoid applying versioning on non-perfect nests.  */
       while (loop_to_version != outermost
-	     && single_exit (loop_outer (loop_to_version))
+	     && (e = single_exit (loop_outer (loop_to_version)))
+	     && !(e->flags & EDGE_COMPLEX)
 	     && (!loop_outer (loop_to_version)->inner->next
 		 || vect_loop_vectorized_call (loop_to_version))
 	     && (!loop_outer (loop_to_version)->inner->next

@@ -6,4 +6,3 @@ int main(char [][] args)
    Vector!(wchar) str;
    return 0;
 }
-

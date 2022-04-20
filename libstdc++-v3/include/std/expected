@@ -95,7 +95,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     class bad_expected_access : public bad_expected_access<void> {
     public:
       explicit
-      bad_expected_access(_Er __e) : _M_val(__e) { }
+      bad_expected_access(_Er __e) : _M_val(std::move(__e)) { }
 
       // XXX const char* what() const noexcept override;
 
@@ -966,8 +966,8 @@ namespace __expected
 	}
 
       template<typename _Up, typename _Gr>
-	requires is_void_v<_Tp>
-	      && is_constructible_v<_Er, const _Gr&>
+	requires is_void_v<_Up>
+	      && is_constructible_v<_Er, _Gr>
 	      && (!__cons_from_expected<_Up, _Gr>)
 	constexpr explicit(!is_convertible_v<_Gr, _Er>)
 	expected(expected<_Up, _Gr>&& __x)
@@ -1104,6 +1104,7 @@ namespace __expected
 		std::construct_at(__builtin_addressof(_M_unex),
 				  std::move(__x._M_unex)); // might throw
 		std::destroy_at(__builtin_addressof(__x._M_unex));
+		_M_has_value = false;
 		__x._M_has_value = true;
 	      }
 	  }
@@ -1115,6 +1116,7 @@ namespace __expected
 				  std::move(_M_unex)); // might throw
 		std::destroy_at(__builtin_addressof(_M_unex));
 		_M_has_value = true;
+		__x._M_has_value = false;
 	      }
 	    else
 	      {

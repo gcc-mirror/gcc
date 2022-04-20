@@ -5998,7 +5998,7 @@ gfc_split_omp_clauses (gfc_code *code,
       innermost = GFC_OMP_SPLIT_DO;
       break;
     case EXEC_OMP_MASKED_TASKLOOP:
-      mask = GFC_OMP_SPLIT_MASKED | GFC_OMP_SPLIT_TASKLOOP;
+      mask = GFC_OMP_MASK_MASKED | GFC_OMP_MASK_TASKLOOP;
       innermost = GFC_OMP_SPLIT_TASKLOOP;
       break;
     case EXEC_OMP_MASTER_TASKLOOP:

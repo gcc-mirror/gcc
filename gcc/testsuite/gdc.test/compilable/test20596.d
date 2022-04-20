@@ -27,5 +27,3 @@ void test3032() @nogc
     scope fp = (){ n = 10; };       // no closure
     fp();
 }
-
-

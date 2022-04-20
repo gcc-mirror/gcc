@@ -100,9 +100,9 @@ Expression resolveAliasThis(Scope* sc, Expression e, bool gag = false, bool find
 
             if (tthis && ad.aliasthis.sym.needThis())
             {
-                if (e.op == EXP.variable)
+                if (auto ve = e.isVarExp())
                 {
-                    if (auto fd = (cast(VarExp)e).var.isFuncDeclaration())
+                    if (auto fd = ve.var.isFuncDeclaration())
                     {
                         // https://issues.dlang.org/show_bug.cgi?id=13009
                         // Support better match for the overloaded alias this.

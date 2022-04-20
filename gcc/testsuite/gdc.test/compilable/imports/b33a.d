@@ -23,6 +23,3 @@ template find()
         return find_!(char).fn( buf );
     }
 }
-
-
-

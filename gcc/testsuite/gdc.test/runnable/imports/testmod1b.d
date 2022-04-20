@@ -5,4 +5,3 @@ import testmod1;
 void bar3() {
   Foo!(int) w;
 }
-

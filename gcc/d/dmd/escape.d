@@ -440,22 +440,33 @@ bool checkParamArgumentEscape(Scope* sc, FuncDeclaration fdc, Parameter par, Exp
  *      sc = used to determine current function and module
  *      firstArg = `ref` argument through which `arg` may be assigned
  *      arg = initializer for parameter
+ *      param = parameter declaration corresponding to `arg`
  *      gag = do not print error messages
  * Returns:
  *      `true` if assignment to `firstArg` would cause an error
  */
-bool checkParamArgumentReturn(Scope* sc, Expression firstArg, Expression arg, bool gag)
+bool checkParamArgumentReturn(Scope* sc, Expression firstArg, Expression arg, Parameter param, bool gag)
 {
     enum log = false;
     if (log) printf("checkParamArgumentReturn(firstArg: %s arg: %s)\n",
         firstArg.toChars(), arg.toChars());
     //printf("type = %s, %d\n", arg.type.toChars(), arg.type.hasPointers());
 
-    if (!arg.type.hasPointers())
+    if (!(param.storageClass & STC.return_))
         return false;
 
+    if (!arg.type.hasPointers() && !param.isReference())
+        return false;
+
+    // `byRef` needed for `assign(ref int* x, ref int i) {x = &i};`
+    // Note: taking address of scope pointer is not allowed
+    // `assign(ref int** x, return ref scope int* i) {x = &i};`
+    // Thus no return ref/return scope ambiguity here
+    const byRef = param.isReference() && !(param.storageClass & STC.scope_)
+        && !(param.storageClass & STC.returnScope); // fixme: it's possible to infer returnScope without scope with vaIsFirstRef
+
     scope e = new AssignExp(arg.loc, firstArg, arg);
-    return checkAssignEscape(sc, e, gag);
+    return checkAssignEscape(sc, e, gag, byRef);
 }
 
 /*****************************************************
@@ -496,23 +507,13 @@ bool checkConstructorEscape(Scope* sc, CallExp ce, bool gag)
     foreach (const i; 0 .. n)
     {
         Expression arg = (*ce.arguments)[i];
-        if (!arg.type.hasPointers())
-            continue;
-
         //printf("\targ[%d]: %s\n", i, arg.toChars());
 
         if (i - j < nparams && i >= j)
         {
             Parameter p = tf.parameterList[i - j];
-
-            if (p.storageClass & STC.return_)
-            {
-                /* Fake `dve.e1 = arg;` and look for scope violations
-                 */
-                scope e = new AssignExp(arg.loc, dve.e1, arg);
-                if (checkAssignEscape(sc, e, gag))
-                    return true;
-            }
+            if (checkParamArgumentReturn(sc, dve.e1, arg, p, gag))
+                return true;
         }
     }
 
@@ -529,13 +530,14 @@ bool checkConstructorEscape(Scope* sc, CallExp ce, bool gag)
  *      sc = used to determine current function and module
  *      e = `AssignExp` or `CatAssignExp` to check for any pointers to the stack
  *      gag = do not print error messages
+ *      byRef = set to `true` if `e1` of `e` gets assigned a reference to `e2`
  * Returns:
  *      `true` if pointers to the stack can escape via assignment
  */
-bool checkAssignEscape(Scope* sc, Expression e, bool gag)
+bool checkAssignEscape(Scope* sc, Expression e, bool gag, bool byRef)
 {
     enum log = false;
-    if (log) printf("checkAssignEscape(e: %s)\n", e.toChars());
+    if (log) printf("checkAssignEscape(e: %s, byRef: %d)\n", e.toChars(), byRef);
     if (e.op != EXP.assign && e.op != EXP.blit && e.op != EXP.construct &&
         e.op != EXP.concatenateAssign && e.op != EXP.concatenateElemAssign && e.op != EXP.concatenateDcharAssign)
         return false;
@@ -561,7 +563,10 @@ bool checkAssignEscape(Scope* sc, Expression e, bool gag)
 
     EscapeByResults er;
 
-    escapeByValue(e2, &er);
+    if (byRef)
+        escapeByRef(e2, &er);
+    else
+        escapeByValue(e2, &er);
 
     if (!er.byref.dim && !er.byvalue.dim && !er.byfunc.dim && !er.byexp.dim)
         return false;
@@ -692,9 +697,7 @@ bool checkAssignEscape(Scope* sc, Expression e, bool gag)
 
             // If va's lifetime encloses v's, then error
             if (va && !va.isDataseg() &&
-                (va.enclosesLifetimeOf(v) && !(v.storage_class & STC.temp) ||
-                 vaIsRef ||
-                 va.isReference() && !(v.storage_class & (STC.parameter | STC.temp))) &&
+                ((va.enclosesLifetimeOf(v) && !(v.storage_class & STC.temp)) || vaIsRef) &&
                 fd.setUnsafe())
             {
                 if (!gag)
@@ -791,9 +794,19 @@ bool checkAssignEscape(Scope* sc, Expression e, bool gag)
 
         Dsymbol p = v.toParent2();
 
+        if (vaIsFirstRef && v.isParameter() &&
+            !(v.storage_class & STC.return_) &&
+            fd.flags & FUNCFLAG.returnInprocess &&
+            p == fd)
+        {
+            //if (log) printf("inferring 'return' for parameter %s in function %s\n", v.toChars(), fd.toChars());
+            inferReturn(fd, v, /*returnScope:*/ false);
+        }
+
         // If va's lifetime encloses v's, then error
         if (va &&
-            (va.enclosesLifetimeOf(v) || (va.isRef() && !(va.storage_class & STC.temp)) || va.isDataseg()) &&
+            !(vaIsFirstRef && (v.storage_class & STC.return_)) &&
+            (va.enclosesLifetimeOf(v) || (va.isReference() && !(va.storage_class & STC.temp)) || va.isDataseg()) &&
             fd.setUnsafe())
         {
             if (!gag)
@@ -1284,27 +1297,24 @@ private bool checkReturnEscapeImpl(Scope* sc, Expression e, bool refs, bool gag)
         {
             if (!gag)
             {
-                const(char)* msg, supplemental;
-                if (v.storage_class & STC.parameter &&
-                    (v.type.hasPointers() || v.storage_class & STC.ref_))
-                {
-                    msg = "returning `%s` escapes a reference to parameter `%s`";
-                    supplemental = vsr == ScopeRef.Ref_ReturnScope
-                                              ? "perhaps remove `scope` parameter annotation so `return` applies to `ref`"
-                                              : v.ident is Id.This
-                                                    ? "perhaps annotate the function with `return`"
-                                                    : "perhaps annotate the parameter with `return`";
-                }
-                else
-                {
-                    msg = "returning `%s` escapes a reference to local variable `%s`";
-                    if (v.ident is Id.This)
-                        supplemental = "perhaps annotate the function with `return`";
-                }
+                const(char)* varKind = v.isParameter() ? "parameter" : "local variable";
+                previewErrorFunc(sc.isDeprecated(), featureState)(e.loc,
+                    "returning `%s` escapes a reference to %s `%s`", e.toChars(), varKind, v.toChars());
 
-                previewErrorFunc(sc.isDeprecated(), featureState)(e.loc, msg, e.toChars(), v.toChars());
-                if (supplemental)
-                    previewSupplementalFunc(sc.isDeprecated(), featureState)(e.loc, supplemental);
+                if (v.isParameter() && v.isReference())
+                {
+                    if (v.storage_class & STC.returnScope)
+                    {
+                        previewSupplementalFunc(sc.isDeprecated(), featureState)(v.loc,
+                            "perhaps change the `return scope` into `scope return`");
+                    }
+                    else
+                    {
+                        const(char)* annotateKind = (v.ident is Id.This) ? "function" : "parameter";
+                        previewSupplementalFunc(sc.isDeprecated(), featureState)(v.loc,
+                            "perhaps annotate the %s with `return`", annotateKind);
+                    }
+                }
             }
             result = true;
         }
@@ -1897,7 +1907,7 @@ void escapeByRef(Expression e, EscapeByResults* er, bool live = false)
 
         override void visit(ThisExp e)
         {
-            if (e.var && e.var.toParent2().isFuncDeclaration().isThis2)
+            if (e.var && e.var.toParent2().isFuncDeclaration().hasDualContext())
                 escapeByValue(e, er, live);
             else if (e.var)
                 er.byref.push(e.var);
@@ -2296,4 +2306,38 @@ bool isReferenceToMutable(Parameter p, Type t)
         return p.type.isMutable();
     }
     return isReferenceToMutable(p.type);
+}
+
+/**********************************
+* Determine if `va` has a lifetime that lasts past
+* the destruction of `v`
+* Params:
+*     va = variable assigned to
+*     v = variable being assigned
+* Returns:
+*     true if it does
+*/
+private bool enclosesLifetimeOf(const VarDeclaration va, const VarDeclaration v) pure
+{
+    assert(va.sequenceNumber != va.sequenceNumber.init);
+    assert(v.sequenceNumber != v.sequenceNumber.init);
+    return va.sequenceNumber < v.sequenceNumber;
+}
+
+/***************************************
+ * Add variable `v` to maybes[]
+ *
+ * When a maybescope variable `v` is assigned to a maybescope variable `va`,
+ * we cannot determine if `this` is actually scope until the semantic
+ * analysis for the function is completed. Thus, we save the data
+ * until then.
+ * Params:
+ *     v = an `STC.maybescope` variable that was assigned to `this`
+ */
+private void addMaybe(VarDeclaration va, VarDeclaration v)
+{
+    //printf("add %s to %s's list of dependencies\n", v.toChars(), toChars());
+    if (!va.maybes)
+        va.maybes = new VarDeclarations();
+    va.maybes.push(v);
 }

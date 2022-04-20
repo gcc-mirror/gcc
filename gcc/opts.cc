@@ -2557,7 +2557,7 @@ common_handle_option (struct gcc_options *opts,
 	break;
 
       target_option_override_hook ();
-      print_specific_help (CL_TARGET, CL_UNDOCUMENTED, 0, opts, lang_mask);
+      print_specific_help (CL_TARGET, 0, 0, opts, lang_mask);
       opts->x_exit_after_options = true;
       break;
 

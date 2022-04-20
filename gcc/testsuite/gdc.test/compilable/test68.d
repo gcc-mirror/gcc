@@ -16,4 +16,3 @@ void main()
 {
         new Foo();
 }
-

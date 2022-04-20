@@ -14,4 +14,3 @@ Complex!real expi(real y)
 {
     return Complex!real(0, 0);
 }
-

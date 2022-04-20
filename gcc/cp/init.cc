@@ -1066,7 +1066,7 @@ perform_member_init (tree member, tree init, hash_set<tree> &uninitialized)
       init = build2 (INIT_EXPR, type, decl, init);
       finish_expr_stmt (init);
       FOR_EACH_VEC_ELT (*cleanups, i, t)
-	push_cleanup (decl, t, false);
+	push_cleanup (NULL_TREE, t, false);
     }
   else if (type_build_ctor_call (type)
 	   || (init && CLASS_TYPE_P (strip_array_types (type))))
@@ -2811,6 +2811,11 @@ warn_placement_new_too_small (tree type, tree nelts, tree size, tree oper)
   if (!objsize)
     return;
 
+  /* We can only draw conclusions if ref.deref == -1,
+     i.e. oper is the address of the object.  */
+  if (ref.deref != -1)
+    return;
+
   offset_int bytes_avail = wi::to_offset (objsize);
   offset_int bytes_need;
 
@@ -3287,7 +3292,7 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
     {
       unsigned align = TYPE_ALIGN_UNIT (elt_type);
       /* Also consider the alignment of the cookie, if any.  */
-      if (TYPE_VEC_NEW_USES_COOKIE (elt_type))
+      if (array_p && TYPE_VEC_NEW_USES_COOKIE (elt_type))
 	align = MAX (align, TYPE_ALIGN_UNIT (size_type_node));
       align_arg = build_int_cst (align_type_node, align);
     }
@@ -4908,10 +4913,9 @@ build_vec_init (tree base, tree maxindex, tree init,
   /* Now make the result have the correct type.  */
   if (TREE_CODE (atype) == ARRAY_TYPE)
     {
-      atype = build_pointer_type (atype);
+      atype = build_reference_type (atype);
       stmt_expr = build1 (NOP_EXPR, atype, stmt_expr);
-      stmt_expr = cp_build_fold_indirect_ref (stmt_expr);
-      suppress_warning (stmt_expr /* What warning? */);
+      stmt_expr = convert_from_reference (stmt_expr);
     }
 
   return stmt_expr;

@@ -191,7 +191,7 @@ class MultiLogger : Logger
 {
     auto dl = cast(FileLogger) sharedLog;
     assert(dl !is null);
-    assert(dl.logLevel == LogLevel.warning);
+    assert(dl.logLevel == LogLevel.info);
     assert(globalLogLevel == LogLevel.all);
 
     auto tl = cast(StdForwardLogger) stdThreadLocalLog;

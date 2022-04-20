@@ -173,9 +173,7 @@ ctf_calc_num_vbytes (ctf_dtdef_ref ctftype)
 static void
 ctf_list_add_ctf_vars (ctf_container_ref ctfc, ctf_dvdef_ref var)
 {
-  /* FIXME - static may not fly with multiple CUs.  */
-  static int num_vars_added = 0;
-  ctfc->ctfc_vars_list[num_vars_added++] = var;
+  ctfc->ctfc_vars_list[ctfc->ctfc_vars_list_count++] = var;
 }
 
 /* Initialize the various sections and labels for CTF output.  */
@@ -213,6 +211,13 @@ ctf_dvd_preprocess_cb (ctf_dvdef_ref * slot, void * arg)
   ctf_dvd_preprocess_arg_t * dvd_arg =  (ctf_dvd_preprocess_arg_t *)arg;
   ctf_dvdef_ref var = (ctf_dvdef_ref) *slot;
   ctf_container_ref arg_ctfc = dvd_arg->dvd_arg_ctfc;
+
+  /* If the CTF variable corresponds to an extern variable declaration with
+     a defining declaration later on, skip it.  Only CTF variable
+     corresponding to the defining declaration for the extern variable is
+     desirable.  */
+  if (ctf_dvd_ignore_lookup (arg_ctfc, var->dvd_key))
+    return 1;
 
   ctf_preprocess_var (arg_ctfc, var);
 
@@ -278,16 +283,16 @@ static void
 ctf_preprocess (ctf_container_ref ctfc)
 {
   size_t num_ctf_types = ctfc->ctfc_types->elements ();
+  size_t num_ctf_vars = ctfc_get_num_ctf_vars (ctfc);
 
   /* Initialize an array to keep track of the CTF variables at global
-     scope.  */
-  size_t num_global_objts = ctfc->ctfc_num_global_objts;
+     scope.  At this time, size it conservatively.  */
+  size_t num_global_objts = num_ctf_vars;
   if (num_global_objts)
     {
       ctfc->ctfc_gobjts_list = ggc_vec_alloc<ctf_dvdef_t*>(num_global_objts);
     }
 
-  size_t num_ctf_vars = ctfc_get_num_ctf_vars (ctfc);
   if (num_ctf_vars)
     {
       ctf_dvd_preprocess_arg_t dvd_arg;
@@ -301,8 +306,11 @@ ctf_preprocess (ctf_container_ref ctfc)
 	 list for sorting.  */
       ctfc->ctfc_vars->traverse<void *, ctf_dvd_preprocess_cb> (&dvd_arg);
       /* Sort the list.  */
-      qsort (ctfc->ctfc_vars_list, num_ctf_vars, sizeof (ctf_dvdef_ref),
-	     ctf_varent_compare);
+      qsort (ctfc->ctfc_vars_list, ctfc->ctfc_vars_list_count,
+	     sizeof (ctf_dvdef_ref), ctf_varent_compare);
+      /* Update the actual number of the generated CTF variables at global
+	 scope.  */
+      ctfc->ctfc_num_global_objts = dvd_arg.dvd_global_obj_idx;
     }
 
   /* Initialize an array to keep track of the CTF functions types for global
@@ -478,7 +486,7 @@ output_ctf_header (ctf_container_ref ctfc)
       /* Vars appear after function index.  */
       varoff = funcidxoff + ctfc->ctfc_num_global_funcs * sizeof (uint32_t);
       /* CTF types appear after vars.  */
-      typeoff = varoff + ctfc_get_num_ctf_vars (ctfc) * sizeof (ctf_varent_t);
+      typeoff = varoff + (ctfc->ctfc_vars_list_count) * sizeof (ctf_varent_t);
       /* The total number of bytes for CTF types is the sum of the number of
 	 times struct ctf_type_t, struct ctf_stype_t are written, plus the
 	 amount of variable length data after each one of these.  */
@@ -597,7 +605,7 @@ static void
 output_ctf_vars (ctf_container_ref ctfc)
 {
   size_t i;
-  size_t num_ctf_vars = ctfc_get_num_ctf_vars (ctfc);
+  unsigned int num_ctf_vars = ctfc->ctfc_vars_list_count;
   if (num_ctf_vars)
     {
       /* Iterate over the list of sorted vars and output the asm.  */

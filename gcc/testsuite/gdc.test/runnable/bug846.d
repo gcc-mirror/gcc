@@ -8,4 +8,3 @@ void main()
     auto num = removeIf( "abcdef".dup, ( char c ) { return c == 'c'; } );
     assert(num == 5);
 }
-

@@ -3,6 +3,12 @@
 
 #include <stdatomic.h>
 
+#ifndef __cpp_lib_stdatomic_h
+# error "Feature test macro for stdatomic.h is missing in <stdatomic.h>"
+#elif __cpp_lib_stdatomic_h != 202011L
+# error "Feature test macro for stdatomic.h has wrong value in <stdatomic.h>"
+#endif
+
 #ifndef ATOMIC_BOOL_LOCK_FREE
 #error ATOMIC_BOOL_LOCK_FREE is not defined in <stdatomic.h>
 #endif

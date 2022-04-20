@@ -169,7 +169,7 @@ string formatSocketError(int err) @trusted
     else
     version (Windows)
     {
-        return sysErrorString(err);
+        return generateSysErrorMsg(err);
     }
     else
         return "Socket error " ~ to!string(err);
@@ -842,7 +842,7 @@ private string formatGaiError(int err) @trusted
 {
     version (Windows)
     {
-        return sysErrorString(err);
+        return generateSysErrorMsg(err);
     }
     else
     {

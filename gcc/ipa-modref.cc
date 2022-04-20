@@ -5281,6 +5281,29 @@ ipa_merge_modref_summary_after_inlining (cgraph_edge *edge)
       if (!ignore_stores)
 	to_info_lto->stores->collapse ();
     }
+  /* Merge side effects and non-determinism.
+     PURE/CONST flags makes functions deterministic and if there is
+     no LOOPING_CONST_OR_PURE they also have no side effects.  */
+  if (!(flags & (ECF_CONST | ECF_NOVOPS | ECF_PURE))
+      || (flags & ECF_LOOPING_CONST_OR_PURE))
+    {
+      if (to_info)
+	{
+	  if (!callee_info || callee_info->side_effects)
+	    to_info->side_effects = true;
+	  if ((!callee_info || callee_info->nondeterministic)
+	      && !ignore_nondeterminism_p (edge->caller->decl, flags))
+	    to_info->nondeterministic = true;
+	}
+      if (to_info_lto)
+	{
+	  if (!callee_info_lto || callee_info_lto->side_effects)
+	    to_info_lto->side_effects = true;
+	  if ((!callee_info_lto || callee_info_lto->nondeterministic)
+	      && !ignore_nondeterminism_p (edge->caller->decl, flags))
+	    to_info_lto->nondeterministic = true;
+	}
+     }
   if (callee_info || callee_info_lto)
     {
       auto_vec <modref_parm_map, 32> parm_map;

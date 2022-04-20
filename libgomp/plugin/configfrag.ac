@@ -197,7 +197,6 @@ if test x"$enable_offload_targets" != x; then
 		       && (test "x$CUDA_DRIVER_LIB" = x \
 			   || test "x$CUDA_DRIVER_LIB" = xno); then
 		      PLUGIN_NVPTX=1
-		      PLUGIN_NVPTX_CPPFLAGS='-I$(srcdir)/plugin/cuda'
 		      PLUGIN_NVPTX_LIBS='-ldl'
 		      PLUGIN_NVPTX_DYNAMIC=1
 		    else

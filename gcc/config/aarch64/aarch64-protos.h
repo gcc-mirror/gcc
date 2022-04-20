@@ -746,6 +746,19 @@ const unsigned int AARCH64_BUILTIN_SHIFT = 1;
 /* Mask that selects the aarch64_builtin_class part of a function code.  */
 const unsigned int AARCH64_BUILTIN_CLASS = (1 << AARCH64_BUILTIN_SHIFT) - 1;
 
+/* RAII class for enabling enough features to define built-in types
+   and implement the arm_neon.h pragma.  */
+class aarch64_simd_switcher
+{
+public:
+  aarch64_simd_switcher (unsigned int extra_flags = 0);
+  ~aarch64_simd_switcher ();
+
+private:
+  unsigned long m_old_isa_flags;
+  bool m_old_general_regs_only;
+};
+
 void aarch64_post_cfi_startproc (void);
 poly_int64 aarch64_initial_elimination_offset (unsigned, unsigned);
 int aarch64_get_condition_code (rtx);
@@ -982,6 +995,7 @@ rtx aarch64_general_expand_builtin (unsigned int, tree, rtx, int);
 tree aarch64_general_builtin_decl (unsigned, bool);
 tree aarch64_general_builtin_rsqrt (unsigned int);
 tree aarch64_builtin_vectorized_function (unsigned int, tree, tree);
+void handle_arm_acle_h (void);
 void handle_arm_neon_h (void);
 
 namespace aarch64_sve {

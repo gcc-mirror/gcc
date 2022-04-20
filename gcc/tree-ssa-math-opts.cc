@@ -1113,7 +1113,7 @@ make_pass_cse_reciprocals (gcc::context *ctxt)
    conversions.  Return the prevailing name.  */
 
 static tree
-execute_cse_conv_1 (tree name)
+execute_cse_conv_1 (tree name, bool *cfg_changed)
 {
   if (SSA_NAME_IS_DEFAULT_DEF (name)
       || SSA_NAME_OCCURS_IN_ABNORMAL_PHI (name))
@@ -1189,15 +1189,18 @@ execute_cse_conv_1 (tree name)
 	  || !types_compatible_p (TREE_TYPE (name), TREE_TYPE (lhs)))
 	continue;
 
-      if (gimple_bb (def_stmt) == gimple_bb (use_stmt)
-	  || dominated_by_p (CDI_DOMINATORS, gimple_bb (use_stmt),
-			     gimple_bb (def_stmt)))
+      basic_block use_bb = gimple_bb (use_stmt);
+      if (gimple_bb (def_stmt) == use_bb
+	  || dominated_by_p (CDI_DOMINATORS, use_bb, gimple_bb (def_stmt)))
 	{
 	  sincos_stats.conv_removed++;
 
 	  gimple_stmt_iterator gsi = gsi_for_stmt (use_stmt);
 	  replace_uses_by (lhs, name);
-	  gsi_remove (&gsi, true);
+	  if (gsi_remove (&gsi, true)
+	      && gimple_purge_dead_eh_edges (use_bb))
+	    *cfg_changed = true;
+	  release_defs (use_stmt);
 	}
     }
 
@@ -1252,7 +1255,7 @@ execute_cse_sincos_1 (tree name)
   int i;
   bool cfg_changed = false;
 
-  name = execute_cse_conv_1 (name);
+  name = execute_cse_conv_1 (name, &cfg_changed);
 
   FOR_EACH_IMM_USE_STMT (use_stmt, use_iter, name)
     {

@@ -231,3 +231,23 @@ const(int)* f_c_20150() @safe
     int x = 42;
     return escape_c_20150(&x);
 }
+
+/* TEST_OUTPUT:
+---
+fail_compilation/retscope6.d(13010): Error: reference to local variable `str` assigned to non-scope parameter `x` calling retscope6.f_throw
+---
+*/
+
+#line 13000
+// https://issues.dlang.org/show_bug.cgi?id=22221
+
+void f_throw(string x) @safe pure
+{
+    throw new Exception(x);
+}
+
+void escape_throw_20150() @safe
+{
+    immutable(char)[4] str;
+    f_throw(str[]);
+}

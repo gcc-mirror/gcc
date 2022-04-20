@@ -134,6 +134,13 @@ end_element:
   if (m == MATCH_ERROR)
     return MATCH_ERROR;
 
+  if (star && ar->start[i] == NULL)
+    {
+      gfc_error ("Missing lower bound in assumed size "
+		 "coarray specification at %C");
+      return MATCH_ERROR;
+    }
+
   /* See if we have an optional stride.  */
   if (gfc_match_char (':') == MATCH_YES)
     {

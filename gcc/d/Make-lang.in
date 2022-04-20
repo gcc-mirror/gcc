@@ -89,6 +89,7 @@ D_FRONTEND_OBJS = \
 	d/canthrow.o \
 	d/chkformat.o \
 	d/clone.o \
+	d/common-bitfields.o \
 	d/common-file.o \
 	d/common-outbuffer.o \
 	d/common-string.o \
@@ -143,6 +144,7 @@ D_FRONTEND_OBJS = \
 	d/lambdacomp.o \
 	d/lexer.o \
 	d/mtype.o \
+	d/mustuse.o \
 	d/nogc.o \
 	d/nspace.o \
 	d/ob.o \

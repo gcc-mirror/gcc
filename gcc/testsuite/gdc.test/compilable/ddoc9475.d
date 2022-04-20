@@ -26,4 +26,3 @@ unittest
 {
     // bar comment
 }
-

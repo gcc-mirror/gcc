@@ -175,6 +175,8 @@ public:
      per-type and thus it's meaningless for them to "have state".  */
   virtual bool can_have_associated_state_p () const { return true; }
 
+  const region *maybe_get_deref_base_region () const;
+
  protected:
   svalue (complexity c, tree type)
   : m_complexity (c), m_type (type)

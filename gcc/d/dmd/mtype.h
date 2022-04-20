@@ -595,8 +595,8 @@ public:
     // .next is the return type
 
     ParameterList parameterList; // function parameters
+    uint16_t bitFields;
     LINK linkage;                // calling convention
-    unsigned funcFlags;
     TRUST trust;                 // level of trust
     PURE purity;                 // PURExxxx
     char inuse;

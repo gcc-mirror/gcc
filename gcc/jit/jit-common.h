@@ -36,7 +36,7 @@ along with GCC; see the file COPYING3.  If not see
 #endif
 #endif
 
-const int NUM_GCC_JIT_TYPES = GCC_JIT_TYPE_COMPLEX_LONG_DOUBLE + 1;
+const int NUM_GCC_JIT_TYPES = GCC_JIT_TYPE_INT128_T + 1;
 
 /* This comment is included by the docs.
 
@@ -198,6 +198,7 @@ enum inner_bool_option
 {
   INNER_BOOL_OPTION_ALLOW_UNREACHABLE_BLOCKS,
   INNER_BOOL_OPTION_USE_EXTERNAL_DRIVER,
+  INNER_BOOL_OPTION_PRINT_ERRORS_TO_STDERR,
 
   NUM_INNER_BOOL_OPTIONS
 };

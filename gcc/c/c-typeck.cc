@@ -15896,6 +15896,12 @@ c_build_va_arg (location_t loc1, tree expr, location_t loc2, tree type)
 		"type %qT", type);
       return error_mark_node;
     }
+  else if (TREE_CODE (type) == FUNCTION_TYPE)
+    {
+      error_at (loc2, "second argument to %<va_arg%> is a function type %qT",
+		type);
+      return error_mark_node;
+    }
   else if (warn_cxx_compat && TREE_CODE (type) == ENUMERAL_TYPE)
     warning_at (loc2, OPT_Wc___compat,
 		"C++ requires promoted type, not enum type, in %<va_arg%>");

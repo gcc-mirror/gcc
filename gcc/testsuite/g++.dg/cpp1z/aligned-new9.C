@@ -23,4 +23,8 @@ int main()
   X *p = new X[n];
   if (nalign != align)
     __builtin_abort ();
+
+  X *p2 = new X;
+  if (nalign != alignof (X))
+    __builtin_abort ();
 }

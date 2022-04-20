@@ -669,7 +669,7 @@ extern (C) void _d_print_throwable(Throwable t)
 
     void sink(in char[] buf) scope nothrow
     {
-        fprintf(stderr, "%.*s", cast(int)buf.length, buf.ptr);
+        fwrite(buf.ptr, char.sizeof, buf.length, stderr);
     }
     formatThrowable(t, &sink);
 }

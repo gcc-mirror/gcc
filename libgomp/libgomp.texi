@@ -214,7 +214,7 @@ The OpenMP 4.5 specification is fully supported.
       and @code{taskloop simd} constructs @tab Y @tab
 @item @code{taskloop} construct cancelable by @code{cancel} construct
       @tab Y @tab
-@item @code{mutexinouset} @emph{dependence-type} for @code{depend} clause
+@item @code{mutexinoutset} @emph{dependence-type} for @code{depend} clause
       @tab Y @tab
 @item Predefined memory spaces, memory allocators, allocator traits
       @tab Y @tab Some are only stubs

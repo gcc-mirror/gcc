@@ -11,5 +11,3 @@ struct T()
 }
 
 alias T!() instance;
-
-

@@ -21,4 +21,3 @@ void foo()
         scope int x;
     }
 }
-

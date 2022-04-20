@@ -1761,6 +1761,9 @@ extern (C++) final class GotoStatement : Statement
         return new GotoStatement(loc, ident);
     }
 
+    /**************
+     * Returns: true for error
+     */
     extern (D) bool checkLabel()
     {
         if (!label.statement)

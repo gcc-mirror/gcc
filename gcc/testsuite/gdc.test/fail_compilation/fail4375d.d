@@ -17,4 +17,3 @@ label2:
     else
         assert(16);
 }
-

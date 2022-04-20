@@ -10,4 +10,3 @@ int main()
     v.func(5);
     return 0;
 }
-

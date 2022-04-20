@@ -26,10 +26,14 @@ import dmd.root.string;
 import dmd.common.file;
 import dmd.common.string;
 
-/// Owns a (rmem-managed) file buffer.
-struct FileBuffer
+nothrow:
+
+/// Owns a (rmem-managed) buffer.
+struct Buffer
 {
     ubyte[] data;
+
+  nothrow:
 
     this(this) @disable;
 
@@ -45,11 +49,6 @@ struct FileBuffer
         data = null;
         return result;
     }
-
-    extern (C++) static FileBuffer* create() pure nothrow @safe
-    {
-        return new FileBuffer();
-    }
 }
 
 ///
@@ -59,7 +58,7 @@ struct File
     static struct ReadResult
     {
         bool success;
-        FileBuffer buffer;
+        Buffer buffer;
 
         /// Transfers ownership of the buffer to the caller.
         ubyte[] extractSlice() pure nothrow @nogc @safe
@@ -78,12 +77,6 @@ struct File
 
 nothrow:
     /// Read the full content of a file.
-    extern (C++) static ReadResult read(const(char)* name)
-    {
-        return read(name.toDString());
-    }
-
-    /// Ditto
     static ReadResult read(const(char)[] name)
     {
         ReadResult result;
@@ -179,22 +172,16 @@ nothrow:
     }
 
     /// Write a file, returning `true` on success.
-    extern (D) static bool write(const(char)* name, const void[] data)
+    static bool write(const(char)* name, const void[] data)
     {
         import dmd.common.file : writeFile;
         return writeFile(name, data);
     }
 
     ///ditto
-    extern(D) static bool write(const(char)[] name, const void[] data)
+    static bool write(const(char)[] name, const void[] data)
     {
         return name.toCStringThen!((fname) => write(fname.ptr, data));
-    }
-
-    /// ditto
-    extern (C++) static bool write(const(char)* name, const(void)* data, size_t size)
-    {
-        return write(name, data[0 .. size]);
     }
 
     /// Delete a file.
@@ -229,7 +216,7 @@ nothrow:
      * Returns:
      *  `true` on success
      */
-    extern (D) static bool update(const(char)* namez, const void[] data)
+    static bool update(const(char)* namez, const void[] data)
     {
         enum log = false;
         if (log) printf("update %s\n", namez);
@@ -252,15 +239,9 @@ nothrow:
     }
 
     ///ditto
-    extern(D) static bool update(const(char)[] name, const void[] data)
+    static bool update(const(char)[] name, const void[] data)
     {
         return name.toCStringThen!(fname => update(fname.ptr, data));
-    }
-
-    /// ditto
-    extern (C++) static bool update(const(char)* name, const(void)* data, size_t size)
-    {
-        return update(name, data[0 .. size]);
     }
 
     /// Size of a file in bytes.

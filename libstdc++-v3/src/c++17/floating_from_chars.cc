@@ -451,20 +451,6 @@ namespace
 #endif // USE_STRTOD_FOR_FROM_CHARS
 
 #if _GLIBCXX_FLOAT_IS_IEEE_BINARY32 && _GLIBCXX_DOUBLE_IS_IEEE_BINARY64
-  // If the given ASCII character represents a hexit, return that hexit.
-  // Otherwise return -1.
-  int
-  ascii_to_hexit(char ch)
-  {
-    if (ch >= '0' && ch <= '9')
-      return ch - '0';
-    if (ch >= 'a' && ch <= 'f')
-      return ch - 'a' + 10;
-    if (ch >= 'A' && ch <= 'F')
-      return ch - 'A' + 10;
-    return -1;
-  }
-
   // Return true iff [FIRST,LAST) begins with PREFIX, ignoring case.
   bool
   starts_with_ci(const char* first, const char* last, string_view prefix)
@@ -614,8 +600,8 @@ namespace
 	    continue;
 	  }
 
-	int hexit = ascii_to_hexit(ch);
-	if (hexit == -1)
+	int hexit = __detail::__from_chars_alnum_to_val<false>(ch);
+	if (hexit >= 16)
 	  break;
 	seen_hexit = true;
 

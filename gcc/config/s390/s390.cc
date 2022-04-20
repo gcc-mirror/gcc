@@ -337,7 +337,7 @@ const struct s390_processor processor_table[] =
   { "z13",    "z13",    PROCESSOR_2964_Z13,    &zEC12_cost,  11 },
   { "z14",    "arch12", PROCESSOR_3906_Z14,    &zEC12_cost,  12 },
   { "z15",    "arch13", PROCESSOR_8561_Z15,    &zEC12_cost,  13 },
-  { "arch14", "arch14", PROCESSOR_ARCH14,      &zEC12_cost,  14 },
+  { "z16",    "arch14", PROCESSOR_3931_Z16,    &zEC12_cost,  14 },
   { "native", "",       PROCESSOR_NATIVE,      NULL,         0  }
 };
 
@@ -851,12 +851,6 @@ s390_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
       if ((bflags & B_VXE2) && !TARGET_VXE2)
 	{
 	  error ("Builtin %qF requires z15 or higher", fndecl);
-	  return const0_rtx;
-	}
-
-      if ((bflags & B_NNPA) && !TARGET_NNPA)
-	{
-	  error ("Builtin %qF requires arch14 or higher.", fndecl);
 	  return const0_rtx;
 	}
     }
@@ -8525,7 +8519,7 @@ s390_issue_rate (void)
     case PROCESSOR_2827_ZEC12:
     case PROCESSOR_2964_Z13:
     case PROCESSOR_3906_Z14:
-    case PROCESSOR_ARCH14:
+    case PROCESSOR_3931_Z16:
     default:
       return 1;
     }
@@ -14879,7 +14873,6 @@ s390_get_sched_attrmask (rtx_insn *insn)
 	mask |= S390_SCHED_ATTR_MASK_GROUPOFTWO;
       break;
     case PROCESSOR_8561_Z15:
-    case PROCESSOR_ARCH14:
       if (get_attr_z15_cracked (insn))
 	mask |= S390_SCHED_ATTR_MASK_CRACKED;
       if (get_attr_z15_expanded (insn))
@@ -14889,6 +14882,18 @@ s390_get_sched_attrmask (rtx_insn *insn)
       if (get_attr_z15_groupalone (insn))
 	mask |= S390_SCHED_ATTR_MASK_GROUPALONE;
       if (get_attr_z15_groupoftwo (insn))
+	mask |= S390_SCHED_ATTR_MASK_GROUPOFTWO;
+      break;
+    case PROCESSOR_3931_Z16:
+      if (get_attr_z16_cracked (insn))
+	mask |= S390_SCHED_ATTR_MASK_CRACKED;
+      if (get_attr_z16_expanded (insn))
+	mask |= S390_SCHED_ATTR_MASK_EXPANDED;
+      if (get_attr_z16_endgroup (insn))
+	mask |= S390_SCHED_ATTR_MASK_ENDGROUP;
+      if (get_attr_z16_groupalone (insn))
+	mask |= S390_SCHED_ATTR_MASK_GROUPALONE;
+      if (get_attr_z16_groupoftwo (insn))
 	mask |= S390_SCHED_ATTR_MASK_GROUPOFTWO;
       break;
     default:
@@ -14927,7 +14932,6 @@ s390_get_unit_mask (rtx_insn *insn, int *units)
 	mask |= 1 << 3;
       break;
     case PROCESSOR_8561_Z15:
-    case PROCESSOR_ARCH14:
       *units = 4;
       if (get_attr_z15_unit_lsu (insn))
 	mask |= 1 << 0;
@@ -14936,6 +14940,17 @@ s390_get_unit_mask (rtx_insn *insn, int *units)
       if (get_attr_z15_unit_fxb (insn))
 	mask |= 1 << 2;
       if (get_attr_z15_unit_vfu (insn))
+	mask |= 1 << 3;
+      break;
+    case PROCESSOR_3931_Z16:
+      *units = 4;
+      if (get_attr_z16_unit_lsu (insn))
+	mask |= 1 << 0;
+      if (get_attr_z16_unit_fxa (insn))
+	mask |= 1 << 1;
+      if (get_attr_z16_unit_fxb (insn))
+	mask |= 1 << 2;
+      if (get_attr_z16_unit_vfu (insn))
 	mask |= 1 << 3;
       break;
     default:
@@ -14951,7 +14966,7 @@ s390_is_fpd (rtx_insn *insn)
     return false;
 
   return get_attr_z13_unit_fpd (insn) || get_attr_z14_unit_fpd (insn)
-    || get_attr_z15_unit_fpd (insn);
+    || get_attr_z15_unit_fpd (insn) || get_attr_z16_unit_fpd (insn);
 }
 
 static bool
@@ -14961,7 +14976,7 @@ s390_is_fxd (rtx_insn *insn)
     return false;
 
   return get_attr_z13_unit_fxd (insn) || get_attr_z14_unit_fxd (insn)
-    || get_attr_z15_unit_fxd (insn);
+    || get_attr_z15_unit_fxd (insn) || get_attr_z16_unit_fxd (insn);
 }
 
 /* Returns TRUE if INSN is a long-running instruction.  */

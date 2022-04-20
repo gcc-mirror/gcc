@@ -445,6 +445,9 @@ public:
      */
     private void writeIdentifier(const AST.Dsymbol s, const bool canFix = false)
     {
+        if (const mn = getMangleOverride(s))
+            return buf.writestring(mn);
+
         writeIdentifier(s.ident, s.loc, s.kind(), canFix);
     }
 
@@ -719,15 +722,20 @@ public:
         visited[cast(void*)fd] = true;
 
         // silently ignore non-user-defined destructors
-        if (fd.generated && fd.isDtorDeclaration())
+        if (fd.isGenerated && fd.isDtorDeclaration())
             return;
 
         // Note that tf might be null for templated (member) functions
         auto tf = cast(AST.TypeFunction)fd.type;
-        if ((tf && tf.linkage != LINK.c && tf.linkage != LINK.cpp) || (!tf && fd.isPostBlitDeclaration()))
+        if ((tf && (tf.linkage != LINK.c || adparent) && tf.linkage != LINK.cpp) || (!tf && fd.isPostBlitDeclaration()))
         {
             ignored("function %s because of linkage", fd.toPrettyChars());
-            return checkVirtualFunction(fd);
+            return checkFunctionNeedsPlaceholder(fd);
+        }
+        if (fd.mangleOverride && tf && tf.linkage != LINK.c)
+        {
+            ignored("function %s because C++ doesn't support explicit mangling", fd.toPrettyChars());
+            return checkFunctionNeedsPlaceholder(fd);
         }
         if (!adparent && !fd.fbody)
         {
@@ -742,7 +750,7 @@ public:
         if (tf && !isSupportedType(tf.next))
         {
             ignored("function %s because its return type cannot be mapped to C++", fd.toPrettyChars());
-            return checkVirtualFunction(fd);
+            return checkFunctionNeedsPlaceholder(fd);
         }
         if (tf) foreach (i, fparam; tf.parameterList)
         {
@@ -750,7 +758,7 @@ public:
             {
                 ignored("function %s because one of its parameters has type `%s` which cannot be mapped to C++",
                         fd.toPrettyChars(), fparam.type.toChars());
-                return checkVirtualFunction(fd);
+                return checkFunctionNeedsPlaceholder(fd);
             }
         }
 
@@ -822,13 +830,19 @@ public:
 
     }
 
-    /// Checks whether `fd` is a virtual function and emits a dummy declaration
-    /// if required to ensure proper vtable layout
-    private void checkVirtualFunction(AST.FuncDeclaration fd)
+    /++
+     + Checks whether `fd` is a function that requires a dummy declaration
+     + instead of simply emitting the declaration (because it would cause
+     + ABI / behaviour issues). This includes:
+     +
+     + - virtual functions to ensure proper vtable layout
+     + - destructors that would break RAII
+     +/
+    private void checkFunctionNeedsPlaceholder(AST.FuncDeclaration fd)
     {
         // Omit redundant declarations - the slot was already
         // reserved in the base class
-        if (fd.isVirtual() && fd.introducing)
+        if (fd.isVirtual() && fd.isIntroducing())
         {
             // Hide placeholders because they are not ABI compatible
             writeProtection(AST.Visibility.Kind.private_);
@@ -836,6 +850,15 @@ public:
             __gshared int counter; // Ensure unique names in all cases
             buf.printf("virtual void __vtable_slot_%u();", counter++);
             buf.writenl();
+        }
+        else if (fd.isDtorDeclaration())
+        {
+            // Create inaccessible dtor to prevent code from keeping instances that
+            // need to be destroyed on the C++ side (but cannot call the dtor)
+            writeProtection(AST.Visibility.Kind.private_);
+            buf.writeByte('~');
+            buf.writestring(adparent.ident.toString());
+            buf.writestringln("();");
         }
     }
 
@@ -946,6 +969,11 @@ public:
             if (vd.linkage != LINK.c && vd.linkage != LINK.cpp && !(tdparent && (this.linkage == LINK.c || this.linkage == LINK.cpp)))
             {
                 ignored("variable %s because of linkage", vd.toPrettyChars());
+                return;
+            }
+            if (vd.mangleOverride && vd.linkage != LINK.c)
+            {
+                ignored("variable %s because C++ doesn't support explicit mangling", vd.toPrettyChars());
                 return;
             }
             if (!isSupportedType(type))
@@ -1073,7 +1101,7 @@ public:
 
         auto fd = ad.aliassym.isFuncDeclaration();
 
-        if (fd && (fd.generated || fd.isDtorDeclaration()))
+        if (fd && (fd.isGenerated() || fd.isDtorDeclaration()))
         {
             // Ignore. It's taken care of while visiting FuncDeclaration
             return;
@@ -1106,7 +1134,7 @@ public:
                 // Print prefix of the base class if this function originates from a superclass
                 // because alias might be resolved through multiple classes, e.g.
                 // e.g. for alias visit = typeof(super).visit in the visitors
-                if (!fd.introducing)
+                if (!fd.isIntroducing())
                     printPrefix(ad.toParent().isClassDeclaration().baseClass);
                 else
                     printPrefix(pd);
@@ -1655,7 +1683,16 @@ public:
             scope(exit) printf("[typeToBuffer(AST.Type, AST.Dsymbol) exit] %s sym %s\n", t.toChars(), s.toChars());
         }
 
-        this.ident = s.ident;
+        // The context pointer (represented as `ThisDeclaration`) is named
+        // `this` but accessible via `outer`
+        if (auto td = s.isThisDeclaration())
+        {
+            import dmd.id;
+            this.ident = Id.outer;
+        }
+        else
+            this.ident = s.ident;
+
         auto type = origType !is null ? origType : t;
         AST.Dsymbol customLength;
 
@@ -1702,7 +1739,12 @@ public:
         if (this.ident)
         {
             buf.writeByte(' ');
-            writeIdentifier(s, canFixup);
+            // Custom identifier doesn't need further checks
+            if (this.ident !is s.ident)
+                buf.writestring(this.ident.toString());
+            else
+                writeIdentifier(s, canFixup);
+
         }
         this.ident = null;
 
@@ -2922,6 +2964,10 @@ public:
             scope(exit) printf("[writeFullName exit] %s\n", sym.toPrettyChars());
         }
 
+        // Explicit `pragma(mangle, "<some string>` overrides the declared name
+        if (auto mn = getMangleOverride(sym))
+            return buf.writestring(mn);
+
         /// Checks whether `sym` is nested in `par` and hence doesn't need the FQN
         static bool isNestedIn(AST.Dsymbol sym, AST.Dsymbol par)
         {
@@ -2969,6 +3015,15 @@ public:
             visitTi(ti);
         else
             buf.writestring(sym.ident.toString());
+    }
+
+    /// Returns: Explicit mangling for `sym` if present
+    extern(D) static const(char)[] getMangleOverride(const AST.Dsymbol sym)
+    {
+        if (auto decl = sym.isDeclaration())
+            return decl.mangleOverride;
+
+        return null;
     }
 }
 
@@ -3037,7 +3092,7 @@ void hashEndIf(ref OutBuffer buf)
 /// Writes `#define <content>` into the supplied buffer
 void hashDefine(ref OutBuffer buf, string content)
 {
-    buf.writestring("# define ");
+    buf.writestring("#define ");
     buf.writestringln(content);
 }
 

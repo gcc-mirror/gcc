@@ -1016,7 +1016,9 @@ root_region::dump_to_pp (pretty_printer *pp, bool simple) const
 symbolic_region::symbolic_region (unsigned id, region *parent,
 				  const svalue *sval_ptr)
 : region (complexity::from_pair (parent, sval_ptr), id, parent,
-	  TREE_TYPE (sval_ptr->get_type ())),
+	  (sval_ptr->get_type ()
+	   ? TREE_TYPE (sval_ptr->get_type ())
+	   : NULL_TREE)),
   m_sval_ptr (sval_ptr)
 {
 }
@@ -1045,8 +1047,11 @@ symbolic_region::dump_to_pp (pretty_printer *pp, bool simple) const
     {
       pp_string (pp, "symbolic_region(");
       get_parent_region ()->dump_to_pp (pp, simple);
-      pp_string (pp, ", ");
-      print_quoted_type (pp, get_type ());
+      if (get_type ())
+	{
+	  pp_string (pp, ", ");
+	  print_quoted_type (pp, get_type ());
+	}
       pp_string (pp, ", ");
       m_sval_ptr->dump_to_pp (pp, simple);
       pp_string (pp, ")");

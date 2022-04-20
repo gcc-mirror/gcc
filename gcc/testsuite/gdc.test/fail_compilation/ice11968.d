@@ -1,7 +1,8 @@
 /*
 TEST_OUTPUT:
 ----
-fail_compilation/ice11968.d(8): Error: The `delete` keyword is obsolete.  Use `object.destroy()` (and `core.memory.GC.free()` if applicable) instead.
+fail_compilation/ice11968.d(9): Error: the `delete` keyword is obsolete
+fail_compilation/ice11968.d(9):        use `object.destroy()` (and `core.memory.GC.free()` if applicable) instead
 ----
 */
 

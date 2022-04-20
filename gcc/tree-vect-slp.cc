@@ -5185,22 +5185,46 @@ vect_bb_slp_scalar_cost (vec_info *vinfo,
 	 the scalar cost.  */
       if (!STMT_VINFO_LIVE_P (stmt_info))
 	{
-	  FOR_EACH_PHI_OR_STMT_DEF (def_p, orig_stmt, op_iter, SSA_OP_DEF)
+	  auto_vec<gimple *, 8> worklist;
+	  hash_set<gimple *> *worklist_visited = NULL;
+	  worklist.quick_push (orig_stmt);
+	  do
 	    {
-	      imm_use_iterator use_iter;
-	      gimple *use_stmt;
-	      FOR_EACH_IMM_USE_STMT (use_stmt, use_iter, DEF_FROM_PTR (def_p))
-		if (!is_gimple_debug (use_stmt))
-		  {
-		    stmt_vec_info use_stmt_info = vinfo->lookup_stmt (use_stmt);
-		    if (!use_stmt_info
-			|| !vectorized_scalar_stmts.contains (use_stmt_info))
+	      gimple *work_stmt = worklist.pop ();
+	      FOR_EACH_PHI_OR_STMT_DEF (def_p, work_stmt, op_iter, SSA_OP_DEF)
+		{
+		  imm_use_iterator use_iter;
+		  gimple *use_stmt;
+		  FOR_EACH_IMM_USE_STMT (use_stmt, use_iter,
+					 DEF_FROM_PTR (def_p))
+		    if (!is_gimple_debug (use_stmt))
 		      {
-			(*life)[i] = true;
-			break;
+			stmt_vec_info use_stmt_info
+			  = vinfo->lookup_stmt (use_stmt);
+			if (!use_stmt_info
+			    || !vectorized_scalar_stmts.contains (use_stmt_info))
+			  {
+			    if (use_stmt_info
+				&& STMT_VINFO_IN_PATTERN_P (use_stmt_info))
+			      {
+				/* For stmts participating in patterns we have
+				   to check its uses recursively.  */
+				if (!worklist_visited)
+				  worklist_visited = new hash_set<gimple *> ();
+				if (!worklist_visited->add (use_stmt))
+				  worklist.safe_push (use_stmt);
+				continue;
+			      }
+			    (*life)[i] = true;
+			    goto next_lane;
+			  }
 		      }
-		  }
+		}
 	    }
+	  while (!worklist.is_empty ());
+next_lane:
+	  if (worklist_visited)
+	    delete worklist_visited;
 	  if ((*life)[i])
 	    continue;
 	}

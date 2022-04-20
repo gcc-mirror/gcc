@@ -1581,16 +1581,29 @@
   }
 )
 
-(define_insn "aarch64_cpymemdi"
-  [(parallel [
-   (set (match_operand:DI 2 "register_operand" "+&r") (const_int 0))
+(define_expand "aarch64_cpymemdi"
+  [(parallel
+     [(set (match_operand 2) (const_int 0))
+      (clobber (match_dup 3))
+      (clobber (match_dup 4))
+      (set (match_operand 0)
+	   (unspec:BLK [(match_operand 1) (match_dup 2)] UNSPEC_CPYMEM))])]
+  "TARGET_MOPS"
+  {
+    operands[3] = XEXP (operands[0], 0);
+    operands[4] = XEXP (operands[1], 0);
+  }
+)
+
+(define_insn "*aarch64_cpymemdi"
+  [(set (match_operand:DI 2 "register_operand" "+&r") (const_int 0))
    (clobber (match_operand:DI 0 "register_operand" "+&r"))
    (clobber (match_operand:DI 1 "register_operand" "+&r"))
    (set (mem:BLK (match_dup 0))
-        (unspec:BLK [(mem:BLK (match_dup 1)) (match_dup 2)] UNSPEC_CPYMEM))])]
- "TARGET_MOPS"
- "cpyfp\t[%x0]!, [%x1]!, %x2!\;cpyfm\t[%x0]!, [%x1]!, %x2!\;cpyfe\t[%x0]!, [%x1]!, %x2!"
- [(set_attr "length" "12")]
+        (unspec:BLK [(mem:BLK (match_dup 1)) (match_dup 2)] UNSPEC_CPYMEM))]
+  "TARGET_MOPS"
+  "cpyfp\t[%x0]!, [%x1]!, %x2!\;cpyfm\t[%x0]!, [%x1]!, %x2!\;cpyfe\t[%x0]!, [%x1]!, %x2!"
+  [(set_attr "length" "12")]
 )
 
 ;; 0 is dst
@@ -1657,16 +1670,28 @@
 }
 )
 
-(define_insn "aarch64_setmemdi"
-  [(parallel [
-   (set (match_operand:DI 2 "register_operand" "+&r") (const_int 0))
+(define_expand "aarch64_setmemdi"
+  [(parallel
+     [(set (match_operand 2) (const_int 0))
+      (clobber (match_dup 3))
+      (set (match_operand 0)
+	   (unspec:BLK [(match_operand 1)
+			(match_dup 2)] UNSPEC_SETMEM))])]
+  "TARGET_MOPS"
+  {
+    operands[3] = XEXP (operands[0], 0);
+  }
+)
+
+(define_insn "*aarch64_setmemdi"
+  [(set (match_operand:DI 2 "register_operand" "+&r") (const_int 0))
    (clobber (match_operand:DI 0 "register_operand" "+&r"))
    (set (mem:BLK (match_dup 0))
         (unspec:BLK [(match_operand:QI 1 "aarch64_reg_or_zero" "rZ")
-                    (match_dup 2)] UNSPEC_SETMEM))])]
- "TARGET_MOPS"
- "setp\t[%x0]!, %x2!, %x1\;setm\t[%x0]!, %x2!, %x1\;sete\t[%x0]!, %x2!, %x1"
- [(set_attr "length" "12")]
+		     (match_dup 2)] UNSPEC_SETMEM))]
+  "TARGET_MOPS"
+  "setp\t[%x0]!, %x2!, %x1\;setm\t[%x0]!, %x2!, %x1\;sete\t[%x0]!, %x2!, %x1"
+  [(set_attr "length" "12")]
 )
 
 ;; 0 is dst

@@ -1,4 +1,5 @@
 // REQUIRED_ARGS: -unittest
+// PERMUTE_ARGS: -preview=dip1000
 // Issue 21285 - Delegate covariance broken between 2.092 and 2.094 (git master).
 unittest
 {
@@ -24,4 +25,37 @@ unittest
 
     static assert(is(typeof(a[0]) == dg));
     static assert(is(typeof(ab[0]) == fn));
+}
+
+int f(string s) { throw new Exception(""); }
+void main()
+{
+    string path;
+    int bank, preset;
+    void delegate(string value)[string] aa = [
+        "path": (string arg) {
+            path = arg;
+        },
+        "bank": (string arg) {
+            bank = f(arg);
+        },
+        "preset": (string arg) {
+            preset = f(arg);
+        },
+    ];
+
+    string delegate(string value)[string] aa2 = [
+        "path": (string arg) {
+            path = arg;
+            return arg;
+        },
+        "bank": (string arg) {
+            bank = f(arg);
+            return arg;
+        },
+        "preset": (string arg) {
+            preset = f(arg);
+            return arg;
+        },
+    ];
 }

@@ -50,7 +50,6 @@ struct S final
     {
         int32_t y;
         double z;
-        extern "C" void foo();
         void bar();
     };
     struct

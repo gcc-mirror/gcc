@@ -1,3 +1,10 @@
+2022-04-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/105186
+	* c-common.cc (c_common_nodes_and_builtins): After registering __int%d
+	and __int%d__ builtin types, initialize corresponding ridpointers
+	entry.
+
 2022-03-30  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/101030

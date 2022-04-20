@@ -267,34 +267,42 @@ modref_access_node::closer_pair_p (const modref_access_node &a1,
 
 
   /* Now compute distance of the intervals.  */
-  poly_int64 dist1, dist2;
+  poly_offset_int dist1, dist2;
   if (known_le (offseta1, offsetb1))
     {
       if (!known_size_p (a1.max_size))
 	dist1 = 0;
       else
-	dist1 = offsetb1 - offseta1 - a1.max_size;
+	dist1 = (poly_offset_int)offsetb1
+		- (poly_offset_int)offseta1
+		- (poly_offset_int)a1.max_size;
     }
   else
     {
       if (!known_size_p (b1.max_size))
 	dist1 = 0;
       else
-	dist1 = offseta1 - offsetb1 - b1.max_size;
+	dist1 = (poly_offset_int)offseta1
+		 - (poly_offset_int)offsetb1
+		 - (poly_offset_int)b1.max_size;
     }
   if (known_le (offseta2, offsetb2))
     {
       if (!known_size_p (a2.max_size))
 	dist2 = 0;
       else
-	dist2 = offsetb2 - offseta2 - a2.max_size;
+	dist2 = (poly_offset_int)offsetb2
+		- (poly_offset_int)offseta2
+		- (poly_offset_int)a2.max_size;
     }
   else
     {
       if (!known_size_p (b2.max_size))
 	dist2 = 0;
       else
-	dist2 = offseta2 - offsetb2 - b2.max_size;
+	dist2 = offseta2
+		- (poly_offset_int)offsetb2
+		- (poly_offset_int)b2.max_size;
     }
   /* It may happen that intervals overlap in case size
      is different.  Prefer the overlap to non-overlap.  */
@@ -380,9 +388,16 @@ modref_access_node::update2 (poly_int64 parm_offset1,
     new_max_size = max_size2;
   else
     {
-      new_max_size = max_size2 + offset2 - offset1;
-      if (known_le (new_max_size, max_size1))
-	new_max_size = max_size1;
+      poly_offset_int s = (poly_offset_int)max_size2
+			  + (poly_offset_int)offset2
+			  - (poly_offset_int)offset1;
+      if (s.to_shwi (&new_max_size))
+	{
+	  if (known_le (new_max_size, max_size1))
+	    new_max_size = max_size1;
+	}
+      else
+	new_max_size = -1;
     }
 
   update (parm_offset1, offset1,
@@ -678,7 +693,9 @@ modref_access_node::get_ao_ref (const gcall *stmt, ao_ref *ref) const
 {
   tree arg;
 
-  if (!parm_offset_known || !(arg = get_call_arg (stmt)))
+  if (!parm_offset_known
+      || !(arg = get_call_arg (stmt))
+      || !POINTER_TYPE_P (TREE_TYPE (arg)))
     return false;
   poly_offset_int off = (poly_offset_int)offset
 	+ ((poly_offset_int)parm_offset << LOG2_BITS_PER_UNIT);

@@ -7,4 +7,3 @@ void front(T)(T[] a)
 {
     static assert(is(T == void));
 }
-

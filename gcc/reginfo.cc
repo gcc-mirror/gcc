@@ -122,6 +122,24 @@ const char * reg_class_names[] = REG_CLASS_NAMES;
    reginfo has been initialized.  */
 static int no_global_reg_vars = 0;
 
+static void
+clear_global_regs_cache (void)
+{
+  for (size_t i = 0 ; i < FIRST_PSEUDO_REGISTER ; i++)
+  {
+    global_regs[i] = 0;
+    global_regs_decl[i] = NULL;
+  }
+}
+
+void
+reginfo_cc_finalize (void)
+{
+  clear_global_regs_cache ();
+  no_global_reg_vars = 0;
+  CLEAR_HARD_REG_SET (global_reg_set);
+}
+
 /* Given a register bitmap, turn on the bits in a HARD_REG_SET that
    correspond to the hard registers, if any, set in that map.  This
    could be done far more efficiently by having all sorts of special-cases
@@ -441,10 +459,15 @@ init_reg_modes_target (void)
 {
   int i, j;
 
+  this_target_regs->x_hard_regno_max_nregs = 1;
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
     for (j = 0; j < MAX_MACHINE_MODE; j++)
-      this_target_regs->x_hard_regno_nregs[i][j]
-	= targetm.hard_regno_nregs (i, (machine_mode) j);
+      {
+	unsigned char nregs = targetm.hard_regno_nregs (i, (machine_mode) j);
+	this_target_regs->x_hard_regno_nregs[i][j] = nregs;
+	if (nregs > this_target_regs->x_hard_regno_max_nregs)
+	  this_target_regs->x_hard_regno_max_nregs = nregs;
+      }
 
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
     {

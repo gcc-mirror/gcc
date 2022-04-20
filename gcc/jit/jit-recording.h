@@ -205,6 +205,11 @@ public:
 	    rvalue *expr,
 	    type *type_);
 
+  rvalue *
+  new_bitcast (location *loc,
+	       rvalue *expr,
+	       type *type_);
+
   lvalue *
   new_array_access (location *loc,
 		    rvalue *ptr,
@@ -564,6 +569,7 @@ public:
   virtual bool is_void () const { return false; }
   virtual vector_type *is_vector () { return NULL; }
   virtual bool has_known_size () const { return true; }
+  virtual bool is_signed () const = 0;
 
   bool is_numeric () const
   {
@@ -604,12 +610,21 @@ public:
   bool accepts_writes_from (type *rtype) FINAL OVERRIDE
   {
     if (m_kind == GCC_JIT_TYPE_VOID_PTR)
-      if (rtype->is_pointer ())
-	{
-	  /* LHS (this) is type (void *), and the RHS is a pointer:
-	     accept it:  */
-	  return true;
-	}
+      {
+	if (rtype->is_pointer ())
+	  {
+	    /* LHS (this) is type (void *), and the RHS is a pointer:
+	       accept it:  */
+	    return true;
+	  }
+      } else if (is_int ()
+		 && rtype->is_int ()
+		 && get_size () == rtype->get_size ()
+		 && is_signed () == rtype->is_signed ())
+      {
+	/* LHS (this) is an integer of the same size and sign as rtype.  */
+	return true;
+      }
 
     return type::accepts_writes_from (rtype);
   }
@@ -620,6 +635,7 @@ public:
   type *is_pointer () FINAL OVERRIDE { return dereference (); }
   type *is_array () FINAL OVERRIDE { return NULL; }
   bool is_void () const FINAL OVERRIDE { return m_kind == GCC_JIT_TYPE_VOID; }
+  bool is_signed () const FINAL OVERRIDE;
 
 public:
   void replay_into (replayer *r) FINAL OVERRIDE;
@@ -653,6 +669,7 @@ public:
   bool is_bool () const FINAL OVERRIDE { return false; }
   type *is_pointer () FINAL OVERRIDE { return m_other_type; }
   type *is_array () FINAL OVERRIDE { return NULL; }
+  bool is_signed () const FINAL OVERRIDE { return false; }
 
 private:
   string * make_debug_string () FINAL OVERRIDE;
@@ -674,12 +691,15 @@ public:
 
   type *dereference () FINAL OVERRIDE { return m_other_type->dereference (); }
 
+  size_t get_size () FINAL OVERRIDE { return m_other_type->get_size (); };
+
   bool is_int () const FINAL OVERRIDE { return m_other_type->is_int (); }
   bool is_float () const FINAL OVERRIDE { return m_other_type->is_float (); }
   bool is_bool () const FINAL OVERRIDE { return m_other_type->is_bool (); }
   type *is_pointer () FINAL OVERRIDE { return m_other_type->is_pointer (); }
   type *is_array () FINAL OVERRIDE { return m_other_type->is_array (); }
   struct_ *is_struct () FINAL OVERRIDE { return m_other_type->is_struct (); }
+  bool is_signed () const FINAL OVERRIDE { return m_other_type->is_signed (); }
 
 protected:
   type *m_other_type;
@@ -811,6 +831,7 @@ class array_type : public type
   type *is_pointer () FINAL OVERRIDE { return NULL; }
   type *is_array () FINAL OVERRIDE { return m_element_type; }
   int num_elements () { return m_num_elements; }
+  bool is_signed () const FINAL OVERRIDE { return false; }
 
   void replay_into (replayer *) FINAL OVERRIDE;
 
@@ -844,6 +865,7 @@ public:
   bool is_bool () const FINAL OVERRIDE { return false; }
   type *is_pointer () FINAL OVERRIDE { return NULL; }
   type *is_array () FINAL OVERRIDE { return NULL; }
+  bool is_signed () const FINAL OVERRIDE { return false; }
 
   void replay_into (replayer *) FINAL OVERRIDE;
 
@@ -957,6 +979,7 @@ public:
   bool is_bool () const FINAL OVERRIDE { return false; }
   type *is_pointer () FINAL OVERRIDE { return NULL; }
   type *is_array () FINAL OVERRIDE { return NULL; }
+  bool is_signed () const FINAL OVERRIDE { return false; }
 
   bool has_known_size () const FINAL OVERRIDE { return m_fields != NULL; }
 
@@ -1146,10 +1169,12 @@ public:
   lvalue (context *ctxt,
 	  location *loc,
 	  type *type_)
-    : rvalue (ctxt, loc, type_),
+  : rvalue (ctxt, loc, type_),
+    m_link_section (NULL),
+    m_reg_name (NULL),
     m_tls_model (GCC_JIT_TLS_MODEL_NONE),
-    m_link_section (NULL)
-    {}
+    m_alignment (0)
+  {}
 
   playback::lvalue *
   playback_lvalue () const
@@ -1172,10 +1197,15 @@ public:
   virtual bool is_global () const { return false; }
   void set_tls_model (enum gcc_jit_tls_model model);
   void set_link_section (const char *name);
+  void set_register_name (const char *reg_name);
+  void set_alignment (unsigned bytes);
+  unsigned get_alignment () const { return m_alignment; }
 
 protected:
-  enum gcc_jit_tls_model m_tls_model;
   string *m_link_section;
+  string *m_reg_name;
+  enum gcc_jit_tls_model m_tls_model;
+  unsigned m_alignment;
 };
 
 class param : public lvalue
@@ -1671,6 +1701,33 @@ public:
 	location *loc,
 	rvalue *a,
 	type *type_)
+  : rvalue (ctxt, loc, type_),
+    m_rvalue (a)
+  {}
+
+  void replay_into (replayer *r) FINAL OVERRIDE;
+
+  void visit_children (rvalue_visitor *v) FINAL OVERRIDE;
+
+private:
+  string * make_debug_string () FINAL OVERRIDE;
+  void write_reproducer (reproducer &r) FINAL OVERRIDE;
+  enum precedence get_precedence () const FINAL OVERRIDE
+  {
+    return PRECEDENCE_CAST;
+  }
+
+private:
+  rvalue *m_rvalue;
+};
+
+class bitcast : public rvalue
+{
+public:
+  bitcast (context *ctxt,
+	   location *loc,
+	   rvalue *a,
+	   type *type_)
   : rvalue (ctxt, loc, type_),
     m_rvalue (a)
   {}

@@ -99,9 +99,8 @@ int blockExit(Statement s, FuncDeclaration func, bool mustNotThrow)
                     result = BE.halt;
                     return;
                 }
-                if (s.exp.op == EXP.assert_)
+                if (AssertExp a = s.exp.isAssertExp())
                 {
-                    AssertExp a = cast(AssertExp)s.exp;
                     if (a.e1.toBool().hasValue(false)) // if it's an assert(0)
                     {
                         result = BE.halt;
@@ -505,7 +504,7 @@ int blockExit(Statement s, FuncDeclaration func, bool mustNotThrow)
             if (!(s.stc & STC.nothrow_))
             {
                 if (mustNotThrow && !(s.stc & STC.nothrow_))
-                    s.deprecation("`asm` statement is assumed to throw - mark it with `nothrow` if it does not");
+                    s.error("`asm` statement is assumed to throw - mark it with `nothrow` if it does not");
                 else
                     result |= BE.throw_;
             }

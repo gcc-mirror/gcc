@@ -344,9 +344,10 @@ am__objects_14 = core/sys/netbsd/dlfcn.lo core/sys/netbsd/err.lo \
 @DRUNTIME_OS_NETBSD_TRUE@am__objects_15 = $(am__objects_14)
 am__objects_16 = core/sys/openbsd/dlfcn.lo core/sys/openbsd/err.lo \
 	core/sys/openbsd/execinfo.lo core/sys/openbsd/pthread_np.lo \
-	core/sys/openbsd/stdlib.lo core/sys/openbsd/string.lo \
-	core/sys/openbsd/sys/cdefs.lo core/sys/openbsd/sys/elf.lo \
-	core/sys/openbsd/sys/elf32.lo core/sys/openbsd/sys/elf64.lo \
+	core/sys/openbsd/pwd.lo core/sys/openbsd/stdlib.lo \
+	core/sys/openbsd/string.lo core/sys/openbsd/sys/cdefs.lo \
+	core/sys/openbsd/sys/elf.lo core/sys/openbsd/sys/elf32.lo \
+	core/sys/openbsd/sys/elf64.lo \
 	core/sys/openbsd/sys/elf_common.lo \
 	core/sys/openbsd/sys/link_elf.lo core/sys/openbsd/sys/mman.lo \
 	core/sys/openbsd/sys/sysctl.lo core/sys/openbsd/time.lo \
@@ -958,13 +959,13 @@ DRUNTIME_DSOURCES_NETBSD = core/sys/netbsd/dlfcn.d \
 
 DRUNTIME_DSOURCES_OPENBSD = core/sys/openbsd/dlfcn.d \
 	core/sys/openbsd/err.d core/sys/openbsd/execinfo.d \
-	core/sys/openbsd/pthread_np.d core/sys/openbsd/stdlib.d \
-	core/sys/openbsd/string.d core/sys/openbsd/sys/cdefs.d \
-	core/sys/openbsd/sys/elf.d core/sys/openbsd/sys/elf32.d \
-	core/sys/openbsd/sys/elf64.d core/sys/openbsd/sys/elf_common.d \
-	core/sys/openbsd/sys/link_elf.d core/sys/openbsd/sys/mman.d \
-	core/sys/openbsd/sys/sysctl.d core/sys/openbsd/time.d \
-	core/sys/openbsd/unistd.d
+	core/sys/openbsd/pthread_np.d core/sys/openbsd/pwd.d \
+	core/sys/openbsd/stdlib.d core/sys/openbsd/string.d \
+	core/sys/openbsd/sys/cdefs.d core/sys/openbsd/sys/elf.d \
+	core/sys/openbsd/sys/elf32.d core/sys/openbsd/sys/elf64.d \
+	core/sys/openbsd/sys/elf_common.d core/sys/openbsd/sys/link_elf.d \
+	core/sys/openbsd/sys/mman.d core/sys/openbsd/sys/sysctl.d \
+	core/sys/openbsd/time.d core/sys/openbsd/unistd.d
 
 DRUNTIME_DSOURCES_POSIX = core/sys/posix/aio.d \
 	core/sys/posix/arpa/inet.d core/sys/posix/config.d \
@@ -1619,6 +1620,7 @@ core/sys/openbsd/dlfcn.lo: core/sys/openbsd/$(am__dirstamp)
 core/sys/openbsd/err.lo: core/sys/openbsd/$(am__dirstamp)
 core/sys/openbsd/execinfo.lo: core/sys/openbsd/$(am__dirstamp)
 core/sys/openbsd/pthread_np.lo: core/sys/openbsd/$(am__dirstamp)
+core/sys/openbsd/pwd.lo: core/sys/openbsd/$(am__dirstamp)
 core/sys/openbsd/stdlib.lo: core/sys/openbsd/$(am__dirstamp)
 core/sys/openbsd/string.lo: core/sys/openbsd/$(am__dirstamp)
 core/sys/openbsd/sys/$(am__dirstamp):

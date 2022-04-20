@@ -69,7 +69,7 @@ void test_copy_cond_equal_length (void)
   T ( 0 ==, 33,  1, (i0 ? a32 : b32) + 32);
 }
 
-#if defined(__i386__) || defined(__x86_64__) || defined(__aarch64__) \
+#if (defined(__i386__) && defined(__SSE__)) || defined(__x86_64__) || defined(__aarch64__) \
     || defined(__s390__) || defined(__powerpc64__)
 
 /* The following tests assume GCC transforms the memcpy calls into

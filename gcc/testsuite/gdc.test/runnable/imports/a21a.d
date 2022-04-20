@@ -18,4 +18,3 @@ class SomeClass
     mixin GoodMixin;
     mixin BadMixin;
 }
-

@@ -262,6 +262,10 @@ static void set_options (gcc_jit_context *ctxt, const char *argv0)
     ctxt,
     GCC_JIT_BOOL_OPTION_DUMP_SUMMARY,
     0);
+  /* Make it easier to compare error messages by disabling colorization,
+     rather then have them be affected by whether stderr is going to a tty.  */
+  gcc_jit_context_add_command_line_option
+    (ctxt, "-fdiagnostics-color=never");
 }
 #endif /* #ifndef TEST_ESCHEWS_SET_OPTIONS */
 

@@ -65,6 +65,7 @@ module std.functional;
 
 import std.meta : AliasSeq, Reverse;
 import std.traits : isCallable, Parameters;
+import std.conv : toCtString;
 
 import std.internal.attributes : betterC;
 
@@ -1846,17 +1847,6 @@ if (isCallable!(F))
         auto dg_xtrnD = toDelegate(&S.xtrnD);
         static assert(! is(typeof(dg_xtrnC) == typeof(dg_xtrnD)));
     }
-}
-
-// Converts an unsigned integer to a compile-time string constant.
-private enum toCtString(ulong n) = n.stringof[0 .. $ - "LU".length];
-
-// Check that .stringof does what we expect, since it's not guaranteed by the
-// language spec.
-@safe unittest
-{
-    assert(toCtString!0 == "0");
-    assert(toCtString!123456 == "123456");
 }
 
 /**

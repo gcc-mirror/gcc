@@ -162,6 +162,22 @@ test_copy()
   return true;
 }
 
+constexpr bool
+test_pr105153()
+{
+  struct E {
+    E(int&&) = delete;
+    E(const int&);
+  };
+
+  std::expected<void, E> e(std::expected<void, int>{});
+
+  static_assert( ! std::is_constructible_v<std::expected<void, int>,
+					   std::expected<int, int>> );
+
+  return true;
+}
+
 int main()
 {
   test_default();
@@ -172,4 +188,6 @@ int main()
   static_assert( test_err() );
   test_copy();
   static_assert( test_copy() );
+  test_pr105153();
+  static_assert( test_pr105153() );
 }

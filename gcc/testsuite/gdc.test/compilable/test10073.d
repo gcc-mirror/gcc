@@ -21,4 +21,3 @@ class Bar
 }
 
 class Foo {}    // NG
-

@@ -3,9 +3,9 @@ REQUIRED_ARGS: -preview=dip1000
 TEST_OUTPUT:
 ---
 fail_compilation/test17450.d(17): Error: returning `&s.bar` escapes a reference to parameter `s`
-fail_compilation/test17450.d(17):        perhaps annotate the parameter with `return`
+fail_compilation/test17450.d(16):        perhaps annotate the parameter with `return`
 fail_compilation/test17450.d(20): Error: returning `&this.bar` escapes a reference to parameter `this`
-fail_compilation/test17450.d(20):        perhaps annotate the function with `return`
+fail_compilation/test17450.d(19):        perhaps annotate the function with `return`
 ---
 */
 // https://issues.dlang.org/show_bug.cgi?id=17450

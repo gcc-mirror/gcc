@@ -5415,11 +5415,10 @@ type_has_user_provided_or_explicit_constructor (tree t)
 
 /* Returns true iff class T has a non-user-provided (i.e. implicitly
    declared or explicitly defaulted in the class body) default
-   constructor.  If SYNTH, only return true if it hasn't been
-   implicitly defined yet.  */
+   constructor.  */
 
-static bool
-type_has_non_user_provided_default_constructor_1 (tree t, bool synth)
+bool
+type_has_non_user_provided_default_constructor (tree t)
 {
   if (!TYPE_HAS_DEFAULT_CONSTRUCTOR (t))
     return false;
@@ -5432,26 +5431,10 @@ type_has_non_user_provided_default_constructor_1 (tree t, bool synth)
       if (TREE_CODE (fn) == FUNCTION_DECL
 	  && default_ctor_p (fn)
 	  && !user_provided_p (fn))
-	{
-	  if (synth)
-	    return !DECL_INITIAL (fn);
-	  return true;
-	}
+	return true;
     }
 
   return false;
-}
-
-bool
-type_has_non_user_provided_default_constructor (tree t)
-{
-  return type_has_non_user_provided_default_constructor_1 (t, false);
-}
-
-bool
-type_has_default_ctor_to_be_synthesized (tree t)
-{
-  return type_has_non_user_provided_default_constructor_1 (t, true);
 }
 
 /* TYPE is being used as a virtual base, and has a non-trivial move
@@ -7740,17 +7723,14 @@ finish_struct (tree t, tree attributes)
 	 lookup not to fail or recurse into bases.  This isn't added
 	 to the template decl list so we drop this at instantiation
 	 time.  */
-      if (!get_class_binding_direct (t, assign_op_identifier, false))
-	{
-	  tree ass_op = build_lang_decl (USING_DECL, assign_op_identifier,
-					 NULL_TREE);
-	  DECL_CONTEXT (ass_op) = t;
-	  USING_DECL_SCOPE (ass_op) = t;
-	  DECL_DEPENDENT_P (ass_op) = true;
-	  DECL_ARTIFICIAL (ass_op) = true;
-	  DECL_CHAIN (ass_op) = TYPE_FIELDS (t);
-	  TYPE_FIELDS (t) = ass_op;
-	}
+      tree ass_op = build_lang_decl (USING_DECL, assign_op_identifier,
+				     NULL_TREE);
+      DECL_CONTEXT (ass_op) = t;
+      USING_DECL_SCOPE (ass_op) = t;
+      DECL_DEPENDENT_P (ass_op) = true;
+      DECL_ARTIFICIAL (ass_op) = true;
+      DECL_CHAIN (ass_op) = TYPE_FIELDS (t);
+      TYPE_FIELDS (t) = ass_op;
 
       TYPE_SIZE (t) = bitsize_zero_node;
       TYPE_SIZE_UNIT (t) = size_zero_node;

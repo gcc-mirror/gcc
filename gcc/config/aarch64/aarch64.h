@@ -813,10 +813,16 @@ enum target_cpus
   TARGET_CPU_generic
 };
 
+/* Define how many bits are used to represent the CPU in TARGET_CPU_DEFAULT.
+   This needs to be big enough to fit the value of TARGET_CPU_generic.
+   All bits after this are used to represent the AARCH64_CPU_DEFAULT_FLAGS.  */
+#define TARGET_CPU_NBITS 8
+#define TARGET_CPU_MASK ((1 << TARGET_CPU_NBITS) - 1)
+
 /* If there is no CPU defined at configure, use generic as default.  */
 #ifndef TARGET_CPU_DEFAULT
 #define TARGET_CPU_DEFAULT \
-  (TARGET_CPU_generic | (AARCH64_CPU_DEFAULT_FLAGS << 6))
+  (TARGET_CPU_generic | (AARCH64_CPU_DEFAULT_FLAGS << TARGET_CPU_NBITS))
 #endif
 
 /* If inserting NOP before a mult-accumulate insn remember to adjust the

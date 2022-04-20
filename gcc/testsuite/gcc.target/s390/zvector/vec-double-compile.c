@@ -31,6 +31,10 @@ vcdlgb_mem (vector unsigned long long *a)
   return vec_double (*a);
 }
 
+/* The following immediates are being converted and directly stored
+   in the literal pool so no explicit conversion is necessary.   */
+/* { dg-final { scan-assembler-times "vl\t%v\[0-9\]+,\.L\[0-9\]+\-\.L\[0-9\]+\\(%r\[0-9\]+\\)" 2 } } */
+
 vector double
 vcdgb_imm ()
 {
@@ -43,5 +47,5 @@ vcdlgb_imm ()
   return vec_double ((vector unsigned long long){ 1, 2 });
 }
 
-/* { dg-final { scan-assembler-times "vcdgb\t" 3 } } */
-/* { dg-final { scan-assembler-times "vcdlgb\t" 3 } } */
+/* { dg-final { scan-assembler-times "vcdgb\t" 2 } } */
+/* { dg-final { scan-assembler-times "vcdlgb\t" 2 } } */

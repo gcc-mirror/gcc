@@ -213,7 +213,7 @@ private Expression checkAliasThisForLhs(AggregateDeclaration ad, Scope* sc, BinE
      */
     if (isRecursiveAliasThis(e.att1, e.e1.type))
         return null;
-    //printf("att %s e1 = %s\n", Token::toChars(e.op), e.e1.type.toChars());
+    //printf("att %s e1 = %s\n", Token.toChars(e.op), e.e1.type.toChars());
     BinExp be = cast(BinExp)e.copy();
     // Resolve 'alias this' but in case of assigment don't resolve properties yet
     // because 'e1 = e2' could mean 'e1(e2)' or 'e1() = e2'
@@ -241,7 +241,7 @@ private Expression checkAliasThisForRhs(AggregateDeclaration ad, Scope* sc, BinE
      */
     if (isRecursiveAliasThis(e.att2, e.e2.type))
         return null;
-    //printf("att %s e2 = %s\n", Token::toChars(e.op), e.e2.type.toChars());
+    //printf("att %s e2 = %s\n", Token.toChars(e.op), e.e2.type.toChars());
     BinExp be = cast(BinExp)e.copy();
     be.e2 = resolveAliasThis(sc, e.e2, true);
     if (!be.e2)
@@ -711,7 +711,7 @@ Expression op_overload(Expression e, Scope* sc, EXP* pop = null)
                 if (s)
                 {
                     functionResolve(m, s, e.loc, sc, tiargs, e.e1.type, &args2);
-                    if (m.lastf && (m.lastf.errors || m.lastf.semantic3Errors))
+                    if (m.lastf && (m.lastf.errors || m.lastf.hasSemantic3Errors()))
                     {
                         return ErrorExp.get();
                     }
@@ -720,7 +720,7 @@ Expression op_overload(Expression e, Scope* sc, EXP* pop = null)
                 if (s_r)
                 {
                     functionResolve(m, s_r, e.loc, sc, tiargs, e.e2.type, &args1);
-                    if (m.lastf && (m.lastf.errors || m.lastf.semantic3Errors))
+                    if (m.lastf && (m.lastf.errors || m.lastf.hasSemantic3Errors()))
                     {
                         return ErrorExp.get();
                     }
@@ -793,7 +793,7 @@ Expression op_overload(Expression e, Scope* sc, EXP* pop = null)
                         if (s_r)
                         {
                             functionResolve(m, s_r, e.loc, sc, tiargs, e.e1.type, &args2);
-                            if (m.lastf && (m.lastf.errors || m.lastf.semantic3Errors))
+                            if (m.lastf && (m.lastf.errors || m.lastf.hasSemantic3Errors()))
                             {
                                 return ErrorExp.get();
                             }
@@ -802,7 +802,7 @@ Expression op_overload(Expression e, Scope* sc, EXP* pop = null)
                         if (s)
                         {
                             functionResolve(m, s, e.loc, sc, tiargs, e.e2.type, &args1);
-                            if (m.lastf && (m.lastf.errors || m.lastf.semantic3Errors))
+                            if (m.lastf && (m.lastf.errors || m.lastf.hasSemantic3Errors()))
                             {
                                 return ErrorExp.get();
                             }
@@ -1250,7 +1250,7 @@ Expression op_overload(Expression e, Scope* sc, EXP* pop = null)
                 if (s)
                 {
                     functionResolve(m, s, e.loc, sc, tiargs, e.e1.type, &args2);
-                    if (m.lastf && (m.lastf.errors || m.lastf.semantic3Errors))
+                    if (m.lastf && (m.lastf.errors || m.lastf.hasSemantic3Errors()))
                     {
                         return ErrorExp.get();
                     }
@@ -1344,7 +1344,7 @@ private Expression compare_overload(BinExp e, Scope* sc, Identifier id, EXP* pop
         if (s)
         {
             functionResolve(m, s, e.loc, sc, tiargs, e.e1.type, &args2);
-            if (m.lastf && (m.lastf.errors || m.lastf.semantic3Errors))
+            if (m.lastf && (m.lastf.errors || m.lastf.hasSemantic3Errors()))
                 return ErrorExp.get();
         }
         FuncDeclaration lastf = m.lastf;
@@ -1352,7 +1352,7 @@ private Expression compare_overload(BinExp e, Scope* sc, Identifier id, EXP* pop
         if (s_r)
         {
             functionResolve(m, s_r, e.loc, sc, tiargs, e.e2.type, &args1);
-            if (m.lastf && (m.lastf.errors || m.lastf.semantic3Errors))
+            if (m.lastf && (m.lastf.errors || m.lastf.hasSemantic3Errors()))
                 return ErrorExp.get();
         }
         if (m.count > 1)

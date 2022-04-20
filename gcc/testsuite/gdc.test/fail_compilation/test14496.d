@@ -48,6 +48,3 @@ struct Baz {
     Bar bar;
     Baz baz;
 }
-
-
-
