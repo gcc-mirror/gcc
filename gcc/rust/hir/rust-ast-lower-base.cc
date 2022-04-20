@@ -838,7 +838,11 @@ ASTLoweringBase::handle_outer_attributes (const HIR::Item &item)
 			  && attr.get_attr_input ().get_attr_input_type ()
 			       == AST::AttrInput::AttrInputType::LITERAL;
 
-      if (is_lang_item)
+      bool is_doc_item = str_path.compare ("doc") == 0;
+
+      if (is_doc_item)
+	handle_doc_item_attribute (item, attr);
+      else if (is_lang_item)
 	handle_lang_item_attribute (item, attr);
       else if (!attribute_handled_in_another_pass (str_path))
 	{
@@ -846,6 +850,27 @@ ASTLoweringBase::handle_outer_attributes (const HIR::Item &item)
 			 attr.get_path ().as_string ().c_str ());
 	}
     }
+}
+
+void
+ASTLoweringBase::handle_doc_item_attribute (const HIR::Item &item,
+					    const AST::Attribute &attr)
+{
+  auto simple_doc_comment = attr.has_attr_input ()
+			    && attr.get_attr_input ().get_attr_input_type ()
+				 == AST::AttrInput::AttrInputType::LITERAL;
+  if (simple_doc_comment)
+    return;
+
+  const AST::AttrInput &input = attr.get_attr_input ();
+  bool is_token_tree
+    = input.get_attr_input_type () == AST::AttrInput::AttrInputType::TOKEN_TREE;
+  rust_assert (is_token_tree);
+  const auto &option = static_cast<const AST::DelimTokenTree &> (input);
+  AST::AttrInputMetaItemContainer *meta_item = option.parse_to_meta_item ();
+
+  // TODO: add actual and complete checks for the doc attributes
+  rust_assert (meta_item);
 }
 
 void
