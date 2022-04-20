@@ -83,6 +83,7 @@ GRS_OBJS = \
     rust/rust-attributes.o \
     rust/rust-abi.o \
     rust/rust-ast-lower.o \
+    rust/rust-ast-lower-base.o \
     rust/rust-ast-lower-pattern.o \
     rust/rust-ast-resolve.o \
     rust/rust-ast-resolve-pattern.o \
