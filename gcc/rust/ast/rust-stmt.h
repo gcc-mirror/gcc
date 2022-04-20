@@ -183,14 +183,22 @@ protected:
  * expression) */
 class ExprStmt : public Stmt
 {
-  // TODO: add any useful virtual functions
+public:
+  enum ExprStmtType
+  {
+    WITH_BLOCK,
+    WITHOUT_BLOCK
+  };
 
+protected:
   Location locus;
 
 public:
   Location get_locus () const override final { return locus; }
 
   bool is_item () const override final { return false; }
+
+  virtual ExprStmtType get_type () const = 0;
 
 protected:
   ExprStmt (Location locus) : locus (locus) {}
@@ -261,6 +269,11 @@ public:
     return expr;
   }
 
+  ExprStmtType get_type () const override
+  {
+    return ExprStmtType::WITHOUT_BLOCK;
+  };
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
@@ -327,6 +340,8 @@ public:
   }
 
   bool is_semicolon_followed () const { return semicolon_followed; }
+
+  ExprStmtType get_type () const override { return ExprStmtType::WITH_BLOCK; };
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
