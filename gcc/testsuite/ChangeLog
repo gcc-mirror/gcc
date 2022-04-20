@@ -1,3 +1,12 @@
+2022-04-19  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-04-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/104880
+	* g++.dg/opt/pr104880.cc: Rename to ...
+	* g++.dg/opt/pr104880.C: ... this.
+
 2022-04-14  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* gcc.dg/torture/fp-int-convert-timode-3.c: Remove XFAIL.

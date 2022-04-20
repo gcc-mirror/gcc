@@ -1,3 +1,19 @@
+2022-04-19  Hans-Peter Nilsson  <hp@axis.com>
+
+	Backported from master:
+	2022-04-18  Hans-Peter Nilsson  <hp@axis.com>
+
+	* doc/install.texi <CRIS>: Remove references to removed websites and
+	adjust for cris-*-elf being the only remaining toolchain.
+
+2022-04-19  Hans-Peter Nilsson  <hp@axis.com>
+
+	Backported from master:
+	2022-04-18  Hans-Peter Nilsson  <hp@axis.com>
+
+	* doc/invoke.texi <CRIS>: Remove references to options for removed
+	subtarget cris-axis-linux-gnu and tweak wording accordingly.
+
 2022-04-14  Andreas Krebbel  <krebbel@linux.ibm.com>
 
 	Backported from master:
