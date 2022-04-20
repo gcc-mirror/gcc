@@ -474,6 +474,7 @@ is
 
       D := Uns64 (Xu) * Uns64 (Yu);
 
+      Lemma_Abs_Mult_Commutation (Big (X), Big (Y));
       pragma Assert (Mult = Big (D));
       Lemma_Hi_Lo (D, Hi (D), Lo (D));
       pragma Assert (Mult = Big_2xx32 * Big (Hi (D)) + Big (Lo (D)));
@@ -508,7 +509,6 @@ is
 
       Lemma_Abs_Div_Commutation (Big (X) * Big (Y), Big (Z));
       Lemma_Abs_Rem_Commutation (Big (X) * Big (Y), Big (Z));
-      Lemma_Abs_Mult_Commutation (Big (X), Big (Y));
       Lemma_Abs_Commutation (X);
       Lemma_Abs_Commutation (Y);
       Lemma_Abs_Commutation (Z);
