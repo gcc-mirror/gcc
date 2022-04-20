@@ -1,3 +1,26 @@
+2022-04-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/105257
+	* gcc.dg/pr105257.c: New test.
+
+2022-04-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/105256
+	* g++.dg/cpp0x/pr105256.C: New test.
+
+2022-04-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/104010
+	PR tree-optimization/103941
+	* gcc.target/i386/pr103941-1.c: New testcase.
+	* gcc.target/i386/pr103941-2.c: Likewise.
+
+2022-04-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/104880
+	* g++.dg/opt/pr104880.cc: Rename to ...
+	* g++.dg/opt/pr104880.C: ... this.
+
 2022-04-18  Kewen Lin  <linkw@linux.ibm.com>
 
 	PR testsuite/105266

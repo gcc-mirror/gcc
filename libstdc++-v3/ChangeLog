@@ -1,3 +1,22 @@
+2022-04-19  Patrick Palka  <ppalka@redhat.com>
+
+	* src/c++17/floating_to_chars.cc (_GLIBCXX_ASSERTIONS): Don't
+	define.
+	(__floating_to_chars_shortest): Add __builtin_unreachable calls to
+	squelch false-positive -Wmaybe-uninitialized and -Wreturn-type
+	warnings.
+	(__floating_to_chars_precision): Likewise.
+
+2022-04-19  Philipp Fent  <fent@in.tum.de>
+
+	* python/libstdcxx/v6/printers.py (StdSpanPrinter): Define.
+	* testsuite/libstdc++-prettyprinters/cxx20.cc: Test it.
+
+2022-04-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	* acinclude.m4 (GLIBCXX_ENABLE_BACKTRACE): Fix shell operators.
+	* configure: Regenerate.
+
 2022-04-18  Patrick Palka  <ppalka@redhat.com>
 
 	* include/std/charconv (__from_chars_pow2_base): Manually

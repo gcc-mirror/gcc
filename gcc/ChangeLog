@@ -1,3 +1,25 @@
+2022-04-19  Sergei Trofimovich  <siarheit@google.com>
+
+	PR gcov-profile/105282
+	* value-prof.cc (stream_out_histogram_value): Allow negative counts
+	on HIST_TYPE_INDIR_CALL.
+
+2022-04-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/105257
+	* config/sparc/sparc.cc (epilogue_renumber): If ORIGINAL_REGNO,
+	use gen_raw_REG instead of gen_rtx_REG and copy over also
+	ORIGINAL_REGNO.  Use return 0; instead of /* fallthrough */.
+
+2022-04-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/104010
+	PR tree-optimization/103941
+	* tree-vect-slp.cc (vect_bb_slp_scalar_cost): When
+	we run into stmts in patterns continue walking those
+	for uses outside of the vectorized region instead of
+	marking the lane live.
+
 2022-04-18  Hans-Peter Nilsson  <hp@axis.com>
 
 	* doc/install.texi <CRIS>: Remove references to removed websites and

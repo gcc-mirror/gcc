@@ -1,3 +1,11 @@
+2022-04-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/105256
+	* typeck2.cc (process_init_constructor_array,
+	process_init_constructor_record, process_init_constructor_union): Move
+	CONSTRUCTOR_PLACEHOLDER_BOUNDARY flag from CONSTRUCTOR elements to the
+	containing CONSTRUCTOR.
+
 2022-04-15  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/105268
