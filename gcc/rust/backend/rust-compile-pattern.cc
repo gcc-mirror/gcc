@@ -20,6 +20,8 @@
 #include "rust-compile-expr.h"
 #include "rust-constexpr.h"
 
+#include "print-tree.h"
+
 namespace Rust {
 namespace Compile {
 
@@ -92,18 +94,20 @@ CompilePatternBindings::visit (HIR::TupleStructPattern &pattern)
   // this must be an enum
   rust_assert (lookup->get_kind () == TyTy::TypeKind::ADT);
   TyTy::ADTType *adt = static_cast<TyTy::ADTType *> (lookup);
-  rust_assert (adt->is_enum ());
+  rust_assert (adt->number_of_variants () > 0);
 
-  // lookup the variant
-  HirId variant_id;
-  ok = ctx->get_tyctx ()->lookup_variant_definition (
-    pattern.get_path ().get_mappings ().get_hirid (), &variant_id);
-  rust_assert (ok);
+  int variant_index = 0;
+  TyTy::VariantDef *variant = adt->get_variants ().at (0);
+  if (adt->is_enum ())
+    {
+      HirId variant_id = UNKNOWN_HIRID;
+      bool ok = ctx->get_tyctx ()->lookup_variant_definition (
+	pattern.get_path ().get_mappings ().get_hirid (), &variant_id);
+      rust_assert (ok);
 
-  int variant_index = -1;
-  TyTy::VariantDef *variant = nullptr;
-  ok = adt->lookup_variant_by_id (variant_id, &variant, &variant_index);
-  rust_assert (ok);
+      ok = adt->lookup_variant_by_id (variant_id, &variant, &variant_index);
+      rust_assert (ok);
+    }
 
   rust_assert (variant->get_variant_type ()
 	       == TyTy::VariantDef::VariantType::TUPLE);
@@ -124,20 +128,37 @@ CompilePatternBindings::visit (HIR::TupleStructPattern &pattern)
 	rust_assert (items_no_range.get_patterns ().size ()
 		     == variant->num_fields ());
 
-	// we are offsetting by + 1 here since the first field in the record
-	// is always the discriminator
-	size_t tuple_field_index = 1;
-	for (auto &pattern : items_no_range.get_patterns ())
+	if (adt->is_enum ())
 	  {
-	    tree variant_accessor
-	      = ctx->get_backend ()->struct_field_expression (
-		match_scrutinee_expr, variant_index, pattern->get_locus ());
+	    // we are offsetting by + 1 here since the first field in the record
+	    // is always the discriminator
+	    size_t tuple_field_index = 1;
+	    for (auto &pattern : items_no_range.get_patterns ())
+	      {
+		tree variant_accessor
+		  = ctx->get_backend ()->struct_field_expression (
+		    match_scrutinee_expr, variant_index, pattern->get_locus ());
 
-	    tree binding = ctx->get_backend ()->struct_field_expression (
-	      variant_accessor, tuple_field_index++, pattern->get_locus ());
+		tree binding = ctx->get_backend ()->struct_field_expression (
+		  variant_accessor, tuple_field_index++, pattern->get_locus ());
 
-	    ctx->insert_pattern_binding (
-	      pattern->get_pattern_mappings ().get_hirid (), binding);
+		ctx->insert_pattern_binding (
+		  pattern->get_pattern_mappings ().get_hirid (), binding);
+	      }
+	  }
+	else
+	  {
+	    size_t tuple_field_index = 0;
+	    for (auto &pattern : items_no_range.get_patterns ())
+	      {
+		tree variant_accessor = match_scrutinee_expr;
+
+		tree binding = ctx->get_backend ()->struct_field_expression (
+		  variant_accessor, tuple_field_index++, pattern->get_locus ());
+
+		ctx->insert_pattern_binding (
+		  pattern->get_pattern_mappings ().get_hirid (), binding);
+	      }
 	  }
       }
       break;
@@ -156,18 +177,20 @@ CompilePatternBindings::visit (HIR::StructPattern &pattern)
   // this must be an enum
   rust_assert (lookup->get_kind () == TyTy::TypeKind::ADT);
   TyTy::ADTType *adt = static_cast<TyTy::ADTType *> (lookup);
-  rust_assert (adt->is_enum ());
+  rust_assert (adt->number_of_variants () > 0);
 
-  // lookup the variant
-  HirId variant_id;
-  ok = ctx->get_tyctx ()->lookup_variant_definition (
-    pattern.get_path ().get_mappings ().get_hirid (), &variant_id);
-  rust_assert (ok);
+  int variant_index = 0;
+  TyTy::VariantDef *variant = adt->get_variants ().at (0);
+  if (adt->is_enum ())
+    {
+      HirId variant_id = UNKNOWN_HIRID;
+      bool ok = ctx->get_tyctx ()->lookup_variant_definition (
+	pattern.get_path ().get_mappings ().get_hirid (), &variant_id);
+      rust_assert (ok);
 
-  int variant_index = -1;
-  TyTy::VariantDef *variant = nullptr;
-  ok = adt->lookup_variant_by_id (variant_id, &variant, &variant_index);
-  rust_assert (ok);
+      ok = adt->lookup_variant_by_id (variant_id, &variant, &variant_index);
+      rust_assert (ok);
+    }
 
   rust_assert (variant->get_variant_type ()
 	       == TyTy::VariantDef::VariantType::STRUCT);
@@ -193,19 +216,29 @@ CompilePatternBindings::visit (HIR::StructPattern &pattern)
 	    HIR::StructPatternFieldIdent &ident
 	      = static_cast<HIR::StructPatternFieldIdent &> (*field.get ());
 
-	    tree variant_accessor
-	      = ctx->get_backend ()->struct_field_expression (
-		match_scrutinee_expr, variant_index, ident.get_locus ());
-
 	    size_t offs = 0;
 	    ok
 	      = variant->lookup_field (ident.get_identifier (), nullptr, &offs);
 	    rust_assert (ok);
 
-	    // we are offsetting by + 1 here since the first field in the record
-	    // is always the discriminator
-	    tree binding = ctx->get_backend ()->struct_field_expression (
-	      variant_accessor, offs + 1, ident.get_locus ());
+	    tree binding = error_mark_node;
+	    if (adt->is_enum ())
+	      {
+		tree variant_accessor
+		  = ctx->get_backend ()->struct_field_expression (
+		    match_scrutinee_expr, variant_index, ident.get_locus ());
+
+		// we are offsetting by + 1 here since the first field in the
+		// record is always the discriminator
+		binding = ctx->get_backend ()->struct_field_expression (
+		  variant_accessor, offs + 1, ident.get_locus ());
+	      }
+	    else
+	      {
+		tree variant_accessor = match_scrutinee_expr;
+		binding = ctx->get_backend ()->struct_field_expression (
+		  variant_accessor, offs, ident.get_locus ());
+	      }
 
 	    ctx->insert_pattern_binding (ident.get_mappings ().get_hirid (),
 					 binding);
