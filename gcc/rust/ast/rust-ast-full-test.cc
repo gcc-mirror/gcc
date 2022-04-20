@@ -2819,12 +2819,7 @@ StructPattern::as_string () const
 std::string
 LiteralPattern::as_string () const
 {
-  std::string str;
-
-  if (has_minus)
-    str += "-";
-
-  return str + lit.as_string ();
+  return lit.as_string ();
 }
 
 std::string

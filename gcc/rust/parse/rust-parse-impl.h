@@ -10400,7 +10400,7 @@ Parser<ManagedTokenSource>::parse_literal_or_range_pattern ()
       // literal pattern
       return std::unique_ptr<AST::LiteralPattern> (
 	new AST::LiteralPattern (range_lower->get_str (), type,
-				 range_lower->get_locus (), has_minus));
+				 range_lower->get_locus ()));
     }
 }
 
