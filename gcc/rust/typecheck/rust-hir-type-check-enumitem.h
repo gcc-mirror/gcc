@@ -57,7 +57,7 @@ public:
       = new HIR::LiteralExpr (mapping, std::to_string (last_discriminant),
 			      HIR::Literal::LitType::INT,
 			      PrimitiveCoreType::CORETYPE_I64,
-			      item.get_locus ());
+			      item.get_locus (), {});
 
     TyTy::BaseType *isize = nullptr;
     bool ok = context->lookup_builtin ("isize", &isize);
@@ -135,7 +135,7 @@ public:
       = new HIR::LiteralExpr (mapping, std::to_string (last_discriminant),
 			      HIR::Literal::LitType::INT,
 			      PrimitiveCoreType::CORETYPE_I64,
-			      item.get_locus ());
+			      item.get_locus (), {});
 
     TyTy::BaseType *isize = nullptr;
     bool ok = context->lookup_builtin ("isize", &isize);
@@ -182,7 +182,7 @@ public:
       = new HIR::LiteralExpr (mapping, std::to_string (last_discriminant),
 			      HIR::Literal::LitType::INT,
 			      PrimitiveCoreType::CORETYPE_I64,
-			      item.get_locus ());
+			      item.get_locus (), {});
 
     TyTy::BaseType *isize = nullptr;
     bool ok = context->lookup_builtin ("isize", &isize);

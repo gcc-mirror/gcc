@@ -670,7 +670,7 @@ public:
 	    = new HIR::LiteralExpr (capacity_mapping, capacity_str,
 				    HIR::Literal::LitType::INT,
 				    PrimitiveCoreType::CORETYPE_USIZE,
-				    expr.get_locus ());
+				    expr.get_locus (), expr.get_outer_attrs ());
 
 	  // mark the type for this implicit node
 	  TyTy::BaseType *expected_ty = nullptr;
@@ -929,7 +929,7 @@ public:
 	    = new HIR::LiteralExpr (mapping, capacity_str,
 				    HIR::Literal::LitType::INT,
 				    PrimitiveCoreType::CORETYPE_USIZE,
-				    Location ());
+				    Location (), {});
 
 	  // mark the type for this implicit node
 	  TyTy::BaseType *expected_ty = nullptr;

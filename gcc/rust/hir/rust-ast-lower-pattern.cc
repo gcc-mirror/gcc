@@ -163,5 +163,50 @@ ASTLoweringPattern::visit (AST::WildcardPattern &pattern)
   translated = new HIR::WildcardPattern (mapping, pattern.get_locus ());
 }
 
+void
+ASTLoweringPattern::visit (AST::TuplePattern &pattern)
+{
+  std::unique_ptr<HIR::TuplePatternItems> items;
+  switch (pattern.get_items ()->get_pattern_type ())
+    {
+      case AST::TuplePatternItems::TuplePatternItemType::MULTIPLE: {
+	AST::TuplePatternItemsMultiple &ref
+	  = *static_cast<AST::TuplePatternItemsMultiple *> (
+	    pattern.get_items ().get ());
+	items = lower_tuple_pattern_multiple (ref);
+      }
+      break;
+
+      case AST::TuplePatternItems::TuplePatternItemType::RANGED: {
+	AST::TuplePatternItemsRanged &ref
+	  = *static_cast<AST::TuplePatternItemsRanged *> (
+	    pattern.get_items ().get ());
+	items = lower_tuple_pattern_ranged (ref);
+      }
+      break;
+    }
+
+  auto crate_num = mappings->get_current_crate ();
+  Analysis::NodeMapping mapping (crate_num, pattern.get_node_id (),
+				 mappings->get_next_hir_id (crate_num),
+				 UNKNOWN_LOCAL_DEFID);
+
+  translated
+    = new HIR::TuplePattern (mapping, std::move (items), pattern.get_locus ());
+}
+
+void
+ASTLoweringPattern::visit (AST::LiteralPattern &pattern)
+{
+  auto crate_num = mappings->get_current_crate ();
+  Analysis::NodeMapping mapping (crate_num, pattern.get_node_id (),
+				 mappings->get_next_hir_id (crate_num),
+				 UNKNOWN_LOCAL_DEFID);
+
+  HIR::Literal l = lower_literal (pattern.get_literal ());
+  translated
+    = new HIR::LiteralPattern (mapping, std::move (l), pattern.get_locus ());
+}
+
 } // namespace HIR
 } // namespace Rust
