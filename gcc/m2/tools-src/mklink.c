@@ -291,7 +291,7 @@ FindObject (char *Name)
   else
     strcpy (m2path, getenv ("M2PATH"));
 
-  sprintf (name, "%s.o", Name);
+  snprintf (name, sizeof (name), "%s.o", Name);
   p = 0;
   while (m2path[p] != (char)0)
     {
@@ -305,7 +305,7 @@ FindObject (char *Name)
       if (m2path[p] == ' ')
 	p++;
       m2search[s] = (char)0;
-      sprintf (exist, "%s/%s", m2search, name);
+      snprintf (exist, sizeof (exist), "%s/%s", m2search, name);
       if (IsExists (exist))
         {
           printf (" %s", exist);
