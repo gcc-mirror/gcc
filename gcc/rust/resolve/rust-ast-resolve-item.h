@@ -955,6 +955,15 @@ public:
 
   void visit (AST::ExternalFunctionItem &function) override
   {
+    NodeId scope_node_id = function.get_node_id ();
+    resolver->get_name_scope ().push (scope_node_id);
+    resolver->get_type_scope ().push (scope_node_id);
+    resolver->get_label_scope ().push (scope_node_id);
+    resolver->push_new_name_rib (resolver->get_name_scope ().peek ());
+    resolver->push_new_type_rib (resolver->get_type_scope ().peek ());
+    resolver->push_new_label_rib (resolver->get_type_scope ().peek ());
+
+    // resolve the generics
     if (function.has_generics ())
       {
 	for (auto &generic : function.get_generic_params ())
@@ -971,6 +980,11 @@ public:
       {
 	ResolveType::go (param.get_type ().get (), param.get_node_id ());
       }
+
+    // done
+    resolver->get_name_scope ().pop ();
+    resolver->get_type_scope ().pop ();
+    resolver->get_label_scope ().pop ();
   }
 
   void visit (AST::ExternalStaticItem &item) override
