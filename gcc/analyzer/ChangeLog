@@ -1,3 +1,7 @@
+2022-04-21  Release Manager
+
+	* GCC 11.3.0 released.
+
 2021-12-11  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/101962

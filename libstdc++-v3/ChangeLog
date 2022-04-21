@@ -1,3 +1,7 @@
+2022-04-21  Release Manager
+
+	* GCC 11.3.0 released.
+
 2022-04-14  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/xml/manual/status_cxx1998.xml: Refer to GCC 11 not

@@ -1,3 +1,7 @@
+2022-04-21  Release Manager
+
+	* GCC 11.3.0 released.
+
 2022-04-13  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:
