@@ -8563,7 +8563,11 @@ Parser<ManagedTokenSource>::parse_match_expr (AST::AttrVec outer_attrs,
 	  return nullptr;
 	}
 
-      std::unique_ptr<AST::Expr> expr = parse_expr ();
+      ParseRestrictions restrictions;
+      restrictions.expr_can_be_stmt = true;
+      restrictions.consume_semi = false;
+
+      std::unique_ptr<AST::ExprStmt> expr = parse_expr_stmt ({}, restrictions);
       if (expr == nullptr)
 	{
 	  Error error (lexer.peek_token ()->get_locus (),
@@ -8573,10 +8577,30 @@ Parser<ManagedTokenSource>::parse_match_expr (AST::AttrVec outer_attrs,
 	  // skip somewhere?
 	  return nullptr;
 	}
-      bool is_expr_without_block = expr->is_expr_without_block ();
+      bool is_expr_without_block
+	= expr->get_type () == AST::ExprStmt::ExprStmtType::WITHOUT_BLOCK;
 
       // construct match case expr and add to cases
-      match_arms.push_back (AST::MatchCase (std::move (arm), std::move (expr)));
+      switch (expr->get_type ())
+	{
+	  case AST::ExprStmt::ExprStmtType::WITH_BLOCK: {
+	    AST::ExprStmtWithBlock *cast
+	      = static_cast<AST::ExprStmtWithBlock *> (expr.get ());
+	    std::unique_ptr<AST::Expr> e = cast->get_expr ()->clone_expr ();
+	    match_arms.push_back (
+	      AST::MatchCase (std::move (arm), std::move (e)));
+	  }
+	  break;
+
+	  case AST::ExprStmt::ExprStmtType::WITHOUT_BLOCK: {
+	    AST::ExprStmtWithoutBlock *cast
+	      = static_cast<AST::ExprStmtWithoutBlock *> (expr.get ());
+	    std::unique_ptr<AST::Expr> e = cast->get_expr ()->clone_expr ();
+	    match_arms.push_back (
+	      AST::MatchCase (std::move (arm), std::move (e)));
+	  }
+	  break;
+	}
 
       // handle comma presence
       if (lexer.peek_token ()->get_id () != COMMA)
