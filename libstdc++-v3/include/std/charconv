@@ -412,14 +412,8 @@ namespace __detail
   constexpr auto
   __from_chars_alnum_to_val_table()
   {
-    constexpr unsigned char __lower_letters[]
-      = { 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j',
-	  'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't',
-	  'u', 'v', 'w', 'x', 'y', 'z' };
-    constexpr unsigned char __upper_letters[]
-      = { 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J',
-	  'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T',
-	  'U', 'V', 'W', 'X', 'Y', 'Z' };
+    constexpr unsigned char __lower_letters[27] = "abcdefghijklmnopqrstuvwxyz";
+    constexpr unsigned char __upper_letters[27] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     struct { unsigned char __data[1u << __CHAR_BIT__] = {}; } __table;
     for (auto& __entry : __table.__data)
       __entry = 127;
@@ -437,7 +431,7 @@ namespace __detail
   // return its corresponding base-10 value, otherwise return a value >= 127.
   // If _DecOnly is false: if the character is an alphanumeric digit, then
   // return its corresponding base-36 value, otherwise return a value >= 127.
-  template<bool _DecOnly>
+  template<bool _DecOnly = false>
     unsigned char
     __from_chars_alnum_to_val(unsigned char __c)
     {
