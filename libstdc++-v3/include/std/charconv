@@ -445,7 +445,9 @@ namespace __detail
 	return __c - '0';
       else
 	{
-	  static constexpr auto __table = __from_chars_alnum_to_val_table();
+	  // This initializer is deliberately made dependent in order to work
+	  // around modules bug PR105322.
+	  static constexpr auto __table = (_DecOnly, __from_chars_alnum_to_val_table());
 	  return __table.__data[__c];
 	}
     }
