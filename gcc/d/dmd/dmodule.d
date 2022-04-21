@@ -1133,8 +1133,10 @@ extern (C++) final class Module : Package
         // If it isn't there, some compiler rewrites, like
         //    classinst == classinst -> .object.opEquals(classinst, classinst)
         // would fail inside object.d.
-        if (members.dim == 0 || (*members)[0].ident != Id.object ||
-            (*members)[0].isImport() is null)
+        if (filetype != FileType.c &&
+            (members.dim == 0 ||
+             (*members)[0].ident != Id.object ||
+             (*members)[0].isImport() is null))
         {
             auto im = new Import(Loc.initial, null, Id.object, null, 0);
             members.shift(im);

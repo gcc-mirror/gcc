@@ -315,6 +315,14 @@ extern (C++) abstract class Statement : ASTNode
             override void visit(ImportStatement s)
             {
             }
+
+            override void visit(CaseStatement s)
+            {
+            }
+
+            override void visit(DefaultStatement s)
+            {
+            }
         }
 
         scope HasCode hc = new HasCode();

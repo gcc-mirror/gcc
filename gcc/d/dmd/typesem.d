@@ -1843,7 +1843,7 @@ extern(C++) Type typeSemantic(Type type, const ref Loc loc, Scope* sc)
                 mtype.sym = e.isScopeExp().sds;
                 break;
             case EXP.tuple:
-                TupleExp te = e.toTupleExp();
+                TupleExp te = e.isTupleExp();
                 Objects* elems = new Objects(te.exps.dim);
                 foreach (i; 0 .. elems.dim)
                 {
@@ -2306,7 +2306,8 @@ extern (C++) Type merge(Type type)
         case Tident:
         case Tinstance:
         case Tmixin:
-            return type;
+        case Ttag:
+            return type;        // don't merge placeholder types
 
         case Tsarray:
             // prevents generating the mangle if the array dim is not yet known
@@ -3904,7 +3905,7 @@ Expression dotExp(Type mt, Scope* sc, Expression e, Identifier ident, int flag)
         assert(e.op != EXP.dot);
 
         // https://issues.dlang.org/show_bug.cgi?id=14010
-        if (ident == Id._mangleof)
+        if (!(sc.flags & SCOPE.Cfile) && ident == Id._mangleof)
         {
             return mt.getProperty(sc, e.loc, ident, flag & 1);
         }
@@ -4656,7 +4657,7 @@ extern (C++) Expression defaultInit(Type mt, const ref Loc loc, const bool isCfi
     {
         static if (LOGDEFAULTINIT)
         {
-            printf("TypeBasic::defaultInit() '%s'\n", mt.toChars());
+            printf("TypeBasic::defaultInit() '%s' isCfile: %d\n", mt.toChars(), isCfile);
         }
         dinteger_t value = 0;
 
@@ -4714,7 +4715,7 @@ extern (C++) Expression defaultInit(Type mt, const ref Loc loc, const bool isCfi
     {
         static if (LOGDEFAULTINIT)
         {
-            printf("TypeSArray::defaultInit() '%s'\n", mt.toChars());
+            printf("TypeSArray::defaultInit() '%s' isCfile %d\n", mt.toChars(), isCfile);
         }
         if (mt.next.ty == Tvoid)
             return mt.tuns8.defaultInit(loc, isCfile);

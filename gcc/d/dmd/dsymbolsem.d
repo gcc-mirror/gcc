@@ -2874,7 +2874,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
             sc = sc.endCTFE();
             resolved = resolved.ctfeInterpret();
             StringExp name = resolved.toStringExp();
-            TupleExp tup = name ? null : resolved.toTupleExp();
+            TupleExp tup = name ? null : resolved.isTupleExp();
             if (!tup && !name)
             {
                 error(ns.loc, "expected string expression for namespace name, got `%s`", ns.identExp.toChars());
@@ -4621,7 +4621,8 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
         buildOpAssign(sd, sc2);
         buildOpEquals(sd, sc2);
 
-        if (global.params.useTypeInfo && Type.dtypeinfo)  // these functions are used for TypeInfo
+        if (!(sc2.flags & SCOPE.Cfile) &&
+            global.params.useTypeInfo && Type.dtypeinfo)  // these functions are used for TypeInfo
         {
             sd.xeq = buildXopEquals(sd, sc2);
             sd.xcmp = buildXopCmp(sd, sc2);
@@ -5023,6 +5024,10 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
                     cldec.com = true;
                 if (cldec.baseClass.isCPPclass())
                     cldec.classKind = ClassKind.cpp;
+                if (cldec.classKind != cldec.baseClass.classKind)
+                    cldec.error("with %s linkage cannot inherit from class `%s` with %s linkage",
+                        cldec.classKind.toChars(), cldec.baseClass.toChars(), cldec.baseClass.classKind.toChars());
+
                 if (cldec.baseClass.stack)
                     cldec.stack = true;
                 cldec.enclosing = cldec.baseClass.enclosing;

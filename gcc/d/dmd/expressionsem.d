@@ -2028,7 +2028,9 @@ private bool functionParameters(const ref Loc loc, Scope* sc,
             //printf("type: %s\n", arg.type.toChars());
             //printf("param: %s\n", p.toChars());
 
-            if (firstArg && p.storageClass & STC.return_)
+            const pStc = tf.parameterStorageClass(tthis, p);
+
+            if (firstArg && (pStc & STC.return_))
             {
                 /* Argument value can be assigned to firstArg.
                  * Check arg to see if it matters.
@@ -2036,7 +2038,9 @@ private bool functionParameters(const ref Loc loc, Scope* sc,
                 if (global.params.useDIP1000 == FeatureState.enabled)
                     err |= checkParamArgumentReturn(sc, firstArg, arg, p, false);
             }
-            else if (tf.parameterEscapes(tthis, p))
+            // Allow 'lazy' to imply 'scope' - lazy parameters can be passed along
+            // as lazy parameters to the next function, but that isn't escaping.
+            else if (!(pStc & (STC.scope_ | STC.lazy_)))
             {
                 /* Argument value can escape from the called function.
                  * Check arg to see if it matters.
@@ -2044,7 +2048,7 @@ private bool functionParameters(const ref Loc loc, Scope* sc,
                 if (global.params.useDIP1000 == FeatureState.enabled)
                     err |= checkParamArgumentEscape(sc, fd, p, arg, false, false);
             }
-            else if (!(p.storageClass & STC.return_))
+            else if (!(pStc & STC.return_))
             {
                 /* Argument value cannot escape from the called function.
                  */
@@ -3229,7 +3233,7 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
         }
         Type t = cle.type.typeSemantic(cle.loc, sc);
         auto init = initializerSemantic(cle.initializer, sc, t, INITnointerpret);
-        auto e = initializerToExpression(init, t);
+        auto e = initializerToExpression(init, t, (sc.flags & SCOPE.Cfile) != 0);
         if (!e)
         {
             error(cle.loc, "cannot convert initializer `%s` to expression", init.toChars());
@@ -12195,7 +12199,7 @@ Expression semanticX(DotIdExp exp, Scope* sc)
     if (Expression ex = unaSemantic(exp, sc))
         return ex;
 
-    if (exp.ident == Id._mangleof)
+    if (!(sc.flags & SCOPE.Cfile) && exp.ident == Id._mangleof)
     {
         // symbol.mangleof
 
@@ -12303,6 +12307,8 @@ Expression semanticY(DotIdExp exp, Scope* sc, int flag)
     //printf("DotIdExp::semanticY(this = %p, '%s')\n", exp, exp.toChars());
 
     //{ static int z; fflush(stdout); if (++z == 10) *(char*)0=0; }
+
+    const cfile = (sc.flags & SCOPE.Cfile) != 0;
 
     /* Special case: rewrite this.id and super.id
      * to be classtype.id and baseclasstype.id
@@ -12555,7 +12561,16 @@ Expression semanticY(DotIdExp exp, Scope* sc, int flag)
             exp.error("undefined identifier `%s` in %s `%s`", exp.ident.toChars(), ie.sds.kind(), ie.sds.toPrettyChars());
         return ErrorExp.get();
     }
-    else if (t1b.ty == Tpointer && exp.e1.type.ty != Tenum && exp.ident != Id._init && exp.ident != Id.__sizeof && exp.ident != Id.__xalignof && exp.ident != Id.offsetof && exp.ident != Id._mangleof && exp.ident != Id.stringof)
+    else if (t1b.ty == Tpointer && exp.e1.type.ty != Tenum &&
+             !(
+               exp.ident == Id.__sizeof ||
+               exp.ident == Id.__xalignof ||
+               !cfile &&
+                (exp.ident == Id._mangleof ||
+                 exp.ident == Id.offsetof ||
+                 exp.ident == Id._init ||
+                 exp.ident == Id.stringof)
+              ))
     {
         Type t1bn = t1b.nextOf();
         if (flag)
@@ -12590,7 +12605,7 @@ Expression semanticY(DotIdExp exp, Scope* sc, int flag)
         Expression e = new IntegerExp(exp.loc, actualAlignment, Type.tsize_t);
         return e;
     }
-    else if (sc.flags & SCOPE.Cfile && exp.ident == Id.__sizeof && exp.e1.isStringExp())
+    else if (cfile && exp.ident == Id.__sizeof && exp.e1.isStringExp())
     {
         // Sizeof string literal includes the terminating 0
         auto se = exp.e1.isStringExp();

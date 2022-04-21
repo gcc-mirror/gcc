@@ -593,7 +593,7 @@ Expression Expression_optimize(Expression e, int result, bool keepLvalue)
                     return;
                 }
             }
-            // Convert &((a.b)[n]) to (&a.b)+n
+            // Convert &((a.b)[index]) to (&a.b)+index*elementsize
             else if (ae.e2.isIntegerExp() && ae.e1.isDotVarExp())
             {
                 sinteger_t index = ae.e2.toInteger();
@@ -614,9 +614,18 @@ Expression Expression_optimize(Expression e, int result, bool keepLvalue)
                         }
                     }
 
+                    import core.checkedint : mulu;
+                    bool overflow;
+                    const offset = mulu(index, ts.nextOf().size(e.loc), overflow); // index*elementsize
+                    if (overflow)
+                    {
+                        e.error("array offset overflow");
+                        return error();
+                    }
+
                     auto pe = new AddrExp(e.loc, ve);
                     pe.type = e.type;
-                    ret = new AddExp(e.loc, pe, ae.e2);
+                    ret = new AddExp(e.loc, pe, new IntegerExp(e.loc, offset, Type.tsize_t));
                     ret.type = e.type;
                     return;
                 }

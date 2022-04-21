@@ -504,7 +504,7 @@ extern (C) size_t _aaLen(scope const AA aa) pure nothrow @nogc
  *      If key was not in the aa, a mutable pointer to newly inserted value which
  *      is set to all zeros
  */
-extern (C) void* _aaGetY(AA* paa, const TypeInfo_AssociativeArray ti,
+extern (C) void* _aaGetY(scope AA* paa, const TypeInfo_AssociativeArray ti,
     const size_t valsz, scope const void* pkey)
 {
     bool found;
@@ -525,7 +525,7 @@ extern (C) void* _aaGetY(AA* paa, const TypeInfo_AssociativeArray ti,
  *      If key was not in the aa, a mutable pointer to newly inserted value which
  *      is set to all zeros
  */
-extern (C) void* _aaGetX(AA* paa, const TypeInfo_AssociativeArray ti,
+extern (C) void* _aaGetX(scope AA* paa, const TypeInfo_AssociativeArray ti,
     const size_t valsz, scope const void* pkey, out bool found)
 {
     // lazily alloc implementation

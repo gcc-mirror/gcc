@@ -2,6 +2,13 @@
 REQUIRED_ARGS:
 TEST_OUTPUT:
 ---
+fail_compilation/fail_scope.d(29): Deprecation: scope variable `da` may not be returned
+fail_compilation/fail_scope.d(31): Deprecation: scope variable `o` may not be returned
+fail_compilation/fail_scope.d(32): Deprecation: scope variable `dg` may not be returned
+fail_compilation/fail_scope.d(34): Deprecation: scope variable `da` may not be returned
+fail_compilation/fail_scope.d(36): Deprecation: scope variable `o` may not be returned
+fail_compilation/fail_scope.d(37): Deprecation: scope variable `dg` may not be returned
+fail_compilation/fail_scope.d(39): Deprecation: scope variable `p` may not be returned
 fail_compilation/fail_scope.d(44): Error: returning `cast(char[])string` escapes a reference to local variable `string`
 fail_compilation/fail_scope.d(62): Error: returning `s.bar()` escapes a reference to local variable `s`
 fail_compilation/fail_scope.d(73): Error: `fail_scope.foo8` called with argument types `(int)` matches both:
@@ -15,26 +22,19 @@ fail_compilation/fail_scope.d(107): Deprecation: escaping reference to outer loc
 fail_compilation/fail_scope.d(126): Error: returning `s.bar()` escapes a reference to local variable `s`
 fail_compilation/fail_scope.d(136): Error: returning `foo16226(i)` escapes a reference to local variable `i`
 ---
-//fail_compilation/fail_scope.d(30): Error: scope variable `da` may not be returned
-//fail_compilation/fail_scope.d(32): Error: scope variable `o` may not be returned
-//fail_compilation/fail_scope.d(33): Error: scope variable `dg` may not be returned
-//fail_compilation/fail_scope.d(35): Error: scope variable `da` may not be returned
-//fail_compilation/fail_scope.d(37): Error: scope variable `o` may not be returned
-//fail_compilation/fail_scope.d(38): Error: scope variable `dg` may not be returned
-//fail_compilation/fail_scope.d(40): Error: scope variable `p` may not be returned
 */
 
 alias int delegate() dg_t;
 
-int[]  checkEscapeScope1(scope int[]  da) { return da; }
-int[3] checkEscapeScope2(scope int[3] sa) { return sa; }
-Object checkEscapeScope3(scope Object o)  { return o;  }
-dg_t   checkEscapeScope4(scope dg_t   dg) { return dg; }
+int[]  checkEscapeScope1(scope int[]  da) @safe { return da; }
+int[3] checkEscapeScope2(scope int[3] sa) @safe { return sa; }
+Object checkEscapeScope3(scope Object o)  @safe { return o;  }
+dg_t   checkEscapeScope4(scope dg_t   dg) @safe { return dg; }
 
-int[]  checkEscapeScope1() { scope int[]  da = [];           return da; }
-int[3] checkEscapeScope2() { scope int[3] sa = [1,2,3];      return sa; }
-Object checkEscapeScope3() { scope Object  o = new Object;   return o;  }   // same with fail7294.d
-dg_t   checkEscapeScope4() { scope dg_t   dg = () => 1;      return dg; }
+int[]  checkEscapeScope1() @safe { scope int[]  da = [];           return da; }
+int[3] checkEscapeScope2() @safe { scope int[3] sa = [1,2,3];      return sa; }
+Object checkEscapeScope3() @safe { scope Object  o = new Object;   return o;  }   // same with fail7294.d
+dg_t   checkEscapeScope4() @safe { scope dg_t   dg = () => 1;      return dg; }
 
 int* test(scope int* p) @safe { return p; }
 

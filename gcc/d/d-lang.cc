@@ -637,10 +637,15 @@ d_handle_option (size_t scode, const char *arg, HOST_WIDE_INT value,
       break;
 
     case OPT_frevert_all:
+      global.params.useDIP1000 = FeatureState::disabled;
       global.params.useDIP25 = FeatureState::disabled;
       global.params.dtorFields = FeatureState::disabled;
       global.params.fix16997 = !value;
       global.params.markdown = !value;
+      break;
+
+    case OPT_frevert_dip1000:
+      global.params.useDIP1000 = FeatureState::disabled;
       break;
 
     case OPT_frevert_dip25:

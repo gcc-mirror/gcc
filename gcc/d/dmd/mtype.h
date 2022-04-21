@@ -109,6 +109,7 @@ enum class TY : uint8_t
  */
 enum MODFlags
 {
+    MODnone      = 0, // default (mutable)
     MODconst     = 1, // type is const
     MODimmutable = 4, // type is immutable
     MODshared    = 2, // type is shared
@@ -608,7 +609,6 @@ public:
     void purityLevel();
     bool hasLazyParameters();
     bool isDstyleVariadic() const;
-    bool parameterEscapes(Parameter *p);
     StorageClass parameterStorageClass(Parameter *p);
     Type *addStorageClass(StorageClass stc);
 
