@@ -17,6 +17,6 @@ bswap_int_dbl (unsigned int a)
   /* Force the value to be loaded into a vector register.  */
   __asm__ (" # %x0" : "+wa" (b));
 
-  /* { dg-final { scan-assembler {\mxxbrw\M} } } */
+  /* { dg-final { scan-assembler {\mxxbrw\M} {xfail {has_arch_pwr10 && {! has_arch_ppc64}}} } } */
   return (double) __builtin_bswap32 (b);
 }
