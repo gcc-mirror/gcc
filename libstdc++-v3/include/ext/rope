@@ -2388,7 +2388,7 @@ protected:
       }
 
       // Erase, single character
-      void
+      _GLIBCXX_DEPRECATED void
       erase(size_type __p)
       { erase(__p, __p + 1); }
 
