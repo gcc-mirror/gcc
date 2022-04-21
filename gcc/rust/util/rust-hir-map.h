@@ -296,6 +296,9 @@ public:
 
   bool lookup_macro_def (NodeId id, AST::MacroRulesDefinition **def);
 
+  void insert_visibility (DefId id, Privacy::ModuleVisibility visibility);
+  bool lookup_visibility (DefId id, Privacy::ModuleVisibility *def);
+
 private:
   Mappings ();
 
