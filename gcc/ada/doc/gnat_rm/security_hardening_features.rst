@@ -31,9 +31,10 @@ option, to affect all subprograms in a compilation, and with a
      --  Before returning, Bar scrubs all call-clobbered registers.
 
 
-For usage and more details on the command-line option, and on the
-``zero_call_used_regs`` attribute, see :title:`Using the GNU Compiler
-Collection (GCC)`.
+For usage and more details on the command-line option, on the
+``zero_call_used_regs`` attribute, and on their use with other
+programming languages, see :title:`Using the GNU Compiler Collection
+(GCC)`.
 
 
 .. Stack Scrubbing:
@@ -44,14 +45,17 @@ Stack Scrubbing
 GNAT can generate code to zero-out stack frames used by subprograms.
 
 It can be activated with the :samp:`Machine_Attribute` pragma, on
-specific subprograms and variables.
+specific subprograms and variables, or their types.  (This attribute
+always applies to a type, even when it is associated with a subprogram
+or a variable.)
 
 .. code-block:: ada
 
      function Foo returns Integer;
      pragma Machine_Attribute (Foo, "strub");
      --  Foo and its callers are modified so as to scrub the stack
-     --  space used by Foo after it returns.
+     --  space used by Foo after it returns.  Shorthand for:
+     --  pragma Machine_Attribute (Foo, "strub", "at-calls");
 
      procedure Bar;
      pragma Machine_Attribute (Bar, "strub", "internal");
@@ -61,13 +65,16 @@ specific subprograms and variables.
      Var : Integer;
      pragma Machine_Attribute (Var, "strub");
      --  Reading from Var in a subprogram enables stack scrubbing
-     --  of the stack space used by the subprogram.
+     --  of the stack space used by the subprogram.  Furthermore, if
+     --  Var is declared within a subprogram, this also enables
+     --  scrubbing of the stack space used by that subprogram.
 
 
 There are also :switch:`-fstrub` command-line options to control
 default settings.  For usage and more details on the command-line
-option, and on the ``strub`` attribute, see :title:`Using the GNU
-Compiler Collection (GCC)`.
+option, on the ``strub`` attribute, and their use with other
+programming languages, see :title:`Using the GNU Compiler Collection
+(GCC)`.
 
 Note that Ada secondary stacks are not scrubbed.  The restriction
 ``No_Secondary_Stack`` avoids their use, and thus their accidental
@@ -81,16 +88,19 @@ access type designates a non-strub type.
 
 .. code-block:: ada
 
-     VI : Integer;
+     VI : aliased Integer;
+     pragma Machine_Attribute (VI, "strub");
      XsVI : access Integer := VI'Access; -- Error.
      UXsVI : access Integer := VI'Unchecked_Access; -- OK,
-     -- UXsVI.all does not enable strub in the enclosing subprogram.
+     --  UXsVI does *not* enable strub in subprograms that
+     --  dereference it to obtain the UXsVI.all value.
 
      type Strub_Int is new Integer;
      pragma Machine_Attribute (Strub_Int, "strub");
-     VSI : Strub_Int;
-     XsVSI : access Strub_Int := VSI'Access; -- OK.
-     -- XsVSI.all enables strub in the enclosing subprogram.
+     VSI : aliased Strub_Int;
+     XsVSI : access Strub_Int := VSI'Access; -- OK,
+     --  VSI and XsVSI.all both enable strub in subprograms that
+     --  read their values.
 
 
 Every access-to-subprogram type, renaming, and overriding and
@@ -108,12 +118,16 @@ turned ``callable`` through such an explicit conversion:
 
      type TBar_Callable is access procedure;
      pragma Machine_Attribute (TBar_Callable, "strub", "callable");
+     --  The attribute modifies the procedure type, rather than the
+     --  access type, because of the extra argument after "strub",
+     --  only applicable to subprogram types.
 
      Bar_Callable_Ptr : constant TBar_Callable
 		:= TBar_Callable (TBar'(Bar'Access));
 
      procedure Bar_Callable renames Bar_Callable_Ptr.all;
      pragma Machine_Attribute (Bar_Callable, "strub", "callable");
+
 
 Note that the renaming declaration is expanded to a full subprogram
 body, it won't be just an alias.  Only if it is inlined will it be as
@@ -162,6 +176,10 @@ respectively.
 They are separate options, however, because of the significantly
 different performance impact of the hardening transformations.
 
+For usage and more details on the command-line options, see
+:title:`Using the GNU Compiler Collection (GCC)`.  These options can
+be used with other programming languages supported by GCC.
+
 
 .. Hardened Booleans:
 
@@ -176,6 +194,7 @@ alternative representations, using representation clauses:
    type HBool is new Boolean;
    for HBool use (16#5a#, 16#a5#);
    for HBool'Size use 8;
+
 
 When validity checking is enabled, the compiler will check that
 variables of such types hold values corresponding to the selected
@@ -196,7 +215,13 @@ checked even when compiling with :switch:`-gnatVT`.
 
    pragma Machine_Attribute (HBool, "hardbool");
 
+
 Note that :switch:`-gnatVn` will disable even ``hardbool`` testing.
+
+Analogous behavior is available as a GCC extension to the C and
+Objective C programming languages, through the ``hardbool`` attribute.
+For usage and more details on that attribute, see :title:`Using the
+GNU Compiler Collection (GCC)`.
 
 
 .. Control Flow Redundancy:
@@ -243,3 +268,7 @@ disabled altogether.
 The instrumentation for hardening with control flow redundancy can be
 observed in dump files generated by the command-line option
 :switch:`-fdump-tree-hardcfr`.
+
+For more details on the control flow redundancy command-line options,
+see :title:`Using the GNU Compiler Collection (GCC)`.  These options
+can be used with other programming languages supported by GCC.
