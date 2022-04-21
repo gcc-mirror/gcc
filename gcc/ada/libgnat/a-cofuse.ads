@@ -216,7 +216,7 @@ package Ada.Containers.Functional_Sets with SPARK_Mode is
          and Included_Except (Add'Result, Container, Item);
 
    function Empty_Set return Set with
-   --  Return an new empty set
+   --  Return a new empty set
 
      Global => null,
      Post   => Is_Empty (Empty_Set'Result);
