@@ -26,6 +26,7 @@
 #include "rust-ast-full-decls.h"
 #include "rust-hir-full-decls.h"
 #include "rust-lang-item.h"
+#include "rust-privacy-common.h"
 
 namespace Rust {
 namespace Analysis {
@@ -353,6 +354,9 @@ private:
 
   // crate names
   std::map<CrateNum, std::string> crate_names;
+
+  // Low level visibility map for each DefId
+  std::map<DefId, Privacy::ModuleVisibility> visibility_map;
 };
 
 } // namespace Analysis

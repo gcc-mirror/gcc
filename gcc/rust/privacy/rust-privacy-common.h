@@ -16,29 +16,46 @@
 // along with GCC; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-#ifndef RUST_PRIVACY_CHECK_H
-#define RUST_PRIVACY_CHECK_H
-
-#include "rust-hir.h"
-#include "rust-hir-expr.h"
-#include "rust-hir-stmt.h"
-#include "rust-hir-item.h"
-#include "rust-hir-type-check.h"
+#include "rust-mapping-common.h"
 
 namespace Rust {
 namespace Privacy {
-class Resolver
+
+/**
+ * Visibility class related specifically to DefIds. This class allows defining
+ * the visibility of an item with regard to a specific module.
+ */
+class ModuleVisibility
 {
 public:
-  /**
-   * Perform the full privacy resolving pass on a crate.
-   *
-   * This resolver first computes the reachability of all items in a crate,
-   * before checking for privacy violations.
-   */
-  static void resolve (HIR::Crate &crate);
+  enum Type
+  {
+    Private,
+    Public,
+    Restricted,
+  };
+
+  static ModuleVisibility create_restricted (DefId module_id)
+  {
+    return ModuleVisibility (Type::Restricted, module_id);
+  }
+
+  static ModuleVisibility create_public ()
+  {
+    return ModuleVisibility (Type::Public, UNKNOWN_DEFID);
+  }
+
+  Type get_kind () { return kind; }
+
+  DefId &get_module_id () { return module_id; }
+
+private:
+  ModuleVisibility (Type kind, DefId module_id)
+    : kind (kind), module_id (module_id)
+  {}
+
+  Type kind;
+  DefId module_id;
 };
 } // namespace Privacy
 } // namespace Rust
-
-#endif // !RUST_PRIVACY_CHECK_H
