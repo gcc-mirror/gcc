@@ -101,7 +101,6 @@ namespace
 	return m_buf + std::__exchange(m_bytes, m_bytes + bytes);
 
       __glibcxx_assert(m_ptr == nullptr);
-      __glibcxx_assert(alignment != 1);
 
       m_ptr = operator new(bytes);
       m_bytes = bytes;
