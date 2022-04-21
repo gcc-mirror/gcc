@@ -77,13 +77,13 @@ public:
 
   LiteralExpr (Analysis::NodeMapping mappings, std::string value_as_string,
 	       Literal::LitType type, PrimitiveCoreType type_hint,
-	       Location locus, AST::AttrVec outer_attrs = AST::AttrVec ())
+	       Location locus, AST::AttrVec outer_attrs)
     : ExprWithoutBlock (std::move (mappings), std::move (outer_attrs)),
       literal (std::move (value_as_string), type, type_hint), locus (locus)
   {}
 
   LiteralExpr (Analysis::NodeMapping mappings, Literal literal, Location locus,
-	       AST::AttrVec outer_attrs = AST::AttrVec ())
+	       AST::AttrVec outer_attrs)
     : ExprWithoutBlock (std::move (mappings), std::move (outer_attrs)),
       literal (std::move (literal)), locus (locus)
   {}

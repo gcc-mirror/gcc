@@ -27,14 +27,6 @@ namespace AST {
 class LiteralPattern : public Pattern
 {
   Literal lit;
-  /* make literal have a type given by enum, etc. rustc uses an extended form of
-   * its literal token implementation */
-  // TODO: literal representation - use LiteralExpr? or another thing?
-
-  // Minus prefixed to literal (if integer or floating-point)
-  bool has_minus;
-  // Actually, this might be a good place to use a template.
-
   Location locus;
   NodeId node_id;
 
@@ -42,16 +34,14 @@ public:
   std::string as_string () const override;
 
   // Constructor for a literal pattern
-  LiteralPattern (Literal lit, Location locus, bool has_minus = false)
-    : lit (std::move (lit)), has_minus (has_minus), locus (locus),
+  LiteralPattern (Literal lit, Location locus)
+    : lit (std::move (lit)), locus (locus),
       node_id (Analysis::Mappings::get ()->get_next_node_id ())
   {}
 
-  LiteralPattern (std::string val, Literal::LitType type, Location locus,
-		  bool has_minus = false)
+  LiteralPattern (std::string val, Literal::LitType type, Location locus)
     : lit (Literal (std::move (val), type, PrimitiveCoreType::CORETYPE_STR)),
-      has_minus (has_minus), locus (locus),
-      node_id (Analysis::Mappings::get ()->get_next_node_id ())
+      locus (locus), node_id (Analysis::Mappings::get ()->get_next_node_id ())
   {}
 
   Location get_locus () const override final { return locus; }
@@ -61,6 +51,10 @@ public:
   NodeId get_node_id () const { return node_id; }
 
   NodeId get_pattern_node_id () const override final { return node_id; }
+
+  Literal &get_literal () { return lit; }
+
+  const Literal &get_literal () const { return lit; }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -1110,7 +1104,7 @@ public:
   TupleStructPattern (TupleStructPattern &&other) = default;
   TupleStructPattern &operator= (TupleStructPattern &&other) = default;
 
-  Location get_locus () const { return path.get_locus (); }
+  Location get_locus () const override { return path.get_locus (); }
 
   void accept_vis (ASTVisitor &vis) override;
 
@@ -1141,6 +1135,12 @@ protected:
 class TuplePatternItems
 {
 public:
+  enum TuplePatternItemType
+  {
+    MULTIPLE,
+    RANGED,
+  };
+
   virtual ~TuplePatternItems () {}
 
   // TODO: should this store location data?
@@ -1155,6 +1155,8 @@ public:
   virtual std::string as_string () const = 0;
 
   virtual void accept_vis (ASTVisitor &vis) = 0;
+
+  virtual TuplePatternItemType get_pattern_type () const = 0;
 
 protected:
   // pure virtual clone implementation
@@ -1240,6 +1242,11 @@ public:
     return patterns;
   }
 
+  TuplePatternItemType get_pattern_type () const override
+  {
+    return TuplePatternItemType::MULTIPLE;
+  }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
@@ -1316,6 +1323,11 @@ public:
   const std::vector<std::unique_ptr<Pattern> > &get_upper_patterns () const
   {
     return upper_patterns;
+  }
+
+  TuplePatternItemType get_pattern_type () const override
+  {
+    return TuplePatternItemType::RANGED;
   }
 
 protected:

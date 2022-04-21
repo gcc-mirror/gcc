@@ -272,6 +272,14 @@ protected:
 
   bool
   attribute_handled_in_another_pass (const std::string &attribute_path) const;
+
+  std::unique_ptr<TuplePatternItems>
+  lower_tuple_pattern_multiple (AST::TuplePatternItemsMultiple &pattern);
+
+  std::unique_ptr<TuplePatternItems>
+  lower_tuple_pattern_ranged (AST::TuplePatternItemsRanged &pattern);
+
+  HIR::Literal lower_literal (const AST::Literal &literal);
 };
 
 } // namespace HIR

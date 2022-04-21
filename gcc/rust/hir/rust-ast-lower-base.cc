@@ -18,6 +18,7 @@
 
 #include "rust-ast-lower-base.h"
 #include "rust-ast-lower-type.h"
+#include "rust-ast-lower-pattern.h"
 
 namespace Rust {
 namespace HIR {
@@ -883,6 +884,80 @@ ASTLoweringBase::attribute_handled_in_another_pass (
     return false;
 
   return lookup.handler != Analysis::CompilerPass::HIR_LOWERING;
+}
+
+std::unique_ptr<HIR::TuplePatternItems>
+ASTLoweringBase::lower_tuple_pattern_multiple (
+  AST::TuplePatternItemsMultiple &pattern)
+{
+  std::vector<std::unique_ptr<HIR::Pattern> > patterns;
+  for (auto &p : pattern.get_patterns ())
+    {
+      HIR::Pattern *translated = ASTLoweringPattern::translate (p.get ());
+      patterns.push_back (std::unique_ptr<HIR::Pattern> (translated));
+    }
+
+  return std::unique_ptr<HIR::TuplePatternItems> (
+    new HIR::TuplePatternItemsMultiple (std::move (patterns)));
+}
+
+std::unique_ptr<TuplePatternItems>
+ASTLoweringBase::lower_tuple_pattern_ranged (
+  AST::TuplePatternItemsRanged &pattern)
+{
+  std::vector<std::unique_ptr<HIR::Pattern> > lower_patterns;
+  std::vector<std::unique_ptr<HIR::Pattern> > upper_patterns;
+
+  for (auto &p : pattern.get_lower_patterns ())
+    {
+      HIR::Pattern *translated = ASTLoweringPattern::translate (p.get ());
+      lower_patterns.push_back (std::unique_ptr<HIR::Pattern> (translated));
+    }
+
+  for (auto &p : pattern.get_upper_patterns ())
+    {
+      HIR::Pattern *translated = ASTLoweringPattern::translate (p.get ());
+      upper_patterns.push_back (std::unique_ptr<HIR::Pattern> (translated));
+    }
+
+  return std::unique_ptr<HIR::TuplePatternItems> (
+    new HIR::TuplePatternItemsRanged (std::move (lower_patterns),
+				      std::move (upper_patterns)));
+}
+
+HIR::Literal
+ASTLoweringBase::lower_literal (const AST::Literal &literal)
+{
+  HIR::Literal::LitType type = HIR::Literal::LitType::CHAR;
+  switch (literal.get_lit_type ())
+    {
+    case AST::Literal::LitType::CHAR:
+      type = HIR::Literal::LitType::CHAR;
+      break;
+    case AST::Literal::LitType::STRING:
+      type = HIR::Literal::LitType::STRING;
+      break;
+    case AST::Literal::LitType::BYTE:
+      type = HIR::Literal::LitType::BYTE;
+      break;
+    case AST::Literal::LitType::BYTE_STRING:
+      type = HIR::Literal::LitType::BYTE_STRING;
+      break;
+    case AST::Literal::LitType::INT:
+      type = HIR::Literal::LitType::INT;
+      break;
+    case AST::Literal::LitType::FLOAT:
+      type = HIR::Literal::LitType::FLOAT;
+      break;
+    case AST::Literal::LitType::BOOL:
+      type = HIR::Literal::LitType::BOOL;
+      break;
+    case AST::Literal::LitType::ERROR:
+      gcc_unreachable ();
+      break;
+    }
+
+  return HIR::Literal (literal.as_string (), type, literal.get_type_hint ());
 }
 
 } // namespace HIR

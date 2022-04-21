@@ -100,5 +100,35 @@ PatternDeclaration::visit (AST::StructPattern &pattern)
   rust_assert (!struct_pattern_elems.has_etc ());
 }
 
+void
+PatternDeclaration::visit (AST::TuplePattern &pattern)
+{
+  std::unique_ptr<AST::TuplePatternItems> &items = pattern.get_items ();
+  switch (items->get_pattern_type ())
+    {
+      case AST::TuplePatternItems::TuplePatternItemType::MULTIPLE: {
+	AST::TuplePatternItemsMultiple &ref
+	  = *static_cast<AST::TuplePatternItemsMultiple *> (
+	    pattern.get_items ().get ());
+
+	for (auto &p : ref.get_patterns ())
+	  p->accept_vis (*this);
+      }
+      break;
+
+      case AST::TuplePatternItems::TuplePatternItemType::RANGED: {
+	AST::TuplePatternItemsRanged &ref
+	  = *static_cast<AST::TuplePatternItemsRanged *> (
+	    pattern.get_items ().get ());
+
+	for (auto &p : ref.get_lower_patterns ())
+	  p->accept_vis (*this);
+	for (auto &p : ref.get_upper_patterns ())
+	  p->accept_vis (*this);
+      }
+      break;
+    }
+}
+
 } // namespace Resolver
 } // namespace Rust

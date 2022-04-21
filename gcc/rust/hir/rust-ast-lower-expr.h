@@ -327,43 +327,15 @@ public:
 
   void visit (AST::LiteralExpr &expr) override
   {
-    HIR::Literal::LitType type = HIR::Literal::LitType::CHAR;
-    switch (expr.get_lit_type ())
-      {
-      case AST::Literal::LitType::CHAR:
-	type = HIR::Literal::LitType::CHAR;
-	break;
-      case AST::Literal::LitType::STRING:
-	type = HIR::Literal::LitType::STRING;
-	break;
-      case AST::Literal::LitType::BYTE:
-	type = HIR::Literal::LitType::BYTE;
-	break;
-      case AST::Literal::LitType::BYTE_STRING:
-	type = HIR::Literal::LitType::BYTE_STRING;
-	break;
-      case AST::Literal::LitType::INT:
-	type = HIR::Literal::LitType::INT;
-	break;
-      case AST::Literal::LitType::FLOAT:
-	type = HIR::Literal::LitType::FLOAT;
-	break;
-      case AST::Literal::LitType::BOOL:
-	type = HIR::Literal::LitType::BOOL;
-	break;
-	// Error literals should have been stripped during expansion
-      case AST::Literal::LitType::ERROR:
-	gcc_unreachable ();
-	break;
-      }
     auto crate_num = mappings->get_current_crate ();
     Analysis::NodeMapping mapping (crate_num, expr.get_node_id (),
 				   mappings->get_next_hir_id (crate_num),
 				   UNKNOWN_LOCAL_DEFID);
 
-    translated = new HIR::LiteralExpr (mapping, expr.as_string (), type,
-				       expr.get_literal ().get_type_hint (),
-				       expr.get_locus ());
+    HIR::Literal l = lower_literal (expr.get_literal ());
+    translated
+      = new HIR::LiteralExpr (mapping, std::move (l), expr.get_locus (),
+			      expr.get_outer_attrs ());
   }
 
   void visit (AST::ArithmeticOrLogicalExpr &expr) override

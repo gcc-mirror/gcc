@@ -39,6 +39,8 @@ public:
       return new TyTy::ErrorType (
 	pattern->get_pattern_mappings ().get_hirid ());
 
+    resolver.context->insert_type (pattern->get_pattern_mappings (),
+				   resolver.infered);
     return resolver.infered;
   }
 
@@ -50,13 +52,17 @@ public:
 
   void visit (HIR::WildcardPattern &pattern) override;
 
+  void visit (HIR::TuplePattern &pattern) override;
+
+  void visit (HIR::LiteralPattern &pattern) override;
+
 private:
   TypeCheckPattern (TyTy::BaseType *parent)
-    : TypeCheckBase (), infered (nullptr), parent (parent)
+    : TypeCheckBase (), parent (parent), infered (nullptr)
   {}
 
-  TyTy::BaseType *infered;
   TyTy::BaseType *parent;
+  TyTy::BaseType *infered;
 };
 
 } // namespace Resolver

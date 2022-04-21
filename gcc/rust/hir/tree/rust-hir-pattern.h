@@ -29,7 +29,6 @@ namespace HIR {
 class LiteralPattern : public Pattern
 {
   Literal lit;
-  bool has_minus;
   Location locus;
   Analysis::NodeMapping mappings;
 
@@ -37,16 +36,14 @@ public:
   std::string as_string () const override;
 
   // Constructor for a literal pattern
-  LiteralPattern (Analysis::NodeMapping mappings, Literal lit, Location locus,
-		  bool has_minus = false)
-    : lit (std::move (lit)), has_minus (has_minus), locus (locus),
-      mappings (mappings)
+  LiteralPattern (Analysis::NodeMapping mappings, Literal lit, Location locus)
+    : lit (std::move (lit)), locus (locus), mappings (mappings)
   {}
 
   LiteralPattern (Analysis::NodeMapping mappings, std::string val,
-		  Literal::LitType type, Location locus, bool has_minus = false)
+		  Literal::LitType type, Location locus)
     : lit (Literal (std::move (val), type, PrimitiveCoreType::CORETYPE_STR)),
-      has_minus (has_minus), locus (locus), mappings (mappings)
+      locus (locus), mappings (mappings)
   {}
 
   Location get_locus () const override { return locus; }
@@ -63,6 +60,9 @@ public:
   {
     return PatternType::LITERAL;
   }
+
+  Literal &get_literal () { return lit; }
+  const Literal &get_literal () const { return lit; }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -962,6 +962,12 @@ protected:
 class TuplePatternItems
 {
 public:
+  enum TuplePatternItemType
+  {
+    MULTIPLE,
+    RANGED,
+  };
+
   virtual ~TuplePatternItems () {}
 
   // TODO: should this store location data?
@@ -976,6 +982,8 @@ public:
   virtual std::string as_string () const = 0;
 
   virtual void accept_vis (HIRFullVisitor &vis) = 0;
+
+  virtual TuplePatternItemType get_pattern_type () const = 0;
 
 protected:
   // pure virtual clone implementation
@@ -1018,6 +1026,17 @@ public:
   std::string as_string () const override;
 
   void accept_vis (HIRFullVisitor &vis) override;
+
+  TuplePatternItemType get_pattern_type () const override
+  {
+    return TuplePatternItemType::MULTIPLE;
+  }
+
+  std::vector<std::unique_ptr<Pattern> > &get_patterns () { return patterns; }
+  const std::vector<std::unique_ptr<Pattern> > &get_patterns () const
+  {
+    return patterns;
+  }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -1077,6 +1096,11 @@ public:
 
   void accept_vis (HIRFullVisitor &vis) override;
 
+  TuplePatternItemType get_pattern_type () const override
+  {
+    return TuplePatternItemType::RANGED;
+  }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
@@ -1134,6 +1158,9 @@ public:
   {
     return PatternType::TUPLE;
   }
+
+  std::unique_ptr<TuplePatternItems> &get_items () { return items; }
+  const std::unique_ptr<TuplePatternItems> &get_items () const { return items; }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather

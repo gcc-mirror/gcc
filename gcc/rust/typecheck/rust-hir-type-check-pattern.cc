@@ -232,5 +232,46 @@ TypeCheckPattern::visit (HIR::WildcardPattern &pattern)
   infered->set_ref (pattern.get_pattern_mappings ().get_hirid ());
 }
 
+void
+TypeCheckPattern::visit (HIR::TuplePattern &pattern)
+{
+  std::unique_ptr<HIR::TuplePatternItems> items;
+  switch (pattern.get_items ()->get_pattern_type ())
+    {
+      case HIR::TuplePatternItems::TuplePatternItemType::MULTIPLE: {
+	HIR::TuplePatternItemsMultiple &ref
+	  = *static_cast<HIR::TuplePatternItemsMultiple *> (
+	    pattern.get_items ().get ());
+
+	std::vector<TyTy::TyVar> pattern_elems;
+	for (auto &p : ref.get_patterns ())
+	  {
+	    TyTy::BaseType *elem = TypeCheckPattern::Resolve (p.get (), parent);
+	    pattern_elems.push_back (TyTy::TyVar (elem->get_ref ()));
+	  }
+	infered
+	  = new TyTy::TupleType (pattern.get_pattern_mappings ().get_hirid (),
+				 pattern.get_locus (), pattern_elems);
+      }
+      break;
+
+      case HIR::TuplePatternItems::TuplePatternItemType::RANGED: {
+	// HIR::TuplePatternItemsRanged &ref
+	//   = *static_cast<HIR::TuplePatternItemsRanged *> (
+	//     pattern.get_items ().get ());
+	// TODO
+	gcc_unreachable ();
+      }
+      break;
+    }
+}
+
+void
+TypeCheckPattern::visit (HIR::LiteralPattern &pattern)
+{
+  infered = resolve_literal (pattern.get_pattern_mappings (),
+			     pattern.get_literal (), pattern.get_locus ());
+}
+
 } // namespace Resolver
 } // namespace Rust
