@@ -55,6 +55,9 @@ protected:
     const TyTy::SubstitutionArgumentMappings &constraint_b,
     const TyTy::BaseType *reference);
 
+  TyTy::BaseType *resolve_literal (const Analysis::NodeMapping &mappings,
+				   HIR::Literal &literal, Location locus);
+
   Analysis::Mappings *mappings;
   Resolver *resolver;
   TypeCheckContext *context;
