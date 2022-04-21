@@ -30,6 +30,24 @@
 namespace Rust {
 namespace Compile {
 
+bool
+should_mangle_item (const AST::AttrVec &attrs)
+{
+  for (const auto &attr : attrs)
+    {
+      if (attr.get_path ().as_string ().compare ("no_mangle") == 0)
+	{
+	  if (attr.has_attr_input ())
+	    rust_error_at (
+	      attr.get_locus (),
+	      "attribute %<no_mangle%> does not accept any arguments");
+	  return false;
+	}
+    }
+
+  return true;
+}
+
 void
 HIRCompileBase::setup_attributes_on_fndecl (
   tree fndecl, bool is_main_entry_point, HIR::Visibility &visibility,
@@ -58,6 +76,7 @@ HIRCompileBase::setup_attributes_on_fndecl (
       bool is_cold = attr.get_path ().as_string ().compare ("cold") == 0;
       bool is_link_section
 	= attr.get_path ().as_string ().compare ("link_section") == 0;
+      bool no_mangle = attr.get_path ().as_string ().compare ("no_mangle") == 0;
       if (is_inline)
 	{
 	  handle_inline_attribute_on_fndecl (fndecl, attr);
@@ -73,6 +92,11 @@ HIRCompileBase::setup_attributes_on_fndecl (
       else if (is_link_section)
 	{
 	  handle_link_section_attribute_on_fndecl (fndecl, attr);
+	}
+      else if (no_mangle)
+	{
+	  // we handled this in `should_mangle_item`
+	  continue;
 	}
     }
 }
@@ -396,7 +420,10 @@ HIRCompileBase::compile_function (
   // we don't mangle the main fn since we haven't implemented the main shim
   bool is_main_fn = fn_name.compare ("main") == 0;
   std::string asm_name = fn_name;
-  if (!is_main_fn)
+  // TODO(liushuyu): we should probably move this part to
+  // `setup_attributes_on_fndecl` if possible
+  bool should_mangle = should_mangle_item (outer_attrs);
+  if (!is_main_fn && should_mangle)
     asm_name = ctx->mangle_item (fntype, *canonical_path);
 
   unsigned int flags = 0;
