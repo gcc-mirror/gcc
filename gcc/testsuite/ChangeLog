@@ -1,3 +1,22 @@
+2022-04-20  Ed Catmur  <ed@catmur.uk>
+
+	PR c++/104996
+	* g++.dg/cpp0x/initlist129.C: New test.
+
+2022-04-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/105312
+	* gcc.target/arm/pr105312.c: New testcase.
+
+2022-04-20  Jan Hubicka  <hubicka@ucw.cz>
+
+	* gcc.c-torture/compile/103818.c: New test.
+
+2022-04-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR ipa/105306
+	* g++.dg/opt/pr105306.C: New test.
+
 2022-04-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/105257

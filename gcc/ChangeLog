@@ -1,3 +1,31 @@
+2022-04-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/104912
+	* tree-vect-loop-manip.cc (vect_loop_versioning): Split
+	the cost model check to a separate BB to make sure it is
+	checked first and not combined with other version checks.
+
+2022-04-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/105312
+	* gimple-isel.cc (gimple_expand_vec_cond_expr): Query both
+	VCOND and VCONDU for EQ and NE.
+
+2022-04-20  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/103818
+	* ipa-modref-tree.cc (modref_access_node::closer_pair_p): Use
+	poly_offset_int to avoid overflow.
+	(modref_access_node::update2): likewise.
+
+2022-04-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR ipa/105306
+	* cgraph.cc (cgraph_node::create): Set node->semantic_interposition
+	to opt_for_fn (decl, flag_semantic_interposition).
+	* cgraphclones.cc (cgraph_node::create_clone): Copy over
+	semantic_interposition flag.
+
 2022-04-19  Sergei Trofimovich  <siarheit@google.com>
 
 	PR gcov-profile/105282
