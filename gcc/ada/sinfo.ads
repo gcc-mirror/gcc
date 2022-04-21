@@ -1680,6 +1680,10 @@ package Sinfo is
    --    nodes which emulate the barrier function of a protected entry body.
    --    The flag is used when checking for incorrect use of Current_Task.
 
+   --  Is_Enum_Array_Aggregate
+   --    A flag set on an aggregate created internally while building the
+   --    images tables for enumerations.
+
    --  Is_Expanded_Build_In_Place_Call
    --    This flag is set in an N_Function_Call node to indicate that the extra
    --    actuals to support a build-in-place style of call have been added to
@@ -1793,6 +1797,9 @@ package Sinfo is
    --    A flag present in all expression nodes. Used temporarily during
    --    overloading determination. The setting of this flag is not relevant
    --    once overloading analysis is complete.
+
+   --  Is_Parenthesis_Aggregate
+   --    A flag set on an aggregate that uses parentheses as delimiters
 
    --  Is_Power_Of_2_For_Shift
    --    A flag present only in N_Op_Expon nodes. It is set when the
@@ -4024,7 +4031,9 @@ package Sinfo is
       --  Compile_Time_Known_Aggregate
       --  Expansion_Delayed
       --  Has_Self_Reference
+      --  Is_Enum_Array_Aggregate
       --  Is_Homogeneous_Aggregate
+      --  Is_Parenthesis_Aggregate
       --  plus fields for expression
 
       --  Note: this structure is used for both record and array aggregates
