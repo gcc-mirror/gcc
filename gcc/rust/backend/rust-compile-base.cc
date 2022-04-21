@@ -55,6 +55,7 @@ HIRCompileBase::setup_attributes_on_fndecl (
       bool is_inline = attr.get_path ().as_string ().compare ("inline") == 0;
       bool is_must_use
 	= attr.get_path ().as_string ().compare ("must_use") == 0;
+      bool is_cold = attr.get_path ().as_string ().compare ("cold") == 0;
       if (is_inline)
 	{
 	  handle_inline_attribute_on_fndecl (fndecl, attr);
@@ -63,7 +64,29 @@ HIRCompileBase::setup_attributes_on_fndecl (
 	{
 	  handle_must_use_attribute_on_fndecl (fndecl, attr);
 	}
+      else if (is_cold)
+	{
+	  handle_cold_attribute_on_fndecl (fndecl, attr);
+	}
     }
+}
+
+void
+HIRCompileBase::handle_cold_attribute_on_fndecl (tree fndecl,
+						 const AST::Attribute &attr)
+{
+  // simple #[cold]
+  if (!attr.has_attr_input ())
+    {
+      tree cold = get_identifier ("cold");
+      // this will get handled by the GCC backend later
+      DECL_ATTRIBUTES (fndecl)
+	= tree_cons (cold, NULL_TREE, DECL_ATTRIBUTES (fndecl));
+      return;
+    }
+
+  rust_error_at (attr.get_locus (),
+		 "attribute %<cold%> does not accept any arguments");
 }
 
 void
