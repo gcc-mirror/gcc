@@ -4341,7 +4341,9 @@ check_for_bare_parameter_packs (tree t, location_t loc /* = UNKNOWN_LOCATION */)
 	 parameter_packs = TREE_CHAIN (parameter_packs))
       {
 	tree pack = TREE_VALUE (parameter_packs);
-	if (is_capture_proxy (pack))
+	if (is_capture_proxy (pack)
+	    || (TREE_CODE (pack) == PARM_DECL
+		&& DECL_CONTEXT (DECL_CONTEXT (pack)) == lam))
 	  break;
       }
 
