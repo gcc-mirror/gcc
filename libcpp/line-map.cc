@@ -67,7 +67,8 @@ location_adhoc_data_hash (const void *l)
   return ((hashval_t) lb->locus
 	  + (hashval_t) lb->src_range.m_start
 	  + (hashval_t) lb->src_range.m_finish
-	  + (size_t) lb->data);
+	  + (size_t) lb->data
+	  + lb->discriminator);
 }
 
 /* Compare function for location_adhoc_data hashtable.  */
@@ -82,7 +83,8 @@ location_adhoc_data_eq (const void *l1, const void *l2)
   return (lb1->locus == lb2->locus
 	  && lb1->src_range.m_start == lb2->src_range.m_start
 	  && lb1->src_range.m_finish == lb2->src_range.m_finish
-	  && lb1->data == lb2->data);
+	  && lb1->data == lb2->data
+	  && lb1->discriminator == lb2->discriminator);
 }
 
 /* Update the hashtable when location_adhoc_data_map::data is reallocated.
@@ -127,11 +129,15 @@ static bool
 can_be_stored_compactly_p (line_maps *set,
 			   location_t locus,
 			   source_range src_range,
-			   void *data)
+			   void *data,
+			   unsigned discriminator)
 {
   /* If there's an ad-hoc pointer, we can't store it directly in the
      location_t, we need the lookaside.  */
   if (data)
+    return false;
+
+  if (discriminator != 0)
     return false;
 
   /* We only store ranges that begin at the locus and that are sufficiently
@@ -168,7 +174,8 @@ location_t
 get_combined_adhoc_loc (line_maps *set,
 			location_t locus,
 			source_range src_range,
-			void *data)
+			void *data,
+			unsigned discriminator)
 {
   struct location_adhoc_data lb;
   struct location_adhoc_data **slot;
@@ -186,7 +193,7 @@ get_combined_adhoc_loc (line_maps *set,
 		  || pure_location_p (set, locus));
 
   /* Consider short-range optimization.  */
-  if (can_be_stored_compactly_p (set, locus, src_range, data))
+  if (can_be_stored_compactly_p (set, locus, src_range, data, discriminator))
     {
       /* The low bits ought to be clear.  */
       linemap_assert (pure_location_p (set, locus));
@@ -206,15 +213,16 @@ get_combined_adhoc_loc (line_maps *set,
      when locus == start == finish (and data is NULL).  */
   if (locus == src_range.m_start
       && locus == src_range.m_finish
-      && !data)
+      && !data && discriminator == 0)
     return locus;
 
-  if (!data)
+  if (!data && discriminator == 0)
     set->num_unoptimized_ranges++;
 
   lb.locus = locus;
   lb.src_range = src_range;
   lb.data = data;
+  lb.discriminator = discriminator;
   slot = (struct location_adhoc_data **)
       htab_find_slot (set->location_adhoc_data_map.htab, &lb, INSERT);
   if (*slot == NULL)
@@ -261,6 +269,13 @@ get_data_from_adhoc_loc (const class line_maps *set, location_t loc)
   return set->location_adhoc_data_map.data[loc & MAX_LOCATION_T].data;
 }
 
+unsigned
+get_discriminator_from_adhoc_loc (const class line_maps *set, location_t loc)
+{
+  linemap_assert (IS_ADHOC_LOC (loc));
+  return set->location_adhoc_data_map.data[loc & MAX_LOCATION_T].discriminator;
+}
+
 /* Return the location for the adhoc loc.  */
 
 location_t
@@ -304,6 +319,15 @@ get_range_from_loc (line_maps *set,
     }
 
   return source_range::from_location (loc);
+}
+
+unsigned
+get_discriminator_from_loc (line_maps *set,
+			    location_t loc)
+{
+  if (IS_ADHOC_LOC (loc))
+    return get_discriminator_from_adhoc_loc (set, loc);
+  return 0;
 }
 
 /* Get whether location LOC is a "pure" location, or

@@ -1362,7 +1362,8 @@ get_location_for_byte_range_in_cur_line (cpp_reader *pfile,
   location_t combined_loc = COMBINE_LOCATION_DATA (pfile->line_table,
 						   start_loc,
 						   src_range,
-						   NULL);
+						   NULL,
+						   0);
   return combined_loc;
 }
 
@@ -2028,7 +2029,7 @@ warn_about_normalization (cpp_reader *pfile,
 					   CPP_BUF_COLUMN (pfile->buffer,
 							   pfile->buffer->cur));
 	  loc = COMBINE_LOCATION_DATA (pfile->line_table,
-				       loc, tok_range, NULL);
+				       loc, tok_range, NULL, 0);
 	}
 
       encoding_rich_location rich_loc (pfile, loc);
@@ -4256,7 +4257,7 @@ _cpp_lex_direct (cpp_reader *pfile)
 
       result->src_loc = COMBINE_LOCATION_DATA (pfile->line_table,
 					       result->src_loc,
-					       tok_range, NULL);
+					       tok_range, NULL, 0);
     }
 
   return result;
