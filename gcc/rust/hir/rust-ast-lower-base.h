@@ -268,6 +268,9 @@ protected:
   void handle_lang_item_attribute (const HIR::Item &item,
 				   const AST::Attribute &attr);
 
+  void handle_doc_item_attribute (const HIR::Item &item,
+				  const AST::Attribute &attr);
+
   bool is_known_attribute (const std::string &attribute_path) const;
 
   bool
