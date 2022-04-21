@@ -2063,6 +2063,11 @@ package body Sem_Ch6 is
          Analyze_Generic_Subprogram_Body (Null_Body, Prev);
          Is_Completion := True;
 
+         --  Mark the newly generated subprogram body as trivial
+
+         Set_Is_Trivial_Subprogram
+           (Defining_Unit_Name (Specification (Null_Body)));
+
          goto Leave;
 
       else
