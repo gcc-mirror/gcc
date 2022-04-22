@@ -886,6 +886,22 @@ public:
 			      TyVar (base_resolved->get_ref ()));
   }
 
+  void visit (ArrayType &type) override
+  {
+    // check base type
+    auto base_resolved
+      = base->get_element_type ()->unify (type.get_element_type ());
+    if (base_resolved == nullptr)
+      {
+	BaseCoercionRules::visit (type);
+	return;
+      }
+
+    resolved = new SliceType (type.get_ref (), type.get_ty_ref (),
+			      type.get_ident ().locus,
+			      TyVar (base_resolved->get_ref ()));
+  }
+
 private:
   BaseType *get_base () override { return base; }
 
