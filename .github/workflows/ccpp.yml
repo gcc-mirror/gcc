@@ -77,9 +77,10 @@ jobs:
     - name: Check regressions
       run: |
            cd gccrs-build; \
-           if grep -e "unexpected" -e "unresolved" gcc/testsuite/rust/rust.sum;\
+           if grep -e "unexpected" -e "unresolved" -e "ERROR:" gcc/testsuite/rust/rust.sum;\
            then \
-              echo "some tests are not correct"; \
+              echo "::error title=Regression test failed::some tests are not correct"; \
+              perl -n ../.github/emit_test_errors.pl < gcc/testsuite/rust/rust.sum; \
               exit 1; \
             else \
               exit 0; \
@@ -142,9 +143,9 @@ jobs:
     - name: Check regressions
       run: |
            cd gccrs-build; \
-           if grep -e "unexpected" -e "unresolved" gcc/testsuite/rust/rust.sum;\
+           if grep -e "unexpected" -e "unresolved" -e "ERROR:" gcc/testsuite/rust/rust.sum;\
            then \
-              echo "some tests are not correct"; \
+              echo "::error title=Regression test failed::some tests are not correct"; \
               exit 1; \
             else \
               exit 0; \
@@ -196,9 +197,9 @@ jobs:
     - name: Check regressions
       run: |
            cd gccrs-build; \
-           if grep -e "unexpected" -e "unresolved" gcc/testsuite/rust/rust.sum;\
+           if grep -e "unexpected" -e "unresolved" -e "ERROR:" gcc/testsuite/rust/rust.sum;\
            then \
-              echo "some tests are not correct"; \
+              echo "::error title=Regression test failed::some tests are not correct"; \
               exit 1; \
             else \
               exit 0; \
