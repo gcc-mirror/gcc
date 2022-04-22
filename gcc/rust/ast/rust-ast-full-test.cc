@@ -20,10 +20,12 @@ along with GCC; see the file COPYING3.  If not see
 // FIXME: This does not work on Windows
 #include <string>
 #include <unistd.h>
+#include <memory>
 
 #include "rust-ast-full.h"
 #include "rust-diagnostics.h"
 #include "rust-ast-visitor.h"
+#include "rust-macro.h"
 #include "rust-session-manager.h"
 #include "rust-lex.h"
 #include "rust-parse.h"
@@ -3862,7 +3864,12 @@ MetaItemInner::~MetaItemInner () = default;
 std::unique_ptr<MetaNameValueStr>
 MetaItemInner::to_meta_name_value_str () const
 {
-  // TODO parse foo = bar
+  if (is_key_value_pair ())
+    {
+      auto converted_item = static_cast<const MetaNameValueStr *> (this);
+      return converted_item->to_meta_name_value_str ();
+    }
+  // TODO actually parse foo = bar
   return nullptr;
 }
 

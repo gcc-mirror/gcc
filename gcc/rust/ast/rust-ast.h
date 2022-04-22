@@ -645,6 +645,8 @@ public:
   virtual Attribute to_attribute () const { return Attribute::create_empty (); }
 
   virtual bool check_cfg_predicate (const Session &session) const = 0;
+
+  virtual bool is_key_value_pair () const { return false; }
 };
 
 // Container used to store MetaItems as AttrInput (bridge-ish kinda thing)
