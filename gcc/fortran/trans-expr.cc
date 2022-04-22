@@ -8093,6 +8093,13 @@ gfc_trans_string_copy (stmtblock_t * block, tree dlength, tree dest,
   cond2 = fold_build2_loc (input_location, LT_EXPR, logical_type_node, slen,
 			   dlen);
 
+  /* Pre-evaluate pointers unless one of the IF arms will be optimized away.  */
+  if (!CONSTANT_CLASS_P (cond2))
+    {
+      dest = gfc_evaluate_now (dest, block);
+      src = gfc_evaluate_now (src, block);
+    }
+
   /* Copy and pad with spaces.  */
   tmp3 = build_call_expr_loc (input_location,
 			      builtin_decl_explicit (BUILT_IN_MEMMOVE),
