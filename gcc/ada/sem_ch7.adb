@@ -409,7 +409,7 @@ package body Sem_Ch7 is
                      --  should occur, so we need to catch all cases where the
                      --  subprogram may be inlined by the client.
 
-                     if not Generate_C_Code
+                     if not CCG_Mode
                        and then (Is_Inlined (Decl_Id)
                                   or else Has_Pragma_Inline (Decl_Id))
                      then
@@ -431,7 +431,7 @@ package body Sem_Ch7 is
                      --  unless we generate C code since inlining is then
                      --  handled by the C compiler.
 
-                     if not Generate_C_Code
+                     if not CCG_Mode
                        and then (Is_Inlined (Decl_Id)
                                   or else Has_Pragma_Inline (Decl_Id))
                      then

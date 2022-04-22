@@ -262,6 +262,9 @@ package Opt is
    --  Set to True to build, bind and link all the sources of a project file
    --  (switch -B)
 
+   CCG_Mode : Boolean := False;
+   --  Set to True when running as CCG (either via -gnatceg or via -emit-c)
+
    Check_Aliasing_Of_Parameters : Boolean := False;
    --  GNAT
    --  Set to True to detect whether subprogram parameters and function results

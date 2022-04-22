@@ -180,6 +180,7 @@ procedure Gnat1drv is
       --  Set all flags required when generating C code
 
       if Generate_C_Code then
+         CCG_Mode := True;
          Modify_Tree_For_C := True;
          Transform_Function_Array := True;
          Unnest_Subprogram_Mode := True;
