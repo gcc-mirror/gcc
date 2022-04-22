@@ -3237,31 +3237,67 @@ _mm_maskz_scalef_round_ss (__mmask8 __U, __m128 __A, __m128 __B, const int __R)
 						      (__mmask8) __U, __R);
 }
 #else
-#define _mm512_scalef_round_pd(A, B, C)            \
-    (__m512d)__builtin_ia32_scalefpd512_mask(A, B, (__v8df)_mm512_undefined_pd(), -1, C)
+#define _mm512_scalef_round_pd(A, B, C)					\
+  ((__m512d)								\
+   __builtin_ia32_scalefpd512_mask((A), (B),				\
+				   (__v8df) _mm512_undefined_pd(),	\
+				   -1, (C)))
 
-#define _mm512_mask_scalef_round_pd(W, U, A, B, C) \
-    (__m512d)__builtin_ia32_scalefpd512_mask(A, B, W, U, C)
+#define _mm512_mask_scalef_round_pd(W, U, A, B, C)			\
+  ((__m512d) __builtin_ia32_scalefpd512_mask((A), (B), (W), (U), (C)))
 
-#define _mm512_maskz_scalef_round_pd(U, A, B, C)   \
-    (__m512d)__builtin_ia32_scalefpd512_mask(A, B, (__v8df)_mm512_setzero_pd(), U, C)
+#define _mm512_maskz_scalef_round_pd(U, A, B, C)			\
+  ((__m512d)								\
+   __builtin_ia32_scalefpd512_mask((A), (B),				\
+				   (__v8df) _mm512_setzero_pd(),	\
+				   (U), (C)))
 
-#define _mm512_scalef_round_ps(A, B, C)            \
-    (__m512)__builtin_ia32_scalefps512_mask(A, B, (__v16sf)_mm512_undefined_ps(), -1, C)
+#define _mm512_scalef_round_ps(A, B, C)					\
+  ((__m512)								\
+   __builtin_ia32_scalefps512_mask((A), (B),				\
+				   (__v16sf) _mm512_undefined_ps(),	\
+				   -1, (C)))
 
-#define _mm512_mask_scalef_round_ps(W, U, A, B, C) \
-    (__m512)__builtin_ia32_scalefps512_mask(A, B, W, U, C)
+#define _mm512_mask_scalef_round_ps(W, U, A, B, C)			\
+  ((__m512) __builtin_ia32_scalefps512_mask((A), (B), (W), (U), (C)))
 
-#define _mm512_maskz_scalef_round_ps(U, A, B, C)   \
-    (__m512)__builtin_ia32_scalefps512_mask(A, B, (__v16sf)_mm512_setzero_ps(), U, C)
+#define _mm512_maskz_scalef_round_ps(U, A, B, C)			\
+  ((__m512)								\
+   __builtin_ia32_scalefps512_mask((A), (B),				\
+				   (__v16sf) _mm512_setzero_ps(),	\
+				   (U), (C)))
 
-#define _mm_scalef_round_sd(A, B, C)            \
-    (__m128d)__builtin_ia32_scalefsd_mask_round (A, B, \
-	(__v2df)_mm_setzero_pd (), -1, C)
+#define _mm_scalef_round_sd(A, B, C)					\
+  ((__m128d)								\
+   __builtin_ia32_scalefsd_mask_round ((A), (B),			\
+				       (__v2df) _mm_undefined_pd (),	\
+				       -1, (C)))
 
-#define _mm_scalef_round_ss(A, B, C)            \
-    (__m128)__builtin_ia32_scalefss_mask_round (A, B, \
-	(__v4sf)_mm_setzero_ps (), -1, C)
+#define _mm_scalef_round_ss(A, B, C)					\
+  ((__m128)								\
+   __builtin_ia32_scalefss_mask_round ((A), (B),			\
+				       (__v4sf) _mm_undefined_ps (),	\
+				       -1, (C)))
+
+#define _mm_mask_scalef_round_sd(W, U, A, B, C)				\
+  ((__m128d)								\
+   __builtin_ia32_scalefsd_mask_round ((A), (B), (W), (U), (C)))
+
+#define _mm_mask_scalef_round_ss(W, U, A, B, C)				\
+  ((__m128)								\
+   __builtin_ia32_scalefss_mask_round ((A), (B), (W), (U), (C)))
+
+#define _mm_maskz_scalef_round_sd(U, A, B, C)				\
+  ((__m128d)								\
+   __builtin_ia32_scalefsd_mask_round ((A), (B),			\
+				       (__v2df) _mm_setzero_pd (),	\
+				       (U), (C)))
+
+#define _mm_maskz_scalef_round_ss(U, A, B, C)				\
+  ((__m128)								\
+   __builtin_ia32_scalefss_mask_round ((A), (B),			\
+				       (__v4sf) _mm_setzero_ps (),	\
+				       (U), (C)))
 #endif
 
 #ifdef __OPTIMIZE__
