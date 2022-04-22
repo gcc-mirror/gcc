@@ -69,8 +69,7 @@ VisibilityResolver::peek_module ()
 {
   // We're always inserting a top module - the crate
   // But we have to check otherwise `.back()` is UB
-  if (module_stack.empty ())
-    gcc_unreachable ();
+  rust_assert (!module_stack.empty ());
 
   return module_stack.back ();
 }
