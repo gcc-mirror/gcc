@@ -1,3 +1,28 @@
+2022-04-21  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/103197
+	PR target/102146
+	* gcc.target/powerpc/bswap-brw.c: Add xfail on scan-assembler for -m32.
+
+2022-04-21  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* lib/target-supports.exp (check_effective_target_has_arch_ppc64): New.
+
+2022-04-21  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/105321
+	* g++.dg/cpp0x/constexpr-105321.C: New test.
+
+2022-04-21  Fritz Reese  <foreese@gcc.gnu.org>
+
+	PR fortran/105310
+	* gfortran.dg/dec_union_12.f90: New test.
+
+2022-04-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/105203
+	* gfortran.dg/g77/pr105203.f: New test.
+
 2022-04-20  Ed Catmur  <ed@catmur.uk>
 
 	PR c++/104996

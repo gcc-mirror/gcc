@@ -1,3 +1,27 @@
+2022-04-21  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/103197
+	PR target/102146
+	* config/rs6000/rs6000.md (zero_extendqi<mode>2 for EXTQI): Disparage
+	the "Z" alternatives in {l,st}{f,xs}iwzx.
+	(zero_extendhi<mode>2 for EXTHI): Ditto.
+	(zero_extendsi<mode>2 for EXTSI): Ditto.
+	(*movsi_internal1): Ditto.
+	(*mov<mode>_internal1 for QHI): Ditto.
+	(movsd_hardfloat): Ditto.
+
+2022-04-21  Martin Liska  <mliska@suse.cz>
+
+	* configure.ac: Enable compressed debug sections for mold
+	linker.
+	* configure: Regenerate.
+
+2022-04-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/105203
+	* emit-rtl.cc (emit_copy_of_insn_after): Don't call mark_jump_label
+	on DEBUG_INSNs.
+
 2022-04-20  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/104912

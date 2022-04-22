@@ -1,3 +1,27 @@
+2022-04-21  Patrick Palka  <ppalka@redhat.com>
+
+	* include/std/charconv (__from_chars_alnum_to_val_table):
+	Simplify initialization of __lower/__upper_letters.
+	(__from_chars_alnum_to_val): Default the template parameter to
+	false.
+	* src/c++17/floating_from_chars.cc (starts_with_ci): Don't
+	assume the uppercase and lowercase letters are contiguous.
+	(__floating_from_chars_hex): Likewise.
+
+2022-04-21  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/105297
+	PR c++/105322
+	* include/std/charconv (__from_chars_alnum_to_val): Make
+	initializer for __table dependent in an artificial way.
+
+2022-04-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/105324
+	* src/c++17/floating_from_chars.cc (buffer_resource::do_allocate):
+	Remove assertion.
+	* testsuite/20_util/from_chars/pr105324.cc: New test.
+
 2022-04-20  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/21_strings/basic_string_view/operations/copy/char/constexpr.cc:

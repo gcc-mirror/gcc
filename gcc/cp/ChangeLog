@@ -1,3 +1,16 @@
+2022-04-21  Marek Polacek  <polacek@redhat.com>
+
+	* constexpr.cc (cxx_eval_logical_expression): Remove unused
+	parameter.
+	(cxx_eval_constant_expression) <case TRUTH_ANDIF_EXPR>,
+	<case TRUTH_OR_EXPR>: Adjust calls to cxx_eval_logical_expression.
+
+2022-04-21  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/105321
+	* constexpr.cc (cxx_eval_logical_expression): Always pass false for lval
+	to cxx_eval_constant_expression.
+
 2022-04-20  Ed Catmur  <ed@catmur.uk>
 
 	PR c++/104996

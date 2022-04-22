@@ -1,3 +1,8 @@
+2022-04-21  Fritz Reese  <foreese@gcc.gnu.org>
+
+	PR fortran/105310
+	* trans-expr.cc (gfc_conv_union_initializer): Pass vec* by reference.
+
 2022-04-13  Tobias Burnus  <tobias@codesourcery.com>
 
 	PR fortran/105242
