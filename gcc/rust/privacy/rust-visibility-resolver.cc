@@ -47,7 +47,18 @@ bool
 VisibilityResolver::resolve_visibility (const HIR::Visibility &visibility,
 					ModuleVisibility &to_resolve)
 {
-  return false;
+  switch (visibility.get_vis_type ())
+    {
+    case HIR::Visibility::PRIVATE:
+      to_resolve = ModuleVisibility::create_restricted (peek_module ());
+      return true;
+    case HIR::Visibility::PUBLIC:
+      // FIXME: We need to handle the restricted path here
+      to_resolve = ModuleVisibility::create_public ();
+      return true;
+    default:
+      return false;
+    }
 }
 
 DefId
