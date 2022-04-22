@@ -48,9 +48,9 @@ public:
     return ModuleVisibility (Type::Public, UNKNOWN_DEFID);
   }
 
-  Type get_kind () { return kind; }
+  Type get_kind () const { return kind; }
 
-  DefId &get_module_id () { return module_id; }
+  const DefId &get_module_id () const { return module_id; }
 
 private:
   ModuleVisibility (Type kind, DefId module_id)
