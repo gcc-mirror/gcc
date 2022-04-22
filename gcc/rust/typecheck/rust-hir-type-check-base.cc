@@ -133,6 +133,14 @@ TypeCheckBase::resolve_literal (const Analysis::NodeMapping &expr_mappings,
 	    ok = context->lookup_builtin ("f64", &infered);
 	    break;
 
+	  case CORETYPE_ISIZE:
+	    ok = context->lookup_builtin ("isize", &infered);
+	    break;
+
+	  case CORETYPE_USIZE:
+	    ok = context->lookup_builtin ("usize", &infered);
+	    break;
+
 	  default:
 	    ok = true;
 	    infered

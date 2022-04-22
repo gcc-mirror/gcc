@@ -619,6 +619,8 @@ public:
 	    = (negated_expr_ty->get_kind () == TyTy::TypeKind::INT)
 	      || (negated_expr_ty->get_kind () == TyTy::TypeKind::UINT)
 	      || (negated_expr_ty->get_kind () == TyTy::TypeKind::FLOAT)
+	      || (negated_expr_ty->get_kind () == TyTy::TypeKind::ISIZE)
+	      || (negated_expr_ty->get_kind () == TyTy::TypeKind::USIZE)
 	      || (negated_expr_ty->get_kind () == TyTy::TypeKind::INFER
 		  && (((TyTy::InferType *) negated_expr_ty)->get_infer_kind ()
 		      == TyTy::InferType::INTEGRAL))
