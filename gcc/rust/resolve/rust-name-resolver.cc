@@ -17,6 +17,24 @@
 // <http://www.gnu.org/licenses/>.
 
 #include "rust-name-resolver.h"
+#include "rust-ast-full.h"
+
+#define MKBUILTIN_TYPE(_X, _R, _TY)                                            \
+  do                                                                           \
+    {                                                                          \
+      AST::PathIdentSegment seg (_X, Linemap::predeclared_location ());        \
+      auto typePath = ::std::unique_ptr<AST::TypePathSegment> (                \
+	new AST::TypePathSegment (::std::move (seg), false,                    \
+				  Linemap::predeclared_location ()));          \
+      ::std::vector< ::std::unique_ptr<AST::TypePathSegment> > segs;           \
+      segs.push_back (::std::move (typePath));                                 \
+      auto builtin_type                                                        \
+	= new AST::TypePath (::std::move (segs),                               \
+			     Linemap::predeclared_location (), false);         \
+      _R.push_back (builtin_type);                                             \
+      tyctx->insert_builtin (_TY->get_ref (), builtin_type->get_node_id (),    \
+			     _TY);                                             \
+  } while (0)
 
 namespace Rust {
 namespace Resolver {
@@ -102,6 +120,315 @@ Rib::decl_was_declared_here (NodeId def) const
 	return true;
     }
   return false;
+}
+
+Resolver::Resolver ()
+  : mappings (Analysis::Mappings::get ()), tyctx (TypeCheckContext::get ()),
+    name_scope (Scope (mappings->get_current_crate ())),
+    type_scope (Scope (mappings->get_current_crate ())),
+    label_scope (Scope (mappings->get_current_crate ())),
+    macro_scope (Scope (mappings->get_current_crate ())),
+    global_type_node_id (UNKNOWN_NODEID), unit_ty_node_id (UNKNOWN_NODEID)
+{
+  generate_builtins ();
+}
+
+Resolver *
+Resolver::get ()
+{
+  static Resolver *instance;
+  if (instance == nullptr)
+    instance = new Resolver ();
+
+  return instance;
+}
+
+void
+Resolver::push_new_name_rib (Rib *r)
+{
+  rust_assert (name_ribs.find (r->get_node_id ()) == name_ribs.end ());
+  name_ribs[r->get_node_id ()] = r;
+}
+
+void
+Resolver::push_new_type_rib (Rib *r)
+{
+  if (type_ribs.size () == 0)
+    global_type_node_id = r->get_node_id ();
+
+  rust_assert (type_ribs.find (r->get_node_id ()) == type_ribs.end ());
+  type_ribs[r->get_node_id ()] = r;
+}
+
+void
+Resolver::push_new_label_rib (Rib *r)
+{
+  rust_assert (label_ribs.find (r->get_node_id ()) == label_ribs.end ());
+  label_ribs[r->get_node_id ()] = r;
+}
+
+void
+Resolver::push_new_macro_rib (Rib *r)
+{
+  rust_assert (label_ribs.find (r->get_node_id ()) == label_ribs.end ());
+  macro_ribs[r->get_node_id ()] = r;
+}
+
+bool
+Resolver::find_name_rib (NodeId id, Rib **rib)
+{
+  auto it = name_ribs.find (id);
+  if (it == name_ribs.end ())
+    return false;
+
+  *rib = it->second;
+  return true;
+}
+
+bool
+Resolver::find_type_rib (NodeId id, Rib **rib)
+{
+  auto it = type_ribs.find (id);
+  if (it == type_ribs.end ())
+    return false;
+
+  *rib = it->second;
+  return true;
+}
+
+bool
+Resolver::find_macro_rib (NodeId id, Rib **rib)
+{
+  auto it = macro_ribs.find (id);
+  if (it == macro_ribs.end ())
+    return false;
+
+  *rib = it->second;
+  return true;
+}
+
+void
+Resolver::insert_builtin_types (Rib *r)
+{
+  auto builtins = get_builtin_types ();
+  for (auto &builtin : builtins)
+    {
+      CanonicalPath builtin_path
+	= CanonicalPath::new_seg (builtin->get_node_id (),
+				  builtin->as_string ());
+      r->insert_name (builtin_path, builtin->get_node_id (),
+		      Linemap::predeclared_location (), false,
+		      [] (const CanonicalPath &, NodeId, Location) -> void {});
+    }
+}
+
+std::vector<AST::Type *> &
+Resolver::get_builtin_types ()
+{
+  return builtins;
+}
+
+void
+Resolver::generate_builtins ()
+{
+  auto u8
+    = new TyTy::UintType (mappings->get_next_hir_id (), TyTy::UintType::U8);
+  auto u16
+    = new TyTy::UintType (mappings->get_next_hir_id (), TyTy::UintType::U16);
+  auto u32
+    = new TyTy::UintType (mappings->get_next_hir_id (), TyTy::UintType::U32);
+  auto u64
+    = new TyTy::UintType (mappings->get_next_hir_id (), TyTy::UintType::U64);
+  auto u128
+    = new TyTy::UintType (mappings->get_next_hir_id (), TyTy::UintType::U128);
+  auto i8 = new TyTy::IntType (mappings->get_next_hir_id (), TyTy::IntType::I8);
+  auto i16
+    = new TyTy::IntType (mappings->get_next_hir_id (), TyTy::IntType::I16);
+  auto i32
+    = new TyTy::IntType (mappings->get_next_hir_id (), TyTy::IntType::I32);
+  auto i64
+    = new TyTy::IntType (mappings->get_next_hir_id (), TyTy::IntType::I64);
+  auto i128
+    = new TyTy::IntType (mappings->get_next_hir_id (), TyTy::IntType::I128);
+  auto rbool = new TyTy::BoolType (mappings->get_next_hir_id ());
+  auto f32
+    = new TyTy::FloatType (mappings->get_next_hir_id (), TyTy::FloatType::F32);
+  auto f64
+    = new TyTy::FloatType (mappings->get_next_hir_id (), TyTy::FloatType::F64);
+  auto usize = new TyTy::USizeType (mappings->get_next_hir_id ());
+  auto isize = new TyTy::ISizeType (mappings->get_next_hir_id ());
+  auto char_tyty = new TyTy::CharType (mappings->get_next_hir_id ());
+  auto str = new TyTy::StrType (mappings->get_next_hir_id ());
+  auto never = new TyTy::NeverType (mappings->get_next_hir_id ());
+
+  MKBUILTIN_TYPE ("u8", builtins, u8);
+  MKBUILTIN_TYPE ("u16", builtins, u16);
+  MKBUILTIN_TYPE ("u32", builtins, u32);
+  MKBUILTIN_TYPE ("u64", builtins, u64);
+  MKBUILTIN_TYPE ("u128", builtins, u128);
+  MKBUILTIN_TYPE ("i8", builtins, i8);
+  MKBUILTIN_TYPE ("i16", builtins, i16);
+  MKBUILTIN_TYPE ("i32", builtins, i32);
+  MKBUILTIN_TYPE ("i64", builtins, i64);
+  MKBUILTIN_TYPE ("i128", builtins, i128);
+  MKBUILTIN_TYPE ("bool", builtins, rbool);
+  MKBUILTIN_TYPE ("f32", builtins, f32);
+  MKBUILTIN_TYPE ("f64", builtins, f64);
+  MKBUILTIN_TYPE ("usize", builtins, usize);
+  MKBUILTIN_TYPE ("isize", builtins, isize);
+  MKBUILTIN_TYPE ("char", builtins, char_tyty);
+  MKBUILTIN_TYPE ("str", builtins, str);
+  MKBUILTIN_TYPE ("!", builtins, never);
+
+  // unit type ()
+  TyTy::TupleType *unit_tyty
+    = TyTy::TupleType::get_unit_type (mappings->get_next_hir_id ());
+  std::vector<std::unique_ptr<AST::Type> > elems;
+  AST::TupleType *unit_type
+    = new AST::TupleType (std::move (elems), Linemap::predeclared_location ());
+  builtins.push_back (unit_type);
+  tyctx->insert_builtin (unit_tyty->get_ref (), unit_type->get_node_id (),
+			 unit_tyty);
+  set_unit_type_node_id (unit_type->get_node_id ());
+}
+
+void
+Resolver::insert_new_definition (NodeId id, Definition def)
+{
+  auto it = name_definitions.find (id);
+  if (it != name_definitions.end ())
+    {
+      rust_assert (it->second.is_equal (def));
+      return;
+    }
+  name_definitions[id] = def;
+}
+
+bool
+Resolver::lookup_definition (NodeId id, Definition *def)
+{
+  auto it = name_definitions.find (id);
+  if (it == name_definitions.end ())
+    return false;
+
+  *def = it->second;
+  return true;
+}
+
+void
+Resolver::insert_resolved_name (NodeId refId, NodeId defId)
+{
+  resolved_names[refId] = defId;
+  get_name_scope ().append_reference_for_def (refId, defId);
+}
+
+bool
+Resolver::lookup_resolved_name (NodeId refId, NodeId *defId)
+{
+  auto it = resolved_names.find (refId);
+  if (it == resolved_names.end ())
+    return false;
+
+  *defId = it->second;
+  return true;
+}
+
+void
+Resolver::insert_resolved_type (NodeId refId, NodeId defId)
+{
+  // auto it = resolved_types.find (refId);
+  // rust_assert (it == resolved_types.end ());
+
+  resolved_types[refId] = defId;
+  get_type_scope ().append_reference_for_def (refId, defId);
+}
+
+bool
+Resolver::lookup_resolved_type (NodeId refId, NodeId *defId)
+{
+  auto it = resolved_types.find (refId);
+  if (it == resolved_types.end ())
+    return false;
+
+  *defId = it->second;
+  return true;
+}
+
+void
+Resolver::insert_resolved_label (NodeId refId, NodeId defId)
+{
+  auto it = resolved_labels.find (refId);
+  rust_assert (it == resolved_labels.end ());
+
+  resolved_labels[refId] = defId;
+  get_label_scope ().append_reference_for_def (refId, defId);
+}
+
+bool
+Resolver::lookup_resolved_label (NodeId refId, NodeId *defId)
+{
+  auto it = resolved_labels.find (refId);
+  if (it == resolved_labels.end ())
+    return false;
+
+  *defId = it->second;
+  return true;
+}
+
+void
+Resolver::insert_resolved_macro (NodeId refId, NodeId defId)
+{
+  auto it = resolved_macros.find (refId);
+  rust_assert (it == resolved_macros.end ());
+
+  resolved_labels[refId] = defId;
+  get_label_scope ().append_reference_for_def (refId, defId);
+}
+
+bool
+Resolver::lookup_resolved_macro (NodeId refId, NodeId *defId)
+{
+  auto it = resolved_macros.find (refId);
+  if (it == resolved_macros.end ())
+    return false;
+
+  *defId = it->second;
+  return true;
+}
+
+void
+Resolver::mark_decl_mutability (NodeId id, bool mut)
+{
+  rust_assert (decl_mutability.find (id) == decl_mutability.end ());
+  decl_mutability[id] = mut;
+}
+
+bool
+Resolver::decl_is_mutable (NodeId id) const
+{
+  auto it = decl_mutability.find (id);
+  rust_assert (it != decl_mutability.end ());
+  return it->second;
+}
+
+void
+Resolver::mark_assignment_to_decl (NodeId id, NodeId assignment)
+{
+  auto it = assignment_to_decl.find (id);
+  if (it == assignment_to_decl.end ())
+    assignment_to_decl[id] = {};
+
+  assignment_to_decl[id].insert (assignment);
+}
+
+size_t
+Resolver::get_num_assignments_to_decl (NodeId id) const
+{
+  auto it = assignment_to_decl.find (id);
+  if (it == assignment_to_decl.end ())
+    return 0;
+
+  return it->second.size ();
 }
 
 } // namespace Resolver
