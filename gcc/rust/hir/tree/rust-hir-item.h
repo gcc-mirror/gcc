@@ -549,7 +549,7 @@ public:
   const Analysis::NodeMapping &get_mappings () const { return mappings; }
 };
 
-// Visibility of item - if the item has it, then it is some form of public
+// Visibility of an item
 struct Visibility
 {
 public:

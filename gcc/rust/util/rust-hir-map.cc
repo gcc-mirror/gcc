@@ -781,5 +781,22 @@ Mappings::lookup_macro_def (NodeId id, AST::MacroRulesDefinition **def)
   return true;
 }
 
+void
+Mappings::insert_visibility (DefId id, Privacy::ModuleVisibility visibility)
+{
+  visibility_map.insert ({id, visibility});
+}
+
+bool
+Mappings::lookup_visibility (DefId id, Privacy::ModuleVisibility *def)
+{
+  auto it = visibility_map.find (id);
+  if (it == visibility_map.end ())
+    return false;
+
+  *def = it->second;
+  return true;
+}
+
 } // namespace Analysis
 } // namespace Rust

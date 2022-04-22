@@ -26,6 +26,7 @@
 #include "rust-ast-full-decls.h"
 #include "rust-hir-full-decls.h"
 #include "rust-lang-item.h"
+#include "rust-privacy-common.h"
 
 namespace Rust {
 namespace Analysis {
@@ -295,6 +296,9 @@ public:
 
   bool lookup_macro_def (NodeId id, AST::MacroRulesDefinition **def);
 
+  void insert_visibility (DefId id, Privacy::ModuleVisibility visibility);
+  bool lookup_visibility (DefId id, Privacy::ModuleVisibility *def);
+
 private:
   Mappings ();
 
@@ -353,6 +357,9 @@ private:
 
   // crate names
   std::map<CrateNum, std::string> crate_names;
+
+  // Low level visibility map for each DefId
+  std::map<DefId, Privacy::ModuleVisibility> visibility_map;
 };
 
 } // namespace Analysis

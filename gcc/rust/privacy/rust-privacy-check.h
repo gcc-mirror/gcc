@@ -19,7 +19,6 @@
 #ifndef RUST_PRIVACY_CHECK_H
 #define RUST_PRIVACY_CHECK_H
 
-#include "rust-hir-map.h"
 #include "rust-hir.h"
 #include "rust-hir-expr.h"
 #include "rust-hir-stmt.h"
