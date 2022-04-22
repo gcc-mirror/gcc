@@ -25,14 +25,15 @@ namespace Privacy {
 
 VisibilityResolver::VisibilityResolver (Analysis::Mappings &mappings)
   : mappings (mappings)
-{
-  // FIXME: Insert a top module (crate) inside the module_stack
-  // FIXME: Insert the visibility of the crate in the mappings maybe?
-}
+{}
 
 void
 VisibilityResolver::go (HIR::Crate &crate)
 {
+  module_stack.push_back (crate.get_mappings ().get_defid ());
+  mappings.insert_visibility (crate.get_mappings ().get_defid (),
+			      ModuleVisibility::create_public ());
+
   for (auto &item : crate.items)
     {
       if (item->get_hir_kind () == HIR::Node::VIS_ITEM)
@@ -74,7 +75,20 @@ VisibilityResolver::peek_module ()
 
 void
 VisibilityResolver::visit (HIR::Module &mod)
-{}
+{
+  module_stack.push_back (mod.get_mappings ().get_defid ());
+
+  for (auto &item : mod.get_items ())
+    {
+      if (item->get_hir_kind () == HIR::Node::VIS_ITEM)
+	{
+	  auto vis_item = static_cast<HIR::VisItem *> (item.get ());
+	  vis_item->accept_vis (*this);
+	}
+    }
+
+  module_stack.pop_back ();
+}
 
 void
 VisibilityResolver::visit (HIR::ExternCrate &crate)
