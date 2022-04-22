@@ -4469,35 +4469,6 @@ package body Exp_Disp is
          Parent_Typ := Full_View (Parent_Typ);
       end if;
 
-      --  Ensure that all the primitives are frozen. This is only required when
-      --  building static dispatch tables: the primitives must be frozen to be
-      --  referenced, otherwise we have problems with the back end. But this is
-      --  not a requirement with nonstatic dispatch tables because in this case
-      --  we generate an empty dispatch table at this point and the extra code
-      --  required to register the primitives in their slot will be generated
-      --  later, when each primitive is frozen (see Freeze_Subprogram).
-
-      if Building_Static_DT (Typ) then
-         declare
-            F_List    : List_Id;
-            Prim      : Entity_Id;
-            Prim_Elmt : Elmt_Id;
-
-         begin
-            Prim_Elmt := First_Elmt (Primitive_Operations (Typ));
-            while Present (Prim_Elmt) loop
-               Prim   := Node (Prim_Elmt);
-               F_List := Freeze_Entity (Prim, Typ, Do_Freeze_Profile => False);
-
-               if Present (F_List) then
-                  Append_List_To (Result, F_List);
-               end if;
-
-               Next_Elmt (Prim_Elmt);
-            end loop;
-         end;
-      end if;
-
       if not Is_Interface (Typ) and then Has_Interfaces (Typ) then
          declare
             Cannot_Have_Null_Disc : Boolean := False;
