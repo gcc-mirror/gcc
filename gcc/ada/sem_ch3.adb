@@ -725,16 +725,6 @@ package body Sem_Ch3 is
    --  sets the flags SSO_Set_Low_By_Default/SSO_Set_High_By_Default according
    --  to the setting of Opt.Default_SSO.
 
-   function Should_Build_Subtype (T : Entity_Id) return Boolean;
-   --  When analyzing components or object declarations, it is possible, in
-   --  some cases, to build subtypes for discriminated types. This is
-   --  worthwhile to avoid the backend allocating the maximum possible size for
-   --  objects of the type.
-   --  In particular, when T is limited, the discriminants and therefore the
-   --  size of an object of type T cannot change. Furthermore, if T is definite
-   --  with statically initialized defaulted discriminants, we are able and
-   --  want to build a constrained subtype of the right size.
-
    procedure Signed_Integer_Type_Declaration (T : Entity_Id; Def : Node_Id);
    --  Create a new signed integer entity, and apply the constraint to obtain
    --  the required first named subtype of this type.
@@ -2214,7 +2204,7 @@ package body Sem_Ch3 is
 
       --  When possible, build the default subtype
 
-      if Should_Build_Subtype (T) then
+      if Build_Default_Subtype_OK (T) then
          declare
             Act_T : constant Entity_Id := Build_Default_Subtype (T, N);
 
@@ -4815,7 +4805,7 @@ package body Sem_Ch3 is
 
       --  When possible, build the default subtype
 
-      elsif Should_Build_Subtype (T) then
+      elsif Build_Default_Subtype_OK (T) then
          if No (E) then
             Act_T := Build_Default_Subtype (T, N);
          else
@@ -22962,80 +22952,6 @@ package body Sem_Ch3 is
            Expand_To_Stored_Constraint (E, Discriminant_Constraint (E)));
       end if;
    end Set_Stored_Constraint_From_Discriminant_Constraint;
-
-   --------------------------
-   -- Should_Build_Subtype --
-   --------------------------
-
-   function Should_Build_Subtype (T : Entity_Id) return Boolean is
-
-      function Default_Discriminant_Values_Known_At_Compile_Time
-         (T : Entity_Id) return Boolean;
-         --  For an unconstrained type T, return False if the given type has a
-         --  discriminant with default value not known at compile time. Return
-         --  True otherwise.
-
-      ---------------------------------------------------------
-      -- Default_Discriminant_Values_Known_At_Compile_Time --
-      ---------------------------------------------------------
-
-      function Default_Discriminant_Values_Known_At_Compile_Time
-         (T : Entity_Id) return Boolean
-      is
-         Discr : Entity_Id;
-         DDV : Node_Id;
-
-      begin
-
-         --  If the type has no discriminant, we know them all at compile time
-
-         if not Has_Discriminants (T) then
-            return True;
-         end if;
-
-         --  The type has discriminants, check that none of them has a default
-         --  value not known at compile time.
-
-         Discr := First_Discriminant (T);
-
-         while Present (Discr) loop
-            DDV := Discriminant_Default_Value (Discr);
-
-            if Present (DDV) and then not Compile_Time_Known_Value (DDV) then
-               return False;
-            end if;
-
-            Next_Discriminant (Discr);
-         end loop;
-
-         return True;
-      end Default_Discriminant_Values_Known_At_Compile_Time;
-
-   --  Start of processing for Should_Build_Subtype
-
-   begin
-
-      if Is_Constrained (T) then
-
-         --  We won't build a new subtype if T is constrained
-
-         return False;
-      end if;
-
-      if not Default_Discriminant_Values_Known_At_Compile_Time (T) then
-
-         --  This is a special case of definite subtypes. To allocate a
-         --  specific size to the subtype, we need to know the value at compile
-         --  time. This might not be the case if the default value is the
-         --  result of a function. In that case, the object might be definite
-         --  and limited but the needed size might not be statically known or
-         --  too tricky to obtain. In that case, we will not build the subtype.
-
-         return False;
-      end if;
-
-      return Is_Definite_Subtype (T) and then Is_Limited_View (T);
-   end Should_Build_Subtype;
 
    -------------------------------------
    -- Signed_Integer_Type_Declaration --

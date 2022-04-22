@@ -320,6 +320,16 @@ package Sem_Util is
    --  declaration in the tree before N, and return the entity of that
    --  subtype. Otherwise, simply return T.
 
+   function Build_Default_Subtype_OK (T : Entity_Id) return Boolean;
+   --  When analyzing components or object declarations, it is possible, in
+   --  some cases, to build subtypes for discriminated types. This is
+   --  worthwhile to avoid the backend allocating the maximum possible size for
+   --  objects of the type.
+   --  In particular, when T is limited, the discriminants and therefore the
+   --  size of an object of type T cannot change. Furthermore, if T is definite
+   --  with statically initialized defaulted discriminants, we are able and
+   --  want to build a constrained subtype of the right size.
+
    function Build_Discriminal_Subtype_Of_Component
      (T : Entity_Id) return Node_Id;
    --  Determine whether a record component has a type that depends on
