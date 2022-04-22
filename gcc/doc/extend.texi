@@ -13525,7 +13525,7 @@ exceptions handling functions @code{fegetround}, @code{feclearexcept} and
 @code{feraiseexcept}.  They may not be available for all targets, and because
 they need close interaction with libc internal values, they may not be available
 for all target libcs, but in all cases they will gracefully fallback to libc
-calls.  This built-in functions appear both with and without the
+calls.  These built-in functions appear both with and without the
 @code{__builtin_} prefix.
 
 @deftypefn {Built-in Function} void *__builtin_alloca (size_t size)
