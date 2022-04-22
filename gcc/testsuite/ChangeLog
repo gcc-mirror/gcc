@@ -1,3 +1,59 @@
+2022-04-21  Fritz Reese  <foreese@gcc.gnu.org>
+
+	Backported from master:
+	2022-04-21  Fritz Reese  <foreese@gcc.gnu.org>
+
+	PR fortran/105310
+	* gfortran.dg/dec_union_12.f90: New test.
+
+2022-04-21  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-01-20  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/100786
+	* gcc.dg/torture/pr100786.c: New testcase.
+
+2022-04-21  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-11-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/103361
+	* g++.dg/torture/pr103361.C: New testcase.
+
+2022-04-21  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-12-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/103596
+	* gcc.dg/torture/pr103596.c: New testcase.
+
+2022-04-21  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-02-03  Richard Biener  <rguenther@suse.de>
+
+	PR debug/104337
+	* gcc.dg/debug/pr104337.c: New testcase.
+
+2022-04-21  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-03-09  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/104786
+	* gcc.dg/pr104786.c: New testcase.
+
+2022-04-21  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-04-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/105226
+	* gcc.dg/pr105226.c: New testcase.
+
 2022-04-11  Alexandre Oliva  <oliva@adacore.com>
 
 	Backported from master:

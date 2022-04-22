@@ -1,3 +1,84 @@
+2022-04-21  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-01-20  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/100786
+	* gimple-fold.c (get_symbol_constant_value): Only return
+	values of compatible type to the symbol.
+
+2022-04-21  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-11-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/103361
+	* gimple-loop-jam.c (adjust_unroll_factor): Use lambda_int
+	for the dependence distance.
+	* tree-data-ref.c (print_lambda_vector): Properly print a lambda_int.
+
+2022-04-21  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-12-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/103596
+	* tree-ssa-sccvn.c (eliminate_dom_walker::eliminate_stmt):
+	Note we are not propagating into a PHI argument to may_propagate_copy.
+	* tree-ssa-propagate.h (may_propagate_copy): Add
+	argument specifying whether we propagate into a PHI arg.
+	* tree-ssa-propagate.c (may_propagate_copy): Likewise.
+	When not doing so we can replace an abnormal with
+	something else.
+	(may_propagate_into_stmt): Update may_propagate_copy calls.
+	(replace_exp_1): Move propagation checking code to
+	propagate_value and rename to ...
+	(replace_exp): ... this and elide previous wrapper.
+	(propagate_value): Perform checking with adjusted
+	may_propagate_copy call and dispatch to replace_exp.
+
+2022-04-21  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-02-03  Richard Biener  <rguenther@suse.de>
+
+	PR debug/104337
+	* tree-nrv.c (pass_nrv::execute): Remove tieing result and found
+	together via DECL_ABSTRACT_ORIGIN.
+
+2022-04-21  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-03-09  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/104786
+	* cfgexpand.c (expand_asm_stmt): Do not generate a copy
+	for VLAs without an upper size bound.
+
+2022-04-21  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-04-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/105226
+	* tree-vect-loop-manip.c (vect_loop_versioning): Verify
+	we can split the exit of an outer loop we choose to version.
+
+2022-04-21  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-03-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/105070
+	* tree-switch-conversion.h
+	(bit_test_cluster::hoist_edge_and_branch_if_true): Add location
+	argument.
+	* tree-switch-conversion.c
+	(bit_test_cluster::hoist_edge_and_branch_if_true): Annotate
+	cond with location.
+	(bit_test_cluster::emit): Annotate all generated expressions
+	with location.
+
 2022-04-05  Martin Jambor  <mjambor@suse.cz>
 
 	Backported from master:
