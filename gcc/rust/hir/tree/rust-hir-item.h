@@ -633,6 +633,7 @@ public:
   virtual void accept_vis (HIRVisItemVisitor &vis) = 0;
 
   Visibility &get_visibility () { return visibility; }
+  const Visibility &get_visibility () const { return visibility; }
 
   std::string as_string () const override;
 };

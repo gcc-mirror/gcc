@@ -64,6 +64,16 @@ VisibilityResolver::resolve_visibility (const HIR::Visibility &visibility,
     }
 }
 
+void
+VisibilityResolver::resolve_and_update (const HIR::VisItem *item)
+{
+  ModuleVisibility module_vis;
+  if (!resolve_visibility (item->get_visibility (), module_vis))
+    return; // we will already have emitted errors
+
+  mappings.insert_visibility (item->get_mappings ().get_defid (), module_vis);
+}
+
 DefId
 VisibilityResolver::peek_module ()
 {
@@ -101,19 +111,27 @@ VisibilityResolver::visit (HIR::UseDeclaration &use_decl)
 
 void
 VisibilityResolver::visit (HIR::Function &func)
-{}
+{
+  resolve_and_update (&func);
+}
 
 void
 VisibilityResolver::visit (HIR::TypeAlias &type_alias)
-{}
+{
+  resolve_and_update (&type_alias);
+}
 
 void
 VisibilityResolver::visit (HIR::StructStruct &struct_item)
-{}
+{
+  resolve_and_update (&struct_item);
+}
 
 void
 VisibilityResolver::visit (HIR::TupleStruct &tuple_struct)
-{}
+{
+  resolve_and_update (&tuple_struct);
+}
 
 void
 VisibilityResolver::visit (HIR::Enum &enum_item)
@@ -133,11 +151,15 @@ VisibilityResolver::visit (HIR::Union &union_item)
 
 void
 VisibilityResolver::visit (HIR::ConstantItem &const_item)
-{}
+{
+  resolve_and_update (&const_item);
+}
 
 void
 VisibilityResolver::visit (HIR::StaticItem &static_item)
-{}
+{
+  resolve_and_update (&static_item);
+}
 
 void
 VisibilityResolver::visit (HIR::Trait &trait)
@@ -153,7 +175,28 @@ VisibilityResolver::visit (HIR::Trait &trait)
 
 void
 VisibilityResolver::visit (HIR::ImplBlock &impl)
-{}
+{
+  for (auto &item : impl.get_impl_items ())
+    {
+      HIR::VisItem *vis_item;
+      switch (item->get_impl_item_type ())
+	{
+	case HIR::ImplItem::FUNCTION:
+	  vis_item = static_cast<HIR::Function *> (item.get ());
+	  break;
+	case HIR::ImplItem::TYPE_ALIAS:
+	  vis_item = static_cast<HIR::TypeAlias *> (item.get ());
+	  break;
+	case HIR::ImplItem::CONSTANT:
+	  vis_item = static_cast<HIR::ConstantItem *> (item.get ());
+	  break;
+	default:
+	  gcc_unreachable ();
+	  return;
+	}
+      vis_item->accept_vis (*this);
+    }
+}
 
 void
 VisibilityResolver::visit (HIR::ExternBlock &block)
