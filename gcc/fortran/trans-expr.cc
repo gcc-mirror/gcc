@@ -2612,7 +2612,7 @@ gfc_conv_substring (gfc_se * se, gfc_ref * ref, int kind,
       /* For BIND(C), a BT_CHARACTER is not an ARRAY_TYPE.  */
       if (TREE_CODE (TREE_TYPE (tmp)) == ARRAY_TYPE)
 	{
-	  tmp = gfc_build_array_ref (tmp, start.expr, NULL);
+	  tmp = gfc_build_array_ref (tmp, start.expr, NULL_TREE, true);
 	  se->expr = gfc_build_addr_expr (type, tmp);
 	}
     }
