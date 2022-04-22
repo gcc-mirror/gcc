@@ -12144,11 +12144,15 @@ package body Sem_Attr is
                      elsif Scope (Subp_Id) /= Current_Scope then
                         null;
 
+                     --  Dispatch tables are not a freeze point either
+
+                     elsif Nkind (Parent (N)) = N_Unchecked_Type_Conversion
+                       and then Is_Dispatch_Table_Entity (Etype (Parent (N)))
+                     then
+                        null;
+
                       --  Analyze the body of the expression function to freeze
-                      --  the expression. This takes care of the case where the
-                      --  'Access is part of dispatch table initialization and
-                      --  the generated body of the expression function has not
-                      --  been analyzed yet.
+                      --  the expression.
 
                      else
                         Analyze (Subp_Body);
