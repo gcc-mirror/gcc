@@ -93,6 +93,7 @@ GRS_OBJS = \
     rust/rust-privacy-check.o \
     rust/rust-privacy-ctx.o \
     rust/rust-reachability.o \
+    rust/rust-visibility-resolver.o \
     rust/rust-tyty.o \
     rust/rust-tyctx.o \
     rust/rust-tyty-bounds.o \

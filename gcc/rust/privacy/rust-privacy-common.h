@@ -30,10 +30,13 @@ class ModuleVisibility
 public:
   enum Type
   {
+    Unknown,
     Private,
     Public,
     Restricted,
   };
+
+  ModuleVisibility () : kind (Unknown), module_id (UNKNOWN_DEFID) {}
 
   static ModuleVisibility create_restricted (DefId module_id)
   {

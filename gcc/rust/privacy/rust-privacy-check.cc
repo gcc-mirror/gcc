@@ -19,6 +19,8 @@
 #include "rust-privacy-check.h"
 #include "rust-reachability.h"
 #include "rust-hir-type-check.h"
+#include "rust-hir-map.h"
+#include "rust-visibility-resolver.h"
 
 extern bool
 saw_errors (void);
@@ -29,10 +31,16 @@ void
 Resolver::resolve (HIR::Crate &crate)
 {
   PrivacyContext ctx;
+  auto mappings = Analysis::Mappings::get ();
+
+  auto resolver = VisibilityResolver (*mappings);
+  resolver.go (crate);
+
   auto ty_ctx = ::Rust::Resolver::TypeCheckContext::get ();
   auto visitor = ReachabilityVisitor (ctx, *ty_ctx);
 
   const auto &items = crate.items;
+
   for (auto &item : items)
     {
       if (item->get_hir_kind () == HIR::Node::VIS_ITEM)

@@ -16,50 +16,49 @@
 // along with GCC; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-#ifndef RUST_REACHABILITY_H
-#define RUST_REACHABILITY_H
+#ifndef RUST_VISIBILITY_H
+#define RUST_VISIBILITY_H
 
-#include "rust-privacy-ctx.h"
-#include "rust-hir-visitor.h"
 #include "rust-hir.h"
 #include "rust-hir-expr.h"
 #include "rust-hir-stmt.h"
 #include "rust-hir-item.h"
-#include "rust-hir-type-check.h"
+#include "rust-hir-map.h"
+#include "rust-hir-visitor.h"
 
 namespace Rust {
 namespace Privacy {
 
-// FIXME: The EmbargoVisitor from rustc is a fixed-point visitor which tries
-// to reach more and more nodes until nothing has changed anymore.
-// Do we need to reproduce this behavior? How long does it take to do this?
-
-/**
- * The ReachabilityVisitor tries to reach all items possible in the crate,
- * according to their privacy level.
- */
-class ReachabilityVisitor : public HIR::HIRVisItemVisitor
+class VisibilityResolver : public HIR::HIRVisItemVisitor
 {
 public:
-  ReachabilityVisitor (PrivacyContext &ctx,
-		       const ::Rust::Resolver::TypeCheckContext &ty_ctx)
-    : current_level (ReachLevel::Reachable), ctx (ctx), ty_ctx (ty_ctx)
-  {}
-
-  // FIXME: Add `go` method which takes an `HIR::Crate &` as argument
+  VisibilityResolver (Analysis::Mappings &mappings);
 
   /**
-   * Visit all the predicates of all the generic types of a given item, marking
-   * them as reachable or not.
+   * Perform visibility resolving on an entire crate
    */
-  void visit_generic_predicates (
-    const std::vector<std::unique_ptr<HIR::GenericParam>> &generics,
-    ReachLevel item_reach);
+  void go (HIR::Crate &crate);
 
   /**
-   * Get the initial reach level for an item based on its visibility.
+   * Resolve the visibility of an item to its ModuleVisibility. This function
+   * emits errors if necessary. The contents of the to_resolve parameter will be
+   * overwritten on success.
+   *
+   * @param visibility Visibility of the item to resolve
+   * @param to_resolve ModuleVisibility reference to fill on success.
+   *
+   * @return false on error, true if the resolving was successful.
    */
-  ReachLevel get_reachability_level (const HIR::Visibility &item_visibility);
+  bool resolve_visibility (const HIR::Visibility &visibility,
+			   ModuleVisibility &to_resolve);
+
+  /**
+   * Get the DefId of the parent module we are currently visiting.
+   *
+   * @return UNKNOWN_DEFID if the module stack is empty, a valid `DefId`
+   * otherwise
+   */
+  DefId peek_module ();
 
   virtual void visit (HIR::Module &mod);
   virtual void visit (HIR::ExternCrate &crate);
@@ -77,11 +76,14 @@ public:
   virtual void visit (HIR::ExternBlock &block);
 
 private:
-  ReachLevel current_level;
-  PrivacyContext &ctx;
-  const ::Rust::Resolver::TypeCheckContext &ty_ctx;
+  /* Mappings to insert visibilities into */
+  Analysis::Mappings &mappings;
+
+  /* Stack of modules visited by this visitor */
+  std::vector<DefId> module_stack;
 };
+
 } // namespace Privacy
 } // namespace Rust
 
-#endif // !RUST_REACHABILITY_H
+#endif // !RUST_VISIBILITY_H
