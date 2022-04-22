@@ -26,32 +26,21 @@
 
 #include "fold-const.h"
 #include "stringpool.h"
+#include "attribs.h"
 
 namespace Rust {
 namespace Compile {
 
-bool
-should_mangle_item (const AST::AttrVec &attrs)
+bool inline should_mangle_item (const tree fndecl)
 {
-  for (const auto &attr : attrs)
-    {
-      if (attr.get_path ().as_string ().compare ("no_mangle") == 0)
-	{
-	  if (attr.has_attr_input ())
-	    rust_error_at (
-	      attr.get_locus (),
-	      "attribute %<no_mangle%> does not accept any arguments");
-	  return false;
-	}
-    }
-
-  return true;
+  return lookup_attribute ("no_mangle", DECL_ATTRIBUTES (fndecl)) == NULL_TREE;
 }
 
 void
-HIRCompileBase::setup_attributes_on_fndecl (
-  tree fndecl, bool is_main_entry_point, HIR::Visibility &visibility,
-  const HIR::FunctionQualifiers &qualifiers, const AST::AttrVec &attrs)
+HIRCompileBase::setup_fndecl (tree fndecl, bool is_main_entry_point,
+			      HIR::Visibility &visibility,
+			      const HIR::FunctionQualifiers &qualifiers,
+			      const AST::AttrVec &attrs)
 {
   // if its the main fn or pub visibility mark its as DECL_PUBLIC
   // please see https://github.com/Rust-GCC/gccrs/pull/137
@@ -95,8 +84,7 @@ HIRCompileBase::setup_attributes_on_fndecl (
 	}
       else if (no_mangle)
 	{
-	  // we handled this in `should_mangle_item`
-	  continue;
+	  handle_no_mangle_attribute_on_fndecl (fndecl, attr);
 	}
     }
 }
@@ -142,6 +130,21 @@ HIRCompileBase::handle_link_section_attribute_on_fndecl (
     }
 
   set_decl_section_name (fndecl, msg_str.c_str ());
+}
+
+void
+HIRCompileBase::handle_no_mangle_attribute_on_fndecl (
+  tree fndecl, const AST::Attribute &attr)
+{
+  if (attr.has_attr_input ())
+    {
+      rust_error_at (attr.get_locus (),
+		     "attribute %<no_mangle%> does not accept any arguments");
+      return;
+    }
+
+  DECL_ATTRIBUTES (fndecl) = tree_cons (get_identifier ("no_mangle"), NULL_TREE,
+					DECL_ATTRIBUTES (fndecl));
 }
 
 void
@@ -420,18 +423,20 @@ HIRCompileBase::compile_function (
   // we don't mangle the main fn since we haven't implemented the main shim
   bool is_main_fn = fn_name.compare ("main") == 0;
   std::string asm_name = fn_name;
-  // TODO(liushuyu): we should probably move this part to
-  // `setup_attributes_on_fndecl` if possible
-  bool should_mangle = should_mangle_item (outer_attrs);
-  if (!is_main_fn && should_mangle)
-    asm_name = ctx->mangle_item (fntype, *canonical_path);
 
   unsigned int flags = 0;
   tree fndecl = ctx->get_backend ()->function (compiled_fn_type, ir_symbol_name,
-					       asm_name, flags, locus);
-  setup_attributes_on_fndecl (fndecl, is_main_fn, visibility, qualifiers,
-			      outer_attrs);
+					       "" /* asm_name */, flags, locus);
+  setup_fndecl (fndecl, is_main_fn, visibility, qualifiers, outer_attrs);
   setup_abi_options (fndecl, fntype->get_abi ());
+
+  // conditionally mangle the function name
+  bool should_mangle = should_mangle_item (fndecl);
+  if (!is_main_fn && should_mangle)
+    asm_name = ctx->mangle_item (fntype, *canonical_path);
+  SET_DECL_ASSEMBLER_NAME (fndecl,
+			   get_identifier_with_length (asm_name.data (),
+						       asm_name.length ()));
 
   // insert into the context
   ctx->insert_function_decl (fntype, fndecl);
