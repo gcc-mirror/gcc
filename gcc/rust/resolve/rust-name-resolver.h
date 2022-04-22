@@ -32,120 +32,23 @@ class Rib
 public:
   // Rust uses local_def_ids assigned by def_collector on the AST
   // lets use NodeId instead
-  Rib (CrateNum crateNum, NodeId node_id)
-    : crate_num (crateNum), node_id (node_id),
-      mappings (Analysis::Mappings::get ())
-  {}
-
-  ~Rib () {}
+  Rib (CrateNum crateNum, NodeId node_id);
 
   // this takes the relative paths of items within a compilation unit for lookup
   void insert_name (
     const CanonicalPath &path, NodeId id, Location locus, bool shadow,
-    std::function<void (const CanonicalPath &, NodeId, Location)> dup_cb)
-  {
-    auto it = path_mappings.find (path);
-    bool path_already_exists = it != path_mappings.end ();
-    if (path_already_exists && !shadow)
-      {
-	const auto &decl = decls_within_rib.find (it->second);
-	if (decl != decls_within_rib.end ())
-	  dup_cb (path, it->second, decl->second);
-	else
-	  dup_cb (path, it->second, locus);
+    std::function<void (const CanonicalPath &, NodeId, Location)> dup_cb);
 
-	return;
-      }
-
-    path_mappings[path] = id;
-    reverse_path_mappings.insert (std::pair<NodeId, CanonicalPath> (id, path));
-    decls_within_rib.insert (std::pair<NodeId, Location> (id, locus));
-    references[id] = {};
-  }
-
-  bool lookup_name (const CanonicalPath &ident, NodeId *id)
-  {
-    auto it = path_mappings.find (ident);
-    if (it == path_mappings.end ())
-      return false;
-
-    *id = it->second;
-    return true;
-  }
-
-  bool lookup_canonical_path (const NodeId &id, CanonicalPath *ident)
-  {
-    auto it = reverse_path_mappings.find (id);
-    if (it == reverse_path_mappings.end ())
-      return false;
-
-    *ident = it->second;
-    return true;
-  }
-
-  void clear_name (const CanonicalPath &ident, NodeId id)
-  {
-    auto ii = path_mappings.find (ident);
-    if (ii != path_mappings.end ())
-      path_mappings.erase (ii);
-
-    auto ij = reverse_path_mappings.find (id);
-    if (ij != reverse_path_mappings.end ())
-      reverse_path_mappings.erase (ij);
-
-    auto ik = decls_within_rib.find (id);
-    if (ik != decls_within_rib.end ())
-      decls_within_rib.erase (ik);
-  }
+  bool lookup_canonical_path (const NodeId &id, CanonicalPath *ident);
+  bool lookup_name (const CanonicalPath &ident, NodeId *id);
+  void clear_name (const CanonicalPath &ident, NodeId id);
+  void append_reference_for_def (NodeId def, NodeId ref);
+  bool have_references_for_node (NodeId def) const;
+  bool decl_was_declared_here (NodeId def) const;
 
   CrateNum get_crate_num () const { return crate_num; }
   NodeId get_node_id () const { return node_id; }
-
-  void iterate_decls (std::function<bool (NodeId, Location)> cb)
-  {
-    for (auto it : decls_within_rib)
-      {
-	if (!cb (it.first, it.second))
-	  return;
-      }
-  }
-
-  void iterate_references_for_def (NodeId def, std::function<bool (NodeId)> cb)
-  {
-    auto it = references.find (def);
-    if (it == references.end ())
-      return;
-
-    for (auto ref : it->second)
-      {
-	if (!cb (ref))
-	  return;
-      }
-  }
-
-  void append_reference_for_def (NodeId def, NodeId ref)
-  {
-    references[def].insert (ref);
-  }
-
-  bool have_references_for_node (NodeId def) const
-  {
-    auto it = references.find (def);
-    if (it == references.end ())
-      return false;
-
-    return !it->second.empty ();
-  }
-
-  bool decl_was_declared_here (NodeId def) const
-  {
-    for (auto &it : decls_within_rib)
-      {
-	if (it.first == def)
-	  return true;
-      }
-    return false;
-  }
+  std::map<NodeId, Location> &get_declarations () { return decls_within_rib; }
 
 private:
   CrateNum crate_num;
