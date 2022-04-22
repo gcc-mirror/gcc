@@ -1937,6 +1937,9 @@ test system can execute decimal floating point tests.
 
 @item hard_dfp
 Target generates decimal floating point instructions with current options.
+
+@item dfp_bid
+Target uses the BID format for decimal floating point.
 @end table
 
 @subsubsection ARM-specific attributes
