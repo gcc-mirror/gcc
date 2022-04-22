@@ -17,6 +17,7 @@
 // <http://www.gnu.org/licenses/>.
 
 #include "rust-visibility-resolver.h"
+#include "rust-ast.h"
 #include "rust-hir.h"
 #include "rust-hir-item.h"
 
@@ -55,6 +56,7 @@ VisibilityResolver::resolve_visibility (const HIR::Visibility &visibility,
       return true;
     case HIR::Visibility::PUBLIC:
       // FIXME: We need to handle the restricted path here
+      // FIXME: We also need to handle 2015 vs 2018 edition conflicts
       to_resolve = ModuleVisibility::create_public ();
       return true;
     default:
@@ -116,7 +118,15 @@ VisibilityResolver::visit (HIR::TupleStruct &tuple_struct)
 
 void
 VisibilityResolver::visit (HIR::Enum &enum_item)
-{}
+{
+  ModuleVisibility vis;
+  if (!resolve_visibility (enum_item.get_visibility (), vis))
+    return;
+
+  mappings.insert_visibility (enum_item.get_mappings ().get_defid (), vis);
+  for (auto &variant : enum_item.get_variants ())
+    mappings.insert_visibility (variant->get_mappings ().get_defid (), vis);
+}
 
 void
 VisibilityResolver::visit (HIR::Union &union_item)
@@ -132,7 +142,15 @@ VisibilityResolver::visit (HIR::StaticItem &static_item)
 
 void
 VisibilityResolver::visit (HIR::Trait &trait)
-{}
+{
+  ModuleVisibility vis;
+  if (!resolve_visibility (trait.get_visibility (), vis))
+    return;
+
+  mappings.insert_visibility (trait.get_mappings ().get_defid (), vis);
+  for (auto &item : trait.get_trait_items ())
+    mappings.insert_visibility (item->get_mappings ().get_defid (), vis);
+}
 
 void
 VisibilityResolver::visit (HIR::ImplBlock &impl)
