@@ -53,6 +53,14 @@ public:
 			   ModuleVisibility &to_resolve);
 
   /**
+   * Resolve the visibility of an item and updates it. This is useful for
+   * vis-items who need to be resolved but do not care about their module
+   * visibility - const items, static items, etc. For items with an impact on
+   * their children (enums, traits), this cannot be used
+   */
+  void resolve_and_update (const HIR::VisItem *item);
+
+  /**
    * Get the DefId of the parent module we are currently visiting.
    *
    * @return UNKNOWN_DEFID if the module stack is empty, a valid `DefId`
