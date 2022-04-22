@@ -22,11 +22,16 @@ namespace Rust {
 namespace Analysis {
 
 // https://doc.rust-lang.org/stable/nightly-rustc/src/rustc_feature/builtin_attrs.rs.html#248
-static const BuiltinAttrDefinition __definitions[]
-  = {{"inline", CODE_GENERATION},  {"cfg", EXPANSION},
-     {"cfg_attr", EXPANSION},	   {"allow", STATIC_ANALYSIS},
-     {"doc", HIR_LOWERING},	   {"lang", HIR_LOWERING},
-     {"must_use", STATIC_ANALYSIS}};
+static const BuiltinAttrDefinition __definitions[] = {
+  {"inline", CODE_GENERATION},
+  {"cold", CODE_GENERATION},
+  {"cfg", EXPANSION},
+  {"cfg_attr", EXPANSION},
+  {"allow", STATIC_ANALYSIS},
+  {"doc", HIR_LOWERING},
+  {"must_use", STATIC_ANALYSIS},
+  {"lang", HIR_LOWERING},
+};
 
 BuiltinAttributeMappings *
 BuiltinAttributeMappings::get ()

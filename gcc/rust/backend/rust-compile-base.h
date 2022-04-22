@@ -82,6 +82,9 @@ protected:
   static void handle_inline_attribute_on_fndecl (tree fndecl,
 						 const AST::Attribute &attr);
 
+  static void handle_cold_attribute_on_fndecl (tree fndecl,
+					       const AST::Attribute &attr);
+
   static void handle_must_use_attribute_on_fndecl (tree fndecl,
 						   const AST::Attribute &attr);
 
