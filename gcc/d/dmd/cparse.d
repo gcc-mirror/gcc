@@ -259,6 +259,7 @@ final class CParser(AST) : Parser!AST
         case TOK.plusPlus:
         case TOK.minusMinus:
         case TOK.sizeof_:
+        case TOK._Generic:
         Lexp:
             auto exp = cparseExpression();
             if (token.value == TOK.identifier && exp.op == EXP.identifier)
@@ -2399,15 +2400,13 @@ final class CParser(AST) : Parser!AST
                 if (idx.length > 2 && idx[0] == '_' && idx[1] == '_')  // leading double underscore
                     importBuiltins = true;  // probably one of those compiler extensions
                 t = null;
-                if (scw & SCW.xtypedef)
-                {
-                    /* Punch through to what the typedef is, to support things like:
-                     *  typedef T* T;
-                     */
-                    auto pt = lookupTypedef(previd);
-                    if (pt && *pt)      // if previd is a known typedef
-                        t = *pt;
-                }
+
+                /* Punch through to what the typedef is, to support things like:
+                 *  typedef T* T;
+                 */
+                auto pt = lookupTypedef(previd);
+                if (pt && *pt)      // if previd is a known typedef
+                    t = *pt;
 
                 if (!t)
                     t = new AST.TypeIdentifier(loc, previd);
@@ -2745,6 +2744,11 @@ final class CParser(AST) : Parser!AST
         Specifier specifier;
         specifier.packalign.setDefault();
         auto tspec = cparseSpecifierQualifierList(LVL.global, specifier);
+        if (tspec && specifier.mod & MOD.xconst)
+        {
+            tspec = toConst(tspec);
+            specifier.mod = MOD.xnone;      // 'used' it
+        }
         Identifier id;
         return cparseDeclarator(DTR.xabstract, tspec, id, specifier);
     }

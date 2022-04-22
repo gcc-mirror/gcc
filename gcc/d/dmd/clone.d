@@ -912,8 +912,8 @@ void buildDtors(AggregateDeclaration ad, Scope* sc)
                 ex = new DotVarExp(loc, ex, v);
 
                 // This is a hack so we can call destructors on const/immutable objects.
-                // Do it as a type 'paint'.
-                ex = new CastExp(loc, ex, v.type.mutableOf());
+                // Do it as a type 'paint', `cast()`
+                ex = new CastExp(loc, ex, MODFlags.none);
                 if (stc & STC.safe)
                     stc = (stc & ~STC.safe) | STC.trusted;
 
@@ -1588,7 +1588,7 @@ private bool needCopyCtor(StructDeclaration sd, out bool hasCpCtor)
 
         auto tf = ctorDecl.type.toTypeFunction();
         const dim = tf.parameterList.length;
-        if (dim == 1)
+        if (dim == 1 || (dim > 1 && tf.parameterList[1].defaultArg))
         {
             auto param = tf.parameterList[0];
             if (param.type.mutableOf().unSharedOf() == sd.type.mutableOf().unSharedOf())

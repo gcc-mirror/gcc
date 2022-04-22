@@ -84,7 +84,7 @@ extern (D) void writeFile(Loc loc, const(char)[] filename, const void[] data)
     ensurePathToNameExists(Loc.initial, filename);
     if (!File.update(filename, data))
     {
-        error(loc, "Error writing file '%*.s'", cast(int) filename.length, filename.ptr);
+        error(loc, "Error writing file '%.*s'", cast(int) filename.length, filename.ptr);
         fatal();
     }
 }

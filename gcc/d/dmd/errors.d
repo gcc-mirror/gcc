@@ -434,8 +434,20 @@ else
     pragma(printf) extern (C++) void vdeprecationSupplemental(const ref Loc loc, const(char)* format, va_list ap);
 
 /**
- * Call this after printing out fatal error messages to clean up and exit
- * the compiler.
+ * The type of the fatal error handler
+ * Returns: true if error handling is done, false to do exit(EXIT_FAILURE)
+ */
+alias FatalErrorHandler = bool delegate();
+
+/**
+ * The fatal error handler.
+ * If non-null it will be called for every fatal() call issued by the compiler.
+ */
+__gshared FatalErrorHandler fatalErrorHandler;
+
+/**
+ * Call this after printing out fatal error messages to clean up and exit the
+ * compiler. You can also set a fatalErrorHandler to override this behaviour.
  */
 extern (C++) void fatal();
 

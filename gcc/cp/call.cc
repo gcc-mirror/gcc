@@ -11546,12 +11546,9 @@ compare_ics (conversion *ics1, conversion *ics2)
 	 P0388R4.)  */
       else if (t1->kind == ck_aggr
 	       && TREE_CODE (t1->type) == ARRAY_TYPE
-	       && TREE_CODE (t2->type) == ARRAY_TYPE)
+	       && TREE_CODE (t2->type) == ARRAY_TYPE
+	       && same_type_p (TREE_TYPE (t1->type), TREE_TYPE (t2->type)))
 	{
-	  /* The type of the array elements must be the same.  */
-	  if (!same_type_p (TREE_TYPE (t1->type), TREE_TYPE (t2->type)))
-	    return 0;
-
 	  tree n1 = nelts_initialized_by_list_init (t1);
 	  tree n2 = nelts_initialized_by_list_init (t2);
 	  if (tree_int_cst_lt (n1, n2))

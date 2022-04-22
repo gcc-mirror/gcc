@@ -838,7 +838,8 @@ extern (C++) class Dsymbol : ASTNode
         }
         if (sds.isAggregateDeclaration() || sds.isEnumDeclaration())
         {
-            if (ident == Id.__sizeof || ident == Id.__xalignof || ident == Id._mangleof)
+            if (ident == Id.__sizeof ||
+                !(sc && sc.flags & SCOPE.Cfile) && (ident == Id.__xalignof || ident == Id._mangleof))
             {
                 error("`.%s` property cannot be redefined", ident.toChars());
                 errors = true;
@@ -2523,6 +2524,7 @@ Dsymbol handleSymbolRedeclarations(ref Scope sc, Dsymbol s, Dsymbol s2, ScopeDsy
 
         if (i1)                         // vd is the definition
         {
+            vd2.storage_class |= STC.extern_;  // so toObjFile() won't emit it
             sds.symtab.update(vd);      // replace vd2 with the definition
             return vd;
         }

@@ -6440,7 +6440,8 @@ emit_copy_of_insn_after (rtx_insn *insn, rtx_insn *after)
     }
 
   /* Update LABEL_NUSES.  */
-  mark_jump_label (PATTERN (new_rtx), new_rtx, 0);
+  if (NONDEBUG_INSN_P (insn))
+    mark_jump_label (PATTERN (new_rtx), new_rtx, 0);
 
   INSN_LOCATION (new_rtx) = INSN_LOCATION (insn);
 

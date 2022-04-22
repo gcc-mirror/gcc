@@ -6378,6 +6378,16 @@ proc check_effective_target_has_arch_pwr10 { } {
 	}]
 }
 
+proc check_effective_target_has_arch_ppc64 { } {
+	return [check_no_compiler_messages arch_ppc64 assembly {
+		#ifndef _ARCH_PPC64
+		#error does not have ppc64 support.
+		#else
+		/* "has ppc64 support" */
+		#endif
+	}]
+}
+
 # Return 1 if this is a PowerPC target supporting -mcpu=power10.
 # Limit this to 64-bit linux systems for now until other targets support
 # power10.

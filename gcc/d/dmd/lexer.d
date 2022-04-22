@@ -1236,28 +1236,47 @@ class Lexer
             {
                 uint v = 0;
                 int n = 0;
-                while (1)
+                if (Ccompile && ndigits == 2)
                 {
-                    if (isdigit(cast(char)c))
-                        c -= '0';
-                    else if (islower(c))
-                        c -= 'a' - 10;
-                    else
-                        c -= 'A' - 10;
-                    v = v * 16 + c;
-                    c = *++p;
-                    if (++n == ndigits)
-                        break;
-                    if (!ishex(cast(char)c))
+                    /* C11 6.4.4.4-7 one to infinity hex digits
+                     */
+                    do
                     {
-                        .error(loc, "escape hex sequence has %d hex digits instead of %d", n, ndigits);
-                        break;
-                    }
+                        if (isdigit(cast(char)c))
+                            c -= '0';
+                        else if (islower(c))
+                            c -= 'a' - 10;
+                        else
+                            c -= 'A' - 10;
+                        v = v * 16 + c;
+                        c = *++p;
+                    } while (ishex(cast(char)c));
                 }
-                if (ndigits != 2 && !utf_isValidDchar(v))
+                else
                 {
-                    .error(loc, "invalid UTF character \\U%08x", v);
-                    v = '?'; // recover with valid UTF character
+                    while (1)
+                    {
+                        if (isdigit(cast(char)c))
+                            c -= '0';
+                        else if (islower(c))
+                            c -= 'a' - 10;
+                        else
+                            c -= 'A' - 10;
+                        v = v * 16 + c;
+                        c = *++p;
+                        if (++n == ndigits)
+                            break;
+                        if (!ishex(cast(char)c))
+                        {
+                            .error(loc, "escape hex sequence has %d hex digits instead of %d", n, ndigits);
+                            break;
+                        }
+                    }
+                    if (ndigits != 2 && !utf_isValidDchar(v))
+                    {
+                        .error(loc, "invalid UTF character \\U%08x", v);
+                        v = '?'; // recover with valid UTF character
+                    }
                 }
                 c = v;
             }

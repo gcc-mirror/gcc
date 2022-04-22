@@ -987,23 +987,9 @@ class Parser(AST, Lexer = dmd.lexer.Lexer) : Lexer
                 nextToken();
                 if (token.value == TOK.assign)
                 {
-                    nextToken();
-                    if (token.value == TOK.identifier)
-                        s = new AST.DebugSymbol(token.loc, token.ident);
-                    else if (token.value == TOK.int32Literal || token.value == TOK.int64Literal)
-                        s = new AST.DebugSymbol(token.loc, cast(uint)token.unsvalue);
-                    else
-                    {
-                        error("identifier or integer expected, not `%s`", token.toChars());
-                        s = null;
-                    }
-                    nextToken();
-                    if (token.value != TOK.semicolon)
-                        error("semicolon expected");
-                    nextToken();
+                    s = parseDebugSpecification();
                     break;
                 }
-
                 condition = parseDebugCondition();
                 goto Lcondition;
 
@@ -1012,20 +998,7 @@ class Parser(AST, Lexer = dmd.lexer.Lexer) : Lexer
                 nextToken();
                 if (token.value == TOK.assign)
                 {
-                    nextToken();
-                    if (token.value == TOK.identifier)
-                        s = new AST.VersionSymbol(token.loc, token.ident);
-                    else if (token.value == TOK.int32Literal || token.value == TOK.int64Literal)
-                        s = new AST.VersionSymbol(token.loc, cast(uint)token.unsvalue);
-                    else
-                    {
-                        error("identifier or integer expected, not `%s`", token.toChars());
-                        s = null;
-                    }
-                    nextToken();
-                    if (token.value != TOK.semicolon)
-                        error("semicolon expected");
-                    nextToken();
+                    s = parseVersionSpecification();
                     break;
                 }
                 condition = parseVersionCondition();
@@ -2197,6 +2170,26 @@ class Parser(AST, Lexer = dmd.lexer.Lexer) : Lexer
         return qualified;
     }
 
+    private AST.DebugSymbol parseDebugSpecification()
+    {
+        AST.DebugSymbol s;
+        nextToken();
+        if (token.value == TOK.identifier)
+            s = new AST.DebugSymbol(token.loc, token.ident);
+        else if (token.value == TOK.int32Literal || token.value == TOK.int64Literal)
+            s = new AST.DebugSymbol(token.loc, cast(uint)token.unsvalue);
+        else
+        {
+            error("identifier or integer expected, not `%s`", token.toChars());
+            s = null;
+        }
+        nextToken();
+        if (token.value != TOK.semicolon)
+            error("semicolon expected");
+        nextToken();
+        return s;
+    }
+
     /**************************************
      * Parse a debug conditional
      */
@@ -2221,6 +2214,29 @@ class Parser(AST, Lexer = dmd.lexer.Lexer) : Lexer
             check(TOK.rightParenthesis);
         }
         return new AST.DebugCondition(loc, mod, level, id);
+    }
+
+    /**************************************
+     * Parse a version specification
+     */
+    private AST.VersionSymbol parseVersionSpecification()
+    {
+        AST.VersionSymbol s;
+        nextToken();
+        if (token.value == TOK.identifier)
+            s = new AST.VersionSymbol(token.loc, token.ident);
+        else if (token.value == TOK.int32Literal || token.value == TOK.int64Literal)
+            s = new AST.VersionSymbol(token.loc, cast(uint)token.unsvalue);
+        else
+        {
+            error("identifier or integer expected, not `%s`", token.toChars());
+            s = null;
+        }
+        nextToken();
+        if (token.value != TOK.semicolon)
+            error("semicolon expected");
+        nextToken();
+        return s;
     }
 
     /**************************************
@@ -6053,10 +6069,14 @@ LagainStc:
             nextToken();
             if (token.value == TOK.assign)
             {
-                error("debug conditions can only be declared at module scope");
-                nextToken();
-                nextToken();
-                goto Lerror;
+                if (auto ds = parseDebugSpecification())
+                {
+                    if (ds.ident)
+                        ds.error("declaration must be at module level");
+                    else
+                        ds.error("level declaration must be at module level");
+                }
+                break;
             }
             cond = parseDebugCondition();
             goto Lcondition;
@@ -6065,10 +6085,14 @@ LagainStc:
             nextToken();
             if (token.value == TOK.assign)
             {
-                error("version conditions can only be declared at module scope");
-                nextToken();
-                nextToken();
-                goto Lerror;
+                if (auto vs = parseVersionSpecification())
+                {
+                    if (vs.ident)
+                        vs.error("declaration must be at module level");
+                    else
+                        vs.error("level declaration must be at module level");
+                }
+                break;
             }
             cond = parseVersionCondition();
             goto Lcondition;

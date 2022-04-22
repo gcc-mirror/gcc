@@ -30623,7 +30623,10 @@ $as_echo_n "checking linker for compressed debug sections... " >&6; }
 # In binutils 2.26, gld gained support for the ELF gABI format.
 if test $in_tree_ld = yes ; then
   gcc_cv_ld_compress_debug=0
-  if test "$gcc_cv_gld_major_version" -eq 2 -a "$gcc_cv_gld_minor_version" -ge 19 -o "$gcc_cv_gld_major_version" -gt 2 \
+  if test $ld_is_mold = yes; then
+    gcc_cv_ld_compress_debug=3
+    gcc_cv_ld_compress_debug_option="--compress-debug-sections"
+  elif test "$gcc_cv_gld_major_version" -eq 2 -a "$gcc_cv_gld_minor_version" -ge 19 -o "$gcc_cv_gld_major_version" -gt 2 \
      && test $in_tree_ld_is_elf = yes && test $ld_is_gold = yes; then
     gcc_cv_ld_compress_debug=2
     gcc_cv_ld_compress_debug_option="--compress-debug-sections"
@@ -30636,7 +30639,10 @@ if test $in_tree_ld = yes ; then
     gcc_cv_ld_compress_debug=1
   fi
 elif echo "$ld_ver" | grep GNU > /dev/null; then
-  if test "$ld_vers_major" -lt 2 \
+  if test $ld_is_mold = yes; then
+    gcc_cv_ld_compress_debug=3
+    gcc_cv_ld_compress_debug_option="--compress-debug-sections"
+  elif test "$ld_vers_major" -lt 2 \
      || test "$ld_vers_major" -eq 2 -a "$ld_vers_minor" -lt 21; then
     gcc_cv_ld_compress_debug=0
   elif test "$ld_vers_major" -eq 2 -a "$ld_vers_minor" -lt 26; then

@@ -695,7 +695,7 @@ extern(C++) Initializer initializerSemantic(Initializer init, Scope* sc, ref Typ
                 assert(sc);
                 auto tm = vd.type.addMod(ts.mod);
                 auto iz = di.initializer.initializerSemantic(sc, tm, needInterpret);
-                auto ex = iz.initializerToExpression();
+                auto ex = iz.initializerToExpression(null, true);
                 if (ex.op == EXP.error)
                 {
                     errors = true;
@@ -1100,6 +1100,8 @@ Initializer inferType(Initializer init, Scope* sc)
  */
 extern (C++) Expression initializerToExpression(Initializer init, Type itype = null, const bool isCfile = false)
 {
+    //printf("initializerToExpression() isCfile: %d\n", isCfile);
+
     Expression visitVoid(VoidInitializer)
     {
         return null;
@@ -1197,7 +1199,7 @@ extern (C++) Expression initializerToExpression(Initializer init, Type itype = n
             assert(j < edim);
             if (Initializer iz = init.value[i])
             {
-                if (Expression ex = iz.initializerToExpression())
+                if (Expression ex = iz.initializerToExpression(null, isCfile))
                 {
                     (*elements)[j] = ex;
                     ++j;
@@ -1285,7 +1287,7 @@ extern (C++) Expression initializerToExpression(Initializer init, Type itype = n
 
     Expression visitC(CInitializer i)
     {
-        //printf("CInitializer.initializerToExpression()\n");
+        //printf("CInitializer.initializerToExpression(null, true)\n");
         return null;
     }
 
