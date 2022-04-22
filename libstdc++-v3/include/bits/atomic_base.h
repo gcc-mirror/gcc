@@ -252,13 +252,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     // TODO add const volatile overload
 
     _GLIBCXX_ALWAYS_INLINE void
-    notify_one() const noexcept
+    notify_one() noexcept
     { std::__atomic_notify_address(&_M_i, false); }
 
     // TODO add const volatile overload
 
     _GLIBCXX_ALWAYS_INLINE void
-    notify_all() const noexcept
+    notify_all() noexcept
     { std::__atomic_notify_address(&_M_i, true); }
 
     // TODO add const volatile overload
@@ -600,13 +600,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // TODO add const volatile overload
 
       _GLIBCXX_ALWAYS_INLINE void
-      notify_one() const noexcept
+      notify_one() noexcept
       { std::__atomic_notify_address(&_M_i, false); }
 
       // TODO add const volatile overload
 
       _GLIBCXX_ALWAYS_INLINE void
-      notify_all() const noexcept
+      notify_all() noexcept
       { std::__atomic_notify_address(&_M_i, true); }
 
       // TODO add const volatile overload
