@@ -56,6 +56,8 @@ HIRCompileBase::setup_attributes_on_fndecl (
       bool is_must_use
 	= attr.get_path ().as_string ().compare ("must_use") == 0;
       bool is_cold = attr.get_path ().as_string ().compare ("cold") == 0;
+      bool is_link_section
+	= attr.get_path ().as_string ().compare ("link_section") == 0;
       if (is_inline)
 	{
 	  handle_inline_attribute_on_fndecl (fndecl, attr);
@@ -67,6 +69,10 @@ HIRCompileBase::setup_attributes_on_fndecl (
       else if (is_cold)
 	{
 	  handle_cold_attribute_on_fndecl (fndecl, attr);
+	}
+      else if (is_link_section)
+	{
+	  handle_link_section_attribute_on_fndecl (fndecl, attr);
 	}
     }
 }
@@ -87,6 +93,31 @@ HIRCompileBase::handle_cold_attribute_on_fndecl (tree fndecl,
 
   rust_error_at (attr.get_locus (),
 		 "attribute %<cold%> does not accept any arguments");
+}
+
+void
+HIRCompileBase::handle_link_section_attribute_on_fndecl (
+  tree fndecl, const AST::Attribute &attr)
+{
+  if (!attr.has_attr_input ())
+    {
+      rust_error_at (attr.get_locus (),
+		     "%<link_section%> expects exactly one argment");
+      return;
+    }
+
+  rust_assert (attr.get_attr_input ().get_attr_input_type ()
+	       == AST::AttrInput::AttrInputType::LITERAL);
+
+  auto &literal = static_cast<AST::AttrInputLiteral &> (attr.get_attr_input ());
+  const auto &msg_str = literal.get_literal ().as_string ();
+
+  if (decl_section_name (fndecl))
+    {
+      rust_warning_at (attr.get_locus (), 0, "section name redefined");
+    }
+
+  set_decl_section_name (fndecl, msg_str.c_str ());
 }
 
 void
