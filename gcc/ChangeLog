@@ -1,3 +1,31 @@
+2022-04-21  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-04-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/105257
+	* config/sparc/sparc.c (epilogue_renumber): If ORIGINAL_REGNO,
+	use gen_raw_REG instead of gen_rtx_REG and copy over also
+	ORIGINAL_REGNO.  Use return 0; instead of /* fallthrough */.
+
+2022-04-21  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-04-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/105203
+	* emit-rtl.c (emit_copy_of_insn_after): Don't call mark_jump_label
+	on DEBUG_INSNs.
+
+2022-04-21  Sergei Trofimovich  <siarheit@google.com>
+
+	Backported from master:
+	2022-04-19  Sergei Trofimovich  <siarheit@google.com>
+
+	PR gcov-profile/105282
+	* value-prof.c (stream_out_histogram_value): Allow negative counts
+	on HIST_TYPE_INDIR_CALL.
+
 2022-04-21  Release Manager
 
 	* GCC 11.3.0 released.

@@ -1,3 +1,11 @@
+2022-04-21  Matthias Kretz  <m.kretz@gsi.de>
+
+	Backported from master:
+	2021-12-19  Matthias Kretz  <m.kretz@gsi.de>
+
+	* module.cc (trees_out::get_merge_kind): NAMESPACE_DECLs also
+	cannot have a DECL_TEMPLATE_INFO.
+
 2022-04-21  Release Manager
 
 	* GCC 11.3.0 released.

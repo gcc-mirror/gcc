@@ -1,3 +1,292 @@
+2022-04-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-11-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/96592
+	* include/std/tuple (tuple::is_constructible): Remove.
+
+2022-04-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-09-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR c++/102177
+	* include/bits/atomic_base.h (__is_valid_cmpexch_failure_order):
+	New function to check if a memory order is valid for the failure
+	case of compare exchange operations.
+	(__atomic_base<I>::compare_exchange_weak): Simplify assertions
+	by using __is_valid_cmpexch_failure_order.
+	(__atomic_base<I>::compare_exchange_strong): Likewise.
+	(__atomic_base<P*>::compare_exchange_weak): Likewise.
+	(__atomic_base<P*>::compare_exchange_strong): Likewise.
+	(__atomic_impl::compare_exchange_weak): Add assertion.
+	(__atomic_impl::compare_exchange_strong): Likewise.
+	* include/std/atomic (atomic::compare_exchange_weak): Likewise.
+	(atomic::compare_exchange_strong): Likewise.
+
+2022-04-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-02-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/20_util/monotonic_buffer_resource/allocate.cc:
+	Ignore -Walloc-larger-than warning.
+	* testsuite/20_util/unsynchronized_pool_resource/allocate.cc:
+	Likewise.
+	* testsuite/29_atomics/atomic/cons/user_pod.cc: Compile with -O1
+	to avoid linker error for __atomic_is_lock_free.
+
+2022-04-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-12-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_iterator.h (operator==, operator<=>): Define
+	overloads for homogeneous specializations of reverse_iterator,
+	__normal_iterator and move_iterator.
+
+2022-04-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-11-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/24_iterators/move_iterator/dr3265.cc: Fix test to
+	account for LWG 3435 resolution.
+
+2022-04-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-08-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/101709
+	* src/filesystem/ops-common.h (get_temp_directory_from_env):
+	Add error_code parameter.
+	* src/c++17/fs_ops.cc (fs::temp_directory_path): Pass error_code
+	argument to get_temp_directory_from_env and check it.
+	* src/filesystem/ops.cc (fs::temp_directory_path): Likewise.
+
+2022-04-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-04-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/105324
+	* src/c++17/floating_from_chars.cc (buffer_resource::do_allocate):
+	Remove assertion.
+	* testsuite/20_util/from_chars/pr105324.cc: New test.
+
+2022-04-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-07-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/65018
+	* configure.ac: Check for secure_getenv.
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+	* src/filesystem/ops-common.h (get_temp_directory_from_env): New
+	helper function to obtain path from the environment.
+	* src/c++17/fs_ops.cc (fs::temp_directory_path): Use new helper.
+	* src/filesystem/ops.cc (fs::temp_directory_path): Likewise.
+	* testsuite/27_io/filesystem/operations/temp_directory_path.cc:
+	Print messages if test cannot be run.
+	* testsuite/experimental/filesystem/operations/temp_directory_path.cc:
+	Likewise. Fix incorrect condition. Use "TMP" to work with
+	Windows as well as POSIX.
+
+2022-04-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-11-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++20/sstream-inst.cc (_GLIBCXX_USE_CXX11_ABI): Define to
+	select new ABI.
+
+2022-04-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-11-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/21_strings/basic_string/cons/char/moveable.cc: Allow
+	moved-from string to be non-empty.
+	* testsuite/21_strings/basic_string/cons/char/moveable2.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/cons/char/moveable2_c++17.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/cons/wchar_t/moveable.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/cons/wchar_t/moveable2.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/cons/wchar_t/moveable2_c++17.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/modifiers/assign/char/87749.cc:
+	Construct empty string before setting oom flag.
+	* testsuite/21_strings/basic_string/modifiers/assign/wchar_t/87749.cc:
+	Likewise.
+
+2022-04-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-12-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/regex_compiler.tcc (_Compiler::_M_match_token):
+	Use reserved name for parameter.
+	* testsuite/17_intro/names.cc: Check "token".
+
+2022-04-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-08-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/17_intro/names.cc: Check 'sz'.
+
+2022-04-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-01-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/ranges (ranges::lazy_split_view::_InnerIter::end()):
+	Add neoxcept (LWG 3593).
+
+2022-04-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-11-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/experimental/internet (address): Use std::_Construct
+	to initialize union members.
+
+2022-04-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-01-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++11/cxx11-ios_failure.cc (io_error_category): Define
+	class and virtual functions as 'final'.
+	(io_category_instance): Use constinit union to make the object
+	immortal.
+	* src/c++11/future.cc (future_error_category): Define class and
+	virtual functions as 'final'.
+	(future_category_instance): Use constinit union.
+
+2022-04-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-11-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/span (span(Range&&)): Reorder constraints.
+
+2022-04-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-12-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++17/fs_path.cc (path::_M_split_cmpts()): Remove
+	micro-optimization for "/" path.
+	* src/filesystem/path.cc (path::_M_split_cmpts()): Only access
+	the contents of _M_pathname using const member functions.
+
+2022-04-21  Pavel I. Kryukov  <pavel.kryukov@phystech.edu>
+
+	Backported from master:
+	2022-01-06  Pavel I. Kryukov  <pavel.kryukov@phystech.edu>
+		    Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/103853
+	* include/bits/forward_list.tcc (forward_list::merge): Check for
+	self-merge.
+	* testsuite/23_containers/forward_list/operations/merge.cc: New test.
+
+2022-04-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-01-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_construct.h (_Construct, _Construct_novalue):
+	Also cast away cv-qualifiers when converting pointer to void.
+	* testsuite/20_util/allocator/void.cc: Test construct function
+	with cv-qualified types.
+
+2022-04-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-01-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/103911
+	* include/std/charconv (__from_chars_alpha_to_num): Return
+	char instead of unsigned char. Change invalid return value to
+	127 instead of using numeric trait.
+	(__from_chars_alnum): Fix comment. Do not use std::isdigit.
+	Change type of variable to char.
+
+2022-04-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-01-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/ranges_base.h (ranges::advance): Avoid signed
+	overflow. Do nothing if already equal to desired result.
+	* testsuite/24_iterators/range_operations/advance_overflow.cc:
+	New test.
+
+2022-04-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-01-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/ext/rope/pthread7-rope.cc: Add dg-timeout-factor.
+
+2022-04-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-03-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/17_intro/names.cc (func): Undef on AIX.
+
+2022-04-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-04-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/93602
+	* doc/xml/manual/prerequisites.xml: Document libiconv
+	workarounds.
+	* doc/html/manual/setup.html: Regenerate.
+	* src/Makefile.am (CXXLINK): Add $(LTLIBICONV).
+	* src/Makefile.in: Regenerate.
+
+2022-04-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-04-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/intro.xml: Fix comment.
+
+2022-04-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-04-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/21_strings/basic_string_view/operations/copy/char/constexpr.cc:
+	Check correct feature test macro.
+
+2022-04-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR middle-end/104966
+	* include/bits/locale_facets_nonio.tcc
+	(__moneypunct_cache::_M_cache): Store string sizes in local
+	variable that doesn't escape.
+
+2022-04-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-01-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/103848
+	* include/bits/stl_deque.h (operator-): Do not use 0 as null
+	pointer constant.
+
 2022-04-21  Release Manager
 
 	* GCC 11.3.0 released.
