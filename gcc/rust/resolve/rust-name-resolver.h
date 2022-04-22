@@ -63,72 +63,24 @@ private:
 class Scope
 {
 public:
-  Scope (CrateNum crate_num) : crate_num (crate_num) {}
-
-  ~Scope () {}
+  Scope (CrateNum crate_num);
 
   void
   insert (const CanonicalPath &ident, NodeId id, Location locus, bool shadow,
-	  std::function<void (const CanonicalPath &, NodeId, Location)> dup_cb)
-  {
-    peek ()->insert_name (ident, id, locus, shadow, dup_cb);
-  }
+	  std::function<void (const CanonicalPath &, NodeId, Location)> dup_cb);
 
-  void insert (const CanonicalPath &ident, NodeId id, Location locus)
-  {
-    peek ()->insert_name (ident, id, locus, true,
-			  [] (const CanonicalPath &, NodeId, Location) -> void {
-			  });
-  }
+  void insert (const CanonicalPath &ident, NodeId id, Location locus);
+  bool lookup (const CanonicalPath &ident, NodeId *id);
 
-  bool lookup (const CanonicalPath &ident, NodeId *id)
-  {
-    NodeId lookup = UNKNOWN_NODEID;
-    iterate ([&] (Rib *r) mutable -> bool {
-      if (r->lookup_name (ident, &lookup))
-	return false;
-      return true;
-    });
+  void iterate (std::function<bool (Rib *)> cb);
 
-    *id = lookup;
-    return lookup != UNKNOWN_NODEID;
-  }
+  Rib *peek ();
+  void push (NodeId id);
+  Rib *pop ();
 
-  void iterate (std::function<bool (Rib *)> cb)
-  {
-    for (auto it = stack.rbegin (); it != stack.rend (); ++it)
-      {
-	if (!cb (*it))
-	  return;
-      }
-  }
-
-  Rib *peek () { return stack.back (); }
-
-  void push (NodeId id) { stack.push_back (new Rib (get_crate_num (), id)); }
-
-  Rib *pop ()
-  {
-    Rib *r = peek ();
-    stack.pop_back ();
-    return r;
-  }
+  void append_reference_for_def (NodeId refId, NodeId defId);
 
   CrateNum get_crate_num () const { return crate_num; }
-
-  void append_reference_for_def (NodeId refId, NodeId defId)
-  {
-    bool ok = false;
-    iterate ([&] (Rib *r) mutable -> bool {
-      if (r->decl_was_declared_here (defId))
-	{
-	  ok = true;
-	  r->append_reference_for_def (defId, refId);
-	}
-      return true;
-    });
-    rust_assert (ok);
-  }
 
 private:
   CrateNum crate_num;
