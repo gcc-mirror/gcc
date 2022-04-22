@@ -7723,7 +7723,7 @@ gfc_conv_expr_descriptor (gfc_se *se, gfc_expr *expr)
       lse.ss = loop.temp_ss;
       rse.ss = ss;
 
-      gfc_conv_scalarized_array_ref (&lse, NULL);
+      gfc_conv_tmp_array_ref (&lse);
       if (expr->ts.type == BT_CHARACTER)
 	{
 	  gfc_conv_expr (&rse, expr);
