@@ -1,3 +1,40 @@
+2022-04-22  Mikael Morin  <mikael@gcc.gnu.org>
+	    Richard Biener  <rguenther@suse.de>
+
+	PR fortran/102043
+	* trans.h (gfc_build_array_ref): Add non_negative_offset
+	argument.
+	* trans.cc (gfc_build_array_ref): Ditto. Use pointer arithmetic
+	if non_negative_offset is false.
+	* trans-expr.cc (gfc_conv_substring): Set flag in the call to
+	gfc_build_array_ref.
+	* trans-array.cc (gfc_get_cfi_dim_item,
+	gfc_conv_descriptor_dimension): Same.
+	(build_array_ref): Decide on whether to set the flag and update
+	the call.
+	(gfc_conv_scalarized_array_ref): Same.  New argument tmp_array.
+	(gfc_conv_tmp_array_ref): Update call to
+	gfc_conv_scalarized_ref.
+	(non_negative_strides_array_p): New function.
+
+2022-04-22  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/102043
+	* trans-array.cc (gfc_conv_expr_descriptor): Use
+	gfc_conv_tmp_array_ref.
+
+2022-04-22  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/102043
+	* trans-io.cc: Add handling for the case where the array
+	is referenced using pointer arithmetic.
+
+2022-04-22  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/102043
+	* trans-expr.cc: Pre-evaluate src and dest to variables
+	before using them.
+
 2022-04-21  Fritz Reese  <foreese@gcc.gnu.org>
 
 	PR fortran/105310

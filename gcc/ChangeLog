@@ -1,3 +1,22 @@
+2022-04-22  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/105334
+	* config/rs6000/rs6000.md (pack<mode> for FMOVE128): New expander.
+	(pack<mode> for FMOVE128): Rename and split the insn_and_split to...
+	(pack<mode>_hard for FMOVE128): ... this...
+	(pack<mode>_soft for FMOVE128): ... and this.
+
+2022-04-22  Paul A. Clarke  <pc@us.ibm.com>
+
+	* doc/extend.texi: Correct "This" to "These".
+
+2022-04-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/105333
+	* rtlanal.cc (replace_rtx): Use simplify_subreg or
+	simplify_unary_operation if CONST_SCALAR_INT_P rather than just
+	CONST_INT_P.
+
 2022-04-21  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR target/103197

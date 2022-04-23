@@ -1,3 +1,25 @@
+2022-04-22  Mikael Morin  <mikael@gcc.gnu.org>
+	    Richard Biener  <rguenther@suse.de>
+
+	PR fortran/102043
+	* gfortran.dg/array_reference_3.f90: New.
+	* gfortran.dg/negative_stride_1.f90: New.
+	* gfortran.dg/vector_subscript_8.f90: New.
+	* gfortran.dg/vector_subscript_9.f90: New.
+	* gfortran.dg/c_loc_test_22.f90: Update dump patterns.
+	* gfortran.dg/finalize_10.f90: Same.
+
+2022-04-22  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/102043
+	* gfortran.dg/dependency_49.f90: Update variable occurence
+	count.
+
+2022-04-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/105333
+	* gcc.dg/pr105333.c: New test.
+
 2022-04-21  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR target/103197
