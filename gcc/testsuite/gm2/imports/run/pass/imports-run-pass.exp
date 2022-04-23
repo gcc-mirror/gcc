@@ -31,7 +31,7 @@ gm2_init_pim "${srcdir}/gm2/imports/run/pass"
 gm2_link_with "-lm2pim -lm2iso -lpthread"
 
 foreach testcase [lsort [glob -nocomplain $srcdir/$subdir/*.mod]] {
-    set output [exec ../../gm2 -B../../ -g -c "-I${gccpath}/libgm2/libpim:${gm2src}/gm2-libs:${srcdir}/gm2/imports/run/pass" -fpim ${srcdir}/gm2/imports/run/pass/c.mod]
+    set output [gm2_target_compile ${srcdir}/${subdir}/c.mod c.o object "-g -I${gccpath}/libgm2/libpim:${gm2src}/gm2-libs:${srcdir}/${subdir} -fpim"]
 
     # If we're only testing specific files and this isn't one of them, skip it.
     if ![runtest_file_p $runtests $testcase] then {

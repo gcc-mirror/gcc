@@ -30,9 +30,7 @@ set gm2src ${srcdir}/../m2
 gm2_init_iso "$srcdir/$subdir"
 gm2_link_with "c.o -lm2iso -lm2pim -lpthread"
 
-set XGCC [lookfor_file $rootme xgcc];
-set output [exec rm -f c.o]
-set output [exec ${XGCC} -B[file dirname $rootme]/gcc -g -c $srcdir/$subdir/c.c -o c.o]
+set output [target_compile $srcdir/$subdir/c.c c.o object "-g"]
 
 foreach testcase [lsort [glob -nocomplain $srcdir/$subdir/*.mod]] {
     # If we're only testing specific files and this isn't one of them, skip it.
@@ -43,5 +41,3 @@ foreach testcase [lsort [glob -nocomplain $srcdir/$subdir/*.mod]] {
     gm2_target_compile $srcdir/$subdir/m.mod m.o object "-g"
     gm2-torture-execute $testcase "" "pass"
 }
-
-set output [exec rm -f c.o]

@@ -29,14 +29,9 @@ load_lib gm2-torture.exp
 set gm2src ${srcdir}/../m2
 
 gm2_init_pim "${srcdir}/gm2/calling-c/datatypes/unbounded/run/pass"
-
-set XGCC [lookfor_file $rootme xgcc];
-
 gm2_link_with "c.o -lm2pim -lm2iso -lpthread"
 
-
-set output [exec rm -f c.o]
-set output [exec ${XGCC} -B[file dirname $rootme]/gcc -g -c $srcdir/gm2/calling-c/datatypes/unbounded/run/pass/c.c -o c.o]
+set output [target_compile $srcdir/$subdir/c.c c.o object "-g"]
 
 foreach testcase [lsort [glob -nocomplain $srcdir/$subdir/*.mod]] {
     # If we're only testing specific files and this isn't one of them, skip it.
@@ -47,5 +42,3 @@ foreach testcase [lsort [glob -nocomplain $srcdir/$subdir/*.mod]] {
     gm2_target_compile $srcdir/$subdir/m.mod m.o object "-g"
     gm2-torture-execute $testcase "" "pass"
 }
-
-set output [exec rm -f c.o]

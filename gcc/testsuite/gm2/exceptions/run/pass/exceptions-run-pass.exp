@@ -28,11 +28,8 @@ load_lib prune.exp
 load_lib gm2-torture.exp
 
 
-set XGPP [lookfor_file $rootme xg++];
-
-set output [exec rm -f cpp.o mycpp.o]
-set output [exec ${XGPP} -B[file dirname $rootme]/gcc -g -c $srcdir/gm2/exceptions/run/pass/cpp.cpp]
-set output [exec ${XGPP} -B[file dirname $rootme]/gcc -g -c $srcdir/gm2/exceptions/run/pass/mycpp.cpp]
+set output [target_compile $srcdir/$subdir/cpp.cpp cpp.o object "-g"]
+set output [target_compile $srcdir/$subdir/mycpp.cpp mycpp.o object "-g"]
 
 #
 #  notice this uses PIM libraries with exceptions - this is a useful test.
