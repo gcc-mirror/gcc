@@ -1,3 +1,20 @@
+2022-04-22  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2022-04-21  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/105321
+	* g++.dg/cpp0x/constexpr-105321.C: New test.
+
+2022-04-22  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2022-04-13  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/97296
+	* g++.dg/cpp0x/ref-bind4.C: Add dg-error.
+	* g++.dg/cpp0x/ref-bind8.C: New test.
+
 2022-04-21  Fritz Reese  <foreese@gcc.gnu.org>
 
 	Backported from master:
