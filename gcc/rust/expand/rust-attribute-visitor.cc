@@ -1630,6 +1630,9 @@ AttrVisitor::visit (AST::IfExpr &expr)
   // can't strip condition expr itself, but can strip sub-expressions
   auto &condition_expr = expr.get_condition_expr ();
   condition_expr->accept_vis (*this);
+  auto cond_fragment = expander.take_expanded_fragment (*this);
+  if (cond_fragment.should_expand ())
+    condition_expr = cond_fragment.take_expression_fragment ();
   if (condition_expr->is_marked_for_strip ())
     rust_error_at (condition_expr->get_locus (),
 		   "cannot strip expression in this position - outer "
@@ -1657,6 +1660,9 @@ AttrVisitor::visit (AST::IfExprConseqElse &expr)
   // can't strip condition expr itself, but can strip sub-expressions
   auto &condition_expr = expr.get_condition_expr ();
   condition_expr->accept_vis (*this);
+  auto cond_fragment = expander.take_expanded_fragment (*this);
+  if (cond_fragment.should_expand ())
+    condition_expr = cond_fragment.take_expression_fragment ();
   if (condition_expr->is_marked_for_strip ())
     rust_error_at (condition_expr->get_locus (),
 		   "cannot strip expression in this position - outer "
@@ -1692,6 +1698,9 @@ AttrVisitor::visit (AST::IfExprConseqIf &expr)
   // can't strip condition expr itself, but can strip sub-expressions
   auto &condition_expr = expr.get_condition_expr ();
   condition_expr->accept_vis (*this);
+  auto cond_fragment = expander.take_expanded_fragment (*this);
+  if (cond_fragment.should_expand ())
+    condition_expr = cond_fragment.take_expression_fragment ();
   if (condition_expr->is_marked_for_strip ())
     rust_error_at (condition_expr->get_locus (),
 		   "cannot strip expression in this position - outer "
@@ -1727,6 +1736,9 @@ AttrVisitor::visit (AST::IfExprConseqIfLet &expr)
   // can't strip condition expr itself, but can strip sub-expressions
   auto &condition_expr = expr.get_condition_expr ();
   condition_expr->accept_vis (*this);
+  auto cond_fragment = expander.take_expanded_fragment (*this);
+  if (cond_fragment.should_expand ())
+    condition_expr = cond_fragment.take_expression_fragment ();
   if (condition_expr->is_marked_for_strip ())
     rust_error_at (condition_expr->get_locus (),
 		   "cannot strip expression in this position - outer "
