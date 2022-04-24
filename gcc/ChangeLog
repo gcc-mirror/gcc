@@ -1,3 +1,10 @@
+2022-04-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/105338
+	* config/i386/i386-expand.cc (ix86_expand_int_movcc): Handle
+	op0 == cst1 ? op0 : op3 like op0 == cst1 ? cst1 : op3 for the non-cmov
+	cases.
+
 2022-04-22  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR target/105334

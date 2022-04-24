@@ -1,3 +1,8 @@
+2022-04-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/105338
+	* gcc.target/i386/pr105338.c: New test.
+
 2022-04-22  Mikael Morin  <mikael@gcc.gnu.org>
 	    Richard Biener  <rguenther@suse.de>
 
