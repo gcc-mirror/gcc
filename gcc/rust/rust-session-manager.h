@@ -182,6 +182,7 @@ struct CompileOptions
    * pointer width, vendor */
   TargetOptions target_data;
   std::string crate_name;
+  bool crate_name_set_manually = false;
   bool enable_test = false;
   bool debug_assertions = false;
   bool proc_macro = false;
@@ -270,6 +271,7 @@ public:
 		      const struct cl_option_handlers *handlers);
   void parse_files (int num_files, const char **files);
   void init_options ();
+  void handle_crate_name (AST::Crate parsed_crate);
 
   /* This function saves the filename data into the session manager using the
    * `move` semantics, and returns a C-style string referencing the input

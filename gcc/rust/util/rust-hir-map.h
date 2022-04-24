@@ -88,6 +88,19 @@ public:
     return true;
   }
 
+  // set crate name mid-compilation
+  // don't use this if setting crate name before Session::parse_files
+  bool set_crate_name (CrateNum crate_num, std::string name)
+  {
+    rust_assert (!name.empty ());
+    auto it = crate_names.find (crate_num);
+    if (it == crate_names.end ())
+      return false;
+
+    it->second.assign (name);
+    return true;
+  }
+
   std::string get_current_crate_name () const
   {
     std::string name;
