@@ -325,12 +325,14 @@ class SimplePathSegment : public PathSegment
 {
   std::string segment_name;
   Location locus;
+  NodeId node_id;
 
   // only allow identifiers, "super", "self", "crate", or "$crate"
 public:
   // TODO: put checks in constructor to enforce this rule?
   SimplePathSegment (std::string segment_name, Location locus = Location ())
-    : segment_name (std::move (segment_name)), locus (locus)
+    : segment_name (std::move (segment_name)), locus (locus),
+      node_id (Analysis::Mappings::get ()->get_next_node_id ())
   {}
 
   /* Returns whether simple path segment is in an invalid state (currently, if
@@ -346,6 +348,7 @@ public:
   std::string as_string () const override;
 
   Location get_locus () const { return locus; }
+  NodeId get_node_id () const { return node_id; }
 
   // TODO: visitor pattern?
 };
@@ -356,6 +359,7 @@ class SimplePath
   bool has_opening_scope_resolution;
   std::vector<SimplePathSegment> segments;
   Location locus;
+  NodeId node_id;
 
 public:
   // Constructor
@@ -363,7 +367,8 @@ public:
 	      bool has_opening_scope_resolution = false,
 	      Location locus = Location ())
     : has_opening_scope_resolution (has_opening_scope_resolution),
-      segments (std::move (path_segments)), locus (locus)
+      segments (std::move (path_segments)), locus (locus),
+      node_id (Analysis::Mappings::get ()->get_next_node_id ())
   {}
 
   // Creates an empty SimplePath.
@@ -378,6 +383,7 @@ public:
   std::string as_string () const;
 
   Location get_locus () const { return locus; }
+  NodeId get_node_id () const { return node_id; }
 
   // does this need visitor if not polymorphic? probably not
 
