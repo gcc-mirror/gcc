@@ -333,33 +333,33 @@ HIRCompileBase::compile_locals_for_block (Context *ctx, Resolver::Rib &rib,
 					  tree fndecl)
 {
   std::vector<Bvariable *> locals;
-  rib.iterate_decls ([&] (NodeId n, Location) mutable -> bool {
-    Resolver::Definition d;
-    bool ok = ctx->get_resolver ()->lookup_definition (n, &d);
-    rust_assert (ok);
+  for (auto it : rib.get_declarations ())
+    {
+      auto node_id = it.first;
 
-    HIR::Stmt *decl = nullptr;
-    ok = ctx->get_mappings ()->resolve_nodeid_to_stmt (d.parent, &decl);
-    rust_assert (ok);
+      Resolver::Definition d;
+      bool ok = ctx->get_resolver ()->lookup_definition (node_id, &d);
+      rust_assert (ok);
 
-    // if its a function we extract this out side of this fn context
-    // and it is not a local to this function
-    bool is_item = ctx->get_mappings ()->lookup_hir_item (
-		     decl->get_mappings ().get_crate_num (),
-		     decl->get_mappings ().get_hirid ())
-		   != nullptr;
-    if (is_item)
-      {
-	HIR::Item *item = static_cast<HIR::Item *> (decl);
-	CompileItem::compile (item, ctx);
-	return true;
-      }
+      HIR::Stmt *decl = nullptr;
+      ok = ctx->get_mappings ()->resolve_nodeid_to_stmt (d.parent, &decl);
+      rust_assert (ok);
 
-    Bvariable *compiled = CompileVarDecl::compile (fndecl, decl, ctx);
-    locals.push_back (compiled);
+      // if its a function we extract this out side of this fn context
+      // and it is not a local to this function
+      bool is_item = ctx->get_mappings ()->lookup_hir_item (
+		       decl->get_mappings ().get_crate_num (),
+		       decl->get_mappings ().get_hirid ())
+		     != nullptr;
+      if (is_item)
+	{
+	  HIR::Item *item = static_cast<HIR::Item *> (decl);
+	  CompileItem::compile (item, ctx);
+	}
 
-    return true;
-  });
+      Bvariable *compiled = CompileVarDecl::compile (fndecl, decl, ctx);
+      locals.push_back (compiled);
+    };
 
   return locals;
 }
