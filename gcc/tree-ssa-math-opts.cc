@@ -1462,7 +1462,7 @@ powi_cost (HOST_WIDE_INT n)
     return 0;
 
   /* Ignore the reciprocal when calculating the cost.  */
-  val = (n < 0) ? -n : n;
+  val = absu_hwi (n);
 
   /* Initialize the exponent cache.  */
   memset (cache, 0, POWI_TABLE_SIZE * sizeof (bool));
