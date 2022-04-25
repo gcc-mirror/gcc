@@ -1,3 +1,21 @@
+2022-04-24  Jeff Law  <jeffreyalaw@gmail.com>
+
+	* gcc.dg/lto/pr94157_0.c: Also request executable stack from
+	the linker.
+
+2022-04-24  Mikael Morin  <mikael@gcc.gnu.org>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/103662
+	* gfortran.dg/unlimited_polymorphic_3.f03 (foo): Separate
+	bind(c) and sequence checks to...
+	(foo_bc, foo_sq): ... two different procedures.
+	(main, foo*): Change type declarations so that type name,
+	component name, and either bind(c) or sequence attribute match
+	between the main type declarations and the procedure type
+	declarations.
+	(toplevel): Add optimization dump checks.
+
 2022-04-23  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/105338

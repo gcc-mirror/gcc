@@ -1,3 +1,13 @@
+2022-04-24  Mikael Morin  <mikael@gcc.gnu.org>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/103662
+	* interface.cc (gfc_compare_derived_types): Support comparing
+	unlimited polymorphic fake symbols.  Recursively compare class
+	descriptor types and virtual table types.
+	* resolve.cc (resolve_fl_derived): Add type to the types list
+	on unlimited polymorphic short-circuit return.
+
 2022-04-22  Mikael Morin  <mikael@gcc.gnu.org>
 	    Richard Biener  <rguenther@suse.de>
 
