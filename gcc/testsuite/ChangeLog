@@ -1,3 +1,11 @@
+2022-04-24  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/104228
+	PR fortran/104570
+	* gfortran.dg/asan_associate_58.f90: New test.
+	* gfortran.dg/asan_associate_59.f90: New test.
+	* gfortran.dg/associate_58.f90: New test.
+
 2022-04-21  Fritz Reese  <foreese@gcc.gnu.org>
 
 	Backported from master:
