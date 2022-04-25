@@ -75,9 +75,10 @@ protected:
   tree resolve_unsized_adjustment (Resolver::Adjustment &adjustment,
 				   tree expression, Location locus);
 
-  static void setup_attributes_on_fndecl (
-    tree fndecl, bool is_main_entry_point, HIR::Visibility &visibility,
-    const HIR::FunctionQualifiers &qualifiers, const AST::AttrVec &attrs);
+  static void setup_fndecl (tree fndecl, bool is_main_entry_point,
+			    HIR::Visibility &visibility,
+			    const HIR::FunctionQualifiers &qualifiers,
+			    const AST::AttrVec &attrs);
 
   static void handle_inline_attribute_on_fndecl (tree fndecl,
 						 const AST::Attribute &attr);
@@ -91,6 +92,9 @@ protected:
   static void
   handle_link_section_attribute_on_fndecl (tree fndecl,
 					   const AST::Attribute &attr);
+
+  static void handle_no_mangle_attribute_on_fndecl (tree fndecl,
+						    const AST::Attribute &attr);
 
   static void setup_abi_options (tree fndecl, ABI abi);
 
