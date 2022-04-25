@@ -640,6 +640,9 @@ public:
     return vis_type == PUB_IN_PATH && in_path.is_empty ();
   }
 
+  // Returns whether a visibility has a path
+  bool has_path () const { return !(is_error ()) && vis_type == PUB_IN_PATH; }
+
   // Returns whether visibility is public or not.
   bool is_public () const { return vis_type != PRIV && !is_error (); }
 
