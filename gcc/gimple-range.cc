@@ -394,6 +394,10 @@ gimple_ranger::prefill_stmt_dependencies (tree ssa)
 	      // Fold and save the value for NAME.
 	      stmt = SSA_NAME_DEF_STMT (name);
 	      fold_range_internal (r, stmt, name);
+	      // Make sure we don't lose any current global info.
+	      int_range_max tmp;
+	      m_cache.get_global_range (tmp, name);
+	      r.intersect (tmp);
 	      m_cache.set_global_range (name, r);
 	    }
 	  continue;
