@@ -543,15 +543,7 @@ is
                        Lst       => Length (Container),
                        Item      => New_Item))
 
-            --  Container contains Count times New_Item at the end
-
-            and M.Constant_Range
-                  (Container => Model (Container),
-                   Fst       => Length (Container)'Old + 1,
-                   Lst       => Length (Container),
-                   Item      => New_Item)
-
-            --  A Count cursors have been inserted at the end of Container
+            --  Count cursors have been inserted at the end of Container
 
             and P_Positions_Truncated
                   (Positions (Container)'Old,
