@@ -1,5 +1,5 @@
 ! { dg-do run }
-! { dg-additional-options "-fdump-tree-dse-details" }
+! { dg-additional-options "-ftree-dse -fdump-tree-dse-details" }
 !
 ! Check that pointer assignments allowed by F2003:C717
 ! work and check null initialization of CLASS(*) pointers.
