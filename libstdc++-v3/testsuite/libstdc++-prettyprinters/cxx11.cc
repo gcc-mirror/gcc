@@ -25,6 +25,7 @@
 #include <memory>
 #include <iostream>
 #include <future>
+#include <initializer_list>
 #include "../util/testsuite_allocator.h" // NullablePointer
 
 typedef std::tuple<int, int> ExTuple;
@@ -190,6 +191,11 @@ main()
   // { dg-final { note-test ecio {std::error_code = {"io": stream}} } }
   std::error_code ecfut0 = std::make_error_code(std::future_errc{});
   // { dg-final { note-test ecfut0 {std::error_code = {"future": 0}} } }
+
+  std::initializer_list<int> emptyIl = {};
+  // { dg-final { note-test emptyIl {std::initializer_list of length 0} } }
+  std::initializer_list<int> il = {3, 4};
+  // { dg-final { note-test il {std::initializer_list of length 2 = {3, 4}} } }
 
   placeholder(""); // Mark SPOT
   use(efl);
