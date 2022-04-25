@@ -53,7 +53,8 @@ def skip_warning(filename, message):
             'genautomata.cc': ['-Wstring-plus-int'],
             'fold-const-call.cc': ['-Wreturn-type'],
             'gfortran.texi': [''],
-            'libtool': ['']
+            'libtool': [''],
+            'lex.cc': ['-Wc++20-attribute-extensions'],
     }
 
     for name, ignores in ignores.items():
