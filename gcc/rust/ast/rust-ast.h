@@ -404,6 +404,11 @@ public:
       = {AST::SimplePathSegment (std::move (str), locus)};
     return SimplePath (std::move (single_segments));
   }
+
+  const std::vector<SimplePathSegment> &get_segments () const
+  {
+    return segments;
+  }
 };
 
 // path-to-string inverse comparison operator
