@@ -3136,6 +3136,8 @@ ix86_expand_int_movcc (rtx operands[])
   bool sign_bit_compare_p = false;
   rtx op0 = XEXP (operands[1], 0);
   rtx op1 = XEXP (operands[1], 1);
+  rtx op2 = operands[2];
+  rtx op3 = operands[3];
 
   if (GET_MODE (op0) == TImode
       || (GET_MODE (op0) == DImode
@@ -3153,17 +3155,29 @@ ix86_expand_int_movcc (rtx operands[])
       || (op1 == constm1_rtx && (code == GT || code == LE)))
     sign_bit_compare_p = true;
 
+  /* op0 == op1 ? op0 : op3 is equivalent to op0 == op1 ? op1 : op3,
+     but if op1 is a constant, the latter form allows more optimizations,
+     either through the last 2 ops being constant handling, or the one
+     constant and one variable cases.  On the other side, for cmov the
+     former might be better as we don't need to load the constant into
+     another register.  */
+  if (code == EQ && CONST_INT_P (op1) && rtx_equal_p (op0, op2))
+    op2 = op1;
+  /* Similarly for op0 != op1 ? op2 : op0 and op0 != op1 ? op2 : op1.  */
+  else if (code == NE && CONST_INT_P (op1) && rtx_equal_p (op0, op3))
+    op3 = op1;
+
   /* Don't attempt mode expansion here -- if we had to expand 5 or 6
      HImode insns, we'd be swallowed in word prefix ops.  */
 
   if ((mode != HImode || TARGET_FAST_PREFIX)
       && (mode != (TARGET_64BIT ? TImode : DImode))
-      && CONST_INT_P (operands[2])
-      && CONST_INT_P (operands[3]))
+      && CONST_INT_P (op2)
+      && CONST_INT_P (op3))
     {
       rtx out = operands[0];
-      HOST_WIDE_INT ct = INTVAL (operands[2]);
-      HOST_WIDE_INT cf = INTVAL (operands[3]);
+      HOST_WIDE_INT ct = INTVAL (op2);
+      HOST_WIDE_INT cf = INTVAL (op3);
       HOST_WIDE_INT diff;
 
       diff = ct - cf;
@@ -3558,6 +3572,9 @@ ix86_expand_int_movcc (rtx operands[])
 
       if (BRANCH_COST (optimize_insn_for_speed_p (), false) <= 2)
 	return false;
+
+      operands[2] = op2;
+      operands[3] = op3;
 
       /* If one of the two operands is an interesting constant, load a
 	 constant with the above and mask it in with a logical operation.  */

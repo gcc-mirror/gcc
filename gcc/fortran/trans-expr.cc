@@ -2612,7 +2612,7 @@ gfc_conv_substring (gfc_se * se, gfc_ref * ref, int kind,
       /* For BIND(C), a BT_CHARACTER is not an ARRAY_TYPE.  */
       if (TREE_CODE (TREE_TYPE (tmp)) == ARRAY_TYPE)
 	{
-	  tmp = gfc_build_array_ref (tmp, start.expr, NULL);
+	  tmp = gfc_build_array_ref (tmp, start.expr, NULL_TREE, true);
 	  se->expr = gfc_build_addr_expr (type, tmp);
 	}
     }
@@ -8092,6 +8092,13 @@ gfc_trans_string_copy (stmtblock_t * block, tree dlength, tree dest,
   /* Truncate string if source is too long.  */
   cond2 = fold_build2_loc (input_location, LT_EXPR, logical_type_node, slen,
 			   dlen);
+
+  /* Pre-evaluate pointers unless one of the IF arms will be optimized away.  */
+  if (!CONSTANT_CLASS_P (cond2))
+    {
+      dest = gfc_evaluate_now (dest, block);
+      src = gfc_evaluate_now (src, block);
+    }
 
   /* Copy and pad with spaces.  */
   tmp3 = build_call_expr_loc (input_location,

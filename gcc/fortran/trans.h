@@ -619,7 +619,9 @@ tree gfc_get_extern_function_decl (gfc_symbol *,
 tree gfc_build_addr_expr (tree, tree);
 
 /* Build an ARRAY_REF.  */
-tree gfc_build_array_ref (tree, tree, tree, tree vptr = NULL_TREE);
+tree gfc_build_array_ref (tree, tree, tree,
+			  bool non_negative_offset = false,
+			  tree vptr = NULL_TREE);
 
 /* Build an array ref using pointer arithmetic.  */
 tree gfc_build_spanned_array_ref (tree base, tree offset, tree span);

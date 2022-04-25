@@ -1,3 +1,17 @@
+2022-04-22  Thomas W Rodgers  <trodgers@redhat.com>
+
+	PR libstdc++/102994
+	* include/bits/atomic_base.h (atomic_flag::notify_one,
+	notify_all): Remove const qualification.
+	(__atomic_base::notify_one, notify_all): Likewise.
+	* include/std/atomic (atomic<bool>::notify_one, notify_all):
+	Likewise.
+	(atomic::notify_one, notify_all): Likewise.
+	(atomic<T*>::notify_one, notify_all): Likewise.
+	(atomic_notify_one, atomic_notify_all): Likewise.
+	* testsuite/29_atomics/atomic/wait_notify/102994.cc: Adjust test
+	to account for change in notify_one/notify_all signature.
+
 2022-04-21  Patrick Palka  <ppalka@redhat.com>
 
 	* include/std/charconv (__from_chars_alnum_to_val_table):

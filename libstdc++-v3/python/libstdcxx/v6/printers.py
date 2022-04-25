@@ -1657,7 +1657,7 @@ class StdRegexStatePrinter:
 class StdSpanPrinter:
     "Print a std::span"
 
-    class _iterator(Iterator):
+    class iterator(Iterator):
         def __init__(self, begin, size):
             self.count = 0
             self.begin = begin
@@ -1686,7 +1686,24 @@ class StdSpanPrinter:
         return '%s of length %d' % (self.typename, self.size)
 
     def children(self):
-        return self._iterator(self.val['_M_ptr'], self.size)
+        return self.iterator(self.val['_M_ptr'], self.size)
+
+    def display_hint(self):
+        return 'array'
+
+class StdInitializerListPrinter:
+    "Print a std::initializer_list"
+
+    def __init__(self, typename, val):
+        self.typename = typename
+        self.val = val
+        self.size = val['_M_len']
+
+    def to_string(self):
+        return '%s of length %d' % (self.typename, self.size)
+
+    def children(self):
+        return StdSpanPrinter.iterator(self.val['_M_array'], self.size)
 
     def display_hint(self):
         return 'array'
@@ -2155,6 +2172,9 @@ def build_libstdcxx_dictionary ():
                                   Tr1UnorderedMapPrinter)
     libstdcxx_printer.add_version('std::tr1::', 'unordered_multiset',
                                   Tr1UnorderedSetPrinter)
+
+    libstdcxx_printer.add_version('std::', 'initializer_list',
+                                  StdInitializerListPrinter)
 
     # std::regex components
     libstdcxx_printer.add_version('std::__detail::', '_State',

@@ -15151,7 +15151,10 @@ resolve_fl_derived (gfc_symbol *sym)
 
       /* Nothing more to do for unlimited polymorphic entities.  */
       if (data->ts.u.derived->attr.unlimited_polymorphic)
-	return true;
+	{
+	  add_dt_to_dt_list (sym);
+	  return true;
+	}
       else if (vptr->ts.u.derived == NULL)
 	{
 	  gfc_symbol *vtab = gfc_find_derived_vtab (data->ts.u.derived);

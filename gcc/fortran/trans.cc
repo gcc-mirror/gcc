@@ -446,10 +446,14 @@ gfc_build_spanned_array_ref (tree base, tree offset, tree span)
 }
 
 
-/* Build an ARRAY_REF with its natural type.  */
+/* Build an ARRAY_REF with its natural type.
+   NON_NEGATIVE_OFFSET indicates if it’s true that OFFSET can’t be negative,
+   and thus that an ARRAY_REF can safely be generated.  If it’s false, we
+   have to play it safe and use pointer arithmetic.  */
 
 tree
-gfc_build_array_ref (tree base, tree offset, tree decl, tree vptr)
+gfc_build_array_ref (tree base, tree offset, tree decl,
+		     bool non_negative_offset, tree vptr)
 {
   tree type = TREE_TYPE (base);
   tree span = NULL_TREE;
@@ -495,10 +499,40 @@ gfc_build_array_ref (tree base, tree offset, tree decl, tree vptr)
      pointer arithmetic.  */
   if (span != NULL_TREE)
     return gfc_build_spanned_array_ref (base, offset, span);
-  /* Otherwise use a straightforward array reference.  */
-  else
+  /* Else use a straightforward array reference if possible.  */
+  else if (non_negative_offset)
     return build4_loc (input_location, ARRAY_REF, type, base, offset,
 		       NULL_TREE, NULL_TREE);
+  /* Otherwise use pointer arithmetic.  */
+  else
+    {
+      gcc_assert (TREE_CODE (TREE_TYPE (base)) == ARRAY_TYPE);
+      tree min = NULL_TREE;
+      if (TYPE_DOMAIN (TREE_TYPE (base))
+	  && !integer_zerop (TYPE_MIN_VALUE (TYPE_DOMAIN (TREE_TYPE (base)))))
+	min = TYPE_MIN_VALUE (TYPE_DOMAIN (TREE_TYPE (base)));
+
+      tree zero_based_index
+	   = min ? fold_build2_loc (input_location, MINUS_EXPR,
+				    gfc_array_index_type,
+				    fold_convert (gfc_array_index_type, offset),
+				    fold_convert (gfc_array_index_type, min))
+		 : fold_convert (gfc_array_index_type, offset);
+
+      tree elt_size = fold_convert (gfc_array_index_type,
+				    TYPE_SIZE_UNIT (type));
+
+      tree offset_bytes = fold_build2_loc (input_location, MULT_EXPR,
+					   gfc_array_index_type,
+					   zero_based_index, elt_size);
+
+      tree base_addr = gfc_build_addr_expr (pvoid_type_node, base);
+
+      tree ptr = fold_build_pointer_plus_loc (input_location, base_addr,
+					      offset_bytes);
+      return build1_loc (input_location, INDIRECT_REF, type,
+			 fold_convert (build_pointer_type (type), ptr));
+    }
 }
 
 
