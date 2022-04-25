@@ -178,7 +178,7 @@ TypeCheckExpr::resolve_root_path (HIR::PathInExpression &expr, size_t *offset,
       HIR::PathExprSegment &seg = expr.get_segments ().at (i);
 
       bool have_more_segments = (expr.get_num_segments () - 1 != i);
-      bool is_root = *offset == 0;
+      bool is_root = *offset == 0 || root_tyty == nullptr;
       NodeId ast_node_id = seg.get_mappings ().get_nodeid ();
 
       // then lookup the reference_node_id
