@@ -1048,6 +1048,7 @@ gimple_fold_builtin_memory_op (gimple_stmt_iterator *gsi,
 			  gsi_replace (gsi, new_stmt, false);
 			  return true;
 			}
+		      gimple_set_location (new_stmt, loc);
 		      gsi_insert_before (gsi, new_stmt, GSI_SAME_STMT);
 		      goto done;
 		    }
@@ -1302,6 +1303,7 @@ gimple_fold_builtin_memory_op (gimple_stmt_iterator *gsi,
 						   new_stmt);
 	      gimple_assign_set_lhs (new_stmt, srcvar);
 	      gimple_set_vuse (new_stmt, gimple_vuse (stmt));
+	      gimple_set_location (new_stmt, loc);
 	      gsi_insert_before (gsi, new_stmt, GSI_SAME_STMT);
 	    }
 	  new_stmt = gimple_build_assign (destvar, srcvar);
@@ -1338,6 +1340,7 @@ set_vop_and_replace:
 	  gsi_replace (gsi, new_stmt, false);
 	  return true;
 	}
+      gimple_set_location (new_stmt, loc);
       gsi_insert_before (gsi, new_stmt, GSI_SAME_STMT);
     }
 
