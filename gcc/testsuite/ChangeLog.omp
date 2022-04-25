@@ -1,3 +1,7 @@
+2022-04-25  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/finalize_38b.f90: New test.
+
 2022-03-11  Andrew Stubbs  <ams@codesourcery.com>
 
 	* c-c++-common/gomp/alloc-pinned-1.c: New test.

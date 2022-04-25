@@ -1,3 +1,7 @@
+2022-04-25  Tobias Burnus  <tobias@codesourcery.com>
+
+	* resolve.cc (gfc_resolve_finalizers): Also resolve allocatable comps.
+
 2022-03-10  Andrew Stubbs  <ams@codesourcery.com>
 
 	* openmp.cc (gfc_match_omp_requires): Allow "requires

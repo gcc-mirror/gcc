@@ -13969,11 +13969,16 @@ gfc_resolve_finalizers (gfc_symbol* derived, bool *finalizable)
   if (parent)
     gfc_resolve_finalizers (parent, finalizable);
 
-  /* Ensure that derived-type components have a their finalizers resolved.  */
+  /* Ensure that derived-type components have a their finalizers resolved;
+     handle allocatables but avoid issues with (in)direct allocatable types. */
   bool has_final = derived->f2k_derived && derived->f2k_derived->finalizers;
   for (c = derived->components; c; c = c->next)
-    if (c->ts.type == BT_DERIVED
-	&& !c->attr.pointer && !c->attr.proc_pointer && !c->attr.allocatable)
+    if (c->ts.type == BT_DERIVED && !c->attr.pointer && !c->attr.proc_pointer
+	&& (!c->attr.allocatable
+	    || (c->ts.u.derived != derived
+		&& c->ts.u.derived->f2k_derived
+		&& c->ts.u.derived->f2k_derived->finalizers
+		&& !c->ts.u.derived->f2k_derived->finalizers->proc_tree)))
       {
 	bool has_final2 = false;
 	if (!gfc_resolve_finalizers (c->ts.u.derived, &has_final2))
