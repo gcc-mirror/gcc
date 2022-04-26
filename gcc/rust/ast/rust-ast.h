@@ -349,6 +349,7 @@ public:
 
   Location get_locus () const { return locus; }
   NodeId get_node_id () const { return node_id; }
+  const std::string &get_segment_name () const { return segment_name; }
 
   // TODO: visitor pattern?
 };
