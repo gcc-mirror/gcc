@@ -14203,7 +14203,8 @@ ix86_print_operand (FILE *file, rtx x, int code)
 
 	    if (!optimize
 	        || optimize_function_for_size_p (cfun)
-		|| !TARGET_BRANCH_PREDICTION_HINTS)
+		|| (!TARGET_BRANCH_PREDICTION_HINTS_NOT_TAKEN
+		    && !TARGET_BRANCH_PREDICTION_HINTS_TAKEN))
 	      return;
 
 	    x = find_reg_note (current_output_insn, REG_BR_PROB, 0);
@@ -14212,25 +14213,13 @@ ix86_print_operand (FILE *file, rtx x, int code)
 		int pred_val = profile_probability::from_reg_br_prob_note
 				 (XINT (x, 0)).to_reg_br_prob_base ();
 
-		if (pred_val < REG_BR_PROB_BASE * 45 / 100
-		    || pred_val > REG_BR_PROB_BASE * 55 / 100)
-		  {
-		    bool taken = pred_val > REG_BR_PROB_BASE / 2;
-		    bool cputaken
-		      = final_forward_branch_p (current_output_insn) == 0;
-
-		    /* Emit hints only in the case default branch prediction
-		       heuristics would fail.  */
-		    if (taken != cputaken)
-		      {
-			/* We use 3e (DS) prefix for taken branches and
-			   2e (CS) prefix for not taken branches.  */
-			if (taken)
-			  fputs ("ds ; ", file);
-			else
-			  fputs ("cs ; ", file);
-		      }
-		  }
+		bool taken = pred_val > REG_BR_PROB_BASE / 2;
+		/* We use 3e (DS) prefix for taken branches and
+		   2e (CS) prefix for not taken branches.  */
+		if (taken && TARGET_BRANCH_PREDICTION_HINTS_TAKEN)
+		  fputs ("ds ; ", file);
+		else if (!taken && TARGET_BRANCH_PREDICTION_HINTS_NOT_TAKEN)
+		  fputs ("cs ; ", file);
 	      }
 	    return;
 	  }
