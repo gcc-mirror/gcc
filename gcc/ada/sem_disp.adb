@@ -1207,7 +1207,7 @@ package body Sem_Disp is
                   Error_Msg_Name_2 := Chars (E);
                   Error_Msg_Sloc := Sloc (E);
                   Error_Msg_N
-                    ("?j?primitive of type % defined after private extension "
+                    ("?.j?primitive of type % defined after private extension "
                      & "% #?", Prim);
                   Error_Msg_Name_1 := Chars (Prim);
                   Error_Msg_Name_2 := Chars (E);
