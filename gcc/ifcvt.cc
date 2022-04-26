@@ -1678,10 +1678,10 @@ noce_try_store_flag_mask (struct noce_if_info *if_info)
   reversep = 0;
 
   if ((if_info->a == const0_rtx
-       && rtx_equal_p (if_info->b, if_info->x))
+       && (REG_P (if_info->b) || rtx_equal_p (if_info->b, if_info->x)))
       || ((reversep = (noce_reversed_cond_code (if_info) != UNKNOWN))
 	  && if_info->b == const0_rtx
-	  && rtx_equal_p (if_info->a, if_info->x)))
+	  && (REG_P (if_info->a) || rtx_equal_p (if_info->a, if_info->x))))
     {
       start_sequence ();
       target = noce_emit_store_flag (if_info,
@@ -1689,7 +1689,7 @@ noce_try_store_flag_mask (struct noce_if_info *if_info)
 				     reversep, -1);
       if (target)
         target = expand_simple_binop (GET_MODE (if_info->x), AND,
-				      if_info->x,
+				      reversep ? if_info->a : if_info->b,
 				      target, if_info->x, 0,
 				      OPTAB_WIDEN);
 
