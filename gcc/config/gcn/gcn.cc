@@ -5588,8 +5588,9 @@ gcn_print_lds_decl (FILE *f, tree var)
       fprintf (f, "%u", gang_private_hwm);
       gang_private_hwm += size;
       if (gang_private_hwm > gang_private_size_opt)
-	error ("gang-private data-share memory exhausted (increase with "
-	       "%<-mgang-private-size=<number>%>)");
+	error ("%d bytes of gang-private data-share memory exhausted"
+	       " (increase with %<-mgang-private-size=%d%>, for example)",
+	       gang_private_size_opt, gang_private_hwm);
     }
 }
 
