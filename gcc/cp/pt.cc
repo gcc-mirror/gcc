@@ -12682,7 +12682,13 @@ gen_elem_of_pack_expansion_instantiation (tree pattern,
     t = tsubst_expr (pattern, args, complain, in_decl,
 		     /*integral_constant_expression_p=*/false);
   else
-    t = tsubst (pattern, args, complain, in_decl);
+    {
+      t = tsubst (pattern, args, complain, in_decl);
+      if (is_auto (t) && !ith_elem_is_expansion)
+	/* When expanding the fake auto... pack expansion from add_capture, we
+	   need to mark that the expansion is no longer a pack.  */
+	TEMPLATE_TYPE_PARAMETER_PACK (t) = false;
+    }
 
   /*  If the Ith argument pack element is a pack expansion, then
       the Ith element resulting from the substituting is going to
