@@ -1,3 +1,10 @@
+2022-04-25  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/105353
+	* typeck.cc (build_x_shufflevector): Use
+	instantiation_dependent_expression_p except for the first two
+	arguments.
+
 2022-04-21  Marek Polacek  <polacek@redhat.com>
 
 	* constexpr.cc (cxx_eval_logical_expression): Remove unused

@@ -1,5 +1,5 @@
 ! { dg-do run }
-! { dg-additional-options "-ftree-dse -fdump-tree-dse-details" }
+! { dg-additional-options "-fdump-tree-dse-details" }
 !
 ! Check that pointer assignments allowed by F2003:C717
 ! work and check null initialization of CLASS(*) pointers.
@@ -71,5 +71,5 @@ end subroutine foo_sq
 ! We used to produce multiple independant types for the unlimited polymorphic
 ! descriptors (types for class(*)) which caused stores to them to be seen as
 ! useless.
-! { dg-final { scan-tree-dump-not "Deleted dead store: z._data = &w" "dse1" } }
-! { dg-final { scan-tree-dump-not "Deleted dead store: z._data = &x" "dse1" } }
+! { dg-final { scan-tree-dump-not "Deleted dead store: z._data = &w" "dse1" { target __OPTIMIZE__ } } }
+! { dg-final { scan-tree-dump-not "Deleted dead store: z._data = &x" "dse1" { target __OPTIMIZE__ } } }

@@ -4444,7 +4444,9 @@ gfc_trans_oacc_construct (gfc_code *code)
   gfc_start_block (&block);
   oacc_clauses = gfc_trans_omp_clauses (&block, code->ext.omp_clauses,
 					code->loc, false, true);
+  pushlevel ();
   stmt = gfc_trans_omp_code (code->block->next, true);
+  stmt = build3_v (BIND_EXPR, NULL, stmt, poplevel (1, 0));
   stmt = build2_loc (gfc_get_location (&code->loc), construct_code,
 		     void_type_node, stmt, oacc_clauses);
   gfc_add_expr_to_block (&block, stmt);

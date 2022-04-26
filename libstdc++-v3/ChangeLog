@@ -1,3 +1,37 @@
+2022-04-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/ptr_traits.h (__cpp_lib_constexpr_memory): Define
+	conditionally.
+	* include/bits/unique_ptr.h (__cpp_lib_constexpr_memory):
+	Define for C++23.
+	(default_delete, default_delete<T[]>, __uniq_ptr_impl)
+	(unique_ptr, unique_ptr<T[], D>): Add constexpr to all member
+	functions.
+	* include/std/version (__cpp_lib_constexpr_memory): Define new
+	value for C++23.
+	* testsuite/20_util/unique_ptr/assign/constexpr.cc: New test.
+	* testsuite/20_util/unique_ptr/comparison/constexpr.cc: New test.
+	* testsuite/20_util/unique_ptr/cons/constexpr_c++20.cc: New test.
+	* testsuite/20_util/unique_ptr/creation/constexpr.cc: New test.
+	* testsuite/20_util/unique_ptr/modifiers/constexpr.cc: New test.
+	* testsuite/20_util/unique_ptr/specialized_algorithms/constexpr.cc:
+	New test.
+
+2022-04-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/105375
+	* include/std/future (packaged_task): Add deduction guides.
+	* testsuite/30_threads/packaged_task/cons/deduction.cc: New test.
+
+2022-04-25  Philipp Fent  <fent@in.tum.de>
+
+	* python/libstdcxx/v6/printers.py (StdSpanPrinter._iterator):
+	Rename as iterator.
+	(StdInitializerListPrinter): Define new printer.
+	(build_libstdcxx_dictionary): Register new printer.
+	* testsuite/libstdc++-prettyprinters/cxx11.cc: Check printer for
+	initializer_list.
+
 2022-04-22  Thomas W Rodgers  <trodgers@redhat.com>
 
 	PR libstdc++/102994

@@ -59,6 +59,8 @@ along with GCC; see the file COPYING3.  If not see
 
 namespace ana {
 
+static int cmp_csts_and_types (const_tree cst1, const_tree cst2);
+
 /* class svalue and its various subclasses.  */
 
 /* class svalue.  */
@@ -304,7 +306,7 @@ svalue::implicitly_live_p (const svalue_set *, const region_model *) const
    of the same type.  */
 
 static int
-cmp_cst (const_tree cst1, const_tree cst2)
+cmp_csts_same_type (const_tree cst1, const_tree cst2)
 {
   gcc_assert (TREE_TYPE (cst1) == TREE_TYPE (cst2));
   gcc_assert (TREE_CODE (cst1) == TREE_CODE (cst2));
@@ -323,9 +325,10 @@ cmp_cst (const_tree cst1, const_tree cst2)
 		     TREE_REAL_CST_PTR (cst2),
 		     sizeof (real_value));
     case COMPLEX_CST:
-      if (int cmp_real = cmp_cst (TREE_REALPART (cst1), TREE_REALPART (cst2)))
+      if (int cmp_real = cmp_csts_and_types (TREE_REALPART (cst1),
+					     TREE_REALPART (cst2)))
 	return cmp_real;
-      return cmp_cst (TREE_IMAGPART (cst1), TREE_IMAGPART (cst2));
+      return cmp_csts_and_types (TREE_IMAGPART (cst1), TREE_IMAGPART (cst2));
     case VECTOR_CST:
       if (int cmp_log2_npatterns
 	    = ((int)VECTOR_CST_LOG2_NPATTERNS (cst1)
@@ -340,15 +343,24 @@ cmp_cst (const_tree cst1, const_tree cst2)
 	{
 	  const_tree elt1 = VECTOR_CST_ENCODED_ELT (cst1, i);
 	  const_tree elt2 = VECTOR_CST_ENCODED_ELT (cst2, i);
-	  int t1 = TYPE_UID (TREE_TYPE (elt1));
-	  int t2 = TYPE_UID (TREE_TYPE (elt2));
-	  if (int cmp_type = t1 - t2)
-	    return cmp_type;
-	  if (int el_cmp = cmp_cst (elt1, elt2))
+	  if (int el_cmp = cmp_csts_and_types (elt1, elt2))
 	    return el_cmp;
 	}
       return 0;
     }
+}
+
+/* Comparator for imposing a deterministic order on constants that might
+   not be of the same type.  */
+
+static int
+cmp_csts_and_types (const_tree cst1, const_tree cst2)
+{
+  int t1 = TYPE_UID (TREE_TYPE (cst1));
+  int t2 = TYPE_UID (TREE_TYPE (cst2));
+  if (int cmp_type = t1 - t2)
+    return cmp_type;
+  return cmp_csts_same_type (cst1, cst2);
 }
 
 /* Comparator for imposing a deterministic order on svalues.  */
@@ -382,7 +394,7 @@ svalue::cmp_ptr (const svalue *sval1, const svalue *sval2)
 	const constant_svalue *constant_sval2 = (const constant_svalue *)sval2;
 	const_tree cst1 = constant_sval1->get_constant ();
 	const_tree cst2 = constant_sval2->get_constant ();
-	return cmp_cst (cst1, cst2);
+	return cmp_csts_same_type (cst1, cst2);
       }
       break;
     case SK_UNKNOWN:

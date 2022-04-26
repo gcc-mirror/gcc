@@ -1,3 +1,10 @@
+2022-04-25  Jakub Jelinek  <jakub@redhat.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR fortran/104717
+	* trans-openmp.cc (gfc_trans_oacc_construct): Wrap construct body
+	in an extra BIND_EXPR.
+
 2022-04-24  Mikael Morin  <mikael@gcc.gnu.org>
 	    Jakub Jelinek  <jakub@redhat.com>
 

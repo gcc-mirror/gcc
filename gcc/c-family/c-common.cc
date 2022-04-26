@@ -2009,12 +2009,12 @@ verify_tree (tree x, struct tlist **pbefore_sp, struct tlist **pno_sp,
   enum tree_code code;
   enum tree_code_class cl;
 
+ restart:
   /* X may be NULL if it is the operand of an empty statement expression
      ({ }).  */
   if (x == NULL)
     return;
 
- restart:
   code = TREE_CODE (x);
   cl = TREE_CODE_CLASS (code);
 

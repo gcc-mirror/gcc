@@ -11770,6 +11770,8 @@ proc check_effective_target___OPTIMIZE__ {} {
 	#ifndef __OPTIMIZE__
 	# error nein
 	#endif
+	/* Avoid pedwarn about empty TU.  */
+	int dummy;
     } [current_compiler_flags]]
 }
 
