@@ -11252,7 +11252,7 @@ finish_decltype_type (tree expr, bool id_expression_or_member_access_p,
     }
   else if (processing_template_decl)
     {
-      expr = instantiate_non_dependent_expr_sfinae (expr, complain);
+      expr = instantiate_non_dependent_expr_sfinae (expr, complain|tf_decltype);
       if (expr == error_mark_node)
 	return error_mark_node;
       /* Keep processing_template_decl cleared for the rest of the function
