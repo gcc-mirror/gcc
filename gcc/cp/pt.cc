@@ -5227,8 +5227,9 @@ process_partial_specialization (tree decl)
 	   && !get_partial_spec_bindings (maintmpl, maintmpl, specargs))
     {
       auto_diagnostic_group d;
-      if (permerror (input_location, "partial specialization %qD is not "
-		     "more specialized than", decl))
+      if (pedwarn (input_location, 0,
+		   "partial specialization %qD is not more specialized than",
+		   decl))
 	inform (DECL_SOURCE_LOCATION (maintmpl), "primary template %qD",
 		maintmpl);
     }
@@ -24299,7 +24300,7 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict,
 	      /* Now check whether the type of this parameter is still
 		 dependent, and give up if so.  */
 	      ++processing_template_decl;
-	      tparm = tsubst (tparm, targs, tf_none, NULL_TREE);
+	      tparm = tsubst (TREE_TYPE (parm), targs, tf_none, NULL_TREE);
 	      --processing_template_decl;
 	      if (uses_template_parms (tparm))
 		return unify_success (explain_p);
