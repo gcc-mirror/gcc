@@ -4595,7 +4595,7 @@ package body Sem_Warn is
                         then
                            if Warn_On_All_Unread_Out_Parameters then
                               Error_Msg_NE
-                                ("?m?& modified by call, but value might not "
+                                ("?.o?& modified by call, but value might not "
                                  & "be referenced", LA, Ent);
                            end if;
                         else
