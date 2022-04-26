@@ -2804,8 +2804,8 @@ package body Inline is
                   elsif Ineffective_Inline_Warnings then
                      Error_Msg_Unit_1 := Bname;
                      Error_Msg_N
-                       ("unable to inline subprograms defined in $??", P);
-                     Error_Msg_N ("\body not found??", P);
+                       ("unable to inline subprograms defined in $?p?", P);
+                     Error_Msg_N ("\body not found?p?", P);
                      return;
                   end if;
                end if;
