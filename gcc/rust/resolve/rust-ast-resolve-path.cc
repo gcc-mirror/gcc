@@ -279,90 +279,69 @@ ResolvePath::resolve_segments (CanonicalPath prefix, size_t offs,
     }
 }
 
-void
-ResolvePath::resolve_path (AST::SimplePath *expr)
+static bool
+lookup_and_insert_segment (Resolver *resolver, CanonicalPath path,
+			   NodeId segment_id, NodeId *to_resolve, bool &is_type)
 {
-  // resolve root segment first then apply segments in turn
-  auto &segs = expr->get_segments ();
-  auto &root_segment = segs.at (0);
-  auto &root_ident_seg = root_segment.get_segment_name ();
-
-  /**
-   * TODO: We need to handle functions and types later on for `use` statements.
-   * So we will also need to check the type scope
-   *
-   * bool segment_is_type = false;
-   * bool segment_is_func = false;
-   */
-  CanonicalPath root_seg_path
-    = CanonicalPath::new_seg (root_segment.get_node_id (), root_ident_seg);
-
-  // name scope first
-  if (resolver->get_name_scope ().lookup (root_seg_path, &resolved_node))
+  if (resolver->get_name_scope ().lookup (path, to_resolve))
     {
-      resolver->insert_resolved_name (root_segment.get_node_id (),
-				      resolved_node);
-      resolver->insert_new_definition (root_segment.get_node_id (),
-				       Definition{expr->get_node_id (),
-						  parent});
+      resolver->insert_resolved_name (segment_id, *to_resolve);
+    }
+  else if (resolver->get_type_scope ().lookup (path, to_resolve))
+    {
+      is_type = true;
+      resolver->insert_resolved_type (segment_id, *to_resolve);
     }
   else
     {
-      rust_error_at (expr->get_locus (),
-		     "Cannot find path %<%s%> in this scope",
-		     root_segment.as_string ().c_str ());
-      return;
+      return false;
     }
 
-  bool is_single_segment = segs.size () == 1;
-  if (is_single_segment)
-    {
-      // if (segment_is_type)
-      // resolver->insert_resolved_type (expr->get_node_id (), resolved_node);
-
-      resolver->insert_resolved_name (expr->get_node_id (), resolved_node);
-      resolver->insert_new_definition (expr->get_node_id (),
-				       Definition{expr->get_node_id (),
-						  parent});
-      return;
-    }
-
-  resolve_simple_path_segments (root_seg_path, 1, expr->get_segments (),
-				expr->get_node_id (), expr->get_locus ());
+  return true;
 }
 
 void
-ResolvePath::resolve_simple_path_segments (
-  CanonicalPath prefix, size_t offs,
-  const std::vector<AST::SimplePathSegment> &segs, NodeId expr_node_id,
-  Location expr_locus)
+ResolvePath::resolve_path (AST::SimplePath *simple_path)
 {
-  /**
-   * TODO: We also need to handle types and functions here
-   */
+  // resolve root segment first then apply segments in turn
+  auto expr_node_id = simple_path->get_node_id ();
+  auto is_type = false;
 
-  CanonicalPath path = prefix;
-  for (const auto &seg : segs)
+  auto path = CanonicalPath::create_empty ();
+  for (const auto &seg : simple_path->get_segments ())
     {
       auto s = ResolveSimplePathSegmentToCanonicalPath::resolve (seg);
       path = path.append (s);
 
+      // Reset state
       resolved_node = UNKNOWN_NODEID;
+      is_type = false;
 
-      if (resolver->get_name_scope ().lookup (path, &resolved_node))
+      if (!lookup_and_insert_segment (resolver, path, seg.get_node_id (),
+				      &resolved_node, is_type))
 	{
-	  resolver->insert_resolved_name (seg.get_node_id (), resolved_node);
-	  resolver->insert_new_definition (seg.get_node_id (),
-					   Definition{expr_node_id, parent});
+	  rust_error_at (seg.get_locus (),
+			 "cannot find simple path segment %qs",
+			 seg.as_string ().c_str ());
+	  return;
 	}
     }
 
-  if (resolved_node != UNKNOWN_NODEID)
+  if (resolved_node == UNKNOWN_NODEID)
     {
-      resolver->insert_resolved_name (expr_node_id, resolved_node);
-      resolver->insert_new_definition (expr_node_id,
-				       Definition{expr_node_id, parent});
+      rust_error_at (simple_path->get_locus (),
+		     "could not resolve simple path %qs",
+		     simple_path->as_string ().c_str ());
+      return;
     }
+
+  if (is_type)
+    resolver->insert_resolved_type (expr_node_id, resolved_node);
+  else
+    resolver->insert_resolved_name (expr_node_id, resolved_node);
+
+  resolver->insert_new_definition (expr_node_id,
+				   Definition{expr_node_id, parent});
 }
 
 } // namespace Resolver

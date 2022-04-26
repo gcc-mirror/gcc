@@ -238,6 +238,8 @@ ResolveItem::visit (AST::Module &module)
   mappings->insert_canonical_path (mappings->get_current_crate (),
 				   module.get_node_id (), cpath);
 
+  resolve_visibility (module.get_visibility ());
+
   NodeId scope_node_id = module.get_node_id ();
   resolver->get_name_scope ().push (scope_node_id);
   resolver->get_type_scope ().push (scope_node_id);
@@ -267,6 +269,8 @@ ResolveItem::visit (AST::TupleStruct &struct_decl)
   mappings->insert_canonical_path (mappings->get_current_crate (),
 				   struct_decl.get_node_id (), cpath);
 
+  resolve_visibility (struct_decl.get_visibility ());
+
   NodeId scope_node_id = struct_decl.get_node_id ();
   resolver->get_type_scope ().push (scope_node_id);
 
@@ -286,6 +290,8 @@ ResolveItem::visit (AST::TupleStruct &struct_decl)
       if (field.get_field_type ()->is_marked_for_strip ())
 	continue;
 
+      resolve_visibility (field.get_visibility ());
+
       ResolveType::go (field.get_field_type ().get (),
 		       struct_decl.get_node_id ());
     }
@@ -302,6 +308,8 @@ ResolveItem::visit (AST::Enum &enum_decl)
   auto cpath = canonical_prefix.append (decl);
   mappings->insert_canonical_path (mappings->get_current_crate (),
 				   enum_decl.get_node_id (), cpath);
+
+  resolve_visibility (enum_decl.get_visibility ());
 
   NodeId scope_node_id = enum_decl.get_node_id ();
   resolver->get_type_scope ().push (scope_node_id);
@@ -328,6 +336,9 @@ ResolveItem::visit (AST::Enum &enum_decl)
 void
 ResolveItem::visit (AST::EnumItem &item)
 {
+  // Since at this point we cannot have visibilities on enum items anymore, we
+  // can skip handling them
+
   auto decl
     = CanonicalPath::new_seg (item.get_node_id (), item.get_identifier ());
   auto path = prefix.append (decl);
@@ -396,6 +407,8 @@ ResolveItem::visit (AST::StructStruct &struct_decl)
   mappings->insert_canonical_path (mappings->get_current_crate (),
 				   struct_decl.get_node_id (), cpath);
 
+  resolve_visibility (struct_decl.get_visibility ());
+
   NodeId scope_node_id = struct_decl.get_node_id ();
   resolver->get_type_scope ().push (scope_node_id);
 
@@ -415,6 +428,8 @@ ResolveItem::visit (AST::StructStruct &struct_decl)
       if (field.get_field_type ()->is_marked_for_strip ())
 	continue;
 
+      resolve_visibility (field.get_visibility ());
+
       ResolveType::go (field.get_field_type ().get (),
 		       struct_decl.get_node_id ());
     }
@@ -431,6 +446,8 @@ ResolveItem::visit (AST::Union &union_decl)
   auto cpath = canonical_prefix.append (decl);
   mappings->insert_canonical_path (mappings->get_current_crate (),
 				   union_decl.get_node_id (), cpath);
+
+  resolve_visibility (union_decl.get_visibility ());
 
   NodeId scope_node_id = union_decl.get_node_id ();
   resolver->get_type_scope ().push (scope_node_id);
@@ -485,6 +502,8 @@ ResolveItem::visit (AST::ConstantItem &constant)
   mappings->insert_canonical_path (mappings->get_current_crate (),
 				   constant.get_node_id (), cpath);
 
+  resolve_visibility (constant.get_visibility ());
+
   ResolveType::go (constant.get_type ().get (), constant.get_node_id ());
   ResolveExpr::go (constant.get_expr ().get (), constant.get_node_id (), path,
 		   cpath);
@@ -504,6 +523,8 @@ ResolveItem::visit (AST::Function &function)
   auto cpath = canonical_prefix.append (decl);
   mappings->insert_canonical_path (mappings->get_current_crate (),
 				   function.get_node_id (), cpath);
+
+  resolve_visibility (function.get_visibility ());
 
   NodeId scope_node_id = function.get_node_id ();
   resolver->get_name_scope ().push (scope_node_id);
@@ -558,6 +579,8 @@ ResolveItem::visit (AST::InherentImpl &impl_block)
   resolver->get_type_scope ().push (scope_node_id);
   resolver->push_new_name_rib (resolver->get_name_scope ().peek ());
   resolver->push_new_type_rib (resolver->get_type_scope ().peek ());
+
+  resolve_visibility (impl_block.get_visibility ());
 
   if (impl_block.has_generics ())
     {
@@ -640,6 +663,9 @@ ResolveItem::visit (AST::Method &method)
 				   method.get_node_id (), cpath);
 
   NodeId scope_node_id = method.get_node_id ();
+
+  resolve_visibility (method.get_visibility ());
+
   resolver->get_name_scope ().push (scope_node_id);
   resolver->get_type_scope ().push (scope_node_id);
   resolver->get_label_scope ().push (scope_node_id);
@@ -711,6 +737,9 @@ void
 ResolveItem::visit (AST::TraitImpl &impl_block)
 {
   NodeId scope_node_id = impl_block.get_node_id ();
+
+  resolve_visibility (impl_block.get_visibility ());
+
   resolver->get_name_scope ().push (scope_node_id);
   resolver->get_type_scope ().push (scope_node_id);
   resolver->push_new_name_rib (resolver->get_name_scope ().peek ());
@@ -812,6 +841,9 @@ void
 ResolveItem::visit (AST::Trait &trait)
 {
   NodeId scope_node_id = trait.get_node_id ();
+
+  resolve_visibility (trait.get_visibility ());
+
   resolver->get_name_scope ().push (scope_node_id);
   resolver->get_type_scope ().push (scope_node_id);
   resolver->push_new_name_rib (resolver->get_name_scope ().peek ());
@@ -862,6 +894,8 @@ ResolveItem::visit (AST::Trait &trait)
 void
 ResolveItem::visit (AST::ExternBlock &extern_block)
 {
+  resolve_visibility (extern_block.get_visibility ());
+
   for (auto &item : extern_block.get_extern_items ())
     {
       resolve_extern_item (item.get ());
@@ -895,6 +929,8 @@ ResolveImplItems::visit (AST::TypeAlias &alias)
 {
   ResolveItem::visit (alias);
 
+  resolve_visibility (alias.get_visibility ());
+
   // FIXME this stops the erronious unused decls which will be fixed later on
   resolver->get_type_scope ().append_reference_for_def (alias.get_node_id (),
 							alias.get_node_id ());
@@ -911,6 +947,9 @@ void
 ResolveExternItem::visit (AST::ExternalFunctionItem &function)
 {
   NodeId scope_node_id = function.get_node_id ();
+
+  resolve_visibility (function.get_visibility ());
+
   resolver->get_name_scope ().push (scope_node_id);
   resolver->get_type_scope ().push (scope_node_id);
   resolver->get_label_scope ().push (scope_node_id);
@@ -945,6 +984,8 @@ ResolveExternItem::visit (AST::ExternalFunctionItem &function)
 void
 ResolveExternItem::visit (AST::ExternalStaticItem &item)
 {
+  resolve_visibility (item.get_visibility ());
+
   ResolveType::go (item.get_type ().get (), item.get_node_id ());
 }
 

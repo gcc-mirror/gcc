@@ -17,15 +17,27 @@
 // <http://www.gnu.org/licenses/>.
 
 #include "rust-ast-resolve-base.h"
+#include "rust-ast-resolve-expr.h"
+#include "rust-ast-resolve-path.h"
+#include "rust-item.h"
 
 namespace Rust {
 namespace Resolver {
 
 bool
-resolve_visibility (const AST::Visibility &vis)
+ResolverBase::resolve_visibility (const AST::Visibility &vis)
 {
-  gcc_unreachable ();
-  return false;
+  if (vis.has_path ())
+    {
+      auto path = vis.get_path ();
+      ResolvePath::go (&path, parent);
+
+      // Do we need to lookup something here?
+      // Is it just about resolving the names correctly so we can look them up
+      // later?
+    }
+
+  return true;
 }
 
 // Default visitors implementations

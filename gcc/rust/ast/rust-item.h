@@ -701,6 +701,7 @@ public:
 
   std::string as_string () const;
   const SimplePath &get_path () const { return in_path; }
+  SimplePath &get_path () { return in_path; }
 
 protected:
   // Clone function implementation - not currently virtual but may be if
