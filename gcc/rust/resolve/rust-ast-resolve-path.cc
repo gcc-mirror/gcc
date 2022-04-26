@@ -38,6 +38,13 @@ ResolvePath::go (AST::QualifiedPathInExpression *expr, NodeId parent)
 }
 
 void
+ResolvePath::go (AST::SimplePath *expr, NodeId parent)
+{
+  ResolvePath resolver (parent);
+  resolver.resolve_path (expr);
+}
+
+void
 ResolvePath::resolve_path (AST::PathInExpression *expr)
 {
   // resolve root segment first then apply segments in turn
@@ -267,6 +274,92 @@ ResolvePath::resolve_segments (CanonicalPath prefix, size_t offs,
       else
 	resolver->insert_resolved_name (expr_node_id, resolved_node);
 
+      resolver->insert_new_definition (expr_node_id,
+				       Definition{expr_node_id, parent});
+    }
+}
+
+void
+ResolvePath::resolve_path (AST::SimplePath *expr)
+{
+  // resolve root segment first then apply segments in turn
+  auto &segs = expr->get_segments ();
+  auto &root_segment = segs.at (0);
+  auto &root_ident_seg = root_segment.get_segment_name ();
+
+  /**
+   * TODO: We need to handle functions and types later on for `use` statements.
+   * So we will also need to check the type scope
+   *
+   * bool segment_is_type = false;
+   * bool segment_is_func = false;
+   */
+  CanonicalPath root_seg_path
+    = CanonicalPath::new_seg (root_segment.get_node_id (), root_ident_seg);
+
+  // name scope first
+  if (resolver->get_name_scope ().lookup (root_seg_path, &resolved_node))
+    {
+      resolver->insert_resolved_name (root_segment.get_node_id (),
+				      resolved_node);
+      resolver->insert_new_definition (root_segment.get_node_id (),
+				       Definition{expr->get_node_id (),
+						  parent});
+    }
+  else
+    {
+      rust_error_at (expr->get_locus (),
+		     "Cannot find path %<%s%> in this scope",
+		     root_segment.as_string ().c_str ());
+      return;
+    }
+
+  bool is_single_segment = segs.size () == 1;
+  if (is_single_segment)
+    {
+      // if (segment_is_type)
+      // resolver->insert_resolved_type (expr->get_node_id (), resolved_node);
+
+      resolver->insert_resolved_name (expr->get_node_id (), resolved_node);
+      resolver->insert_new_definition (expr->get_node_id (),
+				       Definition{expr->get_node_id (),
+						  parent});
+      return;
+    }
+
+  resolve_simple_path_segments (root_seg_path, 1, expr->get_segments (),
+				expr->get_node_id (), expr->get_locus ());
+}
+
+void
+ResolvePath::resolve_simple_path_segments (
+  CanonicalPath prefix, size_t offs,
+  const std::vector<AST::SimplePathSegment> &segs, NodeId expr_node_id,
+  Location expr_locus)
+{
+  /**
+   * TODO: We also need to handle types and functions here
+   */
+
+  CanonicalPath path = prefix;
+  for (const auto &seg : segs)
+    {
+      auto s = ResolveSimplePathSegmentToCanonicalPath::resolve (seg);
+      path = path.append (s);
+
+      resolved_node = UNKNOWN_NODEID;
+
+      if (resolver->get_name_scope ().lookup (path, &resolved_node))
+	{
+	  resolver->insert_resolved_name (seg.get_node_id (), resolved_node);
+	  resolver->insert_new_definition (seg.get_node_id (),
+					   Definition{expr_node_id, parent});
+	}
+    }
+
+  if (resolved_node != UNKNOWN_NODEID)
+    {
+      resolver->insert_resolved_name (expr_node_id, resolved_node);
       resolver->insert_new_definition (expr_node_id,
 				       Definition{expr_node_id, parent});
     }

@@ -31,6 +31,7 @@ class ResolvePath : public ResolverBase
 public:
   static void go (AST::PathInExpression *expr, NodeId parent);
   static void go (AST::QualifiedPathInExpression *expr, NodeId parent);
+  static void go (AST::SimplePath *expr, NodeId parent);
 
 private:
   ResolvePath (NodeId parent) : ResolverBase (parent) {}
@@ -42,12 +43,17 @@ private:
   void resolve_segments (CanonicalPath prefix, size_t offs,
 			 std::vector<AST::PathExprSegment> &segs,
 			 NodeId expr_node_id, Location expr_locus);
+
+  void
+  resolve_simple_path_segments (CanonicalPath prefix, size_t offs,
+				const std::vector<AST::SimplePathSegment> &segs,
+				NodeId expr_node_id, Location expr_locus);
 };
 
 class ResolveSimplePathSegmentToCanonicalPath
 {
 public:
-  static CanonicalPath resolve (AST::SimplePathSegment &seg)
+  static CanonicalPath resolve (const AST::SimplePathSegment &seg)
   {
     // FIXME: Since this is so simple, maybe it can simply be a tiny function?
     return CanonicalPath::new_seg (seg.get_node_id (), seg.get_segment_name ());
