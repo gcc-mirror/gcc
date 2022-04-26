@@ -427,6 +427,56 @@ Mappings::lookup_hir_path_expr_seg (CrateNum crateNum, HirId id)
 }
 
 void
+Mappings::insert_simple_path_segment (CrateNum crateNum, HirId id,
+				      AST::SimplePathSegment *path)
+{
+  rust_assert (lookup_simple_path_segment (crateNum, id) == nullptr);
+
+  astSimplePathSegmentMappings[crateNum][id] = path;
+  nodeIdToHirMappings[crateNum][path->get_node_id ()] = id;
+  insert_location (crateNum, id, path->get_locus ());
+}
+
+AST::SimplePathSegment *
+Mappings::lookup_simple_path_segment (CrateNum crateNum, HirId id)
+{
+  auto it = astSimplePathSegmentMappings.find (crateNum);
+  if (it == astSimplePathSegmentMappings.end ())
+    return nullptr;
+
+  auto iy = it->second.find (id);
+  if (iy == it->second.end ())
+    return nullptr;
+
+  return iy->second;
+}
+
+void
+Mappings::insert_simple_path (CrateNum crateNum, HirId id,
+			      AST::SimplePath *path)
+{
+  rust_assert (lookup_simple_path (crateNum, id) == nullptr);
+
+  astSimplePathMappings[crateNum][id] = path;
+  nodeIdToHirMappings[crateNum][path->get_node_id ()] = id;
+  insert_location (crateNum, id, path->get_locus ());
+}
+
+AST::SimplePath *
+Mappings::lookup_simple_path (CrateNum crateNum, HirId id)
+{
+  auto it = astSimplePathMappings.find (crateNum);
+  if (it == astSimplePathMappings.end ())
+    return nullptr;
+
+  auto iy = it->second.find (id);
+  if (iy == it->second.end ())
+    return nullptr;
+
+  return iy->second;
+}
+
+void
 Mappings::insert_hir_generic_param (CrateNum crateNum, HirId id,
 				    HIR::GenericParam *param)
 {
