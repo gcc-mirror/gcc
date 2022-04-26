@@ -6705,7 +6705,7 @@ package body Sem_Ch13 is
                     and then not Overlays_Constant (U_Ent)
                     and then Address_Clause_Overlay_Warnings
                   then
-                     Error_Msg_N ("??constant overlays a variable", Expr);
+                     Error_Msg_N ("?o?constant overlays a variable", Expr);
 
                   --  Imported variables can have an address clause, but then
                   --  the import is pretty meaningless except to suppress

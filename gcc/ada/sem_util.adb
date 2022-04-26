@@ -25893,7 +25893,7 @@ package body Sem_Util is
 
                   Error_Msg_Sloc := Sloc (Addr);
                   Error_Msg_NE
-                    ("??constant& may be modified via address clause#",
+                    ("?o?constant& may be modified via address clause#",
                      N, O_Ent);
                end;
             end if;

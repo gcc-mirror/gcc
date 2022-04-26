@@ -789,7 +789,7 @@ package body Freeze is
                then
                   Error_Msg_Sloc := Sloc (Addr);
                   Error_Msg_NE
-                    ("??constant& may be modified via address clause#",
+                    ("?o?constant& may be modified via address clause#",
                      Decl, O_Ent);
                end if;
             end;
@@ -10638,11 +10638,11 @@ package body Freeze is
          if Present (Old) then
             Error_Msg_Node_2 := Old;
             Error_Msg_N
-              ("default initialization of & may modify &??",
+              ("default initialization of & may modify &?o?",
                Nam);
          else
             Error_Msg_N
-              ("default initialization of & may modify overlaid storage??",
+              ("default initialization of & may modify overlaid storage?o?",
                Nam);
          end if;
 
