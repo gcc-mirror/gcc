@@ -220,6 +220,7 @@ static tree make_argument_pack (tree);
 static void register_parameter_specializations (tree, tree);
 static tree enclosing_instantiation_of (tree tctx);
 static void instantiate_body (tree pattern, tree args, tree d, bool nested);
+static tree maybe_dependent_member_ref (tree, tree, tsubst_flags_t, tree);
 
 /* Make the current scope suitable for access checking when we are
    processing T.  T can be FUNCTION_DECL for instantiated function
@@ -13725,18 +13726,6 @@ tsubst_aggr_type (tree t,
 					 complain, in_decl);
 	  if (argvec == error_mark_node)
 	    r = error_mark_node;
-	  else if (!entering_scope && (complain & tf_dguide)
-		   && dependent_scope_p (context))
-	    {
-	      /* See maybe_dependent_member_ref.  */
-	      tree name = TYPE_IDENTIFIER (t);
-	      tree fullname = name;
-	      if (instantiates_primary_template_p (t))
-		fullname = build_nt (TEMPLATE_ID_EXPR, name,
-				     INNERMOST_TEMPLATE_ARGS (argvec));
-	      return build_typename_type (context, name, fullname,
-					  typename_type);
-	    }
 	  else
 	    {
 	      r = lookup_template_class (t, argvec, in_decl, context,
@@ -15586,6 +15575,9 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 
   gcc_assert (type != unknown_type_node);
 
+  if (tree d = maybe_dependent_member_ref (t, args, complain, in_decl))
+    return d;
+
   /* Reuse typedefs.  We need to do this to handle dependent attributes,
      such as attribute aligned.  */
   if (TYPE_P (t)
@@ -16815,16 +16807,58 @@ maybe_dependent_member_ref (tree t, tree args, tsubst_flags_t complain,
   if (!(complain & tf_dguide))
     return NULL_TREE;
 
-  tree ctx = context_for_name_lookup (t);
+  tree decl = (t && TYPE_P (t)) ? TYPE_NAME (t) : t;
+  if (!decl || !DECL_P (decl))
+    return NULL_TREE;
+
+  tree ctx = context_for_name_lookup (decl);
   if (!CLASS_TYPE_P (ctx))
     return NULL_TREE;
 
   ctx = tsubst (ctx, args, complain, in_decl);
-  if (dependent_scope_p (ctx))
-    return build_qualified_name (NULL_TREE, ctx, DECL_NAME (t),
-				 /*template_p=*/false);
+  if (!dependent_scope_p (ctx))
+    return NULL_TREE;
 
-  return NULL_TREE;
+  if (TYPE_P (t))
+    {
+      if (typedef_variant_p (t))
+	t = strip_typedefs (t);
+      tree decl = TYPE_NAME (t);
+      if (decl)
+	decl = maybe_dependent_member_ref (decl, args, complain, in_decl);
+      if (!decl)
+	return NULL_TREE;
+      return cp_build_qualified_type_real (TREE_TYPE (decl), cp_type_quals (t),
+					   complain);
+    }
+
+  tree name = DECL_NAME (t);
+  tree fullname = name;
+  if (instantiates_primary_template_p (t))
+    {
+      tree tinfo = get_template_info (t);
+      name = DECL_NAME (TI_TEMPLATE (tinfo));
+      tree targs = INNERMOST_TEMPLATE_ARGS (TI_ARGS (tinfo));
+      targs = tsubst_template_args (targs, args, complain, in_decl);
+      fullname = build_nt (TEMPLATE_ID_EXPR, name, targs);
+    }
+
+  if (TREE_CODE (t) == TYPE_DECL)
+    {
+      if (TREE_CODE (TREE_TYPE (t)) == TYPENAME_TYPE
+	  && TYPE_NAME (TREE_TYPE (t)) == t)
+	/* The TYPE_DECL for a typename has DECL_CONTEXT of the typename
+	   scope, but it doesn't need to be rewritten again.  */
+	return NULL_TREE;
+      tree type = build_typename_type (ctx, name, fullname, typename_type);
+      return TYPE_NAME (type);
+    }
+  else if (DECL_TYPE_TEMPLATE_P (t))
+    return make_unbound_class_template (ctx, name,
+					NULL_TREE, complain);
+  else
+    return build_qualified_name (NULL_TREE, ctx, fullname,
+				 TREE_CODE (t) == TEMPLATE_DECL);
 }
 
 /* Like tsubst, but deals with expressions.  This function just replaces
@@ -16839,6 +16873,9 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 
   if (t == NULL_TREE || t == error_mark_node || args == NULL_TREE)
     return t;
+
+  if (tree d = maybe_dependent_member_ref (t, args, complain, in_decl))
+    return d;
 
   code = TREE_CODE (t);
 
@@ -16884,9 +16921,6 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	/* If ARGS is NULL, then T is known to be non-dependent.  */
 	if (args == NULL_TREE)
 	  return scalar_constant_value (t);
-
-	if (tree ref = maybe_dependent_member_ref (t, args, complain, in_decl))
-	  return ref;
 
 	/* Unfortunately, we cannot just call lookup_name here.
 	   Consider:
@@ -16938,9 +16972,6 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
       return t;
 
     case VAR_DECL:
-      if (tree ref = maybe_dependent_member_ref (t, args, complain, in_decl))
-	return ref;
-      gcc_fallthrough();
     case FUNCTION_DECL:
       if (DECL_LANG_SPECIFIC (t) && DECL_TEMPLATE_INFO (t))
 	r = tsubst (t, args, complain, in_decl);
@@ -17070,18 +17101,6 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	     have to substitute this with one having context `D<int>'.  */
 
 	  tree context = tsubst (DECL_CONTEXT (t), args, complain, in_decl);
-	  if ((complain & tf_dguide) && dependent_scope_p (context))
-	    {
-	      /* When rewriting a constructor into a deduction guide, a
-		 non-dependent name can become dependent, so memtmpl<args>
-		 becomes context::template memtmpl<args>.  */
-	      if (DECL_TYPE_TEMPLATE_P (t))
-		return make_unbound_class_template (context, DECL_NAME (t),
-						    NULL_TREE, complain);
-	      tree type = tsubst (TREE_TYPE (t), args, complain, in_decl);
-	      return build_qualified_name (type, context, DECL_NAME (t),
-					   /*template*/true);
-	    }
 	  return lookup_field (context, DECL_NAME(t), 0, false);
 	}
       else
@@ -21710,21 +21729,6 @@ instantiate_alias_template (tree tmpl, tree args, tsubst_flags_t complain)
 {
   if (tmpl == error_mark_node || args == error_mark_node)
     return error_mark_node;
-
-  /* See maybe_dependent_member_ref.  */
-  if (complain & tf_dguide)
-    {
-      tree ctx = tsubst_aggr_type (DECL_CONTEXT (tmpl), args, complain,
-				   tmpl, true);
-      if (dependent_scope_p (ctx))
-	{
-	  tree name = DECL_NAME (tmpl);
-	  tree fullname = build_nt (TEMPLATE_ID_EXPR, name,
-				    INNERMOST_TEMPLATE_ARGS (args));
-	  tree tname = build_typename_type (ctx, name, fullname, typename_type);
-	  return TYPE_NAME (tname);
-	}
-    }
 
   args =
     coerce_innermost_template_parms (DECL_TEMPLATE_PARMS (tmpl),
