@@ -1,3 +1,14 @@
+2022-04-25  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/105365
+	PR analyzer/105366
+	* svalue.cc
+	(cmp_cst): Rename to...
+	(cmp_csts_same_type): ...this.  Convert all recursive calls to
+	calls to...
+	(cmp_csts_and_types): ....this new function.
+	(svalue::cmp_ptr): Update for renaming of cmp_cst
+
 2022-04-14  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/105264

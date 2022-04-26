@@ -1,3 +1,13 @@
+2022-04-25  Martin Liska  <mliska@suse.cz>
+
+	* filter-clang-warnings.py: Filter out
+	-Wc++20-attribute-extensions in lex.cc.
+
+2022-04-25  Martin Liska  <mliska@suse.cz>
+
+	* filter-clang-warnings.py: Filter out
+	-Wbitwise-instead-of-logical.
+
 2022-04-04  Martin Liska  <mliska@suse.cz>
 
 	* gcc-changelog/git_update_version.py: Ignore the revision.

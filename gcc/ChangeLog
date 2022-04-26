@@ -1,3 +1,72 @@
+2022-04-25  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/104308
+	* gimple-fold.cc (gimple_fold_builtin_memory_op): Explicitly set
+	the location of new_stmt in all places that don't already set it,
+	whether explicitly, or via a call to gsi_replace.
+
+2022-04-25  Paul A. Clarke  <pc@us.ibm.com>
+
+	* doc/extend.texi (Other Builtins): Correct reference to 'modff'.
+
+2022-04-25  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/105276
+	* gimple-range.cc (gimple_ranger::prefill_stmt_dependencies): Include
+	existing global range with calculated value.
+
+2022-04-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/105368
+	* tree-ssa-math-opts.cc (powi_cost): Use absu_hwi.
+
+2022-04-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/100810
+	* tree-ssa-loop-ivopts.cc (struct iv_cand): Add involves_undefs flag.
+	(find_ssa_undef): New function.
+	(add_candidate_1): Avoid adding derived candidates with
+	undefined SSA names and mark the original ones.
+	(determine_group_iv_cost_generic): Reject rewriting
+	uses with a different IV when that involves undefined SSA names.
+
+2022-04-25  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR target/89125
+	* config/freebsd.h: Define TARGET_LIBC_HAS_FUNCTION to be
+	bsd_libc_has_function.
+	* targhooks.cc (bsd_libc_has_function): New function.
+	Expand the supported math functions to inclue C99 libm.
+	* targhooks.h (bsd_libc_has_function): New Prototype.
+
+2022-04-25  Richard Biener  <rguenther@suse.de>
+
+	PR rtl-optimization/105231
+	* combine.cc (distribute_notes): Assert that a REG_EH_REGION
+	with landing pad > 0 is from i3.  Put any REG_EH_REGION note
+	on i3 or drop it if the insn can not trap.
+	(try_combine): Ensure that we can merge REG_EH_REGION notes
+	with non-call exceptions.  Ensure we are not splitting a
+	trapping part of an insn with non-call exceptions when there
+	is any REG_EH_REGION note to preserve.
+
+2022-04-25  Hongyu Wang  <hongyu.wang@intel.com>
+
+	PR target/105339
+	* config/i386/avx512fintrin.h (_mm512_scalef_round_pd):
+	Add parentheses for parameters and djust format.
+	(_mm512_mask_scalef_round_pd): Ditto.
+	(_mm512_maskz_scalef_round_pd): Ditto.
+	(_mm512_scalef_round_ps): Ditto.
+	(_mm512_mask_scalef_round_ps): Ditto.
+	(_mm512_maskz_scalef_round_ps): Ditto.
+	(_mm_scalef_round_sd): Use _mm_undefined_pd.
+	(_mm_scalef_round_ss): Use _mm_undefined_ps.
+	(_mm_mask_scalef_round_sd): New macro.
+	(_mm_mask_scalef_round_ss): Ditto.
+	(_mm_maskz_scalef_round_sd): Ditto.
+	(_mm_maskz_scalef_round_ss): Ditto.
+
 2022-04-23  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/105338

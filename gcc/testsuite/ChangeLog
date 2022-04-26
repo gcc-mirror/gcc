@@ -1,3 +1,54 @@
+2022-04-25  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/105365
+	PR analyzer/105366
+	* gcc.dg/analyzer/pr105365.c: New test.
+	* gcc.dg/analyzer/pr105366.c: New test.
+
+2022-04-25  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/104308
+	* gcc.dg/analyzer/pr104308.c: Add test coverage.
+
+2022-04-25  Jakub Jelinek  <jakub@redhat.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR fortran/104717
+	* gfortran.dg/goacc/pr104717.f90: New test.
+	* gfortran.dg/goacc/privatization-1-compute-loop.f90: Adjust.
+
+2022-04-25  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/105353
+	* g++.dg/ext/builtin-shufflevector-3.C: New test.
+
+2022-04-25  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/105276
+	* g++.dg/pr105276.C: New.
+
+2022-04-25  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/103662
+	* gfortran.dg/unlimited_polymorphic_3.f03: Force execution of
+	the DSE optimization pass.
+
+2022-04-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/100810
+	* gcc.dg/torture/pr100810.c: New testcase.
+	* gcc.dg/torture/pr105337.c: Likewise.
+
+2022-04-25  Richard Biener  <rguenther@suse.de>
+
+	PR rtl-optimization/105231
+	* gcc.dg/torture/pr105231.c: New testcase.
+
+2022-04-25  Hongyu Wang  <hongyu.wang@intel.com>
+
+	PR target/105339
+	* gcc.target/i386/sse-14.c: Add tests for new macro.
+
 2022-04-24  Jeff Law  <jeffreyalaw@gmail.com>
 
 	* gcc.dg/lto/pr94157_0.c: Also request executable stack from
