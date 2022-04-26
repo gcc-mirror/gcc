@@ -753,7 +753,7 @@ is
 
          while Position /= 0 loop
             R := P.Add (R, (Node => Position), I);
-            pragma Assert (P.Length (R) = I);
+            pragma Assert (P.Length (R) = Big (I));
             Position := HT_Ops.Next (Container.Content, Position);
             I := I + 1;
          end loop;

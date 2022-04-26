@@ -33,6 +33,9 @@ pragma Elaborate_All (Ada.Containers.Hash_Tables.Generic_Formal_Keys);
 
 with Ada.Containers.Prime_Numbers; use Ada.Containers.Prime_Numbers;
 
+with Ada.Numerics.Big_Numbers.Big_Integers;
+use Ada.Numerics.Big_Numbers.Big_Integers;
+
 with System; use type System.Address;
 
 package body Ada.Containers.Formal_Hashed_Maps with
@@ -70,6 +73,13 @@ is
 
    function Vet (Container : Map; Position : Cursor) return Boolean
      with Inline;
+
+   --  Convert Count_Type to Big_Interger
+
+   package Conversions is new Signed_Conversions (Int => Count_Type);
+
+   function Big (J : Count_Type) return Big_Integer renames
+     Conversions.To_Big_Integer;
 
    --------------------------
    -- Local Instantiations --
@@ -526,7 +536,7 @@ is
 
          while Position /= 0 loop
             R := P.Add (R, (Node => Position), I);
-            pragma Assert (P.Length (R) = I);
+            pragma Assert (P.Length (R) = Big (I));
             Position := HT_Ops.Next (Container.Content, Position);
             I := I + 1;
          end loop;
