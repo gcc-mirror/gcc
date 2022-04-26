@@ -432,8 +432,7 @@ package body Sem_Ch11 is
       --  If the current scope is a subprogram, entry or task body or declare
       --  block then this is the right place to check for hanging useless
       --  assignments from the statement sequence. Skip this in the body of a
-      --  postcondition, since in that case there are no source references, and
-      --  we need to preserve deferred references from the enclosing scope.
+      --  postcondition, since in that case there are no source references.
 
       if (Is_Subprogram_Or_Entry (Current_Scope)
            and then Chars (Current_Scope) /= Name_uPostconditions)

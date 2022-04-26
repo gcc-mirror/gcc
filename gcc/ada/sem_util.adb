@@ -9309,8 +9309,8 @@ package body Sem_Util is
                   return;
 
                --  An actual that is the prefix in a prefixed call may have
-               --  been rewritten in the call, after the deferred reference
-               --  was collected. Check if sloc and kinds and names match.
+               --  been rewritten in the call. Check if sloc and kinds and
+               --  names match.
 
                elsif Sloc (Actual) = Sloc (N)
                  and then Nkind (Actual) = N_Identifier

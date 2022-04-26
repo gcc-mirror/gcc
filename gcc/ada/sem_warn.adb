@@ -31,7 +31,6 @@ with Einfo.Utils;    use Einfo.Utils;
 with Errout;         use Errout;
 with Exp_Code;       use Exp_Code;
 with Lib;            use Lib;
-with Lib.Xref;       use Lib.Xref;
 with Namet;          use Namet;
 with Nlists;         use Nlists;
 with Opt;            use Opt;
@@ -1132,8 +1131,6 @@ package body Sem_Warn is
    --  Start of processing for Check_References
 
    begin
-      Process_Deferred_References;
-
       --  No messages if warnings are suppressed, or if we have detected any
       --  real errors so far (this last check avoids junk messages resulting
       --  from errors, e.g. a subunit that is not loaded).
@@ -2761,8 +2758,6 @@ package body Sem_Warn is
       if not Opt.Check_Withs or else Operating_Mode = Check_Syntax then
          return;
       end if;
-
-      Process_Deferred_References;
 
       --  Flag any unused with clauses. For a subunit, check only the units
       --  in its context, not those of the parent, which may be needed by other
@@ -4703,8 +4698,6 @@ package body Sem_Warn is
       Ent : Entity_Id;
 
    begin
-      Process_Deferred_References;
-
       if Warn_On_Modified_Unread
         and then In_Extended_Main_Source_Unit (E)
       then
