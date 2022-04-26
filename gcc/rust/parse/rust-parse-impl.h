@@ -12591,16 +12591,6 @@ Parser<ManagedTokenSource>::null_denotation (const_TokenPtr tok,
 	      // struct/enum expr struct
 	      if (!restrictions.can_be_struct_expr && !not_a_block)
 		{
-		  // assume path is returned if not single segment
-		  if (path.is_single_segment ())
-		    {
-		      // have to return an identifier expression or something
-		      /* HACK: may have to become permanent, but this is my
-		       * current identifier expression */
-		      return std::unique_ptr<AST::IdentifierExpr> (
-			new AST::IdentifierExpr (tok->get_str (), {},
-						 tok->get_locus ()));
-		    }
 		  // HACK: add outer attrs to path
 		  path.set_outer_attrs (std::move (outer_attrs));
 		  return std::unique_ptr<AST::PathInExpression> (
@@ -12613,16 +12603,6 @@ Parser<ManagedTokenSource>::null_denotation (const_TokenPtr tok,
 	    // struct/enum expr tuple
 	    if (!restrictions.can_be_struct_expr)
 	      {
-		// assume path is returned if not single segment
-		if (path.is_single_segment ())
-		  {
-		    // have to return an identifier expression or something, idk
-		    /* HACK: may have to become permanent, but this is my
-		     * current identifier expression */
-		    return std::unique_ptr<AST::IdentifierExpr> (
-		      new AST::IdentifierExpr (tok->get_str (), {},
-					       tok->get_locus ()));
-		  }
 		// HACK: add outer attrs to path
 		path.set_outer_attrs (std::move (outer_attrs));
 		return std::unique_ptr<AST::PathInExpression> (
