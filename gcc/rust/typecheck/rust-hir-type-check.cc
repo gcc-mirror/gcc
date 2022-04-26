@@ -54,18 +54,11 @@ TypeResolution::Resolve (HIR::Crate &crate)
 
   // default inference variables if possible
   context->iterate ([&] (HirId id, TyTy::BaseType *ty) mutable -> bool {
-    if (ty->get_kind () == TyTy::TypeKind::ERROR)
-      {
-	rust_error_at (mappings->lookup_location (id),
-		       "failure in type resolution for %u", id);
-	return false;
-      }
-
     // nothing to do
     if (ty->get_kind () != TyTy::TypeKind::INFER)
       return true;
 
-    TyTy::InferType *infer_var = (TyTy::InferType *) ty;
+    TyTy::InferType *infer_var = static_cast<TyTy::InferType *> (ty);
     TyTy::BaseType *default_type;
     bool ok = infer_var->default_type (&default_type);
     if (!ok)
