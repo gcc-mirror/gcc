@@ -3639,7 +3639,7 @@ gen_command_line_string (cl_decoded_option *options,
       case OPT_SPECIAL_input_file:
       case OPT_grecord_gcc_switches:
       case OPT_frecord_gcc_switches:
-      case OPT__output_pch_:
+      case OPT__output_pch:
       case OPT_fdiagnostics_show_location_:
       case OPT_fdiagnostics_show_option:
       case OPT_fdiagnostics_show_caret:
