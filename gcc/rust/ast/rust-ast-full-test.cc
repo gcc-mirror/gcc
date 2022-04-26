@@ -4695,7 +4695,10 @@ MetaNameValueStr::to_attribute () const
 {
   LiteralExpr lit_expr (str, Literal::LitType::STRING,
 			PrimitiveCoreType::CORETYPE_UNKNOWN, {}, Location ());
-  return Attribute (SimplePath::from_str (ident),
+  // FIXME: What location do we put here? Is the literal above supposed to have
+  // an empty location as well?
+  // Should MetaNameValueStr keep a location?
+  return Attribute (SimplePath::from_str (ident, Location ()),
 		    std::unique_ptr<AttrInputLiteral> (
 		      new AttrInputLiteral (std::move (lit_expr))));
 }
@@ -4722,7 +4725,8 @@ MetaItemSeq::to_attribute () const
 Attribute
 MetaWord::to_attribute () const
 {
-  return Attribute (SimplePath::from_str (ident), nullptr);
+  // FIXME: How do we get a location here?
+  return Attribute (SimplePath::from_str (ident, Location ()), nullptr);
 }
 
 Attribute
@@ -4740,7 +4744,8 @@ MetaListPaths::to_attribute () const
 
   std::unique_ptr<AttrInputMetaItemContainer> new_seq_container (
     new AttrInputMetaItemContainer (std::move (new_seq)));
-  return Attribute (SimplePath::from_str (ident),
+  // FIXME: How do we get a location here?
+  return Attribute (SimplePath::from_str (ident, Location ()),
 		    std::move (new_seq_container));
 }
 
@@ -4755,7 +4760,8 @@ MetaListNameValueStr::to_attribute () const
 
   std::unique_ptr<AttrInputMetaItemContainer> new_seq_container (
     new AttrInputMetaItemContainer (std::move (new_seq)));
-  return Attribute (SimplePath::from_str (ident),
+  // FIXME: How do we get a location here?
+  return Attribute (SimplePath::from_str (ident, Location ()),
 		    std::move (new_seq_container));
 }
 

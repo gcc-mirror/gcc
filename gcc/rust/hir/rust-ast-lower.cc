@@ -44,12 +44,13 @@ translate_visibility (const AST::Visibility &vis)
     case AST::Visibility::PUB_SELF:
       return Visibility (Visibility::VisType::PRIVATE);
     // Desugar pub(crate) into pub(in crate) and so on
+    // FIXME: How do we get a location for the SimplePath here?
     case AST::Visibility::PUB_CRATE:
       return Visibility (Visibility::PUBLIC,
-			 AST::SimplePath::from_str ("crate"));
+			 AST::SimplePath::from_str ("crate", Location ()));
     case AST::Visibility::PUB_SUPER:
       return Visibility (Visibility::PUBLIC,
-			 AST::SimplePath::from_str ("super"));
+			 AST::SimplePath::from_str ("super", Location ()));
     case AST::Visibility::PUB_IN_PATH:
       return Visibility (Visibility::VisType::PUBLIC, vis.get_path ());
       break;
