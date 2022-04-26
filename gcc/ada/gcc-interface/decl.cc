@@ -7770,20 +7770,20 @@ warn_on_field_placement (tree gnu_field, Node_Id gnat_component_list,
 
   const char *msg1
     = in_variant
-      ? "??variant layout may cause performance issues"
-      : "??record layout may cause performance issues";
+      ? "?.q?variant layout may cause performance issues"
+      : "?.q?record layout may cause performance issues";
   const char *msg2
     = Ekind (gnat_field) == E_Discriminant
-      ? "??discriminant & whose length is not multiple of a byte"
+      ? "?.q?discriminant & whose length is not multiple of a byte"
       : field_has_self_size (gnu_field)
-	? "??component & whose length depends on a discriminant"
+	? "?.q?component & whose length depends on a discriminant"
 	: field_has_variable_size (gnu_field)
-	  ? "??component & whose length is not fixed"
-	  : "??component & whose length is not multiple of a byte";
+	  ? "?.q?component & whose length is not fixed"
+	  : "?.q?component & whose length is not multiple of a byte";
   const char *msg3
     = do_reorder
-      ? "??comes too early and was moved down"
-      : "??comes too early and ought to be moved down";
+      ? "?.q?comes too early and was moved down"
+      : "?.q?comes too early and ought to be moved down";
 
   post_error (msg1, gnat_field);
   post_error_ne (msg2, gnat_field, gnat_field);
