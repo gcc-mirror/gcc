@@ -169,13 +169,8 @@ public:
 	return CanonicalPath::create_empty ();
       }
 
-    std::string generics
-      = ResolveTypeToCanonicalPath::canonicalize_generic_args (
-	seg.get_generic_args ());
-
     return CanonicalPath::new_seg (seg.get_node_id (),
-				   seg.get_ident_segment ().as_string ()
-				     + "::" + generics);
+				   seg.get_ident_segment ().as_string ());
   }
 };
 
