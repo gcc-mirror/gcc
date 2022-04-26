@@ -330,7 +330,7 @@ class SimplePathSegment : public PathSegment
   // only allow identifiers, "super", "self", "crate", or "$crate"
 public:
   // TODO: put checks in constructor to enforce this rule?
-  SimplePathSegment (std::string segment_name, Location locus = Location ())
+  SimplePathSegment (std::string segment_name, Location locus)
     : segment_name (std::move (segment_name)), locus (locus),
       node_id (Analysis::Mappings::get ()->get_next_node_id ())
   {}
@@ -342,7 +342,7 @@ public:
   // Creates an error SimplePathSegment
   static SimplePathSegment create_error ()
   {
-    return SimplePathSegment (std::string (""));
+    return SimplePathSegment (std::string (""), Location ());
   }
 
   std::string as_string () const override;
@@ -398,10 +398,10 @@ public:
    * ensure that this is a valid identifier in path, so be careful. Also, this
    * will have no location data.
    * TODO have checks? */
-  static SimplePath from_str (std::string str)
+  static SimplePath from_str (std::string str, Location locus)
   {
     std::vector<AST::SimplePathSegment> single_segments
-      = {AST::SimplePathSegment (std::move (str))};
+      = {AST::SimplePathSegment (std::move (str), locus)};
     return SimplePath (std::move (single_segments));
   }
 };
