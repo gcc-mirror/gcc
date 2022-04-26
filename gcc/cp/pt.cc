@@ -10905,7 +10905,7 @@ uses_template_parms (tree t)
 		   || uses_template_parms (TREE_CHAIN (t)));
   else if (TREE_CODE (t) == TYPE_DECL)
     dependent_p = dependent_type_p (TREE_TYPE (t));
-  else if (t == error_mark_node)
+  else if (t == error_mark_node || TREE_CODE (t) == NAMESPACE_DECL)
     dependent_p = false;
   else
     dependent_p = instantiation_dependent_expression_p (t);
