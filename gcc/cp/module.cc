@@ -6468,9 +6468,7 @@ trees_in::core_vals (tree t)
 
     case REAL_CST:
       if (const void *bytes = buf (sizeof (real_value)))
-	TREE_REAL_CST_PTR (t)
-	  = reinterpret_cast<real_value *> (memcpy (ggc_alloc<real_value> (),
-						    bytes, sizeof (real_value)));
+	memcpy (TREE_REAL_CST_PTR (t), bytes, sizeof (real_value));
       break;
 
     case STRING_CST:

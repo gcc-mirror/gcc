@@ -1048,7 +1048,7 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
 #define POLY_INT_CST_COEFF(NODE, I) \
   (POLY_INT_CST_CHECK (NODE)->poly_int_cst.coeffs[I])
 
-#define TREE_REAL_CST_PTR(NODE) (REAL_CST_CHECK (NODE)->real_cst.real_cst_ptr)
+#define TREE_REAL_CST_PTR(NODE) (&REAL_CST_CHECK (NODE)->real_cst.value)
 #define TREE_REAL_CST(NODE) (*TREE_REAL_CST_PTR (NODE))
 
 #define TREE_FIXED_CST_PTR(NODE) \

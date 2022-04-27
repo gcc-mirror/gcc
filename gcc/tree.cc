@@ -2381,7 +2381,6 @@ tree
 build_real (tree type, REAL_VALUE_TYPE d)
 {
   tree v;
-  REAL_VALUE_TYPE *dp;
   int overflow = 0;
 
   /* dconst{1,2,m1,half} are used in various places in
@@ -2408,11 +2407,8 @@ build_real (tree type, REAL_VALUE_TYPE d)
      Consider doing it via real_convert now.  */
 
   v = make_node (REAL_CST);
-  dp = ggc_alloc<real_value> ();
-  memcpy (dp, &d, sizeof (REAL_VALUE_TYPE));
-
   TREE_TYPE (v) = type;
-  TREE_REAL_CST_PTR (v) = dp;
+  memcpy (TREE_REAL_CST_PTR (v), &d, sizeof (REAL_VALUE_TYPE));
   TREE_OVERFLOW (v) = overflow;
   return v;
 }
