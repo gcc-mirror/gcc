@@ -1416,6 +1416,16 @@ extern template class __shared_ptr<const filesystem::filesystem_error::_Impl>;
 
 /// @endcond
 
+// _GLIBCXX_RESOLVE_LIB_DEFECTS
+// 3657. std::hash<std::filesystem::path> is not enabled
+template<>
+  struct hash<filesystem::path>
+  {
+    size_t
+    operator()(const filesystem::path& __p) const noexcept
+    { return filesystem::hash_value(__p); }
+  };
+
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 

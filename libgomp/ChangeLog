@@ -1,3 +1,16 @@
+2022-04-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgomp/105358
+	* work.c (gomp_init_work_share): Don't mask of adjustment for
+	dynamic long long realignment if struct gomp_work_share has smaller
+	alignof than long long.
+	* loop.c (GOMP_loop_start): Don't use inline_ordered_team_ids if
+	struct gomp_work_share has smaller alignof than long long or if
+	sizeof (struct gomp_work_share) is smaller than
+	INLINE_ORDERED_TEAM_IDS_OFF.
+	* loop_ull.c (GOMP_loop_ull_start): Likewise.
+	* sections.c (GOMP_sections2_start): Likewise.
+
 2022-04-25  Jakub Jelinek  <jakub@redhat.com>
 	    Thomas Schwinge  <thomas@codesourcery.com>
 

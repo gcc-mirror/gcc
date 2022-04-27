@@ -12142,29 +12142,26 @@ s390_function_arg_size (machine_mode mode, const_tree type)
   gcc_unreachable ();
 }
 
-/* Return true if a function argument of type TYPE and mode MODE
-   is to be passed in a vector register, if available.  */
+/* Return true if a variable of TYPE should be passed as single value
+   with type CODE. If STRICT_SIZE_CHECK_P is true the sizes of the
+   record type and the field type must match.
 
-bool
-s390_function_arg_vector (machine_mode mode, const_tree type)
+   The ABI says that record types with a single member are treated
+   just like that member would be.  This function is a helper to
+   detect such cases.  The function also produces the proper
+   diagnostics for cases where the outcome might be different
+   depending on the GCC version.  */
+static bool
+s390_single_field_struct_p (enum tree_code code, const_tree type,
+			    bool strict_size_check_p)
 {
-  if (!TARGET_VX_ABI)
-    return false;
-
-  if (s390_function_arg_size (mode, type) > 16)
-    return false;
-
-  /* No type info available for some library calls ...  */
-  if (!type)
-    return VECTOR_MODE_P (mode);
-
-  /* The ABI says that record types with a single member are treated
-     just like that member would be.  */
   int empty_base_seen = 0;
+  bool zero_width_bf_skipped_p = false;
   const_tree orig_type = type;
+
   while (TREE_CODE (type) == RECORD_TYPE)
     {
-      tree field, single = NULL_TREE;
+      tree field, single_type = NULL_TREE;
 
       for (field = TYPE_FIELDS (type); field; field = DECL_CHAIN (field))
 	{
@@ -12181,48 +12178,108 @@ s390_function_arg_vector (machine_mode mode, const_tree type)
 	      continue;
 	    }
 
-	  if (single == NULL_TREE)
-	    single = TREE_TYPE (field);
+	  if (DECL_FIELD_CXX_ZERO_WIDTH_BIT_FIELD (field))
+	    {
+	      zero_width_bf_skipped_p = true;
+	      continue;
+	    }
+
+	  if (single_type == NULL_TREE)
+	    single_type = TREE_TYPE (field);
 	  else
 	    return false;
 	}
 
-      if (single == NULL_TREE)
+      if (single_type == NULL_TREE)
 	return false;
-      else
-	{
-	  /* If the field declaration adds extra byte due to
-	     e.g. padding this is not accepted as vector type.  */
-	  if (int_size_in_bytes (single) <= 0
-	      || int_size_in_bytes (single) != int_size_in_bytes (type))
-	    return false;
-	  type = single;
-	}
+
+      /* Reaching this point we have a struct with a single member and
+	 zero or more zero-sized bit-fields which have been skipped in the
+	 past.  */
+
+      /* If ZERO_WIDTH_BF_SKIPPED_P then the struct will not be accepted.  In case
+	 we are not supposed to emit a warning exit early.  */
+      if (zero_width_bf_skipped_p && !warn_psabi)
+	return false;
+
+      /* If the field declaration adds extra bytes due to padding this
+	 is not accepted with STRICT_SIZE_CHECK_P.  */
+      if (strict_size_check_p
+	  && (int_size_in_bytes (single_type) <= 0
+	      || int_size_in_bytes (single_type) != int_size_in_bytes (type)))
+	return false;
+
+      type = single_type;
     }
 
-  if (!VECTOR_TYPE_P (type))
+  if (TREE_CODE (type) != code)
     return false;
 
-  if (warn_psabi && empty_base_seen)
+  if (warn_psabi)
     {
-      static unsigned last_reported_type_uid;
       unsigned uid = TYPE_UID (TYPE_MAIN_VARIANT (orig_type));
-      if (uid != last_reported_type_uid)
+
+      if (empty_base_seen)
 	{
-	  const char *url = CHANGES_ROOT_URL "gcc-10/changes.html#empty_base";
-	  last_reported_type_uid = uid;
-	  if (empty_base_seen & 1)
-	    inform (input_location,
-		    "parameter passing for argument of type %qT when C++17 "
-		    "is enabled changed to match C++14 %{in GCC 10.1%}",
-		    orig_type, url);
-	  else
-	    inform (input_location,
-		    "parameter passing for argument of type %qT with "
-		    "%<[[no_unique_address]]%> members changed "
-		    "%{in GCC 10.1%}", orig_type, url);
+	  static unsigned last_reported_type_uid_empty_base;
+	  if (uid != last_reported_type_uid_empty_base)
+	    {
+	      last_reported_type_uid_empty_base = uid;
+	      const char *url = CHANGES_ROOT_URL "gcc-10/changes.html#empty_base";
+	      if (empty_base_seen & 1)
+		inform (input_location,
+			"parameter passing for argument of type %qT when C++17 "
+			"is enabled changed to match C++14 %{in GCC 10.1%}",
+			orig_type, url);
+	      else
+		inform (input_location,
+			"parameter passing for argument of type %qT with "
+			"%<[[no_unique_address]]%> members changed "
+			"%{in GCC 10.1%}", orig_type, url);
+	    }
+	}
+
+      /* For C++ older GCCs ignored zero width bitfields and therefore
+	 passed structs more often as single values than GCC 12 does.
+	 So diagnostics are only required in cases where we do NOT
+	 accept the struct to be passed as single value.  */
+      if (zero_width_bf_skipped_p)
+	{
+	  static unsigned last_reported_type_uid_zero_width;
+	  if (uid != last_reported_type_uid_zero_width)
+	    {
+	      last_reported_type_uid_zero_width = uid;
+	      inform (input_location,
+		      "parameter passing for argument of type %qT with "
+		      "zero-width bit fields members changed in GCC 12",
+		      orig_type);
+	    }
 	}
     }
+
+  return !zero_width_bf_skipped_p;
+}
+
+
+/* Return true if a function argument of type TYPE and mode MODE
+   is to be passed in a vector register, if available.  */
+
+static bool
+s390_function_arg_vector (machine_mode mode, const_tree type)
+{
+  if (!TARGET_VX_ABI)
+    return false;
+
+  if (s390_function_arg_size (mode, type) > 16)
+    return false;
+
+  /* No type info available for some library calls ...  */
+  if (!type)
+    return VECTOR_MODE_P (mode);
+
+  if (!s390_single_field_struct_p (VECTOR_TYPE, type, true))
+    return false;
+
   return true;
 }
 
@@ -12243,63 +12300,8 @@ s390_function_arg_float (machine_mode mode, const_tree type)
   if (!type)
     return mode == SFmode || mode == DFmode || mode == SDmode || mode == DDmode;
 
-  /* The ABI says that record types with a single member are treated
-     just like that member would be.  */
-  int empty_base_seen = 0;
-  const_tree orig_type = type;
-  while (TREE_CODE (type) == RECORD_TYPE)
-    {
-      tree field, single = NULL_TREE;
-
-      for (field = TYPE_FIELDS (type); field; field = DECL_CHAIN (field))
-	{
-	  if (TREE_CODE (field) != FIELD_DECL)
-	    continue;
-	  if (DECL_FIELD_ABI_IGNORED (field))
-	    {
-	      if (lookup_attribute ("no_unique_address",
-				    DECL_ATTRIBUTES (field)))
-		empty_base_seen |= 2;
-	      else
-		empty_base_seen |= 1;
-	      continue;
-	    }
-
-	  if (single == NULL_TREE)
-	    single = TREE_TYPE (field);
-	  else
-	    return false;
-	}
-
-      if (single == NULL_TREE)
-	return false;
-      else
-	type = single;
-    }
-
-  if (TREE_CODE (type) != REAL_TYPE)
+  if (!s390_single_field_struct_p (REAL_TYPE, type, false))
     return false;
-
-  if (warn_psabi && empty_base_seen)
-    {
-      static unsigned last_reported_type_uid;
-      unsigned uid = TYPE_UID (TYPE_MAIN_VARIANT (orig_type));
-      if (uid != last_reported_type_uid)
-	{
-	  const char *url = CHANGES_ROOT_URL "gcc-10/changes.html#empty_base";
-	  last_reported_type_uid = uid;
-	  if (empty_base_seen & 1)
-	    inform (input_location,
-		    "parameter passing for argument of type %qT when C++17 "
-		    "is enabled changed to match C++14 %{in GCC 10.1%}",
-		    orig_type, url);
-	  else
-	    inform (input_location,
-		    "parameter passing for argument of type %qT with "
-		    "%<[[no_unique_address]]%> members changed "
-		    "%{in GCC 10.1%}", orig_type, url);
-	}
-    }
 
   return true;
 }

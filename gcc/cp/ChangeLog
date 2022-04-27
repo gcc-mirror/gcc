@@ -1,3 +1,32 @@
+2022-04-26  Jason Merrill  <jason@redhat.com>
+
+	PR c++/102629
+	* pt.cc (gen_elem_of_pack_expansion_instantiation): Clear
+	TEMPLATE_TYPE_PARAMETER_PACK on auto.
+
+2022-04-26  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/105386
+	* semantics.cc (finish_decltype_type): Pass tf_decltype to
+	instantiate_non_dependent_expr_sfinae.
+
+2022-04-26  Jason Merrill  <jason@redhat.com>
+
+	PR c++/104624
+	* pt.cc (check_for_bare_parameter_packs): Check for lambda
+	function parameter pack.
+
+2022-04-26  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/105289
+	PR c++/86193
+	* pt.cc (process_partial_specialization): Downgrade "partial
+	specialization isn't more specialized" diagnostic from permerror
+	to an on-by-default pedwarn.
+	(unify) <case TEMPLATE_PARM_INDEX>: When substituting into the
+	NTTP type a second time, use the original type not the
+	substituted type.
+
 2022-04-25  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/105353
