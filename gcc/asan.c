@@ -1497,10 +1497,14 @@ asan_redzone_buffer::emit_redzone_byte (HOST_WIDE_INT offset,
   HOST_WIDE_INT off
     = m_prev_offset + ASAN_SHADOW_GRANULARITY * m_shadow_bytes.length ();
   if (off == offset)
+    /* Consecutive shadow memory byte.  */;
+  else if (offset < m_prev_offset + (HOST_WIDE_INT) (ASAN_SHADOW_GRANULARITY
+						     * RZ_BUFFER_SIZE)
+	   && !m_shadow_bytes.is_empty ())
     {
-      /* Consecutive shadow memory byte.  */
-      m_shadow_bytes.safe_push (value);
-      flush_if_full ();
+      /* Shadow memory byte with a small gap.  */
+      for (; off < offset; off += ASAN_SHADOW_GRANULARITY)
+	m_shadow_bytes.safe_push (0);
     }
   else
     {
@@ -1521,9 +1525,9 @@ asan_redzone_buffer::emit_redzone_byte (HOST_WIDE_INT offset,
       m_shadow_mem = adjust_address (m_shadow_mem, VOIDmode,
 				     diff >> ASAN_SHADOW_SHIFT);
       m_prev_offset = offset;
-      m_shadow_bytes.safe_push (value);
-      flush_if_full ();
     }
+  m_shadow_bytes.safe_push (value);
+  flush_if_full ();
 }
 
 /* Emit RTX emission of the content of the buffer.  */
