@@ -9,7 +9,6 @@ contains
   subroutine s(inp)
     character(*), intent(in) :: inp
     character(:), allocatable :: a
-    a = a           ! This used to ICE.
     a = inp
     a = a           ! This used to ICE too
     if ((len (a) .ne. 5) .or. (a .ne. "hello")) STOP 1
