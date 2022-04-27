@@ -1583,7 +1583,8 @@ apply_identity_attributes (tree result, tree attribs, bool *remove_attributes)
    stripped.  */
 
 tree
-strip_typedefs (tree t, bool *remove_attributes, unsigned int flags)
+strip_typedefs (tree t, bool *remove_attributes /* = NULL */,
+		unsigned int flags /* = 0 */)
 {
   tree result = NULL, type = NULL, t0 = NULL;
 
