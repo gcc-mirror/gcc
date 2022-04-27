@@ -33,6 +33,7 @@ static const BuiltinAttrDefinition __definitions[] = {
   {"lang", HIR_LOWERING},
   {"link_section", CODE_GENERATION},
   {"no_mangle", CODE_GENERATION},
+  {"repr", CODE_GENERATION},
 };
 
 BuiltinAttributeMappings *
