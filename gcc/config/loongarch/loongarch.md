@@ -713,6 +713,12 @@
 ;;
 
 ;; Float division and modulus.
+(define_expand "div<mode>3"
+  [(set (match_operand:ANYF 0 "register_operand")
+	(div:ANYF (match_operand:ANYF 1 "reg_or_1_operand")
+		  (match_operand:ANYF 2 "register_operand")))]
+  "")
+
 (define_insn "*div<mode>3"
   [(set (match_operand:ANYF 0 "register_operand" "=f")
 	(div:ANYF (match_operand:ANYF 1 "register_operand" "f")
