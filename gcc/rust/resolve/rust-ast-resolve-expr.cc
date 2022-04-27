@@ -22,6 +22,7 @@
 #include "rust-ast-verify-assignee.h"
 #include "rust-ast-resolve-type.h"
 #include "rust-ast-resolve-pattern.h"
+#include "rust-ast-resolve-path.h"
 
 namespace Rust {
 namespace Resolver {
