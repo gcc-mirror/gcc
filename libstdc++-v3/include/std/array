@@ -182,15 +182,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { return const_reverse_iterator(begin()); }
 
       // Capacity.
-      [[__gnu__::__const__, __nodiscard__]]
+      [[__nodiscard__, __gnu__::__const__, __gnu__::__always_inline__]]
       constexpr size_type
       size() const noexcept { return _Nm; }
 
-      [[__gnu__::__const__, __nodiscard__]]
+      [[__nodiscard__, __gnu__::__const__, __gnu__::__always_inline__]]
       constexpr size_type
       max_size() const noexcept { return _Nm; }
 
-      [[__gnu__::__const__, __nodiscard__]]
+      [[__nodiscard__, __gnu__::__const__, __gnu__::__always_inline__]]
       constexpr bool
       empty() const noexcept { return size() == 0; }
 
@@ -271,7 +271,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return _M_elems[_Nm - 1];
       }
 
-      [[__gnu__::__const__, __nodiscard__]]
+      [[__nodiscard__, __gnu__::__const__, __gnu__::__always_inline__]]
       _GLIBCXX17_CONSTEXPR pointer
       data() noexcept
       { return _M_elems; }
