@@ -13973,18 +13973,10 @@ gfc_resolve_finalizers (gfc_symbol* derived, bool *finalizable)
      handle allocatables but avoid issues with (in)direct allocatable types. */
   bool has_final = derived->f2k_derived && derived->f2k_derived->finalizers;
   for (c = derived->components; c; c = c->next)
-    if (c->ts.type == BT_DERIVED && !c->attr.pointer && !c->attr.proc_pointer
-	&& (!c->attr.allocatable
-	    || (c->ts.u.derived != derived
-		&& c->ts.u.derived->f2k_derived
-		&& c->ts.u.derived->f2k_derived->finalizers
-		&& !c->ts.u.derived->f2k_derived->finalizers->proc_tree)))
-      {
-	bool has_final2 = false;
-	if (!gfc_resolve_finalizers (c->ts.u.derived, &has_final2))
-	  return false;  /* Error.  */
-	has_final = has_final || has_final2;
-      }
+    if (c->ts.type == BT_DERIVED
+	&& !c->attr.pointer && !c->attr.proc_pointer && !c->attr.allocatable)
+      has_final |= gfc_is_finalizable (c->ts.u.derived, NULL);
+
   /* Return early if not finalizable.  */
   if (!has_final)
     {
@@ -15529,6 +15521,19 @@ resolve_fl_derived (gfc_symbol *sym)
 		  sym->name, &sym->declared_at);
       return false;
     }
+
+  gfc_component *c = (sym->attr.is_class
+		      ? CLASS_DATA (sym->components) : sym->components);
+  for ( ; c; c = c->next)
+    if ((c->ts.type == BT_DERIVED || c->ts.type == BT_CLASS)
+	&& !c->ts.u.derived->resolve_symbol_called)
+      {
+	if (c->ts.u.derived->components == NULL
+	    && !c->ts.u.derived->attr.zero_comp
+	    && !c->ts.u.derived->attr.use_assoc)
+	  continue;
+	resolve_symbol (c->ts.u.derived);
+      }
 
   /* Resolve the finalizer procedures.  */
   if (!gfc_resolve_finalizers (sym, NULL))

@@ -1,3 +1,11 @@
+2022-04-27  Tobias Burnus <tobias@codesourcery.com>
+
+	* gfortran.dg/abstract_type_6.f03: Remove dg-error as
+	now hidden by other errors; copy to ...
+	* gfortran.dg/abstract_type_6a.f03: ... here; remove
+	some error to diagnose the error.
+	* gfortran.dg/finalize_39a.f90: New test.
+
 2022-04-25  Tobias Burnus  <tobias@codesourcery.com>
 
 	* gfortran.dg/finalize_38b.f90: New test.

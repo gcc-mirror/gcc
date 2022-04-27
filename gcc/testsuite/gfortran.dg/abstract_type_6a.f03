@@ -1,6 +1,9 @@
 ! { dg-do compile }
 ! Test the fix for PR43266, in which an ICE followed correct error messages.
 !
+! Split off from abstract_type_6.f03 as this dg-error wasn't diagosed due to
+! diagnosing the other issues first.
+!
 ! Contributed by Tobias Burnus <burnus@gcc.gnu.org>
 ! Reported in http://groups.google.ca/group/comp.lang.fortran/browse_thread/thread/f5ec99089ea72b79
 !
@@ -10,18 +13,11 @@
 module m
 TYPE, ABSTRACT :: top
 CONTAINS
-   PROCEDURE(xxx), DEFERRED :: proc_a ! { dg-error "must be explicit" }
-   ! some useful default behavior
-   PROCEDURE :: proc_c => top_c ! { dg-error "must be a module procedure" }
 END TYPE top
 
 ! Concrete middle class with useful behavior
 TYPE, EXTENDS(top) :: middle
 CONTAINS
-   ! do nothing, empty proc just to make middle concrete
-   PROCEDURE :: proc_a => dummy_middle_a ! { dg-error "must be a module procedure" }
-   ! some useful default behavior
-   PROCEDURE :: proc_b => middle_b ! { dg-error "must be a module procedure" }
 END TYPE middle
 
 !----------------
@@ -31,8 +27,7 @@ TYPE, EXTENDS(middle) :: bottom
 CONTAINS
    ! useful proc to satisfy deferred procedure in top. Because we've
    ! extended middle we wouldn't get told off if we forgot this.
-   PROCEDURE :: proc_a => bottom_a  ! Invalid, but not diagnosted due to other errors
-                                    ! -> abstract_type_6a.f03
+   PROCEDURE :: proc_a => bottom_a  ! { dg-error "must be a module procedure" }
    ! calls middle%proc_b and then provides extra behavior
    PROCEDURE :: proc_b => bottom_b
    ! calls top_c and then provides extra behavior
@@ -41,13 +36,11 @@ END TYPE bottom
 contains
 SUBROUTINE bottom_b(obj)
    CLASS(Bottom) :: obj
-   CALL obj%middle%proc_b ! { dg-error "should be a SUBROUTINE" }
    ! other stuff
 END SUBROUTINE bottom_b
 
 SUBROUTINE bottom_c(obj)
    CLASS(Bottom) :: obj
-   CALL top_c(obj) ! { dg-error "Explicit interface required" }
    ! other stuff
 END SUBROUTINE bottom_c 
 end module
