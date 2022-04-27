@@ -405,7 +405,10 @@ Session::handle_option (
 	{
 	  auto error = Error (Location (), std::string ());
 	  if ((ret = validate_crate_name (arg, error)))
-	    options.set_crate_name (arg);
+	    {
+	      options.set_crate_name (arg);
+	      options.crate_name_set_manually = true;
+	    }
 	  else
 	    {
 	      rust_assert (!error.message.empty ());
@@ -553,19 +556,9 @@ Session::parse_files (int num_files, const char **files)
 	filename = files[0];
 
       auto crate_name = infer_crate_name (filename);
-      Error error ((Location ()), std::string ());
       rust_debug ("inferred crate name: %s", crate_name.c_str ());
-      if (!validate_crate_name (crate_name, error))
-	{
-	  // fake a linemapping so that we can show the filename
-	  linemap->start_file (filename, 0);
-	  linemap->start_line (0, 1);
-	  error.emit_error ();
-	  rust_inform (linemap->get_location (0),
-		       "crate name inferred from this file");
-	  linemap->stop ();
-	  return;
-	}
+      // set the preliminary crate name here
+      // we will figure out the real crate name in `handle_crate_name`
       options.set_crate_name (crate_name);
     }
 
@@ -580,6 +573,57 @@ Session::parse_files (int num_files, const char **files)
     }
   /* TODO: should semantic analysis be dealed with here? or per file? for now,
    * per-file. */
+}
+
+void
+Session::handle_crate_name (AST::Crate parsed_crate)
+{
+  auto mappings = Analysis::Mappings::get ();
+  auto crate_name_changed = false;
+  auto error = Error (Location (), std::string ());
+
+  for (const auto &attr : parsed_crate.inner_attrs)
+    {
+      if (attr.get_path () != "crate_name")
+	continue;
+      if (!attr.has_attr_input ())
+	{
+	  rust_error_at (attr.get_locus (),
+			 "%<crate_name%> accepts one argument");
+	  continue;
+	}
+
+      auto &literal
+	= static_cast<AST::AttrInputLiteral &> (attr.get_attr_input ());
+      const auto &msg_str = literal.get_literal ().as_string ();
+      if (!validate_crate_name (msg_str, error))
+	{
+	  error.locus = attr.get_locus ();
+	  error.emit_error ();
+	  continue;
+	}
+
+      auto options = Session::get_instance ().options;
+      if (options.crate_name_set_manually && (options.crate_name != msg_str))
+	{
+	  rust_error_at (attr.get_locus (),
+			 "%<-frust-crate-name%> and %<#[crate_name]%> are "
+			 "required to match, but %qs does not match %qs",
+			 options.crate_name.c_str (), msg_str.c_str ());
+	}
+      crate_name_changed = true;
+      options.set_crate_name (msg_str);
+      mappings->set_crate_name (mappings->get_current_crate (), msg_str);
+    }
+
+  options.crate_name_set_manually |= crate_name_changed;
+  if (!options.crate_name_set_manually
+      && !validate_crate_name (options.crate_name, error))
+    {
+      error.emit_error ();
+      rust_inform (linemap->get_location (0),
+		   "crate name inferred from this file");
+    }
 }
 
 // Parses a single file with filename filename.
@@ -605,6 +649,9 @@ Session::parse_file (const char *filename)
   // setup the mappings for this AST
   auto mappings = Analysis::Mappings::get ();
   mappings->insert_ast_crate (&parsed_crate);
+
+  // handle crate name
+  handle_crate_name (parsed_crate);
 
   if (options.dump_option_enabled (CompileOptions::LEXER_DUMP))
     {
