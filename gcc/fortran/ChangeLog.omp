@@ -1,3 +1,10 @@
+2022-04-27  Tobias Burnus <tobias@codesourcery.com>
+
+	* resolve.cc (gfc_resolve_finalizers): Remove
+	gfc_resolve_finalizers calls, use gfc_is_finalizable.
+	(resolve_fl_derived): Resolve derived-type components
+	first.
+
 2022-04-25  Tobias Burnus  <tobias@codesourcery.com>
 
 	* resolve.cc (gfc_resolve_finalizers): Also resolve allocatable comps.
