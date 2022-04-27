@@ -1,3 +1,8 @@
+2022-04-26  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* libdruntime/gcc/emutls.d (emutlsDestroyThread): Clear the per-thread
+	TLS array, don't call free().
+
 2022-04-21  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* libdruntime/MERGE: Merge upstream druntime 27834edb.

@@ -1,3 +1,16 @@
+2022-04-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/shared_ptr_atomic.h (atomic<shared_ptr>): Add
+	constructor for constant initialization from nullptr_t.
+	* testsuite/20_util/shared_ptr/atomic/atomic_shared_ptr.cc:
+	Check for new constructor.
+
+2022-04-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/fs_path.h (hash<filesystem::path>): Define.
+	* testsuite/27_io/filesystem/path/nonmember/hash_value.cc:
+	Check std::hash specialization.
+
 2022-04-25  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/ptr_traits.h (__cpp_lib_constexpr_memory): Define

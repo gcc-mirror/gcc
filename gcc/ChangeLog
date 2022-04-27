@@ -1,3 +1,35 @@
+2022-04-26  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* config/gcn/gcn.cc (gcn_print_lds_decl): Make "gang-private
+	data-share memory exhausted" error more verbose.
+
+2022-04-26  Martin Liska  <mliska@suse.cz>
+
+	PR lto/105364
+	* lto-wrapper.cc (print_lto_docs_link): Use global_dc.
+	(run_gcc): Parse OPT_fdiagnostics_urls_.
+	(main): Initialize global_dc.
+
+2022-04-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/105314
+	* ifcvt.cc (noce_try_store_flag_mask): Don't require that the non-zero
+	operand is equal to if_info->x, instead use the non-zero operand
+	as one of the operands of AND with if_info->x as target.
+
+2022-04-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/105374
+	* tree-ssa-reassoc.cc (eliminate_redundant_comparison): Punt if
+	!fold_convertible_p rather than assuming fold_convert must succeed.
+
+2022-04-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/105367
+	* config/i386/i386.cc (ix86_veclibabi_svml, ix86_veclibabi_acml): Pass
+	el_mode == DFmode ? double_type_node : float_type_node instead of
+	TREE_TYPE (type_in) as first arguments to mathfn_built_in.
+
 2022-04-25  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/104308

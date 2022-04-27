@@ -1,3 +1,67 @@
+2022-04-26  Jason Merrill  <jason@redhat.com>
+
+	PR c++/102629
+	* g++.dg/cpp2a/lambda-pack-init7.C: New test.
+
+2022-04-26  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/105386
+	* g++.dg/cpp0x/decltype81.C: New test.
+
+2022-04-26  Segher Boessenkoool  <segher@kernel.crashing.org>
+
+	PR target/105349
+	* lib/target-supports.exp (check_effective_target_has_arch_pwr5): Use
+	the specified dg-options.
+	(check_effective_target_has_arch_pwr6): Ditto.
+	(check_effective_target_has_arch_pwr7): Ditto.
+	(check_effective_target_has_arch_pwr8): Ditto.
+	(check_effective_target_has_arch_pwr9): Ditto.
+	(check_effective_target_has_arch_pwr10): Ditto.
+	(check_effective_target_has_arch_ppc64): Ditto.
+
+2022-04-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/105314
+	* gcc.target/riscv/pr105314.c: New test.
+
+2022-04-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/65211
+	* g++.target/i386/vec-tmpl1.C: Add -Wno-psabi as
+	dg-additional-options.
+
+2022-04-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/105367
+	* gcc.target/i386/pr105367.c: New test.
+
+2022-04-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/103662
+	* lib/target-supports.exp (check_effective_target___OPTIMIZE__): Add
+	a var definition to avoid pedwarn about empty translation unit.
+	* gfortran.dg/unlimited_polymorphic_3.f03: Remove -ftree-dse from
+	dg-additional-options, guard scan-tree-dump-not directives on
+	__OPTIMIZE__ target.
+
+2022-04-26  Jason Merrill  <jason@redhat.com>
+
+	PR c++/104624
+	* g++.dg/cpp1y/lambda-generic-variadic22.C: New test.
+
+2022-04-26  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/105304
+	* g++.dg/cpp2a/concepts-requires30.C: New test.
+
+2022-04-26  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/105289
+	PR c++/86193
+	* g++.dg/template/partial-specialization11.C: New test.
+	* g++.dg/template/partial-specialization12.C: New test.
+
 2022-04-25  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/105365

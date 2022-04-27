@@ -1,3 +1,9 @@
+2022-04-26  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/105304
+	* c-common.cc (verify_tree) [restart]: Move up to before the
+	NULL test.
+
 2022-04-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/105186
