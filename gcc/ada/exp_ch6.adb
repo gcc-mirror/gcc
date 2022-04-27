@@ -3298,19 +3298,33 @@ package body Exp_Ch6 is
          Variant_Prag : constant Node_Id :=
            Get_Pragma (Current_Scope, Pragma_Subprogram_Variant);
 
+         Pragma_Arg1  : Node_Id;
          Variant_Proc : Entity_Id;
 
       begin
          if Present (Variant_Prag) and then Is_Checked (Variant_Prag) then
 
-            --  Analysis of the pragma rewrites its argument with a reference
-            --  to the internally generated procedure.
+            Pragma_Arg1 :=
+              Expression (First (Pragma_Argument_Associations (Variant_Prag)));
 
-            Variant_Proc :=
-              Entity
-                (Expression
-                   (First
-                      (Pragma_Argument_Associations (Variant_Prag))));
+            --  If pragma parameter is still an aggregate, it comes from a
+            --  structural variant, which is not expanded and ignored for
+            --  run-time execution.
+
+            if Nkind (Pragma_Arg1) = N_Aggregate then
+               pragma Assert
+                 (Chars
+                    (First
+                      (Choices
+                         (First (Component_Associations (Pragma_Arg1))))) =
+                  Name_Structural);
+               return;
+            end if;
+
+            --  Otherwise, analysis of the pragma rewrites its argument with a
+            --  reference to the internally generated procedure.
+
+            Variant_Proc := Entity (Pragma_Arg1);
 
             Insert_Action (Call_Node,
               Make_Procedure_Call_Statement (Loc,
