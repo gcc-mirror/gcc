@@ -1,3 +1,19 @@
+2022-04-26  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	Backported from master:
+	2021-09-30  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* libdruntime/gcc/unwind/generic.d (__aligned__): Define.
+	(_Unwind_Exception): Align struct to __aligned__.
+
+2022-04-26  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	Backported from master:
+	2022-04-26  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* libdruntime/gcc/emutls.d (emutlsDestroyThread): Clear the per-thread
+	TLS array, don't call free().
+
 2022-04-21  Release Manager
 
 	* GCC 11.3.0 released.
