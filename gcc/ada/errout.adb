@@ -2170,6 +2170,9 @@ package body Errout is
       --  Do not print continuations messages as children of the current
       --  message if the current message is a continuation message.
 
+      Option : constant String := Get_Warning_Option (E);
+      --  The option that triggered this message.
+
    --  Start of processing for Output_JSON_Message
 
    begin
@@ -2197,9 +2200,16 @@ package body Errout is
          Write_Str ("}");
       end if;
 
+      Write_Str ("]");
+
+      --  Print message option, if there is one
+      if Option /= "" then
+         Write_Str (",""option"":""" & Option & """");
+      end if;
+
       --  Print message content
 
-      Write_Str ("],""message"":""");
+      Write_Str (",""message"":""");
       Write_JSON_Escaped_String (Errors.Table (E).Text);
       Write_Str ("""");
 
