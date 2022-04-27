@@ -26,6 +26,7 @@
 #include <iostream>
 #include <future>
 #include <initializer_list>
+#include <atomic>
 #include "../util/testsuite_allocator.h" // NullablePointer
 
 typedef std::tuple<int, int> ExTuple;
@@ -196,6 +197,15 @@ main()
   // { dg-final { note-test emptyIl {std::initializer_list of length 0} } }
   std::initializer_list<int> il = {3, 4};
   // { dg-final { note-test il {std::initializer_list of length 2 = {3, 4}} } }
+
+  std::atomic<int> ai{100};
+  // { dg-final { note-test ai {std::atomic<int> = { 100 }} } }
+  long l{};
+  std::atomic<long*> ap{&l};
+  // { dg-final { regexp-test ap {std::atomic.long \*. = { 0x.* }} } }
+  struct Value { int i, j; };
+  std::atomic<Value> av{{8, 9}};
+  // { dg-final { note-test av {std::atomic<Value> = { {i = 8, j = 9} }} } }
 
   placeholder(""); // Mark SPOT
   use(efl);

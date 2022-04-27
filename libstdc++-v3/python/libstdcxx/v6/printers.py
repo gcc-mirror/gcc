@@ -218,7 +218,7 @@ class SmartPtrIterator(Iterator):
         return ('get()', val)
 
 class SharedPointerPrinter:
-    "Print a shared_ptr or weak_ptr"
+    "Print a shared_ptr, weak_ptr, atomic<shared_ptr>, or atomic<weak_ptr>"
 
     def __init__ (self, typename, val):
         self.typename = strip_versioned_namespace(typename)
@@ -228,9 +228,21 @@ class SharedPointerPrinter:
     def children (self):
         return SmartPtrIterator(self.pointer)
 
+    # Return the _Sp_counted_base<>* that holds the refcounts.
+    def _get_refcounts (self):
+        if self.typename == 'std::atomic':
+            # A tagged pointer is stored as uintptr_t.
+            ptr_val = self.val['_M_refcount']['_M_val']['_M_i']
+            ptr_val = ptr_val - (ptr_val % 2) # clear lock bit
+            ptr_type = find_type(self.val['_M_refcount'].type, 'pointer')
+            return ptr_val.cast(ptr_type)
+        return self.val['_M_refcount']['_M_pi']
+
     def to_string (self):
         state = 'empty'
-        refcounts = self.val['_M_refcount']['_M_pi']
+        refcounts = self._get_refcounts()
+        targ = self.val.type.template_argument(0)
+
         if refcounts != 0:
             usecount = refcounts['_M_use_count']
             weakcount = refcounts['_M_weak_count']
@@ -238,7 +250,7 @@ class SharedPointerPrinter:
                 state = 'expired, weak count %d' % weakcount
             else:
                 state = 'use count %d, weak count %d' % (usecount, weakcount - 1)
-        return '%s<%s> (%s)' % (self.typename, str(self.val.type.template_argument(0)), state)
+        return '%s<%s> (%s)' % (self.typename, str(targ), state)
 
 def _tuple_impl_get(val):
     "Return the tuple element stored in a _Tuple_impl<N, T> base class."
@@ -1708,6 +1720,40 @@ class StdInitializerListPrinter:
     def display_hint(self):
         return 'array'
 
+class StdAtomicPrinter:
+    "Print a std:atomic"
+
+    def __init__(self, typename, val):
+        self.typename = typename
+        self.val = val
+        self.shptr_printer = None
+        self.value_type = self.val.type.template_argument(0)
+        if self.value_type.tag is not None:
+            typ = strip_versioned_namespace(self.value_type.tag)
+            if typ.startswith('std::shared_ptr<') or typ.startswith('std::weak_ptr<'):
+                impl = val['_M_impl']
+                self.shptr_printer = SharedPointerPrinter(typename, impl)
+                self.children = self._shptr_children
+
+    def _shptr_children(self):
+        return SmartPtrIterator(self.shptr_printer.pointer)
+
+    def to_string(self):
+        if self.shptr_printer is not None:
+            return self.shptr_printer.to_string()
+
+        if self.value_type.code == gdb.TYPE_CODE_INT:
+            val = self.val['_M_i']
+        elif self.value_type.code == gdb.TYPE_CODE_FLT:
+            val = self.val['_M_fp']
+        elif self.value_type.code == gdb.TYPE_CODE_PTR:
+            val = self.val['_M_b']['_M_p']
+        elif self.value_type.code == gdb.TYPE_CODE_BOOL:
+            val = self.val['_M_base']['_M_i']
+        else:
+            val = self.val['_M_i']
+        return '%s<%s> = { %s }' % (self.typename, str(self.value_type), val)
+
 # A "regular expression" printer which conforms to the
 # "SubPrettyPrinter" protocol from gdb.printing.
 class RxPrinter(object):
@@ -2175,6 +2221,7 @@ def build_libstdcxx_dictionary ():
 
     libstdcxx_printer.add_version('std::', 'initializer_list',
                                   StdInitializerListPrinter)
+    libstdcxx_printer.add_version('std::', 'atomic', StdAtomicPrinter)
 
     # std::regex components
     libstdcxx_printer.add_version('std::__detail::', '_State',
