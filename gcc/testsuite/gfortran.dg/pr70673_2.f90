@@ -1,4 +1,4 @@
-! { dg-do run }
+! { dg-do compile }
 !
 ! Test the fix for PR70673
 !
@@ -16,6 +16,7 @@ contains
     a = a(2:3)      ! Make sure that temporary creation is not broken.
     if ((len (a) .ne. 2) .or. (a .ne. "el")) STOP 2
     deallocate (a)
+    a = a           ! This would ICE too.
   end subroutine s
 end module m
 
