@@ -5565,6 +5565,7 @@ enum tsubst_flags {
 				    constraint normalization.  */
   tf_tst_ok = 1 << 12,		 /* Allow a typename-specifier to name
 				    a template (C++17 or later).  */
+  tf_dguide = 1 << 13,		/* Building a deduction guide from a ctor.  */
   /* Convenient substitution flags combinations.  */
   tf_warning_or_error = tf_warning | tf_error
 };
