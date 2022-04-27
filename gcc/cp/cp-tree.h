@@ -7312,7 +7312,7 @@ extern tree lookup_template_class		(tree, tree, tree, tree,
 						 int, tsubst_flags_t);
 extern tree lookup_template_function		(tree, tree);
 extern tree lookup_template_variable		(tree, tree);
-extern int uses_template_parms			(tree);
+extern bool uses_template_parms			(tree);
 extern bool uses_template_parms_level		(tree, int);
 extern bool in_template_function		(void);
 extern bool need_generic_capture		(void);

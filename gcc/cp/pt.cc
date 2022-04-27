@@ -10884,35 +10884,30 @@ find_template_parameters (tree t, tree ctx_parms)
 
 /* Returns true if T depends on any template parameter.  */
 
-int
+bool
 uses_template_parms (tree t)
 {
-  if (t == NULL_TREE)
+  if (t == NULL_TREE || t == error_mark_node)
     return false;
 
-  bool dependent_p;
-  int saved_processing_template_decl;
+  /* Namespaces can't depend on any template parameters.  */
+  if (TREE_CODE (t) == NAMESPACE_DECL)
+    return false;
 
-  saved_processing_template_decl = processing_template_decl;
-  if (!saved_processing_template_decl)
-    processing_template_decl = 1;
+  processing_template_decl_sentinel ptds (/*reset*/false);
+  ++processing_template_decl;
+
   if (TYPE_P (t))
-    dependent_p = dependent_type_p (t);
+    return dependent_type_p (t);
   else if (TREE_CODE (t) == TREE_VEC)
-    dependent_p = any_dependent_template_arguments_p (t);
+    return any_dependent_template_arguments_p (t);
   else if (TREE_CODE (t) == TREE_LIST)
-    dependent_p = (uses_template_parms (TREE_VALUE (t))
-		   || uses_template_parms (TREE_CHAIN (t)));
+    return (uses_template_parms (TREE_VALUE (t))
+	    || uses_template_parms (TREE_CHAIN (t)));
   else if (TREE_CODE (t) == TYPE_DECL)
-    dependent_p = dependent_type_p (TREE_TYPE (t));
-  else if (t == error_mark_node || TREE_CODE (t) == NAMESPACE_DECL)
-    dependent_p = false;
+    return dependent_type_p (TREE_TYPE (t));
   else
-    dependent_p = instantiation_dependent_expression_p (t);
-
-  processing_template_decl = saved_processing_template_decl;
-
-  return dependent_p;
+    return instantiation_dependent_expression_p (t);
 }
 
 /* Returns true iff we're processing an incompletely instantiated function
