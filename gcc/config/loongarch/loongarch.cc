@@ -329,6 +329,9 @@ loongarch_flatten_aggregate_field (const_tree type,
 	    if (!TYPE_P (TREE_TYPE (f)))
 	      return -1;
 
+	    if (DECL_SIZE (f) && integer_zerop (DECL_SIZE (f)))
+	      continue;
+
 	    HOST_WIDE_INT pos = offset + int_byte_position (f);
 	    n = loongarch_flatten_aggregate_field (TREE_TYPE (f), fields, n,
 						   pos);
