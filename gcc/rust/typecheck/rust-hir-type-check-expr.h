@@ -221,13 +221,6 @@ public:
 
     infered
       = TyTy::TypeCheckCallExpr::go (function_tyty, expr, variant, context);
-    if (infered == nullptr)
-      {
-	rust_error_at (expr.get_locus (), "failed to lookup type to CallExpr");
-	return;
-      }
-
-    infered->set_ref (expr.get_mappings ().get_hirid ());
   }
 
   void visit (HIR::MethodCallExpr &expr) override
@@ -1076,7 +1069,6 @@ private:
     : TypeCheckBase (), infered (nullptr), inside_loop (inside_loop)
   {}
 
-  // Beware: currently returns Tyty::ErrorType or nullptr in case of error.
   TyTy::BaseType *resolve_root_path (HIR::PathInExpression &expr,
 				     size_t *offset,
 				     NodeId *root_resolved_node_id);

@@ -262,6 +262,8 @@ public:
 
   std::vector<PathExprSegment> &get_segments () { return segments; }
 
+  const std::vector<PathExprSegment> &get_segments () const { return segments; }
+
   PathExprSegment &get_root_seg () { return segments.at (0); }
 
   PathExprSegment get_final_segment () const { return segments.back (); }

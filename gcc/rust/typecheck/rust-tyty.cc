@@ -263,6 +263,7 @@ TyVar::get_implicit_infer_var (Location locus)
 			infer);
   mappings->insert_location (mappings->get_current_crate (), infer->get_ref (),
 			     locus);
+
   return TyVar (infer->get_ref ());
 }
 
@@ -341,8 +342,34 @@ InferType::cast (BaseType *other)
 BaseType *
 InferType::clone () const
 {
-  return new InferType (get_ref (), get_ty_ref (), get_infer_kind (),
-			get_ident ().locus, get_combined_refs ());
+  // clones for inference variables are special in that they _must_ exist within
+  // the type check context and we must ensure we don't loose the chain
+  // otherwise we will end up in the missing type annotations case
+  //
+  // This means we cannot simply take over the same reference we must generate a
+  // new ref just like the get_implicit_infer_var code then we can setup the
+  // chain of references accordingly to ensure we don't loose the ability to
+  // update the inference variables when we solve the type
+
+  auto mappings = Analysis::Mappings::get ();
+  auto context = Resolver::TypeCheckContext::get ();
+
+  InferType *clone
+    = new InferType (mappings->get_next_hir_id (), get_infer_kind (),
+		     get_ident ().locus, get_combined_refs ());
+
+  context->insert_type (Analysis::NodeMapping (mappings->get_current_crate (),
+					       UNKNOWN_NODEID,
+					       clone->get_ref (),
+					       UNKNOWN_LOCAL_DEFID),
+			clone);
+  mappings->insert_location (mappings->get_current_crate (), clone->get_ref (),
+			     mappings->lookup_location (get_ref ()));
+
+  // setup the chain to reference this
+  clone->append_reference (get_ref ());
+
+  return clone;
 }
 
 bool

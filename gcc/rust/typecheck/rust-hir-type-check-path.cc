@@ -138,27 +138,17 @@ void
 TypeCheckExpr::visit (HIR::PathInExpression &expr)
 {
   NodeId resolved_node_id = UNKNOWN_NODEID;
-
   size_t offset = -1;
   TyTy::BaseType *tyseg = resolve_root_path (expr, &offset, &resolved_node_id);
-  rust_assert (tyseg != nullptr);
-
   if (tyseg->get_kind () == TyTy::TypeKind::ERROR)
     return;
 
-  if (expr.get_num_segments () == 1)
+  if (tyseg->needs_generic_substitutions ())
+    tyseg = SubstMapper::InferSubst (tyseg, expr.get_locus ());
+
+  bool fully_resolved = offset == expr.get_segments ().size ();
+  if (fully_resolved)
     {
-      Location locus = expr.get_segments ().back ().get_locus ();
-
-      bool is_big_self
-	= expr.get_segments ().front ().get_segment ().as_string ().compare (
-	    "Self")
-	  == 0;
-      if (!is_big_self && tyseg->needs_generic_substitutions ())
-	{
-	  tyseg = SubstMapper::InferSubst (tyseg, locus);
-	}
-
       infered = tyseg;
       return;
     }
@@ -171,14 +161,11 @@ TyTy::BaseType *
 TypeCheckExpr::resolve_root_path (HIR::PathInExpression &expr, size_t *offset,
 				  NodeId *root_resolved_node_id)
 {
-  TyTy::BaseType *root_tyty = nullptr;
   *offset = 0;
   for (size_t i = 0; i < expr.get_num_segments (); i++)
     {
       HIR::PathExprSegment &seg = expr.get_segments ().at (i);
-
       bool have_more_segments = (expr.get_num_segments () - 1 != i);
-      bool is_root = *offset == 0 || root_tyty == nullptr;
       NodeId ast_node_id = seg.get_mappings ().get_nodeid ();
 
       // then lookup the reference_node_id
@@ -205,13 +192,9 @@ TypeCheckExpr::resolve_root_path (HIR::PathInExpression &expr, size_t *offset,
       // ref_node_id is the NodeId that the segments refers to.
       if (ref_node_id == UNKNOWN_NODEID)
 	{
-	  if (is_root)
-	    {
-	      rust_error_at (seg.get_locus (),
-			     "failed to type resolve root segment");
-	      return new TyTy::ErrorType (expr.get_mappings ().get_hirid ());
-	    }
-	  return root_tyty;
+	  rust_error_at (seg.get_locus (),
+			 "failed to type resolve root segment");
+	  return new TyTy::ErrorType (expr.get_mappings ().get_hirid ());
 	}
 
       // node back to HIR
@@ -219,26 +202,20 @@ TypeCheckExpr::resolve_root_path (HIR::PathInExpression &expr, size_t *offset,
       if (!mappings->lookup_node_to_hir (expr.get_mappings ().get_crate_num (),
 					 ref_node_id, &ref))
 	{
-	  if (is_root)
-	    {
-	      rust_error_at (seg.get_locus (), "456 reverse lookup failure");
-	      rust_debug_loc (
-		seg.get_locus (),
-		"failure with [%s] mappings [%s] ref_node_id [%u]",
-		seg.as_string ().c_str (),
-		seg.get_mappings ().as_string ().c_str (), ref_node_id);
+	  rust_error_at (seg.get_locus (), "456 reverse lookup failure");
+	  rust_debug_loc (seg.get_locus (),
+			  "failure with [%s] mappings [%s] ref_node_id [%u]",
+			  seg.as_string ().c_str (),
+			  seg.get_mappings ().as_string ().c_str (),
+			  ref_node_id);
 
-	      return new TyTy::ErrorType (expr.get_mappings ().get_hirid ());
-	    }
-
-	  return root_tyty;
+	  return new TyTy::ErrorType (expr.get_mappings ().get_hirid ());
 	}
 
       auto seg_is_module
 	= (nullptr
 	   != mappings->lookup_module (expr.get_mappings ().get_crate_num (),
 				       ref));
-
       if (seg_is_module)
 	{
 	  // A::B::C::this_is_a_module::D::E::F
@@ -261,33 +238,8 @@ TypeCheckExpr::resolve_root_path (HIR::PathInExpression &expr, size_t *offset,
       TyTy::BaseType *lookup = nullptr;
       if (!context->lookup_type (ref, &lookup))
 	{
-	  if (is_root)
-	    {
-	      rust_error_at (seg.get_locus (),
-			     "failed to resolve root segment");
-	      return new TyTy::ErrorType (expr.get_mappings ().get_hirid ());
-	    }
-	  return root_tyty;
-	}
-
-      // if we have a previous segment type
-      if (root_tyty != nullptr)
-	{
-	  // if this next segment needs substitution we must apply the
-	  // previous type arguments
-	  //
-	  // such as: GenericStruct::<_>::new(123, 456)
-	  if (lookup->needs_generic_substitutions ())
-	    {
-	      if (!root_tyty->needs_generic_substitutions ())
-		{
-		  auto used_args_in_prev_segment
-		    = GetUsedSubstArgs::From (root_tyty);
-		  lookup
-		    = SubstMapperInternal::Resolve (lookup,
-						    used_args_in_prev_segment);
-		}
-	    }
+	  rust_error_at (seg.get_locus (), "failed to resolve root segment");
+	  return new TyTy::ErrorType (expr.get_mappings ().get_hirid ());
 	}
 
       // turbo-fish segment path::<ty>
@@ -300,16 +252,16 @@ TypeCheckExpr::resolve_root_path (HIR::PathInExpression &expr, size_t *offset,
 			     lookup->as_string ().c_str ());
 	      return new TyTy::ErrorType (lookup->get_ref ());
 	    }
-	  lookup = SubstMapper::Resolve (lookup, expr.get_locus (),
+	  lookup = SubstMapper::Resolve (lookup, seg.get_locus (),
 					 &seg.get_generic_args ());
 	}
 
       *root_resolved_node_id = ref_node_id;
       *offset = *offset + 1;
-      root_tyty = lookup;
+      return lookup;
     }
 
-  return root_tyty;
+  return new TyTy::ErrorType (expr.get_mappings ().get_hirid ());
 }
 
 void
@@ -424,19 +376,11 @@ TypeCheckExpr::resolve_segments (NodeId root_resolved_node_id,
 	  bool ok = context->lookup_type (impl_ty_id, &impl_block_ty);
 	  rust_assert (ok);
 
-	  if (prev_segment->needs_generic_substitutions ())
-	    {
-	      if (!impl_block_ty->needs_generic_substitutions ())
-		{
-		  prev_segment = impl_block_ty;
-		}
-	      else
-		{
-		  HIR::PathExprSegment &pseg = segments.at (i - 1);
-		  Location locus = pseg.get_locus ();
-		  prev_segment = SubstMapper::InferSubst (prev_segment, locus);
-		}
-	    }
+	  if (impl_block_ty->needs_generic_substitutions ())
+	    impl_block_ty
+	      = SubstMapper::InferSubst (impl_block_ty, seg.get_locus ());
+
+	  prev_segment = prev_segment->unify (impl_block_ty);
 	}
 
       if (tyseg->needs_generic_substitutions ())

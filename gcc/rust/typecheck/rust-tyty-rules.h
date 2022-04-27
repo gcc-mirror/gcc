@@ -89,6 +89,11 @@ public:
     for (auto ref : other->get_combined_refs ())
       resolved->append_reference (ref);
 
+    other->append_reference (resolved->get_ref ());
+    other->append_reference (get_base ()->get_ref ());
+    get_base ()->append_reference (resolved->get_ref ());
+    get_base ()->append_reference (other->get_ref ());
+
     bool result_resolved = resolved->get_kind () != TyTy::TypeKind::INFER;
     bool result_is_infer_var = resolved->get_kind () == TyTy::TypeKind::INFER;
     bool results_is_non_general_infer_var
