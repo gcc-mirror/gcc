@@ -25933,6 +25933,7 @@ cp_parser_class_specifier_1 (cp_parser* parser)
       case CPP_OPEN_PAREN:
       case CPP_CLOSE_PAREN:
       case CPP_COMMA:
+      case CPP_SCOPE:
         want_semicolon = false;
         break;
 

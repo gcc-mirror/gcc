@@ -713,6 +713,12 @@
 ;;
 
 ;; Float division and modulus.
+(define_expand "div<mode>3"
+  [(set (match_operand:ANYF 0 "register_operand")
+	(div:ANYF (match_operand:ANYF 1 "reg_or_1_operand")
+		  (match_operand:ANYF 2 "register_operand")))]
+  "")
+
 (define_insn "*div<mode>3"
   [(set (match_operand:ANYF 0 "register_operand" "=f")
 	(div:ANYF (match_operand:ANYF 1 "register_operand" "f")
@@ -2047,13 +2053,17 @@
 
 (define_insn "loongarch_ibar"
   [(unspec_volatile:SI
-      [(match_operand 0 "const_uimm15_operand")] UNSPECV_IBAR)]
+      [(match_operand 0 "const_uimm15_operand")]
+       UNSPECV_IBAR)
+   (clobber (mem:BLK (scratch)))]
   ""
   "ibar\t%0")
 
 (define_insn "loongarch_dbar"
   [(unspec_volatile:SI
-      [(match_operand 0 "const_uimm15_operand")] UNSPECV_DBAR)]
+      [(match_operand 0 "const_uimm15_operand")]
+       UNSPECV_DBAR)
+   (clobber (mem:BLK (scratch)))]
   ""
   "dbar\t%0")
 
@@ -2072,13 +2082,17 @@
 
 (define_insn "loongarch_syscall"
   [(unspec_volatile:SI
-      [(match_operand 0 "const_uimm15_operand")] UNSPECV_SYSCALL)]
+      [(match_operand 0 "const_uimm15_operand")]
+       UNSPECV_SYSCALL)
+   (clobber (mem:BLK (scratch)))]
   ""
   "syscall\t%0")
 
 (define_insn "loongarch_break"
   [(unspec_volatile:SI
-      [(match_operand 0 "const_uimm15_operand")] UNSPECV_BREAK)]
+      [(match_operand 0 "const_uimm15_operand")]
+       UNSPECV_BREAK)
+   (clobber (mem:BLK (scratch)))]
   ""
   "break\t%0")
 
@@ -2103,7 +2117,8 @@
 (define_insn "loongarch_csrrd_<d>"
   [(set (match_operand:GPR 0 "register_operand" "=r")
 	(unspec_volatile:GPR [(match_operand  1 "const_uimm14_operand")]
-			      UNSPECV_CSRRD))]
+			      UNSPECV_CSRRD))
+   (clobber (mem:BLK (scratch)))]
   ""
   "csrrd\t%0,%1"
   [(set_attr "type" "load")
@@ -2114,7 +2129,8 @@
 	  (unspec_volatile:GPR
 	    [(match_operand:GPR 1 "register_operand" "0")
 	     (match_operand 2 "const_uimm14_operand")]
-	     UNSPECV_CSRWR))]
+	     UNSPECV_CSRWR))
+   (clobber (mem:BLK (scratch)))]
   ""
   "csrwr\t%0,%2"
   [(set_attr "type" "store")
@@ -2126,7 +2142,8 @@
 	    [(match_operand:GPR 1 "register_operand" "0")
 	     (match_operand:GPR 2 "register_operand" "q")
 	     (match_operand 3 "const_uimm14_operand")]
-	     UNSPECV_CSRXCHG))]
+	     UNSPECV_CSRXCHG))
+   (clobber (mem:BLK (scratch)))]
   ""
   "csrxchg\t%0,%2,%3"
   [(set_attr "type" "load")
@@ -2135,7 +2152,8 @@
 (define_insn "loongarch_iocsrrd_<size>"
   [(set (match_operand:QHWD 0 "register_operand" "=r")
 	(unspec_volatile:QHWD [(match_operand:SI 1 "register_operand" "r")]
-			      UNSPECV_IOCSRRD))]
+			      UNSPECV_IOCSRRD))
+   (clobber (mem:BLK (scratch)))]
   ""
   "iocsrrd.<size>\t%0,%1"
   [(set_attr "type" "load")
@@ -2144,7 +2162,8 @@
 (define_insn "loongarch_iocsrwr_<size>"
   [(unspec_volatile:QHWD [(match_operand:QHWD 0 "register_operand" "r")
 			  (match_operand:SI 1 "register_operand" "r")]
-			  UNSPECV_IOCSRWR)]
+			  UNSPECV_IOCSRWR)
+   (clobber (mem:BLK (scratch)))]
   ""
   "iocsrwr.<size>\t%0,%1"
   [(set_attr "type" "load")
@@ -2154,7 +2173,8 @@
   [(unspec_volatile:X [(match_operand 0 "const_uimm5_operand")
 		       (match_operand:X 1 "register_operand" "r")
 		       (match_operand 2 "const_imm12_operand")]
-		       UNSPECV_CACOP)]
+		       UNSPECV_CACOP)
+   (clobber (mem:BLK (scratch)))]
   ""
   "cacop\t%0,%1,%2"
   [(set_attr "type" "load")
@@ -2164,7 +2184,8 @@
   [(unspec_volatile:X [(match_operand:X 0 "register_operand" "r")
 		       (match_operand:X 1 "register_operand" "r")
 		       (match_operand 2 "const_uimm5_operand")]
-		       UNSPECV_LDDIR)]
+		       UNSPECV_LDDIR)
+   (clobber (mem:BLK (scratch)))]
   ""
   "lddir\t%0,%1,%2"
   [(set_attr "type" "load")
@@ -2173,7 +2194,8 @@
 (define_insn "loongarch_ldpte_<d>"
   [(unspec_volatile:X [(match_operand:X 0 "register_operand" "r")
 		       (match_operand 1 "const_uimm5_operand")]
-		       UNSPECV_LDPTE)]
+		       UNSPECV_LDPTE)
+   (clobber (mem:BLK (scratch)))]
   ""
   "ldpte\t%0,%1"
   [(set_attr "type" "load")

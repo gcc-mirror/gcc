@@ -4891,6 +4891,7 @@ ix86_gimplify_va_arg (tree valist, tree type, gimple_seq *pre_p,
 	{
 	  int i, prev_size = 0;
 	  tree temp = create_tmp_var (type, "va_arg_tmp");
+	  TREE_ADDRESSABLE (temp) = 1;
 
 	  /* addr = &temp; */
 	  t = build1 (ADDR_EXPR, build_pointer_type (type), temp);

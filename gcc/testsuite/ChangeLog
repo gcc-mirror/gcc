@@ -1,3 +1,64 @@
+2022-04-27  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* gfortran.dg/pr70673.f90: Removed second invalid
+	line.
+
+2022-04-27  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/105398
+	* g++.dg/cpp1y/lambda-generic-enum2.C: New test.
+
+2022-04-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/104492
+	* g++.dg/warn/pr104492.C: New test.
+
+2022-04-27  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/70673
+	PR fortran/78054
+	* gfortran.dg/pr70673.f90: Remove invalid statement.
+	* gfortran.dg/pr70673_2.f90: New test to check that
+	ICE does not re-appear.
+
+2022-04-27  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/103662
+	PR fortran/105379
+	* gfortran.dg/class_dummy_8.f90: New test.
+	* gfortran.dg/class_dummy_9.f90: New test.
+
+2022-04-27  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/102043
+	PR fortran/105381
+	* gfortran.dg/character_array_dummy_1.f90: New test.
+
+2022-04-27  Christophe Lyon  <christophe.lyon@arm.com>
+
+	PR tree-optimization/105374
+	* gcc.target/arm/simd/pr105374.C: New.
+
+2022-04-27  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	PR target/102024
+	* g++.target/s390/pr102024-1.C: New test.
+	* g++.target/s390/pr102024-2.C: New test.
+	* g++.target/s390/pr102024-3.C: New test.
+	* g++.target/s390/pr102024-4.C: New test.
+	* g++.target/s390/pr102024-5.C: New test.
+	* g++.target/s390/pr102024-6.C: New test.
+
+2022-04-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/105396
+	* gcc.dg/asan/pr105396.c: New test.
+
+2022-04-27  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/105271
+	* gcc.target/powerpc/pr105271.c: New test.
+
 2022-04-26  Jason Merrill  <jason@redhat.com>
 
 	PR c++/102629

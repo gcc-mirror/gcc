@@ -1,4 +1,5 @@
 // PR c++/104669
+// { dg-require-ifunc "" }
 
 void bar()
 {
