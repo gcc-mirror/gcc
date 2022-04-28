@@ -63,24 +63,6 @@ min_limit (const_tree type)
   return wi::min_value (TYPE_PRECISION (type) , TYPE_SIGN (type));
 }
 
-// If the range of either op1 or op2 is undefined, set the result to
-// varying and return TRUE.  If the caller truely cares about a result,
-// they should pass in a varying if it has an undefined that it wants
-// treated as a varying.
-
-inline bool
-empty_range_varying (irange &r, tree type,
-		     const irange &op1, const irange & op2)
-{
-  if (op1.undefined_p () || op2.undefined_p ())
-    {
-      r.set_varying (type);
-      return true;
-    }
-  else
-    return false;
-}
-
 // Return false if shifting by OP is undefined behavior.  Otherwise, return
 // true and the range it is to be shifted by.  This allows trimming out of
 // undefined ranges, leaving only valid ranges if there are any.
@@ -432,39 +414,10 @@ create_possibly_reversed_range (irange &r, tree type,
     r.set (wide_int_to_tree (type, new_lb), wide_int_to_tree (type, new_ub));
 }
 
-// Return an irange instance that is a boolean TRUE.
-
-static inline int_range<1>
-range_true (tree type)
-{
-  unsigned prec = TYPE_PRECISION (type);
-  return int_range<1> (type, wi::one (prec), wi::one (prec));
-}
-
-// Return an irange instance that is a boolean FALSE.
-
-static inline int_range<1>
-range_false (tree type)
-{
-  unsigned prec = TYPE_PRECISION (type);
-  return int_range<1> (type, wi::zero (prec), wi::zero (prec));
-}
-
-// Return an irange that covers both true and false.
-
-static inline int_range<1>
-range_true_and_false (tree type)
-{
-  unsigned prec = TYPE_PRECISION (type);
-  return int_range<1> (type, wi::zero (prec), wi::one (prec));
-}
-
-enum bool_range_state { BRS_FALSE, BRS_TRUE, BRS_EMPTY, BRS_FULL };
-
 // Return the summary information about boolean range LHS.  If EMPTY/FULL,
 // return the equivalent range for TYPE in R; if FALSE/TRUE, do nothing.
 
-static bool_range_state
+bool_range_state
 get_bool_state (irange &r, const irange &lhs, tree val_type)
 {
   // If there is no result, then this is unexecutable.
@@ -486,37 +439,6 @@ get_bool_state (irange &r, const irange &lhs, tree val_type)
     }
 
   return BRS_TRUE;
-}
-
-// For relation opcodes, first try to see if the supplied relation
-// forces a true or false result, and return that.
-// Then check for undefined operands.  If none of this applies,
-// return false.
-
-static inline bool
-relop_early_resolve (irange &r, tree type, const irange &op1,
-		     const irange &op2, relation_kind rel,
-		     relation_kind my_rel)
-{
-  // If known relation is a complete subset of this relation, always true.
-  if (relation_union (rel, my_rel) == my_rel)
-    {
-      r = range_true (type);
-      return true;
-    }
-
-  // If known relation has no subset of this relation, always false.
-  if (relation_intersect (rel, my_rel) == VREL_EMPTY)
-    {
-      r = range_false (type);
-      return true;
-    }
-
-  // If either operand is undefined, return VARYING.
-  if (empty_range_varying (r, type, op1, op2))
-    return true;
-
-  return false;
 }
 
 
@@ -541,7 +463,7 @@ public:
 // Check if the LHS range indicates a relation between OP1 and OP2.
 
 enum tree_code
-operator_equal::op1_op2_relation (const irange &lhs) const
+equal_op1_op2_relation (const irange &lhs)
 {
   if (lhs.undefined_p ())
     return VREL_EMPTY;
@@ -554,6 +476,12 @@ operator_equal::op1_op2_relation (const irange &lhs) const
   if (!lhs.contains_p (build_zero_cst (lhs.type ())))
     return EQ_EXPR;
   return VREL_NONE;
+}
+
+enum tree_code
+operator_equal::op1_op2_relation (const irange &lhs) const
+{
+  return equal_op1_op2_relation (lhs);
 }
 
 
@@ -651,7 +579,7 @@ public:
 // Check if the LHS range indicates a relation between OP1 and OP2.
 
 enum tree_code
-operator_not_equal::op1_op2_relation (const irange &lhs) const
+not_equal_op1_op2_relation (const irange &lhs)
 {
   if (lhs.undefined_p ())
     return VREL_EMPTY;
@@ -664,6 +592,12 @@ operator_not_equal::op1_op2_relation (const irange &lhs) const
   if (!lhs.contains_p (build_zero_cst (lhs.type ())))
     return NE_EXPR;
   return VREL_NONE;
+}
+
+enum tree_code
+operator_not_equal::op1_op2_relation (const irange &lhs) const
+{
+  return not_equal_op1_op2_relation (lhs);
 }
 
 bool
@@ -821,7 +755,7 @@ public:
 // Check if the LHS range indicates a relation between OP1 and OP2.
 
 enum tree_code
-operator_lt::op1_op2_relation (const irange &lhs) const
+lt_op1_op2_relation (const irange &lhs)
 {
   if (lhs.undefined_p ())
     return VREL_EMPTY;
@@ -834,6 +768,12 @@ operator_lt::op1_op2_relation (const irange &lhs) const
   if (!lhs.contains_p (build_zero_cst (lhs.type ())))
     return LT_EXPR;
   return VREL_NONE;
+}
+
+enum tree_code
+operator_lt::op1_op2_relation (const irange &lhs) const
+{
+  return lt_op1_op2_relation (lhs);
 }
 
 bool
@@ -923,7 +863,7 @@ public:
 // Check if the LHS range indicates a relation between OP1 and OP2.
 
 enum tree_code
-operator_le::op1_op2_relation (const irange &lhs) const
+le_op1_op2_relation (const irange &lhs)
 {
   if (lhs.undefined_p ())
     return VREL_EMPTY;
@@ -936,6 +876,12 @@ operator_le::op1_op2_relation (const irange &lhs) const
   if (!lhs.contains_p (build_zero_cst (lhs.type ())))
     return LE_EXPR;
   return VREL_NONE;
+}
+
+enum tree_code
+operator_le::op1_op2_relation (const irange &lhs) const
+{
+  return le_op1_op2_relation (lhs);
 }
 
 bool
@@ -1025,7 +971,7 @@ public:
 // Check if the LHS range indicates a relation between OP1 and OP2.
 
 enum tree_code
-operator_gt::op1_op2_relation (const irange &lhs) const
+gt_op1_op2_relation (const irange &lhs)
 {
   if (lhs.undefined_p ())
     return VREL_EMPTY;
@@ -1038,6 +984,12 @@ operator_gt::op1_op2_relation (const irange &lhs) const
   if (!lhs.contains_p (build_zero_cst (lhs.type ())))
     return GT_EXPR;
   return VREL_NONE;
+}
+
+enum tree_code
+operator_gt::op1_op2_relation (const irange &lhs) const
+{
+  return gt_op1_op2_relation (lhs);
 }
 
 
@@ -1126,7 +1078,7 @@ public:
 // Check if the LHS range indicates a relation between OP1 and OP2.
 
 enum tree_code
-operator_ge::op1_op2_relation (const irange &lhs) const
+ge_op1_op2_relation (const irange &lhs)
 {
   if (lhs.undefined_p ())
     return VREL_EMPTY;
@@ -1139,6 +1091,12 @@ operator_ge::op1_op2_relation (const irange &lhs) const
   if (!lhs.contains_p (build_zero_cst (lhs.type ())))
     return GE_EXPR;
   return VREL_NONE;
+}
+
+enum tree_code
+operator_ge::op1_op2_relation (const irange &lhs) const
+{
+  return ge_op1_op2_relation (lhs);
 }
 
 bool
@@ -3993,18 +3951,6 @@ pointer_or_operator::wi_fold (irange &r, tree type,
     r.set_varying (type);
 }
 
-// This implements the range operator tables as local objects in this file.
-
-class range_op_table
-{
-public:
-  inline range_operator *operator[] (enum tree_code code);
-protected:
-  void set (enum tree_code code, range_operator &op);
-private:
-  range_operator *m_range_tree[MAX_TREE_CODES];
-};
-
 // Return a pointer to the range_operator instance, if there is one
 // associated with tree_code CODE.
 
