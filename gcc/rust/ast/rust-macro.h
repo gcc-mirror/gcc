@@ -783,12 +783,17 @@ protected:
 class MetaNameValueStr : public MetaItem
 {
   Identifier ident;
+  Location ident_locus;
+
   // NOTE: str stored without quotes
   std::string str;
+  Location str_locus;
 
 public:
-  MetaNameValueStr (Identifier ident, std::string str)
-    : ident (std::move (ident)), str (std::move (str))
+  MetaNameValueStr (Identifier ident, Location ident_locus, std::string str,
+		    Location str_locus)
+    : ident (std::move (ident)), ident_locus (ident_locus),
+      str (std::move (str)), str_locus (str_locus)
   {}
 
   std::string as_string () const override
