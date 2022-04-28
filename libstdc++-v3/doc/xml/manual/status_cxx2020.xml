@@ -20,7 +20,7 @@ presence of the required flag.
 </para>
 
 <para>
-This section describes the C++20 and library TS support in mainline GCC,
+This section describes the C++20 and library TS support in the GCC 12 release series,
 not in any particular release.
 </para>
 

@@ -29,7 +29,7 @@ since C++11 and the implementation is complete.
 </para>
 
 <para>
-This section describes the C++14 and library TS support in mainline GCC,
+This section describes the C++14 and library TS support in the GCC 12 release series,
 not in any particular release.
 </para>
 
