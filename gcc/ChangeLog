@@ -1,3 +1,47 @@
+2022-04-27  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* config/loongarch/loongarch.md: Add fdiv define_expand template,
+	then generate floating-point division and floating-point reciprocal
+	instructions.
+
+2022-04-27  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* config/loongarch/loongarch.md: Add '(clobber (mem:BLK (scratch)))'
+	to PLV instruction templates.
+
+2022-04-27  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/104492
+	* gimple-ssa-warn-access.cc
+	(pass_waccess::warn_invalid_pointer): Exclude equality compare
+	diagnostics for all kind of invalidations.
+	(pass_waccess::check_dangling_uses): Fix post-dominator query.
+	(pass_waccess::check_pointer_uses): Likewise.
+
+2022-04-27  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	PR target/102024
+	* config/s390/s390-protos.h (s390_function_arg_vector): Remove
+	prototype.
+	* config/s390/s390.cc (s390_single_field_struct_p): New function.
+	(s390_function_arg_vector): Invoke s390_single_field_struct_p.
+	(s390_function_arg_float): Likewise.
+
+2022-04-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/105396
+	* asan.cc (asan_redzone_buffer::emit_redzone_byte): Handle the case
+	where offset is bigger than off but smaller than m_prev_offset + 32
+	bits by pushing one or more 0 bytes.  Sink the
+	m_shadow_bytes.safe_push (value); flush_if_full (); statements from
+	all cases to the end of the function.
+
+2022-04-27  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/105271
+	* config/rs6000/rs6000-builtins.def (NEG_V2DI): Move to [power8-vector]
+	stanza.
+
 2022-04-26  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* config/gcn/gcn.cc (gcn_print_lds_decl): Make "gang-private

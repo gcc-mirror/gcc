@@ -1,3 +1,19 @@
+2022-04-27  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/103662
+	PR fortran/105379
+	* array.cc (compare_bounds): Use bool as return type.
+	Support non-constant expressions.
+	(gfc_compare_array_spec): Update call to compare_bounds.
+
+2022-04-27  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/102043
+	PR fortran/105381
+	* trans-array.cc (non_negative_strides_array_p): Inline variable
+	orig_decl and merge nested if conditions.  Add condition to not
+	recurse if the next argument is the same as the current.
+
 2022-04-25  Jakub Jelinek  <jakub@redhat.com>
 	    Thomas Schwinge  <thomas@codesourcery.com>
 

@@ -1,3 +1,12 @@
+2022-04-27  Jason Merrill  <jason@redhat.com>
+
+	* tree.cc (strip_typedefs): Add default argument comments.
+
+2022-04-27  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/105398
+	* pt.cc (uses_template_parms): Return false for any NAMESPACE_DECL.
+
 2022-04-26  Jason Merrill  <jason@redhat.com>
 
 	PR c++/102629

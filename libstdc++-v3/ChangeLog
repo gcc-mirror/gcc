@@ -1,3 +1,24 @@
+2022-04-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/abi/post/x86_64-linux-gnu/baseline_symbols.txt: Update.
+	* config/abi/post/x86_64-linux-gnu/32/baseline_symbols.txt: Update.
+	* config/abi/post/i486-linux-gnu/baseline_symbols.txt: Update.
+	* config/abi/post/aarch64-linux-gnu/baseline_symbols.txt: Update.
+	* config/abi/post/s390x-linux-gnu/baseline_symbols.txt: Update.
+	* config/abi/post/powerpc-linux-gnu/baseline_symbols.txt: Update.
+	* config/abi/post/powerpc64-linux-gnu/baseline_symbols.txt: Update.
+	* config/abi/post/powerpc64-linux-gnu/32/baseline_symbols.txt: Update.
+
+2022-04-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	* python/libstdcxx/v6/printers.py (SharedPointerPrinter): Add
+	support for atomic<shared_ptr<T>> and atomic<weak_ptr<T>>.
+	(StdAtomicPrinter): New printer.
+	(build_libstdcxx_dictionary): Register new printer.
+	* testsuite/libstdc++-prettyprinters/cxx11.cc: Test std::atomic.
+	* testsuite/libstdc++-prettyprinters/cxx20.cc: Test atomic smart
+	pointers.
+
 2022-04-26  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/shared_ptr_atomic.h (atomic<shared_ptr>): Add
