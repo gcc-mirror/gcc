@@ -1,3 +1,11 @@
+2022-04-27  Hongyu Wang  <hongyu.wang@intel.com>
+
+	Backported from master:
+	2022-04-25  Hongyu Wang  <hongyu.wang@intel.com>
+
+	PR target/105339
+	* gcc.target/i386/sse-14.c: Add tests for new macro.
+
 2022-04-24  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/104228
