@@ -829,11 +829,14 @@ protected:
 class MetaListPaths : public MetaItem
 {
   Identifier ident;
+  Location ident_locus;
   std::vector<SimplePath> paths;
 
 public:
-  MetaListPaths (Identifier ident, std::vector<SimplePath> paths)
-    : ident (std::move (ident)), paths (std::move (paths))
+  MetaListPaths (Identifier ident, Location ident_locus,
+		 std::vector<SimplePath> paths)
+    : ident (std::move (ident)), ident_locus (ident_locus),
+      paths (std::move (paths))
   {}
 
   std::string as_string () const override;
@@ -860,13 +863,14 @@ protected:
 class MetaListNameValueStr : public MetaItem
 {
   Identifier ident;
+  Location ident_locus;
   std::vector<MetaNameValueStr> strs;
 
-  // FIXME add location info
-
 public:
-  MetaListNameValueStr (Identifier ident, std::vector<MetaNameValueStr> strs)
-    : ident (std::move (ident)), strs (std::move (strs))
+  MetaListNameValueStr (Identifier ident, Location ident_locus,
+			std::vector<MetaNameValueStr> strs)
+    : ident (std::move (ident)), ident_locus (ident_locus),
+      strs (std::move (strs))
   {}
 
   std::string as_string () const override;

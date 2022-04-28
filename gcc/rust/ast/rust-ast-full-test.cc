@@ -4118,14 +4118,14 @@ AttributeParser::parse_meta_item_inner ()
       return parse_path_meta_item ();
     }
 
-  auto &identifier = peek_token ();
+  auto ident = peek_token ()->as_string ();
+  auto ident_locus = peek_token ()->get_locus ();
+
   if (is_end_meta_item_tok (peek_token (1)->get_id ()))
     {
       // meta word syntax
       skip_token ();
-      // FIXME: We probably need a Location here as well
-      return std::unique_ptr<MetaWord> (
-	new MetaWord (identifier->as_string (), identifier->get_locus ()));
+      return std::unique_ptr<MetaWord> (new MetaWord (ident, ident_locus));
     }
 
   if (peek_token (1)->get_id () == EQUAL)
@@ -4145,9 +4145,8 @@ AttributeParser::parse_meta_item_inner ()
 	  std::string raw_value = unquote_string (std::move (value));
 
 	  return std::unique_ptr<MetaNameValueStr> (
-	    new MetaNameValueStr (identifier->as_string (),
-				  identifier->get_locus (),
-				  std::move (raw_value), locus));
+	    new MetaNameValueStr (ident, ident_locus, std::move (raw_value),
+				  locus));
 	}
       else
 	{
@@ -4189,7 +4188,7 @@ AttributeParser::parse_meta_item_inner ()
   if (!meta_name_value_str_items.empty ())
     {
       return std::unique_ptr<MetaListNameValueStr> (
-	new MetaListNameValueStr (identifier->as_string (),
+	new MetaListNameValueStr (ident, ident_locus,
 				  std::move (meta_name_value_str_items)));
     }
 
@@ -4228,7 +4227,7 @@ AttributeParser::parse_meta_item_inner ()
   if (!path_items.empty ())
     {
       return std::unique_ptr<MetaListPaths> (
-	new MetaListPaths (identifier->as_string (), std::move (path_items)));
+	new MetaListPaths (ident, ident_locus, std::move (path_items)));
     }
 
   rust_error_at (Linemap::unknown_location (),
@@ -4749,8 +4748,7 @@ MetaListPaths::to_attribute () const
 
   std::unique_ptr<AttrInputMetaItemContainer> new_seq_container (
     new AttrInputMetaItemContainer (std::move (new_seq)));
-  // FIXME: How do we get a location here?
-  return Attribute (SimplePath::from_str (ident, Location ()),
+  return Attribute (SimplePath::from_str (ident, ident_locus),
 		    std::move (new_seq_container));
 }
 
@@ -4765,8 +4763,7 @@ MetaListNameValueStr::to_attribute () const
 
   std::unique_ptr<AttrInputMetaItemContainer> new_seq_container (
     new AttrInputMetaItemContainer (std::move (new_seq)));
-  // FIXME: How do we get a location here?
-  return Attribute (SimplePath::from_str (ident, Location ()),
+  return Attribute (SimplePath::from_str (ident, ident_locus),
 		    std::move (new_seq_container));
 }
 
