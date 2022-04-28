@@ -2136,6 +2136,7 @@ Parser<ManagedTokenSource>::parse_visibility ()
   lexer.skip_token ();
 
   const_TokenPtr t = lexer.peek_token ();
+  auto path_loc = t->get_locus ();
 
   switch (t->get_id ())
     {
@@ -2144,19 +2145,19 @@ Parser<ManagedTokenSource>::parse_visibility ()
 
       skip_token (RIGHT_PAREN);
 
-      return AST::Visibility::create_crate ();
+      return AST::Visibility::create_crate (path_loc);
     case SELF:
       lexer.skip_token ();
 
       skip_token (RIGHT_PAREN);
 
-      return AST::Visibility::create_self ();
+      return AST::Visibility::create_self (path_loc);
     case SUPER:
       lexer.skip_token ();
 
       skip_token (RIGHT_PAREN);
 
-      return AST::Visibility::create_super ();
+      return AST::Visibility::create_super (path_loc);
       case IN: {
 	lexer.skip_token ();
 

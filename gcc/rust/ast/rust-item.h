@@ -666,23 +666,25 @@ public:
     return Visibility (PUB, SimplePath::create_empty ());
   }
 
-  // Creates a public visibility with crate-relative paths or whatever.
-  static Visibility create_crate ()
+  // Creates a public visibility with crate-relative paths
+  static Visibility create_crate (Location crate_tok_location)
   {
-    return Visibility (PUB_CRATE, SimplePath::create_empty ());
+    return Visibility (PUB_CRATE,
+		       SimplePath::from_str ("crate", crate_tok_location));
   }
 
-  // Creates a public visibility with self-relative paths or whatever.
-  static Visibility create_self ()
+  // Creates a public visibility with self-relative paths
+  static Visibility create_self (Location self_tok_location)
   {
-    return Visibility (PUB_SELF, SimplePath::create_empty ());
+    return Visibility (PUB_SELF,
+		       SimplePath::from_str ("self", self_tok_location));
   }
 
-  // Creates a public visibility with parent module-relative paths or
-  // whatever.
-  static Visibility create_super ()
+  // Creates a public visibility with parent module-relative paths
+  static Visibility create_super (Location super_tok_location)
   {
-    return Visibility (PUB_SUPER, SimplePath::create_empty ());
+    return Visibility (PUB_SUPER,
+		       SimplePath::from_str ("super", super_tok_location));
   }
 
   // Creates a private visibility
