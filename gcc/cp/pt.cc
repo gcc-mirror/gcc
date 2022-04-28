@@ -24276,7 +24276,8 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict,
 	    }
 	}
 
-      if (!TREE_TYPE (arg))
+      if (!TREE_TYPE (arg)
+	  || TREE_CODE (TREE_TYPE (arg)) == DEPENDENT_OPERATOR_TYPE)
 	/* Template-parameter dependent expression.  Just accept it for now.
 	   It will later be processed in convert_template_argument.  */
 	;
