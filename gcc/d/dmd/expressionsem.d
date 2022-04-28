@@ -5216,13 +5216,30 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
         if (s.ident)
         {
             VarDeclaration v = s.isVarDeclaration();
-            if (v && !(sc.flags & SCOPE.Cfile))
+            if (v)
             {
-                /* Do semantic() on initializer first so this will be illegal:
-                 *      int a = a;
-                 */
-                e.declaration.dsymbolSemantic(sc);
-                s.parent = sc.parent;
+                if (sc.flags & SCOPE.Cfile)
+                {
+                    /* Do semantic() on the type before inserting v into the symbol table
+                     */
+                    if (!v.originalType)
+                        v.originalType = v.type.syntaxCopy();
+                    Scope* sc2 = sc.push();
+                    sc2.stc |= v.storage_class & STC.FUNCATTR;
+                    sc2.linkage = LINK.c;       // account for the extern(C) in front of the declaration
+                    v.inuse++;
+                    v.type = v.type.typeSemantic(v.loc, sc2);
+                    v.inuse--;
+                    sc2.pop();
+                }
+                else
+                {
+                    /* Do semantic() on initializer first so this will be illegal:
+                     *      int a = a;
+                     */
+                    e.declaration.dsymbolSemantic(sc);
+                    s.parent = sc.parent;
+                }
             }
 
             if (!sc.insert(s))

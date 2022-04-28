@@ -373,11 +373,11 @@ public:
     OwnedBy ownedByCtfe;
 
     static StringExp *create(const Loc &loc, const char *s);
-    static StringExp *create(const Loc &loc, const void *s, size_t len);
+    static StringExp *create(const Loc &loc, const void *s, d_size_t len);
     static void emplace(UnionExp *pue, const Loc &loc, const char *s);
     bool equals(const RootObject *o) const;
-    char32_t getCodeUnit(size_t i) const;
-    void setCodeUnit(size_t i, char32_t c);
+    char32_t getCodeUnit(d_size_t i) const;
+    void setCodeUnit(d_size_t i, char32_t c);
     StringExp *toStringExp();
     StringExp *toUTF8(Scope *sc);
     Optional<bool> toBool();
