@@ -876,9 +876,6 @@ package body Sem_Ch3 is
             Mutate_Ekind (Anon_Type, E_Anonymous_Access_Subprogram_Type);
          end if;
 
-         Set_Can_Use_Internal_Rep
-           (Anon_Type, not Always_Compatible_Rep_On_Target);
-
          --  If the anonymous access is associated with a protected operation,
          --  create a reference to it after the enclosing protected definition
          --  because the itype will be used in the subsequent bodies.

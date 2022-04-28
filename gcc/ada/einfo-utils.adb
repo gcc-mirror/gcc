@@ -2659,7 +2659,7 @@ package body Einfo.Utils is
                             | E_Anonymous_Access_Subprogram_Type
               and then not Has_Convention_Pragma (Typ)
             then
-               Set_Basic_Convention (Typ, Val);
+               Set_Convention (Typ, Val);
                Set_Has_Convention_Pragma (Typ);
 
                --  And for the access subprogram type, deal similarly with the
@@ -2669,10 +2669,9 @@ package body Einfo.Utils is
                   declare
                      Dtype : constant Entity_Id := Designated_Type (Typ);
                   begin
-                     if Ekind (Dtype) = E_Subprogram_Type
-                       and then not Has_Convention_Pragma (Dtype)
-                     then
-                        Set_Basic_Convention (Dtype, Val);
+                     if Ekind (Dtype) = E_Subprogram_Type then
+                        pragma Assert (not Has_Convention_Pragma (Dtype));
+                        Set_Convention (Dtype, Val);
                         Set_Has_Convention_Pragma (Dtype);
                      end if;
                   end;
