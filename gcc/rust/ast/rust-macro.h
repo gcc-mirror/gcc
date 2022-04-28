@@ -759,9 +759,12 @@ protected:
 class MetaWord : public MetaItem
 {
   Identifier ident;
+  Location ident_locus;
 
 public:
-  MetaWord (Identifier ident) : ident (std::move (ident)) {}
+  MetaWord (Identifier ident, Location ident_locus)
+    : ident (std::move (ident)), ident_locus (ident_locus)
+  {}
 
   std::string as_string () const override { return ident; }
 

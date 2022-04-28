@@ -4125,7 +4125,7 @@ AttributeParser::parse_meta_item_inner ()
       skip_token ();
       // FIXME: We probably need a Location here as well
       return std::unique_ptr<MetaWord> (
-	new MetaWord (identifier->as_string ()));
+	new MetaWord (identifier->as_string (), identifier->get_locus ()));
     }
 
   if (peek_token (1)->get_id () == EQUAL)
@@ -4731,8 +4731,7 @@ MetaItemSeq::to_attribute () const
 Attribute
 MetaWord::to_attribute () const
 {
-  // FIXME: How do we get a location here?
-  return Attribute (SimplePath::from_str (ident, Location ()), nullptr);
+  return Attribute (SimplePath::from_str (ident, ident_locus), nullptr);
 }
 
 Attribute
