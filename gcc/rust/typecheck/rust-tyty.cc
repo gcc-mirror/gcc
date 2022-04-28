@@ -1230,6 +1230,19 @@ FnType::is_equal (const BaseType &other) const
     {
       if (get_num_substitutions () != other2.get_num_substitutions ())
 	return false;
+
+      const FnType &ofn = static_cast<const FnType &> (other);
+      for (size_t i = 0; i < get_num_substitutions (); i++)
+	{
+	  const SubstitutionParamMapping &a = get_substs ().at (i);
+	  const SubstitutionParamMapping &b = ofn.get_substs ().at (i);
+
+	  const ParamType *pa = a.get_param_ty ();
+	  const ParamType *pb = b.get_param_ty ();
+
+	  if (!pa->is_equal (*pb))
+	    return false;
+	}
     }
 
   if (num_params () != other2.num_params ())
