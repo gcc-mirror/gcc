@@ -2139,17 +2139,6 @@ Until all of the libraries are converted to use IEEE 128-bit floating
 point, it is not recommended to use
 @option{--with-long-double-format=ieee}.
 
-On little endian PowerPC Linux systems, if you explicitly set the
-@code{long double} type, it will build multilibs to allow you to
-select either @code{long double} format, unless you disable multilibs
-with the @code{--disable-multilib} option.  At present,
-@code{long double} multilibs are not built on big endian PowerPC Linux
-systems.  If you are building multilibs, you will need to configure
-the compiler using the @option{--with-system-zlib} option.
-
-If you do not set the @code{long double} type explicitly, no multilibs
-will be generated.
-
 @item --enable-fdpic
 On SH Linux systems, generate ELF FDPIC code.
 
