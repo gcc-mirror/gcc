@@ -47,19 +47,31 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 
 /*
-   GetEnvironment - gets the environment variable, Env, and places
-      	       	    a copy of its value into string, a.
+   GetEnvironment - gets the environment variable Env and places
+      	       	    a copy of its value into string, dest.
+                    It returns TRUE if the string Env was found in
+                    the processes environment.
 */
 
-extern "C" unsigned int Environment_GetEnvironment (const char *Env_, unsigned int _Env_high, char *a, unsigned int _a_high);
+extern "C" unsigned int Environment_GetEnvironment (const char *Env_, unsigned int _Env_high, char *dest, unsigned int _dest_high);
+
+/*
+   PutEnvironment - change or add an environment variable definition EnvDef.
+                    TRUE is returned if the environment variable was
+                    set or changed successfully.
+*/
+
+extern "C" unsigned int Environment_PutEnvironment (const char *EnvDef_, unsigned int _EnvDef_high);
 
 
 /*
-   GetEnvironment - gets the environment variable, Env, and places
-      	       	    a copy of its value into string, a.
+   GetEnvironment - gets the environment variable Env and places
+      	       	    a copy of its value into string, dest.
+                    It returns TRUE if the string Env was found in
+                    the processes environment.
 */
 
-extern "C" unsigned int Environment_GetEnvironment (const char *Env_, unsigned int _Env_high, char *a, unsigned int _a_high)
+extern "C" unsigned int Environment_GetEnvironment (const char *Env_, unsigned int _Env_high, char *dest, unsigned int _dest_high)
 {
   typedef char *_T1;
 
@@ -72,19 +84,38 @@ extern "C" unsigned int Environment_GetEnvironment (const char *Env_, unsigned i
   memcpy (Env, Env_, _Env_high+1);
 
   i = 0;
-  High = _a_high;
+  High = _dest_high;
   Addr = static_cast<_T1> (libc_getenv (&Env));
   while (((i < High) && (Addr != NULL)) && ((*Addr) != ASCII_nul))
     {
-      a[i] = (*Addr);
+      dest[i] = (*Addr);
       Addr += 1;
       i += 1;
     }
   if (i < High)
     {
-      a[i] = ASCII_nul;
+      dest[i] = ASCII_nul;
     }
   return Addr != NULL;
+  /* static analysis guarentees a RETURN statement will be used before here.  */
+  __builtin_unreachable ();
+}
+
+
+/*
+   PutEnvironment - change or add an environment variable definition EnvDef.
+                    TRUE is returned if the environment variable was
+                    set or changed successfully.
+*/
+
+extern "C" unsigned int Environment_PutEnvironment (const char *EnvDef_, unsigned int _EnvDef_high)
+{
+  char EnvDef[_EnvDef_high+1];
+
+  /* make a local copy of each unbounded array.  */
+  memcpy (EnvDef, EnvDef_, _EnvDef_high+1);
+
+  return (libc_putenv (&EnvDef)) == 0;
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }

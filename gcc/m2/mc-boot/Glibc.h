@@ -150,6 +150,12 @@ EXTERN void libc_exit (int r) __attribute__ ((noreturn));
 EXTERN void * libc_getenv (void * s);
 
 /*
+   putenv - change or add an environment variable.
+*/
+
+EXTERN int libc_putenv (void * s);
+
+/*
    getpid - returns the UNIX process identification number.
 */
 
@@ -392,6 +398,12 @@ EXTERN void * libc_ttyname (int filedes);
 */
 
 EXTERN unsigned int libc_sleep (unsigned int seconds);
+
+/*
+   execv - execute a file.
+*/
+
+EXTERN int libc_execv (void * pathname, void * argv);
 #   ifdef __cplusplus
 }
 #   endif

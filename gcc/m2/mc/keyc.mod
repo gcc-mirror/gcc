@@ -1033,6 +1033,7 @@ BEGIN
    add (macros, 'cos') ;
    add (macros, 'tan') ;
    add (macros, 'log10') ;
+   add (macros, 'trunc') ;
    add (macros, 'I') ;
    add (macros, 'csqrt') ;
    add (macros, 'strlen') ;

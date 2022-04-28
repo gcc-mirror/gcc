@@ -49,11 +49,21 @@ extern "C" {
 
 
 /*
-   GetEnvironment - gets the environment variable, Env, and places
-      	       	    a copy of its value into string, a.
+   GetEnvironment - gets the environment variable Env and places
+      	       	    a copy of its value into string, dest.
+                    It returns TRUE if the string Env was found in
+                    the processes environment.
 */
 
-EXTERN unsigned int Environment_GetEnvironment (const char *Env_, unsigned int _Env_high, char *a, unsigned int _a_high);
+EXTERN unsigned int Environment_GetEnvironment (const char *Env_, unsigned int _Env_high, char *dest, unsigned int _dest_high);
+
+/*
+   PutEnvironment - change or add an environment variable definition EnvDef.
+                    TRUE is returned if the environment variable was
+                    set or changed successfully.
+*/
+
+EXTERN unsigned int Environment_PutEnvironment (const char *EnvDef_, unsigned int _EnvDef_high);
 #   ifdef __cplusplus
 }
 #   endif

@@ -982,6 +982,7 @@ static void initMacros (void)
   add (macros, (const char *) "cos", 3);
   add (macros, (const char *) "tan", 3);
   add (macros, (const char *) "log10", 5);
+  add (macros, (const char *) "trunc", 5);
   add (macros, (const char *) "I", 1);
   add (macros, (const char *) "csqrt", 5);
   add (macros, (const char *) "strlen", 6);

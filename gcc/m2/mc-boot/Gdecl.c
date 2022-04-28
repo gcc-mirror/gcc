@@ -267,7 +267,7 @@ typedef struct _T5_r _T5;
 
 #   define MaxBuf 127
 #   define maxNoOfElements 5
-typedef enum {explist, funccall, exit_, return_, stmtseq, comment, halt, new_, dispose, inc, dec, incl, excl, length, nil, true_, false_, address, loc, byte, word, csizet, cssizet, char_, cardinal, longcard, shortcard, integer, longint, shortint, real, longreal, shortreal, bitset, boolean, proc, ztype, rtype, complex_, longcomplex, shortcomplex, type, record, varient, var, enumeration, subrange, array, subscript, string, const_, literal, varparam, param, varargs, optarg_, pointer, recordfield, varientfield, enumerationfield, set, proctype, procedure, def, imp, module, loop, while_, for_, repeat, case_, caselabellist, caselist, range, assignment, if_, elsif, constexp, neg, cast, val, plus, sub, div_, mod, mult, divide, in, adr, size, tsize, ord, float_, trunc, chr, abs_, cap, high, throw_, unreachable, cmplx, re, im, min, max, componentref, pointerref, arrayref, deref, equal, notequal, less, greater, greequal, lessequal, lsl, lsr, lor, land, lnot, lxor, and_, or_, not_, identlist, vardecl, setvalue} nodeT;
+typedef enum {explist, funccall, exit_, return_, stmtseq, comment, halt, new_, dispose, inc, dec, incl, excl, length, nil, true_, false_, address, loc, byte, word, csizet, cssizet, char_, cardinal, longcard, shortcard, integer, longint, shortint, real, longreal, shortreal, bitset, boolean, proc, ztype, rtype, complex_, longcomplex, shortcomplex, type, record, varient, var, enumeration, subrange, array, subscript, string, const_, literal, varparam, param, varargs, optarg_, pointer, recordfield, varientfield, enumerationfield, set, proctype, procedure, def, imp, module, loop, while_, for_, repeat, case_, caselabellist, caselist, range, assignment, if_, elsif, constexp, neg, cast, val, plus, sub, div_, mod, mult, divide, in, adr, size, tsize, ord, float_, trunc_, chr, abs_, cap, high, throw_, unreachable, cmplx, re, im, min, max, componentref, pointerref, arrayref, deref, equal, notequal, less, greater, greequal, lessequal, lsl, lsr, lor, land, lnot, lxor, and_, or_, not_, identlist, vardecl, setvalue} nodeT;
 
 #   define MaxnoOfelements 5
 typedef enum {mcReserved_eoftok, mcReserved_plustok, mcReserved_minustok, mcReserved_timestok, mcReserved_dividetok, mcReserved_becomestok, mcReserved_ambersandtok, mcReserved_periodtok, mcReserved_commatok, mcReserved_semicolontok, mcReserved_lparatok, mcReserved_rparatok, mcReserved_lsbratok, mcReserved_rsbratok, mcReserved_lcbratok, mcReserved_rcbratok, mcReserved_uparrowtok, mcReserved_singlequotetok, mcReserved_equaltok, mcReserved_hashtok, mcReserved_lesstok, mcReserved_greatertok, mcReserved_lessgreatertok, mcReserved_lessequaltok, mcReserved_greaterequaltok, mcReserved_ldirectivetok, mcReserved_rdirectivetok, mcReserved_periodperiodtok, mcReserved_colontok, mcReserved_doublequotestok, mcReserved_bartok, mcReserved_andtok, mcReserved_arraytok, mcReserved_begintok, mcReserved_bytok, mcReserved_casetok, mcReserved_consttok, mcReserved_definitiontok, mcReserved_divtok, mcReserved_dotok, mcReserved_elsetok, mcReserved_elsiftok, mcReserved_endtok, mcReserved_excepttok, mcReserved_exittok, mcReserved_exporttok, mcReserved_finallytok, mcReserved_fortok, mcReserved_fromtok, mcReserved_iftok, mcReserved_implementationtok, mcReserved_importtok, mcReserved_intok, mcReserved_looptok, mcReserved_modtok, mcReserved_moduletok, mcReserved_nottok, mcReserved_oftok, mcReserved_ortok, mcReserved_packedsettok, mcReserved_pointertok, mcReserved_proceduretok, mcReserved_qualifiedtok, mcReserved_unqualifiedtok, mcReserved_recordtok, mcReserved_remtok, mcReserved_repeattok, mcReserved_retrytok, mcReserved_returntok, mcReserved_settok, mcReserved_thentok, mcReserved_totok, mcReserved_typetok, mcReserved_untiltok, mcReserved_vartok, mcReserved_whiletok, mcReserved_withtok, mcReserved_asmtok, mcReserved_volatiletok, mcReserved_periodperiodperiodtok, mcReserved_datetok, mcReserved_linetok, mcReserved_filetok, mcReserved_attributetok, mcReserved_builtintok, mcReserved_inlinetok, mcReserved_integertok, mcReserved_identtok, mcReserved_realtok, mcReserved_stringtok, mcReserved_commenttok} mcReserved_toktype;
@@ -2745,6 +2745,7 @@ extern "C" void * libc_realloc (void * ptr, size_t size);
 extern "C" int libc_isatty (int fd);
 extern "C" void libc_exit (int r) __attribute__ ((noreturn));
 extern "C" void * libc_getenv (void * s);
+extern "C" int libc_putenv (void * s);
 extern "C" int libc_getpid (void);
 extern "C" int libc_dup (int d);
 extern "C" int libc_close (int d);
@@ -2777,6 +2778,7 @@ extern "C" void libc_longjmp (void * env, int val);
 extern "C" int libc_atexit (libc_exitP_C proc);
 extern "C" void * libc_ttyname (int filedes);
 extern "C" unsigned int libc_sleep (unsigned int seconds);
+extern "C" int libc_execv (void * pathname, void * argv);
 extern "C" void mcMetaError_metaError1 (const char *m_, unsigned int _m_high, const unsigned char *s_, unsigned int _s_high);
 extern "C" void mcMetaError_metaError2 (const char *m_, unsigned int _m_high, const unsigned char *s1_, unsigned int _s1_high, const unsigned char *s2_, unsigned int _s2_high);
 extern "C" void mcMetaError_metaError3 (const char *m_, unsigned int _m_high, const unsigned char *s1_, unsigned int _s1_high, const unsigned char *s2_, unsigned int _s2_high, const unsigned char *s3_, unsigned int _s3_high);
@@ -7037,7 +7039,7 @@ static void setUnary (decl_node u, nodeT k, decl_node a, decl_node t)
       case cap:
       case abs_:
       case float_:
-      case trunc:
+      case trunc_:
       case ord:
       case high:
       case throw_:
@@ -7920,7 +7922,7 @@ static decl_node checkIntrinsic (decl_node c, decl_node n)
   else if (c == truncN)
     {
       /* avoid dangling else.  */
-      return makeIntrinsicUnaryType (trunc, n, integerN);
+      return makeIntrinsicUnaryType (trunc_, n, integerN);
     }
   else if (c == ordN)
     {
@@ -8221,7 +8223,7 @@ static unsigned int isUnary (decl_node n)
       case abs_:
       case ord:
       case float_:
-      case trunc:
+      case trunc_:
       case constexp:
       case not_:
       case neg:
@@ -8314,7 +8316,7 @@ static decl_node makeUnary (nodeT k, decl_node e, decl_node res)
           case abs_:
           case ord:
           case float_:
-          case trunc:
+          case trunc_:
           case length:
           case constexp:
           case not_:
@@ -8678,7 +8680,7 @@ static decl_node makeBase (nodeT k)
       case cap:
       case abs_:
       case float_:
-      case trunc:
+      case trunc_:
       case ord:
       case high:
       case throw_:
@@ -9114,7 +9116,7 @@ static decl_node doGetExprType (decl_node n)
         return doSetExprType (&n->unaryF.resultType, realN);
         break;
 
-      case trunc:
+      case trunc_:
         return doSetExprType (&n->unaryF.resultType, integerN);
         break;
 
@@ -9452,7 +9454,7 @@ static unsigned int needsParen (decl_node n)
       case tsize:
       case ord:
       case float_:
-      case trunc:
+      case trunc_:
       case chr:
       case cap:
       case high:
@@ -9844,7 +9846,7 @@ static decl_node doGetLastOp (decl_node a, decl_node b)
         break;
 
       case float_:
-      case trunc:
+      case trunc_:
         return doGetLastOp (b, b->unaryF.arg);
         break;
 
@@ -10425,7 +10427,7 @@ static void doExprC (mcPretty_pretty p, decl_node n)
         doConvertC (p, n, (const char *) "(double)", 8);
         break;
 
-      case trunc:
+      case trunc_:
         doConvertC (p, n, (const char *) "(int)", 5);
         break;
 
@@ -10710,7 +10712,7 @@ static void doExprM2 (mcPretty_pretty p, decl_node n)
         doUnary (p, (const char *) "FLOAT", 5, n->unaryF.arg, n->unaryF.resultType, TRUE, TRUE);
         break;
 
-      case trunc:
+      case trunc_:
         doUnary (p, (const char *) "TRUNC", 5, n->unaryF.arg, n->unaryF.resultType, TRUE, TRUE);
         break;
 
@@ -16107,7 +16109,7 @@ static unsigned int isIntrinsicFunction (decl_node n)
       case size:
       case tsize:
       case float_:
-      case trunc:
+      case trunc_:
       case ord:
       case chr:
       case cap:
@@ -18093,7 +18095,7 @@ static dependentState doDependants (alists_alist l, decl_node n)
       case cap:
       case ord:
       case float_:
-      case trunc:
+      case trunc_:
       case high:
         return walkUnary (l, n);
         break;
@@ -19152,7 +19154,7 @@ static void visitDependants (alists_alist v, decl_node n, nodeProcedure p)
         visitUnary (v, n, p);
         break;
 
-      case trunc:
+      case trunc_:
         visitUnary (v, n, p);
         break;
 
@@ -19458,7 +19460,7 @@ static DynamicStrings_String genKind (decl_node n)
         return DynamicStrings_InitString ((const char *) "float", 5);
         break;
 
-      case trunc:
+      case trunc_:
         return DynamicStrings_InitString ((const char *) "trunc", 5);
         break;
 
@@ -21798,7 +21800,7 @@ static decl_node doDupExpr (decl_node n)
       case cap:
       case high:
       case float_:
-      case trunc:
+      case trunc_:
       case ord:
       case not_:
       case neg:
@@ -21936,7 +21938,7 @@ static void makeBaseSymbols (void)
   minN = makeBase (min);
   maxN = makeBase (max);
   floatN = makeBase (float_);
-  truncN = makeBase (trunc);
+  truncN = makeBase (trunc_);
   ordN = makeBase (ord);
   valN = makeBase (val);
   chrN = makeBase (chr);
@@ -22825,7 +22827,7 @@ extern "C" decl_node decl_getType (decl_node n)
         return booleanN;
         break;
 
-      case trunc:
+      case trunc_:
         return integerN;
         break;
 
@@ -23185,7 +23187,7 @@ extern "C" decl_node decl_getScope (decl_node n)
       case cap:
       case ord:
       case float_:
-      case trunc:
+      case trunc_:
       case high:
       case cast:
       case val:
@@ -24342,7 +24344,7 @@ extern "C" nameKey_Name decl_getSymName (decl_node n)
         return nameKey_makeKey ((const char *) "FLOAT", 5);
         break;
 
-      case trunc:
+      case trunc_:
         return nameKey_makeKey ((const char *) "TRUNC", 5);
         break;
 
