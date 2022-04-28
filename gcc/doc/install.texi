@@ -287,7 +287,8 @@ section.
 @item @anchor{GDC-prerequisite}GDC
 
 In order to build GDC, the D compiler, you need a working GDC
-compiler (GCC version 9.1 or later), as the D front end is written in D.
+compiler (GCC version 9.1 or later) and D runtime library,
+@samp{libphobos}, as the D front end is written in D.
 
 Versions of GDC prior to 12 can be built with an ISO C++11 compiler, which can
 then be installed and used to bootstrap newer versions of the D front end.
@@ -302,6 +303,10 @@ and has a sufficiently recent version.  Though the implementation of the D
 front end does not make use of any GDC-specific extensions, or novel features
 of the D language, if too old a GDC version is installed and
 @option{--enable-languages=d} is used, the build will fail.
+
+On some targets, @samp{libphobos} isn't enabled by default, but compiles
+and works if @option{--enable-libphobos} is used.  Specifics are
+documented for affected targets.
 
 @item A ``working'' POSIX compatible shell, or GNU bash
 
@@ -4875,6 +4880,12 @@ GNU binutils.  @samp{libstdc++} symbol versioning will be disabled if no
 appropriate version is found.  Solaris @command{c++filt} from the Solaris
 Studio compilers does @emph{not} work.
 
+In order to build the GNU D compiler, GDC, a working @samp{libphobos} is
+needed.  That library wasn't built by default in GCC 9--11 on SPARC, or
+on x86 when the Solaris assembler is used, but can be enabled by
+configuring with @option{--enable-libphobos}.  Also, GDC 9.4.0 is
+required on x86, while GDC 9.3.0 is known to work on SPARC.
+
 The versions of the GNU Multiple Precision Library (GMP), the MPFR
 library and the MPC library bundled with Solaris 11.3 and later are
 usually recent enough to match GCC's requirements.  There are two
@@ -4888,6 +4899,7 @@ need to configure with @option{--with-gmp-include=/usr/include/gmp}.
 @item
 The version of the MPFR libary included in Solaris 11.3 is too old; you
 need to provide a more recent one.
+
 @end itemize
 
 @html
