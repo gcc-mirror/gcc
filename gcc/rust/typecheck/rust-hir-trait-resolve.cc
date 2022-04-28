@@ -74,7 +74,14 @@ TraitReference *
 TraitResolver::Resolve (HIR::TypePath &path)
 {
   TraitResolver resolver;
-  return resolver.go (path);
+  return resolver.resolve_path (path);
+}
+
+TraitReference *
+TraitResolver::Resolve (HIR::Trait &trait)
+{
+  TraitResolver resolver;
+  return resolver.resolve_trait (&trait);
 }
 
 TraitReference *
@@ -84,10 +91,12 @@ TraitResolver::Lookup (HIR::TypePath &path)
   return resolver.lookup_path (path);
 }
 
-TraitResolver::TraitResolver () : TypeCheckBase () {}
+TraitResolver::TraitResolver ()
+  : TypeCheckBase (), resolved_trait_reference (nullptr)
+{}
 
 TraitReference *
-TraitResolver::go (HIR::TypePath &path)
+TraitResolver::resolve_path (HIR::TypePath &path)
 {
   NodeId ref;
   if (!resolver->lookup_resolved_type (path.get_mappings ().get_nodeid (),
@@ -110,8 +119,14 @@ TraitResolver::go (HIR::TypePath &path)
 
   rust_assert (resolved_item != nullptr);
   resolved_item->accept_vis (*this);
-  rust_assert (trait_reference != nullptr);
+  rust_assert (resolved_trait_reference != nullptr);
 
+  return resolve_trait (resolved_trait_reference);
+}
+
+TraitReference *
+TraitResolver::resolve_trait (HIR::Trait *trait_reference)
+{
   TraitReference *tref = &TraitReference::error_node ();
   if (context->lookup_trait_reference (
 	trait_reference->get_mappings ().get_defid (), &tref))
@@ -243,11 +258,11 @@ TraitResolver::lookup_path (HIR::TypePath &path)
 
   rust_assert (resolved_item != nullptr);
   resolved_item->accept_vis (*this);
-  rust_assert (trait_reference != nullptr);
+  rust_assert (resolved_trait_reference != nullptr);
 
   TraitReference *tref = &TraitReference::error_node ();
   if (context->lookup_trait_reference (
-	trait_reference->get_mappings ().get_defid (), &tref))
+	resolved_trait_reference->get_mappings ().get_defid (), &tref))
     {
       return tref;
     }

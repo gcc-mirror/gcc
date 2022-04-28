@@ -66,19 +66,23 @@ class TraitResolver : public TypeCheckBase
 public:
   static TraitReference *Resolve (HIR::TypePath &path);
 
+  static TraitReference *Resolve (HIR::Trait &trait);
+
   static TraitReference *Lookup (HIR::TypePath &path);
 
 private:
   TraitResolver ();
 
-  TraitReference *go (HIR::TypePath &path);
+  TraitReference *resolve_path (HIR::TypePath &path);
+
+  TraitReference *resolve_trait (HIR::Trait *trait_reference);
 
   TraitReference *lookup_path (HIR::TypePath &path);
 
-  HIR::Trait *trait_reference;
+  HIR::Trait *resolved_trait_reference;
 
 public:
-  void visit (HIR::Trait &trait) override { trait_reference = &trait; }
+  void visit (HIR::Trait &trait) override { resolved_trait_reference = &trait; }
 };
 
 } // namespace Resolver
