@@ -12557,7 +12557,7 @@ cp_parser_statement (cp_parser* parser, tree in_statement_expr,
 
 /* Append ATTR to attribute list ATTRS.  */
 
-static tree
+tree
 attr_chainon (tree attrs, tree attr)
 {
   if (attrs == error_mark_node)

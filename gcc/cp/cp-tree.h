@@ -7235,6 +7235,7 @@ extern void inject_this_parameter (tree, cp_cv_quals);
 extern location_t defparse_location (tree);
 extern void maybe_show_extern_c_location (void);
 extern bool literal_integer_zerop (const_tree);
+extern tree attr_chainon (tree, tree);
 
 /* in pt.cc */
 extern tree canonical_type_parameter		(tree);

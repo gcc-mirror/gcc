@@ -5557,7 +5557,7 @@ start_decl (const cp_declarator *declarator,
   *pushed_scope_p = NULL_TREE;
 
   if (prefix_attributes != error_mark_node)
-    attributes = chainon (attributes, prefix_attributes);
+    attributes = attr_chainon (attributes, prefix_attributes);
 
   decl = grokdeclarator (declarator, declspecs, NORMAL, initialized,
 			 &attributes);
@@ -12728,9 +12728,10 @@ grokdeclarator (const cp_declarator *declarator,
 	       as a whole.  */
 	    late_attrs = splice_template_attributes (&attrs, type);
 	  returned_attrs = decl_attributes (&type,
-					    chainon (returned_attrs, attrs),
+					    attr_chainon (returned_attrs,
+							  attrs),
 					    attr_flags);
-	  returned_attrs = chainon (late_attrs, returned_attrs);
+	  returned_attrs = attr_chainon (late_attrs, returned_attrs);
 	}
 
       inner_declarator = declarator->declarator;
@@ -12781,8 +12782,8 @@ grokdeclarator (const cp_declarator *declarator,
 
 	       The optional attribute-specifier-seq appertains to the
 	       array.  */
-	    returned_attrs = chainon (returned_attrs,
-				      declarator->std_attributes);
+	    returned_attrs = attr_chainon (returned_attrs,
+					   declarator->std_attributes);
 	  break;
 
 	case cdk_function:
@@ -13122,9 +13123,9 @@ grokdeclarator (const cp_declarator *declarator,
 		/* transaction_safe applies to the type, but
 		   transaction_safe_dynamic applies to the function.  */
 		if (is_attribute_p ("transaction_safe", tx_qual))
-		  attrs = chainon (attrs, att);
+		  attrs = attr_chainon (attrs, att);
 		else
-		  returned_attrs = chainon (returned_attrs, att);
+		  returned_attrs = attr_chainon (returned_attrs, att);
 	      }
 	    if (attrs)
 	      /* [dcl.fct]/2:
@@ -13438,7 +13439,7 @@ grokdeclarator (const cp_declarator *declarator,
   if (returned_attrs)
     {
       if (attrlist)
-	*attrlist = chainon (returned_attrs, *attrlist);
+	*attrlist = attr_chainon (returned_attrs, *attrlist);
       else
 	attrlist = &returned_attrs;
     }
@@ -13451,7 +13452,7 @@ grokdeclarator (const cp_declarator *declarator,
       /* [dcl.meaning]/1: The optional attribute-specifier-seq following
 	 a declarator-id appertains to the entity that is declared.  */
       if (declarator->std_attributes != error_mark_node)
-	*attrlist = chainon (*attrlist, declarator->std_attributes);
+	*attrlist = attr_chainon (*attrlist, declarator->std_attributes);
       else
 	/* We should have already diagnosed the issue (c++/78344).  */
 	gcc_assert (seen_error ());
