@@ -251,21 +251,6 @@ HIRCompileBase::query_compile (HirId ref, TyTy::BaseType *lookup,
 	      rust_assert (ok);				    // found
 	      rust_assert (trait_item_ref->is_optional ()); // has definition
 
-	      Analysis::NodeMapping trait_mappings
-		= trait_item_ref->get_parent_trait_mappings ();
-
-	      HirId associated_impl_id;
-	      ok = ctx->get_tyctx ()->lookup_associated_impl_mapping_for_self (
-		trait_mappings.get_hirid (), receiver, &associated_impl_id);
-	      rust_assert (ok);
-
-	      Resolver::AssociatedImplTrait *associated = nullptr;
-	      bool found_associated_trait_impl
-		= ctx->get_tyctx ()->lookup_associated_trait_impl (
-		  associated_impl_id, &associated);
-	      rust_assert (found_associated_trait_impl);
-	      associated->setup_associated_types ();
-
 	      return CompileTraitItem::Compile (
 		trait_item_ref->get_hir_trait_item (), ctx, lookup, true,
 		expr_locus);

@@ -154,29 +154,7 @@ TraitItemReference::associated_type_reset () const
 }
 
 void
-AssociatedImplTrait::setup_associated_types ()
-{
-  ImplTypeIterator iter (*impl, [&] (HIR::TypeAlias &type) {
-    TraitItemReference *resolved_trait_item = nullptr;
-    bool ok = trait->lookup_trait_item (type.get_new_type_name (),
-					&resolved_trait_item);
-    if (!ok)
-      return;
-    if (resolved_trait_item->get_trait_item_type ()
-	!= TraitItemReference::TraitItemType::TYPE)
-      return;
-
-    TyTy::BaseType *lookup;
-    if (!context->lookup_type (type.get_mappings ().get_hirid (), &lookup))
-      return;
-
-    resolved_trait_item->associated_type_set (lookup);
-  });
-  iter.go ();
-}
-
-void
-AssociatedImplTrait::setup_associated_types2 (
+AssociatedImplTrait::setup_associated_types (
   const TyTy::BaseType *self, const TyTy::TypeBoundPredicate &bound)
 {
   // compute the constrained impl block generic arguments based on self and the
@@ -388,46 +366,6 @@ TraitItemReference::is_object_safe () const
       return false;
     }
   return false;
-}
-
-TyTy::BaseType *
-AssociatedImplTrait::get_projected_type (
-  const TraitItemReference *trait_item_ref, TyTy::BaseType *receiver, HirId ref,
-  HIR::GenericArgs &trait_generics, Location expr_locus)
-{
-  TyTy::BaseType *trait_item_tyty = trait_item_ref->get_tyty ()->clone ();
-
-  // we can substitute the Self with the receiver here
-  if (trait_item_tyty->get_kind () == TyTy::TypeKind::FNDEF)
-    {
-      TyTy::FnType *fn = static_cast<TyTy::FnType *> (trait_item_tyty);
-      TyTy::SubstitutionParamMapping *param = nullptr;
-      for (auto &param_mapping : fn->get_substs ())
-	{
-	  const HIR::TypeParam &type_param = param_mapping.get_generic_param ();
-	  if (type_param.get_type_representation ().compare ("Self") == 0)
-	    {
-	      param = &param_mapping;
-	      break;
-	    }
-	}
-      rust_assert (param != nullptr);
-
-      std::vector<TyTy::SubstitutionArg> mappings;
-      mappings.push_back (TyTy::SubstitutionArg (param, receiver->clone ()));
-
-      TyTy::SubstitutionArgumentMappings args (std::move (mappings),
-					       expr_locus);
-      trait_item_tyty = SubstMapperInternal::Resolve (trait_item_tyty, args);
-    }
-
-  if (!trait_generics.is_empty ())
-    {
-      trait_item_tyty
-	= SubstMapper::Resolve (trait_item_tyty, expr_locus, &trait_generics);
-    }
-
-  return trait_item_tyty;
 }
 
 // rust-hir-path-probe.h

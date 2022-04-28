@@ -52,6 +52,7 @@ CompileTraitItem::visit (HIR::TraitItemFunc &func)
 
   rust_assert (concrete->get_kind () == TyTy::TypeKind::FNDEF);
   TyTy::FnType *fntype = static_cast<TyTy::FnType *> (concrete);
+  fntype->monomorphize ();
 
   // items can be forward compiled which means we may not need to invoke this
   // code. We might also have already compiled this generic function as well.

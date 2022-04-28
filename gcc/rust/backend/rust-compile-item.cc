@@ -127,6 +127,7 @@ CompileItem::visit (HIR::Function &function)
 	{
 	  rust_assert (concrete->get_kind () == TyTy::TypeKind::FNDEF);
 	  fntype = static_cast<TyTy::FnType *> (concrete);
+	  fntype->monomorphize ();
 	}
     }
 

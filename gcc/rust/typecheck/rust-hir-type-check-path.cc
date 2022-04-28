@@ -67,41 +67,41 @@ TypeCheckExpr::visit (HIR::QualifiedPathInExpression &expr)
   // inherit the bound
   root->inherit_bounds ({specified_bound});
 
-  // we need resolve to the impl block
-  NodeId impl_resolved_id = UNKNOWN_NODEID;
-  bool ok = resolver->lookup_resolved_name (
-    qual_path_type.get_mappings ().get_nodeid (), &impl_resolved_id);
-  rust_assert (ok);
-
-  HirId impl_block_id;
-  ok = mappings->lookup_node_to_hir (expr.get_mappings ().get_crate_num (),
-				     impl_resolved_id, &impl_block_id);
-  rust_assert (ok);
-
-  AssociatedImplTrait *lookup_associated = nullptr;
-  bool found_impl_trait
-    = context->lookup_associated_trait_impl (impl_block_id, &lookup_associated);
-  rust_assert (found_impl_trait);
-
+  // lookup the associated item from the specified bound
   HIR::PathExprSegment &item_seg = expr.get_segments ().at (0);
-
-  const TraitItemReference *trait_item_ref = nullptr;
-  ok = trait_ref->lookup_trait_item (item_seg.get_segment ().as_string (),
-				     &trait_item_ref);
-  if (!ok)
+  HIR::PathIdentSegment item_seg_identifier = item_seg.get_segment ();
+  TyTy::TypeBoundPredicateItem item
+    = specified_bound.lookup_associated_item (item_seg_identifier.as_string ());
+  if (item.is_error ())
     {
       rust_error_at (item_seg.get_locus (), "unknown associated item");
       return;
     }
 
-  HIR::GenericArgs trait_generics = qual_path_type.trait_has_generic_args ()
-				      ? qual_path_type.get_trait_generic_args ()
-				      : HIR::GenericArgs::create_empty ();
+  // infer the root type
+  infered = item.get_tyty_for_receiver (root);
 
-  lookup_associated->setup_associated_types ();
-  infered = lookup_associated->get_projected_type (
-    trait_item_ref, root, item_seg.get_mappings ().get_hirid (), trait_generics,
-    item_seg.get_locus ());
+  // we need resolve to the impl block
+  NodeId impl_resolved_id = UNKNOWN_NODEID;
+  bool have_associated_impl = resolver->lookup_resolved_name (
+    qual_path_type.get_mappings ().get_nodeid (), &impl_resolved_id);
+  AssociatedImplTrait *lookup_associated = nullptr;
+  if (have_associated_impl)
+    {
+      HirId impl_block_id;
+      bool ok
+	= mappings->lookup_node_to_hir (expr.get_mappings ().get_crate_num (),
+					impl_resolved_id, &impl_block_id);
+      rust_assert (ok);
+
+      bool found_impl_trait
+	= context->lookup_associated_trait_impl (impl_block_id,
+						 &lookup_associated);
+      if (found_impl_trait)
+	{
+	  lookup_associated->setup_associated_types (root, specified_bound);
+	}
+    }
 
   // turbo-fish segment path::<ty>
   if (item_seg.has_generic_args ())
@@ -119,6 +119,7 @@ TypeCheckExpr::visit (HIR::QualifiedPathInExpression &expr)
     }
 
   // continue on as a path-in-expression
+  const TraitItemReference *trait_item_ref = item.get_raw_item ();
   NodeId root_resolved_node_id = trait_item_ref->get_mappings ().get_nodeid ();
   bool fully_resolved = expr.get_segments ().size () <= 1;
 
@@ -348,20 +349,6 @@ TypeCheckExpr::resolve_segments (NodeId root_resolved_node_id,
 	  HIR::ImplBlock *impl = candidate.item.trait.impl;
 	  if (impl != nullptr)
 	    {
-	      AssociatedImplTrait *lookup_associated = nullptr;
-	      bool found_impl_trait = context->lookup_associated_trait_impl (
-		impl->get_mappings ().get_hirid (), &lookup_associated);
-
-	      // setup associated mappings if possible we might be resolving a
-	      // path within a default implementation of a trait function
-	      // see: testsuite/rust/compile/torture/traits16.rs
-	      if (found_impl_trait)
-		lookup_associated->setup_associated_types ();
-
-	      // we need a new ty_ref_id for this trait item
-	      tyseg = tyseg->clone ();
-	      tyseg->set_ty_ref (mappings->get_next_hir_id ());
-
 	      // get the associated impl block
 	      associated_impl_block = impl;
 	    }
