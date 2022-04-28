@@ -26,6 +26,7 @@
 #include "rust-ast-resolve-type.h"
 #include "rust-ast-resolve-pattern.h"
 #include "rust-ast-resolve-stmt.h"
+#include "config.h"
 
 namespace Rust {
 namespace Resolver {
@@ -81,6 +82,7 @@ public:
   void visit (AST::TraitImpl &impl_block) override;
   void visit (AST::Trait &trait) override;
   void visit (AST::ExternBlock &extern_block) override;
+  void visit (AST::UseDeclaration &) override;
 
 protected:
   void resolve_impl_item (AST::TraitImplItem *item, const CanonicalPath &prefix,
@@ -135,5 +137,14 @@ private:
 
 } // namespace Resolver
 } // namespace Rust
+
+#if CHECKING_P
+
+namespace selftest {
+extern void
+rust_simple_path_resolve_test (void);
+} // namespace selftest
+
+#endif // CHECKING_P
 
 #endif // RUST_AST_RESOLVE_ITEM_H

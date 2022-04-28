@@ -932,23 +932,25 @@ Session::injection (AST::Crate &crate)
 
   // create use tree path
   // prelude is injected_crate_name
-  std::vector<AST::SimplePathSegment> segments
-    = {AST::SimplePathSegment (injected_crate_name, Location ()),
-       AST::SimplePathSegment ("prelude", Location ()),
-       AST::SimplePathSegment ("v1", Location ())};
-  // create use tree and decl
-  std::unique_ptr<AST::UseTreeGlob> use_tree (
-    new AST::UseTreeGlob (AST::UseTreeGlob::PATH_PREFIXED,
-			  AST::SimplePath (std::move (segments)), Location ()));
-  AST::Attribute prelude_attr (AST::SimplePath::from_str ("prelude_import",
-							  Location ()),
-			       nullptr);
-  std::unique_ptr<AST::UseDeclaration> use_decl (
-    new AST::UseDeclaration (std::move (use_tree),
-			     AST::Visibility::create_error (),
-			     {std::move (prelude_attr)}, Location ()));
+  // FIXME: Once we do want to include the standard library, add the prelude
+  // use item
+  // std::vector<AST::SimplePathSegment> segments
+  //   = {AST::SimplePathSegment (injected_crate_name, Location ()),
+  //      AST::SimplePathSegment ("prelude", Location ()),
+  //      AST::SimplePathSegment ("v1", Location ())};
+  // // create use tree and decl
+  // std::unique_ptr<AST::UseTreeGlob> use_tree (
+  //   new AST::UseTreeGlob (AST::UseTreeGlob::PATH_PREFIXED,
+  //     		  AST::SimplePath (std::move (segments)), Location ()));
+  // AST::Attribute prelude_attr (AST::SimplePath::from_str ("prelude_import",
+  //     						  Location ()),
+  //     		       nullptr);
+  // std::unique_ptr<AST::UseDeclaration> use_decl (
+  //   new AST::UseDeclaration (std::move (use_tree),
+  //     		     AST::Visibility::create_error (),
+  //     		     {std::move (prelude_attr)}, Location ()));
 
-  crate.items.insert (crate.items.begin (), std::move (use_decl));
+  // crate.items.insert (crate.items.begin (), std::move (use_decl));
 
   /* TODO: potentially add checking attribute crate type? I can't figure out
    * what this does currently comment says "Unconditionally collect crate
