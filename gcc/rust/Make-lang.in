@@ -87,6 +87,7 @@ GRS_OBJS = \
     rust/rust-ast-lower-pattern.o \
     rust/rust-name-resolver.o \
     rust/rust-ast-resolve.o \
+    rust/rust-ast-resolve-base.o \
     rust/rust-ast-resolve-item.o \
     rust/rust-ast-resolve-pattern.o \
     rust/rust-ast-resolve-expr.o \

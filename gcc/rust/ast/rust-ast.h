@@ -349,6 +349,7 @@ public:
 
   Location get_locus () const { return locus; }
   NodeId get_node_id () const { return node_id; }
+  const std::string &get_segment_name () const { return segment_name; }
 
   // TODO: visitor pattern?
 };
@@ -403,6 +404,11 @@ public:
     std::vector<AST::SimplePathSegment> single_segments
       = {AST::SimplePathSegment (std::move (str), locus)};
     return SimplePath (std::move (single_segments));
+  }
+
+  const std::vector<SimplePathSegment> &get_segments () const
+  {
+    return segments;
   }
 };
 

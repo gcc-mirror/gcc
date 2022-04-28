@@ -45,6 +45,17 @@ VisibilityResolver::go (HIR::Crate &crate)
     }
 }
 
+// FIXME: At this point in the pipeline, we should not be dealing with
+// `AST::SimplePath`s anymore! We need to be dealing with their "resolved
+// counterpart", so probably a NodeId/HirId/DefId.
+
+// static bool
+// resolve_module_path (std::vector<HIR::Module> &module_stack,
+// 		     const AST::SimplePath &restriction, DefId &id)
+// {
+//   return false;
+// }
+
 bool
 VisibilityResolver::resolve_visibility (const HIR::Visibility &visibility,
 					ModuleVisibility &to_resolve)

@@ -38,6 +38,13 @@ ResolvePath::go (AST::QualifiedPathInExpression *expr, NodeId parent)
 }
 
 void
+ResolvePath::go (AST::SimplePath *expr, NodeId parent)
+{
+  ResolvePath resolver (parent);
+  resolver.resolve_path (expr);
+}
+
+void
 ResolvePath::resolve_path (AST::PathInExpression *expr)
 {
   // resolve root segment first then apply segments in turn
@@ -270,6 +277,71 @@ ResolvePath::resolve_segments (CanonicalPath prefix, size_t offs,
       resolver->insert_new_definition (expr_node_id,
 				       Definition{expr_node_id, parent});
     }
+}
+
+static bool
+lookup_and_insert_segment (Resolver *resolver, CanonicalPath path,
+			   NodeId segment_id, NodeId *to_resolve, bool &is_type)
+{
+  if (resolver->get_name_scope ().lookup (path, to_resolve))
+    {
+      resolver->insert_resolved_name (segment_id, *to_resolve);
+    }
+  else if (resolver->get_type_scope ().lookup (path, to_resolve))
+    {
+      is_type = true;
+      resolver->insert_resolved_type (segment_id, *to_resolve);
+    }
+  else
+    {
+      return false;
+    }
+
+  return true;
+}
+
+void
+ResolvePath::resolve_path (AST::SimplePath *simple_path)
+{
+  // resolve root segment first then apply segments in turn
+  auto expr_node_id = simple_path->get_node_id ();
+  auto is_type = false;
+
+  auto path = CanonicalPath::create_empty ();
+  for (const auto &seg : simple_path->get_segments ())
+    {
+      auto s = ResolveSimplePathSegmentToCanonicalPath::resolve (seg);
+      path = path.append (s);
+
+      // Reset state
+      resolved_node = UNKNOWN_NODEID;
+      is_type = false;
+
+      if (!lookup_and_insert_segment (resolver, path, seg.get_node_id (),
+				      &resolved_node, is_type))
+	{
+	  rust_error_at (seg.get_locus (),
+			 "cannot find simple path segment %qs",
+			 seg.as_string ().c_str ());
+	  return;
+	}
+    }
+
+  if (resolved_node == UNKNOWN_NODEID)
+    {
+      rust_error_at (simple_path->get_locus (),
+		     "could not resolve simple path %qs",
+		     simple_path->as_string ().c_str ());
+      return;
+    }
+
+  if (is_type)
+    resolver->insert_resolved_type (expr_node_id, resolved_node);
+  else
+    resolver->insert_resolved_name (expr_node_id, resolved_node);
+
+  resolver->insert_new_definition (expr_node_id,
+				   Definition{expr_node_id, parent});
 }
 
 } // namespace Resolver
