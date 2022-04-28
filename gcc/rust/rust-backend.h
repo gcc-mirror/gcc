@@ -285,8 +285,7 @@ public:
 
   // Create an expression for a call to FN with ARGS, taking place within
   // caller CALLER.
-  virtual tree call_expression (tree caller, tree fn,
-				const std::vector<tree> &args,
+  virtual tree call_expression (tree fn, const std::vector<tree> &args,
 				tree static_chain, Location)
     = 0;
 

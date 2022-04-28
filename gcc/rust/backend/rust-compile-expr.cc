@@ -497,10 +497,8 @@ CompileExpr::visit (HIR::CallExpr &expr)
 
   // must be a call to a function
   auto fn_address = CompileExpr::Compile (expr.get_fnexpr (), ctx);
-  auto fncontext = ctx->peek_fn ();
-  translated
-    = ctx->get_backend ()->call_expression (fncontext.fndecl, fn_address, args,
-					    nullptr, expr.get_locus ());
+  translated = ctx->get_backend ()->call_expression (fn_address, args, nullptr,
+						     expr.get_locus ());
 }
 
 void
@@ -610,10 +608,8 @@ CompileExpr::visit (HIR::MethodCallExpr &expr)
       args.push_back (rvalue);
     }
 
-  auto fncontext = ctx->peek_fn ();
-  translated
-    = ctx->get_backend ()->call_expression (fncontext.fndecl, fn_expr, args,
-					    nullptr, expr.get_locus ());
+  translated = ctx->get_backend ()->call_expression (fn_expr, args, nullptr,
+						     expr.get_locus ());
 }
 
 tree
@@ -696,8 +692,8 @@ CompileExpr::compile_dyn_dispatch_call (const TyTy::DynamicObjectType *dyn,
   tree fn_expr
     = ctx->get_backend ()->var_expression (fn_convert_expr_tmp, expr_locus);
 
-  return ctx->get_backend ()->call_expression (fnctx.fndecl, fn_expr, args,
-					       nullptr, expr_locus);
+  return ctx->get_backend ()->call_expression (fn_expr, args, nullptr,
+					       expr_locus);
 }
 
 tree
@@ -866,9 +862,8 @@ CompileExpr::resolve_operator_overload (
   if (rhs != nullptr)	 // can be null for negation_expr (unary ones)
     args.push_back (rhs);
 
-  auto fncontext = ctx->peek_fn ();
-  return ctx->get_backend ()->call_expression (fncontext.fndecl, fn_expr, args,
-					       nullptr, expr.get_locus ());
+  return ctx->get_backend ()->call_expression (fn_expr, args, nullptr,
+					       expr.get_locus ());
 }
 
 tree
@@ -1289,10 +1284,8 @@ HIRCompileBase::resolve_deref_adjustment (Resolver::Adjustment &adjustment,
     }
 
   // make the call
-  auto fncontext = ctx->peek_fn ();
-  return ctx->get_backend ()->call_expression (fncontext.fndecl, fn_address,
-					       {adjusted_argument}, nullptr,
-					       locus);
+  return ctx->get_backend ()->call_expression (fn_address, {adjusted_argument},
+					       nullptr, locus);
 }
 
 tree
