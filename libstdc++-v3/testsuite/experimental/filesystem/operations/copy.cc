@@ -190,6 +190,34 @@ test05()
   VERIFY( !ec );  // Previous value should be cleared (LWG 2683)
 }
 
+void
+test_pr99290()
+{
+  auto dir = __gnu_test::nonexistent_path();
+  auto source = dir/"source";
+  auto dest = dir/"dest";
+  create_directories(source/"emptydir");
+  create_directories(dest/"emptydir");
+  std::ofstream{source/"file"} << 'a';
+  std::ofstream{dest/"file"} << 'b';
+  // PR libstdc++/99290
+  // std::filesystem::copy does not always report errors for recursion
+  std::error_code ec;
+  copy(source, dest, ec);
+  VERIFY( ec == std::errc::file_exists );
+
+#if __cpp_exceptions
+  try {
+    copy(source, dest);
+    VERIFY( false );
+  } catch (const fs::filesystem_error& e) {
+    VERIFY( e.code() == std::errc::file_exists );
+  }
+#endif
+
+  remove_all(dir);
+}
+
 int
 main()
 {
@@ -198,4 +226,5 @@ main()
   test03();
   test04();
   test05();
+  test_pr99290();
 }
