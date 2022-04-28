@@ -3224,8 +3224,7 @@ ix86_expand_int_movcc (rtx operands[])
 		}
 	      diff = ct - cf;
 
-	      if (reg_overlap_mentioned_p (out, op0)
-		  || reg_overlap_mentioned_p (out, op1))
+	      if (reg_overlap_mentioned_p (out, compare_op))
 		tmp = gen_reg_rtx (mode);
 
 	      if (mode == DImode)
