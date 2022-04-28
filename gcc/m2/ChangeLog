@@ -1,3 +1,20 @@
+2022-04-28   Gaius Mulley   <gaius.mulley@southwales.ac.uk>
+
+        * Make-lang.in: Added $(INCLUDES) to all %.o rules requiring gmp.h.
+
+2022-04-20   Gaius Mulley   <gaius.mulley@southwales.ac.uk>
+
+        * tools-src/mklink.c (FindObject): Replace calls to sprintf
+        with calls to snprintf.
+
+2022-03-02   Gaius Mulley   <gaius.mulley@southwales.ac.uk>
+
+        * ChangeLog: Correct month for last commit.
+
+2022-03-02   Gaius Mulley   <gaius.mulley@southwales.ac.uk>
+
+        * ChangeLog-2021: (New file).
+
 2022-03-02   Gaius Mulley   <gaius.mulley@southwales.ac.uk>
 
 	* gm2-libs/Args.def (GetArg): Corrected formatting.
