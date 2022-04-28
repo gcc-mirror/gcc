@@ -454,17 +454,10 @@ public:
 
   TyTy::BaseType *get_self () { return self; }
 
-  void setup_associated_types ();
-
-  void setup_associated_types2 (const TyTy::BaseType *self,
-				const TyTy::TypeBoundPredicate &bound);
+  void setup_associated_types (const TyTy::BaseType *self,
+			       const TyTy::TypeBoundPredicate &bound);
 
   void reset_associated_types ();
-
-  TyTy::BaseType *get_projected_type (const TraitItemReference *trait_item_ref,
-				      TyTy::BaseType *reciever, HirId ref,
-				      HIR::GenericArgs &trait_generics,
-				      Location expr_locus);
 
 private:
   TraitReference *trait;

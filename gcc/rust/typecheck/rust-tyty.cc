@@ -826,22 +826,23 @@ SubstitutionRef::monomorphize ()
 	      bool found_impl_trait
 		= context->lookup_associated_trait_impl (impl_block_id,
 							 &associated);
-	      rust_assert (found_impl_trait);
-
-	      bool found_trait
-		= specified_bound_ref->is_equal (*bound_trait_ref);
-	      bool found_self
-		= associated->get_self ()->can_eq (binding, false);
-	      if (found_trait && found_self)
+	      if (found_impl_trait)
 		{
-		  associated_impl_trait = associated;
-		  break;
+		  bool found_trait
+		    = specified_bound_ref->is_equal (*bound_trait_ref);
+		  bool found_self
+		    = associated->get_self ()->can_eq (binding, false);
+		  if (found_trait && found_self)
+		    {
+		      associated_impl_trait = associated;
+		      break;
+		    }
 		}
 	    }
 
 	  if (associated_impl_trait != nullptr)
 	    {
-	      associated_impl_trait->setup_associated_types2 (binding, bound);
+	      associated_impl_trait->setup_associated_types (binding, bound);
 	    }
 	}
     }
@@ -1230,6 +1231,19 @@ FnType::is_equal (const BaseType &other) const
     {
       if (get_num_substitutions () != other2.get_num_substitutions ())
 	return false;
+
+      const FnType &ofn = static_cast<const FnType &> (other);
+      for (size_t i = 0; i < get_num_substitutions (); i++)
+	{
+	  const SubstitutionParamMapping &a = get_substs ().at (i);
+	  const SubstitutionParamMapping &b = ofn.get_substs ().at (i);
+
+	  const ParamType *pa = a.get_param_ty ();
+	  const ParamType *pb = b.get_param_ty ();
+
+	  if (!pa->is_equal (*pb))
+	    return false;
+	}
     }
 
   if (num_params () != other2.num_params ())
@@ -2961,6 +2975,7 @@ TypeCheckCallExpr::visit (ADTType &type)
 void
 TypeCheckCallExpr::visit (FnType &type)
 {
+  type.monomorphize ();
   if (call.num_params () != type.num_params ())
     {
       if (type.is_varadic ())

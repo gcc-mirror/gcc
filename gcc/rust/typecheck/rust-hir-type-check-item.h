@@ -224,6 +224,8 @@ public:
       TypeCheckItem::Resolve (item.get ());
   }
 
+  void visit (HIR::Trait &trait) override { TraitResolver::Resolve (trait); }
+
 private:
   TypeCheckItem () : TypeCheckBase () {}
 };

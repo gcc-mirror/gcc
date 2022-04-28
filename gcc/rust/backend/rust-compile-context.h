@@ -254,7 +254,11 @@ public:
   bool in_fn () { return fn_stack.size () != 0; }
 
   // Note: it is undefined behavior to call peek_fn () if fn_stack is empty.
-  fncontext peek_fn () { return fn_stack.back (); }
+  fncontext peek_fn ()
+  {
+    rust_assert (!fn_stack.empty ());
+    return fn_stack.back ();
+  }
 
   void push_type (tree t) { type_decls.push_back (t); }
   void push_var (::Bvariable *v) { var_decls.push_back (v); }

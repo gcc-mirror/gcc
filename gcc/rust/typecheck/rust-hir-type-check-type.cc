@@ -142,31 +142,35 @@ TypeCheckType::visit (HIR::QualifiedPathInType &path)
       return;
     }
 
+  // get the predicate for the bound
+  auto specified_bound
+    = get_predicate_from_bound (*qual_path_type.get_trait ().get ());
+  if (specified_bound.is_error ())
+    return;
+
+  // inherit the bound
+  root->inherit_bounds ({specified_bound});
+
+  // lookup the associated item from the specified bound
   std::unique_ptr<HIR::TypePathSegment> &item_seg
     = path.get_associated_segment ();
-  const TraitItemReference *trait_item_ref = nullptr;
-  bool ok
-    = trait_ref->lookup_trait_item (item_seg->get_ident_segment ().as_string (),
-				    &trait_item_ref);
-  if (!ok)
+  HIR::PathIdentSegment item_seg_identifier = item_seg->get_ident_segment ();
+  TyTy::TypeBoundPredicateItem item
+    = specified_bound.lookup_associated_item (item_seg_identifier.as_string ());
+  if (item.is_error ())
     {
       rust_error_at (item_seg->get_locus (), "unknown associated item");
       return;
     }
 
-  // this will be the placeholder from the trait but we may be able to project
-  // it based on the impl block
-  translated = trait_item_ref->get_tyty ();
-
-  // this is the associated generics we need to potentially apply
-  HIR::GenericArgs trait_generics = qual_path_type.trait_has_generic_args ()
-				      ? qual_path_type.get_trait_generic_args ()
-				      : HIR::GenericArgs::create_empty ();
+  // infer the root type
+  translated = item.get_tyty_for_receiver (root);
 
   // we need resolve to the impl block
   NodeId impl_resolved_id = UNKNOWN_NODEID;
   bool have_associated_impl = resolver->lookup_resolved_name (
     qual_path_type.get_mappings ().get_nodeid (), &impl_resolved_id);
+  AssociatedImplTrait *lookup_associated = nullptr;
   if (have_associated_impl)
     {
       HirId impl_block_id;
@@ -175,30 +179,16 @@ TypeCheckType::visit (HIR::QualifiedPathInType &path)
 					impl_resolved_id, &impl_block_id);
       rust_assert (ok);
 
-      AssociatedImplTrait *lookup_associated = nullptr;
       bool found_impl_trait
 	= context->lookup_associated_trait_impl (impl_block_id,
 						 &lookup_associated);
-      rust_assert (found_impl_trait);
-
-      // project
-      lookup_associated->setup_associated_types ();
-      translated = lookup_associated->get_projected_type (
-	trait_item_ref, root, item_seg->get_mappings ().get_hirid (),
-	trait_generics, item_seg->get_locus ());
-    }
-
-  if (translated->get_kind () == TyTy::TypeKind::PLACEHOLDER)
-    {
-      // lets grab the actual projection type
-      TyTy::PlaceholderType *p
-	= static_cast<TyTy::PlaceholderType *> (translated);
-      if (p->can_resolve ())
+      if (found_impl_trait)
 	{
-	  translated = p->resolve ();
+	  lookup_associated->setup_associated_types (root, specified_bound);
 	}
     }
 
+  // turbo-fish segment path::<ty>
   if (item_seg->get_type () == HIR::TypePathSegment::SegmentType::GENERIC)
     {
       HIR::TypePathSegmentGeneric &generic_seg
@@ -222,6 +212,7 @@ TypeCheckType::visit (HIR::QualifiedPathInType &path)
     }
 
   // continue on as a path-in-expression
+  const TraitItemReference *trait_item_ref = item.get_raw_item ();
   NodeId root_resolved_node_id = trait_item_ref->get_mappings ().get_nodeid ();
   bool fully_resolved = path.get_segments ().empty ();
   if (fully_resolved)
@@ -448,22 +439,6 @@ TypeCheckType::resolve_segments (
 	{
 	  resolved_node_id
 	    = candidate.item.trait.item_ref->get_mappings ().get_nodeid ();
-
-	  // lookup the associated-impl-trait
-	  HIR::ImplBlock *impl = candidate.item.trait.impl;
-	  if (impl != nullptr && !reciever_is_generic)
-	    {
-	      AssociatedImplTrait *lookup_associated = nullptr;
-	      bool found_impl_trait = context->lookup_associated_trait_impl (
-		impl->get_mappings ().get_hirid (), &lookup_associated);
-	      rust_assert (found_impl_trait);
-
-	      lookup_associated->setup_associated_types ();
-
-	      // we need a new ty_ref_id for this trait item
-	      tyseg = tyseg->clone ();
-	      tyseg->set_ty_ref (mappings->get_next_hir_id ());
-	    }
 	}
 
       if (seg->is_generic_segment ())

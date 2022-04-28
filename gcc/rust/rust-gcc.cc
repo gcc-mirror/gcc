@@ -250,7 +250,7 @@ public:
 
   tree array_index_expression (tree array, tree index, Location);
 
-  tree call_expression (tree caller, tree fn, const std::vector<tree> &args,
+  tree call_expression (tree fn, const std::vector<tree> &args,
 			tree static_chain, Location);
 
   // Statements.
@@ -1794,8 +1794,7 @@ Gcc_backend::array_index_expression (tree array_tree, tree index_tree,
 
 // Create an expression for a call to FN_EXPR with FN_ARGS.
 tree
-Gcc_backend::call_expression (tree, // containing fcn for call
-			      tree fn, const std::vector<tree> &fn_args,
+Gcc_backend::call_expression (tree fn, const std::vector<tree> &fn_args,
 			      tree chain_expr, Location location)
 {
   if (fn == error_mark_node || TREE_TYPE (fn) == error_mark_node)
