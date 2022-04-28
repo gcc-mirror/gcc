@@ -1043,7 +1043,8 @@ BEGIN
    add (macros, 'time') ;
    add (macros, 'main') ;
    add (macros, 'true') ;
-   add (macros, 'false')
+   add (macros, 'false') ;
+   add (macros, 'sigfpe')
 END initMacros ;
 
 

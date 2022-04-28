@@ -993,6 +993,7 @@ static void initMacros (void)
   add (macros, (const char *) "main", 4);
   add (macros, (const char *) "true", 4);
   add (macros, (const char *) "false", 5);
+  add (macros, (const char *) "sigfpe", 6);
 }
 
 
