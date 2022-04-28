@@ -759,9 +759,12 @@ protected:
 class MetaWord : public MetaItem
 {
   Identifier ident;
+  Location ident_locus;
 
 public:
-  MetaWord (Identifier ident) : ident (std::move (ident)) {}
+  MetaWord (Identifier ident, Location ident_locus)
+    : ident (std::move (ident)), ident_locus (ident_locus)
+  {}
 
   std::string as_string () const override { return ident; }
 
@@ -783,12 +786,17 @@ protected:
 class MetaNameValueStr : public MetaItem
 {
   Identifier ident;
+  Location ident_locus;
+
   // NOTE: str stored without quotes
   std::string str;
+  Location str_locus;
 
 public:
-  MetaNameValueStr (Identifier ident, std::string str)
-    : ident (std::move (ident)), str (std::move (str))
+  MetaNameValueStr (Identifier ident, Location ident_locus, std::string str,
+		    Location str_locus)
+    : ident (std::move (ident)), ident_locus (ident_locus),
+      str (std::move (str)), str_locus (str_locus)
   {}
 
   std::string as_string () const override
@@ -821,11 +829,14 @@ protected:
 class MetaListPaths : public MetaItem
 {
   Identifier ident;
+  Location ident_locus;
   std::vector<SimplePath> paths;
 
 public:
-  MetaListPaths (Identifier ident, std::vector<SimplePath> paths)
-    : ident (std::move (ident)), paths (std::move (paths))
+  MetaListPaths (Identifier ident, Location ident_locus,
+		 std::vector<SimplePath> paths)
+    : ident (std::move (ident)), ident_locus (ident_locus),
+      paths (std::move (paths))
   {}
 
   std::string as_string () const override;
@@ -852,13 +863,14 @@ protected:
 class MetaListNameValueStr : public MetaItem
 {
   Identifier ident;
+  Location ident_locus;
   std::vector<MetaNameValueStr> strs;
 
-  // FIXME add location info
-
 public:
-  MetaListNameValueStr (Identifier ident, std::vector<MetaNameValueStr> strs)
-    : ident (std::move (ident)), strs (std::move (strs))
+  MetaListNameValueStr (Identifier ident, Location ident_locus,
+			std::vector<MetaNameValueStr> strs)
+    : ident (std::move (ident)), ident_locus (ident_locus),
+      strs (std::move (strs))
   {}
 
   std::string as_string () const override;

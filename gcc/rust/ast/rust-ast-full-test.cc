@@ -4118,12 +4118,14 @@ AttributeParser::parse_meta_item_inner ()
       return parse_path_meta_item ();
     }
 
-  Identifier ident = peek_token ()->as_string ();
+  auto ident = peek_token ()->as_string ();
+  auto ident_locus = peek_token ()->get_locus ();
+
   if (is_end_meta_item_tok (peek_token (1)->get_id ()))
     {
       // meta word syntax
       skip_token ();
-      return std::unique_ptr<MetaWord> (new MetaWord (std::move (ident)));
+      return std::unique_ptr<MetaWord> (new MetaWord (ident, ident_locus));
     }
 
   if (peek_token (1)->get_id () == EQUAL)
@@ -4133,7 +4135,9 @@ AttributeParser::parse_meta_item_inner ()
 	  && is_end_meta_item_tok (peek_token (3)->get_id ()))
 	{
 	  // meta name value str syntax
-	  std::string value = peek_token (2)->as_string ();
+	  auto &value_tok = peek_token (2);
+	  auto value = value_tok->as_string ();
+	  auto locus = value_tok->get_locus ();
 
 	  skip_token (2);
 
@@ -4141,7 +4145,8 @@ AttributeParser::parse_meta_item_inner ()
 	  std::string raw_value = unquote_string (std::move (value));
 
 	  return std::unique_ptr<MetaNameValueStr> (
-	    new MetaNameValueStr (std::move (ident), std::move (raw_value)));
+	    new MetaNameValueStr (ident, ident_locus, std::move (raw_value),
+				  locus));
 	}
       else
 	{
@@ -4183,7 +4188,7 @@ AttributeParser::parse_meta_item_inner ()
   if (!meta_name_value_str_items.empty ())
     {
       return std::unique_ptr<MetaListNameValueStr> (
-	new MetaListNameValueStr (std::move (ident),
+	new MetaListNameValueStr (ident, ident_locus,
 				  std::move (meta_name_value_str_items)));
     }
 
@@ -4222,7 +4227,7 @@ AttributeParser::parse_meta_item_inner ()
   if (!path_items.empty ())
     {
       return std::unique_ptr<MetaListPaths> (
-	new MetaListPaths (std::move (ident), std::move (path_items)));
+	new MetaListPaths (ident, ident_locus, std::move (path_items)));
     }
 
   rust_error_at (Linemap::unknown_location (),
@@ -4694,11 +4699,11 @@ Attribute
 MetaNameValueStr::to_attribute () const
 {
   LiteralExpr lit_expr (str, Literal::LitType::STRING,
-			PrimitiveCoreType::CORETYPE_UNKNOWN, {}, Location ());
+			PrimitiveCoreType::CORETYPE_UNKNOWN, {}, str_locus);
   // FIXME: What location do we put here? Is the literal above supposed to have
   // an empty location as well?
   // Should MetaNameValueStr keep a location?
-  return Attribute (SimplePath::from_str (ident, Location ()),
+  return Attribute (SimplePath::from_str (ident, ident_locus),
 		    std::unique_ptr<AttrInputLiteral> (
 		      new AttrInputLiteral (std::move (lit_expr))));
 }
@@ -4725,8 +4730,7 @@ MetaItemSeq::to_attribute () const
 Attribute
 MetaWord::to_attribute () const
 {
-  // FIXME: How do we get a location here?
-  return Attribute (SimplePath::from_str (ident, Location ()), nullptr);
+  return Attribute (SimplePath::from_str (ident, ident_locus), nullptr);
 }
 
 Attribute
@@ -4744,8 +4748,7 @@ MetaListPaths::to_attribute () const
 
   std::unique_ptr<AttrInputMetaItemContainer> new_seq_container (
     new AttrInputMetaItemContainer (std::move (new_seq)));
-  // FIXME: How do we get a location here?
-  return Attribute (SimplePath::from_str (ident, Location ()),
+  return Attribute (SimplePath::from_str (ident, ident_locus),
 		    std::move (new_seq_container));
 }
 
@@ -4760,8 +4763,7 @@ MetaListNameValueStr::to_attribute () const
 
   std::unique_ptr<AttrInputMetaItemContainer> new_seq_container (
     new AttrInputMetaItemContainer (std::move (new_seq)));
-  // FIXME: How do we get a location here?
-  return Attribute (SimplePath::from_str (ident, Location ()),
+  return Attribute (SimplePath::from_str (ident, ident_locus),
 		    std::move (new_seq_container));
 }
 
