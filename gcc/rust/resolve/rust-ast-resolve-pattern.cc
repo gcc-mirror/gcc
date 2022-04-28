@@ -17,6 +17,7 @@
 // <http://www.gnu.org/licenses/>.
 
 #include "rust-ast-resolve-pattern.h"
+#include "rust-ast-resolve-path.h"
 #include "rust-ast-resolve-expr.h"
 
 namespace Rust {
