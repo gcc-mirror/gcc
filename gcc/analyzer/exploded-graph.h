@@ -1001,6 +1001,8 @@ public:
   const region_model &get_model () const { return m_model; }
   const auto_sbitmap &get_snodes_visited () const { return m_snodes_visited; }
 
+  void dump_to_pp (pretty_printer *pp, bool simple, bool multiline) const;
+
 private:
   region_model m_model;
   auto_sbitmap m_snodes_visited;

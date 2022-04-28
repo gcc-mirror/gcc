@@ -179,7 +179,6 @@ public:
   }
 
   void print (pretty_printer *pp, const format &f) const;
-  void print_source_line (pretty_printer *pp) const;
   void dump () const;
 
   json::object *to_json () const;

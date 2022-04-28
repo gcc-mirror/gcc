@@ -114,6 +114,8 @@ function_point::print (pretty_printer *pp, const format &f) const
 
     case PK_ORIGIN:
       pp_printf (pp, "origin");
+      if (f.m_newlines)
+	pp_newline (pp);
       break;
 
     case PK_BEFORE_SUPERNODE:
@@ -156,6 +158,8 @@ function_point::print (pretty_printer *pp, const format &f) const
 
     case PK_AFTER_SUPERNODE:
       pp_printf (pp, "after SN: %i", m_supernode->m_index);
+      if (f.m_newlines)
+	pp_newline (pp);
       break;
     }
 }
