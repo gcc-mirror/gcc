@@ -1,3 +1,70 @@
+2022-04-28  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/105365
+	PR analyzer/105366
+	* gcc.dg/analyzer/pr105365.c: New test.
+	* gcc.dg/analyzer/pr105366.c: New test.
+
+2022-04-28  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/105252
+	* gcc.dg/analyzer/pr105252.c: New test.
+
+2022-04-28  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2022-04-26  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/105386
+	* g++.dg/cpp0x/decltype81.C: New test.
+
+2022-04-28  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2022-04-26  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/105304
+	* g++.dg/cpp2a/concepts-requires30.C: New test.
+
+2022-04-28  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2022-04-26  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/105289
+	PR c++/86193
+	* g++.dg/template/partial-specialization11.C: New test.
+	* g++.dg/template/partial-specialization12.C: New test.
+
+2022-04-28  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2022-04-28  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/90107
+	* g++.dg/parse/qualified6.C: New test.
+
+2022-04-28  Tamar Christina  <tamar.christina@arm.com>
+
+	PR testsuite/105095
+	* gcc.dg/vect/complex/fast-math-bb-slp-complex-mul-float.c: Update for
+	codegen.
+	* gcc.dg/vect/complex/fast-math-complex-add-double.c: Likewise.
+	* gcc.dg/vect/complex/fast-math-complex-add-float.c: Likewise.
+	* gcc.dg/vect/complex/fast-math-complex-add-half-float.c: Likewise.
+	* gcc.dg/vect/complex/fast-math-complex-add-pattern-double.c: Likewise.
+	* gcc.dg/vect/complex/fast-math-complex-add-pattern-float.c: Likewise.
+	* gcc.dg/vect/complex/fast-math-complex-add-pattern-half-float.c:
+	Likewise.
+	* gcc.dg/vect/complex/fast-math-complex-mla-half-float.c: Likewise.
+	* gcc.dg/vect/complex/fast-math-complex-mls-double.c: Likewise.
+	* gcc.dg/vect/complex/fast-math-complex-mls-float.c: Likewise.
+	* gcc.dg/vect/complex/fast-math-complex-mls-half-float.c: Likewise.
+	* gcc.dg/vect/complex/fast-math-complex-mul-double.c: Likewise.
+	* gcc.dg/vect/complex/fast-math-complex-mul-float.c: Likewise.
+	* gcc.dg/vect/complex/fast-math-complex-mul-half-float.c: Likewise.
+	* gcc.dg/vect/vect.exp: Add extra letter to filter.
+
 2022-04-27  Marek Polacek  <polacek@redhat.com>
 
 	Backported from master:

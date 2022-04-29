@@ -1,3 +1,20 @@
+2022-04-28  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/105365
+	PR analyzer/105366
+	* svalue.cc
+	(cmp_cst): Rename to...
+	(cmp_csts_same_type): ...this.  Convert all recursive calls to
+	calls to...
+	(cmp_csts_and_types): ....this new function.
+	(svalue::cmp_ptr): Update for renaming of cmp_cst
+
+2022-04-28  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/105252
+	* svalue.cc (cmp_cst): When comparing VECTOR_CSTs, compare the
+	types of the encoded elements before calling cmp_cst on them.
+
 2022-04-21  Release Manager
 
 	* GCC 11.3.0 released.
