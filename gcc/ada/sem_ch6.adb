@@ -570,42 +570,52 @@ package body Sem_Ch6 is
          --  RM in 4.9(3.2/5-3.4/5) and we flag an error.
 
          if Is_Static_Function (Def_Id) then
-            if not Is_Static_Expression (Expr) then
-               declare
-                  Exp_Copy : constant Node_Id := New_Copy_Tree (Expr);
-               begin
-                  Set_Checking_Potentially_Static_Expression (True);
+            declare
+               --  If a potentially static expr like "Parameter / 0"
+               --  is transformed into "(raise Constraint_Error)", then we
+               --  need to copy the Original_Node.
+               function Make_Expr_Copy return Node_Id is
+                 (New_Copy_Tree (if Expr in N_Raise_xxx_Error_Id
+                                 then Original_Node (Expr)
+                                 else Expr));
+            begin
+               if not Is_Static_Expression (Expr) then
+                  declare
+                     Exp_Copy : constant Node_Id := Make_Expr_Copy;
+                  begin
+                     Set_Checking_Potentially_Static_Expression (True);
 
-                  Preanalyze_Formal_Expression (Exp_Copy, Typ);
+                     Preanalyze_Formal_Expression (Exp_Copy, Typ);
 
-                  if not Is_Static_Expression (Exp_Copy) then
-                     Error_Msg_N
-                       ("static expression function requires "
-                          & "potentially static expression", Expr);
-                  end if;
+                     if not Is_Static_Expression (Exp_Copy) then
+                        Error_Msg_N
+                          ("static expression function requires "
+                             & "potentially static expression", Expr);
+                     end if;
 
-                  Set_Checking_Potentially_Static_Expression (False);
-               end;
-            end if;
+                     Set_Checking_Potentially_Static_Expression (False);
+                  end;
+               end if;
 
-            --  We also make an additional copy of the expression and
-            --  replace the expression of the expression function with
-            --  this copy, because the currently present expression is
-            --  now associated with the body created for the static
-            --  expression function, which will later be analyzed and
-            --  possibly rewritten, and we need to have the separate
-            --  unanalyzed copy available for use with later static
-            --  calls.
+               --  We also make an additional copy of the expression and
+               --  replace the expression of the expression function with
+               --  this copy, because the currently present expression is
+               --  now associated with the body created for the static
+               --  expression function, which will later be analyzed and
+               --  possibly rewritten, and we need to have the separate
+               --  unanalyzed copy available for use with later static
+               --  calls.
 
-            Set_Expression
-              (Original_Node (Subprogram_Spec (Def_Id)),
-               New_Copy_Tree (Expr));
+               Set_Expression
+                 (Original_Node (Subprogram_Spec (Def_Id)),
+                  Make_Expr_Copy);
 
-            --  Mark static expression functions as inlined, to ensure
-            --  that even calls with nonstatic actuals will be inlined.
+               --  Mark static expression functions as inlined, to ensure
+               --  that even calls with nonstatic actuals will be inlined.
 
-            Set_Has_Pragma_Inline (Def_Id);
-            Set_Is_Inlined (Def_Id);
+               Set_Has_Pragma_Inline (Def_Id);
+               Set_Is_Inlined (Def_Id);
+            end;
          end if;
       end if;
 

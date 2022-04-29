@@ -46,6 +46,7 @@ with Exp_Tss;        use Exp_Tss;
 with Exp_Util;       use Exp_Util;
 with Freeze;         use Freeze;
 with Inline;         use Inline;
+with Lib;            use Lib;
 with Namet;          use Namet;
 with Nlists;         use Nlists;
 with Nmake;          use Nmake;
@@ -11008,6 +11009,16 @@ package body Exp_Ch4 is
          --  actually performed.
 
          else
+            if (not Is_Unchecked_Union
+                     (Implementation_Base_Type (Etype (Prefix (N)))))
+              and then not Is_Predefined_Unit (Get_Source_Unit (N))
+            then
+               Error_Msg_N
+                 ("sorry - unable to generate discriminant check for" &
+                    " reference to variant component &",
+                  Selector_Name (N));
+            end if;
+
             Set_Do_Discriminant_Check (N, False);
          end if;
       end if;

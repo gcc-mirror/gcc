@@ -33,6 +33,7 @@ with Einfo.Entities; use Einfo.Entities;
 with Einfo.Utils;    use Einfo.Utils;
 with Elists;         use Elists;
 with Errout;         use Errout;
+with Exp_Ch3;        use Exp_Ch3;
 with Exp_Disp;       use Exp_Disp;
 with Exp_Tss;        use Exp_Tss;
 with Exp_Util;       use Exp_Util;
@@ -13138,12 +13139,20 @@ package body Sem_Ch13 is
             end if;
          end;
 
+         --  Before we build a predicate function, ensure that discriminant
+         --  checking functions are available. The predicate function might
+         --  need to call these functions if the predicate references
+         --  any components declared in a variant part.
+         if Ekind (E) = E_Record_Type and then Has_Discriminants (E) then
+            Build_Or_Copy_Discr_Checking_Funcs (Parent (E));
+         end if;
+
          Build_Predicate_Function (E, N);
       end if;
 
       --  If type has delayed aspects, this is where we do the preanalysis at
       --  the freeze point, as part of the consistent visibility check. Note
-      --  that this must be done after calling Build_Predicate_Functions or
+      --  that this must be done after calling Build_Predicate_Function or
       --  Build_Invariant_Procedure since these subprograms fix occurrences of
       --  the subtype name in the saved expression so that they will not cause
       --  trouble in the preanalysis.
