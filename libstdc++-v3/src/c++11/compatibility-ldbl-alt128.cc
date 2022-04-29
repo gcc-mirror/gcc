@@ -241,4 +241,40 @@ _ZNKSt4hashIu9__ieee128EclEu9__ieee128 (void)
 # error "Configuration error"
 #endif
 
+#if defined _GLIBCXX_USE_DUAL_ABI && defined __LONG_DOUBLE_IEEE128__
+// PR libstdc++/105417
+// The --with-long-double-abi=ibm build is missing some exports that are present in the
+// --with-long-double-abi=ieee build. Those symbols never should have been exported at all,
+// but now that they have been, they should be exported consistently by both ibm and ieee.
+
+#define STR_(X) #X
+#define STR(X) STR_(X)
+#define JOIN_(X,Y) X ## Y
+#define JOIN(X,Y) JOIN_(X,Y)
+
+#define NUM_GET_TYPE(C, I) _ZNKSt17__gnu_cxx_ieee1287num_getI ## C ## St19istreambuf_iteratorI ## C ## St11char_traitsI ## C
+#define FUNC_NAME(TAG, INT) EEE14_M_extract_int ## TAG ## I ## INT ## EES4_S4_S4_RSt8ios_baseRSt12_Ios_IostateRT_
+
+// This defines __gnu_ieee128::num_get<CHAR>::_M_extract_int[abi:cxx11]<INT> as an alias for
+// __gnu_ieee128::num_get<CHAR>::_M_extract_int<INT> (i.e. the same name without the abi-tag).
+#define ALIAS(CHAR,MANGLED_CHAR,INT) extern "C" std::istreambuf_iterator<CHAR> \
+  JOIN(NUM_GET_TYPE(MANGLED_CHAR,INT), FUNC_NAME(B5cxx11,INT)) (void) \
+  __attribute__((alias (STR(NUM_GET_TYPE(MANGLED_CHAR,INT)) STR(FUNC_NAME(,INT)))))
+
+ALIAS(char,c,j);
+ALIAS(char,c,l);
+ALIAS(char,c,m);
+ALIAS(char,c,t);
+ALIAS(char,c,x);
+ALIAS(char,c,y);
+#ifdef _GLIBCXX_USE_WCHAR_T
+ALIAS(wchar_t,w,j);
+ALIAS(wchar_t,w,l);
+ALIAS(wchar_t,w,m);
+ALIAS(wchar_t,w,t);
+ALIAS(wchar_t,w,x);
+ALIAS(wchar_t,w,y);
+#endif
+#endif
+
 #endif
