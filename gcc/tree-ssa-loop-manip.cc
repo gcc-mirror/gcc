@@ -1096,7 +1096,7 @@ determine_exit_conditions (class loop *loop, class tree_niter_desc *desc,
   /* cond now may be a gimple comparison, which would be OK, but also any
      other gimple rhs (say a && b).  In this case we need to force it to
      operand.  */
-  if (!is_gimple_condexpr (cond))
+  if (!is_gimple_condexpr_for_cond (cond))
     {
       cond = force_gimple_operand (cond, &stmts, true, NULL_TREE);
       if (stmts)

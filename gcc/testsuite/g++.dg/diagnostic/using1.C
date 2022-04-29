@@ -7,6 +7,7 @@ struct a {
 template <typename c> struct d : c {
   using c::e;
   using f = d;
+  // { dg-message "decltype .c::e" "" { target *-*-* } 0 }
   constexpr int g(decltype(e.b())) { return buh; } // { dg-error "buh" }
 };
 struct h {

@@ -432,6 +432,12 @@ ifcombine_ifandif (basic_block inner_cond_bb, bool inner_inv,
       t = canonicalize_cond_expr_cond (t);
       if (!t)
 	return false;
+      if (!is_gimple_condexpr_for_cond (t))
+	{
+	  gsi = gsi_for_stmt (inner_cond);
+	  t = force_gimple_operand_gsi_1 (&gsi, t, is_gimple_condexpr_for_cond,
+					  NULL, true, GSI_SAME_STMT);
+	}
       gimple_cond_set_condition_from_tree (inner_cond, t);
       update_stmt (inner_cond);
 
@@ -512,6 +518,12 @@ ifcombine_ifandif (basic_block inner_cond_bb, bool inner_inv,
       t = canonicalize_cond_expr_cond (t);
       if (!t)
 	return false;
+      if (!is_gimple_condexpr_for_cond (t))
+	{
+	  gsi = gsi_for_stmt (inner_cond);
+	  t = force_gimple_operand_gsi_1 (&gsi, t, is_gimple_condexpr_for_cond,
+					  NULL, true, GSI_SAME_STMT);
+	}
       gimple_cond_set_condition_from_tree (inner_cond, t);
       update_stmt (inner_cond);
 
@@ -593,8 +605,8 @@ ifcombine_ifandif (basic_block inner_cond_bb, bool inner_inv,
 	      result_inv = false;
 	    }
 	  gsi = gsi_for_stmt (inner_cond);
-	  t = force_gimple_operand_gsi_1 (&gsi, t, is_gimple_condexpr, NULL, true,
-					  GSI_SAME_STMT);
+	  t = force_gimple_operand_gsi_1 (&gsi, t, is_gimple_condexpr_for_cond,
+					  NULL, true, GSI_SAME_STMT);
         }
       if (result_inv)
 	t = fold_build1 (TRUTH_NOT_EXPR, TREE_TYPE (t), t);

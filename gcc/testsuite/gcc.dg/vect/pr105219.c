@@ -1,6 +1,7 @@
 /* { dg-do run } */
 /* { dg-additional-options "-O3" } */
 /* { dg-additional-options "-mtune=intel" { target x86_64-*-* i?86-*-* } } */
+/* { dg-additional-options "-mtune=thunderx" { target aarch64*-*-* } } */
 
 #include "tree-vect.h"
 
