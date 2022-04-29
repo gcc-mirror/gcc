@@ -33224,7 +33224,6 @@ cp_parser_next_token_ends_template_argument_p (cp_parser *parser)
 	  || ((cxx_dialect != cxx98) && token->type == CPP_RSHIFT)
 	  /* For better diagnostics, treat >>= like that too, that
 	     shouldn't appear non-nested in template arguments.  */
-	  || token->type == CPP_GREATER_EQ
 	  || token->type == CPP_RSHIFT_EQ);
 }
 
