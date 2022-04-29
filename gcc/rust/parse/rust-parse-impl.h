@@ -5402,7 +5402,7 @@ Parser<ManagedTokenSource>::parse_inherent_impl_item ()
     case FN_TOK:
       // function or method
       return parse_inherent_impl_function_or_method (
-	AST::Visibility::create_error (), std::move (outer_attrs));
+	AST::Visibility::create_private (), std::move (outer_attrs));
     case CONST:
       /* lookahead to resolve production - could be function/method or const
        * item */
@@ -5412,13 +5412,13 @@ Parser<ManagedTokenSource>::parse_inherent_impl_item ()
 	{
 	case IDENTIFIER:
 	case UNDERSCORE:
-	  return parse_const_item (AST::Visibility::create_error (),
+	  return parse_const_item (AST::Visibility::create_private (),
 				   std::move (outer_attrs));
 	case UNSAFE:
 	case EXTERN_TOK:
 	case FN_TOK:
 	  return parse_inherent_impl_function_or_method (
-	    AST::Visibility::create_error (), std::move (outer_attrs));
+	    AST::Visibility::create_private (), std::move (outer_attrs));
 	default:
 	  add_error (Error (t->get_locus (),
 			    "unexpected token %qs in some sort of const item "
@@ -5572,7 +5572,7 @@ Parser<ManagedTokenSource>::parse_trait_impl_item ()
       // these seem to be SimplePath tokens, so this is a macro invocation semi
       return parse_macro_invocation_semi (std::move (outer_attrs));
     case TYPE:
-      return parse_type_alias (AST::Visibility::create_error (),
+      return parse_type_alias (AST::Visibility::create_private (),
 			       std::move (outer_attrs));
       case PUB: {
 	// visibility, so not a macro invocation semi - must be constant,
@@ -5631,7 +5631,7 @@ Parser<ManagedTokenSource>::parse_trait_impl_item ()
     case FN_TOK:
       // function or method
       return parse_trait_impl_function_or_method (
-	AST::Visibility::create_error (), std::move (outer_attrs));
+	AST::Visibility::create_private (), std::move (outer_attrs));
     case CONST:
       // lookahead to resolve production - could be function/method or const
       // item
@@ -5641,13 +5641,13 @@ Parser<ManagedTokenSource>::parse_trait_impl_item ()
 	{
 	case IDENTIFIER:
 	case UNDERSCORE:
-	  return parse_const_item (AST::Visibility::create_error (),
+	  return parse_const_item (AST::Visibility::create_private (),
 				   std::move (outer_attrs));
 	case UNSAFE:
 	case EXTERN_TOK:
 	case FN_TOK:
 	  return parse_trait_impl_function_or_method (
-	    AST::Visibility::create_error (), std::move (outer_attrs));
+	    AST::Visibility::create_private (), std::move (outer_attrs));
 	default:
 	  add_error (Error (
 	    t->get_locus (),

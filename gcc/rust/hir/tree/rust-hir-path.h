@@ -969,7 +969,7 @@ public:
     : segments (std::move (segments)), mappings (mappings), locus (locus)
   {}
 
-  static HIR::SimplePath create_error ()
+  static HIR::SimplePath create_empty ()
   {
     return HIR::SimplePath ({}, Analysis::NodeMapping::get_error (),
 			    Location ());

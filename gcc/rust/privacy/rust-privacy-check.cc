@@ -20,6 +20,7 @@
 #include "rust-reachability.h"
 #include "rust-hir-type-check.h"
 #include "rust-hir-map.h"
+#include "rust-name-resolver.h"
 #include "rust-visibility-resolver.h"
 
 extern bool
@@ -32,9 +33,10 @@ Resolver::resolve (HIR::Crate &crate)
 {
   PrivacyContext ctx;
   auto mappings = Analysis::Mappings::get ();
+  auto resolver = Rust::Resolver::Resolver::get ();
 
-  auto resolver = VisibilityResolver (*mappings);
-  resolver.go (crate);
+  auto visibility_resolver = VisibilityResolver (*mappings, *resolver);
+  visibility_resolver.go (crate);
 
   auto ty_ctx = ::Rust::Resolver::TypeCheckContext::get ();
   auto visitor = ReachabilityVisitor (ctx, *ty_ctx);

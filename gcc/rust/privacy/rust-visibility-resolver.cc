@@ -24,8 +24,9 @@
 namespace Rust {
 namespace Privacy {
 
-VisibilityResolver::VisibilityResolver (Analysis::Mappings &mappings)
-  : mappings (mappings)
+VisibilityResolver::VisibilityResolver (Analysis::Mappings &mappings,
+					Resolver::Resolver &resolver)
+  : mappings (mappings), resolver (resolver)
 {}
 
 void
@@ -45,16 +46,56 @@ VisibilityResolver::go (HIR::Crate &crate)
     }
 }
 
-// FIXME: At this point in the pipeline, we should not be dealing with
-// `AST::SimplePath`s anymore! We need to be dealing with their "resolved
-// counterpart", so probably a NodeId/HirId/DefId.
+bool
+VisibilityResolver::resolve_module_path (const HIR::SimplePath &restriction,
+					 DefId &id)
+{
+  // We need, from the restriction, to figure out the actual Module it
+  // belongs to.
 
-// static bool
-// resolve_module_path (std::vector<HIR::Module> &module_stack,
-// 		     const AST::SimplePath &restriction, DefId &id)
-// {
-//   return false;
-// }
+  NodeId ast_node_id = restriction.get_mappings ().get_nodeid ();
+
+  auto invalid_path
+    = Error (restriction.get_locus (),
+	     "cannot use non-module path as privacy restrictor");
+
+  NodeId ref_node_id = UNKNOWN_NODEID;
+  if (!resolver.lookup_resolved_name (ast_node_id, &ref_node_id))
+    {
+      invalid_path.emit_error ();
+      return false;
+    }
+  // FIXME: Add a hint here if we can find the path in another scope, such as
+  // a type or something else
+  // TODO: For the hint, can we point to the original item's definition if
+  // present?
+
+  Resolver::Definition def;
+  rust_assert (resolver.lookup_definition (ref_node_id, &def));
+
+  // FIXME: Is that what we want?
+  ref_node_id = def.parent;
+
+  HirId ref;
+  rust_assert (
+    mappings.lookup_node_to_hir (restriction.get_mappings ().get_crate_num (),
+				 ref_node_id, &ref));
+
+  auto module
+    = mappings.lookup_module (restriction.get_mappings ().get_crate_num (),
+			      ref);
+
+  if (!module)
+    {
+      invalid_path.emit_error ();
+      return false;
+    }
+
+  // Fill in the resolved `DefId`
+  id = module->get_mappings ().get_defid ();
+
+  return true;
+}
 
 bool
 VisibilityResolver::resolve_visibility (const HIR::Visibility &visibility,
@@ -66,11 +107,14 @@ VisibilityResolver::resolve_visibility (const HIR::Visibility &visibility,
       to_resolve = ModuleVisibility::create_restricted (peek_module ());
       return true;
     case HIR::Visibility::PUBLIC:
-      // FIXME: We need to handle the restricted path here
-      // FIXME: We also need to handle 2015 vs 2018 edition conflicts
       to_resolve = ModuleVisibility::create_public ();
       return true;
+    case HIR::Visibility::RESTRICTED:
+      to_resolve = ModuleVisibility::create_public ();
+      return resolve_module_path (visibility.get_path (),
+				  to_resolve.get_module_id ());
     default:
+      gcc_unreachable ();
       return false;
     }
 }

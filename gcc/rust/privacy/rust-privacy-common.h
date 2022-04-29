@@ -51,6 +51,7 @@ public:
   Type get_kind () const { return kind; }
 
   const DefId &get_module_id () const { return module_id; }
+  DefId &get_module_id () { return module_id; }
 
 private:
   ModuleVisibility (Type kind, DefId module_id)
