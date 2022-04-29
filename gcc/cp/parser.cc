@@ -22636,11 +22636,34 @@ cp_parser_init_declarator (cp_parser* parser,
       return error_mark_node;
     }
 
-  /* An `=' or an `(', or an '{' in C++0x, indicates an initializer.  */
+  /* An `=' or an '{' in C++11, indicate an initializer.  An '(' may indicate
+     an initializer as well. */
   if (token->type == CPP_EQ
       || token->type == CPP_OPEN_PAREN
       || token->type == CPP_OPEN_BRACE)
     {
+      /* Don't get fooled into thinking that F(i)(1)(2) is an initializer.
+	 It isn't; it's an expression.  (Here '(i)' would have already been
+	 parsed as a declarator.)   */
+      if (token->type == CPP_OPEN_PAREN
+	  && cp_parser_uncommitted_to_tentative_parse_p (parser))
+	{
+	  cp_lexer_save_tokens (parser->lexer);
+	  cp_lexer_consume_token (parser->lexer);
+	  cp_parser_skip_to_closing_parenthesis (parser,
+						 /*recovering*/false,
+						 /*or_comma*/false,
+						 /*consume_paren*/true);
+	  /* If this is an initializer, only a ',' or ';' can follow: either
+	     we have another init-declarator, or we're at the end of an
+	     init-declarator-list which can only be followed by a ';'.  */
+	  bool ok = (cp_lexer_next_token_is (parser->lexer, CPP_SEMICOLON)
+		     || cp_lexer_next_token_is (parser->lexer, CPP_COMMA));
+	  cp_lexer_rollback_tokens (parser->lexer);
+	  if (__builtin_expect (!ok, 0))
+	    /* Not an init-declarator.  */
+	    return error_mark_node;
+	}
       is_initialized = SD_INITIALIZED;
       initialization_kind = token->type;
       declarator->init_loc = token->location;
