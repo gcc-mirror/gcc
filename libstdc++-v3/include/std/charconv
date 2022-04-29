@@ -407,176 +407,132 @@ namespace __detail
       return true;
     }
 
-  /// std::from_chars implementation for integers in base 2.
-  template<typename _Tp>
+  // Construct and return a lookup table that maps 0-9, A-Z and a-z to their
+  // corresponding base-36 value and maps all other characters to 127.
+  constexpr auto
+  __from_chars_alnum_to_val_table()
+  {
+    constexpr unsigned char __lower_letters[27] = "abcdefghijklmnopqrstuvwxyz";
+    constexpr unsigned char __upper_letters[27] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    struct { unsigned char __data[1u << __CHAR_BIT__] = {}; } __table;
+    for (auto& __entry : __table.__data)
+      __entry = 127;
+    for (int __i = 0; __i < 10; ++__i)
+      __table.__data['0' + __i] = __i;
+    for (int __i = 0; __i < 26; ++__i)
+      {
+	__table.__data[__lower_letters[__i]] = 10 + __i;
+	__table.__data[__upper_letters[__i]] = 10 + __i;
+      }
+    return __table;
+  }
+
+  // If _DecOnly is true: if the character is a decimal digit, then
+  // return its corresponding base-10 value, otherwise return a value >= 127.
+  // If _DecOnly is false: if the character is an alphanumeric digit, then
+  // return its corresponding base-36 value, otherwise return a value >= 127.
+  template<bool _DecOnly = false>
+    unsigned char
+    __from_chars_alnum_to_val(unsigned char __c)
+    {
+      if _GLIBCXX17_CONSTEXPR (_DecOnly)
+	return __c - '0';
+      else
+	{
+	  // This initializer is deliberately made dependent in order to work
+	  // around modules bug PR105322.
+	  static constexpr auto __table = (_DecOnly, __from_chars_alnum_to_val_table());
+	  return __table.__data[__c];
+	}
+    }
+
+  /// std::from_chars implementation for integers in a power-of-two base.
+  /// If _DecOnly is true, then we may assume __base is at most 8.
+  template<bool _DecOnly, typename _Tp>
     bool
-    __from_chars_binary(const char*& __first, const char* __last, _Tp& __val)
+    __from_chars_pow2_base(const char*& __first, const char* __last, _Tp& __val,
+			   int __base)
     {
       static_assert(is_integral<_Tp>::value, "implementation bug");
       static_assert(is_unsigned<_Tp>::value, "implementation bug");
+
+      // __glibcxx_assert((__base & (__base - 1)) == 0);
+      // __glibcxx_assert(_DecOnly ? __base <= 8 : __base <= 32);
+      const int __log2_base = __countr_zero(__base);
 
       const ptrdiff_t __len = __last - __first;
       ptrdiff_t __i = 0;
       while (__i < __len && __first[__i] == '0')
 	++__i;
       const ptrdiff_t __leading_zeroes = __i;
-
-      while (__i < __len)
+      if (__i >= __len) [[__unlikely__]]
 	{
-	  const unsigned char __c = (unsigned)__first[__i] - '0';
-	  if (__c < 2)
-	    __val = (__val << 1) | __c;
-	  else
+	  __first += __i;
+	  return true;
+	}
+
+      // Remember the leading significant digit value if necessary.
+      unsigned char __leading_c = 0;
+      if (__base != 2)
+	{
+	  __leading_c = __from_chars_alnum_to_val<_DecOnly>(__first[__i]);
+	  // __glibcxx_assert(__leading_c != 0);
+	  if (__leading_c >= __base) [[__unlikely__]]
+	    {
+	      __first += __i;
+	      return true;
+	    }
+	  __val = __leading_c;
+	  ++__i;
+	}
+
+      for (; __i < __len; ++__i)
+	{
+	  const unsigned char __c = __from_chars_alnum_to_val<_DecOnly>(__first[__i]);
+	  if (__c >= __base)
 	    break;
-	  __i++;
+	  __val = (__val << __log2_base) | __c;
 	}
       __first += __i;
-      return (__i - __leading_zeroes) <= __gnu_cxx::__int_traits<_Tp>::__digits;
+      auto __significant_bits = (__i - __leading_zeroes) * __log2_base;
+      if (__base != 2)
+	// Compensate for a leading significant digit that didn't use all
+	// of its available bits.
+	__significant_bits -= __log2_base - __bit_width(__leading_c);
+      // __glibcxx_assert(__significant_bits >= 0);
+      return __significant_bits <= __gnu_cxx::__int_traits<_Tp>::__digits;
     }
 
-  /// std::from_chars implementation for integers in bases 3 to 10.
-  template<typename _Tp>
-    bool
-    __from_chars_digit(const char*& __first, const char* __last, _Tp& __val,
-		       int __base)
-    {
-      static_assert(is_integral<_Tp>::value, "implementation bug");
-      static_assert(is_unsigned<_Tp>::value, "implementation bug");
-
-      auto __matches = [__base](char __c) {
-	  return '0' <= __c && __c <= ('0' + (__base - 1));
-      };
-
-      while (__first != __last)
-	{
-	  const char __c = *__first;
-	  if (__matches(__c))
-	  {
-	    if (!__raise_and_add(__val, __base, __c - '0'))
-	      {
-		while (++__first != __last && __matches(*__first))
-		  ;
-		return false;
-	      }
-	    __first++;
-	  }
-	  else
-	    return true;
-	}
-      return true;
-    }
-
-  constexpr char
-  __from_chars_alpha_to_num(char __c)
-  {
-    switch (__c)
-    {
-    case 'a':
-    case 'A':
-      return 10;
-    case 'b':
-    case 'B':
-      return 11;
-    case 'c':
-    case 'C':
-      return 12;
-    case 'd':
-    case 'D':
-      return 13;
-    case 'e':
-    case 'E':
-      return 14;
-    case 'f':
-    case 'F':
-      return 15;
-    case 'g':
-    case 'G':
-      return 16;
-    case 'h':
-    case 'H':
-      return 17;
-    case 'i':
-    case 'I':
-      return 18;
-    case 'j':
-    case 'J':
-      return 19;
-    case 'k':
-    case 'K':
-      return 20;
-    case 'l':
-    case 'L':
-      return 21;
-    case 'm':
-    case 'M':
-      return 22;
-    case 'n':
-    case 'N':
-      return 23;
-    case 'o':
-    case 'O':
-      return 24;
-    case 'p':
-    case 'P':
-      return 25;
-    case 'q':
-    case 'Q':
-      return 26;
-    case 'r':
-    case 'R':
-      return 27;
-    case 's':
-    case 'S':
-      return 28;
-    case 't':
-    case 'T':
-      return 29;
-    case 'u':
-    case 'U':
-      return 30;
-    case 'v':
-    case 'V':
-      return 31;
-    case 'w':
-    case 'W':
-      return 32;
-    case 'x':
-    case 'X':
-      return 33;
-    case 'y':
-    case 'Y':
-      return 34;
-    case 'z':
-    case 'Z':
-      return 35;
-    }
-    return 127;
-  }
-
-  /// std::from_chars implementation for integers in bases 11 to 36.
-  template<typename _Tp>
+  /// std::from_chars implementation for integers in any base.
+  /// If _DecOnly is true, then we may assume __base is at most 10.
+  template<bool _DecOnly, typename _Tp>
     bool
     __from_chars_alnum(const char*& __first, const char* __last, _Tp& __val,
 		       int __base)
     {
-      bool __valid = true;
-      while (__first != __last)
-	{
-	  char __c = *__first;
-	  if ('0' <= __c && __c <= '9') // isdigit
-	    __c -= '0';
-	  else
-	    {
-	      __c = __from_chars_alpha_to_num(__c);
-	      if (__c >= __base)
-		break;
-	    }
+      // __glibcxx_assert(!_DecOnly || __base <= 10);
 
-	  if (__builtin_expect(__valid, 1))
-	    __valid = __raise_and_add(__val, __base, __c);
-	  __first++;
+      const int __bits_per_digit = __bit_width(__base);
+      int __unused_bits_lower_bound = __gnu_cxx::__int_traits<_Tp>::__digits;
+      for (; __first != __last; ++__first)
+	{
+	  const unsigned char __c = __from_chars_alnum_to_val<_DecOnly>(*__first);
+	  if (__c >= __base)
+	    return true;
+
+	  __unused_bits_lower_bound -= __bits_per_digit;
+	  if (__unused_bits_lower_bound >= 0) [[__likely__]]
+	    // We're definitely not going to overflow.
+	    __val = __val * __base + __c;
+	  else if (!__raise_and_add(__val, __base, __c)) [[__unlikely__]]
+	    {
+	      while (++__first != __last
+		     && __from_chars_alnum_to_val<_DecOnly>(*__first) < __base)
+		;
+	      return false;
+	    }
 	}
-      return __valid;
+      return true;
     }
 
   template<typename _Tp>
@@ -611,12 +567,17 @@ namespace __detail
 
       const auto __start = __first;
       bool __valid;
-      if (__base == 2)
-	__valid = __detail::__from_chars_binary(__first, __last, __val);
+      if ((__base & (__base - 1)) == 0)
+	{
+	  if (__base <= 8)
+	    __valid = __detail::__from_chars_pow2_base<true>(__first, __last, __val, __base);
+	  else
+	    __valid = __detail::__from_chars_pow2_base<false>(__first, __last, __val, __base);
+	}
       else if (__base <= 10)
-	__valid = __detail::__from_chars_digit(__first, __last, __val, __base);
+	__valid = __detail::__from_chars_alnum<true>(__first, __last, __val, __base);
       else
-	__valid = __detail::__from_chars_alnum(__first, __last, __val, __base);
+	__valid = __detail::__from_chars_alnum<false>(__first, __last, __val, __base);
 
       if (__builtin_expect(__first == __start, 0))
 	__res.ec = errc::invalid_argument;

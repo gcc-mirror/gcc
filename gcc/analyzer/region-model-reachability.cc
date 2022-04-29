@@ -252,12 +252,8 @@ reachable_regions::handle_parm (const svalue *sval, tree param_type)
     m_mutable_svals.add (sval);
   else
     m_reachable_svals.add (sval);
-  if (const region_svalue *parm_ptr
-      = sval->dyn_cast_region_svalue ())
-    {
-      const region *pointee_reg = parm_ptr->get_pointee ();
-      add (pointee_reg, is_mutable);
-    }
+  if (const region *base_reg = sval->maybe_get_deref_base_region ())
+    add (base_reg, is_mutable);
   /* Treat all svalues within a compound_svalue as reachable.  */
   if (const compound_svalue *compound_sval
       = sval->dyn_cast_compound_svalue ())

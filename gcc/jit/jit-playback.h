@@ -24,6 +24,7 @@ along with GCC; see the file COPYING3.  If not see
 #include <utility> // for std::pair
 
 #include "timevar.h"
+#include "varasm.h"
 
 #include "jit-recording.h"
 
@@ -179,6 +180,11 @@ public:
   new_cast (location *loc,
 	    rvalue *expr,
 	    type *type_);
+
+  rvalue *
+  new_bitcast (location *loc,
+	       rvalue *expr,
+	       type *type_);
 
   lvalue *
   new_array_access (location *loc,
@@ -699,6 +705,21 @@ public:
   set_link_section (const char* name)
   {
     set_decl_section_name (as_tree (), name);
+  }
+
+  void
+  set_register_name (const char* reg_name)
+  {
+    set_user_assembler_name (as_tree (), reg_name);
+    DECL_REGISTER (as_tree ()) = 1;
+    DECL_HARD_REGISTER (as_tree ()) = 1;
+  }
+
+  void
+  set_alignment (int alignment)
+  {
+      SET_DECL_ALIGN (as_tree (), alignment * BITS_PER_UNIT);
+      DECL_USER_ALIGN (as_tree ()) = 1;
   }
 
 private:

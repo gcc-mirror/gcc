@@ -158,7 +158,7 @@ Expression arrayOp(BinExp e, Scope* sc)
 /// ditto
 Expression arrayOp(BinAssignExp e, Scope* sc)
 {
-    //printf("BinAssignExp.arrayOp() %s\n", toChars());
+    //printf("BinAssignExp.arrayOp() %s\n", e.toChars());
 
     /* Check that the elements of e1 can be assigned to
      */

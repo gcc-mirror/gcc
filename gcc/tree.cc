@@ -6985,6 +6985,15 @@ build_reference_type (tree to_type)
   (HOST_BITS_PER_WIDE_INT > 64 ? HOST_BITS_PER_WIDE_INT : 64)
 static GTY(()) tree nonstandard_integer_type_cache[2 * MAX_INT_CACHED_PREC + 2];
 
+static void
+clear_nonstandard_integer_type_cache (void)
+{
+  for (size_t i = 0 ; i < 2 * MAX_INT_CACHED_PREC + 2 ; i++)
+  {
+    nonstandard_integer_type_cache[i] = NULL;
+  }
+}
+
 /* Builds a signed or unsigned integer type of precision PRECISION.
    Used for C bitfields whose precision does not match that of
    built-in target types.  */
@@ -8406,6 +8415,69 @@ get_callee_fndecl (const_tree call)
   return NULL_TREE;
 }
 
+/* Return true when STMTs arguments and return value match those of FNDECL,
+   a decl of a builtin function.  */
+
+static bool
+tree_builtin_call_types_compatible_p (const_tree call, tree fndecl)
+{
+  gcc_checking_assert (DECL_BUILT_IN_CLASS (fndecl) != NOT_BUILT_IN);
+
+  if (DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_NORMAL)
+    if (tree decl = builtin_decl_explicit (DECL_FUNCTION_CODE (fndecl)))
+      fndecl = decl;
+
+  bool gimple_form = (cfun && (cfun->curr_properties & PROP_gimple)) != 0;
+  if (gimple_form
+      ? !useless_type_conversion_p (TREE_TYPE (call),
+				    TREE_TYPE (TREE_TYPE (fndecl)))
+      : (TYPE_MAIN_VARIANT (TREE_TYPE (call))
+	 != TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (fndecl)))))
+    return false;
+
+  tree targs = TYPE_ARG_TYPES (TREE_TYPE (fndecl));
+  unsigned nargs = call_expr_nargs (call);
+  for (unsigned i = 0; i < nargs; ++i, targs = TREE_CHAIN (targs))
+    {
+      /* Variadic args follow.  */
+      if (!targs)
+	return true;
+      tree arg = CALL_EXPR_ARG (call, i);
+      tree type = TREE_VALUE (targs);
+      if (gimple_form
+	  ? !useless_type_conversion_p (type, TREE_TYPE (arg))
+	  : TYPE_MAIN_VARIANT (type) != TYPE_MAIN_VARIANT (TREE_TYPE (arg)))
+	{
+	  /* For pointer arguments be more forgiving, e.g. due to
+	     FILE * vs. fileptr_type_node, or say char * vs. const char *
+	     differences etc.  */
+	  if (!gimple_form
+	      && POINTER_TYPE_P (type)
+	      && POINTER_TYPE_P (TREE_TYPE (arg))
+	      && tree_nop_conversion_p (type, TREE_TYPE (arg)))
+	    continue;
+	  /* char/short integral arguments are promoted to int
+	     by several frontends if targetm.calls.promote_prototypes
+	     is true.  Allow such promotion too.  */
+	  if (INTEGRAL_TYPE_P (type)
+	      && TYPE_PRECISION (type) < TYPE_PRECISION (integer_type_node)
+	      && INTEGRAL_TYPE_P (TREE_TYPE (arg))
+	      && !TYPE_UNSIGNED (TREE_TYPE (arg))
+	      && targetm.calls.promote_prototypes (TREE_TYPE (fndecl))
+	      && (gimple_form
+		  ? useless_type_conversion_p (integer_type_node,
+					       TREE_TYPE (arg))
+		  : tree_nop_conversion_p (integer_type_node,
+					   TREE_TYPE (arg))))
+	    continue;
+	  return false;
+	}
+    }
+  if (targs && !VOID_TYPE_P (TREE_VALUE (targs)))
+    return false;
+  return true;
+}
+
 /* If CALL_EXPR CALL calls a normal built-in function or an internal function,
    return the associated function code, otherwise return CFN_LAST.  */
 
@@ -8419,7 +8491,9 @@ get_call_combined_fn (const_tree call)
     return as_combined_fn (CALL_EXPR_IFN (call));
 
   tree fndecl = get_callee_fndecl (call);
-  if (fndecl && fndecl_built_in_p (fndecl, BUILT_IN_NORMAL))
+  if (fndecl
+      && fndecl_built_in_p (fndecl, BUILT_IN_NORMAL)
+      && tree_builtin_call_types_compatible_p (call, fndecl))
     return as_combined_fn (DECL_FUNCTION_CODE (fndecl));
 
   return CFN_LAST;
@@ -12906,6 +12980,8 @@ component_ref_size (tree ref, special_array_member *sam /* = NULL */)
      to struct types with flexible array members.  */
   if (memsize)
     {
+      if (!tree_fits_poly_int64_p (memsize))
+	return NULL_TREE;
       poly_int64 memsz64 = memsize ? tree_to_poly_int64 (memsize) : 0;
       if (known_lt (baseoff, memsz64))
 	{
@@ -14616,6 +14692,12 @@ get_target_clone_attr_len (tree arglist)
   if (argnum <= 1)
     return -1;
   return str_len_sum;
+}
+
+void
+tree_cc_finalize (void)
+{
+  clear_nonstandard_integer_type_cache ();
 }
 
 #if CHECKING_P

@@ -17,10 +17,7 @@ static assert(__traits(getLinkage, food) == "D");
 static assert(__traits(getLinkage, foocpp) == "C++");
 static assert(__traits(getLinkage, foow) == "Windows");
 static assert(__traits(getLinkage, fooobjc) == "Objective-C");
-version (Windows)
-    static assert(__traits(getLinkage, foos) == "Windows");
-else
-    static assert(__traits(getLinkage, foos) == "C");
+static assert(__traits(getLinkage, foos) == "System");
 
 extern (C) int global;
 static assert(__traits(getLinkage, global) == "C");

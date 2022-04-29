@@ -15637,7 +15637,7 @@ private:
   unsigned int adjust_body_cost (loop_vec_info, const aarch64_vector_costs *,
 				 unsigned int);
   bool prefer_unrolled_loop () const;
-  unsigned int determine_suggested_unroll_factor ();
+  unsigned int determine_suggested_unroll_factor (loop_vec_info);
 
   /* True if we have performed one-time initialization based on the
      vec_info.  */
@@ -16746,7 +16746,8 @@ adjust_body_cost_sve (const aarch64_vec_op_count *ops,
 }
 
 unsigned int
-aarch64_vector_costs::determine_suggested_unroll_factor ()
+aarch64_vector_costs::
+determine_suggested_unroll_factor (loop_vec_info loop_vinfo)
 {
   bool sve = m_vec_flags & VEC_ANY_SVE;
   /* If we are trying to unroll an Advanced SIMD main loop that contains
@@ -16760,6 +16761,7 @@ aarch64_vector_costs::determine_suggested_unroll_factor ()
     return 1;
 
   unsigned int max_unroll_factor = 1;
+  auto vf = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
   for (auto vec_ops : m_ops)
     {
       aarch64_simd_vec_issue_info const *vec_issue
@@ -16768,7 +16770,8 @@ aarch64_vector_costs::determine_suggested_unroll_factor ()
 	return 1;
       /* Limit unroll factor to a value adjustable by the user, the default
 	 value is 4. */
-      unsigned int unroll_factor = aarch64_vect_unroll_limit;
+      unsigned int unroll_factor = MIN (aarch64_vect_unroll_limit,
+					(int) known_alignment (vf));
       unsigned int factor
        = vec_ops.reduction_latency > 1 ? vec_ops.reduction_latency : 1;
       unsigned int temp;
@@ -16946,7 +16949,8 @@ aarch64_vector_costs::finish_cost (const vector_costs *uncast_scalar_costs)
     {
       m_costs[vect_body] = adjust_body_cost (loop_vinfo, scalar_costs,
 					     m_costs[vect_body]);
-      m_suggested_unroll_factor = determine_suggested_unroll_factor ();
+      m_suggested_unroll_factor
+	= determine_suggested_unroll_factor (loop_vinfo);
     }
 
   /* Apply the heuristic described above m_stp_sequence_cost.  Prefer
@@ -18053,6 +18057,9 @@ aarch64_validate_mtune (const char *str, const struct processor **res)
   return false;
 }
 
+static_assert (TARGET_CPU_generic < TARGET_CPU_MASK,
+	       "TARGET_CPU_NBITS is big enough");
+
 /* Return the CPU corresponding to the enum CPU.
    If it doesn't specify a cpu, return the default.  */
 
@@ -18062,12 +18069,12 @@ aarch64_get_tune_cpu (enum aarch64_processor cpu)
   if (cpu != aarch64_none)
     return &all_cores[cpu];
 
-  /* The & 0x3f is to extract the bottom 6 bits that encode the
-     default cpu as selected by the --with-cpu GCC configure option
+  /* The & TARGET_CPU_MASK is to extract the bottom TARGET_CPU_NBITS bits that
+     encode the default cpu as selected by the --with-cpu GCC configure option
      in config.gcc.
      ???: The whole TARGET_CPU_DEFAULT and AARCH64_CPU_DEFAULT_FLAGS
      flags mechanism should be reworked to make it more sane.  */
-  return &all_cores[TARGET_CPU_DEFAULT & 0x3f];
+  return &all_cores[TARGET_CPU_DEFAULT & TARGET_CPU_MASK];
 }
 
 /* Return the architecture corresponding to the enum ARCH.
@@ -18079,7 +18086,8 @@ aarch64_get_arch (enum aarch64_arch arch)
   if (arch != aarch64_no_arch)
     return &all_architectures[arch];
 
-  const struct processor *cpu = &all_cores[TARGET_CPU_DEFAULT & 0x3f];
+  const struct processor *cpu
+    = &all_cores[TARGET_CPU_DEFAULT & TARGET_CPU_MASK];
 
   return &all_architectures[cpu->arch];
 }
@@ -18166,7 +18174,7 @@ aarch64_override_options (void)
 	{
 	  /* Get default configure-time CPU.  */
 	  selected_cpu = aarch64_get_tune_cpu (aarch64_none);
-	  aarch64_isa_flags = TARGET_CPU_DEFAULT >> 6;
+	  aarch64_isa_flags = TARGET_CPU_DEFAULT >> TARGET_CPU_NBITS;
 	}
 
       if (selected_tune)

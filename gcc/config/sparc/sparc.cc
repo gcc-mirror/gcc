@@ -8884,8 +8884,20 @@ epilogue_renumber (rtx *where, int test)
       if (REGNO (*where) >= 8 && REGNO (*where) < 24)      /* oX or lX */
 	return 1;
       if (! test && REGNO (*where) >= 24 && REGNO (*where) < 32)
-	*where = gen_rtx_REG (GET_MODE (*where), OUTGOING_REGNO (REGNO(*where)));
-      /* fallthrough */
+	{
+	  if (ORIGINAL_REGNO (*where))
+	    {
+	      rtx n = gen_raw_REG (GET_MODE (*where),
+				   OUTGOING_REGNO (REGNO (*where)));
+	      ORIGINAL_REGNO (n) = ORIGINAL_REGNO (*where);
+	      *where = n;
+	    }
+	  else
+	    *where = gen_rtx_REG (GET_MODE (*where),
+				  OUTGOING_REGNO (REGNO (*where)));
+	}
+      return 0;
+
     case SCRATCH:
     case PC:
     case CONST_INT:

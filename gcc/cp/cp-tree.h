@@ -8243,6 +8243,7 @@ extern tree fold_builtin_source_location	(location_t);
 /* in name-lookup.cc */
 extern tree strip_using_decl                    (tree);
 extern void diagnose_name_conflict		(tree, tree);
+extern bool dependent_local_decl_p		(tree);
 
 /* Tell the binding oracle what kind of binding we are looking for.  */
 

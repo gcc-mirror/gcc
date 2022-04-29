@@ -1680,8 +1680,19 @@ direct_reference_binding (tree type, conversion *conv)
        because the types "int *" and "const int *const" are
        reference-related and we were binding both directly and they
        had the same rank.  To break it up, we add a ck_qual under the
-       ck_ref_bind so that conversion sequence ranking chooses #1.  */
-    conv = build_conv (ck_qual, t, conv);
+       ck_ref_bind so that conversion sequence ranking chooses #1.
+
+       We strip_top_quals here which is also what standard_conversion
+       does.  Failure to do so would confuse comp_cv_qual_signature
+       into thinking that in
+
+	 void f(const int * const &); // #1
+	 void f(const int *); // #2
+	 int *x;
+	 f(x);
+
+       #2 is a better match than #1 even though they're ambiguous (97296).  */
+    conv = build_conv (ck_qual, strip_top_quals (t), conv);
 
   return build_conv (ck_ref_bind, type, conv);
 }
@@ -4899,8 +4910,7 @@ build_operator_new_call (tree fnname, vec<tree, va_gc> **args,
        up in the global scope.
 
      we disregard block-scope declarations of "operator new".  */
-  fns = lookup_name (fnname, LOOK_where::NAMESPACE);
-  fns = lookup_arg_dependent (fnname, fns, *args);
+  fns = lookup_qualified_name (global_namespace, fnname);
 
   if (align_arg)
     {
@@ -11536,12 +11546,9 @@ compare_ics (conversion *ics1, conversion *ics2)
 	 P0388R4.)  */
       else if (t1->kind == ck_aggr
 	       && TREE_CODE (t1->type) == ARRAY_TYPE
-	       && TREE_CODE (t2->type) == ARRAY_TYPE)
+	       && TREE_CODE (t2->type) == ARRAY_TYPE
+	       && same_type_p (TREE_TYPE (t1->type), TREE_TYPE (t2->type)))
 	{
-	  /* The type of the array elements must be the same.  */
-	  if (!same_type_p (TREE_TYPE (t1->type), TREE_TYPE (t2->type)))
-	    return 0;
-
 	  tree n1 = nelts_initialized_by_list_init (t1);
 	  tree n2 = nelts_initialized_by_list_init (t2);
 	  if (tree_int_cst_lt (n1, n2))

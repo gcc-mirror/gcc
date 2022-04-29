@@ -172,11 +172,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     // TODO add const volatile overload
 
     void
-    notify_one() const noexcept
+    notify_one() noexcept
     { _M_base.notify_one(); }
 
     void
-    notify_all() const noexcept
+    notify_all() noexcept
     { _M_base.notify_all(); }
 #endif // __cpp_lib_atomic_wait
   };
@@ -399,11 +399,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     // TODO add const volatile overload
 
     void
-    notify_one() const noexcept
+    notify_one() noexcept
     { std::__atomic_notify_address(&_M_i, false); }
 
     void
-    notify_all() const noexcept
+    notify_all() noexcept
     { std::__atomic_notify_address(&_M_i, true); }
 #endif // __cpp_lib_atomic_wait 
 
@@ -654,11 +654,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     // TODO add const volatile overload
 
     void
-    notify_one() const noexcept
+    notify_one() noexcept
     { _M_b.notify_one(); }
 
     void
-    notify_all() const noexcept
+    notify_all() noexcept
     { _M_b.notify_all(); }
 #endif // __cpp_lib_atomic_wait
 
@@ -1434,12 +1434,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _Tp>
     inline void
-    atomic_notify_one(const atomic<_Tp>* __a) noexcept
+    atomic_notify_one(atomic<_Tp>* __a) noexcept
     { __a->notify_one(); }
 
   template<typename _Tp>
     inline void
-    atomic_notify_all(const atomic<_Tp>* __a) noexcept
+    atomic_notify_all(atomic<_Tp>* __a) noexcept
     { __a->notify_all(); }
 #endif // __cpp_lib_atomic_wait
 

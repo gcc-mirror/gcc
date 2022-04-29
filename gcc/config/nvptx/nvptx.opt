@@ -52,7 +52,6 @@ mgomp
 Target Mask(GOMP)
 Generate code for OpenMP offloading: enables -msoft-stack and -muniform-simt.
 
-; Default needs to be in sync with default in ASM_SPEC in nvptx.h.
 misa=
 Target RejectNegative ToLower Joined Enum(ptx_isa) Var(ptx_isa_option) Init(PTX_ISA_SM30)
 Specify the PTX ISA target architecture to use.

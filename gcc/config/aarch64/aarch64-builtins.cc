@@ -1664,6 +1664,14 @@ aarch64_init_ls64_builtins (void)
       = aarch64_general_add_builtin (data[i].name, data[i].type, data[i].code);
 }
 
+/* Implement #pragma GCC aarch64 "arm_acle.h".  */
+void
+handle_arm_acle_h (void)
+{
+  if (TARGET_LS64)
+    aarch64_init_ls64_builtins ();
+}
+
 /* Initialize fpsr fpcr getters and setters.  */
 
 static void
@@ -1755,9 +1763,6 @@ aarch64_general_init_builtins (void)
 
   if (TARGET_MEMTAG)
     aarch64_init_memtag_builtins ();
-
-  if (TARGET_LS64)
-    aarch64_init_ls64_builtins ();
 }
 
 /* Implement TARGET_BUILTIN_DECL for the AARCH64_BUILTIN_GENERAL group.  */

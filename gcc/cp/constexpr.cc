@@ -920,7 +920,8 @@ maybe_save_constexpr_fundef (tree fun)
   if (!potential && complain)
     require_potential_rvalue_constant_expression (massaged);
 
-  if (DECL_CONSTRUCTOR_P (fun) && potential)
+  if (DECL_CONSTRUCTOR_P (fun) && potential
+      && !DECL_DEFAULTED_FN (fun))
     {
       if (cx_check_missing_mem_inits (DECL_CONTEXT (fun),
 				      massaged, complain))
@@ -2889,7 +2890,8 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
 	  else
 	    {
 	      result = *ctx->global->values.get (res);
-	      if (result == NULL_TREE && !*non_constant_p)
+	      if (result == NULL_TREE && !*non_constant_p
+		  && !DECL_DESTRUCTOR_P (fun))
 		{
 		  if (!ctx->quiet)
 		    error ("%<constexpr%> call flows off the end "
@@ -4564,19 +4566,18 @@ cxx_eval_bit_cast (const constexpr_ctx *ctx, tree t, bool *non_constant_p,
 static tree
 cxx_eval_logical_expression (const constexpr_ctx *ctx, tree t,
                              tree bailout_value, tree continue_value,
-			     bool lval,
 			     bool *non_constant_p, bool *overflow_p)
 {
   tree r;
   tree lhs = cxx_eval_constant_expression (ctx, TREE_OPERAND (t, 0),
-					   lval,
-					   non_constant_p, overflow_p);
+					   /*lval*/false, non_constant_p,
+					   overflow_p);
   VERIFY_CONSTANT (lhs);
   if (tree_int_cst_equal (lhs, bailout_value))
     return lhs;
   gcc_assert (tree_int_cst_equal (lhs, continue_value));
   r = cxx_eval_constant_expression (ctx, TREE_OPERAND (t, 1),
-				    lval, non_constant_p,
+				    /*lval*/false, non_constant_p,
 				    overflow_p);
   VERIFY_CONSTANT (r);
   return r;
@@ -5008,7 +5009,8 @@ cxx_eval_vec_init (const constexpr_ctx *ctx, tree t,
   bool value_init = VEC_INIT_EXPR_VALUE_INIT (t);
   if (!init || !BRACE_ENCLOSED_INITIALIZER_P (init))
     ;
-  else if (CONSTRUCTOR_NELTS (init) == 0)
+  else if (CONSTRUCTOR_NELTS (init) == 0
+	   && !CP_AGGREGATE_TYPE_P (strip_array_types (atype)))
     {
       /* Handle {} as value-init.  */
       init = NULL_TREE;
@@ -5931,6 +5933,12 @@ cxx_eval_store_expression (const constexpr_ctx *ctx, tree t,
     {
       /* See above on initialization of empty bases.  */
       gcc_assert (is_empty_class (TREE_TYPE (init)) && !lval);
+      if (!*valp)
+	{
+	  /* But do make sure we have something in *valp.  */
+	  *valp = build_constructor (type, nullptr);
+	  CONSTRUCTOR_NO_CLEARING (*valp) = no_zero_init;
+	}
       return init;
     }
   else
@@ -7097,7 +7105,6 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
     case TRUTH_ANDIF_EXPR:
       r = cxx_eval_logical_expression (ctx, t, boolean_false_node,
 				       boolean_true_node,
-				       lval,
 				       non_constant_p, overflow_p);
       break;
 
@@ -7105,7 +7112,6 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
     case TRUTH_ORIF_EXPR:
       r = cxx_eval_logical_expression (ctx, t, boolean_true_node,
 				       boolean_false_node,
-				       lval,
 				       non_constant_p, overflow_p);
       break;
 

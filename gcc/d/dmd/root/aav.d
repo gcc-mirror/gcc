@@ -14,6 +14,8 @@ module dmd.root.aav;
 import core.stdc.string;
 import dmd.root.rmem;
 
+nothrow:
+
 private size_t hash(size_t a) pure nothrow @nogc @safe
 {
     a ^= (a >> 20) ^ (a >> 12);

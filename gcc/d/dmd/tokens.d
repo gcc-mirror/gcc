@@ -591,7 +591,7 @@ shared static this() nothrow
     Identifier.initTable();
     foreach (kw; keywords)
     {
-        //printf("keyword[%d] = '%s'\n",kw, tochars[kw].ptr);
+        //printf("keyword[%d] = '%s'\n",kw, Token.tochars[kw].ptr);
         Identifier.idPool(Token.tochars[kw].ptr, Token.tochars[kw].length, cast(uint)kw);
     }
 }

@@ -280,6 +280,22 @@ cp_unit_size_without_reusable_padding (tree type)
   return TYPE_SIZE_UNIT (type);
 }
 
+/* Returns type corresponding to FIELD's type when FIELD is a C++ base class
+   i.e., type without virtual base classes or tail padding.  Returns
+   NULL_TREE otherwise.  */
+
+tree
+cp_classtype_as_base (const_tree field)
+{
+  if (DECL_FIELD_IS_BASE (field))
+    {
+      tree type = TREE_TYPE (field);
+      if (TYPE_LANG_SPECIFIC (type))
+	return CLASSTYPE_AS_BASE (type);
+    }
+  return NULL_TREE;
+}
+
 /* Stubs to keep c-opts.cc happy.  */
 void
 push_file_scope (void)

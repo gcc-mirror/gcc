@@ -396,6 +396,10 @@ frevert=all
 D RejectNegative
 Turn off all revertable D language features.
 
+frevert=dip1000
+D RejectNegative
+Revert DIP1000: Scoped pointers.
+
 frevert=dip25
 D RejectNegative
 Revert DIP25: Sealed references.

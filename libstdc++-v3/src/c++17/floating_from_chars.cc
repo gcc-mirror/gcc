@@ -30,6 +30,7 @@
 // Prefer to use std::pmr::string if possible, which requires the cxx11 ABI.
 #define _GLIBCXX_USE_CXX11_ABI 1
 
+#include <array>
 #include <charconv>
 #include <bit>
 #include <string>
@@ -101,7 +102,6 @@ namespace
 	return m_buf + std::__exchange(m_bytes, m_bytes + bytes);
 
       __glibcxx_assert(m_ptr == nullptr);
-      __glibcxx_assert(alignment != 1);
 
       m_ptr = operator new(bytes);
       m_bytes = bytes;
@@ -451,30 +451,34 @@ namespace
 #endif // USE_STRTOD_FOR_FROM_CHARS
 
 #if _GLIBCXX_FLOAT_IS_IEEE_BINARY32 && _GLIBCXX_DOUBLE_IS_IEEE_BINARY64
-  // If the given ASCII character represents a hexit, return that hexit.
-  // Otherwise return -1.
-  int
-  ascii_to_hexit(char ch)
-  {
-    if (ch >= '0' && ch <= '9')
-      return ch - '0';
-    if (ch >= 'a' && ch <= 'f')
-      return ch - 'a' + 10;
-    if (ch >= 'A' && ch <= 'F')
-      return ch - 'A' + 10;
-    return -1;
-  }
-
   // Return true iff [FIRST,LAST) begins with PREFIX, ignoring case.
+  // PREFIX is assumed to not contain any uppercase letters.
   bool
   starts_with_ci(const char* first, const char* last, string_view prefix)
   {
     __glibcxx_requires_valid_range(first, last);
 
-    for (char ch : prefix)
+    // A lookup table that maps uppercase letters to lowercase and
+    // is otherwise the identity mapping.
+    static constexpr auto upper_to_lower_table = [] {
+      constexpr unsigned char lower_letters[27] = "abcdefghijklmnopqrstuvwxyz";
+      constexpr unsigned char upper_letters[27] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+      std::array<unsigned char, (1u << __CHAR_BIT__)> table = {};
+      for (unsigned i = 0; i < table.size(); ++i)
+	table[i] = i;
+      for (unsigned i = 0; i < 26; ++i)
+	table[upper_letters[i]] = lower_letters[i];
+      return table;
+    }();
+
+    if (last - first < static_cast<ptrdiff_t>(prefix.length()))
+      return false;
+
+    for (const unsigned char pch : prefix)
       {
-	__glibcxx_assert(ch >= 'a' && ch <= 'z');
-	if (first == last || (*first != ch && *first != ch - 32))
+	// __glibcxx_assert(pch == upper_to_lower_table[pch]);
+	const unsigned char ch = *first;
+	if (ch != pch && upper_to_lower_table[ch] != pch)
 	  return false;
 	++first;
       }
@@ -550,10 +554,8 @@ namespace
 			  ++first;
 			  break;
 			}
-		      else if ((ch >= '0' && ch <= '9')
-			       || (ch >= 'a' && ch <= 'z')
-			       || (ch >= 'A' && ch <= 'Z')
-			       || ch == '_')
+		      else if (ch == '_'
+			       || __detail::__from_chars_alnum_to_val(ch) < 127)
 			continue;
 		      else
 			{
@@ -614,8 +616,8 @@ namespace
 	    continue;
 	  }
 
-	int hexit = ascii_to_hexit(ch);
-	if (hexit == -1)
+	int hexit = __detail::__from_chars_alnum_to_val(ch);
+	if (hexit >= 16)
 	  break;
 	seen_hexit = true;
 

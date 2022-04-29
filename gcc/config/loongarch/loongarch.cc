@@ -329,6 +329,9 @@ loongarch_flatten_aggregate_field (const_tree type,
 	    if (!TYPE_P (TREE_TYPE (f)))
 	      return -1;
 
+	    if (DECL_SIZE (f) && integer_zerop (DECL_SIZE (f)))
+	      continue;
+
 	    HOST_WIDE_INT pos = offset + int_byte_position (f);
 	    n = loongarch_flatten_aggregate_field (TREE_TYPE (f), fields, n,
 						   pos);
@@ -473,13 +476,14 @@ loongarch_pass_aggregate_in_fpr_and_gpr_p (const_tree type,
 
 static rtx
 loongarch_pass_fpr_single (machine_mode type_mode, unsigned regno,
-			   machine_mode value_mode)
+			   machine_mode value_mode,
+			   HOST_WIDE_INT offset)
 {
   rtx x = gen_rtx_REG (value_mode, regno);
 
   if (type_mode != value_mode)
     {
-      x = gen_rtx_EXPR_LIST (VOIDmode, x, const0_rtx);
+      x = gen_rtx_EXPR_LIST (VOIDmode, x, GEN_INT (offset));
       x = gen_rtx_PARALLEL (type_mode, gen_rtvec (1, x));
     }
   return x;
@@ -539,7 +543,8 @@ loongarch_get_arg_info (struct loongarch_arg_info *info,
 	  {
 	  case 1:
 	    return loongarch_pass_fpr_single (mode, fregno,
-					      TYPE_MODE (fields[0].type));
+					      TYPE_MODE (fields[0].type),
+					      fields[0].offset);
 
 	  case 2:
 	    return loongarch_pass_fpr_pair (mode, fregno,

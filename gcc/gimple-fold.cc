@@ -1048,6 +1048,7 @@ gimple_fold_builtin_memory_op (gimple_stmt_iterator *gsi,
 			  gsi_replace (gsi, new_stmt, false);
 			  return true;
 			}
+		      gimple_set_location (new_stmt, loc);
 		      gsi_insert_before (gsi, new_stmt, GSI_SAME_STMT);
 		      goto done;
 		    }
@@ -1302,6 +1303,7 @@ gimple_fold_builtin_memory_op (gimple_stmt_iterator *gsi,
 						   new_stmt);
 	      gimple_assign_set_lhs (new_stmt, srcvar);
 	      gimple_set_vuse (new_stmt, gimple_vuse (stmt));
+	      gimple_set_location (new_stmt, loc);
 	      gsi_insert_before (gsi, new_stmt, GSI_SAME_STMT);
 	    }
 	  new_stmt = gimple_build_assign (destvar, srcvar);
@@ -1338,6 +1340,7 @@ set_vop_and_replace:
 	  gsi_replace (gsi, new_stmt, false);
 	  return true;
 	}
+      gimple_set_location (new_stmt, loc);
       gsi_insert_before (gsi, new_stmt, GSI_SAME_STMT);
     }
 
@@ -4747,7 +4750,7 @@ clear_padding_type (clear_padding_struct *buf, tree type,
 				      "have well defined padding bits for %qs",
 			    field, "__builtin_clear_padding");
 	      }
-	    else if (is_empty_type (TREE_TYPE (field)))
+	    else if (is_empty_type (ftype))
 	      continue;
 	    else
 	      {
@@ -4758,8 +4761,9 @@ clear_padding_type (clear_padding_struct *buf, tree type,
 		gcc_assert (pos >= 0 && fldsz >= 0 && pos >= cur_pos);
 		clear_padding_add_padding (buf, pos - cur_pos);
 		cur_pos = pos;
-		clear_padding_type (buf, TREE_TYPE (field),
-				    fldsz, for_auto_init);
+		if (tree asbase = lang_hooks.types.classtype_as_base (field))
+		  ftype = asbase;
+		clear_padding_type (buf, ftype, fldsz, for_auto_init);
 		cur_pos += fldsz;
 	      }
 	  }

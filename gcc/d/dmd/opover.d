@@ -213,7 +213,7 @@ private Expression checkAliasThisForLhs(AggregateDeclaration ad, Scope* sc, BinE
      */
     if (isRecursiveAliasThis(e.att1, e.e1.type))
         return null;
-    //printf("att %s e1 = %s\n", Token::toChars(e.op), e.e1.type.toChars());
+    //printf("att %s e1 = %s\n", Token.toChars(e.op), e.e1.type.toChars());
     BinExp be = cast(BinExp)e.copy();
     // Resolve 'alias this' but in case of assigment don't resolve properties yet
     // because 'e1 = e2' could mean 'e1(e2)' or 'e1() = e2'
@@ -241,7 +241,7 @@ private Expression checkAliasThisForRhs(AggregateDeclaration ad, Scope* sc, BinE
      */
     if (isRecursiveAliasThis(e.att2, e.e2.type))
         return null;
-    //printf("att %s e2 = %s\n", Token::toChars(e.op), e.e2.type.toChars());
+    //printf("att %s e2 = %s\n", Token.toChars(e.op), e.e2.type.toChars());
     BinExp be = cast(BinExp)e.copy();
     be.e2 = resolveAliasThis(sc, e.e2, true);
     if (!be.e2)

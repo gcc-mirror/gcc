@@ -2254,7 +2254,11 @@ eliminate_redundant_comparison (enum tree_code opcode,
 	 BIT_AND_EXPR or BIT_IOR_EXPR was of a wider integer type,
 	 we need to convert.  */
       if (!useless_type_conversion_p (TREE_TYPE (curr->op), TREE_TYPE (t)))
-	t = fold_convert (TREE_TYPE (curr->op), t);
+	{
+	  if (!fold_convertible_p (TREE_TYPE (curr->op), t))
+	    continue;
+	  t = fold_convert (TREE_TYPE (curr->op), t);
+	}
 
       if (TREE_CODE (t) != INTEGER_CST
 	  && !operand_equal_p (t, curr->op, 0))
@@ -5857,7 +5861,9 @@ try_special_add_to_ops (vec<operand_entry *> *ops,
 	   && gimple_assign_rhs_code (def_stmt) == NEGATE_EXPR
 	   && !HONOR_SNANS (TREE_TYPE (op))
 	   && (!HONOR_SIGNED_ZEROS (TREE_TYPE (op))
-	       || !COMPLEX_FLOAT_TYPE_P (TREE_TYPE (op))))
+	       || !COMPLEX_FLOAT_TYPE_P (TREE_TYPE (op)))
+	   && (!FLOAT_TYPE_P (TREE_TYPE (op))
+	       || !DECIMAL_FLOAT_MODE_P (element_mode (op))))
     {
       tree rhs1 = gimple_assign_rhs1 (def_stmt);
       tree cst = build_minus_one_cst (TREE_TYPE (op));

@@ -2626,7 +2626,7 @@ void functionResolve(ref MatchAccumulator m, Dsymbol dstart, Loc loc, Scope* sc,
             printf("\t%s %s\n", arg.type.toChars(), arg.toChars());
             //printf("\tty = %d\n", arg.type.ty);
         }
-        //printf("stc = %llx\n", dstart.scope.stc);
+        //printf("stc = %llx\n", dstart._scope.stc);
         //printf("match:t/f = %d/%d\n", ta_last, m.last);
     }
 
@@ -4332,7 +4332,7 @@ MATCH deduceType(RootObject o, Scope* sc, Type tparam, TemplateParameters* param
             {
                 TypeStruct tp = cast(TypeStruct)tparam;
 
-                //printf("\t%d\n", (MATCH) t.implicitConvTo(tp));
+                //printf("\t%d\n", cast(MATCH) t.implicitConvTo(tp));
                 if (wm && t.deduceWild(tparam, false))
                 {
                     result = MATCH.constant;
@@ -4513,7 +4513,7 @@ MATCH deduceType(RootObject o, Scope* sc, Type tparam, TemplateParameters* param
             {
                 TypeClass tp = cast(TypeClass)tparam;
 
-                //printf("\t%d\n", (MATCH) t.implicitConvTo(tp));
+                //printf("\t%d\n", cast(MATCH) t.implicitConvTo(tp));
                 if (wm && t.deduceWild(tparam, false))
                 {
                     result = MATCH.constant;

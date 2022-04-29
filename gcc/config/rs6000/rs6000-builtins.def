@@ -1190,9 +1190,6 @@
   const vd __builtin_altivec_neg_v2df (vd);
     NEG_V2DF negv2df2 {}
 
-  const vsll __builtin_altivec_neg_v2di (vsll);
-    NEG_V2DI negv2di2 {}
-
   void __builtin_altivec_stvx_v2df (vd, signed long, void *);
     STVX_V2DF altivec_stvx_v2df {stvec}
 
@@ -2135,6 +2132,9 @@
 
   const vus __builtin_altivec_nand_v8hi_uns (vus, vus);
     NAND_V8HI_UNS nandv8hi3 {}
+
+  const vsll __builtin_altivec_neg_v2di (vsll);
+    NEG_V2DI negv2di2 {}
 
   const vsc __builtin_altivec_orc_v16qi (vsc, vsc);
     ORC_V16QI orcv16qi3 {}

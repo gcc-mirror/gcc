@@ -483,6 +483,7 @@ builtins_manager::make_primitive_type (enum jit_builtin_type type_id)
     case BT_UINT16: return m_ctxt->get_int_type (2, false);
     case BT_UINT32: return m_ctxt->get_int_type (4, false);
     case BT_UINT64: return m_ctxt->get_int_type (8, false);
+    case BT_UINT128: return m_ctxt->get_int_type (16, false);
     // case BT_WORD:
     // case BT_UNWINDWORD:
     case BT_FLOAT: return m_ctxt->get_type (GCC_JIT_TYPE_FLOAT);

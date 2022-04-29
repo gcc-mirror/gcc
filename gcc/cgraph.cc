@@ -507,6 +507,7 @@ cgraph_node::create (tree decl)
   gcc_assert (TREE_CODE (decl) == FUNCTION_DECL);
 
   node->decl = decl;
+  node->semantic_interposition = opt_for_fn (decl, flag_semantic_interposition);
 
   if ((flag_openacc || flag_openmp)
       && lookup_attribute ("omp declare target", DECL_ATTRIBUTES (decl)))
@@ -3487,7 +3488,11 @@ cgraph_node::verify_node (void)
 	     "returns a pointer");
       error_found = true;
     }
-  if (definition && externally_visible
+  if (definition
+      && externally_visible
+      /* For aliases in lto1 free_lang_data doesn't guarantee preservation
+	 of opt_for_fn (decl, flag_semantic_interposition).  See PR105399.  */
+      && (!alias || !in_lto_p)
       && semantic_interposition
 	 != opt_for_fn (decl, flag_semantic_interposition))
     {

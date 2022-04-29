@@ -69,7 +69,7 @@ void semantic3OnDependencies(Module m)
 /**
  * Remove generated .di files on error and exit
  */
-void removeHdrFilesAndFail(ref Param params, ref Modules modules)
+void removeHdrFilesAndFail(ref Param params, ref Modules modules) nothrow
 {
     if (params.doHdrGeneration)
     {
@@ -94,7 +94,7 @@ void removeHdrFilesAndFail(ref Param params, ref Modules modules)
  * Returns:
  *  the filename of the child package or module
  */
-private const(char)[] getFilename(Identifier[] packages, Identifier ident)
+private const(char)[] getFilename(Identifier[] packages, Identifier ident) nothrow
 {
     const(char)[] filename = ident.toString();
 
@@ -157,14 +157,14 @@ extern (C++) class Package : ScopeDsymbol
     uint tag;        // auto incremented tag, used to mask package tree in scopes
     Module mod;     // !=null if isPkgMod == PKG.module_
 
-    final extern (D) this(const ref Loc loc, Identifier ident)
+    final extern (D) this(const ref Loc loc, Identifier ident) nothrow
     {
         super(loc, ident);
         __gshared uint packageTag;
         this.tag = packageTag++;
     }
 
-    override const(char)* kind() const
+    override const(char)* kind() const nothrow
     {
         return "package";
     }
@@ -664,7 +664,7 @@ extern (C++) final class Module : Package
         //printf("Module::read('%s') file '%s'\n", toChars(), srcfile.toChars());
         if (auto result = global.fileManager.lookup(srcfile))
         {
-            this.src = result.data;
+            this.src = result;
             if (global.params.emitMakeDeps)
                 global.params.makeDeps.push(srcfile.toChars());
             return true;
@@ -1133,8 +1133,10 @@ extern (C++) final class Module : Package
         // If it isn't there, some compiler rewrites, like
         //    classinst == classinst -> .object.opEquals(classinst, classinst)
         // would fail inside object.d.
-        if (members.dim == 0 || (*members)[0].ident != Id.object ||
-            (*members)[0].isImport() is null)
+        if (filetype != FileType.c &&
+            (members.dim == 0 ||
+             (*members)[0].ident != Id.object ||
+             (*members)[0].isImport() is null))
         {
             auto im = new Import(Loc.initial, null, Id.object, null, 0);
             members.shift(im);
@@ -1380,7 +1382,7 @@ extern (C++) final class Module : Package
         a.setDim(0);
     }
 
-    extern (D) static void clearCache()
+    extern (D) static void clearCache() nothrow
     {
         foreach (Module m; amodules)
             m.searchCacheIdent = null;
@@ -1391,7 +1393,7 @@ extern (C++) final class Module : Package
      * return true if it imports m.
      * Can be used to detect circular imports.
      */
-    int imports(Module m)
+    int imports(Module m) nothrow
     {
         //printf("%s Module::imports(%s)\n", toChars(), m.toChars());
         version (none)
@@ -1414,14 +1416,14 @@ extern (C++) final class Module : Package
         return false;
     }
 
-    bool isRoot()
+    bool isRoot() nothrow
     {
         return this.importedFrom == this;
     }
 
     // true if the module source file is directly
     // listed in command line.
-    bool isCoreModule(Identifier ident)
+    bool isCoreModule(Identifier ident) nothrow
     {
         return this.ident == ident && parent && parent.ident == Id.core && !parent.parent;
     }
@@ -1440,7 +1442,7 @@ extern (C++) final class Module : Package
 
     uint[uint] ctfe_cov; /// coverage information from ctfe execution_count[line]
 
-    override inout(Module) isModule() inout
+    override inout(Module) isModule() inout nothrow
     {
         return this;
     }
@@ -1455,7 +1457,7 @@ extern (C++) final class Module : Package
      * Params:
      *    buf = The buffer to write to
      */
-    void fullyQualifiedName(ref OutBuffer buf)
+    void fullyQualifiedName(ref OutBuffer buf) nothrow
     {
         buf.writestring(ident.toString());
 
@@ -1469,7 +1471,7 @@ extern (C++) final class Module : Package
     /** Lazily initializes and returns the escape table.
     Turns out it eats a lot of memory.
     */
-    extern(D) Escape* escapetable()
+    extern(D) Escape* escapetable() nothrow
     {
         if (!_escapetable)
             _escapetable = new Escape();

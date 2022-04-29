@@ -2857,83 +2857,107 @@ match_exit_cycle (gfc_statement st, gfc_exec_op op)
 
   for (o = p, cnt = 0; o->state == COMP_DO && o->previous != NULL; cnt++)
     o = o->previous;
+
+  int count = 1;
   if (cnt > 0
       && o != NULL
-      && o->state == COMP_OMP_STRUCTURED_BLOCK
-      && (o->head->op == EXEC_OACC_LOOP
-	  || o->head->op == EXEC_OACC_KERNELS_LOOP
-	  || o->head->op == EXEC_OACC_PARALLEL_LOOP
-	  || o->head->op == EXEC_OACC_SERIAL_LOOP))
-    {
-      int collapse = 1;
-      gcc_assert (o->head->next != NULL
+      && o->state == COMP_OMP_STRUCTURED_BLOCK)
+    switch (o->head->op)
+      {
+      case EXEC_OACC_LOOP:
+      case EXEC_OACC_KERNELS_LOOP:
+      case EXEC_OACC_PARALLEL_LOOP:
+      case EXEC_OACC_SERIAL_LOOP:
+	gcc_assert (o->head->next != NULL
+		    && (o->head->next->op == EXEC_DO
+			|| o->head->next->op == EXEC_DO_WHILE)
+		    && o->previous != NULL
+		    && o->previous->tail->op == o->head->op);
+	if (o->previous->tail->ext.omp_clauses != NULL)
+	  {
+	    /* Both collapsed and tiled loops are lowered the same way, but are
+	       not compatible.  In gfc_trans_omp_do, the tile is prioritized. */
+	    if (o->previous->tail->ext.omp_clauses->tile_list)
+	      {
+		count = 0;
+		gfc_expr_list *el
+		  = o->previous->tail->ext.omp_clauses->tile_list;
+		for ( ; el; el = el->next)
+		  ++count;
+	      }
+	    else if (o->previous->tail->ext.omp_clauses->collapse > 1)
+	      count = o->previous->tail->ext.omp_clauses->collapse;
+	  }
+	if (st == ST_EXIT && cnt <= count)
+	  {
+	    gfc_error ("EXIT statement at %C terminating !$ACC LOOP loop");
+	    return MATCH_ERROR;
+	  }
+	if (st == ST_CYCLE && cnt < count)
+	  {
+	    gfc_error (o->previous->tail->ext.omp_clauses->tile_list
+		       ? G_("CYCLE statement at %C to non-innermost tiled "
+			    "!$ACC LOOP loop")
+		       : G_("CYCLE statement at %C to non-innermost collapsed "
+			    "!$ACC LOOP loop"));
+	    return MATCH_ERROR;
+	  }
+	break;
+      case EXEC_OMP_TARGET_TEAMS_DISTRIBUTE_PARALLEL_DO_SIMD:
+      case EXEC_OMP_TARGET_PARALLEL_DO_SIMD:
+      case EXEC_OMP_TARGET_SIMD:
+      case EXEC_OMP_TASKLOOP_SIMD:
+      case EXEC_OMP_PARALLEL_MASTER_TASKLOOP_SIMD:
+      case EXEC_OMP_MASTER_TASKLOOP_SIMD:
+      case EXEC_OMP_PARALLEL_MASKED_TASKLOOP_SIMD:
+      case EXEC_OMP_MASKED_TASKLOOP_SIMD:
+      case EXEC_OMP_PARALLEL_DO_SIMD:
+      case EXEC_OMP_DISTRIBUTE_SIMD:
+      case EXEC_OMP_DISTRIBUTE_PARALLEL_DO_SIMD:
+      case EXEC_OMP_TEAMS_DISTRIBUTE_SIMD:
+      case EXEC_OMP_TARGET_TEAMS_DISTRIBUTE_SIMD:
+      case EXEC_OMP_LOOP:
+      case EXEC_OMP_PARALLEL_LOOP:
+      case EXEC_OMP_TEAMS_LOOP:
+      case EXEC_OMP_TARGET_PARALLEL_LOOP:
+      case EXEC_OMP_TARGET_TEAMS_LOOP:
+      case EXEC_OMP_DO:
+      case EXEC_OMP_PARALLEL_DO:
+      case EXEC_OMP_SIMD:
+      case EXEC_OMP_DO_SIMD:
+      case EXEC_OMP_DISTRIBUTE_PARALLEL_DO:
+      case EXEC_OMP_TEAMS_DISTRIBUTE_PARALLEL_DO:
+      case EXEC_OMP_TARGET_TEAMS_DISTRIBUTE_PARALLEL_DO:
+      case EXEC_OMP_TARGET_PARALLEL_DO:
+      case EXEC_OMP_TEAMS_DISTRIBUTE_PARALLEL_DO_SIMD:
+
+	gcc_assert (o->head->next != NULL
 		  && (o->head->next->op == EXEC_DO
 		      || o->head->next->op == EXEC_DO_WHILE)
 		  && o->previous != NULL
 		  && o->previous->tail->op == o->head->op);
-      if (o->previous->tail->ext.omp_clauses != NULL)
-	{
-	  /* Both collapsed and tiled loops are lowered the same way, but are not
-	     compatible.  In gfc_trans_omp_do, the tile is prioritized.  */
-	  if (o->previous->tail->ext.omp_clauses->tile_list)
-	    {
-	      collapse = 0;
-	      gfc_expr_list *el = o->previous->tail->ext.omp_clauses->tile_list;
-	      for ( ; el; el = el->next)
-		++collapse;
-	    }
-	  else if (o->previous->tail->ext.omp_clauses->collapse > 1)
-	    collapse = o->previous->tail->ext.omp_clauses->collapse;
-	}
-      if (st == ST_EXIT && cnt <= collapse)
-	{
-	  gfc_error ("EXIT statement at %C terminating !$ACC LOOP loop");
-	  return MATCH_ERROR;
-	}
-      if (st == ST_CYCLE && cnt < collapse)
-	{
-	  gfc_error (o->previous->tail->ext.omp_clauses->tile_list
-		     ? G_("CYCLE statement at %C to non-innermost tiled"
-			  " !$ACC LOOP loop")
-		     : G_("CYCLE statement at %C to non-innermost collapsed"
-			  " !$ACC LOOP loop"));
-	  return MATCH_ERROR;
-	}
-    }
-  if (cnt > 0
-      && o != NULL
-      && (o->state == COMP_OMP_STRUCTURED_BLOCK)
-      && (o->head->op == EXEC_OMP_DO
-	  || o->head->op == EXEC_OMP_PARALLEL_DO
-	  || o->head->op == EXEC_OMP_SIMD
-	  || o->head->op == EXEC_OMP_DO_SIMD
-	  || o->head->op == EXEC_OMP_PARALLEL_DO_SIMD))
-    {
-      int count = 1;
-      gcc_assert (o->head->next != NULL
-		  && (o->head->next->op == EXEC_DO
-		      || o->head->next->op == EXEC_DO_WHILE)
-		  && o->previous != NULL
-		  && o->previous->tail->op == o->head->op);
-      if (o->previous->tail->ext.omp_clauses != NULL)
-	{
-	  if (o->previous->tail->ext.omp_clauses->collapse > 1)
-	    count = o->previous->tail->ext.omp_clauses->collapse;
-	  if (o->previous->tail->ext.omp_clauses->orderedc)
-	    count = o->previous->tail->ext.omp_clauses->orderedc;
-	}
-      if (st == ST_EXIT && cnt <= count)
-	{
-	  gfc_error ("EXIT statement at %C terminating !$OMP DO loop");
-	  return MATCH_ERROR;
-	}
-      if (st == ST_CYCLE && cnt < count)
-	{
-	  gfc_error ("CYCLE statement at %C to non-innermost collapsed"
-		     " !$OMP DO loop");
-	  return MATCH_ERROR;
-	}
-    }
+	if (o->previous->tail->ext.omp_clauses != NULL)
+	  {
+	    if (o->previous->tail->ext.omp_clauses->collapse > 1)
+	      count = o->previous->tail->ext.omp_clauses->collapse;
+	    if (o->previous->tail->ext.omp_clauses->orderedc)
+	      count = o->previous->tail->ext.omp_clauses->orderedc;
+	  }
+	if (st == ST_EXIT && cnt <= count)
+	  {
+	    gfc_error ("EXIT statement at %C terminating !$OMP DO loop");
+	    return MATCH_ERROR;
+	  }
+	if (st == ST_CYCLE && cnt < count)
+	  {
+	    gfc_error ("CYCLE statement at %C to non-innermost collapsed "
+		       "!$OMP DO loop");
+	    return MATCH_ERROR;
+	  }
+	break;
+      default:
+	break;
+      }
 
   /* Save the first statement in the construct - needed by the backend.  */
   new_st.ext.which_construct = p->construct;

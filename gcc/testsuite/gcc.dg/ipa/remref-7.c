@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fno-early-inlining -fno-ipa-sra -fdump-ipa-inline"  }  */
+/* { dg-options "-O2 -fno-early-inlining -fno-ipa-sra -fdump-ipa-inline --param max-inline-insns-auto=100" }  */
 
 int rglobal = 0;
 int g;

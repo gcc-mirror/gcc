@@ -51,6 +51,7 @@ import dmd.importc;
 import dmd.init;
 import dmd.intrange;
 import dmd.mtype;
+import dmd.mustuse;
 import dmd.nogc;
 import dmd.opover;
 import dmd.parse;
@@ -211,7 +212,8 @@ package (dmd) extern (C++) final class StatementSemanticVisitor : Visitor
             if (f.checkForwardRef(s.exp.loc))
                 s.exp = ErrorExp.get();
         }
-
+        if (checkMustUse(s.exp, sc))
+            s.exp = ErrorExp.get();
         if (!(sc.flags & SCOPE.Cfile) && discardValue(s.exp))
             s.exp = ErrorExp.get();
 

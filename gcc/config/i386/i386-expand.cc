@@ -3136,6 +3136,8 @@ ix86_expand_int_movcc (rtx operands[])
   bool sign_bit_compare_p = false;
   rtx op0 = XEXP (operands[1], 0);
   rtx op1 = XEXP (operands[1], 1);
+  rtx op2 = operands[2];
+  rtx op3 = operands[3];
 
   if (GET_MODE (op0) == TImode
       || (GET_MODE (op0) == DImode
@@ -3153,17 +3155,29 @@ ix86_expand_int_movcc (rtx operands[])
       || (op1 == constm1_rtx && (code == GT || code == LE)))
     sign_bit_compare_p = true;
 
+  /* op0 == op1 ? op0 : op3 is equivalent to op0 == op1 ? op1 : op3,
+     but if op1 is a constant, the latter form allows more optimizations,
+     either through the last 2 ops being constant handling, or the one
+     constant and one variable cases.  On the other side, for cmov the
+     former might be better as we don't need to load the constant into
+     another register.  */
+  if (code == EQ && CONST_INT_P (op1) && rtx_equal_p (op0, op2))
+    op2 = op1;
+  /* Similarly for op0 != op1 ? op2 : op0 and op0 != op1 ? op2 : op1.  */
+  else if (code == NE && CONST_INT_P (op1) && rtx_equal_p (op0, op3))
+    op3 = op1;
+
   /* Don't attempt mode expansion here -- if we had to expand 5 or 6
      HImode insns, we'd be swallowed in word prefix ops.  */
 
   if ((mode != HImode || TARGET_FAST_PREFIX)
       && (mode != (TARGET_64BIT ? TImode : DImode))
-      && CONST_INT_P (operands[2])
-      && CONST_INT_P (operands[3]))
+      && CONST_INT_P (op2)
+      && CONST_INT_P (op3))
     {
       rtx out = operands[0];
-      HOST_WIDE_INT ct = INTVAL (operands[2]);
-      HOST_WIDE_INT cf = INTVAL (operands[3]);
+      HOST_WIDE_INT ct = INTVAL (op2);
+      HOST_WIDE_INT cf = INTVAL (op3);
       HOST_WIDE_INT diff;
 
       diff = ct - cf;
@@ -3558,6 +3572,9 @@ ix86_expand_int_movcc (rtx operands[])
 
       if (BRANCH_COST (optimize_insn_for_speed_p (), false) <= 2)
 	return false;
+
+      operands[2] = op2;
+      operands[3] = op3;
 
       /* If one of the two operands is an interesting constant, load a
 	 constant with the above and mask it in with a logical operation.  */
@@ -17036,7 +17053,8 @@ ix86_emit_fp_unordered_jump (rtx label)
 
 /* Output code to perform an sinh XFmode calculation.  */
 
-void ix86_emit_i387_sinh (rtx op0, rtx op1)
+void
+ix86_emit_i387_sinh (rtx op0, rtx op1)
 {
   rtx e1 = gen_reg_rtx (XFmode);
   rtx e2 = gen_reg_rtx (XFmode);
@@ -17084,7 +17102,8 @@ void ix86_emit_i387_sinh (rtx op0, rtx op1)
 
 /* Output code to perform an cosh XFmode calculation.  */
 
-void ix86_emit_i387_cosh (rtx op0, rtx op1)
+void
+ix86_emit_i387_cosh (rtx op0, rtx op1)
 {
   rtx e1 = gen_reg_rtx (XFmode);
   rtx e2 = gen_reg_rtx (XFmode);
@@ -17106,7 +17125,8 @@ void ix86_emit_i387_cosh (rtx op0, rtx op1)
 
 /* Output code to perform an tanh XFmode calculation.  */
 
-void ix86_emit_i387_tanh (rtx op0, rtx op1)
+void
+ix86_emit_i387_tanh (rtx op0, rtx op1)
 {
   rtx e1 = gen_reg_rtx (XFmode);
   rtx e2 = gen_reg_rtx (XFmode);
@@ -17152,7 +17172,8 @@ void ix86_emit_i387_tanh (rtx op0, rtx op1)
 
 /* Output code to perform an asinh XFmode calculation.  */
 
-void ix86_emit_i387_asinh (rtx op0, rtx op1)
+void
+ix86_emit_i387_asinh (rtx op0, rtx op1)
 {
   rtx e1 = gen_reg_rtx (XFmode);
   rtx e2 = gen_reg_rtx (XFmode);
@@ -17204,7 +17225,8 @@ void ix86_emit_i387_asinh (rtx op0, rtx op1)
 
 /* Output code to perform an acosh XFmode calculation.  */
 
-void ix86_emit_i387_acosh (rtx op0, rtx op1)
+void
+ix86_emit_i387_acosh (rtx op0, rtx op1)
 {
   rtx e1 = gen_reg_rtx (XFmode);
   rtx e2 = gen_reg_rtx (XFmode);
@@ -17230,7 +17252,8 @@ void ix86_emit_i387_acosh (rtx op0, rtx op1)
 
 /* Output code to perform an atanh XFmode calculation.  */
 
-void ix86_emit_i387_atanh (rtx op0, rtx op1)
+void
+ix86_emit_i387_atanh (rtx op0, rtx op1)
 {
   rtx e1 = gen_reg_rtx (XFmode);
   rtx e2 = gen_reg_rtx (XFmode);
@@ -17281,7 +17304,8 @@ void ix86_emit_i387_atanh (rtx op0, rtx op1)
 
 /* Output code to perform a log1p XFmode calculation.  */
 
-void ix86_emit_i387_log1p (rtx op0, rtx op1)
+void
+ix86_emit_i387_log1p (rtx op0, rtx op1)
 {
   rtx_code_label *label1 = gen_label_rtx ();
   rtx_code_label *label2 = gen_label_rtx ();
@@ -17290,6 +17314,11 @@ void ix86_emit_i387_log1p (rtx op0, rtx op1)
   rtx res = gen_reg_rtx (XFmode);
   rtx cst, cstln2, cst1;
   rtx_insn *insn;
+
+  /* The emit_jump call emits pending stack adjust, make sure it is emitted
+     before the conditional jump, otherwise the stack adjustment will be
+     only conditional.  */
+  do_pending_stack_adjust ();
 
   cst = const_double_from_real_value
     (REAL_VALUE_ATOF ("0.29289321881345247561810596348408353", XFmode), XFmode);
@@ -17320,7 +17349,8 @@ void ix86_emit_i387_log1p (rtx op0, rtx op1)
 }
 
 /* Emit code for round calculation.  */
-void ix86_emit_i387_round (rtx op0, rtx op1)
+void
+ix86_emit_i387_round (rtx op0, rtx op1)
 {
   machine_mode inmode = GET_MODE (op1);
   machine_mode outmode = GET_MODE (op0);
@@ -17434,7 +17464,8 @@ void ix86_emit_i387_round (rtx op0, rtx op1)
 /* Output code to perform a Newton-Rhapson approximation of a single precision
    floating point divide [http://en.wikipedia.org/wiki/N-th_root_algorithm].  */
 
-void ix86_emit_swdivsf (rtx res, rtx a, rtx b, machine_mode mode)
+void
+ix86_emit_swdivsf (rtx res, rtx a, rtx b, machine_mode mode)
 {
   rtx x0, x1, e0, e1;
 
@@ -17485,7 +17516,8 @@ void ix86_emit_swdivsf (rtx res, rtx a, rtx b, machine_mode mode)
 /* Output code to perform a Newton-Rhapson approximation of a
    single precision floating point [reciprocal] square root.  */
 
-void ix86_emit_swsqrtsf (rtx res, rtx a, machine_mode mode, bool recip)
+void
+ix86_emit_swsqrtsf (rtx res, rtx a, machine_mode mode, bool recip)
 {
   rtx x0, e0, e1, e2, e3, mthree, mhalf;
   REAL_VALUE_TYPE r;
@@ -23240,9 +23272,10 @@ ix86_expand_divmod_libfunc (rtx libfunc, machine_mode mode,
   *rem_p = rem;
 }
 
-void ix86_expand_atomic_fetch_op_loop (rtx target, rtx mem, rtx val,
-				       enum rtx_code code, bool after,
-				       bool doubleword)
+void
+ix86_expand_atomic_fetch_op_loop (rtx target, rtx mem, rtx val,
+				  enum rtx_code code, bool after,
+				  bool doubleword)
 {
   rtx old_reg, new_reg, old_mem, success;
   machine_mode mode = GET_MODE (target);
@@ -23286,10 +23319,11 @@ void ix86_expand_atomic_fetch_op_loop (rtx target, rtx mem, rtx val,
    it will be relaxed to an atomic load + compare, and skip
    cmpxchg instruction if mem != exp_input.  */
 
-void ix86_expand_cmpxchg_loop (rtx *ptarget_bool, rtx target_val,
-			       rtx mem, rtx exp_input, rtx new_input,
-			       rtx mem_model, bool doubleword,
-			       rtx_code_label *loop_label)
+void
+ix86_expand_cmpxchg_loop (rtx *ptarget_bool, rtx target_val,
+			  rtx mem, rtx exp_input, rtx new_input,
+			  rtx mem_model, bool doubleword,
+			  rtx_code_label *loop_label)
 {
   rtx_code_label *cmp_label = NULL;
   rtx_code_label *done_label = NULL;
@@ -23388,6 +23422,7 @@ void ix86_expand_cmpxchg_loop (rtx *ptarget_bool, rtx target_val,
 
     /* If mem is not expected, pause and loop back.  */
     emit_label (cmp_label);
+    emit_move_insn (target_val, new_mem);
     emit_insn (gen_pause ());
     emit_jump_insn (gen_jump (loop_label));
     emit_barrier ();

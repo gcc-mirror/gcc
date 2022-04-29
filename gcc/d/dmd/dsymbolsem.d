@@ -51,6 +51,7 @@ import dmd.init;
 import dmd.initsem;
 import dmd.hdrgen;
 import dmd.mtype;
+import dmd.mustuse;
 import dmd.nogc;
 import dmd.nspace;
 import dmd.objc;
@@ -542,7 +543,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
                     Parameter arg = Parameter.getNth(tt.arguments, pos);
                     arg.type = arg.type.typeSemantic(dsym.loc, sc);
                     //printf("[%d] iexps.dim = %d, ", pos, iexps.dim);
-                    //printf("e = (%s %s, %s), ", Token::tochars[e.op], e.toChars(), e.type.toChars());
+                    //printf("e = (%s %s, %s), ", Token.tochars[e.op], e.toChars(), e.type.toChars());
                     //printf("arg = (%s, %s)\n", arg.toChars(), arg.type.toChars());
 
                     if (e != ie)
@@ -581,7 +582,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
                             arg = Parameter.getNth(tt.arguments, pos + u);
                             arg.type = arg.type.typeSemantic(dsym.loc, sc);
                             //printf("[%d+%d] exps.dim = %d, ", pos, u, exps.dim);
-                            //printf("ee = (%s %s, %s), ", Token::tochars[ee.op], ee.toChars(), ee.type.toChars());
+                            //printf("ee = (%s %s, %s), ", Token.tochars[ee.op], ee.toChars(), ee.type.toChars());
                             //printf("arg = (%s, %s)\n", arg.toChars(), arg.type.toChars());
 
                             size_t iexps_dim = iexps.dim - 1 + exps.dim;
@@ -2046,6 +2047,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
 
         ed.semanticRun = PASS.semantic;
         UserAttributeDeclaration.checkGNUABITag(ed, sc.linkage);
+        checkMustUseReserved(ed);
 
         if (!ed.members && !ed.memtype) // enum ident;
         {
@@ -2872,7 +2874,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
             sc = sc.endCTFE();
             resolved = resolved.ctfeInterpret();
             StringExp name = resolved.toStringExp();
-            TupleExp tup = name ? null : resolved.toTupleExp();
+            TupleExp tup = name ? null : resolved.isTupleExp();
             if (!tup && !name)
             {
                 error(ns.loc, "expected string expression for namespace name, got `%s`", ns.identExp.toChars());
@@ -3017,7 +3019,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
         if ((funcdecl.storage_class & STC.TYPECTOR) && !(ad || funcdecl.isNested()))
             funcdecl.storage_class &= ~STC.TYPECTOR;
 
-        //printf("function storage_class = x%llx, sc.stc = x%llx, %x\n", storage_class, sc.stc, Declaration::isFinal());
+        //printf("function storage_class = x%llx, sc.stc = x%llx, %x\n", storage_class, sc.stc, Declaration.isFinal());
 
         if (sc.flags & SCOPE.compile)
             funcdecl.flags |= FUNCFLAG.compileTimeOnly; // don't emit code for this function
@@ -3056,6 +3058,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
         funcdecl.visibility = sc.visibility;
         funcdecl.userAttribDecl = sc.userAttribDecl;
         UserAttributeDeclaration.checkGNUABITag(funcdecl, funcdecl.linkage);
+        checkMustUseReserved(funcdecl);
 
         if (!funcdecl.originalType)
             funcdecl.originalType = funcdecl.type.syntaxCopy();
@@ -4092,7 +4095,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
     override void visit(PostBlitDeclaration pbd)
     {
         //printf("PostBlitDeclaration::semantic() %s\n", toChars());
-        //printf("ident: %s, %s, %p, %p\n", ident.toChars(), Id::dtor.toChars(), ident, Id::dtor);
+        //printf("ident: %s, %s, %p, %p\n", ident.toChars(), Id.dtor.toChars(), ident, Id.dtor);
         //printf("stc = x%llx\n", sc.stc);
         if (pbd.semanticRun >= PASS.semanticdone)
             return;
@@ -4129,7 +4132,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
     override void visit(DtorDeclaration dd)
     {
         //printf("DtorDeclaration::semantic() %s\n", toChars());
-        //printf("ident: %s, %s, %p, %p\n", ident.toChars(), Id::dtor.toChars(), ident, Id::dtor);
+        //printf("ident: %s, %s, %p, %p\n", ident.toChars(), Id.dtor.toChars(), ident, Id.dtor);
         if (dd.semanticRun >= PASS.semanticdone)
             return;
         if (dd._scope)
@@ -4618,7 +4621,8 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
         buildOpAssign(sd, sc2);
         buildOpEquals(sd, sc2);
 
-        if (global.params.useTypeInfo && Type.dtypeinfo)  // these functions are used for TypeInfo
+        if (!(sc2.flags & SCOPE.Cfile) &&
+            global.params.useTypeInfo && Type.dtypeinfo)  // these functions are used for TypeInfo
         {
             sd.xeq = buildXopEquals(sd, sc2);
             sd.xcmp = buildXopCmp(sd, sc2);
@@ -4770,6 +4774,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
         }
         cldec.semanticRun = PASS.semantic;
         UserAttributeDeclaration.checkGNUABITag(cldec, sc.linkage);
+        checkMustUseReserved(cldec);
 
         if (cldec.baseok < Baseok.done)
         {
@@ -5019,6 +5024,10 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
                     cldec.com = true;
                 if (cldec.baseClass.isCPPclass())
                     cldec.classKind = ClassKind.cpp;
+                if (cldec.classKind != cldec.baseClass.classKind)
+                    cldec.error("with %s linkage cannot inherit from class `%s` with %s linkage",
+                        cldec.classKind.toChars(), cldec.baseClass.toChars(), cldec.baseClass.classKind.toChars());
+
                 if (cldec.baseClass.stack)
                     cldec.stack = true;
                 cldec.enclosing = cldec.baseClass.enclosing;
@@ -5475,6 +5484,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
                 idec.classKind = ClassKind.cpp;
             idec.cppnamespace = sc.namespace;
             UserAttributeDeclaration.checkGNUABITag(idec, sc.linkage);
+            checkMustUseReserved(idec);
 
             if (sc.linkage == LINK.objc)
                 objc.setObjc(idec);

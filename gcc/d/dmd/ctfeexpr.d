@@ -1269,7 +1269,7 @@ private int ctfeRawCmp(const ref Loc loc, Expression e1, Expression e2, bool ide
         real_t r1 = e1.type.isreal() ? e1.toReal() : e1.toImaginary();
         real_t r2 = e1.type.isreal() ? e2.toReal() : e2.toImaginary();
         if (identity)
-            return !RealIdentical(r1, r2);
+            return !CTFloat.isIdentical(r1, r2);
         if (CTFloat.isNaN(r1) || CTFloat.isNaN(r2)) // if unordered
         {
             return 1;   // they are not equal
@@ -1399,7 +1399,7 @@ bool ctfeIdentity(const ref Loc loc, EXP op, Expression e1, Expression e2)
         cmp = (es1.var == es2.var && es1.offset == es2.offset);
     }
     else if (e1.type.isreal())
-        cmp = RealIdentical(e1.toReal(), e2.toReal());
+        cmp = CTFloat.isIdentical(e1.toReal(), e2.toReal());
     else if (e1.type.isimaginary())
         cmp = RealIdentical(e1.toImaginary(), e2.toImaginary());
     else if (e1.type.iscomplex())

@@ -1,3 +1,35 @@
+2022-04-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgomp/105358
+	* work.c (gomp_init_work_share): Don't mask of adjustment for
+	dynamic long long realignment if struct gomp_work_share has smaller
+	alignof than long long.
+	* loop.c (GOMP_loop_start): Don't use inline_ordered_team_ids if
+	struct gomp_work_share has smaller alignof than long long or if
+	sizeof (struct gomp_work_share) is smaller than
+	INLINE_ORDERED_TEAM_IDS_OFF.
+	* loop_ull.c (GOMP_loop_ull_start): Likewise.
+	* sections.c (GOMP_sections2_start): Likewise.
+
+2022-04-25  Jakub Jelinek  <jakub@redhat.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR fortran/104717
+	* testsuite/libgomp.oacc-fortran/privatized-ref-2.f90: Adjust.
+
+2022-04-13  Jakub Jelinek  <jakub@redhat.com>
+
+	* libgomp.texi: Fix a typo - mutexinouset -> mutexinoutset.
+
+2022-04-06  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* plugin/cuda/cuda.h: Remove file.
+	* plugin/plugin-nvptx.c [PLUGIN_NVPTX_DYNAMIC]: Include
+	"cuda/cuda.h" instead of <cuda.h>.
+	* plugin/configfrag.ac <PLUGIN_NVPTX_DYNAMIC>: Don't set
+	'PLUGIN_NVPTX_CPPFLAGS'.
+	* configure: Regenerate.
+
 2022-04-05  Chung-Lin Tang  <cltang@codesourcery.com>
 
 	* testsuite/libgomp.fortran/use_device_ptr-4.f90: New testcase.

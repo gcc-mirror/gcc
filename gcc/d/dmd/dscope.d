@@ -457,6 +457,8 @@ struct Scope
 
                 if (sc.scopesym.isModule())
                     flags |= SearchUnqualifiedModule;        // tell Module.search() that SearchLocalsOnly is to be obeyed
+                else if (sc.flags & SCOPE.Cfile && sc.scopesym.isStructDeclaration())
+                    continue;                                // C doesn't have struct scope
 
                 if (Dsymbol s = sc.scopesym.search(loc, ident, flags))
                 {

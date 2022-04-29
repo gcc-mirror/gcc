@@ -287,7 +287,8 @@ section.
 @item @anchor{GDC-prerequisite}GDC
 
 In order to build GDC, the D compiler, you need a working GDC
-compiler (GCC version 9.1 or later), as the D front end is written in D.
+compiler (GCC version 9.1 or later) and D runtime library,
+@samp{libphobos}, as the D front end is written in D.
 
 Versions of GDC prior to 12 can be built with an ISO C++11 compiler, which can
 then be installed and used to bootstrap newer versions of the D front end.
@@ -302,6 +303,10 @@ and has a sufficiently recent version.  Though the implementation of the D
 front end does not make use of any GDC-specific extensions, or novel features
 of the D language, if too old a GDC version is installed and
 @option{--enable-languages=d} is used, the build will fail.
+
+On some targets, @samp{libphobos} isn't enabled by default, but compiles
+and works if @option{--enable-libphobos} is used.  Specifics are
+documented for affected targets.
 
 @item A ``working'' POSIX compatible shell, or GNU bash
 
@@ -2134,17 +2139,6 @@ Until all of the libraries are converted to use IEEE 128-bit floating
 point, it is not recommended to use
 @option{--with-long-double-format=ieee}.
 
-On little endian PowerPC Linux systems, if you explicitly set the
-@code{long double} type, it will build multilibs to allow you to
-select either @code{long double} format, unless you disable multilibs
-with the @code{--disable-multilib} option.  At present,
-@code{long double} multilibs are not built on big endian PowerPC Linux
-systems.  If you are building multilibs, you will need to configure
-the compiler using the @option{--with-system-zlib} option.
-
-If you do not set the @code{long double} type explicitly, no multilibs
-will be generated.
-
 @item --enable-fdpic
 On SH Linux systems, generate ELF FDPIC code.
 
@@ -3901,8 +3895,8 @@ configure GCC@ for building a CR16 uclinux cross-compiler.
 @end html
 @anchor{cris}
 @heading CRIS
-CRIS is the CPU architecture in Axis Communications ETRAX system-on-a-chip
-series.  These are used in embedded applications.
+CRIS is a CPU architecture in Axis Communications systems-on-a-chip, for
+example the ETRAX series.  These are used in embedded applications.
 
 @ifnothtml
 @xref{CRIS Options,, CRIS Options, gcc, Using the GNU Compiler
@@ -3913,21 +3907,8 @@ See ``CRIS Options'' in the main manual
 @end ifhtml
 for a list of CRIS-specific options.
 
-There are a few different CRIS targets:
-@table @code
-@item cris-axis-elf
-Mainly for monolithic embedded systems.  Includes a multilib for the
-@samp{v10} core used in @samp{ETRAX 100 LX}.
-@item cris-axis-linux-gnu
-A GNU/Linux port for the CRIS architecture, currently targeting
-@samp{ETRAX 100 LX} by default.
-@end table
-
-Pre-packaged tools can be obtained from
-@uref{ftp://ftp.axis.com/@/pub/@/axis/@/tools/@/cris/@/compiler-kit/}.  More
-information about this platform is available at
-@uref{http://developer.axis.com/}.
-
+Use @samp{configure --target=cris-elf} to configure GCC@ for building
+a cross-compiler for CRIS.
 @html
 <hr />
 @end html
@@ -4888,6 +4869,12 @@ GNU binutils.  @samp{libstdc++} symbol versioning will be disabled if no
 appropriate version is found.  Solaris @command{c++filt} from the Solaris
 Studio compilers does @emph{not} work.
 
+In order to build the GNU D compiler, GDC, a working @samp{libphobos} is
+needed.  That library wasn't built by default in GCC 9--11 on SPARC, or
+on x86 when the Solaris assembler is used, but can be enabled by
+configuring with @option{--enable-libphobos}.  Also, GDC 9.4.0 is
+required on x86, while GDC 9.3.0 is known to work on SPARC.
+
 The versions of the GNU Multiple Precision Library (GMP), the MPFR
 library and the MPC library bundled with Solaris 11.3 and later are
 usually recent enough to match GCC's requirements.  There are two
@@ -4901,6 +4888,7 @@ need to configure with @option{--with-gmp-include=/usr/include/gmp}.
 @item
 The version of the MPFR libary included in Solaris 11.3 is too old; you
 need to provide a more recent one.
+
 @end itemize
 
 @html
@@ -5141,7 +5129,7 @@ the Win32 subsystem that provides a subset of POSIX.
 
 @subheading Intel 64-bit versions
 GCC contains support for x86-64 using the mingw-w64
-runtime library, available from @uref{https://mingw-w64.org/doku.php}.
+runtime library, available from @uref{https://www.mingw-w64.org/downloads/}.
 This library should be used with the target triple x86_64-pc-mingw32.
 
 @subheading Windows CE

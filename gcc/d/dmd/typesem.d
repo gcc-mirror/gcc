@@ -1220,6 +1220,9 @@ extern(C++) Type typeSemantic(Type type, const ref Loc loc, Scope* sc)
             tf.islive = true;
 
         tf.linkage = sc.linkage;
+        if (tf.linkage == LINK.system)
+            tf.linkage = target.systemLinkage();
+
         version (none)
         {
             /* If the parent is @safe, then this function defaults to safe
@@ -1840,7 +1843,7 @@ extern(C++) Type typeSemantic(Type type, const ref Loc loc, Scope* sc)
                 mtype.sym = e.isScopeExp().sds;
                 break;
             case EXP.tuple:
-                TupleExp te = e.toTupleExp();
+                TupleExp te = e.isTupleExp();
                 Objects* elems = new Objects(te.exps.dim);
                 foreach (i; 0 .. elems.dim)
                 {
@@ -2281,10 +2284,7 @@ RootObject compileTypeMixin(TypeMixin tm, Loc loc, Scope* sc)
         return null;
     }
 
-    Type t = o.isType();
-    Expression e = t ? t.typeToExpression() : o.isExpression();
-
-    return (!e && t) ? t : e;
+    return o;
 }
 
 
@@ -2306,7 +2306,8 @@ extern (C++) Type merge(Type type)
         case Tident:
         case Tinstance:
         case Tmixin:
-            return type;
+        case Ttag:
+            return type;        // don't merge placeholder types
 
         case Tsarray:
             // prevents generating the mangle if the array dim is not yet known
@@ -3619,11 +3620,30 @@ Expression dotExp(Type mt, Scope* sc, Expression e, Identifier ident, int flag)
                 e.error("`%s` is not an expression", e.toChars());
                 return ErrorExp.get();
             }
-            else if (checkUnsafeDotExp(sc, e, ident, flag))
+            else if (mt.dim.toUInteger() < 1 && checkUnsafeDotExp(sc, e, ident, flag))
             {
+                // .ptr on static array is @safe unless size is 0
+                // https://issues.dlang.org/show_bug.cgi?id=20853
                 return ErrorExp.get();
             }
             e = e.castTo(sc, e.type.nextOf().pointerTo());
+        }
+        else if (ident == Id._tupleof)
+        {
+            if (e.isTypeExp())
+            {
+                e.error("`.tupleof` cannot be used on type `%s`", mt.toChars);
+                return ErrorExp.get();
+            }
+            else
+            {
+                const length = cast(size_t)mt.dim.toUInteger();
+                auto exps = new Expressions();
+                exps.reserve(length);
+                foreach (i; 0 .. length)
+                    exps.push(new IndexExp(e.loc, e, new IntegerExp(e.loc, i, Type.tsize_t)));
+                e = new TupleExp(e.loc, exps);
+            }
         }
         else
         {
@@ -3885,7 +3905,7 @@ Expression dotExp(Type mt, Scope* sc, Expression e, Identifier ident, int flag)
         assert(e.op != EXP.dot);
 
         // https://issues.dlang.org/show_bug.cgi?id=14010
-        if (ident == Id._mangleof)
+        if (!(sc.flags & SCOPE.Cfile) && ident == Id._mangleof)
         {
             return mt.getProperty(sc, e.loc, ident, flag & 1);
         }
@@ -4637,7 +4657,7 @@ extern (C++) Expression defaultInit(Type mt, const ref Loc loc, const bool isCfi
     {
         static if (LOGDEFAULTINIT)
         {
-            printf("TypeBasic::defaultInit() '%s'\n", mt.toChars());
+            printf("TypeBasic::defaultInit() '%s' isCfile: %d\n", mt.toChars(), isCfile);
         }
         dinteger_t value = 0;
 
@@ -4695,7 +4715,7 @@ extern (C++) Expression defaultInit(Type mt, const ref Loc loc, const bool isCfi
     {
         static if (LOGDEFAULTINIT)
         {
-            printf("TypeSArray::defaultInit() '%s'\n", mt.toChars());
+            printf("TypeSArray::defaultInit() '%s' isCfile %d\n", mt.toChars(), isCfile);
         }
         if (mt.next.ty == Tvoid)
             return mt.tuns8.defaultInit(loc, isCfile);

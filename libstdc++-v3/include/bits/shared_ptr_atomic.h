@@ -573,6 +573,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       constexpr atomic() noexcept = default;
 
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 3661. constinit atomic<shared_ptr<T>> a(nullptr); should work
+      constexpr atomic(nullptr_t) noexcept : atomic() { }
+
       atomic(shared_ptr<_Tp> __r) noexcept
       : _M_impl(std::move(__r))
       { }

@@ -1030,7 +1030,7 @@ dse_classify_store (ao_ref *ref, gimple *stmt,
 	 just pretend the stmt makes itself dead.  Otherwise fail.  */
       if (defs.is_empty ())
 	{
-	  if (ref_may_alias_global_p (ref))
+	  if (ref_may_alias_global_p (ref, false))
 	    return DSE_STORE_LIVE;
 
 	  if (by_clobber_p)
@@ -1062,7 +1062,7 @@ dse_classify_store (ao_ref *ref, gimple *stmt,
 	    {
 	      /* But if the store is to global memory it is definitely
 		 not dead.  */
-	      if (ref_may_alias_global_p (ref))
+	      if (ref_may_alias_global_p (ref, false))
 		return DSE_STORE_LIVE;
 	      defs.unordered_remove (i);
 	    }

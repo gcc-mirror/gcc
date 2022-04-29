@@ -17,7 +17,9 @@ import core.stdc.stdio;
 extern(C++) class ParseTimeTransitiveVisitor(AST) : PermissiveVisitor!AST
 {
     alias visit = PermissiveVisitor!AST.visit;
-    mixin ParseVisitMethods!AST;
+
+    mixin ParseVisitMethods!AST __methods;
+    alias visit = __methods.visit;
 }
 
 /* This mixin implements the AST traversal logic for parse time AST nodes. The same code

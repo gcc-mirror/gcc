@@ -1362,6 +1362,19 @@ region_model_manager::get_region_for_global (tree expr)
   return reg;
 }
 
+/* Return the region for an unknown access of type REGION_TYPE,
+   creating it if necessary.
+   This is a symbolic_region, where the pointer is an unknown_svalue
+   of type &REGION_TYPE.  */
+
+const region *
+region_model_manager::get_unknown_symbolic_region (tree region_type)
+{
+  tree ptr_type = region_type ? build_pointer_type (region_type) : NULL_TREE;
+  const svalue *unknown_ptr = get_or_create_unknown_svalue (ptr_type);
+  return get_symbolic_region (unknown_ptr);
+}
+
 /* Return the region that describes accessing field FIELD of PARENT,
    creating it if necessary.  */
 
@@ -1372,12 +1385,7 @@ region_model_manager::get_field_region (const region *parent, tree field)
 
   /* (*UNKNOWN_PTR).field is (*UNKNOWN_PTR_OF_&FIELD_TYPE).  */
   if (parent->symbolic_for_unknown_ptr_p ())
-    {
-      tree ptr_to_field_type = build_pointer_type (TREE_TYPE (field));
-      const svalue *unknown_ptr_to_field
-	= get_or_create_unknown_svalue (ptr_to_field_type);
-      return get_symbolic_region (unknown_ptr_to_field);
-    }
+    return get_unknown_symbolic_region (TREE_TYPE (field));
 
   field_region::key_t key (parent, field);
   if (field_region *reg = m_field_regions.get (key))
@@ -1397,6 +1405,10 @@ region_model_manager::get_element_region (const region *parent,
 					  tree element_type,
 					  const svalue *index)
 {
+  /* (UNKNOWN_PTR[IDX]) is (UNKNOWN_PTR).  */
+  if (parent->symbolic_for_unknown_ptr_p ())
+    return get_unknown_symbolic_region (element_type);
+
   element_region::key_t key (parent, element_type, index);
   if (element_region *reg = m_element_regions.get (key))
     return reg;
@@ -1416,6 +1428,10 @@ region_model_manager::get_offset_region (const region *parent,
 					 tree type,
 					 const svalue *byte_offset)
 {
+  /* (UNKNOWN_PTR + OFFSET) is (UNKNOWN_PTR).  */
+  if (parent->symbolic_for_unknown_ptr_p ())
+    return get_unknown_symbolic_region (type);
+
   /* If BYTE_OFFSET is zero, return PARENT.  */
   if (tree cst_offset = byte_offset->maybe_get_constant ())
     if (zerop (cst_offset))
@@ -1451,6 +1467,9 @@ region_model_manager::get_sized_region (const region *parent,
 					tree type,
 					const svalue *byte_size_sval)
 {
+  if (parent->symbolic_for_unknown_ptr_p ())
+    return get_unknown_symbolic_region (type);
+
   if (byte_size_sval->get_type () != size_type_node)
     byte_size_sval = get_or_create_cast (size_type_node, byte_size_sval);
 
@@ -1485,6 +1504,9 @@ region_model_manager::get_cast_region (const region *original_region,
   /* If types match, return ORIGINAL_REGION.  */
   if (type == original_region->get_type ())
     return original_region;
+
+  if (original_region->symbolic_for_unknown_ptr_p ())
+    return get_unknown_symbolic_region (type);
 
   cast_region::key_t key (original_region, type);
   if (cast_region *reg = m_cast_regions.get (key))
@@ -1557,6 +1579,9 @@ region_model_manager::get_bit_range (const region *parent, tree type,
 				     const bit_range &bits)
 {
   gcc_assert (parent);
+
+  if (parent->symbolic_for_unknown_ptr_p ())
+    return get_unknown_symbolic_region (type);
 
   bit_range_region::key_t key (parent, type, bits);
   if (bit_range_region *reg = m_bit_range_regions.get (key))

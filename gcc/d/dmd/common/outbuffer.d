@@ -16,6 +16,8 @@ import core.stdc.stdio;
 import core.stdc.string;
 import core.stdc.stdlib;
 
+nothrow:
+
 // In theory these functions should also restore errno, but we don't care because
 // we abort application on error anyway.
 extern (C) private pure @system @nogc nothrow
@@ -53,6 +55,8 @@ struct OutBuffer
     /// Current indent level
     int level;
     // state }
+
+  nothrow:
 
     /**
     Construct given size.

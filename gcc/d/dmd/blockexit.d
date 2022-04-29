@@ -139,16 +139,21 @@ int blockExit(Statement s, FuncDeclaration func, bool mustNotThrow)
                             // Allow if last case/default was empty
                             CaseStatement sc = slast.isCaseStatement();
                             DefaultStatement sd = slast.isDefaultStatement();
-                            if (sc && (!sc.statement.hasCode() || sc.statement.isCaseStatement() || sc.statement.isErrorStatement()))
-                            {
-                            }
-                            else if (sd && (!sd.statement.hasCode() || sd.statement.isCaseStatement() || sd.statement.isErrorStatement()))
+                            auto sl = (sc ? sc.statement : (sd ? sd.statement : null));
+
+                            if (sl && (!sl.hasCode() || sl.isErrorStatement()))
                             {
                             }
                             else if (func.getModule().filetype != FileType.c)
                             {
                                 const(char)* gototype = s.isCaseStatement() ? "case" : "default";
-                                s.error("switch case fallthrough - use 'goto %s;' if intended", gototype);
+                                // @@@DEPRECATED_2.110@@@ https://issues.dlang.org/show_bug.cgi?id=22999
+                                // Deprecated in 2.100
+                                // Make an error in 2.110
+                                if (sl && sl.isCaseStatement())
+                                    s.deprecation("switch case fallthrough - use 'goto %s;' if intended", gototype);
+                                else
+                                    s.error("switch case fallthrough - use 'goto %s;' if intended", gototype);
                             }
                         }
                     }

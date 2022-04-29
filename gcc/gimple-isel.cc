@@ -245,6 +245,14 @@ gimple_expand_vec_cond_expr (struct function *fun, gimple_stmt_iterator *gsi,
 			GET_MODE_NUNITS (cmp_op_mode)));
 
   icode = get_vcond_icode (mode, cmp_op_mode, unsignedp);
+  /* Some targets do not have vcondeq and only vcond with NE/EQ
+     but not vcondu, so make sure to also try vcond here as
+     vcond_icode_p would canonicalize the optab query to.  */
+  if (icode == CODE_FOR_nothing
+      && (tcode == NE_EXPR || tcode == EQ_EXPR)
+      && ((icode = get_vcond_icode (mode, cmp_op_mode, !unsignedp))
+	  != CODE_FOR_nothing))
+    unsignedp = !unsignedp;
   if (icode == CODE_FOR_nothing)
     {
       if (tcode == LT_EXPR

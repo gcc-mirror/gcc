@@ -1843,6 +1843,20 @@ no_c99_libc_has_function (enum function_class fn_class ATTRIBUTE_UNUSED,
   return false;
 }
 
+/* Assume some c99 functions are present at the runtime including sincos.  */
+bool
+bsd_libc_has_function (enum function_class fn_class,
+		       tree type ATTRIBUTE_UNUSED)
+{
+  if (fn_class == function_c94
+      || fn_class == function_c99_misc
+      || fn_class == function_sincos)
+    return true;
+
+  return false;
+}
+
+
 tree
 default_builtin_tm_load_store (tree ARG_UNUSED (type))
 {

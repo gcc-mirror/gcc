@@ -2203,6 +2203,7 @@ dump_expr (cxx_pretty_printer *pp, tree t, int flags)
     case WILDCARD_DECL:
     case OVERLOAD:
     case TYPE_DECL:
+    case USING_DECL:
     case IDENTIFIER_NODE:
       dump_decl (pp, t, ((flags & ~(TFF_DECL_SPECIFIERS|TFF_RETURN_TYPE
                                     |TFF_TEMPLATE_HEADER))
@@ -2584,6 +2585,13 @@ dump_expr (cxx_pretty_printer *pp, tree t, int flags)
     case VIEW_CONVERT_EXPR:
       {
 	tree op = TREE_OPERAND (t, 0);
+
+	if (location_wrapper_p (t))
+	  {
+	    dump_expr (pp, op, flags);
+	    break;
+	  }
+
 	tree ttype = TREE_TYPE (t);
 	tree optype = TREE_TYPE (op);
 

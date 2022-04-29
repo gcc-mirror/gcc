@@ -21,7 +21,7 @@ struct S {
   friend class __attribute__((deprecated)) N3;
   [[deprecated]] friend void foo<>(int, int); // { dg-warning "attribute ignored" }
   [[deprecated]] friend void ::foo(int, int); // { dg-warning "attribute ignored" }
-  // { dg-bogus "should have" "PR100339" { xfail *-*-* } .-1 }
+  // { dg-bogus "should have" "PR100339" }
 };
 
 template<typename T>

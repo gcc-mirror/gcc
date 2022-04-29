@@ -6440,6 +6440,8 @@ vectorizable_operation (vec_info *vinfo,
 	  new_temp = make_ssa_name (vec_dest, new_stmt);
 	  gimple_assign_set_lhs (new_stmt, new_temp);
 	  vect_finish_stmt_generation (vinfo, stmt_info, new_stmt, gsi);
+	  if (using_emulated_vectors_p)
+	    suppress_warning (new_stmt, OPT_Wvector_operation_performance);
 
 	  /* Enter the combined value into the vector cond hash so we don't
 	     AND it with a loop mask again.  */
@@ -10510,7 +10512,7 @@ vectorizable_condition (vec_info *vinfo,
 	      bool honor_nans = HONOR_NANS (TREE_TYPE (cond.op0));
 	      tree_code orig_code = cond.code;
 	      cond.code = invert_tree_comparison (cond.code, honor_nans);
-	      if (loop_vinfo->scalar_cond_masked_set.contains (cond))
+	      if (!masked && loop_vinfo->scalar_cond_masked_set.contains (cond))
 		{
 		  masks = &LOOP_VINFO_MASKS (loop_vinfo);
 		  cond_code = cond.code;

@@ -621,6 +621,7 @@ cgraph_node::analyze (void)
   tree decl = this->decl;
   location_t saved_loc = input_location;
   input_location = DECL_SOURCE_LOCATION (decl);
+  semantic_interposition = opt_for_fn (decl, flag_semantic_interposition);
 
   if (thunk)
     {

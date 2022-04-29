@@ -108,8 +108,8 @@ class Lexer
         size_t endoffset, bool doDocComment, bool commentToken) pure
     {
         scanloc = Loc(filename, 1, 1);
-        //printf("Lexer::Lexer(%p,%d)\n",base,length);
-        //printf("lexer.filename = %s\n", filename);
+        // debug printf("Lexer::Lexer(%p)\n", base);
+        // debug printf("lexer.filename = %s\n", filename);
         token = Token.init;
         this.base = base;
         this.end = base + endoffset;
@@ -1236,28 +1236,47 @@ class Lexer
             {
                 uint v = 0;
                 int n = 0;
-                while (1)
+                if (Ccompile && ndigits == 2)
                 {
-                    if (isdigit(cast(char)c))
-                        c -= '0';
-                    else if (islower(c))
-                        c -= 'a' - 10;
-                    else
-                        c -= 'A' - 10;
-                    v = v * 16 + c;
-                    c = *++p;
-                    if (++n == ndigits)
-                        break;
-                    if (!ishex(cast(char)c))
+                    /* C11 6.4.4.4-7 one to infinity hex digits
+                     */
+                    do
                     {
-                        .error(loc, "escape hex sequence has %d hex digits instead of %d", n, ndigits);
-                        break;
-                    }
+                        if (isdigit(cast(char)c))
+                            c -= '0';
+                        else if (islower(c))
+                            c -= 'a' - 10;
+                        else
+                            c -= 'A' - 10;
+                        v = v * 16 + c;
+                        c = *++p;
+                    } while (ishex(cast(char)c));
                 }
-                if (ndigits != 2 && !utf_isValidDchar(v))
+                else
                 {
-                    .error(loc, "invalid UTF character \\U%08x", v);
-                    v = '?'; // recover with valid UTF character
+                    while (1)
+                    {
+                        if (isdigit(cast(char)c))
+                            c -= '0';
+                        else if (islower(c))
+                            c -= 'a' - 10;
+                        else
+                            c -= 'A' - 10;
+                        v = v * 16 + c;
+                        c = *++p;
+                        if (++n == ndigits)
+                            break;
+                        if (!ishex(cast(char)c))
+                        {
+                            .error(loc, "escape hex sequence has %d hex digits instead of %d", n, ndigits);
+                            break;
+                        }
+                    }
+                    if (ndigits != 2 && !utf_isValidDchar(v))
+                    {
+                        .error(loc, "invalid UTF character \\U%08x", v);
+                        v = '?'; // recover with valid UTF character
+                    }
                 }
                 c = v;
             }
@@ -2122,7 +2141,7 @@ class Lexer
                 // can't translate invalid octal value, just show a generic message
                 error("octal literals larger than 7 are no longer supported");
             else
-                error("octal literals `0%llo%.*s` are no longer supported, use `std.conv.octal!%llo%.*s` instead",
+                error("octal literals `0%llo%.*s` are no longer supported, use `std.conv.octal!\"%llo%.*s\"` instead",
                     n, cast(int)(p - psuffix), psuffix, n, cast(int)(p - psuffix), psuffix);
         }
         TOK result;
@@ -2926,7 +2945,7 @@ class Lexer
      */
     static const(char)* combineComments(const(char)[] c1, const(char)[] c2, bool newParagraph) pure
     {
-        //printf("Lexer::combineComments('%s', '%s', '%i')\n", c1, c2, newParagraph);
+        //debug printf("Lexer::combineComments('%*.s', '%*.s', '%i')\n", cast(int) c1.length, c1.ptr, cast(int) c2.length, c2.ptr, newParagraph);
         const(int) newParagraphSize = newParagraph ? 1 : 0; // Size of the combining '\n'
         if (!c1)
             return c2.ptr;

@@ -995,6 +995,7 @@ rtx aarch64_general_expand_builtin (unsigned int, tree, rtx, int);
 tree aarch64_general_builtin_decl (unsigned, bool);
 tree aarch64_general_builtin_rsqrt (unsigned int);
 tree aarch64_builtin_vectorized_function (unsigned int, tree, tree);
+void handle_arm_acle_h (void);
 void handle_arm_neon_h (void);
 
 namespace aarch64_sve {

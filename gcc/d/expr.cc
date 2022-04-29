@@ -3006,6 +3006,16 @@ public:
     this->result_ = var;
   }
 
+  /* Build an uninitialized value, generated from void initializers.  */
+
+  void visit (VoidInitExp *e)
+  {
+    /* The front-end only generates these for the initializer of globals.
+       Represent `void' as zeroes, regardless of the type's default value.  */
+    gcc_assert (this->constp_);
+    this->result_ = build_zero_cst (build_ctype (e->type));
+  }
+
   /* These expressions are mainly just a placeholders in the frontend.
      We shouldn't see them here.  */
 

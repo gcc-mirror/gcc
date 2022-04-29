@@ -317,8 +317,11 @@ expand_vector_piecewise (gimple_stmt_iterator *gsi, elem_op_func f,
   int i;
   location_t loc = gimple_location (gsi_stmt (*gsi));
 
-  if (nunits == 1)
-    /* Do not diagnose decomposing single element vectors.  */
+  if (nunits == 1
+      || warning_suppressed_p (gsi_stmt (*gsi),
+			       OPT_Wvector_operation_performance))
+    /* Do not diagnose decomposing single element vectors or when
+       decomposing vectorizer produced operations.  */
     ;
   else if (ret_type || !parallel_p)
     warning_at (loc, OPT_Wvector_operation_performance,
@@ -379,14 +382,16 @@ expand_vector_parallel (gimple_stmt_iterator *gsi, elem_op_func f, tree type,
   else
     {
       /* Use a single scalar operation with a mode no wider than word_mode.  */
+      if (!warning_suppressed_p (gsi_stmt (*gsi),
+				 OPT_Wvector_operation_performance))
+	warning_at (loc, OPT_Wvector_operation_performance,
+		    "vector operation will be expanded with a "
+		    "single scalar operation");
       scalar_int_mode mode
 	= int_mode_for_size (tree_to_uhwi (TYPE_SIZE (type)), 0).require ();
       compute_type = lang_hooks.types.type_for_mode (mode, 1);
       result = f (gsi, compute_type, a, b, bitsize_zero_node,
 		  TYPE_SIZE (compute_type), code, type);
-      warning_at (loc, OPT_Wvector_operation_performance,
-	          "vector operation will be expanded with a "
-		  "single scalar operation");
     }
 
   return result;
@@ -487,8 +492,10 @@ expand_vector_comparison (gimple_stmt_iterator *gsi, tree type, tree op0,
 
 	  if (TYPE_PRECISION (ret_inner_type) != 1)
 	    ret_inner_type = build_nonstandard_integer_type (1, 1);
-	  warning_at (loc, OPT_Wvector_operation_performance,
-		      "vector operation will be expanded piecewise");
+	  if (!warning_suppressed_p (gsi_stmt (*gsi),
+				     OPT_Wvector_operation_performance))
+	    warning_at (loc, OPT_Wvector_operation_performance,
+			"vector operation will be expanded piecewise");
 	  for (i = 0; i < nunits;
 	       i++, index = int_const_binop (PLUS_EXPR, index, part_width))
 	    {
@@ -1098,8 +1105,9 @@ expand_vector_condition (gimple_stmt_iterator *gsi, bitmap dce_ssa_names)
 
   /* TODO: try and find a smaller vector type.  */
 
-  warning_at (loc, OPT_Wvector_operation_performance,
-	      "vector condition will be expanded piecewise");
+  if (!warning_suppressed_p (stmt, OPT_Wvector_operation_performance))
+    warning_at (loc, OPT_Wvector_operation_performance,
+		"vector condition will be expanded piecewise");
 
   if (!a_is_comparison
       && VECTOR_BOOLEAN_TYPE_P (TREE_TYPE (a))
@@ -1591,9 +1599,10 @@ lower_vec_perm (gimple_stmt_iterator *gsi)
     }
   else if (can_vec_perm_var_p (TYPE_MODE (vect_type)))
     return;
-  
-  warning_at (loc, OPT_Wvector_operation_performance,
-              "vector shuffling operation will be expanded piecewise");
+
+  if (!warning_suppressed_p (stmt, OPT_Wvector_operation_performance))
+    warning_at (loc, OPT_Wvector_operation_performance,
+		"vector shuffling operation will be expanded piecewise");
 
   vec_alloc (v, elements);
   bool constant_p = true;
@@ -2029,8 +2038,12 @@ expand_vector_conversion (gimple_stmt_iterator *gsi)
 	      location_t loc = gimple_location (gsi_stmt (*gsi));
 
 	      if (compute_type != arg_type)
-		warning_at (loc, OPT_Wvector_operation_performance,
-			    "vector operation will be expanded piecewise");
+		{
+		  if (!warning_suppressed_p (gsi_stmt (*gsi),
+					     OPT_Wvector_operation_performance))
+		    warning_at (loc, OPT_Wvector_operation_performance,
+				"vector operation will be expanded piecewise");
+		}
 	      else
 		{
 		  nunits = 1;

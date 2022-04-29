@@ -9977,7 +9977,11 @@ vect_transform_loop (loop_vec_info loop_vinfo, gimple *loop_vectorized_call)
 			    lowest_vf) - 1
 	   : wi::udiv_floor (loop->nb_iterations_upper_bound + bias_for_lowest,
 			     lowest_vf) - 1);
-      if (main_vinfo)
+      if (main_vinfo
+	  /* Both peeling for alignment and peeling for gaps can end up
+	     with the scalar epilogue running for more than VF-1 iterations.  */
+	  && !main_vinfo->peeling_for_alignment
+	  && !main_vinfo->peeling_for_gaps)
 	{
 	  unsigned int bound;
 	  poly_uint64 main_iters

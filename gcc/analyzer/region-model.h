@@ -327,6 +327,8 @@ public:
   const region *get_bit_range (const region *parent, tree type,
 			       const bit_range &bits);
 
+  const region *get_unknown_symbolic_region (tree region_type);
+
   const region *
   get_region_for_unexpected_tree_code (region_model_context *ctxt,
 				       tree t,

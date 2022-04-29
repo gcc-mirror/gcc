@@ -653,6 +653,25 @@ Type-coercion
      * int <-> bool
      * P*  <-> Q*, for pointer types P and Q
 
+.. function:: gcc_jit_rvalue *\
+              gcc_jit_context_new_bitcast (gcc_jit_context *ctxt,\
+                                           gcc_jit_location *loc,\
+                                           gcc_jit_rvalue *rvalue,\
+                                           gcc_jit_type *type)
+
+   Given an rvalue of T, bitcast it to another type, meaning that this will
+   generate a new rvalue by interpreting the bits of ``rvalue`` to the layout
+   of ``type``.
+
+   The type of rvalue must be the same size as the size of ``type``.
+
+   This entrypoint was added in :ref:`LIBGCCJIT_ABI_21`; you can test for
+   its presence using
+
+   .. code-block:: c
+
+      #ifdef LIBGCCJIT_HAVE_gcc_jit_context_new_bitcast
+
 Lvalues
 -------
 
@@ -741,6 +760,65 @@ where the rvalue is computed by reading from the storage area.
    .. code-block:: c
 
       #ifdef LIBGCCJIT_HAVE_gcc_jit_lvalue_set_link_section
+
+.. function:: void\
+              gcc_jit_lvalue_set_register_name (gcc_jit_lvalue *lvalue,\
+                                                const char *reg_name);
+
+   Set the register name of a variable.
+   The parameter ``reg_name`` must be non-NULL. Analogous to:
+
+   .. code-block:: c
+
+     register int variable asm ("r12");
+
+   in C.
+
+   This entrypoint was added in :ref:`LIBGCCJIT_ABI_22`; you can test for
+   its presence using
+
+   .. code-block:: c
+
+      #ifdef LIBGCCJIT_HAVE_gcc_jit_lvalue_set_register_name
+
+.. function:: void\
+              gcc_jit_lvalue_set_alignment (gcc_jit_lvalue *lvalue,\
+                                            unsigned bytes)
+
+   Set the alignment of a variable, in bytes.
+   Analogous to:
+
+   .. code-block:: c
+
+     int variable __attribute__((aligned (16)));
+
+   in C.
+
+   This entrypoint was added in :ref:`LIBGCCJIT_ABI_24`; you can test for
+   its presence using
+
+   .. code-block:: c
+
+      #ifdef LIBGCCJIT_HAVE_ALIGNMENT
+
+.. function:: unsigned\
+              gcc_jit_lvalue_get_alignment (gcc_jit_lvalue *lvalue)
+
+   Return the alignment of a variable set by ``gcc_jit_lvalue_set_alignment``.
+   Return 0 if the alignment was not set. Analogous to:
+
+   .. code-block:: c
+
+     _Alignof (variable)
+
+   in C.
+
+   This entrypoint was added in :ref:`LIBGCCJIT_ABI_24`; you can test for
+   its presence using
+
+   .. code-block:: c
+
+      #ifdef LIBGCCJIT_HAVE_ALIGNMENT
 
 Global variables
 ****************

@@ -124,6 +124,6 @@ static_assert( move_assignable< void, G > );
 // QoI properties
 static_assert( sizeof(std::expected<char, unsigned char>) == 2 );
 static_assert( sizeof(std::expected<void, char>) == 2 );
-static_assert( sizeof(std::expected<void*, char>) == 2 * __alignof(void*) );
+static_assert( sizeof(std::expected<void*, char>) == sizeof(void*) + __alignof(void*) );
 static_assert( alignof(std::expected<void, char>) == 1 );
 static_assert( alignof(std::expected<void*, char>) == alignof(void*) );

@@ -6315,7 +6315,9 @@ build_x_shufflevector (location_t loc, vec<tree, va_gc> *args,
   if (processing_template_decl)
     {
       for (unsigned i = 0; i < args->length (); ++i)
-	if (type_dependent_expression_p ((*args)[i]))
+	if (i <= 1
+	    ? type_dependent_expression_p ((*args)[i])
+	    : instantiation_dependent_expression_p ((*args)[i]))
 	  {
 	    tree exp = build_min_nt_call_vec (NULL, args);
 	    CALL_EXPR_IFN (exp) = IFN_SHUFFLEVECTOR;

@@ -46,16 +46,18 @@ import argparse
 # TODO: Add test for this script.
 #
 
+SUPPORTED_ISA_SPEC = ["2.2", "20190608", "20191213"]
 arches = collections.OrderedDict()
 abis = collections.OrderedDict()
 required = []
 reuse = []
 
-def arch_canonicalize(arch):
+def arch_canonicalize(arch, isa_spec):
   this_file = os.path.abspath(os.path.join( __file__))
   arch_can_script = \
     os.path.join(os.path.dirname(this_file), "arch-canonicalize")
-  proc = subprocess.Popen([sys.executable, arch_can_script, arch],
+  proc = subprocess.Popen([sys.executable, arch_can_script,
+                          '-misa-spec=%s' % isa_spec, arch],
                           stdout=subprocess.PIPE)
   out, err = proc.communicate()
   return out.decode().strip()
@@ -133,6 +135,9 @@ options = filter(lambda x:x.startswith("--"), sys.argv[1:])
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--cmodel", type=str)
+parser.add_argument('-misa-spec', type=str,
+                    default='20191213',
+                    choices=SUPPORTED_ISA_SPEC)
 parser.add_argument("cfgs", type=str, nargs='*')
 args = parser.parse_args()
 
@@ -158,13 +163,14 @@ for cmodel in cmodels:
     if cmodel == "compact" and arch.startswith("rv32"):
       continue
 
-    arch = arch_canonicalize (arch)
+    arch = arch_canonicalize (arch, args.misa_spec)
     arches[arch] = 1
     abis[abi] = 1
     extra = list(filter(None, extra.split(',')))
     ext_combs = expand_combination(ext)
     alts = sum([[x] + [x + y for y in ext_combs] for x in [arch] + extra], [])
-    alts = list(map(arch_canonicalize, alts))
+    alts = filter(lambda x: len(x) != 0, alts)
+    alts = list(map(lambda a : arch_canonicalize(a, args.misa_spec), alts))
 
     # Drop duplicated entry.
     alts = unique(alts)

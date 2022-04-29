@@ -1,8 +1,8 @@
+/*
 TEST_OUTPUT:
 ---
-fail_compilation/test17284.d(1): Error: no identifier for declarator `TEST_OUTPUT`
-fail_compilation/test17284.d(1): Error: declaration expected, not `:`
-fail_compilation/test17284.d(12): Error: unmatched closing brace
+fail_compilation/test17284.d(16): Error: field `U.c` cannot access pointers in `@safe` code that overlap other fields
+pure nothrow @safe void(U t)
 ---
 */
 

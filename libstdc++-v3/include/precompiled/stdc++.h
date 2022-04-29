@@ -155,4 +155,8 @@
 #if __cplusplus > 202002L
 #include <expected>
 #include <spanstream>
+#if __has_include(<stacktrace>)
+# include <stacktrace>
+#endif
+#include <stdatomic.h>
 #endif

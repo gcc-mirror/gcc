@@ -379,7 +379,7 @@ extern (C++) abstract class Declaration : Dsymbol
 
         if (e1 && e1.op == EXP.this_ && isField())
         {
-            VarDeclaration vthis = (cast(ThisExp)e1).var;
+            VarDeclaration vthis = e1.isThisExp().var;
             for (Scope* scx = sc; scx; scx = scx.enclosing)
             {
                 if (scx.func == vthis.parent && (scx.flags & SCOPE.contract))
@@ -656,9 +656,8 @@ extern (C++) final class TupleDeclaration : Declaration
             if (o.dyncast() == DYNCAST.expression)
             {
                 Expression e = cast(Expression)o;
-                if (e.op == EXP.dSymbol)
+                if (DsymbolExp ve = e.isDsymbolExp())
                 {
-                    DsymbolExp ve = cast(DsymbolExp)e;
                     Declaration d = ve.s.isDeclaration();
                     if (d && d.needThis())
                     {
@@ -1083,28 +1082,11 @@ extern (C++) class VarDeclaration : Declaration
         bool isArgDtorVar;      /// temporary created to handle scope destruction of a function argument
     }
 
-    private ushort bitFields;       // stores multiple booleans for BitFields
+    import dmd.common.bitfields : generateBitFields;
+    mixin(generateBitFields!(BitFields, ushort));
+
     byte canassign;                 // it can be assigned to
     ubyte isdataseg;                // private data for isDataseg 0 unset, 1 true, 2 false
-
-    // Generate getter and setter functions for `bitFields`
-    extern (D) mixin(() {
-        string result = "extern (C++) pure nothrow @nogc @safe final {";
-        foreach (size_t i, mem; __traits(allMembers, BitFields))
-        {
-            result ~= "
-            /// set or get the corresponding BitFields member
-            bool "~mem~"() const { return !!(bitFields & (1 << "~i.stringof~")); }
-            /// ditto
-            bool "~mem~"(bool v)
-            {
-                v ? (bitFields |= (1 << "~i.stringof~")) : (bitFields &= ~(1 << "~i.stringof~"));
-                return v;
-            }";
-        }
-        return result ~ "}";
-    }());
-
 
     final extern (D) this(const ref Loc loc, Type type, Identifier ident, Initializer _init, StorageClass storage_class = STC.undefined_)
     in
@@ -1160,7 +1142,7 @@ extern (C++) class VarDeclaration : Declaration
                 assert(o.dyncast() == DYNCAST.expression);
                 Expression e = cast(Expression)o;
                 assert(e.op == EXP.dSymbol);
-                DsymbolExp se = cast(DsymbolExp)e;
+                DsymbolExp se = e.isDsymbolExp();
                 se.s.setFieldOffset(ad, fieldState, isunion);
             }
             return;
@@ -1458,16 +1440,17 @@ extern (C++) class VarDeclaration : Declaration
                 const sdsz = sd.type.size();
                 assert(sdsz != SIZE_INVALID && sdsz != 0);
                 const n = sz / sdsz;
-                e = new SliceExp(loc, e, new IntegerExp(loc, 0, Type.tsize_t), new IntegerExp(loc, n, Type.tsize_t));
+                SliceExp se = new SliceExp(loc, e, new IntegerExp(loc, 0, Type.tsize_t),
+                    new IntegerExp(loc, n, Type.tsize_t));
 
                 // Prevent redundant bounds check
-                (cast(SliceExp)e).upperIsInBounds = true;
-                (cast(SliceExp)e).lowerIsLessThanUpper = true;
+                se.upperIsInBounds = true;
+                se.lowerIsLessThanUpper = true;
 
                 // This is a hack so we can call destructors on const/immutable objects.
-                e.type = sd.type.arrayOf();
+                se.type = sd.type.arrayOf();
 
-                e = new CallExp(loc, new IdentifierExp(loc, Id.__ArrayDtor), e);
+                e = new CallExp(loc, new IdentifierExp(loc, Id.__ArrayDtor), se);
             }
             return e;
         }

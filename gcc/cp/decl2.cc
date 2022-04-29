@@ -734,10 +734,14 @@ check_classfn (tree ctype, tree function, tree template_parms)
   tree pushed_scope = push_scope (ctype);
   tree matched = NULL_TREE;
   tree fns = get_class_binding (ctype, DECL_NAME (function));
-  
+  bool saw_template = false;
+
   for (ovl_iterator iter (fns); !matched && iter; ++iter)
     {
       tree fndecl = *iter;
+
+      if (TREE_CODE (fndecl) == TEMPLATE_DECL)
+	saw_template = true;
 
       /* A member template definition only matches a member template
 	 declaration.  */
@@ -786,6 +790,23 @@ check_classfn (tree ctype, tree function, tree template_parms)
 	  && (!DECL_TEMPLATE_SPECIALIZATION (function)
 	      || (DECL_TI_TEMPLATE (function) == DECL_TI_TEMPLATE (fndecl))))
 	matched = fndecl;
+    }
+
+  if (!matched && !is_template && saw_template
+      && !processing_template_decl && DECL_UNIQUE_FRIEND_P (function))
+    {
+      /* "[if no non-template match is found,] each remaining function template
+	 is replaced with the specialization chosen by deduction from the
+	 friend declaration or discarded if deduction fails."
+
+	 So ask check_explicit_specialization to find a matching template.  */
+      SET_DECL_IMPLICIT_INSTANTIATION (function);
+      tree spec = check_explicit_specialization (DECL_NAME (function),
+						 function, /* tcount */0,
+						 /* friend flag */4,
+						 /* attrlist */NULL_TREE);
+      if (spec != error_mark_node)
+	matched = spec;
     }
 
   if (!matched)
@@ -1513,12 +1534,19 @@ cp_check_const_attributes (tree attributes)
   for (attr = attributes; attr; attr = TREE_CHAIN (attr))
     {
       tree arg;
+      /* As we implement alignas using gnu::aligned attribute and
+	 alignas argument is a constant expression, force manifestly
+	 constant evaluation of aligned attribute argument.  */
+      bool manifestly_const_eval
+	= is_attribute_p ("aligned", get_attribute_name (attr));
       for (arg = TREE_VALUE (attr); arg && TREE_CODE (arg) == TREE_LIST;
 	   arg = TREE_CHAIN (arg))
 	{
 	  tree expr = TREE_VALUE (arg);
 	  if (EXPR_P (expr))
-	    TREE_VALUE (arg) = fold_non_dependent_expr (expr);
+	    TREE_VALUE (arg)
+	      = fold_non_dependent_expr (expr, tf_warning_or_error,
+					 manifestly_const_eval);
 	}
     }
 }
@@ -1616,8 +1644,16 @@ find_last_decl (tree decl)
 	  if (TREE_CODE (*iter) == OVERLOAD)
 	    continue;
 
-	  if (decls_match (decl, *iter, /*record_decls=*/false))
-	    return *iter;
+	  tree d = *iter;
+
+	  /* We can't compare versions in the middle of processing the
+	     attribute that has the version.  */
+	  if (TREE_CODE (d) == FUNCTION_DECL
+	      && DECL_FUNCTION_VERSIONED (d))
+	    return NULL_TREE;
+
+	  if (decls_match (decl, d, /*record_decls=*/false))
+	    return d;
 	}
       return NULL_TREE;
     }
