@@ -118,12 +118,18 @@ public:
 			    TyTy::VariantDef::VariantType::TUPLE, nullptr,
 			    std::move (fields)));
 
+    // Process #[repr(X)] attribute, if any
+    const AST::AttrVec &attrs = struct_decl.get_outer_attrs ();
+    TyTy::ADTType::ReprOptions repr
+      = parse_repr_options (attrs, struct_decl.get_locus ());
+
     TyTy::BaseType *type
       = new TyTy::ADTType (struct_decl.get_mappings ().get_hirid (),
 			   mappings->get_next_hir_id (),
 			   struct_decl.get_identifier (), ident,
 			   TyTy::ADTType::ADTKind::TUPLE_STRUCT,
-			   std::move (variants), std::move (substitutions));
+			   std::move (variants), std::move (substitutions),
+			   repr);
 
     context->insert_type (struct_decl.get_mappings (), type);
   }
@@ -196,12 +202,18 @@ public:
 			    TyTy::VariantDef::VariantType::STRUCT, nullptr,
 			    std::move (fields)));
 
+    // Process #[repr(X)] attribute, if any
+    const AST::AttrVec &attrs = struct_decl.get_outer_attrs ();
+    TyTy::ADTType::ReprOptions repr
+      = parse_repr_options (attrs, struct_decl.get_locus ());
+
     TyTy::BaseType *type
       = new TyTy::ADTType (struct_decl.get_mappings ().get_hirid (),
 			   mappings->get_next_hir_id (),
 			   struct_decl.get_identifier (), ident,
 			   TyTy::ADTType::ADTKind::STRUCT_STRUCT,
-			   std::move (variants), std::move (substitutions));
+			   std::move (variants), std::move (substitutions),
+			   repr);
 
     context->insert_type (struct_decl.get_mappings (), type);
   }

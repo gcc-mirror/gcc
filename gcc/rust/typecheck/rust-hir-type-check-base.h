@@ -58,6 +58,9 @@ protected:
   TyTy::BaseType *resolve_literal (const Analysis::NodeMapping &mappings,
 				   HIR::Literal &literal, Location locus);
 
+  TyTy::ADTType::ReprOptions parse_repr_options (const AST::AttrVec &attrs,
+						 Location locus);
+
   Analysis::Mappings *mappings;
   Resolver *resolver;
   TypeCheckContext *context;
