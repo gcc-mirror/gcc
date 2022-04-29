@@ -299,8 +299,9 @@ HIRCompileBase::coerce_to_dyn_object (tree compiled_ref,
 	  || it->get_type () == Resolver::Adjustment::AdjustmentType::MUT_REF;
       rust_assert (ok);
 
-      resulting_dyn_object_ref
-	= address_expression (resulting_dyn_object_ref, locus);
+      resulting_dyn_object_ref = address_expression (
+	resulting_dyn_object_ref,
+	build_reference_type (TREE_TYPE (resulting_dyn_object_ref)), locus);
     }
   return resulting_dyn_object_ref;
 }

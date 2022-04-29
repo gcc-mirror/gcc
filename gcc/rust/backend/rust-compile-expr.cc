@@ -123,7 +123,14 @@ void
 CompileExpr::visit (HIR::BorrowExpr &expr)
 {
   tree main_expr = CompileExpr::Compile (expr.get_expr ().get (), ctx);
-  translated = address_expression (main_expr, expr.get_locus ());
+
+  TyTy::BaseType *tyty = nullptr;
+  if (!ctx->get_tyctx ()->lookup_type (expr.get_mappings ().get_hirid (),
+				       &tyty))
+    return;
+
+  tree ptrtype = TyTyResolveCompile::compile (ctx, tyty);
+  translated = address_expression (main_expr, ptrtype, expr.get_locus ());
 }
 
 void
@@ -707,7 +714,8 @@ CompileExpr::resolve_method_address (TyTy::FnType *fntype, HirId ref,
   tree fn = NULL_TREE;
   if (ctx->lookup_function_decl (fntype->get_ty_ref (), &fn))
     {
-      return address_expression (fn, expr_locus);
+      return address_expression (fn, build_pointer_type (TREE_TYPE (fn)),
+				 expr_locus);
     }
 
   // Now we can try and resolve the address since this might be a forward
@@ -983,7 +991,8 @@ CompileExpr::compile_string_literal (const HIR::LiteralExpr &expr,
 
   auto base = ctx->get_backend ()->string_constant_expression (
     literal_value.as_string ());
-  return address_expression (base, expr.get_locus ());
+  return address_expression (base, build_pointer_type (TREE_TYPE (base)),
+			     expr.get_locus ());
 }
 
 tree
@@ -1016,7 +1025,8 @@ CompileExpr::compile_byte_string_literal (const HIR::LiteralExpr &expr,
 							 vals,
 							 expr.get_locus ());
 
-  return address_expression (constructed, expr.get_locus ());
+  return address_expression (constructed, build_pointer_type (array_type),
+			     expr.get_locus ());
 }
 
 tree
@@ -1233,8 +1243,11 @@ HIRCompileBase::resolve_adjustements (
 	  return error_mark_node;
 
 	case Resolver::Adjustment::AdjustmentType::IMM_REF:
-	case Resolver::Adjustment::AdjustmentType::MUT_REF:
-	  e = address_expression (e, locus);
+	  case Resolver::Adjustment::AdjustmentType::MUT_REF: {
+	    tree ptrtype
+	      = TyTyResolveCompile::compile (ctx, adjustment.get_expected ());
+	    e = address_expression (e, ptrtype, locus);
+	  }
 	  break;
 
 	case Resolver::Adjustment::AdjustmentType::DEREF:
@@ -1280,7 +1293,10 @@ HIRCompileBase::resolve_deref_adjustment (Resolver::Adjustment &adjustment,
 		      != Resolver::Adjustment::AdjustmentType::ERROR;
   if (needs_borrow)
     {
-      adjusted_argument = address_expression (expression, locus);
+      adjusted_argument
+	= address_expression (expression,
+			      build_reference_type (TREE_TYPE (expression)),
+			      locus);
     }
 
   // make the call
@@ -1316,7 +1332,9 @@ HIRCompileBase::resolve_unsized_adjustment (Resolver::Adjustment &adjustment,
     = TyTyResolveCompile::compile (ctx, adjustment.get_expected ());
 
   // make a constructor for this
-  tree data = address_expression (expression, locus);
+  tree data
+    = address_expression (expression,
+			  build_reference_type (TREE_TYPE (expression)), locus);
 
   // fetch the size from the domain
   tree domain = TYPE_DOMAIN (expr_type);
@@ -1414,7 +1432,8 @@ CompileExpr::visit (HIR::IdentifierExpr &expr)
   else if (ctx->lookup_function_decl (ref, &fn))
     {
       TREE_USED (fn) = 1;
-      translated = address_expression (fn, expr.get_locus ());
+      translated = address_expression (fn, build_pointer_type (TREE_TYPE (fn)),
+				       expr.get_locus ());
     }
   else if (ctx->lookup_var_decl (ref, &var))
     {

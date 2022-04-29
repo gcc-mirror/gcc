@@ -317,7 +317,7 @@ HIRCompileBase::mark_addressable (tree exp, Location locus)
 }
 
 tree
-HIRCompileBase::address_expression (tree expr, Location location)
+HIRCompileBase::address_expression (tree expr, tree ptrtype, Location location)
 {
   if (expr == error_mark_node)
     return error_mark_node;
@@ -325,7 +325,8 @@ HIRCompileBase::address_expression (tree expr, Location location)
   if (!mark_addressable (expr, location))
     return error_mark_node;
 
-  return build_fold_addr_expr_loc (location.gcc_location (), expr);
+  return build_fold_addr_expr_with_type_loc (location.gcc_location (), expr,
+					     ptrtype);
 }
 
 std::vector<Bvariable *>
