@@ -110,6 +110,7 @@ VisibilityResolver::resolve_visibility (const HIR::Visibility &visibility,
       to_resolve = ModuleVisibility::create_public ();
       return true;
     case HIR::Visibility::RESTRICTED:
+      // FIXME: We also need to handle 2015 vs 2018 edition conflicts
       to_resolve = ModuleVisibility::create_public ();
       return resolve_module_path (visibility.get_path (),
 				  to_resolve.get_module_id ());
