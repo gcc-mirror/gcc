@@ -32,6 +32,10 @@ the proprietary CUDA toolkit.  */
 
 #define CUDA_VERSION 8000
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef void *CUcontext;
 typedef int CUdevice;
 #if defined(__LP64__) || defined(_WIN64)
@@ -190,5 +194,9 @@ CUresult cuStreamDestroy (CUstream);
 CUresult cuStreamQuery (CUstream);
 CUresult cuStreamSynchronize (CUstream);
 CUresult cuStreamWaitEvent (CUstream, CUevent, unsigned);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* GCC_CUDA_H */
