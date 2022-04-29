@@ -79,3 +79,4 @@ snapshot_ret:
 	.comm	ymm_regs,512,32
 	.comm	x87_regs,128,32
 	.comm   volatile_var,8,8
+	.section	.note.GNU-stack,"",@progbits
