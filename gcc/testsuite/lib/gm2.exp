@@ -142,15 +142,23 @@ proc gm2_init { args } {
 #
 
 proc gm2_target_compile_default { source dest type options } {
-    global gluefile wrap_flags;
-    global GCC_UNDER_TEST;
-    global TOOL_OPTIONS;
+    global gluefile wrap_flags
+    global GCC_UNDER_TEST
+    global TOOL_OPTIONS
+    global TEST_ALWAYS_FLAGS
 
     if {[target_info needs_status_wrapper] != "" && \
 	    [target_info needs_status_wrapper] != "0" && \
 	    [info exists gluefile] } {
 	lappend options "libs=${gluefile}"
 	lappend options "ldflags=$wrap_flags"
+    }
+
+    # TEST_ALWAYS_FLAGS are flags that should be passed to every
+    # compilation.  They are passed first to allow individual
+    # tests to override them.
+    if [info exists TEST_ALWAYS_FLAGS] {
+	set options [concat "{additional_flags=$TEST_ALWAYS_FLAGS}" $options]
     }
 
     if [target_info exists gcc,stack_size] {
