@@ -694,7 +694,7 @@ dom_jt_simplifier::simplify (gimple *stmt, gimple *within_stmt,
       if (TREE_CODE (op) != SSA_NAME)
 	return NULL_TREE;
 
-      const value_range_equiv *vr = m_vr_values->get_value_range (op);
+      const value_range *vr = m_vr_values->get_value_range (op);
       return find_case_label_range (switch_stmt, vr);
     }
   if (gassign *assign_stmt = dyn_cast <gassign *> (stmt))

@@ -883,7 +883,7 @@ size_must_be_zero_p (tree size)
     get_global_range_query ()->range_of_expr (vr, size);
   if (vr.undefined_p ())
     vr.set_varying (TREE_TYPE (size));
-  vr.intersect (&valid_range);
+  vr.intersect (valid_range);
   return vr.zero_p ();
 }
 

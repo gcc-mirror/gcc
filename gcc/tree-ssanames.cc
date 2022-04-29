@@ -389,7 +389,7 @@ set_range_info_raw (tree name, enum value_range_kind range_type,
 /* Store range information RANGE_TYPE, MIN, and MAX to tree ssa_name
    NAME while making sure we don't store useless range info.  */
 
-void
+static void
 set_range_info (tree name, enum value_range_kind range_type,
 		const wide_int_ref &min, const wide_int_ref &max)
 {
@@ -720,7 +720,7 @@ duplicate_ssa_name_ptr_info (tree name, struct ptr_info_def *ptr_info)
 
 /* Creates a duplicate of the range_info_def at RANGE_INFO of type
    RANGE_TYPE for use by the SSA name NAME.  */
-void
+static void
 duplicate_ssa_name_range_info (tree name, enum value_range_kind range_type,
 			       struct range_info_def *range_info)
 {
@@ -743,6 +743,14 @@ duplicate_ssa_name_range_info (tree name, enum value_range_kind range_type,
   SSA_NAME_RANGE_INFO (name) = new_range_info;
 }
 
+void
+duplicate_ssa_name_range_info (tree name, tree src)
+{
+  gcc_checking_assert (!POINTER_TYPE_P (TREE_TYPE (src)));
+  duplicate_ssa_name_range_info (name,
+				 SSA_NAME_RANGE_TYPE (src),
+				 SSA_NAME_RANGE_INFO (src));
+}
 
 
 /* Creates a duplicate of a ssa name NAME tobe defined by statement STMT

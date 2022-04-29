@@ -73,7 +73,6 @@ public:
   // In-place operators.
   void union_ (const irange &);
   void intersect (const irange &);
-  void intersect (const wide_int& lb, const wide_int& ub);
   void invert ();
 
   // Operator overloads.
@@ -97,8 +96,8 @@ public:
   bool may_contain_p (tree) const;		// DEPRECATED
   void set (tree);				// DEPRECATED
   bool equal_p (const irange &) const;		// DEPRECATED
-  void union_ (const class irange *);		// DEPRECATED
-  void intersect (const irange *);		// DEPRECATED
+  void legacy_verbose_union_ (const class irange *);	// DEPRECATED
+  void legacy_verbose_intersect (const irange *);	// DEPRECATED
 
 protected:
   irange (tree *, unsigned);
@@ -135,6 +134,7 @@ private:
   void irange_set_1bit_anti_range (tree, tree);
   bool varying_compatible_p () const;
 
+  void intersect (const wide_int& lb, const wide_int& ub);
   unsigned char m_num_ranges;
   unsigned char m_max_ranges;
   ENUM_BITFIELD(value_range_kind) m_kind : 8;
@@ -397,9 +397,8 @@ inline
 irange::irange (tree *base, unsigned nranges)
 {
   m_base = base;
-  m_num_ranges = 0;
   m_max_ranges = nranges;
-  m_kind = VR_UNDEFINED;
+  set_undefined ();
 }
 
 // Constructors for int_range<>.
@@ -550,7 +549,7 @@ irange::union_ (const irange &r)
 {
   dump_flags_t m_flags = dump_flags;
   dump_flags &= ~TDF_DETAILS;
-  irange::union_ (&r);
+  irange::legacy_verbose_union_ (&r);
   dump_flags = m_flags;
 }
 
@@ -559,7 +558,7 @@ irange::intersect (const irange &r)
 {
   dump_flags_t m_flags = dump_flags;
   dump_flags &= ~TDF_DETAILS;
-  irange::intersect (&r);
+  irange::legacy_verbose_intersect (&r);
   dump_flags = m_flags;
 }
 

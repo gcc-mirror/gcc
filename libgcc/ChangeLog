@@ -1,3 +1,68 @@
+2022-04-28  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* libgcov-util.c (ftw_read_file): Improve notice using xstrerror().
+	(gcov_profile_merge_stream): Likewise.
+
+2022-04-28  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* libgcov-util.c (consume_stream): New.
+	(get_target_profiles_for_merge): Likewise.
+	(gcov_profile_merge_stream): Likewise.
+
+2022-04-28  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* libgcov-util.c (ftw_read_file): Use size_t for strlen() variables.
+
+2022-04-28  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* libgcov-util.c (read_gcda_file): Do not open file.
+	(ftw_read_file): Open file here.
+
+2022-04-28  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* libgcov-util.c (read_gcda_file): Prepend new info object to global
+	list.
+	(ftw_read_file): Remove list append here.
+
+2022-04-28  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* libgcov-util.c (read_gcda_file): Do not duplicate filename.
+	(ftw_read_file): Duplicate filename for read_gcda_file().
+
+2022-04-28  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* gcov.h (__gcov_info_to_gcda): Mention __gcov_filename_to_gcfn().
+	(__gcov_filename_to_gcfn): Declare and document.
+	* libgcov-driver.c (dump_string): New.
+	(__gcov_filename_to_gcfn): Likewise.
+	(__gcov_info_to_gcda): Adjust comment to match C11 standard language.
+
+2022-04-28  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* libgcov.h (gcov_seek): Remove define and declaration.
+
+2022-04-28  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* libgcov-driver-system.c (gcov_exit_open_gcda_file): Add mode
+	parameter.  Pass mode to gcov_open() calls.
+	* libgcov-driver.c (dump_one_gcov):  Add mode parameter.  Pass mode to
+	gcov_exit_open_gcda_file() call.
+	(gcov_do_dump): Add mode parameter.  Pass mode to dump_one_gcov()
+	calls.
+	(__gcov_dump_one):  Open file for reading and writing.
+
+2022-04-28  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* libgcov-driver-system.c (gcov_exit_open_gcda_file): Open file for
+	reading and writing.
+	* libgcov-util.c (read_gcda_file): Open file for reading.
+	* libgcov.h (gcov_open): Delete declaration.
+
+2022-04-28  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* libgcov-util.c (gcov_profile_merge): Return the list of merged
+	profiles.  Accept empty target and source profile lists.
+
 2022-04-08  Sergei Trofimovich  <siarheit@google.com>
 
 	* config/ia64/fde-glibc.c: Make a no-op in inhibit_libc mode.

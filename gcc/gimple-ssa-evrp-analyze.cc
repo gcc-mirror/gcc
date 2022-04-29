@@ -110,9 +110,7 @@ evrp_range_analyzer::set_ssa_range_info (tree lhs, value_range_equiv *vr)
   if (INTEGRAL_TYPE_P (TREE_TYPE (lhs)))
     {
       if (!vr->varying_p () && vr->constant_p ())
-	set_range_info (lhs, vr->kind (),
-			wi::to_wide (vr->min ()),
-			wi::to_wide (vr->max ()));
+	set_range_info (lhs, *vr);
     }
   else if (POINTER_TYPE_P (TREE_TYPE (lhs))
 	   && range_includes_zero_p (vr) == 0)
@@ -209,7 +207,7 @@ evrp_range_analyzer::record_ranges_from_incoming_edge (basic_block bb)
 	      const value_range_equiv *old_vr
 		= get_value_range (vrs[i].first);
 	      value_range tem (*old_vr);
-	      tem.intersect (vrs[i].second);
+	      tem.legacy_verbose_intersect (vrs[i].second);
 	      if (tem.equal_p (*old_vr))
 		{
 		  free_value_range (vrs[i].second);

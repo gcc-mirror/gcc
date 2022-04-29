@@ -556,9 +556,7 @@ fini_copy_prop (void)
 		   && SSA_NAME_RANGE_INFO (var)
 		   && !SSA_NAME_RANGE_INFO (copy_of[i].value)
 		   && var_bb == copy_of_bb)
-	    duplicate_ssa_name_range_info (copy_of[i].value,
-					   SSA_NAME_RANGE_TYPE (var),
-					   SSA_NAME_RANGE_INFO (var));
+	    duplicate_ssa_name_range_info (copy_of[i].value, var);
 	}
     }
 

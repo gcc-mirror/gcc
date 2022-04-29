@@ -416,9 +416,7 @@ replace_phi_edge_with_variable (basic_block cond_block,
       && SSA_NAME_RANGE_INFO (phi_result)
       && gimple_bb (SSA_NAME_DEF_STMT (new_tree)) == cond_block
       && dbg_cnt (phiopt_edge_range))
-    duplicate_ssa_name_range_info (new_tree,
-				   SSA_NAME_RANGE_TYPE (phi_result),
-				   SSA_NAME_RANGE_INFO (phi_result));
+    duplicate_ssa_name_range_info (new_tree, phi_result);
 
   /* Change the PHI argument to new.  */
   SET_USE (PHI_ARG_DEF_PTR (phi, e->dest_idx), new_tree);

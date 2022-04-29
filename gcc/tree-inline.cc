@@ -253,8 +253,7 @@ remap_ssa_name (tree name, copy_body_data *id)
       /* So can range-info.  */
       if (!POINTER_TYPE_P (TREE_TYPE (name))
 	  && SSA_NAME_RANGE_INFO (name))
-	duplicate_ssa_name_range_info (new_tree, SSA_NAME_RANGE_TYPE (name),
-				       SSA_NAME_RANGE_INFO (name));
+	duplicate_ssa_name_range_info (new_tree, name);
       return new_tree;
     }
 
@@ -291,8 +290,7 @@ remap_ssa_name (tree name, copy_body_data *id)
       /* So can range-info.  */
       if (!POINTER_TYPE_P (TREE_TYPE (name))
 	  && SSA_NAME_RANGE_INFO (name))
-	duplicate_ssa_name_range_info (new_tree, SSA_NAME_RANGE_TYPE (name),
-				       SSA_NAME_RANGE_INFO (name));
+	duplicate_ssa_name_range_info (new_tree, name);
       if (SSA_NAME_IS_DEFAULT_DEF (name))
 	{
 	  /* By inlining function having uninitialized variable, we might

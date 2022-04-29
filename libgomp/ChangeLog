@@ -1,3 +1,10 @@
+2022-04-28  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR fortran/104717
+	* testsuite/libgomp.oacc-fortran/print-1.f90: Add OpenACC
+	privatization scanning.  For GCN offloading compilation, raise
+	'-mgang-private-size'.
+
 2022-04-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR libgomp/105358

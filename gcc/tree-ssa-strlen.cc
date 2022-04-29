@@ -1951,7 +1951,8 @@ set_strlen_range (tree lhs, wide_int min, wide_int max,
   if (min == max)
     return wide_int_to_tree (size_type_node, min);
 
-  set_range_info (lhs, VR_RANGE, min, max);
+  value_range vr (TREE_TYPE (lhs), min, max);
+  set_range_info (lhs, vr);
   return lhs;
 }
 
@@ -4343,8 +4344,9 @@ strlen_pass::handle_builtin_string_cmp ()
 	       known to be unequal set the range of the result to non-zero.
 	       This allows the call to be eliminated if its result is only
 	       used in tests for equality to zero.  */
-	    wide_int zero = wi::zero (TYPE_PRECISION (TREE_TYPE (lhs)));
-	    set_range_info (lhs, VR_ANTI_RANGE, zero, zero);
+	    value_range nz;
+	    nz.set_nonzero (TREE_TYPE (lhs));
+	    set_range_info (lhs, nz);
 	    return false;
 	  }
 	/* When the two strings are definitely equal (such as when they

@@ -48,8 +48,8 @@ class GTY((user)) value_range_equiv : public value_range
 
   bool operator== (const value_range_equiv &) const /* = delete */;
   bool operator!= (const value_range_equiv &) const /* = delete */;
-  void intersect (const value_range_equiv *);
-  void union_ (const value_range_equiv *);
+  void legacy_verbose_intersect (const value_range_equiv *);
+  void legacy_verbose_union_ (const value_range_equiv *);
   bool equal_p (const value_range_equiv &, bool ignore_equivs) const;
 
   /* Types of value ranges.  */

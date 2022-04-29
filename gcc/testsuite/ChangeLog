@@ -1,3 +1,90 @@
+2022-04-28  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* gcc.dg/gcov-info-to-gcda.c: Test __gcov_filename_to_gcfn().
+
+2022-04-28  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/105285
+	* gcc.dg/analyzer/symbolic-12.c: New test.
+
+2022-04-28  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/105425
+	* g++.dg/template/partial-specialization13.C: New test.
+
+2022-04-28  Jeff Law  <jeffreyalaw@gmail.com>
+
+	* gcc.dg/lto/pr94157_0.c: Revert last change.
+	* lib/prune.exp (prune_gcc_output): Prune new linker warning.
+
+2022-04-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR lto/105399
+	* g++.dg/lto/pr105399_0.C: New test.
+
+2022-04-28  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/104051
+	* g++.dg/coroutines/pr104051.C: New test.
+
+2022-04-28  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/105301
+	* g++.dg/coroutines/pr105301.C: New test.
+
+2022-04-28  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/105287
+	* g++.dg/coroutines/pr105287.C: New test.
+
+2022-04-28  Nathan Sidwell  <nathan@acm.org>
+	    Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/103868
+	* g++.dg/coroutines/pr103868.C: New test.
+
+2022-04-28  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc.target/i386/memcpy-strategy-10.c: Account for
+	__USER_LABEL_PREFIX__.
+	* gcc.target/i386/memcpy-strategy-5.c: Likewise.
+	* gcc.target/i386/memset-strategy-5.c: Likewise.
+	* gcc.target/i386/memset-strategy-7.c: Likewise.
+
+2022-04-28  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* g++.target/i386/mv31.C: Add target supports guard for ifuncs.
+
+2022-04-28  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/90107
+	* g++.dg/parse/qualified6.C: New test.
+
+2022-04-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/105331
+	* gcc.dg/pr105331.c: New test.
+
+2022-04-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/105219
+	* gcc.dg/vect/pr105219.c: New testcase.
+
+2022-04-28  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/105334
+	* gcc.target/powerpc/pr105334.c: New test.
+
+2022-04-28  Jia-Wei Chen  <jiawei@iscas.ac.cn>
+
+	PR target/104676
+	* gcc.dg/torture/pr104676.c: Add "{target pthread}" check.
+
+2022-04-28  Xi Ruoyao  <xry111@mengyan1223.wang>
+
+	* gcc.target/loongarch/zero-size-field-pass.c: New test.
+	* gcc.target/loongarch/zero-size-field-ret.c: New test.
+
 2022-04-27  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	* gfortran.dg/pr70673.f90: Removed second invalid

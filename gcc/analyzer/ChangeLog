@@ -1,3 +1,26 @@
+2022-04-28  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/105285
+	* store.cc (binding_cluster::get_any_binding): Handle accessing
+	sub_svalues of clusters where the base region has a symbolic
+	binding.
+
+2022-04-28  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic-manager.cc (epath_finder::process_worklist_item):
+	Call dump_feasible_path when a path that reaches the the target
+	enode is found.
+	(epath_finder::dump_feasible_path): New.
+	* engine.cc (feasibility_state::dump_to_pp): New.
+	* exploded-graph.h (feasibility_state::dump_to_pp): New decl.
+	* feasible-graph.cc (feasible_graph::dump_feasible_path): New.
+	* feasible-graph.h (feasible_graph::dump_feasible_path): New
+	decls.
+	* program-point.cc (function_point::print): Fix missing trailing
+	newlines.
+	* program-point.h (program_point::print_source_line): Remove
+	unimplemented decl.
+
 2022-04-25  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/105365

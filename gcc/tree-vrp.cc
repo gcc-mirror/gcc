@@ -768,7 +768,7 @@ extract_range_from_plus_minus_expr (value_range *vr,
 	  value_range vrres;
 	  extract_range_from_plus_minus_expr (&vrres, code, expr_type,
 					      &vrtem1, vr1_);
-	  vr->union_ (&vrres);
+	  vr->union_ (vrres);
 	}
       return;
     }
@@ -782,7 +782,7 @@ extract_range_from_plus_minus_expr (value_range *vr,
 	  value_range vrres;
 	  extract_range_from_plus_minus_expr (&vrres, code, expr_type,
 					      vr0_, &vrtem1);
-	  vr->union_ (&vrres);
+	  vr->union_ (vrres);
 	}
       return;
     }
@@ -2470,7 +2470,7 @@ find_case_label_range (gswitch *switch_stmt, const irange *range_of_op)
       int_range_max label_range (CASE_LOW (label), case_high);
       if (!types_compatible_p (label_range.type (), range_of_op->type ()))
 	range_cast (label_range, range_of_op->type ());
-      label_range.intersect (range_of_op);
+      label_range.intersect (*range_of_op);
       if (label_range == *range_of_op)
 	return label;
     }
@@ -2494,7 +2494,7 @@ find_case_label_range (gswitch *switch_stmt, const irange *range_of_op)
       int_range_max label_range (CASE_LOW (min_label), case_high);
       if (!types_compatible_p (label_range.type (), range_of_op->type ()))
 	range_cast (label_range, range_of_op->type ());
-      label_range.intersect (range_of_op);
+      label_range.intersect (*range_of_op);
       if (label_range.undefined_p ())
 	return gimple_switch_label (switch_stmt, 0);
     }
@@ -3742,9 +3742,16 @@ vrp_asserts::remove_range_assertions ()
 		    && all_imm_uses_in_stmt_or_feed_cond (var, stmt,
 							  single_pred (bb)))
 		  {
-		    set_range_info (var, SSA_NAME_RANGE_TYPE (lhs),
-				    SSA_NAME_RANGE_INFO (lhs)->get_min (),
-				    SSA_NAME_RANGE_INFO (lhs)->get_max ());
+		    /* We could use duplicate_ssa_name_range_info here
+		       instead of peeking inside SSA_NAME_RANGE_INFO,
+		       but the aforementioned asserts that the
+		       destination has no global range.  This is
+		       slated for removal anyhow.  */
+		    value_range r (TREE_TYPE (lhs),
+				   SSA_NAME_RANGE_INFO (lhs)->get_min (),
+				   SSA_NAME_RANGE_INFO (lhs)->get_max (),
+				   SSA_NAME_RANGE_TYPE (lhs));
+		    set_range_info (var, r);
 		    maybe_set_nonzero_bits (single_pred_edge (bb), var);
 		  }
 	      }

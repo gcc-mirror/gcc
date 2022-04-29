@@ -1435,10 +1435,20 @@ These options affect the runtime behavior of programs compiled with GNU Fortran.
 @item -fconvert=@var{conversion}
 @opindex @code{fconvert=}@var{conversion}
 Specify the representation of data for unformatted files.  Valid
-values for conversion are: @samp{native}, the default; @samp{swap},
-swap between big- and little-endian; @samp{big-endian}, use big-endian
-representation for unformatted files; @samp{little-endian}, use little-endian
-representation for unformatted files.
+values for conversion on most systems are: @samp{native}, the default;
+@samp{swap}, swap between big- and little-endian; @samp{big-endian}, use
+big-endian representation for unformatted files; @samp{little-endian}, use
+little-endian representation for unformatted files.
+
+On POWER systems which suppport @option{-mabi=ieeelongdouble},
+there are additional options, which can be combined with others with
+commas.  Those are
+@itemize @w{}
+@item @option{-fconvert=r16_ieee} Use IEEE 128-bit format for
+@code{REAL(KIND=16)}.
+@item @option{-fconvert=r16_ibm} Use IBM long double format for
+@code{REAL(KIND=16)}.
+@end itemize
 
 @emph{This option has an effect only when used in the main program.
 The @code{CONVERT} specifier and the GFORTRAN_CONVERT_UNIT environment

@@ -1519,6 +1519,18 @@ binding_cluster::get_any_binding (store_manager *mgr,
       = get_binding_recursive (mgr, reg))
     return direct_sval;
 
+  /* If we had a write to a cluster of unknown size, we might
+     have a self-binding of the whole base region with an svalue,
+     where the base region is symbolic.
+     Handle such cases by returning sub_svalue instances.  */
+  if (const svalue *cluster_sval = maybe_get_simple_value (mgr))
+    {
+      /* Extract child svalue from parent svalue.  */
+      region_model_manager *rmm_mgr = mgr->get_svalue_manager ();
+      return rmm_mgr->get_or_create_sub_svalue (reg->get_type (),
+						cluster_sval, reg);
+    }
+
   /* If this cluster has been touched by a symbolic write, then the content
      of any subregion not currently specifically bound is "UNKNOWN".  */
   if (m_touched)
