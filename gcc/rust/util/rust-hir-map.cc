@@ -428,7 +428,7 @@ Mappings::lookup_hir_path_expr_seg (CrateNum crateNum, HirId id)
 
 void
 Mappings::insert_simple_path_segment (CrateNum crateNum, HirId id,
-				      AST::SimplePathSegment *path)
+				      const AST::SimplePathSegment *path)
 {
   rust_assert (lookup_simple_path_segment (crateNum, id) == nullptr);
 
@@ -437,7 +437,7 @@ Mappings::insert_simple_path_segment (CrateNum crateNum, HirId id,
   insert_location (crateNum, id, path->get_locus ());
 }
 
-AST::SimplePathSegment *
+const AST::SimplePathSegment *
 Mappings::lookup_simple_path_segment (CrateNum crateNum, HirId id)
 {
   auto it = astSimplePathSegmentMappings.find (crateNum);
@@ -453,7 +453,7 @@ Mappings::lookup_simple_path_segment (CrateNum crateNum, HirId id)
 
 void
 Mappings::insert_simple_path (CrateNum crateNum, HirId id,
-			      AST::SimplePath *path)
+			      const AST::SimplePath *path)
 {
   rust_assert (lookup_simple_path (crateNum, id) == nullptr);
 
@@ -462,7 +462,7 @@ Mappings::insert_simple_path (CrateNum crateNum, HirId id,
   insert_location (crateNum, id, path->get_locus ());
 }
 
-AST::SimplePath *
+const AST::SimplePath *
 Mappings::lookup_simple_path (CrateNum crateNum, HirId id)
 {
   auto it = astSimplePathMappings.find (crateNum);

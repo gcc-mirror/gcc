@@ -562,14 +562,13 @@ public:
 
 private:
   VisType vis_type;
-  AST::SimplePath path;
+  HIR::SimplePath path;
 
   // should this store location info?
 
 public:
-  // Creates a Visibility - TODO make constructor protected or private?
   Visibility (VisType vis_type,
-	      AST::SimplePath path = AST::SimplePath::create_empty ())
+	      HIR::SimplePath path = HIR::SimplePath::create_error ())
     : vis_type (vis_type), path (std::move (path))
   {}
 
@@ -582,7 +581,9 @@ public:
   // Creates an error visibility.
   static Visibility create_error ()
   {
-    return Visibility (ERROR, AST::SimplePath::create_empty ());
+    return Visibility (ERROR,
+		       HIR::SimplePath ({},
+					Analysis::NodeMapping::get_error ()));
   }
 
   VisType get_vis_type () const { return vis_type; }
