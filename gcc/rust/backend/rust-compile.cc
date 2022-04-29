@@ -202,26 +202,103 @@ HIRCompileBase::coercion_site (tree rvalue, TyTy::BaseType *actual,
 			       TyTy::BaseType *expected, Location lvalue_locus,
 			       Location rvalue_locus)
 {
-  auto root_actual_kind = actual->get_root ()->get_kind ();
-  auto root_expected_kind = expected->get_root ()->get_kind ();
+  if (rvalue == error_mark_node)
+    return error_mark_node;
 
-  if (root_expected_kind == TyTy::TypeKind::ARRAY
-      && root_actual_kind == TyTy::TypeKind::ARRAY)
+  if (expected->get_kind () == TyTy::TypeKind::REF)
     {
-      tree tree_rval_type
-	= TyTyResolveCompile::compile (ctx, actual->get_root ());
-      tree tree_lval_type
-	= TyTyResolveCompile::compile (ctx, expected->get_root ());
+      // bad coercion... of something to a reference
+      if (actual->get_kind () != TyTy::TypeKind::REF)
+	return error_mark_node;
+
+      TyTy::ReferenceType *exp = static_cast<TyTy::ReferenceType *> (expected);
+      TyTy::ReferenceType *act = static_cast<TyTy::ReferenceType *> (actual);
+
+      tree expected_type = TyTyResolveCompile::compile (ctx, act->get_base ());
+      tree deref_rvalue
+	= ctx->get_backend ()->indirect_expression (expected_type, rvalue,
+						    false /*known_valid*/,
+						    rvalue_locus);
+      tree coerced
+	= coercion_site (deref_rvalue, act->get_base (), exp->get_base (),
+			 lvalue_locus, rvalue_locus);
+
+      return address_expression (coerced,
+				 build_reference_type (TREE_TYPE (coerced)),
+				 rvalue_locus);
+    }
+  else if (expected->get_kind () == TyTy::TypeKind::POINTER)
+    {
+      // bad coercion... of something to a reference
+      bool valid_coercion = actual->get_kind () == TyTy::TypeKind::REF
+			    || actual->get_kind () == TyTy::TypeKind::POINTER;
+      if (!valid_coercion)
+	return error_mark_node;
+
+      TyTy::ReferenceType *exp = static_cast<TyTy::ReferenceType *> (expected);
+
+      TyTy::BaseType *actual_base = nullptr;
+      tree expected_type = error_mark_node;
+      if (actual->get_kind () == TyTy::TypeKind::REF)
+	{
+	  TyTy::ReferenceType *act
+	    = static_cast<TyTy::ReferenceType *> (actual);
+	  actual_base = act->get_base ();
+	  expected_type = TyTyResolveCompile::compile (ctx, act->get_base ());
+	}
+      else if (actual->get_kind () == TyTy::TypeKind::POINTER)
+	{
+	  TyTy::PointerType *act = static_cast<TyTy::PointerType *> (actual);
+	  actual_base = act->get_base ();
+	  expected_type = TyTyResolveCompile::compile (ctx, act->get_base ());
+	}
+      rust_assert (actual_base != nullptr);
+
+      tree deref_rvalue
+	= ctx->get_backend ()->indirect_expression (expected_type, rvalue,
+						    false /*known_valid*/,
+						    rvalue_locus);
+      tree coerced = coercion_site (deref_rvalue, actual_base, exp->get_base (),
+				    lvalue_locus, rvalue_locus);
+
+      return address_expression (coerced,
+				 build_pointer_type (TREE_TYPE (coerced)),
+				 rvalue_locus);
+    }
+  else if (expected->get_kind () == TyTy::TypeKind::ARRAY)
+    {
+      if (actual->get_kind () != TyTy::TypeKind::ARRAY)
+	return error_mark_node;
+
+      tree tree_rval_type = TyTyResolveCompile::compile (ctx, actual);
+      tree tree_lval_type = TyTyResolveCompile::compile (ctx, expected);
       if (!verify_array_capacities (tree_lval_type, tree_rval_type,
 				    lvalue_locus, rvalue_locus))
 	return error_mark_node;
     }
-  else if (root_expected_kind == TyTy::TypeKind::DYNAMIC
-	   && root_actual_kind != TyTy::TypeKind::DYNAMIC)
+  else if (expected->get_kind () == TyTy::TypeKind::DYNAMIC
+	   && actual->get_kind () != TyTy::TypeKind::DYNAMIC)
     {
       const TyTy::DynamicObjectType *dyn
-	= static_cast<const TyTy::DynamicObjectType *> (expected->get_root ());
+	= static_cast<const TyTy::DynamicObjectType *> (expected);
       return coerce_to_dyn_object (rvalue, actual, expected, dyn, rvalue_locus);
+    }
+  else if (expected->get_kind () == TyTy::TypeKind::SLICE)
+    {
+      // bad coercion
+      bool valid_coercion = actual->get_kind () == TyTy::TypeKind::SLICE
+			    || actual->get_kind () == TyTy::TypeKind::ARRAY;
+      if (!valid_coercion)
+	return error_mark_node;
+
+      // nothing to do here
+      if (actual->get_kind () == TyTy::TypeKind::SLICE)
+	return rvalue;
+
+      // return an unsized coercion
+      Resolver::Adjustment unsize_adj (
+	Resolver::Adjustment::AdjustmentType::UNSIZE, expected);
+      return resolve_unsized_adjustment (unsize_adj, rvalue, rvalue_locus);
     }
 
   return rvalue;
@@ -240,12 +317,17 @@ HIRCompileBase::coerce_to_dyn_object (tree compiled_ref,
   // __trait_object_ptr
   // [list of function ptrs]
 
-  auto root = actual->get_root ();
   std::vector<std::pair<Resolver::TraitReference *, HIR::ImplBlock *>>
-    probed_bounds_for_receiver = Resolver::TypeBoundsProbe::Probe (root);
+    probed_bounds_for_receiver = Resolver::TypeBoundsProbe::Probe (actual);
 
+  tree address_of_compiled_ref = null_pointer_node;
+  if (!actual->is_unit ())
+    address_of_compiled_ref
+      = address_expression (compiled_ref,
+			    build_pointer_type (TREE_TYPE (compiled_ref)),
+			    locus);
   std::vector<tree> vals;
-  vals.push_back (compiled_ref);
+  vals.push_back (address_of_compiled_ref);
   for (auto &bound : ty->get_object_items ())
     {
       const Resolver::TraitItemReference *item = bound.first;
@@ -253,57 +335,12 @@ HIRCompileBase::coerce_to_dyn_object (tree compiled_ref,
 
       auto address = compute_address_for_trait_item (item, predicate,
 						     probed_bounds_for_receiver,
-						     actual, root, locus);
+						     actual, actual, locus);
       vals.push_back (address);
     }
 
-  tree constructed_trait_object
-    = ctx->get_backend ()->constructor_expression (dynamic_object, false, vals,
-						   -1, locus);
-
-  fncontext fnctx = ctx->peek_fn ();
-  tree enclosing_scope = ctx->peek_enclosing_scope ();
-  bool is_address_taken = false;
-  tree ret_var_stmt = NULL_TREE;
-
-  Bvariable *dyn_tmp = ctx->get_backend ()->temporary_variable (
-    fnctx.fndecl, enclosing_scope, dynamic_object, constructed_trait_object,
-    is_address_taken, locus, &ret_var_stmt);
-  ctx->add_statement (ret_var_stmt);
-
-  // FIXME this needs to be more generic to apply any covariance
-
-  auto e = expected;
-  std::vector<Resolver::Adjustment> adjustments;
-  while (e->get_kind () == TyTy::TypeKind::REF)
-    {
-      auto r = static_cast<const TyTy::ReferenceType *> (e);
-      e = r->get_base ();
-
-      if (r->is_mutable ())
-	adjustments.push_back (
-	  Resolver::Adjustment (Resolver::Adjustment::AdjustmentType::MUT_REF,
-				e));
-      else
-	adjustments.push_back (
-	  Resolver::Adjustment (Resolver::Adjustment::AdjustmentType::IMM_REF,
-				e));
-    }
-
-  auto resulting_dyn_object_ref
-    = ctx->get_backend ()->var_expression (dyn_tmp, locus);
-  for (auto it = adjustments.rbegin (); it != adjustments.rend (); it++)
-    {
-      bool ok
-	= it->get_type () == Resolver::Adjustment::AdjustmentType::IMM_REF
-	  || it->get_type () == Resolver::Adjustment::AdjustmentType::MUT_REF;
-      rust_assert (ok);
-
-      resulting_dyn_object_ref = address_expression (
-	resulting_dyn_object_ref,
-	build_reference_type (TREE_TYPE (resulting_dyn_object_ref)), locus);
-    }
-  return resulting_dyn_object_ref;
+  return ctx->get_backend ()->constructor_expression (dynamic_object, false,
+						      vals, -1, locus);
 }
 
 tree

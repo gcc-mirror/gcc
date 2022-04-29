@@ -677,17 +677,6 @@ CompileExpr::compile_dyn_dispatch_call (const TyTy::DynamicObjectType *dyn,
     = ctx->get_backend ()->convert_expression (expected_fntype,
 					       fn_vtable_access, expr_locus);
 
-  fncontext fnctx = ctx->peek_fn ();
-  tree enclosing_scope = ctx->peek_enclosing_scope ();
-  bool is_address_taken = false;
-  tree ret_var_stmt = NULL_TREE;
-  Bvariable *fn_convert_expr_tmp
-    = ctx->get_backend ()->temporary_variable (fnctx.fndecl, enclosing_scope,
-					       expected_fntype, fn_convert_expr,
-					       is_address_taken, expr_locus,
-					       &ret_var_stmt);
-  ctx->add_statement (ret_var_stmt);
-
   std::vector<tree> args;
   args.push_back (self_argument);
   for (auto &argument : arguments)
@@ -696,10 +685,7 @@ CompileExpr::compile_dyn_dispatch_call (const TyTy::DynamicObjectType *dyn,
       args.push_back (compiled_expr);
     }
 
-  tree fn_expr
-    = ctx->get_backend ()->var_expression (fn_convert_expr_tmp, expr_locus);
-
-  return ctx->get_backend ()->call_expression (fn_expr, args, nullptr,
+  return ctx->get_backend ()->call_expression (fn_convert_expr, args, nullptr,
 					       expr_locus);
 }
 
