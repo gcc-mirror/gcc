@@ -367,7 +367,7 @@ package body Erroutc is
       Warn     : constant Boolean         := Errors.Table (Id).Warn;
       Warn_Chr : constant String (1 .. 2) := Errors.Table (Id).Warn_Chr;
    begin
-      if Warn and then Warn_Chr /= "  " then
+      if Warn and then Warn_Chr /= "  " and then Warn_Chr (1) /= '?' then
          if Warn_Chr = "$ " then
             return "-gnatel";
          elsif Warn_Chr (2) = ' ' then
