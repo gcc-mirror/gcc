@@ -18818,8 +18818,13 @@ cp_parser_template_argument (cp_parser* parser)
      In C++0x, the '>>' will be considered two separate '>'
      tokens.  */
   if (!cp_parser_error_occurred (parser)
-      && cxx_dialect == cxx98
-      && cp_lexer_next_token_is (parser->lexer, CPP_RSHIFT))
+      && ((cxx_dialect == cxx98
+	   && cp_lexer_next_token_is (parser->lexer, CPP_RSHIFT))
+	  /* Similarly for >= which
+	     cp_parser_next_token_ends_template_argument_p treats for
+	     diagnostics purposes as mistyped > =, but can be valid
+	     after a type-id.  */
+	  || cp_lexer_next_token_is (parser->lexer, CPP_GREATER_EQ)))
     {
       maybe_type_id = true;
       cp_parser_abort_tentative_parse (parser);
@@ -32045,7 +32050,9 @@ cp_parser_enclosed_template_argument_list (cp_parser* parser)
   cp_evaluated ev;
   /* Parse the template-argument-list itself.  */
   if (cp_lexer_next_token_is (parser->lexer, CPP_GREATER)
-      || cp_lexer_next_token_is (parser->lexer, CPP_RSHIFT))
+      || cp_lexer_next_token_is (parser->lexer, CPP_RSHIFT)
+      || cp_lexer_next_token_is (parser->lexer, CPP_GREATER_EQ)
+      || cp_lexer_next_token_is (parser->lexer, CPP_RSHIFT_EQ))
     arguments = NULL_TREE;
   else
     arguments = cp_parser_template_argument_list (parser);
@@ -32101,6 +32108,38 @@ cp_parser_enclosed_template_argument_list (cp_parser* parser)
 		    "spurious %<>>%>, use %<>%> to terminate "
 		    "a template argument list");
 	}
+    }
+  /* Similarly for >>= and >=.  */
+  else if (cp_lexer_next_token_is (parser->lexer, CPP_GREATER_EQ)
+	   || cp_lexer_next_token_is (parser->lexer, CPP_RSHIFT_EQ))
+    {
+      cp_token *token = cp_lexer_consume_token (parser->lexer);
+      gcc_rich_location richloc (token->location);
+      enum cpp_ttype new_type;
+      const char *replacement;
+      if (token->type == CPP_GREATER_EQ)
+	{
+	  replacement = "> =";
+	  new_type = CPP_EQ;
+	}
+      else if (!saved_greater_than_is_operator_p)
+	{
+	  if (cxx_dialect != cxx98)
+	    replacement = ">> =";
+	  else
+	    replacement = "> > =";
+	  new_type = CPP_GREATER;
+	}
+      else
+	{
+	  replacement = "> >=";
+	  new_type = CPP_GREATER_EQ;
+	}
+      richloc.add_fixit_replace (replacement);
+      error_at (&richloc, "%qs should be %qs to terminate a template "
+		"argument list",
+		cpp_type2name (token->type, token->flags), replacement);
+      token->type = new_type;
     }
   else
     cp_parser_require_end_of_template_parameter_list (parser);
@@ -33180,7 +33219,11 @@ cp_parser_next_token_ends_template_argument_p (cp_parser *parser)
   return (token->type == CPP_COMMA
           || token->type == CPP_GREATER
           || token->type == CPP_ELLIPSIS
-	  || ((cxx_dialect != cxx98) && token->type == CPP_RSHIFT));
+	  || ((cxx_dialect != cxx98) && token->type == CPP_RSHIFT)
+	  /* For better diagnostics, treat >>= like that too, that
+	     shouldn't appear non-nested in template arguments.  */
+	  || token->type == CPP_GREATER_EQ
+	  || token->type == CPP_RSHIFT_EQ);
 }
 
 /* Returns TRUE iff the n-th token is a "<", or the n-th is a "[" and the
