@@ -86,7 +86,7 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 
 #if defined(HAVE_SIGNAL_H)
 static struct sigaction sigbus;
-static struct sigaction sigfpe;
+static struct sigaction sigfpe_;
 static struct sigaction sigsegv;
 
 static void (*indexProc) (void *);
@@ -200,11 +200,11 @@ SysExceptions_InitExceptionHandlers (
   if (sigaction (SIGSEGV, &sigsegv, &old) != 0)
     perror ("unable to install the sigsegv signal handler");
 
-  sigfpe.sa_sigaction = sigfpeDespatcher;
-  sigfpe.sa_flags = (SA_SIGINFO);
-  sigemptyset (&sigfpe.sa_mask);
+  sigfpe_.sa_sigaction = sigfpeDespatcher;
+  sigfpe_.sa_flags = (SA_SIGINFO);
+  sigemptyset (&sigfpe_.sa_mask);
 
-  if (sigaction (SIGFPE, &sigfpe, &old) != 0)
+  if (sigaction (SIGFPE, &sigfpe_, &old) != 0)
     perror ("unable to install the sigfpe signal handler");
 }
 
