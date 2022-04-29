@@ -1,3 +1,7 @@
+2022-04-28  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* libdruntime/MERGE: Merge upstream druntime e361d200.
+
 2022-04-26  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* libdruntime/gcc/emutls.d (emutlsDestroyThread): Clear the per-thread

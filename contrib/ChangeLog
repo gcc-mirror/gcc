@@ -1,3 +1,8 @@
+2022-04-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc-changelog/git_update_version.py (active_refs): Add
+	releases/gcc-12.
+
 2022-04-25  Martin Liska  <mliska@suse.cz>
 
 	* filter-clang-warnings.py: Filter out

@@ -1,3 +1,8 @@
+2022-04-28  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* gfortran.texi: Mention r16_ieee and r16_ibm.
+	* invoke.texi: Likewise.
+
 2022-04-27  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/103662

@@ -1,3 +1,45 @@
+2022-04-28  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/105425
+	* pt.cc (unify) <case TEMPLATE_PARM_INDEX>: Treat
+	DEPENDENT_OPERATOR_TYPE like an empty type.
+
+2022-04-28  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/104051
+	* coroutines.cc (coro_diagnose_throwing_final_aw_expr): Handle
+	non-target expression inputs.
+
+2022-04-28  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/105301
+	* coroutines.cc (coro_promise_type_found_p): Account for possible
+	mutliple overloads of the promise return_value() method.
+
+2022-04-28  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/105287
+	* coroutines.cc (maybe_promote_temps): Ensure generated temporaries
+	are added to the bind expr.
+	(add_var_to_bind): Fix local var naming to use portable punctuation.
+	(register_local_var_uses): Do not add synthetic names to unnamed
+	temporaries.
+
+2022-04-28  Nathan Sidwell  <nathan@acm.org>
+	    Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/103868
+	* coroutines.cc (finish_co_await_expr): Do not process non-dependent
+	coroutine expressions at template definition time.
+	(finish_co_yield_expr): Likewise.
+	(finish_co_return_stmt): Likewise.
+
+2022-04-28  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/90107
+	* parser.cc (cp_parser_class_specifier_1): Accept :: after a class
+	definition.
+
 2022-04-27  Jason Merrill  <jason@redhat.com>
 
 	* tree.cc (strip_typedefs): Add default argument comments.

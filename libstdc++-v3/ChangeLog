@@ -1,3 +1,19 @@
+2022-04-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/99290
+	* src/c++17/fs_ops.cc (fs::copy): Pass error_code to
+	directory_iterator constructor, and check on each iteration.
+	* src/filesystem/ops.cc (fs::copy): Likewise.
+	* testsuite/27_io/filesystem/operations/copy.cc: Check for
+	errors during recursion.
+	* testsuite/experimental/filesystem/operations/copy.cc:
+	Likewise.
+
+2022-04-28  François Dumont  <fdumont@gcc.gnu.org>
+
+	* config/abi/pre/gnu-versioned-namespace.ver: Remove
+	std::random_device::* pattern.
+
 2022-04-27  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/abi/post/x86_64-linux-gnu/baseline_symbols.txt: Update.

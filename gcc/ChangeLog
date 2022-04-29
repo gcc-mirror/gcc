@@ -1,3 +1,121 @@
+2022-04-28  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* doc/gcov.texi (Profiling and Test Coverage in Freestanding
+	Environments): New section.
+
+2022-04-28  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* doc/gcov-tool.texi: Document merge-stream subcommand.
+	* doc/invoke.texi (fprofile-info-section): Mention merge-stream
+	subcommand of gcov-tool.
+	* gcov-tool.cc (gcov_profile_merge_stream): Declare.
+	(print_merge_stream_usage_message): New.
+	(merge_stream_usage): Likewise.
+	(do_merge_stream): Likewise.
+	(print_usage): Call print_merge_stream_usage_message().
+	(main): Call do_merge_stream() to execute merge-stream subcommand.
+
+2022-04-28  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* gcov-io.cc (gcov_file_error): New enum.
+	(gcov_var): Use gcov_file_error enum for the error member.
+	(gcov_open): Use GCOV_FILE_NO_ERROR.
+	(gcov_close): Use GCOV_FILE_WRITE_ERROR.
+	(gcov_write): Likewise.
+	(gcov_write_unsigned): Likewise.
+	(gcov_write_string): Likewise.
+	(gcov_read_bytes): Set error code if EOF is reached.
+	(gcov_read_counter): Use GCOV_FILE_COUNTER_OVERFLOW.
+
+2022-04-28  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* gcov-io.cc (GCOV_MODE_STDIN): Define.
+	(gcov_position): For gcov-tool, return calculated position if file is
+	stdin.
+	(gcov_open):  For gcov-tool, use stdin if filename is NULL.
+	(gcov_close): For gcov-tool, do not close stdin.
+	(gcov_read_bytes): For gcov-tool, update position if file is stdin.
+	(gcov_sync): For gcov-tool, discard input if file is stdin.
+
+2022-04-28  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* doc/invoke.texi (fprofile-info-section): Mention
+	__gcov_filename_to_gcfn().  Use "freestanding" to match with C11
+	standard language.  Fix minor example code issues.
+	* gcov-io.h (GCOV_FILENAME_MAGIC): Define and document.
+
+2022-04-28  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* gcov-io.cc (gcov_seek): Make it static.
+	* gcov-io.h (struct gcov_summary): Do not mention gcov_seek().
+
+2022-04-28  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* gcov-tool.cc (gcov_do_dump): Add mode parameter.
+	(gcov_output_files): Open files for reading and writing.
+
+2022-04-28  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* gcov-io.cc (gcov_open): Always use the mode parameter.
+	* gcov-io.h (gcov_open): Declare it unconditionally.
+
+2022-04-28  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* gcov-tool.cc (gcov_profile_merge): Adjust return type.
+	(profile_merge): Allow merging of directories which contain no profile
+	files.
+
+2022-04-28  David Malcolm  <dmalcolm@redhat.com>
+
+	* doc/invoke.texi (-fdump-analyzer-feasibility): Mention the
+	fpath.txt output.
+
+2022-04-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/i386/i386-expand.cc (ix86_expand_int_movcc): Create a
+	temporary only if out overlaps compare_op, not when it overlaps
+	op0 or op1.
+
+2022-04-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR lto/105399
+	* cgraph.cc (cgraph_node::verify_node): Don't verify
+	semantic_interposition flag against
+	opt_for_fn (decl, flag_semantic_interposition) for aliases in lto1.
+
+2022-04-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/105331
+	* config/i386/i386.cc (ix86_gimplify_va_arg): Mark va_arg_tmp
+	temporary TREE_ADDRESSABLE before trying to gimplify ADDR_EXPR
+	of it.
+
+2022-04-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/install.texi (Configuration): Remove misleading text
+	around LE PowerPC Linux multilibs.
+
+2022-04-28  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR d/103528
+	* doc/install.texi (Tools/packages necessary for building GCC)
+	(GDC): Document libphobos requirement.
+	(Host/target specific installation notes for GCC, *-*-solaris2*):
+	Document libphobos and GDC specifics.
+
+2022-04-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/105219
+	* tree-vect-loop.cc (vect_transform_loop): Disable
+	special code narrowing the vectorized epilogue max
+	iterations when peeling for alignment or gaps was in effect.
+
+2022-04-28  Xi Ruoyao  <xry111@mengyan1223.wang>
+
+	* config/loongarch/loongarch.cc
+	(loongarch_flatten_aggregate_field): Ignore empty fields for
+	RECORD_TYPE.
+
 2022-04-27  Lulu Cheng  <chenglulu@loongson.cn>
 
 	* config/loongarch/loongarch.md: Add fdiv define_expand template,
