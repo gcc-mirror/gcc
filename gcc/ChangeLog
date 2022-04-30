@@ -1,3 +1,169 @@
+2022-04-29  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/100413
+	* cgraph.cc (cgraph_node::remove): Release body of the node this
+	is clone_of if appropriate.
+
+2022-04-29  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/51954
+	* config/i386/i386.md (adcl/neg -> sbb peephole): New peephole2.
+
+2022-04-29  Richard Biener  <rguenther@suse.de>
+
+	* gimple-expr.cc (is_gimple_condexpr): Adjust comment.
+	(canonicalize_cond_expr_cond): Move here from gimple.cc,
+	allow both COND_EXPR and GIMPLE_COND forms.
+	* gimple-expr.h (canonicalize_cond_expr_cond): Declare.
+	* gimple.cc (canonicalize_cond_expr_cond): Remove here.
+	* gimple.h (canonicalize_cond_expr_cond): Likewise.
+	* gimple-loop-versioning.cc (loop_versioning::version_loop):
+	Use is_gimple_condexpr_for_cond.
+	* tree-parloops.cc (gen_parallel_loop): Likewise.
+	* tree-ssa-ifcombine.cc (ifcombine_ifandif): Check for
+	a proper cond expr after canonicalize_cond_expr_cond.
+	Use is_gimple_condexpr_for_cond where appropriate.
+	* tree-ssa-loop-manip.cc (determine_exit_conditions): Likewise.
+	* tree-vect-loop-manip.cc (slpeel_add_loop_guard): Likewise.
+
+2022-04-29  Richard Biener  <rguenther@suse.de>
+
+	* gimple-iterator.h (gsi_after_labels): Add overload for
+	gimple_seq.
+	(gsi_start_1): Rename to gsi_start and take a reference.
+	(gsi_last_1): Likewise.
+	* gimple-iterator.cc (gsi_for_stmt): Use gsi_start.
+	* omp-low.cc (lower_rec_input_clauses): Likewise.
+	(lower_omp_scan): Likewise.
+
+2022-04-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/105431
+	* tree-ssa-math-opts.cc (powi_as_mults_1): Make n unsigned.
+	(powi_as_mults): Use absu_hwi.
+	(gimple_expand_builtin_powi): Remove now pointless n != -n
+	check.
+
+2022-04-29  Aldy Hernandez  <aldyh@redhat.com>
+
+	* range-op.cc (empty_range_varying): Move to range-op.h.
+	(range_true): Move to range.h.
+	(range_false): Same.
+	(range_true_and_false): Same.
+	(enum bool_range_state): Move to range-op.h.
+	(relop_early_resolve): Same.
+	(operator_equal::op1_op2_relation): Abstract code to...
+	(equal_op1_op2_relation): ...here.
+	(operator_not_equal::op1_op2_relation): Abstract code to...
+	(not_equal_op1_op2_relation): ...here.
+	(operator_lt::op1_op2_relation): Abstract code to...
+	(lt_op1_op2_relation): ...here.
+	(operator_le::op1_op2_relation): Abstract code to...
+	(le_op1_op2_relation): ...here.
+	(operator_gt::op1_op2_relation): Abstract code to...
+	(gt_op1_op2_relation): ...here.
+	(operator_ge::op1_op2_relation): Abstract code to...
+	(ge_op1_op2_relation): ...here.
+	(class range_op_table): Move to range-op.h.
+	* range-op.h (equal_op1_op2_relation): Moved from range-op.cc.
+	(not_equal_op1_op2_relation): Same.
+	(lt_op1_op2_relation): Same.
+	(le_op1_op2_relation): Same.
+	(gt_op1_op2_relation): Same.
+	(ge_op1_op2_relation): Same.
+	(enum bool_range_state): Same.
+	(get_bool_state): Same.
+	(empty_range_varying): Same.
+	(relop_early_resolve): Same.
+	(class range_op_table): Same.
+	* range.h (range_true): Same.
+	(range_false): Same.
+	(range_true_and_false): Same.
+
+2022-04-29  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gimple-fold.cc (size_must_be_zero_p): Use reference
+	instead of pointer
+	* gimple-ssa-evrp-analyze.cc
+	(evrp_range_analyzer::record_ranges_from_incoming_edge): Rename
+	intersect to legacy_verbose_intersect.
+	* ipa-cp.cc (ipcp_vr_lattice::meet_with_1): Use reference instead
+	of pointer.
+	* tree-ssa-dom.cc (dom_jt_simplifier::simplify): Use value_range
+	instead of value_range_equiv.
+	* tree-vrp.cc (extract_range_from_plus_minus_expr): Use reference
+	instead of pointer.
+	(find_case_label_range): Same.
+	* value-range-equiv.cc (value_range_equiv::intersect): Rename to...
+	(value_range_equiv::legacy_verbose_intersect): ...this.
+	(value_range_equiv::union_): Rename to...
+	(value_range_equiv::legacy_verbose_union_): ...this.
+	* value-range-equiv.h (class value_range_equiv): Rename union and
+	intersect to legacy_verbose_{intersect,union}.
+	* value-range.cc (irange::union_): Rename to...
+	(irange::legacy_verbose_union_): ...this.
+	(irange::intersect): Rename to...
+	(irange::legacy_verbose_intersect): ...this.
+	* value-range.h (irange::union_): Rename union_ to
+	legacy_verbose_union.
+	(irange::intersect): Rename intersect to legacy_verbose_intersect.
+	* vr-values.cc (vr_values::update_value_range): Same.
+	(vr_values::extract_range_for_var_from_comparison_expr): Same.
+	(vr_values::extract_range_from_cond_expr): Rename union_ to
+	legacy_verbose_union.
+	(vr_values::extract_range_from_phi_node): Same.
+
+2022-04-29  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gimple-ssa-evrp-analyze.cc
+	(evrp_range_analyzer::set_ssa_range_info): Use *range_info methods
+	that take a range.
+	* gimple-ssa-sprintf.cc (try_substitute_return_value): Same.
+	* ipa-prop.cc (ipcp_update_vr): Same.
+	* tree-inline.cc (remap_ssa_name): Same.
+	* tree-ssa-copy.cc (fini_copy_prop): Same.
+	* tree-ssa-math-opts.cc (optimize_spaceship): Same.
+	* tree-ssa-phiopt.cc (replace_phi_edge_with_variable): Same.
+	* tree-ssa-pre.cc (insert_into_preds_of_block): Same.
+	* tree-ssa-sccvn.cc (eliminate_dom_walker::eliminate_stmt): Same.
+	* tree-ssa-strlen.cc (set_strlen_range): Same.
+	(strlen_pass::handle_builtin_string_cmp): Same.
+	* tree-ssanames.cc (set_range_info): Make static.
+	(duplicate_ssa_name_range_info): Make static and add a new variant
+	calling the static.
+	* tree-ssanames.h (set_range_info): Remove version taking wide ints.
+	(duplicate_ssa_name_range_info): Remove version taking a
+	range_info_def and replace with a version taking SSA names.
+	* tree-vect-loop-manip.cc (vect_gen_vector_loop_niters): Use *range_info methods
+	that take a range.
+	(vect_do_peeling): Same.
+	* tree-vrp.cc (vrp_asserts::remove_range_assertions): Same.
+	* vr-values.cc (simplify_truth_ops_using_ranges): Same.
+
+2022-04-29  Aldy Hernandez  <aldyh@redhat.com>
+
+	* value-range.h (irange::irange): Use set_undefined.
+
+2022-04-29  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gimple-range-cache.h (non_null_ref::adjust_range): Do not use
+	irange::intersect (wide_int, wide_int).
+	* gimple-range-fold.cc (adjust_pointer_diff_expr): Same.
+	(adjust_imagpart_expr): Same.
+	* value-range.h (irange::intersect (wide_int, wide_int)): Make
+	private.
+
+2022-04-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/104322
+	* tree-vect-loop.cc (vectorizable_reduction): Remove dead code.
+
+2022-04-29  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/105376
+	* tree.cc (build_real): Special case dconst* arguments
+	for decimal floating point types.
+
 2022-04-28  Sebastian Huber  <sebastian.huber@embedded-brains.de>
 
 	* doc/gcov.texi (Profiling and Test Coverage in Freestanding

@@ -1,3 +1,93 @@
+2022-04-29  Jason Merrill  <jason@redhat.com>
+
+	PR c++/91618
+	PR c++/96604
+	* friend.cc (do_friend): Call check_explicit_specialization here.
+	* decl.cc (grokdeclarator): Not here.
+	* decl2.cc (check_classfn): Or here.
+
+2022-04-29  Jason Merrill  <jason@redhat.com>
+
+	PR c++/104470
+	* cp-tree.h (enum tsubst_flags): Add tf_dguide.
+	* pt.cc (tsubst_aggr_type): Check it.
+	(tsubst_baselink, tsubst_copy): Check it.
+	(maybe_dependent_member_ref): Check it.
+	(instantiate_alias_template): Handle it.
+	(build_deduction_guide): Set it.
+
+2022-04-29  Jason Merrill  <jason@redhat.com>
+
+	PR c++/82980
+	* lambda.cc (type_deducible_expression_p): Allow more types.
+
+2022-04-29  Jason Merrill  <jason@redhat.com>
+
+	* decl.cc (cp_finish_decl): Only consider auto for vars.
+
+2022-04-29  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/67048
+	* parser.cc (cp_parser_enum_specifier): Warn about empty unnamed enum
+	only when it's followed by a semicolon.
+
+2022-04-29  Jason Merrill  <jason@redhat.com>
+
+	PR c++/80351
+	* decl.cc (cp_finish_decl): Check completeness of deduced type.
+
+2022-04-29  Jason Merrill  <jason@redhat.com>
+
+	PR c++/102987
+	* error.cc (dump_decl) [USING_DECL]: Respect flags.
+
+2022-04-29  Jason Merrill  <jason@redhat.com>
+
+	* error.cc (dump_decl): Check TFF_UNQUALIFIED_NAME.
+
+2022-04-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/104319
+	* parser.cc (cp_parser_template_argument): Treat >= like C++98 >>
+	after a type id by setting maybe_type_id and aborting tentative
+	parse.
+	(cp_parser_enclosed_template_argument_list): Handle
+	CPP_GREATER_EQ like misspelled CPP_GREATER CPP_RQ and
+	CPP_RSHIFT_EQ like misspelled CPP_GREATER CPP_GREATER_EQ
+	or CPP_RSHIFT CPP_EQ or CPP_GREATER CPP_GREATER CPP_EQ.
+	(cp_parser_next_token_ends_template_argument_p): Return true
+	also for CPP_GREATER_EQ and CPP_RSHIFT_EQ.
+
+2022-04-29  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/105426
+	* coroutines.cc (register_local_var_uses): Allow promotion of unnamed
+	temporaries to coroutine frame copies.
+
+2022-04-29  Jason Merrill  <jason@redhat.com>
+
+	* semantics.cc (check_trait_type): Don't check completeness
+	of element type of array of unknown bound.
+
+2022-04-29  Jason Merrill  <jason@redhat.com>
+
+	PR c++/102651
+	PR c++/49387
+	* rtti.cc (get_tinfo_decl_direct): Don't complete_type.
+	(emit_tinfo_decl): Update tdesc type if needed.
+
+2022-04-29  Zhao Wei Liew  <zhaoweiliew@gmail.com>
+
+	PR c++/25689
+	* call.cc (extract_call_expr): Return a NULL_TREE on failure
+	instead of asserting.
+	(build_new_method_call): Suppress -Wparentheses diagnostic for
+	MODIFY_EXPR.
+	* semantics.cc (is_assignment_op_expr_p): Add function to check
+	if an expression is a call to an op= operator expression.
+	(maybe_convert_cond): Handle the case of a op= operator expression
+	for the -Wparentheses diagnostic.
+
 2022-04-28  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/105425

@@ -1,3 +1,7 @@
+2022-04-29  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* gfortran.texi: Fix exchanged period and letter.
+
 2022-04-28  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	* gfortran.texi: Mention r16_ieee and r16_ibm.

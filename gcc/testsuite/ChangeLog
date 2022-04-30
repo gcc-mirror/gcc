@@ -1,3 +1,91 @@
+2022-04-29  Jason Merrill  <jason@redhat.com>
+
+	PR c++/104470
+	* g++.dg/cpp2a/explicit11.C: Second example also ill-formed.
+	* g++.dg/cpp2a/class-deduction-alias12.C: New test.
+
+2022-04-29  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/67048
+	* g++.dg/cpp0x/enum42.C: New test.
+
+2022-04-29  Jason Merrill  <jason@redhat.com>
+
+	PR c++/80351
+	* g++.dg/cpp0x/constexpr-77482.C: Adjust message.
+	* g++.dg/cpp1y/auto-fn27.C: Likewise.
+	* g++.dg/cpp1y/lambda-generic-variadic22.C: Likewise.
+	* g++.dg/cpp1z/decomp54.C: Likewise.
+	* g++.dg/cpp0x/initlist-const1.C: New test.
+	* g++.dg/warn/Wunused-var-37.C: New test.
+	* g++.dg/warn/Wunused-var-38.C: New test.
+	* g++.dg/warn/Wunused-var-39.C: New test.
+
+2022-04-29  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/100413
+	* g++.dg/ipa/pr100413.C: New test.
+
+2022-04-29  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	PR tree-optimization/105219
+	* gcc.dg/vect/pr105219.c: Add aarch64 target option.
+
+2022-04-29  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/83596
+	* g++.dg/cpp1z/nontype5.C: New test.
+
+2022-04-29  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/78244
+	* g++.dg/cpp0x/Wnarrowing20.C: New test.
+
+2022-04-29  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/71424
+	* g++.dg/cpp0x/initlist-array15.C: New test.
+
+2022-04-29  Jason Merrill  <jason@redhat.com>
+
+	PR c++/102987
+	* g++.dg/diagnostic/using1.C: Check pretty-printing.
+
+2022-04-29  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp0x/alias-decl-1.C: Expect qualified name.
+
+2022-04-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/104319
+	* g++.dg/parse/template28.C: Adjust expected diagnostics.
+	* g++.dg/parse/template30.C: New test.
+
+2022-04-29  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/51954
+	* gcc.target/i386/pr51954.c: New test.
+
+2022-04-29  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/105376
+	* gcc.dg/pr105376.c: New testcase.
+
+2022-04-29  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/ext/unary_trait_incomplete.C: Adjust.
+
+2022-04-29  Jason Merrill  <jason@redhat.com>
+
+	PR c++/102651
+	PR c++/49387
+	* g++.dg/rtti/typeid-complete1.C: New test.
+
+2022-04-29  Zhao Wei Liew  <zhaoweiliew@gmail.com>
+
+	PR c++/25689
+	* g++.dg/warn/Wparentheses-31.C: New test.
+
 2022-04-28  Sebastian Huber  <sebastian.huber@embedded-brains.de>
 
 	* gcc.dg/gcov-info-to-gcda.c: Test __gcov_filename_to_gcfn().

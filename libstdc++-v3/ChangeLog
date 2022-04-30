@@ -1,3 +1,21 @@
+2022-04-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/105417
+	* config/abi/post/powerpc64-linux-gnu/baseline_symbols.txt:
+	Regenerate.
+	* src/c++11/compatibility-ldbl-alt128.cc [_GLIBCXX_USE_DUAL_ABI]:
+	Define __gnu_ieee128::num_get<C>::_M_extract_int[abi:cxx11]<I>
+	symbols as aliases for corresponding symbols without abi-tag.
+
+2022-04-29  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config/abi/post/i386-solaris/baseline_symbols.txt: Regenerate.
+	* config/abi/post/i386-solaris/amd64/baseline_symbols.txt:
+	Likewise.
+	* config/abi/post/sparc-solaris/baseline_symbols.txt: Likewise.
+	* config/abi/post/sparc-solaris/sparcv9/baseline_symbols.txt:
+	Likewise.
+
 2022-04-28  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/99290
