@@ -1,3 +1,12 @@
+2022-04-29  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2022-04-29  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/105426
+	* coroutines.cc (register_local_var_uses): Allow promotion of unnamed
+	temporaries to coroutine frame copies.
+
 2022-04-28  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:
