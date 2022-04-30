@@ -2867,8 +2867,7 @@ DynamicObjectType::clone () const
 std::string
 DynamicObjectType::get_name () const
 {
-  std::string bounds = "[" + raw_bounds_as_string () + "]";
-  return "dyn " + bounds;
+  return "dyn [" + raw_bounds_as_name () + "]";
 }
 
 bool

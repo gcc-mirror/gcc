@@ -215,6 +215,12 @@ TypeBoundPredicate::as_string () const
   return get ()->as_string () + subst_as_string ();
 }
 
+std::string
+TypeBoundPredicate::as_name () const
+{
+  return get ()->get_name () + subst_as_string ();
+}
+
 const Resolver::TraitReference *
 TypeBoundPredicate::get () const
 {
@@ -430,6 +436,20 @@ std::string
 TypeBoundsMappings::bounds_as_string () const
 {
   return "bounds:[" + raw_bounds_as_string () + "]";
+}
+
+std::string
+TypeBoundsMappings::raw_bounds_as_name () const
+{
+  std::string buf;
+  for (size_t i = 0; i < specified_bounds.size (); i++)
+    {
+      const TypeBoundPredicate &b = specified_bounds.at (i);
+      bool has_next = (i + 1) < specified_bounds.size ();
+      buf += b.as_name () + (has_next ? " + " : "");
+    }
+
+  return buf;
 }
 
 void
