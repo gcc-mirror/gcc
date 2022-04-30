@@ -20091,6 +20091,7 @@ tsubst_copy_and_build (tree t,
 	  object = NULL_TREE;
 
 	tree tid = lookup_template_function (templ, targs);
+	protected_set_expr_location (tid, EXPR_LOCATION (t));
 
 	if (object)
 	  RETURN (build3 (COMPONENT_REF, TREE_TYPE (tid),
@@ -30181,6 +30182,8 @@ do_auto_deduction (tree type, tree init, tree auto_node,
     /* Nothing we can do with this, even in deduction context.  */
     return type;
 
+  location_t loc = cp_expr_loc_or_input_loc (init);
+
   /* [dcl.spec.auto]: Obtain P from T by replacing the occurrences of auto
      with either a new invented type template parameter U or, if the
      initializer is a braced-init-list (8.5.4), with
@@ -30195,9 +30198,9 @@ do_auto_deduction (tree type, tree init, tree auto_node,
 	{
           if (complain & tf_warning_or_error)
             {
-	      if (permerror (input_location, "direct-list-initialization of "
+	      if (permerror (loc, "direct-list-initialization of "
 			     "%<auto%> requires exactly one element"))
-	        inform (input_location,
+		inform (loc,
 		        "for deduction to %<std::initializer_list%>, use copy-"
 		        "list-initialization (i.e. add %<=%> before the %<{%>)");
             }
@@ -30288,9 +30291,10 @@ do_auto_deduction (tree type, tree init, tree auto_node,
 		  && (auto_node
 		      == DECL_SAVED_AUTO_RETURN_TYPE (current_function_decl))
 		  && LAMBDA_FUNCTION_P (current_function_decl))
-		error ("unable to deduce lambda return type from %qE", init);
+		error_at (loc, "unable to deduce lambda return type from %qE",
+			  init);
 	      else
-		error ("unable to deduce %qT from %qE", type, init);
+		error_at (loc, "unable to deduce %qT from %qE", type, init);
 	      type_unification_real (tparms, targs, parms, &init, 1, 0,
 				     DEDUCE_CALL,
 				     NULL, /*explain_p=*/true);
@@ -30362,23 +30366,23 @@ do_auto_deduction (tree type, tree init, tree auto_node,
 		{
 		case adc_unspecified:
 		case adc_unify:
-		  error("placeholder constraints not satisfied");
+		  error_at (loc, "placeholder constraints not satisfied");
 		  break;
 		case adc_variable_type:
 		case adc_decomp_type:
-		  error ("deduced initializer does not satisfy "
-			 "placeholder constraints");
+		  error_at (loc, "deduced initializer does not satisfy "
+			    "placeholder constraints");
 		  break;
 		case adc_return_type:
-		  error ("deduced return type does not satisfy "
-			 "placeholder constraints");
+		  error_at (loc, "deduced return type does not satisfy "
+			    "placeholder constraints");
 		  break;
 		case adc_requirement:
-		  error ("deduced expression type does not satisfy "
-			 "placeholder constraints");
+		  error_at (loc, "deduced expression type does not satisfy "
+			    "placeholder constraints");
 		  break;
 		}
-	      diagnose_constraints (input_location, auto_node, full_targs);
+	      diagnose_constraints (loc, auto_node, full_targs);
 	    }
 	  return error_mark_node;
 	}
