@@ -41,9 +41,7 @@ AttrVisitor::expand_struct_fields (std::vector<AST::StructField> &fields)
       auto &type = field.get_field_type ();
       type->accept_vis (*this);
 
-      auto t_fragment = expander.take_expanded_fragment (*this);
-      if (t_fragment.should_expand ())
-	type = t_fragment.take_type_fragment ();
+      maybe_expand_type (type);
 
       if (type->is_marked_for_strip ())
 	rust_error_at (type->get_locus (),
@@ -110,9 +108,7 @@ AttrVisitor::expand_function_params (std::vector<AST::FunctionParam> &params)
       auto &type = param.get_type ();
       type->accept_vis (*this);
 
-      auto t_fragment = expander.take_expanded_fragment (*this);
-      if (t_fragment.should_expand ())
-	type = t_fragment.take_type_fragment ();
+      maybe_expand_type (type);
 
       if (type->is_marked_for_strip ())
 	rust_error_at (type->get_locus (),
@@ -137,9 +133,7 @@ AttrVisitor::expand_generic_args (AST::GenericArgs &args)
   for (auto &type : args.get_type_args ())
     {
       type->accept_vis (*this);
-      auto t_fragment = expander.take_expanded_fragment (*this);
-      if (t_fragment.should_expand ())
-	type = t_fragment.take_type_fragment ();
+      maybe_expand_type (type);
 
       if (type->is_marked_for_strip ())
 	rust_error_at (type->get_locus (),
@@ -169,9 +163,7 @@ AttrVisitor::expand_qualified_path_type (AST::QualifiedPathType &path_type)
   auto &type = path_type.get_type ();
   type->accept_vis (*this);
 
-  auto t_fragment = expander.take_expanded_fragment (*this);
-  if (t_fragment.should_expand ())
-    type = t_fragment.take_type_fragment ();
+  maybe_expand_type (type);
 
   expander.pop_context ();
 
@@ -216,9 +208,7 @@ AttrVisitor::AttrVisitor::expand_closure_params (
 	  auto &type = param.get_type ();
 	  type->accept_vis (*this);
 
-	  auto t_fragment = expander.take_expanded_fragment (*this);
-	  if (t_fragment.should_expand ())
-	    type = t_fragment.take_type_fragment ();
+	  maybe_expand_type (type);
 
 	  if (type->is_marked_for_strip ())
 	    rust_error_at (type->get_locus (),
@@ -241,9 +231,7 @@ AttrVisitor::expand_self_param (AST::SelfParam &self_param)
       auto &type = self_param.get_type ();
       type->accept_vis (*this);
 
-      auto t_fragment = expander.take_expanded_fragment (*this);
-      if (t_fragment.should_expand ())
-	type = t_fragment.take_type_fragment ();
+      maybe_expand_type (type);
 
       if (type->is_marked_for_strip ())
 	rust_error_at (type->get_locus (),
@@ -281,9 +269,7 @@ AttrVisitor::expand_trait_function_decl (AST::TraitFunctionDecl &decl)
       auto &return_type = decl.get_return_type ();
       return_type->accept_vis (*this);
 
-      auto r_fragment = expander.take_expanded_fragment (*this);
-      if (r_fragment.should_expand ())
-	return_type = r_fragment.take_type_fragment ();
+      maybe_expand_type (return_type);
 
       if (return_type->is_marked_for_strip ())
 	rust_error_at (return_type->get_locus (),
@@ -319,9 +305,7 @@ AttrVisitor::expand_trait_method_decl (AST::TraitMethodDecl &decl)
       auto &return_type = decl.get_return_type ();
       return_type->accept_vis (*this);
 
-      auto r_fragment = expander.take_expanded_fragment (*this);
-      if (r_fragment.should_expand ())
-	return_type = r_fragment.take_type_fragment ();
+      maybe_expand_type (return_type);
 
       if (return_type->is_marked_for_strip ())
 	rust_error_at (return_type->get_locus (),
@@ -445,9 +429,7 @@ AttrVisitor::visit (AST::TypePathSegmentFunction &segment)
       auto &return_type = type_path_function.get_return_type ();
       return_type->accept_vis (*this);
 
-      auto r_fragment = expander.take_expanded_fragment (*this);
-      if (r_fragment.should_expand ())
-	return_type = r_fragment.take_type_fragment ();
+      maybe_expand_type (return_type);
 
       if (return_type->is_marked_for_strip ())
 	rust_error_at (return_type->get_locus (),
@@ -612,17 +594,13 @@ AttrVisitor::visit (AST::ArithmeticOrLogicalExpr &expr)
    * with outer expr */
   auto &l_expr = expr.get_left_expr ();
   l_expr->accept_vis (*this);
-  auto l_fragment = expander.take_expanded_fragment (*this);
-  if (l_fragment.should_expand ())
-    l_expr = l_fragment.take_expression_fragment ();
+  maybe_expand_expr (l_expr);
 
   /* should syntactically not have outer attributes, though this may
    * not have worked in practice */
   auto &r_expr = expr.get_right_expr ();
   r_expr->accept_vis (*this);
-  auto r_fragment = expander.take_expanded_fragment (*this);
-  if (r_fragment.should_expand ())
-    r_expr = r_fragment.take_expression_fragment ();
+  maybe_expand_expr (r_expr);
 
   // ensure that they are not marked for strip
   if (expr.get_left_expr ()->is_marked_for_strip ())
@@ -645,17 +623,13 @@ AttrVisitor::visit (AST::ComparisonExpr &expr)
    * with outer expr */
   auto &l_expr = expr.get_left_expr ();
   l_expr->accept_vis (*this);
-  auto l_fragment = expander.take_expanded_fragment (*this);
-  if (l_fragment.should_expand ())
-    l_expr = l_fragment.take_expression_fragment ();
+  maybe_expand_expr (l_expr);
 
   /* should syntactically not have outer attributes, though this may
    * not have worked in practice */
   auto &r_expr = expr.get_right_expr ();
   r_expr->accept_vis (*this);
-  auto r_fragment = expander.take_expanded_fragment (*this);
-  if (r_fragment.should_expand ())
-    r_expr = r_fragment.take_expression_fragment ();
+  maybe_expand_expr (r_expr);
 
   // ensure that they are not marked for strip
   if (expr.get_left_expr ()->is_marked_for_strip ())
@@ -678,17 +652,13 @@ AttrVisitor::visit (AST::LazyBooleanExpr &expr)
    * with outer expr */
   auto &l_expr = expr.get_left_expr ();
   l_expr->accept_vis (*this);
-  auto l_fragment = expander.take_expanded_fragment (*this);
-  if (l_fragment.should_expand ())
-    l_expr = l_fragment.take_expression_fragment ();
+  maybe_expand_expr (l_expr);
 
   /* should syntactically not have outer attributes, though this may
    * not have worked in practice */
   auto &r_expr = expr.get_right_expr ();
   r_expr->accept_vis (*this);
-  auto r_fragment = expander.take_expanded_fragment (*this);
-  if (r_fragment.should_expand ())
-    r_expr = r_fragment.take_expression_fragment ();
+  maybe_expand_expr (r_expr);
 
   // ensure that they are not marked for strip
   if (expr.get_left_expr ()->is_marked_for_strip ())
@@ -738,17 +708,13 @@ AttrVisitor::visit (AST::AssignmentExpr &expr)
    * with outer expr */
   auto &l_expr = expr.get_left_expr ();
   l_expr->accept_vis (*this);
-  auto l_fragment = expander.take_expanded_fragment (*this);
-  if (l_fragment.should_expand ())
-    l_expr = l_fragment.take_expression_fragment ();
+  maybe_expand_expr (l_expr);
 
   /* should syntactically not have outer attributes, though this may
    * not have worked in practice */
   auto &r_expr = expr.get_right_expr ();
   r_expr->accept_vis (*this);
-  auto r_fragment = expander.take_expanded_fragment (*this);
-  if (r_fragment.should_expand ())
-    r_expr = r_fragment.take_expression_fragment ();
+  maybe_expand_expr (r_expr);
 
   // ensure that they are not marked for strip
   if (expr.get_left_expr ()->is_marked_for_strip ())
@@ -771,17 +737,13 @@ AttrVisitor::visit (AST::CompoundAssignmentExpr &expr)
    * with outer expr */
   auto &l_expr = expr.get_left_expr ();
   l_expr->accept_vis (*this);
-  auto l_frag = expander.take_expanded_fragment (*this);
-  if (l_frag.should_expand ())
-    l_expr = l_frag.take_expression_fragment ();
+  maybe_expand_expr (l_expr);
 
   /* should syntactically not have outer attributes, though this may
    * not have worked in practice */
   auto &r_expr = expr.get_right_expr ();
   r_expr->accept_vis (*this);
-  auto r_frag = expander.take_expanded_fragment (*this);
-  if (r_frag.should_expand ())
-    r_expr = r_frag.take_expression_fragment ();
+  maybe_expand_expr (r_expr);
 
   // ensure that they are not marked for strip
   if (expr.get_left_expr ()->is_marked_for_strip ())
@@ -1259,9 +1221,7 @@ AttrVisitor::visit (AST::BlockExpr &expr)
       auto &tail_expr = expr.get_tail_expr ();
 
       tail_expr->accept_vis (*this);
-      auto fragment = expander.take_expanded_fragment (*this);
-      if (fragment.should_expand ())
-	tail_expr = fragment.take_expression_fragment ();
+      maybe_expand_expr (tail_expr);
 
       if (tail_expr->is_marked_for_strip ())
 	expr.strip_tail_expr ();
@@ -1290,9 +1250,7 @@ AttrVisitor::visit (AST::ClosureExprInnerTyped &expr)
   auto &type = expr.get_return_type ();
   type->accept_vis (*this);
 
-  auto t_fragment = expander.take_expanded_fragment (*this);
-  if (t_fragment.should_expand ())
-    type = t_fragment.take_type_fragment ();
+  maybe_expand_type (type);
 
   if (type->is_marked_for_strip ())
     rust_error_at (type->get_locus (), "cannot strip type in this position");
@@ -1630,9 +1588,7 @@ AttrVisitor::visit (AST::IfExpr &expr)
   // can't strip condition expr itself, but can strip sub-expressions
   auto &condition_expr = expr.get_condition_expr ();
   condition_expr->accept_vis (*this);
-  auto cond_fragment = expander.take_expanded_fragment (*this);
-  if (cond_fragment.should_expand ())
-    condition_expr = cond_fragment.take_expression_fragment ();
+  maybe_expand_expr (condition_expr);
   if (condition_expr->is_marked_for_strip ())
     rust_error_at (condition_expr->get_locus (),
 		   "cannot strip expression in this position - outer "
@@ -1660,9 +1616,7 @@ AttrVisitor::visit (AST::IfExprConseqElse &expr)
   // can't strip condition expr itself, but can strip sub-expressions
   auto &condition_expr = expr.get_condition_expr ();
   condition_expr->accept_vis (*this);
-  auto cond_fragment = expander.take_expanded_fragment (*this);
-  if (cond_fragment.should_expand ())
-    condition_expr = cond_fragment.take_expression_fragment ();
+  maybe_expand_expr (condition_expr);
   if (condition_expr->is_marked_for_strip ())
     rust_error_at (condition_expr->get_locus (),
 		   "cannot strip expression in this position - outer "
@@ -1698,9 +1652,7 @@ AttrVisitor::visit (AST::IfExprConseqIf &expr)
   // can't strip condition expr itself, but can strip sub-expressions
   auto &condition_expr = expr.get_condition_expr ();
   condition_expr->accept_vis (*this);
-  auto cond_fragment = expander.take_expanded_fragment (*this);
-  if (cond_fragment.should_expand ())
-    condition_expr = cond_fragment.take_expression_fragment ();
+  maybe_expand_expr (condition_expr);
   if (condition_expr->is_marked_for_strip ())
     rust_error_at (condition_expr->get_locus (),
 		   "cannot strip expression in this position - outer "
@@ -1736,9 +1688,7 @@ AttrVisitor::visit (AST::IfExprConseqIfLet &expr)
   // can't strip condition expr itself, but can strip sub-expressions
   auto &condition_expr = expr.get_condition_expr ();
   condition_expr->accept_vis (*this);
-  auto cond_fragment = expander.take_expanded_fragment (*this);
-  if (cond_fragment.should_expand ())
-    condition_expr = cond_fragment.take_expression_fragment ();
+  maybe_expand_expr (condition_expr);
   if (condition_expr->is_marked_for_strip ())
     rust_error_at (condition_expr->get_locus (),
 		   "cannot strip expression in this position - outer "
@@ -2061,9 +2011,7 @@ AttrVisitor::visit (AST::TypeParam &param)
       auto &type = param.get_type ();
       type->accept_vis (*this);
 
-      auto t_fragment = expander.take_expanded_fragment (*this);
-      if (t_fragment.should_expand ())
-	type = t_fragment.take_type_fragment ();
+      maybe_expand_type (type);
 
       if (type->is_marked_for_strip ())
 	rust_error_at (type->get_locus (),
@@ -2087,9 +2035,7 @@ AttrVisitor::visit (AST::TypeBoundWhereClauseItem &item)
   auto &type = item.get_type ();
   type->accept_vis (*this);
 
-  auto t_fragment = expander.take_expanded_fragment (*this);
-  if (t_fragment.should_expand ())
-    type = t_fragment.take_type_fragment ();
+  maybe_expand_type (type);
 
   if (type->is_marked_for_strip ())
     rust_error_at (type->get_locus (), "cannot strip type in this position");
@@ -2131,9 +2077,7 @@ AttrVisitor::visit (AST::Method &method)
       auto &return_type = method.get_return_type ();
       return_type->accept_vis (*this);
 
-      auto r_fragment = expander.take_expanded_fragment (*this);
-      if (r_fragment.should_expand ())
-	return_type = r_fragment.take_type_fragment ();
+      maybe_expand_type (return_type);
 
       if (return_type->is_marked_for_strip ())
 	rust_error_at (return_type->get_locus (),
@@ -2253,9 +2197,7 @@ AttrVisitor::visit (AST::Function &function)
       auto &return_type = function.get_return_type ();
       return_type->accept_vis (*this);
 
-      auto t_fragment = expander.take_expanded_fragment (*this);
-      if (t_fragment.should_expand ())
-	return_type = t_fragment.take_type_fragment ();
+      maybe_expand_type (return_type);
 
       if (return_type->is_marked_for_strip ())
 	rust_error_at (return_type->get_locus (),
@@ -2467,9 +2409,7 @@ AttrVisitor::visit (AST::ConstantItem &const_item)
   auto &type = const_item.get_type ();
   type->accept_vis (*this);
 
-  auto t_fragment = expander.take_expanded_fragment (*this);
-  if (t_fragment.should_expand ())
-    type = t_fragment.take_type_fragment ();
+  maybe_expand_type (type);
 
   if (type->is_marked_for_strip ())
     rust_error_at (type->get_locus (), "cannot strip type in this position");
@@ -2503,9 +2443,7 @@ AttrVisitor::visit (AST::StaticItem &static_item)
   auto &type = static_item.get_type ();
   type->accept_vis (*this);
 
-  auto t_fragment = expander.take_expanded_fragment (*this);
-  if (t_fragment.should_expand ())
-    type = t_fragment.take_type_fragment ();
+  maybe_expand_type (type);
 
   if (type->is_marked_for_strip ())
     rust_error_at (type->get_locus (), "cannot strip type in this position");
@@ -2591,9 +2529,7 @@ AttrVisitor::visit (AST::TraitItemConst &item)
   auto &type = item.get_type ();
   type->accept_vis (*this);
 
-  auto t_fragment = expander.take_expanded_fragment (*this);
-  if (t_fragment.should_expand ())
-    type = t_fragment.take_type_fragment ();
+  maybe_expand_type (type);
 
   if (type->is_marked_for_strip ())
     rust_error_at (type->get_locus (), "cannot strip type in this position");
@@ -2698,9 +2634,7 @@ AttrVisitor::visit (AST::InherentImpl &impl)
   auto &type = impl.get_type ();
   type->accept_vis (*this);
 
-  auto t_fragment = expander.take_expanded_fragment (*this);
-  if (t_fragment.should_expand ())
-    type = t_fragment.take_type_fragment ();
+  maybe_expand_type (type);
 
   if (type->is_marked_for_strip ())
     rust_error_at (type->get_locus (), "cannot strip type in this position");
@@ -2744,9 +2678,7 @@ AttrVisitor::visit (AST::TraitImpl &impl)
   auto &type = impl.get_type ();
   type->accept_vis (*this);
 
-  auto t_fragment = expander.take_expanded_fragment (*this);
-  if (t_fragment.should_expand ())
-    type = t_fragment.take_type_fragment ();
+  maybe_expand_type (type);
 
   if (type->is_marked_for_strip ())
     rust_error_at (type->get_locus (), "cannot strip type in this position");
@@ -2785,9 +2717,7 @@ AttrVisitor::visit (AST::ExternalStaticItem &item)
   auto &type = item.get_type ();
   type->accept_vis (*this);
 
-  auto t_fragment = expander.take_expanded_fragment (*this);
-  if (t_fragment.should_expand ())
-    type = t_fragment.take_type_fragment ();
+  maybe_expand_type (type);
 
   if (type->is_marked_for_strip ())
     rust_error_at (type->get_locus (), "cannot strip type in this position");
@@ -2829,9 +2759,7 @@ AttrVisitor::visit (AST::ExternalFunctionItem &item)
       auto &type = param.get_type ();
       type->accept_vis (*this);
 
-      auto t_fragment = expander.take_expanded_fragment (*this);
-      if (t_fragment.should_expand ())
-	type = t_fragment.take_type_fragment ();
+      maybe_expand_type (type);
 
       if (type->is_marked_for_strip ())
 	rust_error_at (type->get_locus (),
@@ -2856,9 +2784,7 @@ AttrVisitor::visit (AST::ExternalFunctionItem &item)
       auto &return_type = item.get_return_type ();
       return_type->accept_vis (*this);
 
-      auto r_fragment = expander.take_expanded_fragment (*this);
-      if (r_fragment.should_expand ())
-	return_type = r_fragment.take_type_fragment ();
+      maybe_expand_type (return_type);
 
       if (return_type->is_marked_for_strip ())
 	rust_error_at (return_type->get_locus (),
@@ -3233,9 +3159,7 @@ AttrVisitor::visit (AST::LetStmt &stmt)
       auto &type = stmt.get_type ();
       type->accept_vis (*this);
 
-      auto t_fragment = expander.take_expanded_fragment (*this);
-      if (t_fragment.should_expand ())
-	type = t_fragment.take_type_fragment ();
+      maybe_expand_type (type);
 
       if (type->is_marked_for_strip ())
 	rust_error_at (type->get_locus (),
@@ -3257,9 +3181,7 @@ AttrVisitor::visit (AST::LetStmt &stmt)
 		       "cannot strip expression in this position - outer "
 		       "attributes not allowed");
 
-      auto fragment = expander.take_expanded_fragment (*this);
-      if (fragment.should_expand ())
-	init_expr = fragment.take_expression_fragment ();
+      maybe_expand_expr (init_expr);
     }
 }
 void
@@ -3441,9 +3363,7 @@ AttrVisitor::visit (AST::BareFunctionType &type)
       auto &type = param.get_type ();
       type->accept_vis (*this);
 
-      auto t_fragment = expander.take_expanded_fragment (*this);
-      if (t_fragment.should_expand ())
-	type = t_fragment.take_type_fragment ();
+      maybe_expand_type (type);
 
       if (type->is_marked_for_strip ())
 	rust_error_at (type->get_locus (),
@@ -3471,5 +3391,19 @@ AttrVisitor::visit (AST::BareFunctionType &type)
     }
 
   // no where clause, apparently
+}
+void
+AttrVisitor::maybe_expand_expr (std::unique_ptr<AST::Expr> &expr)
+{
+  auto fragment = expander.take_expanded_fragment (*this);
+  if (fragment.should_expand ())
+    expr = fragment.take_expression_fragment ();
+}
+void
+AttrVisitor::maybe_expand_type (std::unique_ptr<AST::Type> &type)
+{
+  auto fragment = expander.take_expanded_fragment (*this);
+  if (fragment.should_expand ())
+    type = fragment.take_type_fragment ();
 }
 } // namespace Rust
