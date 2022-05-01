@@ -1,3 +1,9 @@
+2022-04-30  Jason Merrill  <jason@redhat.com>
+
+	PR c/100545
+	* c-c++-common/attr-mode-1.c: New test.
+	* c-c++-common/attr-mode-2.c: New test.
+
 2022-04-29  Jason Merrill  <jason@redhat.com>
 
 	PR c++/104470

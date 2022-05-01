@@ -1,3 +1,10 @@
+2022-04-30  Patrick Palka  <ppalka@redhat.com>
+
+	* gengtype.cc (adjust_field_tree_exp): Remove.
+	(adjust_field_type): Don't handle the "tree_exp" special attribute.
+	* tree-core.h (struct tree_exp): Remove "special" and "desc"
+	attributes.  Add "length" attribute.
+
 2022-04-29  Martin Jambor  <mjambor@suse.cz>
 
 	PR ipa/100413
