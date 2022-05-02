@@ -664,7 +664,7 @@ namespace
 
     // Parse the written exponent.
     int written_exponent = 0;
-    if (first != last && *first == 'p')
+    if (first != last && (*first == 'p' || *first == 'P'))
       {
 	// Tentatively consume the 'p' and try to parse a decimal number.
 	const char* const fallback_first = first;
