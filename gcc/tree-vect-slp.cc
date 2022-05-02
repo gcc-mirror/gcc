@@ -7302,6 +7302,13 @@ vect_schedule_slp_node (vec_info *vinfo,
 	  gcc_assert (seen_vector_def);
 	  si = gsi_after_labels (as_a <bb_vec_info> (vinfo)->bbs[0]);
 	}
+      else if (is_ctrl_altering_stmt (last_stmt))
+	{
+	  /* We split regions to vectorize at control altering stmts
+	     with a definition so this must be an external which
+	     we can insert at the start of the region.  */
+	  si = gsi_after_labels (as_a <bb_vec_info> (vinfo)->bbs[0]);
+	}
       else if (is_a <bb_vec_info> (vinfo)
 	       && gimple_bb (last_stmt) != gimple_bb (stmt_info->stmt)
 	       && gimple_could_trap_p (stmt_info->stmt))
