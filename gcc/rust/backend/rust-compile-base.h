@@ -76,7 +76,7 @@ protected:
 				   tree expression, Location locus);
 
   static void setup_fndecl (tree fndecl, bool is_main_entry_point,
-			    HIR::Visibility &visibility,
+			    bool is_generic_fn, HIR::Visibility &visibility,
 			    const HIR::FunctionQualifiers &qualifiers,
 			    const AST::AttrVec &attrs);
 
