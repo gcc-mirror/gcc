@@ -40,7 +40,6 @@
 #include <cmath>
 #include <cstdlib>
 #include <cstring>
-#include <cctype>
 #include <locale.h>
 #include <bits/functexcept.h>
 #if _GLIBCXX_HAVE_XLOCALE_H
@@ -142,10 +141,10 @@ namespace
 
   // Find initial portion of [first, last) containing a floating-point number.
   // The string `digits` is either `dec_digits` or `hex_digits`
-  // and `exp` is 'e' or 'p' or '\0'.
+  // and `exp` is "eE", "pP" or NULL.
   const char*
   find_end_of_float(const char* first, const char* last, const char* digits,
-		    char exp)
+		    const char *exp)
   {
     while (first < last && strchr(digits, *first) != nullptr)
       ++first;
@@ -155,7 +154,7 @@ namespace
 	while (first < last && strchr(digits, *first))
 	  ++first;
       }
-    if (first < last && exp != 0 && std::tolower((unsigned char)*first) == exp)
+    if (first < last && exp != nullptr && (*first == exp[0] || *first == exp[1]))
       {
 	++first;
 	if (first < last && (*first == '-' || *first == '+'))
@@ -237,7 +236,7 @@ namespace
 
 	if ((last - first + 2) > buffer_resource::guaranteed_capacity())
 	  {
-	    last = find_end_of_float(first + neg, last, digits, 'p');
+	    last = find_end_of_float(first + neg, last, digits, "pP");
 #ifndef __cpp_exceptions
 	    if ((last - first + 2) > buffer_resource::guaranteed_capacity())
 	      {
@@ -261,7 +260,7 @@ namespace
 	if ((last - first) > buffer_resource::guaranteed_capacity())
 	  {
 	    last = find_end_of_float(first + neg, last, digits,
-				     "e"[fmt == chars_format::fixed]);
+				     fmt == chars_format::fixed ? nullptr : "eE");
 #ifndef __cpp_exceptions
 	    if ((last - first) > buffer_resource::guaranteed_capacity())
 	      {
