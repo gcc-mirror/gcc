@@ -581,9 +581,7 @@ public:
   // Creates an error visibility.
   static Visibility create_error ()
   {
-    return Visibility (ERROR,
-		       HIR::SimplePath ({},
-					Analysis::NodeMapping::get_error ()));
+    return Visibility (ERROR, HIR::SimplePath::create_error ());
   }
 
   VisType get_vis_type () const { return vis_type; }

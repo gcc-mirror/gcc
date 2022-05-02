@@ -961,19 +961,22 @@ class SimplePath
 {
   std::vector<SimplePathSegment> segments;
   Analysis::NodeMapping mappings;
+  Location locus;
 
 public:
   SimplePath (std::vector<SimplePathSegment> segments,
-	      Analysis::NodeMapping mappings)
-    : segments (std::move (segments)), mappings (mappings)
+	      Analysis::NodeMapping mappings, Location locus)
+    : segments (std::move (segments)), mappings (mappings), locus (locus)
   {}
 
   static HIR::SimplePath create_error ()
   {
-    return HIR::SimplePath ({}, Analysis::NodeMapping::get_error ());
+    return HIR::SimplePath ({}, Analysis::NodeMapping::get_error (),
+			    Location ());
   }
 
   const Analysis::NodeMapping &get_mappings () const { return mappings; }
+  const Location &get_locus () const { return locus; }
 };
 
 } // namespace HIR

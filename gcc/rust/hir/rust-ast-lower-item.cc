@@ -61,7 +61,8 @@ ASTLoweringSimplePath::lower (const AST::SimplePath &path)
 					mappings->get_next_hir_id (crate_num),
 					UNKNOWN_LOCAL_DEFID);
 
-  auto lowered = HIR::SimplePath (std::move (segments), mapping);
+  auto lowered
+    = HIR::SimplePath (std::move (segments), mapping, path.get_locus ());
 
   mappings->insert_node_to_hir (crate_num, node_id, mapping.get_hirid ());
   mappings->insert_simple_path (crate_num, node_id, &path);
