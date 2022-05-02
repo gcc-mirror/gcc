@@ -4565,7 +4565,8 @@ expand_debug_expr (tree exp)
 	      || !DECL_NAME (exp)
 	      || DECL_HARD_REGISTER (exp)
 	      || DECL_IN_CONSTANT_POOL (exp)
-	      || mode == VOIDmode)
+	      || mode == VOIDmode
+	      || symtab_node::get (exp) == NULL)
 	    return NULL;
 
 	  op0 = make_decl_rtl_for_debug (exp);
