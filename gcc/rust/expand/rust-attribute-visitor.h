@@ -25,6 +25,8 @@ class AttrVisitor : public AST::ASTVisitor
 {
 private:
   MacroExpander &expander;
+  void maybe_expand_expr (std::unique_ptr<AST::Expr> &expr);
+  void maybe_expand_type (std::unique_ptr<AST::Type> &expr);
 
 public:
   AttrVisitor (MacroExpander &expander) : expander (expander) {}
