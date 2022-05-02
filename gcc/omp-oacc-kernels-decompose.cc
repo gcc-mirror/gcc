@@ -239,7 +239,13 @@ visit_loops_in_gang_single_region (gimple_stmt_iterator *gsi_p,
     case GIMPLE_OMP_FOR:
       /*TODO Given the current 'adjust_region_code' algorithm, this is
 	actually...  */
+#if 0
       gcc_unreachable ();
+#else
+      /* ..., but due to bugs (PR100400), we may actually come here.
+	 Reliably catch this, regardless of checking level.  */
+      internal_error ("PR100400");
+#endif
 
       {
 	tree clauses = gimple_omp_for_clauses (stmt);
