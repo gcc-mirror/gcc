@@ -36,6 +36,7 @@
 #include "selftest.h"
 #include "rust-cfg-parser.h"
 #include "rust-privacy-ctx.h"
+#include "rust-ast-resolve-item.h"
 
 #include <mpfr.h>
 // note: header files must be in this order or else forward declarations don't
@@ -459,6 +460,7 @@ run_rust_tests ()
   rust_cfg_parser_test ();
   rust_privacy_ctx_test ();
   rust_crate_name_validation_test ();
+  rust_simple_path_resolve_test ();
 }
 } // namespace selftest
 

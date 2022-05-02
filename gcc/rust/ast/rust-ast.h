@@ -410,6 +410,8 @@ public:
   {
     return segments;
   }
+
+  std::vector<SimplePathSegment> &get_segments () { return segments; }
 };
 
 // path-to-string inverse comparison operator

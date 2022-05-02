@@ -1179,7 +1179,28 @@ class UseTree
   Location locus;
 
 public:
+  enum Kind
+  {
+    Glob,
+    Rebind,
+    List,
+  };
+
   virtual ~UseTree () {}
+
+  // Overload assignment operator to clone
+  UseTree &operator= (UseTree const &other)
+  {
+    locus = other.locus;
+
+    return *this;
+  }
+
+  UseTree (const UseTree &other) = default;
+
+  // move constructors
+  UseTree (UseTree &&other) = default;
+  UseTree &operator= (UseTree &&other) = default;
 
   // Unique pointer custom clone function
   std::unique_ptr<UseTree> clone_use_tree () const
@@ -1188,6 +1209,7 @@ public:
   }
 
   virtual std::string as_string () const = 0;
+  virtual Kind get_kind () const = 0;
 
   Location get_locus () const { return locus; }
 
@@ -1236,6 +1258,14 @@ public:
   std::string as_string () const override;
 
   void accept_vis (ASTVisitor &vis) override;
+
+  Kind get_kind () const override { return Glob; }
+
+  SimplePath get_path () const
+  {
+    rust_assert (has_path ());
+    return path;
+  }
 
   /* TODO: find way to ensure only PATH_PREFIXED glob_type has path - factory
    * methods? */
@@ -1318,6 +1348,18 @@ public:
 
   void accept_vis (ASTVisitor &vis) override;
 
+  Kind get_kind () const override { return List; }
+  SimplePath get_path () const
+  {
+    rust_assert (has_path ());
+    return path;
+  }
+
+  const std::vector<std::unique_ptr<UseTree>> &get_trees () const
+  {
+    return trees;
+  }
+
   // TODO: find way to ensure only PATH_PREFIXED path_type has path - factory
   // methods?
 protected:
@@ -1362,6 +1404,20 @@ public:
   std::string as_string () const override;
 
   void accept_vis (ASTVisitor &vis) override;
+
+  Kind get_kind () const override { return Rebind; }
+
+  SimplePath get_path () const
+  {
+    rust_assert (has_path ());
+    return path;
+  }
+
+  const Identifier &get_identifier () const
+  {
+    rust_assert (has_identifier ());
+    return identifier;
+  }
 
   // TODO: find way to ensure only PATH_PREFIXED path_type has path - factory
   // methods?
@@ -1420,6 +1476,7 @@ public:
   UseDeclaration &operator= (UseDeclaration &&other) = default;
 
   Location get_locus () const override final { return locus; }
+  const std::unique_ptr<UseTree> &get_tree () const { return use_tree; }
 
   void accept_vis (ASTVisitor &vis) override;
 

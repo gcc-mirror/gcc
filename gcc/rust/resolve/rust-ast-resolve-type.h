@@ -190,54 +190,10 @@ class ResolveRelativeTypePath : public ResolveTypeToCanonicalPath
   using ResolveTypeToCanonicalPath::visit;
 
 public:
-  static bool go (AST::QualifiedPathInType &path, NodeId parent,
-		  bool canonicalize_type_with_generics)
-  {
-    // resolve the type and trait path
-    auto &qualified_path = path.get_qualified_path_type ();
-    CanonicalPath result = CanonicalPath::create_empty ();
-    if (!resolve_qual_seg (qualified_path, result))
-      return false;
-
-    // resolve the associated impl if available but it can also be from a trait
-    // and this is allowed to fail
-    auto resolver = Resolver::get ();
-    NodeId projection_resolved_id = UNKNOWN_NODEID;
-    if (resolver->get_name_scope ().lookup (result, &projection_resolved_id))
-      {
-	// mark the resolution for this
-	resolver->insert_resolved_name (qualified_path.get_node_id (),
-					projection_resolved_id);
-      }
-
-    // qualified types are similar to other paths in that we cannot guarantee
-    // that we can resolve the path at name resolution. We must look up
-    // associated types and type information to figure this out properly
-
-    ResolveRelativeTypePath o (result);
-    std::unique_ptr<AST::TypePathSegment> &associated
-      = path.get_associated_segment ();
-
-    associated->accept_vis (o);
-    if (o.failure_flag)
-      return false;
-
-    for (auto &seg : path.get_segments ())
-      {
-	seg->accept_vis (o);
-	if (o.failure_flag)
-	  return false;
-      }
-
-    return true;
-  }
+  static bool go (AST::QualifiedPathInType &path);
 
 private:
-  ResolveRelativeTypePath (CanonicalPath qualified_path)
-    : ResolveTypeToCanonicalPath (true, true)
-  {
-    result = qualified_path;
-  }
+  ResolveRelativeTypePath (CanonicalPath qualified_path);
 
   static bool resolve_qual_seg (AST::QualifiedPathType &seg,
 				CanonicalPath &result);
@@ -375,8 +331,7 @@ public:
 
   void visit (AST::QualifiedPathInType &path) override
   {
-    ok = ResolveRelativeTypePath::go (path, parent,
-				      canonicalize_type_with_generics);
+    ok = ResolveRelativeTypePath::go (path);
   }
 
   void visit (AST::ArrayType &type) override;
@@ -431,7 +386,7 @@ public:
     ok = resolved_node != UNKNOWN_NODEID;
   }
 
-  void visit (AST::Lifetime &bound) override { ok = true; }
+  void visit (AST::Lifetime &) override { ok = true; }
 
 private:
   ResolveTypeBound (NodeId parent, bool canonicalize_type_with_generics)
@@ -459,7 +414,7 @@ public:
     return resolver.resolved_node;
   };
 
-  void visit (AST::LifetimeParam &param) override
+  void visit (AST::LifetimeParam &) override
   {
     // For now do not do anything and accept everything.
     ok = true;
