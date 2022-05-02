@@ -124,6 +124,8 @@ public:
 
   std::string bounds_as_string () const;
 
+  std::string raw_bounds_as_name () const;
+
 protected:
   void add_bound (TypeBoundPredicate predicate);
 
@@ -1018,6 +1020,8 @@ public:
   static TypeBoundPredicate error ();
 
   std::string as_string () const;
+
+  std::string as_name () const;
 
   const Resolver::TraitReference *get () const;
 
