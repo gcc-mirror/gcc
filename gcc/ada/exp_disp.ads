@@ -234,7 +234,7 @@ package Exp_Disp is
    --  dispatch table of the target type.
 
    procedure Expand_Interface_Thunk
-     (Prim       : Node_Id;
+     (Prim       : Entity_Id;
       Thunk_Id   : out Entity_Id;
       Thunk_Code : out Node_Id;
       Iface      : Entity_Id);
