@@ -3399,6 +3399,7 @@ AttrVisitor::maybe_expand_expr (std::unique_ptr<AST::Expr> &expr)
   if (fragment.should_expand ())
     expr = fragment.take_expression_fragment ();
 }
+
 void
 AttrVisitor::maybe_expand_type (std::unique_ptr<AST::Type> &type)
 {
