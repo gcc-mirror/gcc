@@ -1,3 +1,12 @@
+2022-05-01  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/constraints.md (Y constraint): Fix comment.
+
+2022-05-01  Aldy Hernandez  <aldyh@redhat.com>
+
+	* tree-ssanames.cc (set_range_info): Denormalize VR_VARYING to
+	VR_RANGE before passing a piecewise range to set_range_info_raw.
+
 2022-04-30  Patrick Palka  <ppalka@redhat.com>
 
 	* gengtype.cc (adjust_field_tree_exp): Remove.
