@@ -5203,22 +5203,36 @@ package body Exp_Ch5 is
 
             Ent := First_Entity (Pack);
             while Present (Ent) loop
+               --  Get_Element_Access function with one parameter called
+               --  Position.
+
                if Chars (Ent) = Name_Get_Element_Access
+                 and then Ekind (Ent) = E_Function
                  and then Present (First_Formal (Ent))
                  and then Chars (First_Formal (Ent)) = Name_Position
                  and then No (Next_Formal (First_Formal (Ent)))
                then
+                  pragma Assert (No (Fast_Element_Access_Op));
                   Fast_Element_Access_Op := Ent;
+
+               --  Next or Prev procedure with one parameter called
+               --  Position.
 
                elsif Chars (Ent) = Name_Step
                  and then Ekind (Ent) = E_Procedure
+                 and then Present (First_Formal (Ent))
+                 and then Chars (First_Formal (Ent)) = Name_Position
+                 and then No (Next_Formal (First_Formal (Ent)))
                then
+                  pragma Assert (No (Fast_Step_Op));
                   Fast_Step_Op := Ent;
 
                elsif Chars (Ent) = Name_Reference_Control_Type then
+                  pragma Assert (No (Reference_Control_Type));
                   Reference_Control_Type := Ent;
 
                elsif Chars (Ent) = Name_Pseudo_Reference then
+                  pragma Assert (No (Pseudo_Reference));
                   Pseudo_Reference := Ent;
                end if;
 
