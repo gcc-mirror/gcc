@@ -2119,6 +2119,13 @@ package body Sem_Ch5 is
       Mutate_Ekind        (Id, E_Label);
       Set_Etype           (Id, Standard_Void_Type);
       Set_Enclosing_Scope (Id, Current_Scope);
+
+      --  A label declared within a Ghost region becomes Ghost (SPARK RM
+      --  6.9(2)).
+
+      if Ghost_Mode > None then
+         Set_Is_Ghost_Entity (Id);
+      end if;
    end Analyze_Implicit_Label_Declaration;
 
    ------------------------------

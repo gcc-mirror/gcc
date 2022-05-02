@@ -26,6 +26,7 @@
 with Atree;          use Atree;
 with Einfo;          use Einfo;
 with Einfo.Utils;    use Einfo.Utils;
+with Ghost;          use Ghost;
 with Namet;          use Namet;
 with Opt;            use Opt;
 with Restrict;       use Restrict;
@@ -34,6 +35,7 @@ with Sem_Ch8;        use Sem_Ch8;
 with Sem_Dim;        use Sem_Dim;
 with Sinfo;          use Sinfo;
 with Sinfo.Nodes;    use Sinfo.Nodes;
+with Sinfo.Utils;    use Sinfo.Utils;
 with Stand;          use Stand;
 with Uintp;          use Uintp;
 
@@ -75,6 +77,18 @@ package body Sem_Ch2 is
          return;
       else
          Find_Direct_Name (N);
+      end if;
+
+      --  A Ghost entity must appear in a specific context. Only do this
+      --  checking on non-overloaded expressions, as otherwise we need to
+      --  wait for resolution, and the checking is done in Resolve_Entity_Name.
+
+      if Nkind (N) in N_Expanded_Name | N_Identifier
+        and then Present (Entity (N))
+        and then Is_Ghost_Entity (Entity (N))
+        and then not Is_Overloaded (N)
+      then
+         Check_Ghost_Context (Entity (N), N);
       end if;
 
       Analyze_Dimension (N);
