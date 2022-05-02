@@ -1033,6 +1033,7 @@ next_runtime_abi_02_protocol_decl (tree p)
   else
     decl = start_var_decl (objc_v2_protocol_template, buf);
   OBJCMETA (decl, objc_meta, meta_protocol);
+  DECL_PRESERVE_P (decl) = 1;
   return decl;
 }
 
@@ -2115,8 +2116,8 @@ build_v2_classrefs_table (void)
 	  expr = convert (objc_class_type, build_fold_addr_expr (expr));
 	}
       /* The runtime wants this, even if it appears unused, so we must force the
-	 output.
-      DECL_PRESERVE_P (decl) = 1; */
+	 output.  */
+      DECL_PRESERVE_P (decl) = 1;
       finish_var_decl (decl, expr);
     }
 }
@@ -2318,6 +2319,7 @@ build_v2_protocol_list_address_table (void)
       expr = convert (objc_protocol_type, build_fold_addr_expr (ref->refdecl));
       OBJCMETA (decl, objc_meta, meta_label_protocollist);
       finish_var_decl (decl, expr);
+      DECL_PRESERVE_P (decl) = 1;
     }
 
     /* TODO: delete the vec.  */
