@@ -462,6 +462,7 @@ static const int cond_expr_maps[3][5] = {
 static const int arg1_map[] = { 1, 1 };
 static const int arg2_map[] = { 1, 2 };
 static const int arg1_arg4_map[] = { 2, 1, 4 };
+static const int op1_op0_map[] = { 2, 1, 0 };
 
 /* For most SLP statements, there is a one-to-one mapping between
    gimple arguments and child nodes.  If that is not true for STMT,
@@ -482,6 +483,9 @@ vect_get_operand_map (const gimple *stmt, unsigned char swap = 0)
       if (gimple_assign_rhs_code (assign) == COND_EXPR
 	  && COMPARISON_CLASS_P (gimple_assign_rhs1 (assign)))
 	return cond_expr_maps[swap];
+      if (TREE_CODE_CLASS (gimple_assign_rhs_code (assign)) == tcc_comparison
+	  && swap)
+	return op1_op0_map;
     }
   gcc_assert (!swap);
   if (auto call = dyn_cast<const gcall *> (stmt))
@@ -1116,6 +1120,12 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
 		    && (alt_stmt_code == PLUS_EXPR
 			|| alt_stmt_code == MINUS_EXPR)
 		    && rhs_code == alt_stmt_code)
+	       && !(first_stmt_code.is_tree_code ()
+		    && rhs_code.is_tree_code ()
+		    && (TREE_CODE_CLASS (tree_code (first_stmt_code))
+			== tcc_comparison)
+		    && (swap_tree_comparison (tree_code (first_stmt_code))
+			== tree_code (rhs_code)))
 	       && !(STMT_VINFO_GROUPED_ACCESS (stmt_info)
 		    && (first_stmt_code == ARRAY_REF
 			|| first_stmt_code == BIT_FIELD_REF
@@ -1313,6 +1323,12 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
 		  continue;
 		}
 	    }
+
+	  if (rhs_code.is_tree_code ()
+	      && TREE_CODE_CLASS ((tree_code)rhs_code) == tcc_comparison
+	      && (swap_tree_comparison ((tree_code)first_stmt_code)
+		  == (tree_code)rhs_code))
+	    swap[i] = 1;
 	}
 
       matches[i] = true;
@@ -1326,7 +1342,8 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
      with the permute we are going to use.  */
   if (alt_stmt_code != ERROR_MARK
       && (!alt_stmt_code.is_tree_code ()
-	  || TREE_CODE_CLASS (tree_code (alt_stmt_code)) != tcc_reference))
+	  || (TREE_CODE_CLASS (tree_code (alt_stmt_code)) != tcc_reference
+	      && TREE_CODE_CLASS (tree_code (alt_stmt_code)) != tcc_comparison)))
     {
       *two_operators = true;
     }
