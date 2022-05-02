@@ -38,14 +38,14 @@ bool inline should_mangle_item (const tree fndecl)
 
 void
 HIRCompileBase::setup_fndecl (tree fndecl, bool is_main_entry_point,
-			      HIR::Visibility &visibility,
+			      bool is_generic_fn, HIR::Visibility &visibility,
 			      const HIR::FunctionQualifiers &qualifiers,
 			      const AST::AttrVec &attrs)
 {
   // if its the main fn or pub visibility mark its as DECL_PUBLIC
   // please see https://github.com/Rust-GCC/gccrs/pull/137
   bool is_pub = visibility.get_vis_type () == HIR::Visibility::VisType::PUBLIC;
-  if (is_main_entry_point || is_pub)
+  if (is_main_entry_point || (is_pub && !is_generic_fn))
     {
       TREE_PUBLIC (fndecl) = 1;
     }
@@ -427,7 +427,9 @@ HIRCompileBase::compile_function (
   unsigned int flags = 0;
   tree fndecl = ctx->get_backend ()->function (compiled_fn_type, ir_symbol_name,
 					       "" /* asm_name */, flags, locus);
-  setup_fndecl (fndecl, is_main_fn, visibility, qualifiers, outer_attrs);
+
+  setup_fndecl (fndecl, is_main_fn, fntype->has_subsititions_defined (),
+		visibility, qualifiers, outer_attrs);
   setup_abi_options (fndecl, fntype->get_abi ());
 
   // conditionally mangle the function name
