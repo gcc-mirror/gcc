@@ -7839,6 +7839,7 @@ package body Exp_Ch6 is
 
       procedure Register_Predefined_DT_Entry (Prim : Entity_Id) is
          Iface_DT_Ptr : Elmt_Id;
+         L            : List_Id;
          Tagged_Typ   : Entity_Id;
          Thunk_Id     : Entity_Id;
          Thunk_Code   : Node_Id;
@@ -7871,7 +7872,7 @@ package body Exp_Ch6 is
               Iface => Related_Type (Node (Iface_DT_Ptr)));
 
             if Present (Thunk_Code) then
-               Insert_Actions_After (N, New_List (
+               L := New_List (
                  Thunk_Code,
 
                  Build_Set_Predefined_Prim_Op_Address (Loc,
@@ -7894,7 +7895,14 @@ package body Exp_Ch6 is
                      Unchecked_Convert_To (RTE (RE_Prim_Ptr),
                        Make_Attribute_Reference (Loc,
                          Prefix         => New_Occurrence_Of (Prim, Loc),
-                         Attribute_Name => Name_Unrestricted_Access)))));
+                         Attribute_Name => Name_Unrestricted_Access))));
+
+               if No (Actions (N)) then
+                  Set_Actions (N, L);
+
+               else
+                  Append_List (L, Actions (N));
+               end if;
             end if;
 
             --  Skip the tag of the predefined primitives dispatch table
