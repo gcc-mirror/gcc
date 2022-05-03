@@ -17266,6 +17266,8 @@ Composite_literal_expression::lower_map(Gogo* gogo, Named_object* function,
   Location location = this->location();
   Unordered_map(unsigned int, std::vector<Expression*>) st;
   Unordered_map(unsigned int, std::vector<Expression*>) nt;
+  bool saw_false = false;
+  bool saw_true = false;
   if (this->vals_ != NULL)
     {
       if (!this->has_keys_)
@@ -17300,6 +17302,7 @@ Composite_literal_expression::lower_map(Gogo* gogo, Named_object* function,
 	    continue;
 	  std::string sval;
 	  Numeric_constant nval;
+	  bool bval;
 	  if ((*p)->string_constant_value(&sval)) // Check string keys.
 	    {
 	      unsigned int h = Gogo::hash_string(sval, 0);
@@ -17372,6 +17375,19 @@ Composite_literal_expression::lower_map(Gogo* gogo, Named_object* function,
 		  // Add this new numeric key to the vector indexed by h.
 		  mit->second.push_back(*p);
 		}
+	    }
+	  else if ((*p)->boolean_constant_value(&bval))
+	    {
+	      if ((bval && saw_true) || (!bval && saw_false))
+		{
+		  go_error_at((*p)->location(),
+			      "duplicate key in map literal");
+		  return Expression::make_error(location);
+		}
+	      if (bval)
+		saw_true = true;
+	      else
+		saw_false = true;
 	    }
 	}
     }
