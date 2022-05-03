@@ -1,3 +1,18 @@
+2022-05-02  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/103911
+	* src/c++17/floating_from_chars.cc (find_end_of_float): Accept
+	two delimeters for the exponent part in the form of a possibly
+	NULL string of length two.  Don't use std::tolower.
+	(pattern): Adjust calls to find_end_of_float accordingly.
+
+2022-05-02  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/105441
+	* src/c++17/floating_from_chars.cc (__floating_from_chars_hex):
+	Also accept 'P' as the start of the exponent.
+	* testsuite/20_util/from_chars/7.cc: Add corresponding testcase.
+
 2022-04-29  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/105417

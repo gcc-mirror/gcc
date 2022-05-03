@@ -1,3 +1,41 @@
+2022-05-02  Richard Biener  <rguenther@suse.de>
+
+	* tree-scalar-evolution.cc (expression_expensive_p):
+	Never consider mismatched calls as cheap.
+
+2022-05-02  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/104240
+	* tree-vect-slp.cc (op1_op0_map): New.
+	(vect_get_operand_map): Handle compares.
+	(vect_build_slp_tree_1): Support swapped operands for
+	tcc_comparison.
+
+2022-05-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/105415
+	* cfgexpand.cc (expand_debug_expr): Don't make_decl_rtl_for_debug
+	if there is no symtab node for the VAR_DECL.
+
+2022-05-02  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* gcov-io.cc (gcov_rewrite):  Clear the file error status.
+
+2022-05-02  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/105437
+	* tree-vect-slp.cc (vect_schedule_slp_node): Handle the
+	case where last_stmt alters control flow.
+
+2022-05-02  Richard Biener  <rguenther@suse.de>
+
+	* dojump.cc (do_jump): Use CASE_CONVERT.
+	* tree-ssa-dom.cc (edge_info::derive_equivalences): Likewise.
+
+2022-05-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* system.h: Include initializer_list.
+
 2022-05-01  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* config/rs6000/constraints.md (Y constraint): Fix comment.

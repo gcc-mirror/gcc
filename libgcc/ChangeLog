@@ -1,3 +1,7 @@
+2022-05-02  Martin Liska  <mliska@suse.cz>
+
+	* libgcov-driver.c: Add ATTRIBUTE_UNUSED.
+
 2022-04-28  Sebastian Huber  <sebastian.huber@embedded-brains.de>
 
 	* libgcov-util.c (ftw_read_file): Improve notice using xstrerror().

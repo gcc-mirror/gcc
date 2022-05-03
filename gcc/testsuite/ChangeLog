@@ -1,3 +1,41 @@
+2022-05-02  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp2a/lambda-pack-init7.C: Check column number.
+
+2022-05-02  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/lookup/name-clash13.C: New test.
+	* g++.dg/lookup/name-clash14.C: New test.
+	* g++.dg/lookup/name-clash15.C: New test.
+	* g++.dg/lookup/name-clash16.C: New test.
+
+2022-05-02  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR testsuite/105433
+	* gcc.target/i386/iamcu/asm-support.S: Add .note.GNU-stack.
+	* gcc.target/x86_64/abi/asm-support.S: Likewise.
+	* gcc.target/x86_64/abi/avx/asm-support.S: Likewise.
+	* gcc.target/x86_64/abi/avx512f/asm-support.S: Likewise.
+	* gcc.target/x86_64/abi/avx512fp16/asm-support.S: Likewise.
+	* gcc.target/x86_64/abi/avx512fp16/m256h/asm-support.S: Likewise.
+	* gcc.target/x86_64/abi/avx512fp16/m512h/asm-support.S: Likewise.
+	* gcc.target/x86_64/abi/ms-sysv/do-test.S: Likewise.
+
+2022-05-02  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/104240
+	* gcc.dg/vect/bb-slp-pr104240.c: New testcase.
+
+2022-05-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/105415
+	* gcc.dg/pr105415.c: New test.
+
+2022-05-02  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/105437
+	* g++.dg/vect/pr105437.cc: New testcase.
+
 2022-04-30  Jason Merrill  <jason@redhat.com>
 
 	PR c/100545
