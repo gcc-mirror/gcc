@@ -3982,6 +3982,7 @@ omp_runtime_api_call (const_tree fndecl)
       "alloc",
       "calloc",
       "free",
+      "get_mapped_ptr",
       "realloc",
       "target_alloc",
       "target_associate_ptr",
