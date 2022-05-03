@@ -492,7 +492,7 @@ HIRCompileBase::verify_array_capacities (tree ltype, tree rtype,
   if (!TREE_CONSTANT (TYPE_MAX_VALUE (ltype_domain)))
     return false;
 
-  auto ltype_length
+  unsigned HOST_WIDE_INT ltype_length
     = wi::ext (wi::to_offset (TYPE_MAX_VALUE (ltype_domain))
 		 - wi::to_offset (TYPE_MIN_VALUE (ltype_domain)) + 1,
 	       TYPE_PRECISION (TREE_TYPE (ltype_domain)),
@@ -506,7 +506,7 @@ HIRCompileBase::verify_array_capacities (tree ltype, tree rtype,
   if (!TREE_CONSTANT (TYPE_MAX_VALUE (rtype_domain)))
     return false;
 
-  auto rtype_length
+  unsigned HOST_WIDE_INT rtype_length
     = wi::ext (wi::to_offset (TYPE_MAX_VALUE (rtype_domain))
 		 - wi::to_offset (TYPE_MIN_VALUE (rtype_domain)) + 1,
 	       TYPE_PRECISION (TREE_TYPE (rtype_domain)),
@@ -515,10 +515,11 @@ HIRCompileBase::verify_array_capacities (tree ltype, tree rtype,
 
   if (ltype_length != rtype_length)
     {
-      rust_error_at (rvalue_locus,
-		     "expected an array with a fixed size of %lu "
-		     "elements, found one with %lu elements",
-		     ltype_length, rtype_length);
+      rust_error_at (
+	rvalue_locus,
+	"expected an array with a fixed size of " HOST_WIDE_INT_PRINT_UNSIGNED
+	" elements, found one with " HOST_WIDE_INT_PRINT_UNSIGNED " elements",
+	ltype_length, rtype_length);
       return false;
     }
 
