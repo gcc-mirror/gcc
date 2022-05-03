@@ -462,7 +462,7 @@ package body Util is
             declare
                Tname : constant String := Token_Type'Image (Token);
             begin
-               Error_Msg_SC ("|extra " & Tname (5 .. Tname'Last) & "ignored");
+               Error_Msg_SC ("|extra " & Tname (5 .. Tname'Last) & " ignored");
             end;
          end if;
 
