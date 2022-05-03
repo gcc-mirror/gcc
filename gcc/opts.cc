@@ -35,6 +35,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "version.h"
 #include "selftest.h"
 
+/* In this file all option sets are explicit.  */
+#undef OPTION_SET_P
+
 static void set_Wstrict_aliasing (struct gcc_options *opts, int onoff);
 
 /* Names of fundamental debug info formats indexed by enum
@@ -1317,7 +1320,7 @@ finish_options (struct gcc_options *opts, struct gcc_options *opts_set,
 	debug_info_level = DINFO_LEVEL_NONE;
     }
 
-  if (!OPTION_SET_P (debug_nonbind_markers_p))
+  if (!opts_set->x_debug_nonbind_markers_p)
     debug_nonbind_markers_p
       = (optimize
 	 && debug_info_level >= DINFO_LEVEL_NORMAL
@@ -1327,14 +1330,14 @@ finish_options (struct gcc_options *opts, struct gcc_options *opts_set,
   /* Note -fvar-tracking is enabled automatically with OPT_LEVELS_1_PLUS and
      so we need to drop it if we are called from optimize attribute.  */
   if (debug_info_level == DINFO_LEVEL_NONE
-      && !OPTION_SET_P (flag_var_tracking))
+      && !opts_set->x_flag_var_tracking)
     flag_var_tracking = false;
 
   /* One could use EnabledBy, but it would lead to a circular dependency.  */
-  if (!OPTION_SET_P (flag_var_tracking_uninit))
+  if (!opts_set->x_flag_var_tracking_uninit)
      flag_var_tracking_uninit = flag_var_tracking;
 
-  if (!OPTION_SET_P (flag_var_tracking_assignments))
+  if (!opts_set->x_flag_var_tracking_assignments)
     flag_var_tracking_assignments
       = (flag_var_tracking
 	 && !(flag_selective_scheduling || flag_selective_scheduling2));
