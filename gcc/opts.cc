@@ -1329,8 +1329,7 @@ finish_options (struct gcc_options *opts, struct gcc_options *opts_set,
 
   /* Note -fvar-tracking is enabled automatically with OPT_LEVELS_1_PLUS and
      so we need to drop it if we are called from optimize attribute.  */
-  if (debug_info_level == DINFO_LEVEL_NONE
-      && !opts_set->x_flag_var_tracking)
+  if (debug_info_level < DINFO_LEVEL_NORMAL)
     flag_var_tracking = false;
 
   /* One could use EnabledBy, but it would lead to a circular dependency.  */
