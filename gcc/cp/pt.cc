@@ -21054,7 +21054,8 @@ tsubst_copy_and_build (tree t,
 	  }
 	else if (TREE_CODE (member) == FIELD_DECL)
 	  {
-	    r = finish_non_static_data_member (member, object, NULL_TREE);
+	    r = finish_non_static_data_member (member, object, NULL_TREE,
+					       complain);
 	    if (TREE_CODE (r) == COMPONENT_REF)
 	      REF_PARENTHESIZED_P (r) = REF_PARENTHESIZED_P (t);
 	    RETURN (r);

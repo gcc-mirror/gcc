@@ -2141,7 +2141,8 @@ finish_parenthesized_expr (cp_expr expr)
    preceded by `.' or `->'.  */
 
 tree
-finish_non_static_data_member (tree decl, tree object, tree qualifying_scope)
+finish_non_static_data_member (tree decl, tree object, tree qualifying_scope,
+			       tsubst_flags_t complain /* = tf_warning_or_error */)
 {
   gcc_assert (TREE_CODE (decl) == FIELD_DECL);
   bool try_omp_private = !object && omp_private_member_map;
@@ -2172,12 +2173,15 @@ finish_non_static_data_member (tree decl, tree object, tree qualifying_scope)
   if (is_dummy_object (object) && cp_unevaluated_operand == 0
       && (!processing_template_decl || !current_class_ref))
     {
-      if (current_function_decl
-	  && DECL_STATIC_FUNCTION_P (current_function_decl))
-	error ("invalid use of member %qD in static member function", decl);
-      else
-	error ("invalid use of non-static data member %qD", decl);
-      inform (DECL_SOURCE_LOCATION (decl), "declared here");
+      if (complain & tf_error)
+	{
+	  if (current_function_decl
+	      && DECL_STATIC_FUNCTION_P (current_function_decl))
+	    error ("invalid use of member %qD in static member function", decl);
+	  else
+	    error ("invalid use of non-static data member %qD", decl);
+	  inform (DECL_SOURCE_LOCATION (decl), "declared here");
+	}
 
       return error_mark_node;
     }
@@ -2219,8 +2223,9 @@ finish_non_static_data_member (tree decl, tree object, tree qualifying_scope)
     {
       tree access_type = TREE_TYPE (object);
 
-      perform_or_defer_access_check (TYPE_BINFO (access_type), decl,
-				     decl, tf_warning_or_error);
+      if (!perform_or_defer_access_check (TYPE_BINFO (access_type), decl,
+					  decl, complain))
+	return error_mark_node;
 
       /* If the data member was named `C::M', convert `*this' to `C'
 	 first.  */
@@ -2234,7 +2239,7 @@ finish_non_static_data_member (tree decl, tree object, tree qualifying_scope)
       ret = build_class_member_access_expr (object, decl,
 					    /*access_path=*/NULL_TREE,
 					    /*preserve_reference=*/false,
-					    tf_warning_or_error);
+					    complain);
     }
   if (try_omp_private)
     {
@@ -2396,7 +2401,7 @@ finish_qualified_id_expr (tree qualifying_class,
     {
       push_deferring_access_checks (dk_no_check);
       expr = finish_non_static_data_member (expr, NULL_TREE,
-					    qualifying_class);
+					    qualifying_class, complain);
       pop_deferring_access_checks ();
     }
   else if (BASELINK_P (expr))
