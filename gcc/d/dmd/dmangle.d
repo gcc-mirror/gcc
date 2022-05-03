@@ -1335,9 +1335,13 @@ void realToMangleBuffer(OutBuffer* buf, real_t value)
 private
 extern (D) const(char)[] externallyMangledIdentifier(Declaration d)
 {
+    assert(!d.mangleOverride, "mangle overrides should have been handled earlier");
+
     const par = d.toParent(); //toParent() skips over mixin templates
     if (!par || par.isModule() || d.linkage == LINK.cpp ||
-        (d.linkage == LINK.c && d.isCsymbol() && d.isFuncDeclaration()))
+        (d.linkage == LINK.c && d.isCsymbol() &&
+         (d.isFuncDeclaration() ||
+          (d.isVarDeclaration() && d.isDataseg() && d.storage_class & STC.extern_))))
     {
         if (d.linkage != LINK.d && d.localNum)
             d.error("the same declaration cannot be in multiple scopes with non-D linkage");

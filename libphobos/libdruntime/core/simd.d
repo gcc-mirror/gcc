@@ -480,6 +480,7 @@ version (D_SIMD)
     /*****
     * For "store" operations of the form:
     *    op1 op= op2
+    * such as MOVLPS.
     * Returns:
     *    op2
     * These cannot be marked as pure, as semantic() doesn't check them.
@@ -487,6 +488,7 @@ version (D_SIMD)
     @safe void16 __simd_sto(XMM opcode, void16 op1, void16 op2);
     @safe void16 __simd_sto(XMM opcode, double op1, void16 op2); ///
     @safe void16 __simd_sto(XMM opcode, float op1, void16 op2);  ///
+    @safe void16 __simd_sto(XMM opcode, void16 op1, long op2); ///
 
     ///
     unittest

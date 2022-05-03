@@ -674,8 +674,20 @@ private Expression interpretFunction(UnionExp* pue, FuncDeclaration fd, InterSta
         }
     }
     // If fell off the end of a void function, return void
-    if (!e && tf.next.ty == Tvoid)
-        e = CTFEExp.voidexp;
+    if (!e)
+    {
+        if (tf.next.ty == Tvoid)
+            e = CTFEExp.voidexp;
+        else
+        {
+            /* missing a return statement can happen with C functions
+             * https://issues.dlang.org/show_bug.cgi?id=23056
+             */
+            fd.error("no return value from function");
+            e = CTFEExp.cantexp;
+        }
+    }
+
     if (tf.isref && e.op == EXP.variable && e.isVarExp().var == fd.vthis)
         e = thisarg;
     if (tf.isref && fd.hasDualContext() && e.op == EXP.index)
@@ -695,7 +707,6 @@ private Expression interpretFunction(UnionExp* pue, FuncDeclaration fd, InterSta
             }
         }
     }
-    assert(e !is null);
 
     // Leave the function
     --ctfeGlobals.callDepth;
