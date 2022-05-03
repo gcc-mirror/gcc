@@ -41,7 +41,7 @@ public:
   // Empty visit for unused Pattern HIR nodes.
   void visit (HIR::GroupedPattern &) override {}
   void visit (HIR::IdentifierPattern &) override {}
-  void visit (HIR::LiteralPattern &) override {}
+  void visit (HIR::LiteralPattern &) override;
   void visit (HIR::QualifiedPathInExpression &) override {}
   void visit (HIR::RangePattern &) override {}
   void visit (HIR::ReferencePattern &) override {}
