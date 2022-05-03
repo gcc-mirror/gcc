@@ -1866,9 +1866,9 @@ perform_tree_ssa_dce (bool aggressive)
   bool in_loop_pipeline = scev_initialized_p ();
   if (aggressive && ! in_loop_pipeline)
     {
-      scev_initialize ();
       loop_optimizer_init (LOOPS_NORMAL
 			   | LOOPS_HAVE_RECORDED_EXITS);
+      scev_initialize ();
     }
 
   if (aggressive)
@@ -1895,8 +1895,8 @@ perform_tree_ssa_dce (bool aggressive)
 
   if (aggressive && ! in_loop_pipeline)
     {
-      loop_optimizer_finalize ();
       scev_finalize ();
+      loop_optimizer_finalize ();
     }
 
   longest_chain = 0;
