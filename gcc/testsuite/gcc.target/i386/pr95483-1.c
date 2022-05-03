@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -msse2" } */
+/* { dg-options "-O2 -msse4.1" } */
 /* { dg-final { scan-assembler-times "pxor\[ \\t\]+\[^\n\]*%xmm\[0-9\]+\[^\n\]*%xmm\[0-9\]+(?:\n|\[ \\t\]+#)" 1 } } */
 /* { dg-final { scan-assembler-times "pinsrw\[ \\t\]+\[^\n\]*%xmm\[0-9\]+(?:\n|\[ \\t\]+#)" 1 } } */
 /* { dg-final { scan-assembler-times "pextrw\[ \\t\]+\[^\n\]*%xmm\[0-9\]+\[^\n\]*(?:\n|\[ \\t\]+#)" 1 } } */
