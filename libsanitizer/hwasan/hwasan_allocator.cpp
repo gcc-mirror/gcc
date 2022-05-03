@@ -132,6 +132,11 @@ static void *HwasanAllocate(StackTrace *stack, uptr orig_size, uptr alignment,
     }
     ReportAllocationSizeTooBig(orig_size, kMaxAllowedMallocSize, stack);
   }
+  if (UNLIKELY(IsRssLimitExceeded())) {
+    if (AllocatorMayReturnNull())
+      return nullptr;
+    ReportRssLimitExceeded(stack);
+  }
 
   alignment = Max(alignment, kShadowAlignment);
   uptr size = TaggedSize(orig_size);
@@ -194,7 +199,7 @@ static void *HwasanAllocate(StackTrace *stack, uptr orig_size, uptr alignment,
     }
   }
 
-  HWASAN_MALLOC_HOOK(user_ptr, size);
+  RunMallocHooks(user_ptr, size);
   return user_ptr;
 }
 
@@ -221,7 +226,7 @@ static bool CheckInvalidFree(StackTrace *stack, void *untagged_ptr,
 
 static void HwasanDeallocate(StackTrace *stack, void *tagged_ptr) {
   CHECK(tagged_ptr);
-  HWASAN_FREE_HOOK(tagged_ptr);
+  RunFreeHooks(tagged_ptr);
 
   bool in_taggable_region =
       InTaggableRegion(reinterpret_cast<uptr>(tagged_ptr));
