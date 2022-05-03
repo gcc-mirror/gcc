@@ -211,13 +211,18 @@ CompileExpr::visit (HIR::MatchExpr &expr)
       return;
     }
 
-  rust_assert (scrutinee_expr_tyty->get_kind () == TyTy::TypeKind::ADT);
+  TyTy::TypeKind scrutinee_kind = scrutinee_expr_tyty->get_kind ();
+  rust_assert (scrutinee_kind == TyTy::TypeKind::BOOL
+	       || scrutinee_kind == TyTy::TypeKind::ADT);
 
-  // this will need to change but for now the first pass implementation, lets
-  // assert this is the case
-  TyTy::ADTType *adt = static_cast<TyTy::ADTType *> (scrutinee_expr_tyty);
-  rust_assert (adt->is_enum ());
-  rust_assert (adt->number_of_variants () > 0);
+  if (scrutinee_kind == TyTy::TypeKind::ADT)
+    {
+      // this will need to change but for now the first pass implementation,
+      // lets assert this is the case
+      TyTy::ADTType *adt = static_cast<TyTy::ADTType *> (scrutinee_expr_tyty);
+      rust_assert (adt->is_enum ());
+      rust_assert (adt->number_of_variants () > 0);
+    }
 
   TyTy::BaseType *expr_tyty = nullptr;
   if (!ctx->get_tyctx ()->lookup_type (expr.get_mappings ().get_hirid (),
@@ -247,16 +252,30 @@ CompileExpr::visit (HIR::MatchExpr &expr)
   tree match_scrutinee_expr
     = CompileExpr::Compile (expr.get_scrutinee_expr ().get (), ctx);
 
-  // need to access the qualifier field, if we use QUAL_UNION_TYPE this would be
-  // DECL_QUALIFIER i think. For now this will just access the first record
-  // field and its respective qualifier because it will always be set because
-  // this is all a big special union
-  tree scrutinee_first_record_expr
-    = ctx->get_backend ()->struct_field_expression (
-      match_scrutinee_expr, 0, expr.get_scrutinee_expr ()->get_locus ());
-  tree match_scrutinee_expr_qualifier_expr
-    = ctx->get_backend ()->struct_field_expression (
-      scrutinee_first_record_expr, 0, expr.get_scrutinee_expr ()->get_locus ());
+  tree match_scrutinee_expr_qualifier_expr;
+  if (scrutinee_kind == TyTy::TypeKind::BOOL)
+    {
+      match_scrutinee_expr_qualifier_expr = match_scrutinee_expr;
+    }
+  else if (scrutinee_kind == TyTy::TypeKind::ADT)
+    {
+      // need to access qualifier the field, if we use QUAL_UNION_TYPE this
+      // would be DECL_QUALIFIER i think. For now this will just access the
+      // first record field and its respective qualifier because it will always
+      // be set because this is all a big special union
+      tree scrutinee_first_record_expr
+	= ctx->get_backend ()->struct_field_expression (
+	  match_scrutinee_expr, 0, expr.get_scrutinee_expr ()->get_locus ());
+      match_scrutinee_expr_qualifier_expr
+	= ctx->get_backend ()->struct_field_expression (
+	  scrutinee_first_record_expr, 0,
+	  expr.get_scrutinee_expr ()->get_locus ());
+    }
+  else
+    {
+      // FIXME: match on other types of expressions not yet implemented.
+      gcc_assert (0);
+    }
 
   // setup the end label so the cases can exit properly
   tree fndecl = fnctx.fndecl;
