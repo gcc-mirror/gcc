@@ -1027,7 +1027,7 @@ public:
 
 	// check the kase type
 	TyTy::BaseType *kase_block_ty
-	  = TypeCheckExpr::Resolve (kase.get_expr ().get (), false);
+	  = TypeCheckExpr::Resolve (kase.get_expr ().get (), inside_loop);
 	kase_block_tys.push_back (kase_block_ty);
       }
 
