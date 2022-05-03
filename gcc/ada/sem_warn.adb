@@ -1272,10 +1272,6 @@ package body Sem_Warn is
 
                elsif Never_Set_In_Source_Check_Spec (E1)
 
-                 --  No warning if warning for this case turned off
-
-                 and then Warn_On_No_Value_Assigned
-
                  --  No warning if address taken somewhere
 
                  and then not Address_Taken (E1)
@@ -1381,7 +1377,7 @@ package body Sem_Warn is
                      --  force use of IN OUT, even if in this particular case
                      --  the formal is not modified.
 
-                     else
+                     elsif Warn_On_No_Value_Assigned then
                         --  Suppress the warnings for a junk name
 
                         if not Has_Junk_Name (E1) then
@@ -1397,15 +1393,17 @@ package body Sem_Warn is
                            if not Has_Pragma_Unmodified_Check_Spec (E1)
                              and then not Warnings_Off_E1
                              and then not Has_Junk_Name (E1)
+                             and then Warn_On_No_Value_Assigned
                            then
                               Output_Reference_Error
-                                ("?f?formal parameter& is read but "
+                                ("?v?formal parameter& is read but "
                                  & "never assigned!");
                            end if;
 
                         elsif not Has_Pragma_Unreferenced_Check_Spec (E1)
                           and then not Warnings_Off_E1
                           and then not Has_Junk_Name (E1)
+                          and then Check_Unreferenced_Formals
                         then
                            Output_Reference_Error
                              ("?f?formal parameter& is not referenced!");
@@ -1416,7 +1414,8 @@ package body Sem_Warn is
 
                   else
                      if Referenced (E1) then
-                        if not Has_Unmodified (E1)
+                        if Warn_On_No_Value_Assigned
+                          and then not Has_Unmodified (E1)
                           and then not Warnings_Off_E1
                           and then not Has_Junk_Name (E1)
                         then
@@ -1431,12 +1430,13 @@ package body Sem_Warn is
                            May_Need_Initialized_Actual (E1);
                         end if;
 
-                     elsif not Has_Unreferenced (E1)
+                     elsif Check_Unreferenced
+                       and then not Has_Unreferenced (E1)
                        and then not Warnings_Off_E1
                        and then not Has_Junk_Name (E1)
                      then
                         Output_Reference_Error -- CODEFIX
-                          ("?v?variable& is never read and never assigned!");
+                          ("?u?variable& is never read and never assigned!");
                      end if;
 
                      --  Deal with special case where this variable is hidden
@@ -1445,14 +1445,15 @@ package body Sem_Warn is
                      if Ekind (E1) = E_Variable
                        and then Present (Hiding_Loop_Variable (E1))
                        and then not Warnings_Off_E1
+                       and then Warn_On_Hiding
                      then
                         Error_Msg_N
-                          ("?v?for loop implicitly declares loop variable!",
+                          ("?h?for loop implicitly declares loop variable!",
                            Hiding_Loop_Variable (E1));
 
                         Error_Msg_Sloc := Sloc (E1);
                         Error_Msg_N
-                          ("\?v?declaration hides & declared#!",
+                          ("\?h?declaration hides & declared#!",
                            Hiding_Loop_Variable (E1));
                      end if;
                   end if;
