@@ -1,3 +1,11 @@
+2022-05-02  Marcel Vollweiler  <marcel@codesourcery.com>
+
+	Backport from mainline:
+	2022-05-02  Marcel Vollweiler  <marcel@codesourcery.com>
+
+	* omp-low.cc (omp_runtime_api_call): Added get_mapped_ptr to
+	omp_runtime_apis array.
+
 2022-06-17  Chung-Lin Tang  <cltang@codesourcery.com>
 
 	Backport from mainline:

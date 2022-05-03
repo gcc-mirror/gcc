@@ -226,6 +226,11 @@ OMP_5.1 {
 	omp_get_teams_thread_limit_;
 } OMP_5.0.2;
 
+OMP_5.1.1 {
+  global:
+	omp_get_mapped_ptr;
+} OMP_5.1;
+
 GOMP_1.0 {
   global:
 	GOMP_atomic_end;
