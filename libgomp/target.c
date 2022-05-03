@@ -3665,6 +3665,44 @@ omp_target_disassociate_ptr (const void *ptr, int device_num)
   return ret;
 }
 
+void *
+omp_get_mapped_ptr (const void *ptr, int device_num)
+{
+  if (device_num < 0 || device_num > gomp_get_num_devices ())
+    return NULL;
+
+  if (device_num == omp_get_initial_device ())
+    return (void *) ptr;
+
+  struct gomp_device_descr *devicep = resolve_device (device_num);
+  if (devicep == NULL)
+    return NULL;
+
+  if (!(devicep->capabilities & GOMP_OFFLOAD_CAP_OPENMP_400)
+      || devicep->capabilities & GOMP_OFFLOAD_CAP_SHARED_MEM)
+    return (void *) ptr;
+
+  gomp_mutex_lock (&devicep->lock);
+
+  struct splay_tree_s *mem_map = &devicep->mem_map;
+  struct splay_tree_key_s cur_node;
+  void *ret = NULL;
+
+  cur_node.host_start = (uintptr_t) ptr;
+  cur_node.host_end = cur_node.host_start;
+  splay_tree_key n = gomp_map_0len_lookup (mem_map, &cur_node);
+
+  if (n)
+    {
+      uintptr_t offset = cur_node.host_start - n->host_start;
+      ret = (void *) (n->tgt->tgt_start + n->tgt_offset + offset);
+    }
+
+  gomp_mutex_unlock (&devicep->lock);
+
+  return ret;
+}
+
 int
 omp_pause_resource (omp_pause_resource_t kind, int device_num)
 {

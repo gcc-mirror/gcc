@@ -723,7 +723,7 @@ others with commas. Those are
 A missing mode for an exception is taken to mean @code{BIG_ENDIAN}.
 Examples of values for @env{GFORTRAN_CONVERT_UNIT} are:
 @itemize @w{}
-@item @code{'big_endian'}  Do all unformatted I/O in big_endian mod.e
+@item @code{'big_endian'}  Do all unformatted I/O in big_endian mode.
 @item @code{'little_endian;native:10-20,25'}  Do all unformatted I/O
 in little_endian mode, except for units 10 to 20 and 25, which are in
 native format.

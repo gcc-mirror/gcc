@@ -8153,15 +8153,16 @@ check_missing_format_attribute (tree ltype, tree rtype)
 void
 set_underlying_type (tree x)
 {
-  if (x == error_mark_node)
+  if (x == error_mark_node || TREE_TYPE (x) == error_mark_node)
     return;
   if (DECL_IS_UNDECLARED_BUILTIN (x) && TREE_CODE (TREE_TYPE (x)) != ARRAY_TYPE)
     {
       if (TYPE_NAME (TREE_TYPE (x)) == 0)
 	TYPE_NAME (TREE_TYPE (x)) = x;
     }
-  else if (TREE_TYPE (x) != error_mark_node
-	   && DECL_ORIGINAL_TYPE (x) == NULL_TREE)
+  else if (DECL_ORIGINAL_TYPE (x))
+    gcc_checking_assert (TYPE_NAME (TREE_TYPE (x)) == x);
+  else
     {
       tree tt = TREE_TYPE (x);
       DECL_ORIGINAL_TYPE (x) = tt;

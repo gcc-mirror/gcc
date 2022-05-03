@@ -21012,7 +21012,9 @@ cp_parser_enum_specifier (cp_parser* parser)
       /* If the next token is not '}', then there are some enumerators.  */
       else if (cp_lexer_next_token_is (parser->lexer, CPP_CLOSE_BRACE))
 	{
-	  if (is_unnamed && !scoped_enum_p)
+	  if (is_unnamed && !scoped_enum_p
+	      /* Don't warn for enum {} a; here.  */
+	      && cp_lexer_nth_token_is (parser->lexer, 2, CPP_SEMICOLON))
 	    pedwarn (type_start_token->location, OPT_Wpedantic,
 		     "ISO C++ forbids empty unnamed enum");
 	}

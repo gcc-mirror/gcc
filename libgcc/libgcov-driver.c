@@ -413,6 +413,7 @@ dump_counter (gcov_type counter,
 /* Dump the STRING using the DUMP handler called with ARG.  */
 
 static inline void
+ATTRIBUTE_UNUSED
 dump_string (const char *string,
 	     void (*dump_fn) (const void *, unsigned, void *),
 	     void *arg)

@@ -8,7 +8,7 @@ struct S {};
 
 template <typename... Args>
 void foo(Args&&... args) {
-  [...args = forward<Args> /*(args)*/] { // { dg-error "" }
+  [...args = forward<Args> /*(args)*/] { // { dg-error "14:" }
     [](auto...) { } (forward<Args>(args)...);
   };
 }

@@ -835,6 +835,15 @@
           end function omp_target_disassociate_ptr
         end interface
 
+        interface
+          function omp_get_mapped_ptr (ptr, device_num) bind(c)
+            use, intrinsic :: iso_c_binding, only : c_ptr, c_int
+            type(c_ptr) :: omp_get_mapped_ptr
+            type(c_ptr), value :: ptr
+            integer(c_int), value :: device_num
+          end function omp_get_mapped_ptr
+        end interface
+
 #if _OPENMP >= 201811
 !GCC$ ATTRIBUTES DEPRECATED :: omp_get_nested, omp_set_nested
 #endif

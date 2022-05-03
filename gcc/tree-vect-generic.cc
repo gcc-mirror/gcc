@@ -1122,6 +1122,9 @@ expand_vector_condition (gimple_stmt_iterator *gsi, bitmap dce_ssa_names)
       tree atype = build_nonstandard_integer_type (prec, 1);
       a = gimplify_build1 (gsi, VIEW_CONVERT_EXPR, atype, a);
     }
+  else if (!a_is_comparison
+	   && VECTOR_BOOLEAN_TYPE_P (TREE_TYPE (a)))
+    comp_width = vector_element_bits_tree (TREE_TYPE (a));
 
   int nunits = nunits_for_known_piecewise_op (type);
   vec_alloc (v, nunits);
@@ -1148,7 +1151,7 @@ expand_vector_condition (gimple_stmt_iterator *gsi, bitmap dce_ssa_names)
 		       build_zero_cst (TREE_TYPE (a)));
 	}
       else
-	aa = tree_vec_extract (gsi, cond_type, a, width, index);
+	aa = tree_vec_extract (gsi, cond_type, a, comp_width, comp_index);
       result = gimplify_build3 (gsi, COND_EXPR, inner_type, aa, bb, cc);
       if (!CONSTANT_CLASS_P (result))
 	constant_p = false;

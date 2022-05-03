@@ -8077,7 +8077,7 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
       && (DECL_INITIAL (decl) || init))
     DECL_INITIALIZED_IN_CLASS_P (decl) = 1;
 
-  if (TREE_CODE (decl) != FUNCTION_DECL
+  if (VAR_P (decl)
       && (auto_node = type_uses_auto (type)))
     {
       tree d_init;
@@ -8105,11 +8105,10 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
 	  d_init = resolve_nondeduced_context (d_init, tf_warning_or_error);
 	}
       enum auto_deduction_context adc = adc_variable_type;
-      if (VAR_P (decl) && DECL_DECOMPOSITION_P (decl))
+      if (DECL_DECOMPOSITION_P (decl))
 	adc = adc_decomp_type;
       tree outer_targs = NULL_TREE;
       if (PLACEHOLDER_TYPE_CONSTRAINTS_INFO (auto_node)
-	  && VAR_P (decl)
 	  && DECL_LANG_SPECIFIC (decl)
 	  && DECL_TEMPLATE_INFO (decl)
 	  && !DECL_FUNCTION_SCOPE_P (decl))
@@ -8126,6 +8125,17 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
 	{
 	  error ("initializer for %<decltype(auto) %D%> has function type; "
 		 "did you forget the %<()%>?", decl);
+	  TREE_TYPE (decl) = error_mark_node;
+	  return;
+	}
+      /* As in start_decl_1, complete so TREE_READONLY is set properly.  */
+      if (!processing_template_decl
+	  && !type_uses_auto (type)
+	  && !COMPLETE_TYPE_P (complete_type (type)))
+	{
+	  error_at (location_of (decl),
+		    "deduced type %qT for %qD is incomplete", type, decl);
+	  cxx_incomplete_type_inform (type);
 	  TREE_TYPE (decl) = error_mark_node;
 	  return;
 	}
@@ -14131,15 +14141,6 @@ grokdeclarator (const cp_declarator *declarator,
 		     in-class defaulted functions, but that breaks grokfndecl.
 		     So set it here.  */
 		  funcdef_flag = true;
-
-		if (template_class_depth (current_class_type) == 0)
-		  {
-		    decl = check_explicit_specialization
-		      (unqualified_id, decl, template_count,
-		       2 * funcdef_flag + 4);
-		    if (decl == error_mark_node)
-		      return error_mark_node;
-		  }
 
 		decl = do_friend (ctype, unqualified_id, decl,
 				  flags, funcdef_flag);

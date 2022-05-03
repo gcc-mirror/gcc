@@ -79,11 +79,14 @@ gcov_is_error (void)
 }
 
 #if IN_LIBGCOV
-/* Move to beginning of file and initialize for writing.  */
+/* Move to beginning of file, initialize for writing, and clear file error
+   status.  */
+
 GCOV_LINKAGE inline void
 gcov_rewrite (void)
 {
   gcov_var.mode = -1; 
+  gcov_var.error = GCOV_FILE_NO_ERROR;
   fseek (gcov_var.file, 0L, SEEK_SET);
 }
 #endif

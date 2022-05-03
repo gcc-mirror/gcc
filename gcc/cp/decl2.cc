@@ -799,14 +799,9 @@ check_classfn (tree ctype, tree function, tree template_parms)
 	 is replaced with the specialization chosen by deduction from the
 	 friend declaration or discarded if deduction fails."
 
-	 So ask check_explicit_specialization to find a matching template.  */
+	 So tell check_explicit_specialization to look for a match.  */
       SET_DECL_IMPLICIT_INSTANTIATION (function);
-      tree spec = check_explicit_specialization (DECL_NAME (function),
-						 function, /* tcount */0,
-						 /* friend flag */4,
-						 /* attrlist */NULL_TREE);
-      if (spec != error_mark_node)
-	matched = spec;
+      matched = function;
     }
 
   if (!matched)

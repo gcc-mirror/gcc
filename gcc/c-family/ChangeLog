@@ -1,3 +1,10 @@
+2022-04-30  Jason Merrill  <jason@redhat.com>
+
+	PR c/100545
+	* c-attribs.cc (handle_mode_attribute): Copy attributes, aligned,
+	and typedef.
+	* c-common.cc (set_underlying_type): Add assert.
+
 2022-04-26  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/105304

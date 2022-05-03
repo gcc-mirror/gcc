@@ -30,6 +30,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #ifdef __ELF__
 # define FN_TYPE(fn) .type fn,@function
 # define FN_SIZE(fn) .size fn,.-fn
+	.section	.note.GNU-stack,"",@progbits
 #else
 # define FN_TYPE(fn)
 # define FN_SIZE(fn)

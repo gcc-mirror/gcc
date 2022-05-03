@@ -4,7 +4,7 @@
 template <typename T>
 auto f (T)
 {
-  auto a = [](auto ... i)	// { dg-prune-output "incomplete type" }
+  auto a = [](auto ... i)	// { dg-prune-output "incomplete" }
   {
     int x[][i] = { 0 };		// { dg-error "not expanded" }
   }();

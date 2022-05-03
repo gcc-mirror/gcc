@@ -395,8 +395,17 @@ set_range_info (tree name, enum value_range_kind range_type,
 {
   gcc_assert (!POINTER_TYPE_P (TREE_TYPE (name)));
 
-  /* A range of the entire domain is really no range at all.  */
   tree type = TREE_TYPE (name);
+  if (range_type == VR_VARYING)
+    {
+      /* SSA_NAME_RANGE_TYPE can only hold a VR_RANGE or
+	 VR_ANTI_RANGE.  Denormalize VR_VARYING to VR_RANGE.  */
+      range_type = VR_RANGE;
+      gcc_checking_assert (min == wi::min_value (type));
+      gcc_checking_assert (max == wi::max_value (type));
+    }
+
+  /* A range of the entire domain is really no range at all.  */
   if (min == wi::min_value (TYPE_PRECISION (type), TYPE_SIGN (type))
       && max == wi::max_value (TYPE_PRECISION (type), TYPE_SIGN (type)))
     {

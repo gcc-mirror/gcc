@@ -263,7 +263,7 @@
        (match_test "REG_P (XEXP (op, 0))")))
 
 (define_memory_constraint "Y"
-  "@internal A memory operand for a DQ-form instruction."
+  "@internal A memory operand for a DS-form instruction."
   (and (match_code "mem")
        (match_test "mem_operand_gpr (op, mode)")))
 

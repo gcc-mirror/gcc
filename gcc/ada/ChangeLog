@@ -1,3 +1,7 @@
+2022-04-29  Martin Liska  <mliska@suse.cz>
+
+	* gnatvsn.ads: Bump Library_Version to 13.
+
 2022-04-27  Sebastian Huber  <sebastian.huber@embedded-brains.de>
 
 	* tracebak.c: Add support for ARM RTEMS. Add support for RTEMS to PPC
