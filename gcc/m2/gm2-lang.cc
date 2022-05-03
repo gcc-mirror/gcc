@@ -449,15 +449,19 @@ gm2_langhook_handle_option (
 /* Run after parsing options.  */
 
 static bool
-gm2_langhook_post_options (const char **pfilename ATTRIBUTE_UNUSED)
+gm2_langhook_post_options (const char **pfilename)
 {
+  const char *filename = *pfilename;
   flag_excess_precision = EXCESS_PRECISION_FAST;
   M2Options_SetCC1Quiet (quiet_flag);
   M2Options_FinaliseOptions ();
+  main_input_filename = filename;
 
   /* Returning false means that the backend should be used.  */
   return false;
 }
+
+/* Call the compiler for every source filename on the command line.  */
 
 static void
 gm2_parse_input_files (const char **filenames, unsigned int filename_count)
@@ -467,7 +471,10 @@ gm2_parse_input_files (const char **filenames, unsigned int filename_count)
 
   for (i = 0; i < filename_count; i++)
     if (!is_cpp_filename (i))
-      init_PerCompilationInit (filenames[i]);
+      {
+	main_input_filename = filenames[i];
+	init_PerCompilationInit (filenames[i]);
+      }
 }
 
 static void
