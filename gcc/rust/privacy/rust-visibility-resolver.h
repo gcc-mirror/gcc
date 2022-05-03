@@ -92,9 +92,6 @@ public:
   virtual void visit (HIR::ExternBlock &block);
 
 private:
-  /* Stack of modules visited by this visitor */
-  std::vector<DefId> module_stack;
-
   Analysis::Mappings &mappings;
   Rust::Resolver::Resolver &resolver;
 };

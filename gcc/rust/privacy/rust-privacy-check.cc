@@ -22,23 +22,25 @@
 #include "rust-hir-map.h"
 #include "rust-name-resolver.h"
 #include "rust-visibility-resolver.h"
+#include "rust-pub-restricted-visitor.h"
 
 extern bool
 saw_errors (void);
 
 namespace Rust {
 namespace Privacy {
+
 void
 Resolver::resolve (HIR::Crate &crate)
 {
   PrivacyContext ctx;
   auto mappings = Analysis::Mappings::get ();
   auto resolver = Rust::Resolver::Resolver::get ();
-
-  auto visibility_resolver = VisibilityResolver (*mappings, *resolver);
-  visibility_resolver.go (crate);
-
   auto ty_ctx = ::Rust::Resolver::TypeCheckContext::get ();
+
+  VisibilityResolver (*mappings, *resolver).go (crate);
+  PubRestrictedVisitor (*mappings).go (crate);
+
   auto visitor = ReachabilityVisitor (ctx, *ty_ctx);
 
   const auto &items = crate.items;
