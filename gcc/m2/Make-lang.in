@@ -107,7 +107,7 @@ m2/gm2spec.o: $(srcdir)/m2/gm2spec.cc $(SYSTEM_H) $(GCC_H) $(CONFIG_H) \
 m2/gm2version.c: gm2version-check; @true
 
 gm2version-check:
-	sh $(srcdir)/m2/tools-src/makeversion -p $(srcdir) m2
+	$(SHELL) $(srcdir)/m2/tools-src/makeversion -p $(srcdir) m2
 	$(STAMP) gm2version-check
 
 gm2version.o: m2/gm2version.c
@@ -228,7 +228,7 @@ Builtins.texi-check:  m2/gm2-libs/Builtins.def
 m2/version.texi: gm2-version.texi-check; @true
 
 gm2-version.texi-check:
-	sh $(srcdir)/m2/tools-src/makeversion -t $(srcdir) m2
+	$(SHELL) $(srcdir)/m2/tools-src/makeversion -t $(srcdir) m2
 	$(STAMP) gm2-version.texi-check
 
 $(objdir)/m2/gm2-ici:
@@ -1113,7 +1113,7 @@ m2/gm2-compiler-boot/M2Version.o: m2/gm2-compiler-boot/M2Version.mod $(MCDEPS) $
 m2/gm2-compiler-boot/M2Version.mod: M2Version-check; @true
 
 M2Version-check:
-	sh $(srcdir)/m2/tools-src/makeversion -m $(srcdir) m2/gm2-compiler-boot
+	$(SHELL) $(srcdir)/m2/tools-src/makeversion -m $(srcdir) m2/gm2-compiler-boot
 	$(STAMP) M2Version-check
 
 #
@@ -1175,7 +1175,7 @@ m2/gm2-compiler/M2Version.o: m2/gm2-compiler/M2Version.mod
 	$(GM2_1) $(GM2_FLAGS) -c -I$(srcdir)/m2/gm2-compiler -I$(srcdir)/m2/gm2-libs -I$(srcdir)/m2/gm2-gcc -I$(srcdir)/m2/gm2-libiberty $< -o $@
 
 m2/gm2-compiler/M2Version.mod:
-	sh $(srcdir)/m2/tools-src/makeversion -m $(srcdir) m2/gm2-compiler
+	$(SHELL) $(srcdir)/m2/tools-src/makeversion -m $(srcdir) m2/gm2-compiler
 
 m2/gm2-libs-iso/%.o: $(srcdir)/m2/gm2-libs-iso/%.c m2/gm2-libs/gm2-libs-host.h
 	$(CXX) -DBUILD_GM2_LIBS_TARGET -DBUILD_GM2_LIBS -c $(CFLAGS) -Im2/gm2-libs -I$(srcdir)/m2 -Im2/gm2-libs-boot $(INCLUDES) $< -o $@
@@ -1219,7 +1219,7 @@ m2/gm2config.h:
         fi
 
 $(objdir)/m2/gm2-libs-min/SYSTEM.def: $(GM2_PROG_DEP)
-	sh $(srcdir)/m2/tools-src/makeSystem -fpim \
+	$(SHELL) $(srcdir)/m2/tools-src/makeSystem -fpim \
              $(srcdir)/m2/gm2-libs-min/SYSTEM.def \
              $(srcdir)/m2/gm2-libs-min/SYSTEM.mod \
              -I$(srcdir)/m2/gm2-libs-min:$(srcdir)/m2/gm2-libs \
@@ -1228,21 +1228,21 @@ $(objdir)/m2/gm2-libs-min/SYSTEM.def: $(GM2_PROG_DEP)
 $(objdir)/m2/gm2-libs/SYSTEM.def: $(GM2_PROG_DEP)
 	echo "GM2_FOR_TARGET $(GM2_FOR_TARGET)"
 	echo "GCC_FOR_TARGET $(GCC_FOR_TARGET)"
-	sh $(srcdir)/m2/tools-src/makeSystem -fpim \
+	$(SHELL) $(srcdir)/m2/tools-src/makeSystem -fpim \
              $(srcdir)/m2/gm2-libs/SYSTEM.def \
              $(srcdir)/m2/gm2-libs/SYSTEM.mod \
              -I$(srcdir)/m2/gm2-libs \
              "$(GM2_FOR_TARGET)" $@
 
 $(objdir)/m2/gm2-libs-iso/SYSTEM.def: $(GM2_PROG_DEP)
-	sh $(srcdir)/m2/tools-src/makeSystem -fiso \
+	$(SHELL) $(srcdir)/m2/tools-src/makeSystem -fiso \
              $(srcdir)/m2/gm2-libs-iso/SYSTEM.def \
              $(srcdir)/m2/gm2-libs-iso/SYSTEM.mod \
              -I$(srcdir)/m2/gm2-libs-iso:$(srcdir)/m2/gm2-libs \
              "$(GM2_FOR_TARGET)" $@
 
 $(objdir)/m2/gm2-libs-coroutines/SYSTEM.def: $(GM2_PROG_DEP)
-	sh $(srcdir)/m2/tools-src/makeSystem -fpim \
+	$(SHELL) $(srcdir)/m2/tools-src/makeSystem -fpim \
              $(srcdir)/m2/gm2-libs-coroutines/SYSTEM.def \
              $(srcdir)/m2/gm2-libs-coroutines/SYSTEM.mod \
              -I$(srcdir)/m2/gm2-libs-coroutines:$(srcdir)/m2/gm2-libs-iso:$(srcdir)/m2/gm2-libs \
@@ -1715,7 +1715,7 @@ m2/gm2-compiler-paranoid/gm2.a: \
 	$(RANLIB) $@
 
 m2/gm2-compiler-paranoid/M2Version.mod:
-	sh $(srcdir)/m2/tools-src/makeversion -m $(srcdir) m2/gm2-compiler-paranoid
+	$(SHELL) $(srcdir)/m2/tools-src/makeversion -m $(srcdir) m2/gm2-compiler-paranoid
 
 m2/gm2-compiler-paranoid/M2Version.o: m2/gm2-compiler-paranoid/M2Version.mod
 	$(GM2_2) $(GM2_FLAGS) -c -I$(srcdir)/m2/gm2-compiler -I$(srcdir)/m2/gm2-libs -I$(srcdir)/m2/gm2-gcc $< -o $@
@@ -1988,7 +1988,7 @@ m2/gm2-pg-boot/main.o: m2/gm2-auto/pginit $(M2LINK)
 
 m2/pg-e$(exeext): m2/pg$(exeext)
 	$(CP) m2/pg$(exeext) m2/pg-e$(exeext)
-	sh $(srcdir)/m2/tools-src/buildpg $(srcdir)/m2/gm2-compiler/ppg.mod pg -e > m2/gm2-auto/t.bnf
+	$(SHELL) $(srcdir)/m2/tools-src/buildpg $(srcdir)/m2/gm2-compiler/ppg.mod pg -e > m2/gm2-auto/t.bnf
 	./m2/pg-e$(exeext) -e -l m2/gm2-auto/t.bnf | sed -e 's/t\.bnf/pg\.bnf/' > m2/gm2-auto/t.mod
 	$(QUIAT)if ! diff m2/gm2-auto/t.mod m2/gm2-auto/pg.mod > /dev/null ; then \
            echo "pg failed during self build" ; \
@@ -1997,7 +1997,7 @@ m2/pg-e$(exeext): m2/pg$(exeext)
 	$(RM) m2/gm2-auto/t.bnf m2/gm2-auto/t.mod
 
 m2/gm2-auto/pg.mod: m2/ppg$(exeext)
-	sh $(srcdir)/m2/tools-src/buildpg $(srcdir)/m2/gm2-compiler/ppg.mod pg -e > m2/gm2-auto/pg.bnf
+	$(SHELL) $(srcdir)/m2/tools-src/buildpg $(srcdir)/m2/gm2-compiler/ppg.mod pg -e > m2/gm2-auto/pg.bnf
 	./m2/ppg$(exeext) -e -l m2/gm2-auto/pg.bnf > m2/gm2-auto/pg.mod
 
 #
@@ -2012,7 +2012,7 @@ BUILD-PGE-O = $(PPG-INTERFACE-C:%.c=m2/gm2-pge-boot/$(SRC_PREFIX)%.o) \
               $(PGE-SRC:%.mod=m2/gm2-pge-boot/$(SRC_PREFIX)%.o)
 
 m2/gm2-auto/pge.mod: m2/pg$(exeext)
-	sh $(srcdir)/m2/tools-src/buildpg $(srcdir)/m2/gm2-compiler/ppg.mod pge > m2/gm2-auto/pge.bnf
+	$(SHELL) $(srcdir)/m2/tools-src/buildpg $(srcdir)/m2/gm2-compiler/ppg.mod pge > m2/gm2-auto/pge.bnf
 	./m2/pg$(exeext) -l m2/gm2-auto/pge.bnf -o m2/gm2-auto/pge.mod
 
 m2/gm2-pge-boot/$(SRC_PREFIX)%.h: $(srcdir)/m2/gm2-libs/%.def $(MCDEPS)
@@ -2076,7 +2076,7 @@ m2/pge$(exeext): m2/boot-bin/mc \
 	+$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ $(BUILD-PGE-O) \
          m2/gm2-pge-boot/main.o m2/gm2-libs-boot/RTcodummy.o \
          m2/mc-boot-ch/$(SRC_PREFIX)abort.o -lm
-	sh $(srcdir)/m2/tools-src/buildpg $(srcdir)/m2/gm2-compiler/ppg.mod t > m2/gm2-auto/t.bnf
+	$(SHELL) $(srcdir)/m2/tools-src/buildpg $(srcdir)/m2/gm2-compiler/ppg.mod t > m2/gm2-auto/t.bnf
 	./m2/pge$(exeext) m2/gm2-auto/t.bnf -o m2/gm2-auto/t1.mod
 	./m2/pg$(exeext) m2/gm2-auto/t.bnf -o m2/gm2-auto/t2.mod
 	$(QUIAT)if ! diff m2/gm2-auto/t1.mod m2/gm2-auto/t2.mod > /dev/null ; then \
