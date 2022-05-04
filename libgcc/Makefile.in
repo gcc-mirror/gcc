@@ -677,7 +677,8 @@ D32PBIT_FUNCS = _addsub_sd _div_sd _mul_sd _plus_sd _minus_sd \
 	_si_to_sd _di_to_sd _usi_to_sd _udi_to_sd \
 	_sd_to_sf _sd_to_df _sd_to_xf _sd_to_tf \
 	_sf_to_sd _df_to_sd _xf_to_sd _tf_to_sd \
-	_sd_to_dd _sd_to_td _unord_sd _conv_sd
+	_sd_to_dd _sd_to_td _unord_sd _conv_sd \
+	_hf_to_sd _sd_to_hf
 
 D64PBIT_FUNCS = _addsub_dd _div_dd _mul_dd _plus_dd _minus_dd \
 	_eq_dd _ne_dd _lt_dd _gt_dd _le_dd _ge_dd \
@@ -685,7 +686,8 @@ D64PBIT_FUNCS = _addsub_dd _div_dd _mul_dd _plus_dd _minus_dd \
 	_si_to_dd _di_to_dd _usi_to_dd _udi_to_dd \
 	_dd_to_sf _dd_to_df _dd_to_xf _dd_to_tf \
 	_sf_to_dd _df_to_dd _xf_to_dd _tf_to_dd \
-	_dd_to_sd _dd_to_td _unord_dd _conv_dd
+	_dd_to_sd _dd_to_td _unord_dd _conv_dd \
+	_hf_to_dd _dd_to_hf
 
 D128PBIT_FUNCS = _addsub_td _div_td _mul_td _plus_td _minus_td \
 	_eq_td _ne_td _lt_td _gt_td _le_td _ge_td \
@@ -693,7 +695,8 @@ D128PBIT_FUNCS = _addsub_td _div_td _mul_td _plus_td _minus_td \
 	_si_to_td _di_to_td _usi_to_td _udi_to_td \
 	_td_to_sf _td_to_df _td_to_xf _td_to_tf \
 	_sf_to_td _df_to_td _xf_to_td _tf_to_td \
-	_td_to_sd _td_to_dd _unord_td _conv_td
+	_td_to_sd _td_to_dd _unord_td _conv_td \
+	_hf_to_td _td_to_hf
 
 ifeq ($(enable_decimal_float),bid)
 ifneq ($(D32PBIT),)
