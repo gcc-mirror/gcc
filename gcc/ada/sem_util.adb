@@ -27388,14 +27388,8 @@ package body Sem_Util is
       pragma Assert (if Present (Id) then Ekind (Id) in E_Void | Type_Kind);
 
       function Caller_Known_Size_Record (Typ : Entity_Id) return Boolean;
-      --  This is called for untagged records and protected types, with
-      --  nondefaulted discriminants. Returns True if the size of function
-      --  results is known at the call site, False otherwise. Returns False
-      --  if there is a variant part that depends on the discriminants of
-      --  this type, or if there is an array constrained by the discriminants
-      --  of this type. ???Currently, this is overly conservative (the array
-      --  could be nested inside some other record that is constrained by
-      --  nondiscriminants). That is, the recursive calls are too conservative.
+      --  Called for untagged record and protected types. Return True if the
+      --  size of function results is known in the caller for Typ.
 
       function Large_Max_Size_Mutable (Typ : Entity_Id) return Boolean;
       --  Returns True if Typ is a nonlimited record with defaulted
@@ -27409,10 +27403,54 @@ package body Sem_Util is
       function Caller_Known_Size_Record (Typ : Entity_Id) return Boolean is
          pragma Assert (Typ = Underlying_Type (Typ));
 
+         function Depends_On_Discriminant (Typ : Entity_Id) return Boolean;
+         --  Called for untagged record and protected types. Return True if Typ
+         --  depends on discriminants, either directly when it is unconstrained
+         --  or indirectly when it is constrained by uplevel discriminants.
+
+         -----------------------------
+         -- Depends_On_Discriminant --
+         -----------------------------
+
+         function Depends_On_Discriminant (Typ : Entity_Id) return Boolean is
+            Cons : Elmt_Id;
+
+         begin
+            if Has_Discriminants (Typ) then
+               if not Is_Constrained (Typ) then
+                  return True;
+
+               else
+                  Cons := First_Elmt (Discriminant_Constraint (Typ));
+                  while Present (Cons) loop
+                     if Nkind (Node (Cons)) = N_Identifier
+                       and then Ekind (Entity (Node (Cons))) = E_Discriminant
+                     then
+                        return True;
+                     end if;
+
+                     Next_Elmt (Cons);
+                  end loop;
+               end if;
+            end if;
+
+            return False;
+         end Depends_On_Discriminant;
+
       begin
-         if Has_Variant_Part (Typ) and then not Is_Definite_Subtype (Typ) then
+         --  First see if we have a variant part and return False if it depends
+         --  on discriminants.
+
+         if Has_Variant_Part (Typ) and then Depends_On_Discriminant (Typ) then
             return False;
          end if;
+
+         --  Then loop over components and return False if their subtype has a
+         --  caller-unknown size, possibly recursively.
+
+         --  ??? This is overly conservative, an array could be nested inside
+         --  some other record that is constrained by nondiscriminants. That
+         --  is, the recursive calls are too conservative.
 
          declare
             Comp : Entity_Id;
@@ -27420,11 +27458,6 @@ package body Sem_Util is
          begin
             Comp := First_Component (Typ);
             while Present (Comp) loop
-
-               --  Only look at E_Component entities. No need to look at
-               --  E_Discriminant entities, and we must ignore internal
-               --  subtypes generated for constrained components.
-
                declare
                   Comp_Type : constant Entity_Id :=
                                 Underlying_Type (Etype (Comp));
