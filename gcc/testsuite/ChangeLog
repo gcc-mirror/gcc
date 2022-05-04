@@ -1,3 +1,12 @@
+2022-05-03  Alexandre Oliva  <oliva@adacore.com>
+
+	Backported from master:
+	2022-05-03  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc.dg/vect/costmodel/ppc/costmodel-vect-31a.c: Update
+	the expected message for the case in which unaligned accesses
+	are not allowed.
+
 2022-04-28  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:
