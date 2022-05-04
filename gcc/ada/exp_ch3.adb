@@ -10031,6 +10031,13 @@ package body Exp_Ch3 is
             Mutate_Ekind (Func_Id, E_Function);
             Set_Is_Wrapper (Func_Id);
 
+            --  Corresponding_Spec will be set again to the same value during
+            --  analysis, but we need this information earlier.
+            --  Expand_N_Freeze_Entity needs to know whether a subprogram body
+            --  is a wrapper's body in order to get check suppression right.
+
+            Set_Corresponding_Spec (Func_Body, Func_Id);
+
             Override_Dispatching_Operation (Tag_Typ, Subp, New_Op => Func_Id);
          end if;
 
