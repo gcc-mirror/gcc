@@ -1,3 +1,9 @@
+2022-05-03  Alexandre Oliva  <oliva@adacore.com>
+
+	PR c++/105324
+	* testsuite/20_util/from_chars/pr105324.cc: Guard test body
+	with conditional for floating-point overloads of from_char.
+
 2022-05-02  Patrick Palka  <ppalka@redhat.com>
 
 	PR libstdc++/103911

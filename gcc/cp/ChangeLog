@@ -1,3 +1,15 @@
+2022-05-03  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/105351
+	* cp-tree.h (finish_non_static_data_member): Add defaulted
+	complain parameter.
+	* pt.cc (tsubst_copy_and_build): Pass complain to
+	finish_non_static_data_member.
+	* semantics.cc (finish_non_static_data_member): Respect complain
+	parameter.
+	(finish_qualified_id_expr): Pass complain to
+	finish_non_static_data_member.
+
 2022-05-02  Jason Merrill  <jason@redhat.com>
 
 	* pt.cc (tsubst_copy_and_build) [TEMPLATE_ID_EXPR]: Copy location.

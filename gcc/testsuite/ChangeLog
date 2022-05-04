@@ -1,3 +1,56 @@
+2022-05-03  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/105351
+	* g++.dg/template/sfinae33.C: New test.
+
+2022-05-03  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	* gcc.c-torture/compile/attr-complex-method-2.c: Accept both __divdc3
+	and __gnu_divdc3 as valid libgcc function names.
+	* gcc.dg/complex-6.c: Ditto for __mulsc3.
+	* gcc.dg/complex-7.c: Ditto for __muldc3.
+
+2022-05-03  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	* gcc.dg/memchr.c: Skip for default_packed targets.
+	* gcc.dg/memcmp-3.c: Ditto.
+
+2022-05-03  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	* gcc.dg/Wattributes-8.c: Add annotations for default_packed
+	targets.
+
+2022-05-03  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	* gcc.dg/lower-subreg-1.c: Skip for PRU.
+
+2022-05-03  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	* gcc.dg/Wno-frame-address.c: Skip for PRU target.
+
+2022-05-03  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR tree-optimization/102950
+	* gcc.dg/pr102950.c: New test case.
+	* gcc.dg/tree-ssa/evrp10.c: New test case.
+
+2022-05-03  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/105079
+	* gcc.target/i386/pr105079.c: New test.
+	* gcc.target/i386/pr95483-1.c (dg-options): Use -msse4.1.
+
+2022-05-03  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/105461
+	* gcc.dg/pr105461.c: New testcase.
+
+2022-05-03  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc.dg/vect/costmodel/ppc/costmodel-vect-31a.c: Update
+	the expected message for the case in which unaligned accesses
+	are not allowed.
+
 2022-05-02  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/cpp2a/lambda-pack-init7.C: Check column number.

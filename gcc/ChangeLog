@@ -1,3 +1,54 @@
+2022-05-03  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR tree-optimization/102950
+	* range-op.cc (wi_optimize_signed_bitwise_op): New function to
+	determine bounds of bitwise operations on signed types.
+	(operator_bitwise_and::wi_fold): Call the above function.
+	(operator_bitwise_or::wi_fold): Likewise.
+	(operator_bitwise_xor::wi_fold): Likewise.  Additionally, the
+	result can't be zero if the operands can't be equal.
+
+2022-05-03  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin.cc (darwin_label_is_anonymous_local_objc_name): Make
+	protocol class methods linker-visible.
+
+2022-05-03  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/105079
+	* config/i386/sse.md (*vec_extract<mode>_0_mem): New pre-reload
+	define_insn_and_split pattern.
+
+2022-05-03  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/105083
+	* tree-scalar-evolution.cc (scev_initialize): Verify we
+	have appropriate loop state.
+	* tree-ssa-dce.cc (perform_tree_ssa_dce): Re-order SCEV and
+	loop init and finalization.
+
+2022-05-03  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/105461
+	* opts.cc (finish_options): Match the condition to
+	disable flag_var_tracking to that of process_options.
+
+2022-05-03  Richard Biener  <rguenther@suse.de>
+
+	* opts.cc: #undef OPTIONS_SET_P.
+	(finish_options): Use opts_set instead of OPTIONS_SET_P.
+
+2022-05-03  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/105394
+	* tree-vect-generic.cc (expand_vector_condition): Adjust
+	comp_width for non-integer mode masks as well.
+
+2022-05-03  Marcel Vollweiler  <marcel@codesourcery.com>
+
+	* omp-low.cc (omp_runtime_api_call): Added get_mapped_ptr to
+	omp_runtime_apis array.
+
 2022-05-02  Richard Biener  <rguenther@suse.de>
 
 	* tree-scalar-evolution.cc (expression_expensive_p):
