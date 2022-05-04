@@ -35,7 +35,7 @@ $ apt install build-essential libgmp3-dev libmpfr-dev libmpc-dev flex bison auto
 Clone the repository
 
 ```bash
-$ git clone git@github.com:Rust-GCC/gccrs.git
+$ git clone https://github.com/Rust-GCC/gccrs
 ```
 
 #### Linux
