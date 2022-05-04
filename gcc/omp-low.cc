@@ -13657,26 +13657,26 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 		new_var = lookup_decl (var, ctx);
 		new_var = DECL_VALUE_EXPR (new_var);
 		tree v = new_var;
+		tree v2 = var;
+		if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_USE_DEVICE_PTR
+		    || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_USE_DEVICE_ADDR)
+		  v2 = maybe_lookup_decl_in_outer_ctx (var, ctx);
 
 		if (is_ref)
 		  {
-		    var = build_fold_indirect_ref (var);
-		    gimplify_expr (&var, &assign_body, NULL, is_gimple_val,
-				   fb_rvalue);
-		    v = create_tmp_var_raw (TREE_TYPE (var), get_name (var));
+		    v2 = build_fold_indirect_ref (v2);
+		    v = create_tmp_var_raw (TREE_TYPE (v2), get_name (var));
 		    gimple_add_tmp_var (v);
 		    TREE_ADDRESSABLE (v) = 1;
-		    gimple_seq_add_stmt (&assign_body,
-					 gimple_build_assign (v, var));
+		    gimplify_assign (v, v2, &assign_body);
 		    tree rhs = build_fold_addr_expr (v);
 		    gimple_seq_add_stmt (&assign_body,
 					 gimple_build_assign (new_var, rhs));
 		  }
 		else
-		  gimple_seq_add_stmt (&assign_body,
-				       gimple_build_assign (new_var, var));
+		  gimplify_assign (new_var, v2, &assign_body);
 
-		tree v2 = lang_hooks.decls.omp_array_data (unshare_expr (v), false);
+		v2 = lang_hooks.decls.omp_array_data (unshare_expr (v), false);
 		gcc_assert (v2);
 		gimplify_expr (&x, &assign_body, NULL, is_gimple_val, fb_rvalue);
 		gimple_seq_add_stmt (&assign_body,
