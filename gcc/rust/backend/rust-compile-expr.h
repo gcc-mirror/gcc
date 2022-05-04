@@ -789,11 +789,13 @@ public:
   void visit (HIR::AsyncBlockExpr &) override {}
 
 protected:
-  tree compile_dyn_dispatch_call (const TyTy::DynamicObjectType *dyn,
-				  TyTy::BaseType *receiver,
-				  TyTy::FnType *fntype, tree receiver_ref,
-				  std::vector<HIR::Expr *> &arguments,
-				  Location expr_locus);
+  tree get_fn_addr_from_dyn (const TyTy::DynamicObjectType *dyn,
+			     TyTy::BaseType *receiver, TyTy::FnType *fntype,
+			     tree receiver_ref, Location expr_locus);
+
+  tree get_receiver_from_dyn (const TyTy::DynamicObjectType *dyn,
+			      TyTy::BaseType *receiver, TyTy::FnType *fntype,
+			      tree receiver_ref, Location expr_locus);
 
   tree resolve_method_address (TyTy::FnType *fntype, HirId ref,
 			       TyTy::BaseType *receiver,

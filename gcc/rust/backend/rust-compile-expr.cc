@@ -573,6 +573,7 @@ CompileExpr::visit (HIR::MethodCallExpr &expr)
       receiver = p->resolve ();
     }
 
+  tree fn_expr = error_mark_node;
   if (is_dyn_dispatch)
     {
       const TyTy::DynamicObjectType *dyn
@@ -582,17 +583,20 @@ CompileExpr::visit (HIR::MethodCallExpr &expr)
       for (auto &arg : expr.get_arguments ())
 	arguments.push_back (arg.get ());
 
-      translated = compile_dyn_dispatch_call (dyn, receiver, fntype, self,
-					      arguments, expr.get_locus ());
-      return;
+      fn_expr
+	= get_fn_addr_from_dyn (dyn, receiver, fntype, self, expr.get_locus ());
+      self = get_receiver_from_dyn (dyn, receiver, fntype, self,
+				    expr.get_locus ());
     }
-
-  // lookup compiled functions since it may have already been compiled
-  HIR::PathExprSegment method_name = expr.get_method_name ();
-  HIR::PathIdentSegment segment_name = method_name.get_segment ();
-  tree fn_expr
-    = resolve_method_address (fntype, ref, receiver, segment_name,
-			      expr.get_mappings (), expr.get_locus ());
+  else
+    {
+      // lookup compiled functions since it may have already been compiled
+      HIR::PathExprSegment method_name = expr.get_method_name ();
+      HIR::PathIdentSegment segment_name = method_name.get_segment ();
+      fn_expr
+	= resolve_method_address (fntype, ref, receiver, segment_name,
+				  expr.get_mappings (), expr.get_locus ());
+    }
 
   // lookup the autoderef mappings
   std::vector<Resolver::Adjustment> *adjustments = nullptr;
@@ -639,11 +643,10 @@ CompileExpr::visit (HIR::MethodCallExpr &expr)
 }
 
 tree
-CompileExpr::compile_dyn_dispatch_call (const TyTy::DynamicObjectType *dyn,
-					TyTy::BaseType *receiver,
-					TyTy::FnType *fntype, tree receiver_ref,
-					std::vector<HIR::Expr *> &arguments,
-					Location expr_locus)
+CompileExpr::get_fn_addr_from_dyn (const TyTy::DynamicObjectType *dyn,
+				   TyTy::BaseType *receiver,
+				   TyTy::FnType *fntype, tree receiver_ref,
+				   Location expr_locus)
 {
   size_t offs = 0;
   const Resolver::TraitItemReference *ref = nullptr;
@@ -680,32 +683,49 @@ CompileExpr::compile_dyn_dispatch_call (const TyTy::DynamicObjectType *dyn,
       receiver_ref = indirect;
     }
 
-  // access the offs + 1 for the fnptr and offs=0 for the reciever obj
-  tree self_argument
-    = ctx->get_backend ()->struct_field_expression (receiver_ref, 0,
-						    expr_locus);
-
-  // access the vtable for the fn
-  tree fn_vtable_access
-    = ctx->get_backend ()->struct_field_expression (receiver_ref, offs + 1,
-						    expr_locus);
-
   // cast it to the correct fntype
   tree expected_fntype = TyTyResolveCompile::compile (ctx, fntype, true);
-  tree fn_convert_expr
-    = ctx->get_backend ()->convert_expression (expected_fntype,
-					       fn_vtable_access, expr_locus);
+  tree idx = build_int_cst (size_type_node, offs);
 
-  std::vector<tree> args;
-  args.push_back (self_argument);
-  for (auto &argument : arguments)
+  tree vtable_ptr
+    = ctx->get_backend ()->struct_field_expression (receiver_ref, 1,
+						    expr_locus);
+  tree vtable_array_access = build4_loc (expr_locus.gcc_location (), ARRAY_REF,
+					 TREE_TYPE (TREE_TYPE (vtable_ptr)),
+					 vtable_ptr, idx, NULL_TREE, NULL_TREE);
+
+  tree vcall
+    = build3_loc (expr_locus.gcc_location (), OBJ_TYPE_REF, expected_fntype,
+		  vtable_array_access, receiver_ref, idx);
+
+  return vcall;
+}
+
+tree
+CompileExpr::get_receiver_from_dyn (const TyTy::DynamicObjectType *dyn,
+				    TyTy::BaseType *receiver,
+				    TyTy::FnType *fntype, tree receiver_ref,
+				    Location expr_locus)
+{
+  // get any indirection sorted out
+  if (receiver->get_kind () == TyTy::TypeKind::REF)
+
     {
-      tree compiled_expr = CompileExpr::Compile (argument, ctx);
-      args.push_back (compiled_expr);
+      TyTy::ReferenceType *r = static_cast<TyTy::ReferenceType *> (receiver);
+      auto indirect_ty = r->get_base ();
+      tree indrect_compiled_tyty
+	= TyTyResolveCompile::compile (ctx, indirect_ty);
+
+      tree indirect
+	= ctx->get_backend ()->indirect_expression (indrect_compiled_tyty,
+						    receiver_ref, true,
+						    expr_locus);
+      receiver_ref = indirect;
     }
 
-  return ctx->get_backend ()->call_expression (fn_convert_expr, args, nullptr,
-					       expr_locus);
+  // access the offs + 1 for the fnptr and offs=0 for the reciever obj
+  return ctx->get_backend ()->struct_field_expression (receiver_ref, 0,
+						       expr_locus);
 }
 
 tree
@@ -832,26 +852,11 @@ CompileExpr::resolve_operator_overload (
 					   &receiver);
   rust_assert (ok);
 
-  bool is_dyn_dispatch
-    = receiver->get_root ()->get_kind () == TyTy::TypeKind::DYNAMIC;
   bool is_generic_receiver = receiver->get_kind () == TyTy::TypeKind::PARAM;
   if (is_generic_receiver)
     {
       TyTy::ParamType *p = static_cast<TyTy::ParamType *> (receiver);
       receiver = p->resolve ();
-    }
-
-  if (is_dyn_dispatch)
-    {
-      const TyTy::DynamicObjectType *dyn
-	= static_cast<const TyTy::DynamicObjectType *> (receiver->get_root ());
-
-      std::vector<HIR::Expr *> arguments;
-      if (rhs_expr != nullptr) // can be null for negation_expr (unary ones)
-	arguments.push_back (rhs_expr);
-
-      return compile_dyn_dispatch_call (dyn, receiver, fntype, lhs, arguments,
-					expr.get_locus ());
     }
 
   // lookup compiled functions since it may have already been compiled

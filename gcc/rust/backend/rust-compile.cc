@@ -312,6 +312,9 @@ HIRCompileBase::coerce_to_dyn_object (tree compiled_ref,
 				      Location locus)
 {
   tree dynamic_object = TyTyResolveCompile::compile (ctx, ty);
+  tree dynamic_object_fields = TYPE_FIELDS (dynamic_object);
+  tree vtable_field = DECL_CHAIN (dynamic_object_fields);
+  rust_assert (TREE_CODE (TREE_TYPE (vtable_field)) == ARRAY_TYPE);
 
   //' this assumes ordering and current the structure is
   // __trait_object_ptr
@@ -326,8 +329,10 @@ HIRCompileBase::coerce_to_dyn_object (tree compiled_ref,
       = address_expression (compiled_ref,
 			    build_pointer_type (TREE_TYPE (compiled_ref)),
 			    locus);
-  std::vector<tree> vals;
-  vals.push_back (address_of_compiled_ref);
+
+  std::vector<tree> vtable_ctor_elems;
+  std::vector<unsigned long> vtable_ctor_idx;
+  unsigned long i = 0;
   for (auto &bound : ty->get_object_items ())
     {
       const Resolver::TraitItemReference *item = bound.first;
@@ -336,11 +341,16 @@ HIRCompileBase::coerce_to_dyn_object (tree compiled_ref,
       auto address = compute_address_for_trait_item (item, predicate,
 						     probed_bounds_for_receiver,
 						     actual, actual, locus);
-      vals.push_back (address);
+      vtable_ctor_elems.push_back (address);
+      vtable_ctor_idx.push_back (i++);
     }
 
+  tree vtable_ctor = ctx->get_backend ()->array_constructor_expression (
+    TREE_TYPE (vtable_field), vtable_ctor_idx, vtable_ctor_elems, locus);
+
+  std::vector<tree> dyn_ctor = {address_of_compiled_ref, vtable_ctor};
   return ctx->get_backend ()->constructor_expression (dynamic_object, false,
-						      vals, -1, locus);
+						      dyn_ctor, -1, locus);
 }
 
 tree

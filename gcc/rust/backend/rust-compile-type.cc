@@ -532,25 +532,19 @@ TyTyResolveCompile::visit (const TyTy::DynamicObjectType &type)
 
   tree uint = ctx->get_backend ()->integer_type (
     true, ctx->get_backend ()->get_pointer_size ());
-  tree uintptr_ty = ctx->get_backend ()->pointer_type (uint);
+  tree uintptr_ty = build_pointer_type (uint);
 
-  Backend::typed_identifier f ("__receiver_trait_obj_ptr", uintptr_ty,
+  Backend::typed_identifier f ("pointer", uintptr_ty,
 			       ctx->get_mappings ()->lookup_location (
 				 type.get_ty_ref ()));
   fields.push_back (std::move (f));
 
-  for (size_t i = 0; i < items.size (); i++)
-    {
-      // mrustc seems to make a vtable consisting of uintptr's
-      tree uint = ctx->get_backend ()->integer_type (
-	true, ctx->get_backend ()->get_pointer_size ());
-      tree uintptr_ty = ctx->get_backend ()->pointer_type (uint);
-
-      Backend::typed_identifier f ("__" + std::to_string (i), uintptr_ty,
-				   ctx->get_mappings ()->lookup_location (
-				     type.get_ty_ref ()));
-      fields.push_back (std::move (f));
-    }
+  tree vtable_size = build_int_cst (size_type_node, items.size ());
+  tree vtable_type = ctx->get_backend ()->array_type (uintptr_ty, vtable_size);
+  Backend::typed_identifier vtf ("vtable", vtable_type,
+				 ctx->get_mappings ()->lookup_location (
+				   type.get_ty_ref ()));
+  fields.push_back (std::move (vtf));
 
   tree type_record = ctx->get_backend ()->struct_type (fields);
   tree named_struct
