@@ -1348,7 +1348,13 @@ HIRCompileBase::resolve_unsized_adjustment (Resolver::Adjustment &adjustment,
 
   // fetch the size from the domain
   tree domain = TYPE_DOMAIN (expr_type);
-  tree size = TYPE_MAX_VALUE (domain);
+  unsigned HOST_WIDE_INT array_size
+    = wi::ext (wi::to_offset (TYPE_MAX_VALUE (domain))
+		 - wi::to_offset (TYPE_MIN_VALUE (domain)) + 1,
+	       TYPE_PRECISION (TREE_TYPE (domain)),
+	       TYPE_SIGN (TREE_TYPE (domain)))
+	.to_uhwi ();
+  tree size = build_int_cst (size_type_node, array_size);
 
   return ctx->get_backend ()->constructor_expression (fat_pointer, false,
 						      {data, size}, -1, locus);
