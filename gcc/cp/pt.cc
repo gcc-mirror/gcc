@@ -29569,7 +29569,11 @@ maybe_aggr_guide (tree tmpl, tree init, vec<tree,va_gc> *args)
 	 PARMS, so that its template level is properly reduced and we don't get
 	 mismatches when deducing types using the guide with PARMS.  */
       if (member_template_p)
-	parms = tsubst (parms, DECL_TI_ARGS (tmpl), complain, init);
+	{
+	  ++processing_template_decl;
+	  parms = tsubst (parms, DECL_TI_ARGS (tmpl), complain, init);
+	  --processing_template_decl;
+	}
     }
   else if (TREE_CODE (init) == TREE_LIST)
     {
