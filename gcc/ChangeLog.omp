@@ -1,3 +1,11 @@
+2022-05-09  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	Backport from master:
+	2022-05-04  Tobias Burnus  <tobias@codesourcery.com>
+
+	* omp-low.cc (lower_omp_target): Fix use_device_{addr,ptr} with list
+	item that is in an outer data-sharing clause.
+
 2022-04-20  Andrew Stubbs  <ams@codesourcery.com>
 
 	* omp-low.cc: Do USM transformations for "unified_address".
