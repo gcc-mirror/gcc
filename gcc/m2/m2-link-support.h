@@ -48,12 +48,16 @@ along with GCC; see the file COPYING3.  If not see
 
 #define SCAFFOLDNAME "%b_m2"
 
+/* RM_IF_NOSAVETEMP remove the next file if save-temps is absent.  */
+
+#define RM_IF_NOSAVETEMP "%{!save-temps*:%d}"
+
 /* GM2CC compile the link scaffold either with the C or C++
    compiler.  */
 
 #define GM2CC(INPUT,OUTPUT) \
   "%{!fno-exceptions:cc1plus;:cc1} " GM2CC_OPTIONS " " INPUT " \
-     -o %d" SCAFFOLDNAME ".s \n\
+     -o " RM_IF_NOSAVETEMP SCAFFOLDNAME ".s \n\
   " AS(SCAFFOLDNAME ".s",OUTPUT) " "
 
 /* GM2LCC invoke the sub program gm2lcc with the object path options
@@ -67,7 +71,8 @@ along with GCC; see the file COPYING3.  If not see
           %{ftarget-ranlib=*} \
           %{fobject-path=*} %{v} --exec --startup \
           " SCAFFOLDNAME "%O \
-          %{!fshared:--ar %:objects() %:noobjects() -o %w%d%g.a } \
+          %{!fshared:--ar %:objects() %:noobjects() -o " \
+          RM_IF_NOSAVETEMP "%w%g.a } \
           " OBJECT " \
           %{fshared:%w%{o:%{o*}}%:nolink() %:objects() %:noobjects() \
             %:linkargs() } " LST " "
@@ -173,19 +178,19 @@ along with GCC; see the file COPYING3.  If not see
 
 #define GEN_SCAFFOLD_SRC \
      "%{fmakeinit:" SCAFFOLDNAME ".cpp;:" \
-                    SCAFFOLDNAME "%d.cpp}"
+                    RM_IF_NOSAVETEMP SCAFFOLDNAME ".cpp}"
 
 /* M2LINK compile main module (providing absense of -fonlylink)
    and link all project dependent modules.  */
 
 #define M2LINK \
-  "%{!S:%{!gm2gcc:%{!fonlylink:" GM2("%i","%d%g.s") " \n\
+  "%{!S:%{!gm2gcc:%{!fonlylink:" GM2("%i",RM_IF_NOSAVETEMP "%g.s") " \n\
                                " AS("%g.s","%w%b%O") " } \n\
                    %{!fuselist:" GM2L("%i"," -o %g.l ") " \n\
                                " GM2LORDER("%g.l","%g.lst") " \n\
                    " GM2LGEN("%{fuselist:%b.lst;:%g.lst}",\
                              GEN_SCAFFOLD_SRC,\
-			     "%d" SCAFFOLDNAME "%O") "}}\n\
+			     RM_IF_NOSAVETEMP SCAFFOLDNAME "%O") "}}\n\
     }"
 
 /* MODULA_LINK_SUPPORT only invoke link subprocesses if no -c option.  */
