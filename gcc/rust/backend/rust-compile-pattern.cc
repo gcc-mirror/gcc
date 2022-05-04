@@ -80,6 +80,20 @@ CompilePatternCaseLabelExpr::visit (HIR::WildcardPattern &pattern)
     = build_case_label (NULL_TREE, NULL_TREE, associated_case_label);
 }
 
+void
+CompilePatternCaseLabelExpr::visit (HIR::LiteralPattern &pattern)
+{
+  // Compile the literal
+  HIR::LiteralExpr *litexpr
+    = new HIR::LiteralExpr (pattern.get_pattern_mappings (),
+			    pattern.get_literal (), pattern.get_locus (),
+			    std::vector<AST::Attribute> ());
+
+  tree lit = CompileExpr::Compile (litexpr, ctx);
+
+  case_label_expr = build_case_label (lit, NULL_TREE, associated_case_label);
+}
+
 // setup the bindings
 
 void
