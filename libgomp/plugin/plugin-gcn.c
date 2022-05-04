@@ -2352,7 +2352,7 @@ isa_matches_agent (struct agent_info *agent, Elf64_Ehdr *image)
 
       snprintf (msg, sizeof msg,
 		"GCN code object ISA '%s' does not match GPU ISA '%s'.\n"
-		"Try to recompile with '-foffload=-march=%s'.\n",
+		"Try to recompile with '-foffload-options=-march=%s'.\n",
 		isa_s, agent_isa_s, agent_isa_gcc_s);
 
       hsa_error (msg, HSA_STATUS_ERROR);
