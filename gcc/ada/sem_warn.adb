@@ -4414,9 +4414,10 @@ package body Sem_Warn is
 
                         if (No (S) or else not Is_Dispatching_Operation (S))
                           and then not Is_Trivial_Subprogram (Scope (E))
+                          and then Check_Unreferenced_Formals
                         then
                            Error_Msg_NE -- CODEFIX
-                             ("?u?formal parameter & is not referenced!",
+                             ("?f?formal parameter & is not referenced!",
                               E, Spec_E);
                         end if;
                      end;
