@@ -15,10 +15,13 @@
 // <http://www.gnu.org/licenses/>.
 
 #include "rust-compile-intrinsic.h"
+#include "fold-const.h"
 #include "langhooks.h"
+#include "rust-compile-context.h"
 #include "rust-compile-type.h"
 #include "rust-compile-fnparam.h"
 #include "rust-tree.h"
+#include "tree-core.h"
 
 namespace Rust {
 namespace Compile {
@@ -176,12 +179,26 @@ static tree
 sizeof_intrinsic_handler (Context *ctx, TyTy::BaseType *fntype);
 static tree
 transmute_intrinsic_handler (Context *ctx, TyTy::BaseType *fntype);
+static tree
+rotate_intrinsic_handler (Context *ctx, TyTy::BaseType *fntype, tree_code op);
+static inline tree
+rotate_left_intrinsic_handler (Context *ctx, TyTy::BaseType *fntype)
+{
+  return rotate_intrinsic_handler (ctx, fntype, LROTATE_EXPR);
+}
+static inline tree
+rotate_right_intrinsic_handler (Context *ctx, TyTy::BaseType *fntype)
+{
+  return rotate_intrinsic_handler (ctx, fntype, RROTATE_EXPR);
+}
 
 static const std::map<std::string,
 		      std::function<tree (Context *, TyTy::BaseType *)>>
   generic_intrinsics = {{"offset", &offset_intrinsic_handler},
 			{"size_of", &sizeof_intrinsic_handler},
-			{"transmute", &transmute_intrinsic_handler}};
+			{"transmute", &transmute_intrinsic_handler},
+			{"rotate_left", &rotate_left_intrinsic_handler},
+			{"rotate_right", &rotate_right_intrinsic_handler}};
 
 Intrinsics::Intrinsics (Context *ctx) : ctx (ctx) {}
 
@@ -497,6 +514,112 @@ transmute_intrinsic_handler (Context *ctx, TyTy::BaseType *fntype_tyty)
 					     Location ());
   ctx->add_statement (return_statement);
   // BUILTIN transmute FN BODY END
+
+  tree bind_tree = ctx->pop_block ();
+
+  gcc_assert (TREE_CODE (bind_tree) == BIND_EXPR);
+  DECL_SAVED_TREE (fndecl) = bind_tree;
+  ctx->push_function (fndecl);
+
+  return fndecl;
+}
+
+static tree
+rotate_intrinsic_handler (Context *ctx, TyTy::BaseType *fntype_tyty,
+			  tree_code op)
+{
+  rust_assert (fntype_tyty->get_kind () == TyTy::TypeKind::FNDEF);
+  TyTy::FnType *fntype = static_cast<TyTy::FnType *> (fntype_tyty);
+  const Resolver::CanonicalPath &canonical_path = fntype->get_ident ().path;
+
+  // items can be forward compiled which means we may not need to invoke this
+  // code. We might also have already compiled this generic function as well.
+  tree lookup = NULL_TREE;
+  if (ctx->lookup_function_decl (fntype->get_ty_ref (), &lookup,
+				 fntype->get_id (), fntype))
+    {
+      // has this been added to the list then it must be finished
+      if (ctx->function_completed (lookup))
+	{
+	  tree dummy = NULL_TREE;
+	  if (!ctx->lookup_function_decl (fntype->get_ty_ref (), &dummy))
+	    {
+	      ctx->insert_function_decl (fntype, lookup);
+	    }
+	  return lookup;
+	}
+    }
+
+  if (fntype->has_subsititions_defined ())
+    {
+      // override the Hir Lookups for the substitutions in this context
+      fntype->override_context ();
+    }
+
+  // rotate intrinsic has two parameter
+  if (fntype->get_params ().size () != 2)
+    {
+      rust_error_at (fntype->get_ident ().locus,
+		     "invalid number of parameters for rotate intrinsic");
+      return error_mark_node;
+    }
+
+  // build the intrinsic function
+  tree compiled_fn_type = TyTyResolveCompile::compile (ctx, fntype);
+  std::string ir_symbol_name
+    = canonical_path.get () + fntype->subst_as_string ();
+  std::string asm_name = ctx->mangle_item (fntype, canonical_path);
+
+  unsigned int flags = 0;
+  tree fndecl
+    = ctx->get_backend ()->function (compiled_fn_type, ir_symbol_name, asm_name,
+				     flags, fntype->get_ident ().locus);
+  TREE_PUBLIC (fndecl) = 0;
+  TREE_READONLY (fndecl) = 1;
+  DECL_ARTIFICIAL (fndecl) = 1;
+  DECL_EXTERNAL (fndecl) = 0;
+  DECL_DECLARED_INLINE_P (fndecl) = 1;
+
+  // setup the params
+  std::vector<Bvariable *> param_vars;
+  for (auto &parm : fntype->get_params ())
+    {
+      auto &referenced_param = parm.first;
+      auto &param_tyty = parm.second;
+      auto compiled_param_type = TyTyResolveCompile::compile (ctx, param_tyty);
+
+      Location param_locus = referenced_param->get_locus ();
+      Bvariable *compiled_param_var
+	= CompileFnParam::compile (ctx, fndecl, referenced_param,
+				   compiled_param_type, param_locus);
+
+      param_vars.push_back (compiled_param_var);
+    }
+
+  auto &x_param = param_vars.at (0);
+  auto &y_param = param_vars.at (1);
+  rust_assert (param_vars.size () == 2);
+  if (!ctx->get_backend ()->function_set_parameters (fndecl, param_vars))
+    return error_mark_node;
+
+  tree enclosing_scope = NULL_TREE;
+  Location start_location = Location ();
+  Location end_location = Location ();
+
+  tree code_block = ctx->get_backend ()->block (fndecl, enclosing_scope, {},
+						start_location, end_location);
+  ctx->push_block (code_block);
+
+  // BUILTIN rotate FN BODY BEGIN
+  tree x = ctx->get_backend ()->var_expression (x_param, Location ());
+  tree y = ctx->get_backend ()->var_expression (y_param, Location ());
+  tree rotate_expr
+    = fold_build2_loc (BUILTINS_LOCATION, op, TREE_TYPE (x), x, y);
+  auto return_statement
+    = ctx->get_backend ()->return_statement (fndecl, {rotate_expr},
+					     Location ());
+  ctx->add_statement (return_statement);
+  // BUILTIN rotate FN BODY END
 
   tree bind_tree = ctx->pop_block ();
 
