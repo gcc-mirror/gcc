@@ -56,7 +56,7 @@ along with GCC; see the file COPYING3.  If not see
    compiler.  */
 
 #define GM2CC(INPUT,OUTPUT) \
-  "%{!fno-exceptions:cc1plus;:cc1} " GM2CC_OPTIONS " " INPUT " \
+  "%{!fno-exceptions:cc1plus;:cc1} %1" GM2CC_OPTIONS " " INPUT " \
      -o " RM_IF_NOSAVETEMP SCAFFOLDNAME ".s \n\
   " AS(SCAFFOLDNAME ".s",OUTPUT) " "
 
