@@ -1515,7 +1515,7 @@ Expression semanticTraits(TraitsExp e, Scope* sc)
 
         if (tf)
         {
-            link = fd ? fd.linkage : tf.linkage;
+            link = fd ? fd.toAliasFunc().linkage : tf.linkage;
         }
         else
         {

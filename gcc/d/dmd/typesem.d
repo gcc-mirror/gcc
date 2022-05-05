@@ -3637,12 +3637,16 @@ Expression dotExp(Type mt, Scope* sc, Expression e, Identifier ident, int flag)
             }
             else
             {
+                Expression e0;
+                Expression ev = e;
+                ev = extractSideEffect(sc, "__tup", e0, ev);
+
                 const length = cast(size_t)mt.dim.toUInteger();
                 auto exps = new Expressions();
                 exps.reserve(length);
                 foreach (i; 0 .. length)
-                    exps.push(new IndexExp(e.loc, e, new IntegerExp(e.loc, i, Type.tsize_t)));
-                e = new TupleExp(e.loc, exps);
+                    exps.push(new IndexExp(e.loc, ev, new IntegerExp(e.loc, i, Type.tsize_t)));
+                e = new TupleExp(e.loc, e0, exps);
             }
         }
         else
