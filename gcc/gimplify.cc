@@ -12509,11 +12509,11 @@ gimplify_omp_for (tree *expr_p, gimple_seq *pre_p)
 			       OMP_CLAUSE_SCHEDULE))
 	    error_at (EXPR_LOCATION (for_stmt),
 		      "%qs clause may not appear on non-rectangular %qs",
-		      "schedule", "for");
+		      "schedule", lang_GNU_Fortran () ? "do" : "for");
 	  if (omp_find_clause (OMP_FOR_CLAUSES (for_stmt), OMP_CLAUSE_ORDERED))
 	    error_at (EXPR_LOCATION (for_stmt),
 		      "%qs clause may not appear on non-rectangular %qs",
-		      "ordered", "for");
+		      "ordered", lang_GNU_Fortran () ? "do" : "for");
 	}
       break;
     case OMP_DISTRIBUTE:
@@ -12528,6 +12528,19 @@ gimplify_omp_for (tree *expr_p, gimple_seq *pre_p)
       ort = ORT_ACC;
       break;
     case OMP_TASKLOOP:
+      if (OMP_FOR_NON_RECTANGULAR (inner_for_stmt ? inner_for_stmt : for_stmt))
+	{
+	  if (omp_find_clause (OMP_FOR_CLAUSES (for_stmt),
+			       OMP_CLAUSE_GRAINSIZE))
+	    error_at (EXPR_LOCATION (for_stmt),
+		      "%qs clause may not appear on non-rectangular %qs",
+		      "grainsize", "taskloop");
+	  if (omp_find_clause (OMP_FOR_CLAUSES (for_stmt),
+			       OMP_CLAUSE_NUM_TASKS))
+	    error_at (EXPR_LOCATION (for_stmt),
+		      "%qs clause may not appear on non-rectangular %qs",
+		      "num_tasks", "taskloop");
+	}
       if (omp_find_clause (OMP_FOR_CLAUSES (for_stmt), OMP_CLAUSE_UNTIED))
 	ort = ORT_UNTIED_TASKLOOP;
       else
