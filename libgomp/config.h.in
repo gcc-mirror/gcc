@@ -170,12 +170,6 @@
 /* Define to the version of this package. */
 #undef PACKAGE_VERSION
 
-/* Define to 1 if the GCN plugin is built, 0 if not. */
-#undef PLUGIN_GCN
-
-/* Define to 1 if the NVIDIA plugin is built, 0 if not. */
-#undef PLUGIN_NVPTX
-
 /* Define to 1 if the NVIDIA plugin should dlopen libcuda.so.1, 0 if it should
    be linked against it. */
 #undef PLUGIN_NVPTX_DYNAMIC

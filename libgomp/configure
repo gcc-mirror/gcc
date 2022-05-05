@@ -674,11 +674,9 @@ offload_additional_options
 offload_targets
 offload_plugins
 PLUGIN_GCN_LIBS
-PLUGIN_GCN
 PLUGIN_NVPTX_LIBS
 PLUGIN_NVPTX_LDFLAGS
 PLUGIN_NVPTX_CPPFLAGS
-PLUGIN_NVPTX
 CUDA_DRIVER_LIB
 CUDA_DRIVER_INCLUDE
 libtool_VERSION
@@ -11414,7 +11412,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11417 "configure"
+#line 11415 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11520,7 +11518,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11523 "configure"
+#line 11521 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -15220,10 +15218,8 @@ PLUGIN_NVPTX_DYNAMIC=0
 
 
 
-
 PLUGIN_GCN=0
 PLUGIN_GCN_LIBS=
-
 
 
 # Parse '--enable-offload-targets', figure out the corresponding libgomp
@@ -15374,11 +15370,6 @@ fi
 
 
 cat >>confdefs.h <<_ACEOF
-#define PLUGIN_NVPTX $PLUGIN_NVPTX
-_ACEOF
-
-
-cat >>confdefs.h <<_ACEOF
 #define PLUGIN_NVPTX_DYNAMIC $PLUGIN_NVPTX_DYNAMIC
 _ACEOF
 
@@ -15389,11 +15380,6 @@ else
   PLUGIN_GCN_TRUE='#'
   PLUGIN_GCN_FALSE=
 fi
-
-
-cat >>confdefs.h <<_ACEOF
-#define PLUGIN_GCN $PLUGIN_GCN
-_ACEOF
 
 
 

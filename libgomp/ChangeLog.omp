@@ -1,3 +1,15 @@
+2022-05-05  Thomas Schwinge  <thomas@codesourcery.com>
+
+	Backport from mainline:
+	2022-05-05  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* plugin/configfrag.ac: Don't 'AC_SUBST' and 'AC_DEFINE_UNQUOTED'
+	for 'PLUGIN_GCN', 'PLUGIN_NVPTX'.
+	* Makefile.in: Regenerate.
+	* config.h.in: Likewise.
+	* configure: Likewise.
+	* testsuite/Makefile.in: Likewise.
+
 2022-05-12  Jakub Jelinek  <jakub@redhat.com>
 
 	Backport from mainline:
