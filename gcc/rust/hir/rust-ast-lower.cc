@@ -223,6 +223,34 @@ ASTLoweringIfBlock::visit (AST::IfExprConseqIf &expr)
 			       expr.get_locus ());
 }
 
+void
+ASTLoweringIfLetBlock::visit (AST::IfLetExpr &expr)
+{
+  std::vector<std::unique_ptr<HIR::Pattern> > patterns;
+  for (auto &pattern : expr.get_patterns ())
+    {
+      HIR::Pattern *ptrn = ASTLoweringPattern::translate (pattern.get ());
+      patterns.push_back (std::unique_ptr<HIR::Pattern> (ptrn));
+    }
+  HIR::Expr *value_ptr
+    = ASTLoweringExpr::translate (expr.get_value_expr ().get ());
+
+  bool ignored_terminated = false;
+  HIR::BlockExpr *block
+    = ASTLoweringBlock::translate (expr.get_if_block ().get (),
+				   &ignored_terminated);
+
+  auto crate_num = mappings->get_current_crate ();
+  Analysis::NodeMapping mapping (crate_num, expr.get_node_id (),
+				 mappings->get_next_hir_id (crate_num),
+				 UNKNOWN_LOCAL_DEFID);
+
+  translated = new HIR::IfLetExpr (mapping, std::move (patterns),
+				   std::unique_ptr<HIR::Expr> (value_ptr),
+				   std::unique_ptr<HIR::BlockExpr> (block),
+				   expr.get_locus ());
+}
+
 // rust-ast-lower-struct-field-expr.h
 
 void
