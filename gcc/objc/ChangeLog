@@ -1,3 +1,10 @@
+2022-05-03  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* objc-next-runtime-abi-02.cc (next_runtime_abi_02_protocol_decl): Do
+	not dead-strip the runtime meta-data symbols.
+	(build_v2_classrefs_table): Likewise.
+	(build_v2_protocol_list_address_table): Likewise.
+
 2022-01-17  Martin Liska  <mliska@suse.cz>
 
 	* Make-lang.in: Rename .c names to .cc.

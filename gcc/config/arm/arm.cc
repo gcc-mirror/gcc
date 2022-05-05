@@ -12849,6 +12849,9 @@ simd_valid_immediate (rtx op, machine_mode mode, int inverse,
 	  || n_elts * innersize != 16))
     return -1;
 
+  if (!TARGET_HAVE_MVE && GET_MODE_CLASS (mode) == MODE_VECTOR_BOOL)
+    return -1;
+
   /* Vectors of float constants.  */
   if (GET_MODE_CLASS (mode) == MODE_VECTOR_FLOAT)
     {

@@ -1936,6 +1936,8 @@ darwin_label_is_anonymous_local_objc_name (const char *name)
     }
   else if (startswith ((const char *)p, "ClassMethods"))
     return false;
+  else if (startswith ((const char *)p, "ClassProtocols"))
+    return false;
   else if (startswith ((const char *)p, "Instance"))
     {
       if (p[8] == 'I' || p[8] == 'M')

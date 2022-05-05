@@ -473,43 +473,43 @@ read_a_state_token (void)
 		{
 		case 'a':
 		  obstack_1grow (&bstring_obstack, '\a');
-		  c = getc (state_file);
+		  getc (state_file);
 		  break;
 		case 'b':
 		  obstack_1grow (&bstring_obstack, '\b');
-		  c = getc (state_file);
+		  getc (state_file);
 		  break;
 		case 't':
 		  obstack_1grow (&bstring_obstack, '\t');
-		  c = getc (state_file);
+		  getc (state_file);
 		  break;
 		case 'n':
 		  obstack_1grow (&bstring_obstack, '\n');
-		  c = getc (state_file);
+		  getc (state_file);
 		  break;
 		case 'v':
 		  obstack_1grow (&bstring_obstack, '\v');
-		  c = getc (state_file);
+		  getc (state_file);
 		  break;
 		case 'f':
 		  obstack_1grow (&bstring_obstack, '\f');
-		  c = getc (state_file);
+		  getc (state_file);
 		  break;
 		case 'r':
 		  obstack_1grow (&bstring_obstack, '\r');
-		  c = getc (state_file);
+		  getc (state_file);
 		  break;
 		case '"':
 		  obstack_1grow (&bstring_obstack, '\"');
-		  c = getc (state_file);
+		  getc (state_file);
 		  break;
 		case '\\':
 		  obstack_1grow (&bstring_obstack, '\\');
-		  c = getc (state_file);
+		  getc (state_file);
 		  break;
 		case ' ':
 		  obstack_1grow (&bstring_obstack, ' ');
-		  c = getc (state_file);
+		  getc (state_file);
 		  break;
 		case 'x':
 		  {
@@ -520,7 +520,7 @@ read_a_state_token (void)
 		      fatal_reading_state
 			(NULL_STATE_TOKEN,
 			 "Lexical error in string hex escape");
-		    c = getc (state_file);
+		    getc (state_file);
 		    break;
 		  }
 		default:

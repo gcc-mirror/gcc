@@ -2615,6 +2615,29 @@ operator_bitwise_and::fold_range (irange &r, tree type,
 }
 
 
+// Optimize BIT_AND_EXPR, BIT_IOR_EXPR and BIT_XOR_EXPR of signed types
+// by considering the number of leading redundant sign bit copies.
+// clrsb (X op Y) = min (clrsb (X), clrsb (Y)), so for example
+// [-1, 0] op [-1, 0] is [-1, 0] (where nonzero_bits doesn't help).
+static bool
+wi_optimize_signed_bitwise_op (irange &r, tree type,
+			       const wide_int &lh_lb, const wide_int &lh_ub,
+			       const wide_int &rh_lb, const wide_int &rh_ub)
+{
+  int lh_clrsb = MIN (wi::clrsb (lh_lb), wi::clrsb (lh_ub));
+  int rh_clrsb = MIN (wi::clrsb (rh_lb), wi::clrsb (rh_ub));
+  int new_clrsb = MIN (lh_clrsb, rh_clrsb);
+  if (new_clrsb == 0)
+    return false;
+  int type_prec = TYPE_PRECISION (type);
+  int rprec = (type_prec - new_clrsb) - 1;
+  value_range_with_overflow (r, type,
+			     wi::mask (rprec, true, type_prec),
+			     wi::mask (rprec, false, type_prec));
+  return true;
+}
+
+
 // Optimize BIT_AND_EXPR and BIT_IOR_EXPR in terms of a mask if
 // possible.  Basically, see if we can optimize:
 //
@@ -2795,7 +2818,14 @@ operator_bitwise_and::wi_fold (irange &r, tree type,
     }
   // If the limits got swapped around, return varying.
   if (wi::gt_p (new_lb, new_ub,sign))
-    r.set_varying (type);
+    {
+      if (sign == SIGNED
+	  && wi_optimize_signed_bitwise_op (r, type,
+					    lh_lb, lh_ub,
+					    rh_lb, rh_ub))
+	return;
+      r.set_varying (type);
+    }
   else
     value_range_with_overflow (r, type, new_lb, new_ub);
 }
@@ -3049,6 +3079,11 @@ operator_bitwise_or::wi_fold (irange &r, tree type,
 	  || wi::lt_p (lh_ub, 0, sign)
 	  || wi::lt_p (rh_ub, 0, sign))
 	r.set_nonzero (type);
+      else if (sign == SIGNED
+	       && wi_optimize_signed_bitwise_op (r, type,
+						 lh_lb, lh_ub,
+						 rh_lb, rh_ub))
+	return;
       else
 	r.set_varying (type);
       return;
@@ -3136,8 +3171,23 @@ operator_bitwise_xor::wi_fold (irange &r, tree type,
   // is better than VARYING.
   if (wi::lt_p (new_lb, 0, sign) || wi::ge_p (new_ub, 0, sign))
     value_range_with_overflow (r, type, new_lb, new_ub);
+  else if (sign == SIGNED
+	   && wi_optimize_signed_bitwise_op (r, type,
+					     lh_lb, lh_ub,
+					     rh_lb, rh_ub))
+    ;  /* Do nothing.  */
   else
     r.set_varying (type);
+
+  /* Furthermore, XOR is non-zero if its arguments can't be equal.  */
+  if (wi::lt_p (lh_ub, rh_lb, sign)
+      || wi::lt_p (rh_ub, lh_lb, sign)
+      || wi::ne_p (result_one_bits, 0))
+    {
+      int_range<2> tmp;
+      tmp.set_nonzero (type);
+      r.intersect (tmp);
+    }
 }
 
 bool

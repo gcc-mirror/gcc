@@ -19021,6 +19021,26 @@
 (define_mode_iterator PEXTR_MODE12
   [(V16QI "TARGET_SSE4_1") V8HI])
 
+(define_insn_and_split "*vec_extract<mode>_0_mem"
+  [(set (match_operand:<ssescalarmode> 0 "memory_operand")
+	(vec_select:<ssescalarmode>
+	  (match_operand:PEXTR_MODE12 1 "register_operand")
+	  (parallel [(const_int 0)])))]
+  "TARGET_SSE2
+   && !TARGET_SSE4_1
+   && (TARGET_INTER_UNIT_MOVES_FROM_VEC
+       || optimize_function_for_speed_p (cfun))
+   && ix86_pre_reload_split ()"
+  "#"
+  "&& 1"
+  [(set (match_dup 2) (match_dup 3))
+   (set (match_dup 0) (match_dup 4))]
+{
+  operands[2] = gen_reg_rtx (SImode);
+  operands[3] = gen_lowpart (SImode, force_reg (<MODE>mode, operands[1]));
+  operands[4] = gen_lowpart (<ssescalarmode>mode, operands[2]);
+})
+
 (define_insn "*vec_extract<mode>"
   [(set (match_operand:<ssescalarmode> 0 "register_sse4nonimm_operand" "=r,m")
 	(vec_select:<ssescalarmode>

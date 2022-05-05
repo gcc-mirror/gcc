@@ -1461,7 +1461,7 @@ struct GTY(()) tree_int_cst {
 
 struct GTY(()) tree_real_cst {
   struct tree_typed typed;
-  struct real_value * real_cst_ptr;
+  struct real_value value;
 };
 
 struct GTY(()) tree_fixed_cst {

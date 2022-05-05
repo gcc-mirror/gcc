@@ -125,10 +125,26 @@ bb_no_side_effects_p (basic_block bb)
       if (is_gimple_debug (stmt))
 	continue;
 
+      gassign *ass;
+      enum tree_code rhs_code;
       if (gimple_has_side_effects (stmt)
 	  || gimple_uses_undefined_value_p (stmt)
 	  || gimple_could_trap_p (stmt)
 	  || gimple_vuse (stmt)
+	  /* We need to rewrite stmts with undefined overflow to use
+	     unsigned arithmetic but cannot do so for signed division.  */
+	  || ((ass = dyn_cast <gassign *> (stmt))
+	      && INTEGRAL_TYPE_P (TREE_TYPE (gimple_assign_lhs (ass)))
+	      && TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (gimple_assign_lhs (ass)))
+	      && ((rhs_code = gimple_assign_rhs_code (ass)), true)
+	      && (rhs_code == TRUNC_DIV_EXPR
+		  || rhs_code == CEIL_DIV_EXPR
+		  || rhs_code == FLOOR_DIV_EXPR
+		  || rhs_code == ROUND_DIV_EXPR)
+	      /* We cannot use expr_not_equal_to since we'd have to restrict
+		 flow-sensitive info to whats known at the outer if.  */
+	      && (TREE_CODE (gimple_assign_rhs2 (ass)) != INTEGER_CST
+		  || !integer_minus_onep (gimple_assign_rhs2 (ass))))
 	  /* const calls don't match any of the above, yet they could
 	     still have some side-effects - they could contain
 	     gimple_could_trap_p statements, like floating point
@@ -847,6 +863,19 @@ pass_tree_ifcombine::execute (function *fun)
 	    /* Clear range info from all stmts in BB which is now executed
 	       conditional on a always true/false condition.  */
 	    reset_flow_sensitive_info_in_bb (bb);
+	    for (gimple_stmt_iterator gsi = gsi_start_bb (bb); !gsi_end_p (gsi);
+		 gsi_next (&gsi))
+	      {
+		gassign *ass = dyn_cast <gassign *> (gsi_stmt (gsi));
+		if (!ass)
+		  continue;
+		tree lhs = gimple_assign_lhs (ass);
+		if ((INTEGRAL_TYPE_P (TREE_TYPE (lhs))
+		     || POINTER_TYPE_P (TREE_TYPE (lhs)))
+		    && arith_code_with_undefined_signed_overflow
+			 (gimple_assign_rhs_code (ass)))
+		  rewrite_to_defined_overflow (ass, true);
+	      }
 	    cfg_changed |= true;
 	  }
     }

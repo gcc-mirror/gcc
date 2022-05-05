@@ -331,18 +331,6 @@ stream_out_histogram_value (struct output_block *ob, histogram_value hist)
       /* When user uses an unsigned type with a big value, constant converted
 	 to gcov_type (a signed type) can be negative.  */
       gcov_type value = hist->hvalue.counters[i];
-      if (hist->type == HIST_TYPE_TOPN_VALUES
-	  || hist->type == HIST_TYPE_IOR)
-	/* Note that the IOR counter tracks pointer values and these can have
-	   sign bit set.  */
-	;
-      else if (hist->type == HIST_TYPE_INDIR_CALL && i == 0)
-	/* 'all' counter overflow is stored as a negative value. Individual
-	   counters and values are expected to be non-negative.  */
-	;
-      else
-	gcc_assert (value >= 0);
-
       streamer_write_gcov_count (ob, value);
     }
   if (hist->hvalue.next)

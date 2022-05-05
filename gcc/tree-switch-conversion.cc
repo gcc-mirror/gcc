@@ -2039,18 +2039,14 @@ switch_decision_tree::balance_case_nodes (case_tree_node **head,
   if (np)
     {
       int i = 0;
-      int ranges = 0;
       case_tree_node **npp;
       case_tree_node *left;
       profile_probability prob = profile_probability::never ();
 
-      /* Count the number of entries on branch.  Also count the ranges.  */
+      /* Count the number of entries on branch.  */
 
       while (np)
 	{
-	  if (!tree_int_cst_equal (np->m_c->get_low (), np->m_c->get_high ()))
-	    ranges++;
-
 	  i++;
 	  prob += np->m_c->m_prob;
 	  np = np->m_right;
@@ -2063,8 +2059,8 @@ switch_decision_tree::balance_case_nodes (case_tree_node **head,
 	  left = *npp;
 	  profile_probability pivot_prob = prob.apply_scale (1, 2);
 
-	  /* Find the place in the list that bisects the list's total cost,
-	     where ranges count as 2.  */
+	  /* Find the place in the list that bisects the list's total cost
+	     by probability.  */
 	  while (1)
 	    {
 	      /* Skip nodes while their probability does not reach

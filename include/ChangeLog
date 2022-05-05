@@ -1,3 +1,8 @@
+2022-05-04  Martin Liska  <mliska@suse.cz>
+
+	* plugin-api.h (enum ld_plugin_tag): Do not set implicit enum
+	values.
+
 2022-04-06  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* cuda/cuda.h: New file.

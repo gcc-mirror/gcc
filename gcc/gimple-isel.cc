@@ -49,22 +49,23 @@ along with GCC; see the file COPYING3.  If not see
      _8 = .VEC_SET (_7, i_4(D), _1);
      u = _8;  */
 
-static gimple *
+static bool
 gimple_expand_vec_set_expr (struct function *fun, gimple_stmt_iterator *gsi)
 {
   enum tree_code code;
   gcall *new_stmt = NULL;
   gassign *ass_stmt = NULL;
+  bool cfg_changed = false;
 
   /* Only consider code == GIMPLE_ASSIGN.  */
   gassign *stmt = dyn_cast<gassign *> (gsi_stmt (*gsi));
   if (!stmt)
-    return NULL;
+    return false;
 
   tree lhs = gimple_assign_lhs (stmt);
   code = TREE_CODE (lhs);
   if (code != ARRAY_REF)
-    return NULL;
+    return false;
 
   tree val = gimple_assign_rhs1 (stmt);
   tree op0 = TREE_OPERAND (lhs, 0);
@@ -98,12 +99,15 @@ gimple_expand_vec_set_expr (struct function *fun, gimple_stmt_iterator *gsi)
 	  gimple_set_location (ass_stmt, loc);
 	  gsi_insert_before (gsi, ass_stmt, GSI_SAME_STMT);
 
+	  basic_block bb = gimple_bb (stmt);
 	  gimple_move_vops (ass_stmt, stmt);
-	  gsi_remove (gsi, true);
+	  if (gsi_remove (gsi, true)
+	      && gimple_purge_dead_eh_edges (bb))
+	    cfg_changed = true;
 	}
     }
 
-  return ass_stmt;
+  return cfg_changed;
 }
 
 /* Expand all VEC_COND_EXPR gimple assignments into calls to internal
@@ -297,6 +301,7 @@ gimple_expand_vec_exprs (struct function *fun)
   basic_block bb;
   hash_map<tree, unsigned int> vec_cond_ssa_name_uses;
   auto_bitmap dce_ssa_names;
+  bool cfg_changed = false;
 
   FOR_EACH_BB_FN (bb, fun)
     {
@@ -311,7 +316,7 @@ gimple_expand_vec_exprs (struct function *fun)
 	      gsi_replace (&gsi, g, false);
 	    }
 
-	  gimple_expand_vec_set_expr (fun, &gsi);
+	  cfg_changed |= gimple_expand_vec_set_expr (fun, &gsi);
 	  if (gsi_end_p (gsi))
 	    break;
 	}
@@ -323,7 +328,7 @@ gimple_expand_vec_exprs (struct function *fun)
 
   simple_dce_from_worklist (dce_ssa_names);
 
-  return 0;
+  return cfg_changed ? TODO_cleanup_cfg : 0;
 }
 
 namespace {

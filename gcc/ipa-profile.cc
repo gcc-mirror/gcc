@@ -481,7 +481,6 @@ ipa_profile_read_summary_section (struct lto_file_decl_data *file_data,
   for (i = 0; i < count; i++)
     {
       index = streamer_read_uhwi (ib);
-      encoder = file_data->symtab_node_encoder;
       node
 	= dyn_cast<cgraph_node *> (lto_symtab_encoder_deref (encoder, index));
 

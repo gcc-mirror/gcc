@@ -4450,18 +4450,18 @@ vect_recog_bool_pattern (vec_info *vinfo,
       if (get_vectype_for_scalar_type (vinfo, type) == NULL_TREE)
 	return NULL;
 
-      if (!check_bool_pattern (var, vinfo, bool_stmts))
+      if (check_bool_pattern (var, vinfo, bool_stmts))
+	var = adjust_bool_stmts (vinfo, bool_stmts, type, stmt_vinfo);
+      else if (integer_type_for_mask (var, vinfo))
 	return NULL;
-
-      rhs = adjust_bool_stmts (vinfo, bool_stmts, type, stmt_vinfo);
 
       lhs = vect_recog_temp_ssa_var (TREE_TYPE (lhs), NULL);
       pattern_stmt 
-	  = gimple_build_assign (lhs, COND_EXPR,
-				 build2 (NE_EXPR, boolean_type_node,
-					 rhs, build_int_cst (type, 0)),
-				 gimple_assign_rhs2 (last_stmt),
-				 gimple_assign_rhs3 (last_stmt));
+	= gimple_build_assign (lhs, COND_EXPR,
+			       build2 (NE_EXPR, boolean_type_node,
+				       var, build_int_cst (TREE_TYPE (var), 0)),
+			       gimple_assign_rhs2 (last_stmt),
+			       gimple_assign_rhs3 (last_stmt));
       *type_out = vectype;
       vect_pattern_detected ("vect_recog_bool_pattern", last_stmt);
 

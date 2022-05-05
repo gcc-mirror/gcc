@@ -31,6 +31,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "toplev.h"
 #include "gimplify.h"
 #include "target.h"
+#include "decl.h"
 
 /* Constructor for a lambda expression.  */
 
@@ -1192,9 +1193,14 @@ maybe_add_lambda_conv_op (tree type)
 	}
     }
   else
-    call = build_call_a (callop,
-			 direct_argvec->length (),
-			 direct_argvec->address ());
+    {
+      /* Don't warn on deprecated or unavailable lambda declarations, unless
+	 the lambda is actually called.  */
+      auto du = make_temp_override (deprecated_state,
+				    UNAVAILABLE_DEPRECATED_SUPPRESS);
+      call = build_call_a (callop, direct_argvec->length (),
+			   direct_argvec->address ());
+    }
 
   CALL_FROM_THUNK_P (call) = 1;
   SET_EXPR_LOCATION (call, UNKNOWN_LOCATION);

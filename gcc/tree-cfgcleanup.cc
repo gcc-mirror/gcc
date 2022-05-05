@@ -468,15 +468,34 @@ phi_alternatives_equal (basic_block dest, edge e1, edge e2)
   return true;
 }
 
-/* Move debug stmts from the forwarder block SRC to DEST.  */
+/* Move debug stmts from the forwarder block SRC to DEST or PRED.  */
 
 static void
-move_debug_stmts_from_forwarder (basic_block src, basic_block dest,
-				 bool dest_single_pred_p)
+move_debug_stmts_from_forwarder (basic_block src,
+				 basic_block dest, bool dest_single_pred_p,
+				 basic_block pred, bool pred_single_succ_p)
 {
   if (!MAY_HAVE_DEBUG_STMTS)
     return;
 
+  /* If we cannot move to the destination but to the predecessor do that.  */
+  if (!dest_single_pred_p && pred_single_succ_p)
+    {
+      gimple_stmt_iterator gsi_to = gsi_last_bb (pred);
+      if (gsi_end_p (gsi_to) || !stmt_ends_bb_p (gsi_stmt (gsi_to)))
+	{
+	  for (gimple_stmt_iterator gsi = gsi_after_labels (src);
+	       !gsi_end_p (gsi);)
+	    {
+	      gimple *debug = gsi_stmt (gsi);
+	      gcc_assert (is_gimple_debug (debug));
+	      gsi_move_after (&gsi, &gsi_to);
+	    }
+	  return;
+	}
+    }
+
+  /* Else move to DEST or drop/reset them.  */
   gimple_stmt_iterator gsi_to = gsi_after_labels (dest);
   for (gimple_stmt_iterator gsi = gsi_after_labels (src); !gsi_end_p (gsi);)
     {
@@ -627,7 +646,8 @@ remove_forwarder_block (basic_block bb)
 
   /* Move debug statements.  Reset them if the destination does not
      have a single predecessor.  */
-  move_debug_stmts_from_forwarder (bb, dest, dest_single_pred_p);
+  move_debug_stmts_from_forwarder (bb, dest, dest_single_pred_p,
+				   pred, pred && single_succ_p (pred));
 
   bitmap_set_bit (cfgcleanup_altered_bbs, dest->index);
 
@@ -1309,7 +1329,8 @@ remove_forwarder_block_with_phi (basic_block bb)
 
   /* Move debug statements.  Reset them if the destination does not
      have a single predecessor.  */
-  move_debug_stmts_from_forwarder (bb, dest, dest_single_pred_p);
+  move_debug_stmts_from_forwarder (bb, dest, dest_single_pred_p,
+				   pred, pred && single_succ_p (pred));
 
   /* Update the dominators.  */
   dombb = get_immediate_dominator (CDI_DOMINATORS, bb);

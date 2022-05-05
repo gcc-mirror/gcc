@@ -11,17 +11,19 @@
 // This file contains error reporting code.
 //===----------------------------------------------------------------------===//
 
+#include "asan_report.h"
+
+#include "asan_descriptions.h"
 #include "asan_errors.h"
 #include "asan_flags.h"
-#include "asan_descriptions.h"
 #include "asan_internal.h"
 #include "asan_mapping.h"
-#include "asan_report.h"
 #include "asan_scariness_score.h"
 #include "asan_stack.h"
 #include "asan_thread.h"
 #include "sanitizer_common/sanitizer_common.h"
 #include "sanitizer_common/sanitizer_flags.h"
+#include "sanitizer_common/sanitizer_interface_internal.h"
 #include "sanitizer_common/sanitizer_report_decorator.h"
 #include "sanitizer_common/sanitizer_stackdepot.h"
 #include "sanitizer_common/sanitizer_symbolizer.h"
@@ -460,6 +462,10 @@ static bool SuppressErrorReport(uptr pc) {
 
 void ReportGenericError(uptr pc, uptr bp, uptr sp, uptr addr, bool is_write,
                         uptr access_size, u32 exp, bool fatal) {
+  if (__asan_test_only_reported_buggy_pointer) {
+    *__asan_test_only_reported_buggy_pointer = addr;
+    return;
+  }
   if (!fatal && SuppressErrorReport(pc)) return;
   ENABLE_FRAME_POINTER;
 

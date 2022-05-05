@@ -3613,11 +3613,6 @@ check_goto (tree decl)
   if (TREE_CODE (decl) != LABEL_DECL)
     return;
 
-  /* We didn't record any information about this label when we created it,
-     and there's not much point since it's trivial to analyze as a return.  */
-  if (decl == cdtor_label)
-    return;
-
   hashval_t hash = IDENTIFIER_HASH_VALUE (DECL_NAME (decl));
   named_label_entry **slot
     = named_labels->find_slot_with_hash (DECL_NAME (decl), hash, NO_INSERT);
@@ -6636,7 +6631,9 @@ reshape_init_class (tree type, reshape_iter *d, bool first_initializer_p,
 
 	  if (TREE_CODE (d->cur->index) == FIELD_DECL)
 	    {
-	      /* We already reshaped this.  */
+	      /* We already reshaped this; we should have returned early from
+		 reshape_init.  */
+	      gcc_checking_assert (false);
 	      if (field != d->cur->index)
 		{
 		  if (tree id = DECL_NAME (d->cur->index))
@@ -7071,6 +7068,10 @@ reshape_init (tree type, tree init, tsubst_flags_t complain)
   /* An empty constructor does not need reshaping, and it is always a valid
      initializer.  */
   if (vec_safe_is_empty (v))
+    return init;
+
+  if ((*v)[0].index && TREE_CODE ((*v)[0].index) == FIELD_DECL)
+    /* Already reshaped.  */
     return init;
 
   /* Brace elision is not performed for a CONSTRUCTOR representing
@@ -17325,14 +17326,6 @@ start_preparsed_function (tree decl1, tree attrs, int flags)
 
   ++function_depth;
 
-  if (DECL_DESTRUCTOR_P (decl1)
-      || (DECL_CONSTRUCTOR_P (decl1)
-	  && targetm.cxx.cdtor_returns_this ()))
-    {
-      cdtor_label = create_artificial_label (input_location);
-      LABEL_DECL_CDTOR (cdtor_label) = true;
-    }
-
   start_fname_decls ();
 
   store_parm_decls (current_function_parms);
@@ -17503,9 +17496,6 @@ finish_constructor_body (void)
 
   if (targetm.cxx.cdtor_returns_this ())
     {
-      /* Any return from a constructor will end up here.  */
-      add_stmt (build_stmt (input_location, LABEL_EXPR, cdtor_label));
-
       val = DECL_ARGUMENTS (current_function_decl);
       suppress_warning (val, OPT_Wuse_after_free);
       val = build2 (MODIFY_EXPR, TREE_TYPE (val),
@@ -17591,10 +17581,6 @@ static void
 finish_destructor_body (void)
 {
   tree exprstmt;
-
-  /* Any return from a destructor will end up here; that way all base
-     and member cleanups will be run when the function returns.  */
-  add_stmt (build_stmt (input_location, LABEL_EXPR, cdtor_label));
 
   if (targetm.cxx.cdtor_returns_this ())
     {

@@ -3666,6 +3666,38 @@ vn_reference_lookup (tree op, tree vuse, vn_lookup_kind kind,
   vr1.vuse = vuse_ssa_val (vuse);
   vr1.operands = operands
     = valueize_shared_reference_ops_from_ref (op, &valueized_anything);
+
+  /* Handle &MEM[ptr + 5].b[1].c as POINTER_PLUS_EXPR.  Avoid doing
+     this before the pass folding __builtin_object_size had a chance to run.  */
+  if ((cfun->curr_properties & PROP_objsz)
+      && operands[0].opcode == ADDR_EXPR
+      && operands.last ().opcode == SSA_NAME)
+    {
+      poly_int64 off = 0;
+      vn_reference_op_t vro;
+      unsigned i;
+      for (i = 1; operands.iterate (i, &vro); ++i)
+	{
+	  if (vro->opcode == SSA_NAME)
+	    break;
+	  else if (known_eq (vro->off, -1))
+	    break;
+	  off += vro->off;
+	}
+      if (i == operands.length () - 1)
+	{
+	  gcc_assert (operands[i-1].opcode == MEM_REF);
+	  tree ops[2];
+	  ops[0] = operands[i].op0;
+	  ops[1] = wide_int_to_tree (sizetype, off);
+	  tree res = vn_nary_op_lookup_pieces (2, POINTER_PLUS_EXPR,
+					       TREE_TYPE (op), ops, NULL);
+	  if (res)
+	    return res;
+	  return NULL_TREE;
+	}
+    }
+
   vr1.type = TREE_TYPE (op);
   ao_ref op_ref;
   ao_ref_init (&op_ref, op);
@@ -3757,13 +3789,45 @@ vn_reference_insert (tree op, tree result, tree vuse, tree vdef)
   vn_reference_t vr1;
   bool tem;
 
+  vec<vn_reference_op_s> operands
+    = valueize_shared_reference_ops_from_ref (op, &tem);
+  /* Handle &MEM[ptr + 5].b[1].c as POINTER_PLUS_EXPR.  Avoid doing this
+     before the pass folding __builtin_object_size had a chance to run.  */
+  if ((cfun->curr_properties & PROP_objsz)
+      && operands[0].opcode == ADDR_EXPR
+      && operands.last ().opcode == SSA_NAME)
+    {
+      poly_int64 off = 0;
+      vn_reference_op_t vro;
+      unsigned i;
+      for (i = 1; operands.iterate (i, &vro); ++i)
+	{
+	  if (vro->opcode == SSA_NAME)
+	    break;
+	  else if (known_eq (vro->off, -1))
+	    break;
+	  off += vro->off;
+	}
+      if (i == operands.length () - 1)
+	{
+	  gcc_assert (operands[i-1].opcode == MEM_REF);
+	  tree ops[2];
+	  ops[0] = operands[i].op0;
+	  ops[1] = wide_int_to_tree (sizetype, off);
+	  vn_nary_op_insert_pieces (2, POINTER_PLUS_EXPR,
+				    TREE_TYPE (op), ops, result,
+				    VN_INFO (result)->value_id);
+	  return;
+	}
+    }
+
   vr1 = XOBNEW (&vn_tables_obstack, vn_reference_s);
   if (TREE_CODE (result) == SSA_NAME)
     vr1->value_id = VN_INFO (result)->value_id;
   else
     vr1->value_id = get_or_alloc_constant_value_id (result);
   vr1->vuse = vuse_ssa_val (vuse);
-  vr1->operands = valueize_shared_reference_ops_from_ref (op, &tem).copy ();
+  vr1->operands = operands.copy ();
   vr1->type = TREE_TYPE (op);
   vr1->punned = false;
   ao_ref op_ref;
