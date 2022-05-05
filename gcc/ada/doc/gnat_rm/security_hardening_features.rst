@@ -7,6 +7,9 @@ Security Hardening Features
 This chapter describes Ada extensions aimed at security hardening that
 are provided by GNAT.
 
+The features in this chapter are currently experimental and subject to
+change.
+
 .. Register Scrubbing:
 
 Register Scrubbing
