@@ -557,19 +557,19 @@ public:
   {
     PRIVATE,
     PUBLIC,
+    RESTRICTED,
     ERROR,
   };
 
 private:
   VisType vis_type;
-  AST::SimplePath path;
+  HIR::SimplePath path;
 
   // should this store location info?
 
 public:
-  // Creates a Visibility - TODO make constructor protected or private?
   Visibility (VisType vis_type,
-	      AST::SimplePath path = AST::SimplePath::create_empty ())
+	      HIR::SimplePath path = HIR::SimplePath::create_empty ())
     : vis_type (vis_type), path (std::move (path))
   {}
 
@@ -579,13 +579,22 @@ public:
   // Does the current visibility refer to a simple `pub <item>` entirely public
   bool is_public () const { return vis_type == PUBLIC; }
 
+  // Is the current visibility public restricted to a certain path
+  bool is_restricted () const { return vis_type == RESTRICTED; }
+
   // Creates an error visibility.
   static Visibility create_error ()
   {
-    return Visibility (ERROR, AST::SimplePath::create_empty ());
+    return Visibility (ERROR, HIR::SimplePath::create_empty ());
   }
 
   VisType get_vis_type () const { return vis_type; }
+
+  const HIR::SimplePath &get_path () const
+  {
+    rust_assert (!is_error ());
+    return path;
+  }
 
   std::string as_string () const;
 };

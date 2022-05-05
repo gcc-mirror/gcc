@@ -946,6 +946,39 @@ public:
 
   Location get_locus () { return locus; }
 };
+
+class SimplePathSegment
+{
+  Analysis::NodeMapping mappings;
+
+public:
+  SimplePathSegment (Analysis::NodeMapping mappings) : mappings (mappings) {}
+
+  const Analysis::NodeMapping &get_mappings () const { return mappings; }
+};
+
+class SimplePath
+{
+  std::vector<SimplePathSegment> segments;
+  Analysis::NodeMapping mappings;
+  Location locus;
+
+public:
+  SimplePath (std::vector<SimplePathSegment> segments,
+	      Analysis::NodeMapping mappings, Location locus)
+    : segments (std::move (segments)), mappings (mappings), locus (locus)
+  {}
+
+  static HIR::SimplePath create_empty ()
+  {
+    return HIR::SimplePath ({}, Analysis::NodeMapping::get_error (),
+			    Location ());
+  }
+
+  const Analysis::NodeMapping &get_mappings () const { return mappings; }
+  const Location &get_locus () const { return locus; }
+};
+
 } // namespace HIR
 } // namespace Rust
 

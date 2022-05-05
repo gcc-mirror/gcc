@@ -24,6 +24,7 @@
 #include "rust-hir-stmt.h"
 #include "rust-hir-item.h"
 #include "rust-hir-map.h"
+#include "rust-name-resolver.h"
 #include "rust-hir-visitor.h"
 
 namespace Rust {
@@ -32,12 +33,19 @@ namespace Privacy {
 class VisibilityResolver : public HIR::HIRVisItemVisitor
 {
 public:
-  VisibilityResolver (Analysis::Mappings &mappings);
+  VisibilityResolver (Analysis::Mappings &mappings,
+		      Rust::Resolver::Resolver &resolver);
 
   /**
    * Perform visibility resolving on an entire crate
    */
   void go (HIR::Crate &crate);
+
+  /**
+   * Resolve a path to the module it refers
+   */
+  bool resolve_module_path (const HIR::SimplePath &restriction,
+			    DefId &to_resolve);
 
   /**
    * Resolve the visibility of an item to its ModuleVisibility. This function
@@ -84,11 +92,11 @@ public:
   virtual void visit (HIR::ExternBlock &block);
 
 private:
-  /* Mappings to insert visibilities into */
-  Analysis::Mappings &mappings;
-
   /* Stack of modules visited by this visitor */
   std::vector<DefId> module_stack;
+
+  Analysis::Mappings &mappings;
+  Rust::Resolver::Resolver &resolver;
 };
 
 } // namespace Privacy

@@ -161,12 +161,13 @@ public:
   HIR::PathExprSegment *lookup_hir_path_expr_seg (CrateNum crateNum, HirId id);
 
   void insert_simple_path_segment (CrateNum crateNum, HirId id,
-				   AST::SimplePathSegment *path);
-  AST::SimplePathSegment *lookup_simple_path_segment (CrateNum crateNum,
-						      HirId id);
+				   const AST::SimplePathSegment *path);
+  const AST::SimplePathSegment *lookup_simple_path_segment (CrateNum crateNum,
+							    HirId id);
 
-  void insert_simple_path (CrateNum crateNum, HirId id, AST::SimplePath *path);
-  AST::SimplePath *lookup_simple_path (CrateNum crateNum, HirId id);
+  void insert_simple_path (CrateNum crateNum, HirId id,
+			   const AST::SimplePath *path);
+  const AST::SimplePath *lookup_simple_path (CrateNum crateNum, HirId id);
 
   void insert_hir_generic_param (CrateNum crateNum, HirId id,
 				 HIR::GenericParam *expr);
@@ -351,8 +352,9 @@ private:
   std::map<CrateNum, std::map<HirId, HIR::TraitItem *>> hirTraitItemMappings;
   std::map<CrateNum, std::map<HirId, HIR::ExternalItem *>>
     hirExternItemMappings;
-  std::map<CrateNum, std::map<HirId, AST::SimplePath *>> astSimplePathMappings;
-  std::map<CrateNum, std::map<HirId, AST::SimplePathSegment *>>
+  std::map<CrateNum, std::map<HirId, const AST::SimplePath *>>
+    astSimplePathMappings;
+  std::map<CrateNum, std::map<HirId, const AST::SimplePathSegment *>>
     astSimplePathSegmentMappings;
   std::map<CrateNum, std::map<HirId, HIR::PathExprSegment *>>
     hirPathSegMappings;

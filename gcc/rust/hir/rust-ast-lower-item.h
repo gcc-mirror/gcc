@@ -826,6 +826,15 @@ private:
   HIR::Item *translated;
 };
 
+class ASTLoweringSimplePath : public ASTLoweringBase
+{
+public:
+  static HIR::SimplePath translate (const AST::SimplePath &path);
+
+  HIR::SimplePathSegment lower (const AST::SimplePathSegment &segment);
+  HIR::SimplePath lower (const AST::SimplePath &path);
+};
+
 } // namespace HIR
 } // namespace Rust
 
