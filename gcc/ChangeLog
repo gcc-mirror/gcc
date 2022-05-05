@@ -1,3 +1,57 @@
+2022-05-04  Tobias Burnus  <tobias@codesourcery.com>
+
+	* omp-low.cc (lower_omp_target): Fix use_device_{addr,ptr} with list
+	item that is in an outer data-sharing clause.
+
+2022-05-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/104658
+	* tree-vect-slp.cc (vect_slp_convert_to_external): Do not
+	create VECTOR_BOOLEAN_TYPE_P extern defs.  Reset the vector
+	type on nodes we promote.
+	(vectorizable_bb_reduc_epilogue): Deal with externalized
+	root.
+	* tree-vect-stmts.cc (vect_maybe_update_slp_op_vectype): Do
+	not allow VECTOR_BOOLEAN_TYPE_P extern defs.
+
+2022-05-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/103116
+	* tree-vect-stmts.cc (get_group_load_store_type): Handle the
+	case we need peeling for gaps even though GROUP_GAP is zero.
+
+2022-05-04  Martin Liska  <mliska@suse.cz>
+
+	* gengtype-state.cc (read_a_state_token): Remove dead code.
+	* ipa-profile.cc (ipa_profile_read_summary_section): Likewise.
+
+2022-05-04  Richard Biener  <rguenther@suse.de>
+
+	* gimplify.cc (gimplify_init_constructor): First gimplify,
+	then simplify the result to a VECTOR_CST.
+
+2022-05-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* genconditions.cc (write_conditions): Append a { nullptr, -1 }
+	element at the end of insn_conditions.
+	(write_writer): Use ARRAY_SIZE (insn_conditions) - 1 instead of
+	ARRAY_SIZE (insn_conditions).
+
+2022-05-04  Christophe Lyon  <christophe.lyon@arm.com>
+
+	PR target/104662
+	* config/arm/arm.cc (simd_valid_immediate): Exit when input is a
+	vector of booleans and MVE is not enabled.
+
+2022-05-04  Richard Biener  <rguenther@suse.de>
+
+	PR debug/105158
+	* tree-cfgcleanup.cc (move_debug_stmts_from_forwarder):
+	Move debug stmts to the predecessor if moving to the
+	destination is not possible.
+	(remove_forwarder_block): Adjust.
+	(remove_forwarder_block_with_phi): Likewise.
+
 2022-05-03  Roger Sayle  <roger@nextmovesoftware.com>
 
 	PR tree-optimization/102950

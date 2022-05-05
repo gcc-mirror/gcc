@@ -1,3 +1,52 @@
+2022-05-04  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/105476
+	* g++.dg/cpp2a/class-deduction-aggr13.C: New test.
+	* g++.dg/cpp2a/class-deduction-aggr13a.C: New test.
+
+2022-05-04  Marek Polacek  <polacek@redhat.com>
+
+	* c-c++-common/Wconversion-1.c: New test.
+
+2022-05-04  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/64679
+	* g++.dg/parse/functor1.C: New test.
+
+2022-05-04  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/105436
+	* g++.dg/parse/template31.C: New test.
+
+2022-05-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/104658
+	* gcc.target/i386/pr104658.c: New testcase.
+
+2022-05-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/103116
+	* gcc.dg/vect/pr103116-1.c: New testcase.
+	* gcc.dg/vect/pr103116-2.c: Likewise.
+
+2022-05-04  Martin Liska  <mliska@suse.cz>
+
+	* c-c++-common/asan/alloca_loop_unpoisoning.c: Do not combine
+	fake and real stack.
+
+2022-05-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/cpp23/lambda-attr1.C: New test.
+	* g++.dg/cpp23/lambda-attr2.C: New test.
+
+2022-05-04  Martin Liska  <mliska@suse.cz>
+
+	* c-c++-common/hwasan/alloca-outside-caught.c: Update dg-output.
+	* c-c++-common/hwasan/heap-overflow.c: Likewise.
+	* c-c++-common/hwasan/hwasan-thread-access-parent.c: Likewise.
+	* c-c++-common/hwasan/large-aligned-1.c: Likewise.
+	* c-c++-common/hwasan/stack-tagging-basic-1.c: Likewise.
+
 2022-05-03  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/105351

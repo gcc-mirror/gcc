@@ -1,3 +1,25 @@
+2022-05-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/104719
+	* include/std/array (array::size(), array::max_size())
+	(array::empty(), array::data()): Add  always_inline attribute.
+
+2022-05-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/104719
+	* include/std/array (__array_traits::_S_ref): Remove.
+	(__array_traits::_S_ptr): Remove.
+	(__array_traits<T, 0>::_Type): Define operator[] and operator T*
+	to provide an array-like API.
+	(array::_AT_Type): Remove public typeef.
+	(array::operator[], array::at, array::front, array::back): Use
+	index operator to access _M_elems instead of _S_ref.
+	(array::data): Use implicit conversion from _M_elems to pointer.
+	(swap(array&, array&)): Use __enable_if_t helper.
+	(get<I>): Use index operator to access _M_elems.
+	* testsuite/23_containers/array/tuple_interface/get_neg.cc:
+	Adjust dg-error line numbers.
+
 2022-05-03  Alexandre Oliva  <oliva@adacore.com>
 
 	PR c++/105324

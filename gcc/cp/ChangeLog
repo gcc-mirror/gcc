@@ -1,3 +1,58 @@
+2022-05-04  Jason Merrill  <jason@redhat.com>
+
+	PR c++/104470
+	* pt.cc (maybe_dependent_member_ref): Handle types.
+	(tsubst, tsubst_copy): Use it.
+	(tsubst_aggr_type, instantiate_alias_template): Don't handle
+	tf_dguide here.
+
+2022-05-04  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/105476
+	* pt.cc (maybe_aggr_guide): Set processing_template_decl when
+	partially instantiating the guide's parameter list.
+
+2022-05-04  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/64679
+	* parser.cc (cp_parser_init_declarator): Properly handle a series of
+	operator() calls, they are not part of an init-declarator.
+
+2022-05-04  Jason Merrill  <jason@redhat.com>
+
+	* decl.cc (reshape_init): Shortcut already-reshaped init.
+	 (reshape_init_class): Assert not getting one here.
+
+2022-05-04  Jason Merrill  <jason@redhat.com>
+
+	* error.cc (cp_print_error_function): Use %qD.
+	(function_category): Use %qD.
+
+2022-05-04  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/105436
+	* parser.cc (cp_parser_next_token_ends_template_argument_p): Don't
+	return true for CPP_GREATER_EQ.
+
+2022-05-04  Jason Merrill  <jason@redhat.com>
+
+	* cp-tree.h (struct language_function): Remove x_cdtor_label.
+	(cdtor_label, LABEL_DECL_CDTOR): Remove.
+	* constexpr.cc (returns): Don't check LABEL_DECL_CDTOR.
+	(cxx_eval_constant_expression): Don't call returns.
+	* decl.cc (check_goto): Don't check cdtor_label.
+	(start_preparsed_function): And don't set it.
+	(finish_constructor_body, finish_destructor_body): Remove.
+	(finish_function_body): Don't call them.
+	* typeck.cc (check_return_expr): Handle cdtor_returns_this here.
+	* semantics.cc (finish_return_stmt): Not here.
+
+2022-05-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* lambda.cc: Include decl.h.
+	(maybe_add_lambda_conv_op): Temporarily override deprecated_state to
+	UNAVAILABLE_DEPRECATED_SUPPRESS.
+
 2022-05-03  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/105351
