@@ -872,6 +872,21 @@ decl_attributes (tree *node, tree attributes, int flags,
 	  tree ret = (spec->handler) (cur_and_last_decl, name, args,
 				      flags|cxx11_flag, &no_add_attrs);
 
+	  /* Fix up typedefs clobbered by attribute handlers.  */
+	  if (TREE_CODE (*node) == TYPE_DECL
+	      && anode == &TREE_TYPE (*node)
+	      && DECL_ORIGINAL_TYPE (*node)
+	      && TYPE_NAME (*anode) == *node
+	      && TYPE_NAME (cur_and_last_decl[0]) != *node)
+	    {
+	      tree t = cur_and_last_decl[0];
+	      DECL_ORIGINAL_TYPE (*node) = t;
+	      tree tt = build_variant_type_copy (t);
+	      cur_and_last_decl[0] = tt;
+	      TREE_TYPE (*node) = tt;
+	      TYPE_NAME (tt) = *node;
+	    }
+
 	  *anode = cur_and_last_decl[0];
 	  if (ret == error_mark_node)
 	    {
