@@ -32129,7 +32129,7 @@ package body Sem_Util is
             --
             --  See Large_Max_Size_Mutable function elsewhere in this
             --  file (currently declared inside of
-            --  Requires_Transient_Scope, so it would have to be
+            --  Returns_On_Secondary_Stack, so it would have to be
             --  moved if we want it to be callable from here).
 
          end Indirect_Temp_Needed;
