@@ -65,6 +65,7 @@ int main()
 
   // User defined derived facet.
   VERIFY( !has_facet<derived_facet>(loc_c) );
+#if __cpp_rtti
   VERIFY( !has_facet<derived_facet>(loc_base) );
   VERIFY( has_facet<derived_facet>(loc_derived) );
 
@@ -97,6 +98,7 @@ int main()
       // Expect no exception.
       VERIFY( true );
     }
+#endif
 
   return 0;
 }

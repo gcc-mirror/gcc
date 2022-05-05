@@ -68,21 +68,27 @@ void test01 ()
   } catch(...) {
     __cxa_exception *exc = __cxa_get_globals()->caughtExceptions;
     VERIFY ( exc != 0 );
+#if __cpp_rtti
     VERIFY ( typeid(int) == *exc->exceptionType );
+#endif
   }
   try {
     throw 0LL;
   } catch(...) {
     __cxa_exception *exc = __cxa_get_globals()->caughtExceptions;
     VERIFY ( exc != 0 );
+#if __cpp_rtti
     VERIFY ( typeid(long long int) == *exc->exceptionType );
+#endif
   }
   try {
     throw 0.0;
   } catch(...) {
     __cxa_exception *exc = __cxa_get_globals()->caughtExceptions;
     VERIFY ( exc != 0 );
+#if __cpp_rtti
     VERIFY ( typeid(double) == *exc->exceptionType );
+#endif
   }
 }
 

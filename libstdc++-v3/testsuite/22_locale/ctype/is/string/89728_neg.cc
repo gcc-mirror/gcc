@@ -18,6 +18,7 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-error "complete" "" { target *-*-* } 0 }
+// { dg-error "invalid 'static_cast'" "" { target { ! rtti }  } 0 }
 
 #include <locale>
 

@@ -36,7 +36,7 @@ void test01()
   any x(5);                                   // x holds int
   VERIFY(any_cast<int>(x) == 5);              // cast to value
   any_cast<int&>(x) = 10;                     // cast to reference
-  VERIFY(any_cast<int>(x) == 10); 
+  VERIFY(any_cast<int>(x) == 10);
 
   x = "Meow";                                 // x holds const char*
   VERIFY(strcmp(any_cast<const char*>(x), "Meow") == 0);
@@ -45,7 +45,7 @@ void test01()
 
   x = string("Meow");                         // x holds string
   string s, s2("Jane");
-  s = move(any_cast<string&>(x));             // move from any 
+  s = move(any_cast<string&>(x));             // move from any
   VERIFY(s == "Meow");
   any_cast<string&>(x) = move(s2);            // move to any
   VERIFY(any_cast<const string&>(x) == "Jane");
@@ -153,13 +153,19 @@ void test07()
 {
   int arr[3];
   any a(arr);
+#if __cpp_rtti
   VERIFY( a.type() == typeid(int*) );	// contained value is decayed
+#endif
 
   int (*p1)[3] = any_cast<int[3]>(&a);
+#if __cpp_rtti
   VERIFY( a.type() != typeid(int[3]) ); // so any_cast should return nullptr
+#endif
   VERIFY( p1 == nullptr );
   int (*p2)[] = any_cast<int[]>(&a);
+#if __cpp_rtti
   VERIFY( a.type() != typeid(int[]) );	// so any_cast should return nullptr
+#endif
   VERIFY( p2 == nullptr );
   const int (*p3)[] = any_cast<int[]>(&const_cast<const any&>(a));
   VERIFY( p3 == nullptr );
