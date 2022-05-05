@@ -2154,7 +2154,7 @@
 
 ;; Note that there is no corresponding CC setter pattern.
 ;; The reason is that it won't be generated, because
-;; compare-elim.c only does the transformation on input
+;; compare-elim.cc only does the transformation on input
 ;; insns that have a two-element PARALLEL, as opposed to
 ;; the three-element one we have here.     
 (define_insn "divmodhi4_nocc"

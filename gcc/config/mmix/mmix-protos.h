@@ -1,4 +1,4 @@
-/* Prototypes for exported functions defined in mmix.c
+/* Prototypes for exported functions defined in mmix.cc
    Copyright (C) 2000-2022 Free Software Foundation, Inc.
    Contributed by Hans-Peter Nilsson (hp@bitrange.com)
 

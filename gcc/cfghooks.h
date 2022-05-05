@@ -25,14 +25,14 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Structure to gather statistic about profile consistency, per pass.
    An array of this structure, indexed by pass static number, is allocated
-   in passes.c.  The structure is defined here so that different CFG modes
+   in passes.cc.  The structure is defined here so that different CFG modes
    can do their book-keeping via CFG hooks.
 
    For every field[2], field[0] is the count before the pass runs, and
    field[1] is the post-pass count.  This allows us to monitor the effect
    of each individual pass on the profile consistency.
    
-   This structure is not supposed to be used by anything other than passes.c
+   This structure is not supposed to be used by anything other than passes.cc
    and one CFG hook per CFG mode.  */
 struct profile_record
 {

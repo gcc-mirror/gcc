@@ -126,7 +126,7 @@ deterministic_p (const gasm *asm_stmt)
 /* Update this model for the asm STMT, using CTXT to report any
    diagnostics.
 
-   Compare with cfgexpand.c: expand_asm_stmt.  */
+   Compare with cfgexpand.cc: expand_asm_stmt.  */
 
 void
 region_model::on_asm_stmt (const gasm *stmt, region_model_context *ctxt)
@@ -267,11 +267,13 @@ region_model::on_asm_stmt (const gasm *stmt, region_model_context *ctxt)
        iter != reachable_regs.end_mutable_base_regs (); ++iter)
     {
       const region *base_reg = *iter;
-      if (base_reg->symbolic_for_unknown_ptr_p ())
+      if (base_reg->symbolic_for_unknown_ptr_p ()
+	  || !base_reg->tracked_p ())
 	continue;
 
       binding_cluster *cluster = m_store.get_or_create_cluster (base_reg);
-      cluster->on_asm (stmt, m_mgr->get_store_manager ());
+      cluster->on_asm (stmt, m_mgr->get_store_manager (),
+		       conjured_purge (this, ctxt));
     }
 
   /* Update the outputs.  */
@@ -291,8 +293,9 @@ region_model::on_asm_stmt (const gasm *stmt, region_model_context *ctxt)
 	{
 	  sval = m_mgr->get_or_create_conjured_svalue (TREE_TYPE (dst_expr),
 						       stmt,
-						       dst_reg);
-	  purge_state_involving (sval, ctxt);
+						       dst_reg,
+						       conjured_purge (this,
+								       ctxt));
 	}
       set_value (dst_reg, sval, ctxt);
     }

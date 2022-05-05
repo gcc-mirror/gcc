@@ -1,6 +1,6 @@
 /* PR target/103861 */
 /* { dg-do compile } */
-/* { dg-options "-O2 -ftree-vectorize -msse4" } */
+/* { dg-options "-O2 -ftree-vectorize -msse4 -fno-vect-cost-model" } */
 
 char r[2], a[2], b[2];
 unsigned char ur[2], ua[2], ub[2];
@@ -63,4 +63,4 @@ void avgu (void)
     ur[i] = (ua[i] + ub[i] + 1) >> 1;
 }
 
-/* { dg-final { scan-assembler "pavgb" { xfail *-*-* } } } */
+/* { dg-final { scan-assembler "pavgb" } } */

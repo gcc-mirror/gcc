@@ -40,8 +40,26 @@ test01()
   }
 }
 
+#pragma GCC push_options
+#pragma GCC optimize "0"
+
+void
+test02()
+{
+  {
+    const size_t len = 3;
+    typedef std::array<int, len> array_type;
+    array_type a;
+
+    VERIFY( a.size() == len );      // { dg-bogus "-Wmaybe-uninitialized"
+  }
+}
+
+#pragma GCC pop_options
+
 int main()
 {
   test01();
+  test02();
   return 0;
 }

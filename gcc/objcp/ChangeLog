@@ -1,3 +1,18 @@
+2022-01-17  Martin Liska  <mliska@suse.cz>
+
+	* Make-lang.in: Rename .c names to .cc.
+	* config-lang.in: Likewise.
+	* lang-specs.h: Likewise.
+	* objcp-decl.cc (objcp_end_compound_stmt): Likewise.
+	* objcp-lang.cc (struct lang_hooks): Likewise.
+
+2022-01-17  Martin Liska  <mliska@suse.cz>
+
+	* objcp-decl.c: Moved to...
+	* objcp-decl.cc: ...here.
+	* objcp-lang.c: Moved to...
+	* objcp-lang.cc: ...here.
+
 2021-11-29  Eric Gallager  <egallager@gcc.gnu.org>
 
 	PR other/103021

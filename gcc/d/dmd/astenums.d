@@ -28,6 +28,7 @@ enum Baseok : ubyte
 
 enum MODFlags : int
 {
+    none         = 0,    // default (mutable)
     const_       = 1,    // type is const
     immutable_   = 4,    // type is immutable
     shared_      = 2,    // type is shared
@@ -133,6 +134,8 @@ enum STC : ulong  // transfer changes to declaration.h
                          STC.nothrow_ | STC.pure_ | STC.safe | STC.trusted | STC.system), /// for a FuncDeclaration
 
 }
+
+alias StorageClass = ulong;
 
 /********
  * Determine if it's the ambigous case of where `return` attaches to.
@@ -302,8 +305,7 @@ enum PURE : ubyte
     impure      = 0,    // not pure at all
     fwdref      = 1,    // it's pure, but not known which level yet
     weak        = 2,    // no mutable globals are read or written
-    const_      = 3,    // parameters are values or const
-    strong      = 4,    // parameters are values or immutable
+    const_      = 3,    // parameters are values or const = strongly pure
 }
 
 // Whether alias this dependency is recursive or not
@@ -389,3 +391,52 @@ enum InitKind : ubyte
     C_,
 }
 
+/// A linkage attribute as defined by `extern(XXX)`
+///
+/// https://dlang.org/spec/attribute.html#linkage
+enum LINK : ubyte
+{
+    default_,
+    d,
+    c,
+    cpp,
+    windows,
+    objc,
+    system,
+}
+
+/// Whether to mangle an external aggregate as a struct or class, as set by `extern(C++, struct)`
+enum CPPMANGLE : ubyte
+{
+    def,      /// default
+    asStruct, /// `extern(C++, struct)`
+    asClass,  /// `extern(C++, class)`
+}
+
+/// Function match levels
+///
+/// https://dlang.org/spec/function.html#function-overloading
+enum MATCH : int
+{
+    nomatch,   /// no match
+    convert,   /// match with conversions
+    constant,  /// match with conversion to const
+    exact,     /// exact match
+}
+
+/// Inline setting as defined by `pragma(inline, XXX)`
+enum PINLINE : ubyte
+{
+    default_, /// as specified on the command line
+    never,    /// never inline
+    always,   /// always inline
+}
+
+/// Source file type
+enum FileType : ubyte
+{
+    d,    /// normal D source file
+    dhdr, /// D header file (.di)
+    ddoc, /// Ddoc documentation file (.dd)
+    c,    /// C source file
+}

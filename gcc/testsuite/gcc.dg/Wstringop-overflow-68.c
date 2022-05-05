@@ -2,7 +2,7 @@
    a larger scalar into a smaller array
    Verify overflow by aggregate stores.
    { dg-do compile }
-   { dg-options "-O2" } */
+   { dg-options "-O2 -fno-tree-vectorize" } */
 
 #define A(N) (A ## N)
 #define Ac1 (AC1){ 0 }
@@ -57,19 +57,20 @@ void warn_comp_lit_zero (void)
 
 void warn_comp_lit (void)
 {
-  *(AC2*)a1 = Ac2;      // { dg-warning "writing 2 bytes into a region of size 1" "pr101475" { target { vect_slp_v2qi_store_unalign } } }
-  // After vectorization, below codes are optimized to
-  // MEM <vector(4) char> [(char *)&a2] = { 0, 1, 2, 3 };
-  // MEM <vector(4) char> [(char *)&a3] = { 0, 1, 2, 3 };
-  // MEM <vector(8) char> [(char *)&a4] = { 0, 1, 2, 3, 4, 5, 6, 7 };
-  // MEM <vector(8) char> [(char *)&a7] = { 0, 1, 2, 3, 4, 5, 6, 7 };
-  // MEM <vector(16) char> [(char *)&a15] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 };
-  // and warning should be expected, refer to PR102722.
-  *(AC4*)a2 = Ac4;      // { dg-warning "writing 4 bytes into a region of size 2" "pr101475" { xfail { ! { vect_slp_v4qi_store_unalign_1 } } } }
-  *(AC4*)a3 = Ac4;      // { dg-warning "writing 4 bytes into a region of size 3" "pr101475" { xfail { ! { vect_slp_v4qi_store_unalign_1 } } } }
-  *(AC8*)a4 = Ac8;      // { dg-warning "writing 8 bytes into a region of size 4" "pr101475" { xfail { ! { vect_slp_v8qi_store_unalign_1 } } } }
-  *(AC8*)a7 = Ac8;      // { dg-warning "writing 8 bytes into a region of size 7" "pr101475" { xfail { ! { vect_slp_v8qi_store_unalign_1 } } } }
-  *(AC16*)a15 = Ac16;   // { dg-warning "writing 16 bytes into a region of size 15" "pr101475" { xfail { ! { vect_slp_v16qi_store_unalign_1 } } } }
+  /* Ideally only one warning would be issued for each of the stores
+     mentioning the size of the rest of the source being assigned to
+     the destination that doesn't fit.  But without vectorization
+     the assignment is a series of one-character stores, except in
+     the first instance multiple warnings end up being issued for
+     each assignment, each saying "writing 1 byte into a region of
+     size 0".  That's suboptimal and should be improved.  See also
+     PR 92110.  */
+  *(AC2*)a1 = Ac2;      // { dg-warning "writing (2 bytes|1 byte) into a region of size (1|0)" "pr101475" }
+  *(AC4*)a2 = Ac4;      // { dg-warning "writing (4 bytes|1 byte) into a region of size (2|0)" "pr101475" }
+  *(AC4*)a3 = Ac4;      // { dg-warning "writing (4 bytes|1 byte) into a region of size (3|0)" "pr101475" }
+  *(AC8*)a4 = Ac8;      // { dg-warning "writing (8 bytes|1 byte) into a region of size (4|0)" "pr101475" }
+  *(AC8*)a7 = Ac8;      // { dg-warning "writing (8 bytes|1 byte) into a region of size (7|0)" "pr101475" }
+  *(AC16*)a15 = Ac16;   // { dg-warning "writing (16 bytes|1 byte) into a region of size (15|0)" "pr101475" }
 }
 
 void warn_aggr_decl (void)

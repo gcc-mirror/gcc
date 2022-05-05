@@ -77,7 +77,7 @@ interface Interface {
     V mColon(lazy P p) ; /// 10
 }
 +/
-    
+
 public P variable;  /// 0
 V mNone(lazy P p) {}  /// 1
 pure nothrow V mPrefix(lazy P p) {}   /// 2
@@ -92,6 +92,3 @@ pure nothrow auto mAutoPrefix(ref P p) { return p; } /// 7
 auto mAutoTemplateSuffix(alias T)(ref T t) pure nothrow { return p; } /// 9
 pure nothrow:
 V mColon(lazy P p) {} /// 10
-
-
-

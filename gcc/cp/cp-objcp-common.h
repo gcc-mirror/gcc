@@ -21,7 +21,7 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_CP_OBJCP_COMMON
 #define GCC_CP_OBJCP_COMMON
 
-/* In cp/objcp-common.c, cp/cp-lang.c and objcp/objcp-lang.c.  */
+/* In cp/objcp-common.c, cp/cp-lang.cc and objcp/objcp-lang.cc.  */
 
 extern tree cp_get_debug_type (const_tree);
 extern tree objcp_tsubst_copy_and_build (tree, tree, tsubst_flags_t,
@@ -31,6 +31,7 @@ extern int cp_decl_dwarf_attribute (const_tree, int);
 extern int cp_type_dwarf_attribute (const_tree, int);
 extern void cp_common_init_ts (void);
 extern tree cp_unit_size_without_reusable_padding (tree);
+extern tree cp_classtype_as_base (const_tree);
 extern tree cp_get_global_decls ();
 extern tree cp_pushdecl (tree);
 extern void cp_register_dumps (gcc::dump_manager *);
@@ -43,7 +44,7 @@ extern tree cxx_simulate_record_decl (location_t, const char *,
 				      array_slice<const tree>);
 
 /* Lang hooks that are shared between C++ and ObjC++ are defined here.  Hooks
-   specific to C++ or ObjC++ go in cp/cp-lang.c and objcp/objcp-lang.c,
+   specific to C++ or ObjC++ go in cp/cp-lang.cc and objcp/objcp-lang.cc,
    respectively.  */
 
 #undef LANG_HOOKS_FREE_LANG_DATA
@@ -167,6 +168,8 @@ extern tree cxx_simulate_record_decl (location_t, const char *,
 #define LANG_HOOKS_TYPE_DWARF_ATTRIBUTE cp_type_dwarf_attribute
 #undef LANG_HOOKS_UNIT_SIZE_WITHOUT_REUSABLE_PADDING
 #define LANG_HOOKS_UNIT_SIZE_WITHOUT_REUSABLE_PADDING cp_unit_size_without_reusable_padding
+#undef LANG_HOOKS_CLASSTYPE_AS_BASE
+#define LANG_HOOKS_CLASSTYPE_AS_BASE cp_classtype_as_base
 
 #undef LANG_HOOKS_OMP_PREDETERMINED_SHARING
 #define LANG_HOOKS_OMP_PREDETERMINED_SHARING cxx_omp_predetermined_sharing

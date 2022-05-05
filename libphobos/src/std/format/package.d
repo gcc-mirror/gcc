@@ -179,10 +179,10 @@ $(BOOKTABLE ,
              Depending on the number, a scientific notation or
              a natural notation is used.))
    $(TR $(TD $(B 'a') / $(B 'A'))
-        $(TD To be formatted as a real number in hexadezimal scientific notation.))
+        $(TD To be formatted as a real number in hexadecimal scientific notation.))
    $(TR $(TD $(B 'r'))
         $(TD To be formatted as raw bytes.
-             The output may not be printable and depends on endianess.))
+             The output may not be printable and depends on endianness.))
 )
 
 The $(I compound indicator) can be used to describe compound types
@@ -1589,7 +1589,7 @@ char[] sformat(alias fmt, Args...)(char[] buf, Args args)
 if (isSomeString!(typeof(fmt)))
 {
     alias e = checkFormatException!(fmt, Args);
-    static assert(!e, e.msg);
+    static assert(!e, e);
     return .sformat(buf, fmt, args);
 }
 

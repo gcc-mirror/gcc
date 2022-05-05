@@ -252,7 +252,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif // C++14
 
 #if __cplusplus >= 201703L
-#define __cpp_lib_nonmember_container_access 201411
+#define __cpp_lib_nonmember_container_access 201411L
 
   /**
    *  @brief  Return the size of a container.

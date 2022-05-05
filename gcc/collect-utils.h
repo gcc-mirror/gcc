@@ -20,7 +20,7 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_COLLECT_UTILS_H
 #define GCC_COLLECT_UTILS_H
 
-/* Provided in collect-utils.c.  */
+/* Provided in collect-utils.cc.  */
 extern void notice (const char *, ...)
   __attribute__ ((format (printf, 1, 2)));
 extern void fatal_signal (int);

@@ -5,5 +5,3 @@ struct Bug3775 {
 }
 
 static assert(cast(int)Bug3775.byLine == 1);
-
-

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -286,8 +286,10 @@ private
    pragma Stream_Convert (Exception_Occurrence, String_To_EO, EO_To_String);
    --  Functions for implementing Exception_Occurrence stream attributes
 
-   pragma Warnings (Off, "aggregate not fully initialized");
-   Null_Occurrence : constant Exception_Occurrence := (others => <>);
-   pragma Warnings (On, "aggregate not fully initialized");
+   Null_Occurrence : constant Exception_Occurrence :=
+     (Machine_Occurrence => System.Null_Address,
+      Msg => (others => '*'),
+      Tracebacks => (others => System.Traceback_Entries.Null_TB_Entry),
+      others => <>);
 
 end Ada.Exceptions;

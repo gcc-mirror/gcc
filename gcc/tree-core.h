@@ -342,6 +342,9 @@ enum omp_clause_code {
      OpenMP clause: map ({alloc:,to:,from:,tofrom:,}variable-list).  */
   OMP_CLAUSE_MAP,
 
+  /* OpenMP clause: has_device_addr (variable-list).  */
+  OMP_CLAUSE_HAS_DEVICE_ADDR,
+
   /* Internal structure to hold OpenACC cache directive's variable-list.
      #pragma acc cache (variable-list).  */
   OMP_CLAUSE__CACHE_,
@@ -686,7 +689,7 @@ enum tree_index {
 
   /* Put the complex types after their component types, so that in (sequential)
      tree streaming we can assert that their component types have already been
-     handled (see tree-streamer.c:record_common_node).  */
+     handled (see tree-streamer.cc:record_common_node).  */
   TI_COMPLEX_INTEGER_TYPE,
   TI_COMPLEX_FLOAT_TYPE,
   TI_COMPLEX_DOUBLE_TYPE,
@@ -821,7 +824,7 @@ enum tree_index {
 /* An enumeration of the standard C integer types.  These must be
    ordered so that shorter types appear before longer ones, and so
    that signed types appear before unsigned ones, for the correct
-   functioning of interpret_integer() in c-lex.c.  */
+   functioning of interpret_integer() in c-lex.cc.  */
 enum integer_type_kind {
   itk_char,
   itk_signed_char,
@@ -933,7 +936,7 @@ enum operand_equal_flag {
 };
 
 /* Enum and arrays used for tree allocation stats.
-   Keep in sync with tree.c:tree_node_kind_names.  */
+   Keep in sync with tree.cc:tree_node_kind_names.  */
 enum tree_node_kind {
   d_kind,
   t_kind,
@@ -961,6 +964,15 @@ enum annot_expr_kind {
   annot_expr_vector_kind,
   annot_expr_parallel_kind,
   annot_expr_kind_last
+};
+
+/* The kind of a TREE_CLOBBER_P CONSTRUCTOR node.  */
+enum clobber_kind {
+  /* Unspecified, this clobber acts as a store of an undefined value.  */
+  CLOBBER_UNDEF,
+  /* This clobber ends the lifetime of the storage.  */
+  CLOBBER_EOL,
+  CLOBBER_LAST
 };
 
 /*---------------------------------------------------------------------------
@@ -1055,7 +1067,8 @@ struct GTY(()) tree_base {
 
       /* This field is only used with TREE_TYPE nodes; the only reason it is
 	 present in tree_base instead of tree_type is to save space.  The size
-	 of the field must be large enough to hold addr_space_t values.  */
+	 of the field must be large enough to hold addr_space_t values.
+	 For CONSTRUCTOR nodes this holds the clobber_kind enum.  */
       unsigned address_space : 8;
     } bits;
 
@@ -1141,6 +1154,9 @@ struct GTY(()) tree_base {
 
        PREDICT_EXPR_OUTCOME in
 	   PREDICT_EXPR
+
+       OMP_CLAUSE_MAP_DECL_MAKE_ADDRESSABLE in
+	   OMP_CLAUSE
 
    static_flag:
 
@@ -1445,7 +1461,7 @@ struct GTY(()) tree_int_cst {
 
 struct GTY(()) tree_real_cst {
   struct tree_typed typed;
-  struct real_value * real_cst_ptr;
+  struct real_value value;
 };
 
 struct GTY(()) tree_fixed_cst {
@@ -1547,9 +1563,7 @@ enum omp_clause_linear_kind
 struct GTY(()) tree_exp {
   struct tree_typed typed;
   location_t locus;
-  tree GTY ((special ("tree_exp"),
-	     desc ("TREE_CODE ((tree) &%0)")))
-    operands[1];
+  tree GTY ((length ("TREE_OPERAND_LENGTH ((tree)&%h)"))) operands[1];
 };
 
 /* Immediate use linking structure.  This structure is used for maintaining
@@ -2267,6 +2281,7 @@ extern const char * built_in_names[(int) END_BUILTINS];
 /* Number of operands and names for each OMP_CLAUSE node.  */
 extern unsigned const char omp_clause_num_ops[];
 extern const char * const omp_clause_code_name[];
+extern const char *user_omp_clause_code_name (tree, bool);
 
 /* A vector of all translation-units.  */
 extern GTY (()) vec<tree, va_gc> *all_translation_units;

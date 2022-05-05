@@ -20,7 +20,7 @@
    <http://www.gnu.org/licenses/>.  */
 
 /* This file contains timing variable definitions, used by timevar.h
-   and timevar.c.
+   and timevar.cc.
 
    Syntax:
 
@@ -307,6 +307,7 @@ DEFTIMEVAR (TV_TREE_UBSAN            , "tree ubsan")
 DEFTIMEVAR (TV_INITIALIZE_RTL        , "initialize rtl")
 DEFTIMEVAR (TV_GIMPLE_LADDRESS       , "address lowering")
 DEFTIMEVAR (TV_TREE_LOOP_IFCVT       , "tree loop if-conversion")
+DEFTIMEVAR (TV_WARN_ACCESS           , "access analysis")
 
 /* Everything else in rest_of_compilation not included above.  */
 DEFTIMEVAR (TV_EARLY_LOCAL	     , "early local passes")

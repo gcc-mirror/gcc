@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -54,7 +54,7 @@ package body Ada.Wide_Text_IO.Integer_Aux is
          Load_Integer (File, Buf, Stop);
       end if;
 
-      Item := Scan (Buf, Ptr'Access, Stop);
+      Scan (Buf, Ptr'Access, Stop, Item);
       Check_End_Of_Field (Buf, Stop, Ptr, Width);
    end Get;
 
@@ -71,7 +71,7 @@ package body Ada.Wide_Text_IO.Integer_Aux is
 
    begin
       String_Skip (From, Pos);
-      Item := Scan (From, Pos'Access, From'Last);
+      Scan (From, Pos'Access, From'Last, Item);
       Last := Pos - 1;
 
    exception

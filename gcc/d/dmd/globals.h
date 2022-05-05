@@ -19,6 +19,8 @@
 // Can't include arraytypes.h here, need to declare these directly.
 template <typename TYPE> struct Array;
 
+class FileManager;
+
 typedef unsigned char Diagnostic;
 enum
 {
@@ -145,7 +147,7 @@ struct Param
     FeatureState dtorFields;  // destruct fields of partially constructed objects
                               // https://issues.dlang.org/show_bug.cgi?id=14246
     bool fieldwise;         // do struct equality testing field-wise rather than by memcmp()
-    bool rvalueRefParam;    // allow rvalues to be arguments to ref parameters
+    FeatureState rvalueRefParam;    // allow rvalues to be arguments to ref parameters
     CppStdRevision cplusplus;  // version of C++ name mangling to support
     bool markdown;          // enable Markdown replacements in Ddoc
     bool vmarkdown;         // list instances of Markdown replacements in Ddoc
@@ -290,6 +292,9 @@ struct Global
     Array<class Identifier*>* debugids;   // command line debug versions and predefined versions
 
     bool hasMainFunction;
+    unsigned varSequenceNumber;
+
+    FileManager* fileManager;
 
     /* Start gagging. Return the current number of gagged errors
      */
@@ -344,15 +349,6 @@ typedef unsigned long long dinteger_t;
 typedef long long sinteger_t;
 typedef unsigned long long uinteger_t;
 #endif
-
-typedef int8_t                  d_int8;
-typedef uint8_t                 d_uns8;
-typedef int16_t                 d_int16;
-typedef uint16_t                d_uns16;
-typedef int32_t                 d_int32;
-typedef uint32_t                d_uns32;
-typedef int64_t                 d_int64;
-typedef uint64_t                d_uns64;
 
 // file location
 struct Loc
@@ -412,6 +408,14 @@ enum class PINLINE : uint8_t
     default_,     // as specified on the command line
     never,        // never inline
     always        // always inline
+};
+
+enum class FileType : uint8_t
+{
+    d,    /// normal D source file
+    dhdr, /// D header file (.di)
+    ddoc, /// Ddoc documentation file (.dd)
+    c,    /// C source file
 };
 
 typedef uinteger_t StorageClass;

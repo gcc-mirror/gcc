@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2020-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 2020-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -652,10 +652,7 @@ begin -- Gen_IL.Gen.Gen_Entities
 
    Cc (E_Access_Type, Access_Kind);
        --  An access type created by an access type declaration with no all
-       --  keyword present. Note that the predefined type Any_Access, which
-       --  has E_Access_Type Ekind, is used to label NULL in the upwards pass
-       --  of type analysis, to be replaced by the true access type in the
-       --  downwards resolution pass.
+       --  keyword present.
 
    Cc (E_Access_Subtype, Access_Kind);
        --  An access subtype created by a subtype declaration for any access

@@ -20,7 +20,7 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_TREE_CFGCLEANUP_H
 #define GCC_TREE_CFGCLEANUP_H
 
-/* In tree-cfgcleanup.c  */
+/* In tree-cfgcleanup.cc  */
 extern bitmap cfgcleanup_altered_bbs;
 extern bool cleanup_tree_cfg (unsigned = 0);
 extern bool fixup_noreturn_call (gimple *stmt);

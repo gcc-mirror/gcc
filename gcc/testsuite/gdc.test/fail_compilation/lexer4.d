@@ -13,11 +13,11 @@ fail_compilation/lexer4.d(30): Error: exponent required for hex float
 fail_compilation/lexer4.d(31): Error: lower case integer suffix 'l' is not allowed. Please use 'L' instead
 fail_compilation/lexer4.d(32): Error: use 'i' suffix instead of 'I'
 fail_compilation/lexer4.d(34): Error: line number `1234567891234567879` out of range
-fail_compilation/lexer4.d(36): Error: #line integer ["filespec"]\n expected
-fail_compilation/lexer4.d(19): Error: #line integer ["filespec"]\n expected
-fail_compilation/lexer4.d(19): Error: declaration expected, not `"file"`
+fail_compilation/lexer4.d(36): Error: positive integer argument expected following `#line`
+fail_compilation/lexer4.d(19): Error: found `"file"` when expecting new line following `#line` directive
 ---
 */
+
 
 static c1 = '
 ;

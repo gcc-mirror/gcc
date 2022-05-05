@@ -193,7 +193,7 @@ struct vec_prefix
   /* FIXME - These fields should be private, but we need to cater to
 	     compilers that have stricter notions of PODness for types.  */
 
-  /* Memory allocation support routines in vec.c.  */
+  /* Memory allocation support routines in vec.cc.  */
   void register_overhead (void *, size_t, size_t CXX_MEM_STAT_INFO);
   void release_overhead (void *, size_t, size_t, bool CXX_MEM_STAT_INFO);
   static unsigned calculate_allocation (vec_prefix *, unsigned, bool);

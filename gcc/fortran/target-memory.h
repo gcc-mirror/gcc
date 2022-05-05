@@ -43,7 +43,7 @@ size_t gfc_interpret_character (unsigned char *, size_t, gfc_expr *);
 int gfc_interpret_derived (unsigned char *, size_t, gfc_expr *);
 size_t gfc_target_interpret_expr (unsigned char *, size_t, gfc_expr *, bool);
 
-/* Merge overlapping equivalence initializers for trans-common.c. */
+/* Merge overlapping equivalence initializers for trans-common.cc. */
 size_t gfc_merge_initializers (gfc_typespec, gfc_expr *, locus *,
 			       unsigned char *, unsigned char *,
 			       size_t);

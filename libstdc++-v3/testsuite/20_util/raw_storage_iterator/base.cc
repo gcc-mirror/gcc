@@ -15,7 +15,7 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-do run { target c++11 } }
+// { dg-do run }
 
 #include <memory>
 #include <testsuite_hooks.h>
@@ -24,7 +24,7 @@ void
 test01()
 {
   int a[2];
-  auto it = std::raw_storage_iterator<int*, int>(a);
+  std::raw_storage_iterator<int*, int> it(a); // { dg-warning "is deprecated" "" { target c++17 } }
   VERIFY( it.base() == a );
   VERIFY( (++it).base() == a+1 );
 }

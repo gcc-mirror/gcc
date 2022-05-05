@@ -35,7 +35,7 @@ struct default_include
 {
   const char *const fname;	/* The name of the directory.  */
   const char *const component;	/* The component containing the directory
-				   (see update_path in prefix.c) */
+				   (see update_path in prefix.cc) */
   const char cplusplus;		/* When this is non-zero, we should only
 				   consider this if we're compiling C++.
 				   When the -stdlib option is configured, this

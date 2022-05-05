@@ -12,7 +12,7 @@
 # - Comment lines start with '#' in the first column.
 # - map lines consist in an identifier optionnaly followed by at most 2
 #   space-separated flags.
-# Flags are described in vms.c (prefixed by VMS_CRTL_).
+# Flags are described in vms.cc (prefixed by VMS_CRTL_).
 #
 # Keep entries alpha-sorted - this is enforced by the awk script.
 #

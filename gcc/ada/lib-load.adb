@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -958,7 +958,7 @@ package body Lib.Load is
    --  code will have to be generated for it.
 
    procedure Make_Instance_Unit (N : Node_Id; In_Main : Boolean) is
-      Sind  : constant Source_File_Index := Source_Index (Main_Unit);
+      Sind : constant Source_File_Index := Source_Index (Main_Unit);
 
    begin
       Units.Increment_Last;

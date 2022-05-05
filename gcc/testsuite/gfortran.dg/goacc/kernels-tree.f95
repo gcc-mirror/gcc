@@ -3,9 +3,12 @@
 ! { dg-additional-options "--param=openacc-kernels=decompose" }
 ! { dg-additional-options "-fdump-tree-omp_oacc_kernels_decompose" }
 
+! { dg-additional-options -Wuninitialized }
+
 program test
   implicit none
   integer :: q, i, j, k, m, n, o, p, r, s, t, u, v, w
+  ! { dg-note {'i' was declared here} {} { target *-*-* } .-1 }
   logical :: l = .true.
 
   !$acc kernels if(l) async num_gangs(i) num_workers(i) vector_length(i) &
@@ -13,6 +16,7 @@ program test
   !$acc no_create(n) &
   !$acc present(o), pcopy(p), pcopyin(r), pcopyout(s), pcreate(t) &
   !$acc deviceptr(u)
+  ! { dg-warning {'i' is used uninitialized} {} { target *-*-* } .-1 }
   !$acc end kernels
 
 end program test

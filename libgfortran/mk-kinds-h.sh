@@ -87,6 +87,12 @@ for k in $possible_real_kinds; do
 		| sed 's/ *TRANSFER *//' | sed 's/_.*//'`
     rm -f tmq$$.*
 
+    # Check for the value of TINY
+    echo "print *, tiny(0._$k) ; end" > tmq$$.f90
+    tiny=`$compile -S -fdump-parse-tree tmq$$.f90 | grep TRANSFER \
+		| sed 's/ *TRANSFER *//' | sed 's/_.*//'`
+    rm -f tmq$$.*
+
     # Check for the value of DIGITS
     echo "print *, digits(0._$k) ; end" > tmq$$.f90
     digits=`$compile -S -fdump-parse-tree tmq$$.f90 | grep TRANSFER \
@@ -105,6 +111,7 @@ for k in $possible_real_kinds; do
     echo "#define HAVE_GFC_REAL_${k}"
     echo "#define HAVE_GFC_COMPLEX_${k}"
     echo "#define GFC_REAL_${k}_HUGE ${huge}${suffix}"
+    echo "#define GFC_REAL_${k}_TINY ${tiny}${suffix}"
     echo "#define GFC_REAL_${k}_LITERAL_SUFFIX ${suffix}"
     if [ "x$suffix" = "x" ]; then
       echo "#define GFC_REAL_${k}_LITERAL(X) (X)"

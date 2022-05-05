@@ -2123,9 +2123,15 @@ String_expression::do_get_backend(Translate_context* context)
 
   Location loc = this->location();
   std::vector<Bexpression*> init(2);
-  Bexpression* str_cst =
-      gogo->backend()->string_constant_expression(this->val_);
-  init[0] = gogo->backend()->address_expression(str_cst, loc);
+
+  if (this->val_.size() == 0)
+    init[0] = gogo->backend()->nil_pointer_expression();
+  else
+    {
+      Bexpression* str_cst =
+	gogo->backend()->string_constant_expression(this->val_);
+      init[0] = gogo->backend()->address_expression(str_cst, loc);
+    }
 
   Btype* int_btype = Type::lookup_integer_type("int")->get_backend(gogo);
   mpz_t lenval;
@@ -10326,16 +10332,7 @@ Builtin_call_expression::do_check_types(Gogo*)
     case BUILTIN_PRINTLN:
       {
 	const Expression_list* args = this->args();
-	if (args == NULL)
-	  {
-	    if (this->code_ == BUILTIN_PRINT)
-	      go_warning_at(this->location(), 0,
-			 "no arguments for built-in function %<%s%>",
-			 (this->code_ == BUILTIN_PRINT
-			  ? "print"
-			  : "println"));
-	  }
-	else
+	if (args != NULL)
 	  {
 	    for (Expression_list::const_iterator p = args->begin();
 		 p != args->end();
@@ -11613,12 +11610,16 @@ Call_expression::intrinsify(Gogo* gogo,
   std::string package = (no->package() != NULL
                          ? no->package()->pkgpath()
                          : gogo->pkgpath());
+  bool is_method = ((no->is_function() && no->func_value()->is_method())
+		    || (no->is_function_declaration()
+			&& no->func_declaration_value()->is_method()));
   Location loc = this->location();
 
   Type* int_type = Type::lookup_integer_type("int");
   Type* int32_type = Type::lookup_integer_type("int32");
   Type* int64_type = Type::lookup_integer_type("int64");
   Type* uint_type = Type::lookup_integer_type("uint");
+  Type* uint8_type = Type::lookup_integer_type("uint8");
   Type* uint32_type = Type::lookup_integer_type("uint32");
   Type* uint64_type = Type::lookup_integer_type("uint64");
   Type* uintptr_type = Type::lookup_integer_type("uintptr");
@@ -11629,6 +11630,9 @@ Call_expression::intrinsify(Gogo* gogo,
 
   if (package == "sync/atomic")
     {
+      if (is_method)
+	return NULL;
+
       // sync/atomic functions and runtime/internal/atomic functions
       // are very similar. In order not to duplicate code, we just
       // redirect to the latter and let the code below to handle them.
@@ -11694,6 +11698,9 @@ Call_expression::intrinsify(Gogo* gogo,
 
   if (package == "runtime/internal/sys")
     {
+      if (is_method)
+	return NULL;
+
       // runtime/internal/sys functions and math/bits functions
       // are very similar. In order not to duplicate code, we just
       // redirect to the latter and let the code below to handle them.
@@ -11713,6 +11720,9 @@ Call_expression::intrinsify(Gogo* gogo,
 
   if (package == "runtime")
     {
+      if (is_method)
+	return NULL;
+
       // Handle a couple of special runtime functions.  In the runtime
       // package, getcallerpc returns the PC of the caller, and
       // getcallersp returns the frame pointer of the caller.  Implement
@@ -11743,6 +11753,9 @@ Call_expression::intrinsify(Gogo* gogo,
     }
   else if (package == "math/bits")
     {
+      if (is_method)
+	return NULL;
+
       if ((name == "ReverseBytes16" || name == "ReverseBytes32"
            || name == "ReverseBytes64" || name == "ReverseBytes")
           && this->args_ != NULL && this->args_->size() == 1)
@@ -11913,9 +11926,137 @@ Call_expression::intrinsify(Gogo* gogo,
     {
       int memorder = __ATOMIC_SEQ_CST;
 
+      if (is_method)
+	{
+	  Function_type* ftype = (no->is_function()
+				  ? no->func_value()->type()
+				  : no->func_declaration_value()->type());
+	  Type* rtype = ftype->receiver()->type()->deref();
+	  go_assert(rtype->named_type() != NULL);
+	  const std::string& rname(rtype->named_type()->name());
+	  if (rname == "Int32")
+	    {
+	      if (name == "Load")
+		name = "LoadInt32";
+	      else if (name == "Store")
+		name = "Storeint32";
+	      else if (name == "CompareAndSwap")
+		name = "Casint32";
+	      else if (name == "Swap")
+		name = "Xchgint32";
+	      else if (name == "Add")
+		name = "Xaddint32";
+	      else
+		go_unreachable();
+	    }
+	  else if (rname == "Int64")
+	    {
+	      if (name == "Load")
+		name = "LoadInt64";
+	      else if (name == "Store")
+		name = "Storeint64";
+	      else if (name == "CompareAndSwap")
+		name = "Casint64";
+	      else if (name == "Swap")
+		name = "Xchgint64";
+	      else if (name == "Add")
+		name = "Xaddint64";
+	      else
+		go_unreachable();
+	    }
+	  else if (rname == "Uint8")
+	    {
+	      if (name == "Load")
+		name = "Load8";
+	      else if (name == "Store")
+		name = "Store8";
+	      else if (name == "And")
+		name = "And8";
+	      else if (name == "Or")
+		name = "Or8";
+	      else
+		go_unreachable();
+	    }
+	  else if (rname == "Uint32")
+	    {
+	      if (name == "Load")
+		name = "Load";
+	      else if (name == "LoadAcquire")
+		name = "LoadAcq";
+	      else if (name == "Store")
+		name = "Store";
+	      else if (name == "CompareAndSwap")
+		name = "Cas";
+	      else if (name == "CompareAndSwapRelease")
+		name = "CasRel";
+	      else if (name == "Swap")
+		name = "Xchg";
+	      else if (name == "And")
+		name = "And";
+	      else if (name == "Or")
+		name = "Or";
+	      else if (name == "Add")
+		name = "Xadd";
+	      else
+		go_unreachable();
+	    }
+	  else if (rname == "Uint64")
+	    {
+	      if (name == "Load")
+		name = "Load64";
+	      else if (name == "Store")
+		name = "Store64";
+	      else if (name == "CompareAndSwap")
+		name = "Cas64";
+	      else if (name == "Swap")
+		name = "Xchgt64";
+	      else if (name == "Add")
+		name = "Xadd64";
+	      else
+		go_unreachable();
+	    }
+	  else if (rname == "Uintptr")
+	    {
+	      if (name == "Load")
+		name = "Loaduintptr";
+	      else if (name == "LoadAcquire")
+		name = "Loadacquintptr";
+	      else if (name == "Store")
+		name = "Storeuintptr";
+	      else if (name == "StoreRelease")
+		name = "StoreReluintptr";
+	      else if (name == "CompareAndSwap")
+		name = "Casuintptr";
+	      else if (name == "Swap")
+		name = "Xchguintptr";
+	      else if (name == "Add")
+		name = "Xadduintptr";
+	      else
+		go_unreachable();
+	    }
+	  else if (rname == "Float64")
+	    {
+	      // Needs unsafe type conversion.  Don't intrinsify for now.
+	      return NULL;
+	    }
+	  else if (rname == "UnsafePointer")
+	    {
+	      if (name == "Load")
+		name = "Loadp";
+	      else if (name == "StoreNoWB")
+		name = "StorepoWB";
+	      else if (name == "CompareAndSwapNoWB")
+		name = "Casp1";
+	      else
+		go_unreachable();
+	    }
+	  else
+	    go_unreachable();
+	}
+
       if ((name == "Load" || name == "Load64" || name == "Loadint64" || name == "Loadp"
            || name == "Loaduint" || name == "Loaduintptr" || name == "LoadAcq"
-           || name == "Loadint32")
+           || name == "Loadint32" || name == "Load8")
           && this->args_ != NULL && this->args_->size() == 1)
         {
           if (int_size < 8 && (name == "Load64" || name == "Loadint64"))
@@ -11972,6 +12113,11 @@ Call_expression::intrinsify(Gogo* gogo,
               res_type = uint32_type;
               memorder = __ATOMIC_ACQUIRE;
             }
+	  else if (name == "Load8")
+	    {
+	      code = Runtime::ATOMIC_LOAD_1;
+	      res_type = uint8_type;
+	    }
           else
             go_unreachable();
           Expression* a1 = this->args_->front();
@@ -12012,6 +12158,8 @@ Call_expression::intrinsify(Gogo* gogo,
               code = Runtime::ATOMIC_STORE_4;
               memorder = __ATOMIC_RELEASE;
             }
+	  else if (name == "Store8")
+	    code = Runtime::ATOMIC_STORE_1;
           else
             go_unreachable();
           Expression* a3 = Expression::make_integer_ul(memorder, int32_type, loc);
@@ -12176,6 +12324,53 @@ Call_expression::intrinsify(Gogo* gogo,
           Expression* a3 = Expression::make_integer_ul(memorder, int32_type, loc);
           return Runtime::make_call(code, loc, 3, a1, a2, a3);
         }
+    }
+  else if (package == "internal/abi")
+    {
+      if (is_method)
+	return NULL;
+
+      if ((name == "FuncPCABI0" || name == "FuncPCABIInternal")
+	  && this->args_ != NULL
+	  && this->args_->size() == 1)
+	{
+	  // We expect to see a conversion from the expression to "any".
+	  Expression* expr = this->args_->front();
+	  Type_conversion_expression* tce = expr->conversion_expression();
+	  if (tce != NULL)
+	    expr = tce->expr();
+	  Func_expression* fe = expr->func_expression();
+	  Interface_field_reference_expression* interface_method =
+	    expr->interface_field_reference_expression();
+	  if (fe != NULL)
+	    {
+	      Named_object* no = fe->named_object();
+	      Expression* ref = Expression::make_func_code_reference(no, loc);
+	      Type* uintptr_type = Type::lookup_integer_type("uintptr");
+	      return Expression::make_cast(uintptr_type, ref, loc);
+	    }
+	  else if (interface_method != NULL)
+	    return interface_method->get_function();
+	  else
+	    {
+	      expr = this->args_->front();
+	      go_assert(expr->type()->interface_type() != NULL
+			&& expr->type()->interface_type()->is_empty());
+	      expr = Expression::make_interface_info(expr,
+						     INTERFACE_INFO_OBJECT,
+						     loc);
+	      // Trust that this is a function type, which means that
+	      // it is a direct iface type and we can use EXPR
+	      // directly.  The backend representation of this
+	      // function is a pointer to a struct whose first field
+	      // is the actual function to call.
+	      Type* pvoid = Type::make_pointer_type(Type::make_void_type());
+	      Type* pfntype = Type::make_pointer_type(pvoid);
+	      Expression* ref = make_unsafe_cast(pfntype, expr, loc);
+	      return Expression::make_dereference(ref, NIL_CHECK_NOT_NEEDED,
+						  loc);
+	    }
+	}
     }
 
   return NULL;

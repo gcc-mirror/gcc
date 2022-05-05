@@ -32,8 +32,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "dmd/mangle.h"
 #include "dmd/module.h"
 #include "dmd/mtype.h"
-#include "dmd/root/file.h"
 #include "dmd/target.h"
+#include "dmd/template.h"
 
 #include "opts.h"
 #include "alias.h"
@@ -579,7 +579,7 @@ d_handle_option (size_t scode, const char *arg, HOST_WIDE_INT value,
       global.params.fix16997 = value;
       global.params.markdown = value;
       global.params.noSharedAccess = value;
-      global.params.rvalueRefParam = value;
+      global.params.rvalueRefParam = FeatureState::enabled;
       global.params.inclusiveInContracts = value;
       global.params.shortenedMethods = value;
       break;
@@ -625,7 +625,7 @@ d_handle_option (size_t scode, const char *arg, HOST_WIDE_INT value,
       break;
 
     case OPT_fpreview_rvaluerefparam:
-      global.params.rvalueRefParam = value;
+      global.params.rvalueRefParam = FeatureState::enabled;
       break;
 
     case OPT_fpreview_shortenedmethods:
@@ -637,10 +637,15 @@ d_handle_option (size_t scode, const char *arg, HOST_WIDE_INT value,
       break;
 
     case OPT_frevert_all:
+      global.params.useDIP1000 = FeatureState::disabled;
       global.params.useDIP25 = FeatureState::disabled;
       global.params.dtorFields = FeatureState::disabled;
       global.params.fix16997 = !value;
       global.params.markdown = !value;
+      break;
+
+    case OPT_frevert_dip1000:
+      global.params.useDIP1000 = FeatureState::disabled;
       break;
 
     case OPT_frevert_dip25:
@@ -1069,9 +1074,8 @@ d_parse_file (void)
 
 	  /* Overwrite the source file for the module, the one created by
 	     Module::create would have a forced a `.d' suffix.  */
-	  m->srcBuffer = FileBuffer::create ();
-	  m->srcBuffer->data.length = len;
-	  m->srcBuffer->data.ptr = buffer;
+	  m->src.length = len;
+	  m->src.ptr = buffer;
 	}
       else
 	{
@@ -1108,7 +1112,7 @@ d_parse_file (void)
       m->importedFrom = m;
       m->parse ();
 
-      if (m->isDocFile)
+      if (m->filetype == FileType::ddoc)
 	{
 	  gendocfile (m);
 	  /* Remove M from list of modules.  */
@@ -1146,7 +1150,8 @@ d_parse_file (void)
       for (size_t i = 0; i < modules.length; i++)
 	{
 	  Module *m = modules[i];
-	  if (m->isHdrFile || (d_option.fonly && m != Module::rootModule))
+	  if (m->filetype == FileType::dhdr
+	      || (d_option.fonly && m != Module::rootModule))
 	    continue;
 
 	  if (global.params.verbose)
@@ -1307,6 +1312,9 @@ d_parse_file (void)
 	}
     }
 
+  if (global.params.vtemplates)
+    printTemplateStats ();
+
   /* Generate JSON files.  */
   if (global.params.doJsonGeneration)
     {
@@ -1374,7 +1382,7 @@ d_parse_file (void)
 
       /* Skip generating code for header files, or when the module wasn't
 	 specified by `-fonly=`.  */
-      if ((m->isHdrFile && m != main_module)
+      if ((m->filetype == FileType::dhdr && m != main_module)
 	  || (d_option.fonly && m != Module::rootModule))
 	continue;
 
@@ -1421,7 +1429,8 @@ d_parse_file (void)
       for (size_t i = 0; i < modules.length; i++)
 	{
 	  Module *m = modules[i];
-	  if (m->isHdrFile || (d_option.fonly && m != Module::rootModule))
+	  if (m->filetype == FileType::dhdr
+	      || (d_option.fonly && m != Module::rootModule))
 	    continue;
 
 	  remove (m->hdrfile.toChars ());

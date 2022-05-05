@@ -181,6 +181,12 @@ void gwv_np_3()
   assert (res == hres);
 }
 
+#if ACC_DEVICE_TYPE_nvidia
+/* To avoid 'libgomp: The Nvidia accelerator has insufficient resources'.  */
+#define NUM_WORKERS 28
+#else
+#define NUM_WORKERS 32
+#endif
 
 /* Test of reduction on loop directive (gangs, workers and vectors, multiple
    non-private reduction variables, float type).  */
@@ -194,7 +200,7 @@ void gwv_np_4()
   for (i = 0; i < 32768; i++)
     arr[i] = i % (32768 / 64);
 
-  #pragma acc parallel num_gangs(32) num_workers(32) vector_length(32)
+  #pragma acc parallel num_gangs(32) num_workers(NUM_WORKERS) vector_length(32)
   {
     #pragma acc loop gang reduction(+:res) reduction(max:mres)
     for (j = 0; j < 32; j++)
@@ -235,6 +241,7 @@ void gwv_np_4()
   assert (mres == hmres);
 }
 
+#undef NUM_WORKERS
 
 /* Test of reduction on loop directive (vectors, private reduction
    variable).  */

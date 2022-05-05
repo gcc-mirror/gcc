@@ -6,10 +6,10 @@ Client Code   . Generated .            libgccjit.so
     ──────────────────────────>      .               .
               .           .    │     .               .
               .           .    V     .               .
-              .           .    ──> libgccjit.c       .
+              .           .    ──> libgccjit.cc       .
               .           .        │ (error-checking).
               .           .        │                 .
-              .           .        ──> jit-recording.c
+              .           .        ──> jit-recording.cc
               .           .              (record API calls)
               .           .    <───────              .
               .           .    │     .               .
@@ -36,7 +36,7 @@ Client Code   . Generated .            libgccjit.so
               .           .          .    │          .
 ..........................................│..................VVVVVVVVVVVVV...
               .           .          .    │          .       No GC in here
-              .           .          .    │ jit-playback.c
+              .           .          .    │ jit-playback.cc
               .           .          .    │   (playback of API calls)
               .           .          .    ───────────────> creation of functions,
               .           .          .               .     types, expression trees

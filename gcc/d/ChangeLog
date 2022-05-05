@@ -1,3 +1,165 @@
+2022-04-28  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* dmd/MERGE: Merge upstream dmd 313d28b3d.
+	* d-port.cc (Port::memicmp): Use d_size_t instead of size_t.
+	(Port::valcpy): Likewise.
+
+2022-04-21  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* dmd/MERGE: Merge upstream dmd eb7bee331.
+	* dmd/VERSION: Update version to v2.100.0-beta.1.
+	* d-lang.cc (d_handle_option): Handle OPT_frevert_dip1000.
+	* lang.opt (frevert=dip1000): New option.
+
+2022-04-13  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* Make-lang.in (D_FRONTEND_OBJS): Add d/common-bitfields.o,
+	d/mustuse.o.
+	* d-ctfloat.cc (CTFloat::isIdentical): Don't treat NaN values as
+	identical.
+	* dmd/MERGE: Merge upstream dmd 4d1bfcf14.
+	* expr.cc (ExprVisitor::visit (VoidInitExp *)): New.
+
+2022-04-03  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-lang.cc: Include dmd/template.h.
+	(d_parse_file): Call printTemplateStats when vtemplates is set.
+	* decl.cc (start_function): Remove OPT_Wtemplates warning.
+	* lang.opt (Wtemplates): Remove.
+
+2022-04-02  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* dmd/MERGE: Merge upstream dmd 47871363d.
+	* d-builtins.cc (d_init_versions): Add predefined version identifiers
+	D_PreConditions, D_PostConditions, and D_Invariants.
+	* d-codegen.cc (d_build_call): Update for new front-end interface.
+	(build_frame_type): Generate reference field for NRVO variables with
+	nested references.
+	(build_closure): Generate assignment of return address to closure.
+	* d-tree.h (DECL_INSTANTIATED): Use DECL_LANG_FLAG_2.
+	(bind_expr): Remove.
+	* decl.cc (DeclVisitor::visit (FuncDeclaration *)): Update for new
+	front-end interface.
+	(get_symbol_decl): Likewise.
+	(get_decl_tree): Check DECL_LANG_FRAME_FIELD before DECL_LANG_NRVO.
+	Dereference the field when both are set.
+	* expr.cc (ExprVisitor::visit (DeleteExp *)): Update for new front-end
+	interface.
+	* modules.cc (get_internal_fn): Likewise.
+	* toir.cc (IRVisitor::visit (ReturnStatement *)): Likewise.
+
+2022-03-21  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/105004
+	* d-codegen.cc (build_struct_literal): Use complex_expr to build
+	complex expressions from __c_complex types.
+
+2022-03-21  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/104911
+	* dmd/MERGE: Merge upstream dmd 2503f17e5.
+	* d-convert.cc (convert_expr): Replace d_uns64 with dinteger_t.
+	* d-lang.cc: Remove dmd/root/file.h include.
+	(d_handle_option): Update for new front-end interface.
+	(d_parse_file): Likewise.
+
+2022-03-13  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* dmd/MERGE: Merge upstream dmd 02a3fafc6.
+	* dmd/VERSION: Update version to v2.099.0.
+	* imports.cc (ImportVisitor::visit (EnumDeclaration *)): Don't cache
+	decl in front-end AST node.
+	(ImportVisitor::visit (AggregateDeclaration *)): Likewise.
+	(ImportVisitor::visit (ClassDeclaration *)): Likewise.
+
+2022-03-11  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* imports.cc (imported_decls): Define.
+	(class ImportVisitor): Add result_ field.
+	(ImportVisitor::result): New method.
+	(ImportVisitor::visit (Module *)): Store decl to result_.
+	(ImportVisitor::visit (Import *)): Likewise.
+	(ImportVisitor::visit (AliasDeclaration *)): Don't cache decl in
+	front-end AST node.
+	(ImportVisitor::visit (OverDeclaration *)): Likewise.
+	(ImportVisitor::visit (FuncDeclaration *)): Likewise.
+	(ImportVisitor::visit (Declaration *)): Likewise.
+	(build_import_decl): Use imported_decls to cache and lookup built
+	declarations.
+
+2022-03-11  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR translation/104552
+	* lang.opt (fdump-cxx-spec=): Fix typo in argument handle.
+	(fpreview=fixaliasthis): Quote `alias this' as code.
+
+2022-03-02  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* dmd/MERGE: Merge upstream dmd 423f19b41.
+
+2022-02-28  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-target.cc (Target::_init): Initialize C type size fields.
+	* dmd/MERGE: Merge upstream dmd cf63dd8e5.
+	* dmd/VERSION: Update version to v2.099.0-rc.1.
+
+2022-02-20  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* expr.cc (ExprVisitor::visit (DeleteExp *)): Remove handling of
+	deleting GC allocated classes.
+	* runtime.def (DELCLASS): Remove.
+	(DELINTERFACE): Remove.
+
+2022-02-20  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* dmd/MERGE: Merge upstream dmd cb49e99f8.
+	* dmd/VERSION: Update version to v2.099.0-beta.1.
+	* decl.cc (layout_class_initializer): Update call to NewExp::create.
+	* expr.cc (ExprVisitor::visit (DeleteExp *)): Remove handling of
+	deleting arrays and pointers.
+	(ExprVisitor::visit (DotVarExp *)): Convert complex types to the
+	front-end library type representing them.
+	(ExprVisitor::visit (StringExp *)): Use getCodeUnit instead of charAt
+	to get the value of each index in a string expression.
+	* runtime.def (DELMEMORY): Remove.
+	(DELARRAYT): Remove.
+	* types.cc (TypeVisitor::visit (TypeEnum *)): Handle anonymous enums.
+
+2022-02-16  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-builtins.cc (d_build_builtins_module): Set purity of DECL_PURE_P
+	functions to PURE::const_.
+	* d-gimplify.cc (bit_field_ref): New function.
+	(d_gimplify_modify_expr): Handle implicit casting for assignments to
+	bit-fields.
+	(d_gimplify_unary_expr): New function.
+	(d_gimplify_binary_expr): New function.
+	(d_gimplify_expr): Handle UNARY_CLASS_P and BINARY_CLASS_P.
+	* d-target.cc (Target::_init): Initialize bitFieldStyle.
+	(TargetCPP::parameterType): Update signature.
+	(Target::supportsLinkerDirective): New function.
+	* dmd/MERGE: Merge upstream dmd 52844d4b1.
+	* expr.cc (ExprVisitor::visit (ThrowExp *)): New function.
+	* types.cc (d_build_bitfield_integer_type): New function.
+	(insert_aggregate_bitfield): New function.
+	(layout_aggregate_members): Handle inserting bit-fields into an
+	aggregate type.
+
+2022-01-31  Martin Liska  <mliska@suse.cz>
+
+	PR d/104287
+	* decl.cc (d_finish_decl): Remove trailing dot.
+
+2022-01-28  Martin Liska  <mliska@suse.cz>
+
+	* decl.cc (d_finish_decl): Do not use leading capital letter.
+
+2022-01-17  Martin Liska  <mliska@suse.cz>
+
+	* d-gimplify.cc: Rename .c names to .cc.
+	* d-incpath.cc: Likewise.
+	* lang-specs.h: Likewise.
+
 2022-01-03  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	PR d/103840

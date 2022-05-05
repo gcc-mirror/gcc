@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2" } */
+/* { dg-options "-O2 -fno-tree-vectorize" } */
 
 typedef long long v2di __attribute__ ((vector_size (16)));
 typedef double v2df __attribute__ ((vector_size (16)));

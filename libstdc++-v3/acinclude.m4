@@ -49,7 +49,7 @@ AC_DEFUN([GLIBCXX_CONFIGURE], [
   # Keep these sync'd with the list in Makefile.am.  The first provides an
   # expandable list at autoconf time; the second provides an expandable list
   # (i.e., shell variable) at configure time.
-  m4_define([glibcxx_SUBDIRS],[include libsupc++ src src/c++98 src/c++11 src/c++17 src/c++20 src/filesystem doc po testsuite python])
+  m4_define([glibcxx_SUBDIRS],[include libsupc++ src src/c++98 src/c++11 src/c++17 src/c++20 src/filesystem src/libbacktrace doc po testsuite python])
   SUBDIRS='glibcxx_SUBDIRS'
 
   # These need to be absolute paths, yet at the same time need to
@@ -172,6 +172,7 @@ dnl  LD (as a side effect of testing)
 dnl Sets:
 dnl  with_gnu_ld
 dnl  glibcxx_ld_is_gold (set to "no" or "yes")
+dnl  glibcxx_ld_is_mold (set to "no" or "yes")
 dnl  glibcxx_gnu_ld_version (possibly)
 dnl
 dnl The last will be a single integer, e.g., version 1.23.45.0.67.89 will
@@ -204,11 +205,14 @@ AC_DEFUN([GLIBCXX_CHECK_LINKER_FEATURES], [
   # Start by getting the version number.  I think the libtool test already
   # does some of this, but throws away the result.
   glibcxx_ld_is_gold=no
+  glibcxx_ld_is_mold=no
   if test x"$with_gnu_ld" = x"yes"; then
     AC_MSG_CHECKING([for ld version])
     changequote(,)
     if $LD --version 2>/dev/null | grep 'GNU gold' >/dev/null 2>&1; then
       glibcxx_ld_is_gold=yes
+    elif $LD --version 2>/dev/null | grep 'mold' >/dev/null 2>&1; then
+      glibcxx_ld_is_mold=yes
     fi
     ldver=`$LD --version 2>/dev/null |
 	   sed -e 's/[. ][0-9]\{8\}$//;s/.* \([^ ]\{1,\}\)$/\1/; q'`
@@ -220,7 +224,7 @@ AC_DEFUN([GLIBCXX_CHECK_LINKER_FEATURES], [
 
   # Set --gc-sections.
   glibcxx_have_gc_sections=no
-  if test "$glibcxx_ld_is_gold" = "yes"; then
+  if test "$glibcxx_ld_is_gold" = "yes" || test "$glibcxx_ld_is_mold" = "yes" ; then
     if $LD --help 2>/dev/null | grep gc-sections >/dev/null 2>&1; then
       glibcxx_have_gc_sections=yes
     fi
@@ -499,19 +503,24 @@ AC_DEFUN([GLIBCXX_CHECK_LFS], [
 
 
 dnl
-dnl Check for whether a fully dynamic basic_string implementation should
-dnl be turned on, that does not put empty objects in per-process static
-dnl memory (mostly useful together with shared memory allocators, see PR
-dnl libstdc++/16612 for details).
+dnl Check whether the old Copy-On-Write basic_string should allocate a new
+dnl empty representation for every default-constructed basic_string. Without
+dnl this option, COW strings share a single empty rep in static storage,
+dnl but this only works if the linker can guarantee the static storage has
+dnl a unique definition in the process. It also doesn't work if basic_string
+dnl objects are stored in shared memory (see PR libstdc++/16612).
+dnl When fully dynamic strings are enabled, the static storage is not used
+dnl and a new empty string with reference-count == 1 is allocated each time.
+dnl Enabling this changes the libstdc++.so ABI.
 dnl
 dnl --enable-fully-dynamic-string defines _GLIBCXX_FULLY_DYNAMIC_STRING to 1
 dnl --disable-fully-dynamic-string defines _GLIBCXX_FULLY_DYNAMIC_STRING to 0
-dnl otherwise undefined
+dnl otherwise the macro is not defined.
 dnl  +  Usage:  GLIBCXX_ENABLE_FULLY_DYNAMIC_STRING[(DEFAULT)]
 dnl       Where DEFAULT is either `yes' or `no'.
 dnl
 AC_DEFUN([GLIBCXX_ENABLE_FULLY_DYNAMIC_STRING], [
-  GLIBCXX_ENABLE(fully-dynamic-string,$1,,[do not put empty strings in per-process static memory])
+  GLIBCXX_ENABLE(fully-dynamic-string,$1,,[do not put empty strings in per-process static memory], [permit yes|no])
   if test $enable_fully_dynamic_string = yes; then
     enable_fully_dynamic_string_def=1
   else
@@ -2039,6 +2048,50 @@ AC_DEFUN([GLIBCXX_CHECK_UCHAR_H], [
 	      namespace std in <cuchar>.])
   fi
 
+  CXXFLAGS="$CXXFLAGS -fchar8_t"
+  if test x"$ac_has_uchar_h" = x"yes"; then
+    AC_MSG_CHECKING([for c8rtomb and mbrtoc8 in <uchar.h> with -fchar8_t])
+    AC_TRY_COMPILE([#include <uchar.h>
+		    namespace test
+		    {
+		      using ::c8rtomb;
+		      using ::mbrtoc8;
+		    }
+		   ],
+		   [], [ac_uchar_c8rtomb_mbrtoc8_fchar8_t=yes],
+		       [ac_uchar_c8rtomb_mbrtoc8_fchar8_t=no])
+  else
+    ac_uchar_c8rtomb_mbrtoc8_fchar8_t=no
+  fi
+  AC_MSG_RESULT($ac_uchar_c8rtomb_mbrtoc8_fchar8_t)
+  if test x"$ac_uchar_c8rtomb_mbrtoc8_fchar8_t" = x"yes"; then
+    AC_DEFINE(_GLIBCXX_USE_UCHAR_C8RTOMB_MBRTOC8_FCHAR8_T, 1,
+	      [Define if c8rtomb and mbrtoc8 functions in <uchar.h> should be
+	      imported into namespace std in <cuchar> for -fchar8_t.])
+  fi
+
+  CXXFLAGS="$CXXFLAGS -std=c++20"
+  if test x"$ac_has_uchar_h" = x"yes"; then
+    AC_MSG_CHECKING([for c8rtomb and mbrtoc8 in <uchar.h> with -std=c++20])
+    AC_TRY_COMPILE([#include <uchar.h>
+		    namespace test
+		    {
+		      using ::c8rtomb;
+		      using ::mbrtoc8;
+		    }
+		   ],
+		   [], [ac_uchar_c8rtomb_mbrtoc8_cxx20=yes],
+		       [ac_uchar_c8rtomb_mbrtoc8_cxx20=no])
+  else
+    ac_uchar_c8rtomb_mbrtoc8_cxx20=no
+  fi
+  AC_MSG_RESULT($ac_uchar_c8rtomb_mbrtoc8_cxx20)
+  if test x"$ac_uchar_c8rtomb_mbrtoc8_cxx20" = x"yes"; then
+    AC_DEFINE(_GLIBCXX_USE_UCHAR_C8RTOMB_MBRTOC8_CXX20, 1,
+	      [Define if c8rtomb and mbrtoc8 functions in <uchar.h> should be
+	      imported into namespace std in <cuchar> for C++20.])
+  fi
+
   CXXFLAGS="$ac_save_CXXFLAGS"
   AC_LANG_RESTORE
 ])
@@ -2081,6 +2134,7 @@ dnl Compute the EOF, SEEK_CUR, and SEEK_END integer constants.
 dnl
 AC_DEFUN([GLIBCXX_COMPUTE_STDIO_INTEGER_CONSTANTS], [
 
+if test "$is_hosted" = yes; then
   AC_CACHE_CHECK([for the value of EOF], glibcxx_cv_stdio_eof, [
   AC_COMPUTE_INT([glibcxx_cv_stdio_eof], [[EOF]],
 		 [#include <stdio.h>],
@@ -2104,6 +2158,7 @@ AC_DEFUN([GLIBCXX_COMPUTE_STDIO_INTEGER_CONSTANTS], [
   ])
   AC_DEFINE_UNQUOTED(_GLIBCXX_STDIO_SEEK_END, $glibcxx_cv_stdio_seek_end,
 		     [Define to the value of the SEEK_END integer constant.])
+fi
 ])
 
 dnl
@@ -2775,11 +2830,13 @@ AC_DEFUN([GLIBCXX_ENABLE_CSTDIO], [
       CSTDIO_H=config/io/c_io_stdio.h
       BASIC_FILE_H=config/io/basic_file_stdio.h
       BASIC_FILE_CC=config/io/basic_file_stdio.cc
-      AC_MSG_RESULT(stdio)
 
       if test "x$enable_cstdio" = "xstdio_pure" ; then
+	AC_MSG_RESULT([stdio (without POSIX read/write)])
 	AC_DEFINE(_GLIBCXX_USE_STDIO_PURE, 1,
 		  [Define to restrict std::__basic_file<> to stdio APIs.])
+      else
+	AC_MSG_RESULT([stdio (with POSIX read/write)])
       fi
       ;;
   esac
@@ -2923,12 +2980,16 @@ AC_DEFUN([GLIBCXX_ENABLE_HOSTED], [
 	    enable_hosted_libstdcxx=yes
 	    ;;
      esac])
+  freestanding_flags=
   if test "$enable_hosted_libstdcxx" = no; then
     AC_MSG_NOTICE([Only freestanding libraries will be built])
     is_hosted=no
     hosted_define=0
     enable_abi_check=no
     enable_libstdcxx_pch=no
+    if test "x$with_headers" = xno; then
+      freestanding_flags="-ffreestanding"
+    fi
   else
     is_hosted=yes
     hosted_define=1
@@ -2936,6 +2997,8 @@ AC_DEFUN([GLIBCXX_ENABLE_HOSTED], [
   GLIBCXX_CONDITIONAL(GLIBCXX_HOSTED, test $is_hosted = yes)
   AC_DEFINE_UNQUOTED(_GLIBCXX_HOSTED, $hosted_define,
     [Define to 1 if a full hosted library is built, or 0 if freestanding.])
+  FREESTANDING_FLAGS="$freestanding_flags"
+  AC_SUBST(FREESTANDING_FLAGS)
 ])
 
 
@@ -3546,7 +3609,12 @@ AC_DEFUN([GLIBCXX_ENABLE_LOCK_POLICY], [
     ac_save_CXXFLAGS="$CXXFLAGS"
 
     dnl Why do we care about 2-byte CAS on targets with 4-byte _Atomic_word?!
+    dnl Why don't we check 8-byte CAS for sparc64, where _Atomic_word is long?!
+    dnl New targets should only check for CAS for the _Atomic_word type.
     AC_TRY_COMPILE([
+    #if defined __riscv
+    # error "Defaulting to mutex-based locks for ABI compatibility"
+    #endif
     #if ! defined __GCC_HAVE_SYNC_COMPARE_AND_SWAP_2
     # error "No 2-byte compare-and-swap"
     #elif ! defined __GCC_HAVE_SYNC_COMPARE_AND_SWAP_4
@@ -3739,6 +3807,8 @@ changequote([,])dnl
     enable_symvers=no
   elif test $glibcxx_ld_is_gold = yes ; then
     : All versions of gold support symbol versioning.
+  elif test $glibcxx_ld_is_mold = yes ; then
+    : All versions of mold support symbol versioning.
   elif test $glibcxx_gnu_ld_version -lt $glibcxx_min_gnu_ld_version ; then
     # The right tools, the right setup, but too old.  Fallbacks?
     AC_MSG_WARN(=== Linker version $glibcxx_gnu_ld_version is too old for)
@@ -4679,6 +4749,43 @@ dnl
     AC_DEFINE(HAVE_TRUNCATE, 1, [Define if truncate is available in <unistd.h>.])
   fi
 dnl
+  AC_CACHE_CHECK([for fdopendir],
+    glibcxx_cv_fdopendir, [dnl
+    GCC_TRY_COMPILE_OR_LINK(
+      [#include <dirent.h>],
+      [::DIR* dir = ::fdopendir(1);],
+      [glibcxx_cv_fdopendir=yes],
+      [glibcxx_cv_fdopendir=no])
+  ])
+  if test $glibcxx_cv_fdopendir = yes; then
+    AC_DEFINE(HAVE_FDOPENDIR, 1, [Define if fdopendir is available in <dirent.h>.])
+  fi
+dnl
+  AC_CACHE_CHECK([for dirfd],
+    glibcxx_cv_dirfd, [dnl
+    GCC_TRY_COMPILE_OR_LINK(
+      [#include <dirent.h>],
+      [int fd = ::dirfd((::DIR*)0);],
+      [glibcxx_cv_dirfd=yes],
+      [glibcxx_cv_dirfd=no])
+  ])
+  if test $glibcxx_cv_dirfd = yes; then
+    AC_DEFINE(HAVE_DIRFD, 1, [Define if dirfd is available in <dirent.h>.])
+  fi
+dnl
+  AC_CACHE_CHECK([for unlinkat],
+    glibcxx_cv_unlinkat, [dnl
+    GCC_TRY_COMPILE_OR_LINK(
+      [#include <fcntl.h>
+       #include <unistd.h>],
+      [::unlinkat(AT_FDCWD, "", AT_REMOVEDIR);],
+      [glibcxx_cv_unlinkat=yes],
+      [glibcxx_cv_unlinkat=no])
+  ])
+  if test $glibcxx_cv_unlinkat = yes; then
+    AC_DEFINE(HAVE_UNLINKAT, 1, [Define if unlinkat is available in <fcntl.h>.])
+  fi
+dnl
   CXXFLAGS="$ac_save_CXXFLAGS"
   AC_LANG_RESTORE
 ])
@@ -4793,6 +4900,165 @@ AC_DEFUN([GLIBCXX_CHECK_ARC4RANDOM], [
   AC_LANG_RESTORE
 ])
 
+dnl
+dnl Check to see whether to build libstdc++_libbacktrace.a
+dnl
+dnl --enable-libstdcxx-backtrace
+dnl
+AC_DEFUN([GLIBCXX_ENABLE_BACKTRACE], [
+  GLIBCXX_ENABLE(libstdcxx-backtrace,auto,,
+    [turns on libbacktrace support],
+    [permit yes|no|auto])
+
+  # Most of this is adapted from libsanitizer/configure.ac
+
+  BACKTRACE_CPPFLAGS=
+
+  # libbacktrace only needs atomics for int, which we've already tested
+  if test "$glibcxx_cv_atomic_int" = "yes"; then
+    BACKTRACE_CPPFLAGS="$BACKTRACE_CPPFLAGS -DHAVE_ATOMIC_FUNCTIONS=1"
+  fi
+
+  # Test for __sync support.
+  AC_CACHE_CHECK([__sync extensions],
+  [glibcxx_cv_sys_sync],
+  [GCC_TRY_COMPILE_OR_LINK(
+     [int i;],
+     [__sync_bool_compare_and_swap (&i, i, i);
+     __sync_lock_test_and_set (&i, 1);
+     __sync_lock_release (&i);],
+     [glibcxx_cv_sys_sync=yes],
+     [glibcxx_cv_sys_sync=no])
+  ])
+  if test "$glibcxx_cv_sys_sync" = "yes"; then
+    BACKTRACE_CPPFLAGS="$BACKTRACE_CPPFLAGS -DHAVE_SYNC_FUNCTIONS=1"
+  fi
+
+  # Check for dl_iterate_phdr.
+  AC_CHECK_HEADERS(link.h)
+  if test "$ac_cv_header_link_h" = "no"; then
+    have_dl_iterate_phdr=no
+  else
+    # When built as a GCC target library, we can't do a link test.
+    AC_EGREP_HEADER([dl_iterate_phdr], [link.h], [have_dl_iterate_phdr=yes],
+		    [have_dl_iterate_phdr=no])
+  fi
+  if test "$have_dl_iterate_phdr" = "yes"; then
+    BACKTRACE_CPPFLAGS="$BACKTRACE_CPPFLAGS -DHAVE_DL_ITERATE_PHDR=1"
+  fi
+
+  # Check for the fcntl function.
+  if test -n "${with_target_subdir}"; then
+     case "${host}" in
+     *-*-mingw*) have_fcntl=no ;;
+     *) have_fcntl=yes ;;
+     esac
+  else
+    AC_CHECK_FUNC(fcntl, [have_fcntl=yes], [have_fcntl=no])
+  fi
+  if test "$have_fcntl" = "yes"; then
+    BACKTRACE_CPPFLAGS="$BACKTRACE_CPPFLAGS -DHAVE_FCNTL=1"
+  fi
+
+  AC_CHECK_DECLS(strnlen)
+
+  # Check for getexecname function.
+  if test -n "${with_target_subdir}"; then
+     case "${host}" in
+     *-*-solaris2*) have_getexecname=yes ;;
+     *) have_getexecname=no ;;
+     esac
+  else
+    AC_CHECK_FUNC(getexecname, [have_getexecname=yes], [have_getexecname=no])
+  fi
+  if test "$have_getexecname" = "yes"; then
+    BACKTRACE_CPPFLAGS="$BACKTRACE_CPPFLAGS -DHAVE_GETEXECNAME=1"
+  fi
+
+# The library needs to be able to read the executable itself.  Compile
+# a file to determine the executable format.  The awk script
+# filetype.awk prints out the file type.
+AC_CACHE_CHECK([output filetype],
+[glibcxx_cv_sys_filetype],
+[filetype=
+AC_COMPILE_IFELSE(
+  [AC_LANG_PROGRAM([int i;], [int j;])],
+  [filetype=`${AWK} -f $srcdir/../libbacktrace/filetype.awk conftest.$ac_objext`],
+  [AC_MSG_FAILURE([compiler failed])])
+glibcxx_cv_sys_filetype=$filetype])
+
+# Match the file type to decide what files to compile.
+FORMAT_FILE=
+case "$glibcxx_cv_sys_filetype" in
+elf*) FORMAT_FILE="elf.lo" ;;
+*) AC_MSG_WARN([could not determine output file type])
+   FORMAT_FILE="unknown.lo"
+   enable_libstdcxx_backtrace=no
+   ;;
+esac
+AC_SUBST(FORMAT_FILE)
+
+# ELF defines.
+elfsize=
+case "$glibcxx_cv_sys_filetype" in
+elf32) elfsize=32 ;;
+elf64) elfsize=64 ;;
+esac
+BACKTRACE_CPPFLAGS="$BACKTRACE_CPPFLAGS -DBACKTRACE_ELF_SIZE=$elfsize"
+
+  AC_MSG_CHECKING([whether to build libbacktrace support])
+  if test "$enable_libstdcxx_backtrace" = "auto"; then
+    enable_libstdcxx_backtrace=no
+  fi
+  if test "$enable_libstdcxx_backtrace" = "yes"; then
+    BACKTRACE_SUPPORTED=1
+
+    AC_CHECK_HEADERS(sys/mman.h)
+    case "${host}" in
+      *-*-msdosdjgpp) # DJGPP has sys/man.h, but no mmap
+	have_mmap=no ;;
+      *-*-*)
+	have_mmap="$ac_cv_header_sys_mman_h" ;;
+    esac
+
+    if test "$have_mmap" = "no"; then
+      VIEW_FILE=read.lo
+      ALLOC_FILE=alloc.lo
+    else
+      VIEW_FILE=mmapio.lo
+      AC_PREPROC_IFELSE([AC_LANG_SOURCE([
+    #include <sys/mman.h>
+    #if !defined(MAP_ANONYMOUS) && !defined(MAP_ANON)
+      #error no MAP_ANONYMOUS
+    #endif
+    ])], [ALLOC_FILE=mmap.lo], [ALLOC_FILE=alloc.lo])
+    fi
+    AC_SUBST(VIEW_FILE)
+    AC_SUBST(ALLOC_FILE)
+
+    BACKTRACE_USES_MALLOC=0
+    if test "$ALLOC_FILE" = "alloc.lo"; then
+      BACKTRACE_USES_MALLOC=1
+    fi
+
+    if test "$ac_has_gthreads" = "yes"; then
+      BACKTRACE_SUPPORTS_THREADS=1
+    else
+      BACKTRACE_SUPPORTS_THREADS=0
+    fi
+    AC_SUBST(BACKTRACE_CPPFLAGS)
+    AC_SUBST(BACKTRACE_SUPPORTED)
+    AC_SUBST(BACKTRACE_USES_MALLOC)
+    AC_SUBST(BACKTRACE_SUPPORTS_THREADS)
+    AC_DEFINE(HAVE_STACKTRACE, 1, [Define if the <stacktrace> header is supported.])
+  else
+    BACKTRACE_SUPPORTED=0
+    BACKTRACE_USES_MALLOC=0
+    BACKTRACE_SUPPORTS_THREADS=0
+  fi
+  AC_MSG_RESULT($enable_libstdcxx_backtrace)
+  GLIBCXX_CONDITIONAL(ENABLE_BACKTRACE, [test "$enable_libstdcxx_backtrace" = yes])
+])
 
 # Macros from the top-level gcc directory.
 m4_include([../config/gc++filt.m4])

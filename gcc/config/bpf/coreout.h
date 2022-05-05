@@ -33,7 +33,6 @@ extern "C"
 
 struct btf_ext_section_header
 {
-  uint32_t kind;
   uint32_t sec_name_off;
   uint32_t num_records;
 };

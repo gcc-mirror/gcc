@@ -19,7 +19,7 @@ module std.json;
 
 import std.array;
 import std.conv;
-import std.range.primitives;
+import std.range;
 import std.traits;
 
 ///
@@ -321,7 +321,7 @@ struct JSONValue
        (*a)[0] = "world";  // segmentation fault
        ---
      */
-    @property ref inout(JSONValue[]) array() return scope inout pure @system
+    @property ref inout(JSONValue[]) array() scope return inout pure @system
     {
         enforce!JSONException(type == JSONType.array,
                                 "JSONValue is not an array");
@@ -929,7 +929,7 @@ Params:
     options = enable decoding string representations of NaN/Inf as float values
 */
 JSONValue parseJSON(T)(T json, int maxDepth = -1, JSONOptions options = JSONOptions.none)
-if (isInputRange!T && !isInfinite!T && isSomeChar!(ElementEncodingType!T))
+if (isSomeFiniteCharInputRange!T)
 {
     import std.ascii : isDigit, isHexDigit, toUpper, toLower;
     import std.typecons : Nullable, Yes;
@@ -1437,7 +1437,7 @@ Params:
     options = enable decoding string representations of NaN/Inf as float values
 */
 JSONValue parseJSON(T)(T json, JSONOptions options)
-if (isInputRange!T && !isInfinite!T && isSomeChar!(ElementEncodingType!T))
+if (isSomeFiniteCharInputRange!T)
 {
     return parseJSON!T(json, -1, options);
 }

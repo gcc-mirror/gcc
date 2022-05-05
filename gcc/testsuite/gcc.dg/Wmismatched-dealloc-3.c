@@ -157,6 +157,7 @@ void test_reallocarray (void *p)
   }
 
   {
+    p = source ();
     void *q = realloc (p, 1);
     q = reallocarray (q, 2, 3);
     sink (q);
@@ -192,6 +193,7 @@ void test_reallocarray (void *p)
   }
 
   {
+    p = source ();
     void *q = reallocarray (p, 7, 8);
     q = __builtin_realloc (q, 9);
     sink (q);
@@ -199,6 +201,7 @@ void test_reallocarray (void *p)
   }
 
   {
+    p = source ();
     void *q = reallocarray (p, 7, 8);
     q = realloc (q, 9);
     sink (q);
@@ -206,6 +209,7 @@ void test_reallocarray (void *p)
   }
 
   {
+    p = source ();
     void *q = reallocarray (p, 8, 9);
     q = reallocarray (q, 3, 4);
     sink (q);
@@ -213,6 +217,7 @@ void test_reallocarray (void *p)
   }
 
   {
+    p = source ();
     void *q = reallocarray (p, 9, 10);
     q = reallocarray (q, 3, 4);
     sink (q);

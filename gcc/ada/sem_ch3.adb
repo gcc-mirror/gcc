@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -3831,6 +3831,9 @@ package body Sem_Ch3 is
                then
                   null;
 
+               elsif Is_Record_Type (Etype (Comp)) then
+                  Check_Dynamic_Object (Etype (Comp));
+
                elsif not Discriminated_Size (Comp)
                  and then Comes_From_Source (Comp)
                then
@@ -3838,8 +3841,6 @@ package body Sem_Ch3 is
                     ("component& of non-static size will violate restriction "
                      & "No_Implicit_Heap_Allocation?", N, Comp);
 
-               elsif Is_Record_Type (Etype (Comp)) then
-                  Check_Dynamic_Object (Etype (Comp));
                end if;
 
                Next_Component (Comp);
@@ -4409,9 +4410,9 @@ package body Sem_Ch3 is
 
          --  If E is null and has been replaced by an N_Raise_Constraint_Error
          --  node (which was marked already-analyzed), we need to set the type
-         --  to something other than Any_Access in order to keep gigi happy.
+         --  to something else than Universal_Access to keep gigi happy.
 
-         if Etype (E) = Any_Access then
+         if Etype (E) = Universal_Access then
             Set_Etype (E, T);
          end if;
 
@@ -5511,6 +5512,7 @@ package body Sem_Ch3 is
             when Array_Kind =>
                Mutate_Ekind                  (Id, E_Array_Subtype);
                Copy_Array_Subtype_Attributes (Id, T);
+               Set_Packed_Array_Impl_Type    (Id, Packed_Array_Impl_Type (T));
 
             when Decimal_Fixed_Point_Kind =>
                Mutate_Ekind             (Id, E_Decimal_Fixed_Point_Subtype);
@@ -6048,13 +6050,13 @@ package body Sem_Ch3 is
    begin
       Analyze (T);
 
-      if R /= Error then
+      if R = Error then
+         Set_Error_Posted (R);
+         Set_Error_Posted (T);
+      else
          Analyze (R);
          Set_Etype (N, Etype (R));
          Resolve (R, Entity (T));
-      else
-         Set_Error_Posted (R);
-         Set_Error_Posted (T);
       end if;
    end Analyze_Subtype_Indication;
 
@@ -7059,7 +7061,7 @@ package body Sem_Ch3 is
       Indic : constant Node_Id    := Subtype_Indication (Def);
 
       Corr_Record      : constant Entity_Id := Make_Temporary (Loc, 'C');
-      Corr_Decl        : Node_Id;
+      Corr_Decl        : Node_Id := Empty;
       Corr_Decl_Needed : Boolean;
       --  If the derived type has fewer discriminants than its parent, the
       --  corresponding record is also a derived type, in order to account for
@@ -9351,13 +9353,11 @@ package body Sem_Ch3 is
          declare
             Iface : Node_Id;
          begin
-            if Is_Non_Empty_List (Interface_List (Type_Def)) then
-               Iface := First (Interface_List (Type_Def));
-               while Present (Iface) loop
-                  Freeze_Before (N, Etype (Iface));
-                  Next (Iface);
-               end loop;
-            end if;
+            Iface := First (Interface_List (Type_Def));
+            while Present (Iface) loop
+               Freeze_Before (N, Etype (Iface));
+               Next (Iface);
+            end loop;
          end;
       end if;
 
@@ -14973,6 +14973,9 @@ package body Sem_Ch3 is
    -- Copy_Array_Subtype_Attributes --
    -----------------------------------
 
+   --  Note that we used to copy Packed_Array_Impl_Type too here, but we now
+   --  let it be recreated during freezing for the sake of better debug info.
+
    procedure Copy_Array_Subtype_Attributes (T1, T2 : Entity_Id) is
    begin
       Set_Size_Info (T1, T2);
@@ -14990,7 +14993,6 @@ package body Sem_Ch3 is
       Set_Convention              (T1, Convention              (T2));
       Set_Is_Limited_Composite    (T1, Is_Limited_Composite    (T2));
       Set_Is_Private_Composite    (T1, Is_Private_Composite    (T2));
-      Set_Packed_Array_Impl_Type  (T1, Packed_Array_Impl_Type  (T2));
    end Copy_Array_Subtype_Attributes;
 
    -----------------------------------
@@ -17274,7 +17276,6 @@ package body Sem_Ch3 is
             --  append the full view's original parent to the interface list,
             --  recursively call Derived_Type_Definition on the full type, and
             --  return True. If a match is not found, return False.
-            --  ??? This seems broken in the case of generic packages.
 
             ------------------------
             -- Reorder_Interfaces --
@@ -17283,6 +17284,7 @@ package body Sem_Ch3 is
             function Reorder_Interfaces return Boolean is
                Iface     : Node_Id;
                New_Iface : Node_Id;
+
             begin
                Iface := First (Interface_List (Def));
                while Present (Iface) loop
@@ -17292,7 +17294,7 @@ package body Sem_Ch3 is
 
                      New_Iface :=
                        Make_Identifier (Sloc (N), Chars (Parent_Type));
-                     Append (New_Iface, Interface_List (Def));
+                     Rewrite (Iface, New_Iface);
 
                      --  Analyze the transformed code
 

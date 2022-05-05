@@ -871,19 +871,13 @@ registered_function_hasher::equal (value_type value, const compare_type &key)
 }
 
 sve_switcher::sve_switcher ()
-  : m_old_isa_flags (aarch64_isa_flags)
+  : aarch64_simd_switcher (AARCH64_FL_F16 | AARCH64_FL_SVE)
 {
   /* Changing the ISA flags and have_regs_of_mode should be enough here.
      We shouldn't need to pay the compile-time cost of a full target
      switch.  */
-  aarch64_isa_flags = (AARCH64_FL_FP | AARCH64_FL_SIMD | AARCH64_FL_F16
-		       | AARCH64_FL_SVE);
-
   m_old_maximum_field_alignment = maximum_field_alignment;
   maximum_field_alignment = 0;
-
-  m_old_general_regs_only = TARGET_GENERAL_REGS_ONLY;
-  global_options.x_target_flags &= ~MASK_GENERAL_REGS_ONLY;
 
   memcpy (m_old_have_regs_of_mode, have_regs_of_mode,
 	  sizeof (have_regs_of_mode));
@@ -896,9 +890,6 @@ sve_switcher::~sve_switcher ()
 {
   memcpy (have_regs_of_mode, m_old_have_regs_of_mode,
 	  sizeof (have_regs_of_mode));
-  if (m_old_general_regs_only)
-    global_options.x_target_flags |= MASK_GENERAL_REGS_ONLY;
-  aarch64_isa_flags = m_old_isa_flags;
   maximum_field_alignment = m_old_maximum_field_alignment;
 }
 
@@ -1009,7 +1000,7 @@ function_builder::add_function (const function_instance &instance,
      consistent numbering scheme for function codes between the C and C++
      frontends, so that everything ties up in LTO.
 
-     Currently, tree-streamer-in.c:unpack_ts_function_decl_value_fields
+     Currently, tree-streamer-in.cc:unpack_ts_function_decl_value_fields
      validates that tree nodes returned by TARGET_BUILTIN_DECL are non-NULL and
      some node other than error_mark_node. This is a holdover from when builtin
      decls were streamed by code rather than by value.
@@ -1352,13 +1343,17 @@ function_resolver::infer_vector_or_tuple_type (unsigned int argno,
 			" expects a single SVE vector rather than a tuple",
 			actual, argno + 1, fndecl);
 	    else if (size_i == 0 && type_i != VECTOR_TYPE_svbool_t)
-	      error_at (location, "passing single vector %qT to argument %d"
-			" of %qE, which expects a tuple of %d vectors",
-			actual, argno + 1, fndecl, num_vectors);
+	      /* num_vectors is always != 1, so the singular isn't needed.  */
+	      error_n (location, num_vectors, "%qT%d%qE%d",
+		       "passing single vector %qT to argument %d"
+		       " of %qE, which expects a tuple of %d vectors",
+		       actual, argno + 1, fndecl, num_vectors);
 	    else
-	      error_at (location, "passing %qT to argument %d of %qE, which"
-			" expects a tuple of %d vectors", actual, argno + 1,
-			fndecl, num_vectors);
+	      /* num_vectors is always != 1, so the singular isn't needed.  */
+	      error_n (location, num_vectors, "%qT%d%qE%d",
+		       "passing %qT to argument %d of %qE, which"
+		       " expects a tuple of %d vectors", actual, argno + 1,
+		       fndecl, num_vectors);
 	    return NUM_TYPE_SUFFIXES;
 	  }
       }

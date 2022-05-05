@@ -144,7 +144,7 @@ enum bb_dom_status
 
 enum bb_dom_status determine_bb_domination_status (class loop *, basic_block);
 
-// In tree-ssa-dom.c.
+// In tree-ssa-dom.cc.
 extern void free_dom_edge_info (edge);
 
 #endif

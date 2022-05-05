@@ -7,17 +7,17 @@ struct StructField(T)
 struct StructProperty(T)
 {
     static T Field;
-	
+
 	static @property T property()
 	{
-		return Field;	
+		return Field;
 	}
-	
+
 	static @property void property(T value)
 	{
-		Field = value;	
+		Field = value;
 	}
-	
+
     static alias property this;
 }
 
@@ -30,17 +30,17 @@ class ClassField(T)
 class ClassProperty(T)
 {
     static T Field;
-	
+
 	static @property T property()
 	{
-		return Field;	
+		return Field;
 	}
-	
+
 	static @property void property(T value)
 	{
-		Field = value;	
+		Field = value;
 	}
-	
+
     static alias property this;
 }
 

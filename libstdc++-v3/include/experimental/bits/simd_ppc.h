@@ -35,7 +35,7 @@
 _GLIBCXX_SIMD_BEGIN_NAMESPACE
 
 // _SimdImplPpc {{{
-template <typename _Abi>
+template <typename _Abi, typename>
   struct _SimdImplPpc : _SimdImplBuiltin<_Abi>
   {
     using _Base = _SimdImplBuiltin<_Abi>;
@@ -117,7 +117,7 @@ template <typename _Abi>
 
 // }}}
 // _MaskImplPpc {{{
-template <typename _Abi>
+template <typename _Abi, typename>
   struct _MaskImplPpc : _MaskImplBuiltin<_Abi>
   {
     using _Base = _MaskImplBuiltin<_Abi>;

@@ -3,6 +3,7 @@
 // weakness.
 
 // { dg-do compile { target c++17 } }
+// { dg-additional-options "-fdelete-null-pointer-checks" }
 
 extern void weakfn1 (void);
 extern void weakfn2 (void);

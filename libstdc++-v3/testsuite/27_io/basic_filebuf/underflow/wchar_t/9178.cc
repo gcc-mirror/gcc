@@ -178,7 +178,7 @@ void test01()
     {
       transform(tmpstr.begin(), tmpstr.end(),
 		back_inserter(str1),
-		bind1st(std::mem_fun(&std::wios::widen), &stream));
+		bind1st(std::mem_fun(&std::wios::widen), &stream)); // { dg-warning "is deprecated" "" { target c++11 } }
     }
 	
   fbuf1.sputn(str1.data(), str1.size());

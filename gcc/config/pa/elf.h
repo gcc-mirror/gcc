@@ -17,7 +17,7 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-/* So we can conditionalize small amounts of code in pa.c or pa.md.  */
+/* So we can conditionalize small amounts of code in pa.cc or pa.md.  */
 #define OBJ_ELF
 
 #define ENDFILE_SPEC "crtend.o%s"

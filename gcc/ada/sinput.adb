@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -329,7 +329,7 @@ package body Sinput is
    begin
       for X in 1 .. Source_File.Last loop
          declare
-            S  : Source_File_Record renames Source_File.Table (X);
+            S : Source_File_Record renames Source_File.Table (X);
          begin
             if S.Instance = No_Instance_Id then
                Free_Source_Buffer (S.Source_Text);

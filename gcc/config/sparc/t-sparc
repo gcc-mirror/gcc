@@ -20,11 +20,11 @@
 
 PASSES_EXTRA += $(srcdir)/config/sparc/sparc-passes.def
 
-sparc-c.o: $(srcdir)/config/sparc/sparc-c.c
+sparc-c.o: $(srcdir)/config/sparc/sparc-c.cc
 	$(COMPILE) $<
 	$(POSTCOMPILE)
 
-sparc-d.o: $(srcdir)/config/sparc/sparc-d.c
+sparc-d.o: $(srcdir)/config/sparc/sparc-d.cc
 	$(COMPILE) $<
 	$(POSTCOMPILE)
 

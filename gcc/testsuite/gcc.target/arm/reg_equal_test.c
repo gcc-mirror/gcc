@@ -1,24 +1,15 @@
 /* { dg-do compile } */
-/* { dg-options "-O1 -fdump-rtl-expand" } */
+/* { dg-options "-fgimple -O1 -fdump-rtl-expand" } */
+/* { dg-skip-if "" { ! { arm_thumb2_ok || arm_thumb1_movt_ok } } } */
 
-extern void abort (void);
-unsigned int a = 1;
-
-int
-main (void)
+void __GIMPLE (ssa,startwith ("expand"))
+x ()
 {
-  unsigned int b, c, d;
+  unsigned int d;
 
-  if (sizeof (int) != 4 || (int) 0xc7d24b5e > 0)
-    return 0;
-
-  c = 0xc7d24b5e;
-  d = a | -2;
-  b = (d == 0) ? c : (c % d);
-  if (b != c)
-    abort ();
-
-  return 0;
+  __BB(2,guessed_local(1073741824)):
+  d_1 = 3352447838u;
+  return;
 }
 
 /* { dg-final { scan-rtl-dump "expr_list:REG_EQUAL \\(const_int -942519458" "expand" } } */

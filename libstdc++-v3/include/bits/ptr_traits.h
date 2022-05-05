@@ -36,7 +36,10 @@
 
 #if __cplusplus > 201703L
 #include <concepts>
-#define __cpp_lib_constexpr_memory 201811L
+# ifndef __cpp_lib_constexpr_memory
+// Defined to a newer value in bits/unique_ptr.h for C++23
+#  define __cpp_lib_constexpr_memory 201811L
+# endif
 namespace __gnu_debug { struct _Safe_iterator_base; }
 #endif
 

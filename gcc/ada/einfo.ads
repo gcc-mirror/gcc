@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -3745,7 +3745,7 @@ package Einfo is
 
 --    No_Dynamic_Predicate_On_Actual
 --       Defined in discrete types. Set for generic formal types that are used
---       in loops and quantified expressions. The corresponing actual cannot
+--       in loops and quantified expressions. The corresponding actual cannot
 --       have dynamic predicates.
 
 --    No_Pool_Assigned [root type only]
@@ -4863,10 +4863,6 @@ package Einfo is
 --  Similarly, the type E_Access_Attribute_Type is used as the initial kind
 --  associated with an access attribute. After resolution a specific access
 --  type will be established as determined by the context.
-
---  Finally, the type Any_Access is used to label -null- during type
---  resolution. Any_Access is also replaced by the context type after
---  resolution.
 
    --------------------------------------------------------
    -- Description of Defined Attributes for Entity_Kinds --

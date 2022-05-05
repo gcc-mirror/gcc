@@ -29,3 +29,15 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 # error "Where has __float128 gone?"
 #endif
 
+/* Keep these conditions on one line so grep can filter it out.  */
+#if defined(__powerpc64__)  && __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__  && __SIZEOF_LONG_DOUBLE__ == 16
+typedef __float128 GFC_REAL_17;
+typedef _Complex float __attribute__((mode(KC))) GFC_COMPLEX_17;
+#define HAVE_GFC_REAL_17
+#define HAVE_GFC_COMPLEX_17
+#define GFC_REAL_17_HUGE 1.18973149535723176508575932662800702e4932q
+#define GFC_REAL_17_LITERAL_SUFFIX q
+#define GFC_REAL_17_LITERAL(X) (X ## q)
+#define GFC_REAL_17_DIGITS 113
+#define GFC_REAL_17_RADIX 2
+#endif

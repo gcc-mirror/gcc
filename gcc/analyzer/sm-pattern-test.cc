@@ -89,9 +89,15 @@ public:
 	    && same_tree_p (m_rhs, other.m_rhs));
   }
 
+  int get_controlling_option () const FINAL OVERRIDE
+  {
+    return 0;
+  }
+
   bool emit (rich_location *rich_loc) FINAL OVERRIDE
   {
-    return warning_at (rich_loc, 0, "pattern match on %<%E %s %E%>",
+    return warning_at (rich_loc, get_controlling_option (),
+		       "pattern match on %<%E %s %E%>",
 		       m_lhs, op_symbol_code (m_op), m_rhs);
   }
 

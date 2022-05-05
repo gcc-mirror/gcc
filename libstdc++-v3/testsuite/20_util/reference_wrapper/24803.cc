@@ -28,12 +28,12 @@ struct test_type
    int cmember2(char)const;
 };
 
-struct functor1 : public std::unary_function<int, double>
+struct functor1 : public std::unary_function<int, double> // { dg-warning "is deprecated" }
 {
   double operator()(int) const;
 };
 
-struct functor2 : public std::binary_function<int, char, double>
+struct functor2 : public std::binary_function<int, char, double> // { dg-warning "is deprecated" }
 {
    double operator()(int, char) const;
 };

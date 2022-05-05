@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *          Copyright (C) 1992-2021, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2022, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -1237,7 +1237,7 @@ __gnat_handle_vms_condition (int *sigargs, void *mechargs)
   if (__gnat_resignal_p (sigargs [1]))
     return SS$_RESIGNAL;
 #ifndef IN_RTS
-  /* toplev.c handles this for compiler.  */
+  /* toplev.cc handles this for compiler.  */
   if (sigargs [1] == SS$_HPARITH)
     return SS$_RESIGNAL;
 #endif

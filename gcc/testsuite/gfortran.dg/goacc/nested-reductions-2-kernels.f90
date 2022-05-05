@@ -2,11 +2,16 @@
 
 ! See also 'c-c++-common/goacc/nested-reductions-2-kernels.c'.
 
+! { dg-additional-options -Wuninitialized }
+
 subroutine acc_kernels ()
   implicit none (type, external)
   integer :: i, j, k, l, sum, diff
 
   !$acc kernels
+  ! implicit 'copy (sum, diff)'
+  ! { dg-warning {'sum' is used uninitialized} TODO { xfail *-*-* } .-2 }
+  ! { dg-warning {'diff' is used uninitialized} TODO { xfail *-*-* } .-3 }
     !$acc loop reduction(+:sum)
     do i = 1, 10
       !$acc loop  ! { dg-warning "nested loop in reduction needs reduction clause for .sum." }
@@ -126,6 +131,9 @@ subroutine acc_kernels_loop ()
   integer :: h, i, j, k, l, sum, diff
 
   !$acc kernels loop
+  ! implicit 'copy (sum, diff)'
+  ! { dg-warning {'sum' is used uninitialized} TODO { xfail *-*-* } .-2 }
+  ! { dg-warning {'diff' is used uninitialized} TODO { xfail *-*-* } .-3 }
   do h = 1, 10
     !$acc loop reduction(+:sum)
     do i = 1, 10
@@ -266,6 +274,9 @@ subroutine acc_kernels_loop_reduction ()
   integer :: h, i, j, k, l, sum, diff
 
   !$acc kernels loop reduction(+:sum)
+  ! implicit 'copy (sum, diff)'
+  ! { dg-warning {'sum' is used uninitialized} TODO { xfail *-*-* } .-2 }
+  ! { dg-warning {'diff' is used uninitialized} TODO { xfail *-*-* } .-3 }
   do h = 1, 10
     !$acc loop  ! { dg-warning "nested loop in reduction needs reduction clause for .sum." }
     do i = 1, 10

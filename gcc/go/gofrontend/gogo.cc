@@ -141,6 +141,15 @@ Gogo::Gogo(Backend* backend, Linemap* linemap, int, int pointer_size)
     this->add_named_type(error_type);
   }
 
+  // "any" is an alias for the empty interface type.
+  {
+    Type* empty = Type::make_empty_interface_type(loc);
+    Named_object* no = Named_object::make_type("any", NULL, empty, loc);
+    Named_type* nt = no->type_value();
+    nt->set_is_alias();
+    this->add_named_type(nt);
+  }
+
   this->globals_->add_constant(Typed_identifier("true",
 						Type::make_boolean_type(),
 						loc),
@@ -1603,31 +1612,16 @@ Gogo::write_globals()
               // The initializer is constant if it is the zero-value of the
               // variable's type or if the initial value is an immutable value
               // that is not copied to the heap.
-	      Expression* init = var->init();
-
-	      // If we see "a = b; b = x", and x is a static
-	      // initializer, just set a to x.
-	      while (init != NULL && init->var_expression() != NULL)
-		{
-		  Named_object* ino = init->var_expression()->named_object();
-		  if (!ino->is_variable() || ino->package() != NULL)
-		    break;
-		  Expression* ino_init = ino->var_value()->init();
-		  if (ino->var_value()->has_pre_init()
-		      || ino_init == NULL
-		      || !ino_init->is_static_initializer())
-		    break;
-		  init = ino_init;
-		}
-
-              bool is_static_initializer;
-              if (init == NULL)
+              bool is_static_initializer = false;
+              if (var->init() == NULL)
                 is_static_initializer = true;
               else
                 {
                   Type* var_type = var->type();
-                  init = Expression::make_cast(var_type, init, var->location());
-                  is_static_initializer = init->is_static_initializer();
+                  Expression* init = var->init();
+                  Expression* init_cast =
+                      Expression::make_cast(var_type, init, var->location());
+                  is_static_initializer = init_cast->is_static_initializer();
                 }
 
 	      // Non-constant variable initializations might need to create
@@ -1646,15 +1640,7 @@ Gogo::write_globals()
                     }
 		  var_init_fn = init_fndecl;
 		}
-
-	      Bexpression* var_binit;
-	      if (init == NULL)
-		var_binit = NULL;
-	      else
-		{
-		  Translate_context context(this, var_init_fn, NULL, NULL);
-		  var_binit = init->get_backend(&context);
-		}
+              Bexpression* var_binit = var->get_init(this, var_init_fn);
 
               if (var_binit == NULL)
 		;
@@ -8860,10 +8846,13 @@ Named_object::get_backend(Gogo* gogo, std::vector<Bexpression*>& const_decls,
           {
             named_type->
                 type_descriptor_pointer(gogo, Linemap::predeclared_location());
-	    named_type->gc_symbol_pointer(gogo);
             Type* pn = Type::make_pointer_type(named_type);
             pn->type_descriptor_pointer(gogo, Linemap::predeclared_location());
-	    pn->gc_symbol_pointer(gogo);
+	    if (named_type->in_heap())
+	      {
+		named_type->gc_symbol_pointer(gogo);
+		pn->gc_symbol_pointer(gogo);
+	      }
           }
       }
       break;

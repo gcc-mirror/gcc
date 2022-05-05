@@ -60,7 +60,7 @@ struct GCBits
             onOutOfMemoryError();
     }
 
-    wordtype test(size_t i) const nothrow
+    wordtype test(size_t i) const scope @trusted pure nothrow @nogc
     in
     {
         assert(i < nbits);
@@ -70,7 +70,7 @@ struct GCBits
         return core.bitop.bt(data, i);
     }
 
-    int set(size_t i) nothrow
+    int set(size_t i) scope @trusted pure nothrow @nogc
     in
     {
         assert(i < nbits);
@@ -80,7 +80,7 @@ struct GCBits
         return core.bitop.bts(data, i);
     }
 
-    int clear(size_t i) nothrow
+    int clear(size_t i) scope @trusted pure nothrow @nogc
     in
     {
         assert(i <= nbits);
@@ -91,7 +91,7 @@ struct GCBits
     }
 
     // return non-zero if bit already set
-    size_t setLocked(size_t i) nothrow
+    size_t setLocked(size_t i) scope @trusted pure nothrow @nogc
     {
         version (GNU)
         {
@@ -112,7 +112,7 @@ struct GCBits
         }
         else version (D_InlineAsm_X86)
         {
-            asm @nogc nothrow {
+            asm pure @nogc nothrow {
                 mov EAX, this;
                 mov ECX, data[EAX];
                 mov EDX, i;
@@ -123,7 +123,7 @@ struct GCBits
         }
         else version (D_InlineAsm_X86_64)
         {
-            asm @nogc nothrow {
+            asm pure @nogc nothrow {
                 mov RAX, this;
                 mov RAX, data[RAX];
                 mov RDX, i;
@@ -239,7 +239,9 @@ struct GCBits
             size_t cntWords = lastWord - firstWord;
             copyWordsShifted(firstWord, cntWords, firstOff, source);
 
-            wordtype src = (source[cntWords - 1] >> (BITS_PER_WORD - firstOff)) | (source[cntWords] << firstOff);
+            wordtype src = (source[cntWords - 1] >> (BITS_PER_WORD - firstOff));
+            if (lastOff >= firstOff) // prevent buffer overread
+                src |= (source[cntWords] << firstOff);
             wordtype mask = (BITS_2 << lastOff) - 1;
             data[lastWord] = (data[lastWord] & ~mask) | (src & mask);
         }

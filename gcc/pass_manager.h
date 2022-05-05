@@ -23,7 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 class opt_pass;
 struct register_pass_info;
 
-/* Define a list of pass lists so that both passes.c and plugins can easily
+/* Define a list of pass lists so that both passes.cc and plugins can easily
    find all the pass lists.  */
 #define GCC_PASS_LISTS \
   DEF_PASS_LIST (all_lowering_passes) \
@@ -106,7 +106,7 @@ private:
 
 private:
   context *m_ctxt;
-  hash_map<nofree_string_hash, opt_pass *> *m_name_to_pass_map;
+  hash_map<free_string_hash, opt_pass *> *m_name_to_pass_map;
 
   /* References to all of the individual passes.
      These fields are generated via macro expansion.
@@ -146,4 +146,3 @@ private:
 } // namespace gcc
 
 #endif /* ! GCC_PASS_MANAGER_H */
-

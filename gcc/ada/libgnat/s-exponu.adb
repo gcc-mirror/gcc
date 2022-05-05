@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,7 +29,19 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-function System.Exponu (Left : Int; Right : Natural) return Int is
+function System.Exponu (Left : Int; Right : Natural) return Int
+  with SPARK_Mode
+is
+   --  Preconditions, postconditions, ghost code, loop invariants and
+   --  assertions in this unit are meant for analysis only, not for run-time
+   --  checking, as it would be too costly otherwise. This is enforced by
+   --  setting the assertion policy to Ignore.
+
+   pragma Assertion_Policy (Pre            => Ignore,
+                            Post           => Ignore,
+                            Ghost          => Ignore,
+                            Loop_Invariant => Ignore,
+                            Assert         => Ignore);
 
    --  Note that negative exponents get a constraint error because the
    --  subtype of the Right argument (the exponent) is Natural.
@@ -49,7 +61,16 @@ begin
 
    if Exp /= 0 then
       loop
+         pragma Loop_Invariant (Exp > 0);
+         pragma Loop_Invariant (Result * Factor ** Exp = Left ** Right);
+         pragma Loop_Variant (Decreases => Exp);
+
          if Exp rem 2 /= 0 then
+            pragma Assert
+              (Result * (Factor * Factor ** (Exp - 1)) = Left ** Right);
+            pragma Assert
+              ((Result * Factor) * Factor ** (Exp - 1) = Left ** Right);
+
             Result := Result * Factor;
          end if;
 

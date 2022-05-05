@@ -1,3 +1,5 @@
+! { dg-additional-options -Wuninitialized }
+
 module bar
   type :: type1
      real(8), pointer, public :: p(:) => null()

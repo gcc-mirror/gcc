@@ -1,6 +1,7 @@
 /* PR29970, PR91038 */
 /* { dg-do run } */
 /* { dg-options "-O0 -Wunused-variable" } */
+/* { dg-require-effective-target alloca } */
 
 int foo3b(void)   // should not return 0
 {

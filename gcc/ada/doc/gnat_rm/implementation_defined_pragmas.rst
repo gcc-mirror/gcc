@@ -7137,7 +7137,9 @@ or not to be given individually for each accept statement.
 
 The left hand side of an assignment does not count as a reference for the
 purpose of this pragma. Thus it is fine to assign to an entity for which
-pragma Unreferenced is given.
+pragma Unreferenced is given. However, use of an entity as an actual for
+an out parameter does count as a reference unless warnings for unread output
+parameters are enabled via :switch:`-gnatw.o`.
 
 Note that if a warning is desired for all calls to a given subprogram,
 regardless of whether they occur in the same unit as the subprogram

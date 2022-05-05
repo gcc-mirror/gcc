@@ -25,6 +25,12 @@ namespace ana {
 
 class constraint_manager;
 
+enum bound_kind
+{
+  BK_LOWER,
+  BK_UPPER
+};
+
 /* One of the end-points of a range.  */
 
 struct bound
@@ -33,7 +39,7 @@ struct bound
   bound (tree constant, bool closed)
   : m_constant (constant), m_closed (closed) {}
 
-  void ensure_closed (bool is_upper);
+  void ensure_closed (enum bound_kind bound_kind);
 
   const char * get_relation_as_str () const;
 
@@ -44,8 +50,9 @@ struct bound
 /* A range of values, used for determining if a value has been
    constrained to just one possible constant value.  */
 
-struct range
+class range
 {
+public:
   range () : m_lower_bound (), m_upper_bound () {}
   range (const bound &lower, const bound &upper)
   : m_lower_bound (lower), m_upper_bound (upper) {}
@@ -60,6 +67,10 @@ struct range
   bool below_lower_bound (tree rhs_const) const;
   bool above_upper_bound (tree rhs_const) const;
 
+  bool add_bound (bound b, enum bound_kind bound_kind);
+  bool add_bound (enum tree_code op, tree rhs_const);
+
+private:
   bound m_lower_bound;
   bound m_upper_bound;
 };

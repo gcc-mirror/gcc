@@ -188,7 +188,7 @@ value_range_equiv::equiv_add (const_tree var,
 }
 
 void
-value_range_equiv::intersect (const value_range_equiv *other)
+value_range_equiv::legacy_verbose_intersect (const value_range_equiv *other)
 {
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
@@ -238,7 +238,7 @@ value_range_equiv::intersect (const value_range_equiv *other)
 }
 
 void
-value_range_equiv::union_ (const value_range_equiv *other)
+value_range_equiv::legacy_verbose_union_ (const value_range_equiv *other)
 {
   if (dump_file && (dump_flags & TDF_DETAILS))
     {

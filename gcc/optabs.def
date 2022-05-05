@@ -259,6 +259,7 @@ OPTAB_D (usubv4_optab, "usubv$I$a4")
 OPTAB_D (umulv4_optab, "umulv$I$a4")
 OPTAB_D (negv3_optab, "negv$I$a3")
 OPTAB_D (addptr3_optab, "addptr$a3")
+OPTAB_D (spaceship_optab, "spaceship$a3")
 
 OPTAB_D (smul_highpart_optab, "smul$a3_highpart")
 OPTAB_D (umul_highpart_optab, "umul$a3_highpart")
@@ -329,6 +330,10 @@ OPTAB_D (sincos_optab, "sincos$a3")
 OPTAB_D (sinh_optab, "sinh$a2")
 OPTAB_D (tan_optab, "tan$a2")
 OPTAB_D (tanh_optab, "tanh$a2")
+
+OPTAB_D (fegetround_optab, "fegetround$a")
+OPTAB_D (feclearexcept_optab, "feclearexcept$a")
+OPTAB_D (feraiseexcept_optab, "feraiseexcept$a")
 
 /* C99 implementations of fmax/fmin.  */
 OPTAB_D (fmax_optab, "fmax$a3")

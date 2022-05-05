@@ -17,6 +17,7 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
+// { dg-options "-Wno-deprecated-declarations" }
 // { dg-add-options using-deprecated }
 
 // 20.3.6 Binders

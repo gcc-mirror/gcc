@@ -62,3 +62,9 @@
   {"cpu_32", "%{" OPT_ARCH32 ":%{!mcpu=*:-mcpu=%(VALUE)}}" }, \
   {"cpu_64", "%{" OPT_ARCH64 ":%{!mcpu=*:-mcpu=%(VALUE)}}" }, \
   {"float", "%{!msoft-float:%{!mhard-float:-m%(VALUE)-float}}" }
+
+/* rs6000.md uses OPTION_GLIBC unconditionally, while it is defined only in
+   linux{,64}.h.  Define fallback for other targets here.  */
+#ifndef OPTION_GLIBC
+#define OPTION_GLIBC 0
+#endif

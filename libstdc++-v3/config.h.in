@@ -66,8 +66,15 @@
 /* Define to 1 if you have the `cosl' function. */
 #undef HAVE_COSL
 
+/* Define to 1 if you have the declaration of `strnlen', and to 0 if you
+   don't. */
+#undef HAVE_DECL_STRNLEN
+
 /* Define to 1 if you have the <dirent.h> header file. */
 #undef HAVE_DIRENT_H
+
+/* Define if dirfd is available in <dirent.h>. */
+#undef HAVE_DIRFD
 
 /* Define to 1 if you have the <dlfcn.h> header file. */
 #undef HAVE_DLFCN_H
@@ -95,6 +102,9 @@
 
 /* Define to 1 if you have the <fcntl.h> header file. */
 #undef HAVE_FCNTL_H
+
+/* Define if fdopendir is available in <dirent.h>. */
+#undef HAVE_FDOPENDIR
 
 /* Define to 1 if you have the <fenv.h> header file. */
 #undef HAVE_FENV_H
@@ -212,6 +222,9 @@
 
 /* Define if link is available in <unistd.h>. */
 #undef HAVE_LINK
+
+/* Define to 1 if you have the <link.h> header file. */
+#undef HAVE_LINK_H
 
 /* Define if futex syscall is available. */
 #undef HAVE_LINUX_FUTEX
@@ -346,6 +359,9 @@
 /* Define to 1 if you have the `sqrtl' function. */
 #undef HAVE_SQRTL
 
+/* Define if the <stacktrace> header is supported. */
+#undef HAVE_STACKTRACE
+
 /* Define to 1 if you have the <stdalign.h> header file. */
 #undef HAVE_STDALIGN_H
 
@@ -403,6 +419,9 @@
 
 /* Define to 1 if you have the <sys/machine.h> header file. */
 #undef HAVE_SYS_MACHINE_H
+
+/* Define to 1 if you have the <sys/mman.h> header file. */
+#undef HAVE_SYS_MMAN_H
 
 /* Define to 1 if you have the <sys/param.h> header file. */
 #undef HAVE_SYS_PARAM_H
@@ -472,6 +491,9 @@
 
 /* Define to 1 if you have the <unistd.h> header file. */
 #undef HAVE_UNISTD_H
+
+/* Define if unlinkat is available in <fcntl.h>. */
+#undef HAVE_UNLINKAT
 
 /* Define to 1 if you have the `uselocale' function. */
 #undef HAVE_USELOCALE
@@ -999,6 +1021,14 @@
 
 /* Define if obsolescent tmpnam is available in <stdio.h>. */
 #undef _GLIBCXX_USE_TMPNAM
+
+/* Define if c8rtomb and mbrtoc8 functions in <uchar.h> should be imported
+   into namespace std in <cuchar> for C++20. */
+#undef _GLIBCXX_USE_UCHAR_C8RTOMB_MBRTOC8_CXX20
+
+/* Define if c8rtomb and mbrtoc8 functions in <uchar.h> should be imported
+   into namespace std in <cuchar> for -fchar8_t. */
+#undef _GLIBCXX_USE_UCHAR_C8RTOMB_MBRTOC8_FCHAR8_T
 
 /* Define if utime is available in <utime.h>. */
 #undef _GLIBCXX_USE_UTIME

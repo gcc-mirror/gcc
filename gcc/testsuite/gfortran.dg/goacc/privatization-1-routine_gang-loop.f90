@@ -4,6 +4,8 @@
 ! { dg-additional-options "--param=openacc-privatization=noisy" } for
 ! testing/documenting aspects of that functionality.
 
+! { dg-additional-options -Wuninitialized }
+
 ! See also '../../c-c++-common/goacc/privatization-1-routine_gang-loop.c'.
 !TODO More cases should be added here.
 
@@ -38,15 +40,16 @@ contains
           ! (See C/C++ example.)
 
           a = g (i, j, a, c)
+          ! { dg-warning {'a' is used uninitialized} TODO { xfail *-*-* } .-1 }
           x = a
           !$acc atomic write
           y = a
        end do
     end do
     ! { dg-note {variable 'count\.[0-9]+' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_loop$c_loop }
-    ! { dg-note {variable 'i' in 'private' clause potentially has improper OpenACC privatization level: 'parm_decl'} "TODO" { target *-*-* } l_loop$c_loop }
-    ! { dg-note {variable 'j' in 'private' clause potentially has improper OpenACC privatization level: 'parm_decl'} "TODO" { target *-*-* } l_loop$c_loop }
-    ! { dg-note {variable 'a' in 'private' clause potentially has improper OpenACC privatization level: 'parm_decl'} "TODO" { target *-*-* } l_loop$c_loop }
+    ! { dg-note {variable 'i' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_loop$c_loop }
+    ! { dg-note {variable 'j' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_loop$c_loop }
+    ! { dg-note {variable 'a' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_loop$c_loop }
     ! { dg-note {variable 'x' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_loop$c_loop }
     ! { dg-note {variable 'y' in 'private' clause is candidate for adjusting OpenACC privatization level} "" { target *-*-* } l_loop$c_loop }
     ! { dg-note {variable 'C\.[0-9]+' declared in block potentially has improper OpenACC privatization level: 'const_decl'} "TODO" { target *-*-* } l_loop$c_loop }

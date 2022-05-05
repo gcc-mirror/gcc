@@ -126,14 +126,11 @@ detach_value (location_t loc, gimple_stmt_iterator *gsip, tree val)
       return val;
     }
 
-  /* Create a SSA "copy" of VAL.  This could be an anonymous
-     temporary, but it's nice to have it named after the corresponding
-     variable.  Alas, when VAL is a DECL_BY_REFERENCE RESULT_DECL,
-     setting (a copy of) it would be flagged by checking, so we don't
-     use copy_ssa_name: we create an anonymous SSA name, and then give
-     it the same identifier (rather than decl) as VAL.  */
+  /* Create a SSA "copy" of VAL.  It would be nice to have it named
+     after the corresponding variable, but sharing the same decl is
+     problematic when VAL is a DECL_BY_REFERENCE RESULT_DECL, and
+     copying just the identifier hits -fcompare-debug failures.  */
   tree ret = make_ssa_name (TREE_TYPE (val));
-  SET_SSA_NAME_VAR_OR_IDENTIFIER (ret, SSA_NAME_IDENTIFIER (val));
 
   /* Some modes won't fit in general regs, so we fall back to memory
      for them.  ??? It would be ideal to try to identify an alternate,
@@ -361,9 +358,9 @@ make_pass_harden_conditional_branches (gcc::context *ctxt)
 }
 
 /* Return the fallthru edge of a block whose other edge is an EH
-   edge.  */
+   edge.  If EHP is not NULL, store the EH edge in it.  */
 static inline edge
-non_eh_succ_edge (basic_block bb)
+non_eh_succ_edge (basic_block bb, edge *ehp = NULL)
 {
   gcc_checking_assert (EDGE_COUNT (bb->succs) == 2);
 
@@ -374,6 +371,9 @@ non_eh_succ_edge (basic_block bb)
 
   gcc_checking_assert (!(ret->flags & EDGE_EH)
 		       && (eh->flags & EDGE_EH));
+
+  if (ehp)
+    *ehp = eh;
 
   return ret;
 }
@@ -506,10 +506,16 @@ pass_harden_compares::execute (function *fun)
 	gsi_insert_before (&gsi_split, asgnck, GSI_SAME_STMT);
 
 	/* We wish to insert a cond_expr after the compare, so arrange
-	   for it to be at the end of a block if it isn't.  */
-	if (!gsi_end_p (gsi_split))
+	   for it to be at the end of a block if it isn't, and for it
+	   to have a single successor in case there's more than
+	   one, as in PR104975.  */
+	if (!gsi_end_p (gsi_split)
+	    || !single_succ_p (gsi_bb (gsi_split)))
 	  {
-	    gsi_prev (&gsi_split);
+	    if (!gsi_end_p (gsi_split))
+	      gsi_prev (&gsi_split);
+	    else
+	      gsi_split = gsi_last_bb (gsi_bb (gsi_split));
 	    basic_block obb = gsi_bb (gsi_split);
 	    basic_block nbb = split_block (obb, gsi_stmt (gsi_split))->dest;
 	    gsi_next (&gsi_split);
@@ -538,8 +544,9 @@ pass_harden_compares::execute (function *fun)
 	    add_stmt_to_eh_lp (asgnck, lookup_stmt_eh_lp (asgn));
 	    make_eh_edges (asgnck);
 
+	    edge ckeh;
 	    basic_block nbb = split_edge (non_eh_succ_edge
-					  (gimple_bb (asgnck)));
+					  (gimple_bb (asgnck), &ckeh));
 	    gsi_split = gsi_start_bb (nbb);
 
 	    if (dump_file)
@@ -547,6 +554,27 @@ pass_harden_compares::execute (function *fun)
 		       "Splitting non-EH edge from block %i into %i after"
 		       " the newly-inserted reversed throwing compare\n",
 		       gimple_bb (asgnck)->index, nbb->index);
+
+	    if (!gimple_seq_empty_p (phi_nodes (ckeh->dest)))
+	      {
+		edge aseh;
+		non_eh_succ_edge (gimple_bb (asgn), &aseh);
+
+		gcc_checking_assert (aseh->dest == ckeh->dest);
+
+		for (gphi_iterator psi = gsi_start_phis (ckeh->dest);
+		     !gsi_end_p (psi); gsi_next (&psi))
+		  {
+		    gphi *phi = psi.phi ();
+		    add_phi_arg (phi, PHI_ARG_DEF_FROM_EDGE (phi, aseh), ckeh,
+				 gimple_phi_arg_location_from_edge (phi, aseh));
+		  }
+
+		if (dump_file)
+		  fprintf (dump_file,
+			   "Copying PHI args in EH block %i from %i to %i\n",
+			   aseh->dest->index, aseh->src->index, ckeh->src->index);
+	      }
 	  }
 
 	gcc_checking_assert (single_succ_p (gsi_bb (gsi_split)));

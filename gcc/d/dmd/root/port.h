@@ -13,12 +13,13 @@
 // The idea is to minimize #ifdef's in the app code.
 
 #include "dsystem.h"
+#include "dcompat.h"
 
 typedef unsigned char utf8_t;
 
 struct Port
 {
-    static int memicmp(const char *s1, const char *s2, size_t n);
+    static int memicmp(const char *s1, const char *s2, d_size_t n);
     static char *strupr(char *s);
 
     static bool isFloat32LiteralOutOfRange(const char *s);
@@ -30,5 +31,5 @@ struct Port
     static unsigned readlongBE(const void *buffer);
     static unsigned readwordLE(const void *buffer);
     static unsigned readwordBE(const void *buffer);
-    static void valcpy(void *dst, uint64_t val, size_t size);
+    static void valcpy(void *dst, uint64_t val, d_size_t size);
 };

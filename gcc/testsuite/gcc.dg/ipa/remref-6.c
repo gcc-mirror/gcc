@@ -20,5 +20,5 @@ void entry()
 }
 
 /* { dg-final { scan-ipa-dump "Removed a reference"  "inline" } }  */
-/* { dg-final { scan-ipa-dump "replaced it with LOAD"  "inline"  } } */
+/* { dg-final { scan-ipa-dump "adding LOAD reference"  "inline"  } } */
 /* { dg-final { scan-tree-dump-not "builtin_exp"  "optimized"  } } */

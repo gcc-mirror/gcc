@@ -529,7 +529,7 @@ typedef struct { int regs; int lib; } CUMULATIVE_ARGS;
 
 /* Node: Function Entry */
 
-/* See mmix.c for TARGET_ASM_FUNCTION_PROLOGUE and
+/* See mmix.cc for TARGET_ASM_FUNCTION_PROLOGUE and
    TARGET_ASM_FUNCTION_EPILOGUE.  */
 
 /* We need to say that the epilogue uses the return address, so the

@@ -525,7 +525,7 @@ while (0)
 
 #define FUNCTION_MODE SImode
 
-/* IQ2000 external variables defined in iq2000.c.  */
+/* IQ2000 external variables defined in iq2000.cc.  */
 
 /* Comparison type.  */
 enum cmp_type

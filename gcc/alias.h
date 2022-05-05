@@ -1,4 +1,4 @@
-/* Exported functions from alias.c
+/* Exported functions from alias.cc
    Copyright (C) 2004-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.

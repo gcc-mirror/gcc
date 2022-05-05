@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -403,7 +403,7 @@ is
    -----------------
 
    function End_Of_Page (File : File_Type) return Boolean is
-      ch  : int;
+      ch : int;
 
    begin
       FIO.Check_Read_Status (AP (File));
@@ -598,7 +598,7 @@ is
      (File : File_Type;
       Item : out Character)
    is
-      ch          : int;
+      ch : int;
 
    begin
       FIO.Check_Read_Status (AP (File));

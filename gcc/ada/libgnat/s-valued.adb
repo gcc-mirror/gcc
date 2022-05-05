@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---            Copyright (C) 2020-2021, Free Software Foundation, Inc.       --
+--            Copyright (C) 2020-2022, Free Software Foundation, Inc.       --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -186,7 +186,7 @@ package body System.Value_D is
 
             elsif S > 0 then
                declare
-                  LS  : Integer := S;
+                  LS : Integer := S;
 
                begin
                   Y := Safe_Expont (B, LS, 10 ** Integer'Max (0, Scale));
@@ -232,7 +232,6 @@ package body System.Value_D is
       Base   : Unsigned;
       ScaleB : Integer;
       Extra  : Unsigned;
-      pragma Unreferenced (Extra);
       Minus  : Boolean;
       Val    : Uns;
 
@@ -250,7 +249,6 @@ package body System.Value_D is
       Base   : Unsigned;
       ScaleB : Integer;
       Extra  : Unsigned;
-      pragma Unreferenced (Extra);
       Minus  : Boolean;
       Val    : Uns;
 

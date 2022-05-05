@@ -16,6 +16,8 @@ import core.stdc.stdio;
 import core.stdc.string;
 import core.stdc.stdlib;
 
+nothrow:
+
 // In theory these functions should also restore errno, but we don't care because
 // we abort application on error anyway.
 extern (C) private pure @system @nogc nothrow
@@ -54,6 +56,8 @@ struct OutBuffer
     int level;
     // state }
 
+  nothrow:
+
     /**
     Construct given size.
     */
@@ -82,18 +86,17 @@ struct OutBuffer
     /**
     Frees resources associated.
     */
-    extern (C++) void dtor() nothrow @trusted
+    extern (C++) void dtor() pure nothrow @trusted
     {
         if (fileMapping)
         {
             if (fileMapping.active)
                 fileMapping.close();
-            fileMapping = null;
         }
         else
         {
             debug (stomp) memset(data.ptr, 0xFF, data.length);
-            free(data.ptr);
+            pureFree(data.ptr);
         }
     }
 
@@ -102,17 +105,7 @@ struct OutBuffer
     */
     extern (C++) ~this() pure nothrow @trusted
     {
-        if (fileMapping)
-        {
-            if (fileMapping.active)
-                fileMapping.close();
-            fileMapping = null;
-        }
-        else
-        {
-            debug (stomp) memset(data.ptr, 0xFF, data.length);
-            pureFree(data.ptr);
-        }
+        dtor();
     }
 
     /// For porting with ease from dmd.backend.outbuf.Outbuffer
@@ -150,17 +143,10 @@ struct OutBuffer
     */
     extern (C++) void destroy() pure nothrow @trusted
     {
-        if (fileMapping && fileMapping.active)
-        {
-            fileMapping.close();
-            data = null;
-            offset = 0;
-        }
-        else
-        {
-            debug (stomp) memset(data.ptr, 0xFF, data.length);
-            pureFree(extractData());
-        }
+        dtor();
+        fileMapping = null;
+        data = null;
+        offset = 0;
     }
 
     /**
@@ -680,6 +666,8 @@ struct OutBuffer
         return cast(char)data[i];
     }
 
+    alias opDollar = length;
+
     /***********************************
      * Extract the data as a slice and take ownership of it.
      *
@@ -896,4 +884,37 @@ unittest
 
     s = unsignedToTempString(29, buf[], 16);
     assert(s == "1d");
+}
+
+unittest
+{
+    OutBuffer buf;
+    buf.writeUTF8(0x0000_0011);
+    buf.writeUTF8(0x0000_0111);
+    buf.writeUTF8(0x0000_1111);
+    buf.writeUTF8(0x0001_1111);
+    buf.writeUTF8(0x0010_0000);
+    assert(buf[] == "\x11\U00000111\U00001111\U00011111\U00100000");
+
+    buf.reset();
+    buf.writeUTF16(0x0000_0011);
+    buf.writeUTF16(0x0010_FFFF);
+    assert(buf[] == cast(string) "\u0011\U0010FFFF"w);
+}
+
+unittest
+{
+    OutBuffer buf;
+    buf.doindent = true;
+
+    const(char)[] s = "abc";
+    buf.writestring(s);
+    buf.level += 1;
+    buf.indent();
+    buf.writestring("abs");
+
+    assert(buf[] == "abc\tabs");
+
+    buf.setsize(4);
+    assert(buf.length == 4);
 }

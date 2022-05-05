@@ -150,7 +150,7 @@ bool flag_stack_usage_info = false
 ; the generated assembly code (to make it more readable).  This option
 ; is generally only of use to those who actually need to read the
 ; generated assembly code (perhaps while debugging the compiler itself).
-; Currently, this switch is only used by dwarf2out.c; however, it is intended
+; Currently, this switch is only used by dwarf2out.cc; however, it is intended
 ; to be a catchall for printing debug information in the assembler file.
 Variable
 int flag_debug_asm
@@ -222,10 +222,6 @@ unsigned int flag_sanitize
 ; What sanitizers should recover from errors
 Variable
 unsigned int flag_sanitize_recover = (SANITIZE_UNDEFINED | SANITIZE_UNDEFINED_NONDEFAULT | SANITIZE_KERNEL_ADDRESS | SANITIZE_KERNEL_HWADDRESS) & ~(SANITIZE_UNREACHABLE | SANITIZE_RETURN)
-
-; What the coverage sanitizers should instrument
-Variable
-unsigned int flag_sanitize_coverage
 
 ; Flag whether a prefix has been added to dump_base_name
 Variable
@@ -423,7 +419,7 @@ Driver Alias(symbolic)
 
 -target-help
 Common Driver
-Alias for --help=target.
+Display target specific command line options (including assembler and linker options).
 
 -time
 Driver Alias(time)
@@ -551,6 +547,14 @@ Warn if an array is accessed out of bounds.
 Warray-bounds=
 Common Joined RejectNegative UInteger Var(warn_array_bounds) Warning IntegerRange(0, 2)
 Warn if an array is accessed out of bounds.
+
+Wuse-after-free
+Common Var(warn_use_after_free) Warning
+Warn for uses of pointers to deallocated storage.
+
+Wuse-after-free=
+Common Joined RejectNegative UInteger Var(warn_use_after_free) Warning IntegerRange(0, 3)
+Warn for uses of pointers to deallocated storage.
 
 Wattributes
 Common Var(warn_attributes) Init(1) Warning
@@ -796,6 +800,10 @@ Do not suppress warnings from system headers.
 Wtrampolines
 Common Var(warn_trampolines) Warning
 Warn whenever a trampoline is generated.
+
+Wtrivial-auto-var-init
+Common Var(warn_trivial_auto_var_init) Warning Init(0)
+Warn about cases where -ftrivial-auto-var-init cannot initialize an auto variable.
 
 Wtype-limits
 Common Var(warn_type_limits) Warning EnabledBy(Wextra)
@@ -1068,7 +1076,7 @@ Common Driver Joined
 Select what to sanitize.
 
 fsanitize-coverage=
-Common Joined RejectNegative Enum(sanitize_coverage)
+Common Joined Enum(sanitize_coverage) Var(flag_sanitize_coverage) EnumBitSet
 Select type of coverage sanitization.
 
 Enum

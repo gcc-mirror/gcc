@@ -34,7 +34,7 @@ version (StdDdoc)
             alias ddoc_long = int;
             alias ddoc_ulong = uint;
         }
-        struct ddoc_complex(T) { T re; T im; };
+        struct ddoc_complex(T) { T re; T im; }
     }
 
     /***

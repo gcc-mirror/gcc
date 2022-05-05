@@ -323,7 +323,6 @@ prefix = @prefix@
 program_transform_name = @program_transform_name@
 psdir = @psdir@
 real_target_noncanonical = @real_target_noncanonical@
-runstatedir = @runstatedir@
 sbindir = @sbindir@
 sharedstatedir = @sharedstatedir@
 srcdir = @srcdir@
@@ -349,11 +348,16 @@ AM_LDFLAGS = @ac_lto_plugin_ldflags@
 AM_LIBTOOLFLAGS = --tag=disable-static
 libexecsub_LTLIBRARIES = liblto_plugin.la
 in_gcc_libs = $(foreach lib, $(libexecsub_LTLIBRARIES), $(gcc_build_dir)/$(lib))
+@LTO_PLUGIN_USE_SYMVER_FALSE@version_arg = -export-symbols-regex onload
+@LTO_PLUGIN_USE_SYMVER_GNU_TRUE@@LTO_PLUGIN_USE_SYMVER_TRUE@version_arg = -Wl,--version-script=$(srcdir)/lto-plugin.map
+@LTO_PLUGIN_USE_SYMVER_SUN_TRUE@@LTO_PLUGIN_USE_SYMVER_TRUE@version_arg = -Wl,-M,$(srcdir)/lto-plugin.map
+@LTO_PLUGIN_USE_SYMVER_FALSE@version_dep = 
+@LTO_PLUGIN_USE_SYMVER_TRUE@version_dep = $(srcdir)/lto-plugin.map
 liblto_plugin_la_SOURCES = lto-plugin.c
 # Note that we intentionally override the bindir supplied by ACX_LT_HOST_FLAGS.
 liblto_plugin_la_LDFLAGS = $(AM_LDFLAGS) $(lt_host_flags) -module \
-	-avoid-version -bindir $(libexecsubdir) -export-symbols-regex \
-	onload $(if $(wildcard $(libiberty_noasan)),, $(if $(wildcard \
+	-avoid-version -bindir $(libexecsubdir) $(version_arg) $(if \
+	$(wildcard $(libiberty_noasan)),, $(if $(wildcard \
 	$(libiberty_pic)),,-Wc,$(libiberty)))
 # Can be simplified when libiberty becomes a normal convenience library.
 libiberty = $(with_libiberty)/libiberty.a
@@ -366,7 +370,8 @@ liblto_plugin_la_LIBADD = \
 
 liblto_plugin_la_DEPENDENCIES = \
 	$(if $(wildcard $(libiberty_noasan)),$(libiberty_noasan), \
-	$(if $(wildcard $(libiberty_pic)),$(libiberty_pic),))
+	$(if $(wildcard $(libiberty_pic)),$(libiberty_pic),)) \
+	$(version_dep)
 
 LTLDFLAGS = $(shell $(SHELL) $(top_srcdir)/../libtool-ldflags $(LDFLAGS))
 liblto_plugin_la_LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) \

@@ -31,13 +31,13 @@ extern int s390_float_const_zero_p (rtx value);
 extern bool s390_check_symref_alignment (rtx addr, HOST_WIDE_INT alignment);
 
 
-/* In s390-common.c.  */
+/* In s390-common.cc.  */
 extern bool s390_handle_option (struct gcc_options *opts ATTRIBUTE_UNUSED,
 				struct gcc_options *opts_set ATTRIBUTE_UNUSED,
 				const struct cl_decoded_option *decoded,
 				location_t loc);
 
-/* Declare functions in s390.c.  */
+/* Declare functions in s390.cc.  */
 
 extern HOST_WIDE_INT s390_initial_elimination_offset (int, int);
 extern void s390_emit_prologue (void);
@@ -49,7 +49,6 @@ extern void s390_function_profiler (FILE *, int);
 extern void s390_set_has_landing_pad_p (bool);
 extern bool s390_hard_regno_rename_ok (unsigned int, unsigned int);
 extern int s390_class_max_nregs (enum reg_class, machine_mode);
-extern bool s390_function_arg_vector (machine_mode, const_tree);
 extern bool s390_return_addr_from_memory(void);
 extern bool s390_fma_allowed_p (machine_mode);
 #if S390_USE_TARGET_ATTRIBUTE
@@ -168,14 +167,14 @@ extern void s390_indirect_branch_via_thunk (unsigned int regno,
 extern void s390_indirect_branch_via_inline_thunk (rtx execute_target);
 #endif /* RTX_CODE */
 
-/* s390-c.c routines */
+/* s390-c.cc routines */
 extern void s390_cpu_cpp_builtins (struct cpp_reader *);
 extern void s390_register_target_pragmas (void);
 
-/* Routines for s390-c.c */
+/* Routines for s390-c.cc */
 extern bool s390_const_operand_ok (tree, int, int, tree);
 
-/* s390-d.c routines */
+/* s390-d.cc routines */
 extern void s390_d_target_versions (void);
 extern void s390_d_register_target_info (void);
 

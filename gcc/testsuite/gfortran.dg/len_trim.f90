@@ -17,11 +17,17 @@ program main
   kk = len_trim (a)
   mm = len_trim (a, kind=4)
   nn = len_trim (a, kind=8)
+  mm = len_trim (a,      4)
+  nn = len_trim (a,      8)
   kk = len_trim ([b])
   mm = len_trim ([b],kind=4)
   nn = len_trim ([b],kind=8)
+  mm = len_trim ([b],     4)
+  nn = len_trim ([b],     8)
   kk = len_trim (c)
   mm = len_trim (c, kind=4)
   nn = len_trim (c, kind=8)
+  mm = len_trim (c,      4)
+  nn = len_trim (c,      8)
   if (any (l4 /= 2_4) .or. any (l8 /= 2_8)) stop 1
 end program main

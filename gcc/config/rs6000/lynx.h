@@ -81,7 +81,7 @@
 #undef SIZE_TYPE
 #undef ASM_OUTPUT_ALIGN
 
-/* The file rs6000.c defines TARGET_HAVE_TLS unconditionally to the
+/* The file rs6000.cc defines TARGET_HAVE_TLS unconditionally to the
    value of HAVE_AS_TLS.  HAVE_AS_TLS is true as gas support for TLS
    is detected by configure.  Override the definition to false.  */
 

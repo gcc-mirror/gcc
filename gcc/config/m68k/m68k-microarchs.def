@@ -18,7 +18,7 @@
    <http://www.gnu.org/licenses/>.  */
 
 /* Define microarchitectures for the -mtune option, used both in
-   m68k.c and to generate m68k-tables.opt.  Before including this
+   m68k.cc and to generate m68k-tables.opt.  Before including this
    file, define a macro:
 
    M68K_MICROARCH (NAME, DEVICE, MICROARCH, ISA, FLAGS)

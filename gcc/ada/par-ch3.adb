@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -209,39 +209,9 @@ package body Ch3 is
    --  Error recovery: can raise Error_Resync
 
    function P_Defining_Identifier (C : Id_Check := None) return Node_Id is
-      Ident_Node : Node_Id;
+      Ident_Node : Node_Id := P_Identifier (C, True);
 
    begin
-      --  Scan out the identifier. Note that this code is essentially identical
-      --  to P_Identifier, except that in the call to Scan_Reserved_Identifier
-      --  we set Force_Msg to True, since we want at least one message for each
-      --  separate declaration (but not use) of a reserved identifier.
-
-      --  Duplication should be removed, common code should be factored???
-
-      if Token = Tok_Identifier then
-         Check_Future_Keyword;
-
-      --  If we have a reserved identifier, manufacture an identifier with
-      --  a corresponding name after posting an appropriate error message
-
-      elsif Is_Reserved_Identifier (C) then
-         Scan_Reserved_Identifier (Force_Msg => True);
-
-      --  Otherwise we have junk that cannot be interpreted as an identifier
-
-      else
-         T_Identifier; -- to give message
-         raise Error_Resync;
-      end if;
-
-      if Style_Check then
-         Style.Check_Defining_Identifier_Casing;
-      end if;
-
-      Ident_Node := Token_Node;
-      Scan; -- past the identifier
-
       --  If we already have a defining identifier, clean it out and make
       --  a new clean identifier. This situation arises in some error cases
       --  and we need to fix it.
@@ -2818,12 +2788,7 @@ package body Ch3 is
             else
                P_Index_Subtype_Def_With_Fixed_Lower_Bound (Subtype_Mark_Node);
 
-               if not Extensions_Allowed then
-                  Error_Msg_N
-                    ("fixed-lower-bound array is an extension feature; "
-                       & "use -gnatX",
-                     Token_Node);
-               end if;
+               Error_Msg_GNAT_Extension ("fixed-lower-bound array");
             end if;
 
             exit when Token = Tok_Right_Paren or else Token = Tok_Of;
@@ -2892,12 +2857,7 @@ package body Ch3 is
                      P_Index_Subtype_Def_With_Fixed_Lower_Bound
                        (Subtype_Mark_Node);
 
-                     if not Extensions_Allowed then
-                        Error_Msg_N
-                          ("fixed-lower-bound array is an extension feature; "
-                             & "use -gnatX",
-                           Token_Node);
-                     end if;
+                     Error_Msg_GNAT_Extension ("fixed-lower-bound array");
                   end if;
 
                   exit when Token = Tok_Right_Paren or else Token = Tok_Of;
@@ -3399,12 +3359,7 @@ package body Ch3 is
             --  later during analysis), and scan to the next token.
 
             if Token = Tok_Box then
-               if not Extensions_Allowed then
-                  Error_Msg_N
-                    ("fixed-lower-bound array is an extension feature; "
-                       & "use -gnatX",
-                     Expr_Node);
-               end if;
+               Error_Msg_GNAT_Extension ("fixed-lower-bound array");
 
                Expr_Node := Empty;
                Scan;

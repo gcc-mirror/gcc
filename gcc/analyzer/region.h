@@ -60,6 +60,7 @@ enum region_kind
   RK_HEAP_ALLOCATED,
   RK_ALLOCA,
   RK_STRING,
+  RK_BIT_RANGE,
   RK_UNKNOWN
 };
 
@@ -88,6 +89,7 @@ enum region_kind
      heap_allocated_region (RK_HEAP_ALLOCATED)
      alloca_region (RK_ALLOCA)
      string_region (RK_STRING)
+     bit_range_region (RK_BIT_RANGE)
      unknown_region (RK_UNKNOWN).  */
 
 /* Abstract base class for representing ways of accessing chunks of memory.
@@ -127,6 +129,8 @@ public:
   dyn_cast_cast_region () const { return NULL; }
   virtual const string_region *
   dyn_cast_string_region () const { return NULL; }
+  virtual const bit_range_region *
+  dyn_cast_bit_range_region () const { return NULL; }
 
   virtual void accept (visitor *v) const;
 
@@ -178,6 +182,12 @@ public:
      Otherwise return false.  */
   virtual bool get_relative_concrete_offset (bit_offset_t *out) const;
 
+  /* Attempt to get the position and size of this region expressed as a
+     concrete range of bytes relative to its parent.
+     If successful, return true and write to *OUT.
+     Otherwise return false.  */
+  bool get_relative_concrete_byte_range (byte_range *out) const;
+
   void
   get_subregions_for_binding (region_model_manager *mgr,
 			      bit_offset_t start_bit_offset,
@@ -187,7 +197,14 @@ public:
 
   bool symbolic_for_unknown_ptr_p () const;
 
+  /* For most base regions it makes sense to track the bindings of the region
+     within the store.  As an optimization, some are not tracked (to avoid
+     bloating the store object with redundant binding clusters).  */
+  virtual bool tracked_p () const { return true; }
+
   const complexity &get_complexity () const { return m_complexity; }
+
+  bool is_named_decl_p (const char *decl_name) const;
 
  protected:
   region (complexity c, unsigned id, const region *parent, tree type);
@@ -296,13 +313,19 @@ public:
   /* Accessors.  */
   const frame_region *get_calling_frame () const { return m_calling_frame; }
   function *get_function () const { return m_fun; }
+  tree get_fndecl () const { return get_function ()->decl; }
   int get_index () const { return m_index; }
   int get_stack_depth () const { return m_index + 1; }
 
-  const decl_region *get_region_for_local (region_model_manager *mgr,
-					   tree expr) const;
+  const decl_region *
+  get_region_for_local (region_model_manager *mgr,
+			tree expr,
+			const region_model_context *ctxt) const;
 
   unsigned get_num_locals () const { return m_locals.elements (); }
+
+  /* Implemented in region-model-manager.cc.  */
+  void dump_untracked_regions () const;
 
  private:
   const frame_region *m_calling_frame;
@@ -618,13 +641,15 @@ template <> struct default_hash_traits<symbolic_region::key_t>
 namespace ana {
 
 /* Concrete region subclass representing the memory occupied by a
-   variable (whether for a global or a local).  */
+   variable (whether for a global or a local).
+   Also used for representing SSA names, as if they were locals.  */
 
 class decl_region : public region
 {
 public:
   decl_region (unsigned id, const region *parent, tree decl)
-  : region (complexity (parent), id, parent, TREE_TYPE (decl)), m_decl (decl)
+  : region (complexity (parent), id, parent, TREE_TYPE (decl)), m_decl (decl),
+    m_tracked (calc_tracked_p (decl))
   {}
 
   enum region_kind get_kind () const FINAL OVERRIDE { return RK_DECL; }
@@ -632,6 +657,8 @@ public:
   dyn_cast_decl_region () const FINAL OVERRIDE { return this; }
 
   void dump_to_pp (pretty_printer *pp, bool simple) const FINAL OVERRIDE;
+
+  bool tracked_p () const FINAL OVERRIDE { return m_tracked; }
 
   tree get_decl () const { return m_decl; }
   int get_stack_depth () const;
@@ -642,7 +669,15 @@ public:
   const svalue *get_svalue_for_initializer (region_model_manager *mgr) const;
 
 private:
+  static bool calc_tracked_p (tree decl);
+
   tree m_decl;
+
+  /* Cached result of calc_tracked_p, so that we can quickly determine when
+     we don't to track a binding_cluster for this decl (to avoid bloating
+     store objects).
+     This can be debugged using -fdump-analyzer-untracked.  */
+  bool m_tracked;
 };
 
 } // namespace ana
@@ -1127,6 +1162,92 @@ is_a_helper <const string_region *>::test (const region *reg)
 {
   return reg->get_kind () == RK_STRING;
 }
+
+namespace ana {
+
+/* A region for a specific range of bits within another region.  */
+
+class bit_range_region : public region
+{
+public:
+  /* A support class for uniquifying instances of bit_range_region.  */
+  struct key_t
+  {
+    key_t (const region *parent, tree type, const bit_range &bits)
+    : m_parent (parent), m_type (type), m_bits (bits)
+    {
+      gcc_assert (parent);
+    }
+
+    hashval_t hash () const
+    {
+      inchash::hash hstate;
+      hstate.add_ptr (m_parent);
+      hstate.add_ptr (m_type);
+      hstate.add_wide_int (m_bits.m_start_bit_offset);
+      hstate.add_wide_int (m_bits.m_size_in_bits);
+      return hstate.end ();
+    }
+
+    bool operator== (const key_t &other) const
+    {
+      return (m_parent == other.m_parent
+	      && m_type == other.m_type
+	      && m_bits == other.m_bits);
+    }
+
+    void mark_deleted () { m_parent = reinterpret_cast<const region *> (1); }
+    void mark_empty () { m_parent = NULL; }
+    bool is_deleted () const
+    {
+      return m_parent == reinterpret_cast<const region *> (1);
+    }
+    bool is_empty () const { return m_parent == NULL; }
+
+    const region *m_parent;
+    tree m_type;
+    bit_range m_bits;
+  };
+
+  bit_range_region (unsigned id, const region *parent, tree type,
+		    const bit_range &bits)
+  : region (complexity (parent), id, parent, type),
+    m_bits (bits)
+  {}
+
+  const bit_range_region *
+  dyn_cast_bit_range_region () const FINAL OVERRIDE { return this; }
+
+  enum region_kind get_kind () const FINAL OVERRIDE { return RK_BIT_RANGE; }
+
+  void dump_to_pp (pretty_printer *pp, bool simple) const FINAL OVERRIDE;
+
+  const bit_range &get_bits () const { return m_bits; }
+
+  bool get_byte_size (byte_size_t *out) const FINAL OVERRIDE;
+  bool get_bit_size (bit_size_t *out) const FINAL OVERRIDE;
+  const svalue *get_byte_size_sval (region_model_manager *mgr) const FINAL OVERRIDE;
+  bool get_relative_concrete_offset (bit_offset_t *out) const FINAL OVERRIDE;
+
+private:
+  bit_range m_bits;
+};
+
+} // namespace ana
+
+template <>
+template <>
+inline bool
+is_a_helper <const bit_range_region *>::test (const region *reg)
+{
+  return reg->get_kind () == RK_BIT_RANGE;
+}
+
+template <> struct default_hash_traits<bit_range_region::key_t>
+: public member_function_hash_traits<bit_range_region::key_t>
+{
+  static const bool empty_zero_p = true;
+};
 
 namespace ana {
 

@@ -60,7 +60,7 @@ omp_is_initial_device (void)
 
 /* This is set to the device number of current GPU during device initialization,
    when the offload image containing this libgomp portion is loaded.  */
-static volatile int GOMP_DEVICE_NUM_VAR;
+volatile int GOMP_DEVICE_NUM_VAR;
 
 int
 omp_get_device_num (void)

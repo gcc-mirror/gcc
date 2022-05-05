@@ -9,6 +9,6 @@ struct S(T)
 class C
 {
 	alias Al = S!C;
-	
+
 	static void func(U)(U var) { }
 }

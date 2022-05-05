@@ -20,7 +20,7 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_BPF_PROTOS_H
 #define GCC_BPF_PROTOS_H
 
-/* Routines implemented in bpf.c.  */
+/* Routines implemented in bpf.cc.  */
 
 extern HOST_WIDE_INT bpf_initial_elimination_offset (int, int);
 extern const char *bpf_output_call (rtx);

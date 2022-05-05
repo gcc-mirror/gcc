@@ -284,6 +284,7 @@ public:
     Identifier *getIdent();
     hash_t toHash();
 
+    bool isDiscardable();
     bool needsCodegen();
 
     TemplateInstance *isTemplateInstance() { return this; }
@@ -313,3 +314,4 @@ Tuple *isTuple(RootObject *o);
 Parameter *isParameter(RootObject *o);
 TemplateParameter *isTemplateParameter(RootObject *o);
 bool isError(const RootObject *const o);
+void printTemplateStats();

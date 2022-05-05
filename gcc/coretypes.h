@@ -228,15 +228,17 @@ enum stack_protector {
   SPCT_FLAG_EXPLICIT = 4
 };
 
-/* Types of unwind/exception handling info that can be generated.  */
+/* Types of unwind/exception handling info that can be generated.
+   Note that a UI_TARGET (or larger) setting is considered to be
+   incompatible with -freorder-blocks-and-partition.  */
 
 enum unwind_info_type
 {
   UI_NONE,
   UI_SJLJ,
   UI_DWARF2,
-  UI_TARGET,
-  UI_SEH
+  UI_SEH,
+  UI_TARGET
 };
 
 /* Callgraph node profile representation.  */
@@ -461,7 +463,7 @@ typedef unsigned char uchar;
 /* On targets that don't need polynomial offsets, target-specific code
    should be able to treat poly_int like a normal constant, with a
    conversion operator going from the former to the latter.  We also
-   allow this for gencondmd.c for all targets, so that we can treat
+   allow this for gencondmd.cc for all targets, so that we can treat
    machine_modes as enums without causing build failures.  */
 #if (defined (IN_TARGET_CODE) \
      && (defined (USE_ENUM_MODES) || NUM_POLY_INT_COEFFS == 1))

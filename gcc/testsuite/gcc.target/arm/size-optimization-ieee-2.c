@@ -1,4 +1,4 @@
-/* { dg-do link { target arm_soft_ok } } */
+/* { dg-do link { target arm_soft_ok_link } } */
 /* { dg-skip-if "Feature is -mfloat-abi=soft only" { *-*-* } { "-mfloat-abi=*" } { "-mfloat-abi=soft" } } */
 /* { dg-options "-mfloat-abi=soft" } */
 

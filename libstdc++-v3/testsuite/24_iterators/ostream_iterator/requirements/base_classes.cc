@@ -30,7 +30,7 @@ void test01()
 
   // Check for required base class.
   typedef ostream_iterator<long> test_iterator;
-  typedef iterator<output_iterator_tag, void, void, void, void> base_iterator;
+  typedef iterator<output_iterator_tag, void, void, void, void> base_iterator; // { dg-warning "is deprecated" "" { target c++17 } }
   ostringstream osstream("this tag");
   test_iterator  r_it(osstream);
   base_iterator* base __attribute__((unused)) = &r_it;

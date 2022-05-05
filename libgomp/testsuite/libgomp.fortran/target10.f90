@@ -1,5 +1,5 @@
 ! { dg-do run }
-! { dg-xfail-run-if TODO { offload_device_intel_mic } }
+! { dg-xfail-run-if TODO { offload_device_any_intel_mic } }
 
 program main
   use omp_lib

@@ -294,11 +294,11 @@ Overview of code structure
 The library is implemented in C++.  The source files have the ``.c``
 extension for legacy reasons.
 
-* ``libgccjit.c`` implements the API entrypoints.  It performs error
+* ``libgccjit.cc`` implements the API entrypoints.  It performs error
   checking, then calls into classes of the gcc::jit::recording namespace
-  within ``jit-recording.c`` and ``jit-recording.h``.
+  within ``jit-recording.cc`` and ``jit-recording.h``.
 
-* The gcc::jit::recording classes (within ``jit-recording.c`` and
+* The gcc::jit::recording classes (within ``jit-recording.cc`` and
   ``jit-recording.h``) record the API calls that are made:
 
    .. literalinclude:: ../../jit-common.h
@@ -307,7 +307,7 @@ extension for legacy reasons.
     :language: c++
 
 * When the context is compiled, the gcc::jit::playback classes (within
-  ``jit-playback.c`` and ``jit-playback.h``) replay the API calls
+  ``jit-playback.cc`` and ``jit-playback.h``) replay the API calls
   within langhook:parse_file:
 
    .. literalinclude:: ../../jit-common.h
@@ -339,9 +339,9 @@ It should not be possible for client code to cause an internal compiler
 error.  If this *does* happen, the root cause should be isolated (perhaps
 using :c:func:`gcc_jit_context_dump_reproducer_to_file`) and the cause
 should be rejected via additional checking.  The checking ideally should
-be within the libgccjit API entrypoints in libgccjit.c, since this is as
+be within the libgccjit API entrypoints in libgccjit.cc, since this is as
 close as possible to the error; failing that, a good place is within
-``recording::context::validate ()`` in jit-recording.c.
+``recording::context::validate ()`` in jit-recording.cc.
 
 Submitting patches
 ------------------

@@ -791,8 +791,7 @@ Type::are_convertible(const Type* lhs, const Type* rhs, std::string* reason)
 
   // The types are convertible if they have identical underlying
   // types, ignoring struct field tags.
-  if ((lhs->named_type() != NULL || rhs->named_type() != NULL)
-      && Type::are_identical(lhs->base(), rhs->base(), 0, reason))
+  if (Type::are_identical(lhs->base(), rhs->base(), 0, reason))
     return true;
 
   // The types are convertible if they are both unnamed pointer types
@@ -2514,13 +2513,18 @@ Type::type_descriptor_constructor(Gogo* gogo, int runtime_type_kind,
   Expression_list* vals = new Expression_list();
   vals->reserve(12);
 
-  if (!this->has_pointer())
+  bool has_pointer;
+  if (name != NULL)
+    has_pointer = name->has_pointer();
+  else
+    has_pointer = this->has_pointer();
+  if (!has_pointer)
     runtime_type_kind |= RUNTIME_TYPE_KIND_NO_POINTERS;
   if (this->is_direct_iface_type())
     runtime_type_kind |= RUNTIME_TYPE_KIND_DIRECT_IFACE;
   int64_t ptrsize;
   int64_t ptrdata;
-  if (this->needs_gcprog(gogo, &ptrsize, &ptrdata))
+  if (has_pointer && this->needs_gcprog(gogo, &ptrsize, &ptrdata))
     runtime_type_kind |= RUNTIME_TYPE_KIND_GC_PROG;
 
   Struct_field_list::const_iterator p = fields->begin();
@@ -2531,7 +2535,10 @@ Type::type_descriptor_constructor(Gogo* gogo, int runtime_type_kind,
   ++p;
   go_assert(p->is_field_name("ptrdata"));
   type_info = Expression::TYPE_INFO_DESCRIPTOR_PTRDATA;
-  vals->push_back(Expression::make_type_info(this, type_info));
+  if (has_pointer)
+    vals->push_back(Expression::make_type_info(this, type_info));
+  else
+    vals->push_back(Expression::make_integer_ul(0, p->type(), bloc));
 
   ++p;
   go_assert(p->is_field_name("hash"));
@@ -2577,7 +2584,12 @@ Type::type_descriptor_constructor(Gogo* gogo, int runtime_type_kind,
 
   ++p;
   go_assert(p->is_field_name("gcdata"));
-  vals->push_back(Expression::make_gc_symbol(this));
+  if (has_pointer)
+    vals->push_back(Expression::make_gc_symbol(this));
+  else
+    vals->push_back(Expression::make_cast(p->type(),
+					  Expression::make_nil(bloc),
+					  bloc));
 
   ++p;
   go_assert(p->is_field_name("string"));
@@ -2804,6 +2816,9 @@ class Ptrmask
 void
 Ptrmask::set_from(Gogo* gogo, Type* type, int64_t ptrsize, int64_t offset)
 {
+  if (!type->has_pointer())
+    return;
+
   switch (type->base()->classification())
     {
     default:
@@ -2846,9 +2861,6 @@ Ptrmask::set_from(Gogo* gogo, Type* type, int64_t ptrsize, int64_t offset)
 
     case Type::TYPE_STRUCT:
       {
-	if (!type->has_pointer())
-	  return;
-
 	const Struct_field_list* fields = type->struct_type()->fields();
 	int64_t soffset = 0;
 	for (Struct_field_list::const_iterator pf = fields->begin();
@@ -2886,9 +2898,6 @@ Ptrmask::set_from(Gogo* gogo, Type* type, int64_t ptrsize, int64_t offset)
 	}
       else
 	{
-	  if (!type->has_pointer())
-	    return;
-
 	  int64_t len;
 	  if (!type->array_type()->int_length(&len))
 	    {
@@ -5294,7 +5303,7 @@ Function_type::do_export(Export* exp) const
   if (results != NULL)
     {
       exp->write_c_string(" ");
-      if (results->size() == 1 && results->begin()->name().empty())
+      if (results->size() == 1)
 	exp->write_type(results->begin()->type());
       else
 	{
@@ -10895,6 +10904,10 @@ Named_type::do_verify()
 bool
 Named_type::do_has_pointer() const
 {
+  // A type that is not in the heap has no pointers that we care about.
+  if (!this->in_heap_)
+    return false;
+
   if (this->seen_)
     return false;
   this->seen_ = true;

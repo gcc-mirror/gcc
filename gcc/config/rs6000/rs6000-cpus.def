@@ -44,7 +44,7 @@
 				 | OPTION_MASK_VSX)
 
 /* For now, don't provide an embedded version of ISA 2.07.  Do not set power8
-   fusion here, instead set it in rs6000.c if we are tuning for a power8
+   fusion here, instead set it in rs6000.cc if we are tuning for a power8
    system.  */
 #define ISA_2_7_MASKS_SERVER	(ISA_2_6_MASKS_SERVER			\
 				 | OPTION_MASK_P8_VECTOR		\
@@ -85,13 +85,7 @@
 #define ISA_3_1_MASKS_SERVER	(ISA_3_0_MASKS_SERVER			\
 				 | OPTION_MASK_POWER10			\
 				 | OTHER_POWER10_MASKS			\
-				 | OPTION_MASK_P10_FUSION		\
-				 | OPTION_MASK_P10_FUSION_LD_CMPI	\
-				 | OPTION_MASK_P10_FUSION_2LOGICAL	\
-				 | OPTION_MASK_P10_FUSION_LOGADD 	\
-				 | OPTION_MASK_P10_FUSION_ADDLOG	\
-				 | OPTION_MASK_P10_FUSION_2ADD		\
-				 | OPTION_MASK_P10_FUSION_2STORE)
+				 | OPTION_MASK_P10_FUSION)
 
 /* Flags that need to be turned off if -mno-power9-vector.  */
 #define OTHER_P9_VECTOR_MASKS	(OPTION_MASK_FLOAT128_HW		\
@@ -139,12 +133,6 @@
 				 | OPTION_MASK_FPRND			\
 				 | OPTION_MASK_POWER10			\
 				 | OPTION_MASK_P10_FUSION		\
-				 | OPTION_MASK_P10_FUSION_LD_CMPI	\
-				 | OPTION_MASK_P10_FUSION_2LOGICAL	\
-				 | OPTION_MASK_P10_FUSION_LOGADD 	\
-				 | OPTION_MASK_P10_FUSION_ADDLOG	\
-				 | OPTION_MASK_P10_FUSION_2ADD    	\
-				 | OPTION_MASK_P10_FUSION_2STORE	\
 				 | OPTION_MASK_HTM			\
 				 | OPTION_MASK_ISEL			\
 				 | OPTION_MASK_MFCRF			\

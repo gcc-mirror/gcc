@@ -27,7 +27,7 @@ struct A { };
 namespace std
 {
   template<>
-    struct less<A*> : binary_function<A*,A*,bool>
+    struct less<A*>
     {
       static int count;
       bool operator()(A* l, A* r) { ++count; return l < r; }

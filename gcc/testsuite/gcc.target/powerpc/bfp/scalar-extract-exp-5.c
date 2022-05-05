@@ -14,7 +14,7 @@ get_exponent (__ieee128 *p)
 {
   __ieee128 source = *p;
 
-  return scalar_extract_exp (source);	/* { dg-error "requires ISA 3.0 IEEE 128-bit floating point" } */
+  return scalar_extract_exp (source);	/* { dg-error "requires quad-precision floating-point arithmetic" } */
 }
 
 

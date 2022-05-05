@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2006-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 2006-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -35,6 +35,17 @@
 --  addition, some platforms lacked suitable compilers to compile the reference
 --  BLAS/LAPACK implementation. Finally, on some platforms there are more
 --  floating point types than supported by BLAS/LAPACK.
+
+--  Preconditions, postconditions, ghost code, loop invariants and assertions
+--  in this unit are meant for analysis only, not for run-time checking, as it
+--  would be too costly otherwise. This is enforced by setting the assertion
+--  policy to Ignore.
+
+pragma Assertion_Policy (Pre            => Ignore,
+                         Post           => Ignore,
+                         Ghost          => Ignore,
+                         Loop_Invariant => Ignore,
+                         Assert         => Ignore);
 
 with Ada.Containers.Generic_Anonymous_Array_Sort; use Ada.Containers;
 

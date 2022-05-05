@@ -1935,7 +1935,7 @@ visl")
   "or\t%1, %%lo(%a3-(%a2-.)), %0")
 
 ;; SPARC-v9 code model support insns.  See sparc_emit_set_symbolic_const64
-;; in sparc.c to see what is going on here... PIC stuff comes first.
+;; in sparc.cc to see what is going on here... PIC stuff comes first.
 
 (define_insn "movdi_lo_sum_pic"
   [(set (match_operand:DI 0 "register_operand" "=r")
@@ -2810,7 +2810,7 @@ visl")
 ;; it simple and only allow those constants supported by all flavors.
 ;; Note that emit_conditional_move canonicalizes operands 2,3 so that operand
 ;; 3 contains the constant if one is present, but we handle either for
-;; generality (sparc.c puts a constant in operand 2).
+;; generality (sparc.cc puts a constant in operand 2).
 ;;
 ;; Our instruction patterns, on the other hand, canonicalize such that
 ;; operand 3 must be the set destination.

@@ -276,7 +276,7 @@ enum reg_class
 /*** Passing Function Arguments on the Stack.  */
 
 /* The eBPF ABI doesn't support passing arguments on the stack.  Only
-   in the first five registers.  Code in bpf.c assures the stack is
+   in the first five registers.  Code in bpf.cc assures the stack is
    never used when passing arguments.  However, we still have to
    define the constants below.  */
 

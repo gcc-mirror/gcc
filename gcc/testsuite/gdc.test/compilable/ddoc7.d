@@ -56,4 +56,3 @@ class C
     /// Some doc
     abstract void foo();
 }
-

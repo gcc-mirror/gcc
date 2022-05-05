@@ -343,7 +343,7 @@ extern(D):
         ///
         inout(T)* data() inout @safe                                        { return _Get_data()._Myptr; }
         ///
-        inout(T)[] as_array() inout nothrow @trusted                        { return _Get_data()._Myptr[0 .. _Get_data()._Mysize]; }
+        inout(T)[] as_array() scope return inout nothrow @trusted           { return _Get_data()._Myptr[0 .. _Get_data()._Mysize]; }
         ///
         ref inout(T) at(size_type i) inout nothrow @trusted                 { return _Get_data()._Myptr[0 .. _Get_data()._Mysize][i]; }
 
@@ -1920,7 +1920,7 @@ extern(D):
         ///
         inout(T)* data() inout @safe                                        { return __get_pointer(); }
         ///
-        inout(T)[] as_array() inout nothrow @trusted                        { return __get_pointer()[0 .. size()]; }
+        inout(T)[] as_array() scope return inout nothrow @trusted           { return __get_pointer()[0 .. size()]; }
         ///
         ref inout(T) at(size_type i) inout nothrow @trusted                 { return __get_pointer()[0 .. size()][i]; }
 
@@ -2497,8 +2497,8 @@ extern(C++, (StdNamespace)):
     extern(D) @safe @nogc:
         pragma(inline, true)
         {
-            ref inout(Alloc) _Getal() inout pure nothrow { return _Mypair._Myval1; }
-            ref inout(ValTy) _Get_data() inout pure nothrow { return _Mypair._Myval2; }
+            ref inout(Alloc) _Getal() return inout pure nothrow { return _Mypair._Myval1; }
+            ref inout(ValTy) _Get_data() return inout pure nothrow { return _Mypair._Myval2; }
         }
 
         void _Orphan_all() nothrow { _Get_data._Base._Orphan_all(); }

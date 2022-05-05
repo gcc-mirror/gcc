@@ -124,7 +124,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   */
   template<typename _Category, typename _Tp, typename _Distance = ptrdiff_t,
            typename _Pointer = _Tp*, typename _Reference = _Tp&>
-    struct iterator
+    struct _GLIBCXX17_DEPRECATED iterator
     {
       /// One of the @link iterator_tags tag types@endlink.
       typedef _Category  iterator_category;

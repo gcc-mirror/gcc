@@ -32,18 +32,18 @@ struct iterator
   using difference_type = std::ptrdiff_t;
   using reference = value;
 
-  value operator*() const { return value{counter}; }
+  constexpr value operator*() const { return value{counter}; }
 
-  iterator& operator++() { ++counter; return *this; }
+  constexpr iterator& operator++() { ++counter; return *this; }
 
-  iterator operator++(int) { auto i = *this; ++counter; return i; }
+  constexpr iterator operator++(int) { auto i = *this; ++counter; return i; }
 
-  bool operator==(sentinel s) const { return counter == s.limit; }
+  constexpr bool operator==(sentinel s) const { return counter == s.limit; }
 
   int counter = 0;
 };
 
-void
+constexpr bool
 test01()
 {
   iterator i;
@@ -54,10 +54,12 @@ test01()
   VERIFY( begin->n == 1 );
   ++begin;
   VERIFY( begin == end );
+
+  return true;
 }
 
 int
 main()
 {
-  test01();
+  constexpr bool b1 = test01();
 }

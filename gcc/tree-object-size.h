@@ -1,4 +1,4 @@
-/* Declarations for tree-object-size.c.
+/* Declarations for tree-object-size.cc.
    Copyright (C) 2013-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.

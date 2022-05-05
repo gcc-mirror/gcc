@@ -1,6 +1,6 @@
 /*
 PERMUTE_ARGS: -preview=dip1000
-TEST_OUTPUT
+TEST_OUTPUT:
 ---
 fail_compilation/test21912.d(24): Error: function `test21912.escapeParam` is `@nogc` yet allocates closures with the GC
 fail_compilation/test21912.d(26):        test21912.escapeParam.__lambda2 closes over variable i at fail_compilation/test21912.d(24)
@@ -32,12 +32,12 @@ Dg escapeAssign(int i, return scope Dg dg)
     return dg;
 }
 
-ref Dg identityR(ref return scope Dg dg)
+ref Dg identityR(return ref scope Dg dg)
 {
     return dg;
 }
 
-ref Dg escapeAssignRef(int i, ref return scope Dg dg)
+ref Dg escapeAssignRef(int i, return ref scope Dg dg)
 {
     dg = () => i;
     return dg;

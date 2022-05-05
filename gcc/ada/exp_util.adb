@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1422,7 +1422,7 @@ package body Exp_Util is
       --  Add a runtime check to verify assertion expression DIC_Expr of
       --  inherited pragma DIC_Prag. This routine applies class-wide pre-
       --  and postcondition-like runtime semantics to the check. Expr is
-      --  the assertion expression after substitition has been performed
+      --  the assertion expression after substitution has been performed
       --  (via Replace_References). All generated code is added to list Stmts.
 
       procedure Add_Inherited_DICs
@@ -3752,7 +3752,7 @@ package body Exp_Util is
       --  Anonymous arrays in object declarations have no explicit declaration
       --  so use the related object declaration as the insertion point.
 
-      elsif Is_Itype (Work_Typ) and then Is_Array_Type (Work_Typ)  then
+      elsif Is_Itype (Work_Typ) and then Is_Array_Type (Work_Typ) then
          Typ_Decl := Associated_Node_For_Itype (Work_Typ);
 
       --  Derived types with the full view as parent do not have a partial
@@ -7172,7 +7172,7 @@ package body Exp_Util is
       Wrapped_Node : Node_Id := Empty;
 
    begin
-      if No (Ins_Actions) or else Is_Empty_List (Ins_Actions) then
+      if Is_Empty_List (Ins_Actions) then
          return;
       end if;
 
@@ -7915,43 +7915,6 @@ package body Exp_Util is
          Insert_List_After_And_Analyze (Assoc_Node, Ins_Actions);
       end if;
    end Insert_Actions_After;
-
-   ------------------------
-   -- Insert_Declaration --
-   ------------------------
-
-   procedure Insert_Declaration (N : Node_Id; Decl : Node_Id) is
-      P : Node_Id;
-
-   begin
-      pragma Assert (Nkind (N) in N_Subexpr);
-
-      --  Climb until we find a procedure or a package
-
-      P := N;
-      loop
-         pragma Assert (Present (Parent (P)));
-         P := Parent (P);
-
-         if Is_List_Member (P) then
-            exit when Nkind (Parent (P)) in
-                        N_Package_Specification | N_Subprogram_Body;
-
-            --  Special handling for handled sequence of statements, we must
-            --  insert in the statements not the exception handlers!
-
-            if Nkind (Parent (P)) = N_Handled_Sequence_Of_Statements then
-               P := First (Statements (Parent (P)));
-               exit;
-            end if;
-         end if;
-      end loop;
-
-      --  Now do the insertion
-
-      Insert_Before (P, Decl);
-      Analyze (Decl);
-   end Insert_Declaration;
 
    ---------------------------------
    -- Insert_Library_Level_Action --
@@ -8780,7 +8743,7 @@ package body Exp_Util is
    ----------------------------------
 
    function Is_Possibly_Unaligned_Object (N : Node_Id) return Boolean is
-      T  : constant Entity_Id := Etype (N);
+      T : constant Entity_Id := Etype (N);
 
    begin
       --  If renamed object, apply test to underlying object
@@ -9495,14 +9458,12 @@ package body Exp_Util is
    begin
       W := Warn;
 
-      if Is_Non_Empty_List (L) then
-         N := First (L);
-         while Present (N) loop
-            Kill_Dead_Code (N, W);
-            W := False;
-            Next (N);
-         end loop;
-      end if;
+      N := First (L);
+      while Present (N) loop
+         Kill_Dead_Code (N, W);
+         W := False;
+         Next (N);
+      end loop;
    end Kill_Dead_Code;
 
    -----------------------------
@@ -9965,7 +9926,7 @@ package body Exp_Util is
             --  Nothing to do when the pragma lacks arguments, in which case it
             --  is illegal.
 
-            elsif No (Args) or else Is_Empty_List (Args) then
+            elsif Is_Empty_List (Args) then
                return False;
             end if;
 
@@ -12676,10 +12637,6 @@ package body Exp_Util is
       Typ     : Entity_Id;
 
    begin
-      if No (L) or else Is_Empty_List (L) then
-         return False;
-      end if;
-
       Decl := First (L);
       while Present (Decl) loop
 
@@ -12698,9 +12655,10 @@ package body Exp_Util is
               and then Is_Library_Level_Entity (Typ)
               and then Convention (Typ) = Convention_Ada
               and then Present (Access_Disp_Table (Typ))
-              and then RTE_Available (RE_Unregister_Tag)
               and then not Is_Abstract_Type (Typ)
               and then not No_Run_Time_Mode
+              and then not Restriction_Active (No_Tagged_Type_Registration)
+              and then RTE_Available (RE_Unregister_Tag)
             then
                return True;
             end if;

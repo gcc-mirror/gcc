@@ -663,6 +663,9 @@
 /* Define to 1 if you have the <pwd.h> header file. */
 #undef HAVE_PWD_H
 
+/* Define to 1 if you have REAL(KIND=17) */
+#undef HAVE_REAL_17
+
 /* Define to 1 if you have the `round' function. */
 #undef HAVE_ROUND
 
@@ -888,8 +891,74 @@
 /* Define to 1 if you have the `ynl' function. */
 #undef HAVE_YNL
 
+/* Define to 1 if you have the `__acoshieee128' function. */
+#undef HAVE___ACOSHIEEE128
+
+/* Define to 1 if you have the `__acosieee128' function. */
+#undef HAVE___ACOSIEEE128
+
+/* Define to 1 if you have the `__asinhieee128' function. */
+#undef HAVE___ASINHIEEE128
+
+/* Define to 1 if you have the `__asinieee128' function. */
+#undef HAVE___ASINIEEE128
+
+/* Define to 1 if you have the `__atan2ieee128' function. */
+#undef HAVE___ATAN2IEEE128
+
+/* Define to 1 if you have the `__atanhieee128' function. */
+#undef HAVE___ATANHIEEE128
+
+/* Define to 1 if you have the `__atanieee128' function. */
+#undef HAVE___ATANIEEE128
+
+/* Define to 1 if you have the `__coshieee128' function. */
+#undef HAVE___COSHIEEE128
+
+/* Define to 1 if you have the `__cosieee128' function. */
+#undef HAVE___COSIEEE128
+
+/* Define to 1 if you have the `__erfieee128' function. */
+#undef HAVE___ERFIEEE128
+
+/* Define to 1 if you have the `__expieee128' function. */
+#undef HAVE___EXPIEEE128
+
+/* Define to 1 if you have the `__fabsieee128' function. */
+#undef HAVE___FABSIEEE128
+
+/* Define to 1 if you have the `__jnieee128' function. */
+#undef HAVE___JNIEEE128
+
+/* Define to 1 if you have the `__log10ieee128' function. */
+#undef HAVE___LOG10IEEE128
+
+/* Define to 1 if you have the `__logieee128' function. */
+#undef HAVE___LOGIEEE128
+
+/* Define to 1 if you have the `__powieee128' function. */
+#undef HAVE___POWIEEE128
+
 /* Define to 1 if you have the `__secure_getenv' function. */
 #undef HAVE___SECURE_GETENV
+
+/* Define to 1 if you have the `__sinhieee128' function. */
+#undef HAVE___SINHIEEE128
+
+/* Define to 1 if you have the `__sinieee128' function. */
+#undef HAVE___SINIEEE128
+
+/* Define to 1 if you have the `__sqrtieee128' function. */
+#undef HAVE___SQRTIEEE128
+
+/* Define to 1 if you have the `__tanhieee128' function. */
+#undef HAVE___TANHIEEE128
+
+/* Define to 1 if you have the `__tanieee128' function. */
+#undef HAVE___TANIEEE128
+
+/* Define to 1 if you have the `__ynieee128' function. */
+#undef HAVE___YNIEEE128
 
 /* Define to the sub-directory in which libtool stores uninstalled libraries.
    */

@@ -52,6 +52,18 @@ enum cl_var_type {
   CLVC_DEFER
 };
 
+/* Values for var_value member of CLVC_ENUM.  */
+enum cl_enum_var_value {
+  /* Enum without EnumSet or EnumBitSet.  */
+  CLEV_NORMAL,
+
+  /* EnumSet.  */
+  CLEV_SET,
+
+  /* EnumBitSet.  */
+  CLEV_BITSET
+};
+
 struct cl_option
 {
   /* Text of the option, including initial '-'.  */
@@ -170,6 +182,7 @@ extern const unsigned int cl_lang_count;
 /* Flags for an enumerated option argument.  */
 #define CL_ENUM_CANONICAL	(1 << 0) /* Canonical for this value.  */
 #define CL_ENUM_DRIVER_ONLY	(1 << 1) /* Only accepted in the driver.  */
+#define CL_ENUM_SET_SHIFT	2	 /* Shift for enum set.  */
 
 /* Structure describing an enumerated option argument.  */
 
@@ -226,6 +239,7 @@ extern const unsigned int cl_enums_count;
 #define CL_ERR_NEGATIVE		(1 << 6) /* Negative form of option
 					    not permitted (together
 					    with OPT_SPECIAL_unknown).  */
+#define CL_ERR_ENUM_SET_ARG	(1 << 7) /* Bad argument of enumerated set.  */
 
 /* Structure describing the result of decoding an option.  */
 
@@ -260,8 +274,13 @@ struct cl_decoded_option
 
   /* For a boolean option, 1 for the true case and 0 for the "no-"
      case.  For an unsigned integer option, the value of the
-     argument.  1 in all other cases.  */
+     argument.  For enum the value of the enumerator corresponding
+     to argument string.  1 in all other cases.  */
   HOST_WIDE_INT value;
+
+  /* For EnumSet the value mask.  Variable should be changed to
+     value | (prev_value & ~mask).  */
+  HOST_WIDE_INT mask;
 
   /* Any flags describing errors detected in this option.  */
   int errors;
@@ -374,7 +393,8 @@ extern bool get_option_state (struct gcc_options *, int,
 extern void set_option (struct gcc_options *opts,
 			struct gcc_options *opts_set,
 			int opt_index, HOST_WIDE_INT value, const char *arg,
-			int kind, location_t loc, diagnostic_context *dc);
+			int kind, location_t loc, diagnostic_context *dc,
+			HOST_WIDE_INT = 0);
 extern void *option_flag_var (int opt_index, struct gcc_options *opts);
 bool handle_generated_option (struct gcc_options *opts,
 			      struct gcc_options *opts_set,

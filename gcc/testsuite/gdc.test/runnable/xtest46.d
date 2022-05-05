@@ -14,14 +14,6 @@ tuple(height)
 tuple(get, get)
 tuple(clear)
 tuple(draw, draw)
-runnable/xtest46.d(149): Deprecation: `opDot` is deprecated. Use `alias this`
-runnable/xtest46.d(151): Deprecation: `opDot` is deprecated. Use `alias this`
-runnable/xtest46.d(152): Deprecation: `opDot` is deprecated. Use `alias this`
-runnable/xtest46.d(154): Deprecation: `opDot` is deprecated. Use `alias this`
-runnable/xtest46.d(181): Deprecation: `opDot` is deprecated. Use `alias this`
-runnable/xtest46.d(183): Deprecation: `opDot` is deprecated. Use `alias this`
-runnable/xtest46.d(184): Deprecation: `opDot` is deprecated. Use `alias this`
-runnable/xtest46.d(186): Deprecation: `opDot` is deprecated. Use `alias this`
 const(int)
 string[]
 double[]
@@ -137,10 +129,7 @@ struct T6
     S6 s;
     int b = 7;
 
-    S6* opDot() return
-    {
-        return &s;
-    }
+    alias s this;
 }
 
 void test6()
@@ -169,10 +158,7 @@ class C7
     S7 s;
     int b = 7;
 
-    S7* opDot()
-    {
-        return &s;
-    }
+    alias s this;
 }
 
 void test7()
@@ -3830,8 +3816,8 @@ void test153()
 /***************************************************/
 // https://issues.dlang.org/show_bug.cgi?id=3632
 
-
-void test154() {
+void test154()
+{
     float f;
     assert(f is float.init);
     double d;
@@ -3842,6 +3828,87 @@ void test154() {
     assert(float.nan is float.nan);
     assert(double.nan is double.nan);
     assert(real.nan is real.nan);
+}
+
+/***************************************************/
+
+__gshared int global3632 = 1;
+
+void test3632()
+{
+    int test(T)()
+    {
+        static struct W
+        {
+            T f;
+            this(T g) { if (__ctfe || global3632) f = g; }
+        }
+        auto nan = W(T.nan);
+        auto nan2 = W(T.nan);
+        auto init = W(T.init);
+        auto init2 = W(T.init);
+        auto zero = W(cast(T)0);
+        auto zero2 = W(cast(T)0);
+        auto nzero2 = W(-cast(T)0);
+
+        // Struct equality
+        assert(!(nan == nan2));
+        assert(!(nan == init2));
+        assert(!(init == init2));
+        assert( (zero == zero2));
+        assert( (zero == nzero2));
+
+        // Float equality
+        assert(!(nan.f == nan2.f));
+        assert(!(nan.f == init2.f));
+        assert(!(init.f == init2.f));
+        assert( (zero.f == zero2.f));
+        assert( (zero.f == nzero2.f));
+
+        // Struct identity
+        assert( (nan is nan2));
+        assert( (nan is init2));
+        assert( (init is init2));
+        assert( (zero is zero2));
+        assert(!(zero is nzero2));
+
+        // Float identity
+        assert( (nan.f is nan2.f));
+        assert( (nan.f is init2.f));
+        assert( (init.f is init2.f));
+        assert( (zero.f is zero2.f));
+        assert(!(zero.f is nzero2.f));
+
+        // Struct !identity
+        assert(!(nan !is nan2));
+        assert( (nan  is init2));
+        assert(!(init !is init2));
+        assert(!(zero !is zero2));
+        assert( (zero !is nzero2));
+
+        // float !identity
+        assert(!(nan.f !is nan2.f));
+        assert( (nan.f is init2.f));
+        assert(!(init.f !is init2.f));
+        assert(!(zero.f !is zero2.f));
+        assert( (zero.f !is nzero2.f));
+
+        // .init identity
+        assert(W.init is W.init);
+
+        return 1;
+    }
+
+    auto rtF = test!float();
+    enum ctF = test!float();
+    auto rtD = test!double();
+    enum ctD = test!double();
+    auto rtR = test!real();
+    enum ctR = test!real();
+
+    assert(float.nan !is -float.nan);
+    assert(double.nan !is -double.nan);
+    assert(real.nan !is -real.nan);
 }
 
 /***************************************************/
@@ -8156,6 +8223,7 @@ int main()
     test155();
     test156();
     test658();
+    test3632();
     test4258();
     test4539();
     test4963();

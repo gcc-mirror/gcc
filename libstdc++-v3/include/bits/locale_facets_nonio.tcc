@@ -71,61 +71,61 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       const moneypunct<_CharT, _Intl>& __mp =
 	use_facet<moneypunct<_CharT, _Intl> >(__loc);
 
+      struct _Scoped_str
+      {
+	size_t _M_len;
+	_CharT* _M_str;
+
+	explicit
+	_Scoped_str(const basic_string<_CharT>& __str)
+	: _M_len(__str.size()), _M_str(new _CharT[_M_len])
+	{ __str.copy(_M_str, _M_len); }
+
+	~_Scoped_str() { delete[] _M_str; }
+
+	void
+	_M_release(const _CharT*& __p, size_t& __n)
+	{
+	  __p = _M_str;
+	  __n = _M_len;
+	  _M_str = 0;
+	}
+      };
+
+      _Scoped_str __curr_symbol(__mp.curr_symbol());
+      _Scoped_str __positive_sign(__mp.positive_sign());
+      _Scoped_str __negative_sign(__mp.negative_sign());
+
+      const string& __g = __mp.grouping();
+      const size_t __g_size = __g.size();
+      char* const __grouping = new char[__g_size];
+      __g.copy(__grouping, __g_size);
+
+      // All allocations succeeded without throwing, OK to modify *this now.
+
+      _M_grouping = __grouping;
+      _M_grouping_size = __g_size;
+      _M_use_grouping = (__g_size
+			 && static_cast<signed char>(__grouping[0]) > 0
+			 && (__grouping[0]
+			     != __gnu_cxx::__numeric_traits<char>::__max));
+
       _M_decimal_point = __mp.decimal_point();
       _M_thousands_sep = __mp.thousands_sep();
+
+      __curr_symbol._M_release(_M_curr_symbol, _M_curr_symbol_size);
+      __positive_sign._M_release(_M_positive_sign, _M_positive_sign_size);
+      __negative_sign._M_release(_M_negative_sign, _M_negative_sign_size);
+
       _M_frac_digits = __mp.frac_digits();
+      _M_pos_format = __mp.pos_format();
+      _M_neg_format = __mp.neg_format();
 
-      char* __grouping = 0;
-      _CharT* __curr_symbol = 0;
-      _CharT* __positive_sign = 0;
-      _CharT* __negative_sign = 0;     
-      __try
-	{
-	  const string& __g = __mp.grouping();
-	  _M_grouping_size = __g.size();
-	  __grouping = new char[_M_grouping_size];
-	  __g.copy(__grouping, _M_grouping_size);
-	  _M_use_grouping = (_M_grouping_size
-			     && static_cast<signed char>(__grouping[0]) > 0
-			     && (__grouping[0]
-				 != __gnu_cxx::__numeric_traits<char>::__max));
+      const ctype<_CharT>& __ct = use_facet<ctype<_CharT> >(__loc);
+      __ct.widen(money_base::_S_atoms,
+		 money_base::_S_atoms + money_base::_S_end, _M_atoms);
 
-	  const basic_string<_CharT>& __cs = __mp.curr_symbol();
-	  _M_curr_symbol_size = __cs.size();
-	  __curr_symbol = new _CharT[_M_curr_symbol_size];
-	  __cs.copy(__curr_symbol, _M_curr_symbol_size);
-
-	  const basic_string<_CharT>& __ps = __mp.positive_sign();
-	  _M_positive_sign_size = __ps.size();
-	  __positive_sign = new _CharT[_M_positive_sign_size];
-	  __ps.copy(__positive_sign, _M_positive_sign_size);
-
-	  const basic_string<_CharT>& __ns = __mp.negative_sign();
-	  _M_negative_sign_size = __ns.size();
-	  __negative_sign = new _CharT[_M_negative_sign_size];
-	  __ns.copy(__negative_sign, _M_negative_sign_size);
-
-	  _M_pos_format = __mp.pos_format();
-	  _M_neg_format = __mp.neg_format();
-
-	  const ctype<_CharT>& __ct = use_facet<ctype<_CharT> >(__loc);
-	  __ct.widen(money_base::_S_atoms,
-		     money_base::_S_atoms + money_base::_S_end, _M_atoms);
-
-	  _M_grouping = __grouping;
-	  _M_curr_symbol = __curr_symbol;
-	  _M_positive_sign = __positive_sign;
-	  _M_negative_sign = __negative_sign;
-	  _M_allocated = true;
-	}
-      __catch(...)
-	{
-	  delete [] __grouping;
-	  delete [] __curr_symbol;
-	  delete [] __positive_sign;
-	  delete [] __negative_sign;
-	  __throw_exception_again;
-	}
+      _M_allocated = true;
     }
 
 _GLIBCXX_BEGIN_NAMESPACE_LDBL_OR_CXX11
@@ -635,6 +635,9 @@ _GLIBCXX_BEGIN_NAMESPACE_LDBL_OR_CXX11
 
 #if defined _GLIBCXX_LONG_DOUBLE_ALT128_COMPAT \
       && defined __LONG_DOUBLE_IEEE128__
+extern "C"
+__typeof__(__builtin_snprintf) __glibcxx_snprintfibm128 __asm__("snprintf");
+
   template<typename _CharT, typename _OutIter>
     _OutIter
     money_put<_CharT, _OutIter>::
@@ -643,30 +646,24 @@ _GLIBCXX_BEGIN_NAMESPACE_LDBL_OR_CXX11
     {
       const locale __loc = __io.getloc();
       const ctype<_CharT>& __ctype = use_facet<ctype<_CharT> >(__loc);
-#if _GLIBCXX_USE_C99_STDIO
       // First try a buffer perhaps big enough.
       int __cs_size = 64;
       char* __cs = static_cast<char*>(__builtin_alloca(__cs_size));
+      const __c_locale __old = __gnu_cxx::__uselocale(_S_get_c_locale());
+
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // 328. Bad sprintf format modifier in money_put<>::do_put()
-      int __len = std::__convert_from_v(_S_get_c_locale(), __cs, __cs_size,
-					"%.*Lf", 0, __units);
+      int __len = __glibcxx_snprintfibm128(__cs, __cs_size, "%.*Lf", 0,
+					     __units);
       // If the buffer was not large enough, try again with the correct size.
       if (__len >= __cs_size)
 	{
 	  __cs_size = __len + 1;
 	  __cs = static_cast<char*>(__builtin_alloca(__cs_size));
-	  __len = std::__convert_from_v(_S_get_c_locale(), __cs, __cs_size,
-					"%.*Lf", 0, __units);
+	  __len = __glibcxx_snprintfibm128(__cs, __cs_size, "%.*Lf", 0,
+					     __units);
 	}
-#else
-      // max_exponent10 + 1 for the integer part, + 2 for sign and '\0'.
-      const int __cs_size =
-	__gnu_cxx::__numeric_traits<long double>::__max_exponent10 + 3;
-      char* __cs = static_cast<char*>(__builtin_alloca(__cs_size));
-      int __len = std::__convert_from_v(_S_get_c_locale(), __cs, 0, "%.*Lf", 
-					0, __units);
-#endif
+      __gnu_cxx::__uselocale(__old);
       string_type __digits(__len, char_type());
       __ctype.widen(__cs, __cs + __len, &__digits[0]);
       return __intl ? _M_insert<true>(__s, __io, __fill, __digits)
@@ -691,7 +688,8 @@ _GLIBCXX_END_NAMESPACE_LDBL_OR_CXX11
     time_get<_CharT, _InIter>::
     _M_extract_via_format(iter_type __beg, iter_type __end, ios_base& __io,
 			  ios_base::iostate& __err, tm* __tm,
-			  const _CharT* __format) const
+			  const _CharT* __format,
+			  __time_get_state &__state) const
     {
       const locale& __loc = __io._M_getloc();
       const __timepunct<_CharT>& __tp = use_facet<__timepunct<_CharT> >(__loc);
@@ -722,7 +720,10 @@ _GLIBCXX_END_NAMESPACE_LDBL_OR_CXX11
 		  __beg = _M_extract_name(__beg, __end, __mem, __days,
 					  14, __io, __tmperr);
 		  if (!__tmperr)
-		    __tm->tm_wday = __mem % 7;
+		    {
+		      __tm->tm_wday = __mem % 7;
+		      __state._M_have_wday = 1;
+		    }
 		  break;
 		case 'h':
 		case 'b':
@@ -734,14 +735,31 @@ _GLIBCXX_END_NAMESPACE_LDBL_OR_CXX11
 		  __beg = _M_extract_name(__beg, __end, __mem,
 					  __months, 24, __io, __tmperr);
 		  if (!__tmperr)
-		    __tm->tm_mon = __mem % 12;
+		    {
+		      __tm->tm_mon = __mem % 12;
+		      __state._M_have_mon = 1;
+		      __state._M_want_xday = 1;
+		    }
 		  break;
 		case 'c':
 		  // Default time and date representation.
 		  const char_type*  __dt[2];
 		  __tp._M_date_time_formats(__dt);
 		  __beg = _M_extract_via_format(__beg, __end, __io, __tmperr, 
-						__tm, __dt[0]);
+						__tm, __dt[0], __state);
+		  if (!__tmperr)
+		    __state._M_want_xday = 1;
+		  break;
+		case 'C':
+		  // Century.
+		  __beg = _M_extract_num(__beg, __end, __mem, 0, 99, 2,
+					 __io, __tmperr);
+		  if (!__tmperr)
+		    {
+		      __state._M_century = __mem;
+		      __state._M_have_century = 1;
+		      __state._M_want_xday = 1;
+		    }
 		  break;
 		case 'd':
 		case 'e':
@@ -751,35 +769,60 @@ _GLIBCXX_END_NAMESPACE_LDBL_OR_CXX11
 		  __beg = _M_extract_num(__beg, __end, __mem, 1, 31, 2,
 					 __io, __tmperr);
 		  if (!__tmperr)
-		    __tm->tm_mday = __mem;
+		    {
+		      __tm->tm_mday = __mem;
+		      __state._M_have_mday = 1;
+		      __state._M_want_xday = 1;
+		    }
 		  break;
 		case 'D':
 		  // Equivalent to %m/%d/%y.[tm_mon, tm_mday, tm_year]
 		  __cs = "%m/%d/%y";
 		  __ctype.widen(__cs, __cs + 9, __wcs);
 		  __beg = _M_extract_via_format(__beg, __end, __io, __tmperr, 
-						__tm, __wcs);
+						__tm, __wcs, __state);
+		  if (!__tmperr)
+		    __state._M_want_xday = 1;
 		  break;
 		case 'H':
 		  // Hour [00, 23]. [tm_hour]
 		  __beg = _M_extract_num(__beg, __end, __mem, 0, 23, 2,
 					 __io, __tmperr);
 		  if (!__tmperr)
-		    __tm->tm_hour = __mem;
+		    {
+		      __tm->tm_hour = __mem;
+		      __state._M_have_I = 0;
+		    }
 		  break;
 		case 'I':
 		  // Hour [01, 12]. [tm_hour]
 		  __beg = _M_extract_num(__beg, __end, __mem, 1, 12, 2,
 					 __io, __tmperr);
 		  if (!__tmperr)
-		    __tm->tm_hour = __mem % 12;
+		    {
+		      __tm->tm_hour = __mem % 12;
+		      __state._M_have_I = 1;
+		    }
+		  break;
+		case 'j':
+		  // Day number of year.
+		  __beg = _M_extract_num(__beg, __end, __mem, 1, 366, 3,
+					 __io, __tmperr);
+		  if (!__tmperr)
+		    {
+		      __tm->tm_yday = __mem - 1;
+		      __state._M_have_yday = 1;
+		    }
 		  break;
 		case 'm':
 		  // Month [01, 12]. [tm_mon]
 		  __beg = _M_extract_num(__beg, __end, __mem, 1, 12, 2, 
 					 __io, __tmperr);
 		  if (!__tmperr)
-		    __tm->tm_mon = __mem - 1;
+		    {
+		      __tm->tm_mon = __mem - 1;
+		      __state._M_have_mon = 1;
+		    }
 		  break;
 		case 'M':
 		  // Minute [00, 59]. [tm_min]
@@ -802,23 +845,22 @@ _GLIBCXX_END_NAMESPACE_LDBL_OR_CXX11
 		    break;
 		  __beg = _M_extract_name(__beg, __end, __mem, __ampm,
 					  2, __io, __tmperr);
-		  // FIXME: This only works if %I comes before %p.
 		  if (!__tmperr && __mem)
-		    __tm->tm_hour += 12;
+		    __state._M_is_pm = 1;
 		  break;
 		case 'r':
 		  // Locale's 12-hour clock time format (in C %I:%M:%S %p).
 		  const char_type*  __ampm_format;
 		  __tp._M_am_pm_format(&__ampm_format);
 		  __beg = _M_extract_via_format(__beg, __end, __io, __tmperr,
-						__tm, __ampm_format);
+						__tm, __ampm_format, __state);
 		  break;
 		case 'R':
 		  // Equivalent to (%H:%M).
 		  __cs = "%H:%M";
 		  __ctype.widen(__cs, __cs + 6, __wcs);
 		  __beg = _M_extract_via_format(__beg, __end, __io, __tmperr, 
-						__tm, __wcs);
+						__tm, __wcs, __state);
 		  break;
 		case 'S':
 		  // Seconds. [tm_sec]
@@ -830,41 +872,105 @@ _GLIBCXX_END_NAMESPACE_LDBL_OR_CXX11
 #endif
 					 __io, __tmperr);
 		  if (!__tmperr)
-		  __tm->tm_sec = __mem;
+		    __tm->tm_sec = __mem;
 		  break;
 		case 'T':
 		  // Equivalent to (%H:%M:%S).
 		  __cs = "%H:%M:%S";
 		  __ctype.widen(__cs, __cs + 9, __wcs);
 		  __beg = _M_extract_via_format(__beg, __end, __io, __tmperr, 
-						__tm, __wcs);
+						__tm, __wcs, __state);
+		  break;
+		case 'U':
+		  // Week number of the year (Sunday as first day of week).
+		  __beg = _M_extract_num(__beg, __end, __mem, 0, 53, 2,
+					 __io, __tmperr);
+		  if (!__tmperr)
+		    {
+		      __state._M_week_no = __mem;
+		      __state._M_have_uweek = 1;
+		    }
+		  break;
+		case 'w':
+		  // Weekday [tm_wday]
+		  __beg = _M_extract_num(__beg, __end, __mem, 0, 6, 1,
+					 __io, __tmperr);
+		  if (!__tmperr)
+		    {
+		      __tm->tm_wday = __mem;
+		      __state._M_have_wday = 1;
+		    }
+		  break;
+		case 'W':
+		  // Week number of the year (Monday as first day of week).
+		  __beg = _M_extract_num(__beg, __end, __mem, 0, 53, 2,
+					 __io, __tmperr);
+		  if (!__tmperr)
+		    {
+		      __state._M_week_no = __mem;
+		      __state._M_have_wweek = 1;
+		    }
 		  break;
 		case 'x':
 		  // Locale's date.
 		  const char_type*  __dates[2];
 		  __tp._M_date_formats(__dates);
 		  __beg = _M_extract_via_format(__beg, __end, __io, __tmperr, 
-						__tm, __dates[0]);
+						__tm, __dates[0], __state);
 		  break;
 		case 'X':
 		  // Locale's time.
 		  const char_type*  __times[2];
 		  __tp._M_time_formats(__times);
 		  __beg = _M_extract_via_format(__beg, __end, __io, __tmperr, 
-						__tm, __times[0]);
+						__tm, __times[0], __state);
 		  break;
 		case 'y':
-		case 'C': // C99
-		  // Two digit year.
+		  // The last 2 digits of year.
+		  __beg = _M_extract_num(__beg, __end, __mem, 0, 99, 2,
+					 __io, __tmperr);
+		  if (!__tmperr)
+		    {
+		      __state._M_want_century = 1;
+		      __state._M_want_xday = 1;
+		      // As an extension, if the 2 digits are followed by
+		      // 1-2 further digits, treat it like %Y.
+		      __c = 0;
+		      if (__beg != __end)
+			__c = __ctype.narrow(*__beg, '*');
+		      if (__c >= '0' && __c <= '9')
+			{
+			  ++__beg;
+			  __mem = __mem * 10 + (__c - '0');
+			  if (__beg != __end)
+			    {
+			      __c = __ctype.narrow(*__beg, '*');
+			      if (__c >= '0' && __c <= '9')
+				{
+				  ++__beg;
+				  __mem = __mem * 10 + (__c - '0');
+				}
+			    }
+			  __mem -= 1900;
+			  __state._M_want_century = 0;
+			}
+		      // Otherwise, as per POSIX 2008, 00-68 is 2000-2068,
+		      // while 69-99 is 1969-1999.
+		      else if (__mem < 69)
+			__mem += 100;
+		      __tm->tm_year = __mem;
+		    }
+		  break;
 		case 'Y':
-		  // Year [1900).
-		  // NB: We parse either two digits, implicitly years since
-		  // 1900, or 4 digits, full year.  In both cases we can 
-		  // reconstruct [tm_year].  See also libstdc++/26701.
+		  // Year.
 		  __beg = _M_extract_num(__beg, __end, __mem, 0, 9999, 4,
 					 __io, __tmperr);
 		  if (!__tmperr)
-		    __tm->tm_year = __mem < 0 ? __mem + 100 : __mem - 1900;
+		    {
+		      __tm->tm_year = __mem - 1900;
+		      __state._M_want_century = 0;
+		      __state._M_want_xday = 1;
+		    }
 		  break;
 		case 'Z':
 		  // Timezone info.
@@ -928,6 +1034,18 @@ _GLIBCXX_END_NAMESPACE_LDBL_OR_CXX11
   template<typename _CharT, typename _InIter>
     _InIter
     time_get<_CharT, _InIter>::
+    _M_extract_via_format(iter_type __beg, iter_type __end, ios_base& __io,
+			  ios_base::iostate& __err, tm* __tm,
+			  const _CharT* __format) const
+    {
+      __time_get_state __state = __time_get_state();
+      return _M_extract_via_format(__beg, __end, __io, __err, __tm,
+				   __format, __state);
+    }
+
+  template<typename _CharT, typename _InIter>
+    _InIter
+    time_get<_CharT, _InIter>::
     _M_extract_num(iter_type __beg, iter_type __end, int& __member,
 		   int __min, int __max, size_t __len,
 		   ios_base& __io, ios_base::iostate& __err) const
@@ -949,13 +1067,7 @@ _GLIBCXX_END_NAMESPACE_LDBL_OR_CXX11
 	  else
 	    break;
 	}
-      // Special encoding for do_get_year, 'y', and 'Y' above.
-      if (__len == 4 && __i == 2)
-	__member = __value - 100;
-      else if (__len == 4 && __i == 4)
-	__member = __value;
-      else if (__len == 2 && __i && __i <= 2
-	       && __value >= __min && __value <= __max)
+      if (__i && __value >= __min && __value <= __max)
 	__member = __value;
       else
 	__err |= ios_base::failbit;
@@ -1212,8 +1324,10 @@ _GLIBCXX_END_NAMESPACE_LDBL_OR_CXX11
       const __timepunct<_CharT>& __tp = use_facet<__timepunct<_CharT> >(__loc);
       const char_type*  __times[2];
       __tp._M_time_formats(__times);
+      __time_get_state __state = __time_get_state();
       __beg = _M_extract_via_format(__beg, __end, __io, __err, 
-				    __tm, __times[0]);
+				    __tm, __times[0], __state);
+      __state._M_finalize_state(__tm);
       if (__beg == __end)
 	__err |= ios_base::eofbit;
       return __beg;
@@ -1229,8 +1343,10 @@ _GLIBCXX_END_NAMESPACE_LDBL_OR_CXX11
       const __timepunct<_CharT>& __tp = use_facet<__timepunct<_CharT> >(__loc);
       const char_type*  __dates[2];
       __tp._M_date_formats(__dates);
+      __time_get_state __state = __time_get_state();
       __beg = _M_extract_via_format(__beg, __end, __io, __err, 
-				    __tm, __dates[0]);
+				    __tm, __dates[0], __state);
+      __state._M_finalize_state(__tm);
       if (__beg == __end)
 	__err |= ios_base::eofbit;
       return __beg;
@@ -1296,11 +1412,38 @@ _GLIBCXX_END_NAMESPACE_LDBL_OR_CXX11
     {
       int __tmpyear;
       ios_base::iostate __tmperr = ios_base::goodbit;
+      const locale& __loc = __io._M_getloc();
+      const ctype<_CharT>& __ctype = use_facet<ctype<_CharT> >(__loc);
 
-      __beg = _M_extract_num(__beg, __end, __tmpyear, 0, 9999, 4,
+      __beg = _M_extract_num(__beg, __end, __tmpyear, 0, 99, 2,
 			     __io, __tmperr);
       if (!__tmperr)
-	__tm->tm_year = __tmpyear < 0 ? __tmpyear + 100 : __tmpyear - 1900;
+	{
+	  char __c = 0;
+	  if (__beg != __end)
+	    __c = __ctype.narrow(*__beg, '*');
+	  // For 1-2 digit year, assume 69-99 is 1969-1999, 0-68 is 2000-2068.
+	  // For 3-4 digit year, use it as year.
+	  // __tm->tm_year needs year - 1900 though.
+	  if (__c >= '0' && __c <= '9')
+	    {
+	      ++__beg;
+	      __tmpyear = __tmpyear * 10 + (__c - '0');
+	      if (__beg != __end)
+		{
+		  __c = __ctype.narrow(*__beg, '*');
+		  if (__c >= '0' && __c <= '9')
+		    {
+		      ++__beg;
+		      __tmpyear = __tmpyear * 10 + (__c - '0');
+		    }
+		}
+	      __tmpyear -= 1900;
+	    }
+	  else if (__tmpyear < 69)
+	    __tmpyear += 100;
+	  __tm->tm_year = __tmpyear;
+	}
       else
 	__err |= ios_base::failbit;
 
@@ -1321,6 +1464,21 @@ _GLIBCXX_END_NAMESPACE_LDBL_OR_CXX11
       const locale& __loc = __io._M_getloc();
       ctype<_CharT> const& __ctype = use_facet<ctype<_CharT> >(__loc);
       __err = ios_base::goodbit;
+      bool __use_state = false;
+#if __GNUC__ >= 5 && !defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpmf-conversions"
+      // Nasty hack.  The C++ standard mandates that get invokes the do_get
+      // virtual method, but unfortunately at least without an ABI change
+      // for the facets we can't keep state across the different do_get
+      // calls.  So e.g. if __fmt is "%p %I:%M:%S", we can't handle it
+      // properly, because we first handle the %p am/pm specifier and only
+      // later the 12-hour format specifier.
+      if ((void*)(this->*(&time_get::do_get)) == (void*)(&time_get::do_get))
+	__use_state = true;
+#pragma GCC diagnostic pop
+#endif
+      __time_get_state __state = __time_get_state();
       while (__fmt != __fmtend &&
              __err == ios_base::goodbit)
         {
@@ -1331,6 +1489,7 @@ _GLIBCXX_END_NAMESPACE_LDBL_OR_CXX11
             }
           else if (__ctype.narrow(*__fmt, 0) == '%')
             {
+	      const char_type* __fmt_start = __fmt;
               char __format;
               char __mod = 0;
               if (++__fmt == __fmtend)
@@ -1351,8 +1510,26 @@ _GLIBCXX_END_NAMESPACE_LDBL_OR_CXX11
                   __err = ios_base::failbit;
                   break;
                 }
-              __s = this->do_get(__s, __end, __io, __err, __tm, __format,
-				 __mod);
+	      if (__use_state)
+		{
+		  char_type __new_fmt[4];
+		  __new_fmt[0] = __fmt_start[0];
+		  __new_fmt[1] = __fmt_start[1];
+		  if (__mod)
+		    {
+		      __new_fmt[2] = __fmt_start[2];
+		      __new_fmt[3] = char_type();
+		    }
+		  else
+		    __new_fmt[2] = char_type();
+		  __s = _M_extract_via_format(__s, __end, __io, __err, __tm,
+					      __new_fmt, __state);
+		  if (__s == __end)
+		    __err |= ios_base::eofbit;
+		}
+	      else
+		__s = this->do_get(__s, __end, __io, __err, __tm, __format,
+				   __mod);
               ++__fmt;
             }
           else if (__ctype.is(ctype_base::space, *__fmt))
@@ -1379,6 +1556,8 @@ _GLIBCXX_END_NAMESPACE_LDBL_OR_CXX11
               break;
             }
         }
+      if (__use_state)
+	__state._M_finalize_state(__tm);
       return __s;
     }
 
@@ -1408,7 +1587,10 @@ _GLIBCXX_END_NAMESPACE_LDBL_OR_CXX11
           __fmt[3] = char_type();
         }
 
-      __beg = _M_extract_via_format(__beg, __end, __io, __err, __tm, __fmt);
+      __time_get_state __state = __time_get_state();
+      __beg = _M_extract_via_format(__beg, __end, __io, __err, __tm, __fmt,
+				    __state);
+      __state._M_finalize_state(__tm);
       if (__beg == __end)
 	__err |= ios_base::eofbit;
       return __beg;

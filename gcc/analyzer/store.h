@@ -509,7 +509,8 @@ public:
 
   void remove_overlapping_bindings (store_manager *mgr,
 				    const binding_key *drop_key,
-				    uncertainty_t *uncertainty);
+				    uncertainty_t *uncertainty,
+				    bool always_overlap);
 
 private:
   void get_overlapping_bindings (const binding_key *key,
@@ -559,6 +560,8 @@ public:
 
   bool symbolic_p () const;
 
+  const region *get_base_region () const { return m_base_region; }
+
   void dump_to_pp (pretty_printer *pp, bool simple, bool multiline) const;
   void dump (bool simple) const;
 
@@ -572,7 +575,9 @@ public:
   void purge_region (store_manager *mgr, const region *reg);
   void fill_region (store_manager *mgr, const region *reg, const svalue *sval);
   void zero_fill_region (store_manager *mgr, const region *reg);
-  void mark_region_as_unknown (store_manager *mgr, const region *reg,
+  void mark_region_as_unknown (store_manager *mgr,
+			       const region *reg_to_bind,
+			       const region *reg_for_overlap,
 			       uncertainty_t *uncertainty);
   void purge_state_involving (const svalue *sval,
 			      region_model_manager *sval_mgr);
@@ -607,8 +612,10 @@ public:
 				 store_manager *mgr);
 
   void mark_as_escaped ();
-  void on_unknown_fncall (const gcall *call, store_manager *mgr);
-  void on_asm (const gasm *stmt, store_manager *mgr);
+  void on_unknown_fncall (const gcall *call, store_manager *mgr,
+			  const conjured_purge &p);
+  void on_asm (const gasm *stmt, store_manager *mgr,
+	       const conjured_purge &p);
 
   bool escaped_p () const { return m_escaped; }
   bool touched_p () const { return m_touched; }
@@ -733,7 +740,8 @@ public:
 			   model_merger *merger);
 
   void mark_as_escaped (const region *base_reg);
-  void on_unknown_fncall (const gcall *call, store_manager *mgr);
+  void on_unknown_fncall (const gcall *call, store_manager *mgr,
+			  const conjured_purge &p);
   bool escaped_p (const region *reg) const;
 
   void get_representative_path_vars (const region_model *model,
@@ -760,7 +768,8 @@ public:
 			  region_model_manager *mgr);
 
 private:
-  void remove_overlapping_bindings (store_manager *mgr, const region *reg);
+  void remove_overlapping_bindings (store_manager *mgr, const region *reg,
+				    uncertainty_t *uncertainty);
   tristate eval_alias_1 (const region *base_reg_a,
 			 const region *base_reg_b) const;
 
@@ -784,6 +793,8 @@ class store_manager
 {
 public:
   store_manager (region_model_manager *mgr) : m_mgr (mgr) {}
+
+  logger *get_logger () const;
 
   /* binding consolidation.  */
   const concrete_binding *

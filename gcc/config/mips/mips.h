@@ -30,7 +30,7 @@ along with GCC; see the file COPYING3.  If not see
 extern int target_flags_explicit;
 #endif
 
-/* MIPS external variables defined in mips.c.  */
+/* MIPS external variables defined in mips.cc.  */
 
 /* Which ABI to use.  ABI_32 (original 32, or o32), ABI_N32 (n32),
    ABI_64 (n64) are all defined by SGI.  ABI_O64 is o32 extended
@@ -2309,7 +2309,7 @@ enum reg_class
 
 #define LUI_OPERAND(VALUE)					\
   (((VALUE) | 0x7fff0000) == 0x7fff0000				\
-   || ((VALUE) | 0x7fff0000) + 0x10000 == 0)
+   || ((unsigned HOST_WIDE_INT) (VALUE) | 0x7fff0000) + 0x10000 == 0)
 
 /* Return a value X with the low 16 bits clear, and such that
    VALUE - X is a signed 16-bit value.  */
@@ -3463,3 +3463,10 @@ struct GTY(())  machine_function {
    && !TARGET_MICROMIPS && !TARGET_FIX_24K)
 
 #define NEED_INDICATE_EXEC_STACK 0
+
+/* Define the shadow offset for asan. Other OS's can override in the
+   respective tm.h files.  */
+#ifndef SUBTARGET_SHADOW_OFFSET
+#define SUBTARGET_SHADOW_OFFSET \
+  (POINTER_SIZE == 64 ? HOST_WIDE_INT_1 << 37 : HOST_WIDE_INT_C (0x0aaa0000))
+#endif

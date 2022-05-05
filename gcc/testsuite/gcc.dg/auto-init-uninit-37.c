@@ -5,8 +5,6 @@
    arguments of array, VLA, or pointer types.
    { dg-do compile }
    { dg-options "-O2 -Wall -ftrack-macro-expansion=0 -ftrivial-auto-var-init=zero" } */
-/* -ftrivial-auto-var-init will make the uninitialized warning for address
-   taken auto var going away, FIXME later.  */
 
 #define NONE    /* none */
 #define RO(...) __attribute__ ((access (read_only, __VA_ARGS__)))
@@ -42,9 +40,9 @@ typedef int IA_[];
 typedef const int CIA_[];
 
 T1 (NONE,   fia_,   IA_);
-T1 (NONE,   fcia_,  CIA_);    // { dg-warning "\\\[-Wmaybe-uninitialized" "" { xfail *-*-* } }
-T1 (RO (1), froia_, IA_);     // { dg-warning "\\\[-Wuninitialized" "" { xfail *-*-* } }
-T1 (RW (1), frwia_, IA_);     // { dg-warning "\\\[-Wmaybe-uninitialized" "" { xfail *-*-* } }
+T1 (NONE,   fcia_,  CIA_);    // { dg-warning "\\\[-Wmaybe-uninitialized" "" }
+T1 (RO (1), froia_, IA_);     // { dg-warning "\\\[-Wuninitialized" "" }
+T1 (RW (1), frwia_, IA_);     // { dg-warning "\\\[-Wmaybe-uninitialized" "" }
 T1 (WO (1), fwoia_, IA_);
 T1 (X (1),  fxia_,  IA_);
 
@@ -53,9 +51,9 @@ typedef int IA1[1];
 typedef const int CIA1[1];
 
 T1 (NONE,   fia1,   IA1);
-T1 (NONE,   fcia1,  CIA1);    // { dg-warning "\\\[-Wmaybe-uninitialized" "" { xfail *-*-* } }
-T1 (RO (1), froia1, IA1);     // { dg-warning "\\\[-Wuninitialized" "" { xfail *-*-* } }
-T1 (RW (1), frwia1, IA1);     // { dg-warning "\\\[-Wmaybe-uninitialized" "" { xfail *-*-* } }
+T1 (NONE,   fcia1,  CIA1);    // { dg-warning "\\\[-Wmaybe-uninitialized" "" }
+T1 (RO (1), froia1, IA1);     // { dg-warning "\\\[-Wuninitialized" "" }
+T1 (RW (1), frwia1, IA1);     // { dg-warning "\\\[-Wmaybe-uninitialized" "" }
 T1 (WO (1), fwoia1, IA1);
 T1 (X (1),  fxia1,  IA1);
 
@@ -64,9 +62,9 @@ T1 (X (1),  fxia1,  IA1);
 #define CIARS1 const int[restrict static 1]
 
 T1 (NONE,   fiars1,   IARS1);
-T1 (NONE,   fciars1,  CIARS1);// { dg-warning "\\\[-Wmaybe-uninitialized" "" { xfail *-*-* } }
-T1 (RO (1), froiars1, IARS1); // { dg-warning "\\\[-Wuninitialized" "" { xfail *-*-* } }
-T1 (RW (1), frwiars1, IARS1); // { dg-warning "\\\[-Wmaybe-uninitialized" "" { xfail *-*-* } }
+T1 (NONE,   fciars1,  CIARS1);// { dg-warning "\\\[-Wmaybe-uninitialized" "" }
+T1 (RO (1), froiars1, IARS1); // { dg-warning "\\\[-Wuninitialized" "" }
+T1 (RW (1), frwiars1, IARS1); // { dg-warning "\\\[-Wmaybe-uninitialized" "" }
 T1 (WO (1), fwoiars1, IARS1);
 T1 (X (1),  fxiars1,  IARS1);
 
@@ -75,9 +73,9 @@ T1 (X (1),  fxiars1,  IARS1);
 #define CIAS1 const int[static 1]
 
 T1 (NONE,   fias1,   IAS1);
-T1 (NONE,   fcias1,  CIAS1);   // { dg-warning "\\\[-Wmaybe-uninitialized" "" { xfail *-*-* } }
-T1 (RO (1), froias1, IAS1);    // { dg-warning "\\\[-Wuninitialized" "" { xfail *-*-* } }
-T1 (RW (1), frwias1, IAS1);    // { dg-warning "\\\[-Wmaybe-uninitialized" "" { xfail *-*-* } }
+T1 (NONE,   fcias1,  CIAS1);   // { dg-warning "\\\[-Wmaybe-uninitialized" "" }
+T1 (RO (1), froias1, IAS1);    // { dg-warning "\\\[-Wuninitialized" "" }
+T1 (RW (1), frwias1, IAS1);    // { dg-warning "\\\[-Wmaybe-uninitialized" "" }
 T1 (WO (1), fwoias1, IAS1);
 T1 (X (1),  fxias1,  IAS1);
 
@@ -86,9 +84,9 @@ T1 (X (1),  fxias1,  IAS1);
 #define CIAX const int[*]
 
 T1 (NONE,   fiax,   IAX);
-T1 (NONE,   fciax,  CIAX);    // { dg-warning "\\\[-Wmaybe-uninitialized" "" { xfail *-*-* } }
-T1 (RO (1), froiax, IAX);     // { dg-warning "\\\[-Wuninitialized" "" { xfail *-*-* } }
-T1 (RW (1), frwiax, IAX);     // { dg-warning "\\\[-Wmaybe-uninitialized" "" { xfail *-*-* } }
+T1 (NONE,   fciax,  CIAX);    // { dg-warning "\\\[-Wmaybe-uninitialized" "" }
+T1 (RO (1), froiax, IAX);     // { dg-warning "\\\[-Wuninitialized" "" }
+T1 (RW (1), frwiax, IAX);     // { dg-warning "\\\[-Wmaybe-uninitialized" "" }
 T1 (WO (1), fwoiax, IAX);
 T1 (X (1),  fxiax,  IAX);
 
@@ -97,9 +95,9 @@ T1 (X (1),  fxiax,  IAX);
 #define CIAN int n, const int[n]
 
 T2 (NONE,      fian,   IAN);
-T2 (NONE,      fcian,  CIAN); // { dg-warning "\\\[-Wmaybe-uninitialized" "" { xfail *-*-* } }
-T2 (RO (2, 1), froian, IAN);  // { dg-warning "\\\[-Wuninitialized" "" { xfail *-*-* } }
-T2 (RW (2, 1), frwian, IAN);  // { dg-warning "\\\[-Wmaybe-uninitialized" "" { xfail *-*-* } }
+T2 (NONE,      fcian,  CIAN); // { dg-warning "\\\[-Wmaybe-uninitialized" "" }
+T2 (RO (2, 1), froian, IAN);  // { dg-warning "\\\[-Wuninitialized" "" }
+T2 (RW (2, 1), frwian, IAN);  // { dg-warning "\\\[-Wmaybe-uninitialized" "" }
 T2 (WO (2, 1), fwoian, IAN);
 T2 (X (2, 1),  fxian,  IAN);
 
@@ -108,9 +106,9 @@ typedef int* IP;
 typedef const int* CIP;
 
 T1 (NONE,   fip,   IP);
-T1 (NONE,   fcip,  CIP);     // { dg-warning "\\\[-Wmaybe-uninitialized" "" { xfail *-*-* } }
-T1 (RO (1), froip, IP);      // { dg-warning "\\\[-Wuninitialized" "" { xfail *-*-* } }
-T1 (RW (1), frwip, IP);      // { dg-warning "\\\[-Wmaybe-uninitialized" "" { xfail *-*-* } }
+T1 (NONE,   fcip,  CIP);     // { dg-warning "\\\[-Wmaybe-uninitialized" "" }
+T1 (RO (1), froip, IP);      // { dg-warning "\\\[-Wuninitialized" "" }
+T1 (RW (1), frwip, IP);      // { dg-warning "\\\[-Wmaybe-uninitialized" "" }
 T1 (WO (1), fwoip, IP);
 T1 (X (1),  fxip,  IP);
 

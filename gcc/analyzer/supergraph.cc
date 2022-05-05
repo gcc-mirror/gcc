@@ -905,7 +905,7 @@ superedge::dump_dot (graphviz_out *gv, const dump_args_t &) const
       break;
     }
 
-  /* Adapted from graph.c:draw_cfg_node_succ_edges.  */
+  /* Adapted from graph.cc:draw_cfg_node_succ_edges.  */
   if (::edge cfg_edge = get_any_cfg_edge ())
     {
       if (cfg_edge->flags & EDGE_FAKE)

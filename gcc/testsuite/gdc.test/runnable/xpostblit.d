@@ -86,7 +86,7 @@ struct FieldThrow
 
     bool throwExcept;
     this(this)
-    { 
+    {
         if (throwExcept)
         {
             throw new Exception("");

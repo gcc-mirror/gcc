@@ -29,7 +29,7 @@ void test01()
   // Check for required base class.
   long l;
   typedef reverse_iterator<long*> test_iterator;
-  typedef iterator<iterator_traits<long*>::iterator_category,
+  typedef iterator<iterator_traits<long*>::iterator_category, // { dg-warning "is deprecated" "" { target c++17 } }
 		   iterator_traits<long*>::value_type,
 		   iterator_traits<long*>::difference_type,
 		   iterator_traits<long*>::pointer,

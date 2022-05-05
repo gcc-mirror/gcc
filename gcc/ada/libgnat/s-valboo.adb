@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -55,7 +55,8 @@ is
    begin
       Normalize_String (S, F, L);
 
-      pragma Assert (F = System.Val_Util.First_Non_Space_Ghost (S));
+      pragma Assert (F = System.Val_Util.First_Non_Space_Ghost
+                     (S, Str'First, Str'Last));
 
       if S (F .. L) = "TRUE" then
          return True;

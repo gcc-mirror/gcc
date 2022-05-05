@@ -758,19 +758,6 @@ version (DigitalMars) version (AnyX86)
 }
 
 
-// @@@DEPRECATED_2.099@@@
-deprecated("volatileLoad has been moved to core.volatile. Use core.volatile.volatileLoad instead.")
-{
-    public import core.volatile : volatileLoad;
-}
-
-// @@@DEPRECATED_2.099@@@
-deprecated("volatileStore has been moved to core.volatile. Use core.volatile.volatileStore instead.")
-{
-    public import core.volatile : volatileStore;
-}
-
-
 /**
  * Reverses the order of bits in a 32-bit integer.
  */

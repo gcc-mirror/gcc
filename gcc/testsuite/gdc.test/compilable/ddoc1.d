@@ -47,7 +47,7 @@ wchar YY;	/// ditto
  *	argulid = the argument
  *	u = the other argument
  */
-int foo(char c, int argulid, char u);
+int foo(char c, int argulid, char u = '\'', wchar v = '\u7233', dchar y = '\U00017233');
 
 int barr() { return 3; } /// doc for barr()
 

@@ -49,7 +49,7 @@ struct lldiv_t { long quot,rem; }
 
 
 
-    void *calloc(size_t, size_t);	/// 
+    void *calloc(size_t, size_t);	///
     void *malloc(size_t);	/// dittx
 
 /**
@@ -62,8 +62,3 @@ private:
 void test1()
 {
 }
-
-
-
-
-

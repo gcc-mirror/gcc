@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1998-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1998-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -36,7 +36,6 @@ with Ada.Streams.Stream_IO;
 with System.Global_Locks;
 with System.Soft_Links;
 
-with System;
 with System.CRTL;
 with System.File_Control_Block;
 with System.File_IO;
@@ -441,7 +440,7 @@ package body System.Shared_Storage is
 
       if SFE = null then
          declare
-            S  : aliased constant String := Dir.all & Var;
+            S : aliased constant String := Dir.all & Var;
 
          begin
             SFE := new Shared_Var_File_Entry;
@@ -522,7 +521,7 @@ package body System.Shared_Storage is
 
       if SFE = null then
          declare
-            S  : aliased constant String := Dir.all & Var;
+            S : aliased constant String := Dir.all & Var;
 
          begin
             SFE := new Shared_Var_File_Entry;

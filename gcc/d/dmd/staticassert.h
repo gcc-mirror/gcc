@@ -24,5 +24,6 @@ public:
     void addMember(Scope *sc, ScopeDsymbol *sds);
     bool oneMember(Dsymbol **ps, Identifier *ident);
     const char *kind() const;
+    StaticAssert *isStaticAssert() { return this; }
     void accept(Visitor *v) { v->visit(this); }
 };

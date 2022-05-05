@@ -44,7 +44,7 @@ contains
     ! { dg-warning "region is vector partitioned but does not contain vector partitioned code" "" { target *-*-* } .-2 }
     !$acc loop gang private(x)
     ! { dg-note {variable 'i' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } .-1 }
-    ! { dg-note {variable 'x' in 'private' clause potentially has improper OpenACC privatization level: 'parm_decl'} "TODO" { target *-*-* } .-2 }
+    ! { dg-note {variable 'x' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } .-2 }
     do i = 1, 32
        x = i * 2;
        arr(i) = arr(i) + x
@@ -72,7 +72,7 @@ contains
     ! { dg-warning "region is worker partitioned but does not contain worker partitioned code" "" { target *-*-* } .-1 }
     !$acc loop gang private(pt)
     ! { dg-note {variable 'i' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } .-1 }
-    ! { dg-note {variable 'pt' in 'private' clause potentially has improper OpenACC privatization level: 'parm_decl'} "TODO" { target *-*-* } .-2 }
+    ! { dg-note {variable 'pt' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } .-2 }
     do i = 0, 31
        pt%x = i
        pt%y = i * 2
@@ -111,7 +111,7 @@ contains
        do j = 0, 31
           !$acc loop vector private(pt)
           ! { dg-note {variable 'k' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } .-1 }
-          ! { dg-note {variable 'pt' in 'private' clause potentially has improper OpenACC privatization level: 'parm_decl'} "TODO" { target *-*-* } .-2 }
+          ! { dg-note {variable 'pt' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } .-2 }
           do k = 0, 31
              pt(1) = ieor(i, j * 3)
              pt(2) = ior(i, j * 5)

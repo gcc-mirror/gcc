@@ -71,9 +71,12 @@ f (int i, int j, int a)
      { dg-note {variable 's' ought to be adjusted for OpenACC privatization level: 'gang'} "TODO" { xfail *-*-* } l_compute$c_compute } */
   /* { dg-note {variable 'e' in 'private' clause is candidate for adjusting OpenACC privatization level} "TODO" { xfail *-*-* } l_compute$c_compute }
      { dg-note {variable 'e' ought to be adjusted for OpenACC privatization level: 'gang'} "TODO" { xfail *-*-* } l_compute$c_compute } */
-  /* { dg-note {variable 'a' in 'private' clause potentially has improper OpenACC privatization level: 'parm_decl'} "TODO" { xfail *-*-* } l_compute$c_compute } */
-  /* { dg-note {variable 'j' in 'private' clause potentially has improper OpenACC privatization level: 'parm_decl'} "TODO" { xfail *-*-* } l_compute$c_compute } */
-  /* { dg-note {variable 'i' in 'private' clause potentially has improper OpenACC privatization level: 'parm_decl'} "TODO" { xfail *-*-* } l_compute$c_compute } */
+  /* { dg-note {variable 'a' in 'private' clause is candidate for adjusting OpenACC privatization level} "TODO" { xfail *-*-* } l_compute$c_compute }
+     { dg-note {variable 'a' ought to be adjusted for OpenACC privatization level: 'gang'} "TODO" { xfail *-*-* } l_compute$c_compute } */
+  /* { dg-note {variable 'j' in 'private' clause is candidate for adjusting OpenACC privatization level} "TODO" { xfail *-*-* } l_compute$c_compute }
+     { dg-note {variable 'j' ought to be adjusted for OpenACC privatization level: 'gang'} "TODO" { xfail *-*-* } l_compute$c_compute } */
+  /* { dg-note {variable 'i' in 'private' clause is candidate for adjusting OpenACC privatization level} "TODO" { xfail *-*-* } l_compute$c_compute }
+     { dg-note {variable 'i' ought to be adjusted for OpenACC privatization level: 'gang'} "TODO" { xfail *-*-* } l_compute$c_compute } */
   /* { dg-note {variable 'll' declared in block potentially has improper OpenACC privatization level: 'label_decl'} "TODO" { target *-*-* } l_compute$c_compute } */
   /* { dg-note {variable 'struct struct s_ss' declared in block potentially has improper OpenACC privatization level: 'type_decl'} "TODO" { target c } l_compute$c_compute }
      { dg-note {variable 's_ss' declared in block potentially has improper OpenACC privatization level: 'type_decl'} "TODO" { target c++ } l_compute$c_compute } */

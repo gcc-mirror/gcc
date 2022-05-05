@@ -2512,7 +2512,8 @@ variable declarations (@pxref{Variable Attributes}),
 labels (@pxref{Label Attributes}),
 enumerators (@pxref{Enumerator Attributes}),
 statements (@pxref{Statement Attributes}),
-and types (@pxref{Type Attributes}).
+types (@pxref{Type Attributes}),
+and on field declarations (for @code{tainted_args}).
 
 There is some overlap between the purposes of attributes and pragmas
 (@pxref{Pragmas,,Pragmas Accepted by GCC}).  It has been
@@ -2650,6 +2651,14 @@ agument is ignored.  The referenced object need not be initialized.
 The mode is intended to be used as a means to help validate the expected
 object size, for example in functions that call @code{__builtin_object_size}.
 @xref{Object Size Checking}.
+
+Note that the @code{access} attribute merely specifies how an object
+referenced by the pointer argument can be accessed; it does not imply that
+an access @strong{will} happen.  Also, the @code{access} attribute does not
+imply the attribute @code{nonnull}; it may be appropriate to add both attributes
+at the declaration of a function that unconditionally manipulates a buffer via
+a pointer argument.  See the @code{nonnull} attribute for more information and
+caveats.
 
 @item alias ("@var{target}")
 @cindex @code{alias} function attribute
@@ -4008,6 +4017,26 @@ Finally if the parameter is @code{"@var{name2}@@@@@var{nodename}"} then in
 addition to creating a symbol version (as if
 @code{"@var{name2}@@@var{nodename}"} was used) the version will be also used
 to resolve @var{name2} by the linker.
+
+@item tainted_args
+@cindex @code{tainted_args} function attribute
+The @code{tainted_args} attribute is used to specify that a function is called
+in a way that requires sanitization of its arguments, such as a system
+call in an operating system kernel.  Such a function can be considered part
+of the ``attack surface'' of the program.  The attribute can be used both
+on function declarations, and on field declarations containing function
+pointers.  In the latter case, any function used as an initializer of
+such a callback field will be treated as being called with tainted
+arguments.
+
+The analyzer will pay particular attention to such functions when both
+@option{-fanalyzer} and @option{-fanalyzer-checker=taint} are supplied,
+potentially issuing warnings guarded by
+@option{-Wanalyzer-tainted-allocation-size},
+@option{-Wanalyzer-tainted-array-index},
+@option{-Wanalyzer-tainted-divisor},
+@option{-Wanalyzer-tainted-offset},
+and @option{-Wanalyzer-tainted-size}.
 
 @item target_clones (@var{options})
 @cindex @code{target_clones} function attribute
@@ -7199,6 +7228,12 @@ On x86 targets, the @code{fentry_section} attribute sets the name
 of the section to record function entry instrumentation calls in when
 enabled with @option{-pg -mrecord-mcount}
 
+@item nodirect_extern_access
+@cindex @code{nodirect_extern_access} function attribute
+@opindex mno-direct-extern-access
+This attribute, attached to a global variable or function, is the
+counterpart to option @option{-mno-direct-extern-access}.
+
 @end table
 
 @node Xstormy16 Function Attributes
@@ -7944,7 +7979,7 @@ If the location does not fit the address range of @code{LDS}
 and @code{STS}, there is currently (Binutils 2.26) just an unspecific
 warning like
 @quotation
-@code{module.c:(.text+0x1c): warning: internal error: out of range error}
+@code{module.cc:(.text+0x1c): warning: internal error: out of range error}
 @end quotation
 
 @end itemize
@@ -13425,7 +13460,7 @@ There are also built-in versions of the ISO C99 functions
 @code{expl}, @code{fabsf}, @code{fabsl}, @code{floorf}, @code{floorl},
 @code{fmodf}, @code{fmodl}, @code{frexpf}, @code{frexpl}, @code{ldexpf},
 @code{ldexpl}, @code{log10f}, @code{log10l}, @code{logf}, @code{logl},
-@code{modfl}, @code{modf}, @code{powf}, @code{powl}, @code{sinf},
+@code{modfl}, @code{modff}, @code{powf}, @code{powl}, @code{sinf},
 @code{sinhf}, @code{sinhl}, @code{sinl}, @code{sqrtf}, @code{sqrtl},
 @code{tanf}, @code{tanhf}, @code{tanhl} and @code{tanl}
 that are recognized in any mode since ISO C90 reserves these names for
@@ -13484,6 +13519,14 @@ In the same fashion, GCC provides @code{fpclassify}, @code{isfinite},
 @code{isinf_sign}, @code{isnormal} and @code{signbit} built-ins used with
 @code{__builtin_} prefixed.  The @code{isinf} and @code{isnan}
 built-in functions appear both with and without the @code{__builtin_} prefix.
+
+GCC provides built-in versions of the ISO C99 floating-point rounding and
+exceptions handling functions @code{fegetround}, @code{feclearexcept} and
+@code{feraiseexcept}.  They may not be available for all targets, and because
+they need close interaction with libc internal values, they may not be available
+for all target libcs, but in all cases they will gracefully fallback to libc
+calls.  These built-in functions appear both with and without the
+@code{__builtin_} prefix.
 
 @deftypefn {Built-in Function} void *__builtin_alloca (size_t size)
 The @code{__builtin_alloca} function must be called at block scope.
@@ -13958,6 +14001,11 @@ bits that are padding bits for all the union members.
 This built-in-function is useful if the padding bits of an object might
 have intederminate values and the object representation needs to be
 bitwise compared to some other object, for example for atomic operations.
+
+For C++, @var{ptr} argument type should be pointer to trivially-copyable
+type, unless the argument is address of a variable or parameter, because
+otherwise it isn't known if the type isn't just a base class whose padding
+bits are reused or laid out differently in a derived class.
 @end deftypefn
 
 @deftypefn {Built-in Function} @var{type} __builtin_bit_cast (@var{type}, @var{arg})
@@ -18247,74 +18295,89 @@ The following built-in functions are available on Linux 64-bit systems
 that use a future architecture instruction set (@option{-mcpu=power10}):
 
 @smallexample
-@exdent unsigned long long int
-@exdent __builtin_cfuged (unsigned long long int, unsigned long long int)
+@exdent unsigned long long
+@exdent __builtin_cfuged (unsigned long long, unsigned long long)
 @end smallexample
 Perform a 64-bit centrifuge operation, as if implemented by the
 @code{cfuged} instruction.
 @findex __builtin_cfuged
 
 @smallexample
-@exdent unsigned long long int
-@exdent __builtin_cntlzdm (unsigned long long int, unsigned long long int)
+@exdent unsigned long long
+@exdent __builtin_cntlzdm (unsigned long long, unsigned long long)
 @end smallexample
 Perform a 64-bit count leading zeros operation under mask, as if
 implemented by the @code{cntlzdm} instruction.
 @findex __builtin_cntlzdm
 
 @smallexample
-@exdent unsigned long long int
-@exdent __builtin_cnttzdm (unsigned long long int, unsigned long long int)
+@exdent unsigned long long
+@exdent __builtin_cnttzdm (unsigned long long, unsigned long long)
 @end smallexample
 Perform a 64-bit count trailing zeros operation under mask, as if
 implemented by the @code{cnttzdm} instruction.
 @findex __builtin_cnttzdm
 
 @smallexample
-@exdent unsigned long long int
-@exdent __builtin_pdepd (unsigned long long int, unsigned long long int)
+@exdent unsigned long long
+@exdent __builtin_pdepd (unsigned long long, unsigned long long)
 @end smallexample
 Perform a 64-bit parallel bits deposit operation, as if implemented by the
 @code{pdepd} instruction.
 @findex __builtin_pdepd
 
 @smallexample
-@exdent unsigned long long int
-@exdent __builtin_pextd (unsigned long long int, unsigned long long int)
+@exdent unsigned long long
+@exdent __builtin_pextd (unsigned long long, unsigned long long)
 @end smallexample
 Perform a 64-bit parallel bits extract operation, as if implemented by the
 @code{pextd} instruction.
 @findex __builtin_pextd
 
 @smallexample
-@exdent vector signed __int128 vsx_xl_sext (signed long long, signed char *);
-@exdent vector signed __int128 vsx_xl_sext (signed long long, signed short *);
-@exdent vector signed __int128 vsx_xl_sext (signed long long, signed int *);
-@exdent vector signed __int128 vsx_xl_sext (signed long long, signed long long *);
-@exdent vector unsigned __int128 vsx_xl_zext (signed long long, unsigned char *);
-@exdent vector unsigned __int128 vsx_xl_zext (signed long long, unsigned short *);
-@exdent vector unsigned __int128 vsx_xl_zext (signed long long, unsigned int *);
-@exdent vector unsigned __int128 vsx_xl_zext (signed long long, unsigned long long *);
+@exdent vector signed __int128 vsx_xl_sext (signed long long, signed char *)
+
+@exdent vector signed __int128 vsx_xl_sext (signed long long, signed short *)
+
+@exdent vector signed __int128 vsx_xl_sext (signed long long, signed int *)
+
+@exdent vector signed __int128 vsx_xl_sext (signed long long, signed long long *)
+
+@exdent vector unsigned __int128 vsx_xl_zext (signed long long, unsigned char *)
+
+@exdent vector unsigned __int128 vsx_xl_zext (signed long long, unsigned short *)
+
+@exdent vector unsigned __int128 vsx_xl_zext (signed long long, unsigned int *)
+
+@exdent vector unsigned __int128 vsx_xl_zext (signed long long, unsigned long long *)
 @end smallexample
 
 Load (and sign extend) to an __int128 vector, as if implemented by the ISA 3.1
-@code{lxvrbx} @code{lxvrhx} @code{lxvrwx} @code{lxvrdx} instructions.
+@code{lxvrbx}, @code{lxvrhx}, @code{lxvrwx}, and  @code{lxvrdx} instructions.
 @findex vsx_xl_sext
 @findex vsx_xl_zext
 
 @smallexample
-@exdent void vec_xst_trunc (vector signed __int128, signed long long, signed char *);
-@exdent void vec_xst_trunc (vector signed __int128, signed long long, signed short *);
-@exdent void vec_xst_trunc (vector signed __int128, signed long long, signed int *);
-@exdent void vec_xst_trunc (vector signed __int128, signed long long, signed long long *);
-@exdent void vec_xst_trunc (vector unsigned __int128, signed long long, unsigned char *);
-@exdent void vec_xst_trunc (vector unsigned __int128, signed long long, unsigned short *);
-@exdent void vec_xst_trunc (vector unsigned __int128, signed long long, unsigned int *);
-@exdent void vec_xst_trunc (vector unsigned __int128, signed long long, unsigned long long *);
+@exdent void vec_xst_trunc (vector signed __int128, signed long long, signed char *)
+
+@exdent void vec_xst_trunc (vector signed __int128, signed long long, signed short *)
+
+@exdent void vec_xst_trunc (vector signed __int128, signed long long, signed int *)
+
+@exdent void vec_xst_trunc (vector signed __int128, signed long long, signed long long *)
+
+@exdent void vec_xst_trunc (vector unsigned __int128, signed long long, unsigned char *)
+
+@exdent void vec_xst_trunc (vector unsigned __int128, signed long long, unsigned short *)
+
+@exdent void vec_xst_trunc (vector unsigned __int128, signed long long, unsigned int *)
+
+@exdent void vec_xst_trunc (vector unsigned __int128, signed long long, unsigned long long *)
 @end smallexample
 
 Truncate and store the rightmost element of a vector, as if implemented by the
-ISA 3.1 @code{stxvrbx} @code{stxvrhx} @code{stxvrwx} @code{stxvrdx} instructions.
+ISA 3.1 @code{stxvrbx}, @code{stxvrhx}, @code{stxvrwx}, and @code{stxvrdx}
+instructions.
 @findex vec_xst_trunc
 
 @node PowerPC AltiVec/VSX Built-in Functions
@@ -25089,7 +25152,7 @@ Requires: @code{type} shall be a complete type, (possibly cv-qualified)
 
 @item __has_trivial_assign (type)
 If @code{type} is @code{const}- qualified or is a reference type then
-the trait is @code{false}.  Otherwise if @code{__is_pod (type)} is
+the trait is @code{false}.  Otherwise if @code{__is_trivial (type)} is
 @code{true} then the trait is @code{true}, else if @code{type} is
 a cv-qualified class or union type with a trivial copy assignment
 ([class.copy]) then the trait is @code{true}, else it is @code{false}.
@@ -25097,7 +25160,7 @@ Requires: @code{type} shall be a complete type, (possibly cv-qualified)
 @code{void}, or an array of unknown bound.
 
 @item __has_trivial_copy (type)
-If @code{__is_pod (type)} is @code{true} or @code{type} is a reference
+If @code{__is_trivial (type)} is @code{true} or @code{type} is a reference
 type then the trait is @code{true}, else if @code{type} is a cv class
 or union type with a trivial copy constructor ([class.copy]) then the trait
 is @code{true}, else it is @code{false}.  Requires: @code{type} shall be
@@ -25105,7 +25168,7 @@ a complete type, (possibly cv-qualified) @code{void}, or an array of unknown
 bound.
 
 @item __has_trivial_constructor (type)
-If @code{__is_pod (type)} is @code{true} then the trait is @code{true},
+If @code{__is_trivial (type)} is @code{true} then the trait is @code{true},
 else if @code{type} is a cv-qualified class or union type (or array thereof)
 with a trivial default constructor ([class.ctor]) then the trait is @code{true},
 else it is @code{false}.
@@ -25113,7 +25176,7 @@ Requires: @code{type} shall be a complete type, (possibly cv-qualified)
 @code{void}, or an array of unknown bound.
 
 @item __has_trivial_destructor (type)
-If @code{__is_pod (type)} is @code{true} or @code{type} is a reference type
+If @code{__is_trivial (type)} is @code{true} or @code{type} is a reference type
 then the trait is @code{true}, else if @code{type} is a cv class or union
 type (or array thereof) with a trivial destructor ([class.dtor]) then
 the trait is @code{true}, else it is @code{false}.

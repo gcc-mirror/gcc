@@ -32,4 +32,4 @@ void foo()
 /* { dg-final { scan-rtl-dump-times "0xfe\\\]" 1 "expand" } } */
 /* { dg-final { scan-rtl-dump-times "0xfffffffffffffefe" 1 "expand" } } */
 /* { dg-final { scan-rtl-dump-times "0xfffffffffefefefe" 2 "expand" } } */
-/* { dg-final { scan-rtl-dump-times "0xfefefefefefefefe" 2 "expand" } } */
+/* { dg-final { scan-rtl-dump-times "0xfefefefefefefefe" 3 "expand" } } */

@@ -29,7 +29,7 @@ along with GCC; see the file COPYING3.  If not see
    For example, a 3-event path has event offsets 0, 1, and 2,
    which would be shown to the user as "(1)", "(2)" and "(3)".
 
-   This has its own header so that pretty-print.c can use this
+   This has its own header so that pretty-print.cc can use this
    to implement "%@" without bringing in all of diagnostic_path
    (which e.g. refers to "tree").  */
 

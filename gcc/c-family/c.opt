@@ -342,10 +342,6 @@ Wno-alloca-larger-than
 C ObjC C++ LTO ObjC++ Alias(Walloca-larger-than=,18446744073709551615EiB,none) Warning
 Disable Walloca-larger-than= warning.  Equivalent to Walloca-larger-than=<SIZE_MAX> or larger.
 
-Warray-bounds
-LangEnabledBy(C ObjC C++ LTO ObjC++)
-; in common.opt
-
 Warray-bounds=
 LangEnabledBy(C ObjC C++ LTO ObjC++,Wall,1,0)
 ; in common.opt
@@ -379,8 +375,8 @@ C ObjC C++ ObjC++ Warning Alias(Wbidi-chars=,any,none)
 ;
 
 Wbidi-chars=
-C ObjC C++ ObjC++ RejectNegative Joined Warning CPP(cpp_warn_bidirectional) CppReason(CPP_W_BIDIRECTIONAL) Var(warn_bidirectional) Init(bidirectional_unpaired) Enum(cpp_bidirectional_level)
--Wbidi-chars=[none|unpaired|any] Warn about UTF-8 bidirectional control characters.
+C ObjC C++ ObjC++ RejectNegative Joined Warning CPP(cpp_warn_bidirectional) CppReason(CPP_W_BIDIRECTIONAL) Var(warn_bidirectional) Init(bidirectional_unpaired) Enum(cpp_bidirectional_level) EnumSet
+-Wbidi-chars=[none|unpaired|any|ucn] Warn about UTF-8 bidirectional control characters.
 
 ; Required for these enum values.
 SourceInclude
@@ -390,13 +386,16 @@ Enum
 Name(cpp_bidirectional_level) Type(int) UnknownError(argument %qs to %<-Wbidi-chars%> not recognized)
 
 EnumValue
-Enum(cpp_bidirectional_level) String(none) Value(bidirectional_none)
+Enum(cpp_bidirectional_level) String(none) Value(bidirectional_none) Set(1)
 
 EnumValue
-Enum(cpp_bidirectional_level) String(unpaired) Value(bidirectional_unpaired)
+Enum(cpp_bidirectional_level) String(unpaired) Value(bidirectional_unpaired) Set(1)
 
 EnumValue
-Enum(cpp_bidirectional_level) String(any) Value(bidirectional_any)
+Enum(cpp_bidirectional_level) String(any) Value(bidirectional_any) Set(1)
+
+EnumValue
+Enum(cpp_bidirectional_level) String(ucn) Value(bidirectional_ucn) Set(2)
 
 Wbool-compare
 C ObjC C++ ObjC++ Var(warn_bool_compare) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
@@ -460,23 +459,23 @@ C++ ObjC++ Var(warn_cxx20_compat) Warning LangEnabledBy(C++ ObjC++,Wall)
 Warn about C++ constructs whose meaning differs between ISO C++ 2017 and ISO C++ 2020.
 
 Wc++11-extensions
-C++ ObjC++ Var(warn_cxx11_extensions) Warning LangEnabledBy(C++ ObjC++) Init(1)
+C++ ObjC++ Var(warn_cxx11_extensions) Warning Init(1)
 Warn about C++11 constructs in code compiled with an older standard.
 
 Wc++14-extensions
-C++ ObjC++ Var(warn_cxx14_extensions) Warning LangEnabledBy(C++ ObjC++) Init(1)
+C++ ObjC++ Var(warn_cxx14_extensions) Warning Init(1)
 Warn about C++14 constructs in code compiled with an older standard.
 
 Wc++17-extensions
-C++ ObjC++ Var(warn_cxx17_extensions) Warning LangEnabledBy(C++ ObjC++) Init(1)
+C++ ObjC++ Var(warn_cxx17_extensions) Warning Init(1)
 Warn about C++17 constructs in code compiled with an older standard.
 
 Wc++20-extensions
-C++ ObjC++ Var(warn_cxx20_extensions) Warning LangEnabledBy(C++ ObjC++) Init(1)
+C++ ObjC++ Var(warn_cxx20_extensions) Warning Init(1)
 Warn about C++20 constructs in code compiled with an older standard.
 
 Wc++23-extensions
-C++ ObjC++ Var(warn_cxx23_extensions) Warning LangEnabledBy(C++ ObjC++) Init(1)
+C++ ObjC++ Var(warn_cxx23_extensions) Warning Init(1)
 Warn about C++23 constructs in code compiled with an older standard.
 
 Wcast-function-type
@@ -547,6 +546,14 @@ Warn when all constructors and destructors are private.
 Wdangling-else
 C ObjC C++ ObjC++ Var(warn_dangling_else) Warning LangEnabledBy(C ObjC C++ ObjC++,Wparentheses)
 Warn about dangling else.
+
+Wdangling-pointer
+C ObjC C++ LTO ObjC++ Alias(Wdangling-pointer=, 2, 0) Warning
+Warn for uses of pointers to auto variables whose lifetime has ended.
+
+Wdangling-pointer=
+C ObjC C++ ObjC++ Joined RejectNegative UInteger Var(warn_dangling_pointer) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall, 2, 0) IntegerRange(0, 2)
+Warn for uses of pointers to auto variables whose lifetime has ended.
 
 Wdate-time
 C ObjC C++ ObjC++ CPP(warn_date_time) CppReason(CPP_W_DATE_TIME) Var(cpp_warn_date_time) Init(0) Warning
@@ -879,6 +886,10 @@ Warn about missing fields in struct initializers.
 Wmissing-requires
 C++ ObjC++ Var(warn_missing_requires) Init(1) Warning
 Warn about likely missing requires keyword.
+
+Wmissing-template-keyword
+C++ ObjC++ Var(warn_missing_template_keyword) Init(1) Warning
+Warn when the template keyword is missing after a member access token in a dependent member access expression if that member is a template.
 
 Wmultistatement-macros
 C ObjC C++ ObjC++ Var(warn_multistatement_macros) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
@@ -1362,6 +1373,14 @@ Wunused-const-variable=
 C ObjC C++ ObjC++ Joined RejectNegative UInteger Var(warn_unused_const_variable) Warning LangEnabledBy(C ObjC,Wunused-variable, 1, 0) IntegerRange(0, 2)
 Warn when a const variable is unused.
 
+; Defining this option here in addition to common.opt is necessary
+; in order for the default -Wall setting of -Wuse-after-free=2 to take
+; effect.
+
+Wuse-after-free=
+LangEnabledBy(C ObjC C++ LTO ObjC++, Wall,2,0)
+; in common.opt
+
 Wvariadic-macros
 C ObjC C++ ObjC++ CPP(warn_variadic_macros) CppReason(CPP_W_VARIADIC_MACROS) Var(cpp_warn_variadic_macros) Init(0) Warning LangEnabledBy(C ObjC C++ ObjC++,Wpedantic || Wtraditional)
 Warn about using variadic macros.
@@ -1703,6 +1722,10 @@ Support dynamic initialization of thread-local variables in a different translat
 
 fexternal-templates
 C++ ObjC++ WarnRemoved
+
+ffold-simple-inlines
+C++ ObjC++ Optimization Var(flag_fold_simple_inlines)
+Fold calls to simple inline functions.
 
 ffor-scope
 C++ ObjC++ WarnRemoved

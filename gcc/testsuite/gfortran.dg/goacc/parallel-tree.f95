@@ -2,12 +2,15 @@
 
 ! test for tree-dump-original and spaces-commas
 
+! { dg-additional-options -Wuninitialized }
+
 ! { dg-additional-options "-Wopenacc-parallelism" } for testing/documenting
 ! aspects of that functionality.
 
 program test
   implicit none
   integer :: q, i, j, k, m, n, o, p, r, s, t, u, v, w
+  ! { dg-note {'i' was declared here} {} { target *-*-* } .-1 }
   logical :: l = .true.
 
   !$acc parallel if(l) async num_gangs(i) num_workers(i) vector_length(i) &
@@ -15,9 +18,10 @@ program test
   !$acc no_create(n) &
   !$acc present(o), pcopy(p), pcopyin(r), pcopyout(s), pcreate(t) &
   !$acc deviceptr(u), private(v), firstprivate(w)
-  ! { dg-warning "region is gang partitioned but does not contain gang partitioned code" "" { target *-*-* } .-1 }
-  ! { dg-warning "region is worker partitioned but does not contain worker partitioned code" "" { target *-*-* } .-2 }
-  ! { dg-warning "region is vector partitioned but does not contain vector partitioned code" "" { target *-*-* } .-3 }
+  ! { dg-warning {'i' is used uninitialized} {} { target *-*-* } .-1 }
+  ! { dg-warning "region is gang partitioned but does not contain gang partitioned code" "" { target *-*-* } .-2 }
+  ! { dg-warning "region is worker partitioned but does not contain worker partitioned code" "" { target *-*-* } .-3 }
+  ! { dg-warning "region is vector partitioned but does not contain vector partitioned code" "" { target *-*-* } .-4 }
   !$acc end parallel
 
 end program test

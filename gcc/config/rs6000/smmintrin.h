@@ -42,34 +42,262 @@
 #include <altivec.h>
 #include <tmmintrin.h>
 
+/* Rounding mode macros. */
+#define _MM_FROUND_TO_NEAREST_INT       0x00
+#define _MM_FROUND_TO_ZERO              0x01
+#define _MM_FROUND_TO_POS_INF           0x02
+#define _MM_FROUND_TO_NEG_INF           0x03
+#define _MM_FROUND_CUR_DIRECTION        0x04
+
+#define _MM_FROUND_NINT		\
+  (_MM_FROUND_TO_NEAREST_INT | _MM_FROUND_RAISE_EXC)
+#define _MM_FROUND_FLOOR	\
+  (_MM_FROUND_TO_NEG_INF | _MM_FROUND_RAISE_EXC)
+#define _MM_FROUND_CEIL		\
+  (_MM_FROUND_TO_POS_INF | _MM_FROUND_RAISE_EXC)
+#define _MM_FROUND_TRUNC	\
+  (_MM_FROUND_TO_ZERO | _MM_FROUND_RAISE_EXC)
+#define _MM_FROUND_RINT		\
+  (_MM_FROUND_CUR_DIRECTION | _MM_FROUND_RAISE_EXC)
+#define _MM_FROUND_NEARBYINT	\
+  (_MM_FROUND_CUR_DIRECTION | _MM_FROUND_NO_EXC)
+
+#define _MM_FROUND_RAISE_EXC            0x00
+#define _MM_FROUND_NO_EXC               0x08
+
+extern __inline __m128d
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_round_pd (__m128d __A, int __rounding)
+{
+  __v2df __r;
+  union {
+    double __fr;
+    long long __fpscr;
+  } __enables_save, __fpscr_save;
+
+  if (__rounding & _MM_FROUND_NO_EXC)
+    {
+      /* Save enabled exceptions, disable all exceptions,
+	 and preserve the rounding mode.  */
+#ifdef _ARCH_PWR9
+      __asm__ ("mffsce %0" : "=f" (__fpscr_save.__fr));
+      __enables_save.__fpscr = __fpscr_save.__fpscr & 0xf8;
+#else
+      __fpscr_save.__fr = __builtin_mffs ();
+      __enables_save.__fpscr = __fpscr_save.__fpscr & 0xf8;
+      __fpscr_save.__fpscr &= ~0xf8;
+      __builtin_mtfsf (0b00000011, __fpscr_save.__fr);
+#endif
+      /* Insert an artificial "read/write" reference to the variable
+	 read below, to ensure the compiler does not schedule
+	 a read/use of the variable before the FPSCR is modified, above.
+	 This can be removed if and when GCC PR102783 is fixed.
+       */
+      __asm__ ("" : "+wa" (__A));
+    }
+
+  switch (__rounding)
+    {
+      case _MM_FROUND_TO_NEAREST_INT:
+	__fpscr_save.__fr = __builtin_mffsl ();
+	__attribute__ ((fallthrough));
+      case _MM_FROUND_TO_NEAREST_INT | _MM_FROUND_NO_EXC:
+	__builtin_set_fpscr_rn (0b00);
+	/* Insert an artificial "read/write" reference to the variable
+	   read below, to ensure the compiler does not schedule
+	   a read/use of the variable before the FPSCR is modified, above.
+	   This can be removed if and when GCC PR102783 is fixed.
+	 */
+	__asm__ ("" : "+wa" (__A));
+
+	__r = vec_rint ((__v2df) __A);
+
+	/* Insert an artificial "read" reference to the variable written
+	   above, to ensure the compiler does not schedule the computation
+	   of the value after the manipulation of the FPSCR, below.
+	   This can be removed if and when GCC PR102783 is fixed.
+	 */
+	__asm__ ("" : : "wa" (__r));
+	__builtin_set_fpscr_rn (__fpscr_save.__fpscr);
+	break;
+      case _MM_FROUND_TO_NEG_INF:
+      case _MM_FROUND_TO_NEG_INF | _MM_FROUND_NO_EXC:
+	__r = vec_floor ((__v2df) __A);
+	break;
+      case _MM_FROUND_TO_POS_INF:
+      case _MM_FROUND_TO_POS_INF | _MM_FROUND_NO_EXC:
+	__r = vec_ceil ((__v2df) __A);
+	break;
+      case _MM_FROUND_TO_ZERO:
+      case _MM_FROUND_TO_ZERO | _MM_FROUND_NO_EXC:
+	__r = vec_trunc ((__v2df) __A);
+	break;
+      case _MM_FROUND_CUR_DIRECTION:
+	__r = vec_rint ((__v2df) __A);
+	break;
+    }
+  if (__rounding & _MM_FROUND_NO_EXC)
+    {
+      /* Insert an artificial "read" reference to the variable written
+	 above, to ensure the compiler does not schedule the computation
+	 of the value after the manipulation of the FPSCR, below.
+	 This can be removed if and when GCC PR102783 is fixed.
+       */
+      __asm__ ("" : : "wa" (__r));
+      /* Restore enabled exceptions.  */
+      __fpscr_save.__fr = __builtin_mffsl ();
+      __fpscr_save.__fpscr |= __enables_save.__fpscr;
+      __builtin_mtfsf (0b00000011, __fpscr_save.__fr);
+    }
+  return (__m128d) __r;
+}
+
+extern __inline __m128d
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_round_sd (__m128d __A, __m128d __B, int __rounding)
+{
+  __B = _mm_round_pd (__B, __rounding);
+  __v2df __r = { ((__v2df) __B)[0], ((__v2df) __A)[1] };
+  return (__m128d) __r;
+}
+
+extern __inline __m128
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_round_ps (__m128 __A, int __rounding)
+{
+  __v4sf __r;
+  union {
+    double __fr;
+    long long __fpscr;
+  } __enables_save, __fpscr_save;
+
+  if (__rounding & _MM_FROUND_NO_EXC)
+    {
+      /* Save enabled exceptions, disable all exceptions,
+	 and preserve the rounding mode.  */
+#ifdef _ARCH_PWR9
+      __asm__ ("mffsce %0" : "=f" (__fpscr_save.__fr));
+      __enables_save.__fpscr = __fpscr_save.__fpscr & 0xf8;
+#else
+      __fpscr_save.__fr = __builtin_mffs ();
+      __enables_save.__fpscr = __fpscr_save.__fpscr & 0xf8;
+      __fpscr_save.__fpscr &= ~0xf8;
+      __builtin_mtfsf (0b00000011, __fpscr_save.__fr);
+#endif
+      /* Insert an artificial "read/write" reference to the variable
+	 read below, to ensure the compiler does not schedule
+	 a read/use of the variable before the FPSCR is modified, above.
+	 This can be removed if and when GCC PR102783 is fixed.
+       */
+      __asm__ ("" : "+wa" (__A));
+    }
+
+  switch (__rounding)
+    {
+      case _MM_FROUND_TO_NEAREST_INT:
+	__fpscr_save.__fr = __builtin_mffsl ();
+	__attribute__ ((fallthrough));
+      case _MM_FROUND_TO_NEAREST_INT | _MM_FROUND_NO_EXC:
+	__builtin_set_fpscr_rn (0b00);
+	/* Insert an artificial "read/write" reference to the variable
+	   read below, to ensure the compiler does not schedule
+	   a read/use of the variable before the FPSCR is modified, above.
+	   This can be removed if and when GCC PR102783 is fixed.
+	 */
+	__asm__ ("" : "+wa" (__A));
+
+	__r = vec_rint ((__v4sf) __A);
+
+	/* Insert an artificial "read" reference to the variable written
+	   above, to ensure the compiler does not schedule the computation
+	   of the value after the manipulation of the FPSCR, below.
+	   This can be removed if and when GCC PR102783 is fixed.
+	 */
+	__asm__ ("" : : "wa" (__r));
+	__builtin_set_fpscr_rn (__fpscr_save.__fpscr);
+	break;
+      case _MM_FROUND_TO_NEG_INF:
+      case _MM_FROUND_TO_NEG_INF | _MM_FROUND_NO_EXC:
+	__r = vec_floor ((__v4sf) __A);
+	break;
+      case _MM_FROUND_TO_POS_INF:
+      case _MM_FROUND_TO_POS_INF | _MM_FROUND_NO_EXC:
+	__r = vec_ceil ((__v4sf) __A);
+	break;
+      case _MM_FROUND_TO_ZERO:
+      case _MM_FROUND_TO_ZERO | _MM_FROUND_NO_EXC:
+	__r = vec_trunc ((__v4sf) __A);
+	break;
+      case _MM_FROUND_CUR_DIRECTION:
+	__r = vec_rint ((__v4sf) __A);
+	break;
+    }
+  if (__rounding & _MM_FROUND_NO_EXC)
+    {
+      /* Insert an artificial "read" reference to the variable written
+	 above, to ensure the compiler does not schedule the computation
+	 of the value after the manipulation of the FPSCR, below.
+	 This can be removed if and when GCC PR102783 is fixed.
+       */
+      __asm__ ("" : : "wa" (__r));
+      /* Restore enabled exceptions.  */
+      __fpscr_save.__fr = __builtin_mffsl ();
+      __fpscr_save.__fpscr |= __enables_save.__fpscr;
+      __builtin_mtfsf (0b00000011, __fpscr_save.__fr);
+    }
+  return (__m128) __r;
+}
+
+extern __inline __m128
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_round_ss (__m128 __A, __m128 __B, int __rounding)
+{
+  __B = _mm_round_ps (__B, __rounding);
+  __v4sf __r = (__v4sf) __A;
+  __r[0] = ((__v4sf) __B)[0];
+  return (__m128) __r;
+}
+
+#define _mm_ceil_pd(V)	   _mm_round_pd ((V), _MM_FROUND_CEIL)
+#define _mm_ceil_sd(D, V)  _mm_round_sd ((D), (V), _MM_FROUND_CEIL)
+
+#define _mm_floor_pd(V)	   _mm_round_pd((V), _MM_FROUND_FLOOR)
+#define _mm_floor_sd(D, V) _mm_round_sd ((D), (V), _MM_FROUND_FLOOR)
+
+#define _mm_ceil_ps(V)	   _mm_round_ps ((V), _MM_FROUND_CEIL)
+#define _mm_ceil_ss(D, V)  _mm_round_ss ((D), (V), _MM_FROUND_CEIL)
+
+#define _mm_floor_ps(V)	   _mm_round_ps ((V), _MM_FROUND_FLOOR)
+#define _mm_floor_ss(D, V) _mm_round_ss ((D), (V), _MM_FROUND_FLOOR)
+
 extern __inline __m128i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_insert_epi8 (__m128i const __A, int const __D, int const __N)
 {
-  __v16qi result = (__v16qi)__A;
+  __v16qi __result = (__v16qi)__A;
 
-  result [__N & 0xf] = __D;
+  __result [__N & 0xf] = __D;
 
-  return (__m128i) result;
+  return (__m128i) __result;
 }
 
 extern __inline __m128i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_insert_epi32 (__m128i const __A, int const __D, int const __N)
 {
-  __v4si result = (__v4si)__A;
+  __v4si __result = (__v4si)__A;
 
-  result [__N & 3] = __D;
+  __result [__N & 3] = __D;
 
-  return (__m128i) result;
+  return (__m128i) __result;
 }
 
 extern __inline __m128i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_insert_epi64 (__m128i const __A, long long const __D, int const __N)
 {
-  __v2di result = (__v2di)__A;
+  __v2di __result = (__v2di)__A;
 
-  result [__N & 1] = __D;
+  __result [__N & 1] = __D;
 
-  return (__m128i) result;
+  return (__m128i) __result;
 }
 
 extern __inline int __attribute__((__gnu_inline__, __always_inline__, __artificial__))
@@ -113,9 +341,13 @@ _mm_blend_epi16 (__m128i __A, __m128i __B, const int __imm8)
 extern __inline __m128i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_blendv_epi8 (__m128i __A, __m128i __B, __m128i __mask)
 {
+#ifdef _ARCH_PWR10
+  return (__m128i) vec_blendv ((__v16qi) __A, (__v16qi) __B, (__v16qu) __mask);
+#else
   const __v16qu __seven = vec_splats ((unsigned char) 0x07);
   __v16qu __lmask = vec_sra ((__v16qu) __mask, __seven);
-  return (__m128i) vec_sel ((__v16qu) __A, (__v16qu) __B, __lmask);
+  return (__m128i) vec_sel ((__v16qi) __A, (__v16qi) __B, __lmask);
+#endif
 }
 
 extern __inline __m128
@@ -149,9 +381,13 @@ extern __inline __m128
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm_blendv_ps (__m128 __A, __m128 __B, __m128 __mask)
 {
+#ifdef _ARCH_PWR10
+  return (__m128) vec_blendv ((__v4sf) __A, (__v4sf) __B, (__v4su) __mask);
+#else
   const __v4si __zero = {0};
   const __vector __bool int __boolmask = vec_cmplt ((__v4si) __mask, __zero);
   return (__m128) vec_sel ((__v4su) __A, (__v4su) __B, (__v4su) __boolmask);
+#endif
 }
 
 extern __inline __m128d
@@ -174,9 +410,13 @@ extern __inline __m128d
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm_blendv_pd (__m128d __A, __m128d __B, __m128d __mask)
 {
+#ifdef _ARCH_PWR10
+  return (__m128d) vec_blendv ((__v2df) __A, (__v2df) __B, (__v2du) __mask);
+#else
   const __v2di __zero = {0};
   const __vector __bool long long __boolmask = vec_cmplt ((__v2di) __mask, __zero);
   return (__m128d) vec_sel ((__v2du) __A, (__v2du) __B, (__v2du) __boolmask);
+#endif
 }
 #endif
 
@@ -213,70 +453,6 @@ _mm_testnzc_si128 (__m128i __A, __m128i __B)
   _mm_testc_si128 ((V), _mm_cmpeq_epi32 ((V), (V)))
 
 #define _mm_test_mix_ones_zeros(M, V) _mm_testnzc_si128 ((M), (V))
-
-extern __inline __m128d
-__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm_ceil_pd (__m128d __A)
-{
-  return (__m128d) vec_ceil ((__v2df) __A);
-}
-
-extern __inline __m128d
-__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm_ceil_sd (__m128d __A, __m128d __B)
-{
-  __v2df __r = vec_ceil ((__v2df) __B);
-  __r[1] = ((__v2df) __A)[1];
-  return (__m128d) __r;
-}
-
-extern __inline __m128d
-__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm_floor_pd (__m128d __A)
-{
-  return (__m128d) vec_floor ((__v2df) __A);
-}
-
-extern __inline __m128d
-__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm_floor_sd (__m128d __A, __m128d __B)
-{
-  __v2df __r = vec_floor ((__v2df) __B);
-  __r[1] = ((__v2df) __A)[1];
-  return (__m128d) __r;
-}
-
-extern __inline __m128
-__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm_ceil_ps (__m128 __A)
-{
-  return (__m128) vec_ceil ((__v4sf) __A);
-}
-
-extern __inline __m128
-__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm_ceil_ss (__m128 __A, __m128 __B)
-{
-  __v4sf __r = (__v4sf) __A;
-  __r[0] = __builtin_ceil (((__v4sf) __B)[0]);
-  return __r;
-}
-
-extern __inline __m128
-__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm_floor_ps (__m128 __A)
-{
-  return (__m128) vec_floor ((__v4sf) __A);
-}
-
-extern __inline __m128
-__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm_floor_ss (__m128 __A, __m128 __B)
-{
-  __v4sf __r = (__v4sf) __A;
-  __r[0] = __builtin_floor (((__v4sf) __B)[0]);
-  return __r;
-}
 
 #ifdef _ARCH_PWR8
 extern __inline __m128i
@@ -511,7 +687,8 @@ _mm_minpos_epu16 (__m128i __A)
   union __u __u = { .__m = __A }, __r = { .__m = {0} };
   unsigned short __ridx = 0;
   unsigned short __rmin = __u.__uh[__ridx];
-  for (unsigned long __i = 1; __i < 8; __i++)
+  unsigned long __i;
+  for (__i = 1; __i < 8; __i++)
     {
       if (__u.__uh[__i] < __rmin)
 	{

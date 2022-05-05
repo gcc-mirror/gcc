@@ -205,4 +205,3 @@ struct Array
         return data.ptr[--length];
     }
 };
-

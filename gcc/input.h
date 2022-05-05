@@ -32,7 +32,7 @@ extern GTY(()) class line_maps *saved_line_table;
 /* The location for declarations in "<built-in>" */
 #define BUILTINS_LOCATION ((location_t) 1)
 
-/* line-map.c reserves RESERVED_LOCATION_COUNT to the user.  Ensure
+/* line-map.cc reserves RESERVED_LOCATION_COUNT to the user.  Ensure
    both UNKNOWN_LOCATION and BUILTINS_LOCATION fit into that.  */
 STATIC_ASSERT (BUILTINS_LOCATION < RESERVED_LOCATION_COUNT);
 
@@ -269,7 +269,7 @@ class GTY(()) string_concat_db
   static location_t get_key_loc (location_t loc);
 
   /* For the fields to be private, we must grant access to the
-     generated code in gtype-desc.c.  */
+     generated code in gtype-desc.cc.  */
 
   friend void ::gt_ggc_mx_string_concat_db (void *x_p);
   friend void ::gt_pch_nx_string_concat_db (void *x_p);

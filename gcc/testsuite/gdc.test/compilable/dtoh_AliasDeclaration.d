@@ -125,7 +125,6 @@ typedef /* noreturn */ char Impossible[0];
 template <typename T>
 struct Array final
 {
-    // Ignoring var length alignment 0
     uint32_t length;
     Array()
     {

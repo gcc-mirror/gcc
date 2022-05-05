@@ -69,8 +69,8 @@ struct div_t
 ///
 struct ldiv_t
 {
-    int quot,
-        rem;
+    c_long quot,
+           rem;
 }
 
 ///

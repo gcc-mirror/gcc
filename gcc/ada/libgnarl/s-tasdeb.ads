@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1997-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1997-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -32,7 +32,6 @@
 --  This package encapsulates all direct interfaces to task debugging services
 --  that are needed by gdb with gnat mode.
 
-with System.Tasking;
 with System.OS_Interface;
 
 package System.Tasking.Debug is

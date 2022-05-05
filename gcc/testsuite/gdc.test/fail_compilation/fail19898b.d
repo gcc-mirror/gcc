@@ -17,4 +17,3 @@ void f (__vector(int[4]) n, S m)
     foreach (i; m .. n)
         cast(void)n;
 }
-

@@ -1,3 +1,328 @@
+2022-05-04  Marek Polacek  <polacek@redhat.com>
+
+	* c-warn.cc (warnings_for_convert_and_check): Convert constants of type
+	char to int.
+
+2022-04-30  Jason Merrill  <jason@redhat.com>
+
+	PR c/100545
+	* c-attribs.cc (handle_mode_attribute): Copy attributes, aligned,
+	and typedef.
+	* c-common.cc (set_underlying_type): Add assert.
+
+2022-04-26  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/105304
+	* c-common.cc (verify_tree) [restart]: Move up to before the
+	NULL test.
+
+2022-04-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/105186
+	* c-common.cc (c_common_nodes_and_builtins): After registering __int%d
+	and __int%d__ builtin types, initialize corresponding ridpointers
+	entry.
+
+2022-03-30  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/101030
+	* c-warn.cc (conversion_warning) <case COND_EXPR>: Don't call
+	conversion_warning when OP1 is null.
+
+2022-03-30  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* c.opt (Wc++11-extensions, Wc++14-extensions, Wc++17-extensions)
+	(Wc++20-extensions, Wc++23-extensions): Remove 'LangEnabledBy'
+	option properties.
+
+2022-03-30  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* c.opt (Wuse-after-free): Remove.
+
+2022-03-30  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* c.opt (Warray-bounds): Remove.
+
+2022-03-26  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* c.opt: Properly quote comment.
+
+2022-03-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-ada-spec.cc (dump_ada_import): Deal with the "section" attribute
+	(dump_ada_node) <POINTER_TYPE>: Do not modify and pass the name, but
+	the referenced type instead.  Deal with the anonymous original type
+	of a typedef'ed type.  In the actual access case, follow the chain
+	of external subtypes.
+	<TYPE_DECL>: Tidy up control flow.
+
+2022-03-21  Qian Jianhua  <qianjh@cn.fujitsu.com>
+
+	* c-ada-spec.cc: Change array length
+
+2022-03-19  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* c-common.cc (c_family_tests): Call the new tests.
+	* c-common.h (c_diagnostic_tests): Declare.
+	(c_opt_problem_cc_tests): Likewise.
+
+2022-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/101515
+	* c-pretty-print.cc (c_fold_indirect_ref_for_warn): For C++ don't
+	return COMPONENT_REFs with FIELD_DECLs whose containing scope can't
+	be printed.
+
+2022-03-16  Christophe Lyon  <christophe.lyon@arm.com>
+	    Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR c/98198
+	* c-attribs.cc (decl_or_type_attrs): Add error_mark_node check.
+
+2022-03-16  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/96780
+	* c.opt: Add -ffold-simple-inlines.
+
+2022-03-13  Tobias Burnus  <tobias@codesourcery.com>
+
+	* c-target.def (check_string_object_format_arg): Fix description typo.
+
+2022-03-12  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR other/65095
+	* c-common.h (c_omp_map_clause_name): Remove.
+	* c-omp.cc (c_omp_map_clause_name): Remove.
+
+2022-03-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/104711
+	* c-opts.cc (c_common_post_options): Don't enable
+	-Wshift-negative-value from -Wextra for C++20 or later.
+	* c-ubsan.cc (ubsan_instrument_shift): Adjust comments.
+	* c-warn.cc (maybe_warn_shift_overflow): Use TYPE_OVERFLOW_WRAPS
+	instead of TYPE_UNSIGNED.
+
+2022-03-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-attribs.cc: Fix up duplicated word issue in a comment.
+
+2022-03-01  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/104533
+	* c-attribs.cc (handle_target_clones_attribute): Use
+	get_target_clone_attr_len and report warning soon.
+
+2022-02-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	* c-pragma.cc (handle_pragma_pack): Remove parameter name.
+	(handle_pragma_weak): Likewise.
+	(handle_pragma_scalar_storage_order): Likewise.
+	(handle_pragma_redefine_extname): Likewise.
+	(handle_pragma_visibility): Likewise.
+	(handle_pragma_diagnostic): Likewise.
+	(handle_pragma_target): Likewise.
+	(handle_pragma_optimize): Likewise.
+	(handle_pragma_push_options): Likewise.
+	(handle_pragma_pop_options): Likewise.
+	(handle_pragma_reset_options): Likewise.
+	(handle_pragma_message): Likewise.
+	(handle_pragma_float_const_decimal64): Likewise.
+
+2022-02-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/104531
+	* c-omp.cc (c_finish_omp_atomic): For MIN_EXPR/MAX_EXPR, try first
+	build_binary_op with LT_EXPR and only if that doesn't return
+	error_mark_node call build_modify_expr.
+
+2022-02-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/104510
+	* c-common.cc (shorten_compare): Convert original arguments to
+	the original *restype_ptr when mixing binary and decimal float.
+
+2022-02-14  Richard Biener  <rguenther@suse.de>
+
+	PR c/104505
+	* c-pretty-print.cc (c_pretty_printer::postfix_expression): Handle
+	internal function calls.
+
+2022-02-11  Richard Biener  <rguenther@suse.de>
+
+	* c-attribs.cc (c_common_attribute_table): Add entry for
+	vector_mask.
+	(handle_vector_mask_attribute): New.
+
+2022-02-10  Marcel Vollweiler  <marcel@codesourcery.com>
+
+	* c-omp.cc (c_omp_split_clauses): Added OMP_CLAUSE_HAS_DEVICE_ADDR case.
+	* c-pragma.h (enum pragma_kind): Added 5.1 in comment.
+	(enum pragma_omp_clause): Added PRAGMA_OMP_CLAUSE_HAS_DEVICE_ADDR.
+
+2022-02-09  Jason Merrill  <jason@redhat.com>
+
+	* c-cppbuiltin.cc (c_cpp_builtins): Update values
+	of __cpp_constexpr and __cpp_concepts for C++20.
+
+2022-01-24  Marek Polacek  <polacek@redhat.com>
+
+	PR preprocessor/104030
+	* c.opt (Wbidi-chars): Mark as EnumSet.  Also accept =ucn.
+
+2022-01-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/104148
+	* c-common.h (check_function_arguments_recurse): Add for_format
+	arg.
+	* c-common.cc (check_function_nonnull): Pass false to
+	check_function_arguments_recurse's last argument.
+	(check_function_arguments_recurse): Add for_format argument,
+	if true, don't stop on warning_suppressed_p.
+	* c-format.cc (check_format_info): Pass true to
+	check_function_arguments_recurse's last argument.
+
+2022-01-19  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-common.cc (c_common_c_tests): Rename to...
+	(c_common_cc_tests): ...this.
+	(c_family_tests): Update calls for .c to .cc renaming.
+	* c-common.h (c_format_c_tests): Rename to...
+	(c_format_cc_tests): ...this.
+	(c_indentation_c_tests): Rename to...
+	(c_indentation_cc_tests): ...this.
+	(c_pretty_print_c_tests): Rename to...
+	(c_pretty_print_cc_tests): ...this.
+	* c-format.cc (c_format_c_tests): Rename to...
+	(c_format_cc_tests): ...this.
+	* c-indentation.cc (c_indentation_c_tests): Rename to...
+	(c_indentation_cc_tests): ...this.
+	* c-pretty-print.cc (c_pretty_print_c_tests): Rename to...
+	(c_pretty_print_cc_tests): ...this.
+
+2022-01-17  Martin Liska  <mliska@suse.cz>
+
+	* c-ada-spec.cc: Rename .c names to .cc.
+	* c-ada-spec.h: Likewise.
+	* c-common.cc (c_build_vec_convert): Likewise.
+	(warning_candidate_p): Likewise.
+	* c-common.h (enum rid): Likewise.
+	(build_real_imag_expr): Likewise.
+	(finish_label_address_expr): Likewise.
+	(c_get_substring_location): Likewise.
+	(c_build_bind_expr): Likewise.
+	(conflict_marker_get_final_tok_kind): Likewise.
+	(c_parse_error): Likewise.
+	(check_missing_format_attribute): Likewise.
+	(invalid_array_size_error): Likewise.
+	(warn_for_multistatement_macros): Likewise.
+	(build_attr_access_from_parms): Likewise.
+	* c-cppbuiltin.cc (c_cpp_builtins): Likewise.
+	* c-format.cc: Likewise.
+	* c-gimplify.cc (c_gimplify_expr): Likewise.
+	* c-indentation.h: Likewise.
+	* c-objc.h (objc_prop_attr_kind_for_rid): Likewise.
+	* c-omp.cc (c_omp_predetermined_mapping): Likewise.
+	* c-opts.cc (c_common_post_options): Likewise.
+	(set_std_cxx23): Likewise.
+	* c-pragma.cc (handle_pragma_redefine_extname): Likewise.
+	* c-pretty-print.h: Likewise.
+
+2022-01-17  Martin Liska  <mliska@suse.cz>
+
+	* c-ada-spec.c: Moved to...
+	* c-ada-spec.cc: ...here.
+	* c-attribs.c: Moved to...
+	* c-attribs.cc: ...here.
+	* c-common.c: Moved to...
+	* c-common.cc: ...here.
+	* c-cppbuiltin.c: Moved to...
+	* c-cppbuiltin.cc: ...here.
+	* c-dump.c: Moved to...
+	* c-dump.cc: ...here.
+	* c-format.c: Moved to...
+	* c-format.cc: ...here.
+	* c-gimplify.c: Moved to...
+	* c-gimplify.cc: ...here.
+	* c-indentation.c: Moved to...
+	* c-indentation.cc: ...here.
+	* c-lex.c: Moved to...
+	* c-lex.cc: ...here.
+	* c-omp.c: Moved to...
+	* c-omp.cc: ...here.
+	* c-opts.c: Moved to...
+	* c-opts.cc: ...here.
+	* c-pch.c: Moved to...
+	* c-pch.cc: ...here.
+	* c-ppoutput.c: Moved to...
+	* c-ppoutput.cc: ...here.
+	* c-pragma.c: Moved to...
+	* c-pragma.cc: ...here.
+	* c-pretty-print.c: Moved to...
+	* c-pretty-print.cc: ...here.
+	* c-semantics.c: Moved to...
+	* c-semantics.cc: ...here.
+	* c-ubsan.c: Moved to...
+	* c-ubsan.cc: ...here.
+	* c-warn.c: Moved to...
+	* c-warn.cc: ...here.
+	* cppspec.c: Moved to...
+	* cppspec.cc: ...here.
+	* stub-objc.c: Moved to...
+	* stub-objc.cc: ...here.
+
+2022-01-15  Martin Sebor  <msebor@redhat.com>
+
+	PR c/63272
+	* c.opt (-Wdangling-pointer): New option.
+
+2022-01-15  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/80532
+	* c.opt (-Wuse-after-free): New options.
+
+2022-01-14  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-attribs.c (c_common_attribute_table): Add "tainted_args".
+	(handle_tainted_args_attribute): New.
+
+2022-01-13  Anthony Sharp  <anthonysharp15@gmail.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	PR c++/70417
+	* c.opt: Added -Wmissing-template-keyword.
+
+2022-01-13  Richard Biener  <rguenther@suse.de>
+
+	PR c/104002
+	* c-common.c (c_common_mark_addressable_vec): Handle TARGET_EXPR.
+
+2022-01-12  Martin Liska  <mliska@suse.cz>
+
+	PR target/103804
+	* c-attribs.c (handle_optimize_attribute): Do not call
+	cl_optimization_compare if we seen an error.
+
+2022-01-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/101537
+	PR c/103881
+	* c-warn.c (conversion_warning): Handle BIT_AND_EXPR, BIT_IOR_EXPR
+	and BIT_XOR_EXPR.
+
+2022-01-10  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/101530
+	* c-common.c (c_build_shufflevector): Wrap the BIT_FIELD_REF
+	in a TARGET_EXPR to force a temporary.
+
+2022-01-06  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/103758
+	* c-pragma.c (handle_pragma_scalar_storage_order): Use %< %> in
+	diagnostic messages.
+	(handle_pragma_diagnostic): Likewise.
+
 2022-01-03  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/103758

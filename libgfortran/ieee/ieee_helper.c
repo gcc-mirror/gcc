@@ -25,6 +25,14 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #include "libgfortran.h"
 
+
+/* Check support for issignaling macro.  If not, we include our own
+   fallback implementation.  */
+#ifndef issignaling
+# include "issignaling_fallback.h"
+#endif
+
+
 /* Prototypes.  */
 
 extern int ieee_class_helper_4 (GFC_REAL_4 *);
@@ -86,8 +94,10 @@ enum {
  \
     if (res == IEEE_QUIET_NAN) \
     { \
-      /* TODO: Handle signaling NaNs  */ \
-      return res; \
+      if (issignaling (*value)) \
+	return IEEE_SIGNALING_NAN; \
+      else \
+	return IEEE_QUIET_NAN; \
     } \
  \
     return res; \
@@ -102,6 +112,80 @@ CLASSMACRO(10)
 
 #ifdef HAVE_GFC_REAL_16
 CLASSMACRO(16)
+#endif
+
+
+extern GFC_REAL_4 ieee_value_helper_4 (int);
+internal_proto(ieee_value_helper_4);
+
+extern GFC_REAL_8 ieee_value_helper_8 (int);
+internal_proto(ieee_value_helper_8);
+
+#ifdef HAVE_GFC_REAL_10
+extern GFC_REAL_10 ieee_value_helper_10 (int);
+internal_proto(ieee_value_helper_10);
+#endif
+
+#ifdef HAVE_GFC_REAL_16
+extern GFC_REAL_16 ieee_value_helper_16 (int);
+internal_proto(ieee_value_helper_16);
+#endif
+
+
+#define VALUEMACRO(TYPE, SUFFIX) \
+  GFC_REAL_ ## TYPE ieee_value_helper_ ## TYPE (int type) \
+  { \
+    switch (type) \
+    { \
+      case IEEE_SIGNALING_NAN: \
+	return __builtin_nans ## SUFFIX (""); \
+   \
+      case IEEE_QUIET_NAN: \
+	return __builtin_nan ## SUFFIX (""); \
+   \
+      case IEEE_NEGATIVE_INF: \
+	return - __builtin_inf ## SUFFIX (); \
+   \
+      case IEEE_NEGATIVE_NORMAL: \
+	return -42; \
+   \
+      case IEEE_NEGATIVE_DENORMAL: \
+	return -(GFC_REAL_ ## TYPE ## _TINY) / 2; \
+   \
+      case IEEE_NEGATIVE_ZERO: \
+	return -(GFC_REAL_ ## TYPE) 0; \
+   \
+      case IEEE_POSITIVE_ZERO: \
+	return 0; \
+   \
+      case IEEE_POSITIVE_DENORMAL: \
+	return (GFC_REAL_ ## TYPE ## _TINY) / 2; \
+   \
+      case IEEE_POSITIVE_NORMAL: \
+	return 42; \
+   \
+      case IEEE_POSITIVE_INF: \
+	return __builtin_inf ## SUFFIX (); \
+   \
+      default: \
+	return 0; \
+    } \
+  }
+
+
+VALUEMACRO(4, f)
+VALUEMACRO(8, )
+
+#ifdef HAVE_GFC_REAL_10
+VALUEMACRO(10, l)
+#endif
+
+#ifdef HAVE_GFC_REAL_16
+# ifdef GFC_REAL_16_IS_FLOAT128
+VALUEMACRO(16, f128)
+# else
+VALUEMACRO(16, l)
+# endif
 #endif
 
 

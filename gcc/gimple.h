@@ -405,7 +405,7 @@ struct GTY((tag("GSS_BIND")))
      which is analogous to TREE_BLOCK (i.e., the lexical block holding
      this statement).  This field is the equivalent of BIND_EXPR_BLOCK
      in tree land (i.e., the lexical scope defined by this bind).  See
-     gimple-low.c.  */
+     gimple-low.cc.  */
   tree block;
 
   /* [ WORD 9 ]  */
@@ -1611,7 +1611,6 @@ bool gimple_could_trap_p (const gimple *);
 bool gimple_assign_rhs_could_trap_p (gimple *);
 extern void dump_gimple_statistics (void);
 unsigned get_gimple_rhs_num_ops (enum tree_code);
-extern tree canonicalize_cond_expr_cond (tree);
 gcall *gimple_call_copy_skip_args (gcall *, bitmap);
 extern bool gimple_compare_field_offset (tree, tree);
 extern tree gimple_unsigned_type (tree);
@@ -2937,6 +2936,15 @@ gimple_clobber_p (const gimple *s)
 {
   return gimple_assign_single_p (s)
          && TREE_CLOBBER_P (gimple_assign_rhs1 (s));
+}
+
+/* Return true if S is a clobber statement.  */
+
+static inline bool
+gimple_clobber_p (const gimple *s, enum clobber_kind kind)
+{
+  return gimple_clobber_p (s)
+	 && CLOBBER_KIND (gimple_assign_rhs1 (s)) == kind;
 }
 
 /* Return true if GS is a GIMPLE_CALL.  */
@@ -6748,7 +6756,7 @@ is_gimple_resx (const gimple *gs)
 
 
 /* Enum and arrays used for allocation stats.  Keep in sync with
-   gimple.c:gimple_alloc_kind_names.  */
+   gimple.cc:gimple_alloc_kind_names.  */
 enum gimple_alloc_kind
 {
   gimple_alloc_kind_assign,	/* Assignments.  */

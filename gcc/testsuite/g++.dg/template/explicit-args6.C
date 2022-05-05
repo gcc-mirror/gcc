@@ -20,6 +20,8 @@ constexpr unsigned
 frob()
 {
   static_assert(N == 1, "user-friendly diagnostic"); // { dg-error "user-friendly" }
+  // dg-message { "-1 == 1" "" { target *-*-* } .-1 }
+
   // narrowing check, reject negative values
   return unsigned{N};		// { dg-prune-output "narrowing" }
 } // { dg-prune-output "flows off the end" }

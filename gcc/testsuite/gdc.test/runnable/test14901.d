@@ -1,7 +1,7 @@
 // REQUIRED_ARGS:
 // PERMUTE_ARGS: -unittest
 // EXTRA_SOURCES: imports/test14901a.d imports/test14901b.d imports/test14901c.d imports/test14901d.d
-// COMPILE_SEPARATELY
+// COMPILE_SEPARATELY:
 
 module test14901;
 

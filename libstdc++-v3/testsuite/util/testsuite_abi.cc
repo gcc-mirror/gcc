@@ -213,6 +213,7 @@ check_version(symbol& test, bool added)
       known_versions.push_back("GLIBCXX_3.4.30");
       known_versions.push_back("GLIBCXX_LDBL_3.4.29");
       known_versions.push_back("GLIBCXX_IEEE128_3.4.29");
+      known_versions.push_back("GLIBCXX_IEEE128_3.4.30");
       known_versions.push_back("CXXABI_1.3");
       known_versions.push_back("CXXABI_LDBL_1.3");
       known_versions.push_back("CXXABI_1.3.1");
@@ -247,11 +248,8 @@ check_version(symbol& test, bool added)
 
       // Check that added symbols are added in the latest pre-release version.
       bool latestp = (test.version_name == "GLIBCXX_3.4.30"
-	  // XXX remove next 3 lines when baselines have been regenerated
-	  // to include {IEEE128,LDBL} symbols:
-		     || test.version_name == "GLIBCXX_LDBL_3.4.29"
-		     || test.version_name == "GLIBCXX_IEEE128_3.4.29"
-		     || test.version_name == "CXXABI_IEEE128_1.3.13"
+	  // XXX remove next line when baselines have been regenerated.
+		     || test.version_name == "GLIBCXX_IEEE128_3.4.30"
 		     || test.version_name == "CXXABI_1.3.13"
 		     || test.version_name == "CXXABI_FLOAT128"
 		     || test.version_name == "CXXABI_TM_1");
@@ -494,6 +492,19 @@ compare_symbols(const char* baseline_file, const char* test_file,
 
       // Mark TLS as undesignated, remove from added.
       if (stest.type == symbol::tls)
+	{
+	  stest.status = symbol::undesignated;
+	  if (!check_version(stest, false))
+	    incompatible.push_back(symbol_pair(stest, stest));
+	  else
+	    undesignated.push_back(stest);
+	}
+      // See PR libstdc++/103407 -  abi_check FAILs on Solaris
+      else if (stest.type == symbol::function
+		 && stest.name.compare(0, 23, "_ZSt10from_charsPKcS0_R") == 0
+		 && stest.name.find_first_of("def", 23) == 23
+		 && (stest.version_name == "GLIBCXX_3.4.29"
+		       || stest.version_name == "GLIBCXX_3.4.30"))
 	{
 	  stest.status = symbol::undesignated;
 	  if (!check_version(stest, false))

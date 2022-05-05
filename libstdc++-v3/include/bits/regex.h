@@ -796,7 +796,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 	__detail::__regex_algo_impl(_Bp, _Bp, match_results<_Bp, _Ap>&,
 				    const basic_regex<_Cp, _Rp>&,
 				    regex_constants::match_flag_type,
-				    _RegexExecutorPolicy, bool);
+				    __detail::_RegexExecutorPolicy, bool);
 
       template<typename, typename, typename, bool>
 	friend class __detail::_Executor;
@@ -2067,7 +2067,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 	__detail::__regex_algo_impl(_Bp, _Bp, match_results<_Bp, _Ap>&,
 				    const basic_regex<_Cp, _Rp>&,
 				    regex_constants::match_flag_type,
-				    _RegexExecutorPolicy, bool);
+				    __detail::_RegexExecutorPolicy, bool);
 
       // Reset contents to __size unmatched sub_match objects
       // (plus additional objects for prefix, suffix and unmatched sub).

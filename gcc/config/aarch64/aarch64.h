@@ -278,7 +278,8 @@ extern unsigned aarch64_architecture_version;
 #define AARCH64_FL_FOR_ARCH8_R     \
   (AARCH64_FL_FOR_ARCH8_4 | AARCH64_FL_V8_R)
 #define AARCH64_FL_FOR_ARCH9       \
-  (AARCH64_FL_FOR_ARCH8_5 | AARCH64_FL_SVE | AARCH64_FL_SVE2 | AARCH64_FL_V9)
+  (AARCH64_FL_FOR_ARCH8_5 | AARCH64_FL_SVE | AARCH64_FL_SVE2 | AARCH64_FL_V9 \
+   | AARCH64_FL_F16)
 
 /* Macros to test ISA flags.  */
 
@@ -636,7 +637,7 @@ extern unsigned aarch64_architecture_version;
 #define DBX_REGISTER_NUMBER(REGNO)	aarch64_dbx_register_number (REGNO)
 /* Provide a definition of DWARF_FRAME_REGNUM here so that fallback unwinders
    can use DWARF_ALT_FRAME_RETURN_COLUMN defined below.  This is just the same
-   as the default definition in dwarf2out.c.  */
+   as the default definition in dwarf2out.cc.  */
 #undef DWARF_FRAME_REGNUM
 #define DWARF_FRAME_REGNUM(REGNO)	DBX_REGISTER_NUMBER (REGNO)
 
@@ -812,10 +813,16 @@ enum target_cpus
   TARGET_CPU_generic
 };
 
+/* Define how many bits are used to represent the CPU in TARGET_CPU_DEFAULT.
+   This needs to be big enough to fit the value of TARGET_CPU_generic.
+   All bits after this are used to represent the AARCH64_CPU_DEFAULT_FLAGS.  */
+#define TARGET_CPU_NBITS 8
+#define TARGET_CPU_MASK ((1 << TARGET_CPU_NBITS) - 1)
+
 /* If there is no CPU defined at configure, use generic as default.  */
 #ifndef TARGET_CPU_DEFAULT
 #define TARGET_CPU_DEFAULT \
-  (TARGET_CPU_generic | (AARCH64_CPU_DEFAULT_FLAGS << 6))
+  (TARGET_CPU_generic | (AARCH64_CPU_DEFAULT_FLAGS << TARGET_CPU_NBITS))
 #endif
 
 /* If inserting NOP before a mult-accumulate insn remember to adjust the
@@ -922,9 +929,21 @@ struct GTY (()) aarch64_frame
 	 Indicated by CALLEE_ADJUST == 0 && EMIT_FRAME_CHAIN.
 
      These fields indicate which registers we've decided to handle using
-     (1) or (2), or INVALID_REGNUM if none.  */
-  unsigned wb_candidate1;
-  unsigned wb_candidate2;
+     (1) or (2), or INVALID_REGNUM if none.
+
+     In some cases we don't always need to pop all registers in the push
+     candidates, pop candidates record which registers need to be popped
+     eventually.  The initial value of a pop candidate is copied from its
+     corresponding push candidate.
+
+     Currently, different pop candidates are only used for shadow call
+     stack.  When "-fsanitize=shadow-call-stack" is specified, we replace
+     x30 in the pop candidate with INVALID_REGNUM to ensure that x30 is
+     not popped twice.  */
+  unsigned wb_push_candidate1;
+  unsigned wb_push_candidate2;
+  unsigned wb_pop_candidate1;
+  unsigned wb_pop_candidate2;
 
   /* Big-endian SVE frames need a spare predicate register in order
      to save vector registers in the correct layout for unwinding.
@@ -932,6 +951,9 @@ struct GTY (()) aarch64_frame
   unsigned spare_pred_reg;
 
   bool laid_out;
+
+  /* True if shadow call stack should be enabled for the current function.  */
+  bool is_scs_enabled;
 };
 
 typedef struct GTY (()) machine_function
@@ -1293,12 +1315,12 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 #define ASM_OUTPUT_POOL_EPILOGUE  aarch64_asm_output_pool_epilogue
 
 /* This type is the user-visible __fp16, and a pointer to that type.  We
-   need it in many places in the backend.  Defined in aarch64-builtins.c.  */
+   need it in many places in the backend.  Defined in aarch64-builtins.cc.  */
 extern GTY(()) tree aarch64_fp16_type_node;
 extern GTY(()) tree aarch64_fp16_ptr_type_node;
 
 /* This type is the user-visible __bf16, and a pointer to that type.  Defined
-   in aarch64-builtins.c.  */
+   in aarch64-builtins.cc.  */
 extern GTY(()) tree aarch64_bf16_type_node;
 extern GTY(()) tree aarch64_bf16_ptr_type_node;
 

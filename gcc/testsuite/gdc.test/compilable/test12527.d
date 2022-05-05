@@ -5,4 +5,3 @@
     static assert(Fun.stringof == "void function() @safe");
     alias Del = void delegate() @safe;
     static assert(Del.stringof == "void delegate() @safe");
-

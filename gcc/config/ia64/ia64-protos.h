@@ -20,7 +20,7 @@ along with GCC; see the file COPYING3.  If not see
 /* Shared between the driver and cc1.  */
 extern enum unwind_info_type ia64_except_unwind_info (struct gcc_options *);
 
-/* Functions defined in ia64.c */
+/* Functions defined in ia64.cc */
 
 extern int bundling_p;
 #ifdef RTX_CODE

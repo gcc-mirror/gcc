@@ -570,7 +570,7 @@ dependencies = { module=all-sim; on=all-intl; };
 dependencies = { module=all-sim; on=all-libiberty; };
 dependencies = { module=all-sim; on=all-bfd; };
 dependencies = { module=all-sim; on=all-opcodes; };
-dependencies = { module=all-sim; on=all-readline; };
+dependencies = { module=configure-sim; on=all-readline; };
 
 // Other host modules.
 dependencies = { module=all-fastjar; on=all-zlib; };
@@ -620,7 +620,6 @@ dependencies = { module=configure-target-fastjar; on=configure-target-zlib; };
 dependencies = { module=all-target-fastjar; on=all-target-zlib; };
 dependencies = { module=configure-target-libgo; on=configure-target-libffi; };
 dependencies = { module=configure-target-libgo; on=all-target-libstdc++-v3; };
-dependencies = { module=configure-target-libffi; on=all-target-libstdc++-v3; };
 dependencies = { module=all-target-libgo; on=all-target-libbacktrace; };
 dependencies = { module=all-target-libgo; on=all-target-libffi; };
 dependencies = { module=all-target-libgo; on=all-target-libatomic; };

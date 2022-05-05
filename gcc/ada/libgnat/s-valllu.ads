@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -32,26 +32,40 @@
 --  This package contains routines for scanning modular Long_Long_Unsigned
 --  values for use in Text_IO.Modular_IO, and the Value attribute.
 
+--  Preconditions in this unit are meant for analysis only, not for run-time
+--  checking, so that the expected exceptions are raised. This is enforced by
+--  setting the corresponding assertion policy to Ignore. Postconditions and
+--  contract cases should not be executed at runtime as well, in order not to
+--  slow down the execution of these functions.
+
+pragma Assertion_Policy (Pre                => Ignore,
+                         Post               => Ignore,
+                         Contract_Cases     => Ignore,
+                         Ghost              => Ignore,
+                         Subprogram_Variant => Ignore);
+
 with System.Unsigned_Types;
 with System.Value_U;
 
-package System.Val_LLU is
+package System.Val_LLU with SPARK_Mode is
    pragma Preelaborate;
 
    subtype Long_Long_Unsigned is Unsigned_Types.Long_Long_Unsigned;
 
    package Impl is new Value_U (Long_Long_Unsigned);
 
-   function Scan_Raw_Long_Long_Unsigned
+   procedure Scan_Raw_Long_Long_Unsigned
      (Str : String;
       Ptr : not null access Integer;
-      Max : Integer) return Long_Long_Unsigned
+      Max : Integer;
+      Res : out Long_Long_Unsigned)
      renames Impl.Scan_Raw_Unsigned;
 
-   function Scan_Long_Long_Unsigned
+   procedure Scan_Long_Long_Unsigned
      (Str : String;
       Ptr : not null access Integer;
-      Max : Integer) return Long_Long_Unsigned
+      Max : Integer;
+      Res : out Long_Long_Unsigned)
      renames Impl.Scan_Unsigned;
 
    function Value_Long_Long_Unsigned

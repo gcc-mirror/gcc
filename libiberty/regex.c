@@ -30,6 +30,10 @@
   #pragma alloca
 #endif
 
+#if __GNUC__ >= 12
+#  pragma GCC diagnostic ignored "-Wuse-after-free"
+#endif
+
 #undef	_GNU_SOURCE
 #define _GNU_SOURCE
 

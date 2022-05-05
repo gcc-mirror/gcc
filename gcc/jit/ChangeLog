@@ -1,3 +1,292 @@
+2022-04-14  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* jit-playback.cc (new_bitcast): Cast values returned by tree_to_uhwi
+	to 'long' to match the print format.
+
+2022-04-12  Antoni Boucher  <bouanto@zoho.com>
+
+	PR jit/104293
+	* docs/_build/texinfo/libgccjit.texi: Regenerate.
+	* docs/topics/compatibility.rst (LIBGCCJIT_ABI_24): New ABI tag.
+	* docs/topics/expressions.rst: Add documentation for the
+	functions gcc_jit_lvalue_set_alignment and
+	gcc_jit_lvalue_get_alignment.
+	* jit-playback.h: New function (set_alignment).
+	* jit-recording.cc: New function (set_alignment).
+	* jit-recording.h: New functions (set_alignment, get_alignment)
+	and new field (m_alignment).
+	* libgccjit.cc: New functions (gcc_jit_lvalue_get_alignment,
+	gcc_jit_lvalue_set_alignment)
+	* libgccjit.h: New functions (gcc_jit_lvalue_get_alignment,
+	gcc_jit_lvalue_set_alignment)
+	* libgccjit.map (LIBGCCJIT_ABI_24): New ABI tag.
+
+2022-04-12  Antoni Boucher  <bouanto@zoho.com>
+
+	PR jit/104073
+	* docs/_build/texinfo/libgccjit.texi: Regenerate.
+	* docs/topics/compatibility.rst (LIBGCCJIT_ABI_23): New ABI tag.
+	* docs/topics/contexts.rst: Add documentation for the new
+	function gcc_jit_context_set_bool_print_errors_to_stderr.
+	* jit-common.h: New enum value
+	(INNER_BOOL_OPTION_PRINT_ERRORS_TO_STDERR).
+	* jit-recording.cc: Handle the new option
+	INNER_BOOL_OPTION_PRINT_ERRORS_TO_STDERR.
+	* libgccjit.cc: New function
+	(gcc_jit_context_set_bool_print_errors_to_stderr).
+	* libgccjit.h: New function
+	(gcc_jit_context_set_bool_print_errors_to_stderr).
+	* libgccjit.map (LIBGCCJIT_ABI_23): New ABI tag.
+
+2022-04-12  Antoni Boucher  <bouanto@zoho.com>
+
+	PR jit/104072
+	* docs/_build/texinfo/libgccjit.texi: Regenerate.
+	* docs/topics/compatibility.rst (LIBGCCJIT_ABI_22): New ABI tag.
+	* docs/topics/expressions.rst: Add documentation for the
+	function gcc_jit_lvalue_set_register_name.
+	* jit-playback.h: New function (set_register_name).
+	* jit-recording.cc: New function (set_register_name) and add
+	support for register variables.
+	* jit-recording.h: New field (m_reg_name) and new function
+	(set_register_name).
+	* libgccjit.cc: New function (gcc_jit_lvalue_set_register_name).
+	* libgccjit.h: New function (gcc_jit_lvalue_set_register_name).
+	* libgccjit.map (LIBGCCJIT_ABI_22): New ABI tag.
+
+2022-04-12  Antoni Boucher  <bouanto@zoho.com>
+
+	PR jit/104071
+	* docs/_build/texinfo/libgccjit.texi: Regenerate.
+	* docs/topics/compatibility.rst (LIBGCCJIT_ABI_21): New ABI tag.
+	* docs/topics/expressions.rst: Add documentation for the
+	function gcc_jit_context_new_bitcast.
+	* jit-playback.cc: New function (new_bitcast).
+	* jit-playback.h: New function (new_bitcast).
+	* jit-recording.cc: New functions (new_bitcast,
+	bitcast::replay_into, bitcast::visit_children,
+	bitcast::make_debug_string, bitcast::write_reproducer).
+	* jit-recording.h: New class (bitcast) and new function
+	(new_bitcast, bitcast::replay_into, bitcast::visit_children,
+	bitcast::make_debug_string, bitcast::write_reproducer,
+	bitcast::get_precedence).
+	* libgccjit.cc: New function (gcc_jit_context_new_bitcast)
+	* libgccjit.h: New function (gcc_jit_context_new_bitcast)
+	* libgccjit.map (LIBGCCJIT_ABI_21): New ABI tag.
+
+2022-04-12  Antoni Boucher  <bouanto@zoho.com>
+
+	PR target/95325
+	* docs/_build/texinfo/libgccjit.texi: Regenerate
+	* docs/topics/compatibility.rst (LIBGCCJIT_ABI_20): New ABI tag.
+	* docs/topics/types.rst: Add documentation for the new types
+	GCC_JIT_TYPE_UINT8_T, GCC_JIT_TYPE_UINT16_T,
+	GCC_JIT_TYPE_UINT32_T, GCC_JIT_TYPE_UINT64_T,
+	GCC_JIT_TYPE_UINT128_T, GCC_JIT_TYPE_INT8_T, GCC_JIT_TYPE_INT16_T,
+	GCC_JIT_TYPE_INT32_T, GCC_JIT_TYPE_INT64_T, GCC_JIT_TYPE_INT128_T and
+	new functions (gcc_jit_compatible_types, gcc_jit_type_get_size).
+	* jit-builtins.cc: Add support for BT_UINT128.
+	* jit-common.h: Update the value of NUM_GCC_JIT_TYPES.
+	* jit-playback.cc: Add support for the sized integer types.
+	* jit-recording.cc: Add support for the sized integer types.
+	* jit-recording.h: Add support for comparing integer types
+	and new function (is_signed).
+	* libgccjit.cc (gcc_jit_compatible_types): New.
+	(gcc_jit_type_get_size) New.
+	* libgccjit.h: New enum variants for gcc_jit_types
+	(GCC_JIT_TYPE_UINT8_T, GCC_JIT_TYPE_UINT16_T,
+	GCC_JIT_TYPE_UINT32_T, GCC_JIT_TYPE_UINT64_T,
+	GCC_JIT_TYPE_UINT128_T, GCC_JIT_TYPE_INT8_T,
+	GCC_JIT_TYPE_INT16_T, GCC_JIT_TYPE_INT32_T,
+	GCC_JIT_TYPE_INT64_T, GCC_JIT_TYPE_INT128_T) and new functions
+	(gcc_jit_compatible_types, gcc_jit_type_get_size).
+	* libgccjit.map (LIBGCCJIT_ABI_20): New ABI tag.
+
+2022-04-06  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/102824
+	* docs/_build/texinfo/factorial.png: Move to...
+	* docs/_build/texinfo/libgccjit-figures/factorial.png: ...here.
+	* docs/_build/texinfo/factorial1.png: Move to...
+	* docs/_build/texinfo/libgccjit-figures/factorial1.png: ...here.
+	* docs/_build/texinfo/sum-of-squares.png: Move to...
+	* docs/_build/texinfo/libgccjit-figures/sum-of-squares.png: ...here.
+	* docs/_build/texinfo/sum-of-squares1.png: Move to...
+	* docs/_build/texinfo/libgccjit-figures/sum-of-squares1.png: ...here.
+
+2022-04-01  David Malcolm  <dmalcolm@redhat.com>
+
+	* docs/topics/expressions.rst: Fix formatting.
+	* docs/topics/types.rst: Likewise.
+	* docs/_build/texinfo/libgccjit.texi: Regenerate
+
+2022-04-01  Petter Tomner  <tomner@kth.se>
+
+	* docs/topics/compatibility.rst: Add 19 tag
+	* docs/topics/compilation.rst: Linking
+	* docs/topics/contexts.rst: Linking example
+	* docs/topics/expressions.rst: Fix formatting and dropped 's'
+
+2022-03-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* libgccjit.h: Fix up duplicated word issue in a comment.
+
+2022-01-17  Martin Liska  <mliska@suse.cz>
+
+	* config-lang.in: Rename .c names to .cc.
+	* docs/_build/texinfo/libgccjit.texi: Likewise.
+	* docs/internals/index.rst: Likewise.
+	* jit-builtins.cc (builtins_manager::make_builtin_function): Likewise.
+	* jit-playback.cc (fold_const_var): Likewise.
+	(playback::context::~context): Likewise.
+	(new_field): Likewise.
+	(new_bitfield): Likewise.
+	(new_compound_type): Likewise.
+	(playback::compound_type::set_fields): Likewise.
+	(global_set_init_rvalue): Likewise.
+	(load_blob_in_ctor): Likewise.
+	(new_global_initialized): Likewise.
+	(double>): Likewise.
+	(new_string_literal): Likewise.
+	(as_truth_value): Likewise.
+	(build_call): Likewise.
+	(playback::context::build_cast): Likewise.
+	(new_array_access): Likewise.
+	(new_field_access): Likewise.
+	(dereference): Likewise.
+	(postprocess): Likewise.
+	(add_jump): Likewise.
+	(add_switch): Likewise.
+	(build_goto_operands): Likewise.
+	(playback::context::read_dump_file): Likewise.
+	(init_types): Likewise.
+	* jit-recording.cc (recording::context::get_int_type): Likewise.
+	* jit-recording.h: Likewise.
+	* libgccjit.cc (compatible_types): Likewise.
+	(gcc_jit_context_acquire): Likewise.
+	(gcc_jit_context_release): Likewise.
+	(gcc_jit_context_new_child_context): Likewise.
+	(gcc_jit_type_as_object): Likewise.
+	(gcc_jit_context_get_type): Likewise.
+	(gcc_jit_context_get_int_type): Likewise.
+	(gcc_jit_type_get_pointer): Likewise.
+	(gcc_jit_type_get_const): Likewise.
+	(gcc_jit_type_get_volatile): Likewise.
+	(gcc_jit_type_dyncast_array): Likewise.
+	(gcc_jit_type_is_bool): Likewise.
+	(gcc_jit_type_is_pointer): Likewise.
+	(gcc_jit_type_is_integral): Likewise.
+	(gcc_jit_type_dyncast_vector): Likewise.
+	(gcc_jit_type_is_struct): Likewise.
+	(gcc_jit_vector_type_get_num_units): Likewise.
+	(gcc_jit_vector_type_get_element_type): Likewise.
+	(gcc_jit_type_unqualified): Likewise.
+	(gcc_jit_type_dyncast_function_ptr_type): Likewise.
+	(gcc_jit_function_type_get_return_type): Likewise.
+	(gcc_jit_function_type_get_param_count): Likewise.
+	(gcc_jit_function_type_get_param_type): Likewise.
+	(gcc_jit_context_new_array_type): Likewise.
+	(gcc_jit_context_new_field): Likewise.
+	(gcc_jit_field_as_object): Likewise.
+	(gcc_jit_context_new_struct_type): Likewise.
+	(gcc_jit_struct_as_type): Likewise.
+	(gcc_jit_struct_set_fields): Likewise.
+	(gcc_jit_struct_get_field_count): Likewise.
+	(gcc_jit_context_new_union_type): Likewise.
+	(gcc_jit_context_new_function_ptr_type): Likewise.
+	(gcc_jit_param_as_rvalue): Likewise.
+	(gcc_jit_context_new_function): Likewise.
+	(gcc_jit_function_get_return_type): Likewise.
+	(gcc_jit_function_dump_to_dot): Likewise.
+	(gcc_jit_block_get_function): Likewise.
+	(gcc_jit_global_set_initializer_rvalue): Likewise.
+	(gcc_jit_rvalue_get_type): Likewise.
+	(gcc_jit_context_new_rvalue_from_int): Likewise.
+	(gcc_jit_context_one): Likewise.
+	(gcc_jit_context_new_rvalue_from_double): Likewise.
+	(gcc_jit_context_null): Likewise.
+	(gcc_jit_context_new_string_literal): Likewise.
+	(valid_binary_op_p): Likewise.
+	(gcc_jit_context_new_binary_op): Likewise.
+	(gcc_jit_context_new_comparison): Likewise.
+	(gcc_jit_context_new_call): Likewise.
+	(is_valid_cast): Likewise.
+	(gcc_jit_context_new_cast): Likewise.
+	(gcc_jit_object_get_context): Likewise.
+	(gcc_jit_object_get_debug_string): Likewise.
+	(gcc_jit_lvalue_access_field): Likewise.
+	(gcc_jit_rvalue_access_field): Likewise.
+	(gcc_jit_rvalue_dereference_field): Likewise.
+	(gcc_jit_rvalue_dereference): Likewise.
+	(gcc_jit_lvalue_get_address): Likewise.
+	(gcc_jit_lvalue_set_tls_model): Likewise.
+	(gcc_jit_lvalue_set_link_section): Likewise.
+	(gcc_jit_function_new_local): Likewise.
+	(gcc_jit_block_add_eval): Likewise.
+	(gcc_jit_block_add_assignment): Likewise.
+	(is_bool): Likewise.
+	(gcc_jit_block_end_with_conditional): Likewise.
+	(gcc_jit_block_add_comment): Likewise.
+	(gcc_jit_block_end_with_jump): Likewise.
+	(gcc_jit_block_end_with_return): Likewise.
+	(gcc_jit_block_end_with_void_return): Likewise.
+	(case_range_validator::case_range_validator): Likewise.
+	(case_range_validator::validate): Likewise.
+	(case_range_validator::get_wide_int): Likewise.
+	(gcc_jit_block_end_with_switch): Likewise.
+	(gcc_jit_context_set_str_option): Likewise.
+	(gcc_jit_context_set_int_option): Likewise.
+	(gcc_jit_context_set_bool_option): Likewise.
+	(gcc_jit_context_set_bool_allow_unreachable_blocks): Likewise.
+	(gcc_jit_context_set_bool_use_external_driver): Likewise.
+	(gcc_jit_context_add_command_line_option): Likewise.
+	(gcc_jit_context_add_driver_option): Likewise.
+	(gcc_jit_context_enable_dump): Likewise.
+	(gcc_jit_context_compile): Likewise.
+	(gcc_jit_context_compile_to_file): Likewise.
+	(gcc_jit_context_set_logfile): Likewise.
+	(gcc_jit_context_dump_reproducer_to_file): Likewise.
+	(gcc_jit_context_get_first_error): Likewise.
+	(gcc_jit_context_get_last_error): Likewise.
+	(gcc_jit_result_get_code): Likewise.
+	(gcc_jit_result_get_global): Likewise.
+	(gcc_jit_rvalue_set_bool_require_tail_call): Likewise.
+	(gcc_jit_type_get_aligned): Likewise.
+	(gcc_jit_type_get_vector): Likewise.
+	(gcc_jit_function_get_address): Likewise.
+	(gcc_jit_version_patchlevel): Likewise.
+	(gcc_jit_block_add_extended_asm): Likewise.
+	(gcc_jit_extended_asm_as_object): Likewise.
+	(gcc_jit_extended_asm_set_volatile_flag): Likewise.
+	(gcc_jit_extended_asm_set_inline_flag): Likewise.
+	(gcc_jit_extended_asm_add_output_operand): Likewise.
+	(gcc_jit_extended_asm_add_input_operand): Likewise.
+	(gcc_jit_extended_asm_add_clobber): Likewise.
+	* notes.txt: Likewise.
+
+2022-01-17  Martin Liska  <mliska@suse.cz>
+
+	* dummy-frontend.c: Moved to...
+	* dummy-frontend.cc: ...here.
+	* jit-builtins.c: Moved to...
+	* jit-builtins.cc: ...here.
+	* jit-logging.c: Moved to...
+	* jit-logging.cc: ...here.
+	* jit-playback.c: Moved to...
+	* jit-playback.cc: ...here.
+	* jit-recording.c: Moved to...
+	* jit-recording.cc: ...here.
+	* jit-result.c: Moved to...
+	* jit-result.cc: ...here.
+	* jit-spec.c: Moved to...
+	* jit-spec.cc: ...here.
+	* jit-tempdir.c: Moved to...
+	* jit-tempdir.cc: ...here.
+	* jit-w32.c: Moved to...
+	* jit-w32.cc: ...here.
+	* libgccjit.c: Moved to...
+	* libgccjit.cc: ...here.
+
 2021-12-28  Martin Liska  <mliska@suse.cz>
 
 	* docs/_build/texinfo/libgccjit.texi: Replace http:// with https.

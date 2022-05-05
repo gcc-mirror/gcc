@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -143,6 +143,7 @@ package Restrict is
       No_Standard_Storage_Pools          => True,
       No_Stream_Optimizations            => True,
       No_Streams                         => True,
+      No_Tagged_Type_Registration        => True,
       No_Task_Attributes_Package         => True,
       No_Task_Termination                => True,
       No_Tasking                         => True,

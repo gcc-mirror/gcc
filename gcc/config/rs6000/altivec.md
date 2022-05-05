@@ -383,6 +383,17 @@
     }
 })
 
+(define_insn_and_split "sldoi_to_mov<mode>"
+  [(set (match_operand:VM 0 "altivec_register_operand")
+	(unspec:VM [(match_operand:VM 1 "easy_vector_constant")
+	            (match_dup 1)
+		    (match_operand:QI 2 "u5bit_cint_operand")]
+		    UNSPEC_VSLDOI))]
+  "VECTOR_UNIT_ALTIVEC_OR_VSX_P (<MODE>mode) && can_create_pseudo_p ()"
+  "#"
+  "&& 1"
+  [(set (match_dup 0) (match_dup 1))])
+
 (define_insn "get_vrsave_internal"
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(unspec:SI [(reg:SI VRSAVE_REGNO)] UNSPEC_GET_VRSAVE))]
@@ -3947,31 +3958,6 @@
   emit_insn (gen_xorv4sf3 (operands[0],
 			   gen_lowpart (V4SFmode, neg0), operands[1])); 
     
-  DONE;
-})
-
-;; Vector reverse elements
-(define_expand "altivec_vreveti2"
-  [(set (match_operand:TI 0 "register_operand" "=v")
-	(unspec:TI [(match_operand:TI 1 "register_operand" "v")]
-		      UNSPEC_VREVEV))]
-  "TARGET_ALTIVEC"
-{
-  int i, j, size, num_elements;
-  rtvec v = rtvec_alloc (16);
-  rtx mask = gen_reg_rtx (V16QImode);
-
-  size = GET_MODE_UNIT_SIZE (TImode);
-  num_elements = GET_MODE_NUNITS (TImode);
-
-  for (j = 0; j < num_elements; j++)
-    for (i = 0; i < size; i++)
-      RTVEC_ELT (v, i + j * size)
-	= GEN_INT (i + (num_elements - 1 - j) * size);
-
-  emit_insn (gen_vec_initv16qiqi (mask, gen_rtx_PARALLEL (V16QImode, v)));
-  emit_insn (gen_altivec_vperm_ti (operands[0], operands[1],
-	     operands[1], mask));
   DONE;
 })
 

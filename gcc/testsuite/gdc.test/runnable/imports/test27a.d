@@ -15,4 +15,3 @@ public:
         Variant b = Variant(v);
     }
 }
-

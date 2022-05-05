@@ -592,7 +592,7 @@ PACKAGE_STRING=
 PACKAGE_BUGREPORT=
 PACKAGE_URL=
 
-ac_unique_file="tree.c"
+ac_unique_file="tree.cc"
 # Factoring default headers for most tests.
 ac_includes_default="\
 #include <stdio.h>
@@ -5352,7 +5352,26 @@ else
   GDC="$ac_cv_prog_GDC"
 fi
 
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether the D compiler works" >&5
+$as_echo_n "checking whether the D compiler works... " >&6; }
+if ${acx_cv_d_compiler_works+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  cat >conftest.d <<EOF
+module conftest; int main() { return 0; }
+EOF
+acx_cv_d_compiler_works=no
 if test "x$GDC" != xno; then
+  errors=`(${GDC} -I"$srcdir"/d -c conftest.d) 2>&1 || echo failure`
+  if test x"$errors" = x && test -f conftest.$ac_objext; then
+    acx_cv_d_compiler_works=yes
+  fi
+  rm -f conftest.*
+fi
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $acx_cv_d_compiler_works" >&5
+$as_echo "$acx_cv_d_compiler_works" >&6; }
+if test "x$GDC" != xno && test x$acx_cv_d_compiler_works != xno; then
   have_gdc=yes
 else
   have_gdc=no
@@ -5422,6 +5441,9 @@ case "${target}" in
 	# On IA64 HP-UX, PIC is the default but the pic flag
 	# sets the default TLS model and affects inlining.
 	PICFLAG_FOR_TARGET=-fPIC
+	;;
+    loongarch*-*-*)
+	PICFLAG_FOR_TARGET=-fpic
 	;;
     mips-sgi-irix6*)
 	# PIC is the default.
@@ -6302,6 +6324,85 @@ rm -rf conftest*
 
 fi
 
+# The cast to long int works around a bug in the HP C Compiler
+# version HP92453-01 B.11.11.23709.GP, which incorrectly rejects
+# declarations like `int a3[[(sizeof (unsigned char)) >= 0]];'.
+# This bug is HP SR number 8606223364.
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking size of ino_t" >&5
+$as_echo_n "checking size of ino_t... " >&6; }
+if ${ac_cv_sizeof_ino_t+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if ac_fn_cxx_compute_int "$LINENO" "(long int) (sizeof (ino_t))" "ac_cv_sizeof_ino_t"        "$ac_includes_default"; then :
+
+else
+  if test "$ac_cv_type_ino_t" = yes; then
+     { { $as_echo "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
+$as_echo "$as_me: error: in \`$ac_pwd':" >&2;}
+as_fn_error 77 "cannot compute sizeof (ino_t)
+See \`config.log' for more details" "$LINENO" 5; }
+   else
+     ac_cv_sizeof_ino_t=0
+   fi
+fi
+
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_sizeof_ino_t" >&5
+$as_echo "$ac_cv_sizeof_ino_t" >&6; }
+
+
+
+cat >>confdefs.h <<_ACEOF
+#define SIZEOF_INO_T $ac_cv_sizeof_ino_t
+_ACEOF
+
+
+# The cast to long int works around a bug in the HP C Compiler
+# version HP92453-01 B.11.11.23709.GP, which incorrectly rejects
+# declarations like `int a3[[(sizeof (unsigned char)) >= 0]];'.
+# This bug is HP SR number 8606223364.
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking size of dev_t" >&5
+$as_echo_n "checking size of dev_t... " >&6; }
+if ${ac_cv_sizeof_dev_t+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if ac_fn_cxx_compute_int "$LINENO" "(long int) (sizeof (dev_t))" "ac_cv_sizeof_dev_t"        "$ac_includes_default"; then :
+
+else
+  if test "$ac_cv_type_dev_t" = yes; then
+     { { $as_echo "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
+$as_echo "$as_me: error: in \`$ac_pwd':" >&2;}
+as_fn_error 77 "cannot compute sizeof (dev_t)
+See \`config.log' for more details" "$LINENO" 5; }
+   else
+     ac_cv_sizeof_dev_t=0
+   fi
+fi
+
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_sizeof_dev_t" >&5
+$as_echo "$ac_cv_sizeof_dev_t" >&6; }
+
+
+
+cat >>confdefs.h <<_ACEOF
+#define SIZEOF_DEV_T $ac_cv_sizeof_dev_t
+_ACEOF
+
+
+
+# Select the right stat being able to handle 64bit inodes, if needed.
+if test "$enable_largefile" != no; then
+  case "$host, $build" in
+    *-*-aix*,*|*,*-*-aix*)
+      if test "$ac_cv_sizeof_ino_t" == "4" -a "$ac_cv_sizeof_dev_t" == 4; then
+
+$as_echo "#define HOST_STAT_FOR_64BIT_INODES stat64x" >>confdefs.h
+
+      fi;;
+  esac
+fi
+
 
 # sizeof(char) is 1 by definition.
 # The cast to long int works around a bug in the HP C Compiler
@@ -6991,7 +7092,7 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
 
 loose_warn=
 save_CXXFLAGS="$CXXFLAGS"
-for real_option in -W -Wall -Wno-narrowing -Wwrite-strings -Wcast-qual -Wno-error=format-diag $wf_opt; do
+for real_option in -W -Wall -Wno-narrowing -Wwrite-strings -Wcast-qual $wf_opt; do
   # Do the check with the no- prefix removed since gcc silently
   # accepts any -Wno-* option on purpose
   case $real_option in
@@ -7049,7 +7150,7 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 c_loose_warn=
 save_CFLAGS="$CFLAGS"
-for real_option in -Wstrict-prototypes -Wmissing-prototypes -Wno-error=format-diag; do
+for real_option in -Wstrict-prototypes -Wmissing-prototypes ; do
   # Do the check with the no- prefix removed since gcc silently
   # accepts any -Wno-* option on purpose
   case $real_option in
@@ -7865,6 +7966,9 @@ else
     mips*-*-*)
       enable_fixed_point=yes
       ;;
+    loongarch*-*-*)
+      enable_fixed_point=yes
+      ;;
     *)
       { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: fixed-point is not supported for this target, ignored" >&5
 $as_echo "$as_me: WARNING: fixed-point is not supported for this target, ignored" >&2;}
@@ -7987,8 +8091,16 @@ fi
 if test "${enable_gcov+set}" = set; then :
   enableval=$enable_gcov;
 else
-  enable_gcov=yes
+  case $target in
+       bpf-*-*)
+         enable_gcov=no
+       ;;
+       *)
+         enable_gcov=yes
+       ;;
+     esac
 fi
+
 
 
 
@@ -8297,7 +8409,7 @@ fi
   test -n "$AWK" && break
 done
 
-# We need awk to create options.c and options.h.
+# We need awk to create options.cc and options.h.
 # Bail out if it's missing.
 case ${AWK} in
   "") as_fn_error $? "can't build without awk, bailing out" "$LINENO" 5 ;;
@@ -12025,7 +12137,7 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 
 # On AIX 5.2, <ldfcn.h> conflicts with <fcntl.h>, as both define incompatible
 # FREAD and FWRITE macros.  Fortunately, for GCC's single usage of ldgetname
-# in collect2.c, <fcntl.h> isn't visible, but the configure test below needs
+# in collect2.cc, <fcntl.h> isn't visible, but the configure test below needs
 # to undef these macros to get the correct value for HAVE_DECL_LDGETNAME.
 for ac_func in ldgetname
 do
@@ -12601,7 +12713,7 @@ if test x$md_file = x
 then md_file=$cpu_type/$cpu_type.md; fi
 
 if test x$out_file = x
-then out_file=$cpu_type/$cpu_type.c; fi
+then out_file=$cpu_type/$cpu_type.cc; fi
 
 if test x"$tmake_file" = x
 then tmake_file=$cpu_type/t-$cpu_type
@@ -13253,8 +13365,8 @@ do
 done
 tmake_file="${tmake_file_}${omp_device_property_tmake_file}"
 
-out_object_file=`basename $out_file .c`.o
-common_out_object_file=`basename $common_out_file .c`.o
+out_object_file=`basename $out_file .cc`.o
+common_out_object_file=`basename $common_out_file .cc`.o
 
 tm_file_list="options.h"
 tm_include_list="options.h insn-constants.h"
@@ -19561,7 +19673,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 19564 "configure"
+#line 19676 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -19667,7 +19779,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 19670 "configure"
+#line 19782 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -23138,6 +23250,20 @@ fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ld_is_gold" >&5
 $as_echo "$ld_is_gold" >&6; }
 
+# Check to see if we are using mold instead of ld
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether we are using mold" >&5
+$as_echo_n "checking whether we are using mold... " >&6; }
+ld_is_mold=no
+if test x$gcc_cv_ld != x; then
+  if $gcc_cv_ld --version 2>/dev/null | sed 1q \
+     | grep "mold" > /dev/null; then
+    ld_is_mold=yes
+  fi
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ld_is_mold" >&5
+$as_echo "$ld_is_mold" >&6; }
+
+
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking gold linker with split stack support as non default" >&5
 $as_echo_n "checking gold linker with split stack support as non default... " >&6; }
 # Check to see if default ld is not gold, but gold is
@@ -24019,6 +24145,8 @@ else
 else
   gcc_cv_ld_hidden=yes
   if test x"$ld_is_gold" = xyes; then
+    :
+  elif test x"$ld_is_mold" = xyes; then
     :
   elif echo "$ld_ver" | grep GNU > /dev/null; then
     if test 0"$ld_date" -lt 20020404; then
@@ -25099,6 +25227,8 @@ $as_echo "$gcc_cv_as_comdat_group_group" >&6; }
 fi
 if test x"$ld_is_gold" = xyes; then
   comdat_group=yes
+elif test x"$ld_is_mold" = xyes; then
+  comdat_group=yes
 elif test $in_tree_ld = yes ; then
   comdat_group=no
   if test "$gcc_cv_gld_major_version" -eq 2 -a "$gcc_cv_gld_minor_version" -ge 16 -o "$gcc_cv_gld_major_version" -gt 2 \
@@ -25431,6 +25561,17 @@ foo:	data8	25
 	adds	r22 = @tprel(foo#), r13
 	movl	r24 = @tprel(foo#)'
 	tls_as_opt=--fatal-warnings
+	;;
+  loongarch*-*-*)
+    conftest_s='
+	.section .tdata,"awT",@progbits
+x:	.word 2
+	.text
+	la.tls.gd $a0,x
+	bl __tls_get_addr'
+	tls_first_major=0
+	tls_first_minor=0
+	tls_as_opt='--fatal-warnings'
 	;;
   microblaze*-*-*)
     conftest_s='
@@ -25909,6 +26050,8 @@ if test -f liblto_plugin.la; then
   if echo "$ld_ver" | grep GNU > /dev/null; then
     # Require GNU ld or gold 2.21+ for plugin support by default.
     if test "$ld_vers_major" -eq 2 -a "$ld_vers_minor" -ge 21; then
+      gcc_cv_lto_plugin=2
+    elif test "$ld_is_mold" = yes; then
       gcc_cv_lto_plugin=2
     # Allow -fuse-linker-plugin to enable plugin support in GNU gold 2.20.
     elif test "$ld_is_gold" = yes -a "$ld_vers_major" -eq 2 -a "$ld_vers_minor" -eq 20; then
@@ -28630,7 +28773,7 @@ else
   gcc_cv_as_riscv_march_zifencei=no
   if test x$gcc_cv_as != x; then
     $as_echo '' > conftest.s
-    if { ac_try='$gcc_cv_as $gcc_cv_as_flags -march=rv32i_zifencei -o conftest.o conftest.s >&5'
+    if { ac_try='$gcc_cv_as $gcc_cv_as_flags -march=rv32i_zifencei2p0 -o conftest.o conftest.s >&5'
   { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
   (eval $ac_try) 2>&5
   ac_status=$?
@@ -28653,6 +28796,43 @@ $as_echo "#define HAVE_AS_MARCH_ZIFENCEI 1" >>confdefs.h
 
 fi
 
+    ;;
+  loongarch*-*-*)
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for .dtprelword support" >&5
+$as_echo_n "checking assembler for .dtprelword support... " >&6; }
+if ${gcc_cv_as_loongarch_dtprelword+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  gcc_cv_as_loongarch_dtprelword=no
+  if test x$gcc_cv_as != x; then
+    $as_echo '' > conftest.s
+    if { ac_try='$gcc_cv_as $gcc_cv_as_flags 2,18,0 -o conftest.o conftest.s >&5'
+  { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; }
+    then
+	.section .tdata,"awT",@progbits
+x:
+	.word 2
+	.text
+	.dtprelword x+0x8000
+    else
+      echo "configure: failed program was" >&5
+      cat conftest.s >&5
+    fi
+    rm -f conftest.o conftest.s
+  fi
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_as_loongarch_dtprelword" >&5
+$as_echo "$gcc_cv_as_loongarch_dtprelword" >&6; }
+
+if test $gcc_cv_as_loongarch_dtprelword != yes; then
+
+$as_echo "#define HAVE_AS_DTPRELWORD 1" >>confdefs.h
+
+fi
     ;;
     s390*-*-*)
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for .gnu_attribute support" >&5
@@ -28817,11 +28997,11 @@ fi
     ;;
 esac
 
-# Mips and HP-UX need the GNU assembler.
+# Mips, LoongArch and HP-UX need the GNU assembler.
 # Linux on IA64 might be able to use the Intel assembler.
 
 case "$target" in
-  mips*-*-* | *-*-hpux* )
+  mips*-*-* | loongarch*-*-* | *-*-hpux* )
     if test x$gas_flag = xyes \
        || test x"$host" != x"$build" \
        || test ! -x "$gcc_cv_as" \
@@ -29258,8 +29438,8 @@ esac
 # ??? Once 2.11 is released, probably need to add first known working
 # version to the per-target configury.
 case "$cpu_type" in
-  aarch64 | alpha | arc | arm | avr | bfin | cris | csky | i386 | m32c | m68k \
-  | microblaze | mips | nds32 | nios2 | pa | riscv | rs6000 | score | sparc \
+  aarch64 | alpha | arc | arm | avr | bfin | cris | csky | i386 | loongarch | m32c \
+  | m68k | microblaze | mips | nds32 | nios2 | pa | riscv | rs6000 | score | sparc \
   | tilegx | tilepro | visium | xstormy16 | xtensa)
     insn="nop"
     ;;
@@ -30443,7 +30623,10 @@ $as_echo_n "checking linker for compressed debug sections... " >&6; }
 # In binutils 2.26, gld gained support for the ELF gABI format.
 if test $in_tree_ld = yes ; then
   gcc_cv_ld_compress_debug=0
-  if test "$gcc_cv_gld_major_version" -eq 2 -a "$gcc_cv_gld_minor_version" -ge 19 -o "$gcc_cv_gld_major_version" -gt 2 \
+  if test $ld_is_mold = yes; then
+    gcc_cv_ld_compress_debug=3
+    gcc_cv_ld_compress_debug_option="--compress-debug-sections"
+  elif test "$gcc_cv_gld_major_version" -eq 2 -a "$gcc_cv_gld_minor_version" -ge 19 -o "$gcc_cv_gld_major_version" -gt 2 \
      && test $in_tree_ld_is_elf = yes && test $ld_is_gold = yes; then
     gcc_cv_ld_compress_debug=2
     gcc_cv_ld_compress_debug_option="--compress-debug-sections"
@@ -30456,7 +30639,10 @@ if test $in_tree_ld = yes ; then
     gcc_cv_ld_compress_debug=1
   fi
 elif echo "$ld_ver" | grep GNU > /dev/null; then
-  if test "$ld_vers_major" -lt 2 \
+  if test $ld_is_mold = yes; then
+    gcc_cv_ld_compress_debug=3
+    gcc_cv_ld_compress_debug_option="--compress-debug-sections"
+  elif test "$ld_vers_major" -lt 2 \
      || test "$ld_vers_major" -eq 2 -a "$ld_vers_minor" -lt 21; then
     gcc_cv_ld_compress_debug=0
   elif test "$ld_vers_major" -eq 2 -a "$ld_vers_minor" -lt 26; then
@@ -32221,7 +32407,7 @@ _ACEOF
 
 
 # Generate gcc-driver-name.h containing GCC_DRIVER_NAME for the benefit
-# of jit/jit-playback.c.
+# of jit/jit-playback.cc.
 gcc_driver_version=`eval "${get_gcc_base_ver} $srcdir/BASE-VER"`
 echo "gcc_driver_version: ${gcc_driver_version}"
 cat > gcc-driver-name.h <<EOF

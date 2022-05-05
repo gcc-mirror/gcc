@@ -175,7 +175,7 @@ class timer
 
   /* A class for managing a collection of named timing items, for use
      e.g. by libgccjit for timing client code.  This class is declared
-     inside timevar.c to avoid everything using timevar.h
+     inside timevar.cc to avoid everything using timevar.h
      from needing vec and hash_map.  */
   class named_items;
 

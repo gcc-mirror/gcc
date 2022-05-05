@@ -1,3 +1,41 @@
+2022-02-27  John David Anglin  <danglin@gcc.gnu.org>
+
+	* inclhack.def (hpux_math_constexpr): New hack.
+	* fixincl.x: Regenerate.
+	* tests/base/math.h: Update.
+
+2022-02-04  Martin Liska  <mliska@suse.cz>
+
+	* fixinc.in: Use cd OLDDIR instead of cd .. .
+
+2022-02-03  Martin Liska  <mliska@suse.cz>
+
+	* fixinc.in: Use mkdir -p rather that a loop.
+
+2022-01-16  Olivier Hainque  <hainque@adacore.com>
+
+	* inclhack.def (vxworks_posix_open): New hack.
+	* tests/base/fcntl.h: Update.
+	* fixincl.x: Regenerate.
+
+2022-01-16  Olivier Hainque  <hainque@adacore.com>
+
+	* inclhack.def (vxworks_time_h_syslib): New hack.
+	* tests/base/time.h: Update.
+	* fixincl.x: Regenerate.
+
+2022-01-16  Olivier Hainque  <hainque@adacore.com>
+
+	* inclhack.def (vxworks_math_h_fp_c99): New hack.
+	* tests/base/math.h: Update.
+	* fixincl.x: Regenerate.
+
+2022-01-06  Olivier Hainque  <hainque@adacore.com>
+
+	* inclhack.def (vxworks_next_yvals): New hack.
+	* tests/base/yvals.h: New expected test result.
+	* fixincl.x: Regenerate.
+
 2022-01-04  Olivier Hainque  <hainque@adacore.com>
 
 	* inclhack.def (vxworks_posix_mkdir): Refine to expose a

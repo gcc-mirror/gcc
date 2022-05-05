@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2015-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 2015-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -4254,6 +4254,11 @@ package body Contracts is
          procedure Remove_Formals (Id : Entity_Id);
          --  Remove formals from homonym chains and make them not visible
 
+         procedure Restore_Original_Selected_Component;
+         --  Traverse Expr searching for dispatching calls to functions whose
+         --  original node was a selected component, and replace them with
+         --  their original node.
+
          ----------------------------
          -- Clear_Unset_References --
          ----------------------------
@@ -4313,6 +4318,111 @@ package body Contracts is
             end loop;
          end Remove_Formals;
 
+         -----------------------------------------
+         -- Restore_Original_Selected_Component --
+         -----------------------------------------
+
+         procedure Restore_Original_Selected_Component is
+            Restored_Nodes_List : Elist_Id := No_Elist;
+
+            procedure Fix_Parents (N : Node_Id);
+            --  Traverse the subtree of N fixing the Parent field of all the
+            --  nodes.
+
+            function Restore_Node (N : Node_Id) return Traverse_Result;
+            --  Process dispatching calls to functions whose original node was
+            --  a selected component, and replace them with their original
+            --  node. Restored nodes are stored in the Restored_Nodes_List
+            --  to fix the parent fields of their subtrees in a separate
+            --  tree traversal.
+
+            -----------------
+            -- Fix_Parents --
+            -----------------
+
+            procedure Fix_Parents (N : Node_Id) is
+
+               function Fix_Parent
+                 (Parent_Node : Node_Id;
+                  Node        : Node_Id) return Traverse_Result;
+               --  Process a single node
+
+               ----------------
+               -- Fix_Parent --
+               ----------------
+
+               function Fix_Parent
+                 (Parent_Node : Node_Id;
+                  Node        : Node_Id) return Traverse_Result
+               is
+                  Par : constant Node_Id := Parent (Node);
+
+               begin
+                  if Par /= Parent_Node then
+                     pragma Assert (not Is_List_Member (Node));
+                     Set_Parent (Node, Parent_Node);
+                  end if;
+
+                  return OK;
+               end Fix_Parent;
+
+               procedure Fix_Parents is
+                  new Traverse_Proc_With_Parent (Fix_Parent);
+
+            begin
+               Fix_Parents (N);
+            end Fix_Parents;
+
+            ------------------
+            -- Restore_Node --
+            ------------------
+
+            function Restore_Node (N : Node_Id) return Traverse_Result is
+            begin
+               if Nkind (N) = N_Function_Call
+                 and then Nkind (Original_Node (N)) = N_Selected_Component
+                 and then Is_Dispatching_Operation (Entity (Name (N)))
+               then
+                  Rewrite (N, Original_Node (N));
+                  Set_Original_Node (N, N);
+
+                  --  Save the restored node in the Restored_Nodes_List to fix
+                  --  the parent fields of their subtrees in a separate tree
+                  --  traversal.
+
+                  Append_New_Elmt (N, Restored_Nodes_List);
+               end if;
+
+               return OK;
+            end Restore_Node;
+
+            procedure Restore_Nodes is new Traverse_Proc (Restore_Node);
+
+         --  Start of processing for Restore_Original_Selected_Component
+
+         begin
+            Restore_Nodes (Expr);
+
+            --  After restoring the original node we must fix the decoration
+            --  of the Parent attribute to ensure tree consistency; required
+            --  because when the class-wide condition is inherited, calls to
+            --  New_Copy_Tree will perform copies of this subtree, and formal
+            --  occurrences with wrong Parent field cannot be mapped to the
+            --  new formals.
+
+            if Present (Restored_Nodes_List) then
+               declare
+                  Elmt : Elmt_Id := First_Elmt (Restored_Nodes_List);
+
+               begin
+                  while Present (Elmt) loop
+                     Fix_Parents (Node (Elmt));
+                     Next_Elmt (Elmt);
+                  end loop;
+               end;
+            end if;
+         end Restore_Original_Selected_Component;
+
       --  Start of processing for Preanalyze_Condition
 
       begin
@@ -4328,6 +4438,16 @@ package body Contracts is
          Inside_Class_Condition_Preanalysis := False;
          Remove_Formals (Subp);
          Pop_Scope;
+
+         --  If this preanalyzed condition has occurrences of dispatching calls
+         --  using the Object.Operation notation, during preanalysis such calls
+         --  are rewritten as dispatching function calls; if at later stages
+         --  this condition is inherited we must have restored the original
+         --  selected-component node to ensure that the preanalysis of the
+         --  inherited condition rewrites these dispatching calls in the
+         --  correct context to avoid reporting spurious errors.
+
+         Restore_Original_Selected_Component;
 
          --  Traverse Expr and clear the Controlling_Argument of calls to
          --  nonabstract functions. Required since the preanalyzed condition
@@ -4373,105 +4493,60 @@ package body Contracts is
            (Par_Subp : Entity_Id;
             Subp     : Entity_Id) return Node_Id
          is
-            Installed_Calls : constant Elist_Id := New_Elmt_List;
+            function Check_Condition (Expr : Node_Id) return Boolean;
+            --  Used in assertion to check that Expr has no reference to the
+            --  formals of Par_Subp.
 
-            procedure Install_Original_Selected_Component (Expr : Node_Id);
-            --  Traverse the given expression searching for dispatching calls
-            --  to functions whose original nodes was a selected component,
-            --  and replacing them temporarily by a copy of their original
-            --  node. Modified calls are stored in the list Installed_Calls
-            --  (to undo this work later).
+            ---------------------
+            -- Check_Condition --
+            ---------------------
 
-            procedure Restore_Dispatching_Calls (Expr : Node_Id);
-            --  Undo the work done by Install_Original_Selected_Component.
+            function Check_Condition (Expr : Node_Id) return Boolean is
+               Par_Formal_Id : Entity_Id;
 
-            -----------------------------------------
-            -- Install_Original_Selected_Component --
-            -----------------------------------------
-
-            procedure Install_Original_Selected_Component (Expr : Node_Id) is
-               function Install_Node (N : Node_Id) return Traverse_Result;
-               --  Process a single node
+               function Check_Entity (N : Node_Id) return Traverse_Result;
+               --  Check occurrence of Par_Formal_Id
 
                ------------------
-               -- Install_Node --
+               -- Check_Entity --
                ------------------
 
-               function Install_Node (N : Node_Id) return Traverse_Result is
-                  New_N    : Node_Id;
-                  Orig_Nod : Node_Id;
-
+               function Check_Entity (N : Node_Id) return Traverse_Result is
                begin
-                  if Nkind (N) = N_Function_Call
-                    and then Nkind (Original_Node (N)) = N_Selected_Component
-                    and then Is_Dispatching_Operation (Entity (Name (N)))
+                  if Nkind (N) = N_Identifier
+                    and then Present (Entity (N))
+                    and then Entity (N) = Par_Formal_Id
                   then
-                     Orig_Nod := Original_Node (N);
-
-                     --  Temporarily use the original node field to keep the
-                     --  reference to this node (to undo this work later!).
-
-                     New_N := New_Copy (N);
-                     Set_Original_Node (New_N, Orig_Nod);
-                     Append_Elmt (New_N, Installed_Calls);
-
-                     Rewrite (N, Orig_Nod);
-                     Set_Original_Node (N, New_N);
+                     return Abandon;
                   end if;
 
                   return OK;
-               end Install_Node;
+               end Check_Entity;
 
-               procedure Install_Nodes is new Traverse_Proc (Install_Node);
+               function Check_Expression is new Traverse_Func (Check_Entity);
+
+            --  Start of processing for Check_Condition
 
             begin
-               Install_Nodes (Expr);
-            end Install_Original_Selected_Component;
+               Par_Formal_Id := First_Formal (Par_Subp);
 
-            -------------------------------
-            -- Restore_Dispatching_Calls --
-            -------------------------------
-
-            procedure Restore_Dispatching_Calls (Expr : Node_Id) is
-               function Restore_Node (N : Node_Id) return Traverse_Result;
-               --  Process a single node
-
-               ------------------
-               -- Restore_Node --
-               ------------------
-
-               function Restore_Node (N : Node_Id) return Traverse_Result is
-                  Orig_Sel_N : Node_Id;
-
-               begin
-                  if Nkind (N) = N_Selected_Component
-                    and then Nkind (Original_Node (N)) = N_Function_Call
-                    and then Contains (Installed_Calls, Original_Node (N))
-                  then
-                     Orig_Sel_N := Original_Node (Original_Node (N));
-                     pragma Assert (Nkind (Orig_Sel_N) = N_Selected_Component);
-                     Rewrite (N, Original_Node (N));
-                     Set_Original_Node (N, Orig_Sel_N);
+               while Present (Par_Formal_Id) loop
+                  if Check_Expression (Expr) = Abandon then
+                     return False;
                   end if;
 
-                  return OK;
-               end Restore_Node;
+                  Next_Formal (Par_Formal_Id);
+               end loop;
 
-               procedure Restore_Nodes is new Traverse_Proc (Restore_Node);
-
-            begin
-               Restore_Nodes (Expr);
-            end Restore_Dispatching_Calls;
+               return True;
+            end Check_Condition;
 
             --  Local variables
 
             Assoc_List     : constant Elist_Id := New_Elmt_List;
             Par_Formal_Id  : Entity_Id := First_Formal (Par_Subp);
             Subp_Formal_Id : Entity_Id := First_Formal (Subp);
-            New_Expr       : Node_Id;
-            Class_Cond     : Node_Id;
-
-         --  Start of processing for Inherit_Condition
+            New_Condition  : Node_Id;
 
          begin
             while Present (Par_Formal_Id) loop
@@ -4482,18 +4557,25 @@ package body Contracts is
                Next_Formal (Subp_Formal_Id);
             end loop;
 
-            --  In order to properly preanalyze an inherited preanalyzed
-            --  condition that has occurrences of the Object.Operation
-            --  notation we must restore the original node; otherwise we
-            --  would report spurious errors.
+            --  Check that Parent field of all the nodes have their correct
+            --  decoration; required because otherwise mapped nodes with
+            --  wrong Parent field are left unmodified in the copied tree
+            --  and cause reporting wrong errors at later stages.
 
-            Class_Cond := Class_Condition (Kind, Par_Subp);
+            pragma Assert
+              (Check_Parents (Class_Condition (Kind, Par_Subp), Assoc_List));
 
-            Install_Original_Selected_Component (Class_Cond);
-            New_Expr := New_Copy_Tree (Class_Cond);
-            Restore_Dispatching_Calls (Class_Cond);
+            New_Condition :=
+              New_Copy_Tree
+                (Source => Class_Condition (Kind, Par_Subp),
+                 Map    => Assoc_List);
 
-            return New_Copy_Tree (New_Expr, Map => Assoc_List);
+            --  Ensure that the inherited condition has no reference to the
+            --  formals of the parent subprogram.
+
+            pragma Assert (Check_Condition (New_Condition));
+
+            return New_Condition;
          end Inherit_Condition;
 
          ----------------------

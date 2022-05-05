@@ -212,21 +212,11 @@ namespace __detail
 
     // constructors and destructor
 
-    path() noexcept { }
+    path() noexcept;
+    path(const path& __p);
+    path(path&& __p) noexcept;
 
-    path(const path& __p) = default;
-
-    path(path&& __p) noexcept
-    : _M_pathname(std::move(__p._M_pathname)), _M_type(__p._M_type)
-    {
-      if (_M_type == _Type::_Multi)
-	_M_split_cmpts();
-      __p.clear();
-    }
-
-    path(string_type&& __source)
-    : _M_pathname(std::move(__source))
-    { _M_split_cmpts(); }
+    path(string_type&& __source);
 
     template<typename _Source,
 	     typename _Require = __detail::_Path<_Source>>
@@ -256,11 +246,11 @@ namespace __detail
       : _M_pathname(_S_convert_loc(__first, __last, __loc))
       { _M_split_cmpts(); }
 
-    ~path() = default;
+    ~path();
 
     // assignments
 
-    path& operator=(const path& __p) = default;
+    path& operator=(const path& __p);
     path& operator=(path&& __p) noexcept;
     path& operator=(string_type&& __source);
     path& assign(string_type&& __source);
@@ -425,8 +415,8 @@ namespace __detail
     class iterator;
     typedef iterator const_iterator;
 
-    iterator begin() const;
-    iterator end() const;
+    iterator begin() const noexcept;
+    iterator end() const noexcept;
 
     /// @cond undocumented
     // Create a basic_string by reading until a null character.
@@ -449,11 +439,7 @@ namespace __detail
 	_Multi, _Root_name, _Root_dir, _Filename
     };
 
-    path(string_type __str, _Type __type) : _M_pathname(__str), _M_type(__type)
-    {
-      __glibcxx_assert(!empty());
-      __glibcxx_assert(_M_type != _Type::_Multi);
-    }
+    path(string_type __str, _Type __type);
 
     enum class _Split { _Stem, _Extension };
 
@@ -908,6 +894,37 @@ namespace __detail
     bool			_M_at_end;  // only used when type != _Multi
   };
 
+  inline
+  path::path() noexcept = default;
+
+  inline
+  path::path(const path&) = default;
+
+  inline
+  path::path(path&& __p) noexcept
+  : _M_pathname(std::move(__p._M_pathname)),
+    _M_cmpts(__p._M_cmpts),
+    _M_type(__p._M_type)
+  { __p.clear(); }
+
+  inline
+  path::path(string_type&& __source)
+  : _M_pathname(std::move(__source))
+  { _M_split_cmpts(); }
+
+  inline
+  path::path(string_type __str, _Type __type)
+  : _M_pathname(__str), _M_type(__type)
+  {
+    __glibcxx_assert(!empty());
+    __glibcxx_assert(_M_type != _Type::_Multi);
+  }
+
+  inline
+  path::~path() = default;
+
+  inline path&
+  path::operator=(const path& __p) = default;
 
   inline path&
   path::operator=(path&& __p) noexcept

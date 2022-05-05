@@ -1,5 +1,5 @@
 /* { dg-do run } */
-/* { dg-options "-O -mno-sse2" } */
+/* { dg-options "-O -mno-sse2 -Wno-psabi" } */
 
 typedef unsigned char __attribute__ ((__vector_size__ (8))) V;
 typedef unsigned long long __attribute__ ((__vector_size__ (16))) W;

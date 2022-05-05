@@ -484,6 +484,15 @@ d_init_versions (void)
   if (global.params.useAssert == CHECKENABLEon)
     VersionCondition::addPredefinedGlobalIdent ("assert");
 
+  if (global.params.useIn == CHECKENABLEon)
+    VersionCondition::addPredefinedGlobalIdent("D_PreConditions");
+
+  if (global.params.useOut == CHECKENABLEon)
+    VersionCondition::addPredefinedGlobalIdent("D_PostConditions");
+
+  if (global.params.useInvariants == CHECKENABLEon)
+    VersionCondition::addPredefinedGlobalIdent("D_Invariants");
+
   if (global.params.useArrayBounds == CHECKENABLEoff)
     VersionCondition::addPredefinedGlobalIdent ("D_NoBoundsChecks");
 
@@ -543,7 +552,7 @@ d_build_builtins_module (Module *m)
 	   flag_unsafe_math_optimizations.
 	 - Built-ins never use the GC or raise a D exception, and so are always
 	   marked as `nothrow' and `@nogc'.  */
-      tf->purity = DECL_PURE_P (decl) ? PURE::strong
+      tf->purity = DECL_PURE_P (decl) ? PURE::const_
 	: TREE_READONLY (decl) ? PURE::const_
 	: DECL_IS_NOVOPS (decl) ? PURE::weak
 	: !DECL_ASSEMBLER_NAME_SET_P (decl) ? PURE::weak

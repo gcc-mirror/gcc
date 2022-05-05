@@ -197,11 +197,17 @@ class feasible_graph : public digraph <fg_traits>
 
   exploded_path *make_epath (feasible_node *fnode) const;
 
+  void dump_feasible_path (const feasible_node &dst_fnode,
+			   const char *filename) const;
+
   unsigned get_num_infeasible () const { return m_num_infeasible; }
 
   void log_stats (logger *logger) const;
 
 private:
+  void dump_feasible_path (const feasible_node &dst_fnode,
+			   pretty_printer *pp) const;
+
   unsigned m_num_infeasible;
 };
 

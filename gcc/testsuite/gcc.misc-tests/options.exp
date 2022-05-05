@@ -79,7 +79,7 @@ proc get_dump_flags {} {
     set res [list]
 
     global srcdir
-    set file "$srcdir/../dumpfile.c"
+    set file "$srcdir/../dumpfile.cc"
     
     set a [open $file]
     set lines [split [read $a] "\n"]

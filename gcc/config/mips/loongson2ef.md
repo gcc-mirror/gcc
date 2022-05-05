@@ -96,7 +96,7 @@
 
 ;; The following 4 instructions each subscribe one of
 ;; ls2_[f]alu{1,2}_turn_enabled units according to this attribute.
-;; These instructions are used in mips.c: sched_ls2_dfa_post_advance_cycle.
+;; These instructions are used in mips.cc: sched_ls2_dfa_post_advance_cycle.
 
 (define_attr "ls2_turn_type" "alu1,alu2,falu1,falu2,unknown,atomic,syncloop"
   (const_string "unknown"))

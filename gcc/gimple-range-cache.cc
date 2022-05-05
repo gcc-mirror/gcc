@@ -29,6 +29,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-pretty-print.h"
 #include "gimple-range.h"
 #include "tree-cfg.h"
+#include "target.h"
+#include "attribs.h"
+#include "gimple-iterator.h"
+#include "gimple-walk.h"
+#include "cfganal.h"
 
 #define DEBUG_RANGE_CACHE (dump_file					\
 			   && (param_ranger_debug & RANGER_DEBUG_CACHE))
@@ -48,6 +53,21 @@ non_null_ref::~non_null_ref ()
 {
   bitmap_obstack_release (&m_bitmaps);
   m_nn.release ();
+}
+
+// This routine will update NAME in BB to be nonnull if it is not already.
+// return TRUE if the update happens.
+
+bool
+non_null_ref::set_nonnull (basic_block bb, tree name)
+{
+  gcc_checking_assert (gimple_range_ssa_p (name)
+		       && POINTER_TYPE_P (TREE_TYPE (name)));
+  // Only process when its not already set.
+  if (non_null_deref_p  (name, bb, false))
+    return false;
+  bitmap_set_bit (m_nn[SSA_NAME_VERSION (name)], bb->index);
+  return true;
 }
 
 // Return true if NAME has a non-null dereference in block bb.  If this is the
@@ -83,35 +103,6 @@ non_null_ref::non_null_deref_p (tree name, basic_block bb, bool search_dom)
 	    bb = get_immediate_dominator (CDI_DOMINATORS, bb))
 	if (bitmap_bit_p (m_nn[v], bb->index))
 	  return true;
-    }
-  return false;
-}
-
-// If NAME has a non-null dereference in block BB, adjust R with the
-// non-zero information from non_null_deref_p, and return TRUE.  If
-// SEARCH_DOM is true, non_null_deref_p should search the dominator tree.
-
-bool
-non_null_ref::adjust_range (irange &r, tree name, basic_block bb,
-			    bool search_dom)
-{
-  // Non-call exceptions mean we could throw in the middle of the
-  // block, so just punt on those for now.
-  if (cfun->can_throw_non_call_exceptions)
-    return false;
-
-  // We only care about the null / non-null property of pointers.
-  if (!POINTER_TYPE_P (TREE_TYPE (name)))
-    return false;
-  if (r.undefined_p () || r.lower_bound () != 0 || r.upper_bound () == 0)
-    return false;
-  // Check if pointers have any non-null dereferences.
-  if (non_null_deref_p (name, bb, search_dom))
-    {
-      // Remove zero from the range.
-      unsigned prec = TYPE_PRECISION (TREE_TYPE (name));
-      r.intersect (wi::one (prec), wi::max_value (prec, UNSIGNED));
-      return true;
     }
   return false;
 }
@@ -323,7 +314,7 @@ private:
   int bitmap_get_quad (const_bitmap head, int quad);
   irange_allocator *m_irange_allocator;
   irange *m_range[SBR_NUM];
-  bitmap bitvec;
+  bitmap_head bitvec;
   tree m_type;
 };
 
@@ -334,7 +325,8 @@ sbr_sparse_bitmap::sbr_sparse_bitmap (tree t, irange_allocator *allocator,
 {
   gcc_checking_assert (TYPE_P (t));
   m_type = t;
-  bitvec = BITMAP_ALLOC (bm);
+  bitmap_initialize (&bitvec, bm);
+  bitmap_tree_view (&bitvec);
   m_irange_allocator = allocator;
   // Pre-cache varying.
   m_range[0] = m_irange_allocator->allocate (2);
@@ -380,7 +372,7 @@ sbr_sparse_bitmap::set_bb_range (const_basic_block bb, const irange &r)
 {
   if (r.undefined_p ())
     {
-      bitmap_set_quad (bitvec, bb->index, SBR_UNDEF);
+      bitmap_set_quad (&bitvec, bb->index, SBR_UNDEF);
       return true;
     }
 
@@ -390,11 +382,11 @@ sbr_sparse_bitmap::set_bb_range (const_basic_block bb, const irange &r)
       {
 	if (!m_range[x])
 	  m_range[x] = m_irange_allocator->allocate (r);
-	bitmap_set_quad (bitvec, bb->index, x + 1);
+	bitmap_set_quad (&bitvec, bb->index, x + 1);
 	return true;
       }
   // All values are taken, default to VARYING.
-  bitmap_set_quad (bitvec, bb->index, SBR_VARYING);
+  bitmap_set_quad (&bitvec, bb->index, SBR_VARYING);
   return false;
 }
 
@@ -404,7 +396,7 @@ sbr_sparse_bitmap::set_bb_range (const_basic_block bb, const irange &r)
 bool
 sbr_sparse_bitmap::get_bb_range (irange &r, const_basic_block bb)
 {
-  int value = bitmap_get_quad (bitvec, bb->index);
+  int value = bitmap_get_quad (&bitvec, bb->index);
 
   if (!value)
     return false;
@@ -422,7 +414,7 @@ sbr_sparse_bitmap::get_bb_range (irange &r, const_basic_block bb)
 bool
 sbr_sparse_bitmap::bb_range_p (const_basic_block bb)
 {
-  return (bitmap_get_quad (bitvec, bb->index) != 0);
+  return (bitmap_get_quad (&bitvec, bb->index) != 0);
 }
 
 // -------------------------------------------------------------------------
@@ -1014,9 +1006,6 @@ ranger_cache::range_of_def (irange &r, tree name, basic_block bb)
       else
 	r = gimple_range_global (name);
     }
-
-  if (bb)
-    m_non_null.adjust_range (r, name, bb, false);
 }
 
 // Get the range of NAME as it occurs on entry to block BB.
@@ -1034,8 +1023,6 @@ ranger_cache::entry_range (irange &r, tree name, basic_block bb)
   // Otherwise pick up the best available global value.
   if (!m_on_entry.get_bb_range (r, name, bb))
     range_of_def (r, name);
-
-  m_non_null.adjust_range (r, name, bb, false);
 }
 
 // Get the range of NAME as it occurs on exit from block BB.
@@ -1089,6 +1076,9 @@ ranger_cache::range_of_expr (irange &r, tree name, gimple *stmt)
    if (gimple_range_ssa_p (expr))
     {
       exit_range (r, expr, e->src);
+      // If this is not an abnormal edge, check for a non-null exit.
+      if ((e->flags & (EDGE_EH | EDGE_ABNORMAL)) == 0)
+	m_non_null.adjust_range (r, expr, e->src, false);
       int_range_max edge_range;
       if (m_gori.outgoing_edge_range_p (edge_range, e, expr, *this))
 	r.intersect (edge_range);
@@ -1409,61 +1399,186 @@ ranger_cache::fill_block_cache (tree name, basic_block bb, basic_block def_bb)
 }
 
 
-// Check to see if we can simply get the range from the dominator.
+// Get the range of NAME from dominators of BB and return it in R.
 
 bool
-ranger_cache::range_from_dom (irange &r, tree name, basic_block bb)
+ranger_cache::range_from_dom (irange &r, tree name, basic_block start_bb)
 {
-  gcc_checking_assert (dom_info_available_p (CDI_DOMINATORS));
+  if (!dom_info_available_p (CDI_DOMINATORS))
+    return false;
 
   // Search back to the definition block or entry block.
   basic_block def_bb = gimple_bb (SSA_NAME_DEF_STMT (name));
   if (def_bb == NULL)
     def_bb = ENTRY_BLOCK_PTR_FOR_FN (cfun);
 
+  basic_block bb;
+  basic_block prev_bb = start_bb;
   // Flag if we encounter a block with non-null set.
   bool non_null = false;
-  for (bb = get_immediate_dominator (CDI_DOMINATORS, bb);
-       bb && bb != def_bb;
-       bb = get_immediate_dominator (CDI_DOMINATORS, bb))
+
+  // Range on entry to the DEF block should not be queried.
+  gcc_checking_assert (start_bb != def_bb);
+  m_workback.truncate (0);
+
+  // Default value is global range.
+  get_global_range (r, name);
+
+  // Search until a value is found, pushing outgoing edges encountered.
+  for (bb = get_immediate_dominator (CDI_DOMINATORS, start_bb);
+       bb;
+       prev_bb = bb, bb = get_immediate_dominator (CDI_DOMINATORS, bb))
     {
-      // If there is an outgoing range, the on-entry value won't work.
+      if (!non_null)
+	non_null |= m_non_null.non_null_deref_p (name, bb, false);
+
+      // This block has an outgoing range.
       if (m_gori.has_edge_range_p (name, bb))
 	{
-	  // Check if we can seed this block with a dominator value. THis will
-	  // prevent the ache from being filled back further than this.
-	  if (bb != def_bb && range_from_dom (r, name, bb))
-	    m_on_entry.set_bb_range (name, bb, r);
-	  return false;
+	  // Only outgoing ranges to single_pred blocks are dominated by
+	  // outgoing edge ranges, so only those need to be considered.
+	  edge e = find_edge (bb, prev_bb);
+	  if (e && single_pred_p (prev_bb))
+	    m_workback.quick_push (prev_bb);
 	}
 
-      // Flag if we see a non-null reference during this walk.
-      if (m_non_null.non_null_deref_p (name, bb, false))
-	non_null = true;
+      if (def_bb == bb)
+	break;
 
-      // If range-on-entry is set in this block, it can be used.
       if (m_on_entry.get_bb_range (r, name, bb))
+	break;
+    }
+
+  if (DEBUG_RANGE_CACHE)
+    {
+      fprintf (dump_file, "CACHE: BB %d DOM query, found ", start_bb->index);
+      r.dump (dump_file);
+      if (bb)
+	fprintf (dump_file, " at BB%d\n", bb->index);
+      else
+	fprintf (dump_file, " at function top\n");
+    }
+
+  // Now process any outgoing edges that we seen along the way.
+  while (m_workback.length () > 0)
+    {
+      int_range_max edge_range;
+      prev_bb = m_workback.pop ();
+      edge e = single_pred_edge (prev_bb);
+      bb = e->src;
+
+      if (m_gori.outgoing_edge_range_p (edge_range, e, name, *this))
 	{
-	  // Apply non-null if appropriate.
-	  if (r.varying_p () && non_null)
+	  r.intersect (edge_range);
+	  if (r.varying_p () && ((e->flags & (EDGE_EH | EDGE_ABNORMAL)) == 0))
 	    {
-	      gcc_checking_assert (POINTER_TYPE_P (TREE_TYPE (name)));
-	      r.set_nonzero (TREE_TYPE (name));
+	      if (m_non_null.non_null_deref_p (name, bb, false))
+		{
+		  gcc_checking_assert (POINTER_TYPE_P (TREE_TYPE (name)));
+		  r.set_nonzero (TREE_TYPE (name));
+		}
 	    }
-	  return true;
+	  if (DEBUG_RANGE_CACHE)
+	    {
+	      fprintf (dump_file, "CACHE: Adjusted edge range for %d->%d : ",
+		       bb->index, prev_bb->index);
+	      r.dump (dump_file);
+	      fprintf (dump_file, "\n");
+	    }
 	}
     }
-  // If this is the def block, and NAME is an export, then this value
-  // cannot be used.
-  if (bb == def_bb && m_gori.has_edge_range_p (name, bb))
-    return false;
 
-  // Otherwise choose the global value and use it.
-  get_global_range (r, name);
-  if (r.varying_p () && non_null)
+  // Apply non-null if appropriate.
+  if (non_null && r.varying_p ()
+      && !has_abnormal_call_or_eh_pred_edge_p (start_bb))
     {
       gcc_checking_assert (POINTER_TYPE_P (TREE_TYPE (name)));
       r.set_nonzero (TREE_TYPE (name));
     }
+  if (DEBUG_RANGE_CACHE)
+    {
+      fprintf (dump_file, "CACHE: Range for DOM returns : ");
+      r.dump (dump_file);
+      fprintf (dump_file, "\n");
+    }
   return true;
+}
+
+// This routine will update NAME in block BB to the nonnull state.
+// It will then update the on-entry cache for this block to be non-null
+// if it isn't already.
+
+void
+ranger_cache::update_to_nonnull (basic_block bb, tree name)
+{
+  tree type = TREE_TYPE (name);
+  if (gimple_range_ssa_p (name) && POINTER_TYPE_P (type))
+    {
+      m_non_null.set_nonnull (bb, name);
+      // Update the on-entry cache for BB to be non-zero.  Note this can set
+      // the on entry value in the DEF block, which can override the def.
+      int_range_max r;
+      exit_range (r, name, bb);
+      if (r.varying_p ())
+	{
+	  r.set_nonzero (type);
+	  m_on_entry.set_bb_range (name, bb, r);
+	}
+    }
+}
+
+// Adapted from infer_nonnull_range_by_dereference and check_loadstore
+// to process nonnull ssa_name OP in S.  DATA contains the ranger_cache.
+
+static bool
+non_null_loadstore (gimple *s, tree op, tree, void *data)
+{
+  if (TREE_CODE (op) == MEM_REF || TREE_CODE (op) == TARGET_MEM_REF)
+    {
+      /* Some address spaces may legitimately dereference zero.  */
+      addr_space_t as = TYPE_ADDR_SPACE (TREE_TYPE (op));
+      if (!targetm.addr_space.zero_address_valid (as))
+	{
+	  tree ssa = TREE_OPERAND (op, 0);
+	  basic_block bb = gimple_bb (s);
+	  ((ranger_cache *)data)->update_to_nonnull (bb, ssa);
+	}
+    }
+  return false;
+}
+
+// This routine is used during a block walk to move the state of non-null for
+// any operands on stmt S to nonnull.
+
+void
+ranger_cache::block_apply_nonnull (gimple *s)
+{
+  if (!flag_delete_null_pointer_checks)
+    return;
+  if (is_a<gphi *> (s))
+    return;
+  if (gimple_code (s) == GIMPLE_ASM || gimple_clobber_p (s))
+    return;
+  if (is_a<gcall *> (s))
+    {
+      tree fntype = gimple_call_fntype (s);
+      bitmap nonnullargs = get_nonnull_args (fntype);
+      // Process any non-null arguments
+      if (nonnullargs)
+	{
+	  basic_block bb = gimple_bb (s);
+	  for (unsigned i = 0; i < gimple_call_num_args (s); i++)
+	    {
+	      if (bitmap_empty_p (nonnullargs) || bitmap_bit_p (nonnullargs, i))
+		{
+		  tree op = gimple_call_arg (s, i);
+		  update_to_nonnull (bb, op);
+		}
+	    }
+	  BITMAP_FREE (nonnullargs);
+	}
+      // Fallthru and walk load/store ops now.
+    }
+  walk_stmt_load_store_ops (s, (void *)this, non_null_loadstore,
+			    non_null_loadstore);
 }

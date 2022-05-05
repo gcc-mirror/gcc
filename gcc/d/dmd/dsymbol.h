@@ -71,6 +71,7 @@ class Expression;
 class ExpressionDsymbol;
 class AliasAssign;
 class OverloadSet;
+class StaticAssert;
 struct AA;
 #ifdef IN_GCC
 typedef union tree_node Symbol;
@@ -110,7 +111,7 @@ struct Visibility
  */
 enum class PASS : uint8_t
 {
-    init,           // initial state
+    initial,        // initial state
     semantic,       // semantic() started
     semanticdone,   // semantic() done
     semantic2,      // semantic2() started
@@ -174,8 +175,6 @@ public:
     /// C++ namespace this symbol belongs to
     CPPNamespaceDeclaration *namespace_;
     Symbol *csym;               // symbol for code generator
-    Symbol *isym;               // import version of csym
-    const utf8_t *comment;      // documentation comment for this Dsymbol
     Loc loc;                    // where defined
     Scope *_scope;               // !=NULL means context to use for semantic()
     const utf8_t *prettystring;
@@ -184,7 +183,6 @@ public:
     unsigned short localNum;        // perturb mangled name to avoid collisions with those in FuncDeclaration.localsymtab
     DeprecatedDeclaration *depdecl; // customized deprecation message
     UserAttributeDeclaration *userAttribDecl;   // user defined attributes
-    UnitTestDeclaration *ddocUnittest; // !=NULL means there's a ddoc unittest associated with this symbol (only use this with ddoc)
 
     static Dsymbol *create(Identifier *);
     const char *toChars() const;
@@ -225,7 +223,7 @@ public:
     virtual void importAll(Scope *sc);
     virtual Dsymbol *search(const Loc &loc, Identifier *ident, int flags = IgnoreNone);
     virtual bool overloadInsert(Dsymbol *s);
-    virtual d_uns64 size(const Loc &loc);
+    virtual uinteger_t size(const Loc &loc);
     virtual bool isforwardRef();
     virtual AggregateDeclaration *isThis();     // is a 'this' required to access the member
     virtual bool isExport() const;              // is Dsymbol exported?
@@ -251,6 +249,10 @@ public:
     virtual void checkCtorConstInit() { }
 
     virtual void addComment(const utf8_t *comment);
+    const utf8_t *comment();                      // current value of comment
+
+    UnitTestDeclaration *ddocUnittest();
+    void ddocUnittest(UnitTestDeclaration *);
 
     bool inNonRoot();
 
@@ -307,6 +309,7 @@ public:
     virtual VisibilityDeclaration *isVisibilityDeclaration() { return NULL; }
     virtual OverloadSet *isOverloadSet() { return NULL; }
     virtual CompileDeclaration *isCompileDeclaration() { return NULL; }
+    virtual StaticAssert *isStaticAssert() { return NULL; }
     void accept(Visitor *v) { v->visit(this); }
 };
 

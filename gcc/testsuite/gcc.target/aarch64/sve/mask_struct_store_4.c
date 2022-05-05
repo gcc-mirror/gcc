@@ -6,15 +6,15 @@
 #define TEST_LOOP(NAME, OUTTYPE, INTYPE, MASKTYPE)		\
   void __attribute__ ((noinline, noclone))			\
   NAME##_2 (OUTTYPE *__restrict dest, INTYPE *__restrict src,	\
-	    MASKTYPE *__restrict cond, int n)			\
+	    MASKTYPE *__restrict cond, intptr_t n)		\
   {								\
-    for (int i = 0; i < n; ++i)					\
+    for (intptr_t i = 0; i < n; ++i)				\
       {								\
 	if (cond[i] < 8)					\
 	  dest[i * 2] = src[i];					\
 	if (cond[i] > 2)					\
 	  dest[i * 2 + 1] = src[i];				\
-	}							\
+      }								\
   }
 
 #define TEST2(NAME, OUTTYPE, INTYPE) \

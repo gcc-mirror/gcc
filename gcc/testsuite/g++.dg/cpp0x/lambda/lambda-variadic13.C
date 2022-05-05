@@ -3,7 +3,7 @@
 
 template <class... Ts>
 void f() {
-  [] { struct S : Ts { }; };	// { dg-error "not expanded" }
+  [] { struct S : Ts { }; };	// { dg-message "" }
 }
 
 int main() {

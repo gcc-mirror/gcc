@@ -2,11 +2,16 @@
 
 /* See also 'gfortran.dg/goacc/nested-reductions-2-kernels.f90'. */
 
+/* { dg-additional-options -Wuninitialized } */
+
 void acc_kernels (void)
 {
   int i, j, k, l, sum, diff;
 
   #pragma acc kernels
+  /* implicit 'copy (sum, diff)'
+     { dg-warning {'sum' is used uninitialized} TODO { xfail *-*-* } .-2 }
+     { dg-warning {'diff' is used uninitialized} TODO { xfail *-*-* } .-3 } */
   {
     #pragma acc loop reduction(+:sum)
     for (i = 0; i < 10; i++)
@@ -99,6 +104,9 @@ void acc_kernels_loop (void)
   int i, j, k, l, sum, diff;
 
   #pragma acc kernels loop
+  /* implicit 'copy (sum, diff)'
+     { dg-warning {'sum' is used uninitialized} TODO { xfail *-*-* } .-2 }
+     { dg-warning {'diff' is used uninitialized} TODO { xfail *-*-* } .-3 } */
   for (int h = 0; h < 10; ++h)
   {
     #pragma acc loop reduction(+:sum)
@@ -209,6 +217,9 @@ void acc_kernels_loop_reduction (void)
   int i, j, k, l, sum, diff;
 
   #pragma acc kernels loop reduction(+:sum)
+  /* implicit 'copy (sum, diff)'
+     { dg-warning {'sum' is used uninitialized} TODO { xfail *-*-* } .-2 }
+     { dg-warning {'diff' is used uninitialized} TODO { xfail *-*-* } .-3 } */
   for (int h = 0; h < 10; ++h)
   {
     #pragma acc loop // { dg-warning "nested loop in reduction needs reduction clause for .sum." }

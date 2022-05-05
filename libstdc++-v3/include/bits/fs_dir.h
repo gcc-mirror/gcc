@@ -537,6 +537,14 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 
     struct _Dir_stack;
     std::__shared_ptr<_Dir_stack> _M_dirs;
+
+    recursive_directory_iterator&
+    __erase(error_code* = nullptr);
+
+    friend uintmax_t
+    filesystem::remove_all(const path&, error_code&);
+    friend uintmax_t
+    filesystem::remove_all(const path&);
   };
 
   /// @relates std::filesystem::recursive_directory_iterator @{

@@ -251,7 +251,7 @@ Recursive cloning only when the probability of call being executed exceeds the p
 
 -param=ipa-cp-recursive-freq-factor=
 Common Joined UInteger Var(param_ipa_cp_recursive_freq_factor) Init(6) Param Optimization
-When propagating IPA-CP effect estimates, multiply frequencies of recursive edges that that bring back an unchanged value by this factor.
+When propagating IPA-CP effect estimates, multiply frequencies of recursive edges that bring back an unchanged value by this factor.
 
 -param=ipa-cp-recursion-penalty=
 Common Joined UInteger Var(param_ipa_cp_recursion_penalty) Init(40) IntegerRange(0, 100) Param Optimization
@@ -551,7 +551,7 @@ Maximum loop depth of a call which is considered for inlining functions called o
 
 -param=max-inline-functions-called-once-insns=
 Common Joined UInteger Var(param_inline_functions_called_once_insns) Init(4000) Optimization Param
-Maximum combinaed size of caller and callee wich is inlined if callee is called once.
+Maximum combined size of caller and callee which is inlined if callee is called once.
 
 -param=max-inline-insns-auto=
 Common Joined UInteger Var(param_max_inline_insns_auto) Init(15) Optimization Param
@@ -612,6 +612,10 @@ The maximum number of insns in loop header duplicated by the copy loop headers p
 -param=max-modulo-backtrack-attempts=
 Common Joined UInteger Var(param_max_modulo_backtrack_attempts) Init(40) Param Optimization
 The maximum number of backtrack attempts the scheduler should make when modulo scheduling a loop.
+
+-param=min-pagesize=
+Common Joined UInteger Var(param_min_pagesize) Init(4096) Param Optimization
+Minimum page size for warning purposes.
 
 -param=max-partial-antic-length=
 Common Joined UInteger Var(param_max_partial_antic_length) Init(100) Param Optimization
@@ -911,6 +915,10 @@ Common Joined UInteger Var(param_ranger_logical_depth) Init(6) IntegerRange(1, 9
 Maximum depth of logical expression evaluation ranger will look through when
 evaluating outgoing edge ranges.
 
+-param=relation-block-limit=
+Common Joined UInteger Var(param_relation_block_limit) Init(200) IntegerRange(0, 9999) Param Optimization
+Maximum number of relations the oracle will register in a basic block.
+
 -param=rpo-vn-max-loop-depth=
 Common Joined UInteger Var(param_rpo_vn_max_loop_depth) Init(7) IntegerRange(2, 65536) Param Optimization
 Maximum depth of a loop nest to fully value-number optimistically.
@@ -1167,6 +1175,10 @@ Controls how loop vectorizer uses partial vectors.  0 means never, 1 means only 
 -param=vect-inner-loop-cost-factor=
 Common Joined UInteger Var(param_vect_inner_loop_cost_factor) Init(50) IntegerRange(1, 10000) Param Optimization
 The maximum factor which the loop vectorizer applies to the cost of statements in an inner loop relative to the loop being vectorized.
+
+-param=vect-induction-float=
+Common Joined UInteger Var(param_vect_induction_float) Init(1) IntegerRage(0, 1) Param Optimization
+Enable loop vectorization of floating point inductions.
 
 -param=vrp1-mode=
 Common Joined Var(param_vrp1_mode) Enum(vrp_mode) Init(VRP_MODE_VRP) Param Optimization

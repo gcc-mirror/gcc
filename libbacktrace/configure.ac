@@ -145,10 +145,10 @@ ACX_PROG_CC_WARNING_OPTS([-W -Wall -Wwrite-strings -Wstrict-prototypes \
 			  -Wmissing-format-attribute -Wcast-qual],
 			  [WARN_FLAGS])
 
-if test -n "${with_target_subdir}"; then
-  WARN_FLAGS="$WARN_FLAGS -Werror"
-fi
-
+AC_ARG_ENABLE([werror],
+  [AS_HELP_STRING([--disable-werror], [disable building with -Werror])])
+AS_IF([test "x$enable_werror" != "xno" && test -n "${with_target_subdir}"],
+  [WARN_FLAGS="$WARN_FLAGS -Werror"])
 AC_SUBST(WARN_FLAGS)
 
 if test -n "${with_target_subdir}"; then

@@ -13,10 +13,14 @@ module dmd.root.complex;
 
 import dmd.root.ctfloat;
 
+nothrow:
+
 extern (C++) struct complex_t
 {
     real_t re;
     real_t im;
+
+  nothrow:
 
     this() @disable;
 

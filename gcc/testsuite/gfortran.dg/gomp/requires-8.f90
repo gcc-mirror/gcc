@@ -4,7 +4,7 @@ contains
  subroutine foo
   interface
    subroutine bar2
-     !$!omp requires dynamic_allocators
+     !$omp requires dynamic_allocators
    end subroutine
   end interface
   !$omp target

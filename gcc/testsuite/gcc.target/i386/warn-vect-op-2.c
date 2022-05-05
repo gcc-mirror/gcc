@@ -14,7 +14,7 @@ int main (int argc, char *argv[])
     v0 + v1,              /* { dg-warning "expanded piecewise" }  */
     v0 - v1,              /* { dg-warning "expanded piecewise" }  */
     v0 > v1,              /* { dg-warning "expanded piecewise" }  */
-    v0 & v1,              /* { dg-warning "expanded piecewise" }  */
+    v0 & v1,              /* { dg-warning "expanded in parallel" }  */
     __builtin_shuffle (v0, v1),        /* { dg-warning "expanded piecewise" }  */
     __builtin_shuffle (v0, v1, v1)     /* { dg-warning "expanded piecewise" }  */
   };

@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-/* Let sh.c know this is ELF.  */
+/* Let sh.cc know this is ELF.  */
 #undef TARGET_ELF
 #define TARGET_ELF 1
 

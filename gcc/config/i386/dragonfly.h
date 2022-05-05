@@ -41,7 +41,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #undef  NO_PROFILE_COUNTERS
 #define NO_PROFILE_COUNTERS	1
 
-/* Tell final.c that we don't need a label passed to mcount.  */
+/* Tell final.cc that we don't need a label passed to mcount.  */
 
 #undef  MCOUNT_NAME
 #define MCOUNT_NAME ".mcount"

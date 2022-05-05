@@ -9,4 +9,3 @@ void main()
     void whatever() {}
     foo!(whatever)();
 }
-

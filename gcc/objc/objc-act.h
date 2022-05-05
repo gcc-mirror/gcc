@@ -1,4 +1,4 @@
-/* Declarations for objc-act.c.
+/* Declarations for objc-act.cc.
    Copyright (C) 1990-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -29,7 +29,7 @@ int objc_gimplify_expr (tree *, gimple_seq *, gimple_seq *);
 void objc_common_init_ts (void);
 
 /* NB: The remaining public functions are prototyped in c-common.h, for the
-   benefit of stub-objc.c and objc-act.c.  */
+   benefit of stub-objc.cc and objc-act.cc.  */
 
 /* Objective-C structures */
 

@@ -35,14 +35,25 @@ int main ()
   for (ix = 0; ix < N;ix++)
     ary[ix] = -1;
   
-#pragma acc parallel num_workers(32) vector_length(32) copy(ary) copy(ondev) \
-	    copyout(workersize, vectorsize)
+#define NW 32
+#define VL 32
+#pragma acc parallel num_workers(NW) vector_length(VL) \
+	    copy(ary) copy(ondev)
   {
     ondev = acc_on_device (acc_device_not_host);
     worker (ary);
-    workersize = __builtin_goacc_parlevel_size (GOMP_DIM_WORKER);
-    vectorsize = __builtin_goacc_parlevel_size (GOMP_DIM_VECTOR);
   }
+  workersize = NW;
+  vectorsize = VL;
+#ifdef ACC_DEVICE_TYPE_radeon
+  /* AMD GCN has an upper limit of 'num_workers(16)'.  */
+  if (workersize > 16)
+    workersize = 16;
+  /* AMD GCN uses the autovectorizer for the vector dimension: the use
+     of a function call in vector-partitioned code in this test is not
+     currently supported.  */
+  vectorsize = 1;
+#endif
 
   for (ix = 0; ix < N; ix++)
     {

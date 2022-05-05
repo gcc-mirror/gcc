@@ -68,7 +68,7 @@ extern void tilegx_final_prescan_insn (rtx_insn *);
 extern const char *tilegx_asm_output_opcode (FILE *, const char *);
 extern void tilegx_function_profiler (FILE *, int);
 
-/* Declare functions in tilegx-c.c */
+/* Declare functions in tilegx-c.cc */
 
 extern void tilegx_cpu_cpp_builtins (struct cpp_reader *);
 

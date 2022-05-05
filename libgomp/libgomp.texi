@@ -187,7 +187,8 @@ The OpenMP 4.5 specification is fully supported.
       env variable @tab Y @tab
 @item Nested-parallel changes to @emph{max-active-levels-var} ICV @tab Y @tab
 @item @code{requires} directive @tab P
-      @tab Only fulfillable requirement is @code{atomic_default_mem_order}
+      @tab Only fulfillable requirement are @code{atomic_default_mem_order}
+      and @code{dynamic_allocators}
 @item @code{teams} construct outside an enclosing target region @tab Y @tab
 @item Non-rectangular loop nests @tab P @tab Only C/C++
 @item @code{!=} as relational-op in canonical loop form for C/C++ @tab Y @tab
@@ -203,7 +204,7 @@ The OpenMP 4.5 specification is fully supported.
       @code{reduction} clause @tab Y @tab
 @item @code{in_reduction} clause on @code{task} constructs @tab Y @tab
 @item @code{in_reduction} clause on @code{target} constructs @tab P
-      @tab Only C/C++, @code{nowait} only stub
+      @tab @code{nowait} only stub
 @item @code{task_reduction} clause with @code{taskgroup} @tab Y @tab
 @item @code{task} modifier to @code{reduction} clause @tab Y @tab
 @item @code{affinity} clause to @code{task} construct @tab Y @tab Stub only
@@ -213,13 +214,13 @@ The OpenMP 4.5 specification is fully supported.
       and @code{taskloop simd} constructs @tab Y @tab
 @item @code{taskloop} construct cancelable by @code{cancel} construct
       @tab Y @tab
-@item @code{mutexinouset} @emph{dependence-type} for @code{depend} clause
+@item @code{mutexinoutset} @emph{dependence-type} for @code{depend} clause
       @tab Y @tab
 @item Predefined memory spaces, memory allocators, allocator traits
       @tab Y @tab Some are only stubs
 @item Memory management routines @tab Y @tab
 @item @code{allocate} directive @tab N @tab
-@item @code{allocate} clause @tab P @tab initial support in C/C++ only
+@item @code{allocate} clause @tab P @tab initial support
 @item @code{use_device_addr} clause on @code{target data} @tab Y @tab
 @item @code{ancestor} modifier on @code{device} clause
       @tab P @tab Reverse offload unsupported
@@ -244,7 +245,7 @@ The OpenMP 4.5 specification is fully supported.
       device memory mapped by an array section @tab P @tab
 @item Mapping of Fortran pointer and allocatable variables, including pointer
       and allocatable components of variables
-      @tab P @tab Mapping of vars with allocatable components unspported
+      @tab P @tab Mapping of vars with allocatable components unsupported
 @item @code{defaultmap} extensions @tab Y @tab
 @item @code{declare mapper} directive @tab N @tab
 @item @code{omp_get_supported_active_levels} routine @tab Y @tab
@@ -293,7 +294,7 @@ The OpenMP 4.5 specification is fully supported.
 @item @code{align} clause/modifier in @code{allocate} directive/clause
       and @code{allocator} directive @tab P @tab C/C++ on clause only
 @item @code{thread_limit} clause to @code{target} construct @tab Y @tab
-@item @code{has_device_addr} clause to @code{target} construct @tab N @tab
+@item @code{has_device_addr} clause to @code{target} construct @tab Y @tab
 @item iterators in @code{target update} motion clauses and @code{map}
       clauses @tab N @tab
 @item indirect calls to the device version of a procedure or function in
@@ -313,12 +314,12 @@ The OpenMP 4.5 specification is fully supported.
 @item @code{omp_target_is_accessible} runtime routine @tab N @tab
 @item @code{omp_target_memcpy_async} and @code{omp_target_memcpy_rect_async}
       runtime routines @tab N @tab
-@item @code{omp_get_mapped_ptr} runtime routine @tab N @tab
+@item @code{omp_get_mapped_ptr} runtime routine @tab Y @tab
 @item @code{omp_calloc}, @code{omp_realloc}, @code{omp_aligned_alloc} and
       @code{omp_aligned_calloc} runtime routines @tab Y @tab
 @item @code{omp_alloctrait_key_t} enum: @code{omp_atv_serialized} added,
       @code{omp_atv_default} changed @tab Y @tab
-@item @code{omp_display_env} runtime routine @tab P
+@item @code{omp_display_env} runtime routine @tab Y
       @tab Not inside @code{target} regions
 @item @code{ompt_scope_endpoint_t} enum: @code{ompt_scope_beginend} @tab N @tab
 @item @code{ompt_sync_region_t} enum additions @tab N @tab

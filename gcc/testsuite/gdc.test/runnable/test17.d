@@ -40,4 +40,3 @@ int main()
     ulog("point(1.2)\n");
     return 0;
 }
-

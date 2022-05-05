@@ -3,8 +3,8 @@
 template<typename Fun, typename... Args> // { dg-error "template parameter" }
 struct call;
 
-template<typename Fun, typename Arg0>
-struct call // { dg-message "note: redeclared here" }
+template<typename Fun, typename Arg0> // { dg-message "note: redeclared here" }
+struct call
 {
     template<typename Sig>
     struct result;
@@ -20,8 +20,8 @@ struct call // { dg-message "note: redeclared here" }
 template<typename Fun, int... N> // { dg-error "template parameter" }
 struct call2;
 
-template<typename Fun, int N>
-struct call2 // { dg-message "note: redeclared here" }
+template<typename Fun, int N> // { dg-message "note: redeclared here" }
+struct call2
 {
     template<typename Sig>
     struct result;
@@ -36,8 +36,8 @@ struct call2 // { dg-message "note: redeclared here" }
 template<typename Fun, template<typename> class... TT> // { dg-error "template parameter" }
 struct call3;
 
-template<typename Fun, template<typename> class TT>
-struct call3 // { dg-message "note: redeclared here" }
+template<typename Fun, template<typename> class TT> // { dg-message "note: redeclared here" }
+struct call3
 {
     template<typename Sig>
     struct result;

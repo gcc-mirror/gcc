@@ -156,6 +156,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 #endif
   };
 
+// Ignore warnings about std::iterator.
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
   struct _Bit_iterator_base
   : public std::iterator<std::random_access_iterator_tag, bool>
   {
@@ -255,6 +258,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	      + __x._M_offset - __y._M_offset);
     }
   };
+#pragma GCC diagnostic pop
 
   struct _Bit_iterator : public _Bit_iterator_base
   {
@@ -1131,9 +1135,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       _GLIBCXX20_CONSTEXPR
       iterator
 #if __cplusplus >= 201103L
-      insert(const_iterator __position, const bool& __x = bool())
+      insert(const_iterator __position, const bool& __x)
 #else
-      insert(iterator __position, const bool& __x = bool())
+      insert(iterator __position, const bool& __x)
 #endif
       {
 	const difference_type __n = __position - begin();
@@ -1144,6 +1148,13 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	  _M_insert_aux(__position._M_const_cast(), __x);
 	return begin() + __n;
       }
+
+#if _GLIBCXX_USE_DEPRECATED
+      _GLIBCXX_DEPRECATED_SUGGEST("insert(position, false)")
+      iterator
+      insert(const_iterator __position)
+      { return this->insert(__position._M_const_cast(), false); }
+#endif
 
 #if __cplusplus >= 201103L
       template<typename _InputIterator,

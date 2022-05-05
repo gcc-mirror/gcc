@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2011-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 2011-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -3032,12 +3032,12 @@ package body Sem_Dim is
    --                  symbol is not empty, then the symbol appears as a
    --                  suffix. Otherwise, a new string is created and appears
    --                  as a suffix of Item. This string results in the
-   --                  successive concatanations between each unit symbol
+   --                  successive concatenations between each unit symbol
    --                  raised by its corresponding dimension power from the
    --                  dimensions of Item.
 
    --   * Put_Dim_Of : The output is a new string resulting in the successive
-   --                  concatanations between each dimension symbol raised by
+   --                  concatenations between each dimension symbol raised by
    --                  its corresponding dimension power from the dimensions of
    --                  Item.
 

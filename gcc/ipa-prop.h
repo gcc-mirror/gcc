@@ -25,7 +25,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #define IPA_UNDESCRIBED_USE -1
 
-/* ipa-prop.c stuff (ipa-cp, indirect inlining):  */
+/* ipa-prop.cc stuff (ipa-cp, indirect inlining):  */
 
 /* A jump function for a callsite represents the values passed as actual
    arguments of the callsite.  They were originally proposed in a paper called
@@ -59,7 +59,7 @@ along with GCC; see the file COPYING3.  If not see
    parameter or can apply one simple binary operation to it (such jump
    functions are called polynomial).
 
-   Jump functions are computed in ipa-prop.c by function
+   Jump functions are computed in ipa-prop.cc by function
    update_call_notes_after_inlining.  Some information can be lost and jump
    functions degraded accordingly when inlining, see
    update_call_notes_after_inlining in the same file.  */
@@ -143,6 +143,8 @@ struct GTY(()) ipa_ancestor_jf_data
   int formal_id;
   /* Flag with the same meaning like agg_preserve in ipa_pass_through_data.  */
   unsigned agg_preserved : 1;
+  /* When set, the operation should not have any effect on NULL pointers.  */
+  unsigned keep_null : 1;
 };
 
 /* A jump function for an aggregate part at a given offset, which describes how
@@ -436,6 +438,17 @@ ipa_get_jf_ancestor_type_preserved (struct ipa_jump_func *jfunc)
 {
   gcc_checking_assert (jfunc->type == IPA_JF_ANCESTOR);
   return jfunc->value.ancestor.agg_preserved;
+}
+
+/* Return if jfunc represents an operation whether we first check the formal
+   parameter for non-NULLness unless it does not matter because the offset is
+   zero anyway.  */
+
+static inline bool
+ipa_get_jf_ancestor_keep_null (struct ipa_jump_func *jfunc)
+{
+  gcc_checking_assert (jfunc->type == IPA_JF_ANCESTOR);
+  return jfunc->value.ancestor.keep_null;
 }
 
 /* Class for allocating a bundle of various potentially known properties about
@@ -1184,11 +1197,11 @@ bool ipcp_get_parm_bits (tree, tree *, widest_int *);
 bool unadjusted_ptr_and_unit_offset (tree op, tree *ret,
 				     poly_int64 *offset_ret);
 
-/* From tree-sra.c:  */
+/* From tree-sra.cc:  */
 tree build_ref_for_offset (location_t, tree, poly_int64, bool, tree,
 			   gimple_stmt_iterator *, bool);
 
-/* In ipa-cp.c  */
-void ipa_cp_c_finalize (void);
+/* In ipa-cp.cc  */
+void ipa_cp_cc_finalize (void);
 
 #endif /* IPA_PROP_H */

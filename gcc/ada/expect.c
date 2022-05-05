@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *                     Copyright (C) 2001-2021, AdaCore                     *
+ *                     Copyright (C) 2001-2022, AdaCore                     *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -345,8 +345,17 @@ __gnat_waitpid (int pid)
 {
   int status = 0;
 
-  waitpid (pid, &status, 0);
-  status = WEXITSTATUS (status);
+  if (waitpid (pid, &status, 0) == -1) {
+     return -1;
+  }
+
+  if WIFEXITED (status) {
+     status = WEXITSTATUS (status);
+  } else if WIFSIGNALED (status) {
+     status = WTERMSIG (status);
+  } else if WIFSTOPPED (status) {
+     status = WSTOPSIG (status);
+  }
 
   return status;
 }

@@ -48,6 +48,7 @@ class impl_region_model_context : public region_model_context
 			     logger *logger = NULL);
 
   bool warn (pending_diagnostic *d) FINAL OVERRIDE;
+  void add_note (pending_note *pn) FINAL OVERRIDE;
   void on_svalue_leak (const svalue *) OVERRIDE;
   void on_liveness_change (const svalue_set &live_svalues,
 			   const region_model *model) FINAL OVERRIDE;
@@ -89,6 +90,8 @@ class impl_region_model_context : public region_model_context
   bool get_taint_map (sm_state_map **out_smap,
 		       const state_machine **out_sm,
 		       unsigned *out_sm_idx) FINAL OVERRIDE;
+
+  const gimple *get_stmt () const OVERRIDE { return m_stmt; }
 
   exploded_graph *m_eg;
   log_user m_logger;
@@ -997,6 +1000,8 @@ public:
 
   const region_model &get_model () const { return m_model; }
   const auto_sbitmap &get_snodes_visited () const { return m_snodes_visited; }
+
+  void dump_to_pp (pretty_printer *pp, bool simple, bool multiline) const;
 
 private:
   region_model m_model;

@@ -136,3 +136,8 @@ func osinit() {
 	ncpu = getncpu()
 	physPageSize = getPageSize()
 }
+
+//go:nosplit
+func validSIGPROF(mp *m, c *sigctxt) bool {
+	return true
+}

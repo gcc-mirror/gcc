@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -69,7 +69,12 @@ package Erroutc is
 
    Is_Warning_Msg : Boolean := False;
    --  Set True to indicate if current message is warning message (contains ?
-   --  or contains < and Error_Msg_Warn is True.
+   --  or contains < and Error_Msg_Warn is True).
+
+   Is_Runtime_Raise : Boolean := False;
+   --  Set to True to indicate that the current message is a warning about a
+   --  constraint error that will be raised at runtime (contains [ and switch
+   --  -gnatwE was given).
 
    Is_Info_Msg : Boolean := False;
    --  Set True to indicate that the current message starts with the characters
@@ -238,6 +243,10 @@ package Erroutc is
       Warn_Err : Boolean;
       --  True if this is a warning message which is to be treated as an error
       --  as a result of a match with a Warning_As_Error pragma.
+
+      Warn_Runtime_Raise : Boolean;
+      --  True if this a warning about a constraint error that will be raised
+      --  at runtime.
 
       Warn_Chr : String (1 .. 2);
       --  See Warning_Msg_Char

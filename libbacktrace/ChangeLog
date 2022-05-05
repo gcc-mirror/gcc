@@ -1,3 +1,23 @@
+2022-04-05  Ian Lance Taylor  <iant@golang.org>
+
+	* elf.c (elf_zlib_inflate): Don't skip initial aligned byte in
+	uncompressed block.
+
+2022-02-17  Ian Lance Taylor  <iant@golang.org>
+
+	* dwarf.c (find_address_ranges): Handle skeleton units.
+	(read_function_entry): Likewise.
+
+2022-02-16  Ian Lance Taylor  <iant@golang.org>
+
+	* dwarf.c (build_address_map): Initialize DWARF 5 fields of unit.
+
+2022-02-03  David Seifert  <soap@gentoo.org>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	* configure.ac: Support --disable-werror.
+	* configure: Regenerate.
+
 2021-12-28  Francois-Xavier Coudert  <fxcoudert@gmail.com>
 
 	PR libbacktrace/103822

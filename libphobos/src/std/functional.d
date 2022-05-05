@@ -65,8 +65,11 @@ module std.functional;
 
 import std.meta : AliasSeq, Reverse;
 import std.traits : isCallable, Parameters;
+import std.conv : toCtString;
 
 import std.internal.attributes : betterC;
+
+public import core.lifetime : forward;
 
 private template needOpCallAlias(alias fun)
 {
@@ -707,19 +710,43 @@ template partial(alias fun, alias arg)
     {
         static assert(false, "Cannot apply partial to a non-callable '" ~ fun.stringof ~ "'.");
     }
-    else // Assume fun is callable and uniquely defined.
+    else
     {
-        static if (Parameters!fun.length == 0)
+        import std.meta : Filter;
+
+        static if (__traits(compiles, __traits(getOverloads,
+            __traits(parent, fun), __traits(identifier, fun))))
+            alias overloads = __traits(getOverloads, __traits(parent, fun),
+                __traits(identifier, fun));
+        else
+            alias overloads = AliasSeq!(fun);
+
+        enum isCallableWithArg(alias fun) = Parameters!fun.length > 0 &&
+            is(typeof(arg) : Parameters!fun[0]);
+        alias candidates = Filter!(isCallableWithArg, overloads);
+
+        static if (overloads.length == 1 && Parameters!fun.length == 0)
         {
             static assert(0, "Cannot partially apply '" ~ fun.stringof ~ "'." ~
                 "'" ~ fun.stringof ~ "' has 0 arguments.");
         }
-        else static if (!is(typeof(arg) : Parameters!fun[0]))
+        else static if (candidates.length == 0)
         {
+            import std.meta : NoDuplicates, staticMap;
+
+            enum hasParameters(alias fun) = Parameters!fun.length > 0;
+            alias firstParameter(alias fun) = Parameters!fun[0];
+            alias firstParameters = NoDuplicates!(
+                staticMap!(firstParameter, Filter!(hasParameters, overloads)));
+
             string errorMsg()
             {
-                string msg = "Argument mismatch for '" ~ fun.stringof ~ "': expected " ~
-                    Parameters!fun[0].stringof ~ ", but got " ~ typeof(arg).stringof ~ ".";
+                string msg = "Argument mismatch for '" ~ fun.stringof ~
+                    "': expected " ~ firstParameters[0].stringof;
+                static foreach (firstParam; firstParameters[1 .. $])
+                    msg ~= " or " ~ firstParam.stringof;
+                msg ~= ", but got " ~ typeof(arg).stringof ~ ".";
+
                 return msg;
             }
             static assert(0, errorMsg());
@@ -727,10 +754,11 @@ template partial(alias fun, alias arg)
         else
         {
             import std.traits : ReturnType;
-            ReturnType!fun partial(Parameters!fun[1..$] args2)
-            {
-                return fun(arg, args2);
-            }
+            static foreach (candidate; candidates)
+                ReturnType!candidate partial(Parameters!candidate[1..$] args2)
+                {
+                    return candidate(arg, args2);
+                }
         }
     }
 }
@@ -744,6 +772,22 @@ template partial(alias fun, alias arg)
     // Note that in most cases you'd use an alias instead of a value
     // assignment. Using an alias allows you to partially evaluate template
     // functions without committing to a particular type of the function.
+}
+
+// https://issues.dlang.org/show_bug.cgi?id=21457
+///
+@safe unittest
+{
+    // Overloads are resolved when the partially applied function is called
+    // with the remaining arguments.
+    struct S
+    {
+        static char fun(int i, string s) { return s[i]; }
+        static int fun(int a, int b) { return a * b; }
+    }
+    alias fun3 = partial!(S.fun, 3);
+    assert(fun3("hello") == 'l');
+    assert(fun3(10) == 30);
 }
 
 // tests for partially evaluating callables
@@ -1805,9 +1849,156 @@ if (isCallable!(F))
     }
 }
 
-// forward used to be here but was moved to druntime
-template forward(args...)
+/**
+ * Passes the fields of a struct as arguments to a function.
+ *
+ * Can be used with a $(LINK2 https://dlang.org/spec/expression.html#function_literals,
+ * function literal) to give temporary names to the fields of a struct or
+ * tuple.
+ *
+ * Params:
+ *   fun = Callable that the struct's fields will be passed to.
+ *
+ * Returns:
+ *   A function that accepts a single struct as an argument and passes its
+ *   fields to `fun` when called.
+ */
+template bind(alias fun)
 {
-    import core.lifetime : fun = forward;
-    alias forward = fun!args;
+    /**
+     * Params:
+     *   args = The struct or tuple whose fields will be used as arguments.
+     *
+     * Returns: `fun(args.tupleof)`
+     */
+    auto ref bind(T)(auto ref T args)
+    if (is(T == struct))
+    {
+        import std.meta : Map = staticMap;
+        import core.lifetime : move;
+
+        // Forwards the i'th member of `args`
+        // Needed because core.lifetime.forward doesn't work on struct members
+        template forwardArg(size_t i)
+        {
+            static if (__traits(isRef, args) || !is(typeof(move(args.tupleof[i]))))
+                enum forwardArg = "args.tupleof[" ~ toCtString!i ~ "], ";
+            else
+                enum forwardArg = "move(args.tupleof[" ~ toCtString!i ~ "]), ";
+        }
+
+        static if (args.tupleof.length == 0)
+            enum argList = "";
+        else
+            alias argList = Map!(forwardArg, Iota!(args.tupleof.length));
+
+        return mixin("fun(", argList, ")");
+    }
+}
+
+/// Giving names to tuple elements
+@safe unittest
+{
+    import std.typecons : tuple;
+
+    auto name = tuple("John", "Doe");
+    string full = name.bind!((first, last) => first ~ " " ~ last);
+    assert(full == "John Doe");
+}
+
+/// Passing struct fields to a function
+@safe unittest
+{
+    import std.algorithm.comparison : min, max;
+
+    struct Pair
+    {
+        int a;
+        int b;
+    }
+
+    auto p = Pair(123, 456);
+    assert(p.bind!min == 123); // min(p.a, p.b)
+    assert(p.bind!max == 456); // max(p.a, p.b)
+}
+
+/// In a range pipeline
+@safe unittest
+{
+    import std.algorithm.iteration : map, filter;
+    import std.algorithm.comparison : equal;
+    import std.typecons : tuple;
+
+    auto ages = [
+        tuple("Alice", 35),
+        tuple("Bob",   64),
+        tuple("Carol", 21),
+        tuple("David", 39),
+        tuple("Eve",   50)
+    ];
+
+    auto overForty = ages
+        .filter!(bind!((name, age) => age > 40))
+        .map!(bind!((name, age) => name));
+
+    assert(overForty.equal(["Bob", "Eve"]));
+}
+
+// Zero arguments
+@safe unittest
+{
+    struct Empty {}
+
+    assert(Empty().bind!(() => 123) == 123);
+}
+
+// Non-copyable arguments
+@safe unittest
+{
+    import std.typecons : tuple;
+
+    static struct NoCopy
+    {
+        int n;
+        @disable this(this);
+    }
+
+    static struct Pair
+    {
+        NoCopy a, b;
+    }
+
+    static auto fun(NoCopy a, NoCopy b)
+    {
+        return tuple(a.n, b.n);
+    }
+
+    auto expected = fun(NoCopy(1), NoCopy(2));
+    assert(Pair(NoCopy(1), NoCopy(2)).bind!fun == expected);
+}
+
+// ref arguments
+@safe unittest
+{
+    import std.typecons : tuple;
+
+    auto t = tuple(123, 456);
+    t.bind!((ref int a, int b) { a = 789; b = 1011; });
+
+    assert(t[0] == 789);
+    assert(t[1] == 456);
+}
+
+// auto ref arguments
+@safe unittest
+{
+    import std.typecons : tuple;
+
+    auto t = tuple(123);
+    t.bind!((auto ref x) {
+        static assert(__traits(isRef, x));
+    });
+    tuple(123).bind!((auto ref x) {
+        static assert(!__traits(isRef, x));
+    });
 }

@@ -1,3 +1,18 @@
+2022-05-04  Martin Liska  <mliska@suse.cz>
+
+	* plugin-api.h (enum ld_plugin_tag): Do not set implicit enum
+	values.
+
+2022-04-06  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* cuda/cuda.h: New file.
+
+2022-03-19  Tiezhu Yang  <yangtiezhu@loongson.cn>
+
+	* floatformat.h (floatformat_ieee_quad_big): Renamed from
+	floatformat_ia64_quad_big.
+	(floatformat_ieee_quad_little): Similarly.
+
 2021-12-12  Jonathan Wakely  <jwakely@redhat.com>
 
 	* unique-ptr.h: Removed.

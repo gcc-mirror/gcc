@@ -2,6 +2,8 @@
 
 ! See also 'c-c++-common/goacc/nested-reductions-2-routine.c'.
 
+! { dg-additional-options -Wuninitialized }
+
 subroutine acc_routine ()
   implicit none (type, external)
   !$acc routine gang
@@ -9,6 +11,7 @@ subroutine acc_routine ()
 
     ! { dg-error "gang reduction on an orphan loop" "" { target *-*-* } .+1 }
     !$acc loop reduction(+:sum)
+    ! { dg-warning {'sum' is used uninitialized} {} { target *-*-* } .-1 }
     do i = 1, 10
       !$acc loop  ! { dg-warning "nested loop in reduction needs reduction clause for .sum." }
       do j = 1, 10
@@ -107,6 +110,7 @@ subroutine acc_routine ()
 
     ! { dg-error "gang reduction on an orphan loop" "" { target *-*-* } .+1 }
     !$acc loop reduction(+:sum) reduction(-:diff)
+    ! { dg-warning {'diff' is used uninitialized} {} { target *-*-* } .-1 }
     do i = 1, 10
       !$acc loop reduction(-:diff)  ! { dg-warning "nested loop in reduction needs reduction clause for .sum." }
       do j = 1, 10

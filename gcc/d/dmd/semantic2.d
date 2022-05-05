@@ -330,11 +330,14 @@ private extern(C++) final class Semantic2Visitor : Visitor
         // gets imported, it is unaffected by context.
         Scope* sc = Scope.createGlobal(mod); // create root scope
         //printf("Module = %p\n", sc.scopesym);
-        // Pass 2 semantic routines: do initializers and function bodies
-        for (size_t i = 0; i < mod.members.dim; i++)
+        if (mod.members)
         {
-            Dsymbol s = (*mod.members)[i];
-            s.semantic2(sc);
+            // Pass 2 semantic routines: do initializers and function bodies
+            for (size_t i = 0; i < mod.members.dim; i++)
+            {
+                Dsymbol s = (*mod.members)[i];
+                s.semantic2(sc);
+            }
         }
         if (mod.userAttribDecl)
         {
@@ -422,7 +425,7 @@ private extern(C++) final class Semantic2Visitor : Visitor
                 const sameParams = tf1.parameterList == tf2.parameterList;
 
                 // Allow the hack to declare overloads with different parameters/STC's
-                // @@@DEPRECATED_2.094@@@
+                // @@@DEPRECATED_2.104@@@
                 // Deprecated in 2020-08, make this an error in 2.104
                 if (parent1.isModule() &&
                     f1.linkage != LINK.d && f1.linkage != LINK.cpp &&
@@ -475,7 +478,7 @@ private extern(C++) final class Semantic2Visitor : Visitor
         i.mod.semantic2(null);
         if (i.mod.needmoduleinfo)
         {
-            //printf("module5 %s because of %s\n", sc.module.toChars(), mod.toChars());
+            //printf("module5 %s because of %s\n", sc._module.toChars(), mod.toChars());
             if (sc)
                 sc._module.needmoduleinfo = 1;
         }

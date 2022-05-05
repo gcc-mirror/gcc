@@ -1063,7 +1063,8 @@ default_width_for_float (int kind)
     {
     case 4:  return 15;
     case 8:  return 25;
-    case 16: return 42;
+    case 16:
+    case 17: return 42;
     default: return  0;
     }
 }
@@ -1075,7 +1076,8 @@ default_precision_for_float (int kind)
     {
     case 4:  return 7;
     case 8:  return 16;
-    case 16: return 33;
+    case 16:
+    case 17: return 33;
     default: return 0;
     }
 }

@@ -23,4 +23,3 @@ int* test2()
 {
     return S().bar();  // error
 }
-

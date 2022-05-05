@@ -30,7 +30,7 @@ void test01()
   // Check for required base class.
   list<int> l;
   typedef front_insert_iterator<list<int> > test_iterator;
-  typedef iterator<output_iterator_tag, void, void, void, void> base_iterator;
+  typedef iterator<output_iterator_tag, void, void, void, void> base_iterator; // { dg-warning "is deprecated" "" { target c++17 } }
   test_iterator  r_it(l);
   base_iterator* base __attribute__((unused)) = &r_it;
 }

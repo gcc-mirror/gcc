@@ -302,8 +302,7 @@ public:
             //property(name, "impure");
             break;
         case PURE.weak:     return property(name, "weak");
-        case PURE.const_:   return property(name, "const");
-        case PURE.strong:   return property(name, "strong");
+        case PURE.const_:   return property(name, "strong");
         case PURE.fwdref:   return property(name, "fwdref");
         }
     }
@@ -320,10 +319,7 @@ public:
             // Should not be printed
             //property(name, "d");
             break;
-        case LINK.system:
-            // Should not be printed
-            //property(name, "system");
-            break;
+        case LINK.system:   return property(name, "system");
         case LINK.c:        return property(name, "c");
         case LINK.cpp:      return property(name, "cpp");
         case LINK.windows:  return property(name, "windows");

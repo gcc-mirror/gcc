@@ -33,9 +33,11 @@ extern bool fold_stmt (gimple_stmt_iterator *);
 extern bool fold_stmt (gimple_stmt_iterator *, tree (*) (tree));
 extern bool fold_stmt_inplace (gimple_stmt_iterator *);
 extern tree maybe_fold_and_comparisons (tree, enum tree_code, tree, tree,
-					enum tree_code, tree, tree);
+					enum tree_code, tree, tree,
+					basic_block = nullptr);
 extern tree maybe_fold_or_comparisons (tree, enum tree_code, tree, tree,
-				       enum tree_code, tree, tree);
+				       enum tree_code, tree, tree,
+				       basic_block = nullptr);
 extern bool clear_padding_type_may_have_padding_p (tree);
 extern void clear_type_padding_in_mask (tree, unsigned char *);
 extern bool optimize_atomic_compare_exchange_p (gimple *);
@@ -62,7 +64,7 @@ extern tree gimple_fold_indirect_ref (tree);
 extern bool gimple_fold_builtin_sprintf (gimple_stmt_iterator *);
 extern bool gimple_fold_builtin_snprintf (gimple_stmt_iterator *);
 extern bool arith_code_with_undefined_signed_overflow (tree_code);
-extern gimple_seq rewrite_to_defined_overflow (gimple *);
+extern gimple_seq rewrite_to_defined_overflow (gimple *, bool = false);
 extern void replace_call_with_value (gimple_stmt_iterator *, tree);
 extern tree tree_vec_extract (gimple_stmt_iterator *, tree, tree, tree, tree);
 
@@ -165,7 +167,7 @@ gimple_build_round_up (gimple_seq *seq, tree type, tree old_size,
 extern bool gimple_stmt_nonnegative_warnv_p (gimple *, bool *, int = 0);
 extern bool gimple_stmt_integer_valued_real_p (gimple *, int = 0);
 
-/* In gimple-match.c.  */
+/* In gimple-match.cc.  */
 extern tree gimple_simplify (enum tree_code, tree, tree,
 			     gimple_seq *, tree (*)(tree));
 extern tree gimple_simplify (enum tree_code, tree, tree, tree,

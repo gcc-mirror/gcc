@@ -80,6 +80,14 @@ call_details::call_details (const gcall *call, region_model *model,
     }
 }
 
+/* Get the manager from m_model.  */
+
+region_model_manager *
+call_details::get_manager () const
+{
+  return m_model->get_manager ();
+}
+
 /* Get any uncertainty_t associated with the region_model_context.  */
 
 uncertainty_t *
@@ -204,13 +212,15 @@ call_details::dump (bool simple) const
   pp_flush (&pp);
 }
 
-/* Get a conjured_svalue for this call for REG.  */
+/* Get a conjured_svalue for this call for REG,
+   and purge any state already relating to that conjured_svalue.  */
 
 const svalue *
 call_details::get_or_create_conjured_svalue (const region *reg) const
 {
   region_model_manager *mgr = m_model->get_manager ();
-  return mgr->get_or_create_conjured_svalue (reg->get_type (), m_call, reg);
+  return mgr->get_or_create_conjured_svalue (reg->get_type (), m_call, reg,
+					     conjured_purge (m_model, m_ctxt));
 }
 
 /* Implementations of specific functions.  */
@@ -264,6 +274,75 @@ region_model::impl_call_analyzer_dump_capacity (const gcall *call,
   warning_at (call->location, 0, "capacity: %qs", desc.m_buffer);
 }
 
+/* Compare D1 and D2 using their names, and then IDs to order them.  */
+
+static int
+cmp_decls (tree d1, tree d2)
+{
+  gcc_assert (DECL_P (d1));
+  gcc_assert (DECL_P (d2));
+  if (DECL_NAME (d1) && DECL_NAME (d2))
+    if (int cmp = strcmp (IDENTIFIER_POINTER (DECL_NAME (d1)),
+			  IDENTIFIER_POINTER (DECL_NAME (d2))))
+      return cmp;
+  return (int)DECL_UID (d1) - (int)DECL_UID (d2);
+}
+
+/* Comparator for use by vec<tree>::qsort,
+   using their names, and then IDs to order them.  */
+
+static int
+cmp_decls_ptr_ptr (const void *p1, const void *p2)
+{
+  tree const *d1 = (tree const *)p1;
+  tree const *d2 = (tree const *)p2;
+
+  return cmp_decls (*d1, *d2);
+}
+
+/* Handle a call to "__analyzer_dump_escaped".
+
+   Emit a warning giving the number of decls that have escaped, followed
+   by a comma-separated list of their names, in alphabetical order.
+
+   This is for use when debugging, and may be of use in DejaGnu tests.  */
+
+void
+region_model::impl_call_analyzer_dump_escaped (const gcall *call)
+{
+  auto_vec<tree> escaped_decls;
+  for (auto iter : m_store)
+    {
+      const binding_cluster *c = iter.second;
+      if (!c->escaped_p ())
+	continue;
+      if (tree decl = c->get_base_region ()->maybe_get_decl ())
+	escaped_decls.safe_push (decl);
+    }
+
+  /* Sort them into deterministic order; alphabetical is
+     probably most user-friendly.  */
+  escaped_decls.qsort (cmp_decls_ptr_ptr);
+
+  pretty_printer pp;
+  pp_format_decoder (&pp) = default_tree_printer;
+  pp_show_color (&pp) = pp_show_color (global_dc->printer);
+  bool first = true;
+  for (auto iter : escaped_decls)
+    {
+      if (first)
+	first = false;
+      else
+	pp_string (&pp, ", ");
+      pp_printf (&pp, "%qD", iter);
+    }
+  /* Print the number to make it easier to write DejaGnu tests for
+     the "nothing has escaped" case.  */
+  warning_at (call->location, 0, "escaped: %i: %s",
+	      escaped_decls.length (),
+	      pp_formatted_text (&pp));
+}
+
 /* Handle a call to "__analyzer_eval" by evaluating the input
    and dumping as a dummy warning, so that test cases can use
    dg-warning to validate the result (and so unexpected warnings will
@@ -304,7 +383,9 @@ region_model::impl_call_calloc (const call_details &cd)
 				  nmemb_sval, size_sval);
   const region *new_reg
     = create_region_for_heap_alloc (prod_sval, cd.get_ctxt ());
-  zero_fill_region (new_reg);
+  const region *sized_reg
+    = m_mgr->get_sized_region (new_reg, NULL_TREE, prod_sval);
+  zero_fill_region (sized_reg);
   if (cd.get_lhs_type ())
     {
       const svalue *ptr_sval
@@ -355,7 +436,6 @@ region_model::impl_call_fgets (const call_details &cd)
     {
       const region *base_reg = reg->get_base_region ();
       const svalue *new_sval = cd.get_or_create_conjured_svalue (base_reg);
-      purge_state_involving (new_sval, cd.get_ctxt ());
       set_value (base_reg, new_sval, cd.get_ctxt ());
     }
 }
@@ -370,7 +450,6 @@ region_model::impl_call_fread (const call_details &cd)
     {
       const region *base_reg = reg->get_base_region ();
       const svalue *new_sval = cd.get_or_create_conjured_svalue (base_reg);
-      purge_state_involving (new_sval, cd.get_ctxt ());
       set_value (base_reg, new_sval, cd.get_ctxt ());
     }
 }
@@ -420,29 +499,29 @@ region_model::impl_call_malloc (const call_details &cd)
 }
 
 /* Handle the on_call_pre part of "memcpy" and "__builtin_memcpy".  */
+// TODO: complain about overlapping src and dest.
 
 void
 region_model::impl_call_memcpy (const call_details &cd)
 {
-  const svalue *dest_sval = cd.get_arg_svalue (0);
+  const svalue *dest_ptr_sval = cd.get_arg_svalue (0);
+  const svalue *src_ptr_sval = cd.get_arg_svalue (1);
   const svalue *num_bytes_sval = cd.get_arg_svalue (2);
 
-  const region *dest_reg = deref_rvalue (dest_sval, cd.get_arg_tree (0),
+  const region *dest_reg = deref_rvalue (dest_ptr_sval, cd.get_arg_tree (0),
 					 cd.get_ctxt ());
+  const region *src_reg = deref_rvalue (src_ptr_sval, cd.get_arg_tree (1),
+					cd.get_ctxt ());
 
-  cd.maybe_set_lhs (dest_sval);
+  cd.maybe_set_lhs (dest_ptr_sval);
 
-  if (tree num_bytes = num_bytes_sval->maybe_get_constant ())
-    {
-      /* "memcpy" of zero size is a no-op.  */
-      if (zerop (num_bytes))
-	return;
-    }
-
-  check_region_for_write (dest_reg, cd.get_ctxt ());
-
-  /* Otherwise, mark region's contents as unknown.  */
-  mark_region_as_unknown (dest_reg, cd.get_uncertainty ());
+  const region *sized_src_reg
+    = m_mgr->get_sized_region (src_reg, NULL_TREE, num_bytes_sval);
+  const region *sized_dest_reg
+    = m_mgr->get_sized_region (dest_reg, NULL_TREE, num_bytes_sval);
+  const svalue *src_contents_sval
+    = get_store_value (sized_src_reg, cd.get_ctxt ());
+  set_value (sized_dest_reg, src_contents_sval, cd.get_ctxt ());
 }
 
 /* Handle the on_call_pre part of "memset" and "__builtin_memset".  */
@@ -580,7 +659,18 @@ region_model::impl_call_realloc (const call_details &cd)
       const call_details cd (get_call_details (model, ctxt));
       const svalue *ptr_sval = cd.get_arg_svalue (0);
       const svalue *size_sval = cd.get_arg_svalue (1);
-      if (const region *buffer_reg = ptr_sval->maybe_get_region ())
+
+      /* We can only grow in place with a non-NULL pointer.  */
+      {
+	const svalue *null_ptr
+	  = model->m_mgr->get_or_create_int_cst (ptr_sval->get_type (), 0);
+	if (!model->add_constraint (ptr_sval, NE_EXPR, null_ptr,
+				    cd.get_ctxt ()))
+	  return false;
+      }
+
+      if (const region *buffer_reg = model->deref_rvalue (ptr_sval, NULL_TREE,
+							  ctxt))
 	if (compat_types_p (size_sval->get_type (), size_type_node))
 	  model->set_dynamic_extents (buffer_reg, size_sval, ctxt);
       if (cd.get_lhs_region ())
@@ -625,10 +715,15 @@ region_model::impl_call_realloc (const call_details &cd)
 	= model->create_region_for_heap_alloc (new_size_sval, ctxt);
       const svalue *new_ptr_sval
 	= model->m_mgr->get_ptr_svalue (cd.get_lhs_type (), new_reg);
+      if (!model->add_constraint (new_ptr_sval, NE_EXPR, old_ptr_sval,
+				  cd.get_ctxt ()))
+	return false;
+
       if (cd.get_lhs_type ())
 	cd.maybe_set_lhs (new_ptr_sval);
 
-      if (const region *freed_reg = old_ptr_sval->maybe_get_region ())
+      if (const region *freed_reg = model->deref_rvalue (old_ptr_sval,
+							 NULL_TREE, ctxt))
 	{
 	  /* Copy the data.  */
 	  const svalue *old_size_sval = model->get_dynamic_extents (freed_reg);
@@ -639,7 +734,18 @@ region_model::impl_call_realloc (const call_details &cd)
 						  old_size_sval);
 	      const svalue *buffer_content_sval
 		= model->get_store_value (sized_old_reg, cd.get_ctxt ());
-	      model->set_value (new_reg, buffer_content_sval, cd.get_ctxt ());
+	      const region *sized_new_reg
+		= model->m_mgr->get_sized_region (new_reg, NULL,
+						  old_size_sval);
+	      model->set_value (sized_new_reg, buffer_content_sval,
+				cd.get_ctxt ());
+	    }
+	  else
+	    {
+	      /* We don't know how big the old region was;
+		 mark the new region as having been touched to avoid uninit
+		 issues.  */
+	      model->mark_region_as_unknown (new_reg, cd.get_uncertainty ());
 	    }
 
 	  /* Free the old region, so that pointers to the old buffer become
@@ -724,7 +830,9 @@ region_model::impl_call_strchr (const call_details &cd)
 	      const svalue *offset
 		= mgr->get_or_create_conjured_svalue (size_type_node,
 						      cd.get_call_stmt (),
-						      str_reg);
+						      str_reg,
+						      conjured_purge (model,
+								      ctxt));
 	      result = mgr->get_or_create_binop (lhs_type, POINTER_PLUS_EXPR,
 						 str_sval, offset);
 	    }

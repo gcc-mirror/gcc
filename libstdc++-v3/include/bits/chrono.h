@@ -327,7 +327,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif // C++20
 
 #if __cplusplus >= 201703L
-# define __cpp_lib_chrono 201611
+# define __cpp_lib_chrono 201611L
 
     template<typename _ToDur, typename _Rep, typename _Period>
       constexpr __enable_if_is_duration<_ToDur>
@@ -1198,7 +1198,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   } // namespace chrono
 
 #if __cplusplus >= 201402L
-    #define __cpp_lib_chrono_udls 201304
+#define __cpp_lib_chrono_udls 201304L
 
   inline namespace literals
   {

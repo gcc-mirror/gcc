@@ -1,4 +1,4 @@
-/* LTO plugin for gold and/or GNU ld.
+/* LTO plugin for linkers like gold, GNU ld or mold.
    Copyright (C) 2009-2022 Free Software Foundation, Inc.
    Contributed by Rafael Avila de Espindola (espindola@google.com).
 
@@ -16,11 +16,11 @@ You should have received a copy of the GNU General Public License
 along with this program; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-/* The plugin has only one external function: onload. Gold passes it an array of
-   function that the plugin uses to communicate back to gold.
+/* The plugin has only one external function: onload. A linker passes it an array of
+   function that the plugin uses to communicate back to the linker.
 
-   With the functions provided by gold, the plugin can be notified when
-   gold first analyzes a file and pass a symbol table back to gold. The plugin
+   With the functions provided by the linker, the plugin can be notified when
+   the linker first analyzes a file and pass a symbol table back to the linker. The plugin
    is also notified when all symbols have been read and it is time to generate
    machine code for the necessary symbols.
 
@@ -122,7 +122,7 @@ struct plugin_symtab
 struct plugin_objfile
 {
   int found;
-  int offload;
+  bool offload;
   simple_object_read *objfile;
   struct plugin_symtab *out;
   const struct ld_plugin_input_file *file;
@@ -205,7 +205,7 @@ static const char *link_output_name = NULL;
 
 /* This indicates link_output_name already contains the dot of the
    suffix, so we can skip it in extensions.  */
-static int skip_in_suffix = 0;
+static bool skip_in_suffix = false;
 
 /* The version of gold being used, or -1 if not gold.  The number is
    MAJOR * 100 + MINOR.  */
@@ -636,7 +636,8 @@ exec_lto_wrapper (char *argv[])
   /* Write argv to a file to avoid a command line that is too long
      Save the file locally on save-temps.  */
   const char *suffix = ".lto_wrapper_args";
-  suffix += skip_in_suffix;
+  if (skip_in_suffix)
+    suffix++;
   if (save_temps && link_output_name)
     arguments_file_name = concat (link_output_name, suffix, NULL);
   else
@@ -799,8 +800,15 @@ all_symbols_read_handler (void)
       char *arg;
       char *offload_objects_file_name;
       struct plugin_offload_file *ofld;
+      const char *suffix = ".ofldlist";
 
-      offload_objects_file_name = make_temp_file (".ofldlist");
+      if (save_temps && link_output_name)
+	{
+	  suffix += skip_in_suffix;
+	  offload_objects_file_name = concat (link_output_name, suffix, NULL);
+	}
+      else
+	offload_objects_file_name = make_temp_file (suffix);
       check (offload_objects_file_name, LDPL_FATAL,
 	     "Failed to generate a temporary file name");
       f = fopen (offload_objects_file_name, "w");
@@ -1132,14 +1140,14 @@ process_offload_section (void *data, const char *name, off_t offset, off_t len)
   if (startswith (name, ".gnu.offload_lto_.opts"))
     {
       struct plugin_objfile *obj = (struct plugin_objfile *) data;
-      obj->offload = 1;
+      obj->offload = true;
       return 0;
     }
 
   return 1;
 }
 
-/* Callback used by gold to check if the plugin will claim FILE. Writes
+/* Callback used by a linker to check if the plugin will claim FILE. Writes
    the result in CLAIMED. */
 
 static enum ld_plugin_status
@@ -1175,7 +1183,7 @@ claim_file_handler (const struct ld_plugin_input_file *file, int *claimed)
   *claimed = 0;
   obj.file = file;
   obj.found = 0;
-  obj.offload = 0;
+  obj.offload = false;
   obj.out = &lto_file.symtab;
   errmsg = NULL;
   obj.objfile = simple_object_start_read (file->fd, file->offset, LTO_SEGMENT_NAME,
@@ -1213,7 +1221,7 @@ claim_file_handler (const struct ld_plugin_input_file *file, int *claimed)
     simple_object_find_sections (obj.objfile, process_offload_section,
 				 &obj, &err);
 
-  if (obj.found == 0 && obj.offload == 0)
+  if (obj.found == 0 && !obj.offload)
     goto err;
 
   if (obj.found > 1)
@@ -1250,10 +1258,10 @@ claim_file_handler (const struct ld_plugin_input_file *file, int *claimed)
   /* If this is an LTO file without offload, and it is the first LTO file, save
      the pointer to the last offload file in the list.  Further offload LTO
      files will be inserted after it, if any.  */
-  if (*claimed && obj.offload == 0 && offload_files_last_lto == NULL)
+  if (*claimed && !obj.offload && offload_files_last_lto == NULL)
     offload_files_last_lto = offload_files_last;
 
-  if (obj.offload == 1)
+  if (obj.offload)
     {
       /* Add file to the list.  The order must be exactly the same as the final
 	 order after recompilation and linking, otherwise host and target tables
@@ -1374,7 +1382,7 @@ process_option (const char *option)
   verbose = verbose || debug;
 }
 
-/* Called by gold after loading the plugin. TV is the transfer vector. */
+/* Called by a linker after loading the plugin. TV is the transfer vector. */
 
 enum ld_plugin_status
 onload (struct ld_plugin_tv *tv)
@@ -1540,7 +1548,7 @@ onload (struct ld_plugin_tv *tv)
 	  assert (escapes == 0);
 	  assert (ticks == oddticks);
 	  assert (q - link_output_name == len - 1);
-	  skip_in_suffix = 1;
+	  skip_in_suffix = true;
 	}
     }
 

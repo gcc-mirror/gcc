@@ -43,6 +43,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    * @{
    */
 
+// Ignore warnings about std::iterator.
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+
   /// Provides input iterator semantics for streams.
   template<typename _Tp, typename _CharT = char,
            typename _Traits = char_traits<_CharT>, typename _Dist = ptrdiff_t>
@@ -256,6 +260,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       operator++(int) _GLIBCXX_NOEXCEPT
       { return *this; }
     };
+#pragma GCC diagnostic pop
 
   /// @} group iterators
 

@@ -822,7 +822,7 @@ struct _CommonImplX86 : _CommonImplBuiltin
 
 // }}}
 // _SimdImplX86 {{{
-template <typename _Abi>
+template <typename _Abi, typename>
   struct _SimdImplX86 : _SimdImplBuiltin<_Abi>
   {
     using _Base = _SimdImplBuiltin<_Abi>;
@@ -4241,7 +4241,7 @@ struct _MaskImplX86Mixin
 
 // }}}
 // _MaskImplX86 {{{
-template <typename _Abi>
+template <typename _Abi, typename>
   struct _MaskImplX86 : _MaskImplX86Mixin, _MaskImplBuiltin<_Abi>
   {
     using _MaskImplX86Mixin::_S_to_bits;

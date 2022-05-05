@@ -1,7 +1,8 @@
 /* PR middle-end/78257 - missing memcmp optimization with constant arrays
    { dg-do compile }
    { dg-options "-O -Wall -fdump-tree-optimized" }
-   { dg-skip-if "missing data representation" { "pdp11-*-*" } } */
+   { dg-skip-if "missing data representation" { "pdp11-*-*" } }
+   { dg-skip-if "test assumes structs are not packed" { default_packed } } */
 
 #define offsetof(T, m) __builtin_offsetof (T, m)
 

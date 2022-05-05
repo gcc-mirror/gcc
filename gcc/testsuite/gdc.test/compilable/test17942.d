@@ -12,4 +12,3 @@ void test()
 enum B = AliasSeq!(2);
 
 enum C = AliasSeq!();
-

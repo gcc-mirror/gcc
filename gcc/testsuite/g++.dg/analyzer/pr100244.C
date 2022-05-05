@@ -11,7 +11,7 @@ struct _Hashtable_alloc {
   int _M_single_bucket;
   int *_M_buckets;
   _Hashtable_alloc () { _M_buckets = &_M_single_bucket; }
-  ~_Hashtable_alloc () { delete _M_buckets; } // { dg-warning "not on the heap" }
+  ~_Hashtable_alloc () { delete _M_buckets; } // { dg-warning "on the stack" }
 };
 
 void

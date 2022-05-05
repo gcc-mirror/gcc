@@ -64,7 +64,7 @@ const_fixed_from_double_int (double_int payload,
 extern void fixed_from_string (FIXED_VALUE_TYPE *, const char *,
 			       scalar_mode);
 
-/* In tree.c: wrap up a FIXED_VALUE_TYPE in a tree node.  */
+/* In tree.cc: wrap up a FIXED_VALUE_TYPE in a tree node.  */
 extern tree build_fixed (tree, FIXED_VALUE_TYPE);
 
 /* Extend or truncate to a new mode.  */

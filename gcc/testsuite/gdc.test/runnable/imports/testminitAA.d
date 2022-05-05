@@ -8,4 +8,3 @@ static this()
     printf("AA\n");
     aa = 1;
 }
-

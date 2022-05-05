@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1499,11 +1499,19 @@ begin
          Namet.Finalize;
          Check_Rep_Info;
 
-         --  Exit the driver with an appropriate status indicator. This will
-         --  generate an empty object file for ignored Ghost units, otherwise
-         --  no object file will be generated.
+         if Ecode /= E_Success then
+            --  If we cannot generate code, exit the driver with an appropriate
+            --  status indicator.
 
-         Exit_Program (Ecode);
+            Exit_Program (Ecode);
+
+         else
+            --  Otherwise use a goto so that finalization occurs normally and
+            --  for instance any late processing in the GCC code can be
+            --  performed.
+
+            goto End_Of_Program;
+         end if;
       end if;
 
       --  In -gnatc mode we only do annotation if -gnatR is also set, or if

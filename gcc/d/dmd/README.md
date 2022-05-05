@@ -33,6 +33,7 @@ Note that these groups have no strict meaning, the category assignments are a bi
 |-----------------------------------------------------------------------------|-----------------------------------------------------------------------|
 | [mars.d](https://github.com/dlang/dmd/blob/master/src/dmd/mars.d)           | The entry point. Contains `main`.                                     |
 | [cli.d](https://github.com/dlang/dmd/blob/master/src/dmd/cli.d)             | Define the command line interface                                     |
+| [dmdparams.d](https://github.com/dlang/dmd/blob/master/src/dmd/dmdparams.d) | DMD-specific parameters                                               |
 | [globals.d](https://github.com/dlang/dmd/blob/master/src/dmd/globals.d)     | Define a structure storing command line options                       |
 | [dinifile.d](https://github.com/dlang/dmd/blob/master/src/dmd/dinifile.d)   | Parse settings from .ini file (`sc.ini` / `dmd.conf`)                 |
 | [vsoptions.d](https://github.com/dlang/dmd/blob/master/src/dmd/vsoptions.d) | Detect the Microsoft Visual Studio toolchain for linking              |
@@ -129,6 +130,8 @@ Note that these groups have no strict meaning, the category assignments are a bi
 | [impcnvtab.d](https://github.com/dlang/dmd/blob/master/src/dmd/impcnvtab.d)   | Define an implicit conversion table for basic types                                        |
 | [importc.d](https://github.com/dlang/dmd/blob/master/src/dmd/importc.d)       | Helpers specific to ImportC                                                                |
 | [sideeffect.d](https://github.com/dlang/dmd/blob/master/src/dmd/sideeffect.d) | Extract side-effects of expressions for certain lowerings.                                 |
+| [mustuse.d](https://github.com/dlang/dmd/blob/master/src/dmd/mustuse.d)       | Helpers related to the `@mustuse` attribute                                                |
+
 
 **Compile Time Function Execution (CTFE)**
 

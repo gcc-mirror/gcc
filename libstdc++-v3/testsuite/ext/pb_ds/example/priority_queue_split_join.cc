@@ -101,7 +101,7 @@ main()
     cout <<* it << endl;
 
   // Now split the queues.
-  even_p.split(bind2nd(modulus<int>(), 2), odd_p);
+  even_p.split(bind2nd(modulus<int>(), 2), odd_p); // { dg-warning "is deprecated" "" { target c++11 } }
 
   // Check that each one contains the appropriate 10 values.
 

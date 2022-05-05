@@ -360,7 +360,6 @@
    UNSPEC_XXGENPCV
    UNSPEC_MTVSBM
    UNSPEC_EXTENDDITI2
-   UNSPEC_MTVSRD_DITI_W1
    UNSPEC_VCNTMB
    UNSPEC_VEXPAND
    UNSPEC_VEXTRACT
@@ -372,6 +371,7 @@
    UNSPEC_REPLACE_UN
    UNSPEC_VDIVES
    UNSPEC_VDIVEU
+   UNSPEC_VMSUMCUD
    UNSPEC_XXEVAL
    UNSPEC_XXSPLTIW
    UNSPEC_XXSPLTIDP
@@ -1237,7 +1237,12 @@
                "<VSisa>,   <VSisa>,   <VSisa>,   *,         *,         *,
                 *,         *,         *,         *,         p9v,       *,
                 p10,       p10,
-                <VSisa>,   *,         *,         *,         *")])
+                <VSisa>,   *,         *,         *,         *")
+   (set_attr "prefixed"
+               "*,         *,         *,         *,         *,         *,
+                *,         *,         *,         *,         *,         *,
+                *,         yes,
+                *,         *,         *,         *,         *")])
 
 ;;              VSX store  VSX load   VSX move   GPR load   GPR store  GPR move
 ;;              LXVKQ      XXSPLTI*
@@ -1276,6 +1281,11 @@
                "<VSisa>,   <VSisa>,   <VSisa>,   *,         *,         *,
                 p10,       p10,
                 p9v,       *,         <VSisa>,   *,         *,
+                *,         *")
+   (set_attr "prefixed"
+               "*,         *,         *,         *,         *,         *,
+                *,         yes,
+                *,         *,         *,         *,         *,
                 *,         *")])
 
 ;; Explicit  load/store expanders for the builtin functions
@@ -3387,15 +3397,12 @@
 ;; Optimize cases were we can do a simple or direct move.
 ;; Or see if we can avoid doing the move at all
 
-;; There are some unresolved problems with reload that show up if an Altivec
-;; register was picked.  Limit the scalar value to FPRs for now.
-
 (define_insn "vsx_extract_<mode>"
-  [(set (match_operand:<VS_scalar> 0 "gpc_reg_operand" "=d, d,  wr, wr")
+  [(set (match_operand:<VS_scalar> 0 "gpc_reg_operand" "=wa, wa, wr, wr")
 	(vec_select:<VS_scalar>
-	 (match_operand:VSX_D 1 "gpc_reg_operand"      "wa, wa, wa, wa")
+	 (match_operand:VSX_D 1 "gpc_reg_operand"       "wa, wa, wa, wa")
 	 (parallel
-	  [(match_operand:QI 2 "const_0_to_1_operand"  "wD, n,  wD, n")])))]
+	  [(match_operand:QI 2 "const_0_to_1_operand"   "wD, n,  wD, n")])))]
   "VECTOR_MEM_VSX_P (<MODE>mode)"
 {
   int element = INTVAL (operands[2]);
@@ -3854,8 +3861,10 @@
   rtx vec_tmp = operands[3];
   int value;
 
+  /* Adjust index for LE element ordering, the below minuend 3 is computed by
+     GET_MODE_NUNITS (V4SImode) - 1.  */
   if (!BYTES_BIG_ENDIAN)
-    element = GEN_INT (GET_MODE_NUNITS (V4SImode) - 1 - INTVAL (element));
+    element = GEN_INT (3 - INTVAL (element));
 
   /* If the value is in the correct position, we can avoid doing the VSPLT<x>
      instruction.  */
@@ -4184,27 +4193,22 @@
  }
 [(set_attr "type" "vecsimple")])
 
-(define_expand "vreplace_un_<mode>"
- [(set (match_operand:REPLACE_ELT 0 "register_operand")
- (unspec:REPLACE_ELT [(match_operand:REPLACE_ELT 1 "register_operand")
-		      (match_operand:<VS_scalar> 2 "register_operand")
-		      (match_operand:QI 3 "const_0_to_12_operand")]
-		     UNSPEC_REPLACE_UN))]
- "TARGET_POWER10"
-{
-   /* Immediate value is the byte index Big Endian numbering.  */
-   emit_insn (gen_vreplace_elt_<mode>_inst (operands[0], operands[1],
-					    operands[2], operands[3]));
-   DONE;
- }
-[(set_attr "type" "vecsimple")])
-
 (define_insn "vreplace_elt_<mode>_inst"
  [(set (match_operand:REPLACE_ELT 0 "register_operand" "=v")
   (unspec:REPLACE_ELT [(match_operand:REPLACE_ELT 1 "register_operand" "0")
 		       (match_operand:<VS_scalar> 2 "register_operand" "r")
 		       (match_operand:QI 3 "const_0_to_12_operand" "n")]
 		      UNSPEC_REPLACE_ELT))]
+ "TARGET_POWER10"
+ "vins<REPLACE_ELT_char> %0,%2,%3"
+ [(set_attr "type" "vecsimple")])
+
+(define_insn "vreplace_un_<mode>"
+ [(set (match_operand:V16QI 0 "register_operand" "=v")
+  (unspec:V16QI [(match_operand:REPLACE_ELT 1 "register_operand" "0")
+                 (match_operand:<VS_scalar> 2 "register_operand" "r")
+		 (match_operand:QI 3 "const_0_to_12_operand" "n")]
+		UNSPEC_REPLACE_UN))]
  "TARGET_POWER10"
  "vins<REPLACE_ELT_char> %0,%2,%3"
  [(set_attr "type" "vecsimple")])
@@ -4230,8 +4234,10 @@
   rtx v4si_tmp = operands[3];
   int value;
 
+  /* Adjust index for LE element ordering, the below minuend 3 is computed by
+     GET_MODE_NUNITS (V4SImode) - 1.  */
   if (!BYTES_BIG_ENDIAN)
-    element = GEN_INT (GET_MODE_NUNITS (V4SImode) - 1 - INTVAL (element));
+    element = GEN_INT (3 - INTVAL (element));
 
   /* If the value is in the correct position, we can avoid doing the VSPLT<x>
      instruction.  */
@@ -4273,8 +4279,10 @@
   rtx df_tmp = operands[4];
   int value;
 
+  /* Adjust index for LE element ordering, the below minuend 3 is computed by
+     GET_MODE_NUNITS (V4SImode) - 1.  */
   if (!BYTES_BIG_ENDIAN)
-    element = GEN_INT (GET_MODE_NUNITS (V4SImode) - 1 - INTVAL (element));
+    element = GEN_INT (3 - INTVAL (element));
 
   /* If the value is in the correct position, we can avoid doing the VSPLT<x>
      instruction.  */
@@ -4466,8 +4474,10 @@
 {
   int ele = INTVAL (operands[4]);
 
+  /* Adjust index for LE element ordering, the below minuend 3 is computed by
+     GET_MODE_NUNITS (V4SFmode) - 1.  */
   if (!BYTES_BIG_ENDIAN)
-    ele = GET_MODE_NUNITS (V4SFmode) - 1 - ele;
+    ele = 3 - ele;
 
   operands[4] = GEN_INT (GET_MODE_SIZE (SFmode) * ele);
   return "xxinsertw %x0,%x2,%4";
@@ -5009,15 +5019,67 @@
   DONE;
 })
 
-;; ISA 3.1 vector sign extend
-;; Move DI value from GPR to TI mode in VSX register, word 1.
-(define_insn "mtvsrdd_diti_w1"
-  [(set (match_operand:TI 0 "register_operand" "=wa")
-	(unspec:TI [(match_operand:DI 1 "register_operand" "r")]
-		     UNSPEC_MTVSRD_DITI_W1))]
-  "TARGET_POWERPC64 && TARGET_DIRECT_MOVE"
-  "mtvsrdd %x0,0,%1"
-  [(set_attr "type" "vecmove")])
+;; Sign extend DI to TI.  We provide both GPR targets and Altivec targets on
+;; power10.  On earlier systems, the machine independent code will generate a
+;; shift left to sign extend the 64-bit value to 128-bit.
+;;
+;; If the register allocator prefers to use GPR registers, we will use a shift
+;; left instruction to sign extend the 64-bit value to 128-bit.
+;;
+;; If the register allocator prefers to use Altivec registers on power10,
+;; generate the vextsd2q instruction.
+(define_insn_and_split "extendditi2"
+  [(set (match_operand:TI 0 "register_operand" "=r,r,v,v,v")
+	(sign_extend:TI (match_operand:DI 1 "input_operand" "r,m,b,wa,Z")))
+   (clobber (reg:DI CA_REGNO))]
+  "TARGET_POWERPC64 && TARGET_POWER10"
+  "#"
+  "&& reload_completed"
+  [(pc)]
+{
+  rtx dest = operands[0];
+  rtx src = operands[1];
+  int dest_regno = reg_or_subregno (dest);
+
+  /* Handle conversion to GPR registers.  Load up the low part and then do
+     a sign extension to the upper part.  */
+  if (INT_REGNO_P (dest_regno))
+    {
+      rtx dest_hi = gen_highpart (DImode, dest);
+      rtx dest_lo = gen_lowpart (DImode, dest);
+
+      emit_move_insn (dest_lo, src);
+      /* In case src is a MEM, we have to use the destination, which is a
+         register, instead of re-using the source.  */
+      rtx src2 = (REG_P (src) || SUBREG_P (src)) ? src : dest_lo;
+      emit_insn (gen_ashrdi3 (dest_hi, src2, GEN_INT (63)));
+      DONE;
+    }
+
+  /* For conversion to an Altivec register, generate either a splat operation
+     or a load rightmost double word instruction.  Both instructions gets the
+     DImode value into the lower 64 bits, and then do the vextsd2q
+     instruction.  */
+
+  else if (ALTIVEC_REGNO_P (dest_regno))
+    {
+      if (MEM_P (src))
+	emit_insn (gen_vsx_lxvrdx (dest, src));
+      else
+	{
+	  rtx dest_v2di = gen_rtx_REG (V2DImode, dest_regno);
+	  emit_insn (gen_vsx_splat_v2di (dest_v2di, src));
+	}
+
+      emit_insn (gen_extendditi2_vector (dest, dest));
+      DONE;
+    }
+
+  else
+    gcc_unreachable ();
+}
+  [(set_attr "length" "8")
+   (set_attr "type" "shift,load,vecmove,vecperm,load")])
 
 ;; Sign extend 64-bit value in TI reg, word 1, to 128-bit value in TI reg
 (define_insn "extendditi2_vector"
@@ -5027,18 +5089,6 @@
   "TARGET_POWER10"
   "vextsd2q %0,%1"
   [(set_attr "type" "vecexts")])
-
-(define_expand "extendditi2"
-  [(set (match_operand:TI 0 "gpc_reg_operand")
-	(sign_extend:DI (match_operand:DI 1 "gpc_reg_operand")))]
-  "TARGET_POWER10"
-  {
-    /* Move 64-bit src from GPR to vector reg and sign extend to 128-bits.  */
-    rtx temp = gen_reg_rtx (TImode);
-    emit_insn (gen_mtvsrdd_diti_w1 (temp, operands[1]));
-    emit_insn (gen_extendditi2_vector (operands[0], temp));
-    DONE;
-  })
 
 
 ;; ISA 3.0 Binary Floating-Point Support
@@ -5632,7 +5682,8 @@
 (define_expand "len_load_v16qi"
   [(match_operand:V16QI 0 "vlogical_operand")
    (match_operand:V16QI 1 "memory_operand")
-   (match_operand:QI 2 "gpc_reg_operand")]
+   (match_operand:QI 2 "gpc_reg_operand")
+   (match_operand:QI 3 "zero_constant")]
   "TARGET_P9_VECTOR && TARGET_64BIT"
 {
   rtx mem = XEXP (operands[1], 0);
@@ -5646,6 +5697,7 @@
   [(match_operand:V16QI 0 "memory_operand")
    (match_operand:V16QI 1 "vlogical_operand")
    (match_operand:QI 2 "gpc_reg_operand")
+   (match_operand:QI 3 "zero_constant")
   ]
   "TARGET_P9_VECTOR && TARGET_64BIT"
 {
@@ -6584,3 +6636,31 @@
    [(set_attr "type" "vecperm")
     (set_attr "prefixed" "yes")])
 
+;; Construct V1TI by vsx_concat_v2di
+(define_split
+  [(set (match_operand:V1TI 0 "vsx_register_operand")
+	(subreg:V1TI
+	  (match_operand:TI 1 "int_reg_operand") 0 ))]
+  "TARGET_P9_VECTOR && !reload_completed"
+  [(const_int 0)]
+{
+  rtx tmp1 = simplify_gen_subreg (DImode, operands[1], TImode, 0);
+  rtx tmp2 = simplify_gen_subreg (DImode, operands[1], TImode, 8);
+  rtx tmp3 = gen_reg_rtx (V2DImode);
+  emit_insn (gen_vsx_concat_v2di (tmp3, tmp1, tmp2));
+  rtx tmp4 = simplify_gen_subreg (V1TImode, tmp3, V2DImode, 0);
+  emit_move_insn (operands[0], tmp4);
+  DONE;
+})
+
+;; vmsumcud
+(define_insn "vmsumcud"
+[(set (match_operand:V1TI 0 "register_operand" "+v")
+      (unspec:V1TI [(match_operand:V2DI 1 "register_operand" "v")
+                    (match_operand:V2DI 2 "register_operand" "v")
+		    (match_operand:V1TI 3 "register_operand" "v")]
+		   UNSPEC_VMSUMCUD))]
+  "TARGET_POWER10"
+  "vmsumcud %0,%1,%2,%3"
+  [(set_attr "type" "veccomplex")]
+)

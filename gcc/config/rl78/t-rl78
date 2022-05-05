@@ -18,7 +18,7 @@
 # License along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
 
-rl78-c.o: $(srcdir)/config/rl78/rl78-c.c $(RTL_H) $(TREE_H) $(CONFIG_H) $(TM_H)
+rl78-c.o: $(srcdir)/config/rl78/rl78-c.cc $(RTL_H) $(TREE_H) $(CONFIG_H) $(TM_H)
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $<
 
 # Enable multilibs:

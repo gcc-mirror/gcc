@@ -1442,7 +1442,7 @@ irange::legacy_union (irange *vr0, const irange *vr1)
    may not be the smallest possible such range.  */
 
 void
-irange::union_ (const irange *other)
+irange::legacy_verbose_union_ (const irange *other)
 {
   if (legacy_mode_p ())
     {
@@ -1482,7 +1482,7 @@ irange::union_ (const irange *other)
 }
 
 void
-irange::intersect (const irange *other)
+irange::legacy_verbose_intersect (const irange *other)
 {
   if (legacy_mode_p ())
     {
@@ -2111,7 +2111,7 @@ vrp_operand_equal_p (const_tree val1, const_tree val2)
   return true;
 }
 
-// ?? These stubs are for ipa-prop.c which use a value_range in a
+// ?? These stubs are for ipa-prop.cc which use a value_range in a
 // hash_traits.  hash-traits.h defines an extern of gt_ggc_mx (T &)
 // instead of picking up the gt_ggc_mx (T *) version.
 void

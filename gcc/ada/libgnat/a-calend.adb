@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -490,7 +490,6 @@ is
       Y : Year_Number;
       M : Month_Number;
       S : Day_Duration;
-      pragma Unreferenced (Y, M, S);
    begin
       Split (Date, Y, M, D, S);
       return D;
@@ -537,7 +536,6 @@ is
       M : Month_Number;
       D : Day_Number;
       S : Day_Duration;
-      pragma Unreferenced (Y, D, S);
    begin
       Split (Date, Y, M, D, S);
       return M;
@@ -552,7 +550,6 @@ is
       M : Month_Number;
       D : Day_Number;
       S : Day_Duration;
-      pragma Unreferenced (Y, M, D);
    begin
       Split (Date, Y, M, D, S);
       return S;
@@ -574,8 +571,6 @@ is
       Se : Integer;
       Ss : Duration;
       Le : Boolean;
-
-      pragma Unreferenced (H, M, Se, Ss, Le);
 
    begin
       --  Even though the input time zone is UTC (0), the flag Use_TZ will
@@ -769,7 +764,6 @@ is
       M : Month_Number;
       D : Day_Number;
       S : Day_Duration;
-      pragma Unreferenced (M, D, S);
    begin
       Split (Date, Y, M, D, S);
       return Y;

@@ -47,5 +47,3 @@ private struct FilterResult(alias pred, Range)
         return _input[0];
     }
 }
-
-

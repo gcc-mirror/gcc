@@ -48,7 +48,8 @@ enum svalue_kind
   SK_WIDENING,
   SK_COMPOUND,
   SK_CONJURED,
-  SK_ASM_OUTPUT
+  SK_ASM_OUTPUT,
+  SK_CONST_FN_RESULT
 };
 
 /* svalue and its subclasses.
@@ -77,7 +78,9 @@ enum svalue_kind
      compound_svalue (SK_COMPOUND): a mapping of bit-ranges to svalues
      conjured_svalue (SK_CONJURED): a value arising from a stmt
      asm_output_svalue (SK_ASM_OUTPUT): an output from a deterministic
-       asm stmt.  */
+       asm stmt.
+     const_fn_result_svalue (SK_CONST_FN_RESULT): the return value from
+       a function with __attribute((const)) for given inputs.  */
 
 /* An abstract base class representing a value held by a region of memory.  */
 
@@ -129,6 +132,8 @@ public:
   dyn_cast_conjured_svalue () const { return NULL; }
   virtual const asm_output_svalue *
   dyn_cast_asm_output_svalue () const { return NULL; }
+  virtual const const_fn_result_svalue *
+  dyn_cast_const_fn_result_svalue () const { return NULL; }
 
   tree maybe_get_constant () const;
   const region *maybe_get_region () const;
@@ -169,6 +174,8 @@ public:
      Most can, but UNKNOWN and POISONED svalues are singletons
      per-type and thus it's meaningless for them to "have state".  */
   virtual bool can_have_associated_state_p () const { return true; }
+
+  const region *maybe_get_deref_base_region () const;
 
  protected:
   svalue (complexity c, tree type)
@@ -1301,6 +1308,27 @@ template <> struct default_hash_traits<compound_svalue::key_t>
 
 namespace ana {
 
+/* A bundle of state for purging information from a program_state about
+   a conjured_svalue.  We pass this whenever calling
+   get_or_create_conjured_svalue, so that if the program_state already
+   has information about this conjured_svalue on an execution path, we
+   can purge that information, to avoid the analyzer confusing the two
+   values as being the same.  */
+
+class conjured_purge
+{
+public:
+  conjured_purge (region_model *model, region_model_context *ctxt)
+  : m_model (model), m_ctxt (ctxt)
+  {
+  }
+  void purge (const conjured_svalue *sval) const;
+
+private:
+  region_model *m_model;
+  region_model_context *m_ctxt;
+};
+
 /* A defined value arising from a statement, where we want to identify a
    particular unknown value, rather than resorting to the unknown_value
    singleton, so that the value can have sm-state.
@@ -1535,4 +1563,128 @@ template <> struct default_hash_traits<asm_output_svalue::key_t>
 {
   static const bool empty_zero_p = true;
 };
+
+namespace ana {
+
+/* The return value from a function with __attribute((const)) for given
+   inputs, provided that we don't have too many inputs, and all of them
+   are deterministic.
+
+   Comparisons of variables that share the same const_fn_result_svalue are known
+   to be equal, even if we don't know what the value is.  */
+
+class const_fn_result_svalue : public svalue
+{
+public:
+  /* Imposing an upper limit and using a (small) array allows key_t
+     to avoid memory management.  */
+  static const unsigned MAX_INPUTS = 2;
+
+  /* A support class for uniquifying instances of const_fn_result_svalue.  */
+  struct key_t
+  {
+    key_t (tree type,
+	   tree fndecl,
+	   const vec<const svalue *> &inputs)
+    : m_type (type), m_fndecl (fndecl),
+      m_num_inputs (inputs.length ())
+    {
+      gcc_assert (inputs.length () <= MAX_INPUTS);
+      for (unsigned i = 0; i < m_num_inputs; i++)
+	m_input_arr[i] = inputs[i];
+    }
+
+    hashval_t hash () const
+    {
+      inchash::hash hstate;
+      hstate.add_ptr (m_type);
+      hstate.add_ptr (m_fndecl);
+      for (unsigned i = 0; i < m_num_inputs; i++)
+	hstate.add_ptr (m_input_arr[i]);
+      return hstate.end ();
+    }
+
+    bool operator== (const key_t &other) const
+    {
+      if (!(m_type == other.m_type
+	    && m_fndecl == other.m_fndecl
+	    && m_num_inputs == other.m_num_inputs))
+	return false;
+      for (unsigned i = 0; i < m_num_inputs; i++)
+	if (m_input_arr[i] != other.m_input_arr[i])
+	  return false;
+      return true;
+    }
+
+    /* Use m_fndecl to mark empty/deleted.  */
+    void mark_deleted () { m_fndecl = reinterpret_cast<tree> (1); }
+    void mark_empty () { m_fndecl = NULL; }
+    bool is_deleted () const
+    {
+      return m_fndecl == reinterpret_cast<tree> (1);
+    }
+    bool is_empty () const { return m_fndecl == NULL; }
+
+    tree m_type;
+    tree m_fndecl;
+    unsigned m_num_inputs;
+    const svalue *m_input_arr[MAX_INPUTS];
+  };
+
+  const_fn_result_svalue (tree type,
+			  tree fndecl,
+			  const vec<const svalue *> &inputs)
+  : svalue (complexity::from_vec_svalue (inputs), type),
+    m_fndecl (fndecl),
+    m_num_inputs (inputs.length ())
+  {
+    gcc_assert (inputs.length () <= MAX_INPUTS);
+    for (unsigned i = 0; i < m_num_inputs; i++)
+      m_input_arr[i] = inputs[i];
+  }
+
+  enum svalue_kind get_kind () const FINAL OVERRIDE
+  {
+    return SK_CONST_FN_RESULT;
+  }
+  const const_fn_result_svalue *
+  dyn_cast_const_fn_result_svalue () const FINAL OVERRIDE
+  {
+    return this;
+  }
+
+  void dump_to_pp (pretty_printer *pp, bool simple) const FINAL OVERRIDE;
+  void accept (visitor *v) const FINAL OVERRIDE;
+
+  tree get_fndecl () const { return m_fndecl; }
+  unsigned get_num_inputs () const { return m_num_inputs; }
+  const svalue *get_input (unsigned idx) const { return m_input_arr[idx]; }
+
+ private:
+  void dump_input (pretty_printer *pp,
+		   unsigned input_idx,
+		   const svalue *sval,
+		   bool simple) const;
+
+  tree m_fndecl;
+  unsigned m_num_inputs;
+  const svalue *m_input_arr[MAX_INPUTS];
+};
+
+} // namespace ana
+
+template <>
+template <>
+inline bool
+is_a_helper <const const_fn_result_svalue *>::test (const svalue *sval)
+{
+  return sval->get_kind () == SK_CONST_FN_RESULT;
+}
+
+template <> struct default_hash_traits<const_fn_result_svalue::key_t>
+: public member_function_hash_traits<const_fn_result_svalue::key_t>
+{
+  static const bool empty_zero_p = true;
+};
+
 #endif /* GCC_ANALYZER_SVALUE_H */

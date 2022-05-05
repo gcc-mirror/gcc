@@ -4,4 +4,3 @@
 private import imports.test63a;
 
 const int SIZE = 7;
-

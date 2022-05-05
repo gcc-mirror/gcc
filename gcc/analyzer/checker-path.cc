@@ -81,6 +81,8 @@ event_kind_to_string (enum event_kind ek)
       return "EK_CUSTOM";
     case EK_STMT:
       return "EK_STMT";
+    case EK_REGION_CREATION:
+      return "EK_REGION_CREATION";
     case EK_FUNCTION_ENTRY:
       return "EK_FUNCTION_ENTRY";
     case EK_STATE_CHANGE:
@@ -197,6 +199,34 @@ statement_event::get_desc (bool) const
   pp_string (&pp, "stmt: ");
   pp_gimple_stmt_1 (&pp, m_stmt, 0, (dump_flags_t)0);
   return label_text::take (xstrdup (pp_formatted_text (&pp)));
+}
+
+/* class region_creation_event : public checker_event.  */
+
+region_creation_event::region_creation_event (const region *reg,
+					      location_t loc,
+					      tree fndecl,
+					      int depth)
+: checker_event (EK_REGION_CREATION, loc, fndecl, depth),
+  m_reg (reg)
+{
+}
+
+/* Implementation of diagnostic_event::get_desc vfunc for
+   region_creation_event.  */
+
+label_text
+region_creation_event::get_desc (bool) const
+{
+  switch (m_reg->get_memory_space ())
+    {
+    default:
+      return label_text::borrow ("region created here");
+    case MEMSPACE_STACK:
+      return label_text::borrow ("region created on stack here");
+    case MEMSPACE_HEAP:
+      return label_text::borrow ("region created on heap here");
+    }
 }
 
 /* class function_entry_event : public checker_event.  */
@@ -989,6 +1019,17 @@ checker_path::debug () const
 	       event_desc.m_buffer);
       event_desc.maybe_free ();
     }
+}
+
+/* Add region_creation_event instance to this path for REG,
+   describing whether REG is on the stack or heap.  */
+
+void
+checker_path::add_region_creation_event (const region *reg,
+					 location_t loc,
+					 tree fndecl, int depth)
+{
+  add_event (new region_creation_event (reg, loc, fndecl, depth));
 }
 
 /* Add a warning_event to the end of this path.  */

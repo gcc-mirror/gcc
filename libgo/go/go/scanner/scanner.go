@@ -155,7 +155,7 @@ func (s *Scanner) error(offs int, msg string) {
 	s.ErrorCount++
 }
 
-func (s *Scanner) errorf(offs int, format string, args ...interface{}) {
+func (s *Scanner) errorf(offs int, format string, args ...any) {
 	s.error(offs, fmt.Sprintf(format, args...))
 }
 
@@ -969,6 +969,8 @@ scanAgain:
 			}
 		case '|':
 			tok = s.switch3(token.OR, token.OR_ASSIGN, '|', token.LOR)
+		case '~':
+			tok = token.TILDE
 		default:
 			// next reports unexpected BOMs - don't repeat
 			if ch != bom {

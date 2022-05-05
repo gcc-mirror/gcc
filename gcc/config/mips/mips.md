@@ -5657,7 +5657,7 @@
   "cache\t0x14,0(%$)"
   [(set_attr "can_delay" "no")])
 
-;; Block moves, see mips.c for more details.
+;; Block moves, see mips.cc for more details.
 ;; Argument 0 is the destination
 ;; Argument 1 is the source
 ;; Argument 2 is the length

@@ -94,6 +94,14 @@ typedef struct c_2 c_2;
 #pragma acc routine /* { dg-error ".#pragma acc routine. not immediately followed by function declaration or definition" } */
 struct d_2 {} d_2;
 
+/* PR c++/101731 */
+/* Regarding the current C/C++ difference, see
+   <http://mid.mail-archive.com/20211122150231.GP2646553@tucnak>.  */
+#pragma acc routine /* { dg-error "not immediately followed by a single function declaration or definition" "" { target c++ } } */
+int pr101731_foo (int pr101731_bar ());
+#pragma acc routine (pr101731_foo) vector /* { dg-error "has already been marked with an OpenACC 'routine' directive" "" { target c } } */
+#pragma acc routine (pr101731_bar) vector /* { dg-error "'pr101731_bar' has not been declared" } */
+
 #pragma acc routine /* { dg-error ".#pragma acc routine. not immediately followed by function declaration or definition" } */
 #pragma acc routine
 int fn4 (void);

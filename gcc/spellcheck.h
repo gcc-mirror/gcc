@@ -23,7 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 typedef unsigned int edit_distance_t;
 const edit_distance_t MAX_EDIT_DISTANCE = UINT_MAX;
 
-/* spellcheck.c  */
+/* spellcheck.cc  */
 extern edit_distance_t
 get_edit_distance (const char *s, int len_s,
 		   const char *t, int len_t);

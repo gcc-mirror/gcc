@@ -1,3 +1,105 @@
+2022-04-19  Richard Henderson  <rth@gcc.gnu.org>
+
+	* MAINTAINERS: Update my email address.
+
+2022-04-01  Qian Jianhua  <qianjh@fujitsu.com>
+
+	* MAINTAINERS: Update my email address.
+
+2022-03-29  Chenghua Xu  <xuchenghua@loongson.cn>
+
+	* MAINTAINERS: (CPU Port Maintainers): Add myself and
+	Lulu as LoongArch port maintainer.
+
+2022-03-29  Chenghua Xu  <xuchenghua@loongson.cn>
+	    Lulu Cheng  <chenglulu@loongson.cn>
+
+	* configure.ac: Add LoongArch tuples.
+	* configure: Regenerate.
+
+2022-03-28  Tom Tromey  <tromey@adacore.com>
+
+	* configure.ac: Remove --with-mpfr-dir and --with-gmp-dir.
+	* configure: Rebuild.
+
+2022-03-24  Bill Schmidt  <bill.schmidt@gmail.com>
+
+	* MAINTAINERS: Change my information.
+
+2022-03-16  Chung-Ju Wu  <jasonwucj@gmail.com>
+
+	* MAINTAINERS: Add myself to DCO section.
+
+2022-03-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* configure.ac: Fix incorrect option in comment.
+	* configure: Regenerate.
+
+2022-03-09  Hans-Peter Nilsson  <hp@axis.com>
+
+	* Makefile.def (dependencies): Make configure-sim depend on
+	all-readline.
+	* Makefile.in: Regenerate.
+
+2022-02-22  Christophe Lyon  <christophe.lyon@foss.st.com>
+
+	* MAINTAINERS (Write After Approval): Update my e-mail address.
+
+2022-02-08  Ulrich Weigand  <ulrich.weigand@de.ibm.com>
+
+	* MAINTAINERS: Remove Hartmut Penner as s390 maintainer.
+
+2022-01-31  Ed Smith-Rowland  <esmithrowland@gmail.com>
+
+	* MAINTAINERS: Update my email and add myself to the DCO list.
+
+2022-01-25  Thomas Schwinge  <thomas@codesourcery.com>
+
+	Revert:
+	2021-09-16  Andrew Pinski  <apinski@marvell.com>
+
+	PR bootstrap/67102
+	* Makefile.def: Have configure-target-libffi depend on
+	all-target-libstdc++-v3.
+	* Makefile.in: Regenerate.
+
+2022-01-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR other/104181
+	* build.log: Remove.
+
+2022-01-20  Martin Liska  <mliska@suse.cz>
+
+	* MAINTAINERS: Adjust email address based on IRC request.
+
+2022-01-18  Xionghu Luo  <luoxhu@linux.ibm.com>
+
+	* MAINTAINERS: Update my email address.
+
+2022-01-17  Martin Liska  <mliska@suse.cz>
+
+	* MAINTAINERS: Rename .c names to .cc.
+
+2022-01-13  Jakub Jelinek  <jakub@redhat.com>
+
+	* Makefile.am: Remove.
+
+2022-01-11  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* Makefile.am: New file.
+
+2022-01-11  Martin Liska  <mliska@suse.cz>
+
+	* MAINTAINERS: Sort 2 names.
+
+2022-01-10  Martin Liska  <mliska@suse.cz>
+
+	* MAINTAINERS: Fix obvious issues with sorting.
+
+2022-01-07  liuhongt  <hongtao.liu@intel.com>
+
+	* build.log: New file.
+
 2022-01-05  Nathan Sidwell  <nathan@acm.org>
 
 	* MAINTAINERS: Add DCO entry.  Sort that list.

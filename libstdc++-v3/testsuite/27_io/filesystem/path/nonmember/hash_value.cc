@@ -42,9 +42,19 @@ test02()
   }
 }
 
+void
+test03()
+{
+  std::hash<path> h;
+  // LWG 3657. std::hash<std::filesystem::path> is not enabled
+  for (const path p : __gnu_test::test_paths)
+    VERIFY( h(p) == hash_value(p) );
+}
+
 int
 main()
 {
   test01();
   test02();
+  test03();
 }

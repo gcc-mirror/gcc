@@ -1,4 +1,4 @@
-/* Export function prototypes from explow.c.
+/* Export function prototypes from explow.cc.
    Copyright (C) 2015-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.

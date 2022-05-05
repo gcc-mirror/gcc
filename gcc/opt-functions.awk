@@ -82,6 +82,17 @@ function opt_args_non_empty(name, flags, description)
 	return args
 }
 
+# Return the number of comma-separated element of S.
+function n_args(s)
+{
+	n = 1
+	while (s ~ ",") {
+		n++
+		sub("[^,]*, *", "", s)
+	}
+	return n
+}
+
 # Return the Nth comma-separated element of S.  Return the empty string
 # if S does not contain N elements.
 function nth_arg(n, s)
@@ -297,7 +308,12 @@ function var_set(flags)
 	}
 	if (flag_set_p("Enum.*", flags)) {
 		en = opt_args("Enum", flags);
-		return enum_index[en] ", CLVC_ENUM, 0"
+		if (flag_set_p("EnumSet", flags))
+			return enum_index[en] ", CLVC_ENUM, CLEV_SET"
+		else if (flag_set_p("EnumBitSet", flags))
+			return enum_index[en] ", CLVC_ENUM, CLEV_BITSET"
+		else
+			return enum_index[en] ", CLVC_ENUM, CLEV_NORMAL"
 	}
 	if (var_type(flags) == "const char *")
 		return "0, CLVC_STRING, 0"
@@ -370,40 +386,4 @@ function integer_range_info(range_option, init, option, uinteger_used)
     }
     else
         return "-1, -1"
-}
-
-# Handle LangEnabledBy(ENABLED_BY_LANGS, ENABLEDBY_NAME, ENABLEDBY_POSARG,
-# ENABLEDBY_NEGARG). This function does not return anything.
-function lang_enabled_by(enabledby_langs, enabledby_name, enabledby_posarg, enabledby_negarg)
-{
-    n_enabledby_arg_langs = split(enabledby_langs, enabledby_arg_langs, " ");
-    if (enabledby_posarg != "" && enabledby_negarg != "") {
-        with_args = "," enabledby_posarg "," enabledby_negarg
-    } else if (enabledby_posarg == "" && enabledby_negarg == "") {
-        with_args = ""
-    } else {
-        print "#error " opts[i] " LangEnabledBy("enabledby_langs","enabledby_name", " \
-            enabledby_posarg", " enabledby_negargs                  \
-            ") with three arguments, it should have either 2 or 4"
-    }
-
-    n_enabledby_array = split(enabledby_name, enabledby_array, " \\|\\| ");
-    for (k = 1; k <= n_enabledby_array; k++) {
-        enabledby_index = opt_numbers[enabledby_array[k]];
-        if (enabledby_index == "") {
-             print "#error " opts[i] " LangEnabledBy("enabledby_langs","enabledby_name", " \
-                 enabledby_posarg", " enabledby_negargs"), unknown option '" enabledby_name "'"
-        } else {
-            for (j = 1; j <= n_enabledby_arg_langs; j++) {
-                 lang_name = lang_sanitized_name(enabledby_arg_langs[j]);
-                 lang_index = lang_numbers[enabledby_arg_langs[j]];
-                 if (enables[lang_name,enabledby_array[k]] == "") {
-                     enabledby[lang_name,n_enabledby_lang[lang_index]] = enabledby_array[k];
-                     n_enabledby_lang[lang_index]++;
-                 }
-                 enables[lang_name,enabledby_array[k]] \
-                     = enables[lang_name,enabledby_array[k]] opts[i] with_args ";";
-            }
-        }
-    }
 }

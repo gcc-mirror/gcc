@@ -1,5 +1,5 @@
 /* { dg-do run } */
-/* { dg-options "-mcpu=power10 -save-temps" } */
+/* { dg-options "-mdejagnu-cpu=power10 -save-temps" } */
 /* { dg-require-effective-target power10_hw } */
 
 /* Check that the expected 128-bit instructions are generated if the processor

@@ -170,7 +170,7 @@ DRUNTIME_CSOURCES = core/stdc/errno_.c
 DRUNTIME_DSOURCES = core/atomic.d core/attribute.d core/bitop.d \
 	core/builtins.d core/checkedint.d core/cpuid.d core/demangle.d \
 	core/exception.d core/gc/config.d core/gc/gcinterface.d \
-	core/gc/registry.d core/internal/abort.d \
+	core/gc/registry.d core/int128.d core/internal/abort.d \
 	core/internal/array/appending.d core/internal/array/capacity.d \
 	core/internal/array/casting.d core/internal/array/comparison.d \
 	core/internal/array/concatenation.d core/internal/array/construction.d \
@@ -294,13 +294,13 @@ DRUNTIME_DSOURCES_NETBSD = core/sys/netbsd/dlfcn.d \
 
 DRUNTIME_DSOURCES_OPENBSD = core/sys/openbsd/dlfcn.d \
 	core/sys/openbsd/err.d core/sys/openbsd/execinfo.d \
-	core/sys/openbsd/pthread_np.d core/sys/openbsd/stdlib.d \
-	core/sys/openbsd/string.d core/sys/openbsd/sys/cdefs.d \
-	core/sys/openbsd/sys/elf.d core/sys/openbsd/sys/elf32.d \
-	core/sys/openbsd/sys/elf64.d core/sys/openbsd/sys/elf_common.d \
-	core/sys/openbsd/sys/link_elf.d core/sys/openbsd/sys/mman.d \
-	core/sys/openbsd/sys/sysctl.d core/sys/openbsd/time.d \
-	core/sys/openbsd/unistd.d
+	core/sys/openbsd/pthread_np.d core/sys/openbsd/pwd.d \
+	core/sys/openbsd/stdlib.d core/sys/openbsd/string.d \
+	core/sys/openbsd/sys/cdefs.d core/sys/openbsd/sys/elf.d \
+	core/sys/openbsd/sys/elf32.d core/sys/openbsd/sys/elf64.d \
+	core/sys/openbsd/sys/elf_common.d core/sys/openbsd/sys/link_elf.d \
+	core/sys/openbsd/sys/mman.d core/sys/openbsd/sys/sysctl.d \
+	core/sys/openbsd/time.d core/sys/openbsd/unistd.d
 
 DRUNTIME_DSOURCES_POSIX = core/sys/posix/aio.d \
 	core/sys/posix/arpa/inet.d core/sys/posix/config.d \
@@ -425,4 +425,4 @@ DRUNTIME_DSOURCES_WINDOWS = core/sys/windows/accctrl.d \
 	core/sys/windows/winuser.d core/sys/windows/winver.d \
 	core/sys/windows/wtsapi32.d core/sys/windows/wtypes.d
 
-DRUNTIME_DISOURCES = __main.di
+DRUNTIME_DISOURCES = __builtins.di __main.di

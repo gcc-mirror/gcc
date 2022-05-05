@@ -36,7 +36,7 @@ enum classify_record
 
 class substring_loc;
 
-/* The following hooks are documented in langhooks.c.  Must not be
+/* The following hooks are documented in langhooks.cc.  Must not be
    NULL.  */
 
 struct lang_hooks_for_tree_inlining
@@ -44,7 +44,7 @@ struct lang_hooks_for_tree_inlining
   bool (*var_mod_type_p) (tree, tree);
 };
 
-/* The following hooks are used by tree-dump.c.  */
+/* The following hooks are used by tree-dump.cc.  */
 
 struct lang_hooks_for_tree_dump
 {
@@ -113,7 +113,7 @@ struct lang_hooks_for_types
      in C.  The default hook ignores the declaration.  */
   void (*register_builtin_type) (tree, const char *);
 
-  /* This routine is called in tree.c to print an error message for
+  /* This routine is called in tree.cc to print an error message for
      invalid use of an incomplete type.  VALUE is the expression that
      was used (or 0 if that isn't known) and TYPE is the type that was
      invalid.  LOC is the location of the use.  */
@@ -166,7 +166,7 @@ struct lang_hooks_for_types
 
   /* Returns the tree that represents the underlying data type used to
      implement the enumeration.  The default implementation will just use
-     type_for_size.  Used in dwarf2out.c to add a DW_AT_type base type
+     type_for_size.  Used in dwarf2out.cc to add a DW_AT_type base type
      reference to a DW_TAG_enumeration.  */
   tree (*enum_underlying_base_type) (const_tree);
 
@@ -188,6 +188,11 @@ struct lang_hooks_for_types
   /* Returns a tree for the unit size of T excluding tail padding that
      might be used by objects inheriting from T.  */
   tree (*unit_size_without_reusable_padding) (tree);
+
+  /* Returns type corresponding to FIELD's type when FIELD is a C++ base class
+     i.e., type without virtual base classes or tail padding.  Returns
+     NULL_TREE otherwise.  */
+  tree (*classtype_as_base) (const_tree);
 };
 
 /* Language hooks related to decls and the symbol table.  */
@@ -521,7 +526,7 @@ struct lang_hooks
   HOST_WIDE_INT (*to_target_charset) (HOST_WIDE_INT);
 
   /* Pointers to machine-independent attribute tables, for front ends
-     using attribs.c.  If one is NULL, it is ignored.  Respectively, a
+     using attribs.cc.  If one is NULL, it is ignored.  Respectively, a
      table of attributes specific to the language, a table of
      attributes common to two or more languages (to allow easy
      sharing), and a table of attributes for checking formats.  */
@@ -631,7 +636,7 @@ struct lang_hooks
   void (*finalize_early_debug) (void);
 
   /* Whenever you add entries here, make sure you adjust langhooks-def.h
-     and langhooks.c accordingly.  */
+     and langhooks.cc accordingly.  */
 };
 
 /* Each front end provides its own.  */

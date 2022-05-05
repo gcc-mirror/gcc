@@ -138,10 +138,6 @@ Wspeculative
 D
 Warn from speculative compiles such as __traits(compiles).
 
-Wtemplates
-D
-; Documented in C
-
 Wunknown-pragmas
 D Var(warn_unknown_pragmas) LangEnabledBy(D, Wextra)
 ; Documented in C
@@ -277,7 +273,7 @@ Add comments for ignored declarations in the generated C++ header.
 
 fdump-c++-spec=
 D RejectNegative Joined
--fdump-cxx-spec=<filename>	Write all declarations as C++ code to <file>.
+-fdump-cxx-spec=<filename>	Write all declarations as C++ code to <filename>.
 
 fdump-d-original
 D
@@ -370,7 +366,7 @@ Use field-wise comparisons for struct equality.
 
 fpreview=fixaliasthis
 D RejectNegative
-When a symbol is resolved, check alias this scope before going to upper scopes.
+When a symbol is resolved, check `alias this' scope before going to upper scopes.
 
 fpreview=in
 D RejectNegative
@@ -399,6 +395,10 @@ Compile release version.
 frevert=all
 D RejectNegative
 Turn off all revertable D language features.
+
+frevert=dip1000
+D RejectNegative
+Revert DIP1000: Scoped pointers.
 
 frevert=dip25
 D RejectNegative

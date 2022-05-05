@@ -62,4 +62,6 @@ version (StdUnittest)
     }
 }
 
+// Used instead of `&object.member` when `member` may be
+// either a field or a @property function.
 package(std) T* addressOf(T)(ref T val) { return &val; }

@@ -40,7 +40,7 @@
    where the arguments are the fields of avr_mcu_t:
    
 	NAME	Name of the device as specified by -mmcu=<NAME>.  Also
-		used by DRIVER_SELF_SPECS and gen-avr-mmcu-specs.c for
+		used by DRIVER_SELF_SPECS and gen-avr-mmcu-specs.cc for
 		- the name of the device specific specs file
 		  in -specs=device-specs/spec-<NAME>
 		- the name of the startup file crt<NAME>.o

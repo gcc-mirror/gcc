@@ -392,7 +392,7 @@ lang_tree_node
 
 /* True if the decl comes from a template instance.  */
 #define DECL_INSTANTIATED(NODE) \
-  (DECL_LANG_FLAG_1 (VAR_OR_FUNCTION_DECL_CHECK (NODE)))
+  (DECL_LANG_FLAG_2 (VAR_OR_FUNCTION_DECL_CHECK (NODE)))
 
 enum d_tree_index
 {
@@ -580,7 +580,6 @@ extern tree build_bounds_index_condition (IndexExp *, tree, tree);
 extern tree build_bounds_slice_condition (SliceExp *, tree, tree, tree);
 extern bool array_bounds_check (void);
 extern bool checkaction_trap_p (void);
-extern tree bind_expr (tree, tree);
 extern TypeFunction *get_function_type (Type *);
 extern bool call_by_alias_p (FuncDeclaration *, FuncDeclaration *);
 extern tree d_build_call_expr (FuncDeclaration *, tree, Expressions *);

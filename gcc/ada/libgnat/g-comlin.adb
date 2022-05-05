@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1999-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1999-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -465,8 +465,8 @@ package body GNAT.Command_Line is
 
       if Do_Expansion then
          declare
-            Arg   : constant String :=
-                      Argument (Parser, Parser.Current_Argument - 1);
+            Arg : constant String :=
+                    Argument (Parser, Parser.Current_Argument - 1);
          begin
             for Index in Arg'Range loop
                if Arg (Index) in '*' | '?' | '[' then
@@ -1257,7 +1257,7 @@ package body GNAT.Command_Line is
       Expanded : String;
       Section  : String := "")
    is
-      Def    : Alias_Definition;
+      Def : Alias_Definition;
 
    begin
       if Config = null then
@@ -2235,7 +2235,6 @@ package body GNAT.Command_Line is
       Add_Before : Boolean   := False)
    is
       Success : Boolean;
-      pragma Unreferenced (Success);
    begin
       Add_Switch (Cmd, Switch, Parameter, Separator,
                   Section, Add_Before, Success);
@@ -2453,7 +2452,6 @@ package body GNAT.Command_Line is
       Section       : String := "")
    is
       Success : Boolean;
-      pragma Unreferenced (Success);
    begin
       Remove_Switch (Cmd, Switch, Remove_All, Has_Parameter, Section, Success);
    end Remove_Switch;

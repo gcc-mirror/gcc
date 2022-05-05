@@ -1,6 +1,5 @@
-// { dg-do compile }
-// { dg-additional-options "-fvect-cost-model=cheap" }
-// { dg-additional-options "-mavx2" { target x86_64-*-* i?86-*-* } }
+// { dg-do compile { target i?86-*-* x86_64-*-* } }
+// { dg-additional-options "-fvect-cost-model=cheap -mavx2" }
 
 #include <stdint.h>
 #include <stdlib.h>

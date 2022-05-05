@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2010-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 2010-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -429,7 +429,7 @@ is
    ------------------
 
    procedure Delete_First (Container : in out Set) is
-      X    : constant Count_Type := Container.Content.First;
+      X : constant Count_Type := Container.Content.First;
    begin
       if X /= 0 then
          Tree_Operations.Delete_Node_Sans_Free (Container.Content, X);
@@ -442,7 +442,7 @@ is
    -----------------
 
    procedure Delete_Last (Container : in out Set) is
-      X    : constant Count_Type := Container.Content.Last;
+      X : constant Count_Type := Container.Content.Last;
    begin
       if X /= 0 then
          Tree_Operations.Delete_Node_Sans_Free (Container.Content, X);
@@ -1420,7 +1420,6 @@ is
       Dst_Node : out Count_Type)
    is
       Success : Boolean;
-      pragma Unreferenced (Success);
 
       procedure Set_Element (Node : in out Node_Type);
 
@@ -1742,7 +1741,7 @@ is
       --------------
 
       function New_Node return Count_Type is
-         N  : Node_Type renames NN (Node);
+         N : Node_Type renames NN (Node);
       begin
          N.Element := Item;
          N.Color   := Red;
@@ -1900,6 +1899,7 @@ is
    function To_Set (New_Item : Element_Type) return Set is
       Node     : Count_Type;
       Inserted : Boolean;
+
    begin
       return S : Set (Capacity => 1) do
          Insert_Sans_Hint (S.Content, New_Item, Node, Inserted);

@@ -1,6 +1,7 @@
 /* PR middle-end/97373 - missing warning on sprintf into allocated destination
    { dg-do compile }
-   { dg-options "-O2 -Wall -ftrack-macro-expansion=0" } */
+   { dg-options "-O2 -Wall -ftrack-macro-expansion=0" }
+   { dg-require-effective-target alloca } */
 
 #include "../range.h"
 

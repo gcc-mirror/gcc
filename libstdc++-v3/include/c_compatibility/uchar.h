@@ -33,6 +33,14 @@
 
 #ifdef _GLIBCXX_NAMESPACE_C
 
+#if (_GLIBCXX_USE_CHAR8_T \
+     && (_GLIBCXX_USE_UCHAR_C8RTOMB_MBRTOC8_FCHAR8_T \
+	 || (__cplusplus >= 202002 \
+	     && _GLIBCXX_USE_UCHAR_C8RTOMB_MBRTOC8_CXX20)))
+using std::mbrtoc8;
+using std::c8rtomb;
+#endif // _GLIBCXX_USE_CHAR8_T
+
 #if _GLIBCXX_USE_C11_UCHAR_CXX11
 using std::mbrtoc16;
 using std::c16rtomb;

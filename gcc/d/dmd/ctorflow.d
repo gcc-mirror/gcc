@@ -222,4 +222,3 @@ bool mergeFieldInit(ref CSX a, const CSX b) pure nothrow
     }
     return ok;
 }
-

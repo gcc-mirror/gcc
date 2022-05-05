@@ -113,14 +113,18 @@ public:
     return m_unsafe_call == other.m_unsafe_call;
   }
 
+  int get_controlling_option () const FINAL OVERRIDE
+  {
+    return OPT_Wanalyzer_unsafe_call_within_signal_handler;
+  }
+
   bool emit (rich_location *rich_loc) FINAL OVERRIDE
   {
     auto_diagnostic_group d;
     diagnostic_metadata m;
     /* CWE-479: Signal Handler Use of a Non-reentrant Function.  */
     m.add_cwe (479);
-    if (warning_meta (rich_loc, m,
-		      OPT_Wanalyzer_unsafe_call_within_signal_handler,
+    if (warning_meta (rich_loc, m, get_controlling_option (),
 		      "call to %qD from within signal handler",
 		      m_unsafe_fndecl))
       {

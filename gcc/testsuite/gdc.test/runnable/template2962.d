@@ -27,4 +27,3 @@ void bug2962comment36()(int p)
     int inner()() { return p; }
     alias inner!() finner;
 }
-

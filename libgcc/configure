@@ -630,6 +630,7 @@ LIPO
 AR
 toolexeclibdir
 toolexecdir
+enable_gcov
 target_subdir
 host_subdir
 build_subdir
@@ -653,7 +654,6 @@ build_cpu
 build
 with_aix_soname
 enable_vtable_verify
-enable_gcov
 enable_shared
 libgcc_topdir
 target_alias
@@ -701,7 +701,6 @@ with_target_subdir
 with_cross_host
 with_ld
 enable_shared
-enable_gcov
 enable_vtable_verify
 with_aix_soname
 enable_version_specific_runtime_libs
@@ -709,6 +708,7 @@ with_toolexeclibdir
 with_slibdir
 enable_maintainer_mode
 with_build_libsubdir
+enable_gcov
 enable_largefile
 enable_decimal_float
 with_system_libunwind
@@ -1342,12 +1342,12 @@ Optional Features:
   --disable-FEATURE       do not include FEATURE (same as --enable-FEATURE=no)
   --enable-FEATURE[=ARG]  include FEATURE [ARG=yes]
   --disable-shared        don't provide a shared libgcc
-  --disable-gcov          don't provide libgcov and related host tools
   --enable-vtable-verify    Enable vtable verification feature
   --enable-version-specific-runtime-libs    Specify that runtime libraries should be installed in a compiler-specific directory
   --enable-maintainer-mode
                           enable make rules and dependencies not useful (and
                           sometimes confusing) to the casual installer
+  --disable-gcov          don't provide libgcov and related host tools
   --disable-largefile     omit support for large files
   --enable-decimal-float={no,yes,bid,dpd}
 			enable decimal float extension to C.  Selecting 'bid'
@@ -2252,15 +2252,6 @@ fi
 
 
 
-# Check whether --enable-gcov was given.
-if test "${enable_gcov+set}" = set; then :
-  enableval=$enable_gcov;
-else
-  enable_gcov=yes
-fi
-
-
-
 # Check whether --enable-vtable-verify was given.
 if test "${enable_vtable_verify+set}" = set; then :
   enableval=$enable_vtable_verify; case "$enableval" in
@@ -2411,6 +2402,9 @@ case "${host}" in
 	# On IA64 HP-UX, PIC is the default but the pic flag
 	# sets the default TLS model and affects inlining.
 	PICFLAG=-fPIC
+	;;
+    loongarch*-*-*)
+	PICFLAG=-fpic
 	;;
     mips-sgi-irix6*)
 	# PIC is the default.
@@ -2711,6 +2705,22 @@ else
 fi
 # No prefix.
 target_subdir=${target_noncanonical}
+
+
+# Check whether --enable-gcov was given.
+if test "${enable_gcov+set}" = set; then :
+  enableval=$enable_gcov;
+else
+  case $target in
+       bpf-*-*)
+         enable_gcov=no
+       ;;
+       *)
+         enable_gcov=yes
+       ;;
+     esac
+fi
+
 
 
 # Calculate toolexeclibdir
@@ -5066,7 +5076,7 @@ $as_echo "$libgcc_cv_cfi" >&6; }
 # word size rather than the address size.
 cat > conftest.c <<EOF
 #if defined(__x86_64__) || (!defined(__i386__) && defined(__LP64__)) \
-    || defined(__mips64)
+    || defined(__mips64) || defined(__loongarch64)
 host_address=64
 #else
 host_address=32

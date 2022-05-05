@@ -14,21 +14,6 @@ nothrow:
 public import core.sys.posix.dlfcn;
 import core.stdc.config;
 
-// enum RTLD_LAZY = 0x00001; // POSIX
-// enum RTLD_NOW = 0x00002; // POSIX
-enum RTLD_NOLOAD = 0x00004;
-enum RTLD_DEEPBIND = 0x00008;
-
-// enum RTLD_GLOBAL = 0x00100; // POSIX
-// enum RTLD_LOCAL = 0; // POSIX
-enum RTLD_PARENT   = 0x00200;
-enum RTLD_GROUP    = 0x00400;
-enum RTLD_WORLD    = 0x00800;
-enum RTLD_NODELETE = 0x01000;
-enum RTLD_FIRST    = 0x02000;
-enum RTLD_CONFGEN  = 0x10000;
-
-
 enum
 {
     RTLD_NEXT    = cast(void *)-1,
@@ -58,21 +43,12 @@ enum
 
 int dldump(const scope char*, const scope char*, int);
 
-struct Dl_info
-{
-    const(char)* dli_fname;
-    void*        dli_fbase;
-    const(char)* dli_sname;
-    void*        dli_saddr;
-}
-
 enum
 {
     RTLD_DL_SYMENT = 1,
     RTLD_DL_LINKMAP = 2,
 }
 
-int dladdr(const(void)*, Dl_info*);
 int dladdr1(void*, Dl_info*, void**, int);
 
 enum

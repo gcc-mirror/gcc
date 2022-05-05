@@ -257,6 +257,9 @@ public:
     return true;
   }
 
+  bool can_purge_base_region_p (const extrinsic_state &ext_state,
+				const region *base_reg) const;
+
   bool can_merge_with_p (const program_state &other,
 			 const extrinsic_state &ext_state,
 			 const program_point &point,

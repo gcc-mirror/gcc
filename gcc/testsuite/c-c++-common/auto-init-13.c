@@ -19,5 +19,5 @@ int foo()
   return d.b + var.bar.b;
 }
 
-/* { dg-final { scan-tree-dump "d = .DEFERRED_INIT \\(4, 1, 0\\)" "gimple" } } */
-/* { dg-final { scan-tree-dump "var = .DEFERRED_INIT \\(4, 1, 0\\)" "gimple" } } */
+/* { dg-final { scan-tree-dump "d = .DEFERRED_INIT \\(4, 1, \&\"d\"" "gimple" } } */
+/* { dg-final { scan-tree-dump "var = .DEFERRED_INIT \\(4, 1, \&\"var\"" "gimple" } } */

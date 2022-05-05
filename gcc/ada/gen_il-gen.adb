@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2020-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 2020-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -2472,7 +2472,8 @@ package body Gen_IL.Gen is
          for T in First_Concrete (Root) .. Last_Concrete (Root) loop
             if T not in N_Unused_At_Start | N_Unused_At_End then
                Put_Make_Spec (S, Root, T);
-               Put (S, ";" & LF & "pragma " & Inline & " (Make_" &
+               Put (S, ";" & LF);
+               Put (S, "pragma " & Inline & " (Make_" &
                     Image_Sans_N (T) & ");" & LF & LF);
             end if;
          end loop;

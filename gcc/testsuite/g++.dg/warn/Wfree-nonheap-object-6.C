@@ -1,5 +1,5 @@
 /* { dg-do compile }
-   { dg-options "-O0 -Wall" } */
+   { dg-options "-O0 -Wall -Wno-dangling-pointer -Wno-return-local-address" } */
 
 #if __cplusplus < 201103L
 # define noexcept throw ()
@@ -18,6 +18,8 @@ extern void *p;
 void nowarn_placement_new ()
 {
   char a[sizeof (A)];
+  /* The store to the global p might trigger -Wdangling pointer or
+     -Wreturn-local-address (if/when it runs without optimization).  */
   p = new (a) A ();           // { dg-bogus "-Wfree-nonheap-object" }
 }
 

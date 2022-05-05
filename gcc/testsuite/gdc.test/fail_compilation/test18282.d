@@ -86,4 +86,3 @@ struct S
 
     S*[] arr;
 }
-

@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-/* Define functions defined in frv.c */
+/* Define functions defined in frv.cc */
 extern void frv_expand_prologue			(void);
 extern void frv_expand_epilogue			(bool);
 extern frv_stack_t *frv_stack_info		(void);

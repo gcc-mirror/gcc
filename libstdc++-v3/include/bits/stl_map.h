@@ -126,6 +126,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 #endif
 
     public:
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
       class value_compare
       : public std::binary_function<value_type, value_type, bool>
       {
@@ -140,6 +142,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	bool operator()(const value_type& __x, const value_type& __y) const
 	{ return comp(__x.first, __y.first); }
       };
+#pragma GCC diagnostic pop
 
     private:
       /// This turns a red-black tree into a [multi]map.
@@ -692,7 +695,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 #endif // C++17
 
 #if __cplusplus > 201402L
-#define __cpp_lib_map_try_emplace 201411
+#define __cpp_lib_map_try_emplace 201411L
       /**
        *  @brief Attempts to build and insert a std::pair into the %map.
        *

@@ -340,6 +340,9 @@ struct diagnostic_context
      source output.  */
   bool show_ruler_p;
 
+  /* True if -freport-bug option is used.  */
+  bool report_bug;
+
   /* Used to specify additional diagnostic output to be emitted after the
      rest of the diagnostic.  This is for implementing
      -fdiagnostics-parseable-fixits and GCC_EXTRA_DIAGNOSTIC_OUTPUT.  */
@@ -387,6 +390,10 @@ struct diagnostic_context
      the BLOCK_SUPERCONTEXT() chain hanging off the LOCATION_BLOCK()
      of a diagnostic's location.  */
   void (*set_locations_cb)(diagnostic_context *, diagnostic_info *);
+
+  /* Include files that diagnostic_report_current_module has already listed the
+     include path for.  */
+  hash_set<location_t, false, location_hash> *includes_seen;
 };
 
 static inline void

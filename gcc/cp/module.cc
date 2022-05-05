@@ -4617,7 +4617,7 @@ create_dirs (char *path)
       }
 }
 
-/* Given a CLASSTYPE_DECL_LIST VALUE get the the template friend decl,
+/* Given a CLASSTYPE_DECL_LIST VALUE get the template friend decl,
    if that's what this is.  */
 
 static tree
@@ -6034,6 +6034,9 @@ trees_out::core_vals (tree t)
       WT (t->function_decl.function_specific_target);
       WT (t->function_decl.function_specific_optimization);
       WT (t->function_decl.vindex);
+
+      if (DECL_HAS_DEPENDENT_EXPLICIT_SPEC_P (t))
+	WT (lookup_explicit_specifier (t));
       break;
 
     case USING_DECL:
@@ -6465,9 +6468,7 @@ trees_in::core_vals (tree t)
 
     case REAL_CST:
       if (const void *bytes = buf (sizeof (real_value)))
-	TREE_REAL_CST_PTR (t)
-	  = reinterpret_cast<real_value *> (memcpy (ggc_alloc<real_value> (),
-						    bytes, sizeof (real_value)));
+	memcpy (TREE_REAL_CST_PTR (t), bytes, sizeof (real_value));
       break;
 
     case STRING_CST:
@@ -6531,6 +6532,13 @@ trees_in::core_vals (tree t)
 	RT (t->function_decl.function_specific_target);
 	RT (t->function_decl.function_specific_optimization);
 	RT (t->function_decl.vindex);
+
+	if (DECL_HAS_DEPENDENT_EXPLICIT_SPEC_P (t))
+	  {
+	    tree spec;
+	    RT (spec);
+	    store_explicit_specifier (t, spec);
+	  }
       }
       break;
 
@@ -12823,7 +12831,7 @@ specialization_add (bool decl_p, spec_entry *entry, void *data_)
     {
       /* We exclusively use decls to locate things.  Make sure there's
 	 no mismatch between the two specialization tables we keep.
-	 pt.c optimizes instantiation lookup using a complicated
+	 pt.cc optimizes instantiation lookup using a complicated
 	 heuristic.  We don't attempt to replicate that algorithm, but
 	 observe its behaviour and reproduce it upon read back.  */
 
@@ -12966,7 +12974,7 @@ depset::hash::add_specializations (bool decl_p)
 	/* Implicit instantiations only walked if we reach them.  */
 	needs_reaching = true;
       else if (!DECL_LANG_SPECIFIC (spec)
-	       || !DECL_MODULE_PURVIEW_P (spec))
+	       || !DECL_MODULE_PURVIEW_P (STRIP_TEMPLATE (spec)))
 	/* Likewise, GMF explicit or partial specializations.  */
 	needs_reaching = true;
 
@@ -13883,20 +13891,18 @@ void
 module_state::mangle (bool include_partition)
 {
   if (subst)
-    mangle_module_substitution (subst - 1);
+    mangle_module_substitution (subst);
   else
     {
       if (parent)
 	parent->mangle (include_partition);
-      if (include_partition || !is_partition ())
+      if (include_partition || !is_partition ()) 
 	{
-	  char p = 0;
-	  // Partitions are significant for global initializer functions
-	  if (is_partition () && !parent->is_partition ())
-	    p = 'P';
+	  // Partitions are significant for global initializer
+	  // functions
+	  bool partition = is_partition () && !parent->is_partition ();
+	  subst = mangle_module_component (name, partition);
 	  substs.safe_push (this);
-	  subst = substs.length ();
-	  mangle_identifier (p, name);
 	}
     }
 }
@@ -13905,6 +13911,8 @@ void
 mangle_module (int mod, bool include_partition)
 {
   module_state *imp = (*modules)[mod];
+
+  gcc_checking_assert (!imp->is_header ());
 
   if (!imp->name)
     /* Set when importing the primary module interface.  */
@@ -14879,7 +14887,7 @@ module_state::read_cluster (unsigned snum)
 	}
 
     }
-  /* Look, function.c's interface to cfun does too much for us, we
+  /* Look, function.cc's interface to cfun does too much for us, we
      just need to restore the old value.  I do not want to go
      redesigning that API right now.  */
 #undef cfun
@@ -18381,14 +18389,15 @@ get_originating_module (tree decl, bool for_mangle)
   if (!DECL_LANG_SPECIFIC (not_tmpl))
     return for_mangle ? -1 : 0;
 
-  if (for_mangle
-      && (DECL_MODULE_EXPORT_P (owner) || !DECL_MODULE_PURVIEW_P (not_tmpl)))
+  if (for_mangle && !DECL_MODULE_PURVIEW_P (not_tmpl))
     return -1;
 
-  if (!DECL_MODULE_IMPORT_P (not_tmpl))
-    return 0;
+  int mod = !DECL_MODULE_IMPORT_P (not_tmpl) ? 0 : get_importing_module (owner);
 
-  return get_importing_module (owner);
+  if (for_mangle && (*modules)[mod]->is_header ())
+    return -1;
+
+  return mod;
 }
 
 unsigned

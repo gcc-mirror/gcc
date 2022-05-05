@@ -40,7 +40,7 @@ struct _d_dynamicArray final
 };
 #endif
 #if !defined(_d_real)
-# define _d_real long double
+#define _d_real long double
 #endif
 
 class ClassFromStruct final

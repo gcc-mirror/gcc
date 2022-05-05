@@ -15,4 +15,3 @@ mixin A!();
 }
 
 enum C = B.nonexistent;
-

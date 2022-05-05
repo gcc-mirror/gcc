@@ -434,7 +434,7 @@ struct GTY(()) cp_parser {
 
 };
 
-/* In parser.c  */
+/* In parser.cc  */
 extern void debug (cp_token &ref);
 extern void debug (cp_token *ptr);
 extern void cp_lexer_debug_tokens (vec<cp_token, va_gc> *);

@@ -14,4 +14,3 @@ static if (true)
         struct G1 {}
 else
     struct G2 {}
-

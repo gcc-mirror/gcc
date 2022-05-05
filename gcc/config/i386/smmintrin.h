@@ -810,17 +810,11 @@ _mm_cmpgt_epi64 (__m128i __X, __m128i __Y)
 
 #include <popcntintrin.h>
 
-#ifndef __SSE4_1__
+#ifndef __CRC32__
 #pragma GCC push_options
-#pragma GCC target("sse4.1")
-#define __DISABLE_SSE4_1__
-#endif /* __SSE4_1__ */
-
-#ifndef __SSE4_2__
-#pragma GCC push_options
-#pragma GCC target("sse4.2")
-#define __DISABLE_SSE4_2__
-#endif /* __SSE4_1__ */
+#pragma GCC target("crc32")
+#define __DISABLE_CRC32__
+#endif /* __CRC32__ */
 
 /* Accumulate CRC32 (polynomial 0x11EDC6F41) value.  */
 extern __inline unsigned int __attribute__((__gnu_inline__, __always_inline__, __artificial__))
@@ -849,14 +843,9 @@ _mm_crc32_u64 (unsigned long long __C, unsigned long long __V)
 }
 #endif
 
-#ifdef __DISABLE_SSE4_2__
-#undef __DISABLE_SSE4_2__
+#ifdef __DISABLE_CRC32__
+#undef __DISABLE_CRC32__
 #pragma GCC pop_options
-#endif /* __DISABLE_SSE4_2__ */
-
-#ifdef __DISABLE_SSE4_1__
-#undef __DISABLE_SSE4_1__
-#pragma GCC pop_options
-#endif /* __DISABLE_SSE4_1__ */
+#endif /* __DISABLE_CRC32__ */
 
 #endif /* _SMMINTRIN_H_INCLUDED */

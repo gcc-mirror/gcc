@@ -323,7 +323,7 @@ extern GTY(()) int darwin_ms_struct;
   } while (0)
 
 /* Machine dependent cpp options.  Don't add more options here, add
-   them to darwin_cpp_builtins in darwin-c.c.  */
+   them to darwin_cpp_builtins in darwin-c.cc.  */
 
 #undef	CPP_SPEC
 #define CPP_SPEC "%{static:%{!dynamic:-D__STATIC__}}%{!static:-D__DYNAMIC__}" \
@@ -340,7 +340,7 @@ extern GTY(()) int darwin_ms_struct;
 " %:version-compare(>= 10.6 mmacosx-version-min= -no_compact_unwind) "
 
 /* In Darwin linker specs we can put -lcrt0.o and ld will search the library
-   path for crt0.o or -lcrtx.a and it will search for for libcrtx.a.  As for
+   path for crt0.o or -lcrtx.a and it will search for libcrtx.a.  As for
    other ports, we can also put xxx.{o,a}%s and get the appropriate complete
    startfile absolute directory.  This latter point is important when we want
    to override ld's rule of .dylib being found ahead of .a and the user wants
@@ -586,7 +586,7 @@ extern GTY(()) int darwin_ms_struct;
 #endif
 
 #if HAVE_GNU_AS
-/* The options are added in gcc.c for this case.  */
+/* The options are added in gcc.cc for this case.  */
 #define ASM_OPTIONS ""
 #else
 /* When we detect that we're cctools or llvm as, we need to insert the right

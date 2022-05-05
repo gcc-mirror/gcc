@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -424,7 +424,7 @@ package body Comperr is
       Unit_Name : Node_Id;
 
       Success : Boolean;
-      pragma Unreferenced (Success);
+      pragma Warnings (Off, "modified by call");
 
       procedure Decode_Name_Buffer;
       --  Replace "__" by "." in Name_Buffer, and adjust Name_Len accordingly
