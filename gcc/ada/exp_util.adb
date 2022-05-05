@@ -8368,9 +8368,10 @@ package body Exp_Util is
       function Initialized_By_Aliased_BIP_Func_Call
         (Trans_Id : Entity_Id) return Boolean;
       --  Determine whether transient object Trans_Id is initialized by a
-      --  build-in-place function call where the BIPalloc parameter is of
-      --  value 1 and BIPaccess is not null. This case creates an aliasing
-      --  between the returned value and the value denoted by BIPaccess.
+      --  build-in-place function call where the BIPalloc parameter either
+      --  does not exist or is Caller_Allocation, and BIPaccess is not null.
+      --  This case creates an aliasing between the returned value and the
+      --  value denoted by BIPaccess.
 
       function Is_Aliased
         (Trans_Id   : Entity_Id;
@@ -8427,11 +8428,14 @@ package body Exp_Util is
 
          if Is_Build_In_Place_Function_Call (Call) then
             declare
+               Caller_Allocation_Val : constant Uint :=
+                 UI_From_Int (BIP_Allocation_Form'Pos (Caller_Allocation));
+
                Access_Nam : Name_Id := No_Name;
                Access_OK  : Boolean := False;
                Actual     : Node_Id;
                Alloc_Nam  : Name_Id := No_Name;
-               Alloc_OK   : Boolean := False;
+               Alloc_OK   : Boolean := True;
                Formal     : Node_Id;
                Func_Id    : Entity_Id;
                Param      : Node_Id;
@@ -8466,7 +8470,7 @@ package body Exp_Util is
                             BIP_Formal_Suffix (BIP_Alloc_Form));
                      end if;
 
-                     --  A match for BIPaccess => Temp has been found
+                     --  A nonnull BIPaccess has been found
 
                      if Chars (Formal) = Access_Nam
                        and then Nkind (Actual) /= N_Null
@@ -8474,13 +8478,12 @@ package body Exp_Util is
                         Access_OK := True;
                      end if;
 
-                     --  A match for BIPalloc => 1 has been found
+                     --  A BIPalloc has been found
 
                      if Chars (Formal) = Alloc_Nam
                        and then Nkind (Actual) = N_Integer_Literal
-                       and then Intval (Actual) = Uint_1
                      then
-                        Alloc_OK := True;
+                        Alloc_OK := Intval (Actual) = Caller_Allocation_Val;
                      end if;
                   end if;
 
@@ -8767,7 +8770,6 @@ package body Exp_Util is
       return
         Ekind (Obj_Id) in E_Constant | E_Variable
           and then Needs_Finalization (Desig)
-          and then Requires_Transient_Scope (Desig)
           and then Nkind (Rel_Node) /= N_Simple_Return_Statement
           and then not Is_Part_Of_BIP_Return_Statement (Rel_Node)
 

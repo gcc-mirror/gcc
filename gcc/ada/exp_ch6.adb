@@ -1055,11 +1055,12 @@ package body Exp_Ch6 is
      (Func_Call   : Node_Id;
       Result_Subt : Entity_Id) return Boolean
    is
+      Ctrl : constant Node_Id   := Controlling_Argument (Func_Call);
+      Utyp : constant Entity_Id := Underlying_Type (Result_Subt);
+
    begin
-      return
-          (Is_Definite_Subtype (Underlying_Type (Result_Subt))
-            and then No (Controlling_Argument (Func_Call)))
-        or else not Requires_Transient_Scope (Underlying_Type (Result_Subt));
+      return (No (Ctrl) and then Is_Definite_Subtype (Utyp))
+        or else not Returns_On_Secondary_Stack (Utyp);
    end Caller_Known_Size;
 
    -----------------------
@@ -10218,7 +10219,7 @@ package body Exp_Ch6 is
       pragma Assert (Is_Build_In_Place_Function (Func_Id));
       Func_Typ : constant Entity_Id := Underlying_Type (Etype (Func_Id));
    begin
-      return Requires_Transient_Scope (Func_Typ);
+      return Returns_On_Secondary_Stack (Func_Typ);
    end Needs_BIP_Alloc_Form;
 
    -------------------------------------
