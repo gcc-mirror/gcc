@@ -190,7 +190,7 @@ The OpenMP 4.5 specification is fully supported.
       @tab Only fulfillable requirement are @code{atomic_default_mem_order}
       and @code{dynamic_allocators}
 @item @code{teams} construct outside an enclosing target region @tab Y @tab
-@item Non-rectangular loop nests @tab P @tab Only C/C++
+@item Non-rectangular loop nests @tab Y @tab
 @item @code{!=} as relational-op in canonical loop form for C/C++ @tab Y @tab
 @item @code{nonmonotonic} as default loop schedule modifier for worksharing-loop
       constructs @tab Y @tab
