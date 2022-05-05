@@ -3,9 +3,9 @@
 
 extern void link_error(void);
 
-static char a;
+static signed char a;
 static short d(unsigned e) {
-  char b;
+  signed char b;
   short c;
   a = b = e;
   if (b)
