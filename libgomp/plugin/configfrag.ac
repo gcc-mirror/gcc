@@ -27,7 +27,9 @@
 # <http://www.gnu.org/licenses/>.
 
 plugin_support=yes
-AC_CHECK_LIB(dl, dlsym, , [plugin_support=no])
+DL_LIBS=
+AC_SUBST(DL_LIBS)
+AC_CHECK_LIB(dl, dlsym, [DL_LIBS=-ldl], [plugin_support=no])
 if test x"$plugin_support" = xyes; then
   AC_DEFINE(PLUGIN_SUPPORT, 1,
     [Define if all infrastructure, needed for plugins, is supported.])
@@ -91,8 +93,6 @@ AC_SUBST(PLUGIN_NVPTX_LDFLAGS)
 AC_SUBST(PLUGIN_NVPTX_LIBS)
 
 PLUGIN_GCN=0
-PLUGIN_GCN_LIBS=
-AC_SUBST(PLUGIN_GCN_LIBS)
 
 # Parse '--enable-offload-targets', figure out the corresponding libgomp
 # plugins, and configure to find the corresponding offload compilers.
@@ -154,7 +154,6 @@ if test x"$enable_offload_targets" != x; then
 		       && (test "x$CUDA_DRIVER_LIB" = x \
 			   || test "x$CUDA_DRIVER_LIB" = xno); then
 		      PLUGIN_NVPTX=1
-		      PLUGIN_NVPTX_LIBS='-ldl'
 		      PLUGIN_NVPTX_DYNAMIC=1
 		    else
 		      PLUGIN_NVPTX=0
@@ -180,8 +179,6 @@ if test x"$enable_offload_targets" != x; then
 		;;
 	      *)
 		tgt_plugin=gcn
-		PLUGIN_GCN=$tgt
-		PLUGIN_GCN_LIBS="-ldl"
 		PLUGIN_GCN=1
 		;;
 	      esac

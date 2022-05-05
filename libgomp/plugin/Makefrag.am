@@ -26,6 +26,8 @@
 # see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 # <http://www.gnu.org/licenses/>.
 
+libgomp_la_LIBADD += $(DL_LIBS)
+
 if PLUGIN_NVPTX
 # Nvidia PTX OpenACC plugin.
 libgomp_plugin_nvptx_version_info = -version-info $(libtool_VERSION)
@@ -46,7 +48,7 @@ endif
 
 # 'dlopen'ing the CUDA Driver library vs. linking it.
 if PLUGIN_NVPTX_DYNAMIC
-libgomp_plugin_nvptx_la_LIBADD += $(PLUGIN_NVPTX_LIBS)
+libgomp_plugin_nvptx_la_LIBADD += $(DL_LIBS)
 else
 libgomp_plugin_nvptx_la_CPPFLAGS += -DPLUGIN_NVPTX_LINK_LIBCUDA
 libgomp_plugin_nvptx_la_LIBADD += $(PLUGIN_NVPTX_LIBS)
@@ -62,6 +64,8 @@ libgomp_plugin_gcn_la_CPPFLAGS = $(AM_CPPFLAGS) \
 	-D_GNU_SOURCE
 libgomp_plugin_gcn_la_LDFLAGS = $(libgomp_plugin_gcn_version_info) \
 	$(lt_host_flags)
-libgomp_plugin_gcn_la_LIBADD = libgomp.la $(PLUGIN_GCN_LIBS)
+libgomp_plugin_gcn_la_LIBADD = libgomp.la
 libgomp_plugin_gcn_la_LIBTOOLFLAGS = --tag=disable-static
+
+libgomp_plugin_gcn_la_LIBADD += $(DL_LIBS)
 endif
