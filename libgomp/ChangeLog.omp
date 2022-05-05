@@ -1,3 +1,20 @@
+2022-05-05  Thomas Schwinge  <thomas@codesourcery.com>
+
+	Backport from mainline:
+	2022-05-05  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* Makefile.am (libgomp_la_LIBADD): Initialize.
+	* plugin/configfrag.ac (DL_LIBS): New.
+	(PLUGIN_GCN_LIBS): Remove.
+	(PLUGIN_NVPTX_LIBS): Don't set in the 'PLUGIN_NVPTX_DYNAMIC' case.
+	* plugin/Makefrag.am (libgomp_la_LIBADD)
+	(libgomp_plugin_gcn_la_LIBADD): Consider '$(DL_LIBS)'.
+	(libgomp_plugin_nvptx_la_LIBADD) <PLUGIN_NVPTX_DYNAMIC>: Likewise.
+	* Makefile.in: Regenerate.
+	* config.h.in: Likewise.
+	* configure: Likewise.
+	* testsuite/Makefile.in: Likewise.
+
 2022-04-07  Thomas Schwinge <thomas@codesourcery.com>
 
 	Backport from mainline:

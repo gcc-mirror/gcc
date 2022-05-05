@@ -675,12 +675,12 @@ offload_additional_lib_paths
 offload_additional_options
 offload_targets
 offload_plugins
-PLUGIN_GCN_LIBS
 PLUGIN_NVPTX_LIBS
 PLUGIN_NVPTX_LDFLAGS
 PLUGIN_NVPTX_CPPFLAGS
 CUDA_DRIVER_LIB
 CUDA_DRIVER_INCLUDE
+DL_LIBS
 libtool_VERSION
 ac_ct_FC
 FCFLAGS
@@ -15057,6 +15057,8 @@ _ACEOF
 # <http://www.gnu.org/licenses/>.
 
 plugin_support=yes
+DL_LIBS=
+
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for dlsym in -ldl" >&5
 $as_echo_n "checking for dlsym in -ldl... " >&6; }
 if ${ac_cv_lib_dl_dlsym+:} false; then :
@@ -15094,12 +15096,7 @@ fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_dl_dlsym" >&5
 $as_echo "$ac_cv_lib_dl_dlsym" >&6; }
 if test "x$ac_cv_lib_dl_dlsym" = xyes; then :
-  cat >>confdefs.h <<_ACEOF
-#define HAVE_LIBDL 1
-_ACEOF
-
-  LIBS="-ldl $LIBS"
-
+  DL_LIBS=-ldl
 else
   plugin_support=no
 fi
@@ -15221,8 +15218,6 @@ PLUGIN_NVPTX_DYNAMIC=0
 
 
 PLUGIN_GCN=0
-PLUGIN_GCN_LIBS=
-
 
 # Parse '--enable-offload-targets', figure out the corresponding libgomp
 # plugins, and configure to find the corresponding offload compilers.
@@ -15295,7 +15290,6 @@ rm -f core conftest.err conftest.$ac_objext \
 		       && (test "x$CUDA_DRIVER_LIB" = x \
 			   || test "x$CUDA_DRIVER_LIB" = xno); then
 		      PLUGIN_NVPTX=1
-		      PLUGIN_NVPTX_LIBS='-ldl'
 		      PLUGIN_NVPTX_DYNAMIC=1
 		    else
 		      PLUGIN_NVPTX=0
@@ -15321,8 +15315,6 @@ rm -f core conftest.err conftest.$ac_objext \
 		;;
 	      *)
 		tgt_plugin=gcn
-		PLUGIN_GCN=$tgt
-		PLUGIN_GCN_LIBS="-ldl"
 		PLUGIN_GCN=1
 		;;
 	      esac
