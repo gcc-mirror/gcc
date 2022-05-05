@@ -1,3 +1,17 @@
+2022-05-05  Sandra Loosemore <sandra@codesourcery.com>
+
+	Backport from mainline:
+	2022-05-05  Sandra Loosemore <sandra@codesourcery.com>
+
+	* c-c++-common/gomp/loop-6.c (f3): New function to test TASKLOOP
+	diagnostics.
+	* gfortran.dg/gomp/collapse1.f90: Update expected messages.
+	* gfortran.dg/gomp/pr85313.f90: Remove dg-error on non-rectangular
+	loops that are now accepted.
+	* gfortran.dg/gomp/non-rectangular-loop.f90: New file.
+	* gfortran.dg/gomp/canonical-loop-1.f90: New file.
+	* gfortran.dg/gomp/canonical-loop-2.f90: New file.
+
 2022-06-17  Chung-Lin Tang  <cltang@codesourcery.com>
 
 	Backport from mainline:

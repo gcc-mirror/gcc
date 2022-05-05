@@ -1,3 +1,12 @@
+2022-05-05  Sandra Loosemore  <sandra@codesourcery.com>
+
+	Backport from mainline:
+	2022-05-05  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* gimplify.cc (gimplify_omp_for): Update messages for SCHEDULED
+	and ORDERED clause conflict errors.  Add check for GRAINSIZE and
+	NUM_TASKS on TASKLOOP.
+
 2022-05-02  Marcel Vollweiler  <marcel@codesourcery.com>
 
 	Backport from mainline:
