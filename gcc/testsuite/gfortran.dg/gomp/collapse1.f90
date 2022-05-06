@@ -19,7 +19,7 @@ subroutine collapse1
     end do
   !$omp parallel do collapse(2)
     do i = 1, 5, 2
-      do j = i + 1, 7, i	! { dg-error "collapsed loops don.t form rectangular iteration space" }
+      do j = i + 1, 7, i	! { dg-error "loop increment not in canonical form" }
       end do
     end do
   !$omp parallel do collapse(2) shared(j)
@@ -49,7 +49,7 @@ subroutine collapse1_2
   integer :: i
   !$omp parallel do collapse(2)
     do i = -6, 6		! { dg-error "cannot be redefined inside loop beginning" }
-      do i = 4, 6		! { dg-error "collapsed loops don.t form rectangular iteration space|cannot be redefined" }
+      do i = 4, 6		! { dg-error "iteration variable used in more than one loop|cannot be redefined" }
       end do
     end do
 end subroutine collapse1_2

@@ -1,3 +1,20 @@
+2022-05-05  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/64679
+	* parser.cc (cp_parser_parameter_declaration_clause): Maintain
+	a vector of parameters that haven't been pushed yet.  Push them at the
+	end of a valid parameter-declaration-clause.
+	(cp_parser_parameter_declaration_list): Take a new auto_vec parameter.
+	Do not pushdecl while parsing tentatively when pushdecl-ing a parameter
+	would result in a hard error.
+	(cp_parser_cache_defarg): Adjust the call to
+	cp_parser_parameter_declaration_list.
+
+2022-05-05  Richard Biener  <rguenther@suse.de>
+
+	* module.cc (trees_in::core_vals): Remove separate allocation
+	for REAL_CST.
+
 2022-05-04  Jason Merrill  <jason@redhat.com>
 
 	PR c++/104470

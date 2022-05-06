@@ -1,3 +1,8 @@
+2022-05-05  Kewen Lin  <linkw@linux.ibm.com>
+
+	* MAINTAINERS: Add myself as PowerPC port co-maintainer and to DCO
+	section.
+
 2022-04-19  Richard Henderson  <rth@gcc.gnu.org>
 
 	* MAINTAINERS: Update my email address.

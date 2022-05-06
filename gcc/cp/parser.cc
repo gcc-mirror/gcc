@@ -2391,7 +2391,7 @@ static void cp_parser_type_specifier_seq
 static tree cp_parser_parameter_declaration_clause
   (cp_parser *, cp_parser_flags);
 static tree cp_parser_parameter_declaration_list
-  (cp_parser *, cp_parser_flags);
+  (cp_parser *, cp_parser_flags, auto_vec<tree> *);
 static cp_parameter_declarator *cp_parser_parameter_declaration
   (cp_parser *, cp_parser_flags, bool, bool *);
 static tree cp_parser_default_argument
@@ -24517,8 +24517,12 @@ cp_parser_parameter_declaration_clause (cp_parser* parser,
       return explicit_void_list_node;
     }
 
+  /* A vector of parameters that haven't been pushed yet.  */
+  auto_vec<tree> pending_decls;
+
   /* Parse the parameter-declaration-list.  */
-  parameters = cp_parser_parameter_declaration_list (parser, flags);
+  parameters = cp_parser_parameter_declaration_list (parser, flags,
+						     &pending_decls);
   /* If a parse error occurred while parsing the
      parameter-declaration-list, then the entire
      parameter-declaration-clause is erroneous.  */
@@ -24548,6 +24552,15 @@ cp_parser_parameter_declaration_clause (cp_parser* parser,
   else
     ellipsis_p = false;
 
+  /* A valid parameter-declaration-clause can only be followed by a ')'.
+     So it's time to push all the parameters we have seen now that we
+     know we have a valid declaration.  Note that here we may not have
+     committed yet, nor should we.  Pushing here will detect the error
+     of redefining a parameter.  */
+  if (cp_lexer_next_token_is (parser->lexer, CPP_CLOSE_PAREN))
+    for (tree p : pending_decls)
+      pushdecl (p);
+
   /* Finish the parameter list.  */
   if (!ellipsis_p)
     parameters = chainon (parameters, void_list_node);
@@ -24562,13 +24575,16 @@ cp_parser_parameter_declaration_clause (cp_parser* parser,
      parameter-declaration-list , parameter-declaration
 
    The parser flags FLAGS is used to control type-specifier parsing.
+   PENDING_DECLS is a vector of parameters that haven't been pushed yet.
 
    Returns a representation of the parameter-declaration-list, as for
    cp_parser_parameter_declaration_clause.  However, the
    `void_list_node' is never appended to the list.  */
 
 static tree
-cp_parser_parameter_declaration_list (cp_parser* parser, cp_parser_flags flags)
+cp_parser_parameter_declaration_list (cp_parser* parser,
+				      cp_parser_flags flags,
+				      auto_vec<tree> *pending_decls)
 {
   tree parameters = NULL_TREE;
   tree *tail = &parameters;
@@ -24625,7 +24641,37 @@ cp_parser_parameter_declaration_list (cp_parser* parser, cp_parser_flags flags)
 			       parameter->decl_specifiers.attributes,
 			       0);
       if (DECL_NAME (decl))
-	decl = pushdecl (decl);
+	{
+	  /* We cannot always pushdecl while parsing tentatively because
+	     it may have side effects and we can't be sure yet if we're
+	     parsing a declaration, e.g.:
+
+	       S foo(int(x), int(x), int{x});
+
+	     where it's not clear if we're dealing with a constructor call
+	     or a function declaration until we've seen the last argument
+	     which breaks it up.
+	     It's safe to pushdecl so long as it doesn't result in a clash
+	     with an already-pushed parameter.  But we don't delay pushing
+	     different parameters to handle
+
+	       S foo(int(i), decltype(i) j = 42);
+
+	     which is valid.  */
+	  if (pending_decls
+	      && cp_parser_uncommitted_to_tentative_parse_p (parser)
+	      /* See if PARAMETERS already contains a parameter with the same
+		 DECL_NAME as DECL.  */
+	      && [parameters, decl] {
+		   for (tree p = parameters; p; p = TREE_CHAIN (p))
+		     if (DECL_NAME (decl) == DECL_NAME (TREE_VALUE (p)))
+		       return true;
+		   return false;
+		 }())
+	    pending_decls->safe_push (decl);
+	  else
+	    decl = pushdecl (decl);
+	}
 
       if (decl != error_mark_node)
 	{
@@ -34072,7 +34118,8 @@ cp_parser_cache_defarg (cp_parser *parser, bool nsdmi)
 		  cp_lexer_consume_token (parser->lexer);
 		  begin_scope (sk_function_parms, NULL_TREE);
 		  tree t = cp_parser_parameter_declaration_list
-			    (parser, CP_PARSER_FLAGS_NONE);
+			    (parser, CP_PARSER_FLAGS_NONE,
+			     /*pending_decls*/nullptr);
 		  if (t == error_mark_node)
 		    error = true;
 		  pop_bindings_and_leave_scope ();

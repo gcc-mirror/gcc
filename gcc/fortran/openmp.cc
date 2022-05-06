@@ -8446,6 +8446,105 @@ gfc_resolve_omp_local_vars (gfc_namespace *ns)
     gfc_traverse_ns (ns, handle_local_var);
 }
 
+/* CODE is an OMP loop construct.  Return true if VAR matches an iteration
+   variable outer to level DEPTH.  */
+static bool
+is_outer_iteration_variable (gfc_code *code, int depth, gfc_symbol *var)
+{
+  int i;
+  gfc_code *do_code = code->block->next;
+
+  for (i = 1; i < depth; i++)
+    {
+      gfc_symbol *ivar = do_code->ext.iterator->var->symtree->n.sym;
+      if (var == ivar)
+	return true;
+      do_code = do_code->block->next;
+    }
+  return false;
+}
+
+/* CODE is an OMP loop construct.  Return true if EXPR does not reference
+   any iteration variables outer to level DEPTH.  */
+static bool
+expr_is_invariant (gfc_code *code, int depth, gfc_expr *expr)
+{
+  int i;
+  gfc_code *do_code = code->block->next;
+
+  for (i = 1; i < depth; i++)
+    {
+      gfc_symbol *ivar = do_code->ext.iterator->var->symtree->n.sym;
+      if (gfc_find_sym_in_expr (ivar, expr))
+	return false;
+      do_code = do_code->block->next;
+    }
+  return true;
+}
+
+/* CODE is an OMP loop construct.  Return true if EXPR matches one of the
+   canonical forms for a bound expression.  It may include references to
+   an iteration variable outer to level DEPTH; set OUTER_VARP if so.  */
+static bool
+bound_expr_is_canonical (gfc_code *code, int depth, gfc_expr *expr,
+			 gfc_symbol **outer_varp)
+{
+  gfc_expr *expr2 = NULL;
+
+  /* Rectangular case.  */
+  if (depth == 0 || expr_is_invariant (code, depth, expr))
+    return true;
+
+  /* Any simple variable that didn't pass expr_is_invariant must be
+     an outer_var.  */
+  if (expr->expr_type == EXPR_VARIABLE && expr->rank == 0)
+    {
+      *outer_varp = expr->symtree->n.sym;
+      return true;
+    }
+
+  /* All other permitted forms are binary operators.  */
+  if (expr->expr_type != EXPR_OP)
+    return false;
+
+  /* Check for plus/minus a loop invariant expr.  */
+  if (expr->value.op.op == INTRINSIC_PLUS
+      || expr->value.op.op == INTRINSIC_MINUS)
+    {
+      if (expr_is_invariant (code, depth, expr->value.op.op1))
+	expr2 = expr->value.op.op2;
+      else if (expr_is_invariant (code, depth, expr->value.op.op2))
+	expr2 = expr->value.op.op1;
+      else
+	return false;
+    }
+  else
+    expr2 = expr;
+
+  /* Check for a product with a loop-invariant expr.  */
+  if (expr2->expr_type == EXPR_OP
+      && expr2->value.op.op == INTRINSIC_TIMES)
+    {
+      if (expr_is_invariant (code, depth, expr2->value.op.op1))
+	expr2 = expr2->value.op.op2;
+      else if (expr_is_invariant (code, depth, expr2->value.op.op2))
+	expr2 = expr2->value.op.op1;
+      else
+	return false;
+    }
+
+  /* What's left must be a reference to an outer loop variable.  */
+  if (expr2->expr_type == EXPR_VARIABLE
+      && expr2->rank == 0
+      && is_outer_iteration_variable (code, depth, expr2->symtree->n.sym))
+    {
+      *outer_varp = expr2->symtree->n.sym;
+      return true;
+    }
+
+  return false;
+}
+
 static void
 resolve_omp_do (gfc_code *code)
 {
@@ -8564,8 +8663,15 @@ resolve_omp_do (gfc_code *code)
       if (collapse <= 0)
 	collapse = 1;
     }
+
+  /* While the spec defines the loop nest depth independently of the COLLAPSE
+     clause, in practice the middle end only pays attention to the COLLAPSE
+     depth and treats any further inner loops as the final-loop-body.  So
+     here we also check canonical loop nest form only for the number of
+     outer loops specified by the COLLAPSE clause too.  */
   for (i = 1; i <= collapse; i++)
     {
+      gfc_symbol *start_var = NULL, *end_var = NULL;
       if (do_code->op == EXEC_DO_WHILE)
 	{
 	  gfc_error ("%s cannot be a DO WHILE or DO without loop control "
@@ -8606,26 +8712,43 @@ resolve_omp_do (gfc_code *code)
 			       "LINEAR at %L", name, &do_code->loc);
 		  break;
 		}
-      if (i > 1)
+      if (is_outer_iteration_variable (code, i, dovar))
 	{
-	  gfc_code *do_code2 = code->block->next;
-	  int j;
-
-	  for (j = 1; j < i; j++)
-	    {
-	      gfc_symbol *ivar = do_code2->ext.iterator->var->symtree->n.sym;
-	      if (dovar == ivar
-		  || gfc_find_sym_in_expr (ivar, do_code->ext.iterator->start)
-		  || gfc_find_sym_in_expr (ivar, do_code->ext.iterator->end)
-		  || gfc_find_sym_in_expr (ivar, do_code->ext.iterator->step))
-		{
-		  gfc_error ("%s collapsed loops don't form rectangular "
-			     "iteration space at %L", name, &do_code->loc);
-		  break;
-		}
-	      do_code2 = do_code2->block->next;
-	    }
+	  gfc_error ("%s iteration variable used in more than one loop at %L",
+		     name, &do_code->loc);
+	  break;
 	}
+      else if (!bound_expr_is_canonical (code, i,
+					 do_code->ext.iterator->start,
+					 &start_var))
+	{
+	  gfc_error ("%s loop start expression not in canonical form at %L",
+		     name, &do_code->loc);
+	  break;
+	}
+      else if (!bound_expr_is_canonical (code, i,
+					 do_code->ext.iterator->end,
+					 &end_var))
+	{
+	  gfc_error ("%s loop end expression not in canonical form at %L",
+		     name, &do_code->loc);
+	  break;
+	}
+      else if (start_var && end_var && start_var != end_var)
+	{
+	  gfc_error ("%s loop bounds reference different "
+		     "iteration variables at %L", name, &do_code->loc);
+	  break;
+	}
+      else if (!expr_is_invariant (code, i, do_code->ext.iterator->step))
+	{
+	  gfc_error ("%s loop increment not in canonical form at %L",
+		     name, &do_code->loc);
+	  break;
+	}
+      if (start_var || end_var)
+	code->ext.omp_clauses->non_rectangular = 1;
+
       for (c = do_code->next; c; c = c->next)
 	if (c->op != EXEC_NOP && c->op != EXEC_CONTINUE)
 	  {

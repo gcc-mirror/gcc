@@ -43,99 +43,129 @@ void test08()
   function<int(X&)> frm(ref(X_bar));
   VERIFY( frm );
   VERIFY( frm(x) == 17 );
+#if __cpp_rtti
   VERIFY( typeid(int X::*) == frm.target_type() );
   VERIFY( frm.target<int X::*>() == &X_bar );
+#endif
 
   function<int(X&)> fr(ref(X_foo));
   VERIFY( fr );
   VERIFY( fr(x) == 1 );
+#if __cpp_rtti
   VERIFY( typeid(int (X::*)()) == fr.target_type() );
   VERIFY( fr.target<int (X::*)()>() == &X_foo );
+#endif
 
   function<int(const X&)> frc(ref(X_foo_c));
   VERIFY( frc );
   VERIFY( frc(x) == 2 );
+#if __cpp_rtti
   VERIFY( typeid(int (X::*)() const) == frc.target_type() );
   VERIFY( frc.target<int (X::*)() const >() == &X_foo_c );
+#endif
 
   function<int(volatile X&)> frv(ref(X_foo_v));
   VERIFY( frv );
   VERIFY( frv(x) == 3 );
+#if __cpp_rtti
   VERIFY( typeid(int (X::*)() volatile) == frv.target_type() );
   VERIFY( *frv.target<int (X::*)() volatile >() == X_foo_v );
   VERIFY( frv.target<int (X::*)() const volatile>() == 0 );
+#endif
 
   function<int(const volatile X&)> frcv(ref(X_foo_cv));
   VERIFY( frcv );
   VERIFY( frcv(x) == 4 );
+#if __cpp_rtti
   VERIFY( typeid(int (X::*)() const volatile) == frcv.target_type() );
   VERIFY( *frcv.target<int (X::*)() const volatile >() == X_foo_cv );
   VERIFY( frcv.target<int (X::*)() const>() == 0 );
+#endif
 
   function<int(X*)> grm(ref(X_bar));
   VERIFY( grm );
   VERIFY( grm(&x) == 17 );
+#if __cpp_rtti
   VERIFY( typeid(int X::*) == grm.target_type() );
   VERIFY( *grm.target<int X::*>() == X_bar );
+#endif
 
   function<int(X*)> gr(ref(X_foo));
   VERIFY( gr );
   VERIFY( gr(&x) == 1 );
+#if __cpp_rtti
   VERIFY( typeid(int (X::*)()) == gr.target_type() );
   VERIFY( *gr.target<int (X::*)()>() == X_foo );
+#endif
 
   function<int(const X*)> grc(ref(X_foo_c));
   VERIFY( grc );
   VERIFY( grc(&x) == 2 );
+#if __cpp_rtti
   VERIFY( typeid(int (X::*)() const) == grc.target_type() );
   VERIFY( *grc.target<int (X::*)() const >() == X_foo_c );
+#endif
 
   function<int(volatile X*)> grv(ref(X_foo_v));
   VERIFY( grv );
   VERIFY( grv(&x) == 3 );
+#if __cpp_rtti
   VERIFY( typeid(int (X::*)() volatile) == grv.target_type() );
   VERIFY( *grv.target<int (X::*)() volatile >() == X_foo_v );
   VERIFY( grv.target<int (X::*)() const volatile>() == 0 );
+#endif
 
   function<int(const volatile X*)> grcv(ref(X_foo_cv));
   VERIFY( grcv );
   VERIFY( grcv(&x) == 4 );
+#if __cpp_rtti
   VERIFY( typeid(int (X::*)() const volatile) == grcv.target_type() );
   VERIFY( *grcv.target<int (X::*)() const volatile >() == X_foo_cv );
   VERIFY( grcv.target<int (X::*)() const>() == 0 );
+#endif
 
   function<int(X&)> hrm(cref(X_bar));
   VERIFY( hrm );
   VERIFY( hrm(x) == 17 );
+#if __cpp_rtti
   VERIFY( typeid(int X::*) == hrm.target_type() );
   VERIFY( hrm.target<int X::*>() == 0 );
   VERIFY( hrm.target<int X::* const>() == &X_bar );
+#endif
 
   function<int(X&)> hr(cref(X_foo));
   VERIFY( hr );
   VERIFY( hr(x) == 1 );
+#if __cpp_rtti
   VERIFY( typeid(int (X::*)()) == hr.target_type() );
   VERIFY( hr.target<int (X::* const)()>() == &X_foo );
+#endif
 
   function<int(const X&)> hrc(cref(X_foo_c));
   VERIFY( hrc );
   VERIFY( hrc(x) == 2 );
+#if __cpp_rtti
   VERIFY( typeid(int (X::*)() const) == hrc.target_type() );
   VERIFY( hrc.target<int (X::* const)() const >() == &X_foo_c );
+#endif
 
   function<int(volatile X&)> hrv(cref(X_foo_v));
   VERIFY( hrv );
   VERIFY( hrv(x) == 3 );
+#if __cpp_rtti
   VERIFY( typeid(int (X::*)() volatile) == hrv.target_type() );
   VERIFY( hrv.target<int (X::* const)() volatile >() == &X_foo_v );
   VERIFY( hrv.target<int (X::* const)() const volatile>() == 0 );
+#endif
 
   function<int(const volatile X&)> hrcv(cref(X_foo_cv));
   VERIFY( hrcv );
   VERIFY( hrcv(x) == 4 );
+#if __cpp_rtti
   VERIFY( typeid(int (X::*)() const volatile) == hrcv.target_type() );
   VERIFY( hrcv.target<int (X::* const)() const volatile >() == &X_foo_cv );
   VERIFY( hrcv.target<int (X::* const)() const>() == 0 );
+#endif
 }
 
 int main()

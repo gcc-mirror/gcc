@@ -5411,6 +5411,7 @@ gfc_trans_omp_do (gfc_code *code, gfc_exec_op op, stmtblock_t *pblock,
   OMP_FOR_INCR (stmt) = incr;
   if (orig_decls)
     OMP_FOR_ORIG_DECLS (stmt) = orig_decls;
+  OMP_FOR_NON_RECTANGULAR (stmt) = clauses->non_rectangular;
   gfc_add_expr_to_block (&block, stmt);
 
   vec_free (doacross_steps);

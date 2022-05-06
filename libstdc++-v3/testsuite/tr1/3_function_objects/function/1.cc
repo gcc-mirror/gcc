@@ -73,6 +73,7 @@ void test01()
     }
   VERIFY( thrown );
 
+#if __cpp_rtti
   // target_type returns typeid(void)
   VERIFY( f1.target_type() == typeid(void) );
 
@@ -83,6 +84,7 @@ void test01()
   const function<int(float)>& f1c = f1;
   VERIFY( f1c.target<int (*)(float)>() == 0 );
   VERIFY( !f1c );
+#endif
 }
 
 int main()
