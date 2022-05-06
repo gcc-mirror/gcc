@@ -95,9 +95,9 @@ f (int c)
   fb = sb;
 
   (void) (c ? sb : sb);
-  (void) (c ? sb : fb); // { dg-error {type mismatch|different types} "" { xfail c } }
+  (void) (c ? sb : fb); // { dg-error {type mismatch|different types} "$tool" { xfail c } }
 
-  (void) (c ? fb : sb); // { dg-error {type mismatch|different types} "" { xfail c } }
+  (void) (c ? fb : sb); // { dg-error {type mismatch|different types} "$tool" { xfail c } }
   (void) (c ? fb : fb);
 }
 
