@@ -13535,6 +13535,7 @@ package body Sem_Ch3 is
       Set_Directly_Designated_Type (Def_Id, Desig_Subtype);
       Set_Depends_On_Private       (Def_Id, Has_Private_Component (Def_Id));
       Set_Is_Access_Constant       (Def_Id, Is_Access_Constant (T));
+      Set_Can_Never_Be_Null        (Def_Id, Can_Never_Be_Null (T));
 
       Conditional_Delay (Def_Id, T);
 
