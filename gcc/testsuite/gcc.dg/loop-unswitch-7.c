@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -funswitch-loops -fdump-tree-unswitch-optimized" } */
+/* { dg-options "-O2 -funswitch-loops -fno-thread-jumps -fdump-tree-unswitch-optimized" } */
 
 int
 foo(double *a, double *b, double *c, double *d, double *r, int size, float order)
