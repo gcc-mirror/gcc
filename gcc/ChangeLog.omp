@@ -1,3 +1,11 @@
+2022-05-06  Marcel Vollweiler  <marcel@codesourcery.com>
+
+	Backport from mainline:
+	2022-05-06  Marcel Vollweiler  <marcel@codesourcery.com>
+
+	* omp-low.cc (omp_runtime_api_call): Added target_is_accessible to
+	omp_runtime_apis array.
+
 2022-05-05  Sandra Loosemore  <sandra@codesourcery.com>
 
 	Backport from mainline:
