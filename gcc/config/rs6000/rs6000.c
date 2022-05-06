@@ -24477,6 +24477,10 @@ rs6000_can_inline_p (tree caller, tree callee)
       else
 	caller_isa = rs6000_isa_flags;
 
+      /* Ignore the -mpower8-fusion option for inlining purposes.  */
+      callee_isa &= ~OPTION_MASK_P8_FUSION;
+      explicit_isa &= ~OPTION_MASK_P8_FUSION;
+
       /* The callee's options must be a subset of the caller's options, i.e.
 	 a vsx function may inline an altivec function, but a no-vsx function
 	 must not inline a vsx function.  However, for those options that the
