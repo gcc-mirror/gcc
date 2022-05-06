@@ -32,7 +32,6 @@ VisibilityResolver::VisibilityResolver (Analysis::Mappings &mappings,
 void
 VisibilityResolver::go (HIR::Crate &crate)
 {
-  module_stack.push_back (crate.get_mappings ().get_defid ());
   mappings.insert_visibility (crate.get_mappings ().get_defid (),
 			      ModuleVisibility::create_public ());
 
@@ -104,12 +103,12 @@ VisibilityResolver::resolve_visibility (const HIR::Visibility &visibility,
   switch (visibility.get_vis_type ())
     {
     case HIR::Visibility::PRIVATE:
-      to_resolve = ModuleVisibility::create_restricted (peek_module ());
       return true;
     case HIR::Visibility::PUBLIC:
       to_resolve = ModuleVisibility::create_public ();
       return true;
     case HIR::Visibility::RESTRICTED:
+      // FIXME: We also need to handle 2015 vs 2018 edition conflicts
       to_resolve = ModuleVisibility::create_public ();
       return resolve_module_path (visibility.get_path (),
 				  to_resolve.get_module_id ());
@@ -129,21 +128,9 @@ VisibilityResolver::resolve_and_update (const HIR::VisItem *item)
   mappings.insert_visibility (item->get_mappings ().get_defid (), module_vis);
 }
 
-DefId
-VisibilityResolver::peek_module ()
-{
-  // We're always inserting a top module - the crate
-  // But we have to check otherwise `.back()` is UB
-  rust_assert (!module_stack.empty ());
-
-  return module_stack.back ();
-}
-
 void
 VisibilityResolver::visit (HIR::Module &mod)
 {
-  module_stack.push_back (mod.get_mappings ().get_defid ());
-
   for (auto &item : mod.get_items ())
     {
       if (item->get_hir_kind () == HIR::Node::VIS_ITEM)
@@ -152,8 +139,6 @@ VisibilityResolver::visit (HIR::Module &mod)
 	  vis_item->accept_vis (*this);
 	}
     }
-
-  module_stack.pop_back ();
 }
 
 void

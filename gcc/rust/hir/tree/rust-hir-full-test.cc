@@ -123,6 +123,8 @@ Visibility::as_string () const
     case PRIVATE:
       return std::string ("private");
     case PUBLIC:
+      return std::string ("pub");
+    case RESTRICTED:
       return std::string ("pub(in ") + path.get_mappings ().as_string ()
 	     + std::string (")");
     default:
