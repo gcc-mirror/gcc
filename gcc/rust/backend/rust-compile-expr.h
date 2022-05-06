@@ -552,21 +552,16 @@ public:
       }
 
     fncontext fnctx = ctx->peek_fn ();
-    Bvariable *tmp = NULL;
-    bool needs_temp = !block_tyty->is_unit ();
-    if (needs_temp)
-      {
-	tree enclosing_scope = ctx->peek_enclosing_scope ();
-	tree block_type = TyTyResolveCompile::compile (ctx, block_tyty);
+    tree enclosing_scope = ctx->peek_enclosing_scope ();
+    tree block_type = TyTyResolveCompile::compile (ctx, block_tyty);
 
-	bool is_address_taken = false;
-	tree ret_var_stmt = NULL_TREE;
-	tmp = ctx->get_backend ()->temporary_variable (
-	  fnctx.fndecl, enclosing_scope, block_type, NULL, is_address_taken,
-	  expr.get_locus (), &ret_var_stmt);
-	ctx->add_statement (ret_var_stmt);
-	ctx->push_loop_context (tmp);
-      }
+    bool is_address_taken = false;
+    tree ret_var_stmt = NULL_TREE;
+    Bvariable *tmp = ctx->get_backend ()->temporary_variable (
+      fnctx.fndecl, enclosing_scope, block_type, NULL, is_address_taken,
+      expr.get_locus (), &ret_var_stmt);
+    ctx->add_statement (ret_var_stmt);
+    ctx->push_loop_context (tmp);
 
     if (expr.has_loop_label ())
       {
@@ -595,12 +590,9 @@ public:
       = ctx->get_backend ()->loop_expression (code_block, expr.get_locus ());
     ctx->add_statement (loop_expr);
 
-    if (tmp != NULL)
-      {
-	ctx->pop_loop_context ();
-	translated
-	  = ctx->get_backend ()->var_expression (tmp, expr.get_locus ());
-      }
+    ctx->pop_loop_context ();
+    translated = ctx->get_backend ()->var_expression (tmp, expr.get_locus ());
+
     ctx->pop_loop_begin_label ();
   }
 
