@@ -68,9 +68,9 @@ is
       end if;
 
       LI := Left.First;
-      RI := Left.First;
+      RI := Right.First;
       while LI /= 0 loop
-         if Left.Nodes (LI).Element /= Right.Nodes (LI).Element then
+         if Left.Nodes (LI).Element /= Right.Nodes (RI).Element then
             return False;
          end if;
 
