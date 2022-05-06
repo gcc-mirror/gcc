@@ -1961,7 +1961,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       bool __saved_avail;
       if (__is >> __mean >> __stddev >> __saved_avail)
 	{
-	  if (__saved_avail && (__is >> __x._M_saved))
+	  if (!__saved_avail || (__is >> __x._M_saved))
 	    {
 	      __x._M_saved_available = __saved_avail;
 	      __x.param(param_type(__mean, __stddev));
