@@ -284,6 +284,32 @@ TyVar::subst_covariant_var (TyTy::BaseType *orig, TyTy::BaseType *subst)
   return TyVar (subst->get_ref ());
 }
 
+TyVar
+TyVar::clone () const
+{
+  TyTy::BaseType *c = get_tyty ()->clone ();
+  return TyVar (c->get_ref ());
+}
+
+TyVar
+TyVar::monomorphized_clone () const
+{
+  auto mappings = Analysis::Mappings::get ();
+  auto context = Resolver::TypeCheckContext::get ();
+
+  // this needs a new hirid
+  TyTy::BaseType *c = get_tyty ()->monomorphized_clone ();
+  c->set_ref (mappings->get_next_hir_id ());
+
+  // insert it
+  context->insert_type (Analysis::NodeMapping (mappings->get_current_crate (),
+					       UNKNOWN_NODEID, c->get_ref (),
+					       UNKNOWN_LOCAL_DEFID),
+			c);
+
+  return TyVar (c->get_ref ());
+}
+
 void
 InferType::accept_vis (TyVisitor &vis)
 {
@@ -372,6 +398,12 @@ InferType::clone () const
   return clone;
 }
 
+BaseType *
+InferType::monomorphized_clone () const
+{
+  return clone ();
+}
+
 bool
 InferType::default_type (BaseType **type) const
 {
@@ -445,6 +477,12 @@ ErrorType::clone () const
   return new ErrorType (get_ref (), get_ty_ref (), get_combined_refs ());
 }
 
+BaseType *
+ErrorType::monomorphized_clone () const
+{
+  return clone ();
+}
+
 std::string
 StructFieldType::as_string () const
 {
@@ -473,6 +511,13 @@ StructFieldType::clone () const
 {
   return new StructFieldType (get_ref (), get_name (),
 			      get_field_type ()->clone ());
+}
+
+StructFieldType *
+StructFieldType::monomorphized_clone () const
+{
+  return new StructFieldType (get_ref (), get_name (),
+			      get_field_type ()->monomorphized_clone ());
 }
 
 bool
@@ -965,6 +1010,19 @@ ADTType::clone () const
 		      get_combined_refs ());
 }
 
+BaseType *
+ADTType::monomorphized_clone () const
+{
+  std::vector<VariantDef *> cloned_variants;
+  for (auto &variant : variants)
+    cloned_variants.push_back (variant->monomorphized_clone ());
+
+  return new ADTType (get_ref (), get_ty_ref (), identifier, ident,
+		      get_adt_kind (), cloned_variants, clone_substs (),
+		      get_repr_options (), used_arguments,
+		      get_combined_refs ());
+}
+
 static bool
 handle_substitions (SubstitutionArgumentMappings &subst_mappings,
 		    StructFieldType *field)
@@ -1127,8 +1185,23 @@ TupleType::is_equal (const BaseType &other) const
 BaseType *
 TupleType::clone () const
 {
-  return new TupleType (get_ref (), get_ty_ref (), get_ident ().locus, fields,
-			get_combined_refs ());
+  std::vector<TyVar> cloned_fields;
+  for (const auto &f : fields)
+    cloned_fields.push_back (f.clone ());
+
+  return new TupleType (get_ref (), get_ty_ref (), get_ident ().locus,
+			cloned_fields, get_combined_refs ());
+}
+
+BaseType *
+TupleType::monomorphized_clone () const
+{
+  std::vector<TyVar> cloned_fields;
+  for (const auto &f : fields)
+    cloned_fields.push_back (f.monomorphized_clone ());
+
+  return new TupleType (get_ref (), get_ty_ref (), get_ident ().locus,
+			cloned_fields, get_combined_refs ());
 }
 
 TupleType *
@@ -1265,8 +1338,20 @@ FnType::clone () const
 {
   std::vector<std::pair<HIR::Pattern *, BaseType *>> cloned_params;
   for (auto &p : params)
-    cloned_params.push_back (
-      std::pair<HIR::Pattern *, BaseType *> (p.first, p.second->clone ()));
+    cloned_params.push_back ({p.first, p.second->clone ()});
+
+  return new FnType (get_ref (), get_ty_ref (), get_id (), get_identifier (),
+		     ident, flags, abi, std::move (cloned_params),
+		     get_return_type ()->clone (), clone_substs (),
+		     get_combined_refs ());
+}
+
+BaseType *
+FnType::monomorphized_clone () const
+{
+  std::vector<std::pair<HIR::Pattern *, BaseType *>> cloned_params;
+  for (auto &p : params)
+    cloned_params.push_back ({p.first, p.second->monomorphized_clone ()});
 
   return new FnType (get_ref (), get_ty_ref (), get_id (), get_identifier (),
 		     ident, flags, abi, std::move (cloned_params),
@@ -1480,6 +1565,18 @@ FnPtr::clone () const
 		    get_combined_refs ());
 }
 
+BaseType *
+FnPtr::monomorphized_clone () const
+{
+  std::vector<TyVar> cloned_params;
+  for (auto &p : params)
+    cloned_params.push_back (p.monomorphized_clone ());
+
+  return new FnPtr (get_ref (), get_ty_ref (), ident.locus,
+		    std::move (cloned_params), result_type,
+		    get_combined_refs ());
+}
+
 void
 ClosureType::accept_vis (TyVisitor &vis)
 {
@@ -1538,6 +1635,12 @@ ClosureType::clone () const
 {
   return new ClosureType (get_ref (), get_ty_ref (), ident, id, parameter_types,
 			  result_type, clone_substs (), get_combined_refs ());
+}
+
+BaseType *
+ClosureType::monomorphized_clone () const
+{
+  return clone ();
 }
 
 ClosureType *
@@ -1618,6 +1721,14 @@ ArrayType::clone () const
 {
   return new ArrayType (get_ref (), get_ty_ref (), ident.locus, capacity_expr,
 			element_type, get_combined_refs ());
+}
+
+BaseType *
+ArrayType::monomorphized_clone () const
+{
+  return new ArrayType (get_ref (), get_ty_ref (), ident.locus, capacity_expr,
+			element_type.monomorphized_clone (),
+			get_combined_refs ());
 }
 
 ArrayType *
@@ -1705,7 +1816,15 @@ SliceType::get_element_type () const
 BaseType *
 SliceType::clone () const
 {
-  return new SliceType (get_ref (), get_ty_ref (), ident.locus, element_type,
+  return new SliceType (get_ref (), get_ty_ref (), ident.locus,
+			element_type.clone (), get_combined_refs ());
+}
+
+BaseType *
+SliceType::monomorphized_clone () const
+{
+  return new SliceType (get_ref (), get_ty_ref (), ident.locus,
+			element_type.monomorphized_clone (),
 			get_combined_refs ());
 }
 
@@ -1777,6 +1896,12 @@ BoolType::clone () const
   return new BoolType (get_ref (), get_ty_ref (), get_combined_refs ());
 }
 
+BaseType *
+BoolType::monomorphized_clone () const
+{
+  return clone ();
+}
+
 void
 IntType::accept_vis (TyVisitor &vis)
 {
@@ -1842,6 +1967,12 @@ IntType::clone () const
 {
   return new IntType (get_ref (), get_ty_ref (), get_int_kind (),
 		      get_combined_refs ());
+}
+
+BaseType *
+IntType::monomorphized_clone () const
+{
+  return clone ();
 }
 
 bool
@@ -1921,6 +2052,12 @@ UintType::clone () const
 		       get_combined_refs ());
 }
 
+BaseType *
+UintType::monomorphized_clone () const
+{
+  return clone ();
+}
+
 bool
 UintType::is_equal (const BaseType &other) const
 {
@@ -1992,6 +2129,12 @@ FloatType::clone () const
 			get_combined_refs ());
 }
 
+BaseType *
+FloatType::monomorphized_clone () const
+{
+  return clone ();
+}
+
 bool
 FloatType::is_equal (const BaseType &other) const
 {
@@ -2054,6 +2197,12 @@ USizeType::clone () const
   return new USizeType (get_ref (), get_ty_ref (), get_combined_refs ());
 }
 
+BaseType *
+USizeType::monomorphized_clone () const
+{
+  return clone ();
+}
+
 void
 ISizeType::accept_vis (TyVisitor &vis)
 {
@@ -2106,6 +2255,12 @@ ISizeType::clone () const
   return new ISizeType (get_ref (), get_ty_ref (), get_combined_refs ());
 }
 
+BaseType *
+ISizeType::monomorphized_clone () const
+{
+  return clone ();
+}
+
 void
 CharType::accept_vis (TyVisitor &vis)
 {
@@ -2156,6 +2311,12 @@ BaseType *
 CharType::clone () const
 {
   return new CharType (get_ref (), get_ty_ref (), get_combined_refs ());
+}
+
+BaseType *
+CharType::monomorphized_clone () const
+{
+  return clone ();
 }
 
 void
@@ -2225,6 +2386,14 @@ BaseType *
 ReferenceType::clone () const
 {
   return new ReferenceType (get_ref (), get_ty_ref (), base, mutability (),
+			    get_combined_refs ());
+}
+
+BaseType *
+ReferenceType::monomorphized_clone () const
+{
+  return new ReferenceType (get_ref (), get_ty_ref (),
+			    base.monomorphized_clone (), mutability (),
 			    get_combined_refs ());
 }
 
@@ -2314,6 +2483,14 @@ PointerType::clone () const
 			  get_combined_refs ());
 }
 
+BaseType *
+PointerType::monomorphized_clone () const
+{
+  return new PointerType (get_ref (), get_ty_ref (),
+			  base.monomorphized_clone (), mutability (),
+			  get_combined_refs ());
+}
+
 PointerType *
 PointerType::handle_substitions (SubstitutionArgumentMappings mappings)
 {
@@ -2398,6 +2575,12 @@ ParamType::clone () const
 			param, get_specified_bounds (), get_combined_refs ());
 }
 
+BaseType *
+ParamType::monomorphized_clone () const
+{
+  return resolve ()->clone ();
+}
+
 std::string
 ParamType::get_symbol () const
 {
@@ -2477,6 +2660,12 @@ BaseType *
 StrType::clone () const
 {
   return new StrType (get_ref (), get_ty_ref (), get_combined_refs ());
+}
+
+BaseType *
+StrType::monomorphized_clone () const
+{
+  return clone ();
 }
 
 void
@@ -2583,6 +2772,12 @@ NeverType::clone () const
   return new NeverType (get_ref (), get_ty_ref (), get_combined_refs ());
 }
 
+BaseType *
+NeverType::monomorphized_clone () const
+{
+  return clone ();
+}
+
 // placeholder type
 
 void
@@ -2637,6 +2832,15 @@ PlaceholderType::clone () const
 {
   return new PlaceholderType (get_symbol (), get_ref (), get_ty_ref (),
 			      get_combined_refs ());
+}
+
+BaseType *
+PlaceholderType::monomorphized_clone () const
+{
+  if (can_resolve ())
+    return resolve ()->monomorphized_clone ();
+
+  return clone ();
 }
 
 void
@@ -2734,9 +2938,15 @@ ProjectionType::can_eq (const BaseType *other, bool emit_errors) const
 BaseType *
 ProjectionType::clone () const
 {
-  return new ProjectionType (get_ref (), get_ty_ref (), base, trait, item,
-			     clone_substs (), used_arguments,
+  return new ProjectionType (get_ref (), get_ty_ref (), base->clone (), trait,
+			     item, clone_substs (), used_arguments,
 			     get_combined_refs ());
+}
+
+BaseType *
+ProjectionType::monomorphized_clone () const
+{
+  return get ()->monomorphized_clone ();
 }
 
 ProjectionType *
@@ -2862,6 +3072,12 @@ DynamicObjectType::clone () const
 {
   return new DynamicObjectType (get_ref (), get_ty_ref (), ident,
 				specified_bounds, get_combined_refs ());
+}
+
+BaseType *
+DynamicObjectType::monomorphized_clone () const
+{
+  return clone ();
 }
 
 std::string
@@ -3087,7 +3303,7 @@ TypeCheckCallExpr::visit (FnPtr &type)
       return;
     }
 
-  resolved = type.get_return_type ()->clone ();
+  resolved = type.get_return_type ()->monomorphized_clone ();
 }
 
 // method call checker
@@ -3143,7 +3359,8 @@ TypeCheckMethodCallExpr::visit (FnType &type)
     }
 
   type.monomorphize ();
-  resolved = type.get_return_type ()->clone ();
+
+  resolved = type.get_return_type ()->monomorphized_clone ();
 }
 
 } // namespace TyTy
