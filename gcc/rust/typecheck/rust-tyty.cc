@@ -229,6 +229,38 @@ BaseType::get_root () const
   return root;
 }
 
+const BaseType *
+BaseType::destructure () const
+{
+  switch (get_kind ())
+    {
+      case TyTy::TypeKind::PARAM: {
+	const TyTy::ParamType *p = static_cast<const TyTy::ParamType *> (this);
+	return p->resolve ();
+      }
+      break;
+
+      case TyTy::TypeKind::PLACEHOLDER: {
+	const TyTy::PlaceholderType *p
+	  = static_cast<const TyTy::PlaceholderType *> (this);
+	rust_assert (p->can_resolve ());
+	return p->resolve ();
+      }
+      break;
+
+      case TyTy::TypeKind::PROJECTION: {
+	const TyTy::ProjectionType *p
+	  = static_cast<const TyTy::ProjectionType *> (this);
+	return p->get ();
+      }
+
+    default:
+      return this;
+    }
+
+  return this;
+}
+
 TyVar::TyVar (HirId ref) : ref (ref)
 {
   // ensure this reference is defined within the context

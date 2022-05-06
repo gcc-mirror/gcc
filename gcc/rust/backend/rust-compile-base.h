@@ -40,8 +40,8 @@ protected:
 protected:
   Context *get_context () { return ctx; }
 
-  tree coercion_site (tree rvalue, TyTy::BaseType *actual,
-		      TyTy::BaseType *expected, Location lvalue_locus,
+  tree coercion_site (tree rvalue, const TyTy::BaseType *actual,
+		      const TyTy::BaseType *expected, Location lvalue_locus,
 		      Location rvalue_locus);
 
   tree coerce_to_dyn_object (tree compiled_ref, const TyTy::BaseType *actual,

@@ -198,12 +198,15 @@ CompileStructExprField::visit (HIR::StructExprFieldIdentifier &field)
 // Shared methods in compilation
 
 tree
-HIRCompileBase::coercion_site (tree rvalue, TyTy::BaseType *actual,
-			       TyTy::BaseType *expected, Location lvalue_locus,
-			       Location rvalue_locus)
+HIRCompileBase::coercion_site (tree rvalue, const TyTy::BaseType *rval,
+			       const TyTy::BaseType *lval,
+			       Location lvalue_locus, Location rvalue_locus)
 {
   if (rvalue == error_mark_node)
     return error_mark_node;
+
+  const TyTy::BaseType *actual = rval->destructure ();
+  const TyTy::BaseType *expected = lval->destructure ();
 
   if (expected->get_kind () == TyTy::TypeKind::REF)
     {
@@ -211,8 +214,10 @@ HIRCompileBase::coercion_site (tree rvalue, TyTy::BaseType *actual,
       if (actual->get_kind () != TyTy::TypeKind::REF)
 	return error_mark_node;
 
-      TyTy::ReferenceType *exp = static_cast<TyTy::ReferenceType *> (expected);
-      TyTy::ReferenceType *act = static_cast<TyTy::ReferenceType *> (actual);
+      const TyTy::ReferenceType *exp
+	= static_cast<const TyTy::ReferenceType *> (expected);
+      const TyTy::ReferenceType *act
+	= static_cast<const TyTy::ReferenceType *> (actual);
 
       tree expected_type = TyTyResolveCompile::compile (ctx, act->get_base ());
       tree deref_rvalue
@@ -235,20 +240,22 @@ HIRCompileBase::coercion_site (tree rvalue, TyTy::BaseType *actual,
       if (!valid_coercion)
 	return error_mark_node;
 
-      TyTy::ReferenceType *exp = static_cast<TyTy::ReferenceType *> (expected);
+      const TyTy::ReferenceType *exp
+	= static_cast<const TyTy::ReferenceType *> (expected);
 
       TyTy::BaseType *actual_base = nullptr;
       tree expected_type = error_mark_node;
       if (actual->get_kind () == TyTy::TypeKind::REF)
 	{
-	  TyTy::ReferenceType *act
-	    = static_cast<TyTy::ReferenceType *> (actual);
+	  const TyTy::ReferenceType *act
+	    = static_cast<const TyTy::ReferenceType *> (actual);
 	  actual_base = act->get_base ();
 	  expected_type = TyTyResolveCompile::compile (ctx, act->get_base ());
 	}
       else if (actual->get_kind () == TyTy::TypeKind::POINTER)
 	{
-	  TyTy::PointerType *act = static_cast<TyTy::PointerType *> (actual);
+	  const TyTy::PointerType *act
+	    = static_cast<const TyTy::PointerType *> (actual);
 	  actual_base = act->get_base ();
 	  expected_type = TyTyResolveCompile::compile (ctx, act->get_base ());
 	}

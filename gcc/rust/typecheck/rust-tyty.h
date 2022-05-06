@@ -253,7 +253,12 @@ public:
 		debug_str ().c_str ());
   }
 
+  // FIXME this will eventually go away
   const BaseType *get_root () const;
+
+  // This will get the monomorphized type from Params, Placeholders or
+  // Projections if available or error
+  const BaseType *destructure () const;
 
   const RustIdent &get_ident () const { return ident; }
 
