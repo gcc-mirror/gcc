@@ -3998,6 +3998,7 @@ omp_runtime_api_call (const_tree fndecl)
       "target_associate_ptr",
       "target_disassociate_ptr",
       "target_free",
+      "target_is_accessible",
       "target_is_present",
       "target_memcpy",
       "target_memcpy_rect",
