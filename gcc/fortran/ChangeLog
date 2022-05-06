@@ -1,3 +1,14 @@
+2022-05-05  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* gfortran.h (struct gfc_omp_clauses): Add non_rectangular bit.
+	* openmp.cc (is_outer_iteration_variable): New function.
+	(expr_is_invariant): New function.
+	(bound_expr_is_canonical): New function.
+	(resolve_omp_do): Replace existing non-rectangularity error with
+	check for canonical form and setting non_rectangular bit.
+	* trans-openmp.cc (gfc_trans_omp_do): Transfer non_rectangular
+	flag to generated tree structure.
+
 2022-05-02  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* trans-openmp.cc (gfc_trans_omp_critical): Set location on OMP

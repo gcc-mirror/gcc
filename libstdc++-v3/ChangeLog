@@ -1,3 +1,74 @@
+2022-05-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/experimental/memory_resource [!__cpp_rtti]
+	(__resource_adaptor_imp::do_is_equal): Do not use dynamic_cast
+	when RTTI is disabled.
+	* testsuite/17_intro/freestanding.cc: Require RTTI.
+	* testsuite/18_support/exception/38732.cc: Likewise.
+	* testsuite/18_support/exception_ptr/rethrow_exception.cc:
+	Likewise.
+	* testsuite/18_support/nested_exception/68139.cc: Likewise.
+	* testsuite/18_support/nested_exception/rethrow_if_nested.cc:
+	Likewise.
+	* testsuite/18_support/type_info/103240.cc: Likewise.
+	* testsuite/18_support/type_info/fundamental.cc: Likewise.
+	* testsuite/18_support/type_info/hash_code.cc: Likewise.
+	* testsuite/20_util/any/assign/emplace.cc: Likewise.
+	* testsuite/20_util/any/cons/in_place.cc: Likewise.
+	* testsuite/20_util/any/misc/any_cast.cc: Likewise.
+	* testsuite/20_util/any/observers/type.cc: Likewise.
+	* testsuite/20_util/function/1.cc: Likewise.
+	* testsuite/20_util/function/2.cc: Likewise.
+	* testsuite/20_util/function/3.cc: Likewise.
+	* testsuite/20_util/function/4.cc: Likewise.
+	* testsuite/20_util/function/5.cc: Likewise.
+	* testsuite/20_util/function/6.cc: Likewise.
+	* testsuite/20_util/function/7.cc: Likewise.
+	* testsuite/20_util/function/8.cc: Likewise.
+	* testsuite/20_util/polymorphic_allocator/resource.cc: Likewise.
+	* testsuite/20_util/shared_ptr/casts/1.cc: Likewise.
+	* testsuite/20_util/shared_ptr/casts/rval.cc: Likewise.
+	* testsuite/20_util/shared_ptr/cons/unique_ptr_deleter_ref_2.cc:
+	Likewise.
+	* testsuite/20_util/shared_ptr/misc/get_deleter.cc: Likewise.
+	* testsuite/20_util/typeindex/comparison_operators.cc: Likewise.
+	* testsuite/20_util/typeindex/comparison_operators_c++20.cc:
+	Likewise.
+	* testsuite/20_util/typeindex/hash.cc: Likewise.
+	* testsuite/20_util/typeindex/hash_code.cc: Likewise.
+	* testsuite/20_util/typeindex/name.cc: Likewise.
+	* testsuite/22_locale/ctype/is/string/89728_neg.cc: Likewise.
+	* testsuite/22_locale/global_templates/standard_facet_hierarchies.cc:
+	Likewise.
+	* testsuite/22_locale/global_templates/user_facet_hierarchies.cc:
+	Likewise.
+	* testsuite/22_locale/locale/13630.cc: Check type without using
+	RTTI.
+	* testsuite/23_containers/array/requirements/non_default_constructible.cc:
+	Require RTTI.
+	* testsuite/27_io/basic_ostream/emit/1.cc: Likewise.
+	* testsuite/27_io/fpos/14320-1.cc: Check type without using RTTI.
+	* testsuite/27_io/fpos/mbstate_t/12065.cc: Require RTTI.
+	* testsuite/27_io/ios_base/failure/dual_abi.cc: Likewise.
+	* testsuite/experimental/any/misc/any_cast.cc: Likewise.
+	* testsuite/experimental/any/observers/type.cc: Likewise.
+	* testsuite/experimental/memory_resource/resource_adaptor.cc:
+	Likewise.
+	* testsuite/lib/libstdc++.exp (check_effective_target_rtti):
+	Define new proc.
+	* testsuite/tr1/3_function_objects/function/1.cc: Likewise.
+	* testsuite/tr1/3_function_objects/function/2.cc: Likewise.
+	* testsuite/tr1/3_function_objects/function/3.cc: Likewise.
+	* testsuite/tr1/3_function_objects/function/4.cc: Likewise.
+	* testsuite/tr1/3_function_objects/function/5.cc: Likewise.
+	* testsuite/tr1/3_function_objects/function/6.cc: Likewise.
+	* testsuite/tr1/3_function_objects/function/7.cc: Likewise.
+	* testsuite/tr1/3_function_objects/function/8.cc: Likewise.
+	* testsuite/tr2/bases/value.cc: Likewise.
+	* testsuite/tr2/direct_bases/value.cc: Likewise.
+	* testsuite/util/exception/safety.h [!__cpp_rtti]: Don't print
+	types without RTTI.
+
 2022-05-04  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/104719

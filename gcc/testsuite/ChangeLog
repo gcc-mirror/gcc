@@ -1,3 +1,57 @@
+2022-05-05  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/64679
+	* g++.dg/parse/ambig11.C: New test.
+	* g++.dg/parse/ambig12.C: New test.
+	* g++.dg/parse/ambig13.C: New test.
+	* g++.dg/parse/ambig14.C: New test.
+
+2022-05-05  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/pr103611-2.c (dg-do): Compile for target ia32.
+	(dg-options): Remove -m32.
+	* gcc.target/i386/pr105032.c (dg-do): Compile for taget ia32.
+	(dg-additional-options): Remove.
+	* gcc.target/i386/pr104732.c (dg-options): Remove -m32.
+	* gcc.target/i386/pr99753.c (dg-options): Ditto.
+
+2022-05-05  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* c-c++-common/gomp/loop-6.c (f3): New function to test TASKLOOP
+	diagnostics.
+	* gfortran.dg/gomp/collapse1.f90: Update expected messages.
+	* gfortran.dg/gomp/pr85313.f90: Remove dg-error on non-rectangular
+	loops that are now accepted.
+	* gfortran.dg/gomp/non-rectangular-loop.f90: New file.
+	* gfortran.dg/gomp/canonical-loop-1.f90: New file.
+	* gfortran.dg/gomp/canonical-loop-2.f90: New file.
+
+2022-05-05  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/104162
+	* gcc.dg/tree-ssa/ssa-fre-99.c: New testcase.
+	* gcc.dg/asan/pr99673.c: Adjust.
+
+2022-05-05  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR testsuite/105486
+	* gcc.dg/pr102950.c: Use explicit "signed char" in test case.
+
+2022-05-05  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/105486
+	* gcc.dg/vect/bb-slp-pr104240.c: Align all data.
+
+2022-05-05  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/105484
+	* gcc.dg/torture/pr105484.c: New testcase.
+
+2022-05-05  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/104595
+	* gcc.dg/vect/pr104595.c: New testcase.
+
 2022-05-04  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/105476

@@ -1,3 +1,66 @@
+2022-05-05  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* gimplify.cc (gimplify_omp_for): Update messages for SCHEDULED
+	and ORDERED clause conflict errors.  Add check for GRAINSIZE and
+	NUM_TASKS on TASKLOOP.
+
+2022-05-05  Martin Liska  <mliska@suse.cz>
+
+	* genautomata.cc (create_composed_state): Remove dead code.
+	* graphite-poly.cc (print_pdrs): Likewise.
+	* lto-wrapper.cc (run_gcc): Likewise.
+	* tree-switch-conversion.cc (switch_decision_tree::balance_case_nodes):
+	Likewise.
+
+2022-05-05  Martin Liska  <mliska@suse.cz>
+
+	* tree-profile.cc (gimple_gen_ic_profiler): Prefix names with
+	PROF_*.
+	(gimple_gen_time_profiler): Likewise.
+
+2022-05-05  Martin Liska  <mliska@suse.cz>
+
+	* value-prof.cc (stream_out_histogram_value): Remove sanity
+	checking.
+
+2022-05-05  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/104162
+	* tree-ssa-sccvn.cc (vn_reference_lookup): Handle
+	&MEM[_1 + 5].a[i] like a POINTER_PLUS_EXPR if the offset
+	becomes invariant.
+	(vn_reference_insert): Likewise.
+
+2022-05-05  Richard Biener  <rguenther@suse.de>
+
+	* tree-core.h (tree_real_cst::real_cst_ptr): Remove pointer
+	to real_value field.
+	(tree_real_cst::value): Add real_value field.
+	* tree.h (TREE_REAL_CST_PTR): Adjust.
+	* tree.cc (build_real): Remove separate allocation.
+	* tree-streamer-in.cc (unpack_ts_real_cst_value_fields):
+	Likewise.
+
+2022-05-05  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-ifcombine.cc (bb_no_side_effects_p): Avoid executing
+	divisions with undefined overflow unconditionally.
+	(pass_tree_ifcombine::execute): Rewrite stmts with undefined
+	overflow to defined.
+
+2022-05-05  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/105484
+	* gimple-isel.cc (gimple_expand_vec_set_expr): Clean EH, return
+	whether the CFG changed.
+	(gimple_expand_vec_exprs): When the CFG changed, clean it up.
+
+2022-05-05  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/104595
+	* tree-vect-patterns.cc (vect_recog_bool_pattern): For
+	COND_EXPR do not fail if check_bool_pattern returns false.
+
 2022-05-04  Tobias Burnus  <tobias@codesourcery.com>
 
 	* omp-low.cc (lower_omp_target): Fix use_device_{addr,ptr} with list
