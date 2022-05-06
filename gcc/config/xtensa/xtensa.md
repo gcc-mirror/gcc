@@ -631,7 +631,7 @@
 
 ;; Field extract instructions.
 
-(define_expand "extv"
+(define_expand "extvsi"
   [(set (match_operand:SI 0 "register_operand" "")
 	(sign_extract:SI (match_operand:SI 1 "register_operand" "")
 			 (match_operand:SI 2 "const_int_operand" "")
@@ -646,12 +646,12 @@
   if (!lsbitnum_operand (operands[3], SImode))
     FAIL;
 
-  emit_insn (gen_extv_internal (operands[0], operands[1],
-				operands[2], operands[3]));
+  emit_insn (gen_extvsi_internal (operands[0], operands[1],
+				  operands[2], operands[3]));
   DONE;
 })
 
-(define_insn "extv_internal"
+(define_insn "extvsi_internal"
   [(set (match_operand:SI 0 "register_operand" "=a")
 	(sign_extract:SI (match_operand:SI 1 "register_operand" "r")
 			 (match_operand:SI 2 "sext_fldsz_operand" "i")
@@ -666,7 +666,7 @@
    (set_attr "mode"	"SI")
    (set_attr "length"	"3")])
 
-(define_expand "extzv"
+(define_expand "extzvsi"
   [(set (match_operand:SI 0 "register_operand" "")
 	(zero_extract:SI (match_operand:SI 1 "register_operand" "")
 			 (match_operand:SI 2 "const_int_operand" "")
@@ -675,12 +675,12 @@
 {
   if (!extui_fldsz_operand (operands[2], SImode))
     FAIL;
-  emit_insn (gen_extzv_internal (operands[0], operands[1],
-				 operands[2], operands[3]));
+  emit_insn (gen_extzvsi_internal (operands[0], operands[1],
+				   operands[2], operands[3]));
   DONE;
 })
 
-(define_insn "extzv_internal"
+(define_insn "extzvsi_internal"
   [(set (match_operand:SI 0 "register_operand" "=a")
 	(zero_extract:SI (match_operand:SI 1 "register_operand" "r")
 			 (match_operand:SI 2 "extui_fldsz_operand" "i")
