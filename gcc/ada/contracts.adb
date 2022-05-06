@@ -2365,6 +2365,10 @@ package body Contracts is
          Set_Debug_Info_Needed   (Proc_Id);
          Set_Postconditions_Proc (Subp_Id, Proc_Id);
 
+         --  Mark it inlined to speed up the call
+
+         Set_Is_Inlined (Proc_Id);
+
          --  Force the front-end inlining of _Postconditions when generating C
          --  code, since its body may have references to itypes defined in the
          --  enclosing subprogram, which would cause problems for unnesting
@@ -2373,7 +2377,6 @@ package body Contracts is
          if Modify_Tree_For_C then
             Set_Has_Pragma_Inline        (Proc_Id);
             Set_Has_Pragma_Inline_Always (Proc_Id);
-            Set_Is_Inlined               (Proc_Id);
          end if;
 
          --  The related subprogram is a function: create the specification of
