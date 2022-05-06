@@ -51,6 +51,7 @@ with Sinfo.Utils;    use Sinfo.Utils;
 with Snames;         use Snames;
 with Stand;          use Stand;
 with Stylesw;        use Stylesw;
+with System.OS_Lib;
 with Uname;          use Uname;
 
 package body Errout is
@@ -2082,6 +2083,7 @@ package body Errout is
       --  Return True if E is a continuation message.
 
       procedure Write_JSON_Escaped_String (Str : String_Ptr);
+      procedure Write_JSON_Escaped_String (Str : String);
       --  Write each character of Str, taking care of preceding each quote and
       --  backslash with a backslash. Note that this escaping differs from what
       --  GCC does.
@@ -2114,9 +2116,9 @@ package body Errout is
       -- Write_JSON_Escaped_String --
       -------------------------------
 
-      procedure Write_JSON_Escaped_String (Str : String_Ptr) is
+      procedure Write_JSON_Escaped_String (Str : String) is
       begin
-         for C of Str.all loop
+         for C of Str loop
             if C = '"' or else C = '\' then
                Write_Char ('\');
             end if;
@@ -2125,14 +2127,30 @@ package body Errout is
          end loop;
       end Write_JSON_Escaped_String;
 
+      -------------------------------
+      -- Write_JSON_Escaped_String --
+      -------------------------------
+
+      procedure Write_JSON_Escaped_String (Str : String_Ptr) is
+      begin
+         Write_JSON_Escaped_String (Str.all);
+      end Write_JSON_Escaped_String;
+
       -------------------------
       -- Write_JSON_Location --
       -------------------------
 
       procedure Write_JSON_Location (Sptr : Source_Ptr) is
+         Name : constant File_Name_Type :=
+           Full_Ref_Name (Get_Source_File_Index (Sptr));
       begin
          Write_Str ("{""file"":""");
-         Write_Name (Full_Ref_Name (Get_Source_File_Index (Sptr)));
+         if Full_Path_Name_For_Brief_Errors then
+            Write_JSON_Escaped_String
+              (System.OS_Lib.Normalize_Pathname (Get_Name_String (Name)));
+         else
+            Write_Name (Name);
+         end if;
          Write_Str (""",""line"":");
          Write_Int (Pos (Get_Physical_Line_Number (Sptr)));
          Write_Str (", ""column"":");
