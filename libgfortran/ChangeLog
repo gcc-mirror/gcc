@@ -1,3 +1,7 @@
+2022-05-06  Release Manager
+
+	* GCC 12.1.0 released.
+
 2022-01-26  Francois-Xavier Coudert  <fxcoudert@gmail.com>
 
 	PR libfortran/104233

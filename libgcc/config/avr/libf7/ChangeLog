@@ -1,3 +1,7 @@
+2022-05-06  Release Manager
+
+	* GCC 12.1.0 released.
+
 2020-06-23  David Edelsohn  <dje.gcc@gmail.com>
 
 	* t-libf7: Use -include.
