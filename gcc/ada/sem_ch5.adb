@@ -4056,6 +4056,12 @@ package body Sem_Ch5 is
       --      range requires the secondary stack. In this case the loop is
       --      wrapped within a block in order to manage the secondary stack.
 
+      --  ??? This overlooks finalization: the loop may leave the secondary
+      --  stack untouched, but its iterator or discrete range may need
+      --  finalization, in which case the block is also required. Therefore
+      --  the criterion must be based on Sem_Util.Requires_Transient_Scope,
+      --  which happens to be what is currently implemented.
+
       if Present (Iter) then
          declare
             Stop_Processing : Boolean;
