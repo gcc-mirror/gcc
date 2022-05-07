@@ -1,3 +1,60 @@
+2022-05-06  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-04-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/105070
+	* tree-switch-conversion.h
+	(bit_test_cluster::hoist_edge_and_branch_if_true): Add location
+	argument.
+	* tree-switch-conversion.c
+	(bit_test_cluster::hoist_edge_and_branch_if_true): Annotate
+	cond with location.
+	(bit_test_cluster::emit): Annotate all generated expressions
+	with location.
+
+2022-05-06  Tom de Vries  <tdevries@suse.de>
+
+	Backported from master:
+	2021-02-05  Tom de Vries  <tdevries@suse.de>
+
+	PR debug/98656
+	* tree-switch-conversion.c (jump_table_cluster::emit): Add loc
+	argument.
+	(bit_test_cluster::emit): Reuse location_t for newly created
+	gswitch statement.
+	(switch_decision_tree::try_switch_expansion): Preserve
+	location_t.
+	* tree-switch-conversion.h: Change function signatures.
+
+2022-05-06  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-03-09  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/104786
+	* cfgexpand.c (expand_asm_stmt): Do not generate a copy
+	for VLAs without an upper size bound.
+
+2022-05-06  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-11-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/103361
+	* gimple-loop-jam.c (adjust_unroll_factor): Use lambda_int
+	for the dependence distance.
+	* tree-data-ref.c (print_lambda_vector): Properly print a lambda_int.
+
+2022-05-06  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-01-20  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/100786
+	* gimple-fold.c (get_symbol_constant_value): Only return
+	values of compatible type to the symbol.
+
 2022-04-27  Hongyu Wang  <hongyu.wang@intel.com>
 
 	Backported from master:
