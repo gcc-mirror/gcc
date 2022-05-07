@@ -1,3 +1,46 @@
+2022-05-06  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-05-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/cpp23/lambda-attr1.C: New test.
+
+2022-05-06  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-04-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/105331
+	* gcc.dg/pr105331.c: New test.
+
+2022-05-06  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-04-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/105396
+	* gcc.dg/asan/pr105396.c: New test.
+
+2022-05-06  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-04-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/105333
+	* gcc.dg/pr105333.c: New test.
+
+2022-05-06  H.J. Lu  <hjl.tools@gmail.com>
+
+	Backported from master:
+	2022-05-02  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR testsuite/105433
+	* gcc.target/i386/iamcu/asm-support.S: Add .note.GNU-stack.
+	* gcc.target/x86_64/abi/asm-support.S: Likewise.
+	* gcc.target/x86_64/abi/avx/asm-support.S: Likewise.
+	* gcc.target/x86_64/abi/avx512f/asm-support.S: Likewise.
+	* gcc.target/x86_64/abi/ms-sysv/do-test.S: Likewise.
+
 2022-05-03  Alexandre Oliva  <oliva@adacore.com>
 
 	Backported from master:

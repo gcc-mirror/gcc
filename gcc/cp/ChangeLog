@@ -1,3 +1,12 @@
+2022-05-06  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-05-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* lambda.c: Include decl.h.
+	(maybe_add_lambda_conv_op): Temporarily override deprecated_state to
+	DEPRECATED_SUPPRESS.
+
 2022-04-28  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:
