@@ -1,3 +1,66 @@
+2022-05-06  Michael Meissner  <meissner@linux.ibm.com>
+
+	Backported from master:
+	2022-05-06   Michael Meissner  <meissner@linux.ibm.com>
+
+	PR target/102059
+	* config/rs6000/rs6000.cc (rs6000_can_inline_p): Ignore -mpower8-fusion
+	and -mpower10-fusion options for inlining purposes.
+
+2022-05-06  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-04-29  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/105376
+	* tree.cc (build_real): Special case dconst* arguments
+	for decimal floating point types.
+
+2022-05-06  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-05-05  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/105484
+	* gimple-isel.cc (gimple_expand_vec_set_expr): Clean EH, return
+	whether the CFG changed.
+	(gimple_expand_vec_exprs): When the CFG changed, clean it up.
+
+2022-05-06  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-05-03  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/105461
+	* opts.cc (finish_options): Match the condition to
+	disable flag_var_tracking to that of process_options.
+
+2022-05-06  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-05-03  Richard Biener  <rguenther@suse.de>
+
+	* opts.cc: #undef OPTIONS_SET_P.
+	(finish_options): Use opts_set instead of OPTIONS_SET_P.
+
+2022-05-06  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-05-02  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/105437
+	* tree-vect-slp.cc (vect_schedule_slp_node): Handle the
+	case where last_stmt alters control flow.
+
+2022-05-06  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-05-03  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/105394
+	* tree-vect-generic.cc (expand_vector_condition): Adjust
+	comp_width for non-integer mode masks as well.
+
 2022-05-06  Release Manager
 
 	* GCC 12.1.0 released.
