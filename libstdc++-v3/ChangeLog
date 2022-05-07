@@ -1,3 +1,58 @@
+2022-05-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/random.tcc (operator==): Only check
+	normal_distribution::_M_saved_available once.
+	* testsuite/26_numerics/random/normal_distribution/operators/equal.cc:
+	Check equality after state changes.
+	* testsuite/26_numerics/random/pr60037-neg.cc: Adjust dg-error
+	lineno.
+
+2022-05-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/105502
+	* include/bits/random.tcc
+	(operator>>(basic_istream<C,T>&, normal_distribution<R>&)):
+	Update state when __state_avail is false.
+	* testsuite/26_numerics/random/normal_distribution/operators/serialize.cc:
+	Check that deserialized object equals serialized one.
+
+2022-05-06  Alexandre Oliva  <oliva@adacore.com>
+
+	* include/experimental/bits/simd.h [__ALTIVEC__]: Require VSX
+	for double, long long, and 64-bit long intrinsic types.
+	[__ALTIVEC__] (__intrinsic_type): Mention 128-bit in
+	preexisting long double diagnostic, adjust no-VSX double
+	diagnostic to cover 64-bit long double as well.
+
+2022-05-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/104731
+	* testsuite/27_io/filesystem/iterators/error_reporting.cc:
+	Use a trailing char array as storage for dirent::d_name.
+
+2022-05-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/stacktrace: Do not include <cxxabi.h>.
+	(__cxa_demangle): Declare.
+
+2022-05-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/99871
+	* include/bits/specfun.h: Use visibility attribute on namespace,
+	instead of pragma push/pop.
+	* libsupc++/compare: Likewise.
+	* libsupc++/exception: Likewise.
+	* libsupc++/exception.h: Likewise.
+	* libsupc++/exception_ptr.h: Likewise.
+	* libsupc++/initializer_list: Likewise.
+	* libsupc++/nested_exception.h: Likewise.
+
+2022-05-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/test.xml: Remove requirement for copyright and
+	GPL notice in tests.
+	* doc/html/manual/test.html: Regenerate.
+
 2022-05-05  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/experimental/memory_resource [!__cpp_rtti]

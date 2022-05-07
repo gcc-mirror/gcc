@@ -1,3 +1,19 @@
+2022-05-06  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/diagnostic/function-color1.C: New test.
+
+2022-05-06   Michael Meissner  <meissner@linux.ibm.com>
+
+	PR target/102059
+	* gcc.target/powerpc/pr102059-4.c: New test.
+
+2022-05-06  Hafiz Abid Qadeer  <abidh@codesourcery.com>
+
+	* c-c++-common/gomp/allocate-2.c: Add tests.
+	* c-c++-common/gomp/allocate-8.c: New test.
+	* gfortran.dg/gomp/allocate-3.f90: Add tests.
+	* gcc.dg/gomp/pr104517.c: Update.
+
 2022-05-05  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/64679

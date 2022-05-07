@@ -1,3 +1,32 @@
+2022-05-06  Jason Merrill  <jason@redhat.com>
+
+	* diagnostic-color.cc: Add fnname and targs color entries.
+	* doc/invoke.texi: Document them.
+
+2022-05-06  Jason Merrill  <jason@redhat.com>
+
+	* vec.h (vec::iterate): Fix comment.
+
+2022-05-06   Michael Meissner  <meissner@linux.ibm.com>
+
+	PR target/102059
+	* config/rs6000/rs6000.cc (rs6000_can_inline_p): Ignore -mpower8-fusion
+	and -mpower10-fusion options for inlining purposes.
+
+2022-05-06  Christophe Lyon  <christophe.lyon@arm.com>
+
+	* config/aarch64/iterators.md (GPF_TF_F16): Delete.
+
+2022-05-06  Marcel Vollweiler  <marcel@codesourcery.com>
+
+	* omp-low.cc (omp_runtime_api_call): Added target_is_accessible to
+	omp_runtime_apis array.
+
+2022-05-06  Hafiz Abid Qadeer  <abidh@codesourcery.com>
+
+	* omp-low.cc (omp_maybe_offloaded_ctx): New prototype.
+	(scan_sharing_clauses):  Check a restriction on allocate clause.
+
 2022-05-05  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* gimplify.cc (gimplify_omp_for): Update messages for SCHEDULED
