@@ -1,3 +1,27 @@
+2022-05-06  Michael Meissner  <meissner@linux.ibm.com>
+
+	Backported from master:
+	2022-05-06   Michael Meissner  <meissner@linux.ibm.com>
+
+	PR target/102059
+	* gcc.target/powerpc/pr102059-4.c: New test.
+
+2022-05-06  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-04-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/105198
+	* gcc.dg/torture/pr105198.c: New testcase.
+
+2022-05-06  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-02-07  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/104402
+	* gcc.dg/torture/pr104402.c: New testcase.
+
 2022-04-27  Hongyu Wang  <hongyu.wang@intel.com>
 
 	Backported from master:

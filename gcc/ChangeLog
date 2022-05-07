@@ -1,3 +1,33 @@
+2022-05-06  Michael Meissner  <meissner@linux.ibm.com>
+
+	Backported from master:
+	2022-05-06   Michael Meissner  <meissner@linux.ibm.com>
+
+	PR target/102059
+	* config/rs6000/rs6000.c (rs6000_can_inline_p): Ignore -mpower8-fusion
+	option for inlining purposes.
+
+2022-05-06  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-04-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/105198
+	* tree-predcom.c (find_looparound_phi): Check whether
+	the found memory location of the entry value is clobbered
+	inbetween the value we want to use and loop entry.
+
+2022-05-06  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-02-07  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/104402
+	* gimple-expr.c (is_gimple_condexpr): _Complex typed
+	compares are not valid.
+	* tree-cfg.c (verify_gimple_assign_ternary): For COND_EXPR
+	check is_gimple_condexpr.
+
 2022-04-27  Hongyu Wang  <hongyu.wang@intel.com>
 
 	Backported from master:
