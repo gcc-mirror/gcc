@@ -16,6 +16,21 @@ SubstituteCtx::substitute_metavar (std::unique_ptr<AST::Token> &metavar)
     }
   else
     {
+      // If we are expanding a metavar which has a lof of matches, we are
+      // currently expanding a repetition metavar - not a simple metavar. We
+      // need to error out and inform the user.
+      // Associated test case for an example: compile/macro-issue1224.rs
+      if (it->second.get_match_amount () != 1)
+	{
+	  rust_error_at (metavar->get_locus (),
+			 "metavariable is still repeating at this depth");
+	  rust_inform (
+	    metavar->get_locus (),
+	    "you probably forgot the repetition operator: %<%s%s%s%>", "$(",
+	    metavar->as_string ().c_str (), ")*");
+	  return expanded;
+	}
+
       // We only care about the vector when expanding repetitions.
       // Just access the first element of the vector.
       auto &frag = it->second.get_single_fragment ();
