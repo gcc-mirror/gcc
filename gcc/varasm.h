@@ -79,4 +79,6 @@ extern rtx assemble_static_space (unsigned HOST_WIDE_INT);
 
 extern rtx assemble_trampoline_template (void);
 
+extern void switch_to_comdat_section (section *, tree);
+
 #endif  // GCC_VARASM_H
