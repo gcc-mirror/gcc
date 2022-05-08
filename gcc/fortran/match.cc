@@ -1606,21 +1606,21 @@ gfc_match_if (gfc_statement *if_type)
   match ("assign", gfc_match_assign, ST_LABEL_ASSIGNMENT)
   match ("backspace", gfc_match_backspace, ST_BACKSPACE)
   match ("call", gfc_match_call, ST_CALL)
-  match ("change team", gfc_match_change_team, ST_CHANGE_TEAM)
+  match ("change% team", gfc_match_change_team, ST_CHANGE_TEAM)
   match ("close", gfc_match_close, ST_CLOSE)
   match ("continue", gfc_match_continue, ST_CONTINUE)
   match ("cycle", gfc_match_cycle, ST_CYCLE)
   match ("deallocate", gfc_match_deallocate, ST_DEALLOCATE)
   match ("end file", gfc_match_endfile, ST_END_FILE)
   match ("end team", gfc_match_end_team, ST_END_TEAM)
-  match ("error stop", gfc_match_error_stop, ST_ERROR_STOP)
-  match ("event post", gfc_match_event_post, ST_EVENT_POST)
-  match ("event wait", gfc_match_event_wait, ST_EVENT_WAIT)
+  match ("error% stop", gfc_match_error_stop, ST_ERROR_STOP)
+  match ("event% post", gfc_match_event_post, ST_EVENT_POST)
+  match ("event% wait", gfc_match_event_wait, ST_EVENT_WAIT)
   match ("exit", gfc_match_exit, ST_EXIT)
-  match ("fail image", gfc_match_fail_image, ST_FAIL_IMAGE)
+  match ("fail% image", gfc_match_fail_image, ST_FAIL_IMAGE)
   match ("flush", gfc_match_flush, ST_FLUSH)
   match ("forall", match_simple_forall, ST_FORALL)
-  match ("form team", gfc_match_form_team, ST_FORM_TEAM)
+  match ("form% team", gfc_match_form_team, ST_FORM_TEAM)
   match ("go to", gfc_match_goto, ST_GOTO)
   match ("if", match_arithmetic_if, ST_ARITHMETIC_IF)
   match ("inquire", gfc_match_inquire, ST_INQUIRE)
@@ -1634,10 +1634,10 @@ gfc_match_if (gfc_statement *if_type)
   match ("rewind", gfc_match_rewind, ST_REWIND)
   match ("stop", gfc_match_stop, ST_STOP)
   match ("wait", gfc_match_wait, ST_WAIT)
-  match ("sync all", gfc_match_sync_all, ST_SYNC_CALL);
-  match ("sync images", gfc_match_sync_images, ST_SYNC_IMAGES);
-  match ("sync memory", gfc_match_sync_memory, ST_SYNC_MEMORY);
-  match ("sync team", gfc_match_sync_team, ST_SYNC_TEAM)
+  match ("sync% all", gfc_match_sync_all, ST_SYNC_CALL);
+  match ("sync% images", gfc_match_sync_images, ST_SYNC_IMAGES);
+  match ("sync% memory", gfc_match_sync_memory, ST_SYNC_MEMORY);
+  match ("sync% team", gfc_match_sync_team, ST_SYNC_TEAM)
   match ("unlock", gfc_match_unlock, ST_UNLOCK)
   match ("where", match_simple_where, ST_WHERE)
   match ("write", gfc_match_write, ST_WRITE)
@@ -6716,7 +6716,7 @@ gfc_match_select_rank (void)
   if (m == MATCH_ERROR)
     return m;
 
-  m = gfc_match (" select rank ( ");
+  m = gfc_match (" select% rank ( ");
   if (m != MATCH_YES)
     return m;
 
