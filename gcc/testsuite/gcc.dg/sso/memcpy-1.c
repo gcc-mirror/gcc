@@ -3,20 +3,20 @@
 typedef unsigned char uint8_t;
 typedef unsigned int uint32_t;
 
-#define __big_endian__ scalar_storage_order("big-endian")
-#define __little_endian__ scalar_storage_order("little-endian")
+#define __big_endian_attr__ scalar_storage_order("big-endian")
+#define __little_endian_attr__ scalar_storage_order("little-endian")
 
 typedef union
 {
   uint32_t val;
   uint8_t v[4];
-} __attribute__((__big_endian__)) upal_u32be_t;
+} __attribute__((__big_endian_attr__)) upal_u32be_t;
 
 typedef union
 {
   uint32_t val;
   uint8_t v[4];
-} __attribute__((__little_endian__)) upal_u32le_t;
+} __attribute__((__little_endian_attr__)) upal_u32le_t;
 
 static inline uint32_t native_to_big_endian(uint32_t t)
 {
