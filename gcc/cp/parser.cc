@@ -12174,7 +12174,7 @@ cp_parser_handle_directive_omp_attributes (cp_parser *parser, tree *pattrs,
      atomic-statement
 
   IN_COMPOUND is true when the statement is nested inside a
-  cp_parser_compound_statement; this matters for certain pragmas.
+  cp_parser_compound_statement.
 
   If IF_P is not NULL, *IF_P is set to indicate whether the statement
   is a (possibly labeled) if statement which is not enclosed in braces
@@ -12184,7 +12184,7 @@ cp_parser_handle_directive_omp_attributes (cp_parser *parser, tree *pattrs,
 
 static void
 cp_parser_statement (cp_parser* parser, tree in_statement_expr,
-		     bool in_compound, bool *if_p, vec<tree> *chain,
+		     const bool in_compound, bool *if_p, vec<tree> *chain,
 		     location_t *loc_after_labels)
 {
   tree statement, std_attrs = NULL_TREE;
@@ -12192,6 +12192,9 @@ cp_parser_statement (cp_parser* parser, tree in_statement_expr,
   location_t statement_location, attrs_loc;
   bool in_omp_attribute_pragma = parser->lexer->in_omp_attribute_pragma;
   bool has_std_attrs;
+  /* A copy of IN_COMPOUND which is set to false after seeing a label.
+     This matters for certain pragmas.  */
+  bool in_compound_for_pragma = in_compound;
 
  restart:
   if (if_p != NULL)
@@ -12286,7 +12289,7 @@ cp_parser_statement (cp_parser* parser, tree in_statement_expr,
 	     Parse the label, and then use tail recursion to parse
 	     the statement.  */
 	  cp_parser_label_for_labeled_statement (parser, std_attrs);
-	  in_compound = false;
+	  in_compound_for_pragma = false;
 	  in_omp_attribute_pragma = parser->lexer->in_omp_attribute_pragma;
 	  goto restart;
 
@@ -12370,7 +12373,21 @@ cp_parser_statement (cp_parser* parser, tree in_statement_expr,
 	     the statement.  */
 
 	  cp_parser_label_for_labeled_statement (parser, std_attrs);
-	  in_compound = false;
+
+	  /* If there's no statement, it's not a labeled-statement, just
+	     a label.  That's allowed in C++23, but only if we're at the
+	     end of a compound-statement.  */
+	  if (in_compound
+	      && cp_lexer_next_token_is (parser->lexer, CPP_CLOSE_BRACE))
+	    {
+	      location_t loc = cp_lexer_peek_token (parser->lexer)->location;
+	      if (cxx_dialect < cxx23)
+		pedwarn (loc, OPT_Wc__23_extensions,
+			 "label at end of compound statement only available "
+			 "with %<-std=c++2b%> or %<-std=gnu++2b%>");
+	      return;
+	    }
+	  in_compound_for_pragma = false;
 	  in_omp_attribute_pragma = parser->lexer->in_omp_attribute_pragma;
 	  goto restart;
 	}
@@ -12393,7 +12410,7 @@ cp_parser_statement (cp_parser* parser, tree in_statement_expr,
 	 the context of a compound, accept the pragma as a "statement" and
 	 return so that we can check for a close brace.  Otherwise we
 	 require a real statement and must go back and read one.  */
-      if (in_compound)
+      if (in_compound_for_pragma)
 	cp_parser_pragma (parser, pragma_compound, if_p);
       else if (!cp_parser_pragma (parser, pragma_stmt, if_p))
 	do_restart = true;
@@ -12544,9 +12561,13 @@ attr_chainon (tree attrs, tree attr)
 
 /* Parse the label for a labeled-statement, i.e.
 
-   identifier :
-   case constant-expression :
-   default :
+   label:
+     attribute-specifier-seq[opt] identifier :
+     attribute-specifier-seq[opt] case constant-expression :
+     attribute-specifier-seq[opt] default :
+
+   labeled-statement:
+     label statement
 
    GNU Extension:
    case constant-expression ... constant-expression : statement
@@ -12766,7 +12787,11 @@ cp_parser_expression_statement (cp_parser* parser, tree in_statement_expr)
 /* Parse a compound-statement.
 
    compound-statement:
-     { statement-seq [opt] }
+     { statement-seq [opt] label-seq [opt] }
+
+   label-seq:
+     label
+     label-seq label
 
    GNU extension:
 
