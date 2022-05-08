@@ -1,3 +1,12 @@
+2022-05-07  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/101833
+	PR c++/47634
+	* g++.dg/ext/attr-format-arg1.C: New test.
+	* g++.dg/ext/attr-format1.C: New test.
+	* g++.dg/ext/attr-format2.C: New test.
+	* g++.dg/ext/attr-format3.C: New test.
+
 2022-05-06  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/diagnostic/function-color1.C: New test.

@@ -1,3 +1,9 @@
+2022-05-07  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/101833
+	PR c++/47634
+	* tree-core.h (struct attribute_spec): Update comment for HANDLER.
+
 2022-05-06  Jason Merrill  <jason@redhat.com>
 
 	* diagnostic-color.cc: Add fnname and targs color entries.

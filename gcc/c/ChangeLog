@@ -1,3 +1,9 @@
+2022-05-07  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/101833
+	PR c++/47634
+	* c-objc-common.cc (maybe_adjust_arg_pos_for_attribute): New.
+
 2022-04-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/105149
