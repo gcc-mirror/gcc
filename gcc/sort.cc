@@ -37,8 +37,6 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "system.h"
 
-#define likely(cond) __builtin_expect ((cond), 1)
-
 #ifdef __GNUC__
 #define noinline __attribute__ ((__noinline__))
 #else
@@ -86,15 +84,15 @@ do {                                                     \
   memcpy (&t0, e0 + OFFSET, sizeof (TYPE));              \
   memcpy (&t1, e1 + OFFSET, sizeof (TYPE));              \
   char *out = c->out + OFFSET;                           \
-  if (likely (c->n == 3))                                \
+  if (LIKELY (c->n == 3))                                \
     memmove (out + 2*STRIDE, e2 + OFFSET, sizeof (TYPE));\
   memcpy (out, &t0, sizeof (TYPE)); out += STRIDE;       \
   memcpy (out, &t1, sizeof (TYPE));                      \
 } while (0)
 
-  if (likely (c->size == sizeof (size_t)))
+  if (LIKELY (c->size == sizeof (size_t)))
     REORDER_23 (size_t, sizeof (size_t), 0);
-  else if (likely (c->size == sizeof (int)))
+  else if (LIKELY (c->size == sizeof (int)))
     REORDER_23 (int, sizeof (int), 0);
   else
     {
@@ -119,7 +117,7 @@ do {                                                     \
   memcpy (&t2, e2 + OFFSET, sizeof (TYPE));              \
   memcpy (&t3, e3 + OFFSET, sizeof (TYPE));              \
   char *out = c->out + OFFSET;                           \
-  if (likely (c->n == 5))                                \
+  if (LIKELY (c->n == 5))                                \
     memmove (out + 4*STRIDE, e4 + OFFSET, sizeof (TYPE));\
   memcpy (out, &t0, sizeof (TYPE)); out += STRIDE;       \
   memcpy (out, &t1, sizeof (TYPE)); out += STRIDE;       \
@@ -127,9 +125,9 @@ do {                                                     \
   memcpy (out, &t3, sizeof (TYPE));                      \
 } while (0)
 
-  if (likely (c->size == sizeof (size_t)))
+  if (LIKELY (c->size == sizeof (size_t)))
     REORDER_45 (size_t, sizeof (size_t), 0);
-  else if (likely(c->size == sizeof (int)))
+  else if (LIKELY (c->size == sizeof (int)))
     REORDER_45 (int,  sizeof (int), 0);
   else
     {
@@ -168,7 +166,7 @@ do {                                  \
 
   char *e0 = in, *e1 = e0 + c->size, *e2 = e1 + c->size;
   CMP (e0, e1);
-  if (likely (c->n == 3))
+  if (LIKELY (c->n == 3))
     {
       CMP (e1, e2);
       CMP (e0, e1);
@@ -176,13 +174,13 @@ do {                                  \
   if (c->n <= 3)
     return reorder23 (c, e0, e1, e2);
   char *e3 = e2 + c->size, *e4 = e3 + c->size;
-  if (likely (c->n == 5))
+  if (LIKELY (c->n == 5))
     {
       CMP (e3, e4);
       CMP (e2, e4);
     }
   CMP (e2, e3);
-  if (likely (c->n == 5))
+  if (LIKELY (c->n == 5))
     {
       CMP (e0, e3);
       CMP (e1, e4);
@@ -200,7 +198,7 @@ template<typename sort_ctx>
 static void
 mergesort (char *in, sort_ctx *c, size_t n, char *out, char *tmp)
 {
-  if (likely (n <= c->nlim))
+  if (LIKELY (n <= c->nlim))
     {
       c->out = out;
       c->n = n;
@@ -225,12 +223,12 @@ do {                                            \
   l += ~mr & SIZE;                              \
 } while (r != end)
 
-  if (likely (c->cmp(r, l + (r - out) - c->size) < 0))
+  if (LIKELY (c->cmp (r, l + (r - out) - c->size) < 0))
     {
       char *end = out + n * c->size;
-      if (sizeof (size_t) == 8 && likely (c->size == 8))
+      if (sizeof (size_t) == 8 && LIKELY (c->size == 8))
 	MERGE_ELTSIZE (8);
-      else if (likely (c->size == 4))
+      else if (LIKELY (c->size == 4))
 	MERGE_ELTSIZE (4);
       else
 	MERGE_ELTSIZE (c->size);

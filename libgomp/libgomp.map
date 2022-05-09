@@ -229,6 +229,7 @@ OMP_5.1 {
 OMP_5.1.1 {
   global:
 	omp_get_mapped_ptr;
+	omp_target_is_accessible;
 } OMP_5.1;
 
 GOMP_1.0 {

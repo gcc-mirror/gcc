@@ -1087,7 +1087,6 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  (bit_ior:c (bit_xor:c@3 @0 @1) (bit_xor:c (bit_xor:c @1 @2) @0))
  (bit_ior @3 @2))
 
-#if GIMPLE
 /* (~X | C) ^ D -> (X | C) ^ (~D ^ C) if (~D ^ C) can be simplified.  */
 (simplify
  (bit_xor:c (bit_ior:cs (bit_not:s @0) @1) @2)
@@ -1104,7 +1103,6 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  (if (INTEGRAL_TYPE_P (TREE_TYPE (@0))
       && wi::bit_and_not (get_nonzero_bits (@0), wi::to_wide (@1)) == 0)
   (bit_xor @0 @1)))
-#endif
 
 /* For constants M and N, if M == (1LL << cst) - 1 && (N & M) == M,
    ((A & N) + B) & M -> (A + B) & M
@@ -1259,6 +1257,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	&& wi::to_wide (@1) != wi::min_value (TYPE_PRECISION (type),
 					      SIGNED))
     (minus (plus @1 { build_minus_one_cst (type); }) @0))))
+#endif
 
 /* ~(X >> Y) -> ~X >> Y if ~X can be simplified.  */
 (simplify
@@ -1271,7 +1270,6 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
    (if (!wi::neg_p (tree_nonzero_bits (@0)))
     (with { tree stype = signed_type_for (TREE_TYPE (@0)); }
      (convert (rshift (bit_not! (convert:stype @0)) @1))))))
-#endif
 
 /* x + (x & 1) -> (x + 1) & ~1 */
 (simplify
@@ -2750,7 +2748,6 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 
 /* (T)(A) +- (T)(B) -> (T)(A +- B) only when (A +- B) could be simplified
    to a simple value.  */
-#if GIMPLE
   (for op (plus minus)
    (simplify
     (op (convert @0) (convert @1))
@@ -2761,7 +2758,6 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	  && !TYPE_OVERFLOW_TRAPS (type)
 	  && !TYPE_OVERFLOW_SANITIZED (type))
       (convert (op! @0 @1)))))
-#endif
 
   /* ~A + A -> -1 */
   (simplify
@@ -2947,9 +2943,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
      /* If @1 +- @2 is constant require a hard single-use on either
 	original operand (but not on both).  */
      (mult (plusminus @1 @2) @0)
-#if GIMPLE
      (mult! (plusminus @1 @2) @0)
-#endif
   )))
   /* We cannot generate constant 1 for fract.  */
   (if (!ALL_FRACT_MODE_P (TYPE_MODE (type)))
@@ -4070,7 +4064,6 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (if (integer_zerop (@0))
    @2)))
 
-#if GIMPLE
 /* Sink unary operations to branches, but only if we do fold both.  */
 (for op (negate bit_not abs absu)
  (simplify
@@ -4093,7 +4086,6 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  (simplify
   (op @3 (vec_cond:s @0 @1 @2))
   (vec_cond @0 (op! @3 @1) (op! @3 @2))))
-#endif
 
 #if GIMPLE
 (match (nop_atomic_bit_test_and_p @0 @1 @4)
@@ -5419,7 +5411,6 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (cmp:c (bit_xor:c @0 @1) @0)
   (cmp @1 { build_zero_cst (TREE_TYPE (@1)); }))
 
-#if GIMPLE
  /* (X & Y) == X becomes (X & ~Y) == 0.  */
  (simplify
   (cmp:c (bit_and:c @0 @1) @0)
@@ -5439,7 +5430,6 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  (simplify
   (cmp:c (bit_ior:c @0 @1) @1)
   (cmp (bit_and @0 (bit_not! @1)) { build_zero_cst (TREE_TYPE (@0)); }))
-#endif
 
  /* (X ^ C1) op C2 can be rewritten as X op (C1 ^ C2).  */
  (simplify

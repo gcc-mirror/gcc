@@ -1,3 +1,15 @@
+2022-05-06  Marcel Vollweiler  <marcel@codesourcery.com>
+
+	* libgomp.map: Added omp_target_is_accessible.
+	* libgomp.texi: Tagged omp_target_is_accessible as supported.
+	* omp.h.in: Added omp_target_is_accessible.
+	* omp_lib.f90.in: Added interface for omp_target_is_accessible.
+	* omp_lib.h.in: Likewise.
+	* target.c (omp_target_is_accessible): Added implementation of
+	omp_target_is_accessible.
+	* testsuite/libgomp.c-c++-common/target-is-accessible-1.c: New test.
+	* testsuite/libgomp.fortran/target-is-accessible-1.f90: New test.
+
 2022-05-05  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* libgomp.texi (OpenMP 5.0): Feature is now fully supported.

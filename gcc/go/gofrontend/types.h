@@ -2800,7 +2800,7 @@ class Array_type : public Type
 
   // Return an expression for the pointer to the values in an array.
   Expression*
-  get_value_pointer(Gogo*, Expression* array, bool is_lvalue) const;
+  get_value_pointer(Gogo*, Expression* array) const;
 
   // Return an expression for the length of an array with this type.
   Expression*

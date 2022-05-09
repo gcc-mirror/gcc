@@ -62,7 +62,6 @@ So instead we use the macro below and test it against specific values.  */
 #define GCC_VERSION (__GNUC__ * 1000 + __GNUC_MINOR__)
 #endif /* GCC_VERSION */
 
-#if defined (__STDC__) || defined(__cplusplus) || defined (_AIX) || (defined (__mips) && defined (_SYSTYPE_SVR4)) || defined(_WIN32)
 /* All known AIX compilers implement these things (but don't always
    define __STDC__).  The RISC/OS MIPS compiler defines these things
    in SVR4 mode, but does not define __STDC__.  */
@@ -88,22 +87,6 @@ So instead we use the macro below and test it against specific values.  */
 #  define inline  /* nothing */
 # endif
 #endif
-
-#else	/* Not ANSI C.  */
-
-#define PTR		char *
-
-/* some systems define these in header files for non-ansi mode */
-#undef const
-#undef volatile
-#undef signed
-#undef inline
-#define const
-#define volatile
-#define signed
-#define inline
-
-#endif	/* ANSI C.  */
 
 /* Define macros for some gcc attributes.  This permits us to use the
    macros freely, and know that they will come into play for the

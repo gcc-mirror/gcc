@@ -1,3 +1,24 @@
+2022-05-07  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/101833
+	PR c++/47634
+	* c-attribs.cc (positional_argument): Pass POS by reference.  Deal
+	with FN being either a function declaration or function type.  Use
+	maybe_adjust_arg_pos_for_attribute.
+	* c-common.cc (check_function_arguments): Maybe pass FNDECL down to
+	check_function_format.
+	* c-common.h (maybe_adjust_arg_pos_for_attribute): Declare.
+	(positional_argument): Adjust.
+	* c-format.cc (get_constant): Rename to ...
+	(validate_constant): ... this.  Take EXPR by reference.  Return bool
+	instead of tree.
+	(handle_format_arg_attribute): Don't overwrite FORMAT_NUM_EXPR by the
+	return value of validate_constant.
+	(decode_format_attr): Don't overwrite FORMAT_NUM_EXPR and
+	FIRST_ARG_NUM_EXPR by the return value of validate_constant.
+	(check_function_format): Adjust a parameter name.
+	(handle_format_attribute): Maybe pass FNDECL down to decode_format_attr.
+
 2022-05-04  Marek Polacek  <polacek@redhat.com>
 
 	* c-warn.cc (warnings_for_convert_and_check): Convert constants of type

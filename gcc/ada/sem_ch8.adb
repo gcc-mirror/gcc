@@ -474,6 +474,10 @@ package body Sem_Ch8 is
    --  scope: the defining entity for U, unless U is a package instance, in
    --  which case we retrieve the entity of the instance spec.
 
+   procedure Error_Missing_With_Of_Known_Unit (Pkg : Node_Id);
+   --  Display an error message denoting a "with" is missing for a given known
+   --  package Pkg with its full path name.
+
    procedure Find_Expanded_Name (N : Node_Id);
    --  The input is a selected component known to be an expanded name. Verify
    --  legality of selector given the scope denoted by prefix, and change node
@@ -509,6 +513,7 @@ package body Sem_Ch8 is
 
    function Has_Implicit_Operator (N : Node_Id) return Boolean;
    --  N is an expanded name whose selector is an operator name (e.g. P."+").
+   --  Determine if N denotes an operator implicitly declared in prefix P: P's
    --  declarative part contains an implicit declaration of an operator if it
    --  has a declaration of a type to which one of the predefined operators
    --  apply. The existence of this routine is an implementation artifact. A
@@ -4532,7 +4537,7 @@ package body Sem_Ch8 is
       --  have at least one formal parameter, with the exceptions of the GNAT
       --  attribute 'Img, which GNAT treats as renameable.
 
-      if not Is_Non_Empty_List (Parameter_Specifications (Spec)) then
+      if Is_Empty_List (Parameter_Specifications (Spec)) then
          if Aname /= Name_Img then
             Error_Msg_N
               ("subprogram renaming an attribute must have formals", N);
@@ -5333,6 +5338,81 @@ package body Sem_Ch8 is
       end if;
    end Entity_Of_Unit;
 
+   --------------------------------------
+   -- Error_Missing_With_Of_Known_Unit --
+   --------------------------------------
+
+   procedure Error_Missing_With_Of_Known_Unit (Pkg : Node_Id) is
+      Selectors : array (1 .. 6) of Node_Id;
+      --  Contains the chars of the full package name up to maximum number
+      --  allowed as per Errout.Error_Msg_Name_# variables.
+
+      Count : Integer := Selectors'First;
+      --  Count of selector names forming the full package name
+
+      Current_Pkg : Node_Id := Parent (Pkg);
+
+   begin
+      Selectors (Count) := Pkg;
+
+      --  Gather all the selectors we can display
+
+      while Nkind (Current_Pkg) = N_Selected_Component
+        and then Is_Known_Unit (Current_Pkg)
+        and then Count < Selectors'Length
+      loop
+         Count             := Count + 1;
+         Selectors (Count) := Selector_Name (Current_Pkg);
+         Current_Pkg       := Parent (Current_Pkg);
+      end loop;
+
+      --  Display the error message based on the number of selectors found
+
+      case Count is
+         when 1 =>
+            Error_Msg_Node_1 := Selectors (1);
+            Error_Msg_N -- CODEFIX
+              ("\\missing `WITH &;`", Pkg);
+         when 2 =>
+            Error_Msg_Node_1 := Selectors (1);
+            Error_Msg_Node_2 := Selectors (2);
+            Error_Msg_N -- CODEFIX
+              ("\\missing `WITH &.&;`", Pkg);
+         when 3 =>
+            Error_Msg_Node_1 := Selectors (1);
+            Error_Msg_Node_2 := Selectors (2);
+            Error_Msg_Node_3 := Selectors (3);
+            Error_Msg_N -- CODEFIX
+              ("\\missing `WITH &.&.&;`", Pkg);
+         when 4 =>
+            Error_Msg_Node_1 := Selectors (1);
+            Error_Msg_Node_2 := Selectors (2);
+            Error_Msg_Node_3 := Selectors (3);
+            Error_Msg_Node_3 := Selectors (4);
+            Error_Msg_N -- CODEFIX
+              ("\\missing `WITH &.&.&.&;`", Pkg);
+         when 5 =>
+            Error_Msg_Node_1 := Selectors (1);
+            Error_Msg_Node_2 := Selectors (2);
+            Error_Msg_Node_3 := Selectors (3);
+            Error_Msg_Node_3 := Selectors (4);
+            Error_Msg_Node_3 := Selectors (5);
+            Error_Msg_N -- CODEFIX
+              ("\\missing `WITH &.&.&.&.&;`", Pkg);
+         when 6 =>
+            Error_Msg_Node_1 := Selectors (1);
+            Error_Msg_Node_2 := Selectors (2);
+            Error_Msg_Node_3 := Selectors (3);
+            Error_Msg_Node_4 := Selectors (4);
+            Error_Msg_Node_5 := Selectors (5);
+            Error_Msg_Node_6 := Selectors (6);
+            Error_Msg_N -- CODEFIX
+              ("\\missing `WITH &.&.&.&.&.&;`", Pkg);
+         when others =>
+            raise Program_Error;
+      end case;
+   end Error_Missing_With_Of_Known_Unit;
+
    ----------------------
    -- Find_Direct_Name --
    ----------------------
@@ -5876,25 +5956,7 @@ package body Sem_Ch8 is
               and then N = Prefix (Parent (N))
               and then Is_Known_Unit (Parent (N))
             then
-               declare
-                  P : Node_Id := Parent (N);
-               begin
-                  Error_Msg_Name_1 := Chars (N);
-                  Error_Msg_Name_2 := Chars (Selector_Name (P));
-
-                  if Nkind (Parent (P)) = N_Selected_Component
-                    and then Is_Known_Unit (Parent (P))
-                  then
-                     P := Parent (P);
-                     Error_Msg_Name_3 := Chars (Selector_Name (P));
-                     Error_Msg_N -- CODEFIX
-                       ("\\missing `WITH %.%.%;`", N);
-
-                  else
-                     Error_Msg_N -- CODEFIX
-                       ("\\missing `WITH %.%;`", N);
-                  end if;
-               end;
+               Error_Missing_With_Of_Known_Unit (N);
             end if;
 
             --  Now check for possible misspellings
@@ -6909,9 +6971,7 @@ package body Sem_Ch8 is
                                            Standard_Standard)
                then
                   if not Error_Posted (N) then
-                     Error_Msg_Node_2 := Selector;
-                     Error_Msg_N -- CODEFIX
-                       ("missing `WITH &.&;`", Prefix (N));
+                     Error_Missing_With_Of_Known_Unit (Prefix (N));
                   end if;
 
                --  If this is a selection from a dummy package, then suppress
@@ -8650,7 +8710,10 @@ package body Sem_Ch8 is
             | Name_Op_Xor
          =>
             while Id /= Priv_Id loop
-               if Valid_Boolean_Arg (Id) and then Is_Base_Type (Id) then
+               if Is_Type (Id)
+                 and then Valid_Boolean_Arg (Id)
+                 and then Is_Base_Type (Id)
+               then
                   Add_Implicit_Operator (Id);
                   return True;
                end if;
@@ -8665,7 +8728,7 @@ package body Sem_Ch8 is
          =>
             while Id /= Priv_Id loop
                if Is_Type (Id)
-                 and then not Is_Limited_Type (Id)
+                 and then Valid_Equality_Arg (Id)
                  and then Is_Base_Type (Id)
                then
                   Add_Implicit_Operator (Standard_Boolean, Id);
@@ -8683,9 +8746,8 @@ package body Sem_Ch8 is
             | Name_Op_Lt
          =>
             while Id /= Priv_Id loop
-               if (Is_Scalar_Type (Id)
-                    or else (Is_Array_Type (Id)
-                              and then Is_Scalar_Type (Component_Type (Id))))
+               if Is_Type (Id)
+                 and then Valid_Comparison_Arg (Id)
                  and then Is_Base_Type (Id)
                then
                   Add_Implicit_Operator (Standard_Boolean, Id);

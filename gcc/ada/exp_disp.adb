@@ -3817,11 +3817,11 @@ package body Exp_Disp is
               and then not Is_Actual_For_Formal_Incomplete_Type (Comp)
             then
                Error_Msg_Sloc := Sloc (Subp);
-               Error_Msg_Node_2 := Subp;
-               Error_Msg_Name_1 := Chars (Tagged_Type);
                Error_Msg_NE
                  ("declaration must appear after completion of type &",
                   N, Comp);
+               Error_Msg_Node_2 := Subp;
+               Error_Msg_Name_1 := Chars (Tagged_Type);
                Error_Msg_NE
                  ("\which is a component of untagged type& in the profile "
                   & "of primitive & of type % that is frozen by the "

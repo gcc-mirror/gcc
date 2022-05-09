@@ -5168,12 +5168,12 @@ package body Sem_Prag is
                elsif Has_Pragma_Unmodified (Arg_Id) then
                   if Has_Pragma_Unused (Arg_Id) then
                      Error_Msg_NE
-                       ("??pragma Unused already given for &!", Arg_Expr,
-                         Arg_Id);
+                       (Fix_Error ("??pragma Unused already given for &!"),
+                        Arg_Expr, Arg_Id);
                   else
                      Error_Msg_NE
-                       ("??pragma Unmodified already given for &!", Arg_Expr,
-                         Arg_Id);
+                       (Fix_Error ("??pragma Unmodified already given for &!"),
+                        Arg_Expr, Arg_Id);
                   end if;
 
                --  Otherwise the pragma referenced an illegal entity
@@ -5276,12 +5276,13 @@ package body Sem_Prag is
                   if Has_Pragma_Unreferenced (Arg_Id) then
                      if Has_Pragma_Unused (Arg_Id) then
                         Error_Msg_NE
-                          ("??pragma Unused already given for &!", Arg_Expr,
-                            Arg_Id);
+                          (Fix_Error ("??pragma Unused already given for &!"),
+                           Arg_Expr, Arg_Id);
                      else
                         Error_Msg_NE
-                          ("??pragma Unreferenced already given for &!",
-                            Arg_Expr, Arg_Id);
+                          (Fix_Error
+                             ("??pragma Unreferenced already given for &!"),
+                           Arg_Expr, Arg_Id);
                      end if;
 
                   --  Apply Unreferenced to the entity
@@ -19454,8 +19455,39 @@ package body Sem_Prag is
                   end;
                end if;
 
-               Preanalyze_Assert_Expression
-                 (Expression (Variant), Any_Discrete);
+               --  Preanalyze_Assert_Expression, but without enforcing any of
+               --  the two acceptable types.
+
+               Preanalyze_Assert_Expression (Expression (Variant));
+
+               --  Expression of a discrete type is allowed
+
+               if Is_Discrete_Type (Etype (Expression (Variant))) then
+                  null;
+
+               --  Expression of a Big_Integer type (or its ghost variant) is
+               --  only allowed in Decreases clause.
+
+               elsif
+                 Is_RTE (Base_Type (Etype (Expression (Variant))),
+                         RE_Big_Integer)
+                   or else
+                 Is_RTE (Base_Type (Etype (Expression (Variant))),
+                         RO_GH_Big_Integer)
+               then
+                  if Chars (Variant) = Name_Increases then
+                     Error_Msg_N
+                       ("Loop_Variant with Big_Integer can only decrease",
+                        Expression (Variant));
+                  end if;
+
+               --  Expression of other types is not allowed
+
+               else
+                  Error_Msg_N
+                    ("expected a discrete or Big_Integer type",
+                     Expression (Variant));
+               end if;
 
                Next (Variant);
             end loop;
@@ -29414,7 +29446,36 @@ package body Sem_Prag is
          end if;
 
          Errors := Serious_Errors_Detected;
-         Preanalyze_Assert_Expression (Expr, Any_Discrete);
+
+         --  Preanalyze_Assert_Expression, but without enforcing any of the two
+         --  acceptable types.
+
+         Preanalyze_Assert_Expression (Expr);
+
+         --  Expression of a discrete type is allowed
+
+         if Is_Discrete_Type (Etype (Expr)) then
+            null;
+
+         --  Expression of a Big_Integer type (or its ghost variant) is only
+         --  allowed in Decreases clause.
+
+         elsif
+           Is_RTE (Base_Type (Etype (Expr)), RE_Big_Integer)
+             or else
+           Is_RTE (Base_Type (Etype (Expr)), RO_GH_Big_Integer)
+         then
+            if Chars (Direction) = Name_Increases then
+               Error_Msg_N
+                 ("Subprogram_Variant with Big_Integer can only decrease",
+                  Expr);
+            end if;
+
+         --  Expression of other types is not allowed
+
+         else
+            Error_Msg_N ("expected a discrete or Big_Integer type", Expr);
+         end if;
 
          --  Emit a clarification message when the variant expression
          --  contains at least one undefined reference, possibly due

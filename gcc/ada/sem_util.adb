@@ -1719,6 +1719,31 @@ package body Sem_Util is
             Error_Msg_FE (Msg, N, Typ);
          end if;
 
+         --  Suggest to use First_Valid/Last_Valid instead of First/Last/Range
+         --  if the predicate is static.
+
+         if not Has_Dynamic_Predicate_Aspect (Typ)
+           and then Has_Static_Predicate (Typ)
+           and then Nkind (N) = N_Attribute_Reference
+         then
+            declare
+               Aname   : constant Name_Id := Attribute_Name (N);
+               Attr_Id : constant Attribute_Id := Get_Attribute_Id (Aname);
+            begin
+               case Attr_Id is
+                  when Attribute_First =>
+                     Error_Msg_F ("\use attribute First_Valid instead", N);
+                  when Attribute_Last =>
+                     Error_Msg_F ("\use attribute Last_Valid instead", N);
+                  when Attribute_Range =>
+                     Error_Msg_F ("\use attributes First_Valid and "
+                                  & "Last_Valid instead", N);
+                  when others =>
+                     null;
+               end case;
+            end;
+         end if;
+
          --  Emit an optional suggestion on how to remedy the error if the
          --  context warrants it.
 
@@ -14986,6 +15011,47 @@ package body Sem_Util is
       return False;
    end In_Return_Value;
 
+   -----------------------------------------
+   -- In_Statement_Condition_With_Actions --
+   -----------------------------------------
+
+   function In_Statement_Condition_With_Actions (N : Node_Id) return Boolean is
+      Prev : Node_Id := N;
+      P    : Node_Id := Parent (N);
+      --  P and Prev will be used for traversing the AST, while maintaining an
+      --  invariant that P = Parent (Prev).
+   begin
+      while Present (P) loop
+         if Nkind (P) = N_Iteration_Scheme
+           and then Prev = Condition (P)
+         then
+            return True;
+
+         elsif Nkind (P) = N_Elsif_Part
+           and then Prev = Condition (P)
+         then
+            return True;
+
+         --  No point in going beyond statements
+
+         elsif Nkind (N) in N_Statement_Other_Than_Procedure_Call
+                          | N_Procedure_Call_Statement
+         then
+            exit;
+
+         --  Prevent the search from going too far
+
+         elsif Is_Body_Or_Package_Declaration (P) then
+            exit;
+         end if;
+
+         Prev := P;
+         P := Parent (P);
+      end loop;
+
+      return False;
+   end In_Statement_Condition_With_Actions;
+
    ---------------------
    -- In_Visible_Part --
    ---------------------
@@ -14997,30 +15063,6 @@ package body Sem_Util is
         and then not In_Package_Body (Scope_Id)
         and then not In_Private_Part (Scope_Id);
    end In_Visible_Part;
-
-   -----------------------------
-   -- In_While_Loop_Condition --
-   -----------------------------
-
-   function In_While_Loop_Condition (N : Node_Id) return Boolean is
-      Prev : Node_Id := N;
-      P    : Node_Id := Parent (N);
-      --  P and Prev will be used for traversing the AST, while maintaining an
-      --  invariant that P = Parent (Prev).
-   begin
-      loop
-         if No (P) then
-            return False;
-         elsif Nkind (P) = N_Iteration_Scheme
-           and then Prev = Condition (P)
-         then
-            return True;
-         else
-            Prev := P;
-            P := Parent (P);
-         end if;
-      end loop;
-   end In_While_Loop_Condition;
 
    --------------------------------
    -- Incomplete_Or_Partial_View --
@@ -19533,9 +19575,7 @@ package body Sem_Util is
          if Nkind (Original_Node (AV)) in N_Function_Call | N_Aggregate then
             return False;
 
-         elsif Comes_From_Source (AV)
-           and then Nkind (Original_Node (Expression (AV))) = N_Function_Call
-         then
+         elsif Nkind (Original_Node (Expression (AV))) = N_Function_Call then
             return False;
 
          elsif Nkind (Original_Node (AV)) = N_Type_Conversion then
@@ -21477,6 +21517,25 @@ package body Sem_Util is
 
         and then Nkind (Parent (Id)) = N_Function_Specification;
    end Is_User_Defined_Equality;
+
+   -----------------------------
+   -- Is_User_Defined_Literal --
+   -----------------------------
+
+   function Is_User_Defined_Literal
+     (N   : Node_Id;
+      Typ : Entity_Id) return Boolean
+   is
+      Literal_Aspect_Map :
+        constant array (N_Numeric_Or_String_Literal) of Aspect_Id :=
+          (N_Integer_Literal => Aspect_Integer_Literal,
+           N_Real_Literal    => Aspect_Real_Literal,
+           N_String_Literal  => Aspect_String_Literal);
+
+   begin
+      return Nkind (N) in N_Numeric_Or_String_Literal
+        and then Present (Find_Aspect (Typ, Literal_Aspect_Map (Nkind (N))));
+   end Is_User_Defined_Literal;
 
    --------------------------------------
    -- Is_Validation_Variable_Reference --
@@ -25698,10 +25757,11 @@ package body Sem_Util is
                      --  of pragma Unused.
 
                      if Has_Pragma_Unused (Ent) then
-                        Error_Msg_NE ("??pragma Unused given for &!", N, Ent);
+                        Error_Msg_NE
+                          ("??aspect Unused specified for &!", N, Ent);
                      else
                         Error_Msg_NE
-                          ("??pragma Unmodified given for &!", N, Ent);
+                          ("??aspect Unmodified specified for &!", N, Ent);
                      end if;
                   end if;
 

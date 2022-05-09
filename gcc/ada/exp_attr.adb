@@ -888,6 +888,11 @@ package body Exp_Attr is
          --  special stream-processing operations for that type (for example
          --  Unbounded_String and its wide varieties).
 
+         --  We don't install the package either if array type and element
+         --  type come from the same package, and the original array type is
+         --  private, because in this case the underlying type Arr is
+         --  itself a full view, which carries the full view of the component.
+
          Scop := Scope (C_Type);
 
          if Is_Private_Type (C_Type)
@@ -896,7 +901,15 @@ package body Exp_Attr is
            and then Ekind (Scop) = E_Package
            and then No (Get_Stream_Convert_Pragma (C_Type))
          then
-            Install := True;
+            if Scope (Arr) = Scope (C_Type)
+              and then Is_Private_Type (Etype (Prefix (N)))
+              and then Full_View (Etype (Prefix (N))) = Arr
+            then
+               null;
+
+            else
+               Install := True;
+            end if;
          end if;
       end if;
 
@@ -6691,7 +6704,21 @@ package body Exp_Attr is
             Prefix_Is_Type := False;
          end if;
 
-         if Is_Class_Wide_Type (Ttyp) then
+         --  In the case of a class-wide equivalent type without a parent,
+         --  the _Tag component has been built in Make_CW_Equivalent_Type
+         --  manually and must be referenced directly.
+
+         if Ekind (Ttyp) = E_Class_Wide_Subtype
+           and then Present (Equivalent_Type (Ttyp))
+           and then No (Parent_Subtype (Equivalent_Type (Ttyp)))
+         then
+            Ttyp := Equivalent_Type (Ttyp);
+
+         --  In all the other cases of class-wide type, including an equivalent
+         --  type with a parent, the _Tag component ultimately present is that
+         --  of the root type.
+
+         elsif Is_Class_Wide_Type (Ttyp) then
             Ttyp := Root_Type (Ttyp);
          end if;
 

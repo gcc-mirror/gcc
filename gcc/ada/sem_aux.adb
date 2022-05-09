@@ -410,8 +410,10 @@ package body Sem_Aux is
       Ctyp : Entity_Id;
 
    begin
+      pragma Assert (Is_Tagged_Type (Typ)
+        or else Is_Class_Wide_Equivalent_Type (Typ));
+
       Ctyp := Typ;
-      pragma Assert (Is_Tagged_Type (Ctyp));
 
       if Is_Class_Wide_Type (Ctyp) then
          Ctyp := Root_Type (Ctyp);

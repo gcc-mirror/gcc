@@ -151,7 +151,7 @@ is
          Insert (Target, N.Key, N.Element);
       end Insert_Element;
 
-      --  Start of processing for Assign
+   --  Start of processing for Assign
 
    begin
       if Target'Address = Source'Address then

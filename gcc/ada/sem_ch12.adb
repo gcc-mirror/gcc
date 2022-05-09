@@ -17192,7 +17192,7 @@ package body Sem_Ch12 is
          end if;
       end Validate_Derived_Type_Default;
 
-      --  Start of processing for Validate_Formal_Type_Default
+   --  Start of processing for Validate_Formal_Type_Default
 
    begin
       Analyze (Default);

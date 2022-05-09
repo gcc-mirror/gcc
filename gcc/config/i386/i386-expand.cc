@@ -20941,6 +20941,106 @@ expand_vec_perm_vpshufb2_vpermq_even_odd (struct expand_vec_perm_d *d)
   return true;
 }
 
+/* Implement permutation with pslldq + psrldq + por when pshufb is not
+   available.  */
+static bool
+expand_vec_perm_pslldq_psrldq_por (struct expand_vec_perm_d *d, bool pandn)
+{
+  unsigned i, nelt = d->nelt;
+  unsigned start1, end1 = -1;
+  machine_mode vmode = d->vmode, imode;
+  int start2 = -1;
+  bool clear_op0, clear_op1;
+  unsigned inner_size;
+  rtx op0, op1, dop1;
+  rtx (*gen_vec_shr) (rtx, rtx, rtx);
+  rtx (*gen_vec_shl) (rtx, rtx, rtx);
+
+  /* pshufd can be used for V4SI/V2DI under TARGET_SSE2.  */
+  if (!TARGET_SSE2 || (vmode != E_V16QImode && vmode != E_V8HImode))
+    return false;
+
+  start1 = d->perm[0];
+  for (i = 1; i < nelt; i++)
+    {
+      if (d->perm[i] != d->perm[i-1] + 1)
+	{
+	  if (start2 == -1)
+	    {
+	      start2 = d->perm[i];
+	      end1 = d->perm[i-1];
+	    }
+	  else
+	    return false;
+	}
+      else if (d->perm[i] >= nelt
+	       && start2 == -1)
+	{
+	  start2 = d->perm[i];
+	  end1 = d->perm[i-1];
+	}
+    }
+
+  clear_op0 = end1 != nelt - 1;
+  clear_op1 = start2 % nelt != 0;
+  /* pandn/pand is needed to clear upper/lower bits of op0/op1.  */
+  if (!pandn && (clear_op0 || clear_op1))
+    return false;
+
+  if (d->testing_p)
+    return true;
+
+  gen_vec_shr = vmode == E_V16QImode ? gen_vec_shr_v16qi : gen_vec_shr_v8hi;
+  gen_vec_shl = vmode == E_V16QImode ? gen_vec_shl_v16qi : gen_vec_shl_v8hi;
+  imode = GET_MODE_INNER (vmode);
+  inner_size = GET_MODE_BITSIZE (imode);
+  op0 = gen_reg_rtx (vmode);
+  op1 = gen_reg_rtx (vmode);
+
+  if (start1)
+    emit_insn (gen_vec_shr (op0, d->op0, GEN_INT (start1 * inner_size)));
+  else
+    emit_move_insn (op0, d->op0);
+
+  dop1 = d->op1;
+  if (d->one_operand_p)
+    dop1 = d->op0;
+
+  int shl_offset = end1 - start1 + 1 - start2 % nelt;
+  if (shl_offset)
+    emit_insn (gen_vec_shl (op1, dop1, GEN_INT (shl_offset * inner_size)));
+  else
+    emit_move_insn (op1, dop1);
+
+  /* Clear lower/upper bits for op0/op1.  */
+  if (clear_op0 || clear_op1)
+    {
+      rtx vec[16];
+      rtx const_vec;
+      rtx clear;
+      for (i = 0; i != nelt; i++)
+	{
+	  if (i < (end1 - start1 + 1))
+	    vec[i] = gen_int_mode ((HOST_WIDE_INT_1U << inner_size) - 1, imode);
+	  else
+	    vec[i] = CONST0_RTX (imode);
+	}
+      const_vec = gen_rtx_CONST_VECTOR (vmode, gen_rtvec_v (nelt, vec));
+      const_vec = validize_mem (force_const_mem (vmode, const_vec));
+      clear = force_reg (vmode, const_vec);
+
+      if (clear_op0)
+	emit_move_insn (op0, gen_rtx_AND (vmode, op0, clear));
+      if (clear_op1)
+	emit_move_insn (op1, gen_rtx_AND (vmode,
+					  gen_rtx_NOT (vmode, clear),
+					  op1));
+    }
+
+  emit_move_insn (d->target, gen_rtx_IOR (vmode, op0, op1));
+  return true;
+}
+
 /* A subroutine of expand_vec_perm_even_odd_1.  Implement extract-even
    and extract-odd permutations of two V8QI, V8HI, V16QI, V16HI or V32QI
    operands with two "and" and "pack" or two "shift" and "pack" insns.
@@ -21853,6 +21953,9 @@ ix86_expand_vec_perm_const_1 (struct expand_vec_perm_d *d)
   if (expand_vec_perm_pshufb2 (d))
     return true;
 
+  if (expand_vec_perm_pslldq_psrldq_por (d, false))
+    return true;
+
   if (expand_vec_perm_interleave3 (d))
     return true;
 
@@ -21889,6 +21992,10 @@ ix86_expand_vec_perm_const_1 (struct expand_vec_perm_d *d)
      The combinatorics of punpck[lh] get pretty ugly... */
 
   if (expand_vec_perm_even_odd (d))
+    return true;
+
+  /* Generate four or five instructions.  */
+  if (expand_vec_perm_pslldq_psrldq_por (d, true))
     return true;
 
   /* Even longer sequences.  */

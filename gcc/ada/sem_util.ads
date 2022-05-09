@@ -1723,13 +1723,17 @@ package Sem_Util is
    --  This version is more efficient than calling the single root version of
    --  Is_Subtree twice.
 
+   function In_Statement_Condition_With_Actions (N : Node_Id) return Boolean;
+   --  Returns true if the expression N occurs within the condition of a
+   --  statement node with actions. Subsidiary to inlining for GNATprove, where
+   --  inlining of function calls in such expressions would expand the called
+   --  body into actions list of the condition node. GNATprove cannot yet cope
+   --  with such a complex AST.
+
    function In_Visible_Part (Scope_Id : Entity_Id) return Boolean;
    --  Determine whether a declaration occurs within the visible part of a
    --  package specification. The package must be on the scope stack, and the
    --  corresponding private part must not.
-
-   function In_While_Loop_Condition (N : Node_Id) return Boolean;
-   --  Returns true if the expression N occurs within the condition of a while
 
    function Incomplete_Or_Partial_View (Id : Entity_Id) return Entity_Id;
    --  Given the entity of a constant or a type, retrieve the incomplete or
@@ -2467,6 +2471,12 @@ package Sem_Util is
 
    function Is_User_Defined_Equality (Id : Entity_Id) return Boolean;
    --  Determine whether an entity denotes a user-defined equality
+
+   function Is_User_Defined_Literal
+     (N   : Node_Id;
+      Typ : Entity_Id) return Boolean;
+   pragma Inline (Is_User_Defined_Literal);
+   --  Determine whether N is a user-defined literal for Typ
 
    function Is_Validation_Variable_Reference (N : Node_Id) return Boolean;
    --  Determine whether N denotes a reference to a variable which captures the

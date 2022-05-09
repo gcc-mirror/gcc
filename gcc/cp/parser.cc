@@ -1454,7 +1454,7 @@ cp_ensure_no_omp_declare_simd (cp_parser *parser)
 static inline void
 cp_finalize_omp_declare_simd (cp_parser *parser, tree fndecl)
 {
-  if (__builtin_expect (parser->omp_declare_simd != NULL, 0))
+  if (UNLIKELY (parser->omp_declare_simd != NULL))
     {
       if (fndecl == error_mark_node)
 	{
@@ -22660,7 +22660,7 @@ cp_parser_init_declarator (cp_parser* parser,
 	  bool ok = (cp_lexer_next_token_is (parser->lexer, CPP_SEMICOLON)
 		     || cp_lexer_next_token_is (parser->lexer, CPP_COMMA));
 	  cp_lexer_rollback_tokens (parser->lexer);
-	  if (__builtin_expect (!ok, 0))
+	  if (UNLIKELY (!ok))
 	    /* Not an init-declarator.  */
 	    return error_mark_node;
 	}
@@ -47196,7 +47196,7 @@ cp_parser_late_parsing_oacc_routine (cp_parser *parser, tree attrs)
 static void
 cp_finalize_oacc_routine (cp_parser *parser, tree fndecl, bool is_defn)
 {
-  if (__builtin_expect (parser->oacc_routine != NULL, 0))
+  if (UNLIKELY (parser->oacc_routine != NULL))
     {
       /* Keep going if we're in error reporting mode.  */
       if (parser->oacc_routine->error_seen

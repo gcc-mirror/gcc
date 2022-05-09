@@ -1288,8 +1288,6 @@ package body Exp_Ch3 is
       Comp      : Entity_Id;
       Comp_Type : Entity_Id;
 
-      --  Start of processing for Build_Equivalent_Record_Aggregate
-
    begin
       if not Is_Record_Type (T)
         or else Has_Discriminants (T)

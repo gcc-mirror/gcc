@@ -890,6 +890,8 @@ package body Exp_Util is
          Size_Id : constant Entity_Id := Make_Temporary (Loc, 'S');
 
          Actuals      : List_Id;
+         Alloc_Nod    : Node_Id := Empty;
+         Alloc_Expr   : Node_Id := Empty;
          Fin_Addr_Id  : Entity_Id;
          Fin_Mas_Act  : Node_Id;
          Fin_Mas_Id   : Entity_Id;
@@ -897,6 +899,36 @@ package body Exp_Util is
          Subpool      : Node_Id := Empty;
 
       begin
+         --  When we are building an allocator procedure, extract the allocator
+         --  node for later processing and calculation of alignment.
+
+         if Is_Allocate then
+
+            if Nkind (Expr) = N_Allocator then
+               Alloc_Nod := Expr;
+
+            --  When Expr is an object declaration we have to examine its
+            --  expression.
+
+            elsif Nkind (Expr) = N_Object_Declaration
+              and then Nkind (Expression (Expr)) = N_Allocator
+            then
+               Alloc_Nod := Expression (Expr);
+
+            --  Otherwise, we raise an error because we should have found one
+
+            else
+               raise Program_Error;
+            end if;
+
+            --  Extract the qualified expression if there is one from the
+            --  allocator.
+
+            if Nkind (Expression (Alloc_Nod)) = N_Qualified_Expression then
+               Alloc_Expr := Expression (Alloc_Nod);
+            end if;
+         end if;
+
          --  Step 1: Construct all the actuals for the call to library routine
          --  Allocate_Any_Controlled / Deallocate_Any_Controlled.
 
@@ -967,19 +999,27 @@ package body Exp_Util is
          Append_To (Actuals, New_Occurrence_Of (Addr_Id, Loc));
          Append_To (Actuals, New_Occurrence_Of (Size_Id, Loc));
 
-         if (Is_Allocate or else not Is_Class_Wide_Type (Desig_Typ))
+         --  Class-wide allocations without expressions and non-class-wide
+         --  allocations can be performed without getting the alignment from
+         --  the type's Type Specific Record.
+
+         if ((Is_Allocate and then No (Alloc_Expr))
+               or else
+             not Is_Class_Wide_Type (Desig_Typ))
            and then not Use_Secondary_Stack_Pool
          then
             Append_To (Actuals, New_Occurrence_Of (Alig_Id, Loc));
 
-         --  For deallocation of class-wide types we obtain the value of
-         --  alignment from the Type Specific Record of the deallocated object.
+         --  For operations on class-wide types we obtain the value of
+         --  alignment from the Type Specific Record of the relevant object.
          --  This is needed because the frontend expansion of class-wide types
          --  into equivalent types confuses the back end.
 
          else
             --  Generate:
             --     Obj.all'Alignment
+            --   or
+            --     Alloc_Expr'Alignment
 
             --  ... because 'Alignment applied to class-wide types is expanded
             --  into the code that reads the value of alignment from the TSD
@@ -992,7 +1032,10 @@ package body Exp_Util is
               Unchecked_Convert_To (RTE (RE_Storage_Offset),
                 Make_Attribute_Reference (Loc,
                   Prefix         =>
-                    Make_Explicit_Dereference (Loc, Relocate_Node (Expr)),
+                    (if No (Alloc_Expr) then
+                       Make_Explicit_Dereference (Loc, Relocate_Node (Expr))
+                     else
+                       Relocate_Node (Expression (Alloc_Expr))),
                   Attribute_Name => Name_Alignment)));
          end if;
 
@@ -6468,7 +6511,7 @@ package body Exp_Util is
          return Empty;
       end Check_Decls;
 
-      --  Start of processing for Following_Address_Clause
+   --  Start of processing for Following_Address_Clause
 
    begin
       --  If parser detected no address clause for the identifier in question,
@@ -9480,8 +9523,8 @@ package body Exp_Util is
    --     Ext__50 : Storage_Array (1 .. (Exp'size - Typ'object_size)/8);
    --   end Equiv_T;
    --
-   --  ??? Note that this type does not guarantee same alignment as all
-   --  derived types
+   --  Note that this type does not guarantee same alignment as all derived
+   --  types.
    --
    --  Note: for the freezing circuitry, this looks like a record extension,
    --  and so we need to make sure that the scalar storage order is the same
@@ -9539,7 +9582,8 @@ package body Exp_Util is
       if not Is_Interface (Root_Typ) then
 
          --  subtype rg__xx is
-         --    Storage_Offset range 1 .. (Expr'size - typ'size) / Storage_Unit
+         --    Storage_Offset range 1 .. (Expr'size - typ'object_size)
+         --                                / Storage_Unit
 
          Sizexpr :=
            Make_Op_Subtract (Loc,
@@ -9554,13 +9598,20 @@ package body Exp_Util is
                  Attribute_Name => Name_Object_Size));
       else
          --  subtype rg__xx is
-         --    Storage_Offset range 1 .. Expr'size / Storage_Unit
+         --    Storage_Offset range 1 .. (Expr'size - Ada.Tags.Tag'object_size)
+         --                                / Storage_Unit
 
          Sizexpr :=
-           Make_Attribute_Reference (Loc,
-             Prefix =>
-               OK_Convert_To (T, Duplicate_Subexpr_No_Checks (E)),
-             Attribute_Name => Name_Size);
+           Make_Op_Subtract (Loc,
+             Left_Opnd =>
+               Make_Attribute_Reference (Loc,
+                 Prefix =>
+                   OK_Convert_To (T, Duplicate_Subexpr_No_Checks (E)),
+                 Attribute_Name => Name_Size),
+             Right_Opnd =>
+               Make_Attribute_Reference (Loc,
+                 Prefix => New_Occurrence_Of (RTE (RE_Tag), Loc),
+                 Attribute_Name => Name_Object_Size));
       end if;
 
       Set_Paren_Count (Sizexpr, 1);
@@ -9596,13 +9647,17 @@ package body Exp_Util is
                     New_List (New_Occurrence_Of (Range_Type, Loc))))));
 
       --  type Equiv_T is record
-      --    [ _parent : Tnn; ]
-      --    E : Str_Type;
+      --    _Parent : Snn;          -- not interface
+      --    _Tag    : Ada.Tags.Tag  -- interface
+      --    Cnn     : Str_Type;
       --  end Equiv_T;
 
       Equiv_Type := Make_Temporary (Loc, 'T');
       Mutate_Ekind (Equiv_Type, E_Record_Type);
-      Set_Parent_Subtype (Equiv_Type, Constr_Root);
+
+      if not Is_Interface (Root_Typ) then
+         Set_Parent_Subtype (Equiv_Type, Constr_Root);
+      end if;
 
       --  Set Is_Class_Wide_Equivalent_Type very early to trigger the special
       --  treatment for this type. In particular, even though _parent's type
@@ -9630,6 +9685,17 @@ package body Exp_Util is
            (Equiv_Type, Reverse_Storage_Order (Base_Type (Root_Utyp)));
          Set_Reverse_Bit_Order
            (Equiv_Type, Reverse_Bit_Order (Base_Type (Root_Utyp)));
+
+      else
+         Append_To (Comp_List,
+           Make_Component_Declaration (Loc,
+             Defining_Identifier  =>
+               Make_Defining_Identifier (Loc, Name_uTag),
+             Component_Definition =>
+               Make_Component_Definition (Loc,
+                 Aliased_Present    => False,
+                 Subtype_Indication =>
+                   New_Occurrence_Of (RTE (RE_Tag), Loc))));
       end if;
 
       Append_To (Comp_List,
@@ -9654,6 +9720,13 @@ package body Exp_Util is
       --  the generation of spurious warnings under ZFP run-time.
 
       Insert_Actions (E, List_Def, Suppress => All_Checks);
+
+      --  In the case of an interface type mark the tag for First_Tag_Component
+
+      if Is_Interface (Root_Typ) then
+         Set_Is_Tag (First_Entity (Equiv_Type));
+      end if;
+
       return Equiv_Type;
    end Make_CW_Equivalent_Type;
 
@@ -10239,15 +10312,61 @@ package body Exp_Util is
 
    function Make_Variant_Comparison
      (Loc      : Source_Ptr;
+      Typ      : Entity_Id;
       Mode     : Name_Id;
       Curr_Val : Node_Id;
       Old_Val  : Node_Id) return Node_Id
    is
+      function Big_Integer_Lt return Entity_Id;
+      --  Returns the entity of the predefined "<" function from
+      --  Ada.Numerics.Big_Numbers.Big_Integers.
+
+      --------------------
+      -- Big_Integer_Lt --
+      --------------------
+
+      function Big_Integer_Lt return Entity_Id is
+         Big_Integers : constant Entity_Id :=
+           RTU_Entity (Ada_Numerics_Big_Numbers_Big_Integers);
+
+         E : Entity_Id := First_Entity (Big_Integers);
+
+      begin
+         while Present (E) loop
+            if Chars (E) = Name_Op_Lt then
+               return E;
+            end if;
+            Next_Entity (E);
+         end loop;
+
+         raise Program_Error;
+      end Big_Integer_Lt;
+
+   --  Start of processing for Make_Variant_Comparison
+
    begin
       if Mode = Name_Increases then
          return Make_Op_Gt (Loc, Curr_Val, Old_Val);
+
       else pragma Assert (Mode = Name_Decreases);
-         return Make_Op_Lt (Loc, Curr_Val, Old_Val);
+
+         --  For discrete expressions use the "<" operator
+
+         if Is_Discrete_Type (Typ) then
+            return Make_Op_Lt (Loc, Curr_Val, Old_Val);
+
+         --  For Big_Integer expressions use the "<" function, because the
+         --  operator on private type might not be visible and won't be
+         --  resolved.
+
+         else pragma Assert (Is_RTE (Base_Type (Typ), RE_Big_Integer));
+            return
+              Make_Function_Call (Loc,
+                Name                   =>
+                  New_Occurrence_Of (Big_Integer_Lt, Loc),
+                Parameter_Associations =>
+                  New_List (Curr_Val, Old_Val));
+         end if;
       end if;
    end Make_Variant_Comparison;
 

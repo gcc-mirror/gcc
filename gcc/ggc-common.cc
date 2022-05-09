@@ -592,7 +592,7 @@ gt_pch_save (FILE *f)
 	 temporarily defined and then restoring previous state.  */
       int get_vbits = 0;
       size_t valid_size = state.ptrs[i]->size;
-      if (__builtin_expect (RUNNING_ON_VALGRIND, 0))
+      if (UNLIKELY (RUNNING_ON_VALGRIND))
 	{
 	  if (vbits.length () < valid_size)
 	    vbits.safe_grow (valid_size, true);
@@ -644,7 +644,7 @@ gt_pch_save (FILE *f)
       if (state.ptrs[i]->note_ptr_fn != gt_pch_p_S)
 	memcpy (state.ptrs[i]->obj, this_object, state.ptrs[i]->size);
 #if defined ENABLE_VALGRIND_ANNOTATIONS && defined VALGRIND_GET_VBITS
-      if (__builtin_expect (get_vbits == 1, 0))
+      if (UNLIKELY (get_vbits == 1))
 	{
 	  (void) VALGRIND_SET_VBITS (state.ptrs[i]->obj, vbits.address (),
 				     valid_size);

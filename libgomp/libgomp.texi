@@ -311,7 +311,7 @@ The OpenMP 4.5 specification is fully supported.
 @item @code{omp_set_num_teams}, @code{omp_set_teams_thread_limit},
       @code{omp_get_max_teams}, @code{omp_get_teams_thread_limit} runtime
       routines @tab Y @tab
-@item @code{omp_target_is_accessible} runtime routine @tab N @tab
+@item @code{omp_target_is_accessible} runtime routine @tab Y @tab
 @item @code{omp_target_memcpy_async} and @code{omp_target_memcpy_rect_async}
       runtime routines @tab N @tab
 @item @code{omp_get_mapped_ptr} runtime routine @tab Y @tab

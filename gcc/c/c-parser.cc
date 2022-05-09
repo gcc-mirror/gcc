@@ -7669,7 +7669,7 @@ c_parser_conditional_expression (c_parser *parser, struct c_expr *after,
   c_inhibit_evaluation_warnings -= cond.value == truthvalue_true_node;
   location_t loc1 = make_location (exp1.get_start (), exp1.src_range);
   location_t loc2 = make_location (exp2.get_start (), exp2.src_range);
-  if (__builtin_expect (omp_atomic_lhs != NULL, 0)
+  if (UNLIKELY (omp_atomic_lhs != NULL)
       && (TREE_CODE (cond.value) == GT_EXPR
 	  || TREE_CODE (cond.value) == LT_EXPR
 	  || TREE_CODE (cond.value) == EQ_EXPR)
@@ -7865,7 +7865,7 @@ c_parser_binary_expression (c_parser *parser, struct c_expr *after,
     stack[sp].expr							      \
       = convert_lvalue_to_rvalue (stack[sp].loc,			      \
 				  stack[sp].expr, true, true);		      \
-    if (__builtin_expect (omp_atomic_lhs != NULL_TREE, 0) && sp == 1	      \
+    if (UNLIKELY (omp_atomic_lhs != NULL_TREE) && sp == 1		      \
 	&& ((c_parser_next_token_is (parser, CPP_SEMICOLON)		      \
 	     && ((1 << stack[sp].prec)					      \
 		 & ((1 << PREC_BITOR) | (1 << PREC_BITXOR)		      \

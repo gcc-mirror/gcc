@@ -1971,9 +1971,9 @@ package body Osint is
    function Nb_Dir_In_Obj_Search_Path return Natural is
    begin
       if Opt.Look_In_Primary_Dir then
-         return Lib_Search_Directories.Last -  Primary_Directory + 1;
+         return Lib_Search_Directories.Last - Primary_Directory + 1;
       else
-         return Lib_Search_Directories.Last -  Primary_Directory;
+         return Lib_Search_Directories.Last - Primary_Directory;
       end if;
    end Nb_Dir_In_Obj_Search_Path;
 
@@ -1984,9 +1984,9 @@ package body Osint is
    function Nb_Dir_In_Src_Search_Path return Natural is
    begin
       if Opt.Look_In_Primary_Dir then
-         return Src_Search_Directories.Last -  Primary_Directory + 1;
+         return Src_Search_Directories.Last - Primary_Directory + 1;
       else
-         return Src_Search_Directories.Last -  Primary_Directory;
+         return Src_Search_Directories.Last - Primary_Directory;
       end if;
    end Nb_Dir_In_Src_Search_Path;
 

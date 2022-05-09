@@ -545,12 +545,12 @@ cgraph_node::get_create (tree decl)
       node->order = first_clone->order;
       symtab->symtab_prevail_in_asm_name_hash (node);
       node->decl->decl_with_vis.symtab_node = node;
-      if (dump_file)
+      if (dump_file && symtab->state != PARSING)
 	fprintf (dump_file, "Introduced new external node "
 		 "(%s) and turned into root of the clone tree.\n",
 		 node->dump_name ());
     }
-  else if (dump_file)
+  else if (dump_file && symtab->state != PARSING)
     fprintf (dump_file, "Introduced new external node "
 	     "(%s).\n", node->dump_name ());
   return node;

@@ -70,8 +70,10 @@ def arch_canonicalize(arch, isa_spec):
   is_isa_spec_2p2 = isa_spec == '2.2'
   new_arch = ""
   extra_long_ext = []
+  std_exts = []
   if arch[:5] in ['rv32e', 'rv32i', 'rv32g', 'rv64i', 'rv64g']:
-    new_arch = arch[:5].replace("g", "imafd")
+    new_arch = arch[:5].replace("g", "i")
+    std_exts = ['m', 'a', 'f', 'd']
     if arch[:5] in ['rv32g', 'rv64g']:
       if not is_isa_spec_2p2:
         extra_long_ext = ['zicsr', 'zifencei']
@@ -86,10 +88,10 @@ def arch_canonicalize(arch, isa_spec):
   if long_ext_prefixes_idx:
     first_long_ext_idx = min(long_ext_prefixes_idx)
     long_exts = arch[first_long_ext_idx:].split("_")
-    std_exts = list(arch[5:first_long_ext_idx])
+    std_exts += list(arch[5:first_long_ext_idx])
   else:
     long_exts = []
-    std_exts = list(arch[5:])
+    std_exts += list(arch[5:])
 
   long_exts += extra_long_ext
 

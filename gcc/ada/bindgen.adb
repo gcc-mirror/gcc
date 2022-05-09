@@ -2907,7 +2907,7 @@ package body Bindgen is
             Nlen := Name'Length;
             Name (Name'Last) := Character'Val (J mod 10 + Character'Pos ('0'));
             Name (Name'Last - 1) :=
-              Character'Val (J /   10 + Character'Pos ('0'));
+              Character'Val (J / 10 + Character'Pos ('0'));
          end if;
 
          for K in ALIs.First .. ALIs.Last loop

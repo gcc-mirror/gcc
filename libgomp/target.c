@@ -3704,6 +3704,24 @@ omp_get_mapped_ptr (const void *ptr, int device_num)
 }
 
 int
+omp_target_is_accessible (const void *ptr, size_t size, int device_num)
+{
+  if (device_num < 0 || device_num > gomp_get_num_devices ())
+    return false;
+
+  if (device_num == gomp_get_num_devices ())
+    return true;
+
+  struct gomp_device_descr *devicep = resolve_device (device_num);
+  if (devicep == NULL)
+    return false;
+
+  /* TODO: Unified shared memory must be handled when available.  */
+
+  return devicep->capabilities & GOMP_OFFLOAD_CAP_SHARED_MEM;
+}
+
+int
 omp_pause_resource (omp_pause_resource_t kind, int device_num)
 {
   (void) kind;

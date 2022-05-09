@@ -4931,9 +4931,7 @@ package body Sem_Ch6 is
                      --  by the GCC backend (ie. "function might not be
                      --  inlinable").
 
-                     if Present (Subp_Decl)
-                       and then Has_Excluded_Declaration (Spec_Id, Subp_Decl)
-                     then
+                     if Has_Excluded_Declaration (Spec_Id, Subp_Decl) then
                         null;
 
                      elsif Has_Excluded_Statement

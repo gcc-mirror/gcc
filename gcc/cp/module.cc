@@ -2697,11 +2697,11 @@ pending_map_t *pending_table;
    completed.  */
 vec<tree, va_heap, vl_embed> *post_load_decls;
 
-/* Some entities are attached to another entitity for ODR purposes.
+/* Some entities are keyed to another entitity for ODR purposes.
    For example, at namespace scope, 'inline auto var = []{};', that
-   lambda is attached to 'var', and follows its ODRness.  */
-typedef hash_map<tree, auto_vec<tree>> attached_map_t;
-static attached_map_t *attached_table;
+   lambda is keyed to 'var', and follows its ODRness.  */
+typedef hash_map<tree, auto_vec<tree>> keyed_map_t;
+static keyed_map_t *keyed_table;
 
 /********************************************************************/
 /* Tree streaming.   The tree streaming is very specific to the tree
@@ -2766,7 +2766,7 @@ enum merge_kind
   MK_partial,
 
   MK_enum,	/* Found by CTX, & 1stMemberNAME.  */
-  MK_attached,  /* Found by attachee & index.  */
+  MK_keyed,     /* Found by key & index.  */
 
   MK_friend_spec,  /* Like named, but has a tmpl & args too.  */
   MK_local_friend, /* Found by CTX, index.  */
@@ -5533,7 +5533,7 @@ trees_out::lang_decl_bools (tree t)
      that's the GM purview, so not what the importer will mean  */
   WB (lang->u.base.module_purview_p && !header_module_p ());
   if (VAR_OR_FUNCTION_DECL_P (t))
-    WB (lang->u.base.module_attached_p);
+    WB (lang->u.base.module_keyed_decls_p);
   switch (lang->u.base.selector)
     {
     default:
@@ -5603,7 +5603,7 @@ trees_in::lang_decl_bools (tree t)
   RB (lang->u.base.dependent_init_p);
   RB (lang->u.base.module_purview_p);
   if (VAR_OR_FUNCTION_DECL_P (t))
-    RB (lang->u.base.module_attached_p);
+    RB (lang->u.base.module_keyed_decls_p);
   switch (lang->u.base.selector)
     {
     default:
@@ -7701,11 +7701,11 @@ trees_out::decl_value (tree decl, depset *dep)
 
   if (VAR_OR_FUNCTION_DECL_P (inner)
       && DECL_LANG_SPECIFIC (inner)
-      && DECL_MODULE_ATTACHMENTS_P (inner)
+      && DECL_MODULE_KEYED_DECLS_P (inner)
       && !is_key_order ())
     {
-      /* Stream the attached entities.  */
-      auto *attach_vec = attached_table->get (inner);
+      /* Stream the keyed entities.  */
+      auto *attach_vec = keyed_table->get (inner);
       unsigned num = attach_vec->length ();
       if (streaming_p ())
 	u (num);
@@ -7998,12 +7998,12 @@ trees_in::decl_value ()
 
   if (VAR_OR_FUNCTION_DECL_P (inner)
       && DECL_LANG_SPECIFIC (inner)
-      && DECL_MODULE_ATTACHMENTS_P (inner))
+      && DECL_MODULE_KEYED_DECLS_P (inner))
     {
       /* Read and maybe install the attached entities.  */
       bool existed;
-      auto &set = attached_table->get_or_insert (STRIP_TEMPLATE (existing),
-						 &existed);
+      auto &set = keyed_table->get_or_insert (STRIP_TEMPLATE (existing),
+					      &existed);
       unsigned num = u ();
       if (is_new == existed)
 	set_overrun ();
@@ -10200,9 +10200,9 @@ trees_out::get_merge_kind (tree decl, depset *dep)
 		  = LAMBDA_EXPR_EXTRA_SCOPE (CLASSTYPE_LAMBDA_EXPR
 					     (TREE_TYPE (decl))))
 		if (TREE_CODE (scope) == VAR_DECL
-		    && DECL_MODULE_ATTACHMENTS_P (scope))
+		    && DECL_MODULE_KEYED_DECLS_P (scope))
 		  {
-		    mk = MK_attached;
+		    mk = MK_keyed;
 		    break;
 		  }
 
@@ -10492,13 +10492,13 @@ trees_out::key_mergeable (int tag, merge_kind mk, tree decl, tree inner,
 	  }
 	  break;
 
-	case MK_attached:
+	case MK_keyed:
 	  {
 	    gcc_checking_assert (LAMBDA_TYPE_P (TREE_TYPE (inner)));
 	    tree scope = LAMBDA_EXPR_EXTRA_SCOPE (CLASSTYPE_LAMBDA_EXPR
 						  (TREE_TYPE (inner)));
 	    gcc_checking_assert (TREE_CODE (scope) == VAR_DECL);
-	    auto *root = attached_table->get (scope);
+	    auto *root = keyed_table->get (scope);
 	    unsigned ix = root->length ();
 	    /* If we don't find it, we'll write a really big number
 	       that the reader will ignore.  */
@@ -10506,7 +10506,7 @@ trees_out::key_mergeable (int tag, merge_kind mk, tree decl, tree inner,
 	      if ((*root)[ix] == inner)
 		break;
 
-	    /* Use the attached-to decl as the 'name'.  */
+	    /* Use the keyed-to decl as the 'name'.  */
 	    name = scope;
 	    key.index = ix;
 	  }
@@ -10773,12 +10773,12 @@ trees_in::key_mergeable (int tag, merge_kind mk, tree decl, tree inner,
 	    gcc_unreachable ();
 
 	  case NAMESPACE_DECL:
-	    if (mk == MK_attached)
+	    if (mk == MK_keyed)
 	      {
 		if (DECL_LANG_SPECIFIC (name)
 		    && VAR_OR_FUNCTION_DECL_P (name)
-		    && DECL_MODULE_ATTACHMENTS_P (name))
-		  if (auto *set = attached_table->get (name))
+		    && DECL_MODULE_KEYED_DECLS_P (name))
+		  if (auto *set = keyed_table->get (name))
 		    if (key.index < set->length ())
 		      {
 			existing = (*set)[key.index];
@@ -18566,10 +18566,10 @@ set_originating_module (tree decl, bool friend_p ATTRIBUTE_UNUSED)
   DECL_MODULE_EXPORT_P (decl) = true;
 }
 
-/* DECL is attached to ROOT for odr purposes.  */
+/* DECL is keyed to CTX for odr purposes.  */
 
 void
-maybe_attach_decl (tree ctx, tree decl)
+maybe_key_decl (tree ctx, tree decl)
 {
   if (!modules_p ())
     return;
@@ -18581,14 +18581,14 @@ maybe_attach_decl (tree ctx, tree decl)
 
   gcc_checking_assert (DECL_NAMESPACE_SCOPE_P (ctx));
 
- if (!attached_table)
-    attached_table = new attached_map_t (EXPERIMENT (1, 400));
+ if (!keyed_table)
+    keyed_table = new keyed_map_t (EXPERIMENT (1, 400));
 
- auto &vec = attached_table->get_or_insert (ctx);
+ auto &vec = keyed_table->get_or_insert (ctx);
  if (!vec.length ())
    {
      retrofit_lang_decl (ctx);
-     DECL_MODULE_ATTACHMENTS_P (ctx) = true;
+     DECL_MODULE_KEYED_DECLS_P (ctx) = true;
    }
  vec.safe_push (decl);
 }
@@ -18898,8 +18898,8 @@ direct_import (module_state *import, cpp_reader *reader)
 
   if (import->loadedness < ML_LANGUAGE)
     {
-      if (!attached_table)
-	attached_table = new attached_map_t (EXPERIMENT (1, 400));
+      if (!keyed_table)
+	keyed_table = new keyed_map_t (EXPERIMENT (1, 400));
       import->read_language (true);
     }
 
@@ -20004,9 +20004,9 @@ fini_modules ()
   delete pending_table;
   pending_table = NULL;
 
-  /* Or any attachments -- Let it go!  */
-  delete attached_table;
-  attached_table = NULL;
+  /* Or any keys -- Let it go!  */
+  delete keyed_table;
+  keyed_table = NULL;
 
   /* Allow a GC, we've possibly made much data unreachable.  */
   ggc_collect ();

@@ -7542,7 +7542,7 @@ package body Exp_Aggr is
 
       end Expand_Iterated_Component;
 
-      --  Start of processing for Expand_Container_Aggregate
+   --  Start of processing for Expand_Container_Aggregate
 
    begin
       Parse_Aspect_Aggregate (Asp,

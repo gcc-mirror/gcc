@@ -38,7 +38,6 @@
 #include <bits/stl_iterator.h>
 #include <bits/stl_uninitialized.h>
 #include <ext/numeric_traits.h>
-#include <cxxabi.h>
 
 struct __glibcxx_backtrace_state;
 struct __glibcxx_backtrace_simple_data;
@@ -68,6 +67,13 @@ __glibcxx_backtrace_syminfo(__glibcxx_backtrace_state*, uintptr_t addr,
 				      uintptr_t, uintptr_t),
 			    void(*)(void*, const char*, int),
 			    void*);
+}
+
+namespace __cxxabiv1
+{
+  extern "C" char*
+  __cxa_demangle(const char* __mangled_name, char* __output_buffer,
+		 size_t* __length, int* __status);
 }
 
 namespace std _GLIBCXX_VISIBILITY(default)

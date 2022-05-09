@@ -901,12 +901,14 @@ package Exp_Util is
 
    function Make_Variant_Comparison
      (Loc      : Source_Ptr;
+      Typ      : Entity_Id;
       Mode     : Name_Id;
       Curr_Val : Node_Id;
       Old_Val  : Node_Id) return Node_Id;
    --  Subsidiary to the expansion of pragmas Loop_Variant and
    --  Subprogram_Variant. Generate a comparison between Curr_Val and Old_Val
-   --  depending on the variant mode (Increases / Decreases).
+   --  depending on the variant mode (Increases / Decreases) using less or
+   --  greater operator for Typ.
 
    procedure Map_Formals
      (Parent_Subp  : Entity_Id;

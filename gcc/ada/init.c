@@ -1758,8 +1758,26 @@ extern size_t vxIntStackOverflowSize;
 #define INT_OVERFLOW_SIZE vxIntStackOverflowSize
 #endif
 
-#ifdef VTHREADS
-#include "private/vThreadsP.h"
+/* VxWorks 653 vThreads expects the field excCnt to be zeroed when a signal is.
+   handled.  The VxWorks version of longjmp does this; GCC's builtin_longjmp
+   doesn't.  A similar issue is present VxWorks 7.2 and affects ZCX as well
+   as builtin_longjmp.  This field only exists in Kernel mode, not RTP.  */
+#if defined(VTHREADS) || (!defined(__RTP__) && (_WRS_VXWORKS_MAJOR >= 7))
+# ifdef VTHREADS
+#  include "private/vThreadsP.h"
+#  define EXCCNT vThreads.excCnt
+# else
+#  include "private/taskLibP.h"
+#  define EXCCNT excCnt
+# endif
+# define CLEAR_EXCEPTION_COUNT()			 \
+  do							 \
+    {							 \
+      WIND_TCB *currentTask = (WIND_TCB *) taskIdSelf(); \
+      currentTask->EXCCNT = 0;				 \
+    } while (0)
+#else
+# define CLEAR_EXCEPTION_COUNT()
 #endif
 
 #ifndef __RTP__
@@ -1833,19 +1851,6 @@ __gnat_reset_guard_page (int sig)
     }
 #endif /* VXWORKS_FORCE_GUARD_PAGE */
   return FALSE;
-}
-
-/* VxWorks 653 vThreads expects the field excCnt to be zeroed when a signal is.
-   handled. The VxWorks version of longjmp does this; GCC's builtin_longjmp
-   doesn't.  */
-void
-__gnat_clear_exception_count (void)
-{
-#ifdef VTHREADS
-  WIND_TCB *currentTask = (WIND_TCB *) taskIdSelf();
-
-  currentTask->vThreads.excCnt = 0;
-#endif
 }
 
 /* Handle different SIGnal to exception mappings in different VxWorks
@@ -1959,7 +1964,8 @@ __gnat_map_signal (int sig,
           break;
         }
     }
-  __gnat_clear_exception_count ();
+
+  CLEAR_EXCEPTION_COUNT ();
   Raise_From_Signal_Handler (exception, msg);
 }
 

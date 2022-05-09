@@ -44,6 +44,7 @@ with Sinfo.Nodes;    use Sinfo.Nodes;
 with Sinfo.Utils;    use Sinfo.Utils;
 with Sinput;         use Sinput;
 with Snames;         use Snames;
+with Stand;          use Stand;
 with Stringt;        use Stringt;
 with Table;
 with Ttypes;
@@ -874,10 +875,11 @@ package body Repinfo is
       C : Character;
 
    begin
-      --  List the qualified name recursively, except
-      --  at compilation unit level in default mode.
+      --  In JSON mode, we recurse up to Standard. This is also valid in
+      --  default mode where we recurse up to the first compilation unit and
+      --  should not get to Standard.
 
-      if Is_Compilation_Unit (Ent) then
+      if Scope (Ent) = Standard_Standard then
          null;
       elsif not Is_Compilation_Unit (Scope (Ent))
         or else List_Representation_Info_To_JSON
