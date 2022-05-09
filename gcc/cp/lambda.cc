@@ -425,9 +425,9 @@ build_capture_proxy (tree member, tree init)
   if (DECL_VLA_CAPTURE_P (member))
     {
       /* Rebuild the VLA type from the pointer and maxindex.  */
-      tree field = next_initializable_field (TYPE_FIELDS (type));
+      tree field = next_aggregate_field (TYPE_FIELDS (type));
       tree ptr = build_simple_component_ref (object, field);
-      field = next_initializable_field (DECL_CHAIN (field));
+      field = next_aggregate_field (DECL_CHAIN (field));
       tree max = build_simple_component_ref (object, field);
       type = build_cplus_array_type (TREE_TYPE (TREE_TYPE (ptr)),
 				     build_index_type (max));

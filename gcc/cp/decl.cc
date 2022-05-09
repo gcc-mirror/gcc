@@ -6384,20 +6384,36 @@ static tree reshape_init_r (tree, reshape_iter *, tree, tsubst_flags_t);
 
 /* FIELD is an element of TYPE_FIELDS or NULL.  In the former case, the value
    returned is the next FIELD_DECL (possibly FIELD itself) that can be
-   initialized.  If there are no more such fields, the return value
-   will be NULL.  */
+   initialized as if for an aggregate class.  If there are no more such fields,
+   the return value will be NULL.  */
 
 tree
-next_initializable_field (tree field)
+next_aggregate_field (tree field)
 {
   while (field
 	 && (TREE_CODE (field) != FIELD_DECL
 	     || DECL_UNNAMED_BIT_FIELD (field)
 	     || (DECL_ARTIFICIAL (field)
-		 /* In C++17, don't skip base class fields.  */
-		 && !(cxx_dialect >= cxx17 && DECL_FIELD_IS_BASE (field))
-		 /* Don't skip vptr fields.  We might see them when we're
-		    called from reduced_constant_expression_p.  */
+		 /* In C++17, aggregates can have bases.  */
+		 && !(cxx_dialect >= cxx17 && DECL_FIELD_IS_BASE (field)))))
+    field = DECL_CHAIN (field);
+
+  return field;
+}
+
+/* FIELD is an element of TYPE_FIELDS or NULL.  In the former case, the value
+   returned is the next FIELD_DECL (possibly FIELD itself) that corresponds
+   to a subobject.  If there are no more such fields, the return value will be
+   NULL.  */
+
+tree
+next_subobject_field (tree field)
+{
+  while (field
+	 && (TREE_CODE (field) != FIELD_DECL
+	     || DECL_UNNAMED_BIT_FIELD (field)
+	     || (DECL_ARTIFICIAL (field)
+		 && !DECL_FIELD_IS_BASE (field)
 		 && !DECL_VIRTUAL_P (field))))
     field = DECL_CHAIN (field);
 
@@ -6595,7 +6611,7 @@ reshape_init_class (tree type, reshape_iter *d, bool first_initializer_p,
   if (base_binfo)
     field = base_binfo;
   else
-    field = next_initializable_field (TYPE_FIELDS (type));
+    field = next_aggregate_field (TYPE_FIELDS (type));
 
   if (!field)
     {
@@ -6762,10 +6778,10 @@ reshape_init_class (tree type, reshape_iter *d, bool first_initializer_p,
 	  if (BINFO_BASE_ITERATE (binfo, ++binfo_idx, base_binfo))
 	    field = base_binfo;
 	  else
-	    field = next_initializable_field (TYPE_FIELDS (type));
+	    field = next_aggregate_field (TYPE_FIELDS (type));
 	}
       else
-	field = next_initializable_field (DECL_CHAIN (field));
+	field = next_aggregate_field (DECL_CHAIN (field));
     }
 
   /* A trailing aggregate element that is a pack expansion is assumed to

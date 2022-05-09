@@ -784,7 +784,7 @@ cx_check_missing_mem_inits (tree ctype, tree body, bool complain)
 
   if (TREE_CODE (ctype) == UNION_TYPE)
     {
-      if (nelts == 0 && next_initializable_field (field))
+      if (nelts == 0 && next_aggregate_field (field))
 	{
 	  if (complain)
 	    error ("%<constexpr%> constructor for union %qT must "
@@ -3053,7 +3053,7 @@ reduced_constant_expression_p (tree t)
 	      field = NULL_TREE;
 	    }
 	  else
-	    field = next_initializable_field (TYPE_FIELDS (TREE_TYPE (t)));
+	    field = next_subobject_field (TYPE_FIELDS (TREE_TYPE (t)));
 	}
       else
 	field = NULL_TREE;
@@ -3065,15 +3065,15 @@ reduced_constant_expression_p (tree t)
 	    return false;
 	  /* Empty class field may or may not have an initializer.  */
 	  for (; field && e.index != field;
-	       field = next_initializable_field (DECL_CHAIN (field)))
+	       field = next_subobject_field (DECL_CHAIN (field)))
 	    if (!is_really_empty_class (TREE_TYPE (field),
 					/*ignore_vptr*/false))
 	      return false;
 	  if (field)
-	    field = next_initializable_field (DECL_CHAIN (field));
+	    field = next_subobject_field (DECL_CHAIN (field));
 	}
       /* There could be a non-empty field at the end.  */
-      for (; field; field = next_initializable_field (DECL_CHAIN (field)))
+      for (; field; field = next_subobject_field (DECL_CHAIN (field)))
 	if (!is_really_empty_class (TREE_TYPE (field), /*ignore_vptr*/false))
 	  return false;
 ok:

@@ -5494,8 +5494,8 @@ default_init_uninitialized_part (tree type)
       if (r)
 	return r;
     }
-  for (t = next_initializable_field (TYPE_FIELDS (type)); t;
-       t = next_initializable_field (DECL_CHAIN (t)))
+  for (t = next_aggregate_field (TYPE_FIELDS (type)); t;
+       t = next_aggregate_field (DECL_CHAIN (t)))
     if (!DECL_INITIAL (t) && !DECL_ARTIFICIAL (t))
       {
 	r = default_init_uninitialized_part (TREE_TYPE (t));
@@ -7781,10 +7781,10 @@ finish_struct (tree t, tree attributes)
       bool ok = false;
       if (processing_template_decl)
 	{
-	  tree f = next_initializable_field (TYPE_FIELDS (t));
+	  tree f = next_aggregate_field (TYPE_FIELDS (t));
 	  if (f && TYPE_PTR_P (TREE_TYPE (f)))
 	    {
-	      f = next_initializable_field (DECL_CHAIN (f));
+	      f = next_aggregate_field (DECL_CHAIN (f));
 	      if (f && same_type_p (TREE_TYPE (f), size_type_node))
 		ok = true;
 	    }

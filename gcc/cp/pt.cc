@@ -29586,7 +29586,7 @@ maybe_aggr_guide (tree tmpl, tree init, vec<tree,va_gc> *args)
 	   len;
 	   --len, field = DECL_CHAIN (field))
 	{
-	  field = next_initializable_field (field);
+	  field = next_aggregate_field (field);
 	  if (!field)
 	    return NULL_TREE;
 	  tree ftype = finish_decltype_type (field, true, complain);

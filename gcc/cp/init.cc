@@ -422,7 +422,7 @@ build_value_init_noctor (tree type, tsubst_flags_t complain)
 		  && !COMPLETE_TYPE_P (ftype)
 		  && !TYPE_DOMAIN (ftype)
 		  && COMPLETE_TYPE_P (TREE_TYPE (ftype))
-		  && (next_initializable_field (DECL_CHAIN (field))
+		  && (next_aggregate_field (DECL_CHAIN (field))
 		      == NULL_TREE))
 		continue;
 
@@ -1477,9 +1477,9 @@ emit_mem_initializers (tree mem_inits)
 
   /* Initially that is all of them.  */
   if (warn_uninitialized)
-    for (tree f = next_initializable_field (TYPE_FIELDS (current_class_type));
+    for (tree f = next_aggregate_field (TYPE_FIELDS (current_class_type));
 	 f != NULL_TREE;
-	 f = next_initializable_field (DECL_CHAIN (f)))
+	 f = next_aggregate_field (DECL_CHAIN (f)))
       if (!DECL_ARTIFICIAL (f)
 	  && !is_really_empty_class (TREE_TYPE (f), /*ignore_vptr*/false))
 	uninitialized.add (f);

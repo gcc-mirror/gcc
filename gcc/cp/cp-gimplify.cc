@@ -3106,7 +3106,7 @@ get_source_location_impl_type (location_t loc)
 
   int cnt = 0;
   for (tree field = TYPE_FIELDS (type);
-       (field = next_initializable_field (field)) != NULL_TREE;
+       (field = next_aggregate_field (field)) != NULL_TREE;
        field = DECL_CHAIN (field))
     {
       if (DECL_NAME (field) != NULL_TREE)
@@ -3281,7 +3281,7 @@ fold_builtin_source_location (location_t loc)
       vec<constructor_elt, va_gc> *v = NULL;
       vec_alloc (v, 4);
       for (tree field = TYPE_FIELDS (source_location_impl);
-	   (field = next_initializable_field (field)) != NULL_TREE;
+	   (field = next_aggregate_field (field)) != NULL_TREE;
 	   field = DECL_CHAIN (field))
 	{
 	  const char *n = IDENTIFIER_POINTER (DECL_NAME (field));
