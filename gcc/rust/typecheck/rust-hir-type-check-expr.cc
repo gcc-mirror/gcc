@@ -469,7 +469,8 @@ TypeCheckExpr::resolve_operator_overload (
   fn->monomorphize ();
 
   // get the return type
-  TyTy::BaseType *function_ret_tyty = type->get_return_type ()->clone ();
+  TyTy::BaseType *function_ret_tyty
+    = type->get_return_type ()->monomorphized_clone ();
 
   // store the expected fntype
   context->insert_operator_overload (expr.get_mappings ().get_hirid (), type);

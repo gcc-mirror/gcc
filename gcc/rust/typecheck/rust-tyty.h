@@ -212,6 +212,9 @@ public:
    * releasing the memory of the returned ty. */
   virtual BaseType *clone () const = 0;
 
+  // TODO
+  virtual BaseType *monomorphized_clone () const = 0;
+
   // get_combined_refs returns the chain of node refs involved in unification
   std::set<HirId> get_combined_refs () const { return combined; }
 
@@ -253,7 +256,12 @@ public:
 		debug_str ().c_str ());
   }
 
+  // FIXME this will eventually go away
   const BaseType *get_root () const;
+
+  // This will get the monomorphized type from Params, Placeholders or
+  // Projections if available or error
+  const BaseType *destructure () const;
 
   const RustIdent &get_ident () const { return ident; }
 
@@ -292,6 +300,10 @@ public:
   HirId get_ref () const { return ref; }
 
   BaseType *get_tyty () const;
+
+  TyVar clone () const;
+
+  TyVar monomorphized_clone () const;
 
   static TyVar get_implicit_infer_var (Location locus);
 
@@ -339,6 +351,7 @@ public:
   BaseType *cast (BaseType *other) override;
 
   BaseType *clone () const final override;
+  BaseType *monomorphized_clone () const final override;
 
   InferTypeKind get_infer_kind () const { return infer_kind; }
 
@@ -378,6 +391,7 @@ public:
   BaseType *cast (BaseType *other) override;
 
   BaseType *clone () const final override;
+  BaseType *monomorphized_clone () const final override;
 
   std::string get_name () const override final { return as_string (); }
 
@@ -421,6 +435,7 @@ public:
   BaseType *cast (BaseType *other) override;
 
   BaseType *clone () const final override;
+  BaseType *monomorphized_clone () const final override;
 
   std::string get_symbol () const;
 
@@ -470,6 +485,8 @@ public:
   void set_field_type (BaseType *fty) { ty = fty; }
 
   StructFieldType *clone () const;
+
+  StructFieldType *monomorphized_clone () const;
 
   bool is_concrete () const { return ty->is_concrete (); }
 
@@ -524,6 +541,7 @@ public:
   BaseType *get_field (size_t index) const;
 
   BaseType *clone () const final override;
+  BaseType *monomorphized_clone () const final override;
 
   bool is_concrete () const override final
   {
@@ -1235,6 +1253,16 @@ public:
 			   cloned_fields);
   }
 
+  VariantDef *monomorphized_clone () const
+  {
+    std::vector<StructFieldType *> cloned_fields;
+    for (auto &f : fields)
+      cloned_fields.push_back ((StructFieldType *) f->monomorphized_clone ());
+
+    return new VariantDef (id, identifier, ident, type, discriminant,
+			   cloned_fields);
+  }
+
   const RustIdent &get_ident () const { return ident; }
 
 private:
@@ -1358,6 +1386,7 @@ public:
   }
 
   BaseType *clone () const final override;
+  BaseType *monomorphized_clone () const final override;
 
   bool needs_generic_substitutions () const override final
   {
@@ -1530,6 +1559,7 @@ public:
   BaseType *get_return_type () const { return type; }
 
   BaseType *clone () const final override;
+  BaseType *monomorphized_clone () const final override;
 
   bool needs_generic_substitutions () const override final
   {
@@ -1595,6 +1625,7 @@ public:
   bool is_equal (const BaseType &other) const override;
 
   BaseType *clone () const final override;
+  BaseType *monomorphized_clone () const final override;
 
   void iterate_params (std::function<bool (BaseType *)> cb) const
   {
@@ -1668,6 +1699,7 @@ public:
   bool is_equal (const BaseType &other) const override;
 
   BaseType *clone () const final override;
+  BaseType *monomorphized_clone () const final override;
 
   bool is_concrete () const override final
   {
@@ -1735,6 +1767,7 @@ public:
   BaseType *get_element_type () const;
 
   BaseType *clone () const final override;
+  BaseType *monomorphized_clone () const final override;
 
   bool is_concrete () const final override
   {
@@ -1784,6 +1817,7 @@ public:
   BaseType *get_element_type () const;
 
   BaseType *clone () const final override;
+  BaseType *monomorphized_clone () const final override;
 
   bool is_concrete () const final override
   {
@@ -1826,6 +1860,7 @@ public:
   BaseType *cast (BaseType *other) override;
 
   BaseType *clone () const final override;
+  BaseType *monomorphized_clone () const final override;
   bool is_concrete () const override final { return true; }
 };
 
@@ -1873,6 +1908,7 @@ public:
   IntKind get_int_kind () const { return int_kind; }
 
   BaseType *clone () const final override;
+  BaseType *monomorphized_clone () const final override;
 
   bool is_equal (const BaseType &other) const override;
   bool is_concrete () const override final { return true; }
@@ -1925,6 +1961,7 @@ public:
   UintKind get_uint_kind () const { return uint_kind; }
 
   BaseType *clone () const final override;
+  BaseType *monomorphized_clone () const final override;
 
   bool is_equal (const BaseType &other) const override;
   bool is_concrete () const override final { return true; }
@@ -1975,6 +2012,7 @@ public:
   FloatKind get_float_kind () const { return float_kind; }
 
   BaseType *clone () const final override;
+  BaseType *monomorphized_clone () const final override;
 
   bool is_equal (const BaseType &other) const override;
   bool is_concrete () const override final { return true; }
@@ -2013,6 +2051,7 @@ public:
   BaseType *cast (BaseType *other) override;
 
   BaseType *clone () const final override;
+  BaseType *monomorphized_clone () const final override;
   bool is_concrete () const override final { return true; }
 };
 
@@ -2046,6 +2085,7 @@ public:
   BaseType *cast (BaseType *other) override;
 
   BaseType *clone () const final override;
+  BaseType *monomorphized_clone () const final override;
   bool is_concrete () const override final { return true; }
 };
 
@@ -2079,6 +2119,7 @@ public:
   BaseType *cast (BaseType *other) override;
 
   BaseType *clone () const final override;
+  BaseType *monomorphized_clone () const final override;
   bool is_concrete () const override final { return true; }
 };
 
@@ -2123,6 +2164,7 @@ public:
   bool is_equal (const BaseType &other) const override;
 
   BaseType *clone () const final override;
+  BaseType *monomorphized_clone () const final override;
 
   bool is_concrete () const override final
   {
@@ -2181,6 +2223,7 @@ public:
   bool is_equal (const BaseType &other) const override;
 
   BaseType *clone () const final override;
+  BaseType *monomorphized_clone () const final override;
 
   bool is_concrete () const override final
   {
@@ -2232,6 +2275,7 @@ public:
   bool is_equal (const BaseType &other) const override;
 
   BaseType *clone () const final override;
+  BaseType *monomorphized_clone () const final override;
   bool is_concrete () const override final { return true; }
 };
 
@@ -2273,6 +2317,7 @@ public:
   BaseType *cast (BaseType *other) override;
 
   BaseType *clone () const final override;
+  BaseType *monomorphized_clone () const final override;
 
   std::string get_name () const override final { return as_string (); }
 
@@ -2314,6 +2359,7 @@ public:
   BaseType *cast (BaseType *other) override;
 
   BaseType *clone () const final override;
+  BaseType *monomorphized_clone () const final override;
 
   std::string get_name () const override final { return as_string (); }
 
@@ -2389,6 +2435,7 @@ public:
   BaseType *cast (BaseType *other) override;
 
   BaseType *clone () const final override;
+  BaseType *monomorphized_clone () const final override;
 
   std::string get_name () const override final { return as_string (); }
 
@@ -2447,6 +2494,7 @@ public:
   bool is_equal (const BaseType &other) const override;
 
   BaseType *clone () const final override;
+  BaseType *monomorphized_clone () const final override;
 
   std::string get_name () const override final;
 
