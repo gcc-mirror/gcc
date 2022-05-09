@@ -1516,11 +1516,10 @@ package body Sem_Disp is
                        ("\spec should appear immediately after the type!",
                         Subp);
 
-                  elsif Is_Frozen (Subp) then
+                  else
 
                      --  The subprogram body declares a primitive operation.
-                     --  If the subprogram is already frozen, we must update
-                     --  its dispatching information explicitly here. The
+                     --  We must update its dispatching information here. The
                      --  information is taken from the overridden subprogram.
                      --  We must also generate a cross-reference entry because
                      --  references to other primitives were already created

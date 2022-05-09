@@ -4389,25 +4389,15 @@ package body Sem_Ch6 is
             end if;
 
             --  A subprogram body should cause freezing of its own declaration,
-            --  but if there was no previous explicit declaration, then the
-            --  subprogram will get frozen too late (there may be code within
-            --  the body that depends on the subprogram having been frozen,
-            --  such as uses of extra formals), so we force it to be frozen
-            --  here. Same holds if the body and spec are compilation units.
-            --  Finally, if the return type is an anonymous access to protected
-            --  subprogram, it must be frozen before the body because its
-            --  expansion has generated an equivalent type that is used when
-            --  elaborating the body.
+            --  so, if the body and spec are compilation units, we must do it
+            --  manually here. Moreover, if the return type is anonymous access
+            --  to protected subprogram, it must be frozen before the body
+            --  because its expansion has generated an equivalent type that is
+            --  used when elaborating the body.
 
-            --  An exception in the case of Ada 2012, AI05-177: The bodies
-            --  created for expression functions do not freeze.
-
-            if No (Spec_Id)
-              and then Nkind (Original_Node (N)) /= N_Expression_Function
+            if Present (Spec_Id)
+              and then Nkind (Parent (N)) = N_Compilation_Unit
             then
-               Freeze_Before (N, Body_Id);
-
-            elsif Nkind (Parent (N)) = N_Compilation_Unit then
                Freeze_Before (N, Spec_Id);
 
             elsif Is_Access_Subprogram_Type (Etype (Body_Id)) then
@@ -4775,12 +4765,27 @@ package body Sem_Ch6 is
 
            --  No warnings for expression functions
 
-           and then Nkind (Original_Node (N)) /= N_Expression_Function
+           and then (Nkind (N) /= N_Subprogram_Body
+                      or else not Was_Expression_Function (N))
          then
             Style.Body_With_No_Spec (N);
          end if;
 
          New_Overloaded_Entity (Body_Id);
+
+         --  A subprogram body should cause freezing of its own declaration,
+         --  but if there was no previous explicit declaration, then the
+         --  subprogram will get frozen too late (there may be code within
+         --  the body that depends on the subprogram having been frozen,
+         --  such as uses of extra formals), so we force it to be frozen here.
+         --  An exception in Ada 2012 is that the body created for expression
+         --  functions does not freeze.
+
+         if Nkind (N) /= N_Subprogram_Body
+           or else not Was_Expression_Function (N)
+         then
+            Freeze_Before (N, Body_Id);
+         end if;
 
          if Nkind (N) /= N_Subprogram_Body_Stub then
             Set_Acts_As_Spec (N);
