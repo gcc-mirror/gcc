@@ -22,7 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #define INCLUDE_ALGORITHM
 #include "rust-diagnostics.h"
-#include "util/rust-make-unique.h"
+#include "rust-make-unique.h"
 
 namespace Rust {
 // Left binding powers of operations.

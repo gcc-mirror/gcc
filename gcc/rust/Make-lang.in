@@ -291,7 +291,8 @@ RUST_INCLUDES = -I $(srcdir)/rust \
 	-I $(srcdir)/rust/util \
 	-I $(srcdir)/rust/typecheck \
 	-I $(srcdir)/rust/privacy \
-	-I $(srcdir)/rust/lint
+	-I $(srcdir)/rust/lint \
+	-I $(srcdir)/rust/util
 
 # add files that require cross-folder includes - currently rust-lang.o, rust-lex.o
 CFLAGS-rust/rust-lang.o += $(RUST_INCLUDES)
