@@ -37,9 +37,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-fold.h"
 #include "gimple-walk.h"
 
-gimple_ranger::gimple_ranger () :
+gimple_ranger::gimple_ranger (bool use_imm_uses) :
 	non_executable_edge_flag (cfun),
-	m_cache (non_executable_edge_flag),
+	m_cache (non_executable_edge_flag, use_imm_uses),
 	tracer (""),
 	current_bb (NULL)
 {
@@ -118,9 +118,11 @@ gimple_ranger::range_of_expr (irange &r, tree expr, gimple *stmt)
       // If name is defined in this block, try to get an range from S.
       if (def_stmt && gimple_bb (def_stmt) == bb)
 	{
-	  // Check for a definition override from a block walk.
-	  if (!POINTER_TYPE_P (TREE_TYPE (expr))
-	      || !m_cache.block_range (r, bb, expr, false))
+	  // Declared in ths block, if it has a global set, check for an
+	  // override from a block walk, otherwise calculate it.
+	  if (m_cache.get_global_range (r, expr))
+	    m_cache.block_range (r, bb, expr, false);
+	  else
 	    range_of_stmt (r, def_stmt, expr);
 	}
       // Otherwise OP comes from outside this block, use range on entry.
@@ -153,13 +155,6 @@ gimple_ranger::range_on_entry (irange &r, basic_block bb, tree name)
   // Now see if there is any on_entry value which may refine it.
   if (m_cache.block_range (entry_range, bb, name))
     r.intersect (entry_range);
-
-  if (dom_info_available_p (CDI_DOMINATORS))
-    {
-      basic_block dom_bb = get_immediate_dominator (CDI_DOMINATORS, bb);
-      if (dom_bb)
-	m_cache.m_non_null.adjust_range (r, name, dom_bb, true);
-    }
 
   if (idx)
     tracer.trailer (idx, "range_on_entry", true, name, r);
@@ -237,7 +232,7 @@ gimple_ranger::range_on_edge (irange &r, edge e, tree name)
       range_on_exit (r, e->src, name);
       // If this is not an abnormal edge, check for a non-null exit .
       if ((e->flags & (EDGE_EH | EDGE_ABNORMAL)) == 0)
-	m_cache.m_non_null.adjust_range (r, name, e->src, false);
+	m_cache.m_exit.maybe_adjust_range (r, name, e->src);
       gcc_checking_assert  (r.undefined_p ()
 			    || range_compatible_p (r.type(), TREE_TYPE (name)));
 
@@ -480,7 +475,7 @@ gimple_ranger::register_side_effects (gimple *s)
 	  fputc ('\n', dump_file);
 	}
     }
-  m_cache.block_apply_nonnull (s);
+  m_cache.apply_side_effects (s);
 }
 
 // This routine will export whatever global ranges are known to GCC
@@ -625,12 +620,12 @@ gimple_ranger::debug ()
    resources.  */
 
 gimple_ranger *
-enable_ranger (struct function *fun)
+enable_ranger (struct function *fun, bool use_imm_uses)
 {
   gimple_ranger *r;
 
   gcc_checking_assert (!fun->x_range_query);
-  r = new gimple_ranger;
+  r = new gimple_ranger (use_imm_uses);
   fun->x_range_query = r;
 
   return r;

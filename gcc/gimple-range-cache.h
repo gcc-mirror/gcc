@@ -22,56 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 #define GCC_SSA_RANGE_CACHE_H
 
 #include "gimple-range-gori.h" 
-
-// Class used to track non-null references of an SSA name.  A vector
-// of bitmaps indexed by SSA name is maintained.  When indexed by
-// basic block, an on-bit indicates there is a non-null dereference
-// for that SSA in that block.
-
-class non_null_ref
-{
-public:
-  non_null_ref ();
-  ~non_null_ref ();
-  bool non_null_deref_p (tree name, basic_block bb, bool search_dom = true);
-  bool adjust_range (irange &r, tree name, basic_block bb,
-		     bool search_dom = true);
-  bool set_nonnull (basic_block bb, tree name);
-private:
-  vec <bitmap> m_nn;
-  void process_name (tree name);
-  bitmap_obstack m_bitmaps;
-};
-
-// If NAME has a non-null dereference in block BB, adjust R with the
-// non-zero information from non_null_deref_p, and return TRUE.  If
-// SEARCH_DOM is true, non_null_deref_p should search the dominator tree.
-
-inline bool
-non_null_ref::adjust_range (irange &r, tree name, basic_block bb,
-			    bool search_dom)
-{
-  // Non-call exceptions mean we could throw in the middle of the
-  // block, so just punt on those for now.
-  if (cfun->can_throw_non_call_exceptions)
-    return false;
-  // We only care about the null / non-null property of pointers.
-  if (!POINTER_TYPE_P (TREE_TYPE (name)))
-    return false;
-  if (r.undefined_p () || r.lower_bound () != 0 || r.upper_bound () == 0)
-    return false;
-  // Check if pointers have any non-null dereferences.
-  if (non_null_deref_p (name, bb, search_dom))
-    {
-      // Remove zero from the range.
-      gcc_checking_assert (TYPE_UNSIGNED (TREE_TYPE (name)));
-      int_range<2> nz;
-      nz.set_nonzero (TREE_TYPE (name));
-      r.intersect (nz);
-      return true;
-    }
-  return false;
-}
+#include "gimple-range-side-effect.h"
 
 // This class manages a vector of pointers to ssa_block ranges.  It
 // provides the basis for the "range on entry" cache for all
@@ -123,7 +74,7 @@ private:
 class ranger_cache : public range_query
 {
 public:
-  ranger_cache (int not_executable_flag);
+  ranger_cache (int not_executable_flag, bool use_imm_uses);
   ~ranger_cache ();
 
   virtual bool range_of_expr (irange &r, tree name, gimple *stmt);
@@ -136,10 +87,9 @@ public:
 
   void propagate_updated_value (tree name, basic_block bb);
 
-  void block_apply_nonnull (gimple *s);
-  void update_to_nonnull (basic_block bb, tree name);
-  non_null_ref m_non_null;
+  void apply_side_effects (gimple *s);
   gori_compute m_gori;
+  side_effect_manager m_exit;
 
   void dump_bb (FILE *f, basic_block bb);
   virtual void dump (FILE *f) OVERRIDE;
