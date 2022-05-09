@@ -1439,9 +1439,10 @@ irange::legacy_union (irange *vr0, const irange *vr1)
 
 /* Meet operation for value ranges.  Given two value ranges VR0 and
    VR1, store in VR0 a range that contains both VR0 and VR1.  This
-   may not be the smallest possible such range.  */
+   may not be the smallest possible such range.
+   Return TRUE if the original value changes.  */
 
-void
+bool
 irange::legacy_verbose_union_ (const irange *other)
 {
   if (legacy_mode_p ())
@@ -1450,7 +1451,7 @@ irange::legacy_verbose_union_ (const irange *other)
 	{
 	  int_range<1> tmp = *other;
 	  legacy_union (this, &tmp);
-	  return;
+	  return true;
 	}
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{
@@ -1469,16 +1470,16 @@ irange::legacy_verbose_union_ (const irange *other)
 	  dump_value_range (dump_file, this);
 	  fprintf (dump_file, "\n");
 	}
-      return;
+      return true;
     }
 
   if (other->legacy_mode_p ())
     {
       int_range<2> wider = *other;
-      irange_union (wider);
+      return irange_union (wider);
     }
   else
-    irange_union (*other);
+    return irange_union (*other);
 }
 
 bool
@@ -1522,21 +1523,94 @@ irange::legacy_verbose_intersect (const irange *other)
     return irange_intersect (*other);
 }
 
+// Perform an efficient union with R when both ranges have only a single pair.
+// Excluded are VARYING and UNDEFINED ranges.
+
+bool
+irange::irange_single_pair_union (const irange &r)
+{
+  gcc_checking_assert (!undefined_p () && !varying_p ());
+  gcc_checking_assert (!r.undefined_p () && !varying_p ());
+
+  signop sign = TYPE_SIGN (TREE_TYPE (m_base[0]));
+  // Check if current lower bound is also the new lower bound.
+  if (wi::le_p (wi::to_wide (m_base[0]), wi::to_wide (r.m_base[0]), sign))
+    {
+      // If current upper bound is new upper bound, we're done.
+      if (wi::le_p (wi::to_wide (r.m_base[1]), wi::to_wide (m_base[1]), sign))
+	return false;
+      // Otherwise R has the new upper bound.
+      // Check for overlap/touching ranges, or single target range.
+      if (m_max_ranges == 1
+	  || wi::to_widest (m_base[1]) + 1 >= wi::to_widest (r.m_base[0]))
+	{
+	  m_base[1] = r.m_base[1];
+	  if (varying_compatible_p ())
+	    m_kind = VR_VARYING;
+	}
+      else
+	{
+	  // This is a dual range result.
+	  m_base[2] = r.m_base[0];
+	  m_base[3] = r.m_base[1];
+	  m_num_ranges = 2;
+	}
+      if (flag_checking)
+	verify_range ();
+      return true;
+    }
+
+  // Set the new lower bound to R's lower bound.
+  tree lb = m_base[0];
+  m_base[0] = r.m_base[0];
+
+  // If R fully contains THIS range, just set the upper bound.
+  if (wi::ge_p (wi::to_wide (r.m_base[1]), wi::to_wide (m_base[1]), sign))
+    m_base[1] = r.m_base[1];
+  // Check for overlapping ranges, or target limited to a single range.
+  else if (m_max_ranges == 1
+	   || wi::to_widest (r.m_base[1]) + 1 >= wi::to_widest (lb))
+    {
+      // This has the new upper bound, just check for varying.
+      if (varying_compatible_p ())
+	  m_kind = VR_VARYING;
+    }
+  else
+    {
+      // Left with 2 pairs.
+      m_num_ranges = 2;
+      m_base[2] = lb;
+      m_base[3] = m_base[1];
+      m_base[1] = r.m_base[1];
+    }
+  if (flag_checking)
+    verify_range ();
+  return true;
+}
+
 // union_ for multi-ranges.
 
-void
+bool
 irange::irange_union (const irange &r)
 {
   gcc_checking_assert (!legacy_mode_p () && !r.legacy_mode_p ());
 
   if (r.undefined_p () || varying_p ())
-    return;
+    return false;
 
   if (undefined_p () || r.varying_p ())
     {
       operator= (r);
-      return;
+      return true;
     }
+
+  // Special case one range union one range.
+  if (m_num_ranges == 1 && r.m_num_ranges == 1)
+    return irange_single_pair_union (r);
+
+  // If this ranges fully contains R, then we need do nothing.
+  if (irange_contains_p (r))
+    return false;
 
   // Do not worry about merging and such by reserving twice as many
   // pairs as needed, and then simply sort the 2 ranges into this
@@ -1628,6 +1702,7 @@ irange::irange_union (const irange &r)
 
   if (flag_checking)
     verify_range ();
+  return true;
 }
 
 // Return TRUE if THIS fully contains R.  No undefined or varying cases.

@@ -71,7 +71,7 @@ public:
   bool contains_p (tree) const;
 
   // In-place operators.
-  void union_ (const irange &);
+  bool union_ (const irange &);
   bool intersect (const irange &);
   void invert ();
 
@@ -96,7 +96,7 @@ public:
   bool may_contain_p (tree) const;		// DEPRECATED
   void set (tree);				// DEPRECATED
   bool equal_p (const irange &) const;		// DEPRECATED
-  void legacy_verbose_union_ (const class irange *);	// DEPRECATED
+  bool legacy_verbose_union_ (const class irange *);	// DEPRECATED
   bool legacy_verbose_intersect (const irange *);	// DEPRECATED
 
 protected:
@@ -107,11 +107,12 @@ protected:
   tree tree_upper_bound () const;
 
    // In-place operators.
-  void irange_union (const irange &);
+  bool irange_union (const irange &);
   bool irange_intersect (const irange &);
   void irange_set (tree, tree);
   void irange_set_anti_range (tree, tree);
   bool irange_contains_p (const irange &) const;
+  bool irange_single_pair_union (const irange &r);
 
   void normalize_kind ();
 
@@ -545,13 +546,14 @@ irange::upper_bound () const
   return upper_bound (pairs - 1);
 }
 
-inline void
+inline bool
 irange::union_ (const irange &r)
 {
   dump_flags_t m_flags = dump_flags;
   dump_flags &= ~TDF_DETAILS;
-  irange::legacy_verbose_union_ (&r);
+  bool ret = irange::legacy_verbose_union_ (&r);
   dump_flags = m_flags;
+  return ret;
 }
 
 inline bool
