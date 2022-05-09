@@ -419,18 +419,19 @@ public:
     // compile it
     tree compiled_adt_type = TyTyResolveCompile::compile (ctx, tyty);
 
-    // this assumes all fields are in order from type resolution and if a base
-    // struct was specified those fields are filed via accesors
     std::vector<tree> arguments;
-    for (size_t i = 0; i < struct_expr.get_fields ().size (); i++)
+    if (adt->is_union ())
       {
+	rust_assert (struct_expr.get_fields ().size () == 1);
+
 	// assignments are coercion sites so lets convert the rvalue if
 	// necessary
-	auto respective_field = variant->get_field_at_index (i);
+	auto respective_field
+	  = variant->get_field_at_index (union_disriminator);
 	auto expected = respective_field->get_field_type ();
 
 	// process arguments
-	auto &argument = struct_expr.get_fields ().at (i);
+	auto &argument = struct_expr.get_fields ().at (0);
 	auto lvalue_locus
 	  = ctx->get_mappings ()->lookup_location (expected->get_ty_ref ());
 	auto rvalue_locus = argument->get_locus ();
@@ -440,8 +441,6 @@ public:
 	bool ok = ctx->get_tyctx ()->lookup_type (
 	  argument->get_mappings ().get_hirid (), &actual);
 
-	// coerce it if required/possible see
-	// compile/torture/struct_base_init_1.rs
 	if (ok)
 	  {
 	    rvalue = coercion_site (rvalue, actual, expected, lvalue_locus,
@@ -450,6 +449,41 @@ public:
 
 	// add it to the list
 	arguments.push_back (rvalue);
+      }
+    else
+      {
+	// this assumes all fields are in order from type resolution and if a
+	// base struct was specified those fields are filed via accesors
+	for (size_t i = 0; i < struct_expr.get_fields ().size (); i++)
+	  {
+	    // assignments are coercion sites so lets convert the rvalue if
+	    // necessary
+	    auto respective_field = variant->get_field_at_index (i);
+	    auto expected = respective_field->get_field_type ();
+
+	    // process arguments
+	    auto &argument = struct_expr.get_fields ().at (i);
+	    auto lvalue_locus
+	      = ctx->get_mappings ()->lookup_location (expected->get_ty_ref ());
+	    auto rvalue_locus = argument->get_locus ();
+	    auto rvalue
+	      = CompileStructExprField::Compile (argument.get (), ctx);
+
+	    TyTy::BaseType *actual = nullptr;
+	    bool ok = ctx->get_tyctx ()->lookup_type (
+	      argument->get_mappings ().get_hirid (), &actual);
+
+	    // coerce it if required/possible see
+	    // compile/torture/struct_base_init_1.rs
+	    if (ok)
+	      {
+		rvalue = coercion_site (rvalue, actual, expected, lvalue_locus,
+					rvalue_locus);
+	      }
+
+	    // add it to the list
+	    arguments.push_back (rvalue);
+	  }
       }
 
     // the constructor depends on whether this is actually an enum or not if
@@ -552,21 +586,16 @@ public:
       }
 
     fncontext fnctx = ctx->peek_fn ();
-    Bvariable *tmp = NULL;
-    bool needs_temp = !block_tyty->is_unit ();
-    if (needs_temp)
-      {
-	tree enclosing_scope = ctx->peek_enclosing_scope ();
-	tree block_type = TyTyResolveCompile::compile (ctx, block_tyty);
+    tree enclosing_scope = ctx->peek_enclosing_scope ();
+    tree block_type = TyTyResolveCompile::compile (ctx, block_tyty);
 
-	bool is_address_taken = false;
-	tree ret_var_stmt = NULL_TREE;
-	tmp = ctx->get_backend ()->temporary_variable (
-	  fnctx.fndecl, enclosing_scope, block_type, NULL, is_address_taken,
-	  expr.get_locus (), &ret_var_stmt);
-	ctx->add_statement (ret_var_stmt);
-	ctx->push_loop_context (tmp);
-      }
+    bool is_address_taken = false;
+    tree ret_var_stmt = NULL_TREE;
+    Bvariable *tmp = ctx->get_backend ()->temporary_variable (
+      fnctx.fndecl, enclosing_scope, block_type, NULL, is_address_taken,
+      expr.get_locus (), &ret_var_stmt);
+    ctx->add_statement (ret_var_stmt);
+    ctx->push_loop_context (tmp);
 
     if (expr.has_loop_label ())
       {
@@ -595,12 +624,9 @@ public:
       = ctx->get_backend ()->loop_expression (code_block, expr.get_locus ());
     ctx->add_statement (loop_expr);
 
-    if (tmp != NULL)
-      {
-	ctx->pop_loop_context ();
-	translated
-	  = ctx->get_backend ()->var_expression (tmp, expr.get_locus ());
-      }
+    ctx->pop_loop_context ();
+    translated = ctx->get_backend ()->var_expression (tmp, expr.get_locus ());
+
     ctx->pop_loop_begin_label ();
   }
 
