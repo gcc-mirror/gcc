@@ -892,9 +892,15 @@ package body Contracts is
          end;
       end if;
 
-      --  Verify the mutual interaction of the various external properties
+      --  Verify the mutual interaction of the various external properties.
+      --  For variables for which No_Caching is enabled, it has been checked
+      --  already that only False values for other external properties are
+      --  allowed.
 
-      if Seen then
+      if Seen
+        and then (Ekind (Type_Or_Obj_Id) /= E_Variable
+                   or else not No_Caching_Enabled (Type_Or_Obj_Id))
+      then
          Check_External_Properties
            (Type_Or_Obj_Id, AR_Val, AW_Val, ER_Val, EW_Val);
       end if;

@@ -2139,11 +2139,24 @@ package body Sem_Prag is
       Expr     : Node_Id;
 
    begin
-      --  Do not analyze the pragma multiple times, but set the output
-      --  parameter to the argument specified by the pragma.
+      --  Ensure that the Boolean expression (if present) is static. A missing
+      --  argument defaults the value to True (SPARK RM 7.1.2(5)).
+
+      Expr_Val := True;
+
+      if Present (Arg1) then
+         Expr := Get_Pragma_Arg (Arg1);
+
+         if Is_OK_Static_Expression (Expr) then
+            Expr_Val := Is_True (Expr_Value (Expr));
+         end if;
+      end if;
+
+      --  The output parameter was set to the argument specified by the pragma.
+      --  Do not analyze the pragma multiple times.
 
       if Is_Analyzed_Pragma (N) then
-         goto Leave;
+         return;
       end if;
 
       Error_Msg_Name_1 := Pragma_Name (N);
@@ -2163,9 +2176,11 @@ package body Sem_Prag is
          if Ekind (Obj_Id) = E_Variable
            and then No_Caching_Enabled (Obj_Id)
          then
-            SPARK_Msg_N
-              ("illegal combination of external property % and property "
-               & """No_Caching"" (SPARK RM 7.1.2(6))", N);
+            if Expr_Val then  --  Confirming value of False is allowed
+               SPARK_Msg_N
+                 ("illegal combination of external property % and property "
+                  & """No_Caching"" (SPARK RM 7.1.2(6))", N);
+            end if;
          else
             SPARK_Msg_N
               ("external property % must apply to a volatile type or object",
@@ -2185,22 +2200,6 @@ package body Sem_Prag is
       end if;
 
       Set_Is_Analyzed_Pragma (N);
-
-      <<Leave>>
-
-      --  Ensure that the Boolean expression (if present) is static. A missing
-      --  argument defaults the value to True (SPARK RM 7.1.2(5)).
-
-      Expr_Val := True;
-
-      if Present (Arg1) then
-         Expr := Get_Pragma_Arg (Arg1);
-
-         if Is_OK_Static_Expression (Expr) then
-            Expr_Val := Is_True (Expr_Value (Expr));
-         end if;
-      end if;
-
    end Analyze_External_Property_In_Decl_Part;
 
    ---------------------------------
