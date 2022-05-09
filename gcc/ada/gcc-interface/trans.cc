@@ -467,71 +467,6 @@ gigi (Node_Id gnat_root,
   /* Make the types and functions used for exception processing.  */
   except_type_node = gnat_to_gnu_type (Base_Type (standard_exception_type));
 
-  for (t = TYPE_FIELDS (except_type_node); t; t = DECL_CHAIN (t))
-    if (DECL_NAME (t) == not_handled_by_others_name_id)
-      {
-	not_handled_by_others_decl = t;
-	break;
-      }
-  gcc_assert (DECL_P (not_handled_by_others_decl));
-
-  jmpbuf_type
-    = build_array_type (gnat_type_for_mode (Pmode, 0),
-			build_index_type (size_int (5)));
-  record_builtin_type ("JMPBUF_T", jmpbuf_type, true);
-  jmpbuf_ptr_type = build_pointer_type (jmpbuf_type);
-
-  /* Functions to get and set the jumpbuf pointer for the current thread.  */
-  get_jmpbuf_decl
-    = create_subprog_decl
-      (get_identifier ("system__soft_links__get_jmpbuf_address_soft"),
-       NULL_TREE, build_function_type_list (jmpbuf_ptr_type, NULL_TREE),
-       NULL_TREE, is_default, true, true, true, false, false, NULL, Empty);
-
-  set_jmpbuf_decl
-    = create_subprog_decl
-      (get_identifier ("system__soft_links__set_jmpbuf_address_soft"),
-       NULL_TREE, build_function_type_list (void_type_node, jmpbuf_ptr_type,
-					    NULL_TREE),
-       NULL_TREE, is_default, true, true, true, false, false, NULL, Empty);
-
-  get_excptr_decl
-    = create_subprog_decl
-      (get_identifier ("system__soft_links__get_gnat_exception"), NULL_TREE,
-       build_function_type_list (build_pointer_type (except_type_node),
-				 NULL_TREE),
-       NULL_TREE, is_default, true, true, true, false, false, NULL, Empty);
-
-  /* setjmp returns an integer and has one operand, which is a pointer to
-     a jmpbuf.  */
-  setjmp_decl
-    = create_subprog_decl
-      (get_identifier ("__builtin_setjmp"), NULL_TREE,
-       build_function_type_list (integer_type_node, jmpbuf_ptr_type,
-				 NULL_TREE),
-       NULL_TREE, is_default, true, true, true, false, false, NULL, Empty);
-  set_decl_built_in_function (setjmp_decl, BUILT_IN_NORMAL, BUILT_IN_SETJMP);
-
-  /* update_setjmp_buf updates a setjmp buffer from the current stack pointer
-     address.  */
-  update_setjmp_buf_decl
-    = create_subprog_decl
-      (get_identifier ("__builtin_update_setjmp_buf"), NULL_TREE,
-       build_function_type_list (void_type_node, jmpbuf_ptr_type, NULL_TREE),
-       NULL_TREE, is_default, true, true, true, false, false, NULL, Empty);
-  set_decl_built_in_function (update_setjmp_buf_decl, BUILT_IN_NORMAL,
-			      BUILT_IN_UPDATE_SETJMP_BUF);
-
-  /* Indicate that it never returns.  */
-  ftype = build_function_type_list (void_type_node,
-				    build_pointer_type (except_type_node),
-				    NULL_TREE);
-  ftype = build_qualified_type (ftype, TYPE_QUAL_VOLATILE);
-  raise_nodefer_decl
-    = create_subprog_decl
-      (get_identifier ("__gnat_raise_nodefer_with_msg"), NULL_TREE, ftype,
-       NULL_TREE, is_default, true, true, true, false, false, NULL, Empty);
-
   set_exception_parameter_decl
     = create_subprog_decl
       (get_identifier ("__gnat_set_exception_parameter"), NULL_TREE,
@@ -600,8 +535,7 @@ gigi (Node_Id gnat_root,
 		       NULL, Empty);
 
   /* If in no exception handlers mode, all raise statements are redirected to
-     __gnat_last_chance_handler.  No need to redefine raise_nodefer_decl since
-     this procedure will never be called in this mode.  */
+     __gnat_last_chance_handler.  */
   if (No_Exception_Handlers_Set ())
     {
       /* Indicate that it never returns.  */

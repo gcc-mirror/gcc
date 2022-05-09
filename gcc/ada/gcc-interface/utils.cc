@@ -264,9 +264,6 @@ struct GTY((chain_next ("%h.chain"))) gnat_binding_level {
   struct gnat_binding_level *chain;
   /* The BLOCK node for this level.  */
   tree block;
-  /* If nonzero, the setjmp buffer that needs to be updated for any
-     variable-sized definition within this context.  */
-  tree jmpbuf_decl;
 };
 
 /* The binding level currently in effect.  */
@@ -599,7 +596,6 @@ gnat_pushlevel (void)
 
   /* Add this level to the front of the chain (stack) of active levels.  */
   newlevel->chain = current_binding_level;
-  newlevel->jmpbuf_decl = NULL_TREE;
   current_binding_level = newlevel;
 }
 
@@ -612,22 +608,6 @@ set_current_block_context (tree fndecl)
   BLOCK_SUPERCONTEXT (current_binding_level->block) = fndecl;
   DECL_INITIAL (fndecl) = current_binding_level->block;
   set_block_for_group (current_binding_level->block);
-}
-
-/* Set the jmpbuf_decl for the current binding level to DECL.  */
-
-void
-set_block_jmpbuf_decl (tree decl)
-{
-  current_binding_level->jmpbuf_decl = decl;
-}
-
-/* Get the jmpbuf_decl, if any, for the current binding level.  */
-
-tree
-get_block_jmpbuf_decl (void)
-{
-  return current_binding_level->jmpbuf_decl;
 }
 
 /* Exit a binding level.  Set any BLOCK into the current code group.  */
