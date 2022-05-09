@@ -2108,30 +2108,31 @@ duplicate_decls (tree newdecl, tree olddecl, bool hiding, bool was_hidden)
       && TREE_CODE (olddecl) != NAMESPACE_DECL
       && !hiding)
     {
-      if (DECL_ARTIFICIAL (olddecl))
+      if (!module_may_redeclare (olddecl))
 	{
-	  if (module_attach_p ())
+	  if (DECL_ARTIFICIAL (olddecl))
 	    error ("declaration %qD conflicts with builtin", newdecl);
 	  else
-	    DECL_MODULE_EXPORT_P (olddecl) = DECL_MODULE_EXPORT_P (newdecl);
-	}
-      else
-	{
-	  if (!module_may_redeclare (olddecl))
 	    {
 	      error ("declaration %qD conflicts with import", newdecl);
 	      inform (olddecl_loc, "import declared %q#D here", olddecl);
-
-	      return error_mark_node;
 	    }
 
-	  if (DECL_MODULE_EXPORT_P (newdecl)
-	      && !DECL_MODULE_EXPORT_P (olddecl))
+	  return error_mark_node;
+	}
+
+      tree not_tmpl = STRIP_TEMPLATE (olddecl);
+      if (DECL_LANG_SPECIFIC (not_tmpl) && DECL_MODULE_ATTACH_P (not_tmpl))
+	{
+	  if (DECL_MODULE_EXPORT_P (STRIP_TEMPLATE (newdecl))
+	      && !DECL_MODULE_EXPORT_P (not_tmpl))
 	    {
 	      error ("conflicting exporting declaration %qD", newdecl);
 	      inform (olddecl_loc, "previous declaration %q#D here", olddecl);
 	    }
 	}
+      else if (DECL_MODULE_EXPORT_P (newdecl))
+	DECL_MODULE_EXPORT_P (not_tmpl) = true;
     }
 
   /* We have committed to returning OLDDECL at this point.  */

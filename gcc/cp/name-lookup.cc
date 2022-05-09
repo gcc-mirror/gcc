@@ -3493,11 +3493,13 @@ maybe_record_mergeable_decl (tree *slot, tree name, tree decl)
     /* Internal linkage.  */
     return;
 
-  bool partition = named_module_p ();
+  bool is_attached = (DECL_LANG_SPECIFIC (not_tmpl)
+		      && DECL_MODULE_ATTACH_P (not_tmpl));
   tree *gslot = get_fixed_binding_slot
-    (slot, name, partition ? BINDING_SLOT_PARTITION : BINDING_SLOT_GLOBAL, true);
+    (slot, name, is_attached ? BINDING_SLOT_PARTITION : BINDING_SLOT_GLOBAL,
+     true);
 
-  if (!partition)
+  if (!is_attached)
     {
       binding_slot &orig
 	= BINDING_VECTOR_CLUSTER (*slot, 0).slots[BINDING_SLOT_CURRENT];
@@ -3841,11 +3843,12 @@ pushdecl (tree decl, bool hiding)
    GMF slot or a module-specific one.  */
 
 tree *
-mergeable_namespace_slots (tree ns, tree name, bool is_global, tree *vec)
+mergeable_namespace_slots (tree ns, tree name, bool is_attached, tree *vec)
 {
   tree *mslot = find_namespace_slot (ns, name, true);
   tree *vslot = get_fixed_binding_slot
-    (mslot, name, is_global ? BINDING_SLOT_GLOBAL : BINDING_SLOT_PARTITION, true);
+    (mslot, name, is_attached ? BINDING_SLOT_PARTITION : BINDING_SLOT_GLOBAL,
+     true);
 
   gcc_checking_assert (TREE_CODE (*mslot) == BINDING_VECTOR);
   *vec = *mslot;
@@ -4832,10 +4835,10 @@ do_nonmember_using_decl (name_lookup &lookup, bool fn_scope_p,
 	  if (exporting)
 	    {
 	      /* If the using decl is exported, the things it refers
-		 to must also be exported (or not in module purview).  */
+		 to must also be exported (or not habve module attachment).  */
 	      if (!DECL_MODULE_EXPORT_P (new_fn)
 		  && (DECL_LANG_SPECIFIC (new_fn)
-		      && DECL_MODULE_PURVIEW_P (new_fn)))
+		      && DECL_MODULE_ATTACH_P (new_fn)))
 		{
 		  error ("%q#D does not have external linkage", new_fn);
 		  inform (DECL_SOURCE_LOCATION (new_fn),

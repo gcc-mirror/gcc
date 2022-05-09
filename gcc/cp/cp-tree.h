@@ -1725,6 +1725,11 @@ check_constraint_info (tree t)
 #define DECL_MODULE_PURVIEW_P(N) \
   (DECL_LANG_SPECIFIC (DECL_MODULE_CHECK (N))->u.base.module_purview_p)
 
+/* Attached to the named module it is in the purview of.  Decls
+   attached to the global module will have this false.  */
+#define DECL_MODULE_ATTACH_P(N) \
+  (DECL_LANG_SPECIFIC (DECL_MODULE_CHECK (N))->u.base.module_attach_p)
+
 /* True if the live version of the decl was imported.  */
 #define DECL_MODULE_IMPORT_P(NODE) \
   (DECL_LANG_SPECIFIC (DECL_MODULE_CHECK (NODE))->u.base.module_import_p)
@@ -2827,13 +2832,8 @@ struct GTY(()) lang_decl_base {
 
   /* The following apply to VAR, FUNCTION, TYPE, CONCEPT, & NAMESPACE
      decls.  */
-  // FIXME: Purview and Attachment are not the same thing, due to
-  // linkage-declarations.  The modules code presumes they are the
-  // same.  (For context, linkage-decl semantics was a very late
-  // change). We need a module_attachment_p flag, and this will allow
-  // some simplification of how we handle header unit entities.
-  // Hurrah!
-  unsigned module_purview_p : 1;	   /* in module purview (not GMF) */
+  unsigned module_purview_p : 1;	   // in named-module purview
+  unsigned module_attach_p : 1;		   // attached to named module
   unsigned module_import_p : 1;     	   /* from an import */
   unsigned module_entity_p : 1;		   /* is in the entitity ary &
 					      hash.  */

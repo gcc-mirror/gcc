@@ -47,10 +47,14 @@ along with GCC; see the file COPYING3.  If not see
    module-local index.
 
    Each importable DECL contains several flags.  The simple set are
-   DECL_EXPORT_P, DECL_MODULE_PURVIEW_P and DECL_MODULE_IMPORT_P.  The
-   first indicates whether it is exported, the second whether it is in
-   the module purview (as opposed to the global module fragment), and
-   the third indicates whether it was an import into this TU or not.
+   DECL_MODULE_EXPORT_P, DECL_MODULE_PURVIEW_P, DECL_MODULE_ATTACH_P
+   and DECL_MODULE_IMPORT_P.  The first indicates whether it is
+   exported, the second whether it is in module or header-unit
+   purview.  The third indicates it is attached to the named module in
+   whose purview it resides and the fourth indicates whether it was an
+   import into this TU or not.  DECL_MODULE_ATTACH_P will be false for
+   all decls in a header-unit, and for those in a named module inside
+   a linkage declaration.
 
    The more detailed flags are DECL_MODULE_PARTITION_P,
    DECL_MODULE_ENTITY_P.  The first is set in a primary interface unit
@@ -2927,7 +2931,7 @@ private:
 public:
   tree decl_container ();
   tree key_mergeable (int tag, merge_kind, tree decl, tree inner, tree type,
-		      tree container, bool is_mod);
+		      tree container, bool is_attached);
   unsigned binfo_mergeable (tree *);
 
 private:
@@ -5529,9 +5533,11 @@ trees_out::lang_decl_bools (tree t)
   WB (lang->u.base.concept_p);
   WB (lang->u.base.var_declared_inline_p);
   WB (lang->u.base.dependent_init_p);
-  /* When building a header unit, everthing is marked as purview, but
-     that's the GM purview, so not what the importer will mean  */
+  /* When building a header unit, everthing is marked as purview, (so
+     we know which decls to write).  But when we import them we do not
+     want to mark them as in module purview.  */
   WB (lang->u.base.module_purview_p && !header_module_p ());
+  WB (lang->u.base.module_attach_p);
   if (VAR_OR_FUNCTION_DECL_P (t))
     WB (lang->u.base.module_keyed_decls_p);
   switch (lang->u.base.selector)
@@ -5602,6 +5608,7 @@ trees_in::lang_decl_bools (tree t)
   RB (lang->u.base.var_declared_inline_p);
   RB (lang->u.base.dependent_init_p);
   RB (lang->u.base.module_purview_p);
+  RB (lang->u.base.module_attach_p);
   if (VAR_OR_FUNCTION_DECL_P (t))
     RB (lang->u.base.module_keyed_decls_p);
   switch (lang->u.base.selector)
@@ -7535,14 +7542,14 @@ trees_out::decl_value (tree decl, depset *dep)
 		 or a module entity.  This bool merges into the next block
 		 of bools.  Sneaky.  */
 	      tree o = get_originating_module_decl (decl);
-	      bool is_mod = false;
+	      bool is_attached = false;
 
 	      tree not_tmpl = STRIP_TEMPLATE (o);
 	      if (DECL_LANG_SPECIFIC (not_tmpl)
-		  && DECL_MODULE_PURVIEW_P (not_tmpl))
-		is_mod = true;
+		  && DECL_MODULE_ATTACH_P (not_tmpl))
+		is_attached = true;
 
-	      b (is_mod);
+	      b (is_attached);
 	    }
 	  b (dep && dep->has_defn ());
 	}
@@ -7791,7 +7798,7 @@ tree
 trees_in::decl_value ()
 {
   int tag = 0;
-  bool is_mod = false;
+  bool is_attached = false;
   bool has_defn = false;
   unsigned mk_u = u ();
   if (mk_u >= MK_hwm || !merge_kind_name[mk_u])
@@ -7812,7 +7819,7 @@ trees_in::decl_value ()
 	{
 	  if (!(mk & MK_template_mask) && !state->is_header ())
 	    /* See note in trees_out about where this bool is sequenced.  */
-	    is_mod = b ();
+	    is_attached = b ();
 
 	  has_defn = b ();
 	}
@@ -7916,7 +7923,8 @@ trees_in::decl_value ()
   if (TREE_CODE (inner) == FUNCTION_DECL)
     parm_tag = fn_parms_init (inner);
 
-  tree existing = key_mergeable (tag, mk, decl, inner, type, container, is_mod);
+  tree existing = key_mergeable (tag, mk, decl, inner, type, container,
+				 is_attached);
   tree existing_inner = existing;
   if (existing)
     {
@@ -10652,7 +10660,7 @@ check_mergeable_decl (merge_kind mk, tree decl, tree ovl, merge_key const &key)
 
 tree
 trees_in::key_mergeable (int tag, merge_kind mk, tree decl, tree inner,
-			 tree type, tree container, bool is_mod)
+			 tree type, tree container, bool is_attached)
 {
   const char *kind = "new";
   tree existing = NULL_TREE;
@@ -10792,14 +10800,15 @@ trees_in::key_mergeable (int tag, merge_kind mk, tree decl, tree inner,
 			  }
 		      }
 	      }
-	    else if (is_mod && !(state->is_module () || state->is_partition ()))
+	    else if (is_attached
+		     && !(state->is_module () || state->is_partition ()))
 	      kind = "unique";
 	    else
 	      {
 		gcc_checking_assert (mk == MK_named || mk == MK_enum);
 		tree mvec;
 		tree *vslot = mergeable_namespace_slots (container, name,
-							 !is_mod, &mvec);
+							 is_attached, &mvec);
 		existing = check_mergeable_decl (mk, decl, *vslot, key);
 		if (!existing)
 		  add_mergeable_namespace_entity (vslot, decl);
@@ -10807,7 +10816,7 @@ trees_in::key_mergeable (int tag, merge_kind mk, tree decl, tree inner,
 		  {
 		    /* Note that we now have duplicates to deal with in
 		       name lookup.  */
-		    if (is_mod)
+		    if (is_attached)
 		      BINDING_VECTOR_PARTITION_DUPS_P (mvec) = true;
 		    else
 		      BINDING_VECTOR_GLOBAL_DUPS_P (mvec) = true;
@@ -10824,7 +10833,7 @@ trees_in::key_mergeable (int tag, merge_kind mk, tree decl, tree inner,
 	    break;
 
 	  case TYPE_DECL:
-	    if (is_mod && !(state->is_module () || state->is_partition ())
+	    if (is_attached && !(state->is_module () || state->is_partition ())
 		/* Implicit member functions can come from
 		   anywhere.  */
 		&& !(DECL_ARTIFICIAL (decl)
@@ -18389,14 +18398,11 @@ get_originating_module (tree decl, bool for_mangle)
   if (!DECL_LANG_SPECIFIC (not_tmpl))
     return for_mangle ? -1 : 0;
 
-  if (for_mangle && !DECL_MODULE_PURVIEW_P (not_tmpl))
+  if (for_mangle && !DECL_MODULE_ATTACH_P (not_tmpl))
     return -1;
 
   int mod = !DECL_MODULE_IMPORT_P (not_tmpl) ? 0 : get_importing_module (owner);
-
-  if (for_mangle && (*modules)[mod]->is_header ())
-    return -1;
-
+  gcc_checking_assert (!for_mangle || !(*modules)[mod]->is_header ());
   return mod;
 }
 
@@ -18416,9 +18422,34 @@ get_importing_module (tree decl, bool flexible)
 bool
 module_may_redeclare (tree decl)
 {
+  for (;;)
+    {
+      tree ctx = CP_DECL_CONTEXT (decl);
+      if (TREE_CODE (ctx) == NAMESPACE_DECL)
+	// Found the namespace-scope decl.
+	break;
+      if (!CLASS_TYPE_P (ctx))
+	// We've met a non-class scope.  Such a thing is not
+	// reopenable, so we must be ok.
+	return true;
+      decl = TYPE_NAME (ctx);
+    }
+
+  tree not_tmpl = STRIP_TEMPLATE (decl);
+
+  int use_tpl = 0;
+  if (node_template_info (not_tmpl, use_tpl) && use_tpl)
+    // Specializations of any kind can be redeclared anywhere.
+    // FIXME: Should we be checking this in more places on the scope chain?
+    return true;
+
+  if (!DECL_LANG_SPECIFIC (not_tmpl) || !DECL_MODULE_ATTACH_P (not_tmpl))
+    // Decl is attached to global module.  Current scope needs to be too.
+    return !module_attach_p ();
+
   module_state *me = (*modules)[0];
   module_state *them = me;
-  tree not_tmpl = STRIP_TEMPLATE (decl);
+
   if (DECL_LANG_SPECIFIC (not_tmpl) && DECL_MODULE_IMPORT_P (not_tmpl))
     {
       /* We can be given the TEMPLATE_RESULT.  We want the
@@ -18446,30 +18477,14 @@ module_may_redeclare (tree decl)
       them = import_entity_module (index);
     }
 
-  if (them->is_header ())
-    {
-      if (!header_module_p ())
-	return !module_purview_p ();
+  // Decl is attached to named module.  Current scope needs to be
+  // attaching to the same module.
+  if (!module_attach_p ())
+    return false;
 
-      if (DECL_SOURCE_LOCATION (decl) == BUILTINS_LOCATION)
-	/* This is a builtin, being declared in header-unit.  We
-	   now need to mark it as an export.  */
-	DECL_MODULE_EXPORT_P (decl) = true;
-
-      /* If it came from a header, it's in the global module.  */
-      return true;
-    }
-
+  // Both attached to named module.
   if (me == them)
-    return ((DECL_LANG_SPECIFIC (not_tmpl) && DECL_MODULE_PURVIEW_P (not_tmpl))
-	    == module_purview_p ());
-
-  if (!me->name)
-    me = me->parent;
-
-  /* We can't have found a GMF entity from a named module.  */
-  gcc_checking_assert (DECL_LANG_SPECIFIC (not_tmpl)
-		       && DECL_MODULE_PURVIEW_P (not_tmpl));
+    return true;
 
   return me && get_primary (them) == get_primary (me);
 }
@@ -18554,10 +18569,16 @@ set_originating_module (tree decl, bool friend_p ATTRIBUTE_UNUSED)
 {
   set_instantiating_module (decl);
 
-  if (TREE_CODE (CP_DECL_CONTEXT (decl)) != NAMESPACE_DECL)
+  if (!DECL_NAMESPACE_SCOPE_P (decl))
     return;
 
   gcc_checking_assert (friend_p || decl == get_originating_module_decl (decl));
+
+  if (module_attach_p ())
+    {
+      retrofit_lang_decl (decl);
+      DECL_MODULE_ATTACH_P (decl) = true;
+    }
 
   if (!module_exporting_p ())
     return;
