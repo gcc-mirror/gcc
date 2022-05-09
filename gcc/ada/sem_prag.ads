@@ -149,6 +149,7 @@ package Sem_Prag is
       Pragma_Precondition              => True,
       Pragma_Predicate                 => True,
       Pragma_Refined_Post              => True,
+      Pragma_Subprogram_Variant        => True,
       Pragma_Test_Case                 => True,
       Pragma_Type_Invariant            => True,
       Pragma_Type_Invariant_Class      => True,
