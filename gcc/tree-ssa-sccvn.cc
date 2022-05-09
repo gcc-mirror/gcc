@@ -3684,7 +3684,12 @@ vn_reference_lookup (tree op, tree vuse, vn_lookup_kind kind,
 	    break;
 	  off += vro->off;
 	}
-      if (i == operands.length () - 1)
+      if (i == operands.length () - 1
+	  /* Make sure we the offset we accumulated in a 64bit int
+	     fits the address computation carried out in target
+	     offset precision.  */
+	  && (off.coeffs[0]
+	      == sext_hwi (off.coeffs[0], TYPE_PRECISION (sizetype))))
 	{
 	  gcc_assert (operands[i-1].opcode == MEM_REF);
 	  tree ops[2];
@@ -3808,7 +3813,12 @@ vn_reference_insert (tree op, tree result, tree vuse, tree vdef)
 	    break;
 	  off += vro->off;
 	}
-      if (i == operands.length () - 1)
+      if (i == operands.length () - 1
+	  /* Make sure we the offset we accumulated in a 64bit int
+	     fits the address computation carried out in target
+	     offset precision.  */
+	  && (off.coeffs[0]
+	      == sext_hwi (off.coeffs[0], TYPE_PRECISION (sizetype))))
 	{
 	  gcc_assert (operands[i-1].opcode == MEM_REF);
 	  tree ops[2];
