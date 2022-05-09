@@ -3089,10 +3089,16 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 
 /* Simplifications of MIN_EXPR, MAX_EXPR, fmin() and fmax().  */
 
-(for minmax (min max FMIN_ALL FMAX_ALL)
+(for minmax (min max)
  (simplify
   (minmax @0 @0)
   @0))
+/* For fmin() and fmax(), skip folding when both are sNaN.  */
+(for minmax (FMIN_ALL FMAX_ALL)
+ (simplify
+  (minmax @0 @0)
+  (if (!tree_expr_maybe_signaling_nan_p (@0))
+    @0)))
 /* min(max(x,y),y) -> y.  */
 (simplify
  (min:c (max:c @0 @1) @1)
@@ -3192,12 +3198,13 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
    (minmax @1 (convert @2)))))
 
 (for minmax (FMIN_ALL FMAX_ALL)
- /* If either argument is NaN, return the other one.  Avoid the
-    transformation if we get (and honor) a signalling NaN.  */
+ /* If either argument is NaN and other one is not sNaN, return the other
+    one.  Avoid the transformation if we get (and honor) a signalling NaN.  */
  (simplify
   (minmax:c @0 REAL_CST@1)
-  (if (real_isnan (TREE_REAL_CST_PTR (@1))
-       && (!HONOR_SNANS (@1) || !TREE_REAL_CST (@1).signalling))
+   (if (real_isnan (TREE_REAL_CST_PTR (@1))
+       && (!HONOR_SNANS (@1) || !TREE_REAL_CST (@1).signalling)
+       && !tree_expr_maybe_signaling_nan_p (@0))
    @0)))
 /* Convert fmin/fmax to MIN_EXPR/MAX_EXPR.  C99 requires these
    functions to return the numeric arg if the other one is NaN.
