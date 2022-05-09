@@ -1060,7 +1060,7 @@ package body Exp_Ch6 is
 
    begin
       return (No (Ctrl) and then Is_Definite_Subtype (Utyp))
-        or else not Returns_On_Secondary_Stack (Utyp);
+        or else not Needs_Secondary_Stack (Utyp);
    end Caller_Known_Size;
 
    -----------------------
@@ -4946,7 +4946,7 @@ package body Exp_Ch6 is
                  Is_Build_In_Place_Function_Call (Parent (Call_Node)))
          then
             Establish_Transient_Scope
-              (Call_Node, Returns_On_Secondary_Stack (Etype (Subp)));
+              (Call_Node, Needs_Secondary_Stack (Etype (Subp)));
          end if;
       end if;
    end Expand_Call_Helper;
@@ -7341,7 +7341,7 @@ package body Exp_Ch6 is
       --  A return statement from an ignored Ghost function does not use the
       --  secondary stack (or any other one).
 
-      elsif not Returns_On_Secondary_Stack (R_Type)
+      elsif not Needs_Secondary_Stack (R_Type)
         or else Is_Ignored_Ghost_Entity (Scope_Id)
       then
          --  Mutable records with variable-length components are not returned
@@ -7455,7 +7455,7 @@ package body Exp_Ch6 is
          --  how to do a copy.)
 
          if Exp_Is_Function_Call
-           and then Returns_On_Secondary_Stack (Exp_Typ)
+           and then Needs_Secondary_Stack (Exp_Typ)
          then
             Set_By_Ref (N);
 
@@ -10219,7 +10219,7 @@ package body Exp_Ch6 is
       pragma Assert (Is_Build_In_Place_Function (Func_Id));
       Func_Typ : constant Entity_Id := Underlying_Type (Etype (Func_Id));
    begin
-      return Returns_On_Secondary_Stack (Func_Typ);
+      return Needs_Secondary_Stack (Func_Typ);
    end Needs_BIP_Alloc_Form;
 
    -------------------------------------

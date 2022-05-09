@@ -5864,7 +5864,7 @@ gnat_to_gnu_subprog_type (Entity_Id gnat_subprog, bool definition,
 	}
 
       /* This is for the other types returned on the secondary stack.  */
-      else if (Returns_On_Secondary_Stack (gnat_return_type))
+      else if (Needs_Secondary_Stack (gnat_return_type))
 	{
 	  gnu_return_type = build_reference_type (gnu_return_type);
 	  return_unconstrained_p = true;

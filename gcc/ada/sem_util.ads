@@ -2677,6 +2677,12 @@ package Sem_Util is
    --  parameter to identify the accessibility level of the function result
    --  "determined by the point of call".
 
+   function Needs_Secondary_Stack (Id : Entity_Id) return Boolean;
+   --  Return true if functions whose result type is Id must return on the
+   --  secondary stack, i.e. allocate the return object on this stack.
+
+   --  WARNING: There is a matching C declaration of this subprogram in fe.h
+
    function Needs_Simple_Initialization
      (Typ         : Entity_Id;
       Consider_IS : Boolean := True) return Boolean;
@@ -3091,12 +3097,6 @@ package Sem_Util is
    procedure Restore_SPARK_Mode (Mode : SPARK_Mode_Type; Prag : Node_Id);
    --  Set the current SPARK_Mode to Mode and SPARK_Mode_Pragma to Prag. This
    --  routine must be used in tandem with Set_SPARK_Mode.
-
-   function Returns_On_Secondary_Stack (Id : Entity_Id) return Boolean;
-   --  Return true if functions whose result type is Id must return on the
-   --  secondary stack, i.e. allocate the return object on this stack.
-
-   --  WARNING: There is a matching C declaration of this subprogram in fe.h
 
    function Returns_Unconstrained_Type (Subp : Entity_Id) return Boolean;
    --  Return true if Subp is a function that returns an unconstrained type
