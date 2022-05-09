@@ -2110,7 +2110,7 @@ duplicate_decls (tree newdecl, tree olddecl, bool hiding, bool was_hidden)
     {
       if (DECL_ARTIFICIAL (olddecl))
 	{
-	  if (!(global_purview_p () || not_module_p ()))
+	  if (module_attach_p ())
 	    error ("declaration %qD conflicts with builtin", newdecl);
 	  else
 	    DECL_MODULE_EXPORT_P (olddecl) = DECL_MODULE_EXPORT_P (newdecl);

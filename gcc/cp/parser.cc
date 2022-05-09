@@ -14582,7 +14582,7 @@ cp_parser_module_declaration (cp_parser *parser, module_parse mp_state,
     {
       /* Start global module fragment.  */
       cp_lexer_consume_token (parser->lexer);
-      module_kind |= MK_GLOBAL;
+      module_kind = MK_NAMED;
       mp_state = MP_GLOBAL;
       cp_parser_require_pragma_eol (parser, token);
     }
@@ -14596,16 +14596,16 @@ cp_parser_module_declaration (cp_parser *parser, module_parse mp_state,
       cp_lexer_consume_token (parser->lexer);
       cp_parser_require_pragma_eol (parser, token);
 
-      if (!(mp_state == MP_PURVIEW || mp_state == MP_PURVIEW_IMPORTS)
-	  || !module_interface_p () || module_partition_p ())
-	error_at (token->location,
-		  "private module fragment only permitted in purview"
-		  " of module interface or partition");
-      else
+      if ((mp_state == MP_PURVIEW || mp_state == MP_PURVIEW_IMPORTS)
+	  && module_has_cmi_p ())
 	{
 	  mp_state = MP_PRIVATE_IMPORTS;
 	  sorry_at (token->location, "private module fragment");
 	}
+      else
+	error_at (token->location,
+		  "private module fragment only permitted in purview"
+		  " of module interface or partition");
     }
   else if (!(mp_state == MP_FIRST || mp_state == MP_GLOBAL))
     {
@@ -14642,10 +14642,7 @@ cp_parser_import_declaration (cp_parser *parser, module_parse mp_state,
   parser->lexer->in_pragma = true;
   cp_token *token = cp_lexer_consume_token (parser->lexer);
 
-  if (mp_state != MP_PURVIEW_IMPORTS
-      && mp_state != MP_PRIVATE_IMPORTS
-      && module_purview_p ()
-      && !global_purview_p ())
+  if (mp_state == MP_PURVIEW || mp_state == MP_PRIVATE)
     {
       error_at (token->location, "post-module-declaration"
 		" imports must be contiguous");
@@ -14674,18 +14671,19 @@ cp_parser_import_declaration (cp_parser *parser, module_parse mp_state,
 	error_at (token->location, "import cannot appear directly in"
 		  " a linkage-specification");
 
-      /* Module-purview imports must not be from source inclusion
-	 [cpp.import]/7  */
-      if (attrs && module_purview_p () && !global_purview_p ()
-	  && private_lookup_attribute ("__translated",
-				       strlen ("__translated"), attrs))
-	error_at (token->location, "post-module-declaration imports"
-		  " must not be include-translated");
-      else if ((mp_state == MP_PURVIEW_IMPORTS
-		|| mp_state == MP_PRIVATE_IMPORTS)
-	       && !token->main_source_p)
-	error_at (token->location, "post-module-declaration imports"
-		  " must not be from header inclusion");
+      if (mp_state == MP_PURVIEW_IMPORTS || mp_state == MP_PRIVATE_IMPORTS)
+	{
+	  /* Module-purview imports must not be from source inclusion
+	     [cpp.import]/7  */
+	  if (attrs
+	      && private_lookup_attribute ("__translated",
+					   strlen ("__translated"), attrs))
+	    error_at (token->location, "post-module-declaration imports"
+		      " must not be include-translated");
+	  else if (!token->main_source_p)
+	    error_at (token->location, "post-module-declaration imports"
+		      " must not be from header inclusion");
+	}
 
       import_module (mod, token->location, exporting, attrs, parse_in);
     }
@@ -14941,10 +14939,14 @@ cp_parser_declaration (cp_parser* parser, tree prefix_attrs)
       cp_token *next = exporting ? token2 : token1;
       if (exporting)
 	cp_lexer_consume_token (parser->lexer);
+      // In module purview this will be ill-formed.
+      auto state = (!named_module_p () ? MP_NOT_MODULE
+		    : module_purview_p () ? MP_PURVIEW
+		    : MP_GLOBAL);
       if (next->keyword == RID__MODULE)
-	cp_parser_module_declaration (parser, MP_NOT_MODULE, exporting);
+	cp_parser_module_declaration (parser, state, exporting);
       else
-	cp_parser_import_declaration (parser, MP_NOT_MODULE, exporting);
+	cp_parser_import_declaration (parser, state, exporting);
     }
   /* If the next token is `extern', 'static' or 'inline' and the one
      after that is `template', we have a GNU extended explicit

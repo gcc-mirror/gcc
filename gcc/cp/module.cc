@@ -18971,25 +18971,21 @@ declare_module (module_state *module, location_t from_loc, bool exporting_p,
   gcc_checking_assert (module->is_direct () && module->has_location ());
 
   /* Yer a module, 'arry.  */
-  module_kind &= ~MK_GLOBAL;
-  module_kind |= MK_MODULE;
+  module_kind = module->is_header () ? MK_HEADER : MK_NAMED | MK_ATTACH;
 
-  if (module->is_partition () || exporting_p)
+  // Even in header units, we consider the decls to be purview
+  module_kind |= MK_PURVIEW;
+
+  if (module->is_partition ())
+    module_kind |= MK_PARTITION;
+  if (exporting_p)
     {
-      gcc_checking_assert (module->get_flatname ());
+      module->interface_p = true;
+      module_kind |= MK_INTERFACE;
+    }
 
-      if (module->is_partition ())
-	module_kind |= MK_PARTITION;
-
-      if (exporting_p)
-	{
-	  module->interface_p = true;
-	  module_kind |= MK_INTERFACE;
-	}
-
-      if (module->is_header ())
-	module_kind |= MK_GLOBAL | MK_EXPORTING;
-
+  if (module_has_cmi_p ())
+    {
       /* Copy the importing information we may have already done.  We
 	 do not need to separate out the imports that only happen in
 	 the GMF, inspite of what the literal wording of the std
@@ -19523,6 +19519,7 @@ preprocessed_module (cpp_reader *reader)
 	  if (module->is_module ())
 	    {
 	      declare_module (module, cpp_main_loc (reader), true, NULL, reader);
+	      module_kind |= MK_EXPORTING;
 	      break;
 	    }
 	}

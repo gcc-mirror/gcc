@@ -190,25 +190,25 @@ search_imported_binding_slot (tree *slot, unsigned ix)
 static void
 init_global_partition (binding_cluster *cluster, tree decl)
 {
-  bool purview = true;
+  bool named = true;
 
   if (header_module_p ())
-    purview = false;
+    named = false;
   else if (TREE_PUBLIC (decl)
 	   && TREE_CODE (decl) == NAMESPACE_DECL
 	   && !DECL_NAMESPACE_ALIAS (decl))
-    purview = false;
+    named = false;
   else if (!get_originating_module (decl))
-    purview = false;
+    named = false;
 
   binding_slot *mslot;
-  if (!purview)
-    mslot = &cluster[0].slots[BINDING_SLOT_GLOBAL];
-  else
+  if (named)
     mslot = &cluster[BINDING_SLOT_PARTITION
 		     / BINDING_VECTOR_SLOTS_PER_CLUSTER]
       .slots[BINDING_SLOT_PARTITION
 	     % BINDING_VECTOR_SLOTS_PER_CLUSTER];
+  else
+    mslot = &cluster[0].slots[BINDING_SLOT_GLOBAL];
 
   if (*mslot)
     decl = ovl_make (decl, *mslot);
@@ -248,7 +248,7 @@ get_fixed_binding_slot (tree *slot, tree name, unsigned ix, int create)
       if (!create)
 	return NULL;
 
-      /* The partition slot is only needed when we know we're a named
+      /* The partition slot is only needed when we're a named
 	 module.  */
       bool partition_slot = named_module_p ();
       unsigned want = ((BINDING_SLOTS_FIXED + partition_slot + (create < 0)
@@ -3472,9 +3472,9 @@ push_local_extern_decl_alias (tree decl)
   DECL_LOCAL_DECL_ALIAS (decl) = alias;
 }
 
-/* DECL is a global or module-purview entity.  If it has non-internal
-   linkage, and we have a module vector, record it in the appropriate
-   slot.  We have already checked for duplicates.  */
+/* If DECL has non-internal linkage, and we have a module vector,
+   record it in the appropriate slot.  We have already checked for
+   duplicates.  */
 
 static void
 maybe_record_mergeable_decl (tree *slot, tree name, tree decl)
@@ -3826,7 +3826,7 @@ pushdecl (tree decl, bool hiding)
 
 	  if (level->kind == sk_namespace
 	      && TREE_PUBLIC (level->this_entity)
-	      && !not_module_p ())
+	      && module_p ())
 	    maybe_record_mergeable_decl (slot, name, decl);
 	}
     }

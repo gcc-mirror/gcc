@@ -1720,7 +1720,8 @@ check_constraint_info (tree t)
 #define DECL_MODULE_CHECK(NODE)						\
   TREE_NOT_CHECK (NODE, TEMPLATE_DECL)
 
-/* In the purview of a module (including header unit).  */
+/* In the purview of a named module (or in the purview of the
+   header-unit being compiled).  */
 #define DECL_MODULE_PURVIEW_P(N) \
   (DECL_LANG_SPECIFIC (DECL_MODULE_CHECK (N))->u.base.module_purview_p)
 
@@ -7137,46 +7138,40 @@ inline bool modules_p () { return flag_modules != 0; }
 /* The kind of module or part thereof that we're in.  */
 enum module_kind_bits
 {
-  MK_MODULE = 1 << 0,     /* This TU is a module.  */
-  MK_GLOBAL = 1 << 1,     /* Entities are in the global module.  */
-  MK_INTERFACE = 1 << 2,  /* This TU is an interface.  */
-  MK_PARTITION = 1 << 3,  /* This TU is a partition.  */
-  MK_EXPORTING = 1 << 4,  /* We are in an export region.  */
+  MK_NAMED = 1 << 0,	// TU is a named module
+  MK_HEADER = 1 << 1,	// TU is a header unit
+  MK_INTERFACE = 1 << 2,  // TU is an interface
+  MK_PARTITION = 1 << 3,  // TU is a partition
+
+  MK_PURVIEW = 1 << 4,	// In purview of current module
+  MK_ATTACH = 1 << 5,	// Attaching to named module
+
+  MK_EXPORTING = 1 << 6,  /* We are in an export region.  */
 };
 
 /* We do lots of bit-manipulation, so an unsigned is easier.  */
 extern unsigned module_kind;
 
-/*  MK_MODULE & MK_GLOBAL have the following combined meanings:
- MODULE GLOBAL
-   0	  0	not a module
-   0	  1	GMF of named module (we've not yet seen module-decl)
-   1	  0	purview of named module
-   1	  1	header unit.   */
-
-inline bool module_purview_p ()
-{ return module_kind & MK_MODULE; }
-inline bool global_purview_p ()
-{ return module_kind & MK_GLOBAL; }
-
-inline bool not_module_p ()
-{ return (module_kind & (MK_MODULE | MK_GLOBAL)) == 0; }
+inline bool module_p ()
+{ return module_kind & (MK_NAMED | MK_HEADER); }
 inline bool named_module_p ()
-{ /* This is a named module if exactly one of MODULE and GLOBAL is
-     set.  */
-  /* The divides are constant shifts!  */
-  return ((module_kind / MK_MODULE) ^ (module_kind / MK_GLOBAL)) & 1;
-}
+{ return module_kind & MK_NAMED; }
 inline bool header_module_p ()
-{ return (module_kind & (MK_MODULE | MK_GLOBAL)) == (MK_MODULE | MK_GLOBAL); }
-inline bool named_module_purview_p ()
-{ return (module_kind & (MK_MODULE | MK_GLOBAL)) == MK_MODULE; }
+{ return module_kind & MK_HEADER; }
 inline bool module_interface_p ()
 { return module_kind & MK_INTERFACE; }
 inline bool module_partition_p ()
 { return module_kind & MK_PARTITION; }
 inline bool module_has_cmi_p ()
 { return module_kind & (MK_INTERFACE | MK_PARTITION); }
+
+inline bool module_purview_p ()
+{ return module_kind & MK_PURVIEW; }
+inline bool module_attach_p ()
+{ return module_kind & MK_ATTACH; }
+
+inline bool named_module_purview_p ()
+{ return named_module_p () && module_purview_p (); }
 
 /* We're currently exporting declarations.  */
 inline bool module_exporting_p ()
