@@ -178,9 +178,8 @@ rid_int128(void)
   return RID_MAX + 1;
 }
 
-/* Called to decide whether a conditional macro should be expanded.
-   Since we have exactly one such macro (i.e, 'vector'), we do not
-   need to examine the 'tok' parameter.  */
+/* Called to decide whether a conditional macro should be expanded
+   by peeking two or more tokens(_bool/_pixel/int/long/double/...).  */
 
 static cpp_hashnode *
 rs6000_macro_to_expand (cpp_reader *pfile, const cpp_token *tok)
@@ -282,7 +281,9 @@ rs6000_macro_to_expand (cpp_reader *pfile, const cpp_token *tok)
 		expand_bool_pixel = __pixel_keyword;
 	      else if (ident == C_CPP_HASHNODE (__bool_keyword))
 		expand_bool_pixel = __bool_keyword;
-	      else
+
+	      /* If there are more tokens to check.  */
+	      else if (ident)
 		{
 		  /* Try two tokens down, too.  */
 		  do
