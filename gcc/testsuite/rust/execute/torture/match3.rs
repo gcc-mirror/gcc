@@ -7,7 +7,7 @@ enum Foo {
     A,
     B,
     C(char),
-    D { x: i64, y: i64 },
+    D { x: i32, y: i32 },
 }
 
 fn inspect(f: Foo) {
