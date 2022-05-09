@@ -1481,7 +1481,7 @@ irange::legacy_verbose_union_ (const irange *other)
     irange_union (*other);
 }
 
-void
+bool
 irange::legacy_verbose_intersect (const irange *other)
 {
   if (legacy_mode_p ())
@@ -1490,7 +1490,7 @@ irange::legacy_verbose_intersect (const irange *other)
 	{
 	  int_range<1> tmp = *other;
 	  legacy_intersect (this, &tmp);
-	  return;
+	  return true;
 	}
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{
@@ -1509,17 +1509,17 @@ irange::legacy_verbose_intersect (const irange *other)
 	  dump_value_range (dump_file, this);
 	  fprintf (dump_file, "\n");
 	}
-      return;
+      return true;
     }
 
   if (other->legacy_mode_p ())
     {
       int_range<2> wider;
       wider = *other;
-      irange_intersect (wider);
+      return irange_intersect (wider);
     }
   else
-    irange_intersect (*other);
+    return irange_intersect (*other);
 }
 
 // union_ for multi-ranges.
@@ -1630,9 +1630,55 @@ irange::irange_union (const irange &r)
     verify_range ();
 }
 
-// intersect for multi-ranges.
+// Return TRUE if THIS fully contains R.  No undefined or varying cases.
 
-void
+bool
+irange::irange_contains_p (const irange &r) const
+{
+  gcc_checking_assert (!undefined_p () && !varying_p ());
+  gcc_checking_assert (!r.undefined_p () && !varying_p ());
+
+  // In order for THIS to fully contain R, all of the pairs within R must
+  // be fully contained by the pairs in this object.
+  signop sign = TYPE_SIGN (TREE_TYPE(m_base[0]));
+  unsigned ri = 0;
+  unsigned i = 0;
+  tree rl = r.m_base[0];
+  tree ru = r.m_base[1];
+  tree l = m_base[0];
+  tree u = m_base[1];
+  while (1)
+    {
+      // If r is contained within this range, move to the next R
+      if (wi::ge_p (wi::to_wide (rl), wi::to_wide (l), sign)
+	  && wi::le_p (wi::to_wide (ru), wi::to_wide (u), sign))
+	{
+	  // This pair is OK, Either done, or bump to the next.
+	  if (++ri >= r.num_pairs ())
+	    return true;
+	  rl = r.m_base[ri * 2];
+	  ru = r.m_base[ri * 2 + 1];
+	  continue;
+	}
+      // Otherwise, check if this's pair occurs before R's.
+      if (wi::lt_p (wi::to_wide (u), wi::to_wide (rl), sign))
+	{
+	  // THere's still at leats one pair of R left.
+	  if (++i >= num_pairs ())
+	    return false;
+	  l = m_base[i * 2];
+	  u = m_base[i * 2 + 1];
+	  continue;
+	}
+      return false;
+    }
+  return false;
+}
+
+
+// Intersect for multi-ranges.  Return TRUE if anything changes.
+
+bool
 irange::irange_intersect (const irange &r)
 {
   gcc_checking_assert (!legacy_mode_p () && !r.legacy_mode_p ());
@@ -1640,24 +1686,24 @@ irange::irange_intersect (const irange &r)
 		       || range_compatible_p (type (), r.type ()));
 
   if (undefined_p () || r.varying_p ())
-    return;
+    return false;
   if (r.undefined_p ())
     {
       set_undefined ();
-      return;
+      return true;
     }
   if (varying_p ())
     {
       operator= (r);
-      return;
+      return true;
     }
 
   if (r.num_pairs () == 1)
-   {
-     // R cannot be undefined, use more efficent pair routine.
-     intersect (r.lower_bound(), r.upper_bound ());
-     return;
-   }
+    return intersect (r.lower_bound (), r.upper_bound ());
+
+  // If R fully contains this, then intersection will change nothing.
+  if (r.irange_contains_p (*this))
+    return false;
 
   signop sign = TYPE_SIGN (TREE_TYPE(m_base[0]));
   unsigned bld_pair = 0;
@@ -1732,21 +1778,25 @@ irange::irange_intersect (const irange &r)
 
   if (flag_checking)
     verify_range ();
+
+  return true;
 }
 
-// Multirange intersect for a specified wide_int [lb, ub] range.
 
-void
+// Multirange intersect for a specified wide_int [lb, ub] range.
+// Return TRUE if intersect changed anything.
+
+bool
 irange::intersect (const wide_int& lb, const wide_int& ub)
 {
   // Undefined remains undefined.
   if (undefined_p ())
-    return;
+    return false;
 
   if (legacy_mode_p ())
     {
       intersect (int_range<1> (type (), lb, ub));
-      return;
+      return true;
     }
 
   tree range_type = type();
@@ -1754,6 +1804,11 @@ irange::intersect (const wide_int& lb, const wide_int& ub)
 
   gcc_checking_assert (TYPE_PRECISION (range_type) == wi::get_precision (lb));
   gcc_checking_assert (TYPE_PRECISION (range_type) == wi::get_precision (ub));
+
+  // If this range is fuly contained, then intersection will do nothing.
+  if (wi::ge_p (lower_bound (), lb, sign)
+      && wi::le_p (upper_bound (), ub, sign))
+    return false;
 
   unsigned bld_index = 0;
   unsigned pair_lim = num_pairs ();
@@ -1793,7 +1848,10 @@ irange::intersect (const wide_int& lb, const wide_int& ub)
 
   if (flag_checking)
     verify_range ();
+  return true;
 }
+
+
 // Signed 1-bits are strange.  You can't subtract 1, because you can't
 // represent the number 1.  This works around that for the invert routine.
 
