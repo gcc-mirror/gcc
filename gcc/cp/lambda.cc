@@ -1431,7 +1431,7 @@ record_lambda_scope (tree lambda)
     {
       tree closure = LAMBDA_EXPR_CLOSURE (lambda);
       gcc_checking_assert (closure);
-      maybe_attach_decl (lambda_scope, TYPE_NAME (closure));
+      maybe_key_decl (lambda_scope, TYPE_NAME (closure));
     }
 }
 

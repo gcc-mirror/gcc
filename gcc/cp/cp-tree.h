@@ -1734,9 +1734,9 @@ check_constraint_info (tree t)
   (DECL_LANG_SPECIFIC (DECL_MODULE_CHECK (NODE))->u.base.module_entity_p)
 
 /* DECL that has attached decls for ODR-relatedness.  */
-#define DECL_MODULE_ATTACHMENTS_P(NODE)			\
+#define DECL_MODULE_KEYED_DECLS_P(NODE)			\
   (DECL_LANG_SPECIFIC (TREE_CHECK2(NODE,FUNCTION_DECL,VAR_DECL))\
-   ->u.base.module_attached_p)
+   ->u.base.module_keyed_decls_p)
 
 /* Whether this is an exported DECL.  Held on any decl that can appear
    at namespace scope (function, var, type, template, const or
@@ -2836,8 +2836,8 @@ struct GTY(()) lang_decl_base {
   unsigned module_import_p : 1;     	   /* from an import */
   unsigned module_entity_p : 1;		   /* is in the entitity ary &
 					      hash.  */
-  /* VAR_DECL or FUNCTION_DECL has attached decls.     */
-  unsigned module_attached_p : 1;
+  /* VAR_DECL or FUNCTION_DECL has keyed decls.     */
+  unsigned module_keyed_decls_p : 1;
 
   /* 12 spare bits.  */
 };
@@ -7196,7 +7196,7 @@ extern unsigned get_importing_module (tree, bool = false) ATTRIBUTE_PURE;
 /* Where current instance of the decl got declared/defined/instantiated.  */
 extern void set_instantiating_module (tree);
 extern void set_defining_module (tree);
-extern void maybe_attach_decl (tree ctx, tree decl);
+extern void maybe_key_decl (tree ctx, tree decl);
 
 extern void mangle_module (int m, bool include_partition);
 extern void mangle_module_fini ();
