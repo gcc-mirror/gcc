@@ -1240,8 +1240,7 @@ extern enum reg_class rs6000_regno_regclass[FIRST_PSEUDO_REGISTER];
 /* Register classes for various constraints that are based on the target
    switches.  */
 enum r6000_reg_class_enum {
-  RS6000_CONSTRAINT_d,		/* fpr registers for double values */
-  RS6000_CONSTRAINT_f,		/* fpr registers for single values */
+  RS6000_CONSTRAINT_d,		/* FPR registers */
   RS6000_CONSTRAINT_v,		/* Altivec registers */
   RS6000_CONSTRAINT_wa,		/* Any VSX register */
   RS6000_CONSTRAINT_we,		/* VSX register if ISA 3.0 vector. */

@@ -29,7 +29,7 @@
   "A base register.  Like @code{r}, but @code{r0} is not allowed, so
    @code{r1}@dots{}@code{r31}.")
 
-(define_register_constraint "f" "rs6000_constraints[RS6000_CONSTRAINT_f]"
+(define_register_constraint "f" "rs6000_constraints[RS6000_CONSTRAINT_d]"
   "A floating point register (FPR), @code{f0}@dots{}@code{f31}.")
 
 (define_register_constraint "d" "rs6000_constraints[RS6000_CONSTRAINT_d]"
