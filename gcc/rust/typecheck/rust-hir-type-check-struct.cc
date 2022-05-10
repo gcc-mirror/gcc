@@ -44,7 +44,7 @@ TypeCheckStructExpr::visit (HIR::StructExprStructFields &struct_expr)
 	= TypeCheckExpr::Resolve (struct_expr.struct_base->base_struct.get (),
 				  false);
       struct_def
-	= (TyTy::ADTType *) struct_path_resolved->unify (base_resolved);
+	= (TyTy::ADTType *) struct_path_resolved->coerce (base_resolved);
       if (struct_def == nullptr)
 	{
 	  rust_fatal_error (struct_expr.struct_base->base_struct->get_locus (),
@@ -222,7 +222,7 @@ TypeCheckStructExpr::visit (HIR::StructExprFieldIdentifierValue &field)
     }
 
   TyTy::BaseType *value = TypeCheckExpr::Resolve (field.get_value (), false);
-  resolved_field_value_expr = field_type->get_field_type ()->unify (value);
+  resolved_field_value_expr = field_type->get_field_type ()->coerce (value);
   if (resolved_field_value_expr != nullptr)
     {
       fields_assigned.insert (field.field_name);
@@ -251,7 +251,7 @@ TypeCheckStructExpr::visit (HIR::StructExprFieldIndexValue &field)
     }
 
   TyTy::BaseType *value = TypeCheckExpr::Resolve (field.get_value (), false);
-  resolved_field_value_expr = field_type->get_field_type ()->unify (value);
+  resolved_field_value_expr = field_type->get_field_type ()->coerce (value);
   if (resolved_field_value_expr != nullptr)
     {
       fields_assigned.insert (field_name);
@@ -285,7 +285,7 @@ TypeCheckStructExpr::visit (HIR::StructExprFieldIdentifier &field)
 			    field.get_locus ());
   TyTy::BaseType *value = TypeCheckExpr::Resolve (&expr, false);
 
-  resolved_field_value_expr = field_type->get_field_type ()->unify (value);
+  resolved_field_value_expr = field_type->get_field_type ()->coerce (value);
   if (resolved_field_value_expr != nullptr)
 
     {
