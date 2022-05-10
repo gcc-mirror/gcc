@@ -1,3 +1,7 @@
+2022-05-09  Martin Liska  <mliska@suse.cz>
+
+	* ansidecl.h (PTR): Remove Not ANCI C part.
+
 2022-05-04  Martin Liska  <mliska@suse.cz>
 
 	* plugin-api.h (enum ld_plugin_tag): Do not set implicit enum

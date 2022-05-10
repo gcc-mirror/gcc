@@ -1,3 +1,10 @@
+2022-05-09  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/105501
+	* match.cc (gfc_match_if): Adjust patterns used for matching.
+	(gfc_match_select_rank): Likewise.
+	* parse.cc (decode_statement): Likewise.
+
 2022-05-05  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* gfortran.h (struct gfc_omp_clauses): Add non_rectangular bit.

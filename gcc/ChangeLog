@@ -1,3 +1,92 @@
+2022-05-09  Qing Zhao  <qing.zhao@oracle.com>
+
+	PR target/101891
+	* config/i386/i386.cc (zero_call_used_regno_mode): use V2SImode
+	as a generic MMX mode instead of V4HImode.
+	(zero_all_mm_registers): Use SET to zero instead of MOV for
+	zeroing scratch registers.
+	(ix86_zero_call_used_regs): Likewise.
+
+2022-05-09  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/105354
+	* config/i386/i386-expand.cc
+	(expand_vec_perm_pslldq_psrldq_por): New function.
+	(ix86_expand_vec_perm_const_1): Try
+	expand_vec_perm_pslldq_psrldq_por for both 3-instruction and
+	4/5-instruction sequence.
+
+2022-05-09  Martin Liška  <mliska@suse.cz>
+
+	* basic-block.h (STATIC_ASSERT): Use normal STATIC_ASSERT.
+	* system.h (STATIC_ASSERT): Define as static_assert for C++
+	and fallback to array index in C.
+
+2022-05-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/105517
+	* tree-ssa-sccvn.cc (vn_reference_lookup): Make sure the accumulated
+	offset can be represented in the POINTER_PLUS_EXPR IL.
+	(vn_reference_insert): Likewise.
+	* poly-int.h (sext_hwi): Add poly version of sext_hwi.
+
+2022-05-09  Richard Biener  <rguenther@suse.de>
+
+	* match.pd: Remove #if GIMPLE guards around ! using patterns.
+
+2022-05-09  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/105072
+	* config/i386/sse.md (*sse4_1_<code>v2qiv2di2<mask_name>_1):
+	New define_insn.
+	(*sse4_1_zero_extendv2qiv2di2_2): New pre_reload
+	define_insn_and_split.
+
+2022-05-09  Alex Coplan  <alex.coplan@arm.com>
+
+	* cgraph.cc (cgraph_node::get_create): Don't dump if the current
+	symtab state is PARSING.
+
+2022-05-09  Martin Liska  <mliska@suse.cz>
+
+	* system.h (LIKELY): Define.
+	(UNLIKELY): Likewise.
+	* domwalk.cc (sort_bbs_postorder): Use {,UN}LIKELY
+	macros.
+	* dse.cc (set_position_unneeded): Likewise.
+	(set_all_positions_unneeded): Likewise.
+	(any_positions_needed_p): Likewise.
+	(all_positions_needed_p): Likewise.
+	* expmed.cc (flip_storage_order): Likewise.
+	* genmatch.cc (dt_simplify::gen_1): Likewise.
+	* ggc-common.cc (gt_pch_save): Likewise.
+	* print-rtl.cc: Likewise.
+	* rtl-iter.h (T>::array_type::~array_type): Likewise.
+	(T>::next): Likewise.
+	* rtl-ssa/internals.inl: Likewise.
+	* rtl-ssa/member-fns.inl: Likewise.
+	* rtlanal.cc (T>::add_subrtxes_to_queue): Likewise.
+	(rtx_properties::try_to_add_dest): Likewise.
+	* rtlanal.h (growing_rtx_properties::repeat): Likewise.
+	(vec_rtx_properties_base::~vec_rtx_properties_base): Likewise.
+	* simplify-rtx.cc (simplify_replace_fn_rtx): Likewise.
+	* sort.cc (likely): Likewise.
+	(mergesort): Likewise.
+	* wide-int.h (wi::eq_p): Likewise.
+	(wi::ltu_p): Likewise.
+	(wi::cmpu): Likewise.
+	(wi::bit_and): Likewise.
+	(wi::bit_and_not): Likewise.
+	(wi::bit_or): Likewise.
+	(wi::bit_or_not): Likewise.
+	(wi::bit_xor): Likewise.
+	(wi::add): Likewise.
+	(wi::sub): Likewise.
+
+2022-05-09  Kito Cheng  <kito.cheng@sifive.com>
+
+	* config/riscv/arch-canonicalize: Handle g correctly.
+
 2022-05-07  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/101833

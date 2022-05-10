@@ -1,3 +1,74 @@
+2022-05-09  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/103539
+	* g++.dg/cpp23/label1.C: New test.
+	* g++.dg/cpp23/label2.C: New test.
+
+2022-05-09  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/105501
+	* gfortran.dg/pr105501.f90: New test.
+
+2022-05-09  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	* gcc.dg/analyzer/torture/pr51628-30.c: Test can spill excess
+	errors for default_packed targets.
+
+2022-05-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/105256
+	* g++.dg/cpp0x/pr105256.C: Remove superfluous semicolon.
+
+2022-05-09  Qing Zhao  <qing.zhao@oracle.com>
+
+	* gcc.target/i386/zero-scratch-regs-1.c: Add -fno-stack-protector
+	-fno-PIC.
+	* gcc.target/i386/zero-scratch-regs-10.c: Adjust mov to xor.
+	* gcc.target/i386/zero-scratch-regs-13.c: Add -msse.
+	* gcc.target/i386/zero-scratch-regs-14.c: Adjust mov to xor.
+	* gcc.target/i386/zero-scratch-regs-15.c: Add -fno-stack-protector
+	-fno-PIC.
+	* gcc.target/i386/zero-scratch-regs-16.c: Likewise.
+	* gcc.target/i386/zero-scratch-regs-17.c: Likewise.
+	* gcc.target/i386/zero-scratch-regs-18.c: Add -fno-stack-protector
+	-fno-PIC, adjust mov to xor.
+	* gcc.target/i386/zero-scratch-regs-19.c: Add -fno-stack-protector
+	-fno-PIC.
+	* gcc.target/i386/zero-scratch-regs-2.c: Adjust mov to xor.
+	* gcc.target/i386/zero-scratch-regs-20.c: Add -msse.
+	* gcc.target/i386/zero-scratch-regs-21.c: Add -fno-stack-protector
+	-fno-PIC, Adjust mov to xor.
+	* gcc.target/i386/zero-scratch-regs-22.c: Adjust mov to xor.
+	* gcc.target/i386/zero-scratch-regs-23.c: Likewise.
+	* gcc.target/i386/zero-scratch-regs-26.c: Likewise.
+	* gcc.target/i386/zero-scratch-regs-27.c: Likewise.
+	* gcc.target/i386/zero-scratch-regs-28.c: Likewise.
+	* gcc.target/i386/zero-scratch-regs-3.c: Add -fno-stack-protector.
+	* gcc.target/i386/zero-scratch-regs-31.c: Adjust mov to xor.
+	* gcc.target/i386/zero-scratch-regs-4.c: Add -fno-stack-protector
+	-fno-PIC.
+	* gcc.target/i386/zero-scratch-regs-5.c: Adjust mov to xor.
+	* gcc.target/i386/zero-scratch-regs-6.c: Add -fno-stack-protector.
+	* gcc.target/i386/zero-scratch-regs-7.c: Likewise.
+	* gcc.target/i386/zero-scratch-regs-8.c: Adjust mov to xor.
+	* gcc.target/i386/zero-scratch-regs-9.c: Add -fno-stack-protector.
+
+2022-05-09  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/105491
+	* g++.dg/cpp0x/constexpr-union7.C: New test.
+	* g++.dg/cpp0x/constexpr-union7a.C: New test.
+	* g++.dg/cpp2a/constinit17.C: New test.
+
+2022-05-09  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr105354-1.c: New test.
+	* gcc.target/i386/pr105354-2.c: New test.
+
+2022-05-09  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr105072.c: New test.
+
 2022-05-07  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/101833

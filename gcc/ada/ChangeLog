@@ -1,3 +1,285 @@
+2022-05-09  Yannick Moy  <moy@adacore.com>
+
+	* sem_util.adb (Bad_Predicated_Subtype_Use): Add continuation
+	message.
+
+2022-05-09  Piotr Trojanek  <trojanek@adacore.com>
+
+	* uintp.adb (UI_To_CC): Guard against illegal inputs; reuse
+	UI_To_Int.
+
+2022-05-09  Piotr Trojanek  <trojanek@adacore.com>
+
+	* par-prag.adb (Prag): Simplify conversion of character codes.
+	* sem_case.adb (Choice_Image): Likewise.
+	(Lit_Of): Likewise.
+
+2022-05-09  Justin Squirek  <squirek@adacore.com>
+
+	* exp_attr.adb (Expand_N_Attribute_Reference) <Attribute_Tag>:
+	Deal specifically wth class-wide equivalent types without a
+	parent.
+	* exp_util.adb (Build_Allocate_Deallocate_Proc): Extract
+	allocator node for calculation of alignment actual and modify
+	alignment for allocators of class-wide types with associated
+	expressions.
+	(Make_CW_Equivalent_Type): Handle interface types differently
+	when generating the equivalent record.
+	* sem_aux.adb (First_Tag_Component): Accept class-wide
+	equivalent types too.
+
+2022-05-09  Etienne Servais  <servais@adacore.com>
+
+	* repinfo.adb (List_Name): Rework termination condition.
+
+2022-05-09  Piotr Trojanek  <trojanek@adacore.com>
+
+	* bindgen.adb, errout.adb, exp_unst.adb, gnatchop.adb,
+	libgnat/a-ngcefu.adb, libgnat/a-strunb.adb,
+	libgnat/a-stwiun.adb, libgnat/a-stzunb.adb,
+	libgnat/a-wtedit.adb, libgnat/g-debpoo.adb, osint.adb,
+	sigtramp-vxworks.c, uintp.adb: Remove extra whitespace around +,
+	-, *, / and **.
+
+2022-05-09  Piotr Trojanek  <trojanek@adacore.com>
+
+	* libgnat/s-expmod.adb: Remove CodePeer annotation for pragma
+	Loop_Variant.
+
+2022-05-09  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_util.ads (In_Statement_Condition_With_Actions): Renamed
+	from In_While_Loop_Condition; move to fit the alphabetic order.
+	* sem_util.adb (In_Statement_Condition_With_Actions): Detect
+	Elsif condition; stop search on other statements; prevent search
+	from going too far; move to fit the alphabetic order.
+	* sem_res.adb (Resolve_Call): Adapt caller.
+
+2022-05-09  Piotr Trojanek  <trojanek@adacore.com>
+
+	* inline.adb (Build_Body_To_Inline): Remove redundant guards.
+	* sem_ch6.adb (Analyze_Subprogram_Body_Helper): Likewise.
+
+2022-05-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_util.adb (Is_OK_Variable_For_Out_Formal): Remove test on
+	Comes_From_Source in the condition dealing with the expression
+	of an N_Unchecked_Type_Conversion node.
+
+2022-05-09  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_aggr.adb, exp_ch3.adb, exp_util.adb, freeze.adb,
+	gnatfind.adb, gnatlink.adb, gnatxref.adb, gprep.adb,
+	libgnat/a-cfhama.adb, libgnat/g-alleve.adb, sem_ch12.adb,
+	sem_ch13.adb, xr_tabls.adb: Fix style labels.
+
+2022-05-09  Justin Squirek  <squirek@adacore.com>
+
+	* err_vars.ads: Add new error message names and nodes.
+	* erroutc.adb (Set_Msg_Insertion_Name,
+	Set_Msg_Insertion_Name_Literal): Likewise.
+	* errout.adb (Set_Msg_Insertion_Node): Likewise.
+	* errout.ads: Likewise.
+	* exp_disp.adb (Check_Premature_Freezing): Modify setting of
+	Error_Msg_Node_2 to occur directly before Error_Msg call where
+	applicable.
+	* sem_ch8.adb (Error_Missing_With_Of_Known_Unit): Added to
+	handle the printing of full package names of known units.
+	(Undefined, Find_Expanded_Name): Replace error printing with
+	call to Error_Missing_With_Of_Known_Unit.
+
+2022-05-09  Yannick Moy  <moy@adacore.com>
+
+	* exp_ch4.adb (Expand_Allocator_Expression): Set Error_Msg_Warn
+	correctly.
+
+2022-05-09  Steve Baird  <baird@adacore.com>
+
+	* sem_ch13.adb (Replace_Type_Ref): In the case of an identifier
+	that names a component of the type, simplify the test to decide
+	whether to build a prefix for it (the prefix denotes the current
+	instance of the enclosing type): if the identifier doesn't
+	already have a prefix, then give it one. This isn't quite right
+	in the corner case of a quantified expression or some other such
+	expression that declares an object with the same name as a
+	component, but it is still an improvement.
+
+2022-05-09  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_attr.adb (Compile_Stream_Body_In_Scope): Do not install
+	package if array type and element type come from the same
+	package, and the original array type is private.
+
+2022-05-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch4.adb (Handle_Changed_Representation): Simplify and fix
+	thinko in the loop building the constraints for discriminants.
+	* exp_ch5.adb (Make_Component_List_Assign): Try also to extract
+	discriminant values for a derived type.
+
+2022-05-09  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_res.adb (Resolve_Declare_Expression): Traverse the
+	expression to replace references to local variables that occur
+	within declarations of the declare_expression; fix typos in
+	comments.
+
+2022-05-09  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch4.adb (Operator_Check): Fix condition.
+
+2022-05-09  Piotr Trojanek  <trojanek@adacore.com>
+
+	* doc/gnat_rm/implementation_defined_pragmas.rst
+	(Abstract_State, Async_Readers, Async_Writers,
+	Constant_After_Elaboration, Effective_Reads, Effective_Writes,
+	Extensions_Visible, Ghost, No_Caching, Volatile_Function): Only
+	static Boolean expressions are allowed.
+	* gnat_rm.texi: Regenerate.
+
+2022-05-09  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_prag.adb (Expand_Pragma_Loop_Variant,
+	Expand_Pragma_Subprogram_Variant): Adapt call via
+	Process_Variant to Make_Variant_Comparison.
+	* exp_util.adb (Make_Variant_Comparison): Compare Big_Integer
+	expressions with a function call and not an operator.
+	* exp_util.ads (Make_Variant_Comparison): Add type parameter,
+	which is needed because the Curr_Val and Old_Val expressions
+	might not be yet decorated.
+	* rtsfind.ads: (RTU_Id): Add support for Big_Integers and
+	Big_Integers_Ghost.
+	(RE_Id): Add support for Big_Integer and its ghost variant.
+	(RE_Unit_Table): Add mapping from Big_Integer to Big_Integers;
+	same for the ghost variants.
+	* rtsfind.adb (Get_Unit_Name): Add support for Big_Numbers.
+	* sem_prag.adb (Analyze_Pragma): Allow Big_Integer in pragma
+	Loop_Variant.
+	(Analyze_Variant): Allow Big_Integer in pragma
+	Subprogram_Variant.
+
+2022-05-09  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_ch3.ads, sem_ch3.adb (Preanalyze_Assert_Expression): Add a
+	variant that doesn't force preanalysis to yield a specific type.
+
+2022-05-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* einfo.ads (Access Kinds): Reorder and beef up.
+	* sem.adb (Analyze): Call Analyze_Comparison_Equality_Op for all
+	comparison and equality operators.
+	* sem_ch4.ads (Analyze_Comparison_Op): Delete.
+	(Analyze_Equality_Op): Likewise.
+	(Analyze_Comparison_Equality_Op): Declare.
+	(Ambiguous_Operands): Likewise.
+	* sem_ch4.adb (Ambiguous_Operands): Remove declaration.
+	(Defined_In_Scope): Delete.
+	(Find_Comparison_Types): Merge into...
+	(Find_Equality_Types): Merge into...
+	(Find_Comparison_Equality_Types): ...this.  Make fully symmetrical.
+	(Analyze_Arithmetic_Op): Minor consistency tweaks.
+	(Analyze_Comparison_Op): Merge into...
+	(Analyze_Equality_Op): Merge into...
+	(Analyze_Comparison_Equality_Op): ...this.  Make fully symmetrical.
+	(Analyze_Logical_Op): Minor consistency tweaks.
+	(Analyze_Membership_Op): Make fully symmetrical.
+	(Analyze_One_Call): Minor comment tweak.
+	(Analyze_Operator_Call): Call Find_Comparison_Equality_Types.
+	(Analyze_User_Defined_Binary_Op): Make fully symmetrical.
+	(Check_Arithmetic_Pair.Specific_Type): Delete.
+	(Diagnose_Call): Add special handling for "+" operator.
+	(Operator_Check): Call Analyze_Comparison_Equality_Op.
+	* sem_ch8.adb (Has_Implicit_Operator): Add Is_Type guard for boolean
+	operators, use Valid_Comparison_Arg and Valid_Equality_Arg for resp.
+	comparison and equality operators.
+	* sem_res.adb (Check_For_Visible_Operator): Call Is_Visible_Operator
+	(Make_Call_Into_Operator): Use Preserve_Comes_From_Source.
+	(Resolve_Actuals): Deal specifically with Any_Type actuals for user-
+	defined comparison and equality operators.
+	(Resolve_Call): Minor tweaks.
+	(Resolve_Comparison_Op): Tidy up and give error for ambiguity.
+	(Resolve_Equality_Op): Likewise, as well as other errors.
+	(Rewrite_Renamed_Operator): Simplify.
+	* sem_type.ads (Is_Invisible_Operator): Delete.
+	(Is_Visible_Operator): Declare.
+	(Has_Compatible_Type): Remove For_Comparison parameter.
+	(Specific_Type): Declare.
+	(Valid_Equality_Arg): Likewise.
+	* sem_type.adb (Specific_Type): Remove declaration.
+	(Add_One_Interp): Call Is_Visible_Operator for the visibility test.
+	(Remove_Conversions): Rename into...
+	(Remove_Conversions_And_Abstract_Operations): ...this.  Do not apply
+	numeric-type treatment to Any_Type.  Expand the special handling for
+	abstract interpretations to second operand.  Remove obsolete code.
+	(Disambiguate): Adjust to above renaming.  Tweak to hidden case and
+	call Remove_Conversions_And_Abstract_Operations for operators too.
+	(Entity_Matches_Spec): Minor tweak.
+	(Find_Unique_Type): Simplify and deal with user-defined literals.
+	(Has_Compatible_Type): Remove For_Comparison parameter and adjust.
+	Call the Is_User_Defined_Literal predicate and remove call to
+	the Is_Invisible_Operator predicate.
+	(Is_Invisible_Operator): Delete.
+	(Is_Visible_Operator): New function.
+	(Operator_Matches_Spec): Use Valid_Equality_Arg predicate.
+	(Specific_Type): Tidy up, make fully symmetrical and deal with
+	private views the same way as Covers.
+	(Valid_Comparison_Arg): Return true for Any_Composite/Any_String.
+	(Valid_Equality_Arg): New function.
+	* sem_util.ads (Is_User_Defined_Literal): Declare.
+	* sem_util.adb (Is_User_Defined_Literal): New function.
+
+2022-05-09  Bob Duff  <duff@adacore.com>
+
+	* lib-xref.adb, sem_util.adb: Change wording of warning messages
+	to use "aspect".
+	* sem_prag.adb: Use Fix_Error to change wording of warnings.
+	* doc/gnat_rm/implementation_defined_pragmas.rst: Minor: fix
+	cut&paste error.
+	* gnat_rm.texi: Regenerate.
+
+2022-05-09  Doug Rupp  <rupp@adacore.com>
+
+	* init.c [vxworks] (CLEAR_EXCEPTION_COUNT): New macro.
+	(__gnat_clear_exception_count): Remove.
+	(__gnat_map_signal): Call CLEAR_EXCEPTION_COUNT().
+
+2022-05-09  Fedor Rybin  <frybin@adacore.com>
+
+	* doc/gnat_ugn/gnat_utility_programs.rst: Remove gnattest
+	section.
+
+2022-05-09  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_attr.adb (Analyze_Attribute): Remove calls to Analyze for
+	attributes Identity, Priority, Ref, Restriction_Set, To_Address
+	and for tasking-related attributes Callable, Terminated and
+	Storage_Size.
+
+2022-05-09  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_attr.adb (Analyze_Attribute): Don't call Set_Etype for
+	Bit_Order attribute.
+
+2022-05-09  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_ch5.adb (Update_Choice_Index): Simplify condition.
+	* sem_ch8.adb (Attribute_Renaming): Likewise.
+
+2022-05-09  Dmitriy Anisimkov  <anisimko@adacore.com>
+
+	* adaint.c (__gnat_kill): Remove close parameter.
+	(__gnat_killprocesstree): Do not provide close parameter on call
+	to __gnat_kill.
+	* libgnat/g-expect.adb (Kill): Remove Close parameter.
+	(Close): Do not provide Close parameter on call to Kill.
+	(Send_Signal): Do not provide Close parameter on call to Kill.
+	* libgnat/s-os_lib.adb (Kill): Do not provide close parameter on
+	call to __gnat_kill.
+
+2022-05-09  Dmitriy Anisimkov  <anisimko@adacore.com>
+
+	* libgnat/g-expect.adb (Close): Call Kill before Close_Input.
+
 2022-04-29  Martin Liska  <mliska@suse.cz>
 
 	* gnatvsn.ads: Bump Library_Version to 13.

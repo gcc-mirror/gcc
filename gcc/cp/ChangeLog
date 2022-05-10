@@ -1,3 +1,73 @@
+2022-05-09  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/103539
+	* parser.cc (cp_parser_statement): Constify the in_compound parameter.
+	Create a modifiable copy.  Allow labels at the end of compound
+	statements.
+
+2022-05-09  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/105491
+	* call.cc (field_in_pset): Adjust after next_initializable_field
+	renaming.
+	(build_aggr_conv): Likewise.
+	(convert_like_internal): Likewise.
+	(type_has_extended_temps): Likewise.
+	* class.cc (default_init_uninitialized_part): Likewise.
+	(finish_struct): Likewise.
+	* constexpr.cc (cx_check_missing_mem_inits): Likewise.
+	(reduced_constant_expression_p): Use next_subobject_field
+	instead.
+	* cp-gimplify.cc (get_source_location_impl_type): Adjust after
+	next_initializable_field renaming.
+	(fold_builtin_source_location): Likewise.
+	* cp-tree.h (next_initializable_field): Rename to ...
+	(next_aggregate_field): ... this.
+	(next_subobject_field): Declare.
+	* decl.cc (next_aggregate_field): Renamed from ...
+	(next_initializable_field): ... this.  Skip over vptr fields
+	again.
+	(next_subobject_field): Define.
+	(reshape_init_class): Adjust after next_initializable_field
+	renaming.
+	* init.cc (build_value_init_noctor): Likewise.
+	(emit_mem_initializers): Likewise.
+	* lambda.cc (build_capture_proxy): Likewise.
+	* method.cc (build_comparison_op): Likewise.
+	* pt.cc (maybe_aggr_guide): Likewise.
+	* tree.cc (structural_type_p): Likewise.
+	* typeck2.cc (split_nonconstant_init_1): Likewise.
+	(digest_init_r): Likewise.
+
+2022-05-09  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-tree.h (DECL_MODULE_KEYED_DECLS_P): Renamed from
+	DECL_MODULE_ATTACHMENTS_P.
+	(struct lane_decl_base): Rename module_attached_p to
+	module_keyed_decls_p.
+	(maybe_key_decl): Renamed from maybe_attach_decl.
+	* lambda.cc (record_lambda_scope): Adjust.
+	* lex.cc (cxx_dup_lang_specific_decl): Adjust.
+	* module.cc (keyed_map_t, keyed_table): Renamed from attached_map_t,
+	attached_table.
+	(enum merge_kind): Rename MK_attached to MK_keyed.
+	(trees_out::lang_decl_bools): Adjust.
+	(trees_in::lang_decl_bools): Adjust.
+	(trees_in::decl_value): Adjust.
+	(trees_out::get_merge_kind): Adjust.
+	(trees_out::key_mergeable): Adjust.
+	(trees_in::key_mergeable): Adjust.
+	(maybe_key_decl): Rename from maybe_attach_decl.
+	(direct_import): Adjust.
+	(fini_modules): Adjust.
+
+2022-05-09  Martin Liska  <mliska@suse.cz>
+
+	* cp-gimplify.cc (cp_genericize_r): Use {,UN}LIKELY
+	macros.
+	* parser.cc (cp_finalize_omp_declare_simd): Likewise.
+	(cp_finalize_oacc_routine): Likewise.
+
 2022-05-07  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/101833

@@ -1,3 +1,15 @@
+2022-05-09  Alex Coplan  <alex.coplan@arm.com>
+
+	* c-common.h (get_dump_info): Delete.
+	* c-gimplify.cc (c_genericize): Get TDI_original dump file info
+	from the global dump_manager instead of the (now obsolete)
+	get_dump_info.
+	* c-opts.cc (original_dump_file): Delete.
+	(original_dump_flags): Delete.
+	(c_common_parse_file): Switch to using global dump_manager to
+	manage the original dump file; fix leak of dump file.
+	(get_dump_info): Delete.
+
 2022-05-07  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/101833
