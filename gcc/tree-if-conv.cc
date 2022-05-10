@@ -459,8 +459,6 @@ fold_or_predicates (location_t loc, tree c1, tree c2)
 static tree
 fold_build_cond_expr (tree type, tree cond, tree rhs, tree lhs)
 {
-  tree rhs1, lhs1, cond_expr;
-
   /* If COND is comparison r != 0 and r has boolean type, convert COND
      to SSA_NAME to accept by vect bool pattern.  */
   if (TREE_CODE (cond) == NE_EXPR)
@@ -472,34 +470,20 @@ fold_build_cond_expr (tree type, tree cond, tree rhs, tree lhs)
 	  && (integer_zerop (op1)))
 	cond = op0;
     }
-  cond_expr = fold_ternary (COND_EXPR, type, cond, rhs, lhs);
 
-  if (cond_expr == NULL_TREE)
-    return build3 (COND_EXPR, type, cond, rhs, lhs);
-
-  STRIP_USELESS_TYPE_CONVERSION (cond_expr);
-
-  if (is_gimple_val (cond_expr))
-    return cond_expr;
-
-  if (TREE_CODE (cond_expr) == ABS_EXPR)
+  gimple_match_op cexpr (gimple_match_cond::UNCOND, COND_EXPR,
+			 type, cond, rhs, lhs);
+  if (cexpr.resimplify (NULL, follow_all_ssa_edges))
     {
-      rhs1 = TREE_OPERAND (cond_expr, 1);
-      STRIP_USELESS_TYPE_CONVERSION (rhs1);
-      if (is_gimple_val (rhs1))
-	return build1 (ABS_EXPR, type, rhs1);
+      if (gimple_simplified_result_is_gimple_val (&cexpr))
+	return cexpr.ops[0];
+      else if (cexpr.code == ABS_EXPR)
+	return build1 (ABS_EXPR, type, cexpr.ops[0]);
+      else if (cexpr.code == MIN_EXPR
+	       || cexpr.code == MAX_EXPR)
+	return build2 ((tree_code)cexpr.code, type, cexpr.ops[0], cexpr.ops[1]);
     }
 
-  if (TREE_CODE (cond_expr) == MIN_EXPR
-      || TREE_CODE (cond_expr) == MAX_EXPR)
-    {
-      lhs1 = TREE_OPERAND (cond_expr, 0);
-      STRIP_USELESS_TYPE_CONVERSION (lhs1);
-      rhs1 = TREE_OPERAND (cond_expr, 1);
-      STRIP_USELESS_TYPE_CONVERSION (rhs1);
-      if (is_gimple_val (rhs1) && is_gimple_val (lhs1))
-	return build2 (TREE_CODE (cond_expr), type, lhs1, rhs1);
-    }
   return build3 (COND_EXPR, type, cond, rhs, lhs);
 }
 
@@ -1897,14 +1881,6 @@ gen_phi_arg_condition (gphi *phi, vec<int> *occur,
   return cond;
 }
 
-/* Local valueization callback that follows all-use SSA edges.  */
-
-static tree
-ifcvt_follow_ssa_use_edges (tree val)
-{
-  return val;
-}
-
 /* Replace a scalar PHI node with a COND_EXPR using COND as condition.
    This routine can handle PHI nodes with more than two arguments.
 
@@ -2007,7 +1983,7 @@ predicate_scalar_phi (gphi *phi, gimple_stmt_iterator *gsi)
       new_stmt = gimple_build_assign (res, rhs);
       gsi_insert_before (gsi, new_stmt, GSI_SAME_STMT);
       gimple_stmt_iterator new_gsi = gsi_for_stmt (new_stmt);
-      if (fold_stmt (&new_gsi, ifcvt_follow_ssa_use_edges))
+      if (fold_stmt (&new_gsi, follow_all_ssa_edges))
 	{
 	  new_stmt = gsi_stmt (new_gsi);
 	  update_stmt (new_stmt);
