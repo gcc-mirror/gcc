@@ -2112,9 +2112,6 @@ package body Sem_Ch5 is
    --  An implicit label declaration is generated in the innermost enclosing
    --  declarative part. This is done for labels, and block and loop names.
 
-   --  Note: any changes in this routine may need to be reflected in
-   --  Analyze_Label_Entity.
-
    procedure Analyze_Implicit_Label_Declaration (N : Node_Id) is
       Id : constant Node_Id := Defining_Identifier (N);
    begin
@@ -2880,18 +2877,6 @@ package body Sem_Ch5 is
    begin
       Kill_Current_Values;
    end Analyze_Label;
-
-   --------------------------
-   -- Analyze_Label_Entity --
-   --------------------------
-
-   procedure Analyze_Label_Entity (E : Entity_Id) is
-   begin
-      Mutate_Ekind        (E, E_Label);
-      Set_Etype           (E, Standard_Void_Type);
-      Set_Enclosing_Scope (E, Current_Scope);
-      Set_Reachable       (E, True);
-   end Analyze_Label_Entity;
 
    ------------------------------------------
    -- Analyze_Loop_Parameter_Specification --
