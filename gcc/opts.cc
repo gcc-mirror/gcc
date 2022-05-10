@@ -1333,10 +1333,29 @@ finish_options (struct gcc_options *opts, struct gcc_options *opts_set,
 	 && !(opts->x_flag_selective_scheduling
 	      || opts->x_flag_selective_scheduling2));
 
-  /* Note -fvar-tracking is enabled automatically with OPT_LEVELS_1_PLUS and
-     so we need to drop it if we are called from optimize attribute.  */
-  if (opts->x_debug_info_level < DINFO_LEVEL_NORMAL)
-    opts->x_flag_var_tracking = false;
+  /* We know which debug output will be used so we can set flag_var_tracking
+     and flag_var_tracking_uninit if the user has not specified them.  Note
+     we have not yet initialized debug_hooks so we might uselessly run
+     var-tracking on targets without var_location debug hook support.  */
+  if (opts->x_debug_info_level < DINFO_LEVEL_NORMAL
+      || !dwarf_debuginfo_p (opts))
+    {
+      if ((opts_set->x_flag_var_tracking && opts->x_flag_var_tracking == 1)
+	  || (opts_set->x_flag_var_tracking_uninit
+	      && opts->x_flag_var_tracking_uninit == 1))
+	{
+	  if (opts->x_debug_info_level < DINFO_LEVEL_NORMAL)
+	    warning_at (UNKNOWN_LOCATION, 0,
+			"variable tracking requested, but useless unless "
+			"producing debug info");
+	  else
+	    warning_at (UNKNOWN_LOCATION, 0,
+			"variable tracking requested, but not supported "
+			"by this debug format");
+	}
+      opts->x_flag_var_tracking = 0;
+      opts->x_flag_var_tracking_uninit = 0;
+    }
 
   /* One could use EnabledBy, but it would lead to a circular dependency.  */
   if (!opts_set->x_flag_var_tracking_uninit)
