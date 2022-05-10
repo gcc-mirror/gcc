@@ -384,8 +384,8 @@ typedef unsigned long int uintptr_t;
 # endif /* not using relocating allocator */
 
 
-/* True if `size1' is non-NULL and void *is pointing anywhere inside
-   `string1' or just past its end.  This works if void *is NULL, which is
+/* True if `size1' is non-NULL and PTR is pointing anywhere inside
+   `string1' or just past its end.  This works if PTR is NULL, which is
    a good thing.  */
 # define FIRST_STRING_P(ptr) 					\
   (size1 && string1 <= (ptr) && (ptr) <= string1 + size1)
@@ -5256,7 +5256,7 @@ PREFIX(re_search_2) (struct re_pattern_buffer *bufp, const char *string1,
 }
 
 #ifdef WCHAR
-/* This converts void *, a pointer into one of the search wchar_t strings
+/* This converts PTR, a pointer into one of the search wchar_t strings
    `string1' and `string2' into an multibyte string offset from the
    beginning of that string. We use mbs_offset to optimize.
    See convert_mbs_to_wcs.  */
@@ -5266,7 +5266,7 @@ PREFIX(re_search_2) (struct re_pattern_buffer *bufp, const char *string1,
    : ((regoff_t)((mbs_offset2 != NULL? mbs_offset2[(ptr)-string2] : 0)	\
 		 + csize1)))
 #else /* BYTE */
-/* This converts void *, a pointer into one of the search strings `string1'
+/* This converts PTR, a pointer into one of the search strings `string1'
    and `string2' into an offset from the beginning of that string.  */
 # define POINTER_TO_OFFSET(ptr)			\
   (FIRST_STRING_P (ptr)				\
