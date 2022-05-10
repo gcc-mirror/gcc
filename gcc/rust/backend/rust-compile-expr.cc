@@ -903,7 +903,6 @@ CompileExpr::compile_integer_literal (const HIR::LiteralExpr &expr,
   const auto literal_value = expr.get_literal ();
 
   tree type = TyTyResolveCompile::compile (ctx, tyty);
-  rust_assert (TREE_CODE (type) == INTEGER_TYPE);
 
   mpz_t ival;
   if (mpz_init_set_str (ival, literal_value.as_string ().c_str (), 10) != 0)

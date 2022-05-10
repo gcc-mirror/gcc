@@ -59,17 +59,7 @@ ConstCtx::constexpr_expression (tree t)
     {
       if (TREE_OVERFLOW (t))
 	{
-	  rust_error_at (Location (loc), "overflow in constant expression");
-	  return t;
-	}
-
-      if (TREE_CODE (t) == INTEGER_CST && TYPE_PTR_P (TREE_TYPE (t))
-	  && !integer_zerop (t))
-	{
-	  // FIXME check does this actually work to print out tree types
-	  rust_error_at (Location (loc),
-			 "value %qE of type %qT is not a constant expression",
-			 t, TREE_TYPE (t));
+	  error_at (loc, "overflow in constant expression");
 	  return t;
 	}
 
