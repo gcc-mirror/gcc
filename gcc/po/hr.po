@@ -6,10 +6,10 @@
 # Božidar Putanec <bozidarp@yahoo.com>, 2022.
 msgid ""
 msgstr ""
-"Project-Id-Version: gcc-12.1-b20220403\n"
+"Project-Id-Version: gcc-12.1.0\n"
 "Report-Msgid-Bugs-To: https://gcc.gnu.org/bugs/\n"
 "POT-Creation-Date: 2022-05-05 17:00+0000\n"
-"PO-Revision-Date: 2022-04-05 11:51-0700\n"
+"PO-Revision-Date: 2022-05-09 15:51-0700\n"
 "Last-Translator: Božidar Putanec <bozidarp@yahoo.com>\n"
 "Language-Team: Croatian <lokalizacija@linux.hr>\n"
 "Language: hr\n"
@@ -16666,10 +16666,10 @@ msgid "  --help                   Display this information.\n"
 msgstr "  --help                   ova prikazana pomoć\n"
 
 #: gcc.cc:3761
-#, fuzzy
-#| msgid "  --target-help            Display target specific command line options.\n"
 msgid "  --target-help            Display target specific command line options (including assembler and linker options).\n"
-msgstr "  --target-help            pokaže opcije naredbenog retka specifične za cilj\n"
+msgstr ""
+"  --target-help            pokaže opcije naredbenog retka specifične za cilj\n"
+"(uključujući opcije asemblera i linkera)\n"
 
 #: gcc.cc:3763
 msgid "  --help={common|optimizers|params|target|warnings|[^]{joined|separate|undocumented}}[,...].\n"
