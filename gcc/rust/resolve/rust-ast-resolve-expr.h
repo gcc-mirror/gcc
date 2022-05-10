@@ -69,6 +69,8 @@ public:
 
   void visit (AST::IfExprConseqIf &expr) override;
 
+  void visit (AST::IfLetExpr &expr) override;
+
   void visit (AST::BlockExpr &expr) override;
 
   void visit (AST::UnsafeBlockExpr &expr) override;
