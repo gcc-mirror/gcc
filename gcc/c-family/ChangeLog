@@ -1,3 +1,12 @@
+2022-05-09  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2022-04-26  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/105304
+	* c-common.c (verify_tree) [restart]: Move up to before the
+	NULL test.
+
 2021-04-08  Release Manager
 
 	* GCC 10.3.0 released.
