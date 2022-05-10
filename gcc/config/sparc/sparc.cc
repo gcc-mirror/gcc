@@ -13041,9 +13041,9 @@ sparc_vectorize_vec_perm_const (machine_mode vmode, rtx target, rtx op0,
   if (!TARGET_VIS2)
     return false;
 
-  /* All permutes are supported.  */
+  /* All 8-byte permutes are supported.  */
   if (!target)
-    return true;
+    return GET_MODE_SIZE (vmode) == 8;
 
   /* Force target-independent code to convert constant permutations on other
      modes down to V8QI.  Rely on this to avoid the complexity of the byte
