@@ -1,6 +1,44 @@
+2022-05-05   Gaius Mulley   <gaius.mulley@southwales.ac.uk>
+
+        * m2-link-support.h (GM2CC): Add CC1_SPEC to the cc1/cc1plus
+        invocation.
+
+2022-05-04   Gaius Mulley   <gaius.mulley@southwales.ac.uk>
+
+        * m2/m2-link-support.h (RM_IF_NOSAVETEMP) New macro.
+        (GM2CC) Use RM_IF_NOSAVETEMP on the assembler intermediate file.
+        (GM2LCC) Use RM_IF_NOSAVETEMP when creating an archive of the
+        application.  (GEN_SCAFFOLD_SRC) Use RM_IF_NOSAVETEMP when
+        creating the scaffold source program.  (M2LINK) Use
+        RM_IF_NOSAVETEMP when creating the assembler source name and use
+        RM_IF_NOSAVETEMP when creating the main program object.
+
+2022-05-03   Gaius Mulley   <gaius.mulley@southwales.ac.uk>
+
+        * Make-lang.in:  Replaced sh with $(SHELL).
+        * gm2-lang.cc (gm2_langhook_post_options): Assign
+        main_input_filename.  (gm2_parse_input_files) Assign
+        main_input_filename before every source filename is compiled.
+
+2022-04-29   Gaius Mulley   <gaius.mulley@southwales.ac.uk>
+        * m2/gm2-libs-ch/SysExceptions.c: Replace sigfpe with sigfpe_ to
+        avoid name clash with C signal infastructure.
+        * m2/mc-boot-ch/GSysExceptions.c: Replace sigfpe with sigfpe_ to
+        avoid name clash with C signal infastructure.
+
 2022-04-28   Gaius Mulley   <gaius.mulley@southwales.ac.uk>
 
         * Make-lang.in: Added $(INCLUDES) to all %.o rules requiring gmp.h.
+        * mc-boot/Gkeyc.c: Rebuilt.
+        * mc/keyc.mod (initMacros): Add sigfpe to the list of names to be
+        avoided.
+        * m2/mc-boot/GEnvironment.c: Rebuilt.
+        * mc-boot/GEnvironment.h: Rebuilt.
+        * mc-boot/Gdecl.c: Rebuilt.
+        * mc-boot/Gkeyc.c: Rebuilt.
+        * mc-boot/Glibc.h: Rebuilt.
+        * mc/keyc.mod (initMacros): Add trunc to the list of functions to
+        be avoided.
 
 2022-04-20   Gaius Mulley   <gaius.mulley@southwales.ac.uk>
 
