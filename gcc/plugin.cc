@@ -128,7 +128,7 @@ static const char *str_license = "plugin_is_GPL_compatible";
    structure to be inserted into the hash table.  */
 
 static hashval_t
-htab_hash_plugin (const PTR p)
+htab_hash_plugin (const void *p)
 {
   const struct plugin_name_args *plugin = (const struct plugin_name_args *) p;
   return htab_hash_string (plugin->base_name);

@@ -175,8 +175,8 @@ ggc_cleared_alloc_htab_ignore_args (size_t c ATTRIBUTE_UNUSED,
 void *
 ggc_cleared_alloc_ptr_array_two_args (size_t c, size_t n)
 {
-  gcc_assert (sizeof (PTR *) == n);
-  return ggc_cleared_vec_alloc<PTR *> (c);
+  gcc_assert (sizeof (void **) == n);
+  return ggc_cleared_vec_alloc<void **> (c);
 }
 
 /* These are for splay_tree_new_ggc.  */
