@@ -1,3 +1,9 @@
+2022-04-15  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	gcc/c-family/
+	* c-omp.cc (check_and_annotate_for_loop): Check that the DECL_INITIAL
+	is non-NULL before using.
+
 2022-06-17  Chung-Lin Tang  <cltang@codesourcery.com>
 
 	Backport from mainline:

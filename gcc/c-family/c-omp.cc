@@ -3412,6 +3412,7 @@ check_and_annotate_for_loop (tree *nodeptr, tree_stmt_iterator *prev_tsi,
 	  unlink_prev = true;
 	}
       else if (is_local_var (prev_stmt)
+	       && DECL_INITIAL (prev_stmt)
 	       && !TREE_SIDE_EFFECTS (DECL_INITIAL (prev_stmt)))
 	{
 	  /* If the preceding statement is the declaration of the loop
