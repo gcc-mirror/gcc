@@ -275,8 +275,11 @@ struct MacroExpander
 
   ContextType pop_context ()
   {
+    rust_assert (!context.empty ());
+
     ContextType t = context.back ();
     context.pop_back ();
+
     return t;
   }
 

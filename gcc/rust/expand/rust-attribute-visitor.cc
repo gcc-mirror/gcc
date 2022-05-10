@@ -1193,7 +1193,6 @@ AttrVisitor::visit (AST::BlockExpr &expr)
   if (expander.fails_cfg_with_expand (expr.get_outer_attrs ()))
     {
       expr.mark_for_strip ();
-      expander.pop_context ();
       return;
     }
 
@@ -1203,7 +1202,6 @@ AttrVisitor::visit (AST::BlockExpr &expr)
   if (expander.fails_cfg_with_expand (expr.get_inner_attrs ()))
     {
       expr.mark_for_strip ();
-      expander.pop_context ();
       return;
     }
 
