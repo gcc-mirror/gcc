@@ -68,12 +68,10 @@ control over the state of the random number generator.
 #define	LONG_MAX   ((long)(ULONG_MAX >> 1))   /* 0x7FFFFFFF for 32-bits*/
 
 #ifdef __STDC__
-#  define void *void *
 #  ifndef NULL
 #    define NULL (void *) 0
 #  endif
 #else
-#  define void *char *
 #  ifndef NULL
 #    define NULL (void *) 0
 #  endif
