@@ -1,4 +1,4 @@
-/* ANSI and traditional C compatability macros
+/* Compiler compatibility macros
    Copyright (C) 1991-2022 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
@@ -16,18 +16,7 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street - Fifth Floor, Boston, MA 02110-1301, USA.  */
 
-/* ANSI and traditional C compatibility macros
-
-   ANSI C is assumed if __STDC__ is #defined.
-
-   Macro		ANSI C definition	Traditional C definition
-   -----		---- - ----------	----------- - ----------
-   PTR			`void *'		`char *'
-   const		not defined		`'
-   volatile		not defined		`'
-   signed		not defined		`'
-
-   For ease of writing code which uses GCC extensions but needs to be
+/* For ease of writing code which uses GCC extensions but needs to be
    portable to other compilers, we provide the GCC_VERSION macro that
    simplifies testing __GNUC__ and __GNUC_MINOR__ together, and various
    wrappers around __attribute__.  Also, __extension__ will be #defined
@@ -61,19 +50,6 @@ So instead we use the macro below and test it against specific values.  */
 #ifndef GCC_VERSION
 #define GCC_VERSION (__GNUC__ * 1000 + __GNUC_MINOR__)
 #endif /* GCC_VERSION */
-
-/* All known AIX compilers implement these things (but don't always
-   define __STDC__).  The RISC/OS MIPS compiler defines these things
-   in SVR4 mode, but does not define __STDC__.  */
-/* eraxxon@alumni.rice.edu: The Compaq C++ compiler, unlike many other
-   C++ compilers, does not define __STDC__, though it acts as if this
-   was so. (Verified versions: 5.7, 6.2, 6.3, 6.5) */
-
-#define PTR		void *
-
-#undef const
-#undef volatile
-#undef signed
 
 /* inline requires special treatment; it's in C99, and GCC >=2.7 supports
    it too, but it's not in C89.  */
