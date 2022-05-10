@@ -1,3 +1,12 @@
+2022-05-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-05-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/104731
+	* testsuite/27_io/filesystem/iterators/error_reporting.cc:
+	Use a trailing char array as storage for dirent::d_name.
+
 2022-05-06  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:
