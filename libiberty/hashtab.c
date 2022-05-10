@@ -458,9 +458,9 @@ htab_empty (htab_t htab)
 	(*htab->free_with_arg_f) (htab->alloc_arg, htab->entries);
       if (htab->alloc_with_arg_f != NULL)
 	htab->entries = (void **) (*htab->alloc_with_arg_f) (htab->alloc_arg, nsize,
-						           sizeof (void **));
+							     sizeof (void *));
       else
-	htab->entries = (void **) (*htab->alloc_f) (nsize, sizeof (void **));
+	htab->entries = (void **) (*htab->alloc_f) (nsize, sizeof (void *));
      htab->size = nsize;
      htab->size_prime_index = nindex;
     }
@@ -544,9 +544,9 @@ htab_expand (htab_t htab)
 
   if (htab->alloc_with_arg_f != NULL)
     nentries = (void **) (*htab->alloc_with_arg_f) (htab->alloc_arg, nsize,
-						  sizeof (void **));
+						    sizeof (void *));
   else
-    nentries = (void **) (*htab->alloc_f) (nsize, sizeof (void **));
+    nentries = (void **) (*htab->alloc_f) (nsize, sizeof (void *));
   if (nentries == NULL)
     return 0;
   htab->entries = nentries;
