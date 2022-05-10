@@ -89,6 +89,17 @@ CompilePatternCaseLabelExpr::visit (HIR::LiteralPattern &pattern)
 			    pattern.get_literal (), pattern.get_locus (),
 			    std::vector<AST::Attribute> ());
 
+  // Note: Floating point literals are currently accepted but will likely be
+  // forbidden in LiteralPatterns in a future version of Rust.
+  // See: https://github.com/rust-lang/rust/issues/41620
+  // For now, we cannot compile them anyway as CASE_LABEL_EXPR does not support
+  // floating point types.
+  if (pattern.get_literal ().get_lit_type () == HIR::Literal::LitType::FLOAT)
+    {
+      sorry_at (pattern.get_locus ().gcc_location (),
+		"floating-point literal in pattern");
+    }
+
   tree lit = CompileExpr::Compile (litexpr, ctx);
 
   case_label_expr = build_case_label (lit, NULL_TREE, associated_case_label);
