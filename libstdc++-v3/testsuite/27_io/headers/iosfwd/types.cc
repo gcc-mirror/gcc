@@ -115,6 +115,56 @@ static_assert(Same<basic_stringstream<wchar_t>,
 		   >::value,
     "std::basic_stringstream<wchar_t> has the correct default template argument");
 
+#if __cplusplus > 202002L
+using std::basic_spanbuf;
+
+static_assert(Same<basic_spanbuf<char>,
+		   basic_spanbuf<char, Traits<char>>
+		   >::value,
+    "std::basic_spanbuf<char> has the correct default template argument");
+
+static_assert(Same<basic_spanbuf<wchar_t>,
+		   basic_spanbuf<wchar_t, Traits<wchar_t>>
+		   >::value,
+    "std::basic_spanbuf<wchar_t> has the correct default template argument");
+
+using std::basic_ispanstream;
+
+static_assert(Same<basic_ispanstream<char>,
+		   basic_ispanstream<char, Traits<char>>
+		   >::value,
+    "std::basic_ispanstream<char> has the correct default template argument");
+
+static_assert(Same<basic_ispanstream<wchar_t>,
+		   basic_ispanstream<wchar_t, Traits<wchar_t>>
+		   >::value,
+    "std::basic_ispanstream<wchar_t> has the correct default template argument");
+
+using std::basic_ospanstream;
+
+static_assert(Same<basic_ospanstream<char>,
+		   basic_ospanstream<char, Traits<char>>
+		   >::value,
+    "std::basic_ospanstream<char> has the correct default template argument");
+
+static_assert(Same<basic_ospanstream<wchar_t>,
+		   basic_ospanstream<wchar_t, Traits<wchar_t>>
+		   >::value,
+    "std::basic_ospanstream<wchar_t> has the correct default template argument");
+
+using std::basic_spanstream;
+
+static_assert(Same<basic_spanstream<char>,
+		   basic_spanstream<char, Traits<char>>
+		   >::value,
+    "std::basic_spanstream<char> has the correct default template argument");
+
+static_assert(Same<basic_spanstream<wchar_t>,
+		   basic_spanstream<wchar_t, Traits<wchar_t>>
+		   >::value,
+    "std::basic_spanstream<wchar_t> has the correct default template argument");
+#endif
+
 using std::basic_filebuf;
 
 static_assert(Same<basic_filebuf<char>,

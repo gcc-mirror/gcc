@@ -45,7 +45,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #define __cpp_lib_spanstream 202106L
 
-template<typename _CharT, typename _Traits = char_traits<_CharT>>
+template<typename _CharT, typename _Traits>
   class basic_spanbuf
   : public basic_streambuf<_CharT, _Traits>
   {
@@ -218,7 +218,7 @@ template<typename _CharT, typename _Traits>
 using spanbuf = basic_spanbuf<char>;
 using wspanbuf = basic_spanbuf<wchar_t>;
 
-template<typename _CharT, typename _Traits = char_traits<_CharT>>
+template<typename _CharT, typename _Traits>
   class basic_ispanstream
   : public basic_istream<_CharT, _Traits>
   {
@@ -310,7 +310,7 @@ template<typename _CharT, typename _Traits>
 using ispanstream = basic_ispanstream<char>;
 using wispanstream = basic_ispanstream<wchar_t>;
 
-template<typename _CharT, typename _Traits = char_traits<_CharT>>
+template<typename _CharT, typename _Traits>
   class basic_ospanstream
   : public basic_ostream<_CharT, _Traits>
   {
@@ -378,7 +378,7 @@ template<typename _CharT, typename _Traits>
 using ospanstream = basic_ospanstream<char>;
 using wospanstream = basic_ospanstream<wchar_t>;
 
-template<typename _CharT, typename _Traits = char_traits<_CharT>>
+template<typename _CharT, typename _Traits>
   class basic_spanstream
   : public basic_iostream<_CharT, _Traits>
   {

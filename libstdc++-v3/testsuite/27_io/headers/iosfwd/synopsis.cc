@@ -75,6 +75,12 @@ _GLIBCXX_END_NAMESPACE_CXX11
   typedef basic_ostringstream<char> ostringstream;
   typedef basic_stringstream<char>  stringstream;
 
+#if __cplusplus > 202002L
+  typedef basic_spanbuf<char>     spanbuf;
+  typedef basic_ispanstream<char> ispanstream;
+  typedef basic_ospanstream<char> ospanstream;
+  typedef basic_spanstream<char>  spanstream;
+#endif
 
   typedef basic_filebuf<char>  filebuf;
   typedef basic_ifstream<char> ifstream;
@@ -95,6 +101,13 @@ _GLIBCXX_END_NAMESPACE_CXX11
   typedef basic_istringstream<wchar_t> wistringstream;
   typedef basic_ostringstream<wchar_t> wostringstream;
   typedef basic_stringstream<wchar_t>  wstringstream;
+
+#if __cplusplus > 202002L
+  typedef basic_spanbuf<wchar_t>     wspanbuf;
+  typedef basic_ispanstream<wchar_t> wispanstream;
+  typedef basic_ospanstream<wchar_t> wospanstream;
+  typedef basic_spanstream<wchar_t>  wspanstream;
+#endif
 
   typedef basic_filebuf<wchar_t>  wfilebuf;
   typedef basic_ifstream<wchar_t> wifstream;
