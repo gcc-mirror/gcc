@@ -49,7 +49,7 @@ libiberty_vprintf_buffer_size (const char *format, va_list args)
 #ifdef va_copy
   va_copy (ap, args);
 #else
-  memcpy ((PTR) &ap, (PTR) &args, sizeof (va_list));
+  memcpy ((void *) &ap, (void *) &args, sizeof (va_list));
 #endif
 
   while (*p != '\0')

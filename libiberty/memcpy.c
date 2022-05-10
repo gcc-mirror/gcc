@@ -18,8 +18,8 @@ Copies @var{length} bytes from memory region @var{in} to region
 
 void bcopy (const void*, void*, size_t);
 
-PTR
-memcpy (PTR out, const PTR in, size_t length)
+void *
+memcpy (void *out, const void *in, size_t length)
 {
     bcopy(in, out, length);
     return out;
