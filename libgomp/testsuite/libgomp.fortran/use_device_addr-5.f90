@@ -8,7 +8,7 @@ program main
   aaa(:,:,:) = reshape ([(i, i = 1, size(aaa))], shape(aaa))
 
   do i = 0, omp_get_num_devices()
-    !$omp target data map(to: aaa)
+    !$omp target data map(to: aaa) device(i)
       call test_addr (aaa, i)
       call test_ptr (aaa, i)
     !$omp end target data
