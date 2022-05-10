@@ -9338,7 +9338,7 @@ trees_in::tree_node (bool is_use)
 	    if (!get_overrun ())
 	      {
 		tree pack = cxx_make_type (TYPE_ARGUMENT_PACK);
-		SET_ARGUMENT_PACK_ARGS (pack, res);
+		ARGUMENT_PACK_ARGS (pack) = res;
 		res = pack;
 	      }
 	    break;
@@ -9351,7 +9351,7 @@ trees_in::tree_node (bool is_use)
 		{
 		  tree expn = cxx_make_type (TYPE_PACK_EXPANSION);
 		  SET_TYPE_STRUCTURAL_EQUALITY (expn);
-		  SET_PACK_EXPANSION_PATTERN (expn, res);
+		  PACK_EXPANSION_PATTERN (expn) = res;
 		  PACK_EXPANSION_PARAMETER_PACKS (expn) = param_packs;
 		  PACK_EXPANSION_LOCAL_P (expn) = local;
 		  res = expn;

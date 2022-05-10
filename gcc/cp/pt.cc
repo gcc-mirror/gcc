@@ -4219,7 +4219,7 @@ make_pack_expansion (tree arg, tsubst_flags_t complain)
 
       /* Create the pack expansion type for the base type.  */
       purpose = cxx_make_type (TYPE_PACK_EXPANSION);
-      SET_PACK_EXPANSION_PATTERN (purpose, TREE_PURPOSE (arg));
+      PACK_EXPANSION_PATTERN (purpose) = TREE_PURPOSE (arg);
       PACK_EXPANSION_PARAMETER_PACKS (purpose) = parameter_packs;
       PACK_EXPANSION_LOCAL_P (purpose) = at_function_scope_p ();
 
@@ -4237,7 +4237,7 @@ make_pack_expansion (tree arg, tsubst_flags_t complain)
   result = for_types
      ? cxx_make_type (TYPE_PACK_EXPANSION)
      : make_node (EXPR_PACK_EXPANSION);
-  SET_PACK_EXPANSION_PATTERN (result, arg);
+  PACK_EXPANSION_PATTERN (result) = arg;
   if (TREE_CODE (result) == EXPR_PACK_EXPANSION)
     {
       /* Propagate type and const-expression information.  */
@@ -4852,7 +4852,7 @@ template_parm_to_arg (tree t)
 	  TREE_VEC_ELT (vec, 0) = make_pack_expansion (t);
 
 	  t = cxx_make_type (TYPE_ARGUMENT_PACK);
-	  SET_ARGUMENT_PACK_ARGS (t, vec);
+	  ARGUMENT_PACK_ARGS (t) = vec;
 	}
     }
   else
@@ -4869,7 +4869,7 @@ template_parm_to_arg (tree t)
 	  TREE_VEC_ELT (vec, 0) = make_pack_expansion (t);
 
 	  t  = make_node (NONTYPE_ARGUMENT_PACK);
-	  SET_ARGUMENT_PACK_ARGS (t, vec);
+	  ARGUMENT_PACK_ARGS (t) = vec;
 	}
       else
 	t = convert_from_reference (t);
@@ -8718,7 +8718,7 @@ coerce_template_parameter_pack (tree parms,
 	 _DECL as a use rather than a declaration.  */
       tree decl = TREE_VALUE (parm);
       tree exp = cxx_make_type (TYPE_PACK_EXPANSION);
-      SET_PACK_EXPANSION_PATTERN (exp, decl);
+      PACK_EXPANSION_PATTERN (exp) = decl;
       PACK_EXPANSION_PARAMETER_PACKS (exp) = packs;
       SET_TYPE_STRUCTURAL_EQUALITY (exp);
 
@@ -8818,7 +8818,7 @@ coerce_template_parameter_pack (tree parms,
       TREE_CONSTANT (argument_pack) = 1;
     }
 
-  SET_ARGUMENT_PACK_ARGS (argument_pack, packed_args);
+  ARGUMENT_PACK_ARGS (argument_pack) = packed_args;
   if (CHECKING_P)
     SET_NON_DEFAULT_TEMPLATE_ARGS_COUNT (packed_args,
 					 TREE_VEC_LENGTH (packed_args));
@@ -12460,7 +12460,7 @@ extract_fnparm_pack (tree tmpl_parm, tree *spec_p)
 	}
 
       /* Build the argument packs.  */
-      SET_ARGUMENT_PACK_ARGS (argpack, parmvec);
+      ARGUMENT_PACK_ARGS (argpack) = parmvec;
     }
   *spec_p = spec_parm;
 
@@ -13023,7 +13023,7 @@ extract_locals_r (tree *tp, int */*walk_subtrees*/, void *data_)
 			{
 			  spec = copy_node (spec);
 			  args = copy_node (args);
-			  SET_ARGUMENT_PACK_ARGS (spec, args);
+			  ARGUMENT_PACK_ARGS (spec) = args;
 			  register_local_specialization (spec, *tp);
 			}
 		      TREE_VEC_ELT (args, i) = carg;
@@ -13410,7 +13410,7 @@ make_argument_pack (tree vec)
       pack = make_node (NONTYPE_ARGUMENT_PACK);
       TREE_CONSTANT (pack) = 1;
     }
-  SET_ARGUMENT_PACK_ARGS (pack, vec);
+  ARGUMENT_PACK_ARGS (pack) = vec;
   return pack;
 }
 
@@ -13463,7 +13463,7 @@ tsubst_argument_pack (tree orig_arg, tree args, tsubst_flags_t complain,
 	  TREE_CONSTANT (new_arg) = TREE_CONSTANT (orig_arg);
 	}
 
-      SET_ARGUMENT_PACK_ARGS (new_arg, pack_args);
+      ARGUMENT_PACK_ARGS (new_arg) = pack_args;
     }
 
   return new_arg;
@@ -18442,7 +18442,7 @@ lookup_init_capture_pack (tree decl)
       len = TREE_VEC_LENGTH (fpack);
       vec = make_tree_vec (len);
       r = make_node (NONTYPE_ARGUMENT_PACK);
-      SET_ARGUMENT_PACK_ARGS (r, vec);
+      ARGUMENT_PACK_ARGS (r) = vec;
     }
   for (int i = 0; i < len; ++i)
     {
@@ -22911,7 +22911,7 @@ type_unification_real (tree tparms,
 	      else
 		arg = cxx_make_type (TYPE_ARGUMENT_PACK);
 
-	      SET_ARGUMENT_PACK_ARGS (arg, make_tree_vec (0));
+	      ARGUMENT_PACK_ARGS (arg) = make_tree_vec (0);
 
 	      TREE_VEC_ELT (targs, i) = arg;
 	      continue;
@@ -23771,7 +23771,7 @@ unify_pack_expansion (tree tparms, tree targs, tree packed_parms,
           else
 	    result = cxx_make_type (TYPE_ARGUMENT_PACK);
 
-          SET_ARGUMENT_PACK_ARGS (result, new_args);
+	  ARGUMENT_PACK_ARGS (result) = new_args;
 
           /* Note the deduced argument packs for this parameter
              pack.  */
@@ -23785,7 +23785,7 @@ unify_pack_expansion (tree tparms, tree targs, tree packed_parms,
              now we have a complete set of arguments.  */
           tree explicit_args = ARGUMENT_PACK_EXPLICIT_ARGS (old_pack);
 
-          SET_ARGUMENT_PACK_ARGS (old_pack, new_args);
+	  ARGUMENT_PACK_ARGS (old_pack) = new_args;
           ARGUMENT_PACK_INCOMPLETE_P (old_pack) = 1;
           ARGUMENT_PACK_EXPLICIT_ARGS (old_pack) = explicit_args;
         }
@@ -26899,7 +26899,7 @@ tsubst_initializer_list (tree t, tree argvec)
 		  else
 		    {
 		      value = expr;
-		      SET_PACK_EXPANSION_PATTERN (value, TREE_VALUE (arg));
+		      PACK_EXPANSION_PATTERN (value) = TREE_VALUE (arg);
 		    }
 		  expanded_exprs
 		    = tsubst_pack_expansion (value, argvec,

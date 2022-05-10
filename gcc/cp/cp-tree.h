@@ -3903,14 +3903,6 @@ struct GTY(()) lang_decl {
   (TREE_CODE (PACK_EXPANSION_CHECK (NODE)) == TYPE_PACK_EXPANSION \
    ? TREE_TYPE (NODE) : TREE_OPERAND (NODE, 0))
 
-/* Sets the type or expression pattern for a TYPE_PACK_EXPANSION or
-   EXPR_PACK_EXPANSION.  */
-#define SET_PACK_EXPANSION_PATTERN(NODE,VALUE)  \
-  if (TREE_CODE (PACK_EXPANSION_CHECK (NODE)) == TYPE_PACK_EXPANSION)  \
-    TREE_TYPE (NODE) = VALUE;                   \
-  else                                          \
-    TREE_OPERAND (NODE, 0) = VALUE
-
 /* The list of parameter packs used in the PACK_EXPANSION_* node. The
    TREE_VALUE of each TREE_LIST contains the parameter packs.  */
 #define PACK_EXPANSION_PARAMETER_PACKS(NODE)		\
@@ -3962,14 +3954,6 @@ struct GTY(()) lang_decl {
 #define ARGUMENT_PACK_ARGS(NODE)                               \
   (TREE_CODE (ARGUMENT_PACK_CHECK (NODE)) == TYPE_ARGUMENT_PACK \
    ? TREE_TYPE (NODE) : TREE_OPERAND (NODE, 0))
-
-/* Set the arguments stored in an argument pack. VALUE must be a
-   TREE_VEC.  */
-#define SET_ARGUMENT_PACK_ARGS(NODE,VALUE)     \
-  if (TREE_CODE (ARGUMENT_PACK_CHECK (NODE)) == TYPE_ARGUMENT_PACK)  \
-    TREE_TYPE (NODE) = VALUE;                           \
-  else                                                  \
-    TREE_OPERAND (NODE, 0) = VALUE
 
 /* Whether the argument pack is "incomplete", meaning that more
    arguments can still be deduced. Incomplete argument packs are only

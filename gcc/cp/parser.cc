@@ -4649,7 +4649,7 @@ make_char_string_pack (tree value)
     }
 
   /* Build the argument packs.  */
-  SET_ARGUMENT_PACK_ARGS (argpack, charvec);
+  ARGUMENT_PACK_ARGS (argpack) = charvec;
 
   TREE_VEC_ELT (argvec, 0) = argpack;
 
@@ -4684,7 +4684,7 @@ make_string_pack (tree value)
 			    double_int::from_buffer (str + i * sz, sz));
 
   /* Build the argument packs.  */
-  SET_ARGUMENT_PACK_ARGS (argpack, charvec);
+  ARGUMENT_PACK_ARGS (argpack) = charvec;
 
   TREE_VEC_ELT (argvec, 1) = argpack;
 
