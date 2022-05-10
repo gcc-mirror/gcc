@@ -32563,7 +32563,8 @@ cp_parser_sizeof_pack (cp_parser *parser)
   else if (TREE_CODE (expr) == CONST_DECL)
     expr = DECL_INITIAL (expr);
   expr = make_pack_expansion (expr);
-  PACK_EXPANSION_SIZEOF_P (expr) = true;
+  if (expr != error_mark_node)
+    PACK_EXPANSION_SIZEOF_P (expr) = true;
 
   if (paren)
     parens.require_close (parser);

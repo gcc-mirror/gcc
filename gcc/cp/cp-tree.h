@@ -3894,16 +3894,19 @@ struct GTY(()) lang_decl {
   (TREE_CODE (NODE) == TYPE_PACK_EXPANSION     \
    || TREE_CODE (NODE) == EXPR_PACK_EXPANSION)
 
+#define PACK_EXPANSION_CHECK(NODE) \
+  TREE_CHECK2 (NODE, TYPE_PACK_EXPANSION, EXPR_PACK_EXPANSION)
+
 /* Extracts the type or expression pattern from a TYPE_PACK_EXPANSION or
    EXPR_PACK_EXPANSION.  */
 #define PACK_EXPANSION_PATTERN(NODE)                            \
-  (TREE_CODE (NODE) == TYPE_PACK_EXPANSION ? TREE_TYPE (NODE)    \
-   : TREE_OPERAND (NODE, 0))
+  (TREE_CODE (PACK_EXPANSION_CHECK (NODE)) == TYPE_PACK_EXPANSION \
+   ? TREE_TYPE (NODE) : TREE_OPERAND (NODE, 0))
 
 /* Sets the type or expression pattern for a TYPE_PACK_EXPANSION or
    EXPR_PACK_EXPANSION.  */
 #define SET_PACK_EXPANSION_PATTERN(NODE,VALUE)  \
-  if (TREE_CODE (NODE) == TYPE_PACK_EXPANSION)  \
+  if (TREE_CODE (PACK_EXPANSION_CHECK (NODE)) == TYPE_PACK_EXPANSION)  \
     TREE_TYPE (NODE) = VALUE;                   \
   else                                          \
     TREE_OPERAND (NODE, 0) = VALUE
@@ -3911,7 +3914,7 @@ struct GTY(()) lang_decl {
 /* The list of parameter packs used in the PACK_EXPANSION_* node. The
    TREE_VALUE of each TREE_LIST contains the parameter packs.  */
 #define PACK_EXPANSION_PARAMETER_PACKS(NODE)		\
-  *(TREE_CODE (NODE) == EXPR_PACK_EXPANSION		\
+  *(TREE_CODE (PACK_EXPANSION_CHECK (NODE)) == EXPR_PACK_EXPANSION \
     ? &TREE_OPERAND (NODE, 1)				\
     : &TYPE_MIN_VALUE_RAW (TYPE_PACK_EXPANSION_CHECK (NODE)))
 
@@ -3922,22 +3925,26 @@ struct GTY(()) lang_decl {
    are enclosing functions that provided function parameter packs we'll need
    to map appropriately.  */
 #define PACK_EXPANSION_EXTRA_ARGS(NODE)		\
-  *(TREE_CODE (NODE) == TYPE_PACK_EXPANSION	\
+  *(TREE_CODE (PACK_EXPANSION_CHECK (NODE)) == TYPE_PACK_EXPANSION \
     ? &TYPE_MAX_VALUE_RAW (NODE)			\
     : &TREE_OPERAND ((NODE), 2))
 
 /* True iff this pack expansion is within a function context.  */
-#define PACK_EXPANSION_LOCAL_P(NODE) TREE_LANG_FLAG_0 (NODE)
+#define PACK_EXPANSION_LOCAL_P(NODE) \
+  TREE_LANG_FLAG_0 (PACK_EXPANSION_CHECK (NODE))
 
 /* True iff this pack expansion is for sizeof....  */
-#define PACK_EXPANSION_SIZEOF_P(NODE) TREE_LANG_FLAG_1 (NODE)
+#define PACK_EXPANSION_SIZEOF_P(NODE) \
+  TREE_LANG_FLAG_1 (PACK_EXPANSION_CHECK (NODE))
 
 /* True iff this pack expansion is for auto... in lambda init-capture.  */
-#define PACK_EXPANSION_AUTO_P(NODE) TREE_LANG_FLAG_2 (NODE)
+#define PACK_EXPANSION_AUTO_P(NODE) \
+  TREE_LANG_FLAG_2 (PACK_EXPANSION_CHECK (NODE))
 
 /* True if we must use PACK_EXPANSION_EXTRA_ARGS and avoid partial
    instantiation of this pack expansion.  */
-#define PACK_EXPANSION_FORCE_EXTRA_ARGS_P(NODE) TREE_LANG_FLAG_3 (NODE)
+#define PACK_EXPANSION_FORCE_EXTRA_ARGS_P(NODE) \
+  TREE_LANG_FLAG_3 (PACK_EXPANSION_CHECK (NODE))
 
 /* True iff the wildcard can match a template parameter pack.  */
 #define WILDCARD_PACK_P(NODE) TREE_LANG_FLAG_0 (NODE)
@@ -3947,16 +3954,19 @@ struct GTY(()) lang_decl {
   (TREE_CODE (NODE) == TYPE_ARGUMENT_PACK              \
    || TREE_CODE (NODE) == NONTYPE_ARGUMENT_PACK)
 
+#define ARGUMENT_PACK_CHECK(NODE) \
+  TREE_CHECK2 (NODE, TYPE_ARGUMENT_PACK, NONTYPE_ARGUMENT_PACK)
+
 /* The arguments stored in an argument pack. Arguments are stored in a
    TREE_VEC, which may have length zero.  */
 #define ARGUMENT_PACK_ARGS(NODE)                               \
-  (TREE_CODE (NODE) == TYPE_ARGUMENT_PACK? TREE_TYPE (NODE)    \
-   : TREE_OPERAND (NODE, 0))
+  (TREE_CODE (ARGUMENT_PACK_CHECK (NODE)) == TYPE_ARGUMENT_PACK \
+   ? TREE_TYPE (NODE) : TREE_OPERAND (NODE, 0))
 
 /* Set the arguments stored in an argument pack. VALUE must be a
    TREE_VEC.  */
 #define SET_ARGUMENT_PACK_ARGS(NODE,VALUE)     \
-  if (TREE_CODE (NODE) == TYPE_ARGUMENT_PACK)  \
+  if (TREE_CODE (ARGUMENT_PACK_CHECK (NODE)) == TYPE_ARGUMENT_PACK)  \
     TREE_TYPE (NODE) = VALUE;                           \
   else                                                  \
     TREE_OPERAND (NODE, 0) = VALUE
