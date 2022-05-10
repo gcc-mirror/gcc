@@ -120,6 +120,35 @@ private:
   bool terminated;
 };
 
+class ASTLoweringIfLetBlock : public ASTLoweringBase
+{
+  using Rust::HIR::ASTLoweringBase::visit;
+
+public:
+  static HIR::IfLetExpr *translate (AST::IfLetExpr *expr)
+  {
+    ASTLoweringIfLetBlock resolver;
+    expr->accept_vis (resolver);
+    if (resolver.translated != nullptr)
+      {
+	resolver.mappings->insert_hir_expr (
+	  resolver.translated->get_mappings ().get_crate_num (),
+	  resolver.translated->get_mappings ().get_hirid (),
+	  resolver.translated);
+      }
+    return resolver.translated;
+  }
+
+  ~ASTLoweringIfLetBlock () {}
+
+  void visit (AST::IfLetExpr &expr) override;
+
+private:
+  ASTLoweringIfLetBlock () : ASTLoweringBase (), translated (nullptr) {}
+
+  HIR::IfLetExpr *translated;
+};
+
 class ASTLoweringExprWithBlock : public ASTLoweringBase
 {
   using Rust::HIR::ASTLoweringBase::visit;
@@ -157,6 +186,11 @@ public:
   void visit (AST::IfExprConseqIf &expr) override
   {
     translated = ASTLoweringIfBlock::translate (&expr, &terminated);
+  }
+
+  void visit (AST::IfLetExpr &expr) override
+  {
+    translated = ASTLoweringIfLetBlock::translate (&expr);
   }
 
   void visit (AST::BlockExpr &expr) override
