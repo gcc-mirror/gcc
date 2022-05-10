@@ -942,8 +942,8 @@ ubsan_expand_objsize_ifn (gimple_stmt_iterator *gsi)
   gimple *g;
 
   /* See if we can discard the check.  */
-  if (TREE_CODE (size) != INTEGER_CST
-      || integer_all_onesp (size))
+  if (TREE_CODE (size) == INTEGER_CST
+      && integer_all_onesp (size))
     /* Yes, __builtin_object_size couldn't determine the
        object size.  */;
   else if (TREE_CODE (offset) == INTEGER_CST
@@ -2162,14 +2162,14 @@ instrument_object_size (gimple_stmt_iterator *gsi, tree t, bool is_lhs)
   if (decl_p)
     base_addr = build1 (ADDR_EXPR,
 			build_pointer_type (TREE_TYPE (base)), base);
-  if (compute_builtin_object_size (base_addr, 0, &sizet))
+  if (compute_builtin_object_size (base_addr, OST_DYNAMIC, &sizet))
     ;
   else if (optimize)
     {
       if (LOCATION_LOCUS (loc) == UNKNOWN_LOCATION)
 	loc = input_location;
-      /* Generate __builtin_object_size call.  */
-      sizet = builtin_decl_explicit (BUILT_IN_OBJECT_SIZE);
+      /* Generate __builtin_dynamic_object_size call.  */
+      sizet = builtin_decl_explicit (BUILT_IN_DYNAMIC_OBJECT_SIZE);
       sizet = build_call_expr_loc (loc, sizet, 2, base_addr,
 				   integer_zero_node);
       sizet = force_gimple_operand_gsi (gsi, sizet, false, NULL_TREE, true,
@@ -2226,7 +2226,8 @@ instrument_object_size (gimple_stmt_iterator *gsi, tree t, bool is_lhs)
       && !TREE_ADDRESSABLE (base))
     mark_addressable (base);
 
-  if (bos_stmt && gimple_call_builtin_p (bos_stmt, BUILT_IN_OBJECT_SIZE))
+  if (bos_stmt
+      && gimple_call_builtin_p (bos_stmt, BUILT_IN_DYNAMIC_OBJECT_SIZE))
     ubsan_create_edge (bos_stmt);
 
   /* We have to emit the check.  */
