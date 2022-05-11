@@ -1334,11 +1334,15 @@ finish_options (struct gcc_options *opts, struct gcc_options *opts_set,
 	      || opts->x_flag_selective_scheduling2));
 
   /* We know which debug output will be used so we can set flag_var_tracking
-     and flag_var_tracking_uninit if the user has not specified them.  Note
-     we have not yet initialized debug_hooks so we might uselessly run
-     var-tracking on targets without var_location debug hook support.  */
+     and flag_var_tracking_uninit if the user has not specified them.  */
   if (opts->x_debug_info_level < DINFO_LEVEL_NORMAL
-      || !dwarf_debuginfo_p (opts))
+      || !dwarf_debuginfo_p (opts)
+      /* We have not yet initialized debug hooks so match that to check
+	 whether we're only doing DWARF2_LINENO_DEBUGGING_INFO.  */
+#ifndef DWARF2_DEBUGGING_INFO
+      || true
+#endif
+     )
     {
       if ((opts_set->x_flag_var_tracking && opts->x_flag_var_tracking == 1)
 	  || (opts_set->x_flag_var_tracking_uninit
