@@ -1260,6 +1260,16 @@ Assignment_operation_statement::do_lower(Gogo*, Named_object*,
   Move_ordered_evals moe(b);
   this->lhs_->traverse_subexpressions(&moe);
 
+  // We can still be left with subexpressions that have to be loaded
+  // even if they don't have side effects themselves, in case the RHS
+  // changes variables named on the LHS.
+  int i;
+  if (this->lhs_->must_eval_subexpressions_in_order(&i))
+    {
+      Move_subexpressions ms(i, b);
+      this->lhs_->traverse_subexpressions(&ms);
+    }
+
   Expression* lval = this->lhs_->copy();
 
   Operator op;
