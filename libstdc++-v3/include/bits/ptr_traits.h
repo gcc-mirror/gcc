@@ -47,6 +47,8 @@ namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
+  /// @cond undocumented
+
   class __undefined;
 
   // For a specialization `SomeTemplate<T, Types...>` the member `type` is T,
@@ -90,6 +92,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Ptr>
     using __ptr_traits_elem_t = typename __ptr_traits_elem<_Ptr>::type;
 #endif
+
+  /// @endcond
 
   // Define pointer_traits<P>::pointer_to.
   template<typename _Ptr, typename _Elt, bool = is_void<_Elt>::value>
@@ -187,6 +191,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /**
    * @brief  Uniform interface to all pointer-like types
+   * @headerfile memory
    * @ingroup pointer_abstractions
    * @since C++11
   */
@@ -203,6 +208,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /**
    * @brief  Partial specialization for built-in pointers.
+   * @headerfile memory
    * @ingroup pointer_abstractions
    * @since C++11
   */
