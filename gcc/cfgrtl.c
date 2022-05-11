@@ -230,7 +230,7 @@ delete_insn_and_edges (rtx_insn *insn)
 {
   bool purge = false;
 
-  if (INSN_P (insn) && BLOCK_FOR_INSN (insn))
+  if (NONDEBUG_INSN_P (insn) && BLOCK_FOR_INSN (insn))
     {
       basic_block bb = BLOCK_FOR_INSN (insn);
       if (BB_END (bb) == insn)
