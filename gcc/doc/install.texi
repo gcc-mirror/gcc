@@ -2360,10 +2360,20 @@ default is derived from glibc's behavior. When glibc clamps float_t to double,
 GCC follows and enables the option. For other cross compiles, the default is
 disabled.
 
-@item --with-zstd
-Specify prefix directory for installed zstd library.
-Equivalent to @option{--with-zstd-include=PATH/include} plus
-@option{--with-zstd-lib=PATH/lib}.
+@item --with-zstd=@var{pathname}
+@itemx --with-zstd-include=@var{pathname}
+@itemx --with-zstd-lib=@var{pathname}
+If you do not have the @code{zstd} library installed in a standard
+location and you want to build GCC, you can explicitly specify the
+directory where it is installed (@samp{--with-zstd=@/@var{zstdinstalldir}}).
+The @option{--with-zstd=@/@var{zstdinstalldir}} option is shorthand for
+@option{--with-zstd-lib=@/@var{zstdinstalldir}/lib} and
+@option{--with-zstd-include=@/@var{zstdinstalldir}/include}. If this
+shorthand assumption is not correct, you can use the explicit
+include and lib options directly.
+
+These flags are applicable to the host platform only.  When building
+a cross compiler, they will not be used to configure target libraries.
 @end table
 
 @subheading Cross-Compiler-Specific Options
