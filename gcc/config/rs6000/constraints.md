@@ -37,7 +37,7 @@
    historically @code{f} was for single-precision and @code{d} was for
    double-precision floating point.")
 
-(define_register_constraint "v" "ALTIVEC_REGS"
+(define_register_constraint "v" "rs6000_constraints[RS6000_CONSTRAINT_v]"
   "An Altivec vector register (VR), @code{v0}@dots{}@code{v31}.")
 
 (define_register_constraint "wa" "rs6000_constraints[RS6000_CONSTRAINT_wa]"
