@@ -181,11 +181,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif // __cpp_lib_atomic_wait
   };
 
-#if __cplusplus <= 201703L
-# define _GLIBCXX20_INIT(I)
-#else
+/// @cond undocumented
+#if __cpp_lib_atomic_value_initialization
 # define _GLIBCXX20_INIT(I) = I
+#else
+# define _GLIBCXX20_INIT(I)
 #endif
+/// @endcond
 
   /**
    *  @brief Generic atomic type, primary class template.

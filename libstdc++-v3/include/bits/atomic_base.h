@@ -86,6 +86,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     } memory_order;
 #endif
 
+  /// @cond undocumented
   enum __memory_order_modifier
     {
       __memory_order_mask          = 0x0ffff,
@@ -93,6 +94,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __memory_order_hle_acquire   = 0x10000,
       __memory_order_hle_release   = 0x20000
     };
+  /// @endcond
 
   constexpr memory_order
   operator|(memory_order __m, __memory_order_modifier __mod)
@@ -105,6 +107,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   {
     return memory_order(int(__m) & int(__mod));
   }
+
+  /// @cond undocumented
 
   // Drop release ordering as per [atomics.types.operations.req]/21
   constexpr memory_order
@@ -128,6 +132,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	&& (__m & __memory_order_mask) != memory_order_acq_rel;
   }
 
+  // Base types for atomics.
+  template<typename _IntTp>
+    struct __atomic_base;
+
+  /// @endcond
+
   _GLIBCXX_ALWAYS_INLINE void
   atomic_thread_fence(memory_order __m) noexcept
   { __atomic_thread_fence(int(__m)); }
@@ -145,16 +155,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return __ret;
     }
 
-  // Base types for atomics.
-  template<typename _IntTp>
-    struct __atomic_base;
-
-#if __cplusplus <= 201703L
-# define _GLIBCXX20_INIT(I)
-#else
+#if __cplusplus >= 202002L
 # define __cpp_lib_atomic_value_initialization 201911L
-# define _GLIBCXX20_INIT(I) = I
 #endif
+
+/// @cond undocumented
+#if __cpp_lib_atomic_value_initialization
+# define _GLIBCXX20_INIT(I) = I
+#else
+# define _GLIBCXX20_INIT(I)
+#endif
+/// @endcond
 
 #define ATOMIC_VAR_INIT(_VI) { _VI }
 
@@ -171,8 +182,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     typedef unsigned char __atomic_flag_data_type;
 #endif
 
-  /**
-   *  @brief Base type for atomic_flag.
+  /// @cond undocumented
+
+  /*
+   *  Base type for atomic_flag.
    *
    *  Base type is POD with data, allowing atomic_flag to derive from
    *  it and meet the standard layout type requirement. In addition to
@@ -189,6 +202,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   };
 
   _GLIBCXX_END_EXTERN_C
+
+  /// @endcond
 
 #define ATOMIC_FLAG_INIT { 0 }
 
@@ -295,6 +310,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { return __i ? __GCC_ATOMIC_TEST_AND_SET_TRUEVAL : 0; }
   };
 
+  /// @cond undocumented
 
   /// Base class for atomic integrals.
   //
@@ -936,7 +952,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { return __atomic_fetch_sub(&_M_p, _M_type_size(__d), int(__m)); }
     };
 
+  /// @endcond
+
 #if __cplusplus > 201703L
+  /// @cond undocumented
+
   // Implementation details of atomic_ref and atomic<floating-point>.
   namespace __atomic_impl
   {
@@ -1936,6 +1956,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _Tp** _M_ptr;
     };
 
+  /// @endcond
 #endif // C++2a
 
   /// @} group atomics
