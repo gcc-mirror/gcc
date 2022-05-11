@@ -1,3 +1,18 @@
+2022-05-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-05-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/105528
+	* gimple-isel.cc (gimple_expand_vec_set_expr): After gsi_remove
+	set *gsi to gsi_for_stmt (ass_stmt).  Fix up function comment.
+
+2022-05-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR target/105292
+	* config/sparc/sparc.cc (sparc_vectorize_vec_perm_const): Return
+	true only for 8-byte vector modes.
+
 2022-05-06  Michael Meissner  <meissner@linux.ibm.com>
 
 	Backported from master:
