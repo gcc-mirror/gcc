@@ -2371,6 +2371,11 @@ For a native build and cross compiles that have target headers, the option's
 default is derived from glibc's behavior. When glibc clamps float_t to double,
 GCC follows and enables the option. For other cross compiles, the default is
 disabled.
+
+@item --with-zstd
+Specify prefix directory for installed zstd library.
+Equivalent to @option{--with-zstd-include=PATH/include} plus
+@option{--with-zstd-lib=PATH/lib}.
 @end table
 
 @subheading Cross-Compiler-Specific Options
