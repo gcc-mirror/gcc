@@ -394,6 +394,18 @@
   "bext\t%0,%1,%2"
   [(set_attr "type" "bitmanip")])
 
+;; When performing `(a & (1UL << bitno)) ? 0 : -1` the combiner
+;; usually has the `bitno` typed as X-mode (i.e. no further
+;; zero-extension is performed around the bitno).
+(define_insn "*bext<mode>"
+  [(set (match_operand:X 0 "register_operand" "=r")
+	(zero_extract:X (match_operand:X 1 "register_operand" "r")
+			(const_int 1)
+			(match_operand:X 2 "register_operand" "r")))]
+  "TARGET_ZBS"
+  "bext\t%0,%1,%2"
+  [(set_attr "type" "bitmanip")])
+
 (define_insn "*bexti"
   [(set (match_operand:X 0 "register_operand" "=r")
 	(zero_extract:X (match_operand:X 1 "register_operand" "r")
