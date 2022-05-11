@@ -1,3 +1,8 @@
+2022-05-10  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.fortran/use_device_addr-5.f90: Fix up
+	multi-device testing.
+
 2022-05-06  Marcel Vollweiler  <marcel@codesourcery.com>
 
 	* libgomp.map: Added omp_target_is_accessible.

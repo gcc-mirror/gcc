@@ -1,3 +1,15 @@
+2022-05-10  Martin Liska  <mliska@suse.cz>
+
+	* ansidecl.h (PTR): Remove.
+	(const): Likewise.
+	(volatile): Likewise.
+	(signed): Likewise.
+
+2022-05-10  Martin Liska  <mliska@suse.cz>
+
+	* hashtab.h (HTAB_EMPTY_ENTRY): Use void * instead PTR.
+	(HTAB_DELETED_ENTRY): Likewise.
+
 2022-05-09  Martin Liska  <mliska@suse.cz>
 
 	* ansidecl.h (PTR): Remove Not ANCI C part.

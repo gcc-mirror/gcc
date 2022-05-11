@@ -1,3 +1,206 @@
+2022-05-10  Martin Liska  <mliska@suse.cz>
+
+	* gcc-interface/decl.cc (compare_field_bitpos): Use void *
+	instead PTR.
+	* gcc-interface/utils2.cc (compare_elmt_bitpos): Likewise.
+
+2022-05-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* fe.h (Is_Expression_Function): Declare.
+	* sem_util.ads (Is_Expression_Function): Add warning line.
+
+2022-05-10  Alexandre Oliva  <oliva@adacore.com>
+
+	* exp_attr.adb (Expand_N_Attribute_Reference) <Attribute_Valid>:
+	Drop redundant range check for nonstandard booleans.
+
+2022-05-10  Alexandre Oliva  <oliva@adacore.com>
+
+	* exp_util.adb (Adjust_Result_Type): Leave result in
+	Standard.Boolean if it's going to be converted to another
+	boolean type.
+	* exp_ch4.adb (Expand_N_Type_Conversion): When optimizing,
+	convert to nonstandard booleans with an if_expression with
+	boolean literals.
+
+2022-05-10  Alexandre Oliva  <oliva@adacore.com>
+
+	* exp_ch4.adb (Expand_N_If_Expression): Call Adjust_Condition to
+	handle non-standard booleans.
+
+2022-05-10  Justin Squirek  <squirek@adacore.com>
+
+	* sem_ch8.adb (Use_One_Type): Remove code in charge of setting
+	Current_Use_Clause when Id is known to be redundant, and modify
+	the printing of errors associated with redundant use type
+	clauses so that line number gets included in more cases.
+
+2022-05-10  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_warn.adb (Check_Unset_Reference): Use variant of
+	Earlier_In_Extended_Unit that calls Sloc internally.
+
+2022-05-10  Piotr Trojanek  <trojanek@adacore.com>
+
+	* par-ch10.adb, scng.adb, sem_res.adb, sinfo-utils.adb,
+	treepr.adb: Simplify calculations with Source_Ptr and Loc
+	values.
+
+2022-05-10  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_res.adb (Resolve_Expression_With_Actions): Fix style in
+	nested routines.
+
+2022-05-10  Piotr Trojanek  <trojanek@adacore.com>
+
+	* atree.adb, exp_ch6.adb, exp_ch9.adb, ghost.adb, sem_ch3.adb,
+	sem_ch4.adb, sem_res.adb, sem_util.adb: Use
+	Is_Rewrite_Substitution where possible.
+
+2022-05-10  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_ch11.adb, exp_ch5.adb, exp_prag.adb, gnat_cuda.adb,
+	sem_ch12.adb, sem_ch3.adb, sem_ch6.adb, sem_util.adb,
+	treepr.adb: Replace /= and = operators with No and Present,
+	respectively.
+
+2022-05-10  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_warn.adb (Within_Postcondition): Guard against search
+	going too far.
+
+2022-05-10  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_warn.adb (Check_Unset_Reference): The early test was only
+	saving time of calls to Original_Node, Comes_From_Source and
+	Nkind, which are all quick and cheap.
+
+2022-05-10  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_ch5.adb (Check_Unreachable_Code): Remove inner declare
+	block; refill code and comments.
+
+2022-05-10  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_ch6.adb (Analyze_Subprogram_Body_Helper): Replace
+	First_Entity/Next_Entity with First_Formal/Next_Formal; rename
+	E1/E2 to F1/F2.
+
+2022-05-10  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_res.adb (Resolve_Declare_Expression): Check expression for
+	references to unset objects.
+	(Resolve_Qualified_Expression): Likewise.
+	* sem_warn.adb (Check_Unset_Reference): Remove handling of
+	declare and qualified expressions; clarify comment for type
+	conversions.
+
+2022-05-10  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_res.adb (Resolve_Case_Expression): Check alternative
+	expressions for references to unset objects.
+	(Resolve_If_Expression): Check condition, then and else
+	expressions for references to unset objects.
+
+2022-05-10  Kévin Le Gouguec  <legouguec@adacore.com>
+
+	* doc/gnat_rm/implementation_defined_attributes.rst,
+	doc/gnat_ugn/the_gnat_compilation_model.rst: Fix typos.
+	* gnat_rm.texi, gnat_ugn.texi: Regenerate.
+
+2022-05-10  Etienne Servais  <servais@adacore.com>
+
+	* sem_ch13.adb (Is_Predicate_Static): Fix typo in comment.
+
+2022-05-10  Yannick Moy  <moy@adacore.com>
+
+	* libgnat/s-valuei.adb: Fix indentation.
+	* libgnat/s-valuei.ads: Same.
+
+2022-05-10  Claire Dross  <dross@adacore.com>
+
+	* snames.ads-tmpl: Add "Structural" as a name.
+	* sem_prag.adb: (Analyze_Pragma): Accept modifier "Structural"
+	in pragmas Loop_Variant and Subprogram_Variant. Check that items
+	associated to Structural occur alone in the pragma associations.
+	(Analyze_Subprogram_Variant_In_Decl_Part): Idem.
+	* exp_prag.adb (Expand_Pragma_Loop_Variant): Discard structural
+	variants.
+	(Expand_Pragma_Subprogram_Variant): Idem.
+
+2022-05-10  Claire Dross  <dross@adacore.com>
+
+	* libgnat/s-valint.ads: Add SPARK_Mode and pragma to ignore
+	assertions in instance and add additional ghost parameters to
+	the instance of Value_I.
+	* libgnat/s-vallli.ads: Idem.
+	* libgnat/s-valllli.ads: Idem.
+	* libgnat/s-valuei.ads, libgnat/s-valuei.adb: New generic
+	parameters for ghost functions from System.Valueu. Add
+	functional contracts.
+
+2022-05-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_res.adb (Resolve_Eqyality_Op): Remove obsolete code.
+	(Resolve_Op_Not): Likewise.
+	* sem_type.adb (Disambiguate): Add missing test for RM 8.4(10).
+	* libgnat/s-dwalin.adb (Enable_Cache): Fix ambiguity.
+	(Symbolic_Address): Likewise.
+
+2022-05-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_eval.adb (Eval_Integer_Literal): Fix oversight in entry test.
+
+2022-05-10  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_aggr.adb (Expand_N_Aggregate): Replace UI_To_Int with
+	UI_To_CC; replace magic literals with high-level routines that
+	recognise wide and wide wide characters; reorder if-then-elsif
+	condition, because we don't have a routine to detect wide wide
+	characters.
+
+2022-05-10  Etienne Servais  <servais@adacore.com>
+
+	* scng.adb (Nlit): Error on big UI_Scale.
+
+2022-05-10  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_util.adb (Build_Task_Array_Image): Declare expanded
+	objects as constants.
+	(Build_Task_Image_Prefix): Likewise.
+	(Build_Task_Record_Image): Likewise.
+
+2022-05-10  Marc Poulhiès  <poulhies@adacore.com>
+
+	* checks.adb (Determine_Range): Fix range refining.
+
+2022-05-10  Steve Baird  <baird@adacore.com>
+
+	* sem_util.adb (Get_Actual_Subtype): If a new subtype is built,
+	do not freeze it if Expander_Active is False. The idea here is
+	to avoid generating an unwanted Freeze_Node for a subtype that
+	has been conjured up solely for purposes of preanalysis.
+
+2022-05-10  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_util.adb (Build_Task_Array_Image): Fix style in the
+	structure of generated code; add Pref'Length as the component of
+	the Sum initialization expression.
+
+2022-05-10  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_prag.adb (Expand_Pragma_Import_Or_Interface): Use
+	Get_Char_Code.
+	* exp_util.adb (Build_Task_Array_Image): Simplify conversion to
+	Char_Code.
+	(Build_Task_Image_Prefix): Likewise.
+	(Build_Task_Record_Image): Likewise.
+	* cstand.adb (Create_Standard): Use UI_From_Int instead of
+	UI_From_CC.
+	* exp_ch11.adb (Expand_N_Exception_Declaration): Likewise.
+	* sem_res.adb (Patch_Up_Value): Likewise.
+	* stringt.adb (Write_String_Table_Entry): Use Get_Char_Code.
+
 2022-05-09  Yannick Moy  <moy@adacore.com>
 
 	* sem_util.adb (Bad_Predicated_Subtype_Use): Add continuation

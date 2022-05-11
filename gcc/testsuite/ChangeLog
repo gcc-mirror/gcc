@@ -1,3 +1,94 @@
+2022-05-10  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/105526
+	* gfortran.dg/coarray_50.f90: New test.
+
+2022-05-10  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/105472
+	* gcc.target/i386/iamcu/asm-support.S: Add .note.GNU-stack section
+	only for Linux.
+	* gcc.target/x86_64/abi/asm-support.S: Likewise.
+	* gcc.target/x86_64/abi/avx/asm-support.S: Likewise.
+	* gcc.target/x86_64/abi/avx512f/asm-support.S: Likewise.
+	* gcc.target/x86_64/abi/avx512fp16/asm-support.S: Likewise.
+	* gcc.target/x86_64/abi/avx512fp16/m256h/asm-support.S: Likewise.
+	* gcc.target/x86_64/abi/avx512fp16/m512h/asm-support.S: Likewise.
+	* gcc.target/x86_64/abi/ms-sysv/do-test.S: Likewise.
+
+2022-05-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/105528
+	* gcc.dg/pr105528.c: New test.
+
+2022-05-10  Maciej W. Rozycki  <macro@embecosm.com>
+
+	* gcc.target/riscv/fmax-snan.c: New test.
+	* gcc.target/riscv/fmax.c: New test.
+	* gcc.target/riscv/fmaxf-snan.c: New test.
+	* gcc.target/riscv/fmaxf.c: New test.
+	* gcc.target/riscv/fmin-snan.c: New test.
+	* gcc.target/riscv/fmin.c: New test.
+	* gcc.target/riscv/fminf-snan.c: New test.
+	* gcc.target/riscv/fminf.c: New test.
+	* gcc.target/riscv/smax-ieee.c: New test.
+	* gcc.target/riscv/smax.c: New test.
+	* gcc.target/riscv/smaxf-ieee.c: New test.
+	* gcc.target/riscv/smaxf.c: New test.
+	* gcc.target/riscv/smin-ieee.c: New test.
+	* gcc.target/riscv/smin.c: New test.
+	* gcc.target/riscv/sminf-ieee.c: New test.
+	* gcc.target/riscv/sminf.c: New test.
+
+2022-05-10  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR middle-end/100400
+	* c-c++-common/goacc/kernels-decompose-pr100400-1-2.c: Specify
+	'-Wfatal-errors'.
+
+2022-05-10  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/105537
+	* gcc.dg/torture/pr105537.c: New testcase.
+
+2022-05-10  Uroš Bizjak  <ubizjak@gmail.com>
+	    Roger Sayle  <roger@nextmovesoftware.com>
+
+	* gcc.target/i386/and-1.c: New test case.
+
+2022-05-10  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* gcc.dg/tree-ssa/pr65855-2.c: New test case.
+
+2022-05-10  Claire Dross  <dross@adacore.com>
+
+	* gnat.dg/loopvar.adb: Update expected error message.
+
+2022-05-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/equal7.adb: Add expected error messages (code is now
+	illegal).
+
+2022-05-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.target/sparc/20220510-1.c: New test.
+
+2022-05-10  Siddhesh Poyarekar  <siddhesh@gotplt.org>
+
+	PR middle-end/70090
+	* gcc.dg/ubsan/object-size-dyn.c: New test.
+
+2022-05-10  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105529
+	* g++.dg/cpp2a/constexpr-dtor13.C: New test.
+	* g++.dg/cpp2a/constexpr-dtor14.C: New test.
+
+2022-05-10  Jiufu Guo  <guojiufu@linux.ibm.com>
+
+	PR preprocessor/101168
+	* g++.target/powerpc/pr101168.C: New test.
+
 2022-05-09  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/103539

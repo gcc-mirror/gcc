@@ -1,3 +1,10 @@
+2022-05-10  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/105526
+	* resolve.cc (check_team): New.
+	(gfc_resolve_code): Add checks for arguments to coarray intrinsics
+	FORM TEAM, CHANGE TEAM, and SYNC TEAM.
+
 2022-05-09  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/105501

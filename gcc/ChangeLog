@@ -1,3 +1,98 @@
+2022-05-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/105528
+	* gimple-isel.cc (gimple_expand_vec_set_expr): After gsi_remove
+	set *gsi to gsi_for_stmt (ass_stmt).  Fix up function comment.
+
+2022-05-10  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* doc/md.texi (Defining Mode Iterators): Correct example replacement
+	text.
+
+2022-05-10  Maciej W. Rozycki  <macro@embecosm.com>
+
+	* config/riscv/riscv.md (UNSPEC_FMIN, UNSPEC_FMAX): New
+	constants.
+	(fmin<mode>3, fmax<mode>3): New insns.
+
+2022-05-10  Richard Biener  <rguenther@suse.de>
+
+	* tree-if-conv.cc (fold_build_cond_expr): Use
+	match-and-simplify to simplify the condition.
+	(ifcvt_follow_ssa_use_edges): Remove.
+	(predicate_scalar_phi): Use follow_all_ssa_edges.
+
+2022-05-10  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR middle-end/100400
+	* omp-oacc-kernels-decompose.cc
+	(visit_loops_in_gang_single_region) <GIMPLE_OMP_FOR>: Explicitly
+	call 'internal_error'.
+
+2022-05-10  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/105537
+	* toplev.cc (process_options): Move flag_var_tracking
+	handling ...
+	* opts.cc (finish_options): ... here.
+
+2022-05-10  Martin Liska  <mliska@suse.cz>
+
+	* basic-block.h (struct basic_block_d): Use void *
+	instead PTR.
+	* cfgloop.h: Likewise.
+	* cgraph.h: Likewise.
+	* gengtype-state.cc (state_ident_by_name): Likewise.
+	(record_type): Likewise.
+	(read_state_already_seen_type): Likewise.
+	* gengtype.cc (dump_type): Likewise.
+	(input_file_by_name): Likewise.
+	(main): Likewise.
+	* ggc-common.cc (ggc_cleared_alloc_ptr_array_two_args): Likewise.
+	* ipa-utils.h (struct ipa_dfs_info): Likewise.
+	* plugin.cc (htab_hash_plugin): Likewise.
+
+2022-05-10  Richard Biener  <rguenther@suse.de>
+
+	* flags.h (dwarf_debuginfo_p): Add opts argument, guard
+	API with !GENERATOR_FILE.
+	* opts.cc (global_options): Poison.
+	(global_options_set): Likewise.
+	(finish_options): Refer to options via opts.
+
+2022-05-10  Uroš Bizjak  <ubizjak@gmail.com>
+	    Roger Sayle  <roger@nextmovesoftware.com>
+
+	* config/i386/i386.md (*testqi_1_maybe_si): Prefer shorter SImode
+	alternative when optimizing for size and the immediate operand is
+	const_0_to_127_operand.
+	(*andqi_2_maybe_si): Likewise.
+	* config/i386/predicates.md (const_0_to_127_operand): New predicate.
+
+2022-05-10  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* tree-chrec.cc (chrec_apply): Attempt to fold the linear chrec
+	"{a, +, a} (x-1)" as "a*x", as the number of loop iterations, x-1,
+	can't be negative.
+
+2022-05-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR target/105292
+	* config/sparc/sparc.cc (sparc_vectorize_vec_perm_const): Return
+	true only for 8-byte vector modes.
+
+2022-05-10  Siddhesh Poyarekar  <siddhesh@gotplt.org>
+
+	PR middle-end/70090
+	* ubsan.cc (ubsan_expand_objsize_ifn): Allow non-constant SIZE.
+	(instrument_object_size): Get dynamic object size expression.
+
+2022-05-10  Jiufu Guo  <guojiufu@linux.ibm.com>
+
+	PR preprocessor/101168
+	* config/rs6000/rs6000-c.cc (rs6000_macro_to_expand):
+	Avoid empty identifier.
+
 2022-05-09  Qing Zhao  <qing.zhao@oracle.com>
 
 	PR target/101891

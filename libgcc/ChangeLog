@@ -1,3 +1,10 @@
+2022-05-10  Martin Liska  <mliska@suse.cz>
+	    Hans-Peter Helfert  <peter-helfert@t-online.de>
+
+	PR gcov-profile/105535
+	* libgcov.h (struct gcov_info): Use gcov_unsigned_t for
+	n_functions.
+
 2022-05-02  Martin Liska  <mliska@suse.cz>
 
 	* libgcov-driver.c: Add ATTRIBUTE_UNUSED.
