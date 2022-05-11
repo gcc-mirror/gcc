@@ -114,6 +114,26 @@ TypeKindFormat::to_string (TypeKind kind)
 }
 
 bool
+is_primitive_type_kind (TypeKind kind)
+{
+  switch (kind)
+    {
+    case TypeKind::BOOL:
+    case TypeKind::CHAR:
+    case TypeKind::INT:
+    case TypeKind::UINT:
+    case TypeKind::ISIZE:
+    case TypeKind::USIZE:
+    case TypeKind::FLOAT:
+    case TypeKind::NEVER:
+    case TypeKind::STR:
+      return true;
+    default:
+      return false;
+    }
+}
+
+bool
 BaseType::satisfies_bound (const TypeBoundPredicate &predicate) const
 {
   const Resolver::TraitReference *query = predicate.get ();

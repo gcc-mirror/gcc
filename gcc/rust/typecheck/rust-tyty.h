@@ -67,6 +67,9 @@ enum TypeKind
   ERROR
 };
 
+extern bool
+is_primitive_type_kind (TypeKind kind);
+
 class TypeKindFormat
 {
 public:
