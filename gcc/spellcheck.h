@@ -128,11 +128,29 @@ class best_match
 
     /* Otherwise, compute the distance and see if the candidate
        has beaten the previous best value.  */
+    const char *candidate_str = candidate_traits::get_string (candidate);
     edit_distance_t dist
-      = get_edit_distance (m_goal, m_goal_len,
-			   candidate_traits::get_string (candidate),
-			   candidate_len);
+      = get_edit_distance (m_goal, m_goal_len, candidate_str, candidate_len);
+
+    bool is_better = false;
     if (dist < m_best_distance)
+      is_better = true;
+    else if (dist == m_best_distance)
+      {
+	/* Prefer a candidate that inserts a trailing '=',
+	   so that for
+	   "-ftrivial-auto-var-init"
+	   we suggest
+	   "-ftrivial-auto-var-init="
+	   rather than
+	   "-Wtrivial-auto-var-init".  */
+	/* Prefer a candidate has a difference in trailing sign character.  */
+	if (candidate_str[candidate_len - 1] == '='
+	    && m_goal[m_goal_len - 1] != '=')
+	  is_better = true;
+      }
+
+    if (is_better)
       {
 	m_best_distance = dist;
 	m_best_candidate = candidate;

@@ -464,6 +464,15 @@ test_find_closest_string ()
   ASSERT_STREQ ("DWARF_GNAT_ENCODINGS_ALL",
 		find_closest_string ("DWARF_GNAT_ENCODINGS_all",
 				     &candidates));
+
+  /* Example from PR 105564 where option name with missing equal
+     sign should win.  */
+  candidates.truncate (0);
+  candidates.safe_push ("-Wtrivial-auto-var-init");
+  candidates.safe_push ("-ftrivial-auto-var-init=");
+  ASSERT_STREQ ("-ftrivial-auto-var-init=",
+		find_closest_string ("-ftrivial-auto-var-init",
+				     &candidates));
 }
 
 /* Test data for test_metric_conditions.  */
