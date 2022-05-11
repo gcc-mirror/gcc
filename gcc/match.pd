@@ -4656,7 +4656,34 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
    (if (ic == icmp)
     (icmp @0 @1)
     (if (ic == ncmp)
-     (ncmp @0 @1))))))
+     (ncmp @0 @1)))))
+ /* The following bits are handled by fold_binary_op_with_conditional_arg.  */
+ (simplify
+  (ne (cmp@2 @0 @1) integer_zerop)
+  (if (types_match (type, TREE_TYPE (@2)))
+   (cmp @0 @1)))
+ (simplify
+  (eq (cmp@2 @0 @1) integer_truep)
+  (if (types_match (type, TREE_TYPE (@2)))
+   (cmp @0 @1)))
+ (simplify
+  (ne (cmp@2 @0 @1) integer_truep)
+  (if (types_match (type, TREE_TYPE (@2)))
+   (with { enum tree_code ic = invert_tree_comparison
+	     (cmp, HONOR_NANS (@0)); }
+    (if (ic == icmp)
+     (icmp @0 @1)
+     (if (ic == ncmp)
+      (ncmp @0 @1))))))
+ (simplify
+  (eq (cmp@2 @0 @1) integer_zerop)
+  (if (types_match (type, TREE_TYPE (@2)))
+   (with { enum tree_code ic = invert_tree_comparison
+	     (cmp, HONOR_NANS (@0)); }
+    (if (ic == icmp)
+     (icmp @0 @1)
+     (if (ic == ncmp)
+      (ncmp @0 @1)))))))
 
 /* Transform comparisons of the form X - Y CMP 0 to X CMP Y.
    ??? The transformation is valid for the other operators if overflow
@@ -5485,6 +5512,18 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  (simplify
   (cmp (bit_and@2 @0 integer_pow2p@1) @1)
   (icmp @2 { build_zero_cst (TREE_TYPE (@0)); })))
+
+/* From fold_binary_op_with_conditional_arg handle the case of
+   rewriting (a ? b : c) > d to a ? (b > d) : (c > d) when the
+   compares simplify.  */
+(for cmp (simple_comparison)
+ (simplify
+  (cmp:c (cond @0 @1 @2) @3)
+  /* Do not move possibly trapping operations into the conditional as this
+     pessimizes code and causes gimplification issues when applied late.  */
+  (if (!FLOAT_TYPE_P (TREE_TYPE (@3))
+       || operation_could_trap_p (cmp, true, false, @3))
+   (cond @0 (cmp! @1 @3) (cmp! @2 @3)))))
 
 (for cmp (ge lt)
 /* x < 0 ? ~y : y into (x >> (prec-1)) ^ y. */
