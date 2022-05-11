@@ -135,7 +135,6 @@ mingw32_gt_pch_use_address (void *&addr, size_t size, int fd,
      and earlier, backslashes are invalid in object name.  So, we need
      to check if we are on Windows2000 or higher.  */
   OSVERSIONINFO version_info;
-  int r;
 
   version_info.dwOSVersionInfoSize = sizeof (version_info);
 
@@ -169,25 +168,24 @@ mingw32_gt_pch_use_address (void *&addr, size_t size, int fd,
       return -1; 
     }
 
-  /* Retry five times, as here might occure a race with multiple gcc's
-     instances at same time.  */
-  for (r = 0; r < 5; r++)
-   {
-      mmap_addr = MapViewOfFileEx (mmap_handle, FILE_MAP_COPY, 0, offset,
-				   size, addr);
-      if (mmap_addr == addr)
-	break;
-      if (r != 4)
-        Sleep (500);
-   }
-      
-  if (mmap_addr != addr)
+  /* Try mapping the file at `addr`.  */
+  mmap_addr = MapViewOfFileEx (mmap_handle, FILE_MAP_COPY, 0, offset,
+			       size, addr);
+  if (mmap_addr == NULL)
     {
-      w32_error (__FUNCTION__, __FILE__, __LINE__, "MapViewOfFileEx");
-      CloseHandle(mmap_handle);
-      return  -1;
+      /* We could not map the file at its original address, so let the
+	 system choose a different one. The PCH can be relocated later.  */
+      mmap_addr = MapViewOfFileEx (mmap_handle, FILE_MAP_COPY, 0, offset,
+				   size, NULL);
+      if (mmap_addr == NULL)
+	{
+	  w32_error (__FUNCTION__, __FILE__, __LINE__, "MapViewOfFileEx");
+	  CloseHandle(mmap_handle);
+	  return  -1;
+	}
     }
 
+  addr = mmap_addr;
   return 1;
 }
 
