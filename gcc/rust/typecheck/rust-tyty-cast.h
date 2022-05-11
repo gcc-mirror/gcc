@@ -588,8 +588,11 @@ public:
 
   void visit (PointerType &type) override
   {
-    bool is_valid
-      = (base->get_infer_kind () == TyTy::InferType::InferTypeKind::GENERAL);
+    bool is_general_infer_var
+      = base->get_infer_kind () == TyTy::InferType::InferTypeKind::GENERAL;
+    bool is_integral_infer_var
+      = base->get_infer_kind () == TyTy::InferType::InferTypeKind::INTEGRAL;
+    bool is_valid = is_general_infer_var || is_integral_infer_var;
     if (is_valid)
       {
 	resolved = type.clone ();
@@ -939,6 +942,8 @@ public:
 
   void visit (ISizeType &type) override { resolved = type.clone (); }
 
+  void visit (PointerType &type) override { resolved = type.clone (); }
+
 private:
   BaseType *get_base () override { return base; }
 
@@ -974,6 +979,8 @@ public:
   void visit (USizeType &type) override { resolved = type.clone (); }
 
   void visit (ISizeType &type) override { resolved = type.clone (); }
+
+  void visit (PointerType &type) override { resolved = type.clone (); }
 
   void visit (CharType &type) override
   {

@@ -555,7 +555,17 @@ public:
 	return;
       }
 
-    infered = lhs->unify (rhs);
+    switch (expr.get_expr_type ())
+      {
+      case ArithmeticOrLogicalOperator::LEFT_SHIFT:
+      case ArithmeticOrLogicalOperator::RIGHT_SHIFT:
+	infered = rhs->cast (lhs);
+	break;
+
+      default:
+	infered = lhs->unify (rhs);
+	break;
+      }
   }
 
   void visit (HIR::ComparisonExpr &expr) override
