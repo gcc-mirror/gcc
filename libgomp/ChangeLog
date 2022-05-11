@@ -1,3 +1,79 @@
+2022-05-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-02-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgomp/104385
+	* task.c (gomp_task_run_post_handle_dependers): If parent is NULL,
+	clear task->parent.
+	* testsuite/libgomp.c/pr104385.c: New test.
+
+2022-05-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-11-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/103384
+	* testsuite/libgomp.c/declare-variant-2.c: New test.
+
+2022-05-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-10-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/linux/affinity.c (gomp_affinity_init_level_1): For level 1
+	after creating count places clean up and return immediately.
+	* testsuite/libgomp.c/places-6.c: New test.
+	* testsuite/libgomp.c/places-7.c: New test.
+	* testsuite/libgomp.c/places-8.c: New test.
+
+2022-05-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-07-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/94366
+	* testsuite/libgomp.c-c++-common/pr94366.c: New test.
+
+2022-05-10  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-05-04  Tobias Burnus  <tobias@codesourcery.com>
+
+	* testsuite/libgomp.c-c++-common/reduction-1.c: New test.
+	* testsuite/libgomp.c-c++-common/reduction-2.c: New test.
+	* testsuite/libgomp.c-c++-common/reduction-3.c: New test.
+	* testsuite/libgomp.c-c++-common/reduction-4.c: New file.
+
+2022-05-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-07-13  Jakub Jelinek  <jakub@redhat.com>
+		    Florian Weimer  <fweimer@redhat.com>
+
+	* config/linux/sem.h: Don't include limits.h.
+	(SEM_WAIT): Define to -__INT_MAX__ - 1 instead of INT_MIN.
+	* config/linux/affinity.c: Include limits.h.
+
+2022-05-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-06-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/101167
+	* testsuite/libgomp.c-c++-common/task-reduction-15.c: New test.
+
+2022-05-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-05-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/100471
+	* taskloop.c (GOMP_taskloop): If GOMP_TASK_FLAG_REDUCTION and not
+	GOMP_TASK_FLAG_NOGROUP, when doing early return clear the task
+	reduction pointer.
+	* testsuite/libgomp.c/task-reduction-4.c: New test.
+
 2021-05-06  Roman Zhuykov  <zhroma@ispras.ru>
 
 	Backported from master:

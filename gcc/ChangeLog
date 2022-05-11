@@ -1,3 +1,675 @@
+2022-05-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-04-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/105396
+	* asan.c (asan_redzone_buffer::emit_redzone_byte): Handle the case
+	where offset is bigger than off but smaller than m_prev_offset + 32
+	bits by pushing one or more 0 bytes.  Sink the
+	m_shadow_bytes.safe_push (value); flush_if_full (); statements from
+	all cases to the end of the function.
+
+2022-05-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-04-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/105333
+	* rtlanal.c (replace_rtx): Use simplify_subreg or
+	simplify_unary_operation if CONST_SCALAR_INT_P rather than just
+	CONST_INT_P.
+
+2022-05-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-04-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/105257
+	* config/sparc/sparc.c (epilogue_renumber): If ORIGINAL_REGNO,
+	use gen_raw_REG instead of gen_rtx_REG and copy over also
+	ORIGINAL_REGNO.  Use return 0; instead of /* fallthrough */.
+
+2022-05-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-04-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/105214
+	* config/i386/i386-expand.c (ix86_emit_i387_log1p): Call
+	do_pending_stack_adjust.
+
+2022-05-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-04-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/105211
+	* builtins.c (expand_builtin_int_roundingfn_2): If mathfn_built_in_1
+	fails for TREE_TYPE (arg), retry it with
+	TREE_VALUE (TYPE_ARG_TYPES (TREE_TYPE (fndecl))) and if even that
+	fails, emit call normally.
+
+2022-05-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-04-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/105189
+	* fold-const.c (make_range_step): Fix up handling of
+	(unsigned) x +[low, -] ranges for signed x if low fits into
+	typeof (x).
+
+2022-05-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-04-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/104985
+	* combine.c (struct undo): Add where.regno member.
+	(do_SUBST_MODE): Rename to ...
+	(subst_mode): ... this.  Change first argument from rtx * into int,
+	operate on regno_reg_rtx[regno] and save regno into where.regno.
+	(SUBST_MODE): Remove.
+	(try_combine): Use subst_mode instead of SUBST_MODE, change first
+	argument from regno_reg_rtx[whatever] to whatever.  For UNDO_MODE, use
+	regno_reg_rtx[undo->where.regno] instead of *undo->where.r.
+	(undo_to_marker): For UNDO_MODE, use regno_reg_rtx[undo->where.regno]
+	instead of *undo->where.r.
+	(simplify_set): Use subst_mode instead of SUBST_MODE, change first
+	argument from regno_reg_rtx[whatever] to whatever.
+
+2022-05-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-04-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/105123
+	* config/i386/i386-expand.c (ix86_expand_vector_init_general): Avoid
+	using word as target for expand_simple_binop when doing ASHIFT and
+	IOR.
+
+2022-05-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-03-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/105093
+	* ubsan.c (instrument_object_size): If t is equal to inner and
+	is a decl other than global var, punt.  When emitting call to
+	UBSAN_OBJECT_SIZE ifn, make sure base is addressable.
+
+2022-05-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-03-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/105094
+	* gimple-ssa-store-merging.c (mem_valid_for_store_merging): Punt if
+	bitsize <= 0 rather than just == 0.
+
+2022-05-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/104971
+	* config/i386/i386-expand.c
+	(ix86_expand_builtin) <case IX86_BUILTIN_READ_FLAGS>: If ignore,
+	don't push/pop anything and just return const0_rtx.
+
+2022-05-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-03-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/104910
+	* config/aarch64/aarch64.c (aarch64_load_symref_appropriately): Copy
+	imm rtx.
+
+2022-05-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-03-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/104814
+	* ifcvt.c (find_if_case_1, find_if_case_2): Punt if test_bb doesn't
+	end with onlyjump_p.  Assume BB_END (test_bb) is always non-NULL.
+
+2022-05-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-03-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/104711
+	* doc/invoke.texi (-Wextra): Document that -Wshift-negative-value
+	is enabled by it only for C++11 to C++17 rather than for C++03 or
+	later.
+	(-Wshift-negative-value): Similarly (except here we stated
+	that it is enabled for C++11 or later).
+
+2022-05-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-03-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/104775
+	* config/s390/s390.md (*cmp_and_trap_unsigned_int<mode>): Use
+	S constraint instead of T in the last alternative.
+
+2022-05-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-02-25  Jakub Jelinek  <jakub@redhat.com>
+		    Marc Glisse  <marc.glisse@inria.fr>
+
+	PR tree-optimization/104675
+	* match.pd (t * 2U / 2 -> t & (~0 / 2), t / 2U * 2 -> t & ~1):
+	Restrict simplifications to INTEGRAL_TYPE_P.
+
+2022-05-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-02-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/104681
+	* config/rs6000/vector.md (movmisalign<mode>): Use rs6000_emit_move.
+
+2022-05-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-02-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/104675
+	* match.pd (-A - 1 -> ~A, -1 - A -> ~A): Don't simplify for
+	COMPLEX_TYPE.
+
+2022-05-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-02-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/102656
+	* asan.c (instrument_derefs): If inner is a RESULT_DECL and access is
+	known to be within bounds, treat it like automatic variables.
+	If instrumenting access and inner is {VAR,PARM,RESULT}_DECL from
+	current function and !TREE_STATIC which is not TREE_ADDRESSABLE, mark
+	it addressable.
+
+2022-05-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-02-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/104557
+	* valtrack.c (debug_lowpart_subreg): Don't call gen_rtx_raw_SUBREG
+	if expr has VOIDmode.
+
+2022-05-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-02-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/104544
+	* combine.c (try_combine): When looking for insn whose links
+	should be updated from i3 to i2, don't stop on debug insns, instead
+	skip over them.
+
+2022-05-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-02-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/104517
+	* omp-low.c (task_cpyfns): New variable.
+	(delete_omp_context): Don't call finalize_task_copyfn from here.
+	(create_task_copyfn): Push task_stmt into task_cpyfns.
+	(execute_lower_omp): Call finalize_task_copyfn here on entries from
+	task_cpyfns vector and release the vector.
+
+2022-05-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-02-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/104449
+	* asan.c: Include tree-eh.h.
+	(handle_builtin_alloca): Handle the case when __builtin_alloca or
+	__builtin_alloca_with_align can throw.
+
+2022-05-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-02-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/104502
+	* config/i386/i386.md (cvtsd2ss splitter): If operands[1] is xmm16+
+	and AVX512VL isn't available, move operands[1] to operands[0] first.
+
+2022-05-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-02-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/104446
+	* combine.c (subst): Don't substitute CONST_INTs into RTX_AUTOINC
+	operands.
+
+2022-05-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-02-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/102140
+	* config/rs6000/rs6000.c (vspltis_shifted): Return false also if
+	split1 pass has finished already.
+
+2022-05-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-01-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/104263
+	* gimple-ssa-store-merging.c (get_status_for_store_merging): For
+	cfun->can_throw_non_call_exceptions && cfun->eh test whether
+	last non-debug stmt in the bb is store_valid_for_store_merging_p
+	rather than last stmt.
+
+2022-05-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-01-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/102478
+	* optabs.c (prepare_cmp_insn): If !can_create_pseudo_p (), don't
+	force_reg constants and for -fnon-call-exceptions fail if copy_to_reg
+	would be needed.
+
+2022-05-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-01-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/102860
+	* match.pd (x %[fl] y -> x % y): New simplification for
+	unsigned integral types.
+	* optabs-tree.c (optab_for_tree_code): Return unknown_optab
+	for {CEIL,FLOOR,ROUND}_{DIV,MOD}_EXPR with VECTOR_TYPE.
+
+2022-05-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-01-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/103908
+	* ifcvt.c (bb_valid_for_noce_process_p): Punt on bbs ending with
+	asm goto.
+
+2022-05-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-12-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/103860
+	* shrink-wrap.c (try_shrink_wrapping): Make sure can_get_prologue is
+	called on pro even if nothing further is pushed into vec.
+
+2022-05-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-12-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/103837
+	* loop-invariant.c (can_move_invariant_reg): Ignore DEBUG_INSNs in
+	the decisions whether to return false or continue and right before
+	returning true reset those debug insns that previously caused
+	returning false.
+
+2022-05-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-11-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/103435
+	* gimple-ssa-store-merging.c (find_bswap_or_nop_finalize): Avoid UB if
+	n->range - rsize == 8, just clear both *cmpnop and *cmpxchg in that
+	case.
+
+2022-05-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-11-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/103384
+	* omp-general.c (omp_context_selector_matches): For ACCEL_COMPILER,
+	return 0 for kind(host) and continue for kind(nohost).
+
+2022-05-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-11-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/102431
+	* gimplify.c (replace_reduction_placeholders): Remove.
+	(note_no_context_vars): New function.
+	(gimplify_omp_loop): For OMP_PARALLEL's BIND_EXPR create a new
+	BLOCK.  Use copy_tree_body_r with walk_tree instead of unshare_expr
+	and replace_reduction_placeholders for duplication of
+	OMP_CLAUSE_REDUCTION_{INIT,MERGE} expressions.  Ensure all mentioned
+	automatic vars have DECL_CONTEXT set to non-NULL before doing so
+	and reset it afterwards for those vars and their corresponding
+	vars.
+
+2022-05-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-11-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/103192
+	* tree-ssa-loop-im.c (move_computations_worker): Use
+	reset_flow_sensitive_info instead of manually clearing
+	SSA_NAME_RANGE_INFO and do it for all SSA_NAMEs, not just ones
+	with integral types.
+
+2022-05-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-11-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/103205
+	* config/i386/sync.md (atomic_bit_test_and_set<mode>,
+	atomic_bit_test_and_complement<mode>,
+	atomic_bit_test_and_reset<mode>): Use OPTAB_WIDEN instead of
+	OPTAB_DIRECT.
+
+2022-05-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-11-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/101378
+	* dwarf2out.c (field_byte_offset): Do the PCC_BITFIELD_TYPE_MATTERS
+	handling only for DECL_BIT_FIELD_TYPE decls.
+
+2022-05-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-10-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/102441
+	* var-tracking.c (add_stores): For cselib_sp_derived_value_p values
+	use MO_VAL_SET if loc is not sp.
+
+2022-05-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-09-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/102498
+	* config/i386/i386.c (standard_80387_constant_p): Don't recognize
+	special 80387 instruction XFmode constants if flag_rounding_math.
+
+2022-05-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-09-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/88578
+	PR c++/102295
+	* varasm.c (output_constructor_regular_field): Instead of assertion
+	that array_size_for_constructor result is equal to size of
+	TREE_TYPE (local->val) in bytes, assert that the type size is greater
+	or equal to array_size_for_constructor result and use type size as
+	fieldsize.
+
+2022-05-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-09-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/102224
+	* config/i386/i386.md (xorsign<mode>3): If operands[1] is equal to
+	operands[2], emit abs<mode>2 instead.
+	(@xorsign<mode>3_1): Add early-clobber for output operand.
+
+2022-05-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-08-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/101905
+	* dwarf2out.c (gen_variable_die): Add DW_AT_location for global
+	register variables already during early_dwarf if possible.
+
+2022-05-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-07-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/101624
+	* ubsan.c (maybe_instrument_pointer_overflow,
+	instrument_object_size): Only test DECL_REGISTER on VAR_DECLs,
+	PARM_DECLs or RESULT_DECLs.
+	* sanopt.c (maybe_optimize_ubsan_ptr_ifn): Likewise.
+
+2022-05-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-07-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/101562
+	* expmed.c (store_integral_bit_field): Only use movstrict_optab
+	if the operand isn't paradoxical.
+
+2022-05-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-07-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/101535
+	* gimplify.c (omp_check_private): Properly skip ORT_TARGET_DATA
+	contexts in which decl isn't privatized and for ORT_TARGET return
+	false if decl is mapped.
+
+2022-05-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-07-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/101384
+	* config/rs6000/rs6000.c (vspltis_constant): Accept EASY_VECTOR_MSB
+	only if step and copies are equal to 1.
+
+2022-05-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-07-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/94366
+	* omp-low.c (lower_rec_input_clauses): Rename is_fp_and_or to
+	is_truth_op, set it for TRUTH_*IF_EXPR regardless of new_var's type,
+	use boolean_type_node instead of integer_type_node as NE_EXPR type.
+	(lower_reduction_clauses): Likewise.
+
+2022-05-10  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-05-04  Tobias Burnus  <tobias@codesourcery.com>
+
+	* omp-low.c (lower_rec_input_clauses, lower_reduction_clauses): Handle
+	&& and || with floating-point and complex arguments.
+
+2022-05-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-07-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR go/101407
+	* godump.c (godump_str_hash): New type.
+	(godump_container::pot_dummy_types): Use string_hash instead of
+	ptr_hash in the hash_set.
+
+2022-05-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-07-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/101266
+	* dwarf2out.c (loc_list_from_tree_1): Handle COMPOUND_LITERAL_EXPR.
+
+2022-05-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-06-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/101210
+	* match.pd ((intptr_t)x eq/ne CST to x eq/ne (typeof x) CST): Don't
+	perform the optimization in GENERIC when sanitizing and x has a
+	reference type.
+
+2022-05-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-06-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/101167
+	* omp-low.c (lower_omp_regimplify_p): Regimplify also PARM_DECLs
+	and RESULT_DECLs that have DECL_HAS_VALUE_EXPR_P set.
+
+2022-05-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-06-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR inline-asm/100785
+	* cfgexpand.c (expand_asm_stmt): If errors are emitted,
+	remove all inputs, outputs and clobbers from the asm and
+	set template to "".
+
+2022-05-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-06-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/101062
+	* stor-layout.c (finish_bitfield_layout): Don't add bitfield
+	representatives in QUAL_UNION_TYPE.
+
+2022-05-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-06-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/101062
+	* stor-layout.c (finish_bitfield_representative): For fields in unions
+	assume nextf is always NULL.
+	(finish_bitfield_layout): Compute bit field representatives also in
+	unions, but handle it as if each bitfield was the only field in the
+	aggregate.
+
+2022-05-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-06-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/101046
+	* expr.c (expand_expr_real_2) <case VEC_PACK_FIX_TRUNC_EXPR,
+	case VEC_PACK_TRUNC_EXPR>: Clear subtarget when changing mode.
+
+2022-05-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-06-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/101008
+	* simplify-rtx.c (relational_result): New function.
+	(simplify_logical_relational_operation,
+	simplify_relational_operation): Use it.
+
+2022-05-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-06-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/100887
+	* fold-const.c (fold_read_from_vector): Return NULL if trying to
+	read from a CONSTRUCTOR with vector type elements.
+
+2022-05-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-06-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/100898
+	* tree-inline.c (copy_bb): Only use gimple_call_arg_ptr if memcpy
+	should copy any arguments.  Don't call gimple_call_num_args
+	on id->call_stmt or call_stmt more than once.
+
+2022-05-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-06-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/100887
+	* config/i386/i386-expand.c (ix86_expand_vector_init): Handle
+	concatenation from half-sized modes with TImode elements.
+
+2022-05-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-05-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/100580
+	* function.c (push_dummy_function): Set DECL_ARTIFICIAL and
+	DECL_ASSEMBLER_NAME on the fn_decl.
+
+2022-05-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-05-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/100342
+	* regcprop.c (copy_value): When copying a source reg in a wider
+	mode than it has recorded for the value, adjust recorded destination
+	mode too or punt if !REG_CAN_CHANGE_MODE_P.
+
+2022-05-10  liuhongt  <hongtao.liu@intel.com>
+
+	Backported from master:
+	2021-01-21  liuhongt  <hongtao.liu@intel.com>
+
+	PR rtl-optimization/98694
+	* regcprop.c (copy_value): If SRC had been assigned a mode
+	narrower than the copy, we can't link DEST into the chain even
+	they have same hard_regno_nregs(i.e. HImode/SImode in i386
+	backend).
+
+2022-05-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-05-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/100508
+	* cfgexpand.c (expand_debug_expr): For DEBUG_EXPR_DECL with vector
+	type, don't reuse DECL_RTL if it has different mode, instead force
+	creation of a new DEBUG_EXPR.
+
+2022-05-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-05-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/100471
+	* omp-low.c (lower_omp_task_reductions): For OMP_TASKLOOP, if data
+	is 0, bypass the reduction loop including
+	GOMP_taskgroup_reduction_unregister call.
+
+2022-05-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR target/105292
+	* config/sparc/sparc.c (sparc_vectorize_vec_perm_const): Return
+	true only for 8-byte vector modes.
+
 2022-05-06  Michael Meissner  <meissner@linux.ibm.com>
 
 	Backported from master:

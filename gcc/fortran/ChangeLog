@@ -1,3 +1,12 @@
+2022-05-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-11-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/103315
+	* trans-types.c (gfc_get_array_descr_info): Use DW_OP_deref_size 1
+	instead of DW_OP_deref for DW_AT_rank.
+
 2022-04-24  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/104228

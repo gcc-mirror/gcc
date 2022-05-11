@@ -1,3 +1,57 @@
+2022-05-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-03-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/104711
+	* c-fold.c (c_fully_fold_internal): Don't emit
+	-Wshift-negative-value warning if TYPE_OVERFLOW_WRAPS.
+	* c-typeck.c (build_binary_op): Likewise.
+
+2022-05-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-12-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/103587
+	* c-parser.c (c_parser_balanced_token_sequence): For CPP_PRAGMA,
+	consume the pragma and silently skip to the pragma eol.
+
+2022-05-10  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-05-04  Tobias Burnus  <tobias@codesourcery.com>
+
+	* c-typeck.c (c_finish_omp_clauses): Accept float + complex
+	for || and && reductions.
+
+2022-05-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-06-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/101176
+	* c-parser.c (c_parser_has_attribute_expression): Set source range for
+	the result.
+
+2022-05-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-06-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/101171
+	* c-typeck.c (build_c_cast): Don't call note_integer_operands on
+	error_mark_node.
+
+2022-05-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-06-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR inline-asm/100785
+	* c-typeck.c (c_mark_addressable): Diagnose trying to make
+	bit-fields addressable.
+
 2021-04-20  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:
