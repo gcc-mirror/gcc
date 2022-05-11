@@ -32067,7 +32067,10 @@ cp_parser_enclosed_template_argument_list (cp_parser* parser)
   /* Parse the template-argument-list itself.  */
   if (cp_lexer_next_token_is (parser->lexer, CPP_GREATER)
       || cp_lexer_next_token_is (parser->lexer, CPP_RSHIFT))
-    arguments = NULL_TREE;
+    {
+      arguments = make_tree_vec (0);
+      SET_NON_DEFAULT_TEMPLATE_ARGS_COUNT (arguments, 0);
+    }
   else
     arguments = cp_parser_template_argument_list (parser);
   /* Look for the `>' that ends the template-argument-list. If we find
