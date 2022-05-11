@@ -73,55 +73,32 @@ extern tree tree_vec_extract (gimple_stmt_iterator *, tree, tree, tree, tree);
    Supposed to replace force_gimple_operand (fold_buildN (...), ...).  */
 extern tree gimple_build (gimple_seq *, location_t,
 			  enum tree_code, tree, tree);
-inline tree
-gimple_build (gimple_seq *seq,
-	      enum tree_code code, tree type, tree op0)
-{
-  return gimple_build (seq, UNKNOWN_LOCATION, code, type, op0);
-}
 extern tree gimple_build (gimple_seq *, location_t,
 			  enum tree_code, tree, tree, tree);
-inline tree
-gimple_build (gimple_seq *seq,
-	      enum tree_code code, tree type, tree op0, tree op1)
-{
-  return gimple_build (seq, UNKNOWN_LOCATION, code, type, op0, op1);
-}
 extern tree gimple_build (gimple_seq *, location_t,
 			  enum tree_code, tree, tree, tree, tree);
+template<class ...Args>
 inline tree
-gimple_build (gimple_seq *seq,
-	      enum tree_code code, tree type, tree op0, tree op1, tree op2)
+gimple_build (gimple_seq *seq, enum tree_code code, tree type, Args ...ops)
 {
-  return gimple_build (seq, UNKNOWN_LOCATION, code, type, op0, op1, op2);
+  static_assert (sizeof...(ops) > 0 && sizeof...(ops) <= 3,
+		 "Number of operands must be from one to three");
+  return gimple_build (seq, UNKNOWN_LOCATION, code, type, ops...);
 }
+
 extern tree gimple_build (gimple_seq *, location_t, combined_fn, tree);
-inline tree
-gimple_build (gimple_seq *seq, combined_fn fn, tree type)
-{
-  return gimple_build (seq, UNKNOWN_LOCATION, fn, type);
-}
 extern tree gimple_build (gimple_seq *, location_t, combined_fn, tree, tree);
-inline tree
-gimple_build (gimple_seq *seq, combined_fn fn, tree type, tree arg0)
-{
-  return gimple_build (seq, UNKNOWN_LOCATION, fn, type, arg0);
-}
 extern tree gimple_build (gimple_seq *, location_t, combined_fn,
 			  tree, tree, tree);
-inline tree
-gimple_build (gimple_seq *seq, combined_fn fn,
-	      tree type, tree arg0, tree arg1)
-{
-  return gimple_build (seq, UNKNOWN_LOCATION, fn, type, arg0, arg1);
-}
 extern tree gimple_build (gimple_seq *, location_t, combined_fn,
 			  tree, tree, tree, tree);
+template<class ...Args>
 inline tree
-gimple_build (gimple_seq *seq, combined_fn fn,
-	      tree type, tree arg0, tree arg1, tree arg2)
+gimple_build (gimple_seq *seq, combined_fn fn, tree type, Args ...args)
 {
-  return gimple_build (seq, UNKNOWN_LOCATION, fn, type, arg0, arg1, arg2);
+  static_assert (sizeof...(args) < 4,
+		 "Number of arguments must be less than four");
+  return gimple_build (seq, UNKNOWN_LOCATION, fn, type, args...);
 }
 
 extern tree gimple_convert (gimple_seq *, location_t, tree, tree);
