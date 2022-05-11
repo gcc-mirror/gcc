@@ -1,3 +1,7 @@
+2022-05-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.target/sparc/20220510-1.c: New test.
+
 2022-05-09  Mikael Morin  <mikael@gcc.gnu.org>
 
 	Backported from master:
