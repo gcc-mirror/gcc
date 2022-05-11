@@ -77,7 +77,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif // C++17
   /// @}
 
-  inline namespace _V2 {
+_GLIBCXX_BEGIN_INLINE_ABI_NAMESPACE(_V2)
 
   /** @addtogroup diagnostics
    * @{
@@ -188,7 +188,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   system_category() noexcept;
 
   /// @}
-  } // end inline namespace
+
+_GLIBCXX_END_INLINE_ABI_NAMESPACE(_V2)
 
   /** @addtogroup diagnostics
    * @{

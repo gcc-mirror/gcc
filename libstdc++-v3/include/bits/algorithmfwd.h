@@ -601,13 +601,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     _OIter
     reverse_copy(_BIter, _BIter, _OIter);
 
-  inline namespace _V2
-  {
-    template<typename _FIter>
-      _GLIBCXX20_CONSTEXPR
-      _FIter
-      rotate(_FIter, _FIter, _FIter);
-  }
+_GLIBCXX_BEGIN_INLINE_ABI_NAMESPACE(_V2)
+
+  template<typename _FIter>
+    _GLIBCXX20_CONSTEXPR
+    _FIter
+    rotate(_FIter, _FIter, _FIter);
+
+_GLIBCXX_END_INLINE_ABI_NAMESPACE(_V2)
 
   template<typename _FIter, typename _OIter>
     _GLIBCXX20_CONSTEXPR
