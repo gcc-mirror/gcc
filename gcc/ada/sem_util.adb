@@ -27312,7 +27312,7 @@ package body Sem_Util is
          --  The setting of the attributes is intentionally conservative. This
          --  prevents accidental clobbering of enabled attributes. We need to
          --  call Base_Type twice, because it is sometimes not set to an actual
-         --  base type.
+         --  base type???
 
          if Has_Inherited_DIC (From_Typ) then
             Set_Has_Inherited_DIC (Base_Type (Base_Type (Typ)));
@@ -27362,14 +27362,14 @@ package body Sem_Util is
          --  The setting of the attributes is intentionally conservative. This
          --  prevents accidental clobbering of enabled attributes. We need to
          --  call Base_Type twice, because it is sometimes not set to an actual
-         --  base type.
+         --  base type???
 
          if Has_Inheritable_Invariants (From_Typ) then
-            Set_Has_Inheritable_Invariants (Typ);
+            Set_Has_Inheritable_Invariants (Base_Type (Base_Type (Typ)));
          end if;
 
          if Has_Inherited_Invariants (From_Typ) then
-            Set_Has_Inherited_Invariants (Typ);
+            Set_Has_Inherited_Invariants (Base_Type (Base_Type (Typ)));
          end if;
 
          if Has_Own_Invariants (From_Typ) then
