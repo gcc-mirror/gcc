@@ -4757,8 +4757,16 @@ warn_for_null_address (location_t location, tree op, tsubst_flags_t complain)
       tree off = TREE_OPERAND (cop, 1);
       if (!integer_zerop (off)
 	  && !warning_suppressed_p (cop, OPT_Waddress))
-	warning_at (location, OPT_Waddress, "comparing the result of pointer "
-		    "addition %qE and NULL", cop);
+	{
+	  tree base = TREE_OPERAND (cop, 0);
+	  STRIP_NOPS (base);
+	  if (TYPE_REF_P (TREE_TYPE (base)))
+	    warning_at (location, OPT_Waddress, "the compiler can assume that "
+			"the address of %qE will never be NULL", base);
+	  else
+	    warning_at (location, OPT_Waddress, "comparing the result of "
+			"pointer addition %qE and NULL", cop);
+	}
       return;
     }
   else if (CONVERT_EXPR_P (op)
