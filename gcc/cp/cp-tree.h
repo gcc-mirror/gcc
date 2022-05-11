@@ -3771,11 +3771,13 @@ struct GTY(()) lang_decl {
 
 /* The depth of a template argument vector.  When called directly by
    the parser, we use a TREE_LIST rather than a TREE_VEC to represent
-   template arguments.  In fact, we may even see NULL_TREE if there
-   are no template arguments.  In both of those cases, there is only
-   one level of template arguments.  */
-#define TMPL_ARGS_DEPTH(NODE)					\
-  (TMPL_ARGS_HAVE_MULTIPLE_LEVELS (NODE) ? TREE_VEC_LENGTH (NODE) : 1)
+   template arguments.  In that case, there is only one level of template
+   arguments.  We may even see NULL_TREE if there are 0 levels of
+   template arguments, as in cp_parser_requires_expression.   */
+#define TMPL_ARGS_DEPTH(NODE)						\
+  ((NODE) == NULL_TREE ? 0						\
+   : TMPL_ARGS_HAVE_MULTIPLE_LEVELS (NODE) ? TREE_VEC_LENGTH (NODE)	\
+   : 1)
 
 /* The LEVELth level of the template ARGS.  The outermost level of
    args is level 1, not level 0.  */
