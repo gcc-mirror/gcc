@@ -36,7 +36,8 @@
 --  Preconditions in this unit are meant for analysis only, not for run-time
 --  checking, so that the expected exceptions are raised. This is enforced by
 --  setting the corresponding assertion policy to Ignore. These preconditions
---  do not protect against Storage_Error.
+--  protect from Dereference_Error and Update_Error, but not from
+--  Storage_Error.
 
 pragma Assertion_Policy (Pre => Ignore);
 
@@ -117,7 +118,9 @@ is
       Chars  : char_array;
       Check  : Boolean := True)
    with
-     Pre    => Item /= Null_Ptr,
+     Pre    =>
+       Item /= Null_Ptr
+         and then (if Check then Offset <= Strlen (Item) - Chars'Length),
      Global => (In_Out => C_Memory);
 
    procedure Update
@@ -126,7 +129,9 @@ is
       Str    : String;
       Check  : Boolean := True)
    with
-     Pre    => Item /= Null_Ptr,
+     Pre    =>
+       Item /= Null_Ptr
+         and then (if Check then Offset <= Strlen (Item) - Str'Length),
      Global => (In_Out => C_Memory);
 
    Update_Error : exception;
