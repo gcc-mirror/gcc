@@ -1811,8 +1811,8 @@ iterative_hash_template_arg (tree arg, hashval_t val)
       return iterative_hash_object (IDENTIFIER_HASH_VALUE (arg), val);
 
     case TREE_VEC:
-      for (int i = 0, len = TREE_VEC_LENGTH (arg); i < len; ++i)
-	val = iterative_hash_template_arg (TREE_VEC_ELT (arg, i), val);
+      for (tree elt : tree_vec_range (arg))
+	val = iterative_hash_template_arg (elt, val);
       return val;
 
     case TYPE_PACK_EXPANSION:
@@ -4883,15 +4883,15 @@ template_parm_to_arg (tree t)
 tree
 template_parms_level_to_args (tree parms)
 {
-  tree a = copy_node (parms);
-  TREE_TYPE (a) = NULL_TREE;
-  for (int i = TREE_VEC_LENGTH (a) - 1; i >= 0; --i)
-    TREE_VEC_ELT (a, i) = template_parm_to_arg (TREE_VEC_ELT (a, i));
+  parms = copy_node (parms);
+  TREE_TYPE (parms) = NULL_TREE;
+  for (tree& parm : tree_vec_range (parms))
+    parm = template_parm_to_arg (parm);
 
   if (CHECKING_P)
-    SET_NON_DEFAULT_TEMPLATE_ARGS_COUNT (a, TREE_VEC_LENGTH (a));
+    SET_NON_DEFAULT_TEMPLATE_ARGS_COUNT (parms, TREE_VEC_LENGTH (parms));
 
-  return a;
+  return parms;
 }
 
 /* Given a set of template parameters, return them as a set of template
@@ -22470,10 +22470,9 @@ deducible_array_bound (tree domain)
 static bool
 deducible_template_args (tree args)
 {
-  for (int i = 0; i < TREE_VEC_LENGTH (args); ++i)
+  for (tree elt : tree_vec_range (args))
     {
       bool deducible;
-      tree elt = TREE_VEC_ELT (args, i);
       if (ARGUMENT_PACK_P (elt))
 	deducible = deducible_template_args (ARGUMENT_PACK_ARGS (elt));
       else
@@ -24844,12 +24843,11 @@ static bool
 check_undeduced_parms (tree targs, tree args, tree end)
 {
   bool found = false;
-  int i;
-  for (i = TREE_VEC_LENGTH (targs) - 1; i >= 0; --i)
-    if (TREE_VEC_ELT (targs, i) == NULL_TREE)
+  for (tree& targ : tree_vec_range (targs))
+    if (targ == NULL_TREE)
       {
 	found = true;
-	TREE_VEC_ELT (targs, i) = error_mark_node;
+	targ = error_mark_node;
       }
   if (found)
     {
@@ -27288,10 +27286,9 @@ dependent_type_p_r (tree type)
   if (TREE_CODE (type) == TYPE_ARGUMENT_PACK)
     {
       tree args = ARGUMENT_PACK_ARGS (type);
-      int i, len = TREE_VEC_LENGTH (args);
-      for (i = 0; i < len; ++i)
-        if (dependent_template_arg_p (TREE_VEC_ELT (args, i)))
-          return true;
+      for (tree arg : tree_vec_range (args))
+	if (dependent_template_arg_p (arg))
+	  return true;
     }
 
   /* All TYPE_PACK_EXPANSIONs are dependent, because parameter packs must
@@ -27574,16 +27571,10 @@ value_dependent_expression_p (tree expression)
     case NONTYPE_ARGUMENT_PACK:
       /* A NONTYPE_ARGUMENT_PACK is value-dependent if any packed argument
          is value-dependent.  */
-      {
-        tree values = ARGUMENT_PACK_ARGS (expression);
-        int i, len = TREE_VEC_LENGTH (values);
-
-        for (i = 0; i < len; ++i)
-          if (value_dependent_expression_p (TREE_VEC_ELT (values, i)))
-            return true;
-
-        return false;
-      }
+      for (tree arg : tree_vec_range (ARGUMENT_PACK_ARGS (expression)))
+	if (value_dependent_expression_p (arg))
+	  return true;
+      return false;
 
     case TRAIT_EXPR:
       {
@@ -28209,13 +28200,9 @@ dependent_template_arg_p (tree arg)
   else if (ARGUMENT_PACK_P (arg))
     {
       tree args = ARGUMENT_PACK_ARGS (arg);
-      int i, len = TREE_VEC_LENGTH (args);
-      for (i = 0; i < len; ++i)
-        {
-          if (dependent_template_arg_p (TREE_VEC_ELT (args, i)))
-            return true;
-        }
-
+      for (tree arg : tree_vec_range (args))
+	if (dependent_template_arg_p (arg))
+	  return true;
       return false;
     }
   else if (TYPE_P (arg))

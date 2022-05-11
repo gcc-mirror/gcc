@@ -1107,8 +1107,9 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
 
 /* In a TREE_VEC node.  */
 #define TREE_VEC_LENGTH(NODE) (TREE_VEC_CHECK (NODE)->base.u.length)
+#define TREE_VEC_BEGIN(NODE) (&TREE_VEC_CHECK (NODE)->vec.a[0])
 #define TREE_VEC_END(NODE) \
-  ((void) TREE_VEC_CHECK (NODE), &((NODE)->vec.a[(NODE)->vec.base.u.length]))
+  ((void) TREE_VEC_CHECK (NODE), &((NODE)->vec.a[(NODE)->base.u.length]))
 
 #define TREE_VEC_ELT(NODE,I) TREE_VEC_ELT_CHECK (NODE, I)
 
@@ -4480,6 +4481,18 @@ extern tree make_tree_vec (int CXX_MEM_STAT_INFO);
 /* Grow a TREE_VEC.  */
 
 extern tree grow_tree_vec (tree v, int CXX_MEM_STAT_INFO);
+
+/* Treat a TREE_VEC as a range of trees, e.g.
+   for (tree e : tree_vec_range (v)) { ... }  */
+
+class tree_vec_range
+{
+  tree v;
+public:
+  tree_vec_range(tree v) : v(v) { }
+  tree *begin() { return TREE_VEC_BEGIN (v); }
+  tree *end() { return TREE_VEC_END (v); }
+};
 
 /* Construct various types of nodes.  */
 
