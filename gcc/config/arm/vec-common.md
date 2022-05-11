@@ -280,29 +280,81 @@
   DONE;
 })
 
-(define_expand "movmisalign<mode>"
- [(set (match_operand:VDQ 0 "neon_perm_struct_or_reg_operand")
-	(unspec:VDQ [(match_operand:VDQ 1 "neon_perm_struct_or_reg_operand")]
+(define_expand "@movmisalign<mode>"
+ [(set (match_operand:VDQ 0 "nonimmediate_operand")
+	(unspec:VDQ [(match_operand:VDQ 1 "general_operand")]
 	 UNSPEC_MISALIGNED_ACCESS))]
  "ARM_HAVE_<MODE>_LDST && !BYTES_BIG_ENDIAN
   && unaligned_access && !TARGET_REALLY_IWMMXT"
 {
- rtx adjust_mem;
- /* This pattern is not permitted to fail during expansion: if both arguments
-    are non-registers (e.g. memory := constant, which can be created by the
-    auto-vectorizer), force operand 1 into a register.  */
- if (!s_register_operand (operands[0], <MODE>mode)
-     && !s_register_operand (operands[1], <MODE>mode))
-   operands[1] = force_reg (<MODE>mode, operands[1]);
+  rtx *memloc;
+  bool for_store = false;
+  /* This pattern is not permitted to fail during expansion: if both arguments
+     are non-registers (e.g. memory := constant, which can be created by the
+     auto-vectorizer), force operand 1 into a register.  */
+  if (!s_register_operand (operands[0], <MODE>mode)
+      && !s_register_operand (operands[1], <MODE>mode))
+    operands[1] = force_reg (<MODE>mode, operands[1]);
 
- if (s_register_operand (operands[0], <MODE>mode))
-   adjust_mem = operands[1];
- else
-   adjust_mem = operands[0];
+  if (s_register_operand (operands[0], <MODE>mode))
+    memloc = &operands[1];
+  else
+    {
+      memloc = &operands[0];
+      for_store = true;
+    }
 
- /* Legitimize address.  */
- if (!neon_vector_mem_operand (adjust_mem, 2, true))
-   XEXP (adjust_mem, 0) = force_reg (Pmode, XEXP (adjust_mem, 0));
+  /* For MVE, vector loads/stores must be aligned to the element size.  If the
+     alignment is less than that convert the load/store to a suitable mode.  */
+  if (TARGET_HAVE_MVE
+      && (MEM_ALIGN (*memloc)
+	  < GET_MODE_ALIGNMENT (GET_MODE_INNER (<MODE>mode))))
+    {
+      scalar_mode new_smode;
+      switch (MEM_ALIGN (*memloc))
+	{
+	case 64:
+	case 32:
+	  new_smode = SImode;
+	  break;
+	case 16:
+	  new_smode = HImode;
+	  break;
+	default:
+	  new_smode = QImode;
+	  break;
+	}
+      machine_mode new_mode
+	= mode_for_vector (new_smode,
+			   GET_MODE_SIZE (<MODE>mode)
+			   / GET_MODE_SIZE (new_smode)).require ();
+      rtx new_mem = adjust_address (*memloc, new_mode, 0);
+
+      if (!for_store)
+	{
+	  rtx reg = gen_reg_rtx (new_mode);
+	  emit_insn (gen_movmisalign (new_mode, reg, new_mem));
+	  emit_move_insn (operands[0], gen_lowpart (<MODE>mode, reg));
+	  DONE;
+	}
+      emit_insn (gen_movmisalign (new_mode, new_mem,
+				  gen_lowpart (new_mode, operands[1])));
+      DONE;
+    }
+
+  /* Legitimize address.  */
+  if ((TARGET_HAVE_MVE
+       && !mve_vector_mem_operand (<MODE>mode, XEXP (*memloc, 0), false))
+      || (!TARGET_HAVE_MVE
+	  && !neon_vector_mem_operand (*memloc, 2, false)))
+    {
+      rtx new_mem
+	= replace_equiv_address (*memloc,
+				 force_reg (Pmode, XEXP (*memloc, 0)),
+				 false);
+      gcc_assert (MEM_ALIGN (new_mem) == MEM_ALIGN (*memloc));
+      *memloc = new_mem;
+    }
 })
 
 (define_insn "mve_vshlq_<supf><mode>"
