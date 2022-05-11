@@ -10448,7 +10448,7 @@ check_return_expr (tree retval, bool *no_warning)
       if (retval)
 	error_at (loc, "returning a value from a destructor");
 
-      if (targetm.cxx.cdtor_returns_this ())
+      if (targetm.cxx.cdtor_returns_this () && !processing_template_decl)
 	retval = current_class_ptr;
       else
 	return NULL_TREE;
@@ -10463,7 +10463,7 @@ check_return_expr (tree retval, bool *no_warning)
 	/* You can't return a value from a constructor.  */
 	error_at (loc, "returning a value from a constructor");
 
-      if (targetm.cxx.cdtor_returns_this ())
+      if (targetm.cxx.cdtor_returns_this () && !processing_template_decl)
 	retval = current_class_ptr;
       else
 	return NULL_TREE;
