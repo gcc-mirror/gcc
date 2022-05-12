@@ -2388,6 +2388,7 @@ PREDEFINED             = __cplusplus=202002L \
                          _GLIBCXX14_CONSTEXPR=constexpr \
                          _GLIBCXX17_CONSTEXPR=constexpr \
                          _GLIBCXX20_CONSTEXPR=constexpr \
+                         _GLIBCXX23_CONSTEXPR=constexpr \
                          "_GLIBCXX11_DEPRECATED= " \
                          "_GLIBCXX11_DEPRECATED_SUGGEST(E)= " \
                          "_GLIBCXX17_DEPRECATED= " \
