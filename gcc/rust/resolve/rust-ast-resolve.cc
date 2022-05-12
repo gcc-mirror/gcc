@@ -86,7 +86,7 @@ NameResolution::go (AST::Crate &crate)
   // a Self type Foo which is defined after the impl block for example.
   for (auto it = crate.items.begin (); it != crate.items.end (); it++)
     ResolveTopLevel::go (it->get (), CanonicalPath::create_empty (),
-			 crate_prefix);
+			 crate_prefix, scope_node_id);
 
   // FIXME remove this
   if (saw_errors ())
