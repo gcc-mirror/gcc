@@ -1,3 +1,14 @@
+2022-05-11  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2021-07-01  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/101194
+	* constexpr.c (cxx_eval_array_reference): When the element type
+	is an empty type and the corresponding element is omitted, just
+	return an empty CONSTRUCTOR instead of attempting value
+	initialization.
+
 2022-05-10  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:

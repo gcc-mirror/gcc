@@ -1,3 +1,11 @@
+2022-05-11  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2021-07-01  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/101194
+	* g++.dg/cpp0x/constexpr-empty16.C: New test.
+
 2022-05-10  Jeff Law  <jeffreyalaw@gmail.com>
 
 	Backported from master:
