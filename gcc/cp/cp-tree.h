@@ -3783,7 +3783,8 @@ struct GTY(()) lang_decl {
    args is level 1, not level 0.  */
 #define TMPL_ARGS_LEVEL(ARGS, LEVEL)		\
   (TMPL_ARGS_HAVE_MULTIPLE_LEVELS (ARGS)	\
-   ? TREE_VEC_ELT (ARGS, (LEVEL) - 1) : (ARGS))
+   ? TREE_VEC_ELT (ARGS, (LEVEL) - 1)		\
+   : (gcc_checking_assert ((LEVEL) == 1), (ARGS)))
 
 /* Set the LEVELth level of the template ARGS to VAL.  This macro does
    not work with single-level argument vectors.  */
