@@ -703,6 +703,29 @@ public:
       infered = if_blk_resolved->unify (else_blk_resolved);
   }
 
+  void visit (HIR::IfLetExpr &expr) override
+  {
+    // this needs to perform a least upper bound coercion on the blocks and then
+    // unify the scruintee and arms
+    TyTy::BaseType *scrutinee_tyty
+      = TypeCheckExpr::Resolve (expr.get_scrutinee_expr ().get (), false);
+
+    for (auto &pattern : expr.get_patterns ())
+      {
+	TyTy::BaseType *kase_arm_ty
+	  = TypeCheckPattern::Resolve (pattern.get (), scrutinee_tyty);
+
+	TyTy::BaseType *checked_kase = scrutinee_tyty->unify (kase_arm_ty);
+	if (checked_kase->get_kind () == TyTy::TypeKind::ERROR)
+	  return;
+      }
+
+    TypeCheckExpr::Resolve (expr.get_if_block (), inside_loop);
+
+    infered
+      = TyTy::TupleType::get_unit_type (expr.get_mappings ().get_hirid ());
+  }
+
   void visit (HIR::BlockExpr &expr) override;
 
   void visit (HIR::UnsafeBlockExpr &expr) override

@@ -3477,6 +3477,19 @@ public:
   void accept_vis (HIRFullVisitor &vis) override;
   void accept_vis (HIRExpressionVisitor &vis) override;
 
+  std::unique_ptr<Expr> &get_scrutinee_expr ()
+  {
+    rust_assert (value != nullptr);
+    return value;
+  }
+
+  std::vector<std::unique_ptr<Pattern> > &get_patterns ()
+  {
+    return match_arm_patterns;
+  }
+
+  BlockExpr *get_if_block () { return if_block.get (); }
+
   ExprType get_expression_type () const final override
   {
     return ExprType::IfLet;
