@@ -19,6 +19,7 @@
 #ifndef RUST_HIR_MAP_H
 #define RUST_HIR_MAP_H
 
+#include "rust-optional.h"
 #include "rust-system.h"
 #include "rust-location.h"
 #include "rust-mapping-common.h"
@@ -321,6 +322,9 @@ public:
   void insert_visibility (DefId id, Privacy::ModuleVisibility visibility);
   bool lookup_visibility (DefId id, Privacy::ModuleVisibility *def);
 
+  void insert_module_child (NodeId module, NodeId child);
+  Optional<std::vector<NodeId> &> lookup_module_children (NodeId module);
+
 private:
   Mappings ();
 
@@ -386,6 +390,11 @@ private:
 
   // Low level visibility map for each DefId
   std::map<DefId, Privacy::ModuleVisibility> visibility_map;
+
+  // Module tree maps
+
+  // Maps each module's node id to a list of its children
+  std::map<NodeId, std::vector<NodeId>> module_child_map;
 };
 
 } // namespace Analysis

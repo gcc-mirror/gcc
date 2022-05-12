@@ -848,5 +848,25 @@ Mappings::lookup_visibility (DefId id, Privacy::ModuleVisibility *def)
   return true;
 }
 
+void
+Mappings::insert_module_child (NodeId module, NodeId child)
+{
+  auto it = module_child_map.find (module);
+  if (it == module_child_map.end ())
+    module_child_map.insert ({module, {child}});
+  else
+    it->second.emplace_back (child);
+}
+
+Optional<std::vector<NodeId> &>
+Mappings::lookup_module_children (NodeId module)
+{
+  auto it = module_child_map.find (module);
+  if (it == module_child_map.end ())
+    return Optional<std::vector<NodeId> &>::none ();
+
+  return Optional<std::vector<NodeId> &>::some (it->second);
+}
+
 } // namespace Analysis
 } // namespace Rust
