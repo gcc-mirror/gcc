@@ -11,7 +11,7 @@ struct A
 struct B
 {				// This should really be target { ! c++2a }
   typedef A W[4];		// { dg-error "paren" "" { xfail *-*-* } .+1 }
-  constexpr B () : w ({ A::z, A::z, A::z, A::z }) {} // { dg-error "constant" "" { xfail *-*-* } }
+  constexpr B () : w ({ A::z, A::z, A::z, A::z }) {} // { dg-error "constant" }
   W w;
 };
 
