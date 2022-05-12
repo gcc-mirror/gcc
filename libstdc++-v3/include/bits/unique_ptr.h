@@ -65,8 +65,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #pragma GCC diagnostic pop
 #endif
 
-  /// Primary template of default_delete, used by unique_ptr for single objects
-  /// @since C++11
+  /** Primary template of default_delete, used by unique_ptr for single objects
+   *
+   * @headerfile memory
+   * @since C++11
+   */
   template<typename _Tp>
     struct default_delete
     {
@@ -99,7 +102,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // _GLIBCXX_RESOLVE_LIB_DEFECTS
   // DR 740 - omit specialization for array objects with a compile time length
 
-  /// Specialization of default_delete for arrays, used by `unique_ptr<T[]>`
+  /** Specialization of default_delete for arrays, used by `unique_ptr<T[]>`
+   *
+   * @headerfile memory
+   * @since C++11
+   */
   template<typename _Tp>
     struct default_delete<_Tp[]>
     {
