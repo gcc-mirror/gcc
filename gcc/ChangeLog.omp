@@ -1,3 +1,14 @@
+2022-05-12  Jakub Jelinek  <jakub@redhat.com>
+
+	Backport from mainline:
+	2022-05-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* gimplify.cc (gimplify_omp_depend): Don't build_fold_addr_expr
+	if null_pointer_node.
+	(gimplify_scan_omp_clauses): Likewise.
+	* tree-pretty-print.cc (dump_omp_clause): Print null_pointer_node
+	as omp_all_memory.
+
 2022-04-06  Thomas Schwinge  <thomas@codesourcery.com>
 
 	Backport from mainline:

@@ -219,6 +219,9 @@ enum rid
   RID_AT_INTERFACE,
   RID_AT_IMPLEMENTATION,
 
+  /* OpenMP */
+  RID_OMP_ALL_MEMORY,
+
   /* Named address support, mapping the keyword to a particular named address
      number.  Named address space 0 is reserved for the generic address.  If
      there are more than 254 named addresses, the addr_space_t type will need

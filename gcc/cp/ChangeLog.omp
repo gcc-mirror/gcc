@@ -1,3 +1,19 @@
+2022-05-12  Jakub Jelinek  <jakub@redhat.com>
+
+	Backport from mainline:
+	2022-05-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* lex.cc (init_reswords): Register omp_all_memory as keyword
+	if flag_openmp.
+	* parser.cc (cp_parser_primary_expression): Diagnose uses of
+	omp_all_memory in postfix expressions.
+	(cp_parser_omp_var_list_no_open): Handle omp_all_memory in depend
+	clause.
+	* semantics.cc (finish_omp_clauses): Handle omp_all_memory
+	keyword in depend clause as null_pointer_node, diagnose invalid
+	uses.
+	* pt.cc (tsubst_omp_clause_decl): Pass through omp_all_memory.
+
 2022-06-17  Chung-Lin Tang  <cltang@codesourcery.com>
 
 	Backport from mainline:

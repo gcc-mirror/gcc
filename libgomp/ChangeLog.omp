@@ -1,3 +1,18 @@
+2022-05-12  Jakub Jelinek  <jakub@redhat.com>
+
+	Backport from mainline:
+	2022-05-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* libgomp.h (struct gomp_task): Add depend_all_memory member.
+	* task.c (gomp_init_task): Initialize depend_all_memory.
+	(gomp_task_handle_depend): Handle omp_all_memory.
+	(gomp_task_run_post_handle_depend_hash): Clear
+	parent->depend_all_memory if equal to current task.
+	(gomp_task_maybe_wait_for_dependencies): Handle omp_all_memory.
+	* testsuite/libgomp.c-c++-common/depend-1.c: New test.
+	* testsuite/libgomp.c-c++-common/depend-2.c: New test.
+	* testsuite/libgomp.c-c++-common/depend-3.c: New test.
+
 2022-04-06  Thomas Schwinge  <thomas@codesourcery.com>
 
 	Backport from mainline:

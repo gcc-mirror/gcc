@@ -574,6 +574,8 @@ struct gomp_task
   struct gomp_dependers_vec *dependers;
   struct htab *depend_hash;
   struct gomp_taskwait *taskwait;
+  /* Last depend({,in}out:omp_all_memory) child if any.  */
+  struct gomp_task *depend_all_memory;
   /* Number of items in DEPEND.  */
   size_t depend_count;
   /* Number of tasks this task depends on.  Once this counter reaches
