@@ -65,9 +65,12 @@ namespace std _GLIBCXX_VISIBILITY(default)
 
   using __exception_ptr::exception_ptr;
 
-  /** Obtain an exception_ptr to the currently handled exception. If there
-   *  is none, or the currently handled exception is foreign, return the null
-   *  value.
+  /** Obtain an exception_ptr to the currently handled exception.
+   *
+   * If there is none, or the currently handled exception is foreign,
+   * return the null value.
+   *
+   * @since C++11
    */
   exception_ptr current_exception() _GLIBCXX_USE_NOEXCEPT;
 
@@ -79,10 +82,16 @@ namespace std _GLIBCXX_VISIBILITY(default)
 
   namespace __exception_ptr
   {
-    using std::rethrow_exception;
+    using std::rethrow_exception; // So that ADL finds it.
 
     /**
      *  @brief An opaque pointer to an arbitrary exception.
+     *
+     * The actual name of this type is unspecified, so the alias
+     * `std::exception_ptr` should be used to refer to it.
+     *
+     *  @headerfile exception
+     *  @since C++11 (but usable in C++98 as a GCC extension)
      *  @ingroup exceptions
      */
     class exception_ptr
@@ -230,6 +239,8 @@ namespace std _GLIBCXX_VISIBILITY(default)
     /// @endcond
 
   } // namespace __exception_ptr
+
+  using __exception_ptr::swap; // So that std::swap(exp1, exp2) finds it.
 
   /// Obtain an exception_ptr pointing to a copy of the supplied object.
 #if (__cplusplus >= 201103L && __cpp_rtti) || __cpp_exceptions

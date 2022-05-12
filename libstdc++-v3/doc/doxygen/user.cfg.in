@@ -2408,6 +2408,7 @@ PREDEFINED             = __cplusplus=202002L \
                          _GLIBCXX_HAVE_BUILTIN_LAUNDER \
 			 "_GLIBCXX_DOXYGEN_ONLY(X)=X " \
 			 __allocator_base=std::__new_allocator \
+			 __exception_ptr=__unspecified__ \
 
 # If the MACRO_EXPANSION and EXPAND_ONLY_PREDEF tags are set to YES then this
 # tag can be used to specify a list of macro names that should be expanded. The
