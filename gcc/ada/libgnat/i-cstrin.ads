@@ -120,7 +120,10 @@ is
    with
      Pre    =>
        Item /= Null_Ptr
-         and then (if Check then Offset <= Strlen (Item) - Chars'Length),
+         and then
+      (if Check then
+         Strlen (Item) <= size_t'Last - Offset
+           and then Strlen (Item) + Offset <= Chars'Length),
      Global => (In_Out => C_Memory);
 
    procedure Update
@@ -131,7 +134,10 @@ is
    with
      Pre    =>
        Item /= Null_Ptr
-         and then (if Check then Offset <= Strlen (Item) - Str'Length),
+         and then
+      (if Check then
+         Strlen (Item) <= size_t'Last - Offset
+           and then Strlen (Item) + Offset <= Str'Length),
      Global => (In_Out => C_Memory);
 
    Update_Error : exception;
