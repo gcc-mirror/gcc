@@ -1,3 +1,32 @@
+2022-05-11  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-02-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/104147
+	* macro.c (funlike_invocation_p): For padding prefer a token
+	with val.source non-NULL especially if it has PREV_WHITE set
+	on val.source->flags.  Add gcc_assert that CPP_PADDING tokens
+	don't have PREV_WHITE set in flags.
+
+2022-05-11  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-02-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* directives.c (destringize_and_run): Push &pfile->avoid_paste
+	instead of a copy of pfile->directive_result for the CPP_PADDING
+	case.
+
+2022-05-11  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-12-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/89971
+	* macro.c (replace_args): For ##__VA_OPT__, if __VA_OPT__ expands
+	to no tokens at all, drop PASTE_LEFT flag from the previous token.
+
 2021-06-01  Release Manager
 
 	* GCC 9.4.0 released.

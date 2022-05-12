@@ -1,3 +1,11 @@
+2022-05-11  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-02-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* sanitizer_common/sanitizer_linux_libcdep.cc: Cherry-pick
+	llvm-project revision ef14b78d9a144ba81ba02083fe21eb286a88732b.
+
 2022-01-19  H.J. Lu  <hjl.tools@gmail.com>
 
 	Backported from master:
