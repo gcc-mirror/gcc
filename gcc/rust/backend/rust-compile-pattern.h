@@ -37,13 +37,13 @@ public:
   void visit (HIR::StructPattern &pattern) override;
   void visit (HIR::TupleStructPattern &pattern) override;
   void visit (HIR::WildcardPattern &pattern) override;
+  void visit (HIR::RangePattern &pattern) override;
 
   // Empty visit for unused Pattern HIR nodes.
   void visit (HIR::GroupedPattern &) override {}
   void visit (HIR::IdentifierPattern &) override {}
   void visit (HIR::LiteralPattern &) override;
   void visit (HIR::QualifiedPathInExpression &) override {}
-  void visit (HIR::RangePattern &) override {}
   void visit (HIR::ReferencePattern &) override {}
   void visit (HIR::SlicePattern &) override {}
   void visit (HIR::TuplePattern &) override {}
