@@ -79,15 +79,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   {
   public:
 #ifdef _GLIBCXX_HAS_GTHREADS
-    // Abstract base class for types that wrap arbitrary functors to be
-    // invoked in the new thread of execution.
-    struct _State
-    {
-      virtual ~_State();
-      virtual void _M_run() = 0;
-    };
-    using _State_ptr = unique_ptr<_State>;
-
     using native_handle_type = __gthread_t;
 #else
     using native_handle_type = int;
@@ -216,6 +207,18 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     hardware_concurrency() noexcept;
 
 #ifdef _GLIBCXX_HAS_GTHREADS
+#ifndef _GLIBCXX_THREAD_IMPL
+  private:
+#endif
+    // Abstract base class for types that wrap arbitrary functors to be
+    // invoked in the new thread of execution.
+    struct _State
+    {
+      virtual ~_State();
+      virtual void _M_run() = 0;
+    };
+    using _State_ptr = unique_ptr<_State>;
+
   private:
     template<typename _Callable>
       struct _State_impl : public _State
