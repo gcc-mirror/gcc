@@ -58,7 +58,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    * @defgroup futures Futures
    * @ingroup concurrency
    *
-   * Classes for futures support.
+   * Futures and promises provide support for retrieving the result from
+   * an asynchronous function, e.g. one that is running in another thread.
+   * A `std::future` represents an asynchronous result that will become
+   * ready at some later time. A consumer can wait on a future until the
+   * result is ready to be accessed.
+   *
+   * @since C++11
    * @{
    */
 
@@ -71,7 +77,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     broken_promise
   };
 
-  /// Specialization.
+  /// Specialization that allows `future_errc` to convert to `error_code`.
   template<>
     struct is_error_code_enum<future_errc> : public true_type { };
 
@@ -79,12 +85,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   const error_category&
   future_category() noexcept;
 
-  /// Overload for make_error_code.
+  /// Overload of make_error_code for `future_errc`.
   inline error_code
   make_error_code(future_errc __errc) noexcept
   { return error_code(static_cast<int>(__errc), future_category()); }
 
-  /// Overload for make_error_condition.
+  /// Overload of make_error_condition for `future_errc`.
   inline error_condition
   make_error_condition(future_errc __errc) noexcept
   { return error_condition(static_cast<int>(__errc), future_category()); }
@@ -92,6 +98,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /**
    *  @brief Exception type thrown by futures.
    *  @ingroup exceptions
+   *  @since C++11
    */
   class future_error : public logic_error
   {
@@ -178,11 +185,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     deferred
   };
 
+  /// @cond undocumented
   // _GLIBCXX_RESOLVE_LIB_DEFECTS
   // 2021. Further incorrect usages of result_of
   template<typename _Fn, typename... _Args>
     using __async_result_of = typename __invoke_result<
       typename decay<_Fn>::type, typename decay<_Args>::type...>::type;
+  /// @endcond
 
   template<typename _Fn, typename... _Args>
     future<__async_result_of<_Fn, _Args...>>
@@ -193,6 +202,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     async(_Fn&& __fn, _Args&&... __args);
 
 #if defined(_GLIBCXX_HAS_GTHREADS)
+
+  /// @cond undocumented
 
   /// Base class and enclosing scope.
   struct __future_base
@@ -655,8 +666,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       void _M_destroy() { delete this; }
     };
 
+  /// @endcond
+
 #ifndef _GLIBCXX_ASYNC_ABI_COMPAT
 
+  /// @cond undocumented
   // Allow _Setter objects to be stored locally in std::function
   template<typename _Res, typename _Arg>
     struct __is_location_invariant
@@ -668,6 +682,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct __is_location_invariant
     <__future_base::_Task_setter<_Res_ptr, _Fn, _Res>>
     : true_type { };
+  /// @endcond
 
   /// Common implementation for future and shared_future.
   template<typename _Res>
@@ -1376,6 +1391,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
     };
 
+  /// @cond undocumented
   template<typename _Ptr_type, typename _Fn, typename _Res>
     struct __future_base::_Task_setter
     {
@@ -1512,6 +1528,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return __create_task_state<_Res(_Args...)>(std::move(_M_impl._M_fn),
 						 static_cast<_Alloc&>(_M_impl));
     }
+  /// @endcond
 
   /// packaged_task
   template<typename _Res, typename... _ArgTypes>
@@ -1648,6 +1665,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     : public true_type { };
 #endif
 
+  /// @cond undocumented
+
   // Shared state created by std::async().
   // Holds a deferred function and storage for its result.
   template<typename _BoundFn, typename _Res>
@@ -1761,7 +1780,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _Ptr_type _M_result;
       _BoundFn _M_fn;
     };
-
+  /// @endcond
 
   /// async
   template<typename _Fn, typename... _Args>

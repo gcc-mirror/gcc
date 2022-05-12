@@ -57,7 +57,24 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  @{
    */
 
-  /// thread
+  /** A std::thread represents a new thread of execution.
+   *
+   * The default constructor creates an object that does not own a thread.
+   * The `thread(F&&, Args&&...)` constructor invokes a callable in a new
+   * thread, and owns that new thread. A `std::thread` that owns a thread
+   * is *joinable*. Joining a thread waits for it to finish executing,
+   * which happens when the callable running in that thread returns.
+   *
+   * A `std::thread` cannot be copied, but can be moved. Moving a joinable
+   * object transfers ownership of its thread to another object.
+   *
+   * A joinable `std::thread` must be explicitly joined (or detached) before
+   * it is destroyed or assigned to. Attempting to destroy a joinable thread
+   * will terminate the whole process.
+   *
+   * @headerfile thread
+   * @since C++11
+   */
   class thread
   {
   public:
@@ -76,7 +93,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     using native_handle_type = int;
 #endif
 
-    /// thread::id
+    /** A std::thread::id is a unique identifier for a thread.
+     *
+     * @headerfile thread
+     * @since C++11
+     */
     class id
     {
       native_handle_type	_M_thread;
@@ -261,8 +282,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       };
 
   public:
+    /// @cond undocumented
     template<typename... _Tp>
       using _Call_wrapper = _Invoker<tuple<typename decay<_Tp>::type...>>;
+    /// @endcond
 #endif // _GLIBCXX_HAS_GTHREADS
   };
 
@@ -272,10 +295,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   inline unsigned int thread::hardware_concurrency() noexcept { return 0; }
 #endif
 
+  /// @relates std::thread
   inline void
   swap(thread& __x, thread& __y) noexcept
   { __x.swap(__y); }
 
+  /// @relates std::thread::id
   inline bool
   operator==(thread::id __x, thread::id __y) noexcept
   {
@@ -301,7 +326,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   namespace this_thread
   {
-    /// this_thread::get_id
+    /// The unique identifier of the current thread.
     inline thread::id
     get_id() noexcept
     {
@@ -314,7 +339,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
     }
 
-    /// this_thread::yield
+    /// Allow the implementation to schedule a different thread.
     inline void
     yield() noexcept
     {
