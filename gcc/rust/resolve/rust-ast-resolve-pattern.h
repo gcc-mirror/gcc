@@ -103,6 +103,8 @@ public:
 
   void visit (AST::TuplePattern &pattern) override;
 
+  void visit (AST::RangePattern &pattern) override;
+
 private:
   PatternDeclaration (NodeId parent) : ResolverBase (parent) {}
 };

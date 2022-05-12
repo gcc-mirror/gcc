@@ -131,5 +131,39 @@ PatternDeclaration::visit (AST::TuplePattern &pattern)
     }
 }
 
+static void
+resolve_range_pattern_bound (AST::RangePatternBound *bound, NodeId parent)
+{
+  switch (bound->get_bound_type ())
+    {
+    case AST::RangePatternBound::RangePatternBoundType::LITERAL:
+      // Nothing to resolve for a literal.
+      break;
+
+      case AST::RangePatternBound::RangePatternBoundType::PATH: {
+	AST::RangePatternBoundPath &ref
+	  = *static_cast<AST::RangePatternBoundPath *> (bound);
+
+	ResolvePath::go (&ref.get_path (), parent);
+      }
+      break;
+
+      case AST::RangePatternBound::RangePatternBoundType::QUALPATH: {
+	AST::RangePatternBoundQualPath &ref
+	  = *static_cast<AST::RangePatternBoundQualPath *> (bound);
+
+	ResolvePath::go (&ref.get_qualified_path (), parent);
+      }
+      break;
+    }
+}
+
+void
+PatternDeclaration::visit (AST::RangePattern &pattern)
+{
+  resolve_range_pattern_bound (pattern.get_upper_bound ().get (), parent);
+  resolve_range_pattern_bound (pattern.get_lower_bound ().get (), parent);
+}
+
 } // namespace Resolver
 } // namespace Rust
