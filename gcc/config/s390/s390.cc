@@ -70,6 +70,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "debug.h"
 #include "langhooks.h"
 #include "internal-fn.h"
+#include "gimple-iterator.h"
 #include "gimple-fold.h"
 #include "tree-eh.h"
 #include "gimplify.h"

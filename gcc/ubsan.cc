@@ -1184,12 +1184,9 @@ ubsan_expand_ptr_ifn (gimple_stmt_iterator *gsip)
       gimple_set_location (g, loc);
       gsi_insert_after (&gsi2, g, GSI_NEW_STMT);
 
-      gimple_seq seq = NULL;
-      tree t = gimple_build (&seq, loc, NOP_EXPR, ssizetype, off);
-      t = gimple_build (&seq, loc, GE_EXPR, boolean_type_node,
-			t, ssize_int (0));
-      gsi_insert_seq_before (&gsi, seq, GSI_SAME_STMT);
-      g = gimple_build_cond (NE_EXPR, t, boolean_false_node,
+      tree t = gimple_build (&gsi, true, GSI_SAME_STMT,
+			     loc, NOP_EXPR, ssizetype, off);
+      g = gimple_build_cond (GE_EXPR, t, ssize_int (0),
 			     NULL_TREE, NULL_TREE);
     }
   gimple_set_location (g, loc);

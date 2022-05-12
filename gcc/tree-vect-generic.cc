@@ -54,10 +54,7 @@ gimplify_build3 (gimple_stmt_iterator *gsi, enum tree_code code,
 		 tree type, tree a, tree b, tree c)
 {
   location_t loc = gimple_location (gsi_stmt (*gsi));
-  gimple_seq stmts = NULL;
-  tree ret = gimple_build (&stmts, loc, code, type, a, b, c);
-  gsi_insert_seq_before (gsi, stmts, GSI_SAME_STMT);
-  return ret;
+  return gimple_build (gsi, true, GSI_SAME_STMT, loc, code, type, a, b, c);
 }
 
 /* Build a binary operation and gimplify it.  Emit code before GSI.
@@ -68,10 +65,7 @@ gimplify_build2 (gimple_stmt_iterator *gsi, enum tree_code code,
 		 tree type, tree a, tree b)
 {
   location_t loc = gimple_location (gsi_stmt (*gsi));
-  gimple_seq stmts = NULL;
-  tree ret = gimple_build (&stmts, loc, code, type, a, b);
-  gsi_insert_seq_before (gsi, stmts, GSI_SAME_STMT);
-  return ret;
+  return gimple_build (gsi, true, GSI_SAME_STMT, loc, code, type, a, b);
 }
 
 /* Build a unary operation and gimplify it.  Emit code before GSI.
@@ -82,10 +76,7 @@ gimplify_build1 (gimple_stmt_iterator *gsi, enum tree_code code, tree type,
 		 tree a)
 {
   location_t loc = gimple_location (gsi_stmt (*gsi));
-  gimple_seq stmts = NULL;
-  tree ret = gimple_build (&stmts, loc, code, type, a);
-  gsi_insert_seq_before (gsi, stmts, GSI_SAME_STMT);
-  return ret;
+  return gimple_build (gsi, true, GSI_SAME_STMT, loc, code, type, a);
 }
 
 

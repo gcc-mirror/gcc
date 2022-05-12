@@ -29,6 +29,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "ssa.h"
 #include "gimple-pretty-print.h"
 #include "optabs-tree.h"
+#include "gimple-iterator.h"
 #include "gimple-fold.h"
 #include "wide-int.h"
 #include "fold-const.h"
