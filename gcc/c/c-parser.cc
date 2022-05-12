@@ -165,6 +165,14 @@ c_parse_init (void)
       C_SET_RID_CODE (id, RID_FIRST_INT_N + i);
       C_IS_RESERVED_WORD (id) = 1;
     }
+
+  if (flag_openmp)
+    {
+      id = get_identifier ("omp_all_memory");
+      C_SET_RID_CODE (id, RID_OMP_ALL_MEMORY);
+      C_IS_RESERVED_WORD (id) = 1;
+      ridpointers [RID_OMP_ALL_MEMORY] = id;
+    }
 }
 
 /* A parser structure recording information about the state and
@@ -10202,6 +10210,13 @@ c_parser_postfix_expression (c_parser *parser)
 	case RID_GENERIC:
 	  expr = c_parser_generic_selection (parser);
 	  break;
+	case RID_OMP_ALL_MEMORY:
+	  gcc_assert (flag_openmp);
+	  c_parser_consume_token (parser);
+	  error_at (loc, "%<omp_all_memory%> may only be used in OpenMP "
+			 "%<depend%> clause");
+	  expr.set_error ();
+	  break;
 	default:
 	  c_parser_error (parser, "expected expression");
 	  expr.set_error ();
@@ -13025,7 +13040,19 @@ c_parser_omp_variable_list (c_parser *parser,
 	  if (c_parser_next_token_is_not (parser, CPP_NAME)
 	      || c_parser_peek_token (parser)->id_kind != C_ID_ID)
 	    {
-	      struct c_expr expr = c_parser_expr_no_commas (parser, NULL);
+	      struct c_expr expr;
+	      if (kind == OMP_CLAUSE_DEPEND
+		  && c_parser_next_token_is_keyword (parser,
+						     RID_OMP_ALL_MEMORY)
+		  && (c_parser_peek_2nd_token (parser)->type == CPP_COMMA
+		      || (c_parser_peek_2nd_token (parser)->type
+			  == CPP_CLOSE_PAREN)))
+		{
+		  expr.value = ridpointers[RID_OMP_ALL_MEMORY];
+		  c_parser_consume_token (parser);
+		}
+	      else
+		expr = c_parser_expr_no_commas (parser, NULL);
 	      if (expr.value != error_mark_node)
 		{
 		  tree u = build_omp_clause (clause_loc, kind);

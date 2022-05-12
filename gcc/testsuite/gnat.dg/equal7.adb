@@ -1,4 +1,4 @@
---  { dg-do run }
+--  { dg-do compile }
 
 with Equal7_Pkg; use Equal7_Pkg;
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
@@ -13,3 +13,11 @@ begin
        null;
    end if;
 end;
+
+-- { dg-error "ambiguous expression \\(cannot resolve \"/=\"\\)" "" { target *-*-* } 9 }
+-- { dg-error "possible interpretation at a-strunb.ads:\\d+" "" { target *-*-* } 9 }
+-- { dg-error "possible interpretation in package Standard" "" { target *-*-* } 9 }
+
+-- { dg-error "ambiguous expression \\(cannot resolve \"=\"\\)" "" { target *-*-* } 12 }
+-- { dg-error "possible interpretation at a-strunb.ads:\\d+" "" { target *-*-* } 12 }
+-- { dg-error "possible interpretation in package Standard" "" { target *-*-* } 12 }

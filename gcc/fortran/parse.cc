@@ -454,7 +454,7 @@ decode_statement (void)
 
     case 'c':
       match ("call", gfc_match_call, ST_CALL);
-      match ("change team", gfc_match_change_team, ST_CHANGE_TEAM);
+      match ("change% team", gfc_match_change_team, ST_CHANGE_TEAM);
       match ("close", gfc_match_close, ST_CLOSE);
       match ("continue", gfc_match_continue, ST_CONTINUE);
       match ("contiguous", gfc_match_contiguous, ST_ATTR_DECL);
@@ -479,7 +479,7 @@ decode_statement (void)
       match ("else", gfc_match_else, ST_ELSE);
       match ("else where", gfc_match_elsewhere, ST_ELSEWHERE);
       match ("else if", gfc_match_elseif, ST_ELSEIF);
-      match ("error stop", gfc_match_error_stop, ST_ERROR_STOP);
+      match ("error% stop", gfc_match_error_stop, ST_ERROR_STOP);
       match ("enum , bind ( c )", gfc_match_enum, ST_ENUM);
 
       if (gfc_match_end (&st) == MATCH_YES)
@@ -488,15 +488,15 @@ decode_statement (void)
       match ("entry% ", gfc_match_entry, ST_ENTRY);
       match ("equivalence", gfc_match_equivalence, ST_EQUIVALENCE);
       match ("external", gfc_match_external, ST_ATTR_DECL);
-      match ("event post", gfc_match_event_post, ST_EVENT_POST);
-      match ("event wait", gfc_match_event_wait, ST_EVENT_WAIT);
+      match ("event% post", gfc_match_event_post, ST_EVENT_POST);
+      match ("event% wait", gfc_match_event_wait, ST_EVENT_WAIT);
       break;
 
     case 'f':
-      match ("fail image", gfc_match_fail_image, ST_FAIL_IMAGE);
+      match ("fail% image", gfc_match_fail_image, ST_FAIL_IMAGE);
       match ("final", gfc_match_final_decl, ST_FINAL);
       match ("flush", gfc_match_flush, ST_FLUSH);
-      match ("form team", gfc_match_form_team, ST_FORM_TEAM);
+      match ("form% team", gfc_match_form_team, ST_FORM_TEAM);
       match ("format", gfc_match_format, ST_FORMAT);
       break;
 
@@ -562,16 +562,16 @@ decode_statement (void)
       match ("save", gfc_match_save, ST_ATTR_DECL);
       match ("static", gfc_match_static, ST_ATTR_DECL);
       match ("submodule", gfc_match_submodule, ST_SUBMODULE);
-      match ("sync all", gfc_match_sync_all, ST_SYNC_ALL);
-      match ("sync images", gfc_match_sync_images, ST_SYNC_IMAGES);
-      match ("sync memory", gfc_match_sync_memory, ST_SYNC_MEMORY);
-      match ("sync team", gfc_match_sync_team, ST_SYNC_TEAM);
+      match ("sync% all", gfc_match_sync_all, ST_SYNC_ALL);
+      match ("sync% images", gfc_match_sync_images, ST_SYNC_IMAGES);
+      match ("sync% memory", gfc_match_sync_memory, ST_SYNC_MEMORY);
+      match ("sync% team", gfc_match_sync_team, ST_SYNC_TEAM);
       break;
 
     case 't':
       match ("target", gfc_match_target, ST_ATTR_DECL);
       match ("type", gfc_match_derived_decl, ST_DERIVED_DECL);
-      match ("type is", gfc_match_type_is, ST_TYPE_IS);
+      match ("type% is", gfc_match_type_is, ST_TYPE_IS);
       break;
 
     case 'u':

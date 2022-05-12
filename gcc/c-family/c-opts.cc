@@ -300,7 +300,7 @@ c_common_handle_option (size_t scode, const char *arg, HOST_WIDE_INT value,
       result = false;
       break;
 
-    case OPT__output_pch_:
+    case OPT__output_pch:
       pch_file = arg;
       break;
 

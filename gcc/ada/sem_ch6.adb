@@ -5407,8 +5407,8 @@ package body Sem_Ch6 is
       --  Check for variables that are never modified
 
       declare
-         E1 : Entity_Id;
-         E2 : Entity_Id;
+         F1 : Entity_Id;
+         F2 : Entity_Id;
 
       begin
          --  If there is a separate spec, then transfer Never_Set_In_Source
@@ -5417,21 +5417,21 @@ package body Sem_Ch6 is
          --  the body entities, not the spec entities.
 
          if Present (Spec_Id) then
-            E1 := First_Entity (Spec_Id);
-            while Present (E1) loop
-               if Ekind (E1) = E_Out_Parameter then
-                  E2 := First_Entity (Body_Id);
-                  while Present (E2) loop
-                     exit when Chars (E1) = Chars (E2);
-                     Next_Entity (E2);
+            F1 := First_Formal (Spec_Id);
+            while Present (F1) loop
+               if Ekind (F1) = E_Out_Parameter then
+                  F2 := First_Formal (Body_Id);
+                  while Present (F2) loop
+                     exit when Chars (F1) = Chars (F2);
+                     Next_Formal (F2);
                   end loop;
 
-                  if Present (E2) then
-                     Set_Never_Set_In_Source (E2, Never_Set_In_Source (E1));
+                  if Present (F2) then
+                     Set_Never_Set_In_Source (F2, Never_Set_In_Source (F1));
                   end if;
                end if;
 
-               Next_Entity (E1);
+               Next_Formal (F1);
             end loop;
          end if;
 
@@ -5473,11 +5473,11 @@ package body Sem_Ch6 is
       --  Restore the limited views in the spec, if any, to let the back end
       --  process it without running into circularities.
 
-      if Exch_Views /= No_Elist then
+      if Present (Exch_Views) then
          Restore_Limited_Views (Exch_Views);
       end if;
 
-      if Mask_Types /= No_Elist then
+      if Present (Mask_Types) then
          Unmask_Unfrozen_Types (Mask_Types);
       end if;
 

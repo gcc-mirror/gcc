@@ -305,13 +305,15 @@ extern Boolean Compile_Time_Known_Value	(Node_Id);
 
 #define Defining_Entity			sem_util__defining_entity
 #define First_Actual			sem_util__first_actual
+#define Is_Expression_Function		sem_util__is_expression_function
 #define Is_Variable_Size_Record 	sem_util__is_variable_size_record
 #define Next_Actual			sem_util__next_actual
 #define Requires_Transient_Scope	sem_util__requires_transient_scope
 
 extern Entity_Id Defining_Entity	(Node_Id);
 extern Node_Id First_Actual		(Node_Id);
-extern Boolean Is_Variable_Size_Record 	(Entity_Id Id);
+extern Boolean Is_Expression_Function	(Entity_Id);
+extern Boolean Is_Variable_Size_Record 	(Entity_Id);
 extern Node_Id Next_Actual		(Node_Id);
 extern Boolean Requires_Transient_Scope	(Entity_Id);
 

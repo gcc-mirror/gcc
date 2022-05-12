@@ -2667,6 +2667,7 @@ package body Sem_Case is
             ---------------------
             -- Free_Value_Sets --
             ---------------------
+
             procedure Free_Value_Sets is
             begin
                Value_Index_Set_Table.Free;

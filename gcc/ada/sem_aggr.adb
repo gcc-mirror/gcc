@@ -4896,6 +4896,15 @@ package body Sem_Aggr is
          return;
       end if;
 
+      --  A record aggregate can only use parentheses
+
+      if Nkind (N) = N_Aggregate
+        and then Is_Homogeneous_Aggregate (N)
+      then
+         Error_Msg_N ("record aggregate must use () and not '[']", N);
+         return;
+      end if;
+
       --  STEP 2: Verify aggregate structure
 
       Step_2 : declare

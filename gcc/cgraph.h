@@ -628,7 +628,7 @@ public:
   /* File stream where this node is being written to.  */
   struct lto_file_decl_data * lto_file_data;
 
-  PTR GTY ((skip)) aux;
+  void *GTY ((skip)) aux;
 
   /* Comdat group the symbol is in.  Can be private if GGC allowed that.  */
   tree x_comdat_group;
@@ -1895,7 +1895,7 @@ public:
   /* Additional information about an indirect call.  Not cleared when an edge
      becomes direct.  */
   cgraph_indirect_call_info *indirect_info;
-  PTR GTY ((skip (""))) aux;
+  void *GTY ((skip (""))) aux;
   /* When equal to CIF_OK, inline this call.  Otherwise, points to the
      explanation why function was not inlined.  */
   enum cgraph_inline_failed_t inline_failed;

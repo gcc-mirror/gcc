@@ -342,6 +342,13 @@ for (i = 0; i < n_opts; i++) {
 	len = length (opts[i]);
 	enum = opt_enum(opts[i])
 
+	# Do not allow Joined and Separate properties if
+	# an options ends with '='.
+	if (flag_set_p("Joined", flags[i]) && flag_set_p("Separate", flags[i]) && opts[i] ~ "=$") {
+		print "#error Option '" opts[i] "' ending with '=' cannot have " \
+			"both Joined and Separate properties"
+	}
+
 	# If this switch takes joined arguments, back-chain all
 	# subsequent switches to it for which it is a prefix.  If
 	# a later switch S is a longer prefix of a switch T, T

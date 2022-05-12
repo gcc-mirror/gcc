@@ -1079,7 +1079,7 @@ package body Ghost is
       function Ultimate_Original_Node (Nod : Node_Id) return Node_Id is
          Res : Node_Id := Nod;
       begin
-         while Original_Node (Res) /= Res loop
+         while Is_Rewrite_Substitution (Res) loop
             Res := Original_Node (Res);
          end loop;
 

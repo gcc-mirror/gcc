@@ -135,8 +135,8 @@ C ObjC C++ ObjC++ Separate Alias(o)
 -output=
 C ObjC C++ ObjC++ Joined Alias(o)
 
--output-pch=
-C ObjC C++ ObjC++ Joined Separate
+-output-pch
+C ObjC C++ ObjC++ Separate
 
 -pedantic
 C ObjC C++ ObjC++ Alias(pedantic)

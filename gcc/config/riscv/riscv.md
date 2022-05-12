@@ -42,6 +42,8 @@
   UNSPEC_COPYSIGN
   UNSPEC_LRINT
   UNSPEC_LROUND
+  UNSPEC_FMIN
+  UNSPEC_FMAX
 
   ;; Stack tie
   UNSPEC_TIE
@@ -1215,6 +1217,26 @@
 ;;	MIN/MAX
 ;;
 ;;  ....................
+
+(define_insn "fmin<mode>3"
+  [(set (match_operand:ANYF                    0 "register_operand" "=f")
+	(unspec:ANYF [(use (match_operand:ANYF 1 "register_operand" " f"))
+		      (use (match_operand:ANYF 2 "register_operand" " f"))]
+		     UNSPEC_FMIN))]
+  "TARGET_HARD_FLOAT && !HONOR_SNANS (<MODE>mode)"
+  "fmin.<fmt>\t%0,%1,%2"
+  [(set_attr "type" "fmove")
+   (set_attr "mode" "<UNITMODE>")])
+
+(define_insn "fmax<mode>3"
+  [(set (match_operand:ANYF                    0 "register_operand" "=f")
+	(unspec:ANYF [(use (match_operand:ANYF 1 "register_operand" " f"))
+		      (use (match_operand:ANYF 2 "register_operand" " f"))]
+		     UNSPEC_FMAX))]
+  "TARGET_HARD_FLOAT && !HONOR_SNANS (<MODE>mode)"
+  "fmax.<fmt>\t%0,%1,%2"
+  [(set_attr "type" "fmove")
+   (set_attr "mode" "<UNITMODE>")])
 
 (define_insn "smin<mode>3"
   [(set (match_operand:ANYF            0 "register_operand" "=f")

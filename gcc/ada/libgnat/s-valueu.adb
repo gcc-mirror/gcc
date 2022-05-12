@@ -234,6 +234,77 @@ package body System.Value_U is
       end if;
    end Lemma_Scan_Digit;
 
+   ----------------------------------------
+   -- Prove_Iter_Scan_Based_Number_Ghost --
+   ----------------------------------------
+
+   procedure Prove_Iter_Scan_Based_Number_Ghost
+     (Str1, Str2 : String;
+      From, To : Integer;
+      Base     : Uns := 10;
+      Acc      : Uns := 0)
+   is
+   begin
+      if From > To then
+         null;
+      elsif Str1 (From) = '_' then
+         Prove_Iter_Scan_Based_Number_Ghost
+           (Str1, Str2, From + 1, To, Base, Acc);
+      elsif Scan_Overflows_Ghost
+        (Hexa_To_Unsigned_Ghost (Str1 (From)), Base, Acc)
+      then
+         null;
+      else
+         Prove_Iter_Scan_Based_Number_Ghost
+           (Str1, Str2, From + 1, To, Base,
+            Base * Acc + Hexa_To_Unsigned_Ghost (Str1 (From)));
+      end if;
+   end Prove_Iter_Scan_Based_Number_Ghost;
+
+   -----------------------------------
+   -- Prove_Scan_Only_Decimal_Ghost --
+   -----------------------------------
+
+   procedure Prove_Scan_Only_Decimal_Ghost
+     (Str : String;
+      Val : Uns)
+   is
+      Non_Blank : constant Positive := First_Non_Space_Ghost
+        (Str, Str'First, Str'Last);
+      pragma Assert (Non_Blank = Str'First + 1);
+      Fst_Num   : constant Positive :=
+        (if Str (Non_Blank) = '+' then Non_Blank + 1 else Non_Blank);
+      pragma Assert (Fst_Num = Str'First + 1);
+      Last_Num_Init   : constant Integer :=
+        Last_Number_Ghost (Str (Str'First + 1 .. Str'Last));
+      pragma Assert (Last_Num_Init = Str'Last);
+      Starts_As_Based : constant Boolean :=
+        Last_Num_Init < Str'Last - 1
+        and then Str (Last_Num_Init + 1) in '#' | ':'
+        and then Str (Last_Num_Init + 2) in
+          '0' .. '9' | 'a' .. 'f' | 'A' .. 'F';
+      pragma Assert (Starts_As_Based = False);
+      Last_Num_Based  : constant Integer :=
+        (if Starts_As_Based
+         then Last_Hexa_Ghost (Str (Last_Num_Init + 2 .. Str'Last))
+         else Last_Num_Init);
+      pragma Assert (Last_Num_Based = Str'Last);
+   begin
+      pragma Assert
+        (Is_Opt_Exponent_Format_Ghost (Str (Str'Last + 1 .. Str'Last)));
+      pragma Assert
+        (Is_Natural_Format_Ghost (Str (Str'First + 1 .. Str'Last)));
+      pragma Assert
+        (Is_Raw_Unsigned_Format_Ghost (Str (Str'First + 1 .. Str'Last)));
+      pragma Assert
+        (not Raw_Unsigned_Overflows_Ghost (Str, Str'First + 1, Str'Last));
+      pragma Assert (Val = Exponent_Unsigned_Ghost (Val, 0, 10).Value);
+      pragma Assert
+        (Val = Scan_Raw_Unsigned_Ghost (Str, Str'First + 1, Str'Last));
+      pragma Assert (Is_Unsigned_Ghost (Str));
+      pragma Assert (Is_Value_Unsigned_Ghost (Str, Val));
+   end Prove_Scan_Only_Decimal_Ghost;
+
    -----------------------
    -- Scan_Raw_Unsigned --
    -----------------------

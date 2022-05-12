@@ -4869,7 +4869,7 @@ static htab_t seen_types;
 static void
 dump_type (int indent, type_p t)
 {
-  PTR *slot;
+  void **slot;
 
   printf ("%*cType at %p: ", indent, ' ', (void *) t);
   if (t->kind == TYPE_UNDEFINED)
@@ -5118,7 +5118,7 @@ static htab_t input_file_htab;
 input_file*
 input_file_by_name (const char* name)
 {
-  PTR* slot;
+  void ** slot;
   input_file* f = NULL;
   int namlen = 0;
   if (!name)
@@ -5227,7 +5227,7 @@ main (int argc, char **argv)
       POS_HERE (do_scalar_typedef ("machine_mode", &pos));
       POS_HERE (do_scalar_typedef ("fixed_size_mode", &pos));
       POS_HERE (do_scalar_typedef ("CONSTEXPR", &pos));
-      POS_HERE (do_typedef ("PTR", 
+      POS_HERE (do_typedef ("void *",
 			    create_pointer (resolve_typedef ("void", &pos)),
 			    &pos));
 #undef POS_HERE

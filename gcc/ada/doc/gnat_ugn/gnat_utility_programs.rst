@@ -630,13 +630,13 @@ building specialized scripts.
 
    .. index:: --wide-character-encoding (gnatmetric)
 
-   :switch:`--wide-character-encoding={e}`
-     Specify the wide character encoding method for the input and output
-     files. ``e`` is one of the following:
+  :switch:`--wide-character-encoding={e}`
+    Specify the wide character encoding method for the input and output
+    files. ``e`` is one of the following:
 
-     * *8* - UTF-8 encoding
+    * *8* - UTF-8 encoding
 
-     * *b* - Brackets encoding (default value)
+    * *b* - Brackets encoding (default value)
 
 
   .. index:: Disable Metrics For Local Units in gnatmetric
@@ -1161,7 +1161,7 @@ building specialized scripts.
     Report maximal loop nesting level
 
 
-  :switch:`-no-loop-nesting`
+  :switch:`--no-loop-nesting`
     Do not report maximal loop nesting level
 
 

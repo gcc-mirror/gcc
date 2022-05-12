@@ -1,3 +1,26 @@
+2022-05-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/105284
+	* include/std/iosfwd: Add declarations for <spanstream> class
+	templates and typedefs.
+	* include/std/spanstream (basic_spanbuf, basic_ispanstream)
+	(basic_ospanstream, basic_spanstream): Remove default template
+	arguments.
+	* testsuite/27_io/headers/iosfwd/synopsis.cc: Add <spanstream>
+	declarations.
+	* testsuite/27_io/headers/iosfwd/types.cc: Check <spanstream>
+	default arguments.
+
+2022-05-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/105284
+	* include/std/iosfwd: Add declarations for <synstream> class
+	templates and typedefs.
+	* include/std/syncstream (basic_syncbuf, basic_osyncstream):
+	Remove default template arguments.
+	* testsuite/27_io/headers/iosfwd/synopsis.cc: New test.
+	* testsuite/27_io/headers/iosfwd/types.cc: New test.
+
 2022-05-06  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/random.tcc (operator==): Only check

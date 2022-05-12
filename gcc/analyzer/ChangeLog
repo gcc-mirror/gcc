@@ -1,3 +1,21 @@
+2022-05-11  David Malcolm  <dmalcolm@redhat.com>
+
+	* checker-path.cc (state_change_event::get_desc): Call maybe_free
+	on label_text temporaries.
+	* diagnostic-manager.cc
+	(diagnostic_manager::prune_for_sm_diagnostic): Likewise.
+	* engine.cc (exploded_graph::~exploded_graph): Fix leak of
+	m_per_point_data and m_per_call_string_data values.  Simplify
+	cleanup of m_per_function_stats and m_per_point_data values.
+	(feasibility_state::maybe_update_for_edge): Fix leak of result of
+	superedge::get_description.
+	* region-model-manager.cc
+	(region_model_manager::~region_model_manager): Move cleanup of
+	m_setjmp_values to match the ordering of the fields within
+	region_model_manager.  Fix leak of values within
+	m_repeated_values_map, m_bits_within_values_map,
+	m_asm_output_values_map, and m_const_fn_result_values_map.
+
 2022-04-28  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/105285

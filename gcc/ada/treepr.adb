@@ -539,7 +539,7 @@ package body Treepr is
          return;
       end if;
 
-      if E = No_Elist then
+      if No (E) then
          Write_Str ("<no elist>");
 
       elsif Is_Empty_Elmt_List (E) then
@@ -1229,7 +1229,7 @@ package body Treepr is
 
          else
             Sfile := Get_Source_File_Index (Sloc (N));
-            Print_Int (Int (Sloc (N)) - Int (Source_Text (Sfile)'First));
+            Print_Int (Int (Sloc (N) - Source_Text (Sfile)'First));
             Write_Str ("  ");
             Write_Location (Sloc (N));
          end if;

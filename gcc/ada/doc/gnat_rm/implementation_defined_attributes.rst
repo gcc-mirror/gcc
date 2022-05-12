@@ -1043,7 +1043,7 @@ are relaxed. Instead, the following rules apply:
 * the enclosing machine scalar is defined as the smallest machine
   scalar starting at a position no greater than
   ``position + first_bit / storage_element_size`` and covering
-  storage elements at least up to ``position + (last_bit + storage_element_size - 1) / storage_element_size```
+  storage elements at least up to ``position + (last_bit + storage_element_size - 1) / storage_element_size``
 * the position of the component is interpreted relative to that machine
   scalar.
 

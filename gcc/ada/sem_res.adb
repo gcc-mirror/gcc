@@ -2245,12 +2245,12 @@ package body Sem_Res is
          elsif Nkind (N) = N_String_Literal
                  and then Is_Character_Type (Typ)
          then
-            Set_Character_Literal_Name (Char_Code (Character'Pos ('A')));
+            Set_Character_Literal_Name (Get_Char_Code ('A'));
             Rewrite (N,
               Make_Character_Literal (Sloc (N),
                 Chars => Name_Find,
                 Char_Literal_Value =>
-                  UI_From_Int (Character'Pos ('A'))));
+                  UI_From_CC (Get_Char_Code ('A'))));
             Set_Etype (N, Any_Character);
             Set_Is_Static_Expression (N);
 
@@ -2472,7 +2472,7 @@ package body Sem_Res is
       --  Declare_Expression and requires scope management.
 
       if Nkind (N) = N_Expression_With_Actions then
-         if Comes_From_Source (N) and then N = Original_Node (N) then
+         if Comes_From_Source (N) and then not Is_Rewrite_Substitution (N) then
             Resolve_Declare_Expression (N, Typ);
          else
             Resolve (Expression (N), Typ);
@@ -7394,6 +7394,7 @@ package body Sem_Res is
          end if;
 
          Resolve (Alt_Expr, Typ);
+         Check_Unset_Reference (Alt_Expr);
          Alt_Typ := Etype (Alt_Expr);
 
          --  When the expression is of a scalar subtype different from the
@@ -7672,6 +7673,7 @@ package body Sem_Res is
       end if;
 
       Resolve (Expr, Typ);
+      Check_Unset_Reference (Expr);
    end Resolve_Declare_Expression;
 
    -----------------------------------------
@@ -8962,55 +8964,6 @@ package body Sem_Res is
             Error_Msg_N ("?q?equality should be parenthesized here!", N);
          end if;
 
-         --  If the equality is overloaded and the operands have resolved
-         --  properly, set the proper equality operator on the node. The
-         --  current setting is the first one found during analysis, which
-         --  is not necessarily the one to which the node has resolved.
-
-         if Is_Overloaded (N) then
-            declare
-               I  : Interp_Index;
-               It : Interp;
-
-            begin
-               Get_First_Interp (N, I, It);
-
-               --  If the equality is user-defined, the type of the operands
-               --  matches that of the formals. For a predefined operator,
-               --  it is the scope that matters, given that the predefined
-               --  equality has Any_Type formals. In either case the result
-               --  type (most often Boolean) must match the context. The scope
-               --  is either that of the type, if there is a generated equality
-               --  (when there is an equality for the component type), or else
-               --  Standard otherwise.
-
-               while Present (It.Typ) loop
-                  if Etype (It.Nam) = Typ
-                    and then
-                     (Etype (First_Entity (It.Nam)) = Etype (L)
-                       or else Scope (It.Nam) = Standard_Standard
-                       or else Scope (It.Nam) = Scope (T))
-                  then
-                     Set_Entity (N, It.Nam);
-
-                     Set_Is_Overloaded (N, False);
-                     exit;
-                  end if;
-
-                  Get_Next_Interp (I, It);
-               end loop;
-
-               --  If expansion is active and this is an inherited operation,
-               --  replace it with its ancestor. This must not be done during
-               --  preanalysis because the type may not be frozen yet, as when
-               --  the context is a precondition or postcondition.
-
-               if Present (Alias (Entity (N))) and then Expander_Active then
-                  Set_Entity (N, Alias (Entity (N)));
-               end if;
-            end;
-         end if;
-
          Check_Unset_Reference (L);
          Check_Unset_Reference (R);
          Generate_Operator_Reference (N, T);
@@ -9183,6 +9136,10 @@ package body Sem_Res is
       --  Expr is an expression with compile-time-known value. This returns the
       --  literal node that reprsents that value.
 
+      -------------------
+      -- OK_For_Static --
+      -------------------
+
       function OK_For_Static (Act : Node_Id) return Boolean is
       begin
          case Nkind (Act) is
@@ -9208,6 +9165,10 @@ package body Sem_Res is
          return False;
       end OK_For_Static;
 
+      -----------------------
+      -- All_OK_For_Static --
+      -----------------------
+
       function All_OK_For_Static return Boolean is
          Act : Node_Id := First (Actions (N));
       begin
@@ -9221,6 +9182,10 @@ package body Sem_Res is
 
          return True;
       end All_OK_For_Static;
+
+      -----------------
+      -- Get_Literal --
+      -----------------
 
       function Get_Literal (Expr : Node_Id) return Node_Id is
          pragma Assert (Compile_Time_Known_Value (Expr));
@@ -9245,7 +9210,11 @@ package body Sem_Res is
          return Result;
       end Get_Literal;
 
+      --  Local variables
+
       Loc : constant Source_Ptr := Sloc (N);
+
+   --  Start of processing for Resolve_Expression_With_Actions
 
    begin
       Set_Etype (N, Typ);
@@ -9366,6 +9335,9 @@ package body Sem_Res is
 
       Resolve (Condition, Any_Boolean);
       Resolve (Then_Expr, Result_Type);
+      Check_Unset_Reference (Condition);
+      Check_Unset_Reference (Then_Expr);
+
       Apply_Check (Then_Expr);
 
       --  If ELSE expression present, just resolve using the determined type
@@ -9381,6 +9353,8 @@ package body Sem_Res is
          else
             Resolve (Else_Expr, Result_Type);
          end if;
+
+         Check_Unset_Reference (Else_Expr);
 
          Apply_Check (Else_Expr);
 
@@ -10594,42 +10568,9 @@ package body Sem_Res is
          end if;
 
          --  Complete resolution and evaluation of NOT
-         --  If argument is an equality and expected type is boolean, that
-         --  expected type has no effect on resolution, and there are
-         --  special rules for resolution of Eq, Neq in the presence of
-         --  overloaded operands, so we directly call its resolution routines.
 
-         declare
-            Opnd : constant Node_Id := Right_Opnd (N);
-            Op_Id : Entity_Id;
-
-         begin
-            if B_Typ = Standard_Boolean
-              and then Nkind (Opnd) in N_Op_Eq | N_Op_Ne
-              and then Is_Overloaded (Opnd)
-            then
-               Resolve_Equality_Op (Opnd, B_Typ);
-               Op_Id := Entity (Opnd);
-
-               if Ekind (Op_Id) = E_Function
-                 and then not Is_Intrinsic_Subprogram (Op_Id)
-               then
-                  Rewrite_Operator_As_Call (Opnd, Op_Id);
-               end if;
-
-               if not Inside_A_Generic or else Is_Entity_Name (Opnd) then
-                  Freeze_Expression (Opnd);
-               end if;
-
-               Expand (Opnd);
-
-            else
-               Resolve (Opnd, B_Typ);
-            end if;
-
-            Check_Unset_Reference (Opnd);
-         end;
-
+         Resolve (Right_Opnd (N), B_Typ);
+         Check_Unset_Reference (Right_Opnd (N));
          Set_Etype (N, B_Typ);
          Generate_Operator_Reference (N, B_Typ);
          Eval_Op_Not (N);
@@ -10662,6 +10603,7 @@ package body Sem_Res is
 
    begin
       Resolve (Expr, Target_Typ);
+      Check_Unset_Reference (Expr);
 
       --  A qualified expression requires an exact match of the type, class-
       --  wide matching is not allowed. However, if the qualifying type is
@@ -11812,7 +11754,7 @@ package body Sem_Res is
 
                   Error_Msg
                     ("literal out of range of type Standard.Character",
-                     Source_Ptr (Int (Loc) + J));
+                     Loc + Source_Ptr (J));
                   return;
                end if;
             end loop;
@@ -11841,7 +11783,7 @@ package body Sem_Res is
 
                   Error_Msg
                     ("literal out of range of type Standard.Wide_Character",
-                     Source_Ptr (Int (Loc) + J));
+                     Loc + Source_Ptr (J));
                   return;
                end if;
             end loop;

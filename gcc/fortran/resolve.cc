@@ -11831,6 +11831,23 @@ deferred_op_assign (gfc_code **code, gfc_namespace *ns)
 }
 
 
+static bool
+check_team (gfc_expr *team, const char *intrinsic)
+{
+  if (team->rank != 0
+      || team->ts.type != BT_DERIVED
+      || team->ts.u.derived->from_intmod != INTMOD_ISO_FORTRAN_ENV
+      || team->ts.u.derived->intmod_sym_id != ISOFORTRAN_TEAM_TYPE)
+    {
+      gfc_error ("TEAM argument to %qs at %L must be a scalar expression "
+		 "of type TEAM_TYPE", intrinsic, &team->where);
+      return false;
+    }
+
+  return true;
+}
+
+
 /* Given a block of code, recursively resolve everything pointed to by this
    code block.  */
 
@@ -11999,10 +12016,25 @@ start:
 	  break;
 
 	case EXEC_FAIL_IMAGE:
+	  break;
+
 	case EXEC_FORM_TEAM:
+	  if (code->expr1 != NULL
+	      && (code->expr1->ts.type != BT_INTEGER || code->expr1->rank))
+	    gfc_error ("TEAM NUMBER argument to FORM TEAM at %L must be "
+		       "a scalar INTEGER", &code->expr1->where);
+	  check_team (code->expr2, "FORM TEAM");
+	  break;
+
 	case EXEC_CHANGE_TEAM:
+	  check_team (code->expr1, "CHANGE TEAM");
+	  break;
+
 	case EXEC_END_TEAM:
+	  break;
+
 	case EXEC_SYNC_TEAM:
+	  check_team (code->expr1, "SYNC TEAM");
 	  break;
 
 	case EXEC_ENTRY:

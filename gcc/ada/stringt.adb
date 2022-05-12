@@ -441,7 +441,7 @@ package body Stringt is
          for J in 1 .. String_Length (Id) loop
             C := Get_String_Char (Id, J);
 
-            if C = Character'Pos ('"') then
+            if C = Get_Char_Code ('"') then
                Write_Str ("""""");
             else
                Write_Char_Code (C);

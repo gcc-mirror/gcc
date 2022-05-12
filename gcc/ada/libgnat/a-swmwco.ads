@@ -181,7 +181,7 @@ private
       Character_Ranges'Unrestricted_Access);
 
    Lower_Case_Mapping : aliased constant Wide_Character_Mapping_Values :=
-     [Length => 56,
+     (Length => 56,
 
       Domain =>
         "ABCDEFGHIJKLMNOPQRSTUVWXYZ" &
@@ -247,14 +247,14 @@ private
          W.LC_U_Circumflex           &
          W.LC_U_Diaeresis            &
          W.LC_Y_Acute                &
-         W.LC_Icelandic_Thorn];
+         W.LC_Icelandic_Thorn);
 
    Lower_Case_Map : constant Wide_Character_Mapping :=
      (AF.Controlled with
       Map => Lower_Case_Mapping'Unrestricted_Access);
 
    Upper_Case_Mapping : aliased constant Wide_Character_Mapping_Values :=
-     [Length => 56,
+     (Length => 56,
 
       Domain =>
         "abcdefghijklmnopqrstuvwxyz" &
@@ -320,14 +320,14 @@ private
          W.UC_U_Circumflex           &
          W.UC_U_Diaeresis            &
          W.UC_Y_Acute                &
-         W.UC_Icelandic_Thorn];
+         W.UC_Icelandic_Thorn);
 
    Upper_Case_Map : constant Wide_Character_Mapping :=
      (AF.Controlled with
       Upper_Case_Mapping'Unrestricted_Access);
 
    Basic_Mapping : aliased constant Wide_Character_Mapping_Values :=
-     [Length => 55,
+     (Length => 55,
 
       Domain =>
         W.UC_A_Grave          &
@@ -441,7 +441,7 @@ private
         'u'        &  -- LC_U_Circumflex
         'u'        &  -- LC_U_Diaeresis
         'y'        &  -- LC_Y_Acute
-        'y'];         -- LC_Y_Diaeresis
+        'y');         -- LC_Y_Diaeresis
 
    Basic_Map : constant Wide_Character_Mapping :=
      (AF.Controlled with

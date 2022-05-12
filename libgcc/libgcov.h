@@ -235,7 +235,7 @@ struct gcov_info
   gcov_merge_fn merge[GCOV_COUNTERS];  /* merge functions (null for
 					  unused) */
   
-  unsigned n_functions;		/* number of functions */
+  gcov_unsigned_t n_functions;		/* number of functions */
 
 #ifndef IN_GCOV_TOOL
   const struct gcov_fn_info *const *functions; /* pointer to pointers

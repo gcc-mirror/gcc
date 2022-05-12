@@ -273,6 +273,14 @@ init_reswords (void)
       C_SET_RID_CODE (id, RID_FIRST_INT_N + i);
       set_identifier_kind (id, cik_keyword);
     }
+
+  if (flag_openmp)
+    {
+      id = get_identifier ("omp_all_memory");
+      C_SET_RID_CODE (id, RID_OMP_ALL_MEMORY);
+      set_identifier_kind (id, cik_keyword);
+      ridpointers [RID_OMP_ALL_MEMORY] = id;
+    }
 }
 
 static void

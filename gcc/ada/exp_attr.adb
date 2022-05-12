@@ -7281,7 +7281,11 @@ package body Exp_Attr is
                       New_Occurrence_Of (Standard_False, Loc))),
                 Right_Opnd => Make_Integer_Literal (Loc, 0));
 
-            if Ptyp /= PBtyp
+            --  Skip the range test for boolean types, as it buys us
+            --  nothing. The function called above already fails for
+            --  values different from both True and False.
+
+            if Ptyp /= PBtyp and then not Is_Boolean_Type (PBtyp)
               and then
                 (Type_Low_Bound (Ptyp) /= Type_Low_Bound (PBtyp)
                   or else

@@ -323,24 +323,28 @@ state_change_event::get_desc (bool can_colorize) const
   if (m_sval)
     {
       label_text sval_desc = m_sval->get_desc ();
+      label_text result;
       if (m_origin)
 	{
 	  label_text origin_desc = m_origin->get_desc ();
-	  return make_label_text
+	  result = make_label_text
 	    (can_colorize,
 	     "state of %qs: %qs -> %qs (origin: %qs)",
 	     sval_desc.m_buffer,
 	     m_from->get_name (),
 	     m_to->get_name (),
 	     origin_desc.m_buffer);
+	  origin_desc.maybe_free ();
 	}
       else
-	return make_label_text
+	result = make_label_text
 	  (can_colorize,
 	   "state of %qs: %qs -> %qs (NULL origin)",
 	   sval_desc.m_buffer,
 	   m_from->get_name (),
 	   m_to->get_name ());
+      sval_desc.maybe_free ();
+      return result;
     }
   else
     {

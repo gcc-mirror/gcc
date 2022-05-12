@@ -37,7 +37,6 @@ with System.Arith_64;
 with System.Image_F;
 
 package System.Img_Fixed_64 is
-   pragma Pure;
 
    subtype Int64 is Interfaces.Integer_64;
 

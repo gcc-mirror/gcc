@@ -4,7 +4,7 @@
 --                                                                          --
 --                             E X P _ A T A G                              --
 --                                                                          --
---                                 S p e c                                  --
+--                                 B o d y                                  --
 --                                                                          --
 --          Copyright (C) 2006-2022, Free Software Foundation, Inc.         --
 --                                                                          --

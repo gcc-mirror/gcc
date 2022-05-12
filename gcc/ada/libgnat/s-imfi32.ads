@@ -37,7 +37,6 @@ with System.Arith_32;
 with System.Image_F;
 
 package System.Img_Fixed_32 is
-   pragma Pure;
 
    subtype Int32 is Interfaces.Integer_32;
 

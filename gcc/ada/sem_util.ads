@@ -2073,6 +2073,8 @@ package Sem_Util is
    function Is_Expression_Function (Subp : Entity_Id) return Boolean;
    --  Determine whether subprogram [body] Subp denotes an expression function
 
+   --  WARNING: There is a matching C declaration of this subprogram in fe.h
+
    function Is_Expression_Function_Or_Completion
      (Subp : Entity_Id) return Boolean;
    --  Determine whether subprogram [body] Subp denotes an expression function

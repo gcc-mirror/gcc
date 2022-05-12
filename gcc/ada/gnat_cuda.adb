@@ -149,7 +149,7 @@ package body GNAT_CUDA is
    is
       Device_Entities : Elist_Id := Get_CUDA_Device_Entities (Pack_Id);
    begin
-      if Device_Entities = No_Elist then
+      if No (Device_Entities) then
          Device_Entities := New_Elmt_List;
          Set_CUDA_Device_Entities (Pack_Id, Device_Entities);
       end if;
@@ -166,7 +166,7 @@ package body GNAT_CUDA is
    is
       Kernels : Elist_Id := Get_CUDA_Kernels (Pack_Id);
    begin
-      if Kernels = No_Elist then
+      if No (Kernels) then
          Kernels := New_Elmt_List;
          Set_CUDA_Kernels (Pack_Id, Kernels);
       end if;
@@ -687,7 +687,7 @@ package body GNAT_CUDA is
    --  Start of processing for Build_And_Insert_CUDA_Initialization
 
    begin
-      if CUDA_Node_List = No_Elist then
+      if No (CUDA_Node_List) then
          return;
       end if;
 
@@ -745,7 +745,7 @@ package body GNAT_CUDA is
    begin
       pragma Assert (Debug_Flag_Underscore_C);
 
-      if Device_Entities = No_Elist then
+      if No (Device_Entities) then
          return;
       end if;
 
@@ -789,7 +789,7 @@ package body GNAT_CUDA is
       E       : Elist_Id)
    is
    begin
-      pragma Assert (Get_CUDA_Device_Entities (Pack_Id) = No_Elist);
+      pragma Assert (No (Get_CUDA_Device_Entities (Pack_Id)));
       CUDA_Device_Entities_Table.Set (Pack_Id, E);
    end Set_CUDA_Device_Entities;
 
@@ -802,7 +802,7 @@ package body GNAT_CUDA is
       Kernels : Elist_Id)
    is
    begin
-      pragma Assert (Get_CUDA_Kernels (Pack_Id) = No_Elist);
+      pragma Assert (No (Get_CUDA_Kernels (Pack_Id)));
       CUDA_Kernels_Table.Set (Pack_Id, Kernels);
    end Set_CUDA_Kernels;
 

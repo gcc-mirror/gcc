@@ -224,7 +224,7 @@ static bool constructor_address_p (tree);
 static bool allocatable_size_p (tree, bool);
 static bool initial_value_needs_conversion (tree, tree);
 static tree update_n_elem (tree, tree, tree);
-static int compare_field_bitpos (const PTR, const PTR);
+static int compare_field_bitpos (const void *, const void *);
 static bool components_to_record (Node_Id, Entity_Id, tree, tree, int, bool,
 				  bool, bool, bool, bool, bool, bool, tree,
 				  tree *);
@@ -7712,7 +7712,7 @@ field_has_variable_size (tree field)
 /* qsort comparer for the bit positions of two record components.  */
 
 static int
-compare_field_bitpos (const PTR rt1, const PTR rt2)
+compare_field_bitpos (const void *rt1, const void *rt2)
 {
   const_tree const field1 = * (const_tree const *) rt1;
   const_tree const field2 = * (const_tree const *) rt2;

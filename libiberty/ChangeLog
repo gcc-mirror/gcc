@@ -1,3 +1,79 @@
+2022-05-10  Martin Liska  <mliska@suse.cz>
+
+	* regex.c: Restore comments.
+
+2022-05-10  Martin Liska  <mliska@suse.cz>
+	    Alan Modra  <amodra@gmail.com>
+
+	* hashtab.c (htab_empty): Use void * type instead of void **.
+	(htab_expand): Likewise.
+
+2022-05-10  Martin Liska  <mliska@suse.cz>
+
+	* random.c: Remove 'define PTR'.
+
+2022-05-10  Martin Liska  <mliska@suse.cz>
+
+	* alloca.c (C_alloca): Use void * instead PTR.
+	* calloc.c (malloc): Likewise.
+	(bzero): Likewise.
+	(calloc): Likewise.
+	* hashtab.c (find_empty_slot_for_expand): Likewise.
+	(eq_pointer): Likewise.
+	(htab_create_alloc_ex): Likewise.
+	(htab_create_typed_alloc): Likewise.
+	(htab_set_functions_ex): Likewise.
+	(htab_delete): Likewise.
+	(htab_empty): Likewise.
+	(htab_expand): Likewise.
+	(htab_find_with_hash): Likewise.
+	(htab_find): Likewise.
+	(htab_find_slot_with_hash): Likewise.
+	(htab_find_slot): Likewise.
+	(htab_remove_elt): Likewise.
+	(htab_remove_elt_with_hash): Likewise.
+	(htab_clear_slot): Likewise.
+	(htab_traverse_noresize): Likewise.
+	(htab_traverse): Likewise.
+	(htab_hash_string): Likewise.
+	(iterative_hash): Likewise.
+	(hash_pointer): Likewise.
+	* memchr.c (memchr): Likewise.
+	* memcmp.c (memcmp): Likewise.
+	* memcpy.c (memcpy): Likewise.
+	* memmove.c (memmove): Likewise.
+	* mempcpy.c (memcpy): Likewise.
+	(mempcpy): Likewise.
+	* memset.c (memset): Likewise.
+	* objalloc.c (malloc): Likewise.
+	(free): Likewise.
+	(objalloc_create): Likewise.
+	(_objalloc_alloc): Likewise.
+	(objalloc_free_block): Likewise.
+	* random.c (PTR): Likewise.
+	(void): Likewise.
+	(initstate): Likewise.
+	(setstate): Likewise.
+	* regex.c: Likewise.
+	* spaces.c (malloc): Likewise.
+	(free): Likewise.
+	* stpcpy.c (memcpy): Likewise.
+	* strdup.c (malloc): Likewise.
+	(memcpy): Likewise.
+	* strerror.c (malloc): Likewise.
+	(memset): Likewise.
+	* strndup.c (malloc): Likewise.
+	(memcpy): Likewise.
+	* strsignal.c (malloc): Likewise.
+	(memset): Likewise.
+	* vasprintf.c (malloc): Likewise.
+	* vprintf-support.c: Likewise.
+	* xatexit.c (malloc): Likewise.
+	* xmalloc.c (xmalloc): Likewise.
+	(xcalloc): Likewise.
+	(xrealloc): Likewise.
+	* xmemdup.c (xmemdup): Likewise.
+
 2022-03-19  Tiezhu Yang  <yangtiezhu@loongson.cn>
 
 	* floatformat.c (floatformat_ieee_quad_big): Renamed from

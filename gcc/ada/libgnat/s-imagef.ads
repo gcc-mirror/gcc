@@ -43,7 +43,6 @@ generic
            Round : Boolean);
 
 package System.Image_F is
-   pragma Pure;
 
    procedure Image_Fixed
      (V    : Int;

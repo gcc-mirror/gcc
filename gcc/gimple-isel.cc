@@ -43,7 +43,7 @@ along with GCC; see the file COPYING3.  If not see
 /* Expand all ARRAY_REF(VIEW_CONVERT_EXPR) gimple assignments into calls to
    internal function based on vector type of selected expansion.
    i.e.:
-     VIEW_CONVERT_EXPR<int[4]>(u)[_1] =  = i_4(D);
+     VIEW_CONVERT_EXPR<int[4]>(u)[_1] = i_4(D);
    =>
      _7 = u;
      _8 = .VEC_SET (_7, i_4(D), _1);
@@ -104,6 +104,7 @@ gimple_expand_vec_set_expr (struct function *fun, gimple_stmt_iterator *gsi)
 	  if (gsi_remove (gsi, true)
 	      && gimple_purge_dead_eh_edges (bb))
 	    cfg_changed = true;
+	  *gsi = gsi_for_stmt (ass_stmt);
 	}
     }
 

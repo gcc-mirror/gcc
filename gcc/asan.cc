@@ -3457,14 +3457,22 @@ initialize_sanitizer_builtins (void)
 
 #include "sanitizer.def"
 
-  /* -fsanitize=object-size uses __builtin_object_size, but that might
-     not be available for e.g. Fortran at this point.  We use
-     DEF_SANITIZER_BUILTIN here only as a convenience macro.  */
-  if ((flag_sanitize & SANITIZE_OBJECT_SIZE)
-      && !builtin_decl_implicit_p (BUILT_IN_OBJECT_SIZE))
-    DEF_SANITIZER_BUILTIN_1 (BUILT_IN_OBJECT_SIZE, "object_size",
-			     BT_FN_SIZE_CONST_PTR_INT,
-			     ATTR_PURE_NOTHROW_LEAF_LIST);
+  /* -fsanitize=object-size uses __builtin_dynamic_object_size and
+     __builtin_object_size, but they might not be available for e.g. Fortran at
+     this point.  We use DEF_SANITIZER_BUILTIN here only as a convenience
+     macro.  */
+  if (flag_sanitize & SANITIZE_OBJECT_SIZE)
+    {
+      if (!builtin_decl_implicit_p (BUILT_IN_OBJECT_SIZE))
+	DEF_SANITIZER_BUILTIN_1 (BUILT_IN_OBJECT_SIZE, "object_size",
+				 BT_FN_SIZE_CONST_PTR_INT,
+				 ATTR_PURE_NOTHROW_LEAF_LIST);
+      if (!builtin_decl_implicit_p (BUILT_IN_DYNAMIC_OBJECT_SIZE))
+	DEF_SANITIZER_BUILTIN_1 (BUILT_IN_DYNAMIC_OBJECT_SIZE,
+				 "dynamic_object_size",
+				 BT_FN_SIZE_CONST_PTR_INT,
+				 ATTR_PURE_NOTHROW_LEAF_LIST);
+    }
 
 #undef DEF_SANITIZER_BUILTIN_1
 #undef DEF_SANITIZER_BUILTIN
