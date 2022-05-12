@@ -53,6 +53,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    */
 
 #ifdef _GLIBCXX_HAS_GTHREADS
+  /// @cond undocumented
+
   // Common base class for std::mutex and std::timed_mutex
   class __mutex_base
   {
@@ -78,8 +80,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     __mutex_base(const __mutex_base&) = delete;
     __mutex_base& operator=(const __mutex_base&) = delete;
   };
+  /// @endcond
 
-  /// The standard mutex type.
+  /** The standard mutex type.
+   *
+   * A simple, non-recursive, non-timed mutex.
+   *
+   * Do not call `lock()` and `unlock()` directly, use a scoped lock type
+   * such as `std::unique_lock`, `std::lock_guard`, or (since C++17)
+   * `std::scoped_lock`.
+   *
+   * @headerfile mutex
+   * @since C++11
+   */
   class mutex : private __mutex_base
   {
   public:
@@ -122,6 +135,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     native_handle() noexcept
     { return &_M_mutex; }
   };
+
+  /// @cond undocumented
 
   // Implementation details for std::condition_variable
   class __condvar
@@ -192,6 +207,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     __gthread_cond_t _M_cond;
 #endif
   };
+  /// @endcond
 
 #endif // _GLIBCXX_HAS_GTHREADS
 
@@ -218,6 +234,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *
    * A lock_guard controls mutex ownership within a scope, releasing
    * ownership in the destructor.
+   *
+   * @headerfile mutex
+   * @since C++11
    */
   template<typename _Mutex>
     class lock_guard

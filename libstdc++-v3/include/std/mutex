@@ -62,6 +62,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    */
 
 #ifdef _GLIBCXX_HAS_GTHREADS
+  /// @cond undocumented
 
   // Common base class for std::recursive_mutex and std::recursive_timed_mutex
   class __recursive_mutex_base
@@ -89,8 +90,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { __gthread_recursive_mutex_destroy(&_M_mutex); }
 #endif
   };
+  /// @endcond
 
-  /// The standard recursive mutex type.
+  /** The standard recursive mutex type.
+   *
+   * A recursive mutex can be locked more than once by the same thread.
+   * Other threads cannot lock the mutex until the owning thread unlocks it
+   * as many times as it was locked.
+   *
+   * @headerfile mutex
+   * @since C++11
+   */
   class recursive_mutex : private __recursive_mutex_base
   {
   public:
@@ -132,6 +142,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   };
 
 #if _GTHREAD_USE_MUTEX_TIMEDLOCK
+  /// @cond undocumented
+
   template<typename _Derived>
     class __timed_mutex_impl
     {
@@ -207,8 +219,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  return false;
 	}
     };
+  /// @endcond
 
-  /// The standard timed mutex type.
+  /** The standard timed mutex type.
+   *
+   * A non-recursive mutex that supports a timeout when trying to acquire the
+   * lock.
+   *
+   * @headerfile mutex
+   * @since C++11
+   */
   class timed_mutex
   : private __mutex_base, public __timed_mutex_impl<timed_mutex>
   {
@@ -273,7 +293,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
   };
 
-  /// recursive_timed_mutex
+  /** The standard recursive timed mutex type.
+   *
+   * A recursive mutex that supports a timeout when trying to acquire the
+   * lock. A recursive mutex can be locked more than once by the same thread.
+   * Other threads cannot lock the mutex until the owning thread unlocks it
+   * as many times as it was locked.
+   *
+   * @headerfile mutex
+   * @since C++11
+   */
   class recursive_timed_mutex
   : private __recursive_mutex_base,
     public __timed_mutex_impl<recursive_timed_mutex>
@@ -687,6 +716,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *
    * A scoped_lock controls mutex ownership within a scope, releasing
    * ownership in the destructor.
+   *
+   * @headerfile mutex
+   * @since C++17
    */
   template<typename... _MutexTypes>
     class scoped_lock
