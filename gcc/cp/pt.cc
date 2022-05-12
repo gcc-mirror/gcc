@@ -17601,8 +17601,8 @@ static tree
 tsubst_omp_clause_decl (tree decl, tree args, tsubst_flags_t complain,
 			tree in_decl, tree *iterator_cache)
 {
-  if (decl == NULL_TREE)
-    return NULL_TREE;
+  if (decl == NULL_TREE || decl == ridpointers[RID_OMP_ALL_MEMORY])
+    return decl;
 
   /* Handle OpenMP iterators.  */
   if (TREE_CODE (decl) == TREE_LIST

@@ -14832,6 +14832,18 @@ c_finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	    }
 	  if (t == error_mark_node)
 	    remove = true;
+	  else if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_DEPEND
+		   && t == ridpointers[RID_OMP_ALL_MEMORY])
+	    {
+	      if (OMP_CLAUSE_DEPEND_KIND (c) != OMP_CLAUSE_DEPEND_OUT
+		  && OMP_CLAUSE_DEPEND_KIND (c) != OMP_CLAUSE_DEPEND_INOUT)
+		{
+		  error_at (OMP_CLAUSE_LOCATION (c),
+			    "%<omp_all_memory%> used with %<depend%> kind "
+			    "other than %<out%> or %<inout%>");
+		  remove = true;
+		}
+	    }
 	  else if (!lvalue_p (t))
 	    {
 	      error_at (OMP_CLAUSE_LOCATION (c),
@@ -14873,24 +14885,32 @@ c_finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	    }
 	  if (!remove)
 	    {
-	      tree addr = build_unary_op (OMP_CLAUSE_LOCATION (c), ADDR_EXPR,
-					  t, false);
-	      if (addr == error_mark_node)
-		remove = true;
+	      if (t == ridpointers[RID_OMP_ALL_MEMORY])
+		t = null_pointer_node;
 	      else
 		{
+		  tree addr = build_unary_op (OMP_CLAUSE_LOCATION (c),
+					      ADDR_EXPR, t, false);
+		  if (addr == error_mark_node)
+		    {
+		      remove = true;
+		      break;
+		    }
 		  t = build_indirect_ref (OMP_CLAUSE_LOCATION (c), addr,
 					  RO_UNARY_STAR);
 		  if (t == error_mark_node)
-		    remove = true;
-		  else if (TREE_CODE (OMP_CLAUSE_DECL (c)) == TREE_LIST
-			   && TREE_PURPOSE (OMP_CLAUSE_DECL (c))
-			   && (TREE_CODE (TREE_PURPOSE (OMP_CLAUSE_DECL (c)))
-			       == TREE_VEC))
-		    TREE_VALUE (OMP_CLAUSE_DECL (c)) = t;
-		  else
-		    OMP_CLAUSE_DECL (c) = t;
+		    {
+		      remove = true;
+		      break;
+		    }
 		}
+	      if (TREE_CODE (OMP_CLAUSE_DECL (c)) == TREE_LIST
+		  && TREE_PURPOSE (OMP_CLAUSE_DECL (c))
+		  && (TREE_CODE (TREE_PURPOSE (OMP_CLAUSE_DECL (c)))
+		      == TREE_VEC))
+		TREE_VALUE (OMP_CLAUSE_DECL (c)) = t;
+	      else
+		OMP_CLAUSE_DECL (c) = t;
 	    }
 	  break;
 

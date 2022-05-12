@@ -850,7 +850,10 @@ dump_omp_clause (pretty_printer *pp, tree clause, int spc, dump_flags_t flags)
 	    pp_string (pp, name);
 	    pp_colon (pp);
 	  }
-	dump_generic_node (pp, t, spc, flags, false);
+	if (t == null_pointer_node)
+	  pp_string (pp, "omp_all_memory");
+	else
+	  dump_generic_node (pp, t, spc, flags, false);
 	pp_right_paren (pp);
       }
       break;

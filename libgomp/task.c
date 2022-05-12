@@ -80,6 +80,7 @@ gomp_init_task (struct gomp_task *task, struct gomp_task *parent_task,
   task->dependers = NULL;
   task->depend_hash = NULL;
   task->taskwait = NULL;
+  task->depend_all_memory = NULL;
   task->depend_count = 0;
   task->completion_sem = NULL;
   task->deferred_p = false;
@@ -171,6 +172,7 @@ gomp_task_handle_depend (struct gomp_task *task, struct gomp_task *parent,
   size_t ndepend = (uintptr_t) depend[0];
   size_t i;
   hash_entry_type ent;
+  bool all_memory = false;
 
   if (ndepend)
     {
@@ -181,6 +183,7 @@ gomp_task_handle_depend (struct gomp_task *task, struct gomp_task *parent,
 	{
 	  task->depend[i].addr = depend[2 + i];
 	  task->depend[i].is_in = i >= nout;
+	  all_memory |= i < nout && depend[2 + i] == NULL;
 	}
     }
   else
@@ -201,6 +204,8 @@ gomp_task_handle_depend (struct gomp_task *task, struct gomp_task *parent,
 	    {
 	    case GOMP_DEPEND_OUT:
 	    case GOMP_DEPEND_INOUT:
+	      all_memory |= d[0] == NULL;
+	      break;
 	    case GOMP_DEPEND_MUTEXINOUTSET:
 	      break;
 	    case GOMP_DEPEND_IN:
@@ -226,8 +231,126 @@ gomp_task_handle_depend (struct gomp_task *task, struct gomp_task *parent,
 	  task->depend[n++].is_in = 1;
 	}
     }
-  task->depend_count = ndepend;
   task->num_dependees = 0;
+  if (__builtin_expect (parent->depend_all_memory && ndepend, false))
+    {
+      struct gomp_task *tsk = parent->depend_all_memory;
+      if (tsk->dependers == NULL)
+	{
+	  tsk->dependers
+	    = gomp_malloc (sizeof (struct gomp_dependers_vec)
+			   + 6 * sizeof (struct gomp_task *));
+	  tsk->dependers->n_elem = 1;
+	  tsk->dependers->allocated = 6;
+	  tsk->dependers->elem[0] = task;
+	}
+      else
+	{
+	  if (tsk->dependers->n_elem == tsk->dependers->allocated)
+	    {
+	      tsk->dependers->allocated
+		= tsk->dependers->allocated * 2 + 2;
+	      tsk->dependers
+		= gomp_realloc (tsk->dependers,
+				sizeof (struct gomp_dependers_vec)
+				+ (tsk->dependers->allocated
+				   * sizeof (struct gomp_task *)));
+	    }
+	  tsk->dependers->elem[tsk->dependers->n_elem++] = task;
+	}
+      task->num_dependees++;
+    }
+  if (__builtin_expect (all_memory, false))
+    {
+      /* A task with depend(inout: omp_all_memory) depends on all previous
+	 sibling tasks which have any dependencies and all later sibling
+	 tasks which have any dependencies depend on it.  */
+      task->depend_count = 1;
+      task->depend[0].addr = NULL;
+      task->depend[0].next = NULL;
+      task->depend[0].prev = NULL;
+      task->depend[0].task = task;
+      task->depend[0].redundant = true;
+      task->depend[0].redundant_out = false;
+      if (parent->depend_hash)
+	{
+	  /* Inlined htab_traverse + htab_clear.  All newer siblings can
+	     just depend on this task.  Add dependencies on all previous
+	     sibling tasks with dependencies and make them redundant and
+	     clear the hash table.  */
+	  hash_entry_type *slot = &parent->depend_hash->entries[0];
+	  hash_entry_type *end = slot + htab_size (parent->depend_hash);
+	  for (; slot != end; ++slot)
+	    {
+	      if (*slot == HTAB_EMPTY_ENTRY)
+		continue;
+	      if (*slot != HTAB_DELETED_ENTRY)
+		{
+		  for (ent = *slot; ent; ent = ent->next)
+		    {
+		      struct gomp_task *tsk = ent->task;
+
+		      if (ent->redundant_out)
+			break;
+
+		      ent->redundant = true;
+		      if (tsk->dependers == NULL)
+			{
+			  tsk->dependers
+			    = gomp_malloc (sizeof (struct gomp_dependers_vec)
+					   + 6 * sizeof (struct gomp_task *));
+			  tsk->dependers->n_elem = 1;
+			  tsk->dependers->allocated = 6;
+			  tsk->dependers->elem[0] = task;
+			  task->num_dependees++;
+			  continue;
+			}
+		      /* We already have some other dependency on tsk from
+			 earlier depend clause.  */
+		      else if (tsk->dependers->n_elem
+			       && (tsk->dependers->elem[tsk->dependers->n_elem
+							- 1] == task))
+			continue;
+		      else if (tsk->dependers->n_elem
+			       == tsk->dependers->allocated)
+			{
+			  tsk->dependers->allocated
+			    = tsk->dependers->allocated * 2 + 2;
+			  tsk->dependers
+			    = gomp_realloc (tsk->dependers,
+					    sizeof (struct gomp_dependers_vec)
+					    + (tsk->dependers->allocated
+					       * sizeof (struct gomp_task *)));
+			}
+		      tsk->dependers->elem[tsk->dependers->n_elem++] = task;
+		      task->num_dependees++;
+		    }
+		  while (ent)
+		    {
+		      ent->redundant = true;
+		      ent = ent->next;
+		    }
+		}
+	      *slot = HTAB_EMPTY_ENTRY;
+	    }
+	  if (htab_size (parent->depend_hash) <= 32)
+	    {
+	      parent->depend_hash->n_elements = 0;
+	      parent->depend_hash->n_deleted = 0;
+	    }
+	  else
+	    {
+	      /* Shrink the hash table if it would be too large.
+		 We don't want to walk e.g. megabytes of empty hash
+		 table for every depend(inout: omp_all_memory).  */
+	      free (parent->depend_hash);
+	      parent->depend_hash = htab_create (12);
+	    }
+	}
+      parent->depend_all_memory = task;
+      return;
+    }
+  task->depend_count = ndepend;
   if (parent->depend_hash == NULL)
     parent->depend_hash = htab_create (2 * ndepend > 12 ? 2 * ndepend : 12);
   for (i = 0; i < ndepend; i++)
@@ -1175,6 +1298,8 @@ gomp_task_run_post_handle_depend_hash (struct gomp_task *child_task)
   struct gomp_task *parent = child_task->parent;
   size_t i;
 
+  if (parent->depend_all_memory == child_task)
+    parent->depend_all_memory = NULL;
   for (i = 0; i < child_task->depend_count; i++)
     if (!child_task->depend[i].redundant)
       {
@@ -1738,6 +1863,17 @@ gomp_task_maybe_wait_for_dependencies (void **depend)
       n = 5;
     }
   gomp_mutex_lock (&team->task_lock);
+  if (__builtin_expect (task->depend_all_memory && ndepend, false))
+    {
+      struct gomp_task *tsk = task->depend_all_memory;
+      if (!tsk->parent_depends_on)
+	{
+	  tsk->parent_depends_on = true;
+	  ++num_awaited;
+	  if (tsk->num_dependees == 0 && tsk->kind == GOMP_TASK_WAITING)
+	    priority_queue_upgrade_task (tsk, task);
+	}
+    }
   for (i = 0; i < ndepend; i++)
     {
       elem.addr = depend[i + n];
@@ -1759,6 +1895,36 @@ gomp_task_maybe_wait_for_dependencies (void **depend)
 			  (int) (uintptr_t) d[1]);
 	    }
 	  elem.addr = d[0];
+	}
+      if (__builtin_expect (elem.addr == NULL && !elem.is_in, false))
+	{
+	  size_t size = htab_size (task->depend_hash);
+	  if (htab_elements (task->depend_hash) * 8 < size && size > 32)
+	    htab_expand (task->depend_hash);
+
+	  /* depend(inout: omp_all_memory) - depend on all previous
+	     sibling tasks that do have dependencies.  Inlined
+	     htab_traverse.  */
+	  hash_entry_type *slot = &task->depend_hash->entries[0];
+	  hash_entry_type *end = slot + htab_size (task->depend_hash);
+	  for (; slot != end; ++slot)
+	    {
+	      if (*slot == HTAB_EMPTY_ENTRY || *slot == HTAB_DELETED_ENTRY)
+		continue;
+	      for (ent = *slot; ent; ent = ent->next)
+		{
+		  struct gomp_task *tsk = ent->task;
+		  if (!tsk->parent_depends_on)
+		    {
+		      tsk->parent_depends_on = true;
+		      ++num_awaited;
+		      if (tsk->num_dependees == 0
+			  && tsk->kind == GOMP_TASK_WAITING)
+			priority_queue_upgrade_task (tsk, task);
+		    }
+		}
+	    }
+	  break;
 	}
       ent = htab_find (task->depend_hash, &elem);
       for (; ent; ent = ent->next)

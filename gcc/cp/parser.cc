@@ -5876,6 +5876,14 @@ cp_parser_primary_expression (cp_parser *parser,
 	case RID_AT_SELECTOR:
 	  return cp_parser_objc_expression (parser);
 
+	case RID_OMP_ALL_MEMORY:
+	  gcc_assert (flag_openmp);
+	  cp_lexer_consume_token (parser->lexer);
+	  error_at (token->location,
+		    "%<omp_all_memory%> may only be used in OpenMP "
+		    "%<depend%> clause");
+	  return error_mark_node;
+
 	case RID_TEMPLATE:
 	  if (parser->in_function_body
 	      && (cp_lexer_peek_nth_token (parser->lexer, 2)->type
@@ -36734,6 +36742,15 @@ cp_parser_omp_var_list_no_open (cp_parser *parser, enum omp_clause_code kind,
 	  cp_id_kind idk;
 	  decl = cp_parser_primary_expression (parser, false, false, false,
 					       &idk);
+	}
+      else if (kind == OMP_CLAUSE_DEPEND
+	       && cp_parser_is_keyword (token, RID_OMP_ALL_MEMORY)
+	       && (cp_lexer_nth_token_is (parser->lexer, 2, CPP_COMMA)
+		   || cp_lexer_nth_token_is (parser->lexer, 2,
+					     CPP_CLOSE_PAREN)))
+	{
+	  decl = ridpointers[RID_OMP_ALL_MEMORY];
+	  cp_lexer_consume_token (parser->lexer);
 	}
       else
 	{
