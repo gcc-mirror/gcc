@@ -208,5 +208,23 @@ ASTLoweringPattern::visit (AST::LiteralPattern &pattern)
     = new HIR::LiteralPattern (mapping, std::move (l), pattern.get_locus ());
 }
 
+void
+ASTLoweringPattern::visit (AST::RangePattern &pattern)
+{
+  auto upper_bound
+    = lower_range_pattern_bound (pattern.get_upper_bound ().get ());
+  auto lower_bound
+    = lower_range_pattern_bound (pattern.get_lower_bound ().get ());
+
+  auto crate_num = mappings->get_current_crate ();
+  Analysis::NodeMapping mapping (crate_num, pattern.get_node_id (),
+				 mappings->get_next_hir_id (crate_num),
+				 UNKNOWN_LOCAL_DEFID);
+
+  translated
+    = new HIR::RangePattern (mapping, std::move (lower_bound),
+			     std::move (upper_bound), pattern.get_locus ());
+}
+
 } // namespace HIR
 } // namespace Rust
