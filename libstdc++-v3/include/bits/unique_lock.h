@@ -51,7 +51,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    * to another unique_lock by move construction or move assignment. If a
    * mutex lock is owned when the destructor runs ownership will be released.
    *
+   * @headerfile mutex
    * @ingroup mutexes
+   * @since C++11
    */
   template<typename _Mutex>
     class unique_lock

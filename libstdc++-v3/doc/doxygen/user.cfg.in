@@ -2325,6 +2325,7 @@ INCLUDE_FILE_PATTERNS  =
 PREDEFINED             = __cplusplus=202002L \
                          __GTHREADS \
                          _GLIBCXX_HAS_GTHREADS \
+                         _GTHREAD_USE_MUTEX_TIMEDLOCK \
                          _GLIBCXX_HAVE_TLS \
                          _GLIBCXX_INCLUDE_AS_CXX11 \
                          "_GLIBCXX_PURE= " \
