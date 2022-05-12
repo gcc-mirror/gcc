@@ -1,3 +1,7 @@
+2022-05-12  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/finalize_38b.f90: Compile with -Ofast.
+
 2022-04-27  Tobias Burnus <tobias@codesourcery.com>
 
 	* gfortran.dg/abstract_type_6.f03: Remove dg-error as

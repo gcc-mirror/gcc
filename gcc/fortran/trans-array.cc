@@ -3076,6 +3076,12 @@ gfc_scalar_elemental_arg_saved_as_reference (gfc_ss_info * ss_info)
       && gfc_expr_is_variable (ss_info->expr))
     return true;
 
+  /* Proc pointers: avoid creating a non-pointer function temporary;
+     should only get used internally due to constraints. */
+  if (!ss_info->data.scalar.needs_temporary &&
+      gfc_expr_attr (ss_info->expr).proc_pointer)
+    return true;
+
   /* Otherwise the expression is evaluated to a temporary variable before the
      scalarization loop.  */
   return false;
