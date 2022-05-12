@@ -823,6 +823,9 @@ namespace std
 
 #undef _GLIBCXX_HAS_BUILTIN
 
+// Mark code that should be ignored by the compiler, but seen by Doxygen.
+#define _GLIBCXX_DOXYGEN_ONLY(X)
+
 // PSTL configuration
 
 #if __cplusplus >= 201703L
