@@ -23,16 +23,22 @@ long bext64_1(long a, char bitno)
 
 long bext64_2(long a, char bitno)
 {
-  return (a & (1UL << bitno)) ? 0 : -1;
+  return (a & (1UL << bitno)) ? 0 : 1;
 }
 
 long bext64_3(long a, char bitno)
+{
+  return (a & (1UL << bitno)) ? 0 : -1;
+}
+
+long bext64_4(long a, char bitno)
 {
   return (a & (1UL << bitno)) ? -1 : 0;
 }
 
 /* { dg-final { scan-assembler-times "bexti\t" 1 } } */
-/* { dg-final { scan-assembler-times "bext\t" 4 } } */
+/* { dg-final { scan-assembler-times "bext\t" 5 } } */
+/* { dg-final { scan-assembler-times "xori\t|snez\t" 1 } } */
 /* { dg-final { scan-assembler-times "addi\t" 1 } } */
 /* { dg-final { scan-assembler-times "neg\t" 1 } } */
 /* { dg-final { scan-assembler-not "andi" } } */
