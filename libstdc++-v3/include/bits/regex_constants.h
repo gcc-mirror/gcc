@@ -1,4 +1,4 @@
-// class template regex -*- C++ -*-
+// Namespace std::regex_constants -*- C++ -*-
 
 // Copyright (C) 2010-2022 Free Software Foundation, Inc.
 //
@@ -38,6 +38,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
  * @defgroup regex Regular Expressions
  *
  * A facility for performing regular expression pattern matching.
+ *
+ * @since C++11
+ *
  * @{
  */
 
