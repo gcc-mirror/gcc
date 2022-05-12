@@ -122,13 +122,15 @@ target_triplet = @target@
 
 # Including the GCC-shipped 'include/cuda/cuda.h' vs. system <cuda.h>.
 @PLUGIN_NVPTX_DYNAMIC_FALSE@@PLUGIN_NVPTX_TRUE@am__append_2 = -DPLUGIN_NVPTX_INCLUDE_SYSTEM_CUDA_H \
+@PLUGIN_NVPTX_DYNAMIC_FALSE@@PLUGIN_NVPTX_TRUE@	$(PLUGIN_NVPTX_CPPFLAGS) \
 @PLUGIN_NVPTX_DYNAMIC_FALSE@@PLUGIN_NVPTX_TRUE@	-DPLUGIN_NVPTX_LINK_LIBCUDA
 
 # 'dlopen'ing the CUDA Driver library vs. linking it.
 @PLUGIN_NVPTX_DYNAMIC_TRUE@@PLUGIN_NVPTX_TRUE@am__append_3 = $(DL_LIBS)
-@PLUGIN_NVPTX_DYNAMIC_FALSE@@PLUGIN_NVPTX_TRUE@am__append_4 = $(PLUGIN_NVPTX_LIBS)
-@PLUGIN_GCN_TRUE@am__append_5 = libgomp-plugin-gcn.la
-@USE_FORTRAN_TRUE@am__append_6 = openacc.f90
+@PLUGIN_NVPTX_DYNAMIC_FALSE@@PLUGIN_NVPTX_TRUE@am__append_4 = $(PLUGIN_NVPTX_LDFLAGS)
+@PLUGIN_NVPTX_DYNAMIC_FALSE@@PLUGIN_NVPTX_TRUE@am__append_5 = $(PLUGIN_NVPTX_LIBS)
+@PLUGIN_GCN_TRUE@am__append_6 = libgomp-plugin-gcn.la
+@USE_FORTRAN_TRUE@am__append_7 = openacc.f90
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/../config/acx.m4 \
@@ -536,7 +538,7 @@ libsubincludedir = $(libdir)/gcc/$(target_alias)/$(gcc_version)/include
 AM_CPPFLAGS = $(addprefix -I, $(search_path))
 AM_CFLAGS = $(XCFLAGS)
 AM_LDFLAGS = $(XLDFLAGS) $(SECTION_LDFLAGS) $(OPT_LDFLAGS)
-toolexeclib_LTLIBRARIES = libgomp.la $(am__append_1) $(am__append_5)
+toolexeclib_LTLIBRARIES = libgomp.la $(am__append_1) $(am__append_6)
 nodist_toolexeclib_HEADERS = libgomp.spec
 
 # -Wc is only a libtool option.
@@ -563,18 +565,18 @@ libgomp_la_SOURCES = alloc.c atomic.c barrier.c critical.c env.c \
 	oacc-parallel.c oacc-host.c oacc-init.c oacc-mem.c \
 	oacc-async.c oacc-plugin.c oacc-cuda.c priority_queue.c \
 	affinity-fmt.c teams.c allocator.c oacc-profiling.c \
-	oacc-target.c $(am__append_6)
+	oacc-target.c $(am__append_7)
 
 # Nvidia PTX OpenACC plugin.
 @PLUGIN_NVPTX_TRUE@libgomp_plugin_nvptx_version_info = -version-info $(libtool_VERSION)
 @PLUGIN_NVPTX_TRUE@libgomp_plugin_nvptx_la_SOURCES = plugin/plugin-nvptx.c
 @PLUGIN_NVPTX_TRUE@libgomp_plugin_nvptx_la_CPPFLAGS = $(AM_CPPFLAGS) \
-@PLUGIN_NVPTX_TRUE@	$(PLUGIN_NVPTX_CPPFLAGS) $(am__append_2)
+@PLUGIN_NVPTX_TRUE@	$(am__append_2)
 @PLUGIN_NVPTX_TRUE@libgomp_plugin_nvptx_la_LDFLAGS =  \
 @PLUGIN_NVPTX_TRUE@	$(libgomp_plugin_nvptx_version_info) \
-@PLUGIN_NVPTX_TRUE@	$(lt_host_flags) $(PLUGIN_NVPTX_LDFLAGS)
+@PLUGIN_NVPTX_TRUE@	$(lt_host_flags) $(am__append_4)
 @PLUGIN_NVPTX_TRUE@libgomp_plugin_nvptx_la_LIBADD = libgomp.la \
-@PLUGIN_NVPTX_TRUE@	$(am__append_3) $(am__append_4)
+@PLUGIN_NVPTX_TRUE@	$(am__append_3) $(am__append_5)
 @PLUGIN_NVPTX_TRUE@libgomp_plugin_nvptx_la_LIBTOOLFLAGS = --tag=disable-static
 
 # AMD GCN plugin
