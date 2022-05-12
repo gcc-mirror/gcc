@@ -832,19 +832,19 @@ Mappings::lookup_macro_def (NodeId id, AST::MacroRulesDefinition **def)
 }
 
 void
-Mappings::insert_visibility (DefId id, Privacy::ModuleVisibility visibility)
+Mappings::insert_visibility (NodeId id, Privacy::ModuleVisibility visibility)
 {
   visibility_map.insert ({id, visibility});
 }
 
 bool
-Mappings::lookup_visibility (DefId id, Privacy::ModuleVisibility *def)
+Mappings::lookup_visibility (NodeId id, Privacy::ModuleVisibility &def)
 {
   auto it = visibility_map.find (id);
   if (it == visibility_map.end ())
     return false;
 
-  *def = it->second;
+  def = it->second;
   return true;
 }
 

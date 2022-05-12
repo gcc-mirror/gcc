@@ -48,6 +48,11 @@ public:
     return ModuleVisibility (Type::Public, UNKNOWN_DEFID);
   }
 
+  static ModuleVisibility create_private ()
+  {
+    return ModuleVisibility (Type::Private, UNKNOWN_DEFID);
+  }
+
   Type get_kind () const { return kind; }
 
   const DefId &get_module_id () const { return module_id; }

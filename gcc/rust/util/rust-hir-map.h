@@ -319,8 +319,8 @@ public:
 
   bool lookup_macro_def (NodeId id, AST::MacroRulesDefinition **def);
 
-  void insert_visibility (DefId id, Privacy::ModuleVisibility visibility);
-  bool lookup_visibility (DefId id, Privacy::ModuleVisibility *def);
+  void insert_visibility (NodeId id, Privacy::ModuleVisibility visibility);
+  bool lookup_visibility (NodeId id, Privacy::ModuleVisibility &def);
 
   void insert_module_child (NodeId module, NodeId child);
   Optional<std::vector<NodeId> &> lookup_module_children (NodeId module);
@@ -389,7 +389,7 @@ private:
   std::map<CrateNum, std::string> crate_names;
 
   // Low level visibility map for each DefId
-  std::map<DefId, Privacy::ModuleVisibility> visibility_map;
+  std::map<NodeId, Privacy::ModuleVisibility> visibility_map;
 
   // Module tree maps
 
