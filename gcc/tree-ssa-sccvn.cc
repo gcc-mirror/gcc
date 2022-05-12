@@ -1799,11 +1799,13 @@ struct pd_data
 struct vn_walk_cb_data
 {
   vn_walk_cb_data (vn_reference_t vr_, tree orig_ref_, tree *last_vuse_ptr_,
-		   vn_lookup_kind vn_walk_kind_, bool tbaa_p_, tree mask_)
+		   vn_lookup_kind vn_walk_kind_, bool tbaa_p_, tree mask_,
+		   bool redundant_store_removal_p_)
     : vr (vr_), last_vuse_ptr (last_vuse_ptr_), last_vuse (NULL_TREE),
       mask (mask_), masked_result (NULL_TREE), vn_walk_kind (vn_walk_kind_),
-      tbaa_p (tbaa_p_), saved_operands (vNULL), first_set (-2),
-      first_base_set (-2), known_ranges (NULL)
+      tbaa_p (tbaa_p_), redundant_store_removal_p (redundant_store_removal_p_),
+      saved_operands (vNULL), first_set (-2), first_base_set (-2),
+      known_ranges (NULL)
   {
     if (!last_vuse_ptr)
       last_vuse_ptr = &last_vuse;
@@ -1862,6 +1864,7 @@ struct vn_walk_cb_data
   tree masked_result;
   vn_lookup_kind vn_walk_kind;
   bool tbaa_p;
+  bool redundant_store_removal_p;
   vec<vn_reference_op_s> saved_operands;
 
   /* The VDEFs of partial defs we come along.  */
@@ -2617,6 +2620,19 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 	  && !refs_may_alias_p_1 (ref, &lhs_ref, data->tbaa_p))
 	{
 	  *disambiguate_only = TR_VALUEIZE_AND_DISAMBIGUATE;
+	  return NULL;
+	}
+
+      /* When the def is a CLOBBER we can optimistically disambiguate
+	 against it since any overlap it would be undefined behavior.
+	 Avoid this for obvious must aliases to save compile-time though.
+	 We also may not do this when the query is used for redundant
+	 store removal.  */
+      if (!data->redundant_store_removal_p
+	  && gimple_clobber_p (def_stmt)
+	  && !operand_equal_p (ao_ref_base (&lhs_ref), base, OEP_ADDRESS_OF))
+	{
+	  *disambiguate_only = TR_DISAMBIGUATE;
 	  return NULL;
 	}
 
@@ -3604,7 +3620,8 @@ vn_reference_lookup_pieces (tree vuse, alias_set_type set,
     {
       ao_ref r;
       unsigned limit = param_sccvn_max_alias_queries_per_access;
-      vn_walk_cb_data data (&vr1, NULL_TREE, NULL, kind, true, NULL_TREE);
+      vn_walk_cb_data data (&vr1, NULL_TREE, NULL, kind, true, NULL_TREE,
+			    false);
       vec<vn_reference_op_s> ops_for_ref;
       if (!valueized_p)
 	ops_for_ref = vr1.operands;
@@ -3649,12 +3666,14 @@ vn_reference_lookup_pieces (tree vuse, alias_set_type set,
    MASK is either NULL_TREE, or can be an INTEGER_CST if the result of the
    load is bitwise anded with MASK and so we are only interested in a subset
    of the bits and can ignore if the other bits are uninitialized or
-   not initialized with constants.  */
+   not initialized with constants.  When doing redundant store removal
+   the caller has to set REDUNDANT_STORE_REMOVAL_P.  */
 
 tree
 vn_reference_lookup (tree op, tree vuse, vn_lookup_kind kind,
 		     vn_reference_t *vnresult, bool tbaa_p,
-		     tree *last_vuse_ptr, tree mask)
+		     tree *last_vuse_ptr, tree mask,
+		     bool redundant_store_removal_p)
 {
   vec<vn_reference_op_s> operands;
   struct vn_reference_s vr1;
@@ -3732,7 +3751,8 @@ vn_reference_lookup (tree op, tree vuse, vn_lookup_kind kind,
 					     vr1.type, ops_for_ref))
 	ao_ref_init (&r, op);
       vn_walk_cb_data data (&vr1, r.ref ? NULL_TREE : op,
-			    last_vuse_ptr, kind, tbaa_p, mask);
+			    last_vuse_ptr, kind, tbaa_p, mask,
+			    redundant_store_removal_p);
 
       wvnresult
 	= ((vn_reference_t)
@@ -6592,7 +6612,8 @@ eliminate_dom_walker::eliminate_stmt (basic_block b, gimple_stmt_iterator *gsi)
       tree val = NULL_TREE;
       if (lookup_lhs)
 	val = vn_reference_lookup (lookup_lhs, gimple_vuse (stmt),
-				   VN_WALKREWRITE, &vnresult, false);
+				   VN_WALKREWRITE, &vnresult, false,
+				   NULL, NULL_TREE, true);
       if (TREE_CODE (rhs) == SSA_NAME)
 	rhs = VN_INFO (rhs)->valnum;
       if (val
