@@ -11891,7 +11891,7 @@ Type::build_direct_iface_stub_methods(Gogo* gogo, const Type* type,
         need_stub = true;
       if (!in_heap && !m->is_value_method())
         need_stub = true;
-      if (!need_stub)
+      if (!need_stub || m->is_ambiguous())
         continue;
 
       Type* receiver_type = const_cast<Type*>(type);
