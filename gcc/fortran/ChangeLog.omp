@@ -1,3 +1,8 @@
+2022-05-12  Tobias Burnus  <tobias@codesourcery.com>
+
+	* trans-array.cc (gfc_scalar_elemental_arg_saved_as_reference):
+	Return true for attr.proc_pointer expressions.
+
 2022-04-27  Tobias Burnus <tobias@codesourcery.com>
 
 	* resolve.cc (gfc_resolve_finalizers): Remove
