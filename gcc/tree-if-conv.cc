@@ -244,8 +244,8 @@ static inline void
 set_bb_predicate (basic_block bb, tree cond)
 {
   gcc_assert ((TREE_CODE (cond) == TRUTH_NOT_EXPR
-	       && is_gimple_condexpr (TREE_OPERAND (cond, 0)))
-	      || is_gimple_condexpr (cond));
+	       && is_gimple_val (TREE_OPERAND (cond, 0)))
+	      || is_gimple_val (cond));
   ((struct bb_predicate *) bb->aux)->predicate = cond;
 }
 
@@ -544,10 +544,10 @@ add_to_predicate_list (class loop *loop, basic_block bb, tree nc)
     tp = &TREE_OPERAND (bc, 0);
   else
     tp = &bc;
-  if (!is_gimple_condexpr (*tp))
+  if (!is_gimple_val (*tp))
     {
       gimple_seq stmts;
-      *tp = force_gimple_operand_1 (*tp, &stmts, is_gimple_condexpr, NULL_TREE);
+      *tp = force_gimple_operand (*tp, &stmts, true, NULL_TREE);
       add_bb_predicate_gimplified_stmts (bb, stmts);
     }
   set_bb_predicate (bb, bc);
@@ -1884,16 +1884,14 @@ gen_phi_arg_condition (gphi *phi, vec<int> *occur,
 	  cond = c;
 	  break;
 	}
-      c = force_gimple_operand_gsi_1 (gsi, unshare_expr (c),
-				      is_gimple_condexpr, NULL_TREE,
-				      true, GSI_SAME_STMT);
+      c = force_gimple_operand_gsi (gsi, unshare_expr (c),
+				    true, NULL_TREE, true, GSI_SAME_STMT);
       if (cond != NULL_TREE)
 	{
 	  /* Must build OR expression.  */
 	  cond = fold_or_predicates (EXPR_LOCATION (c), c, cond);
-	  cond = force_gimple_operand_gsi_1 (gsi, unshare_expr (cond),
-					     is_gimple_condexpr, NULL_TREE,
-					     true, GSI_SAME_STMT);
+	  cond = force_gimple_operand_gsi (gsi, unshare_expr (cond), true,
+					   NULL_TREE, true, GSI_SAME_STMT);
 	}
       else
 	cond = c;
@@ -1973,9 +1971,8 @@ predicate_scalar_phi (gphi *phi, gimple_stmt_iterator *gsi)
       else
 	cond = bb_predicate (first_edge->src);
       /* Gimplify the condition to a valid cond-expr conditonal operand.  */
-      cond = force_gimple_operand_gsi_1 (gsi, unshare_expr (cond),
-					 is_gimple_condexpr, NULL_TREE,
-					 true, GSI_SAME_STMT);
+      cond = force_gimple_operand_gsi (gsi, unshare_expr (cond), true,
+				       NULL_TREE, true, GSI_SAME_STMT);
       true_bb = first_edge->src;
       if (EDGE_PRED (bb, 1)->src == true_bb)
 	{
@@ -2074,9 +2071,8 @@ predicate_scalar_phi (gphi *phi, gimple_stmt_iterator *gsi)
 	  cond = TREE_OPERAND (cond, 0);
 	}
       /* Gimplify the condition to a valid cond-expr conditonal operand.  */
-      cond = force_gimple_operand_gsi_1 (gsi, unshare_expr (cond),
-					 is_gimple_condexpr, NULL_TREE,
-					 true, GSI_SAME_STMT);
+      cond = force_gimple_operand_gsi (gsi, unshare_expr (cond), true,
+				       NULL_TREE, true, GSI_SAME_STMT);
       if (!(is_cond_scalar_reduction (phi, &reduc, arg0 , arg1,
 				      &op0, &op1, true, &has_nop, &nop_reduc)))
 	rhs = fold_build_cond_expr (TREE_TYPE (res), unshare_expr (cond),
@@ -2612,9 +2608,8 @@ predicate_statements (loop_p loop)
 	      rhs = ifc_temp_var (type, unshare_expr (rhs), &gsi);
 	      if (swap)
 		std::swap (lhs, rhs);
-	      cond = force_gimple_operand_gsi_1 (&gsi, unshare_expr (cond),
-						 is_gimple_condexpr, NULL_TREE,
-						 true, GSI_SAME_STMT);
+	      cond = force_gimple_operand_gsi (&gsi, unshare_expr (cond), true,
+					       NULL_TREE, true, GSI_SAME_STMT);
 	      rhs = fold_build_cond_expr (type, unshare_expr (cond), rhs, lhs);
 	      gimple_assign_set_rhs1 (stmt, ifc_temp_var (type, rhs, &gsi));
 	      update_stmt (stmt);

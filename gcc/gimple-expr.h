@@ -40,7 +40,6 @@ extern void extract_ops_from_tree (tree, enum tree_code *, tree *, tree *,
 extern void gimple_cond_get_ops_from_tree (tree, enum tree_code *, tree *,
 					   tree *);
 extern bool is_gimple_lvalue (tree);
-extern bool is_gimple_condexpr (tree);
 extern bool is_gimple_condexpr_for_cond (tree);
 extern bool is_gimple_address (const_tree);
 extern bool is_gimple_invariant_address (const_tree);
