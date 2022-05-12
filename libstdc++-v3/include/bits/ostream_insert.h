@@ -40,6 +40,8 @@ namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
+  /// @cond undocumented
+
   template<typename _CharT, typename _Traits>
     inline void
     __ostream_write(basic_ostream<_CharT, _Traits>& __out,
@@ -123,6 +125,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 					     streamsize);
 #endif
 #endif
+
+  /// @endcond
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
