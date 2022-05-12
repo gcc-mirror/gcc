@@ -3272,15 +3272,6 @@ class Interface_type : public Type
   methods_are_finalized() const
   { return this->methods_are_finalized_; }
 
-  // Sort embedded interfaces by name. Needed when we are preparing
-  // to emit types into the export data.
-  void
-  sort_embedded()
-  {
-    if (parse_methods_ != NULL)
-      parse_methods_->sort_by_name();
-  }
-
  protected:
   int
   do_traverse(Traverse*);
