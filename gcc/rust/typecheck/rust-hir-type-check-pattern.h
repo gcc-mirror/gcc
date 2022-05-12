@@ -56,10 +56,17 @@ public:
 
   void visit (HIR::LiteralPattern &pattern) override;
 
+  void visit (HIR::RangePattern &pattern) override;
+
 private:
   TypeCheckPattern (TyTy::BaseType *parent)
     : TypeCheckBase (), parent (parent), infered (nullptr)
   {}
+
+  static TyTy::BaseType *
+  typecheck_range_pattern_bound (HIR::RangePatternBound *bound,
+				 Analysis::NodeMapping mappings,
+				 Location locus);
 
   TyTy::BaseType *parent;
   TyTy::BaseType *infered;
