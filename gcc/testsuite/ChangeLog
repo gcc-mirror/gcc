@@ -1,3 +1,34 @@
+2022-05-11  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105541
+	* g++.dg/cpp2a/lambda-requires1.C: New test.
+
+2022-05-11  Jason Merrill  <jason@redhat.com>
+
+	PR bootstrap/105567
+	* g++.dg/template/ctor10.C: New test.
+
+2022-05-11  Harald Anlauf  <anlauf@gmx.de>
+	    Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/105230
+	* gfortran.dg/pr105230.f90: New test.
+
+2022-05-11  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/tree-ssa/pr61839_1.c: Adjust.
+	* gcc.dg/tree-ssa/vrp24.c: Likewise.
+
+2022-05-11  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr104915-vmovd.c: New test.
+	* gcc.target/i386/pr104915-vmovw.c: New test.
+
+2022-05-11  Haochen Gui  <guihaoc@gcc.gnu.org>
+
+	PR target/105414
+	* gcc.dg/pr105414.c: New.
+
 2022-05-10  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/105526

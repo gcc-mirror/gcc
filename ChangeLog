@@ -1,3 +1,7 @@
+2022-05-11  Kewen Lin  <linkw@linux.ibm.com>
+
+	* MAINTAINERS: Remove myself from DCO section.
+
 2022-05-09  Xi Ruoyao  <xry111@xry111.site>
 
 	* MAINTAINERS: Update my email address.

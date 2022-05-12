@@ -1,3 +1,265 @@
+2022-05-11  Yannick Moy  <moy@adacore.com>
+
+	* libgnat/s-imaged.ads: Remove Pure.
+	* libgnat/s-imagef.ads: Remove Pure.
+	* libgnat/s-imager.ads: Remove Pure.
+	* libgnat/s-imageu.adb: Add ghost code.
+	* libgnat/s-imageu.ads: Add contracts.
+	* libgnat/s-imde128.ads: Remove Pure.
+	* libgnat/s-imde32.ads: Remove Pure.
+	* libgnat/s-imde64.ads: Remove Pure.
+	* libgnat/s-imfi128.ads: Remove Pure.
+	* libgnat/s-imfi32.ads: Remove Pure.
+	* libgnat/s-imfi64.ads: Remove Pure.
+	* libgnat/s-imgflt.ads: Remove Pure.
+	* libgnat/s-imglfl.ads: Remove Pure.
+	* libgnat/s-imgllf.ads: Remove Pure.
+	* libgnat/s-imglllu.ads: Instantiate with ghost subprograms.
+	* libgnat/s-imgllu.ads: Instantiate with ghost subprograms.
+	* libgnat/s-imgrea.ads: Remove Pure.
+	* libgnat/s-imguns.ads: Instantiate with ghost subprograms.
+	* libgnat/s-imguti.ads: Remove Pure.
+	* libgnat/s-valueu.adb (Prove_Iter_Scan_Based_Number_Ghost,
+	Prove_Scan_Only_Decimal_Ghost): New lemmas.
+	* libgnat/s-valueu.ads (Uns_Option): Do not make type ghost to
+	be able to use it as formal in instantiations.
+	(Only_Decimal_Ghost): New ghost query.
+	(Prove_Iter_Scan_Based_Number_Ghost,
+	Prove_Scan_Only_Decimal_Ghost): New lemmas.
+	* libgnat/s-widlllu.ads: Adapt to changes in Width_U.
+	* libgnat/s-widllu.ads: Adapt to changes in Width_U.
+	* libgnat/s-widthu.adb: Change generic function in generic
+	package in order to complete the postcondition. Tighten the
+	upper bound on the result by 1.
+	* libgnat/s-widthu.ads: Same.
+	* libgnat/s-widuns.ads: Adapt to changes in Width_U.
+	* gcc-interface/Make-lang.in: Add dependencies on a-nubinu,
+	a-numeri.ads and a-widuns.ads.
+
+2022-05-11  Piotr Trojanek  <trojanek@adacore.com>
+
+	* snames.ads-tmpl (Detect_Blocking): Move after
+	Default_Storage_Pool.
+
+2022-05-11  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_prag.adb (Analyze_Pragma): Remove custom check for
+	Compile_Time_Error and Compile_Time_Warning pragmas.
+	* snames.ads-tmpl (Compile_Time_Error, Compile_Time_Warning):
+	Move beyond Last_Configuration_Pragma_Name.
+
+2022-05-11  Marc Poulhiès  <poulhies@adacore.com>
+
+	* libgnat/a-direct.adb (Start_Search_Internal): Use parentheses
+	for record aggregate.
+	* libgnat/a-stbubo.adb (Get_UTF_8): Likewise.
+	* libgnat/a-stbuun.adb (Get_UTF_8): Likewise.
+	* libgnat/a-stzbou.ads (Null_Bounded_Wide_Wide_String):
+	Likewise.
+	* libgnat/a-swmwco.ads (Lower_Case_Mapping, Basic_Mapping):
+	Likewise.
+	* libgnat/a-szmzco.ads (Lower_Case_Mapping, Basic_Mapping):
+	Likewise.
+	* libgnat/s-statxd.adb (Fields): Likewise.
+	* libgnat/s-stausa.adb (Initialize): Likewise.
+	* sem_aggr.adb (Resolve_Record_Aggregate): Reject aggregates
+	using brackets.
+
+2022-05-11  Piotr Trojanek  <trojanek@adacore.com>
+
+	* doc/gnat_rm/implementation_defined_pragmas.rst,
+	doc/gnat_rm/implementation_of_specific_ada_features.rst,
+	doc/gnat_rm/representation_clauses_and_pragmas.rst,
+	doc/gnat_rm/the_gnat_library.rst,
+	doc/gnat_rm/the_implementation_of_standard_i_o.rst,
+	doc/gnat_ugn/building_executable_programs_with_gnat.rst,
+	doc/gnat_ugn/gnat_and_program_execution.rst,
+	doc/gnat_ugn/platform_specific_information.rst: Fix unbalanced
+	parentheses and brackets.
+	* sem_prag.adb (pragma Obsolescent): Likewise.
+	* gnat_rm.texi, gnat_ugn.texi: Regenerate.
+
+2022-05-11  Marc Poulhiès  <poulhies@adacore.com>
+
+	* libgnat/s-rident.ads (Restriction_Id): Add
+	No_Local_Tagged_Types, update comment for adding new GNAT
+	specific restriction.
+	* restrict.ads (Implementation_Restriction): Add
+	No_Local_Tagged_Types.
+	* sem_ch3.adb (Analyze_Full_Type_Declaration): Add check for
+	tagged type at library level.
+	* doc/gnat_rm/standard_and_implementation_defined_restrictions.rst:
+	Add No_Local_Tagged_Types description.
+	* gnat_rm.texi: Regenerate.
+
+2022-05-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch4.adb (Analyze_User_Defined_Binary_Op): Use the base type
+	in the interpretation of the operator.
+
+2022-05-11  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_case.adb (Free_Value_Sets): Fix style in body header box.
+	* sem_ch12.adb (Build_Subprogram_Wrappers): Likewise.
+	* sem_util.adb (Statically_Denotes_Entity): Likewise.
+
+2022-05-11  Etienne Servais  <servais@adacore.com>
+
+	* sem_ch3.adb (Constrain_Access): Call Desig_Subtype in each if
+	branch to avoid calling it twice.
+
+2022-05-11  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_warn.adb (Find_Var): Detect all operators; replace
+	"condition" to "expression" in comments, because when this
+	routine is called recursively it no longer examines the
+	condition.
+	(Is_Suspicious_Function_Name): Reduce scope of a local variable
+	to avoid shadowing with a parameter of a nested
+	Substring_Present function.
+
+2022-05-11  Yannick Moy  <moy@adacore.com>
+
+	* libgnat/s-aridou.adb (Double_Divide, Scaled_Divide): Add
+	intermediate assertions.
+
+2022-05-11  Piotr Trojanek  <trojanek@adacore.com>
+
+	* libgnat/s-rident.ads (Implementation_Restriction): Remove
+	No_Dynamic_Attachment, No_Implementation_Attributes,
+	No_Implementation_Pragmas, No_Local_Protected_Objects,
+	No_Protected_Type_Allocators, No_Relative_Delay,
+	No_Requeue_Statements, No_Select_Statements,
+	No_Task_Termination, Pure_Barriers and Simple_Barriers; add
+	No_Dynamic_Sized_Objects,
+	No_Implicit_Protected_Object_Allocations,
+	No_Implicit_Task_Allocations, No_Task_At_Interrupt_Priority and
+	Static_Dispatch_Tables; sort alphabetically.
+	* restrict.ads (Restriction_Id): Change Pure_Barriers and
+	No_Task_Termination from GNAT to Ada restrictions.
+
+2022-05-11  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_atag.adb, lib-util.ads, libgnat/g-decstr.adb,
+	libgnat/g-exptty.adb, libgnat/g-socpol.adb,
+	libgnat/s-strhas.adb: Fix headers.
+
+2022-05-11  Joao Azevedo  <azevedo@adacore.com>
+
+	* doc/gnat_ugn/platform_specific_information.rst: Add
+	glibc-locale-base-32bit as a dependency in SUSE distributions.
+	* gnat_ugn.texi: Regenerate.
+
+2022-05-11  Piotr Trojanek  <trojanek@adacore.com>
+
+	* doc/gnat_ugn/gnat_and_program_execution.rst,
+	doc/gnat_ugn/gnat_utility_programs.rst,
+	doc/gnat_ugn/inline_assembler.rst: Fix typos and formatting
+	glitches.
+	* gnat_ugn.texi: Regenerate.
+
+2022-05-11  Piotr Trojanek  <trojanek@adacore.com>
+
+	* doc/gnat_ugn/elaboration_order_handling_in_gnat.rst: Change
+	blocks from plain code to Ada.
+
+2022-05-11  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_ch5.adb (Expand_Assign_With_Target_Names): Bypass the temp
+	object approach in the case where the type of the LHS is
+	controlled or has controlled subcomponents (Needs_Finalization
+	is True), and use the procedure approach instead.
+
+2022-05-11  Bob Duff  <duff@adacore.com>
+
+	* sem_ch3.adb (Get_Discr_Value): Copy the result. Otherwise, the
+	"tree" can be malformed (a DAG, not a tree) because
+	Get_Discr_Value could be returning some subtree already attached
+	to the tree.
+
+2022-05-11  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_ch5.adb (Analyze_Statements): Only clear Reachable flag on
+	proper label entities.
+
+2022-05-11  Piotr Trojanek  <trojanek@adacore.com>
+
+	* doc/gnat_rm/implementation_defined_characteristics.rst: Add
+	tabularcolums directive, as explained in documentation of Sphinx
+	and tabular LaTeX package.
+
+2022-05-11  Piotr Trojanek  <trojanek@adacore.com>
+
+	* doc/gnat_rm/implementation_defined_aspects.rst,
+	doc/gnat_rm/implementation_defined_pragmas.rst: Remove extra
+	whitespace.
+	* gnat_rm.texi: Regenerate.
+
+2022-05-11  Piotr Trojanek  <trojanek@adacore.com>
+
+	* doc/gnat_rm/implementation_defined_characteristics.rst: Remove
+	extra indent in continuation lines; indent both descriptions of
+	Max_Picture_Length.
+	* gnat_rm.texi: Regenerate.
+
+2022-05-11  Piotr Trojanek  <trojanek@adacore.com>
+
+	* doc/gnat_rm/implementation_defined_pragmas.rst (Pragma
+	Eliminate): Fix markup.
+	* gnat_rm.texi: Regenerate.
+
+2022-05-11  Johannes Kliemann  <kliemann@adacore.com>
+
+	* libgnat/g-sthcso.adb: Suppress warning about unneeded use type
+	clause.
+
+2022-05-11  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_ch5.adb (Analyze_Statements): Only clear Reachable flag on
+	proper label entities.
+
+2022-05-11  Piotr Trojanek  <trojanek@adacore.com>
+
+	* doc/gnat_rm/implementation_defined_pragmas.rst (Pragma
+	Ada_2022): Copy description from pragma Ada 2012 and adapt.
+	* doc/gnat_ugn/the_gnat_compilation_model.rst (Configuration
+	Pragmas): List pragma Ada 2022.
+	* gnat_rm.texi, gnat_ugn.texi: Regenerate.
+
+2022-05-11  Steve Baird  <baird@adacore.com>
+
+	* sem_ch13.adb (Analyze_Attribute_Definition_Clause): Replace
+	the existing check for an address specification for an object of
+	a class-wide type with a more general check which rejects either
+	the class-wide case or the case where the FE would (if the
+	address specification were accepted) build a malformed
+	tree (specifically, an object renaming declaration with a
+	specified address). In the case where the check fails, reject
+	the construct at compile time instead of generating an
+	unconditional raise of Program_Error.
+	* doc/gnat_rm/representation_clauses_and_pragmas.rst: Update
+	documentation to reflect these changes.
+	* gnat_rm.texi: Regenerate.
+
+2022-05-11  Piotr Trojanek  <trojanek@adacore.com>
+
+	* gen_il-gen-gen_entities.adb (Reachable): Move from
+	Root_Entity_Type to E_Label.
+
+2022-05-11  Alexandre Oliva  <oliva@adacore.com>
+
+	* exp_ch3.adb (Expand_N_Object_Declaration): Guard
+	Set_Is_Known_Valid with Safe_To_Capture_Value.
+
+2022-05-11  Bob Duff  <duff@adacore.com>
+
+	* repinfo.adb (List_Object_Info): Do not try to print values
+	that have not been computed (and so are No_Uint).
+	(Rep_Not_Constant): Reverse sense and change name to
+	Compile_Time_Known_Rep. This makes the code at call sites a
+	little more readable. Simplify code to a single return
+	statement.
+
 2022-05-10  Martin Liska  <mliska@suse.cz>
 
 	* gcc-interface/decl.cc (compare_field_bitpos): Use void *

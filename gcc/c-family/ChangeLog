@@ -1,3 +1,9 @@
+2022-05-11  Martin Liska  <mliska@suse.cz>
+
+	PR target/105355
+	* c-opts.cc (c_common_handle_option): Change option name.
+	* c.opt: Remove Joined and use Separate option.
+
 2022-05-09  Alex Coplan  <alex.coplan@arm.com>
 
 	* c-common.h (get_dump_info): Delete.

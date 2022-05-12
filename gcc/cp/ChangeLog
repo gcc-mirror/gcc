@@ -1,3 +1,59 @@
+2022-05-11  Patrick Palka  <ppalka@redhat.com>
+
+	* constraint.cc (tsubst_parameter_mapping): Convert loop over
+	TREE_VEC into a range-based for loop using tree_vec_range.
+	* pt.cc (iterative_hash_template_arg): Likewise.
+	(template_parms_level_to_args): Likewise.
+	(deducible_template_args): Likewise.
+	(check_undeduced_parms): Likewise.
+	(dependent_type_p_r): Likewise.
+	(value_dependent_expression_p) <case NONTYPE_ARGUMENT_PACK>:
+	Likewise.
+	(dependent_template_arg_p): Likewise.
+	* tree.cc (cp_walk_subtrees) <case NONTYPE_ARGUMENT_PACK>:
+	Likewise.
+
+2022-05-11  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105541
+	* cp-tree.h (TMPL_ARGS_DEPTH): 0 for null args.
+	* parser.cc (cp_parser_enclosed_template_argument_list):
+	Use 0-length TREE_VEC for <>.
+
+2022-05-11  Jason Merrill  <jason@redhat.com>
+
+	PR bootstrap/105567
+	* typeck.cc (check_return_expr): Don't mess with ctor return value
+	while parsing a template.
+
+2022-05-11  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-tree.h (DECL_MODULE_ATTACH_P): New.
+	(struct lang_decl_base): Add module_attach_p flag.
+	* decl.cc (duplicate_decls): Rework module redeclaration
+	checking.
+	* module.cc (trees_out::lang_decl_bools): Write attach flag.
+	(trees_in::lang_decl_bools): ... and read it back.
+	(trees_out::decl_value): Rework module attachment handling.
+	(trees_in::decl_value): Rename local var to reflect meaning.
+	(trees_in::key_mergeable): Likewise.
+	(get_originating_module): Use DECL_MODULE_ATTACH_P.  No need
+	to special-case mangling.
+	(module_may_redeclare): Reimplement.
+	(set_originating_module): Deal with attachment.
+	* name-lookup.cc (maybe_record_mergeable_decl): Deal with
+	attachment.
+	(mergeable_namespace_slots): Likewise.
+	(do_nonmember_using_decl): Likewise.
+	* name-lookup.h (mergeable_namespace_slots): Adjust parm
+	meaning.
+	* ptree.cc (cxx_print_decl): Adjust purview & attach printing.
+
+2022-05-11  Martin Liska  <mliska@suse.cz>
+
+	PR target/105355
+	* lang-specs.h: Use Separate syntax.
+
 2022-05-10  Patrick Palka  <ppalka@redhat.com>
 
 	* coroutines.cc (instantiate_coro_traits): Adjust accordingly.

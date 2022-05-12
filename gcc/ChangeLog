@@ -1,3 +1,108 @@
+2022-05-11  Patrick Palka  <ppalka@redhat.com>
+
+	* tree.h (TREE_VEC_BEGIN): Define.
+	(TREE_VEC_END): Correct 'length' member access.
+	(class tree_vec_range): Define.
+
+2022-05-11  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.md: Use wa instead of <Fv>.
+
+2022-05-11  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.md: Use d instead of <Ff>.
+
+2022-05-11  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/constraints.md (register_constraint "f"): Use
+	RS6000_CONSTRAINT_d.
+	* config/rs6000/rs6000.cc (rs6000_debug_reg_global): Do not handle
+	RS6000_CONSTRAINT_f.
+	(rs6000_init_hard_regno_mode_ok): Ditto.  Reorder and simplify a bit.
+	* config/rs6000/rs6000.h (r6000_reg_class_enum): Delete
+	RS6000_CONSTRAINT_d.
+
+2022-05-11  Richard Biener  <rguenther@suse.de>
+
+	* gimple-fold.h (gimple_build): Use variadic template
+	functions for the gimple_build API forwarders without
+	location_t argument.
+
+2022-05-11  Siddhesh Poyarekar  <siddhesh@gotplt.org>
+
+	PR middle-end/70090
+	* asan.cc (initialize_sanitizer_builtins): Register
+	__builtin_dynamic_object_size if necessary.
+
+2022-05-11  Richard Biener  <rguenther@suse.de>
+
+	PR rtl-optimization/105559
+	* cfgrtl.cc (delete_insn_and_edges): Only perform search to BB_END
+	for non-debug insns.
+
+2022-05-11  Richard Biener  <rguenther@suse.de>
+
+	* generic-match-head.cc: Include tree-eh.h.
+	* match.pd ((cond ...) cmp X): New simplification inspired
+	by fold_binary_op_with_conditional_arg.
+	(eq/ne (cmp ...) true/false): Likewise.
+
+2022-05-11  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* doc/install.texi: Don't document '--with-hsa-runtime',
+	'--with-hsa-runtime-include', '--with-hsa-runtime-lib'.
+
+2022-05-11  Martin Liska  <mliska@suse.cz>
+
+	PR other/105527
+	* doc/install.texi: Document the configure option --with-zstd.
+
+2022-05-11  Martin Liska  <mliska@suse.cz>
+
+	* common/config/i386/cpuinfo.h (has_cpu_feature): Directly
+	compute index in cpu_features2.
+	(set_cpu_feature): Likewise.
+	* config/i386/i386-builtins.cc (fold_builtin_cpu): Also remove
+	loop for cpu_features2 and use NOP_EXPRs.
+
+2022-05-11  Richard Biener  <rguenther@suse.de>
+
+	PR bootstrap/105551
+	* opts.cc (finish_options): Also disable var-tracking if
+	!DWARF2_DEBUGGING_INFO.
+
+2022-05-11  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/104915
+	* config/i386/sse.md (*vec_set<mode>_0_zero_extendhi): New
+	pre_reload define_insn_and_split.
+	(*vec_setv2di_0_zero_extendhi_1): Ditto.
+	(*vec_set<mode>_0_zero_extendsi): Ditto.
+	(*vec_setv2di_0_zero_extendsi_1): Ditto.
+	(ssewvecmode): New mode attr.
+	(ssewvecmodelower): Ditto.
+	(ssepackmodelower): Ditto.
+
+2022-05-11  Kewen Lin  <linkw@linux.ibm.com>
+
+	* config/rs6000/constraints.md (register constraint v): Use
+	rs6000_constraints[RS6000_CONSTRAINT_v] instead of ALTIVEC_REGS.
+
+2022-05-11  Martin Liska  <mliska@suse.cz>
+
+	PR target/105355
+	* config/riscv/riscv.opt: Remove Separate from
+	-msmall-data-limit=.
+	* optc-gen.awk: Report error for the described situation.
+	* gcc.cc: Use Separate syntax.
+	* opts.cc (gen_command_line_string): Change option name.
+
+2022-05-11  Haochen Gui  <guihaoc@gcc.gnu.org>
+
+	PR target/105414
+	* match.pd (minmax): Skip constant folding for fmin/fmax when both
+	arguments are sNaN or one is sNaN and another is NaN.
+
 2022-05-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/105528
