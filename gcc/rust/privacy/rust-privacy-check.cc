@@ -23,6 +23,7 @@
 #include "rust-name-resolver.h"
 #include "rust-visibility-resolver.h"
 #include "rust-pub-restricted-visitor.h"
+#include "rust-privacy-reporter.h"
 
 extern bool
 saw_errors (void);
@@ -40,6 +41,7 @@ Resolver::resolve (HIR::Crate &crate)
 
   VisibilityResolver (*mappings, *resolver).go (crate);
   PubRestrictedVisitor (*mappings).go (crate);
+  PrivacyReporter (*mappings, *resolver).go (crate);
 
   auto visitor = ReachabilityVisitor (ctx, *ty_ctx);
 

@@ -96,6 +96,7 @@ private:
 
 public:
   Optional (const Optional &other) = default;
+  Optional &operator= (const Optional &other) = default;
   Optional (Optional &&other) = default;
 
   static Optional<T> some (T value)

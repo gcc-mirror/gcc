@@ -31,6 +31,7 @@ PubRestrictedVisitor::is_restriction_valid (NodeId item_id,
 
   // If there is no visibility in the mappings, then the item is private and
   // does not contain any restriction
+  // FIXME: Is that correct?
   if (!mappings.lookup_visibility (item_id, visibility))
     return true;
 

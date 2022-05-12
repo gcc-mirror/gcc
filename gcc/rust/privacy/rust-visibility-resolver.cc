@@ -35,6 +35,8 @@ VisibilityResolver::go (HIR::Crate &crate)
   mappings.insert_visibility (crate.get_mappings ().get_nodeid (),
 			      ModuleVisibility::create_public ());
 
+  current_module = crate.get_mappings ().get_defid ();
+
   for (auto &item : crate.items)
     {
       if (item->get_hir_kind () == HIR::Node::VIS_ITEM)
@@ -103,7 +105,7 @@ VisibilityResolver::resolve_visibility (const HIR::Visibility &visibility,
   switch (visibility.get_vis_type ())
     {
     case HIR::Visibility::PRIVATE:
-      to_resolve = ModuleVisibility::create_private ();
+      to_resolve = ModuleVisibility::create_restricted (current_module);
       return true;
     case HIR::Visibility::PUBLIC:
       to_resolve = ModuleVisibility::create_public ();
@@ -134,6 +136,9 @@ VisibilityResolver::resolve_and_update (const HIR::VisItem *item)
 void
 VisibilityResolver::visit (HIR::Module &mod)
 {
+  auto old_module = current_module;
+  current_module = mod.get_mappings ().get_defid ();
+
   for (auto &item : mod.get_items ())
     {
       if (item->get_hir_kind () == HIR::Node::VIS_ITEM)
@@ -142,6 +147,8 @@ VisibilityResolver::visit (HIR::Module &mod)
 	  vis_item->accept_vis (*this);
 	}
     }
+
+  current_module = old_module;
 }
 
 void
