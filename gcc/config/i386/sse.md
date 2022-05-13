@@ -4390,10 +4390,54 @@
 	(match_operator:V2DI 1 ""
 	  [(match_operand:V2DI 2 "register_operand")
 	   (match_operand:V2DI 3 "vector_operand")]))]
-  "TARGET_SSE4_1"
+  "TARGET_SSE2"
 {
-  bool ok = ix86_expand_int_vec_cmp (operands);
+  bool ok;
+  if (!TARGET_SSE4_1)
+    {
+      rtx ops[4];
+      ops[0] = gen_reg_rtx (V4SImode);
+      ops[2] = gen_lowpart (V4SImode, force_reg (V2DImode, operands[2]));
+      ops[3] = gen_lowpart (V4SImode, force_reg (V2DImode, operands[3]));
+      ops[1] = gen_rtx_fmt_ee (GET_CODE (operands[1]), V4SImode,
+			       ops[2], ops[3]);
+      ok = ix86_expand_int_vec_cmp (ops);
+
+      rtx tmp1 = gen_reg_rtx (V4SImode);
+      emit_insn (gen_sse2_pshufd (tmp1, ops[0], GEN_INT (0xb1)));
+
+      rtx tmp2 = gen_reg_rtx (V4SImode);
+      emit_insn (gen_andv4si3 (tmp2, tmp1, ops[0]));
+
+      emit_move_insn (operands[0], gen_lowpart (V2DImode, tmp2));
+    }
+  else
+    ok = ix86_expand_int_vec_cmp (operands);
   gcc_assert (ok);
+  DONE;
+})
+
+(define_expand "vec_cmpeqv1tiv1ti"
+  [(set (match_operand:V1TI 0 "register_operand")
+	(match_operator:V1TI 1 ""
+	  [(match_operand:V1TI 2 "register_operand")
+	   (match_operand:V1TI 3 "vector_operand")]))]
+  "TARGET_SSE2"
+{
+  rtx dst = gen_reg_rtx (V2DImode);
+  rtx op1 = gen_lowpart (V2DImode, force_reg (V1TImode, operands[2]));
+  rtx op2 = gen_lowpart (V2DImode, force_reg (V1TImode, operands[3]));
+  rtx cmp = gen_rtx_fmt_ee (GET_CODE (operands[1]), V2DImode, op1, op2);
+  emit_insn (gen_vec_cmpeqv2div2di (dst, cmp, op1, op2));
+
+  rtx tmp1 = gen_reg_rtx (V4SImode);
+  rtx tmp2 = gen_lowpart (V4SImode, dst);
+  emit_insn (gen_sse2_pshufd (tmp1, tmp2, GEN_INT (0x4e)));
+
+  rtx tmp3 = gen_reg_rtx (V4SImode);
+  emit_insn (gen_andv4si3 (tmp3, tmp2, tmp1));
+
+  emit_move_insn (operands[0], gen_lowpart (V1TImode, tmp3));
   DONE;
 })
 
