@@ -20963,7 +20963,8 @@ expand_vec_perm_pslldq_psrldq_por (struct expand_vec_perm_d *d, bool pandn)
   start1 = d->perm[0];
   for (i = 1; i < nelt; i++)
     {
-      if (d->perm[i] != d->perm[i-1] + 1)
+      if (d->perm[i] != d->perm[i-1] + 1
+	  || d->perm[i] == nelt)
 	{
 	  if (start2 == -1)
 	    {
@@ -20972,12 +20973,6 @@ expand_vec_perm_pslldq_psrldq_por (struct expand_vec_perm_d *d, bool pandn)
 	    }
 	  else
 	    return false;
-	}
-      else if (d->perm[i] >= nelt
-	       && start2 == -1)
-	{
-	  start2 = d->perm[i];
-	  end1 = d->perm[i-1];
 	}
     }
 
