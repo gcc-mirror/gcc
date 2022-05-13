@@ -9092,16 +9092,17 @@ expand_omp_atomic_cas (basic_block load_bb, tree addr,
 
       if (cond_stmt)
 	{
-	  g = gimple_build_assign (gimple_assign_lhs (cond_stmt),
-				   NOP_EXPR, im);
+	  g = gimple_build_assign (cond, NOP_EXPR, im);
 	  gimple_set_location (g, loc);
 	  gsi_insert_before (&gsi, g, GSI_SAME_STMT);
 	}
-      else if (need_new)
+
+      if (need_new)
 	{
 	  g = gimple_build_assign (create_tmp_reg (itype), COND_EXPR,
-				   build2 (NE_EXPR, boolean_type_node,
-					   im, build_zero_cst (itype)),
+				   cond_stmt
+				   ? cond : build2 (NE_EXPR, boolean_type_node,
+						    im, build_zero_cst (itype)),
 				   d, re);
 	  gimple_set_location (g, loc);
 	  gsi_insert_before (&gsi, g, GSI_SAME_STMT);
