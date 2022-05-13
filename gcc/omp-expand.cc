@@ -10540,7 +10540,15 @@ expand_omp_target (struct omp_region *region)
 	  oacc_replace_fn_attrib (child_fn, dims);
 	}
       else
-	oacc_set_fn_attrib (child_fn, clauses, &args);
+	{
+	  unsigned int args_before = args.length ();
+
+	  oacc_set_fn_attrib (child_fn, clauses, &args);
+	  for (unsigned int ix = args_before; ix < args.length (); ix++)
+	    args[ix] = force_gimple_operand_gsi (&gsi, args[ix], true,
+						 NULL_TREE, true,
+						 GSI_SAME_STMT);
+	}
       tagging = true;
       /* FALLTHRU */
     case BUILT_IN_GOACC_ENTER_DATA:
