@@ -3805,9 +3805,44 @@ strlen_pass::handle_builtin_memset (bool *zero_write)
 {
   gimple *memset_stmt = gsi_stmt (m_gsi);
   tree ptr = gimple_call_arg (memset_stmt, 0);
+  tree memset_val = gimple_call_arg (memset_stmt, 1);
+  tree memset_size = gimple_call_arg (memset_stmt, 2);
+
   /* Set to the non-constant offset added to PTR.  */
   wide_int offrng[2];
   int idx1 = get_stridx (ptr, memset_stmt, offrng, ptr_qry.rvals);
+  if (idx1 == 0
+      && TREE_CODE (memset_val) == INTEGER_CST
+      && ((TREE_CODE (memset_size) == INTEGER_CST
+	   && !integer_zerop (memset_size))
+	  || TREE_CODE (memset_size) == SSA_NAME))
+    {
+      unsigned HOST_WIDE_INT mask = (HOST_WIDE_INT_1U << CHAR_TYPE_SIZE) - 1;
+      bool full_string_p = (wi::to_wide (memset_val) & mask) == 0;
+
+      /* We only handle symbolic lengths when writing non-zero values.  */
+      if (full_string_p && TREE_CODE (memset_size) != INTEGER_CST)
+	return false;
+
+      idx1 = new_stridx (ptr);
+      if (idx1 == 0)
+	return false;
+      tree newlen;
+      if (full_string_p)
+	newlen = build_int_cst (size_type_node, 0);
+      else if (TREE_CODE (memset_size) == INTEGER_CST)
+	newlen = fold_convert (size_type_node, memset_size);
+      else
+	newlen = memset_size;
+
+      strinfo *dsi = new_strinfo (ptr, idx1, newlen, full_string_p);
+      set_strinfo (idx1, dsi);
+      find_equal_ptrs (ptr, idx1);
+      dsi->dont_invalidate = true;
+      dsi->writable = true;
+      return false;
+    }
+
   if (idx1 <= 0)
     return false;
   strinfo *si1 = get_strinfo (idx1);
@@ -3820,7 +3855,6 @@ strlen_pass::handle_builtin_memset (bool *zero_write)
   if (!valid_builtin_call (alloc_stmt))
     return false;
   tree alloc_size = gimple_call_arg (alloc_stmt, 0);
-  tree memset_size = gimple_call_arg (memset_stmt, 2);
 
   /* Check for overflow.  */
   maybe_warn_overflow (memset_stmt, false, memset_size, NULL, false, true);
@@ -3836,7 +3870,7 @@ strlen_pass::handle_builtin_memset (bool *zero_write)
     return false;
 
   /* Bail when the call writes a non-zero value.  */
-  if (!integer_zerop (gimple_call_arg (memset_stmt, 1)))
+  if (!integer_zerop (memset_val))
     return false;
 
   /* Let the caller know the memset call cleared the destination.  */
@@ -5089,8 +5123,9 @@ strlen_pass::handle_store (bool *zero_write)
 	  return false;
 	}
 
-      if (storing_all_zeros_p
-	  || storing_nonzero_p
+      if (storing_nonzero_p
+	  || storing_all_zeros_p
+	  || (full_string_p && lenrange[1] == 0)
 	  || (offset != 0 && store_before_nul[1] > 0))
 	{
 	  /* When STORING_NONZERO_P, we know that the string will start
@@ -5100,8 +5135,9 @@ strlen_pass::handle_store (bool *zero_write)
 	     of leading non-zero characters and set si->NONZERO_CHARS to
 	     the result instead.
 
-	     When STORING_ALL_ZEROS_P, we know that the string is now
-	     OFFSET characters long.
+	     When STORING_ALL_ZEROS_P, or the first byte written is zero,
+	     i.e. FULL_STRING_P && LENRANGE[1] == 0, we know that the
+	     string is now OFFSET characters long.
 
 	     Otherwise, we're storing an unknown value at offset OFFSET,
 	     so need to clip the nonzero_chars to OFFSET.
