@@ -1,3 +1,93 @@
+2022-05-12  Jason Merrill  <jason@redhat.com>
+
+	Revert:
+	2022-05-12  Jason Merrill  <jason@redhat.com>
+
+	PR c++/101767
+	* decl.c (reshape_init_class): Back out of anon struct
+	if a designator doesn't match.
+
+2022-05-12  Jason Merrill  <jason@redhat.com>
+
+	Revert:
+	2021-05-20  Jason Merrill  <jason@redhat.com>
+
+	PR c++/41723
+	* parser.c (cp_parser_class_name): Check dependent_scope_p.
+
+2022-05-12  Jason Merrill  <jason@redhat.com>
+
+	PR c++/104142
+	* decl.c (check_initializer): Check TREE_SIDE_EFFECTS.
+
+2022-05-12  Jason Merrill  <jason@redhat.com>
+
+	PR c++/102071
+	* init.c (build_new_1): Include cookie in alignment.  Omit
+	constexpr wrapper from alloc_call.
+
+2022-05-12  Jason Merrill  <jason@redhat.com>
+
+	PR c++/100838
+	PR c++/105265
+	* call.c (convert_like_internal): Clear tf_no_cleanup when
+	recursing.
+	(build_user_type_conversion_1): Only add ck_rvalue if
+	LOOKUP_ONLYCONVERTING.
+
+2022-05-12  Jason Merrill  <jason@redhat.com>
+
+	PR c++/82980
+	* lambda.c (type_deducible_expression_p): New.
+	(lambda_capture_field_type): Check it.
+
+2022-05-12  Jason Merrill  <jason@redhat.com>
+
+	PR c++/104646
+	* constexpr.c (maybe_save_constexpr_fundef): Don't do extra
+	checks for defaulted ctors.
+
+2022-05-12  Jason Merrill  <jason@redhat.com>
+
+	PR c++/102629
+	* pt.c (gen_elem_of_pack_expansion_instantiation): Clear
+	TEMPLATE_TYPE_PARAMETER_PACK on auto.
+
+2022-05-12  Jason Merrill  <jason@redhat.com>
+
+	PR c++/59950
+	* call.c (build_over_call): Use cp_build_indirect_ref.
+
+2022-05-12  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105245
+	PR c++/100111
+	* constexpr.c (cxx_eval_store_expression): Build a CONSTRUCTOR
+	as needed in empty base handling.
+
+2022-05-12  Jason Merrill  <jason@redhat.com>
+
+	PR c++/101717
+	* lambda.c (lambda_expr_this_capture): Check all enclosing
+	lambdas for completeness.
+
+2022-05-12  Jason Merrill  <jason@redhat.com>
+
+	PR c++/100608
+	* name-lookup.c (check_local_shadow): Use -Wshadow=local
+	if exactly one of 'old' and 'decl' is a type.
+
+2022-05-12  Jason Merrill  <jason@redhat.com>
+
+	PR c++/98249
+	* call.c (build_operator_new_call): Just look in ::.
+
+2022-05-12  Jason Merrill  <jason@redhat.com>
+
+	PR c++/101767
+	* decl.c (reshape_init_class): Back out of anon struct
+	if a designator doesn't match.
+
 2022-05-11  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:
