@@ -1,3 +1,45 @@
+2022-05-12  Jason Merrill  <jason@redhat.com>
+
+	PR c++/102629
+	* g++.dg/cpp2a/lambda-pack-init7.C: New test.
+
+2022-05-12  Jason Merrill  <jason@redhat.com>
+
+	PR c++/104646
+	* g++.dg/cpp0x/constexpr-fno-elide-ctors1.C: New test.
+
+2022-05-12  Jason Merrill  <jason@redhat.com>
+
+	PR c++/82980
+	* g++.dg/cpp0x/lambda/lambda-current-inst1.C: New test.
+
+2022-05-12  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105265
+	PR c++/100838
+	* g++.dg/cpp0x/initlist-new6.C: New test.
+
+2022-05-12  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105245
+	PR c++/100111
+	* g++.dg/cpp1y/constexpr-empty2.C: Add -fno-elide-constructors.
+
+2022-05-12  Jason Merrill  <jason@redhat.com>
+
+	PR c++/104669
+	* g++.target/i386/mv31.C: New test.
+
+2022-05-12  Jason Merrill  <jason@redhat.com>
+
+	PR c++/102071
+	* g++.dg/cpp1z/aligned-new9.C: New test.
+
+2022-05-12  Jason Merrill  <jason@redhat.com>
+
+	PR c++/104142
+	* g++.dg/opt/const7.C: New test.
+
 2022-05-10  H.J. Lu  <hjl.tools@gmail.com>
 
 	Backported from master:
