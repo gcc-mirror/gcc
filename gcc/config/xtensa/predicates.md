@@ -55,7 +55,7 @@
 
 (define_predicate "extui_fldsz_operand"
   (and (match_code "const_int")
-       (match_test "xtensa_mask_immediate ((1 << INTVAL (op)) - 1)")))
+       (match_test "IN_RANGE (INTVAL (op), 1, 16)")))
 
 (define_predicate "sext_operand"
   (if_then_else (match_test "TARGET_SEXT")

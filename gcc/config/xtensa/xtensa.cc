@@ -456,19 +456,7 @@ xtensa_b4constu (HOST_WIDE_INT v)
 bool
 xtensa_mask_immediate (HOST_WIDE_INT v)
 {
-#define MAX_MASK_SIZE 16
-  int mask_size;
-
-  for (mask_size = 1; mask_size <= MAX_MASK_SIZE; mask_size++)
-    {
-      if ((v & 1) == 0)
-	return false;
-      v = v >> 1;
-      if (v == 0)
-	return true;
-    }
-
-  return false;
+  return IN_RANGE (exact_log2 (v + 1), 1, 16);
 }
 
 
@@ -2430,17 +2418,11 @@ print_operand (FILE *file, rtx x, int letter)
     case 'K':
       if (GET_CODE (x) == CONST_INT)
 	{
-	  int num_bits = 0;
 	  unsigned val = INTVAL (x);
-	  while (val & 1)
-	    {
-	      num_bits += 1;
-	      val = val >> 1;
-	    }
-	  if ((val != 0) || (num_bits == 0) || (num_bits > 16))
+	  if (!xtensa_mask_immediate (val))
 	    fatal_insn ("invalid mask", x);
 
-	  fprintf (file, "%d", num_bits);
+	  fprintf (file, "%d", floor_log2 (val + 1));
 	}
       else
 	output_operand_lossage ("invalid %%K value");
