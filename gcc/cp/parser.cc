@@ -18646,6 +18646,9 @@ cp_parser_template_name (cp_parser* parser,
     (9.3.4), or in a type-only context other than a nested-name-specifier
     (13.8).  */
 
+  /* Handle injected-class-name.  */
+  decl = maybe_get_template_decl_from_type_decl (decl);
+
   /* If DECL is a template, then the name was a template-name.  */
   if (TREE_CODE (decl) == TEMPLATE_DECL)
     {
