@@ -351,42 +351,42 @@ struct gcc_target targetm = TARGET_INITIALIZER;
 bool
 xtensa_simm8 (HOST_WIDE_INT v)
 {
-  return v >= -128 && v <= 127;
+  return IN_RANGE (v, -128, 127);
 }
 
 
 bool
 xtensa_simm8x256 (HOST_WIDE_INT v)
 {
-  return (v & 255) == 0 && (v >= -32768 && v <= 32512);
+  return (v & 255) == 0 && IN_RANGE (v, -32768, 32512);
 }
 
 
 bool
 xtensa_simm12b (HOST_WIDE_INT v)
 {
-  return v >= -2048 && v <= 2047;
+  return IN_RANGE (v, -2048, 2047);
 }
 
 
 static bool
 xtensa_uimm8 (HOST_WIDE_INT v)
 {
-  return v >= 0 && v <= 255;
+  return IN_RANGE (v, 0, 255);
 }
 
 
 static bool
 xtensa_uimm8x2 (HOST_WIDE_INT v)
 {
-  return (v & 1) == 0 && (v >= 0 && v <= 510);
+  return (v & 1) == 0 && IN_RANGE (v, 0, 510);
 }
 
 
 static bool
 xtensa_uimm8x4 (HOST_WIDE_INT v)
 {
-  return (v & 3) == 0 && (v >= 0 && v <= 1020);
+  return (v & 3) == 0 && IN_RANGE (v, 0, 1020);
 }
 
 
@@ -537,7 +537,7 @@ smalloffset_mem_p (rtx op)
 	    return FALSE;
 
 	  val = INTVAL (offset);
-	  return (val & 3) == 0 && (val >= 0 && val <= 60);
+	  return (val & 3) == 0 && IN_RANGE (val, 0, 60);
 	}
     }
   return FALSE;
@@ -2367,7 +2367,7 @@ static void
 printx (FILE *file, signed int val)
 {
   /* Print a hexadecimal value in a nice way.  */
-  if ((val > -0xa) && (val < 0xa))
+  if (IN_RANGE (val, -9, 9))
     fprintf (file, "%d", val);
   else if (val < 0)
     fprintf (file, "-0x%x", -val);
@@ -2697,7 +2697,7 @@ xtensa_call_save_reg(int regno)
     return crtl->profile || !crtl->is_leaf || crtl->calls_eh_return ||
       df_regs_ever_live_p (regno);
 
-  if (crtl->calls_eh_return && regno >= 2 && regno < 4)
+  if (crtl->calls_eh_return && IN_RANGE (regno, 2, 3))
     return true;
 
   return !call_used_or_fixed_reg_p (regno) && df_regs_ever_live_p (regno);
@@ -2817,7 +2817,7 @@ xtensa_expand_prologue (void)
       int callee_save_size = cfun->machine->callee_save_size;
 
       /* -128 is a limit of single addi instruction. */
-      if (total_size > 0 && total_size <= 128)
+      if (IN_RANGE (total_size, 1, 128))
 	{
 	  insn = emit_insn (gen_addsi3 (stack_pointer_rtx, stack_pointer_rtx,
 					GEN_INT (-total_size)));

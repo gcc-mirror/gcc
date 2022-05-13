@@ -92,7 +92,7 @@
  "An integer constant in the range @minus{}32-95 for use with MOVI.N
   instructions."
  (and (match_code "const_int")
-      (match_test "ival >= -32 && ival <= 95")))
+      (match_test "IN_RANGE (ival, -32, 95)")))
 
 (define_constraint "N"
  "An unsigned 8-bit integer constant shifted left by 8 bits for use
@@ -103,7 +103,7 @@
 (define_constraint "O"
  "An integer constant that can be used in ADDI.N instructions."
  (and (match_code "const_int")
-      (match_test "ival == -1 || (ival >= 1 && ival <= 15)")))
+      (match_test "ival == -1 || IN_RANGE (ival, 1, 15)")))
 
 (define_constraint "P"
  "An integer constant that can be used as a mask value in an EXTUI

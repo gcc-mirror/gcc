@@ -504,7 +504,7 @@ enum reg_class
    used for this purpose since all function arguments are pushed on
    the stack.  */
 #define FUNCTION_ARG_REGNO_P(N)						\
-  ((N) >= GP_OUTGOING_ARG_FIRST && (N) <= GP_OUTGOING_ARG_LAST)
+  IN_RANGE ((N), GP_OUTGOING_ARG_FIRST, GP_OUTGOING_ARG_LAST)
 
 /* Record the number of argument words seen so far, along with a flag to
    indicate whether these are incoming arguments.  (FUNCTION_INCOMING_ARG
