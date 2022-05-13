@@ -1313,7 +1313,7 @@ xtensa_expand_block_move (rtx *operands)
   move_ratio = 4;
   if (optimize > 2)
     move_ratio = LARGEST_MOVE_RATIO;
-  num_pieces = (bytes / align) + (bytes % align); /* Close enough anyway.  */
+  num_pieces = (bytes / align) + ((bytes % align + 1) / 2);
   if (num_pieces > move_ratio)
     return 0;
 
@@ -1350,7 +1350,7 @@ xtensa_expand_block_move (rtx *operands)
 	  temp[next] = gen_reg_rtx (mode[next]);
 
 	  x = adjust_address (src_mem, mode[next], offset_ld);
-	  emit_insn (gen_rtx_SET (temp[next], x));
+	  emit_move_insn (temp[next], x);
 
 	  offset_ld += next_amount;
 	  bytes -= next_amount;
@@ -1360,9 +1360,9 @@ xtensa_expand_block_move (rtx *operands)
       if (active[phase])
 	{
 	  active[phase] = false;
-	  
+
 	  x = adjust_address (dst_mem, mode[phase], offset_st);
-	  emit_insn (gen_rtx_SET (x, temp[phase]));
+	  emit_move_insn (x, temp[phase]);
 
 	  offset_st += amount[phase];
 	}
