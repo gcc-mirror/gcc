@@ -1,3 +1,8 @@
+2022-05-13  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* omp-expand.cc (expand_omp_target): Gimplify launch dimensions used
+	in function call.
+
 2022-04-14  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	* graphite-oacc.cc (find_oacc_tail_marks): Check that data_dep is
