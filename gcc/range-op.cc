@@ -1343,10 +1343,10 @@ operator_minus::wi_fold (irange &r, tree type,
 // OP1 and OP2.
 
 relation_kind
-operator_minus::lhs_op1_relation (const irange &lhs, const irange &,
+operator_minus::lhs_op1_relation (const irange &, const irange &op1,
 				  const irange &, relation_kind rel) const
 {
-  if (TYPE_SIGN (lhs.type ()) == UNSIGNED)
+  if (!op1.undefined_p () && TYPE_SIGN (op1.type ()) == UNSIGNED)
     switch (rel)
       {
       case VREL_GT:
