@@ -1,3 +1,37 @@
+2022-05-12  Richard Biener  <rguenther@suse.de>
+
+	PR rtl-optimization/105577
+	* dse.cc (rest_of_handle_dse): Make sure to purge dead EH
+	edges before running fast DCE via df_analyze.
+
+2022-05-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/105562
+	* tree-ssa-sccvn.cc (vn_reference_lookup_3): Disambiguate
+	against all CLOBBER defs if there's not an obvious must-alias
+	and we are not doing redundant store elimination.
+	(vn_walk_cb_data::redundant_store_removal_p): New field.
+	(vn_reference_lookup_pieces): Initialize it.
+	(vn_reference_lookup): Add argument to specify if we are
+	doing redundant store removal.
+	(eliminate_dom_walker::eliminate_stmt): Specify we do.
+	* tree-ssa-sccvn.h (vn_reference_lookup): Adjust.
+
+2022-05-12  Haochen Jiang  <haochen.jiang@intel.com>
+
+	PR target/104371
+	* config/i386/sse.md (vi1avx2const): New define_mode_attr.
+	(pxor/pcmpeqb/pmovmskb/cmp 0xffff to ptest splitter):
+	New define_split pattern.
+
+2022-05-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* gimplify.cc (gimplify_omp_depend): Don't build_fold_addr_expr
+	if null_pointer_node.
+	(gimplify_scan_omp_clauses): Likewise.
+	* tree-pretty-print.cc (dump_omp_clause): Print null_pointer_node
+	as omp_all_memory.
+
 2022-05-11  Patrick Palka  <ppalka@redhat.com>
 
 	* tree.h (TREE_VEC_BEGIN): Define.

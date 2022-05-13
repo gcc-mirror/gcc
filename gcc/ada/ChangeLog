@@ -1,3 +1,305 @@
+2022-05-12  Piotr Trojanek  <trojanek@adacore.com>
+
+	* gnat1drv.adb (Gnat1drv): Skip postponed checks when there are
+	errors.
+
+2022-05-12  Arnaud Charlet  <charlet@adacore.com>
+
+	* doc/gnat_ugn/the_gnat_compilation_model.rst: Fix URL.
+	* gnat_ugn.texi: Regenerate.
+
+2022-05-12  Bob Duff  <duff@adacore.com>
+
+	* namet.ads, namet.adb (Write_Name_For_Debug): Add Quote
+	parameter to allow conditional addition of quotes. Note that
+	some calls to Write_Name_For_Debug, for example for file names,
+	shouldn't have quotes, as in some_package.adb:123:45.
+	* treepr.adb (Print_Name): Add double quotes around the name
+	using the above Quote parameters.
+
+2022-05-12  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_res.adb (Resolve_Actuals): Simplify with N_Op_Compare.
+	* sem_util.adb (Replace_Null_Operand,
+	Null_To_Null_Address_Convert_OK): Likewise.
+
+2022-05-12  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_util.ads (Is_Selector_Name): Remove spec.
+	* sem_util.adb (Is_Selector_Name): Remove body.
+
+2022-05-12  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem_warn.adb (Has_Junk_Name): Add more dummy names.
+
+2022-05-12  Piotr Trojanek  <trojanek@adacore.com>
+
+	* lib-xref.adb (Generate_Reference): Fix comment and implement
+	it precisely.
+
+2022-05-12  Piotr Trojanek  <trojanek@adacore.com>
+
+	* atree.adb, atree.ads: Move WITH clause from spec to body; to
+	prevent new warnings stopping the bootstrap.
+	* fmap.adb, fname-sf.adb, libgnat/a-direct.adb,
+	libgnat/s-bignum.adb: Remove unnecessary WITH clauses; to
+	prevent new warnings stopping the bootstrap.
+	* sem_ch12.adb (Analyze_Subprogram_Instantiation): Only set
+	Is_Instantiated flag when the instance is in the extended main
+	source unit.
+
+2022-05-12  Yannick Moy  <moy@adacore.com>
+
+	* libgnat/s-valuei.ads: Remove pragma Warnings Off.
+	* libgnat/s-valueu.ads: Same.
+	* libgnat/s-valuti.ads: Same.
+
+2022-05-12  Yannick Moy  <moy@adacore.com>
+
+	* sem_util.adb (Check_Result_And_Post_State): Exempt trivial
+	post.
+
+2022-05-12  Arnaud Charlet  <charlet@adacore.com>
+
+	* ali.adb, ali.ads, bcheck.adb, exp_ch11.adb, fe.h,
+	gnat1drv.adb, opt.adb, opt.ads, targparm.adb, targparm.ads,
+	lib-writ.adb: Get rid of Frontend_Exceptions processing.
+	* libgnat/system-aix.ads, libgnat/system-darwin-arm.ads,
+	libgnat/system-darwin-ppc.ads, libgnat/system-darwin-x86.ads,
+	libgnat/system-djgpp.ads, libgnat/system-dragonfly-x86_64.ads,
+	libgnat/system-freebsd.ads, libgnat/system-hpux-ia64.ads,
+	libgnat/system-hpux.ads, libgnat/system-linux-alpha.ads,
+	libgnat/system-linux-arm.ads, libgnat/system-linux-hppa.ads,
+	libgnat/system-linux-ia64.ads, libgnat/system-linux-m68k.ads,
+	libgnat/system-linux-mips.ads, libgnat/system-linux-ppc.ads,
+	libgnat/system-linux-riscv.ads, libgnat/system-linux-s390.ads,
+	libgnat/system-linux-sh4.ads, libgnat/system-linux-sparc.ads,
+	libgnat/system-linux-x86.ads, libgnat/system-lynxos178-ppc.ads,
+	libgnat/system-lynxos178-x86.ads, libgnat/system-mingw.ads,
+	libgnat/system-qnx-aarch64.ads, libgnat/system-rtems.ads,
+	libgnat/system-solaris-sparc.ads,
+	libgnat/system-solaris-x86.ads,
+	libgnat/system-vxworks-arm-rtp-smp.ads,
+	libgnat/system-vxworks-arm-rtp.ads,
+	libgnat/system-vxworks-arm.ads,
+	libgnat/system-vxworks-e500-kernel.ads,
+	libgnat/system-vxworks-e500-rtp-smp.ads,
+	libgnat/system-vxworks-e500-rtp.ads,
+	libgnat/system-vxworks-ppc-kernel.ads,
+	libgnat/system-vxworks-ppc-rtp-smp.ads,
+	libgnat/system-vxworks-ppc-rtp.ads,
+	libgnat/system-vxworks-x86-kernel.ads,
+	libgnat/system-vxworks-x86-rtp-smp.ads,
+	libgnat/system-vxworks-x86-rtp.ads,
+	libgnat/system-vxworks7-aarch64-rtp-smp.ads,
+	libgnat/system-vxworks7-aarch64.ads,
+	libgnat/system-vxworks7-arm-rtp-smp.ads,
+	libgnat/system-vxworks7-arm.ads,
+	libgnat/system-vxworks7-e500-kernel.ads,
+	libgnat/system-vxworks7-e500-rtp-smp.ads,
+	libgnat/system-vxworks7-e500-rtp.ads,
+	libgnat/system-vxworks7-ppc-kernel.ads,
+	libgnat/system-vxworks7-ppc-rtp-smp.ads,
+	libgnat/system-vxworks7-ppc-rtp.ads,
+	libgnat/system-vxworks7-ppc64-kernel.ads,
+	libgnat/system-vxworks7-ppc64-rtp-smp.ads,
+	libgnat/system-vxworks7-x86-kernel.ads,
+	libgnat/system-vxworks7-x86-rtp-smp.ads,
+	libgnat/system-vxworks7-x86-rtp.ads,
+	libgnat/system-vxworks7-x86_64-kernel.ads,
+	libgnat/system-vxworks7-x86_64-rtp-smp.ads: Remove
+	Frontend_Exceptions line.
+	* gcc-interface/decl.cc, gcc-interface/trans.cc
+	(gnat_to_gnu_entity, gnat_to_gnu_subprog_type, gigi,
+	gnat_to_gnu): Remove Front_End_SJLJ processing and always assume
+	Back_End_Exceptions.
+
+2022-05-12  Bob Duff  <duff@adacore.com>
+
+	* namet.ads, namet.adb (Write_Name_For_Debug): New more-robust
+	version of Write_Name.
+	(Destroy_Global_Name_Buffer): New procedure to help detect bugs
+	related to use of Global_Name_Buffer.  Misc cleanup and comment
+	improvements. E.g. we don't need to document every detail of
+	debugging printouts, especially since they can change.
+	* uname.ads, uname.adb (Write_Unit_Name_For_Debug): New
+	more-robust version of Write_Unit_Name.
+	(Get_Unit_Name_String): Pass buffer in, instead of using the
+	global variable. Misc cleanup. Remove the "special fudge", which
+	is apparently not needed, and anyway the comment "the %s or %b
+	has already been eliminated" seems wrong.
+	(Write_Unit_Name): Call the new version of Get_Unit_Name_String.
+	* errout.adb (Set_Msg_Insertion_Unit_Name): Call the new version
+	of Get_Unit_Name_String. We pass the global variable here,
+	because it's too much trouble to disentangle such uses in
+	Errout.
+	* sem_util.ads, sem_util.adb, sem_dist.adb
+	(Get_Library_Unit_Name): New version of
+	Get_Library_Unit_Name_String that avoids usage of the global
+	variable.
+	* casing.ads, casing.adb, exp_prag.adb, exp_util.adb
+	(Set_All_Upper_Case): Remove. There is no need for a wrapper
+	here -- code is clearer without it.
+	* treepr.adb (Print_Name): Call Write_Name_For_Debug, which
+	deals with No_Name (etc), rather than duplicating that here.
+	Note that the call to Get_Name_String was superfluous.
+	(Tree_Dump): Call Write_Unit_Name_For_Debug instead of
+	Write_Unit_Name, which crashes if not Is_Valid_Name.
+	* erroutc.ads: Improve comments.
+	* erroutc.adb (Set_Msg_Name_Buffer): Call
+	Destroy_Global_Name_Buffer to detect potential bugs where it
+	incorrectly looks at the global variable.
+	* sinput.adb (Write_Location): Call Write_Name_For_Debug instead
+	of Write_Name, so it won't blow up on invalid data.
+	* sinput.ads: Improve comments; remove some verbosity.
+	* libgnat/s-imagef.adb: Fix typo in comment.
+
+2022-05-12  Yannick Moy  <moy@adacore.com>
+
+	* libgnat/s-imageu.adb (Set_Image_Unsigned): Add lemma.
+	* libgnat/s-valueu.adb (Scan_Raw_Unsigned): Add assertion.
+
+2022-05-12  Yannick Moy  <moy@adacore.com>
+
+	* libgnat/s-aridou.ads: Remove use-clause, add renames and
+	subtypes.
+	* libgnat/s-exponn.ads: Same.
+	* libgnat/s-expont.ads: Same.
+	* libgnat/s-widthu.ads: Same.
+
+2022-05-12  Etienne Servais  <servais@adacore.com>
+
+	* csets.adb (Fold_Latin_9): Fix y with diaeresis.
+	(Fold_IBM_PC_850): Fix o with stroke.
+
+2022-05-12  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_type.adb (Valid_Boolean_Arg): Remove redundant guard.
+
+2022-05-12  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_type.adb (Valid_Boolean_Arg): Operands of Raise_Type are
+	valid boolean arguments.
+
+2022-05-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch4.adb (Possible_Type_For_Conditional_Expression): Add
+	test for subtype conformance in the cases of
+	access-to-subprogram types.
+
+2022-05-12  Yannick Moy  <moy@adacore.com>
+
+	* libgnat/s-imagef.adb: Justify false message from CodePeer.
+
+2022-05-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch4.adb (Analyze_Case_Expression): Rewrite.
+	(Analyze_If_Expression): Likewise.
+	(Possible_Type_For_Conditional_Expression): New function.
+	* sem_type.adb (Specific_Type): Retur the base type in more
+	cases.
+
+2022-05-12  Yannick Moy  <moy@adacore.com>
+
+	* libgnat/s-imagef.adb: Adapt to new signature of Image_I, by
+	providing ghost imported subprograms. For now, no contract is
+	used on these subprograms, as System.Image_F is not proved.
+	* libgnat/s-imagef.ads: Add modular type Uns as formal
+	parameter, to use in defining Int_Params for instantiating
+	Image_I.
+	* libgnat/s-imagei.adb: Add contracts and ghost code.
+	* libgnat/s-imagei.ads: Replace Int formal parameter by package
+	Int_Params, which bundles type Int and Uns with ghost
+	subprograms.  Add contracts.
+	* libgnat/s-imfi128.ads: Adapt to new formal of Image_F.
+	* libgnat/s-imfi32.ads: Adapt to new formal of Image_F.
+	* libgnat/s-imfi64.ads: Adapt to new formal of Image_F.
+	* libgnat/s-imgint.ads: Adapt to new formals of Image_I.
+	* libgnat/s-imglli.ads: Adapt to new formals of Image_I.
+	* libgnat/s-imgllli.ads: Adapt to new formals of Image_I.
+	* libgnat/s-valint.ads: Adapt to new formals of Value_I.
+	* libgnat/s-vallli.ads: Adapt to new formals of Value_I.
+	* libgnat/s-valllli.ads: Adapt to new formals of Value_I.
+	* libgnat/s-valuei.adb (Prove_Scan_Only_Decimal_Ghost): New
+	ghost lemma.
+	* libgnat/s-valuei.ads: New formal parameters to prove the new
+	lemma.
+	* libgnat/s-valuti.ads (Int_Params): Define a generic package to
+	be used as a trait-like formal parameter in Image_I and other
+	generics that need to instantiate Image_I.
+	* libgnat/s-widthu.ads (Big_10): Qualify the 10 literal.
+
+2022-05-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch4.adb (Find_Arithmetic_Types): Use local variables.
+	(Find_Boolean_Types): Rewrite modeled on Find_Arithmetic_Types.
+
+2022-05-12  Alexandre Oliva  <oliva@adacore.com>
+
+	* doc/gnat_rm/security_hardening_features.rst (Hardened
+	Booleans): New.
+	* exp_util.adb (Adjust_Condition): Perform validity checking on
+	hardbool-annotated types even with -gnatVT.
+	* gnat_rm.texi: Regenerate.
+	* gcc-interface/utils.cc (gnat_internal_attribute_table): Ignore
+	hardbool.
+
+2022-05-12  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_ch9.adb (Build_Protected_Entry): Set scope of the nested
+	block to spec and not the body of the procedure created for a
+	protected entry.
+
+2022-05-12  Etienne Servais  <servais@adacore.com>
+
+	* sem_ch3.adb (Find_Type_Of_Object): Remove duplicate "i" in
+	comment.
+
+2022-05-12  Marc Poulhiès  <poulhies@adacore.com>
+
+	* csets.adb (Initialize): Only treat square bracket as valid
+	identifier character for Ada versions prior to Ada 2022.
+	* style.ads (Check_Left_Paren): Rename...
+	(Check_Left_Paren_Square_Bracket): ...to this.
+	* styleg.adb (Check_Left_Bracket): Rename...
+	(Check_Left_Paren_Square_Bracket): ...to this.
+	* styleg.ads (Check_Left_Paren): Rename...
+	(Check_Left_Paren_Square_Bracket): ...to this.
+	* scng.adb (Scan): Add check for spacing around left square
+	bracket and use new name for Check_Left_Paren_Square_Bracket.
+	* libgnat/a-szmzco.ads (Control_Ranges, Graphic_Ranges)
+	(Letter_Ranges, Decimal_Digit_Ranges, ISO_646_Ranges)
+	(Character_Ranges): Fix style (remove extra space).
+	* libgnat/a-swmwco.ads (Control_Ranges, Graphic_Ranges)
+	(Letter_Ranges, Decimal_Digit_Ranges, ISO_646_Ranges)
+	(Character_Ranges): Likewise.
+	* opt.adb (Set_Config_Switches): Remove [ from Identifier_Char
+	set.
+
+2022-05-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_type.adb (Specific_Type): Add swapped cases for interfaces.
+
+2022-05-12  Piotr Trojanek  <trojanek@adacore.com>
+
+	* doc/gnat_rm/implementation_defined_pragmas.rst:
+	(Export_Object, Import_Object, Short_Descriptors): Fix pragma
+	syntax specification.
+	* gnat_rm.texi: Regenerate.
+
+2022-05-12  Piotr Trojanek  <trojanek@adacore.com>
+
+	* ali.adb (Hash): Reuse GNAT.String_Hash.Hash and don't pollute
+	the Name_Id table.
+
+2022-05-12  Piotr Trojanek  <trojanek@adacore.com>
+
+	* doc/gnat_ugn/the_gnat_compilation_model.rst (Configuration
+	Pragmas): Add Aggregate_Individually_Assign; otherwise the list
+	is complete except for some obsoleted pragmas, which most likely
+	are intentionally omitted.
+	* gnat_ugn.texi: Regenerate.
+
 2022-05-11  Yannick Moy  <moy@adacore.com>
 
 	* libgnat/s-imaged.ads: Remove Pure.

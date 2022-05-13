@@ -1,3 +1,10 @@
+2022-05-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* config/locale/dragonfly/numeric_members.cc: Remove whitespace.
+	* config/locale/gnu/numeric_members.cc: Likewise.
+	* include/bits/locale_facets_nonio.h: Likewise.
+	* libsupc++/typeinfo: Likewise.
+
 2022-05-10  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/105284

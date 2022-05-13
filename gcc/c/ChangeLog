@@ -1,3 +1,15 @@
+2022-05-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.cc (c_parse_init): Register omp_all_memory as keyword
+	if flag_openmp.
+	(c_parser_postfix_expression): Diagnose uses of omp_all_memory
+	in postfix expressions.
+	(c_parser_omp_variable_list): Handle omp_all_memory in depend
+	clause.
+	* c-typeck.cc (c_finish_omp_clauses): Handle omp_all_memory
+	keyword in depend clause as null_pointer_node, diagnose invalid
+	uses.
+
 2022-05-09  Martin Liska  <mliska@suse.cz>
 
 	* c-parser.cc (c_parser_conditional_expression): Use {,UN}LIKELY

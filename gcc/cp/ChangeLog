@@ -1,3 +1,29 @@
+2022-05-12  Patrick Palka  <ppalka@redhat.com>
+
+	* cp-tree.h (TMPL_ARGS_LEVEL): Assert LEVEL is 1 when
+	TMPL_ARGS_HAVE_MULTIPLE_LEVELS is false.
+	* pt.cc (try_class_unification): Correctly copy multidimensional
+	targs.  Free the copy of targs.
+	(unify_pack_expansion): Fix level comparison.
+
+2022-05-12  Nathan Sidwell  <nathan@acm.org>
+
+	* parser.cc (cp_parser_linkage_specification): Implement
+	global module attachment semantics.
+
+2022-05-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* lex.cc (init_reswords): Register omp_all_memory as keyword
+	if flag_openmp.
+	* parser.cc (cp_parser_primary_expression): Diagnose uses of
+	omp_all_memory in postfix expressions.
+	(cp_parser_omp_var_list_no_open): Handle omp_all_memory in depend
+	clause.
+	* semantics.cc (finish_omp_clauses): Handle omp_all_memory
+	keyword in depend clause as null_pointer_node, diagnose invalid
+	uses.
+	* pt.cc (tsubst_omp_clause_decl): Pass through omp_all_memory.
+
 2022-05-11  Patrick Palka  <ppalka@redhat.com>
 
 	* constraint.cc (tsubst_parameter_mapping): Convert loop over

@@ -1,3 +1,36 @@
+2022-05-12  David Edelsohn  <dje.gcc@gmail.com>
+
+	* g++.target/powerpc/pr101168.C: Require VSX.
+
+2022-05-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/105562
+	* g++.dg/warn/uninit-pr105562.C: New testcase.
+
+2022-05-12  Nathan Sidwell  <nathan@acm.org>
+
+	* g++.dg/modules/lang-3_a.C: New.
+	* g++.dg/modules/lang-3_b.C: New.
+	* g++.dg/modules/lang-3_c.C: New.
+
+2022-05-12  Haochen Jiang  <haochen.jiang@intel.com>
+
+	PR target/104371
+	* gcc.target/i386/pr104371-1.c: New test.
+	* gcc.target/i386/pr104371-2.c: Ditto.
+
+2022-05-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/gomp/all-memory-1.c: New test.
+	* c-c++-common/gomp/all-memory-2.c: New test.
+	* c-c++-common/gomp/all-memory-3.c: New test.
+	* g++.dg/gomp/all-memory-1.C: New test.
+	* g++.dg/gomp/all-memory-2.C: New test.
+
+2022-05-12  jiawei  <jiawei@iscas.ac.cn>
+
+	* c-c++-common/Wconversion-1.c: Update type.
+
 2022-05-11  Jason Merrill  <jason@redhat.com>
 
 	PR c++/105541

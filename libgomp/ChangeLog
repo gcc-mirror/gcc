@@ -1,3 +1,50 @@
+2022-05-12  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* Makefile.am (libgomp_la_LIBADD): Initialize.
+	* plugin/configfrag.ac (DL_LIBS): New.
+	(PLUGIN_GCN_LIBS): Remove.
+	(PLUGIN_NVPTX_LIBS): Don't set in the 'PLUGIN_NVPTX_DYNAMIC' case.
+	* plugin/Makefrag.am (libgomp_la_LIBADD)
+	(libgomp_plugin_gcn_la_LIBADD): Consider '$(DL_LIBS)'.
+	(libgomp_plugin_nvptx_la_LIBADD) <PLUGIN_NVPTX_DYNAMIC>: Likewise.
+	* Makefile.in: Regenerate.
+	* config.h.in: Likewise.
+	* configure: Likewise.
+	* testsuite/Makefile.in: Likewise.
+
+2022-05-12  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* plugin/Makefrag.am: Handle 'PLUGIN_NVPTX_DYNAMIC'.
+	* plugin/configfrag.ac (PLUGIN_NVPTX_DYNAMIC): Change
+	'AC_DEFINE_UNQUOTED' into 'AM_CONDITIONAL'.
+	* plugin/plugin-nvptx.c: Split 'PLUGIN_NVPTX_DYNAMIC' into
+	'PLUGIN_NVPTX_INCLUDE_SYSTEM_CUDA_H' and
+	'PLUGIN_NVPTX_LINK_LIBCUDA'.
+	* Makefile.in: Regenerate.
+	* config.h.in: Likewise.
+	* configure: Likewise.
+
+2022-05-12  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* plugin/configfrag.ac: Don't 'AC_SUBST' and 'AC_DEFINE_UNQUOTED'
+	for 'PLUGIN_GCN', 'PLUGIN_NVPTX'.
+	* Makefile.in: Regenerate.
+	* config.h.in: Likewise.
+	* configure: Likewise.
+	* testsuite/Makefile.in: Likewise.
+
+2022-05-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* libgomp.h (struct gomp_task): Add depend_all_memory member.
+	* task.c (gomp_init_task): Initialize depend_all_memory.
+	(gomp_task_handle_depend): Handle omp_all_memory.
+	(gomp_task_run_post_handle_depend_hash): Clear
+	parent->depend_all_memory if equal to current task.
+	(gomp_task_maybe_wait_for_dependencies): Handle omp_all_memory.
+	* testsuite/libgomp.c-c++-common/depend-1.c: New test.
+	* testsuite/libgomp.c-c++-common/depend-2.c: New test.
+	* testsuite/libgomp.c-c++-common/depend-3.c: New test.
+
 2022-05-11  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* plugin/configfrag.ac: Remove '--with-hsa-runtime',
