@@ -4956,7 +4956,8 @@ is_cplusplus_method (Entity_Id gnat_entity)
      'this' parameter is not encoded in the mangled name of a method.  */
   if (Is_Subprogram (gnat_entity) && Present (Interface_Name (gnat_entity)))
     {
-      String_Pointer sp = { NULL, NULL };
+      String_Template temp = { 0, 0 };
+      String_Pointer sp = { "", &temp };
       Get_External_Name (gnat_entity, false, sp);
 
       void *mem;
