@@ -19644,11 +19644,11 @@
    (set_attr "type" "sselog,ssemov,sselog,ssemov,mmxcvt,mmxmov")
    (set_attr "mode" "TI,TI,V4SF,SF,DI,DI")])
 
-(define_insn "*vec_concatv4si"
-  [(set (match_operand:V4SI 0 "register_operand"       "=x,v,x,x,v")
-	(vec_concat:V4SI
-	  (match_operand:V2SI 1 "register_operand"     " 0,v,0,0,v")
-	  (match_operand:V2SI 2 "nonimmediate_operand" " x,v,x,m,m")))]
+(define_insn "*vec_concat<mode>"
+  [(set (match_operand:VI124_128 0 "register_operand"       "=x,v,x,x,v")
+	(vec_concat:VI124_128
+	  (match_operand:<ssehalfvecmode> 1 "register_operand"     " 0,v,0,0,v")
+	  (match_operand:<ssehalfvecmode> 2 "nonimmediate_operand" " x,v,x,m,m")))]
   "TARGET_SSE"
   "@
    punpcklqdq\t{%2, %0|%0, %2}
@@ -19660,6 +19660,60 @@
    (set_attr "type" "sselog,sselog,ssemov,ssemov,ssemov")
    (set_attr "prefix" "orig,maybe_evex,orig,orig,maybe_evex")
    (set_attr "mode" "TI,TI,V4SF,V2SF,V2SF")])
+
+(define_insn_and_split "*vec_concatv16qi_permt2"
+  [(set (match_operand:V16QI 0 "register_operand")
+	(unspec:V16QI
+	  [(const_vector:V16QI [(const_int 0) (const_int 1)
+				(const_int 2) (const_int 3)
+				(const_int 4) (const_int 5)
+				(const_int 6) (const_int 7)
+				(const_int 16) (const_int 17)
+				(const_int 18) (const_int 19)
+				(const_int 20) (const_int 21)
+				(const_int 22) (const_int 23)])
+	   (match_operand:V16QI 1 "register_operand")
+	   (match_operand:V16QI 2 "nonimmediate_operand")]
+	  UNSPEC_VPERMT2))]
+  "TARGET_AVX512VL && TARGET_AVX512VBMI
+   && ix86_pre_reload_split ()"
+  "#"
+  "&& 1"
+  [(set (match_dup 0)
+	(vec_concat:V16QI (match_dup 1) (match_dup 2)))]
+{
+  operands[1] = lowpart_subreg (V8QImode,
+				force_reg (V16QImode, operands[1]),
+				V16QImode);
+  if (!MEM_P (operands[2]))
+    operands[2] = force_reg (V16QImode, operands[2]);
+  operands[2] = lowpart_subreg (V8QImode, operands[2], V16QImode);
+})
+
+(define_insn_and_split "*vec_concatv8hi_permt2"
+  [(set (match_operand:V8HI 0 "register_operand")
+	(unspec:V8HI
+	  [(const_vector:V8HI [(const_int 0) (const_int 1)
+				(const_int 2) (const_int 3)
+				(const_int 8) (const_int 9)
+				(const_int 10) (const_int 11)])
+	   (match_operand:V8HI 1 "register_operand")
+	   (match_operand:V8HI 2 "nonimmediate_operand")]
+	  UNSPEC_VPERMT2))]
+  "TARGET_AVX512VL && TARGET_AVX512BW
+   && ix86_pre_reload_split ()"
+  "#"
+  "&& 1"
+  [(set (match_dup 0)
+	(vec_concat:V8HI (match_dup 1) (match_dup 2)))]
+{
+  operands[1] = lowpart_subreg (V4HImode,
+				force_reg (V8HImode, operands[1]),
+				V8HImode);
+  if (!MEM_P (operands[2]))
+    operands[2] = force_reg (V8HImode, operands[2]);
+  operands[2] = lowpart_subreg (V4HImode, operands[2], V8HImode);
+})
 
 (define_insn "*vec_concat<mode>_0"
   [(set (match_operand:VI124_128 0 "register_operand"       "=v,x")
