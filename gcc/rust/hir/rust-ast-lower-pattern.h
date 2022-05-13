@@ -62,6 +62,8 @@ public:
 
   void visit (AST::LiteralPattern &pattern) override;
 
+  void visit (AST::RangePattern &pattern) override;
+
 private:
   ASTLoweringPattern () : translated (nullptr) {}
 

@@ -282,6 +282,9 @@ protected:
   std::unique_ptr<TuplePatternItems>
   lower_tuple_pattern_ranged (AST::TuplePatternItemsRanged &pattern);
 
+  std::unique_ptr<HIR::RangePatternBound>
+  lower_range_pattern_bound (AST::RangePatternBound *bound);
+
   HIR::Literal lower_literal (const AST::Literal &literal);
 };
 

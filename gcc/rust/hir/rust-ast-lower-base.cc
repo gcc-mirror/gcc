@@ -950,6 +950,51 @@ ASTLoweringBase::lower_tuple_pattern_ranged (
 				      std::move (upper_patterns)));
 }
 
+std::unique_ptr<HIR::RangePatternBound>
+ASTLoweringBase::lower_range_pattern_bound (AST::RangePatternBound *bound)
+{
+  std::unique_ptr<HIR::RangePatternBound> hir_bound = nullptr;
+  switch (bound->get_bound_type ())
+    {
+      case AST::RangePatternBound::RangePatternBoundType::LITERAL: {
+	AST::RangePatternBoundLiteral &ref
+	  = *static_cast<AST::RangePatternBoundLiteral *> (bound);
+
+	HIR::Literal literal = lower_literal (ref.get_literal ());
+
+	hir_bound = std::unique_ptr<HIR::RangePatternBound> (
+	  new HIR::RangePatternBoundLiteral (literal, ref.get_locus (),
+					     ref.get_has_minus ()));
+      }
+      break;
+      case AST::RangePatternBound::RangePatternBoundType::PATH: {
+	AST::RangePatternBoundPath &ref
+	  = *static_cast<AST::RangePatternBoundPath *> (bound);
+
+	HIR::PathInExpression *path
+	  = ASTLowerPathInExpression::translate (&ref.get_path ());
+
+	hir_bound = std::unique_ptr<HIR::RangePatternBound> (
+	  new HIR::RangePatternBoundPath (*path));
+      }
+      break;
+      case AST::RangePatternBound::RangePatternBoundType::QUALPATH: {
+	AST::RangePatternBoundQualPath &ref
+	  = *static_cast<AST::RangePatternBoundQualPath *> (bound);
+
+	HIR::QualifiedPathInExpression *qualpath
+	  = ASTLowerQualPathInExpression::translate (
+	    &ref.get_qualified_path ());
+
+	hir_bound = std::unique_ptr<HIR::RangePatternBound> (
+	  new HIR::RangePatternBoundQualPath (*qualpath));
+      }
+      break;
+    }
+
+  return hir_bound;
+}
+
 HIR::Literal
 ASTLoweringBase::lower_literal (const AST::Literal &literal)
 {

@@ -197,6 +197,13 @@ protected:
 class RangePatternBound
 {
 public:
+  enum RangePatternBoundType
+  {
+    LITERAL,
+    PATH,
+    QUALPATH
+  };
+
   virtual ~RangePatternBound () {}
 
   // Unique pointer custom clone function
@@ -209,6 +216,8 @@ public:
   virtual std::string as_string () const = 0;
 
   virtual void accept_vis (HIRFullVisitor &vis) = 0;
+
+  virtual RangePatternBoundType get_bound_type () const = 0;
 
 protected:
   // pure virtual as RangePatternBound is abstract
@@ -238,7 +247,14 @@ public:
 
   Location get_locus () const { return locus; }
 
+  Literal get_literal () const { return literal; }
+
   void accept_vis (HIRFullVisitor &vis) override;
+
+  RangePatternBoundType get_bound_type () const override
+  {
+    return RangePatternBoundType::LITERAL;
+  }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -264,7 +280,15 @@ public:
 
   Location get_locus () const { return path.get_locus (); }
 
+  PathInExpression &get_path () { return path; }
+  const PathInExpression &get_path () const { return path; }
+
   void accept_vis (HIRFullVisitor &vis) override;
+
+  RangePatternBoundType get_bound_type () const override
+  {
+    return RangePatternBoundType::PATH;
+  }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -293,6 +317,14 @@ public:
   Location get_locus () const { return path.get_locus (); }
 
   void accept_vis (HIRFullVisitor &vis) override;
+
+  QualifiedPathInExpression &get_qualified_path () { return path; }
+  const QualifiedPathInExpression &get_qualified_path () const { return path; }
+
+  RangePatternBoundType get_bound_type () const override
+  {
+    return RangePatternBoundType::QUALPATH;
+  }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -366,6 +398,18 @@ public:
   PatternType get_pattern_type () const override final
   {
     return PatternType::RANGE;
+  }
+
+  std::unique_ptr<RangePatternBound> &get_lower_bound ()
+  {
+    rust_assert (lower != nullptr);
+    return lower;
+  }
+
+  std::unique_ptr<RangePatternBound> &get_upper_bound ()
+  {
+    rust_assert (upper != nullptr);
+    return upper;
   }
 
 protected:

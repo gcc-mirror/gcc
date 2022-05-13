@@ -195,6 +195,13 @@ protected:
 class RangePatternBound
 {
 public:
+  enum RangePatternBoundType
+  {
+    LITERAL,
+    PATH,
+    QUALPATH
+  };
+
   virtual ~RangePatternBound () {}
 
   // Unique pointer custom clone function
@@ -207,6 +214,8 @@ public:
   virtual std::string as_string () const = 0;
 
   virtual void accept_vis (ASTVisitor &vis) = 0;
+
+  virtual RangePatternBoundType get_bound_type () const = 0;
 
 protected:
   // pure virtual as RangePatternBound is abstract
@@ -234,9 +243,18 @@ public:
 
   std::string as_string () const override;
 
+  Literal get_literal () const { return literal; }
+
+  bool get_has_minus () const { return has_minus; }
+
   Location get_locus () const { return locus; }
 
   void accept_vis (ASTVisitor &vis) override;
+
+  RangePatternBoundType get_bound_type () const override
+  {
+    return RangePatternBoundType::LITERAL;
+  }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -267,6 +285,11 @@ public:
   // TODO: this mutable getter seems kinda dodgy
   PathInExpression &get_path () { return path; }
   const PathInExpression &get_path () const { return path; }
+
+  RangePatternBoundType get_bound_type () const override
+  {
+    return RangePatternBoundType::PATH;
+  }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -299,6 +322,11 @@ public:
   // TODO: this mutable getter seems kinda dodgy
   QualifiedPathInExpression &get_qualified_path () { return path; }
   const QualifiedPathInExpression &get_qualified_path () const { return path; }
+
+  RangePatternBoundType get_bound_type () const override
+  {
+    return RangePatternBoundType::QUALPATH;
+  }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather

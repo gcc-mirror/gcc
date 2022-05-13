@@ -105,6 +105,64 @@ CompilePatternCaseLabelExpr::visit (HIR::LiteralPattern &pattern)
   case_label_expr = build_case_label (lit, NULL_TREE, associated_case_label);
 }
 
+static tree
+compile_range_pattern_bound (HIR::RangePatternBound *bound,
+			     Analysis::NodeMapping mappings, Location locus,
+			     Context *ctx)
+{
+  tree result = NULL_TREE;
+  switch (bound->get_bound_type ())
+    {
+      case HIR::RangePatternBound::RangePatternBoundType::LITERAL: {
+	HIR::RangePatternBoundLiteral &ref
+	  = *static_cast<HIR::RangePatternBoundLiteral *> (bound);
+
+	HIR::LiteralExpr *litexpr
+	  = new HIR::LiteralExpr (mappings, ref.get_literal (), locus,
+				  std::vector<AST::Attribute> ());
+
+	result = CompileExpr::Compile (litexpr, ctx);
+      }
+      break;
+
+      case HIR::RangePatternBound::RangePatternBoundType::PATH: {
+	HIR::RangePatternBoundPath &ref
+	  = *static_cast<HIR::RangePatternBoundPath *> (bound);
+
+	result = ResolvePathRef::Compile (ref.get_path (), ctx);
+
+	// If the path resolves to a const expression, fold it.
+	result = ConstCtx::fold (result);
+      }
+      break;
+
+      case HIR::RangePatternBound::RangePatternBoundType::QUALPATH: {
+	HIR::RangePatternBoundQualPath &ref
+	  = *static_cast<HIR::RangePatternBoundQualPath *> (bound);
+
+	result = ResolvePathRef::Compile (ref.get_qualified_path (), ctx);
+
+	// If the path resolves to a const expression, fold it.
+	result = ConstCtx::fold (result);
+      }
+    }
+
+  return result;
+}
+
+void
+CompilePatternCaseLabelExpr::visit (HIR::RangePattern &pattern)
+{
+  tree upper = compile_range_pattern_bound (pattern.get_upper_bound ().get (),
+					    pattern.get_pattern_mappings (),
+					    pattern.get_locus (), ctx);
+  tree lower = compile_range_pattern_bound (pattern.get_lower_bound ().get (),
+					    pattern.get_pattern_mappings (),
+					    pattern.get_locus (), ctx);
+
+  case_label_expr = build_case_label (lower, upper, associated_case_label);
+}
+
 // setup the bindings
 
 void
