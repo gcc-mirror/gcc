@@ -83,7 +83,8 @@ PROCEDURE __BUILTIN__ significandf (s: SHORTREAL) : SHORTREAL ;
 PROCEDURE __BUILTIN__ significandl (l: LONGREAL) : LONGREAL ;
 
 PROCEDURE __BUILTIN__ modf (x: REAL; VAR y: REAL) : REAL ;
-PROCEDURE __BUILTIN__ modff (x: SHORTREAL; VAR y: SHORTREAL) : SHORTREAL ;
+PROCEDURE __BUILTIN__ modff (x: SHORTREAL;
+                             VAR y: SHORTREAL) : SHORTREAL ;
 PROCEDURE __BUILTIN__ modfl (x: LONGREAL; VAR y: LONGREAL) : LONGREAL ;
 
 PROCEDURE __BUILTIN__ signbit (r: REAL) : INTEGER ;
@@ -124,9 +125,11 @@ PROCEDURE __BUILTIN__ conjf (z: SHORTCOMPLEX) : SHORTCOMPLEX ;
 PROCEDURE __BUILTIN__ conj (z: COMPLEX) : COMPLEX ;
 PROCEDURE __BUILTIN__ conjl (z: LONGCOMPLEX) : LONGCOMPLEX ;
 
-PROCEDURE __BUILTIN__ cpowerf (base: SHORTCOMPLEX; exp: SHORTREAL) : SHORTCOMPLEX ;
+PROCEDURE __BUILTIN__ cpowerf (base: SHORTCOMPLEX;
+                               exp: SHORTREAL) : SHORTCOMPLEX ;
 PROCEDURE __BUILTIN__ cpower (base: COMPLEX; exp: REAL) : COMPLEX ;
-PROCEDURE __BUILTIN__ cpowerl (base: LONGCOMPLEX; exp: LONGREAL) : LONGCOMPLEX ;
+PROCEDURE __BUILTIN__ cpowerl (base: LONGCOMPLEX;
+                               exp: LONGREAL) : LONGCOMPLEX ;
 
 PROCEDURE __BUILTIN__ csqrtf (z: SHORTCOMPLEX) : SHORTCOMPLEX ;
 PROCEDURE __BUILTIN__ csqrt (z: COMPLEX) : COMPLEX ;
@@ -167,18 +170,25 @@ PROCEDURE __BUILTIN__ carctanl (z: LONGCOMPLEX) : LONGCOMPLEX ;
 (* memory and string intrincic procedure functions *)
 
 PROCEDURE __BUILTIN__ alloca (i: CARDINAL) : ADDRESS ;
-PROCEDURE __BUILTIN__ memcpy (dest, src: ADDRESS; n: CARDINAL) : ADDRESS ;
+PROCEDURE __BUILTIN__ memcpy (dest, src: ADDRESS;
+                              nbytes: CARDINAL) : ADDRESS ;
 PROCEDURE __BUILTIN__ index (s: ADDRESS; c: INTEGER) : ADDRESS ;
 PROCEDURE __BUILTIN__ rindex (s: ADDRESS; c: INTEGER) : ADDRESS ;
-PROCEDURE __BUILTIN__ memcmp (s1, s2: ADDRESS; n: CARDINAL) : INTEGER ;
-PROCEDURE __BUILTIN__ memset (s: ADDRESS; c: INTEGER; n: CARDINAL) : ADDRESS ;
-PROCEDURE __BUILTIN__ memmove (s1, s2: ADDRESS; n: CARDINAL) : ADDRESS ;
+PROCEDURE __BUILTIN__ memcmp (s1, s2: ADDRESS;
+                              nbytes: CARDINAL) : INTEGER ;
+PROCEDURE __BUILTIN__ memset (s: ADDRESS; c: INTEGER;
+                              nbytes: CARDINAL) : ADDRESS ;
+PROCEDURE __BUILTIN__ memmove (s1, s2: ADDRESS;
+                               nbytes: CARDINAL) : ADDRESS ;
 PROCEDURE __BUILTIN__ strcat (dest, src: ADDRESS) : ADDRESS ;
-PROCEDURE __BUILTIN__ strncat (dest, src: ADDRESS; n: CARDINAL) : ADDRESS ;
+PROCEDURE __BUILTIN__ strncat (dest, src: ADDRESS;
+                               nbytes: CARDINAL) : ADDRESS ;
 PROCEDURE __BUILTIN__ strcpy (dest, src: ADDRESS) : ADDRESS ;
-PROCEDURE __BUILTIN__ strncpy (dest, src: ADDRESS; n: CARDINAL) : ADDRESS ;
+PROCEDURE __BUILTIN__ strncpy (dest, src: ADDRESS;
+                               nbytes: CARDINAL) : ADDRESS ;
 PROCEDURE __BUILTIN__ strcmp (s1, s2: ADDRESS) : INTEGER ;
-PROCEDURE __BUILTIN__ strncmp (s1, s2: ADDRESS; n: CARDINAL) : INTEGER ;
+PROCEDURE __BUILTIN__ strncmp (s1, s2: ADDRESS;
+                               nbytes: CARDINAL) : INTEGER ;
 PROCEDURE __BUILTIN__ strlen (s: ADDRESS) : INTEGER ;
 PROCEDURE __BUILTIN__ strstr (haystack, needle: ADDRESS) : ADDRESS ;
 PROCEDURE __BUILTIN__ strpbrk (s, accept: ADDRESS) : ADDRESS ;

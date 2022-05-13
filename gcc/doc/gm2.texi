@@ -1,6 +1,6 @@
 \input texinfo
 @c -*-texinfo-*-
-@c Copyright (C) 2001-2021 Free Software Foundation, Inc.
+@c Copyright (C) 2001-2022 Free Software Foundation, Inc.
 @c This is part of the GM2 manual.
 
 @c User level documentation for GNU Modula-2
@@ -10,13 +10,13 @@
 @setfilename gm2.info
 @settitle The GNU Modula-2 Compiler
 
-@include version.texi
+@include m2/version.texi
 @set version-python  3.5
 
 @include gcc-common.texi
 
 @c Copyright years for this manual.
-@set copyrights-gm2 1999-2021
+@set copyrights-gm2 1999-2022
 
 @copying
 @c man begin COPYRIGHT
@@ -137,7 +137,6 @@ to name but a few processors.
 The compiler provides semantic analysis and runtime checking (full ISO
 Modula-2 checking is implemented) and there is a plugin which can,
 under certain conditions, detect runtime errors at compile time.
-See @xref{Semantic checking, , ,gm2}.
 
 gm2 can produce swig interface headers to allow access from Python and
 other scripting languages.  The compiler supports PIM2, PIM3, PIM4 and
@@ -155,7 +154,7 @@ builtins (vararg access) and GCC features.
 
 There is an intention to implement the M2R10 dialect of Modula-2 and
 any of the language changes.  If you wish to see something different
-please email @email{gaius.mulley@@southwales.ac.uk} with your ideas.
+please email @email{gm2@@nongnu.org} with your ideas.
 
 @node News, Features, Release map, Using
 @section News
@@ -264,7 +263,7 @@ $ cd ..
 @node Obtaining, Features, Development, Using
 
 GNU Modula-2 is in the process of migrating into the
-@url{https://gcc.gnu.org/git.html, GCC git tree}.  Please see the
+@url{https://gcc.gnu.org/git.html, GCC git tree}.
 @xref{Development, , ,gm2} section in this GM2 documentation for git
 details and @xref{Downloading the source, , ,gcc} in the GCC
 documentation.
@@ -276,9 +275,9 @@ documentation.
 
 @item
 the compiler currently complies with Programming in Modula-2 Edition
-2, 3, 4 and ISO Modula-2.  Users can switch on specific mutually
-exclusive features by using: @samp{-fpim}, @samp{-fpim2},
-@samp{-fpim3}, @samp{-fpim4} or @samp{-fiso}.
+2, 3, 4 and ISO Modula-2.  Users can switch on specific language
+features by using: @samp{-fpim}, @samp{-fpim2}, @samp{-fpim3},
+@samp{-fpim4} or @samp{-fiso}.
 
 @item
 the option @samp{-fswig} will automatically create a swig interface
@@ -318,7 +317,7 @@ easy interface to C, and varargs can be passed to C routines.
 
 @item
 many Logitech libraries have been implemented and can be accessed via:
-@samp{-flibs=m2iso,m2pim}.
+@samp{-flibs=m2log,m2pim,m2iso}.
 
 @item
 coroutines have been implemented in the PIM style and these are
@@ -335,24 +334,37 @@ such as the AVR and the ARM).
 @node Documentation, Regression tests, Features, Using
 @section Documentation
 
-The GNU Modula-2 documentation is available on line or as a
-pdf @url{gm2.pdf}.
+The GNU Modula-2 documentation is available on line
+@url{https://www.nongnu.org/gm2/homepage.html,at the gm2 homepage}
+or in the pdf, info, html file format.
 
 @node Regression tests, Limitations, Documentation, Using
 @section Regression tests for gm2 in the repository
 
-The result of the GNU Modula-2 regression tests for the current
-snapshot are held at
-@url{http://floppsie.comp.glam.ac.uk/gm2-results/regression-tests.html}.
+The regression testsuite can be run from the gcc build directory:
 
-Other combinations almost certainly work, if you successfully
-build gm2 on a different platform please email
-@email{gaius.mulley@@southwales.ac.uk}
-or the
-@email{gm2@@nongnu.org}
-GNU Modula-2
-mailing list. You will need to subscribe to send email to
-the mailing list.
+@example
+$ cd build-gcc
+$ make check -j 24
+@end example
+
+which runs the complete testsuite for all compilers using 24 parallel
+invocations of the compiler.  Individual language testsuites can be
+run by specifying the language, for example the Modula-2 testsuite can
+be run using:
+
+@example
+$ cd build-gcc
+$ make check-m2 -j 24
+@end example
+
+Finally the results of the testsuite can be emailed to the
+@url{https://gcc.gnu.org/lists.html, gcc-testresults} list using the
+script:
+
+@example
+$ @file{gccsrcdir/contrib/test_summary}
+@end example
 
 @node Limitations, Objectives, Regression tests, Using
 @section Limitations
@@ -455,6 +467,20 @@ available}.
 * Other languages::       Other languages for GCC.
 * What is GNU Modula-2::  Brief description of GNU Modula-2.
 * Why use GNU Modula-2::  Advantages of GNU Modula-2.
+@ifnothtml
+@c omit these nodes if generating gm2 webpage as these are hand written.
+* Release map:: Release map.
+* News:: News.
+* Development:: Development.
+* Obtaining:: How to Obtain GNU Modula-2.
+* Features:: Features of the implementation.
+* Documentation:: Placeholder for how to access the documentation online.
+* Regression tests:: How to run the testsuite.
+* Limitations:: Current limitations.
+* Objectives:: Objectives of the implementation.
+* FAQ:: Frequently asked questions.
+* Community:: How to join the community.
+@end ifnothtml
 @end menu
 
 This document contains the user and design issues relevant to the
@@ -494,7 +520,7 @@ This manual only documents the options specific to @command{gm2}.
 
 This section describes how to compile and link a simple hello world
 program.  It provides a few examples of using the different options
-mentioned in @xref{Compiler options, , ,gm2}.  Assuming that you have
+mentioned in @pxref{Compiler options, , ,gm2}.  Assuming that you have
 a file called @file{hello.mod} in your current directory which
 contains:
 
@@ -527,7 +553,7 @@ when trouble shooting.}
 @section Compiler options
 
 This section describes the compiler options specific to GNU Modula-2
-for generic flags details see @xref{Invoking GCC, , ,gcc}.
+for generic flags details @xref{Invoking GCC, , ,gcc}.
 
 @c man begin OPTIONS
 
@@ -593,7 +619,7 @@ generate a shared library from the module.
 
 @item -fmakeinit
 generate the start up C++ code for the module, a file
-@file{_m2_modulename.cpp} is created.  This is an internal command
+@file{modulename_m2.cpp} is created.  This is an internal command
 line option.
 
 @item -fruntime-modules=
@@ -732,7 +758,7 @@ order of modules.
 
 @item -fcpp
 preprocess the source with @samp{cpp -lang-asm -traditional-cpp}
-For further details about these options see @xref{Invocation, , ,cpp}.
+For further details about these options @xref{Invocation, , ,cpp}.
 If @samp{-fcpp} is supplied then all definition modules and
 implementation modules which are parsed will be preprocessed by
 @samp{cpp}.
@@ -742,37 +768,37 @@ turn on ISO standard features. Currently this enables the ISO
 @code{SYSTEM} module and alters the default library search path so
 that the ISO libraries are searched before the PIM libraries.  It also
 effects the behaviour of @code{DIV} and @code{MOD} operators.
-See @xref{Dialect, , ,gm2}.
+@xref{Dialect, , ,gm2}.
 
 @item -fpim
 turn on PIM standard features. Currently this enables the PIM
 @code{SYSTEM} module and determines which identifiers are pervasive
 (declared in the base module). If no other @samp{-fpim[234]} switch is
 used then division and modulus operators behave as defined in PIM4.
-See @xref{Dialect, , ,gm2}.
+@xref{Dialect, , ,gm2}.
 
 @item -fpim2
 turn on PIM-2 standard features. Currently this removes @code{SIZE}
 from being a pervasive identifier (declared in the base module).  It
 places @code{SIZE} in the @code{SYSTEM} module.  It also effects the
 behaviour of @code{DIV} and @code{MOD} operators.
-See @xref{Dialect, , ,gm2}.
+@xref{Dialect, , ,gm2}.
 
 @item -fpim3
 turn on PIM-3 standard features. Currently this only effects the
 behaviour of @code{DIV} and @code{MOD} operators.
-See @xref{Dialect, , ,gm2}.
+@xref{Dialect, , ,gm2}.
 
 @item -fpim4
 turn on PIM-4 standard features. Currently this only effects the
 behaviour of @code{DIV} and @code{MOD} operators.
-See @xref{Dialect, , ,gm2}.
+@xref{Dialect, , ,gm2}.
 
 @item -fpositive-mod-floor-div
 forces the @code{DIV} and @code{MOD} operators to behave as defined by PIM4.
 All modulus results are positive and the results from the division are
 rounded to the floor.
-See @xref{Dialect, , ,gm2}.
+@xref{Dialect, , ,gm2}.
 
 @item -flibs=
 modifies the default library search path.  The libraries supplied are:
@@ -905,7 +931,8 @@ this:
 @example
 $ gm2 -g -c -I. -I../project -I../project/unix foo.mod
 $ gm2 -fonlylink -g -I. -I../project -I../project/unix \
-  -fobject-path=../project/obj -Iobject-path=../project/unix/obj -I. foo.mod
+  -fobject-path=../project/obj -Iobject-path=../project/unix/obj \
+  -I. foo.mod
 @end example
 
 they can be simplified by utilising two environment variables to do
@@ -924,33 +951,6 @@ order for compiling and linking is: command line switches followed by
 environment variable paths followed by default runtime libraries or
 Modula-2 dialect libraries.  If in doubt include the @code{-v} option
 to see the search path used between the compiler subcomponents.
-
-Lastly there is the @code{GM2_ROOT} environment variable which
-determines where the compiler subcomponents reside in the
-filesystem.  This environment variable overrides the compiler time
-configure option @code{--prefix=}.  For example suppose the compiler
-was built to reside in @file{/usr/local} and the system administrator
-decided to move the entire compiler tree to
-@file{/architecture/i386/usr}.  Once the tree is moved then a system
-wide environment variable (@code{GM2_ROOT}) could be set to:
-
-@example
-$ export GM2_ROOT=/architecture/i386/usr
-@end example
-
-The system administrator needs to ensure that the front end binary
-@file{gm2} can be seen by the users path.  At that point a user can
-invoke @code{gm2 -g -c -I. hello.mod} from the command line and all
-subcomponents will be picked up from @file{/architecture/i386/usr}.
-This allows users to try out different GNU Modula-2 releases and also
-allows system administrators to install compiler binaries at different
-locations to where they were initially configured to reside.
-
-The environment variable @code{GM2_ROOT} has no effect if either the
-@code{LIBRARY_PATH} or @code{COMPILE_PATH} is set.  The last two
-environment variables are used by @code{gcc}.  However if by mistake
-@code{GM2_ROOT} and either @code{LIBRARY_PATH} or @code{COMPILE_PATH}
-is set then an error message is issued.
 
 @c man end
 
@@ -1014,7 +1014,7 @@ functions are: @code{ABS}, @code{CAP}, @code{CHR}, @code{FLOAT},
 @example
 
 (*
-   ABS - returns the positive value of, i.
+   ABS - returns the positive value of i.
 *)
 
 @findex ABS
@@ -1025,8 +1025,8 @@ PROCEDURE ABS (i: <any signed type>) : <any signed type> ;
 @example
 
 (*
-   CAP - returns the capital of character, ch, providing
-         ch lies within the range 'a'..'z'. Otherwise, ch,
+   CAP - returns the capital of character ch providing
+         ch lies within the range 'a'..'z'. Otherwise ch
          is returned unaltered.
 *)
 
@@ -1073,7 +1073,7 @@ PROCEDURE DISPOSE (VAR p:<any pointer type>) ;
    DEC - can either take one or two parameters.  If supplied
          with one parameter then on the completion of the call to
          DEC, v will have its predecessor value.  If two
-         parameters are supplied then the value, v, will have its
+         parameters are supplied then the value v will have its
          n'th predecessor.  For these reasons the value of n
          must be >=0.
 *)
@@ -1085,7 +1085,7 @@ PROCEDURE DEC (VAR v: <any base type>; [n: <any base type> = 1]) ;
 @example
 
 (*
-   EXCL - excludes bit element, e, from a set type, s.
+   EXCL - excludes bit element e from a set type s.
 *)
 
 @findex EXCL
@@ -1095,7 +1095,7 @@ PROCEDURE EXCL (VAR s: <any set type>; e: <element of set type s>) ;
 @example
 
 (*
-   FLOAT - will return a REAL number whose value is the same as, o.
+   FLOAT - will return a REAL number whose value is the same as o.
 *)
 
 @findex FLOAT
@@ -1105,7 +1105,7 @@ PROCEDURE FLOAT (o: <any whole number type>) : REAL ;
 @example
 
 (*
-   FLOATS - will return a SHORTREAL number whose value is the same as, o.
+   FLOATS - will return a SHORTREAL number whose value is the same as o.
 *)
 
 @findex FLOATS
@@ -1115,7 +1115,7 @@ PROCEDURE FLOATS (o: <any whole number type>) : REAL ;
 @example
 
 (*
-   FLOATL - will return a LONGREAL number whose value is the same as, o.
+   FLOATL - will return a LONGREAL number whose value is the same as o.
 *)
 
 @findex FLOATL
@@ -1150,7 +1150,7 @@ PROCEDURE HALT ;
              foo('hello')
           END
 
-          will cause the local variable, c, to contain the value 4
+          will cause the local variable c to contain the value 4
 *)
 
 @findex HIGH
@@ -1163,7 +1163,7 @@ PROCEDURE HIGH (a: ARRAY OF CHAR) : CARDINAL ;
    INC - can either take one or two parameters.  If supplied
          with one parameter then on the completion of the call to
          INC, v will have its successor value.  If two
-         parameters are supplied then the value, v, will have its
+         parameters are supplied then the value v will have its
          n'th successor.  For these reasons the value of n
          must be >=0.
 *)
@@ -1175,7 +1175,7 @@ PROCEDURE INC (VAR v: <any base type>; [n: <any base type> = 1]) ;
 @example
 
 (*
-   INCL - includes bit element, e, to a set type, s.
+   INCL - includes bit element e to a set type s.
 *)
 
 @findex INCL
@@ -1185,7 +1185,7 @@ PROCEDURE INCL (VAR s: <any set type>; e: <element of set type s>) ;
 @example
 
 (*
-   LFLOAT - will return a LONGREAL number whose value is the same as, o.
+   LFLOAT - will return a LONGREAL number whose value is the same as o.
 *)
 
 @findex LFLOAT
@@ -1195,9 +1195,9 @@ PROCEDURE LFLOAT (o: <any whole number type>) : LONGREAL ;
 @example
 
 (*
-   LTRUNC - will return a LONG<type> number whose value is the same as, o.
-            PIM2, PIM3 and ISO Modula-2 will return a LONGCARD
-            whereas PIM4 returns LONGINT.
+   LTRUNC - will return a LONG<type> number whose value is the
+            same as o.  PIM2, PIM3 and ISO Modula-2 will return
+            a LONGCARD whereas PIM4 returns LONGINT.
 *)
 
 @findex LTRUNC
@@ -1235,7 +1235,7 @@ PROCEDURE MAX (t: <ordinal type>) : <ordinal type> ;
          (normally found in the module, Storage.)
 
          In:  a variable p: of any pointer type.
-         Out: variable, p, is set to some allocated memory
+         Out: variable p is set to some allocated memory
               which is large enough to hold all the contents of p^.
 *)
 
@@ -1257,7 +1257,8 @@ PROCEDURE ODD (x: <whole number type>) : BOOLEAN ;
 @example
 
 (*
-   SFLOAT - will return a SHORTREAL number whose value is the same as, o.
+   SFLOAT - will return a SHORTREAL number whose value is the same
+            as o.
 *)
 
 @findex SFLOAT
@@ -1267,9 +1268,9 @@ PROCEDURE SFLOAT (o: <any whole number type>) : SHORTREAL ;
 @example
 
 (*
-   STRUNC - will return a SHORT<type> number whose value is the same as, o.
-            PIM2, PIM3 and ISO Modula-2 will return a SHORTCARD
-            whereas PIM4 returns SHORTINT.
+   STRUNC - will return a SHORT<type> number whose value is the same
+            as o.  PIM2, PIM3 and ISO Modula-2 will return a
+            SHORTCARD whereas PIM4 returns SHORTINT.
 *)
 
 @findex STRUNC
@@ -1279,7 +1280,7 @@ PROCEDURE STRUNC (o: <any floating point type>) : SHORT<type> ;
 @example
 
 (*
-   TRUNC - will return a <type> number whose value is the same as, o.
+   TRUNC - will return a <type> number whose value is the same as o.
            PIM2, PIM3 and ISO Modula-2 will return a CARDINAL
            whereas PIM4 returns INTEGER.
 *)
@@ -1291,9 +1292,9 @@ PROCEDURE TRUNC (o: <any floating point type>) : <type> ;
 @example
 
 (*
-   TRUNCS - will return a <type> number whose value is the same as, o.
-            PIM2, PIM3 and ISO Modula-2 will return a SHORTCARD
-            whereas PIM4 returns SHORTINT.
+   TRUNCS - will return a <type> number whose value is the same
+            as o.  PIM2, PIM3 and ISO Modula-2 will return a
+            SHORTCARD whereas PIM4 returns SHORTINT.
 *)
 
 @findex TRUNCS
@@ -1303,9 +1304,9 @@ PROCEDURE TRUNCS (o: <any floating point type>) : <type> ;
 @example
 
 (*
-   TRUNCL - will return a <type> number whose value is the same as, o.
-            PIM2, PIM3 and ISO Modula-2 will return a LONGCARD
-            whereas PIM4 returns LONGINT.
+   TRUNCL - will return a <type> number whose value is the same
+            as o.  PIM2, PIM3 and ISO Modula-2 will return a
+            LONGCARD whereas PIM4 returns LONGINT.
 *)
 
 @findex TRUNCL
@@ -1315,7 +1316,7 @@ PROCEDURE TRUNCL (o: <any floating point type>) : <type> ;
 @example
 
 (*
-   VAL - converts data, i, of <any simple data type 2> to
+   VAL - converts data i of <any simple data type 2> to
          <any simple data type 1> and returns this value.
          No range checking is performed during this conversion.
 *)
@@ -1346,7 +1347,7 @@ PROCEDURE IM (c: <any complex type>) : <floating point type> ;
 @example
 
 (*
-   INT - returns an INTEGER value which has the same value as, v.
+   INT - returns an INTEGER value which has the same value as v.
          This function is equivalent to: VAL(INTEGER, v).
 *)
 
@@ -1357,7 +1358,7 @@ PROCEDURE INT (v: <any ordinal type>) : INTEGER ;
 @example
 
 (*
-   LENGTH - returns the length of string, a.
+   LENGTH - returns the length of string a.
 *)
 
 @findex LENGTH
@@ -1489,7 +1490,6 @@ Consider the following program:
 @example
 MODULE assignvalue ;  (*!m2iso+gm2*)
 
-
 PROCEDURE bad () : INTEGER ;
 VAR
    i: INTEGER ;
@@ -1498,22 +1498,23 @@ BEGIN
    RETURN i
 END bad ;
 
-
 VAR
    foo: CARDINAL ;
 BEGIN
-   (* the m2rte plugin will detect this as an error, post optimization.  *)
+   (* the m2rte plugin will detect this as an error, post
+      optimization.  *)
    foo := bad ()
 END assignvalue.
 @end example
 
-here we see that the programmer has not seen that the return value
+here we see that the programmer has overlooked that the return value
 from @samp{bad} will cause an overflow to @samp{foo}.  If we compile
 the code with the following options:
 
 @example
 $ gm2 -g -fsoft-check-all -O2 -c assignvalue.mod
-assignvalue.mod:16:0:inevitable that this error will occur at runtime, assignment will result in an overflow
+assignvalue.mod:16:0:inevitable that this error will occur at runtime,
+assignment will result in an overflow
 @end example
 
 The gm2 semantic plugin is automatically run and will generate a
@@ -1534,7 +1535,7 @@ not just restricted to a pointer type providing the
 
 Declarations can be made in any order, whether they are
 types, constants, procedures, nested modules or variables.
-@c (see @xref{Passes, , ,}.)
+@c (@xref{Passes, , ,}.)
 
 GNU Modula-2 also allows programmers to interface to @code{C} and
 assembly language.
@@ -1636,7 +1637,8 @@ FROM DynamicStrings IMPORT String, InitString, InitStringChar, Mark,
 
 (*
 #define InitString(X) InitStringDB(X, __FILE__, __LINE__)
-#define InitStringCharStar(X) InitStringCharStarDB(X, __FILE__, __LINE__)
+#define InitStringCharStar(X) InitStringCharStarDB(X, __FILE__, \
+                                                   __LINE__)
 #define InitStringChar(X) InitStringCharDB(X, __FILE__, __LINE__)
 #define Mult(X,Y) MultDB(X, Y, __FILE__, __LINE__)
 #define Dup(X) DupDB(X, __FILE__, __LINE__)
@@ -2025,13 +2027,13 @@ We also must compile the scaffold.
 @example
 gm2 -c -g -fmakelist c.mod
 gm2 -c -g -fmakeinit -fshared c.mod
-libtool --tag=CC --mode=compile g++ -g -c c_m2.cpp -o _m2_c.lo
+libtool --tag=CC --mode=compile g++ -g -c c_m2.cpp -o c_m2.lo
 @end example
 
 The third step is to link all these @file{.lo} files.
 
 @example
-libtool --mode=link gcc -g _m2_c.lo a.lo b.lo c.lo \
+libtool --mode=link gcc -g c_m2.lo a.lo b.lo c.lo \
         -L$(prefix)/lib64 \
         -rpath `pwd` -lgm2 -lstdc++ -lm -o libabc.la
 @end example
@@ -2042,41 +2044,43 @@ created inside the directory @file{.libs}.
 @node Interface for Python, Producing a Python module, Building a shared library, Using
 @section How to produce swig interface files
 
-This section describes how your Modula-2 implementation modules can be
+This section describes how Modula-2 implementation modules can be
 called from Python (and other scripting languages such as TCL and
 Perl).  GNU Modula-2 can be instructed to create a swig interface when
 it is compiling an implementation module.  Swig then uses the
 interface file to generate all the necessary wrapping to that the
-desired scripting language may access your implementation module.
+desired scripting language may access the implementation module.
 
 Here is an example of how you might call upon the services of the
-Modula-2 library module @code{NumberIO} from Python.
-This example can be found in the directory
-@file{gm2/examples/swig/full-strlib} and can be run using the commands:
+Modula-2 library module @code{NumberIO} from Python3.
+
+The following commands can be used to generate the Python3 module:
 
 @example
-$ cd build-@value{version-GCC}/gcc/gm2/examples/swig/full-strlib
-$ make numberio
-@end example
+export src=@samp{directory to the sources}
+export prefix=@samp{directory to where the compiler is installed}
+gm2 -I$@{src@} -c -g -fswig $@{src@}/../../../gm2-libs/NumberIO.mod
+gm2 -I$@{src@} -c -g -fmakelist $@{src@}/../../../gm2-libs/NumberIO.mod
 
-The build commands can be run individually from the command line via:
+gm2 -I$@{src@} -c -g -fmakeinit -fshared \
+   $@{src@}/../../../gm2-libs/NumberIO.mod
 
-@example
-export yoursrc=@samp{path to the sources}
-export yourprefix=@samp{path to where the compiler is installed}
-export yourpython=@samp{your python version}
-gm2 -I$(yoursrc) -c -g -fswig $(yoursrc)/../../../gm2-libs/NumberIO.mod
-gm2 -I$(yoursrc) -c -g -fmakelist $(yoursrc)/../../../gm2-libs/NumberIO.mod
-gm2 -I$(yoursrc) -c -g -fmakeinit -fshared $(yoursrc)/../../../gm2-libs/NumberIO.mod
-swig -c++ -python NumberIO.i
+swig -c++ -python3 NumberIO.i
 
-libtool --mode=compile g++ -g -c -I$(yoursrc) _m2_NumberIO.cpp -o _m2_NumberIO.lo
-libtool --tag=CC --mode=compile gm2 -g -c -I$(yoursrc)../../../gm2-libs $(yoursrc)/../../../gm2-libs/NumberIO.mod -o NumberIO.lo
-libtool --tag=CC --mode=compile g++ -g -c NumberIO_wrap.cxx -I/usr/include/python$(yourpython) -o NumberIO_wrap.lo
+libtool --mode=compile g++ -g -c -I$@{src@} NumberIO_m2.cpp \
+  -o NumberIO_m2.lo
 
-libtool --mode=link gcc -g _m2_NumberIO.lo NumberIO_wrap.lo \
-   -L$(yourprefix)/lib64 \
+libtool --tag=CC --mode=compile gm2 -g -c \
+  -I$@{src@}../../../gm2-libs \
+  $@{src@}/../../../gm2-libs/NumberIO.mod -o NumberIO.lo
+
+libtool --tag=CC --mode=compile g++ -g -c NumberIO_wrap.cxx \
+  -I/usr/include/python3 -o NumberIO_wrap.lo
+
+libtool --mode=link gcc -g NumberIO_m2.lo NumberIO_wrap.lo \
+   -L$@{prefix@}/lib64 \
    -rpath `pwd` -lgm2 -lstdc++ -lm -o libNumberIO.la
+
 cp .libs/libNumberIO.so _NumberIO.so
 @end example
 
@@ -2093,15 +2097,19 @@ Now it is possible to run the following Python script
 @example
 import NumberIO
 
-print "1234 x 2 =", NumberIO.NumberIO_StrToInt("1234")*2
+print ("1234 x 2 =", NumberIO.NumberIO_StrToInt("1234")*2)
 @end example
 
 like this:
 
 @example
-$ python testnum.py
+$ python3 testnum.py
 1234 x 2 = 2468
 @end example
+
+@xref{Producing a Python module, , ,gm2} for another example which
+uses the @code{UNQUALIFIED} keyword to reduce the module name clutter
+from the viewport of Python3.
 
 @subsection Limitations of automatic generated of Swig files
 
@@ -2162,28 +2170,22 @@ block of a procedure.
 @section How to produce a Python module
 
 This section descibes how it is possible to produce a Python module
-from your Modula-2 code.  There are a number of advantages to this
+from Modula-2 code.  There are a number of advantages to this
 approach, it ensures your code reaches a wider audience, maybe it is
-easier to initialize your application in Python, maybe users of your
-code are familiar with Python and can use it to configure your
-application.
+easier to initialize your application in Python.
 
-The examples given here can be found in the source tree
-@file{gcc-@var{version-GCC}/gcc/gm2/examples/gravity/}.  The example used
-here is a pedagogical two dimensional gravity next event simulation.
-The Python module needs to have a clear API, this also needs to be
-placed in a single definition module.  In the gravity simulation
-example this is found in the file:
-@file{gcc-@var{version-GCC}/gcc/gm2/examples/gravity/twoDsim.def}.
-Furthermore the API should only use fundamental pervasive data types
-and strings.  Below is @file{twoDsim.def}:
+The example application here is a pedagogical two dimensional gravity
+next event simulation.  The Python module needs to have a clear API
+which should be placed in a single definition module.  Furthermore the
+API should only use fundamental pervasive data types and strings.
+Below the API is contained in the file @file{twoDsim.def}:
 
 @example
 DEFINITION MODULE twoDsim ;
 
 EXPORT UNQUALIFIED gravity, box, poly3, poly5, poly6, mass,
                    fix, circle, pivot, velocity, accel, fps,
-                   replayRate, simulateFor, addDebugging ;
+                   replayRate, simulateFor ;
 (*
    gravity - turn on gravity at: g m^2
 *)
@@ -2211,7 +2213,8 @@ PROCEDURE poly3 (x0, y0, x1, y1, x2, y2: REAL) : CARDINAL ;
            (x0,y0),(x1,y1),(x2,y2),(x3,y3),(x4,y4)
 *)
 
-PROCEDURE poly5 (x0, y0, x1, y1, x2, y2, x3, y3, x4, y4: REAL) : CARDINAL ;
+PROCEDURE poly5 (x0, y0, x1, y1,
+                 x2, y2, x3, y3, x4, y4: REAL) : CARDINAL ;
 
 
 (*
@@ -2219,7 +2222,9 @@ PROCEDURE poly5 (x0, y0, x1, y1, x2, y2, x3, y3, x4, y4: REAL) : CARDINAL ;
            (x0,y0),(x1,y1),(x2,y2),(x3,y3),(x4,y4),(x5,y5)
 *)
 
-PROCEDURE poly6 (x0, y0, x1, y1, x2, y2, x3, y3, x4, y4, x5, y5: REAL) : CARDINAL ;
+PROCEDURE poly6 (x0, y0, x1, y1,
+                 x2, y2, x3, y3,
+                 x4, y4, x5, y5: REAL) : CARDINAL ;
 
 
 (*
@@ -2242,13 +2247,6 @@ PROCEDURE fix (id: CARDINAL) : CARDINAL ;
 *)
 
 PROCEDURE circle (x0, y0, r: REAL) : CARDINAL ;
-
-
-(*
-   pivot - pivot an object at position, (x0,y0).
-*)
-
-PROCEDURE pivot (x0, y0: REAL; id1: CARDINAL) : CARDINAL ;
 
 
 (*
@@ -2286,46 +2284,38 @@ PROCEDURE replayRate (f: REAL) ;
 PROCEDURE simulateFor (t: REAL) ;
 
 
-(*
-   addDebugging - add a debugging event at time, t, which colours objects,
-                  a, and, b, blue.
-*)
-
-PROCEDURE addDebugging (t: REAL; a, b: CARDINAL) ;
-
-
 END twoDsim.
 @end example
 
-By using the keyword @code{UNQUALIFIED} we ensure that the
+The keyword @code{UNQUALIFIED} can be used to ensure that the
 compiler will provide externally accessible functions
 @code{gravity}, @code{box}, @code{poly3}, @code{poly5}, @code{poly6},
 @code{mass}, @code{fix}, @code{circle}, @code{pivot}, @code{velocity},
-@code{accel}, @code{fps}, @code{replayRate}, @code{simulateFor},
-@code{addDebugging} rather than name mangled alternatives.
-Hence in our Python application we could write:
+@code{accel}, @code{fps}, @code{replayRate}, @code{simulateFor}
+rather than name mangled alternatives.
+Hence in our Python3 application we could write:
 
 @example
-#!/usr/bin/python
+#!/usr/bin/env python3
 
 from twoDsim import *
 
-b = box(0.0, 0.0, 1.0, 1.0)
-b = fix(b)
-c1 = circle(0.7, 0.7, 0.05)
-c1 = mass(c1, 0.01)
-c2 = circle(0.7, 0.1, 0.05)
-c2 = mass(c2, 0.01)
-c2 = fix(c2)
-gravity(-9.81)
-fps(24.0*4.0)
-replayRate(24.0)
-print "creating frames"
+b = box (0.0, 0.0, 1.0, 1.0)
+b = fix (b)
+c1 = circle (0.7, 0.7, 0.05)
+c1 = mass (c1, 0.01)
+c2 = circle (0.7, 0.1, 0.05)
+c2 = mass (c2, 0.01)
+c2 = fix (c2)
+gravity (-9.81)
+fps (24.0*4.0)
+replayRate (24.0)
+print ("creating frames")
 try:
-    simulateFor(1.0)
-    print "all done"
+    simulateFor (1.0)
+    print ("all done")
 except:
-    print "exception raised"
+    print ("exception raised")
 @end example
 
 which accesses the various functions defined and implemented by the
@@ -2337,31 +2327,34 @@ $ gm2 -g -fiso -c -fmakelist twoDsim.mod
 $ gm2 -g -fiso -c -fmakeinit twoDsim.mod
 @end example
 
-Notice that the last command both compiled and produced a swig
-interface file @file{swig.i}.  We now use @code{swig} and @code{gcc}
-to produce and compile the interface wrappers:
+The first command both compiles the source file creating
+@file{twoDsim.o} and produces a swig interface file @file{swig.i}.  We
+now use @code{swig} and @code{g++} to produce and compile the
+interface wrappers:
 
 @example
-$ libtool --mode=compile g++ -g -c _m2_twoDsim.cpp -o _m2_twoDsim.lo
-$ swig -c++ -python twoDsim.i
-$ libtool --mode=compile g++ -c -fPIC twoDsim_wrap.cxx -I/usr/include/python@value{version-python} -o twoDsim_wrap.lo
+$ libtool --mode=compile g++ -g -c twoDsim_m2.cpp -o twoDsim_m2.lo
+$ swig -c++ -python3 twoDsim.i
+$ libtool --mode=compile g++ -c -fPIC twoDsim_wrap.cxx \
+   -I/usr/include/python3 -o twoDsim_wrap.lo
 $ libtool --mode=compile gm2 -g -fPIC -fiso -c deviceGnuPic.mod
 $ libtool --mode=compile gm2 -g -fPIC -fiso -c roots.mod
-$ libtool --mode=compile gm2 -g -fPIC -fiso -c -fswig twoDsim.mod -o twoDsim.lo
+$ libtool --mode=compile gm2 -g -fPIC -fiso -c -fswig \
+   twoDsim.mod -o twoDsim.lo
 @end example
 
 Finally the application is linked into a shared library:
 
 @example
-$ libtool --mode=link gcc -g _m2_twoDsim.lo twoDsim_wrap.lo \
+$ libtool --mode=link gcc -g twoDsim_m2.lo twoDsim_wrap.lo \
   roots.lo deviceGnuPic.lo \
-   -L$(yourprefix)/lib64 \
+   -L$@{prefix@}/lib64 \
    -rpath `pwd` -lgm2 -lstdc++ -lm -o libtwoDsim.la
 cp .libs/libtwoDsim.so _twoDsim.so
 @end example
 
-The library name must start with a @code{_} to comply with the Python
-naming scheme.
+The library name must start with @code{_} to comply with the Python3
+module naming scheme.
 
 @node Interface to C, Assembly language, Producing a Python module, Using
 @section Interfacing GNU Modula-2 to C
@@ -2378,8 +2371,7 @@ unbounded array parameters need no copy, but still use the
 The recommended method of interfacing GNU Modula-2 to C is by telling
 the definition module that the implementation is in the C language.
 This is achieved by using the tokens @code{DEFINITION MODULE FOR "C"}.
-Here is an example which can be found in the source tree
-@file{gcc-@var{version-GCC}/gcc/gm2/examples/callingC/libprintf.def}
+Here is an example @file{libprintf.def}.
 
 @example
 DEFINITION MODULE FOR "C" libprintf ;
@@ -2400,7 +2392,7 @@ semantically matches @code{ARRAY OF CHAR} but since the module is for
 the C language it will be mapped onto @code{char *}. The token
 @code{...} indicates a variable number of arguments (varargs) and all
 parameters passed here are mapped onto their C equivalents. Arrays and
-constant strings are passed as pointers.  Lastly the @code{[ INTEGER ]}
+constant strings are passed as pointers.  Lastly @code{[ INTEGER ]}
 states that the caller can ignore the function return result if desired.
 
 The hello world program can be rewritten as:
@@ -2481,7 +2473,8 @@ PROCEDURE Example (foo, bar: CARDINAL) : CARDINAL ;
 VAR
    myout: CARDINAL ;
 BEGIN
-   ASM VOLATILE ("movq %[left],%%rax; addq %[right],%%rax; movq %%rax,%[output]"
+   ASM VOLATILE (
+    "movq %[left],%%rax; addq %[right],%%rax; movq %%rax,%[output]"
       : [output] "=rm" (myout)                  (* outputs *)
       : [left] "rm" (foo), [right] "rm" (bar)   (* inputs  *)
       : "rax") ;                                (* we trash *)
@@ -2776,7 +2769,7 @@ The following module @code{Builtins.def} enumerates the list of
 built-in functions which can be accessed in GNU Modula-2. It also
 serves to define the parameter and return value for each function:
 
-@include Builtins.texi
+@include m2/Builtins.texi
 
 Although this module exists and will result in the generation of
 in-line code if optimization flags are passed to GNU Modula-2, users
@@ -2788,7 +2781,7 @@ be in-lined you need to specify the @samp{-ffast-math -O} options.
 @node The PIM system module, The ISO system module, Built-ins, Using
 @section The PIM system module
 
-@include SYSTEM-pim.texi
+@include m2/SYSTEM-pim.texi
 
 The different dialects of Modula-2 PIM-[234] and ISO Modula-2 declare
 the function @code{SIZE} in different places.  PIM-[34] and ISO
@@ -2814,7 +2807,7 @@ depend upon the target architecture.
 @node The ISO system module, , The PIM system module, Using
 @section The ISO system module
 
-@include SYSTEM-iso.texi
+@include m2/SYSTEM-iso.texi
 
 The data types @code{CSIZE_T} and @code{CSSIZE_T} are also exported from
 the @code{SYSTEM} module.  The type @code{CSIZE_T} is unsigned and is
@@ -2886,7 +2879,7 @@ with the base language.
 Note that the first six productions are built into the lexical analysis
 phase.
 
-@include gm2-ebnf.texi
+@include m2/gm2-ebnf.texi
 
 @node Libraries, Indices, EBNF, Top
 @chapter PIM and ISO library definitions
@@ -2900,7 +2893,7 @@ This chapter contains M2F, PIM and ISO libraries.
 @c University of Ulm and were originally shipped with the ULM sparc
 @c Modula-2 compiler.
 
-@include gm2-libs.texi
+@include m2/gm2-libs.texi
 
 @node Indices, , Libraries, Top
 @section Indices

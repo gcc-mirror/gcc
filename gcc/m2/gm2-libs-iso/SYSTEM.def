@@ -122,9 +122,10 @@ PROCEDURE TSIZE (<type>; ... ): CARDINAL;
 PROCEDURE THROW (i: INTEGER) ;
   (*
      THROW is a GNU extension and was not part of the PIM or ISO
-     standards.  It throws an exception which will be caught by the EXCEPT
-     block (assuming it exists).  This is a compiler builtin function which
-     interfaces to the GCC exception handling runtime system.
+     standards.  It throws an exception which will be caught by the
+     EXCEPT block (assuming it exists).  This is a compiler builtin
+     function which interfaces to the GCC exception handling runtime
+     system.
      GCC uses the term throw, hence the naming distinction between
      the GCC builtin and the Modula-2 runtime library procedure Raise.
      The later library procedure Raise will call SYSTEM.THROW after
@@ -161,8 +162,8 @@ PROCEDURE ShiftVal (VAR s, d: ARRAY OF BITSET;
 (*
    ShiftLeft - performs the shift left for a multi word set.
                This procedure might be called by the back end of
-               GNU Modula-2 depending whether amount is known at compile
-               time.
+               GNU Modula-2 depending whether amount is known at
+               compile time.
 *)
 
 PROCEDURE ShiftLeft (VAR s, d: ARRAY OF BITSET;
@@ -172,8 +173,8 @@ PROCEDURE ShiftLeft (VAR s, d: ARRAY OF BITSET;
 (*
    ShiftRight - performs the shift left for a multi word set.
                 This procedure might be called by the back end of
-                GNU Modula-2 depending whether amount is known at compile
-                time.
+                GNU Modula-2 depending whether amount is known at
+                compile time.
 *)
 
 PROCEDURE ShiftRight (VAR s, d: ARRAY OF BITSET;
@@ -185,7 +186,8 @@ PROCEDURE ShiftRight (VAR s, d: ARRAY OF BITSET;
    RotateVal - is a runtime procedure whose job is to implement
                the ROTATE procedure of ISO SYSTEM. GNU Modula-2 will
                inline a ROTATE of a single WORD (or less)
-               sized set and will only call this routine for larger sets.
+               sized set and will only call this routine for larger
+               sets.
 *)
 
 PROCEDURE RotateVal (VAR s, d: ARRAY OF BITSET;
@@ -196,8 +198,8 @@ PROCEDURE RotateVal (VAR s, d: ARRAY OF BITSET;
 (*
    RotateLeft - performs the rotate left for a multi word set.
                 This procedure might be called by the back end of
-                GNU Modula-2 depending whether amount is known at compile
-                time.
+                GNU Modula-2 depending whether amount is known at
+                compile time.
 *)
 
 PROCEDURE RotateLeft (VAR s, d: ARRAY OF BITSET;
@@ -208,8 +210,8 @@ PROCEDURE RotateLeft (VAR s, d: ARRAY OF BITSET;
 (*
    RotateRight - performs the rotate right for a multi word set.
                  This procedure might be called by the back end of
-                 GNU Modula-2 depending whether amount is known at compile
-                 time.
+                 GNU Modula-2 depending whether amount is known at
+                 compile time.
 *)
 
 PROCEDURE RotateRight (VAR s, d: ARRAY OF BITSET;

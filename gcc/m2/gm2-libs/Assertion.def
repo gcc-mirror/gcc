@@ -30,7 +30,8 @@ EXPORT QUALIFIED Assert ;
 
 
 (*
-   Assert - tests the boolean Condition, if it fails then HALT is called.
+   Assert - tests the boolean Condition, if it fails then HALT
+            is called.
 *)
 
 PROCEDURE Assert (Condition: BOOLEAN) ;

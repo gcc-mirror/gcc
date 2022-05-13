@@ -27,19 +27,25 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 DEFINITION MODULE FpuIO ;
 
 EXPORT QUALIFIED ReadReal, WriteReal, StrToReal, RealToStr,
-                 ReadLongReal, WriteLongReal, StrToLongReal, LongRealToStr,
-                 ReadLongInt, WriteLongInt, StrToLongInt, LongIntToStr ;
+                 ReadLongReal, WriteLongReal, StrToLongReal,
+                 LongRealToStr,
+                 ReadLongInt, WriteLongInt, StrToLongInt,
+                 LongIntToStr ;
 
 
 PROCEDURE ReadReal (VAR x: REAL) ;
 PROCEDURE WriteReal (x: REAL; TotalWidth, FractionWidth: CARDINAL) ;
 PROCEDURE StrToReal (a: ARRAY OF CHAR ; VAR x: REAL) ;
-PROCEDURE RealToStr (x: REAL; TotalWidth, FractionWidth: CARDINAL; VAR a: ARRAY OF CHAR) ;
+PROCEDURE RealToStr (x: REAL; TotalWidth, FractionWidth: CARDINAL;
+                     VAR a: ARRAY OF CHAR) ;
 
 PROCEDURE ReadLongReal (VAR x: LONGREAL) ;
-PROCEDURE WriteLongReal (x: LONGREAL; TotalWidth, FractionWidth: CARDINAL) ;
+PROCEDURE WriteLongReal (x: LONGREAL;
+                         TotalWidth, FractionWidth: CARDINAL) ;
 PROCEDURE StrToLongReal (a: ARRAY OF CHAR ; VAR x: LONGREAL) ;
-PROCEDURE LongRealToStr (x: LONGREAL; TotalWidth, FractionWidth: CARDINAL; VAR a: ARRAY OF CHAR) ;
+PROCEDURE LongRealToStr (x: LONGREAL;
+                         TotalWidth, FractionWidth: CARDINAL;
+                         VAR a: ARRAY OF CHAR) ;
 
 PROCEDURE ReadLongInt (VAR x: LONGINT) ;
 PROCEDURE WriteLongInt (x: LONGINT; n: CARDINAL) ;

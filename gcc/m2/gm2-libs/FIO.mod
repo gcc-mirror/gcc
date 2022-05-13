@@ -1,6 +1,6 @@
 (* FIO.mod provides a simple buffered file input/output library.
 
-Copyright (C) 2001-2021 Free Software Foundation, Inc.
+Copyright (C) 2001-2022 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
 
 This file is part of GNU Modula-2.
@@ -626,13 +626,13 @@ END ReadFromBuffer ;
 
 
 (*
-   ReadNBytes - reads nBytes of a file into memory area, a, returning
+   ReadNBytes - reads nBytes of a file into memory area, dest, returning
                 the number of bytes actually read.
                 This function will consume from the buffer and then
                 perform direct libc reads. It is ideal for large reads.
 *)
 
-PROCEDURE ReadNBytes (f: File; nBytes: CARDINAL; a: ADDRESS) : CARDINAL ;
+PROCEDURE ReadNBytes (f: File; nBytes: CARDINAL; dest: ADDRESS) : CARDINAL ;
 VAR
    n: INTEGER ;
    p: POINTER TO CHAR ;
@@ -640,12 +640,12 @@ BEGIN
    IF f # Error
    THEN
       CheckAccess (f, openedforread, FALSE) ;
-      n := ReadFromBuffer (f, a, nBytes) ;
+      n := ReadFromBuffer (f, dest, nBytes) ;
       IF n <= 0
       THEN
          RETURN 0
       ELSE
-         p := a ;
+         p := dest ;
          INC (p, n-1) ;
          SetEndOfLine (f, p^) ;
          RETURN n
@@ -1184,14 +1184,14 @@ END WriteLine ;
 
 
 (*
-   WriteNBytes - writes nBytes of a file into memory area, a, returning
-                 the number of bytes actually written.
+   WriteNBytes - writes nBytes from memory area src to a file
+                 returning the number of bytes actually written.
                  This function will flush the buffer and then
                  write the nBytes using a direct write from libc.
                  It is ideal for large writes.
 *)
 
-PROCEDURE WriteNBytes (f: File; nBytes: CARDINAL; a: ADDRESS) : CARDINAL ;
+PROCEDURE WriteNBytes (f: File; nBytes: CARDINAL; src: ADDRESS) : CARDINAL ;
 VAR
    total: INTEGER ;
    fd   : FileDescriptor ;
@@ -1204,7 +1204,7 @@ BEGIN
       IF fd#NIL
       THEN
          WITH fd^ DO
-            total := write(unixfd, a, INTEGER(nBytes)) ;
+            total := write(unixfd, src, INTEGER(nBytes)) ;
             IF total<0
             THEN
                state := failed ;

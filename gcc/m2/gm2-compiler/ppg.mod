@@ -52,7 +52,7 @@ CONST
 
    (* formatting constants *)
    BaseRightLimit    = 75 ;
-   BaseRightMargin   = 60 ;
+   BaseRightMargin   = 50 ;
    BaseNewLine       =  3 ;
 
 TYPE

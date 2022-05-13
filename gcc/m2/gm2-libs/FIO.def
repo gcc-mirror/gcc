@@ -109,13 +109,15 @@ PROCEDURE OpenToWrite (fname: ARRAY OF CHAR) : File ;
                    calling IsNoError.
                    towrite, determines whether the file should be
                    opened for writing or reading.
-                   newfile, determines whether a file should be created
-                   if towrite is TRUE or whether the previous file should
-                   be left alone, allowing this descriptor to seek
+                   newfile, determines whether a file should be
+                   created if towrite is TRUE or whether the
+                   previous file should be left alone,
+                   allowing this descriptor to seek
                    and modify an existing file.
 *)
 
-PROCEDURE OpenForRandom (fname: ARRAY OF CHAR; towrite, newfile: BOOLEAN) : File ;
+PROCEDURE OpenForRandom (fname: ARRAY OF CHAR;
+                         towrite, newfile: BOOLEAN) : File ;
 
 
 (*
@@ -134,7 +136,8 @@ PROCEDURE Close (f: File) ;
 PROCEDURE exists        (fname: ADDRESS; flength: CARDINAL) : BOOLEAN ;
 PROCEDURE openToRead    (fname: ADDRESS; flength: CARDINAL) : File ;
 PROCEDURE openToWrite   (fname: ADDRESS; flength: CARDINAL) : File ;
-PROCEDURE openForRandom (fname: ADDRESS; flength: CARDINAL; towrite, newfile: BOOLEAN) : File ;
+PROCEDURE openForRandom (fname: ADDRESS; flength: CARDINAL;
+                         towrite, newfile: BOOLEAN) : File ;
 
 
 (*
@@ -145,13 +148,14 @@ PROCEDURE FlushBuffer (f: File) ;
 
 
 (*
-   ReadNBytes - reads nBytes of a file into memory area, a, returning
+   ReadNBytes - reads nBytes of a file into memory area, dest, returning
                 the number of bytes actually read.
                 This function will consume from the buffer and then
                 perform direct libc reads. It is ideal for large reads.
 *)
 
-PROCEDURE ReadNBytes (f: File; nBytes: CARDINAL; a: ADDRESS) : CARDINAL ;
+PROCEDURE ReadNBytes (f: File; nBytes: CARDINAL;
+                      dest: ADDRESS) : CARDINAL ;
 
 
 (*
@@ -164,14 +168,15 @@ PROCEDURE ReadAny (f: File; VAR a: ARRAY OF BYTE) ;
 
 
 (*
-   WriteNBytes - writes nBytes of a file into memory area, a, returning
-                 the number of bytes actually written.
+   WriteNBytes - writes nBytes from memory area src to a file
+                 returning the number of bytes actually written.
                  This function will flush the buffer and then
                  write the nBytes using a direct write from libc.
                  It is ideal for large writes.
 *)
 
-PROCEDURE WriteNBytes (f: File; nBytes: CARDINAL; a: ADDRESS) : CARDINAL ;
+PROCEDURE WriteNBytes (f: File; nBytes: CARDINAL;
+                       src: ADDRESS) : CARDINAL ;
 
 
 (*
@@ -286,7 +291,8 @@ PROCEDURE GetUnixFileDescriptor (f: File) : INTEGER ;
 
 
 (*
-   SetPositionFromBeginning - sets the position from the beginning of the file.
+   SetPositionFromBeginning - sets the position from the beginning
+                              of the file.
 *)
 
 PROCEDURE SetPositionFromBeginning (f: File; pos: LONGINT) ;
@@ -321,7 +327,8 @@ PROCEDURE getFileName (f: File) : ADDRESS ;
 
 
 (*
-   getFileNameLength - returns the number of characters associated with filename, f.
+   getFileNameLength - returns the number of characters associated with
+                       filename, f.
 *)
 
 PROCEDURE getFileNameLength (f: File) : CARDINAL ;

@@ -47,14 +47,14 @@ BEGIN
    RETURN returned
 END alloca_trace ;
 
-PROCEDURE __ATTRIBUTE__ __BUILTIN__ ((__builtin_memcpy)) memcpy (dest, src: ADDRESS; n: CARDINAL) : ADDRESS ;
+PROCEDURE __ATTRIBUTE__ __BUILTIN__ ((__builtin_memcpy)) memcpy (dest, src: ADDRESS; nbytes: CARDINAL) : ADDRESS ;
 BEGIN
    (* hopefully the compiler will choose to use the __builtin_memcpy function within GCC.
       This call is here just in case it cannot. Ie if the user sets a procedure variable to
       memcpy, then clearly the compiler cannot inline such a call and thus it will
       be forced into calling this function.
    *)
-   RETURN cbuiltin.memcpy (dest, src, n)
+   RETURN cbuiltin.memcpy (dest, src, nbytes)
 END memcpy ;
 
 PROCEDURE __ATTRIBUTE__  __BUILTIN__ ((__builtin_isfinite)) isfinitef (x: SHORTREAL) : BOOLEAN ;
@@ -547,19 +547,19 @@ BEGIN
    RETURN cbuiltin.rindex (s, c)
 END rindex ;
 
-PROCEDURE __ATTRIBUTE__  __BUILTIN__ ((__builtin_memcmp)) memcmp (s1, s2: ADDRESS; n: CARDINAL) : INTEGER ;
+PROCEDURE __ATTRIBUTE__  __BUILTIN__ ((__builtin_memcmp)) memcmp (s1, s2: ADDRESS; nbytes: CARDINAL) : INTEGER ;
 BEGIN
-   RETURN cbuiltin.memcmp (s1, s2, n)
+   RETURN cbuiltin.memcmp (s1, s2, nbytes)
 END memcmp ;
 
-PROCEDURE __ATTRIBUTE__  __BUILTIN__ ((__builtin_memset)) memset (s: ADDRESS; c: INTEGER; n: CARDINAL) : ADDRESS ;
+PROCEDURE __ATTRIBUTE__  __BUILTIN__ ((__builtin_memset)) memset (s: ADDRESS; c: INTEGER; nbytes: CARDINAL) : ADDRESS ;
 BEGIN
-   RETURN cbuiltin.memset (s, c, n)
+   RETURN cbuiltin.memset (s, c, nbytes)
 END memset ;
 
-PROCEDURE __ATTRIBUTE__  __BUILTIN__ ((__builtin_memmove)) memmove (s1, s2: ADDRESS; n: CARDINAL) : ADDRESS ;
+PROCEDURE __ATTRIBUTE__  __BUILTIN__ ((__builtin_memmove)) memmove (s1, s2: ADDRESS; nbytes: CARDINAL) : ADDRESS ;
 BEGIN
-   RETURN cbuiltin.memmove (s1, s2, n)
+   RETURN cbuiltin.memmove (s1, s2, nbytes)
 END memmove ;
 
 PROCEDURE __ATTRIBUTE__  __BUILTIN__ ((__builtin_strcat)) strcat (dest, src: ADDRESS) : ADDRESS ;
@@ -567,9 +567,9 @@ BEGIN
    RETURN cbuiltin.strcat (dest, src)
 END strcat ;
 
-PROCEDURE __ATTRIBUTE__  __BUILTIN__ ((__builtin_strncat)) strncat (dest, src: ADDRESS; n: CARDINAL) : ADDRESS ;
+PROCEDURE __ATTRIBUTE__  __BUILTIN__ ((__builtin_strncat)) strncat (dest, src: ADDRESS; nbytes: CARDINAL) : ADDRESS ;
 BEGIN
-   RETURN cbuiltin.strncat (dest, src, n)
+   RETURN cbuiltin.strncat (dest, src, nbytes)
 END strncat ;
 
 PROCEDURE __ATTRIBUTE__  __BUILTIN__ ((__builtin_strcpy)) strcpy (dest, src: ADDRESS) : ADDRESS ;
@@ -577,9 +577,9 @@ BEGIN
    RETURN cbuiltin.strcpy (dest, src)
 END strcpy ;
 
-PROCEDURE __ATTRIBUTE__  __BUILTIN__ ((__builtin_strncpy)) strncpy (dest, src: ADDRESS; n: CARDINAL) : ADDRESS ;
+PROCEDURE __ATTRIBUTE__  __BUILTIN__ ((__builtin_strncpy)) strncpy (dest, src: ADDRESS; nbytes: CARDINAL) : ADDRESS ;
 BEGIN
-   RETURN cbuiltin.strncpy (dest, src, n)
+   RETURN cbuiltin.strncpy (dest, src, nbytes)
 END strncpy ;
 
 PROCEDURE __ATTRIBUTE__  __BUILTIN__ ((__builtin_strcmp)) strcmp (s1, s2: ADDRESS) : INTEGER ;
@@ -587,9 +587,9 @@ BEGIN
    RETURN cbuiltin.strcmp (s1, s2)
 END strcmp ;
 
-PROCEDURE __ATTRIBUTE__  __BUILTIN__ ((__builtin_strncmp)) strncmp (s1, s2: ADDRESS; n: CARDINAL) : INTEGER ;
+PROCEDURE __ATTRIBUTE__  __BUILTIN__ ((__builtin_strncmp)) strncmp (s1, s2: ADDRESS; nbytes: CARDINAL) : INTEGER ;
 BEGIN
-   RETURN cbuiltin.strncmp (s1, s2, n)
+   RETURN cbuiltin.strncmp (s1, s2, nbytes)
 END strncmp ;
 
 PROCEDURE __ATTRIBUTE__  __BUILTIN__ ((__builtin_strlen)) strlen (s: ADDRESS) : INTEGER ;
