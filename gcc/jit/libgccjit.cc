@@ -2559,6 +2559,42 @@ gcc_jit_context_new_array_access (gcc_jit_context *ctxt,
 /* Public entrypoint.  See description in libgccjit.h.
 
    After error-checking, the real work is done by the
+   gcc::jit::recording::context::new_convert_vector method in
+   jit-recording.cc.  */
+
+gcc_jit_rvalue *
+gcc_jit_context_convert_vector (gcc_jit_context *ctxt,
+				gcc_jit_location *loc,
+				gcc_jit_rvalue *vector,
+				gcc_jit_type *type)
+{
+  RETURN_NULL_IF_FAIL (ctxt, NULL, loc, "NULL context");
+  JIT_LOG_FUNC (ctxt->get_logger ());
+  /* LOC can be NULL.  */
+  RETURN_NULL_IF_FAIL (vector, ctxt, loc, "NULL vector");
+  RETURN_NULL_IF_FAIL (type, ctxt, loc, "NULL type");
+
+  gcc::jit::recording::vector_type *value_vec_type
+    = vector->get_type ()->dyn_cast_vector_type ();
+  RETURN_NULL_IF_FAIL_PRINTF1 (value_vec_type, ctxt, loc,
+			       "%s is not a value of a vector type",
+			       vector->get_debug_string ());
+  gcc::jit::recording::vector_type *as_vec_type
+    = type->dyn_cast_vector_type ();
+  RETURN_NULL_IF_FAIL_PRINTF1 (as_vec_type, ctxt, loc,
+			       "%s is not a vector type",
+			       type->get_debug_string ());
+  RETURN_NULL_IF_FAIL_PRINTF2 (
+    as_vec_type->get_num_units () == value_vec_type->get_num_units (), ctxt,
+    loc, "%s should contain the same number of elements as %s",
+    vector->get_debug_string (), type->get_debug_string ());
+
+  return (gcc_jit_rvalue *)ctxt->new_convert_vector (loc, vector, type);
+}
+
+/* Public entrypoint.  See description in libgccjit.h.
+
+   After error-checking, the real work is done by the
    gcc::jit::recording::memento::get_context method in
    jit-recording.h.  */
 

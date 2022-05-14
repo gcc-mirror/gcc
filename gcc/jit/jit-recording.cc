@@ -1341,6 +1341,23 @@ recording::context::new_array_access (recording::location *loc,
   return result;
 }
 
+/* Create a recording::convert_vector instance and add it to this context's list
+   of mementos.
+
+   Implements the post-error-checking part of
+   gcc_jit_context_convert_vector.  */
+
+recording::rvalue *
+recording::context::new_convert_vector (recording::location *loc,
+				    recording::rvalue *vector,
+				    recording::type *type)
+{
+  // TODO: instead have an "internal function" memento?
+  recording::rvalue *result = new convert_vector (this, loc, vector, type);
+  record (result);
+  return result;
+}
+
 /* Create a recording::case_ instance and add it to this context's list
    of mementos.
 
@@ -6570,6 +6587,61 @@ recording::array_access::write_reproducer (reproducer &r)
 	   r.get_identifier (m_loc),
 	   r.get_identifier_as_rvalue (m_ptr),
 	   r.get_identifier_as_rvalue (m_index));
+}
+
+/* The implementation of class gcc::jit::recording::convert_vector.  */
+
+/* Implementation of pure virtual hook recording::memento::replay_into
+   for recording::convert_vector.  */
+
+void
+recording::convert_vector::replay_into (replayer *r)
+{
+  set_playback_obj (
+    r->convert_vector (playback_location (r, m_loc),
+			  m_vector->playback_rvalue (),
+			  m_type->playback_type ()));
+}
+
+/* Implementation of pure virtual hook recording::rvalue::visit_children
+   for recording::convert_vector.  */
+
+void
+recording::convert_vector::visit_children (rvalue_visitor *v)
+{
+  v->visit (m_vector);
+}
+
+/* Implementation of recording::memento::make_debug_string for
+   array accesses.  */
+
+recording::string *
+recording::convert_vector::make_debug_string ()
+{
+  enum precedence prec = get_precedence ();
+  return string::from_printf (m_ctxt,
+			      "(%s)%s",
+			      m_type->get_debug_string (),
+			      m_vector->get_debug_string_parens (prec));
+}
+
+/* Implementation of recording::memento::write_reproducer for
+   convert_vector.  */
+
+void
+recording::convert_vector::write_reproducer (reproducer &r)
+{
+  const char *id = r.make_identifier (this, "lvalue");
+  r.write ("  gcc_jit_rvalue *%s = \n"
+	   "    gcc_jit_context_convert_vector (%s, /* gcc_jit_context *ctxt */\n"
+	   "                                    %s, /*gcc_jit_location *loc */\n"
+	   "                                    %s, /* gcc_jit_rvalue *vector */\n"
+	   "                                    %s); /* gcc_jit_type *type */\n",
+	   id,
+	   r.get_identifier (get_context ()),
+	   r.get_identifier (m_loc),
+	   r.get_identifier_as_rvalue (m_vector),
+	   r.get_identifier_as_type (m_type));
 }
 
 /* The implementation of class gcc::jit::recording::access_field_of_lvalue.  */

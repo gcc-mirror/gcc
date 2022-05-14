@@ -148,6 +148,13 @@
 /* test-const-attribute.c: This can't be in the testcases array as it needs
    the `-O3` flag.  */
 
+/* test-convert-vector.c */
+#define create_code create_code_convert_vector
+#define verify_code verify_code_convert_vector
+#include "test-convert-vector.c"
+#undef create_code
+#undef verify_code
+
 /* test-debug-strings.c */
 #define create_code create_code_debug_strings
 #define verify_code verify_code_debug_strings
@@ -504,6 +511,9 @@ const struct testcase testcases[] = {
   {"constants",
    create_code_constants,
    verify_code_constants},
+  {"convert_vector",
+   create_code_convert_vector,
+   verify_code_convert_vector},
   {"debug_strings",
    create_code_debug_strings,
    verify_code_debug_strings},

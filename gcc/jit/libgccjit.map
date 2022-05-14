@@ -299,3 +299,8 @@ LIBGCCJIT_ABI_29 {
   global:
     gcc_jit_global_set_readonly;
 } LIBGCCJIT_ABI_28;
+
+LIBGCCJIT_ABI_30 {
+  global:
+    gcc_jit_context_convert_vector;
+} LIBGCCJIT_ABI_29;

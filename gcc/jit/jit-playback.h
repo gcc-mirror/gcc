@@ -222,6 +222,11 @@ public:
 		    rvalue *ptr,
 		    rvalue *index);
 
+  rvalue *
+  convert_vector (location *loc,
+		  rvalue *vector,
+		  type *type);
+
   void
   set_str_option (enum gcc_jit_str_option opt,
 		  const char *value);

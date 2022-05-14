@@ -1694,6 +1694,34 @@ new_array_access (location *loc,
     }
 }
 
+/* Construct a playback::rvalue instance (wrapping a tree) for a
+   vector conversion.  */
+
+playback::rvalue *
+playback::context::
+convert_vector (location *loc,
+		   rvalue *vector,
+		   type *type)
+{
+  gcc_assert (vector);
+  gcc_assert (type);
+
+  /* For comparison, see:
+       c/c-common.cc: c_build_vec_convert
+  */
+
+  tree t_vector = vector->as_tree ();
+
+  tree t_result =
+    build_call_expr_internal_loc (UNKNOWN_LOCATION, IFN_VEC_CONVERT,
+      type->as_tree (), 1, t_vector);
+
+  if (loc)
+    set_tree_location (t_result, loc);
+
+  return new rvalue (this, t_result);
+}
+
 /* Construct a tree for a field access.  */
 
 tree
