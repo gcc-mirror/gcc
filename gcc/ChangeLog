@@ -1,3 +1,18 @@
+2022-05-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree-sra.cc (sra_modify_assign): Check that scalar storage order
+	is the same on the LHS and RHS before rewriting one with the model
+	of the other.
+
+2022-05-13  Alexandre Oliva  <oliva@adacore.com>
+
+	Backported from master:
+	2022-05-13  Alexandre Oliva  <oliva@adacore.com>
+
+	PR rtl-optimization/105455
+	* gimple-harden-conditionals.cc (insert_check_and_trap): Set
+	probabilities for newly-conditional edges.
+
 2022-05-11  Martin Jambor  <mjambor@suse.cz>
 
 	Backported from master:
