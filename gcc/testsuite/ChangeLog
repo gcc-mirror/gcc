@@ -1,3 +1,34 @@
+2022-05-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/101442
+	* g++.dg/cpp0x/initlist-nrv1.C: New test.
+
+2022-05-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/101698
+	* g++.dg/template/conv19.C: New test.
+
+2022-05-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/65211
+	* g++.target/i386/vec-tmpl1.C: New test.
+
+2022-05-13  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2021-09-27  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/102479
+	* g++.dg/cpp1z/class-deduction12.C: Also test alias CTAD in the
+	same way.
+	* g++.dg/cpp1z/class-deduction99.C: New test.
+
+2022-05-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/102300
+	* g++.dg/parse/no-typename1.C: Remove expected error.
+	* g++.dg/template/nested7.C: New test.
+
 2022-05-12  Jason Merrill  <jason@redhat.com>
 
 	PR c++/102629

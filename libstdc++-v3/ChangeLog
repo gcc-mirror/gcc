@@ -1,3 +1,14 @@
+2022-05-13  Alexandre Oliva  <oliva@adacore.com>
+
+	Backported from master:
+	2022-05-06  Alexandre Oliva  <oliva@adacore.com>
+
+	* include/experimental/bits/simd.h [__ALTIVEC__]: Require VSX
+	for double, long long, and 64-bit long intrinsic types.
+	[__ALTIVEC__] (__intrinsic_type): Mention 128-bit in
+	preexisting long double diagnostic, adjust no-VSX double
+	diagnostic to cover 64-bit long double as well.
+
 2022-05-11  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:

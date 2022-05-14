@@ -1,3 +1,36 @@
+2022-05-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/101442
+	* decl.c (cp_finish_decl): Don't pass decl to push_cleanup.
+	* init.c (perform_member_init): Likewise.
+	* semantics.c (push_cleanup): Adjust comment.
+
+2022-05-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/101698
+	* pt.c (tsubst_baselink): Also check dependent optype.
+
+2022-05-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/65211
+	* pt.c (tsubst_decl) [TYPE_DECL]: Copy TYPE_ALIGN.
+
+2022-05-13  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2021-09-27  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/102479
+	* pt.c (rewrite_template_parm): Handle single-level tsubst_args.
+	Avoid a tree cycle when assigning the DECL_TEMPLATE_PARMS for a
+	rewritten ttp.
+	(alias_ctad_tweaks): Set current_template_parms accordingly.
+
+2022-05-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/102300
+	* parser.c (cp_parser_template_name): Use dependent_scope_p.
+
 2022-05-12  Jason Merrill  <jason@redhat.com>
 
 	PR c++/102629
