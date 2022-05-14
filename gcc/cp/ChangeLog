@@ -1,3 +1,11 @@
+2022-05-13  Nathan Sidwell  <nathan@acm.org>
+
+	* mangle.cc (maybe_write_module): Check external linkage.
+
+2022-05-13  Richard Biener  <rguenther@suse.de>
+
+	* constexpr.cc: Remove gimple-fold.h include.
+
 2022-05-12  Patrick Palka  <ppalka@redhat.com>
 
 	* cp-tree.h (TMPL_ARGS_LEVEL): Assert LEVEL is 1 when

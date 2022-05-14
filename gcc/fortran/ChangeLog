@@ -1,3 +1,9 @@
+2022-05-13  Tobias Burnus  <tobias@codesourcery.com>
+
+	* trans-openmp.cc (gfc_trans_omp_clauses): When mapping nondescriptor
+	array sections, use GOMP_MAP_FIRSTPRIVATE_POINTER instead of
+	GOMP_MAP_POINTER for the pointer attachment.
+
 2022-05-11  Harald Anlauf  <anlauf@gmx.de>
 	    Steven G. Kargl  <kargl@gcc.gnu.org>
 

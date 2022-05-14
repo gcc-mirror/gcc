@@ -1,3 +1,7 @@
+2022-05-13  Richard Biener  <rguenther@suse.de>
+
+	* c-omp.cc: Remove gimple-fold.h include.
+
 2022-05-12  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-common.h (enum rid): Add RID_OMP_ALL_MEMORY.

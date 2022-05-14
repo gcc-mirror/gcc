@@ -1,3 +1,124 @@
+2022-05-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/std_thread.h (thread::_State, thread::_State_ptr):
+	Declare as private unless _GLIBCXX_THREAD_IMPL is defined.
+	* src/c++11/thread.cc (_GLIBCXX_THREAD_IMPL): Define.
+
+2022-05-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/future (launch): Make operators noexcept.
+
+2022-05-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/doxygen/user.cfg.in (PREDEFINED): Replace __exception_ptr
+	with "__unspecified__".
+	* libsupc++/exception_ptr.h: Improve doxygen docs.
+	(__exception_ptr::swap): Also declare in namespace std.
+
+2022-05-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* libsupc++/nested_exception.h (throw_with_nested) [C++17]: Use
+	if-constexpr instead of tag dispatching.
+	(rethrow_if_nested) [C++17]: Likewise.
+	(rethrow_if_nested) [!__cpp_rtti]: Do not use dynamic_cast if it
+	would require RTTI.
+	* testsuite/18_support/nested_exception/rethrow_if_nested-term.cc:
+	New test.
+
+2022-05-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/doxygen/user.cfg.in (PREDEFINED): Define
+	_GTHREAD_USE_MUTEX_TIMEDLOCK macro.
+	* include/bits/std_mutex.h (mutex, lock_guard): Use @since and
+	@headerfile.
+	* include/bits/unique_lock.h (unique_lock): Likewise.
+	* include/std/mutex (recursive_mutex, timed_mutex)
+	(recursive_timed_mutex, scoped_lock): Likewise.
+
+2022-05-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/doxygen/user.cfg.in (PREDEFINED): Define
+	_GLIBCXX23_CONSTEXPR macro.
+	* include/backward/auto_ptr.h (auto_ptr): Use @deprecated.
+	* include/bits/unique_ptr.h (default_delete): Use @since and
+	@headerfile.
+	* include/std/scoped_allocator: Remove @ingroup from @file
+	block.
+
+2022-05-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/std_thread.h (thread, thread::id): Improve
+	doxygen docs.
+	* include/std/future: Likewise.
+	* include/std/thread (jthread): Likewise.
+
+2022-05-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/ostream_insert.h: Mark helper functions as
+	undocumented by Doxygen.
+	* include/bits/stl_algo.h: Use markdown for formatting and mark
+	helper functions as undocumented.
+	* include/bits/stl_numeric.h:  Likewise.
+	* include/bits/stl_pair.h (pair): Add @headerfile.
+
+2022-05-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/doxygen/user.cfg.in (PREDEFINED): Define __allocator_base
+	so that Doxygen shows the right base-class for std::allocator.
+	* include/bits/alloc_traits.h: Improve doxygen docs.
+	* include/bits/allocator.h: Likewise.
+	* include/bits/new_allocator.h: Likewise.
+	* include/ext/new_allocator.h: Likewise.
+
+2022-05-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/doxygen/user.cfg.in (PREDEFINED): Define macro
+	_GLIBCXX_DOXYGEN_ONLY to expand its argument.
+	* include/bits/c++config (_GLIBCXX_DOXYGEN_ONLY): Define.
+	* include/bits/regex.h: Improve doxygen docs.
+	* include/bits/regex_constants.h: Likewise.
+	* include/bits/regex_error.h: Likewise.
+
+2022-05-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/atomic: Suppress doxygen docs for
+	implementation details.
+	* include/bits/atomic_base.h: Likewise.
+	* include/bits/shared_ptr_atomic.h: Use markdown. Fix grouping
+	so that std::atomic is not added to the pointer abstractions
+	group.
+
+2022-05-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/system_error: Improve doxygen comments.
+
+2022-05-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/ptr_traits.h: Add some doxygen comments.
+
+2022-05-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/doxygen/user.cfg.in (PREDEFINED): Expand new macros to
+	nothing.
+	* include/bits/c++config (_GLIBCXX_BEGIN_INLINE_ABI_NAMESPACE)
+	(_GLIBCXX_END_INLINE_ABI_NAMESPACE): Define new macros.
+	* include/bits/algorithmfwd.h (_V2::__rotate): Use new macros
+	for the namespace.
+	* include/bits/chrono.h (chrono::_V2::system_clock): Likewise.
+	* include/bits/stl_algo.h (_V2::__rotate): Likewise.
+	* include/std/condition_variable (_V2::condition_variable_any):
+	Likewise.
+	* include/std/system_error (_V2::error_category): Likewise.
+
+2022-05-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/mofunc_impl.h: Fix doxygen command.
+
+2022-05-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/doxygen/user.cfg.in (GROUP_NESTED_COMPOUNDS): Set to NO.
+	(CLASS_DIAGRAMS): Remove obsolete option.
+
 2022-05-12  Jonathan Wakely  <jwakely@redhat.com>
 
 	* config/locale/dragonfly/numeric_members.cc: Remove whitespace.

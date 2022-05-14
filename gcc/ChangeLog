@@ -1,3 +1,260 @@
+2022-05-13  Roger Sayle  <roger@nextmovesoftware.com>
+	    Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/sse.md (vec_cmpeqv2div2di): Enable for TARGET_SSE2.
+	For !TARGET_SSE4_1, expand as a V4SI vector comparison, followed
+	by a pshufd and pand.
+	(vec_cmpeqv1tiv1ti): New define_expand implementing V1TImode
+	vector equality as a V2DImode vector comparison (see above),
+	followed by a pshufd and pand.
+
+2022-05-13  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR tree-optimization/83907
+	* tree-ssa-strlen.cc (handle_builtin_memset): Record a strinfo
+	for memset with an constant char value.
+	(handle_store): Improved handling of stores with a first byte
+	of zero, but not storing_all_zeros_p.
+
+2022-05-13  Philipp Tomsich  <philipp.tomsich@vrull.eu>
+	    Manolis Tsamis  <manolis.tsamis@vrull.eu>
+
+	* config/riscv/riscv.h (CLZ_DEFINED_VALUE_AT_ZERO): Implement.
+	(CTZ_DEFINED_VALUE_AT_ZERO): Same.
+	* doc/sourcebuild.texi: add documentation for RISC-V specific
+	test target keywords
+
+2022-05-13  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/105597
+	* range-op.cc (operator_minus::lhs_op1_relation): Use op1 instead
+	of the lhs and make sure it is not undefined.
+
+2022-05-13  Sebastian Pop  <spop@amazon.com>
+
+	PR target/105162
+	* config/aarch64/aarch64-protos.h (atomic_ool_names): Increase dimension
+	of str array.
+	* config/aarch64/aarch64.cc (aarch64_atomic_ool_func): Call
+	memmodel_from_int and handle MEMMODEL_SYNC_*.
+	(DEF0): Add __aarch64_*_sync functions.
+
+2022-05-13  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range-fold.cc (fold_using_range::range_of_phi): Use new VREL_*
+	enumerated values.
+	* gimple-range-path.cc (maybe_register_phi_relation): Ditto.
+	* range-op.cc (*::lhs_op1_relation): Return relation_kind, and use
+	new VREL enumerated values.
+	(*::lhs_op2_relation): Ditto.
+	(*::op1_op2_relation): Ditto.
+	(*::fold_range): Use new VREL enumerated values.
+	(minus_op1_op2_relation_effect): Ditto.
+	(range_relational_tests): Ditto.
+	* range-op.h (fold_range, op1_range, op2_range): Use VREL_VARYING.
+	(lhs_op1_relation, lhs_op2_relation, op1_op2_relation): Return
+	relation_kind.
+	(*_op1_op2_relation): Return relation_kind.
+	(relop_early_resolve): Use VREL_UNDEFINED.
+	* value-query.cc (range_query::query_relation): Use VREL_VARYING.
+	* value-relation.cc (VREL_LAST): Change enumerated value.
+	(vrel_range_assert): Delete.
+	(print_relation): Remove range assert.
+	(rr_negate_table): Adjust table to use new enumerated values..
+	(relation_negate): Remove range assert.
+	(rr_swap_table): Adjust.
+	(relation_swap): Remove range assert.
+	(rr_intersect_table): Adjust.
+	(relation_intersect): Remove range assert.
+	(rr_union_table): Adjust.
+	(relation_union): Remove range assert.
+	(rr_transitive_table): Adjust.
+	(relation_transitive): Remove range assert.
+	(equiv_oracle::query_relation): Use new VREL enumerated values.
+	(equiv_oracle::register_relation): Ditto.
+	(relation_oracle::register_stmt): Ditto.
+	(dom_oracle::set_one_relation): Ditto.
+	(dom_oracle::register_transitives): Ditto.
+	(dom_oracle::query_relation): Ditto.
+	(path_oracle::register_relation): Ditto.
+	(path_oracle::query_relation): Ditto.
+	* value-relation.h (enum relation_kind_t): New relation_kind.
+	(*_op1_op2_relation): Adjust prototypes.
+
+2022-05-13  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range-edge.cc (calc_switch_ranges): Check union return value.
+	* value-range.cc (irange::legacy_verbose_union_): Add return value.
+	(irange::irange_single_pair_union): New.
+	(irange::irange_union): Add return value.
+	* value-range.h (class irange): Adjust prototypes.
+
+2022-05-13  Andrew MacLeod  <amacleod@redhat.com>
+
+	* value-range.cc (irange::legacy_verbose_intersect): Add return value.
+	(irange::irange_contains_p): New.
+	(irange::irange_intersect): Add return value.
+	* value-range.h (class irange): Adjust prototypes.
+
+2022-05-13  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range-cache.cc (ranger_cache::get_global_range): Return the
+	had_global value instead.
+
+2022-05-13  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/104547
+	* gimple-range-fold.cc (fold_using_range::range_of_range_op): Add
+	the op1/op2 relation to the relation call.
+	* range-op.cc (*::lhs_op1_relation): Add param.
+	(*::lhs_op2_relation): Ditto.
+	(operator_minus::lhs_op1_relation): New.
+	(range_relational_tests): Add relation param.
+	* range-op.h (lhs_op1_relation, lhs_op2_relation): Adjust prototype.
+
+2022-05-13  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range.cc (gimple_ranger::register_side_effects): First check
+	if the DEF should be exported as a global.
+	* tree-vrp.cc (rvrp_folder::pre_fold_bb): Process PHI side effects,
+	which will export globals.
+	(execute_ranger_vrp): Remove call to export_global_ranges.
+
+2022-05-13  Andrew MacLeod  <amacleod@redhat.com>
+
+	* value-relation.cc (path_oracle::reset_path): Clear killing_defs.
+
+2022-05-13  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range-cache.cc (ranger_cache::ranger_cache): Start with
+	worlist truncated.
+	(ranger_cache::entry_range): Add rfd_mode parameter.
+	(ranger_cache::exit_range): Ditto.
+	(ranger_cache::edge_range): New.  Incorporate from range_on_edge.
+	(ranger_cache::range_of_expr): Adjust call to entry_range.
+	(ranger_cache::range_on_edge): Split to edge_range and call.
+	(ranger_cache::fill_block_cache): Always invoke range_from_dom.
+	(ranger_cache::range_from_dom): Make reentrant, add search mode, handle
+	mutiple predecessors.
+	(ranger_cache::update_to_nonnull): Adjust call to exit_range.
+	* gimple-range-cache.h (ranger_cache): Add enum rfd_mode.  Adjust
+	prototypes.
+
+2022-05-13  Alexandre Oliva  <oliva@adacore.com>
+
+	* gimple-harden-conditionals.cc: Include sbitmap.h.
+	(pass_harden_conditional_branches::execute): Skip new blocks.
+	(pass_harden_compares::execute): Likewise.
+
+2022-05-13  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/105463
+	* config/arm/mve.md (*movmisalign<mode>_mve_store): Use
+	mve_memory_operand.
+	(*movmisalign<mode>_mve_load): Likewise.
+	* config/arm/vec-common.md (movmisalign<mode>): Convert to generator
+	form...
+	(@movmisalign<mode>): ... thus.  Use generic predicates and then
+	rework operands if they are not valid.  For MVE rework to a
+	narrower element size if the alignment is not high enough.
+
+2022-05-13  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/arm.cc (mve_vector_mem_operand): Allow SP_REGNUM
+	when there is no write-back.  Fix use when strict is true.
+
+2022-05-13  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/xtensa.h (TARGET_HAS_NO_HW_DIVIDE): New macro
+	definition.
+
+2022-05-13  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/xtensa.md (extvsi, extvsi_internal, extzvsi,
+	extzvsi_internal): Rename from extv, extv_internal, extzv and
+	extzv_internal, respectively.
+
+2022-05-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree-sra.cc (sra_modify_assign): Check that scalar storage order
+	is the same on the LHS and RHS before rewriting one with the model
+	of the other.
+
+2022-05-13  Richard Biener  <rguenther@suse.de>
+
+	* gimple-fold.cc (gimple_build): Adjust for new
+	main API.
+	* gimple-fold.h (gimple_build): New main APIs with
+	iterator, insert direction and iterator update.
+	(gimple_build): New forwarder template.
+	(clear_padding_type_may_have_padding_p): Remove.
+	(clear_type_padding_in_mask): Likewise.
+	(arith_overflowed_p): Likewise.
+	* fold-const.h (clear_padding_type_may_have_padding_p): Declare.
+	(clear_type_padding_in_mask): Likewise.
+	(arith_overflowed_p): Likewise.
+	* tree-vect-generic.cc (gimplify_build3): Use main gimple_build API.
+	(gimplify_build2): Likewise.
+	(gimplify_build1): Likewise.
+	* ubsan.cc (ubsan_expand_ptr_ifn): Likewise, avoid extra
+	compare stmt.
+	* gengtype.cc (open_base_files): Re-order includes.
+	* builtins.cc: Re-order gimple-fold.h include.
+	* calls.cc: Likewise.
+	* cgraphbuild.cc: Likewise.
+	* cgraphunit.cc: Likewise.
+	* config/rs6000/rs6000-builtin.cc: Likewise.
+	* config/rs6000/rs6000-call.cc: Likewise.
+	* config/rs6000/rs6000.cc: Likewise.
+	* config/s390/s390.cc: Likewise.
+	* expr.cc: Likewise.
+	* fold-const.cc: Likewise.
+	* function-tests.cc: Likewise.
+	* gimple-match-head.cc: Likewise.
+	* gimple-range-fold.cc: Likewise.
+	* gimple-ssa-evrp-analyze.cc: Likewise.
+	* gimple-ssa-evrp.cc: Likewise.
+	* gimple-ssa-sprintf.cc: Likewise.
+	* gimple-ssa-warn-access.cc: Likewise.
+	* gimplify.cc: Likewise.
+	* graphite-isl-ast-to-gimple.cc: Likewise.
+	* ipa-cp.cc: Likewise.
+	* ipa-devirt.cc: Likewise.
+	* ipa-prop.cc: Likewise.
+	* omp-low.cc: Likewise.
+	* pointer-query.cc: Likewise.
+	* range-op.cc: Likewise.
+	* tree-cfg.cc: Likewise.
+	* tree-if-conv.cc: Likewise.
+	* tree-inline.cc: Likewise.
+	* tree-object-size.cc: Likewise.
+	* tree-ssa-ccp.cc: Likewise.
+	* tree-ssa-dom.cc: Likewise.
+	* tree-ssa-forwprop.cc: Likewise.
+	* tree-ssa-ifcombine.cc: Likewise.
+	* tree-ssa-loop-ivcanon.cc: Likewise.
+	* tree-ssa-math-opts.cc: Likewise.
+	* tree-ssa-pre.cc: Likewise.
+	* tree-ssa-propagate.cc: Likewise.
+	* tree-ssa-reassoc.cc: Likewise.
+	* tree-ssa-sccvn.cc: Likewise.
+	* tree-ssa-strlen.cc: Likewise.
+	* tree-ssa.cc: Likewise.
+	* value-pointer-equiv.cc: Likewise.
+	* vr-values.cc: Likewise.
+
+2022-05-13  Alexandre Oliva  <oliva@adacore.com>
+
+	PR rtl-optimization/105455
+	* gimple-harden-conditionals.cc (insert_check_and_trap): Set
+	probabilities for newly-conditional edges.
+
+2022-05-13  liuhongt  <hongtao.liu@intel.com>
+
+	PR tree-optimization/102583
+	* tree-ssa-forwprop.cc (simplify_bitfield_ref): Extended to a
+	contiguous stride in the VEC_PERM_EXPR.
+
 2022-05-12  Richard Biener  <rguenther@suse.de>
 
 	PR rtl-optimization/105577

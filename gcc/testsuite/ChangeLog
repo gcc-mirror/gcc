@@ -1,3 +1,150 @@
+2022-05-13  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/81952
+	* g++.dg/overload/conv-op4.C: New test.
+
+2022-05-13  Roger Sayle  <roger@nextmovesoftware.com>
+	    Uroš Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/sse2-v1ti-veq.c: New test case.
+	* gcc.target/i386/sse2-v1ti-vne.c: New test case.
+
+2022-05-13  Paul A. Clarke  <pc@us.ibm.com>
+
+	* g++.target/powerpc/pr65240-1.C: Adjust DejaGnu directives.
+	* g++.target/powerpc/pr65240-2.C: Likewise.
+	* g++.target/powerpc/pr65240-3.C: Likewise.
+	* g++.target/powerpc/pr65240-4.C: Likewise.
+	* g++.target/powerpc/pr65242.C: Likewise.
+	* g++.target/powerpc/pr67211.C: Likewise.
+	* g++.target/powerpc/pr69667.C: Likewise.
+	* g++.target/powerpc/pr71294.C: Likewise.
+
+2022-05-13  Paul A. Clarke  <pc@us.ibm.com>
+
+	* g++.dg/pr65240.h: Move to g++.target/powerpc.
+	* g++.dg/pr93974.C: Likewise.
+	* g++.dg/pr65240-1.C: Move to g++.target/powerpc, adjust dg directives.
+	* g++.dg/pr65240-2.C: Likewise.
+	* g++.dg/pr65240-3.C: Likewise.
+	* g++.dg/pr65240-4.C: Likewise.
+	* g++.dg/pr65242.C: Likewise.
+	* g++.dg/pr67211.C: Likewise.
+	* g++.dg/pr69667.C: Likewise.
+	* g++.dg/pr71294.C: Likewise.
+	* g++.dg/pr84264.C: Likewise.
+	* g++.dg/pr84279.C: Likewise.
+	* g++.dg/pr85657.C: Likewise.
+	* g++.target/powerpc/pr65240-1.C: New file.
+	* g++.target/powerpc/pr65240-2.C: New file.
+	* g++.target/powerpc/pr65240-3.C: New file.
+	* g++.target/powerpc/pr65240-4.C: New file.
+	* g++.target/powerpc/pr65240.h: New file.
+	* g++.target/powerpc/pr65242.C: New file.
+	* g++.target/powerpc/pr67211.C: New file.
+	* g++.target/powerpc/pr69667.C: New file.
+	* g++.target/powerpc/pr71294.C: New file.
+	* g++.target/powerpc/pr84264.C: New file.
+	* g++.target/powerpc/pr84279.C: New file.
+	* g++.target/powerpc/pr85657.C: New file.
+	* g++.target/powerpc/pr93974.C: New file.
+
+2022-05-13  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR tree-optimization/83907
+	* gcc.dg/tree-ssa/pr83907-1.c: New test case.
+	* gcc.dg/tree-ssa/pr83907-2.c: New test case.
+
+2022-05-13  Philipp Tomsich  <philipp.tomsich@vrull.eu>
+	    Manolis Tsamis  <manolis.tsamis@vrull.eu>
+
+	* gcc.dg/pr90838.c: Add additional flags (dg-additional-options)
+	  when compiling for riscv64 and subsume gcc.target/aarch64/pr90838.c
+	  and gcc.target/i386/pr95863-2.c.
+	* gcc.target/aarch64/pr90838.c: Removed.
+	* gcc.target/i386/pr95863-2.c: Removed.
+	* lib/target-supports.exp: Recognize RV32 or RV64 via XLEN
+
+2022-05-13  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/105597
+	* gcc.dg/pr105597.c: New.
+
+2022-05-13  Sebastian Pop  <spop@amazon.com>
+
+	PR target/105162
+	* gcc.target/aarch64/sync-comp-swap-ool.c: New.
+	* gcc.target/aarch64/sync-op-acquire-ool.c: New.
+	* gcc.target/aarch64/sync-op-full-ool.c: New.
+	* gcc.target/aarch64/target_attr_20.c: Update check.
+	* gcc.target/aarch64/target_attr_21.c: Same.
+
+2022-05-13  Palmer Dabbelt  <palmer@rivosinc.com>
+
+	* gcc.dg/debug/btf/btf-datasec-1.c: Don't use small data on RISC-V.
+
+2022-05-13  Jia-Wei Chen  <jiawei@iscas.ac.cn>
+
+	* g++.dg/opt/const7.C: Don't use small data on RISC-V.
+
+2022-05-13  Andrew MacLeod  <amacleod@redhat.com>
+
+	* g++.dg/pr104547.C: New.
+
+2022-05-13  Nathan Sidwell  <nathan@acm.org>
+
+	* g++.dg/modules/mod-sym-4.C: New.
+
+2022-05-13  Alexandre Oliva  <oliva@adacore.com>
+
+	* gnat.dg/hardbool.ads: New.
+	* gnat.dg/hardbool.adb: New.
+
+2022-05-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/sso17.adb: New test.
+
+2022-05-13  Christophe Lyon  <christophe.lyon@arm.com>
+
+	* gcc.target/aarch64/sve/acle/general/attributes_7.c: Make
+	diagnostic unique.
+
+2022-05-13  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/plugin/diagnostic_group_plugin.c: Reorder or remove
+	gimple-fold.h include.
+	* gcc.dg/plugin/diagnostic_plugin_show_trees.c:
+	Likewise.
+	* gcc.dg/plugin/diagnostic_plugin_test_inlining.c:
+	Likewise.
+	* gcc.dg/plugin/diagnostic_plugin_test_metadata.c:
+	Likewise.
+	* gcc.dg/plugin/diagnostic_plugin_test_paths.c:
+	Likewise.
+	* gcc.dg/plugin/diagnostic_plugin_test_show_locus.c:
+	Likewise.
+	* gcc.dg/plugin/diagnostic_plugin_test_string_literals.c: Likewise.
+	* gcc.dg/plugin/diagnostic_plugin_test_tree_expression_range.c:
+	Likewise.
+	* gcc.dg/plugin/finish_unit_plugin.c: Likewise.
+	* gcc.dg/plugin/ggcplug.c: Likewise.
+	* gcc.dg/plugin/must_tail_call_plugin.c: Likewise.
+	* gcc.dg/plugin/one_time_plugin.c: Likewise.
+	* gcc.dg/plugin/selfassign.c: Likewise.
+	* gcc.dg/plugin/start_unit_plugin.c: Likewise.
+	* g++.dg/plugin/selfassign.c: Likewise.
+
+2022-05-13  Alexandre Oliva  <oliva@adacore.com>
+
+	PR rtl-optimization/105455
+	* gcc.dg/pr105455.c: New.
+
+2022-05-13  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr102583.c: New test.
+	* gcc.target/i386/pr92645-2.c: Adjust testcase.
+	* gcc.target/i386/pr92645-3.c: Ditto.
+
 2022-05-12  David Edelsohn  <dje.gcc@gmail.com>
 
 	* g++.target/powerpc/pr101168.C: Require VSX.

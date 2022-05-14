@@ -1,3 +1,303 @@
+2022-05-13  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc-interface/decl.cc (is_cplusplus_method): Build proper
+	String for Get_External_Name.
+
+2022-05-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch3.adb (Derive_Subprogram): For a function, also copy the
+	Returns_By_Ref flag from the parent.
+
+2022-05-13  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_ch13.adb (Check_Aspect_At_Freeze_Point): Analyze the
+	expression of the aspect at this point, like other aspects that
+	denote simple entities. Ensures that function
+	Storage_Model_Object will have an entity to retrieve from the
+	aspect expression. Also, move comment about aspects that don't
+	require delay analysis in front of last alternative of the case
+	statement, where it's supposed to be.
+
+2022-05-13  Javier Miranda  <miranda@adacore.com>
+
+	* contracts.adb (Build_Unique_Name): New subprogram.
+	(Make_Class_Precondition_Subps): Use Build_Unique_Name to
+	generate the names of the call helpers and the name of indirect
+	call wrappers.
+	* freeze.adb (Needs_Wrapper): Remove dead code.
+	(Check_Inherited_Conditions): Defer building helpers and ICW
+	until all the dispatch table wrappers have been built and
+	analyzed. Required to ensure uniqueness in their names because
+	when building these wrappers for overlapped subprograms their
+	homonym number is not definite until they have been analyzed.
+
+2022-05-13  Arnaud Charlet  <charlet@adacore.com>
+
+	* libgnarl/s-taprop__linux.adb (Initialize): Do not use an
+	alternate stack if no handler for SEGV is installed.
+
+2022-05-13  Alexandre Oliva  <oliva@adacore.com>
+
+	* doc/gnat_rm/security_hardening_features.rst (Control Flow
+	Redundancy): Drop mentions of noreturn and tail calls.
+	* gnat_rm.texi: Regenerate.
+
+2022-05-13  Ghjuvan Lacambre  <lacambre@adacore.com>
+
+	* ali.adb: Introduce new 'K' line in ALI files, used to
+	represent CUDA kernel entries.
+	* ali.ads: Create new CUDA_Kernels table, which contains entries
+	of type CUDA_Kernel_Record. Each CUDA_Kernel_Record corresponds
+	to a K line in an ali file.
+	* bindgen.adb: Introduce new Gen_CUDA_Init procedure in the
+	binder, which generates CUDA kernel registration code.
+	* gnat_cuda.adb: Move Get_CUDA_Kernels spec to package spec to
+	make it available to bindgen.adb.
+	* gnat_cuda.ads: Likewise.
+	* lib-writ.adb: Introduce new Output_CUDA_Symbols procedure,
+	which generates one 'K' line in the ALI file per visible CUDA
+	kernel.
+	* opt.ads: Introduce Enable_CUDA_Expansion option, triggered by
+	using the -gnatd_c flag.
+	* switch-b.adb: Likewise.
+	* switch-c.adb: Likewise.
+
+2022-05-13  Marc Poulhiès  <poulhies@adacore.com>
+
+	* exp_aggr.adb (Gen_Loop): Create scope for loop variable of
+	iterated components.
+
+2022-05-13  Yannick Moy  <moy@adacore.com>
+
+	* libgnat/a-chtgfk.adb (Checked_Equivalent_Keys, Checked_Index):
+	Remove useless functions.
+	(Delete_Key_Sans_Free, Find, Generic_Conditional_Insert): Adapt
+	to removal of wrapper functions.
+	* libgnat/a-chtgfk.ads (Checked_Equivalent_Keys, Checked_Index):
+	Remove useless functions.
+	* libgnat/a-chtgfo.adb (Checked_Index): Remove useless function.
+	(Clear): Delete code commented out regarding Busy and Lock
+	management.
+	(Delete_Node_At_Index): Delete unused procedure.
+	(Delete_Node_Sans_Free, Free, Generic_Read, Next): Adapt to
+	removal of wrapper functions.
+	* libgnat/a-chtgfo.ads (Checked_Index): Remove useless function.
+	(Delete_Node_At_Index): Delete unused procedure.
+
+2022-05-13  Yannick Moy  <moy@adacore.com>
+
+	* libgnat/a-cfhama.adb (Generic_Allocate): Retype to avoid
+	aliasing.
+	(Assign, Move): Remove address comparison.
+	(Include): Insert constants for subtype constraints.
+	(Insert): Rewrite to avoid aliasing and function with side-effects.
+	* libgnat/a-cfhase.adb (Generic_Allocate): Retype to avoid
+	aliasing.
+	(Assign, Move): Remove address comparison.
+	(Difference, Intersection, Is_Subset, Overlap,
+	Symmetric_Difference, Union): Remove address comparison.  Insert
+	constants for subtype constraints.
+	(Insert): Rewrite to avoid aliasing and function with
+	side-effects.
+	* libgnat/a-chtgfk.adb (Checked_Equivalent_Keys, Checked_Index,
+	Delete_Key_Sans_Free, Find, Generic_Replace_Element, Index):
+	Type for hash tables not tagged anymore.
+	(Generic_Conditional_Insert): New_Node generic formal is a
+	procedure taking the hash table as first parameter now, to avoid
+	aliasing in the caller.
+	* libgnat/a-chtgfk.ads: Same.
+	* libgnat/a-chtgfo.adb (Checked_Index, Clear,
+	Delete_Node_At_Index, Delete_Node_Sans_Free, First, Free,
+	Generic_Allocate, Generic_Iteration, Generic_Read,
+	Generic_Write, Index, Next): Type for hash tables not tagged
+	anymore.
+	(Generic_Equal): Removed tagged. Remove address comparison.
+	* libgnat/a-chtgfo.ads: Same.
+	* libgnat/a-cohata.ads (Hash_Table_Type): Remove tagged.
+
+2022-05-13  Yannick Moy  <moy@adacore.com>
+
+	* Makefile.rtl: Add new files.
+	* libgnat/a-cfhama.adb: Use formal version of hash tables.
+	* libgnat/a-cfhama.ads: Same.
+	* libgnat/a-cfhase.adb: Same.
+	* libgnat/a-cfhase.ads: Same.
+	* libgnat/a-chtgfk.adb: New unit for formal containers, modified
+	version of Generic_Bounded_Keys.
+	* libgnat/a-chtgfk.ads: Same.
+	* libgnat/a-chtgfo.adb: New unit for formal containers, modified
+	version of Generic_Bounded_Operations.
+	* libgnat/a-chtgfo.ads: Same.
+	* libgnat/a-cohata.ads (Generic_Formal_Hash_Table_Types): Third
+	version of the type for hash tables, equivalent to the bounded
+	version without tampering checks.
+
+2022-05-13  Javier Miranda  <miranda@adacore.com>
+
+	* freeze.adb (Check_Inherited_Conditions): Dispatch table
+	wrappers must be placed in the list of entities of their scope
+	at the same place of their wrapped primitive. This is required
+	for private types since these wrappers are built when their full
+	tagged type declaration is frozen but they may override a
+	primitive defined in the public part of the package (and it is
+	important to maintain the wrapper in the list of public entities
+	of the package to ensure their correct visibility).
+
+2022-05-13  Johannes Kanig  <kanig@adacore.com>
+
+	* osint.ads, osint.adb (Relocate_Path): If the GNSA_ROOT
+	environment variable is set, we use that as the prefix, instead
+	of computing the prefix from the executable location.
+
+2022-05-13  Steve Baird  <baird@adacore.com>
+
+	* exp_ch3.ads (Build_Intialization_Call): Add new formal
+	parameter, Init_Control_Actual, with default value. Clients
+	outside of package Exp_Ch3 are unaffected.
+	* exp_ch3.adb (Initialization_Control): new package; support for
+	this 4-valued parameter.  The existing Requires_Late_Init
+	function is moved into this new package.
+	(Build_Initialization_Call): Add new formal parameter for
+	subprogram body, use this new formal parameter in generating an
+	init proc call.
+	(Build_Record_Init_Proc): Replace Set_Tag Boolean formal
+	parameter with 4-valued Init_Control_Formal. Wrap if-statements
+	with appropriate conditions around tag initialization, early
+	initialization, and late initialization statements.
+	* exp_util.adb (Build_Task_Image_Decl): Avoid problem with
+	duplicate declarations when an init proc for a type extension
+	calls the parent type's init proc twice.
+
+2022-05-13  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch5.adb (Analyze_Iterator_Specification): Fix Typ in the
+	case of a class-wide derived iterator.
+
+2022-05-13  Yannick Moy  <moy@adacore.com>
+
+	* libgnat/a-strbou.ads (Overwrite): Switch to >= operator in
+	contracts.
+	* libgnat/a-strsup.adb (Super_Overwrite): Switch to >= operator
+	in code of procedure (function already uses it).
+	* libgnat/a-strsup.ads (Super_Overwrite): Switch to >= operator
+	in contracts.
+
+2022-05-13  Etienne Servais  <servais@adacore.com>
+
+	* doc/gnat_rm/representation_clauses_and_pragmas.rst: Fix code
+	snippet.
+	* gnat_rm.texi: Regenerate.
+
+2022-05-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* aspects.adb (Find_Value_Of_Aspect): Add guard.
+	* sem_ch4.adb (Complete_Object_Operation): Remove obsolete code.
+	* sem_ch5.adb (Has_Sec_Stack_Default_Iterator): Add guard.
+
+2022-05-13  Javier Miranda  <miranda@adacore.com>
+
+	* exp_attr.adb (Expand_N_Attribute_Reference): The expansion of
+	'Address in a call to an instantiation of the implicit
+	subprogram To_Pointer with a class-wide interface type target
+	requires adding an implicit type conversion to force
+	displacement of the "this" pointer.
+
+2022-05-13  Javier Miranda  <miranda@adacore.com>
+
+	* sem_attr.adb (Resolve_Attribute): Ensure that attribute
+	expressions are resolved at this stage; required for preanalyzed
+	references to discriminants since their resolution (and
+	expansion) will take care of updating their Entity attribute to
+	reference their discriminal.
+
+2022-05-13  Justin Squirek  <squirek@adacore.com>
+
+	* sem_util.adb (Wrong_Type): Avoid using the first subtype of
+	the expected type in error messages when the expected type is
+	not internally generated.
+
+2022-05-13  Alexandre Oliva  <oliva@adacore.com>
+
+	* doc/gnat_rm/security_hardening_features.rst: Add subsection on
+	Control Flow Redundancy.
+	* gnat_rm.texi: Regenerate.
+
+2022-05-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_util.adb (Insert_Actions) <N_Iteration_Scheme>: Check that
+	it is a WHILE iteration scheme before using Condition_Actions.
+
+2022-05-13  Piotr Trojanek  <trojanek@adacore.com>
+
+	* atree.adb, gen_il-gen.adb, osint.adb, set_targ.adb,
+	sinput.adb, table.adb, treepr.adb, types.ads: Replace uses of
+	Unchecked_Conversion in the compiler itself.
+	* libgnarl/a-reatim.adb, libgnarl/s-osinte__gnu.ads,
+	libgnarl/s-osinte__kfreebsd-gnu.ads, libgnat/a-coboho.adb,
+	libgnat/a-stuten.ads, libgnat/s-putima.adb: Likewise in the
+	runtime.
+	* doc/gnat_ugn/gnat_and_program_execution.rst: Likewise in
+	documentation.
+	* gnat_ugn.texi: Regenerate.
+
+2022-05-13  Piotr Trojanek  <trojanek@adacore.com>
+
+	* butil.adb, sem.adb, sinput.adb, types.ads, xref_lib.adb:
+	Replace uses of Unchecked_Deallocation with
+	Ada.Unchecked_Deallocation.
+	* doc/gnat_ugn/gnat_and_program_execution.rst: Likewise for the
+	documentation; fix casing of GNAT.IO.
+	* gnat_ugn.texi: Regenerate.
+
+2022-05-13  Marc Poulhiès  <poulhies@adacore.com>
+
+	* sem_aggr.adb (Resolve_Array_Aggregate): Fix ARM reference.
+	Remove useless loop.
+
+2022-05-13  Etienne Servais  <servais@adacore.com>
+
+	* sem_ch3.adb (Analyze_Subtype_Declaration): Fix typo in
+	comment.
+
+2022-05-13  Justin Squirek  <squirek@adacore.com>
+
+	* sem_ch6.adb (Check_Return_Construct_Accessibility): Modify
+	generation of run-time accessibility checks to account for cases
+	where Extra_Accessibility_Of_Result should be used versus the
+	level of the enclosing subprogram. Use original node to avoid
+	checking against expanded code. Disable check generation for
+	tagged type case.
+	(Is_Formal_Of_Current_Function): Added to encompass a predicate
+	used within Check_Return_Construct_Accessibility to test if an
+	associated expression is related to a relevant formal.
+	* sem_util.adb, sem_util.ads (Enclosing_Subprogram): Modified to
+	accept Node_Or_Entity_Id.
+	(Innermost_Master_Scope_Depth): Calculate level based on the
+	subprogram of a return statement instead of the one returned by
+	Current_Subprogram.
+	(Needs_Result_Accessibility_Level): Remove
+	Disable_Coextension_Cases constant, and disable the tagged type
+	case for performance reasons.
+
+2022-05-13  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_res.adb (Flag_Effectively_Volatile_Objects): Ignore
+	component and discriminant identifiers.
+
+2022-05-13  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_res.adb (Flag_Effectively_Volatile_Objects): Remove
+	redundant guard.
+
+2022-05-13  Justin Squirek  <squirek@adacore.com>
+
+	* sem_ch8.adb (Determine_Package_Scope): Created to centralize
+	the calculation of which package a given use clause belongs to.
+	(Most_Descendant_Use_Clause): Modified to call
+	Determine_Package_Scope.
+	* sem_util.adb, sem_util.ads (Enclosing_Package): Modified to
+	handle both entity and node ids.
+
 2022-05-12  Piotr Trojanek  <trojanek@adacore.com>
 
 	* gnat1drv.adb (Gnat1drv): Skip postponed checks when there are

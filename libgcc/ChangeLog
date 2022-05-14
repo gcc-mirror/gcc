@@ -1,3 +1,9 @@
+2022-05-13  Sebastian Pop  <spop@amazon.com>
+
+	PR target/105162
+	* config/aarch64/lse.S: Define BARRIER and handle memory MODEL 5.
+	* config/aarch64/t-lse: Add a 5th memory model for _sync functions.
+
 2022-05-10  Martin Liska  <mliska@suse.cz>
 	    Hans-Peter Helfert  <peter-helfert@t-online.de>
 

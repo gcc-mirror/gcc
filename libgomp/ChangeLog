@@ -1,3 +1,19 @@
+2022-05-13  Tobias Burnus  <tobias@codesourcery.com>
+
+	* testsuite/libgomp.fortran/target-nowait-array-section.f90: New test.
+
+2022-05-13  Tobias Burnus  <tobias@codesourcery.com>
+
+	* testsuite/libgomp.fortran/target-nowait-array-section.f90: New test.
+
+2022-05-13  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* plugin/Makefrag.am (libgomp_plugin_nvptx_la_CPPFLAGS)
+	[PLUGIN_NVPTX_DYNAMIC]: Don't append '$(PLUGIN_NVPTX_CPPFLAGS)'.
+	(libgomp_plugin_nvptx_la_LDFLAGS) [PLUGIN_NVPTX_DYNAMIC]: Don't
+	append '$(PLUGIN_NVPTX_LDFLAGS)'.
+	* Makefile.in: Regenerate.
+
 2022-05-12  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* Makefile.am (libgomp_la_LIBADD): Initialize.
