@@ -1,3 +1,38 @@
+2022-05-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/101078
+	* g++.dg/template/access39.C: New test.
+
+2022-05-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/65211
+	* g++.target/i386/vec-tmpl1.C: New test.
+
+2022-05-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/101698
+	* g++.dg/template/conv19.C: New test.
+
+2022-05-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/101442
+	* g++.dg/cpp0x/initlist-nrv1.C: New test.
+
+2022-05-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/99066
+	* g++.dg/cpp0x/extern_template-6.C: New test.
+
+2022-05-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/91241
+	* g++.dg/abi/lambda-defarg1.C: New test.
+
+2022-05-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/86355
+	* g++.dg/cpp0x/alias-decl-variadic2.C: New test.
+
 2022-05-12  Jason Merrill  <jason@redhat.com>
 
 	Revert:

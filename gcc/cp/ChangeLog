@@ -1,3 +1,42 @@
+2022-05-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/101078
+	* pt.c (tsubst_baselink): Update binfos in non-dependent case.
+
+2022-05-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/65211
+	* pt.c (tsubst_decl) [TYPE_DECL]: Copy TYPE_ALIGN.
+
+2022-05-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/101698
+	* pt.c (tsubst_baselink): Also check dependent optype.
+
+2022-05-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/101442
+	* decl.c (cp_finish_decl): Don't pass decl to push_cleanup.
+	* init.c (perform_member_init): Likewise.
+	* semantics.c (push_cleanup): Adjust comment.
+
+2022-05-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/99066
+	* pt.c (mark_decl_instantiated): Set DECL_EXTERNAL.
+
+2022-05-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/91241
+	* mangle.c (write_compact_number): Add sanity check.
+	(write_local_name): Use list_length for parm number.
+
+2022-05-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/86355
+	* pt.c (use_pack_expansion_extra_args_p): Don't compare
+	args from the same argument pack.
+
 2022-05-12  Jason Merrill  <jason@redhat.com>
 
 	Revert:
