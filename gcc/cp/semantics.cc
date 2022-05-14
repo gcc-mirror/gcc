@@ -4139,6 +4139,15 @@ finish_id_expression_1 (tree id_expression,
 	}
       return r;
     }
+  else if (TREE_CODE (decl) == UNBOUND_CLASS_TEMPLATE)
+    {
+      gcc_checking_assert (scope);
+      *idk = CP_ID_KIND_QUALIFIED;
+      cp_warn_deprecated_use_scopes (scope);
+      decl = finish_qualified_id_expr (scope, decl, done, address_p,
+				       template_p, template_arg_p,
+				       tf_warning_or_error);
+    }
   else
     {
       bool dependent_p = type_dependent_expression_p (decl);

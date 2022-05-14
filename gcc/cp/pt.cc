@@ -27734,6 +27734,8 @@ type_dependent_expression_p (tree expression)
   if (expression == NULL_TREE || expression == error_mark_node)
     return false;
 
+  gcc_checking_assert (!TYPE_P (expression));
+
   STRIP_ANY_LOCATION_WRAPPER (expression);
 
   /* An unresolved name is always dependent.  */
