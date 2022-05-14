@@ -1,3 +1,105 @@
+2022-05-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/101078
+	* g++.dg/template/access39.C: New test.
+
+2022-05-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/99066
+	* g++.dg/cpp0x/extern_template-6.C: New test.
+
+2022-05-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/100838
+	PR c++/105265
+	* g++.dg/init/no-elide2.C: New test.
+	* g++.dg/cpp0x/initlist-new6.C: New test.
+
+2022-05-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/91217
+	* g++.dg/opt/nrv20.C: New test.
+
+2022-05-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/99643
+	* g++.dg/cpp0x/initlist-new5.C: New test.
+
+2022-05-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/65211
+	* g++.target/i386/vec-tmpl1.C: New test.
+
+2022-05-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/101698
+	* g++.dg/template/conv19.C: New test.
+
+2022-05-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/101442
+	* g++.dg/cpp0x/initlist-nrv1.C: New test.
+
+2022-05-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/98249
+	* g++.dg/lookup/new3.C: New test.
+
+2022-05-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/104646
+	* g++.dg/cpp0x/constexpr-fno-elide-ctors1.C: New test.
+
+2022-05-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/59950
+	* g++.dg/init/assign2.C: New test.
+
+2022-05-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/99901
+	* g++.dg/cpp1z/inline-var9.C: New test.
+
+2022-05-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/101717
+	* g++.dg/cpp1y/lambda-generic-this4.C: New test.
+
+2022-05-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/90664
+	* g++.dg/cpp1z/noexcept-type24.C: New test.
+
+2022-05-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/95870
+	* g++.dg/cpp0x/lambda/lambda-nsdmi10.C: New test.
+
+2022-05-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/96311
+	* g++.dg/cpp1y/lambda-generic-Wunused.C: New test.
+
+2022-05-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/96673
+	* g++.dg/cpp1y/nsdmi-aggr13.C: New test.
+
+2022-05-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/91933
+	* g++.dg/cpp0x/constexpr-base7.C: New test.
+
+2022-05-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/100032
+	* g++.dg/cpp0x/alias-decl-equiv1.C: New test.
+
+2022-05-13  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp0x/constexpr-array23.C: Remove xfail.
+	* g++.dg/cpp2a/lambda-pack-init6.C: Removed.
+
 2022-05-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/102860
