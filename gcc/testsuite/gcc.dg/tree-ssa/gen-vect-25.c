@@ -54,5 +54,5 @@ int main (void)
   return main_1 (n + 2, (int *) &n);
 }
 
-/* { dg-final { scan-tree-dump-times "vectorized 2 loops" 1 "vect" { target { ! { avr-*-* msp430-*-* } } } } } */
-/* { dg-final { scan-tree-dump-times "Vectorizing an unaligned access" 0 "vect" { target { ! { avr-*-* msp430-*-* } } } } } */
+/* { dg-final { scan-tree-dump-times "vectorized 2 loops" 1 "vect" { target { ! { avr-*-* msp430-*-* pru-*-* } } } } } */
+/* { dg-final { scan-tree-dump-times "Vectorizing an unaligned access" 0 "vect" { target { ! { avr-*-* msp430-*-* pru-*-* } } } } } */
