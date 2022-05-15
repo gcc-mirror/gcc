@@ -25,5 +25,5 @@ func3 (void)
   return 0;
 }
 
-/* The xfail for avr and cris-* is due to PR53535.  */
-/* { dg-final { scan-tree-dump-not "memset" "optimized" { xfail avr-*-* cris-*-* } } } */
+/* The xfail for avr, cris-* and pru is due to PR53535.  */
+/* { dg-final { scan-tree-dump-not "memset" "optimized" { xfail avr-*-* cris-*-* pru-*-* } } } */
