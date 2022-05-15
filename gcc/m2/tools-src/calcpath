@@ -39,7 +39,7 @@ if [ $# -eq 3 ]; then
        the_path=$2/$3
    fi
    cd $3
-   if realpath -e ${the_path} > /dev/null ; then
+   if realpath ${the_path} > /dev/null ; then
        echo ${the_path}
    else
        echo "calcpath: error ${the_path} is not a valid path in subdirectory $3" 1>&2
