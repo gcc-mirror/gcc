@@ -3312,9 +3312,15 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 		  /* An array element or array section which is not part of a
 		     derived type, etc.  */
 		  bool element = n->expr->ref->u.ar.type == AR_ELEMENT;
-		  gfc_trans_omp_array_section (block, n, decl, element,
-					       GOMP_MAP_POINTER, node, node2,
-					       node3, node4);
+		  tree type = TREE_TYPE (decl);
+		  gomp_map_kind k = GOMP_MAP_POINTER;
+		  if (!openacc
+		      && !GFC_DESCRIPTOR_TYPE_P (type)
+		      && !(POINTER_TYPE_P (type)
+			   && GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (type))))
+		    k = GOMP_MAP_FIRSTPRIVATE_POINTER;
+		  gfc_trans_omp_array_section (block, n, decl, element, k,
+					       node, node2, node3, node4);
 		}
 	      else if (n->expr
 		       && n->expr->expr_type == EXPR_VARIABLE

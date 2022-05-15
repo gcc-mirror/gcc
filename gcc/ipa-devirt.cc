@@ -120,6 +120,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "print-tree.h"
 #include "calls.h"
 #include "ipa-utils.h"
+#include "gimple-iterator.h"
 #include "gimple-fold.h"
 #include "symbol-summary.h"
 #include "tree-vrp.h"

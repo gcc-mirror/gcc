@@ -158,6 +158,9 @@ package body Switch.B is
 
                elsif Underscore then
                   Set_Underscored_Debug_Flag (C);
+                  if Debug_Flag_Underscore_C then
+                     Enable_CUDA_Expansion := True;
+                  end if;
                   Underscore := False;
 
                --    letter

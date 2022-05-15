@@ -664,7 +664,7 @@ package body Lib.Xref is
       --  a default in an instance.
 
       --  We also set the referenced flag in a generic package that is not in
-      --  then main source unit, when the variable is of a formal private type,
+      --  the main source unit, when the object is of a formal private type,
       --  to warn in the instance if the corresponding type is not a fully
       --  initialized type.
 
@@ -694,6 +694,7 @@ package body Lib.Xref is
             return;
 
          elsif Inside_A_Generic
+           and then Is_Object (E)
            and then Is_Generic_Type (Etype (E))
          then
             Set_Referenced (E);

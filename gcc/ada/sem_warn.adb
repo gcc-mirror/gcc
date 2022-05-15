@@ -2872,7 +2872,9 @@ package body Sem_Warn is
         Match ("dummy")   or else
         Match ("ignore")  or else
         Match ("junk")    or else
-        Match ("unused");
+        Match ("unuse")   or else
+        Match ("tmp")     or else
+        Match ("temp");
    end Has_Junk_Name;
 
    --------------------------------------

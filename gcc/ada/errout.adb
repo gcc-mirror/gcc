@@ -3760,7 +3760,7 @@ package body Errout is
          Set_Msg_Str ("<error>");
 
       else
-         Get_Unit_Name_String (Error_Msg_Unit_1, Suffix);
+         Get_Unit_Name_String (Global_Name_Buffer, Error_Msg_Unit_1, Suffix);
          Set_Msg_Blank;
          Set_Msg_Quote;
          Set_Msg_Name_Buffer;

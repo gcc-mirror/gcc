@@ -1916,6 +1916,8 @@ package body Exp_Aggr is
          Is_Iterated_Component : constant Boolean :=
            Parent_Kind (Expr) = N_Iterated_Component_Association;
 
+         Ent : Entity_Id;
+
          L_J : Node_Id;
 
          L_L : Node_Id;
@@ -2025,10 +2027,28 @@ package body Exp_Aggr is
          --  Otherwise construct the loop, starting with the loop index L_J
 
          if Is_Iterated_Component then
+
+            --  Create a new scope for the loop variable so that the
+            --  following Gen_Assign (that ends up calling
+            --  Preanalyze_And_Resolve) can correctly find it.
+
+            Ent := New_Internal_Entity (E_Loop,
+                 Current_Scope, Loc, 'L');
+            Set_Etype  (Ent, Standard_Void_Type);
+            Set_Parent (Ent, Parent (Parent (Expr)));
+            Push_Scope (Ent);
+
             L_J :=
               Make_Defining_Identifier (Loc,
                 Chars => (Chars (Defining_Identifier (Parent (Expr)))));
 
+            Enter_Name (L_J);
+
+            --  The Etype will be set by a later Analyze call.
+            Set_Etype (L_J, Any_Type);
+
+            Mutate_Ekind (L_J, E_Variable);
+            Set_Scope (L_J, Ent);
          else
             L_J := Make_Temporary (Loc, 'J', L);
          end if;
@@ -2082,6 +2102,10 @@ package body Exp_Aggr is
               Identifier       => Empty,
               Iteration_Scheme => L_Iteration_Scheme,
               Statements       => L_Body));
+
+         if Is_Iterated_Component then
+            End_Scope;
+         end if;
 
          --  A small optimization: if the aggregate is initialized with a box
          --  and the component type has no initialization procedure, remove the

@@ -285,7 +285,9 @@ package body Aspects is
 
    begin
       if Present (Spec) then
-         if A = Aspect_Default_Iterator then
+         if A = Aspect_Default_Iterator
+           and then Present (Aspect_Rep_Item (Spec))
+         then
             return Expression (Aspect_Rep_Item (Spec));
          else
             return Expression (Spec);

@@ -328,10 +328,9 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
    *  @param  __last  End of input range.
    *  @param  __result  Output sums.
    *  @return  Iterator pointing just beyond the values written to result.
-   *
-   *  _GLIBCXX_RESOLVE_LIB_DEFECTS
-   *  DR 539. partial_sum and adjacent_difference should mention requirements
    */
+  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+  // DR 539. partial_sum and adjacent_difference should mention requirements
   template<typename _InputIterator, typename _OutputIterator>
     _GLIBCXX20_CONSTEXPR
     _OutputIterator
@@ -371,10 +370,9 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
    *  @param  __result  Output sum.
    *  @param  __binary_op Function object.
    *  @return  Iterator pointing just beyond the values written to result.
-   *
-   *  _GLIBCXX_RESOLVE_LIB_DEFECTS
-   *  DR 539. partial_sum and adjacent_difference should mention requirements
    */
+  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+  // DR 539. partial_sum and adjacent_difference should mention requirements
   template<typename _InputIterator, typename _OutputIterator,
 	   typename _BinaryOperation>
     _GLIBCXX20_CONSTEXPR

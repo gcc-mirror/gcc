@@ -34,7 +34,7 @@ with Sdefault; use Sdefault;
 with Table;
 with Targparm; use Targparm;
 
-with Unchecked_Conversion;
+with Ada.Unchecked_Conversion;
 
 pragma Warnings (Off);
 --  This package is used also by gnatcoll
@@ -2216,9 +2216,9 @@ package body Osint is
       --  GNAT releases are available with these functions.
 
       function To_Int is
-        new Unchecked_Conversion (OS_Time, Underlying_OS_Time);
+        new Ada.Unchecked_Conversion (OS_Time, Underlying_OS_Time);
       function From_Int is
-        new Unchecked_Conversion (Underlying_OS_Time, OS_Time);
+        new Ada.Unchecked_Conversion (Underlying_OS_Time, OS_Time);
 
       TI : Underlying_OS_Time := To_Int (T);
       Y  : Year_Type;
@@ -2758,7 +2758,25 @@ package body Osint is
 
    begin
       if Std_Prefix = null then
-         Std_Prefix := Executable_Prefix;
+         Std_Prefix := String_Ptr (Getenv ("GNSA_ROOT"));
+
+         if Std_Prefix.all = "" then
+            Std_Prefix := Executable_Prefix;
+
+         elsif not Is_Directory_Separator (Std_Prefix (Std_Prefix'Last)) then
+
+            --  The remainder of this function assumes that Std_Prefix
+            --  terminates with a dir separator, so we force this here.
+
+            declare
+               Old_Prefix : String_Ptr := Std_Prefix;
+            begin
+               Std_Prefix := new String (1 .. Old_Prefix'Length + 1);
+               Std_Prefix (1 .. Old_Prefix'Length) := Old_Prefix.all;
+               Std_Prefix (Old_Prefix'Length + 1) := Directory_Separator;
+               Free (Old_Prefix);
+            end;
+         end if;
 
          if Std_Prefix.all /= "" then
 
@@ -3085,8 +3103,8 @@ package body Osint is
       type Path_String_Access is access Path_String;
 
       function Address_To_Access is new
-        Unchecked_Conversion (Source => Address,
-                              Target => Path_String_Access);
+        Ada.Unchecked_Conversion (Source => Address,
+                                  Target => Path_String_Access);
 
       Path_Access : constant Path_String_Access :=
                       Address_To_Access (Path_Addr);

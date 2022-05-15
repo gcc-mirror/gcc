@@ -267,7 +267,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	delete [] _M_data->_M_grouping;
       delete _M_data;
     }
- #endif
+#endif
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace

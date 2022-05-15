@@ -57,6 +57,8 @@ package System.Val_Int with SPARK_Mode is
      (Int                          => Integer,
       Uns                          => Unsigned,
       Scan_Raw_Unsigned            => Val_Uns.Scan_Raw_Unsigned,
+      Uns_Option                   => Val_Uns.Impl.Uns_Option,
+      Wrap_Option                  => Val_Uns.Impl.Wrap_Option,
       Is_Raw_Unsigned_Format_Ghost =>
          Val_Uns.Impl.Is_Raw_Unsigned_Format_Ghost,
       Raw_Unsigned_Overflows_Ghost =>
@@ -64,7 +66,11 @@ package System.Val_Int with SPARK_Mode is
       Scan_Raw_Unsigned_Ghost      =>
          Val_Uns.Impl.Scan_Raw_Unsigned_Ghost,
       Raw_Unsigned_Last_Ghost      =>
-         Val_Uns.Impl.Raw_Unsigned_Last_Ghost);
+         Val_Uns.Impl.Raw_Unsigned_Last_Ghost,
+      Only_Decimal_Ghost           =>
+         Val_Uns.Impl.Only_Decimal_Ghost,
+      Scan_Based_Number_Ghost      =>
+         Val_Uns.Impl.Scan_Based_Number_Ghost);
 
    procedure Scan_Integer
      (Str : String;

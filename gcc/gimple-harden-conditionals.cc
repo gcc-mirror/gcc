@@ -36,6 +36,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfghooks.h"
 #include "cfgloop.h"
 #include "tree-eh.h"
+#include "sbitmap.h"
 #include "diagnostic.h"
 #include "intl.h"
 
@@ -254,8 +255,10 @@ insert_check_and_trap (location_t loc, gimple_stmt_iterator *gsip,
      equality.  */
   single_succ_edge (chk)->flags &= ~EDGE_FALLTHRU;
   single_succ_edge (chk)->flags |= neg_true_false_flag;
+  single_succ_edge (chk)->probability = profile_probability::always ();
   edge e = make_edge (chk, trp, true_false_flag);
   e->goto_locus = loc;
+  e->probability = profile_probability::never ();
 
   if (dom_info_available_p (CDI_DOMINATORS))
     set_immediate_dominator (CDI_DOMINATORS, trp, chk);
@@ -301,9 +304,21 @@ insert_edge_check_and_trap (location_t loc, edge e,
 unsigned int
 pass_harden_conditional_branches::execute (function *fun)
 {
+  /* Record the preexisting blocks, to avoid visiting newly-created
+     blocks.  */
+  auto_sbitmap to_visit (last_basic_block_for_fn (fun));
+  bitmap_clear (to_visit);
+
   basic_block bb;
-  FOR_EACH_BB_REVERSE_FN (bb, fun)
+  FOR_EACH_BB_FN (bb, fun)
+    bitmap_set_bit (to_visit, bb->index);
+
+  sbitmap_iterator it;
+  unsigned i;
+  EXECUTE_IF_SET_IN_BITMAP (to_visit, 0, i, it)
     {
+      bb = BASIC_BLOCK_FOR_FN (fun, i);
+
       gimple_stmt_iterator gsi = gsi_last_bb (bb);
 
       if (gsi_end_p (gsi))
@@ -383,205 +398,215 @@ non_eh_succ_edge (basic_block bb, edge *ehp = NULL)
 unsigned int
 pass_harden_compares::execute (function *fun)
 {
+  /* Record the preexisting blocks, to avoid visiting newly-created
+     blocks.  */
+  auto_sbitmap to_visit (last_basic_block_for_fn (fun));
+  bitmap_clear (to_visit);
+
   basic_block bb;
-  /* Go backwards over BBs and stmts, so that, even if we split the
-     block multiple times to insert a cond_expr after each compare we
-     find, we remain in the same block, visiting every preexisting
-     stmt exactly once, and not visiting newly-added blocks or
-     stmts.  */
-  FOR_EACH_BB_REVERSE_FN (bb, fun)
-    for (gimple_stmt_iterator gsi = gsi_last_bb (bb);
-	 !gsi_end_p (gsi); gsi_prev (&gsi))
-      {
-	gassign *asgn = dyn_cast <gassign *> (gsi_stmt (gsi));
-	if (!asgn)
-	  continue;
+  FOR_EACH_BB_FN (bb, fun)
+    bitmap_set_bit (to_visit, bb->index);
 
-	/* Turn:
+  sbitmap_iterator it;
+  unsigned i;
+  EXECUTE_IF_SET_IN_BITMAP (to_visit, 0, i, it)
+    {
+      bb = BASIC_BLOCK_FOR_FN (fun, i);
 
-	   z = x op y;
-
-	   into:
-
-	   z = x op y;
-	   z' = x' cop y';
-	   if (z == z') __builtin_trap ();
-
-	   where cop is a complementary boolean operation to op; and x'
-	   and y' hold the same value as x and y, but in a way that does
-	   not enable the compiler to optimize the redundant compare
-	   away.
-	*/
-
-	enum tree_code op = gimple_assign_rhs_code (asgn);
-
-	enum tree_code cop;
-
-	switch (op)
-	  {
-	  case EQ_EXPR:
-	  case NE_EXPR:
-	  case GT_EXPR:
-	  case GE_EXPR:
-	  case LT_EXPR:
-	  case LE_EXPR:
-	  case LTGT_EXPR:
-	  case UNEQ_EXPR:
-	  case UNGT_EXPR:
-	  case UNGE_EXPR:
-	  case UNLT_EXPR:
-	  case UNLE_EXPR:
-	  case ORDERED_EXPR:
-	  case UNORDERED_EXPR:
-	    cop = invert_tree_comparison (op,
-					  HONOR_NANS
-					  (gimple_assign_rhs1 (asgn)));
-
-	    if (cop == ERROR_MARK)
-	      /* ??? Can we do better?  */
-	      continue;
-
-	    break;
-
-	    /* ??? Maybe handle these too?  */
-	  case TRUTH_NOT_EXPR:
-	    /* ??? The code below assumes binary ops, it would have to
-	       be adjusted for TRUTH_NOT_EXPR, since it's unary.  */
-	  case TRUTH_ANDIF_EXPR:
-	  case TRUTH_ORIF_EXPR:
-	  case TRUTH_AND_EXPR:
-	  case TRUTH_OR_EXPR:
-	  case TRUTH_XOR_EXPR:
-	  default:
+      for (gimple_stmt_iterator gsi = gsi_last_bb (bb);
+	   !gsi_end_p (gsi); gsi_prev (&gsi))
+	{
+	  gassign *asgn = dyn_cast <gassign *> (gsi_stmt (gsi));
+	  if (!asgn)
 	    continue;
-	  }
 
-	/* These are the operands for the verification.  */
-	tree lhs = gimple_assign_lhs (asgn);
-	tree op1 = gimple_assign_rhs1 (asgn);
-	tree op2 = gimple_assign_rhs2 (asgn);
-	location_t loc = gimple_location (asgn);
+	  /* Turn:
 
-	/* Vector booleans can't be used in conditional branches.  ???
-	   Can we do better?  How to reduce compare and
-	   reversed-compare result vectors to a single boolean?  */
-	if (VECTOR_TYPE_P (TREE_TYPE (op1)))
-	  continue;
+	     z = x op y;
 
-	/* useless_type_conversion_p enables conversions from 1-bit
-	   integer types to boolean to be discarded.  */
-	gcc_checking_assert (TREE_CODE (TREE_TYPE (lhs)) == BOOLEAN_TYPE
-			     || (INTEGRAL_TYPE_P (TREE_TYPE (lhs))
-				 && TYPE_PRECISION (TREE_TYPE (lhs)) == 1));
+	     into:
 
-	tree rhs = copy_ssa_name (lhs);
+	     z = x op y;
+	     z' = x' cop y';
+	     if (z == z') __builtin_trap ();
 
-	gimple_stmt_iterator gsi_split = gsi;
-	/* Don't separate the original assignment from debug stmts
-	   that might be associated with it, and arrange to split the
-	   block after debug stmts, so as to make sure the split block
-	   won't be debug stmts only.  */
-	gsi_next_nondebug (&gsi_split);
+	     where cop is a complementary boolean operation to op; and x'
+	     and y' hold the same value as x and y, but in a way that does
+	     not enable the compiler to optimize the redundant compare
+	     away.
+	  */
 
-	bool throwing_compare_p = stmt_ends_bb_p (asgn);
-	if (throwing_compare_p)
-	  {
-	    basic_block nbb = split_edge (non_eh_succ_edge
-					  (gimple_bb (asgn)));
-	    gsi_split = gsi_start_bb (nbb);
+	  enum tree_code op = gimple_assign_rhs_code (asgn);
 
-	    if (dump_file)
-	      fprintf (dump_file,
-		       "Splitting non-EH edge from block %i into %i"
-		       " after a throwing compare\n",
-		       gimple_bb (asgn)->index, nbb->index);
-	  }
+	  enum tree_code cop;
 
-	bool same_p = (op1 == op2);
-	op1 = detach_value (loc, &gsi_split, op1);
-	op2 = same_p ? op1 : detach_value (loc, &gsi_split, op2);
+	  switch (op)
+	    {
+	    case EQ_EXPR:
+	    case NE_EXPR:
+	    case GT_EXPR:
+	    case GE_EXPR:
+	    case LT_EXPR:
+	    case LE_EXPR:
+	    case LTGT_EXPR:
+	    case UNEQ_EXPR:
+	    case UNGT_EXPR:
+	    case UNGE_EXPR:
+	    case UNLT_EXPR:
+	    case UNLE_EXPR:
+	    case ORDERED_EXPR:
+	    case UNORDERED_EXPR:
+	      cop = invert_tree_comparison (op,
+					    HONOR_NANS
+					    (gimple_assign_rhs1 (asgn)));
 
-	gassign *asgnck = gimple_build_assign (rhs, cop, op1, op2);
-	gimple_set_location (asgnck, loc);
-	gsi_insert_before (&gsi_split, asgnck, GSI_SAME_STMT);
+	      if (cop == ERROR_MARK)
+		/* ??? Can we do better?  */
+		continue;
 
-	/* We wish to insert a cond_expr after the compare, so arrange
-	   for it to be at the end of a block if it isn't, and for it
-	   to have a single successor in case there's more than
-	   one, as in PR104975.  */
-	if (!gsi_end_p (gsi_split)
-	    || !single_succ_p (gsi_bb (gsi_split)))
-	  {
-	    if (!gsi_end_p (gsi_split))
-	      gsi_prev (&gsi_split);
-	    else
-	      gsi_split = gsi_last_bb (gsi_bb (gsi_split));
-	    basic_block obb = gsi_bb (gsi_split);
-	    basic_block nbb = split_block (obb, gsi_stmt (gsi_split))->dest;
-	    gsi_next (&gsi_split);
-	    gcc_checking_assert (gsi_end_p (gsi_split));
+	      break;
 
-	    single_succ_edge (bb)->goto_locus = loc;
+	      /* ??? Maybe handle these too?  */
+	    case TRUTH_NOT_EXPR:
+	      /* ??? The code below assumes binary ops, it would have to
+		 be adjusted for TRUTH_NOT_EXPR, since it's unary.  */
+	    case TRUTH_ANDIF_EXPR:
+	    case TRUTH_ORIF_EXPR:
+	    case TRUTH_AND_EXPR:
+	    case TRUTH_OR_EXPR:
+	    case TRUTH_XOR_EXPR:
+	    default:
+	      continue;
+	    }
 
-	    if (dump_file)
-	      fprintf (dump_file,
-		       "Splitting block %i into %i"
-		       " before the conditional trap branch\n",
-		       obb->index, nbb->index);
-	  }
+	  /* These are the operands for the verification.  */
+	  tree lhs = gimple_assign_lhs (asgn);
+	  tree op1 = gimple_assign_rhs1 (asgn);
+	  tree op2 = gimple_assign_rhs2 (asgn);
+	  location_t loc = gimple_location (asgn);
 
-	/* If the check assignment must end a basic block, we can't
-	   insert the conditional branch in the same block, so split
-	   the block again, and prepare to insert the conditional
-	   branch in the new block.
+	  /* Vector booleans can't be used in conditional branches.  ???
+	     Can we do better?  How to reduce compare and
+	     reversed-compare result vectors to a single boolean?  */
+	  if (VECTOR_TYPE_P (TREE_TYPE (op1)))
+	    continue;
 
-	   Also assign an EH region to the compare.  Even though it's
-	   unlikely that the hardening compare will throw after the
-	   original compare didn't, the compiler won't even know that
-	   it's the same compare operands, so add the EH edge anyway.  */
-	if (throwing_compare_p)
-	  {
-	    add_stmt_to_eh_lp (asgnck, lookup_stmt_eh_lp (asgn));
-	    make_eh_edges (asgnck);
+	  /* useless_type_conversion_p enables conversions from 1-bit
+	     integer types to boolean to be discarded.  */
+	  gcc_checking_assert (TREE_CODE (TREE_TYPE (lhs)) == BOOLEAN_TYPE
+			       || (INTEGRAL_TYPE_P (TREE_TYPE (lhs))
+				   && TYPE_PRECISION (TREE_TYPE (lhs)) == 1));
 
-	    edge ckeh;
-	    basic_block nbb = split_edge (non_eh_succ_edge
-					  (gimple_bb (asgnck), &ckeh));
-	    gsi_split = gsi_start_bb (nbb);
+	  tree rhs = copy_ssa_name (lhs);
 
-	    if (dump_file)
-	      fprintf (dump_file,
-		       "Splitting non-EH edge from block %i into %i after"
-		       " the newly-inserted reversed throwing compare\n",
-		       gimple_bb (asgnck)->index, nbb->index);
+	  gimple_stmt_iterator gsi_split = gsi;
+	  /* Don't separate the original assignment from debug stmts
+	     that might be associated with it, and arrange to split the
+	     block after debug stmts, so as to make sure the split block
+	     won't be debug stmts only.  */
+	  gsi_next_nondebug (&gsi_split);
 
-	    if (!gimple_seq_empty_p (phi_nodes (ckeh->dest)))
-	      {
-		edge aseh;
-		non_eh_succ_edge (gimple_bb (asgn), &aseh);
+	  bool throwing_compare_p = stmt_ends_bb_p (asgn);
+	  if (throwing_compare_p)
+	    {
+	      basic_block nbb = split_edge (non_eh_succ_edge
+					    (gimple_bb (asgn)));
+	      gsi_split = gsi_start_bb (nbb);
 
-		gcc_checking_assert (aseh->dest == ckeh->dest);
+	      if (dump_file)
+		fprintf (dump_file,
+			 "Splitting non-EH edge from block %i into %i"
+			 " after a throwing compare\n",
+			 gimple_bb (asgn)->index, nbb->index);
+	    }
 
-		for (gphi_iterator psi = gsi_start_phis (ckeh->dest);
-		     !gsi_end_p (psi); gsi_next (&psi))
-		  {
-		    gphi *phi = psi.phi ();
-		    add_phi_arg (phi, PHI_ARG_DEF_FROM_EDGE (phi, aseh), ckeh,
-				 gimple_phi_arg_location_from_edge (phi, aseh));
-		  }
+	  bool same_p = (op1 == op2);
+	  op1 = detach_value (loc, &gsi_split, op1);
+	  op2 = same_p ? op1 : detach_value (loc, &gsi_split, op2);
 
-		if (dump_file)
-		  fprintf (dump_file,
-			   "Copying PHI args in EH block %i from %i to %i\n",
-			   aseh->dest->index, aseh->src->index, ckeh->src->index);
-	      }
-	  }
+	  gassign *asgnck = gimple_build_assign (rhs, cop, op1, op2);
+	  gimple_set_location (asgnck, loc);
+	  gsi_insert_before (&gsi_split, asgnck, GSI_SAME_STMT);
 
-	gcc_checking_assert (single_succ_p (gsi_bb (gsi_split)));
+	  /* We wish to insert a cond_expr after the compare, so arrange
+	     for it to be at the end of a block if it isn't, and for it
+	     to have a single successor in case there's more than
+	     one, as in PR104975.  */
+	  if (!gsi_end_p (gsi_split)
+	      || !single_succ_p (gsi_bb (gsi_split)))
+	    {
+	      if (!gsi_end_p (gsi_split))
+		gsi_prev (&gsi_split);
+	      else
+		gsi_split = gsi_last_bb (gsi_bb (gsi_split));
+	      basic_block obb = gsi_bb (gsi_split);
+	      basic_block nbb = split_block (obb, gsi_stmt (gsi_split))->dest;
+	      gsi_next (&gsi_split);
+	      gcc_checking_assert (gsi_end_p (gsi_split));
 
-	insert_check_and_trap (loc, &gsi_split, EDGE_TRUE_VALUE,
-			       EQ_EXPR, lhs, rhs);
-      }
+	      single_succ_edge (bb)->goto_locus = loc;
+
+	      if (dump_file)
+		fprintf (dump_file,
+			 "Splitting block %i into %i"
+			 " before the conditional trap branch\n",
+			 obb->index, nbb->index);
+	    }
+
+	  /* If the check assignment must end a basic block, we can't
+	     insert the conditional branch in the same block, so split
+	     the block again, and prepare to insert the conditional
+	     branch in the new block.
+
+	     Also assign an EH region to the compare.  Even though it's
+	     unlikely that the hardening compare will throw after the
+	     original compare didn't, the compiler won't even know that
+	     it's the same compare operands, so add the EH edge anyway.  */
+	  if (throwing_compare_p)
+	    {
+	      add_stmt_to_eh_lp (asgnck, lookup_stmt_eh_lp (asgn));
+	      make_eh_edges (asgnck);
+
+	      edge ckeh;
+	      basic_block nbb = split_edge (non_eh_succ_edge
+					    (gimple_bb (asgnck), &ckeh));
+	      gsi_split = gsi_start_bb (nbb);
+
+	      if (dump_file)
+		fprintf (dump_file,
+			 "Splitting non-EH edge from block %i into %i after"
+			 " the newly-inserted reversed throwing compare\n",
+			 gimple_bb (asgnck)->index, nbb->index);
+
+	      if (!gimple_seq_empty_p (phi_nodes (ckeh->dest)))
+		{
+		  edge aseh;
+		  non_eh_succ_edge (gimple_bb (asgn), &aseh);
+
+		  gcc_checking_assert (aseh->dest == ckeh->dest);
+
+		  for (gphi_iterator psi = gsi_start_phis (ckeh->dest);
+		       !gsi_end_p (psi); gsi_next (&psi))
+		    {
+		      gphi *phi = psi.phi ();
+		      add_phi_arg (phi, PHI_ARG_DEF_FROM_EDGE (phi, aseh), ckeh,
+				   gimple_phi_arg_location_from_edge (phi, aseh));
+		    }
+
+		  if (dump_file)
+		    fprintf (dump_file,
+			     "Copying PHI args in EH block %i from %i to %i\n",
+			     aseh->dest->index, aseh->src->index,
+			     ckeh->src->index);
+		}
+	    }
+
+	  gcc_checking_assert (single_succ_p (gsi_bb (gsi_split)));
+
+	  insert_check_and_trap (loc, &gsi_split, EDGE_TRUE_VALUE,
+				 EQ_EXPR, lhs, rhs);
+	}
+    }
 
   return 0;
 }

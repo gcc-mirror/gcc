@@ -32,6 +32,6 @@ void odd (v4sf *dst, v8si *srcp)
 /* Four conversions, on the smaller vector type, to not convert excess
    elements.  */
 /* { dg-final { scan-tree-dump-times " = \\\(vector\\\(4\\\) float\\\)" 4 "cddce1" } } */
-/* { dg-final { scan-tree-dump-times "VEC_PERM_EXPR" 3 "cddce1" } } */
+/* { dg-final { scan-tree-dump-times "VEC_PERM_EXPR" 3 "cddce1" { xfail *-*-* } } } */
 /* Ideally highpart extraction would elide the VEC_PERM_EXPR as well.  */
-/* { dg-final { scan-tree-dump-times "VEC_PERM_EXPR" 2 "cddce1" { xfail *-*-* } } } */
+/* { dg-final { scan-tree-dump-times "VEC_PERM_EXPR" 2 "cddce1" } } */

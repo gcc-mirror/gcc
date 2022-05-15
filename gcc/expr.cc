@@ -60,6 +60,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa-address.h"
 #include "builtins.h"
 #include "ccmp.h"
+#include "gimple-iterator.h"
 #include "gimple-fold.h"
 #include "rtx-vector-builder.h"
 #include "tree-pretty-print.h"

@@ -23398,8 +23398,6 @@ static tree
 try_class_unification (tree tparms, tree targs, tree parm, tree arg,
 		       bool explain_p)
 {
-  tree copy_of_targs;
-
   if (!CLASSTYPE_SPECIALIZATION_OF_PRIMARY_TEMPLATE_P (arg))
     return NULL_TREE;
   else if (TREE_CODE (parm) == BOUND_TEMPLATE_TEMPLATE_PARM)
@@ -23438,21 +23436,23 @@ try_class_unification (tree tparms, tree targs, tree parm, tree arg,
      because there are two ways to unify base classes of S<0, 1, 2>
      with S<I, I, I>.  If we kept the already deduced knowledge, we
      would reject the possibility I=1.  */
-  copy_of_targs = make_tree_vec (TREE_VEC_LENGTH (targs));
+  targs = copy_template_args (targs);
+  for (tree& targ : tree_vec_range (INNERMOST_TEMPLATE_ARGS (targs)))
+    targ = NULL_TREE;
 
+  int err;
   if (TREE_CODE (parm) == BOUND_TEMPLATE_TEMPLATE_PARM)
-    {
-      if (unify_bound_ttp_args (tparms, copy_of_targs, parm, arg, explain_p))
-	return NULL_TREE;
-      return arg;
-    }
+    err = unify_bound_ttp_args (tparms, targs, parm, arg, explain_p);
+  else
+    err = unify (tparms, targs, CLASSTYPE_TI_ARGS (parm),
+		 CLASSTYPE_TI_ARGS (arg), UNIFY_ALLOW_NONE, explain_p);
 
-  /* If unification failed, we're done.  */
-  if (unify (tparms, copy_of_targs, CLASSTYPE_TI_ARGS (parm),
-	     CLASSTYPE_TI_ARGS (arg), UNIFY_ALLOW_NONE, explain_p))
-    return NULL_TREE;
+  if (TMPL_ARGS_HAVE_MULTIPLE_LEVELS (targs))
+    for (tree level : tree_vec_range (targs))
+      ggc_free (level);
+  ggc_free (targs);
 
-  return arg;
+  return err ? NULL_TREE : arg;
 }
 
 /* Given a template type PARM and a class type ARG, find the unique
@@ -23649,7 +23649,7 @@ unify_pack_expansion (tree tparms, tree targs, tree packed_parms,
 
       /* Determine the index and level of this parameter pack.  */
       template_parm_level_and_index (parm_pack, &level, &idx);
-      if (level < levels)
+      if (level > levels)
 	continue;
 
       /* Keep track of the parameter packs and their corresponding

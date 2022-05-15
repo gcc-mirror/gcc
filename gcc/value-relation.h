@@ -28,7 +28,7 @@ along with GCC; see the file COPYING3.  If not see
 // The general range_query object provided in value-query.h provides
 // access to an oracle, if one is available, via the oracle() method.
 // Thre are also a couple of access routines provided, which even if there is
-// no oracle, will return the default VREL_NONE no relation.
+// no oracle, will return the default VREL_VARYING no relation.
 //
 // Typically, when a ranger object is active, there will be an oracle, and
 // any information available can be directly queried.  Ranger also sets and
@@ -43,8 +43,8 @@ along with GCC; see the file COPYING3.  If not see
 // block, or on an edge, the possible return values are:
 //
 //  EQ_EXPR, NE_EXPR, LT_EXPR, LE_EXPR, GT_EXPR, and GE_EXPR mean the same.
-//  VREL_NONE : No relation between the 2 names.
-//  VREL_EMPTY : Impossible relation (ie, A < B && A > B produces VREL_EMPTY.
+//  VREL_VARYING : No relation between the 2 names.
+//  VREL_UNDEFINED : Impossible relation (ie, A < B && A > B)
 //
 // The oracle maintains EQ_EXPR relations with equivalency sets, so if a
 // relation comes back EQ_EXPR, it is also possible to query the set of
@@ -58,13 +58,20 @@ along with GCC; see the file COPYING3.  If not see
 
 // Rather than introduce a new enumerated type for relations, we can use the
 // existing tree_codes for relations, plus add a couple of #defines for
-// the other cases.  These codes are arranged such that VREL_NONE is the first
-// code, and all the rest are contiguous.
+// the other cases.  These codes are arranged such that VREL_VARYING is the
+// first code, and all the rest are contiguous.
 
-typedef enum tree_code relation_kind;
-
-#define VREL_NONE		TRUTH_NOT_EXPR
-#define VREL_EMPTY		LTGT_EXPR
+typedef enum relation_kind_t
+{
+  VREL_VARYING = 0,	// No known relation,  AKA varying.
+  VREL_UNDEFINED,	// Impossible relation, ie (r1 < r2) && (r2 > r1)
+  VREL_LT,		// r1 < r2
+  VREL_LE,		// r1 <= r2
+  VREL_GT,		// r1 > r2
+  VREL_GE,		// r1 >= r2
+  VREL_EQ,		// r1 == r2
+  VREL_NE		// r1 != r2
+} relation_kind;
 
 // General relation kind transformations.
 relation_kind relation_union (relation_kind r1, relation_kind r2);
@@ -72,7 +79,6 @@ relation_kind relation_intersect (relation_kind r1, relation_kind r2);
 relation_kind relation_negate (relation_kind r);
 relation_kind relation_swap (relation_kind r);
 void print_relation (FILE *f, relation_kind rel);
-
 
 class relation_oracle
 {

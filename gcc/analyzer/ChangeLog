@@ -1,3 +1,7 @@
+2022-05-13  Richard Biener  <rguenther@suse.de>
+
+	* supergraph.cc: Re-order gimple-fold.h include.
+
 2022-05-11  David Malcolm  <dmalcolm@redhat.com>
 
 	* checker-path.cc (state_change_event::get_desc): Call maybe_free

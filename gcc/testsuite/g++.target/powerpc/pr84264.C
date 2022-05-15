@@ -1,4 +1,4 @@
-/* { dg-do compile { target { powerpc*-*-* } } } */
+/* { dg-do compile } */
 /* { dg-options "-w -O1 -fstack-protector-strong" } */
 
 void _setjmp ();

@@ -41,6 +41,59 @@ package body System.Value_I is
                             Assert_And_Cut     => Ignore,
                             Subprogram_Variant => Ignore);
 
+   -----------------------------------
+   -- Prove_Scan_Only_Decimal_Ghost --
+   -----------------------------------
+
+   procedure Prove_Scan_Only_Decimal_Ghost (Str : String; Val : Int) is
+      Non_Blank : constant Positive := First_Non_Space_Ghost
+        (Str, Str'First, Str'Last);
+      pragma Assert
+        (if Val < 0 then Non_Blank = Str'First
+         else
+            Only_Space_Ghost (Str, Str'First, Str'First)
+            and then Non_Blank = Str'First + 1);
+      Minus : constant Boolean := Str (Non_Blank) = '-';
+      Fst_Num   : constant Positive :=
+        (if Minus then Non_Blank + 1 else Non_Blank);
+      pragma Assert (Fst_Num = Str'First + 1);
+      Uval      : constant Uns :=
+        Scan_Raw_Unsigned_Ghost (Str, Fst_Num, Str'Last);
+
+      procedure Unique_Int_Of_Uns (Val1, Val2 : Int)
+      with
+        Pre  => Uns_Is_Valid_Int (Minus, Uval)
+          and then Is_Int_Of_Uns (Minus, Uval, Val1)
+          and then Is_Int_Of_Uns (Minus, Uval, Val2),
+        Post => Val1 = Val2;
+      --  Local proof of the unicity of the signed representation
+
+      procedure Unique_Int_Of_Uns (Val1, Val2 : Int) is null;
+
+   --  Start of processing for Prove_Scan_Only_Decimal_Ghost
+
+   begin
+      pragma Assert (Minus = (Val < 0));
+      pragma Assert (Uval = Abs_Uns_Of_Int (Val));
+      pragma Assert (if Minus then Uval <= Uns (Int'Last) + 1
+                     else Uval <= Uns (Int'Last));
+      pragma Assert (Uns_Is_Valid_Int (Minus, Uval));
+      pragma Assert
+        (if Minus and then Uval = Uns (Int'Last) + 1 then Val = Int'First
+         elsif Minus then Val = -(Int (Uval))
+         else Val = Int (Uval));
+      pragma Assert (Is_Int_Of_Uns (Minus, Uval, Val));
+      pragma Assert
+        (Is_Raw_Unsigned_Format_Ghost (Str (Fst_Num .. Str'Last)));
+      pragma Assert
+        (not Raw_Unsigned_Overflows_Ghost (Str, Fst_Num, Str'Last));
+      pragma Assert (Only_Space_Ghost
+        (Str, Raw_Unsigned_Last_Ghost (Str, Fst_Num, Str'Last), Str'Last));
+      pragma Assert (Is_Integer_Ghost (Str));
+      pragma Assert (Is_Value_Integer_Ghost (Str, Val));
+      Unique_Int_Of_Uns (Val, Value_Integer (Str));
+   end Prove_Scan_Only_Decimal_Ghost;
+
    ------------------
    -- Scan_Integer --
    ------------------

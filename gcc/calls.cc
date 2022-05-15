@@ -55,6 +55,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "hash-traits.h"
 #include "attribs.h"
 #include "builtins.h"
+#include "gimple-iterator.h"
 #include "gimple-fold.h"
 #include "attr-fnspec.h"
 #include "value-query.h"

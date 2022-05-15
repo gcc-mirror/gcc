@@ -1833,7 +1833,7 @@ package body Sem_Aggr is
                  or else No (Iterator_Specification (Assoc))
                then
                   Error_Msg_N ("mixed iterated component association"
-                   & " (RM 4.4.3 (17.1/5))",
+                   & " (RM 4.3.3 (17.1/5))",
                       Assoc);
                   return False;
                end if;
@@ -1852,7 +1852,7 @@ package body Sem_Aggr is
                  and then Present (Iterator_Specification (Assoc))
                then
                   Error_Msg_N ("mixed iterated component association"
-                    & " (RM 4.4.3 (17.1/5))",
+                    & " (RM 4.3.3 (17.1/5))",
                       Assoc);
                   return False;
                end if;
@@ -1860,9 +1860,6 @@ package body Sem_Aggr is
                Next (Assoc);
             end loop;
 
-            while Present (Assoc) loop
-               Next (Assoc);
-            end loop;
          end if;
 
          Assoc := First (Component_Associations (N));

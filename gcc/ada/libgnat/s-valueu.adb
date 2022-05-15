@@ -590,6 +590,10 @@ package body System.Value_U is
                if Str (P) = Base_Char then
                   Ptr.all := P + 1;
                   pragma Assert (Ptr.all = Last_Num_Based + 2);
+                  pragma Assert
+                    (if not Overflow then
+                       Based_Val = Scan_Based_Number_Ghost
+                         (Str, P, Last_Num_Based, Base, Uval));
                   Lemma_End_Of_Scan (Str, P, Last_Num_Based, Base, Uval);
                   pragma Assert (if not Overflow then Uval = Based_Val.Value);
                   exit;

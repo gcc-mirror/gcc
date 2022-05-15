@@ -3707,7 +3707,8 @@ package body Exp_Ch9 is
 
       Analyze_Statements (Bod_Stmts);
 
-      Set_Scope (Entity (Identifier (First (Bod_Stmts))), Bod_Id);
+      Set_Scope (Entity (Identifier (First (Bod_Stmts))),
+                 Protected_Body_Subprogram (Ent));
 
       Reset_Scopes_To
         (First (Bod_Stmts), Entity (Identifier (First (Bod_Stmts))));

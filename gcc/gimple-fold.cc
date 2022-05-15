@@ -37,9 +37,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "expr.h"
 #include "stor-layout.h"
 #include "dumpfile.h"
+#include "gimple-iterator.h"
 #include "gimple-fold.h"
 #include "gimplify.h"
-#include "gimple-iterator.h"
 #include "tree-into-ssa.h"
 #include "tree-dfa.h"
 #include "tree-object-size.h"
@@ -8669,14 +8669,23 @@ gimple_build_valueize (tree op)
 
 /* Build the expression CODE OP0 of type TYPE with location LOC,
    simplifying it first if possible.  Returns the built
-   expression value and appends statements possibly defining it
-   to SEQ.  */
+   expression value and inserts statements possibly defining it
+   before GSI if BEFORE is true or after GSI if false and advance
+   the iterator accordingly.
+   If gsi refers to a basic block simplifying is allowed to look
+   at all SSA defs while when it does not it is restricted to
+   SSA defs that are not associated with a basic block yet,
+   indicating they belong to the currently building sequence.  */
 
 tree
-gimple_build (gimple_seq *seq, location_t loc,
-	      enum tree_code code, tree type, tree op0)
+gimple_build (gimple_stmt_iterator *gsi,
+	      bool before, gsi_iterator_update update,
+	      location_t loc, enum tree_code code, tree type, tree op0)
 {
-  tree res = gimple_simplify (code, type, op0, seq, gimple_build_valueize);
+  gimple_seq seq = NULL;
+  tree res
+    = gimple_simplify (code, type, op0, &seq,
+		       gsi->bb ? follow_all_ssa_edges : gimple_build_valueize);
   if (!res)
     {
       res = create_tmp_reg_or_ssa_name (type);
@@ -8688,7 +8697,21 @@ gimple_build (gimple_seq *seq, location_t loc,
       else
 	stmt = gimple_build_assign (res, code, op0);
       gimple_set_location (stmt, loc);
-      gimple_seq_add_stmt_without_update (seq, stmt);
+      gimple_seq_add_stmt_without_update (&seq, stmt);
+    }
+  if (before)
+    {
+      if (gsi->bb)
+	gsi_insert_seq_before (gsi, seq, update);
+      else
+	gsi_insert_seq_before_without_update (gsi, seq, update);
+    }
+  else
+    {
+      if (gsi->bb)
+	gsi_insert_seq_after (gsi, seq, update);
+      else
+	gsi_insert_seq_after_without_update (gsi, seq, update);
     }
   return res;
 }
@@ -8699,16 +8722,35 @@ gimple_build (gimple_seq *seq, location_t loc,
    to SEQ.  */
 
 tree
-gimple_build (gimple_seq *seq, location_t loc,
-	      enum tree_code code, tree type, tree op0, tree op1)
+gimple_build (gimple_stmt_iterator *gsi,
+	      bool before, gsi_iterator_update update,
+	      location_t loc, enum tree_code code, tree type,
+	      tree op0, tree op1)
 {
-  tree res = gimple_simplify (code, type, op0, op1, seq, gimple_build_valueize);
+  gimple_seq seq = NULL;
+  tree res
+    = gimple_simplify (code, type, op0, op1, &seq,
+		       gsi->bb ? follow_all_ssa_edges : gimple_build_valueize);
   if (!res)
     {
       res = create_tmp_reg_or_ssa_name (type);
       gimple *stmt = gimple_build_assign (res, code, op0, op1);
       gimple_set_location (stmt, loc);
-      gimple_seq_add_stmt_without_update (seq, stmt);
+      gimple_seq_add_stmt_without_update (&seq, stmt);
+    }
+  if (before)
+    {
+      if (gsi->bb)
+	gsi_insert_seq_before (gsi, seq, update);
+      else
+	gsi_insert_seq_before_without_update (gsi, seq, update);
+    }
+  else
+    {
+      if (gsi->bb)
+	gsi_insert_seq_after (gsi, seq, update);
+      else
+	gsi_insert_seq_after_without_update (gsi, seq, update);
     }
   return res;
 }
@@ -8719,11 +8761,16 @@ gimple_build (gimple_seq *seq, location_t loc,
    to SEQ.  */
 
 tree
-gimple_build (gimple_seq *seq, location_t loc,
-	      enum tree_code code, tree type, tree op0, tree op1, tree op2)
+gimple_build (gimple_stmt_iterator *gsi,
+	      bool before, gsi_iterator_update update,
+	      location_t loc, enum tree_code code, tree type,
+	      tree op0, tree op1, tree op2)
 {
-  tree res = gimple_simplify (code, type, op0, op1, op2,
-			      seq, gimple_build_valueize);
+
+  gimple_seq seq = NULL;
+  tree res
+    = gimple_simplify (code, type, op0, op1, op2, &seq,
+		       gsi->bb ? follow_all_ssa_edges : gimple_build_valueize);
   if (!res)
     {
       res = create_tmp_reg_or_ssa_name (type);
@@ -8734,7 +8781,21 @@ gimple_build (gimple_seq *seq, location_t loc,
       else
 	stmt = gimple_build_assign (res, code, op0, op1, op2);
       gimple_set_location (stmt, loc);
-      gimple_seq_add_stmt_without_update (seq, stmt);
+      gimple_seq_add_stmt_without_update (&seq, stmt);
+    }
+  if (before)
+    {
+      if (gsi->bb)
+	gsi_insert_seq_before (gsi, seq, update);
+      else
+	gsi_insert_seq_before_without_update (gsi, seq, update);
+    }
+  else
+    {
+      if (gsi->bb)
+	gsi_insert_seq_after (gsi, seq, update);
+      else
+	gsi_insert_seq_after_without_update (gsi, seq, update);
     }
   return res;
 }

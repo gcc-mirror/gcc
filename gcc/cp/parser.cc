@@ -16189,6 +16189,8 @@ cp_parser_linkage_specification (cp_parser* parser, tree prefix_attr)
     linkage = get_identifier (TREE_STRING_POINTER (linkage));
 
   /* We're now using the new linkage.  */
+  unsigned saved_module = module_kind;
+  module_kind &= ~MK_ATTACH;
   push_lang_context (linkage);
 
   /* Preserve the location of the innermost linkage specification,
@@ -16235,6 +16237,7 @@ cp_parser_linkage_specification (cp_parser* parser, tree prefix_attr)
 
   /* We're done with the linkage-specification.  */
   pop_lang_context ();
+  module_kind = saved_module;
 
   /* Restore location of parent linkage specification, if any.  */
   parser->innermost_linkage_specification_location = saved_location;

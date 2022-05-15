@@ -33,6 +33,7 @@
 #include "langhooks.h"
 #include "stringpool.h"
 #include "attribs.h"
+#include "gimple-iterator.h"
 #include "gimple-fold.h"
 #include "gimple-ssa.h"
 #include "intl.h"

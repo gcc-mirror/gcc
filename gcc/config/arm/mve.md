@@ -10462,7 +10462,7 @@
 )
 
 (define_insn "*movmisalign<mode>_mve_store"
-  [(set (match_operand:MVE_VLD_ST 0 "neon_permissive_struct_operand"	     "=Ux")
+  [(set (match_operand:MVE_VLD_ST 0 "mve_memory_operand"	     "=Ux")
 	(unspec:MVE_VLD_ST [(match_operand:MVE_VLD_ST 1 "s_register_operand" " w")]
 	 UNSPEC_MISALIGNED_ACCESS))]
   "((TARGET_HAVE_MVE && VALID_MVE_SI_MODE (<MODE>mode))
@@ -10475,7 +10475,7 @@
 
 (define_insn "*movmisalign<mode>_mve_load"
   [(set (match_operand:MVE_VLD_ST 0 "s_register_operand"				 "=w")
-	(unspec:MVE_VLD_ST [(match_operand:MVE_VLD_ST 1 "neon_permissive_struct_operand" " Ux")]
+	(unspec:MVE_VLD_ST [(match_operand:MVE_VLD_ST 1 "mve_memory_operand" " Ux")]
 	 UNSPEC_MISALIGNED_ACCESS))]
   "((TARGET_HAVE_MVE && VALID_MVE_SI_MODE (<MODE>mode))
     || (TARGET_HAVE_MVE_FLOAT && VALID_MVE_SF_MODE (<MODE>mode)))

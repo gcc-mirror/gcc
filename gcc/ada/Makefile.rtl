@@ -126,6 +126,8 @@ GNATRTL_NONTASKING_OBJS= \
   a-chlat9$(objext) \
   a-chtgbk$(objext) \
   a-chtgbo$(objext) \
+  a-chtgfk$(objext) \
+  a-chtgfo$(objext) \
   a-chtgke$(objext) \
   a-chtgop$(objext) \
   a-chzla1$(objext) \

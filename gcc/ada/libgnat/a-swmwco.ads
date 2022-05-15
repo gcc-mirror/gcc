@@ -66,27 +66,27 @@ private
    subtype WC is Wide_Character;
 
    Control_Ranges           : aliased constant Wide_Character_Ranges :=
-     [ (W.NUL, W.US),
-       (W.DEL, W.APC)];
+     [(W.NUL, W.US),
+      (W.DEL, W.APC)];
 
    Control_Set              : constant Wide_Character_Set :=
      (AF.Controlled with
       Control_Ranges'Unrestricted_Access);
 
    Graphic_Ranges           : aliased constant Wide_Character_Ranges :=
-     [ (W.Space,      W.Tilde),
-       (WC'Val (256), WC'Last)];
+     [(W.Space,      W.Tilde),
+      (WC'Val (256), WC'Last)];
 
    Graphic_Set              : constant Wide_Character_Set :=
      (AF.Controlled with
       Graphic_Ranges'Unrestricted_Access);
 
    Letter_Ranges            : aliased constant Wide_Character_Ranges :=
-     [ ('A',                   'Z'),
-       (W.LC_A,                W.LC_Z),
-       (W.UC_A_Grave,          W.UC_O_Diaeresis),
-       (W.UC_O_Oblique_Stroke, W.LC_O_Diaeresis),
-       (W.LC_O_Oblique_Stroke, W.LC_Y_Diaeresis)];
+     [('A',                   'Z'),
+      (W.LC_A,                W.LC_Z),
+      (W.UC_A_Grave,          W.UC_O_Diaeresis),
+      (W.UC_O_Oblique_Stroke, W.LC_O_Diaeresis),
+      (W.LC_O_Oblique_Stroke, W.LC_Y_Diaeresis)];
 
    Letter_Set               : constant Wide_Character_Set :=
      (AF.Controlled with
@@ -126,7 +126,7 @@ private
       Basic_Ranges'Unrestricted_Access);
 
    Decimal_Digit_Ranges     : aliased constant Wide_Character_Ranges :=
-     [ ('0', '9')];
+     [('0', '9')];
 
    Decimal_Digit_Set        : constant Wide_Character_Set :=
      (AF.Controlled with
@@ -167,14 +167,14 @@ private
       Special_Graphic_Ranges'Unrestricted_Access);
 
    ISO_646_Ranges           : aliased constant Wide_Character_Ranges :=
-     [ (W.NUL, W.DEL)];
+     [(W.NUL, W.DEL)];
 
    ISO_646_Set              : constant Wide_Character_Set :=
      (AF.Controlled with
       ISO_646_Ranges'Unrestricted_Access);
 
    Character_Ranges         : aliased constant Wide_Character_Ranges :=
-     [ (W.NUL, WC'Val (255))];
+     [(W.NUL, WC'Val (255))];
 
    Character_Set            : constant Wide_Character_Set :=
      (AF.Controlled with

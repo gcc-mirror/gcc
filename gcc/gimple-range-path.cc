@@ -740,10 +740,10 @@ relation_kind
 jt_fur_source::query_relation (tree op1, tree op2)
 {
   if (!m_oracle)
-    return VREL_NONE;
+    return VREL_VARYING;
 
   if (TREE_CODE (op1) != SSA_NAME || TREE_CODE (op2) != SSA_NAME)
-    return VREL_NONE;
+    return VREL_VARYING;
 
   return m_oracle->query_relation (m_entry, op1, op2);
 }
@@ -799,7 +799,7 @@ path_range_query::maybe_register_phi_relation (gphi *phi, edge e)
     fprintf (dump_file, "maybe_register_phi_relation in bb%d:", bb->index);
 
   get_path_oracle ()->killing_def (result);
-  m_oracle->register_relation (entry_bb (), EQ_EXPR, arg, result);
+  m_oracle->register_relation (entry_bb (), VREL_EQ, arg, result);
 }
 
 // Compute relations for each PHI in BB.  For example:

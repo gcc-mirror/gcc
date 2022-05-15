@@ -605,14 +605,14 @@ package body Exp_Prag is
             Get_Name_String (Chars (External));
          end if;
 
-         Set_All_Upper_Case;
+         Set_Casing (All_Upper_Case);
 
          Psect :=
            Make_String_Literal (Eloc, Strval => String_From_Name_Buffer);
 
       else
          Get_Name_String (Chars (Internal));
-         Set_All_Upper_Case;
+         Set_Casing (All_Upper_Case);
          Psect :=
            Make_String_Literal (Iloc, Strval => String_From_Name_Buffer);
       end if;

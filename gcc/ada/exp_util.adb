@@ -328,6 +328,72 @@ package body Exp_Util is
    ----------------------
 
    procedure Adjust_Condition (N : Node_Id) is
+
+      function Is_Hardbool_Type (T : Entity_Id) return Boolean;
+      --  Return True iff T is a type annotated with the
+      --  Machine_Attribute pragma "hardbool".
+
+      ----------------------
+      -- Is_Hardbool_Type --
+      ----------------------
+
+      function Is_Hardbool_Type (T : Entity_Id) return Boolean is
+
+         function Find_Hardbool_Pragma
+           (Id : Entity_Id) return Node_Id;
+         --  Return a Rep_Item associated with entity Id that
+         --  corresponds to the Hardbool Machine_Attribute pragma, if
+         --  any, or Empty otherwise.
+
+         function Pragma_Arg_To_String (Item : Node_Id) return String is
+            (To_String (Strval (Expr_Value_S (Item))));
+         --  Return the pragma argument Item as a String
+
+         function Hardbool_Pragma_P (Item : Node_Id) return Boolean is
+            (Nkind (Item) = N_Pragma
+               and then
+             Pragma_Name (Item) = Name_Machine_Attribute
+               and then
+             Pragma_Arg_To_String
+               (Get_Pragma_Arg
+                  (Next (First (Pragma_Argument_Associations (Item)))))
+               = "hardbool");
+         --  Return True iff representation Item is a "hardbool"
+         --  Machine_Attribute pragma.
+
+         --------------------------
+         -- Find_Hardbool_Pragma --
+         --------------------------
+
+         function Find_Hardbool_Pragma
+           (Id : Entity_Id) return Node_Id
+         is
+            Item : Node_Id;
+
+         begin
+            if not Has_Gigi_Rep_Item (Id) then
+               return Empty;
+            end if;
+
+            Item := First_Rep_Item (Id);
+            while Present (Item) loop
+               if Hardbool_Pragma_P (Item) then
+                  return Item;
+               end if;
+               Item := Next_Rep_Item (Item);
+            end loop;
+
+            return Empty;
+         end Find_Hardbool_Pragma;
+
+      --  Start of processing for Is_Hardbool_Type
+
+      begin
+         return Present (Find_Hardbool_Pragma (T));
+      end Is_Hardbool_Type;
+
+   --  Start of processing for Adjust_Condition
+
    begin
       if No (N) then
          return;
@@ -347,7 +413,10 @@ package body Exp_Util is
 
          --  Apply validity checking if needed
 
-         if Validity_Checks_On and Validity_Check_Tests then
+         if Validity_Checks_On
+           and then
+             (Validity_Check_Tests or else Is_Hardbool_Type (T))
+         then
             Ensure_Valid (N);
          end if;
 
@@ -4308,6 +4377,12 @@ package body Exp_Util is
                    and then
                  Nkind (Expression (Parent (Id_Ref))) = N_Allocator;
 
+      Component_Suffix_Index : constant Int :=
+        (if In_Init_Proc then -1 else 0);
+      --  If an init proc calls Build_Task_Image_Decls twice for its
+      --  _Parent component (to split early/late initialization), we don't
+      --  want two decls with the same name. Hence, the -1 suffix.
+
    begin
       --  If Discard_Names or No_Implicit_Heap_Allocations are in effect,
       --  generate a dummy declaration only.
@@ -4349,7 +4424,8 @@ package body Exp_Util is
          elsif Nkind (Id_Ref) = N_Selected_Component then
             T_Id :=
               Make_Defining_Identifier (Loc,
-                New_External_Name (Chars (Selector_Name (Id_Ref)), 'T'));
+                New_External_Name (Chars (Selector_Name (Id_Ref)), 'T',
+                  Suffix_Index => Component_Suffix_Index));
             Fun := Build_Task_Record_Image (Loc, Id_Ref, Is_Dyn);
 
          elsif Nkind (Id_Ref) = N_Indexed_Component then
@@ -6630,7 +6706,7 @@ package body Exp_Util is
          --  Generates the entity name in upper case
 
          Get_Decoded_Name_String (Chars (Ent));
-         Set_All_Upper_Case;
+         Set_Casing (All_Upper_Case);
          Store_String_Chars (Name_Buffer (1 .. Name_Len));
          return;
       end Internal_Full_Qualified_Name;
@@ -7476,7 +7552,7 @@ package body Exp_Util is
             when N_Elsif_Part
                | N_Iteration_Scheme
             =>
-               if N = Condition (P) then
+               if Present (Condition (P)) and then N = Condition (P) then
                   if Present (Condition_Actions (P)) then
                      Insert_List_After_And_Analyze
                        (Last (Condition_Actions (P)), Ins_Actions);

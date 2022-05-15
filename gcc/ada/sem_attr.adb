@@ -12500,6 +12500,28 @@ package body Sem_Attr is
                when others => null;
             end case;
 
+            --  Ensure that attribute expressions are resolved at this stage;
+            --  required for preanalyzed references to discriminants since
+            --  their resolution (and expansion) will take care of updating
+            --  their Entity attribute to reference their discriminal.
+
+            if Expander_Active
+              and then Present (Expressions (N))
+            then
+               declare
+                  Expr : Node_Id := First (Expressions (N));
+
+               begin
+                  while Present (Expr) loop
+                     if not Analyzed (Expr) then
+                        Resolve (Expr, Etype (Expr));
+                     end if;
+
+                     Next (Expr);
+                  end loop;
+               end;
+            end if;
+
             --  If the prefix of the attribute is a class-wide type then it
             --  will be expanded into a dispatching call to a predefined
             --  primitive. Therefore we must check for potential violation

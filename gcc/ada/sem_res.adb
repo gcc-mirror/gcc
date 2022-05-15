@@ -3868,8 +3868,13 @@ package body Sem_Res is
                when N_Identifier | N_Expanded_Name =>
                   Id := Entity (N);
 
-                  if Present (Id)
-                    and then Is_Object (Id)
+                  --  Identifiers of components and discriminants are not names
+                  --  in the sense of Ada RM 4.1. They can only occur as a
+                  --  selector_name in selected_component or as a choice in
+                  --  component_association.
+
+                  if Is_Object (Id)
+                    and then Ekind (Id) not in E_Component | E_Discriminant
                     and then Is_Effectively_Volatile_For_Reading (Id)
                     and then
                       not Is_OK_Volatile_Context (Context       => Parent (N),
@@ -4163,12 +4168,7 @@ package body Sem_Res is
             --  marked with Any_Type. Since the operation has been resolved to
             --  the user-defined operator, that is irrelevant, so reset Etype.
 
-            if Nkind (Original_Node (N)) in N_Op_Eq
-                                          | N_Op_Ge
-                                          | N_Op_Gt
-                                          | N_Op_Le
-                                          | N_Op_Lt
-                                          | N_Op_Ne
+            if Nkind (Original_Node (N)) in N_Op_Compare
               and then not Is_Boolean_Type (Etype (N))
             then
                Set_Etype (A, Etype (F));

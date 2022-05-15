@@ -36,7 +36,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimplify.h"
 #include "langhooks.h"
 #include "bitmap.h"
-#include "gimple-fold.h"
 
 
 /* Complete a #pragma oacc wait construct.  LOC is the location of

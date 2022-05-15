@@ -219,7 +219,7 @@ typedef enum {
 } Ada_Version_Type;
 
 typedef enum {
-  Front_End_SJLJ, Back_End_ZCX, Back_End_SJLJ
+  Back_End_ZCX, Back_End_SJLJ
 } Exception_Mechanism_Type;
 
 extern Ada_Version_Type Ada_Version;
@@ -238,13 +238,9 @@ extern Boolean Suppress_Checks;
 
 #define ZCX_Exceptions		opt__zcx_exceptions
 #define SJLJ_Exceptions		opt__sjlj_exceptions
-#define Front_End_Exceptions	opt__front_end_exceptions
-#define Back_End_Exceptions	opt__back_end_exceptions
 
 extern Boolean ZCX_Exceptions		(void);
 extern Boolean SJLJ_Exceptions		(void);
-extern Boolean Front_End_Exceptions	(void);
-extern Boolean Back_End_Exceptions	(void);
 
 /* restrict: */
 

@@ -31,7 +31,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "builtins.h"
 #include "tree-inline.h"
 #include "ubsan.h"
-#include "gimple-fold.h"
 #include "timevar.h"
 #include "fold-const-call.h"
 #include "stor-layout.h"

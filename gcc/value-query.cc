@@ -457,7 +457,7 @@ range_query::query_relation (gimple *s, tree ssa1, tree ssa2, bool get_range)
 {
   int_range_max tmp;
   if (!m_oracle || TREE_CODE (ssa1) != SSA_NAME || TREE_CODE (ssa2) != SSA_NAME)
-    return VREL_NONE;
+    return VREL_VARYING;
 
   // Ensure ssa1 and ssa2 have both been evaluated.
   if (get_range)
@@ -478,7 +478,7 @@ range_query::query_relation (edge e, tree ssa1, tree ssa2, bool get_range)
   basic_block bb;
   int_range_max tmp;
   if (!m_oracle || TREE_CODE (ssa1) != SSA_NAME || TREE_CODE (ssa2) != SSA_NAME)
-    return VREL_NONE;
+    return VREL_VARYING;
 
   // Use destination block if it has a single predecessor, and this picks
   // up any relation on the edge.

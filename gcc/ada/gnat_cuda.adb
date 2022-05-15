@@ -118,11 +118,6 @@ package body GNAT_CUDA is
    --  are declared within package body Pack_Body. Returns No_Elist if Pack_Id
    --  does not contain such entities.
 
-   function Get_CUDA_Kernels (Pack_Id : Entity_Id) return Elist_Id;
-   --  Returns an Elist of all procedures marked with pragma CUDA_Global that
-   --  are declared within package body Pack_Body. Returns No_Elist if Pack_Id
-   --  does not contain such procedures.
-
    procedure Remove_CUDA_Device_Entities (Pack_Id : Entity_Id);
    --  Removes all entities marked with the CUDA_Device pragma from package
    --  Pack_Id. Must only be called when compiling for the host.

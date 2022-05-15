@@ -327,9 +327,8 @@ package body Sem_Util is
 
             elsif Nkind (Node_Par) in N_Extended_Return_Statement
                                     | N_Simple_Return_Statement
-              and then Ekind (Current_Scope) = E_Function
             then
-               return Scope_Depth (Current_Scope);
+               return Scope_Depth (Enclosing_Subprogram (Node_Par));
 
             --  Statements are counted as masters
 
@@ -4813,6 +4812,9 @@ package body Sem_Util is
       --  and post-state. Prag is a [refined] postcondition or a contract-cases
       --  pragma. Result_Seen is set when the pragma mentions attribute 'Result
 
+      function Is_Trivial_Boolean (N : Node_Id) return Boolean;
+      --  Determine whether source node N denotes "True" or "False"
+
       -------------------------------------------
       -- Check_Result_And_Post_State_In_Pragma --
       -------------------------------------------
@@ -4835,9 +4837,6 @@ package body Sem_Util is
 
          function Is_Function_Result (N : Node_Id) return Traverse_Result;
          --  Attempt to find attribute 'Result in a subtree denoted by N
-
-         function Is_Trivial_Boolean (N : Node_Id) return Boolean;
-         --  Determine whether source node N denotes "True" or "False"
 
          function Mentions_Post_State (N : Node_Id) return Boolean;
          --  Determine whether a subtree denoted by N mentions any construct
@@ -5089,20 +5088,6 @@ package body Sem_Util is
             end if;
          end Is_Function_Result;
 
-         ------------------------
-         -- Is_Trivial_Boolean --
-         ------------------------
-
-         function Is_Trivial_Boolean (N : Node_Id) return Boolean is
-         begin
-            return
-              Comes_From_Source (N)
-                and then Is_Entity_Name (N)
-                and then (Entity (N) = Standard_True
-                            or else
-                          Entity (N) = Standard_False);
-         end Is_Trivial_Boolean;
-
          -------------------------
          -- Mentions_Post_State --
          -------------------------
@@ -5201,6 +5186,20 @@ package body Sem_Util is
             Check_Expression (Expr);
          end if;
       end Check_Result_And_Post_State_In_Pragma;
+
+      ------------------------
+      -- Is_Trivial_Boolean --
+      ------------------------
+
+      function Is_Trivial_Boolean (N : Node_Id) return Boolean is
+      begin
+         return
+           Comes_From_Source (N)
+             and then Is_Entity_Name (N)
+             and then (Entity (N) = Standard_True
+                         or else
+                       Entity (N) = Standard_False);
+      end Is_Trivial_Boolean;
 
       --  Local variables
 
@@ -5305,10 +5304,14 @@ package body Sem_Util is
       elsif Present (Case_Prag) and then not Seen_In_Case then
          Error_Msg_N ("contract cases do not mention result?.t?", Case_Prag);
 
-      --  The function has postconditions only and they do not mention
-      --  attribute 'Result.
+      --  The function has non-trivial postconditions only and they do not
+      --  mention attribute 'Result.
 
-      elsif Present (Post_Prag) and then not Seen_In_Post then
+      elsif Present (Post_Prag)
+        and then not Seen_In_Post
+        and then not Is_Trivial_Boolean
+          (Get_Pragma_Arg (First (Pragma_Argument_Associations (Post_Prag))))
+      then
          Error_Msg_N
            ("postcondition does not mention function result?.t?", Post_Prag);
       end if;
@@ -8283,10 +8286,32 @@ package body Sem_Util is
    -- Enclosing_Package --
    -----------------------
 
-   function Enclosing_Package (E : Entity_Id) return Entity_Id is
-      Dynamic_Scope : constant Entity_Id := Enclosing_Dynamic_Scope (E);
+   function Enclosing_Package (N : Node_Or_Entity_Id) return Entity_Id is
+      Dynamic_Scope : Entity_Id;
 
    begin
+      --  Obtain the enclosing scope when N is a Node_Id - taking care to
+      --  handle the case when the enclosing scope is already a package.
+
+      if Nkind (N) not in N_Entity then
+         declare
+            Encl_Scop : constant Entity_Id := Find_Enclosing_Scope (N);
+         begin
+            if No (Encl_Scop) then
+               return Empty;
+            elsif Ekind (Encl_Scop) in
+                    E_Generic_Package | E_Package | E_Package_Body
+            then
+               return Encl_Scop;
+            end if;
+
+            return Enclosing_Package (Encl_Scop);
+         end;
+      end if;
+
+      --  When N is already an Entity_Id proceed
+
+      Dynamic_Scope := Enclosing_Dynamic_Scope (N);
       if Dynamic_Scope = Standard_Standard then
          return Standard_Standard;
 
@@ -8330,10 +8355,29 @@ package body Sem_Util is
    -- Enclosing_Subprogram --
    --------------------------
 
-   function Enclosing_Subprogram (E : Entity_Id) return Entity_Id is
-      Dyn_Scop : constant Entity_Id := Enclosing_Dynamic_Scope (E);
+   function Enclosing_Subprogram (N : Node_Or_Entity_Id) return Entity_Id is
+      Dyn_Scop  : Entity_Id;
+      Encl_Scop : Entity_Id;
 
    begin
+      --  Obtain the enclosing scope when N is a Node_Id - taking care to
+      --  handle the case when the enclosing scope is already a subprogram.
+
+      if Nkind (N) not in N_Entity then
+         Encl_Scop := Find_Enclosing_Scope (N);
+
+         if No (Encl_Scop) then
+            return Empty;
+         elsif Ekind (Encl_Scop) in Subprogram_Kind then
+            return Encl_Scop;
+         end if;
+
+         return Enclosing_Subprogram (Encl_Scop);
+      end if;
+
+      --  When N is already an Entity_Id proceed
+
+      Dyn_Scop := Enclosing_Dynamic_Scope (N);
       if Dyn_Scop = Standard_Standard then
          return Empty;
 
@@ -11390,21 +11434,23 @@ package body Sem_Util is
       end if;
    end Get_Iterable_Type_Primitive;
 
-   ----------------------------------
-   -- Get_Library_Unit_Name_String --
-   ----------------------------------
+   ---------------------------
+   -- Get_Library_Unit_Name --
+   ---------------------------
 
-   procedure Get_Library_Unit_Name_String (Decl_Node : Node_Id) is
+   function Get_Library_Unit_Name (Decl_Node : Node_Id) return String_Id is
       Unit_Name_Id : constant Unit_Name_Type := Get_Unit_Name (Decl_Node);
-
+      Buf : Bounded_String;
    begin
-      Get_Unit_Name_String (Unit_Name_Id);
+      Get_Unit_Name_String (Buf, Unit_Name_Id);
 
-      --  Remove seven last character (" (spec)" or " (body)")
+      --  Remove the last seven characters (" (spec)" or " (body)")
 
-      Name_Len := Name_Len - 7;
-      pragma Assert (Name_Buffer (Name_Len + 1) = ' ');
-   end Get_Library_Unit_Name_String;
+      Buf.Length := Buf.Length - 7;
+      pragma Assert (Buf.Chars (Buf.Length + 1) = ' ');
+
+      return String_From_Name_Buffer (Buf);
+   end Get_Library_Unit_Name;
 
    --------------------------
    -- Get_Max_Queue_Length --
@@ -14183,9 +14229,7 @@ package body Sem_Util is
 
    begin
       pragma Assert (Relaxed_RM_Semantics);
-      pragma Assert
-        (Nkind (N) in
-           N_Null | N_Op_Eq | N_Op_Ge | N_Op_Gt | N_Op_Le | N_Op_Lt | N_Op_Ne);
+      pragma Assert (Nkind (N) in N_Null | N_Op_Compare);
 
       if Nkind (N) = N_Null then
          Rewrite (N, New_Occurrence_Of (RTE (RE_Null_Address), Sloc (N)));
@@ -20966,37 +21010,6 @@ package body Sem_Util is
       return False;
    end Is_Reversible_Iterator;
 
-   ----------------------
-   -- Is_Selector_Name --
-   ----------------------
-
-   function Is_Selector_Name (N : Node_Id) return Boolean is
-   begin
-      if not Is_List_Member (N) then
-         declare
-            P : constant Node_Id := Parent (N);
-         begin
-            return Nkind (P) in N_Expanded_Name
-                              | N_Generic_Association
-                              | N_Parameter_Association
-                              | N_Selected_Component
-              and then Selector_Name (P) = N;
-         end;
-
-      else
-         declare
-            L : constant List_Id := List_Containing (N);
-            P : constant Node_Id := Parent (L);
-         begin
-            return (Nkind (P) = N_Discriminant_Association
-                     and then Selector_Names (P) = L)
-              or else
-                   (Nkind (P) = N_Component_Association
-                     and then Choices (P) = L);
-         end;
-      end if;
-   end Is_Selector_Name;
-
    ---------------------------------
    -- Is_Single_Concurrent_Object --
    ---------------------------------
@@ -23096,8 +23109,8 @@ package body Sem_Util is
          if not Is_Limited_Type (Comp_Typ) then
             return False;
 
-            --  Only limited types can have access discriminants with
-            --  defaults.
+         --  Only limited types can have access discriminants with
+         --  defaults.
 
          elsif Has_Unconstrained_Access_Discriminants (Comp_Typ) then
             return True;
@@ -23127,16 +23140,18 @@ package body Sem_Util is
          return False;
       end Has_Unconstrained_Access_Discriminant_Component;
 
-      Disable_Coextension_Cases : constant Boolean := True;
-      --  Flag used to temporarily disable a "True" result for types with
-      --  access discriminants and related coextension cases.
+      Disable_Tagged_Cases : constant Boolean := True;
+      --  Flag used to temporarily disable a "True" result for tagged types.
+      --  See comments further below for details.
 
    --  Start of processing for Needs_Result_Accessibility_Level
 
    begin
-      --  False if completion unavailable (how does this happen???)
+      --  False if completion unavailable, which can happen when we are
+      --  analyzing an abstract subprogram or if the subprogram has
+      --  delayed freezing.
 
-      if not Present (Func_Typ) then
+      if No (Func_Typ) then
          return False;
 
       --  False if not a function, also handle enum-lit renames case
@@ -23169,14 +23184,6 @@ package body Sem_Util is
       elsif Ekind (Func_Typ) = E_Anonymous_Access_Type then
          return True;
 
-      --  The following cases are related to coextensions and do not fully
-      --  cover everything mentioned in RM 3.10.2 (12) ???
-
-      --  Temporarily disabled ???
-
-      elsif Disable_Coextension_Cases then
-         return False;
-
       --  In the case of, say, a null tagged record result type, the need for
       --  this extra parameter might not be obvious so this function returns
       --  True for all tagged types for compatibility reasons.
@@ -23193,8 +23200,11 @@ package body Sem_Util is
       --  solve these issues by introducing wrappers, but that is not the
       --  approach that was chosen.
 
+      --  Note: Despite the reasoning noted above, the extra accessibility
+      --  parameter for tagged types is disabled for performance reasons.
+
       elsif Is_Tagged_Type (Func_Typ) then
-         return True;
+         return not Disable_Tagged_Cases;
 
       elsif Has_Unconstrained_Access_Discriminants (Func_Typ) then
          return True;
@@ -26104,9 +26114,7 @@ package body Sem_Util is
       if Nkind (N) = N_Null then
          return Present (Typ) and then Is_Descendant_Of_Address (Typ);
 
-      elsif Nkind (N) in
-              N_Op_Eq | N_Op_Ge | N_Op_Gt | N_Op_Le | N_Op_Lt | N_Op_Ne
-      then
+      elsif Nkind (N) in N_Op_Compare then
          declare
             L : constant Node_Id := Left_Opnd (N);
             R : constant Node_Id := Right_Opnd (N);
@@ -30366,6 +30374,9 @@ package body Sem_Util is
       Found_Type : constant Entity_Id := First_Subtype (Etype (Expr));
       Expec_Type : constant Entity_Id := First_Subtype (Expected_Type);
 
+      Err_Msg_Exp_Typ : Entity_Id := Expected_Type;
+      --  Type entity used when printing errors concerning the expected type
+
       Matching_Field : Entity_Id;
       --  Entity to give a more precise suggestion on how to write a one-
       --  element positional aggregate.
@@ -30523,6 +30534,15 @@ package body Sem_Util is
          end if;
       end if;
 
+      --  Avoid printing internally generated subtypes in error messages and
+      --  instead use the corresponding first subtype in such cases.
+
+      if not Comes_From_Source (Err_Msg_Exp_Typ)
+        or else not Comes_From_Source (Declaration_Node (Err_Msg_Exp_Typ))
+      then
+         Err_Msg_Exp_Typ := First_Subtype (Err_Msg_Exp_Typ);
+      end if;
+
       --  An interesting special check. If the expression is parenthesized
       --  and its type corresponds to the type of the sole component of the
       --  expected record type, or to the component type of the expected one
@@ -30560,7 +30580,7 @@ package body Sem_Util is
          Error_Msg_N
            ("result must be general access type!", Expr);
          Error_Msg_NE -- CODEFIX
-           ("\add ALL to }!", Expr, Expec_Type);
+           ("\add ALL to }!", Expr, Err_Msg_Exp_Typ);
 
       --  Another special check, if the expected type is an integer type,
       --  but the expression is of type System.Address, and the parent is
@@ -30652,7 +30672,7 @@ package body Sem_Util is
             Error_Msg_NE ("expected}!", Expr,
                           Corresponding_Remote_Type (Expec_Type));
          else
-            Error_Msg_NE ("expected}!", Expr, Expec_Type);
+            Error_Msg_NE ("expected}!", Expr, Err_Msg_Exp_Typ);
          end if;
 
          if Is_Entity_Name (Expr)
