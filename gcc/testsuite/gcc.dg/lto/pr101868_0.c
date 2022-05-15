@@ -22,12 +22,13 @@ repro(VALUE dummy, VALUE hash)
 
 static VALUE (*that)(VALUE dummy, VALUE hash) = repro;
 
+volatile int zero = 0;
+
 int
 main(int argc, char **argv)
 {
-        argc--;
-        that(0, argc);
+        that(0, zero);
 
-        rb_check_type(argc, argc);
+        rb_check_type(zero, zero);
 
 }
