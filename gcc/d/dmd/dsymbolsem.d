@@ -376,7 +376,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
         // https://issues.dlang.org/show_bug.cgi?id=19482
         if ((dsym.storage_class & (STC.foreach_ | STC.local)) == (STC.foreach_ | STC.local))
         {
-            dsym.linkage = LINK.d;
+            dsym._linkage = LINK.d;
             dsym.visibility = Visibility(Visibility.Kind.public_);
             dsym.overlapped = false; // unset because it is modified early on this function
             dsym.userAttribDecl = null; // unset because it is set by Dsymbol.setScope()
@@ -389,7 +389,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
             dsym.storage_class |= (sc.stc & ~(STC.synchronized_ | STC.override_ | STC.abstract_ | STC.final_));
             dsym.userAttribDecl = sc.userAttribDecl;
             dsym.cppnamespace = sc.namespace;
-            dsym.linkage = sc.linkage;
+            dsym._linkage = sc.linkage;
             dsym.visibility = sc.visibility;
             dsym.alignment = sc.alignment();
         }
@@ -1191,7 +1191,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
 
     override void visit(TypeInfoDeclaration dsym)
     {
-        assert(dsym.linkage == LINK.c);
+        assert(dsym._linkage == LINK.c);
     }
 
     override void visit(BitFieldDeclaration dsym)
@@ -2174,7 +2174,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
 
                 em.semanticRun = PASS.semantic;
                 em.type = Type.tint32;
-                em.linkage = LINK.c;
+                em._linkage = LINK.c;
                 em.storage_class |= STC.manifest;
                 if (em.value)
                 {
@@ -2264,7 +2264,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
         em.semanticRun = PASS.semantic;
 
         em.visibility = em.ed.isAnonymous() ? em.ed.visibility : Visibility(Visibility.Kind.public_);
-        em.linkage = LINK.d;
+        em._linkage = LINK.d;
         em.storage_class |= STC.manifest;
 
         // https://issues.dlang.org/show_bug.cgi?id=9701
@@ -3024,7 +3024,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
         if (sc.flags & SCOPE.compile)
             funcdecl.flags |= FUNCFLAG.compileTimeOnly; // don't emit code for this function
 
-        funcdecl.linkage = sc.linkage;
+        funcdecl._linkage = sc.linkage;
         if (auto fld = funcdecl.isFuncLiteralDeclaration())
         {
             if (fld.treq)
@@ -3037,7 +3037,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
                     fld.tok = TOK.function_;
                 else
                     assert(0);
-                funcdecl.linkage = treq.nextOf().toTypeFunction().linkage;
+                funcdecl._linkage = treq.nextOf().toTypeFunction().linkage;
             }
         }
 
@@ -3048,7 +3048,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
         // check pragma(crt_constructor)
         if (funcdecl.flags & (FUNCFLAG.CRTCtor | FUNCFLAG.CRTDtor))
         {
-            if (funcdecl.linkage != LINK.c)
+            if (funcdecl._linkage != LINK.c)
             {
                 funcdecl.error("must be `extern(C)` for `pragma(%s)`",
                     (funcdecl.flags & FUNCFLAG.CRTCtor) ? "crt_constructor".ptr : "crt_destructor".ptr);
@@ -3057,7 +3057,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
 
         funcdecl.visibility = sc.visibility;
         funcdecl.userAttribDecl = sc.userAttribDecl;
-        UserAttributeDeclaration.checkGNUABITag(funcdecl, funcdecl.linkage);
+        UserAttributeDeclaration.checkGNUABITag(funcdecl, funcdecl._linkage);
         checkMustUseReserved(funcdecl);
 
         if (!funcdecl.originalType)
@@ -3193,7 +3193,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
                 tf.isScopeQual = false;
             }
 
-            sc.linkage = funcdecl.linkage;
+            sc.linkage = funcdecl._linkage;
 
             if (!tf.isNaked() && !(funcdecl.isThis() || funcdecl.isNested()))
             {

@@ -4764,12 +4764,31 @@ extern (C++) final class TypeFunction : TypeNext
                                             s ~= "@safe ";
                                         if (!f.isNogc && sc.func.setGC())
                                             s ~= "nogc ";
-                                        s[$-1] = '\0';
-                                        buf.printf("`%s` copy constructor cannot be called from a `%s` context", f.type.toChars(), s.ptr);
-
+                                        if (s)
+                                        {
+                                            s[$-1] = '\0';
+                                            buf.printf("`%s` copy constructor cannot be called from a `%s` context", f.type.toChars(), s.ptr);
+                                        }
+                                        else if (f.isGenerated() && f.isDisabled())
+                                        {
+                                            /* https://issues.dlang.org/show_bug.cgi?id=23097
+                                             * Compiler generated copy constructor failed.
+                                             */
+                                            buf.printf("generating a copy constructor for `struct %s` failed, therefore instances of it are uncopyable",
+                                                       argStruct.toChars());
+                                        }
+                                        else
+                                        {
+                                            /* Although a copy constructor may exist, no suitable match was found.
+                                             * i.e: `inout` constructor creates `const` object, not mutable.
+                                             * Fallback to using the original generic error before bugzilla 22202.
+                                             */
+                                            goto Lnocpctor;
+                                        }
                                     }
                                     else
                                     {
+                                    Lnocpctor:
                                         buf.printf("`struct %s` does not define a copy constructor for `%s` to `%s` copies",
                                                argStruct.toChars(), targ.toChars(), tprm.toChars());
                                     }

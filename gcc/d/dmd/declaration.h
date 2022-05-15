@@ -115,7 +115,7 @@ public:
     Type *originalType;         // before semantic analysis
     StorageClass storage_class;
     Visibility visibility;
-    LINK linkage;
+    LINK _linkage;              // may be `LINK::system`; use `resolvedLinkage()` to resolve it
     short inuse;                // used to detect cycles
     uint8_t adFlags;
     Symbol* isym;               // import version of csym
@@ -127,6 +127,7 @@ public:
     Dsymbol *search(const Loc &loc, Identifier *ident, int flags = SearchLocalsOnly);
 
     bool isStatic() const { return (storage_class & STCstatic) != 0; }
+    LINK resolvedLinkage() const; // returns the linkage, resolving the target-specific `System` one
     virtual bool isDelete();
     virtual bool isDataseg();
     virtual bool isThreadlocal();
