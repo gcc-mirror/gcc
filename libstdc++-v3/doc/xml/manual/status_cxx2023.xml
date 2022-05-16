@@ -159,6 +159,23 @@ or any notes about the implementation.
     </row>
 
     <row>
+      <?dbhtml bgcolor="#B0B0B0" ?>
+      <entry> Missing constexpr in std::optional and std::variant </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p2231r1.html">
+        P2231R1
+        </link>
+      </entry>
+      <entry align="center"> 11.3 (<code>optional</code> only) </entry>
+      <entry>
+	<informaltable colsep="0" rowsep="0" rowheader="norowheader" frame="none"><tgroup cols="1"><tbody>
+        <row><entry> <code>__cpp_lib_constexpr_optional &gt;= 202106L</code> </entry></row>
+        <row><entry> <code>__cpp_lib_variant &gt;= 202106L</code> </entry></row>
+        </tbody></tgroup></informaltable>
+      </entry>
+    </row>
+
+    <row>
       <entry namest="c1" nameend="c4" align="left">
         <emphasis role="bold">Strings and text</emphasis>
       </entry>
