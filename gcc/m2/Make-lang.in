@@ -391,8 +391,8 @@ m2.install-plugin: installdirs
 	$(INSTALL_PROGRAM) plugin/m2rte$(exeext).so $(DESTDIR)$(plugin_resourcesdir)/m2rte$(exeext).so
 	chmod a+x $(DESTDIR)$(plugin_resourcesdir)/m2rte$(exeext).so
 
-plugin/m2rte$(exeext).so: $(srcdir)/m2/plugin/m2rte.cc $(TARGET_H) $(PLUGIN_HEADERS) \
-                          $(srcdir)/flags.h gtype-m2.h m2/gm2config.h
+plugin/m2rte$(exeext).so: $(srcdir)/m2/plugin/m2rte.cc $(GCC_HEADER_DEPENDENCIES_FOR_M2) \
+        insn-attr-common.h $(generated_files)
 	test -d plugin || mkdir plugin
 	$(PLUGINCC) $(PLUGINCFLAGS) -fno-rtti -I. -I$(srcdir) -I$(srcdir)/m2 -I$(srcdir)/m2/gm2-gcc -I$(srcdir)/../include -I$(srcdir)/../libcpp/include -Wall $(GMPINC) -Wno-literal-suffix -fPIC -c -o plugin/m2rte.o $(srcdir)/m2/plugin/m2rte.cc
 	$(PLUGINCC) $(PLUGINCFLAGS) $(PLUGINLIBS) -fno-rtti plugin/m2rte.o -shared -o $@
