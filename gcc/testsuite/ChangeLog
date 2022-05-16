@@ -1,3 +1,18 @@
+2022-05-15  Jason Merrill  <jason@redhat.com>
+
+	PR c++/100502
+	PR c++/58993
+	* g++.dg/template/access37.C: Now OK.
+	* g++.dg/template/friend69.C: Now OK.
+	* g++.dg/lookup/friend23.C: New test.
+
+2022-05-15  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105589
+	PR c++/105191
+	PR c++/92385
+	* g++.dg/cpp0x/initlist-array16.C: New test.
+
 2022-05-13  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/81952

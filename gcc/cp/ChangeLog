@@ -1,3 +1,22 @@
+2022-05-15  Jason Merrill  <jason@redhat.com>
+
+	PR c++/100502
+	PR c++/58993
+	* friend.cc (is_friend): Hidden friends count as members.
+	* search.cc (friend_accessible_p): Likewise.
+
+2022-05-15  Jason Merrill  <jason@redhat.com>
+
+	* parser.cc (cp_parser_template_name): Look through
+	injected-class-name.
+
+2022-05-15  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105589
+	PR c++/105191
+	PR c++/92385
+	* init.cc (build_value_init): Handle class in template.
+
 2022-05-13  Nathan Sidwell  <nathan@acm.org>
 
 	* mangle.cc (maybe_write_module): Check external linkage.

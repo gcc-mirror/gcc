@@ -1,3 +1,25 @@
+2022-05-15  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md: Remove constraints when used with
+	const_int_operand, const0_operand, const_1_operand, constm1_operand,
+	const8_operand, const128_operand, const248_operand, const123_operand,
+	const2367_operand, const1248_operand, const359_operand,
+	const_4_or_8_to_11_operand, const48_operand, const_0_to_1_operand,
+	const_0_to_3_operand, const_0_to_4_operand, const_0_to_5_operand,
+	const_0_to_7_operand, const_0_to_15_operand, const_0_to_31_operand,
+	const_0_to_63_operand, const_0_to_127_operand, const_0_to_255_operand,
+	const_0_to_255_mul_8_operand, const_1_to_31_operand,
+	const_1_to_63_operand, const_2_to_3_operand, const_4_to_5_operand,
+	const_4_to_7_operand, const_6_to_7_operand, const_8_to_9_operand,
+	const_8_to_11_operand, const_8_to_15_operand, const_10_to_11_operand,
+	const_12_to_13_operand, const_12_to_15_operand, const_14_to_15_operand,
+	const_16_to_19_operand, const_16_to_31_operand, const_20_to_23_operand,
+	const_24_to_27_operand and const_28_to_31_operand.
+	* config/i386/mmx.md: Ditto.
+	* config/i386/sse.md: Ditto.
+	* config/i386/subst.md: Ditto.
+	* config/i386/sync.md: Ditto.
+
 2022-05-13  Roger Sayle  <roger@nextmovesoftware.com>
 	    Uroš Bizjak  <ubizjak@gmail.com>
 
