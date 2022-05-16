@@ -2381,23 +2381,26 @@ simplify_bitfield_ref (gimple_stmt_iterator *gsi)
 
   /* One element.  */
   if (known_eq (size, elem_size))
-    idx = TREE_INT_CST_LOW (VECTOR_CST_ELT (m, idx));
+    idx = TREE_INT_CST_LOW (VECTOR_CST_ELT (m, idx)) % (2 * nelts);
   else
     {
       unsigned HOST_WIDE_INT nelts_op;
       if (!constant_multiple_p (size, elem_size, &nelts_op)
 	  || !pow2p_hwi (nelts_op))
 	return false;
-      unsigned start = TREE_INT_CST_LOW (vector_cst_elt (m, idx));
-      unsigned end = TREE_INT_CST_LOW (vector_cst_elt (m, idx + nelts_op - 1));
+      /* Clamp vec_perm_expr index.  */
+      unsigned start = TREE_INT_CST_LOW (vector_cst_elt (m, idx)) % (2 * nelts);
+      unsigned end = TREE_INT_CST_LOW (vector_cst_elt (m, idx + nelts_op - 1))
+		     % (2 * nelts);
       /* Be in the same vector.  */
       if ((start < nelts) != (end < nelts))
 	return false;
       for (unsigned HOST_WIDE_INT i = 1; i != nelts_op; i++)
 	{
 	  /* Continuous area.  */
-	  if (TREE_INT_CST_LOW (vector_cst_elt (m, idx + i)) - 1
-	      != TREE_INT_CST_LOW (vector_cst_elt (m, idx + i - 1)))
+	  if (TREE_INT_CST_LOW (vector_cst_elt (m, idx + i)) % (2 * nelts) - 1
+	      != TREE_INT_CST_LOW (vector_cst_elt (m, idx + i - 1))
+		 % (2 * nelts))
 	    return false;
 	}
       /* Alignment not worse than before.  */
