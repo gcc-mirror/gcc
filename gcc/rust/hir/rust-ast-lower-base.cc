@@ -19,6 +19,7 @@
 #include "rust-ast-lower-base.h"
 #include "rust-ast-lower-type.h"
 #include "rust-ast-lower-pattern.h"
+#include "rust-ast-lower-extern.h"
 
 namespace Rust {
 namespace HIR {
@@ -545,11 +546,11 @@ ASTLoweringBase::lower_loop_label (AST::LoopLabel &loop_label)
   return HIR::LoopLabel (mapping, std::move (life), loop_label.get_locus ());
 }
 
-std::vector<std::unique_ptr<HIR::GenericParam> >
+std::vector<std::unique_ptr<HIR::GenericParam>>
 ASTLoweringBase::lower_generic_params (
-  std::vector<std::unique_ptr<AST::GenericParam> > &params)
+  std::vector<std::unique_ptr<AST::GenericParam>> &params)
 {
-  std::vector<std::unique_ptr<HIR::GenericParam> > lowered;
+  std::vector<std::unique_ptr<HIR::GenericParam>> lowered;
   for (auto &ast_param : params)
     {
       auto hir_param = ASTLowerGenericParam::translate (ast_param.get ());
@@ -601,7 +602,7 @@ ASTLoweringBase::lower_generic_args (AST::GenericArgs &args)
       lifetime_args.push_back (std::move (l));
     }
 
-  std::vector<std::unique_ptr<HIR::Type> > type_args;
+  std::vector<std::unique_ptr<HIR::Type>> type_args;
   for (auto &type : args.get_type_args ())
     {
       HIR::Type *t = ASTLoweringType::translate (type.get ());
@@ -653,7 +654,7 @@ ASTLowerTypePath::visit (AST::TypePathSegmentGeneric &segment)
       lifetime_args.push_back (std::move (l));
     }
 
-  std::vector<std::unique_ptr<HIR::Type> > type_args;
+  std::vector<std::unique_ptr<HIR::Type>> type_args;
   for (auto &type : segment.get_generic_args ().get_type_args ())
     {
       HIR::Type *t = ASTLoweringType::translate (type.get ());
@@ -700,7 +701,7 @@ ASTLowerQualifiedPathInType::visit (AST::QualifiedPathInType &path)
     }
   std::unique_ptr<HIR::TypePathSegment> associated_segment (translated_segment);
 
-  std::vector<std::unique_ptr<HIR::TypePathSegment> > translated_segments;
+  std::vector<std::unique_ptr<HIR::TypePathSegment>> translated_segments;
   for (auto &seg : path.get_segments ())
     {
       translated_segment = nullptr;
@@ -728,7 +729,7 @@ ASTLowerQualifiedPathInType::visit (AST::QualifiedPathInType &path)
 void
 ASTLoweringType::visit (AST::TraitObjectTypeOneBound &type)
 {
-  std::vector<std::unique_ptr<HIR::TypeParamBound> > bounds;
+  std::vector<std::unique_ptr<HIR::TypeParamBound>> bounds;
   HIR::TypeParamBound *translated_bound
     = ASTLoweringTypeBounds::translate (&type.get_trait_bound ());
   bounds.push_back (std::unique_ptr<HIR::TypeParamBound> (translated_bound));
@@ -748,7 +749,7 @@ ASTLoweringType::visit (AST::TraitObjectTypeOneBound &type)
 void
 ASTLoweringType::visit (AST::TraitObjectType &type)
 {
-  std::vector<std::unique_ptr<HIR::TypeParamBound> > bounds;
+  std::vector<std::unique_ptr<HIR::TypeParamBound>> bounds;
 
   for (auto &bound : type.get_type_param_bounds ())
     {
@@ -915,7 +916,7 @@ std::unique_ptr<HIR::TuplePatternItems>
 ASTLoweringBase::lower_tuple_pattern_multiple (
   AST::TuplePatternItemsMultiple &pattern)
 {
-  std::vector<std::unique_ptr<HIR::Pattern> > patterns;
+  std::vector<std::unique_ptr<HIR::Pattern>> patterns;
   for (auto &p : pattern.get_patterns ())
     {
       HIR::Pattern *translated = ASTLoweringPattern::translate (p.get ());
@@ -930,8 +931,8 @@ std::unique_ptr<TuplePatternItems>
 ASTLoweringBase::lower_tuple_pattern_ranged (
   AST::TuplePatternItemsRanged &pattern)
 {
-  std::vector<std::unique_ptr<HIR::Pattern> > lower_patterns;
-  std::vector<std::unique_ptr<HIR::Pattern> > upper_patterns;
+  std::vector<std::unique_ptr<HIR::Pattern>> lower_patterns;
+  std::vector<std::unique_ptr<HIR::Pattern>> upper_patterns;
 
   for (auto &p : pattern.get_lower_patterns ())
     {
@@ -1028,6 +1029,51 @@ ASTLoweringBase::lower_literal (const AST::Literal &literal)
     }
 
   return HIR::Literal (literal.as_string (), type, literal.get_type_hint ());
+}
+
+HIR::ExternBlock *
+ASTLoweringBase::lower_extern_block (AST::ExternBlock &extern_block)
+{
+  HIR::Visibility vis = translate_visibility (extern_block.get_visibility ());
+
+  std::vector<std::unique_ptr<HIR::ExternalItem>> extern_items;
+  for (auto &item : extern_block.get_extern_items ())
+    {
+      if (item->is_marked_for_strip ())
+	continue;
+
+      HIR::ExternalItem *lowered
+	= ASTLoweringExternItem::translate (item.get ());
+      extern_items.push_back (std::unique_ptr<HIR::ExternalItem> (lowered));
+    }
+
+  ABI abi = ABI::RUST;
+  if (extern_block.has_abi ())
+    {
+      const std::string &extern_abi = extern_block.get_abi ();
+      abi = get_abi_from_string (extern_abi);
+      if (abi == ABI::UNKNOWN)
+	rust_error_at (extern_block.get_locus (), "unknown ABI option");
+    }
+
+  auto crate_num = mappings->get_current_crate ();
+  Analysis::NodeMapping mapping (crate_num, extern_block.get_node_id (),
+				 mappings->get_next_hir_id (crate_num),
+				 mappings->get_next_localdef_id (crate_num));
+
+  HIR::ExternBlock *hir_extern_block
+    = new HIR::ExternBlock (mapping, abi, std::move (extern_items),
+			    std::move (vis), extern_block.get_inner_attrs (),
+			    extern_block.get_outer_attrs (),
+			    extern_block.get_locus ());
+
+  mappings->insert_defid_mapping (mapping.get_defid (), hir_extern_block);
+  mappings->insert_hir_item (mapping.get_crate_num (), mapping.get_hirid (),
+			     hir_extern_block);
+  mappings->insert_location (crate_num, mapping.get_hirid (),
+			     extern_block.get_locus ());
+
+  return hir_extern_block;
 }
 
 } // namespace HIR

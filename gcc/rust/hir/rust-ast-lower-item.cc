@@ -752,46 +752,7 @@ ASTLoweringItem::visit (AST::TraitImpl &impl_block)
 void
 ASTLoweringItem::visit (AST::ExternBlock &extern_block)
 {
-  HIR::Visibility vis = translate_visibility (extern_block.get_visibility ());
-
-  std::vector<std::unique_ptr<HIR::ExternalItem>> extern_items;
-  for (auto &item : extern_block.get_extern_items ())
-    {
-      if (item->is_marked_for_strip ())
-	continue;
-
-      HIR::ExternalItem *lowered
-	= ASTLoweringExternItem::translate (item.get ());
-      extern_items.push_back (std::unique_ptr<HIR::ExternalItem> (lowered));
-    }
-
-  ABI abi = ABI::RUST;
-  if (extern_block.has_abi ())
-    {
-      const std::string &extern_abi = extern_block.get_abi ();
-      abi = get_abi_from_string (extern_abi);
-      if (abi == ABI::UNKNOWN)
-	rust_error_at (extern_block.get_locus (), "unknown ABI option");
-    }
-
-  auto crate_num = mappings->get_current_crate ();
-  Analysis::NodeMapping mapping (crate_num, extern_block.get_node_id (),
-				 mappings->get_next_hir_id (crate_num),
-				 mappings->get_next_localdef_id (crate_num));
-
-  HIR::ExternBlock *hir_extern_block
-    = new HIR::ExternBlock (mapping, abi, std::move (extern_items),
-			    std::move (vis), extern_block.get_inner_attrs (),
-			    extern_block.get_outer_attrs (),
-			    extern_block.get_locus ());
-
-  translated = hir_extern_block;
-
-  mappings->insert_defid_mapping (mapping.get_defid (), translated);
-  mappings->insert_hir_item (mapping.get_crate_num (), mapping.get_hirid (),
-			     translated);
-  mappings->insert_location (crate_num, mapping.get_hirid (),
-			     extern_block.get_locus ());
+  translated = lower_extern_block (extern_block);
 }
 
 HIR::SimplePath

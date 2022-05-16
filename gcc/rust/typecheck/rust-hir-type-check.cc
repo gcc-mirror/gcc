@@ -90,12 +90,7 @@ TypeCheckExpr::visit (HIR::BlockExpr &expr)
       if (!s->is_item ())
 	continue;
 
-      auto resolved = TypeCheckStmt::Resolve (s.get (), inside_loop);
-      if (resolved == nullptr)
-	{
-	  rust_error_at (s->get_locus (), "failure to resolve type");
-	  return;
-	}
+      TypeCheckStmt::Resolve (s.get (), inside_loop);
     }
 
   for (auto &s : expr.get_statements ())

@@ -29,11 +29,19 @@ class CompileExternItem : public HIRCompileBase,
 			  public HIR::HIRExternalItemVisitor
 {
 public:
-  static void compile (HIR::ExternalItem *item, Context *ctx,
-		       TyTy::BaseType *concrete = nullptr)
+  static tree compile (HIR::ExternalItem *item, Context *ctx,
+		       TyTy::BaseType *concrete = nullptr,
+		       bool is_query_mode = false,
+		       Location ref_locus = Location ())
   {
-    CompileExternItem compiler (ctx, concrete);
+    CompileExternItem compiler (ctx, concrete, ref_locus);
     item->accept_vis (compiler);
+
+    if (is_query_mode && compiler.reference == error_mark_node)
+      rust_internal_error_at (ref_locus, "failed to compile extern item: %s",
+			      item->as_string ().c_str ());
+
+    return compiler.reference;
   }
 
   void visit (HIR::ExternalStaticItem &item) override
@@ -58,6 +66,8 @@ public:
 					      item.get_locus ());
     ctx->insert_var_decl (item.get_mappings ().get_hirid (), static_global);
     ctx->push_var (static_global);
+
+    reference = ctx->get_backend ()->var_expression (static_global, ref_locus);
   }
 
   void visit (HIR::ExternalFunctionItem &function) override
@@ -129,14 +139,21 @@ public:
     setup_abi_options (fndecl, fntype->get_abi ());
 
     ctx->insert_function_decl (fntype, fndecl);
+
+    reference
+      = address_expression (fndecl, build_pointer_type (TREE_TYPE (fndecl)),
+			    ref_locus);
   }
 
 private:
-  CompileExternItem (Context *ctx, TyTy::BaseType *concrete)
-    : HIRCompileBase (ctx), concrete (concrete)
+  CompileExternItem (Context *ctx, TyTy::BaseType *concrete, Location ref_locus)
+    : HIRCompileBase (ctx), concrete (concrete), reference (error_mark_node),
+      ref_locus (ref_locus)
   {}
 
   TyTy::BaseType *concrete;
+  tree reference;
+  Location ref_locus;
 };
 
 } // namespace Compile

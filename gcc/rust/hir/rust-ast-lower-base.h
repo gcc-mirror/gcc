@@ -286,6 +286,8 @@ protected:
   lower_range_pattern_bound (AST::RangePatternBound *bound);
 
   HIR::Literal lower_literal (const AST::Literal &literal);
+
+  HIR::ExternBlock *lower_extern_block (AST::ExternBlock &extern_block);
 };
 
 } // namespace HIR
