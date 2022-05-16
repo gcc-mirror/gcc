@@ -153,14 +153,17 @@ am__DEPENDENCIES_1 =
 @GLIBCXX_LDBL_COMPAT_TRUE@am__objects_1 = compatibility-ldbl.lo
 am__objects_2 = compatibility.lo compatibility-debug_list.lo \
 	compatibility-debug_list-2.lo $(am__objects_1)
-@ENABLE_DUAL_ABI_TRUE@@GLIBCXX_LDBL_ALT128_COMPAT_TRUE@am__objects_3 = compatibility-ldbl-alt128-cxx11.lo
-@GLIBCXX_LDBL_ALT128_COMPAT_TRUE@am__objects_4 =  \
+@ENABLE_SYMVERS_GNU_NAMESPACE_FALSE@am__objects_3 = compatibility-atomic-c++0x.lo \
+@ENABLE_SYMVERS_GNU_NAMESPACE_FALSE@	compatibility-c++0x.lo \
+@ENABLE_SYMVERS_GNU_NAMESPACE_FALSE@	compatibility-chrono.lo \
+@ENABLE_SYMVERS_GNU_NAMESPACE_FALSE@	compatibility-condvar.lo \
+@ENABLE_SYMVERS_GNU_NAMESPACE_FALSE@	compatibility-thread-c++0x.lo
+@ENABLE_DUAL_ABI_TRUE@@GLIBCXX_LDBL_ALT128_COMPAT_TRUE@am__objects_4 = compatibility-ldbl-alt128-cxx11.lo
+@GLIBCXX_LDBL_ALT128_COMPAT_TRUE@am__objects_5 =  \
 @GLIBCXX_LDBL_ALT128_COMPAT_TRUE@	compatibility-ldbl-alt128.lo \
-@GLIBCXX_LDBL_ALT128_COMPAT_TRUE@	$(am__objects_3)
-am__objects_5 = compatibility-c++0x.lo compatibility-atomic-c++0x.lo \
-	compatibility-thread-c++0x.lo compatibility-chrono.lo \
-	compatibility-condvar.lo $(am__objects_4)
-am_libstdc___la_OBJECTS = $(am__objects_2) $(am__objects_5)
+@GLIBCXX_LDBL_ALT128_COMPAT_TRUE@	$(am__objects_4)
+am__objects_6 = $(am__objects_3) $(am__objects_5)
+am_libstdc___la_OBJECTS = $(am__objects_2) $(am__objects_6)
 libstdc___la_OBJECTS = $(am_libstdc___la_OBJECTS)
 @VTV_CYGMIN_FALSE@am_libstdc___la_rpath = -rpath $(toolexeclibdir)
 @VTV_CYGMIN_TRUE@am_libstdc___la_rpath = -rpath $(toolexeclibdir)
@@ -512,6 +515,14 @@ SUBDIRS = c++98 c++11 c++17 c++20 $(filesystem_dir) $(backtrace_dir)
 @GLIBCXX_LDBL_ALT128_COMPAT_TRUE@	compatibility-ldbl-alt128.cc \
 @GLIBCXX_LDBL_ALT128_COMPAT_TRUE@	${ldbl_alt128_compat_cxx11_sources}
 
+@ENABLE_SYMVERS_GNU_NAMESPACE_FALSE@cxx0x_compat_sources = \
+@ENABLE_SYMVERS_GNU_NAMESPACE_FALSE@	compatibility-atomic-c++0x.cc \
+@ENABLE_SYMVERS_GNU_NAMESPACE_FALSE@	compatibility-c++0x.cc \
+@ENABLE_SYMVERS_GNU_NAMESPACE_FALSE@	compatibility-chrono.cc \
+@ENABLE_SYMVERS_GNU_NAMESPACE_FALSE@	compatibility-condvar.cc \
+@ENABLE_SYMVERS_GNU_NAMESPACE_FALSE@	compatibility-thread-c++0x.cc
+
+@ENABLE_SYMVERS_GNU_NAMESPACE_TRUE@cxx0x_compat_sources = 
 parallel_compat_sources = \
 	compatibility-parallel_list.cc  compatibility-parallel_list-2.cc
 
@@ -522,11 +533,7 @@ cxx98_sources = \
 	${ldbl_compat_sources}
 
 cxx11_sources = \
-	compatibility-c++0x.cc \
-	compatibility-atomic-c++0x.cc \
-	compatibility-thread-c++0x.cc \
-	compatibility-chrono.cc \
-	compatibility-condvar.cc \
+	${cxx0x_compat_sources} \
 	${ldbl_alt128_compat_sources}
 
 libstdc___la_SOURCES = $(cxx98_sources) $(cxx11_sources)
