@@ -8,7 +8,7 @@ target_noncanonical := @target_noncanonical@
 libexecsubdir := $(libexecdir)/gcc/$(real_target_noncanonical)/$(gcc_version)$(accel_dir_suffix)
 
 AM_CPPFLAGS = -I$(top_srcdir)/../include $(DEFS)
-AM_CFLAGS = @ac_lto_plugin_warn_cflags@ $(CET_HOST_FLAGS)
+AM_CFLAGS = @ac_lto_plugin_warn_cflags@ $(CET_HOST_FLAGS) -DBASE_VERSION='"$(gcc_version)"'
 # The plug-in depends on pthreads.
 AM_LDFLAGS = -pthread @ac_lto_plugin_ldflags@
 AM_LIBTOOLFLAGS = --tag=disable-static
