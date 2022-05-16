@@ -968,10 +968,10 @@ if (isUnsigned!F && isUnsigned!G && isUnsigned!H)
 pragma(inline, true)
 real exp(real x) @trusted pure nothrow @nogc // TODO: @safe
 {
-    import std.math.constants : LOG2E;
-
     version (InlineAsm_X87)
     {
+        import std.math.constants : LOG2E;
+
         //  e^^x = 2^^(LOG2E*x)
         // (This is valid because the overflow & underflow limits for exp
         // and exp2 are so similar).

@@ -76,7 +76,7 @@ d_decl_context (Dsymbol *dsym)
 	 but only for extern(D) symbols.  */
       if (parent->isModule ())
 	{
-	  if ((decl != NULL && decl->linkage != LINK::d)
+	  if ((decl != NULL && decl->resolvedLinkage () != LINK::d)
 	      || (ad != NULL && ad->classKind != ClassKind::d))
 	    return NULL_TREE;
 
@@ -1165,7 +1165,7 @@ build_struct_literal (tree type, vec <constructor_elt, va_gc> *init)
     }
 
   vec <constructor_elt, va_gc> *ve = NULL;
-  HOST_WIDE_INT offset = 0;
+  HOST_WIDE_INT bitoffset = 0;
   bool constant_p = true;
   bool finished = false;
 
@@ -1210,11 +1210,11 @@ build_struct_literal (tree type, vec <constructor_elt, va_gc> *init)
 
       if (is_initialized)
 	{
-	  HOST_WIDE_INT fieldpos = int_byte_position (field);
+	  HOST_WIDE_INT fieldpos = int_bit_position (field);
 	  gcc_assert (value != NULL_TREE);
 
 	  /* Must not initialize fields that overlap.  */
-	  if (fieldpos < offset)
+	  if (fieldpos < bitoffset)
 	    {
 	      /* Find the nearest user defined type and field.  */
 	      tree vtype = type;
@@ -1243,12 +1243,9 @@ build_struct_literal (tree type, vec <constructor_elt, va_gc> *init)
 	    finished = true;
 	}
 
-      /* Move offset to the next position in the struct.  */
-      if (TREE_CODE (type) == RECORD_TYPE)
-	{
-	  offset = int_byte_position (field)
-	    + int_size_in_bytes (TREE_TYPE (field));
-	}
+      /* Move bit offset to the next position in the struct.  */
+      if (TREE_CODE (type) == RECORD_TYPE && DECL_SIZE (field))
+	bitoffset = int_bit_position (field) + tree_to_shwi (DECL_SIZE (field));
 
       /* If all initializers have been assigned, there's nothing else to do.  */
       if (vec_safe_is_empty (init))

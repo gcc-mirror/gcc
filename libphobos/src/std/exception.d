@@ -1641,7 +1641,7 @@ package string errnoString(int errno) nothrow @trusted
 class ErrnoException : Exception
 {
     /// Operating system error code.
-    final @property uint errno() nothrow pure @nogc @safe { return _errno; }
+    final @property uint errno() nothrow pure scope @nogc @safe { return _errno; }
     private uint _errno;
     /// Constructor which takes an error message. The current global $(REF errno, core,stdc,errno) value is used as error code.
     this(string msg, string file = null, size_t line = 0) @safe

@@ -984,7 +984,7 @@ extern (C++) class Dsymbol : ASTNode
      */
     uinteger_t size(const ref Loc loc)
     {
-        error("Dsymbol `%s` has no size", toChars());
+        error("symbol `%s` has no size", toChars());
         return SIZE_INVALID;
     }
 
@@ -1639,6 +1639,32 @@ public:
             visibilities = cast(Visibility.Kind*)mem.xrealloc(visibilities, importedScopes.dim * (visibilities[0]).sizeof);
             visibilities[importedScopes.dim - 1] = visibility.kind;
         }
+    }
+
+
+    /*****************************************
+     * Returns: the symbols whose members have been imported, i.e. imported modules
+     * and template mixins.
+     *
+     * See_Also: importScope
+     */
+    extern (D) final Dsymbols* getImportedScopes() nothrow @nogc @safe pure
+    {
+        return importedScopes;
+    }
+
+    /*****************************************
+     * Returns: the array of visibilities associated with each imported scope. The
+     * length of the array matches the imported scopes array.
+     *
+     * See_Also: getImportedScopes
+     */
+    extern (D) final Visibility.Kind[] getImportVisibilities() nothrow @nogc @safe pure
+    {
+        if (!importedScopes)
+            return null;
+
+        return (() @trusted => visibilities[0 .. importedScopes.dim])();
     }
 
     extern (D) final void addAccessiblePackage(Package p, Visibility visibility) nothrow

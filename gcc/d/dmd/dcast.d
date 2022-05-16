@@ -1695,14 +1695,6 @@ Expression castTo(Expression e, Scope* sc, Type t, Type att = null)
             {
                 // T[n] sa;
                 // cast(U[])sa; // ==> cast(U[])sa[];
-                if (global.params.useDIP1000 == FeatureState.enabled)
-                {
-                    if (auto v = expToVariable(e))
-                    {
-                        if (e.type.hasPointers() && !checkAddressVar(sc, e, v))
-                            goto Lfail;
-                    }
-                }
                 const fsize = t1b.nextOf().size();
                 const tsize = tob.nextOf().size();
                 if (fsize == SIZE_INVALID || tsize == SIZE_INVALID)
@@ -2236,7 +2228,7 @@ Expression castTo(Expression e, Scope* sc, Type t, Type att = null)
         ArrayLiteralExp ae = e;
 
         Type tb = t.toBasetype();
-        if (tb.ty == Tarray && global.params.useDIP1000 == FeatureState.enabled)
+        if (tb.ty == Tarray)
         {
             if (checkArrayLiteralEscape(sc, ae, false))
             {
@@ -2782,9 +2774,8 @@ Expression scaleFactor(BinExp be, Scope* sc)
         if (eoff.op == EXP.int64 && eoff.toInteger() == 0)
         {
         }
-        else if (sc.func.setUnsafe())
+        else if (sc.func.setUnsafe(false, be.loc, "pointer arithmetic not allowed in @safe functions"))
         {
-            be.error("pointer arithmetic not allowed in @safe functions");
             return ErrorExp.get();
         }
     }

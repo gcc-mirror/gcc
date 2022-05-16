@@ -28,6 +28,7 @@ struct Ensure
 class FuncDeclaration;
 class StructDeclaration;
 struct IntRange;
+struct AttributeViolation;
 
 //enum STC : ulong from astenums.d:
 
@@ -115,7 +116,7 @@ public:
     Type *originalType;         // before semantic analysis
     StorageClass storage_class;
     Visibility visibility;
-    LINK linkage;
+    LINK _linkage;              // may be `LINK::system`; use `resolvedLinkage()` to resolve it
     short inuse;                // used to detect cycles
     uint8_t adFlags;
     Symbol* isym;               // import version of csym
@@ -127,6 +128,7 @@ public:
     Dsymbol *search(const Loc &loc, Identifier *ident, int flags = SearchLocalsOnly);
 
     bool isStatic() const { return (storage_class & STCstatic) != 0; }
+    LINK resolvedLinkage() const; // returns the linkage, resolving the target-specific `System` one
     virtual bool isDelete();
     virtual bool isDataseg();
     virtual bool isThreadlocal();
@@ -612,6 +614,10 @@ public:
 
     FuncDeclarations *inlinedNestedCallees;
 
+private:
+    AttributeViolation* safetyViolation;
+public:
+
     unsigned flags;                     // FUNCFLAGxxxxx
 
     // Data for a function declaration that is needed for the Objective-C
@@ -655,6 +661,7 @@ public:
     bool isNRVO() const;
     void isNRVO(bool v);
     bool isNaked() const;
+    void isNaked(bool v);
     bool isGenerated() const;
     void isGenerated(bool v);
     bool isIntroducing() const;
@@ -664,7 +671,9 @@ public:
     bool hasDualContext() const;
     bool hasAlwaysInlines() const;
     bool isCrtCtor() const;
+    void isCrtCtor(bool v);
     bool isCrtDtor() const;
+    void isCrtDtor(bool v);
 
     virtual bool isNested() const;
     AggregateDeclaration *isThis();

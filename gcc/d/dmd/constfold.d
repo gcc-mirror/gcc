@@ -1181,7 +1181,7 @@ UnionExp Cast(const ref Loc loc, Type type, Type to, Expression e1)
     {
         if (type != Type.terror)
         {
-            // have to change to Internal Compiler Error
+            // have to change to internal compiler error
             // all invalid casts should be handled already in Expression::castTo().
             error(loc, "cannot cast `%s` to `%s`", e1.type.toChars(), type.toChars());
         }

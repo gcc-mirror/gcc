@@ -344,6 +344,10 @@ extern (C++) class FuncDeclaration : Declaration
 
     FuncDeclarations *inlinedNestedCallees;
 
+    /// In case of failed `@safe` inference, store the error that made the function `@system` for
+    /// better diagnostics
+    private AttributeViolation* safetyViolation;
+
     /// Function flags: A collection of boolean packed for memory efficiency
     /// See the `FUNCFLAG` enum
     uint flags = FUNCFLAG.NRVO;
@@ -1207,12 +1211,12 @@ extern (C++) class FuncDeclaration : Declaration
 
     final bool isMain() const
     {
-        return ident == Id.main && linkage != LINK.c && !isMember() && !isNested();
+        return ident == Id.main && resolvedLinkage() != LINK.c && !isMember() && !isNested();
     }
 
     final bool isCMain() const
     {
-        return ident == Id.main && linkage == LINK.c && !isMember() && !isNested();
+        return ident == Id.main && resolvedLinkage() == LINK.c && !isMember() && !isNested();
     }
 
     final bool isWinMain() const
@@ -1220,24 +1224,24 @@ extern (C++) class FuncDeclaration : Declaration
         //printf("FuncDeclaration::isWinMain() %s\n", toChars());
         version (none)
         {
-            bool x = ident == Id.WinMain && linkage != LINK.c && !isMember();
+            bool x = ident == Id.WinMain && resolvedLinkage() != LINK.c && !isMember();
             printf("%s\n", x ? "yes" : "no");
             return x;
         }
         else
         {
-            return ident == Id.WinMain && linkage != LINK.c && !isMember();
+            return ident == Id.WinMain && resolvedLinkage() != LINK.c && !isMember();
         }
     }
 
     final bool isDllMain() const
     {
-        return ident == Id.DllMain && linkage != LINK.c && !isMember();
+        return ident == Id.DllMain && resolvedLinkage() != LINK.c && !isMember();
     }
 
     final bool isRtInit() const
     {
-        return ident == Id.rt_init && linkage == LINK.c && !isMember() && !isNested();
+        return ident == Id.rt_init && resolvedLinkage() == LINK.c && !isMember() && !isNested();
     }
 
     override final bool isExport() const
@@ -1349,8 +1353,7 @@ extern (C++) class FuncDeclaration : Declaration
             flags |= FUNCFLAG.returnInprocess;
 
         // Initialize for inferring STC.scope_
-        if (global.params.useDIP1000 == FeatureState.enabled)
-            flags |= FUNCFLAG.inferScope;
+        flags |= FUNCFLAG.inferScope;
     }
 
     final PURE isPure()
@@ -1427,22 +1430,49 @@ extern (C++) class FuncDeclaration : Declaration
     }
 
     /**************************************
-     * The function is doing something unsafe,
-     * so mark it as unsafe.
-     * If there's a safe error, return true.
+     * The function is doing something unsafe, so mark it as unsafe.
+     *
+     * Params:
+     *   gag = surpress error message (used in escape.d)
+     *   loc = location of error
+     *   fmt = printf-style format string
+     *   arg0  = (optional) argument for first %s format specifier
+     *   arg1  = (optional) argument for second %s format specifier
+     * Returns: whether there's a safe error
      */
-    extern (D) final bool setUnsafe()
+    extern (D) final bool setUnsafe(
+        bool gag = false, Loc loc = Loc.init, const(char)* fmt = null, RootObject arg0 = null, RootObject arg1 = null)
     {
         if (flags & FUNCFLAG.safetyInprocess)
         {
             flags &= ~FUNCFLAG.safetyInprocess;
             type.toTypeFunction().trust = TRUST.system;
+            if (!gag && !safetyViolation && (fmt || arg0))
+                safetyViolation = new AttributeViolation(loc, fmt, arg0, arg1);
+
             if (fes)
                 fes.func.setUnsafe();
         }
         else if (isSafe())
+        {
+            if (!gag && fmt)
+                .error(loc, fmt, arg0 ? arg0.toChars() : "", arg1 ? arg1.toChars() : "");
+
             return true;
+        }
         return false;
+    }
+
+    /**************************************
+     * The function is calling `@system` function `f`, so mark it as unsafe.
+     *
+     * Params:
+     *   f = function being called (needed for diagnostic of inferred functions)
+     * Returns: whether there's a safe error
+     */
+    extern (D) final bool setUnsafeCall(FuncDeclaration f)
+    {
+        return setUnsafe(false, f.loc, null, f, null);
     }
 
     final bool isNogc()
@@ -1472,6 +1502,12 @@ extern (C++) class FuncDeclaration : Declaration
     final bool isNaked() const scope @safe pure nothrow @nogc
     {
         return !!(this.flags & FUNCFLAG.naked);
+    }
+
+    final void isNaked(bool v) @safe pure nothrow @nogc
+    {
+        if (v) this.flags |= FUNCFLAG.naked;
+        else this.flags &= ~FUNCFLAG.naked;
     }
 
     final bool isGenerated() const scope @safe pure nothrow @nogc
@@ -1520,9 +1556,21 @@ extern (C++) class FuncDeclaration : Declaration
         return !!(this.flags & FUNCFLAG.CRTCtor);
     }
 
+    final void isCrtCtor(bool v) @safe pure nothrow @nogc
+    {
+        if (v) this.flags |= FUNCFLAG.CRTCtor;
+        else this.flags &= ~FUNCFLAG.CRTCtor;
+    }
+
     final bool isCrtDtor() const scope @safe pure nothrow @nogc
     {
         return !!(this.flags & FUNCFLAG.CRTDtor);
+    }
+
+    final void isCrtDtor(bool v) @safe pure nothrow @nogc
+    {
+        if (v) this.flags |= FUNCFLAG.CRTDtor;
+        else this.flags &= ~FUNCFLAG.CRTDtor;
     }
 
     /**************************************
@@ -1758,7 +1806,7 @@ extern (C++) class FuncDeclaration : Declaration
         auto f = toAliasFunc();
         //printf("\ttoParent2() = '%s'\n", f.toParent2().toChars());
         return ((f.storage_class & STC.static_) == 0) &&
-                (f.linkage == LINK.d) &&
+                (f._linkage == LINK.d) &&
                 (f.toParent2().isFuncDeclaration() !is null ||
                  f.toParent2() !is f.toParentLocal());
     }
@@ -2645,7 +2693,7 @@ extern (C++) class FuncDeclaration : Declaration
             tf = new TypeFunction(ParameterList(fparams), treturn, LINK.c, stc);
             fd = new FuncDeclaration(Loc.initial, Loc.initial, id, STC.static_, tf);
             fd.visibility = Visibility(Visibility.Kind.public_);
-            fd.linkage = LINK.c;
+            fd._linkage = LINK.c;
 
             st.insert(fd);
         }
@@ -2705,6 +2753,7 @@ extern (C++) class FuncDeclaration : Declaration
         const nparams = tf.parameterList.length;
         bool argerr;
 
+        const linkage = resolvedLinkage();
         if (linkage == LINK.d)
         {
             if (nparams == 1)
@@ -4269,5 +4318,49 @@ extern (C++) final class NewDeclaration : FuncDeclaration
     override void accept(Visitor v)
     {
         v.visit(this);
+    }
+}
+
+/// Stores a reason why a function failed to infer a function attribute like `@safe` or `pure`
+///
+/// Has two modes:
+/// - a regular safety error, stored in (fmtStr, arg0, arg1)
+/// - a call to a function without the attribute, which is a special case, because in that case,
+///   that function might recursively also have a `AttributeViolation`. This way, in case
+///   of a big call stack, the error can go down all the way to the root cause.
+///   The `FunctionDeclaration` is then stored in `arg0` and `fmtStr` must be `null`.
+private struct AttributeViolation
+{
+    /// location of error
+    Loc loc = Loc.init;
+    /// printf-style format string
+    const(char)* fmtStr = null;
+    /// Arguments for up to two `%s` format specifiers in format string
+    RootObject arg0 = null;
+    /// ditto
+    RootObject arg1 = null;
+}
+
+/// Print the reason why `fd` was inferred `@system` as a supplemental error
+/// Params:
+///   fd = function to check
+///   maxDepth = up to how many functions deep to report errors
+void errorSupplementalInferredSafety(FuncDeclaration fd, int maxDepth)
+{
+    if (auto s = fd.safetyViolation)
+    {
+        if (s.fmtStr)
+        {
+            errorSupplemental(s.loc, "which was inferred `@system` because of:");
+            errorSupplemental(s.loc, s.fmtStr, s.arg0 ? s.arg0.toChars() : "", s.arg1 ? s.arg1.toChars() : "");
+        }
+        else if (FuncDeclaration fd2 = cast(FuncDeclaration) s.arg0)
+        {
+            if (maxDepth > 0)
+            {
+                errorSupplemental(s.loc, "which calls `%s`", fd2.toPrettyChars());
+                errorSupplementalInferredSafety(fd2, maxDepth - 1);
+            }
+        }
     }
 }

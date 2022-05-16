@@ -73,14 +73,6 @@ enum CppStdRevision
     CppStdRevisionCpp20 = 202002
 };
 
-/// Configuration for the C++ header generator
-enum class CxxHeaderMode
-{
-    none,   /// Don't generate headers
-    silent, /// Generate headers
-    verbose /// Generate headers and add comments for hidden declarations
-};
-
 /// Trivalent boolean to represent the state of a `revert`able change
 enum class FeatureState : signed char
 {
@@ -89,15 +81,25 @@ enum class FeatureState : signed char
     enabled = 1    /// Specified as `-preview=`
 };
 
+struct Output
+{
+    /// Configuration for the compiler generator
+    bool doOutput;      // Output is enabled
+    bool fullOutput;    // Generate comments for hidden declarations (for -HC),
+                        // and don't strip the bodies of plain (non-template) functions (for -H)
+    DString dir;   // write to directory 'dir'
+    DString name;  // write to file 'name'
+    Array<const char*> files; // Other files associated with this output,
+                                // e.g. macro include files for Ddoc, dependencies for makedeps
+    OutBuffer* buffer;  // if this output is buffered, this is the buffer
+    int bufferLines;    // number of lines written to the buffer
+};
+
 // Put command line switches in here
 struct Param
 {
     bool obj;           // write object file
-    bool link;          // perform link
-    bool dll;           // generate shared dynamic library
-    bool lib;           // write library file instead of object file(s)
     bool multiobj;      // break one object file into multiple ones
-    bool oneobj;        // write one object file instead of multiple ones
     bool trace;         // insert profiling hooks
     bool tracegc;       // instrument calls to 'new'
     bool verbose;       // verbose compile
@@ -110,11 +112,7 @@ struct Param
     bool vfield;        // identify non-mutable field variables
     bool vcomplex;      // identify complex/imaginary type usage
     bool vin;           // identify 'in' parameters
-    unsigned char symdebug;  // insert debug symbolic information
-    bool symdebugref;   // insert debug information for all referenced types, too
-    bool optimize;      // run optimizer
     Diagnostic useDeprecated;
-    bool stackstomp;    // add stack stomping code
     bool useUnitTests;  // generate unittest code
     bool useInline;     // inline expand functions
     FeatureState useDIP25;      // implement https://wiki.dlang.org/DIP25
@@ -123,12 +121,10 @@ struct Param
     bool release;       // build release version
     bool preservePaths; // true means don't strip path from source file
     Diagnostic warnings;
-    unsigned char pic;  // generate position-independent-code for shared libs
     bool color;         // use ANSI colors in console output
     bool cov;           // generate code coverage data
     unsigned char covPercent;   // 0..100 code coverage percentage required
     bool ctfe_cov;      // generate coverage data for ctfe
-    bool nofloat;       // code should not pull in floating point support
     bool ignoreUnsupportedPragmas;      // rather than error on them
     bool useModuleInfo; // generate runtime module information
     bool useTypeInfo;   // generate runtime type information
@@ -147,10 +143,9 @@ struct Param
     FeatureState dtorFields;  // destruct fields of partially constructed objects
                               // https://issues.dlang.org/show_bug.cgi?id=14246
     bool fieldwise;         // do struct equality testing field-wise rather than by memcmp()
+    bool bitfields;         // support C style bit fields
     FeatureState rvalueRefParam;    // allow rvalues to be arguments to ref parameters
     CppStdRevision cplusplus;  // version of C++ name mangling to support
-    bool markdown;          // enable Markdown replacements in Ddoc
-    bool vmarkdown;         // list instances of Markdown replacements in Ddoc
     bool showGaggedErrors;  // print gagged errors anyway
     bool printErrorContext;  // print errors with the error context (the error line in the source file)
     bool manual;            // open browser on compiler manual
@@ -185,27 +180,14 @@ struct Param
     DString objname;   // .obj file output name
     DString libname;   // .lib file output name
 
-    bool doDocComments;  // process embedded documentation comments
-    DString docdir;      // write documentation file to docdir directory
-    DString docname;     // write documentation file to docname
-    Array<const char *> ddocfiles;  // macro include files for Ddoc
-
-    bool doHdrGeneration;  // process embedded documentation comments
-    DString hdrdir;        // write 'header' file to docdir directory
-    DString hdrname;       // write 'header' file to docname
-    bool hdrStripPlainFunctions; // strip the bodies of plain (non-template) functions
-
-    CxxHeaderMode doCxxHdrGeneration;  // write 'Cxx header' file
-    DString cxxhdrdir;        // write 'header' file to docdir directory
-    DString cxxhdrname;       // write 'header' file to docname
-
-    bool doJsonGeneration;    // write JSON file
-    DString jsonfilename;     // write JSON file to jsonfilename
+    Output ddoc;              // Generate embedded documentation comments
+    Output dihdr;             // Generate `.di` 'header' files
+    Output cxxhdr;            // Generate 'Cxx header' file
+    Output json;              // Generate JSON file
     unsigned jsonFieldFlags;  // JSON field flags to include
-
-    OutBuffer *mixinOut;                // write expanded mixins for debugging
-    const char *mixinFile;             // .mixin file output name
-    int mixinLines;                     // Number of lines in writeMixins
+    Output makeDeps;          // Generate make file dependencies
+    Output mixinOut;          // write expanded mixins for debugging
+    Output moduleDeps;        // Generate `.deps` module dependencies
 
     unsigned debuglevel;   // debug level
     Array<const char *> *debugids;     // debug identifiers
@@ -213,21 +195,13 @@ struct Param
     unsigned versionlevel; // version level
     Array<const char *> *versionids;   // version identifiers
 
-    DString defaultlibname;     // default library for non-debug builds
-    DString debuglibname;       // default library for debug builds
-    DString mscrtlib;           // MS C runtime library
-
-    DString moduleDepsFile;     // filename for deps output
-    OutBuffer *moduleDeps;      // contents to be written to deps file
-
-    bool emitMakeDeps;                // whether to emit makedeps
-    DString makeDepsFile;             // filename for makedeps output
-    Array<const char *> makeDeps;     // dependencies for makedeps
 
     MessageStyle messageStyle;  // style of file/line annotations on messages
 
     bool run;           // run resulting executable
     Strings runargs;    // arguments for executable
+
+    Array<const char *> cppswitches; // preprocessor switches
 
     // Linker stuff
     Array<const char *> objfiles;
@@ -295,6 +269,8 @@ struct Global
     unsigned varSequenceNumber;
 
     FileManager* fileManager;
+
+    FileName (*preprocess)(FileName, const char*, Array<const char *>& cppswitches, bool&);
 
     /* Start gagging. Return the current number of gagged errors
      */

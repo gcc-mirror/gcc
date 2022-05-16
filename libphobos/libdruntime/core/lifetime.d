@@ -200,12 +200,10 @@ Returns: The newly constructed object.
 T emplace(T, Args...)(void[] chunk, auto ref Args args)
     if (is(T == class))
 {
-    import core.internal.traits : maxAlignment;
-
     enum classSize = __traits(classInstanceSize, T);
     assert(chunk.length >= classSize, "chunk size too small.");
 
-    enum alignment = maxAlignment!(void*, typeof(T.tupleof));
+    enum alignment = __traits(classInstanceAlignment, T);
     assert((cast(size_t) chunk.ptr) % alignment == 0, "chunk is not aligned.");
 
     return emplace!T(cast(T)(chunk.ptr), forward!args);
@@ -242,9 +240,7 @@ T emplace(T, Args...)(void[] chunk, auto ref Args args)
         int virtualGetI() { return i; }
     }
 
-    import core.internal.traits : classInstanceAlignment;
-
-    align(classInstanceAlignment!C) byte[__traits(classInstanceSize, C)] buffer;
+    align(__traits(classInstanceAlignment, C)) byte[__traits(classInstanceSize, C)] buffer;
     C c = emplace!C(buffer[], 42);
     assert(c.virtualGetI() == 42);
 }
@@ -290,7 +286,8 @@ T emplace(T, Args...)(void[] chunk, auto ref Args args)
     }
 
     int var = 6;
-    align(__conv_EmplaceTestClass.alignof) ubyte[__traits(classInstanceSize, __conv_EmplaceTestClass)] buf;
+    align(__traits(classInstanceAlignment, __conv_EmplaceTestClass))
+        ubyte[__traits(classInstanceSize, __conv_EmplaceTestClass)] buf;
     auto support = (() @trusted => cast(__conv_EmplaceTestClass)(buf.ptr))();
 
     auto fromRval = emplace!__conv_EmplaceTestClass(support, 1);
@@ -1198,7 +1195,7 @@ pure nothrow @safe /* @nogc */ unittest
     }
     void[] buf;
 
-    static align(A.alignof) byte[__traits(classInstanceSize, A)] sbuf;
+    static align(__traits(classInstanceAlignment, A)) byte[__traits(classInstanceSize, A)] sbuf;
     buf = sbuf[];
     auto a = emplace!A(buf, 55);
     assert(a.x == 55 && a.y == 55);

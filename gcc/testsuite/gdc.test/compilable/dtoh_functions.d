@@ -8,9 +8,9 @@ TEST_OUTPUT:
 #pragma once
 
 #include <assert.h>
+#include <math.h>
 #include <stddef.h>
 #include <stdint.h>
-#include <math.h>
 
 #ifdef CUSTOM_D_ARRAY_TYPE
 #define _d_dynamicArray CUSTOM_D_ARRAY_TYPE
@@ -78,6 +78,8 @@ extern int32_t baz4(int32_t x = 42);
 extern size_t baz5(size_t x = 42);
 
 extern size_t& bazRef(size_t& x);
+
+extern size_t bazOut(size_t& x);
 
 enum class E : int64_t
 {
@@ -215,6 +217,11 @@ extern (C++) size_t baz5(size_t x = 42)
 }
 
 extern (C++) ref size_t bazRef(return ref size_t x)
+{
+    return x;
+}
+
+extern (C++) size_t bazOut(out size_t x)
 {
     return x;
 }
