@@ -1394,7 +1394,7 @@ or any notes about the implementation.
         <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p0553r4.html">
         P0553R4 </link>
       </entry>
-      <entry align="center"> 10.1 </entry>
+      <entry align="center"> 9.1 </entry>
       <entry> <code>__cpp_lib_bitops &gt;= 201907L</code> (since 9.4, see Note 1) </entry>
     </row>
 
