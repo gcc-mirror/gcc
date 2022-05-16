@@ -28,6 +28,10 @@
 # error "compatibility-condvar-c++0x.cc must be compiled with -std=gnu++11"
 #endif
 
+#if _GLIBCXX_INLINE_VERSION
+# error "compatibility-thread-c++0x.cc is not needed for gnu-versioned-namespace"
+#endif
+
 #if defined(_GLIBCXX_HAS_GTHREADS) && defined(_GLIBCXX_USE_C99_STDINT_TR1)
 
 #define condition_variable_any condition_variable_anyXX
