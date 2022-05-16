@@ -1775,6 +1775,11 @@ package body Atree is
 
          --  Mark the copy as Ghost depending on the current Ghost region
 
+         if Nkind (New_Id) in N_Entity then
+            Set_Is_Checked_Ghost_Entity (New_Id, False);
+            Set_Is_Ignored_Ghost_Entity (New_Id, False);
+         end if;
+
          Mark_New_Ghost_Node (New_Id);
 
          New_Node_Debugging_Output (New_Id);
