@@ -1665,6 +1665,11 @@ struct null_assignment_sm_context : public sm_context
   {
     delete d;
   }
+  void warn (const supernode *, const gimple *,
+	     const svalue *, pending_diagnostic *d) FINAL OVERRIDE
+  {
+    delete d;
+  }
 
   tree get_diagnostic_tree (tree expr) FINAL OVERRIDE
   {
@@ -1706,6 +1711,10 @@ struct null_assignment_sm_context : public sm_context
   const program_state *get_old_program_state () const FINAL OVERRIDE
   {
     return m_old_state;
+  }
+  const program_state *get_new_program_state () const FINAL OVERRIDE
+  {
+    return m_new_state;
   }
 
   const program_state *m_old_state;
@@ -2048,15 +2057,7 @@ diagnostic_manager::add_events_for_superedge (const path_builder &pb,
       break;
 
     case SUPEREDGE_CALL:
-      {
-	emission_path->add_event
-	  (new call_event (eedge,
-			   (last_stmt
-			    ? last_stmt->location
-			    : UNKNOWN_LOCATION),
-			   src_point.get_fndecl (),
-			   src_stack_depth));
-      }
+      pd->add_call_event (eedge, emission_path);
       break;
 
     case SUPEREDGE_INTRAPROCEDURAL_CALL:

@@ -464,6 +464,10 @@ Objective-C and Objective-C++ Dialects}.
 -Wno-analyzer-use-after-free @gol
 -Wno-analyzer-use-of-pointer-in-stale-stack-frame @gol
 -Wno-analyzer-use-of-uninitialized-value @gol
+-Wno-analyzer-va-arg-type-mismatch @gol
+-Wno-analyzer-va-list-exhausted @gol
+-Wno-analyzer-va-list-leak @gol
+-Wno-analyzer-va-list-use-after-va-end @gol
 -Wno-analyzer-write-to-const @gol
 -Wno-analyzer-write-to-string-literal @gol
 }
@@ -9689,6 +9693,10 @@ Enabling this option effectively enables the following warnings:
 -Wanalyzer-use-after-free @gol
 -Wanalyzer-use-of-pointer-in-stale-stack-frame @gol
 -Wanalyzer-use-of-uninitialized-value @gol
+-Wanalyzer-va-arg-type-mismatch @gol
+-Wanalyzer-va-list-exhausted @gol
+-Wanalyzer-va-list-leak @gol
+-Wanalyzer-va-list-use-after-va-end @gol
 -Wanalyzer-write-to-const @gol
 -Wanalyzer-write-to-string-literal @gol
 }
@@ -9970,6 +9978,53 @@ to disable it.
 
 This diagnostic warns for paths through the code in which a pointer
 is dereferenced that points to a variable in a stale stack frame.
+
+@item -Wno-analyzer-va-arg-type-mismatch
+@opindex Wanalyzer-va-arg-type-mismatch
+@opindex Wno-analyzer-va-arg-type-mismatch
+This warning requires @option{-fanalyzer}, which enables it; use
+@option{-Wno-analyzer-va-arg-type-mismatch}
+to disable it.
+
+This diagnostic warns for interprocedural paths through the code for which
+the analyzer detects an attempt to use @code{va_arg} to extract a value
+passed to a variadic call, but uses a type that does not match that of
+the expression passed to the call.
+
+@item -Wno-analyzer-va-list-exhausted
+@opindex Wanalyzer-va-list-exhausted
+@opindex Wno-analyzer-va-list-exhausted
+This warning requires @option{-fanalyzer}, which enables it; use
+@option{-Wno-analyzer-va-list-exhausted}
+to disable it.
+
+This diagnostic warns for interprocedural paths through the code for which
+the analyzer detects an attempt to use @code{va_arg} to access the next
+value passed to a variadic call, but all of the values in the
+@code{va_list} have already been consumed.
+
+@item -Wno-analyzer-va-list-leak
+@opindex Wanalyzer-va-list-leak
+@opindex Wno-analyzer-va-list-leak
+This warning requires @option{-fanalyzer}, which enables it; use
+@option{-Wno-analyzer-va-list-leak}
+to disable it.
+
+This diagnostic warns for interprocedural paths through the code for which
+the analyzer detects that @code{va_start} or @code{va_copy} has been called
+on a @code{va_list} without a corresponding call to @code{va_end}.
+
+@item -Wno-analyzer-va-list-use-after-va-end
+@opindex Wanalyzer-va-list-use-after-va-end
+@opindex Wno-analyzer-va-list-use-after-va-end
+This warning requires @option{-fanalyzer}, which enables it; use
+@option{-Wno-analyzer-va-list-use-after-va-end}
+to disable it.
+
+This diagnostic warns for interprocedural paths through the code for which
+the analyzer detects an attempt to use a @code{va_list}  after
+@code{va_end} has been called on it.
+@code{va_list}.
 
 @item -Wno-analyzer-write-to-const
 @opindex Wanalyzer-write-to-const

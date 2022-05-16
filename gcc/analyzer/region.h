@@ -61,7 +61,8 @@ enum region_kind
   RK_ALLOCA,
   RK_STRING,
   RK_BIT_RANGE,
-  RK_UNKNOWN
+  RK_VAR_ARG,
+  RK_UNKNOWN,
 };
 
 /* Region and its subclasses.
@@ -90,6 +91,7 @@ enum region_kind
      alloca_region (RK_ALLOCA)
      string_region (RK_STRING)
      bit_range_region (RK_BIT_RANGE)
+     var_arg_region (RK_VAR_ARG)
      unknown_region (RK_UNKNOWN).  */
 
 /* Abstract base class for representing ways of accessing chunks of memory.
@@ -131,6 +133,8 @@ public:
   dyn_cast_string_region () const { return NULL; }
   virtual const bit_range_region *
   dyn_cast_bit_range_region () const { return NULL; }
+  virtual const var_arg_region *
+  dyn_cast_var_arg_region () const { return NULL; }
 
   virtual void accept (visitor *v) const;
 
@@ -1245,6 +1249,87 @@ is_a_helper <const bit_range_region *>::test (const region *reg)
 
 template <> struct default_hash_traits<bit_range_region::key_t>
 : public member_function_hash_traits<bit_range_region::key_t>
+{
+  static const bool empty_zero_p = true;
+};
+
+namespace ana {
+
+/* A region for the N-th vararg within a frame_region for a variadic call.  */
+
+class var_arg_region : public region
+{
+public:
+  /* A support class for uniquifying instances of var_arg_region.  */
+  struct key_t
+  {
+    key_t (const frame_region *parent, unsigned idx)
+    : m_parent (parent), m_idx (idx)
+    {
+      gcc_assert (parent);
+    }
+
+    hashval_t hash () const
+    {
+      inchash::hash hstate;
+      hstate.add_ptr (m_parent);
+      hstate.add_int (m_idx);
+      return hstate.end ();
+    }
+
+    bool operator== (const key_t &other) const
+    {
+      return (m_parent == other.m_parent
+	      && m_idx == other.m_idx);
+    }
+
+    void mark_deleted ()
+    {
+      m_parent = reinterpret_cast<const frame_region *> (1);
+    }
+    void mark_empty () { m_parent = NULL; }
+    bool is_deleted () const
+    {
+      return m_parent == reinterpret_cast<const frame_region *> (1);
+    }
+    bool is_empty () const { return m_parent == NULL; }
+
+    const frame_region *m_parent;
+    unsigned m_idx;
+  };
+
+  var_arg_region (unsigned id, const frame_region *parent,
+		  unsigned idx)
+  : region (complexity (parent), id, parent, NULL_TREE),
+    m_idx (idx)
+  {}
+
+  const var_arg_region *
+  dyn_cast_var_arg_region () const FINAL OVERRIDE { return this; }
+
+  enum region_kind get_kind () const FINAL OVERRIDE { return RK_VAR_ARG; }
+
+  void dump_to_pp (pretty_printer *pp, bool simple) const FINAL OVERRIDE;
+
+  const frame_region *get_frame_region () const;
+  unsigned get_index () const { return m_idx; }
+
+private:
+  unsigned m_idx;
+};
+
+} // namespace ana
+
+template <>
+template <>
+inline bool
+is_a_helper <const var_arg_region *>::test (const region *reg)
+{
+  return reg->get_kind () == RK_VAR_ARG;
+}
+
+template <> struct default_hash_traits<var_arg_region::key_t>
+: public member_function_hash_traits<var_arg_region::key_t>
 {
   static const bool empty_zero_p = true;
 };

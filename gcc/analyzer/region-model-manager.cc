@@ -1601,6 +1601,25 @@ region_model_manager::get_bit_range (const region *parent, tree type,
   return bit_range_reg;
 }
 
+/* Return the region that describes accessing the IDX-th variadic argument
+   within PARENT_FRAME, creating it if necessary.  */
+
+const var_arg_region *
+region_model_manager::get_var_arg_region (const frame_region *parent_frame,
+					  unsigned idx)
+{
+  gcc_assert (parent_frame);
+
+  var_arg_region::key_t key (parent_frame, idx);
+  if (var_arg_region *reg = m_var_arg_regions.get (key))
+    return reg;
+
+  var_arg_region *var_arg_reg
+    = new var_arg_region (alloc_region_id (), parent_frame, idx);
+  m_var_arg_regions.put (key, var_arg_reg);
+  return var_arg_reg;
+}
+
 /* If we see a tree code we don't know how to handle, rather than
    ICE or generate bogus results, create a dummy region, and notify
    CTXT so that it can mark the new state as being not properly
@@ -1773,6 +1792,7 @@ region_model_manager::log_stats (logger *logger, bool show_objs) const
   log_uniq_map (logger, show_objs, "symbolic_region", m_symbolic_regions);
   log_uniq_map (logger, show_objs, "string_region", m_string_map);
   log_uniq_map (logger, show_objs, "bit_range_region", m_bit_range_regions);
+  log_uniq_map (logger, show_objs, "var_arg_region", m_var_arg_regions);
   logger->log ("  # managed dynamic regions: %i",
 	       m_managed_dynamic_regions.length ());
   m_store_mgr.log_stats (logger, show_objs);

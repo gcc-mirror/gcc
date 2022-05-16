@@ -435,6 +435,23 @@ public:
        var, var_old_sval, current, d);
   }
 
+  void warn (const supernode *snode, const gimple *stmt,
+	     const svalue *sval, pending_diagnostic *d) FINAL OVERRIDE
+  {
+    LOG_FUNC (get_logger ());
+    gcc_assert (d); // take ownership
+    impl_region_model_context old_ctxt
+      (m_eg, m_enode_for_diag, m_old_state, m_new_state, NULL, NULL, NULL);
+
+    state_machine::state_t current
+      = (sval
+	 ? m_old_smap->get_state (sval, m_eg.get_ext_state ())
+	 : m_old_smap->get_global_state ());
+    m_eg.get_diagnostic_manager ().add_diagnostic
+      (&m_sm, m_enode_for_diag, snode, stmt, m_stmt_finder,
+       NULL_TREE, sval, current, d);
+  }
+
   /* Hook for picking more readable trees for SSA names of temporaries,
      so that rather than e.g.
        "double-free of '<unknown>'"
@@ -510,6 +527,11 @@ public:
   const program_state *get_old_program_state () const FINAL OVERRIDE
   {
     return m_old_state;
+  }
+
+  const program_state *get_new_program_state () const FINAL OVERRIDE
+  {
+    return m_new_state;
   }
 
   log_user m_logger;

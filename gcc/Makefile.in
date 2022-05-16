@@ -1278,7 +1278,8 @@ ANALYZER_OBJS = \
 	analyzer/store.o \
 	analyzer/supergraph.o \
 	analyzer/svalue.o \
-	analyzer/trimmed-graph.o
+	analyzer/trimmed-graph.o \
+	analyzer/varargs.o
 
 # Language-independent object files.
 # We put the *-match.o and insn-*.o files first so that a parallel make
