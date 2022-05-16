@@ -65,6 +65,16 @@ Feature-testing recommendations for C++</link>.
     </row>
 
     <row>
+      <entry> Bit operations </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p0553r4.html">
+        P0553R4 </link>
+      </entry>
+      <entry align="center"> 9.1 </entry>
+      <entry> <code>__cpp_lib_bitops &gt;= 201907L</code> (macro only defined since 9.4) </entry>
+    </row>
+
+    <row>
       <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>  Extending <code>make_shared</code> to Support Arrays </entry>
       <entry>
@@ -421,7 +431,7 @@ Feature-testing recommendations for C++</link>.
 	</link>
       </entry>
       <entry align="center"> 9.1 </entry>
-      <entry />
+      <entry> <code>__cpp_lib_int_pow2 &gt;= 201806L</code> (macro only defined since 9.4) </entry>
     </row>
 
     <row>
