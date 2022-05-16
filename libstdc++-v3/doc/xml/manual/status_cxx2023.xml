@@ -1,0 +1,232 @@
+<section xmlns="http://docbook.org/ns/docbook" version="5.0"
+   xml:id="status.iso.2023" xreflabel="Status C++ 2023">
+<?dbhtml filename="status_iso_cxx2023.html"?>
+
+<info><title>C++ 2023</title>
+  <keywordset>
+    <keyword>ISO C++</keyword>
+    <keyword>2023</keyword>
+  </keywordset>
+</info>
+
+<para>
+In this implementation the <literal>-std=gnu++23</literal> or
+<literal>-std=c++23</literal> flag must be used to enable language
+and library
+features. See <link linkend="manual.intro.using.flags">dialect</link>
+options. The pre-defined symbol
+<constant>__cplusplus</constant> is used to check for the
+presence of the required flag.
+</para>
+
+<para>
+This section describes the C++23 and library TS support in mainline GCC,
+not in any particular release.
+</para>
+
+<para>
+The following table lists new library features that have been accepted into
+the C++23 working draft. The "Proposal" column provides a link to the
+ISO C++ committee proposal that describes the feature, while the "Status"
+column indicates the first version of GCC that contains an implementation of
+this feature (if it has been implemented).
+A dash (&#x2014;) in the status column indicates that the changes in the proposal
+either do not affect the code in libstdc++, or the changes are not required for conformance.
+The "SD-6 Feature Test / Notes" column shows the corresponding macro or header from
+<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://isocpp.org/std/standing-documents/sd-6-sg10-feature-test-recommendations">SD-6:
+Feature-testing recommendations for C++</link> (where applicable)
+or any notes about the implementation.
+</para>
+
+<table frame="all" xml:id="table.cxx23_features">
+<title>C++ 2023 Library Features</title>
+
+<tgroup cols="4" align="left" colsep="0" rowsep="1">
+<colspec colname="c1"/>
+<colspec colname="c2"/>
+<colspec colname="c3"/>
+<colspec colname="c4"/>
+  <thead>
+    <row>
+      <entry>Library Feature</entry>
+      <entry>Proposal</entry>
+      <entry>Status</entry>
+      <entry>SD-6 Feature Test / Notes</entry>
+    </row>
+  </thead>
+
+  <tbody>
+
+    <row>
+      <entry namest="c1" nameend="c4" align="left">
+        <emphasis role="bold">Ranges and Views</emphasis>
+      </entry>
+    </row>
+
+    <row>
+      <entry> Range constructor for std::string_view </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p1989r2.pdf">
+        P1989R2
+        </link>
+      </entry>
+      <entry align="center"> 11.1 </entry>
+      <entry />
+    </row>
+
+    <row>
+      <entry> <code>join_view</code> should join all views of ranges </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p2328r1.html">
+        P2328R1
+        </link>
+      </entry>
+      <entry align="center"> 11.2 </entry>
+      <entry />
+    </row>
+
+
+    <row>
+      <entry> Clarifying range adaptor objects </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p2281r1.html">
+        P2281R1
+        </link>
+      </entry>
+      <entry align="center"> 11.1 </entry>
+      <entry />
+    </row>
+
+    <row>
+      <entry> Views should not be required to be default constructible </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p2325r3.html">
+        P2325R3
+        </link>
+      </entry>
+      <entry align="center"> 11.3 </entry>
+      <entry> <code>__cpp_lib_ranges &gt;= 202106L</code> </entry>
+    </row>
+
+    <row>
+      <entry> Conditionally borrowed ranges </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/p2017r1.html">
+        P2017R1
+        </link>
+      </entry>
+      <entry align="center"> 11.1 </entry>
+      <entry />
+    </row>
+
+    <row>
+      <entry> Require <code>span</code> &amp; <code>basic_string_view</code> to be Trivially Copyable </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p2251r1.pdf">
+        P2251R1
+        </link>
+      </entry>
+      <entry align="center"> Yes </entry>
+      <entry />
+    </row>
+
+    <row>
+      <entry namest="c1" nameend="c4" align="left">
+        <emphasis role="bold">Compile-time programming</emphasis>
+      </entry>
+    </row>
+
+    <row>
+      <entry> A proposal for a type trait to detect scoped enumerations </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/p1048r1.pdf">
+        P1048R1
+        </link>
+      </entry>
+      <entry align="center"> 11.1 </entry>
+      <entry> <code>__cpp_lib_is_scoped_enum &gt;= 202011L</code> </entry>
+    </row>
+
+    <row>
+      <entry> std::to_underlying for enumerations </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p1682r3.html">
+        P1682R3
+        </link>
+      </entry>
+      <entry align="center"> 11.1 </entry>
+      <entry> <code>__cpp_lib_to_underlying &gt;= 202102L</code> </entry>
+    </row>
+
+    <row>
+      <entry namest="c1" nameend="c4" align="left">
+        <emphasis role="bold">Strings and text</emphasis>
+      </entry>
+    </row>
+
+    <row>
+      <entry> string contains function </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/p1679r3.html">
+        P1679R3
+        </link>
+      </entry>
+      <entry align="center"> 11.1 </entry>
+      <entry> <code>__cpp_lib_string_contains &gt;= 202011L</code> </entry>
+    </row>
+
+    <row>
+      <entry namest="c1" nameend="c4" align="left">
+        <emphasis role="bold">Miscellaneous</emphasis>
+      </entry>
+    </row>
+
+    <row>
+      <entry> Inheriting from <code>std::variant</code> </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p2162r2.html">
+        P2162R2
+        </link>
+      </entry>
+      <entry align="center"> 11.3 </entry>
+      <entry> <code>__cpp_lib_variant &gt;= 202102L</code> </entry>
+    </row>
+
+    <row>
+      <entry> Printing <code>volatile</code> Pointers </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p1147r1.html">
+        P1147R1
+        </link>
+      </entry>
+      <entry align="center"> 11.3 </entry>
+      <entry />
+    </row>
+
+    <row>
+      <entry> Clarifying the status of the "C headers" </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p2340r1.html">
+        P2340R1
+        </link>
+      </entry>
+      <entry align="center"> Yes </entry>
+      <entry />
+    </row>
+
+    <row>
+      <entry> Relax Requirements for time_point::clock </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/p2212r2.html">
+        P2212R2
+        </link>
+      </entry>
+      <entry align="center"> Yes </entry>
+      <entry />
+    </row>
+
+  </tbody>
+</tgroup>
+</table>
+
+</section>
