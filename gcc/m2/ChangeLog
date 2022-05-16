@@ -1,3 +1,59 @@
+2022-05-16   Gaius Mulley   <gaius.mulley@southwales.ac.uk>
+
+	* plugin/m2rte.cc (alias.h, predict.h, tm.h)
+        (stringpool.h, toplev.h, basic-block.h, hash-table.h)
+        (vec.h, ggc.h, basic-block.h, tree-ssa-alias.h)
+        (internal-fn.h, gimple-fold.h, tree-eh.h, gimple-expr.h)
+        (is-a.h):  Header file includes removed.
+        (plugin/m2rte$(exeext).so) Make dependent upon
+        $(GCC_HEADER_DEPENDENCIES_FOR_M2) and insn-addr-common.h.
+
+2022-05-15   Gaius Mulley   <gaius.mulley@southwales.ac.uk>
+
+        * m2/Make-lang.in (GCC_HEADER_DEPENDENCIES_FOR_M2): New define.
+        m2/gm2-gcc/%.o: Add GCC_HEADER_DEPENDENCIES_FOR_M2 as a dependent.
+        m2/gm2-lang.o: Add GCC_HEADER_DEPENDENCIES_FOR_M2 as a dependent.
+        m2/stor-layout.o: Add GCC_HEADER_DEPENDENCIES_FOR_M2 as a
+        dependent.
+        m2/m2pp.o: Add GCC_HEADER_DEPENDENCIES_FOR_M2 as a
+        dependent.
+        m2/gm2-gcc/rtegraph.o: Add GCC_HEADER_DEPENDENCIES_FOR_M2 as a
+        dependent.
+        c-family/m2pp.o: Add GCC_HEADER_DEPENDENCIES_FOR_M2 as a
+        dependent.  Added new comments.
+        * m2/tools-src/calcpath: Remove -e option to realpath
+        to help the build on FreeBSD.
+
+2022-05-13   Gaius Mulley   <gaius.mulley@southwales.ac.uk>
+
+        * gm2-compiler/ppg.mod: Reduced the line wrap marker
+        to ensure texi pretty print rules do not cause overful box errors
+        in gm2 pdf documentation.
+        * gm2-libs-iso/SYSTEM.def: Shorten the comment lines
+        and parameter lists per line to avoid overful box errors.
+        * gm2-libs/Assertion.def: Shorten the comment lines
+        and parameter lists per line to avoid overful box errors.
+        * gm2-libs/Builtins.def: Shorten the comment lines
+        and parameter lists per line to avoid overful box errors.
+        * gm2-libs/Builtins.mod: Name change n to nbytes for memcpy,
+        memset and memmove.
+        * gm2-libs/DynamicStrings.def: Shorten the comment lines
+        and parameter lists per line to avoid overful box errors.
+        * gm2-libs/Environment.def: Shorten the comment lines
+        and parameter lists per line to avoid overful box errors.
+        * gm2-libs/FIO.def: Shorten the comment lines
+        and parameter lists per line to avoid overful box errors.
+        * gm2-libs/FIO.mod: Shorten the comment lines
+        and parameter lists per line to avoid overful box errors.
+        * gm2-libs/FormatStrings.def: Shorten the comment lines
+        and parameter lists per line to avoid overful box errors.
+        * gm2-libs/FpuIO.def: Shorten the comment lines
+        and parameter lists per line to avoid overful box errors.
+        * gm2-libs/GetOpt.def: Shorten the comment lines
+        and parameter lists per line to avoid overful box errors.
+        * gm2-libs/SYSTEM.def: Shorten the comment lines
+        and parameter lists per line to avoid overful box errors.
+
 2022-05-05   Gaius Mulley   <gaius.mulley@southwales.ac.uk>
 
         * m2-link-support.h (GM2CC): Add CC1_SPEC to the cc1/cc1plus
