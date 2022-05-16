@@ -1757,7 +1757,31 @@ or any notes about the implementation.
         <a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p2251r1.pdf" target="_top">
         P2251R1
         </a>
-      </td><td align="center"> Yes </td><td align="left"> </td></tr><tr><td colspan="4" align="left">
+      </td><td align="center"> Yes </td><td align="left"> </td></tr><tr><td align="left"> Repairing input range adaptors and counted_iterator </td><td align="left">
+        <a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p2259r1.html" target="_top">
+        P2259R1
+        </a>
+      </td><td align="center"> 12.1 </td><td align="left"> </td></tr><tr><td align="left"> Superior String Splitting </td><td align="left">
+        <a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p2210r2.html" target="_top">
+        P2210R2
+        </a>
+      </td><td align="center"> 12.1 </td><td align="left"> </td></tr><tr><td align="left"> What is a <code class="code">view</code>? </td><td align="left">
+        <a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p2415r2.html" target="_top">
+        P2415R2
+        </a>
+      </td><td align="center"> 12.1 </td><td align="left"> <code class="code">__cpp_lib_ranges &gt;= 202110L</code> </td></tr><tr><td align="left"> Fix istream_view </td><td align="left">
+        <a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p2432r1.pdf" target="_top">
+        P2432R1
+        </a>
+      </td><td align="center"> 12.1 </td><td align="left"> </td></tr><tr bgcolor="#C8B0B0"><td align="left"> <code class="code">starts_with</code> and <code class="code">ends_with</code> </td><td align="left">
+        <a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p1659r3.html" target="_top">
+        P1659R3
+        </a>
+      </td><td align="center"> </td><td align="left"> <code class="code">__cpp_lib_ranges_starts_ends_with &gt;= 202106L</code> </td></tr><tr bgcolor="#C8B0B0"><td align="left"> <code class="code">zip</code> </td><td align="left">
+        <a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p2321r2.html" target="_top">
+        P2321R2
+        </a>
+      </td><td align="center"> </td><td align="left"> <code class="code">__cpp_lib_ranges_zip &gt;= 202110L</code> </td></tr><tr><td colspan="4" align="left">
         <span class="bold"><strong>Compile-time programming</strong></span>
       </td></tr><tr><td align="left"> A proposal for a type trait to detect scoped enumerations </td><td align="left">
         <a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/p1048r1.pdf" target="_top">
@@ -1767,13 +1791,67 @@ or any notes about the implementation.
         <a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p1682r3.html" target="_top">
         P1682R3
         </a>
-      </td><td align="center"> 11.1 </td><td align="left"> <code class="code">__cpp_lib_to_underlying &gt;= 202102L</code> </td></tr><tr><td colspan="4" align="left">
+      </td><td align="center"> 11.1 </td><td align="left"> <code class="code">__cpp_lib_to_underlying &gt;= 202102L</code> </td></tr><tr><td align="left"> Missing constexpr in std::optional and std::variant </td><td align="left">
+        <a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p2231r1.html" target="_top">
+        P2231R1
+        </a>
+      </td><td align="center">
+	<div class="informaltable"><table class="informaltable" border="0"><colgroup><col /></colgroup><tbody><tr><td> 11.3 (<code class="code">optional</code>) </td></tr><tr><td> 12.1 (<code class="code">variant</code>) </td></tr></tbody></table></div>
+      </td><td align="left">
+	<div class="informaltable"><table class="informaltable" border="0"><colgroup><col /></colgroup><tbody><tr><td> <code class="code">__cpp_lib_constexpr_optional &gt;= 202106L</code> </td></tr><tr><td> <code class="code">__cpp_lib_variant &gt;= 202106L</code> </td></tr></tbody></table></div>
+      </td></tr><tr><td align="left"> Making <code class="code">std::unique_ptr</code> constexpr </td><td align="left">
+        <a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p2273r3.pdf" target="_top">
+        P2273R3
+        </a>
+      </td><td align="center"> 12.1 </td><td align="left"> <code class="code">__cpp_lib_constexpr_memory &gt;= 202202L</code> </td></tr><tr><td align="left"> Making <code class="code">std::type_info::operator==</code> constexpr </td><td align="left">
+        <a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p1328r1.html" target="_top">
+        P1328R1
+        </a>
+      </td><td align="center"> 12.1 </td><td align="left"> <code class="code">__cpp_lib_constexpr_typeinfo &gt;= 202106L</code> </td></tr><tr bgcolor="#C8B0B0"><td align="left"> constexpr for <code class="code">&lt;cmath&gt;</code> and <code class="code">&lt;cstdlib&gt;</code> </td><td align="left">
+        <a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p0533r9.pdf" target="_top">
+        P0533R9
+        </a>
+      </td><td align="center"> </td><td align="left"> <code class="code">__cpp_lib_constexpr_cmath &gt;= 202202L</code> </td></tr><tr bgcolor="#C8B0B0"><td align="left"> Deprecate std::aligned_storage and std::aligned_union </td><td align="left">
+        <a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p1413r3.pdf" target="_top">
+        P1413R3
+        </a>
+      </td><td align="center"> </td><td align="left"> </td></tr><tr bgcolor="#C8B0B0"><td align="left"> A type trait to detect reference binding to temporary </td><td align="left">
+        <a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p2255r2.html" target="_top">
+        P2255R2
+        </a>
+      </td><td align="center"> </td><td align="left"> <code class="code">__cpp_lib_reference_from_temporary &gt;= 202202L</code> </td></tr><tr><td colspan="4" align="left">
         <span class="bold"><strong>Strings and text</strong></span>
       </td></tr><tr><td align="left"> string contains function </td><td align="left">
         <a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/p1679r3.html" target="_top">
         P1679R3
         </a>
-      </td><td align="center"> 11.1 </td><td align="left"> <code class="code">__cpp_lib_string_contains &gt;= 202011L</code> </td></tr><tr><td colspan="4" align="left">
+      </td><td align="center"> 11.1 </td><td align="left"> <code class="code">__cpp_lib_string_contains &gt;= 202011L</code> </td></tr><tr><td align="left"> Prohibit std::basic_string and std::basic_string_view construction from nullptr </td><td align="left">
+        <a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/p2166r1.html" target="_top">
+        P2166R1
+        </a>
+      </td><td align="center"> 12.1 </td><td align="left"> </td></tr><tr><td align="left"> basic_string::resize_and_overwrite </td><td align="left">
+        <a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p1072r10.html" target="_top">
+        P1072R10
+        </a>
+      </td><td align="center"> 12.1 </td><td align="left"> <code class="code">__cpp_lib_resize_and_overwrite &gt;= 202110L</code> </td></tr><tr><td align="left"> A strstream replacement using span&lt;charT&gt; as buffer </td><td align="left">
+        <a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p0448r4.pdf" target="_top">
+        P0448R4
+        </a>
+      </td><td align="center"> 12.1 </td><td align="left"> <code class="code">__cpp_lib_spanstream &gt;= 202106L</code> </td></tr><tr><td colspan="4" align="left">
+        <span class="bold"><strong>Containers</strong></span>
+      </td></tr><tr><td align="left"> Iterator pair constructors for stack and queue </td><td align="left">
+        <a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p1425r4.pdf" target="_top">
+        P1425R4
+        </a>
+      </td><td align="center"> 12.1 </td><td align="left"> <code class="code">__cpp_lib_adaptor_iterator_pair_constructor &gt;= 202106L</code> </td></tr><tr><td align="left"> Stop overconstraining allocators in container deduction guides </td><td align="left">
+        <a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p1518r2.html" target="_top">
+        P1518R2
+        </a>
+      </td><td align="center"> 12.1 </td><td align="left"> </td></tr><tr bgcolor="#C8B0B0"><td align="left"> Heterogeneous erasure overloads for associative containers </td><td align="left">
+        <a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p2077r3.html" target="_top">
+        P2077R3
+        </a>
+      </td><td align="center"> </td><td align="left"> <code class="code">__cpp_lib_associative_heterogeneous_erasure &gt;= 202110L</code> </td></tr><tr><td colspan="4" align="left">
         <span class="bold"><strong>Miscellaneous</strong></span>
       </td></tr><tr><td align="left"> Inheriting from <code class="code">std::variant</code> </td><td align="left">
         <a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p2162r2.html" target="_top">
@@ -1783,7 +1861,47 @@ or any notes about the implementation.
         <a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p1147r1.html" target="_top">
         P1147R1
         </a>
-      </td><td align="center"> 11.3 </td><td align="left"> </td></tr><tr><td align="left"> Clarifying the status of the "C headers" </td><td align="left">
+      </td><td align="center"> 11.3 </td><td align="left"> </td></tr><tr><td align="left"> A Proposal to add stacktrace library </td><td align="left">
+        <a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/p0881r7.html" target="_top">
+        P0881R7
+        </a>
+      </td><td align="center"> 12.1 </td><td align="left"> <code class="code">__cpp_lib_stacktrace &gt;= 202011L</code> </td></tr><tr><td align="left"> Add a pmr alias for std::stacktrace </td><td align="left">
+        <a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p2301r1.html" target="_top">
+        P2301R1
+        </a>
+      </td><td align="center"> 12.1 </td><td align="left"> </td></tr><tr><td align="left"> <code class="code">std::expected</code> </td><td align="left">
+        <a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p0323r12.html" target="_top">
+        P0323R12
+        </a>
+      </td><td align="center"> 12.1 </td><td align="left"> <code class="code">__cpp_lib_expected &gt;= 202202L</code> </td></tr><tr><td align="left"> Monadic operations for std::optional </td><td align="left">
+        <a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p0798r8.html" target="_top">
+        P0798R8
+        </a>
+      </td><td align="center"> 12.1 </td><td align="left"> <code class="code">__cpp_lib_optional &gt;= 202110L</code> </td></tr><tr><td align="left"> <code class="code">move_only_function</code> </td><td align="left">
+        <a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p0288r9.html" target="_top">
+        P0288R9
+        </a>
+      </td><td align="center"> 12.1 </td><td align="left"> <code class="code">__cpp_lib_move_only_function &gt;= 202110L</code> </td></tr><tr><td align="left"> <code class="code">invoke_r</code> </td><td align="left">
+        <a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p2136r3.html" target="_top">
+        P2136R3
+        </a>
+      </td><td align="center"> 12.1 </td><td align="left"> <code class="code">__cpp_lib_invoke_r &gt;= 202106L</code> </td></tr><tr><td align="left"> Byteswapping for fun&amp;&amp;nuf </td><td align="left">
+        <a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p1272r4.html" target="_top">
+        P1272R4
+        </a>
+      </td><td align="center"> 12.1 </td><td align="left"> <code class="code">__cpp_lib_byteswap &gt;= 202110L</code> </td></tr><tr><td align="left"> Function to mark unreachable code </td><td align="left">
+        <a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p0627r6.pdf" target="_top">
+        P0627R6
+        </a>
+      </td><td align="center"> 12.1 </td><td align="left"> <code class="code">__cpp_lib_unreachable &gt;= 202202L</code> </td></tr><tr><td align="left"> Add a conditional noexcept specification to std::exchange </td><td align="left">
+        <a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p2401r0.html" target="_top">
+        P2401R0
+        </a>
+      </td><td align="center"> 12.1 </td><td align="left"> </td></tr><tr><td align="left"> Support C atomics in C++ </td><td align="left">
+        <a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/p0943r6.html" target="_top">
+        P0943R6
+        </a>
+      </td><td align="center"> 12.1 </td><td align="left"> <code class="code">__cpp_lib_stdatomic_h &gt;= 202011L</code> </td></tr><tr><td align="left"> Clarifying the status of the "C headers" </td><td align="left">
         <a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p2340r1.html" target="_top">
         P2340R1
         </a>
@@ -1791,7 +1909,11 @@ or any notes about the implementation.
         <a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/p2212r2.html" target="_top">
         P2212R2
         </a>
-      </td><td align="center"> Yes </td><td align="left"> </td></tr></tbody></table></div></div><br class="table-break" /></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="status.iso.tr1"></a>C++ TR1</h3></div></div></div><p>
+      </td><td align="center"> Yes </td><td align="left"> </td></tr><tr><td align="left"> Removing Garbage Collection Support </td><td align="left">
+        <a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p2186r2.html" target="_top">
+        P2186R2
+        </a>
+      </td><td align="center"> 12.1 </td><td align="left"> </td></tr></tbody></table></div></div><br class="table-break" /></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="status.iso.tr1"></a>C++ TR1</h3></div></div></div><p>
 This table is based on the table of contents of ISO/IEC DTR 19768,
 Doc No: N1836=05-0096, Date: 2005-06-24,
 "Draft Technical Report on C++ Library Extensions".
