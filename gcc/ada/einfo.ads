@@ -605,10 +605,10 @@ package Einfo is
 
 --    Checks_May_Be_Suppressed
 --       Defined in all entities. Set if a pragma Suppress or Unsuppress
---       mentions the entity specifically in the second argument. If this
---       flag is set the Global_Entity_Suppress and Local_Entity_Suppress
---       tables must be consulted to determine if there actually is an active
---       Suppress or Unsuppress pragma that applies to the entity.
+--       mentions the entity specifically in the second argument. If this flag
+--       is set the global and local suppress stacks must be consulted to
+--       determine if there actually is an active Suppress or Unsuppress pragma
+--       that applies to the entity.
 
 --    Class_Postconditions
 --       Defined on subprogram entities. Set if the subprogram has class-wide

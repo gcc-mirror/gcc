@@ -327,8 +327,8 @@ package Sem is
    --  using pragma Check_Name), are handled as follows. If a suppress or
    --  unsuppress pragma is encountered for a given entity, then the flag
    --  Checks_May_Be_Suppressed is set in the entity and an entry is made in
-   --  either the Local_Entity_Suppress stack (case of pragma that appears in
-   --  other than a package spec), or in the Global_Entity_Suppress stack (case
+   --  either the local suppress stack (case of pragma that appears in
+   --  other than a package spec), or in the global suppress stack (case
    --  of pragma that appears in a package spec, which is by the rule of RM
    --  11.5(7) applicable throughout the life of the entity). Similarly, a
    --  Suppress/Unsuppress pragma for a non-predefined check which does not
@@ -340,7 +340,7 @@ package Sem is
    --  other point is that we have to make sure that we have proper nested
    --  interaction between such specific pragmas and locally applied general
    --  pragmas applying to all entities. This is achieved by including in the
-   --  Local_Entity_Suppress table dummy entries with an empty Entity field
+   --  local suppress stack dummy entries with an empty Entity field
    --  that are applicable to all entities. A similar search is needed for any
    --  non-predefined check even if no specific entity is involved.
 
@@ -359,18 +359,18 @@ package Sem is
    --  applies, and gives the right result when such pragmas are used even
    --  in complex cases of nested Suppress and Unsuppress pragmas.
 
-   --  The Local_Entity_Suppress and Global_Entity_Suppress stacks are handled
-   --  using dynamic allocation and linked lists. We do not often use this
-   --  approach in the compiler (preferring to use extensible tables instead).
-   --  The reason we do it here is that scope stack entries save a pointer to
-   --  the current local stack top, which is also saved and restored on scope
-   --  exit. Furthermore for processing of generics we save pointers to the
-   --  top of the stack, so that the local stack is actually a tree of stacks
-   --  rather than a single stack, a structure that is easy to represent using
-   --  linked lists, but impossible to represent using a single table. Note
-   --  that because of the generic issue, we never release entries in these
-   --  stacks, but that's no big deal, since we are unlikely to have a huge
-   --  number of Suppress/Unsuppress entries in a single compilation.
+   --  The local and global suppress stacks are handled using dynamic
+   --  allocation and linked lists. We do not often use this approach in the
+   --  compiler (preferring to use extensible tables instead). The reason we do
+   --  it here is that scope stack entries save a pointer to the current local
+   --  stack top, which is also saved and restored on scope exit. Furthermore
+   --  for processing of generics we save pointers to the top of the stack, so
+   --  that the local stack is actually a tree of stacks rather than a single
+   --  stack, a structure that is easy to represent using linked lists, but
+   --  impossible to represent using a single table. Note that because of the
+   --  generic issue, we never release entries in these stacks, but that's no
+   --  big deal, since we are unlikely to have a huge number of
+   --  Suppress/Unsuppress entries in a single compilation.
 
    type Suppress_Stack_Entry;
    type Suppress_Stack_Entry_Ptr is access all Suppress_Stack_Entry;

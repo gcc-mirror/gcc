@@ -11000,7 +11000,7 @@ package body Sem_Prag is
                Scope_Suppress.Suppress (C) := Suppress_Case;
             end if;
 
-            --  Also make an entry in the Local_Entity_Suppress table
+            --  Also push an entry in the local suppress stack
 
             Push_Local_Suppress_Stack_Entry
               (Entity   => Empty,
