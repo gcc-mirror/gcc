@@ -8575,14 +8575,20 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	      else
 		{
 		  t = OMP_CLAUSE_DECL (c);
+		  while (TREE_CODE (t) == TREE_LIST)
+		    t = TREE_CHAIN (t);
 		  while (TREE_CODE (t) == INDIRECT_REF
 			 || TREE_CODE (t) == ARRAY_REF)
 		    t = TREE_OPERAND (t, 0);
 		}
 	    }
-	  bitmap_set_bit (&is_on_device_head, DECL_UID (t));
 	  if (VAR_P (t) || TREE_CODE (t) == PARM_DECL)
-	    cxx_mark_addressable (t);
+	    {
+	      bitmap_set_bit (&is_on_device_head, DECL_UID (t));
+	      if (!processing_template_decl
+		  && !cxx_mark_addressable (t))
+		remove = true;
+	    }
 	  goto check_dup_generic_t;
 
 	case OMP_CLAUSE_USE_DEVICE_ADDR:
