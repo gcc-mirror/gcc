@@ -124,6 +124,11 @@ class Collect_export_references : public Traverse
   void
   prepare_types(const std::vector<Named_object*>& sorted_exports);
 
+  // Third entry point (called after the method above), to find
+  // all types in expressions referenced by exports.
+  void
+  prepare_expressions(const std::vector<Named_object*>& sorted_exports);
+
  protected:
   // Override of parent class method.
   int
@@ -279,6 +284,28 @@ Collect_export_references::expression(Expression** pexpr)
     }
 
   return TRAVERSE_CONTINUE;
+}
+
+// Collect up the set of types mentioned in expressions of things we're exporting,
+// and collect all the packages encountered during type traversal, to make sure
+// we can declare things referered to indirectly (for example, in the body of an
+// exported inline function from another package).
+
+void
+Collect_export_references::prepare_expressions(const std::vector<Named_object*>& sorted_exports)
+{
+  for (std::vector<Named_object*>::const_iterator p = sorted_exports.begin();
+       p != sorted_exports.end();
+       ++p)
+    {
+      Named_object* no = *p;
+      if (no->classification() == Named_object::NAMED_OBJECT_CONST)
+        {
+          Expression* e = no->const_value()->expr();
+          if (e != NULL)
+            Expression::traverse(&e, this);
+        }
+    }
 }
 
 // Collect up the set of types mentioned in things we're exporting, and collect
@@ -891,6 +918,7 @@ Export::export_globals(const std::string& package_name,
   // Collect up the set of types mentioned in things we're exporting,
   // and any packages that may be referred to indirectly.
   collect.prepare_types(sorted_exports);
+  collect.prepare_expressions(sorted_exports);
 
   // Assign indexes to all exported types and types referenced by
   // things we're exporting.  Return value is index of first non-exported
