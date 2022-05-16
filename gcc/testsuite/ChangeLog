@@ -1,3 +1,22 @@
+2022-05-15  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105589
+	PR c++/105191
+	PR c++/92385
+	* g++.dg/cpp0x/initlist-array16.C: New test.
+
+2022-05-15  Jason Merrill  <jason@redhat.com>
+
+	PR c++/104470
+	* g++.dg/cpp2a/explicit11.C: Second example also ill-formed.
+	* g++.dg/cpp2a/class-deduction-alias12.C: New test.
+
+2022-05-15  Jason Merrill  <jason@redhat.com>
+
+	PR c++/102651
+	PR c++/49387
+	* g++.dg/rtti/typeid-complete1.C: New test.
+
 2022-05-13  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:

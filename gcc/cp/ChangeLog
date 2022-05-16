@@ -1,3 +1,27 @@
+2022-05-15  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105589
+	PR c++/105191
+	PR c++/92385
+	* init.cc (build_value_init): Handle class in template.
+
+2022-05-15  Jason Merrill  <jason@redhat.com>
+
+	PR c++/104470
+	* cp-tree.h (enum tsubst_flags): Add tf_dguide.
+	* pt.cc (tsubst_aggr_type): Check it.
+	(tsubst_baselink, tsubst_copy): Check it.
+	(maybe_dependent_member_ref): Check it.
+	(instantiate_alias_template): Handle it.
+	(build_deduction_guide): Set it.
+
+2022-05-15  Jason Merrill  <jason@redhat.com>
+
+	PR c++/102651
+	PR c++/49387
+	* rtti.cc (get_tinfo_decl_direct): Don't complete_type.
+	(emit_tinfo_decl): Update tdesc type if needed.
+
 2022-05-06  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:
