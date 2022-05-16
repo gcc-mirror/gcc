@@ -335,30 +335,4 @@ bool directly_supported_p (code_helper, tree, optab_subtype = optab_default);
 
 internal_fn get_conditional_internal_fn (code_helper, tree);
 
-extern tree gimple_build (gimple_seq *, location_t,
-			  code_helper, tree, tree);
-inline tree
-gimple_build (gimple_seq *seq, code_helper code, tree type, tree op0)
-{
-  return gimple_build (seq, UNKNOWN_LOCATION, code, type, op0);
-}
-
-extern tree gimple_build (gimple_seq *, location_t,
-			  code_helper, tree, tree, tree);
-inline tree
-gimple_build (gimple_seq *seq, code_helper code, tree type, tree op0,
-	      tree op1)
-{
-  return gimple_build (seq, UNKNOWN_LOCATION, code, type, op0, op1);
-}
-
-extern tree gimple_build (gimple_seq *, location_t,
-			  code_helper, tree, tree, tree, tree);
-inline tree
-gimple_build (gimple_seq *seq, code_helper code, tree type, tree op0,
-	      tree op1, tree op2)
-{
-  return gimple_build (seq, UNKNOWN_LOCATION, code, type, op0, op1, op2);
-}
-
 #endif  /* GCC_GIMPLE_MATCH_H */

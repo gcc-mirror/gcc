@@ -8667,6 +8667,29 @@ gimple_build_valueize (tree op)
   return NULL_TREE;
 }
 
+/* Helper for gimple_build to perform the final insertion of stmts on SEQ.  */
+
+static inline void
+gimple_build_insert_seq (gimple_stmt_iterator *gsi,
+			 bool before, gsi_iterator_update update,
+			 gimple_seq seq)
+{
+  if (before)
+    {
+      if (gsi->bb)
+	gsi_insert_seq_before (gsi, seq, update);
+      else
+	gsi_insert_seq_before_without_update (gsi, seq, update);
+    }
+  else
+    {
+      if (gsi->bb)
+	gsi_insert_seq_after (gsi, seq, update);
+      else
+	gsi_insert_seq_after_without_update (gsi, seq, update);
+    }
+}
+
 /* Build the expression CODE OP0 of type TYPE with location LOC,
    simplifying it first if possible.  Returns the built
    expression value and inserts statements possibly defining it
@@ -8699,27 +8722,14 @@ gimple_build (gimple_stmt_iterator *gsi,
       gimple_set_location (stmt, loc);
       gimple_seq_add_stmt_without_update (&seq, stmt);
     }
-  if (before)
-    {
-      if (gsi->bb)
-	gsi_insert_seq_before (gsi, seq, update);
-      else
-	gsi_insert_seq_before_without_update (gsi, seq, update);
-    }
-  else
-    {
-      if (gsi->bb)
-	gsi_insert_seq_after (gsi, seq, update);
-      else
-	gsi_insert_seq_after_without_update (gsi, seq, update);
-    }
+  gimple_build_insert_seq (gsi, before, update, seq);
   return res;
 }
 
 /* Build the expression OP0 CODE OP1 of type TYPE with location LOC,
    simplifying it first if possible.  Returns the built
-   expression value and appends statements possibly defining it
-   to SEQ.  */
+   expression value inserting any new statements at GSI honoring BEFORE
+   and UPDATE.  */
 
 tree
 gimple_build (gimple_stmt_iterator *gsi,
@@ -8738,27 +8748,14 @@ gimple_build (gimple_stmt_iterator *gsi,
       gimple_set_location (stmt, loc);
       gimple_seq_add_stmt_without_update (&seq, stmt);
     }
-  if (before)
-    {
-      if (gsi->bb)
-	gsi_insert_seq_before (gsi, seq, update);
-      else
-	gsi_insert_seq_before_without_update (gsi, seq, update);
-    }
-  else
-    {
-      if (gsi->bb)
-	gsi_insert_seq_after (gsi, seq, update);
-      else
-	gsi_insert_seq_after_without_update (gsi, seq, update);
-    }
+  gimple_build_insert_seq (gsi, before, update, seq);
   return res;
 }
 
 /* Build the expression (CODE OP0 OP1 OP2) of type TYPE with location LOC,
    simplifying it first if possible.  Returns the built
-   expression value and appends statements possibly defining it
-   to SEQ.  */
+   expression value inserting any new statements at GSI honoring BEFORE
+   and UPDATE.  */
 
 tree
 gimple_build (gimple_stmt_iterator *gsi,
@@ -8783,31 +8780,22 @@ gimple_build (gimple_stmt_iterator *gsi,
       gimple_set_location (stmt, loc);
       gimple_seq_add_stmt_without_update (&seq, stmt);
     }
-  if (before)
-    {
-      if (gsi->bb)
-	gsi_insert_seq_before (gsi, seq, update);
-      else
-	gsi_insert_seq_before_without_update (gsi, seq, update);
-    }
-  else
-    {
-      if (gsi->bb)
-	gsi_insert_seq_after (gsi, seq, update);
-      else
-	gsi_insert_seq_after_without_update (gsi, seq, update);
-    }
+  gimple_build_insert_seq (gsi, before, update, seq);
   return res;
 }
 
 /* Build the call FN () with a result of type TYPE (or no result if TYPE is
    void) with a location LOC.  Returns the built expression value (or NULL_TREE
-   if TYPE is void) and appends statements possibly defining it to SEQ.  */
+   if TYPE is void) inserting any new statements at GSI honoring BEFORE
+   and UPDATE.  */
 
 tree
-gimple_build (gimple_seq *seq, location_t loc, combined_fn fn, tree type)
+gimple_build (gimple_stmt_iterator *gsi,
+	      bool before, gsi_iterator_update update,
+	      location_t loc, combined_fn fn, tree type)
 {
   tree res = NULL_TREE;
+  gimple_seq seq = NULL;
   gcall *stmt;
   if (internal_fn_p (fn))
     stmt = gimple_build_call_internal (as_internal_fn (fn), 0);
@@ -8822,21 +8810,25 @@ gimple_build (gimple_seq *seq, location_t loc, combined_fn fn, tree type)
       gimple_call_set_lhs (stmt, res);
     }
   gimple_set_location (stmt, loc);
-  gimple_seq_add_stmt_without_update (seq, stmt);
+  gimple_seq_add_stmt_without_update (&seq, stmt);
+  gimple_build_insert_seq (gsi, before, update, seq);
   return res;
 }
 
 /* Build the call FN (ARG0) with a result of type TYPE
    (or no result if TYPE is void) with location LOC,
    simplifying it first if possible.  Returns the built
-   expression value (or NULL_TREE if TYPE is void) and appends
-   statements possibly defining it to SEQ.  */
+   expression value (or NULL_TREE if TYPE is void) inserting any new
+   statements at GSI honoring BEFORE and UPDATE.  */
 
 tree
-gimple_build (gimple_seq *seq, location_t loc, combined_fn fn,
+gimple_build (gimple_stmt_iterator *gsi,
+	      bool before, gsi_iterator_update update,
+	      location_t loc, combined_fn fn,
 	      tree type, tree arg0)
 {
-  tree res = gimple_simplify (fn, type, arg0, seq, gimple_build_valueize);
+  gimple_seq seq = NULL;
+  tree res = gimple_simplify (fn, type, arg0, &seq, gimple_build_valueize);
   if (!res)
     {
       gcall *stmt;
@@ -8853,22 +8845,27 @@ gimple_build (gimple_seq *seq, location_t loc, combined_fn fn,
 	  gimple_call_set_lhs (stmt, res);
 	}
       gimple_set_location (stmt, loc);
-      gimple_seq_add_stmt_without_update (seq, stmt);
+      gimple_seq_add_stmt_without_update (&seq, stmt);
     }
+  gimple_build_insert_seq  (gsi, before, update, seq);
   return res;
 }
 
 /* Build the call FN (ARG0, ARG1) with a result of type TYPE
    (or no result if TYPE is void) with location LOC,
    simplifying it first if possible.  Returns the built
-   expression value (or NULL_TREE if TYPE is void) and appends
-   statements possibly defining it to SEQ.  */
+   expression value (or NULL_TREE if TYPE is void) inserting any new
+   statements at GSI honoring BEFORE and UPDATE.  */
 
 tree
-gimple_build (gimple_seq *seq, location_t loc, combined_fn fn,
+gimple_build (gimple_stmt_iterator *gsi,
+	      bool before, gsi_iterator_update update,
+	      location_t loc, combined_fn fn,
 	      tree type, tree arg0, tree arg1)
 {
-  tree res = gimple_simplify (fn, type, arg0, arg1, seq, gimple_build_valueize);
+  gimple_seq seq = NULL;
+  tree res = gimple_simplify (fn, type, arg0, arg1, &seq,
+			      gimple_build_valueize);
   if (!res)
     {
       gcall *stmt;
@@ -8885,23 +8882,27 @@ gimple_build (gimple_seq *seq, location_t loc, combined_fn fn,
 	  gimple_call_set_lhs (stmt, res);
 	}
       gimple_set_location (stmt, loc);
-      gimple_seq_add_stmt_without_update (seq, stmt);
+      gimple_seq_add_stmt_without_update (&seq, stmt);
     }
+  gimple_build_insert_seq (gsi, before, update, seq);
   return res;
 }
 
 /* Build the call FN (ARG0, ARG1, ARG2) with a result of type TYPE
    (or no result if TYPE is void) with location LOC,
    simplifying it first if possible.  Returns the built
-   expression value (or NULL_TREE if TYPE is void) and appends
-   statements possibly defining it to SEQ.  */
+   expression value (or NULL_TREE if TYPE is void) inserting any new
+   statements at GSI honoring BEFORE and UPDATE.  */
 
 tree
-gimple_build (gimple_seq *seq, location_t loc, combined_fn fn,
+gimple_build (gimple_stmt_iterator *gsi,
+	      bool before, gsi_iterator_update update,
+	      location_t loc, combined_fn fn,
 	      tree type, tree arg0, tree arg1, tree arg2)
 {
+  gimple_seq seq = NULL;
   tree res = gimple_simplify (fn, type, arg0, arg1, arg2,
-			      seq, gimple_build_valueize);
+			      &seq, gimple_build_valueize);
   if (!res)
     {
       gcall *stmt;
@@ -8919,92 +8920,107 @@ gimple_build (gimple_seq *seq, location_t loc, combined_fn fn,
 	  gimple_call_set_lhs (stmt, res);
 	}
       gimple_set_location (stmt, loc);
-      gimple_seq_add_stmt_without_update (seq, stmt);
+      gimple_seq_add_stmt_without_update (&seq, stmt);
     }
+  gimple_build_insert_seq (gsi, before, update, seq);
   return res;
 }
 
 /* Build CODE (OP0) with a result of type TYPE (or no result if TYPE is
    void) with location LOC, simplifying it first if possible.  Returns the
-   built expression value (or NULL_TREE if TYPE is void) and appends
-   statements possibly defining it to SEQ.  */
+   built expression value (or NULL_TREE if TYPE is void) inserting any new
+   statements at GSI honoring BEFORE and UPDATE.  */
 
 tree
-gimple_build (gimple_seq *seq, location_t loc, code_helper code,
-	      tree type, tree op0)
+gimple_build (gimple_stmt_iterator *gsi,
+	      bool before, gsi_iterator_update update,
+	      location_t loc, code_helper code, tree type, tree op0)
 {
   if (code.is_tree_code ())
-    return gimple_build (seq, loc, tree_code (code), type, op0);
-  return gimple_build (seq, loc, combined_fn (code), type, op0);
+    return gimple_build (gsi, before, update, loc, tree_code (code), type, op0);
+  return gimple_build (gsi, before, update, loc, combined_fn (code), type, op0);
 }
 
 /* Build CODE (OP0, OP1) with a result of type TYPE (or no result if TYPE is
    void) with location LOC, simplifying it first if possible.  Returns the
-   built expression value (or NULL_TREE if TYPE is void) and appends
-   statements possibly defining it to SEQ.  */
+   built expression value (or NULL_TREE if TYPE is void) inserting any new
+   statements at GSI honoring BEFORE and UPDATE.  */
 
 tree
-gimple_build (gimple_seq *seq, location_t loc, code_helper code,
-	      tree type, tree op0, tree op1)
+gimple_build (gimple_stmt_iterator *gsi,
+	      bool before, gsi_iterator_update update,
+	      location_t loc, code_helper code, tree type, tree op0, tree op1)
 {
   if (code.is_tree_code ())
-    return gimple_build (seq, loc, tree_code (code), type, op0, op1);
-  return gimple_build (seq, loc, combined_fn (code), type, op0, op1);
+    return gimple_build (gsi, before, update,
+			 loc, tree_code (code), type, op0, op1);
+  return gimple_build (gsi, before, update,
+		       loc, combined_fn (code), type, op0, op1);
 }
 
 /* Build CODE (OP0, OP1, OP2) with a result of type TYPE (or no result if TYPE
    is void) with location LOC, simplifying it first if possible.  Returns the
-   built expression value (or NULL_TREE if TYPE is void) and appends statements
-   possibly defining it to SEQ.  */
+   built expression value (or NULL_TREE if TYPE is void) inserting any new
+   statements at GSI honoring BEFORE and UPDATE.  */
 
 tree
-gimple_build (gimple_seq *seq, location_t loc, code_helper code,
+gimple_build (gimple_stmt_iterator *gsi,
+	      bool before, gsi_iterator_update update,
+	      location_t loc, code_helper code,
 	      tree type, tree op0, tree op1, tree op2)
 {
   if (code.is_tree_code ())
-    return gimple_build (seq, loc, tree_code (code), type, op0, op1, op2);
-  return gimple_build (seq, loc, combined_fn (code), type, op0, op1, op2);
+    return gimple_build (gsi, before, update,
+			 loc, tree_code (code), type, op0, op1, op2);
+  return gimple_build (gsi, before, update,
+		       loc, combined_fn (code), type, op0, op1, op2);
 }
 
 /* Build the conversion (TYPE) OP with a result of type TYPE
    with location LOC if such conversion is neccesary in GIMPLE,
    simplifying it first.
-   Returns the built expression value and appends
-   statements possibly defining it to SEQ.  */
+   Returns the built expression inserting any new statements
+   at GSI honoring BEFORE and UPDATE.  */
 
 tree
-gimple_convert (gimple_seq *seq, location_t loc, tree type, tree op)
+gimple_convert (gimple_stmt_iterator *gsi,
+		bool before, gsi_iterator_update update,
+		location_t loc, tree type, tree op)
 {
   if (useless_type_conversion_p (type, TREE_TYPE (op)))
     return op;
-  return gimple_build (seq, loc, NOP_EXPR, type, op);
+  return gimple_build (gsi, before, update, loc, NOP_EXPR, type, op);
 }
 
 /* Build the conversion (ptrofftype) OP with a result of a type
    compatible with ptrofftype with location LOC if such conversion
    is neccesary in GIMPLE, simplifying it first.
-   Returns the built expression value and appends
-   statements possibly defining it to SEQ.  */
+   Returns the built expression value inserting any new statements
+   at GSI honoring BEFORE and UPDATE.  */
 
 tree
-gimple_convert_to_ptrofftype (gimple_seq *seq, location_t loc, tree op)
+gimple_convert_to_ptrofftype (gimple_stmt_iterator *gsi,
+			      bool before, gsi_iterator_update update,
+			      location_t loc, tree op)
 {
   if (ptrofftype_p (TREE_TYPE (op)))
     return op;
-  return gimple_convert (seq, loc, sizetype, op);
+  return gimple_convert (gsi, before, update, loc, sizetype, op);
 }
 
 /* Build a vector of type TYPE in which each element has the value OP.
-   Return a gimple value for the result, appending any new statements
-   to SEQ.  */
+   Return a gimple value for the result, inserting any new statements
+   at GSI honoring BEFORE and UPDATE.  */
 
 tree
-gimple_build_vector_from_val (gimple_seq *seq, location_t loc, tree type,
-			      tree op)
+gimple_build_vector_from_val (gimple_stmt_iterator *gsi,
+			      bool before, gsi_iterator_update update,
+			      location_t loc, tree type, tree op)
 {
   if (!TYPE_VECTOR_SUBPARTS (type).is_constant ()
       && !CONSTANT_CLASS_P (op))
-    return gimple_build (seq, loc, VEC_DUPLICATE_EXPR, type, op);
+    return gimple_build (gsi, before, update,
+			 loc, VEC_DUPLICATE_EXPR, type, op);
 
   tree res, vec = build_vector_from_val (type, op);
   if (is_gimple_val (vec))
@@ -9013,15 +9029,17 @@ gimple_build_vector_from_val (gimple_seq *seq, location_t loc, tree type,
     res = make_ssa_name (type);
   else
     res = create_tmp_reg (type);
+  gimple_seq seq = NULL;
   gimple *stmt = gimple_build_assign (res, vec);
   gimple_set_location (stmt, loc);
-  gimple_seq_add_stmt_without_update (seq, stmt);
+  gimple_seq_add_stmt_without_update (&seq, stmt);
+  gimple_build_insert_seq (gsi, before, update, seq);
   return res;
 }
 
 /* Build a vector from BUILDER, handling the case in which some elements
-   are non-constant.  Return a gimple value for the result, appending any
-   new instructions to SEQ.
+   are non-constant.  Return a gimple value for the result, inserting
+   any new instructions to GSI honoring BEFORE and UPDATE.
 
    BUILDER must not have a stepped encoding on entry.  This is because
    the function is not geared up to handle the arithmetic that would
@@ -9029,14 +9047,16 @@ gimple_build_vector_from_val (gimple_seq *seq, location_t loc, tree type,
    is known to be constant should use BUILDER->build () directly.  */
 
 tree
-gimple_build_vector (gimple_seq *seq, location_t loc,
-		     tree_vector_builder *builder)
+gimple_build_vector (gimple_stmt_iterator *gsi,
+		     bool before, gsi_iterator_update update,
+		     location_t loc, tree_vector_builder *builder)
 {
   gcc_assert (builder->nelts_per_pattern () <= 2);
   unsigned int encoded_nelts = builder->encoded_nelts ();
   for (unsigned int i = 0; i < encoded_nelts; ++i)
     if (!CONSTANT_CLASS_P ((*builder)[i]))
       {
+	gimple_seq seq = NULL;
 	tree type = builder->type ();
 	unsigned int nelts = TYPE_VECTOR_SUBPARTS (type).to_constant ();
 	vec<constructor_elt, va_gc> *v;
@@ -9051,7 +9071,8 @@ gimple_build_vector (gimple_seq *seq, location_t loc,
 	  res = create_tmp_reg (type);
 	gimple *stmt = gimple_build_assign (res, build_constructor (type, v));
 	gimple_set_location (stmt, loc);
-	gimple_seq_add_stmt_without_update (seq, stmt);
+	gimple_seq_add_stmt_without_update (&seq, stmt);
+	gimple_build_insert_seq (gsi, before, update, seq);
 	return res;
       }
   return builder->build ();
@@ -9063,18 +9084,21 @@ gimple_build_vector (gimple_seq *seq, location_t loc,
    Return the tree node representing this size, it is of TREE_TYPE TYPE.  */
 
 tree
-gimple_build_round_up (gimple_seq *seq, location_t loc, tree type,
+gimple_build_round_up (gimple_stmt_iterator *gsi,
+		       bool before, gsi_iterator_update update,
+		       location_t loc, tree type,
 		       tree old_size, unsigned HOST_WIDE_INT align)
 {
   unsigned HOST_WIDE_INT tg_mask = align - 1;
   /* tree new_size = (old_size + tg_mask) & ~tg_mask;  */
   gcc_assert (INTEGRAL_TYPE_P (type));
   tree tree_mask = build_int_cst (type, tg_mask);
-  tree oversize = gimple_build (seq, loc, PLUS_EXPR, type, old_size,
-				tree_mask);
+  tree oversize = gimple_build (gsi, before, update,
+				loc, PLUS_EXPR, type, old_size, tree_mask);
 
   tree mask = build_int_cst (type, -align);
-  return gimple_build (seq, loc, BIT_AND_EXPR, type, oversize, mask);
+  return gimple_build (gsi, before, update,
+		       loc, BIT_AND_EXPR, type, oversize, mask);
 }
 
 /* Return true if the result of assignment STMT is known to be non-negative.
