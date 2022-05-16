@@ -5643,6 +5643,9 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
 
+# The plug-in depends on pthreads
+LDFLAGS="-pthread"
+
 # Check whether -static-libgcc is supported.
 saved_LDFLAGS="$LDFLAGS"
 LDFLAGS="$LDFLAGS -static-libgcc"
@@ -6008,6 +6011,16 @@ else
   LTO_PLUGIN_USE_SYMVER_SUN_TRUE='#'
   LTO_PLUGIN_USE_SYMVER_SUN_FALSE=
 fi
+
+
+# Check for thread headers.
+ac_fn_c_check_header_mongrel "$LINENO" "pthread.h" "ac_cv_header_pthread_h" "$ac_includes_default"
+if test "x$ac_cv_header_pthread_h" = xyes; then :
+
+$as_echo "#define HAVE_PTHREAD_H 1" >>confdefs.h
+
+fi
+
 
 
 case `pwd` in
@@ -12081,7 +12094,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 12084 "configure"
+#line 12097 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -12187,7 +12200,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 12190 "configure"
+#line 12203 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
