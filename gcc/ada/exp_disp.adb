@@ -358,6 +358,12 @@ package body Exp_Disp is
       procedure Build_Package_Dispatch_Tables (N : Node_Id);
       --  Build static dispatch tables associated with package declaration N
 
+      procedure Make_And_Insert_Dispatch_Table (Typ : Entity_Id);
+      --  Build the dispatch table of the tagged type Typ and insert it at the
+      --  end of Target_List after wrapping it in the Actions list of a freeze
+      --  node, so that it is skipped by Sem_Elab (Expand_Freeze_Record_Type
+      --  does the same for nonstatic dispatch tables).
+
       ---------------------------
       -- Build_Dispatch_Tables --
       ---------------------------
@@ -410,8 +416,7 @@ package body Exp_Disp is
                then
                   null;
                else
-                  Insert_List_After_And_Analyze (Last (Target_List),
-                    Make_DT (Defining_Entity (D)));
+                  Make_And_Insert_Dispatch_Table (Defining_Entity (D));
                end if;
 
             --  Handle private types of library level tagged types. We must
@@ -434,8 +439,7 @@ package body Exp_Disp is
                     and then not Is_Concurrent_Type (E2)
                   then
                      Exchange_Declarations (E1);
-                     Insert_List_After_And_Analyze (Last (Target_List),
-                       Make_DT (E1));
+                     Make_And_Insert_Dispatch_Table (E1);
                      Exchange_Declarations (E2);
                   end if;
                end;
@@ -468,6 +472,25 @@ package body Exp_Disp is
 
          Pop_Scope;
       end Build_Package_Dispatch_Tables;
+
+      ------------------------------------
+      -- Make_And_Insert_Dispatch_Table --
+      ------------------------------------
+
+      procedure Make_And_Insert_Dispatch_Table (Typ : Entity_Id) is
+         F_Typ : constant Entity_Id := Create_Itype (E_Class_Wide_Type, Typ);
+         --  The code generator discards freeze nodes of CW types after
+         --  evaluating their side effects, so create an artificial one.
+
+         F_Nod : constant Node_Id := Make_Freeze_Entity (Sloc (Typ));
+
+      begin
+         Set_Is_Frozen (F_Typ);
+         Set_Entity    (F_Nod, F_Typ);
+         Set_Actions   (F_Nod, Make_DT (Typ));
+
+         Insert_After_And_Analyze (Last (Target_List), F_Nod);
+      end Make_And_Insert_Dispatch_Table;
 
    --  Start of processing for Build_Static_Dispatch_Tables
 

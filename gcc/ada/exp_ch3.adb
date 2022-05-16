@@ -5763,7 +5763,7 @@ package body Exp_Ch3 is
 
                --  Generate dispatch table of locally defined tagged type.
                --  Dispatch tables of library level tagged types are built
-               --  later (see Analyze_Declarations).
+               --  later (see Build_Static_Dispatch_Tables).
 
                if not Building_Static_DT (Typ) then
                   Append_Freeze_Actions (Typ, Make_DT (Typ));
@@ -6905,37 +6905,6 @@ package body Exp_Ch3 is
         and then Related_Type (Def_Id) = Implementation_Base_Type (Typ)
       then
          return;
-      end if;
-
-      --  First we do special processing for objects of a tagged type where
-      --  this is the point at which the type is frozen. The creation of the
-      --  dispatch table and the initialization procedure have to be deferred
-      --  to this point, since we reference previously declared primitive
-      --  subprograms.
-
-      --  Force construction of dispatch tables of library level tagged types
-
-      if Tagged_Type_Expansion
-        and then Building_Static_Dispatch_Tables
-        and then Is_Library_Level_Entity (Def_Id)
-        and then Is_Library_Level_Tagged_Type (Base_Typ)
-        and then Ekind (Base_Typ) in E_Record_Type
-                                   | E_Protected_Type
-                                   | E_Task_Type
-        and then not Has_Dispatch_Table (Base_Typ)
-      then
-         declare
-            New_Nodes : List_Id := No_List;
-
-         begin
-            if Is_Concurrent_Type (Base_Typ) then
-               New_Nodes := Make_DT (Corresponding_Record_Type (Base_Typ));
-            else
-               New_Nodes := Make_DT (Base_Typ);
-            end if;
-
-            Insert_List_Before (N, New_Nodes);
-         end;
       end if;
 
       --  Make shared memory routines for shared passive variable
