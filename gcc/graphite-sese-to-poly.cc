@@ -649,14 +649,14 @@ build_poly_sr_1 (poly_bb_p pbb, gimple *stmt, tree var, enum poly_dr_type kind,
 		 isl_map *acc, isl_set *subscript_sizes)
 {
   scop_p scop = PBB_SCOP (pbb);
-  /* Each scalar variables has a unique alias set number starting from
+  /* Each scalar variable has a unique alias set number starting from
      the maximum alias set assigned to a dr.  */
   int alias_set = scop->max_alias_set + SSA_NAME_VERSION (var);
   subscript_sizes = isl_set_fix_si (subscript_sizes, isl_dim_set, 0,
 				    alias_set);
 
   /* Add a constrain to the ACCESSES polyhedron for the alias set of
-     data reference DR.  */
+     the reference.  */
   isl_constraint *c
     = isl_equality_alloc (isl_local_space_from_space (isl_map_get_space (acc)));
   c = isl_constraint_set_constant_si (c, -alias_set);
