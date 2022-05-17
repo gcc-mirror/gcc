@@ -74,11 +74,26 @@ namespace pmr
 #endif
 
   // Global memory resources
-  memory_resource* new_delete_resource() noexcept;
-  memory_resource* null_memory_resource() noexcept;
-  memory_resource* set_default_resource(memory_resource* __r) noexcept;
-  memory_resource* get_default_resource() noexcept
-    __attribute__((__returns_nonnull__));
+
+  /// A pmr::memory_resource that uses `new` to allocate memory
+  [[nodiscard, __gnu__::__returns_nonnull__, __gnu__::__const__]]
+  memory_resource*
+  new_delete_resource() noexcept;
+
+  /// A pmr::memory_resource that always throws `bad_alloc`
+  [[nodiscard, __gnu__::__returns_nonnull__, __gnu__::__const__]]
+  memory_resource*
+  null_memory_resource() noexcept;
+
+  /// Replace the default memory resource pointer
+  [[__gnu__::__returns_nonnull__]]
+  memory_resource*
+  set_default_resource(memory_resource* __r) noexcept;
+
+  /// Get the current default memory resource pointer
+  [[__gnu__::__returns_nonnull__]]
+  memory_resource*
+  get_default_resource() noexcept;
 
   // Pool resource classes
   struct pool_options;
@@ -111,6 +126,7 @@ namespace pmr
     __attribute__((__nonnull__))
     { return do_deallocate(__p, __bytes, __alignment); }
 
+    [[nodiscard]]
     bool
     is_equal(const memory_resource& __other) const noexcept
     { return do_is_equal(__other); }
@@ -126,11 +142,13 @@ namespace pmr
     do_is_equal(const memory_resource& __other) const noexcept = 0;
   };
 
+  [[nodiscard]]
   inline bool
   operator==(const memory_resource& __a, const memory_resource& __b) noexcept
   { return &__a == &__b || __a.is_equal(__b); }
 
 #if __cpp_impl_three_way_comparison < 201907L
+  [[nodiscard]]
   inline bool
   operator!=(const memory_resource& __a, const memory_resource& __b) noexcept
   { return !(__a == __b); }
@@ -369,6 +387,7 @@ namespace pmr
     };
 
   template<typename _Tp1, typename _Tp2>
+    [[nodiscard]]
     inline bool
     operator==(const polymorphic_allocator<_Tp1>& __a,
 	       const polymorphic_allocator<_Tp2>& __b) noexcept
@@ -376,6 +395,7 @@ namespace pmr
 
 #if __cpp_impl_three_way_comparison < 201907L
   template<typename _Tp1, typename _Tp2>
+    [[nodiscard]]
     inline bool
     operator!=(const polymorphic_allocator<_Tp1>& __a,
 	       const polymorphic_allocator<_Tp2>& __b) noexcept
