@@ -20,7 +20,8 @@ foo(double *a, double *b, double *c, double *d, double *r, int size, unsigned or
 
     double x = 3 * tmp + d[i] + tmp;
 
-    /* This should not be unswitched as it's mutually excluded with case 0 ... 4.  */
+    /* This and the case 0 ... 4 condition should only be unswitched once
+       since they are mutually excluded.  */
     if (order >= 5)
       x += 2;
 
@@ -31,5 +32,4 @@ foo(double *a, double *b, double *c, double *d, double *r, int size, unsigned or
   return 0;
 }
 
-/* { dg-final { scan-tree-dump "Unswitching loop on condition: order.* <= 4" "unswitch" } } */
 /* { dg-final { scan-tree-dump-times "Unswitching loop on condition" 1 "unswitch" } } */

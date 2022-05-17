@@ -15,8 +15,8 @@ void foo (int a, int b, int c, int n)
     }
 }
 
-/* We fail to unswitch all permutations of the predicates.  */
-/* { dg-final { scan-tree-dump-times "Unswitching loop on condition" 7 "unswitch" { xfail *-*-* } } } */
+/* Verify we can unswitch all permutations of the predicates.  */
+/* { dg-final { scan-tree-dump-times "Unswitching loop on condition" 7 "unswitch" } } */
 /* { dg-final { scan-tree-dump "Unswitching loop on condition: a" "unswitch" } } */
 /* { dg-final { scan-tree-dump "Unswitching loop on condition: b" "unswitch" } } */
 /* { dg-final { scan-tree-dump "Unswitching loop on condition: c" "unswitch" } } */

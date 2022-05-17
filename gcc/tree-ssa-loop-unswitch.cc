@@ -109,10 +109,11 @@ static gimple_ranger *ranger = NULL;
 
 struct unswitch_predicate
 {
+  /* CTOR for a switch edge predicate.  */
   unswitch_predicate (tree cond, tree lhs_, int edge_index_, edge e)
   : condition (cond), lhs (lhs_), true_range (), false_range (),
     merged_true_range (), merged_false_range (),
-    edge_index (edge_index_), handled (false)
+    edge_index (edge_index_)
   {
     gcc_assert (!(e->flags & (EDGE_TRUE_VALUE|EDGE_FALSE_VALUE)));
     if (irange::supports_type_p (TREE_TYPE (lhs)))
@@ -125,17 +126,15 @@ struct unswitch_predicate
 		&& !false_range.undefined_p ())
 	      false_range.invert ();
 	  }
-	else
-	  /* Huge switches are not supported by Ranger but without a range
-	     we cannot simplify the copies.  */
-	  handled = true;
       }
+    num = predicates->length ();
+    predicates->safe_push (this);
   }
 
+  /* CTOR for an if true edge predicate.  */
   unswitch_predicate (tree cond, tree lhs_, edge e)
   : condition (cond), lhs (lhs_), true_range (), false_range (),
-    merged_true_range (), merged_false_range (),
-    handled (false)
+    merged_true_range (), merged_false_range ()
   {
     gcc_assert (e->flags & EDGE_TRUE_VALUE);
     edge_index = (EDGE_SUCC (e->src, 0) == e) ? 0 : 1;
@@ -150,6 +149,8 @@ struct unswitch_predicate
 	      false_range.invert ();
 	  }
       }
+    num = predicates->length ();
+    predicates->safe_push (this);
   }
 
   /* Copy ranges for purpose of usage in predicate path.  */
@@ -177,13 +178,18 @@ struct unswitch_predicate
      in the successor vector.  */
   int edge_index;
 
-  /* True if the predicate was already used for unswitching or is
-     covered by another predicate unswitched.  */
-  bool handled;
+  /* The number of the predicate in the predicates vector below.  */
+  unsigned num;
+
+  /* Vector of all used predicates, used for assigning a unique id that
+     can be used for bitmap operations.  */
+  static vec<unswitch_predicate *> *predicates;
 };
 
+vec<unswitch_predicate *> *unswitch_predicate::predicates;
+
 /* Cache storage for unswitch_predicate belonging to a basic block.  */
-static vec<vec<unswitch_predicate *>> *bb_predicates = NULL;
+static vec<vec<unswitch_predicate *>> *bb_predicates;
 
 /* The type represents a predicate path leading to a basic block.  */
 typedef vec<std::pair<unswitch_predicate *, bool>> predicate_vector;
@@ -191,8 +197,8 @@ typedef vec<std::pair<unswitch_predicate *, bool>> predicate_vector;
 static class loop *tree_unswitch_loop (class loop *, edge, tree);
 static bool tree_unswitch_single_loop (class loop *, dump_user_location_t,
 				       predicate_vector &predicate_path,
-				       unsigned &budget,
-				       int ignored_edge_flag);
+				       unsigned loop_size, unsigned &budget,
+				       int ignored_edge_flag, bitmap);
 static void
 find_unswitching_predicates_for_bb (basic_block bb, class loop *loop,
 				    vec<unswitch_predicate *> &candidates);
@@ -271,15 +277,16 @@ init_loop_unswitch_info (class loop *loop)
 /* Main entry point.  Perform loop unswitching on all suitable loops.  */
 
 unsigned int
-tree_ssa_unswitch_loops (void)
+tree_ssa_unswitch_loops (function *fun)
 {
-  bool changed = false;
-  auto_edge_flag ignored_edge_flag (cfun);
+  bool changed_unswitch = false;
+  bool changed_hoist = false;
+  auto_edge_flag ignored_edge_flag (fun);
 
-  ranger = enable_ranger (cfun);
+  ranger = enable_ranger (fun);
 
   /* Go through all loops starting from innermost.  */
-  for (auto loop : loops_list (cfun, LI_FROM_INNERMOST))
+  for (auto loop : loops_list (fun, LI_FROM_INNERMOST))
     {
       if (!loop->inner)
 	{
@@ -311,41 +318,45 @@ tree_ssa_unswitch_loops (void)
 
 	  bb_predicates = new vec<vec<unswitch_predicate *>> ();
 	  bb_predicates->safe_push (vec<unswitch_predicate *> ());
+	  unswitch_predicate::predicates = new vec<unswitch_predicate *> ();
 
 	  /* Unswitch innermost loop.  */
-	  unsigned int budget
-	    = (init_loop_unswitch_info (loop) + param_max_unswitch_insns);
+	  unsigned int loop_size = init_loop_unswitch_info (loop);
+	  unsigned int budget = loop_size + param_max_unswitch_insns;
 
 	  predicate_vector predicate_path;
 	  predicate_path.create (8);
-	  changed |= tree_unswitch_single_loop (loop, loc, predicate_path,
-						budget, ignored_edge_flag);
+	  auto_bitmap handled;
+	  changed_unswitch
+	    |= tree_unswitch_single_loop (loop, loc, predicate_path,
+					  loop_size, budget,
+					  ignored_edge_flag, handled);
 	  predicate_path.release ();
 
 	  for (auto predlist : bb_predicates)
-	    {
-	      for (auto predicate : predlist)
-		delete predicate;
-	      predlist.release ();
-	    }
-
+	    predlist.release ();
 	  bb_predicates->release ();
 	  delete bb_predicates;
 	  bb_predicates = NULL;
+
+	  for (auto pred : unswitch_predicate::predicates)
+	    delete pred;
+	  unswitch_predicate::predicates->release ();
+	  delete unswitch_predicate::predicates;
+	  unswitch_predicate::predicates = NULL;
 	}
       else
-	changed |= tree_unswitch_outer_loop (loop);
+	changed_hoist |= tree_unswitch_outer_loop (loop);
     }
 
-
-  disable_ranger (cfun);
+  disable_ranger (fun);
   clear_aux_for_blocks ();
 
-  if (changed)
-    {
-      clean_up_after_unswitching (ignored_edge_flag);
-      return TODO_cleanup_cfg;
-    }
+  if (changed_unswitch)
+    clean_up_after_unswitching (ignored_edge_flag);
+
+  if (changed_unswitch || changed_hoist)
+    return TODO_cleanup_cfg;
 
   return 0;
 }
@@ -579,7 +590,7 @@ add_predicate_to_path (predicate_vector &predicate_path,
   merge_last (predicate_path);
 }
 
-bool
+static bool
 find_range_for_lhs (predicate_vector &predicate_path, tree lhs,
 		    int_range_max &range)
 {
@@ -592,7 +603,7 @@ find_range_for_lhs (predicate_vector &predicate_path, tree lhs,
 	{
 	  range = (true_edge ? predicate->merged_true_range
 		   : predicate->merged_false_range);
-	  return true;
+	  return !range.undefined_p ();
 	}
     }
 
@@ -691,7 +702,7 @@ evaluate_control_stmt_using_entry_checks (gimple *stmt,
 
 static bool
 simplify_loop_version (class loop *loop, predicate_vector &predicate_path,
-		       int ignored_edge_flag)
+		       int ignored_edge_flag, bitmap handled)
 {
   bool changed = false;
   basic_block *bbs = get_loop_body (loop);
@@ -720,7 +731,7 @@ simplify_loop_version (class loop *loop, predicate_vector &predicate_path,
 		gimple_cond_set_condition_from_tree (cond, boolean_false_node);
 
 	      gcc_assert (predicates.length () == 1);
-	      predicates[0]->handled = true;
+	      bitmap_set_bit (handled, predicates[0]->num);
 
 	      update_stmt (cond);
 	      changed = true;
@@ -738,7 +749,7 @@ simplify_loop_version (class loop *loop, predicate_vector &predicate_path,
 	    {
 	      edge e = EDGE_SUCC (bbs[i], predicates[j]->edge_index);
 	      if (ignored_edges.contains (e))
-		predicates[j]->handled = true;
+		bitmap_set_bit (handled, predicates[j]->num);
 	    }
 
 	  if (folded)
@@ -816,28 +827,30 @@ evaluate_insns (class loop *loop, basic_block *bbs,
 	}
     }
 
-  /* Evaluate insns.  */
+  /* Evaluate insns and clear the flag from basic blocks.  */
   unsigned size = 0;
-
   for (unsigned i = 0; i < loop->num_nodes; i++)
-    if (bbs[i]->flags & reachable_flag)
-      size += (size_t)bbs[i]->aux;
-
-  /* Clear the flag from basic blocks.  */
-  for (unsigned i = 0; i < loop->num_nodes; i++)
-    bbs[i]->flags &= ~reachable_flag;
+    {
+      if (bbs[i]->flags & reachable_flag)
+	{
+	  bbs[i]->flags &= ~reachable_flag;
+	  size += (size_t)bbs[i]->aux;
+	}
+    }
 
   return size;
 }
 
 /* Evaluate how many instruction will we have if we unswitch LOOP (with BBS)
-   based on PREDICATE predicate (using PREDICATE_PATH).  */
+   based on PREDICATE predicate (using PREDICATE_PATH).  Store the
+   result in TRUE_SIZE and FALSE_SIZE.  */
 
-static unsigned
+static void
 evaluate_loop_insns_for_predicate (class loop *loop, basic_block *bbs,
 				   predicate_vector &predicate_path,
 				   unswitch_predicate *predicate,
-				   int ignored_edge_flag)
+				   int ignored_edge_flag,
+				   unsigned *true_size, unsigned *false_size)
 {
   auto_bb_flag reachable_flag (cfun);
 
@@ -851,7 +864,8 @@ evaluate_loop_insns_for_predicate (class loop *loop, basic_block *bbs,
 					     reachable_flag, ignored_edge_flag);
   predicate_path.pop ();
 
-  return true_loop_cost + false_loop_cost;
+  *true_size = true_loop_cost;
+  *false_size = false_loop_cost;
 }
 
 /* Unswitch single LOOP.  PREDICATE_PATH contains so far used predicates
@@ -860,40 +874,45 @@ evaluate_loop_insns_for_predicate (class loop *loop, basic_block *bbs,
 
 static bool
 tree_unswitch_single_loop (class loop *loop, dump_user_location_t loc,
-			   predicate_vector &predicate_path, unsigned &budget,
-			   int ignored_edge_flag)
+			   predicate_vector &predicate_path,
+			   unsigned loop_size, unsigned &budget,
+			   int ignored_edge_flag, bitmap handled)
 {
   basic_block *bbs = NULL;
   class loop *nloop;
   bool changed = false;
   unswitch_predicate *predicate = NULL;
   basic_block bb = NULL;
+  unsigned true_size = 0, false_size = 0;
 
   bbs = get_loop_body (loop);
 
   for (unsigned i = 0; i < loop->num_nodes; i++)
     for (auto pred : get_predicates_for_bb (bbs[i]))
       {
-	if (pred->handled)
+	if (bitmap_bit_p (handled, pred->num))
 	  continue;
 
-	unsigned cost
-	  = evaluate_loop_insns_for_predicate (loop, bbs, predicate_path,
-					       pred, ignored_edge_flag);
+	evaluate_loop_insns_for_predicate (loop, bbs, predicate_path,
+					   pred, ignored_edge_flag,
+					   &true_size, &false_size);
 
 	/* FIXME: right now we select first candidate, but we can choose
 	   the cheapest or hottest one.  */
-	if (cost <= budget)
+	if (true_size + false_size < budget + loop_size)
 	  {
 	    predicate = pred;
 	    bb = bbs[i];
-	    budget -= cost;
+	    /* We get one more simplified loop copy and the original
+	       loop simplified.  */
+	    budget -= (true_size + false_size - loop_size);
 	    break;
 	  }
 	else if (dump_enabled_p ())
 	  dump_printf_loc (MSG_NOTE, loc,
 			   "Not unswitching condition, cost too big "
-			   "(%d insns)\n", cost);
+			   "(%u insns copied to %u and %u)\n", loop_size,
+			   true_size, false_size);
       }
 
   if (predicate != NULL)
@@ -906,7 +925,7 @@ tree_unswitch_single_loop (class loop *loop, dump_user_location_t loc,
 			 "Unswitching loop on condition: %T\n",
 			 predicate->condition);
 
-      predicate->handled = true;
+      bitmap_set_bit (handled, predicate->num);
       initialize_original_copy_tables ();
       /* Unswitch the loop on this condition.  */
       nloop = tree_unswitch_loop (loop, EDGE_SUCC (bb, predicate->edge_index),
@@ -929,21 +948,26 @@ tree_unswitch_single_loop (class loop *loop, dump_user_location_t loc,
       update_ssa (TODO_update_ssa);
 
       /* Invoke itself on modified loops.  */
+      bitmap handled_copy = BITMAP_ALLOC (NULL);
+      bitmap_copy (handled_copy, handled);
       add_predicate_to_path (predicate_path, predicate, false);
       changed |= simplify_loop_version (nloop, predicate_path,
-					ignored_edge_flag);
-      tree_unswitch_single_loop (nloop, loc, predicate_path, budget,
-				 ignored_edge_flag);
+					ignored_edge_flag, handled_copy);
+      tree_unswitch_single_loop (nloop, loc, predicate_path,
+				 false_size, budget,
+				 ignored_edge_flag, handled_copy);
       predicate_path.pop ();
+      BITMAP_FREE (handled_copy);
 
       /* FIXME: After unwinding above we have to reset all ->handled
 	 flags as otherwise we fail to realize unswitching opportunities
 	 in the below recursion.  See gcc.dg/loop-unswitch-16.c  */
       add_predicate_to_path (predicate_path, predicate, true);
       changed |= simplify_loop_version (loop, predicate_path,
-					ignored_edge_flag);
-      tree_unswitch_single_loop (loop, loc, predicate_path, budget,
-				 ignored_edge_flag);
+					ignored_edge_flag, handled);
+      tree_unswitch_single_loop (loop, loc, predicate_path,
+				 true_size, budget,
+				 ignored_edge_flag, handled);
       predicate_path.pop ();
       changed = true;
     }
@@ -1558,7 +1582,7 @@ pass_tree_unswitch::execute (function *fun)
   if (number_of_loops (fun) <= 1)
     return 0;
 
-  return tree_ssa_unswitch_loops ();
+  return tree_ssa_unswitch_loops (fun);
 }
 
 } // anon namespace
