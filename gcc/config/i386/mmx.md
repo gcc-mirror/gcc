@@ -3454,7 +3454,7 @@
   [(set (match_operand:HI 0 "register_sse4nonimm_operand" "=r,r,m")
 	(vec_select:HI
 	  (match_operand:V4HI 1 "register_operand" "y,YW,YW")
-	  (parallel [(match_operand:SI 2 "const_0_to_3_operand")])))]
+	  (parallel [(match_operand:SI 2 "const_0_to_3_operand" "n,n,n")])))]
   "(TARGET_MMX || TARGET_MMX_WITH_SSE)
    && (TARGET_SSE || TARGET_3DNOW_A)"
   "@
@@ -3473,7 +3473,7 @@
 	(zero_extend:SWI48
 	  (vec_select:HI
 	    (match_operand:V4HI 1 "register_operand" "y,YW")
-	    (parallel [(match_operand:SI 2 "const_0_to_3_operand")]))))]
+	    (parallel [(match_operand:SI 2 "const_0_to_3_operand" "n,n")]))))]
   "(TARGET_MMX || TARGET_MMX_WITH_SSE)
    && (TARGET_SSE || TARGET_3DNOW_A)"
   "@
@@ -3490,7 +3490,7 @@
   [(set (match_operand:QI 0 "nonimmediate_operand" "=r,m")
 	(vec_select:QI
 	  (match_operand:V8QI 1 "register_operand" "YW,YW")
-	  (parallel [(match_operand:SI 2 "const_0_to_7_operand")])))]
+	  (parallel [(match_operand:SI 2 "const_0_to_7_operand" "n,n")])))]
   "TARGET_SSE4_1 && TARGET_MMX_WITH_SSE"
   "@
    %vpextrb\t{%2, %1, %k0|%k0, %1, %2}
@@ -3507,7 +3507,7 @@
 	(zero_extend:SWI248
 	  (vec_select:QI
 	    (match_operand:V8QI 1 "register_operand" "YW")
-	    (parallel [(match_operand:SI 2 "const_0_to_7_operand")]))))]
+	    (parallel [(match_operand:SI 2 "const_0_to_7_operand" "n")]))))]
   "TARGET_SSE4_1 && TARGET_MMX_WITH_SSE"
   "%vpextrb\t{%2, %1, %k0|%k0, %1, %2}"
   [(set_attr "type" "sselog1")
@@ -3630,7 +3630,7 @@
 	(vec_merge:V4HI
 	  (match_operand:V4HI 2 "register_operand" "Yr,*x,x")
 	  (match_operand:V4HI 1 "register_operand" "0,0,x")
-	  (match_operand:SI 3 "const_0_to_15_operand")))]
+	  (match_operand:SI 3 "const_0_to_15_operand" "n,n,n")))]
   "TARGET_SSE4_1 && TARGET_MMX_WITH_SSE"
   "@
    pblendw\t{%3, %2, %0|%0, %2, %3}
@@ -3648,7 +3648,7 @@
 	(vec_merge:V2HI
 	  (match_operand:V2HI 2 "register_operand" "Yr,*x,x")
 	  (match_operand:V2HI 1 "register_operand" "0,0,x")
-	  (match_operand:SI 3 "const_0_to_7_operand")))]
+	  (match_operand:SI 3 "const_0_to_7_operand" "n,n,n")))]
   "TARGET_SSE4_1"
   "@
    pblendw\t{%3, %2, %0|%0, %2, %3}
@@ -4035,7 +4035,7 @@
   [(set (match_operand:HI 0 "register_sse4nonimm_operand" "=r,m")
 	(vec_select:HI
 	  (match_operand:V2HI 1 "register_operand" "YW,YW")
-	  (parallel [(match_operand:SI 2 "const_0_to_1_operand")])))]
+	  (parallel [(match_operand:SI 2 "const_0_to_1_operand" "n,n")])))]
   "TARGET_SSE2"
   "@
    %vpextrw\t{%2, %1, %k0|%k0, %1, %2}
@@ -4051,7 +4051,7 @@
 	(zero_extend:SWI48
 	  (vec_select:HI
 	    (match_operand:V2HI 1 "register_operand" "YW")
-	    (parallel [(match_operand:SI 2 "const_0_to_1_operand")]))))]
+	    (parallel [(match_operand:SI 2 "const_0_to_1_operand" "n")]))))]
   "TARGET_SSE2"
   "%vpextrw\t{%2, %1, %k0|%k0, %1, %2}"
   [(set_attr "type" "sselog1")
@@ -4063,7 +4063,7 @@
   [(set (match_operand:QI 0 "nonimmediate_operand" "=r,m")
 	(vec_select:QI
 	  (match_operand:V4QI 1 "register_operand" "YW,YW")
-	  (parallel [(match_operand:SI 2 "const_0_to_3_operand")])))]
+	  (parallel [(match_operand:SI 2 "const_0_to_3_operand" "n,n")])))]
   "TARGET_SSE4_1"
   "@
    %vpextrb\t{%2, %1, %k0|%k0, %1, %2}
@@ -4080,7 +4080,7 @@
 	(zero_extend:SWI248
 	  (vec_select:QI
 	    (match_operand:V4QI 1 "register_operand" "YW")
-	    (parallel [(match_operand:SI 2 "const_0_to_3_operand")]))))]
+	    (parallel [(match_operand:SI 2 "const_0_to_3_operand" "n")]))))]
   "TARGET_SSE4_1"
   "%vpextrb\t{%2, %1, %k0|%k0, %1, %2}"
   [(set_attr "type" "sselog1")
