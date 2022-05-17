@@ -1111,6 +1111,12 @@ rs6000_function_arg_advance_1 (CUMULATIVE_ARGS *cum, machine_mode mode,
 	{
 	  cum->vregno += n_elts;
 
+	  /* If we are not splitting Complex IEEE128 args then account for the
+	     fact that they are passed in 2 VSX regs. */
+	  if (!targetm.calls.split_complex_arg && type
+	      && TREE_CODE (type) == COMPLEX_TYPE && elt_mode == KCmode)
+	    cum->vregno++;
+
 	  if (!TARGET_ALTIVEC)
 	    error ("cannot pass argument in vector register because"
 		   " altivec instructions are disabled, use %qs"
