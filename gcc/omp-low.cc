@@ -3883,6 +3883,16 @@ check_omp_nesting_restrictions (gimple *stmt, omp_context *ctx)
 		}
 	      else
 		{
+		  if ((gimple_omp_target_kind (ctx->stmt)
+		       == GF_OMP_TARGET_KIND_REGION)
+		      && (gimple_omp_target_kind (stmt)
+			  == GF_OMP_TARGET_KIND_REGION))
+		    {
+		      c = omp_find_clause (gimple_omp_target_clauses (stmt),
+					   OMP_CLAUSE_DEVICE);
+		      if (c && OMP_CLAUSE_DEVICE_ANCESTOR (c))
+			break;
+		    }
 		  warning_at (gimple_location (stmt), 0,
 			      "%qs construct inside of %qs region",
 			      stmt_name, ctx_stmt_name);
