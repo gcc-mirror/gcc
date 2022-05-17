@@ -199,9 +199,10 @@ public:
   void visit (AST::BareFunctionType &);
 
 protected:
-  ResolverBase (NodeId parent)
+  ResolverBase (NodeId parent, NodeId current_module = UNKNOWN_NODEID)
     : resolver (Resolver::get ()), mappings (Analysis::Mappings::get ()),
-      resolved_node (UNKNOWN_NODEID), parent (parent), locus (Location ())
+      resolved_node (UNKNOWN_NODEID), parent (parent),
+      current_module (current_module), locus (Location ())
   {}
 
   bool resolved () const { return resolved_node != UNKNOWN_NODEID; }
@@ -215,6 +216,7 @@ protected:
   Analysis::Mappings *mappings;
   NodeId resolved_node;
   NodeId parent;
+  NodeId current_module;
   Location locus;
 };
 

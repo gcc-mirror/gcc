@@ -832,20 +832,40 @@ Mappings::lookup_macro_def (NodeId id, AST::MacroRulesDefinition **def)
 }
 
 void
-Mappings::insert_visibility (DefId id, Privacy::ModuleVisibility visibility)
+Mappings::insert_visibility (NodeId id, Privacy::ModuleVisibility visibility)
 {
   visibility_map.insert ({id, visibility});
 }
 
 bool
-Mappings::lookup_visibility (DefId id, Privacy::ModuleVisibility *def)
+Mappings::lookup_visibility (NodeId id, Privacy::ModuleVisibility &def)
 {
   auto it = visibility_map.find (id);
   if (it == visibility_map.end ())
     return false;
 
-  *def = it->second;
+  def = it->second;
   return true;
+}
+
+void
+Mappings::insert_module_child (NodeId module, NodeId child)
+{
+  auto it = module_child_map.find (module);
+  if (it == module_child_map.end ())
+    module_child_map.insert ({module, {child}});
+  else
+    it->second.emplace_back (child);
+}
+
+Optional<std::vector<NodeId> &>
+Mappings::lookup_module_children (NodeId module)
+{
+  auto it = module_child_map.find (module);
+  if (it == module_child_map.end ())
+    return Optional<std::vector<NodeId> &>::none ();
+
+  return Optional<std::vector<NodeId> &>::some (it->second);
 }
 
 } // namespace Analysis

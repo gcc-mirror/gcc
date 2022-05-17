@@ -250,8 +250,11 @@ ResolveItem::visit (AST::Module &module)
   resolver->push_new_type_rib (resolver->get_type_scope ().peek ());
   resolver->push_new_label_rib (resolver->get_type_scope ().peek ());
 
+  // FIXME: Should we reinsert a child here? Any reason we ResolveTopLevel::go
+  // in ResolveTopLevel::visit (AST::Module) as well as here?
   for (auto &item : module.get_items ())
-    ResolveTopLevel::go (item.get (), CanonicalPath::create_empty (), cpath);
+    ResolveTopLevel::go (item.get (), CanonicalPath::create_empty (), cpath,
+			 module.get_node_id ());
 
   for (auto &item : module.get_items ())
     ResolveItem::go (item.get (), path, cpath);

@@ -82,12 +82,12 @@ public:
    *
    * In case of error, this function will emit the errors and return.
    *
-   * @param item_id DefId of the item to check the restriction of
+   * @param item_id NodeId of the item to check the restriction of
    * @param locus Location of the item being checked
    *
    * @return true if the visibility restriction is valid, false otherwise.
    */
-  bool is_restriction_valid (DefId item_id, const Location &locus);
+  bool is_restriction_valid (NodeId item_id, const Location &locus);
 
   virtual void visit (HIR::Module &mod);
   virtual void visit (HIR::ExternCrate &crate);

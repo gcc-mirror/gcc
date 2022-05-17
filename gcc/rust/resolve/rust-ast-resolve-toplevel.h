@@ -34,12 +34,12 @@ class ResolveTopLevel : public ResolverBase
 
 public:
   static void go (AST::Item *item, const CanonicalPath &prefix,
-		  const CanonicalPath &canonical_prefix)
+		  const CanonicalPath &canonical_prefix, NodeId current_module)
   {
     if (item->is_marked_for_strip ())
       return;
 
-    ResolveTopLevel resolver (prefix, canonical_prefix);
+    ResolveTopLevel resolver (prefix, canonical_prefix, current_module);
     item->accept_vis (resolver);
   };
 
@@ -62,8 +62,10 @@ public:
 				     Definition{module.get_node_id (),
 						module.get_node_id ()});
 
+    mappings->insert_module_child (current_module, module.get_node_id ());
+
     for (auto &item : module.get_items ())
-      ResolveTopLevel::go (item.get (), path, cpath);
+      ResolveTopLevel::go (item.get (), path, cpath, module.get_node_id ());
 
     mappings->insert_canonical_path (mappings->get_current_crate (),
 				     module.get_node_id (), cpath);
@@ -123,7 +125,7 @@ public:
       });
 
     for (auto &variant : enum_decl.get_variants ())
-      ResolveTopLevel::go (variant.get (), path, cpath);
+      ResolveTopLevel::go (variant.get (), path, cpath, current_module);
 
     mappings->insert_canonical_path (mappings->get_current_crate (),
 				     enum_decl.get_node_id (), cpath);
@@ -403,8 +405,8 @@ public:
 
 private:
   ResolveTopLevel (const CanonicalPath &prefix,
-		   const CanonicalPath &canonical_prefix)
-    : ResolverBase (UNKNOWN_NODEID), prefix (prefix),
+		   const CanonicalPath &canonical_prefix, NodeId current_module)
+    : ResolverBase (UNKNOWN_NODEID, current_module), prefix (prefix),
       canonical_prefix (canonical_prefix)
   {}
 

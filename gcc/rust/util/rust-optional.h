@@ -96,6 +96,7 @@ private:
 
 public:
   Optional (const Optional &other) = default;
+  Optional &operator= (const Optional &other) = default;
   Optional (Optional &&other) = default;
 
   static Optional<T> some (T value)
@@ -167,74 +168,110 @@ public:
   }
 };
 
+template <typename T> class Optional<T &>
+{
+private:
+  struct Empty
+  {
+  };
+
+  enum Kind
+  {
+    Some,
+    None
+  } kind;
+
+  union Content
+  {
+    Empty empty;
+    T *value;
+
+    Content () = default;
+  } content;
+
+  Optional<T &> (Kind kind, Content content) : kind (kind), content (content) {}
+
+public:
+  Optional (const Optional &other) = default;
+  Optional (Optional &&other) = default;
+
+  static Optional<T &> some (T &value)
+  {
+    Content content;
+    content.value = &value;
+
+    return Optional (Kind::Some, content);
+  }
+
+  static Optional<T &> none ()
+  {
+    Content content;
+    content.empty = Empty ();
+
+    return Optional (Kind::None, content);
+  }
+
+  bool is_some () const { return kind == Kind::Some; }
+  bool is_none () const { return !is_some (); }
+
+  // FIXME: Can we factor this in a single class?
+
+  /**
+   * Enable boolean-like comparisons.
+   */
+  operator bool () { return is_some (); }
+
+  /**
+   * Enables dereferencing to access the contained value
+   */
+  T &operator* () { return get (); }
+  const T &operator* () const { return get (); }
+  T *operator-> () { return &get (); }
+  const T *operator-> () const { return &get (); }
+
+  const T &get () const
+  {
+    rust_assert (is_some ());
+
+    return *content.value;
+  }
+
+  T &get ()
+  {
+    rust_assert (is_some ());
+
+    return *content.value;
+  }
+
+  T &take ()
+  {
+    rust_assert (is_some ());
+
+    auto to_return = std::move (content.value);
+
+    content.empty = Empty ();
+    kind = Kind::None;
+
+    return *to_return;
+  }
+
+  template <typename U> Optional<U &> map (std::function<U &(T &)> functor)
+  {
+    if (is_none ())
+      return Optional::none ();
+
+    auto value = functor (take ());
+
+    return Optional::some (value);
+  }
+};
+
 } // namespace Rust
 
 #ifdef CHECKING_P
 
-static void
-rust_optional_create ()
-{
-  auto opt = Rust::Optional<int>::some (15);
-
-  ASSERT_TRUE (opt.is_some ());
-  ASSERT_EQ (opt.get (), 15);
-
-  Rust::Optional<int> const_opt = Rust::Optional<int>::some (15);
-  const int &value = const_opt.get ();
-
-  ASSERT_EQ (value, 15);
-}
-
-static void
-rust_optional_operators ()
-{
-  auto opt = Rust::Optional<int>::some (15);
-
-  // as bool
-  ASSERT_TRUE (opt);
-
-  // deref
-  ASSERT_EQ (*opt, 15);
-
-  class Methodable
-  {
-  public:
-    int method () { return 15; }
-  };
-
-  auto m_opt = Rust::Optional<Methodable>::some (Methodable ());
-  ASSERT_EQ (m_opt->method (), 15);
-}
-
-static void
-rust_optional_take ()
-{
-  auto opt = Rust::Optional<int>::some (15);
-  auto value = opt.take ();
-
-  ASSERT_EQ (value, 15);
-  ASSERT_TRUE (opt.is_none ());
-}
-
-static void
-rust_optional_map ()
-{
-  auto opt = Rust::Optional<int>::some (15);
-  auto twice = opt.map<int> ([] (int value) { return value * 2; });
-
-  ASSERT_FALSE (opt);
-  ASSERT_TRUE (twice);
-  ASSERT_EQ (*twice, 30);
-}
-
-static void
-rust_optional_test ()
-{
-  rust_optional_create ();
-  rust_optional_operators ();
-  rust_optional_take ();
-  rust_optional_map ();
-}
+void
+rust_optional_test ();
 
 #endif // !CHECKING_P
 

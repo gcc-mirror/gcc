@@ -24,6 +24,9 @@ namespace Privacy {
 /**
  * Visibility class related specifically to DefIds. This class allows defining
  * the visibility of an item with regard to a specific module.
+ *
+ * Items are either public throughout a crate, or restricted to a specific
+ * module. Private items are simply restricted to the current module.
  */
 class ModuleVisibility
 {
@@ -31,7 +34,6 @@ public:
   enum Type
   {
     Unknown,
-    Private,
     Public,
     Restricted,
   };

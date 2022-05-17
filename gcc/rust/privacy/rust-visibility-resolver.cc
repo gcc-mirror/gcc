@@ -32,8 +32,10 @@ VisibilityResolver::VisibilityResolver (Analysis::Mappings &mappings,
 void
 VisibilityResolver::go (HIR::Crate &crate)
 {
-  mappings.insert_visibility (crate.get_mappings ().get_defid (),
+  mappings.insert_visibility (crate.get_mappings ().get_nodeid (),
 			      ModuleVisibility::create_public ());
+
+  current_module = crate.get_mappings ().get_defid ();
 
   for (auto &item : crate.items)
     {
@@ -103,15 +105,18 @@ VisibilityResolver::resolve_visibility (const HIR::Visibility &visibility,
   switch (visibility.get_vis_type ())
     {
     case HIR::Visibility::PRIVATE:
+      to_resolve = ModuleVisibility::create_restricted (current_module);
       return true;
     case HIR::Visibility::PUBLIC:
       to_resolve = ModuleVisibility::create_public ();
       return true;
-    case HIR::Visibility::RESTRICTED:
-      // FIXME: We also need to handle 2015 vs 2018 edition conflicts
-      to_resolve = ModuleVisibility::create_public ();
-      return resolve_module_path (visibility.get_path (),
-				  to_resolve.get_module_id ());
+      case HIR::Visibility::RESTRICTED: {
+	// FIXME: We also need to handle 2015 vs 2018 edition conflicts
+	auto id = UNKNOWN_DEFID;
+	auto result = resolve_module_path (visibility.get_path (), id);
+	to_resolve = ModuleVisibility::create_restricted (id);
+	return result;
+      }
     default:
       gcc_unreachable ();
       return false;
@@ -125,12 +130,15 @@ VisibilityResolver::resolve_and_update (const HIR::VisItem *item)
   if (!resolve_visibility (item->get_visibility (), module_vis))
     return; // we will already have emitted errors
 
-  mappings.insert_visibility (item->get_mappings ().get_defid (), module_vis);
+  mappings.insert_visibility (item->get_mappings ().get_nodeid (), module_vis);
 }
 
 void
 VisibilityResolver::visit (HIR::Module &mod)
 {
+  auto old_module = current_module;
+  current_module = mod.get_mappings ().get_defid ();
+
   for (auto &item : mod.get_items ())
     {
       if (item->get_hir_kind () == HIR::Node::VIS_ITEM)
@@ -139,6 +147,8 @@ VisibilityResolver::visit (HIR::Module &mod)
 	  vis_item->accept_vis (*this);
 	}
     }
+
+  current_module = old_module;
 }
 
 void
@@ -180,9 +190,9 @@ VisibilityResolver::visit (HIR::Enum &enum_item)
   if (!resolve_visibility (enum_item.get_visibility (), vis))
     return;
 
-  mappings.insert_visibility (enum_item.get_mappings ().get_defid (), vis);
+  mappings.insert_visibility (enum_item.get_mappings ().get_nodeid (), vis);
   for (auto &variant : enum_item.get_variants ())
-    mappings.insert_visibility (variant->get_mappings ().get_defid (), vis);
+    mappings.insert_visibility (variant->get_mappings ().get_nodeid (), vis);
 }
 
 void
@@ -208,9 +218,9 @@ VisibilityResolver::visit (HIR::Trait &trait)
   if (!resolve_visibility (trait.get_visibility (), vis))
     return;
 
-  mappings.insert_visibility (trait.get_mappings ().get_defid (), vis);
+  mappings.insert_visibility (trait.get_mappings ().get_nodeid (), vis);
   for (auto &item : trait.get_trait_items ())
-    mappings.insert_visibility (item->get_mappings ().get_defid (), vis);
+    mappings.insert_visibility (item->get_mappings ().get_nodeid (), vis);
 }
 
 void

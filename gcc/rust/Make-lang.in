@@ -100,6 +100,7 @@ GRS_OBJS = \
     rust/rust-reachability.o \
     rust/rust-visibility-resolver.o \
     rust/rust-pub-restricted-visitor.o \
+    rust/rust-privacy-reporter.o \
     rust/rust-tyty.o \
     rust/rust-tyctx.o \
     rust/rust-tyty-bounds.o \
@@ -120,6 +121,7 @@ GRS_OBJS = \
     rust/rust-compile-pattern.o \
     rust/rust-compile-fnparam.o \
     rust/rust-base62.o \
+    rust/rust-optional-test.o \
     rust/rust-compile-item.o \
     rust/rust-compile-implitem.o \
     rust/rust-compile-expr.o \

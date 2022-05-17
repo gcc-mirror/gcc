@@ -94,6 +94,7 @@ public:
 private:
   Analysis::Mappings &mappings;
   Rust::Resolver::Resolver &resolver;
+  DefId current_module;
 };
 
 } // namespace Privacy

@@ -24,14 +24,15 @@ namespace Rust {
 namespace Privacy {
 
 bool
-PubRestrictedVisitor::is_restriction_valid (DefId item_id,
+PubRestrictedVisitor::is_restriction_valid (NodeId item_id,
 					    const Location &locus)
 {
   ModuleVisibility visibility;
 
   // If there is no visibility in the mappings, then the item is private and
   // does not contain any restriction
-  if (!mappings.lookup_visibility (item_id, &visibility))
+  // FIXME: Is that correct?
+  if (!mappings.lookup_visibility (item_id, visibility))
     return true;
 
   for (auto mod = module_stack.rbegin (); mod != module_stack.rend (); mod++)
@@ -72,7 +73,7 @@ PubRestrictedVisitor::visit (HIR::Module &mod)
   // FIXME: We need to update `super` and `self` here
   module_stack.push_back (mod.get_mappings ().get_defid ());
 
-  is_restriction_valid (mod.get_mappings ().get_defid (), mod.get_locus ());
+  is_restriction_valid (mod.get_mappings ().get_nodeid (), mod.get_locus ());
 
   for (auto &item : mod.get_items ())
     {
@@ -89,33 +90,34 @@ PubRestrictedVisitor::visit (HIR::Module &mod)
 void
 PubRestrictedVisitor::visit (HIR::ExternCrate &crate)
 {
-  is_restriction_valid (crate.get_mappings ().get_defid (), crate.get_locus ());
+  is_restriction_valid (crate.get_mappings ().get_nodeid (),
+			crate.get_locus ());
 }
 
 void
 PubRestrictedVisitor::visit (HIR::UseDeclaration &use_decl)
 {
-  is_restriction_valid (use_decl.get_mappings ().get_defid (),
+  is_restriction_valid (use_decl.get_mappings ().get_nodeid (),
 			use_decl.get_locus ());
 }
 
 void
 PubRestrictedVisitor::visit (HIR::Function &func)
 {
-  is_restriction_valid (func.get_mappings ().get_defid (), func.get_locus ());
+  is_restriction_valid (func.get_mappings ().get_nodeid (), func.get_locus ());
 }
 
 void
 PubRestrictedVisitor::visit (HIR::TypeAlias &type_alias)
 {
-  is_restriction_valid (type_alias.get_mappings ().get_defid (),
+  is_restriction_valid (type_alias.get_mappings ().get_nodeid (),
 			type_alias.get_locus ());
 }
 
 void
 PubRestrictedVisitor::visit (HIR::StructStruct &struct_item)
 {
-  is_restriction_valid (struct_item.get_mappings ().get_defid (),
+  is_restriction_valid (struct_item.get_mappings ().get_nodeid (),
 			struct_item.get_locus ());
   // FIXME: Check fields here as well
 }
@@ -123,7 +125,7 @@ PubRestrictedVisitor::visit (HIR::StructStruct &struct_item)
 void
 PubRestrictedVisitor::visit (HIR::TupleStruct &tuple_struct)
 {
-  is_restriction_valid (tuple_struct.get_mappings ().get_defid (),
+  is_restriction_valid (tuple_struct.get_mappings ().get_nodeid (),
 			tuple_struct.get_locus ());
   // FIXME: Check fields here as well
 }
@@ -131,47 +133,49 @@ PubRestrictedVisitor::visit (HIR::TupleStruct &tuple_struct)
 void
 PubRestrictedVisitor::visit (HIR::Enum &enum_item)
 {
-  is_restriction_valid (enum_item.get_mappings ().get_defid (),
+  is_restriction_valid (enum_item.get_mappings ().get_nodeid (),
 			enum_item.get_locus ());
 }
 
 void
 PubRestrictedVisitor::visit (HIR::Union &union_item)
 {
-  is_restriction_valid (union_item.get_mappings ().get_defid (),
+  is_restriction_valid (union_item.get_mappings ().get_nodeid (),
 			union_item.get_locus ());
 }
 
 void
 PubRestrictedVisitor::visit (HIR::ConstantItem &const_item)
 {
-  is_restriction_valid (const_item.get_mappings ().get_defid (),
+  is_restriction_valid (const_item.get_mappings ().get_nodeid (),
 			const_item.get_locus ());
 }
 
 void
 PubRestrictedVisitor::visit (HIR::StaticItem &static_item)
 {
-  is_restriction_valid (static_item.get_mappings ().get_defid (),
+  is_restriction_valid (static_item.get_mappings ().get_nodeid (),
 			static_item.get_locus ());
 }
 
 void
 PubRestrictedVisitor::visit (HIR::Trait &trait)
 {
-  is_restriction_valid (trait.get_mappings ().get_defid (), trait.get_locus ());
+  is_restriction_valid (trait.get_mappings ().get_nodeid (),
+			trait.get_locus ());
 }
 
 void
 PubRestrictedVisitor::visit (HIR::ImplBlock &impl)
 {
-  is_restriction_valid (impl.get_mappings ().get_defid (), impl.get_locus ());
+  is_restriction_valid (impl.get_mappings ().get_nodeid (), impl.get_locus ());
 }
 
 void
 PubRestrictedVisitor::visit (HIR::ExternBlock &block)
 {
-  is_restriction_valid (block.get_mappings ().get_defid (), block.get_locus ());
+  is_restriction_valid (block.get_mappings ().get_nodeid (),
+			block.get_locus ());
 }
 
 } // namespace Privacy
