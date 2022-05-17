@@ -390,6 +390,9 @@ statement_sink_location (gimple *stmt, basic_block frombb,
 		 with the use.  */
 	      if (gimple_code (use_stmt) == GIMPLE_PHI)
 		{
+		  /* If the PHI defines the virtual operand, ignore it.  */
+		  if (gimple_phi_result (use_stmt) == gimple_vuse (stmt))
+		    continue;
 		  /* In case the PHI node post-dominates the current insert
 		     location we can disregard it.  But make sure it is not
 		     dominating it as well as can happen in a CFG cycle.  */
