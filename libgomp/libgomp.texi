@@ -321,8 +321,7 @@ The OpenMP 4.5 specification is fully supported.
       @code{omp_aligned_calloc} runtime routines @tab Y @tab
 @item @code{omp_alloctrait_key_t} enum: @code{omp_atv_serialized} added,
       @code{omp_atv_default} changed @tab Y @tab
-@item @code{omp_display_env} runtime routine @tab Y
-      @tab Not inside @code{target} regions
+@item @code{omp_display_env} runtime routine @tab Y @tab
 @item @code{ompt_scope_endpoint_t} enum: @code{ompt_scope_beginend} @tab N @tab
 @item @code{ompt_sync_region_t} enum additions @tab N @tab
 @item @code{ompt_state_t} enum: @code{ompt_state_wait_barrier_implementation}
