@@ -602,8 +602,7 @@ const struct c_common_resword c_common_reswords[] =
   { "null_resettable",	RID_NULL_RESETTABLE,	D_OBJC },
 };
 
-const unsigned int num_c_common_reswords =
-  sizeof c_common_reswords / sizeof (struct c_common_resword);
+const unsigned int num_c_common_reswords = ARRAY_SIZE (c_common_reswords);
 
 /* Return identifier for address space AS.  */
 
@@ -4482,9 +4481,7 @@ c_common_nodes_and_builtins (void)
 
   /* Make fileptr_type_node a distinct void * type until
      FILE type is defined.  Likewise for const struct tm*.  */
-  for (unsigned i = 0;
-       i < sizeof (builtin_structptr_types) / sizeof (builtin_structptr_type);
-       ++i)
+  for (unsigned i = 0; i < ARRAY_SIZE (builtin_structptr_types); ++i)
     builtin_structptr_types[i].node
       = build_variant_type_copy (builtin_structptr_types[i].base);
 
@@ -6071,8 +6068,8 @@ check_function_arguments (location_t loc, const_tree fndecl, const_tree fntype,
   /* Check for errors in format strings.  */
 
   if (warn_format || warn_suggest_attribute_format)
-    check_function_format (fntype, TYPE_ATTRIBUTES (fntype), nargs, argarray,
-			   arglocs);
+    check_function_format (fndecl ? fndecl : fntype, TYPE_ATTRIBUTES (fntype), nargs,
+			   argarray, arglocs);
 
   if (warn_format)
     check_function_sentinel (fntype, nargs, argarray);

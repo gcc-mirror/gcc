@@ -55,43 +55,49 @@ struct __processor_model2
 static inline int
 has_cpu_feature (struct __processor_model *cpu_model,
 		 unsigned int *cpu_features2,
-		 enum processor_features f)
+		 enum processor_features feature)
 {
-  unsigned int i;
+  unsigned index, offset;
+  unsigned f = feature;
+
   if (f < 32)
     {
       /* The first 32 features.  */
-      return cpu_model->__cpu_features[0] & (1U << (f & 31));
+      return cpu_model->__cpu_features[0] & (1U << f);
     }
-  /* The rest of features.  cpu_features2[i] contains features from
-     (32 + i * 32) to (31 + 32 + i * 32), inclusively.  */
-  for (i = 0; i < SIZE_OF_CPU_FEATURES; i++)
-    if (f < (32 + 32 + i * 32))
-    return cpu_features2[i] & (1U << ((f - (32 + i * 32)) & 31));
-  gcc_unreachable ();
+  else
+    {
+      /* The rest of features.  cpu_features2[i] contains features from
+	 (32 + i * 32) to (31 + 32 + i * 32), inclusively.  */
+      f -= 32;
+      index = f / 32;
+      offset = f % 32;
+      return cpu_features2[index] & (1U << offset);
+    }
 }
 
 static inline void
 set_cpu_feature (struct __processor_model *cpu_model,
 		 unsigned int *cpu_features2,
-		 enum processor_features f)
+		 enum processor_features feature)
 {
-  unsigned int i;
+  unsigned index, offset;
+  unsigned f = feature;
+
   if (f < 32)
     {
       /* The first 32 features.  */
-      cpu_model->__cpu_features[0] |= (1U << (f & 31));
-      return;
+      cpu_model->__cpu_features[0] |= (1U << f);
     }
-  /* The rest of features.  cpu_features2[i] contains features from
-     (32 + i * 32) to (31 + 32 + i * 32), inclusively.  */
-  for (i = 0; i < SIZE_OF_CPU_FEATURES; i++)
-    if (f < (32 + 32 + i * 32))
-      {
-	cpu_features2[i] |= (1U << ((f - (32 + i * 32)) & 31));
-	return;
-      }
-  gcc_unreachable ();
+  else
+    {
+      /* The rest of features.  cpu_features2[i] contains features from
+	 (32 + i * 32) to (31 + 32 + i * 32), inclusively.  */
+      f -= 32;
+      index = f / 32;
+      offset = f % 32;
+      cpu_features2[index] |= (1U << offset);
+    }
 }
 
 /* Get the specific type of AMD CPU and return AMD CPU name.  Return

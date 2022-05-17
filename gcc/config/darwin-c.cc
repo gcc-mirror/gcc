@@ -505,7 +505,7 @@ darwin_register_frameworks (const char *sysroot,
       size_t i;
 
       /* Setup default search path for frameworks.  */
-      for (i=0; i<sizeof (framework_defaults)/sizeof(const char *); ++i)
+      for (i = 0; i < ARRAY_SIZE (framework_defaults); ++i)
 	{
 	  char *str;
 	  if (sysroot)

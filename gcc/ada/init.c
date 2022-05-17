@@ -1758,8 +1758,26 @@ extern size_t vxIntStackOverflowSize;
 #define INT_OVERFLOW_SIZE vxIntStackOverflowSize
 #endif
 
-#ifdef VTHREADS
-#include "private/vThreadsP.h"
+/* VxWorks 653 vThreads expects the field excCnt to be zeroed when a signal is.
+   handled.  The VxWorks version of longjmp does this; GCC's builtin_longjmp
+   doesn't.  A similar issue is present VxWorks 7.2 and affects ZCX as well
+   as builtin_longjmp.  This field only exists in Kernel mode, not RTP.  */
+#if defined(VTHREADS) || (!defined(__RTP__) && (_WRS_VXWORKS_MAJOR >= 7))
+# ifdef VTHREADS
+#  include "private/vThreadsP.h"
+#  define EXCCNT vThreads.excCnt
+# else
+#  include "private/taskLibP.h"
+#  define EXCCNT excCnt
+# endif
+# define CLEAR_EXCEPTION_COUNT()			 \
+  do							 \
+    {							 \
+      WIND_TCB *currentTask = (WIND_TCB *) taskIdSelf(); \
+      currentTask->EXCCNT = 0;				 \
+    } while (0)
+#else
+# define CLEAR_EXCEPTION_COUNT()
 #endif
 
 #ifndef __RTP__
@@ -1833,19 +1851,6 @@ __gnat_reset_guard_page (int sig)
     }
 #endif /* VXWORKS_FORCE_GUARD_PAGE */
   return FALSE;
-}
-
-/* VxWorks 653 vThreads expects the field excCnt to be zeroed when a signal is.
-   handled. The VxWorks version of longjmp does this; GCC's builtin_longjmp
-   doesn't.  */
-void
-__gnat_clear_exception_count (void)
-{
-#ifdef VTHREADS
-  WIND_TCB *currentTask = (WIND_TCB *) taskIdSelf();
-
-  currentTask->vThreads.excCnt = 0;
-#endif
 }
 
 /* Handle different SIGnal to exception mappings in different VxWorks
@@ -1959,7 +1964,8 @@ __gnat_map_signal (int sig,
           break;
         }
     }
-  __gnat_clear_exception_count ();
+
+  CLEAR_EXCEPTION_COUNT ();
   Raise_From_Signal_Handler (exception, msg);
 }
 
@@ -2605,7 +2611,7 @@ __gnat_install_handler (void)
   struct sigaction act;
   int err;
 
-  act.sa_handler = __gnat_error_handler;
+  act.sa_sigaction = __gnat_error_handler;
   act.sa_flags = SA_NODEFER | SA_SIGINFO;
   sigemptyset (&act.sa_mask);
 
@@ -2619,26 +2625,26 @@ __gnat_install_handler (void)
     }
   }
   if (__gnat_get_interrupt_state (SIGILL) != 's') {
-    sigaction (SIGILL,  &act, NULL);
+    err = sigaction (SIGILL,  &act, NULL);
     if (err == -1) {
       err = errno;
-      perror ("error while attaching SIGFPE");
+      perror ("error while attaching SIGILL");
       perror (strerror (err));
     }
   }
   if (__gnat_get_interrupt_state (SIGSEGV) != 's') {
-    sigaction (SIGSEGV, &act, NULL);
+    err = sigaction (SIGSEGV, &act, NULL);
     if (err == -1) {
       err = errno;
-      perror ("error while attaching SIGFPE");
+      perror ("error while attaching SIGSEGV");
       perror (strerror (err));
     }
   }
   if (__gnat_get_interrupt_state (SIGBUS) != 's') {
-    sigaction (SIGBUS,  &act, NULL);
+    err = sigaction (SIGBUS,  &act, NULL);
     if (err == -1) {
       err = errno;
-      perror ("error while attaching SIGFPE");
+      perror ("error while attaching SIGBUS");
       perror (strerror (err));
     }
   }

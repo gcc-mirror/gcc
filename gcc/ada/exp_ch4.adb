@@ -425,36 +425,21 @@ package body Exp_Ch4 is
       Lhs : Node_Id;
       Rhs : Node_Id) return Node_Id
    is
-      Prim   : Node_Id;
-      Prim_E : Elmt_Id;
+      Eq : constant Entity_Id := Get_User_Defined_Equality (Typ);
 
    begin
-      Prim_E := First_Elmt (Collect_Primitive_Operations (Typ));
-      while Present (Prim_E) loop
-         Prim := Node (Prim_E);
+      if Present (Eq) then
+         if Is_Abstract_Subprogram (Eq) then
+            return Make_Raise_Program_Error (Loc,
+               Reason =>  PE_Explicit_Raise);
 
-         --  Locate primitive equality with the right signature
-
-         if Chars (Prim) = Name_Op_Eq
-           and then Etype (First_Formal (Prim)) =
-                    Etype (Next_Formal (First_Formal (Prim)))
-           and then Etype (Prim) = Standard_Boolean
-         then
-            if Is_Abstract_Subprogram (Prim) then
-               return
-                 Make_Raise_Program_Error (Loc,
-                   Reason => PE_Explicit_Raise);
-
-            else
-               return
-                 Make_Function_Call (Loc,
-                   Name                   => New_Occurrence_Of (Prim, Loc),
-                   Parameter_Associations => New_List (Lhs, Rhs));
-            end if;
+         else
+            return
+              Make_Function_Call (Loc,
+                Name                   => New_Occurrence_Of (Eq, Loc),
+                Parameter_Associations => New_List (Lhs, Rhs));
          end if;
-
-         Next_Elmt (Prim_E);
-      end loop;
+      end if;
 
       --  If not found, predefined operation will be used
 
@@ -835,6 +820,7 @@ package body Exp_Ch4 is
               Make_Raise_Program_Error (Loc,
                 Reason => PE_Accessibility_Check_Failed));
 
+            Error_Msg_Warn := SPARK_Mode /= On;
             Error_Msg_N ("anonymous access discriminant is too deep for use"
                          & " in allocator<<", N);
             Error_Msg_N ("\Program_Error [<<", N);
@@ -5149,6 +5135,30 @@ package body Exp_Ch4 is
                         Set_Expression (N, New_Occurrence_Of (Typ, Loc));
                      end if;
 
+                     --  When the designated subtype is unconstrained and
+                     --  the allocator specifies a constrained subtype (or
+                     --  such a subtype has been created, such as above by
+                     --  Build_Default_Subtype), associate that subtype with
+                     --  the dereference of the allocator's access value.
+                     --  This is needed by the back end for cases where
+                     --  the access type has a Designated_Storage_Model,
+                     --  to support allocation of a host object of the right
+                     --  size for passing to the initialization procedure.
+
+                     if not Is_Constrained (Dtyp)
+                       and then Is_Constrained (Typ)
+                     then
+                        declare
+                           Init_Deref : constant Node_Id :=
+                             Unqual_Conv (Init_Arg1);
+                        begin
+                           pragma Assert
+                             (Nkind (Init_Deref) = N_Explicit_Dereference);
+
+                           Set_Actual_Designated_Subtype (Init_Deref, Typ);
+                        end;
+                     end if;
+
                      Discr := First_Elmt (Discriminant_Constraint (Typ));
                      while Present (Discr) loop
                         Nod := Node (Discr);
@@ -5793,6 +5803,10 @@ package body Exp_Ch4 is
    --  Start of processing for Expand_N_If_Expression
 
    begin
+      --  Deal with non-standard booleans
+
+      Adjust_Condition (Cond);
+
       --  Check for MINIMIZED/ELIMINATED overflow mode.
       --  Apply_Arithmetic_Overflow_Check will not deal with Then/Else_Actions
       --  so skip this step if any actions are present.
@@ -7812,20 +7826,9 @@ package body Exp_Ch4 is
       --  build and analyze call, adding conversions if the operation is
       --  inherited.
 
-      function Is_Equality (Subp : Entity_Id;
-                            Typ  : Entity_Id := Empty) return Boolean;
-      --  Determine whether arbitrary Entity_Id denotes a function with the
-      --  right name and profile for an equality op, specifically for the
-      --  base type Typ if Typ is nonempty.
-
       function Find_Equality (Prims : Elist_Id) return Entity_Id;
       --  Find a primitive equality function within primitive operation list
       --  Prims.
-
-      function User_Defined_Primitive_Equality_Op
-        (Typ : Entity_Id) return Entity_Id;
-      --  Find a user-defined primitive equality function for a given untagged
-      --  record type, ignoring visibility. Return Empty if no such op found.
 
       function Has_Unconstrained_UU_Component (Typ : Entity_Id) return Boolean;
       --  Determines whether a type has a subcomponent of an unconstrained
@@ -8075,43 +8078,6 @@ package body Exp_Ch4 is
          Analyze_And_Resolve (N, Standard_Boolean, Suppress => All_Checks);
       end Build_Equality_Call;
 
-      -----------------
-      -- Is_Equality --
-      -----------------
-
-      function Is_Equality (Subp : Entity_Id;
-                            Typ  : Entity_Id := Empty) return Boolean is
-         Formal_1 : Entity_Id;
-         Formal_2 : Entity_Id;
-      begin
-         --  The equality function carries name "=", returns Boolean, and has
-         --  exactly two formal parameters of an identical type.
-
-         if Ekind (Subp) = E_Function
-           and then Chars (Subp) = Name_Op_Eq
-           and then Base_Type (Etype (Subp)) = Standard_Boolean
-         then
-            Formal_1 := First_Formal (Subp);
-            Formal_2 := Empty;
-
-            if Present (Formal_1) then
-               Formal_2 := Next_Formal (Formal_1);
-            end if;
-
-            return
-              Present (Formal_1)
-                and then Present (Formal_2)
-                and then No (Next_Formal (Formal_2))
-                and then Base_Type (Etype (Formal_1)) =
-                         Base_Type (Etype (Formal_2))
-                and then
-                  (not Present (Typ)
-                    or else Implementation_Base_Type (Etype (Formal_1)) = Typ);
-         end if;
-
-         return False;
-      end Is_Equality;
-
       -------------------
       -- Find_Equality --
       -------------------
@@ -8134,7 +8100,7 @@ package body Exp_Ch4 is
 
             Candid := Prim;
             while Present (Candid) loop
-               if Is_Equality (Candid) then
+               if Is_User_Defined_Equality (Candid) then
                   return Candid;
                end if;
 
@@ -8172,43 +8138,6 @@ package body Exp_Ch4 is
 
          return Eq_Prim;
       end Find_Equality;
-
-      ----------------------------------------
-      -- User_Defined_Primitive_Equality_Op --
-      ----------------------------------------
-
-      function User_Defined_Primitive_Equality_Op
-        (Typ : Entity_Id) return Entity_Id
-      is
-         Enclosing_Scope : constant Entity_Id := Scope (Typ);
-         E : Entity_Id;
-      begin
-         for Private_Entities in Boolean loop
-            if Private_Entities then
-               if Ekind (Enclosing_Scope) /= E_Package then
-                  exit;
-               end if;
-               E := First_Private_Entity (Enclosing_Scope);
-
-            else
-               E := First_Entity (Enclosing_Scope);
-            end if;
-
-            while Present (E) loop
-               if Is_Equality (E, Typ) then
-                  return E;
-               end if;
-               Next_Entity (E);
-            end loop;
-         end loop;
-
-         if Is_Derived_Type (Typ) then
-            return User_Defined_Primitive_Equality_Op
-                     (Implementation_Base_Type (Etype (Typ)));
-         end if;
-
-         return Empty;
-      end User_Defined_Primitive_Equality_Op;
 
       ------------------------------------
       -- Has_Unconstrained_UU_Component --
@@ -8353,14 +8282,7 @@ package body Exp_Ch4 is
 
       --  Deal with private types
 
-      Typl := A_Typ;
-
-      if Ekind (Typl) = E_Private_Type then
-         Typl := Underlying_Type (Typl);
-
-      elsif Ekind (Typl) = E_Private_Subtype then
-         Typl := Underlying_Type (Base_Type (Typl));
-      end if;
+      Typl := Underlying_Type (A_Typ);
 
       --  It may happen in error situations that the underlying type is not
       --  set. The error will be detected later, here we just defend the
@@ -8523,15 +8445,6 @@ package body Exp_Ch4 is
                Build_Equality_Call
                  (Find_Equality (Primitive_Operations (Typl)));
             end if;
-
-         --  See AI12-0101 (which only removes a legality rule) and then
-         --  AI05-0123 (which then applies in the previously illegal case).
-         --  AI12-0101 is a binding interpretation.
-
-         elsif Ada_Version >= Ada_2012
-           and then Present (User_Defined_Primitive_Equality_Op (Typl))
-         then
-            Build_Equality_Call (User_Defined_Primitive_Equality_Op (Typl));
 
          --  Ada 2005 (AI-216): Program_Error is raised when evaluating the
          --  predefined equality operator for a type which has a subcomponent
@@ -10887,6 +10800,8 @@ package body Exp_Ch4 is
          Ensure_Valid (Operand);
       end if;
 
+      Freeze_Before (Operand, Target_Type);
+
       --  Apply possible constraint check
 
       Apply_Constraint_Check (Operand, Target_Type, No_Sliding => True);
@@ -11745,31 +11660,24 @@ package body Exp_Ch4 is
                   declare
                      Stored : constant Elist_Id :=
                                 Stored_Constraint (Operand_Type);
-
-                     Elmt : Elmt_Id;
+                     --  Stored constraints of the operand. If present, they
+                     --  correspond to the discriminants of the parent type.
 
                      Disc_O : Entity_Id;
                      --  Discriminant of the operand type. Its value in the
                      --  object is captured in a selected component.
 
-                     Disc_S : Entity_Id;
-                     --  Stored discriminant of the operand. If present, it
-                     --  corresponds to a constrained discriminant of the
-                     --  parent type.
-
                      Disc_T : Entity_Id;
                      --  Discriminant of the target type
 
-                  begin
-                     Disc_T := First_Discriminant (Target_Type);
-                     Disc_O := First_Discriminant (Operand_Type);
-                     Disc_S := First_Stored_Discriminant (Operand_Type);
+                     Elmt : Elmt_Id;
 
-                     if Present (Stored) then
-                        Elmt := First_Elmt (Stored);
-                     else
-                        Elmt := No_Elmt; -- init to avoid warning
-                     end if;
+                  begin
+                     Disc_O := First_Discriminant (Operand_Type);
+                     Disc_T := First_Discriminant (Target_Type);
+                     Elmt   := (if Present (Stored)
+                                 then First_Elmt (Stored)
+                                 else No_Elmt);
 
                      Cons := New_List;
                      while Present (Disc_T) loop
@@ -11784,8 +11692,11 @@ package body Exp_Ch4 is
                                  Make_Identifier (Loc, Chars (Disc_O))));
                            Next_Discriminant (Disc_O);
 
-                        elsif Present (Disc_S) then
+                        elsif Present (Elmt) then
                            Append_To (Cons, New_Copy_Tree (Node (Elmt)));
+                        end if;
+
+                        if Present (Elmt) then
                            Next_Elmt (Elmt);
                         end if;
 
@@ -12756,18 +12667,35 @@ package body Exp_Ch4 is
          if not Has_Compatible_Representation (Target_Type, Operand_Type)
            and then not Conversion_OK (N)
          then
+            if Optimization_Level > 0
+              and then Is_Boolean_Type (Target_Type)
+            then
+               --  Convert x(y) to (if y then x'(True) else x'(False)).
+               --  Use literals, instead of indexing x'val, to enable
+               --  further optimizations in the middle-end.
 
-            --  Convert: x(y) to x'val (ytyp'pos (y))
+               Rewrite (N,
+                 Make_If_Expression (Loc,
+                   Expressions => New_List (
+                     Operand,
+                     Convert_To (Target_Type,
+                                 New_Occurrence_Of (Standard_True, Loc)),
+                     Convert_To (Target_Type,
+                                 New_Occurrence_Of (Standard_False, Loc)))));
 
-            Rewrite (N,
-              Make_Attribute_Reference (Loc,
-                Prefix         => New_Occurrence_Of (Target_Type, Loc),
-                Attribute_Name => Name_Val,
-                Expressions    => New_List (
-                  Make_Attribute_Reference (Loc,
-                    Prefix         => New_Occurrence_Of (Operand_Type, Loc),
-                    Attribute_Name => Name_Pos,
-                    Expressions    => New_List (Operand)))));
+            else
+               --  Convert: x(y) to x'val (ytyp'pos (y))
+
+               Rewrite (N,
+                 Make_Attribute_Reference (Loc,
+                   Prefix         => New_Occurrence_Of (Target_Type, Loc),
+                   Attribute_Name => Name_Val,
+                   Expressions    => New_List (
+                     Make_Attribute_Reference (Loc,
+                       Prefix         => New_Occurrence_Of (Operand_Type, Loc),
+                       Attribute_Name => Name_Pos,
+                       Expressions    => New_List (Operand)))));
+            end if;
 
             Analyze_And_Resolve (N, Target_Type);
          end if;
@@ -13114,23 +13042,11 @@ package body Exp_Ch4 is
          if (Is_Entity_Name (Alt) and then Is_Type (Entity (Alt)))
            or else Nkind (Alt) = N_Range
          then
-            Cond :=
-              Make_In (Sloc (Alt),
-                Left_Opnd  => L,
-                Right_Opnd => R);
+            Cond := Make_In (Sloc (Alt), Left_Opnd  => L, Right_Opnd => R);
+
          else
-            Cond :=
-              Make_Op_Eq (Sloc (Alt),
-                Left_Opnd  => L,
-                Right_Opnd => R);
-
-            if Is_Record_Or_Limited_Type (Etype (Alt)) then
-
-               --  We reset the Entity in order to use the primitive equality
-               --  of the type, as per RM 4.5.2 (28.1/4).
-
-               Set_Entity (Cond, Empty);
-            end if;
+            Cond := Make_Op_Eq (Sloc (Alt), Left_Opnd  => L, Right_Opnd => R);
+            Resolve_Membership_Equality (Cond, Etype (Alt));
          end if;
 
          return Cond;

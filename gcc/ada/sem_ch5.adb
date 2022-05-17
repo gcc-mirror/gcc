@@ -1111,7 +1111,7 @@ package body Sem_Ch5 is
 
          --  Where the object is the same on both sides
 
-         and then Same_Object (Lhs, Original_Node (Rhs))
+         and then Same_Object (Lhs, Rhs)
 
          --  But exclude the case where the right side was an operation that
          --  got rewritten (e.g. JUNK + K, where K was known to be zero). We
@@ -2316,7 +2316,7 @@ package body Sem_Ch5 is
                           Defining_Identifier => S,
                           Subtype_Indication  => New_Copy_Tree (Subt));
             begin
-               Insert_Before (Parent (Parent (N)), Decl);
+               Insert_Action (N, Decl);
                Analyze (Decl);
                Rewrite (Subt, New_Occurrence_Of (S, Sloc (Subt)));
             end;
@@ -2761,9 +2761,21 @@ package body Sem_Ch5 is
                end;
             end if;
 
-         --  IN iterator, domain is a range, or a call to Iterate function
+         --  IN iterator, domain is a range, a call to Iterate function,
+         --  or an object/actual parameter of an iterator type.
 
          else
+            --  If the type of the name is class-wide and its root type is a
+            --  derived type, the primitive operations (First, Next, etc.) are
+            --  those inherited by its specific type. Calls to these primitives
+            --  will be dispatching.
+
+            if Is_Class_Wide_Type (Typ)
+              and then Is_Derived_Type (Etype (Typ))
+            then
+               Typ := Etype (Typ);
+            end if;
+
             --  For an iteration of the form IN, the name must denote an
             --  iterator, typically the result of a call to Iterate. Give a
             --  useful error message when the name is a container by itself.
@@ -3675,6 +3687,7 @@ package body Sem_Ch5 is
          begin
             return
               Present (Def_Iter)
+                and then Present (Etype (Def_Iter))
                 and then Requires_Transient_Scope (Etype (Def_Iter));
          end Has_Sec_Stack_Default_Iterator;
 
@@ -4012,6 +4025,7 @@ package body Sem_Ch5 is
 
             if Ekind (Ent) = E_Label then
                Reinit_Field_To_Zero (Ent, F_Enclosing_Scope);
+               Reinit_Field_To_Zero (Ent, F_Reachable);
                Mutate_Ekind (Ent, E_Loop);
 
                if Nkind (Parent (Ent)) = N_Implicit_Label_Declaration then
@@ -4383,7 +4397,9 @@ package body Sem_Ch5 is
 
       S := First (L);
       while Present (S) loop
-         if Nkind (S) = N_Label then
+         if Nkind (S) = N_Label
+           and then Ekind (Entity (Identifier (S))) = E_Label
+         then
             Set_Reachable (Entity (Identifier (S)), False);
          end if;
 
@@ -4397,149 +4413,145 @@ package body Sem_Ch5 is
 
    procedure Check_Unreachable_Code (N : Node_Id) is
       Error_Node : Node_Id;
+      Nxt        : Node_Id;
       P          : Node_Id;
 
    begin
       if Is_List_Member (N) and then Comes_From_Source (N) then
-         declare
-            Nxt : Node_Id;
+         Nxt := Original_Node (Next (N));
 
-         begin
-            Nxt := Original_Node (Next (N));
+         --  Skip past pragmas
 
-            --  Skip past pragmas
+         while Nkind (Nxt) = N_Pragma loop
+            Nxt := Original_Node (Next (Nxt));
+         end loop;
 
-            while Nkind (Nxt) = N_Pragma loop
-               Nxt := Original_Node (Next (Nxt));
-            end loop;
+         --  If a label follows us, then we never have dead code, since someone
+         --  could branch to the label, so we just ignore it.
 
-            --  If a label follows us, then we never have dead code, since
-            --  someone could branch to the label, so we just ignore it.
+         if Nkind (Nxt) = N_Label then
+            return;
 
-            if Nkind (Nxt) = N_Label then
-               return;
+         --  Otherwise see if we have a real statement following us
 
-            --  Otherwise see if we have a real statement following us
+         elsif Present (Nxt)
+           and then Comes_From_Source (Nxt)
+           and then Is_Statement (Nxt)
+         then
+            --  Special very annoying exception. If we have a return that
+            --  follows a raise, then we allow it without a warning, since
+            --  the Ada RM annoyingly requires a useless return here.
 
-            elsif Present (Nxt)
-              and then Comes_From_Source (Nxt)
-              and then Is_Statement (Nxt)
+            if Nkind (Original_Node (N)) /= N_Raise_Statement
+              or else Nkind (Nxt) /= N_Simple_Return_Statement
             then
-               --  Special very annoying exception. If we have a return that
-               --  follows a raise, then we allow it without a warning, since
-               --  the Ada RM annoyingly requires a useless return here.
+               --  The rather strange shenanigans with the warning message
+               --  here reflects the fact that Kill_Dead_Code is very good at
+               --  removing warnings in deleted code, and this is one warning
+               --  we would prefer NOT to have removed.
 
-               if Nkind (Original_Node (N)) /= N_Raise_Statement
-                 or else Nkind (Nxt) /= N_Simple_Return_Statement
+               Error_Node := Nxt;
+
+               --  If we have unreachable code, analyze and remove the
+               --  unreachable code, since it is useless and we don't want
+               --  to generate junk warnings.
+
+               --  We skip this step if we are not in code generation mode
+               --  or CodePeer mode.
+
+               --  This is the one case where we remove dead code in the
+               --  semantics as opposed to the expander, and we do not want
+               --  to remove code if we are not in code generation mode, since
+               --  this messes up the tree or loses useful information for
+               --  CodePeer.
+
+               --  Note that one might react by moving the whole circuit to
+               --  exp_ch5, but then we lose the warning in -gnatc mode.
+
+               if Operating_Mode = Generate_Code
+                 and then not CodePeer_Mode
                then
-                  --  The rather strange shenanigans with the warning message
-                  --  here reflects the fact that Kill_Dead_Code is very good
-                  --  at removing warnings in deleted code, and this is one
-                  --  warning we would prefer NOT to have removed.
+                  loop
+                     Nxt := Next (N);
 
-                  Error_Node := Nxt;
+                     --  Quit deleting when we have nothing more to delete
+                     --  or if we hit a label (since someone could transfer
+                     --  control to a label, so we should not delete it).
 
-                  --  If we have unreachable code, analyze and remove the
-                  --  unreachable code, since it is useless and we don't
-                  --  want to generate junk warnings.
+                     exit when No (Nxt) or else Nkind (Nxt) = N_Label;
 
-                  --  We skip this step if we are not in code generation mode
-                  --  or CodePeer mode.
+                     --  Statement/declaration is to be deleted
 
-                  --  This is the one case where we remove dead code in the
-                  --  semantics as opposed to the expander, and we do not want
-                  --  to remove code if we are not in code generation mode,
-                  --  since this messes up the tree or loses useful information
-                  --  for CodePeer.
-
-                  --  Note that one might react by moving the whole circuit to
-                  --  exp_ch5, but then we lose the warning in -gnatc mode.
-
-                  if Operating_Mode = Generate_Code
-                    and then not CodePeer_Mode
-                  then
-                     loop
-                        Nxt := Next (N);
-
-                        --  Quit deleting when we have nothing more to delete
-                        --  or if we hit a label (since someone could transfer
-                        --  control to a label, so we should not delete it).
-
-                        exit when No (Nxt) or else Nkind (Nxt) = N_Label;
-
-                        --  Statement/declaration is to be deleted
-
-                        Analyze (Nxt);
-                        Remove (Nxt);
-                        Kill_Dead_Code (Nxt);
-                     end loop;
-                  end if;
-
-                  Error_Msg
-                    ("??unreachable code!", Sloc (Error_Node), Error_Node);
+                     Analyze (Nxt);
+                     Remove (Nxt);
+                     Kill_Dead_Code (Nxt);
+                  end loop;
                end if;
 
-            --  If the unconditional transfer of control instruction is the
-            --  last statement of a sequence, then see if our parent is one of
-            --  the constructs for which we count unblocked exits, and if so,
-            --  adjust the count.
+               Error_Msg
+                 ("??unreachable code!", Sloc (Error_Node), Error_Node);
+            end if;
 
-            else
-               P := Parent (N);
+         --  If the unconditional transfer of control instruction is the
+         --  last statement of a sequence, then see if our parent is one of
+         --  the constructs for which we count unblocked exits, and if so,
+         --  adjust the count.
 
-               --  Statements in THEN part or ELSE part of IF statement
+         else
+            P := Parent (N);
 
-               if Nkind (P) = N_If_Statement then
-                  null;
+            --  Statements in THEN part or ELSE part of IF statement
 
-               --  Statements in ELSIF part of an IF statement
+            if Nkind (P) = N_If_Statement then
+               null;
 
-               elsif Nkind (P) = N_Elsif_Part then
-                  P := Parent (P);
-                  pragma Assert (Nkind (P) = N_If_Statement);
+            --  Statements in ELSIF part of an IF statement
 
-               --  Statements in CASE statement alternative
+            elsif Nkind (P) = N_Elsif_Part then
+               P := Parent (P);
+               pragma Assert (Nkind (P) = N_If_Statement);
 
-               elsif Nkind (P) = N_Case_Statement_Alternative then
-                  P := Parent (P);
-                  pragma Assert (Nkind (P) = N_Case_Statement);
+            --  Statements in CASE statement alternative
 
-               --  Statements in body of block
+            elsif Nkind (P) = N_Case_Statement_Alternative then
+               P := Parent (P);
+               pragma Assert (Nkind (P) = N_Case_Statement);
 
-               elsif Nkind (P) = N_Handled_Sequence_Of_Statements
-                 and then Nkind (Parent (P)) = N_Block_Statement
+            --  Statements in body of block
+
+            elsif Nkind (P) = N_Handled_Sequence_Of_Statements
+              and then Nkind (Parent (P)) = N_Block_Statement
+            then
+               --  The original loop is now placed inside a block statement
+               --  due to the expansion of attribute 'Loop_Entry. Return as
+               --  this is not a "real" block for the purposes of exit
+               --  counting.
+
+               if Nkind (N) = N_Loop_Statement
+                 and then Subject_To_Loop_Entry_Attributes (N)
                then
-                  --  The original loop is now placed inside a block statement
-                  --  due to the expansion of attribute 'Loop_Entry. Return as
-                  --  this is not a "real" block for the purposes of exit
-                  --  counting.
-
-                  if Nkind (N) = N_Loop_Statement
-                    and then Subject_To_Loop_Entry_Attributes (N)
-                  then
-                     return;
-                  end if;
-
-               --  Statements in exception handler in a block
-
-               elsif Nkind (P) = N_Exception_Handler
-                 and then Nkind (Parent (P)) = N_Handled_Sequence_Of_Statements
-                 and then Nkind (Parent (Parent (P))) = N_Block_Statement
-               then
-                  null;
-
-               --  None of these cases, so return
-
-               else
                   return;
                end if;
 
-               --  This was one of the cases we are looking for (i.e. the
-               --  parent construct was IF, CASE or block) so decrement count.
+            --  Statements in exception handler in a block
 
-               Unblocked_Exit_Count := Unblocked_Exit_Count - 1;
+            elsif Nkind (P) = N_Exception_Handler
+              and then Nkind (Parent (P)) = N_Handled_Sequence_Of_Statements
+              and then Nkind (Parent (Parent (P))) = N_Block_Statement
+            then
+               null;
+
+            --  None of these cases, so return
+
+            else
+               return;
             end if;
-         end;
+
+            --  This was one of the cases we are looking for (i.e. the parent
+            --  construct was IF, CASE or block) so decrement count.
+
+            Unblocked_Exit_Count := Unblocked_Exit_Count - 1;
+         end if;
       end if;
    end Check_Unreachable_Code;
 

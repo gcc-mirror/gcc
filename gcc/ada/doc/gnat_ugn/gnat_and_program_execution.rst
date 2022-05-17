@@ -433,7 +433,7 @@ Ada Tasks
 
 .. index:: Breakpoints and tasks
 
-* ``break``*linespec* ``task`` *taskid*, ``break`` *linespec* ``task`` *taskid* ``if`` ...
+* ``break`` *linespec* ``task`` *taskid*, ``break`` *linespec* ``task`` *taskid* ``if`` ...
 
     These commands are like the ``break ... thread ...``.
     *linespec* specifies source lines.
@@ -1306,7 +1306,7 @@ or simply:
 
   ::
 
-    $  gprof my_prog
+    $ gprof my_prog
 
 The complete form of the gprof command line is the following:
 
@@ -1494,7 +1494,7 @@ Use of Restrictions
 The use of pragma Restrictions allows you to control which features are
 permitted in your program. Apart from the obvious point that if you avoid
 relatively expensive features like finalization (enforceable by the use
-of pragma Restrictions (No_Finalization), the use of this pragma does not
+of pragma Restrictions (No_Finalization)), the use of this pragma does not
 affect the generated code in most cases.
 
 One notable exception to this rule is that the possibility of task abort
@@ -2101,11 +2101,11 @@ the typing system. Consider the following complete program example:
          function to_a2 (Input : a1) return a2;
       end p2;
 
-      with Unchecked_Conversion;
+      with Ada.Unchecked_Conversion;
       package body p2 is
          function to_a2 (Input : a1) return a2 is
             function to_a2u is
-              new Unchecked_Conversion (a1, a2);
+              new Ada.Unchecked_Conversion (a1, a2);
          begin
             return to_a2u (Input);
          end to_a2;
@@ -2198,7 +2198,7 @@ the warning off:
 
      pragma Warnings (Off);
      function to_a2u is
-       new Unchecked_Conversion (a1, a2);
+       new Ada.Unchecked_Conversion (a1, a2);
      pragma Warnings (On);
 
 Of course that approach is not appropriate for this particular
@@ -2452,7 +2452,7 @@ If ``Text_IO`` must be used, note that by default output to the standard
 output and standard error files is unbuffered (this provides better
 behavior when output statements are used for debugging, or if the
 progress of a program is observed by tracking the output, e.g. by
-using the Unix *tail -f* command to watch redirected output.
+using the Unix *tail -f* command to watch redirected output).
 
 If you are generating large volumes of output with ``Text_IO`` and
 performance is an important factor, use a designated file instead
@@ -3590,9 +3590,9 @@ properly allocated memory location. Here is a complete example of use of
 
   .. code-block:: ada
 
-      with Gnat.Io; use Gnat.Io;
-      with Unchecked_Deallocation;
-      with Unchecked_Conversion;
+      with GNAT.IO; use GNAT.IO;
+      with Ada.Unchecked_Deallocation;
+      with Ada.Unchecked_Conversion;
       with GNAT.Debug_Pools;
       with System.Storage_Elements;
       with Ada.Exceptions; use Ada.Exceptions;
@@ -3604,8 +3604,8 @@ properly allocated memory location. Here is a complete example of use of
          P : GNAT.Debug_Pools.Debug_Pool;
          for T'Storage_Pool use P;
 
-         procedure Free is new Unchecked_Deallocation (Integer, T);
-         function UC is new Unchecked_Conversion (U, T);
+         procedure Free is new Ada.Unchecked_Deallocation (Integer, T);
+         function UC is new Ada.Unchecked_Conversion (U, T);
          A, B : aliased T;
 
          procedure Info is new GNAT.Debug_Pools.Print_Info(Put_Line);
@@ -3864,12 +3864,12 @@ execution of this erroneous program:
 
     .. code-block:: ada
 
-       with Unchecked_Deallocation;
+       with Ada.Unchecked_Deallocation;
        procedure Test_Gm is
 
           type T is array (1..1000) of Integer;
           type Ptr is access T;
-          procedure Free is new Unchecked_Deallocation (T, Ptr);
+          procedure Free is new Ada.Unchecked_Deallocation (T, Ptr);
           A : Ptr;
 
           procedure My_Alloc is

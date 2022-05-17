@@ -13532,8 +13532,7 @@ static const dwarf_qual_info_t dwarf_qual_info[] =
   { TYPE_QUAL_RESTRICT, DW_TAG_restrict_type },
   { TYPE_QUAL_ATOMIC, DW_TAG_atomic_type }
 };
-static const unsigned int dwarf_qual_info_size
-  = sizeof (dwarf_qual_info) / sizeof (dwarf_qual_info[0]);
+static const unsigned int dwarf_qual_info_size = ARRAY_SIZE (dwarf_qual_info);
 
 /* If DIE is a qualified DIE of some base DIE with the same parent,
    return the base DIE, otherwise return NULL.  Set MASK to the
@@ -19449,6 +19448,14 @@ loc_list_from_tree_1 (tree loc, int want_address,
       break;
 
     case TRUTH_NOT_EXPR:
+      list_ret = loc_list_from_tree_1 (TREE_OPERAND (loc, 0), 0, context);
+      if (list_ret == 0)
+	return 0;
+
+      add_loc_descr_to_each (list_ret, new_loc_descr (DW_OP_lit0, 0, 0));
+      add_loc_descr_to_each (list_ret, new_loc_descr (DW_OP_eq, 0, 0));
+      break;
+
     case BIT_NOT_EXPR:
       op = DW_OP_not;
       goto do_unop;
@@ -19497,6 +19504,15 @@ loc_list_from_tree_1 (tree loc, int want_address,
 	  list_ret
 	    = loc_list_from_tree_1 (TREE_OPERAND (TREE_OPERAND (loc, 0), 0),
 				    0, context);
+	/* Likewise, swap the operands for a logically negated condition.  */
+	else if (TREE_CODE (TREE_OPERAND (loc, 0)) == TRUTH_NOT_EXPR)
+	  {
+	    lhs = loc_descriptor_from_tree (TREE_OPERAND (loc, 2), 0, context);
+	    rhs = loc_list_from_tree_1 (TREE_OPERAND (loc, 1), 0, context);
+	    list_ret
+	      = loc_list_from_tree_1 (TREE_OPERAND (TREE_OPERAND (loc, 0), 0),
+				      0, context);
+	  }
 	else
 	  list_ret = loc_list_from_tree_1 (TREE_OPERAND (loc, 0), 0, context);
 	if (list_ret == 0 || lhs == 0 || rhs == 0)

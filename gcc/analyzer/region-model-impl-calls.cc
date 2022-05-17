@@ -57,6 +57,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "analyzer/store.h"
 #include "analyzer/region-model.h"
 #include "analyzer/call-info.h"
+#include "analyzer/sm.h"
+#include "diagnostic-path.h"
+#include "analyzer/pending-diagnostic.h"
 #include "gimple-pretty-print.h"
 
 #if ENABLE_ANALYZER

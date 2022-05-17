@@ -50,12 +50,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /**
    * @defgroup threads Threads
    * @ingroup concurrency
+   * @since C++11
    *
    * Classes for thread support.
    * @{
    */
 
   // std::thread is defined in <bits/std_thread.h>
+
+  /// @relates std::thread::id @{
 
 #if __cpp_lib_three_way_comparison
   inline strong_ordering
@@ -96,9 +99,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       else
 	return __out << __id._M_thread;
     }
+  /// @}
 
 #ifdef __cpp_lib_jthread
 
+  /// @cond undocumented
 #ifndef __STRICT_ANSI__
     template<typename _Callable, typename... _Args>
       constexpr bool __pmf_expects_stop_token = false;
@@ -108,8 +113,22 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	= __and_<is_member_function_pointer<remove_reference_t<_Callable>>,
 		 is_invocable<_Callable, _Obj, stop_token, _Args...>>::value;
 #endif
+    /// @endcond
 
-  /// A thread that can be requested to stop and automatically joined.
+  /** A thread with cancellation and automatic joining.
+   *
+   * Unlike `std::thread`, destroying a joinable `std::jthread` will not
+   * terminate the process. Instead, it will try to request its thread to
+   * stop, then will join it.
+   *
+   * A `std::jthread` has a `std::stop_source` member which will be passed
+   * as the first argument to the callable that runs in the new thread
+   * (as long as the callable will accept that argument). That can then
+   * be used to send a stop request that the new thread can test for.
+   *
+   * @headerfile thread
+   * @since C++20
+   */
   class jthread
   {
   public:

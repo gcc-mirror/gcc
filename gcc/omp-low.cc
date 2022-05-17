@@ -37,9 +37,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "fold-const.h"
 #include "stor-layout.h"
 #include "internal-fn.h"
+#include "gimple-iterator.h"
 #include "gimple-fold.h"
 #include "gimplify.h"
-#include "gimple-iterator.h"
 #include "gimplify-me.h"
 #include "gimple-walk.h"
 #include "tree-iterator.h"
@@ -195,6 +195,7 @@ static vec<gomp_task *> task_cpyfns;
 
 static void scan_omp (gimple_seq *, omp_context *);
 static tree scan_omp_1_op (tree *, int *, void *);
+static bool omp_maybe_offloaded_ctx (omp_context *ctx);
 
 #define WALK_SUBSTMTS  \
     case GIMPLE_BIND: \
@@ -1154,6 +1155,15 @@ scan_sharing_clauses (tree clauses, omp_context *ctx)
 	    || !integer_onep (OMP_CLAUSE_ALLOCATE_ALLOCATOR (c))
 	    || OMP_CLAUSE_ALLOCATE_ALIGN (c) != NULL_TREE))
       {
+	/* The allocate clauses that appear on a target construct or on
+	   constructs in a target region must specify an allocator expression
+	   unless a requires directive with the dynamic_allocators clause
+	   is present in the same compilation unit.  */
+	if (OMP_CLAUSE_ALLOCATE_ALLOCATOR (c) == NULL_TREE
+	    && ((omp_requires_mask & OMP_REQUIRES_DYNAMIC_ALLOCATORS) == 0)
+	    && omp_maybe_offloaded_ctx (ctx))
+	  error_at (OMP_CLAUSE_LOCATION (c), "%<allocate%> clause must"
+		    " specify an allocator here");
 	if (ctx->allocate_map == NULL)
 	  ctx->allocate_map = new hash_map<tree, tree>;
 	tree val = integer_zero_node;
@@ -3988,6 +3998,7 @@ omp_runtime_api_call (const_tree fndecl)
       "target_associate_ptr",
       "target_disassociate_ptr",
       "target_free",
+      "target_is_accessible",
       "target_is_present",
       "target_memcpy",
       "target_memcpy_rect",
@@ -12293,7 +12304,7 @@ lower_depend_clauses (tree *pclauses, gimple_seq *iseq, gimple_seq *oseq)
 {
   tree c, clauses;
   gimple *g;
-  size_t cnt[4] = { 0, 0, 0, 0 }, idx = 2, i;
+  size_t cnt[5] = { 0, 0, 0, 0, 0 }, idx = 2, i;
 
   clauses = omp_find_clause (*pclauses, OMP_CLAUSE_DEPEND);
   gcc_assert (clauses);
@@ -12317,16 +12328,20 @@ lower_depend_clauses (tree *pclauses, gimple_seq *iseq, gimple_seq *oseq)
 	case OMP_CLAUSE_DEPEND_DEPOBJ:
 	  cnt[3]++;
 	  break;
+	case OMP_CLAUSE_DEPEND_INOUTSET:
+	  cnt[4]++;
+	  break;
 	case OMP_CLAUSE_DEPEND_SOURCE:
 	case OMP_CLAUSE_DEPEND_SINK:
 	  /* FALLTHRU */
 	default:
 	  gcc_unreachable ();
 	}
-  if (cnt[1] || cnt[3])
+  if (cnt[1] || cnt[3] || cnt[4])
     idx = 5;
-  size_t total = cnt[0] + cnt[1] + cnt[2] + cnt[3];
-  tree type = build_array_type_nelts (ptr_type_node, total + idx);
+  size_t total = cnt[0] + cnt[1] + cnt[2] + cnt[3] + cnt[4];
+  size_t inoutidx = total + idx;
+  tree type = build_array_type_nelts (ptr_type_node, total + idx + 2 * cnt[4]);
   tree array = create_tmp_var (type);
   TREE_ADDRESSABLE (array) = 1;
   tree r = build4 (ARRAY_REF, ptr_type_node, array, size_int (0), NULL_TREE,
@@ -12347,7 +12362,7 @@ lower_depend_clauses (tree *pclauses, gimple_seq *iseq, gimple_seq *oseq)
       g = gimple_build_assign (r, build_int_cst (ptr_type_node, cnt[i]));
       gimple_seq_add_stmt (iseq, g);
     }
-  for (i = 0; i < 4; i++)
+  for (i = 0; i < 5; i++)
     {
       if (cnt[i] == 0)
 	continue;
@@ -12375,10 +12390,21 @@ lower_depend_clauses (tree *pclauses, gimple_seq *iseq, gimple_seq *oseq)
 		if (i != 3)
 		  continue;
 		break;
+	      case OMP_CLAUSE_DEPEND_INOUTSET:
+		if (i != 4)
+		   continue;
+		break;
 	      default:
 		gcc_unreachable ();
 	      }
 	    tree t = OMP_CLAUSE_DECL (c);
+	    if (i == 4)
+	      {
+		t = build4 (ARRAY_REF, ptr_type_node, array,
+			    size_int (inoutidx), NULL_TREE, NULL_TREE);
+		t = build_fold_addr_expr (t);
+		inoutidx += 2;
+	      }
 	    t = fold_convert (ptr_type_node, t);
 	    gimplify_expr (&t, iseq, NULL, is_gimple_val, fb_rvalue);
 	    r = build4 (ARRAY_REF, ptr_type_node, array, size_int (idx++),
@@ -12387,6 +12413,25 @@ lower_depend_clauses (tree *pclauses, gimple_seq *iseq, gimple_seq *oseq)
 	    gimple_seq_add_stmt (iseq, g);
 	  }
     }
+  if (cnt[4])
+    for (c = clauses; c; c = OMP_CLAUSE_CHAIN (c))
+      if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_DEPEND
+	  && OMP_CLAUSE_DEPEND_KIND (c) == OMP_CLAUSE_DEPEND_INOUTSET)
+	{
+	  tree t = OMP_CLAUSE_DECL (c);
+	  t = fold_convert (ptr_type_node, t);
+	  gimplify_expr (&t, iseq, NULL, is_gimple_val, fb_rvalue);
+	  r = build4 (ARRAY_REF, ptr_type_node, array, size_int (idx++),
+		      NULL_TREE, NULL_TREE);
+	  g = gimple_build_assign (r, t);
+	  gimple_seq_add_stmt (iseq, g);
+	  t = build_int_cst (ptr_type_node, GOMP_DEPEND_INOUTSET);
+	  r = build4 (ARRAY_REF, ptr_type_node, array, size_int (idx++),
+		      NULL_TREE, NULL_TREE);
+	  g = gimple_build_assign (r, t);
+	  gimple_seq_add_stmt (iseq, g);
+	}
+
   c = build_omp_clause (UNKNOWN_LOCATION, OMP_CLAUSE_DEPEND);
   OMP_CLAUSE_DEPEND_KIND (c) = OMP_CLAUSE_DEPEND_LAST;
   OMP_CLAUSE_DECL (c) = build_fold_addr_expr (array);

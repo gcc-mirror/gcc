@@ -44,7 +44,9 @@ void test02()
   try {
     rethrow_exception(make_exception_ptr(runtime_error("test")));
   } catch(exception &e) {
+#if __cpp_rtti
     VERIFY( typeid(e) == typeid(runtime_error) );
+#endif
     VERIFY( strcmp(e.what(), "test") == 0 );
   }
 }

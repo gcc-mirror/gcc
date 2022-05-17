@@ -79,8 +79,7 @@ get_string_macro_hint (const char *name, enum stdlib lib)
   if ((lib == STDLIB_C && flag_isoc99)
       || (lib == STDLIB_CPLUSPLUS && cxx_dialect >= cxx11 ))
     {
-      const size_t num_c99_cxx11_macros
-	= sizeof (c99_cxx11_macros) / sizeof (c99_cxx11_macros[0]);
+      const size_t num_c99_cxx11_macros = ARRAY_SIZE (c99_cxx11_macros);
       for (size_t i = 0; i < num_c99_cxx11_macros; i++)
 	if (strcmp (name, c99_cxx11_macros[i]) == 0)
 	  return lib == STDLIB_C ? "<inttypes.h>" : "<cinttypes>";
@@ -204,7 +203,7 @@ get_stdlib_header_for_name (const char *name, enum stdlib lib)
     {"WCHAR_MAX", {"<wchar.h>", "<cwchar>"} },
     {"WCHAR_MIN", {"<wchar.h>", "<cwchar>"} }
   };
-  const size_t num_hints = sizeof (hints) / sizeof (hints[0]);
+  const size_t num_hints = ARRAY_SIZE (hints);
   for (size_t i = 0; i < num_hints; i++)
     if (strcmp (name, hints[i].name) == 0)
       return hints[i].header[lib];

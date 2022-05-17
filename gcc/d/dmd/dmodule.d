@@ -71,7 +71,7 @@ void semantic3OnDependencies(Module m)
  */
 void removeHdrFilesAndFail(ref Param params, ref Modules modules) nothrow
 {
-    if (params.doHdrGeneration)
+    if (params.dihdr.doOutput)
     {
         foreach (m; modules)
         {
@@ -472,7 +472,7 @@ extern (C++) final class Module : Package
         if (doDocComment)
             setDocfile();
         if (doHdrGen)
-            hdrfile = setOutfilename(global.params.hdrname, global.params.hdrdir, arg, hdr_ext);
+            hdrfile = setOutfilename(global.params.dihdr.name, global.params.dihdr.dir, arg, hdr_ext);
     }
 
     extern (D) this(const(char)[] filename, Identifier ident, int doDocComment, int doHdrGen)
@@ -584,7 +584,7 @@ extern (C++) final class Module : Package
 
     extern (D) void setDocfile()
     {
-        docfile = setOutfilename(global.params.docname, global.params.docdir, arg, doc_ext);
+        docfile = setOutfilename(global.params.ddoc.name, global.params.ddoc.dir, arg, doc_ext);
     }
 
     /**
@@ -662,11 +662,55 @@ extern (C++) final class Module : Package
             return true; // already read
 
         //printf("Module::read('%s') file '%s'\n", toChars(), srcfile.toChars());
-        if (auto result = global.fileManager.lookup(srcfile))
+
+        /* Preprocess the file if it's a .c file
+         */
+        FileName filename = srcfile;
+        bool ifile = false;             // did we generate a .i file
+        scope (exit)
+        {
+            if (ifile)
+                File.remove(filename.toChars());        // remove generated file
+        }
+
+        if (global.preprocess &&
+            FileName.equalsExt(srcfile.toString(), c_ext) &&
+            FileName.exists(srcfile.toString()))
+        {
+            /* Look for "importc.h" by searching along import path.
+             * It should be in the same place as "object.d"
+             */
+            const(char)* importc_h;
+
+            foreach (entry; (global.path ? (*global.path)[] : null))
+            {
+                auto f = FileName.combine(entry, "importc.h");
+                if (FileName.exists(f) == 1)
+                {
+                     importc_h = f;
+                     break;
+                }
+                FileName.free(f);
+            }
+
+            if (importc_h)
+            {
+                if (global.params.verbose)
+                    message("include   %s", importc_h);
+            }
+            else
+            {
+                error("cannot find \"importc.h\" along import path");
+                fatal();
+            }
+            filename = global.preprocess(srcfile, importc_h, global.params.cppswitches, ifile);  // run C preprocessor
+        }
+
+        if (auto result = global.fileManager.lookup(filename))
         {
             this.src = result;
-            if (global.params.emitMakeDeps)
-                global.params.makeDeps.push(srcfile.toChars());
+            if (global.params.makeDeps.doOutput)
+                global.params.makeDeps.files.push(srcfile.toChars());
             return true;
         }
 

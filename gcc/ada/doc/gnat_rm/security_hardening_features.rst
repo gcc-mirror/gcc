@@ -15,7 +15,7 @@ Register Scrubbing
 GNAT can generate code to zero-out hardware registers before returning
 from a subprogram.
 
-It can be enabled with the *-fzero-call-used-regs* command line
+It can be enabled with the :switch:`-fzero-call-used-regs` command-line
 option, to affect all subprograms in a compilation, and with a
 :samp:`Machine_Attribute` pragma, to affect only specific subprograms.
 
@@ -31,7 +31,7 @@ option, to affect all subprograms in a compilation, and with a
      --  Before returning, Bar scrubs all call-clobbered registers.
 
 
-For usage and more details on the command line option, and on the
+For usage and more details on the command-line option, and on the
 ``zero_call_used_regs`` attribute, see :title:`Using the GNU Compiler
 Collection (GCC)`.
 
@@ -64,10 +64,10 @@ specific subprograms and variables.
      --  of the stack space used by the subprogram.
 
 
-There are also *-fstrub* command line options to control default
-settings.  For usage and more details on the command line option, and
-on the ``strub`` attribute, see :title:`Using the GNU Compiler
-Collection (GCC)`.
+There are also :switch:`-fstrub` command-line options to control
+default settings.  For usage and more details on the command-line
+option, and on the ``strub`` attribute, see :title:`Using the GNU
+Compiler Collection (GCC)`.
 
 Note that Ada secondary stacks are not scrubbed.  The restriction
 ``No_Secondary_Stack`` avoids their use, and thus their accidental
@@ -126,18 +126,18 @@ Bar_Callable_Ptr.
 Hardened Conditionals
 =====================
 
-GNAT can harden conditionals to protect against control flow attacks.
+GNAT can harden conditionals to protect against control-flow attacks.
 
 This is accomplished by two complementary transformations, each
 activated by a separate command-line option.
 
-The option *-fharden-compares* enables hardening of compares that
-compute results stored in variables, adding verification that the
+The option :switch:`-fharden-compares` enables hardening of compares
+that compute results stored in variables, adding verification that the
 reversed compare yields the opposite result.
 
-The option *-fharden-conditional-branches* enables hardening of
-compares that guard conditional branches, adding verification of the
-reversed compare to both execution paths.
+The option :switch:`-fharden-conditional-branches` enables hardening
+of compares that guard conditional branches, adding verification of
+the reversed compare to both execution paths.
 
 These transformations are introduced late in the compilation pipeline,
 long after boolean expressions are decomposed into separate compares,
@@ -155,8 +155,91 @@ options ensures that every compare that is neither optimized out nor
 optimized into implied conditionals will be hardened.
 
 The addition of reversed compares can be observed by enabling the dump
-files of the corresponding passes, through command line options
-*-fdump-tree-hardcmp* and *-fdump-tree-hardcbr*, respectively.
+files of the corresponding passes, through command-line options
+:switch:`-fdump-tree-hardcmp` and :switch:`-fdump-tree-hardcbr`,
+respectively.
 
 They are separate options, however, because of the significantly
 different performance impact of the hardening transformations.
+
+
+.. Hardened Booleans:
+
+Hardened Booleans
+=================
+
+Ada has built-in support for introducing boolean types with
+alternative representations, using representation clauses:
+
+.. code-block:: ada
+
+   type HBool is new Boolean;
+   for HBool use (16#5a#, 16#a5#);
+   for HBool'Size use 8;
+
+When validity checking is enabled, the compiler will check that
+variables of such types hold values corresponding to the selected
+representations.
+
+There are multiple strategies for where to introduce validity checking
+(see :switch:`-gnatV` options).  Their goal is to guard against
+various kinds of programming errors, and GNAT strives to omit checks
+when program logic rules out an invalid value, and optimizers may
+further remove checks found to be redundant.
+
+For additional hardening, the ``hardbool`` :samp:`Machine_Attribute`
+pragma can be used to annotate boolean types with representation
+clauses, so that expressions of such types used as conditions are
+checked even when compiling with :switch:`-gnatVT`.
+
+.. code-block:: ada
+
+   pragma Machine_Attribute (HBool, "hardbool");
+
+Note that :switch:`-gnatVn` will disable even ``hardbool`` testing.
+
+
+.. Control Flow Redundancy:
+
+Control Flow Redundancy
+=======================
+
+GNAT can guard against unexpected execution flows, such as branching
+into the middle of subprograms, as in Return Oriented Programming
+exploits.
+
+In units compiled with :switch:`-fharden-control-flow-redundancy`,
+subprograms are instrumented so that, every time they are called,
+basic blocks take note as control flows through them, and, before
+returning, subprograms verify that the taken notes are consistent with
+the control-flow graph.
+
+Functions with too many basic blocks, or with multiple return points,
+call a run-time function to perform the verification.  Other functions
+perform the verification inline before returning.
+
+Optimizing the inlined verification can be quite time consuming, so
+the default upper limit for the inline mode is set at 16 blocks.
+Command-line option :switch:`--param hardcfr-max-inline-blocks=` can
+override it.
+
+Even though typically sparse control-flow graphs exhibit run-time
+verification time nearly proportional to the block count of a
+subprogram, it may become very significant for generated subprograms
+with thousands of blocks.  Command-line option
+:switch:`--param hardcfr-max-blocks=` can set an upper limit for
+instrumentation.
+
+For each block that is marked as visited, the mechanism checks that at
+least one of its predecessors, and at least one of its successors, are
+also marked as visited.
+
+Verification is performed just before returning.  Subprogram
+executions that complete by raising or propagating an exception bypass
+verification-and-return points.  A subprogram that can only complete
+by raising or propagating an exception may have instrumentation
+disabled altogether.
+
+The instrumentation for hardening with control flow redundancy can be
+observed in dump files generated by the command-line option
+:switch:`-fdump-tree-hardcfr`.

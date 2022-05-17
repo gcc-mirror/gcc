@@ -611,15 +611,7 @@ package body Sem_Ch11 is
 
          else
             Set_Local_Raise_Not_OK (P);
-
-            --  Do not check the restriction if the reraise statement is part
-            --  of the code generated for an AT-END handler. That's because
-            --  if the restriction is actually active, we never generate this
-            --  raise anyway, so the apparent violation is bogus.
-
-            if not From_At_End (N) then
-               Check_Restriction (No_Exception_Propagation, N);
-            end if;
+            Check_Restriction (No_Exception_Propagation, N);
          end if;
 
       --  Normal case with exception id present

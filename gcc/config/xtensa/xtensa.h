@@ -75,6 +75,11 @@ along with GCC; see the file COPYING3.  If not see
 #define HAVE_AS_TLS 0
 #endif
 
+/* Define this if the target has no hardware divide instructions.  */
+#if !TARGET_DIV32
+#define TARGET_HAS_NO_HW_DIVIDE
+#endif
+
 
 /* Target CPU builtins.  */
 #define TARGET_CPU_CPP_BUILTINS()					\

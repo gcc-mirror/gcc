@@ -30,6 +30,7 @@ with Debug;          use Debug;
 with Einfo;          use Einfo;
 with Einfo.Entities; use Einfo.Entities;
 with Einfo.Utils;    use Einfo.Utils;
+with Elists;         use Elists;
 with Errout;         use Errout;
 with Fname;          use Fname;
 with Fname.UF;       use Fname.UF;
@@ -37,6 +38,7 @@ with Lib.Util;       use Lib.Util;
 with Lib.Xref;       use Lib.Xref;
 with Nlists;         use Nlists;
 with Gnatvsn;        use Gnatvsn;
+with GNAT_CUDA;      use GNAT_CUDA;
 with Opt;            use Opt;
 with Osint;          use Osint;
 with Osint.C;        use Osint.C;
@@ -268,6 +270,10 @@ package body Lib.Writ is
       --  Collect with lines for entries in the context clause of the given
       --  compilation unit, Cunit.
 
+      procedure Output_CUDA_Symbols (Unit_Num : Unit_Number_Type);
+      --  Output CUDA symbols, so that the rest of the toolchain may know what
+      --  symbols need registering with the CUDA runtime.
+
       procedure Write_Unit_Information (Unit_Num : Unit_Number_Type);
       --  Write out the library information for one unit for which code is
       --  generated (includes unit line and with lines).
@@ -385,6 +391,43 @@ package body Lib.Writ is
             Next (Item);
          end loop;
       end Collect_Withs;
+
+      -------------------------
+      -- Output_CUDA_Symbols --
+      -------------------------
+
+      procedure Output_CUDA_Symbols (Unit_Num : Unit_Number_Type) is
+         Unit_Id     : constant Node_Id := Unit (Cunit (Unit_Num));
+         Spec_Id     : Node_Id;
+         Kernels     : Elist_Id;
+         Kernel_Elm  : Elmt_Id;
+         Kernel      : Entity_Id;
+      begin
+         if not Enable_CUDA_Expansion
+           or else Nkind (Unit_Id) = N_Null_Statement
+         then
+            return;
+         end if;
+         Spec_Id := (if Nkind (Unit_Id) = N_Package_Body
+           then Corresponding_Spec (Unit_Id)
+           else Defining_Unit_Name (Specification (Unit_Id)));
+         Kernels := Get_CUDA_Kernels (Spec_Id);
+         if No (Kernels) then
+            return;
+         end if;
+
+         Kernel_Elm := First_Elmt (Kernels);
+         while Present (Kernel_Elm) loop
+            Kernel := Node (Kernel_Elm);
+
+            Write_Info_Initiate ('K');
+            Write_Info_Char (' ');
+            Write_Info_Name (Chars (Kernel));
+            Write_Info_Terminate;
+            Next_Elmt (Kernel_Elm);
+         end loop;
+
+      end Output_CUDA_Symbols;
 
       ----------------------------
       -- Write_Unit_Information --
@@ -1166,6 +1209,14 @@ package body Lib.Writ is
          Write_Info_Terminate;
       end loop;
 
+      --  Output CUDA Kernel lines
+
+      for Unit in Units.First .. Last_Unit loop
+         if Present (Cunit (Unit)) then
+            Output_CUDA_Symbols (Unit);
+         end if;
+      end loop;
+
       --  Output parameters ('P') line
 
       Write_Info_Initiate ('P');
@@ -1232,10 +1283,6 @@ package body Lib.Writ is
 
       if Unreserve_All_Interrupts then
          Write_Info_Str (" UA");
-      end if;
-
-      if Front_End_Exceptions then
-         Write_Info_Str (" FX");
       end if;
 
       if ZCX_Exceptions then

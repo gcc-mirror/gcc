@@ -48,7 +48,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  @brief Polymorphic function wrapper.
    *  @ingroup functors
    *  @since C++23
-   *  @headername functional
+   *  @headerfile functional
    *
    *  The `std::move_only_function` class template is a call wrapper similar
    *  to *  `std::function`, but does not require the stored target function

@@ -10,5 +10,5 @@ __v2si ret_mmx (void)
 }
 
 /* { dg-final { scan-assembler "pxor\[ \t\]+%mm1, %mm1" } } */
-/* { dg-final { scan-assembler "movq\[ \t\]+%mm1, %mm2" } } */
-/* { dg-final { scan-assembler-not "movq\[ \t\]+%mm1, %mm\[34567\]" } } */
+/* { dg-final { scan-assembler "pxor\[ \t\]+%mm2, %mm2" } } */
+/* { dg-final { scan-assembler-not "pxor\[ \t\]+%mm\[34567\], %mm\[34567\]" } } */

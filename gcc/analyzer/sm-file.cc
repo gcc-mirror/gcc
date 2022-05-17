@@ -329,8 +329,7 @@ get_file_using_fns ()
     "ungetc",
     "vfprintf"
   };
-  const size_t count
-    = sizeof(funcnames) / sizeof (funcnames[0]);
+  const size_t count = ARRAY_SIZE (funcnames);
   function_set fs (funcnames, count);
   return fs;
 }

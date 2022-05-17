@@ -664,7 +664,7 @@ package body Lib.Xref is
       --  a default in an instance.
 
       --  We also set the referenced flag in a generic package that is not in
-      --  then main source unit, when the variable is of a formal private type,
+      --  the main source unit, when the object is of a formal private type,
       --  to warn in the instance if the corresponding type is not a fully
       --  initialized type.
 
@@ -694,6 +694,7 @@ package body Lib.Xref is
             return;
 
          elsif Inside_A_Generic
+           and then Is_Object (E)
            and then Is_Generic_Type (Etype (E))
          then
             Set_Referenced (E);
@@ -936,10 +937,10 @@ package body Lib.Xref is
                      if Chars (BE) = Chars (E) then
                         if Has_Pragma_Unused (E) then
                            Error_Msg_NE -- CODEFIX
-                             ("??pragma Unused given for&!", N, BE);
+                             ("??aspect Unused specified for&!", N, BE);
                         else
                            Error_Msg_NE -- CODEFIX
-                             ("??pragma Unreferenced given for&!", N, BE);
+                             ("??aspect Unreferenced specified for&!", N, BE);
                         end if;
                         exit;
                      end if;
@@ -952,10 +953,10 @@ package body Lib.Xref is
 
             elsif Has_Pragma_Unused (E) then
                Error_Msg_NE -- CODEFIX
-                 ("??pragma Unused given for&!", N, E);
+                 ("??aspect Unused specified for&!", N, E);
             else
                Error_Msg_NE -- CODEFIX
-                 ("??pragma Unreferenced given for&!", N, E);
+                 ("??aspect Unreferenced specified for&!", N, E);
             end if;
          end if;
 

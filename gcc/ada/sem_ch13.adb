@@ -195,7 +195,7 @@ package body Sem_Ch13 is
    --  returned for non-scalar types.
    --
    --  Note: the RM seems to suggest that string types can also have static
-   --  predicates. But that really makes lttle sense as very few useful
+   --  predicates. But that really makes little sense as very few useful
    --  predicates can be constructed for strings. Remember that:
    --
    --     "ABC" < "DEF"
@@ -6550,22 +6550,47 @@ package body Sem_Ch13 is
                     ("\?j?use interrupt procedure instead", N);
                end if;
 
-            --  Case of an address clause for a class-wide object, which is
-            --  considered erroneous.
-
-            elsif Is_Class_Wide_Type (Etype (U_Ent)) then
-               Error_Msg_NE
-                 ("??class-wide object & must not be overlaid", Nam, U_Ent);
-               Error_Msg_N
-                 ("\??Program_Error will be raised at run time", Nam);
-               Insert_Action (Declaration_Node (U_Ent),
-                 Make_Raise_Program_Error (Loc,
-                   Reason => PE_Overlaid_Controlled_Object));
-               return;
-
             --  Case of address clause for an object
 
             elsif Ekind (U_Ent) in E_Constant | E_Variable then
+
+               --  Disallow case of an address clause for an object of an
+               --  indefinite subtype which takes its bounds/discriminant/tag
+               --  from its initial value. Without this, we get a Gigi
+               --  assertion failure for things like
+               --    X : String := Some_Function (...) with Address => ...;
+               --  where the result subtype of the function is unconstrained.
+               --
+               --  We want to reject two cases: the class-wide case, and the
+               --  case where the FE conjures up a renaming declaration and
+               --  would then otherwise generate an address specification for
+               --  that renaming (which is a malformed tree, which is why Gigi
+               --  complains).
+
+               if Is_Class_Wide_Type (Etype (U_Ent)) then
+                  Error_Msg_N
+                    ("address specification not supported for class-wide " &
+                     "object declaration", Nam);
+                  return;
+               elsif Is_Constr_Subt_For_U_Nominal (Etype (U_Ent))
+                 and then
+                   Nkind (Parent (U_Ent)) = N_Object_Renaming_Declaration
+               then
+                  --  Confirm accuracy of " and dynamic size" message text
+                  --  before including it. We want to include that text when
+                  --  it is correct because it may be useful to the reader.
+                  --  The case where we omit that part of the message text
+                  --  might be dead code, but let's not rely on that.
+
+                  Error_Msg_N
+                    ("address specification not supported for object " &
+                     "declaration with indefinite nominal subtype" &
+                     (if Size_Known_At_Compile_Time (Etype (U_Ent))
+                      then ""
+                      else " and dynamic size"), Nam);
+                  return;
+               end if;
+
                declare
                   Expr  : constant Node_Id := Expression (N);
                   O_Ent : Entity_Id;
@@ -10206,16 +10231,13 @@ package body Sem_Ch13 is
 
             Set_SCO_Pragma_Enabled (Sloc (Prag));
 
-            --  Extract the arguments of the pragma. The expression itself
-            --  is copied for use in the predicate function, to preserve the
-            --  original version for ASIS use.
-            --  Is this still needed???
+            --  Extract the arguments of the pragma
 
             Arg1 := First (Pragma_Argument_Associations (Prag));
             Arg2 := Next (Arg1);
 
             Arg1 := Get_Pragma_Arg (Arg1);
-            Arg2 := New_Copy_Tree (Get_Pragma_Arg (Arg2));
+            Arg2 := Get_Pragma_Arg (Arg2);
 
             --  When the predicate pragma applies to the current type or its
             --  full view, replace all occurrences of the subtype name with
@@ -10430,45 +10452,12 @@ package body Sem_Ch13 is
 
          if Raise_Expression_Present then
             declare
-               function Reset_Loop_Variable
-                 (N : Node_Id) return Traverse_Result;
-
-               procedure Reset_Loop_Variables is
-                 new Traverse_Proc (Reset_Loop_Variable);
-
-               ------------------------
-               -- Reset_Loop_Variable --
-               ------------------------
-
-               function Reset_Loop_Variable
-                 (N : Node_Id) return Traverse_Result
-               is
-               begin
-                  if Nkind (N) = N_Iterator_Specification then
-                     Set_Defining_Identifier (N,
-                       Make_Defining_Identifier
-                         (Sloc (N), Chars (Defining_Identifier (N))));
-                  end if;
-
-                  return OK;
-               end Reset_Loop_Variable;
-
-               --  Local variables
-
                Map : constant Elist_Id := New_Elmt_List;
 
             begin
                Append_Elmt (Object_Entity, Map);
                Append_Elmt (Object_Entity_M, Map);
                Expr_M := New_Copy_Tree (Expr, Map => Map);
-
-               --  The unanalyzed expression will be copied and appear in
-               --  both functions. Normally expressions do not declare new
-               --  entities, but quantified expressions do, so we need to
-               --  create new entities for their bound variables, to prevent
-               --  multiple definitions in gigi.
-
-               Reset_Loop_Variables (Expr_M);
             end;
          end if;
 
@@ -11334,9 +11323,11 @@ package body Sem_Ch13 is
          when Aspect_Predicate_Failure =>
             T := Standard_String;
 
-         --  Here is the list of aspects that don't require delay analysis
+         --  As for some other aspects above, the expression of this aspect is
+         --  just an entity that does not need any resolution, so just analyze.
 
          when Aspect_Designated_Storage_Model =>
+            Analyze (Expression (ASN));
             return;
 
          when Aspect_Storage_Model_Type =>
@@ -11363,6 +11354,8 @@ package body Sem_Ch13 is
             end;
 
             return;
+
+         --  Here is the list of aspects that don't require delay analysis
 
          when Aspect_Abstract_State
             | Aspect_Annotate
@@ -12449,7 +12442,7 @@ package body Sem_Ch13 is
                OC_Lbit (To) := OC_Lbit (From);
             end OC_Move;
 
-            --  Start of processing for Overlap_Check
+         --  Start of processing for Overlap_Check
 
          begin
             CC := First (Component_Clauses (N));
@@ -13443,56 +13436,40 @@ package body Sem_Ch13 is
    -----------------------------------
 
    function Has_Compatible_Representation
-     (Target_Type, Operand_Type : Entity_Id) return Boolean
+     (Target_Typ, Operand_Typ : Entity_Id) return Boolean
    is
-      T1 : constant Entity_Id := Underlying_Type (Target_Type);
-      T2 : constant Entity_Id := Underlying_Type (Operand_Type);
+      --  The subtype-specific representation attributes (Size and Alignment)
+      --  do not affect representation from the point of view of this function.
+
+      T1 : constant Entity_Id := Implementation_Base_Type (Target_Typ);
+      T2 : constant Entity_Id := Implementation_Base_Type (Operand_Typ);
 
    begin
-      --  A quick check, if base types are the same, then we definitely have
-      --  the same representation, because the subtype specific representation
-      --  attributes (Size and Alignment) do not affect representation from
-      --  the point of view of this test.
+      --  Return true immediately for the same base type
 
-      if Base_Type (T1) = Base_Type (T2) then
+      if T1 = T2 then
          return True;
-
-      elsif Is_Private_Type (Base_Type (T2))
-        and then Base_Type (T1) = Full_View (Base_Type (T2))
-      then
-         return True;
-
-      --  If T2 is a generic actual it is declared as a subtype, so
-      --  check against its base type.
-
-      elsif Is_Generic_Actual_Type (T1)
-        and then Has_Compatible_Representation (Base_Type (T1), T2)
-      then
-         return True;
-      end if;
 
       --  Tagged types always have the same representation, because it is not
       --  possible to specify different representations for common fields.
 
-      if Is_Tagged_Type (T1) then
+      elsif Is_Tagged_Type (T1) then
          return True;
-      end if;
 
       --  Representations are definitely different if conventions differ
 
-      if Convention (T1) /= Convention (T2) then
+      elsif Convention (T1) /= Convention (T2) then
          return False;
-      end if;
 
       --  Representations are different if component alignments or scalar
       --  storage orders differ.
 
-      if (Is_Record_Type (T1) or else Is_Array_Type (T1))
-            and then
-         (Is_Record_Type (T2) or else Is_Array_Type (T2))
-        and then
-         (Component_Alignment (T1) /= Component_Alignment (T2)
-           or else Reverse_Storage_Order (T1) /= Reverse_Storage_Order (T2))
+      elsif (Is_Record_Type (T1) or else Is_Array_Type (T1))
+              and then
+            (Is_Record_Type (T2) or else Is_Array_Type (T2))
+        and then (Component_Alignment (T1) /= Component_Alignment (T2)
+                   or else
+                  Reverse_Storage_Order (T1) /= Reverse_Storage_Order (T2))
       then
          return False;
       end if;
@@ -13519,11 +13496,10 @@ package body Sem_Ch13 is
          then
             return True;
          end if;
-      end if;
 
-      --  For records, representations are different if reorderings differ
+      --  For records, representations are different if reordering differs
 
-      if Is_Record_Type (T1)
+      elsif Is_Record_Type (T1)
         and then Is_Record_Type (T2)
         and then No_Reordering (T1) /= No_Reordering (T2)
       then
@@ -13562,6 +13538,16 @@ package body Sem_Ch13 is
 
          if Is_Packed (T1) /= Is_Packed (T2) then
             return False;
+
+         --  If the operand type is derived from the target type and no clause
+         --  has been given after the derivation, then the representations are
+         --  the same since the derived type inherits that of the parent type.
+
+         elsif Is_Derived_Type (T2)
+           and then Etype (T2) = T1
+           and then not Has_Record_Rep_Clause (T2)
+         then
+            return True;
 
          --  Otherwise we must check components. Typ2 maybe a constrained
          --  subtype with fewer components, so we compare the components
@@ -15176,25 +15162,24 @@ package body Sem_Ch13 is
                end if;
 
                --  The components of the type are directly visible and can
-               --  be referenced without a prefix.
+               --  be referenced in the source code without a prefix.
+               --  If a name denoting a component doesn't already have a
+               --  prefix, then normalize it by adding a reference to the
+               --  current instance of the type as a prefix.
+               --
+               --  This isn't right in the pathological corner case of an
+               --  object-declaring expression (e.g., a quantified expression
+               --  or a declare expression) that declares an object with the
+               --  same name as a visible component declaration, thereby hiding
+               --  the component within that expression. For example, given a
+               --  record with a Boolean component "C" and a dynamic predicate
+               --  "C = (for some C in Character => Some_Function (C))", only
+               --  the first of the two uses of C should have a prefix added
+               --  here; instead, both will get prefixes.
 
-               if Nkind (Parent (N)) = N_Selected_Component then
-                  null;
-
-               --  In expression C (I), C may be a directly visible function
-               --  or a visible component that has an array type. Disambiguate
-               --  by examining the component type.
-
-               elsif Nkind (Parent (N)) = N_Indexed_Component
-                 and then N = Prefix (Parent (N))
+               if Nkind (Parent (N)) /= N_Selected_Component
+                 or else N /= Selector_Name (Parent (N))
                then
-                  Comp := Visible_Component (Chars (N));
-
-                  if Present (Comp) and then Is_Array_Type (Etype (Comp)) then
-                     Add_Prefix (N, Comp);
-                  end if;
-
-               else
                   Comp := Visible_Component (Chars (N));
 
                   if Present (Comp) then

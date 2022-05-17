@@ -1,4 +1,5 @@
 // { dg-do run { target c++11 } }
+// { dg-require-effective-target rtti }
 
 // Copyright (C) 2009-2022 Free Software Foundation, Inc.
 //
@@ -27,7 +28,7 @@ inline base::~base() noexcept = default;
 
 struct derived2 : base, std::nested_exception { };
 
-void test01() 
+void test01()
 {
   bool test = false;
 
@@ -52,7 +53,7 @@ void test01()
   VERIFY( test );
 }
 
-void test02() 
+void test02()
 {
   bool test = false;
 
@@ -69,7 +70,7 @@ void test02()
   VERIFY( test );
 }
 
-void test03() 
+void test03()
 {
   bool test = false;
 

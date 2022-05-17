@@ -32,16 +32,45 @@
 --  This package contains routines for scanning signed Integer values for use
 --  in Text_IO.Integer_IO, and the Value attribute.
 
+--  Preconditions in this unit are meant for analysis only, not for run-time
+--  checking, so that the expected exceptions are raised. This is enforced by
+--  setting the corresponding assertion policy to Ignore. Postconditions and
+--  contract cases should not be executed at runtime as well, in order not to
+--  slow down the execution of these functions.
+
+pragma Assertion_Policy (Pre                => Ignore,
+                         Post               => Ignore,
+                         Contract_Cases     => Ignore,
+                         Ghost              => Ignore,
+                         Subprogram_Variant => Ignore);
+
 with System.Unsigned_Types;
 with System.Val_Uns;
 with System.Value_I;
 
-package System.Val_Int is
+package System.Val_Int with SPARK_Mode is
    pragma Preelaborate;
 
    subtype Unsigned is Unsigned_Types.Unsigned;
 
-   package Impl is new Value_I (Integer, Unsigned, Val_Uns.Scan_Raw_Unsigned);
+   package Impl is new Value_I
+     (Int                          => Integer,
+      Uns                          => Unsigned,
+      Scan_Raw_Unsigned            => Val_Uns.Scan_Raw_Unsigned,
+      Uns_Option                   => Val_Uns.Impl.Uns_Option,
+      Wrap_Option                  => Val_Uns.Impl.Wrap_Option,
+      Is_Raw_Unsigned_Format_Ghost =>
+         Val_Uns.Impl.Is_Raw_Unsigned_Format_Ghost,
+      Raw_Unsigned_Overflows_Ghost =>
+         Val_Uns.Impl.Raw_Unsigned_Overflows_Ghost,
+      Scan_Raw_Unsigned_Ghost      =>
+         Val_Uns.Impl.Scan_Raw_Unsigned_Ghost,
+      Raw_Unsigned_Last_Ghost      =>
+         Val_Uns.Impl.Raw_Unsigned_Last_Ghost,
+      Only_Decimal_Ghost           =>
+         Val_Uns.Impl.Only_Decimal_Ghost,
+      Scan_Based_Number_Ghost      =>
+         Val_Uns.Impl.Scan_Based_Number_Ghost);
 
    procedure Scan_Integer
      (Str : String;

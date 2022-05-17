@@ -1109,9 +1109,7 @@ free_lang_data (void)
   free_lang_data_in_cgraph (&fld);
 
   /* Create gimple variants for common types.  */
-  for (unsigned i = 0;
-       i < sizeof (builtin_structptr_types) / sizeof (builtin_structptr_type);
-       ++i)
+  for (unsigned i = 0; i < ARRAY_SIZE (builtin_structptr_types); ++i)
     builtin_structptr_types[i].node = builtin_structptr_types[i].base;
 
   /* Reset some langhooks.  Do not reset types_compatible_p, it may

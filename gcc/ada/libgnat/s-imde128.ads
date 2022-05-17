@@ -37,7 +37,6 @@ with Interfaces;
 with System.Image_D;
 
 package System.Img_Decimal_128 is
-   pragma Pure;
 
    subtype Int128 is Interfaces.Integer_128;
 

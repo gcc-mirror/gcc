@@ -30,30 +30,38 @@
 #ifndef _GLIBCXX_NESTED_EXCEPTION_H
 #define _GLIBCXX_NESTED_EXCEPTION_H 1
 
-#pragma GCC visibility push(default)
-
 #if __cplusplus < 201103L
 # include <bits/c++0x_warning.h>
 #else
 
-#include <bits/c++config.h>
 #include <bits/move.h>
+#include <bits/exception_ptr.h>
 
 extern "C++" {
 
-namespace std
+namespace std _GLIBCXX_VISIBILITY(default)
 {
   /**
    * @addtogroup exceptions
    * @{
    */
 
-  /// Exception class with exception_ptr data member.
+  /** Mixin class that stores the current exception.
+   *
+   * This type can be used via `std::throw_with_nested` to store
+   * the current exception nested within another exception.
+   *
+   * @headerfile exception
+   * @since C++11
+   * @see std::throw_with_nested
+   * @ingroup exceptions
+   */
   class nested_exception
   {
     exception_ptr _M_ptr;
 
   public:
+    /// The default constructor stores the current exception (if any).
     nested_exception() noexcept : _M_ptr(current_exception()) { }
 
     nested_exception(const nested_exception&) noexcept = default;
@@ -62,6 +70,7 @@ namespace std
 
     virtual ~nested_exception() noexcept;
 
+    /// Rethrow the stored exception, or terminate if none was stored.
     [[noreturn]]
     void
     rethrow_nested() const
@@ -71,6 +80,7 @@ namespace std
       std::terminate();
     }
 
+    /// Access the stored exception.
     exception_ptr
     nested_ptr() const noexcept
     { return _M_ptr; }
@@ -90,6 +100,7 @@ namespace std
       { }
     };
 
+#if __cplusplus < 201703L || ! defined __cpp_if_constexpr
   // [except.nested]/8
   // Throw an exception of unspecified type that is publicly derived from
   // both remove_reference_t<_Tp> and nested_exception.
@@ -98,8 +109,7 @@ namespace std
     inline void
     __throw_with_nested_impl(_Tp&& __t, true_type)
     {
-      using _Up = typename remove_reference<_Tp>::type;
-      throw _Nested_exception<_Up>{std::forward<_Tp>(__t)};
+      throw _Nested_exception<__remove_cvref_t<_Tp>>{std::forward<_Tp>(__t)};
     }
 
   template<typename _Tp>
@@ -107,11 +117,31 @@ namespace std
     inline void
     __throw_with_nested_impl(_Tp&& __t, false_type)
     { throw std::forward<_Tp>(__t); }
+#endif
 
   /// @endcond
 
-  /// If @p __t is derived from nested_exception, throws @p __t.
-  /// Else, throws an implementation-defined object derived from both.
+  /** Throw an exception that also stores the currently active exception.
+   *
+   * If `_Tp` is derived from `std::nested_exception` or is not usable
+   * as a base-class, throws a copy of `__t`.
+   * Otherwise, throws an object of an implementation-defined type derived
+   * from both `_Tp` and `std::nested_exception`, containing a copy of `__t`
+   * and the result of `std::current_exception()`.
+   *
+   * In other words, throws the argument as a new exception that contains
+   * the currently active exception nested within it. This is intended for
+   * use in a catch handler to replace the caught exception with a different
+   * type, while still preserving the original exception. When the new
+   * exception is caught, the nested exception can be rethrown by using
+   * `std::rethrow_if_nested`.
+   *
+   * This can be used at API boundaries, for example to catch a library's
+   * internal exception type and rethrow it nested with a `std::runtime_error`,
+   * or vice versa.
+   *
+   * @since C++11
+   */
   template<typename _Tp>
     [[noreturn]]
     inline void
@@ -122,25 +152,27 @@ namespace std
 	= __and_<is_copy_constructible<_Up>, is_move_constructible<_Up>>;
       static_assert(_CopyConstructible::value,
 	  "throw_with_nested argument must be CopyConstructible");
+
+#if __cplusplus >= 201703L && __cpp_if_constexpr
+      if constexpr (is_class_v<_Up>)
+	if constexpr (!is_final_v<_Up>)
+	  if constexpr (!is_base_of_v<nested_exception, _Up>)
+	    throw _Nested_exception<_Up>{std::forward<_Tp>(__t)};
+      throw std::forward<_Tp>(__t);
+#else
       using __nest = __and_<is_class<_Up>, __bool_constant<!__is_final(_Up)>,
 			    __not_<is_base_of<nested_exception, _Up>>>;
       std::__throw_with_nested_impl(std::forward<_Tp>(__t), __nest{});
+#endif
     }
 
+#if __cplusplus < 201703L || ! defined __cpp_if_constexpr
   /// @cond undocumented
-
-  // Determine if dynamic_cast<const nested_exception&> would be well-formed.
-  template<typename _Tp>
-    using __rethrow_if_nested_cond = typename enable_if<
-      __and_<is_polymorphic<_Tp>,
-	     __or_<__not_<is_base_of<nested_exception, _Tp>>,
-		   is_convertible<_Tp*, nested_exception*>>>::value
-    >::type;
 
   // Attempt dynamic_cast to nested_exception and call rethrow_nested().
   template<typename _Ex>
-    inline __rethrow_if_nested_cond<_Ex>
-    __rethrow_if_nested_impl(const _Ex* __ptr)
+    inline void
+    __rethrow_if_nested_impl(const _Ex* __ptr, true_type)
     {
       if (auto __ne_ptr = dynamic_cast<const nested_exception*>(__ptr))
 	__ne_ptr->rethrow_nested();
@@ -148,16 +180,59 @@ namespace std
 
   // Otherwise, no effects.
   inline void
-  __rethrow_if_nested_impl(const void*)
+  __rethrow_if_nested_impl(const void*, false_type)
   { }
 
   /// @endcond
+#endif
 
-  /// If @p __ex is derived from nested_exception, @p __ex.rethrow_nested().
+  /** Rethrow a nested exception
+   *
+   * If `__ex` contains a `std::nested_exception` object, call its
+   * `rethrow_nested()` member to rethrow the stored exception.
+   *
+   * After catching an exception thrown by a call to `std::throw_with_nested`
+   * this function can be used to rethrow the exception that was active when
+   * `std::throw_with_nested` was called.
+   *
+   * @since C++11
+   */
+  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+  // 2484. rethrow_if_nested() is doubly unimplementable
+  // 2784. Resolution to LWG 2484 is missing "otherwise, no effects" and [...]
   template<typename _Ex>
+# if ! __cpp_rtti
+    [[__gnu__::__always_inline__]]
+#endif
     inline void
     rethrow_if_nested(const _Ex& __ex)
-    { std::__rethrow_if_nested_impl(std::__addressof(__ex)); }
+    {
+      const _Ex* __ptr = __builtin_addressof(__ex);
+#if __cplusplus < 201703L || ! defined __cpp_if_constexpr
+# if __cpp_rtti
+      using __cast = __and_<is_polymorphic<_Ex>,
+			    __or_<__not_<is_base_of<nested_exception, _Ex>>,
+				  is_convertible<_Ex*, nested_exception*>>>;
+# else
+      using __cast = __and_<is_polymorphic<_Ex>,
+			    is_base_of<nested_exception, _Ex>,
+			    is_convertible<_Ex*, nested_exception*>>;
+# endif
+      std::__rethrow_if_nested_impl(__ptr, __cast{});
+#else
+      if constexpr (!is_polymorphic_v<_Ex>)
+	return;
+      else if constexpr (is_base_of_v<nested_exception, _Ex>
+			 && !is_convertible_v<_Ex*, nested_exception*>)
+	return; // nested_exception base class is inaccessible or ambiguous.
+# if ! __cpp_rtti
+      else if constexpr (!is_base_of_v<nested_exception, _Ex>)
+	return; // Cannot do polymorphic casts without RTTI.
+# endif
+      else if (auto __ne_ptr = dynamic_cast<const nested_exception*>(__ptr))
+	__ne_ptr->rethrow_nested();
+#endif
+    }
 
   /// @} group exceptions
 } // namespace std
@@ -165,7 +240,4 @@ namespace std
 } // extern "C++"
 
 #endif // C++11
-
-#pragma GCC visibility pop
-
 #endif // _GLIBCXX_NESTED_EXCEPTION_H

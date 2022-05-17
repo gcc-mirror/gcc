@@ -1,12 +1,11 @@
 /* TEST_OUTPUT:
 REQUIRED_ARGS: -preview=dip1000
 ---
-fail_compilation/test15191.d(35): Error: returning `&identity(x)` escapes a reference to local variable `x`
-fail_compilation/test15191.d(41): Error: returning `&identityPtr(x)` escapes a reference to local variable `x`
-fail_compilation/test15191.d(47): Error: cannot take address of `ref return` of `identityPtr()` in `@safe` function `addrOfRefTransitive`
-fail_compilation/test15191.d(47):        return type `int*` has pointers that may be `scope`
-fail_compilation/test15191.d(68): Error: cannot slice static array of `ref return` of `identityArr()` in `@safe` function `sliceOfRefEscape`
-fail_compilation/test15191.d(68):        return type `int*[1]` has pointers that may be `scope`
+fail_compilation/test15191.d(34): Error: returning `&identity(x)` escapes a reference to local variable `x`
+fail_compilation/test15191.d(40): Error: returning `&identityPtr(x)` escapes a reference to local variable `x`
+fail_compilation/test15191.d(46): Error: returning `&identityPtr(x)` escapes a reference to local variable `x`
+fail_compilation/test15191.d(67): Error: cannot take address of `scope` variable `x` since `scope` applies to first indirection only
+fail_compilation/test15191.d(69): Error: cannot take address of `scope` variable `x` since `scope` applies to first indirection only
 ---
 */
 
@@ -61,10 +60,24 @@ ref int*[1] identityArr(return ref scope int*[1] x)
 	return x;
 }
 
-int* sliceOfRefEscape()
+int*[] sliceOfRefEscape()
 {
 	int stackVar = 0xFF;
 	scope int*[1] x = [&stackVar];
-	int*[] y = identityArr(x)[];
-	return y[0];
+	auto y = identityArr(x)[]; // check transitive scope in assignment
+	cast(void) y;
+	return identityArr(x)[]; // check transitive scope in return statement
+}
+
+// https://issues.dlang.org/show_bug.cgi?id=23079
+int** p;
+
+ref int* get() @safe
+{
+    return *p;
+}
+
+int** g1() @safe
+{
+    return &get();
 }

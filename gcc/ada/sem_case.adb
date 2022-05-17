@@ -1104,7 +1104,7 @@ package body Sem_Case is
          C := UI_To_Int (Value);
 
          if C in 16#20# .. 16#7E# then
-            Set_Character_Literal_Name (Char_Code (UI_To_Int (Value)));
+            Set_Character_Literal_Name (UI_To_CC (Value));
             return Name_Find;
          end if;
 
@@ -2667,6 +2667,7 @@ package body Sem_Case is
             ---------------------
             -- Free_Value_Sets --
             ---------------------
+
             procedure Free_Value_Sets is
             begin
                Value_Index_Set_Table.Free;
@@ -2925,7 +2926,7 @@ package body Sem_Case is
          --  is created with the appropriate Char_Code and Chars fields.
 
          if Is_Standard_Character_Type (Choice_Type) then
-            Set_Character_Literal_Name (Char_Code (UI_To_Int (Value)));
+            Set_Character_Literal_Name (UI_To_CC (Value));
             Lit :=
               Make_Character_Literal (Loc,
                 Chars              => Name_Find,

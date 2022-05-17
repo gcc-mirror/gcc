@@ -44,6 +44,7 @@ with Sinfo.Nodes;    use Sinfo.Nodes;
 with Sinfo.Utils;    use Sinfo.Utils;
 with Sinput;         use Sinput;
 with Snames;         use Snames;
+with Stand;          use Stand;
 with Stringt;        use Stringt;
 with Table;
 with Ttypes;
@@ -189,9 +190,9 @@ package body Repinfo is
    procedure List_Type_Info (Ent : Entity_Id);
    --  List type info for type Ent
 
-   function Rep_Not_Constant (Val : Node_Ref_Or_Val) return Boolean;
-   --  Returns True if Val represents a variable value, and False if it
-   --  represents a value that is fixed at compile time.
+   function Compile_Time_Known_Rep (Val : Node_Ref_Or_Val) return Boolean;
+   --  Returns True if Val represents a representation value that is known at
+   --  compile time.
 
    procedure Spaces (N : Natural);
    --  Output given number of spaces
@@ -874,10 +875,11 @@ package body Repinfo is
       C : Character;
 
    begin
-      --  List the qualified name recursively, except
-      --  at compilation unit level in default mode.
+      --  In JSON mode, we recurse up to Standard. This is also valid in
+      --  default mode where we recurse up to the first compilation unit and
+      --  should not get to Standard.
 
-      if Is_Compilation_Unit (Ent) then
+      if Scope (Ent) = Standard_Standard then
          null;
       elsif not Is_Compilation_Unit (Scope (Ent))
         or else List_Representation_Info_To_JSON
@@ -906,10 +908,12 @@ package body Repinfo is
 
    procedure List_Object_Info (Ent : Entity_Id) is
    begin
-      --  The information has not been computed in a generic unit, so don't try
-      --  to print it.
+      --  If size and alignment have not been computed (e.g. if we are in a
+      --  generic unit, or if the back end is not being run), don't try to
+      --  print them.
 
-      if Sem_Util.In_Generic_Scope (Ent) then
+      pragma Assert (Known_Esize (Ent) = Known_Alignment (Ent));
+      if not Known_Alignment (Ent) then
          return;
       end if;
 
@@ -1053,20 +1057,7 @@ package body Repinfo is
                Get_Decoded_Name_String (Chars (Comp));
                Name_Length := Prefix_Length + Name_Len;
 
-               if Rep_Not_Constant (Bofs) then
-
-                  --  If the record is not packed, then we know that all fields
-                  --  whose position is not specified have starting normalized
-                  --  bit position of zero.
-
-                  if not Known_Normalized_First_Bit (Comp)
-                    and then not Is_Packed (Ent)
-                  then
-                     Set_Normalized_First_Bit (Comp, Uint_0);
-                  end if;
-
-                  UI_Image_Length := 2; -- For "??" marker
-               else
+               if Compile_Time_Known_Rep (Bofs) then
                   Npos := Bofs / SSU;
                   Fbit := Bofs mod SSU;
 
@@ -1096,6 +1087,18 @@ package body Repinfo is
                   end if;
 
                   UI_Image (Spos);
+               else
+                  --  If the record is not packed, then we know that all fields
+                  --  whose position is not specified have starting normalized
+                  --  bit position of zero.
+
+                  if not Known_Normalized_First_Bit (Comp)
+                    and then not Is_Packed (Ent)
+                  then
+                     Set_Normalized_First_Bit (Comp, Uint_0);
+                  end if;
+
+                  UI_Image_Length := 2; -- For "??" marker
                end if;
 
                Max_Name_Length := Natural'Max (Max_Name_Length, Name_Length);
@@ -2116,18 +2119,14 @@ package body Repinfo is
       end if;
    end List_Type_Info;
 
-   ----------------------
-   -- Rep_Not_Constant --
-   ----------------------
+   ----------------------------
+   -- Compile_Time_Known_Rep --
+   ----------------------------
 
-   function Rep_Not_Constant (Val : Node_Ref_Or_Val) return Boolean is
+   function Compile_Time_Known_Rep (Val : Node_Ref_Or_Val) return Boolean is
    begin
-      if No (Val) or else Val < 0 then
-         return True;
-      else
-         return False;
-      end if;
-   end Rep_Not_Constant;
+      return Present (Val) and then Val >= 0;
+   end Compile_Time_Known_Rep;
 
    ---------------
    -- Rep_Value --
@@ -2406,24 +2405,20 @@ package body Repinfo is
 
    procedure Write_Val (Val : Node_Ref_Or_Val; Paren : Boolean := False) is
    begin
-      if Rep_Not_Constant (Val) then
-         if List_Representation_Info < 3 or else No (Val) then
-            Write_Unknown_Val;
-
-         else
-            if Paren then
-               Write_Char ('(');
-            end if;
-
-            List_GCC_Expression (Val);
-
-            if Paren then
-               Write_Char (')');
-            end if;
+      if Compile_Time_Known_Rep (Val) then
+         UI_Write (Val, Decimal);
+      elsif List_Representation_Info < 3 or else No (Val) then
+         Write_Unknown_Val;
+      else
+         if Paren then
+            Write_Char ('(');
          end if;
 
-      else
-         UI_Write (Val, Decimal);
+         List_GCC_Expression (Val);
+
+         if Paren then
+            Write_Char (')');
+         end if;
       end if;
    end Write_Val;
 

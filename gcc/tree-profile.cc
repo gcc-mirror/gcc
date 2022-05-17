@@ -383,8 +383,8 @@ gimple_gen_ic_profiler (histogram_value value, unsigned tag)
     Example:
       f_1 = foo;
       __gcov_indirect_call.counters = &__gcov4.main[0];
-      PROF_9 = f_1;
-      __gcov_indirect_call.callee = PROF_9;
+      PROF_fn_9 = f_1;
+      __gcov_indirect_call.callee = PROF_fn_9;
       _4 = f_1 ();
    */
 
@@ -394,7 +394,7 @@ gimple_gen_ic_profiler (histogram_value value, unsigned tag)
 			     ic_tuple_var, ic_tuple_counters_field, NULL_TREE);
 
   stmt1 = gimple_build_assign (counter_ref, ref_ptr);
-  tmp1 = make_temp_ssa_name (ptr_type_node, NULL, "PROF");
+  tmp1 = make_temp_ssa_name (ptr_type_node, NULL, "PROF_fn");
   stmt2 = gimple_build_assign (tmp1, unshare_expr (value->hvalue.value));
   tree callee_ref = build3 (COMPONENT_REF, ptr_type_node,
 			     ic_tuple_var, ic_tuple_callee_field, NULL_TREE);
@@ -520,7 +520,7 @@ gimple_gen_time_profiler (unsigned tag)
   if (flag_profile_update == PROFILE_UPDATE_ATOMIC)
     {
       tree ptr = make_temp_ssa_name (build_pointer_type (type), NULL,
-				     "time_profiler_counter_ptr");
+				     "PROF_time_profiler_counter_ptr");
       tree addr = build1 (ADDR_EXPR, TREE_TYPE (ptr),
 			  tree_time_profiler_counter);
       gassign *assign = gimple_build_assign (ptr, NOP_EXPR, addr);
@@ -532,10 +532,10 @@ gimple_gen_time_profiler (unsigned tag)
 				       build_int_cst (integer_type_node,
 						      MEMMODEL_RELAXED));
       tree result_type = TREE_TYPE (TREE_TYPE (f));
-      tree tmp = make_temp_ssa_name (result_type, NULL, "time_profile");
+      tree tmp = make_temp_ssa_name (result_type, NULL, "PROF_time_profile");
       gimple_set_lhs (stmt, tmp);
       gsi_insert_after (&gsi, stmt, GSI_NEW_STMT);
-      tmp = make_temp_ssa_name (type, NULL, "time_profile");
+      tmp = make_temp_ssa_name (type, NULL, "PROF_time_profile");
       assign = gimple_build_assign (tmp, NOP_EXPR,
 				    gimple_call_lhs (stmt));
       gsi_insert_after (&gsi, assign, GSI_NEW_STMT);
@@ -544,11 +544,11 @@ gimple_gen_time_profiler (unsigned tag)
     }
   else
     {
-      tree tmp = make_temp_ssa_name (type, NULL, "time_profile");
+      tree tmp = make_temp_ssa_name (type, NULL, "PROF_time_profile");
       gassign *assign = gimple_build_assign (tmp, tree_time_profiler_counter);
       gsi_insert_before (&gsi, assign, GSI_NEW_STMT);
 
-      tmp = make_temp_ssa_name (type, NULL, "time_profile");
+      tmp = make_temp_ssa_name (type, NULL, "PROF_time_profile");
       assign = gimple_build_assign (tmp, PLUS_EXPR, gimple_assign_lhs (assign),
 				    one);
       gsi_insert_after (&gsi, assign, GSI_NEW_STMT);

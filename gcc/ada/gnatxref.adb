@@ -74,7 +74,7 @@ procedure Gnatxref is
 
       procedure Check_Version_And_Help is new Check_Version_And_Help_G (Usage);
 
-      --  Start of processing for Parse_Cmd_Line
+   --  Start of processing for Parse_Cmd_Line
 
    begin
       --  First check for --version or --help

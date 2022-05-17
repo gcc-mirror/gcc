@@ -4,7 +4,7 @@
 --                                                                          --
 --                    G N A T . D E C O D E _ S T R I N G                   --
 --                                                                          --
---                                 S p e c                                  --
+--                                 B o d y                                  --
 --                                                                          --
 --                     Copyright (C) 2007-2022, AdaCore                     --
 --                                                                          --

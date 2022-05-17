@@ -948,7 +948,7 @@ field_in_pset (hash_set<tree, true> &pset, tree field)
     for (field = TYPE_FIELDS (TREE_TYPE (field));
 	 field; field = DECL_CHAIN (field))
       {
-	field = next_initializable_field (field);
+	field = next_aggregate_field (field);
 	if (field == NULL_TREE)
 	  break;
 	if (field_in_pset (pset, field))
@@ -965,7 +965,7 @@ build_aggr_conv (tree type, tree ctor, int flags, tsubst_flags_t complain)
 {
   unsigned HOST_WIDE_INT i = 0;
   conversion *c;
-  tree field = next_initializable_field (TYPE_FIELDS (type));
+  tree field = next_aggregate_field (TYPE_FIELDS (type));
   tree empty_ctor = NULL_TREE;
   hash_set<tree, true> pset;
 
@@ -1011,7 +1011,7 @@ build_aggr_conv (tree type, tree ctor, int flags, tsubst_flags_t complain)
 	}
     }
 
-  for (; field; field = next_initializable_field (DECL_CHAIN (field)))
+  for (; field; field = next_aggregate_field (DECL_CHAIN (field)))
     {
       tree ftype = TREE_TYPE (field);
       tree val;
@@ -8098,10 +8098,10 @@ convert_like_internal (conversion *convs, tree expr, tree fn, int argnum,
 	totype = complete_type_or_maybe_complain (totype, NULL_TREE, complain);
 	if (!totype)
 	  return error_mark_node;
-	tree field = next_initializable_field (TYPE_FIELDS (totype));
+	tree field = next_aggregate_field (TYPE_FIELDS (totype));
 	vec<constructor_elt, va_gc> *vec = NULL;
 	CONSTRUCTOR_APPEND_ELT (vec, field, array);
-	field = next_initializable_field (DECL_CHAIN (field));
+	field = next_aggregate_field (DECL_CHAIN (field));
 	CONSTRUCTOR_APPEND_ELT (vec, field, size_int (len));
 	tree new_ctor = build_constructor (totype, vec);
 	return get_target_expr_sfinae (new_ctor, complain);
@@ -13267,8 +13267,8 @@ type_has_extended_temps (tree type)
     {
       if (is_std_init_list (type))
 	return true;
-      for (tree f = next_initializable_field (TYPE_FIELDS (type));
-	   f; f = next_initializable_field (DECL_CHAIN (f)))
+      for (tree f = next_aggregate_field (TYPE_FIELDS (type));
+	   f; f = next_aggregate_field (DECL_CHAIN (f)))
 	if (type_has_extended_temps (TREE_TYPE (f)))
 	  return true;
     }

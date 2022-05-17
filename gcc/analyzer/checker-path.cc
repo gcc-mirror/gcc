@@ -323,24 +323,28 @@ state_change_event::get_desc (bool can_colorize) const
   if (m_sval)
     {
       label_text sval_desc = m_sval->get_desc ();
+      label_text result;
       if (m_origin)
 	{
 	  label_text origin_desc = m_origin->get_desc ();
-	  return make_label_text
+	  result = make_label_text
 	    (can_colorize,
 	     "state of %qs: %qs -> %qs (origin: %qs)",
 	     sval_desc.m_buffer,
 	     m_from->get_name (),
 	     m_to->get_name (),
 	     origin_desc.m_buffer);
+	  origin_desc.maybe_free ();
 	}
       else
-	return make_label_text
+	result = make_label_text
 	  (can_colorize,
 	   "state of %qs: %qs -> %qs (NULL origin)",
 	   sval_desc.m_buffer,
 	   m_from->get_name (),
 	   m_to->get_name ());
+      sval_desc.maybe_free ();
+      return result;
     }
   else
     {
@@ -682,8 +686,8 @@ call_event::get_desc (bool can_colorize) const
 
   return make_label_text (can_colorize,
 			  "calling %qE from %qE",
-			  m_dest_snode->m_fun->decl,
-			  m_src_snode->m_fun->decl);
+			  get_callee_fndecl (),
+			  get_caller_fndecl ());
 }
 
 /* Override of checker_event::is_call_p for calls.  */
@@ -692,6 +696,18 @@ bool
 call_event::is_call_p () const
 {
   return true;
+}
+
+tree
+call_event::get_caller_fndecl () const
+{
+  return m_src_snode->m_fun->decl;
+}
+
+tree
+call_event::get_callee_fndecl () const
+{
+  return m_dest_snode->m_fun->decl;
 }
 
 /* class return_event : public superedge_event.  */

@@ -360,7 +360,7 @@ Gabriel Charette				<gchare@google.com>
 Chandra Chavva					<cchavva@redhat.com>
 Dehao Chen					<dehao@google.com>
 Fabien Chêne					<fabien@gcc.gnu.org>
-Clément Chigot					<clement.chigot@atos.net>
+Clément Chigot					<chigot@adacore.com>
 Harshit Chopra					<harshit@google.com>
 Tamar Christina					<tamar.christina@arm.com>
 Eric Christopher				<echristo@gmail.com>
@@ -464,6 +464,7 @@ Daniel Jacobowitz				<drow@false.org>
 Andreas Jaeger					<aj@suse.de>
 Harsha Jagasia					<harsha.jagasia@amd.com>
 Fariborz Jahanian				<fjahanian@apple.com>
+Surya Kumari Jangala				<jskumari@linux.ibm.com>
 Qian Jianhua					<qianjh@fujitsu.com>
 Janis Johnson					<janis.marie.johnson@gmail.com>
 Teresa Johnson					<tejohnson@google.com>
@@ -681,7 +682,7 @@ Przemyslaw Wirkus				<przemyslaw.wirkus@arm.com>
 Carlo Wood					<carlo@alinoe.com>
 Jackson Woodruff				<jackson.woodruff@arm.com>
 Jonathan Wright					<jonathan.wright@arm.com>
-Ruoyao Xi					<xry111@mengyan1223.wang>
+Ruoyao Xi					<xry111@xry111.site>
 Mingjie Xing					<mingjie.xing@gmail.com>
 Chenghua Xu					<paul.hua.gm@gmail.com>
 Canqun Yang					<canqun@nudt.edu.cn>
@@ -717,8 +718,6 @@ information.
 Matthias Kretz					<m.kretz@gsi.de>
 Jeff Law					<jeffreyalaw@gmail.com>
 Jeff Law					<jlaw@tachyum.com>
-Kewen Lin					<linkw@gcc.gnu.org>
-Kewen Lin					<linkw@linux.ibm.com>
 Gaius Mulley					<gaiusmod2@gmail.com>
 Siddhesh Poyarekar				<siddhesh@gotplt.org>
 Navid Rahimi					<navidrahimi@microsoft.com>

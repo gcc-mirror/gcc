@@ -221,7 +221,7 @@ extern (C++) abstract class Declaration : Dsymbol
     Type originalType;  // before semantic analysis
     StorageClass storage_class = STC.undefined_;
     Visibility visibility;
-    LINK linkage = LINK.default_;
+    LINK _linkage = LINK.default_; // may be `LINK.system`; use `resolvedLinkage()` to resolve it
     short inuse;          // used to detect cycles
 
     ubyte adFlags;         // control re-assignment of AliasDeclaration (put here for packing reasons)
@@ -336,7 +336,7 @@ extern (C++) abstract class Declaration : Dsymbol
         {
             if (ctor.isCpCtor && ctor.isGenerated())
             {
-                .error(loc, "Generating an `inout` copy constructor for `struct %s` failed, therefore instances of it are uncopyable", parent.toPrettyChars());
+                .error(loc, "generating an `inout` copy constructor for `struct %s` failed, therefore instances of it are uncopyable", parent.toPrettyChars());
                 return true;
             }
         }
@@ -418,6 +418,12 @@ extern (C++) abstract class Declaration : Dsymbol
     final bool isStatic() const pure nothrow @nogc @safe
     {
         return (storage_class & STC.static_) != 0;
+    }
+
+    /// Returns the linkage, resolving the target-specific `System` one.
+    final LINK resolvedLinkage() const
+    {
+        return _linkage == LINK.system ? target.systemLinkage() : _linkage;
     }
 
     bool isDelete()
@@ -1506,7 +1512,7 @@ extern (C++) class VarDeclaration : Declaration
         uint oldgag = global.gag;
         if (global.gag)
         {
-            Dsymbol sym = toParent().isAggregateDeclaration();
+            Dsymbol sym = isMember();
             if (sym && !sym.isSpeculative())
                 global.gag = 0;
         }
@@ -1689,6 +1695,32 @@ extern (C++) class BitFieldDeclaration : VarDeclaration
     override void accept(Visitor v)
     {
         v.visit(this);
+    }
+
+    /***********************************
+     * Retrieve the .min or .max values.
+     * Only valid after semantic analysis.
+     * Params:
+     *  id = Id.min or Id.max
+     * Returns:
+     *  the min or max value
+     */
+    final ulong getMinMax(Identifier id)
+    {
+        const width = fieldWidth;
+        const uns = type.isunsigned();
+        const min = id == Id.min;
+        ulong v;
+        assert(width != 0);  // should have been rejected in semantic pass
+        if (width == ulong.sizeof * 8)
+            v = uns ? (min ? ulong.min : ulong.max)
+                    : (min ?  long.min :  long.max);
+        else
+            v = uns ? (min ? 0
+                           : (1L << width) - 1)
+                    : (min ? -(1L << (width - 1))
+                           :  (1L << (width - 1)) - 1);
+        return v;
     }
 
     override final void setFieldOffset(AggregateDeclaration ad, ref FieldState fieldState, bool isunion)
@@ -1919,7 +1951,7 @@ extern (C++) class TypeInfoDeclaration : VarDeclaration
         this.tinfo = tinfo;
         storage_class = STC.static_ | STC.gshared;
         visibility = Visibility(Visibility.Kind.public_);
-        linkage = LINK.c;
+        _linkage = LINK.c;
         alignment.set(target.ptrsize);
     }
 

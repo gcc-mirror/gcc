@@ -435,6 +435,23 @@ public:
        var, var_old_sval, current, d);
   }
 
+  void warn (const supernode *snode, const gimple *stmt,
+	     const svalue *sval, pending_diagnostic *d) FINAL OVERRIDE
+  {
+    LOG_FUNC (get_logger ());
+    gcc_assert (d); // take ownership
+    impl_region_model_context old_ctxt
+      (m_eg, m_enode_for_diag, m_old_state, m_new_state, NULL, NULL, NULL);
+
+    state_machine::state_t current
+      = (sval
+	 ? m_old_smap->get_state (sval, m_eg.get_ext_state ())
+	 : m_old_smap->get_global_state ());
+    m_eg.get_diagnostic_manager ().add_diagnostic
+      (&m_sm, m_enode_for_diag, snode, stmt, m_stmt_finder,
+       NULL_TREE, sval, current, d);
+  }
+
   /* Hook for picking more readable trees for SSA names of temporaries,
      so that rather than e.g.
        "double-free of '<unknown>'"
@@ -510,6 +527,11 @@ public:
   const program_state *get_old_program_state () const FINAL OVERRIDE
   {
     return m_old_state;
+  }
+
+  const program_state *get_new_program_state () const FINAL OVERRIDE
+  {
+    return m_new_state;
   }
 
   log_user m_logger;
@@ -1139,7 +1161,7 @@ exploded_node::get_dot_fillcolor () const
 	= {"azure", "coral", "cornsilk", "lightblue", "yellow",
 	   "honeydew", "lightpink", "lightsalmon", "palegreen1",
 	   "wheat", "seashell"};
-      const int num_colors = sizeof (colors) / sizeof (colors[0]);
+      const int num_colors = ARRAY_SIZE (colors);
       return colors[total_sm_state % num_colors];
     }
   else
@@ -2340,15 +2362,14 @@ exploded_graph::exploded_graph (const supergraph &sg, logger *logger,
 
 exploded_graph::~exploded_graph ()
 {
-  for (function_stat_map_t::iterator iter = m_per_function_stats.begin ();
-       iter != m_per_function_stats.end ();
-       ++iter)
-    delete (*iter).second;
-
-  for (point_map_t::iterator iter = m_per_point_data.begin ();
-       iter != m_per_point_data.end ();
-       ++iter)
-    delete (*iter).second;
+  for (auto iter : m_per_point_data)
+    delete iter.second;
+  for (auto iter : m_per_function_data)
+    delete iter.second;
+  for (auto iter : m_per_function_stats)
+    delete iter.second;
+  for (auto iter : m_per_call_string_data)
+    delete iter.second;
 }
 
 /* Subroutine for use when implementing __attribute__((tainted_args))
@@ -4538,10 +4559,14 @@ feasibility_state::maybe_update_for_edge (logger *logger,
   if (sedge)
     {
       if (logger)
-	logger->log ("  sedge: SN:%i -> SN:%i %s",
-		     sedge->m_src->m_index,
-		     sedge->m_dest->m_index,
-		     sedge->get_description (false));
+	{
+	  char *desc = sedge->get_description (false);
+	  logger->log ("  sedge: SN:%i -> SN:%i %s",
+		       sedge->m_src->m_index,
+		       sedge->m_dest->m_index,
+		       desc);
+	  free (desc);
+	}
 
       const gimple *last_stmt = src_point.get_supernode ()->get_last_stmt ();
       if (!m_model.maybe_update_for_edge (*sedge, last_stmt, NULL, out_rc))

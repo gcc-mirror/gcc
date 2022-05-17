@@ -326,6 +326,8 @@ public:
   const string_region *get_region_for_string (tree string_cst);
   const region *get_bit_range (const region *parent, tree type,
 			       const bit_range &bits);
+  const var_arg_region *get_var_arg_region (const frame_region *parent,
+					    unsigned idx);
 
   const region *get_unknown_symbolic_region (tree region_type);
 
@@ -488,6 +490,7 @@ private:
   string_map_t m_string_map;
 
   consolidation_map<bit_range_region> m_bit_range_regions;
+  consolidation_map<var_arg_region> m_var_arg_regions;
 
   store_manager m_store_mgr;
 
@@ -626,6 +629,12 @@ class region_model
   void impl_call_operator_new (const call_details &cd);
   void impl_call_operator_delete (const call_details &cd);
   void impl_deallocation_call (const call_details &cd);
+
+  /* Implemented in varargs.cc.  */
+  void impl_call_va_start (const call_details &cd);
+  void impl_call_va_copy (const call_details &cd);
+  void impl_call_va_arg (const call_details &cd);
+  void impl_call_va_end (const call_details &cd);
 
   void handle_unrecognized_call (const gcall *call,
 				 region_model_context *ctxt);

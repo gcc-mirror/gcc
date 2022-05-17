@@ -901,12 +901,14 @@ package Exp_Util is
 
    function Make_Variant_Comparison
      (Loc      : Source_Ptr;
+      Typ      : Entity_Id;
       Mode     : Name_Id;
       Curr_Val : Node_Id;
       Old_Val  : Node_Id) return Node_Id;
    --  Subsidiary to the expansion of pragmas Loop_Variant and
    --  Subprogram_Variant. Generate a comparison between Curr_Val and Old_Val
-   --  depending on the variant mode (Increases / Decreases).
+   --  depending on the variant mode (Increases / Decreases) using less or
+   --  greater operator for Typ.
 
    procedure Map_Formals
      (Parent_Subp  : Entity_Id;
@@ -1103,8 +1105,8 @@ package Exp_Util is
    --    1) controlled objects
    --    2) library-level tagged types
    --
-   --  These cases require special actions on scope exit. The flag Lib_Level
-   --  is set True if the construct is at library level, and False otherwise.
+   --  These cases require special actions on scope exit. Lib_Level is True if
+   --  the construct is at library level, and False otherwise.
 
    function Safe_Unchecked_Type_Conversion (Exp : Node_Id) return Boolean;
    --  Given the node for an N_Unchecked_Type_Conversion, return True if this

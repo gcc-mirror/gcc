@@ -52,7 +52,6 @@ with Types;          use Types;
 with Seinfo;         use Seinfo;
 with System;         use System;
 with Table;
-with Unchecked_Conversion;
 
 package Atree is
 

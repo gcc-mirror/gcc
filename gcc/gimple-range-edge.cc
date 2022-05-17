@@ -154,7 +154,9 @@ gimple_outgoing_range::calc_switch_ranges (gswitch *sw)
       irange *&slot = m_edge_table->get_or_insert (e, &existed);
       if (existed)
 	{
-	  case_range.union_ (*slot);
+	  // If this doesn't change the value, move on.
+	  if (!case_range.union_ (*slot))
+	   continue;
 	  if (slot->fits_p (case_range))
 	    {
 	      *slot = case_range;

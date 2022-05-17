@@ -729,7 +729,7 @@ package body GPrep is
 
       procedure Check_Version_And_Help is new Check_Version_And_Help_G (Usage);
 
-      --  Start of processing for Scan_Command_Line
+   --  Start of processing for Scan_Command_Line
 
    begin
       --  First check for --version or --help

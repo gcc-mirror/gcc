@@ -1423,7 +1423,7 @@ show_omp_namelist (int list_type, gfc_omp_namelist *n)
 	  case OMP_LINEAR_UVAL: fputs ("uval(", dumpfile); break;
 	  default: break;
 	  }
-      fprintf (dumpfile, "%s", n->sym->name);
+      fprintf (dumpfile, "%s", n->sym ? n->sym->name : "omp_all_memory");
       if (list_type == OMP_LIST_LINEAR && n->u.linear_op != OMP_LINEAR_DEFAULT)
 	fputc (')', dumpfile);
       if (n->expr)

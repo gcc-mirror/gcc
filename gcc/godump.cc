@@ -1326,7 +1326,7 @@ static void
 keyword_hash_init (class godump_container *container)
 {
   size_t i;
-  size_t count = sizeof (keywords) / sizeof (keywords[0]);
+  size_t count = ARRAY_SIZE (keywords);
   void **slot;
 
   for (i = 0; i < count; i++)

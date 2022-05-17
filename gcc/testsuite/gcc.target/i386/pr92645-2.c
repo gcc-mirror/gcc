@@ -29,6 +29,6 @@ void odd (v2si *dst, v4si *srcp)
 }
 
 /* { dg-final { scan-tree-dump-times "BIT_FIELD_REF" 4 "cddce1" } } */
-/* { dg-final { scan-tree-dump-times "VEC_PERM_EXPR" 3 "cddce1" } } */
+/* { dg-final { scan-tree-dump-times "VEC_PERM_EXPR" 3 "cddce1" { xfail *-*-* } } } */
 /* Ideally highpart extraction would elide the permutation as well.  */
-/* { dg-final { scan-tree-dump-times "VEC_PERM_EXPR" 2 "cddce1" { xfail *-*-* } } } */
+/* { dg-final { scan-tree-dump-times "VEC_PERM_EXPR" 2 "cddce1" } } */

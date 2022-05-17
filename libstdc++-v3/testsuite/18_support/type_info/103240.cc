@@ -1,5 +1,6 @@
 // { dg-do run }
 // { dg-require-sharedlib "" }
+// { dg-require-effective-target rtti }
 // { dg-options "./testsuite_shared.so" }
 
 #include <typeinfo>

@@ -29,7 +29,6 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Ada.Unchecked_Conversion;
 with System.Generic_Bignums;
 with System.Secondary_Stack;  use System.Secondary_Stack;
 with System.Shared_Bignums;   use System.Shared_Bignums;

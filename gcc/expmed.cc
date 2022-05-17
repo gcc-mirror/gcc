@@ -403,13 +403,13 @@ flip_storage_order (machine_mode mode, rtx x)
       return gen_rtx_CONCAT (mode, real, imag);
     }
 
-  if (__builtin_expect (reverse_storage_order_supported < 0, 0))
+  if (UNLIKELY (reverse_storage_order_supported < 0))
     check_reverse_storage_order_support ();
 
   if (!is_a <scalar_int_mode> (mode, &int_mode))
     {
       if (FLOAT_MODE_P (mode)
-	  && __builtin_expect (reverse_float_storage_order_supported < 0, 0))
+	  && UNLIKELY (reverse_float_storage_order_supported < 0))
 	check_reverse_float_storage_order_support ();
 
       if (!int_mode_for_size (GET_MODE_PRECISION (mode), 0).exists (&int_mode)

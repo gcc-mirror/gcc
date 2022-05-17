@@ -67,13 +67,13 @@ along with GCC; see the file COPYING3.  If not see
 #include "asan.h"
 #include "internal-fn.h"
 #include "case-cfn-macros.h"
+#include "gimple-iterator.h"
 #include "gimple-fold.h"
 #include "intl.h"
 #include "file-prefix-map.h" /* remap_macro_filename()  */
 #include "gomp-constants.h"
 #include "omp-general.h"
 #include "tree-dfa.h"
-#include "gimple-iterator.h"
 #include "gimple-ssa.h"
 #include "tree-ssa-live.h"
 #include "tree-outof-ssa.h"
@@ -613,7 +613,7 @@ c_strlen (tree arg, int only_value, c_strlen_data *data, unsigned eltsize)
   if (eltsize != tree_to_uhwi (TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (src)))))
     return NULL_TREE;
 
-  /* Set MAXELTS to sizeof (SRC) / sizeof (*SRC) - 1, the maximum possible
+  /* Set MAXELTS to ARRAY_SIZE (SRC) - 1, the maximum possible
      length of SRC.  Prefer TYPE_SIZE() to TREE_STRING_LENGTH() if possible
      in case the latter is less than the size of the array, such as when
      SRC refers to a short string literal used to initialize a large array.

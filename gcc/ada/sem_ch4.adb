@@ -148,10 +148,6 @@ package body Sem_Ch4 is
    --  like a function, but instead of a list of actuals, it is presented with
    --  the operand of the operator node.
 
-   procedure Ambiguous_Operands (N : Node_Id);
-   --  For equality, membership, and comparison operators with overloaded
-   --  arguments, list possible interpretations.
-
    procedure Analyze_One_Call
       (N          : Node_Id;
        Nam        : Entity_Id;
@@ -184,12 +180,6 @@ package body Sem_Ch4 is
    --  Analyze_Selected_Component after producing an invalid selector error
    --  message.
 
-   function Defined_In_Scope (T : Entity_Id; S : Entity_Id) return Boolean;
-   --  Verify that type T is declared in scope S. Used to find interpretations
-   --  for operators given by expanded names. This is abstracted as a separate
-   --  function to handle extensions to System, where S is System, but T is
-   --  declared in the extension.
-
    procedure Find_Arithmetic_Types
      (L, R  : Node_Id;
       Op_Id : Entity_Id;
@@ -198,24 +188,18 @@ package body Sem_Ch4 is
    --  pairs of interpretations for L and R that have a numeric type consistent
    --  with the semantics of the operator.
 
-   procedure Find_Comparison_Types
+   procedure Find_Comparison_Equality_Types
      (L, R  : Node_Id;
       Op_Id : Entity_Id;
       N     : Node_Id);
-   --  L and R are operands of a comparison operator. Find consistent pairs of
-   --  interpretations for L and R.
+   --  L and R are operands of a comparison or equality operator. Find valid
+   --  pairs of interpretations for L and R.
 
    procedure Find_Concatenation_Types
      (L, R  : Node_Id;
       Op_Id : Entity_Id;
       N     : Node_Id);
    --  For the four varieties of concatenation
-
-   procedure Find_Equality_Types
-     (L, R  : Node_Id;
-      Op_Id : Entity_Id;
-      N     : Node_Id);
-   --  Ditto for equality operators
 
    procedure Find_Boolean_Types
      (L, R  : Node_Id;
@@ -228,18 +212,6 @@ package body Sem_Ch4 is
       Op_Id : Entity_Id;
       N     : Node_Id);
    --  Find consistent interpretation for operand of negation operator
-
-   procedure Find_Non_Universal_Interpretations
-     (N     : Node_Id;
-      R     : Node_Id;
-      Op_Id : Entity_Id;
-      T1    : Entity_Id);
-   --  For equality and comparison operators, the result is always boolean, and
-   --  the legality of the operation is determined from the visibility of the
-   --  operand types. If one of the operands has a universal interpretation,
-   --  the legality check uses some compatible non-universal interpretation of
-   --  the other operand. N can be an operator node, or a function call whose
-   --  name is an operator designator.
 
    function Find_Primitive_Operation (N : Node_Id) return Boolean;
    --  Find candidate interpretations for the name Obj.Proc when it appears in
@@ -292,6 +264,22 @@ package body Sem_Ch4 is
    --  of the new aspect. It is unclear whether a full implementation of
    --  these aspects can be achieved without larger modifications to the
    --  two-pass resolution algorithm.
+
+   function Possible_Type_For_Conditional_Expression
+     (T1, T2 : Entity_Id) return Entity_Id;
+   --  Given two types T1 and T2 that are _not_ compatible, return a type that
+   --  may still be used as the possible type of a conditional expression whose
+   --  dependent expressions, or part thereof, have type T1 and T2 respectively
+   --  during the first phase of type resolution, or Empty if such a type does
+   --  not exist.
+
+   --  The typical example is an if_expression whose then_expression is of a
+   --  tagged type and whose else_expresssion is of an extension of this type:
+   --  the types are not compatible but such an if_expression can be legal if
+   --  its expected type is the 'Class of the tagged type, so the function will
+   --  return the tagged type in this case. If the expected type turns out to
+   --  be something else, including the tagged type itself, then an error will
+   --  be given during the second phase of type resolution.
 
    procedure Remove_Abstract_Operations (N : Node_Id);
    --  Ada 2005: implementation of AI-310. An abstract non-dispatching
@@ -800,7 +788,7 @@ package body Sem_Ch4 is
                --  type.
 
                else
-                  if Original_Node (N) /= N
+                  if Is_Rewrite_Substitution (N)
                     and then Nkind (Original_Node (N)) = N_Allocator
                   then
                      declare
@@ -911,12 +899,15 @@ package body Sem_Ch4 is
    ---------------------------
 
    procedure Analyze_Arithmetic_Op (N : Node_Id) is
-      L     : constant Node_Id := Left_Opnd (N);
-      R     : constant Node_Id := Right_Opnd (N);
+      L : constant Node_Id := Left_Opnd (N);
+      R : constant Node_Id := Right_Opnd (N);
+
       Op_Id : Entity_Id;
 
    begin
+      Set_Etype (N, Any_Type);
       Candidate_Type := Empty;
+
       Analyze_Expression (L);
       Analyze_Expression (R);
 
@@ -926,22 +917,18 @@ package body Sem_Ch4 is
       --  and we do not need to collect interpretations, instead we just get
       --  the single possible interpretation.
 
-      Op_Id := Entity (N);
+      if Present (Entity (N)) then
+         Op_Id := Entity (N);
 
-      if Present (Op_Id) then
          if Ekind (Op_Id) = E_Operator then
-            Set_Etype (N, Any_Type);
             Find_Arithmetic_Types (L, R, Op_Id, N);
          else
-            Set_Etype (N, Any_Type);
             Add_One_Interp (N, Op_Id, Etype (Op_Id));
          end if;
 
       --  Entity is not already set, so we do need to collect interpretations
 
       else
-         Set_Etype (N, Any_Type);
-
          Op_Id := Get_Name_Entity_Id (Chars (N));
          while Present (Op_Id) loop
             if Ekind (Op_Id) = E_Operator
@@ -1266,19 +1253,11 @@ package body Sem_Ch4 is
          --  If the nonoverloaded interpretation is a call to an abstract
          --  nondispatching operation, then flag an error and return.
 
-         --  Should this be incorporated in Remove_Abstract_Operations (which
-         --  currently only deals with cases where the name is overloaded)? ???
-
          if Is_Overloadable (Nam_Ent)
            and then Is_Abstract_Subprogram (Nam_Ent)
            and then not Is_Dispatching_Operation (Nam_Ent)
          then
-            Set_Etype (N, Any_Type);
-
-            Error_Msg_Sloc := Sloc (Nam_Ent);
-            Error_Msg_NE
-              ("cannot call abstract operation& declared#", N, Nam_Ent);
-
+            Nondispatching_Call_To_Abstract_Operation (N, Nam_Ent);
             return;
          end if;
 
@@ -1588,9 +1567,29 @@ package body Sem_Ch4 is
    -----------------------------
 
    procedure Analyze_Case_Expression (N : Node_Id) is
+      Expr      : constant Node_Id := Expression (N);
+      First_Alt : constant Node_Id := First (Alternatives (N));
+
+      First_Expr : Node_Id := Empty;
+      --  First expression in the case where there is some type information
+      --  available, i.e. there is not Any_Type everywhere, which can happen
+      --  because of some error.
+
+      Second_Expr : Node_Id := Empty;
+      --  Second expression as above
+
+      Wrong_Alt : Node_Id := Empty;
+      --  For error reporting
+
       procedure Non_Static_Choice_Error (Choice : Node_Id);
       --  Error routine invoked by the generic instantiation below when
       --  the case expression has a non static choice.
+
+      procedure Check_Next_Expression (T : Entity_Id; Alt : Node_Id);
+      --  Check one interpretation of the next expression with type T
+
+      procedure Check_Expression_Pair (T1, T2 : Entity_Id; Alt : Node_Id);
+      --  Check first expression with type T1 and next expression with type T2
 
       package Case_Choices_Analysis is new
         Generic_Analyze_Choices
@@ -1614,23 +1613,81 @@ package body Sem_Ch4 is
            ("choice given in case expression is not static!", Choice);
       end Non_Static_Choice_Error;
 
+      ---------------------------
+      -- Check_Next_Expression --
+      ---------------------------
+
+      procedure Check_Next_Expression (T : Entity_Id; Alt : Node_Id) is
+         Next_Expr : constant Node_Id := Expression (Alt);
+
+         I     : Interp_Index;
+         It    : Interp;
+
+      begin
+         if Next_Expr = First_Expr then
+            Check_Next_Expression (T, Next (Alt));
+            return;
+         end if;
+
+         --  Loop through the interpretations of the next expression
+
+         if not Is_Overloaded (Next_Expr) then
+            Check_Expression_Pair (T, Etype (Next_Expr), Alt);
+
+         else
+            Get_First_Interp (Next_Expr, I, It);
+            while Present (It.Typ) loop
+               Check_Expression_Pair (T, It.Typ, Alt);
+               Get_Next_Interp (I, It);
+            end loop;
+         end if;
+      end Check_Next_Expression;
+
+      ---------------------------
+      -- Check_Expression_Pair --
+      ---------------------------
+
+      procedure Check_Expression_Pair (T1, T2 : Entity_Id; Alt : Node_Id) is
+         Next_Expr : constant Node_Id := Expression (Alt);
+
+         T : Entity_Id;
+
+      begin
+         if Covers (T1 => T1, T2 => T2)
+           or else Covers (T1 => T2, T2 => T1)
+         then
+            T := Specific_Type (T1, T2);
+
+         elsif Is_User_Defined_Literal (First_Expr, T2) then
+            T := T2;
+
+         elsif Is_User_Defined_Literal (Next_Expr, T1) then
+            T := T1;
+
+         else
+            T := Possible_Type_For_Conditional_Expression (T1, T2);
+
+            if No (T) then
+               Wrong_Alt := Alt;
+               return;
+            end if;
+         end if;
+
+         if Present (Next (Alt)) then
+            Check_Next_Expression (T, Next (Alt));
+         else
+            Add_One_Interp (N, T, T);
+         end if;
+      end Check_Expression_Pair;
+
       --  Local variables
 
-      Expr      : constant Node_Id := Expression (N);
-      Alt       : Node_Id;
-      Exp_Type  : Entity_Id;
-      Exp_Btype : Entity_Id;
-
-      FirstX : Node_Id := Empty;
-      --  First expression in the case for which there is some type information
-      --  available, i.e. it is not Any_Type, which can happen because of some
-      --  error, or from the use of e.g. raise Constraint_Error.
-
+      Alt            : Node_Id;
+      Exp_Type       : Entity_Id;
+      Exp_Btype      : Entity_Id;
+      I              : Interp_Index;
+      It             : Interp;
       Others_Present : Boolean;
-      --  Indicates if Others was present
-
-      Wrong_Alt : Node_Id := Empty;
-      --  For error reporting
 
    --  Start of processing for Analyze_Case_Expression
 
@@ -1640,16 +1697,23 @@ package body Sem_Ch4 is
       Exp_Type := Etype (Expr);
       Exp_Btype := Base_Type (Exp_Type);
 
-      Alt := First (Alternatives (N));
+      Set_Etype (N, Any_Type);
+
+      Alt := First_Alt;
       while Present (Alt) loop
          if Error_Posted (Expression (Alt)) then
             return;
          end if;
 
-         Analyze (Expression (Alt));
+         Analyze_Expression (Expression (Alt));
 
-         if No (FirstX) and then Etype (Expression (Alt)) /= Any_Type then
-            FirstX := Expression (Alt);
+         if Etype (Expression (Alt)) /= Any_Type then
+            if No (First_Expr) then
+               First_Expr := Expression (Alt);
+
+            elsif No (Second_Expr) then
+               Second_Expr := Expression (Alt);
+            end if;
          end if;
 
          Next (Alt);
@@ -1658,46 +1722,32 @@ package body Sem_Ch4 is
       --  Get our initial type from the first expression for which we got some
       --  useful type information from the expression.
 
-      if No (FirstX) then
+      if No (First_Expr) then
          return;
       end if;
 
-      if not Is_Overloaded (FirstX) then
-         Set_Etype (N, Etype (FirstX));
+      --  Loop through the interpretations of the first expression and check
+      --  the other expressions if present.
+
+      if not Is_Overloaded (First_Expr) then
+         if Present (Second_Expr) then
+            Check_Next_Expression (Etype (First_Expr), First_Alt);
+         else
+            Set_Etype (N, Etype (First_Expr));
+         end if;
 
       else
-         declare
-            I  : Interp_Index;
-            It : Interp;
+         Get_First_Interp (First_Expr, I, It);
+         while Present (It.Typ) loop
+            if Present (Second_Expr) then
+               Check_Next_Expression (It.Typ, First_Alt);
+            else
+               Add_One_Interp (N, It.Typ, It.Typ);
+            end if;
 
-         begin
-            Set_Etype (N, Any_Type);
-
-            Get_First_Interp (FirstX, I, It);
-            while Present (It.Nam) loop
-
-               --  For each interpretation of the first expression, we only
-               --  add the interpretation if every other expression in the
-               --  case expression alternatives has a compatible type.
-
-               Alt := Next (First (Alternatives (N)));
-               while Present (Alt) loop
-                  exit when not Has_Compatible_Type (Expression (Alt), It.Typ);
-                  Next (Alt);
-               end loop;
-
-               if No (Alt) then
-                  Add_One_Interp (N, It.Typ, It.Typ);
-               else
-                  Wrong_Alt := Alt;
-               end if;
-
-               Get_Next_Interp (I, It);
-            end loop;
-         end;
+            Get_Next_Interp (I, It);
+         end loop;
       end if;
-
-      Exp_Btype := Base_Type (Exp_Type);
 
       --  The expression must be of a discrete type which must be determinable
       --  independently of the context in which the expression occurs, but
@@ -1718,10 +1768,54 @@ package body Sem_Ch4 is
          return;
       end if;
 
+      --  If no possible interpretation has been found, the type of the wrong
+      --  alternative doesn't match any interpretation of the FIRST expression.
+
       if Etype (N) = Any_Type and then Present (Wrong_Alt) then
-         Error_Msg_N
-           ("type incompatible with that of previous alternatives",
-            Expression (Wrong_Alt));
+         Second_Expr := Expression (Wrong_Alt);
+
+         if Is_Overloaded (First_Expr) then
+            if Is_Overloaded (Second_Expr) then
+               Error_Msg_N
+                 ("no interpretation compatible with those of previous "
+                  & "alternative",
+                  Second_Expr);
+            else
+               Error_Msg_N
+                 ("type incompatible with interpretations of previous "
+                  & "alternative",
+                  Second_Expr);
+               Error_Msg_NE
+                 ("\this alternative has}!",
+                  Second_Expr,
+                  Etype (Second_Expr));
+            end if;
+
+         else
+            if Is_Overloaded (Second_Expr) then
+               Error_Msg_N
+                 ("no interpretation compatible with type of previous "
+                  & "alternative",
+                  Second_Expr);
+               Error_Msg_NE
+                 ("\previous alternative has}!",
+                  Second_Expr,
+                  Etype (First_Expr));
+            else
+               Error_Msg_N
+                 ("type incompatible with that of previous alternative",
+                  Second_Expr);
+               Error_Msg_NE
+                 ("\previous alternative has}!",
+                  Second_Expr,
+                  Etype (First_Expr));
+               Error_Msg_NE
+                 ("\this alternative has}!",
+                  Second_Expr,
+                  Etype (Second_Expr));
+            end if;
+         end if;
+
          return;
       end if;
 
@@ -1760,50 +1854,6 @@ package body Sem_Ch4 is
          end if;
       end if;
    end Analyze_Case_Expression;
-
-   ---------------------------
-   -- Analyze_Comparison_Op --
-   ---------------------------
-
-   procedure Analyze_Comparison_Op (N : Node_Id) is
-      L     : constant Node_Id := Left_Opnd (N);
-      R     : constant Node_Id := Right_Opnd (N);
-      Op_Id : Entity_Id        := Entity (N);
-
-   begin
-      Set_Etype (N, Any_Type);
-      Candidate_Type := Empty;
-
-      Analyze_Expression (L);
-      Analyze_Expression (R);
-
-      if Present (Op_Id) then
-         if Ekind (Op_Id) = E_Operator then
-            Find_Comparison_Types (L, R, Op_Id, N);
-         else
-            Add_One_Interp (N, Op_Id, Etype (Op_Id));
-         end if;
-
-         if Is_Overloaded (L) then
-            Set_Etype (L, Intersect_Types (L, R));
-         end if;
-
-      else
-         Op_Id := Get_Name_Entity_Id (Chars (N));
-         while Present (Op_Id) loop
-            if Ekind (Op_Id) = E_Operator then
-               Find_Comparison_Types (L, R, Op_Id, N);
-            else
-               Analyze_User_Defined_Binary_Op (N, Op_Id);
-            end if;
-
-            Op_Id := Homonym (Op_Id);
-         end loop;
-      end if;
-
-      Operator_Check (N);
-      Check_Function_Writable_Actuals (N);
-   end Analyze_Comparison_Op;
 
    ---------------------------
    -- Analyze_Concatenation --
@@ -1956,14 +2006,15 @@ package body Sem_Ch4 is
       Operator_Check (N);
    end Analyze_Concatenation_Rest;
 
-   -------------------------
-   -- Analyze_Equality_Op --
-   -------------------------
+   ------------------------------------
+   -- Analyze_Comparison_Equality_Op --
+   ------------------------------------
 
-   procedure Analyze_Equality_Op (N : Node_Id) is
-      Loc   : constant Source_Ptr := Sloc (N);
-      L     : constant Node_Id := Left_Opnd (N);
-      R     : constant Node_Id := Right_Opnd (N);
+   procedure Analyze_Comparison_Equality_Op (N : Node_Id) is
+      Loc : constant Source_Ptr := Sloc (N);
+      L   : constant Node_Id    := Left_Opnd (N);
+      R   : constant Node_Id    := Right_Opnd (N);
+
       Op_Id : Entity_Id;
 
    begin
@@ -1980,9 +2031,9 @@ package body Sem_Ch4 is
 
       --  For the predefined case, the result is Boolean, regardless of the
       --  type of the operands. The operands may even be limited, if they are
-      --  generic actuals. If they are overloaded, label the left argument with
-      --  the common type that must be present, or with the type of the formal
-      --  of the user-defined function.
+      --  generic actuals. If they are overloaded, label the operands with the
+      --  common type that must be present, or with the type of the formal of
+      --  the user-defined function.
 
       if Present (Entity (N)) then
          Op_Id := Entity (N);
@@ -2001,11 +2052,20 @@ package body Sem_Ch4 is
             end if;
          end if;
 
+         if Is_Overloaded (R) then
+            if Ekind (Op_Id) = E_Operator then
+               Set_Etype (R, Intersect_Types (L, R));
+            else
+               Set_Etype (R, Etype (Next_Formal (First_Formal (Op_Id))));
+            end if;
+         end if;
+
       else
          Op_Id := Get_Name_Entity_Id (Chars (N));
+
          while Present (Op_Id) loop
             if Ekind (Op_Id) = E_Operator then
-               Find_Equality_Types (L, R, Op_Id, N);
+               Find_Comparison_Equality_Types (L, R, Op_Id, N);
             else
                Analyze_User_Defined_Binary_Op (N, Op_Id);
             end if;
@@ -2026,7 +2086,7 @@ package body Sem_Ch4 is
          Op_Id := Get_Name_Entity_Id (Name_Op_Eq);
          while Present (Op_Id) loop
             if Ekind (Op_Id) = E_Operator then
-               Find_Equality_Types (L, R, Op_Id, N);
+               Find_Comparison_Equality_Types (L, R, Op_Id, N);
             else
                Analyze_User_Defined_Binary_Op (N, Op_Id);
             end if;
@@ -2051,7 +2111,7 @@ package body Sem_Ch4 is
 
       Operator_Check (N);
       Check_Function_Writable_Actuals (N);
-   end Analyze_Equality_Op;
+   end Analyze_Comparison_Equality_Op;
 
    ----------------------------------
    -- Analyze_Explicit_Dereference --
@@ -2259,7 +2319,6 @@ package body Sem_Ch4 is
 
    procedure Analyze_Expression (N : Node_Id) is
    begin
-
       --  If the expression is an indexed component that will be rewritten
       --  as a container indexing, it has already been analyzed.
 
@@ -2375,8 +2434,75 @@ package body Sem_Ch4 is
 
    procedure Analyze_If_Expression (N : Node_Id) is
       Condition : constant Node_Id := First (Expressions (N));
+
       Then_Expr : Node_Id;
       Else_Expr : Node_Id;
+
+      procedure Check_Else_Expression (T : Entity_Id);
+      --  Check one interpretation of the THEN expression with type T
+
+      procedure Check_Expression_Pair (T1, T2 : Entity_Id);
+      --  Check THEN expression with type T1 and ELSE expression with type T2
+
+      ---------------------------
+      -- Check_Else_Expression --
+      ---------------------------
+
+      procedure Check_Else_Expression (T : Entity_Id) is
+         I    : Interp_Index;
+         It   : Interp;
+
+      begin
+         --  Loop through the interpretations of the ELSE expression
+
+         if not Is_Overloaded (Else_Expr) then
+            Check_Expression_Pair (T, Etype (Else_Expr));
+
+         else
+            Get_First_Interp (Else_Expr, I, It);
+            while Present (It.Typ) loop
+               Check_Expression_Pair (T, It.Typ);
+               Get_Next_Interp (I, It);
+            end loop;
+         end if;
+      end Check_Else_Expression;
+
+      ---------------------------
+      -- Check_Expression_Pair --
+      ---------------------------
+
+      procedure Check_Expression_Pair (T1, T2 : Entity_Id) is
+         T : Entity_Id;
+
+      begin
+         if Covers (T1 => T1, T2 => T2)
+           or else Covers (T1 => T2, T2 => T1)
+         then
+            T := Specific_Type (T1, T2);
+
+         elsif Is_User_Defined_Literal (Then_Expr, T2) then
+            T := T2;
+
+         elsif Is_User_Defined_Literal (Else_Expr, T1) then
+            T := T1;
+
+         else
+            T := Possible_Type_For_Conditional_Expression (T1, T2);
+
+            if No (T) then
+               return;
+            end if;
+         end if;
+
+         Add_One_Interp (N, T, T);
+      end Check_Expression_Pair;
+
+      --  Local variables
+
+      I  : Interp_Index;
+      It : Interp;
+
+      --  Start of processing for Analyze_If_Expression
 
    begin
       --  Defend against error of missing expressions from previous error
@@ -2385,6 +2511,8 @@ package body Sem_Ch4 is
          Check_Error_Detected;
          return;
       end if;
+
+      Set_Etype (N, Any_Type);
 
       Then_Expr := Next (Condition);
 
@@ -2404,8 +2532,8 @@ package body Sem_Ch4 is
       Analyze_Expression (Condition);
       Resolve (Condition, Any_Boolean);
 
-      --  Analyze THEN expression and (if present) ELSE expression. For those
-      --  we delay resolution in the normal manner, because of overloading etc.
+      --  Analyze the THEN expression and (if present) the ELSE expression. For
+      --  them we delay resolution in the normal manner because of overloading.
 
       Analyze_Expression (Then_Expr);
 
@@ -2413,49 +2541,65 @@ package body Sem_Ch4 is
          Analyze_Expression (Else_Expr);
       end if;
 
-      --  If then expression not overloaded, then that decides the type
+      --  Loop through the interpretations of the THEN expression and check the
+      --  ELSE expression if present.
 
       if not Is_Overloaded (Then_Expr) then
-         Set_Etype (N, Etype (Then_Expr));
-
-      --  Case where then expression is overloaded
+         if Present (Else_Expr) then
+            Check_Else_Expression (Etype (Then_Expr));
+         else
+            Set_Etype (N, Etype (Then_Expr));
+         end if;
 
       else
-         declare
-            I  : Interp_Index;
-            It : Interp;
-
-         begin
-            Set_Etype (N, Any_Type);
-
-            --  Loop through interpretations of Then_Expr
-
-            Get_First_Interp (Then_Expr, I, It);
-            while Present (It.Nam) loop
-
-               --  Add possible interpretation of Then_Expr if no Else_Expr, or
-               --  Else_Expr is present and has a compatible type.
-
-               if No (Else_Expr)
-                 or else Has_Compatible_Type (Else_Expr, It.Typ)
-               then
-                  Add_One_Interp (N, It.Typ, It.Typ);
-               end if;
-
-               Get_Next_Interp (I, It);
-            end loop;
-
-            --  If no valid interpretation has been found, then the type of the
-            --  ELSE expression does not match any interpretation of the THEN
-            --  expression.
-
-            if Etype (N) = Any_Type then
-               Error_Msg_N
-                 ("type incompatible with that of THEN expression",
-                  Else_Expr);
-               return;
+         Get_First_Interp (Then_Expr, I, It);
+         while Present (It.Typ) loop
+            if Present (Else_Expr) then
+               Check_Else_Expression (It.Typ);
+            else
+               Add_One_Interp (N, It.Typ, It.Typ);
             end if;
-         end;
+
+            Get_Next_Interp (I, It);
+         end loop;
+      end if;
+
+      --  If no possible interpretation has been found, the type of the
+      --  ELSE expression does not match any interpretation of the THEN
+      --  expression.
+
+      if Etype (N) = Any_Type then
+         if Is_Overloaded (Then_Expr) then
+            if Is_Overloaded (Else_Expr) then
+               Error_Msg_N
+                 ("no interpretation compatible with those of THEN expression",
+                  Else_Expr);
+            else
+               Error_Msg_N
+                 ("type of ELSE incompatible with interpretations of THEN "
+                  & "expression",
+                  Else_Expr);
+               Error_Msg_NE
+                 ("\ELSE expression has}!", Else_Expr, Etype (Else_Expr));
+            end if;
+
+         else
+            if Is_Overloaded (Else_Expr) then
+               Error_Msg_N
+                 ("no interpretation compatible with type of THEN expression",
+                  Else_Expr);
+               Error_Msg_NE
+                 ("\THEN expression has}!", Else_Expr, Etype (Then_Expr));
+            else
+               Error_Msg_N
+                 ("type of ELSE incompatible with that of THEN expression",
+                  Else_Expr);
+               Error_Msg_NE
+                 ("\THEN expression has}!", Else_Expr, Etype (Then_Expr));
+               Error_Msg_NE
+                 ("\ELSE expression has}!", Else_Expr, Etype (Else_Expr));
+            end if;
+         end if;
       end if;
    end Analyze_If_Expression;
 
@@ -2909,9 +3053,10 @@ package body Sem_Ch4 is
    ------------------------
 
    procedure Analyze_Logical_Op (N : Node_Id) is
-      L     : constant Node_Id := Left_Opnd (N);
-      R     : constant Node_Id := Right_Opnd (N);
-      Op_Id : Entity_Id := Entity (N);
+      L : constant Node_Id := Left_Opnd (N);
+      R : constant Node_Id := Right_Opnd (N);
+
+      Op_Id : Entity_Id;
 
    begin
       Set_Etype (N, Any_Type);
@@ -2920,13 +3065,22 @@ package body Sem_Ch4 is
       Analyze_Expression (L);
       Analyze_Expression (R);
 
-      if Present (Op_Id) then
+      --  If the entity is already set, the node is the instantiation of a
+      --  generic node with a non-local reference, or was manufactured by a
+      --  call to Make_Op_xxx. In either case the entity is known to be valid,
+      --  and we do not need to collect interpretations, instead we just get
+      --  the single possible interpretation.
+
+      if Present (Entity (N)) then
+         Op_Id := Entity (N);
 
          if Ekind (Op_Id) = E_Operator then
             Find_Boolean_Types (L, R, Op_Id, N);
          else
             Add_One_Interp (N, Op_Id, Etype (Op_Id));
          end if;
+
+      --  Entity is not already set, so we do need to collect interpretations
 
       else
          Op_Id := Get_Name_Entity_Id (Chars (N));
@@ -2954,25 +3108,24 @@ package body Sem_Ch4 is
       L     : constant Node_Id    := Left_Opnd (N);
       R     : constant Node_Id    := Right_Opnd (N);
 
-      Index : Interp_Index;
-      It    : Interp;
-      Found : Boolean := False;
-      I_F   : Interp_Index;
-      T_F   : Entity_Id;
-
       procedure Analyze_Set_Membership;
       --  If a set of alternatives is present, analyze each and find the
       --  common type to which they must all resolve.
 
-      procedure Find_Interpretation;
-      function Find_Interpretation return Boolean;
-      --  Routine and wrapper to find a matching interpretation
+      function Find_Interp return Boolean;
+      --  Find a valid interpretation of the test. Note that the context of the
+      --  operation plays no role in resolving the operands, so that if there
+      --  is more than one interpretation of the operands that is compatible
+      --  with the test, the operation is ambiguous.
 
-      procedure Try_One_Interp (T1 : Entity_Id);
-      --  Routine to try one proposed interpretation. Note that the context
-      --  of the operation plays no role in resolving the arguments, so that
-      --  if there is more than one interpretation of the operands that is
-      --  compatible with a membership test, the operation is ambiguous.
+      function Try_Left_Interp (T : Entity_Id) return Boolean;
+      --  Try an interpretation of the left operand with type T. Return true if
+      --  one interpretation (at least) of the right operand making up a valid
+      --  operand pair exists, otherwise false if no such pair exists.
+
+      function Is_Valid_Pair (T1, T2 : Entity_Id) return Boolean;
+      --  Return true if T1 and T2 constitute a valid pair of operand types for
+      --  L and R respectively.
 
       ----------------------------
       -- Analyze_Set_Membership --
@@ -3055,8 +3208,6 @@ package body Sem_Ch4 is
             end loop;
          end if;
 
-         Set_Etype (N, Standard_Boolean);
-
          if Present (Common_Type) then
             Set_Etype (L, Common_Type);
 
@@ -3068,63 +3219,134 @@ package body Sem_Ch4 is
          end if;
       end Analyze_Set_Membership;
 
-      -------------------------
-      -- Find_Interpretation --
-      -------------------------
+      -----------------
+      -- Find_Interp --
+      -----------------
 
-      procedure Find_Interpretation is
+      function Find_Interp return Boolean is
+         Found   : Boolean;
+         I       : Interp_Index;
+         It      : Interp;
+         L_Typ   : Entity_Id;
+         Valid_I : Interp_Index;
+
       begin
+         --  Loop through the interpretations of the left operand
+
          if not Is_Overloaded (L) then
-            Try_One_Interp (Etype (L));
+            Found := Try_Left_Interp (Etype (L));
 
          else
-            Get_First_Interp (L, Index, It);
+            Found   := False;
+            L_Typ   := Empty;
+            Valid_I := 0;
+
+            Get_First_Interp (L, I, It);
             while Present (It.Typ) loop
-               Try_One_Interp (It.Typ);
-               Get_Next_Interp (Index, It);
-            end loop;
-         end if;
-      end Find_Interpretation;
+               if Try_Left_Interp (It.Typ) then
+                  --  If several interpretations are possible, disambiguate
 
-      function Find_Interpretation return Boolean is
-      begin
-         Find_Interpretation;
+                  if Present (L_Typ)
+                    and then Base_Type (It.Typ) /= Base_Type (L_Typ)
+                  then
+                     It := Disambiguate (L, Valid_I, I, Any_Type);
 
-         return Found;
-      end Find_Interpretation;
+                     if It = No_Interp then
+                        Ambiguous_Operands (N);
+                        Set_Etype (L, Any_Type);
+                        return True;
+                     end if;
 
-      --------------------
-      -- Try_One_Interp --
-      --------------------
+                  else
+                     Valid_I := I;
+                  end if;
 
-      procedure Try_One_Interp (T1 : Entity_Id) is
-      begin
-         if Has_Compatible_Type (R, T1, For_Comparison => True) then
-            if Found
-              and then Base_Type (T1) /= Base_Type (T_F)
-            then
-               It := Disambiguate (L, I_F, Index, Any_Type);
-
-               if It = No_Interp then
-                  Ambiguous_Operands (N);
-                  Set_Etype (L, Any_Type);
-                  return;
-
-               else
-                  T_F := It.Typ;
+                  L_Typ := It.Typ;
+                  Set_Etype (L, L_Typ);
+                  Found := True;
                end if;
 
-            else
-               Found := True;
-               T_F   := T1;
-               I_F   := Index;
-            end if;
-
-            Set_Etype (L, T_F);
+               Get_Next_Interp (I, It);
+            end loop;
          end if;
-      end Try_One_Interp;
 
-      Op : Node_Id;
+         return Found;
+      end Find_Interp;
+
+      ---------------------
+      -- Try_Left_Interp --
+      ---------------------
+
+      function Try_Left_Interp (T : Entity_Id) return Boolean is
+         Found   : Boolean;
+         I       : Interp_Index;
+         It      : Interp;
+         R_Typ   : Entity_Id;
+         Valid_I : Interp_Index;
+
+      begin
+         --  Defend against previous error
+
+         if Nkind (R) = N_Error then
+            Found := False;
+
+         --  Loop through the interpretations of the right operand
+
+         elsif not Is_Overloaded (R) then
+            Found := Is_Valid_Pair (T, Etype (R));
+
+         else
+            Found   := False;
+            R_Typ   := Empty;
+            Valid_I := 0;
+
+            Get_First_Interp (R, I, It);
+            while Present (It.Typ) loop
+               if Is_Valid_Pair (T, It.Typ) then
+                  --  If several interpretations are possible, disambiguate
+
+                  if Present (R_Typ)
+                    and then Base_Type (It.Typ) /= Base_Type (R_Typ)
+                  then
+                     It := Disambiguate (R, Valid_I, I, Any_Type);
+
+                     if It = No_Interp then
+                        Ambiguous_Operands (N);
+                        Set_Etype (R, Any_Type);
+                        return True;
+                     end if;
+
+                  else
+                     Valid_I := I;
+                  end if;
+
+                  R_Typ := It.Typ;
+                  Found := True;
+               end if;
+
+               Get_Next_Interp (I, It);
+            end loop;
+         end if;
+
+         return Found;
+      end Try_Left_Interp;
+
+      -------------------
+      -- Is_Valid_Pair --
+      -------------------
+
+      function Is_Valid_Pair (T1, T2 : Entity_Id) return Boolean is
+      begin
+         return Covers (T1 => T1, T2 => T2)
+           or else Covers (T1 => T2, T2 => T1)
+           or else Is_User_Defined_Literal (L, T2)
+           or else Is_User_Defined_Literal (R, T1);
+      end Is_Valid_Pair;
+
+      --  Local variables
+
+      Dummy : Boolean;
+      Op    : Node_Id;
 
    --  Start of processing for Analyze_Membership_Op
 
@@ -3133,43 +3355,34 @@ package body Sem_Ch4 is
 
       if No (R) then
          pragma Assert (Ada_Version >= Ada_2012);
-         Analyze_Set_Membership;
-         Check_Function_Writable_Actuals (N);
-         return;
-      end if;
 
-      if Nkind (R) = N_Range
+         Analyze_Set_Membership;
+
+      elsif Nkind (R) = N_Range
         or else (Nkind (R) = N_Attribute_Reference
                   and then Attribute_Name (R) = Name_Range)
       then
-         Analyze (R);
+         Analyze_Expression (R);
 
-         Find_Interpretation;
+         Dummy := Find_Interp;
 
       --  If not a range, it can be a subtype mark, or else it is a degenerate
       --  membership test with a singleton value, i.e. a test for equality,
       --  if the types are compatible.
 
       else
-         Analyze (R);
+         Analyze_Expression (R);
 
          if Is_Entity_Name (R) and then Is_Type (Entity (R)) then
             Find_Type (R);
             Check_Fully_Declared (Entity (R), R);
 
-         elsif Ada_Version >= Ada_2012 and then Find_Interpretation then
-            if Nkind (N) = N_In then
-               Op := Make_Op_Eq (Loc, Left_Opnd => L, Right_Opnd => R);
-            else
-               Op := Make_Op_Ne (Loc, Left_Opnd => L, Right_Opnd => R);
-            end if;
+         elsif Ada_Version >= Ada_2012 and then Find_Interp then
+            Op := Make_Op_Eq (Loc, Left_Opnd => L, Right_Opnd => R);
+            Resolve_Membership_Equality (Op, Etype (L));
 
-            if Is_Record_Or_Limited_Type (Etype (L)) then
-
-               --  We reset the Entity in order to use the primitive equality
-               --  of the type, as per RM 4.5.2 (28.1/4).
-
-               Set_Entity (Op, Empty);
+            if Nkind (N) = N_Not_In then
+               Op := Make_Op_Not (Loc, Op);
             end if;
 
             Rewrite (N, Op);
@@ -3233,8 +3446,9 @@ package body Sem_Ch4 is
    ----------------------
 
    procedure Analyze_Negation (N : Node_Id) is
-      R     : constant Node_Id := Right_Opnd (N);
-      Op_Id : Entity_Id := Entity (N);
+      R : constant Node_Id := Right_Opnd (N);
+
+      Op_Id : Entity_Id;
 
    begin
       Set_Etype (N, Any_Type);
@@ -3242,7 +3456,15 @@ package body Sem_Ch4 is
 
       Analyze_Expression (R);
 
-      if Present (Op_Id) then
+      --  If the entity is already set, the node is the instantiation of a
+      --  generic node with a non-local reference, or was manufactured by a
+      --  call to Make_Op_xxx. In either case the entity is known to be valid,
+      --  and we do not need to collect interpretations, instead we just get
+      --  the single possible interpretation.
+
+      if Present (Entity (N)) then
+         Op_Id := Entity (N);
+
          if Ekind (Op_Id) = E_Operator then
             Find_Negation_Types (R, Op_Id, N);
          else
@@ -3616,8 +3838,8 @@ package body Sem_Ch4 is
             return;
          end if;
 
-         --  This can occur when the prefix of the call is an operator
-         --  name or an expanded name whose selector is an operator name.
+         --  This occurs when the prefix of the call is an operator name
+         --  or an expanded name whose selector is an operator name.
 
          Analyze_Operator_Call (N, Nam);
 
@@ -3933,17 +4155,14 @@ package body Sem_Ch4 is
             =>
                Find_Boolean_Types (Act1, Act2, Op_Id, N);
 
-            when Name_Op_Ge
+            when Name_Op_Eq
+               | Name_Op_Ge
                | Name_Op_Gt
                | Name_Op_Le
                | Name_Op_Lt
-            =>
-               Find_Comparison_Types (Act1, Act2, Op_Id,  N);
-
-            when Name_Op_Eq
                | Name_Op_Ne
             =>
-               Find_Equality_Types (Act1, Act2, Op_Id,  N);
+               Find_Comparison_Equality_Types (Act1, Act2, Op_Id,  N);
 
             when Name_Op_Concat =>
                Find_Concatenation_Types (Act1, Act2, Op_Id, N);
@@ -5842,8 +6061,9 @@ package body Sem_Ch4 is
    ----------------------
 
    procedure Analyze_Unary_Op (N : Node_Id) is
-      R     : constant Node_Id := Right_Opnd (N);
-      Op_Id : Entity_Id := Entity (N);
+      R : constant Node_Id := Right_Opnd (N);
+
+      Op_Id : Entity_Id;
 
    begin
       Set_Etype (N, Any_Type);
@@ -5851,7 +6071,15 @@ package body Sem_Ch4 is
 
       Analyze_Expression (R);
 
-      if Present (Op_Id) then
+      --  If the entity is already set, the node is the instantiation of a
+      --  generic node with a non-local reference, or was manufactured by a
+      --  call to Make_Op_xxx. In either case the entity is known to be valid,
+      --  and we do not need to collect interpretations, instead we just get
+      --  the single possible interpretation.
+
+      if Present (Entity (N)) then
+         Op_Id := Entity (N);
+
          if Ekind (Op_Id) = E_Operator then
             Find_Unary_Types (R, Op_Id,  N);
          else
@@ -5925,9 +6153,9 @@ package body Sem_Ch4 is
            and then (Has_Compatible_Type (Right_Opnd (N), Etype (F2))
                       or else Etype (F2) = Any_Type)
          then
-            Add_One_Interp (N, Op_Id, Etype (Op_Id));
+            Add_One_Interp (N, Op_Id, Base_Type (Etype (Op_Id)));
 
-            --  If the left operand is overloaded, indicate that the current
+            --  If the operands are overloaded, indicate that the current
             --  type is a viable candidate. This is redundant in most cases,
             --  but for equality and comparison operators where the context
             --  does not impose a type on the operands, setting the proper
@@ -5937,6 +6165,10 @@ package body Sem_Ch4 is
 
             if Is_Overloaded (Left_Opnd (N)) then
                Set_Etype (Left_Opnd (N), Etype (F1));
+            end if;
+
+            if Is_Overloaded (Right_Opnd (N)) then
+               Set_Etype (Right_Opnd (N), Etype (F2));
             end if;
 
             if Debug_Flag_E then
@@ -6005,9 +6237,6 @@ package body Sem_Ch4 is
       --  Standard, the predefined universal fixed operator is available,
       --  as specified by AI-420 (RM 4.5.5 (19.1/2)).
 
-      function Specific_Type (T1, T2 : Entity_Id) return Entity_Id;
-      --  Get specific type (i.e. non-universal type if there is one)
-
       ------------------
       -- Has_Fixed_Op --
       ------------------
@@ -6063,19 +6292,6 @@ package body Sem_Ch4 is
 
          return False;
       end Has_Fixed_Op;
-
-      -------------------
-      -- Specific_Type --
-      -------------------
-
-      function Specific_Type (T1, T2 : Entity_Id) return Entity_Id is
-      begin
-         if Is_Universal_Numeric_Type (T1) then
-            return Base_Type (T2);
-         else
-            return Base_Type (T1);
-         end if;
-      end Specific_Type;
 
    --  Start of processing for Check_Arithmetic_Pair
 
@@ -6246,18 +6462,6 @@ package body Sem_Ch4 is
       end if;
    end Check_Misspelled_Selector;
 
-   ----------------------
-   -- Defined_In_Scope --
-   ----------------------
-
-   function Defined_In_Scope (T : Entity_Id; S : Entity_Id) return Boolean
-   is
-      S1 : constant Entity_Id := Scope (Base_Type (T));
-   begin
-      return S1 = S
-        or else (S1 = System_Aux_Id and then S = Scope (S1));
-   end Defined_In_Scope;
-
    -------------------
    -- Diagnose_Call --
    -------------------
@@ -6268,32 +6472,35 @@ package body Sem_Ch4 is
       It               : Interp;
       Err_Mode         : Boolean;
       New_Nam          : Node_Id;
+      Num_Actuals      : Natural;
+      Num_Interps      : Natural;
       Void_Interp_Seen : Boolean := False;
 
       Success : Boolean;
       pragma Warnings (Off, Boolean);
 
    begin
-      if Ada_Version >= Ada_2005 then
-         Actual := First_Actual (N);
-         while Present (Actual) loop
+      Num_Actuals := 0;
+      Actual := First_Actual (N);
 
-            --  Ada 2005 (AI-50217): Post an error in case of premature
-            --  usage of an entity from the limited view.
+      while Present (Actual) loop
+         --  Ada 2005 (AI-50217): Post an error in case of premature
+         --  usage of an entity from the limited view.
 
-            if not Analyzed (Etype (Actual))
-             and then From_Limited_With (Etype (Actual))
-            then
-               Error_Msg_Qual_Level := 1;
-               Error_Msg_NE
-                ("missing with_clause for scope of imported type&",
-                  Actual, Etype (Actual));
-               Error_Msg_Qual_Level := 0;
-            end if;
+         if not Analyzed (Etype (Actual))
+          and then From_Limited_With (Etype (Actual))
+          and then Ada_Version >= Ada_2005
+         then
+            Error_Msg_Qual_Level := 1;
+            Error_Msg_NE
+             ("missing with_clause for scope of imported type&",
+               Actual, Etype (Actual));
+            Error_Msg_Qual_Level := 0;
+         end if;
 
-            Next_Actual (Actual);
-         end loop;
-      end if;
+         Num_Actuals := Num_Actuals + 1;
+         Next_Actual (Actual);
+      end loop;
 
       --  Before listing the possible candidates, check whether this is
       --  a prefix of a selected component that has been rewritten as a
@@ -6328,17 +6535,9 @@ package body Sem_Ch4 is
          end;
       end if;
 
-      --  Analyze each candidate call again, with full error reporting for
-      --  each.
-
-      Error_Msg_N
-        ("no candidate interpretations match the actuals:!", Nam);
-      Err_Mode := All_Errors_Mode;
-      All_Errors_Mode := True;
-
-      --  If this is a call to an operation of a concurrent type,
-      --  the failed interpretations have been removed from the
-      --  name. Recover them to provide full diagnostics.
+      --  If this is a call to an operation of a concurrent type, the failed
+      --  interpretations have been removed from the name. Recover them now
+      --  in order to provide full diagnostics.
 
       if Nkind (Parent (Nam)) = N_Selected_Component then
          Set_Entity (Nam, Empty);
@@ -6351,6 +6550,48 @@ package body Sem_Ch4 is
       else
          Get_First_Interp (Nam, X, It);
       end if;
+
+      --  If the number of actuals is 2, then remove interpretations involving
+      --  a unary "+" operator as they might yield confusing errors downstream.
+
+      if Num_Actuals = 2
+        and then Nkind (Parent (Nam)) /= N_Selected_Component
+      then
+         Num_Interps := 0;
+
+         while Present (It.Nam) loop
+            if Ekind (It.Nam) = E_Operator
+              and then Chars (It.Nam) = Name_Op_Add
+              and then (No (First_Formal (It.Nam))
+                         or else No (Next_Formal (First_Formal (It.Nam))))
+            then
+               Remove_Interp (X);
+            else
+               Num_Interps := Num_Interps + 1;
+            end if;
+
+            Get_Next_Interp (X, It);
+         end loop;
+
+         if Num_Interps = 0 then
+            Error_Msg_N ("!too many arguments in call to&", Nam);
+            return;
+         end if;
+
+         Get_First_Interp (Nam, X, It);
+
+      else
+         Num_Interps := 2; -- at least
+      end if;
+
+      --  Analyze each candidate call again with full error reporting for each
+
+      if Num_Interps > 1 then
+         Error_Msg_N ("!no candidate interpretations match the actuals:", Nam);
+      end if;
+
+      Err_Mode := All_Errors_Mode;
+      All_Errors_Mode := True;
 
       while Present (It.Nam) loop
          if Etype (It.Nam) = Standard_Void_Type then
@@ -6428,11 +6669,6 @@ package body Sem_Ch4 is
       Op_Id : Entity_Id;
       N     : Node_Id)
    is
-      Index1 : Interp_Index;
-      Index2 : Interp_Index;
-      It1    : Interp;
-      It2    : Interp;
-
       procedure Check_Right_Argument (T : Entity_Id);
       --  Check right operand of operator
 
@@ -6441,17 +6677,26 @@ package body Sem_Ch4 is
       --------------------------
 
       procedure Check_Right_Argument (T : Entity_Id) is
+         I  : Interp_Index;
+         It : Interp;
+
       begin
          if not Is_Overloaded (R) then
-            Check_Arithmetic_Pair (T, Etype (R), Op_Id,  N);
+            Check_Arithmetic_Pair (T, Etype (R), Op_Id, N);
+
          else
-            Get_First_Interp (R, Index2, It2);
-            while Present (It2.Typ) loop
-               Check_Arithmetic_Pair (T, It2.Typ, Op_Id, N);
-               Get_Next_Interp (Index2, It2);
+            Get_First_Interp (R, I, It);
+            while Present (It.Typ) loop
+               Check_Arithmetic_Pair (T, It.Typ, Op_Id, N);
+               Get_Next_Interp (I, It);
             end loop;
          end if;
       end Check_Right_Argument;
+
+      --  Local variables
+
+      I  : Interp_Index;
+      It : Interp;
 
    --  Start of processing for Find_Arithmetic_Types
 
@@ -6460,13 +6705,12 @@ package body Sem_Ch4 is
          Check_Right_Argument (Etype (L));
 
       else
-         Get_First_Interp (L, Index1, It1);
-         while Present (It1.Typ) loop
-            Check_Right_Argument (It1.Typ);
-            Get_Next_Interp (Index1, It1);
+         Get_First_Interp (L, I, It);
+         while Present (It.Typ) loop
+            Check_Right_Argument (It.Typ);
+            Get_Next_Interp (I, It);
          end loop;
       end if;
-
    end Find_Arithmetic_Types;
 
    ------------------------
@@ -6478,244 +6722,368 @@ package body Sem_Ch4 is
       Op_Id : Entity_Id;
       N     : Node_Id)
    is
-      Index : Interp_Index;
-      It    : Interp;
+      procedure Check_Boolean_Pair (T1, T2 : Entity_Id);
+      --  Check operand pair of operator
 
-      procedure Check_Numeric_Argument (T : Entity_Id);
-      --  Special case for logical operations one of whose operands is an
-      --  integer literal. If both are literal the result is any modular type.
+      procedure Check_Right_Argument (T : Entity_Id);
+      --  Check right operand of operator
 
-      ----------------------------
-      -- Check_Numeric_Argument --
-      ----------------------------
+      ------------------------
+      -- Check_Boolean_Pair --
+      ------------------------
 
-      procedure Check_Numeric_Argument (T : Entity_Id) is
+      procedure Check_Boolean_Pair (T1, T2 : Entity_Id) is
+         T : Entity_Id;
+
       begin
-         if T = Universal_Integer then
-            Add_One_Interp (N, Op_Id, Any_Modular);
+         if Valid_Boolean_Arg (T1)
+           and then Valid_Boolean_Arg (T2)
+           and then (Covers (T1 => T1, T2 => T2)
+                      or else Covers (T1 => T2, T2 => T1))
+         then
+            T := Specific_Type (T1, T2);
 
-         elsif Is_Modular_Integer_Type (T) then
+            if T = Universal_Integer then
+               T := Any_Modular;
+            end if;
+
             Add_One_Interp (N, Op_Id, T);
          end if;
-      end Check_Numeric_Argument;
+      end Check_Boolean_Pair;
+
+      --------------------------
+      -- Check_Right_Argument --
+      --------------------------
+
+      procedure Check_Right_Argument (T : Entity_Id) is
+         I  : Interp_Index;
+         It : Interp;
+
+      begin
+         --  Defend against previous error
+
+         if Nkind (R) = N_Error then
+            null;
+
+         elsif not Is_Overloaded (R) then
+            Check_Boolean_Pair (T, Etype (R));
+
+         else
+            Get_First_Interp (R, I, It);
+            while Present (It.Typ) loop
+               Check_Boolean_Pair (T, It.Typ);
+               Get_Next_Interp (I, It);
+            end loop;
+         end if;
+      end Check_Right_Argument;
+
+      --  Local variables
+
+      I  : Interp_Index;
+      It : Interp;
 
    --  Start of processing for Find_Boolean_Types
 
    begin
       if not Is_Overloaded (L) then
-         if Etype (L) = Universal_Integer
-           or else Etype (L) = Any_Modular
-         then
-            if not Is_Overloaded (R) then
-               Check_Numeric_Argument (Etype (R));
-
-            else
-               Get_First_Interp (R, Index, It);
-               while Present (It.Typ) loop
-                  Check_Numeric_Argument (It.Typ);
-                  Get_Next_Interp (Index, It);
-               end loop;
-            end if;
-
-         --  If operands are aggregates, we must assume that they may be
-         --  boolean arrays, and leave disambiguation for the second pass.
-         --  If only one is an aggregate, verify that the other one has an
-         --  interpretation as a boolean array
-
-         elsif Nkind (L) = N_Aggregate then
-            if Nkind (R) = N_Aggregate then
-               Add_One_Interp (N, Op_Id, Etype (L));
-
-            elsif not Is_Overloaded (R) then
-               if Valid_Boolean_Arg (Etype (R)) then
-                  Add_One_Interp (N, Op_Id, Etype (R));
-               end if;
-
-            else
-               Get_First_Interp (R, Index, It);
-               while Present (It.Typ) loop
-                  if Valid_Boolean_Arg (It.Typ) then
-                     Add_One_Interp (N, Op_Id, It.Typ);
-                  end if;
-
-                  Get_Next_Interp (Index, It);
-               end loop;
-            end if;
-
-         elsif Valid_Boolean_Arg (Etype (L))
-           and then Has_Compatible_Type (R, Etype (L))
-         then
-            Add_One_Interp (N, Op_Id, Etype (L));
-         end if;
+         Check_Right_Argument (Etype (L));
 
       else
-         Get_First_Interp (L, Index, It);
+         Get_First_Interp (L, I, It);
          while Present (It.Typ) loop
-            if Valid_Boolean_Arg (It.Typ)
-              and then Has_Compatible_Type (R, It.Typ)
-            then
-               Add_One_Interp (N, Op_Id, It.Typ);
-            end if;
-
-            Get_Next_Interp (Index, It);
+            Check_Right_Argument (It.Typ);
+            Get_Next_Interp (I, It);
          end loop;
       end if;
    end Find_Boolean_Types;
 
-   ---------------------------
-   -- Find_Comparison_Types --
-   ---------------------------
+   ------------------------------------
+   -- Find_Comparison_Equality_Types --
+   ------------------------------------
 
-   procedure Find_Comparison_Types
+   --  The context of the operator plays no role in resolving the operands,
+   --  so that if there is more than one interpretation of the operands that
+   --  is compatible with the comparison or equality, then the operation is
+   --  ambiguous, but this cannot be reported at this point because there is
+   --  no guarantee that the operation will be resolved to this operator yet.
+
+   procedure Find_Comparison_Equality_Types
      (L, R  : Node_Id;
       Op_Id : Entity_Id;
       N     : Node_Id)
    is
-      Index : Interp_Index;
-      It    : Interp;
-      Found : Boolean := False;
-      I_F   : Interp_Index;
-      T_F   : Entity_Id;
-      Scop  : Entity_Id := Empty;
+      Op_Name : constant Name_Id := Chars (Op_Id);
+      Op_Typ  : Entity_Id renames Standard_Boolean;
 
-      procedure Try_One_Interp (T1 : Entity_Id);
-      --  Routine to try one proposed interpretation. Note that the context
-      --  of the operator plays no role in resolving the arguments, so that
-      --  if there is more than one interpretation of the operands that is
-      --  compatible with comparison, the operation is ambiguous.
+      function Try_Left_Interp (T : Entity_Id) return Entity_Id;
+      --  Try an interpretation of the left operand with type T. Return the
+      --  type of the interpretation of the right operand making up a valid
+      --  operand pair, or else Any_Type if the right operand is ambiguous,
+      --  otherwise Empty if no such pair exists.
 
-      --------------------
-      -- Try_One_Interp --
-      --------------------
+      function Is_Valid_Comparison_Type (T : Entity_Id) return Boolean;
+      --  Return true if T is a valid comparison type
 
-      procedure Try_One_Interp (T1 : Entity_Id) is
+      function Is_Valid_Equality_Type
+        (T           : Entity_Id;
+         Anon_Access : Boolean) return Boolean;
+      --  Return true if T is a valid equality type
+
+      function Is_Valid_Pair (T1, T2 : Entity_Id) return Boolean;
+      --  Return true if T1 and T2 constitute a valid pair of operand types for
+      --  L and R respectively.
+
+      ---------------------
+      -- Try_Left_Interp --
+      ---------------------
+
+      function Try_Left_Interp (T : Entity_Id) return Entity_Id is
+         I       : Interp_Index;
+         It      : Interp;
+         R_Typ   : Entity_Id;
+         Valid_I : Interp_Index;
+
       begin
-         --  If the operator is an expanded name, then the type of the operand
-         --  must be defined in the corresponding scope. If the type is
-         --  universal, the context will impose the correct type. Note that we
-         --  also avoid returning if we are currently within a generic instance
-         --  due to the fact that the generic package declaration has already
-         --  been successfully analyzed and Defined_In_Scope expects the base
-         --  type to be defined within the instance which will never be the
-         --  case.
+         --  Defend against previous error
 
-         if Present (Scop)
-           and then not Defined_In_Scope (T1, Scop)
-           and then not In_Instance
-           and then T1 /= Universal_Integer
-           and then T1 /= Universal_Real
-           and then T1 /= Any_String
-           and then T1 /= Any_Composite
-         then
-            return;
-         end if;
+         if Nkind (R) = N_Error then
+            null;
 
-         if Valid_Comparison_Arg (T1)
-           and then Has_Compatible_Type (R, T1, For_Comparison => True)
-         then
-            if Found and then Base_Type (T1) /= Base_Type (T_F) then
-               It := Disambiguate (L, I_F, Index, Any_Type);
+         --  Loop through the interpretations of the right operand
 
-               if It = No_Interp then
-                  Ambiguous_Operands (N);
-                  Set_Etype (L, Any_Type);
-                  return;
-
-               else
-                  T_F := It.Typ;
-               end if;
-            else
-               Found := True;
-               T_F   := T1;
-               I_F   := Index;
+         elsif not Is_Overloaded (R) then
+            if Is_Valid_Pair (T, Etype (R)) then
+               return Etype (R);
             end if;
 
-            Set_Etype (L, T_F);
-            Find_Non_Universal_Interpretations (N, R, Op_Id, T1);
-         end if;
-      end Try_One_Interp;
-
-   --  Start of processing for Find_Comparison_Types
-
-   begin
-      --  If left operand is aggregate, the right operand has to
-      --  provide a usable type for it.
-
-      if Nkind (L) = N_Aggregate and then Nkind (R) /= N_Aggregate then
-         Find_Comparison_Types (L => R, R => L, Op_Id => Op_Id, N => N);
-         return;
-      end if;
-
-      if Nkind (N) = N_Function_Call
-         and then Nkind (Name (N)) = N_Expanded_Name
-      then
-         Scop := Entity (Prefix (Name (N)));
-
-         --  The prefix may be a package renaming, and the subsequent test
-         --  requires the original package.
-
-         if Ekind (Scop) = E_Package
-           and then Present (Renamed_Entity (Scop))
-         then
-            Scop := Renamed_Entity (Scop);
-            Set_Entity (Prefix (Name (N)), Scop);
-         end if;
-      end if;
-
-      if not Is_Overloaded (L) then
-         Try_One_Interp (Etype (L));
-
-      else
-         Get_First_Interp (L, Index, It);
-         while Present (It.Typ) loop
-            Try_One_Interp (It.Typ);
-            Get_Next_Interp (Index, It);
-         end loop;
-      end if;
-   end Find_Comparison_Types;
-
-   ----------------------------------------
-   -- Find_Non_Universal_Interpretations --
-   ----------------------------------------
-
-   procedure Find_Non_Universal_Interpretations
-     (N     : Node_Id;
-      R     : Node_Id;
-      Op_Id : Entity_Id;
-      T1    : Entity_Id)
-   is
-      Index : Interp_Index;
-      It    : Interp;
-
-   begin
-      --  Defend against previous error
-
-      if Nkind (R) = N_Error then
-         return;
-      end if;
-
-      if T1 = Universal_Integer
-        or else T1 = Universal_Real
-        or else T1 = Universal_Access
-      then
-         if not Is_Overloaded (R) then
-            Add_One_Interp (N, Op_Id, Standard_Boolean, Base_Type (Etype (R)));
          else
-            Get_First_Interp (R, Index, It);
+            R_Typ   := Empty;
+            Valid_I := 0;
+
+            Get_First_Interp (R, I, It);
             while Present (It.Typ) loop
-               if Covers (It.Typ, T1) then
-                  Add_One_Interp
-                    (N, Op_Id, Standard_Boolean, Base_Type (It.Typ));
+               if Is_Valid_Pair (T, It.Typ) then
+                  --  If several interpretations are possible, disambiguate
+
+                  if Present (R_Typ)
+                    and then Base_Type (It.Typ) /= Base_Type (R_Typ)
+                  then
+                     It := Disambiguate (R, Valid_I, I, Any_Type);
+
+                     if It = No_Interp then
+                        R_Typ := Any_Type;
+                        exit;
+                     end if;
+
+                  else
+                     Valid_I := I;
+                  end if;
+
+                  R_Typ := It.Typ;
                end if;
 
-               Get_Next_Interp (Index, It);
+               Get_Next_Interp (I, It);
             end loop;
+
+            if Present (R_Typ) then
+               return R_Typ;
+            end if;
          end if;
 
-      elsif Has_Compatible_Type (R, T1) or else Covers (Etype (R), T1) then
-         Add_One_Interp (N, Op_Id, Standard_Boolean, Base_Type (T1));
+         return Empty;
+      end Try_Left_Interp;
+
+      ------------------------------
+      -- Is_Valid_Comparison_Type --
+      ------------------------------
+
+      function Is_Valid_Comparison_Type (T : Entity_Id) return Boolean is
+      begin
+         --  The operation must be performed in a context where the operators
+         --  of the base type are visible.
+
+         if Is_Visible_Operator (N, Base_Type (T)) then
+            null;
+
+         --  Save candidate type for subsequent error message, if any
+
+         else
+            if Valid_Comparison_Arg (T) then
+               Candidate_Type := T;
+            end if;
+
+            return False;
+         end if;
+
+         --  Defer to the common implementation for the rest
+
+         return Valid_Comparison_Arg (T);
+      end Is_Valid_Comparison_Type;
+
+      ----------------------------
+      -- Is_Valid_Equality_Type --
+      ----------------------------
+
+      function Is_Valid_Equality_Type
+        (T           : Entity_Id;
+         Anon_Access : Boolean) return Boolean
+      is
+      begin
+         --  The operation must be performed in a context where the operators
+         --  of the base type are visible. Deal with special types used with
+         --  access types before type resolution is done.
+
+         if Ekind (T) = E_Access_Attribute_Type
+           or else (Ekind (T) in E_Access_Subprogram_Type
+                               | E_Access_Protected_Subprogram_Type
+                      and then
+                    Ekind (Designated_Type (T)) /= E_Subprogram_Type)
+           or else Is_Visible_Operator (N, Base_Type (T))
+         then
+            null;
+
+         --  AI95-0230: Keep restriction imposed by Ada 83 and 95, do not allow
+         --  anonymous access types in universal_access equality operators.
+
+         elsif Anon_Access then
+            if Ada_Version < Ada_2005 then
+               return False;
+            end if;
+
+         --  Save candidate type for subsequent error message, if any
+
+         else
+            if Valid_Equality_Arg (T) then
+               Candidate_Type := T;
+            end if;
+
+            return False;
+         end if;
+
+         --  For the use of a "/=" operator on a tagged type, several possible
+         --  interpretations of equality need to be considered, we don't want
+         --  the default inequality declared in Standard to be chosen, and the
+         --  "/=" operator will be rewritten as a negation of "=" (see the end
+         --  of Analyze_Comparison_Equality_Op). This ensures the rewriting
+         --  occurs during analysis rather than being delayed until expansion.
+         --  Note that, if the node is N_Op_Ne but Op_Id is Name_Op_Eq, then we
+         --  still proceed with the interpretation, because this indicates
+         --  the aforementioned rewriting case where the interpretation to be
+         --  considered is actually that of the "=" operator.
+
+         if Nkind (N) = N_Op_Ne
+           and then Op_Name /= Name_Op_Eq
+           and then Is_Tagged_Type (T)
+         then
+            return False;
+
+         --  Defer to the common implementation for the rest
+
+         else
+            return Valid_Equality_Arg (T);
+         end if;
+      end Is_Valid_Equality_Type;
+
+      -------------------
+      -- Is_Valid_Pair --
+      -------------------
+
+      function Is_Valid_Pair (T1, T2 : Entity_Id) return Boolean is
+      begin
+         if Op_Name = Name_Op_Eq or else Op_Name = Name_Op_Ne then
+            declare
+               Anon_Access : constant Boolean :=
+                 Is_Anonymous_Access_Type (T1)
+                   or else Is_Anonymous_Access_Type (T2);
+               --  RM 4.5.2(9.1/2): At least one of the operands of an equality
+               --  operator for universal_access shall be of specific anonymous
+               --  access type.
+
+            begin
+               if not Is_Valid_Equality_Type (T1, Anon_Access)
+                 or else not Is_Valid_Equality_Type (T2, Anon_Access)
+               then
+                  return False;
+               end if;
+            end;
+
+         else
+            if not Is_Valid_Comparison_Type (T1)
+              or else not Is_Valid_Comparison_Type (T2)
+            then
+               return False;
+            end if;
+         end if;
+
+         return Covers (T1 => T1, T2 => T2)
+           or else Covers (T1 => T2, T2 => T1)
+           or else Is_User_Defined_Literal (L, T2)
+           or else Is_User_Defined_Literal (R, T1);
+      end Is_Valid_Pair;
+
+      --  Local variables
+
+      I       : Interp_Index;
+      It      : Interp;
+      L_Typ   : Entity_Id;
+      R_Typ   : Entity_Id;
+      T       : Entity_Id;
+      Valid_I : Interp_Index;
+
+   --  Start of processing for Find_Comparison_Equality_Types
+
+   begin
+      --  Loop through the interpretations of the left operand
+
+      if not Is_Overloaded (L) then
+         T := Try_Left_Interp (Etype (L));
+
+         if Present (T) then
+            Set_Etype (R, T);
+            Add_One_Interp (N, Op_Id, Op_Typ, Find_Unique_Type (L, R));
+         end if;
+
+      else
+         L_Typ   := Empty;
+         R_Typ   := Empty;
+         Valid_I := 0;
+
+         Get_First_Interp (L, I, It);
+         while Present (It.Typ) loop
+            T := Try_Left_Interp (It.Typ);
+
+            if Present (T) then
+               --  If several interpretations are possible, disambiguate
+
+               if Present (L_Typ)
+                 and then Base_Type (It.Typ) /= Base_Type (L_Typ)
+               then
+                  It := Disambiguate (L, Valid_I, I, Any_Type);
+
+                  if It = No_Interp then
+                     L_Typ := Any_Type;
+                     R_Typ := T;
+                     exit;
+                  end if;
+
+               else
+                  Valid_I := I;
+               end if;
+
+               L_Typ := It.Typ;
+               R_Typ := T;
+            end if;
+
+            Get_Next_Interp (I, It);
+         end loop;
+
+         if Present (L_Typ) then
+            Set_Etype (L, L_Typ);
+            Set_Etype (R, R_Typ);
+            Add_One_Interp (N, Op_Id, Op_Typ, Find_Unique_Type (L, R));
+         end if;
       end if;
-   end Find_Non_Universal_Interpretations;
+   end Find_Comparison_Equality_Types;
 
    ------------------------------
    -- Find_Concatenation_Types --
@@ -6757,457 +7125,6 @@ package body Sem_Ch4 is
          Add_One_Interp (N, Op_Id, Op_Type);
       end if;
    end Find_Concatenation_Types;
-
-   -------------------------
-   -- Find_Equality_Types --
-   -------------------------
-
-   procedure Find_Equality_Types
-     (L, R  : Node_Id;
-      Op_Id : Entity_Id;
-      N     : Node_Id)
-   is
-      Index               : Interp_Index := 0;
-      It                  : Interp;
-      Found               : Boolean := False;
-      Is_Universal_Access : Boolean := False;
-      I_F                 : Interp_Index;
-      T_F                 : Entity_Id;
-      Scop                : Entity_Id := Empty;
-
-      procedure Check_Access_Attribute (N : Node_Id);
-      --  For any object, '[Unchecked_]Access of such object can never be
-      --  passed as a parameter of a call to the Universal_Access equality
-      --  operator.
-      --  This is because the expected type for Obj'Access in a call to
-      --  the Standard."=" operator whose formals are of type
-      --  Universal_Access is Universal_Access, and Universal_Access
-      --  doesn't have a designated type. For more detail see RM 6.4.1(3)
-      --  and 3.10.2.
-      --  This procedure assumes that the context is a universal_access.
-
-      function Check_Access_Object_Types
-        (N : Node_Id; Typ : Entity_Id) return Boolean;
-      --  Check for RM 4.5.2 (9.6/2): When both are of access-to-object types,
-      --  the designated types shall be the same or one shall cover the other,
-      --  and if the designated types are elementary or array types, then the
-      --  designated subtypes shall statically match.
-      --  If N is not overloaded, then its unique type must be compatible as
-      --  per above. Otherwise iterate through the interpretations of N looking
-      --  for a compatible one.
-
-      procedure Check_Compatible_Profiles (N : Node_Id; Typ : Entity_Id);
-      --  Check for RM 4.5.2(9.7/2): When both are of access-to-subprogram
-      --  types, the designated profiles shall be subtype conformant.
-
-      function References_Anonymous_Access_Type
-        (N : Node_Id; Typ : Entity_Id) return Boolean;
-      --  Return True either if N is not overloaded and its Etype is an
-      --  anonymous access type or if one of the interpretations of N refers
-      --  to an anonymous access type compatible with Typ.
-
-      procedure Try_One_Interp (T1 : Entity_Id);
-      --  The context of the equality operator plays no role in resolving the
-      --  arguments, so that if there is more than one interpretation of the
-      --  operands that is compatible with equality, the construct is ambiguous
-      --  and an error can be emitted now, after trying to disambiguate, i.e.
-      --  applying preference rules.
-
-      ----------------------------
-      -- Check_Access_Attribute --
-      ----------------------------
-
-      procedure Check_Access_Attribute (N : Node_Id) is
-      begin
-         if Nkind (N) = N_Attribute_Reference
-           and then Attribute_Name (N) in Name_Access | Name_Unchecked_Access
-         then
-            Error_Msg_N
-              ("access attribute cannot be used as actual for "
-               & "universal_access equality", N);
-         end if;
-      end Check_Access_Attribute;
-
-      -------------------------------
-      -- Check_Access_Object_Types --
-      -------------------------------
-
-      function Check_Access_Object_Types
-        (N : Node_Id; Typ : Entity_Id) return Boolean
-      is
-         function Check_Designated_Types (DT1, DT2 : Entity_Id) return Boolean;
-         --  Check RM 4.5.2 (9.6/2) on the given designated types.
-
-         ----------------------------
-         -- Check_Designated_Types --
-         ----------------------------
-
-         function Check_Designated_Types
-           (DT1, DT2 : Entity_Id) return Boolean is
-         begin
-            --  If the designated types are elementary or array types, then
-            --  the designated subtypes shall statically match.
-
-            if Is_Elementary_Type (DT1) or else Is_Array_Type (DT1) then
-               if Base_Type (DT1) /= Base_Type (DT2) then
-                  return False;
-               else
-                  return Subtypes_Statically_Match (DT1, DT2);
-               end if;
-
-            --  Otherwise, the designated types shall be the same or one
-            --  shall cover the other.
-
-            else
-               return DT1 = DT2
-                 or else Covers (DT1, DT2)
-                 or else Covers (DT2, DT1);
-            end if;
-         end Check_Designated_Types;
-
-      --  Start of processing for Check_Access_Object_Types
-
-      begin
-         --  Return immediately with no checks if Typ is not an
-         --  access-to-object type.
-
-         if not Is_Access_Object_Type (Typ) then
-            return True;
-
-         --  Any_Type is compatible with all types in this context, and is used
-         --  in particular for the designated type of a 'null' value.
-
-         elsif Directly_Designated_Type (Typ) = Any_Type
-           or else Nkind (N) = N_Null
-         then
-            return True;
-         end if;
-
-         if not Is_Overloaded (N) then
-            if Is_Access_Object_Type (Etype (N)) then
-               return Check_Designated_Types
-                 (Designated_Type (Typ), Designated_Type (Etype (N)));
-            end if;
-         else
-            declare
-               Typ_Is_Anonymous : constant Boolean :=
-                 Is_Anonymous_Access_Type (Typ);
-
-               I  : Interp_Index;
-               It : Interp;
-
-            begin
-               Get_First_Interp (N, I, It);
-               while Present (It.Typ) loop
-
-                  --  The check on designated types if only relevant when one
-                  --  of the types is anonymous, ignore other (non relevant)
-                  --  types.
-
-                  if (Typ_Is_Anonymous
-                       or else Is_Anonymous_Access_Type (It.Typ))
-                    and then Is_Access_Object_Type (It.Typ)
-                  then
-                     if Check_Designated_Types
-                          (Designated_Type (Typ), Designated_Type (It.Typ))
-                     then
-                        return True;
-                     end if;
-                  end if;
-
-                  Get_Next_Interp (I, It);
-               end loop;
-            end;
-         end if;
-
-         return False;
-      end Check_Access_Object_Types;
-
-      -------------------------------
-      -- Check_Compatible_Profiles --
-      -------------------------------
-
-      procedure Check_Compatible_Profiles (N : Node_Id; Typ : Entity_Id) is
-         I     : Interp_Index;
-         It    : Interp;
-         I1    : Interp_Index := 0;
-         Found : Boolean      := False;
-         Tmp   : Entity_Id    := Empty;
-
-      begin
-         if not Is_Overloaded (N) then
-            Check_Subtype_Conformant
-              (Designated_Type (Etype (N)), Designated_Type (Typ), N);
-         else
-            Get_First_Interp (N, I, It);
-            while Present (It.Typ) loop
-               if Is_Access_Subprogram_Type (It.Typ) then
-                  if not Found then
-                     Found := True;
-                     Tmp   := It.Typ;
-                     I1    := I;
-
-                  else
-                     It := Disambiguate (N, I1, I, Any_Type);
-
-                     if It /= No_Interp then
-                        Tmp := It.Typ;
-                        I1  := I;
-                     else
-                        Found := False;
-                        exit;
-                     end if;
-                  end if;
-               end if;
-
-               Get_Next_Interp (I, It);
-            end loop;
-
-            if Found then
-               Check_Subtype_Conformant
-                 (Designated_Type (Tmp), Designated_Type (Typ), N);
-            end if;
-         end if;
-      end Check_Compatible_Profiles;
-
-      --------------------------------------
-      -- References_Anonymous_Access_Type --
-      --------------------------------------
-
-      function References_Anonymous_Access_Type
-        (N : Node_Id; Typ : Entity_Id) return Boolean
-      is
-         I  : Interp_Index;
-         It : Interp;
-      begin
-         if not Is_Overloaded (N) then
-            return Is_Anonymous_Access_Type (Etype (N));
-         else
-            Get_First_Interp (N, I, It);
-            while Present (It.Typ) loop
-               if Is_Anonymous_Access_Type (It.Typ)
-                 and then (Covers (It.Typ, Typ) or else Covers (Typ, It.Typ))
-               then
-                  return True;
-               end if;
-
-               Get_Next_Interp (I, It);
-            end loop;
-
-            return False;
-         end if;
-      end References_Anonymous_Access_Type;
-
-      --------------------
-      -- Try_One_Interp --
-      --------------------
-
-      procedure Try_One_Interp (T1 : Entity_Id) is
-         Anonymous_Access : Boolean;
-         Bas              : Entity_Id;
-
-      begin
-         --  Perform a sanity check in case of previous errors
-
-         if No (T1) then
-            return;
-         end if;
-
-         Bas := Base_Type (T1);
-
-         --  If the operator is an expanded name, then the type of the operand
-         --  must be defined in the corresponding scope. If the type is
-         --  universal, the context will impose the correct type. An anonymous
-         --  type for a 'Access reference is also universal in this sense, as
-         --  the actual type is obtained from context.
-
-         --  In Ada 2005, the equality operator for anonymous access types
-         --  is declared in Standard, and preference rules apply to it.
-
-         Anonymous_Access := Is_Anonymous_Access_Type (T1)
-           or else References_Anonymous_Access_Type (R, T1);
-
-         if Present (Scop) then
-
-            --  Note that we avoid returning if we are currently within a
-            --  generic instance due to the fact that the generic package
-            --  declaration has already been successfully analyzed and
-            --  Defined_In_Scope expects the base type to be defined within
-            --  the instance which will never be the case.
-
-            if Defined_In_Scope (T1, Scop)
-              or else In_Instance
-              or else T1 = Universal_Integer
-              or else T1 = Universal_Real
-              or else T1 = Universal_Access
-              or else T1 = Any_String
-              or else T1 = Any_Composite
-              or else (Ekind (T1) = E_Access_Subprogram_Type
-                        and then not Comes_From_Source (T1))
-            then
-               null;
-
-            elsif Scop /= Standard_Standard or else not Anonymous_Access then
-
-               --  The scope does not contain an operator for the type
-
-               return;
-            end if;
-
-         --  If we have infix notation, the operator must be usable. Within
-         --  an instance, the type may have been immediately visible if the
-         --  types are compatible.
-
-         elsif In_Open_Scopes (Scope (Bas))
-           or else Is_Potentially_Use_Visible (Bas)
-           or else In_Use (Bas)
-           or else (In_Use (Scope (Bas)) and then not Is_Hidden (Bas))
-           or else
-             ((In_Instance or else In_Inlined_Body)
-                and then Has_Compatible_Type (R, T1))
-         then
-            null;
-
-         elsif not Anonymous_Access then
-            --  Save candidate type for subsequent error message, if any
-
-            if not Is_Limited_Type (T1) then
-               Candidate_Type := T1;
-            end if;
-
-            return;
-         end if;
-
-         --  Ada 2005 (AI-230): Keep restriction imposed by Ada 83 and 95:
-         --  Do not allow anonymous access types in equality operators.
-
-         if Ada_Version < Ada_2005 and then Anonymous_Access then
-            return;
-         end if;
-
-         --  If the right operand has a type compatible with T1, check for an
-         --  acceptable interpretation, unless T1 is limited (no predefined
-         --  equality available), or this is use of a "/=" for a tagged type.
-         --  In the latter case, possible interpretations of equality need
-         --  to be considered, we don't want the default inequality declared
-         --  in Standard to be chosen, and the "/=" will be rewritten as a
-         --  negation of "=" (see the end of Analyze_Equality_Op). This ensures
-         --  that rewriting happens during analysis rather than being
-         --  delayed until expansion (is this still needed now that ASIS mode
-         --  is gone???). Note that if the node is N_Op_Ne, but Op_Id
-         --  is Name_Op_Eq then we still proceed with the interpretation,
-         --  because that indicates the potential rewriting case where the
-         --  interpretation to consider is actually "=" and the node may be
-         --  about to be rewritten by Analyze_Equality_Op.
-         --  Finally, also check for RM 4.5.2 (9.6/2).
-
-         if T1 /= Standard_Void_Type
-           and then (Anonymous_Access
-                      or else
-                     Has_Compatible_Type (R, T1, For_Comparison => True))
-
-           and then
-             ((not Is_Limited_Type (T1)
-                and then not Is_Limited_Composite (T1))
-
-               or else
-                 (Is_Array_Type (T1)
-                   and then not Is_Limited_Type (Component_Type (T1))
-                   and then Available_Full_View_Of_Component (T1)))
-
-           and then
-             (Nkind (N) /= N_Op_Ne
-               or else not Is_Tagged_Type (T1)
-               or else Chars (Op_Id) = Name_Op_Eq)
-
-           and then (not Anonymous_Access
-                      or else Check_Access_Object_Types (R, T1))
-         then
-            if Found
-              and then Base_Type (T1) /= Base_Type (T_F)
-            then
-               It := Disambiguate (L, I_F, Index, Any_Type);
-
-               if It = No_Interp then
-                  Ambiguous_Operands (N);
-                  Set_Etype (L, Any_Type);
-                  return;
-
-               else
-                  T_F := It.Typ;
-                  Is_Universal_Access := Anonymous_Access;
-               end if;
-
-            else
-               Found := True;
-               T_F   := T1;
-               I_F   := Index;
-               Is_Universal_Access := Anonymous_Access;
-            end if;
-
-            if not Analyzed (L) then
-               Set_Etype (L, T_F);
-            end if;
-
-            Find_Non_Universal_Interpretations (N, R, Op_Id, T1);
-
-            --  Case of operator was not visible, Etype still set to Any_Type
-
-            if Etype (N) = Any_Type then
-               Found := False;
-            end if;
-         end if;
-      end Try_One_Interp;
-
-   --  Start of processing for Find_Equality_Types
-
-   begin
-      --  If left operand is aggregate, the right operand has to
-      --  provide a usable type for it.
-
-      if Nkind (L) = N_Aggregate and then Nkind (R) /= N_Aggregate then
-         Find_Equality_Types (L => R, R => L, Op_Id => Op_Id, N => N);
-         return;
-      end if;
-
-      if Nkind (N) = N_Function_Call
-         and then Nkind (Name (N)) = N_Expanded_Name
-      then
-         Scop := Entity (Prefix (Name (N)));
-
-         --  The prefix may be a package renaming, and the subsequent test
-         --  requires the original package.
-
-         if Ekind (Scop) = E_Package
-           and then Present (Renamed_Entity (Scop))
-         then
-            Scop := Renamed_Entity (Scop);
-            Set_Entity (Prefix (Name (N)), Scop);
-         end if;
-      end if;
-
-      if not Is_Overloaded (L) then
-         Try_One_Interp (Etype (L));
-      else
-         Get_First_Interp (L, Index, It);
-         while Present (It.Typ) loop
-            Try_One_Interp (It.Typ);
-            Get_Next_Interp (Index, It);
-         end loop;
-      end if;
-
-      if Is_Universal_Access then
-         if Is_Access_Subprogram_Type (Etype (L))
-           and then Nkind (L) /= N_Null
-           and then Nkind (R) /= N_Null
-         then
-            Check_Compatible_Profiles (R, Etype (L));
-         end if;
-
-         Check_Access_Attribute (R);
-         Check_Access_Attribute (L);
-      end if;
-   end Find_Equality_Types;
 
    -------------------------
    -- Find_Negation_Types --
@@ -7556,7 +7473,9 @@ package body Sem_Ch4 is
             then
                return;
 
-            elsif Has_Possible_Literal_Aspects (N) then
+            elsif Present (Entity (N))
+              and then Has_Possible_Literal_Aspects (N)
+            then
                return;
 
             --  If we have a logical operator, one of whose operands is
@@ -7605,7 +7524,7 @@ package body Sem_Ch4 is
                          Standard_Address, Relocate_Node (R)));
 
                      if Nkind (N) in N_Op_Ge | N_Op_Gt | N_Op_Le | N_Op_Lt then
-                        Analyze_Comparison_Op (N);
+                        Analyze_Comparison_Equality_Op (N);
                      else
                         Analyze_Arithmetic_Op (N);
                      end if;
@@ -7627,7 +7546,7 @@ package body Sem_Ch4 is
                          Standard_Address, Relocate_Node (R)));
 
                      if Nkind (N) in N_Op_Ge | N_Op_Gt | N_Op_Le | N_Op_Lt then
-                        Analyze_Comparison_Op (N);
+                        Analyze_Comparison_Equality_Op (N);
                      else
                         Analyze_Arithmetic_Op (N);
                      end if;
@@ -7657,7 +7576,7 @@ package body Sem_Ch4 is
                          Standard_Address, Relocate_Node (R)));
 
                      if Nkind (N) in N_Op_Ge | N_Op_Gt | N_Op_Le | N_Op_Lt then
-                        Analyze_Comparison_Op (N);
+                        Analyze_Comparison_Equality_Op (N);
                      else
                         Analyze_Arithmetic_Op (N);
                      end if;
@@ -7681,7 +7600,7 @@ package body Sem_Ch4 is
                   Replace_Null_By_Null_Address (N);
 
                   if Nkind (N) in N_Op_Ge | N_Op_Gt | N_Op_Le | N_Op_Lt then
-                     Analyze_Comparison_Op (N);
+                     Analyze_Comparison_Equality_Op (N);
                   else
                      Analyze_Arithmetic_Op (N);
                   end if;
@@ -7758,7 +7677,7 @@ package body Sem_Ch4 is
                   Rewrite (R,
                     Unchecked_Convert_To (
                       Standard_Address, Relocate_Node (R)));
-                  Analyze_Equality_Op (N);
+                  Analyze_Comparison_Equality_Op (N);
                   return;
 
                --  Under relaxed RM semantics silently replace occurrences of
@@ -7766,7 +7685,7 @@ package body Sem_Ch4 is
 
                elsif Null_To_Null_Address_Convert_OK (N) then
                   Replace_Null_By_Null_Address (N);
-                  Analyze_Equality_Op (N);
+                  Analyze_Comparison_Equality_Op (N);
                   return;
                end if;
             end if;
@@ -7937,6 +7856,133 @@ package body Sem_Ch4 is
 
       return Etype (N) /= Any_Type;
    end Has_Possible_Literal_Aspects;
+
+   -----------------------------------------------
+   -- Nondispatching_Call_To_Abstract_Operation --
+   -----------------------------------------------
+
+   procedure Nondispatching_Call_To_Abstract_Operation
+     (N : Node_Id;
+      Abstract_Op : Entity_Id)
+   is
+      Typ : constant Entity_Id := Etype (N);
+
+   begin
+      --  In an instance body, this is a runtime check, but one we know will
+      --  fail, so give an appropriate warning. As usual this kind of warning
+      --  is an error in SPARK mode.
+
+      Error_Msg_Sloc := Sloc (Abstract_Op);
+
+      if In_Instance_Body and then SPARK_Mode /= On then
+         Error_Msg_NE
+           ("??cannot call abstract operation& declared#",
+            N, Abstract_Op);
+         Error_Msg_N ("\Program_Error [??", N);
+         Rewrite (N,
+           Make_Raise_Program_Error (Sloc (N),
+           Reason => PE_Explicit_Raise));
+         Analyze (N);
+         Set_Etype (N, Typ);
+
+      else
+         Error_Msg_NE
+           ("cannot call abstract operation& declared#",
+            N, Abstract_Op);
+         Set_Etype (N, Any_Type);
+      end if;
+   end Nondispatching_Call_To_Abstract_Operation;
+
+   ----------------------------------------------
+   -- Possible_Type_For_Conditional_Expression --
+   ----------------------------------------------
+
+   function Possible_Type_For_Conditional_Expression
+     (T1, T2 : Entity_Id) return Entity_Id
+   is
+      function Is_Access_Protected_Subprogram_Attribute
+        (T : Entity_Id) return Boolean;
+      --  Return true if T is the type of an access-to-protected-subprogram
+      --  attribute.
+
+      function Is_Access_Subprogram_Attribute (T : Entity_Id) return Boolean;
+      --  Return true if T is the type of an access-to-subprogram attribute
+
+      ----------------------------------------------
+      -- Is_Access_Protected_Subprogram_Attribute --
+      ----------------------------------------------
+
+      function Is_Access_Protected_Subprogram_Attribute
+        (T : Entity_Id) return Boolean
+      is
+      begin
+         return Ekind (T) = E_Access_Protected_Subprogram_Type
+           and then Ekind (Designated_Type (T)) /= E_Subprogram_Type;
+      end Is_Access_Protected_Subprogram_Attribute;
+
+      ------------------------------------
+      -- Is_Access_Subprogram_Attribute --
+      ------------------------------------
+
+      function Is_Access_Subprogram_Attribute (T : Entity_Id) return Boolean is
+      begin
+         return Ekind (T) = E_Access_Subprogram_Type
+           and then Ekind (Designated_Type (T)) /= E_Subprogram_Type;
+      end Is_Access_Subprogram_Attribute;
+
+   --  Start of processing for Possible_Type_For_Conditional_Expression
+
+   begin
+      --  If both types are those of similar access attributes or allocators,
+      --  pick one of them, for example the first.
+
+      if Ekind (T1) in E_Access_Attribute_Type | E_Allocator_Type
+        and then Ekind (T2) in E_Access_Attribute_Type | E_Allocator_Type
+      then
+         return T1;
+
+      elsif Is_Access_Subprogram_Attribute (T1)
+        and then Is_Access_Subprogram_Attribute (T2)
+        and then
+          Subtype_Conformant (Designated_Type (T1), Designated_Type (T2))
+      then
+         return T1;
+
+      elsif Is_Access_Protected_Subprogram_Attribute (T1)
+        and then Is_Access_Protected_Subprogram_Attribute (T2)
+        and then
+          Subtype_Conformant (Designated_Type (T1), Designated_Type (T2))
+      then
+         return T1;
+
+      --  The other case to be considered is a pair of tagged types
+
+      elsif Is_Tagged_Type (T1) and then Is_Tagged_Type (T2) then
+         --  Covers performs the same checks when T1 or T2 are a CW type, so
+         --  we don't need to do them again here.
+
+         if not Is_Class_Wide_Type (T1) and then Is_Ancestor (T1, T2) then
+            return T1;
+
+         elsif not Is_Class_Wide_Type (T2) and then Is_Ancestor (T2, T1) then
+            return T2;
+
+         --  Neither type is an ancestor of the other, but they may have one in
+         --  common, so we pick the first type as above. We could perform here
+         --  the computation of the nearest common ancestors of T1 and T2, but
+         --  this would require a significant amount of work and the practical
+         --  benefit would very likely be negligible.
+
+         else
+            return T1;
+         end if;
+
+      --  Otherwise no type is possible
+
+      else
+         return Empty;
+      end if;
+   end Possible_Type_For_Conditional_Expression;
 
    --------------------------------
    -- Remove_Abstract_Operations --
@@ -8166,10 +8212,7 @@ package body Sem_Ch4 is
 
                --  Removal of abstract operation left no viable candidate
 
-               Set_Etype (N, Any_Type);
-               Error_Msg_Sloc := Sloc (Abstract_Op);
-               Error_Msg_NE
-                 ("cannot call abstract operation& declared#", N, Abstract_Op);
+               Nondispatching_Call_To_Abstract_Operation (N, Abstract_Op);
 
             --  In Ada 2005, an abstract operation may disable predefined
             --  operators. Since the context is not yet known, we mark the
@@ -9241,19 +9284,6 @@ package body Sem_Ch4 is
             Save_Interps (Subprog, Node_To_Replace);
 
          else
-            --  The type of the subprogram may be a limited view obtained
-            --  transitively from another unit. If full view is available,
-            --  use it to analyze call. If there is no nonlimited view, then
-            --  this is diagnosed when analyzing the rewritten call.
-
-            declare
-               T : constant Entity_Id := Etype (Subprog);
-            begin
-               if From_Limited_With (T) then
-                  Set_Etype (Entity (Subprog), Available_View (T));
-               end if;
-            end;
-
             Analyze (Node_To_Replace);
 
             --  If the operation has been rewritten into a call, which may get

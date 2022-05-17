@@ -1720,9 +1720,15 @@ check_constraint_info (tree t)
 #define DECL_MODULE_CHECK(NODE)						\
   TREE_NOT_CHECK (NODE, TEMPLATE_DECL)
 
-/* In the purview of a module (including header unit).  */
+/* In the purview of a named module (or in the purview of the
+   header-unit being compiled).  */
 #define DECL_MODULE_PURVIEW_P(N) \
   (DECL_LANG_SPECIFIC (DECL_MODULE_CHECK (N))->u.base.module_purview_p)
+
+/* Attached to the named module it is in the purview of.  Decls
+   attached to the global module will have this false.  */
+#define DECL_MODULE_ATTACH_P(N) \
+  (DECL_LANG_SPECIFIC (DECL_MODULE_CHECK (N))->u.base.module_attach_p)
 
 /* True if the live version of the decl was imported.  */
 #define DECL_MODULE_IMPORT_P(NODE) \
@@ -1734,9 +1740,9 @@ check_constraint_info (tree t)
   (DECL_LANG_SPECIFIC (DECL_MODULE_CHECK (NODE))->u.base.module_entity_p)
 
 /* DECL that has attached decls for ODR-relatedness.  */
-#define DECL_MODULE_ATTACHMENTS_P(NODE)			\
+#define DECL_MODULE_KEYED_DECLS_P(NODE)			\
   (DECL_LANG_SPECIFIC (TREE_CHECK2(NODE,FUNCTION_DECL,VAR_DECL))\
-   ->u.base.module_attached_p)
+   ->u.base.module_keyed_decls_p)
 
 /* Whether this is an exported DECL.  Held on any decl that can appear
    at namespace scope (function, var, type, template, const or
@@ -2826,18 +2832,13 @@ struct GTY(()) lang_decl_base {
 
   /* The following apply to VAR, FUNCTION, TYPE, CONCEPT, & NAMESPACE
      decls.  */
-  // FIXME: Purview and Attachment are not the same thing, due to
-  // linkage-declarations.  The modules code presumes they are the
-  // same.  (For context, linkage-decl semantics was a very late
-  // change). We need a module_attachment_p flag, and this will allow
-  // some simplification of how we handle header unit entities.
-  // Hurrah!
-  unsigned module_purview_p : 1;	   /* in module purview (not GMF) */
+  unsigned module_purview_p : 1;	   // in named-module purview
+  unsigned module_attach_p : 1;		   // attached to named module
   unsigned module_import_p : 1;     	   /* from an import */
   unsigned module_entity_p : 1;		   /* is in the entitity ary &
 					      hash.  */
-  /* VAR_DECL or FUNCTION_DECL has attached decls.     */
-  unsigned module_attached_p : 1;
+  /* VAR_DECL or FUNCTION_DECL has keyed decls.     */
+  unsigned module_keyed_decls_p : 1;
 
   /* 12 spare bits.  */
 };
@@ -3770,17 +3771,20 @@ struct GTY(()) lang_decl {
 
 /* The depth of a template argument vector.  When called directly by
    the parser, we use a TREE_LIST rather than a TREE_VEC to represent
-   template arguments.  In fact, we may even see NULL_TREE if there
-   are no template arguments.  In both of those cases, there is only
-   one level of template arguments.  */
-#define TMPL_ARGS_DEPTH(NODE)					\
-  (TMPL_ARGS_HAVE_MULTIPLE_LEVELS (NODE) ? TREE_VEC_LENGTH (NODE) : 1)
+   template arguments.  In that case, there is only one level of template
+   arguments.  We may even see NULL_TREE if there are 0 levels of
+   template arguments, as in cp_parser_requires_expression.   */
+#define TMPL_ARGS_DEPTH(NODE)						\
+  ((NODE) == NULL_TREE ? 0						\
+   : TMPL_ARGS_HAVE_MULTIPLE_LEVELS (NODE) ? TREE_VEC_LENGTH (NODE)	\
+   : 1)
 
 /* The LEVELth level of the template ARGS.  The outermost level of
    args is level 1, not level 0.  */
 #define TMPL_ARGS_LEVEL(ARGS, LEVEL)		\
   (TMPL_ARGS_HAVE_MULTIPLE_LEVELS (ARGS)	\
-   ? TREE_VEC_ELT (ARGS, (LEVEL) - 1) : (ARGS))
+   ? TREE_VEC_ELT (ARGS, (LEVEL) - 1)		\
+   : (gcc_checking_assert ((LEVEL) == 1), (ARGS)))
 
 /* Set the LEVELth level of the template ARGS to VAL.  This macro does
    not work with single-level argument vectors.  */
@@ -3893,24 +3897,19 @@ struct GTY(()) lang_decl {
   (TREE_CODE (NODE) == TYPE_PACK_EXPANSION     \
    || TREE_CODE (NODE) == EXPR_PACK_EXPANSION)
 
+#define PACK_EXPANSION_CHECK(NODE) \
+  TREE_CHECK2 (NODE, TYPE_PACK_EXPANSION, EXPR_PACK_EXPANSION)
+
 /* Extracts the type or expression pattern from a TYPE_PACK_EXPANSION or
    EXPR_PACK_EXPANSION.  */
 #define PACK_EXPANSION_PATTERN(NODE)                            \
-  (TREE_CODE (NODE) == TYPE_PACK_EXPANSION ? TREE_TYPE (NODE)    \
-   : TREE_OPERAND (NODE, 0))
-
-/* Sets the type or expression pattern for a TYPE_PACK_EXPANSION or
-   EXPR_PACK_EXPANSION.  */
-#define SET_PACK_EXPANSION_PATTERN(NODE,VALUE)  \
-  if (TREE_CODE (NODE) == TYPE_PACK_EXPANSION)  \
-    TREE_TYPE (NODE) = VALUE;                   \
-  else                                          \
-    TREE_OPERAND (NODE, 0) = VALUE
+  (TREE_CODE (PACK_EXPANSION_CHECK (NODE)) == TYPE_PACK_EXPANSION \
+   ? TREE_TYPE (NODE) : TREE_OPERAND (NODE, 0))
 
 /* The list of parameter packs used in the PACK_EXPANSION_* node. The
    TREE_VALUE of each TREE_LIST contains the parameter packs.  */
 #define PACK_EXPANSION_PARAMETER_PACKS(NODE)		\
-  *(TREE_CODE (NODE) == EXPR_PACK_EXPANSION		\
+  *(TREE_CODE (PACK_EXPANSION_CHECK (NODE)) == EXPR_PACK_EXPANSION \
     ? &TREE_OPERAND (NODE, 1)				\
     : &TYPE_MIN_VALUE_RAW (TYPE_PACK_EXPANSION_CHECK (NODE)))
 
@@ -3921,22 +3920,26 @@ struct GTY(()) lang_decl {
    are enclosing functions that provided function parameter packs we'll need
    to map appropriately.  */
 #define PACK_EXPANSION_EXTRA_ARGS(NODE)		\
-  *(TREE_CODE (NODE) == TYPE_PACK_EXPANSION	\
+  *(TREE_CODE (PACK_EXPANSION_CHECK (NODE)) == TYPE_PACK_EXPANSION \
     ? &TYPE_MAX_VALUE_RAW (NODE)			\
     : &TREE_OPERAND ((NODE), 2))
 
 /* True iff this pack expansion is within a function context.  */
-#define PACK_EXPANSION_LOCAL_P(NODE) TREE_LANG_FLAG_0 (NODE)
+#define PACK_EXPANSION_LOCAL_P(NODE) \
+  TREE_LANG_FLAG_0 (PACK_EXPANSION_CHECK (NODE))
 
 /* True iff this pack expansion is for sizeof....  */
-#define PACK_EXPANSION_SIZEOF_P(NODE) TREE_LANG_FLAG_1 (NODE)
+#define PACK_EXPANSION_SIZEOF_P(NODE) \
+  TREE_LANG_FLAG_1 (PACK_EXPANSION_CHECK (NODE))
 
 /* True iff this pack expansion is for auto... in lambda init-capture.  */
-#define PACK_EXPANSION_AUTO_P(NODE) TREE_LANG_FLAG_2 (NODE)
+#define PACK_EXPANSION_AUTO_P(NODE) \
+  TREE_LANG_FLAG_2 (PACK_EXPANSION_CHECK (NODE))
 
 /* True if we must use PACK_EXPANSION_EXTRA_ARGS and avoid partial
    instantiation of this pack expansion.  */
-#define PACK_EXPANSION_FORCE_EXTRA_ARGS_P(NODE) TREE_LANG_FLAG_3 (NODE)
+#define PACK_EXPANSION_FORCE_EXTRA_ARGS_P(NODE) \
+  TREE_LANG_FLAG_3 (PACK_EXPANSION_CHECK (NODE))
 
 /* True iff the wildcard can match a template parameter pack.  */
 #define WILDCARD_PACK_P(NODE) TREE_LANG_FLAG_0 (NODE)
@@ -3946,19 +3949,14 @@ struct GTY(()) lang_decl {
   (TREE_CODE (NODE) == TYPE_ARGUMENT_PACK              \
    || TREE_CODE (NODE) == NONTYPE_ARGUMENT_PACK)
 
+#define ARGUMENT_PACK_CHECK(NODE) \
+  TREE_CHECK2 (NODE, TYPE_ARGUMENT_PACK, NONTYPE_ARGUMENT_PACK)
+
 /* The arguments stored in an argument pack. Arguments are stored in a
    TREE_VEC, which may have length zero.  */
 #define ARGUMENT_PACK_ARGS(NODE)                               \
-  (TREE_CODE (NODE) == TYPE_ARGUMENT_PACK? TREE_TYPE (NODE)    \
-   : TREE_OPERAND (NODE, 0))
-
-/* Set the arguments stored in an argument pack. VALUE must be a
-   TREE_VEC.  */
-#define SET_ARGUMENT_PACK_ARGS(NODE,VALUE)     \
-  if (TREE_CODE (NODE) == TYPE_ARGUMENT_PACK)  \
-    TREE_TYPE (NODE) = VALUE;                           \
-  else                                                  \
-    TREE_OPERAND (NODE, 0) = VALUE
+  (TREE_CODE (ARGUMENT_PACK_CHECK (NODE)) == TYPE_ARGUMENT_PACK \
+   ? TREE_TYPE (NODE) : TREE_OPERAND (NODE, 0))
 
 /* Whether the argument pack is "incomplete", meaning that more
    arguments can still be deduced. Incomplete argument packs are only
@@ -6841,6 +6839,7 @@ extern tree lookup_enumerator			(tree, tree);
 extern bool start_preparsed_function		(tree, tree, int);
 extern bool start_function			(cp_decl_specifier_seq *,
 						 const cp_declarator *, tree);
+extern void maybe_return_this			(void);
 extern tree begin_function_body			(void);
 extern void finish_function_body		(tree);
 extern tree outer_curly_brace_block		(tree);
@@ -6870,7 +6869,8 @@ extern bool is_direct_enum_init			(tree, tree);
 extern void initialize_artificial_var		(tree, vec<constructor_elt, va_gc> *);
 extern tree check_var_type			(tree, tree, location_t);
 extern tree reshape_init                        (tree, tree, tsubst_flags_t);
-extern tree next_initializable_field (tree);
+extern tree next_aggregate_field		(tree);
+extern tree next_subobject_field		(tree);
 extern tree first_field				(const_tree);
 extern tree fndecl_declared_return_type		(tree);
 extern bool undeduced_auto_decl			(tree);
@@ -7135,46 +7135,40 @@ inline bool modules_p () { return flag_modules != 0; }
 /* The kind of module or part thereof that we're in.  */
 enum module_kind_bits
 {
-  MK_MODULE = 1 << 0,     /* This TU is a module.  */
-  MK_GLOBAL = 1 << 1,     /* Entities are in the global module.  */
-  MK_INTERFACE = 1 << 2,  /* This TU is an interface.  */
-  MK_PARTITION = 1 << 3,  /* This TU is a partition.  */
-  MK_EXPORTING = 1 << 4,  /* We are in an export region.  */
+  MK_NAMED = 1 << 0,	// TU is a named module
+  MK_HEADER = 1 << 1,	// TU is a header unit
+  MK_INTERFACE = 1 << 2,  // TU is an interface
+  MK_PARTITION = 1 << 3,  // TU is a partition
+
+  MK_PURVIEW = 1 << 4,	// In purview of current module
+  MK_ATTACH = 1 << 5,	// Attaching to named module
+
+  MK_EXPORTING = 1 << 6,  /* We are in an export region.  */
 };
 
 /* We do lots of bit-manipulation, so an unsigned is easier.  */
 extern unsigned module_kind;
 
-/*  MK_MODULE & MK_GLOBAL have the following combined meanings:
- MODULE GLOBAL
-   0	  0	not a module
-   0	  1	GMF of named module (we've not yet seen module-decl)
-   1	  0	purview of named module
-   1	  1	header unit.   */
-
-inline bool module_purview_p ()
-{ return module_kind & MK_MODULE; }
-inline bool global_purview_p ()
-{ return module_kind & MK_GLOBAL; }
-
-inline bool not_module_p ()
-{ return (module_kind & (MK_MODULE | MK_GLOBAL)) == 0; }
+inline bool module_p ()
+{ return module_kind & (MK_NAMED | MK_HEADER); }
 inline bool named_module_p ()
-{ /* This is a named module if exactly one of MODULE and GLOBAL is
-     set.  */
-  /* The divides are constant shifts!  */
-  return ((module_kind / MK_MODULE) ^ (module_kind / MK_GLOBAL)) & 1;
-}
+{ return module_kind & MK_NAMED; }
 inline bool header_module_p ()
-{ return (module_kind & (MK_MODULE | MK_GLOBAL)) == (MK_MODULE | MK_GLOBAL); }
-inline bool named_module_purview_p ()
-{ return (module_kind & (MK_MODULE | MK_GLOBAL)) == MK_MODULE; }
+{ return module_kind & MK_HEADER; }
 inline bool module_interface_p ()
 { return module_kind & MK_INTERFACE; }
 inline bool module_partition_p ()
 { return module_kind & MK_PARTITION; }
 inline bool module_has_cmi_p ()
 { return module_kind & (MK_INTERFACE | MK_PARTITION); }
+
+inline bool module_purview_p ()
+{ return module_kind & MK_PURVIEW; }
+inline bool module_attach_p ()
+{ return module_kind & MK_ATTACH; }
+
+inline bool named_module_purview_p ()
+{ return named_module_p () && module_purview_p (); }
 
 /* We're currently exporting declarations.  */
 inline bool module_exporting_p ()
@@ -7196,7 +7190,7 @@ extern unsigned get_importing_module (tree, bool = false) ATTRIBUTE_PURE;
 /* Where current instance of the decl got declared/defined/instantiated.  */
 extern void set_instantiating_module (tree);
 extern void set_defining_module (tree);
-extern void maybe_attach_decl (tree ctx, tree decl);
+extern void maybe_key_decl (tree ctx, tree decl);
 
 extern void mangle_module (int m, bool include_partition);
 extern void mangle_module_fini ();

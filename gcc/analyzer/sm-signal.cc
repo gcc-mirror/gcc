@@ -309,8 +309,7 @@ get_async_signal_unsafe_fns ()
     "vsnprintf",
     "vsprintf"
   };
-  const size_t count
-    = sizeof(async_signal_unsafe_fns) / sizeof (async_signal_unsafe_fns[0]);
+  const size_t count = ARRAY_SIZE (async_signal_unsafe_fns);
   function_set fs (async_signal_unsafe_fns, count);
   return fs;
 }

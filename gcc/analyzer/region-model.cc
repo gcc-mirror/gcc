@@ -1342,6 +1342,9 @@ region_model::on_call_pre (const gcall *call, region_model_context *ctxt,
 	 return false;
        case IFN_UBSAN_BOUNDS:
 	 return false;
+       case IFN_VA_ARG:
+	 impl_call_va_arg (cd);
+	 return false;
        }
     }
 
@@ -1428,6 +1431,13 @@ region_model::on_call_pre (const gcall *call, region_model_context *ctxt,
 	       on the return value.  */
 	    check_call_args (cd);
 	    break;
+
+	  case BUILT_IN_VA_START:
+	    impl_call_va_start (cd);
+	    return false;
+	  case BUILT_IN_VA_COPY:
+	    impl_call_va_copy (cd);
+	    return false;
 	  }
       else if (is_named_call_p (callee_fndecl, "malloc", call, 1))
 	{
@@ -1569,6 +1579,10 @@ region_model::on_call_post (const gcall *call,
 	    break;
 	  case BUILT_IN_REALLOC:
 	    impl_call_realloc (cd);
+	    return;
+
+	  case BUILT_IN_VA_END:
+	    impl_call_va_end (cd);
 	    return;
 	  }
     }
@@ -3520,6 +3534,7 @@ region_model::get_representative_path_var_1 (const region *reg,
 	return path_var (string_reg->get_string_cst (), 0);
       }
 
+    case RK_VAR_ARG:
     case RK_UNKNOWN:
       return path_var (NULL_TREE, 0);
     }
@@ -3887,6 +3902,17 @@ region_model::push_frame (function *fun, const vec<const svalue *> *arg_svals,
 	  const region *parm_reg = get_lvalue (parm_lval, ctxt);
 	  const svalue *arg_sval = (*arg_svals)[idx];
 	  set_value (parm_reg, arg_sval, ctxt);
+	}
+
+      /* Handle any variadic args.  */
+      unsigned va_arg_idx = 0;
+      for (; idx < arg_svals->length (); idx++, va_arg_idx++)
+	{
+	  const svalue *arg_sval = (*arg_svals)[idx];
+	  const region *var_arg_reg
+	    = m_mgr->get_var_arg_region (m_current_frame,
+					 va_arg_idx);
+	  set_value (var_arg_reg, arg_sval, ctxt);
 	}
     }
   else

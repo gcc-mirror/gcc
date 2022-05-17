@@ -343,10 +343,6 @@ build_value_init (tree type, tsubst_flags_t complain)
      A program that calls for default-initialization or
      value-initialization of an entity of reference type is ill-formed.  */
 
-  /* The AGGR_INIT_EXPR tweaking below breaks in templates.  */
-  gcc_assert (!processing_template_decl
-	      || (SCALAR_TYPE_P (type) || TREE_CODE (type) == ARRAY_TYPE));
-
   if (CLASS_TYPE_P (type) && type_build_ctor_call (type))
     {
       tree ctor
@@ -354,6 +350,9 @@ build_value_init (tree type, tsubst_flags_t complain)
 				     NULL, type, LOOKUP_NORMAL, complain);
       if (ctor == error_mark_node || TREE_CONSTANT (ctor))
 	return ctor;
+      if (processing_template_decl)
+	/* The AGGR_INIT_EXPR tweaking below breaks in templates.  */
+	return build_min (CAST_EXPR, type, NULL_TREE);
       tree fn = NULL_TREE;
       if (TREE_CODE (ctor) == CALL_EXPR)
 	fn = get_callee_fndecl (ctor);
@@ -422,7 +421,7 @@ build_value_init_noctor (tree type, tsubst_flags_t complain)
 		  && !COMPLETE_TYPE_P (ftype)
 		  && !TYPE_DOMAIN (ftype)
 		  && COMPLETE_TYPE_P (TREE_TYPE (ftype))
-		  && (next_initializable_field (DECL_CHAIN (field))
+		  && (next_aggregate_field (DECL_CHAIN (field))
 		      == NULL_TREE))
 		continue;
 
@@ -1477,9 +1476,9 @@ emit_mem_initializers (tree mem_inits)
 
   /* Initially that is all of them.  */
   if (warn_uninitialized)
-    for (tree f = next_initializable_field (TYPE_FIELDS (current_class_type));
+    for (tree f = next_aggregate_field (TYPE_FIELDS (current_class_type));
 	 f != NULL_TREE;
-	 f = next_initializable_field (DECL_CHAIN (f)))
+	 f = next_aggregate_field (DECL_CHAIN (f)))
       if (!DECL_ARTIFICIAL (f)
 	  && !is_really_empty_class (TREE_TYPE (f), /*ignore_vptr*/false))
 	uninitialized.add (f);

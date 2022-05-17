@@ -1936,7 +1936,7 @@ build_call_raise_range (int msg, Node_Id gnat_node, char kind,
    for record components.  */
 
 static int
-compare_elmt_bitpos (const PTR rt1, const PTR rt2)
+compare_elmt_bitpos (const void *rt1, const void *rt2)
 {
   const constructor_elt * const elmt1 = (const constructor_elt *) rt1;
   const constructor_elt * const elmt2 = (const constructor_elt *) rt2;

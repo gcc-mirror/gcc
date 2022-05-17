@@ -105,7 +105,8 @@ package Uintp is
    subtype Upos is Valid_Uint with Predicate => Upos >= Uint_1; -- positive
    subtype Nonzero_Uint is Valid_Uint with Predicate => Nonzero_Uint /= Uint_0;
    subtype Unegative is Valid_Uint with Predicate => Unegative < Uint_0;
-   subtype Ubool is Valid_Uint with Predicate => Ubool in Uint_0 | Uint_1;
+   subtype Ubool is Valid_Uint with
+     Predicate => Ubool = Uint_0 or else Ubool = Uint_1;
    subtype Opt_Ubool is Uint with
      Predicate => No (Opt_Ubool) or else Opt_Ubool in Ubool;
 

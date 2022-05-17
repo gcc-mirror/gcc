@@ -40,8 +40,8 @@ valid until at least the next call.
 #include <unixlib.h>
 #else
 /* For systems with larger pointers than ints, these must be declared.  */
-extern PTR malloc (size_t);
-extern void free (PTR);
+extern void *malloc (size_t);
+extern void free (void *);
 #endif
 
 const char *

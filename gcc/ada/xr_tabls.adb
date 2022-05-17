@@ -819,7 +819,7 @@ package body Xr_Tabls is
          end if;
       end Internal_Strip;
 
-   --  Start of processing for Get_File;
+   --  Start of processing for Get_File
 
    begin
       --  If we do not want the full path name

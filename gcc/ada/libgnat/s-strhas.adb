@@ -4,7 +4,7 @@
 --                                                                          --
 --                    S Y S T E M . S T R I N G _ H A S H                   --
 --                                                                          --
---                                 S p e c                                  --
+--                                 B o d y                                  --
 --                                                                          --
 --          Copyright (C) 2009-2022, Free Software Foundation, Inc.         --
 --                                                                          --

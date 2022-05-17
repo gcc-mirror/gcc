@@ -4205,7 +4205,15 @@ package body Ch3 is
          --  second null exclusion is present in the access type definition.
 
          Not_Null_Present := P_Null_Exclusion; --  Ada 2005 (AI-231)
+
+         if Token /= Tok_Access then
+            Error_Msg
+              ("ACCESS expected",
+               Token_Ptr);
+         end if;
+
          Scan; -- past ACCESS
+
          Not_Null_Subtype_Loc := Token_Ptr;
          Not_Null_Subtype := P_Null_Exclusion; --  Might also appear
       end if;

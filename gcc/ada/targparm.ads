@@ -263,9 +263,6 @@ package Targparm is
    ZCX_By_Default_On_Target : Boolean := False;
    --  Indicates if zero cost scheme for exceptions
 
-   Frontend_Exceptions_On_Target : Boolean := True;
-   --  Indicates if we're using a front-end scheme for exceptions
-
    ------------------------------------
    -- Run-Time Library Configuration --
    ------------------------------------

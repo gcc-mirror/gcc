@@ -61,11 +61,13 @@ void test04()
   f2 = do_truncate_float_t();
   VERIFY( f2(3.1f) == 3 );
 
+#if __cpp_rtti
   // target_type and target() functions
   const function<int(float)>& f1c = f1;
   VERIFY( typeid(do_truncate_float_t) == f1.target_type() );
   VERIFY( f2.target<do_truncate_float_t>() != 0 );
   VERIFY( f1c.target<do_truncate_float_t>() != 0 );
+#endif
 }
 
 int main()

@@ -75,6 +75,55 @@ as_internal_fn (combined_fn code)
   return internal_fn (int (code) - int (END_BUILTINS));
 }
 
+/* Helper to transparently allow tree codes and builtin function codes
+   exist in one storage entity.  */
+class code_helper
+{
+public:
+  code_helper () {}
+  code_helper (tree_code code) : rep ((int) code) {}
+  code_helper (combined_fn fn) : rep (-(int) fn) {}
+  code_helper (internal_fn fn) : rep (-(int) as_combined_fn (fn)) {}
+  explicit operator tree_code () const { return (tree_code) rep; }
+  explicit operator combined_fn () const { return (combined_fn) -rep; }
+  explicit operator internal_fn () const;
+  explicit operator built_in_function () const;
+  bool is_tree_code () const { return rep > 0; }
+  bool is_fn_code () const { return rep < 0; }
+  bool is_internal_fn () const;
+  bool is_builtin_fn () const;
+  int get_rep () const { return rep; }
+  bool operator== (const code_helper &other) { return rep == other.rep; }
+  bool operator!= (const code_helper &other) { return rep != other.rep; }
+  bool operator== (tree_code c) { return rep == code_helper (c).rep; }
+  bool operator!= (tree_code c) { return rep != code_helper (c).rep; }
+
+private:
+  int rep;
+};
+
+inline code_helper::operator internal_fn () const
+{
+  return as_internal_fn (combined_fn (*this));
+}
+
+inline code_helper::operator built_in_function () const
+{
+  return as_builtin_fn (combined_fn (*this));
+}
+
+inline bool
+code_helper::is_internal_fn () const
+{
+  return is_fn_code () && internal_fn_p (combined_fn (*this));
+}
+
+inline bool
+code_helper::is_builtin_fn () const
+{
+  return is_fn_code () && builtin_fn_p (combined_fn (*this));
+}
+
 /* Macros for initializing `tree_contains_struct'.  */
 #define MARK_TS_BASE(C)					\
   (tree_contains_struct[C][TS_BASE] = true)
@@ -1107,8 +1156,9 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
 
 /* In a TREE_VEC node.  */
 #define TREE_VEC_LENGTH(NODE) (TREE_VEC_CHECK (NODE)->base.u.length)
+#define TREE_VEC_BEGIN(NODE) (&TREE_VEC_CHECK (NODE)->vec.a[0])
 #define TREE_VEC_END(NODE) \
-  ((void) TREE_VEC_CHECK (NODE), &((NODE)->vec.a[(NODE)->vec.base.u.length]))
+  ((void) TREE_VEC_CHECK (NODE), &((NODE)->vec.a[(NODE)->base.u.length]))
 
 #define TREE_VEC_ELT(NODE,I) TREE_VEC_ELT_CHECK (NODE, I)
 
@@ -4480,6 +4530,18 @@ extern tree make_tree_vec (int CXX_MEM_STAT_INFO);
 /* Grow a TREE_VEC.  */
 
 extern tree grow_tree_vec (tree v, int CXX_MEM_STAT_INFO);
+
+/* Treat a TREE_VEC as a range of trees, e.g.
+   for (tree e : tree_vec_range (v)) { ... }  */
+
+class tree_vec_range
+{
+  tree v;
+public:
+  tree_vec_range(tree v) : v(v) { }
+  tree *begin() { return TREE_VEC_BEGIN (v); }
+  tree *end() { return TREE_VEC_END (v); }
+};
 
 /* Construct various types of nodes.  */
 

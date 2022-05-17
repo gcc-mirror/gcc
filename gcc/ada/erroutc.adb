@@ -1319,12 +1319,15 @@ package body Erroutc is
          end if;
       end if;
 
-      --  The following assignments ensure that the second and third percent
-      --  insertion characters will correspond to the Error_Msg_Name_2 and
-      --  Error_Msg_Name_3 as required.
+      --  The following assignments ensure that other percent insertion
+      --  characters will correspond to their appropriate Error_Msg_Name_#
+      --  values as required.
 
       Error_Msg_Name_1 := Error_Msg_Name_2;
       Error_Msg_Name_2 := Error_Msg_Name_3;
+      Error_Msg_Name_3 := Error_Msg_Name_4;
+      Error_Msg_Name_4 := Error_Msg_Name_5;
+      Error_Msg_Name_5 := Error_Msg_Name_6;
    end Set_Msg_Insertion_Name;
 
    ------------------------------------
@@ -1348,12 +1351,15 @@ package body Erroutc is
          Set_Msg_Quote;
       end if;
 
-      --  The following assignments ensure that the second and third % or %%
-      --  insertion characters will correspond to the Error_Msg_Name_2 and
-      --  Error_Msg_Name_3 values.
+      --  The following assignments ensure that other percent insertion
+      --  characters will correspond to their appropriate Error_Msg_Name_#
+      --  values as required.
 
       Error_Msg_Name_1 := Error_Msg_Name_2;
       Error_Msg_Name_2 := Error_Msg_Name_3;
+      Error_Msg_Name_3 := Error_Msg_Name_4;
+      Error_Msg_Name_4 := Error_Msg_Name_5;
+      Error_Msg_Name_5 := Error_Msg_Name_6;
    end Set_Msg_Insertion_Name_Literal;
 
    -------------------------------------
@@ -1462,6 +1468,7 @@ package body Erroutc is
    procedure Set_Msg_Name_Buffer is
    begin
       Set_Msg_Str (Name_Buffer (1 .. Name_Len));
+      Destroy_Global_Name_Buffer;
    end Set_Msg_Name_Buffer;
 
    -------------------

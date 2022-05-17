@@ -144,13 +144,13 @@ cmp_bb_postorder (const void *a, const void *b, void *data)
 static void
 sort_bbs_postorder (basic_block *bbs, int n, int *bb_postorder)
 {
-  if (__builtin_expect (n == 2, true))
+  if (LIKELY (n == 2))
     {
       basic_block bb0 = bbs[0], bb1 = bbs[1];
       if (bb_postorder[bb0->index] < bb_postorder[bb1->index])
 	bbs[0] = bb1, bbs[1] = bb0;
     }
-  else if (__builtin_expect (n == 3, true))
+  else if (LIKELY (n == 3))
     {
       basic_block bb0 = bbs[0], bb1 = bbs[1], bb2 = bbs[2];
       if (bb_postorder[bb0->index] < bb_postorder[bb1->index])

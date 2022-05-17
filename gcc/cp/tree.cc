@@ -4852,8 +4852,8 @@ structural_type_p (tree t, bool explain)
 	explain_non_literal_class (t);
       return false;
     }
-  for (tree m = next_initializable_field (TYPE_FIELDS (t)); m;
-       m = next_initializable_field (DECL_CHAIN (m)))
+  for (tree m = next_aggregate_field (TYPE_FIELDS (t)); m;
+       m = next_aggregate_field (DECL_CHAIN (m)))
     {
       if (TREE_PRIVATE (m) || TREE_PROTECTED (m))
 	{
@@ -5414,9 +5414,8 @@ cp_walk_subtrees (tree *tp, int *walk_subtrees_p, walk_tree_fn func,
     case NONTYPE_ARGUMENT_PACK:
       {
         tree args = ARGUMENT_PACK_ARGS (*tp);
-        int i, len = TREE_VEC_LENGTH (args);
-        for (i = 0; i < len; i++)
-          WALK_SUBTREE (TREE_VEC_ELT (args, i));
+	for (tree arg : tree_vec_range (args))
+	  WALK_SUBTREE (arg);
       }
       break;
 
@@ -6119,6 +6118,25 @@ maybe_warn_zero_as_null_pointer_constant (tree expr, location_t loc)
     }
   return false;
 }
+
+/* FNDECL is a function declaration whose type may have been altered by
+   adding extra parameters such as this, in-charge, or VTT.  When this
+   takes place, the positional arguments supplied by the user (as in the
+   'format' attribute arguments) may refer to the wrong argument.  This
+   function returns an integer indicating how many arguments should be
+   skipped.  */
+
+int
+maybe_adjust_arg_pos_for_attribute (const_tree fndecl)
+{
+  if (!fndecl)
+    return 0;
+  int n = num_artificial_parms_for (fndecl);
+  /* The manual states that it's the user's responsibility to account
+     for the implicit this parameter.  */
+  return n > 0 ? n - 1 : 0;
+}
+
 
 /* Release memory we no longer need after parsing.  */
 void

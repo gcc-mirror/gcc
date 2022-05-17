@@ -3554,13 +3554,13 @@ package (dmd) extern (C++) final class StatementSemanticVisitor : Visitor
 
         if (!global.params.useExceptions)
         {
-            tcs.error("Cannot use try-catch statements with -betterC");
+            tcs.error("cannot use try-catch statements with -betterC");
             return setError();
         }
 
         if (!ClassDeclaration.throwable)
         {
-            tcs.error("Cannot use try-catch statements because `object.Throwable` was not declared");
+            tcs.error("cannot use try-catch statements because `object.Throwable` was not declared");
             return setError();
         }
 
@@ -3762,13 +3762,13 @@ package (dmd) extern (C++) final class StatementSemanticVisitor : Visitor
     {
         if (!global.params.useExceptions)
         {
-            loc.error("Cannot use `throw` statements with -betterC");
+            loc.error("cannot use `throw` statements with -betterC");
             return false;
         }
 
         if (!ClassDeclaration.throwable)
         {
-            loc.error("Cannot use `throw` statements because `object.Throwable` was not declared");
+            loc.error("cannot use `throw` statements because `object.Throwable` was not declared");
             return false;
         }
 
@@ -3927,8 +3927,10 @@ package (dmd) extern (C++) final class StatementSemanticVisitor : Visitor
             cas.error("`asm` statement is assumed to be impure - mark it with `pure` if it is not");
         if (!(cas.stc & STC.nogc) && sc.func.setGC())
             cas.error("`asm` statement is assumed to use the GC - mark it with `@nogc` if it does not");
-        if (!(cas.stc & (STC.trusted | STC.safe)) && sc.func.setUnsafe())
-            cas.error("`asm` statement is assumed to be `@system` - mark it with `@trusted` if it is not");
+        if (!(cas.stc & (STC.trusted | STC.safe)))
+        {
+            sc.func.setUnsafe(false, cas.loc, "`asm` statement is assumed to be `@system` - mark it with `@trusted` if it is not");
+        }
 
         sc.pop();
         result = cas;
@@ -4032,10 +4034,10 @@ void catchSemantic(Catch c, Scope* sc)
             error(c.loc, "catching C++ class objects not supported for this target");
             c.errors = true;
         }
-        if (sc.func && !sc.intypeof && !c.internalCatch && sc.func.setUnsafe())
+        if (sc.func && !sc.intypeof && !c.internalCatch)
         {
-            error(c.loc, "cannot catch C++ class objects in `@safe` code");
-            c.errors = true;
+            if (sc.func.setUnsafe(false, c.loc, "cannot catch C++ class objects in `@safe` code"))
+                c.errors = true;
         }
     }
     else if (cd != ClassDeclaration.throwable && !ClassDeclaration.throwable.isBaseOf(cd, null))
@@ -4044,10 +4046,10 @@ void catchSemantic(Catch c, Scope* sc)
         c.errors = true;
     }
     else if (sc.func && !sc.intypeof && !c.internalCatch && ClassDeclaration.exception &&
-             cd != ClassDeclaration.exception && !ClassDeclaration.exception.isBaseOf(cd, null) &&
-             sc.func.setUnsafe())
+            cd != ClassDeclaration.exception && !ClassDeclaration.exception.isBaseOf(cd, null) &&
+            sc.func.setUnsafe(false, c.loc,
+                "can only catch class objects derived from `Exception` in `@safe` code, not `%s`", c.type))
     {
-        error(c.loc, "can only catch class objects derived from `Exception` in `@safe` code, not `%s`", c.type.toChars());
         c.errors = true;
     }
     else if (global.params.ehnogc)
@@ -4829,7 +4831,7 @@ private Statement toStatement(Dsymbol s)
     }
     else
     {
-        .error(Loc.initial, "Internal Compiler Error: cannot mixin %s `%s`\n", s.kind(), s.toChars());
+        .error(Loc.initial, "internal compiler error: cannot mixin %s `%s`\n", s.kind(), s.toChars());
         result = new ErrorStatement();
     }
 

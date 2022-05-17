@@ -1845,7 +1845,7 @@ package body Sem_Elab is
 
       function Is_SPARK_Semantic_Target (Id : Entity_Id) return Boolean;
       pragma Inline (Is_SPARK_Semantic_Target);
-      --  Determine whether arbitrary entity Id nodes a source or internally
+      --  Determine whether arbitrary entity Id denotes a source or internally
       --  generated subprogram which emulates SPARK semantics.
 
       function Is_Subprogram_Inst (Id : Entity_Id) return Boolean;

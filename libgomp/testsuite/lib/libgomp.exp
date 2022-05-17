@@ -202,10 +202,6 @@ proc libgomp_init { args } {
 	    lappend ALWAYS_CFLAGS "additional_flags=-L$cuda_driver_lib"
 	    append always_ld_library_path ":$cuda_driver_lib"
 	}
-	global hsa_runtime_lib
-	if { $hsa_runtime_lib != "" } {
-	    append always_ld_library_path ":$hsa_runtime_lib"
-	}
     }
 
     # We use atomic operations in the testcases to validate results.

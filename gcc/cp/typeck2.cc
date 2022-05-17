@@ -606,7 +606,7 @@ split_nonconstant_init_1 (tree dest, tree init, bool last,
 				  : TYPE_FIELDS (type));
 		     ; prev = DECL_CHAIN (prev))
 		  {
-		    prev = next_initializable_field (prev);
+		    prev = next_aggregate_field (prev);
 		    if (prev == field_index)
 		      break;
 		    tree ptype = TREE_TYPE (prev);
@@ -1304,7 +1304,7 @@ digest_init_r (tree type, tree init, int nested, int flags,
 	    the first element of d, which is the B base subobject.  The base
 	    of type B is copy-initialized from the D temporary, causing
 	    object slicing.  */
-	  tree field = next_initializable_field (TYPE_FIELDS (type));
+	  tree field = next_aggregate_field (TYPE_FIELDS (type));
 	  if (field && DECL_FIELD_IS_BASE (field))
 	    {
 	      if (warning_at (loc, 0, "initializing a base class of type %qT "

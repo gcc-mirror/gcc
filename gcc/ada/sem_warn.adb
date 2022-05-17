@@ -284,15 +284,15 @@ package body Sem_Warn is
 
       procedure Find_Var (N : Node_Id) is
       begin
-         --  Condition is a direct variable reference
+         --  Expression is a direct variable reference
 
          if Is_Entity_Name (N) then
             Ref := N;
             Var := Entity (Ref);
 
-         --  Case of condition is a comparison with compile time known value
+         --  If expression is an operator, check its operands
 
-         elsif Nkind (N) in N_Op_Compare then
+         elsif Nkind (N) in N_Binary_Op then
             if Compile_Time_Known_Value (Right_Opnd (N)) then
                Find_Var (Left_Opnd (N));
 
@@ -305,9 +305,9 @@ package body Sem_Warn is
                return;
             end if;
 
-         --  If condition is a negation, check its operand
+         --  If expression is a unary operator, check its operand
 
-         elsif Nkind (N) = N_Op_Not then
+         elsif Nkind (N) in N_Unary_Op then
             Find_Var (Right_Opnd (N));
 
          --  Case of condition is function call
@@ -445,8 +445,6 @@ package body Sem_Warn is
       ---------------------------------
 
       function Is_Suspicious_Function_Name (E : Entity_Id) return Boolean is
-         S : Entity_Id;
-
          function Substring_Present (S : String) return Boolean;
          --  Returns True if name buffer has given string delimited by non-
          --  alphabetic characters or by end of string. S is lower case.
@@ -472,6 +470,10 @@ package body Sem_Warn is
 
             return False;
          end Substring_Present;
+
+         --  Local variables
+
+         S : Entity_Id;
 
       --  Start of processing for Is_Suspicious_Function_Name
 
@@ -1882,15 +1884,6 @@ package body Sem_Warn is
          return;
       end if;
 
-      --  Nothing to do for numeric or string literal. Do this test early to
-      --  save time in a common case (it does not matter that we do not include
-      --  character literal here, since that will be caught later on in the
-      --  when others branch of the case statement).
-
-      if Nkind (N) in N_Numeric_Or_String_Literal then
-         return;
-      end if;
-
       --  Ignore reference unless it comes from source. Almost always if we
       --  have a reference from generated code, it is bogus (e.g. calls to init
       --  procs to set default discriminant values).
@@ -1924,7 +1917,7 @@ package body Sem_Warn is
                  and then (No (Unset_Reference (E))
                             or else
                               Earlier_In_Extended_Unit
-                                (Sloc (N), Sloc (Unset_Reference (E))))
+                                (N, Unset_Reference (E)))
                  and then not Has_Pragma_Unmodified_Check_Spec (E)
                  and then not Warnings_Off_Check_Spec (E)
                  and then not Has_Junk_Name (E)
@@ -2016,6 +2009,11 @@ package body Sem_Warn is
                               then
                                  return True;
                               end if;
+
+                           --  Prevent the search from going too far
+
+                           elsif Is_Body_Or_Package_Declaration (Nod) then
+                              exit;
                            end if;
 
                            Nod := Parent (Nod);
@@ -2244,13 +2242,11 @@ package body Sem_Warn is
                Check_Unset_Reference (Pref);
             end;
 
-         --  For type conversions, qualifications, or expressions with actions,
-         --  examine the expression.
+         --  Type conversions can appear in assignment statements both
+         --  as variable names and as expressions. We examine their own
+         --  expressions only when processing their parent node.
 
-         when N_Expression_With_Actions
-            | N_Qualified_Expression
-            | N_Type_Conversion
-         =>
+         when N_Type_Conversion =>
             Check_Unset_Reference (Expression (N));
 
          --  For explicit dereference, always check prefix, which will generate
@@ -2876,7 +2872,9 @@ package body Sem_Warn is
         Match ("dummy")   or else
         Match ("ignore")  or else
         Match ("junk")    or else
-        Match ("unused");
+        Match ("unuse")   or else
+        Match ("tmp")     or else
+        Match ("temp");
    end Has_Junk_Name;
 
    --------------------------------------

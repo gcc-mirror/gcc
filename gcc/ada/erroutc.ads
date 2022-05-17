@@ -23,7 +23,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This packages contains global variables and routines common to error
+--  This package contains global variables and routines common to error
 --  reporting packages, including Errout and Prj.Err.
 
 with Table;
@@ -617,8 +617,8 @@ package Erroutc is
    --  buffer with no leading zeroes output.
 
    procedure Set_Msg_Name_Buffer;
-   --  Output name from Name_Buffer, with surrounding quotes unless manual
-   --  quotation mode is in effect.
+   --  Output name from Namet.Global_Name_Buffer, with surrounding quotes
+   --  unless manual quotation mode is in effect.
 
    procedure Set_Msg_Quote;
    --  Set quote if in normal quote mode, nothing if in manual quote mode

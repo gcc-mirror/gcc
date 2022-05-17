@@ -3630,6 +3630,10 @@ package body Contracts is
       --  and append it to the freezing actions of Tagged_Type. Is_Dynamic
       --  controls building the static or dynamic version of the helper.
 
+      function Build_Unique_Name (Suffix : String) return Name_Id;
+      --  Build an unique new name adding suffix to Subp_Id name (plus its
+      --  homonym number for values bigger than 1).
+
       -------------------------------
       -- Add_Indirect_Call_Wrapper --
       -------------------------------
@@ -3710,9 +3714,7 @@ package body Contracts is
          function Build_ICW_Decl return Node_Id is
             ICW_Id : constant Entity_Id  :=
                        Make_Defining_Identifier (Loc,
-                         New_External_Name (Chars (Subp_Id),
-                           Suffix       => "ICW",
-                           Suffix_Index => Source_Offset (Loc)));
+                         Build_Unique_Name (Suffix => "ICW"));
             Decl   : Node_Id;
             Spec   : Node_Id;
 
@@ -3897,7 +3899,16 @@ package body Contracts is
             Set_Corresponding_Body (Helper_Decl, Body_Id);
             Set_Must_Override (Body_Spec, False);
 
-            if Present (Class_Preconditions (Subp_Id)) then
+            if Present (Class_Preconditions (Subp_Id))
+            --  Evaluate the expression if we are building a dynamic helper
+            --  or we are building a static helper for a non-abstract tagged
+            --  type; for abstract tagged types the helper just returns True
+            --  since it is called by the indirect call wrapper (ICW).
+              and then
+                (Is_Dynamic
+                   or else
+                      not Is_Abstract_Type (Find_Dispatching_Type (Subp_Id)))
+            then
                Return_Expr :=
                  Copy_And_Update_References (Class_Preconditions (Subp_Id));
 
@@ -3908,7 +3919,8 @@ package body Contracts is
             --  enabled.
 
             else
-               pragma Assert (Present (Ignored_Class_Preconditions (Subp_Id)));
+               pragma Assert (Present (Ignored_Class_Preconditions (Subp_Id))
+                 or else Is_Abstract_Type (Find_Dispatching_Type (Subp_Id)));
                Return_Expr := New_Occurrence_Of (Standard_True, Loc);
             end if;
 
@@ -4049,6 +4061,29 @@ package body Contracts is
          end if;
       end Add_Call_Helper;
 
+      -----------------------
+      -- Build_Unique_Name --
+      -----------------------
+
+      function Build_Unique_Name (Suffix : String) return Name_Id is
+      begin
+         --  Append the homonym number. Strip the leading space character in
+         --  the image of natural numbers. Also do not add the homonym value
+         --  of 1.
+
+         if Has_Homonym (Subp_Id) and then Homonym_Number (Subp_Id) > 1 then
+            declare
+               S : constant String := Homonym_Number (Subp_Id)'Img;
+
+            begin
+               return New_External_Name (Chars (Subp_Id),
+                        Suffix => Suffix & "_" & S (2 .. S'Last));
+            end;
+         end if;
+
+         return New_External_Name (Chars (Subp_Id), Suffix);
+      end Build_Unique_Name;
+
       --  Local variables
 
       Helper_Id : Entity_Id;
@@ -4070,9 +4105,7 @@ package body Contracts is
 
             Helper_Id :=
               Make_Defining_Identifier (Loc,
-                New_External_Name (Chars (Subp_Id),
-                Suffix       => "DP",
-                Suffix_Index => Source_Offset (Loc)));
+                Build_Unique_Name (Suffix => "DP"));
             Add_Call_Helper (Helper_Id, Is_Dynamic => True);
 
             --  Link original subprogram to helper and vice versa
@@ -4089,9 +4122,7 @@ package body Contracts is
 
             Helper_Id :=
               Make_Defining_Identifier (Loc,
-                New_External_Name (Chars (Subp_Id),
-                Suffix       => "SP",
-                Suffix_Index => Source_Offset (Loc)));
+                Build_Unique_Name (Suffix => "SP"));
 
             Add_Call_Helper (Helper_Id, Is_Dynamic => False);
 

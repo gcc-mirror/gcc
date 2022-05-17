@@ -1428,7 +1428,6 @@ run_gcc (unsigned argc, char *argv[])
   char **lto_argv, **ltoobj_argv;
   bool linker_output_rel = false;
   bool skip_debug = false;
-  unsigned n_debugobj;
   const char *incoming_dumppfx = dumppfx = NULL;
   static char current_dir[] = { '.', DIR_SEPARATOR, '\0' };
 
@@ -1871,7 +1870,6 @@ cont1:
 
   /* Copy the early generated debug info from the objects to temporary
      files and append those to the partial link commandline.  */
-  n_debugobj = 0;
   early_debug_object_names = NULL;
   if (! skip_debug)
     {
@@ -1881,10 +1879,7 @@ cont1:
 	{
 	  const char *tem;
 	  if ((tem = debug_objcopy (ltoobj_argv[i], !linker_output_rel)))
-	    {
-	      early_debug_object_names[i] = tem;
-	      n_debugobj++;
-	    }
+	    early_debug_object_names[i] = tem;
 	}
     }
 

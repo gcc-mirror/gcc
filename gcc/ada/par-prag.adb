@@ -1266,8 +1266,7 @@ begin
 
          elsif Nkind (A) = N_Character_Literal then
             declare
-               R : constant Char_Code :=
-                     Char_Code (UI_To_Int (Char_Literal_Value (A)));
+               R : constant Char_Code := UI_To_CC (Char_Literal_Value (A));
             begin
                if In_Character_Range (R) then
                   Wide_Character_Encoding_Method :=

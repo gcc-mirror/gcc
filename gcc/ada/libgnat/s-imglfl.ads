@@ -38,7 +38,6 @@ with System.Powten_LFlt;
 with System.Unsigned_Types;
 
 package System.Img_LFlt is
-   pragma Pure;
 
    --  Note that the following instantiation is really for a 32-bit target,
    --  where 128-bit integer types are not available. For a 64-bit targaet,

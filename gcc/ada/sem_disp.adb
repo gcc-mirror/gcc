@@ -566,7 +566,10 @@ package body Sem_Disp is
          --  when it is user-defined.
 
          if Is_Predefined_Dispatching_Operation (Subp_Entity)
-           and then not Is_User_Defined_Equality (Subp_Entity)
+           and then not (Is_User_Defined_Equality (Subp_Entity)
+                          and then Comes_From_Source (Subp_Entity)
+                          and then Nkind (Parent (Subp_Entity)) =
+                                                      N_Function_Specification)
          then
             return;
          end if;
@@ -748,14 +751,22 @@ package body Sem_Disp is
 
             elsif Is_Subprogram (Scop)
               and then not Is_Tag_Indeterminate (N)
-              and then In_Pre_Post_Condition (Call, Class_Wide_Only => True)
-
-              --  The tagged type associated with the called subprogram must be
-              --  the same as that of the subprogram with a class-wide aspect.
-
-              and then Is_Dispatching_Operation (Scop)
               and then
-                Find_Dispatching_Type (Subp) = Find_Dispatching_Type (Scop)
+               --  The context is an internally built helper or an indirect
+               --  call wrapper that handles class-wide preconditions
+                 (Present (Class_Preconditions_Subprogram (Scop))
+
+               --  ... or the context is a class-wide pre/postcondition.
+                   or else
+                     (In_Pre_Post_Condition (Call, Class_Wide_Only => True)
+
+                       --  The tagged type associated with the called
+                       --  subprogram must be the same as that of the
+                       --  subprogram with a class-wide aspect.
+
+                       and then Is_Dispatching_Operation (Scop)
+                       and then Find_Dispatching_Type (Subp)
+                                  = Find_Dispatching_Type (Scop)))
             then
                null;
 

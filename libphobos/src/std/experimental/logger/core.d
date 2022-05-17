@@ -1628,7 +1628,8 @@ private @property Logger defaultSharedLoggerImpl() @trusted
     import core.lifetime : emplace;
     import std.stdio : stderr;
 
-    __gshared align(FileLogger.alignof) void[__traits(classInstanceSize, FileLogger)] _buffer;
+    __gshared align(__traits(classInstanceAlignment, FileLogger))
+        void[__traits(classInstanceSize, FileLogger)] _buffer;
 
     import std.concurrency : initOnce;
     initOnce!stdSharedDefaultLogger({
@@ -1762,9 +1763,8 @@ private @property Logger stdThreadLocalLogImpl() @trusted
 {
     import core.lifetime : emplace;
 
-    static void*[(__traits(classInstanceSize, StdForwardLogger) - 1) / (void*).sizeof + 1] _buffer;
-
-    auto buffer = cast(ubyte[]) _buffer;
+    static align(__traits(classInstanceAlignment, StdForwardLogger))
+        void[__traits(classInstanceSize, StdForwardLogger)] buffer;
 
     if (stdLoggerDefaultThreadLogger is null)
     {

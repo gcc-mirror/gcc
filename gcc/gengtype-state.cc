@@ -313,7 +313,7 @@ fatal_reading_state (struct state_token_st* tok, const char*msg)
 static struct state_ident_st *
 state_ident_by_name (const char *name, enum insert_option optins)
 {
-  PTR *slot = NULL;
+  void **slot = NULL;
   int namlen = 0;
   struct state_ident_st *stid = NULL;
 
@@ -1435,7 +1435,7 @@ static void read_state_common_type_content (type_p current);
 static void
 record_type (type_p type)
 {
-  PTR *slot;
+  void **slot;
 
   slot = htab_find_slot (state_seen_types, type, INSERT);
   gcc_assert (slot);
@@ -1451,7 +1451,7 @@ read_state_already_seen_type (type_p *type)
 
   if (state_token_kind (t0) == STOK_INTEGER)
     {
-      PTR *slot = NULL;
+      void **slot = NULL;
       struct type loctype = { TYPE_SCALAR, 0, 0, 0, GC_UNUSED, {0} };
 
       loctype.state_number = t0->stok_un.stok_num;

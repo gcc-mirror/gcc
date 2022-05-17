@@ -1,8 +1,8 @@
 /* REQUIRED_ARGS: -preview=dip1000
    TEST_OUTPUT:
 ---
-fail_compilation/test20569.d(19): Error: cannot take address of `scope` local `s1` in `@safe` function `main`
-fail_compilation/test20569.d(23): Error: cannot take address of `scope` local `s2` in `@safe` function `main`
+fail_compilation/test20569.d(19): Error: cannot take address of `scope` variable `s1` since `scope` applies to first indirection only
+fail_compilation/test20569.d(23): Error: cannot take address of `scope` variable `s2` since `scope` applies to first indirection only
 ---
  */
 

@@ -219,6 +219,9 @@ enum rid
   RID_AT_INTERFACE,
   RID_AT_IMPLEMENTATION,
 
+  /* OpenMP */
+  RID_OMP_ALL_MEMORY,
+
   /* Named address support, mapping the keyword to a particular named address
      number.  Named address space 0 is reserved for the generic address.  If
      there are more than 254 named addresses, the addr_space_t type will need
@@ -950,7 +953,6 @@ extern bool c_common_post_options (const char **);
 extern bool c_common_init (void);
 extern void c_common_finish (void);
 extern void c_common_parse_file (void);
-extern FILE *get_dump_info (int, dump_flags_t *);
 extern alias_set_type c_common_get_alias_set (tree);
 extern void c_register_builtin_type (tree, const char*);
 extern bool c_promoting_integer_type_p (const_tree);
@@ -1049,6 +1051,7 @@ extern tree finish_label_address_expr (tree, location_t);
 extern tree lookup_label (tree);
 extern tree lookup_name (tree);
 extern bool lvalue_p (const_tree);
+extern int maybe_adjust_arg_pos_for_attribute (const_tree);
 
 extern bool vector_targets_convertible_p (const_tree t1, const_tree t2);
 extern bool vector_types_convertible_p (const_tree t1, const_tree t2, bool emit_lax_note);
@@ -1493,7 +1496,7 @@ enum posargflags {
   POSARG_ELLIPSIS = 2
 };
 
-extern tree positional_argument (const_tree, const_tree, tree, tree_code,
+extern tree positional_argument (const_tree, const_tree, tree &, tree_code,
 				 int = 0, int = posargflags ());
 
 extern enum flt_eval_method

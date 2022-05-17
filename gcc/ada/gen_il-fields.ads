@@ -191,7 +191,6 @@ package Gen_IL.Fields is
       Formal_Type_Definition,
       Forwards_OK,
       From_Aspect_Specification,
-      From_At_End,
       From_At_Mod,
       From_Conditional_Expression,
       From_Default,

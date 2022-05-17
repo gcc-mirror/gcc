@@ -468,6 +468,9 @@ package Errout is
    Error_Msg_Name_1 : Name_Id renames Err_Vars.Error_Msg_Name_1;
    Error_Msg_Name_2 : Name_Id renames Err_Vars.Error_Msg_Name_2;
    Error_Msg_Name_3 : Name_Id renames Err_Vars.Error_Msg_Name_3;
+   Error_Msg_Name_4 : Name_Id renames Err_Vars.Error_Msg_Name_4;
+   Error_Msg_Name_5 : Name_Id renames Err_Vars.Error_Msg_Name_5;
+   Error_Msg_Name_6 : Name_Id renames Err_Vars.Error_Msg_Name_6;
    --  Name_Id values for % insertion characters in message
 
    Error_Msg_File_1 : File_Name_Type renames Err_Vars.Error_Msg_File_1;
@@ -481,6 +484,10 @@ package Errout is
 
    Error_Msg_Node_1 : Node_Id renames Err_Vars.Error_Msg_Node_1;
    Error_Msg_Node_2 : Node_Id renames Err_Vars.Error_Msg_Node_2;
+   Error_Msg_Node_3 : Node_Id renames Err_Vars.Error_Msg_Node_3;
+   Error_Msg_Node_4 : Node_Id renames Err_Vars.Error_Msg_Node_4;
+   Error_Msg_Node_5 : Node_Id renames Err_Vars.Error_Msg_Node_5;
+   Error_Msg_Node_6 : Node_Id renames Err_Vars.Error_Msg_Node_6;
    --  Node_Id values for & insertion characters in message
 
    Error_Msg_Qual_Level : Nat renames Err_Vars.Error_Msg_Qual_Level;

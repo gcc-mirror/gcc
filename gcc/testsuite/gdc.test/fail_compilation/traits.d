@@ -11,13 +11,13 @@ fail_compilation/traits.d(200): Error: undefined identifier `imports.nonexistent
 fail_compilation/traits.d(201): Error: undefined identifier `imports.nonexistent`
 fail_compilation/traits.d(202): Error: expected 1 arguments for `isPackage` but had 0
 fail_compilation/traits.d(203): Error: expected 1 arguments for `isModule` but had 0
-fail_compilation/traits.d(300): Error: In expression `__traits(allMembers, float)` `float` can't have members
+fail_compilation/traits.d(300): Error: in expression `__traits(allMembers, float)` `float` can't have members
 fail_compilation/traits.d(300):        `float` must evaluate to either a module, a struct, an union, a class, an interface or a template instantiation
-fail_compilation/traits.d(306): Error: In expression `__traits(allMembers, TemplatedStruct)` struct `TemplatedStruct(T)` has no members
+fail_compilation/traits.d(306): Error: in expression `__traits(allMembers, TemplatedStruct)` struct `TemplatedStruct(T)` has no members
 fail_compilation/traits.d(306):        `TemplatedStruct(T)` must evaluate to either a module, a struct, an union, a class, an interface or a template instantiation
-fail_compilation/traits.d(309): Error: In expression `__traits(derivedMembers, float)` `float` can't have members
+fail_compilation/traits.d(309): Error: in expression `__traits(derivedMembers, float)` `float` can't have members
 fail_compilation/traits.d(309):        `float` must evaluate to either a module, a struct, an union, a class, an interface or a template instantiation
-fail_compilation/traits.d(316): Error: In expression `__traits(derivedMembers, TemplatedStruct)` struct `TemplatedStruct(T)` has no members
+fail_compilation/traits.d(316): Error: in expression `__traits(derivedMembers, TemplatedStruct)` struct `TemplatedStruct(T)` has no members
 fail_compilation/traits.d(316):        `TemplatedStruct(T)` must evaluate to either a module, a struct, an union, a class, an interface or a template instantiation
 fail_compilation/traits.d(404): Error: function `traits.func1` circular reference in `__traits(GetCppNamespaces,...)`
 fail_compilation/traits.d(413): Error: function `traits.foo1.func1` circular reference in `__traits(GetCppNamespaces,...)`

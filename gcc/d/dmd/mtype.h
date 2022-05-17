@@ -670,8 +670,8 @@ class TypeTraits : public Type
     Loc loc;
     /// The expression to resolve as type or symbol.
     TraitsExp *exp;
-    /// The symbol when exp doesn't represent a type.
-    Dsymbol *sym;
+    /// Cached type/symbol after semantic analysis.
+    RootObject *obj;
 
     const char *kind();
     TypeTraits *syntaxCopy();

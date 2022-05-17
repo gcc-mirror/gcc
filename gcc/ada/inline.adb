@@ -1330,9 +1330,7 @@ package body Inline is
          return;
       end if;
 
-      if Present (Declarations (N))
-        and then Has_Excluded_Declaration (Spec_Id, Declarations (N))
-      then
+      if Has_Excluded_Declaration (Spec_Id, Declarations (N)) then
          return;
       end if;
 
@@ -1893,12 +1891,6 @@ package body Inline is
             or else
            Get_SPARK_Mode_From_Annotation (SPARK_Pragma (Spec_Id)) /= On)
       then
-         return False;
-
-      --  Subprograms in generic instances are currently not inlined, to avoid
-      --  problems with inlining of standard library subprograms.
-
-      elsif Instantiation_Location (Sloc (Id)) /= No_Location then
          return False;
 
       --  Do not inline subprograms and entries defined inside protected types,
@@ -2622,9 +2614,7 @@ package body Inline is
 
       --  Check excluded declarations
 
-      elsif Present (Declarations (N))
-        and then Has_Excluded_Declaration (Spec_Id, Declarations (N))
-      then
+      elsif Has_Excluded_Declaration (Spec_Id, Declarations (N)) then
          return;
 
       --  Check excluded statements. There is no need to protect us against
@@ -2645,6 +2635,75 @@ package body Inline is
          Set_Is_Inlined (Spec_Id);
       end if;
    end Check_And_Split_Unconstrained_Function;
+
+   ---------------------------------------------
+   -- Check_Object_Renaming_In_GNATprove_Mode --
+   ---------------------------------------------
+
+   procedure Check_Object_Renaming_In_GNATprove_Mode (Spec_Id : Entity_Id) is
+      Decl      : constant Node_Id := Unit_Declaration_Node (Spec_Id);
+      Body_Decl : constant Node_Id :=
+        Unit_Declaration_Node (Corresponding_Body (Decl));
+
+      function Check_Object_Renaming (N : Node_Id) return Traverse_Result;
+      --  Returns Abandon on node N if this is a reference to an object
+      --  renaming, which will be expanded into the renamed object in
+      --  GNATprove mode.
+
+      ---------------------------
+      -- Check_Object_Renaming --
+      ---------------------------
+
+      function Check_Object_Renaming (N : Node_Id) return Traverse_Result is
+      begin
+         case Nkind (Original_Node (N)) is
+            when N_Expanded_Name
+               | N_Identifier
+            =>
+               declare
+                  Obj_Id : constant Entity_Id := Entity (Original_Node (N));
+               begin
+                  --  Recognize the case when SPARK expansion rewrites a
+                  --  reference to an object renaming.
+
+                  if Present (Obj_Id)
+                    and then Is_Object (Obj_Id)
+                    and then Present (Renamed_Object (Obj_Id))
+                    and then Nkind (Renamed_Object (Obj_Id)) not in N_Entity
+
+                    --  Copy_Generic_Node called for inlining expects the
+                    --  references to global entities to have the same kind
+                    --  in the "generic" code and its "instantiation".
+
+                    and then Nkind (Original_Node (N)) /=
+                      Nkind (Renamed_Object (Obj_Id))
+                  then
+                     return Abandon;
+                  else
+                     return OK;
+                  end if;
+               end;
+
+            when others =>
+               return OK;
+         end case;
+      end Check_Object_Renaming;
+
+      function Check_All_Object_Renamings is new
+        Traverse_Func (Check_Object_Renaming);
+
+   --  Start of processing for Check_Object_Renaming_In_GNATprove_Mode
+
+   begin
+      --  Subprograms with object renamings replaced by the special SPARK
+      --  expansion cannot be inlined.
+
+      if Check_All_Object_Renamings (Body_Decl) /= OK then
+         Cannot_Inline ("cannot inline & (object renaming)?",
+                        Body_Decl, Spec_Id);
+         Set_Body_To_Inline (Decl, Empty);
+      end if;
+   end Check_Object_Renaming_In_GNATprove_Mode;
 
    -------------------------------------
    -- Check_Package_Body_For_Inlining --
@@ -2777,7 +2836,7 @@ package body Inline is
             Scop := Protected_Body_Subprogram (Scop);
 
          elsif Is_Subprogram (Scop)
-           and then Is_Protected_Type (Scope (Scop))
+           and then Is_Protected_Type (Underlying_Type (Scope (Scop)))
            and then Present (Protected_Body_Subprogram (Scop))
          then
             --  If a protected operation contains an instance, its cleanup
@@ -4388,9 +4447,7 @@ package body Inline is
             return True;
 
          elsif Nkind (S) = N_Block_Statement then
-            if Present (Declarations (S))
-              and then Has_Excluded_Declaration (Subp, Declarations (S))
-            then
+            if Has_Excluded_Declaration (Subp, Declarations (S)) then
                return True;
 
             elsif Present (Handled_Statement_Sequence (S)) then

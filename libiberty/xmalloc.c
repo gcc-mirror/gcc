@@ -139,10 +139,10 @@ xmalloc_failed (size_t size)
   xexit (1);
 }  
 
-PTR
+void *
 xmalloc (size_t size)
 {
-  PTR newmem;
+  void *newmem;
 
   if (size == 0)
     size = 1;
@@ -153,10 +153,10 @@ xmalloc (size_t size)
   return (newmem);
 }
 
-PTR
+void *
 xcalloc (size_t nelem, size_t elsize)
 {
-  PTR newmem;
+  void *newmem;
 
   if (nelem == 0 || elsize == 0)
     nelem = elsize = 1;
@@ -168,10 +168,10 @@ xcalloc (size_t nelem, size_t elsize)
   return (newmem);
 }
 
-PTR
-xrealloc (PTR oldmem, size_t size)
+void *
+xrealloc (void *oldmem, size_t size)
 {
-  PTR newmem;
+  void *newmem;
 
   if (size == 0)
     size = 1;

@@ -73,8 +73,10 @@ void test01()
     }
   VERIFY( thrown );
 
+#if __cpp_rtti
   // target_type returns typeid(void)
   VERIFY( f1.target_type() == typeid(void) );
+#endif
 
   // target() always returns a NULL pointer
   VERIFY( f1.target<int (*)(float)>() == 0);

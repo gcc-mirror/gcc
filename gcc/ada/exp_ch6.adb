@@ -1576,8 +1576,8 @@ package body Exp_Ch6 is
             Var := Make_Var (Expression (Actual));
 
             Crep := not Has_Compatible_Representation
-                          (Target_Type  => F_Typ,
-                           Operand_Type => Etype (Expression (Actual)));
+                          (Target_Typ  => F_Typ,
+                           Operand_Typ => Etype (Expression (Actual)));
 
          else
             V_Typ := Etype (Actual);
@@ -2379,8 +2379,8 @@ package body Exp_Ch6 is
                   --  Also pass by copy if change of representation
 
                   or else not Has_Compatible_Representation
-                                (Target_Type  => Etype (Formal),
-                                 Operand_Type => Etype (Expression (Actual))))
+                                (Target_Typ  => Etype (Formal),
+                                 Operand_Typ => Etype (Expression (Actual))))
             then
                Add_Call_By_Copy_Code;
 
@@ -3932,7 +3932,7 @@ package body Exp_Ch6 is
             --  First verify the actual is internal
 
             elsif not Comes_From_Source (Prev)
-              and then Original_Node (Prev) = Prev
+              and then not Is_Rewrite_Substitution (Prev)
 
               --  Next check that the actual is a constant
 
@@ -4475,16 +4475,6 @@ package body Exp_Ch6 is
 
          Set_Entity (Name (Call_Node), Parent_Subp);
 
-         --  Move this check to sem???
-
-         if Is_Abstract_Subprogram (Parent_Subp)
-           and then not In_Instance
-         then
-            Error_Msg_NE
-              ("cannot call abstract subprogram &!",
-               Name (Call_Node), Parent_Subp);
-         end if;
-
          --  Inspect all formals of derived subprogram Subp. Compare parameter
          --  types with the parent subprogram and check whether an actual may
          --  need a type conversion to the corresponding formal of the parent
@@ -4566,8 +4556,8 @@ package body Exp_Ch6 is
                   --  warning, and do the change of representation.
 
                   elsif not Has_Compatible_Representation
-                              (Target_Type  => Formal_Typ,
-                               Operand_Type => Parent_Typ)
+                              (Target_Typ  => Formal_Typ,
+                               Operand_Typ => Parent_Typ)
                   then
                      Error_Msg_N
                        ("??change of representation required", Actual);
@@ -7866,6 +7856,8 @@ package body Exp_Ch6 is
          declare
             Typ : constant Entity_Id := Scope (DTC_Entity (Subp));
 
+            L : List_Id;
+
          begin
             --  Handle private overridden primitives
 
@@ -7905,8 +7897,17 @@ package body Exp_Ch6 is
                      Register_Predefined_DT_Entry (Subp);
                   end if;
 
-                  Insert_Actions_After (N,
-                    Register_Primitive (Loc, Prim => Subp));
+                  L := Register_Primitive (Loc, Prim => Subp);
+
+                  if Is_Empty_List (L) then
+                     null;
+
+                  elsif No (Actions (N)) then
+                     Set_Actions (N, L);
+
+                  else
+                     Append_List (L, Actions (N));
+                  end if;
                end if;
             end if;
          end;

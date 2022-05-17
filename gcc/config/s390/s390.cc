@@ -70,6 +70,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "debug.h"
 #include "langhooks.h"
 #include "internal-fn.h"
+#include "gimple-iterator.h"
 #include "gimple-fold.h"
 #include "tree-eh.h"
 #include "gimplify.h"
@@ -8768,7 +8769,7 @@ static machine_mode constant_modes[] =
   QImode,
   V1QImode
 };
-#define NR_C_MODES (sizeof (constant_modes) / sizeof (constant_modes[0]))
+#define NR_C_MODES (ARRAY_SIZE (constant_modes))
 
 struct constant
 {

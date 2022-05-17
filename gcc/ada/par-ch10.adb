@@ -1194,7 +1194,7 @@ package body Ch10 is
       Write_Int (Int (Line));
 
       Write_Str (", file offset ");
-      Write_Int (Int (Loc) - Int (Source_First (Sind)));
+      Write_Int (Int (Loc - Source_First (Sind)));
    end Unit_Location;
 
 end Ch10;

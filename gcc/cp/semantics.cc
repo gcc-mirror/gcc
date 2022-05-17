@@ -7815,6 +7815,20 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	    }
 	  if (t == error_mark_node)
 	    remove = true;
+	  else if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_DEPEND
+		   && t == ridpointers[RID_OMP_ALL_MEMORY])
+	    {
+	      if (OMP_CLAUSE_DEPEND_KIND (c) != OMP_CLAUSE_DEPEND_OUT
+		  && OMP_CLAUSE_DEPEND_KIND (c) != OMP_CLAUSE_DEPEND_INOUT)
+		{
+		  error_at (OMP_CLAUSE_LOCATION (c),
+			    "%<omp_all_memory%> used with %<depend%> kind "
+			    "other than %<out%> or %<inout%>");
+		  remove = true;
+		}
+	      if (processing_template_decl)
+		break;
+	    }
 	  else if (processing_template_decl && TREE_CODE (t) != OVERLOAD)
 	    break;
 	  else if (!lvalue_p (t))
@@ -7867,24 +7881,32 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	    }
 	  if (!remove)
 	    {
-	      tree addr = cp_build_addr_expr (t, tf_warning_or_error);
-	      if (addr == error_mark_node)
-		remove = true;
+	      if (t == ridpointers[RID_OMP_ALL_MEMORY])
+		t = null_pointer_node;
 	      else
 		{
+		  tree addr = cp_build_addr_expr (t, tf_warning_or_error);
+		  if (addr == error_mark_node)
+		    {
+		      remove = true;
+		      break;
+		    }
 		  t = cp_build_indirect_ref (OMP_CLAUSE_LOCATION (c),
 					     addr, RO_UNARY_STAR,
 					     tf_warning_or_error);
 		  if (t == error_mark_node)
-		    remove = true;
-		  else if (TREE_CODE (OMP_CLAUSE_DECL (c)) == TREE_LIST
-			   && TREE_PURPOSE (OMP_CLAUSE_DECL (c))
-			   && (TREE_CODE (TREE_PURPOSE (OMP_CLAUSE_DECL (c)))
-			       == TREE_VEC))
-		    TREE_VALUE (OMP_CLAUSE_DECL (c)) = t;
-		  else
-		    OMP_CLAUSE_DECL (c) = t;
+		    {
+		      remove = true;
+		      break;
+		    }
 		}
+	      if (TREE_CODE (OMP_CLAUSE_DECL (c)) == TREE_LIST
+		  && TREE_PURPOSE (OMP_CLAUSE_DECL (c))
+		  && (TREE_CODE (TREE_PURPOSE (OMP_CLAUSE_DECL (c)))
+		      == TREE_VEC))
+		TREE_VALUE (OMP_CLAUSE_DECL (c)) = t;
+	      else
+		OMP_CLAUSE_DECL (c) = t;
 	    }
 	  break;
 	case OMP_CLAUSE_DETACH:
@@ -8553,14 +8575,20 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	      else
 		{
 		  t = OMP_CLAUSE_DECL (c);
+		  while (TREE_CODE (t) == TREE_LIST)
+		    t = TREE_CHAIN (t);
 		  while (TREE_CODE (t) == INDIRECT_REF
 			 || TREE_CODE (t) == ARRAY_REF)
 		    t = TREE_OPERAND (t, 0);
 		}
 	    }
-	  bitmap_set_bit (&is_on_device_head, DECL_UID (t));
 	  if (VAR_P (t) || TREE_CODE (t) == PARM_DECL)
-	    cxx_mark_addressable (t);
+	    {
+	      bitmap_set_bit (&is_on_device_head, DECL_UID (t));
+	      if (!processing_template_decl
+		  && !cxx_mark_addressable (t))
+		remove = true;
+	    }
 	  goto check_dup_generic_t;
 
 	case OMP_CLAUSE_USE_DEVICE_ADDR:

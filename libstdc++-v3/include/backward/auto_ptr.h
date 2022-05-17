@@ -84,6 +84,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  _GLIBCXX_RESOLVE_LIB_DEFECTS
    *  127.  auto_ptr<> conversion issues
    *  These resolutions have all been incorporated.
+   *
+   * @headerfile memory
+   * @deprecated Deprecated in C++11, no longer in the standard since C++17.
+   * Use `unique_ptr` instead.
    */
   template<typename _Tp>
     class auto_ptr

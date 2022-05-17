@@ -38,7 +38,6 @@ with System.Powten_Flt;
 with System.Unsigned_Types;
 
 package System.Img_Flt is
-   pragma Pure;
 
    package Impl is new Image_R
      (Float,

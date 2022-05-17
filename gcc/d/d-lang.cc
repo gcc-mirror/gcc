@@ -478,21 +478,21 @@ d_handle_option (size_t scode, const char *arg, HOST_WIDE_INT value,
       break;
 
     case OPT_fdoc:
-      global.params.doDocComments = value;
+      global.params.ddoc.doOutput = value;
       break;
 
     case OPT_fdoc_dir_:
-      global.params.doDocComments = true;
-      global.params.docdir = arg;
+      global.params.ddoc.doOutput = true;
+      global.params.ddoc.dir = arg;
       break;
 
     case OPT_fdoc_file_:
-      global.params.doDocComments = true;
-      global.params.docname = arg;
+      global.params.ddoc.doOutput = true;
+      global.params.ddoc.name = arg;
       break;
 
     case OPT_fdoc_inc_:
-      global.params.ddocfiles.push (arg);
+      global.params.ddoc.files.push (arg);
       break;
 
     case OPT_fdruntime:
@@ -500,13 +500,12 @@ d_handle_option (size_t scode, const char *arg, HOST_WIDE_INT value,
       break;
 
     case OPT_fdump_c___spec_:
-      if (global.params.doCxxHdrGeneration == CxxHeaderMode::none)
-	global.params.doCxxHdrGeneration = CxxHeaderMode::silent;
-      global.params.cxxhdrname = arg;
+      global.params.cxxhdr.doOutput = true;
+      global.params.cxxhdr.name = arg;
       break;
 
     case OPT_fdump_c___spec_verbose:
-      global.params.doCxxHdrGeneration = CxxHeaderMode::verbose;
+      global.params.cxxhdr.fullOutput = true;
       break;
 
     case OPT_fdump_d_original:
@@ -572,16 +571,20 @@ d_handle_option (size_t scode, const char *arg, HOST_WIDE_INT value,
       global.params.useDIP25 = FeatureState::enabled;
       global.params.useDIP1000 = FeatureState::enabled;
       global.params.useDIP1021 = value;
+      global.params.bitfields = value;
       global.params.dtorFields = FeatureState::enabled;
       global.params.fieldwise = value;
       global.params.fixAliasThis = value;
       global.params.previewIn = value;
       global.params.fix16997 = value;
-      global.params.markdown = value;
       global.params.noSharedAccess = value;
       global.params.rvalueRefParam = FeatureState::enabled;
       global.params.inclusiveInContracts = value;
       global.params.shortenedMethods = value;
+      break;
+
+    case OPT_fpreview_bitfields:
+      global.params.bitfields = value;
       break;
 
     case OPT_fpreview_dip1000:
@@ -641,7 +644,6 @@ d_handle_option (size_t scode, const char *arg, HOST_WIDE_INT value,
       global.params.useDIP25 = FeatureState::disabled;
       global.params.dtorFields = FeatureState::disabled;
       global.params.fix16997 = !value;
-      global.params.markdown = !value;
       break;
 
     case OPT_frevert_dip1000:
@@ -660,17 +662,14 @@ d_handle_option (size_t scode, const char *arg, HOST_WIDE_INT value,
       global.params.fix16997 = !value;
       break;
 
-    case OPT_frevert_markdown:
-      global.params.markdown = !value;
-      break;
-
     case OPT_frtti:
       global.params.useTypeInfo = value;
       break;
 
     case OPT_fsave_mixins_:
-      global.params.mixinFile = arg;
-      global.params.mixinOut = d_gc_malloc<OutBuffer> ();
+      global.params.mixinOut.doOutput = true;
+      global.params.mixinOut.name = arg;
+      global.params.mixinOut.buffer = d_gc_malloc<OutBuffer> ();
       break;
 
     case OPT_fswitch_errors:
@@ -681,7 +680,6 @@ d_handle_option (size_t scode, const char *arg, HOST_WIDE_INT value,
       global.params.vfield = value;
       global.params.vgc = value;
       global.params.vin = value;
-      global.params.vmarkdown= value;
       global.params.vtls = value;
       break;
 
@@ -695,10 +693,6 @@ d_handle_option (size_t scode, const char *arg, HOST_WIDE_INT value,
 
     case OPT_ftransition_nogc:
       global.params.vgc = value;
-      break;
-
-    case OPT_ftransition_vmarkdown:
-      global.params.vmarkdown = value;
       break;
 
     case OPT_ftransition_templates:
@@ -736,17 +730,17 @@ d_handle_option (size_t scode, const char *arg, HOST_WIDE_INT value,
       break;
 
     case OPT_H:
-      global.params.doHdrGeneration = true;
+      global.params.dihdr.doOutput = true;
       break;
 
     case OPT_Hd:
-      global.params.doHdrGeneration = true;
-      global.params.hdrdir = arg;
+      global.params.dihdr.doOutput = true;
+      global.params.dihdr.dir = arg;
       break;
 
     case OPT_Hf:
-      global.params.doHdrGeneration = true;
-      global.params.hdrname = arg;
+      global.params.dihdr.doOutput = true;
+      global.params.dihdr.name = arg;
       break;
 
     case OPT_imultilib:
@@ -827,11 +821,11 @@ d_handle_option (size_t scode, const char *arg, HOST_WIDE_INT value,
       break;
 
     case OPT_Xf:
-      global.params.jsonfilename = arg;
+      global.params.json.name = arg;
       /* Fall through.  */
 
     case OPT_X:
-      global.params.doJsonGeneration = true;
+      global.params.json.doOutput = true;
       break;
 
     default:
@@ -904,16 +898,26 @@ d_post_options (const char ** fn)
 	? CHECKENABLEoff : CHECKENABLEon;
     }
 
+  /* When not linking against D runtime, turn off all code generation that
+     would otherwise reference it.  */
   if (global.params.betterC)
     {
       if (!OPTION_SET_P (flag_moduleinfo))
 	global.params.useModuleInfo = false;
 
+      /* Ensure that the front-end options are in sync with the `-frtti' and
+	 `-fexceptions' flags.  */
       if (!OPTION_SET_P (flag_rtti))
-	global.params.useTypeInfo = false;
+	{
+	  global.params.useTypeInfo = false;
+	  flag_rtti = false;
+	}
 
       if (!OPTION_SET_P (flag_exceptions))
-	global.params.useExceptions = false;
+	{
+	  global.params.useExceptions = false;
+	  flag_exceptions = false;
+	}
 
       global.params.checkAction = CHECKACTION_C;
     }
@@ -947,18 +951,14 @@ d_post_options (const char ** fn)
   if (flag_excess_precision == EXCESS_PRECISION_DEFAULT)
     flag_excess_precision = EXCESS_PRECISION_STANDARD;
 
-  global.params.symdebug = write_symbols != NO_DEBUG;
   global.params.useInline = flag_inline_functions;
   global.params.showColumns = flag_show_column;
   global.params.printErrorContext = flag_diagnostics_show_caret;
 
   if (global.params.useInline)
-    global.params.hdrStripPlainFunctions = false;
+    global.params.dihdr.fullOutput = true;
 
   global.params.obj = !flag_syntax_only;
-
-  /* Has no effect yet.  */
-  global.params.pic = flag_pic != 0;
 
   /* Add in versions given on the command line.  */
   if (global.params.versionids)
@@ -1068,8 +1068,8 @@ d_parse_file (void)
 	  /* Handling stdin, generate a unique name for the module.  */
 	  Module *m = Module::create (in_fnames[i],
 				      Identifier::idPool ("__stdin"),
-				      global.params.doDocComments,
-				      global.params.doHdrGeneration);
+				      global.params.ddoc.doOutput,
+				      global.params.dihdr.doOutput);
 	  modules.push (m);
 
 	  /* Overwrite the source file for the module, the one created by
@@ -1084,8 +1084,8 @@ d_parse_file (void)
 	  const char *name = FileName::removeExt (basename);
 
 	  Module *m = Module::create (in_fnames[i], Identifier::idPool (name),
-				      global.params.doDocComments,
-				      global.params.doHdrGeneration);
+				      global.params.ddoc.doOutput,
+				      global.params.dihdr.doOutput);
 	  modules.push (m);
 	  FileName::free (name);
 	}
@@ -1142,7 +1142,7 @@ d_parse_file (void)
   if (global.errors)
     goto had_errors;
 
-  if (global.params.doHdrGeneration)
+  if (global.params.dihdr.doOutput)
     {
       /* Generate 'header' import files.  Since 'header' import files must be
 	 independent of command line switches and what else is imported, they
@@ -1316,12 +1316,12 @@ d_parse_file (void)
     printTemplateStats ();
 
   /* Generate JSON files.  */
-  if (global.params.doJsonGeneration)
+  if (global.params.json.doOutput)
     {
       OutBuffer buf;
       json_generate (&buf, &modules);
 
-      const char *name = global.params.jsonfilename.ptr;
+      const char *name = global.params.json.name.ptr;
       FILE *json_stream;
 
       if (name && (name[0] != '-' || name[1] != '\0'))
@@ -1346,7 +1346,7 @@ d_parse_file (void)
     }
 
   /* Generate Ddoc files.  */
-  if (global.params.doDocComments && !global.errors && !errorcount)
+  if (global.params.ddoc.doOutput && !global.errors && !errorcount)
     {
       for (size_t i = 0; i < modules.length; i++)
 	{
@@ -1370,7 +1370,7 @@ d_parse_file (void)
     }
 
   /* Generate C++ header files.  */
-  if (global.params.doCxxHdrGeneration != CxxHeaderMode::none)
+  if (global.params.cxxhdr.doOutput)
     genCppHdrFiles (modules);
 
   if (global.errors)
@@ -1403,23 +1403,23 @@ d_parse_file (void)
   errorcount += (global.errors + global.warnings);
 
   /* We want to write the mixin expansion file also on error.  */
-  if (global.params.mixinOut)
+  if (global.params.mixinOut.doOutput)
     {
-      FILE *mixin_stream = fopen (global.params.mixinFile, "w");
+      FILE *mixin_stream = fopen (global.params.mixinOut.name.ptr, "w");
 
       if (mixin_stream)
 	{
-	  OutBuffer *buf = global.params.mixinOut;
+	  OutBuffer *buf = global.params.mixinOut.buffer;
 	  fprintf (mixin_stream, "%s", buf->peekChars ());
 
 	  if (ferror (mixin_stream) || fclose (mixin_stream))
 	    fatal_error (input_location, "closing mixin file %s: %m",
-			 global.params.mixinFile);
+			 global.params.mixinOut.name.ptr);
 	}
       else
 	{
 	  fatal_error (input_location, "opening mixin file %s: %m",
-		       global.params.mixinFile);
+		       global.params.mixinOut.name.ptr);
 	}
     }
 
@@ -1558,7 +1558,7 @@ d_type_promotes_to (tree type)
   /* Promotions are only applied on unnamed function arguments for declarations
      with `extern(C)' or `extern(C++)' linkage.  */
   if (cfun && DECL_LANG_FRONTEND (cfun->decl)
-      && DECL_LANG_FRONTEND (cfun->decl)->linkage != LINK::d)
+      && DECL_LANG_FRONTEND (cfun->decl)->resolvedLinkage () != LINK::d)
     {
       /* In [type/integer-promotions], integer promotions are conversions of the
 	 following types:

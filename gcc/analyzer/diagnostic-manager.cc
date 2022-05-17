@@ -1665,6 +1665,11 @@ struct null_assignment_sm_context : public sm_context
   {
     delete d;
   }
+  void warn (const supernode *, const gimple *,
+	     const svalue *, pending_diagnostic *d) FINAL OVERRIDE
+  {
+    delete d;
+  }
 
   tree get_diagnostic_tree (tree expr) FINAL OVERRIDE
   {
@@ -1706,6 +1711,10 @@ struct null_assignment_sm_context : public sm_context
   const program_state *get_old_program_state () const FINAL OVERRIDE
   {
     return m_old_state;
+  }
+  const program_state *get_new_program_state () const FINAL OVERRIDE
+  {
+    return m_new_state;
   }
 
   const program_state *m_old_state;
@@ -2048,15 +2057,7 @@ diagnostic_manager::add_events_for_superedge (const path_builder &pb,
       break;
 
     case SUPEREDGE_CALL:
-      {
-	emission_path->add_event
-	  (new call_event (eedge,
-			   (last_stmt
-			    ? last_stmt->location
-			    : UNKNOWN_LOCATION),
-			   src_point.get_fndecl (),
-			   src_stack_depth));
-      }
+      pd->add_call_event (eedge, emission_path);
       break;
 
     case SUPEREDGE_INTRAPROCEDURAL_CALL:
@@ -2171,6 +2172,7 @@ diagnostic_manager::prune_for_sm_diagnostic (checker_path *path,
 		  log ("considering event %i (%s), with sval: %qs, state: %qs",
 		       idx, event_kind_to_string (base_event->m_kind),
 		       sval_desc.m_buffer, state->get_name ());
+		  sval_desc.maybe_free ();
 		}
 	      else
 		log ("considering event %i (%s), with global state: %qs",
@@ -2238,6 +2240,8 @@ diagnostic_manager::prune_for_sm_diagnostic (checker_path *path,
 			     " switching var of interest from %qs to %qs",
 			     idx, sval_desc.m_buffer,
 			     origin_sval_desc.m_buffer);
+			sval_desc.maybe_free ();
+			origin_sval_desc.maybe_free ();
 		      }
 		    sval = state_change->m_origin;
 		  }
@@ -2265,6 +2269,7 @@ diagnostic_manager::prune_for_sm_diagnostic (checker_path *path,
 			else
 			  log ("filtering event %i: state change to %qs",
 			       idx, change_sval_desc.m_buffer);
+			change_sval_desc.maybe_free ();
 		      }
 		    else
 		      log ("filtering event %i: global state change", idx);
@@ -2334,6 +2339,7 @@ diagnostic_manager::prune_for_sm_diagnostic (checker_path *path,
 			 " recording critical state for %qs at call"
 			 " from %qE in callee to %qE in caller",
 			 idx, sval_desc.m_buffer, callee_var, caller_var);
+		    sval_desc.maybe_free ();
 		  }
 		if (expr.param_p ())
 		  event->record_critical_state (caller_var, state);
@@ -2377,6 +2383,7 @@ diagnostic_manager::prune_for_sm_diagnostic (checker_path *path,
 			     " recording critical state for %qs at return"
 			     " from %qE in caller to %qE in callee",
 			     idx, sval_desc.m_buffer, callee_var, callee_var);
+			sval_desc.maybe_free ();
 		      }
 		    if (expr.return_value_p ())
 		      event->record_critical_state (callee_var, state);

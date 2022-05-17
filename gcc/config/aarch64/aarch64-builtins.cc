@@ -832,7 +832,7 @@ aarch64_lookup_simd_builtin_type (machine_mode mode,
 				  enum aarch64_type_qualifiers q)
 {
   int i;
-  int nelts = sizeof (aarch64_simd_types) / sizeof (aarch64_simd_types[0]);
+  int nelts = ARRAY_SIZE (aarch64_simd_types);
 
   /* Non-poly scalar modes map to standard types not in the table.  */
   if (q != qualifier_poly && !VECTOR_MODE_P (mode))
@@ -869,7 +869,7 @@ static void
 aarch64_init_simd_builtin_types (void)
 {
   int i;
-  int nelts = sizeof (aarch64_simd_types) / sizeof (aarch64_simd_types[0]);
+  int nelts = ARRAY_SIZE (aarch64_simd_types);
   tree tdecl;
 
   /* Init all the element types built by the front-end.  */
@@ -1434,7 +1434,7 @@ aarch64_init_builtin_rsqrt (void)
   };
 
   builtin_decls_data *bdd = bdda;
-  builtin_decls_data *bdd_end = bdd + (sizeof (bdda) / sizeof (builtin_decls_data));
+  builtin_decls_data *bdd_end = bdd + (ARRAY_SIZE (bdda));
 
   for (; bdd < bdd_end; bdd++)
   {

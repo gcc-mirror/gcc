@@ -2632,7 +2632,7 @@ gcn_omp_device_kind_arch_isa (enum omp_device_kind_arch_isa trait,
     case omp_device_kind:
       return strcmp (name, "gpu") == 0;
     case omp_device_arch:
-      return strcmp (name, "gcn") == 0;
+      return strcmp (name, "amdgcn") == 0 || strcmp (name, "gcn") == 0;
     case omp_device_isa:
       if (strcmp (name, "fiji") == 0)
 	return gcn_arch == PROCESSOR_FIJI;

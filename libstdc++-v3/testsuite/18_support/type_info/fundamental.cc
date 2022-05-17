@@ -1,5 +1,6 @@
 // { dg-do run { target c++11 } }
 // { dg-require-effective-target dfp }
+// { dg-require-effective-target rtti }
 
 // 2011-02-23  Benjamin Kosnik  <bkoz@redhat.com>
 //
@@ -27,10 +28,10 @@
 template<typename _Tp>
   std::string
   gen_type_info()
-  { 
-    std::string s1 = typeid(_Tp).name(); 
-    std::string s2 = typeid(_Tp*).name(); 
-    std::string s3 = typeid(const _Tp*).name(); 
+  {
+    std::string s1 = typeid(_Tp).name();
+    std::string s2 = typeid(_Tp*).name();
+    std::string s3 = typeid(const _Tp*).name();
     return std::max(std::max(s1, s2), s3);
   }
 

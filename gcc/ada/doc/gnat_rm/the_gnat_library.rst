@@ -721,6 +721,18 @@ Provides AWK-like parsing functions, with an easy interface for parsing one
 or more files containing formatted data.  The file is viewed as a database
 where each record is a line and a field is a data element in this line.
 
+.. _`GNAT.Binary_Search_(g-binsea.ads)`:
+
+``GNAT.Binary_Search`` (:file:`g-binsea.ads`)
+================================================
+
+.. index:: GNAT.Binary_Search (g-binsea.ads)
+
+.. index:: Binary search
+
+Allow binary search of a sorted array (or of an array-like container;
+the generic does not reference the array directly).
+
 .. _`GNAT.Bind_Environment_(g-binenv.ads)`:
 
 ``GNAT.Bind_Environment`` (:file:`g-binenv.ads`)
@@ -2177,7 +2189,7 @@ x86, and x86_64 platforms.
 
 This package provides the interface to the low level routines used
 by the generated code for allocation and freeing storage for the
-default storage pool (analogous to the C routines malloc and free.
+default storage pool (analogous to the C routines malloc and free).
 It also provides a reallocation interface analogous to the C routine
 realloc. The body of this unit may be modified to provide alternative
 allocation mechanisms for the default pool, and in addition, direct

@@ -203,10 +203,7 @@ class pending_diagnostic
   /* A vfunc for fixing up locations (both the primary location for the
      diagnostic, and for events in their paths), e.g. to avoid unwinding
      inside specific macros.  */
-  virtual location_t fixup_location (location_t loc) const
-  {
-    return loc;
-  }
+  virtual location_t fixup_location (location_t loc) const;
 
   /* For greatest precision-of-wording, the various following "describe_*"
      virtual functions give the pending diagnostic a way to describe events
@@ -294,6 +291,12 @@ class pending_diagnostic
   {
     return false;
   }
+
+  /* Vfunc for adding a call_event to a checker_path, so that e.g.
+     the varargs diagnostics can add a custom event subclass that annotates
+     the variadic arguments.  */
+  virtual void add_call_event (const exploded_edge &,
+			       checker_path *);
 
   /* Vfunc for determining that this pending_diagnostic supercedes OTHER,
      and that OTHER should therefore not be emitted.

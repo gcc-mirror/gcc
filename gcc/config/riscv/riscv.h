@@ -1004,4 +1004,9 @@ extern void riscv_remove_unneeded_save_restore_calls (void);
 
 #define HARD_REGNO_RENAME_OK(FROM, TO) riscv_hard_regno_rename_ok (FROM, TO)
 
+#define CLZ_DEFINED_VALUE_AT_ZERO(MODE, VALUE) \
+  ((VALUE) = GET_MODE_UNIT_BITSIZE (MODE), 2)
+#define CTZ_DEFINED_VALUE_AT_ZERO(MODE, VALUE) \
+  ((VALUE) = GET_MODE_UNIT_BITSIZE (MODE), 2)
+
 #endif /* ! GCC_RISCV_H */

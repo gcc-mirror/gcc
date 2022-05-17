@@ -847,53 +847,10 @@ public:
       }
     else
       {
+	/* Appending an element or array to another array has already been
+	   handled by the front-end.  */
 	gcc_assert (tb1->ty == TY::Tarray || tb2->ty == TY::Tsarray);
-
-	if ((tb2->ty == TY::Tarray || tb2->ty == TY::Tsarray)
-	    && same_type_p (etype, tb2->nextOf ()->toBasetype ()))
-	  {
-	    /* Append an array to another array:
-	       The assignment is handled by the D run-time library, so only
-	       need to call `_d_arrayappendT(ti, &e1, e2)'  */
-	    result = build_libcall (LIBCALL_ARRAYAPPENDT, e->type, 3,
-				    build_typeinfo (e->loc, e->type),
-				    ptr, d_array_convert (e->e2));
-	  }
-	else if (same_type_p (etype, tb2))
-	  {
-	    /* Append an element to an array:
-	       The assignment is generated inline, so need to handle temporaries
-	       here, and ensure that they are evaluated in the correct order.
-
-	       The generated code should end up being equivalent to:
-		    _d_arrayappendcTX(ti, &e1, 1)[e1.length - 1] = e2
-	     */
-	    tree callexp = build_libcall (LIBCALL_ARRAYAPPENDCTX, e->type, 3,
-					  build_typeinfo (e->loc, e->type),
-					  ptr, size_one_node);
-	    callexp = d_save_expr (callexp);
-
-	    /* Assign e2 to last element.  */
-	    tree offexp = d_array_length (callexp);
-	    offexp = build2 (MINUS_EXPR, TREE_TYPE (offexp),
-			     offexp, size_one_node);
-
-	    tree ptrexp = d_array_ptr (callexp);
-	    ptrexp = void_okay_p (ptrexp);
-	    ptrexp = build_array_index (ptrexp, offexp);
-
-	    /* Evaluate expression before appending.  */
-	    tree rhs = build_expr (e->e2);
-	    tree rexpr = stabilize_expr (&rhs);
-
-	    if (TREE_CODE (rhs) == CALL_EXPR)
-	      rhs = force_target_expr (rhs);
-
-	    result = modify_expr (build_deref (ptrexp), rhs);
-	    result = compound_expr (rexpr, result);
-	  }
-	else
-	  gcc_unreachable ();
+	gcc_unreachable ();
       }
 
     /* Construct in order: ptr = &e1, _d_arrayappend(ptr, e2), *ptr;  */

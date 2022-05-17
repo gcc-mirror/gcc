@@ -5168,12 +5168,12 @@ package body Sem_Prag is
                elsif Has_Pragma_Unmodified (Arg_Id) then
                   if Has_Pragma_Unused (Arg_Id) then
                      Error_Msg_NE
-                       ("??pragma Unused already given for &!", Arg_Expr,
-                         Arg_Id);
+                       (Fix_Error ("??pragma Unused already given for &!"),
+                        Arg_Expr, Arg_Id);
                   else
                      Error_Msg_NE
-                       ("??pragma Unmodified already given for &!", Arg_Expr,
-                         Arg_Id);
+                       (Fix_Error ("??pragma Unmodified already given for &!"),
+                        Arg_Expr, Arg_Id);
                   end if;
 
                --  Otherwise the pragma referenced an illegal entity
@@ -5276,12 +5276,13 @@ package body Sem_Prag is
                   if Has_Pragma_Unreferenced (Arg_Id) then
                      if Has_Pragma_Unused (Arg_Id) then
                         Error_Msg_NE
-                          ("??pragma Unused already given for &!", Arg_Expr,
-                            Arg_Id);
+                          (Fix_Error ("??pragma Unused already given for &!"),
+                           Arg_Expr, Arg_Id);
                      else
                         Error_Msg_NE
-                          ("??pragma Unreferenced already given for &!",
-                            Arg_Expr, Arg_Id);
+                          (Fix_Error
+                             ("??pragma Unreferenced already given for &!"),
+                           Arg_Expr, Arg_Id);
                      end if;
 
                   --  Apply Unreferenced to the entity
@@ -14321,15 +14322,6 @@ package body Sem_Prag is
          when Pragma_Compile_Time_Error | Pragma_Compile_Time_Warning =>
             GNAT_Pragma;
 
-            --  These pragmas rely on the context. In adc files they raise
-            --  Constraint_Error. Ban them from use as configuration pragmas
-            --  even in cases where such a use could work.
-
-            if Is_Configuration_Pragma then
-               Error_Pragma
-                  ("pragma% is not allowed as a configuration pragma");
-            end if;
-
             Process_Compile_Time_Warning_Or_Error;
 
          -----------------------------
@@ -19422,7 +19414,8 @@ package body Sem_Prag is
                if Chars (Variant) = No_Name then
                   Error_Pragma_Arg_Ident ("expect name `Increases`", Variant);
 
-               elsif Chars (Variant) not in Name_Decreases | Name_Increases
+               elsif Chars (Variant) not in
+                    Name_Decreases | Name_Increases | Name_Structural
                then
                   declare
                      Name : String := Get_Name_String (Chars (Variant));
@@ -19447,15 +19440,62 @@ package body Sem_Prag is
                         Error_Pragma_Arg_Ident
                           ("expect name `Decreases`", Variant);
 
+                     elsif Name'Length >= 4
+                       and then Name (1 .. 4) = "stru"
+                     then
+                        Error_Pragma_Arg_Ident
+                          ("expect name `Structural`", Variant);
+
                      else
                         Error_Pragma_Arg_Ident
-                          ("expect name `Increases` or `Decreases`", Variant);
+                          ("expect name `Increases`, `Decreases`,"
+                           & " or `Structural`", Variant);
                      end if;
                   end;
+
+               elsif Chars (Variant) = Name_Structural
+                 and then List_Length (Pragma_Argument_Associations (N)) > 1
+               then
+                  Error_Pragma_Arg_Ident
+                    ("Structural variant shall be the only variant", Variant);
                end if;
 
-               Preanalyze_Assert_Expression
-                 (Expression (Variant), Any_Discrete);
+               --  Preanalyze_Assert_Expression, but without enforcing any of
+               --  the two acceptable types.
+
+               Preanalyze_Assert_Expression (Expression (Variant));
+
+               --  Expression of a discrete type is allowed. Nothing to
+               --  check for structural variants.
+
+               if Chars (Variant) = Name_Structural
+                 or else Is_Discrete_Type (Etype (Expression (Variant)))
+               then
+                  null;
+
+               --  Expression of a Big_Integer type (or its ghost variant) is
+               --  only allowed in Decreases clause.
+
+               elsif
+                 Is_RTE (Base_Type (Etype (Expression (Variant))),
+                         RE_Big_Integer)
+                   or else
+                 Is_RTE (Base_Type (Etype (Expression (Variant))),
+                         RO_GH_Big_Integer)
+               then
+                  if Chars (Variant) = Name_Increases then
+                     Error_Msg_N
+                       ("Loop_Variant with Big_Integer can only decrease",
+                        Expression (Variant));
+                  end if;
+
+               --  Expression of other types is not allowed
+
+               else
+                  Error_Msg_N
+                    ("expected a discrete or Big_Integer type",
+                     Expression (Variant));
+               end if;
 
                Next (Variant);
             end loop;
@@ -20332,12 +20372,12 @@ package body Sem_Prag is
 
          --  pragma Obsolescent (
          --    [Message =>] static_string_EXPRESSION
-         --  [,[Version =>] Ada_05]]);
+         --  [,[Version =>] Ada_05]);
 
          --  pragma Obsolescent (
          --    [Entity  =>] NAME
          --  [,[Message =>] static_string_EXPRESSION
-         --  [,[Version =>] Ada_05]] );
+         --  [,[Version =>] Ada_05]]);
 
          when Pragma_Obsolescent => Obsolescent : declare
             Decl  : Node_Id;
@@ -24195,13 +24235,16 @@ package body Sem_Prag is
          -- Subprogram_Variant --
          ------------------------
 
-         --  pragma Subprogram_Variant ( SUBPROGRAM_VARIANT_ITEM
-         --                           {, SUBPROGRAM_VARIANT_ITEM } );
+         --  pragma Subprogram_Variant ( SUBPROGRAM_VARIANT_LIST );
 
-         --  SUBPROGRAM_VARIANT_ITEM ::=
-         --    CHANGE_DIRECTION => discrete_EXPRESSION
-
-         --  CHANGE_DIRECTION ::= Increases | Decreases
+         --  SUBPROGRAM_VARIANT_LIST ::= STRUCTURAL_SUBPROGRAM_VARIANT_ITEM
+         --                            | NUMERIC_SUBPROGRAM_VARIANT_ITEMS
+         --  NUMERIC_SUBPROGRAM_VARIANT_ITEMS ::=
+         --    NUMERIC_SUBPROGRAM_VARIANT_ITEM
+         --      {, NUMERIC_SUBPROGRAM_VARIANT_ITEM}
+         --  NUMERIC_SUBPROGRAM_VARIANT_ITEM ::= CHANGE_DIRECTION => EXPRESSION
+         --  STRUCTURAL_SUBPROGRAM_VARIANT_ITEM ::= Structural => EXPRESSION
+         --  CHANGE_DIRECTION        ::= Increases | Decreases
 
          --  Characteristics:
 
@@ -29403,9 +29446,9 @@ package body Sem_Prag is
          --  Check placement of OTHERS if available (SPARK RM 6.1.3(1))
 
          if Nkind (Direction) = N_Identifier then
-            if Chars (Direction) /= Name_Decreases
-                 and then
-               Chars (Direction) /= Name_Increases
+            if Chars (Direction) not in Name_Decreases
+                                      | Name_Increases
+                                      | Name_Structural
             then
                Error_Msg_N ("wrong direction", Direction);
             end if;
@@ -29414,7 +29457,39 @@ package body Sem_Prag is
          end if;
 
          Errors := Serious_Errors_Detected;
-         Preanalyze_Assert_Expression (Expr, Any_Discrete);
+
+         --  Preanalyze_Assert_Expression, but without enforcing any of the two
+         --  acceptable types.
+
+         Preanalyze_Assert_Expression (Expr);
+
+         --  Expression of a discrete type is allowed. Nothing more to check
+         --  for structural variants.
+
+         if Is_Discrete_Type (Etype (Expr))
+              or else Chars (Direction) = Name_Structural
+         then
+            null;
+
+         --  Expression of a Big_Integer type (or its ghost variant) is only
+         --  allowed in Decreases clause.
+
+         elsif
+           Is_RTE (Base_Type (Etype (Expr)), RE_Big_Integer)
+             or else
+           Is_RTE (Base_Type (Etype (Expr)), RO_GH_Big_Integer)
+         then
+            if Chars (Direction) = Name_Increases then
+               Error_Msg_N
+                 ("Subprogram_Variant with Big_Integer can only decrease",
+                  Expr);
+            end if;
+
+         --  Expression of other types is not allowed
+
+         else
+            Error_Msg_N ("expected a discrete or Big_Integer type", Expr);
+         end if;
 
          --  Emit a clarification message when the variant expression
          --  contains at least one undefined reference, possibly due
@@ -29500,6 +29575,14 @@ package body Sem_Prag is
          Variant := First (Component_Associations (Variants));
          while Present (Variant) loop
             Analyze_Variant (Variant);
+
+            if Chars (First (Choices (Variant))) = Name_Structural
+              and then List_Length (Component_Associations (Variants)) > 1
+            then
+               Error_Msg_N
+                 ("Structural variant shall be the only variant", Variant);
+            end if;
+
             Next (Variant);
          end loop;
 

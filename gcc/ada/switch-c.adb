@@ -390,6 +390,9 @@ package body Switch.C is
                      elsif Underscore then
                         Set_Underscored_Debug_Flag (C);
                         Store_Compilation_Switch ("-gnatd_" & C);
+                        if Debug_Flag_Underscore_C then
+                           Enable_CUDA_Expansion := True;
+                        end if;
 
                      --  Normal flag
 

@@ -13527,7 +13527,7 @@ mve_vector_mem_operand (machine_mode mode, rtx op, bool strict)
       int reg_no = REGNO (op);
       return (((mode == E_V8QImode || mode == E_V4QImode || mode == E_V4HImode)
 	       ? reg_no <= LAST_LO_REGNUM
-	       :(reg_no < LAST_ARM_REGNUM && reg_no != SP_REGNUM))
+	       : reg_no < LAST_ARM_REGNUM)
 	      || (!strict && reg_no >= FIRST_PSEUDO_REGISTER));
     }
   code = GET_CODE (op);
@@ -13536,10 +13536,10 @@ mve_vector_mem_operand (machine_mode mode, rtx op, bool strict)
       || code == PRE_INC || code == POST_DEC)
     {
       reg_no = REGNO (XEXP (op, 0));
-      return ((mode == E_V8QImode || mode == E_V4QImode || mode == E_V4HImode)
-	      ? reg_no <= LAST_LO_REGNUM
-	      :(reg_no < LAST_ARM_REGNUM && reg_no != SP_REGNUM))
-	|| reg_no >= FIRST_PSEUDO_REGISTER;
+      return (((mode == E_V8QImode || mode == E_V4QImode || mode == E_V4HImode)
+	       ? reg_no <= LAST_LO_REGNUM
+	       :(reg_no < LAST_ARM_REGNUM && reg_no != SP_REGNUM))
+	      || (!strict && reg_no >= FIRST_PSEUDO_REGISTER));
     }
   else if (((code == POST_MODIFY || code == PRE_MODIFY)
 	    && GET_CODE (XEXP (op, 1)) == PLUS
@@ -13580,10 +13580,11 @@ mve_vector_mem_operand (machine_mode mode, rtx op, bool strict)
 	  default:
 	    return FALSE;
 	}
-      return reg_no >= FIRST_PSEUDO_REGISTER
-	|| (MVE_STN_LDW_MODE (mode)
-	    ? reg_no <= LAST_LO_REGNUM
-	    : (reg_no < LAST_ARM_REGNUM && reg_no != SP_REGNUM));
+      return ((!strict && reg_no >= FIRST_PSEUDO_REGISTER)
+	      || (MVE_STN_LDW_MODE (mode)
+		  ? reg_no <= LAST_LO_REGNUM
+		  : (reg_no < LAST_ARM_REGNUM
+		     && (code == PLUS || reg_no != SP_REGNUM))));
     }
   return FALSE;
 }

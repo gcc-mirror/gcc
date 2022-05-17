@@ -1,3 +1,9 @@
+2022-05-16  Martin Liska  <mliska@suse.cz>
+
+	* jit-builtins.cc (find_builtin_by_name): Use ARRAY_SIZE.
+	(get_string_for_type_id): Likewise.
+	* jit-recording.cc (recording::context::context): Likewise.
+
 2022-04-14  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* jit-playback.cc (new_bitcast): Cast values returned by tree_to_uhwi

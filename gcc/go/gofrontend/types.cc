@@ -7815,7 +7815,7 @@ Array_type::finish_backend_element(Gogo* gogo)
 // Return an expression for a pointer to the values in ARRAY.
 
 Expression*
-Array_type::get_value_pointer(Gogo*, Expression* array, bool is_lvalue) const
+Array_type::get_value_pointer(Gogo*, Expression* array) const
 {
   if (this->length() != NULL)
     {
@@ -7828,25 +7828,6 @@ Array_type::get_value_pointer(Gogo*, Expression* array, bool is_lvalue) const
     }
 
   // Slice.
-
-  if (is_lvalue)
-    {
-      Temporary_reference_expression* tref =
-          array->temporary_reference_expression();
-      Var_expression* ve = array->var_expression();
-      if (tref != NULL)
-        {
-          tref = tref->copy()->temporary_reference_expression();
-          tref->set_is_lvalue();
-          array = tref;
-        }
-      else if (ve != NULL)
-        {
-          ve = new Var_expression(ve->named_object(), ve->location());
-          array = ve;
-        }
-    }
-
   return Expression::make_slice_info(array,
                                      Expression::SLICE_INFO_VALUE_POINTER,
                                      array->location());
@@ -9050,6 +9031,9 @@ Interface_type::finalize_methods()
   if (this->parse_methods_ == NULL)
     return;
 
+  // The exporter uses parse_methods_.
+  this->parse_methods_->sort_by_name();
+
   this->all_methods_ = new Typed_identifier_list();
   this->all_methods_->reserve(this->parse_methods_->size());
   Typed_identifier_list inherit;
@@ -9337,15 +9321,17 @@ Interface_type::is_compatible_for_assign(const Interface_type* t,
 // Hash code.
 
 unsigned int
-Interface_type::do_hash_for_method(Gogo*, int) const
+Interface_type::do_hash_for_method(Gogo*, int flags) const
 {
   go_assert(this->methods_are_finalized_);
+  Typed_identifier_list* methods = (((flags & COMPARE_EMBEDDED_INTERFACES) != 0)
+				    ? this->parse_methods_
+				    : this->all_methods_);
   unsigned int ret = 0;
-  if (this->all_methods_ != NULL)
+  if (methods != NULL)
     {
-      for (Typed_identifier_list::const_iterator p =
-	     this->all_methods_->begin();
-	   p != this->all_methods_->end();
+      for (Typed_identifier_list::const_iterator p = methods->begin();
+	   p != methods->end();
 	   ++p)
 	{
 	  ret = Gogo::hash_string(p->name(), ret);

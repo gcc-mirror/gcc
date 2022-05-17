@@ -35,8 +35,8 @@ along with GCC; see the file COPYING3.  If not see
    BRANCH_COST.  */
 #include "fold-const.h"
 #include "cfganal.h"
-#include "gimple-fold.h"
 #include "gimple-iterator.h"
+#include "gimple-fold.h"
 #include "gimplify-me.h"
 #include "tree-cfg.h"
 #include "tree-ssa.h"

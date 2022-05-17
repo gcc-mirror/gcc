@@ -130,11 +130,7 @@ package body Scng is
 
    procedure Check_End_Of_Line is
       Len : constant Int :=
-              Int (Scan_Ptr) -
-                Int (Current_Line_Start) -
-                  Wide_Char_Byte_Count;
-
-   --  Start of processing for Check_End_Of_Line
+              Int (Scan_Ptr - Current_Line_Start) - Wide_Char_Byte_Count;
 
    begin
       if Style_Check then
@@ -771,6 +767,15 @@ package body Scng is
 
             if UI_Scale = 0 then
                Int_Literal_Value := UI_Num_Value;
+
+            --  When the exponent is large, computing is expected to take a
+            --  rather unreasonable time. We generate an error so that it
+            --  does not appear that the compiler has gotten stuck. Such a
+            --  large exponent is most likely a typo anyway.
+
+            elsif UI_Scale >= 800_000 then
+               Error_Msg_SC ("exponent too large");
+               Int_Literal_Value := No_Uint;
 
             --  Avoid doing possibly expensive calculations in cases like
             --  parsing 163E800_000# when semantics will not be done anyway.
@@ -1416,7 +1421,7 @@ package body Scng is
             Token := Tok_Left_Paren;
 
             if Style_Check then
-               Style.Check_Left_Paren;
+               Style.Check_Left_Paren_Square_Bracket;
             end if;
 
             return;
@@ -1432,6 +1437,11 @@ package body Scng is
             if Ada_Version >= Ada_2022 then
                Scan_Ptr := Scan_Ptr + 1;
                Token := Tok_Left_Bracket;
+
+               if Style_Check then
+                  Style.Check_Left_Paren_Square_Bracket;
+               end if;
+
                return;
 
             elsif Source (Scan_Ptr + 1) = '"' then
