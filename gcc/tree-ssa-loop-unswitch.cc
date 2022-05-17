@@ -83,27 +83,25 @@ along with GCC; see the file COPYING3.  If not see
 
    1) Number of instructions is estimated for each BB that belongs to a loop.
    2) Unswitching candidates are found for gcond and gswitch statements
-      (note that unswitching precicate for a gswitch actually corresponds
-       to a non-default edge - can contain multiple cases).
-   3) The so called unswitinch predicates are stored in a cache where gimple_uid
-      is an index to the cache.
-   4) We consider one by one the unswitching candidate and calculate BBs that
+      (note that an unswitching predicate for a gswitch actually corresponds
+       to a non-default edge so it can contain multiple cases).
+   3) The so called unswitch predicates are stored in a cache where the
+      gimple_uid of the last stmt in a basic-block is an index to the cache.
+   4) We consider one by one the unswitching candidates and calculate BBs that
       will be reachable in the unswitch version.
-   5) A selected predicate is chosen and we simplify CFG (dead edges) in both
-      versions of the loop.  We utilize both Ranger for condition simplification
-      and also symbol equivalence.  The folded if conditions are replaced with
-      true/false values, while for gswitch we mark the corresponding edge
-      with a pass-defined unreachable flag.
+   5) A selected predicate is chosen and we simplify the CFG (dead edges) in
+      both versions of the loop.  We utilize both Ranger for condition
+      simplification and also symbol equivalence.  The folded if conditions
+      are replaced with true/false values, while for gswitch we mark the
+      corresponding edges with a pass-defined unreachable flag.
    6) Every time we unswitch a loop, we save unswitch_predicate to a vector
       together with information if true or false edge was taken.  Doing that
       we have a so called PREDICATE_PATH that is utilized for simplification
       of the cloned loop.
    7) The process is repeated until we reach a growth threshold or all
-      unswitching opportunities are taken.
+      unswitching opportunities are taken.  */
 
-*/
-
-/* A tuple that holds GIMPLE condition and value range for an unswitching
+/* A tuple that holds a GENERIC condition and value range for an unswitching
    predicate.  */
 
 struct unswitch_predicate
@@ -136,7 +134,7 @@ struct unswitch_predicate
     merged_false_range = false_range;
   }
 
-  /* Unswitching expression.  */
+  /* GENERIC unswitching expression testing LHS against CONSTANT.  */
   tree condition;
 
   /* LHS of the expression.  */
@@ -414,9 +412,7 @@ find_unswitching_predicates_for_bb (basic_block bb, class loop *loop,
 
       tree lhs = gimple_cond_lhs (stmt);
       tree rhs = gimple_cond_rhs (stmt);
-
-      if (TREE_CODE (lhs) != SSA_NAME
-	  || !TREE_CONSTANT (rhs))
+      if (TREE_CODE (lhs) != SSA_NAME)
 	return;
 
       cond = build2 (gimple_cond_code (stmt), boolean_type_node, lhs, rhs);
@@ -453,60 +449,58 @@ find_unswitching_predicates_for_bb (basic_block bb, class loop *loop,
       if (is_maybe_undefined (idx, stmt, loop))
 	return;
 
+      /* Build compound expression for all outgoing edges of the switch.  */
+      auto_vec<tree, 16> preds;
+      preds.safe_grow_cleared (EDGE_COUNT (gimple_bb (stmt)->succs));
       edge e;
       edge_iterator ei;
       unsigned edge_index = 0;
       FOR_EACH_EDGE (e, ei, gimple_bb (stmt)->succs)
+	e->aux = (void *)(uintptr_t)edge_index++;
+      for (unsigned i = 1; i < gimple_switch_num_labels (stmt); ++i)
 	{
-	  /* Build compound expression for all cases leading
-	     to this edge.  */
-	  tree expr = NULL_TREE;
-	  for (unsigned i = 1; i < gimple_switch_num_labels (stmt); ++i)
+	  tree lab = gimple_switch_label (stmt, i);
+	  tree cmp;
+	  if (CASE_HIGH (lab) != NULL_TREE)
 	    {
-	      tree lab = gimple_switch_label (stmt, i);
-	      basic_block dest = label_to_block (cfun, CASE_LABEL (lab));
-	      edge e2 = find_edge (gimple_bb (stmt), dest);
-	      if (e != e2)
-		continue;
-
-	      tree cmp;
-	      if (CASE_HIGH (lab) != NULL_TREE)
-		{
-		  tree cmp1 = build2 (GE_EXPR, boolean_type_node, idx,
-				      CASE_LOW (lab));
-		  tree cmp2 = build2 (LE_EXPR, boolean_type_node, idx,
-				      CASE_HIGH (lab));
-		  cmp = fold_build2 (BIT_AND_EXPR, boolean_type_node, cmp1,
-				     cmp2);
-		}
-	      else
-		cmp = fold_build2 (EQ_EXPR, boolean_type_node, idx,
-				   CASE_LOW (lab));
-
-	      /* Combine the expression with the existing one.  */
-	      if (expr == NULL_TREE)
-		expr = cmp;
-	      else
-		expr = fold_build2 (BIT_IOR_EXPR, boolean_type_node, expr,
-				    cmp);
+	      tree cmp1 = fold_build2 (GE_EXPR, boolean_type_node, idx,
+				       CASE_LOW (lab));
+	      tree cmp2 = fold_build2 (LE_EXPR, boolean_type_node, idx,
+				       CASE_HIGH (lab));
+	      cmp = fold_build2 (BIT_AND_EXPR, boolean_type_node, cmp1, cmp2);
 	    }
+	  else
+	    cmp = fold_build2 (EQ_EXPR, boolean_type_node, idx, CASE_LOW (lab));
 
-	  if (expr != NULL_TREE)
+	  /* Combine the expression with the existing one.  */
+	  basic_block dest = label_to_block (cfun, CASE_LABEL (lab));
+	  e = find_edge (gimple_bb (stmt), dest);
+	  tree &expr = preds[(uintptr_t)e->aux];
+	  if (expr == NULL_TREE)
+	    expr = cmp;
+	  else
+	    expr = fold_build2 (BIT_IOR_EXPR, boolean_type_node, expr, cmp);
+	}
+
+      /* Now register the predicates.  */
+      for (edge_index = 0; edge_index < preds.length (); ++edge_index)
+	{
+	  edge e = EDGE_SUCC (gimple_bb (stmt), edge_index);
+	  e->aux = NULL;
+	  if (preds[edge_index] != NULL_TREE)
 	    {
 	      unswitch_predicate *predicate
-		= new unswitch_predicate (expr, idx, edge_index);
-	      if (!ranger->gori ().outgoing_edge_range_p (predicate->true_range, e,
-							  idx, *get_global_range_query ()))
+		= new unswitch_predicate (preds[edge_index], idx, edge_index);
+	      if (!ranger->gori ().outgoing_edge_range_p
+		    (predicate->true_range, e, idx, *get_global_range_query ()))
 		{
 		  /* Huge switches are not supported by Ranger.  */
 		  delete predicate;
-		  return;
+		  continue;
 		}
 	      predicate->init_false_edge ();
-
 	      candidates.safe_push (predicate);
 	    }
-	  edge_index++;
 	}
     }
 }
@@ -932,12 +926,12 @@ tree_unswitch_single_loop (class loop *loop, int num,
       basic_block *bbs2 = get_loop_body (nloop);
       for (unsigned i = 0; i < nloop->num_nodes; i++)
 	bbs2[i]->aux = get_bb_original (bbs2[i])->aux;
-
       free (bbs2);
+
+      free_original_copy_tables ();
 
       /* Update the SSA form after unswitching.  */
       update_ssa (TODO_update_ssa);
-      free_original_copy_tables ();
 
       /* Invoke itself on modified loops.  */
       add_predicate_to_path (predicate_path, predicate, false);
