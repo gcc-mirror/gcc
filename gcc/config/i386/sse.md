@@ -4407,7 +4407,10 @@
       emit_insn (gen_sse2_pshufd (tmp1, ops[0], GEN_INT (0xb1)));
 
       rtx tmp2 = gen_reg_rtx (V4SImode);
-      emit_insn (gen_andv4si3 (tmp2, tmp1, ops[0]));
+      if (GET_CODE (operands[1]) == EQ)
+	emit_insn (gen_andv4si3 (tmp2, tmp1, ops[0]));
+      else
+	emit_insn (gen_iorv4si3 (tmp2, tmp1, ops[0]));
 
       emit_move_insn (operands[0], gen_lowpart (V2DImode, tmp2));
     }
@@ -4435,7 +4438,10 @@
   emit_insn (gen_sse2_pshufd (tmp1, tmp2, GEN_INT (0x4e)));
 
   rtx tmp3 = gen_reg_rtx (V4SImode);
-  emit_insn (gen_andv4si3 (tmp3, tmp2, tmp1));
+  if (GET_CODE (operands[1]) == EQ)
+    emit_insn (gen_andv4si3 (tmp3, tmp2, tmp1));
+  else
+    emit_insn (gen_iorv4si3 (tmp3, tmp2, tmp1));
 
   emit_move_insn (operands[0], gen_lowpart (V1TImode, tmp3));
   DONE;
