@@ -101,28 +101,55 @@ along with GCC; see the file COPYING3.  If not see
    7) The process is repeated until we reach a growth threshold or all
       unswitching opportunities are taken.  */
 
+/* Ranger instance used in the pass.  */
+static gimple_ranger *ranger = NULL;
+
 /* A tuple that holds a GENERIC condition and value range for an unswitching
    predicate.  */
 
 struct unswitch_predicate
 {
-  /* Default constructor.  */
-  unswitch_predicate (tree cond, tree lhs_, int edge_index_ = -1)
+  unswitch_predicate (tree cond, tree lhs_, int edge_index_, edge e)
   : condition (cond), lhs (lhs_), true_range (), false_range (),
     merged_true_range (), merged_false_range (),
     edge_index (edge_index_), handled (false)
-  {}
-
-  /* Based on true_range, compute inverted range.  */
-
-  inline void
-  init_false_edge (void)
   {
-    false_range = true_range;
+    gcc_assert (!(e->flags & (EDGE_TRUE_VALUE|EDGE_FALSE_VALUE)));
+    if (irange::supports_type_p (TREE_TYPE (lhs)))
+      {
+	if (ranger->gori ().outgoing_edge_range_p (true_range, e, lhs,
+						   *get_global_range_query ()))
+	  {
+	    false_range = true_range;
+	    if (!false_range.varying_p ()
+		&& !false_range.undefined_p ())
+	      false_range.invert ();
+	  }
+	else
+	  /* Huge switches are not supported by Ranger but without a range
+	     we cannot simplify the copies.  */
+	  handled = true;
+      }
+  }
 
-    if (!false_range.varying_p ()
-	&& !false_range.undefined_p ())
-      false_range.invert ();
+  unswitch_predicate (tree cond, tree lhs_, edge e)
+  : condition (cond), lhs (lhs_), true_range (), false_range (),
+    merged_true_range (), merged_false_range (),
+    handled (false)
+  {
+    gcc_assert (e->flags & EDGE_TRUE_VALUE);
+    edge_index = (EDGE_SUCC (e->src, 0) == e) ? 0 : 1;
+    if (irange::supports_type_p (TREE_TYPE (lhs)))
+      {
+	if (ranger->gori ().outgoing_edge_range_p (true_range, e, lhs,
+						   *get_global_range_query ()))
+	  {
+	    false_range = true_range;
+	    if (!false_range.varying_p ()
+		&& !false_range.undefined_p ())
+	      false_range.invert ();
+	  }
+      }
   }
 
   /* Copy ranges for purpose of usage in predicate path.  */
@@ -146,27 +173,26 @@ struct unswitch_predicate
   /* Modified range that is part of a predicate path.  */
   int_range_max merged_true_range, merged_false_range;
 
-  /* For switch predicates, index of the edge the predicate belongs to.  */
+  /* For switch predicates, index of the edge the predicate belongs to
+     in the successor vector.  */
   int edge_index;
 
-  /* True if the predicate was already used for unswitching.  */
+  /* True if the predicate was already used for unswitching or is
+     covered by another predicate unswitched.  */
   bool handled;
 };
 
 /* Cache storage for unswitch_predicate belonging to a basic block.  */
 static vec<vec<unswitch_predicate *>> *bb_predicates = NULL;
 
-/* Ranger instance used in the pass.  */
-static gimple_ranger *ranger = NULL;
-
 /* The type represents a predicate path leading to a basic block.  */
 typedef vec<std::pair<unswitch_predicate *, bool>> predicate_vector;
 
-static class loop *tree_unswitch_loop (class loop *, basic_block, tree);
-static bool tree_unswitch_single_loop (class loop *, int,
+static class loop *tree_unswitch_loop (class loop *, edge, tree);
+static bool tree_unswitch_single_loop (class loop *, dump_user_location_t,
 				       predicate_vector &predicate_path,
-				       unsigned budget,
-				       const auto_edge_flag &ignored_edge_flag);
+				       unsigned &budget,
+				       int ignored_edge_flag);
 static void
 find_unswitching_predicates_for_bb (basic_block bb, class loop *loop,
 				    vec<unswitch_predicate *> &candidates);
@@ -178,7 +204,7 @@ static bool used_outside_loop_p (class loop *, tree, vec<gimple *>&);
 static void hoist_guard (class loop *, edge);
 static bool check_exit_phi (class loop *);
 static tree get_vop_from_header (class loop *);
-static void clean_up_after_unswitching (const auto_edge_flag &);
+static void clean_up_after_unswitching (int);
 
 /* Return vector of predicates that belong to a basic block.  */
 
@@ -257,6 +283,32 @@ tree_ssa_unswitch_loops (void)
     {
       if (!loop->inner)
 	{
+	  /* Perform initial tests if unswitch is eligible.  */
+	  dump_user_location_t loc = find_loop_location (loop);
+
+	  /* Do not unswitch in cold regions. */
+	  if (optimize_loop_for_size_p (loop))
+	    {
+	      if (dump_enabled_p ())
+		dump_printf_loc (MSG_NOTE, loc,
+				 "Not unswitching cold loops\n");
+	      continue;
+	    }
+
+	  /* If the loop is not expected to iterate, there is no need
+	     for unswitching.  */
+	  HOST_WIDE_INT iterations = estimated_loop_iterations_int (loop);
+	  if (iterations < 0)
+	    iterations = likely_max_loop_iterations_int (loop);
+	  if (iterations >= 0 && iterations <= 1)
+	    {
+	      if (dump_enabled_p ())
+		dump_printf_loc (MSG_NOTE, loc,
+				 "Not unswitching, loop is not expected"
+				 " to iterate\n");
+	      continue;
+	    }
+
 	  bb_predicates = new vec<vec<unswitch_predicate *>> ();
 	  bb_predicates->safe_push (vec<unswitch_predicate *> ());
 
@@ -266,13 +318,13 @@ tree_ssa_unswitch_loops (void)
 
 	  predicate_vector predicate_path;
 	  predicate_path.create (8);
-	  changed |= tree_unswitch_single_loop (loop, 0, predicate_path,
+	  changed |= tree_unswitch_single_loop (loop, loc, predicate_path,
 						budget, ignored_edge_flag);
 	  predicate_path.release ();
 
-	  for (auto predlist: bb_predicates)
+	  for (auto predlist : bb_predicates)
 	    {
-	      for (auto predicate: predlist)
+	      for (auto predicate : predlist)
 		delete predicate;
 	      predlist.release ();
 	    }
@@ -288,10 +340,12 @@ tree_ssa_unswitch_loops (void)
 
   disable_ranger (cfun);
   clear_aux_for_blocks ();
-  clean_up_after_unswitching (ignored_edge_flag);
 
   if (changed)
-    return TODO_cleanup_cfg;
+    {
+      clean_up_after_unswitching (ignored_edge_flag);
+      return TODO_cleanup_cfg;
+    }
 
   return 0;
 }
@@ -419,16 +473,8 @@ find_unswitching_predicates_for_bb (basic_block bb, class loop *loop,
       edge edge_true, edge_false;
       extract_true_false_edges_from_block (bb, &edge_true, &edge_false);
 
-      unswitch_predicate *predicate = new unswitch_predicate (cond, lhs);
-
-      if (irange::supports_type_p (TREE_TYPE (lhs)))
-	{
-	  ranger->gori ().outgoing_edge_range_p (predicate->true_range,
-						 edge_true, lhs,
-						 *get_global_range_query ());
-	  predicate->init_false_edge ();
-	}
-
+      unswitch_predicate *predicate = new unswitch_predicate (cond, lhs,
+							      edge_true);
       candidates.safe_push (predicate);
     }
   else if (gswitch *stmt = safe_dyn_cast <gswitch *> (last))
@@ -490,15 +536,8 @@ find_unswitching_predicates_for_bb (basic_block bb, class loop *loop,
 	  if (preds[edge_index] != NULL_TREE)
 	    {
 	      unswitch_predicate *predicate
-		= new unswitch_predicate (preds[edge_index], idx, edge_index);
-	      if (!ranger->gori ().outgoing_edge_range_p
-		    (predicate->true_range, e, idx, *get_global_range_query ()))
-		{
-		  /* Huge switches are not supported by Ranger.  */
-		  delete predicate;
-		  continue;
-		}
-	      predicate->init_false_edge ();
+		= new unswitch_predicate (preds[edge_index], idx,
+					  edge_index, e);
 	      candidates.safe_push (predicate);
 	    }
 	}
@@ -560,59 +599,43 @@ find_range_for_lhs (predicate_vector &predicate_path, tree lhs,
   return false;
 }
 
-/* Simplifies COND using checks in front of the entry of the LOOP.
-   Utilize both symbolic expressions and value ranges calculated by Ranger.  */
+/* Simplifies STMT using the predicate we unswitched on which is the last
+   in PREDICATE_PATH.  For switch statements add newly unreachable edges
+   to IGNORED_EDGES (but do not set IGNORED_EDGE_FLAG on them).  */
 
 static tree
 evaluate_control_stmt_using_entry_checks (gimple *stmt,
 					  predicate_vector &predicate_path,
-					  const auto_edge_flag &ignored_edge_flag,
+					  int ignored_edge_flag,
 					  hash_set<edge> *ignored_edges)
 {
-  tree lhs;
-
-  gcond *condition = dyn_cast<gcond *> (stmt);
-  gswitch *swtch = dyn_cast<gswitch *> (stmt);
-
   unswitch_predicate *last_predicate = predicate_path.last ().first;
   bool true_edge = predicate_path.last ().second;
 
-  if (condition != NULL
-      && (lhs = gimple_cond_lhs (stmt))
-      && operand_equal_p (lhs, last_predicate->lhs, 0))
+  if (gcond *cond = dyn_cast<gcond *> (stmt))
     {
-      if (gimple_cond_code (stmt) == TREE_CODE (last_predicate->condition)
-	  && operand_equal_p (gimple_cond_rhs (stmt),
-			      TREE_OPERAND (last_predicate->condition, 1), 0))
-	{
-	  edge edge_true, edge_false;
-	  extract_true_false_edges_from_block (gimple_bb (stmt),
-					       &edge_true, &edge_false);
-	  if (true_edge)
-	    {
-	      if (ignored_edges != NULL)
-		ignored_edges->add (edge_true);
-	      return boolean_true_node;
-	    }
-	  else
-	    {
-	      if (ignored_edges != NULL)
-		ignored_edges->add (edge_false);
-	      return boolean_false_node;
-	    }
-	}
+      tree lhs = gimple_cond_lhs (cond);
+      if (!operand_equal_p (lhs, last_predicate->lhs))
+	return NULL_TREE;
+      /* Try a symbolic match which works for floating point and fully
+	 symbolic conditions.  */
+      if (gimple_cond_code (cond) == TREE_CODE (last_predicate->condition)
+	  && operand_equal_p (gimple_cond_rhs (cond),
+			      TREE_OPERAND (last_predicate->condition, 1)))
+	return true_edge ? boolean_true_node : boolean_false_node;
+      /* Else try ranger if it supports LHS.  */
       else if (irange::supports_type_p (TREE_TYPE (lhs)))
 	{
 	  int_range_max r;
 	  int_range_max path_range;
 
 	  if (find_range_for_lhs (predicate_path, lhs, path_range)
-	      && fold_range (r, stmt, path_range)
+	      && fold_range (r, cond, path_range)
 	      && r.singleton_p ())
 	    return r.zero_p () ? boolean_false_node : boolean_true_node;
 	}
     }
-  else if (swtch != NULL)
+  else if (gswitch *swtch = dyn_cast<gswitch *> (stmt))
     {
       unsigned nlabels = gimple_switch_num_labels (swtch);
 
@@ -622,36 +645,41 @@ evaluate_control_stmt_using_entry_checks (gimple *stmt,
       if (TREE_CONSTANT (idx))
 	return NULL_TREE;
 
+      int_range_max path_range;
+      if (!find_range_for_lhs (predicate_path, idx, path_range))
+	return NULL_TREE;
+
       tree result = NULL_TREE;
+      edge single_edge = NULL;
       for (unsigned i = 0; i < nlabels; ++i)
 	{
 	  tree lab = gimple_switch_label (swtch, i);
 	  basic_block dest = label_to_block (cfun, CASE_LABEL (lab));
 	  edge e = find_edge (gimple_bb (stmt), dest);
 	  if (e->flags & ignored_edge_flag)
-	    {
-	      ignored_edges->add (e);
-	      continue;
-	    }
+	    continue;
 
 	  int_range_max r;
-	  int_range_max path_range;
 
 	  ranger->gori ().outgoing_edge_range_p (r, e, idx,
 						 *get_global_range_query ());
-	  if (find_range_for_lhs (predicate_path, idx, path_range))
+	  r.intersect (path_range);
+	  if (r.undefined_p ())
+	    ignored_edges->add (e);
+	  else
 	    {
-	      r.intersect (path_range);
-	      if (r.undefined_p ())
-		  ignored_edges->add (e);
-	      else
-		result = CASE_LOW (lab);
+	      if (!single_edge)
+		{
+		  single_edge = e;
+		  result = CASE_LOW (lab);
+		}
+	      else if (single_edge != e)
+		result = NULL;
 	    }
 	}
 
       /* Only one edge from the switch is alive.  */
-      unsigned edge_count = EDGE_COUNT (gimple_bb (swtch)->succs);
-      if (ignored_edges->elements () + 1 == edge_count)
+      if (single_edge && result)
 	return result;
     }
 
@@ -663,47 +691,48 @@ evaluate_control_stmt_using_entry_checks (gimple *stmt,
 
 static bool
 simplify_loop_version (class loop *loop, predicate_vector &predicate_path,
-		       const auto_edge_flag &ignored_edge_flag)
+		       int ignored_edge_flag)
 {
   bool changed = false;
   basic_block *bbs = get_loop_body (loop);
 
+  hash_set<edge> ignored_edges;
   for (unsigned i = 0; i != loop->num_nodes; i++)
     {
       vec<unswitch_predicate *> &predicates = get_predicates_for_bb (bbs[i]);
       if (predicates.is_empty ())
 	continue;
 
-      hash_set<edge> ignored_edges;
       gimple *stmt = last_stmt (bbs[i]);
       tree folded = evaluate_control_stmt_using_entry_checks (stmt,
 							      predicate_path,
 							      ignored_edge_flag,
 							      &ignored_edges);
 
-      gcond *cond = dyn_cast<gcond *> (stmt);
-      gswitch *swtch = dyn_cast<gswitch *> (stmt);
-
-      if (cond != NULL
-	  && folded != NULL_TREE)
+      if (gcond *cond = dyn_cast<gcond *> (stmt))
 	{
-	  /* Remove path.  */
-	  if (integer_nonzerop (folded))
-	    gimple_cond_set_condition_from_tree (cond, boolean_true_node);
-	  else
-	    gimple_cond_set_condition_from_tree (cond, boolean_false_node);
+	  if (folded)
+	    {
+	      /* Remove path.  */
+	      if (integer_nonzerop (folded))
+		gimple_cond_set_condition_from_tree (cond, boolean_true_node);
+	      else
+		gimple_cond_set_condition_from_tree (cond, boolean_false_node);
 
-	  gimple_set_uid (cond, 0);
-	  update_stmt (cond);
-	  changed = true;
+	      gcc_assert (predicates.length () == 1);
+	      predicates[0]->handled = true;
+
+	      update_stmt (cond);
+	      changed = true;
+	    }
 	}
-      else if (swtch != NULL)
+      else if (gswitch *swtch = dyn_cast<gswitch *> (stmt))
 	{
 	  edge e;
 	  edge_iterator ei;
 	  FOR_EACH_EDGE (e, ei, bbs[i]->succs)
 	    if (ignored_edges.contains (e))
-	      e->flags = ignored_edge_flag;
+	      e->flags |= ignored_edge_flag;
 
 	  for (unsigned j = 0; j < predicates.length (); j++)
 	    {
@@ -732,8 +761,7 @@ simplify_loop_version (class loop *loop, predicate_vector &predicate_path,
 static unsigned
 evaluate_insns (class loop *loop, basic_block *bbs,
 		predicate_vector &predicate_path,
-		auto_bb_flag &reachable_flag,
-		const auto_edge_flag &ignored_edge_flag)
+		int reachable_flag, int ignored_edge_flag)
 {
   auto_vec<basic_block> worklist (loop->num_nodes);
   worklist.quick_push (bbs[0]);
@@ -743,7 +771,7 @@ evaluate_insns (class loop *loop, basic_block *bbs,
     {
       edge e;
       edge_iterator ei;
-      int flags = 0;
+      int flags = ignored_edge_flag;
       basic_block bb = worklist.pop ();
 
       gimple *last = last_stmt (bb);
@@ -758,11 +786,13 @@ evaluate_insns (class loop *loop, basic_block *bbs,
 	    flags = EDGE_TRUE_VALUE;
 	  else
 	    {
-	      if (!get_predicates_for_bb (bb).is_empty ())
-		evaluate_control_stmt_using_entry_checks (cond,
-							  predicate_path,
-							  ignored_edge_flag,
-							  &ignored_edges);
+	      tree res;
+	      if (!get_predicates_for_bb (bb).is_empty ()
+		  && (res = evaluate_control_stmt_using_entry_checks
+			      (cond, predicate_path, ignored_edge_flag,
+			       &ignored_edges)))
+		flags = (integer_nonzerop (res)
+			 ? EDGE_FALSE_VALUE : EDGE_TRUE_VALUE);
 	    }
 	}
       else if (swtch != NULL
@@ -807,7 +837,7 @@ static unsigned
 evaluate_loop_insns_for_predicate (class loop *loop, basic_block *bbs,
 				   predicate_vector &predicate_path,
 				   unswitch_predicate *predicate,
-				   const auto_edge_flag &ignored_edge_flag)
+				   int ignored_edge_flag)
 {
   auto_bb_flag reachable_flag (cfun);
 
@@ -824,83 +854,47 @@ evaluate_loop_insns_for_predicate (class loop *loop, basic_block *bbs,
   return true_loop_cost + false_loop_cost;
 }
 
-/* Unswitch single LOOP.  NUM is number of unswitchings done; we do not allow
-   it to grow too much, it is too easy to create example on that the code would
-   grow exponentially.  PREDICATE_PATH contains so far used predicates
+/* Unswitch single LOOP.  PREDICATE_PATH contains so far used predicates
    for unswitching.  BUDGET is number of instruction for which we can increase
-   the loop.  */
+   the loop and is updated when unswitching occurs.  */
 
 static bool
-tree_unswitch_single_loop (class loop *loop, int num,
-			   predicate_vector &predicate_path, unsigned budget,
-			   const auto_edge_flag &ignored_edge_flag)
+tree_unswitch_single_loop (class loop *loop, dump_user_location_t loc,
+			   predicate_vector &predicate_path, unsigned &budget,
+			   int ignored_edge_flag)
 {
   basic_block *bbs = NULL;
   class loop *nloop;
   bool changed = false;
-  HOST_WIDE_INT iterations;
-
-  dump_user_location_t loc = find_loop_location (loop);
-
-  /* Perform initial tests if unswitch is eligible.  */
-  if (num == 0)
-    {
-      /* Do not unswitch in cold regions. */
-      if (optimize_loop_for_size_p (loop))
-	{
-	  if (dump_enabled_p ())
-	    dump_printf_loc (MSG_NOTE, loc,
-			     "Not unswitching cold loops\n");
-	  return false;
-	}
-
-      /* If the loop is not expected to iterate, there is no need
-	 for unswitching.  */
-      iterations = estimated_loop_iterations_int (loop);
-      if (iterations < 0)
-        iterations = likely_max_loop_iterations_int (loop);
-      if (iterations >= 0 && iterations <= 1)
-	{
-	  if (dump_enabled_p ())
-	    dump_printf_loc (MSG_NOTE, loc,
-			     "Not unswitching, loop is not expected"
-			     " to iterate\n");
-	  return false;
-	}
-    }
-
   unswitch_predicate *predicate = NULL;
   basic_block bb = NULL;
 
   bbs = get_loop_body (loop);
 
   for (unsigned i = 0; i < loop->num_nodes; i++)
-    {
-      vec<unswitch_predicate *> &preds = get_predicates_for_bb (bbs[i]);
-      for (auto pred: preds)
-	{
-	  if (pred->handled)
-	    continue;
+    for (auto pred : get_predicates_for_bb (bbs[i]))
+      {
+	if (pred->handled)
+	  continue;
 
-	  unsigned cost
-	    = evaluate_loop_insns_for_predicate (loop, bbs, predicate_path,
-						 pred, ignored_edge_flag);
+	unsigned cost
+	  = evaluate_loop_insns_for_predicate (loop, bbs, predicate_path,
+					       pred, ignored_edge_flag);
 
-	  /* FIXME: right now we select first candidate, but we can choose
-	     a cheapest (best) one.  */
-	  if (cost <= budget)
-	    {
-	      predicate = pred;
-	      bb = bbs[i];
-	      budget -= cost;
-	      break;
-	    }
-	  else if (dump_enabled_p ())
-	    dump_printf_loc (MSG_NOTE, loc,
-			     "Not unswitching condition, cost too big "
-			     "(%d insns)\n", cost);
-	}
-    }
+	/* FIXME: right now we select first candidate, but we can choose
+	   the cheapest or hottest one.  */
+	if (cost <= budget)
+	  {
+	    predicate = pred;
+	    bb = bbs[i];
+	    budget -= cost;
+	    break;
+	  }
+	else if (dump_enabled_p ())
+	  dump_printf_loc (MSG_NOTE, loc,
+			   "Not unswitching condition, cost too big "
+			   "(%d insns)\n", cost);
+      }
 
   if (predicate != NULL)
     {
@@ -915,7 +909,8 @@ tree_unswitch_single_loop (class loop *loop, int num,
       predicate->handled = true;
       initialize_original_copy_tables ();
       /* Unswitch the loop on this condition.  */
-      nloop = tree_unswitch_loop (loop, bb, predicate->condition);
+      nloop = tree_unswitch_loop (loop, EDGE_SUCC (bb, predicate->edge_index),
+				  predicate->condition);
       if (!nloop)
 	{
 	  free_original_copy_tables ();
@@ -937,14 +932,17 @@ tree_unswitch_single_loop (class loop *loop, int num,
       add_predicate_to_path (predicate_path, predicate, false);
       changed |= simplify_loop_version (nloop, predicate_path,
 					ignored_edge_flag);
-      tree_unswitch_single_loop (nloop, num + 1, predicate_path, budget,
+      tree_unswitch_single_loop (nloop, loc, predicate_path, budget,
 				 ignored_edge_flag);
       predicate_path.pop ();
 
+      /* FIXME: After unwinding above we have to reset all ->handled
+	 flags as otherwise we fail to realize unswitching opportunities
+	 in the below recursion.  See gcc.dg/loop-unswitch-16.c  */
       add_predicate_to_path (predicate_path, predicate, true);
       changed |= simplify_loop_version (loop, predicate_path,
 					ignored_edge_flag);
-      tree_unswitch_single_loop (loop, num + 1, predicate_path, budget,
+      tree_unswitch_single_loop (loop, loc, predicate_path, budget,
 				 ignored_edge_flag);
       predicate_path.pop ();
       changed = true;
@@ -955,25 +953,20 @@ exit:
   return changed;
 }
 
-/* Unswitch a LOOP w.r. to given basic block UNSWITCH_ON.  We only support
-   unswitching of innermost loops.  COND is the condition determining which
-   loop is entered -- the new loop is entered if COND is true.  Returns NULL
-   if impossible, new loop otherwise.  */
+/* Unswitch a LOOP w.r. to given EDGE_TRUE.  We only support unswitching of
+   innermost loops.  COND is the condition determining which loop is entered;
+   the new loop is entered if COND is true.  Returns NULL if impossible, new
+   loop otherwise.  */
 
 static class loop *
-tree_unswitch_loop (class loop *loop,
-		    basic_block unswitch_on, tree cond)
+tree_unswitch_loop (class loop *loop, edge edge_true, tree cond)
 {
-  profile_probability prob_true;
-  edge edge_true, edge_false;
-
   /* Some sanity checking.  */
-  gcc_assert (flow_bb_inside_loop_p (loop, unswitch_on));
-  gcc_assert (EDGE_COUNT (unswitch_on->succs) >= 2);
+  gcc_assert (flow_bb_inside_loop_p (loop, edge_true->src));
+  gcc_assert (EDGE_COUNT (edge_true->src->succs) >= 2);
   gcc_assert (loop->inner == NULL);
 
-  extract_true_false_edges_from_block (unswitch_on, &edge_true, &edge_false);
-  prob_true = edge_true->probability;
+  profile_probability prob_true = edge_true->probability;
   return loop_version (loop, unshare_expr (cond),
 		       NULL, prob_true,
 		       prob_true.invert (),
@@ -1490,7 +1483,7 @@ check_exit_phi (class loop *loop)
 /* Remove all dead cases from switches that are unswitched.  */
 
 static void
-clean_up_after_unswitching (const auto_edge_flag &ignored_edge_flag)
+clean_up_after_unswitching (int ignored_edge_flag)
 {
   basic_block bb;
   edge e;
