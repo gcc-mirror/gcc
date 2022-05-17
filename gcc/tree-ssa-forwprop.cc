@@ -511,9 +511,7 @@ forward_propagate_into_comparison (gimple_stmt_iterator *gsi)
 /* Propagate from the ssa name definition statements of COND_EXPR
    in GIMPLE_COND statement STMT into the conditional if that simplifies it.
    Returns zero if no statement was changed, one if there were
-   changes and two if cfg_cleanup needs to run.
-
-   This must be kept in sync with forward_propagate_into_cond.  */
+   changes and two if cfg_cleanup needs to run.  */
 
 static int
 forward_propagate_into_gimple_cond (gcond *stmt)
@@ -568,70 +566,6 @@ forward_propagate_into_gimple_cond (gcond *stmt)
       EDGE_SUCC (bb, 0)->flags ^= (EDGE_TRUE_VALUE|EDGE_FALSE_VALUE);
       EDGE_SUCC (bb, 1)->flags ^= (EDGE_TRUE_VALUE|EDGE_FALSE_VALUE);
       return 1;
-    }
-
-  return 0;
-}
-
-
-/* Propagate from the ssa name definition statements of COND_EXPR
-   in the rhs of statement STMT into the conditional if that simplifies it.
-   Returns true zero if the stmt was changed.  */
-
-static bool
-forward_propagate_into_cond (gimple_stmt_iterator *gsi_p)
-{
-  gimple *stmt = gsi_stmt (*gsi_p);
-  tree tmp = NULL_TREE;
-  tree cond = gimple_assign_rhs1 (stmt);
-  enum tree_code code = gimple_assign_rhs_code (stmt);
-
-  /* We can do tree combining on SSA_NAME and comparison expressions.  */
-  if (COMPARISON_CLASS_P (cond))
-    tmp = forward_propagate_into_comparison_1 (stmt, TREE_CODE (cond),
-					       TREE_TYPE (cond),
-					       TREE_OPERAND (cond, 0),
-					       TREE_OPERAND (cond, 1));
-  else if (TREE_CODE (cond) == SSA_NAME)
-    {
-      enum tree_code def_code;
-      tree name = cond;
-      gimple *def_stmt = get_prop_source_stmt (name, true, NULL);
-      if (!def_stmt || !can_propagate_from (def_stmt))
-	return 0;
-
-      def_code = gimple_assign_rhs_code (def_stmt);
-      if (TREE_CODE_CLASS (def_code) == tcc_comparison)
-	tmp = fold_build2_loc (gimple_location (def_stmt),
-			       def_code,
-			       TREE_TYPE (cond),
-			       gimple_assign_rhs1 (def_stmt),
-			       gimple_assign_rhs2 (def_stmt));
-    }
-
-  if (tmp
-      && is_gimple_val (tmp))
-    {
-      if (dump_file)
-	{
-	  fprintf (dump_file, "  Replaced '");
-	  print_generic_expr (dump_file, cond);
-	  fprintf (dump_file, "' with '");
-	  print_generic_expr (dump_file, tmp);
-	  fprintf (dump_file, "'\n");
-	}
-
-      if ((code == VEC_COND_EXPR) ? integer_all_onesp (tmp)
-				  : integer_onep (tmp))
-	gimple_assign_set_rhs_from_tree (gsi_p, gimple_assign_rhs2 (stmt));
-      else if (integer_zerop (tmp))
-	gimple_assign_set_rhs_from_tree (gsi_p, gimple_assign_rhs3 (stmt));
-      else
-	gimple_assign_set_rhs1 (stmt, unshare_expr (tmp));
-      stmt = gsi_stmt (*gsi_p);
-      update_stmt (stmt);
-
-      return true;
     }
 
   return 0;
@@ -3720,16 +3654,7 @@ pass_forwprop::execute (function *fun)
 		    tree rhs1 = gimple_assign_rhs1 (stmt);
 		    enum tree_code code = gimple_assign_rhs_code (stmt);
 
-		    if (code == COND_EXPR)
-		      {
-			/* In this case the entire COND_EXPR is in rhs1. */
-			if (forward_propagate_into_cond (&gsi))
-			  {
-			    changed = true;
-			    stmt = gsi_stmt (gsi);
-			  }
-		      }
-		    else if (TREE_CODE_CLASS (code) == tcc_comparison)
+		    if (TREE_CODE_CLASS (code) == tcc_comparison)
 		      {
 			int did_something;
 			did_something = forward_propagate_into_comparison (&gsi);
