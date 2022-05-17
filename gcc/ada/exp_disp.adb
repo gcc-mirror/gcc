@@ -80,6 +80,20 @@ package body Exp_Disp is
    --  Ada 2005 (AI-251): Returns the fixed position in the dispatch table
    --  of the default primitive operations.
 
+   procedure Expand_Interface_Thunk
+     (Prim       : Entity_Id;
+      Thunk_Id   : out Entity_Id;
+      Thunk_Code : out Node_Id;
+      Iface      : Entity_Id);
+   --  Ada 2005 (AI-251): When a tagged type implements abstract interfaces we
+   --  generate additional subprograms (thunks) associated with each primitive
+   --  Prim to have a layout compatible with the C++ ABI. The thunk displaces
+   --  the pointers to the actuals that depend on the controlling type before
+   --  transferring control to the target subprogram. If there is no need to
+   --  generate the thunk, then Thunk_Id is set to Empty. Otherwise Thunk_Id
+   --  is set to the defining identifier of the thunk and Thunk_Code to the
+   --  code generated for the thunk respectively.
+
    function Has_DT (Typ : Entity_Id) return Boolean;
    pragma Inline (Has_DT);
    --  Returns true if we generate a dispatch table for tagged type Typ
@@ -7130,6 +7144,96 @@ package body Exp_Disp is
          end if;
       end if;
    end Prim_Op_Kind;
+
+   -----------------------------------
+   -- Register_Predefined_Primitive --
+   -----------------------------------
+
+   function Register_Predefined_Primitive
+     (Loc     : Source_Ptr;
+      Prim    : Entity_Id) return List_Id
+   is
+      L          : constant List_Id   := New_List;
+      Tagged_Typ : constant Entity_Id := Find_Dispatching_Type (Prim);
+
+      Iface_DT_Ptr  : Elmt_Id;
+      Thunk_Id      : Entity_Id;
+      Thunk_Code    : Node_Id;
+
+   begin
+      if No (Access_Disp_Table (Tagged_Typ))
+        or else not Has_Interfaces (Tagged_Typ)
+        or else not RTE_Available (RE_Interface_Tag)
+        or else Restriction_Active (No_Dispatching_Calls)
+      then
+         return L;
+      end if;
+
+      --  Skip the first two access-to-dispatch-table pointers since they
+      --  leads to the primary dispatch table (predefined DT and user
+      --  defined DT). We are only concerned with the secondary dispatch
+      --  table pointers. Note that the access-to- dispatch-table pointer
+      --  corresponds to the first implemented interface retrieved below.
+
+      Iface_DT_Ptr :=
+        Next_Elmt (Next_Elmt (First_Elmt (Access_Disp_Table (Tagged_Typ))));
+
+      while Present (Iface_DT_Ptr)
+        and then Ekind (Node (Iface_DT_Ptr)) = E_Constant
+      loop
+         pragma Assert (Has_Thunks (Node (Iface_DT_Ptr)));
+
+         Expand_Interface_Thunk
+           (Prim, Thunk_Id, Thunk_Code, Related_Type (Node (Iface_DT_Ptr)));
+
+         if Present (Thunk_Id) then
+            Append_To (L, Thunk_Code);
+
+            Append_To (L,
+              Build_Set_Predefined_Prim_Op_Address (Loc,
+                Tag_Node     =>
+                  New_Occurrence_Of (Node (Next_Elmt (Iface_DT_Ptr)), Loc),
+                Position     => DT_Position (Prim),
+                Address_Node =>
+                  Unchecked_Convert_To (RTE (RE_Prim_Ptr),
+                    Make_Attribute_Reference (Loc,
+                      Prefix         => New_Occurrence_Of (Thunk_Id, Loc),
+                      Attribute_Name => Name_Unrestricted_Access))));
+
+            Append_To (L,
+              Build_Set_Predefined_Prim_Op_Address (Loc,
+                Tag_Node     =>
+                  New_Occurrence_Of
+                   (Node (Next_Elmt (Next_Elmt (Next_Elmt (Iface_DT_Ptr)))),
+                    Loc),
+                Position     => DT_Position (Prim),
+                Address_Node =>
+                  Unchecked_Convert_To (RTE (RE_Prim_Ptr),
+                    Make_Attribute_Reference (Loc,
+                      Prefix         => New_Occurrence_Of (Prim, Loc),
+                      Attribute_Name => Name_Unrestricted_Access))));
+         end if;
+
+         --  Skip the tag of the predefined primitives dispatch table
+
+         Next_Elmt (Iface_DT_Ptr);
+         pragma Assert (Has_Thunks (Node (Iface_DT_Ptr)));
+
+         --  Skip tag of the no-thunks dispatch table
+
+         Next_Elmt (Iface_DT_Ptr);
+         pragma Assert (not Has_Thunks (Node (Iface_DT_Ptr)));
+
+         --  Skip tag of predefined primitives no-thunks dispatch table
+
+         Next_Elmt (Iface_DT_Ptr);
+         pragma Assert (not Has_Thunks (Node (Iface_DT_Ptr)));
+
+         Next_Elmt (Iface_DT_Ptr);
+      end loop;
+
+      return L;
+   end Register_Predefined_Primitive;
 
    ------------------------
    -- Register_Primitive --

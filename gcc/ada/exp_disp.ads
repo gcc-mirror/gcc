@@ -233,20 +233,6 @@ package Exp_Disp is
    --  to the object to give access to the interface tag associated with the
    --  dispatch table of the target type.
 
-   procedure Expand_Interface_Thunk
-     (Prim       : Entity_Id;
-      Thunk_Id   : out Entity_Id;
-      Thunk_Code : out Node_Id;
-      Iface      : Entity_Id);
-   --  Ada 2005 (AI-251): When a tagged type implements abstract interfaces we
-   --  generate additional subprograms (thunks) associated with each primitive
-   --  Prim to have a layout compatible with the C++ ABI. The thunk displaces
-   --  the pointers to the actuals that depend on the controlling type before
-   --  transferring control to the target subprogram. If there is no need to
-   --  generate the thunk then Thunk_Id and Thunk_Code are set to Empty.
-   --  Otherwise they are set to the defining identifier and the subprogram
-   --  body of the generated thunk.
-
    function Has_CPP_Constructors (Typ : Entity_Id) return Boolean;
    --  Returns true if the type has CPP constructors
 
@@ -336,6 +322,15 @@ package Exp_Disp is
    --  Typ and fill the contents of Access_Disp_Table. In case of library level
    --  tagged types this routine imports the forward declaration of the tag
    --  entity, that will be declared and exported by Make_DT.
+
+   function Register_Predefined_Primitive
+     (Loc     : Source_Ptr;
+      Prim    : Entity_Id) return List_Id;
+   --  Ada 2005: Register a predefined primitive in all the secondary dispatch
+   --  tables of its primitive type.
+   --
+   --  The caller is responsible for inserting the generated code in the
+   --  proper place.
 
    function Register_Primitive
      (Loc     : Source_Ptr;

@@ -7828,108 +7828,8 @@ package body Exp_Ch6 is
    -----------------------
 
    procedure Freeze_Subprogram (N : Node_Id) is
-      Loc : constant Source_Ptr := Sloc (N);
-
-      procedure Register_Predefined_DT_Entry (Prim : Entity_Id);
-      --  (Ada 2005): Register a predefined primitive in all the secondary
-      --  dispatch tables of its primitive type.
-
-      ----------------------------------
-      -- Register_Predefined_DT_Entry --
-      ----------------------------------
-
-      procedure Register_Predefined_DT_Entry (Prim : Entity_Id) is
-         Iface_DT_Ptr : Elmt_Id;
-         L            : List_Id;
-         Tagged_Typ   : Entity_Id;
-         Thunk_Id     : Entity_Id;
-         Thunk_Code   : Node_Id;
-
-      begin
-         Tagged_Typ := Find_Dispatching_Type (Prim);
-
-         if No (Access_Disp_Table (Tagged_Typ))
-           or else not Has_Interfaces (Tagged_Typ)
-           or else not RTE_Available (RE_Interface_Tag)
-           or else Restriction_Active (No_Dispatching_Calls)
-         then
-            return;
-         end if;
-
-         --  Skip the first two access-to-dispatch-table pointers since they
-         --  leads to the primary dispatch table (predefined DT and user
-         --  defined DT). We are only concerned with the secondary dispatch
-         --  table pointers. Note that the access-to- dispatch-table pointer
-         --  corresponds to the first implemented interface retrieved below.
-
-         Iface_DT_Ptr :=
-           Next_Elmt (Next_Elmt (First_Elmt (Access_Disp_Table (Tagged_Typ))));
-
-         while Present (Iface_DT_Ptr)
-           and then Ekind (Node (Iface_DT_Ptr)) = E_Constant
-         loop
-            pragma Assert (Has_Thunks (Node (Iface_DT_Ptr)));
-            Expand_Interface_Thunk (Prim, Thunk_Id, Thunk_Code,
-              Iface => Related_Type (Node (Iface_DT_Ptr)));
-
-            if Present (Thunk_Code) then
-               L := New_List (
-                 Thunk_Code,
-
-                 Build_Set_Predefined_Prim_Op_Address (Loc,
-                   Tag_Node     =>
-                     New_Occurrence_Of (Node (Next_Elmt (Iface_DT_Ptr)), Loc),
-                   Position     => DT_Position (Prim),
-                   Address_Node =>
-                     Unchecked_Convert_To (RTE (RE_Prim_Ptr),
-                       Make_Attribute_Reference (Loc,
-                         Prefix         => New_Occurrence_Of (Thunk_Id, Loc),
-                         Attribute_Name => Name_Unrestricted_Access))),
-
-                 Build_Set_Predefined_Prim_Op_Address (Loc,
-                   Tag_Node     =>
-                     New_Occurrence_Of
-                      (Node (Next_Elmt (Next_Elmt (Next_Elmt (Iface_DT_Ptr)))),
-                       Loc),
-                   Position     => DT_Position (Prim),
-                   Address_Node =>
-                     Unchecked_Convert_To (RTE (RE_Prim_Ptr),
-                       Make_Attribute_Reference (Loc,
-                         Prefix         => New_Occurrence_Of (Prim, Loc),
-                         Attribute_Name => Name_Unrestricted_Access))));
-
-               if No (Actions (N)) then
-                  Set_Actions (N, L);
-
-               else
-                  Append_List (L, Actions (N));
-               end if;
-            end if;
-
-            --  Skip the tag of the predefined primitives dispatch table
-
-            Next_Elmt (Iface_DT_Ptr);
-            pragma Assert (Has_Thunks (Node (Iface_DT_Ptr)));
-
-            --  Skip tag of the no-thunks dispatch table
-
-            Next_Elmt (Iface_DT_Ptr);
-            pragma Assert (not Has_Thunks (Node (Iface_DT_Ptr)));
-
-            --  Skip tag of predefined primitives no-thunks dispatch table
-
-            Next_Elmt (Iface_DT_Ptr);
-            pragma Assert (not Has_Thunks (Node (Iface_DT_Ptr)));
-
-            Next_Elmt (Iface_DT_Ptr);
-         end loop;
-      end Register_Predefined_DT_Entry;
-
-      --  Local variables
-
+      Loc  : constant Source_Ptr := Sloc (N);
       Subp : constant Entity_Id  := Entity (N);
-
-   --  Start of processing for Freeze_Subprogram
 
    begin
       --  We suppress the initialization of the dispatch table entry when
@@ -7985,10 +7885,12 @@ package body Exp_Ch6 is
                  or else Present (Interface_Alias (Subp))
                then
                   if Is_Predefined_Dispatching_Operation (Subp) then
-                     Register_Predefined_DT_Entry (Subp);
+                     L := Register_Predefined_Primitive (Loc, Subp);
+                  else
+                     L := New_List;
                   end if;
 
-                  L := Register_Primitive (Loc, Prim => Subp);
+                  Append_List_To (L, Register_Primitive (Loc, Subp));
 
                   if Is_Empty_List (L) then
                      null;
