@@ -1,3 +1,21 @@
+2022-05-16  Jason Merrill  <jason@redhat.com>
+
+	PR c/105492
+	* c-attribs.cc (handle_mode_attribute): Don't fix broken typedefs
+	here.
+
+2022-05-16  Martin Liska  <mliska@suse.cz>
+
+	* c-common.cc (ARRAY_SIZE): Use ARRAY_SIZE.
+	(c_common_nodes_and_builtins): Likewise.
+	* c-format.cc (check_tokens): Likewise.
+	(check_plain): Likewise.
+	* c-pragma.cc (c_pp_lookup_pragma): Likewise.
+	(init_pragma): Likewise.
+	* known-headers.cc (get_string_macro_hint): Likewise.
+	(get_stdlib_header_for_name): Likewise.
+	* c-attribs.cc: Likewise.
+
 2022-05-13  Richard Biener  <rguenther@suse.de>
 
 	* c-omp.cc: Remove gimple-fold.h include.

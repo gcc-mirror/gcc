@@ -1,3 +1,267 @@
+2022-05-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch7.adb (Inspect_Untagged_Record_Completion): Also move the
+	equality operator on the homonym chain if there is another equality
+	operator in the private part.
+
+2022-05-16  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_attr.adb (Expand_Loop_Entry_Attribute): Disable value
+	propagation when analysing the constant that holds the
+	Loop_Entry prefix value.
+
+2022-05-16  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_attr.adb (Address_Checks): Remove call to
+	Kill_Current_Values for subprogram entities, because this
+	routine only does something for object entities.
+
+2022-05-16  Justin Squirek  <squirek@adacore.com>
+
+	* exp_ch7.adb (Build_Finalizer): Disable late evaluation of
+	postconditions for functions returning types which where
+	Has_Unconstrained_Elements is true or are unconstrained arrays.
+
+2022-05-16  Etienne Servais  <servais@adacore.com>
+
+	* exp_ch4.adb (Expand_N_Qualified_Expression): Freeze
+	Target_Type.
+
+2022-05-16  Yannick Moy  <moy@adacore.com>
+
+	* libgnat/s-aridou.adb (Double_Divide): Add intermediate
+	assertions.
+
+2022-05-16  Ghjuvan Lacambre  <lacambre@adacore.com>
+
+	* lib-writ.adb (Output_CUDA_Symbols): Check for null packages.
+
+2022-05-16  Joel Brobecker  <brobecker@adacore.com>
+
+	* libgnat/g-debpoo.ads: Improve documentation of the
+	Stack_Trace_Depth parameter.
+
+2022-05-16  Joel Brobecker  <brobecker@adacore.com>
+
+	* init.c (__gnat_install_handler) [__QNX__]: Save sigaction's
+	return value in err before checking err's value.  Fix incorrect
+	signal names in perror messages.
+
+2022-05-16  Joel Brobecker  <brobecker@adacore.com>
+
+	* init.c (__gnat_install_handler) [__QNX__]: Set
+	act.sa_sigaction rather than act.sa_handler.
+
+2022-05-16  Joel Brobecker  <brobecker@adacore.com>
+
+	* cstreams.c: Add <stdlib.h> #include.
+
+2022-05-16  Joel Brobecker  <brobecker@adacore.com>
+
+	* terminals.c: Remove bzero #define on HP/UX or Solaris
+	platforms.
+	(child_setup_tty): Replace bzero call by equivalent call to
+	memset.
+
+2022-05-16  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_util.ads (Storage_Model_Support): Revise comments on most
+	operations within this nested package to reflect that they can
+	now be passed either a type that has aspect Storage_Model_Type
+	or an object of such a type.  Change the names of the relevant
+	formals to SM_Obj_Or_Type. Also, add more precise semantic
+	descriptions in some cases, and declare the subprograms in a
+	more logical order.
+	* sem_util.adb (Storage_Model_Support.Storage_Model_Object): Add
+	an assertion that the type must specify aspect
+	Designated_Storage_Model, rather than returning Empty when it
+	doesn't specify that aspect.
+	(Storage_Model_Support.Storage_Model_Type): Add an assertion
+	that formal must be an object whose type specifies aspect
+	Storage_Model_Type, rather than returning Empty for when it
+	doesn't have such a type (and test Has_Storage_Model_Type_Aspect
+	rather than Find_Value_Of_Aspect).
+	(Storage_Model_Support.Get_Storage_Model_Type_Entity): Allow
+	both objects and types, and add an assertion that the type (or
+	the type of the object) has a value for aspect
+	Storage_Model_Type.
+
+2022-05-16  Etienne Servais  <servais@adacore.com>
+
+	* checks.adb (Apply_Arithmetic_Overflow_Minimized_Eliminated):
+	Fix condition to return.
+
+2022-05-16  Yannick Moy  <moy@adacore.com>
+
+	* inline.adb (Can_Be_Inlined_In_GNATprove_Mode): Update comment.
+
+2022-05-16  Marc Poulhiès  <poulhies@adacore.com>
+
+	* sem_aggr.adb (Resolve_Iterated_Association): Create scope
+	around N_Iterated_Element_Association handling. Analyze a copy
+	of the Loop_Parameter_Specification. Call Analyze instead
+	Analyze_* to be more homogeneous.
+	(Sem_Ch5): Remove now unused package.
+
+2022-05-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_util.adb (Insert_Actions) <N_Iterated_Component_Association>:
+	Climb up out of the node if the actions come from Discrete_Choices.
+
+2022-05-16  Javier Miranda  <miranda@adacore.com>
+
+	* sem_disp.adb (Check_Dispatching_Context): When checking to see
+	whether an expression occurs in a class-wide pre/post-condition,
+	also check for the possibility that it occurs in a class-wide
+	preconditions subprogram that was introduced as part of
+	expansion. Without this fix, some legal calls occuring in
+	class-wide preconditions may be incorrectly flagged as violating
+	the "a call to an abstract subprogram must be dispatching" rule.
+
+2022-05-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* inline.adb (Cleanup_Scopes): Test the underlying type.
+
+2022-05-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_util.ads (Is_Entity_Of_Quantified_Expression): Declare.
+	* sem_util.adb (Is_Entity_Of_Quantified_Expression): New
+	predicate.
+	(New_Copy_Tree): Deal with all entities of quantified
+	expressions.
+	* sem_ch13.adb (Build_Predicate_Functions): Get rid of
+	superfluous tree copying and remove obsolete code.
+	* sem_ch6.adb (Fully_Conformant_Expressions): Deal with all
+	entities of quantified expressions.
+
+2022-05-16  Steve Baird  <baird@adacore.com>
+
+	* exp_ch7.adb (Build_Finalize_Statements): Add Last_POC_Call
+	variable to keep track of the last "early finalization" call
+	generated for type extension's finalization procedure. If
+	non-empty, then this will indicate the point at which to insert
+	the call to the parent type's finalization procedure. Modify
+	nested function Process_Component_List_For_Finalize to set this
+	variable (and avoid setting it during a recursive call).  If
+	Last_POC_Call is empty, then insert the parent finalization call
+	before, rather than after, the finalization code for the
+	extension components.
+
+2022-05-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* einfo-utils.adb (Remove_Entity): Fix couple of oversights.
+	* exp_ch3.adb (Is_User_Defined_Equality): Delete.
+	(User_Defined_Eq): Call Get_User_Defined_Equality.
+	(Make_Eq_Body): Likewise.
+	(Predefined_Primitive_Eq_Body): Call Is_User_Defined_Equality.
+	* exp_ch4.adb (Build_Eq_Call): Call Get_User_Defined_Equality.
+	(Is_Equality): Delete.
+	(User_Defined_Primitive_Equality_Op): Likewise.
+	(Find_Aliased_Equality): Call Is_User_Defined_Equality.
+	(Expand_N_Op_Eq): Call Underlying_Type unconditionally.
+	Do not implement AI12-0101 + AI05-0123 here.
+	(Expand_Set_Membership): Call Resolve_Membership_Equality.
+	* exp_ch6.adb (Expand_Call_Helper): Remove obsolete code.
+	* sem_aux.ads (Is_Record_Or_Limited_Type): Delete.
+	* sem_aux.adb (Is_Record_Or_Limited_Type): Likewise.
+	* sem_ch4.ads (Nondispatching_Call_To_Abstract_Operation): Declare.
+	* sem_ch4.adb (Analyze_Call): Call Call_Abstract_Operation.
+	(Analyze_Membership_Op): Call Resolve_Membership_Equality.
+	(Nondispatching_Call_To_Abstract_Operation): New procedure.
+	(Remove_Abstract_Operations): Call it.
+	* sem_ch6.adb (Check_Untagged_Equality): Remove obsolete error and
+	call Is_User_Defined_Equality.
+	* sem_ch7.adb (Inspect_Untagged_Record_Completion): New procedure
+	implementing AI12-0101 + AI05-0123.
+	(Analyze_Package_Specification): Call it.
+	(Declare_Inherited_Private_Subprograms): Minor tweak.
+	(Uninstall_Declarations): Likewise.
+	* sem_disp.adb (Check_Direct_Call): Adjust to new implementation
+	of Is_User_Defined_Equality.
+	* sem_res.ads (Resolve_Membership_Equality): Declare.
+	* sem_res.adb (Resolve): Replace direct error handling with call to
+	Nondispatching_Call_To_Abstract_Operation
+	(Resolve_Call): Likewise.
+	(Resolve_Equality_Op): Likewise.  mplement AI12-0413.
+	(Resolve_Membership_Equality): New procedure.
+	(Resolve_Membership_Op): Call Get_User_Defined_Equality.
+	* sem_util.ads (Get_User_Defined_Eq): Rename into...
+	(Get_User_Defined_Equality): ...this.
+	* sem_util.adb (Get_User_Defined_Eq): Rename into...
+	(Get_User_Defined_Equality): ...this. Call Is_User_Defined_Equality.
+	(Is_User_Defined_Equality): Also check the profile but remove tests
+	on Comes_From_Source and Parent.
+	* sinfo.ads (Generic_Parent_Type): Adjust field description.
+	* uintp.ads (Ubool): Invoke user-defined equality in predicate.
+
+2022-05-16  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_ch3.adb (User_Defined_Eq): Replace duplicated code with a
+	call to Get_User_Defined_Eq.
+
+2022-05-16  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_ch3.adb (Build_Untagged_Equality): Exit early when the
+	outcome of a loop is already known.
+
+2022-05-16  Olivier Hainque  <hainque@adacore.com>
+
+	* Makefile.rtl: Add aarch64 to the list of CPUs for which
+	GNATLIB_SHARED maps to gnatlib-shared-dual for vxworks7r2.
+
+2022-05-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch4.adb (Analyze_Negation): Minor tweak.
+	(Analyze_Unary_Op): Likewise.
+
+2022-05-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch3.adb (Build_Assignment): Adjust to the new definition of
+	Incomplete_View field.
+	* sem_ch10.ads (Decorate_Type): Declare.
+	* sem_ch10.adb (Decorate_Type): Move to library level.
+	(Install_Limited_With_Clause): In the already analyzed case, also
+	deal with incomplete type declarations present in the sources and
+	simplify the replacement code.
+	(Build_Shadow_Entity): Deal with swapped views in package body.
+	(Restore_Chain_For_Shadow): Deal with incomplete type declarations
+	present in the sources.
+	* sem_ch3.adb (Analyze_Full_Type_Declaration): Adjust to the new
+	definition of Incomplete_View field.
+	(Build_Incomplete_Type_Declaration): Small consistency tweak.
+	Set the incomplete type as the Incomplete_View of the full type.
+	If the scope is a package with a limited view, build a shadow
+	entity for the incomplete type.
+	* sem_ch6.adb (Analyze_Subprogram_Body_Helper): When replacing
+	the limited view of a CW type as designated type of an anonymous
+	access return type, get to the CW type of the incomplete view of
+	the tagged type, if any.
+	(Collect_Primitive_Operations): Adjust to the new definition of
+	Incomplete_View field.
+	* sinfo.ads (Incomplete_View): Denote the entity itself instead
+	of its declaration.
+	* sem_util.adb: Remove call to Defining_Entity.
+
+2022-05-16  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_util.adb (Type_Or_Variable_Has_Enabled_Property): Given a
+	subtype recurse into its base type.
+
+2022-05-16  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_util.adb (Type_Or_Variable_Has_Enabled_Property): Clarify.
+
+2022-05-16  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_util.adb (Is_Enabled): Remove; use Is_Enabled_Pragma
+	instead.
+
+2022-05-16  Martin Liska  <mliska@suse.cz>
+
+	* locales.c (iso_639_1_to_639_3): Use ARRAY_SIZE.
+	(language_name_to_639_3): Likewise.
+	(country_name_to_3166): Likewise.
+
 2022-05-13  Alexandre Oliva  <oliva@adacore.com>
 
 	* gcc-interface/decl.cc (is_cplusplus_method): Build proper

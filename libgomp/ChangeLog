@@ -1,3 +1,9 @@
+2022-05-16  Marcel Vollweiler  <marcel@codesourcery.com>
+
+	* testsuite/libgomp.c++/target-has-device-addr-7.C: New test.
+	* testsuite/libgomp.c++/target-has-device-addr-8.C: New test.
+	* testsuite/libgomp.c++/target-has-device-addr-9.C: New test.
+
 2022-05-13  Tobias Burnus  <tobias@codesourcery.com>
 
 	* testsuite/libgomp.fortran/target-nowait-array-section.f90: New test.

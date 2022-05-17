@@ -1,3 +1,14 @@
+2022-05-16  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* libdruntime/MERGE: Merge upstream druntime 94bd5bcb.
+	* libdruntime/Makefile.am (ALL_DRUNTIME_INSTALL_DSOURCES): Add
+	$(DRUNTIME_DSOURCES_ELF).
+	(ALL_DRUNTIME_SOURCES): Likewise.
+	(DRUNTIME_DSOURCES_ELF): New variable.
+	* libdruntime/Makefile.in: Regenerate.
+	* src/MERGE: Merge upstream phobos 3a1cd9a01.
+	* testsuite/libphobos.init_fini/custom_gc.d: Update test.
+
 2022-04-28  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* libdruntime/MERGE: Merge upstream druntime e361d200.

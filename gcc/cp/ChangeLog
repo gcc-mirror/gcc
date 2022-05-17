@@ -1,3 +1,14 @@
+2022-05-16  Martin Liska  <mliska@suse.cz>
+
+	* module.cc (depset::entity_kind_name): Use ARRAY_SIZE.
+	* name-lookup.cc (get_std_name_hint): Likewise.
+	* parser.cc (cp_parser_new): Likewise.
+
+2022-05-16  Marcel Vollweiler  <marcel@codesourcery.com>
+
+	* pt.cc (tsubst_omp_clauses): Added OMP_CLAUSE_HAS_DEVICE_ADDR.
+	* semantics.cc (finish_omp_clauses): Added template decl processing.
+
 2022-05-15  Jason Merrill  <jason@redhat.com>
 
 	PR c++/100502

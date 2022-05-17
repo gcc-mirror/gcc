@@ -1,3 +1,112 @@
+2022-05-16  Jason Merrill  <jason@redhat.com>
+
+	PR c/105492
+	* attribs.cc (decl_attributes): Fix broken typedefs here.
+
+2022-05-16  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/105103
+	* Makefile.in (ANALYZER_OBJS): Add analyzer/varargs.o.
+	* doc/invoke.texi: Add -Wanalyzer-va-arg-type-mismatch,
+	-Wanalyzer-va-list-exhausted, -Wanalyzer-va-list-leak, and
+	-Wanalyzer-va-list-use-after-va-end.
+
+2022-05-16  Richard Biener  <rguenther@suse.de>
+
+	* gimple-match.h (gimple_build): Move code_helper overloads ...
+	* gimple-fold.h (gimple_build): ... here.
+	(gimple_build): Transition to new worker API.  Provide
+	overloads from sequence-based API.
+	(gimple_convert): Likewise.
+	(gimple_convert_to_ptrofftype): Likewise.
+	(gimple_build_vector_from_val): Likewise.
+	(gimple_build_vector): Likewise.
+	(gimple_build_round_up): Likewise.
+	* gimple-fold.cc (gimple_build_insert_seq): New helper.
+	(gimple_build): Use it.  Transition combined_fn and code_helper
+	API parts.
+	(gimple_convert): Transition to new worker API.
+	(gimple_convert_to_ptrofftype): Likewise.
+	(gimple_build_vector_from_val): Likewise.
+	(gimple_build_vector): Likewise.
+	(gimple_build_round_up): Likewise.
+
+2022-05-16  Richard Biener  <rguenther@suse.de>
+
+	* gimple-match.h (code_helper): Move class ...
+	* tree.h (code_helper): ... here.
+
+2022-05-16  Martin Liska  <mliska@suse.cz>
+
+	* opts-global.cc (write_langs): Add comment.
+
+2022-05-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* dwarf2out.cc (loc_list_from_tree_1) <TRUTH_NOT_EXPR>: Do a logical
+	instead of a bitwise negation.
+	<COND_EXPR>: Swap the operands if the condition is TRUTH_NOT_EXPR.
+
+2022-05-16  Martin Liska  <mliska@suse.cz>
+
+	* attribs.cc (diag_attr_exclusions): Use ARRAY_SIZE.
+	(decls_mismatched_attributes): Likewise.
+	* builtins.cc (c_strlen): Likewise.
+	* cfg.cc (DEF_BASIC_BLOCK_FLAG): Likewise.
+	* common/config/aarch64/aarch64-common.cc (aarch64_option_init_struct): Likewise.
+	* config/aarch64/aarch64-builtins.cc (aarch64_lookup_simd_builtin_type): Likewise.
+	(aarch64_init_simd_builtin_types): Likewise.
+	(aarch64_init_builtin_rsqrt): Likewise.
+	* config/aarch64/aarch64.cc (is_madd_op): Likewise.
+	* config/arm/arm-builtins.cc (arm_lookup_simd_builtin_type): Likewise.
+	(arm_init_simd_builtin_types): Likewise.
+	* config/avr/gen-avr-mmcu-texi.cc (mcus[ARRAY_SIZE): Likewise.
+	(c_prefix): Likewise.
+	(main): Likewise.
+	* config/c6x/c6x.cc (N_SAVE_ORDER): Likewise.
+	* config/darwin-c.cc (darwin_register_frameworks): Likewise.
+	* config/gcn/mkoffload.cc (process_obj): Likewise.
+	* config/i386/i386-builtins.cc (get_builtin_code_for_version): Likewise.
+	(fold_builtin_cpu): Likewise.
+	* config/m32c/m32c.cc (PUSHM_N): Likewise.
+	* config/nvptx/mkoffload.cc (process): Likewise.
+	* config/rs6000/driver-rs6000.cc (host_detect_local_cpu): Likewise.
+	* config/s390/s390.cc (NR_C_MODES): Likewise.
+	* config/tilepro/gen-mul-tables.cc (find_sequences): Likewise.
+	(create_insn_code_compression_table): Likewise.
+	* config/vms/vms.cc (NBR_CRTL_NAMES): Likewise.
+	* diagnostic-format-json.cc (json_from_expanded_location): Likewise.
+	* dwarf2out.cc (ARRAY_SIZE): Likewise.
+	* genhooks.cc (emit_documentation): Likewise.
+	(emit_init_macros): Likewise.
+	* gimple-ssa-sprintf.cc (format_floating): Likewise.
+	* gimple-ssa-warn-access.cc (memmodel_name): Likewise.
+	* godump.cc (keyword_hash_init): Likewise.
+	* hash-table.cc (hash_table_higher_prime_index): Likewise.
+	* input.cc (for_each_line_table_case): Likewise.
+	* ipa-free-lang-data.cc (free_lang_data): Likewise.
+	* ipa-inline.cc (sanitize_attrs_match_for_inline_p): Likewise.
+	* optc-save-gen.awk: Likewise.
+	* spellcheck.cc (test_metric_conditions): Likewise.
+	* tree-vect-slp-patterns.cc (sizeof): Likewise.
+	(ARRAY_SIZE): Likewise.
+	* tree.cc (build_common_tree_nodes): Likewise.
+
+2022-05-16  Martin Liska  <mliska@suse.cz>
+
+	* opts-global.cc (write_langs): Allocate at least one byte.
+
+2022-05-16  Richard Biener  <rguenther@suse.de>
+
+	* match.pd (A cmp B ? A : B -> min/max): New patterns
+	carried over from fold_cond_expr_with_comparison.
+
+2022-05-16  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/105587
+	* config/i386/i386-expand.cc
+	(expand_vec_perm_pslldq_psrldq_por): Fail when (d->perm[i] ==
+	d->perm[i-1] + 1) && d->perm[i] == nelt && start != -1.
+
 2022-05-15  Uroš Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md: Remove constraints when used with

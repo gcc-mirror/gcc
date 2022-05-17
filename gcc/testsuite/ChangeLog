@@ -1,3 +1,29 @@
+2022-05-16  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/105103
+	* gcc.dg/analyzer/stdarg-1.c: New test.
+	* gcc.dg/analyzer/stdarg-2.c: New test.
+	* gcc.dg/analyzer/stdarg-fmtstring-1.c: New test.
+	* gcc.dg/analyzer/stdarg-lto-1-a.c: New test.
+	* gcc.dg/analyzer/stdarg-lto-1-b.c: New test.
+	* gcc.dg/analyzer/stdarg-lto-1.h: New test.
+	* gcc.dg/analyzer/stdarg-sentinel-1.c: New test.
+	* gcc.dg/analyzer/stdarg-types-1.c: New test.
+	* gcc.dg/analyzer/stdarg-types-2.c: New test.
+
+2022-05-16  Richard Biener  <rguenther@suse.de>
+
+	PR rtl-optimization/105577
+	* g++.dg/torture/pr105577.C: New testcase.
+
+2022-05-16  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/torture/pr105598.c: New testcase.
+
+2022-05-16  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr105587.c: New test.
+
 2022-05-15  Jason Merrill  <jason@redhat.com>
 
 	PR c++/100502

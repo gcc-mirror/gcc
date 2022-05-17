@@ -1,3 +1,28 @@
+2022-05-16  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* dmd/MERGE: Merge upstream dmd 60bfa0ee7.
+	* dmd/VERSION: Update version to v2.100.0.
+	* d-builtins.cc (d_init_versions): Update for new front-end interface.
+	* d-codegen.cc (d_decl_context): Use resolvedLinkage to get
+	declaration linkage.
+	(build_struct_literal): Track offset in bits.
+	* d-gimplify.cc (d_gimplify_modify_expr): Check both operands for a
+	bit-field reference.
+	* d-lang.cc (d_handle_option): Handle -fpreview=bitfields, remove
+	-frevert=markdown and -ftransition=vmarkdown.
+	(d_post_options): Set flag_rtti and flag_exceptions if -fno-druntime
+	was seen on command-line.
+	(d_parse_file): Update for new front-end interface.
+	(d_type_promotes_to): Use resolvedLinkage to get declaration linkage.
+	* decl.cc (make_thunk): Likewise.
+	* expr.cc (ExprVisitor::visit (CatAssignExp *)): Remove lowering for
+	appending of an element or array to another array.
+	* lang.opt (fpreview=bitfields): New option.
+	(frevert=markdown): Remove.
+	(ftransition=vmarkdown): Remove.
+	* types.cc (layout_aggregate_members): Ignore anonymous fields in
+	total count.
+
 2022-04-28  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* dmd/MERGE: Merge upstream dmd 313d28b3d.

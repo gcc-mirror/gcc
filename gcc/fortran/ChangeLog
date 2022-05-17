@@ -1,3 +1,10 @@
+2022-05-16  Martin Liska  <mliska@suse.cz>
+
+	* frontend-passes.cc (gfc_code_walker): Use ARRAY_SIZE.
+	* openmp.cc (gfc_match_omp_context_selector_specification): Likewise.
+	* trans-intrinsic.cc (conv_intrinsic_ieee_builtin): Likewise.
+	* trans-types.cc (gfc_get_array_descr_info): Likewise.
+
 2022-05-13  Tobias Burnus  <tobias@codesourcery.com>
 
 	* trans-openmp.cc (gfc_trans_omp_clauses): When mapping nondescriptor
