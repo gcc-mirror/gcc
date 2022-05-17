@@ -20,15 +20,22 @@ PrivacyReporter::go (HIR::Crate &crate)
 }
 
 static bool
-is_child_module (NodeId current_module,
-		 Optional<std::vector<NodeId> &> children)
+is_child_module (Analysis::Mappings &mappings, NodeId parent,
+		 NodeId possible_child)
 {
+  auto children = mappings.lookup_module_children (parent);
+
   if (!children)
     return false;
 
-  // FIXME: This checks for one step - we need to go deeper
+  // Visit all toplevel children
   for (auto &child : *children)
-    if (child == current_module)
+    if (child == possible_child)
+      return true;
+
+  // Now descend recursively in the child module tree
+  for (auto &child : *children)
+    if (is_child_module (mappings, child, possible_child))
       return true;
 
   return false;
@@ -72,11 +79,9 @@ PrivacyReporter::check_for_privacy_violation (const NodeId &use_id,
 	if (mod_node_id == current_module.get ())
 	  break;
 
-	auto children = mappings.lookup_module_children (mod_node_id);
-
 	// FIXME: This needs a LOT of TLC: hinting about the definition, a
 	// string to say if it's a module, function, type, etc...
-	if (!is_child_module (current_module.get (), children))
+	if (!is_child_module (mappings, mod_node_id, current_module.get ()))
 	  valid = false;
       }
       break;
