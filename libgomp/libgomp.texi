@@ -158,6 +158,7 @@ See also @ref{OpenMP Implementation Status}.
 * OpenMP 4.5:: Feature completion status to 4.5 specification
 * OpenMP 5.0:: Feature completion status to 5.0 specification
 * OpenMP 5.1:: Feature completion status to 5.1 specification
+* OpenMP 5.2:: Feature completion status to 5.2 specification
 @end menu
 
 The @code{_OPENMP} preprocessor macro and Fortran's @code{openmp_version}
@@ -182,7 +183,7 @@ The OpenMP 4.5 specification is fully supported.
 @item Iterators @tab Y @tab
 @item @code{metadirective} directive @tab N @tab
 @item @code{declare variant} directive
-      @tab P @tab simd traits not handled correctly
+      @tab P @tab @emph{simd} traits not handled correctly
 @item @emph{target-offload-var} ICV and @code{OMP_TARGET_OFFLOAD}
       env variable @tab Y @tab
 @item Nested-parallel changes to @emph{max-active-levels-var} ICV @tab Y @tab
@@ -220,7 +221,7 @@ The OpenMP 4.5 specification is fully supported.
       @tab Y @tab Some are only stubs
 @item Memory management routines @tab Y @tab
 @item @code{allocate} directive @tab N @tab
-@item @code{allocate} clause @tab P @tab initial support
+@item @code{allocate} clause @tab P @tab Initial support
 @item @code{use_device_addr} clause on @code{target data} @tab Y @tab
 @item @code{ancestor} modifier on @code{device} clause
       @tab P @tab Reverse offload unsupported
@@ -290,14 +291,14 @@ The OpenMP 4.5 specification is fully supported.
 @item @code{scope} directive @tab Y @tab
 @item Loop transformation constructs @tab N @tab
 @item @code{strict} modifier in the @code{grainsize} and @code{num_tasks}
-      clauses of the taskloop construct @tab Y @tab
+      clauses of the @code{taskloop} construct @tab Y @tab
 @item @code{align} clause/modifier in @code{allocate} directive/clause
       and @code{allocator} directive @tab P @tab C/C++ on clause only
 @item @code{thread_limit} clause to @code{target} construct @tab Y @tab
 @item @code{has_device_addr} clause to @code{target} construct @tab Y @tab
-@item iterators in @code{target update} motion clauses and @code{map}
+@item Iterators in @code{target update} motion clauses and @code{map}
       clauses @tab N @tab
-@item indirect calls to the device version of a procedure or function in
+@item Indirect calls to the device version of a procedure or function in
       @code{target} regions @tab N @tab
 @item @code{interop} directive @tab N @tab
 @item @code{omp_interop_t} object support in runtime routines @tab N @tab
@@ -342,6 +343,56 @@ The OpenMP 4.5 specification is fully supported.
 @item Support of structured block sequences in C/C++ @tab Y @tab
 @item @code{unconstrained} and @code{reproducible} modifiers on @code{order}
       clause @tab Y @tab
+@end multitable
+
+
+@node OpenMP 5.2
+@section OpenMP 5.2
+
+@unnumberedsubsec New features listed in Appendix B of the OpenMP specification
+
+@multitable @columnfractions .60 .10 .25
+@item @code{omp_in_explicit_task} routine and @emph{implicit-task-var} ICV
+      @tab N @tab
+@item @code{omp}/@code{ompx}/@code{omx} sentinels and @code{omp_}/@code{ompx_}
+      namespaces @tab N/A @tab
+@item Clauses on @code{end} directive can be on directive @tab N @tab
+@item Deprecation of no-argument @code{destroy} clause on @code{depobj}
+      @tab N @tab
+@item @code{linear} clause syntax changes and @code{step} modifier @tab N @tab
+@item Deprecation of minus operator for reductions @tab N @tab
+@item Deprecation of separating @code{map} modifiers without comma @tab N @tab
+@item @code{declare mapper} with iterator and @code{present} modifiers
+      @tab N @tab
+@item If a matching mapped list item is not found in the data environment, the
+      pointer retains its original value @tab N @tab
+@item New @code{enter} clause as alias for @code{to} on declare target directive
+      @tab N @tab
+@item Deprecation of @code{to} clause on declare target directive @tab N @tab
+@item Extended list of directives permitted in Fortran pure procedures
+      @tab N @tab
+@item New @code{allocators} directive for Fortran @tab N @tab
+@item Deprecation of @code{allocator} directive for Fortran
+      allocatables/pointers @tab N @tab
+@item Optional paired @code{end} directive with @code{dispatch} @tab N @tab
+@item New @code{memspace} and @code{traits} modifiers for @code{uses_allocators}
+      @tab N @tab
+@item Deprecation of traits array following the allocator_handle expression in
+      @code{uses_allocators} @tab N @tab
+@item New @code{otherwise} clause as alias for @code{default} on metadirectives
+      @tab N @tab
+@item Deprecation of @code{default} clause on metadirectives @tab N @tab
+@item Deprecation of delimited form of @code{declare target} @tab N @tab
+@item Reproducible semantics changed for @code{order(concurrent)} @tab N @tab
+@item @code{allocate} and @code{firstprivate} clauses on @code{scope}
+      @tab N @tab
+@item @code{ompt_callback_work} @tab N @tab
+@item Extended map-type handling of @code{target enter/exit data} @tab N @tab
+@item New @code{doacross} clause as alias for @code{depend} with
+      @code{source}/@code{sink} modifier @tab N @tab
+@item Deprecation of @code{depend} with @code{source}/@code{sink} modifier
+      @tab N @tab
+@item @code{omp_cur_iteration} keyword @tab N @tab
 @end multitable
 
 
