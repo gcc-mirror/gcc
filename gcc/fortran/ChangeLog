@@ -1,3 +1,22 @@
+2022-05-16  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2022-05-11  Harald Anlauf  <anlauf@gmx.de>
+		    Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/105230
+	* expr.c (find_array_section): Correct logic to avoid NULL
+	pointer dereference on invalid array section.
+
+2022-05-16  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2022-03-09  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/104849
+	* expr.c (find_array_section): Avoid NULL pointer dereference on
+	invalid array section.
+
 2022-04-21  Fritz Reese  <foreese@gcc.gnu.org>
 
 	Backported from master:

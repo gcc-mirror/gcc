@@ -1,3 +1,19 @@
+2022-05-16  Sebastian Pop  <spop@amazon.com>
+
+	PR target/105162
+	* config/aarch64/aarch64-protos.h (atomic_ool_names): Increase dimension
+	of str array.
+	* config/aarch64/aarch64.c (aarch64_atomic_ool_func): Call
+	memmodel_from_int and handle MEMMODEL_SYNC_*.
+	(DEF0): Add __aarch64_*_sync functions.
+
+2022-05-16  Jan Hubicka  <jh@suse.cz>
+
+	Backported from master:
+	2021-11-10  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-modref-tree.h (modref_tree::remap_params): Fix off-by-one error.
+
 2022-05-10  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:
