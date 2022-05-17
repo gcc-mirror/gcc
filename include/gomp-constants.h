@@ -328,6 +328,7 @@ enum gomp_map_kind
 #define GOMP_DEPEND_OUT			2
 #define GOMP_DEPEND_INOUT		3
 #define GOMP_DEPEND_MUTEXINOUTSET	4
+#define GOMP_DEPEND_INOUTSET		5
 
 /* HSA specific data structures.  */
 
