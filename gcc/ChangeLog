@@ -1,3 +1,18 @@
+2022-05-16  Sebastian Pop  <spop@amazon.com>
+
+	PR target/105162
+	* config/aarch64/aarch64-protos.h (atomic_ool_names): Increase dimension
+	of str array.
+	* config/aarch64/aarch64.cc (aarch64_atomic_ool_func): Call
+	memmodel_from_int and handle MEMMODEL_SYNC_*.
+	(DEF0): Add __aarch64_*_sync functions.
+
+2022-05-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* dwarf2out.cc (loc_list_from_tree_1) <TRUTH_NOT_EXPR>: Do a logical
+	instead of a bitwise negation.
+	<COND_EXPR>: Swap the operands if the condition is TRUTH_NOT_EXPR.
+
 2022-05-13  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree-sra.cc (sra_modify_assign): Check that scalar storage order
