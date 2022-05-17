@@ -316,11 +316,11 @@ process (FILE *in, FILE *out)
 	   "  const struct nvptx_fn *fn_names;\n"
 	   "  unsigned fn_num;\n"
 	   "} target_data = {\n"
-	   "  ptx_objs, ARRAY_SIZE (ptx_objs),\n"
+	   "  ptx_objs, sizeof (ptx_objs) / sizeof (ptx_objs[0]),\n"
 	   "  var_mappings,"
-	   "  ARRAY_SIZE (var_mappings),\n"
+	   "  sizeof (var_mappings) / sizeof (var_mappings[0]),\n"
 	   "  func_mappings,"
-	   "  ARRAY_SIZE (func_mappings)\n"
+	   "  sizeof (func_mappings) / sizeof (func_mappings[0])\n"
 	   "};\n\n");
 
   fprintf (out, "#ifdef __cplusplus\n"

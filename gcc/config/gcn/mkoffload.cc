@@ -723,7 +723,7 @@ process_obj (FILE *in, FILE *cfile)
 	   "  unsigned global_variable_count;\n"
 	   "} target_data = {\n"
 	   "  &gcn_image,\n"
-	   "  ARRAY_SIZE (gcn_kernels),\n"
+	   "  sizeof (gcn_kernels) / sizeof (gcn_kernels[0]),\n"
 	   "  gcn_kernels,\n"
 	   "  gcn_num_vars\n"
 	   "};\n\n");
