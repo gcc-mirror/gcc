@@ -304,6 +304,46 @@ package body Sem_Ch7 is
             Decl_Id     : Entity_Id;
             In_Instance : Boolean;
             Spec        : Node_Id;
+            Ignore      : Boolean;
+
+            function Set_Referencer_Of_Non_Subprograms return Boolean;
+            --  Set Has_Referencer_Of_Non_Subprograms and call
+            --  Scan_Subprogram_Refs if relevant.
+            --  Return whether Scan_Subprogram_Refs was called.
+
+            ---------------------------------------
+            -- Set_Referencer_Of_Non_Subprograms --
+            ---------------------------------------
+
+            function Set_Referencer_Of_Non_Subprograms return Boolean is
+            begin
+               --  An inlined subprogram body acts as a referencer
+               --  unless we generate C code since inlining is then
+               --  handled by the C compiler.
+
+               --  Note that we test Has_Pragma_Inline here in addition
+               --  to Is_Inlined. We are doing this for a client, since
+               --  we are computing which entities should be public, and
+               --  it is the client who will decide if actual inlining
+               --  should occur, so we need to catch all cases where the
+               --  subprogram may be inlined by the client.
+
+               if (not CCG_Mode or else Has_Pragma_Inline_Always (Decl_Id))
+                 and then (Is_Inlined (Decl_Id)
+                            or else Has_Pragma_Inline (Decl_Id))
+               then
+                  Has_Referencer_Of_Non_Subprograms := True;
+
+                  --  Inspect the statements of the subprogram body
+                  --  to determine whether the body references other
+                  --  subprograms.
+
+                  Scan_Subprogram_Refs (Decl);
+                  return True;
+               else
+                  return False;
+               end if;
+            end Set_Referencer_Of_Non_Subprograms;
 
          begin
             if No (Decls) then
@@ -398,54 +438,17 @@ package body Sem_Ch7 is
                         return True;
                      end if;
 
-                     --  An inlined subprogram body acts as a referencer
-                     --  unless we generate C code since inlining is then
-                     --  handled by the C compiler.
-
-                     --  Note that we test Has_Pragma_Inline here in addition
-                     --  to Is_Inlined. We are doing this for a client, since
-                     --  we are computing which entities should be public, and
-                     --  it is the client who will decide if actual inlining
-                     --  should occur, so we need to catch all cases where the
-                     --  subprogram may be inlined by the client.
-
-                     if not CCG_Mode
-                       and then (Is_Inlined (Decl_Id)
-                                  or else Has_Pragma_Inline (Decl_Id))
-                     then
-                        Has_Referencer_Of_Non_Subprograms := True;
-
-                        --  Inspect the statements of the subprogram body
-                        --  to determine whether the body references other
-                        --  subprograms.
-
-                        Scan_Subprogram_Refs (Decl);
-                     end if;
+                     Ignore := Set_Referencer_Of_Non_Subprograms;
 
                   --  Otherwise this is a stand alone subprogram body
 
                   else
                      Decl_Id := Defining_Entity (Decl);
 
-                     --  An inlined subprogram body acts as a referencer
-                     --  unless we generate C code since inlining is then
-                     --  handled by the C compiler.
-
-                     if not CCG_Mode
-                       and then (Is_Inlined (Decl_Id)
-                                  or else Has_Pragma_Inline (Decl_Id))
+                     if not Set_Referencer_Of_Non_Subprograms
+                       and then not Subprogram_Table.Get (Decl_Id)
                      then
-                        Has_Referencer_Of_Non_Subprograms := True;
-
-                        --  Inspect the statements of the subprogram body
-                        --  to determine whether the body references other
-                        --  subprograms.
-
-                        Scan_Subprogram_Refs (Decl);
-
-                     --  Otherwise we can reset Is_Public right away
-
-                     elsif not Subprogram_Table.Get (Decl_Id) then
+                        --  We can reset Is_Public right away
                         Set_Is_Public (Decl_Id, False);
                      end if;
                   end if;
