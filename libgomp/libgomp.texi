@@ -113,6 +113,7 @@ changed to GNU Offloading and Multi Processing Runtime Library.
 * OpenACC Library Interoperability:: OpenACC library interoperability with the
                                NVIDIA CUBLAS library.
 * OpenACC Profiling Interface::
+* Offload-Target Specifics::   Notes on offload-target specific internals
 * The libgomp ABI::            Notes on the external ABI presented by libgomp.
 * Reporting Bugs::             How to report bugs in the GNU Offloading and
                                Multi Processing Runtime Library.
@@ -4255,6 +4256,37 @@ offloading devices (it's not clear if they should be):
 @item @code{acc_memcpy_from_device}, @code{acc_memcpy_from_device_async}
 @end itemize
 
+@c ---------------------------------------------------------------------
+@c Offload-Target Specifics
+@c ---------------------------------------------------------------------
+
+@node Offload-Target Specifics
+@chapter Offload-Target Specifics
+
+The following sections present notes on the offload-target specifics.
+
+@menu
+* OpenMP Context Selectors::
+@end menu
+
+@node OpenMP Context Selectors
+@section OpenMP Context Selectors
+
+@code{vendor} is always @code{gnu}. References are to the GCC manual.
+
+@multitable @columnfractions .60 .10 .25
+@headitem @code{arch} @tab @code{kind} @tab @code{isa}
+@item @code{intel_mic}, @code{x86}, @code{x86_64}, @code{i386}, @code{i486},
+      @code{i586}, @code{i686}, @code{ia32}
+      @tab @code{host}
+      @tab See @code{-m...} flags in ``x86 Options'' (without @code{-m})
+@item @code{amdgcn} @code{gcn}
+      @tab @code{gpu}
+      @tab See @code{-march=} in ``AMD GCN Options''
+@item @code{nvptx}
+      @tab @code{gpu}
+      @tab See @code{-misa=} in ``Nvidia PTX Options''
+@end multitable
 
 
 @c ---------------------------------------------------------------------
