@@ -1,3 +1,21 @@
+2022-05-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-05-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/prerequisites.xml: Fix attributes for external
+	hyperlink.
+	* doc/html/manual/setup.html: Regenerate.
+
+2022-05-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-05-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/html/manual/status.html: Regenerate.
+	* doc/xml/manual/status_cxx2020.xml: Fix supported version for
+	C++20 bit operations.
+
 2022-05-09  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:
