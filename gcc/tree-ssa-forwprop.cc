@@ -2356,14 +2356,14 @@ simplify_bitfield_ref (gimple_stmt_iterator *gsi)
   code = gimple_assign_rhs_code (def_stmt);
   elem_type = TREE_TYPE (TREE_TYPE (op0));
   type = TREE_TYPE (op);
-  /* Also hanlde vector type.
-   .i.e.
-   _7 = VEC_PERM_EXPR <_1, _1, { 2, 3, 2, 3 }>;
-   _11 = BIT_FIELD_REF <_7, 64, 0>;
+  /* Also handle vector type.
+     .i.e.
+     _7 = VEC_PERM_EXPR <_1, _1, { 2, 3, 2, 3 }>;
+     _11 = BIT_FIELD_REF <_7, 64, 0>;
 
-   to
+     to
 
-   _11 = BIT_FIELD_REF <_1, 64, 64>.  */
+     _11 = BIT_FIELD_REF <_1, 64, 64>.  */
 
   size = tree_to_poly_uint64 (TYPE_SIZE (type));
   if (maybe_ne (bit_field_size (op), size))
