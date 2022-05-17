@@ -9253,7 +9253,9 @@ finish_enum (tree enumtype, tree values, tree attributes)
 
 	  DECL_INITIAL (enu) = ini;
 	  TREE_PURPOSE (pair) = DECL_NAME (enu);
-	  TREE_VALUE (pair) = ini;
+	  /* To match the C++ FE, store the CONST_DECL rather than just its
+	     value.  */
+	  TREE_VALUE (pair) = enu;
 	}
 
       TYPE_VALUES (enumtype) = values;
