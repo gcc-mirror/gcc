@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -funswitch-loops -fdump-tree-unswitch-optimized" } */
+/* { dg-options "-O2 -funswitch-loops -fdump-tree-unswitch-optimized --param max-unswitch-insns=100" } */
 
 void bar (int);
 void foo (int a, int b, int c, int n)

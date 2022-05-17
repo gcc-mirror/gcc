@@ -247,7 +247,7 @@ init_loop_unswitch_info (class loop *loop)
 	   gsi_next (&gsi))
 	insns += estimate_num_insns (gsi_stmt (gsi), &eni_size_weights);
 
-      bbs[i]->aux = (void *)(size_t)insns;
+      bbs[i]->aux = (void *)(uintptr_t)insns;
       total_insns += insns;
     }
 
@@ -812,6 +812,8 @@ evaluate_insns (class loop *loop, basic_block *bbs,
 						  ignored_edge_flag,
 						  &ignored_edges);
 
+      /* ???  We fail to account for removed condition or switch stmts.  */
+
       FOR_EACH_EDGE (e, ei, bb->succs)
 	{
 	  basic_block dest = e->dest;
@@ -834,7 +836,7 @@ evaluate_insns (class loop *loop, basic_block *bbs,
       if (bbs[i]->flags & reachable_flag)
 	{
 	  bbs[i]->flags &= ~reachable_flag;
-	  size += (size_t)bbs[i]->aux;
+	  size += (uintptr_t)bbs[i]->aux;
 	}
     }
 
@@ -888,32 +890,38 @@ tree_unswitch_single_loop (class loop *loop, dump_user_location_t loc,
   bbs = get_loop_body (loop);
 
   for (unsigned i = 0; i < loop->num_nodes; i++)
-    for (auto pred : get_predicates_for_bb (bbs[i]))
-      {
-	if (bitmap_bit_p (handled, pred->num))
-	  continue;
+    {
+      for (auto pred : get_predicates_for_bb (bbs[i]))
+	{
+	  if (bitmap_bit_p (handled, pred->num))
+	    continue;
 
-	evaluate_loop_insns_for_predicate (loop, bbs, predicate_path,
-					   pred, ignored_edge_flag,
-					   &true_size, &false_size);
+	  evaluate_loop_insns_for_predicate (loop, bbs, predicate_path,
+					     pred, ignored_edge_flag,
+					     &true_size, &false_size);
+	  gcc_assert (true_size + false_size >= loop_size);
 
-	/* FIXME: right now we select first candidate, but we can choose
-	   the cheapest or hottest one.  */
-	if (true_size + false_size < budget + loop_size)
-	  {
-	    predicate = pred;
-	    bb = bbs[i];
-	    /* We get one more simplified loop copy and the original
-	       loop simplified.  */
-	    budget -= (true_size + false_size - loop_size);
-	    break;
-	  }
-	else if (dump_enabled_p ())
-	  dump_printf_loc (MSG_NOTE, loc,
-			   "Not unswitching condition, cost too big "
-			   "(%u insns copied to %u and %u)\n", loop_size,
-			   true_size, false_size);
-      }
+	  /* FIXME: right now we select first candidate, but we can choose
+	     the cheapest or hottest one.  */
+	  if (true_size + false_size < budget + loop_size)
+	    {
+	      predicate = pred;
+	      bb = bbs[i];
+	      /* We get one more simplified loop copy and the original
+		 loop simplified.
+		 ???  We fail to account for the versioning condition.  */
+	      budget -= (true_size + false_size - loop_size);
+	      break;
+	    }
+	  else if (dump_enabled_p ())
+	    dump_printf_loc (MSG_NOTE, loc,
+			     "Not unswitching condition, cost too big "
+			     "(%u insns copied to %u and %u)\n", loop_size,
+			     true_size, false_size);
+	}
+      if (predicate)
+	break;
+    }
 
   if (predicate != NULL)
     {
