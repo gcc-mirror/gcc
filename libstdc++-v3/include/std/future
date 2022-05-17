@@ -82,15 +82,18 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct is_error_code_enum<future_errc> : public true_type { };
 
   /// Points to a statically-allocated object derived from error_category.
+  [[__nodiscard__, __gnu__::__const__]]
   const error_category&
   future_category() noexcept;
 
   /// Overload of make_error_code for `future_errc`.
+  [[__nodiscard__]]
   inline error_code
   make_error_code(future_errc __errc) noexcept
   { return error_code(static_cast<int>(__errc), future_category()); }
 
   /// Overload of make_error_condition for `future_errc`.
+  [[__nodiscard__]]
   inline error_condition
   make_error_condition(future_errc __errc) noexcept
   { return error_condition(static_cast<int>(__errc), future_category()); }
