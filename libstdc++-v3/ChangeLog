@@ -1,3 +1,12 @@
+2022-05-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-05-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/html/manual/status.html: Regenerate.
+	* doc/xml/manual/status_cxx2020.xml: Fix supported version for
+	C++20 bit operations and power-of-two operations.
+
 2022-05-09  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:

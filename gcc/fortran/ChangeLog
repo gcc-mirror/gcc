@@ -1,3 +1,32 @@
+2022-05-16  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2022-05-11  Harald Anlauf  <anlauf@gmx.de>
+		    Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/105230
+	* expr.c (find_array_section): Correct logic to avoid NULL
+	pointer dereference on invalid array section.
+
+2022-05-16  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2022-03-09  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/104849
+	* expr.c (find_array_section): Avoid NULL pointer dereference on
+	invalid array section.
+
+2022-05-16  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2022-04-05  Harald Anlauf  <anlauf@gmx.de>
+		    Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/105138
+	* intrinsic.c (gfc_is_intrinsic): When a symbol refers to a
+	RECURSIVE procedure, it cannot be an INTRINSIC.
+
 2022-05-11  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:

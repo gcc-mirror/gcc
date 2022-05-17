@@ -1,3 +1,9 @@
+2022-05-16  Sebastian Pop  <spop@amazon.com>
+
+	PR target/105162
+	* config/aarch64/lse.S: Define BARRIER and handle memory MODEL 5.
+	* config/aarch64/t-lse: Add a 5th memory model for _sync functions.
+
 2021-10-27  John David Anglin  <danglin@gcc.gnu.org>
 
 	* config.host (hppa*64*-*-linux*): Don't add pa/t-linux to
