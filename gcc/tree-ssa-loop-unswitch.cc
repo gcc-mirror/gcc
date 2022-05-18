@@ -1523,11 +1523,14 @@ clean_up_after_unswitching (int ignored_edge_flag)
 
   FOR_EACH_BB_FN (bb, cfun)
     {
-      gimple *last = last_stmt (bb);
-      if (gswitch *stmt = safe_dyn_cast <gswitch *> (last))
+      gswitch *stmt= safe_dyn_cast <gswitch *> (last_stmt (bb));
+      if (stmt && !CONSTANT_CLASS_P (gimple_switch_index (stmt)))
 	{
 	  unsigned nlabels = gimple_switch_num_labels (stmt);
 	  unsigned index = 1;
+	  tree lab = gimple_switch_default_label (stmt);
+	  edge default_e = find_edge (gimple_bb (stmt),
+				      label_to_block (cfun, CASE_LABEL (lab)));
 	  for (unsigned i = 1; i < nlabels; ++i)
 	    {
 	      tree lab = gimple_switch_label (stmt, i);
@@ -1536,7 +1539,13 @@ clean_up_after_unswitching (int ignored_edge_flag)
 	      if (e == NULL)
 		; /* The edge is already removed.  */
 	      else if (e->flags & ignored_edge_flag)
-		remove_edge (e);
+		{
+		  /* We may not remove the default label so we also have
+		     to preserve its edge.  But we can remove the
+		     non-default CASE sharing the edge.  */
+		  if (e != default_e)
+		    remove_edge (e);
+		}
 	      else
 		{
 		  gimple_switch_set_label (stmt, index, lab);
