@@ -2,6 +2,8 @@
 
 	* gm2l.1: Corrected default implementation/program module
 	extension to .mod.
+	* m2color.c: Reformatted to use GNU coding standard
+	formatting.
 
 2022-05-17      Gaius Mulley <gaius.mulley@southwales.ac.uk>
 

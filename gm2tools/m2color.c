@@ -23,23 +23,27 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 
 extern "C" {
 
-const char *m2color_colorize_start (bool show_color, char *name, unsigned int name_len)
+const char *
+m2color_colorize_start (bool show_color, char *name, unsigned int name_len)
 {
   return "";
 }
 
-const char *m2color_colorize_stop (bool show_color)
+const char *
+m2color_colorize_stop (bool show_color)
 {
   return "";
 }
 
 
-void _M2_m2color_init ()
+void
+_M2_m2color_init ()
 {
 }
 
 
-void  _M2_m2color_finish ()
+void
+_M2_m2color_finish ()
 {
 }
 
