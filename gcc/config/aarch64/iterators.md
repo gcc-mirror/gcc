@@ -2119,7 +2119,10 @@
 ;; -------------------------------------------------------------------
 
 ;; This code iterator allows the various shifts supported on the core
-(define_code_iterator SHIFT [ashift ashiftrt lshiftrt rotatert])
+(define_code_iterator SHIFT [ashift ashiftrt lshiftrt rotatert rotate])
+
+;; This code iterator allows all shifts except for rotates.
+(define_code_iterator SHIFT_no_rotate [ashift ashiftrt lshiftrt])
 
 ;; This code iterator allows the shifts supported in arithmetic instructions
 (define_code_iterator ASHIFT [ashift ashiftrt lshiftrt])
@@ -2249,6 +2252,7 @@
 			 (ashiftrt "ashr")
 			 (lshiftrt "lshr")
 			 (rotatert "rotr")
+			 (rotate   "rotl")
 			 (sign_extend "extend")
 			 (zero_extend "zero_extend")
 			 (sign_extract "extv")
@@ -2338,7 +2342,10 @@
 
 ;; Similar for the instruction mnemonics
 (define_code_attr shift [(ashift "lsl") (ashiftrt "asr")
-			 (lshiftrt "lsr") (rotatert "ror")])
+			 (lshiftrt "lsr") (rotatert "ror") (rotate "ror")])
+;; True if shift is rotate left.
+(define_code_attr is_rotl [(ashift "0") (ashiftrt "0")
+			   (lshiftrt "0") (rotatert "0") (rotate "1")])
 
 ;; Op prefix for shift right and accumulate.
 (define_code_attr sra_op [(ashiftrt "s") (lshiftrt "u")])
