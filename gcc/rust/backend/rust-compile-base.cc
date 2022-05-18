@@ -343,8 +343,12 @@ HIRCompileBase::compile_locals_for_block (Context *ctx, Resolver::Rib &rib,
       rust_assert (ok);
 
       HIR::Stmt *decl = nullptr;
-      ok = ctx->get_mappings ()->resolve_nodeid_to_stmt (d.parent, &decl);
-      rust_assert (ok);
+      if (!ctx->get_mappings ()->resolve_nodeid_to_stmt (d.parent, &decl))
+	{
+	  // might be an extern block see fix for
+	  // https://github.com/Rust-GCC/gccrs/issues/976
+	  continue;
+	}
 
       // if its a function we extract this out side of this fn context
       // and it is not a local to this function

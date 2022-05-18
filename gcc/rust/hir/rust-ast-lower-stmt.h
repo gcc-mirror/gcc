@@ -437,6 +437,11 @@ public:
     translated = fn;
   }
 
+  void visit (AST::ExternBlock &extern_block) override
+  {
+    translated = lower_extern_block (extern_block);
+  }
+
 private:
   ASTLoweringStmt () : translated (nullptr), terminated (false) {}
 

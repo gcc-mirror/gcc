@@ -24,6 +24,7 @@
 #include "rust-hir-type-check-type.h"
 #include "rust-hir-type-check-expr.h"
 #include "rust-hir-type-check-enumitem.h"
+#include "rust-hir-type-check-implitem.h"
 
 namespace Rust {
 namespace Resolver {
@@ -54,6 +55,14 @@ public:
   {
     infered
       = TyTy::TupleType::get_unit_type (stmt.get_mappings ().get_hirid ());
+  }
+
+  void visit (HIR::ExternBlock &extern_block) override
+  {
+    for (auto &item : extern_block.get_extern_items ())
+      {
+	TypeCheckTopLevelExternItem::Resolve (item.get (), extern_block);
+      }
   }
 
   void visit (HIR::ConstantItem &constant) override

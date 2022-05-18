@@ -406,6 +406,8 @@ public:
     resolver->get_label_scope ().pop ();
   }
 
+  void visit (AST::ExternBlock &extern_block) override;
+
 private:
   ResolveStmt (NodeId parent, const CanonicalPath &prefix,
 	       const CanonicalPath &canonical_prefix,

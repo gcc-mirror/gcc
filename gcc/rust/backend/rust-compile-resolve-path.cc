@@ -23,8 +23,7 @@
 #include "rust-compile-expr.h"
 #include "rust-hir-trait-resolve.h"
 #include "rust-hir-path-probe.h"
-
-#include "print-tree.h"
+#include "rust-compile-extern.h"
 
 namespace Rust {
 namespace Compile {
@@ -172,7 +171,11 @@ HIRCompileBase::query_compile (HirId ref, TyTy::BaseType *lookup,
 {
   HIR::Item *resolved_item
     = ctx->get_mappings ()->lookup_hir_item (mappings.get_crate_num (), ref);
+  HIR::ExternalItem *resolved_extern_item
+    = ctx->get_mappings ()->lookup_hir_extern_item (mappings.get_crate_num (),
+						    ref);
   bool is_hir_item = resolved_item != nullptr;
+  bool is_hir_extern_item = resolved_extern_item != nullptr;
   if (is_hir_item)
     {
       if (!lookup->has_subsititions_defined ())
@@ -181,6 +184,15 @@ HIRCompileBase::query_compile (HirId ref, TyTy::BaseType *lookup,
       else
 	return CompileItem::compile (resolved_item, ctx, lookup, true,
 				     expr_locus);
+    }
+  else if (is_hir_extern_item)
+    {
+      if (!lookup->has_subsititions_defined ())
+	return CompileExternItem::compile (resolved_extern_item, ctx, nullptr,
+					   true, expr_locus);
+      else
+	return CompileExternItem::compile (resolved_extern_item, ctx, lookup,
+					   true, expr_locus);
     }
   else
     {
