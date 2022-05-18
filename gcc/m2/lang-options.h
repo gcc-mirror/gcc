@@ -21,8 +21,8 @@ see <https://www.gnu.org/licenses/>.  */
 
 #define LINK_COMMAND_SPEC ""
 
-/* This is the contribution to the `documented_lang_options' array in
-   toplev.c for gm2.  */
+/* These options are used in toplev.cc via the auto-generated options.cc for
+   the driver program gm2.  */
 
 DEFINE_LANG_NAME ("Modula-2")
 
@@ -69,7 +69,7 @@ DEFINE_LANG_NAME ("Modula-2")
   { "-fno-return",
       N_("turns off runtime checking for functions which finish without executing a RETURN statement") },
   { "-fcase",
-      N_("turns on runtime checking to check whether a CASE statement requires an ELSE clause when on was not specified") },
+      N_("turns on runtime checking to check whether a CASE statement requires an ELSE clause when one was not specified") },
   { "-fno-case",
       N_("turns off runtime checking to check whether a CASE statement requires an ELSE clause when on was not specified") },
   { "-fsoft-check-all",

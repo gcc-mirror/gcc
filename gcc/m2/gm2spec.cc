@@ -1035,9 +1035,10 @@ add_env_option (const char *path, size_t option)
     }
 }
 
-/* add_word returns a new string which has the contents of lib appended to list.
-   If list is NULL then lib is duplicated and returned otherwise the list is
-   appended by "," and the contents of lib.  */
+/* add_word returns a new string which has the contents of lib
+   appended to list.  If list is NULL then lib is duplicated and
+   returned otherwise the list is appended by "," and the contents of
+   lib.  */
 
 static const char *
 add_word (const char *list, const char *lib)
@@ -1052,10 +1053,10 @@ add_word (const char *list, const char *lib)
   return copy;
 }
 
-/* convert_abbreviation checks abbreviation against known library abbreviations.
-   If an abbreviations is found it converts the element to the full
-   library name, otherwise the user supplied name is added to the full_libraries list.
-   A new string is returned.  */
+/* convert_abbreviation checks abbreviation against known library
+   abbreviations.  If an abbreviation is found it converts the element
+   to the full library name, otherwise the user supplied name is added
+   to the full_libraries list.  A new string is returned.  */
 
 static const char *
 convert_abbreviation (const char *full_libraries, const char *abbreviation)
@@ -1067,10 +1068,10 @@ convert_abbreviation (const char *full_libraries, const char *abbreviation)
   return add_word (full_libraries, abbreviation);
 }
 
-/* convert_abbreviations checks each element in the library list to see if an
-   a known library abbreviation was used.  If found it converts the element to the full
-   library name, otherwise the element is copied into the list.
-   A new string is returned.  */
+/* convert_abbreviations checks each element in the library list to
+   see if an a known library abbreviation was used.  If found it
+   converts the element to the full library name, otherwise the
+   element is copied into the list.  A new string is returned.  */
 
 static const char *
 convert_abbreviations (const char *libraries)
