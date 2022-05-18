@@ -783,20 +783,24 @@ simplify_loop_version (class loop *loop, predicate_vector &predicate_path,
   return changed;
 }
 
-/* Evaluate how many instructions will be executed if we unswitch
-   LOOP (with BBS) based on PREDICATE_PATH.
-   REACHABLE_FLAG is used for marking of the basic blocks.  */
+/* Evaluate reachable blocks in LOOP and call VISIT on them, aborting the
+   DFS walk if VISIT returns true.  When PREDICATE_PATH is specified then
+   take into account that when computing reachability, otherwise just
+   look at the simplified state and IGNORED_EDGE_FLAG.  */
 
-static unsigned
-evaluate_insns (class loop *loop, basic_block *bbs,
-		predicate_vector &predicate_path,
-		int reachable_flag, int ignored_edge_flag)
+template <typename VisitOp>
+static void
+evaluate_bbs (class loop *loop, predicate_vector *predicate_path,
+	      int ignored_edge_flag, VisitOp visit)
 {
-  auto_vec<basic_block> worklist (loop->num_nodes);
+  auto_bb_flag reachable_flag (cfun);
+  auto_vec<basic_block, 10> worklist (loop->num_nodes);
+  auto_vec<basic_block, 10> reachable (loop->num_nodes);
   hash_set<edge> ignored_edges;
 
-  bbs[0]->flags |= reachable_flag;
-  worklist.quick_push (bbs[0]);
+  loop->header->flags |= reachable_flag;
+  worklist.quick_push (loop->header);
+  reachable.safe_push (loop->header);
 
   while (!worklist.is_empty ())
     {
@@ -805,6 +809,9 @@ evaluate_insns (class loop *loop, basic_block *bbs,
       int flags = ignored_edge_flag;
       basic_block bb = worklist.pop ();
 
+      if (visit (bb))
+	break;
+
       gimple *last = last_stmt (bb);
       if (gcond *cond = safe_dyn_cast <gcond *> (last))
 	{
@@ -812,20 +819,21 @@ evaluate_insns (class loop *loop, basic_block *bbs,
 	    flags = EDGE_FALSE_VALUE;
 	  else if (gimple_cond_false_p (cond))
 	    flags = EDGE_TRUE_VALUE;
-	  else
+	  else if (predicate_path)
 	    {
 	      tree res;
 	      if (!get_predicates_for_bb (bb).is_empty ()
 		  && (res = evaluate_control_stmt_using_entry_checks
-			      (cond, predicate_path, ignored_edge_flag,
+			      (cond, *predicate_path, ignored_edge_flag,
 			       &ignored_edges)))
 		flags = (integer_nonzerop (res)
 			 ? EDGE_FALSE_VALUE : EDGE_TRUE_VALUE);
 	    }
 	}
       else if (gswitch *swtch = safe_dyn_cast<gswitch *> (last))
-	if (!get_predicates_for_bb (bb).is_empty ())
-	  evaluate_control_stmt_using_entry_checks (swtch, predicate_path,
+	if (predicate_path
+	    && !get_predicates_for_bb (bb).is_empty ())
+	  evaluate_control_stmt_using_entry_checks (swtch, *predicate_path,
 						    ignored_edge_flag,
 						    &ignored_edges);
 
@@ -840,24 +848,16 @@ evaluate_insns (class loop *loop, basic_block *bbs,
 	      && !(e->flags & flags)
 	      && !ignored_edges.contains (e))
 	    {
-	      worklist.safe_push (dest);
 	      dest->flags |= reachable_flag;
+	      worklist.safe_push (dest);
+	      reachable.safe_push (dest);
 	    }
 	}
     }
 
-  /* Evaluate insns and clear the flag from basic blocks.  */
-  unsigned size = 0;
-  for (unsigned i = 0; i < loop->num_nodes; i++)
-    {
-      if (bbs[i]->flags & reachable_flag)
-	{
-	  bbs[i]->flags &= ~reachable_flag;
-	  size += (uintptr_t)bbs[i]->aux;
-	}
-    }
-
-  return size;
+  /* Clear the flag from basic blocks.  */
+  while (!reachable.is_empty ())
+    reachable.pop ()->flags &= ~reachable_flag;
 }
 
 /* Evaluate how many instruction will we have if we unswitch LOOP (with BBS)
@@ -865,23 +865,26 @@ evaluate_insns (class loop *loop, basic_block *bbs,
    result in TRUE_SIZE and FALSE_SIZE.  */
 
 static void
-evaluate_loop_insns_for_predicate (class loop *loop, basic_block *bbs,
+evaluate_loop_insns_for_predicate (class loop *loop,
 				   predicate_vector &predicate_path,
 				   unswitch_predicate *predicate,
 				   int ignored_edge_flag,
 				   unsigned *true_size, unsigned *false_size)
 {
-  auto_bb_flag reachable_flag (cfun);
+  unsigned size = 0;
+  auto sum_size = [&](basic_block bb) -> bool
+    { size += (uintptr_t)bb->aux; return false; };
 
   add_predicate_to_path (predicate_path, predicate, true);
-  unsigned true_loop_cost = evaluate_insns (loop, bbs, predicate_path,
-					    reachable_flag, ignored_edge_flag);
+  evaluate_bbs (loop, &predicate_path, ignored_edge_flag, sum_size);
   predicate_path.pop ();
+  unsigned true_loop_cost = size;
 
+  size = 0;
   add_predicate_to_path (predicate_path, predicate, false);
-  unsigned false_loop_cost = evaluate_insns (loop, bbs, predicate_path,
-					     reachable_flag, ignored_edge_flag);
+  evaluate_bbs (loop, &predicate_path, ignored_edge_flag, sum_size);
   predicate_path.pop ();
+  unsigned false_loop_cost = size;
 
   *true_size = true_loop_cost;
   *false_size = false_loop_cost;
@@ -897,46 +900,36 @@ tree_unswitch_single_loop (class loop *loop, dump_user_location_t loc,
 			   unsigned loop_size, unsigned &budget,
 			   int ignored_edge_flag, bitmap handled)
 {
-  basic_block *bbs = NULL;
   class loop *nloop;
   bool changed = false;
   unswitch_predicate *predicate = NULL;
-  basic_block bb = NULL;
+  basic_block predicate_bb = NULL;
   unsigned true_size = 0, false_size = 0;
 
-  bbs = get_loop_body (loop);
-
-  for (unsigned i = 0; i < loop->num_nodes; i++)
+  auto check_predicates = [&](basic_block bb) -> bool
     {
-      /* ???  The caller computed reachability of blocks when
-	 evaluating costs but we are still processing predicates
-	 on unreachable ones.  */
-      for (auto pred : get_predicates_for_bb (bbs[i]))
+      for (auto pred : get_predicates_for_bb (bb))
 	{
 	  if (bitmap_bit_p (handled, pred->num))
 	    continue;
 
-	  evaluate_loop_insns_for_predicate (loop, bbs, predicate_path,
+	  evaluate_loop_insns_for_predicate (loop, predicate_path,
 					     pred, ignored_edge_flag,
 					     &true_size, &false_size);
 
 	  gcc_assert (true_size + false_size >= loop_size);
-
-	  /* When the block was unreachable the predicate has no effect.  */
-	  if (true_size == loop_size && false_size == loop_size)
-	    continue;
 
 	  /* FIXME: right now we select first candidate, but we can choose
 	     the cheapest or hottest one.  */
 	  if (true_size + false_size < budget + loop_size)
 	    {
 	      predicate = pred;
-	      bb = bbs[i];
+	      predicate_bb = bb;
 	      /* We get one more simplified loop copy and the original
 		 loop simplified.
 		 ???  We fail to account for the versioning condition.  */
 	      budget -= (true_size + false_size - loop_size);
-	      break;
+	      return true;
 	    }
 	  else if (dump_enabled_p ())
 	    dump_printf_loc (MSG_NOTE, loc,
@@ -944,9 +937,10 @@ tree_unswitch_single_loop (class loop *loop, dump_user_location_t loc,
 			     "(%u insns copied to %u and %u)\n", loop_size,
 			     true_size, false_size);
 	}
-      if (predicate)
-	break;
-    }
+      return false;
+    };
+  /* Check predicates of reachable blocks.  */
+  evaluate_bbs (loop, NULL, ignored_edge_flag, check_predicates);
 
   if (predicate != NULL)
     {
@@ -961,7 +955,8 @@ tree_unswitch_single_loop (class loop *loop, dump_user_location_t loc,
       bitmap_set_bit (handled, predicate->num);
       initialize_original_copy_tables ();
       /* Unswitch the loop on this condition.  */
-      nloop = tree_unswitch_loop (loop, EDGE_SUCC (bb, predicate->edge_index),
+      nloop = tree_unswitch_loop (loop, EDGE_SUCC (predicate_bb,
+						   predicate->edge_index),
 				  predicate->condition);
       if (!nloop)
 	{
@@ -1006,7 +1001,6 @@ tree_unswitch_single_loop (class loop *loop, dump_user_location_t loc,
     }
 
 exit:
-  free (bbs);
   return changed;
 }
 
