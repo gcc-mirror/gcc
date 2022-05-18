@@ -1,15 +1,20 @@
+2022-05-18      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+
+	* gm2l.1: Corrected default implementation/program module
+	extension to .mod.
+
 2022-05-17      Gaius Mulley <gaius.mulley@southwales.ac.uk>
 
 	* Corrected dates on all source files.
 
 2021-06-14      Gaius Mulley <gaius.mulley@southwales.ac.uk>
 
-	* errors.c:  (New file).
-	* Makefile.am:  (m2color.o) rule added include paths for gcc
+	* errors.c: (New file).
+	* Makefile.am: (m2color.o) rule added include paths for gcc
 	system headers.  (errors.o) rule added include paths for gcc
 	system headers.  Add errors.o to list of modules and add errors.o
 	to gm2l.
-	* Makefile.in:  (rebuilt).
+	* Makefile.in: (rebuilt).
 
 2021-06-12      Gaius Mulley <gaius.mulley@southwales.ac.uk>
 
@@ -17,17 +22,17 @@
 
 2021-06-11      Gaius Mulley <gaius.mulley@southwales.ac.uk>
 
-	* gm2tools/Makefile.am:  (man_MANS) set to gm2lgen.1
+	* gm2tools/Makefile.am: (man_MANS) set to gm2lgen.1
 	gm2l.1 gm2lcc.1 gm2lorder.1.  (%.o) includes changed to
 	find gm2-libiberty and the gcc system.h and config.h.
-	* gm2tools/Makefile.in:  (rebuilt).
+	* gm2tools/Makefile.in: (rebuilt).
 
 2021-06-09      Gaius Mulley <gaius.mulley@southwales.ac.uk>
 
-	* gm2l.1:  (New file).
-	* gm2lcc.1:  (New file).
-	* gm2lgen.1:  (New file).
-	* gm2lorder.1:  (New file).
+	* gm2l.1: (New file).
+	* gm2lcc.1: (New file).
+	* gm2lgen.1: (New file).
+	* gm2lorder.1: (New file).
 
 2021-06-08      Gaius Mulley <gaius.mulley@southwales.ac.uk>
 
