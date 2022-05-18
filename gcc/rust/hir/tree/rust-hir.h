@@ -486,6 +486,8 @@ protected:
   virtual Type *clone_type_impl () const = 0;
 
   Analysis::NodeMapping mappings;
+
+  // FIXME: How do we get the location here for each type?
 };
 
 // A type without parentheses? - abstract
