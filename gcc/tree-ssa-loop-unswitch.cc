@@ -793,8 +793,10 @@ evaluate_insns (class loop *loop, basic_block *bbs,
 		int reachable_flag, int ignored_edge_flag)
 {
   auto_vec<basic_block> worklist (loop->num_nodes);
-  worklist.quick_push (bbs[0]);
   hash_set<edge> ignored_edges;
+
+  bbs[0]->flags |= reachable_flag;
+  worklist.quick_push (bbs[0]);
 
   while (!worklist.is_empty ())
     {
@@ -804,10 +806,7 @@ evaluate_insns (class loop *loop, basic_block *bbs,
       basic_block bb = worklist.pop ();
 
       gimple *last = last_stmt (bb);
-      gcond *cond = last != NULL ? dyn_cast<gcond *> (last) : NULL;
-      gswitch *swtch = last != NULL ? dyn_cast<gswitch *> (last) : NULL;
-
-      if (cond != NULL)
+      if (gcond *cond = safe_dyn_cast <gcond *> (last))
 	{
 	  if (gimple_cond_true_p (cond))
 	    flags = EDGE_FALSE_VALUE;
@@ -824,11 +823,11 @@ evaluate_insns (class loop *loop, basic_block *bbs,
 			 ? EDGE_FALSE_VALUE : EDGE_TRUE_VALUE);
 	    }
 	}
-      else if (swtch != NULL
-	       && !get_predicates_for_bb (bb).is_empty ())
-	evaluate_control_stmt_using_entry_checks (swtch, predicate_path,
-						  ignored_edge_flag,
-						  &ignored_edges);
+      else if (gswitch *swtch = safe_dyn_cast<gswitch *> (last))
+	if (!get_predicates_for_bb (bb).is_empty ())
+	  evaluate_control_stmt_using_entry_checks (swtch, predicate_path,
+						    ignored_edge_flag,
+						    &ignored_edges);
 
       /* ???  We fail to account for removed condition or switch stmts.  */
 
@@ -909,6 +908,9 @@ tree_unswitch_single_loop (class loop *loop, dump_user_location_t loc,
 
   for (unsigned i = 0; i < loop->num_nodes; i++)
     {
+      /* ???  The caller computed reachability of blocks when
+	 evaluating costs but we are still processing predicates
+	 on unreachable ones.  */
       for (auto pred : get_predicates_for_bb (bbs[i]))
 	{
 	  if (bitmap_bit_p (handled, pred->num))
@@ -917,7 +919,12 @@ tree_unswitch_single_loop (class loop *loop, dump_user_location_t loc,
 	  evaluate_loop_insns_for_predicate (loop, bbs, predicate_path,
 					     pred, ignored_edge_flag,
 					     &true_size, &false_size);
+
 	  gcc_assert (true_size + false_size >= loop_size);
+
+	  /* When the block was unreachable the predicate has no effect.  */
+	  if (true_size == loop_size && false_size == loop_size)
+	    continue;
 
 	  /* FIXME: right now we select first candidate, but we can choose
 	     the cheapest or hottest one.  */
