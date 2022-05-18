@@ -119,12 +119,9 @@ localExit (int i)
   exit (1);
 }
 
-/*
- *  tcpServerEstablishPort - returns a tcpState containing the relevant
- *                           information about a socket declared to receive
- *                           tcp connections.  This method attempts to use
- *                           the port specified by the parameter.
- */
+/* tcpServerEstablishPort returns a tcpState containing the relevant
+   information about a socket declared to receive tcp connections.
+   This method attempts to use the port specified by the parameter.  */
 
 tcpServerState *
 tcpServerEstablishPort (int portNo)
@@ -135,7 +132,7 @@ tcpServerEstablishPort (int portNo)
   if (s == NULL)
     ERROR ("no more memory");
 
-  /* remove SIGPIPE which is raised on the server if the client is killed */
+  /* Remove SIGPIPE which is raised on the server if the client is killed.  */
   signal (SIGPIPE, SIG_IGN);
 
   if (gethostname (s->hostname, MAXHOSTNAME) < 0)
@@ -150,9 +147,7 @@ tcpServerEstablishPort (int portNo)
   do
     {
       p++;
-      /*
-       * Open a TCP socket (an Internet stream socket)
-       */
+       /* Open a TCP socket (an Internet stream socket).  */
 
       s->sockFd = socket (s->hp->h_addrtype, SOCK_STREAM, 0);
       if (s->sockFd < 0)
@@ -180,11 +175,8 @@ tcpServerEstablishPort (int portNo)
   return s;
 }
 
-/*
- *  tcpServerEstablish - returns a tcpServerState containing the relevant
- *                       information about a socket declared to receive
- *                       tcp connections.
- */
+/* tcpServerEstablish returns a tcpServerState containing the relevant
+   information about a socket declared to receive tcp connections.  */
 
 tcpServerState *
 tcpServerEstablish (void)
@@ -192,10 +184,8 @@ tcpServerEstablish (void)
   return tcpServerEstablishPort (PORTSTART);
 }
 
-/*
- *  tcpServerAccept - returns a file descriptor once a client has connected and
- *                    been accepted.
- */
+/* tcpServerAccept returns a file descriptor once a client has connected and
+   been accepted.  */
 
 int
 tcpServerAccept (tcpServerState *s)
@@ -210,9 +200,7 @@ tcpServerAccept (tcpServerState *s)
   return t;
 }
 
-/*
- *  tcpServerPortNo - returns the portNo from structure, s.
- */
+/* tcpServerPortNo returns the portNo from structure, s.  */
 
 int
 tcpServerPortNo (tcpServerState *s)
@@ -220,9 +208,7 @@ tcpServerPortNo (tcpServerState *s)
   return s->portNo;
 }
 
-/*
- *  tcpServerSocketFd - returns the sockFd from structure, s.
- */
+/* tcpServerSocketFd returns the sockFd from structure, s.  */
 
 int
 tcpServerSocketFd (tcpServerState *s)
@@ -230,9 +216,7 @@ tcpServerSocketFd (tcpServerState *s)
   return s->sockFd;
 }
 
-/*
- *  getLocalIP - returns the IP address of this machine.
- */
+/* getLocalIP returns the IP address of this machine.  */
 
 unsigned int
 getLocalIP (tcpServerState *s)
@@ -274,9 +258,7 @@ getLocalIP (tcpServerState *s)
   return 0;
 }
 
-/*
- *  tcpServerIP - returns the IP address from structure, s.
- */
+/* tcpServerIP returns the IP address from structure s.  */
 
 int
 tcpServerIP (tcpServerState *s)
@@ -284,10 +266,8 @@ tcpServerIP (tcpServerState *s)
   return *((int *)s->hp->h_addr_list[0]);
 }
 
-/*
- *  tcpServerClientIP - returns the IP address of the client who
- *                      has connected to server, s.
- */
+/* tcpServerClientIP returns the IP address of the client who
+   has connected to server s.  */
 
 unsigned int
 tcpServerClientIP (tcpServerState *s)
@@ -300,10 +280,8 @@ tcpServerClientIP (tcpServerState *s)
   return ip;
 }
 
-/*
- *  tcpServerClientPortNo - returns the port number of the client who
- *                          has connected to server, s.
- */
+/* tcpServerClientPortNo returns the port number of the client who
+   has connected to server s.  */
 
 unsigned int
 tcpServerClientPortNo (tcpServerState *s)
@@ -326,10 +304,8 @@ typedef struct
   int portNo;
 } tcpClientState;
 
-/*
- *  tcpClientSocket - returns a file descriptor (socket) which has
- *                    connected to, serverName:portNo.
- */
+/* tcpClientSocket returns a file descriptor (socket) which has
+   connected to, serverName:portNo.  */
 
 tcpClientState *
 tcpClientSocket (char *serverName, int portNo)
@@ -339,7 +315,7 @@ tcpClientSocket (char *serverName, int portNo)
   if (s == NULL)
     ERROR ("no more memory");
 
-  /* remove SIGPIPE which is raised on the server if the client is killed */
+  /* Remove SIGPIPE which is raised on the server if the client is killed.  */
   signal (SIGPIPE, SIG_IGN);
 
   s->hp = gethostbyname (serverName);
@@ -355,18 +331,14 @@ tcpClientSocket (char *serverName, int portNo)
   s->portNo = portNo;
   s->sa.sin_port = htons (portNo);
 
-  /*
-   *  Open a TCP socket (an Internet stream socket)
-   */
+  /* Open a TCP socket (an Internet stream socket).  */
 
   s->sockFd = socket (s->hp->h_addrtype, SOCK_STREAM, 0);
   return s;
 }
 
-/*
- *  tcpClientSocketIP - returns a file descriptor (socket) which has
- *                      connected to, ip:portNo.
- */
+/* tcpClientSocketIP returns a file descriptor (socket) which has
+   connected to, ip:portNo.  */
 
 tcpClientState *
 tcpClientSocketIP (unsigned int ip, int portNo)
@@ -376,7 +348,7 @@ tcpClientSocketIP (unsigned int ip, int portNo)
   if (s == NULL)
     ERROR ("no more memory");
 
-  /* remove SIGPIPE which is raised on the server if the client is killed */
+  /* Remove SIGPIPE which is raised on the server if the client is killed.  */
   signal (SIGPIPE, SIG_IGN);
 
   memset ((void *)&s->sa, 0, sizeof (s->sa));
@@ -385,18 +357,14 @@ tcpClientSocketIP (unsigned int ip, int portNo)
   s->portNo = portNo;
   s->sa.sin_port = htons (portNo);
 
-  /*
-   * Open a TCP socket (an Internet stream socket)
-   */
+  /* Open a TCP socket (an Internet stream socket).  */
 
   s->sockFd = socket (PF_INET, SOCK_STREAM, 0);
   return s;
 }
 
-/*
- *  tcpClientConnect - returns the file descriptor associated with, s,
- *                     once a connect has been performed.
- */
+/* tcpClientConnect returns the file descriptor associated with s,
+   once a connect has been performed.  */
 
 int
 tcpClientConnect (tcpClientState *s)
@@ -407,9 +375,7 @@ tcpClientConnect (tcpClientState *s)
   return s->sockFd;
 }
 
-/*
- *  tcpClientPortNo - returns the portNo from structure, s.
- */
+/* tcpClientPortNo returns the portNo from structure s.  */
 
 int
 tcpClientPortNo (tcpClientState *s)
@@ -417,9 +383,7 @@ tcpClientPortNo (tcpClientState *s)
   return s->portNo;
 }
 
-/*
- *  tcpClientSocketFd - returns the sockFd from structure, s.
- */
+/* tcpClientSocketFd returns the sockFd from structure s.  */
 
 int
 tcpClientSocketFd (tcpClientState *s)
@@ -427,9 +391,7 @@ tcpClientSocketFd (tcpClientState *s)
   return s->sockFd;
 }
 
-/*
- *  tcpClientIP - returns the sockFd from structure, s.
- */
+/* tcpClientIP returns the sockFd from structure s.  */
 
 int
 tcpClientIP (tcpClientState *s)
@@ -441,9 +403,7 @@ tcpClientIP (tcpClientState *s)
 }
 #endif
 
-/*
- *  GNU Modula-2 link fodder.
- */
+/* GNU Modula-2 link fodder.  */
 
 void
 _M2_sckt_init (void)

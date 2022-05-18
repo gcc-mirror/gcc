@@ -167,7 +167,7 @@ typedef enum {
   parodd,
   hupcl,
   clocal,
-  /* local flags */
+  /* Local flags.  */
   lisig,
   licanon,
   lxcase,
@@ -185,7 +185,7 @@ typedef enum {
   liexten
 } Flag;
 
-/* prototypes */
+/* Prototypes.  */
 void *EXPORT (InitTermios) (void);
 void *EXPORT (KillTermios) (struct termios *p);
 int EXPORT (cfgetospeed) (struct termios *t);

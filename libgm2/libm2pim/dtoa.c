@@ -37,32 +37,32 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #endif
 
 #if defined(HAVE_STDDEF_H)
-/* to obtain a definition for NULL */
+/* Obtain a definition for NULL.  */
 #include <stddef.h>
 #endif
 
 #if defined(HAVE_STDIO_H)
-/* to obtain a definition for NULL */
+/* Obtain a definition for NULL.  */
 #include <stdio.h>
 #endif
 
 #if defined(HAVE_TIME_H)
-/* to obtain a definition for NULL */
+/* Obtain a definition for NULL.  */
 #include <time.h>
 #endif
 
 #if defined(HAVE_STRING_H)
-/* to obtain a definition for NULL */
+/* Obtain a definition for NULL.  */
 #include <string.h>
 #endif
 
 #if defined(HAVE_WCHAR_H)
-/* to obtain a definition for NULL */
+/* Obtain a definition for NULL.  */
 #include <wchar.h>
 #endif
 
 #if defined(HAVE_STDLIB_H)
-/* to obtain a prototype for free and malloc */
+/* Obtain a prototype for free and malloc.  */
 #include <stdlib.h>
 #endif
 
@@ -98,14 +98,11 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 typedef enum Mode { maxsignicant, decimaldigits } Mode;
 
-/*
- *  maxsignicant:  return a string containing max(1,ndigits) significant
- *                 digits.  The return string contains the string produced
- *                 by ecvt.
- *  decimaldigits: return a string produced by fcvt.  The string will
- *                 contain ndigits past the decimal point
- *                 (ndigits may be negative).
- */
+/* maxsignicant:  return a string containing max(1,ndigits) significant
+   digits.  The return string contains the string produced by ecvt.
+
+   decimaldigits: return a string produced by fcvt.  The string will
+   contain ndigits past the decimal point (ndigits may be negative).  */
 
 double
 dtoa_strtod (const char *s, int *error)
@@ -128,11 +125,8 @@ dtoa_strtod (const char *s, int *error)
   return d;
 }
 
-/*
- *  dtoa_calcmaxsig - calculates the position of the decimal point
- *                    it also removes the decimal point and exponent
- *                    from string, p.
- */
+/* dtoa_calcmaxsig calculates the position of the decimal point
+   it also removes the decimal point and exponent from string, p.  */
 
 int
 dtoa_calcmaxsig (char *p, int ndigits)
@@ -160,13 +154,10 @@ dtoa_calcmaxsig (char *p, int ndigits)
     }
 }
 
-/*
- *  dtoa_calcdecimal - calculates the position of the decimal point
- *                     it also removes the decimal point and exponent
- *                     from string, p.  It truncates the digits in p
- *                     accordingly to ndigits.  Ie ndigits is the
- *                     number of digits after the '.'
- */
+/* dtoa_calcdecimal calculates the position of the decimal point
+   it also removes the decimal point and exponent from string, p.
+   It truncates the digits in p accordingly to ndigits.
+   Ie ndigits is the number of digits after the '.'.  */
 
 int
 dtoa_calcdecimal (char *p, int str_size, int ndigits)
@@ -246,9 +237,7 @@ dtoa_dtoa (double d, int mode, int ndigits, int *decpt, int *sign)
 #endif
 
 #if defined(GM2)
-/*
- *  GNU Modula-2 hooks
- */
+/* GNU Modula-2 linking hooks.  */
 
 void
 _M2_dtoa_init (void)

@@ -27,12 +27,12 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include <config.h>
 
 #if defined(HAVE_STDDEF_H)
-/* to obtain a definition for NULL */
+/* Obtain a definition for NULL.  */
 #include <stddef.h>
 #endif
 
 #if defined(HAVE_STDIO_H)
-/* to obtain a definition for NULL */
+/* Obtain a definition for NULL.  */
 #include <stdio.h>
 #endif
 
@@ -41,22 +41,22 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #endif
 
 #if defined(HAVE_TIME_H)
-/* to obtain a definition for NULL */
+/* Obtain a definition for NULL.  */
 #include <time.h>
 #endif
 
 #if defined(HAVE_STRING_H)
-/* to obtain a definition for NULL */
+/* Obtain a definition for NULL.  */
 #include <string.h>
 #endif
 
 #if defined(HAVE_WCHAR_H)
-/* to obtain a definition for NULL */
+/* Obtain a definition for NULL.  */
 #include <wchar.h>
 #endif
 
 #if defined(HAVE_STDLIB_H)
-/* to obtain a prototype for free and malloc */
+/* Obtain a prototype for free and malloc.  */
 #include <stdlib.h>
 #endif
 

@@ -66,7 +66,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define NULL 0
 #endif
 
-/* strtime - returns the address of a string which describes the
+/* strtime returns the address of a string which describes the
    local time.  */
 
 char *
@@ -102,7 +102,7 @@ wrapc_filesize (int f, unsigned int *low, unsigned int *high)
 #endif
 }
 
-/* filemtime - returns the mtime of a file, f.  */
+/* filemtime returns the mtime of a file, f.  */
 
 int
 wrapc_filemtime (int f)
@@ -119,7 +119,7 @@ wrapc_filemtime (int f)
 #endif
 }
 
-/* fileinode - returns the inode associated with a file, f.  */
+/* fileinode returns the inode associated with a file, f.  */
 
 #if defined(HAVE_SYS_STAT_H) && defined(HAVE_STRUCT_STAT)
 ino_t
@@ -146,7 +146,7 @@ wrapc_fileinode (int f, unsigned int *low, unsigned int *high)
 }
 #endif
 
-/* getrand - returns a random number between 0..n-1 */
+/* getrand returns a random number between 0..n-1.  */
 
 int
 wrapc_getrand (int n)
@@ -163,7 +163,7 @@ wrapc_getusername (void)
   return getpwuid (getuid ())->pw_gecos;
 }
 
-/* getnameuidgid - fills in the, uid, and, gid, which represents
+/* getnameuidgid fills in the, uid, and, gid, which represents
    user, name.  */
 
 void
@@ -203,7 +203,7 @@ wrapc_signbit (double r)
 #if defined(HAVE_SIGNBIT)
 
   /* signbit is a macro which tests its argument against sizeof(float),
-     sizeof(double) */
+     sizeof(double).  */
   return signbit (r);
 #else
   return FALSE;
@@ -216,7 +216,7 @@ wrapc_signbitl (long double r)
 #if defined(HAVE_SIGNBITL)
 
   /* signbit is a macro which tests its argument against sizeof(float),
-     sizeof(double) */
+     sizeof(double).  */
   return signbitl (r);
 #else
   return FALSE;
@@ -229,14 +229,14 @@ wrapc_signbitf (float r)
 #if defined(HAVE_SIGNBITF)
 
   /* signbit is a macro which tests its argument against sizeof(float),
-     sizeof(double) */
+     sizeof(double).  */
   return signbitf (r);
 #else
   return FALSE;
 #endif
 }
 
-/* isfinite - provide non builtin alternative to the gcc builtin
+/* isfinite provide non builtin alternative to the gcc builtin
    isfinite.  Returns 1 if x is finite and 0 if it is not.  */
 
 int
@@ -249,7 +249,7 @@ wrapc_isfinite (double x)
 #endif
 }
 
-/* isfinitel - provide non builtin alternative to the gcc builtin
+/* isfinitel provide non builtin alternative to the gcc builtin
    isfinite.  Returns 1 if x is finite and 0 if it is not.  */
 
 int
@@ -262,7 +262,7 @@ wrapc_isfinitel (long double x)
 #endif
 }
 
-/* isfinitef - provide non builtin alternative to the gcc builtin
+/* isfinitef provide non builtin alternative to the gcc builtin
    isfinite.  Returns 1 if x is finite and 0 if it is not.  */
 
 int
@@ -275,7 +275,7 @@ wrapc_isfinitef (float x)
 #endif
 }
 
-/* init - init/finish functions for the module.  */
+/* init/finish are GNU Modula-2 linking fodder.  */
 
 void
 _M2_wrapc_init ()

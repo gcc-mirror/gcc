@@ -91,16 +91,14 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #endif
 
-/*
- *  note
- *    o  wholeDivException and realDivException are caught by SIGFPE and
- *       depatched to the appropriate Modula-2 runtime routine upon testing
- *       FPE_INTDIV or FPE_FLTDIV.
- *    o  realValueException is also caught by SIGFPE and dispatched by
- *       testing FFE_FLTOVF or FPE_FLTUND or FPE_FLTRES or FPE_FLTINV.
- *    o  indexException is caught by SIGFPE and dispatched by FPE_FLTSUB.
- *
- */
+/* Note:
+
+    o  wholeDivException and realDivException are caught by SIGFPE and
+       depatched to the appropriate Modula-2 runtime routine upon testing
+       FPE_INTDIV or FPE_FLTDIV.
+    o  realValueException is also caught by SIGFPE and dispatched by
+       testing FFE_FLTOVF or FPE_FLTUND or FPE_FLTRES or FPE_FLTINV.
+    o  indexException is caught by SIGFPE and dispatched by FPE_FLTSUB.  */
 
 #if defined(HAVE_SIGNAL_H)
 static struct sigaction sigbus;
@@ -150,23 +148,23 @@ sigfpeDespatcher (int signum, siginfo_t *info, void *ucontext)
       if (info)
         {
           if (info->si_code | FPE_INTDIV)
-            (*wholedivProc) (info->si_addr); /* integer divide by zero */
+            (*wholedivProc) (info->si_addr); /* Integer divide by zero.  */
           if (info->si_code | FPE_INTOVF)
-            (*wholevalueProc) (info->si_addr); /* integer overflow */
+            (*wholevalueProc) (info->si_addr); /* Integer overflow.  */
           if (info->si_code | FPE_FLTDIV)
-            (*realdivProc) (info->si_addr); /* floating-point divide by zero */
+            (*realdivProc) (info->si_addr); /* Floating-point divide by zero.  */
           if (info->si_code | FPE_FLTOVF)
-            (*realvalueProc) (info->si_addr); /* floating-point overflow */
+            (*realvalueProc) (info->si_addr); /* Floating-point overflow.  */
           if (info->si_code | FPE_FLTUND)
-            (*realvalueProc) (info->si_addr); /* floating-point underflow */
+            (*realvalueProc) (info->si_addr); /* Floating-point underflow.  */
           if (info->si_code | FPE_FLTRES)
             (*realvalueProc) (
-                info->si_addr); /* floating-point inexact result */
+                info->si_addr); /* Floating-point inexact result.  */
           if (info->si_code | FPE_FLTINV)
             (*realvalueProc) (
-                info->si_addr); /* floating-point invalid result */
+                info->si_addr); /* Floating-point invalid result.  */
           if (info->si_code | FPE_FLTSUB)
-            (*indexProc) (info->si_addr); /* subscript out of range */
+            (*indexProc) (info->si_addr); /* Subscript out of range.  */
         }
       break;
     default:
@@ -237,9 +235,7 @@ SysExceptions_InitExceptionHandlers (void *indexf, void *range, void *casef,
 }
 #endif
 
-/*
- *  GNU Modula-2 linking fodder.
- */
+/* GNU Modula-2 linking fodder.  */
 
 void
 _M2_SysExceptions_init (void)

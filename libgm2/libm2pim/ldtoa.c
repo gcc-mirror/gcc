@@ -37,27 +37,27 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #endif
 
 #if defined(HAVE_STDDEF_H)
-/* to obtain a definition for NULL */
+/* Obtain a definition for NULL.  */
 #include <stddef.h>
 #endif
 
 #if defined(HAVE_STDIO_H)
-/* to obtain a definition for NULL */
+/* Obtain a definition for NULL.  */
 #include <stdio.h>
 #endif
 
 #if defined(HAVE_TIME_H)
-/* to obtain a definition for NULL */
+/* Obtain a definition for NULL.  */
 #include <time.h>
 #endif
 
 #if defined(HAVE_STRING_H)
-/* to obtain a definition for NULL */
+/* Obtain a definition for NULL.  */
 #include <string.h>
 #endif
 
 #if defined(HAVE_WCHAR_H)
-/* to obtain a definition for NULL */
+/* Obtain a definition for NULL.  */
 #include <wchar.h>
 #endif
 
@@ -77,7 +77,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #endif
 
 #if defined(HAVE_STDLIB_H)
-/* to obtain a prototype for free and malloc */
+/* Obtain a prototype for free and malloc.  */
 #include <stdlib.h>
 #endif
 
@@ -100,14 +100,11 @@ extern int dtoa_calcmaxsig (char *p, int ndigits);
 extern int dtoa_calcdecimal (char *p, int str_size, int ndigits);
 extern int dtoa_calcsign (char *p, int str_size);
 
-/*
- *  maxsignicant:  return a string containing max(1,ndigits) significant
- *                 digits.  The return string contains the string produced
- *                 by snprintf.
- *  decimaldigits: return a string produced by fcvt.  The string will
- *                 contain ndigits past the decimal point
- *                 (ndigits may be negative).
- */
+/* maxsignicant return a string containing max(1,ndigits) significant
+   digits.  The return string contains the string produced by snprintf.
+
+   decimaldigits: return a string produced by fcvt.  The string will
+   contain ndigits past the decimal point (ndigits may be negative).  */
 
 long double
 ldtoa_strtold (const char *s, int *error)
@@ -121,7 +118,7 @@ ldtoa_strtold (const char *s, int *error)
 #if defined(HAVE_STRTOLD)
   d = strtold (s, &endp);
 #else
-  /* fall back to using strtod */
+  /* Fall back to using strtod.  */
   d = (long double)strtod (s, &endp);
 #endif
   if (endp != NULL && (*endp == '\0'))
@@ -145,7 +142,7 @@ ldtoa_ldtoa (long double d, int mode, int ndigits, int *decpt, int *sign)
     {
 
     case maxsignicant:
-      ndigits += 20; /* enough for exponent */
+      ndigits += 20; /* Enough for exponent.  */
       p = malloc (ndigits);
       snprintf (format, 50, "%s%d%s", "%.", ndigits - 20, "LE");
       snprintf (p, ndigits, format, d);
@@ -165,9 +162,7 @@ ldtoa_ldtoa (long double d, int mode, int ndigits, int *decpt, int *sign)
 }
 
 #if defined(GM2)
-/*
- *  GNU Modula-2 hooks
- */
+/* GNU Modula-2 linking hooks.  */
 
 void
 _M2_ldtoa_init (void)
