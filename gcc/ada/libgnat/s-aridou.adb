@@ -162,7 +162,7 @@ is
 
    function To_Neg_Int (A : Double_Uns) return Double_Int
    with
-     Annotate => (GNATprove, Terminating),
+     Annotate => (GNATprove, Always_Return),
      Pre      => In_Double_Int_Range (-Big (A)),
      Post     => Big (To_Neg_Int'Result) = -Big (A);
    --  Convert to negative integer equivalent. If the input is in the range
@@ -172,7 +172,7 @@ is
 
    function To_Pos_Int (A : Double_Uns) return Double_Int
    with
-     Annotate => (GNATprove, Terminating),
+     Annotate => (GNATprove, Always_Return),
      Pre      => In_Double_Int_Range (Big (A)),
      Post     => Big (To_Pos_Int'Result) = Big (A);
    --  Convert to positive integer equivalent. If the input is in the range
