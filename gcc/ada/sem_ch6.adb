@@ -5989,7 +5989,7 @@ package body Sem_Ch6 is
          --  the subprogram is abstract also. This does not apply to renaming
          --  declarations, where abstractness is inherited, and to subprogram
          --  bodies generated for stream operations, which become renamings as
-         --  bodies.
+         --  bodies. We also skip the check for thunks.
 
          --  In case of primitives associated with abstract interface types
          --  the check is applied later (see Analyze_Subprogram_Declaration).
@@ -5998,6 +5998,7 @@ package body Sem_Ch6 is
               N_Abstract_Subprogram_Declaration        |
               N_Formal_Abstract_Subprogram_Declaration |
               N_Subprogram_Renaming_Declaration
+           and then not Is_Thunk (Designator)
          then
             if Is_Abstract_Type (Etype (Designator)) then
                Error_Msg_N
@@ -9011,7 +9012,7 @@ package body Sem_Ch6 is
       --  Local variables
 
       Formal_Type : Entity_Id;
-      P_Formal    : Entity_Id := Empty;
+      P_Formal    : Entity_Id;
 
    --  Start of processing for Create_Extra_Formals
 
@@ -9023,10 +9024,10 @@ package body Sem_Ch6 is
          return;
       end if;
 
-      --  No need to generate extra formals in interface thunks whose target
-      --  primitive has no extra formals.
+      --  No need to generate extra formals in thunks whose target has no extra
+      --  formals, but we can have two of them chained (interface and stack).
 
-      if Is_Thunk (E) and then No (Extra_Formals (Thunk_Entity (E))) then
+      if Is_Thunk (E) and then No (Extra_Formals (Thunk_Target (E))) then
          return;
       end if;
 
@@ -9036,6 +9037,8 @@ package body Sem_Ch6 is
 
       if Is_Overloadable (E) and then Present (Alias (E)) then
          P_Formal := First_Formal (Alias (E));
+      else
+         P_Formal := Empty;
       end if;
 
       Formal := First_Formal (E);

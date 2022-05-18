@@ -31,6 +31,7 @@ with Elists;         use Elists;
 with Errout;         use Errout;
 with Erroutc;        use Erroutc;
 with Exp_Ch3;        use Exp_Ch3;
+with Exp_Ch6;        use Exp_Ch6;
 with Exp_Ch11;       use Exp_Ch11;
 with Exp_Util;       use Exp_Util;
 with Fname;          use Fname;
@@ -6881,19 +6882,25 @@ package body Sem_Util is
    ----------------------------
 
    procedure Compute_Returns_By_Ref (Func : Entity_Id) is
-      Typ  : constant Entity_Id := Etype (Func);
+      Kind : constant Entity_Kind := Ekind (Func);
+      Typ  : constant Entity_Id   := Etype (Func);
 
    begin
-      if Is_Limited_View (Typ) then
+      --  Nothing to do for procedures
+
+      if Kind in E_Procedure | E_Generic_Procedure
+        or else (Kind = E_Subprogram_Type and then Typ = Standard_Void_Type)
+      then
+         null;
+
+      --  The build-in-place protocols return a reference to the result
+
+      elsif Is_Build_In_Place_Function (Func) then
          Set_Returns_By_Ref (Func);
 
-      --  For class-wide types and types which both need finalization and are
-      --  returned on the secondary stack, the secondary stack allocation is
-      --  done by the front end, see Expand_Simple_Function_Return.
+      --  In Ada 95, limited types are returned by reference
 
-      elsif Needs_Secondary_Stack (Typ)
-        and then CW_Or_Needs_Finalization (Underlying_Type (Typ))
-      then
+      elsif Is_Limited_View (Typ) then
          Set_Returns_By_Ref (Func);
       end if;
    end Compute_Returns_By_Ref;
@@ -23481,13 +23488,14 @@ package body Sem_Util is
       then
          return Needs_Secondary_Stack (Cloned_Subtype (Typ));
 
-      --  Functions returning specific tagged types may dispatch on result, so
-      --  their returned value is allocated on the secondary stack, even in the
-      --  definite case. We must treat nondispatching functions the same way,
-      --  because access-to-function types can point at both, so the calling
-      --  conventions must be compatible.
+      --  Class-wide types obviously have an unknown size. For specific tagged
+      --  types, if a call returning one of them is dispatching on result, and
+      --  this type is not returned on the secondary stack, then the call goes
+      --  through a thunk that only moves the result from the primary onto the
+      --  secondary stack, because the computation of the size of the result is
+      --  possible but complex from the outside.
 
-      elsif Is_Tagged_Type (Typ) then
+      elsif Is_Class_Wide_Type (Typ) then
          return True;
 
       --  If the return slot of the back end cannot be accessed, then there
@@ -23498,9 +23506,9 @@ package body Sem_Util is
       elsif not Back_End_Return_Slot and then Needs_Finalization (Typ) then
          return True;
 
-      --  Untagged definite subtypes are known size. This includes all
-      --  elementary [sub]types. Tasks are known size even if they have
-      --  discriminants. So we return False here, with one exception:
+      --  Definite subtypes have a known size. This includes all elementary
+      --  types. Tasks have a known size even if they have discriminants, so
+      --  we return False here, with one exception:
       --  For a type like:
       --    type T (Last : Natural := 0) is
       --       X : String (1 .. Last);
@@ -23513,7 +23521,7 @@ package body Sem_Util is
       elsif Is_Definite_Subtype (Typ) or else Is_Task_Type (Typ) then
          return Large_Max_Size_Mutable (Typ);
 
-      --  Indefinite (discriminated) untagged record or protected type
+      --  Indefinite (discriminated) record or protected type
 
       elsif Is_Record_Type (Typ) or else Is_Protected_Type (Typ) then
          return not Caller_Known_Size_Record (Typ);

@@ -88,7 +88,6 @@ package Gen_IL.Fields is
       Body_Required,
       Body_To_Inline,
       Box_Present,
-      By_Ref,
       Char_Literal_Value,
       Chars,
       Check_Address_Alignment,

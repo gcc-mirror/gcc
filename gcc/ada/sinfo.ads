@@ -927,12 +927,6 @@ package Sinfo is
    --    a pragma Import or Interface applies, in which case no body is
    --    permitted (in Ada 83 or Ada 95).
 
-   --  By_Ref
-   --    Present in N_Simple_Return_Statement and N_Extended_Return_Statement,
-   --    this flag is set when the returned expression is already allocated on
-   --    the secondary stack and thus the result is passed by reference rather
-   --    than copied another time.
-
    --  Cleanup_Actions
    --    Present in block statements created for transient blocks, contains
    --    additional cleanup actions carried over from the transient scope.
@@ -5576,7 +5570,6 @@ package Sinfo is
       --  Expression (set to Empty if no expression present)
       --  Storage_Pool
       --  Procedure_To_Call
-      --  By_Ref
       --  Comes_From_Extended_Return_Statement
 
       --  Note: Return_Statement_Entity points to an E_Return_Statement
@@ -5591,7 +5584,6 @@ package Sinfo is
       --  Handled_Statement_Sequence (set to Empty if not present)
       --  Storage_Pool
       --  Procedure_To_Call
-      --  By_Ref
 
       --  Note: Return_Statement_Entity points to an E_Return_Statement.
 

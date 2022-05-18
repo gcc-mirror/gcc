@@ -9294,6 +9294,17 @@ package body Exp_Util is
       return False;
    end Is_Secondary_Stack_BIP_Func_Call;
 
+   ------------------------------
+   -- Is_Secondary_Stack_Thunk --
+   ------------------------------
+
+   function Is_Secondary_Stack_Thunk (Id : Entity_Id) return Boolean is
+   begin
+      return Ekind (Id) = E_Function
+        and then Is_Thunk (Id)
+        and then Has_Controlling_Result (Id);
+   end Is_Secondary_Stack_Thunk;
+
    -------------------------------------
    -- Is_Tag_To_Class_Wide_Conversion --
    -------------------------------------
@@ -14058,6 +14069,23 @@ package body Exp_Util is
          raise Program_Error;
       end if;
    end Small_Integer_Type_For;
+
+   ------------------
+   -- Thunk_Target --
+   ------------------
+
+   function Thunk_Target (Thunk : Entity_Id) return Entity_Id is
+      Target : Entity_Id := Thunk;
+
+   begin
+      pragma Assert (Is_Thunk (Thunk));
+
+      while Is_Thunk (Target) loop
+         Target := Thunk_Entity (Target);
+      end loop;
+
+      return Target;
+   end Thunk_Target;
 
    -------------------
    -- Type_Map_Hash --

@@ -76,15 +76,15 @@ package body Exp_Ch7 is
    -- Transient Scope Management --
    --------------------------------
 
-   --  A transient scope is created when temporary objects are created by the
-   --  compiler. These temporary objects are allocated on the secondary stack
-   --  and the transient scope is responsible for finalizing the object when
-   --  appropriate and reclaiming the memory at the right time. The temporary
-   --  objects are generally the objects allocated to store the result of a
-   --  function returning an unconstrained or a tagged value. Expressions
-   --  needing to be wrapped in a transient scope (functions calls returning
-   --  unconstrained or tagged values) may appear in 3 different contexts which
-   --  lead to 3 different kinds of transient scope expansion:
+   --  A transient scope is needed when certain temporary objects are created
+   --  by the compiler. These temporary objects are allocated on the secondary
+   --  stack and/or need finalization, and the transient scope is responsible
+   --  for finalizing the objects and reclaiming the memory of the secondary
+   --  stack at the appropriate time. They are generally objects allocated to
+   --  store the result of a function returning an unconstrained or controlled
+   --  value. Expressions needing to be wrapped in a transient scope may appear
+   --  in three different contexts which lead to different kinds of transient
+   --  scope expansion:
 
    --   1. In a simple statement (procedure call, assignment, ...). In this
    --      case the instruction is wrapped into a transient block. See
@@ -98,29 +98,6 @@ package body Exp_Ch7 is
    --      here, so the finalization actions, if any, are done right after the
    --      declaration and the secondary stack deallocation is done in the
    --      proper enclosing scope. See Wrap_Transient_Declaration for details.
-
-   --  Note about functions returning tagged types: it has been decided to
-   --  always allocate their result in the secondary stack, even though is not
-   --  absolutely mandatory when the tagged type is constrained because the
-   --  caller knows the size of the returned object and thus could allocate the
-   --  result in the primary stack. An exception to this is when the function
-   --  builds its result in place, as is done for functions with inherently
-   --  limited result types for Ada 2005. In that case, certain callers may
-   --  pass the address of a constrained object as the target object for the
-   --  function result.
-
-   --  By always allocating tagged results in the secondary stack, a couple of
-   --  implementation difficulties are avoided:
-
-   --    - If this is a dispatching function call, the computation of the size
-   --      of the result is possible but complex from the outside.
-
-   --    - If the result type is class-wide, it is unconstrained anyway.
-
-   --  Furthermore, the small loss in efficiency which is the result of this
-   --  decision is not such a big deal because functions returning tagged types
-   --  are not as common in practice compared to functions returning access to
-   --  a tagged type.
 
    --------------------------------------------------
    -- Transient Blocks and Finalization Management --

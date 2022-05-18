@@ -182,13 +182,17 @@ extern Boolean Is_Init_Proc		(Entity_Id);
 
 /* exp_util: */
 
+#define Find_Interface_Tag		exp_util__find_interface_tag
 #define Is_Fully_Repped_Tagged_Type	exp_util__is_fully_repped_tagged_type
 #define Is_Related_To_Func_Return	exp_util__is_related_to_func_return
-#define Find_Interface_Tag		exp_util__find_interface_tag
+#define Is_Secondary_Stack_Thunk	exp_util__is_secondary_stack_thunk
+#define Thunk_Target			exp_util__thunk_target
 
+extern Entity_Id Find_Interface_Tag		(Entity_Id, Entity_Id);
 extern Boolean Is_Fully_Repped_Tagged_Type	(Entity_Id);
 extern Boolean Is_Related_To_Func_Return	(Entity_Id);
-extern Entity_Id Find_Interface_Tag		(Entity_Id, Entity_Id);
+extern Boolean Is_Secondary_Stack_Thunk		(Entity_Id);
+extern Entity_Id Thunk_Target 			(Entity_Id);
 
 /* lib: */
 

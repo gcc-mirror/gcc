@@ -296,6 +296,12 @@ package body Sem_Disp is
       Ctrl_Type : Entity_Id;
 
    begin
+      --  We skip the check for thunks
+
+      if Is_Thunk (Subp) then
+         return;
+      end if;
+
       Formal := First_Formal (Subp);
       while Present (Formal) loop
          Ctrl_Type := Check_Controlling_Type (Etype (Formal), Subp);

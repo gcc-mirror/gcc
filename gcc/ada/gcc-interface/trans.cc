@@ -3725,7 +3725,7 @@ finalize_nrv (tree fndecl, bitmap nrv, vec<tree, va_gc> *other, Node_Id gnat_ret
   data.result = DECL_RESULT (fndecl);
   data.gnat_ret = gnat_ret;
   data.visited = new hash_set<tree>;
-  if (TYPE_RETURN_UNCONSTRAINED_P (TREE_TYPE (fndecl)))
+  if (TYPE_RETURN_BY_DIRECT_REF_P (TREE_TYPE (fndecl)))
     func = finalize_nrv_unc_r;
   else
     func = finalize_nrv_r;
@@ -3902,6 +3902,7 @@ Subprogram_Body_to_gnu (Node_Id gnat_node)
 
   /* Try to create a bona-fide thunk and hand it over to the middle-end.  */
   if (Is_Thunk (gnat_subprog)
+      && !Is_Secondary_Stack_Thunk (gnat_subprog)
       && maybe_make_gnu_thunk (gnat_subprog, gnu_subprog))
     return;
 
@@ -5252,10 +5253,9 @@ Call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target,
 	  gnu_result_type = TREE_TYPE (gnu_call);
 	}
 
-      /* If the function returns an unconstrained array or by direct reference,
-	 we have to dereference the pointer.  */
-      if (TYPE_RETURN_UNCONSTRAINED_P (gnu_subprog_type)
-	  || TYPE_RETURN_BY_DIRECT_REF_P (gnu_subprog_type))
+      /* If the function returns by direct reference, we have to dereference
+	 the pointer.  */
+      if (TYPE_RETURN_BY_DIRECT_REF_P (gnu_subprog_type))
 	gnu_call = build_unary_op (INDIRECT_REF, NULL_TREE, gnu_call);
 
       if (gnu_target)
@@ -7439,52 +7439,58 @@ gnat_to_gnu (Node_Id gnat_node)
 	      gnu_ret_val = TREE_OPERAND (gnu_ret_val, 0);
 
 	    /* If the function returns by direct reference, return a pointer
-	       to the return value.  */
-	    if (TYPE_RETURN_BY_DIRECT_REF_P (gnu_subprog_type)
-		|| By_Ref (gnat_node))
-	      gnu_ret_val = build_unary_op (ADDR_EXPR, NULL_TREE, gnu_ret_val);
-
-	    /* Otherwise, if it returns an unconstrained array, we have to
-	       allocate a new version of the result and return it.  */
-	    else if (TYPE_RETURN_UNCONSTRAINED_P (gnu_subprog_type))
+	       to the return value, possibly after allocating it.  */
+	    if (TYPE_RETURN_BY_DIRECT_REF_P (gnu_subprog_type))
 	      {
-		gnu_ret_val = maybe_unconstrained_array (gnu_ret_val);
-
-		/* And find out whether this is a candidate for Named Return
-		   Value.  If so, record it.  */
-		if (optimize
-		    && !optimize_debug
-		    && !TYPE_CI_CO_LIST (gnu_subprog_type))
+		if (Present (Storage_Pool (gnat_node)))
 		  {
-		    tree ret_val = gnu_ret_val;
+		    gnu_ret_val = maybe_unconstrained_array (gnu_ret_val);
 
-		    /* Strip useless conversions around the return value.  */
-		    if (gnat_useless_type_conversion (ret_val))
-		      ret_val = TREE_OPERAND (ret_val, 0);
-
-		    /* Strip unpadding around the return value.  */
-		    if (TREE_CODE (ret_val) == COMPONENT_REF
-			&& TYPE_IS_PADDING_P
-			   (TREE_TYPE (TREE_OPERAND (ret_val, 0))))
-		      ret_val = TREE_OPERAND (ret_val, 0);
-
-		    /* Now apply the test to the return value.  */
-		    if (return_value_ok_for_nrv_p (NULL_TREE, ret_val))
+		    /* And find out whether it is a candidate for Named Return
+		       Value.  If so, record it.  Note that we disable this NRV
+		       optimization when we're preserving the control flow as
+		       it entails hoisting the allocation done below.  */
+		    if (optimize
+			&& !optimize_debug
+			&& !TYPE_CI_CO_LIST (gnu_subprog_type))
 		      {
-			if (!f_named_ret_val)
-			  f_named_ret_val = BITMAP_GGC_ALLOC ();
-			bitmap_set_bit (f_named_ret_val, DECL_UID (ret_val));
-			if (!f_gnat_ret)
-			  f_gnat_ret = gnat_node;
+			tree ret_val = gnu_ret_val;
+
+			/* Strip conversions around the return value.  */
+			if (gnat_useless_type_conversion (ret_val))
+			  ret_val = TREE_OPERAND (ret_val, 0);
+
+			/* Strip unpadding around the return value.  */
+			if (TREE_CODE (ret_val) == COMPONENT_REF
+			    && TYPE_IS_PADDING_P
+			      (TREE_TYPE (TREE_OPERAND (ret_val, 0))))
+			  ret_val = TREE_OPERAND (ret_val, 0);
+
+			/* Now apply the test to the return value.  */
+			if (return_value_ok_for_nrv_p (NULL_TREE, ret_val))
+			  {
+			    if (!f_named_ret_val)
+			      f_named_ret_val = BITMAP_GGC_ALLOC ();
+			    bitmap_set_bit (f_named_ret_val,
+					    DECL_UID (ret_val));
+			    if (!f_gnat_ret)
+			      f_gnat_ret = gnat_node;
+			  }
 		      }
+
+		    gnu_ret_val
+		      = build_allocator (TREE_TYPE (gnu_ret_val),
+					 gnu_ret_val,
+					 TREE_TYPE (gnu_ret_obj),
+					 Procedure_To_Call (gnat_node),
+					 Storage_Pool (gnat_node),
+					 gnat_node,
+					 false);
 		  }
 
-		gnu_ret_val = build_allocator (TREE_TYPE (gnu_ret_val),
-					       gnu_ret_val,
-					       TREE_TYPE (gnu_ret_obj),
-					       Procedure_To_Call (gnat_node),
-					       Storage_Pool (gnat_node),
-					       gnat_node, false);
+		else
+		  gnu_ret_val
+		    = build_unary_op (ADDR_EXPR, NULL_TREE, gnu_ret_val);
 	      }
 
 	    /* Otherwise, if it returns by invisible reference, dereference
@@ -10670,7 +10676,8 @@ make_covariant_thunk (Entity_Id gnat_thunk, tree gnu_thunk)
 static bool
 maybe_make_gnu_thunk (Entity_Id gnat_thunk, tree gnu_thunk)
 {
-  const Entity_Id gnat_target = Thunk_Entity (gnat_thunk);
+  /* We use the Thunk_Target to compute the properties of the thunk.  */
+  const Entity_Id gnat_target = Thunk_Target (gnat_thunk);
 
   /* Check that the first formal of the target is the only controlling one.  */
   Entity_Id gnat_formal = First_Formal (gnat_target);
@@ -10738,7 +10745,9 @@ maybe_make_gnu_thunk (Entity_Id gnat_thunk, tree gnu_thunk)
       indirect_offset = (HOST_WIDE_INT) (POINTER_SIZE / BITS_PER_UNIT);
     }
 
-  tree gnu_target = gnat_to_gnu_entity (gnat_target, NULL_TREE, false);
+  /* But we generate a call to the Thunk_Entity in the thunk.  */
+  tree gnu_target
+    = gnat_to_gnu_entity (Thunk_Entity (gnat_thunk), NULL_TREE, false);
 
   /* If the target is local, then thunk and target must have the same context
      because cgraph_node::expand_thunk can only forward the static chain.  */

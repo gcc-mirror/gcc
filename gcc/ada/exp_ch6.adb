@@ -164,7 +164,7 @@ package body Exp_Ch6 is
    function Caller_Known_Size
      (Func_Call   : Node_Id;
       Result_Subt : Entity_Id) return Boolean;
-   --  True if result subtype is definite, or has a size that does not require
+   --  True if result subtype is definite or has a size that does not require
    --  secondary stack usage (i.e. no variant part or components whose type
    --  depends on discriminants). In particular, untagged types with only
    --  access discriminants do not require secondary stack use. Note we must
@@ -1055,12 +1055,12 @@ package body Exp_Ch6 is
      (Func_Call   : Node_Id;
       Result_Subt : Entity_Id) return Boolean
    is
-      Ctrl : constant Node_Id   := Controlling_Argument (Func_Call);
       Utyp : constant Entity_Id := Underlying_Type (Result_Subt);
 
    begin
-      return (No (Ctrl) and then Is_Definite_Subtype (Utyp))
-        or else not Needs_Secondary_Stack (Utyp);
+      return not Needs_Secondary_Stack (Utyp)
+        and then not (Is_Tagged_Type (Utyp)
+                       and then Present (Controlling_Argument (Func_Call)));
    end Caller_Known_Size;
 
    -----------------------
@@ -5549,10 +5549,6 @@ package body Exp_Ch6 is
                     Present (Unqual_BIP_Iface_Function_Call
                               (Expression (Original_Node (Ret_Obj_Decl))))));
 
-            --  Return the build-in-place result by reference
-
-            Set_By_Ref (Return_Stmt);
-
          elsif Is_BIP_Func then
 
             --  Locate the implicit access parameter associated with the
@@ -5586,10 +5582,6 @@ package body Exp_Ch6 is
                Obj_Alloc_Formal : Entity_Id;
 
             begin
-               --  Build-in-place results must be returned by reference
-
-               Set_By_Ref (Return_Stmt);
-
                --  Retrieve the implicit access parameter passed by the caller
 
                Obj_Acc_Formal :=
@@ -7316,13 +7308,18 @@ package body Exp_Ch6 is
 
       --  Deal with returning variable length objects and controlled types
 
-      --  Nothing to do if we are returning by reference, or this is not a
-      --  type that requires special processing (indicated by the fact that
-      --  it requires a cleanup scope for the secondary stack case).
+      --  Nothing to do if we are returning by reference
 
-      if Is_Build_In_Place_Function (Scope_Id)
-        or else Is_Limited_Interface (Exp_Typ)
-      then
+      if Is_Build_In_Place_Function (Scope_Id) then
+         --  Prevent the reclamation of the secondary stack by all enclosing
+         --  blocks and loops as well as the related function; otherwise the
+         --  result would be reclaimed too early.
+
+         if Needs_BIP_Alloc_Form (Scope_Id) then
+            Set_Enclosing_Sec_Stack_Return (N);
+         end if;
+
+      elsif Is_Limited_View (R_Type) then
          null;
 
       --  No copy needed for thunks returning interface type objects since
@@ -7333,7 +7330,7 @@ package body Exp_Ch6 is
          null;
 
       --  If the call is within a thunk and the type is a limited view, the
-      --  backend will eventually see the non-limited view of the type.
+      --  back end will eventually see the non-limited view of the type.
 
       elsif Is_Thunk (Scope_Id) and then Is_Incomplete_Type (Exp_Typ) then
          return;
@@ -7341,7 +7338,8 @@ package body Exp_Ch6 is
       --  A return statement from an ignored Ghost function does not use the
       --  secondary stack (or any other one).
 
-      elsif not Needs_Secondary_Stack (R_Type)
+      elsif (not Needs_Secondary_Stack (R_Type)
+              and then not Is_Secondary_Stack_Thunk (Scope_Id))
         or else Is_Ignored_Ghost_Entity (Scope_Id)
       then
          --  Mutable records with variable-length components are not returned
@@ -7380,8 +7378,9 @@ package body Exp_Ch6 is
          --    return Rnn.all;
 
          --  but optimize the case where the result is a function call that
-         --  also needs finalization. In this case the result is already on
-         --  the return stack and no further processing is required.
+         --  also needs finalization. In this case the result can directly be
+         --  allocated on the the return stack of the caller and no further
+         --  processing is required.
 
          if Present (Utyp)
            and then Needs_Finalization (Utyp)
@@ -7448,17 +7447,11 @@ package body Exp_Ch6 is
 
          --  Optimize the case where the result is a function call that also
          --  returns on the secondary stack. In this case the result is already
-         --  on the secondary stack and no further processing is required
-         --  except to set the By_Ref flag to ensure that gigi does not attempt
-         --  an extra unnecessary copy. (Actually not just unnecessary but
-         --  wrong in the case of a controlled type, where gigi does not know
-         --  how to do a copy.)
+         --  on the secondary stack and no further processing is required.
 
          if Exp_Is_Function_Call
            and then Needs_Secondary_Stack (Exp_Typ)
          then
-            Set_By_Ref (N);
-
             --  Remove side effects from the expression now so that other parts
             --  of the expander do not have to reanalyze this node without this
             --  optimization
@@ -7488,7 +7481,15 @@ package body Exp_Ch6 is
          --  controlled (by the virtue of restriction No_Finalization) because
          --  gigi is not able to properly allocate class-wide types.
 
-         elsif CW_Or_Needs_Finalization (Utyp) then
+         --  But optimize the case where the result is a function call that
+         --  also needs finalization. In this case the result can directly be
+         --  allocated on the secondary stack and no further processing is
+         --  required.
+
+         elsif CW_Or_Needs_Finalization (Utyp)
+           and then not (Exp_Is_Function_Call
+                          and then Needs_Finalization (Exp_Typ))
+         then
             declare
                Loc        : constant Source_Ptr := Sloc (N);
                Acc_Typ    : constant Entity_Id := Make_Temporary (Loc, 'A');
@@ -10047,7 +10048,7 @@ package body Exp_Ch6 is
       --  formals.
 
       if Is_Thunk (Func_Id) then
-         Subp_Id := Thunk_Entity (Func_Id);
+         Subp_Id := Thunk_Target (Func_Id);
 
       --  Common case
 
@@ -10091,26 +10092,25 @@ package body Exp_Ch6 is
    -- Needs_BIP_Finalization_Master --
    -----------------------------------
 
-   function Needs_BIP_Finalization_Master
-     (Func_Id : Entity_Id) return Boolean
+   function Needs_BIP_Finalization_Master (Func_Id : Entity_Id) return Boolean
    is
-      pragma Assert (Is_Build_In_Place_Function (Func_Id));
-      Func_Typ : constant Entity_Id := Underlying_Type (Etype (Func_Id));
+      Typ : constant Entity_Id := Underlying_Type (Etype (Func_Id));
+
    begin
+      pragma Assert (Is_Build_In_Place_Function (Func_Id));
+
       --  A formal giving the finalization master is needed for build-in-place
       --  functions whose result type needs finalization or is a tagged type.
       --  Tagged primitive build-in-place functions need such a formal because
       --  they can be called by a dispatching call, and extensions may require
-      --  finalization even if the root type doesn't. This means they're also
-      --  needed for tagged nonprimitive build-in-place functions with tagged
-      --  results, since such functions can be called via access-to-function
-      --  types, and those can be used to call primitives, so masters have to
-      --  be passed to all such build-in-place functions, primitive or not.
+      --  finalization even if the root type doesn't. This means nonprimitive
+      --  build-in-place functions with tagged results also need it, since such
+      --  functions can be called via access-to-function types, and those can
+      --  be used to call primitives, so the formal needs to be passed to all
+      --  such build-in-place functions, primitive or not.
 
-      return
-        not Restriction_Active (No_Finalization)
-          and then (Needs_Finalization (Func_Typ)
-                     or else Is_Tagged_Type (Func_Typ));
+      return not Restriction_Active (No_Finalization)
+        and then (Needs_Finalization (Typ) or else Is_Tagged_Type (Typ));
    end Needs_BIP_Finalization_Master;
 
    --------------------------
@@ -10118,10 +10118,23 @@ package body Exp_Ch6 is
    --------------------------
 
    function Needs_BIP_Alloc_Form (Func_Id : Entity_Id) return Boolean is
-      pragma Assert (Is_Build_In_Place_Function (Func_Id));
-      Func_Typ : constant Entity_Id := Underlying_Type (Etype (Func_Id));
+      Typ : constant Entity_Id := Underlying_Type (Etype (Func_Id));
+
    begin
-      return Needs_Secondary_Stack (Func_Typ);
+      pragma Assert (Is_Build_In_Place_Function (Func_Id));
+
+      --  A formal giving the allocation method is needed for build-in-place
+      --  functions whose result type is returned on the secondary stack or
+      --  is a tagged type. Tagged primitive build-in-place functions need
+      --  such a formal because they can be called by a dispatching call, and
+      --  the secondary stack is always used for dispatching-on-result calls.
+      --  This means nonprimitive build-in-place functions with tagged results
+      --  also need it, as such functions can be called via access-to-function
+      --  types, and those can be used to call primitives, so the formal needs
+      --  to be passed to all such build-in-place functions, primitive or not.
+
+      return not Restriction_Active (No_Secondary_Stack)
+        and then (Needs_Secondary_Stack (Typ) or else Is_Tagged_Type (Typ));
    end Needs_BIP_Alloc_Form;
 
    -------------------------------------

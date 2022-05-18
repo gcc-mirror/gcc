@@ -3841,11 +3841,10 @@ gnat_useless_type_conversion (tree expr)
 /* Return true if T, a {FUNCTION,METHOD}_TYPE, has the specified flags.  */
 
 bool
-fntype_same_flags_p (const_tree t, tree cico_list, bool return_unconstrained_p,
-		     bool return_by_direct_ref_p, bool return_by_invisi_ref_p)
+fntype_same_flags_p (const_tree t, tree cico_list, bool return_by_direct_ref_p,
+		     bool return_by_invisi_ref_p)
 {
   return TYPE_CI_CO_LIST (t) == cico_list
-	 && TYPE_RETURN_UNCONSTRAINED_P (t) == return_unconstrained_p
 	 && TYPE_RETURN_BY_DIRECT_REF_P (t) == return_by_direct_ref_p
 	 && TREE_ADDRESSABLE (t) == return_by_invisi_ref_p;
 }

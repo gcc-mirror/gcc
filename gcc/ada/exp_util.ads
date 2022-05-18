@@ -837,6 +837,11 @@ package Exp_Util is
    --  Determine whether Expr denotes a build-in-place function which returns
    --  its result on the secondary stack.
 
+   function Is_Secondary_Stack_Thunk (Id : Entity_Id) return Boolean;
+   --  Determine whether Id denotes a secondary stack thunk
+
+   --  WARNING: There is a matching C declaration of this subprogram in fe.h
+
    function Is_Tag_To_Class_Wide_Conversion
      (Obj_Id : Entity_Id) return Boolean;
    --  Determine whether object Obj_Id is the result of a tag-to-class-wide
@@ -1190,6 +1195,12 @@ package Exp_Util is
    --  Return the smallest standard integer type containing at least S bits and
    --  of the signedness given by Uns.
 
+   function Thunk_Target (Thunk : Entity_Id) return Entity_Id;
+   --  Return the entity ultimately called by the thunk, that is to say return
+   --  the Thunk_Entity of the last member on the thunk chain.
+
+   --  WARNING: There is a matching C declaration of this subprogram in fe.h
+
    function Type_May_Have_Bit_Aligned_Components
      (Typ : Entity_Id) return Boolean;
    --  Determines if Typ is a composite type that has within it (looking down
@@ -1216,4 +1227,6 @@ private
    pragma Inline (Force_Evaluation);
    pragma Inline (Get_Mapped_Entity);
    pragma Inline (Is_Library_Level_Tagged_Type);
+   pragma Inline (Is_Secondary_Stack_Thunk);
+   pragma Inline (Thunk_Target);
 end Exp_Util;

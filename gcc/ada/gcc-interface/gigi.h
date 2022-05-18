@@ -547,7 +547,7 @@ extern int gnat_types_compatible_p (tree t1, tree t2);
 extern bool gnat_useless_type_conversion (tree expr);
 
 /* Return true if T, a {FUNCTION,METHOD}_TYPE, has the specified flags.  */
-extern bool fntype_same_flags_p (const_tree, tree, bool, bool, bool);
+extern bool fntype_same_flags_p (const_tree, tree, bool, bool);
 
 /* Create an expression whose value is that of EXPR,
    converted to type TYPE.  The TREE_TYPE of the value
