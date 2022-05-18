@@ -1,3 +1,11 @@
+2022-05-17  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-05-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* libgomp.texi (OpenMP 5.1): Remove "Not inside target regions"
+	comment for omp_display_env feature.
+
 2022-05-06  Release Manager
 
 	* GCC 12.1.0 released.
