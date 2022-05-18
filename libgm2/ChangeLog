@@ -8,6 +8,7 @@
 	* libm2pim/sckt.c: Reformatted comments.
 	* libm2pim/termios.c: Reformatted comments.
 	* libm2pim/wrapc.c: Reformatted comments.
+	* libm2pim/termios.c: Reformatted comments within enum.
 
 2022-05-17  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
 

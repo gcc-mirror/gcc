@@ -82,7 +82,7 @@ typedef enum {
 } ControlChar;
 
 typedef enum {
-  /* input flag bits */
+  /* Input flag bits.  */
   ignbrk,
   ibrkint,
   ignpar,
@@ -97,7 +97,7 @@ typedef enum {
   ixany,
   ixoff,
   imaxbel,
-  /* output flag bits */
+  /* Output flag bits.  */
   opost,
   olcuc,
   onlcr,
@@ -122,7 +122,7 @@ typedef enum {
   off1,
   ovt0,
   ovt1,
-  /* baud rate */
+  /* Baud rate.  */
   b0,
   b50,
   b75,
@@ -156,7 +156,7 @@ typedef enum {
   b4000000,
   maxbaud,
   crtscts,
-  /* character size */
+  /* Character size.  */
   cs5,
   cs6,
   cs7,
