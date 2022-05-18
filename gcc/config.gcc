@@ -4178,31 +4178,12 @@ case "${target}" in
 			  pattern=AARCH64_CORE
 			fi
 
-			ext_mask=AARCH64_CPU_DEFAULT_FLAGS
-
 			# Find the base CPU or ARCH id in aarch64-cores.def or
 			# aarch64-arches.def
 			if [ x"$base_val" = x ] \
 			    || grep "^$pattern(\"$base_val\"," \
 				    ${srcdir}/config/aarch64/$def \
 				    > /dev/null; then
-
-			  if [ $which = arch ]; then
-				base_id=`grep "^$pattern(\"$base_val\"," \
-				  ${srcdir}/config/aarch64/$def | \
-				  sed -e 's/^[^,]*,[ 	]*//' | \
-				  sed -e 's/,.*$//'`
-				# Extract the architecture flags from aarch64-arches.def
-				ext_mask=`grep "^$pattern(\"$base_val\"," \
-				   ${srcdir}/config/aarch64/$def | \
-				   sed -e 's/)$//' | \
-				   sed -e 's/^.*,//'`
-			  else
-				base_id=`grep "^$pattern(\"$base_val\"," \
-				  ${srcdir}/config/aarch64/$def | \
-				  sed -e 's/^[^,]*,[ 	]*//' | \
-				  sed -e 's/,.*$//'`
-			  fi
 
 			  # Disallow extensions in --with-tune=cortex-a53+crc.
 			  if [ $which = tune ] && [ x"$ext_val" != x ]; then
@@ -4234,25 +4215,7 @@ case "${target}" in
 					grep "^\"$base_ext\""`
 
 				if [ x"$base_ext" = x ] \
-				    || [[ -n $opt_line ]]; then
-
-				  # These regexp extract the elements based on
-				  # their group match index in the regexp.
-				  ext_canon=`echo -e "$opt_line" | \
-					sed -e "s/$sed_patt/\2/"`
-				  ext_on=`echo -e "$opt_line" | \
-					sed -e "s/$sed_patt/\3/"`
-				  ext_off=`echo -e "$opt_line" | \
-					sed -e "s/$sed_patt/\4/"`
-
-				  if [ $ext = $base_ext ]; then
-					# Adding extension
-					ext_mask="("$ext_mask") | ("$ext_on" | "$ext_canon")"
-				  else
-					# Removing extension
-					ext_mask="("$ext_mask") & ~("$ext_off" | "$ext_canon")"
-				  fi
-
+				    || [ x"$opt_line" != x ]; then
 				  true
 				else
 				  echo "Unknown extension used in --with-$which=$val" 1>&2
@@ -4261,10 +4224,6 @@ case "${target}" in
 				ext_val=`echo $ext_val | sed -e 's/[a-z0-9]\+//'`
 			  done
 
-			  ext_mask="(("$ext_mask") << TARGET_CPU_NBITS)"
-			  if [ x"$base_id" != x ]; then
-				target_cpu_cname="TARGET_CPU_$base_id | $ext_mask"
-			  fi
 			  true
 			else
 			  # Allow --with-$which=native.

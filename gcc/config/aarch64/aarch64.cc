@@ -2760,8 +2760,6 @@ static const struct attribute_spec aarch64_attribute_table[] =
   { NULL,                 0, 0, false, false, false, false, NULL, NULL }
 };
 
-#define AARCH64_CPU_DEFAULT_FLAGS ((selected_cpu) ? selected_cpu->flags : 0)
-
 /* An ISA extension in the co-processor and main instruction set space.  */
 struct aarch64_option_extension
 {
@@ -18067,39 +18065,24 @@ aarch64_validate_mtune (const char *str, const struct processor **res)
   return false;
 }
 
-static_assert (TARGET_CPU_generic < TARGET_CPU_MASK,
-	       "TARGET_CPU_NBITS is big enough");
-
-/* Return the CPU corresponding to the enum CPU.
-   If it doesn't specify a cpu, return the default.  */
+/* Return the CPU corresponding to the enum CPU.  */
 
 static const struct processor *
 aarch64_get_tune_cpu (enum aarch64_processor cpu)
 {
-  if (cpu != aarch64_none)
-    return &all_cores[cpu];
+  gcc_assert (cpu != aarch64_none);
 
-  /* The & TARGET_CPU_MASK is to extract the bottom TARGET_CPU_NBITS bits that
-     encode the default cpu as selected by the --with-cpu GCC configure option
-     in config.gcc.
-     ???: The whole TARGET_CPU_DEFAULT and AARCH64_CPU_DEFAULT_FLAGS
-     flags mechanism should be reworked to make it more sane.  */
-  return &all_cores[TARGET_CPU_DEFAULT & TARGET_CPU_MASK];
+  return &all_cores[cpu];
 }
 
-/* Return the architecture corresponding to the enum ARCH.
-   If it doesn't specify a valid architecture, return the default.  */
+/* Return the architecture corresponding to the enum ARCH.  */
 
 static const struct processor *
 aarch64_get_arch (enum aarch64_arch arch)
 {
-  if (arch != aarch64_no_arch)
-    return &all_architectures[arch];
+  gcc_assert (arch != aarch64_no_arch);
 
-  const struct processor *cpu
-    = &all_cores[TARGET_CPU_DEFAULT & TARGET_CPU_MASK];
-
-  return &all_architectures[cpu->arch];
+  return &all_architectures[arch];
 }
 
 /* Return the VG value associated with -msve-vector-bits= value VALUE.  */
@@ -18137,10 +18120,6 @@ aarch64_override_options (void)
   uint64_t arch_isa = 0;
   aarch64_isa_flags = 0;
 
-  bool valid_cpu = true;
-  bool valid_tune = true;
-  bool valid_arch = true;
-
   selected_cpu = NULL;
   selected_arch = NULL;
   selected_tune = NULL;
@@ -18155,77 +18134,56 @@ aarch64_override_options (void)
      If either of -march or -mtune is given, they override their
      respective component of -mcpu.  */
   if (aarch64_cpu_string)
-    valid_cpu = aarch64_validate_mcpu (aarch64_cpu_string, &selected_cpu,
-					&cpu_isa);
+    aarch64_validate_mcpu (aarch64_cpu_string, &selected_cpu, &cpu_isa);
 
   if (aarch64_arch_string)
-    valid_arch = aarch64_validate_march (aarch64_arch_string, &selected_arch,
-					  &arch_isa);
+    aarch64_validate_march (aarch64_arch_string, &selected_arch, &arch_isa);
 
   if (aarch64_tune_string)
-    valid_tune = aarch64_validate_mtune (aarch64_tune_string, &selected_tune);
+    aarch64_validate_mtune (aarch64_tune_string, &selected_tune);
 
 #ifdef SUBTARGET_OVERRIDE_OPTIONS
   SUBTARGET_OVERRIDE_OPTIONS;
 #endif
 
-  /* If the user did not specify a processor, choose the default
-     one for them.  This will be the CPU set during configuration using
-     --with-cpu, otherwise it is "generic".  */
-  if (!selected_cpu)
+  if (selected_cpu && selected_arch)
     {
-      if (selected_arch)
-	{
-	  selected_cpu = &all_cores[selected_arch->ident];
-	  aarch64_isa_flags = arch_isa;
-	  explicit_arch = selected_arch->arch;
-	}
-      else
-	{
-	  /* Get default configure-time CPU.  */
-	  selected_cpu = aarch64_get_tune_cpu (aarch64_none);
-	  aarch64_isa_flags = TARGET_CPU_DEFAULT >> TARGET_CPU_NBITS;
-	}
-
-      if (selected_tune)
-	explicit_tune_core = selected_tune->ident;
-    }
-  /* If both -mcpu and -march are specified check that they are architecturally
-     compatible, warn if they're not and prefer the -march ISA flags.  */
-  else if (selected_arch)
-    {
+      /* If both -mcpu and -march are specified, warn if they are not
+	 architecturally compatible and prefer the -march ISA flags.  */
       if (selected_arch->arch != selected_cpu->arch)
 	{
 	  warning (0, "switch %<-mcpu=%s%> conflicts with %<-march=%s%> switch",
 		       aarch64_cpu_string,
 		       aarch64_arch_string);
 	}
+
       aarch64_isa_flags = arch_isa;
-      explicit_arch = selected_arch->arch;
-      explicit_tune_core = selected_tune ? selected_tune->ident
-					  : selected_cpu->ident;
+    }
+  else if (selected_cpu)
+    {
+      selected_arch = &all_architectures[selected_cpu->arch];
+      aarch64_isa_flags = cpu_isa;
+    }
+  else if (selected_arch)
+    {
+      selected_cpu = &all_cores[selected_arch->ident];
+      aarch64_isa_flags = arch_isa;
     }
   else
     {
-      /* -mcpu but no -march.  */
-      aarch64_isa_flags = cpu_isa;
-      explicit_tune_core = selected_tune ? selected_tune->ident
-					  : selected_cpu->ident;
-      gcc_assert (selected_cpu);
+      /* No -mcpu or -march specified, so use the default CPU.  */
+      selected_cpu = &all_cores[TARGET_CPU_DEFAULT];
       selected_arch = &all_architectures[selected_cpu->arch];
-      explicit_arch = selected_arch->arch;
+      aarch64_isa_flags = selected_cpu->flags;
     }
 
-  /* Set the arch as well as we will need it when outputing
-     the .arch directive in assembly.  */
-  if (!selected_arch)
-    {
-      gcc_assert (selected_cpu);
-      selected_arch = &all_architectures[selected_cpu->arch];
-    }
-
+  explicit_arch = selected_arch->arch;
   if (!selected_tune)
     selected_tune = selected_cpu;
+  explicit_tune_core = selected_tune->ident;
+
+  gcc_assert (explicit_tune_core != aarch64_none);
+  gcc_assert (explicit_arch != aarch64_no_arch);
 
   if (aarch64_enable_bti == 2)
     {
@@ -18260,15 +18218,6 @@ aarch64_override_options (void)
 
   if (aarch64_ra_sign_scope != AARCH64_FUNCTION_NONE && TARGET_ILP32)
     sorry ("return address signing is only supported for %<-mabi=lp64%>");
-
-  /* Make sure we properly set up the explicit options.  */
-  if ((aarch64_cpu_string && valid_cpu)
-       || (aarch64_tune_string && valid_tune))
-    gcc_assert (explicit_tune_core != aarch64_none);
-
-  if ((aarch64_cpu_string && valid_cpu)
-       || (aarch64_arch_string && valid_arch))
-    gcc_assert (explicit_arch != aarch64_no_arch);
 
   /* The pass to insert speculation tracking runs before
      shrink-wrapping and the latter does not know how to update the
@@ -18375,11 +18324,7 @@ aarch64_option_restore (struct gcc_options *opts,
   opts->x_explicit_arch = ptr->x_explicit_arch;
   selected_arch = aarch64_get_arch (ptr->x_explicit_arch);
   opts->x_explicit_tune_core = ptr->x_explicit_tune_core;
-  if (opts->x_explicit_tune_core == aarch64_none
-      && opts->x_explicit_arch != aarch64_no_arch)
-    selected_tune = &all_cores[selected_arch->ident];
-  else
-    selected_tune = aarch64_get_tune_cpu (ptr->x_explicit_tune_core);
+  selected_tune = aarch64_get_tune_cpu (ptr->x_explicit_tune_core);
   opts->x_aarch64_override_tune_string = ptr->x_aarch64_override_tune_string;
   opts->x_aarch64_branch_protection_string
     = ptr->x_aarch64_branch_protection_string;
