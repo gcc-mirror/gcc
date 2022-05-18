@@ -215,7 +215,7 @@ dtoa_dtoa (double d, int mode, int ndigits, int *decpt, int *sign)
     {
 
     case maxsignicant:
-      ndigits += 20; /* enough for exponent */
+      ndigits += 20; /* Enough for exponent.  */
       p = malloc (ndigits);
       snprintf (format, 50, "%s%d%s", "%.", ndigits - 20, "E");
       snprintf (p, ndigits, format, d);

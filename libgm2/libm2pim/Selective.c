@@ -96,7 +96,7 @@ Selective_Select (int nooffds, void *readfds, void *writefds, void *exceptfds,
 }
 #endif
 
-/* InitTime initialises a timeval structure and returns a pointer to it.  */
+/* InitTime initializes a timeval structure and returns a pointer to it.  */
 
 #if defined(HAVE_STRUCT_TIMEVAL)
 struct timeval *

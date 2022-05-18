@@ -9,6 +9,8 @@
 	* libm2pim/termios.c: Reformatted comments.
 	* libm2pim/wrapc.c: Reformatted comments.
 	* libm2pim/termios.c: Reformatted comments within enum.
+	* libm2pim/Selective.c: Correct spelling.
+	* libm2pim/termios.c: Use GNU comment formatting.
 
 2022-05-17  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
 
