@@ -1,3 +1,229 @@
+2022-05-17  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_res.adb (Flag_Effectively_Volatile_Objects): Restore
+	redundant guard.
+
+2022-05-17  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_ch8.adb (Analyze_Subprogram_Renaming): Add error check for
+	the case of a renamed subprogram given by an expanded name whose
+	outermost prefix names a unit that is hidden by the name of the
+	renaming.
+	(Ult_Expanded_Prefix): New local expression function to return
+	the ultimate prefix of an expanded name.
+
+2022-05-17  Ghjuvan Lacambre  <lacambre@adacore.com>
+
+	* gnat_cuda.ads: Update package-level comments.
+	(Build_And_Insert_CUDA_Initialization): Remove function.
+	* gnat_cuda.adb (Build_And_Insert_CUDA_Initialization): Remove
+	function.
+	(Expand_CUDA_Package): Remove call to
+	Build_And_Insert_CUDA_Initialization.
+
+2022-05-17  Etienne Servais  <servais@adacore.com>
+
+	* freeze.adb (Freeze_Enumeration_Type): Fix comment, enhance
+	message and silence warning for size > 32.
+
+2022-05-17  Yannick Moy  <moy@adacore.com>
+
+	* exp_spark.adb (Expand_SPARK_Potential_Renaming): Deal with no
+	entity case.
+	* inline.ads (Check_Object_Renaming_In_GNATprove_Mode): New
+	procedure.
+	* inline.adb (Check_Object_Renaming_In_GNATprove_Mode): New
+	procedure.
+	(Can_Be_Inlined_In_GNATprove_Mode): Remove case forbidding
+	inlining for subprograms inside generics.
+	* sem_ch12.adb (Copy_Generic_Node): Preserve global entities
+	when inlining in GNATprove mode.
+	* sem_ch6.adb (Analyse_Subprogram_Body_Helper): Remove body to
+	inline if renaming is detected in GNATprove mode.
+
+2022-05-17  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_ch4.adb (Expand_N_Allocator): For an allocator with an
+	unconstrained discriminated designated type, and whose
+	allocation subtype is constrained, set the
+	Actual_Designated_Subtype of the dereference passed to the init
+	proc of the designated type to be the allocation subtype.
+	* sinfo.ads: Add documentation of new setting of
+	Actual_Designated_Subtype on a dereference used as an actual
+	parameter of call to an init proc associated with an allocator.
+	Also add missing syntax and documentation for the GNAT language
+	extension that allows an expression as a default for a concrete
+	generic formal function.
+
+2022-05-17  Bob Duff  <duff@adacore.com>
+
+	* sinfo.ads: Remove From_At_End.  Update comments.
+	* gen_il-fields.ads, gen_il-gen-gen_nodes.adb, sem_ch11.adb:
+	Remove From_At_End.
+	* exp_ch11.adb (Expand_At_End_Handler): Remove assertion.
+	* fe.h (Exception_Mechanism, Exception_Mechanism_Type, Has_DIC,
+	Has_Invariants, Is_List_Member, List_Containing): Remove
+	declarations that are not used in gigi.
+	* opt.ads (Exception_Mechanism): This is not used in gigi.
+	* exp_util.ads: Minor comment fix.
+
+2022-05-17  Dmitriy Anisimkov  <anisimko@adacore.com>
+
+	* impunit.adb: Add "g-binsea" to Non_Imp_File_Names_95 list.
+
+2022-05-17  Yannick Moy  <moy@adacore.com>
+
+	* sem_ch5.adb (Analyze_Iterator_Specification): Use
+	Insert_Action when possibly inside an expression.
+
+2022-05-17  Marc Poulhiès  <poulhies@adacore.com>
+
+	* libgnat/g-forstr.adb (Is_Number): Add scientific notation and
+	shortest representation.
+
+2022-05-17  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch3.adb (Expand_N_Full_Type_Declaration): Look into N.
+
+2022-05-17  Bob Duff  <duff@adacore.com>
+
+	* exp_util.adb (Requires_Cleanup_Actions): Remove
+	N_Protected_Body from the case statement, so that case will be
+	covered by "raise Program_Error".
+
+2022-05-17  Bob Duff  <duff@adacore.com>
+
+	* output.adb (Pop_Output, Set_Output): Unconditionally flush
+	output when switching from one output destination to another.
+	Otherwise buffering can cause garbled output.
+	(w): Push/pop the current settings, and temporarily
+	Set_Standard_Error during these procedures.
+
+2022-05-17  Dmitriy Anisimkov  <anisimko@adacore.com>
+
+	* libgnat/g-binsea.ads, libgnat/g-binsea.adb
+	(GNAT.Binary_Search): New package.
+	* Makefile.rtl (GNATRTL_NONTASKING_OBJS): New item in list.
+	* doc/gnat_rm/the_gnat_library.rst (GNAT.Binary_Search): New
+	package record.
+	* gnat_rm.texi: Regenerate.
+
+2022-05-17  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch12.ads (Is_Abbreviated_Instance): Declare.
+	* sem_ch12.adb (Check_Abbreviated_Instance): Declare.
+	(Requires_Conformance_Checking): Declare.
+	(Analyze_Association.Process_Default): Fix subtype of parameter.
+	(Analyze_Formal_Object_Declaration): Check whether it is in the
+	visible part of abbreviated instance.
+	(Analyze_Formal_Subprogram_Declaration): Likewise.
+	(Analyze_Formal_Type_Declaration): Likewise.
+	(Analyze_Package_Instantiation): Do not check for a generic child
+	unit in the case of an abbreviated instance.
+	(Check_Abbreviated_Instance): New procedure.
+	(Check_Formal_Packages): Tidy up.
+	(Copy_Generic_Elist): Fix comment.
+	(Instantiate_Formal_Package): Tidy up.  If the generic unit is a
+	child unit, copy the qualified name onto the abbreviated instance.
+	(Is_Abbreviated_Instance): New function.
+	(Collect_Previous_Instances): Call Is_Abbreviated_Instance.
+	(Requires_Conformance_Checking): New function.
+	* sem_ch7.adb (Analyze_Package_Specification): Do not install the
+	private declarations of the parent for an abbreviated instance.
+
+2022-05-17  Etienne Servais  <servais@adacore.com>
+
+	* sem_ch3.adb (Analyze_Subtype_Declaration): Use underlying type
+	of Indic_Typ.
+	(Constrain_Array): Ditto for T.
+
+2022-05-17  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem_attr.adb (Analyze_Attribute [Attribute_Reduce]): Allow
+	'Reduce for Ada 2022 and above.
+	* sem_attr.ads (Attribute_Impl_Def): 'Reduce is no longer
+	implementation defined.
+
+2022-05-17  Ghjuvan Lacambre  <lacambre@adacore.com>
+
+	* exp_ch9.adb (Expand_N_Asynchronous_Select): Don't generate
+	Abort_Undefers when not Abort_Allowed.
+
+2022-05-17  Marc Poulhiès  <poulhies@adacore.com>
+
+	* exp_ch7.adb: Fix typo.
+
+2022-05-17  Etienne Servais  <servais@adacore.com>
+
+	* lib.ads: initialize `Compiler_State` to `Parsing`.
+
+2022-05-17  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch13.adb (Has_Compatible_Representation): Return true for
+	derived untagged record types without representation clause.
+
+2022-05-17  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch13.ads (Has_Compatible_Representation): Minor tweaks.
+	* sem_ch13.adb (Has_Compatible_Representation): Look directly into
+	the (implementation) base types and simplifiy accordingly.
+	* exp_ch5.adb (Change_Of_Representation): Adjust.
+	* exp_ch6.adb (Expand_Actuals): Likewise.
+
+2022-05-17  Etienne Servais  <servais@adacore.com>
+
+	* sem_ch5.adb (Analyze_Assignment): Remove superfluous call to
+	Original_Node.
+
+2022-05-17  Javier Miranda  <miranda@adacore.com>
+
+	* freeze.adb (Freeze_Entity): Protect the call to
+	Declaration_Node against entities of expressions replaced by the
+	frontend with an N_Raise_CE node.
+
+2022-05-17  Javier Miranda  <miranda@adacore.com>
+
+	* freeze.adb (Build_DTW_Spec): Do not inherit the not-overriding
+	indicator because the DTW wrapper overrides its wrapped
+	subprogram.
+	* contracts.ads (Make_Class_Precondition_Subps): Adding
+	documentation.
+
+2022-05-17  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch13.adb (Expand_N_Freeze_Entity): Delete freeze nodes for
+	subprograms only if they have no actions.
+	* exp_ch6.adb (Freeze_Subprogram): Put the actions into the Actions
+	field of the freeze node instead of inserting them after it.
+	* sem_elab.adb (Is_SPARK_Semantic_Target): Fix typo in comment.
+	* gcc-interface/trans.cc (process_freeze_entity): Return early for
+	freeze nodes of subprograms with Interface_Alias set.
+
+2022-05-17  Javier Miranda  <miranda@adacore.com>
+
+	* contracts.adb (Build_Call_Helper_Body): Improve handling of
+	the case of a (legal) non-dispatching call to an abstract
+	subprogram.
+
+2022-05-17  Piotr Trojanek  <trojanek@adacore.com>
+
+	* doc/gnat_rm/implementation_defined_attributes.rst
+	(Loop_Entry): Mention pragmas Assert, Assert_And_Cut and Assume;
+	refill.
+	* gnat_rm.texi: Regenerate.
+
+2022-05-17  Etienne Servais  <servais@adacore.com>
+
+	* par-ch3.adb (P_Access_Type_Definition): Outputs an error if
+	token is not "access".
+
+2022-05-17  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_ch2.adb (Expand_Current_Value): Remove special case for
+	references immediately within pragma argument associations.
+	* exp_prag.adb (Expand_Pragma_Inspection_Point): Remove special
+	case for privals.
+
 2022-05-16  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* sem_ch7.adb (Inspect_Untagged_Record_Completion): Also move the

@@ -1,3 +1,12 @@
+2022-05-17  Tobias Burnus  <tobias@codesourcery.com>
+
+	* dump-parse-tree.cc (show_omp_namelist): Handle omp_all_memory.
+	* openmp.cc (gfc_match_omp_variable_list, gfc_match_omp_depend_sink,
+	gfc_match_omp_clauses, resolve_omp_clauses): Likewise.
+	* trans-openmp.cc (gfc_trans_omp_clauses, gfc_trans_omp_depobj):
+	Likewise.
+	* resolve.cc (resolve_symbol): Reject it as symbol.
+
 2022-05-16  Martin Liska  <mliska@suse.cz>
 
 	* frontend-passes.cc (gfc_code_walker): Use ARRAY_SIZE.

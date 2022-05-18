@@ -1,3 +1,61 @@
+2022-05-17  Jason Merrill  <jason@redhat.com>
+
+	PR c++/102307
+	* g++.dg/cpp1z/constexpr-array2.C: New test.
+
+2022-05-17  Tobias Burnus  <tobias@codesourcery.com>
+
+	* c-c++-common/gomp/target-device-ancestor-5.c: New test.
+
+2022-05-17  Giuliano Belinassi  <gbelinassi@suse.de>
+
+	PR c++/105169
+	* g++.dg/modules/pr105169.h: New file.
+	* g++.dg/modules/pr105169_a.C: New test.
+	* g++.dg/modules/pr105169_b.C: New file.
+
+2022-05-17  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gcc.dg/pr105458.c: New.
+
+2022-05-17  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/105624
+	* gcc.target/i386/pr105624.c: New test.
+
+2022-05-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/gomp/all-memory-1.c (boo): Add test with
+	inoutset depend-kind.
+	* c-c++-common/gomp/all-memory-2.c (boo): Likewise.
+	* c-c++-common/gomp/depobj-1.c (f1): Likewise.
+	(f2): Adjusted expected diagnostics.
+	* g++.dg/gomp/depobj-1.C (f4): Adjust expected diagnostics.
+
+2022-05-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/105613
+	* gcc.c-torture/execute/pr105613.c: New test.
+
+2022-05-17  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/gomp/all-memory-1.f90: New test.
+	* gfortran.dg/gomp/all-memory-2.f90: New test.
+	* gfortran.dg/gomp/all-memory-3.f90: New test.
+
+2022-05-17  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/105618
+	* gcc.dg/tree-ssa/ssa-sink-19.c: New testcase.
+
+2022-05-17  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr105033.c: New test.
+
+2022-05-17  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.dg/pr105591.c: New test.
+
 2022-05-16  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/105103

@@ -1,3 +1,43 @@
+2022-05-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* libgomp.texi (OpenMP 5.1): Remove "Not inside target regions"
+	comment for omp_display_env feature.
+
+2022-05-17  Tobias Burnus  <tobias@codesourcery.com>
+
+	* libgomp.texi (Offload-Target Specifics): New chapter; add section
+	to document OpenMP context selectors.
+
+2022-05-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* libgomp.h (struct gomp_task_depend_entry): Change is_in type
+	from bool to unsigned char.
+	* task.c (gomp_task_handle_depend): Handle GOMP_DEPEND_INOUTSET.
+	Ignore dependencies where
+	task->depend[i].is_in && task->depend[i].is_in == ent->is_in
+	rather than just task->depend[i].is_in && ent->is_in.  Remember
+	whether GOMP_DEPEND_IN loop is needed and guard the loop with that
+	conditional.
+	(gomp_task_maybe_wait_for_dependencies): Handle GOMP_DEPEND_INOUTSET.
+	Ignore dependencies where elem.is_in && elem.is_in == ent->is_in
+	rather than just elem.is_in && ent->is_in.
+	* testsuite/libgomp.c-c++-common/depend-1.c (test): Add task with
+	inoutset depend-kind.
+	* testsuite/libgomp.c-c++-common/depend-2.c (test): Likewise.
+	* testsuite/libgomp.c-c++-common/depend-3.c (test): Likewise.
+	* testsuite/libgomp.c-c++-common/depend-inoutset-1.c: New test.
+
+2022-05-17  Tobias Burnus  <tobias@codesourcery.com>
+
+	* libgomp.texi (OpenMP Implementation Status): Add 5.2 table.
+
+2022-05-17  Tobias Burnus  <tobias@codesourcery.com>
+
+	* libgomp.texi (OpenMP 5.1): Set omp_all_memory to 'Y'.
+	* testsuite/libgomp.fortran/depend-5.f90: New test.
+	* testsuite/libgomp.fortran/depend-6.f90: New test.
+	* testsuite/libgomp.fortran/depend-7.f90: New test.
+
 2022-05-16  Marcel Vollweiler  <marcel@codesourcery.com>
 
 	* testsuite/libgomp.c++/target-has-device-addr-7.C: New test.

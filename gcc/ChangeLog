@@ -1,3 +1,166 @@
+2022-05-17  Marek Polacek  <polacek@redhat.com>
+
+	* godump.cc (go_output_typedef): Use the DECL_INITIAL of the TREE_VALUE.
+
+2022-05-17  Pat Haugen  <pthaugen@linux.ibm.com>
+
+	PR target/99685
+	* config/rs6000/rs6000-call.cc (rs6000_function_arg_advance_1): Bump
+	register count when not splitting IEEE 128-bit Complex.
+
+2022-05-17  Tobias Burnus  <tobias@codesourcery.com>
+
+	* omp-low.cc (check_omp_nesting_restrictions): Skip warning for
+	target inside target if inner is reverse offload.
+
+2022-05-17  Tobias Burnus  <tobias@codesourcery.com>
+
+	* config/gcn/mkoffload.cc (process_obj): Revert: Use ARRAY_SIZE.
+	* config/nvptx/mkoffload.cc (process): Likewise.
+
+2022-05-17  Andrew MacLeod  <amacleod@redhat.com>
+
+	* Makefile.in (OBJS): Add gimple-range-side-effect.o.
+	* gimple-range-cache.cc (non_null_ref::non_null_ref): Delete.
+	(non_null_ref::~non_null_ref): Delete.
+	(non_null_ref::set_nonnull): Delete.
+	(non_null_ref::non_null_deref_p): Delete.
+	(non_null_ref::process_name): Delete.
+	(ranger_cache::ranger_cache): Initialize m_exit object.
+	(ranger_cache::fill_block_cache): Use m_exit object intead of nonnull.
+	(ranger_cache::range_from_dom): Use side_effect class and m_exit object.
+	(ranger_cache::update_to_nonnull): Delete.
+	(non_null_loadstore): Delete.
+	(ranger_cache::block_apply_nonnull): Delete.
+	(ranger_cache::apply_side_effects): New.
+	* gimple-range-cache.h (class non_null_ref): Delete.
+	(non_null_ref::adjust_range): Delete.
+	(class ranger_cache): Adjust prototypes, add side effect manager.
+	* gimple-range-path.cc (path_range_query::range_defined_in_block): Use
+	side effect manager for queries.
+	(path_range_query::adjust_for_non_null_uses): Ditto.
+	* gimple-range-path.h (class path_range_query): Delete non_null_ref.
+	* gimple-range-side-effect.cc: New.
+	* gimple-range-side-effect.h: New.
+	* gimple-range.cc (gimple_ranger::gimple_ranger): Update contructor.
+	(gimple_ranger::range_of_expr): Check def block for override value.
+	(gimple_ranger::range_on_entry): Don't scan dominators for non-null.
+	(gimple_ranger::range_on_edge): Check for outgoing side-effects.
+	(gimple_ranger::register_side_effects): Call apply_side_effects.
+	(enable_ranger): Update contructor.
+	* gimple-range.h (class gimple_ranger): Update prototype.
+	(enable_ranger): Update prototype.
+	* tree-vrp.cc (execute_ranger_vrp): Invoke without immediate-use flag.
+
+2022-05-17  Giuliano Belinassi  <gbelinassi@suse.de>
+
+	PR c++/105169
+	* targhooks.cc (default_print_patchable_function_entry_1): Handle COMDAT case.
+	* varasm.cc (switch_to_comdat_section): New
+	(handle_vtv_comdat_section): Call switch_to_comdat_section.
+	* varasm.h: Declare switch_to_comdat_section.
+
+2022-05-17  Richard Biener  <rguenther@suse.de>
+
+	* cfgloopmanip.cc (duplicate_loop_body_to_header_edge): Do
+	not clear bb->aux of the copied blocks.
+
+2022-05-17  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/105458
+	* value-relation.cc (path_oracle::register_relation): Merge, then check
+	for equivalence.
+
+2022-05-17  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/105624
+	Revert:
+	* config/i386/i386.md: Remove constraints when used with
+	const_int_operand, const0_operand, const_1_operand, constm1_operand,
+	const8_operand, const128_operand, const248_operand, const123_operand,
+	const2367_operand, const1248_operand, const359_operand,
+	const_4_or_8_to_11_operand, const48_operand, const_0_to_1_operand,
+	const_0_to_3_operand, const_0_to_4_operand, const_0_to_5_operand,
+	const_0_to_7_operand, const_0_to_15_operand, const_0_to_31_operand,
+	const_0_to_63_operand, const_0_to_127_operand, const_0_to_255_operand,
+	const_0_to_255_mul_8_operand, const_1_to_31_operand,
+	const_1_to_63_operand, const_2_to_3_operand, const_4_to_5_operand,
+	const_4_to_7_operand, const_6_to_7_operand, const_8_to_9_operand,
+	const_8_to_11_operand, const_8_to_15_operand, const_10_to_11_operand,
+	const_12_to_13_operand, const_12_to_15_operand, const_14_to_15_operand,
+	const_16_to_19_operand, const_16_to_31_operand, const_20_to_23_operand,
+	const_24_to_27_operand and const_28_to_31_operand.
+	* config/i386/mmx.md: Ditto.
+	* config/i386/sse.md: Ditto.
+	* config/i386/subst.md: Ditto.
+	* config/i386/sync.md: Ditto.
+
+2022-05-17  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* diagnostic.cc: Don't advise to call 'abort' instead of
+	'internal_error'.
+	* system.h: Advise to call 'internal_error' instead of 'abort' or
+	'fancy_abort'.
+
+2022-05-17  Frederik Harwath  <frederik@codesourcery.com>
+
+	* graphite-sese-to-poly.cc (build_poly_sr_1): Fix a typo and
+	a reference to a variable which does not exist.
+	* graphite-isl-ast-to-gimple.cc (gsi_insert_earliest): Fix typo
+	in comment.
+
+2022-05-17  Frederik Harwath  <frederik@codesourcery.com>
+
+	* graphite-sese-to-poly.cc (isl_id_for_ssa_name): Rename to ...
+	(isl_id_for_parameter): ... this new function name.
+	(build_scop_context): Adjust function use.
+
+2022-05-17  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR target/105602
+	* config/gcn/t-omp-device (arch): Add 'amdgcn' besides existing 'gcn'.
+	* config/gcn/gcn.cc (gcn_omp_device_kind_arch_isa): Likewise.
+
+2022-05-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree-core.h (enum omp_clause_depend_kind): Add
+	OMP_CLAUSE_DEPEND_INOUTSET.
+	* tree-pretty-print.cc (dump_omp_clause): Handle
+	OMP_CLAUSE_DEPEND_INOUTSET.
+	* gimplify.cc (gimplify_omp_depend): Likewise.
+	* omp-low.cc (lower_depend_clauses): Likewise.
+
+2022-05-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/105613
+	* config/i386/sse.md (vec_cmpeqv2div2di, vec_cmpeqv1tiv1ti): Use
+	andv4si3 only for EQ, for NE use iorv4si3 instead.
+
+2022-05-17  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/105618
+	* tree-ssa-sink.cc (statement_sink_location): For virtual
+	PHI uses ignore those defining the used virtual operand.
+
+2022-05-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree-ssa-forwprop.cc (simplify_bitfield_ref): Spelling fix:
+	hanlde -> handle.  Fix up comment formatting.
+
+2022-05-17  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/105033
+	* config/i386/sse.md (*vec_concatv4si): Extend to ..
+	(*vec_concat<mode>): .. V16QI and V8HImode.
+	(*vec_concatv16qi_permt2): New pre_reload define_insn_and_split.
+	(*vec_concatv8hi_permt2): Ditto.
+
+2022-05-17  liuhongt  <hongtao.liu@intel.com>
+
+	PR tree-optimization/105591
+	* tree-ssa-forwprop.cc (simplify_bitfield_ref): Clamp
+	vec_perm_expr index.
+
 2022-05-16  Jason Merrill  <jason@redhat.com>
 
 	PR c/105492

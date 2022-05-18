@@ -1,3 +1,11 @@
+2022-05-17  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-demangle.c (d_make_comp): Adjust.
+	(d_unqualified_name): Add 'DC' support.
+	(d_count_template_scopes): Adjust.
+	(d_print_comp_inner): Add structured binding.
+	* testsuite/demangle-expected: Add testcases.
+
 2022-05-10  Martin Liska  <mliska@suse.cz>
 
 	* regex.c: Restore comments.

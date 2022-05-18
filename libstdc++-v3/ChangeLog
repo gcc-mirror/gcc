@@ -1,3 +1,56 @@
+2022-05-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++17/memory_resource.cc (set_default_resource): Use
+	memory_order_acq_rel.
+	(get_default_resource): Use memory_order_acquire.
+
+2022-05-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/memory_resource (new_delete_resource): Add
+	nodiscard, returns_nonnull and const attributes.
+	(null_memory_resource): Likewise.
+	(set_default_resource, get_default_resource): Add returns_nonnull
+	attribute.
+	(memory_resource::is_equal): Add nodiscard attribute.
+	(operator==, operator!=): Likewise.
+
+2022-05-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/ios_base.h (io_category): Add const and nodiscard
+	attributes.
+	(make_error_code, make_error_condition): Add nodiscard.
+	* include/std/future (future_category): Add const and nodiscard.
+	(make_error_code, make_error_condition): Add nodiscard.
+	* include/std/system_error (generic_category system_category):
+	Add nodiscard. Replace _GLIBCXX_CONST with C++11 attribute.
+	(error_code::value, error_code::category, error_code::operator bool)
+	(error_condition::value, error_condition::category)
+	(error_condition::operator bool, make_error_code)
+	(make_error_condition, operator==, operator!=, operator<=>): Add
+	nodiscard.
+
+2022-05-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/20_util/expected/synopsis.cc: Skip for versioned
+	namespace.
+	* testsuite/27_io/headers/iosfwd/synopsis.cc: Likewise.
+
+2022-05-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/Makefile.am [ENABLE_SYMVERS_GNU_NAMESPACE] (cxx11_sources):
+	Do not build the compatibility*-c++0x.cc objects.
+	* src/Makefile.in: Regenerate.
+	* src/c++11/compatibility-c++0x.cc [_GLIBCXX_INLINE_VERSION]:
+	Refuse to build for the versioned namespace.
+	* src/c++11/compatibility-chrono.cc: Likewise.
+	* src/c++11/compatibility-condvar.cc: Likewise.
+	* src/c++11/compatibility-thread-c++0x.cc: Likewise.
+	* src/c++11/chrono.cc (system_clock, steady_clock):
+	Use macros to define in inline namespace _V2, matching the
+	declarations in <system_error>.
+	* src/c++11/system_error.cc (system_category, generic_category):
+	Likewise.
+
 2022-05-16  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/xml/manual/prerequisites.xml: Fix attributes for external

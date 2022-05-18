@@ -1,3 +1,8 @@
+2022-05-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-omp.cc (c_finish_omp_depobj): Handle
+	OMP_CLAUSE_DEPEND_INOUTSET.
+
 2022-05-16  Jason Merrill  <jason@redhat.com>
 
 	PR c/105492
