@@ -2105,6 +2105,21 @@ dump_ada_node (pretty_printer *buffer, tree node, tree type, int spc,
 	  append_withs ("Interfaces.C.Extensions", false);
 	  pp_string (buffer, "Extensions.CFloat_128");
 	}
+      else if (TREE_TYPE (node) == float_type_node)
+	{
+	  append_withs ("Ada.Numerics.Complex_Types", false);
+	  pp_string (buffer, "Ada.Numerics.Complex_Types.Complex");
+	}
+      else if (TREE_TYPE (node) == double_type_node)
+	{
+	  append_withs ("Ada.Numerics.Long_Complex_Types", false);
+	  pp_string (buffer, "Ada.Numerics.Long_Complex_Types.Complex");
+	}
+      else if (TREE_TYPE (node) == long_double_type_node)
+	{
+	  append_withs ("Ada.Numerics.Long_Long_Complex_Types", false);
+	  pp_string (buffer, "Ada.Numerics.Long_Long_Complex_Types.Complex");
+	}
       else
 	pp_string (buffer, "<complex>");
       break;
@@ -2190,7 +2205,7 @@ dump_ada_node (pretty_printer *buffer, tree node, tree type, int spc,
 	{
 	  tree ref_type = TREE_TYPE (node);
 	  const unsigned int quals = TYPE_QUALS (ref_type);
-	  bool is_access = false;
+	  bool is_access;
 
 	  if (VOID_TYPE_P (ref_type))
 	    {
@@ -2242,7 +2257,10 @@ dump_ada_node (pretty_printer *buffer, tree node, tree type, int spc,
 		    }
 
 		  if (!package_prefix)
-		    pp_string (buffer, "access");
+		    {
+		      is_access = false;
+		      pp_string (buffer, "access");
+		    }
 		  else if (AGGREGATE_TYPE_P (ref_type))
 		    {
 		      if (!type || TREE_CODE (type) != FUNCTION_DECL)
@@ -2256,17 +2274,21 @@ dump_ada_node (pretty_printer *buffer, tree node, tree type, int spc,
 			    pp_string (buffer, "all ");
 			}
 		      else if (quals & TYPE_QUAL_CONST)
-			pp_string (buffer, "in ");
+			{
+			  is_access = false;
+			  pp_string (buffer, "in ");
+			}
 		      else
 			{
 			  is_access = true;
 			  pp_string (buffer, "access ");
-			  /* ??? should be configurable: access or in out.  */
 			}
 		    }
 		  else
 		    {
-		      is_access = true;
+		      /* We want to use regular with clauses for scalar types,
+			 as they are not involved in circular declarations.  */
+		      is_access = false;
 		      pp_string (buffer, "access ");
 
 		      if (!name_only)
