@@ -1379,6 +1379,7 @@ show_omp_namelist (int list_type, gfc_omp_namelist *n)
 	  case OMP_DEPEND_IN: fputs ("in:", dumpfile); break;
 	  case OMP_DEPEND_OUT: fputs ("out:", dumpfile); break;
 	  case OMP_DEPEND_INOUT: fputs ("inout:", dumpfile); break;
+	  case OMP_DEPEND_INOUTSET: fputs ("inoutset:", dumpfile); break;
 	  case OMP_DEPEND_DEPOBJ: fputs ("depobj:", dumpfile); break;
 	  case OMP_DEPEND_MUTEXINOUTSET:
 	    fputs ("mutexinoutset:", dumpfile);
@@ -1898,6 +1899,7 @@ show_omp_clauses (gfc_omp_clauses *omp_clauses)
 	case OMP_DEPEND_IN: deptype = "IN"; break;
 	case OMP_DEPEND_OUT: deptype = "OUT"; break;
 	case OMP_DEPEND_INOUT: deptype = "INOUT"; break;
+	case OMP_DEPEND_INOUTSET: deptype = "INOUTSET"; break;
 	case OMP_DEPEND_MUTEXINOUTSET: deptype = "MUTEXINOUTSET"; break;
 	default: gcc_unreachable ();
 	}

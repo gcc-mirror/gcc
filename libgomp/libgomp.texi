@@ -306,7 +306,7 @@ The OpenMP 4.5 specification is fully supported.
 @item @code{nowait} clause in @code{taskwait} directive @tab N @tab
 @item Extensions to the @code{atomic} directive @tab Y @tab
 @item @code{seq_cst} clause on a @code{flush} construct @tab Y @tab
-@item @code{inoutset} argument to the @code{depend} clause @tab N @tab
+@item @code{inoutset} argument to the @code{depend} clause @tab Y @tab
 @item @code{private} and @code{firstprivate} argument to @code{default}
       clause in C and C++ @tab Y @tab
 @item @code{present} argument to @code{defaultmap} clause @tab N @tab
@@ -4279,7 +4279,7 @@ The following sections present notes on the offload-target specifics.
       @code{i586}, @code{i686}, @code{ia32}
       @tab @code{host}
       @tab See @code{-m...} flags in ``x86 Options'' (without @code{-m})
-@item @code{amdgcn} @code{gcn}
+@item @code{amdgcn}, @code{gcn}
       @tab @code{gpu}
       @tab See @code{-march=} in ``AMD GCN Options''
 @item @code{nvptx}

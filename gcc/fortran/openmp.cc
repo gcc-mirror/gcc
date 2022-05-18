@@ -1915,7 +1915,9 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 		break;
 	      m = MATCH_YES;
 	      gfc_omp_depend_op depend_op = OMP_DEPEND_OUT;
-	      if (gfc_match ("inout") == MATCH_YES)
+	      if (gfc_match ("inoutset") == MATCH_YES)
+		depend_op = OMP_DEPEND_INOUTSET;
+	      else if (gfc_match ("inout") == MATCH_YES)
 		depend_op = OMP_DEPEND_INOUT;
 	      else if (gfc_match ("in") == MATCH_YES)
 		depend_op = OMP_DEPEND_IN;
@@ -3805,7 +3807,9 @@ gfc_match_omp_depobj (void)
   if (gfc_match ("update ( ") == MATCH_YES)
     {
       c = gfc_get_omp_clauses ();
-      if (gfc_match ("inout )") == MATCH_YES)
+      if (gfc_match ("inoutset )") == MATCH_YES)
+	c->depobj_update = OMP_DEPEND_INOUTSET;
+      else if (gfc_match ("inout )") == MATCH_YES)
 	c->depobj_update = OMP_DEPEND_INOUT;
       else if (gfc_match ("in )") == MATCH_YES)
 	c->depobj_update = OMP_DEPEND_IN;
@@ -3815,8 +3819,8 @@ gfc_match_omp_depobj (void)
 	c->depobj_update = OMP_DEPEND_MUTEXINOUTSET;
       else
 	{
-	  gfc_error ("Expected IN, OUT, INOUT, MUTEXINOUTSET followed by "
-		     "%<)%> at %C");
+	  gfc_error ("Expected IN, OUT, INOUT, INOUTSET or MUTEXINOUTSET "
+		     "followed by %<)%> at %C");
 	  goto error;
 	}
     }
