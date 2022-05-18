@@ -143,21 +143,14 @@ struct unswitch_predicate
 	  rhs_range.set (rhs);
 	if (!range_op->op1_range (true_range, TREE_TYPE (lhs),
 				  int_range<2> (boolean_true_node,
-						boolean_true_node), rhs_range))
+						boolean_true_node), rhs_range)
+	    || !range_op->op1_range (false_range, TREE_TYPE (lhs),
+				     int_range<2> (boolean_false_node,
+						   boolean_false_node),
+				     rhs_range))
 	  {
 	    true_range.set_varying (TREE_TYPE (lhs));
 	    false_range.set_varying (TREE_TYPE (lhs));
-	  }
-	else
-	  {
-	    false_range = true_range;
-	    if (!false_range.varying_p ()
-		&& !false_range.undefined_p ())
-	      false_range.invert ();
-	    else
-	      /* ???  Inversion of undefined is varying, of varying
-		 is undefined but ranger asserts.  */
-	      false_range.set_varying (TREE_TYPE (lhs));
 	  }
       }
     num = predicates->length ();
