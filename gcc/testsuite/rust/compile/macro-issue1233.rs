@@ -1,15 +1,15 @@
-// { dg-additional-options "-w" }
+// { dg-additional-options "-frust-cfg=A -w" }
 
 macro_rules! impl_uint {
     ($($ty:ident = $lang:literal),*) => {
         $(
             impl $ty {
                 pub fn to_le(self) -> Self {
-                    #[cfg(not(target_endian = "little"))]
+                    #[cfg(not(A))]
                     {
                         self
                     }
-                    #[cfg(target_endian = "little")]
+                    #[cfg(A)]
                     {
                         self
                     }
