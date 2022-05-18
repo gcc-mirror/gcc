@@ -239,7 +239,7 @@ Mappings::insert_hir_item (CrateNum crateNum, HirId id, HIR::Item *item)
   rust_assert (lookup_hir_item (crateNum, id) == nullptr);
 
   hirItemMappings[crateNum][id] = item;
-  nodeIdToHirMappings[crateNum][item->get_mappings ().get_nodeid ()] = id;
+  insert_node_to_hir (crateNum, item->get_mappings ().get_nodeid (), id);
 }
 
 HIR::Item *
@@ -263,7 +263,7 @@ Mappings::insert_hir_trait_item (CrateNum crateNum, HirId id,
   rust_assert (lookup_hir_trait_item (crateNum, id) == nullptr);
 
   hirTraitItemMappings[crateNum][id] = item;
-  nodeIdToHirMappings[crateNum][item->get_mappings ().get_nodeid ()] = id;
+  insert_node_to_hir (crateNum, item->get_mappings ().get_nodeid (), id);
 }
 
 HIR::TraitItem *
@@ -287,7 +287,7 @@ Mappings::insert_hir_extern_item (CrateNum crateNum, HirId id,
   rust_assert (lookup_hir_extern_item (crateNum, id) == nullptr);
 
   hirExternItemMappings[crateNum][id] = item;
-  nodeIdToHirMappings[crateNum][item->get_mappings ().get_nodeid ()] = id;
+  insert_node_to_hir (crateNum, item->get_mappings ().get_nodeid (), id);
 }
 
 HIR::ExternalItem *
@@ -311,7 +311,7 @@ Mappings::insert_hir_impl_block (CrateNum crateNum, HirId id,
   rust_assert (lookup_hir_impl_block (crateNum, id) == nullptr);
 
   hirImplBlockMappings[crateNum][id] = item;
-  nodeIdToHirMappings[crateNum][item->get_mappings ().get_nodeid ()] = id;
+  insert_node_to_hir (crateNum, item->get_mappings ().get_nodeid (), id);
 }
 
 HIR::ImplBlock *
@@ -357,7 +357,7 @@ Mappings::insert_hir_implitem (CrateNum crateNum, HirId id,
   rust_assert (lookup_hir_implitem (crateNum, id, nullptr) == nullptr);
   hirImplItemMappings[crateNum][id]
     = std::pair<HirId, HIR::ImplItem *> (parent_impl_id, item);
-  nodeIdToHirMappings[crateNum][item->get_impl_mappings ().get_nodeid ()] = id;
+  insert_node_to_hir (crateNum, item->get_impl_mappings ().get_nodeid (), id);
 }
 
 HIR::ImplItem *
@@ -383,7 +383,7 @@ void
 Mappings::insert_hir_expr (CrateNum crateNum, HirId id, HIR::Expr *expr)
 {
   hirExprMappings[crateNum][id] = expr;
-  nodeIdToHirMappings[crateNum][expr->get_mappings ().get_nodeid ()] = id;
+  insert_node_to_hir (crateNum, expr->get_mappings ().get_nodeid (), id);
   insert_location (crateNum, id, expr->get_locus ());
 }
 
@@ -408,7 +408,7 @@ Mappings::insert_hir_path_expr_seg (CrateNum crateNum, HirId id,
   rust_assert (lookup_hir_path_expr_seg (crateNum, id) == nullptr);
 
   hirPathSegMappings[crateNum][id] = expr;
-  nodeIdToHirMappings[crateNum][expr->get_mappings ().get_nodeid ()] = id;
+  insert_node_to_hir (crateNum, expr->get_mappings ().get_nodeid (), id);
   insert_location (crateNum, id, expr->get_locus ());
 }
 
@@ -433,7 +433,7 @@ Mappings::insert_simple_path_segment (CrateNum crateNum, HirId id,
   rust_assert (lookup_simple_path_segment (crateNum, id) == nullptr);
 
   astSimplePathSegmentMappings[crateNum][id] = path;
-  nodeIdToHirMappings[crateNum][path->get_node_id ()] = id;
+  insert_node_to_hir (crateNum, path->get_node_id (), id);
   insert_location (crateNum, id, path->get_locus ());
 }
 
@@ -458,7 +458,7 @@ Mappings::insert_simple_path (CrateNum crateNum, HirId id,
   rust_assert (lookup_simple_path (crateNum, id) == nullptr);
 
   astSimplePathMappings[crateNum][id] = path;
-  nodeIdToHirMappings[crateNum][path->get_node_id ()] = id;
+  insert_node_to_hir (crateNum, path->get_node_id (), id);
   insert_location (crateNum, id, path->get_locus ());
 }
 
@@ -483,7 +483,7 @@ Mappings::insert_hir_generic_param (CrateNum crateNum, HirId id,
   rust_assert (lookup_hir_generic_param (crateNum, id) == nullptr);
 
   hirGenericParamMappings[crateNum][id] = param;
-  nodeIdToHirMappings[crateNum][param->get_mappings ().get_nodeid ()] = id;
+  insert_node_to_hir (crateNum, param->get_mappings ().get_nodeid (), id);
   insert_location (crateNum, id, param->get_locus ());
 }
 
@@ -507,7 +507,7 @@ Mappings::insert_hir_type (CrateNum crateNum, HirId id, HIR::Type *type)
   rust_assert (lookup_hir_type (crateNum, id) == nullptr);
 
   hirTypeMappings[crateNum][id] = type;
-  nodeIdToHirMappings[crateNum][type->get_mappings ().get_nodeid ()] = id;
+  insert_node_to_hir (crateNum, type->get_mappings ().get_nodeid (), id);
 }
 
 HIR::Type *
@@ -525,12 +525,12 @@ Mappings::lookup_hir_type (CrateNum crateNum, HirId id)
 }
 
 void
-Mappings::insert_hir_stmt (CrateNum crateNum, HirId id, HIR::Stmt *type)
+Mappings::insert_hir_stmt (CrateNum crateNum, HirId id, HIR::Stmt *stmt)
 {
   rust_assert (lookup_hir_stmt (crateNum, id) == nullptr);
 
-  hirStmtMappings[crateNum][id] = type;
-  nodeIdToHirMappings[crateNum][type->get_mappings ().get_nodeid ()] = id;
+  hirStmtMappings[crateNum][id] = stmt;
+  insert_node_to_hir (crateNum, stmt->get_mappings ().get_nodeid (), id);
 }
 
 HIR::Stmt *
@@ -554,7 +554,7 @@ Mappings::insert_hir_param (CrateNum crateNum, HirId id,
   rust_assert (lookup_hir_stmt (crateNum, id) == nullptr);
 
   hirParamMappings[crateNum][id] = param;
-  nodeIdToHirMappings[crateNum][param->get_mappings ().get_nodeid ()] = id;
+  insert_node_to_hir (crateNum, param->get_mappings ().get_nodeid (), id);
 }
 
 HIR::FunctionParam *
@@ -578,7 +578,7 @@ Mappings::insert_hir_self_param (CrateNum crateNum, HirId id,
   rust_assert (lookup_hir_stmt (crateNum, id) == nullptr);
 
   hirSelfParamMappings[crateNum][id] = param;
-  nodeIdToHirMappings[crateNum][param->get_mappings ().get_nodeid ()] = id;
+  insert_node_to_hir (crateNum, param->get_mappings ().get_nodeid (), id);
 }
 
 HIR::SelfParam *
@@ -602,7 +602,7 @@ Mappings::insert_hir_struct_field (CrateNum crateNum, HirId id,
   rust_assert (lookup_hir_stmt (crateNum, id) == nullptr);
 
   hirStructFieldMappings[crateNum][id] = field;
-  nodeIdToHirMappings[crateNum][field->get_mappings ().get_nodeid ()] = id;
+  insert_node_to_hir (crateNum, field->get_mappings ().get_nodeid (), id);
 }
 
 HIR::StructExprField *
@@ -624,8 +624,8 @@ Mappings::insert_hir_pattern (CrateNum crateNum, HirId id,
 			      HIR::Pattern *pattern)
 {
   hirPatternMappings[crateNum][id] = pattern;
-  nodeIdToHirMappings[crateNum][pattern->get_pattern_mappings ().get_nodeid ()]
-    = id;
+  insert_node_to_hir (crateNum, pattern->get_pattern_mappings ().get_nodeid (),
+		      id);
 }
 
 HIR::Pattern *
@@ -684,6 +684,7 @@ void
 Mappings::insert_node_to_hir (CrateNum crate, NodeId id, HirId ref)
 {
   nodeIdToHirMappings[crate][id] = ref;
+  hirIdToNodeMappings[crate][ref] = id;
 }
 
 bool
@@ -691,6 +692,21 @@ Mappings::lookup_node_to_hir (CrateNum crate, NodeId id, HirId *ref)
 {
   auto it = nodeIdToHirMappings.find (crate);
   if (it == nodeIdToHirMappings.end ())
+    return false;
+
+  auto iy = it->second.find (id);
+  if (iy == it->second.end ())
+    return false;
+
+  *ref = iy->second;
+  return true;
+}
+
+bool
+Mappings::lookup_hir_to_node (CrateNum crate, HirId id, NodeId *ref)
+{
+  auto it = hirIdToNodeMappings.find (crate);
+  if (it == hirIdToNodeMappings.end ())
     return false;
 
   auto iy = it->second.find (id);
