@@ -9506,7 +9506,7 @@ package body Exp_Ch3 is
             --       Prim_T       => Typ'Tag,
             --       Interface_T  => Iface'Tag,
             --       Offset_Value => n,
-            --       Offset_Func  => Fn'Address)
+            --       Offset_Func  => Fn'Unrestricted_Access)
 
             Append_To (Stmts_List,
               Make_Procedure_Call_Statement (Loc,
@@ -9541,7 +9541,7 @@ package body Exp_Ch3 is
                     Make_Attribute_Reference (Loc,
                       Prefix => New_Occurrence_Of
                                   (DT_Offset_To_Top_Func (Tag_Comp), Loc),
-                      Attribute_Name => Name_Address)))));
+                      Attribute_Name => Name_Unrestricted_Access)))));
 
             --  In this case the next component stores the value of the offset
             --  to the top.
