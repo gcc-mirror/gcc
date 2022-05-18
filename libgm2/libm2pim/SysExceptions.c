@@ -1,6 +1,6 @@
 /* SysExceptions.c configure the signals to create m2 exceptions.
 
-Copyright (C) 2009-2021 Free Software Foundation, Inc.
+Copyright (C) 2009-2022 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
 
 This file is part of GNU Modula-2.

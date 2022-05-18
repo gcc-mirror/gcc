@@ -1,6 +1,6 @@
 /* libc.c provides minimal stubs for expected symbols used by the rts.
 
-Copyright (C) 2010-2021 Free Software Foundation, Inc.
+Copyright (C) 2010-2022 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
 
 This file is part of GNU Modula-2.

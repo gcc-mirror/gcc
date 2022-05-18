@@ -1,6 +1,6 @@
 /* RTco.c provides minimal access to thread primitives.
 
-Copyright (C) 2019-2021 Free Software Foundation, Inc.
+Copyright (C) 2019-2022 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
 
 This file is part of GNU Modula-2.
@@ -125,7 +125,7 @@ signalSem (threadSem *sem)
     __gthread_cond_signal (&sem->counter);
   else
     sem->sem_value++;
-  __gthread_mutex_unlock (&sem->mutex);  
+  __gthread_mutex_unlock (&sem->mutex);
 }
 
 void stop (void) {}

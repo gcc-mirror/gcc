@@ -1409,19 +1409,18 @@ Modula-2 language as defined in ISO/IEC Information technology -
 programming languages - part 1: Modula-2 Language, ISO/IEC 10514-1
 (1996) (ISO).
 
-The command line switches @samp{-fpim2}, @samp{-fpim3},
-@samp{-fpim4} and @samp{-fiso} can be used to force mutually
-exclusive features. However by default the compiler will not
-agressively fail if a non mutually exclusive feature is used
-from another dialect. For example it is possible to specify
-@samp{-fpim2} and still utilise @samp{DEFINITION} @samp{MODULES}
-which have no export list.
+The command line switches @samp{-fpim2}, @samp{-fpim3}, @samp{-fpim4}
+and @samp{-fiso} can be used to force mutually exclusive
+features.  However by default the compiler will not aggressively fail
+if a non mutually exclusive feature is used from another dialect.  For
+example it is possible to specify @samp{-fpim2} and still utilise
+@samp{DEFINITION} @samp{MODULES} which have no export list.
 
 Some dialect differences will force a compile time error, for example
 in PIM2 the user must @code{IMPORT} @code{SIZE} from the module
 @code{SYSTEM}, whereas in PIM3 and PIM4 @code{SIZE} is a pervasive
-function. Thus compiling PIM4 source code with the @samp{-fpim2}
-switch will cause a compile time error. This can be fixed quickly
+function.  Thus compiling PIM4 source code with the @samp{-fpim2}
+switch will cause a compile time error.  This can be fixed quickly
 with an additional @code{IMPORT} or alternatively by compiling with
 the @samp{-fpim4} switch.
 
@@ -1435,7 +1434,7 @@ The most dangerous set of mutually exclusive features found in the
 four dialects supported by GNU Modula-2 are the @code{INTEGER}
 division, remainder and modulus arithmetic operators.  It is important
 to note that the same source code can be compiled to give different
-runtime results depending upon these switches! The reference manual
+runtime results depending upon these switches!  The reference manual
 for the various dialects of Modula-2 are quite clear about this
 behaviour and sadly there are three distinct definitions.
 

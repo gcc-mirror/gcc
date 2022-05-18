@@ -1,6 +1,6 @@
 /* ErrnoCatogory.c categorizes values of errno maps onto ChanConsts.h.
 
-Copyright (C) 2008-2021 Free Software Foundation, Inc.
+Copyright (C) 2008-2022 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
 
 This file is part of GNU Modula-2.
