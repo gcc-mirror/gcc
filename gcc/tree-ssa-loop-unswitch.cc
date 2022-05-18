@@ -101,52 +101,63 @@ along with GCC; see the file COPYING3.  If not see
    7) The process is repeated until we reach a growth threshold or all
       unswitching opportunities are taken.  */
 
-/* Ranger instance used in the pass.  */
-static gimple_ranger *ranger = NULL;
-
 /* A tuple that holds a GENERIC condition and value range for an unswitching
    predicate.  */
 
 struct unswitch_predicate
 {
   /* CTOR for a switch edge predicate.  */
-  unswitch_predicate (tree cond, tree lhs_, int edge_index_, edge e)
-  : condition (cond), lhs (lhs_), true_range (), false_range (),
+  unswitch_predicate (tree cond, tree lhs_, int edge_index_, edge e,
+		      const int_range_max& edge_range)
+  : condition (cond), lhs (lhs_), true_range (edge_range), false_range (),
     merged_true_range (), merged_false_range (),
     edge_index (edge_index_)
   {
-    gcc_assert (!(e->flags & (EDGE_TRUE_VALUE|EDGE_FALSE_VALUE)));
-    if (irange::supports_type_p (TREE_TYPE (lhs)))
-      {
-	if (ranger->gori ().outgoing_edge_range_p (true_range, e, lhs,
-						   *get_global_range_query ()))
-	  {
-	    false_range = true_range;
-	    if (!false_range.varying_p ()
-		&& !false_range.undefined_p ())
-	      false_range.invert ();
-	  }
-      }
+    gcc_assert (!(e->flags & (EDGE_TRUE_VALUE|EDGE_FALSE_VALUE))
+		&& irange::supports_type_p (TREE_TYPE (lhs)));
+    false_range = true_range;
+    if (!false_range.varying_p ()
+	&& !false_range.undefined_p ())
+      false_range.invert ();
     num = predicates->length ();
     predicates->safe_push (this);
   }
 
-  /* CTOR for an if true edge predicate.  */
-  unswitch_predicate (tree cond, tree lhs_, edge e)
-  : condition (cond), lhs (lhs_), true_range (), false_range (),
-    merged_true_range (), merged_false_range ()
+  /* CTOR for a GIMPLE condition statement.  */
+  unswitch_predicate (gcond *stmt)
+    : true_range (), false_range (), merged_true_range (), merged_false_range ()
   {
-    gcc_assert (e->flags & EDGE_TRUE_VALUE);
-    edge_index = (EDGE_SUCC (e->src, 0) == e) ? 0 : 1;
+    if (EDGE_SUCC (gimple_bb (stmt), 0)->flags & EDGE_TRUE_VALUE)
+      edge_index = 0;
+    else
+      edge_index = 1;
+    lhs = gimple_cond_lhs (stmt);
+    tree rhs = gimple_cond_rhs (stmt);
+    enum tree_code code = gimple_cond_code (stmt);
+    condition = build2 (code, boolean_type_node, lhs, rhs);
     if (irange::supports_type_p (TREE_TYPE (lhs)))
       {
-	if (ranger->gori ().outgoing_edge_range_p (true_range, e, lhs,
-						   *get_global_range_query ()))
+	auto range_op = range_op_handler (code, TREE_TYPE (lhs));
+	int_range<2> rhs_range (TREE_TYPE (rhs));
+	if (CONSTANT_CLASS_P (rhs))
+	  rhs_range.set (rhs);
+	if (!range_op->op1_range (true_range, TREE_TYPE (lhs),
+				  int_range<2> (boolean_true_node,
+						boolean_true_node), rhs_range))
+	  {
+	    true_range.set_varying (TREE_TYPE (lhs));
+	    false_range.set_varying (TREE_TYPE (lhs));
+	  }
+	else
 	  {
 	    false_range = true_range;
 	    if (!false_range.varying_p ()
 		&& !false_range.undefined_p ())
 	      false_range.invert ();
+	    else
+	      /* ???  Inversion of undefined is varying, of varying
+		 is undefined but ranger asserts.  */
+	      false_range.set_varying (TREE_TYPE (lhs));
 	  }
       }
     num = predicates->length ();
@@ -187,6 +198,9 @@ struct unswitch_predicate
 };
 
 vec<unswitch_predicate *> *unswitch_predicate::predicates;
+
+/* Ranger instance used in the pass.  */
+static gimple_ranger *ranger = NULL;
 
 /* Cache storage for unswitch_predicate belonging to a basic block.  */
 static vec<vec<unswitch_predicate *>> *bb_predicates;
@@ -444,7 +458,7 @@ find_unswitching_predicates_for_bb (basic_block bb, class loop *loop,
 				    vec<unswitch_predicate *> &candidates)
 {
   gimple *last, *def;
-  tree cond, use;
+  tree use;
   basic_block def_bb;
   ssa_op_iter iter;
 
@@ -461,6 +475,10 @@ find_unswitching_predicates_for_bb (basic_block bb, class loop *loop,
       if (gimple_cond_true_p (stmt) || gimple_cond_false_p (stmt))
 	return;
 
+      /* At least the LHS needs to be symbolic.  */
+      if (TREE_CODE (gimple_cond_lhs (stmt)) != SSA_NAME)
+	return;
+
       /* Condition must be invariant.  */
       FOR_EACH_SSA_TREE_OPERAND (use, stmt, iter, SSA_OP_USE)
 	{
@@ -475,17 +493,7 @@ find_unswitching_predicates_for_bb (basic_block bb, class loop *loop,
 	    return;
 	}
 
-      tree lhs = gimple_cond_lhs (stmt);
-      tree rhs = gimple_cond_rhs (stmt);
-      if (TREE_CODE (lhs) != SSA_NAME)
-	return;
-
-      cond = build2 (gimple_cond_code (stmt), boolean_type_node, lhs, rhs);
-      edge edge_true, edge_false;
-      extract_true_false_edges_from_block (bb, &edge_true, &edge_false);
-
-      unswitch_predicate *predicate = new unswitch_predicate (cond, lhs,
-							      edge_true);
+      unswitch_predicate *predicate = new unswitch_predicate (stmt);
       candidates.safe_push (predicate);
     }
   else if (gswitch *stmt = safe_dyn_cast <gswitch *> (last))
@@ -508,7 +516,9 @@ find_unswitching_predicates_for_bb (basic_block bb, class loop *loop,
 
       /* Build compound expression for all outgoing edges of the switch.  */
       auto_vec<tree, 16> preds;
-      preds.safe_grow_cleared (EDGE_COUNT (gimple_bb (stmt)->succs));
+      auto_vec<int_range_max> edge_range;
+      preds.safe_grow_cleared (EDGE_COUNT (gimple_bb (stmt)->succs), true);
+      edge_range.safe_grow_cleared (EDGE_COUNT (gimple_bb (stmt)->succs), true);
       edge e;
       edge_iterator ei;
       unsigned edge_index = 0;
@@ -518,6 +528,7 @@ find_unswitching_predicates_for_bb (basic_block bb, class loop *loop,
 	{
 	  tree lab = gimple_switch_label (stmt, i);
 	  tree cmp;
+	  int_range<2> lab_range;
 	  if (CASE_HIGH (lab) != NULL_TREE)
 	    {
 	      tree cmp1 = fold_build2 (GE_EXPR, boolean_type_node, idx,
@@ -525,9 +536,14 @@ find_unswitching_predicates_for_bb (basic_block bb, class loop *loop,
 	      tree cmp2 = fold_build2 (LE_EXPR, boolean_type_node, idx,
 				       CASE_HIGH (lab));
 	      cmp = fold_build2 (BIT_AND_EXPR, boolean_type_node, cmp1, cmp2);
+	      lab_range.set (CASE_LOW (lab), CASE_HIGH (lab));
 	    }
 	  else
-	    cmp = fold_build2 (EQ_EXPR, boolean_type_node, idx, CASE_LOW (lab));
+	    {
+	      cmp = fold_build2 (EQ_EXPR, boolean_type_node, idx,
+				 CASE_LOW (lab));
+	      lab_range.set (CASE_LOW (lab));
+	    }
 
 	  /* Combine the expression with the existing one.  */
 	  basic_block dest = label_to_block (cfun, CASE_LABEL (lab));
@@ -537,6 +553,7 @@ find_unswitching_predicates_for_bb (basic_block bb, class loop *loop,
 	    expr = cmp;
 	  else
 	    expr = fold_build2 (BIT_IOR_EXPR, boolean_type_node, expr, cmp);
+	  edge_range[(uintptr_t)e->aux].union_ (lab_range);
 	}
 
       /* Now register the predicates.  */
@@ -548,7 +565,8 @@ find_unswitching_predicates_for_bb (basic_block bb, class loop *loop,
 	    {
 	      unswitch_predicate *predicate
 		= new unswitch_predicate (preds[edge_index], idx,
-					  edge_index, e);
+					  edge_index, e,
+					  edge_range[edge_index]);
 	      candidates.safe_push (predicate);
 	    }
 	}
@@ -637,7 +655,7 @@ evaluate_control_stmt_using_entry_checks (gimple *stmt,
       /* Else try ranger if it supports LHS.  */
       else if (irange::supports_type_p (TREE_TYPE (lhs)))
 	{
-	  int_range_max r;
+	  int_range<2> r;
 	  int_range_max path_range;
 
 	  if (find_range_for_lhs (predicate_path, lhs, path_range)
@@ -671,9 +689,9 @@ evaluate_control_stmt_using_entry_checks (gimple *stmt,
 	    continue;
 
 	  int_range_max r;
-
-	  ranger->gori ().outgoing_edge_range_p (r, e, idx,
-						 *get_global_range_query ());
+	  if (!ranger->gori ().outgoing_edge_range_p (r, e, idx,
+						      *get_global_range_query ()))
+	    continue;
 	  r.intersect (path_range);
 	  if (r.undefined_p ())
 	    ignored_edges->add (e);
