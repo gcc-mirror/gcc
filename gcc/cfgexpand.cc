@@ -4575,6 +4575,10 @@ expand_debug_expr (tree exp)
 	      || SYMBOL_REF_DECL (XEXP (op0, 0)) != exp)
 	    return NULL;
 	}
+      else if (VAR_P (exp)
+	       && is_global_var (exp)
+	       && symtab_node::get (exp) == NULL)
+	return NULL;
       else
 	op0 = copy_rtx (op0);
 
