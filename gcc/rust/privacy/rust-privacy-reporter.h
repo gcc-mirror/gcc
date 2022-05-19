@@ -32,7 +32,8 @@ namespace Privacy {
  * violations. It should be started after using the `VisibilityResolver` visitor
  * which resolves the visibilities of all items of a crate.
  */
-class PrivacyReporter : public HIR::HIRFullVisitor
+class PrivacyReporter : public HIR::HIRExpressionVisitor,
+			public HIR::HIRStmtVisitor
 {
 public:
   PrivacyReporter (Analysis::Mappings &mappings,
@@ -56,16 +57,17 @@ private:
   void check_for_privacy_violation (const NodeId &use_id,
 				    const Location &locus);
 
+  virtual void visit (HIR::StructExprFieldIdentifier &field);
+  virtual void visit (HIR::StructExprFieldIdentifierValue &field);
+  virtual void visit (HIR::StructExprFieldIndexValue &field);
+
+  virtual void visit (HIR::QualifiedPathInExpression &expr);
+  virtual void visit (HIR::PathInExpression &expr);
+  virtual void visit (HIR::ClosureExprInnerTyped &);
+  virtual void visit (HIR::ClosureExprInner &expr);
+  virtual void visit (HIR::StructExprStructFields &);
+  virtual void visit (HIR::StructExprStruct &);
   virtual void visit (HIR::IdentifierExpr &ident_expr);
-  virtual void visit (HIR::Lifetime &lifetime);
-  virtual void visit (HIR::LifetimeParam &lifetime_param);
-  virtual void visit (HIR::PathInExpression &path);
-  virtual void visit (HIR::TypePathSegment &segment);
-  virtual void visit (HIR::TypePathSegmentGeneric &segment);
-  virtual void visit (HIR::TypePathSegmentFunction &segment);
-  virtual void visit (HIR::TypePath &path);
-  virtual void visit (HIR::QualifiedPathInExpression &path);
-  virtual void visit (HIR::QualifiedPathInType &path);
   virtual void visit (HIR::LiteralExpr &expr);
   virtual void visit (HIR::BorrowExpr &expr);
   virtual void visit (HIR::DereferenceExpr &expr);
@@ -78,24 +80,14 @@ private:
   virtual void visit (HIR::AssignmentExpr &expr);
   virtual void visit (HIR::CompoundAssignmentExpr &expr);
   virtual void visit (HIR::GroupedExpr &expr);
-  virtual void visit (HIR::ArrayElemsValues &elems);
-  virtual void visit (HIR::ArrayElemsCopied &elems);
   virtual void visit (HIR::ArrayExpr &expr);
   virtual void visit (HIR::ArrayIndexExpr &expr);
   virtual void visit (HIR::TupleExpr &expr);
   virtual void visit (HIR::TupleIndexExpr &expr);
-  virtual void visit (HIR::StructExprStruct &expr);
-  virtual void visit (HIR::StructExprFieldIdentifier &field);
-  virtual void visit (HIR::StructExprFieldIdentifierValue &field);
-  virtual void visit (HIR::StructExprFieldIndexValue &field);
-  virtual void visit (HIR::StructExprStructFields &expr);
-  virtual void visit (HIR::StructExprStructBase &expr);
   virtual void visit (HIR::CallExpr &expr);
   virtual void visit (HIR::MethodCallExpr &expr);
   virtual void visit (HIR::FieldAccessExpr &expr);
-  virtual void visit (HIR::ClosureExprInner &expr);
   virtual void visit (HIR::BlockExpr &expr);
-  virtual void visit (HIR::ClosureExprInnerTyped &expr);
   virtual void visit (HIR::ContinueExpr &expr);
   virtual void visit (HIR::BreakExpr &expr);
   virtual void visit (HIR::RangeFromToExpr &expr);
@@ -121,72 +113,32 @@ private:
   virtual void visit (HIR::MatchExpr &expr);
   virtual void visit (HIR::AwaitExpr &expr);
   virtual void visit (HIR::AsyncBlockExpr &expr);
-  virtual void visit (HIR::TypeParam &param);
-  virtual void visit (HIR::LifetimeWhereClauseItem &item);
-  virtual void visit (HIR::TypeBoundWhereClauseItem &item);
+
+  virtual void visit (HIR::EnumItemTuple &);
+  virtual void visit (HIR::EnumItemStruct &);
+  virtual void visit (HIR::EnumItem &item);
+  virtual void visit (HIR::TupleStruct &tuple_struct);
+  virtual void visit (HIR::EnumItemDiscriminant &);
+  virtual void visit (HIR::TypePathSegmentFunction &segment);
+  virtual void visit (HIR::TypePath &path);
+  virtual void visit (HIR::QualifiedPathInType &path);
   virtual void visit (HIR::Module &module);
   virtual void visit (HIR::ExternCrate &crate);
-  virtual void visit (HIR::UseTreeGlob &use_tree);
-  virtual void visit (HIR::UseTreeList &use_tree);
-  virtual void visit (HIR::UseTreeRebind &use_tree);
   virtual void visit (HIR::UseDeclaration &use_decl);
   virtual void visit (HIR::Function &function);
   virtual void visit (HIR::TypeAlias &type_alias);
   virtual void visit (HIR::StructStruct &struct_item);
-  virtual void visit (HIR::TupleStruct &tuple_struct);
-  virtual void visit (HIR::EnumItem &item);
-  virtual void visit (HIR::EnumItemTuple &item);
-  virtual void visit (HIR::EnumItemStruct &item);
-  virtual void visit (HIR::EnumItemDiscriminant &item);
   virtual void visit (HIR::Enum &enum_item);
   virtual void visit (HIR::Union &union_item);
   virtual void visit (HIR::ConstantItem &const_item);
   virtual void visit (HIR::StaticItem &static_item);
-  virtual void visit (HIR::TraitItemFunc &item);
-  virtual void visit (HIR::TraitItemConst &item);
-  virtual void visit (HIR::TraitItemType &item);
   virtual void visit (HIR::Trait &trait);
   virtual void visit (HIR::ImplBlock &impl);
-  virtual void visit (HIR::ExternalStaticItem &item);
-  virtual void visit (HIR::ExternalFunctionItem &item);
   virtual void visit (HIR::ExternBlock &block);
-  virtual void visit (HIR::LiteralPattern &pattern);
-  virtual void visit (HIR::IdentifierPattern &pattern);
-  virtual void visit (HIR::WildcardPattern &pattern);
-  virtual void visit (HIR::RangePatternBoundLiteral &bound);
-  virtual void visit (HIR::RangePatternBoundPath &bound);
-  virtual void visit (HIR::RangePatternBoundQualPath &bound);
-  virtual void visit (HIR::RangePattern &pattern);
-  virtual void visit (HIR::ReferencePattern &pattern);
-  virtual void visit (HIR::StructPatternFieldTuplePat &field);
-  virtual void visit (HIR::StructPatternFieldIdentPat &field);
-  virtual void visit (HIR::StructPatternFieldIdent &field);
-  virtual void visit (HIR::StructPattern &pattern);
-  virtual void visit (HIR::TupleStructItemsNoRange &tuple_items);
-  virtual void visit (HIR::TupleStructItemsRange &tuple_items);
-  virtual void visit (HIR::TupleStructPattern &pattern);
-  virtual void visit (HIR::TuplePatternItemsMultiple &tuple_items);
-  virtual void visit (HIR::TuplePatternItemsRanged &tuple_items);
-  virtual void visit (HIR::TuplePattern &pattern);
-  virtual void visit (HIR::GroupedPattern &pattern);
-  virtual void visit (HIR::SlicePattern &pattern);
   virtual void visit (HIR::EmptyStmt &stmt);
   virtual void visit (HIR::LetStmt &stmt);
   virtual void visit (HIR::ExprStmtWithoutBlock &stmt);
   virtual void visit (HIR::ExprStmtWithBlock &stmt);
-  virtual void visit (HIR::TraitBound &bound);
-  virtual void visit (HIR::ImplTraitType &type);
-  virtual void visit (HIR::TraitObjectType &type);
-  virtual void visit (HIR::ParenthesisedType &type);
-  virtual void visit (HIR::ImplTraitTypeOneBound &type);
-  virtual void visit (HIR::TupleType &type);
-  virtual void visit (HIR::NeverType &type);
-  virtual void visit (HIR::RawPointerType &type);
-  virtual void visit (HIR::ReferenceType &type);
-  virtual void visit (HIR::ArrayType &type);
-  virtual void visit (HIR::SliceType &type);
-  virtual void visit (HIR::InferredType &type);
-  virtual void visit (HIR::BareFunctionType &type);
 
   Analysis::Mappings &mappings;
   Rust::Resolver::Resolver &resolver;
