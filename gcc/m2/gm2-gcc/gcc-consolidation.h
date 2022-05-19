@@ -54,7 +54,7 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 
 #if !defined(GM2TOOLS)
 
-/* utilize some of the C build routines.  */
+/* Utilize some of the C build routines.  */
 
 #include "fold-const.h"
 #include "varasm.h"

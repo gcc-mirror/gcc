@@ -33,6 +33,8 @@
 	* gm2-gcc/m2treelib.cc: Corrected comment formatting.
 	* gm2-gcc/m2type.cc: Corrected comment formatting.
 	* gm2-gcc/rtegraph.cc: Corrected comment formatting.
+	* gm2-gcc/m2color.h: Corrected comment formatting.
+	* gm2-gcc/gcc-consolidation.h: Corrected comment formatting.
 
 2022-05-16   Gaius Mulley   <gaius.mulley@southwales.ac.uk>
 
