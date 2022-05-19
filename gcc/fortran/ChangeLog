@@ -1,3 +1,13 @@
+2022-05-18  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.h (enum gfc_omp_depend_op): Add OMP_DEPEND_INOUTSET.
+	(gfc_omp_clauses): Enlarge ENUM_BITFIELD.
+	* dump-parse-tree.cc (show_omp_namelist, show_omp_clauses): Handle
+	'inoutset' depend modifier.
+	* openmp.cc (gfc_match_omp_clauses, gfc_match_omp_depobj): Likewise.
+	* trans-openmp.cc (gfc_trans_omp_clauses, gfc_trans_omp_depobj):
+	Likewise.
+
 2022-05-17  Tobias Burnus  <tobias@codesourcery.com>
 
 	* dump-parse-tree.cc (show_omp_namelist): Handle omp_all_memory.

@@ -1,3 +1,75 @@
+2022-05-18  Marek Polacek  <polacek@redhat.com>
+
+	PR c/105131
+	* doc/invoke.texi: Document -Wenum-int-mismatch.
+
+2022-05-18  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/gnu-user-common.h (defined): Only define
+	TARGET_CAN_SPLIT_STACK for glibc targets.
+	* config/i386/gnu.h (defined): Ditto.
+
+2022-05-18  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* config/i386/i386.cc (ix86_rtx_costs) [MULT]: When mode size
+	is wider than word_mode, a multiplication costs three word_mode
+	multiplications and two word_mode additions.
+
+2022-05-18  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* config/i386/i386.md (define_split):  Split *andsi_1
+	and *andn_si_ccno after reload with -Oz.
+
+2022-05-18  Frederik Harwath  <frederik@codesourcery.com>
+
+	* graphite-scop-detection.cc (scop_detection::can_represent_loop):
+	Output reason for failure to dump file.
+	(scop_detection::harmful_loop_in_region): Likewise.
+	(scop_detection::graphite_can_represent_expr): Likewise.
+	(scop_detection::stmt_has_simple_data_refs_p): Likewise.
+	(scop_detection::stmt_simple_for_scop_p): Likewise.
+	(print_sese_loop_numbers): New function.
+	(scop_detection::add_scop): Use from here.
+
+2022-05-18  liuhongt  <hongtao.liu@intel.com>
+
+	PR middle-end/103462
+	* match.pd (bitwise_induction_p): New match.
+	* tree-scalar-evolution.cc (gimple_bitwise_induction_p):
+	Declare.
+	(analyze_and_compute_bitwise_induction_effect): New function.
+	(enum bit_op_kind): New enum.
+	(final_value_replacement_loop): Enhanced to handle bitwise
+	induction.
+
+2022-05-18  Haochen Gui  <guihaoc@gcc.gnu.org>
+
+	PR target/95737
+	* config/rs6000/rs6000.md (*subfsi3_carry_in_xx_64): New.
+
+2022-05-18  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/104375
+	* config/i386/i386.md (*bmi2_bzhi_zero_extendsidi_4): New
+	define_insn.
+
+2022-05-18  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/104610
+	* config/i386/i386-expand.cc (ix86_expand_branch): Use ptest
+	for QImode when code is EQ or NE.
+	* config/i386/i386.md (cbranchoi4): New expander.
+
+2022-05-18  Peter Bergner  <bergner@linux.ibm.com>
+	    Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/105556
+	* config/rs6000/mma.md (mma_<vv>, mma_<avv>, mma_<pv>, mma_<apv>,
+	mma_<vvi4i4i8>, mma_<avvi4i4i8>, mma_<vvi4i4i2>, mma_<avvi4i4i2>,
+	mma_<vvi4i4>, mma_<avvi4i4>, mma_<pvi4i2>, mma_<apvi4i2>,
+	mma_<vvi4i4i4>, mma_<avvi4i4i4>): Replace "wa" constraints with "v,?wa".
+	Update other operands accordingly.
+
 2022-05-17  Marek Polacek  <polacek@redhat.com>
 
 	* godump.cc (go_output_typedef): Use the DECL_INITIAL of the TREE_VALUE.

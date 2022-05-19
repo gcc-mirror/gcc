@@ -1,3 +1,15 @@
+2022-05-18  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* cuda/cuda.h (enum CUjit_option): Add
+	'CU_JIT_GENERATE_DEBUG_INFO', 'CU_JIT_GENERATE_LINE_INFO'.
+	(enum CUlimit): Add 'CU_LIMIT_STACK_SIZE',
+	'CU_LIMIT_MALLOC_HEAP_SIZE'.
+	(cuCtxSetLimit, cuGetErrorName): Add.
+
+2022-05-18  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* cuda/cuda.h: For C++, wrap in 'extern "C"'.
+
 2022-05-17  Nathan Sidwell  <nathan@acm.org>
 
 	* demangle.h (enum demangle_component_type): Add

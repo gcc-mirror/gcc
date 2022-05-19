@@ -1,3 +1,83 @@
+2022-05-18  Marek Polacek  <polacek@redhat.com>
+
+	PR c/105131
+	* gcc.dg/Wenum-int-mismatch-1.c: New test.
+	* gcc.dg/Wenum-int-mismatch-2.c: New test.
+	* gcc.dg/Wenum-int-mismatch-3.c: New test.
+	* gcc.dg/Wenum-int-mismatch-4.c: New test.
+	* gcc.dg/Wenum-int-mismatch-5.c: New test.
+
+2022-05-18  Paul A. Clarke  <pc@us.ibm.com>
+
+	PR target/105620
+	* g++.target/powerpc/pr69667.C: Move to ...
+	* g++.dg/pr69667.C: here. Also, revert recent dg directives changes.
+
+2022-05-18  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* gcc.target/i386/bmi-andn-3.c: New test case.
+
+2022-05-18  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/105497
+	* c-c++-common/Wswitch-1.c: New test.
+	* g++.dg/warn/Wswitch-4.C: New test.
+
+2022-05-18  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/105634
+	* g++.dg/Wclass-memaccess-2.C: Moved to...
+	* g++.dg/warn/Wclass-memaccess-2.C: ...here.
+	* g++.dg/Wclass-memaccess-3.C: Moved to...
+	* g++.dg/warn/Wclass-memaccess-3.C: ...here.
+	* g++.dg/Wclass-memaccess-4.C: Moved to...
+	* g++.dg/warn/Wclass-memaccess-4.C: ...here.
+	* g++.dg/Wclass-memaccess-5.C: Moved to...
+	* g++.dg/warn/Wclass-memaccess-5.C: ...here.
+	* g++.dg/Wclass-memaccess-6.C: Moved to...
+	* g++.dg/warn/Wclass-memaccess-6.C: ...here.
+	* g++.dg/Wclass-memaccess.C: Moved to...
+	* g++.dg/warn/Wclass-memaccess.C: ...here.
+	* g++.dg/warn/Wclass-memaccess-7.C: New test.
+
+2022-05-18  Kewen Lin  <linkw@linux.ibm.com>
+
+	* gcc.target/powerpc/pr83660.C: Moved to...
+	* g++.target/powerpc/pr83660.C: ...here.
+
+2022-05-18  Frederik Harwath  <frederik@codesourcery.com>
+
+	* gcc.dg/graphite/scop-22a.c: New test.
+
+2022-05-18  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/gomp/all-memory-1.f90: Add inoutset test.
+	* gfortran.dg/gomp/all-memory-2.f90: Likewise.
+	* gfortran.dg/gomp/depobj-1.f90: Likewise.
+	* gfortran.dg/gomp/depobj-2.f90: Likewise.
+
+2022-05-18  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr103462-1.c: New test.
+	* gcc.target/i386/pr103462-2.c: New test.
+	* gcc.target/i386/pr103462-3.c: New test.
+	* gcc.target/i386/pr103462-4.c: New test.
+	* gcc.target/i386/pr103462-5.c: New test.
+	* gcc.target/i386/pr103462-6.c: New test.
+
+2022-05-18  Haochen Gui  <guihaoc@gcc.gnu.org>
+
+	PR target/95737
+	* gcc.target/powerpc/pr95737.c: New.
+
+2022-05-18  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr104375.c: New test.
+
+2022-05-18  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr104610.c: New test.
+
 2022-05-17  Jason Merrill  <jason@redhat.com>
 
 	PR c++/102307

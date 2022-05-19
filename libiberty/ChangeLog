@@ -1,3 +1,14 @@
+2022-05-18  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-demangle.c (d_name): Add SUBSTABLE parameter,
+	push substitution if requested. Adjust unscoped name handling.
+	(d_prefix): Reorder main loop. Adjust all calls.
+	(d_unqualified_name): Add SCOPE parameter, create qualified
+	name here. Adjust all calls.
+	(cplus_demangle_type): Do not handle 'S' here, leave all
+	to d_class_enum_type.
+	(d_class_enum_type): Add SUBSTABLE parameter.
+
 2022-05-17  Nathan Sidwell  <nathan@acm.org>
 
 	* cp-demangle.c (d_make_comp): Adjust.

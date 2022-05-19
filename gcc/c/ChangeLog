@@ -1,3 +1,11 @@
+2022-05-18  Marek Polacek  <polacek@redhat.com>
+
+	PR c/105131
+	* c-decl.cc (diagnose_mismatched_decls): Warn about enum/integer type
+	mismatches.
+	* c-tree.h (comptypes_check_enum_int): Declare.
+	* c-typeck.cc (comptypes): No longer static.
+
 2022-05-17  Marek Polacek  <polacek@redhat.com>
 
 	* c-decl.cc (finish_enum): Store the CONST_DECL into TREE_VALUE, not

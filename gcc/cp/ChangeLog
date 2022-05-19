@@ -1,3 +1,8 @@
+2022-05-18  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/105634
+	* call.cc (maybe_warn_class_memaccess): Avoid % by zero.
+
 2022-05-17  Jason Merrill  <jason@redhat.com>
 
 	PR c++/102307

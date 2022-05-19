@@ -1,3 +1,21 @@
+2022-05-18  Marek Polacek  <polacek@redhat.com>
+
+	PR c/105131
+	* c.opt (Wenum-int-mismatch): New.
+
+2022-05-18  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/105497
+	* c-warn.cc (c_do_switch_warnings): Don't warn about unhandled
+	enumerator when it was marked with attribute unused.
+
+2022-05-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-ada-spec.cc (dump_ada_node) <COMPLEX_TYPE>: Deal with usual
+	floating-point complex types.
+	<POINTER_TYPE>: Do not use limited_with clause if the designated
+	type is a scalar type.
+
 2022-05-17  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-omp.cc (c_finish_omp_depobj): Handle

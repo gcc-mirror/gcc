@@ -1,3 +1,12 @@
+2022-05-18  Tobias Burnus  <tobias@codesourcery.com>
+
+	* libgomp.texi (OpenMP 5.1): Set 'inoutset' to Y.
+	(OpenMP Context Selectors): Add missing comma.
+	* testsuite/libgomp.fortran/depend-5.f90: Add inoutset test.
+	* testsuite/libgomp.fortran/depend-6.f90: Likewise.
+	* testsuite/libgomp.fortran/depend-7.f90: Likewise.
+	* testsuite/libgomp.fortran/depend-inoutset-1.f90: New test.
+
 2022-05-17  Jakub Jelinek  <jakub@redhat.com>
 
 	* libgomp.texi (OpenMP 5.1): Remove "Not inside target regions"

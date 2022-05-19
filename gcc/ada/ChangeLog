@@ -1,3 +1,240 @@
+2022-05-18  Claire Dross  <dross@adacore.com>
+
+	* libgnat/s-imageu.adb (Set_Image_Unsigned): Change assertion.
+
+2022-05-18  Doug Rupp  <rupp@adacore.com>
+
+	* sigtramp-qnx.c: Change struct sigcontext * to mcontext_t *.
+
+2022-05-18  Doug Rupp  <rupp@adacore.com>
+
+	* sigtramp-arm-qnx.c: Rewrite.
+
+2022-05-18  Yannick Moy  <moy@adacore.com>
+
+	* libgnat/s-aridou.adb (Big3): Change return type.
+	(Lemma_Mult_Non_Negative, Lemma_Mult_Non_Positive): Reorder
+	alphabetically.
+	(Lemma_Concat_Definition, Lemma_Double_Big_2xxsingle): New
+	lemmas.
+	(Double_Divide, Scaled_Divide): Add assertions.
+
+2022-05-18  Claire Dross  <dross@adacore.com>
+
+	* libgnat/s-valueu.adb (Scan_Raw_Unsigned): Add assertions.
+
+2022-05-18  Kévin Le Gouguec  <legouguec@adacore.com>
+
+	* libgnat/s-dwalin.adb (Read_Aranges_Header): Initialize output
+	parameter in case we return early.
+
+2022-05-18  Bob Duff  <duff@adacore.com>
+
+	* libgnat/a-crbtgo.ads, libgnat/a-rbtgbo.ads,
+	libgnat/a-cbdlli.adb, libgnat/a-cbhama.adb,
+	libgnat/a-cbhase.adb, libgnat/a-cdlili.adb,
+	libgnat/a-cfdlli.adb, libgnat/a-cfhama.adb,
+	libgnat/a-cfhase.adb, libgnat/a-cidlli.adb,
+	libgnat/a-cihama.adb, libgnat/a-cihase.adb,
+	libgnat/a-cohama.adb, libgnat/a-cohase.adb,
+	libgnat/a-crbtgo.adb, libgnat/a-crdlli.adb, libgnat/a-rbtgbo.adb
+	(Vet): Make the Vet functions do nothing when
+	Container_Checks'Enabled is False, and inline them, so the calls
+	disappear when optimizing.
+
+2022-05-18  Doug Rupp  <rupp@adacore.com>
+
+	* Makefile.rtl (arm-qnx): Use default (non-fma) target pair.
+
+2022-05-18  Kévin Le Gouguec  <legouguec@adacore.com>
+
+	* libgnat/s-dwalin.adb (Aranges_Lookup, Enable_Cache): Adapt to
+	changes in the signature of Read_Aranges_*.
+	(Debug_Info_Lookup): Do not control address size read from
+	DWARF.
+	(Read_Aranges_Header): Do not control address size read from
+	DWARF; return this size.
+	(Read_Aranges_Entry): Use the size returned by
+	Read_Aranges_Header.
+
+2022-05-18  Gary Dismukes  <dismukes@adacore.com>
+
+	* errout.ads (Error_Msg_GNAT_Extension): Add formal Loc and
+	revise comment.
+	* errout.adb (Error_Msg_GNAT_Extension): Condition message on
+	the flag Ada_Version_Pragma, and add suggestion to use of pragma
+	Extensions_Allowed in messages.
+	* par-ch3.adb, par-ch5.adb, par-ch6.adb, par-ch11.adb,
+	par-ch12.adb: Add actual Token_Ptr on calls to
+	Error_Msg_GNAT_Extension.
+	* par-ch4.adb: Change Error_Msg to Error_Msg_GNAT_Extension for
+	error calls related to use of extension features.
+	* sem_ch13.adb: Likewise.
+
+2022-05-18  Johannes Kliemann  <kliemann@adacore.com>
+
+	* libgnarl/s-osinte__qnx.adb (To_Target_Priority): Perform
+	arithmetic in int.
+
+2022-05-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch7.adb (Build_BIP_Cleanup_Stmts): Use Needs_BIP_Alloc_Form.
+
+2022-05-18  Javier Miranda  <miranda@adacore.com>
+
+	* sem_ch6.adb (Find_Corresponding_Spec): Avoid calling
+	Is_Null_Extension with a class-wide type entity.
+	(Overrides_Visible_Function): Handle alias entities.
+	* sem_res.adb (Has_Applicable_User_Defined_Literal): Conversion
+	not needed if the result type of the call is class-wide or if
+	the result type matches the context type.
+	* sem_util.ads (Is_Null_Extension): Adding documentation.
+	(Is_Null_Extension_Of): Adding documentation.
+	* sem_util.adb (Is_Null_Extension): Adding assertion.
+	(Is_Null_Extension_Of): Adding assertions.
+
+2022-05-18  Javier Miranda  <miranda@adacore.com>
+
+	* snames.ads-tmpl (Name_Index): New attribute name.
+	(Attribute_Id): Adding Attribute_Index as regular attribute.
+	* sem_attr.adb (Attribute_22): Adding Attribute_Index as Ada
+	2022 attribute.
+	(Analyze_Index_Attribute): Check that 'Index appears in a
+	pre-/postcondition aspect or pragma associated with an entry
+	family.
+	(Analyze_Attribute): Adding semantic analysis for 'Index.
+	(Eval_Attribute): Register 'Index as can never be folded.
+	(Resolve_Attribute): Resolve attribute 'Index.
+	* sem_ch9.adb (Check_Wrong_Attribute_In_Postconditions): New
+	subprogram.
+	(Analyze_Requeue): Check that the requeue target shall not have
+	an applicable specific or class-wide postcondition which
+	includes an Index attribute reference.
+	* exp_attr.adb (Expand_N_Attribute_Reference): Transform
+	attribute Index into a renaming of the second formal of the
+	wrapper built for an entry family that has contract cases.
+	* einfo.ads (Is_Entry_Wrapper): Complete documentation.
+
+2022-05-18  Yannick Moy  <moy@adacore.com>
+
+	* libgnat/s-imagei.adb (Set_Digits): Add assertion.
+	* libgnat/s-imgboo.adb (Image_Boolean): Add assertions.
+	* libgnat/s-valueu.adb (Scan_Raw_Unsigned): Add assertion.
+
+2022-05-18  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem_aux.adb (Is_Immutably_Limited_Type): Do not look through
+	private types as per RM 7.5(8.1).
+	* sem_ch6.adb (Analyze_Function_Return): Use
+	Is_Immutably_Limited_Type as per RM 6.5(5.10).
+
+2022-05-18  Marc Poulhiès  <poulhies@adacore.com>
+
+	* gen_il-gen-gen_nodes.adb (Gen_IL.Gen.Gen_Nodes): Add
+	Is_Homogeneous_Aggregate field for N_Delta_Aggregate nodes.
+	* par-ch4.adb (P_Aggregate_Or_Paren_Expr): Minor reformatting.
+	* sem_aggr.adb (Resolve_Delta_Aggregate): Reject square brackets
+	for record aggregate.
+	(Resolve_Record_Aggregate): Uniformise error message.
+
+2022-05-18  Arnaud Charlet  <charlet@adacore.com>
+
+	* ali.adb (Scan_ALI): Special case a-tags.ali when setting
+	Sec_Stack_Used.
+	* bindgen.adb (Gen_Adainit): Simplify handling of secondary
+	stack related code, and only import __gnat_binder_ss_count when
+	needed.
+	* libgnat/s-secsta.adb (Binder_SS_Count): Default initialize to
+	0.
+
+2022-05-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* libgnat/s-dourea.adb ("/"): Add guard for zero and infinite
+	divisor.
+	* libgnat/s-valuer.adb (Scan_Raw_Real): Add guard for very large
+	exponent values.
+
+2022-05-18  Yannick Moy  <moy@adacore.com>
+
+	* sem_elab.adb (Is_Suitable_Construct): Fix for generated
+	constructs.
+
+2022-05-18  Marc Poulhiès  <poulhies@adacore.com>
+
+	* sem_ch3.adb (Analyze_Object_Declaration): Skip predicate check
+	for type conversion if object's subtype and expression's subtype
+	statically match.
+	* exp_prag.adb (Expand_Pragma_Check): Typo fix in comment.
+
+2022-05-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_dbug.ads (Build_Subprogram_Instance_Renamings): Fix typo.
+	* exp_dbug.adb (Build_Subprogram_Instance_Renamings): Build the
+	renaming only for actuals of formal objects.
+
+2022-05-18  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_ch3.adb (Check_Abstract_Overriding): If the type is
+	derived from an untagged type, then don't perform any of the
+	abstract overriding error checks.
+
+2022-05-18  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_aggr.adb (Component_Count): Calculate size as an Uint and
+	only then check if it is in the range of Int, as otherwise the
+	multiplication of Int values can overflow.
+
+2022-05-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* Makefile.rtl (GNATRTL_NONTASKING_OBJS): Add g-gfmafu$(objext).
+	(SIMD_PATH_TARGET_PAIRS): New variable.
+	(TRASYM_DWARF_COMMON_OBJS): Minor tweak.
+	(x86-64/Linux): Use SIMD_PATH_TARGET_PAIRS.
+	(x32/Linux): Likewise.
+	* doc/gnat_rm/the_gnat_library.rst (Generic_Fast_Math_Functions):
+	New entry.
+	* gnat_rm.texi: Regenerate.
+	* impunit.adb (Non_Imp_File_Names_95): Add g-gfmafu.
+	* sem_ch7.adb (Has_Referencer): Do not set In_Nested_Instance for
+	instances of generic packages that do not have a body.
+	* libgnat/a-nalofl__simd.ads: New SIMD-enabled version.
+	* libgnat/a-nuaufl__simd.ads: Likewise.
+	* libgnat/g-gfmafu.ads: New package renaming unit.
+
+2022-05-18  Arnaud Charlet  <charlet@adacore.com>
+
+	* freeze.adb (Should_Freeze_Type): Fix handling of freezing in
+	instances.
+
+2022-05-18  Marc Poulhiès  <poulhies@adacore.com>
+
+	* sem_ch12.adb (Check_Generic_Parent): Use
+	Get_Unit_Instantiation_Node instead of Next.
+
+2022-05-18  Alexandre Oliva  <oliva@adacore.com>
+
+	* libgnat/a-nagefl.ads: Replace mentions of C/unix math library
+	with intrinsics.
+	* libgnat/a-nallfl.ads: Likewise.  State compatibility
+	requirements.
+	* libgnat/a-nalofl.ads: Likewise.
+	* libgnat/a-nuaufl.ads: Likewise.
+
+2022-05-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch8.adb (Analyze_Subprogram_Renaming): Move final test on
+	In_Instance to outer condition.
+
+2022-05-18  Doug Rupp  <rupp@adacore.com>
+
+	* Makefile.rtl: Rename system-qnx-aarch64.ads to
+	system-qnx-arm.ads.
+	(AARCH64 QNX section): Modify to handle both arm and arch64.
+	* tracebak.c (__QNX__): Add new __ARMEL__ section.
+	* sigtramp-arm-qnx.c: New file.
+	* libgnat/system-qnx-aarch64.ads: Renamed to ...
+	* libgnat/system-qnx-arm.ads: this.
+
 2022-05-17  Piotr Trojanek  <trojanek@adacore.com>
 
 	* sem_res.adb (Flag_Effectively_Volatile_Objects): Restore
