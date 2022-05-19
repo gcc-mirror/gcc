@@ -28,7 +28,7 @@ along with GNU Modula-2; see the file COPYING3.  If not see
   "Please report this crash to the GNU Modula-2 mailing list "                \
   "<gm2@nongnu.org>\n"
 
-/* external functions.  */
+/* External functions.  */
 
 #define m2except_c
 #include "m2assert.h"
@@ -40,7 +40,7 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 #include "m2treelib.h"
 #include "m2type.h"
 
-/* local prototypes.  */
+/* Local prototypes.  */
 
 #include "m2except.h"
 
@@ -65,7 +65,7 @@ static tree build_address (tree t);
 void _M2_gm2except_init (void);
 void _M2_gm2except_finally (void);
 
-/* exception handling library functions.  */
+/* Exception handling library functions.  */
 
 static GTY (()) tree fn_begin_catch_tree = NULL_TREE;
 static GTY (()) tree fn_end_catch_tree = NULL_TREE;
@@ -151,7 +151,7 @@ m2except_InitExceptions (location_t location)
       location, location, "__cxa_free_exception", ptr_type_node, TRUE, FALSE,
       TRUE);
 
-  /* define integer type exception type which will match C++ int type
+  /* Define integer type exception type which will match C++ int type
      in the C++ runtime library.  */
   gm2_eh_int_type = build_eh_type_type (location, integer_type_node);
   m2block_popGlobalScope ();
@@ -385,7 +385,7 @@ gm2_build_throw (location_t location, tree exp)
   m2assert_AssertLocation (location);
 
   if (exp == NULL_TREE)
-    /* rethrow the current exception.  */
+    /* Rethrow the current exception.  */
     exp = build1 (THROW_EXPR, void_type_node, do_rethrow (location));
   else
     {
@@ -479,7 +479,7 @@ m2except_BuildTryEnd (tree try_block)
 
   TRY_HANDLERS (try_block) = m2block_begin_statement_list ();
 
-  /* now ensure that all successive add_stmts adds to this statement
+  /* Now ensure that all successive add_stmts adds to this statement
      sequence.  */
   m2block_push_statement_list (TRY_HANDLERS (try_block));
 }
@@ -522,7 +522,7 @@ begin_handler (location_t location)
 
   HANDLER_BODY (r) = m2block_begin_statement_list ();
 
-  /* now ensure that all successive add_stmts adds to this
+  /* Now ensure that all successive add_stmts adds to this
      statement sequence.  */
   m2block_push_statement_list (HANDLER_BODY (r));
   return r;
@@ -534,7 +534,7 @@ begin_handler (location_t location)
 static void
 finish_handler (location_t location, tree handler)
 {
-  /* we might need to rethrow the exception if we reach the end.
+  /* We might need to rethrow the exception if we reach the end.
      use this code:  finish_expr_stmt (build_throw (NULL_TREE));  */
   tree body = m2block_pop_statement_list ();
 
@@ -552,7 +552,7 @@ static tree
 finish_handler_parms (location_t location, tree handler)
 {
   m2assert_AssertLocation (location);
-  /* equivalent to C++ catch (...).  */
+  /* Equivalent to C++ catch (...).  */
   finish_expr_stmt (location, do_begin_catch (location));
 
   HANDLER_TYPE (handler) = NULL_TREE;
@@ -580,7 +580,7 @@ begin_try_block (location_t location)
   m2assert_AssertLocation (location);
   TRY_STMTS (r) = m2block_begin_statement_list ();
 
-  /* now ensure that all successive add_stmts adds to this statement
+  /* Now ensure that all successive add_stmts adds to this statement
      sequence.  */
   m2block_push_statement_list (TRY_STMTS (r));
   return r;
@@ -621,7 +621,6 @@ finish_expr_stmt (location_t location, tree expr)
 static tree
 maybe_cleanup_point_expr_void (tree expr)
 {
-  /* if (stmts_are_full_exprs_p ()).  */
   return fold_build_cleanup_point_expr (void_type_node, expr);
 }
 

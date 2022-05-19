@@ -24,7 +24,7 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 #include "../gm2-lang.h"
 #include "../m2-tree.h"
 
-/* prototypes.  */
+/* Prototypes.  */
 
 #define m2statement_c
 #include "m2assert.h"
@@ -37,7 +37,7 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 #include "m2treelib.h"
 #include "m2type.h"
 
-static GTY (()) tree param_list = NULL_TREE; /* ready for the next time we
+static GTY (()) tree param_list = NULL_TREE; /* Ready for the next time we
                                                 call/define a function.  */
 static GTY (()) tree last_function = NULL_TREE;
 
@@ -69,7 +69,7 @@ m2statement_BuildStartFunctionCode (location_t location, tree fndecl,
   /* Begin the statement tree for this function.  */
   DECL_SAVED_TREE (fndecl) = NULL_TREE;
 
-  /* set the context of these parameters to this function.  */
+  /* Set the context of these parameters to this function.  */
   for (param_decl = DECL_ARGUMENTS (fndecl); param_decl;
        param_decl = TREE_CHAIN (param_decl))
     DECL_CONTEXT (param_decl) = fndecl;
@@ -86,8 +86,8 @@ static void
 gm2_gimplify_function_node (tree fndecl)
 {
   /* Convert all nested functions to GIMPLE now.  We do things in this
-  order so that items like VLA sizes are expanded properly in the
-  context of the correct function.  */
+     order so that items like VLA sizes are expanded properly in the
+     context of the correct function.  */
   struct cgraph_node *cgn;
 
   dump_function (TDI_original, fndecl);
@@ -272,7 +272,7 @@ m2statement_BuildProcedureCallTree (location_t location, tree procedure,
   m2assert_AssertLocation (location);
   ASSERT_CONDITION (
       last_function
-      == NULL_TREE); /* previous function value has not been collected.  */
+      == NULL_TREE); /* Previous function value has not been collected.  */
   TREE_USED (procedure) = TRUE;
 
   for (i = 0; i < n; i++)
@@ -295,7 +295,7 @@ m2statement_BuildProcedureCallTree (location_t location, tree procedure,
 #endif
 
       param_list
-          = NULL_TREE; /* ready for the next time we call a procedure.  */
+          = NULL_TREE; /* Ready for the next time we call a procedure.  */
       last_function = NULL_TREE;
       return call;
     }
@@ -306,7 +306,7 @@ m2statement_BuildProcedureCallTree (location_t location, tree procedure,
       TREE_USED (last_function) = TRUE;
       TREE_SIDE_EFFECTS (last_function) = TRUE;
       param_list
-          = NULL_TREE; /* ready for the next time we call a procedure.  */
+          = NULL_TREE; /* Ready for the next time we call a procedure.  */
       return last_function;
     }
 }
@@ -509,7 +509,7 @@ m2statement_BuildAsm (location_t location, tree instr, int isVolatile,
   m2assert_AssertLocation (location);
 
   /* ASM statements without outputs, including simple ones, are treated
-  as volatile.  */
+     as volatile.  */
   ASM_INPUT_P (args) = isSimple;
   ASM_VOLATILE_P (args) = isVolatile;
 

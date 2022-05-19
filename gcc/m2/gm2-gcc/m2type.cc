@@ -43,18 +43,18 @@ static int broken_set_debugging_info = TRUE;
 
 struct GTY (()) struct_constructor
 {
-  /* constructor_type, the type that we are constructing.  */
+  /* Constructor_type, the type that we are constructing.  */
   tree GTY ((skip (""))) constructor_type;
-  /* constructor_fields, the list of fields belonging to
+  /* Constructor_fields, the list of fields belonging to
      constructor_type.  Used by SET and RECORD constructors.  */
   tree GTY ((skip (""))) constructor_fields;
-  /* constructor_element_list, the list of constants used by SET and
+  /* Constructor_element_list, the list of constants used by SET and
      RECORD constructors.  */
   tree GTY ((skip (""))) constructor_element_list;
-  /* constructor_elements, used by an ARRAY initializer all elements
+  /* Constructor_elements, used by an ARRAY initializer all elements
      are held in reverse order.  */
   vec<constructor_elt, va_gc> *constructor_elements;
-  /* level, the next level down in the constructor stack.  */
+  /* Level, the next level down in the constructor stack.  */
   struct struct_constructor *level;
 };
 
@@ -158,7 +158,7 @@ m2type_BuildStartArrayType (tree index_type, tree elt_type, int type)
   ASSERT_CONDITION (index_type != NULL_TREE);
   if (elt_type == NULL_TREE)
     {
-      /* cannot use GCC canonicalization routines yet, so we use our front
+      /* Cannot use GCC canonicalization routines yet, so we use our front
          end version based on the front end type.  */
       return gm2_canonicalize_array (index_type, type);
     }
@@ -255,7 +255,7 @@ gm2_build_array_type (tree elementtype, tree indextype, int fetype)
 }
 
 /* ValueInTypeRange returns TRUE if the constant, value, lies within
-the range of, type.  */
+   the range of, type.  */
 
 int
 m2type_ValueInTypeRange (tree type, tree value)
@@ -270,7 +270,7 @@ m2type_ValueInTypeRange (tree type, tree value)
 }
 
 /* ValueOutOfTypeRange returns TRUE if the constant, value, exceeds
-the range of, type.  */
+   the range of, type.  */
 
 int
 m2type_ValueOutOfTypeRange (tree type, tree value)
@@ -715,8 +715,6 @@ m2type_GetISOLocType (void)
   return m2_iso_loc_type_node;
 }
 
-/* --fixme-- section  check these gaius - the function names are misleading
- * --fixme-- once the compiler is building correctly.  */
 /* GetWordType - return the C unsigned data type.  */
 
 tree
@@ -749,14 +747,13 @@ m2type_GetLongRealType (void)
   return long_double_type_node;
 }
 
-/* GetRealType - */
+/* GetRealType - returns the C double_type_node.  */
 
 tree
 m2type_GetRealType (void)
 {
   return double_type_node;
 }
-/* end of --fixme-- section.  */
 
 /* GetBitnumType - return the ISO bitnum type.  */
 
@@ -1275,8 +1272,8 @@ gm2_finish_decl (location_t location, tree decl)
     }
 
   /* Output the assembler code and/or RTL code for variables and
-  functions, unless the type is an undefined structure or union.  If
-  not, it will get done when the type is completed.  */
+     functions, unless the type is an undefined structure or union.  If
+     not, it will get done when the type is completed.  */
 
   if (TREE_CODE (decl) == VAR_DECL || TREE_CODE (decl) == FUNCTION_DECL)
     {
@@ -1286,7 +1283,7 @@ gm2_finish_decl (location_t location, tree decl)
               || DECL_INITIAL (decl) == error_mark_node)
 
             /* Don't output anything when a tentative file-scope definition is
-            seen.  But at end of compilation, do output code for them.  */
+	       seen.  But at end of compilation, do output code for them.  */
             DECL_DEFER_OUTPUT (decl) = 1;
           rest_of_decl_compilation (decl, true, 0);
         }
@@ -1295,7 +1292,7 @@ gm2_finish_decl (location_t location, tree decl)
         {
 
           /* Recompute the RTL of a local array now if it used to be an
-          incomplete type.  */
+	     incomplete type.  */
           if (was_incomplete && !TREE_STATIC (decl) && !DECL_EXTERNAL (decl))
             {
               /* If we used it already as memory, it must stay in memory.  */
@@ -1356,7 +1353,7 @@ build_m2_iso_word_node (location_t location, int loc)
   m2assert_AssertLocation (location);
   /* Define `WORD' as specified in ISO m2
 
-WORD = ARRAY [0..SizeOfWord / SizeOfLoc] OF LOC ; */
+     WORD = ARRAY [0..SizeOfWord / SizeOfLoc] OF LOC ; */
 
   if (m2decl_GetBitsPerInt () == BITS_PER_UNIT)
     c = m2type_GetISOLocType ();
@@ -1380,7 +1377,7 @@ build_m2_iso_byte_node (location_t location, int loc)
 
   /* Define `BYTE' as specified in ISO m2
 
-BYTE = ARRAY [0..SizeOfByte / SizeOfLoc] OF LOC ; */
+     BYTE = ARRAY [0..SizeOfByte / SizeOfLoc] OF LOC ; */
 
   if (BITS_PER_UNIT == 8)
     c = m2type_GetISOLocType ();
@@ -1729,7 +1726,7 @@ build_m2_cardinal_address_type_node (location_t location)
   return build_m2_specific_size_type (location, INTEGER_TYPE, bits, FALSE);
 }
 
-/* InitBaseTypes - */
+/* InitBaseTypes create the Modula-2 base types.  */
 
 void
 m2type_InitBaseTypes (location_t location)
@@ -1792,8 +1789,8 @@ m2type_InitBaseTypes (location_t location)
 /* BuildStartType - given a, type, with a, name, return a GCC
    declaration of this type.  TYPE name = foo ;
 
-the type, foo, maybe a partially created type (which has yet to be
-   'gm2_finish_decl'ed.  */
+   the type, foo, maybe a partially created type (which has
+   yet to be 'gm2_finish_decl'ed).  */
 
 tree
 m2type_BuildStartType (location_t location, char *name, tree type)
@@ -1953,13 +1950,8 @@ m2type_BuildTypeDeclaration (location_t location, tree type)
       m2type_BuildTypeDeclaration (location, TREE_TYPE (type));
       m2block_pushDecl (
           build_stmt (location, DECL_EXPR,
-                      type)); /* is this safe?  --fixme-- gaius got here.  */
+                      type));  /* Is this safe?  --fixme--.  */
     }
-
-#if 0
-    add_stmt (build_stmt (location, DECL_EXPR, type));
-    add_stmt (build_stmt (location, DECL_EXPR, build_decl (location, TYPE_DECL, NULL, type)));
-#endif
 }
 
 /* Begin compiling the definition of an enumeration type.  NAME is
@@ -1980,7 +1972,7 @@ gm2_start_enum (location_t location, tree name, int ispacked)
                 IDENTIFIER_POINTER (name));
 
       /* Completely replace its old definition.  The old enumerators remain
-      defined, however.  */
+	 defined, however.  */
       TYPE_VALUES (enumtype) = 0;
     }
 
@@ -2185,7 +2177,7 @@ m2type_BuildEnumerator (location_t location, char *name, tree value,
   tree gccenum = gm2_build_enumerator (location, id, copy_of_value);
 
   m2assert_AssertLocation (location);
-  /* choose copy_of_value for enum value.  */
+  /* Choose copy_of_value for enum value.  */
   *enumvalues = chainon (gccenum, *enumvalues);
   return copy_of_value;
 }
@@ -2502,7 +2494,7 @@ m2type_BuildSubrangeType (location_t location, char *name, tree type,
 
   if ((name != NULL) && (strcmp (name, "") != 0))
     {
-      /* declared as TYPE foo = [x..y];  */
+      /* Declared as TYPE foo = [x..y];  */
       range_type = m2type_DeclareKnownType (location, name, range_type);
       layout_type (m2tree_skip_type_decl (range_type));
     }
@@ -2552,7 +2544,7 @@ gm2_start_struct (location_t location, enum tree_code code, char *name)
   else
     id = get_identifier (name);
 
-  TYPE_PACKED (s) = FALSE; /* this is set TRUE later if necessary.  */
+  TYPE_PACKED (s) = FALSE; /* This maybe set TRUE later if necessary.  */
 
   m2block_pushDecl (build_decl (location, TYPE_DECL, id, s));
   return s;
@@ -2662,11 +2654,6 @@ m2type_BuildEndRecord (location_t location, tree record, tree fieldlist,
   /* Now we have the truly final field list.  Store it in this type and
      in the variants.  */
 
-  ASSERT_CONDITION (TYPE_FIELDS (record)
-                    == fieldlist); /* --fixme-- remove this.  */
-  TYPE_FIELDS (record)
-      = fieldlist; /* and this once the condition always passes.  */
-
   for (x = TYPE_MAIN_VARIANT (record); x; x = TYPE_NEXT_VARIANT (x))
     {
       TYPE_FIELDS (x) = TYPE_FIELDS (record);
@@ -2679,7 +2666,7 @@ m2type_BuildEndRecord (location_t location, tree record, tree fieldlist,
   TYPE_STUB_DECL (record) = d;
 
   /* Finish debugging output for this type.  This must be done after we have
-   * called build_decl.  */
+     called build_decl.  */
   rest_of_type_compilation (record, m2block_toplevel ());
 
   return record;

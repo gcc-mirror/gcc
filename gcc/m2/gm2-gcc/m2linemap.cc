@@ -21,7 +21,7 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 
 #include "gcc-consolidation.h"
 
-/* utilize some of the C build routines */
+/* Utilize some of the C build routines */
 
 #include "../gm2-lang.h"
 #include "../m2-tree.h"
@@ -118,17 +118,14 @@ EXTERN
 location_t
 m2linemap_GetLocationBinary (location_t caret, location_t start, location_t finish)
 {
-#if 1
   if (isSrcLocation (start) && isSrcLocation (finish) && isSrcLocation (caret)
     && (m2linemap_GetFilenameFromLocation (start) != NULL))
     {
       linemap_add (line_table, LC_ENTER, false, xstrdup (m2linemap_GetFilenameFromLocation (start)), 1);
       gcc_assert (inFile);
       location_t location = make_location (caret, start, finish);
-      /* error_at (location, "testing here"); */
       return location;
     }
-#endif
   return caret;
 }
 

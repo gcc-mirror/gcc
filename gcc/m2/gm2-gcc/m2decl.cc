@@ -37,7 +37,7 @@ extern GTY (()) tree current_function_decl;
 
 /* Used in BuildStartFunctionType.  */
 static GTY (()) tree param_type_list;
-static GTY (()) tree param_list = NULL_TREE; /* ready for the next time we
+static GTY (()) tree param_list = NULL_TREE; /* Ready for the next time we
                                                 call/define a function.  */
 
 /* DeclareKnownVariable - declares a variable in scope, funcscope.
@@ -107,7 +107,7 @@ m2decl_DeclareKnownVariable (location_t location, char *name, tree type,
 tree
 m2decl_DeclareKnownConstant (location_t location, tree type, tree value)
 {
-  tree id = make_node (IDENTIFIER_NODE); /* ignore the name of the constant. */
+  tree id = make_node (IDENTIFIER_NODE); /* Ignore the name of the constant. */
   tree decl;
 
   m2assert_AssertLocation (location);
@@ -166,7 +166,7 @@ m2decl_BuildStartFunctionDeclaration (int uses_varargs)
     param_type_list = NULL_TREE;
   else
     param_type_list = tree_cons (NULL_TREE, void_type_node, NULL_TREE);
-  param_list = NULL_TREE; /* ready for when we define a function.  */
+  param_list = NULL_TREE; /* Ready for when we define a function.  */
 }
 
 /* BuildEndFunctionDeclaration - build a function which will return a
@@ -188,7 +188,7 @@ m2decl_BuildEndFunctionDeclaration (location_t location_begin,
   ASSERT_BOOL (isnested);
   ASSERT_BOOL (ispublic);
   returntype = m2tree_skip_type_decl (returntype);
-  /* the function type depends on the return type and type of args,
+  /* The function type depends on the return type and type of args,
      both of which we have created in BuildParameterDeclaration */
   if (returntype == NULL_TREE)
     returntype = void_type_node;
@@ -221,7 +221,7 @@ m2decl_BuildEndFunctionDeclaration (location_t location_begin,
 
   rest_of_decl_compilation (fndecl, 1, 0);
   param_list
-      = NULL_TREE; /* ready for the next time we call/define a function.  */
+      = NULL_TREE; /* Ready for the next time we call/define a function.  */
   return fndecl;
 }
 

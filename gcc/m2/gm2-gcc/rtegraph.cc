@@ -98,9 +98,9 @@ rtegraph_set_current_function (rtenode *func)
 
 void rtegraph_include_rtscall (rtenode *func)
 {
-  /* this is a runtime exception, mark it as such.  */
+  /* This is a runtime exception, mark it as such.  */
   func->exception_routine = true;
-  /* and remember it.  */
+  /* And remember it.  */
   vec_safe_push (rtegraph_current_function->rts_call, func);
 }
 

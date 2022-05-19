@@ -118,7 +118,7 @@ struct builtin_function_entry
   tree return_node;
 };
 
-/* entries are added by examining gcc/builtins.def and copying those
+/* Entries are added by examining gcc/builtins.def and copying those
    functions which can be applied to Modula-2.  */
 
 static struct builtin_function_entry list_of_builtins[] = {
@@ -235,7 +235,7 @@ static struct builtin_function_entry list_of_builtins[] = {
   { "__builtin_scalbnl", BT_FN_LONG_DOUBLE_LONG_DOUBLE_INT, BUILT_IN_SCALBNL,
     BUILT_IN_NORMAL, "scalblnl", NULL, NULL },
 
-  /* complex intrinsic functions.  */
+  /* Complex intrinsic functions.  */
   { "__builtin_cabs", BT_FN_DOUBLE_DCOMPLEX, BUILT_IN_CABS, BUILT_IN_NORMAL,
     "cabs", NULL, NULL },
   { "__builtin_cabsf", BT_FN_FLOAT_FCOMPLEX, BUILT_IN_CABSF, BUILT_IN_NORMAL,
@@ -417,7 +417,7 @@ static GTY (()) tree doubleptr_type_node;
 static GTY (()) tree floatptr_type_node;
 static GTY (()) tree builtin_ftype_int_var;
 
-/* prototypes for locally defined functions.  */
+/* Prototypes for locally defined functions.  */
 static tree DoBuiltinAlloca (location_t location, tree n);
 static tree DoBuiltinMemCopy (location_t location, tree dest, tree src,
                               tree n);
@@ -439,7 +439,7 @@ static tree dogUnderflow (location_t location, tree type);
 static tree doexception (location_t location, tree type);
 static tree doextend (location_t location, tree type);
 static tree donModes (location_t location, tree type);
-/* prototypes finish here.  */
+/* Prototypes finish here.  */
 
 #define m2builtins_c
 #include "m2builtins.h"
@@ -802,7 +802,7 @@ m2builtins_BuiltInAlloca (location_t location, tree n)
 }
 
 /* BuiltInIsfinite - return integer 1 if the real expression is
-   finite.  return integer 0 if it is not finite.  */
+   finite otherwise return integer 0.  */
 
 tree
 m2builtins_BuiltInIsfinite (location_t location, tree expression)

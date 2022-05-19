@@ -193,7 +193,7 @@ newLevel (void)
 
   init_binding_level (newlevel);
 
-  /* now we a push_statement_list.  */
+  /* Now we a push_statement_list.  */
   vec_safe_push (newlevel->m2_statements, m2block_begin_statement_list ());
   return newlevel;
 }
@@ -267,8 +267,8 @@ m2block_begin_statement_list (void)
 tree
 m2block_end_statement_list (tree t)
 {
-  /* should we do anything with, t?  Specifically we may need to test
-     for the presence of a label --fixme-- check this */
+  /* Should we do anything with, t?  Specifically we may need to test
+     for the presence of a label --fixme-- check this.  */
   return t;
 }
 
@@ -312,7 +312,7 @@ m2block_pushFunctionScope (tree fndecl)
     printf ("pushFunctionScope\n");
 #endif
 
-  /* allow multiple consecutive pushes of the same scope.  */
+  /* Allow multiple consecutive pushes of the same scope.  */
 
   if (current_binding_level != NULL
       && (current_binding_level->fndecl == fndecl))
@@ -321,11 +321,11 @@ m2block_pushFunctionScope (tree fndecl)
       return;
     }
 
-  /* firstly check to see that fndecl is not already on the binding
+  /* Firstly check to see that fndecl is not already on the binding
      stack.  */
 
   for (b = current_binding_level; b != NULL; b = b->next)
-    /* only allowed one instance of the binding on the stack at a time.  */
+    /* Only allowed one instance of the binding on the stack at a time.  */
     ASSERT_CONDITION (b->fndecl != fndecl);
 
   n = findLevel (fndecl);
@@ -350,20 +350,20 @@ m2block_popFunctionScope (void)
 
   if (current_binding_level->count > 0)
     {
-      /* multiple pushes have occurred of the same function scope (and
+      /* Multiple pushes have occurred of the same function scope (and
          ignored), pop them likewise.  */
       current_binding_level->count--;
       return fndecl;
     }
   ASSERT_CONDITION (current_binding_level->fndecl
-                    != NULL_TREE); /* expecting local scope.  */
+                    != NULL_TREE); /* Expecting local scope.  */
 
   ASSERT_CONDITION (current_binding_level->constants
-                    == NULL_TREE); /* should not be used.  */
+                    == NULL_TREE); /* Should not be used.  */
   ASSERT_CONDITION (current_binding_level->names
-                    == NULL_TREE); /* should be cleared.  */
+                    == NULL_TREE); /* Should be cleared.  */
   ASSERT_CONDITION (current_binding_level->decl
-                    == NULL_TREE); /* should be cleared.  */
+                    == NULL_TREE); /* Should be cleared.  */
 
   current_binding_level = current_binding_level->next;
   return fndecl;
@@ -389,7 +389,7 @@ void
 m2block_popGlobalScope (void)
 {
   ASSERT_CONDITION (
-      current_binding_level->is_global); /* expecting global scope.  */
+      current_binding_level->is_global); /* Expecting global scope.  */
   ASSERT_CONDITION (current_binding_level == global_binding_level);
 
   if (current_binding_level->count > 0)

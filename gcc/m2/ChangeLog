@@ -21,6 +21,18 @@
 	* plugin/m2rte.cc: Further reformatting of comments.
 	* gm2-gcc/m2statement.cc: Corrected comment formatting and
 	removed usused debugging code.
+	* gm2-gcc/m2assert.cc: Corrected comment formatting.
+	* gm2-gcc/m2block.cc: Corrected comment formatting.
+	* gm2-gcc/m2builtins.cc: Corrected comment formatting.
+	* gm2-gcc/m2convert.cc: Corrected comment formatting.
+	* gm2-gcc/m2decl.cc: Corrected comment formatting.
+	* gm2-gcc/m2except.cc: Corrected comment formatting.
+	* gm2-gcc/m2expr.cc: Corrected comment formatting.
+	* gm2-gcc/m2linemap.cc: Corrected comment formatting.
+	* gm2-gcc/m2statement.cc: Corrected comment formatting.
+	* gm2-gcc/m2treelib.cc: Corrected comment formatting.
+	* gm2-gcc/m2type.cc: Corrected comment formatting.
+	* gm2-gcc/rtegraph.cc: Corrected comment formatting.
 
 2022-05-16   Gaius Mulley   <gaius.mulley@southwales.ac.uk>
 

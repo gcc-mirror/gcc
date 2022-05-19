@@ -128,7 +128,7 @@ build_modify_expr (location_t location, tree lhs, enum tree_code modifycode,
      always has the same type as the LHS argument.  */
 
   ASSERT_CONDITION (olhstype == TREE_TYPE (result));
-  /* in Modula-2 I'm assuming this will be true this maybe wrong, but
+  /* In Modula-2 I'm assuming this will be true this maybe wrong, but
      at least I'll know about it soon.  If true then we do not need to
      implement convert_for_assignment - which is a huge win.  */
 

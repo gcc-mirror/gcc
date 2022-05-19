@@ -25,7 +25,7 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 #include "../m2-tree.h"
 #include "m2convert.h"
 
-/* prototypes.  */
+/* Prototypes.  */
 
 #define m2expr_c
 #include "m2assert.h"
@@ -673,13 +673,13 @@ m2expr_BuildLRLn (location_t location, tree op1, tree op2, tree nBits,
 
   m2assert_AssertLocation (location);
 
-  /* ensure we wrap the rotate.  */
+  /* Ensure we wrap the rotate.  */
 
   op2min = m2expr_BuildModTrunc (
       location, m2convert_ToCardinal (location, op2),
       m2convert_ToCardinal (location, nBits), needconvert);
 
-  /* optimize if we are we going to rotate a TSIZE(BITSET) set.  */
+  /* Optimize if we are we going to rotate a TSIZE(BITSET) set.  */
 
   if (m2expr_CompareTrees (
           m2decl_BuildIntegerConstant (m2decl_GetBitsPerBitset ()), nBits)
@@ -690,7 +690,7 @@ m2expr_BuildLRLn (location_t location, tree op1, tree op2, tree nBits,
       tree mask = m2expr_BuildMask (location, nBits, needconvert);
       tree left, right;
 
-      /* make absolutely sure there are no high order bits lying around.  */
+      /* Make absolutely sure there are no high order bits lying around.  */
 
       op1 = m2expr_BuildLogicalAnd (location, op1, mask, needconvert);
       left = m2expr_BuildLSL (location, op1, op2min, needconvert);
@@ -715,12 +715,12 @@ m2expr_BuildLRRn (location_t location, tree op1, tree op2, tree nBits,
 
   m2assert_AssertLocation (location);
 
-  /* ensure we wrap the rotate.  */
+  /* Ensure we wrap the rotate.  */
 
   op2min = m2expr_BuildModTrunc (
       location, m2convert_ToCardinal (location, op2),
       m2convert_ToCardinal (location, nBits), needconvert);
-  /* optimize if we are we going to rotate a TSIZE(BITSET) set.  */
+  /* Optimize if we are we going to rotate a TSIZE(BITSET) set.  */
 
   if (m2expr_CompareTrees (
           m2decl_BuildIntegerConstant (m2decl_GetBitsPerBitset ()), nBits)
@@ -731,7 +731,7 @@ m2expr_BuildLRRn (location_t location, tree op1, tree op2, tree nBits,
       tree mask = m2expr_BuildMask (location, nBits, needconvert);
       tree left, right;
 
-      /* make absolutely sure there are no high order bits lying around.  */
+      /* Make absolutely sure there are no high order bits lying around.  */
 
       op1 = m2expr_BuildLogicalAnd (location, op1, mask, needconvert);
       right = m2expr_BuildLSR (location, op1, op2min, needconvert);
@@ -835,7 +835,7 @@ m2expr_BuildBinarySetDo (location_t location, tree settype, tree op1, tree op2,
   if (m2expr_CompareTrees (
           size, m2decl_BuildIntegerConstant (SET_WORD_SIZE / BITS_PER_UNIT))
       <= 0)
-    /* small set size <= TSIZE(WORD).  */
+    /* Small set size <= TSIZE(WORD).  */
     (*binop) (location,
               m2treelib_get_rvalue (location, op1, settype, is_op1lvalue),
               m2treelib_get_rvalue (location, op2, settype, is_op2lvalue),
@@ -854,7 +854,7 @@ m2expr_BuildBinarySetDo (location_t location, tree settype, tree op1, tree op2,
                   FALSE)),
           m2expr_GetCardinalOne (location), FALSE);
 
-      /* if op3 is constant then make op3 positive and remember which
+      /* If op3 is constant then make op3 positive and remember which
       direction we are shifting.  */
 
       op3 = m2tree_skip_const_decl (op3);
@@ -869,13 +869,13 @@ m2expr_BuildBinarySetDo (location_t location, tree settype, tree op1, tree op2,
                                         op3, FALSE);
         }
 
-      /* these parameters must match the prototypes of the procedures:
+      /* These parameters must match the prototypes of the procedures:
 	 ShiftLeft, ShiftRight, ShiftVal, RotateLeft, RotateRight, RotateVal
 	 inside gm2-iso/SYSTEM.mod.  */
 
       /* Remember we must build the parameters in reverse.  */
 
-      /* parameter 4 amount.  */
+      /* Parameter 4 amount.  */
       m2statement_BuildParam (
           location,
           m2convert_BuildConvert (
@@ -885,27 +885,27 @@ m2expr_BuildBinarySetDo (location_t location, tree settype, tree op1, tree op2,
                                     is_op3lvalue),
               FALSE));
 
-      /* parameter 3 nBits.  */
+      /* Parameter 3 nBits.  */
       m2statement_BuildParam (
           location,
           m2convert_BuildConvert (location, m2type_GetM2CardinalType (),
                                   m2expr_FoldAndStrip (nBits), FALSE));
 
-      /* parameter 2 destination set.  */
+      /* Parameter 2 destination set.  */
       m2statement_BuildParam (
           location,
           buildUnboundedArrayOf (
               unbounded,
               m2treelib_get_set_address (location, op1, is_op1lvalue), high));
 
-      /* parameter 1 source set.  */
+      /* Parameter 1 source set.  */
       m2statement_BuildParam (
           location,
           buildUnboundedArrayOf (
               unbounded,
               m2treelib_get_set_address (location, op2, is_op2lvalue), high));
 
-      /* now call the appropriate procedure inside SYSTEM.mod.  */
+      /* Now call the appropriate procedure inside SYSTEM.mod.  */
       if (is_const)
         if (is_left)
           result = m2statement_BuildProcedureCallTree (location, leftproc,
@@ -1105,7 +1105,7 @@ m2expr_BuildLessThanZero (location_t location, tree value, tree type, tree min,
   else if (m2expr_CompareTrees (max, m2expr_GetIntegerZero (location)) == -1)
     /* max is less than zero therefore value will always be < 0.  */
     return m2expr_GetIntegerOne (location);
-  /* we now know 0 lies in the range min..max so we can safely cast
+  /* We now know 0 lies in the range min..max so we can safely cast
      zero to type.  */
   return m2expr_BuildLessThan (
       location, value,
@@ -1127,7 +1127,7 @@ m2expr_BuildGreaterThanZero (location_t location, tree value, tree type,
     /* max is less than or equal to zero therefore value will always be
        <= 0.  */
     return m2expr_GetIntegerZero (location);
-  /* we now know 0 lies in the range min..max so we can safely cast
+  /* We now know 0 lies in the range min..max so we can safely cast
      zero to type.  */
   return m2expr_BuildGreaterThan (
       location, value,
@@ -1149,7 +1149,7 @@ m2expr_BuildEqualToZero (location_t location, tree value, tree type, tree min,
     /* max is less than or equal to zero therefore value will always be <
        0.  */
     return m2expr_GetIntegerZero (location);
-  /* we now know 0 lies in the range min..max so we can safely cast
+  /* We now know 0 lies in the range min..max so we can safely cast
      zero to type.  */
   return m2expr_BuildEqualTo (
       location, value,
@@ -1171,7 +1171,7 @@ m2expr_BuildNotEqualToZero (location_t location, tree value, tree type,
     /* max is less than or equal to zero therefore value will always be
        true.  */
     return m2expr_GetIntegerOne (location);
-  /* we now know 0 lies in the range min..max so we can safely cast
+  /* We now know 0 lies in the range min..max so we can safely cast
      zero to type.  */
   return m2expr_BuildNotEqualTo (
       location, value,
@@ -1193,7 +1193,7 @@ m2expr_BuildGreaterThanOrEqualZero (location_t location, tree value, tree type,
   else if (m2expr_CompareTrees (max, m2expr_GetIntegerZero (location)) < 0)
     /* max is less than zero therefore value will always be < 0.  */
     return m2expr_GetIntegerZero (location);
-  /* we now know 0 lies in the range min..max so we can safely cast
+  /* We now know 0 lies in the range min..max so we can safely cast
      zero to type.  */
   return m2expr_BuildGreaterThan (
       location, value,
@@ -1215,7 +1215,7 @@ m2expr_BuildLessThanOrEqualZero (location_t location, tree value, tree type,
   else if (m2expr_CompareTrees (max, m2expr_GetIntegerZero (location)) <= 0)
     /* max is less than or equal to zero therefore value will always be <= 0.  */
     return m2expr_GetIntegerOne (location);
-  /* we now know 0 lies in the range min..max so we can safely cast
+  /* We now know 0 lies in the range min..max so we can safely cast
      zero to type.  */
   return m2expr_BuildLessThanOrEqual (
       location, value,
@@ -1518,16 +1518,16 @@ divMinUnderflow (location_t location, tree value, tree lowest, tree min, tree ma
 
 PROCEDURE divtruncexpr (a, b: INTEGER) : BOOLEAN ;
 BEGIN
-   (* firstly catch division by 0.  *)
+   (* Firstly catch division by 0.  *)
    RETURN ((b = 0) OR
-           (* case 2 range is always negative.  *)
-           (* in which case a division will be illegal as result will be positive.  *)
+           (* Case 2 range is always negative.  *)
+           (* In which case a division will be illegal as result will be positive.  *)
            (max < 0) OR
-           (* case 1 both min / max are positive, check for underflow.  *)
+           (* Case 1 both min / max are positive, check for underflow.  *)
            ((min >= 0) AND (max >= 0) AND (multMinOverflow (b) OR (a < b * min))) OR
-           (* case 1 both min / max are positive, check for overflow.  *)
+           (* Case 1 both min / max are positive, check for overflow.  *)
            ((min >= 0) AND (max >= 0) AND (divMinUnderflow (a) OR (b > a DIV min))) OR
-           (* case 3 mixed range, need to check underflow.  *)
+           (* Case 3 mixed range, need to check underflow.  *)
            ((min < 0) AND (max >= 0) AND (a < 0) AND (b < 0) AND (b >= a DIV min)) OR
            ((min < 0) AND (max >= 0) AND (a < 0) AND (b > 0) AND (b <= a DIV max)) OR
            ((min < 0) AND (max >= 0) AND (a >= 0) AND (b < 0) AND (a DIV b < min)))
@@ -2415,7 +2415,7 @@ checkWholeDivFloorOverflow (location_t location, tree i, tree j, tree lowest,
 							    i, j, lowest, min, max));
 
   if (M2Options_GetISO ())
-    /*  ISO Modula-2 raises an exception if the right hand operand is < 0.  */
+    /* ISO Modula-2 raises an exception if the right hand operand is < 0.  */
     j_lt_zero = m2expr_FoldAndStrip (m2expr_BuildLessThanZero (location, j, lowest, min, max));
   else
     j_lt_zero = m2expr_GetIntegerZero (location);
@@ -2633,7 +2633,7 @@ m2expr_BuildAddAddress (location_t location, tree op1, tree op2)
                           m2expr_FoldAndStrip (op2));
 }
 
-/*  BuildNegateCheck builds a negate tree.  */
+/* BuildNegateCheck builds a negate tree.  */
 
 tree
 m2expr_BuildNegateCheck (location_t location, tree arg, tree lowest, tree min,
@@ -2693,7 +2693,7 @@ m2expr_BuildMult (location_t location, tree op1, tree op2, int needconvert)
   return m2expr_build_binary_op (location, MULT_EXPR, op1, op2, needconvert);
 }
 
-/*  BuildMultCheck builds a multiplication tree.  */
+/* BuildMultCheck builds a multiplication tree.  */
 
 tree
 m2expr_BuildMultCheck (location_t location, tree op1, tree op2, tree lowest,
@@ -3022,7 +3022,7 @@ base_type (tree type)
 }
 
 /* boolean_enum_to_unsigned convert a BOOLEAN_TYPE, t, or
-ENUMERAL_TYPE to an unsigned type.  */
+   ENUMERAL_TYPE to an unsigned type.  */
 
 static tree
 boolean_enum_to_unsigned (location_t location, tree t)
@@ -3047,7 +3047,7 @@ check_for_comparison (location_t location, tree op, tree badType,
 {
   m2assert_AssertLocation (location);
   if (m2tree_skip_type_decl (TREE_TYPE (op)) == badType)
-    /* cannot compare array contents in m2expr_build_binary_op.  */
+    /* Cannot compare array contents in m2expr_build_binary_op.  */
     return m2expr_BuildIndirect (
         location, m2expr_BuildAddr (location, op, FALSE), goodType);
   return op;
@@ -3194,7 +3194,7 @@ m2expr_BuildIfConstInVar (location_t location, tree type, tree varset,
   if (m2expr_CompareTrees (
           size, m2decl_BuildIntegerConstant (SET_WORD_SIZE / BITS_PER_UNIT))
       <= 0)
-    /* small set size <= TSIZE(WORD).  */
+    /* Small set size <= TSIZE(WORD).  */
     m2treelib_do_jump_if_bit (
         location, NE_EXPR,
         m2treelib_get_rvalue (location, varset, type, is_lvalue), constel,
@@ -3230,7 +3230,7 @@ m2expr_BuildIfNotConstInVar (location_t location, tree type, tree varset,
   if (m2expr_CompareTrees (
           size, m2decl_BuildIntegerConstant (SET_WORD_SIZE / BITS_PER_UNIT))
       <= 0)
-    /* small set size <= TSIZE(WORD).  */
+    /* Small set size <= TSIZE(WORD).  */
     m2treelib_do_jump_if_bit (
         location, EQ_EXPR,
         m2treelib_get_rvalue (location, varset, type, is_lvalue), constel,
@@ -3259,7 +3259,7 @@ m2expr_BuildIfVarInVar (location_t location, tree type, tree varset,
                         tree high ATTRIBUTE_UNUSED, char *label)
 {
   tree size = m2expr_GetSizeOf (location, type);
-  /* calculate the index from the first bit, ie bit 0 represents low value.  */
+  /* Calculate the index from the first bit, ie bit 0 represents low value.  */
   tree index = m2expr_BuildSub (
       location, m2convert_BuildConvert (location, m2type_GetIntegerType (),
                                         varel, FALSE),
@@ -3271,7 +3271,7 @@ m2expr_BuildIfVarInVar (location_t location, tree type, tree varset,
   if (m2expr_CompareTrees (
           size, m2decl_BuildIntegerConstant (SET_WORD_SIZE / BITS_PER_UNIT))
       <= 0)
-    /* small set size <= TSIZE(WORD).  */
+    /* Small set size <= TSIZE(WORD).  */
     m2treelib_do_jump_if_bit (
         location, NE_EXPR,
         m2treelib_get_rvalue (location, varset, type, is_lvalue), index,
@@ -3279,11 +3279,11 @@ m2expr_BuildIfVarInVar (location_t location, tree type, tree varset,
   else
     {
       tree p1 = m2treelib_get_set_address (location, varset, is_lvalue);
-      /* which word do we need to fetch?  */
+      /* Which word do we need to fetch?  */
       tree word_index = m2expr_FoldAndStrip (m2expr_BuildDivTrunc (
           location, index, m2decl_BuildIntegerConstant (SET_WORD_SIZE),
           FALSE));
-      /* calculate the bit in this word.  */
+      /* Calculate the bit in this word.  */
       tree offset_into_word = m2expr_FoldAndStrip (m2expr_BuildModTrunc (
           location, index, m2decl_BuildIntegerConstant (SET_WORD_SIZE),
           FALSE));
@@ -3291,11 +3291,11 @@ m2expr_BuildIfVarInVar (location_t location, tree type, tree varset,
           location, word_index,
           m2decl_BuildIntegerConstant (SET_WORD_SIZE / BITS_PER_UNIT), FALSE));
 
-      /* calculate the address of the word we are interested in.  */
+      /* Calculate the address of the word we are interested in.  */
       p1 = m2expr_BuildAddAddress (location,
                                    m2convert_convertToPtr (location, p1), p2);
 
-      /* fetch the word, extract the bit and test for != 0.  */
+      /* Fetch the word, extract the bit and test for != 0.  */
       m2treelib_do_jump_if_bit (
           location, NE_EXPR,
           m2expr_BuildIndirect (location, p1, m2type_GetBitsetType ()),
@@ -3311,7 +3311,7 @@ m2expr_BuildIfNotVarInVar (location_t location, tree type, tree varset,
                            tree high ATTRIBUTE_UNUSED, char *label)
 {
   tree size = m2expr_GetSizeOf (location, type);
-  /* calculate the index from the first bit, ie bit 0 represents low value.  */
+  /* Calculate the index from the first bit, ie bit 0 represents low value.  */
   tree index = m2expr_BuildSub (
       location, m2convert_BuildConvert (location, m2type_GetIntegerType (),
                                         m2expr_FoldAndStrip (varel), FALSE),
@@ -3325,7 +3325,7 @@ m2expr_BuildIfNotVarInVar (location_t location, tree type, tree varset,
   if (m2expr_CompareTrees (
           size, m2decl_BuildIntegerConstant (SET_WORD_SIZE / BITS_PER_UNIT))
       <= 0)
-    /* small set size <= TSIZE(WORD).  */
+    /* Small set size <= TSIZE(WORD).  */
     m2treelib_do_jump_if_bit (
         location, EQ_EXPR,
         m2treelib_get_rvalue (location, varset, type, is_lvalue), index,
@@ -3333,13 +3333,13 @@ m2expr_BuildIfNotVarInVar (location_t location, tree type, tree varset,
   else
     {
       tree p1 = m2treelib_get_set_address (location, varset, is_lvalue);
-      /* calculate the index from the first bit.  */
+      /* Calculate the index from the first bit.  */
 
-      /* which word do we need to fetch?  */
+      /* Which word do we need to fetch?  */
       tree word_index = m2expr_FoldAndStrip (m2expr_BuildDivTrunc (
           location, index, m2decl_BuildIntegerConstant (SET_WORD_SIZE),
           FALSE));
-      /* calculate the bit in this word.  */
+      /* Calculate the bit in this word.  */
       tree offset_into_word = m2expr_FoldAndStrip (m2expr_BuildModTrunc (
           location, index, m2decl_BuildIntegerConstant (SET_WORD_SIZE),
           FALSE));
@@ -3347,10 +3347,10 @@ m2expr_BuildIfNotVarInVar (location_t location, tree type, tree varset,
           location, word_index,
           m2decl_BuildIntegerConstant (SET_WORD_SIZE / BITS_PER_UNIT), FALSE));
 
-      /* calculate the address of the word we are interested in.  */
+      /* Calculate the address of the word we are interested in.  */
       p1 = m2expr_BuildAddAddress (location, p1, p2);
 
-      /* fetch the word, extract the bit and test for == 0.  */
+      /* Fetch the word, extract the bit and test for == 0.  */
       m2treelib_do_jump_if_bit (
           location, EQ_EXPR,
           m2expr_BuildIndirect (location, p1, m2type_GetBitsetType ()),
@@ -3675,7 +3675,7 @@ m2expr_BuildISOModM2Check (location_t location,
 				    m2convert_BuildConvert (location, TREE_TYPE (op2),
 							    m2expr_GetIntegerZero (location), FALSE));
 
-  /* return the result of the modulus.  */
+  /* Return the result of the modulus.  */
   return fold_build3 (COND_EXPR, TREE_TYPE (op1), cond,
 		      /* op2 < 0.  */
 		      m2expr_BuildModCeilCheck (location, op1, op2, lowest, min, max),
@@ -3808,7 +3808,7 @@ m2expr_BuildBinaryForeachWordDo (location_t location, tree type, tree op1,
   if (m2expr_CompareTrees (
           size, m2decl_BuildIntegerConstant (SET_WORD_SIZE / BITS_PER_UNIT))
       <= 0)
-    /* small set size <= TSIZE(WORD).  */
+    /* Small set size <= TSIZE(WORD).  */
     m2statement_BuildAssignmentTree (
         location, m2treelib_get_rvalue (location, op1, type, is_op1lvalue),
         (*binop) (
@@ -3816,7 +3816,7 @@ m2expr_BuildBinaryForeachWordDo (location_t location, tree type, tree op1,
             m2treelib_get_rvalue (location, op3, type, is_op3lvalue), FALSE));
   else
     {
-      /* large set size > TSIZE(WORD).  */
+      /* Large set size > TSIZE(WORD).  */
 
       tree p2 = m2treelib_get_set_address_if_var (location, op2, is_op2lvalue,
                                                   is_op2const);
@@ -3966,7 +3966,7 @@ m2expr_interpret_integer (const char *str, unsigned int base,
           else
             {
               overflow = append_digit (low, high, c, base);
-              max = 0; /* from now on we always use append_digit.  */
+              max = 0; /* From now on we always use append_digit.  */
             }
         }
     }
@@ -4091,7 +4091,7 @@ m2expr_interpret_m2_integer (const char *str, unsigned int base,
           else
             {
               overflow = append_m2_digit (low, high, c, base);
-              max = 0; /* from now on we always use append_digit.  */
+              max = 0; /* From now on we always use append_digit.  */
             }
         }
     }

@@ -83,7 +83,7 @@ m2convert_ConvertString (tree type, tree expr)
 enum conversion_safety
 unsafe_conversion_p (location_t loc, tree type, tree expr, bool produce_warns)
 {
-  enum conversion_safety give_warning = SAFE_CONVERSION; /* is 0 or false.  */
+  enum conversion_safety give_warning = SAFE_CONVERSION; /* Is 0 or false.  */
   tree expr_type = TREE_TYPE (expr);
 
   if (TREE_CODE (expr) == REAL_CST || TREE_CODE (expr) == INTEGER_CST)
@@ -156,8 +156,8 @@ unsafe_conversion_p (location_t loc, tree type, tree expr, bool produce_warns)
 
 /* (Taken from c-common.cc and trimmed for Modula-2)
 
-Warns if the conversion of EXPR to TYPE may alter a value.  This is a
-   helper function for warnings_for_convert_and_check.  */
+   Warns if the conversion of EXPR to TYPE may alter a value.  This is
+   a helper function for warnings_for_convert_and_check.  */
 
 static void
 conversion_warning (location_t loc, tree type, tree expr)
@@ -184,8 +184,8 @@ conversion_warning (location_t loc, tree type, tree expr)
     case TRUTH_NOT_EXPR:
 
       /* Conversion from boolean to a signed:1 bit-field (which only can
-      hold the values 0 and -1) doesn't lose information - but it does
-      change the value.  */
+	 hold the values 0 and -1) doesn't lose information - but it does
+	 change the value.  */
       if (TYPE_PRECISION (type) == 1 && !TYPE_UNSIGNED (type))
         warning_at (loc, OPT_Wconversion,
                     "conversion to %qT from boolean expression", type);
@@ -208,7 +208,7 @@ conversion_warning (location_t loc, tree type, tree expr)
       {
 
         /* In case of COND_EXPR, we do not care about the type of COND_EXPR,
-        only about the conversion of each operand.  */
+	   only about the conversion of each operand.  */
         tree op1 = TREE_OPERAND (expr, 1);
         tree op2 = TREE_OPERAND (expr, 2);
 
@@ -217,7 +217,7 @@ conversion_warning (location_t loc, tree type, tree expr)
         return;
       }
 
-    default: /* 'expr' is not a constant.  */
+    default:  /* 'expr' is not a constant.  */
       conversion_kind = unsafe_conversion_p (loc, type, expr, true);
       if (conversion_kind == UNSAFE_REAL)
         warning_at (loc, OPT_Wfloat_conversion,
@@ -246,15 +246,15 @@ warnings_for_convert_and_check (location_t loc, tree type, tree expr,
     {
 
       /* Do not diagnose overflow in a constant expression merely because a
-      conversion overflowed.  */
+	 conversion overflowed.  */
       if (TREE_OVERFLOW (result))
         TREE_OVERFLOW (result) = TREE_OVERFLOW (expr);
 
       if (TYPE_UNSIGNED (type))
         {
 
-          /* This detects cases like converting -129 or 256 to unsigned char.
-           */
+          /* This detects cases like converting -129 or 256 to unsigned
+	     char.  */
           if (!int_fits_type_p (expr, m2type_gm2_signed_type (type)))
             warning_at (loc, OPT_Woverflow,
                         "large integer implicitly truncated to unsigned type");
@@ -297,8 +297,8 @@ convert_and_check (location_t loc, tree type, tree expr)
   tree expr_for_warning;
 
   /* Convert from a value with possible excess precision rather than
-  via the semantic type, but do not warn about values not fitting
-  exactly in the semantic type.  */
+     via the semantic type, but do not warn about values not fitting
+     exactly in the semantic type.  */
   if (TREE_CODE (expr) == EXCESS_PRECISION_EXPR)
     {
       tree orig_type = TREE_TYPE (expr);
@@ -351,7 +351,7 @@ converting_ISO_generic (location_t location, tree type, tree value,
   tree value_type = m2tree_skip_type_decl (TREE_TYPE (value));
 
   if (value_type == type)
-    /* we let the caller deal with this.  */
+    /* We let the caller deal with this.  */
     return FALSE;
 
   if ((TREE_CODE (value) == INTEGER_CST) && (type == generic_type))
@@ -398,11 +398,11 @@ convert_char_to_array (location_t location, tree type, tree value)
 
   nul[0] = (char)0;
 
-  /* store the initial char.  */
+  /* Store the initial char.  */
   m2type_BuildArrayConstructorElement (c, value, i);
   i = m2expr_BuildAdd (location, i, m2decl_BuildIntegerConstant (1), FALSE);
 
-  /* now pad out the remaining elements with nul chars.  */
+  /* Now pad out the remaining elements with nul chars.  */
   while (m2expr_CompareTrees (i, n) < 0)
     {
       m2type_BuildArrayConstructorElement (
@@ -466,11 +466,11 @@ m2convert_BuildConvert (location_t location, tree type, tree value,
     {
       if (TREE_TYPE (value) == m2type_GetM2CharType ())
 
-        /* passing a const char to an array [..] of char.  So we convert
+        /* Passing a const char to an array [..] of char.  So we convert
 	   const char into the correct length string.  */
         return convert_char_to_array (location, type, value);
       if (TREE_CODE (value) == STRING_CST)
-        /* convert a string into an array constant, padding with zeros if
+        /* Convert a string into an array constant, padding with zeros if
            necessary.  */
         return convert_string_to_array (location, type, value);
     }

@@ -31,7 +31,7 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 void
 m2assert_AssertLocation (location_t location)
 {
-  /* internally the compiler will use unknown location and
+  /* Internally the compiler will use unknown location and
      builtins_location so we ignore these values.  */
   if (location == BUILTINS_LOCATION || location == UNKNOWN_LOCATION)
     return;
