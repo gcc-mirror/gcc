@@ -10129,6 +10129,8 @@ following warnings from @option{-fanalyzer}:
 -Wanalyzer-possible-null-dereference @gol
 -Wanalyzer-unsafe-call-within-signal-handler @gol
 -Wanalyzer-use-after-free @gol
+-Wanalyzer-va-list-leak @gol
+-Wanalyzer-va-list-use-after-va-end @gol
 }
 
 @item -fno-analyzer-feasibility
