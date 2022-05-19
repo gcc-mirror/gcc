@@ -34,6 +34,8 @@
 
 #if ! _GLIBCXX_USE_CXX11_ABI
 
+#include <ext/atomicity.h> // _Atomic_word, __is_single_threaded
+
 #ifdef __cpp_lib_is_constant_evaluated
 // Support P1032R1 in C++20 (but not P0980R1 for COW strings).
 # define __cpp_lib_constexpr_string 201811L
