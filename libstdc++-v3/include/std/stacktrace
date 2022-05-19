@@ -52,20 +52,20 @@ __glibcxx_backtrace_create_state(const char*, int,
 
 int
 __glibcxx_backtrace_simple(__glibcxx_backtrace_state*, int,
-			   int (*) (void*, uintptr_t),
+			   int (*) (void*, __UINTPTR_TYPE__),
 			   void(*)(void*, const char*, int),
 			   void*);
 int
-__glibcxx_backtrace_pcinfo(__glibcxx_backtrace_state*, uintptr_t,
-			   int (*)(void*, uintptr_t,
+__glibcxx_backtrace_pcinfo(__glibcxx_backtrace_state*, __UINTPTR_TYPE__,
+			   int (*)(void*, __UINTPTR_TYPE__,
 				   const char*, int, const char*),
 			   void(*)(void*, const char*, int),
 			   void*);
 
 int
-__glibcxx_backtrace_syminfo(__glibcxx_backtrace_state*, uintptr_t addr,
-			    void (*) (void*, uintptr_t, const char*,
-				      uintptr_t, uintptr_t),
+__glibcxx_backtrace_syminfo(__glibcxx_backtrace_state*, __UINTPTR_TYPE__ addr,
+			    void (*) (void*, __UINTPTR_TYPE__, const char*,
+				      __UINTPTR_TYPE__, __UINTPTR_TYPE__),
 			    void(*)(void*, const char*, int),
 			    void*);
 }
@@ -225,6 +225,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     class basic_stacktrace
     {
       using _AllocTraits = allocator_traits<_Allocator>;
+      using uintptr_t = __UINTPTR_TYPE__;
 
     public:
       using value_type = stacktrace_entry;

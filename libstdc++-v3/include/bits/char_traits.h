@@ -40,6 +40,9 @@
 #include <cwchar>               // For WEOF, wmemmove, wmemset, etc.
 #if __cplusplus >= 201103L
 # include <type_traits>
+#if !defined __UINT_LEAST16_TYPE__ || !defined __UINT_LEAST32_TYPE__
+# include <cstdint>
+#endif
 #endif
 #if __cplusplus >= 202002L
 # include <compare>
@@ -728,8 +731,6 @@ _GLIBCXX_END_NAMESPACE_VERSION
 
 #if __cplusplus >= 201103L
 
-#include <cstdint>
-
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
@@ -738,10 +739,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct char_traits<char16_t>
     {
       typedef char16_t          char_type;
-#ifdef _GLIBCXX_USE_C99_STDINT_TR1
-      typedef uint_least16_t    int_type;
-#elif defined __UINT_LEAST16_TYPE__
+#ifdef __UINT_LEAST16_TYPE__
       typedef __UINT_LEAST16_TYPE__	    int_type;
+#elif defined _GLIBCXX_USE_C99_STDINT_TR1
+      typedef uint_least16_t    int_type;
 #else
       typedef make_unsigned<char16_t>::type int_type;
 #endif
@@ -859,10 +860,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct char_traits<char32_t>
     {
       typedef char32_t          char_type;
-#ifdef _GLIBCXX_USE_C99_STDINT_TR1
-      typedef uint_least32_t    int_type;
-#elif defined __UINT_LEAST32_TYPE__
+#ifdef __UINT_LEAST32_TYPE__
       typedef __UINT_LEAST32_TYPE__	    int_type;
+#elif defined _GLIBCXX_USE_C99_STDINT_TR1
+      typedef uint_least32_t    int_type;
 #else
       typedef make_unsigned<char32_t>::type int_type;
 #endif

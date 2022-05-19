@@ -85,6 +85,8 @@ using F128_type = __float128;
 using F128_type = void;
 #endif
 
+#include <stdint.h>
+
 namespace
 {
 #if defined __SIZEOF_INT128__
