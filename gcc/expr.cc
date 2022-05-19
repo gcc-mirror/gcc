@@ -9541,6 +9541,38 @@ expand_expr_real_2 (sepops ops, rtx target, machine_mode tmode,
 	}
 
       expand_operands (treeop0, treeop1, subtarget, &op0, &op1, EXPAND_NORMAL);
+
+      /* Expand X*Y as X&-Y when Y must be zero or one.  */
+      if (SCALAR_INT_MODE_P (mode))
+	{
+	  bool bit0_p = tree_nonzero_bits (treeop0) == 1;
+	  bool bit1_p = tree_nonzero_bits (treeop1) == 1;
+
+	  /* Expand X*Y as X&Y when both X and Y must be zero or one.  */
+	  if (bit0_p && bit1_p)
+	    return REDUCE_BIT_FIELD (expand_and (mode, op0, op1, target));
+
+	  if (bit0_p || bit1_p)
+	    {
+	      bool speed = optimize_insn_for_speed_p ();
+	      int cost = add_cost (speed, mode) + neg_cost (speed, mode);
+	      struct algorithm algorithm;
+	      enum mult_variant variant;
+	      if (CONST_INT_P (op1)
+		  ? !choose_mult_variant (mode, INTVAL (op1),
+					  &algorithm, &variant, cost)
+		  : cost < mul_cost (speed, mode))
+		{
+		  target = bit0_p ? expand_and (mode, negate_rtx (mode, op0),
+						op1, target)
+				  : expand_and (mode, op0,
+						negate_rtx (mode, op1),
+						target);
+		  return REDUCE_BIT_FIELD (target);
+		}
+	    }
+	}
+
       return REDUCE_BIT_FIELD (expand_mult (mode, op0, op1, target, unsignedp));
 
     case TRUNC_MOD_EXPR:
