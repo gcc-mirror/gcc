@@ -19,6 +19,8 @@
 	* plugin/m2rte.cc: Reformatted comments.
 	* lang-options.h: (Removed).
 	* plugin/m2rte.cc: Further reformatting of comments.
+	* gm2-gcc/m2statement.cc: Corrected comment formatting and
+	removed usused debugging code.
 
 2022-05-16   Gaius Mulley   <gaius.mulley@southwales.ac.uk>
 
