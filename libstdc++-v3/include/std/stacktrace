@@ -33,6 +33,7 @@
 #include <new>
 #include <string>
 #include <sstream>
+#include <bits/memory_resource.h>
 #include <bits/stl_algobase.h>
 #include <bits/stl_algo.h>
 #include <bits/stl_iterator.h>
@@ -758,7 +759,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   namespace pmr
   {
-    template<typename _Tp> class polymorphic_allocator;
     using stacktrace
       = basic_stacktrace<polymorphic_allocator<stacktrace_entry>>;
   }

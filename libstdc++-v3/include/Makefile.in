@@ -515,6 +515,7 @@ bits_headers = \
 	${bits_srcdir}/localefwd.h \
 	${bits_srcdir}/mask_array.h \
 	${bits_srcdir}/max_size_type.h \
+	${bits_srcdir}/memory_resource.h \
 	${bits_srcdir}/memoryfwd.h \
 	${bits_srcdir}/mofunc_impl.h \
 	${bits_srcdir}/move.h \

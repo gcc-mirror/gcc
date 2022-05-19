@@ -67,12 +67,12 @@
 #include <bits/regex_executor.h>
 
 #if __cplusplus >= 201703L && _GLIBCXX_USE_CXX11_ABI
+#include <bits/memory_resource.h>
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
   namespace pmr
   {
-    template<typename _Tp> class polymorphic_allocator;
     template<typename _BidirectionalIterator>
       using match_results
 	= std::match_results<_BidirectionalIterator, polymorphic_allocator<
