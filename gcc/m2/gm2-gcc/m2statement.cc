@@ -147,7 +147,7 @@ m2statement_BuildEndFunctionCode (location_t location, tree fndecl, int nested)
 }
 
 /* BuildPushFunctionContext - pushes the current function context.
-   Maps onto push_function_context in ../function.c */
+   Maps onto push_function_context in ../function.cc.  */
 
 void
 m2statement_BuildPushFunctionContext (void)
@@ -156,7 +156,7 @@ m2statement_BuildPushFunctionContext (void)
 }
 
 /* BuildPopFunctionContext - pops the current function context.  Maps
-   onto pop_function_context in ../function.c */
+   onto pop_function_context in ../function.cc.  */
 
 void
 m2statement_BuildPopFunctionContext (void)

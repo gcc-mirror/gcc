@@ -1138,7 +1138,7 @@ m2type_GetTreeType (tree t)
 /* finish_build_pointer_type - finish building a POINTER_TYPE node.
    necessary to solve self references in procedure types.  */
 
-/* code taken from tree.c:build_pointer_type_for_mode.  */
+/* Code taken from tree.cc:build_pointer_type_for_mode.  */
 
 static tree
 finish_build_pointer_type (tree t, tree to_type, enum machine_mode mode,
@@ -1841,10 +1841,10 @@ m2type_DeclareKnownType (location_t location, char *name, tree type)
    declaration.  Otherwise it declares the type.  In Modula-2 this is
    equivalent to:
 
-TYPE name = type ;
+   TYPE name = type ;
 
-We need this function as the initialization to gccgm2.c will declare
-   C default types and _some_ M2 default types.  */
+   We need this function during gm2 initialization as it allows
+   gm2 to access default types before creating Modula-2 types.  */
 
 tree
 m2type_GetDefaultType (location_t location, char *name, tree type)
@@ -1992,7 +1992,7 @@ gm2_start_enum (location_t location, tree name, int ispacked)
 
      Create a fake NULL-named TYPE_DECL node whose TREE_TYPE will be the
      tagged type we just added to the current scope.  This fake NULL-named
-     TYPE_DECL node helps dwarfout.c to know when it needs to output a
+     TYPE_DECL node helps dwarfout.cc to know when it needs to output a
      representation of a tagged type, and it also gives us a convenient
      place to record the "scope start" address for the tagged type.  */
 
@@ -2616,7 +2616,7 @@ m2type_BuildStartFieldVarient (location_t location, char *name)
   return field;
 }
 
-/* BuildEndRecord - a heavily pruned finish_struct from c-decl.c.  It
+/* BuildEndRecord - a heavily pruned finish_struct from c-decl.cc.  It
    sets the context for each field to, t, propagates isPacked
    throughout the fields in the structure.  */
 

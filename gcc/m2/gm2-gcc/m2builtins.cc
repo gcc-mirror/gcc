@@ -582,7 +582,7 @@ doplaces (location_t location ATTRIBUTE_UNUSED, tree type)
 {
   if (TREE_CODE (type) == REAL_TYPE)
     {
-      /*  taken from c-family/c-cppbuiltin.c.  */
+      /* Taken from c-family/c-cppbuiltin.cc.  */
       /* The number of decimal digits, q, such that any floating-point
          number with q decimal digits can be rounded into a
          floating-point number with p radix b digits and back again
@@ -637,7 +637,7 @@ computeLarge (tree type)
   REAL_VALUE_TYPE real;
   char buf[128];
 
-  /* shamelessly taken from c-cppbuiltin.c:builtin_define_float_constants.  */
+  /* Shamelessly taken from c-cppbuiltin.cc:builtin_define_float_constants.  */
 
   /* Since, for the supported formats, B is always a power of 2, we
   construct the following numbers directly as a hexadecimal constants.  */

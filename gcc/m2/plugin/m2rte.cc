@@ -269,7 +269,7 @@ pass_warn_exception_inevitable::execute (function *fun)
 	  debug (gsi_stmt (gsi));
 #endif
 	}
-      /* we only care about the first basic block in each function.
+      /* We only care about the first basic block in each function.
          We could continue to search if this edge falls though (top
          of a loop for example) but for now this is cautiously safe.
          --fixme--  */
@@ -309,7 +309,6 @@ plugin_init (struct plugin_name_args *plugin_info,
 {
   struct register_pass_info pass_info;
   const char *plugin_name = plugin_info->base_name;
-  // return 0;  // --fixme-- just testing!
 
   if (!plugin_default_version_check (version, &gcc_version))
     {

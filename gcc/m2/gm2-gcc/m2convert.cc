@@ -66,7 +66,7 @@ m2convert_ConvertString (tree type, tree expr)
 }
 
 
-/* (taken from c-common.c and trimmed for Modula-2)
+/* (Taken from c-common.cc and trimmed for Modula-2)
 
    Checks if expression EXPR of real/integer type cannot be converted to
    the real/integer type TYPE.  Function returns non-zero when:
@@ -154,7 +154,7 @@ unsafe_conversion_p (location_t loc, tree type, tree expr, bool produce_warns)
   return give_warning;
 }
 
-/* (taken from c-common.c and trimmed for Modula-2)
+/* (Taken from c-common.cc and trimmed for Modula-2)
 
 Warns if the conversion of EXPR to TYPE may alter a value.  This is a
    helper function for warnings_for_convert_and_check.  */
@@ -230,7 +230,7 @@ conversion_warning (location_t loc, tree type, tree expr)
     }
 }
 
-/* (taken from c-common.c and trimmed for Modula-2)
+/* (Taken from c-common.cc and trimmed for Modula-2)
 
    Produce warnings after a conversion.  RESULT is the result of
    converting EXPR to TYPE.  This is a helper function for
@@ -283,7 +283,7 @@ warnings_for_convert_and_check (location_t loc, tree type, tree expr,
     conversion_warning (loc, type, expr);
 }
 
-/* (taken from c-common.c and trimmed for Modula-2)
+/* (Taken from c-common.cc and trimmed for Modula-2)
 
    Convert EXPR to TYPE, warning about conversion problems with
    constants.  Invoke this function on every expression that is

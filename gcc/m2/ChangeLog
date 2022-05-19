@@ -1,3 +1,24 @@
+2022-05-19   Gaius Mulley   <gaius.mulley@southwales.ac.uk>
+
+	* gm2-gcc/m2builtins.cc: Corrected comments (specifically
+	those referring to .c files).
+	* gm2-gcc/m2convert.cc: Corrected comments (specifically
+	those referring to .c files).
+	* gm2-gcc/m2expr.cc: Corrected comments (specifically
+	those referring to .c files).
+	* gm2-gcc/m2statement.cc: Corrected comments (specifically
+	those referring to .c files).
+	* gm2-gcc/m2treelib.cc: Corrected comments (specifically
+	those referring to .c files).
+	* gm2-gcc/m2type.cc: Corrected comments (specifically
+	those referring to .c files).
+	* gm2-gcc/rtegraph.cc: Corrected comments (specifically
+	those referring to .c files).
+	* gm2-lang.cc: Corrected comments (specifically
+	those referring to .c files).
+	* plugin/m2rte.cc: Reformatted comments.
+	* lang-options.h: (Removed).
+
 2022-05-16   Gaius Mulley   <gaius.mulley@southwales.ac.uk>
 
 	* plugin/m2rte.cc (alias.h, predict.h, tm.h)

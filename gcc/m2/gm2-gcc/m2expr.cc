@@ -1065,7 +1065,7 @@ m2expr_build_unary_op (location_t location, enum tree_code code, tree arg,
 }
 
 /* build_binary_op is a heavily pruned version of the one found in
-   c-typeck.c.  The Modula-2 expression rules are much more restricted
+   c-typeck.cc.  The Modula-2 expression rules are much more restricted
    than C.  */
 
 tree
@@ -3518,7 +3518,7 @@ m2expr_IsFalse (tree t)
   return (m2expr_FoldAndStrip (t) == m2type_GetBooleanFalse ());
 }
 
-/* AreConstantsEqual - maps onto tree.c (tree_int_cst_equal).  It
+/* AreConstantsEqual - maps onto tree.cc (tree_int_cst_equal).  It
    returns TRUE if the value of e1 is the same as e2.  */
 
 int
@@ -3922,7 +3922,7 @@ append_digit (unsigned HOST_WIDE_INT *low, HOST_WIDE_INT *high,
 }
 
 /* interpret_integer convert an integer constant into two integer
-   constants.  Heavily borrowed from gcc/cppexp.c.  */
+   constants.  Heavily borrowed from gcc/cppexp.cc.  */
 
 int
 m2expr_interpret_integer (const char *str, unsigned int base,
@@ -4044,7 +4044,7 @@ append_m2_digit (unsigned int *low, int *high, unsigned int digit,
 }
 
 /* interpret_m2_integer convert an integer constant into two integer
-   constants.  Heavily borrowed from gcc/cppexp.c.  Note that this is a
+   constants.  Heavily borrowed from gcc/cppexp.cc.  Note that this is a
    copy of the above code except that it uses `int' rather than
    HOST_WIDE_INT to allow gm2 to determine what Modula-2 base type to
    use for this constant.  */
@@ -4138,7 +4138,7 @@ m2expr_GetSizeOfInBits (tree type)
   return m2decl_BuildIntegerConstant (TYPE_PRECISION (type));
 }
 
-/* GetSizeOf taken from c-typeck.c (c_sizeof).  */
+/* GetSizeOf taken from c-typeck.cc (c_sizeof).  */
 
 tree
 m2expr_GetSizeOf (location_t location, tree type)

@@ -757,8 +757,7 @@ gm2_preserve_from_gc (tree t)
   gm2_gc_root = tree_cons (NULL_TREE, t, gm2_gc_root);
 }
 
-/* Return a decl for the exception personality function.  The
-   function itself is implemented in libgo/runtime/go-unwind.c.  */
+/* Return a decl for the exception personality function.  */
 
 static tree
 gm2_langhook_eh_personality (void)

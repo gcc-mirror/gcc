@@ -36,15 +36,15 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 
 struct GTY (()) rtenode
 {
-  bool constructor_reachable;   /* is this guarenteed to be reachable by a constructor?  */
-  bool export_reachable;  /* is this reachable via exported functions?  */
-  bool exception_routine;   /* is this an exception routine?  */
-  bool constructor_final;   /* have we walked this rtenode during constructor testing?  */
-  bool export_final;   /* walked this rtenode during exported testing?  */
-  bool is_call;    /* is this a function call?  */
+  bool constructor_reachable;   /* Is this guarenteed to be reachable by a constructor?  */
+  bool export_reachable;  /* Is this reachable via exported functions?  */
+  bool exception_routine;   /* Is this an exception routine?  */
+  bool constructor_final;   /* Have we walked this rtenode during constructor testing?  */
+  bool export_final;   /* Walked this rtenode during exported testing?  */
+  bool is_call;    /* Is this a function call?  */
   gimple *grtenode;
   tree func;
-  rtenode *reachable_src;  /* if this is reachable which src function will call us?  */
+  rtenode *reachable_src;  /* If this is reachable which src function will call us?  */
 
   vec<rtenode *, va_gc> *function_call;
   vec<rtenode *, va_gc> *rts_call;
@@ -114,7 +114,7 @@ void rtegraph_include_function_call (rtenode *func)
 }
 
 
-/* rtegraph_discover performs the main work, called by m2rte.c analyse_graph.
+/* rtegraph_discover performs the main work, called by m2rte.cc analyse_graph.
    It determines which function calls a reachable and then issues any warning
    message if a reachable function is a call to a runtime exception handler.  */
 
@@ -359,7 +359,7 @@ generate_report (gimple *stmt, const char *report, diagnostic_t kind)
 	  && access_string (s1, &scope)
 	  && access_string (s2, &message))
 	{
-	  /* continue to use scope as this will survive any
+	  /* Continue to use scope as this will survive any
 	     optimization transforms.  */
 	  location_t location = gimple_location (stmt);
 	  rte_error_at (location, kind, "In %s\n%s, %s",
@@ -478,9 +478,9 @@ void rtenode::propagate_constructor_reachable (rtenode *src)
     (*rts_call)[i]->propagate_constructor_reachable (src);
 }
 
-/* propagate_export_reachable for every function which is reachable from
-   rtenode call the callee rtenode and mark it as reachable from an exported
-   function.  */
+/* propagate_export_reachable for every function which is reachable
+   from rtenode call the callee rtenode and mark it as reachable from
+   an exported function.  */
 
 void rtenode::propagate_export_reachable (rtenode *src)
 {
@@ -495,7 +495,8 @@ void rtenode::propagate_export_reachable (rtenode *src)
     (*rts_call)[i]->propagate_export_reachable (src);
 }
 
-/* rtegraph_init initialize the data structures (vec arrays) in this file.  */
+/* rtegraph_init initialize the data structures (vec arrays) in this
+   file.  */
 
 void rtegraph_init (void)
 {

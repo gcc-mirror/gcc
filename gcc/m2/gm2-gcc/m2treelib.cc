@@ -58,7 +58,7 @@ m2treelib_do_jump_if_bit (location_t location, enum tree_code code, tree word,
       NULL, label);
 }
 
-/* build_modify_expr - taken from c-typeck.c and heavily pruned.
+/* build_modify_expr - taken from c-typeck.cc and heavily pruned.
 
    Build an assignment expression of lvalue LHS from value RHS.  If
    LHS_ORIGTYPE is not NULL, it is the original type of LHS, which
@@ -385,7 +385,7 @@ add_stmt (location_t location, tree t)
   return m2block_add_stmt (location, t);
 }
 
-/* taken from gcc/c-semantics.c.  */
+/* taken from gcc/c-semantics.cc.  */
 
 /* Build a generic statement based on the given type of node and
    arguments.  Similar to `build_nt', except that we set EXPR_LOCATION
