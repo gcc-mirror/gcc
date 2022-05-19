@@ -159,17 +159,17 @@ examine_call (gimple *stmt)
   // rtegraph_dump ();
   if (fndecl != NULL && (DECL_NAME (fndecl) != NULL))
     {
-      /* firstly check if the function is a runtime exception.  */
+      /* Firstly check if the function is a runtime exception.  */
       if (is_rte (fndecl))
 	{
-	  /* remember runtime exception call.  */
+	  /* Remember runtime exception call.  */
 	  rtegraph_include_rtscall (func);
-	  /* add the callee to the list of candidates to be queried reachable.  */
+	  /* Add the callee to the list of candidates to be queried reachable.  */
 	  rtegraph_candidates_include (func);
 	  return;
 	}
     }
-  /* add it to the list of calls.  */
+  /* Add it to the list of calls.  */
   rtegraph_include_function_call (func);
 }
 
@@ -184,10 +184,10 @@ examine_function_decl (rtenode *rt)
   tree fndecl = rtegraph_get_func (rt);
   if (fndecl != NULL && (DECL_NAME (fndecl) != NULL))
     {
-      /* check if the function is a module constructor.  */
+      /* Check if the function is a module constructor.  */
       if (is_constructor (fndecl))
 	rtegraph_constructors_include (rt);
-      /* can it be called externally?  */
+      /* Can it be called externally?  */
       if (is_external (fndecl))
 	rtegraph_externs_include (rt);
     }
@@ -226,10 +226,7 @@ public:
     : gimple_opt_pass(pass_data_exception_detection, ctxt)
   {}
 
-  /* opt_pass methods: */
-  // opt_pass * clone () { return new pass_warn_exception_inevitable (m_ctxt); }
   virtual unsigned int execute (function *);
-
 };
 
 /* execute checks the first basic block of function fun to see if it
@@ -240,11 +237,11 @@ pass_warn_exception_inevitable::execute (function *fun)
 {
   gimple_stmt_iterator gsi;
   basic_block bb;
-  /* record a function declaration.  */
+  /* Record a function declaration.  */
   rtenode *fn = rtegraph_lookup (fun->gimple_body, fun->decl, false);
 
   rtegraph_set_current_function (fn);
-  /* check if the current function is a module constructor/deconstructor.
+  /* Check if the current function is a module constructor/deconstructor.
      Also check if the current function is declared as external.  */
   examine_function_decl (fn);
 
@@ -317,7 +314,7 @@ plugin_init (struct plugin_name_args *plugin_info,
       return 1;
     }
 
-  /* runtime exception inevitable detection.  This plugin is most effective if
+  /* Runtime exception inevitable detection.  This plugin is most effective if
      it is run after all optimizations.  This is plugged in at the end of
      gimple range of optimizations.  */
   pass_info.pass = make_pass_warn_exception_inevitable (g);
