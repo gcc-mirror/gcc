@@ -1014,7 +1014,7 @@ gsi_insert_earliest (gimple_seq seq)
   basic_block begin_bb = get_entry_bb (codegen_region);
 
   /* Inserting the gimple statements in a vector because gimple_seq behave
-     in strage ways when inserting the stmts from it into different basic
+     in strange ways when inserting the stmts from it into different basic
      blocks one at a time.  */
   auto_vec<gimple *, 3> stmts;
   for (gimple_stmt_iterator gsi = gsi_start (seq); !gsi_end_p (gsi);

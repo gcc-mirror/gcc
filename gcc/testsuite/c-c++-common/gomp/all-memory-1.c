@@ -49,4 +49,6 @@ boo (void)
   ;
   #pragma omp task depend(mutexinoutset: omp_all_memory)	/* { dg-error "'omp_all_memory' used with 'depend' kind other than 'out' or 'inout'" } */
   ;
+  #pragma omp task depend(inoutset: omp_all_memory)		/* { dg-error "'omp_all_memory' used with 'depend' kind other than 'out' or 'inout'" } */
+  ;
 }

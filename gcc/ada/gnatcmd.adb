@@ -57,7 +57,6 @@ procedure GNATCmd is
       Compile,
       Check,
       Elim,
-      Find,
       Krunch,
       Link,
       List,
@@ -69,10 +68,9 @@ procedure GNATCmd is
       Stack,
       Stub,
       Test,
-      Xref,
       Undefined);
 
-   subtype Real_Command_Type is Command_Type range Bind .. Xref;
+   subtype Real_Command_Type is Command_Type range Bind .. Test;
    --  All real command types (excludes only Undefined).
 
    type Alternate_Command is (Comp, Ls, Kr, Pp, Prep);
@@ -160,11 +158,6 @@ procedure GNATCmd is
          Unixcmd  => new String'("gnatelim"),
          Unixsws  => null),
 
-      Find =>
-        (Cname    => new String'("FIND"),
-         Unixcmd  => new String'("gnatfind"),
-         Unixsws  => null),
-
       Krunch =>
         (Cname    => new String'("KRUNCH"),
          Unixcmd  => new String'("gnatkr"),
@@ -218,11 +211,6 @@ procedure GNATCmd is
       Test =>
         (Cname    => new String'("TEST"),
          Unixcmd  => new String'("gnattest"),
-         Unixsws  => null),
-
-      Xref =>
-        (Cname    => new String'("XREF"),
-         Unixcmd  => new String'("gnatxref"),
          Unixsws  => null)
      );
 
@@ -588,30 +576,6 @@ begin
             First_Switches.Table (First_Switches.Last) :=
               Command_List (The_Command).Unixsws (J);
          end loop;
-      end if;
-
-      --  For FIND and XREF, look for switch -P. If it is specified, then
-      --  report an error indicating that the command does not support project
-      --  files.
-
-      if The_Command in Find | Xref then
-         declare
-            Argv : String_Access;
-         begin
-            for Arg_Num in 1 .. Last_Switches.Last loop
-               Argv := Last_Switches.Table (Arg_Num);
-
-               if Argv'Length >= 2
-                 and then Argv (Argv'First .. Argv'First + 1) = "-P"
-               then
-                  if The_Command = Find then
-                     Fail ("'gnat find -P' is not supported;");
-                  else
-                     Fail ("'gnat xref -P' is not supported;");
-                  end if;
-               end if;
-            end loop;
-         end;
       end if;
 
       --  Gather all the arguments and invoke the executable

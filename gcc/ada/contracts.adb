@@ -3899,7 +3899,16 @@ package body Contracts is
             Set_Corresponding_Body (Helper_Decl, Body_Id);
             Set_Must_Override (Body_Spec, False);
 
-            if Present (Class_Preconditions (Subp_Id)) then
+            if Present (Class_Preconditions (Subp_Id))
+            --  Evaluate the expression if we are building a dynamic helper
+            --  or we are building a static helper for a non-abstract tagged
+            --  type; for abstract tagged types the helper just returns True
+            --  since it is called by the indirect call wrapper (ICW).
+              and then
+                (Is_Dynamic
+                   or else
+                      not Is_Abstract_Type (Find_Dispatching_Type (Subp_Id)))
+            then
                Return_Expr :=
                  Copy_And_Update_References (Class_Preconditions (Subp_Id));
 
@@ -3910,7 +3919,8 @@ package body Contracts is
             --  enabled.
 
             else
-               pragma Assert (Present (Ignored_Class_Preconditions (Subp_Id)));
+               pragma Assert (Present (Ignored_Class_Preconditions (Subp_Id))
+                 or else Is_Abstract_Type (Find_Dispatching_Type (Subp_Id)));
                Return_Expr := New_Occurrence_Of (Standard_True, Loc);
             end if;
 

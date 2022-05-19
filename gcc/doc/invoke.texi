@@ -349,6 +349,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wno-div-by-zero  -Wdouble-promotion @gol
 -Wduplicated-branches  -Wduplicated-cond @gol
 -Wempty-body  -Wno-endif-labels  -Wenum-compare  -Wenum-conversion @gol
+-Wenum-int-mismatch @gol
 -Werror  -Werror=*  -Wexpansion-to-defined  -Wfatal-errors @gol
 -Wfloat-conversion  -Wfloat-equal  -Wformat  -Wformat=2 @gol
 -Wno-format-contains-nul  -Wno-format-extra-args  @gol
@@ -464,6 +465,10 @@ Objective-C and Objective-C++ Dialects}.
 -Wno-analyzer-use-after-free @gol
 -Wno-analyzer-use-of-pointer-in-stale-stack-frame @gol
 -Wno-analyzer-use-of-uninitialized-value @gol
+-Wno-analyzer-va-arg-type-mismatch @gol
+-Wno-analyzer-va-list-exhausted @gol
+-Wno-analyzer-va-list-leak @gol
+-Wno-analyzer-va-list-use-after-va-end @gol
 -Wno-analyzer-write-to-const @gol
 -Wno-analyzer-write-to-string-literal @gol
 }
@@ -5755,6 +5760,7 @@ Options} and @ref{Objective-C and Objective-C++ Dialect Options}.
 -Wdangling-pointer=2  @gol
 -Wduplicate-decl-specifier @r{(C and Objective-C only)} @gol
 -Wenum-compare @r{(in C/ObjC; this is on by default in C++)} @gol
+-Wenum-int-mismatch @r{(C and Objective-C only)} @gol
 -Wformat   @gol
 -Wformat-overflow  @gol
 -Wformat-truncation  @gol
@@ -8731,6 +8737,25 @@ Warn when a value of enumerated type is implicitly converted to a
 different enumerated type.  This warning is enabled by @option{-Wextra}
 in C@.
 
+@item -Wenum-int-mismatch @r{(C and Objective-C only)}
+@opindex Wenum-int-mismatch
+@opindex Wno-enum-int-mismatch
+Warn about mismatches between an enumerated type and an integer type in
+declarations.  For example:
+
+@smallexample
+enum E @{ l = -1, z = 0, g = 1 @};
+int foo(void);
+enum E foo(void);
+@end smallexample
+
+In C, an enumerated type is compatible with @code{char}, a signed
+integer type, or an unsigned integer type.  However, since the choice
+of the underlying type of an enumerated type is implementation-defined,
+such mismatches may cause portability issues.  In C++, such mismatches
+are an error.  In C, this warning is enabled by @option{-Wall} and
+@option{-Wc++-compat}.
+
 @item -Wjump-misses-init @r{(C, Objective-C only)}
 @opindex Wjump-misses-init
 @opindex Wno-jump-misses-init
@@ -9689,6 +9714,10 @@ Enabling this option effectively enables the following warnings:
 -Wanalyzer-use-after-free @gol
 -Wanalyzer-use-of-pointer-in-stale-stack-frame @gol
 -Wanalyzer-use-of-uninitialized-value @gol
+-Wanalyzer-va-arg-type-mismatch @gol
+-Wanalyzer-va-list-exhausted @gol
+-Wanalyzer-va-list-leak @gol
+-Wanalyzer-va-list-use-after-va-end @gol
 -Wanalyzer-write-to-const @gol
 -Wanalyzer-write-to-string-literal @gol
 }
@@ -9971,6 +10000,53 @@ to disable it.
 This diagnostic warns for paths through the code in which a pointer
 is dereferenced that points to a variable in a stale stack frame.
 
+@item -Wno-analyzer-va-arg-type-mismatch
+@opindex Wanalyzer-va-arg-type-mismatch
+@opindex Wno-analyzer-va-arg-type-mismatch
+This warning requires @option{-fanalyzer}, which enables it; use
+@option{-Wno-analyzer-va-arg-type-mismatch}
+to disable it.
+
+This diagnostic warns for interprocedural paths through the code for which
+the analyzer detects an attempt to use @code{va_arg} to extract a value
+passed to a variadic call, but uses a type that does not match that of
+the expression passed to the call.
+
+@item -Wno-analyzer-va-list-exhausted
+@opindex Wanalyzer-va-list-exhausted
+@opindex Wno-analyzer-va-list-exhausted
+This warning requires @option{-fanalyzer}, which enables it; use
+@option{-Wno-analyzer-va-list-exhausted}
+to disable it.
+
+This diagnostic warns for interprocedural paths through the code for which
+the analyzer detects an attempt to use @code{va_arg} to access the next
+value passed to a variadic call, but all of the values in the
+@code{va_list} have already been consumed.
+
+@item -Wno-analyzer-va-list-leak
+@opindex Wanalyzer-va-list-leak
+@opindex Wno-analyzer-va-list-leak
+This warning requires @option{-fanalyzer}, which enables it; use
+@option{-Wno-analyzer-va-list-leak}
+to disable it.
+
+This diagnostic warns for interprocedural paths through the code for which
+the analyzer detects that @code{va_start} or @code{va_copy} has been called
+on a @code{va_list} without a corresponding call to @code{va_end}.
+
+@item -Wno-analyzer-va-list-use-after-va-end
+@opindex Wanalyzer-va-list-use-after-va-end
+@opindex Wno-analyzer-va-list-use-after-va-end
+This warning requires @option{-fanalyzer}, which enables it; use
+@option{-Wno-analyzer-va-list-use-after-va-end}
+to disable it.
+
+This diagnostic warns for interprocedural paths through the code for which
+the analyzer detects an attempt to use a @code{va_list}  after
+@code{va_end} has been called on it.
+@code{va_list}.
+
 @item -Wno-analyzer-write-to-const
 @opindex Wanalyzer-write-to-const
 @opindex Wno-analyzer-write-to-const
@@ -10053,6 +10129,8 @@ following warnings from @option{-fanalyzer}:
 -Wanalyzer-possible-null-dereference @gol
 -Wanalyzer-unsafe-call-within-signal-handler @gol
 -Wanalyzer-use-after-free @gol
+-Wanalyzer-va-list-leak @gol
+-Wanalyzer-va-list-use-after-va-end @gol
 }
 
 @item -fno-analyzer-feasibility

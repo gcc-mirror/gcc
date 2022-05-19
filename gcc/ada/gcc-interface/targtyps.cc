@@ -4,7 +4,7 @@
  *                                                                          *
  *                            T A R G T Y P S                               *
  *                                                                          *
- *                                  Body                                    *
+ *                          C Implementation File                           *
  *                                                                          *
  *          Copyright (C) 1992-2021, Free Software Foundation, Inc.         *
  *                                                                          *

@@ -46,7 +46,7 @@ along with GCC; see the file COPYING3.  If not see
 class gimple_ranger : public range_query
 {
 public:
-  gimple_ranger ();
+  gimple_ranger (bool use_imm_uses = true);
   ~gimple_ranger ();
   virtual bool range_of_stmt (irange &r, gimple *, tree name = NULL) OVERRIDE;
   virtual bool range_of_expr (irange &r, tree name, gimple * = NULL) OVERRIDE;
@@ -69,12 +69,15 @@ protected:
   range_tracer tracer;
   basic_block current_bb;
   vec<tree> m_stmt_list;
+  friend class path_range_query;
 };
 
 /* Create a new ranger instance and associate it with a function.
    Each call must be paired with a call to disable_ranger to release
-   resources.  */
-extern gimple_ranger *enable_ranger (struct function *);
+   resources.  If USE_IMM_USES is true, pre-calculate sideffects like
+   non-null uses as required using the immediate use chains.  */
+extern gimple_ranger *enable_ranger (struct function *m,
+				     bool use_imm_uses = true);
 extern void disable_ranger (struct function *);
 
 #endif // GCC_GIMPLE_RANGE_H

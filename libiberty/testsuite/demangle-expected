@@ -1493,3 +1493,13 @@ decltype ({parm#1}.A::x) f<A>(A)
 
 _Z2f6IP1AEDtptfp_gssr1A1BE1xET_
 decltype ({parm#1}->(::A::B::x)) f6<A*>(A*)
+
+# Structured Bindings
+_ZDC1a1bE
+[a, b]
+
+_ZNStDC1aEE
+std::[a]
+
+_ZN3NMSDC1aEE
+NMS::[a]

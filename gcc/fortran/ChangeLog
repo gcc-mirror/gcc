@@ -1,3 +1,29 @@
+2022-05-18  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.h (enum gfc_omp_depend_op): Add OMP_DEPEND_INOUTSET.
+	(gfc_omp_clauses): Enlarge ENUM_BITFIELD.
+	* dump-parse-tree.cc (show_omp_namelist, show_omp_clauses): Handle
+	'inoutset' depend modifier.
+	* openmp.cc (gfc_match_omp_clauses, gfc_match_omp_depobj): Likewise.
+	* trans-openmp.cc (gfc_trans_omp_clauses, gfc_trans_omp_depobj):
+	Likewise.
+
+2022-05-17  Tobias Burnus  <tobias@codesourcery.com>
+
+	* dump-parse-tree.cc (show_omp_namelist): Handle omp_all_memory.
+	* openmp.cc (gfc_match_omp_variable_list, gfc_match_omp_depend_sink,
+	gfc_match_omp_clauses, resolve_omp_clauses): Likewise.
+	* trans-openmp.cc (gfc_trans_omp_clauses, gfc_trans_omp_depobj):
+	Likewise.
+	* resolve.cc (resolve_symbol): Reject it as symbol.
+
+2022-05-16  Martin Liska  <mliska@suse.cz>
+
+	* frontend-passes.cc (gfc_code_walker): Use ARRAY_SIZE.
+	* openmp.cc (gfc_match_omp_context_selector_specification): Likewise.
+	* trans-intrinsic.cc (conv_intrinsic_ieee_builtin): Likewise.
+	* trans-types.cc (gfc_get_array_descr_info): Likewise.
+
 2022-05-13  Tobias Burnus  <tobias@codesourcery.com>
 
 	* trans-openmp.cc (gfc_trans_omp_clauses): When mapping nondescriptor

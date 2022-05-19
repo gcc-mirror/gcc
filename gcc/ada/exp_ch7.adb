@@ -109,18 +109,13 @@ package body Exp_Ch7 is
    --  pass the address of a constrained object as the target object for the
    --  function result.
 
-   --  By allocating tagged results in the secondary stack a number of
+   --  By always allocating tagged results in the secondary stack, a couple of
    --  implementation difficulties are avoided:
 
-   --    - If it is a dispatching function call, the computation of the size of
-   --      the result is possible but complex from the outside.
+   --    - If this is a dispatching function call, the computation of the size
+   --      of the result is possible but complex from the outside.
 
-   --    - If the returned type is controlled, the assignment of the returned
-   --      value to the anonymous object involves an Adjust, and we have no
-   --      easy way to access the anonymous object created by the back end.
-
-   --    - If the returned type is class-wide, this is an unconstrained type
-   --      anyway.
+   --    - If the result type is class-wide, it is unconstrained anyway.
 
    --  Furthermore, the small loss in efficiency which is the result of this
    --  decision is not such a big deal because functions returning tagged types
@@ -157,14 +152,14 @@ package body Exp_Ch7 is
    -- Finalization Management --
    -----------------------------
 
-   --  This part describe how Initialization/Adjustment/Finalization procedures
-   --  are generated and called. Two cases must be considered, types that are
-   --  Controlled (Is_Controlled flag set) and composite types that contain
-   --  controlled components (Has_Controlled_Component flag set). In the first
-   --  case the procedures to call are the user-defined primitive operations
-   --  Initialize/Adjust/Finalize. In the second case, GNAT generates
-   --  Deep_Initialize, Deep_Adjust and Deep_Finalize that are in charge
-   --  of calling the former procedures on the controlled components.
+   --  This part describes how Initialization/Adjustment/Finalization
+   --  procedures are generated and called. Two cases must be considered: types
+   --  that are Controlled (Is_Controlled flag set) and composite types that
+   --  contain controlled components (Has_Controlled_Component flag set). In
+   --  the first case the procedures to call are the user-defined primitive
+   --  operations Initialize/Adjust/Finalize. In the second case, GNAT
+   --  generates Deep_Initialize, Deep_Adjust and Deep_Finalize that are in
+   --  charge of calling the former procedures on the controlled components.
 
    --  For records with Has_Controlled_Component set, a hidden "controller"
    --  component is inserted. This controller component contains its own
@@ -2850,16 +2845,14 @@ package body Exp_Ch7 is
                 Left_Opnd  => New_Occurrence_Of (Fin_Mas_Id, Loc),
                 Right_Opnd => Make_Null (Loc));
 
-            --  For constrained or tagged results escalate the condition to
+            --  For unconstrained or tagged results, escalate the condition to
             --  include the allocation format. Generate:
 
             --    if BIPallocform > Secondary_Stack'Pos
             --      and then BIPfinalizationmaster /= null
             --    then
 
-            if not Is_Constrained (Func_Typ)
-              or else Is_Tagged_Type (Func_Typ)
-            then
+            if Needs_BIP_Alloc_Form (Func_Id) then
                declare
                   Alloc : constant Entity_Id :=
                             Build_In_Place_Formal (Func_Id, BIP_Alloc_Form);
@@ -4247,14 +4240,33 @@ package body Exp_Ch7 is
          --
          --    Postcond_Enable := False;
 
-         Append_To (Top_Decls,
-           Make_Assignment_Statement (Loc,
-             Name       =>
-               New_Occurrence_Of
-                 (Get_Postcond_Enabled (Def_Ent), Loc),
-             Expression =>
-               New_Occurrence_Of
-                 (Standard_False, Loc)));
+         --  Note that we do not disable early evaluation of postconditions
+         --  for return types that are unconstrained or have unconstrained
+         --  elements since the temporary result object could get allocated on
+         --  the stack and be out of scope at the point where we perform late
+         --  evaluation of postconditions - leading to uninitialized memory
+         --  reads.
+
+         --  This disabling of early evaluation can lead to incorrect run-time
+         --  semantics where functions with unconstrained elements will
+         --  have their corresponding postconditions evaluated before
+         --  finalization. The proper solution here is to generate a wrapper
+         --  to capture the result instead of using multiple flags and playing
+         --  with flags which does not even work in all cases ???
+
+         if not Has_Unconstrained_Elements (Etype (Def_Ent))
+           or else (Is_Array_Type (Etype (Def_Ent))
+                     and then not Is_Constrained (Etype (Def_Ent)))
+         then
+            Append_To (Top_Decls,
+              Make_Assignment_Statement (Loc,
+                Name       =>
+                  New_Occurrence_Of
+                    (Get_Postcond_Enabled (Def_Ent), Loc),
+                Expression =>
+                  New_Occurrence_Of
+                    (Standard_False, Loc)));
+         end if;
 
          --  Add the subprogram to the list of declarations an analyze it
 
@@ -8273,19 +8285,23 @@ package body Exp_Ch7 is
 
          Counter        : Nat := 0;
          Finalizer_Data : Finalization_Exception_Data;
+         Last_POC_Call  : Node_Id := Empty;
 
          function Process_Component_List_For_Finalize
-           (Comps : Node_Id) return List_Id;
+           (Comps           : Node_Id;
+            In_Variant_Part : Boolean := False) return List_Id;
          --  Build all necessary finalization statements for a single component
          --  list. The statements may include a jump circuitry if flag Is_Local
-         --  is enabled.
+         --  is enabled. In_Variant_Part indicates whether this is a recursive
+         --  call.
 
          -----------------------------------------
          -- Process_Component_List_For_Finalize --
          -----------------------------------------
 
          function Process_Component_List_For_Finalize
-           (Comps : Node_Id) return List_Id
+           (Comps           : Node_Id;
+            In_Variant_Part : Boolean := False) return List_Id
          is
             procedure Process_Component_For_Finalize
               (Decl      : Node_Id;
@@ -8467,7 +8483,8 @@ package body Exp_Ch7 is
                            New_Copy_List (Discrete_Choices (Var)),
                          Statements =>
                            Process_Component_List_For_Finalize (
-                             Component_List (Var))));
+                             Component_List (Var),
+                             In_Variant_Part => True)));
 
                      Next_Non_Pragma (Var);
                   end loop;
@@ -8532,6 +8549,12 @@ package body Exp_Ch7 is
 
                   Prev_Non_Pragma (Decl);
                end loop;
+            end if;
+
+            if not In_Variant_Part then
+               Last_POC_Call := Last (Stmts);
+               --  In the case of a type extension, the deep-finalize call
+               --  for the _Parent component will be inserted here.
             end if;
 
             --  Process the rest of the components in reverse order
@@ -8749,7 +8772,38 @@ package body Exp_Ch7 is
                                     (Finalizer_Data))));
                      end if;
 
-                     Append_To (Bod_Stmts, Fin_Stmt);
+                     --  The intended component finalization order is
+                     --    1) POC components of extension
+                     --    2) _Parent component
+                     --    3) non-POC components of extension.
+                     --
+                     --  With this "finalize the parent part in the middle"
+                     --  ordering, we can avoid the need for making two
+                     --  calls to the parent's subprogram in the way that
+                     --  is necessary for Init_Procs. This does have the
+                     --  peculiar (but legal) consequence that the parent's
+                     --  non-POC components are finalized before the
+                     --  non-POC extension components. This violates the
+                     --  usual "finalize in reverse declaration order"
+                     --  principle, but that's ok (see Ada RM 7.6.1(9)).
+                     --
+                     --  Last_POC_Call should be non-empty if the extension
+                     --  has at least one POC. Interactions with variant
+                     --  parts are incorrectly ignored.
+
+                     if Present (Last_POC_Call) then
+                        Insert_After (Last_POC_Call, Fin_Stmt);
+                     else
+                        --  At this point, we could look for the common case
+                        --  where there are no POC components anywhere in
+                        --  sight (inherited or not) and, in that common case,
+                        --  call Append_To instead of Prepend_To. That would
+                        --  result in finalizing the parent part after, rather
+                        --  than before, the extension components. That might
+                        --  be more intuitive (as discussed in preceding
+                        --  comment), but it is not required.
+                        Prepend_To (Bod_Stmts, Fin_Stmt);
+                     end if;
                   end if;
                end if;
             end;
@@ -10282,7 +10336,7 @@ package body Exp_Ch7 is
          --  reclamation is done by the caller.
 
          if Ekind (Curr_S) = E_Function
-           and then Requires_Transient_Scope (Etype (Curr_S))
+           and then Returns_On_Secondary_Stack (Etype (Curr_S))
          then
             null;
 

@@ -1,5 +1,6 @@
 // { dg-options "-std=gnu++23" }
 // { dg-do compile { target c++23 } }
+// { dg-require-normal-namespace "" }
 
 #include <expected>
 

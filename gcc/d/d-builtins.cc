@@ -475,7 +475,7 @@ d_init_versions (void)
   if (flag_pie)
     VersionCondition::addPredefinedGlobalIdent ("D_PIE");
 
-  if (global.params.doDocComments)
+  if (global.params.ddoc.doOutput)
     VersionCondition::addPredefinedGlobalIdent ("D_Ddoc");
 
   if (global.params.useUnitTests)

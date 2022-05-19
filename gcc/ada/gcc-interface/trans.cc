@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *          Copyright (C) 1992-2021, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2022, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -1149,9 +1149,9 @@ Gigi_Types_Compatible (Entity_Id type, Entity_Id def_type)
   return false;
 }
 
-/* Subroutine of gnat_to_gnu to translate gnat_node, an N_Identifier,
-   to a GCC tree, which is returned.  GNU_RESULT_TYPE_P is a pointer
-   to where we should place the result type.  */
+/* Subroutine of gnat_to_gnu to translate GNAT_NODE, an N_Identifier, to a GCC
+   tree, which is returned.  GNU_RESULT_TYPE_P is a pointer to where we should
+   place the result type.  */
 
 static tree
 Identifier_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p)
@@ -1353,8 +1353,8 @@ Identifier_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p)
   return gnu_result;
 }
 
-/* Subroutine of gnat_to_gnu to process gnat_node, an N_Pragma.  Return
-   any statements we generate.  */
+/* Subroutine of gnat_to_gnu to translate GNAT_NODE, an N_Pragma, to a GCC
+   tree, which is returned.  */
 
 static tree
 Pragma_to_gnu (Node_Id gnat_node)
@@ -1700,9 +1700,9 @@ get_type_length (tree type, tree result_type)
   return length;
 }
 
-/* Subroutine of gnat_to_gnu to translate GNAT_NODE, an N_Attribute node,
-   to a GCC tree, which is returned.  GNU_RESULT_TYPE_P is a pointer to
-   where we should place the result type.  ATTRIBUTE is the attribute ID.  */
+/* Subroutine of gnat_to_gnu to translate GNAT_NODE, an N_Attribute node, to a
+   GCC tree, which is returned.  GNU_RESULT_TYPE_P is a pointer to where we
+   should place the result type.  ATTRIBUTE is the attribute ID.  */
 
 static tree
 Attribute_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, int attribute)
@@ -2613,8 +2613,8 @@ Attribute_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, int attribute)
   return gnu_result;
 }
 
-/* Subroutine of gnat_to_gnu to translate gnat_node, an N_Case_Statement,
-   to a GCC tree, which is returned.  */
+/* Subroutine of gnat_to_gnu to translate GNAT_NODE, an N_Case_Statement, to a
+   GCC tree, which is returned.  */
 
 static tree
 Case_Statement_to_gnu (Node_Id gnat_node)
@@ -2951,8 +2951,8 @@ independent_iterations_p (tree stmt_list)
   return true;
 }
 
-/* Subroutine of gnat_to_gnu to translate gnat_node, an N_Loop_Statement,
-   to a GCC tree, which is returned.  */
+/* Subroutine of gnat_to_gnu to translate GNAT_NODE, an N_Loop_Statement, to a
+   GCC tree, which is returned.  */
 
 static tree
 Loop_Statement_to_gnu (Node_Id gnat_node)
@@ -3836,23 +3836,20 @@ build_return_expr (tree ret_obj, tree ret_val)
   return build1 (RETURN_EXPR, void_type_node, result_expr);
 }
 
-/* Subroutine of gnat_to_gnu to process gnat_node, an N_Subprogram_Body.  We
-   don't return anything.  */
+/* Subroutine of gnat_to_gnu to translate GNAT_NODE, an N_Subprogram_Body.  */
 
 static void
 Subprogram_Body_to_gnu (Node_Id gnat_node)
 {
-  /* Defining identifier of a parameter to the subprogram.  */
-  Entity_Id gnat_param;
   /* The defining identifier for the subprogram body. Note that if a
      specification has appeared before for this body, then the identifier
-     occurring in that specification will also be a defining identifier and all
-     the calls to this subprogram will point to that specification.  */
-  Entity_Id gnat_subprog_id
+     occurring in that specification will also be a defining identifier
+     and calls to this subprogram will point to that specification.  */
+  Entity_Id gnat_subprog
     = (Present (Corresponding_Spec (gnat_node))
        ? Corresponding_Spec (gnat_node) : Defining_Entity (gnat_node));
-  /* The FUNCTION_DECL node corresponding to the subprogram spec.   */
-  tree gnu_subprog_decl;
+  /* The FUNCTION_DECL node corresponding to the defining identifier.  */
+  tree gnu_subprog;
   /* Its RESULT_DECL node.  */
   tree gnu_result_decl;
   /* Its FUNCTION_TYPE node.  */
@@ -3860,17 +3857,12 @@ Subprogram_Body_to_gnu (Node_Id gnat_node)
   /* The TYPE_CI_CO_LIST of its FUNCTION_TYPE node, if any.  */
   tree gnu_cico_list;
   /* The entry in the CI_CO_LIST that represents a function return, if any.  */
-  tree gnu_return_var_elmt = NULL_TREE;
-  tree gnu_result;
+  tree gnu_return_var_elmt;
+  /* Its source location.  */
   location_t locus;
-  struct language_function *gnu_subprog_language;
-  vec<parm_attr, va_gc> *cache;
 
-  /* If this is a generic object or if it has been eliminated,
-     ignore it.  */
-  if (Ekind (gnat_subprog_id) == E_Generic_Procedure
-      || Ekind (gnat_subprog_id) == E_Generic_Function
-      || Is_Eliminated (gnat_subprog_id))
+  /* If this is a generic subprogram or it has been eliminated, ignore it.  */
+  if (Is_Generic_Subprogram (gnat_subprog) || Is_Eliminated (gnat_subprog))
     return;
 
   /* If this subprogram acts as its own spec, define it.  Otherwise, just get
@@ -3879,19 +3871,21 @@ Subprogram_Body_to_gnu (Node_Id gnat_node)
      treat it as not being defined in that case.  Such a subprogram cannot
      have an address clause or a freeze node, so this test is safe, though it
      does disable some otherwise-useful error checking.  */
-  gnu_subprog_decl
-    = gnat_to_gnu_entity (gnat_subprog_id, NULL_TREE,
+  gnu_subprog
+    = gnat_to_gnu_entity (gnat_subprog, NULL_TREE,
 			  Acts_As_Spec (gnat_node)
-			  && !present_gnu_tree (gnat_subprog_id));
-  DECL_FUNCTION_IS_DEF (gnu_subprog_decl) = true;
-  gnu_result_decl = DECL_RESULT (gnu_subprog_decl);
-  gnu_subprog_type = TREE_TYPE (gnu_subprog_decl);
+			  && !present_gnu_tree (gnat_subprog));
+  DECL_FUNCTION_IS_DEF (gnu_subprog) = true;
+  gnu_result_decl = DECL_RESULT (gnu_subprog);
+  gnu_subprog_type = TREE_TYPE (gnu_subprog);
   gnu_cico_list = TYPE_CI_CO_LIST (gnu_subprog_type);
   if (gnu_cico_list && TREE_VALUE (gnu_cico_list) == void_type_node)
     gnu_return_var_elmt = gnu_cico_list;
+  else
+    gnu_return_var_elmt = NULL_TREE;
 
   /* If the function returns by invisible reference, make it explicit in the
-     function body.  See gnat_to_gnu_entity, E_Subprogram_Type case.  */
+     function body.  See gnat_to_gnu_subprog_type for more details.  */
   if (TREE_ADDRESSABLE (gnu_subprog_type))
     {
       TREE_TYPE (gnu_result_decl)
@@ -3900,30 +3894,25 @@ Subprogram_Body_to_gnu (Node_Id gnat_node)
     }
 
   /* Set the line number in the decl to correspond to that of the body.  */
-  if (DECL_IGNORED_P (gnu_subprog_decl))
+  if (DECL_IGNORED_P (gnu_subprog))
     locus = UNKNOWN_LOCATION;
-  else if (!Sloc_to_locus (Sloc (gnat_node), &locus, false, gnu_subprog_decl))
+  else if (!Sloc_to_locus (Sloc (gnat_node), &locus, false, gnu_subprog))
     locus = input_location;
-  DECL_SOURCE_LOCATION (gnu_subprog_decl) = locus;
-
-  /* If the body comes from an expression function, arrange it to be inlined
-     in almost all cases.  */
-  if (Was_Expression_Function (gnat_node) && !Debug_Flag_Dot_8)
-    DECL_DISREGARD_INLINE_LIMITS (gnu_subprog_decl) = 1;
+  DECL_SOURCE_LOCATION (gnu_subprog) = locus;
 
   /* Try to create a bona-fide thunk and hand it over to the middle-end.  */
-  if (Is_Thunk (gnat_subprog_id)
-      && maybe_make_gnu_thunk (gnat_subprog_id, gnu_subprog_decl))
+  if (Is_Thunk (gnat_subprog)
+      && maybe_make_gnu_thunk (gnat_subprog, gnu_subprog))
     return;
 
   /* Initialize the information structure for the function.  */
-  allocate_struct_function (gnu_subprog_decl, false);
-  gnu_subprog_language = ggc_cleared_alloc<language_function> ();
-  DECL_STRUCT_FUNCTION (gnu_subprog_decl)->language = gnu_subprog_language;
-  DECL_STRUCT_FUNCTION (gnu_subprog_decl)->function_start_locus = locus;
+  allocate_struct_function (gnu_subprog, false);
+  language_function *gnu_subprog_lang = ggc_cleared_alloc<language_function> ();
+  DECL_STRUCT_FUNCTION (gnu_subprog)->language = gnu_subprog_lang;
+  DECL_STRUCT_FUNCTION (gnu_subprog)->function_start_locus = locus;
   set_cfun (NULL);
 
-  begin_subprog_body (gnu_subprog_decl);
+  begin_subprog_body (gnu_subprog);
 
   /* If there are copy-in/copy-out parameters, we need to ensure that they are
      properly copied out by the return statement.  We do this by making a new
@@ -3931,7 +3920,7 @@ Subprogram_Body_to_gnu (Node_Id gnat_node)
      block.  */
   if (gnu_cico_list)
     {
-      tree gnu_return_var = NULL_TREE;
+      tree gnu_return_var;
 
       vec_safe_push (gnu_return_label_stack,
 		     create_artificial_label (input_location));
@@ -3951,9 +3940,11 @@ Subprogram_Body_to_gnu (Node_Id gnat_node)
 	    = create_var_decl (get_identifier ("RETVAL"), NULL_TREE,
 			       gnu_return_type, NULL_TREE,
 			       false, false, false, false, false,
-			       true, false, NULL, gnat_subprog_id);
+			       true, false, NULL, gnat_subprog);
 	  TREE_VALUE (gnu_return_var_elmt) = gnu_return_var;
 	}
+      else
+	gnu_return_var = NULL_TREE;
 
       vec_safe_push (gnu_return_var_stack, gnu_return_var);
 
@@ -3962,7 +3953,7 @@ Subprogram_Body_to_gnu (Node_Id gnat_node)
 	 put it into TYPE_CI_CO_LIST, which must contain an empty entry too.
 	 We can match up the entries because TYPE_CI_CO_LIST is in the order
 	 of the parameters.  */
-      for (gnat_param = First_Formal_With_Extras (gnat_subprog_id);
+      for (Entity_Id gnat_param = First_Formal_With_Extras (gnat_subprog);
 	   Present (gnat_param);
 	   gnat_param = Next_Formal_With_Extras (gnat_param))
 	if (!present_gnu_tree (gnat_param))
@@ -3993,23 +3984,25 @@ Subprogram_Body_to_gnu (Node_Id gnat_node)
   start_stmt_group ();
   gnat_pushlevel ();
 
+  /* First translate the declarations of the subprogram.  */
   process_decls (Declarations (gnat_node), Empty, Empty, true, true);
 
-  /* Generate the code of the subprogram itself.  A return statement will be
-     present and any Out parameters will be handled there.  */
+  /* Then generate the code of the subprogram itself.  A return statement will
+     be present and any Out parameters will be handled there.  */
   add_stmt (gnat_to_gnu (Handled_Statement_Sequence (gnat_node)));
+
   gnat_poplevel ();
-  gnu_result = end_stmt_group ();
+  tree gnu_result = end_stmt_group ();
 
   /* Attempt setting the end_locus of our GCC body tree, typically a BIND_EXPR,
      then the end_locus of our GCC subprogram declaration tree.  */
   set_end_locus_from_node (gnu_result, gnat_node);
-  set_end_locus_from_node (gnu_subprog_decl, gnat_node);
+  set_end_locus_from_node (gnu_subprog, gnat_node);
 
   /* If we populated the parameter attributes cache, we need to make sure that
      the cached expressions are evaluated on all the possible paths leading to
      their uses.  So we force their evaluation on entry of the function.  */
-  cache = gnu_subprog_language->parm_attr_cache;
+  vec<parm_attr, va_gc> *cache = gnu_subprog_lang->parm_attr_cache;
   if (cache)
     {
       struct parm_attr_d *pa;
@@ -4030,7 +4023,7 @@ Subprogram_Body_to_gnu (Node_Id gnat_node)
       add_stmt (gnu_result);
       gnu_result = end_stmt_group ();
 
-      gnu_subprog_language->parm_attr_cache = NULL;
+      gnu_subprog_lang->parm_attr_cache = NULL;
     }
 
   /* If we are dealing with a return from an Ada procedure with parameters
@@ -4102,7 +4095,7 @@ Subprogram_Body_to_gnu (Node_Id gnat_node)
 
   /* On SEH targets, install an exception handler around the main entry
      point to catch unhandled exceptions.  */
-  if (DECL_NAME (gnu_subprog_decl) == main_identifier_node
+  if (DECL_NAME (gnu_subprog) == main_identifier_node
       && targetm_common.except_unwind_info (&global_options) == UI_SEH)
     {
       tree t;
@@ -4124,7 +4117,7 @@ Subprogram_Body_to_gnu (Node_Id gnat_node)
 
   /* Finally annotate the parameters and disconnect the trees for parameters
      that we have turned into variables since they are now unusable.  */
-  for (gnat_param = First_Formal_With_Extras (gnat_subprog_id);
+  for (Entity_Id gnat_param = First_Formal_With_Extras (gnat_subprog);
        Present (gnat_param);
        gnat_param = Next_Formal_With_Extras (gnat_param))
     {
@@ -4144,22 +4137,22 @@ Subprogram_Body_to_gnu (Node_Id gnat_node)
 
   /* If the function returns an aggregate type and we have candidates for
      a Named Return Value, finalize the optimization.  */
-  if (optimize && !optimize_debug && gnu_subprog_language->named_ret_val)
+  if (optimize && !optimize_debug && gnu_subprog_lang->named_ret_val)
     {
-      finalize_nrv (gnu_subprog_decl,
-		    gnu_subprog_language->named_ret_val,
-		    gnu_subprog_language->other_ret_val,
-		    gnu_subprog_language->gnat_ret);
-      gnu_subprog_language->named_ret_val = NULL;
-      gnu_subprog_language->other_ret_val = NULL;
+      finalize_nrv (gnu_subprog,
+		    gnu_subprog_lang->named_ret_val,
+		    gnu_subprog_lang->other_ret_val,
+		    gnu_subprog_lang->gnat_ret);
+      gnu_subprog_lang->named_ret_val = NULL;
+      gnu_subprog_lang->other_ret_val = NULL;
     }
 
   /* If this is an inlined external function that has been marked uninlinable,
      drop the body and stop there.  Otherwise compile the body.  */
-  if (DECL_EXTERNAL (gnu_subprog_decl) && DECL_UNINLINABLE (gnu_subprog_decl))
-    DECL_SAVED_TREE (gnu_subprog_decl) = NULL_TREE;
+  if (DECL_EXTERNAL (gnu_subprog) && DECL_UNINLINABLE (gnu_subprog))
+    DECL_SAVED_TREE (gnu_subprog) = NULL_TREE;
   else
-    rest_of_subprog_body_compilation (gnu_subprog_decl);
+    rest_of_subprog_body_compilation (gnu_subprog);
 }
 
 /* The type of an atomic access.  */
@@ -4471,7 +4464,7 @@ elaborate_profile (Entity_Id first_formal, Entity_Id result_type)
     (void) gnat_to_gnu_type (result_type);
 }
 
-/* Subroutine of gnat_to_gnu to translate gnat_node, either an N_Function_Call
+/* Subroutine of gnat_to_gnu to translate GNAT_NODE, an N_Function_Call
    or an N_Procedure_Call_Statement, to a GCC tree, which is returned.
    GNU_RESULT_TYPE_P is a pointer to where we should place the result type.
    If GNU_TARGET is non-null, this must be a function call on the RHS of a
@@ -5288,6 +5281,15 @@ Call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target,
 		   && return_slot_opt_for_pure_call_p (gnu_target, gnu_call))
 	    op_code = INIT_EXPR;
 
+	  /* If this is the initialization of a return object in a function
+	     returning by invisible reference, we can always use the return
+	     slot optimization.  */
+	  else if (TREE_CODE (gnu_target) == INDIRECT_REF
+		   && TREE_CODE (TREE_OPERAND (gnu_target, 0)) == RESULT_DECL
+		   && current_function_decl
+		   && TREE_ADDRESSABLE (TREE_TYPE (current_function_decl)))
+	    op_code = INIT_EXPR;
+
 	  else
 	    op_code = MODIFY_EXPR;
 
@@ -5351,7 +5353,7 @@ Call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target,
   return gnu_result;
 }
 
-/* Subroutine of gnat_to_gnu to translate gnat_node, an
+/* Subroutine of gnat_to_gnu to translate GNAT_NODE, an
    N_Handled_Sequence_Of_Statements, to a GCC tree, which is returned.  */
 
 static tree
@@ -5495,12 +5497,11 @@ stmt_list_cannot_alter_control_flow_p (List_Id gnat_list)
   return true;
 }
 
-/* Subroutine of gnat_to_gnu to translate gnat_node, an N_Exception_Handler,
-   to a GCC tree, which is returned.  This is the variant for GCC exception
-   schemes.  */
+/* Subroutine of gnat_to_gnu to translate GNAT_NODE, an N_Exception_Handler,
+   to a GCC tree, which is returned.  */
 
 static tree
-Exception_Handler_to_gnu_gcc (Node_Id gnat_node)
+Exception_Handler_to_gnu (Node_Id gnat_node)
 {
   tree gnu_etypes_list = NULL_TREE;
 
@@ -5672,7 +5673,7 @@ Exception_Handler_to_gnu_gcc (Node_Id gnat_node)
     build2 (CATCH_EXPR, void_type_node, gnu_etypes_list, end_stmt_group ());
 }
 
-/* Subroutine of gnat_to_gnu to generate code for an N_Compilation unit.  */
+/* Subroutine of gnat_to_gnu to translate GNAT_NODE, an N_Compilation_Unit.  */
 
 static void
 Compilation_Unit_to_gnu (Node_Id gnat_node)
@@ -5853,8 +5854,8 @@ Range_to_gnu (Node_Id gnat_range, tree *gnu_low, tree *gnu_high)
 }
 
 /* Subroutine of gnat_to_gnu to translate GNAT_NODE, an N_Raise_xxx_Error,
-   to a GCC tree and return it.  GNU_RESULT_TYPE_P is a pointer to where
-   we should place the result type.  */
+   to a GCC tree,  which is returned.  GNU_RESULT_TYPE_P is a pointer to
+   where we should place the result type.  */
 
 static tree
 Raise_Error_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p)
@@ -6147,7 +6148,8 @@ gnat_to_gnu (Node_Id gnat_node)
   bool aa_sync;
 
   /* Save node number for error message and set location information.  */
-  Current_Error_Node = gnat_node;
+  if (Sloc (gnat_node) > No_Location)
+    Current_Error_Node = gnat_node;
   Sloc_to_locus (Sloc (gnat_node), &input_location);
 
   /* If we are only annotating types and this node is a statement, return
@@ -6386,6 +6388,39 @@ gnat_to_gnu (Node_Id gnat_node)
 	       && !Is_Constrained (Etype (gnat_temp)))
 	      || Is_Concurrent_Type (Etype (gnat_temp))))
 	break;
+
+      /* If this is a constant related to a return initialized by a reference
+	 to a function call in a function returning by invisible reference:
+
+	   type Ann is access all Result_Type;
+	   Rnn : constant Ann := Func'reference;
+	   [...]
+	   return Rnn.all;
+
+	 then elide the temporary by forwarding the return object to Func:
+
+	   *<retval> = Func (); [return slot optimization]
+	   [...]
+	   return <retval>;
+
+	 That's necessary if the result type needs finalization because the
+	 temporary would never be adjusted as Expand_Simple_Function_Return
+	 also elides the temporary in this case.  */
+      if (Ekind (gnat_temp) == E_Constant
+	  && Is_Related_To_Func_Return (gnat_temp)
+	  && Nkind (Expression (gnat_node)) == N_Reference
+	  && Nkind (Prefix (Expression (gnat_node))) == N_Function_Call
+	  && current_function_decl
+	  && TREE_ADDRESSABLE (TREE_TYPE (current_function_decl)))
+	{
+	  gnu_result = gnat_to_gnu_entity (gnat_temp, NULL_TREE, true);
+	  gnu_result = build_unary_op (INDIRECT_REF, NULL_TREE, gnu_result);
+	  gnu_result
+	    = Call_to_gnu (Prefix (Expression (gnat_node)),
+			   &gnu_result_type, gnu_result,
+			   NOT_ATOMIC, false);
+	  break;
+	}
 
       if (Present (Expression (gnat_node))
 	  && !(kind == N_Object_Declaration && No_Initialization (gnat_node))
@@ -7464,6 +7499,14 @@ gnat_to_gnu (Node_Id gnat_node)
 				    gnu_ret_obj);
 		gnu_result = build2 (INIT_EXPR, void_type_node,
 				     gnu_ret_deref, gnu_ret_val);
+		/* Avoid a useless copy with __builtin_return_slot.  */
+		if (TREE_CODE (gnu_ret_val) == INDIRECT_REF)
+		  gnu_result
+		    = build3 (COND_EXPR, void_type_node,
+			      fold_build2 (NE_EXPR, boolean_type_node,
+					   TREE_OPERAND (gnu_ret_val, 0),
+					   gnu_ret_obj),
+			      gnu_result, NULL_TREE);
 		add_stmt_with_node (gnu_result, gnat_node);
 		gnu_ret_val = NULL_TREE;
 	      }
@@ -7679,7 +7722,7 @@ gnat_to_gnu (Node_Id gnat_node)
       break;
 
     case N_Exception_Handler:
-      gnu_result = Exception_Handler_to_gnu_gcc (gnat_node);
+      gnu_result = Exception_Handler_to_gnu (gnat_node);
       break;
 
     case N_Raise_Statement:
@@ -8637,30 +8680,6 @@ gnat_gimplify_expr (tree *expr_p, gimple_seq *pre_p,
 
   switch (TREE_CODE (expr))
     {
-    case NULL_EXPR:
-      /* If this is an aggregate type, build a null pointer of the appropriate
-	 type and dereference it.  */
-      if (AGGREGATE_TYPE_P (type)
-	  || TREE_CODE (type) == UNCONSTRAINED_ARRAY_TYPE)
-	*expr_p = build_unary_op (INDIRECT_REF, NULL_TREE,
-				  convert (build_pointer_type (type),
-					   integer_zero_node));
-      /* Otherwise, just make a VAR_DECL.  */
-      else
-	{
-	  *expr_p = create_tmp_var (type, NULL);
-	  suppress_warning (*expr_p);
-	}
-
-      gimplify_and_add (TREE_OPERAND (expr, 0), pre_p);
-      return GS_OK;
-
-    case UNCONSTRAINED_ARRAY_REF:
-      /* We should only do this if we are just elaborating for side-effects,
-	 but we can't know that yet.  */
-      *expr_p = TREE_OPERAND (*expr_p, 0);
-      return GS_OK;
-
     case ADDR_EXPR:
       op = TREE_OPERAND (expr, 0);
 
@@ -8694,8 +8713,7 @@ gnat_gimplify_expr (tree *expr_p, gimple_seq *pre_p,
 	    else
 	      op = inner;
 	  }
-
-      return GS_UNHANDLED;
+      break;
 
     case CALL_EXPR:
       /* If we are passing a constant fat pointer CONSTRUCTOR, make sure it is
@@ -8719,8 +8737,62 @@ gnat_gimplify_expr (tree *expr_p, gimple_seq *pre_p,
 		*(CALL_EXPR_ARGP (expr) + i) = tree_output_constant_def (arg);
 	    }
 	}
+      break;
 
-      return GS_UNHANDLED;
+    case DECL_EXPR:
+      op = DECL_EXPR_DECL (expr);
+
+      /* The expressions for the RM bounds must be gimplified to ensure that
+	 they are properly elaborated.  See gimplify_decl_expr.  */
+      if ((TREE_CODE (op) == TYPE_DECL || TREE_CODE (op) == VAR_DECL)
+	  && !TYPE_SIZES_GIMPLIFIED (TREE_TYPE (op))
+	  && (INTEGRAL_TYPE_P (TREE_TYPE (op))
+	      || SCALAR_FLOAT_TYPE_P (TREE_TYPE (op))))
+	{
+	  tree type = TYPE_MAIN_VARIANT (TREE_TYPE (op)), t, val;
+
+	  val = TYPE_RM_MIN_VALUE (type);
+	  if (val)
+	    {
+	      gimplify_one_sizepos (&val, pre_p);
+	      for (t = type; t; t = TYPE_NEXT_VARIANT (t))
+		SET_TYPE_RM_MIN_VALUE (t, val);
+	    }
+
+	  val = TYPE_RM_MAX_VALUE (type);
+	  if (val)
+	    {
+	      gimplify_one_sizepos (&val, pre_p);
+	      for (t = type; t; t = TYPE_NEXT_VARIANT (t))
+		SET_TYPE_RM_MAX_VALUE (t, val);
+	    }
+	}
+      break;
+
+    case NULL_EXPR:
+      /* If this is an aggregate type, build a null pointer of the appropriate
+	 type and dereference it.  */
+      if (AGGREGATE_TYPE_P (type)
+	  || TREE_CODE (type) == UNCONSTRAINED_ARRAY_TYPE)
+	*expr_p = build_unary_op (INDIRECT_REF, NULL_TREE,
+				  convert (build_pointer_type (type),
+					   integer_zero_node));
+
+      /* Otherwise, just make a VAR_DECL.  */
+      else
+	{
+	  *expr_p = create_tmp_var (type, NULL);
+	   suppress_warning (*expr_p);
+	}
+
+      gimplify_and_add (TREE_OPERAND (expr, 0), pre_p);
+      return GS_OK;
+
+    case UNCONSTRAINED_ARRAY_REF:
+      /* We should only do this if we are just elaborating for side effects,
+	 but we can't know that yet.  */
+      *expr_p = TREE_OPERAND (*expr_p, 0);
+      return GS_OK;
 
     case VIEW_CONVERT_EXPR:
       op = TREE_OPERAND (expr, 0);
@@ -8741,53 +8813,13 @@ gnat_gimplify_expr (tree *expr_p, gimple_seq *pre_p,
 	  TREE_OPERAND (expr, 0) = new_var;
 	  return GS_OK;
 	}
-
-      return GS_UNHANDLED;
-
-    case DECL_EXPR:
-      op = DECL_EXPR_DECL (expr);
-
-      /* The expressions for the RM bounds must be gimplified to ensure that
-	 they are properly elaborated.  See gimplify_decl_expr.  */
-      if ((TREE_CODE (op) == TYPE_DECL || TREE_CODE (op) == VAR_DECL)
-	  && !TYPE_SIZES_GIMPLIFIED (TREE_TYPE (op)))
-	switch (TREE_CODE (TREE_TYPE (op)))
-	  {
-	  case INTEGER_TYPE:
-	  case ENUMERAL_TYPE:
-	  case BOOLEAN_TYPE:
-	  case REAL_TYPE:
-	    {
-	      tree type = TYPE_MAIN_VARIANT (TREE_TYPE (op)), t, val;
-
-	      val = TYPE_RM_MIN_VALUE (type);
-	      if (val)
-		{
-		  gimplify_one_sizepos (&val, pre_p);
-		  for (t = type; t; t = TYPE_NEXT_VARIANT (t))
-		    SET_TYPE_RM_MIN_VALUE (t, val);
-		}
-
-	      val = TYPE_RM_MAX_VALUE (type);
-	      if (val)
-		{
-		  gimplify_one_sizepos (&val, pre_p);
-		  for (t = type; t; t = TYPE_NEXT_VARIANT (t))
-		    SET_TYPE_RM_MAX_VALUE (t, val);
-		}
-
-	    }
-	    break;
-
-	  default:
-	    break;
-	  }
-
-      /* ... fall through ... */
+      break;
 
     default:
-      return GS_UNHANDLED;
+      break;
     }
+
+  return GS_UNHANDLED;
 }
 
 /* Generate GIMPLE in place for the statement at *STMT_P.  */
@@ -9045,6 +9077,11 @@ process_freeze_entity (Node_Id gnat_node)
   if (kind == E_Class_Wide_Type)
     return;
 
+  /* Likewise for the entities internally used by the front-end to register
+     primitives covering abstract interfaces, see Expand_N_Freeze_Entity.  */
+  if (Is_Subprogram (gnat_entity) && Present (Interface_Alias (gnat_entity)))
+    return;
+
   /* Check for an old definition if this isn't an object with address clause,
      since the saved GCC tree is the address expression in that case.  */
   gnu_old
@@ -9224,31 +9261,29 @@ process_decls (List_Id gnat_decls, List_Id gnat_decls2,
 	      record_code_position
 		(Proper_Body (Unit (Library_Unit (gnat_decl))));
 
-	    /* We defer most subprogram bodies to the second pass.  */
+	    /* We defer most subprogram bodies to the second pass.  For bodies
+	       that act as their own specs and stubs, the entity itself must be
+	       elaborated in the first pass, because it may be used in other
+	       declarations.  */
 	    else if (Nkind (gnat_decl) == N_Subprogram_Body)
 	      {
 		if (Acts_As_Spec (gnat_decl))
 		  {
-		    Node_Id gnat_subprog_id = Defining_Entity (gnat_decl);
+		    Entity_Id gnat_subprog = Defining_Entity (gnat_decl);
 
-		    if (Ekind (gnat_subprog_id) != E_Generic_Procedure
-			&& Ekind (gnat_subprog_id) != E_Generic_Function)
-		      gnat_to_gnu_entity (gnat_subprog_id, NULL_TREE, true);
+		    if (!Is_Generic_Subprogram (gnat_subprog))
+		      gnat_to_gnu_entity (gnat_subprog, NULL_TREE, true);
 		  }
 	      }
 
-	    /* For bodies and stubs that act as their own specs, the entity
-	       itself must be elaborated in the first pass, because it may
-	       be used in other declarations.  */
 	    else if (Nkind (gnat_decl) == N_Subprogram_Body_Stub)
 	      {
-		Node_Id gnat_subprog_id
+		Entity_Id gnat_subprog
 		  = Defining_Entity (Specification (gnat_decl));
 
-		    if (Ekind (gnat_subprog_id) != E_Subprogram_Body
-			&& Ekind (gnat_subprog_id) != E_Generic_Procedure
-			&& Ekind (gnat_subprog_id) != E_Generic_Function)
-		      gnat_to_gnu_entity (gnat_subprog_id, NULL_TREE, true);
+		if (!Is_Generic_Subprogram (gnat_subprog)
+		    && Ekind (gnat_subprog) != E_Subprogram_Body)
+		  gnat_to_gnu_entity (gnat_subprog, NULL_TREE, true);
 	      }
 
 	    /* Concurrent stubs stand for the corresponding subprogram bodies,

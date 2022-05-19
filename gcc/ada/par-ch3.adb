@@ -2788,7 +2788,7 @@ package body Ch3 is
             else
                P_Index_Subtype_Def_With_Fixed_Lower_Bound (Subtype_Mark_Node);
 
-               Error_Msg_GNAT_Extension ("fixed-lower-bound array");
+               Error_Msg_GNAT_Extension ("fixed-lower-bound array", Token_Ptr);
             end if;
 
             exit when Token = Tok_Right_Paren or else Token = Tok_Of;
@@ -2857,7 +2857,8 @@ package body Ch3 is
                      P_Index_Subtype_Def_With_Fixed_Lower_Bound
                        (Subtype_Mark_Node);
 
-                     Error_Msg_GNAT_Extension ("fixed-lower-bound array");
+                     Error_Msg_GNAT_Extension
+                       ("fixed-lower-bound array", Token_Ptr);
                   end if;
 
                   exit when Token = Tok_Right_Paren or else Token = Tok_Of;
@@ -3359,7 +3360,7 @@ package body Ch3 is
             --  later during analysis), and scan to the next token.
 
             if Token = Tok_Box then
-               Error_Msg_GNAT_Extension ("fixed-lower-bound array");
+               Error_Msg_GNAT_Extension ("fixed-lower-bound array", Token_Ptr);
 
                Expr_Node := Empty;
                Scan;
@@ -4205,7 +4206,15 @@ package body Ch3 is
          --  second null exclusion is present in the access type definition.
 
          Not_Null_Present := P_Null_Exclusion; --  Ada 2005 (AI-231)
+
+         if Token /= Tok_Access then
+            Error_Msg
+              ("ACCESS expected",
+               Token_Ptr);
+         end if;
+
          Scan; -- past ACCESS
+
          Not_Null_Subtype_Loc := Token_Ptr;
          Not_Null_Subtype := P_Null_Exclusion; --  Might also appear
       end if;

@@ -20634,7 +20634,17 @@ ix86_rtx_costs (rtx x, machine_mode mode, int outer_code_i, int opno,
 	        op0 = XEXP (op0, 0), mode = GET_MODE (op0);
 	    }
 
-  	  *total = (cost->mult_init[MODE_INDEX (mode)]
+	  int mult_init;
+	  // Double word multiplication requires 3 mults and 2 adds.
+	  if (GET_MODE_SIZE (mode) > UNITS_PER_WORD)
+	    {
+	      mult_init = 3 * cost->mult_init[MODE_INDEX (word_mode)]
+			  + 2 * cost->add;
+	      nbits *= 3;
+	    }
+	  else mult_init = cost->mult_init[MODE_INDEX (mode)];
+
+  	  *total = (mult_init
 		    + nbits * cost->mult_bit
 	            + rtx_cost (op0, mode, outer_code, opno, speed)
 		    + rtx_cost (op1, mode, outer_code, opno, speed));

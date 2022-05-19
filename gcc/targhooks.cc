@@ -2009,8 +2009,12 @@ default_print_patchable_function_entry_1 (FILE *file,
       patch_area_number++;
       ASM_GENERATE_INTERNAL_LABEL (buf, "LPFE", patch_area_number);
 
-      switch_to_section (get_section ("__patchable_function_entries",
-				      flags, current_function_decl));
+      section *sect = get_section ("__patchable_function_entries",
+				  flags, current_function_decl);
+      if (HAVE_COMDAT_GROUP && DECL_COMDAT_GROUP (current_function_decl))
+	switch_to_comdat_section (sect, current_function_decl);
+      else
+	switch_to_section (sect);
       assemble_align (POINTER_SIZE);
       fputs (asm_op, file);
       assemble_name_raw (file, buf);

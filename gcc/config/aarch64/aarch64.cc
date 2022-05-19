@@ -20755,7 +20755,7 @@ is_madd_op (enum attr_type t1)
     TYPE_SMMLA, TYPE_UMLAL, TYPE_UMLALS,TYPE_SMLSD, TYPE_SMLSDX, TYPE_SMLSLD
   };
 
-  for (i = 0; i < sizeof (mlatypes) / sizeof (enum attr_type); i++)
+  for (i = 0; i < ARRAY_SIZE (mlatypes); i++)
     {
       if (t1 == mlatypes[i])
 	return true;

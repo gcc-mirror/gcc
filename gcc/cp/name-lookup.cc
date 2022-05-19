@@ -6918,7 +6918,7 @@ get_std_name_hint (const char *name)
     /* <vector>.  */
     {"vector", "<vector>", cxx98},
   };
-  const size_t num_hints = sizeof (hints) / sizeof (hints[0]);
+  const size_t num_hints = ARRAY_SIZE (hints);
   for (size_t i = 0; i < num_hints; i++)
     {
       if (strcmp (name, hints[i].name) == 0)

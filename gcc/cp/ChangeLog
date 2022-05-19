@@ -1,3 +1,52 @@
+2022-05-18  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/105634
+	* call.cc (maybe_warn_class_memaccess): Avoid % by zero.
+
+2022-05-17  Jason Merrill  <jason@redhat.com>
+
+	PR c++/102307
+	* decl.cc (check_initializer): Use build_cplus_new in case of
+	constexpr failure.
+
+2022-05-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* parser.cc (cp_parser_omp_clause_depend): Parse
+	inoutset depend-kind.
+	(cp_parser_omp_depobj): Likewise.
+	* cxx-pretty-print.cc (cxx_pretty_printer::statement): Handle
+	OMP_CLAUSE_DEPEND_INOUTSET.
+
+2022-05-16  Martin Liska  <mliska@suse.cz>
+
+	* module.cc (depset::entity_kind_name): Use ARRAY_SIZE.
+	* name-lookup.cc (get_std_name_hint): Likewise.
+	* parser.cc (cp_parser_new): Likewise.
+
+2022-05-16  Marcel Vollweiler  <marcel@codesourcery.com>
+
+	* pt.cc (tsubst_omp_clauses): Added OMP_CLAUSE_HAS_DEVICE_ADDR.
+	* semantics.cc (finish_omp_clauses): Added template decl processing.
+
+2022-05-15  Jason Merrill  <jason@redhat.com>
+
+	PR c++/100502
+	PR c++/58993
+	* friend.cc (is_friend): Hidden friends count as members.
+	* search.cc (friend_accessible_p): Likewise.
+
+2022-05-15  Jason Merrill  <jason@redhat.com>
+
+	* parser.cc (cp_parser_template_name): Look through
+	injected-class-name.
+
+2022-05-15  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105589
+	PR c++/105191
+	PR c++/92385
+	* init.cc (build_value_init): Handle class in template.
+
 2022-05-13  Nathan Sidwell  <nathan@acm.org>
 
 	* mangle.cc (maybe_write_module): Check external linkage.

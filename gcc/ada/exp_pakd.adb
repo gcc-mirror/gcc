@@ -1930,9 +1930,17 @@ package body Exp_Pakd is
       --  modular case we guarantee that the unused bits are always zeroes.
       --  We do have to compare the lengths because we could be comparing
       --  two different subtypes of the same base type. We can only do this
-      --  if the PATs on both sides are the same.
+      --  if the PATs on both sides are modular (in which case they are
+      --  necessarily structurally the same -- same Modulus and so on);
+      --  otherwise, we have a case where the right operand is not of
+      --  compile time known size.
 
-      if Is_Modular_Integer_Type (PAT) and then PAT = Etype (R) then
+      if Is_Modular_Integer_Type (PAT)
+        and then Is_Modular_Integer_Type (Etype (R))
+      then
+         pragma Assert (RM_Size (Etype (R)) = RM_Size (PAT));
+         pragma Assert (Modulus (Etype (R)) = Modulus (PAT));
+
          Rewrite (N,
            Make_And_Then (Loc,
              Left_Opnd =>

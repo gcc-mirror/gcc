@@ -98,59 +98,166 @@ gimple_build (gimple_seq *seq, enum tree_code code, tree type, Args ...ops)
 		       UNKNOWN_LOCATION, code, type, ops...);
 }
 
-extern tree gimple_build (gimple_seq *, location_t, combined_fn, tree);
-extern tree gimple_build (gimple_seq *, location_t, combined_fn, tree, tree);
-extern tree gimple_build (gimple_seq *, location_t, combined_fn,
-			  tree, tree, tree);
-extern tree gimple_build (gimple_seq *, location_t, combined_fn,
-			  tree, tree, tree, tree);
+extern tree gimple_build (gimple_stmt_iterator *, bool,
+			  enum gsi_iterator_update,
+			  location_t, combined_fn, tree);
+extern tree gimple_build (gimple_stmt_iterator *, bool,
+			  enum gsi_iterator_update,
+			  location_t, combined_fn, tree, tree);
+extern tree gimple_build (gimple_stmt_iterator *, bool,
+			  enum gsi_iterator_update,
+			  location_t, combined_fn, tree, tree, tree);
+extern tree gimple_build (gimple_stmt_iterator *, bool,
+			  enum gsi_iterator_update,
+			  location_t, combined_fn, tree, tree, tree, tree);
+template<class ...Args>
+inline tree
+gimple_build (gimple_seq *seq, location_t loc,
+	      combined_fn fn, tree type, Args ...args)
+{
+  static_assert (sizeof...(args) < 4,
+		 "Number of arguments must be less than four");
+  gimple_stmt_iterator gsi = gsi_last (*seq);
+  return gimple_build (&gsi, false, GSI_CONTINUE_LINKING,
+		       loc, fn, type, args...);
+}
 template<class ...Args>
 inline tree
 gimple_build (gimple_seq *seq, combined_fn fn, tree type, Args ...args)
 {
   static_assert (sizeof...(args) < 4,
 		 "Number of arguments must be less than four");
-  return gimple_build (seq, UNKNOWN_LOCATION, fn, type, args...);
+  gimple_stmt_iterator gsi = gsi_last (*seq);
+  return gimple_build (&gsi, false, GSI_CONTINUE_LINKING,
+		       UNKNOWN_LOCATION, fn, type, args...);
 }
 
-extern tree gimple_convert (gimple_seq *, location_t, tree, tree);
+extern tree gimple_build (gimple_stmt_iterator *, bool,
+			  enum gsi_iterator_update,
+			  location_t, code_helper, tree, tree);
+extern tree gimple_build (gimple_stmt_iterator *, bool,
+			  enum gsi_iterator_update,
+			  location_t, code_helper, tree, tree, tree);
+extern tree gimple_build (gimple_stmt_iterator *, bool,
+			  enum gsi_iterator_update,
+			  location_t, code_helper, tree, tree, tree, tree);
+
+template<class ...Args>
+inline tree
+gimple_build (gimple_seq *seq, location_t loc,
+	      code_helper code, tree type, Args ...ops)
+{
+  static_assert (sizeof...(ops) < 4,
+		 "Number of operands must be less than four");
+  gimple_stmt_iterator gsi = gsi_last (*seq);
+  return gimple_build (&gsi, false, GSI_CONTINUE_LINKING,
+		       loc, code, type, ops...);
+}
+template<class ...Args>
+inline tree
+gimple_build (gimple_seq *seq,
+	      code_helper code, tree type, Args ...ops)
+{
+  static_assert (sizeof...(ops) < 4,
+		 "Number of operands must be less than four");
+  gimple_stmt_iterator gsi = gsi_last (*seq);
+  return gimple_build (&gsi, false, GSI_CONTINUE_LINKING,
+		       UNKNOWN_LOCATION, code, type, ops...);
+}
+
+extern tree gimple_convert (gimple_stmt_iterator *, bool,
+			    enum gsi_iterator_update,
+			    location_t, tree, tree);
+inline tree
+gimple_convert (gimple_seq *seq, location_t loc, tree type, tree op)
+{
+  gimple_stmt_iterator gsi = gsi_last (*seq);
+  return gimple_convert (&gsi, false, GSI_CONTINUE_LINKING, loc, type, op);
+}
 inline tree
 gimple_convert (gimple_seq *seq, tree type, tree op)
 {
-  return gimple_convert (seq, UNKNOWN_LOCATION, type, op);
+  gimple_stmt_iterator gsi = gsi_last (*seq);
+  return gimple_convert (&gsi, false, GSI_CONTINUE_LINKING,
+			 UNKNOWN_LOCATION, type, op);
 }
 
-extern tree gimple_convert_to_ptrofftype (gimple_seq *, location_t, tree);
+extern tree gimple_convert_to_ptrofftype (gimple_stmt_iterator *, bool,
+					  enum gsi_iterator_update,
+					  location_t, tree);
+inline tree
+gimple_convert_to_ptrofftype (gimple_seq *seq, location_t loc, tree op)
+{
+  gimple_stmt_iterator gsi = gsi_last (*seq);
+  return gimple_convert_to_ptrofftype (&gsi, false, GSI_CONTINUE_LINKING,
+				       loc, op);
+}
 inline tree
 gimple_convert_to_ptrofftype (gimple_seq *seq, tree op)
 {
-  return gimple_convert_to_ptrofftype (seq, UNKNOWN_LOCATION, op);
+  gimple_stmt_iterator gsi = gsi_last (*seq);
+  return gimple_convert_to_ptrofftype (&gsi, false, GSI_CONTINUE_LINKING,
+				       UNKNOWN_LOCATION, op);
 }
 
-extern tree gimple_build_vector_from_val (gimple_seq *, location_t, tree,
-					  tree);
+extern tree gimple_build_vector_from_val (gimple_stmt_iterator *, bool,
+					  enum gsi_iterator_update,
+					  location_t, tree, tree);
+inline tree
+gimple_build_vector_from_val (gimple_seq *seq, location_t loc,
+			      tree type, tree op)
+{
+  gimple_stmt_iterator gsi = gsi_last (*seq);
+  return gimple_build_vector_from_val (&gsi, false, GSI_CONTINUE_LINKING,
+				       loc, type, op);
+}
 inline tree
 gimple_build_vector_from_val (gimple_seq *seq, tree type, tree op)
 {
-  return gimple_build_vector_from_val (seq, UNKNOWN_LOCATION, type, op);
+  gimple_stmt_iterator gsi = gsi_last (*seq);
+  return gimple_build_vector_from_val (&gsi, false, GSI_CONTINUE_LINKING,
+				       UNKNOWN_LOCATION, type, op);
 }
 
 class tree_vector_builder;
-extern tree gimple_build_vector (gimple_seq *, location_t,
-				 tree_vector_builder *);
+extern tree gimple_build_vector (gimple_stmt_iterator *, bool,
+				 enum gsi_iterator_update,
+				 location_t, tree_vector_builder *);
+inline tree
+gimple_build_vector (gimple_seq *seq, location_t loc,
+		     tree_vector_builder *builder)
+{
+  gimple_stmt_iterator gsi = gsi_last (*seq);
+  return gimple_build_vector (&gsi, false, GSI_CONTINUE_LINKING,
+			      loc, builder);
+}
 inline tree
 gimple_build_vector (gimple_seq *seq, tree_vector_builder *builder)
 {
-  return gimple_build_vector (seq, UNKNOWN_LOCATION, builder);
+  gimple_stmt_iterator gsi = gsi_last (*seq);
+  return gimple_build_vector (&gsi, false, GSI_CONTINUE_LINKING,
+			      UNKNOWN_LOCATION, builder);
 }
 
-extern tree gimple_build_round_up (gimple_seq *, location_t, tree, tree,
+extern tree gimple_build_round_up (gimple_stmt_iterator *, bool,
+				   enum gsi_iterator_update,
+				   location_t, tree, tree,
 				   unsigned HOST_WIDE_INT);
+inline tree
+gimple_build_round_up (gimple_seq *seq, location_t loc,
+		       tree type, tree old_size, unsigned HOST_WIDE_INT align)
+{
+  gimple_stmt_iterator gsi = gsi_last (*seq);
+  return gimple_build_round_up (&gsi, false, GSI_CONTINUE_LINKING,
+				loc, type, old_size, align);
+}
 inline tree
 gimple_build_round_up (gimple_seq *seq, tree type, tree old_size,
 		       unsigned HOST_WIDE_INT align)
 {
-  return gimple_build_round_up (seq, UNKNOWN_LOCATION, type, old_size, align);
+  gimple_stmt_iterator gsi = gsi_last (*seq);
+  return gimple_build_round_up (&gsi, false, GSI_CONTINUE_LINKING,
+				UNKNOWN_LOCATION, type, old_size, align);
 }
 
 extern bool gimple_stmt_nonnegative_warnv_p (gimple *, bool *, int = 0);

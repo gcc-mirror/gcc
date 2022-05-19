@@ -555,6 +555,9 @@ is_return_from(void *symbol_addr, void *ret_addr)
 
 #if defined (__aarch64__)
 #define PC_ADJUST -4
+#elif defined (__ARMEL__)
+#define PC_ADJUST -2
+#define USING_ARM_UNWINDING 1
 #else
 #error Unhandled QNX architecture.
 #endif

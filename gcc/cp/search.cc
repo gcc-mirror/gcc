@@ -734,12 +734,9 @@ friend_accessible_p (tree scope, tree decl, tree type, tree otype)
 	  && friend_accessible_p (DECL_CONTEXT (scope), decl, type, otype))
 	return 1;
       /* Perhaps SCOPE is a friend function defined inside a class from which
-	 DECL is accessible.  Checking this is necessary only when the class
-	 is dependent, for otherwise add_friend will already have added the
-	 class to SCOPE's DECL_BEFRIENDING_CLASSES.  */
+	 DECL is accessible.  */
       if (tree fctx = DECL_FRIEND_CONTEXT (scope))
-	if (dependent_type_p (fctx)
-	    && protected_accessible_p (decl, fctx, type, otype))
+	if (friend_accessible_p (fctx, decl, type, otype))
 	  return 1;
     }
 

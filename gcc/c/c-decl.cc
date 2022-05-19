@@ -1658,7 +1658,7 @@ c_bind (location_t loc, tree decl, bool is_global)
    Used only by match_builtin_function_types.  */
 
 static const unsigned builtin_structptr_type_count
-  = sizeof builtin_structptr_types / sizeof builtin_structptr_types[0];
+  = ARRAY_SIZE (builtin_structptr_types);
 
 static GTY(()) tree last_structptr_types[builtin_structptr_type_count];
 
@@ -1705,10 +1705,8 @@ match_builtin_function_types (tree newtype, tree oldtype,
   tree newargs = TYPE_ARG_TYPES (newtype);
   tree tryargs = newargs;
 
-  const unsigned nlst
-    = sizeof last_structptr_types / sizeof last_structptr_types[0];
-  const unsigned nbst
-    = sizeof builtin_structptr_types / sizeof builtin_structptr_types[0];
+  const unsigned nlst = ARRAY_SIZE (last_structptr_types);
+  const unsigned nbst = ARRAY_SIZE (builtin_structptr_types);
 
   gcc_checking_assert (nlst == nbst);
 
@@ -1995,9 +1993,12 @@ diagnose_mismatched_decls (tree newdecl, tree olddecl,
 
   bool pedwarned = false;
   bool warned = false;
+  bool enum_and_int_p = false;
   auto_diagnostic_group d;
 
-  if (!comptypes (oldtype, newtype))
+  int comptypes_result = comptypes_check_enum_int (oldtype, newtype,
+						   &enum_and_int_p);
+  if (!comptypes_result)
     {
       if (TREE_CODE (olddecl) == FUNCTION_DECL
 	  && fndecl_built_in_p (olddecl, BUILT_IN_NORMAL)
@@ -2139,6 +2140,13 @@ diagnose_mismatched_decls (tree newdecl, tree olddecl,
 	  return false;
 	}
     }
+  /* Warn about enum/integer type mismatches.  They are compatible types
+     (C2X 6.7.2.2/5), but may pose portability problems.  */
+  else if (enum_and_int_p && TREE_CODE (newdecl) != TYPE_DECL)
+    warned = warning_at (DECL_SOURCE_LOCATION (newdecl),
+			 OPT_Wenum_int_mismatch,
+			 "conflicting types for %q+D due to enum/integer "
+			 "mismatch; have %qT", newdecl, newtype);
 
   /* Redeclaration of a type is a constraint violation (6.7.2.3p1),
      but silently ignore the redeclaration if either is in a system
@@ -2148,7 +2156,6 @@ diagnose_mismatched_decls (tree newdecl, tree olddecl,
   if (TREE_CODE (newdecl) == TYPE_DECL)
     {
       bool types_different = false;
-      int comptypes_result;
 
       comptypes_result
 	= comptypes_check_different_types (oldtype, newtype, &types_different);
@@ -9255,7 +9262,9 @@ finish_enum (tree enumtype, tree values, tree attributes)
 
 	  DECL_INITIAL (enu) = ini;
 	  TREE_PURPOSE (pair) = DECL_NAME (enu);
-	  TREE_VALUE (pair) = ini;
+	  /* To match the C++ FE, store the CONST_DECL rather than just its
+	     value.  */
+	  TREE_VALUE (pair) = enu;
 	}
 
       TYPE_VALUES (enumtype) = values;

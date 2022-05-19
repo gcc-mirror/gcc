@@ -6,7 +6,7 @@
  *                                                                          *
  *                              C Header File                               *
  *                                                                          *
- *          Copyright (C) 1992-2021, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2022, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -577,5 +577,6 @@ do {						   \
 
 /* Small kludge to be able to define Ada built-in functions locally.
    We overload them on top of the C++ coroutines builtin functions.  */
-#define BUILT_IN_LIKELY   BUILT_IN_CORO_PROMISE
-#define BUILT_IN_UNLIKELY BUILT_IN_CORO_RESUME
+#define BUILT_IN_LIKELY      BUILT_IN_CORO_PROMISE
+#define BUILT_IN_UNLIKELY    BUILT_IN_CORO_RESUME
+#define BUILT_IN_RETURN_SLOT BUILT_IN_CORO_DESTROY

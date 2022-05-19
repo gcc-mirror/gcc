@@ -19,25 +19,23 @@ module __builtins;
  * into the D compiler.
  */
 
-import core.stdc.stdarg;
-
-alias va_list = core.stdc.stdarg.va_list;
+alias va_list = imported!"core.stdc.stdarg".va_list;
 
 version (Posix)
 {
     version (X86_64)
-        alias __va_list_tag = core.stdc.stdarg.__va_list_tag;
+        alias __va_list_tag = imported!"core.stdc.stdarg".__va_list_tag;
 }
 
-alias __builtin_va_start = core.stdc.stdarg.va_start;
+alias __builtin_va_start = imported!"core.stdc.stdarg".va_start;
 
-alias __builtin_va_end = core.stdc.stdarg.va_end;
+alias __builtin_va_end = imported!"core.stdc.stdarg".va_end;
 
-alias __builtin_va_copy = core.stdc.stdarg.va_copy;
+alias __builtin_va_copy = imported!"core.stdc.stdarg".va_copy;
 
 /* dmd's ImportC rewrites __builtin_va_arg into an instantiation of va_arg
  */
-alias va_arg = core.stdc.stdarg.va_arg;
+alias va_arg = imported!"core.stdc.stdarg".va_arg;
 
 version (CRuntime_Microsoft)
 {
@@ -63,11 +61,9 @@ version (DigitalMars)
     alias __builtin_huge_valf = __builtin_inff;
     alias __builtin_huge_vall = __builtin_infl;
 
-    import core.stdc.math;
-
-    alias __builtin_fabs  = core.stdc.math.fabs;
-    alias __builtin_fabsf = core.stdc.math.fabsf;
-    alias __builtin_fabsl = core.stdc.math.fabsl;
+    alias __builtin_fabs  = imported!"core.stdc.math".fabs;
+    alias __builtin_fabsf = imported!"core.stdc.math".fabsf;
+    alias __builtin_fabsl = imported!"core.stdc.math".fabsl;
 
     ushort __builtin_bswap16()(ushort value)
     {
@@ -87,10 +83,13 @@ version (DigitalMars)
         return core.bitop.bswap(value);
     }
 
+    // Lazily imported on first use
+    private alias c_long = imported!"core.stdc.config".c_long;
+
     // Stub these out to no-ops
-    int   __builtin_constant_p(T)(T exp) { return 0; } // should be something like __traits(compiles, enum X = expr)
-    long  __builtin_expect()(long exp, long c) { return exp; }
-    void* __builtin_assume_aligned()(const void* p, size_t align_, ...) { return cast(void*)p; }
+    int    __builtin_constant_p(T)(T exp) { return 0; } // should be something like __traits(compiles, enum X = expr)
+    c_long __builtin_expect()(c_long exp, c_long c) { return exp; }
+    void*  __builtin_assume_aligned()(const void* p, size_t align_, ...) { return cast(void*)p; }
 
     // https://releases.llvm.org/13.0.0/tools/clang/docs/LanguageExtensions.html#builtin-assume
     void __builtin_assume(T)(lazy T arg) { }

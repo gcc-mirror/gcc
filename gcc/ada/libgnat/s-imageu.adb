@@ -390,16 +390,9 @@ package body System.Image_U is
                Acc  => Value)
               = Wrap_Option (V));
       end loop;
+      pragma Assert (Value = 0);
 
       Prove_Unchanged;
-      pragma Assert
-        (Scan_Based_Number_Ghost
-           (Str  => S,
-            From => P + 1,
-            To   => P + Nb_Digits,
-            Base => 10,
-            Acc  => Value)
-         = Wrap_Option (V));
 
       P := P + Nb_Digits;
    end Set_Image_Unsigned;

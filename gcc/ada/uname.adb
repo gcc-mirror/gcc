@@ -715,7 +715,7 @@ package body Uname is
       Buf : Bounded_String;
    begin
       Get_Unit_Name_String (Buf, N);
-      Write_Str (Buf.chars (1 .. Buf.Length));
+      Write_Str (Buf.Chars (1 .. Buf.Length));
    end Write_Unit_Name;
 
    -------------------------------

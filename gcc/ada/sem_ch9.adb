@@ -2293,6 +2293,64 @@ package body Sem_Ch9 is
    ---------------------
 
    procedure Analyze_Requeue (N : Node_Id) is
+
+      procedure Check_Wrong_Attribute_In_Postconditions
+        (Entry_Id   : Entity_Id;
+         Error_Node : Node_Id);
+      --  Check that the requeue target Entry_Id does not have an specific or
+      --  class-wide postcondition that references an Old or Index attribute.
+
+      ---------------------------------------------
+      -- Check_Wrong_Attribute_In_Postconditions --
+      ---------------------------------------------
+
+      procedure Check_Wrong_Attribute_In_Postconditions
+        (Entry_Id   : Entity_Id;
+         Error_Node : Node_Id)
+      is
+         function Check_Node (N : Node_Id) return Traverse_Result;
+         --  Check that N is not a reference to attribute Index or Old; report
+         --  an error otherwise.
+
+         ----------------
+         -- Check_Node --
+         ----------------
+
+         function Check_Node (N : Node_Id) return Traverse_Result is
+         begin
+            if Nkind (N) = N_Attribute_Reference
+              and then Attribute_Name (N) in Name_Index
+                                           | Name_Old
+            then
+               Error_Msg_Name_1 := Attribute_Name (N);
+               Error_Msg_N
+                 ("target of requeue must not have references to attribute % "
+                  & "in postcondition",
+                  Error_Node);
+            end if;
+
+            return OK;
+         end Check_Node;
+
+         procedure Check_Attr_Refs is new Traverse_Proc (Check_Node);
+
+         --  Local variables
+
+         Prag : Node_Id;
+      begin
+         Prag := Pre_Post_Conditions (Contract (Entry_Id));
+
+         while Present (Prag) loop
+            if Pragma_Name (Prag) = Name_Postcondition then
+               Check_Attr_Refs (First (Pragma_Argument_Associations (Prag)));
+            end if;
+
+            Prag := Next_Pragma (Prag);
+         end loop;
+      end Check_Wrong_Attribute_In_Postconditions;
+
+      --  Local variables
+
       Count       : Natural := 0;
       Entry_Name  : Node_Id := Name (N);
       Entry_Id    : Entity_Id;
@@ -2304,6 +2362,8 @@ package body Sem_Ch9 is
       Req_Scope   : Entity_Id;
       Outer_Ent   : Entity_Id;
       Synch_Type  : Entity_Id := Empty;
+
+   --  Start of processing for Analyze_Requeue
 
    begin
       --  Preserve relevant elaboration-related attributes of the context which
@@ -2586,6 +2646,18 @@ package body Sem_Ch9 is
       then
          Error_Msg_N
            ("target protected object of requeue must be a variable", N);
+      end if;
+
+      --  Ada 2022 (AI12-0143): The requeue target shall not have an
+      --  applicable specific or class-wide postcondition which includes
+      --  an Old or Index attribute reference.
+
+      if Ekind (Entry_Id) = E_Entry_Family
+        and then Present (Contract (Entry_Id))
+      then
+         Check_Wrong_Attribute_In_Postconditions
+           (Entry_Id   => Entry_Id,
+            Error_Node => Entry_Name);
       end if;
 
       --  A requeue statement is treated as a call for purposes of ABE checks

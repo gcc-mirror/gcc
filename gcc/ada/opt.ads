@@ -202,7 +202,7 @@ package Opt is
    --  values.
 
    Back_End_Handles_Limited_Types : Boolean;
-   --  This flag is set true if the back end can properly handle limited or
+   --  This flag is set True if the back end can properly handle limited or
    --  other by reference types, and avoid copies. If this flag is False, then
    --  the front end does special expansion for if/case expressions to make
    --  sure that no copy occurs. If the flag is True, then the expansion for
@@ -214,11 +214,19 @@ package Opt is
    Back_End_Inlining : Boolean := False;
    --  GNAT
    --  Set True to activate inlining by back-end expansion. This is the normal
-   --  default mode for gcc targets, so it is True on such targets unless the
+   --  default mode for GCC targets, so it is True on such targets unless the
    --  switches -gnatN or -gnatd.z are used. See circuitry in gnat1drv for the
    --  exact conditions for setting this switch.
 
    --  WARNING: There is a matching C declaration of this variable in fe.h
+
+   Back_End_Return_Slot : Boolean := True;
+   --  GNAT
+   --  This flag is set True if the return slot of the back end for functions
+   --  returning a by-reference type can be accessed by means of an intrinsic
+   --  function callable in the body of these functions. This is the normal
+   --  default mode for GCC targets, so it is True on such targets unless the
+   --  switch -gnatd_r is used.
 
    Bind_Alternate_Main_Name : Boolean := False;
    --  GNATBIND
@@ -585,16 +593,11 @@ package Opt is
       --  Similar to Back_End_ZCX with respect to the front-end processing
       --  of regular and AT-END handlers. A setjmp/longjmp scheme is used to
       --  propagate and setup handler contexts on regular execution paths.
-   pragma Convention (C, Exception_Mechanism_Type);
-
-   --  WARNING: There is a matching C declaration of this type in fe.h
 
    Exception_Mechanism : Exception_Mechanism_Type := Back_End_SJLJ;
    --  GNAT
    --  Set to the appropriate value depending on the flags in system.ads
-   --  (ZCX_By_Default). The C convention is there to allow access by gigi.
-
-   --  WARNING: There is a matching C declaration of this variable in fe.h
+   --  (ZCX_By_Default).
 
    function ZCX_Exceptions return Boolean;
    function SJLJ_Exceptions return Boolean;

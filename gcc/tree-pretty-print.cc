@@ -804,6 +804,9 @@ dump_omp_clause (pretty_printer *pp, tree clause, int spc, dump_flags_t flags)
 	case OMP_CLAUSE_DEPEND_MUTEXINOUTSET:
 	  name = "mutexinoutset";
 	  break;
+	case OMP_CLAUSE_DEPEND_INOUTSET:
+	  name = "inoutset";
+	  break;
 	case OMP_CLAUSE_DEPEND_SOURCE:
 	  pp_string (pp, "source)");
 	  return;

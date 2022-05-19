@@ -536,8 +536,8 @@ struct gomp_task_depend_entry
   struct gomp_task_depend_entry *prev;
   /* Task that provides the dependency in ADDR.  */
   struct gomp_task *task;
-  /* Depend entry is of type "IN".  */
-  bool is_in;
+  /* Depend entry is of type "IN" (1) or "INOUTSET" (2).  */
+  unsigned char is_in;
   bool redundant;
   bool redundant_out;
 };

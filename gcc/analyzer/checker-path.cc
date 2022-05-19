@@ -686,8 +686,8 @@ call_event::get_desc (bool can_colorize) const
 
   return make_label_text (can_colorize,
 			  "calling %qE from %qE",
-			  m_dest_snode->m_fun->decl,
-			  m_src_snode->m_fun->decl);
+			  get_callee_fndecl (),
+			  get_caller_fndecl ());
 }
 
 /* Override of checker_event::is_call_p for calls.  */
@@ -696,6 +696,18 @@ bool
 call_event::is_call_p () const
 {
   return true;
+}
+
+tree
+call_event::get_caller_fndecl () const
+{
+  return m_src_snode->m_fun->decl;
+}
+
+tree
+call_event::get_callee_fndecl () const
+{
+  return m_dest_snode->m_fun->decl;
 }
 
 /* class return_event : public superedge_event.  */

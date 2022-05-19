@@ -820,6 +820,8 @@ package Exp_Util is
    --  Determine whether object Id is related to an expanded return statement.
    --  The case concerned is "return Id.all;".
 
+   --  WARNING: There is a matching C declaration of this subprogram in fe.h
+
    function Is_Renamed_Object (N : Node_Id) return Boolean;
    --  Returns True if the node N is a renamed object. An expression is
    --  considered to be a renamed object if either it is the Name of an object
@@ -874,13 +876,19 @@ package Exp_Util is
    --  expression Expr. Expr is passed as an actual parameter in the call.
 
    function Make_Predicate_Call
-     (Typ  : Entity_Id;
-      Expr : Node_Id;
-      Mem  : Boolean := False) return Node_Id;
+     (Typ         : Entity_Id;
+      Expr        : Node_Id;
+      Static_Mem  : Boolean := False;
+      Dynamic_Mem : Node_Id := Empty) return Node_Id;
    --  Typ is a type with Predicate_Function set. This routine builds a call to
    --  this function passing Expr as the argument, and returns it unanalyzed.
-   --  If Mem is set True, this is the special call for the membership case,
-   --  and the function called is the Predicate_Function_M if present.
+   --  If the callee takes a second parameter (as determined by
+   --  Sem_Util.Predicate_Function_Needs_Membership_Parameter), then the
+   --  actual parameter is determined by the two Mem parameters.
+   --  If Dynamic_Mem is nonempty, then Dynamic_Mem is the actual parameter.
+   --  Otherwise, the value of the Static_Mem parameter is passed in as
+   --  a Boolean literal. It is an error if Dynamic_Mem is nonempty but
+   --  the callee does not take a second parameter.
 
    function Make_Predicate_Check
      (Typ  : Entity_Id;
@@ -1105,8 +1113,8 @@ package Exp_Util is
    --    1) controlled objects
    --    2) library-level tagged types
    --
-   --  These cases require special actions on scope exit. The flag Lib_Level
-   --  is set True if the construct is at library level, and False otherwise.
+   --  These cases require special actions on scope exit. Lib_Level is True if
+   --  the construct is at library level, and False otherwise.
 
    function Safe_Unchecked_Type_Conversion (Exp : Node_Id) return Boolean;
    --  Given the node for an N_Unchecked_Type_Conversion, return True if this

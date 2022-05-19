@@ -1,3 +1,369 @@
+2022-05-18  Marek Polacek  <polacek@redhat.com>
+
+	PR c/105131
+	* doc/invoke.texi: Document -Wenum-int-mismatch.
+
+2022-05-18  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/gnu-user-common.h (defined): Only define
+	TARGET_CAN_SPLIT_STACK for glibc targets.
+	* config/i386/gnu.h (defined): Ditto.
+
+2022-05-18  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* config/i386/i386.cc (ix86_rtx_costs) [MULT]: When mode size
+	is wider than word_mode, a multiplication costs three word_mode
+	multiplications and two word_mode additions.
+
+2022-05-18  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* config/i386/i386.md (define_split):  Split *andsi_1
+	and *andn_si_ccno after reload with -Oz.
+
+2022-05-18  Frederik Harwath  <frederik@codesourcery.com>
+
+	* graphite-scop-detection.cc (scop_detection::can_represent_loop):
+	Output reason for failure to dump file.
+	(scop_detection::harmful_loop_in_region): Likewise.
+	(scop_detection::graphite_can_represent_expr): Likewise.
+	(scop_detection::stmt_has_simple_data_refs_p): Likewise.
+	(scop_detection::stmt_simple_for_scop_p): Likewise.
+	(print_sese_loop_numbers): New function.
+	(scop_detection::add_scop): Use from here.
+
+2022-05-18  liuhongt  <hongtao.liu@intel.com>
+
+	PR middle-end/103462
+	* match.pd (bitwise_induction_p): New match.
+	* tree-scalar-evolution.cc (gimple_bitwise_induction_p):
+	Declare.
+	(analyze_and_compute_bitwise_induction_effect): New function.
+	(enum bit_op_kind): New enum.
+	(final_value_replacement_loop): Enhanced to handle bitwise
+	induction.
+
+2022-05-18  Haochen Gui  <guihaoc@gcc.gnu.org>
+
+	PR target/95737
+	* config/rs6000/rs6000.md (*subfsi3_carry_in_xx_64): New.
+
+2022-05-18  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/104375
+	* config/i386/i386.md (*bmi2_bzhi_zero_extendsidi_4): New
+	define_insn.
+
+2022-05-18  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/104610
+	* config/i386/i386-expand.cc (ix86_expand_branch): Use ptest
+	for QImode when code is EQ or NE.
+	* config/i386/i386.md (cbranchoi4): New expander.
+
+2022-05-18  Peter Bergner  <bergner@linux.ibm.com>
+	    Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/105556
+	* config/rs6000/mma.md (mma_<vv>, mma_<avv>, mma_<pv>, mma_<apv>,
+	mma_<vvi4i4i8>, mma_<avvi4i4i8>, mma_<vvi4i4i2>, mma_<avvi4i4i2>,
+	mma_<vvi4i4>, mma_<avvi4i4>, mma_<pvi4i2>, mma_<apvi4i2>,
+	mma_<vvi4i4i4>, mma_<avvi4i4i4>): Replace "wa" constraints with "v,?wa".
+	Update other operands accordingly.
+
+2022-05-17  Marek Polacek  <polacek@redhat.com>
+
+	* godump.cc (go_output_typedef): Use the DECL_INITIAL of the TREE_VALUE.
+
+2022-05-17  Pat Haugen  <pthaugen@linux.ibm.com>
+
+	PR target/99685
+	* config/rs6000/rs6000-call.cc (rs6000_function_arg_advance_1): Bump
+	register count when not splitting IEEE 128-bit Complex.
+
+2022-05-17  Tobias Burnus  <tobias@codesourcery.com>
+
+	* omp-low.cc (check_omp_nesting_restrictions): Skip warning for
+	target inside target if inner is reverse offload.
+
+2022-05-17  Tobias Burnus  <tobias@codesourcery.com>
+
+	* config/gcn/mkoffload.cc (process_obj): Revert: Use ARRAY_SIZE.
+	* config/nvptx/mkoffload.cc (process): Likewise.
+
+2022-05-17  Andrew MacLeod  <amacleod@redhat.com>
+
+	* Makefile.in (OBJS): Add gimple-range-side-effect.o.
+	* gimple-range-cache.cc (non_null_ref::non_null_ref): Delete.
+	(non_null_ref::~non_null_ref): Delete.
+	(non_null_ref::set_nonnull): Delete.
+	(non_null_ref::non_null_deref_p): Delete.
+	(non_null_ref::process_name): Delete.
+	(ranger_cache::ranger_cache): Initialize m_exit object.
+	(ranger_cache::fill_block_cache): Use m_exit object intead of nonnull.
+	(ranger_cache::range_from_dom): Use side_effect class and m_exit object.
+	(ranger_cache::update_to_nonnull): Delete.
+	(non_null_loadstore): Delete.
+	(ranger_cache::block_apply_nonnull): Delete.
+	(ranger_cache::apply_side_effects): New.
+	* gimple-range-cache.h (class non_null_ref): Delete.
+	(non_null_ref::adjust_range): Delete.
+	(class ranger_cache): Adjust prototypes, add side effect manager.
+	* gimple-range-path.cc (path_range_query::range_defined_in_block): Use
+	side effect manager for queries.
+	(path_range_query::adjust_for_non_null_uses): Ditto.
+	* gimple-range-path.h (class path_range_query): Delete non_null_ref.
+	* gimple-range-side-effect.cc: New.
+	* gimple-range-side-effect.h: New.
+	* gimple-range.cc (gimple_ranger::gimple_ranger): Update contructor.
+	(gimple_ranger::range_of_expr): Check def block for override value.
+	(gimple_ranger::range_on_entry): Don't scan dominators for non-null.
+	(gimple_ranger::range_on_edge): Check for outgoing side-effects.
+	(gimple_ranger::register_side_effects): Call apply_side_effects.
+	(enable_ranger): Update contructor.
+	* gimple-range.h (class gimple_ranger): Update prototype.
+	(enable_ranger): Update prototype.
+	* tree-vrp.cc (execute_ranger_vrp): Invoke without immediate-use flag.
+
+2022-05-17  Giuliano Belinassi  <gbelinassi@suse.de>
+
+	PR c++/105169
+	* targhooks.cc (default_print_patchable_function_entry_1): Handle COMDAT case.
+	* varasm.cc (switch_to_comdat_section): New
+	(handle_vtv_comdat_section): Call switch_to_comdat_section.
+	* varasm.h: Declare switch_to_comdat_section.
+
+2022-05-17  Richard Biener  <rguenther@suse.de>
+
+	* cfgloopmanip.cc (duplicate_loop_body_to_header_edge): Do
+	not clear bb->aux of the copied blocks.
+
+2022-05-17  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/105458
+	* value-relation.cc (path_oracle::register_relation): Merge, then check
+	for equivalence.
+
+2022-05-17  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/105624
+	Revert:
+	* config/i386/i386.md: Remove constraints when used with
+	const_int_operand, const0_operand, const_1_operand, constm1_operand,
+	const8_operand, const128_operand, const248_operand, const123_operand,
+	const2367_operand, const1248_operand, const359_operand,
+	const_4_or_8_to_11_operand, const48_operand, const_0_to_1_operand,
+	const_0_to_3_operand, const_0_to_4_operand, const_0_to_5_operand,
+	const_0_to_7_operand, const_0_to_15_operand, const_0_to_31_operand,
+	const_0_to_63_operand, const_0_to_127_operand, const_0_to_255_operand,
+	const_0_to_255_mul_8_operand, const_1_to_31_operand,
+	const_1_to_63_operand, const_2_to_3_operand, const_4_to_5_operand,
+	const_4_to_7_operand, const_6_to_7_operand, const_8_to_9_operand,
+	const_8_to_11_operand, const_8_to_15_operand, const_10_to_11_operand,
+	const_12_to_13_operand, const_12_to_15_operand, const_14_to_15_operand,
+	const_16_to_19_operand, const_16_to_31_operand, const_20_to_23_operand,
+	const_24_to_27_operand and const_28_to_31_operand.
+	* config/i386/mmx.md: Ditto.
+	* config/i386/sse.md: Ditto.
+	* config/i386/subst.md: Ditto.
+	* config/i386/sync.md: Ditto.
+
+2022-05-17  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* diagnostic.cc: Don't advise to call 'abort' instead of
+	'internal_error'.
+	* system.h: Advise to call 'internal_error' instead of 'abort' or
+	'fancy_abort'.
+
+2022-05-17  Frederik Harwath  <frederik@codesourcery.com>
+
+	* graphite-sese-to-poly.cc (build_poly_sr_1): Fix a typo and
+	a reference to a variable which does not exist.
+	* graphite-isl-ast-to-gimple.cc (gsi_insert_earliest): Fix typo
+	in comment.
+
+2022-05-17  Frederik Harwath  <frederik@codesourcery.com>
+
+	* graphite-sese-to-poly.cc (isl_id_for_ssa_name): Rename to ...
+	(isl_id_for_parameter): ... this new function name.
+	(build_scop_context): Adjust function use.
+
+2022-05-17  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR target/105602
+	* config/gcn/t-omp-device (arch): Add 'amdgcn' besides existing 'gcn'.
+	* config/gcn/gcn.cc (gcn_omp_device_kind_arch_isa): Likewise.
+
+2022-05-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree-core.h (enum omp_clause_depend_kind): Add
+	OMP_CLAUSE_DEPEND_INOUTSET.
+	* tree-pretty-print.cc (dump_omp_clause): Handle
+	OMP_CLAUSE_DEPEND_INOUTSET.
+	* gimplify.cc (gimplify_omp_depend): Likewise.
+	* omp-low.cc (lower_depend_clauses): Likewise.
+
+2022-05-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/105613
+	* config/i386/sse.md (vec_cmpeqv2div2di, vec_cmpeqv1tiv1ti): Use
+	andv4si3 only for EQ, for NE use iorv4si3 instead.
+
+2022-05-17  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/105618
+	* tree-ssa-sink.cc (statement_sink_location): For virtual
+	PHI uses ignore those defining the used virtual operand.
+
+2022-05-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree-ssa-forwprop.cc (simplify_bitfield_ref): Spelling fix:
+	hanlde -> handle.  Fix up comment formatting.
+
+2022-05-17  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/105033
+	* config/i386/sse.md (*vec_concatv4si): Extend to ..
+	(*vec_concat<mode>): .. V16QI and V8HImode.
+	(*vec_concatv16qi_permt2): New pre_reload define_insn_and_split.
+	(*vec_concatv8hi_permt2): Ditto.
+
+2022-05-17  liuhongt  <hongtao.liu@intel.com>
+
+	PR tree-optimization/105591
+	* tree-ssa-forwprop.cc (simplify_bitfield_ref): Clamp
+	vec_perm_expr index.
+
+2022-05-16  Jason Merrill  <jason@redhat.com>
+
+	PR c/105492
+	* attribs.cc (decl_attributes): Fix broken typedefs here.
+
+2022-05-16  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/105103
+	* Makefile.in (ANALYZER_OBJS): Add analyzer/varargs.o.
+	* doc/invoke.texi: Add -Wanalyzer-va-arg-type-mismatch,
+	-Wanalyzer-va-list-exhausted, -Wanalyzer-va-list-leak, and
+	-Wanalyzer-va-list-use-after-va-end.
+
+2022-05-16  Richard Biener  <rguenther@suse.de>
+
+	* gimple-match.h (gimple_build): Move code_helper overloads ...
+	* gimple-fold.h (gimple_build): ... here.
+	(gimple_build): Transition to new worker API.  Provide
+	overloads from sequence-based API.
+	(gimple_convert): Likewise.
+	(gimple_convert_to_ptrofftype): Likewise.
+	(gimple_build_vector_from_val): Likewise.
+	(gimple_build_vector): Likewise.
+	(gimple_build_round_up): Likewise.
+	* gimple-fold.cc (gimple_build_insert_seq): New helper.
+	(gimple_build): Use it.  Transition combined_fn and code_helper
+	API parts.
+	(gimple_convert): Transition to new worker API.
+	(gimple_convert_to_ptrofftype): Likewise.
+	(gimple_build_vector_from_val): Likewise.
+	(gimple_build_vector): Likewise.
+	(gimple_build_round_up): Likewise.
+
+2022-05-16  Richard Biener  <rguenther@suse.de>
+
+	* gimple-match.h (code_helper): Move class ...
+	* tree.h (code_helper): ... here.
+
+2022-05-16  Martin Liska  <mliska@suse.cz>
+
+	* opts-global.cc (write_langs): Add comment.
+
+2022-05-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* dwarf2out.cc (loc_list_from_tree_1) <TRUTH_NOT_EXPR>: Do a logical
+	instead of a bitwise negation.
+	<COND_EXPR>: Swap the operands if the condition is TRUTH_NOT_EXPR.
+
+2022-05-16  Martin Liska  <mliska@suse.cz>
+
+	* attribs.cc (diag_attr_exclusions): Use ARRAY_SIZE.
+	(decls_mismatched_attributes): Likewise.
+	* builtins.cc (c_strlen): Likewise.
+	* cfg.cc (DEF_BASIC_BLOCK_FLAG): Likewise.
+	* common/config/aarch64/aarch64-common.cc (aarch64_option_init_struct): Likewise.
+	* config/aarch64/aarch64-builtins.cc (aarch64_lookup_simd_builtin_type): Likewise.
+	(aarch64_init_simd_builtin_types): Likewise.
+	(aarch64_init_builtin_rsqrt): Likewise.
+	* config/aarch64/aarch64.cc (is_madd_op): Likewise.
+	* config/arm/arm-builtins.cc (arm_lookup_simd_builtin_type): Likewise.
+	(arm_init_simd_builtin_types): Likewise.
+	* config/avr/gen-avr-mmcu-texi.cc (mcus[ARRAY_SIZE): Likewise.
+	(c_prefix): Likewise.
+	(main): Likewise.
+	* config/c6x/c6x.cc (N_SAVE_ORDER): Likewise.
+	* config/darwin-c.cc (darwin_register_frameworks): Likewise.
+	* config/gcn/mkoffload.cc (process_obj): Likewise.
+	* config/i386/i386-builtins.cc (get_builtin_code_for_version): Likewise.
+	(fold_builtin_cpu): Likewise.
+	* config/m32c/m32c.cc (PUSHM_N): Likewise.
+	* config/nvptx/mkoffload.cc (process): Likewise.
+	* config/rs6000/driver-rs6000.cc (host_detect_local_cpu): Likewise.
+	* config/s390/s390.cc (NR_C_MODES): Likewise.
+	* config/tilepro/gen-mul-tables.cc (find_sequences): Likewise.
+	(create_insn_code_compression_table): Likewise.
+	* config/vms/vms.cc (NBR_CRTL_NAMES): Likewise.
+	* diagnostic-format-json.cc (json_from_expanded_location): Likewise.
+	* dwarf2out.cc (ARRAY_SIZE): Likewise.
+	* genhooks.cc (emit_documentation): Likewise.
+	(emit_init_macros): Likewise.
+	* gimple-ssa-sprintf.cc (format_floating): Likewise.
+	* gimple-ssa-warn-access.cc (memmodel_name): Likewise.
+	* godump.cc (keyword_hash_init): Likewise.
+	* hash-table.cc (hash_table_higher_prime_index): Likewise.
+	* input.cc (for_each_line_table_case): Likewise.
+	* ipa-free-lang-data.cc (free_lang_data): Likewise.
+	* ipa-inline.cc (sanitize_attrs_match_for_inline_p): Likewise.
+	* optc-save-gen.awk: Likewise.
+	* spellcheck.cc (test_metric_conditions): Likewise.
+	* tree-vect-slp-patterns.cc (sizeof): Likewise.
+	(ARRAY_SIZE): Likewise.
+	* tree.cc (build_common_tree_nodes): Likewise.
+
+2022-05-16  Martin Liska  <mliska@suse.cz>
+
+	* opts-global.cc (write_langs): Allocate at least one byte.
+
+2022-05-16  Richard Biener  <rguenther@suse.de>
+
+	* match.pd (A cmp B ? A : B -> min/max): New patterns
+	carried over from fold_cond_expr_with_comparison.
+
+2022-05-16  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/105587
+	* config/i386/i386-expand.cc
+	(expand_vec_perm_pslldq_psrldq_por): Fail when (d->perm[i] ==
+	d->perm[i-1] + 1) && d->perm[i] == nelt && start != -1.
+
+2022-05-15  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md: Remove constraints when used with
+	const_int_operand, const0_operand, const_1_operand, constm1_operand,
+	const8_operand, const128_operand, const248_operand, const123_operand,
+	const2367_operand, const1248_operand, const359_operand,
+	const_4_or_8_to_11_operand, const48_operand, const_0_to_1_operand,
+	const_0_to_3_operand, const_0_to_4_operand, const_0_to_5_operand,
+	const_0_to_7_operand, const_0_to_15_operand, const_0_to_31_operand,
+	const_0_to_63_operand, const_0_to_127_operand, const_0_to_255_operand,
+	const_0_to_255_mul_8_operand, const_1_to_31_operand,
+	const_1_to_63_operand, const_2_to_3_operand, const_4_to_5_operand,
+	const_4_to_7_operand, const_6_to_7_operand, const_8_to_9_operand,
+	const_8_to_11_operand, const_8_to_15_operand, const_10_to_11_operand,
+	const_12_to_13_operand, const_12_to_15_operand, const_14_to_15_operand,
+	const_16_to_19_operand, const_16_to_31_operand, const_20_to_23_operand,
+	const_24_to_27_operand and const_28_to_31_operand.
+	* config/i386/mmx.md: Ditto.
+	* config/i386/sse.md: Ditto.
+	* config/i386/subst.md: Ditto.
+	* config/i386/sync.md: Ditto.
+
 2022-05-13  Roger Sayle  <roger@nextmovesoftware.com>
 	    Uroš Bizjak  <ubizjak@gmail.com>
 

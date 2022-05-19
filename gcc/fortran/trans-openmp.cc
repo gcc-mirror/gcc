@@ -2880,14 +2880,16 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 		  continue;
 		}
 
-	      if (!n->sym->attr.referenced)
+	      if (n->sym && !n->sym->attr.referenced)
 		continue;
 
 	      tree node = build_omp_clause (input_location,
 					    list == OMP_LIST_DEPEND
 					    ? OMP_CLAUSE_DEPEND
 					    : OMP_CLAUSE_AFFINITY);
-	      if (n->expr == NULL || n->expr->ref->u.ar.type == AR_FULL)
+	      if (n->sym == NULL)  /* omp_all_memory  */
+		OMP_CLAUSE_DECL (node) = null_pointer_node;
+	      else if (n->expr == NULL || n->expr->ref->u.ar.type == AR_FULL)
 		{
 		  tree decl = gfc_trans_omp_variable (n->sym, false);
 		  if (gfc_omp_privatize_by_reference (decl))
@@ -2934,6 +2936,9 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 		    break;
 		  case OMP_DEPEND_INOUT:
 		    OMP_CLAUSE_DEPEND_KIND (node) = OMP_CLAUSE_DEPEND_INOUT;
+		    break;
+		  case OMP_DEPEND_INOUTSET:
+		    OMP_CLAUSE_DEPEND_KIND (node) = OMP_CLAUSE_DEPEND_INOUTSET;
 		    break;
 		  case OMP_DEPEND_MUTEXINOUTSET:
 		    OMP_CLAUSE_DEPEND_KIND (node)
@@ -5531,7 +5536,9 @@ gfc_trans_omp_depobj (gfc_code *code)
   if (n)
     {
       tree var;
-      if (n->expr && n->expr->ref->u.ar.type != AR_FULL)
+      if (!n->sym)  /* omp_all_memory.  */
+	var = null_pointer_node;
+      else if (n->expr && n->expr->ref->u.ar.type != AR_FULL)
 	{
 	  gfc_init_se (&se, NULL);
 	  if (n->expr->ref->u.ar.type == AR_ELEMENT)
@@ -5589,6 +5596,7 @@ gfc_trans_omp_depobj (gfc_code *code)
       case OMP_DEPEND_IN: k = GOMP_DEPEND_IN; break;
       case OMP_DEPEND_OUT: k = GOMP_DEPEND_OUT; break;
       case OMP_DEPEND_INOUT: k = GOMP_DEPEND_INOUT; break;
+      case OMP_DEPEND_INOUTSET: k = GOMP_DEPEND_INOUTSET; break;
       case OMP_DEPEND_MUTEXINOUTSET: k = GOMP_DEPEND_MUTEXINOUTSET; break;
       default: gcc_unreachable ();
       }

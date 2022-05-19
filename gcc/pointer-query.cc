@@ -555,7 +555,7 @@ gimple_parm_array_size (tree ptr, wide_int rng[2],
      from the current function declaratation (e.g., attribute access or
      related).  */
   tree var = SSA_NAME_VAR (ptr);
-  if (TREE_CODE (var) != PARM_DECL)
+  if (TREE_CODE (var) != PARM_DECL || !POINTER_TYPE_P (TREE_TYPE (var)))
     return NULL_TREE;
 
   const unsigned prec = TYPE_PRECISION (sizetype);

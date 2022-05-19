@@ -471,7 +471,7 @@ private final class CppMangleVisitor : Visitor
             }
             else
             {
-                ti.error("Internal Compiler Error: C++ `%s` template value parameter is not supported", tv.valType.toChars());
+                ti.error("internal compiler error: C++ `%s` template value parameter is not supported", tv.valType.toChars());
                 fatal();
             }
         }
@@ -506,13 +506,13 @@ private final class CppMangleVisitor : Visitor
             }
             else
             {
-                ti.error("Internal Compiler Error: C++ `%s` template alias parameter is not supported", o.toChars());
+                ti.error("internal compiler error: C++ `%s` template alias parameter is not supported", o.toChars());
                 fatal();
             }
         }
         else if (tp.isTemplateThisParameter())
         {
-            ti.error("Internal Compiler Error: C++ `%s` template this parameter is not supported", o.toChars());
+            ti.error("internal compiler error: C++ `%s` template this parameter is not supported", o.toChars());
             fatal();
         }
         else
@@ -995,7 +995,7 @@ private final class CppMangleVisitor : Visitor
         // fake mangling for fields to fix https://issues.dlang.org/show_bug.cgi?id=16525
         if (!(d.storage_class & (STC.extern_ | STC.field | STC.gshared)))
         {
-            d.error("Internal Compiler Error: C++ static non-`__gshared` non-`extern` variables not supported");
+            d.error("internal compiler error: C++ static non-`__gshared` non-`extern` variables not supported");
             fatal();
         }
         Dsymbol p = d.toParent();
@@ -1330,7 +1330,7 @@ private final class CppMangleVisitor : Visitor
             if (t.ty == Tsarray)
             {
                 // Static arrays in D are passed by value; no counterpart in C++
-                .error(loc, "Internal Compiler Error: unable to pass static array `%s` to extern(C++) function, use pointer instead",
+                .error(loc, "internal compiler error: unable to pass static array `%s` to extern(C++) function, use pointer instead",
                     t.toChars());
                 fatal();
             }
@@ -1369,7 +1369,7 @@ private final class CppMangleVisitor : Visitor
             p = "`shared` ";
         else
             p = "";
-        .error(loc, "Internal Compiler Error: %stype `%s` cannot be mapped to C++\n", p, t.toChars());
+        .error(loc, "internal compiler error: %stype `%s` cannot be mapped to C++\n", p, t.toChars());
         fatal(); //Fatal, because this error should be handled in frontend
     }
 

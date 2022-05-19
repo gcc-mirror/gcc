@@ -2390,53 +2390,6 @@ package body Einfo.Utils is
       return Empty;
    end Predicate_Function;
 
-   --------------------------
-   -- Predicate_Function_M --
-   --------------------------
-
-   function Predicate_Function_M (Id : E) return E is
-      Subp_Elmt : Elmt_Id;
-      Subp_Id   : Entity_Id;
-      Subps     : Elist_Id;
-      Typ       : Entity_Id;
-
-   begin
-      pragma Assert (Is_Type (Id));
-
-      --  If type is private and has a completion, predicate may be defined on
-      --  the full view.
-
-      if Is_Private_Type (Id)
-         and then
-           (not Has_Predicates (Id) or else No (Subprograms_For_Type (Id)))
-         and then Present (Full_View (Id))
-      then
-         Typ := Full_View (Id);
-
-      else
-         Typ := Id;
-      end if;
-
-      Subps := Subprograms_For_Type (Typ);
-
-      if Present (Subps) then
-         Subp_Elmt := First_Elmt (Subps);
-         while Present (Subp_Elmt) loop
-            Subp_Id := Node (Subp_Elmt);
-
-            if Ekind (Subp_Id) = E_Function
-              and then Is_Predicate_Function_M (Subp_Id)
-            then
-               return Subp_Id;
-            end if;
-
-            Next_Elmt (Subp_Elmt);
-         end loop;
-      end if;
-
-      return Empty;
-   end Predicate_Function_M;
-
    -------------------------
    -- Present_In_Rep_Item --
    -------------------------
@@ -2520,11 +2473,13 @@ package body Einfo.Utils is
 
       elsif Id = First then
          Set_First_Entity (Scop, Next);
+         Set_Prev_Entity (Next, Empty);  --  Empty <-- First_Entity
 
       --  The eliminated entity was the tail of the entity chain
 
       elsif Id = Last then
          Set_Last_Entity (Scop, Prev);
+         Set_Next_Entity (Prev, Empty);  --  Last_Entity --> Empty
 
       --  Otherwise the eliminated entity comes from the middle of the entity
       --  chain.
@@ -2876,43 +2831,6 @@ package body Einfo.Utils is
          Next_Elmt (Subp_Elmt);
       end loop;
    end Set_Predicate_Function;
-
-   ------------------------------
-   -- Set_Predicate_Function_M --
-   ------------------------------
-
-   procedure Set_Predicate_Function_M (Id : E; V : E) is
-      Subp_Elmt : Elmt_Id;
-      Subp_Id   : Entity_Id;
-      Subps     : Elist_Id;
-
-   begin
-      pragma Assert (Is_Type (Id) and then Has_Predicates (Id));
-
-      Subps := Subprograms_For_Type (Id);
-
-      if No (Subps) then
-         Subps := New_Elmt_List;
-         Set_Subprograms_For_Type (Id, Subps);
-      end if;
-
-      Subp_Elmt := First_Elmt (Subps);
-      Prepend_Elmt (V, Subps);
-
-      --  Check for a duplicate predication function
-
-      while Present (Subp_Elmt) loop
-         Subp_Id := Node (Subp_Elmt);
-
-         if Ekind (Subp_Id) = E_Function
-           and then Is_Predicate_Function_M (Subp_Id)
-         then
-            raise Program_Error;
-         end if;
-
-         Next_Elmt (Subp_Elmt);
-      end loop;
-   end Set_Predicate_Function_M;
 
    -----------------
    -- Size_Clause --

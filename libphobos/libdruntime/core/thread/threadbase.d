@@ -80,9 +80,7 @@ private
 {
     // Handling unaligned mutexes are not supported on all platforms, so we must
     // ensure that the address of all shared data are appropriately aligned.
-    import core.internal.traits : classInstanceAlignment;
-
-    enum mutexAlign = classInstanceAlignment!Mutex;
+    enum mutexAlign = __traits(classInstanceAlignment, Mutex);
     enum mutexClassInstanceSize = __traits(classInstanceSize, Mutex);
 
     alias swapContext = externDFunc!("core.thread.osthread.swapContext", void* function(void*) nothrow @nogc);
@@ -820,10 +818,13 @@ package ThreadT thread_attachThis_tpl(ThreadT)()
  *
  * NOTE: This routine does not run thread-local static destructors when called.
  *       If full functionality as a D thread is desired, the following function
- *       must be called after thread_detachThis, particularly if the thread is
+ *       must be called before thread_detachThis, particularly if the thread is
  *       being detached at some indeterminate time before program termination:
  *
  *       $(D extern(C) void rt_moduleTlsDtor();)
+ *
+ * See_Also:
+ *     $(REF thread_attachThis, core,thread,osthread)
  */
 extern (C) void thread_detachThis() nothrow @nogc
 {

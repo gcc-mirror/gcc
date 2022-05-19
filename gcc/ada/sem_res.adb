@@ -559,7 +559,12 @@ package body Sem_Res is
 
          Set_Etype (Call, Etype (Callee));
 
-         if Base_Type (Etype (Call)) /= Base_Type (Typ) then
+         --  Conversion not needed if the result type of the call is class-wide
+         --  or if the result type matches the context type.
+
+         if not Is_Class_Wide_Type (Typ)
+           and then Base_Type (Etype (Call)) /= Base_Type (Typ)
+         then
             --  Conversion may be needed in case of an inherited
             --  aspect of a derived type. For a null extension, we
             --  use a null extension aggregate instead because the
@@ -3215,11 +3220,11 @@ package body Sem_Res is
          then
             Get_First_Interp (N, I, It);
             while Present (It.Typ) loop
-               if Present (It.Abstract_Op) and then
-                 Etype (It.Abstract_Op) = Typ
+               if Present (It.Abstract_Op)
+                 and then Etype (It.Abstract_Op) = Typ
                then
-                  Error_Msg_NE
-                    ("cannot call abstract subprogram &!", N, It.Abstract_Op);
+                  Nondispatching_Call_To_Abstract_Operation
+                    (N, It.Abstract_Op);
                   return;
                end if;
 
@@ -3873,7 +3878,8 @@ package body Sem_Res is
                   --  selector_name in selected_component or as a choice in
                   --  component_association.
 
-                  if Is_Object (Id)
+                  if Present (Id)
+                    and then Is_Object (Id)
                     and then Ekind (Id) not in E_Component | E_Discriminant
                     and then Is_Effectively_Volatile_For_Reading (Id)
                     and then
@@ -6949,7 +6955,8 @@ package body Sem_Res is
         and then Requires_Transient_Scope (Etype (Nam))
         and then not Is_Ignored_Ghost_Entity (Nam)
       then
-         Establish_Transient_Scope (N, Manage_Sec_Stack => True);
+         Establish_Transient_Scope
+           (N, Returns_On_Secondary_Stack (Etype (Nam)));
 
          --  If the call appears within the bounds of a loop, it will be
          --  rewritten and reanalyzed, nothing left to do here.
@@ -7063,24 +7070,19 @@ package body Sem_Res is
       --  If the subprogram is a primitive operation, check whether or not
       --  it is a correct dispatching call.
 
-      if Is_Overloadable (Nam)
-        and then Is_Dispatching_Operation (Nam)
-      then
+      if Is_Overloadable (Nam) and then Is_Dispatching_Operation (Nam) then
          Check_Dispatching_Call (N);
 
-      elsif Ekind (Nam) /= E_Subprogram_Type
-        and then Is_Abstract_Subprogram (Nam)
-        and then not In_Instance
-      then
-         Error_Msg_NE ("cannot call abstract subprogram &!", N, Nam);
+      --  If the subprogram is an abstract operation, then flag an error
+
+      elsif Is_Overloadable (Nam) and then Is_Abstract_Subprogram (Nam) then
+         Nondispatching_Call_To_Abstract_Operation (N, Nam);
       end if;
 
       --  If this is a dispatching call, generate the appropriate reference,
       --  for better source navigation in GNAT Studio.
 
-      if Is_Overloadable (Nam)
-        and then Present (Controlling_Argument (N))
-      then
+      if Is_Overloadable (Nam) and then Present (Controlling_Argument (N)) then
          Generate_Reference (Nam, Subp, 'R');
 
       --  Normal case, not a dispatching call: generate a call reference
@@ -8534,7 +8536,8 @@ package body Sem_Res is
       elsif Expander_Active
         and then Requires_Transient_Scope (Etype (Nam))
       then
-         Establish_Transient_Scope (N, Manage_Sec_Stack => True);
+         Establish_Transient_Scope
+           (N, Returns_On_Secondary_Stack (Etype (Nam)));
       end if;
 
       --  Now we know that this is not a call to a function that returns an
@@ -8918,6 +8921,41 @@ package body Sem_Res is
          Resolve (L, T);
          Resolve (R, T);
 
+         --  AI12-0413: user-defined primitive equality of an untagged record
+         --  type hides the predefined equality operator, including within a
+         --  generic, and if it is declared abstract, results in an illegal
+         --  instance if the operator is used in the spec, or in the raising
+         --  of Program_Error if used in the body of an instance.
+
+         if Nkind (N) = N_Op_Eq
+           and then In_Instance
+           and then Ada_Version >= Ada_2012
+         then
+            declare
+               U : constant Entity_Id := Underlying_Type (T);
+
+               Eq : Entity_Id;
+
+            begin
+               if Present (U)
+                 and then Is_Record_Type (U)
+                 and then not Is_Tagged_Type (U)
+               then
+                  Eq := Get_User_Defined_Equality (T);
+
+                  if Present (Eq) then
+                     if Is_Abstract_Subprogram (Eq) then
+                        Nondispatching_Call_To_Abstract_Operation (N, Eq);
+                     else
+                        Rewrite_Operator_As_Call (N, Eq);
+                     end if;
+
+                     return;
+                  end if;
+               end if;
+            end;
+         end if;
+
          --  If the unique type is a class-wide type then it will be expanded
          --  into a dispatching call to the predefined primitive. Therefore we
          --  check here for potential violation of such restriction.
@@ -8977,8 +9015,8 @@ package body Sem_Res is
          if Nkind (N) = N_Op_Eq
            or else Comes_From_Source (Entity (N))
            or else Ekind (Entity (N)) = E_Operator
-           or else Is_Intrinsic_Subprogram
-                     (Corresponding_Equality (Entity (N)))
+           or else
+             Is_Intrinsic_Subprogram (Corresponding_Equality (Entity (N)))
          then
             Analyze_Dimension (N);
             Eval_Relational_Op (N);
@@ -8986,7 +9024,7 @@ package body Sem_Res is
          elsif Nkind (N) = N_Op_Ne
            and then Is_Abstract_Subprogram (Entity (N))
          then
-            Error_Msg_NE ("cannot call abstract subprogram &!", N, Entity (N));
+            Nondispatching_Call_To_Abstract_Operation (N, Entity (N));
          end if;
       end if;
    end Resolve_Equality_Op;
@@ -9837,6 +9875,38 @@ package body Sem_Res is
       Eval_Logical_Op (N);
    end Resolve_Logical_Op;
 
+   ---------------------------------
+   -- Resolve_Membership_Equality --
+   ---------------------------------
+
+   procedure Resolve_Membership_Equality (N : Node_Id; Typ : Entity_Id) is
+      Utyp : constant Entity_Id := Underlying_Type (Typ);
+
+   begin
+      --  RM 4.5.2(4.1/3): if the type is limited, then it shall have a visible
+      --  primitive equality operator. This means that we can use the regular
+      --  visibility-based resolution and reset Entity in order to trigger it.
+
+      if Is_Limited_Type (Typ) then
+         Set_Entity (N, Empty);
+
+      --  RM 4.5.2(28.1/3): if the type is a record, then the membership test
+      --  uses the primitive equality for the type [even if it is not visible].
+      --  We only deal with the untagged case here, because the tagged case is
+      --  handled uniformly in the expander.
+
+      elsif Is_Record_Type (Utyp) and then not Is_Tagged_Type (Utyp) then
+         declare
+            Eq_Id : constant Entity_Id := Get_User_Defined_Equality (Typ);
+
+         begin
+            if Present (Eq_Id) then
+               Rewrite_Operator_As_Call (N, Eq_Id);
+            end if;
+         end;
+      end if;
+   end Resolve_Membership_Equality;
+
    ---------------------------
    -- Resolve_Membership_Op --
    ---------------------------
@@ -9953,7 +10023,7 @@ package body Sem_Res is
          --  following warning appears useful for the most common case.
 
          if Is_Scalar_Type (Etype (L))
-           and then Present (Get_User_Defined_Eq (Etype (L)))
+           and then Present (Get_User_Defined_Equality (Etype (L)))
          then
             Error_Msg_NE
               ("membership test on& uses predefined equality?", N, Etype (L));

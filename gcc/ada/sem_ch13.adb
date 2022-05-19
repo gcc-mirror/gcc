@@ -133,7 +133,7 @@ package body Sem_Ch13 is
    --  may be before the freeze point of the type. The predicate expression is
    --  preanalyzed at this point, to catch visibility errors.
 
-   procedure Build_Predicate_Functions (Typ : Entity_Id; N : Node_Id);
+   procedure Build_Predicate_Function (Typ : Entity_Id; N : Node_Id);
    --  If Typ has predicates (indicated by Has_Predicates being set for Typ),
    --  then either there are pragma Predicate entries on the rep chain for the
    --  type (note that Predicate aspects are converted to pragma Predicate), or
@@ -141,9 +141,7 @@ package body Sem_Ch13 is
    --  This procedure builds body for the Predicate function that tests these
    --  predicates. N is the freeze node for the type. The spec of the function
    --  is inserted before the freeze node, and the body of the function is
-   --  inserted after the freeze node. If the predicate expression has a least
-   --  one Raise_Expression, then this procedure also builds the M version of
-   --  the predicate function for use in membership tests.
+   --  inserted after the freeze node.
 
    procedure Check_Pool_Size_Clash (Ent : Entity_Id; SP, SS : Node_Id);
    --  Called if both Storage_Pool and Storage_Size attribute definition
@@ -2601,10 +2599,8 @@ package body Sem_Ch13 is
                         Aspect);
 
                   elsif Is_Imported_Intrinsic then
-                     Error_Msg_N
-                       ("aspect % on intrinsic function is an extension: " &
-                        "use -gnatX",
-                        Aspect);
+                     Error_Msg_GNAT_Extension
+                       ("aspect % on intrinsic function", Sloc (Aspect));
 
                   else
                      Error_Msg_N
@@ -4411,11 +4407,7 @@ package body Sem_Ch13 is
 
                when Aspect_Designated_Storage_Model =>
                   if not Extensions_Allowed then
-                     Error_Msg_N
-                       ("aspect only allowed if extensions enabled",
-                        Aspect);
-                     Error_Msg_N
-                       ("\unit must be compiled with -gnatX switch", Aspect);
+                     Error_Msg_GNAT_Extension ("aspect %", Sloc (Aspect));
 
                   elsif not Is_Type (E)
                     or else Ekind (E) /= E_Access_Type
@@ -4430,11 +4422,7 @@ package body Sem_Ch13 is
 
                when Aspect_Storage_Model_Type =>
                   if not Extensions_Allowed then
-                     Error_Msg_N
-                       ("aspect only allowed if extensions enabled",
-                        Aspect);
-                     Error_Msg_N
-                       ("\unit must be compiled with -gnatX switch", Aspect);
+                     Error_Msg_GNAT_Extension ("aspect %", Sloc (Aspect));
 
                   elsif not Is_Type (E)
                     or else not Is_Immutably_Limited_Type (E)
@@ -9472,10 +9460,7 @@ package body Sem_Ch13 is
                   declare
                      Ent : constant Entity_Id := Entity (Name (Exp));
                   begin
-                     if Is_Predicate_Function (Ent)
-                          or else
-                        Is_Predicate_Function_M (Ent)
-                     then
+                     if Is_Predicate_Function (Ent) then
                         return Stat_Pred (Etype (First_Formal (Ent)), Static);
                      end if;
                   end;
@@ -10016,11 +10001,11 @@ package body Sem_Ch13 is
       return Prag;
    end Build_Export_Import_Pragma;
 
-   -------------------------------
-   -- Build_Predicate_Functions --
-   -------------------------------
+   ------------------------------
+   -- Build_Predicate_Function --
+   ------------------------------
 
-   --  The functions that are constructed here have the form:
+   --  The function constructed here has the form:
 
    --    function typPredicate (Ixxx : typ) return Boolean is
    --    begin
@@ -10031,6 +10016,18 @@ package body Sem_Ch13 is
    --          and then exp1 and then exp2 and then ...;
    --    end typPredicate;
 
+   --  If Predicate_Function_Needs_Membership_Parameter is true, then this
+   --  function takes an additional boolean parameter; the parameter
+   --  indicates whether the predicate evaluation is part of a membership
+   --  test. This parameter is used in two cases: 1) It is passed along
+   --  if another predicate function is called and that predicate function
+   --  expects to be passed a boolean parameter. 2) If the Predicate_Failure
+   --  aspect is directly specified for typ, then we replace the return
+   --  expression described above with
+   --      (if <expression described above> then True
+   --       elsif For_Membership_Test then False
+   --       else (raise Assertion_Error
+   --                     with <Predicate_Failure expression>))
    --  Here exp1, and exp2 are expressions from Predicate pragmas. Note that
    --  this is the point at which these expressions get analyzed, providing the
    --  required delay, and typ1, typ2, are entities from which predicates are
@@ -10043,25 +10040,16 @@ package body Sem_Ch13 is
    --  Note that Sem_Eval.Real_Or_String_Static_Predicate_Matches depends on
    --  the form of this return expression.
 
-   --  If the expression has at least one Raise_Expression, then we also build
-   --  the typPredicateM version of the function, in which any occurrence of a
-   --  Raise_Expression is converted to "return False".
-
    --  WARNING: This routine manages Ghost regions. Return statements must be
    --  replaced by gotos which jump to the end of the routine and restore the
    --  Ghost mode.
 
-   procedure Build_Predicate_Functions (Typ : Entity_Id; N : Node_Id) is
+   procedure Build_Predicate_Function (Typ : Entity_Id; N : Node_Id) is
       Loc : constant Source_Ptr := Sloc (Typ);
 
       Expr : Node_Id;
       --  This is the expression for the result of the function. It is
       --  is build by connecting the component predicates with AND THEN.
-
-      Expr_M : Node_Id := Empty; -- init to avoid warning
-      --  This is the corresponding return expression for the Predicate_M
-      --  function. It differs in that raise expressions are marked for
-      --  special expansion (see Process_REs).
 
       Object_Name : Name_Id;
       --  Name for argument of Predicate procedure. Note that we use the same
@@ -10071,18 +10059,15 @@ package body Sem_Ch13 is
       Object_Entity : Entity_Id;
       --  Entity for argument of Predicate procedure
 
-      Object_Entity_M : Entity_Id;
-      --  Entity for argument of separate Predicate procedure when exceptions
-      --  are present in expression.
-
       FDecl : Node_Id;
       --  The function declaration
 
       SId : Entity_Id;
       --  Its entity
 
-      Raise_Expression_Present : Boolean := False;
-      --  Set True if Expr has at least one Raise_Expression
+      Ancestor_Predicate_Function_Called : Boolean := False;
+      --  Does this predicate function include a call to the
+      --  predication function of an ancestor subtype?
 
       procedure Add_Condition (Cond : Node_Id);
       --  Append Cond to Expr using "and then" (or just copy Cond to Expr if
@@ -10098,19 +10083,11 @@ package body Sem_Ch13 is
       --  Includes a call to the predicate function for type T in Expr if
       --  Predicate_Function (T) is non-empty.
 
-      function Process_RE (N : Node_Id) return Traverse_Result;
-      --  Used in Process REs, tests if node N is a raise expression, and if
-      --  so, marks it to be converted to return False.
-
-      procedure Process_REs is new Traverse_Proc (Process_RE);
-      --  Marks any raise expressions in Expr_M to return False
-
-      function Test_RE (N : Node_Id) return Traverse_Result;
-      --  Used in Test_REs, tests one node for being a raise expression, and if
-      --  so sets Raise_Expression_Present True.
-
-      procedure Test_REs is new Traverse_Proc (Test_RE);
-      --  Tests to see if Expr contains any raise expressions
+      procedure Replace_Current_Instance_References
+         (N : Node_Id; Typ, New_Entity : Entity_Id);
+      --  Replace all references to Typ in the tree rooted at N with
+      --  references to Param. [New_Entity will be a formal parameter of a
+      --  predicate function.]
 
       --------------
       -- Add_Call --
@@ -10126,16 +10103,34 @@ package body Sem_Ch13 is
             --  Build the call to the predicate function of T. The type may be
             --  derived, so use an unchecked conversion for the actual.
 
-            Exp :=
-              Make_Predicate_Call
-                (Typ  => T,
-                 Expr =>
-                   Unchecked_Convert_To (T,
-                     Make_Identifier (Loc, Object_Name)));
+            declare
+               Dynamic_Mem : Node_Id := Empty;
+               Second_Formal : constant Entity_Id :=
+                 Next_Entity (Object_Entity);
+            begin
+               --  Some predicate functions require a second parameter;
+               --  If one predicate function calls another and the second
+               --  requires two parameters, then the first should also
+               --  take two parameters (so that the first function has
+               --  something to pass to the second function).
+               if Predicate_Function_Needs_Membership_Parameter (T) then
+                  pragma Assert (Present (Second_Formal));
+                  Dynamic_Mem := New_Occurrence_Of (Second_Formal, Loc);
+               end if;
+
+               Exp :=
+                 Make_Predicate_Call
+                   (Typ  => T,
+                    Expr =>
+                      Unchecked_Convert_To (T,
+                        Make_Identifier (Loc, Object_Name)),
+                    Dynamic_Mem => Dynamic_Mem);
+            end;
 
             --  "and"-in the call to evolving expression
 
             Add_Condition (Exp);
+            Ancestor_Predicate_Function_Called := True;
 
             --  Output info message on inheritance if required. Note we do not
             --  give this information for generic actual types, since it is
@@ -10192,32 +10187,6 @@ package body Sem_Ch13 is
          -------------------
 
          procedure Add_Predicate (Prag : Node_Id) is
-            procedure Replace_Type_Reference (N : Node_Id);
-            --  Replace a single occurrence N of the subtype name with a
-            --  reference to the formal of the predicate function. N can be an
-            --  identifier referencing the subtype, or a selected component,
-            --  representing an appropriately qualified occurrence of the
-            --  subtype name.
-
-            procedure Replace_Type_References is
-              new Replace_Type_References_Generic (Replace_Type_Reference);
-            --  Traverse an expression changing every occurrence of an
-            --  identifier whose name matches the name of the subtype with a
-            --  reference to the formal parameter of the predicate function.
-
-            ----------------------------
-            -- Replace_Type_Reference --
-            ----------------------------
-
-            procedure Replace_Type_Reference (N : Node_Id) is
-            begin
-               Rewrite (N, Make_Identifier (Sloc (N), Object_Name));
-               --  Use the Sloc of the usage name, not the defining name
-
-               Set_Etype (N, Typ);
-               Set_Entity (N, Object_Entity);
-            end Replace_Type_Reference;
-
             --  Local variables
 
             Asp  : constant Node_Id := Corresponding_Aspect (Prag);
@@ -10231,16 +10200,13 @@ package body Sem_Ch13 is
 
             Set_SCO_Pragma_Enabled (Sloc (Prag));
 
-            --  Extract the arguments of the pragma. The expression itself
-            --  is copied for use in the predicate function, to preserve the
-            --  original version for ASIS use.
-            --  Is this still needed???
+            --  Extract the arguments of the pragma
 
             Arg1 := First (Pragma_Argument_Associations (Prag));
             Arg2 := Next (Arg1);
 
             Arg1 := Get_Pragma_Arg (Arg1);
-            Arg2 := New_Copy_Tree (Get_Pragma_Arg (Arg2));
+            Arg2 := Get_Pragma_Arg (Arg2);
 
             --  When the predicate pragma applies to the current type or its
             --  full view, replace all occurrences of the subtype name with
@@ -10249,20 +10215,25 @@ package body Sem_Ch13 is
             if Entity (Arg1) = Typ
               or else Full_View (Entity (Arg1)) = Typ
             then
-               Replace_Type_References (Arg2, Typ);
+               declare
+                  Arg2_Copy : constant Node_Id := New_Copy_Tree (Arg2);
+               begin
+                  Replace_Current_Instance_References
+                   (Arg2_Copy, Typ => Typ, New_Entity => Object_Entity);
 
-               --  If the predicate pragma comes from an aspect, replace the
-               --  saved expression because we need the subtype references
-               --  replaced for the calls to Preanalyze_Spec_Expression in
-               --  Check_Aspect_At_xxx routines.
+                  --  If the predicate pragma comes from an aspect, replace the
+                  --  saved expression because we need the subtype references
+                  --  replaced for the calls to Preanalyze_Spec_Expression in
+                  --  Check_Aspect_At_xxx routines.
 
-               if Present (Asp) then
-                  Set_Entity (Identifier (Asp), New_Copy_Tree (Arg2));
-               end if;
+                  if Present (Asp) then
+                     Set_Entity (Identifier (Asp), New_Copy_Tree (Arg2_Copy));
+                  end if;
 
-               --  "and"-in the Arg2 condition to evolving expression
+                  --  "and"-in the Arg2 condition to evolving expression
 
-               Add_Condition (Relocate_Node (Arg2));
+                  Add_Condition (Arg2_Copy);
+               end;
             end if;
          end Add_Predicate;
 
@@ -10316,33 +10287,34 @@ package body Sem_Ch13 is
          end loop;
       end Add_Predicates;
 
-      ----------------
-      -- Process_RE --
-      ----------------
+      -----------------------------------------
+      -- Replace_Current_Instance_References --
+      -----------------------------------------
 
-      function Process_RE (N : Node_Id) return Traverse_Result is
+      procedure Replace_Current_Instance_References
+         (N : Node_Id; Typ, New_Entity : Entity_Id)
+      is
+         Root : Node_Id renames N;
+
+         procedure Replace_One_Reference (N : Node_Id);
+         --  Actual parameter for Replace_Type_References_Generic instance
+
+         ---------------------------
+         -- Replace_One_Reference --
+         ---------------------------
+
+         procedure Replace_One_Reference (N : Node_Id) is
+            pragma Assert (In_Subtree (N, Root => Root));
+         begin
+            Rewrite (N, New_Occurrence_Of (New_Entity, Sloc (N)));
+            --  Use the Sloc of the usage name, not the defining name
+         end Replace_One_Reference;
+
+         procedure Replace_Type_References is
+           new Replace_Type_References_Generic (Replace_One_Reference);
       begin
-         if Nkind (N) = N_Raise_Expression then
-            Set_Convert_To_Return_False (N);
-            return Skip;
-         else
-            return OK;
-         end if;
-      end Process_RE;
-
-      -------------
-      -- Test_RE --
-      -------------
-
-      function Test_RE (N : Node_Id) return Traverse_Result is
-      begin
-         if Nkind (N) = N_Raise_Expression then
-            Raise_Expression_Present := True;
-            return Abandon;
-         else
-            return OK;
-         end if;
-      end Test_RE;
+         Replace_Type_References (N, Typ);
+      end Replace_Current_Instance_References;
 
       --  Local variables
 
@@ -10350,7 +10322,7 @@ package body Sem_Ch13 is
       Saved_IGR : constant Node_Id         := Ignored_Ghost_Region;
       --  Save the Ghost-related attributes to restore on exit
 
-   --  Start of processing for Build_Predicate_Functions
+   --  Start of processing for Build_Predicate_Function
 
    begin
       --  Return if already built, if type does not have predicates,
@@ -10412,8 +10384,7 @@ package body Sem_Ch13 is
          Defining_Identifier
            (First (Parameter_Specifications (Specification (FDecl))));
 
-      Object_Name     := Chars (Object_Entity);
-      Object_Entity_M := Make_Defining_Identifier (Loc, Chars => Object_Name);
+      Object_Name   := Chars (Object_Entity);
 
       --  Add predicates for ancestor if present. These must come before the
       --  ones for the current type, as required by AI12-0071-1.
@@ -10445,58 +10416,6 @@ package body Sem_Ch13 is
 
       if Present (Expr) then
 
-         --  Test for raise expression present
-
-         Test_REs (Expr);
-
-         --  If raise expression is present, capture a copy of Expr for use
-         --  in building the predicateM function version later on. For this
-         --  copy we replace references to Object_Entity by Object_Entity_M.
-
-         if Raise_Expression_Present then
-            declare
-               function Reset_Loop_Variable
-                 (N : Node_Id) return Traverse_Result;
-
-               procedure Reset_Loop_Variables is
-                 new Traverse_Proc (Reset_Loop_Variable);
-
-               ------------------------
-               -- Reset_Loop_Variable --
-               ------------------------
-
-               function Reset_Loop_Variable
-                 (N : Node_Id) return Traverse_Result
-               is
-               begin
-                  if Nkind (N) = N_Iterator_Specification then
-                     Set_Defining_Identifier (N,
-                       Make_Defining_Identifier
-                         (Sloc (N), Chars (Defining_Identifier (N))));
-                  end if;
-
-                  return OK;
-               end Reset_Loop_Variable;
-
-               --  Local variables
-
-               Map : constant Elist_Id := New_Elmt_List;
-
-            begin
-               Append_Elmt (Object_Entity, Map);
-               Append_Elmt (Object_Entity_M, Map);
-               Expr_M := New_Copy_Tree (Expr, Map => Map);
-
-               --  The unanalyzed expression will be copied and appear in
-               --  both functions. Normally expressions do not declare new
-               --  entities, but quantified expressions do, so we need to
-               --  create new entities for their bound variables, to prevent
-               --  multiple definitions in gigi.
-
-               Reset_Loop_Variables (Expr_M);
-            end;
-         end if;
-
          --  Build the main predicate function
 
          declare
@@ -10514,27 +10433,189 @@ package body Sem_Ch13 is
 
             --  Build function body
 
-            Spec :=
-              Make_Function_Specification (Loc,
-                Defining_Unit_Name       => SIdB,
-                Parameter_Specifications => New_List (
-                  Make_Parameter_Specification (Loc,
-                    Defining_Identifier =>
-                      Make_Defining_Identifier (Loc, Object_Name),
-                    Parameter_Type =>
-                      New_Occurrence_Of (Typ, Loc))),
-                Result_Definition        =>
-                  New_Occurrence_Of (Standard_Boolean, Loc));
+            declare
+               Param_Specs : constant List_Id := New_List (
+                 Make_Parameter_Specification (Loc,
+                   Defining_Identifier =>
+                     Make_Defining_Identifier (Loc, Object_Name),
+                   Parameter_Type =>
+                     New_Occurrence_Of (Typ, Loc)));
+            begin
+               --  if Spec has 2 parameters, then body should too
+               if Present (Next_Entity (Object_Entity)) then
+                  Append (Make_Parameter_Specification (Loc,
+                            Defining_Identifier =>
+                              Make_Defining_Identifier
+                                (Loc, Chars (Next_Entity (Object_Entity))),
+                            Parameter_Type      =>
+                              New_Occurrence_Of (Standard_Boolean, Loc)),
+                          Param_Specs);
+               end if;
 
-            FBody :=
-              Make_Subprogram_Body (Loc,
-                Specification              => Spec,
-                Declarations               => Empty_List,
-                Handled_Statement_Sequence =>
-                  Make_Handled_Sequence_Of_Statements (Loc,
-                    Statements => New_List (
-                      Make_Simple_Return_Statement (Loc,
-                        Expression => Expr))));
+               Spec :=
+                 Make_Function_Specification (Loc,
+                   Defining_Unit_Name       => SIdB,
+                   Parameter_Specifications => Param_Specs,
+                   Result_Definition        =>
+                     New_Occurrence_Of (Standard_Boolean, Loc));
+            end;
+
+            --  The Predicate_Expression attribute is used by SPARK.
+            --
+            --  If Ancestor_Predicate_Function_Called is True, then
+            --  we try to exclude that call to the ancestor's
+            --  predicate function by calling Right_Opnd.
+            --  The call is not excluded in the case where
+            --  it is not "and"ed with anything else (so we don't have
+            --  an N_And_Then node). This exclusion is required if the
+            --  Predicate_Failure aspect is specified for Typ because
+            --  in that case we are going to drop the N_And_Then node
+            --  on the floor. Otherwise, it is a question of what is
+            --  most convenient for SPARK.
+
+            Set_Predicate_Expression
+              (SId, (if Ancestor_Predicate_Function_Called
+                       and then Nkind (Expr) = N_And_Then
+                     then Right_Opnd (Expr)
+                     else Expr));
+
+            declare
+               Result_Expr   : Node_Id := Expr;
+               PF_Expr       : Node_Id := Predicate_Failure_Expression
+                                            (Typ, Inherited_OK => False);
+               PF_Expr_Copy  : Node_Id;
+               Second_Formal : constant Entity_Id :=
+                 Next_Entity (Object_Entity);
+            begin
+               --  In GNATprove mode we are only interested in the predicate
+               --  expression itself and don't want a raise expression that
+               --  comes from the Predicate_Failure. Ditto for CodePeer.
+               --  And an illegal Predicate_Failure aspect can lead to cases
+               --  we want to avoid.
+
+               if Present (PF_Expr)
+                 and then not GNATprove_Mode
+                 and then not CodePeer_Mode
+                 and then Serious_Errors_Detected = 0
+               then
+                  pragma Assert (Present (Second_Formal));
+
+                  --  This is an ugly hack to cope with an ugly situation.
+                  --  PF_Expr may have children whose Parent attribute
+                  --  does not point back to PF_Expr. If we pass such a
+                  --  tree to New_Copy_Tree, then it does not make a deep
+                  --  copy. But we need a deep copy. So we need to find a
+                  --  tree for which New_Copy_Tree *will* make a deep copy.
+
+                  declare
+                     function Check_Node_Parent (Parent_Node, Node : Node_Id)
+                       return Traverse_Result;
+                     function Check_Node_Parent (Parent_Node, Node : Node_Id)
+                       return Traverse_Result is
+                     begin
+                        if Parent_Node = PF_Expr
+                          and then not Is_List_Member (Node)
+                        then
+                           pragma Assert
+                             (Nkind (PF_Expr) = Nkind (Parent (Node)));
+
+                           --  We need PF_Expr to be a node for which
+                           --  New_Copy_Tree will make a deep copy.
+                           PF_Expr := Parent (Node);
+                           return Abandon;
+                        end if;
+                        return OK;
+                     end Check_Node_Parent;
+                     procedure Check_Parentage is
+                       new Traverse_Proc_With_Parent (Check_Node_Parent);
+                  begin
+                     Check_Parentage (PF_Expr);
+                     PF_Expr_Copy := New_Copy_Tree (PF_Expr);
+                  end;
+
+                  --  Current instance uses need to have their Entity
+                  --  fields set so that Replace_Current_Instance_References
+                  --  can find them. So we preanalyze. Just for purposes of
+                  --  calls to Is_Current_Instance during this preanalysis,
+                  --  we set the Parent field.
+                  Set_Parent (PF_Expr_Copy, Parent (PF_Expr));
+                  Preanalyze (PF_Expr_Copy);
+                  Set_Parent (PF_Expr_Copy, Empty);
+
+                  Replace_Current_Instance_References
+                    (PF_Expr_Copy, Typ => Typ, New_Entity => Object_Entity);
+
+                  if Ancestor_Predicate_Function_Called then
+                     --  If the call to an ancestor predicate function
+                     --  returns False, we do not want to raise an
+                     --  exception here. Our Predicate_Failure aspect does
+                     --  not apply in that case. So we have to build a
+                     --  more complicated result expression:
+                     --   (if not Ancestor_Predicate_Function (...) then False
+                     --    elsif Noninherited_Predicates (...) then True
+                     --    elsif Is_Membership_Test then False
+                     --    else (raise Assertion_Error with PF text))
+
+                     declare
+                        Ancestor_Call : constant Node_Id :=
+                          Left_Opnd (Result_Expr);
+                        Local_Preds   : constant Node_Id :=
+                          Right_Opnd (Result_Expr);
+                     begin
+                        Result_Expr :=
+                          Make_If_Expression (Loc,
+                            Expressions => New_List (
+                              Make_Op_Not (Loc, Ancestor_Call),
+                              New_Occurrence_Of (Standard_False, Loc),
+                              Make_If_Expression (Loc,
+                                Is_Elsif => True,
+                                Expressions => New_List (
+                                  Local_Preds,
+                                  New_Occurrence_Of (Standard_True, Loc),
+                                  Make_If_Expression (Loc,
+                                    Is_Elsif => True,
+                                    Expressions => New_List (
+                                      New_Occurrence_Of (Second_Formal, Loc),
+                                      New_Occurrence_Of (Standard_False, Loc),
+                                      Make_Raise_Expression (Loc,
+                                        New_Occurrence_Of (RTE
+                                          (RE_Assert_Failure), Loc),
+                                        PF_Expr_Copy)))))));
+                     end;
+
+                  else
+                     --  Build a conditional expression:
+                     --   (if <predicate evaluates to True> then True
+                     --    elsif Is_Membership_Test then False
+                     --    else (raise Assertion_Error with PF text))
+
+                     Result_Expr :=
+                       Make_If_Expression (Loc,
+                         Expressions => New_List (
+                           Result_Expr,
+                           New_Occurrence_Of (Standard_True, Loc),
+                           Make_If_Expression (Loc,
+                             Is_Elsif => True,
+                             Expressions => New_List (
+                               New_Occurrence_Of (Second_Formal, Loc),
+                               New_Occurrence_Of (Standard_False, Loc),
+                               Make_Raise_Expression (Loc,
+                                 New_Occurrence_Of (RTE
+                                   (RE_Assert_Failure), Loc),
+                                 PF_Expr_Copy)))));
+                  end if;
+               end if;
+
+               FBody :=
+                 Make_Subprogram_Body (Loc,
+                   Specification              => Spec,
+                   Declarations               => Empty_List,
+                   Handled_Statement_Sequence =>
+                     Make_Handled_Sequence_Of_Statements (Loc,
+                       Statements => New_List (
+                         Make_Simple_Return_Statement (Loc,
+                           Expression => Result_Expr))));
+            end;
 
             --  The declaration has been analyzed when created, and placed
             --  after type declaration. Insert body itself after freeze node,
@@ -10604,121 +10685,6 @@ package body Sem_Ch13 is
                Set_Is_Inlined (SId);
             end if;
          end;
-
-         --  Test for raise expressions present and if so build M version
-
-         if Raise_Expression_Present then
-            declare
-               SId : constant Entity_Id :=
-                 Make_Defining_Identifier (Loc,
-                   Chars => New_External_Name (Chars (Typ), "PredicateM"));
-               --  The entity for the function spec
-
-               SIdB : constant Entity_Id :=
-                 Make_Defining_Identifier (Loc,
-                   Chars => New_External_Name (Chars (Typ), "PredicateM"));
-               --  The entity for the function body
-
-               Spec  : Node_Id;
-               FBody : Node_Id;
-               FDecl : Node_Id;
-               BTemp : Entity_Id;
-
-               CRec_Typ : Entity_Id;
-               --  The corresponding record type of Full_Typ
-
-               Full_Typ : Entity_Id;
-               --  The full view of Typ
-
-               Priv_Typ : Entity_Id;
-               --  The partial view of Typ
-
-               UFull_Typ : Entity_Id;
-               --  The underlying full view of Full_Typ
-
-            begin
-               --  Mark any raise expressions for special expansion
-
-               Process_REs (Expr_M);
-
-               --  Build function declaration
-
-               Mutate_Ekind (SId, E_Function);
-               Set_Is_Predicate_Function_M (SId);
-               Set_Predicate_Function_M (Typ, SId);
-
-               --  Obtain all views of the input type
-
-               Get_Views (Typ, Priv_Typ, Full_Typ, UFull_Typ, CRec_Typ);
-
-               --  Associate the predicate function with all views
-
-               Propagate_Predicate_Attributes (Priv_Typ,  From_Typ => Typ);
-               Propagate_Predicate_Attributes (Full_Typ,  From_Typ => Typ);
-               Propagate_Predicate_Attributes (UFull_Typ, From_Typ => Typ);
-               Propagate_Predicate_Attributes (CRec_Typ,  From_Typ => Typ);
-
-               Spec :=
-                 Make_Function_Specification (Loc,
-                   Defining_Unit_Name       => SId,
-                   Parameter_Specifications => New_List (
-                     Make_Parameter_Specification (Loc,
-                       Defining_Identifier => Object_Entity_M,
-                       Parameter_Type      => New_Occurrence_Of (Typ, Loc))),
-                   Result_Definition        =>
-                     New_Occurrence_Of (Standard_Boolean, Loc));
-
-               FDecl :=
-                 Make_Subprogram_Declaration (Loc,
-                   Specification => Spec);
-
-               --  Build function body
-
-               Spec :=
-                 Make_Function_Specification (Loc,
-                   Defining_Unit_Name       => SIdB,
-                   Parameter_Specifications => New_List (
-                     Make_Parameter_Specification (Loc,
-                       Defining_Identifier =>
-                         Make_Defining_Identifier (Loc, Object_Name),
-                       Parameter_Type =>
-                         New_Occurrence_Of (Typ, Loc))),
-                   Result_Definition        =>
-                     New_Occurrence_Of (Standard_Boolean, Loc));
-
-               --  Build the body, we declare the boolean expression before
-               --  doing the return, because we are not really confident of
-               --  what happens if a return appears within a return.
-
-               BTemp :=
-                 Make_Temporary (Loc, 'B');
-
-               FBody :=
-                 Make_Subprogram_Body (Loc,
-                   Specification              => Spec,
-
-                   Declarations               => New_List (
-                     Make_Object_Declaration (Loc,
-                       Defining_Identifier => BTemp,
-                       Constant_Present    => True,
-                         Object_Definition =>
-                           New_Occurrence_Of (Standard_Boolean, Loc),
-                         Expression        => Expr_M)),
-
-                   Handled_Statement_Sequence =>
-                     Make_Handled_Sequence_Of_Statements (Loc,
-                       Statements => New_List (
-                         Make_Simple_Return_Statement (Loc,
-                           Expression => New_Occurrence_Of (BTemp, Loc)))));
-
-               --  Insert declaration before freeze node and body after
-
-               Insert_Before_And_Analyze (N, FDecl);
-               Insert_After_And_Analyze  (N, FBody);
-
-               --  Should quantified expressions be handled here as well ???
-            end;
-         end if;
 
          --  See if we have a static predicate. Note that the answer may be
          --  yes even if we have an explicit Dynamic_Predicate present.
@@ -10812,7 +10778,7 @@ package body Sem_Ch13 is
       end if;
 
       Restore_Ghost_Region (Saved_GM, Saved_IGR);
-   end Build_Predicate_Functions;
+   end Build_Predicate_Function;
 
    ------------------------------------------
    -- Build_Predicate_Function_Declaration --
@@ -10881,15 +10847,28 @@ package body Sem_Ch13 is
       Propagate_Predicate_Attributes (UFull_Typ, From_Typ => Typ);
       Propagate_Predicate_Attributes (CRec_Typ,  From_Typ => Typ);
 
-      Spec :=
-        Make_Function_Specification (Loc,
-          Defining_Unit_Name       => Func_Id,
-          Parameter_Specifications => New_List (
-            Make_Parameter_Specification (Loc,
-              Defining_Identifier => Make_Temporary (Loc, 'I'),
-              Parameter_Type      => New_Occurrence_Of (Typ, Loc))),
-          Result_Definition        =>
-            New_Occurrence_Of (Standard_Boolean, Loc));
+      declare
+         Param_Specs : constant List_Id := New_List (
+           Make_Parameter_Specification (Loc,
+             Defining_Identifier => Make_Temporary (Loc, 'I'),
+             Parameter_Type      => New_Occurrence_Of (Typ, Loc)));
+      begin
+         if Predicate_Function_Needs_Membership_Parameter (Typ) then
+            --  Add Boolean-valued For_Membership_Test param
+            Append (Make_Parameter_Specification (Loc,
+                      Defining_Identifier => Make_Temporary (Loc, 'M'),
+                      Parameter_Type      =>
+                        New_Occurrence_Of (Standard_Boolean, Loc)),
+                    Param_Specs);
+         end if;
+
+         Spec :=
+           Make_Function_Specification (Loc,
+             Defining_Unit_Name       => Func_Id,
+             Parameter_Specifications => Param_Specs,
+             Result_Definition        =>
+               New_Occurrence_Of (Standard_Boolean, Loc));
+      end;
 
       Func_Decl := Make_Subprogram_Declaration (Loc, Specification => Spec);
 
@@ -13153,7 +13132,7 @@ package body Sem_Ch13 is
             end if;
          end;
 
-         Build_Predicate_Functions (E, N);
+         Build_Predicate_Function (E, N);
       end if;
 
       --  If type has delayed aspects, this is where we do the preanalysis at
@@ -13472,56 +13451,40 @@ package body Sem_Ch13 is
    -----------------------------------
 
    function Has_Compatible_Representation
-     (Target_Type, Operand_Type : Entity_Id) return Boolean
+     (Target_Typ, Operand_Typ : Entity_Id) return Boolean
    is
-      T1 : constant Entity_Id := Underlying_Type (Target_Type);
-      T2 : constant Entity_Id := Underlying_Type (Operand_Type);
+      --  The subtype-specific representation attributes (Size and Alignment)
+      --  do not affect representation from the point of view of this function.
+
+      T1 : constant Entity_Id := Implementation_Base_Type (Target_Typ);
+      T2 : constant Entity_Id := Implementation_Base_Type (Operand_Typ);
 
    begin
-      --  A quick check, if base types are the same, then we definitely have
-      --  the same representation, because the subtype specific representation
-      --  attributes (Size and Alignment) do not affect representation from
-      --  the point of view of this test.
+      --  Return true immediately for the same base type
 
-      if Base_Type (T1) = Base_Type (T2) then
+      if T1 = T2 then
          return True;
-
-      elsif Is_Private_Type (Base_Type (T2))
-        and then Base_Type (T1) = Full_View (Base_Type (T2))
-      then
-         return True;
-
-      --  If T2 is a generic actual it is declared as a subtype, so
-      --  check against its base type.
-
-      elsif Is_Generic_Actual_Type (T1)
-        and then Has_Compatible_Representation (Base_Type (T1), T2)
-      then
-         return True;
-      end if;
 
       --  Tagged types always have the same representation, because it is not
       --  possible to specify different representations for common fields.
 
-      if Is_Tagged_Type (T1) then
+      elsif Is_Tagged_Type (T1) then
          return True;
-      end if;
 
       --  Representations are definitely different if conventions differ
 
-      if Convention (T1) /= Convention (T2) then
+      elsif Convention (T1) /= Convention (T2) then
          return False;
-      end if;
 
       --  Representations are different if component alignments or scalar
       --  storage orders differ.
 
-      if (Is_Record_Type (T1) or else Is_Array_Type (T1))
-            and then
-         (Is_Record_Type (T2) or else Is_Array_Type (T2))
-        and then
-         (Component_Alignment (T1) /= Component_Alignment (T2)
-           or else Reverse_Storage_Order (T1) /= Reverse_Storage_Order (T2))
+      elsif (Is_Record_Type (T1) or else Is_Array_Type (T1))
+              and then
+            (Is_Record_Type (T2) or else Is_Array_Type (T2))
+        and then (Component_Alignment (T1) /= Component_Alignment (T2)
+                   or else
+                  Reverse_Storage_Order (T1) /= Reverse_Storage_Order (T2))
       then
          return False;
       end if;
@@ -13548,11 +13511,10 @@ package body Sem_Ch13 is
          then
             return True;
          end if;
-      end if;
 
-      --  For records, representations are different if reorderings differ
+      --  For records, representations are different if reordering differs
 
-      if Is_Record_Type (T1)
+      elsif Is_Record_Type (T1)
         and then Is_Record_Type (T2)
         and then No_Reordering (T1) /= No_Reordering (T2)
       then
@@ -13591,6 +13553,16 @@ package body Sem_Ch13 is
 
          if Is_Packed (T1) /= Is_Packed (T2) then
             return False;
+
+         --  If the operand type is derived from the target type and no clause
+         --  has been given after the derivation, then the representations are
+         --  the same since the derived type inherits that of the parent type.
+
+         elsif Is_Derived_Type (T2)
+           and then Etype (T2) = T1
+           and then not Has_Record_Rep_Clause (T2)
+         then
+            return True;
 
          --  Otherwise we must check components. Typ2 maybe a constrained
          --  subtype with fewer components, so we compare the components

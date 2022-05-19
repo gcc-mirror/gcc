@@ -63,7 +63,6 @@ enum SCOPE
     free          = 0x8000,   /// is on free list
 
     fullinst      = 0x10000,  /// fully instantiate templates
-    alias_        = 0x20000,  /// inside alias declaration.
 
     // The following are mutually exclusive
     printf        = 0x4_0000, /// printf-style function

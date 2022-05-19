@@ -15505,6 +15505,13 @@ resolve_symbol (gfc_symbol *sym)
   if (sym->attr.unlimited_polymorphic)
     return;
 
+  if (UNLIKELY (flag_openmp && strcmp (sym->name, "omp_all_memory") == 0))
+    {
+      gfc_error ("%<omp_all_memory%>, declared at %L, may only be used in "
+		 "the OpenMP DEPEND clause", &sym->declared_at);
+      return;
+    }
+
   if (sym->attr.flavor == FL_UNKNOWN
       || (sym->attr.flavor == FL_PROCEDURE && !sym->attr.intrinsic
 	  && !sym->attr.generic && !sym->attr.external

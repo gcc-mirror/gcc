@@ -48,7 +48,7 @@ is
       Before    : Count_Type;
       New_Node  : Count_Type);
 
-   function Vet (L : List; Position : Cursor) return Boolean;
+   function Vet (L : List; Position : Cursor) return Boolean with Inline;
 
    ---------
    -- "=" --
@@ -1766,8 +1766,11 @@ is
 
    function Vet (L : List; Position : Cursor) return Boolean is
       N : Node_Array renames L.Nodes;
-
    begin
+      if not Container_Checks'Enabled then
+         return True;
+      end if;
+
       if L.Length = 0 then
          return False;
       end if;

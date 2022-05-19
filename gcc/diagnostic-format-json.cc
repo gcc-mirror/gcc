@@ -62,7 +62,7 @@ json_from_expanded_location (diagnostic_context *context, location_t loc)
     {"byte-column", DIAGNOSTICS_COLUMN_UNIT_BYTE}
   };
   int the_column = INT_MIN;
-  for (int i = 0; i != sizeof column_fields / sizeof (*column_fields); ++i)
+  for (int i = 0; i != ARRAY_SIZE (column_fields); ++i)
     {
       context->column_unit = column_fields[i].unit;
       const int col = diagnostic_converted_column (context, exploc);

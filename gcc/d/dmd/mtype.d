@@ -4375,8 +4375,6 @@ extern (C++) final class TypeFunction : TypeNext
     {
         //printf("parameterStorageClass(p: %s)\n", p.toChars());
         auto stc = p.storageClass;
-        if (global.params.useDIP1000 != FeatureState.enabled)
-            return stc;
 
         // When the preview switch is enable, `in` parameters are `scope`
         if (stc & STC.in_ && global.params.previewIn)
@@ -4441,7 +4439,9 @@ extern (C++) final class TypeFunction : TypeNext
         // Check escaping through return value
         Type tret = nextOf().toBasetype();
         if (isref || tret.hasPointers())
+        {
             return stc | STC.scope_ | STC.return_ | STC.returnScope;
+        }
         else
             return stc | STC.scope_;
     }
@@ -4764,12 +4764,31 @@ extern (C++) final class TypeFunction : TypeNext
                                             s ~= "@safe ";
                                         if (!f.isNogc && sc.func.setGC())
                                             s ~= "nogc ";
-                                        s[$-1] = '\0';
-                                        buf.printf("`%s` copy constructor cannot be called from a `%s` context", f.type.toChars(), s.ptr);
-
+                                        if (s)
+                                        {
+                                            s[$-1] = '\0';
+                                            buf.printf("`%s` copy constructor cannot be called from a `%s` context", f.type.toChars(), s.ptr);
+                                        }
+                                        else if (f.isGenerated() && f.isDisabled())
+                                        {
+                                            /* https://issues.dlang.org/show_bug.cgi?id=23097
+                                             * Compiler generated copy constructor failed.
+                                             */
+                                            buf.printf("generating a copy constructor for `struct %s` failed, therefore instances of it are uncopyable",
+                                                       argStruct.toChars());
+                                        }
+                                        else
+                                        {
+                                            /* Although a copy constructor may exist, no suitable match was found.
+                                             * i.e: `inout` constructor creates `const` object, not mutable.
+                                             * Fallback to using the original generic error before bugzilla 22202.
+                                             */
+                                            goto Lnocpctor;
+                                        }
                                     }
                                     else
                                     {
+                                    Lnocpctor:
                                         buf.printf("`struct %s` does not define a copy constructor for `%s` to `%s` copies",
                                                argStruct.toChars(), targ.toChars(), tprm.toChars());
                                     }
@@ -5134,22 +5153,6 @@ extern (C++) final class TypeDelegate : TypeNext
     override Type addStorageClass(StorageClass stc)
     {
         TypeDelegate t = cast(TypeDelegate)Type.addStorageClass(stc);
-        if (global.params.useDIP1000 != FeatureState.enabled)
-            return t;
-
-        /* The rest is meant to add 'scope' to a delegate declaration if it is of the form:
-         *  alias dg_t = void* delegate();
-         *  scope dg_t dg = ...;
-         */
-        if(stc & STC.scope_)
-        {
-            auto n = t.next.addStorageClass(STC.scope_ | STC.scopeinferred);
-            if (n != t.next)
-            {
-                t.next = n;
-                t.deco = t.merge().deco; // mangling supposed to not be changed due to STC.scope_inferrred
-            }
-        }
         return t;
     }
 
@@ -5218,8 +5221,8 @@ extern (C++) final class TypeTraits : Type
     Loc loc;
     /// The expression to resolve as type or symbol.
     TraitsExp exp;
-    /// After `typeSemantic` the symbol when `exp` doesn't represent a type.
-    Dsymbol sym;
+    /// Cached type/symbol after semantic analysis.
+    RootObject obj;
 
     final extern (D) this(const ref Loc loc, TraitsExp exp)
     {

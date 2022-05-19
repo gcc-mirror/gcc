@@ -788,7 +788,8 @@ private template fqnType(T,
                 ~ (attrs & FA.trusted ? " @trusted" : "")
                 ~ (attrs & FA.safe ? " @safe" : "")
                 ~ (attrs & FA.nogc ? " @nogc" : "")
-                ~ (attrs & FA.return_ ? " return" : "");
+                ~ (attrs & FA.return_ ? " return" : "")
+                ~ (attrs & FA.live ? " @live" : "");
     }
 
     string addQualifiers(string typeString,
@@ -4838,7 +4839,7 @@ Returns class instance alignment.
 template classInstanceAlignment(T)
 if (is(T == class))
 {
-    alias classInstanceAlignment = maxAlignment!(void*, typeof(T.tupleof));
+    enum classInstanceAlignment = __traits(classInstanceAlignment, T);
 }
 
 ///

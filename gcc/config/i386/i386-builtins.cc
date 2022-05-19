@@ -1936,8 +1936,7 @@ get_builtin_code_for_version (tree decl, tree *predicate_list)
 
   enum feature_priority priority = P_NONE;
 
-  static unsigned int NUM_FEATURES
-    = sizeof (isa_names_table) / sizeof (_isa_names_table);
+  static unsigned int NUM_FEATURES = ARRAY_SIZE (isa_names_table);
 
   unsigned int i;
 
@@ -2290,8 +2289,7 @@ fold_builtin_cpu (tree fndecl, tree *args)
       tree final;
 
       unsigned int field_val = 0;
-      unsigned int NUM_ISA_NAMES
-	= sizeof (isa_names_table) / sizeof (struct _isa_names_table);
+      unsigned int NUM_ISA_NAMES = ARRAY_SIZE (isa_names_table);
 
       for (i = 0; i < NUM_ISA_NAMES; i++)
 	if (strcmp (isa_names_table[i].name,

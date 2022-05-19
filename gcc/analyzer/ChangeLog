@@ -1,3 +1,83 @@
+2022-05-16  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/105103
+	* analyzer.cc (make_label_text_n): New.
+	* analyzer.h (class var_arg_region): New forward decl.
+	(make_label_text_n): New decl.
+	* analyzer.opt (Wanalyzer-va-arg-type-mismatch): New option.
+	(Wanalyzer-va-list-exhausted): New option.
+	(Wanalyzer-va-list-leak): New option.
+	(Wanalyzer-va-list-use-after-va-end): New option.
+	* checker-path.cc (call_event::get_desc): Split out decl access
+	into..
+	(call_event::get_caller_fndecl): ...this new function and...
+	(call_event::get_callee_fndecl): ...this new function.
+	* checker-path.h (call_event::get_desc): Drop "FINAL".
+	(call_event::get_caller_fndecl): New decl.
+	(call_event::get_callee_fndecl): New decl.
+	(class call_event): Make fields protected.
+	* diagnostic-manager.cc (null_assignment_sm_context::warn): New
+	overload.
+	(null_assignment_sm_context::get_new_program_state): New.
+	(diagnostic_manager::add_events_for_superedge): Move case
+	SUPEREDGE_CALL to a new pending_diagnostic::add_call_event vfunc.
+	* engine.cc (impl_sm_context::warn): Implement new override.
+	(impl_sm_context::get_new_program_state): New.
+	* pending-diagnostic.cc: Include "analyzer/diagnostic-manager.h",
+	"cpplib.h", "digraph.h", "ordered-hash-map.h", "cfg.h",
+	"basic-block.h", "gimple.h", "gimple-iterator.h", "cgraph.h"
+	"analyzer/supergraph.h", "analyzer/program-state.h",
+	"alloc-pool.h", "fibonacci_heap.h", "shortest-paths.h",
+	"sbitmap.h", "analyzer/exploded-graph.h", "diagnostic-path.h",
+	and "analyzer/checker-path.h".
+	(ht_ident_eq): New.
+	(fixup_location_in_macro_p): New.
+	(pending_diagnostic::fixup_location): New.
+	(pending_diagnostic::add_call_event): New.
+	* pending-diagnostic.h (pending_diagnostic::fixup_location): Drop
+	no-op inline implementation in favor of the more complex
+	implementation above.
+	(pending_diagnostic::add_call_event): New vfunc.
+	* region-model-impl-calls.cc: Include "analyzer/sm.h",
+	"diagnostic-path.h", and "analyzer/pending-diagnostic.h".
+	* region-model-manager.cc
+	(region_model_manager::get_var_arg_region): New.
+	(region_model_manager::log_stats): Log m_var_arg_regions.
+	* region-model.cc (region_model::on_call_pre): Handle IFN_VA_ARG,
+	BUILT_IN_VA_START, and BUILT_IN_VA_COPY.
+	(region_model::on_call_post): Handle BUILT_IN_VA_END.
+	(region_model::get_representative_path_var_1): Handle RK_VAR_ARG.
+	(region_model::push_frame): Push variadic arguments.
+	* region-model.h (region_model_manager::get_var_arg_region): New
+	decl.
+	(region_model_manager::m_var_arg_regions): New field.
+	(region_model::impl_call_va_start): New decl.
+	(region_model::impl_call_va_copy): New decl.
+	(region_model::impl_call_va_arg): New decl.
+	(region_model::impl_call_va_end): New decl.
+	* region.cc (alloca_region::dump_to_pp): Dump the id.
+	(var_arg_region::dump_to_pp): New.
+	(var_arg_region::get_frame_region): New.
+	* region.h (enum region_kind): Add RK_VAR_ARG.
+	(region::dyn_cast_var_arg_region): New.
+	(class var_arg_region): New.
+	(is_a_helper <const var_arg_region *>::test): New.
+	(struct default_hash_traits<var_arg_region::key_t>): New.
+	* sm.cc (make_checkers): Call make_va_list_state_machine.
+	* sm.h (sm_context::warn): New vfunc.
+	(sm_context::get_old_svalue): Drop unused decl.
+	(sm_context::get_new_program_state): New vfunc.
+	(make_va_list_state_machine): New decl.
+	* varargs.cc: New file.
+
+2022-05-16  Martin Liska  <mliska@suse.cz>
+
+	* engine.cc (exploded_node::get_dot_fillcolor): Use ARRAY_SIZE.
+	* function-set.cc (test_stdio_example): Likewise.
+	* sm-file.cc (get_file_using_fns): Likewise.
+	* sm-malloc.cc (malloc_state_machine::unaffected_by_call_p): Likewise.
+	* sm-signal.cc (get_async_signal_unsafe_fns): Likewise.
+
 2022-05-13  Richard Biener  <rguenther@suse.de>
 
 	* supergraph.cc: Re-order gimple-fold.h include.

@@ -100,14 +100,15 @@ extract_affine_mul (scop_p s, tree e, __isl_take isl_space *space)
   return isl_pw_aff_mul (lhs, rhs);
 }
 
-/* Return an isl identifier from the name of the ssa_name E.  */
+/* Return an isl identifier for the parameter P.  */
 
 static isl_id *
-isl_id_for_ssa_name (scop_p s, tree e)
+isl_id_for_parameter (scop_p s, tree p)
 {
-  char name1[14];
-  snprintf (name1, sizeof (name1), "P_%d", SSA_NAME_VERSION (e));
-  return isl_id_alloc (s->isl_context, name1, e);
+  gcc_checking_assert (TREE_CODE (p) == SSA_NAME);
+  char name[14];
+  snprintf (name, sizeof (name), "P_%d", SSA_NAME_VERSION (p));
+  return isl_id_alloc (s->isl_context, name, p);
 }
 
 /* Return an isl identifier for the data reference DR.  Data references and
@@ -648,14 +649,14 @@ build_poly_sr_1 (poly_bb_p pbb, gimple *stmt, tree var, enum poly_dr_type kind,
 		 isl_map *acc, isl_set *subscript_sizes)
 {
   scop_p scop = PBB_SCOP (pbb);
-  /* Each scalar variables has a unique alias set number starting from
+  /* Each scalar variable has a unique alias set number starting from
      the maximum alias set assigned to a dr.  */
   int alias_set = scop->max_alias_set + SSA_NAME_VERSION (var);
   subscript_sizes = isl_set_fix_si (subscript_sizes, isl_dim_set, 0,
 				    alias_set);
 
   /* Add a constrain to the ACCESSES polyhedron for the alias set of
-     data reference DR.  */
+     the reference.  */
   isl_constraint *c
     = isl_equality_alloc (isl_local_space_from_space (isl_map_get_space (acc)));
   c = isl_constraint_set_constant_si (c, -alias_set);
@@ -898,15 +899,15 @@ build_scop_context (scop_p scop)
   isl_space *space = isl_space_set_alloc (scop->isl_context, nbp, 0);
 
   unsigned i;
-  tree e;
-  FOR_EACH_VEC_ELT (region->params, i, e)
+  tree p;
+  FOR_EACH_VEC_ELT (region->params, i, p)
     space = isl_space_set_dim_id (space, isl_dim_param, i,
-                                  isl_id_for_ssa_name (scop, e));
+				  isl_id_for_parameter (scop, p));
 
   scop->param_context = isl_set_universe (space);
 
-  FOR_EACH_VEC_ELT (region->params, i, e)
-    add_param_constraints (scop, i, e);
+  FOR_EACH_VEC_ELT (region->params, i, p)
+    add_param_constraints (scop, i, p);
 }
 
 /* Return true when loop A is nested in loop B.  */

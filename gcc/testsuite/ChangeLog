@@ -1,3 +1,182 @@
+2022-05-18  Marek Polacek  <polacek@redhat.com>
+
+	PR c/105131
+	* gcc.dg/Wenum-int-mismatch-1.c: New test.
+	* gcc.dg/Wenum-int-mismatch-2.c: New test.
+	* gcc.dg/Wenum-int-mismatch-3.c: New test.
+	* gcc.dg/Wenum-int-mismatch-4.c: New test.
+	* gcc.dg/Wenum-int-mismatch-5.c: New test.
+
+2022-05-18  Paul A. Clarke  <pc@us.ibm.com>
+
+	PR target/105620
+	* g++.target/powerpc/pr69667.C: Move to ...
+	* g++.dg/pr69667.C: here. Also, revert recent dg directives changes.
+
+2022-05-18  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* gcc.target/i386/bmi-andn-3.c: New test case.
+
+2022-05-18  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/105497
+	* c-c++-common/Wswitch-1.c: New test.
+	* g++.dg/warn/Wswitch-4.C: New test.
+
+2022-05-18  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/105634
+	* g++.dg/Wclass-memaccess-2.C: Moved to...
+	* g++.dg/warn/Wclass-memaccess-2.C: ...here.
+	* g++.dg/Wclass-memaccess-3.C: Moved to...
+	* g++.dg/warn/Wclass-memaccess-3.C: ...here.
+	* g++.dg/Wclass-memaccess-4.C: Moved to...
+	* g++.dg/warn/Wclass-memaccess-4.C: ...here.
+	* g++.dg/Wclass-memaccess-5.C: Moved to...
+	* g++.dg/warn/Wclass-memaccess-5.C: ...here.
+	* g++.dg/Wclass-memaccess-6.C: Moved to...
+	* g++.dg/warn/Wclass-memaccess-6.C: ...here.
+	* g++.dg/Wclass-memaccess.C: Moved to...
+	* g++.dg/warn/Wclass-memaccess.C: ...here.
+	* g++.dg/warn/Wclass-memaccess-7.C: New test.
+
+2022-05-18  Kewen Lin  <linkw@linux.ibm.com>
+
+	* gcc.target/powerpc/pr83660.C: Moved to...
+	* g++.target/powerpc/pr83660.C: ...here.
+
+2022-05-18  Frederik Harwath  <frederik@codesourcery.com>
+
+	* gcc.dg/graphite/scop-22a.c: New test.
+
+2022-05-18  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/gomp/all-memory-1.f90: Add inoutset test.
+	* gfortran.dg/gomp/all-memory-2.f90: Likewise.
+	* gfortran.dg/gomp/depobj-1.f90: Likewise.
+	* gfortran.dg/gomp/depobj-2.f90: Likewise.
+
+2022-05-18  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr103462-1.c: New test.
+	* gcc.target/i386/pr103462-2.c: New test.
+	* gcc.target/i386/pr103462-3.c: New test.
+	* gcc.target/i386/pr103462-4.c: New test.
+	* gcc.target/i386/pr103462-5.c: New test.
+	* gcc.target/i386/pr103462-6.c: New test.
+
+2022-05-18  Haochen Gui  <guihaoc@gcc.gnu.org>
+
+	PR target/95737
+	* gcc.target/powerpc/pr95737.c: New.
+
+2022-05-18  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr104375.c: New test.
+
+2022-05-18  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr104610.c: New test.
+
+2022-05-17  Jason Merrill  <jason@redhat.com>
+
+	PR c++/102307
+	* g++.dg/cpp1z/constexpr-array2.C: New test.
+
+2022-05-17  Tobias Burnus  <tobias@codesourcery.com>
+
+	* c-c++-common/gomp/target-device-ancestor-5.c: New test.
+
+2022-05-17  Giuliano Belinassi  <gbelinassi@suse.de>
+
+	PR c++/105169
+	* g++.dg/modules/pr105169.h: New file.
+	* g++.dg/modules/pr105169_a.C: New test.
+	* g++.dg/modules/pr105169_b.C: New file.
+
+2022-05-17  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gcc.dg/pr105458.c: New.
+
+2022-05-17  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/105624
+	* gcc.target/i386/pr105624.c: New test.
+
+2022-05-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/gomp/all-memory-1.c (boo): Add test with
+	inoutset depend-kind.
+	* c-c++-common/gomp/all-memory-2.c (boo): Likewise.
+	* c-c++-common/gomp/depobj-1.c (f1): Likewise.
+	(f2): Adjusted expected diagnostics.
+	* g++.dg/gomp/depobj-1.C (f4): Adjust expected diagnostics.
+
+2022-05-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/105613
+	* gcc.c-torture/execute/pr105613.c: New test.
+
+2022-05-17  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/gomp/all-memory-1.f90: New test.
+	* gfortran.dg/gomp/all-memory-2.f90: New test.
+	* gfortran.dg/gomp/all-memory-3.f90: New test.
+
+2022-05-17  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/105618
+	* gcc.dg/tree-ssa/ssa-sink-19.c: New testcase.
+
+2022-05-17  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr105033.c: New test.
+
+2022-05-17  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.dg/pr105591.c: New test.
+
+2022-05-16  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/105103
+	* gcc.dg/analyzer/stdarg-1.c: New test.
+	* gcc.dg/analyzer/stdarg-2.c: New test.
+	* gcc.dg/analyzer/stdarg-fmtstring-1.c: New test.
+	* gcc.dg/analyzer/stdarg-lto-1-a.c: New test.
+	* gcc.dg/analyzer/stdarg-lto-1-b.c: New test.
+	* gcc.dg/analyzer/stdarg-lto-1.h: New test.
+	* gcc.dg/analyzer/stdarg-sentinel-1.c: New test.
+	* gcc.dg/analyzer/stdarg-types-1.c: New test.
+	* gcc.dg/analyzer/stdarg-types-2.c: New test.
+
+2022-05-16  Richard Biener  <rguenther@suse.de>
+
+	PR rtl-optimization/105577
+	* g++.dg/torture/pr105577.C: New testcase.
+
+2022-05-16  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/torture/pr105598.c: New testcase.
+
+2022-05-16  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr105587.c: New test.
+
+2022-05-15  Jason Merrill  <jason@redhat.com>
+
+	PR c++/100502
+	PR c++/58993
+	* g++.dg/template/access37.C: Now OK.
+	* g++.dg/template/friend69.C: Now OK.
+	* g++.dg/lookup/friend23.C: New test.
+
+2022-05-15  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105589
+	PR c++/105191
+	PR c++/92385
+	* g++.dg/cpp0x/initlist-array16.C: New test.
+
 2022-05-13  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/81952

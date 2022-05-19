@@ -327,7 +327,7 @@ private extern(C++) final class Semantic3Visitor : Visitor
             sc2.scontinue = null;
             sc2.sw = null;
             sc2.fes = funcdecl.fes;
-            sc2.linkage = LINK.d;
+            sc2.linkage = funcdecl.isCsymbol() ? LINK.c : LINK.d;
             sc2.stc &= STC.flowThruFunction;
             sc2.visibility = Visibility(Visibility.Kind.public_);
             sc2.explicitVisibility = 0;
@@ -1053,7 +1053,7 @@ private extern(C++) final class Semantic3Visitor : Visitor
                         {
                             if (!v._init)
                             {
-                                v.error("Zero-length `out` parameters are not allowed.");
+                                v.error("zero-length `out` parameters are not allowed.");
                                 return;
                             }
                             ExpInitializer ie = v._init.isExpInitializer();
@@ -1277,70 +1277,7 @@ private extern(C++) final class Semantic3Visitor : Visitor
             f.isnogc = true;
         }
 
-        if (funcdecl.flags & FUNCFLAG.returnInprocess)
-        {
-            funcdecl.flags &= ~FUNCFLAG.returnInprocess;
-            if (funcdecl.storage_class & STC.return_)
-            {
-                if (funcdecl.type == f)
-                    f = cast(TypeFunction)f.copy();
-                f.isreturn = true;
-                f.isreturnscope = cast(bool) (funcdecl.storage_class & STC.returnScope);
-                if (funcdecl.storage_class & STC.returninferred)
-                    f.isreturninferred = true;
-            }
-        }
-
-        funcdecl.flags &= ~FUNCFLAG.inferScope;
-
-        // Eliminate maybescope's
-        {
-            // Create and fill array[] with maybe candidates from the `this` and the parameters
-            VarDeclaration[10] tmp = void;
-            size_t dim = (funcdecl.vthis !is null) + (funcdecl.parameters ? funcdecl.parameters.dim : 0);
-
-            import dmd.common.string : SmallBuffer;
-            auto sb = SmallBuffer!VarDeclaration(dim, tmp[]);
-            VarDeclaration[] array = sb[];
-
-            size_t n = 0;
-            if (funcdecl.vthis)
-                array[n++] = funcdecl.vthis;
-            if (funcdecl.parameters)
-            {
-                foreach (v; *funcdecl.parameters)
-                {
-                    array[n++] = v;
-                }
-            }
-            eliminateMaybeScopes(array[0 .. n]);
-        }
-
-        // Infer STC.scope_
-        if (funcdecl.parameters && !funcdecl.errors)
-        {
-            assert(f.parameterList.length == funcdecl.parameters.dim);
-            foreach (u, p; f.parameterList)
-            {
-                auto v = (*funcdecl.parameters)[u];
-                if (v.storage_class & STC.maybescope)
-                {
-                    //printf("Inferring scope for %s\n", v.toChars());
-                    notMaybeScope(v);
-                    v.storage_class |= STC.scope_ | STC.scopeinferred;
-                    p.storageClass |= STC.scope_ | STC.scopeinferred;
-                    assert(!(p.storageClass & STC.maybescope));
-                }
-            }
-        }
-
-        if (funcdecl.vthis && funcdecl.vthis.storage_class & STC.maybescope)
-        {
-            notMaybeScope(funcdecl.vthis);
-            funcdecl.vthis.storage_class |= STC.scope_ | STC.scopeinferred;
-            f.isScopeQual = true;
-            f.isscopeinferred = true;
-        }
+        finishScopeParamInference(funcdecl, f);
 
         // reset deco to apply inference result to mangled name
         if (f != funcdecl.type)
@@ -1353,9 +1290,75 @@ private extern(C++) final class Semantic3Visitor : Visitor
             if (funcdecl.isCtorDeclaration()) // https://issues.dlang.org/show_bug.cgi?id=#15665
                 f.isctor = true;
             sc.stc = 0;
-            sc.linkage = funcdecl.linkage; // https://issues.dlang.org/show_bug.cgi?id=8496
+            sc.linkage = funcdecl._linkage; // https://issues.dlang.org/show_bug.cgi?id=8496
             funcdecl.type = f.typeSemantic(funcdecl.loc, sc);
             sc = sc.pop();
+        }
+
+        // Check `extern(C++)` functions for invalid the return/parameter types
+        if (funcdecl._linkage == LINK.cpp)
+        {
+            static bool isCppNonMappableType(Type type, Parameter param = null, Type origType = null)
+            {
+                // Don't allow D `immutable` and `shared` types to be interfaced with C++
+                if (type.isImmutable() || type.isShared())
+                    return true;
+                else if (Type cpptype = target.cpp.parameterType(type))
+                    type = cpptype;
+
+                if (origType is null)
+                    origType = type;
+
+                // Permit types that are handled by toCppMangle. This list should be kept in sync with
+                // each visit method in dmd.cppmangle and dmd.cppmanglewin.
+                switch (type.ty)
+                {
+                    case Tnull:
+                    case Tnoreturn:
+                    case Tvector:
+                    case Tpointer:
+                    case Treference:
+                    case Tfunction:
+                    case Tstruct:
+                    case Tenum:
+                    case Tclass:
+                    case Tident:
+                    case Tinstance:
+                        break;
+
+                    case Tsarray:
+                        if (!origType.isTypePointer())
+                            return true;
+                        break;
+
+                    default:
+                        if (!type.isTypeBasic())
+                            return true;
+                        break;
+                }
+
+                // Descend to the enclosing type
+                if (auto tnext = type.nextOf())
+                    return isCppNonMappableType(tnext, param, origType);
+
+                return false;
+            }
+            if (isCppNonMappableType(f.next.toBasetype()))
+            {
+                funcdecl.error("cannot return type `%s` because its linkage is `extern(C++)`", f.next.toChars());
+                funcdecl.errors = true;
+            }
+            foreach (i, param; f.parameterList)
+            {
+                if (isCppNonMappableType(param.type.toBasetype(), param))
+                {
+                    funcdecl.error("cannot have parameter of type `%s` because its linkage is `extern(C++)`", param.type.toChars());
+                    if (param.type.toBasetype().isTypeSArray())
+                        errorSupplemental(funcdecl.loc, "perhaps use a `%s*` type instead",
+                                          param.type.nextOf().mutableOf().unSharedOf().toChars());
+                    funcdecl.errors = true;
+                }
+            }
         }
 
         // Do live analysis
@@ -1535,9 +1538,11 @@ private extern(C++) final class Semantic3Visitor : Visitor
 
         sc2.pop();
 
-        // don't do it for unused deprecated types
-        // or error ypes
-        if (!ad.getRTInfo && Type.rtinfo && (!ad.isDeprecated() || global.params.useDeprecated != DiagnosticReporting.error) && (ad.type && ad.type.ty != Terror))
+        // Instantiate RTInfo!S to provide a pointer bitmap for the GC
+        // Don't do it in -betterC or on unused deprecated / error types
+        if (!ad.getRTInfo && global.params.useTypeInfo && Type.rtinfo &&
+            (!ad.isDeprecated() || global.params.useDeprecated != DiagnosticReporting.error) &&
+            (ad.type && ad.type.ty != Terror))
         {
             // Evaluate: RTinfo!type
             auto tiargs = new Objects();

@@ -352,9 +352,13 @@ public:
   call_event (const exploded_edge &eedge,
 	      location_t loc, tree fndecl, int depth);
 
-  label_text get_desc (bool can_colorize) const FINAL OVERRIDE;
+  label_text get_desc (bool can_colorize) const OVERRIDE;
 
   bool is_call_p () const FINAL OVERRIDE;
+
+protected:
+  tree get_caller_fndecl () const;
+  tree get_callee_fndecl () const;
 
   const supernode *m_src_snode;
   const supernode *m_dest_snode;

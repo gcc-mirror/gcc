@@ -61,7 +61,8 @@ package Ada.Containers.Red_Black_Trees.Generic_Operations is
 
    --  procedure Check_Invariant (Tree : Tree_Type);
 
-   function Vet (Tree : Tree_Type; Node : Node_Access) return Boolean;
+   function Vet (Tree : Tree_Type; Node : Node_Access) return Boolean
+     with Inline;
    --  Inspects Node to determine (to the extent possible) whether
    --  the node is valid; used to detect if the node is dangling.
 

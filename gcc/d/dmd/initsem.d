@@ -198,14 +198,16 @@ extern(C++) Initializer initializerSemantic(Initializer init, Scope* sc, ref Typ
                 {
                     if ((!t.alignment.isDefault() && t.alignment.get() < target.ptrsize ||
                          (vd.offset & (target.ptrsize - 1))) &&
-                        sc.func && sc.func.setUnsafe())
+                        sc.func)
                     {
-                        error(i.value[j].loc, "field `%s.%s` cannot assign to misaligned pointers in `@safe` code",
-                            sd.toChars(), vd.toChars());
-                        errors = true;
-                        elems[fieldi] = ErrorExp.get(); // for better diagnostics on multiple errors
-                        ++fieldi;
-                        continue;
+                        if (sc.func.setUnsafe(false, i.value[j].loc,
+                            "field `%s.%s` cannot assign to misaligned pointers in `@safe` code", sd, vd))
+                        {
+                            errors = true;
+                            elems[fieldi] = ErrorExp.get(); // for better diagnostics on multiple errors
+                            ++fieldi;
+                            continue;
+                        }
                     }
                 }
 
@@ -502,6 +504,18 @@ extern(C++) Initializer initializerSemantic(Initializer init, Scope* sc, ref Typ
                 i.exp = se.castTo(sc, t);
                 goto L1;
             }
+
+            /* Lop off terminating 0 of initializer for:
+             *  static char s[5] = "hello";
+             */
+            if (sc.flags & SCOPE.Cfile &&
+                typeb.ty == Tsarray &&
+                tynto.isSomeChar &&
+                tb.isTypeSArray().dim.toInteger() + 1 == typeb.isTypeSArray().dim.toInteger())
+            {
+                i.exp = se.castTo(sc, t);
+                goto L1;
+            }
         }
         /* C11 6.7.9-14..15
          * Initialize an array of unknown size with a string.
@@ -573,7 +587,7 @@ extern(C++) Initializer initializerSemantic(Initializer init, Scope* sc, ref Typ
         }
         else if (sc.flags & SCOPE.Cfile && i.exp.isStringExp() &&
             tta && (tta.next.ty == Tint8 || tta.next.ty == Tuns8) &&
-            ti.ty == Tpointer && ti.nextOf().ty == Tchar)
+            ti.ty == Tsarray && ti.nextOf().ty == Tchar)
         {
             /* unsigned char bbb[1] = "";
              *   signed char ccc[1] = "";

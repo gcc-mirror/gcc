@@ -1154,7 +1154,7 @@ extern(C++) Type typeSemantic(Type type, const ref Loc loc, Scope* sc)
             //printf("already done\n");
             return mtype;
         }
-        //printf("TypeFunction::semantic() this = %p\n", this);
+        //printf("TypeFunction::semantic() this = %p\n", mtype);
         //printf("TypeFunction::semantic() %s, sc.stc = %llx\n", mtype.toChars(), sc.stc);
 
         bool errors = false;
@@ -1788,111 +1788,18 @@ extern(C++) Type typeSemantic(Type type, const ref Loc loc, Scope* sc)
 
     Type visitTraits(TypeTraits mtype)
     {
-        if (mtype.ty == Terror)
-            return mtype;
+        Expression e;
+        Type t;
+        Dsymbol s;
+        mtype.resolve(loc, sc, e, t, s);
 
-        const inAlias = (sc.flags & SCOPE.alias_) != 0;
-        if (mtype.exp.ident != Id.allMembers &&
-            mtype.exp.ident != Id.derivedMembers &&
-            mtype.exp.ident != Id.getMember &&
-            mtype.exp.ident != Id.parent &&
-            mtype.exp.ident != Id.parameters &&
-            mtype.exp.ident != Id.child &&
-            mtype.exp.ident != Id.toType &&
-            mtype.exp.ident != Id.getOverloads &&
-            mtype.exp.ident != Id.getVirtualFunctions &&
-            mtype.exp.ident != Id.getVirtualMethods &&
-            mtype.exp.ident != Id.getAttributes &&
-            mtype.exp.ident != Id.getUnitTests &&
-            mtype.exp.ident != Id.getAliasThis)
-        {
-            static immutable (const(char)*)[2] ctxt = ["as type", "in alias"];
-            .error(mtype.loc, "trait `%s` is either invalid or not supported %s",
-                 mtype.exp.ident.toChars, ctxt[inAlias]);
-            mtype.ty = Terror;
-            return mtype;
-        }
-
-        import dmd.traits : semanticTraits;
-        Type result;
-
-        if (Expression e = semanticTraits(mtype.exp, sc))
-        {
-            switch (e.op)
-            {
-            case EXP.dotVariable:
-                mtype.sym = e.isDotVarExp().var;
-                break;
-            case EXP.variable:
-                mtype.sym = e.isVarExp().var;
-                break;
-            case EXP.function_:
-                auto fe = e.isFuncExp();
-                mtype.sym = fe.td ? fe.td : fe.fd;
-                break;
-            case EXP.dotTemplateDeclaration:
-                mtype.sym = e.isDotTemplateExp().td;
-                break;
-            case EXP.dSymbol:
-                mtype.sym = e.isDsymbolExp().s;
-                break;
-            case EXP.template_:
-                mtype.sym = e.isTemplateExp().td;
-                break;
-            case EXP.scope_:
-                mtype.sym = e.isScopeExp().sds;
-                break;
-            case EXP.tuple:
-                TupleExp te = e.isTupleExp();
-                Objects* elems = new Objects(te.exps.dim);
-                foreach (i; 0 .. elems.dim)
-                {
-                    auto src = (*te.exps)[i];
-                    switch (src.op)
-                    {
-                    case EXP.type:
-                        (*elems)[i] = src.isTypeExp().type;
-                        break;
-                    case EXP.dotType:
-                        (*elems)[i] = src.isDotTypeExp().sym.isType();
-                        break;
-                    case EXP.overloadSet:
-                        (*elems)[i] = src.isOverExp().type;
-                        break;
-                    default:
-                        if (auto sym = isDsymbol(src))
-                            (*elems)[i] = sym;
-                        else
-                            (*elems)[i] = src;
-                    }
-                }
-                TupleDeclaration td = new TupleDeclaration(e.loc, Identifier.generateId("__aliastup"), elems);
-                mtype.sym = td;
-                break;
-            case EXP.dotType:
-                result = e.isDotTypeExp().sym.isType();
-                break;
-            case EXP.type:
-                result = e.isTypeExp().type;
-                break;
-            case EXP.overloadSet:
-                result = e.isOverExp().type;
-                break;
-            default:
-                break;
-            }
-        }
-
-        if (result)
-            result = result.addMod(mtype.mod);
-        if (!inAlias && !result)
+        if (!t)
         {
             if (!global.errors)
                 .error(mtype.loc, "`%s` does not give a valid type", mtype.toChars);
             return error();
         }
-
-        return result;
+        return t;
     }
 
     Type visitReturn(TypeReturn mtype)
@@ -3132,7 +3039,8 @@ void resolve(Type mt, const ref Loc loc, Scope* sc, out Expression pe, out Type 
         if (mt.exp.op == EXP.type ||
             mt.exp.op == EXP.scope_)
         {
-            if (mt.exp.checkType())
+            if (!(sc.flags & SCOPE.Cfile) && // in (extended) C typeof may be used on types as with sizeof
+                mt.exp.checkType())
                 goto Lerr;
 
             /* Today, 'typeof(func)' returns void if func is a
@@ -3326,14 +3234,99 @@ void resolve(Type mt, const ref Loc loc, Scope* sc, out Expression pe, out Type 
         mt.obj = pe ? pe : (pt ? pt : ps);
     }
 
-    void visitTraits(TypeTraits tt)
+    void visitTraits(TypeTraits mt)
     {
-        if (Type t = typeSemantic(tt, loc, sc))
-            returnType(t);
-        else if (tt.sym)
-            returnSymbol(tt.sym);
+        // if already resolved just return the cached object.
+        if (mt.obj)
+        {
+            pt = mt.obj.isType();
+            ps = mt.obj.isDsymbol();
+            return;
+        }
+
+        import dmd.traits : semanticTraits;
+
+        if (Expression e = semanticTraits(mt.exp, sc))
+        {
+            switch (e.op)
+            {
+            case EXP.dotVariable:
+                mt.obj = e.isDotVarExp().var;
+                break;
+            case EXP.variable:
+                mt.obj = e.isVarExp().var;
+                break;
+            case EXP.function_:
+                auto fe = e.isFuncExp();
+                mt.obj = fe.td ? fe.td : fe.fd;
+                break;
+            case EXP.dotTemplateDeclaration:
+                mt.obj = e.isDotTemplateExp().td;
+                break;
+            case EXP.dSymbol:
+                mt.obj = e.isDsymbolExp().s;
+                break;
+            case EXP.template_:
+                mt.obj = e.isTemplateExp().td;
+                break;
+            case EXP.scope_:
+                mt.obj = e.isScopeExp().sds;
+                break;
+            case EXP.tuple:
+                TupleExp te = e.isTupleExp();
+                Objects* elems = new Objects(te.exps.dim);
+                foreach (i; 0 .. elems.dim)
+                {
+                    auto src = (*te.exps)[i];
+                    switch (src.op)
+                    {
+                    case EXP.type:
+                        (*elems)[i] = src.isTypeExp().type;
+                        break;
+                    case EXP.dotType:
+                        (*elems)[i] = src.isDotTypeExp().sym.isType();
+                        break;
+                    case EXP.overloadSet:
+                        (*elems)[i] = src.isOverExp().type;
+                        break;
+                    default:
+                        if (auto sym = isDsymbol(src))
+                            (*elems)[i] = sym;
+                        else
+                            (*elems)[i] = src;
+                    }
+                }
+                TupleDeclaration td = new TupleDeclaration(e.loc, Identifier.generateId("__aliastup"), elems);
+                mt.obj = td;
+                break;
+            case EXP.dotType:
+                mt.obj = e.isDotTypeExp().sym.isType();
+                break;
+            case EXP.type:
+                mt.obj = e.isTypeExp().type;
+                break;
+            case EXP.overloadSet:
+                mt.obj = e.isOverExp().type;
+                break;
+            default:
+                break;
+            }
+        }
+
+        if (mt.obj)
+        {
+            if (auto t = mt.obj.isType())
+                returnType(t.addMod(mt.mod));
+            else if (auto s = mt.obj.isDsymbol())
+                returnSymbol(s);
+            else
+                assert(0);
+        }
         else
+        {
+            mt.obj = Type.terror;
             return returnError();
+        }
     }
 
     switch (mt.ty)
@@ -3391,7 +3384,7 @@ Expression dotExp(Type mt, Scope* sc, Expression e, Identifier ident, int flag)
                 v.dsymbolSemantic(null);
                 if (v.isField())
                 {
-                    auto ad = v.toParent().isAggregateDeclaration();
+                    auto ad = v.isMember();
                     objc.checkOffsetof(e, ad);
                     ad.size(e.loc);
                     if (ad.sizeok != Sizeok.done)
@@ -3637,12 +3630,16 @@ Expression dotExp(Type mt, Scope* sc, Expression e, Identifier ident, int flag)
             }
             else
             {
+                Expression e0;
+                Expression ev = e;
+                ev = extractSideEffect(sc, "__tup", e0, ev);
+
                 const length = cast(size_t)mt.dim.toUInteger();
                 auto exps = new Expressions();
                 exps.reserve(length);
                 foreach (i; 0 .. length)
-                    exps.push(new IndexExp(e.loc, e, new IntegerExp(e.loc, i, Type.tsize_t)));
-                e = new TupleExp(e.loc, exps);
+                    exps.push(new IndexExp(e.loc, ev, new IntegerExp(e.loc, i, Type.tsize_t)));
+                e = new TupleExp(e.loc, e0, exps);
             }
         }
         else

@@ -1743,8 +1743,7 @@ The following information is contained in the :file:`ALI` file.
   if any of these units are modified.
 
 * Cross-reference data. Contains information on all entities referenced
-  in the unit. Used by tools like ``gnatxref`` and ``gnatfind`` to
-  provide cross-reference information.
+  in the unit. Used by some tools to provide cross-reference information.
 
 For a full detailed description of the format of the :file:`ALI` file,
 see the source of the body of unit ``Lib.Writ``, contained in file
@@ -2009,8 +2008,8 @@ be :file:`adalib`).
 You can also specify a new default path to the run-time library at compilation
 time with the switch :switch:`--RTS=rts-path`. You can thus choose / change
 the run-time library you want your program to be compiled with. This switch is
-recognized by ``gcc``, ``gnatmake``, ``gnatbind``,
-``gnatls``, ``gnatfind`` and ``gnatxref``.
+recognized by ``gcc``, ``gnatmake``, ``gnatbind``, ``gnatls``, and all
+project aware tools.
 
 It is possible to install a library before or after the standard GNAT
 library, by reordering the lines in the configuration files. In general, a

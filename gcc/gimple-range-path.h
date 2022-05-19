@@ -91,7 +91,6 @@ private:
 
   auto_bitmap m_imports;
   gimple_ranger *m_ranger;
-  non_null_ref m_non_null;
 
   // Current path position.
   unsigned m_pos;

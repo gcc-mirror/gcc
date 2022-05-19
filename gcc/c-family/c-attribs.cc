@@ -2215,16 +2215,6 @@ handle_mode_attribute (tree *node, tree name, tree args,
 						 TYPE_QUALS (type));
       if (TYPE_USER_ALIGN (type))
 	*node = build_aligned_type (*node, TYPE_ALIGN (type));
-
-      tree decl = node[2];
-      if (decl && TYPE_NAME (type) == decl)
-	{
-	  /* Set up the typedef all over again.  */
-	  DECL_ORIGINAL_TYPE (decl) = NULL_TREE;
-	  TREE_TYPE (decl) = *node;
-	  set_underlying_type (decl);
-	  *node = TREE_TYPE (decl);
-	}
     }
 
   return NULL_TREE;
@@ -4952,8 +4942,7 @@ handle_access_attribute (tree node[3], tree name, tree args, int flags,
   int imode;
 
   {
-    const int nmodes =
-      sizeof attr_access::mode_names / sizeof *attr_access::mode_names;
+    const int nmodes = ARRAY_SIZE (attr_access::mode_names);
 
     for (imode = 0; imode != nmodes; ++imode)
       if (!strncmp (ps, attr_access::mode_names[imode],

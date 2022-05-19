@@ -142,6 +142,22 @@ Wanalyzer-use-of-pointer-in-stale-stack-frame
 Common Var(warn_analyzer_use_of_pointer_in_stale_stack_frame) Init(1) Warning
 Warn about code paths in which a pointer to a stale stack frame is used.
 
+Wanalyzer-va-arg-type-mismatch
+Common Var(warn_analyzer_va_arg_type_mismatch) Init(1) Warning
+Warn about code paths in which va_arg uses the wrong type.
+
+Wanalyzer-va-list-exhausted
+Common Var(warn_analyzer_va_list_exhausted) Init(1) Warning
+Warn about code paths in which va_arg is used too many times on a va_list.
+
+Wanalyzer-va-list-leak
+Common Var(warn_analyzer_va_list_leak) Init(1) Warning
+Warn about code paths in which va_start or va_copy is used without a corresponding va_end.
+
+Wanalyzer-va-list-use-after-va-end
+Common Var(warn_analyzer_va_list_use_after_va_end) Init(1) Warning
+Warn about code paths in which a va_list is used after va_end.
+
 Wanalyzer-write-to-const
 Common Var(warn_analyzer_write_to_const) Init(1) Warning
 Warn about code paths which attempt to write to a const object.

@@ -1,3 +1,44 @@
+2022-05-18  Marek Polacek  <polacek@redhat.com>
+
+	PR c/105131
+	* c.opt (Wenum-int-mismatch): New.
+
+2022-05-18  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/105497
+	* c-warn.cc (c_do_switch_warnings): Don't warn about unhandled
+	enumerator when it was marked with attribute unused.
+
+2022-05-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-ada-spec.cc (dump_ada_node) <COMPLEX_TYPE>: Deal with usual
+	floating-point complex types.
+	<POINTER_TYPE>: Do not use limited_with clause if the designated
+	type is a scalar type.
+
+2022-05-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-omp.cc (c_finish_omp_depobj): Handle
+	OMP_CLAUSE_DEPEND_INOUTSET.
+
+2022-05-16  Jason Merrill  <jason@redhat.com>
+
+	PR c/105492
+	* c-attribs.cc (handle_mode_attribute): Don't fix broken typedefs
+	here.
+
+2022-05-16  Martin Liska  <mliska@suse.cz>
+
+	* c-common.cc (ARRAY_SIZE): Use ARRAY_SIZE.
+	(c_common_nodes_and_builtins): Likewise.
+	* c-format.cc (check_tokens): Likewise.
+	(check_plain): Likewise.
+	* c-pragma.cc (c_pp_lookup_pragma): Likewise.
+	(init_pragma): Likewise.
+	* known-headers.cc (get_string_macro_hint): Likewise.
+	(get_stdlib_header_for_name): Likewise.
+	* c-attribs.cc: Likewise.
+
 2022-05-13  Richard Biener  <rguenther@suse.de>
 
 	* c-omp.cc: Remove gimple-fold.h include.

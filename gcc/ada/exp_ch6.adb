@@ -1576,8 +1576,8 @@ package body Exp_Ch6 is
             Var := Make_Var (Expression (Actual));
 
             Crep := not Has_Compatible_Representation
-                          (Target_Type  => F_Typ,
-                           Operand_Type => Etype (Expression (Actual)));
+                          (Target_Typ  => F_Typ,
+                           Operand_Typ => Etype (Expression (Actual)));
 
          else
             V_Typ := Etype (Actual);
@@ -2379,8 +2379,8 @@ package body Exp_Ch6 is
                   --  Also pass by copy if change of representation
 
                   or else not Has_Compatible_Representation
-                                (Target_Type  => Etype (Formal),
-                                 Operand_Type => Etype (Expression (Actual))))
+                                (Target_Typ  => Etype (Formal),
+                                 Operand_Typ => Etype (Expression (Actual))))
             then
                Add_Call_By_Copy_Code;
 
@@ -4475,16 +4475,6 @@ package body Exp_Ch6 is
 
          Set_Entity (Name (Call_Node), Parent_Subp);
 
-         --  Move this check to sem???
-
-         if Is_Abstract_Subprogram (Parent_Subp)
-           and then not In_Instance
-         then
-            Error_Msg_NE
-              ("cannot call abstract subprogram &!",
-               Name (Call_Node), Parent_Subp);
-         end if;
-
          --  Inspect all formals of derived subprogram Subp. Compare parameter
          --  types with the parent subprogram and check whether an actual may
          --  need a type conversion to the corresponding formal of the parent
@@ -4566,8 +4556,8 @@ package body Exp_Ch6 is
                   --  warning, and do the change of representation.
 
                   elsif not Has_Compatible_Representation
-                              (Target_Type  => Formal_Typ,
-                               Operand_Type => Parent_Typ)
+                              (Target_Typ  => Formal_Typ,
+                               Operand_Typ => Parent_Typ)
                   then
                      Error_Msg_N
                        ("??change of representation required", Actual);
@@ -4909,8 +4899,8 @@ package body Exp_Ch6 is
       --  the return type is limited, then the context is initialization and
       --  different processing applies. If the call is to a protected function,
       --  the expansion above will call Expand_Call recursively. Otherwise the
-      --  function call is transformed into a temporary which obtains the
-      --  result from the secondary stack.
+      --  function call is transformed into a reference to the result that has
+      --  been built either on the return or the secondary stack.
 
       if Needs_Finalization (Etype (Subp)) then
          if not Is_Build_In_Place_Function_Call (Call_Node)
@@ -4937,10 +4927,11 @@ package body Exp_Ch6 is
            and then
              (Ekind (Current_Scope) /= E_Loop
                or else Nkind (Parent (Call_Node)) /= N_Function_Call
-               or else not Is_Build_In_Place_Function_Call
-                             (Parent (Call_Node)))
+               or else not
+                 Is_Build_In_Place_Function_Call (Parent (Call_Node)))
          then
-            Establish_Transient_Scope (Call_Node, Manage_Sec_Stack => True);
+            Establish_Transient_Scope
+              (Call_Node, Returns_On_Secondary_Stack (Etype (Subp)));
          end if;
       end if;
    end Expand_Call_Helper;
@@ -7335,10 +7326,9 @@ package body Exp_Ch6 is
       --  A return statement from an ignored Ghost function does not use the
       --  secondary stack (or any other one).
 
-      elsif not Requires_Transient_Scope (R_Type)
+      elsif not Returns_On_Secondary_Stack (R_Type)
         or else Is_Ignored_Ghost_Entity (Scope_Id)
       then
-
          --  Mutable records with variable-length components are not returned
          --  on the sec-stack, so we need to make sure that the back end will
          --  only copy back the size of the actual value, and not the maximum
@@ -7351,6 +7341,7 @@ package body Exp_Ch6 is
             Ubt  : constant Entity_Id := Underlying_Type (Base_Type (Exp_Typ));
             Decl : Node_Id;
             Ent  : Entity_Id;
+
          begin
             if not Exp_Is_Function_Call
               and then Has_Discriminants (Ubt)
@@ -7364,6 +7355,72 @@ package body Exp_Ch6 is
                Analyze_And_Resolve (Exp);
             end if;
          end;
+
+         --  For types which need finalization, do the allocation on the return
+         --  stack manually in order to call Adjust at the right time:
+
+         --    type Ann is access R_Type;
+         --    for Ann'Storage_pool use rs_pool;
+         --    Rnn : Ann := new Exp_Typ'(Exp);
+         --    return Rnn.all;
+
+         --  but optimize the case where the result is a function call that
+         --  also needs finalization. In this case the result is already on
+         --  the return stack and no further processing is required.
+
+         if Present (Utyp)
+           and then Needs_Finalization (Utyp)
+           and then not (Exp_Is_Function_Call
+                          and then Needs_Finalization (Exp_Typ))
+         then
+            declare
+               Loc        : constant Source_Ptr := Sloc (N);
+               Acc_Typ    : constant Entity_Id := Make_Temporary (Loc, 'A');
+               Alloc_Node : Node_Id;
+               Temp       : Entity_Id;
+
+            begin
+               Mutate_Ekind (Acc_Typ, E_Access_Type);
+
+               Set_Associated_Storage_Pool (Acc_Typ, RTE (RE_RS_Pool));
+
+               --  This is an allocator for the return stack, and it's fine
+               --  to have Comes_From_Source set False on it, as gigi knows not
+               --  to flag it as a violation of No_Implicit_Heap_Allocations.
+
+               Alloc_Node :=
+                 Make_Allocator (Loc,
+                   Expression =>
+                     Make_Qualified_Expression (Loc,
+                       Subtype_Mark => New_Occurrence_Of (Exp_Typ, Loc),
+                       Expression   => Relocate_Node (Exp)));
+
+               --  We do not want discriminant checks on the declaration,
+               --  given that it gets its value from the allocator.
+
+               Set_No_Initialization (Alloc_Node);
+
+               Temp := Make_Temporary (Loc, 'R', Alloc_Node);
+
+               Insert_Actions (Exp, New_List (
+                 Make_Full_Type_Declaration (Loc,
+                   Defining_Identifier => Acc_Typ,
+                   Type_Definition     =>
+                     Make_Access_To_Object_Definition (Loc,
+                       Subtype_Indication => Subtype_Ind)),
+
+                 Make_Object_Declaration (Loc,
+                   Defining_Identifier => Temp,
+                   Object_Definition   => New_Occurrence_Of (Acc_Typ, Loc),
+                   Expression          => Alloc_Node)));
+
+               Rewrite (Exp,
+                 Make_Explicit_Dereference (Loc,
+                 Prefix => New_Occurrence_Of (Temp, Loc)));
+
+               Analyze_And_Resolve (Exp, R_Type);
+            end;
+         end if;
 
       --  Here if secondary stack is used
 
@@ -7382,8 +7439,8 @@ package body Exp_Ch6 is
          --  wrong in the case of a controlled type, where gigi does not know
          --  how to do a copy.)
 
-         pragma Assert (Requires_Transient_Scope (R_Type));
-         if Exp_Is_Function_Call and then Requires_Transient_Scope (Exp_Typ)
+         if Exp_Is_Function_Call
+           and then Returns_On_Secondary_Stack (Exp_Typ)
          then
             Set_By_Ref (N);
 
@@ -7403,19 +7460,20 @@ package body Exp_Ch6 is
 
             Analyze_And_Resolve (Exp, R_Type);
 
-         --  For controlled types, do the allocation on the secondary stack
-         --  manually in order to call adjust at the right time:
+         --  For types which both need finalization and are returned on the
+         --  secondary stack, do the allocation on secondary stack manually
+         --  in order to call Adjust at the right time:
 
-         --    type Anon1 is access R_Type;
-         --    for Anon1'Storage_pool use ss_pool;
-         --    Anon2 : anon1 := new R_Type'(expr);
-         --    return Anon2.all;
+         --    type Ann is access R_Type;
+         --    for Ann'Storage_pool use ss_pool;
+         --    Rnn : Ann := new Exp_Typ'(Exp);
+         --    return Rnn.all;
 
-         --  We do the same for classwide types that are not potentially
+         --  And we do the same for class-wide types that are not potentially
          --  controlled (by the virtue of restriction No_Finalization) because
          --  gigi is not able to properly allocate class-wide types.
 
-         elsif CW_Or_Has_Controlled_Part (Utyp) then
+         elsif CW_Or_Needs_Finalization (Utyp) then
             declare
                Loc        : constant Source_Ptr := Sloc (N);
                Acc_Typ    : constant Entity_Id := Make_Temporary (Loc, 'A');
@@ -7866,6 +7924,8 @@ package body Exp_Ch6 is
          declare
             Typ : constant Entity_Id := Scope (DTC_Entity (Subp));
 
+            L : List_Id;
+
          begin
             --  Handle private overridden primitives
 
@@ -7905,8 +7965,17 @@ package body Exp_Ch6 is
                      Register_Predefined_DT_Entry (Subp);
                   end if;
 
-                  Insert_Actions_After (N,
-                    Register_Primitive (Loc, Prim => Subp));
+                  L := Register_Primitive (Loc, Prim => Subp);
+
+                  if Is_Empty_List (L) then
+                     null;
+
+                  elsif No (Actions (N)) then
+                     Set_Actions (N, L);
+
+                  else
+                     Append_List (L, Actions (N));
+                  end if;
                end if;
             end if;
          end;

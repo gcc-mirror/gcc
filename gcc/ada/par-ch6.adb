@@ -1999,7 +1999,7 @@ package body Ch6 is
             --  at a Return_when_statement
 
             if Token = Tok_When and then not Missing_Semicolon_On_When then
-               Error_Msg_GNAT_Extension ("return when statement");
+               Error_Msg_GNAT_Extension ("return when statement", Token_Ptr);
                Mutate_Nkind (Ret_Node, N_Return_When_Statement);
 
                Scan; -- past WHEN
@@ -2008,7 +2008,7 @@ package body Ch6 is
             --  Allow IF instead of WHEN, giving error message
 
             elsif Token = Tok_If then
-               Error_Msg_GNAT_Extension ("return when statement");
+               Error_Msg_GNAT_Extension ("return when statement", Token_Ptr);
                Mutate_Nkind (Ret_Node, N_Return_When_Statement);
 
                T_When;

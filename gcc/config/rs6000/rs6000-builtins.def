@@ -1424,9 +1424,10 @@
   pure vsc __builtin_vsx_ld_elemrev_v16qi (signed long, const void *);
     LD_ELEMREV_V16QI vsx_ld_elemrev_v16qi {ldvec,endian}
 
-; TODO: There is apparent intent in rs6000-builtin.def to have
-; RS6000_BTC_SPECIAL processing for LXSDX, LXVDSX, and STXSDX, but there are
-; no def_builtin calls for any of them.  At some point, we may want to add a
+; TODO: There was apparent intent in the rs6000-builtin.def to
+; have SPECIAL processing for LXSDX, LXVDSX, and STXSDX, but there are
+; no def_builtin calls for any of them.  That file was removed as part
+; of the BIF rewrite, but at some point, we may want to add a
 ; set of built-ins for whichever vector types make sense for these.
 
   pure vsq __builtin_vsx_lxvd2x_v1ti (signed long, const void *);

@@ -33,12 +33,30 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-event-id.h"
 #include "analyzer/sm.h"
 #include "analyzer/pending-diagnostic.h"
+#include "analyzer/diagnostic-manager.h"
 #include "selftest.h"
 #include "tristate.h"
 #include "analyzer/call-string.h"
 #include "analyzer/program-point.h"
 #include "analyzer/store.h"
 #include "analyzer/region-model.h"
+#include "cpplib.h"
+#include "digraph.h"
+#include "ordered-hash-map.h"
+#include "cfg.h"
+#include "basic-block.h"
+#include "gimple.h"
+#include "gimple-iterator.h"
+#include "cgraph.h"
+#include "analyzer/supergraph.h"
+#include "analyzer/program-state.h"
+#include "alloc-pool.h"
+#include "fibonacci_heap.h"
+#include "shortest-paths.h"
+#include "sbitmap.h"
+#include "analyzer/exploded-graph.h"
+#include "diagnostic-path.h"
+#include "analyzer/checker-path.h"
 
 #if ENABLE_ANALYZER
 
@@ -109,6 +127,70 @@ bool
 pending_diagnostic::same_tree_p (tree t1, tree t2)
 {
   return simple_cst_equal (t1, t2) == 1;
+}
+
+/* Return true iff IDENT is STR.  */
+
+static bool
+ht_ident_eq (ht_identifier ident, const char *str)
+{
+  return (strlen (str) == ident.len
+	  && 0 == strcmp (str, (const char *)ident.str));
+}
+
+/* Return true if we should show the expansion location rather than unwind
+   within MACRO.  */
+
+static bool
+fixup_location_in_macro_p (cpp_hashnode *macro)
+{
+  ht_identifier ident = macro->ident;
+  /* Don't unwind inside <stdarg.h> macros, so that we don't suppress warnings
+     from them (due to being in system headers).  */
+  if (ht_ident_eq (ident, "va_start")
+      || ht_ident_eq (ident, "va_copy")
+      || ht_ident_eq (ident, "va_arg")
+      || ht_ident_eq (ident, "va_end"))
+    return true;
+  return false;
+}
+
+/* Base implementation of pending_diagnostic::fixup_location.
+   Don't unwind inside macros for which fixup_location_in_macro_p is true.  */
+
+location_t
+pending_diagnostic::fixup_location (location_t loc) const
+{
+  if (linemap_location_from_macro_expansion_p (line_table, loc))
+    {
+      line_map *map
+	= const_cast <line_map *> (linemap_lookup (line_table, loc));
+      const line_map_macro *macro_map = linemap_check_macro (map);
+      if (fixup_location_in_macro_p (macro_map->macro))
+	loc = linemap_resolve_location (line_table, loc,
+					LRK_MACRO_EXPANSION_POINT, NULL);
+    }
+  return loc;
+}
+
+/* Base implementation of pending_diagnostic::add_call_event.
+   Add a call_event to EMISSION_PATH.  */
+
+void
+pending_diagnostic::add_call_event (const exploded_edge &eedge,
+				    checker_path *emission_path)
+{
+  const exploded_node *src_node = eedge.m_src;
+  const program_point &src_point = src_node->get_point ();
+  const int src_stack_depth = src_point.get_stack_depth ();
+  const gimple *last_stmt = src_point.get_supernode ()->get_last_stmt ();
+  emission_path->add_event
+    (new call_event (eedge,
+		     (last_stmt
+		      ? last_stmt->location
+		      : UNKNOWN_LOCATION),
+		     src_point.get_fndecl (),
+		     src_stack_depth));
 }
 
 } // namespace ana

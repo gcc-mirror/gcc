@@ -22,4 +22,7 @@ subroutine f1
   !$omp task depend(mutexinoutset: a)
   !$omp end task
   !$omp depobj(depobj2) destroy
+  !$omp depobj(depobj1) depend(inoutset: a)
+  !$omp depobj(depobj1) update(mutexinoutset)
+  !$omp depobj(depobj1) update(inoutset)
 end subroutine f1

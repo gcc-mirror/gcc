@@ -76,9 +76,9 @@ void foo() @safe
 /* TEST_OUTPUT:
 ---
 fail_compilation/retscope6.d(8016): Error: address of variable `i` assigned to `p` with longer lifetime
-fail_compilation/retscope6.d(8031): Error: reference to local variable `i` assigned to non-scope parameter `p` calling retscope6.betty!().betty
-fail_compilation/retscope6.d(8031): Error: reference to local variable `j` assigned to non-scope parameter `q` calling retscope6.betty!().betty
-fail_compilation/retscope6.d(8048): Error: reference to local variable `j` assigned to non-scope parameter `q` calling retscope6.archie!().archie
+fail_compilation/retscope6.d(8031): Error: reference to local variable `i` assigned to non-scope parameter `p`
+fail_compilation/retscope6.d(8031): Error: reference to local variable `j` assigned to non-scope parameter `q`
+fail_compilation/retscope6.d(8048): Error: reference to local variable `j` assigned to non-scope parameter `q`
 ---
 */
 
@@ -172,7 +172,7 @@ T9 testfred()
 
 /* TEST_OUTPUT:
 ---
-fail_compilation/retscope6.d(10003): Error: scope variable `values` assigned to non-scope parameter `values` calling retscope6.escape
+fail_compilation/retscope6.d(10003): Error: scope variable `values` assigned to non-scope parameter `values`
 ---
 */
 
@@ -234,7 +234,7 @@ const(int)* f_c_20150() @safe nothrow
 
 /* TEST_OUTPUT:
 ---
-fail_compilation/retscope6.d(13010): Error: reference to local variable `str` assigned to non-scope parameter `x` calling retscope6.f_throw
+fail_compilation/retscope6.d(13010): Error: reference to local variable `str` assigned to non-scope parameter `x`
 ---
 */
 
@@ -254,7 +254,7 @@ void escape_throw_20150() @safe
 
 /* TEST_OUTPUT:
 ---
-fail_compilation/retscope6.d(14019): Error: scope variable `scopePtr` assigned to non-scope parameter `x` calling retscope6.noInfer23021
+fail_compilation/retscope6.d(14019): Error: scope variable `scopePtr` assigned to non-scope parameter `x`
 fail_compilation/retscope6.d(14022): Error: scope variable `scopePtr` may not be returned
 ---
 */

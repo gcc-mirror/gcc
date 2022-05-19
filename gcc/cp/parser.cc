@@ -4200,7 +4200,7 @@ cp_parser_new (cp_lexer *lexer)
 {
   /* Initialize the binops_by_token so that we can get the tree
      directly from the token.  */
-  for (unsigned i = 0; i < sizeof (binops) / sizeof (binops[0]); i++)
+  for (unsigned i = 0; i < ARRAY_SIZE (binops); i++)
     binops_by_token[binops[i].token_type] = binops[i];
 
   cp_parser *parser = ggc_cleared_alloc<cp_parser> ();
@@ -18645,6 +18645,9 @@ cp_parser_template_name (cp_parser* parser,
     - that is a terminal name in a using-declarator (9.9), in a declarator-id
     (9.3.4), or in a type-only context other than a nested-name-specifier
     (13.8).  */
+
+  /* Handle injected-class-name.  */
+  decl = maybe_get_template_decl_from_type_decl (decl);
 
   /* If DECL is a template, then the name was a template-name.  */
   if (TREE_CODE (decl) == TEMPLATE_DECL)
@@ -39443,6 +39446,8 @@ cp_parser_omp_clause_depend (cp_parser *parser, tree list, location_t loc)
 	kind = OMP_CLAUSE_DEPEND_IN;
       else if (strcmp ("inout", p) == 0)
 	kind = OMP_CLAUSE_DEPEND_INOUT;
+      else if (strcmp ("inoutset", p) == 0)
+	kind = OMP_CLAUSE_DEPEND_INOUTSET;
       else if (strcmp ("mutexinoutset", p) == 0)
 	kind = OMP_CLAUSE_DEPEND_MUTEXINOUTSET;
       else if (strcmp ("out", p) == 0)
@@ -41742,12 +41747,14 @@ cp_parser_omp_depobj (cp_parser *parser, cp_token *pragma_tok)
 		    kind = OMP_CLAUSE_DEPEND_INOUT;
 		  else if (!strcmp ("mutexinoutset", p2))
 		    kind = OMP_CLAUSE_DEPEND_MUTEXINOUTSET;
+		  else if (!strcmp ("inoutset", p2))
+		    kind = OMP_CLAUSE_DEPEND_INOUTSET;
 		}
 	      if (kind == OMP_CLAUSE_DEPEND_SOURCE)
 		{
 		  clause = error_mark_node;
-		  error_at (c2_loc, "expected %<in%>, %<out%>, %<inout%> or "
-				    "%<mutexinoutset%>");
+		  error_at (c2_loc, "expected %<in%>, %<out%>, %<inout%>, "
+				    "%<mutexinoutset%> or %<inoutset%>");
 		}
 	      if (!c_parens.require_close (parser))
 		cp_parser_skip_to_closing_parenthesis (parser,

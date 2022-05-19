@@ -296,14 +296,17 @@ gfc_find_omp_udr (gfc_namespace *ns, const char *name, gfc_typespec *ts)
 }
 
 
-/* Match a variable/common block list and construct a namelist from it.  */
+/* Match a variable/common block list and construct a namelist from it;
+   if has_all_memory != NULL, *has_all_memory is set and omp_all_memory
+   yields a list->sym NULL entry. */
 
 static match
 gfc_match_omp_variable_list (const char *str, gfc_omp_namelist **list,
 			     bool allow_common, bool *end_colon = NULL,
 			     gfc_omp_namelist ***headp = NULL,
 			     bool allow_sections = false,
-			     bool allow_derived = false)
+			     bool allow_derived = false,
+			     bool *has_all_memory = NULL)
 {
   gfc_omp_namelist *head, *tail, *p;
   locus old_loc, cur_loc;
@@ -315,7 +318,8 @@ gfc_match_omp_variable_list (const char *str, gfc_omp_namelist **list,
   head = tail = NULL;
 
   old_loc = gfc_current_locus;
-
+  if (has_all_memory)
+    *has_all_memory = false;
   m = gfc_match (str);
   if (m != MATCH_YES)
     return m;
@@ -323,7 +327,35 @@ gfc_match_omp_variable_list (const char *str, gfc_omp_namelist **list,
   for (;;)
     {
       cur_loc = gfc_current_locus;
-      m = gfc_match_symbol (&sym, 1);
+
+      m = gfc_match_name (n);
+      if (m == MATCH_YES && strcmp (n, "omp_all_memory") == 0)
+	{
+	  if (!has_all_memory)
+	    {
+	      gfc_error ("%<omp_all_memory%> at %C not permitted in this "
+			 "clause");
+	      goto cleanup;
+	    }
+	  *has_all_memory = true;
+	  p = gfc_get_omp_namelist ();
+	  if (head == NULL)
+	    head = tail = p;
+	  else
+	    {
+	      tail->next = p;
+	      tail = tail->next;
+	    }
+	  tail->where = cur_loc;
+	  goto next_item;
+	}
+      if (m == MATCH_YES)
+	{
+	  gfc_symtree *st;
+	  if ((m = gfc_get_ha_sym_tree (n, &st) ? MATCH_ERROR : MATCH_YES)
+	      == MATCH_YES)
+	    sym = st->n.sym;
+	}
       switch (m)
 	{
 	case MATCH_YES:
@@ -578,6 +610,12 @@ gfc_match_omp_depend_sink (gfc_omp_namelist **list)
 	  tail->sym = sym;
 	  tail->expr = NULL;
 	  tail->where = cur_loc;
+	  if (UNLIKELY (strcmp (sym->name, "omp_all_memory") == 0))
+	    {
+	      gfc_error ("%<omp_all_memory%> used with DEPEND kind "
+			 "other than OUT or INOUT at %C");
+	      goto cleanup;
+	    }
 	  if (gfc_match_char ('+') == MATCH_YES)
 	    {
 	      if (gfc_match_literal_constant (&tail->expr, 0) != MATCH_YES)
@@ -1868,6 +1906,7 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 	  if ((mask & OMP_CLAUSE_DEPEND)
 	      && gfc_match ("depend ( ") == MATCH_YES)
 	    {
+	      bool has_omp_all_memory;
 	      gfc_namespace *ns_iter = NULL, *ns_curr = gfc_current_ns;
 	      match m_it = gfc_match_iterator (&ns_iter, false);
 	      if (m_it == MATCH_ERROR)
@@ -1876,7 +1915,9 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 		break;
 	      m = MATCH_YES;
 	      gfc_omp_depend_op depend_op = OMP_DEPEND_OUT;
-	      if (gfc_match ("inout") == MATCH_YES)
+	      if (gfc_match ("inoutset") == MATCH_YES)
+		depend_op = OMP_DEPEND_INOUTSET;
+	      else if (gfc_match ("inout") == MATCH_YES)
 		depend_op = OMP_DEPEND_INOUT;
 	      else if (gfc_match ("in") == MATCH_YES)
 		depend_op = OMP_DEPEND_IN;
@@ -1920,21 +1961,27 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 	      if (m == MATCH_YES)
 		m = gfc_match_omp_variable_list (" : ",
 						 &c->lists[OMP_LIST_DEPEND],
-						 false, NULL, &head, true);
+						 false, NULL, &head, true,
+						 false, &has_omp_all_memory);
+	      if (m != MATCH_YES)
+		goto error;
 	      gfc_current_ns = ns_curr;
-	      if (m == MATCH_YES)
+	      if (has_omp_all_memory && depend_op != OMP_DEPEND_INOUT
+		  && depend_op != OMP_DEPEND_OUT)
 		{
-		  gfc_omp_namelist *n;
-		  for (n = *head; n; n = n->next)
-		    {
-		      n->u.depend_op = depend_op;
-		      n->u2.ns = ns_iter;
-		      if (ns_iter)
-			ns_iter->refs++;
-		    }
-		  continue;
+		  gfc_error ("%<omp_all_memory%> used with DEPEND kind "
+			     "other than OUT or INOUT at %C");
+		  goto error;
 		}
-	      break;
+	      gfc_omp_namelist *n;
+	      for (n = *head; n; n = n->next)
+		{
+		  n->u.depend_op = depend_op;
+		  n->u2.ns = ns_iter;
+		  if (ns_iter)
+		    ns_iter->refs++;
+		}
+	      continue;
 	    }
 	  if ((mask & OMP_CLAUSE_DETACH)
 	      && !openacc
@@ -3760,7 +3807,9 @@ gfc_match_omp_depobj (void)
   if (gfc_match ("update ( ") == MATCH_YES)
     {
       c = gfc_get_omp_clauses ();
-      if (gfc_match ("inout )") == MATCH_YES)
+      if (gfc_match ("inoutset )") == MATCH_YES)
+	c->depobj_update = OMP_DEPEND_INOUTSET;
+      else if (gfc_match ("inout )") == MATCH_YES)
 	c->depobj_update = OMP_DEPEND_INOUT;
       else if (gfc_match ("in )") == MATCH_YES)
 	c->depobj_update = OMP_DEPEND_IN;
@@ -3770,8 +3819,8 @@ gfc_match_omp_depobj (void)
 	c->depobj_update = OMP_DEPEND_MUTEXINOUTSET;
       else
 	{
-	  gfc_error ("Expected IN, OUT, INOUT, MUTEXINOUTSET followed by "
-		     "%<)%> at %C");
+	  gfc_error ("Expected IN, OUT, INOUT, INOUTSET or MUTEXINOUTSET "
+		     "followed by %<)%> at %C");
 	  goto error;
 	}
     }
@@ -4902,8 +4951,7 @@ gfc_match_omp_context_selector_specification (gfc_omp_declare_variant *odv)
       match m;
       const char *selector_sets[] = { "construct", "device",
 				      "implementation", "user" };
-      const int selector_set_count
-	= sizeof (selector_sets) / sizeof (*selector_sets);
+      const int selector_set_count = ARRAY_SIZE (selector_sets);
       int i;
       char buf[GFC_MAX_SYMBOL_LEN + 1];
 
@@ -6491,6 +6539,8 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
   for (list = 0; list < OMP_LIST_NUM; list++)
     for (n = omp_clauses->lists[list]; n; n = n->next)
       {
+	if (!n->sym)  /* omp_all_memory.  */
+	  continue;
 	n->sym->mark = 0;
 	n->sym->comp_mark = 0;
 	if (n->sym->attr.flavor == FL_VARIABLE

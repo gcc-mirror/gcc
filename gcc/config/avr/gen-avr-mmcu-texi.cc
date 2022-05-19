@@ -23,10 +23,12 @@
 
 #define IN_GEN_AVR_MMCU_TEXI
 
+#define ARRAY_SIZE(a) (sizeof (a) / sizeof ((a)[0]))
+
 #include "avr-devices.cc"
 
 static const avr_mcu_t*
-mcus[sizeof avr_mcu_types / sizeof avr_mcu_types[0]];
+mcus[ARRAY_SIZE (avr_mcu_types)];
 
 static int letter (char c)
 {
@@ -56,7 +58,7 @@ c_prefix (const char *str)
       "attiny", "atmega", "atxmega", "ata", "at90"
     };
 
-  int i, n = (int) (sizeof (prefixes) / sizeof (*prefixes));
+  int i, n = (int) (ARRAY_SIZE (prefixes));
 
   for (i = 0; i < n; i++)
     if (str_prefix_p (str, prefixes[i]))
@@ -185,7 +187,7 @@ int main (void)
 	  print_mcus (n_mcus);
 	  n_mcus = 0;
 
-	  for (i = 0; i < sizeof (avr_texinfo) / sizeof (*avr_texinfo); i++)
+	  for (i = 0; i < ARRAY_SIZE (avr_texinfo); i++)
 	    if (arch_id == avr_texinfo[i].arch_id)
 	      printf ("@item %s\n%s\n", mcu->name, avr_texinfo[i].texinfo);
 	}

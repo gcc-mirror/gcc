@@ -1536,7 +1536,7 @@ public:
                 bodyToBuffer(f);
                 hgs.autoMember--;
             }
-            else if (hgs.tpltMember == 0 && global.params.hdrStripPlainFunctions)
+            else if (hgs.tpltMember == 0 && global.params.dihdr.fullOutput == false)
             {
                 if (!f.fbody)
                 {
@@ -1621,7 +1621,7 @@ public:
 
     void bodyToBuffer(FuncDeclaration f)
     {
-        if (!f.fbody || (hgs.hdrgen && global.params.hdrStripPlainFunctions && !hgs.autoMember && !hgs.tpltMember))
+        if (!f.fbody || (hgs.hdrgen && global.params.dihdr.fullOutput == false && !hgs.autoMember && !hgs.tpltMember))
         {
             if (!f.fbody && (f.fensures || f.frequires))
             {

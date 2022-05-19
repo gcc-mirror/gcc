@@ -1,4 +1,5 @@
 // { dg-do compile }
+// { dg-require-normal-namespace "" }
 
 #include <iosfwd>
 

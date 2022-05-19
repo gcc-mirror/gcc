@@ -16067,7 +16067,7 @@ c_parser_omp_clause_affinity (c_parser *parser, tree list)
    depend ( depend-modifier , depend-kind: variable-list )
 
    depend-kind:
-     in | out | inout | mutexinoutset | depobj
+     in | out | inout | mutexinoutset | depobj | inoutset
 
    depend-modifier:
      iterator ( iterators-definition )  */
@@ -16099,6 +16099,8 @@ c_parser_omp_clause_depend (c_parser *parser, tree list)
 	kind = OMP_CLAUSE_DEPEND_IN;
       else if (strcmp ("inout", p) == 0)
 	kind = OMP_CLAUSE_DEPEND_INOUT;
+      else if (strcmp ("inoutset", p) == 0)
+	kind = OMP_CLAUSE_DEPEND_INOUTSET;
       else if (strcmp ("mutexinoutset", p) == 0)
 	kind = OMP_CLAUSE_DEPEND_MUTEXINOUTSET;
       else if (strcmp ("out", p) == 0)
@@ -19063,12 +19065,14 @@ c_parser_omp_depobj (c_parser *parser)
 		    kind = OMP_CLAUSE_DEPEND_INOUT;
 		  else if (!strcmp ("mutexinoutset", p2))
 		    kind = OMP_CLAUSE_DEPEND_MUTEXINOUTSET;
+		  else if (!strcmp ("inoutset", p2))
+		    kind = OMP_CLAUSE_DEPEND_INOUTSET;
 		}
 	      if (kind == OMP_CLAUSE_DEPEND_SOURCE)
 		{
 		  clause = error_mark_node;
-		  error_at (c2_loc, "expected %<in%>, %<out%>, %<inout%> or "
-				    "%<mutexinoutset%>");
+		  error_at (c2_loc, "expected %<in%>, %<out%>, %<inout%>, "
+				    "%<mutexinoutset%> or %<inoutset%>");
 		}
 	      c_parens.skip_until_found_close (parser);
 	    }

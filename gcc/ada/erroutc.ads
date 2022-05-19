@@ -465,7 +465,7 @@ package Erroutc is
    --  Tests if message buffer ends with given string preceded by a space
 
    procedure Buffer_Remove (C : Character);
-   --  Remove given character fron end of buffer if it is present
+   --  Remove given character from end of buffer if it is present
 
    procedure Buffer_Remove (S : String);
    --  Removes given string from end of buffer if it is present at end of

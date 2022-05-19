@@ -1237,9 +1237,14 @@ package body Checks is
          --  ops, but if they appear in an assignment or similar contexts
          --  there is no overflow check that starts from that parent node,
          --  so apply check now.
+         --  Similarly, if these expressions are nested, we should go on.
 
          if Nkind (P) in N_If_Expression | N_Case_Expression
            and then not Is_Signed_Integer_Arithmetic_Op (Parent (P))
+         then
+            null;
+         elsif Nkind (P) in N_If_Expression | N_Case_Expression
+            and then Nkind (Op) in N_If_Expression | N_Case_Expression
          then
             null;
          else

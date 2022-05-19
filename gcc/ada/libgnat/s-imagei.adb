@@ -388,6 +388,8 @@ package body System.Image_I is
          Prove_Uns_Of_Non_Positive_Value;
          pragma Assert (Uns_Value rem 10 = Uns_Of_Non_Positive (Value rem 10));
          pragma Assert (Uns_Value rem 10 = Uns (-(Value rem 10)));
+         pragma Assert
+           (Uns_Value = From_Big (Big (Uns_T) / Big_10 ** (Nb_Digits - J)));
 
          Prev_Value := Uns_Value;
          Prev_S := S;

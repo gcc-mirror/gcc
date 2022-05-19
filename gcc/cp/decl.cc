@@ -7413,12 +7413,19 @@ check_initializer (tree decl, tree init, int flags, vec<tree, va_gc> **cleanups)
 	      /* Declared constexpr or constinit, but no suitable initializer;
 		 massage init appropriately so we can pass it into
 		 store_init_value for the error.  */
-	      if (CLASS_TYPE_P (type)
-		  && (!init || TREE_CODE (init) == TREE_LIST))
+	      tree new_init = NULL_TREE;
+	      if (!processing_template_decl
+		  && TREE_CODE (init_code) == CALL_EXPR)
+		new_init = build_cplus_new (type, init_code, tf_none);
+	      else if (CLASS_TYPE_P (type)
+		       && (!init || TREE_CODE (init) == TREE_LIST))
+		new_init = build_functional_cast (input_location, type,
+						  init, tf_none);
+	      if (new_init)
 		{
-		  init = build_functional_cast (input_location, type,
-						init, tf_none);
-		  if (TREE_CODE (init) == TARGET_EXPR)
+		  init = new_init;
+		  if (TREE_CODE (init) == TARGET_EXPR
+		      && !(flags & LOOKUP_ONLYCONVERTING))
 		    TARGET_EXPR_DIRECT_INIT_P (init) = true;
 		}
 	      init_code = NULL_TREE;

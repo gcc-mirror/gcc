@@ -39,7 +39,7 @@ package Lib is
    --  Type to hold list of indirect references to unit number table
 
    type Compiler_State_Type is (Parsing, Analyzing);
-   Compiler_State : Compiler_State_Type;
+   Compiler_State : Compiler_State_Type := Parsing;
    --  Indicates current state of compilation. This is used to implement the
    --  function In_Extended_Main_Source_Unit.
 

@@ -1,0 +1,573 @@
+<section xmlns="http://docbook.org/ns/docbook" version="5.0"
+   xml:id="status.iso.2023" xreflabel="Status C++ 2023">
+<?dbhtml filename="status_iso_cxx2023.html"?>
+
+<info><title>C++ 2023</title>
+  <keywordset>
+    <keyword>ISO C++</keyword>
+    <keyword>2023</keyword>
+  </keywordset>
+</info>
+
+<para>
+In this implementation the <literal>-std=gnu++23</literal> or
+<literal>-std=c++23</literal> flag must be used to enable language
+and library
+features. See <link linkend="manual.intro.using.flags">dialect</link>
+options. The pre-defined symbol
+<constant>__cplusplus</constant> is used to check for the
+presence of the required flag.
+</para>
+
+<para>
+This section describes the C++23 and library TS support in mainline GCC,
+not in any particular release.
+</para>
+
+<para>
+The following table lists new library features that have been accepted into
+the C++23 working draft. The "Proposal" column provides a link to the
+ISO C++ committee proposal that describes the feature, while the "Status"
+column indicates the first version of GCC that contains an implementation of
+this feature (if it has been implemented).
+A dash (&#x2014;) in the status column indicates that the changes in the proposal
+either do not affect the code in libstdc++, or the changes are not required for conformance.
+The "SD-6 Feature Test / Notes" column shows the corresponding macro or header from
+<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://isocpp.org/std/standing-documents/sd-6-sg10-feature-test-recommendations">SD-6:
+Feature-testing recommendations for C++</link> (where applicable)
+or any notes about the implementation.
+</para>
+
+<table frame="all" xml:id="table.cxx23_features">
+<title>C++ 2023 Library Features</title>
+
+<tgroup cols="4" align="left" colsep="0" rowsep="1">
+<colspec colname="c1"/>
+<colspec colname="c2"/>
+<colspec colname="c3"/>
+<colspec colname="c4"/>
+  <thead>
+    <row>
+      <entry>Library Feature</entry>
+      <entry>Proposal</entry>
+      <entry>Status</entry>
+      <entry>SD-6 Feature Test / Notes</entry>
+    </row>
+  </thead>
+
+  <tbody>
+
+    <row>
+      <entry namest="c1" nameend="c4" align="left">
+        <emphasis role="bold">Ranges and Views</emphasis>
+      </entry>
+    </row>
+
+    <row>
+      <entry> Range constructor for std::string_view </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p1989r2.pdf">
+        P1989R2
+        </link>
+      </entry>
+      <entry align="center"> 11.1 </entry>
+      <entry />
+    </row>
+
+    <row>
+      <entry> <code>join_view</code> should join all views of ranges </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p2328r1.html">
+        P2328R1
+        </link>
+      </entry>
+      <entry align="center"> 11.2 </entry>
+      <entry />
+    </row>
+
+
+    <row>
+      <entry> Clarifying range adaptor objects </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p2281r1.html">
+        P2281R1
+        </link>
+      </entry>
+      <entry align="center"> 11.1 </entry>
+      <entry />
+    </row>
+
+    <row>
+      <entry> Views should not be required to be default constructible </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p2325r3.html">
+        P2325R3
+        </link>
+      </entry>
+      <entry align="center"> 11.3 </entry>
+      <entry> <code>__cpp_lib_ranges &gt;= 202106L</code> </entry>
+    </row>
+
+    <row>
+      <entry> Conditionally borrowed ranges </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/p2017r1.html">
+        P2017R1
+        </link>
+      </entry>
+      <entry align="center"> 11.1 </entry>
+      <entry />
+    </row>
+
+    <row>
+      <entry> Require <code>span</code> &amp; <code>basic_string_view</code> to be Trivially Copyable </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p2251r1.pdf">
+        P2251R1
+        </link>
+      </entry>
+      <entry align="center"> Yes </entry>
+      <entry />
+    </row>
+
+    <row>
+      <entry> Repairing input range adaptors and counted_iterator </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p2259r1.html">
+        P2259R1
+        </link>
+      </entry>
+      <entry align="center"> 12.1 </entry>
+      <entry />
+    </row>
+
+    <row>
+      <entry> Superior String Splitting </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p2210r2.html">
+        P2210R2
+        </link>
+      </entry>
+      <entry align="center"> 12.1 </entry>
+      <entry />
+    </row>
+
+    <row>
+      <entry> What is a <code>view</code>? </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p2415r2.html">
+        P2415R2
+        </link>
+      </entry>
+      <entry align="center"> 12.1 </entry>
+      <entry> <code>__cpp_lib_ranges &gt;= 202110L</code> </entry>
+    </row>
+
+    <row>
+      <entry> Fix istream_view </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p2432r1.pdf">
+        P2432R1
+        </link>
+      </entry>
+      <entry align="center"> 12.1 </entry>
+      <entry />
+    </row>
+
+    <row>
+      <?dbhtml bgcolor="#C8B0B0" ?>
+      <entry> <code>starts_with</code> and <code>ends_with</code> </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p1659r3.html">
+        P1659R3
+        </link>
+      </entry>
+      <entry align="center"> </entry>
+      <entry> <code>__cpp_lib_ranges_starts_ends_with &gt;= 202106L</code> </entry>
+    </row>
+
+    <row>
+      <?dbhtml bgcolor="#C8B0B0" ?>
+      <entry> <code>zip</code> </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p2321r2.html">
+        P2321R2
+        </link>
+      </entry>
+      <entry align="center"> </entry>
+      <entry> <code>__cpp_lib_ranges_zip &gt;= 202110L</code> </entry>
+    </row>
+
+    <row>
+      <entry namest="c1" nameend="c4" align="left">
+        <emphasis role="bold">Compile-time programming</emphasis>
+      </entry>
+    </row>
+
+    <row>
+      <entry> A proposal for a type trait to detect scoped enumerations </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/p1048r1.pdf">
+        P1048R1
+        </link>
+      </entry>
+      <entry align="center"> 11.1 </entry>
+      <entry> <code>__cpp_lib_is_scoped_enum &gt;= 202011L</code> </entry>
+    </row>
+
+    <row>
+      <entry> std::to_underlying for enumerations </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p1682r3.html">
+        P1682R3
+        </link>
+      </entry>
+      <entry align="center"> 11.1 </entry>
+      <entry> <code>__cpp_lib_to_underlying &gt;= 202102L</code> </entry>
+    </row>
+
+    <row>
+      <entry> Missing constexpr in std::optional and std::variant </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p2231r1.html">
+        P2231R1
+        </link>
+      </entry>
+      <entry align="center">
+	<informaltable colsep="0" rowsep="0" rowheader="norowheader" frame="none"><tgroup cols="1"><tbody>
+        <row><entry> 11.3 (<code>optional</code>) </entry></row>
+        <row><entry> 12.1 (<code>variant</code>) </entry></row>
+        </tbody></tgroup></informaltable>
+      </entry>
+      <entry>
+	<informaltable colsep="0" rowsep="0" rowheader="norowheader" frame="none"><tgroup cols="1"><tbody>
+        <row><entry> <code>__cpp_lib_constexpr_optional &gt;= 202106L</code> </entry></row>
+        <row><entry> <code>__cpp_lib_variant &gt;= 202106L</code> </entry></row>
+        </tbody></tgroup></informaltable>
+      </entry>
+    </row>
+
+    <row>
+      <entry> Making <code>std::unique_ptr</code> constexpr </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p2273r3.pdf">
+        P2273R3
+        </link>
+      </entry>
+      <entry align="center"> 12.1 </entry>
+      <entry> <code>__cpp_lib_constexpr_memory &gt;= 202202L</code> </entry>
+    </row>
+
+    <row>
+      <entry> Making <code>std::type_info::operator==</code> constexpr </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p1328r1.html">
+        P1328R1
+        </link>
+      </entry>
+      <entry align="center"> 12.1 </entry>
+      <entry> <code>__cpp_lib_constexpr_typeinfo &gt;= 202106L</code> </entry>
+    </row>
+
+    <row>
+      <?dbhtml bgcolor="#C8B0B0" ?>
+      <entry> constexpr for <code>&lt;cmath&gt;</code> and <code>&lt;cstdlib&gt;</code> </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p0533r9.pdf">
+        P0533R9
+        </link>
+      </entry>
+      <entry align="center"> </entry>
+      <entry> <code>__cpp_lib_constexpr_cmath &gt;= 202202L</code> </entry>
+    </row>
+
+    <row>
+      <?dbhtml bgcolor="#C8B0B0" ?>
+      <entry> Deprecate std::aligned_storage and std::aligned_union </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p1413r3.pdf">
+        P1413R3
+        </link>
+      </entry>
+      <entry align="center"> </entry>
+      <entry />
+    </row>
+
+    <row>
+      <?dbhtml bgcolor="#C8B0B0" ?>
+      <entry> A type trait to detect reference binding to temporary </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p2255r2.html">
+        P2255R2
+        </link>
+      </entry>
+      <entry align="center"> </entry>
+      <entry> <code>__cpp_lib_reference_from_temporary &gt;= 202202L</code> </entry>
+    </row>
+
+    <row>
+      <entry namest="c1" nameend="c4" align="left">
+        <emphasis role="bold">Strings and text</emphasis>
+      </entry>
+    </row>
+
+    <row>
+      <entry> string contains function </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/p1679r3.html">
+        P1679R3
+        </link>
+      </entry>
+      <entry align="center"> 11.1 </entry>
+      <entry> <code>__cpp_lib_string_contains &gt;= 202011L</code> </entry>
+    </row>
+
+    <row>
+      <entry> Prohibit std::basic_string and std::basic_string_view construction from nullptr </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/p2166r1.html">
+        P2166R1
+        </link>
+      </entry>
+      <entry align="center"> 12.1 </entry>
+      <entry />
+    </row>
+
+    <row>
+      <entry> basic_string::resize_and_overwrite </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p1072r10.html">
+        P1072R10
+        </link>
+      </entry>
+      <entry align="center"> 12.1 </entry>
+      <entry> <code>__cpp_lib_resize_and_overwrite &gt;= 202110L</code> </entry>
+    </row>
+
+    <row>
+      <entry> A strstream replacement using span&lt;charT&gt; as buffer </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p0448r4.pdf">
+        P0448R4
+        </link>
+      </entry>
+      <entry align="center"> 12.1 </entry>
+      <entry> <code>__cpp_lib_spanstream &gt;= 202106L</code> </entry>
+    </row>
+
+    <row>
+      <entry namest="c1" nameend="c4" align="left">
+        <emphasis role="bold">Containers</emphasis>
+      </entry>
+    </row>
+
+    <row>
+      <entry> Iterator pair constructors for stack and queue </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p1425r4.pdf">
+        P1425R4
+        </link>
+      </entry>
+      <entry align="center"> 12.1 </entry>
+      <entry> <code>__cpp_lib_adaptor_iterator_pair_constructor &gt;= 202106L</code> </entry>
+    </row>
+
+    <row>
+      <entry> Stop overconstraining allocators in container deduction guides </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p1518r2.html">
+        P1518R2
+        </link>
+      </entry>
+      <entry align="center"> 12.1 </entry>
+      <entry />
+    </row>
+
+    <row>
+      <?dbhtml bgcolor="#C8B0B0" ?>
+      <entry> Heterogeneous erasure overloads for associative containers </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p2077r3.html">
+        P2077R3
+        </link>
+      </entry>
+      <entry align="center"> </entry>
+      <entry> <code>__cpp_lib_associative_heterogeneous_erasure &gt;= 202110L</code> </entry>
+    </row>
+
+    <row>
+      <entry namest="c1" nameend="c4" align="left">
+        <emphasis role="bold">Miscellaneous</emphasis>
+      </entry>
+    </row>
+
+    <row>
+      <entry> Inheriting from <code>std::variant</code> </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p2162r2.html">
+        P2162R2
+        </link>
+      </entry>
+      <entry align="center"> 11.3 </entry>
+      <entry> <code>__cpp_lib_variant &gt;= 202102L</code> </entry>
+    </row>
+
+    <row>
+      <entry> Printing <code>volatile</code> Pointers </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p1147r1.html">
+        P1147R1
+        </link>
+      </entry>
+      <entry align="center"> 11.3 </entry>
+      <entry/>
+    </row>
+
+    <row>
+      <entry> A Proposal to add stacktrace library </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/p0881r7.html">
+        P0881R7
+        </link>
+      </entry>
+      <entry align="center"> 12.1 </entry>
+      <entry> <code>__cpp_lib_stacktrace &gt;= 202011L</code> </entry>
+    </row>
+
+    <row>
+      <entry> Add a pmr alias for std::stacktrace </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p2301r1.html">
+        P2301R1
+        </link>
+      </entry>
+      <entry align="center"> 12.1 </entry>
+      <entry />
+    </row>
+
+    <row>
+      <entry> <code>std::expected</code> </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p0323r12.html">
+        P0323R12
+        </link>
+      </entry>
+      <entry align="center"> 12.1 </entry>
+      <entry> <code>__cpp_lib_expected &gt;= 202202L</code> </entry>
+    </row>
+
+    <row>
+      <entry> Monadic operations for std::optional </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p0798r8.html">
+        P0798R8
+        </link>
+      </entry>
+      <entry align="center"> 12.1 </entry>
+      <entry> <code>__cpp_lib_optional &gt;= 202110L</code> </entry>
+    </row>
+
+    <row>
+      <entry> <code>move_only_function</code> </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p0288r9.html">
+        P0288R9
+        </link>
+      </entry>
+      <entry align="center"> 12.1 </entry>
+      <entry> <code>__cpp_lib_move_only_function &gt;= 202110L</code> </entry>
+    </row>
+
+    <row>
+      <entry> <code>invoke_r</code> </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p2136r3.html">
+        P2136R3
+        </link>
+      </entry>
+      <entry align="center"> 12.1 </entry>
+      <entry> <code>__cpp_lib_invoke_r &gt;= 202106L</code> </entry>
+    </row>
+
+    <row>
+      <entry> Byteswapping for fun&amp;&amp;nuf </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p1272r4.html">
+        P1272R4
+        </link>
+      </entry>
+      <entry align="center"> 12.1 </entry>
+      <entry> <code>__cpp_lib_byteswap &gt;= 202110L</code> </entry>
+    </row>
+
+    <row>
+      <entry> Function to mark unreachable code </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p0627r6.pdf">
+        P0627R6
+        </link>
+      </entry>
+      <entry align="center"> 12.1 </entry>
+      <entry> <code>__cpp_lib_unreachable &gt;= 202202L</code> </entry>
+    </row>
+
+    <row>
+      <entry> Add a conditional noexcept specification to std::exchange </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p2401r0.html">
+        P2401R0
+        </link>
+      </entry>
+      <entry align="center"> 12.1 </entry>
+      <entry />
+    </row>
+
+    <row>
+      <entry> Support C atomics in C++ </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/p0943r6.html">
+        P0943R6
+        </link>
+      </entry>
+      <entry align="center"> 12.1 </entry>
+      <entry> <code>__cpp_lib_stdatomic_h &gt;= 202011L</code> </entry>
+    </row>
+
+    <row>
+      <entry> Clarifying the status of the "C headers" </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p2340r1.html">
+        P2340R1
+        </link>
+      </entry>
+      <entry align="center"> Yes </entry>
+      <entry />
+    </row>
+
+    <row>
+      <entry> Relax Requirements for time_point::clock </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/p2212r2.html">
+        P2212R2
+        </link>
+      </entry>
+      <entry align="center"> Yes </entry>
+      <entry />
+    </row>
+
+    <row>
+      <entry> Removing Garbage Collection Support </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p2186r2.html">
+        P2186R2
+        </link>
+      </entry>
+      <entry align="center"> 12.1 </entry>
+      <entry />
+    </row>
+
+  </tbody>
+</tgroup>
+</table>
+
+</section>

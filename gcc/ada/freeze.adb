@@ -184,9 +184,11 @@ package body Freeze is
    --  the designated type. Otherwise freezing the access type does not freeze
    --  the designated type.
 
-   function Should_Freeze_Type (Typ : Entity_Id; E : Entity_Id) return Boolean;
-   --  If Typ is in the current scope or in an instantiation, then return True.
-   --  ???Expression functions (represented by E) shouldn't freeze types in
+   function Should_Freeze_Type
+     (Typ : Entity_Id; E : Entity_Id; N : Node_Id) return Boolean;
+   --  If Typ is in the current scope, then return True.
+   --  N is a node whose source location corresponds to the freeze point.
+   --  ??? Expression functions (represented by E) shouldn't freeze types in
    --  general, but our current expansion and freezing model requires an early
    --  freezing when the dispatch table is needed or when building an aggregate
    --  with a subtype of Typ, so return True also in this case.
@@ -198,7 +200,7 @@ package body Freeze is
    ------------------------
 
    function Should_Freeze_Type
-     (Typ : Entity_Id; E : Entity_Id) return Boolean
+     (Typ : Entity_Id; E : Entity_Id; N : Node_Id) return Boolean
    is
       function Is_Dispatching_Call_Or_Aggregate
         (N : Node_Id) return Traverse_Result;
@@ -244,7 +246,8 @@ package body Freeze is
 
    begin
       return Within_Scope (Typ, Current_Scope)
-        or else In_Instance
+        or else (Nkind (N) = N_Subprogram_Renaming_Declaration
+                 and then Present (Corresponding_Formal_Spec (N)))
         or else (Present (Decl)
                  and then Nkind (Decl) = N_Expression_Function
                  and then Need_Dispatch_Table (Expression (Decl)) = Abandon);
@@ -1618,6 +1621,13 @@ package body Freeze is
       begin
          DTW_Spec := Build_Overriding_Spec (Par_Prim, R);
          DTW_Id   := Defining_Entity (DTW_Spec);
+
+         --  Clear the not-overriding indicator since the DTW wrapper overrides
+         --  its wrapped subprogram; required because if present in the parent
+         --  primitive, given that Build_Overriding_Spec inherits it, we report
+         --  spurious errors.
+
+         Set_Must_Not_Override (DTW_Spec, False);
 
          --  Add minimal decoration of fields
 
@@ -4599,7 +4609,7 @@ package body Freeze is
             end if;
 
             if not From_Limited_With (F_Type)
-              and then Should_Freeze_Type (F_Type, E)
+              and then Should_Freeze_Type (F_Type, E, N)
             then
                Freeze_And_Append (F_Type, N, Result);
             end if;
@@ -4779,7 +4789,7 @@ package body Freeze is
                Set_Etype (E, R_Type);
             end if;
 
-            if Should_Freeze_Type (R_Type, E) then
+            if Should_Freeze_Type (R_Type, E, N) then
                Freeze_And_Append (R_Type, N, Result);
             end if;
 
@@ -6575,9 +6585,13 @@ package body Freeze is
                end if;
             end if;
 
-            --  Special processing for objects created by object declaration
+            --  Special processing for objects created by object declaration;
+            --  we protect the call to Declaration_Node against entities of
+            --  expressions replaced by the frontend with an N_Raise_CE node.
 
-            if Nkind (Declaration_Node (E)) = N_Object_Declaration then
+            if Ekind (E) in E_Constant | E_Variable
+              and then Nkind (Declaration_Node (E)) = N_Object_Declaration
+            then
                Freeze_Object_Declaration (E);
             end if;
 
@@ -7957,15 +7971,17 @@ package body Freeze is
 
       else
          --  If the enumeration type interfaces to C, and it has a size clause
-         --  that specifies less than int size, it warrants a warning. The
-         --  user may intend the C type to be an enum or a char, so this is
+         --  that is smaller than the size of int, it warrants a warning. The
+         --  user may intend the C type to be a boolean or a char, so this is
          --  not by itself an error that the Ada compiler can detect, but it
-         --  it is a worth a heads-up. For Boolean and Character types we
+         --  is worth a heads-up. For Boolean and Character types we
          --  assume that the programmer has the proper C type in mind.
+         --  For explicit sizes larger than int, assume the user knows what
+         --  he is doing and that the code is intentional.
 
          if Convention (Typ) = Convention_C
            and then Has_Size_Clause (Typ)
-           and then Esize (Typ) /= Esize (Standard_Integer)
+           and then Esize (Typ) < Standard_Integer_Size
            and then not Is_Boolean_Type (Typ)
            and then not Is_Character_Type (Typ)
 
@@ -7974,7 +7990,12 @@ package body Freeze is
            and then not Target_Short_Enums
          then
             Error_Msg_N
-              ("C enum types have the size of a C int??", Size_Clause (Typ));
+              ("??the size of enums in C is implementation-defined",
+               Size_Clause (Typ));
+            Error_Msg_N
+              ("\??check that the C counterpart has size of " &
+               UI_Image (Esize (Typ)),
+               Size_Clause (Typ));
          end if;
 
          Adjust_Esize_For_Alignment (Typ);

@@ -186,6 +186,7 @@ procedure Gnat1drv is
          Building_Static_Dispatch_Tables := False;
          Minimize_Expression_With_Actions := True;
          Expand_Nonbinary_Modular_Ops := True;
+         Back_End_Return_Slot := False;
 
          --  Set operating mode to Generate_Code to benefit from full front-end
          --  expansion (e.g. generics).
@@ -724,6 +725,12 @@ procedure Gnat1drv is
 
       else
          Back_End_Handles_Limited_Types := False;
+      end if;
+
+      --  Return slot support is disabled if -gnatd_r is specified
+
+      if Debug_Flag_Underscore_R then
+         Back_End_Return_Slot := False;
       end if;
 
       --  If the inlining level has not been set by the user, compute it from
@@ -1435,7 +1442,7 @@ begin
 
                --  Do not generate an ALI file in this case, because it would
                --  become obsolete when the parent is compiled, and thus
-               --  confuse tools such as gnatfind.
+               --  confuse some tools.
 
             elsif Main_Unit_Kind = N_Subprogram_Declaration then
                Write_Str (" (subprogram spec)");

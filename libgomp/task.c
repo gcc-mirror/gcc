@@ -197,6 +197,7 @@ gomp_task_handle_depend (struct gomp_task *task, struct gomp_task *parent,
       /* ndepend - nout - nmutexinoutset - nin is # of depobjs */
       size_t normal = nout + nmutexinoutset + nin;
       size_t n = 0;
+      bool has_in = false;
       for (i = normal; i < ndepend; i++)
 	{
 	  void **d = (void **) (uintptr_t) depend[5 + i];
@@ -209,6 +210,8 @@ gomp_task_handle_depend (struct gomp_task *task, struct gomp_task *parent,
 	    case GOMP_DEPEND_MUTEXINOUTSET:
 	      break;
 	    case GOMP_DEPEND_IN:
+	    case GOMP_DEPEND_INOUTSET:
+	      has_in = true;
 	      continue;
 	    default:
 	      gomp_fatal ("unknown omp_depend_t dependence type %d",
@@ -222,14 +225,17 @@ gomp_task_handle_depend (struct gomp_task *task, struct gomp_task *parent,
 	  task->depend[n].addr = depend[5 + i];
 	  task->depend[n++].is_in = i >= nout + nmutexinoutset;
 	}
-      for (i = normal; i < ndepend; i++)
-	{
-	  void **d = (void **) (uintptr_t) depend[5 + i];
-	  if ((uintptr_t) d[1] != GOMP_DEPEND_IN)
-	    continue;
-	  task->depend[n].addr = d[0];
-	  task->depend[n++].is_in = 1;
-	}
+      if (has_in)
+	for (i = normal; i < ndepend; i++)
+	  {
+	    void **d = (void **) (uintptr_t) depend[5 + i];
+	    if ((uintptr_t) d[1] != GOMP_DEPEND_IN
+		&& (uintptr_t) d[1] != GOMP_DEPEND_INOUTSET)
+	      continue;
+	    task->depend[n].addr = d[0];
+	    task->depend[n++].is_in
+	      = 1 + ((uintptr_t) d[1] == GOMP_DEPEND_INOUTSET);
+	  }
     }
   task->num_dependees = 0;
   if (__builtin_expect (parent->depend_all_memory && ndepend, false))
@@ -381,8 +387,10 @@ gomp_task_handle_depend (struct gomp_task *task, struct gomp_task *parent,
 
 	      last = ent;
 
-	      /* depend(in:...) doesn't depend on earlier depend(in:...).  */
-	      if (task->depend[i].is_in && ent->is_in)
+	      /* depend(in:...) doesn't depend on earlier depend(in:...).
+		 Similarly depend(inoutset:...) doesn't depend on earlier
+		 depend(inoutset:...).  */
+	      if (task->depend[i].is_in && task->depend[i].is_in == ent->is_in)
 		continue;
 
 	      if (!ent->is_in)
@@ -1890,6 +1898,9 @@ gomp_task_maybe_wait_for_dependencies (void **depend)
 	    case GOMP_DEPEND_MUTEXINOUTSET:
 	      elem.is_in = 0;
 	      break;
+	    case GOMP_DEPEND_INOUTSET:
+	      elem.is_in = 2;
+	      break;
 	    default:
 	      gomp_fatal ("unknown omp_depend_t dependence type %d",
 			  (int) (uintptr_t) d[1]);
@@ -1928,7 +1939,7 @@ gomp_task_maybe_wait_for_dependencies (void **depend)
 	}
       ent = htab_find (task->depend_hash, &elem);
       for (; ent; ent = ent->next)
-	if (elem.is_in && ent->is_in)
+	if (elem.is_in && elem.is_in == ent->is_in)
 	  continue;
 	else
 	  {

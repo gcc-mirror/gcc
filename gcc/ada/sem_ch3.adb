@@ -61,6 +61,7 @@ with Sem_Cat;        use Sem_Cat;
 with Sem_Ch6;        use Sem_Ch6;
 with Sem_Ch7;        use Sem_Ch7;
 with Sem_Ch8;        use Sem_Ch8;
+with Sem_Ch10;       use Sem_Ch10;
 with Sem_Ch13;       use Sem_Ch13;
 with Sem_Dim;        use Sem_Dim;
 with Sem_Disp;       use Sem_Disp;
@@ -3158,7 +3159,7 @@ package body Sem_Ch3 is
         and then Present (Full_View (Prev))
       then
          T := Full_View (Prev);
-         Set_Incomplete_View (N, Parent (Prev));
+         Set_Incomplete_View (N, Prev);
       else
          T := Prev;
       end if;
@@ -4571,11 +4572,15 @@ package body Sem_Ch3 is
             null;
 
          --  Do not generate a predicate check if the initialization expression
-         --  is a type conversion because the conversion has been subjected to
-         --  the same check. This is a small optimization which avoid redundant
+         --  is a type conversion whose target subtype statically matches the
+         --  object's subtype because the conversion has been subjected to the
+         --  same check. This is a small optimization which avoids redundant
          --  checks.
 
-         elsif Present (E) and then Nkind (E) = N_Type_Conversion then
+         elsif Present (E)
+           and then Nkind (E) in N_Type_Conversion
+           and then Subtypes_Statically_Match (Etype (Subtype_Mark (E)), T)
+         then
             null;
 
          else
@@ -5977,7 +5982,7 @@ package body Sem_Ch3 is
       if Nkind (Subtype_Indication (N)) = N_Subtype_Indication then
          declare
             Indic_Typ    : constant Entity_Id :=
-                             Etype (Subtype_Mark (Subtype_Indication (N)));
+              Underlying_Type (Etype (Subtype_Mark (Subtype_Indication (N))));
             Subt_Index   : Node_Id;
             Target_Index : Node_Id;
 
@@ -11046,6 +11051,14 @@ package body Sem_Ch3 is
          Subp := Node (Elmt);
          Alias_Subp := Alias (Subp);
 
+         --  If the parent type is untagged, then no overriding error checks
+         --  are needed (such as in the case of an implicit full type for
+         --  a derived type whose parent is an untagged private type with
+         --  a tagged full type).
+
+         if not Is_Tagged_Type (Etype (T)) then
+            null;
+
          --  Inherited subprograms are identified by the fact that they do not
          --  come from source, and the associated source location is the
          --  location of the first subtype of the derived type.
@@ -11064,7 +11077,7 @@ package body Sem_Ch3 is
          --  overriding in Ada 2005, but wrappers need to be built for them
          --  (see exp_ch3, Build_Controlling_Function_Wrappers).
 
-         if Is_Null_Extension (T)
+         elsif Is_Null_Extension (T)
            and then Has_Controlling_Result (Subp)
            and then Ada_Version >= Ada_2005
            and then Present (Alias_Subp)
@@ -11600,10 +11613,9 @@ package body Sem_Ch3 is
 
             if H = Typ then
                Set_Name_Entity_Id (Chars (Typ), Homonym (Typ));
+
             else
-               while Present (H)
-                 and then Homonym (H) /= Typ
-               loop
+               while Present (Homonym (H)) and then Homonym (H) /= Typ loop
                   H := Homonym (Typ);
                end loop;
 
@@ -11613,15 +11625,47 @@ package body Sem_Ch3 is
             Insert_Before (Typ_Decl, Decl);
             Analyze (Decl);
             Set_Full_View (Inc_T, Typ);
+            Set_Incomplete_View (Typ_Decl, Inc_T);
+
+            --  If the type is tagged, create a common class-wide type for
+            --  both views, and set the Etype of the class-wide type to the
+            --  full view.
 
             if Is_Tagged then
-
-               --  Create a common class-wide type for both views, and set the
-               --  Etype of the class-wide type to the full view.
-
                Make_Class_Wide_Type (Inc_T);
                Set_Class_Wide_Type (Typ, Class_Wide_Type (Inc_T));
                Set_Etype (Class_Wide_Type (Typ), Typ);
+            end if;
+
+            --  If the scope is a package with a limited view, create a shadow
+            --  entity for the incomplete type like Build_Limited_Views, so as
+            --  to make it possible for Remove_Limited_With_Unit to reinstall
+            --  this incomplete type as the visible entity.
+
+            if Ekind (Scope (Inc_T)) = E_Package
+              and then Present (Limited_View (Scope (Inc_T)))
+            then
+               declare
+                  Shadow : constant Entity_Id := Make_Temporary (Loc, 'Z');
+
+               begin
+                  --  This is modeled on Build_Shadow_Entity
+
+                  Set_Chars              (Shadow, Chars (Inc_T));
+                  Set_Parent             (Shadow, Decl);
+                  Decorate_Type          (Shadow, Scope (Inc_T), Is_Tagged);
+                  Set_Is_Internal        (Shadow);
+                  Set_From_Limited_With  (Shadow);
+                  Set_Non_Limited_View   (Shadow, Inc_T);
+                  Set_Private_Dependents (Shadow, New_Elmt_List);
+
+                  if Is_Tagged then
+                     Set_Non_Limited_View
+                       (Class_Wide_Type (Shadow), Class_Wide_Type (Inc_T));
+                  end if;
+
+                  Append_Entity (Shadow, Limited_View (Scope (Inc_T)));
+               end;
             end if;
          end if;
       end Build_Incomplete_Type_Declaration;
@@ -13562,6 +13606,8 @@ package body Sem_Ch3 is
       if Is_Access_Type (T) then
          T := Designated_Type (T);
       end if;
+
+      T := Underlying_Type (T);
 
       --  If an index constraint follows a subtype mark in a subtype indication
       --  then the type or subtype denoted by the subtype mark must not already

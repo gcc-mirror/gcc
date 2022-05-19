@@ -153,12 +153,14 @@ _GLIBCXX_BEGIN_INLINE_ABI_NAMESPACE(_V2)
     equivalent(const error_code& __code, int __i) const noexcept;
 
     /// An error_category only compares equal to itself.
+    [[__nodiscard__]]
     bool
     operator==(const error_category& __other) const noexcept
     { return this == &__other; }
 
     /// Ordered comparison that defines a total order for error categories.
 #if __cpp_lib_three_way_comparison
+    [[nodiscard]]
     strong_ordering
     operator<=>(const error_category& __rhs) const noexcept
     { return std::compare_three_way()(this, &__rhs); }
@@ -176,10 +178,14 @@ _GLIBCXX_BEGIN_INLINE_ABI_NAMESPACE(_V2)
   // DR 890.
 
   /// Error category for `errno` error codes.
-  _GLIBCXX_CONST const error_category& generic_category() noexcept;
+  [[__nodiscard__, __gnu__::__const__]]
+  const error_category&
+  generic_category() noexcept;
 
   /// Error category for other error codes defined by the OS.
-  _GLIBCXX_CONST const error_category& system_category() noexcept;
+  [[__nodiscard__, __gnu__::__const__]]
+  const error_category&
+  system_category() noexcept;
 
   /// @}
 
@@ -241,10 +247,12 @@ _GLIBCXX_END_INLINE_ABI_NAMESPACE(_V2)
       { return *this = make_error_code(__e); }
 
     /// The error value.
+    [[__nodiscard__]]
     int
     value() const noexcept { return _M_value; }
 
     /// The error category that this error belongs to.
+    [[__nodiscard__]]
     const error_category&
     category() const noexcept { return *_M_cat; }
 
@@ -259,6 +267,7 @@ _GLIBCXX_END_INLINE_ABI_NAMESPACE(_V2)
     { return category().message(value()); }
 
     /// Test whether `value()` is non-zero.
+    [[__nodiscard__]]
     explicit operator bool() const noexcept
     { return _M_value != 0; }
 
@@ -278,6 +287,7 @@ _GLIBCXX_END_INLINE_ABI_NAMESPACE(_V2)
    * @relates error_code
    * @since C++11
    */
+  [[__nodiscard__]]
   inline error_code
   make_error_code(errc __e) noexcept
   { return error_code(static_cast<int>(__e), generic_category()); }
@@ -291,6 +301,7 @@ _GLIBCXX_END_INLINE_ABI_NAMESPACE(_V2)
    * @since C++11
    */
 #if __cpp_lib_three_way_comparison
+  [[nodiscard]]
   inline strong_ordering
   operator<=>(const error_code& __lhs, const error_code& __rhs) noexcept
   {
@@ -371,10 +382,12 @@ _GLIBCXX_END_INLINE_ABI_NAMESPACE(_V2)
     // C++11 19.5.3.4 observers
 
     /// The error value.
+    [[__nodiscard__]]
     int
     value() const noexcept { return _M_value; }
 
     /// The error category that this error belongs to.
+    [[__nodiscard__]]
     const error_category&
     category() const noexcept { return *_M_cat; }
 
@@ -385,6 +398,7 @@ _GLIBCXX_END_INLINE_ABI_NAMESPACE(_V2)
     { return category().message(value()); }
 
     /// Test whether `value()` is non-zero.
+    [[__nodiscard__]]
     explicit operator bool() const noexcept
     { return _M_value != 0; }
 
@@ -404,6 +418,7 @@ _GLIBCXX_END_INLINE_ABI_NAMESPACE(_V2)
    * @relates error_condition
    * @since C++11
    */
+  [[__nodiscard__]]
   inline error_condition
   make_error_condition(errc __e) noexcept
   { return error_condition(static_cast<int>(__e), generic_category()); }
@@ -417,6 +432,7 @@ _GLIBCXX_END_INLINE_ABI_NAMESPACE(_V2)
    * @relates error_condition
    * @since C++11
    */
+  [[__nodiscard__]]
   inline bool
   operator==(const error_code& __lhs, const error_code& __rhs) noexcept
   {
@@ -432,6 +448,7 @@ _GLIBCXX_END_INLINE_ABI_NAMESPACE(_V2)
    * @relates error_condition
    * @since C++11
    */
+  [[__nodiscard__]]
   inline bool
   operator==(const error_code& __lhs, const error_condition& __rhs) noexcept
   {
@@ -446,6 +463,7 @@ _GLIBCXX_END_INLINE_ABI_NAMESPACE(_V2)
    * @relates error_condition
    * @since C++11
    */
+  [[__nodiscard__]]
   inline bool
   operator==(const error_condition& __lhs,
 	     const error_condition& __rhs) noexcept
@@ -463,6 +481,7 @@ _GLIBCXX_END_INLINE_ABI_NAMESPACE(_V2)
    * @since C++11
    */
 #if __cpp_lib_three_way_comparison
+  [[nodiscard]]
   inline strong_ordering
   operator<=>(const error_condition& __lhs,
 	      const error_condition& __rhs) noexcept
