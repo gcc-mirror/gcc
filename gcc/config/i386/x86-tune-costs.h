@@ -1866,7 +1866,7 @@ struct processor_costs skylake_cost = {
   {8, 8, 8, 12, 24},			/* cost of storing SSE registers
 					   in 32,64,128,256 and 512-bit */
   6, 6,				/* SSE->integer and integer->SSE moves */
-  5, 5,				/* mask->integer and integer->mask moves */
+  6, 6,				/* mask->integer and integer->mask moves */
   {8, 8, 8},				/* cost of loading mask register
 					   in QImode, HImode, SImode.  */
   {6, 6, 6},				/* cost if storing mask register
@@ -1992,7 +1992,7 @@ struct processor_costs icelake_cost = {
   {8, 8, 8, 12, 24},			/* cost of storing SSE registers
 					   in 32,64,128,256 and 512-bit */
   6, 6,				/* SSE->integer and integer->SSE moves */
-  5, 5,				/* mask->integer and integer->mask moves */
+  6, 6,				/* mask->integer and integer->mask moves */
   {8, 8, 8},				/* cost of loading mask register
 					   in QImode, HImode, SImode.  */
   {6, 6, 6},				/* cost if storing mask register
