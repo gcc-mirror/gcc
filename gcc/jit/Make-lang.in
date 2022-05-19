@@ -157,18 +157,23 @@ LIBGCCJIT_EXTRA_OPTS = $(LIBGCCJIT_VERSION_SCRIPT_OPTION) \
 endif
 endif
 
+# Only link objects from $(EXTRA_GCC_OBJS) that's not already
+# included in libbackend.a ($(EXTRA_OBJS)).
+EXTRA_GCC_OBJS_EXCLUSIVE = $(foreach _obj1, $(EXTRA_GCC_OBJS), \
+	$(if $(filter $(_obj1), $(EXTRA_OBJS)),, $(_obj1)))
+
 # We avoid using $(BACKEND) from Makefile.in in order to avoid pulling
 # in main.o
 $(LIBGCCJIT_FILENAME): $(jit_OBJS) \
 	libbackend.a libcommon-target.a libcommon.a \
 	$(CPPLIB) $(LIBDECNUMBER) \
 	$(LIBDEPS) $(srcdir)/jit/libgccjit.map \
-	$(EXTRA_GCC_OBJS) $(jit.prev)
+	$(EXTRA_GCC_OBJS_EXCLUSIVE) $(jit.prev)
 	@$(call LINK_PROGRESS,$(INDEX.jit),start)
 	+$(LLINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ -shared \
 	     $(jit_OBJS) libbackend.a libcommon-target.a libcommon.a \
 	     $(CPPLIB) $(LIBDECNUMBER) $(EXTRA_GCC_LIBS) $(LIBS) $(BACKENDLIBS) \
-	     $(EXTRA_GCC_OBJS) \
+	     $(EXTRA_GCC_OBJS_EXCLUSIVE) \
 	     $(LIBGCCJIT_EXTRA_OPTS)
 	@$(call LINK_PROGRESS,$(INDEX.jit),end)
 
