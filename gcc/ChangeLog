@@ -1,3 +1,9 @@
+2022-05-18  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/105458
+	* value-relation.cc (path_oracle::register_relation): Merge, then check
+	for equivalence.
+
 2022-05-16  Sebastian Pop  <spop@amazon.com>
 
 	PR target/105162

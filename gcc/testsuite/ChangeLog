@@ -1,3 +1,7 @@
+2022-05-18  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gcc.dg/pr105458.c: New.
+
 2022-05-16  Sebastian Pop  <spop@amazon.com>
 
 	PR target/105162
