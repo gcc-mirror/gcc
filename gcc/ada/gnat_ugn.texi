@@ -11383,8 +11383,7 @@ This switch disables warnings on overlapping actuals in a call.
 If this warning option is activated, then warnings are generated for
 calls to subprograms marked with @code{pragma Obsolescent} and
 for use of features in Annex J of the Ada Reference Manual. In the
-case of Annex J, not all features are flagged. In particular use
-of the renamed packages (like @code{Text_IO}) and use of package
+case of Annex J, not all features are flagged. In particular, uses of package
 @code{ASCII} are not flagged, since these are very common and
 would generate many annoying positive warnings. The default is that
 such warnings are not generated.
