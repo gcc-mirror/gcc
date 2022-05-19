@@ -356,6 +356,22 @@ namespace pmr
       __attribute__((__returns_nonnull__))
       { return _M_resource; }
 
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 3683. operator== for polymorphic_allocator cannot deduce template arg
+      [[nodiscard]]
+      friend bool
+      operator==(const polymorphic_allocator& __a,
+		 const polymorphic_allocator& __b) noexcept
+      { return *__a.resource() == *__b.resource(); }
+
+#if __cpp_impl_three_way_comparison < 201907L
+      [[nodiscard]]
+      friend bool
+      operator!=(const polymorphic_allocator& __a,
+		 const polymorphic_allocator& __b) noexcept
+      { return !(__a == __b); }
+#endif
+
     private:
 #if ! __cpp_lib_make_obj_using_allocator
       using __uses_alloc1_ = __uses_alloc1<polymorphic_allocator>;
