@@ -63,7 +63,7 @@ typedef struct m2stack_t
   struct m2stack_t *next;
 } stack;
 
-/* Prototypes */
+/* Prototypes.  */
 
 static pretty *initPretty (int bits);
 static pretty *dupPretty (pretty *s);
@@ -162,7 +162,7 @@ extern void stop (void);
 
 static stack *stackPtr = NULL;
 
-/* */
+/* do_pf helper function for pf.  */
 
 void
 do_pf (tree t, int bits)
@@ -545,7 +545,6 @@ m2pp_types (pretty *s)
     }
 }
 
-#if 1
 /* hextree - displays the critical fields for function, block and
    bind_expr trees in raw hex.  */
 
@@ -606,9 +605,8 @@ hextree (tree t)
       killPretty (state);
     }
 }
-#endif
 
-/* */
+/* translation produce a pseudo implementation module from the tree t.  */
 
 static void
 m2pp_translation (pretty *s, tree t)
@@ -641,7 +639,6 @@ m2pp_module_block (pretty *s, tree t)
       {
         switch (TREE_CODE (t))
           {
-
           case FUNCTION_DECL:
             if (!DECL_EXTERNAL (t))
               {
@@ -2330,7 +2327,7 @@ m2pp_procedure_call (pretty *s, tree t)
   m2pp_print (s, ";\n");
 }
 
-/* */
+/* args displays each argument in an iter list by calling expression.  */
 
 static void
 m2pp_args (pretty *s, tree e)

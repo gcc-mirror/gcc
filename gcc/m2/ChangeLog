@@ -1,3 +1,9 @@
+2022-05-20   Gaius Mulley   <gaius.mulley@southwales.ac.uk>
+
+	* m2pp.cc: (Renamed from m2pp.c).  Comments tidied up.
+	* Make-lang.in: m2pp.c changed to m2pp.cc.
+	(m2rte.so) Added insn-flags.h as a dependent
+
 2022-05-19   Gaius Mulley   <gaius.mulley@southwales.ac.uk>
 
 	* gm2-gcc/m2builtins.cc: Corrected comments (specifically
