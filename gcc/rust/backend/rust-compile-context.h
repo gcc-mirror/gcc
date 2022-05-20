@@ -24,7 +24,6 @@
 #include "rust-name-resolver.h"
 #include "rust-hir-type-check.h"
 #include "rust-backend.h"
-#include "rust-compile-tyty.h"
 #include "rust-hir-full.h"
 #include "rust-mangle.h"
 #include "rust-tree.h"
@@ -41,50 +40,14 @@ struct fncontext
 class Context
 {
 public:
-  Context (::Backend *backend)
-    : backend (backend), resolver (Resolver::Resolver::get ()),
-      tyctx (Resolver::TypeCheckContext::get ()),
-      mappings (Analysis::Mappings::get ()), mangler (Mangler ())
+  Context (::Backend *backend);
+
+  void setup_builtins ();
+
+  bool lookup_compiled_types (tree t, tree *type)
   {
-    // insert the builtins
-    auto builtins = resolver->get_builtin_types ();
-    for (auto it = builtins.begin (); it != builtins.end (); it++)
-      {
-	HirId ref;
-	bool ok = tyctx->lookup_type_by_node_id ((*it)->get_node_id (), &ref);
-	rust_assert (ok);
-
-	TyTy::BaseType *lookup;
-	ok = tyctx->lookup_type (ref, &lookup);
-	rust_assert (ok);
-
-	tree compiled = TyTyCompile::compile (backend, lookup);
-	compiled_type_map.insert (std::pair<HirId, tree> (ref, compiled));
-	builtin_range.insert (ref);
-      }
-  }
-
-  bool lookup_compiled_types (HirId id, tree *type,
-			      const TyTy::BaseType *ref = nullptr)
-  {
-    if (ref != nullptr)
-      {
-	for (auto it = mono.begin (); it != mono.end (); it++)
-	  {
-	    std::pair<HirId, tree> &val = it->second;
-	    const TyTy::BaseType *r = it->first;
-
-	    if (ref->is_equal (*r))
-	      {
-		*type = val.second;
-
-		return true;
-	      }
-	  }
-	return false;
-      }
-
-    auto it = compiled_type_map.find (id);
+    hashval_t h = type_hasher (t);
+    auto it = compiled_type_map.find (h);
     if (it == compiled_type_map.end ())
       return false;
 
@@ -92,16 +55,16 @@ public:
     return true;
   }
 
-  void insert_compiled_type (HirId id, tree type,
-			     const TyTy::BaseType *ref = nullptr)
+  tree insert_compiled_type (tree type)
   {
-    rust_assert (builtin_range.find (id) == builtin_range.end ());
-    compiled_type_map.insert (std::pair<HirId, tree> (id, type));
-    if (ref != nullptr)
-      {
-	std::pair<HirId, tree> elem (id, type);
-	mono[ref] = std::move (elem);
-      }
+    hashval_t h = type_hasher (type);
+    auto it = compiled_type_map.find (h);
+    if (it != compiled_type_map.end ())
+      return it->second;
+
+    compiled_type_map.insert ({h, type});
+    push_type (type);
+    return type;
   }
 
   ::Backend *get_backend () { return backend; }
@@ -328,18 +291,19 @@ public:
   std::vector<tree> &get_const_decls () { return const_decls; }
   std::vector<tree> &get_func_decls () { return func_decls; }
 
+  static hashval_t type_hasher (tree type);
+
 private:
   ::Backend *backend;
   Resolver::Resolver *resolver;
   Resolver::TypeCheckContext *tyctx;
   Analysis::Mappings *mappings;
-  std::set<HirId> builtin_range;
   Mangler mangler;
 
   // state
   std::vector<fncontext> fn_stack;
   std::map<HirId, ::Bvariable *> compiled_var_decls;
-  std::map<HirId, tree> compiled_type_map;
+  std::map<hashval_t, tree> compiled_type_map;
   std::map<HirId, tree> compiled_fn_map;
   std::map<HirId, tree> compiled_consts;
   std::map<HirId, tree> compiled_labels;
@@ -347,7 +311,6 @@ private:
   std::vector<tree> scope_stack;
   std::vector<::Bvariable *> loop_value_stack;
   std::vector<tree> loop_begin_labels;
-  std::map<const TyTy::BaseType *, std::pair<HirId, tree>> mono;
   std::map<DefId, std::vector<std::pair<const TyTy::BaseType *, tree>>>
     mono_fns;
   std::map<HirId, tree> implicit_pattern_bindings;

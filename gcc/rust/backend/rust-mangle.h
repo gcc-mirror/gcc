@@ -17,7 +17,8 @@
 #ifndef RUST_MANGLE_H
 #define RUST_MANGLE_H
 
-#include "rust-compile-tyty.h"
+#include "rust-system.h"
+#include "rust-tyty.h"
 
 namespace Rust {
 namespace Compile {

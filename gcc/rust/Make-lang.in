@@ -130,6 +130,7 @@ GRS_OBJS = \
     rust/rust-constexpr.o \
     rust/rust-compile-base.o \
     rust/rust-tree.o \
+    rust/rust-compile-context.o \
     $(END)
 # removed object files from here
 
