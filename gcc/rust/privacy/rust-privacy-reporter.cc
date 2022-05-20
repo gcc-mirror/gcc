@@ -163,11 +163,9 @@ PrivacyReporter::check_base_type_privacy (Analysis::NodeMapping &node_mappings,
     case TyTy::PROJECTION:
       return recursive_check (
 	static_cast<const TyTy::ProjectionType *> (ty)->get ());
-    case TyTy::NEVER:
     case TyTy::CLOSURE:
-    case TyTy::ERROR:
-    case TyTy::INFER:
-      rust_unreachable ();
+      sorry_at (locus.gcc_location (),
+		"privacy pass for closures is not handled yet");
       break;
 
       // If we're dealing with a generic param, there's nothing we should be
@@ -180,7 +178,13 @@ PrivacyReporter::check_base_type_privacy (Analysis::NodeMapping &node_mappings,
       // FIXME: Can we really not resolve Dynamic types here? Shouldn't we have
       // a look at the path and perform proper privacy analysis?
     case TyTy::DYNAMIC:
+      // The never type is builtin and always available
+    case TyTy::NEVER:
+      // We shouldn't have inference types here, ever
+    case TyTy::INFER:
       return;
+    case TyTy::ERROR:
+      rust_unreachable ();
     }
 }
 
