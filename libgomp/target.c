@@ -49,6 +49,8 @@ static inline void * htab_alloc (size_t size) { return gomp_malloc (size); }
 static inline void htab_free (void *ptr) { free (ptr); }
 #include "hashtab.h"
 
+ialias_redirect (GOMP_task)
+
 static inline hashval_t
 htab_hash (hash_entry_type element)
 {
@@ -3355,40 +3357,49 @@ omp_target_is_present (const void *ptr, int device_num)
   return ret;
 }
 
-int
-omp_target_memcpy (void *dst, const void *src, size_t length,
-		   size_t dst_offset, size_t src_offset, int dst_device_num,
-		   int src_device_num)
+static int
+omp_target_memcpy_check (int dst_device_num, int src_device_num,
+			 struct gomp_device_descr **dst_devicep,
+			 struct gomp_device_descr **src_devicep)
 {
-  struct gomp_device_descr *dst_devicep = NULL, *src_devicep = NULL;
-  bool ret;
-
   if (dst_device_num != gomp_get_num_devices ())
     {
       if (dst_device_num < 0)
 	return EINVAL;
 
-      dst_devicep = resolve_device (dst_device_num);
-      if (dst_devicep == NULL)
+      *dst_devicep = resolve_device (dst_device_num);
+      if (*dst_devicep == NULL)
 	return EINVAL;
 
-      if (!(dst_devicep->capabilities & GOMP_OFFLOAD_CAP_OPENMP_400)
-	  || dst_devicep->capabilities & GOMP_OFFLOAD_CAP_SHARED_MEM)
-	dst_devicep = NULL;
+      if (!((*dst_devicep)->capabilities & GOMP_OFFLOAD_CAP_OPENMP_400)
+	  || (*dst_devicep)->capabilities & GOMP_OFFLOAD_CAP_SHARED_MEM)
+	*dst_devicep = NULL;
     }
+
   if (src_device_num != num_devices_openmp)
     {
       if (src_device_num < 0)
 	return EINVAL;
 
-      src_devicep = resolve_device (src_device_num);
-      if (src_devicep == NULL)
+      *src_devicep = resolve_device (src_device_num);
+      if (*src_devicep == NULL)
 	return EINVAL;
 
-      if (!(src_devicep->capabilities & GOMP_OFFLOAD_CAP_OPENMP_400)
-	  || src_devicep->capabilities & GOMP_OFFLOAD_CAP_SHARED_MEM)
-	src_devicep = NULL;
+      if (!((*src_devicep)->capabilities & GOMP_OFFLOAD_CAP_OPENMP_400)
+	  || (*src_devicep)->capabilities & GOMP_OFFLOAD_CAP_SHARED_MEM)
+	*src_devicep = NULL;
     }
+
+  return 0;
+}
+
+static int
+omp_target_memcpy_copy (void *dst, const void *src, size_t length,
+			size_t dst_offset, size_t src_offset,
+			struct gomp_device_descr *dst_devicep,
+			struct gomp_device_descr *src_devicep)
+{
+  bool ret;
   if (src_devicep == NULL && dst_devicep == NULL)
     {
       memcpy ((char *) dst + dst_offset, (char *) src + src_offset, length);
@@ -3422,6 +3433,85 @@ omp_target_memcpy (void *dst, const void *src, size_t length,
       return (ret ? 0 : EINVAL);
     }
   return EINVAL;
+}
+
+int
+omp_target_memcpy (void *dst, const void *src, size_t length, size_t dst_offset,
+		   size_t src_offset, int dst_device_num, int src_device_num)
+{
+  struct gomp_device_descr *dst_devicep = NULL, *src_devicep = NULL;
+  int ret = omp_target_memcpy_check (dst_device_num, src_device_num,
+				     &dst_devicep, &src_devicep);
+
+  if (ret)
+    return ret;
+
+  ret = omp_target_memcpy_copy (dst, src, length, dst_offset, src_offset,
+				dst_devicep, src_devicep);
+
+  return ret;
+}
+
+typedef struct
+{
+  void *dst;
+  const void *src;
+  size_t length;
+  size_t dst_offset;
+  size_t src_offset;
+  struct gomp_device_descr *dst_devicep;
+  struct gomp_device_descr *src_devicep;
+} omp_target_memcpy_data;
+
+static void
+omp_target_memcpy_async_helper (void *args)
+{
+  omp_target_memcpy_data *a = args;
+  if (omp_target_memcpy_copy (a->dst, a->src, a->length, a->dst_offset,
+			      a->src_offset, a->dst_devicep, a->src_devicep))
+    gomp_fatal ("omp_target_memcpy failed");
+}
+
+int
+omp_target_memcpy_async (void *dst, const void *src, size_t length,
+			 size_t dst_offset, size_t src_offset,
+			 int dst_device_num, int src_device_num,
+			 int depobj_count, omp_depend_t *depobj_list)
+{
+  struct gomp_device_descr *dst_devicep = NULL, *src_devicep = NULL;
+  unsigned int flags = 0;
+  void *depend[depobj_count + 5];
+  int i;
+  int check = omp_target_memcpy_check (dst_device_num, src_device_num,
+				       &dst_devicep, &src_devicep);
+
+  omp_target_memcpy_data s = {
+    .dst = dst,
+    .src = src,
+    .length = length,
+    .dst_offset = dst_offset,
+    .src_offset = src_offset,
+    .dst_devicep = dst_devicep,
+    .src_devicep = src_devicep
+  };
+
+  if (check)
+    return check;
+
+  if (depobj_count > 0 && depobj_list != NULL)
+    {
+      flags |= GOMP_TASK_FLAG_DEPEND;
+      depend[0] = 0;
+      depend[1] = (void *) (uintptr_t) depobj_count;
+      depend[2] = depend[3] = depend[4] = 0;
+      for (i = 0; i < depobj_count; ++i)
+	depend[i + 5] = &depobj_list[i];
+    }
+
+  GOMP_task (omp_target_memcpy_async_helper, &s, NULL, sizeof (s),
+	     __alignof__ (s), true, flags, depend, 0, NULL);
+
+  return 0;
 }
 
 static int
@@ -3500,50 +3590,36 @@ omp_target_memcpy_rect_worker (void *dst, const void *src, size_t element_size,
   return 0;
 }
 
-int
-omp_target_memcpy_rect (void *dst, const void *src, size_t element_size,
-			int num_dims, const size_t *volume,
-			const size_t *dst_offsets,
-			const size_t *src_offsets,
-			const size_t *dst_dimensions,
-			const size_t *src_dimensions,
-			int dst_device_num, int src_device_num)
+static int
+omp_target_memcpy_rect_check (void *dst, const void *src, int dst_device_num,
+			      int src_device_num,
+			      struct gomp_device_descr **dst_devicep,
+			      struct gomp_device_descr **src_devicep)
 {
-  struct gomp_device_descr *dst_devicep = NULL, *src_devicep = NULL;
-
   if (!dst && !src)
     return INT_MAX;
 
-  if (dst_device_num != gomp_get_num_devices ())
-    {
-      if (dst_device_num < 0)
-	return EINVAL;
+  int ret = omp_target_memcpy_check (dst_device_num, src_device_num,
+				     dst_devicep, src_devicep);
+  if (ret)
+    return ret;
 
-      dst_devicep = resolve_device (dst_device_num);
-      if (dst_devicep == NULL)
-	return EINVAL;
-
-      if (!(dst_devicep->capabilities & GOMP_OFFLOAD_CAP_OPENMP_400)
-	  || dst_devicep->capabilities & GOMP_OFFLOAD_CAP_SHARED_MEM)
-	dst_devicep = NULL;
-    }
-  if (src_device_num != num_devices_openmp)
-    {
-      if (src_device_num < 0)
-	return EINVAL;
-
-      src_devicep = resolve_device (src_device_num);
-      if (src_devicep == NULL)
-	return EINVAL;
-
-      if (!(src_devicep->capabilities & GOMP_OFFLOAD_CAP_OPENMP_400)
-	  || src_devicep->capabilities & GOMP_OFFLOAD_CAP_SHARED_MEM)
-	src_devicep = NULL;
-    }
-
-  if (src_devicep != NULL && dst_devicep != NULL && src_devicep != dst_devicep)
+  if (*src_devicep != NULL && *dst_devicep != NULL && *src_devicep != *dst_devicep)
     return EINVAL;
 
+  return 0;
+}
+
+static int
+omp_target_memcpy_rect_copy (void *dst, const void *src,
+			     size_t element_size, int num_dims,
+			     const size_t *volume, const size_t *dst_offsets,
+			     const size_t *src_offsets,
+			     const size_t *dst_dimensions,
+			     const size_t *src_dimensions,
+			     struct gomp_device_descr *dst_devicep,
+			     struct gomp_device_descr *src_devicep)
+{
   if (src_devicep)
     gomp_mutex_lock (&src_devicep->lock);
   else if (dst_devicep)
@@ -3556,7 +3632,113 @@ omp_target_memcpy_rect (void *dst, const void *src, size_t element_size,
     gomp_mutex_unlock (&src_devicep->lock);
   else if (dst_devicep)
     gomp_mutex_unlock (&dst_devicep->lock);
+
   return ret;
+}
+
+int
+omp_target_memcpy_rect (void *dst, const void *src, size_t element_size,
+			int num_dims, const size_t *volume,
+			const size_t *dst_offsets,
+			const size_t *src_offsets,
+			const size_t *dst_dimensions,
+			const size_t *src_dimensions,
+			int dst_device_num, int src_device_num)
+{
+  struct gomp_device_descr *dst_devicep = NULL, *src_devicep = NULL;
+
+  int check = omp_target_memcpy_rect_check (dst, src, dst_device_num,
+					    src_device_num, &dst_devicep,
+					    &src_devicep);
+
+  if (check)
+    return check;
+
+  int ret = omp_target_memcpy_rect_copy (dst, src, element_size, num_dims,
+					 volume, dst_offsets, src_offsets,
+					 dst_dimensions, src_dimensions,
+					 dst_devicep, src_devicep);
+
+  return ret;
+}
+
+typedef struct
+{
+  void *dst;
+  const void *src;
+  size_t element_size;
+  const size_t *volume;
+  const size_t *dst_offsets;
+  const size_t *src_offsets;
+  const size_t *dst_dimensions;
+  const size_t *src_dimensions;
+  struct gomp_device_descr *dst_devicep;
+  struct gomp_device_descr *src_devicep;
+  int num_dims;
+} omp_target_memcpy_rect_data;
+
+static void
+omp_target_memcpy_rect_async_helper (void *args)
+{
+  omp_target_memcpy_rect_data *a = args;
+  int ret = omp_target_memcpy_rect_copy (a->dst, a->src, a->element_size,
+					 a->num_dims, a->volume, a->dst_offsets,
+					 a->src_offsets, a->dst_dimensions,
+					 a->src_dimensions, a->dst_devicep,
+					 a->src_devicep);
+  if (ret)
+    gomp_fatal ("omp_target_memcpy_rect failed");
+}
+
+int
+omp_target_memcpy_rect_async (void *dst, const void *src, size_t element_size,
+			      int num_dims, const size_t *volume,
+			      const size_t *dst_offsets,
+			      const size_t *src_offsets,
+			      const size_t *dst_dimensions,
+			      const size_t *src_dimensions,
+			      int dst_device_num, int src_device_num,
+			      int depobj_count, omp_depend_t *depobj_list)
+{
+  struct gomp_device_descr *dst_devicep = NULL, *src_devicep = NULL;
+  unsigned flags = 0;
+  int check = omp_target_memcpy_rect_check (dst, src, dst_device_num,
+					    src_device_num, &dst_devicep,
+					    &src_devicep);
+  void *depend[depobj_count + 5];
+  int i;
+
+  omp_target_memcpy_rect_data s = {
+    .dst = dst,
+    .src = src,
+    .element_size = element_size,
+    .num_dims = num_dims,
+    .volume = volume,
+    .dst_offsets = dst_offsets,
+    .src_offsets = src_offsets,
+    .dst_dimensions = dst_dimensions,
+    .src_dimensions = src_dimensions,
+    .dst_devicep = dst_devicep,
+    .src_devicep = src_devicep
+  };
+
+  if (check)
+    return check;
+
+  if (depobj_count > 0 && depobj_list != NULL)
+    {
+      flags |= GOMP_TASK_FLAG_DEPEND;
+      depend[0] = 0;
+      depend[1] = (void *) (uintptr_t) depobj_count;
+      depend[2] = depend[3] = depend[4] = 0;
+      for (i = 0; i < depobj_count; ++i)
+	depend[i + 5] = &depobj_list[i];
+    }
+
+  GOMP_task (omp_target_memcpy_rect_async_helper, &s, NULL, sizeof (s),
+	     __alignof__ (s), true, flags, depend, 0, NULL);
+
+  return 0;
 }
 
 int

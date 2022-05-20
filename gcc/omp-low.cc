@@ -4011,7 +4011,9 @@ omp_runtime_api_call (const_tree fndecl)
       "target_is_accessible",
       "target_is_present",
       "target_memcpy",
+      "target_memcpy_async",
       "target_memcpy_rect",
+      "target_memcpy_rect_async",
       NULL,
       /* Now omp_* calls that are available as omp_* and omp_*_; however, the
 	 DECL_NAME is always omp_* without tailing underscore.  */
