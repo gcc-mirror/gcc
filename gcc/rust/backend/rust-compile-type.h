@@ -63,16 +63,13 @@ public:
 private:
   TyTyResolveCompile (Context *ctx, bool trait_object_mode)
     : ctx (ctx), trait_object_mode (trait_object_mode),
-      translated (error_mark_node), recursion_count (0)
+      translated (error_mark_node), recurisve_ops (0)
   {}
 
   Context *ctx;
   bool trait_object_mode;
   tree translated;
-
-  // FIXME this needs to be derived from the gcc config option
-  size_t recursion_count;
-  static const size_t kDefaultRecusionLimit = 5;
+  int recurisve_ops;
 };
 
 } // namespace Compile

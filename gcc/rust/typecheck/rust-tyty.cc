@@ -252,33 +252,49 @@ BaseType::get_root () const
 const BaseType *
 BaseType::destructure () const
 {
-  switch (get_kind ())
+  int recurisve_ops = 0;
+  const BaseType *x = this;
+  while (true)
     {
-      case TyTy::TypeKind::PARAM: {
-	const TyTy::ParamType *p = static_cast<const TyTy::ParamType *> (this);
-	return p->resolve ();
-      }
-      break;
+      if (recurisve_ops++ >= rust_max_recursion_depth)
+	{
+	  rust_error_at (
+	    Location (),
+	    "%<recursion depth%> count exceeds limit of %i (use "
+	    "%<frust-max-recursion-depth=%> to increase the limit)",
+	    rust_max_recursion_depth);
+	  return new ErrorType (get_ref ());
+	}
 
-      case TyTy::TypeKind::PLACEHOLDER: {
-	const TyTy::PlaceholderType *p
-	  = static_cast<const TyTy::PlaceholderType *> (this);
-	rust_assert (p->can_resolve ());
-	return p->resolve ();
-      }
-      break;
+      switch (x->get_kind ())
+	{
+	  case TyTy::TypeKind::PARAM: {
+	    const TyTy::ParamType *p = static_cast<const TyTy::ParamType *> (x);
+	    x = p->resolve ();
+	  }
+	  break;
 
-      case TyTy::TypeKind::PROJECTION: {
-	const TyTy::ProjectionType *p
-	  = static_cast<const TyTy::ProjectionType *> (this);
-	return p->get ();
-      }
+	  case TyTy::TypeKind::PLACEHOLDER: {
+	    const TyTy::PlaceholderType *p
+	      = static_cast<const TyTy::PlaceholderType *> (x);
+	    rust_assert (p->can_resolve ());
+	    x = p->resolve ();
+	  }
+	  break;
 
-    default:
-      return this;
+	  case TyTy::TypeKind::PROJECTION: {
+	    const TyTy::ProjectionType *p
+	      = static_cast<const TyTy::ProjectionType *> (x);
+	    x = p->get ();
+	  }
+	  break;
+
+	default:
+	  return x;
+	}
     }
 
-  return this;
+  return x;
 }
 
 TyVar::TyVar (HirId ref) : ref (ref)

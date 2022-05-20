@@ -112,9 +112,15 @@ TyTyResolveCompile::visit (const TyTy::PlaceholderType &type)
 void
 TyTyResolveCompile::visit (const TyTy::ParamType &param)
 {
-  // FIXME make this reuse the same machinery from constexpr code
-  recursion_count++;
-  rust_assert (recursion_count < kDefaultRecusionLimit);
+  if (recurisve_ops++ >= rust_max_recursion_depth)
+    {
+      rust_error_at (Location (),
+		     "%<recursion depth%> count exceeds limit of %i (use "
+		     "%<frust-max-recursion-depth=%> to increase the limit)",
+		     rust_max_recursion_depth);
+      translated = error_mark_node;
+      return;
+    }
 
   param.resolve ()->accept_vis (*this);
 }
