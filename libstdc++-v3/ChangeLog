@@ -1,3 +1,67 @@
+2022-05-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/char_traits.h: Only include <cstdint> when
+	necessary.
+	* include/std/stacktrace: Use __UINTPTR_TYPE__ instead of
+	uintptr_t.
+	* src/c++11/cow-stdexcept.cc: Include <stdint.h>.
+	* src/c++17/floating_to_chars.cc: Likewise.
+	* testsuite/20_util/assume_aligned/1.cc: Include <cstdint>.
+	* testsuite/20_util/assume_aligned/3.cc: Likewise.
+	* testsuite/20_util/shared_ptr/creation/array.cc: Likewise.
+
+2022-05-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/basic_string.h: Do not include <ext/atomicity.h>
+	here.
+	* include/bits/cow_string.h: Include it here.
+
+2022-05-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/Makefile.am: Add new header.
+	* include/Makefile.in: Regenerate.
+	* include/bits/memory_resource.h: New file.
+	* include/std/deque: Include <bits/memory_resource.h>.
+	* include/std/forward_list: Likewise.
+	* include/std/list: Likewise.
+	* include/std/map: Likewise.
+	* include/std/memory_resource (pmr::memory_resource): Move to
+	new <bits/memory_resource.h> header.
+	(pmr::polymorphic_allocator): Likewise.
+	* include/std/regex: Likewise.
+	* include/std/set: Likewise.
+	* include/std/stacktrace: Likewise.
+	* include/std/string: Likewise.
+	* include/std/unordered_map: Likewise.
+	* include/std/unordered_set: Likewise.
+	* include/std/vector: Likewise.
+	* testsuite/21_strings/basic_string/types/pmr_typedefs.cc:
+	Remove <memory_resource> header and check construction.
+	* testsuite/23_containers/deque/types/pmr_typedefs.cc: Likewise.
+	* testsuite/23_containers/forward_list/pmr_typedefs.cc:
+	Likewise.
+	* testsuite/23_containers/list/pmr_typedefs.cc: Likewise.
+	* testsuite/23_containers/map/pmr_typedefs.cc: Likewise.
+	* testsuite/23_containers/multimap/pmr_typedefs.cc: Likewise.
+	* testsuite/23_containers/multiset/pmr_typedefs.cc: Likewise.
+	* testsuite/23_containers/set/pmr_typedefs.cc: Likewise.
+	* testsuite/23_containers/unordered_map/pmr_typedefs.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_multimap/pmr_typedefs.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_multiset/pmr_typedefs.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_set/pmr_typedefs.cc:
+	Likewise.
+	* testsuite/23_containers/vector/pmr_typedefs.cc: Likewise.
+	* testsuite/28_regex/match_results/pmr_typedefs.cc: Likewise.
+
+2022-05-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/memory_resource (polymorphic_allocator): Add
+	non-template equality operator, as proposed for LWG 3683.
+	* testsuite/20_util/polymorphic_allocator/lwg3683.cc: New test.
+
 2022-05-17  Jonathan Wakely  <jwakely@redhat.com>
 
 	* src/c++17/memory_resource.cc (set_default_resource): Use

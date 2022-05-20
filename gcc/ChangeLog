@@ -1,3 +1,58 @@
+2022-05-19  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR middle-end/98865
+	* expr.cc (expand_expr_real_2) [MULT_EXPR]:  Expand X*Y as X&Y
+	when both X and Y are [0, 1], X*Y as X&-Y when Y is [0,1] and
+	likewise X*Y as -X&Y when X is [0,1] using tree_nonzero_bits.
+
+2022-05-19  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	* config/rs6000/rs6000-builtins.def: Rephrase
+	to remove RS6000_BTC_SPECIAL from comment.
+	* config/rs6000/rs6000.h (RS6000_BTC_UNARY, RS6000_BTC_BINARY,
+	RS6000_BTC_TERNARY, RS6000_BTC_QUATERNARY,
+	RS6000_BTC_QUINARY, RS6000_BTC_SENARY, RS6000_BTC_OPND_MASK,
+	RS6000_BTC_SPECIAL, RS6000_BTC_PREDICATE, RS6000_BTC_ABS,
+	RS6000_BTC_DST, RS6000_BTC_TYPE_MASK, RS6000_BTC_MISC,
+	RS6000_BTC_CONST, RS6000_BTC_PURE, RS6000_BTC_FP,
+	RS6000_BTC_QUAD, RS6000_BTC_PAIR, RS6000_BTC_QUADPAIR,
+	RS6000_BTC_ATTR_MASK, RS6000_BTC_SPR, RS6000_BTC_VOID,
+	RS6000_BTC_CR, RS6000_BTC_OVERLOADED, RS6000_BTC_GIMPLE,
+	RS6000_BTC_MISC_MASK, RS6000_BTC_MEM, RS6000_BTC_SAT,
+	RS6000_BTM_ALWAYS): Delete.
+
+2022-05-19  Richard Biener  <rguenther@suse.de>
+
+	* omp-expand.cc (expand_omp_atomic_cas): Do not short-cut
+	computation of the new value.
+
+2022-05-19  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-pre.cc (get_or_alloc_expression_id): Remove.
+	(add_to_value): Use get_expression_id.
+	(bitmap_insert_into_set): Likewise.
+	(bitmap_value_insert_into_set): Likewise.
+
+2022-05-19  David Malcolm  <dmalcolm@redhat.com>
+
+	* doc/invoke.texi (-fanalyzer-checker=): Add
+	-Wanalyzer-va-list-leak and -Wanalyzer-va-list-use-after-va-end to
+	the list of analyzer warnings disabled by
+	-fanalyzer-checker=taint.
+
+2022-05-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/105630
+	* cfgexpand.cc (expand_debug_expr): For VAR_DECL, punt for
+	global vars without symtab node even when they have DECL_RTL
+	set.
+
+2022-05-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/105635
+	* pointer-query.cc (gimple_parm_array_size): Return NULL if var
+	doesn't have pointer or reference type.
+
 2022-05-18  Marek Polacek  <polacek@redhat.com>
 
 	PR c/105131

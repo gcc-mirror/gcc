@@ -1,3 +1,29 @@
+2022-05-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	* g++.dg/cpp0x/variadic-tuple.C: Qualify function to avoid ADL
+	finding std::make_tuple.
+
+2022-05-19  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR middle-end/98865
+	* gcc.target/i386/pr98865.c: New test case.
+
+2022-05-19  Giuliano Belinassi  <gbelinassi@suse.de>
+
+	PR target/105647
+	* g++.dg/modules/pr105169_a.C: Change -fpatchable-function-entry to 2.
+	* g++.dg/modules/pr105169_b.C: Likewise.
+
+2022-05-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/105630
+	* gcc.dg/pr105630.c: New test.
+
+2022-05-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/105635
+	* gcc.dg/pr105635.c: New test.
+
 2022-05-18  Marek Polacek  <polacek@redhat.com>
 
 	PR c/105131
