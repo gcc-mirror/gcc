@@ -1,3 +1,78 @@
+2022-05-19  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-05-17  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/105618
+	* tree-ssa-sink.cc (statement_sink_location): For virtual
+	PHI uses ignore those defining the used virtual operand.
+
+2022-05-19  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-05-12  Richard Biener  <rguenther@suse.de>
+
+	PR rtl-optimization/105577
+	* dse.cc (rest_of_handle_dse): Make sure to purge dead EH
+	edges before running fast DCE via df_analyze.
+
+2022-05-19  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-05-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/105562
+	* tree-ssa-sccvn.cc (vn_reference_lookup_3): Disambiguate
+	against all CLOBBER defs if there's not an obvious must-alias
+	and we are not doing redundant store elimination.
+	(vn_walk_cb_data::redundant_store_removal_p): New field.
+	(vn_reference_lookup_pieces): Initialize it.
+	(vn_reference_lookup): Add argument to specify if we are
+	doing redundant store removal.
+	(eliminate_dom_walker::eliminate_stmt): Specify we do.
+	* tree-ssa-sccvn.h (vn_reference_lookup): Adjust.
+
+2022-05-19  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-05-11  Richard Biener  <rguenther@suse.de>
+
+	PR rtl-optimization/105559
+	* cfgrtl.cc (delete_insn_and_edges): Only perform search to BB_END
+	for non-debug insns.
+
+2022-05-19  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-05-10  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/105537
+	* toplev.cc (process_options): Move flag_var_tracking
+	handling ...
+	* opts.cc (finish_options): ... here.
+
+2022-05-19  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-05-10  Richard Biener  <rguenther@suse.de>
+
+	* flags.h (dwarf_debuginfo_p): Add opts argument, guard
+	API with !GENERATOR_FILE.
+	* opts.cc (global_options): Poison.
+	(global_options_set): Likewise.
+	(finish_options): Refer to options via opts.
+
+2022-05-19  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-04-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/105431
+	* tree-ssa-math-opts.cc (powi_as_mults_1): Make n unsigned.
+	(powi_as_mults): Use absu_hwi.
+	(gimple_expand_builtin_powi): Remove now pointless n != -n
+	check.
+
 2022-05-18  Andrew MacLeod  <amacleod@redhat.com>
 
 	PR tree-optimization/105458

@@ -1,3 +1,35 @@
+2022-05-19  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-05-17  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/105618
+	* gcc.dg/tree-ssa/ssa-sink-19.c: New testcase.
+
+2022-05-19  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-05-16  Richard Biener  <rguenther@suse.de>
+
+	PR rtl-optimization/105577
+	* g++.dg/torture/pr105577.C: New testcase.
+
+2022-05-19  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-05-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/105562
+	* g++.dg/warn/uninit-pr105562.C: New testcase.
+
+2022-05-19  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-05-10  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/105537
+	* gcc.dg/torture/pr105537.c: New testcase.
+
 2022-05-18  Andrew MacLeod  <amacleod@redhat.com>
 
 	* gcc.dg/pr105458.c: New.
