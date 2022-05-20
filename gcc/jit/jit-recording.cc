@@ -3741,7 +3741,7 @@ class rvalue_usage_validator : public recording::rvalue_visitor
 			  recording::statement *stmt);
 
   void
-  visit (recording::rvalue *rvalue) FINAL OVERRIDE;
+  visit (recording::rvalue *rvalue) final override;
 
  private:
   const char *m_api_funcname;

@@ -58,20 +58,20 @@ class pattern_test_state_machine : public state_machine
 public:
   pattern_test_state_machine (logger *logger);
 
-  bool inherited_state_p () const FINAL OVERRIDE { return false; }
+  bool inherited_state_p () const final override { return false; }
 
   bool on_stmt (sm_context *sm_ctxt,
 		const supernode *node,
-		const gimple *stmt) const FINAL OVERRIDE;
+		const gimple *stmt) const final override;
 
   void on_condition (sm_context *sm_ctxt,
 		     const supernode *node,
 		     const gimple *stmt,
 		     const svalue *lhs,
 		     enum tree_code op,
-		     const svalue *rhs) const FINAL OVERRIDE;
+		     const svalue *rhs) const final override;
 
-  bool can_purge_p (state_t s) const FINAL OVERRIDE;
+  bool can_purge_p (state_t s) const final override;
 };
 
 class pattern_match : public pending_diagnostic_subclass<pattern_match>
@@ -80,7 +80,7 @@ public:
   pattern_match (tree lhs, enum tree_code op, tree rhs)
   : m_lhs (lhs), m_op (op), m_rhs (rhs) {}
 
-  const char *get_kind () const FINAL OVERRIDE { return "pattern_match"; }
+  const char *get_kind () const final override { return "pattern_match"; }
 
   bool operator== (const pattern_match &other) const
   {
@@ -89,12 +89,12 @@ public:
 	    && same_tree_p (m_rhs, other.m_rhs));
   }
 
-  int get_controlling_option () const FINAL OVERRIDE
+  int get_controlling_option () const final override
   {
     return 0;
   }
 
-  bool emit (rich_location *rich_loc) FINAL OVERRIDE
+  bool emit (rich_location *rich_loc) final override
   {
     return warning_at (rich_loc, get_controlling_option (),
 		       "pattern match on %<%E %s %E%>",

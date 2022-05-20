@@ -180,8 +180,8 @@ public:
 class ccp_propagate : public ssa_propagation_engine
 {
  public:
-  enum ssa_prop_result visit_stmt (gimple *, edge *, tree *) FINAL OVERRIDE;
-  enum ssa_prop_result visit_phi (gphi *) FINAL OVERRIDE;
+  enum ssa_prop_result visit_stmt (gimple *, edge *, tree *) final override;
+  enum ssa_prop_result visit_phi (gphi *) final override;
 };
 
 /* Array of propagated constant values.  After propagation,
@@ -947,8 +947,8 @@ do_dbg_cnt (void)
 class ccp_folder : public substitute_and_fold_engine
 {
  public:
-  tree value_of_expr (tree, gimple *) FINAL OVERRIDE;
-  bool fold_stmt (gimple_stmt_iterator *) FINAL OVERRIDE;
+  tree value_of_expr (tree, gimple *) final override;
+  bool fold_stmt (gimple_stmt_iterator *) final override;
 };
 
 /* This method just wraps GET_CONSTANT_VALUE for now.  Over time

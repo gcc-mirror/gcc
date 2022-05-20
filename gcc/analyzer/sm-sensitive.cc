@@ -52,13 +52,13 @@ class sensitive_state_machine : public state_machine
 public:
   sensitive_state_machine (logger *logger);
 
-  bool inherited_state_p () const FINAL OVERRIDE { return true; }
+  bool inherited_state_p () const final override { return true; }
 
   bool on_stmt (sm_context *sm_ctxt,
 		const supernode *node,
-		const gimple *stmt) const FINAL OVERRIDE;
+		const gimple *stmt) const final override;
 
-  bool can_purge_p (state_t s) const FINAL OVERRIDE;
+  bool can_purge_p (state_t s) const final override;
 
   /* State for "sensitive" data, such as a password.  */
   state_t m_sensitive;
@@ -81,7 +81,7 @@ public:
   : m_sm (sm), m_arg (arg)
   {}
 
-  const char *get_kind () const FINAL OVERRIDE
+  const char *get_kind () const final override
   {
     return "exposure_through_output_file";
   }
@@ -91,12 +91,12 @@ public:
     return same_tree_p (m_arg, other.m_arg);
   }
 
-  int get_controlling_option () const FINAL OVERRIDE
+  int get_controlling_option () const final override
   {
     return OPT_Wanalyzer_exposure_through_output_file;
   }
 
-  bool emit (rich_location *rich_loc) FINAL OVERRIDE
+  bool emit (rich_location *rich_loc) final override
   {
     diagnostic_metadata m;
     /* CWE-532: Information Exposure Through Log Files */
@@ -107,7 +107,7 @@ public:
   }
 
   label_text describe_state_change (const evdesc::state_change &change)
-    FINAL OVERRIDE
+    final override
   {
     if (change.m_new_state == m_sm.m_sensitive)
       {
@@ -118,7 +118,7 @@ public:
   }
 
   label_text describe_call_with_state (const evdesc::call_with_state &info)
-    FINAL OVERRIDE
+    final override
   {
     if (info.m_state == m_sm.m_sensitive)
       return info.formatted_print
@@ -128,7 +128,7 @@ public:
   }
 
   label_text describe_return_of_state (const evdesc::return_of_state &info)
-    FINAL OVERRIDE
+    final override
   {
     if (info.m_state == m_sm.m_sensitive)
       return info.formatted_print ("returning sensitive value to %qE from %qE",
@@ -136,7 +136,7 @@ public:
     return label_text ();
   }
 
-  label_text describe_final_event (const evdesc::final_event &ev) FINAL OVERRIDE
+  label_text describe_final_event (const evdesc::final_event &ev) final override
   {
     if (m_first_sensitive_event.known_p ())
       return ev.formatted_print ("sensitive value %qE written to output file"

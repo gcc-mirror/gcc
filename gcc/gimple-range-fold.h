@@ -143,9 +143,9 @@ class fur_stmt : public fur_source
 {
 public:
   fur_stmt (gimple *s, range_query *q = NULL);
-  virtual bool get_operand (irange &r, tree expr) OVERRIDE;
-  virtual bool get_phi_operand (irange &r, tree expr, edge e) OVERRIDE;
-  virtual relation_kind query_relation (tree op1, tree op2) OVERRIDE;
+  virtual bool get_operand (irange &r, tree expr) override;
+  virtual bool get_phi_operand (irange &r, tree expr, edge e) override;
+  virtual relation_kind query_relation (tree op1, tree op2) override;
 private:
   gimple *m_stmt;
 };
@@ -158,9 +158,9 @@ class fur_depend : public fur_stmt
 public:
   fur_depend (gimple *s, gori_compute *gori, range_query *q = NULL);
   virtual void register_relation (gimple *stmt, relation_kind k, tree op1,
-				  tree op2) OVERRIDE;
+				  tree op2) override;
   virtual void register_relation (edge e, relation_kind k, tree op1,
-				  tree op2) OVERRIDE;
+				  tree op2) override;
 protected:
   relation_oracle *m_oracle;
 };

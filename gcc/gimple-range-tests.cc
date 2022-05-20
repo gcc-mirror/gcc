@@ -42,7 +42,7 @@ public:
     ASSERT_TRUE (r == expect);
   }
 
-  virtual bool range_of_expr (irange &r, tree expr, gimple * = NULL) OVERRIDE
+  virtual bool range_of_expr (irange &r, tree expr, gimple * = NULL) override
   {
     if (expr == op0)
       {

@@ -57,10 +57,10 @@ class fileptr_state_machine : public state_machine
 public:
   fileptr_state_machine (logger *logger);
 
-  bool inherited_state_p () const FINAL OVERRIDE { return false; }
+  bool inherited_state_p () const final override { return false; }
 
   state_machine::state_t
-  get_default_state (const svalue *sval) const FINAL OVERRIDE
+  get_default_state (const svalue *sval) const final override
   {
     if (tree cst = sval->maybe_get_constant ())
       {
@@ -72,17 +72,17 @@ public:
 
   bool on_stmt (sm_context *sm_ctxt,
 		const supernode *node,
-		const gimple *stmt) const FINAL OVERRIDE;
+		const gimple *stmt) const final override;
 
   void on_condition (sm_context *sm_ctxt,
 		     const supernode *node,
 		     const gimple *stmt,
 		     const svalue *lhs,
 		     enum tree_code op,
-		     const svalue *rhs) const FINAL OVERRIDE;
+		     const svalue *rhs) const final override;
 
-  bool can_purge_p (state_t s) const FINAL OVERRIDE;
-  pending_diagnostic *on_leak (tree var) const FINAL OVERRIDE;
+  bool can_purge_p (state_t s) const final override;
+  pending_diagnostic *on_leak (tree var) const final override;
 
   /* State for a FILE * returned from fopen that hasn't been checked for
      NULL.
@@ -111,13 +111,13 @@ public:
   : m_sm (sm), m_arg (arg)
   {}
 
-  bool subclass_equal_p (const pending_diagnostic &base_other) const OVERRIDE
+  bool subclass_equal_p (const pending_diagnostic &base_other) const override
   {
     return same_tree_p (m_arg, ((const file_diagnostic &)base_other).m_arg);
   }
 
   label_text describe_state_change (const evdesc::state_change &change)
-    OVERRIDE
+    override
   {
     if (change.m_old_state == m_sm.get_start_state ()
 	&& change.m_new_state == m_sm.m_unchecked)
@@ -155,14 +155,14 @@ public:
     : file_diagnostic (sm, arg)
   {}
 
-  const char *get_kind () const FINAL OVERRIDE { return "double_fclose"; }
+  const char *get_kind () const final override { return "double_fclose"; }
 
-  int get_controlling_option () const FINAL OVERRIDE
+  int get_controlling_option () const final override
   {
     return OPT_Wanalyzer_double_fclose;
   }
 
-  bool emit (rich_location *rich_loc) FINAL OVERRIDE
+  bool emit (rich_location *rich_loc) final override
   {
     return warning_at (rich_loc, get_controlling_option (),
 		       "double %<fclose%> of FILE %qE",
@@ -170,7 +170,7 @@ public:
   }
 
   label_text describe_state_change (const evdesc::state_change &change)
-    OVERRIDE
+    override
   {
     if (change.m_new_state == m_sm.m_closed)
       {
@@ -180,7 +180,7 @@ public:
     return file_diagnostic::describe_state_change (change);
   }
 
-  label_text describe_final_event (const evdesc::final_event &ev) FINAL OVERRIDE
+  label_text describe_final_event (const evdesc::final_event &ev) final override
   {
     if (m_first_fclose_event.known_p ())
       return ev.formatted_print ("second %qs here; first %qs was at %@",
@@ -200,14 +200,14 @@ public:
     : file_diagnostic (sm, arg)
   {}
 
-  const char *get_kind () const FINAL OVERRIDE { return "file_leak"; }
+  const char *get_kind () const final override { return "file_leak"; }
 
-  int get_controlling_option () const FINAL OVERRIDE
+  int get_controlling_option () const final override
   {
     return OPT_Wanalyzer_file_leak;
   }
 
-  bool emit (rich_location *rich_loc) FINAL OVERRIDE
+  bool emit (rich_location *rich_loc) final override
   {
     diagnostic_metadata m;
     /* CWE-775: "Missing Release of File Descriptor or Handle after
@@ -223,7 +223,7 @@ public:
   }
 
   label_text describe_state_change (const evdesc::state_change &change)
-    FINAL OVERRIDE
+    final override
   {
     if (change.m_new_state == m_sm.m_unchecked)
       {
@@ -233,7 +233,7 @@ public:
     return file_diagnostic::describe_state_change (change);
   }
 
-  label_text describe_final_event (const evdesc::final_event &ev) FINAL OVERRIDE
+  label_text describe_final_event (const evdesc::final_event &ev) final override
   {
     if (m_fopen_event.known_p ())
       {

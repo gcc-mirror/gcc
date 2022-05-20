@@ -236,11 +236,11 @@ public:
   state_purge_annotator (const state_purge_map *map) : m_map (map) {}
 
   bool add_node_annotations (graphviz_out *gv, const supernode &n, bool)
-    const FINAL OVERRIDE;
+    const final override;
 
   void add_stmt_annotations (graphviz_out *gv, const gimple *stmt,
 			     bool within_row)
-    const FINAL OVERRIDE;
+    const final override;
 
 private:
   void print_needed (graphviz_out *gv,

@@ -258,7 +258,7 @@ private:
   public:
     lv_dom_walker (loop_versioning &);
 
-    edge before_dom_children (basic_block) FINAL OVERRIDE;
+    edge before_dom_children (basic_block) final override;
 
   private:
     /* The parent pass.  */
@@ -271,7 +271,7 @@ private:
   {
   public:
     name_prop (loop_info &li) : m_li (li) {}
-    tree value_of_expr (tree name, gimple *) FINAL OVERRIDE;
+    tree value_of_expr (tree name, gimple *) final override;
 
   private:
     /* Information about the versioning we've performed on the loop.  */

@@ -64,8 +64,8 @@ typedef int complex_lattice_t;
 
 class complex_propagate : public ssa_propagation_engine
 {
-  enum ssa_prop_result visit_stmt (gimple *, edge *, tree *) FINAL OVERRIDE;
-  enum ssa_prop_result visit_phi (gphi *) FINAL OVERRIDE;
+  enum ssa_prop_result visit_stmt (gimple *, edge *, tree *) final override;
+  enum ssa_prop_result visit_phi (gphi *) final override;
 };
 
 static vec<complex_lattice_t> complex_lattice_values;

@@ -970,52 +970,52 @@ class region_model_context
 class noop_region_model_context : public region_model_context
 {
 public:
-  bool warn (pending_diagnostic *) OVERRIDE { return false; }
-  void add_note (pending_note *pn) OVERRIDE;
-  void on_svalue_leak (const svalue *) OVERRIDE {}
+  bool warn (pending_diagnostic *) override { return false; }
+  void add_note (pending_note *pn) override;
+  void on_svalue_leak (const svalue *) override {}
   void on_liveness_change (const svalue_set &,
-			   const region_model *) OVERRIDE {}
-  logger *get_logger () OVERRIDE { return NULL; }
+			   const region_model *) override {}
+  logger *get_logger () override { return NULL; }
   void on_condition (const svalue *lhs ATTRIBUTE_UNUSED,
 		     enum tree_code op ATTRIBUTE_UNUSED,
-		     const svalue *rhs ATTRIBUTE_UNUSED) OVERRIDE
+		     const svalue *rhs ATTRIBUTE_UNUSED) override
   {
   }
   void on_unknown_change (const svalue *sval ATTRIBUTE_UNUSED,
-			  bool is_mutable ATTRIBUTE_UNUSED) OVERRIDE
+			  bool is_mutable ATTRIBUTE_UNUSED) override
   {
   }
   void on_phi (const gphi *phi ATTRIBUTE_UNUSED,
-	       tree rhs ATTRIBUTE_UNUSED) OVERRIDE
+	       tree rhs ATTRIBUTE_UNUSED) override
   {
   }
-  void on_unexpected_tree_code (tree, const dump_location_t &) OVERRIDE {}
+  void on_unexpected_tree_code (tree, const dump_location_t &) override {}
 
-  void on_escaped_function (tree) OVERRIDE {}
+  void on_escaped_function (tree) override {}
 
-  uncertainty_t *get_uncertainty () OVERRIDE { return NULL; }
+  uncertainty_t *get_uncertainty () override { return NULL; }
 
-  void purge_state_involving (const svalue *sval ATTRIBUTE_UNUSED) OVERRIDE {}
+  void purge_state_involving (const svalue *sval ATTRIBUTE_UNUSED) override {}
 
-  void bifurcate (custom_edge_info *info) OVERRIDE;
-  void terminate_path () OVERRIDE;
+  void bifurcate (custom_edge_info *info) override;
+  void terminate_path () override;
 
-  const extrinsic_state *get_ext_state () const OVERRIDE { return NULL; }
+  const extrinsic_state *get_ext_state () const override { return NULL; }
 
   bool get_malloc_map (sm_state_map **,
 		       const state_machine **,
-		       unsigned *) OVERRIDE
+		       unsigned *) override
   {
     return false;
   }
   bool get_taint_map (sm_state_map **,
 		      const state_machine **,
-		      unsigned *) OVERRIDE
+		      unsigned *) override
   {
     return false;
   }
 
-  const gimple *get_stmt () const OVERRIDE { return NULL; }
+  const gimple *get_stmt () const override { return NULL; }
 };
 
 /* A subclass of region_model_context for determining if operations fail
@@ -1027,7 +1027,7 @@ public:
   tentative_region_model_context () : m_num_unexpected_codes (0) {}
 
   void on_unexpected_tree_code (tree, const dump_location_t &)
-    FINAL OVERRIDE
+    final override
   {
     m_num_unexpected_codes++;
   }
@@ -1044,100 +1044,100 @@ private:
 class region_model_context_decorator : public region_model_context
 {
  public:
-  bool warn (pending_diagnostic *d) OVERRIDE
+  bool warn (pending_diagnostic *d) override
   {
     return m_inner->warn (d);
   }
 
-  void add_note (pending_note *pn) OVERRIDE
+  void add_note (pending_note *pn) override
   {
     m_inner->add_note (pn);
   }
 
-  void on_svalue_leak (const svalue *sval) OVERRIDE
+  void on_svalue_leak (const svalue *sval) override
   {
     m_inner->on_svalue_leak (sval);
   }
 
   void on_liveness_change (const svalue_set &live_svalues,
-			   const region_model *model) OVERRIDE
+			   const region_model *model) override
   {
     m_inner->on_liveness_change (live_svalues, model);
   }
 
-  logger *get_logger () OVERRIDE
+  logger *get_logger () override
   {
     return m_inner->get_logger ();
   }
 
   void on_condition (const svalue *lhs,
 		     enum tree_code op,
-		     const svalue *rhs) OVERRIDE
+		     const svalue *rhs) override
   {
     m_inner->on_condition (lhs, op, rhs);
   }
 
-  void on_unknown_change (const svalue *sval, bool is_mutable) OVERRIDE
+  void on_unknown_change (const svalue *sval, bool is_mutable) override
   {
     m_inner->on_unknown_change (sval, is_mutable);
   }
 
-  void on_phi (const gphi *phi, tree rhs) OVERRIDE
+  void on_phi (const gphi *phi, tree rhs) override
   {
     m_inner->on_phi (phi, rhs);
   }
 
   void on_unexpected_tree_code (tree t,
-				const dump_location_t &loc) OVERRIDE
+				const dump_location_t &loc) override
   {
     m_inner->on_unexpected_tree_code (t, loc);
   }
 
-  void on_escaped_function (tree fndecl) OVERRIDE
+  void on_escaped_function (tree fndecl) override
   {
     m_inner->on_escaped_function (fndecl);
   }
 
-  uncertainty_t *get_uncertainty () OVERRIDE
+  uncertainty_t *get_uncertainty () override
   {
     return m_inner->get_uncertainty ();
   }
 
-  void purge_state_involving (const svalue *sval) OVERRIDE
+  void purge_state_involving (const svalue *sval) override
   {
     m_inner->purge_state_involving (sval);
   }
 
-  void bifurcate (custom_edge_info *info) OVERRIDE
+  void bifurcate (custom_edge_info *info) override
   {
     m_inner->bifurcate (info);
   }
 
-  void terminate_path () OVERRIDE
+  void terminate_path () override
   {
     m_inner->terminate_path ();
   }
 
-  const extrinsic_state *get_ext_state () const OVERRIDE
+  const extrinsic_state *get_ext_state () const override
   {
     return m_inner->get_ext_state ();
   }
 
   bool get_malloc_map (sm_state_map **out_smap,
 		       const state_machine **out_sm,
-		       unsigned *out_sm_idx) OVERRIDE
+		       unsigned *out_sm_idx) override
   {
     return m_inner->get_malloc_map (out_smap, out_sm, out_sm_idx);
   }
 
   bool get_taint_map (sm_state_map **out_smap,
 		      const state_machine **out_sm,
-		      unsigned *out_sm_idx) OVERRIDE
+		      unsigned *out_sm_idx) override
   {
     return m_inner->get_taint_map (out_smap, out_sm, out_sm_idx);
   }
 
-  const gimple *get_stmt () const OVERRIDE
+  const gimple *get_stmt () const override
   {
     return m_inner->get_stmt ();
   }
@@ -1158,7 +1158,7 @@ protected:
 class note_adding_context : public region_model_context_decorator
 {
 public:
-  bool warn (pending_diagnostic *d) OVERRIDE
+  bool warn (pending_diagnostic *d) override
   {
     if (m_inner->warn (d))
       {
@@ -1248,7 +1248,7 @@ public:
     m_lhs (lhs), m_op (op), m_rhs (rhs)
   {}
 
-  void dump_to_pp (pretty_printer *pp) const FINAL OVERRIDE;
+  void dump_to_pp (pretty_printer *pp) const final override;
 
   tree m_lhs;
   enum tree_code m_op;
@@ -1264,7 +1264,7 @@ public:
     m_expr (expr), m_ranges (ranges)
   {}
 
-  void dump_to_pp (pretty_printer *pp) const FINAL OVERRIDE;
+  void dump_to_pp (pretty_printer *pp) const final override;
 
 private:
   tree m_expr;
@@ -1305,7 +1305,7 @@ using namespace ::selftest;
 class test_region_model_context : public noop_region_model_context
 {
 public:
-  bool warn (pending_diagnostic *d) FINAL OVERRIDE
+  bool warn (pending_diagnostic *d) final override
   {
     m_diagnostics.safe_push (d);
     return true;
@@ -1314,7 +1314,7 @@ public:
   unsigned get_num_diagnostics () const { return m_diagnostics.length (); }
 
   void on_unexpected_tree_code (tree t, const dump_location_t &)
-    FINAL OVERRIDE
+    final override
   {
     internal_error ("unhandled tree code: %qs",
 		    get_tree_code_name (TREE_CODE (t)));

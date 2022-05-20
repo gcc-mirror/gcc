@@ -79,9 +79,9 @@ public:
   range_query ();
   virtual ~range_query ();
 
-  virtual tree value_of_expr (tree expr, gimple * = NULL) OVERRIDE;
-  virtual tree value_on_edge (edge, tree expr) OVERRIDE;
-  virtual tree value_of_stmt (gimple *, tree name = NULL) OVERRIDE;
+  virtual tree value_of_expr (tree expr, gimple * = NULL) override;
+  virtual tree value_on_edge (edge, tree expr) override;
+  virtual tree value_of_stmt (gimple *, tree name = NULL) override;
 
   // These are the range equivalents of the value_* methods.  Instead
   // of returning a singleton, they calculate a range and return it in
@@ -123,7 +123,7 @@ private:
 class global_range_query : public range_query
 {
 public:
-  bool range_of_expr (irange &r, tree expr, gimple * = NULL) OVERRIDE;
+  bool range_of_expr (irange &r, tree expr, gimple * = NULL) override;
 };
 
 extern global_range_query global_ranges;

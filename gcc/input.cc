@@ -2310,7 +2310,7 @@ class ebcdic_execution_charset : public lexer_test_options
       s_singleton = NULL;
     }
 
-  void apply (lexer_test &test) FINAL OVERRIDE
+  void apply (lexer_test &test) final override
   {
     cpp_options *cpp_opts = cpp_get_options (test.m_parser);
     cpp_opts->narrow_charset = "IBM1047";
@@ -2375,7 +2375,7 @@ class lexer_diagnostic_sink : public lexer_test_options
       free (str);
   }
 
-  void apply (lexer_test &test) FINAL OVERRIDE
+  void apply (lexer_test &test) final override
   {
     cpp_callbacks *callbacks = cpp_get_callbacks (test.m_parser);
     callbacks->diagnostic = on_diagnostic;

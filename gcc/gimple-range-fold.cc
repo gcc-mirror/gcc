@@ -109,8 +109,8 @@ class fur_edge : public fur_source
 {
 public:
   fur_edge (edge e, range_query *q = NULL);
-  virtual bool get_operand (irange &r, tree expr) OVERRIDE;
-  virtual bool get_phi_operand (irange &r, tree expr, edge e) OVERRIDE;
+  virtual bool get_operand (irange &r, tree expr) override;
+  virtual bool get_phi_operand (irange &r, tree expr, edge e) override;
 private:
   edge m_edge;
 };
@@ -217,8 +217,8 @@ public:
   fur_list (irange &r1);
   fur_list (irange &r1, irange &r2);
   fur_list (unsigned num, irange *list);
-  virtual bool get_operand (irange &r, tree expr) OVERRIDE;
-  virtual bool get_phi_operand (irange &r, tree expr, edge e) OVERRIDE;
+  virtual bool get_operand (irange &r, tree expr) override;
+  virtual bool get_phi_operand (irange &r, tree expr, edge e) override;
 private:
   int_range_max m_local[2];
   irange *m_list;

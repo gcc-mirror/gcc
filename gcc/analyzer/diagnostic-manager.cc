@@ -565,7 +565,7 @@ public:
   }
 
   void dump_extra_info (const exploded_node *enode,
-			pretty_printer *pp) const FINAL OVERRIDE
+			pretty_printer *pp) const final override
   {
     pp_printf (pp, "sp: %i", m_sep.get_shortest_path (enode).length ());
     pp_newline (pp);
@@ -1430,7 +1430,7 @@ public:
   bool on_global_state_change (const state_machine &sm,
 			       state_machine::state_t src_sm_val,
 			       state_machine::state_t dst_sm_val)
-    FINAL OVERRIDE
+    final override
   {
     if (&sm != m_pb.get_sm ())
       return false;
@@ -1460,7 +1460,7 @@ public:
 			state_machine::state_t src_sm_val,
 			state_machine::state_t dst_sm_val,
 			const svalue *sval,
-			const svalue *dst_origin_sval) FINAL OVERRIDE
+			const svalue *dst_origin_sval) final override
   {
     if (&sm != m_pb.get_sm ())
       return false;
@@ -1588,13 +1588,13 @@ struct null_assignment_sm_context : public sm_context
   {
   }
 
-  tree get_fndecl_for_call (const gcall */*call*/) FINAL OVERRIDE
+  tree get_fndecl_for_call (const gcall */*call*/) final override
   {
     return NULL_TREE;
   }
 
   state_machine::state_t get_state (const gimple *stmt ATTRIBUTE_UNUSED,
-				    tree var) FINAL OVERRIDE
+				    tree var) final override
   {
     const svalue *var_old_sval
       = m_old_state->m_region_model->get_rvalue (var, NULL);
@@ -1607,7 +1607,7 @@ struct null_assignment_sm_context : public sm_context
   }
 
   state_machine::state_t get_state (const gimple *stmt ATTRIBUTE_UNUSED,
-				    const svalue *sval) FINAL OVERRIDE
+				    const svalue *sval) final override
   {
     const sm_state_map *old_smap = m_old_state->m_checker_states[m_sm_idx];
     state_machine::state_t current = old_smap->get_state (sval, m_ext_state);
@@ -1617,7 +1617,7 @@ struct null_assignment_sm_context : public sm_context
   void set_next_state (const gimple *stmt,
 		       tree var,
 		       state_machine::state_t to,
-		       tree origin ATTRIBUTE_UNUSED) FINAL OVERRIDE
+		       tree origin ATTRIBUTE_UNUSED) final override
   {
     state_machine::state_t from = get_state (stmt, var);
     if (from != m_sm.get_start_state ())
@@ -1641,7 +1641,7 @@ struct null_assignment_sm_context : public sm_context
   void set_next_state (const gimple *stmt,
 		       const svalue *sval,
 		       state_machine::state_t to,
-		       tree origin ATTRIBUTE_UNUSED) FINAL OVERRIDE
+		       tree origin ATTRIBUTE_UNUSED) final override
   {
     state_machine::state_t from = get_state (stmt, sval);
     if (from != m_sm.get_start_state ())
@@ -1661,41 +1661,41 @@ struct null_assignment_sm_context : public sm_context
   }
 
   void warn (const supernode *, const gimple *,
-	     tree, pending_diagnostic *d) FINAL OVERRIDE
+	     tree, pending_diagnostic *d) final override
   {
     delete d;
   }
   void warn (const supernode *, const gimple *,
-	     const svalue *, pending_diagnostic *d) FINAL OVERRIDE
+	     const svalue *, pending_diagnostic *d) final override
   {
     delete d;
   }
 
-  tree get_diagnostic_tree (tree expr) FINAL OVERRIDE
+  tree get_diagnostic_tree (tree expr) final override
   {
     return expr;
   }
 
-  tree get_diagnostic_tree (const svalue *sval) FINAL OVERRIDE
+  tree get_diagnostic_tree (const svalue *sval) final override
   {
     return m_new_state->m_region_model->get_representative_tree (sval);
   }
 
-  state_machine::state_t get_global_state () const FINAL OVERRIDE
+  state_machine::state_t get_global_state () const final override
   {
     return 0;
   }
 
-  void set_global_state (state_machine::state_t) FINAL OVERRIDE
+  void set_global_state (state_machine::state_t) final override
   {
     /* No-op.  */
   }
 
-  void on_custom_transition (custom_transition *) FINAL OVERRIDE
+  void on_custom_transition (custom_transition *) final override
   {
   }
 
-  tree is_zero_assignment (const gimple *stmt) FINAL OVERRIDE
+  tree is_zero_assignment (const gimple *stmt) final override
   {
     const gassign *assign_stmt = dyn_cast <const gassign *> (stmt);
     if (!assign_stmt)
@@ -1708,11 +1708,11 @@ struct null_assignment_sm_context : public sm_context
     return NULL_TREE;
   }
 
-  const program_state *get_old_program_state () const FINAL OVERRIDE
+  const program_state *get_old_program_state () const final override
   {
     return m_old_state;
   }
-  const program_state *get_new_program_state () const FINAL OVERRIDE
+  const program_state *get_new_program_state () const final override
   {
     return m_new_state;
   }

@@ -2933,7 +2933,7 @@ store::remove_overlapping_bindings (store_manager *mgr, const region *reg,
 
 struct region_finder : public visitor
 {
-  void visit_region (const region *reg) FINAL OVERRIDE
+  void visit_region (const region *reg) final override
   {
     m_regs.add (reg);
   }

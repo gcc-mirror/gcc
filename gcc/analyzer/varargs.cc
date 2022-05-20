@@ -206,17 +206,17 @@ class va_list_state_machine : public state_machine
 public:
   va_list_state_machine (logger *logger);
 
-  bool inherited_state_p () const FINAL OVERRIDE { return false; }
+  bool inherited_state_p () const final override { return false; }
 
   bool on_stmt (sm_context *sm_ctxt,
 		const supernode *node,
-		const gimple *stmt) const FINAL OVERRIDE;
+		const gimple *stmt) const final override;
 
-  bool can_purge_p (state_t s) const FINAL OVERRIDE
+  bool can_purge_p (state_t s) const final override
   {
     return s != m_started;
   }
-  pending_diagnostic *on_leak (tree var) const FINAL OVERRIDE;
+  pending_diagnostic *on_leak (tree var) const final override;
 
   /* State for a va_list that the result of a va_start or va_copy.  */
   state_t m_started;
@@ -319,7 +319,7 @@ get_stateful_arg (sm_context *sm_ctxt, const gcall *call, unsigned arg_idx)
 class va_list_sm_diagnostic : public pending_diagnostic
 {
 public:
-  bool subclass_equal_p (const pending_diagnostic &base_other) const OVERRIDE
+  bool subclass_equal_p (const pending_diagnostic &base_other) const override
   {
     const va_list_sm_diagnostic &other
       = (const va_list_sm_diagnostic &)base_other;
@@ -328,7 +328,7 @@ public:
   }
 
   label_text describe_state_change (const evdesc::state_change &change)
-    OVERRIDE
+    override
   {
     if (const char *fnname = maybe_get_fnname (change))
       return change.formatted_print ("%qs called here", fnname);
@@ -380,7 +380,7 @@ public:
   {
   }
 
-  int get_controlling_option () const FINAL OVERRIDE
+  int get_controlling_option () const final override
   {
     return OPT_Wanalyzer_va_list_use_after_va_end;
   }
@@ -391,27 +391,27 @@ public:
 	    && 0 == strcmp (m_usage_fnname, other.m_usage_fnname));
   }
 
-  bool emit (rich_location *rich_loc) FINAL OVERRIDE
+  bool emit (rich_location *rich_loc) final override
   {
     auto_diagnostic_group d;
     return warning_at (rich_loc, get_controlling_option (),
 		       "%qs after %qs", m_usage_fnname, "va_end");
   }
 
-  const char *get_kind () const FINAL OVERRIDE
+  const char *get_kind () const final override
   {
     return "va_list_use_after_va_end";
   }
 
   label_text describe_state_change (const evdesc::state_change &change)
-    FINAL OVERRIDE
+    final override
   {
     if (change.m_new_state == m_sm.m_ended)
       m_va_end_event = change.m_event_id;
     return va_list_sm_diagnostic::describe_state_change (change);
   }
 
-  label_text describe_final_event (const evdesc::final_event &ev) FINAL OVERRIDE
+  label_text describe_final_event (const evdesc::final_event &ev) final override
   {
     if (ev.m_expr)
       {
@@ -456,7 +456,7 @@ public:
   {
   }
 
-  int get_controlling_option () const FINAL OVERRIDE
+  int get_controlling_option () const final override
   {
     return OPT_Wanalyzer_va_list_leak;
   }
@@ -473,10 +473,10 @@ public:
 		       "missing call to %qs", "va_end");
   }
 
-  const char *get_kind () const FINAL OVERRIDE { return "va_list_leak"; }
+  const char *get_kind () const final override { return "va_list_leak"; }
 
   label_text describe_state_change (const evdesc::state_change &change)
-    FINAL OVERRIDE
+    final override
   {
     if (change.m_new_state == m_sm.m_started)
       {
@@ -486,7 +486,7 @@ public:
     return va_list_sm_diagnostic::describe_state_change (change);
   }
 
-  label_text describe_final_event (const evdesc::final_event &ev) FINAL OVERRIDE
+  label_text describe_final_event (const evdesc::final_event &ev) final override
   {
     if (ev.m_expr)
       {
@@ -718,7 +718,7 @@ public:
   /* Override of pending_diagnostic::add_call_event,
      adding a custom call_event subclass.  */
   void add_call_event (const exploded_edge &eedge,
-		       checker_path *emission_path) OVERRIDE
+		       checker_path *emission_path) override
   {
     /* As per call_event, but show the number of variadic arguments
        in the call.  */
@@ -733,7 +733,7 @@ public:
       {
       }
 
-      label_text get_desc (bool can_colorize) const OVERRIDE
+      label_text get_desc (bool can_colorize) const override
       {
 	return make_label_text_n
 	  (can_colorize, m_num_variadic_arguments,
@@ -778,7 +778,7 @@ protected:
   : m_va_list_tree (va_list_tree), m_var_arg_reg (var_arg_reg)
   {}
 
-  bool subclass_equal_p (const pending_diagnostic &base_other) const OVERRIDE
+  bool subclass_equal_p (const pending_diagnostic &base_other) const override
   {
     const va_arg_diagnostic &other = (const va_arg_diagnostic &)base_other;
     return (same_tree_p (m_va_list_tree, other.m_va_list_tree)
@@ -819,13 +819,13 @@ public:
     m_expected_type (expected_type), m_actual_type (actual_type)
   {}
 
-  const char *get_kind () const FINAL OVERRIDE
+  const char *get_kind () const final override
   {
     return "va_arg_type_mismatch";
   }
 
   bool subclass_equal_p (const pending_diagnostic &base_other)
-    const FINAL OVERRIDE
+    const final override
   {
     if (!va_arg_diagnostic::subclass_equal_p (base_other))
       return false;
@@ -835,12 +835,12 @@ public:
 	    && same_tree_p (m_actual_type, other.m_actual_type));
   }
 
-  int get_controlling_option () const FINAL OVERRIDE
+  int get_controlling_option () const final override
   {
     return OPT_Wanalyzer_va_arg_type_mismatch;
   }
 
-  bool emit (rich_location *rich_loc) FINAL OVERRIDE
+  bool emit (rich_location *rich_loc) final override
   {
     auto_diagnostic_group d;
     bool warned
@@ -852,7 +852,7 @@ public:
     return warned;
   }
 
-  label_text describe_final_event (const evdesc::final_event &ev) FINAL OVERRIDE
+  label_text describe_final_event (const evdesc::final_event &ev) final override
   {
     return ev.formatted_print ("%<va_arg%> expected %qT but received %qT"
 			       " for variadic argument %i of %qE",
@@ -877,17 +877,17 @@ public:
   : va_arg_diagnostic (va_list_tree, var_arg_reg)
   {}
 
-  const char *get_kind () const FINAL OVERRIDE
+  const char *get_kind () const final override
   {
     return "va_list_exhausted";
   }
 
-  int get_controlling_option () const FINAL OVERRIDE
+  int get_controlling_option () const final override
   {
     return OPT_Wanalyzer_va_list_exhausted;
   }
 
-  bool emit (rich_location *rich_loc) FINAL OVERRIDE
+  bool emit (rich_location *rich_loc) final override
   {
     auto_diagnostic_group d;
     bool warned = warning_at (rich_loc, get_controlling_option (),
@@ -896,7 +896,7 @@ public:
     return warned;
   }
 
-  label_text describe_final_event (const evdesc::final_event &ev) FINAL OVERRIDE
+  label_text describe_final_event (const evdesc::final_event &ev) final override
   {
     return ev.formatted_print ("%qE has no more arguments (%i consumed)",
 			       m_va_list_tree, get_num_consumed ());
