@@ -1354,6 +1354,8 @@ enum value_cat {
 
 static tree cxx_eval_constant_expression (const constexpr_ctx *, tree,
 					  value_cat, bool *, bool *, tree * = NULL);
+static tree cxx_fold_indirect_ref (const constexpr_ctx *, location_t, tree, tree,
+				   bool * = NULL);
 
 /* Attempt to evaluate T which represents a call to a builtin function.
    We assume here that all builtin functions evaluate to scalar types
@@ -2720,9 +2722,7 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
 	 At this point it has already been evaluated in the call
 	 to cxx_bind_parameters_in_call.  */
       new_obj = TREE_VEC_ELT (new_call.bindings, 0);
-      STRIP_NOPS (new_obj);
-      if (TREE_CODE (new_obj) == ADDR_EXPR)
-	new_obj = TREE_OPERAND (new_obj, 0);
+      new_obj = cxx_fold_indirect_ref (ctx, loc, DECL_CONTEXT (fun), new_obj);
 
       if (ctx->call && ctx->call->fundef
 	  && DECL_CONSTRUCTOR_P (ctx->call->fundef->decl))
@@ -5197,7 +5197,8 @@ cxx_fold_indirect_ref_1 (const constexpr_ctx *ctx, location_t loc, tree type,
 	  && CLASS_TYPE_P (optype)
 	  && DERIVED_FROM_P (type, optype))
 	{
-	  *empty_base = true;
+	  if (empty_base)
+	    *empty_base = true;
 	  return op;
 	}
     }
@@ -5216,7 +5217,7 @@ cxx_fold_indirect_ref_1 (const constexpr_ctx *ctx, location_t loc, tree type,
 
 static tree
 cxx_fold_indirect_ref (const constexpr_ctx *ctx, location_t loc, tree type,
-		       tree op0, bool *empty_base)
+		       tree op0, bool *empty_base /* = NULL*/)
 {
   tree sub = op0;
   tree subtype;
