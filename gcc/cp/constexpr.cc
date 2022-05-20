@@ -5916,15 +5916,15 @@ cxx_eval_store_expression (const constexpr_ctx *ctx, tree t,
   gcc_checking_assert (!*valp || (same_type_ignoring_top_level_qualifiers_p
 				  (TREE_TYPE (*valp), type)));
   if (empty_base || !(same_type_ignoring_top_level_qualifiers_p
-		      (TREE_TYPE (init), type)))
+		      (initialized_type (init), type)))
     {
       /* For initialization of an empty base, the original target will be
        *(base*)this, evaluation of which resolves to the object
        argument, which has the derived type rather than the base type.  In
        this situation, just evaluate the initializer and return, since
        there's no actual data to store, and we didn't build a CONSTRUCTOR.  */
+      gcc_assert (is_empty_class (TREE_TYPE (target)));
       empty_base = true;
-      gcc_assert (is_empty_class (TREE_TYPE (init)));
       if (!*valp)
 	{
 	  /* But do make sure we have something in *valp.  */
