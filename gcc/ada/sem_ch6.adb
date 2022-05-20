@@ -4772,6 +4772,13 @@ package body Sem_Ch6 is
          if Nkind (N) /= N_Subprogram_Body
            or else not Was_Expression_Function (N)
          then
+            --  First clear the Is_Public flag on thunks since they are only
+            --  referenced locally by dispatch tables and thus never inlined.
+
+            if Is_Thunk (Body_Id) then
+               Set_Is_Public (Body_Id, False);
+            end if;
+
             Freeze_Before (N, Body_Id);
          end if;
 
