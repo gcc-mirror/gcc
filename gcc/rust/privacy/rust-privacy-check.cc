@@ -41,7 +41,7 @@ Resolver::resolve (HIR::Crate &crate)
 
   VisibilityResolver (*mappings, *resolver).go (crate);
   PubRestrictedVisitor (*mappings).go (crate);
-  PrivacyReporter (*mappings, *resolver).go (crate);
+  PrivacyReporter (*mappings, *resolver, *ty_ctx).go (crate);
 
   auto visitor = ReachabilityVisitor (ctx, *ty_ctx);
 

@@ -6,9 +6,10 @@
 namespace Rust {
 namespace Privacy {
 
-PrivacyReporter::PrivacyReporter (Analysis::Mappings &mappings,
-				  Resolver::Resolver &resolver)
-  : mappings (mappings), resolver (resolver),
+PrivacyReporter::PrivacyReporter (
+  Analysis::Mappings &mappings, Resolver::Resolver &resolver,
+  const Rust::Resolver::TypeCheckContext &ty_ctx)
+  : mappings (mappings), resolver (resolver), ty_ctx (ty_ctx),
     current_module (Optional<NodeId>::none ())
 {}
 
@@ -52,7 +53,11 @@ PrivacyReporter::check_for_privacy_violation (const NodeId &use_id,
   if (!resolver.lookup_resolved_name (use_id, &ref_node_id))
     resolver.lookup_resolved_type (use_id, &ref_node_id);
 
-  rust_assert (ref_node_id != UNKNOWN_NODEID);
+  // FIXME: Assert here. For now, we return since this causes issues when
+  // checking inferred types (#1260)
+  // rust_assert (ref_node_id != UNKNOWN_NODEID);
+  if (ref_node_id == UNKNOWN_NODEID)
+    return;
 
   ModuleVisibility vis;
 
@@ -95,6 +100,106 @@ PrivacyReporter::check_for_privacy_violation (const NodeId &use_id,
 
   if (!valid)
     rust_error_at (locus, "definition is private in this context");
+}
+
+void
+PrivacyReporter::check_base_type_privacy (Analysis::NodeMapping &node_mappings,
+					  const TyTy::BaseType *ty,
+					  const Location &locus)
+{
+  // Avoids repeating commong argument such as `use_id` or `locus` since we're
+  // doing a lot of recursive calls here
+  auto recursive_check
+    = [this, &node_mappings, &locus] (const TyTy::BaseType *ty) {
+	return check_base_type_privacy (node_mappings, ty, locus);
+      };
+
+  switch (ty->get_kind ())
+    {
+      // These "simple" types are our stop condition
+    case TyTy::BOOL:
+    case TyTy::CHAR:
+    case TyTy::INT:
+    case TyTy::UINT:
+    case TyTy::FLOAT:
+    case TyTy::USIZE:
+    case TyTy::ISIZE:
+    case TyTy::ADT:
+      case TyTy::STR: {
+	auto ref_id = ty->get_ref ();
+	NodeId lookup_id;
+
+	mappings.lookup_hir_to_node (node_mappings.get_crate_num (), ref_id,
+				     &lookup_id);
+
+	return check_for_privacy_violation (lookup_id, locus);
+      }
+    case TyTy::REF:
+      return recursive_check (
+	static_cast<const TyTy::ReferenceType *> (ty)->get_base ());
+    case TyTy::POINTER:
+      return recursive_check (
+	static_cast<const TyTy::PointerType *> (ty)->get_base ());
+    case TyTy::ARRAY:
+      return recursive_check (
+	static_cast<const TyTy::ArrayType *> (ty)->get_element_type ());
+    case TyTy::SLICE:
+      return recursive_check (
+	static_cast<const TyTy::SliceType *> (ty)->get_element_type ());
+    case TyTy::FNPTR:
+      for (auto &param : static_cast<const TyTy::FnPtr *> (ty)->get_params ())
+	recursive_check (param.get_tyty ());
+      return recursive_check (
+	static_cast<const TyTy::FnPtr *> (ty)->get_return_type ());
+    case TyTy::TUPLE:
+      for (auto &param :
+	   static_cast<const TyTy::TupleType *> (ty)->get_fields ())
+	recursive_check (param.get_tyty ());
+      return;
+    case TyTy::PLACEHOLDER:
+      return recursive_check (
+	// FIXME: Can we use `resolve` here? Is that what we should do?
+	static_cast<const TyTy::PlaceholderType *> (ty)->resolve ());
+    case TyTy::PROJECTION:
+      return recursive_check (
+	static_cast<const TyTy::ProjectionType *> (ty)->get ());
+    case TyTy::CLOSURE:
+      sorry_at (locus.gcc_location (),
+		"privacy pass for closures is not handled yet");
+      break;
+
+      // If we're dealing with a generic param, there's nothing we should be
+      // doing here
+    case TyTy::PARAM:
+      // We are dealing with a function definition that has been assigned
+      // somewhere else. Nothing to resolve privacy-wise other than the actual
+      // function, which is resolved as an expression
+    case TyTy::FNDEF:
+      // FIXME: Can we really not resolve Dynamic types here? Shouldn't we have
+      // a look at the path and perform proper privacy analysis?
+    case TyTy::DYNAMIC:
+      // The never type is builtin and always available
+    case TyTy::NEVER:
+      // We shouldn't have inference types here, ever
+    case TyTy::INFER:
+      return;
+    case TyTy::ERROR:
+      rust_unreachable ();
+    }
+}
+
+void
+PrivacyReporter::check_type_privacy (const HIR::Type *type,
+				     const Location &locus)
+{
+  rust_assert (type);
+
+  TyTy::BaseType *lookup = nullptr;
+  rust_assert (
+    ty_ctx.lookup_type (type->get_mappings ().get_hirid (), &lookup));
+
+  auto node_mappings = type->get_mappings ();
+  return check_base_type_privacy (node_mappings, lookup, locus);
 }
 
 void
@@ -529,6 +634,11 @@ PrivacyReporter::visit (HIR::UseDeclaration &use_decl)
 void
 PrivacyReporter::visit (HIR::Function &function)
 {
+  for (auto &param : function.get_function_params ())
+    check_type_privacy (param.get_type (), param.get_locus ());
+
+  // FIXME: It would be better if it was specifically the type's locus (#1256)
+
   function.get_definition ()->accept_vis (*this);
 }
 
@@ -626,7 +736,11 @@ PrivacyReporter::visit (HIR::EmptyStmt &stmt)
 void
 PrivacyReporter::visit (HIR::LetStmt &stmt)
 {
-  // FIXME: We probably have to check the type as well
+  auto type = stmt.get_type ();
+  if (type)
+    check_type_privacy (type, stmt.get_locus ());
+  // FIXME: #1256
+
   auto init_expr = stmt.get_init_expr ();
   if (init_expr)
     init_expr->accept_vis (*this);

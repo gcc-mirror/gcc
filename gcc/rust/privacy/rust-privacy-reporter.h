@@ -37,7 +37,8 @@ class PrivacyReporter : public HIR::HIRExpressionVisitor,
 {
 public:
   PrivacyReporter (Analysis::Mappings &mappings,
-		   Rust::Resolver::Resolver &resolver);
+		   Rust::Resolver::Resolver &resolver,
+		   const Rust::Resolver::TypeCheckContext &ty_ctx);
 
   /**
    * Perform privacy error reporting on an entire crate
@@ -56,6 +57,26 @@ private:
    */
   void check_for_privacy_violation (const NodeId &use_id,
 				    const Location &locus);
+
+  /**
+   * Internal function used by `check_type_privacy` when dealing with complex
+types
+   * such as references or arrays
+   */
+  void check_base_type_privacy (Analysis::NodeMapping &node_mappings,
+				const TyTy::BaseType *ty,
+				const Location &locus);
+
+  /**
+   * Check the privacy of an explicit type.
+   *
+   * This function reports the errors it finds.
+   *
+   * @param type Reference to an explicit type used in a statement, expression
+   * 		or parameter
+   * @param locus Location of said type
+   */
+  void check_type_privacy (const HIR::Type *type, const Location &locus);
 
   virtual void visit (HIR::StructExprFieldIdentifier &field);
   virtual void visit (HIR::StructExprFieldIdentifierValue &field);
@@ -142,6 +163,7 @@ private:
 
   Analysis::Mappings &mappings;
   Rust::Resolver::Resolver &resolver;
+  const Rust::Resolver::TypeCheckContext &ty_ctx;
 
   // `None` means we're in the root module - the crate
   Optional<NodeId> current_module;

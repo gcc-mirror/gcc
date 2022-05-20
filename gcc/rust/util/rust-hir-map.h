@@ -177,7 +177,7 @@ public:
   void insert_hir_type (CrateNum crateNum, HirId id, HIR::Type *type);
   HIR::Type *lookup_hir_type (CrateNum crateNum, HirId id);
 
-  void insert_hir_stmt (CrateNum crateNum, HirId id, HIR::Stmt *type);
+  void insert_hir_stmt (CrateNum crateNum, HirId id, HIR::Stmt *stmt);
   HIR::Stmt *lookup_hir_stmt (CrateNum crateNum, HirId id);
 
   void insert_hir_param (CrateNum crateNum, HirId id, HIR::FunctionParam *type);
@@ -199,6 +199,7 @@ public:
 
   void insert_node_to_hir (CrateNum crate, NodeId id, HirId ref);
   bool lookup_node_to_hir (CrateNum crate, NodeId id, HirId *ref);
+  bool lookup_hir_to_node (CrateNum crate, HirId id, NodeId *ref);
 
   void insert_location (CrateNum crate, HirId id, Location locus);
   Location lookup_location (CrateNum crate, HirId id);
@@ -376,8 +377,8 @@ private:
   // location info
   std::map<CrateNum, std::map<NodeId, Location>> locations;
 
-  // reverse mappings
   std::map<CrateNum, std::map<NodeId, HirId>> nodeIdToHirMappings;
+  std::map<CrateNum, std::map<HirId, NodeId>> hirIdToNodeMappings;
 
   // all hirid nodes
   std::map<CrateNum, std::set<HirId>> hirNodesWithinCrate;
