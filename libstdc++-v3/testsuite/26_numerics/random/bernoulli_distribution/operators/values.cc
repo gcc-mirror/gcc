@@ -24,6 +24,14 @@
 #include <functional>
 #include <testsuite_random.h>
 
+// { dg-additional-options "-DSIMULATOR_TEST" { target simulator } }
+
+#ifdef SIMULATOR_TEST
+# define ARGS 100, 1000
+#else
+# define ARGS
+#endif
+
 void test01()
 {
   using namespace __gnu_test;
@@ -32,15 +40,15 @@ void test01()
 
   std::bernoulli_distribution bd1(0.25);
   auto bbd1 = std::bind(bd1, eng);
-  testDiscreteDist(bbd1, [](int n) { return bernoulli_pdf(n, 0.25); } );
+  testDiscreteDist<ARGS>(bbd1, [](int n) { return bernoulli_pdf(n, 0.25); } );
 
   std::bernoulli_distribution bd2(0.5);
   auto bbd2 = std::bind(bd2, eng);
-  testDiscreteDist(bbd2, [](int n) { return bernoulli_pdf(n, 0.5); } );
+  testDiscreteDist<ARGS>(bbd2, [](int n) { return bernoulli_pdf(n, 0.5); } );
 
   std::bernoulli_distribution bd3(0.75);
   auto bbd3 = std::bind(bd3, eng);
-  testDiscreteDist(bbd3, [](int n) { return bernoulli_pdf(n, 0.75); } );
+  testDiscreteDist<ARGS>(bbd3, [](int n) { return bernoulli_pdf(n, 0.75); } );
 }
 
 int main()
