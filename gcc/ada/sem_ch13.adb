@@ -15943,6 +15943,7 @@ package body Sem_Ch13 is
             while Present (It.Typ) loop
                if Ekind (It.Nam) = E_Function
                   and then Scope (It.Nam) = Scope (Typ)
+                  and then Present (First_Formal (It.Nam))
                   and then Etype (First_Formal (It.Nam)) = Typ
                then
                   F1 := First_Formal (It.Nam);
