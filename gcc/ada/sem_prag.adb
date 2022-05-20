@@ -3292,27 +3292,25 @@ package body Sem_Prag is
          --  Collect all objects that appear in the visible declarations of the
          --  related package.
 
-         if Present (Visible_Declarations (Pack_Spec)) then
-            Decl := First (Visible_Declarations (Pack_Spec));
-            while Present (Decl) loop
-               if Comes_From_Source (Decl)
-                 and then Nkind (Decl) in N_Object_Declaration
-                                        | N_Object_Renaming_Declaration
-               then
-                  Append_New_Elmt (Defining_Entity (Decl), States_And_Objs);
+         Decl := First (Visible_Declarations (Pack_Spec));
+         while Present (Decl) loop
+            if Comes_From_Source (Decl)
+              and then Nkind (Decl) in N_Object_Declaration
+                                     | N_Object_Renaming_Declaration
+            then
+               Append_New_Elmt (Defining_Entity (Decl), States_And_Objs);
 
-               elsif Nkind (Decl) = N_Package_Declaration then
-                  Collect_States_And_Objects (Decl);
+            elsif Nkind (Decl) = N_Package_Declaration then
+               Collect_States_And_Objects (Decl);
 
-               elsif Is_Single_Concurrent_Type_Declaration (Decl) then
-                  Append_New_Elmt
-                    (Anonymous_Object (Defining_Entity (Decl)),
-                     States_And_Objs);
-               end if;
+            elsif Is_Single_Concurrent_Type_Declaration (Decl) then
+               Append_New_Elmt
+                 (Anonymous_Object (Defining_Entity (Decl)),
+                  States_And_Objs);
+            end if;
 
-               Next (Decl);
-            end loop;
-         end if;
+            Next (Decl);
+         end loop;
       end Collect_States_And_Objects;
 
       --  Local variables

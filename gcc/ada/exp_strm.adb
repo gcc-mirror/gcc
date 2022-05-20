@@ -1548,37 +1548,32 @@ package body Exp_Strm is
 
       function Make_Field_Attributes (Clist : List_Id) return List_Id is
          Item   : Node_Id;
-         Result : List_Id;
+         Result : constant List_Id := New_List;
 
       begin
-         Result := New_List;
+         --  Loop through components, skipping all internal components, which
+         --  are not part of the value (e.g. _Tag), except that we don't skip
+         --  the _Parent, since we do want to process that recursively. If
+         --  _Parent is an interface type, being abstract with no components
+         --  there is no need to handle it.
 
-         if Present (Clist) then
-            Item := First (Clist);
+         Item := First (Clist);
+         while Present (Item) loop
+            if Nkind (Item) = N_Component_Declaration
+              and then
+                ((Chars (Defining_Identifier (Item)) = Name_uParent
+                 and then not Is_Interface
+                   (Etype (Defining_Identifier (Item))))
+                or else
+                  not Is_Internal_Name (Chars (Defining_Identifier (Item))))
+            then
+               Append_To
+                 (Result,
+                  Make_Field_Attribute (Defining_Identifier (Item)));
+            end if;
 
-            --  Loop through components, skipping all internal components,
-            --  which are not part of the value (e.g. _Tag), except that we
-            --  don't skip the _Parent, since we do want to process that
-            --  recursively. If _Parent is an interface type, being abstract
-            --  with no components there is no need to handle it.
-
-            while Present (Item) loop
-               if Nkind (Item) = N_Component_Declaration
-                 and then
-                   ((Chars (Defining_Identifier (Item)) = Name_uParent
-                       and then not Is_Interface
-                                      (Etype (Defining_Identifier (Item))))
-                     or else
-                    not Is_Internal_Name (Chars (Defining_Identifier (Item))))
-               then
-                  Append_To
-                    (Result,
-                     Make_Field_Attribute (Defining_Identifier (Item)));
-               end if;
-
-               Next (Item);
-            end loop;
-         end if;
+            Next (Item);
+         end loop;
 
          return Result;
       end Make_Field_Attributes;

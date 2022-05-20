@@ -2019,13 +2019,11 @@ package body Sem_Ch5 is
 
       --  Now to analyze the elsif parts if any are present
 
-      if Present (Elsif_Parts (N)) then
-         E := First (Elsif_Parts (N));
-         while Present (E) loop
-            Analyze_Cond_Then (E);
-            Next (E);
-         end loop;
-      end if;
+      E := First (Elsif_Parts (N));
+      while Present (E) loop
+         Analyze_Cond_Then (E);
+         Next (E);
+      end loop;
 
       if Present (Else_Statements (N)) then
          Analyze_Statements (Else_Statements (N));
@@ -2054,13 +2052,11 @@ package body Sem_Ch5 is
          if Is_True (Expr_Value (Condition (N))) then
             Remove_Warning_Messages (Else_Statements (N));
 
-            if Present (Elsif_Parts (N)) then
-               E := First (Elsif_Parts (N));
-               while Present (E) loop
-                  Remove_Warning_Messages (Then_Statements (E));
-                  Next (E);
-               end loop;
-            end if;
+            E := First (Elsif_Parts (N));
+            while Present (E) loop
+               Remove_Warning_Messages (Then_Statements (E));
+               Next (E);
+            end loop;
 
          else
             Remove_Warning_Messages (Then_Statements (N));

@@ -712,14 +712,12 @@ package body Sem_Ch6 is
 
       --  Otherwise analyze the parameters
 
-      if Present (Actuals) then
-         Actual := First (Actuals);
-         while Present (Actual) loop
-            Analyze (Actual);
-            Check_Parameterless_Call (Actual);
-            Next (Actual);
-         end loop;
-      end if;
+      Actual := First (Actuals);
+      while Present (Actual) loop
+         Analyze (Actual);
+         Check_Parameterless_Call (Actual);
+         Next (Actual);
+      end loop;
 
       Analyze_Call (N);
    end Analyze_Function_Call;
@@ -2300,15 +2298,13 @@ package body Sem_Ch6 is
 
       --  Otherwise analyze the parameters
 
-      if Present (Actuals) then
-         Actual := First (Actuals);
+      Actual := First (Actuals);
 
-         while Present (Actual) loop
-            Analyze (Actual);
-            Check_Parameterless_Call (Actual);
-            Next (Actual);
-         end loop;
-      end if;
+      while Present (Actual) loop
+         Analyze (Actual);
+         Check_Parameterless_Call (Actual);
+         Next (Actual);
+      end loop;
 
       --  Special processing for Elab_Spec, Elab_Body and Elab_Subp_Body calls
 
@@ -3061,31 +3057,27 @@ package body Sem_Ch6 is
       begin
          --  Check for aspects that may generate a contract
 
-         if Present (Aspect_Specifications (N)) then
-            Item := First (Aspect_Specifications (N));
-            while Present (Item) loop
-               if Is_Subprogram_Contract_Annotation (Item) then
-                  return True;
-               end if;
+         Item := First (Aspect_Specifications (N));
+         while Present (Item) loop
+            if Is_Subprogram_Contract_Annotation (Item) then
+               return True;
+            end if;
 
-               Next (Item);
-            end loop;
-         end if;
+            Next (Item);
+         end loop;
 
          --  Check for pragmas that may generate a contract
 
-         if Present (Decls) then
-            Item := First (Decls);
-            while Present (Item) loop
-               if Nkind (Item) = N_Pragma
-                 and then Is_Subprogram_Contract_Annotation (Item)
-               then
-                  return True;
-               end if;
+         Item := First (Decls);
+         while Present (Item) loop
+            if Nkind (Item) = N_Pragma
+              and then Is_Subprogram_Contract_Annotation (Item)
+            then
+               return True;
+            end if;
 
-               Next (Item);
-            end loop;
-         end if;
+            Next (Item);
+         end loop;
 
          return False;
       end Body_Has_Contract;
@@ -3101,41 +3093,37 @@ package body Sem_Ch6 is
       begin
          --  Check for SPARK_Mode aspect
 
-         if Present (Aspect_Specifications (N)) then
-            Item := First (Aspect_Specifications (N));
-            while Present (Item) loop
-               if Get_Aspect_Id (Item) = Aspect_SPARK_Mode then
-                  return Get_SPARK_Mode_From_Annotation (Item) = On;
-               end if;
+         Item := First (Aspect_Specifications (N));
+         while Present (Item) loop
+            if Get_Aspect_Id (Item) = Aspect_SPARK_Mode then
+               return Get_SPARK_Mode_From_Annotation (Item) = On;
+            end if;
 
-               Next (Item);
-            end loop;
-         end if;
+            Next (Item);
+         end loop;
 
          --  Check for SPARK_Mode pragma
 
-         if Present (Decls) then
-            Item := First (Decls);
-            while Present (Item) loop
+         Item := First (Decls);
+         while Present (Item) loop
 
-               --  Pragmas that apply to a subprogram body are usually grouped
-               --  together. Look for a potential pragma SPARK_Mode among them.
+            --  Pragmas that apply to a subprogram body are usually grouped
+            --  together. Look for a potential pragma SPARK_Mode among them.
 
-               if Nkind (Item) = N_Pragma then
-                  if Get_Pragma_Id (Item) = Pragma_SPARK_Mode then
-                     return Get_SPARK_Mode_From_Annotation (Item) = On;
-                  end if;
-
-               --  Otherwise the first non-pragma declarative item terminates
-               --  the region where pragma SPARK_Mode may appear.
-
-               else
-                  exit;
+            if Nkind (Item) = N_Pragma then
+               if Get_Pragma_Id (Item) = Pragma_SPARK_Mode then
+                  return Get_SPARK_Mode_From_Annotation (Item) = On;
                end if;
 
-               Next (Item);
-            end loop;
-         end if;
+            --  Otherwise the first non-pragma declarative item terminates the
+            --  region where pragma SPARK_Mode may appear.
+
+            else
+               exit;
+            end if;
+
+            Next (Item);
+         end loop;
 
          --  Otherwise, the applicable SPARK_Mode is inherited from the
          --  enclosing subprogram or package.
@@ -7792,17 +7780,15 @@ package body Sem_Ch6 is
             Check_Statement_Sequence (Then_Statements (Last_Stm));
             Check_Statement_Sequence (Else_Statements (Last_Stm));
 
-            if Present (Elsif_Parts (Last_Stm)) then
-               declare
-                  Elsif_Part : Node_Id := First (Elsif_Parts (Last_Stm));
+            declare
+               Elsif_Part : Node_Id := First (Elsif_Parts (Last_Stm));
 
-               begin
-                  while Present (Elsif_Part) loop
-                     Check_Statement_Sequence (Then_Statements (Elsif_Part));
-                     Next (Elsif_Part);
-                  end loop;
-               end;
-            end if;
+            begin
+               while Present (Elsif_Part) loop
+                  Check_Statement_Sequence (Then_Statements (Elsif_Part));
+                  Next (Elsif_Part);
+               end loop;
+            end;
 
             return;
 
