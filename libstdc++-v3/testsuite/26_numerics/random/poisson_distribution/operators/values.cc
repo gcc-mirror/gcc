@@ -1,4 +1,3 @@
-// { dg-options "-DSIMULATOR_TEST" { target simulator } }
 // { dg-do run { target c++11 } }
 // { dg-require-cstdint "" }
 // { dg-require-cmath "" }
@@ -26,6 +25,14 @@
 #include <functional>
 #include <testsuite_random.h>
 
+// { dg-additional-options "-DSIMULATOR_TEST" { target simulator } }
+
+#ifdef SIMULATOR_TEST
+# define ARGS 100, 1000
+#else
+# define ARGS
+#endif
+
 void test01()
 {
   using namespace __gnu_test;
@@ -34,15 +41,15 @@ void test01()
 
   std::poisson_distribution<> pd1(3.0);
   auto bpd1 = std::bind(pd1, eng);
-  testDiscreteDist(bpd1, [](int n) { return poisson_pdf(n, 3.0); } );
+  testDiscreteDist<ARGS>(bpd1, [](int n) { return poisson_pdf(n, 3.0); } );
 
   std::poisson_distribution<> pd2(15.0);
   auto bpd2 = std::bind(pd2, eng);
-  testDiscreteDist(bpd2, [](int n) { return poisson_pdf(n, 15.0); } );
+  testDiscreteDist<ARGS>(bpd2, [](int n) { return poisson_pdf(n, 15.0); } );
 
   std::poisson_distribution<> pd3(30.0);
   auto bpd3 = std::bind(pd3, eng);
-  testDiscreteDist(bpd3, [](int n) { return poisson_pdf(n, 30.0); } );
+  testDiscreteDist<ARGS>(bpd3, [](int n) { return poisson_pdf(n, 30.0); } );
 
   // This can take extremely long on simulators, timing out the test.
 #ifndef SIMULATOR_TEST
