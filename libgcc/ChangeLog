@@ -1,3 +1,17 @@
+2022-05-20  Christophe Lyon  <christophe.lyon@arm.com>
+
+	* Makefile.in (D32PBIT_FUNCS): Add _hf_to_sd and _sd_to_hf.
+	(D64PBIT_FUNCS): Add _hf_to_dd and _dd_to_hf.
+	(D128PBIT_FUNCS): Add _hf_to_td _td_to_hf.
+
+2022-05-20  Christophe Lyon  <christophe.lyon@arm.com>
+
+	* config.host: Add t-dfprules to AArch64 targets.
+
+2022-05-20  Christophe Lyon  <christophe.lyon@arm.com>
+
+	* configure: Regenerate.
+
 2022-05-13  Sebastian Pop  <spop@amazon.com>
 
 	PR target/105162

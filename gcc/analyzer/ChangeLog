@@ -1,3 +1,33 @@
+2022-05-20  David Malcolm  <dmalcolm@redhat.com>
+
+	* analyzer-pass.cc: Replace uses of "FINAL" and "OVERRIDE" with
+	"final" and "override".
+	* call-info.h: Likewise.
+	* checker-path.h: Likewise.
+	* constraint-manager.cc: Likewise.
+	* diagnostic-manager.cc: Likewise.
+	* engine.cc: Likewise.
+	* exploded-graph.h: Likewise.
+	* feasible-graph.h: Likewise.
+	* pending-diagnostic.h: Likewise.
+	* region-model-impl-calls.cc: Likewise.
+	* region-model.cc: Likewise.
+	* region-model.h: Likewise.
+	* region.h: Likewise.
+	* sm-file.cc: Likewise.
+	* sm-malloc.cc: Likewise.
+	* sm-pattern-test.cc: Likewise.
+	* sm-sensitive.cc: Likewise.
+	* sm-signal.cc: Likewise.
+	* sm-taint.cc: Likewise.
+	* state-purge.h: Likewise.
+	* store.cc: Likewise.
+	* store.h: Likewise.
+	* supergraph.h: Likewise.
+	* svalue.h: Likewise.
+	* trimmed-graph.h: Likewise.
+	* varargs.cc: Likewise.
+
 2022-05-16  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/105103

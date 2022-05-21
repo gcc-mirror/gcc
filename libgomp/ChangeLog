@@ -1,3 +1,41 @@
+2022-05-20  Marcel Vollweiler  <marcel@codesourcery.com>
+
+	* libgomp.map: Added omp_target_memcpy_async and
+	omp_target_memcpy_rect_async.
+	* libgomp.texi: Both functions are now supported.
+	* omp.h.in: Added omp_target_memcpy_async and
+	omp_target_memcpy_rect_async.
+	* omp_lib.f90.in: Added interfaces for both new functions.
+	* omp_lib.h.in: Likewise.
+	* target.c (ialias_redirect): Added for GOMP_task.
+	(omp_target_memcpy): Restructured into check and copy part.
+	(omp_target_memcpy_check): New helper function for omp_target_memcpy and
+	omp_target_memcpy_async that checks requirements.
+	(omp_target_memcpy_copy): New helper function for omp_target_memcpy and
+	omp_target_memcpy_async that performs the memcpy.
+	(omp_target_memcpy_async_helper): New helper function that is used in
+	omp_target_memcpy_async for the asynchronous task.
+	(omp_target_memcpy_async): Added.
+	(omp_target_memcpy_rect): Restructured into check and copy part.
+	(omp_target_memcpy_rect_check): New helper function for
+	omp_target_memcpy_rect and omp_target_memcpy_rect_async that checks
+	requirements.
+	(omp_target_memcpy_rect_copy): New helper function for
+	omp_target_memcpy_rect and omp_target_memcpy_rect_async that performs
+	the memcpy.
+	(omp_target_memcpy_rect_async_helper): New helper function that is used
+	in omp_target_memcpy_rect_async for the asynchronous task.
+	(omp_target_memcpy_rect_async): Added.
+	* task.c (ialias): Added for GOMP_task.
+	* testsuite/libgomp.c-c++-common/target-memcpy-async-1.c: New test.
+	* testsuite/libgomp.c-c++-common/target-memcpy-async-2.c: New test.
+	* testsuite/libgomp.c-c++-common/target-memcpy-rect-async-1.c: New test.
+	* testsuite/libgomp.c-c++-common/target-memcpy-rect-async-2.c: New test.
+	* testsuite/libgomp.fortran/target-memcpy-async-1.f90: New test.
+	* testsuite/libgomp.fortran/target-memcpy-async-2.f90: New test.
+	* testsuite/libgomp.fortran/target-memcpy-rect-async-1.f90: New test.
+	* testsuite/libgomp.fortran/target-memcpy-rect-async-2.f90: New test.
+
 2022-05-18  Tobias Burnus  <tobias@codesourcery.com>
 
 	* libgomp.texi (OpenMP 5.1): Set 'inoutset' to Y.

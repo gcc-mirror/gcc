@@ -1,3 +1,118 @@
+2022-05-20  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	* config/aarch64/aarch64.md
+	(and_<SHIFT:optab><mode>3_compare0): Support rotate left.
+	(and_<SHIFT:optab>si3_compare0_uxtw): Likewise.
+	(<LOGICAL:optab>_<SHIFT:optab><mode>3): Likewise.
+	(<LOGICAL:optab>_<SHIFT:optab>si3_uxtw): Likewise.
+	(one_cmpl_<optab><mode>2): Likewise.
+	(<LOGICAL:optab>_one_cmpl_<SHIFT:optab><mode>3): Likewise.
+	(<LOGICAL:optab>_one_cmpl_<SHIFT:optab>sidi_uxtw): New pattern.
+	(eor_one_cmpl_<SHIFT:optab><mode>3_alt): Support rotate left.
+	(eor_one_cmpl_<SHIFT:optab>sidi3_alt_ze): Likewise.
+	(and_one_cmpl_<SHIFT:optab><mode>3_compare0): Likewise.
+	(and_one_cmpl_<SHIFT:optab>si3_compare0_uxtw): Likewise.
+	(and_one_cmpl_<SHIFT:optab><mode>3_compare0_no_reuse): Likewise.
+	(and_<SHIFT:optab><mode>3nr_compare0): Likewise.
+	(*<optab>si3_insn_uxtw): Use SHIFT_no_rotate.
+	(rolsi3_insn_uxtw): New pattern.
+	* config/aarch64/iterators.md (SHIFT): Add rotate left.
+	(SHIFT_no_rotate): Add new iterator.
+	(SHIFT:shift): Print rotate left as ror.
+	(is_rotl): Add test for left rotate.
+
+2022-05-20  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	* config.gcc (aarch64*-*-*): Simplify --with-cpu and --with-arch
+	processing.  Add support for architectural extensions.
+	* config/aarch64/aarch64.h (TARGET_CPU_DEFAULT): Remove
+	AARCH64_CPU_DEFAULT_FLAGS.
+	(TARGET_CPU_NBITS): Remove.
+	(TARGET_CPU_MASK): Remove.
+	* config/aarch64/aarch64.cc (AARCH64_CPU_DEFAULT_FLAGS): Remove define.
+	(get_tune_cpu): Assert CPU is always valid.
+	(get_arch): Assert architecture is always valid.
+	(aarch64_override_options): Cleanup CPU selection code and simplify logic.
+	(aarch64_option_restore): Remove unnecessary checks on tune.
+
+2022-05-20  David Malcolm  <dmalcolm@redhat.com>
+
+	* config/aarch64/aarch64-sve-builtins-base.cc: Replace uses of
+	"FINAL" and "OVERRIDE" with "final" and "override".
+	* config/aarch64/aarch64-sve-builtins-functions.h: Likewise.
+	* config/aarch64/aarch64-sve-builtins-shapes.cc: Likewise.
+	* config/aarch64/aarch64-sve-builtins-sve2.cc: Likewise.
+	* diagnostic-path.h: Likewise.
+	* digraph.cc: Likewise.
+	* gcc-rich-location.h: Likewise.
+	* gimple-array-bounds.cc: Likewise.
+	* gimple-loop-versioning.cc: Likewise.
+	* gimple-range-cache.cc: Likewise.
+	* gimple-range-cache.h: Likewise.
+	* gimple-range-fold.cc: Likewise.
+	* gimple-range-fold.h: Likewise.
+	* gimple-range-tests.cc: Likewise.
+	* gimple-range.h: Likewise.
+	* gimple-ssa-evrp.cc: Likewise.
+	* input.cc: Likewise.
+	* json.h: Likewise.
+	* read-rtl-function.cc: Likewise.
+	* tree-complex.cc: Likewise.
+	* tree-diagnostic-path.cc: Likewise.
+	* tree-ssa-ccp.cc: Likewise.
+	* tree-ssa-copy.cc: Likewise.
+	* tree-vrp.cc: Likewise.
+	* value-query.h: Likewise.
+	* vr-values.h: Likewise.
+
+2022-05-20  Marcel Vollweiler  <marcel@codesourcery.com>
+
+	* omp-low.cc (omp_runtime_api_call): Added target_memcpy_async and
+	target_memcpy_rect_async to omp_runtime_apis array.
+
+2022-05-20  Christophe Lyon  <christophe.lyon@arm.com>
+
+	* doc/sourcebuild.texi (Decimal floating point attributes): Document
+	dfp_bid effective-target.
+
+2022-05-20  Christophe Lyon  <christophe.lyon@arm.com>
+
+	* config/aarch64/aarch64.cc
+	(aarch64_split_128bit_move): Handle DFP modes.
+	(aarch64_mode_valid_for_sched_fusion_p): Likewise.
+	(aarch64_classify_address): Likewise.
+	(aarch64_legitimize_address_displacement): Likewise.
+	(aarch64_reinterpret_float_as_int): Likewise.
+	(aarch64_float_const_zero_rtx_p): Likewise.
+	(aarch64_can_const_movi_rtx_p): Likewise.
+	(aarch64_anchor_offset): Likewise.
+	(aarch64_secondary_reload): Likewise.
+	(aarch64_rtx_costs): Likewise.
+	(aarch64_legitimate_constant_p): Likewise.
+	(aarch64_gimplify_va_arg_expr): Likewise.
+	(aapcs_vfp_sub_candidate): Likewise.
+	(aarch64_vfp_is_call_or_return_candidate): Likewise.
+	(aarch64_output_scalar_simd_mov_immediate): Likewise.
+	(aarch64_gen_adjusted_ldpstp): Likewise.
+	(aarch64_scalar_mode_supported_p): Accept DFP modes if enabled.
+	* config/aarch64/aarch64.md
+	(movsf_aarch64): Use SFD iterator and rename into
+	mov<mode>_aarch64.
+	(movdf_aarch64): Use DFD iterator and rename into
+	mov<mode>_aarch64.
+	(movtf_aarch64): Use TFD iterator and rename into
+	mov<mode>_aarch64.
+	(split pattern for move TF mode): Use TFD iterator.
+	* config/aarch64/iterators.md
+	(GPF_TF_F16_MOV): Add DFP modes.
+	(SFD, DFD, TFD): New iterators.
+	(GPF_TF): Add DFP modes.
+	(TX, DX, DX2): Likewise.
+
+2022-05-20  Christophe Lyon  <christophe.lyon@arm.com>
+
+	* configure: Regenerate.
+
 2022-05-19  Roger Sayle  <roger@nextmovesoftware.com>
 
 	PR middle-end/98865

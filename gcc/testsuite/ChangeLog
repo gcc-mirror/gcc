@@ -1,3 +1,93 @@
+2022-05-20  Marc Poulhiès  <poulhies@adacore.com>
+
+	* g++.dg/ext/visibility/visibility-local-extern1.C: Add missing
+	dg-require-effective-target fpic.
+
+2022-05-20  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	* gcc.target/aarch64/ror_2.c: New test.
+	* gcc.target/aarch64/ror_3.c: New test.
+
+2022-05-20  Christophe Lyon  <christophe.lyon@arm.com>
+
+	* gcc.dg/torture/convert-dfp-2.c: New test.
+	* gcc.dg/torture/convert-dfp.c: New test.
+
+2022-05-20  Christophe Lyon  <christophe.lyon@arm.com>
+
+	* g++.dg/eh/dfp-1.C: New test.
+	* g++.dg/eh/dfp-2.C: New test.
+	* g++.dg/eh/dfp-saves-aarch64.C: New test.
+
+2022-05-20  Christophe Lyon  <christophe.lyon@arm.com>
+
+	* lib/target-supports.exp (check_effective_target_dfp_bid): New.
+	* gcc.dg/dfp/bid-non-canonical-d128-1.c: Use dfp_bid
+	effective-target.
+	* gcc.dg/dfp/bid-non-canonical-d128-2.c: Likewise.
+	* gcc.dg/dfp/bid-non-canonical-d128-3.c: Likewise.
+	* gcc.dg/dfp/bid-non-canonical-d128-4.c: Likewise.
+	* gcc.dg/dfp/bid-non-canonical-d32-1.c: Likewise.
+	* gcc.dg/dfp/bid-non-canonical-d32-2.c: Likewise.
+	* gcc.dg/dfp/bid-non-canonical-d64-1.c: Likewise.
+	* gcc.dg/dfp/bid-non-canonical-d64-2.c: Likewise.
+
+2022-05-20  Christophe Lyon  <christophe.lyon@arm.com>
+
+	* gcc.target/aarch64/aapcs64/aapcs64.exp: Support new dfp*.c tests.
+	* gcc.target/aarch64/aapcs64/func-ret-1.c: Add DFP tests.
+	* gcc.target/aarch64/aapcs64/func-ret-3.c: Add DFP tests.
+	* gcc.target/aarch64/aapcs64/type-def.h: Add DFP types.
+	* gcc.target/aarch64/aapcs64/dfp-1.c: New test.
+	* gcc.target/aarch64/aapcs64/ice_dfp_5.c: New test.
+	* gcc.target/aarch64/aapcs64/test_align_dfp-1.c: New test.
+	* gcc.target/aarch64/aapcs64/test_align_dfp-4.c: New test.
+	* gcc.target/aarch64/aapcs64/test_dfp_1.c: New test.
+	* gcc.target/aarch64/aapcs64/test_dfp_10.c: New test.
+	* gcc.target/aarch64/aapcs64/test_dfp_11.c: New test.
+	* gcc.target/aarch64/aapcs64/test_dfp_12.c: New test.
+	* gcc.target/aarch64/aapcs64/test_dfp_13.c: New test.
+	* gcc.target/aarch64/aapcs64/test_dfp_14.c: New test.
+	* gcc.target/aarch64/aapcs64/test_dfp_15.c: New test.
+	* gcc.target/aarch64/aapcs64/test_dfp_16.c: New test.
+	* gcc.target/aarch64/aapcs64/test_dfp_17.c: New test.
+	* gcc.target/aarch64/aapcs64/test_dfp_18.c: New test.
+	* gcc.target/aarch64/aapcs64/test_dfp_19.c: New test.
+	* gcc.target/aarch64/aapcs64/test_dfp_2.c: New test.
+	* gcc.target/aarch64/aapcs64/test_dfp_20.c: New test.
+	* gcc.target/aarch64/aapcs64/test_dfp_21.c: New test.
+	* gcc.target/aarch64/aapcs64/test_dfp_22.c: New test.
+	* gcc.target/aarch64/aapcs64/test_dfp_23.c: New test.
+	* gcc.target/aarch64/aapcs64/test_dfp_24.c: New test.
+	* gcc.target/aarch64/aapcs64/test_dfp_25.c: New test.
+	* gcc.target/aarch64/aapcs64/test_dfp_26.c: New test.
+	* gcc.target/aarch64/aapcs64/test_dfp_27.c: New test.
+	* gcc.target/aarch64/aapcs64/test_dfp_3.c: New test.
+	* gcc.target/aarch64/aapcs64/test_dfp_5.c: New test.
+	* gcc.target/aarch64/aapcs64/test_dfp_6.c: New test.
+	* gcc.target/aarch64/aapcs64/test_dfp_7.c: New test.
+	* gcc.target/aarch64/aapcs64/test_dfp_8.c: New test.
+	* gcc.target/aarch64/aapcs64/test_dfp_9.c: New test.
+	* gcc.target/aarch64/aapcs64/test_quad_double_dfp.c: New test.
+	* gcc.target/aarch64/aapcs64/va_arg_dfp-1.c: New test.
+	* gcc.target/aarch64/aapcs64/va_arg_dfp-10.c: New test.
+	* gcc.target/aarch64/aapcs64/va_arg_dfp-11.c: New test.
+	* gcc.target/aarch64/aapcs64/va_arg_dfp-12.c: New test.
+	* gcc.target/aarch64/aapcs64/va_arg_dfp-13.c: New test.
+	* gcc.target/aarch64/aapcs64/va_arg_dfp-14.c: New test.
+	* gcc.target/aarch64/aapcs64/va_arg_dfp-16.c: New test.
+	* gcc.target/aarch64/aapcs64/va_arg_dfp-2.c: New test.
+	* gcc.target/aarch64/aapcs64/va_arg_dfp-3.c: New test.
+	* gcc.target/aarch64/aapcs64/va_arg_dfp-4.c: New test.
+	* gcc.target/aarch64/aapcs64/va_arg_dfp-5.c: New test.
+	* gcc.target/aarch64/aapcs64/va_arg_dfp-6.c: New test.
+	* gcc.target/aarch64/aapcs64/va_arg_dfp-8.c: New test.
+	* gcc.target/aarch64/aapcs64/va_arg_dfp-9.c: New test.
+
+2022-05-20  Christophe Lyon  <christophe.lyon@arm.com>
+
+	* c-c++-common/dfp/pr39986.c: Accept .word directive.
+
 2022-05-19  Jonathan Wakely  <jwakely@redhat.com>
 
 	* g++.dg/cpp0x/variadic-tuple.C: Qualify function to avoid ADL

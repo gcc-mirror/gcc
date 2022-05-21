@@ -1,3 +1,10 @@
+2022-05-20  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit-playback.h: Replace uses of "FINAL" and "OVERRIDE" with
+	"final" and "override".
+	* jit-recording.cc: Likewise.
+	* jit-recording.h: Likewise.
+
 2022-05-16  Martin Liska  <mliska@suse.cz>
 
 	* jit-builtins.cc (find_builtin_by_name): Use ARRAY_SIZE.

@@ -1,3 +1,20 @@
+2022-05-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/26_numerics/random/bernoulli_distribution/operators/values.cc:
+	Run fewer iterations for simulator targets.
+	* testsuite/26_numerics/random/binomial_distribution/operators/values.cc:
+	Likewise.
+	* testsuite/26_numerics/random/discrete_distribution/operators/values.cc:
+	Likewise.
+	* testsuite/26_numerics/random/geometric_distribution/operators/values.cc:
+	Likewise.
+	* testsuite/26_numerics/random/negative_binomial_distribution/operators/values.cc:
+	Likewise.
+	* testsuite/26_numerics/random/poisson_distribution/operators/values.cc:
+	Likewise.
+	* testsuite/26_numerics/random/uniform_int_distribution/operators/values.cc:
+	Likewise.
+
 2022-05-19  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/char_traits.h: Only include <cstdint> when
