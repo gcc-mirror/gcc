@@ -524,12 +524,6 @@ package body Exp_Disp is
    --  Start of processing for Build_Static_Dispatch_Tables
 
    begin
-      if not Expander_Active
-        or else not Tagged_Type_Expansion
-      then
-         return;
-      end if;
-
       if Nkind (N) = N_Package_Declaration then
          declare
             Spec       : constant Node_Id := Specification (N);
@@ -553,8 +547,15 @@ package body Exp_Disp is
          end;
 
       else pragma Assert (Nkind (N) = N_Package_Body);
-         Target_List := Declarations (N);
-         Build_Dispatch_Tables (Target_List);
+         declare
+            Spec_Id : constant Entity_Id := Corresponding_Spec (N);
+
+         begin
+            Push_Scope (Spec_Id);
+            Target_List := Declarations (N);
+            Build_Dispatch_Tables (Target_List);
+            Pop_Scope;
+         end;
       end if;
    end Build_Static_Dispatch_Tables;
 

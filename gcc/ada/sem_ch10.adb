@@ -31,6 +31,7 @@ with Einfo;          use Einfo;
 with Einfo.Entities; use Einfo.Entities;
 with Einfo.Utils;    use Einfo.Utils;
 with Errout;         use Errout;
+with Exp_Disp;       use Exp_Disp;
 with Exp_Put_Image;
 with Exp_Util;       use Exp_Util;
 with Elists;         use Elists;
@@ -998,6 +999,22 @@ package body Sem_Ch10 is
 
             Add_Stub_Constructs (N);
          end if;
+      end if;
+
+      --  Build dispatch tables of library-level tagged types only now because
+      --  the generation of distribution stubs above may create some of them.
+
+      if Expander_Active and then Tagged_Type_Expansion then
+         case Nkind (Unit_Node) is
+            when N_Package_Declaration | N_Package_Body =>
+               Build_Static_Dispatch_Tables (Unit_Node);
+
+            when N_Package_Instantiation =>
+               Build_Static_Dispatch_Tables (Instance_Spec (Unit_Node));
+
+            when others =>
+               null;
+         end case;
       end if;
 
       --  Remove unit from visibility, so that environment is clean for the

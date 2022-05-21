@@ -5876,15 +5876,19 @@ package body Exp_Ch7 is
       --  This is done only for non-generic packages
 
       if Ekind (Spec_Id) = E_Package then
-         Push_Scope (Spec_Id);
-
-         --  Build dispatch tables of library level tagged types
+         --  Build dispatch tables of library-level tagged types for bodies
+         --  that are not compilation units (see Analyze_Compilation_Unit),
+         --  except for instances because they have no N_Compilation_Unit.
 
          if Tagged_Type_Expansion
            and then Is_Library_Level_Entity (Spec_Id)
+           and then (not Is_Compilation_Unit (Spec_Id)
+                      or else Is_Generic_Instance (Spec_Id))
          then
             Build_Static_Dispatch_Tables (N);
          end if;
+
+         Push_Scope (Spec_Id);
 
          Expand_CUDA_Package (N);
 
@@ -6035,12 +6039,13 @@ package body Exp_Ch7 is
          Pop_Scope;
       end if;
 
-      --  Build dispatch tables of library-level tagged types
+      --  Build dispatch tables of library-level tagged types for instances
+      --  that are not compilation units (see Analyze_Compilation_Unit).
 
       if Tagged_Type_Expansion
-        and then (Is_Compilation_Unit (Id)
-                   or else (Is_Generic_Instance (Id)
-                             and then Is_Library_Level_Entity (Id)))
+        and then Is_Library_Level_Entity (Id)
+        and then Is_Generic_Instance (Id)
+        and then not Is_Compilation_Unit (Id)
       then
          Build_Static_Dispatch_Tables (N);
       end if;
