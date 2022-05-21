@@ -3842,6 +3842,12 @@ public:
     return match_arm_patterns;
   }
 
+  std::unique_ptr<Expr> &get_guard_expr ()
+  {
+    rust_assert (has_match_arm_guard ());
+    return guard_expr;
+  }
+
   Location get_locus () const { return locus; }
 };
 
