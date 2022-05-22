@@ -83,11 +83,8 @@ gimple_outgoing_range::~gimple_outgoing_range ()
 // Use a cached value if it exists, or calculate it if not.
 
 bool
-gimple_outgoing_range::get_edge_range (irange &r, gimple *s, edge e)
+gimple_outgoing_range::switch_edge_range (irange &r, gswitch *sw, edge e)
 {
-  gcc_checking_assert (is_a<gswitch *> (s));
-  gswitch *sw = as_a<gswitch *> (s);
-
   // ADA currently has cases where the index is 64 bits and the case
   // arguments are 32 bit, causing a trap when we create a case_range.
   // Until this is resolved (https://gcc.gnu.org/bugzilla/show_bug.cgi?id=87798)
@@ -204,12 +201,9 @@ gimple_outgoing_range::edge_range_p (irange &r, edge e)
 
   gcc_checking_assert (is_a<gswitch *> (s));
   gswitch *sw = as_a<gswitch *> (s);
-  tree type = TREE_TYPE (gimple_switch_index (sw));
 
-  if (!irange::supports_type_p (type))
-    return NULL;
-
-  if (get_edge_range (r, sw, e))
+  // Switches can only be integers.
+  if (switch_edge_range (as_a <irange> (r), sw, e))
     return s;
 
   return NULL;

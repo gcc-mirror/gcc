@@ -89,9 +89,9 @@ public:
   //
   // Note that range_of_expr must always return TRUE unless ranges are
   // unsupported for EXPR's type (supports_type_p is false).
-  virtual bool range_of_expr (irange &r, tree expr, gimple * = NULL) = 0;
-  virtual bool range_on_edge (irange &r, edge, tree expr);
-  virtual bool range_of_stmt (irange &r, gimple *, tree name = NULL);
+  virtual bool range_of_expr (vrange &r, tree expr, gimple * = NULL) = 0;
+  virtual bool range_on_edge (vrange &r, edge, tree expr);
+  virtual bool range_of_stmt (vrange &r, gimple *, tree name = NULL);
 
   // Query if there is any relation between SSA1 and SSA2.
   relation_kind query_relation (gimple *s, tree ssa1, tree ssa2,
@@ -110,8 +110,8 @@ public:
 protected:
   class value_range_equiv *allocate_value_range_equiv ();
   void free_value_range_equiv (class value_range_equiv *);
-  bool get_tree_range (irange &r, tree expr, gimple *stmt);
-  bool get_arith_expr_range (irange &r, tree expr, gimple *stmt);
+  bool get_tree_range (vrange &v, tree expr, gimple *stmt);
+  bool get_arith_expr_range (vrange &r, tree expr, gimple *stmt);
   relation_oracle *m_oracle;
 
 private:
@@ -123,7 +123,7 @@ private:
 class global_range_query : public range_query
 {
 public:
-  bool range_of_expr (irange &r, tree expr, gimple * = NULL) override;
+  bool range_of_expr (vrange &r, tree expr, gimple * = NULL) override;
 };
 
 extern global_range_query global_ranges;
@@ -143,7 +143,7 @@ get_range_query (const struct function *fun)
   return fun->x_range_query ? fun->x_range_query : &global_ranges;
 }
 
-extern value_range gimple_range_global (tree name);
-extern bool update_global_range (irange &r, tree name);
+extern void gimple_range_global (vrange &v, tree name);
+extern bool update_global_range (vrange &v, tree name);
 
 #endif // GCC_QUERY_H

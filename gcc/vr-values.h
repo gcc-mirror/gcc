@@ -109,7 +109,7 @@ class vr_values : public range_query
   vr_values (void);
   ~vr_values (void);
 
-  virtual bool range_of_expr (irange &r, tree expr, gimple *stmt) override;
+  virtual bool range_of_expr (vrange &r, tree expr, gimple *stmt) override;
   virtual tree value_of_expr (tree, gimple * = NULL) override;
   virtual tree value_on_edge (edge, tree) override;
   virtual tree value_of_stmt (gimple *, tree = NULL_TREE) override;

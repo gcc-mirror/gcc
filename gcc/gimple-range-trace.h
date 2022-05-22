@@ -32,7 +32,7 @@ public:
   range_tracer (const char *name = "");
   unsigned header (const char *str);
   void trailer (unsigned counter, const char *caller, bool result, tree name,
-		const irange &r);
+		const vrange &r);
   void print (unsigned counter, const char *str);
   inline void enable_trace () { tracing = true; }
   inline void disable_trace () { tracing = false; }

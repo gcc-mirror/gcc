@@ -140,13 +140,13 @@ struct unswitch_predicate
 	int_range<2> rhs_range (TREE_TYPE (rhs));
 	if (CONSTANT_CLASS_P (rhs))
 	  rhs_range.set (rhs);
-	if (!range_op->op1_range (true_range, TREE_TYPE (lhs),
-				  int_range<2> (boolean_true_node,
-						boolean_true_node), rhs_range)
-	    || !range_op->op1_range (false_range, TREE_TYPE (lhs),
-				     int_range<2> (boolean_false_node,
-						   boolean_false_node),
-				     rhs_range))
+	if (!range_op.op1_range (true_range, TREE_TYPE (lhs),
+				 int_range<2> (boolean_true_node,
+					       boolean_true_node), rhs_range)
+	    || !range_op.op1_range (false_range, TREE_TYPE (lhs),
+				    int_range<2> (boolean_false_node,
+						  boolean_false_node),
+				    rhs_range))
 	  {
 	    true_range.set_varying (TREE_TYPE (lhs));
 	    false_range.set_varying (TREE_TYPE (lhs));

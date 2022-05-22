@@ -42,8 +42,9 @@ public:
     ASSERT_TRUE (r == expect);
   }
 
-  virtual bool range_of_expr (irange &r, tree expr, gimple * = NULL) override
+  virtual bool range_of_expr (vrange &v, tree expr, gimple * = NULL) override
   {
+    irange &r = as_a <irange> (v);
     if (expr == op0)
       {
 	r.set (build_int_cst (type, 5), build_int_cst (type, 10));

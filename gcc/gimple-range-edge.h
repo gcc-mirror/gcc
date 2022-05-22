@@ -43,7 +43,7 @@ public:
   gimple *edge_range_p (irange &r, edge e);
 private:
   void calc_switch_ranges (gswitch *sw);
-  bool get_edge_range (irange &r, gimple *s, edge e);
+  bool switch_edge_range (irange &r, gswitch *sw, edge e);
 
   int m_max_edges;
   hash_map<edge, irange *> *m_edge_table;
