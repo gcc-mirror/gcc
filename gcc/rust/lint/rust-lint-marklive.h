@@ -204,6 +204,19 @@ public:
     expr.get_else_block ()->accept_vis (*this);
   }
 
+  void visit (HIR::MatchExpr &expr) override
+  {
+    expr.get_scrutinee_expr ()->accept_vis (*this);
+    std::vector<HIR::MatchCase> &cases = expr.get_match_cases ();
+    for (auto &&caz : cases)
+      {
+	auto case_arm = caz.get_arm ();
+	if (case_arm.has_match_arm_guard ())
+	  case_arm.get_guard_expr ()->accept_vis (*this);
+	caz.get_expr ()->accept_vis (*this);
+      }
+  }
+
   void visit (HIR::IfExprConseqIf &expr) override
   {
     expr.get_if_condition ()->accept_vis (*this);
