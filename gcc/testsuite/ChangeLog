@@ -1,3 +1,34 @@
+2022-05-21  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	* gcc.dg/tree-ssa/gen-vect-11.c: For PRU target, skip the
+	vectorizing checks in tree dumps.
+	* gcc.dg/tree-ssa/gen-vect-11a.c: Ditto.
+	* gcc.dg/tree-ssa/gen-vect-2.c: Ditto.
+	* gcc.dg/tree-ssa/gen-vect-25.c: Ditto.
+	* gcc.dg/tree-ssa/gen-vect-26.c: Ditto.
+	* gcc.dg/tree-ssa/gen-vect-28.c: Ditto.
+	* gcc.dg/tree-ssa/gen-vect-32.c: Ditto.
+
+2022-05-21  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	PR ipa/91088
+	* gcc.dg/ipa/pr91088.c: Adjust member offset checks to
+	accommodate targets which pack structures by default.
+
+2022-05-21  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	PR middle-end/53535
+	* gcc.dg/pr46647.c: Skip for pru target.
+
+2022-05-21  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	* gcc.dg/ifcvt-4.c: Skip for PRU.
+
+2022-05-21  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	* gcc.dg/Warray-bounds-48-novec.c: Add expected warnings
+	if target packs the structs by default.
+
 2022-05-20  Marc Poulhiès  <poulhies@adacore.com>
 
 	* g++.dg/ext/visibility/visibility-local-extern1.C: Add missing
