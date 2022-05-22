@@ -78,7 +78,7 @@ private:
   bitmap m_seen;
   bitmap_obstack m_bitmaps;
   struct obstack m_list_obstack;
-  irange_allocator m_range_allocator;
+  vrange_allocator m_range_allocator;
 };
 
 #endif // GCC_GIMPLE_RANGE_SIDE_H

@@ -189,8 +189,10 @@ infer_range_manager::get_nonzero (tree name)
     m_nonzero.safe_grow_cleared (num_ssa_names + 20);
   if (!m_nonzero[v])
     {
-      m_nonzero[v] = m_range_allocator.allocate (2);
-      m_nonzero[v]->set_nonzero (TREE_TYPE (name));
+      tree type = TREE_TYPE (name);
+      m_nonzero[v]
+	= static_cast <irange *> (m_range_allocator.alloc_vrange (type));
+      m_nonzero[v]->set_nonzero (type);
     }
   return *(m_nonzero[v]);
 }
@@ -259,14 +261,17 @@ infer_range_manager::add_range (tree name, basic_block bb, const irange &r)
       if (ptr->range->fits_p (cur))
 	*(ptr->range) = cur;
       else
-	ptr->range = m_range_allocator.allocate (cur);
+	{
+	  vrange &v = cur;
+	  ptr->range = static_cast <irange *> (m_range_allocator.clone (v));
+	}
       return;
     }
 
   // Otherwise create a record.
   bitmap_set_bit (m_on_exit[bb->index].m_names, SSA_NAME_VERSION (name));
   ptr = (exit_range *)obstack_alloc (&m_list_obstack, sizeof (exit_range));
-  ptr->range = m_range_allocator.allocate (r);
+  ptr->range = m_range_allocator.clone (r);
   ptr->name = name;
   ptr->next = m_on_exit[bb->index].head;
   m_on_exit[bb->index].head = ptr;

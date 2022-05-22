@@ -166,13 +166,13 @@ gimple_outgoing_range::calc_switch_ranges (gswitch *sw)
       // If there was an existing range and it doesn't fit, we lose the memory.
       // It'll get reclaimed when the obstack is freed.  This seems less
       // intrusive than allocating max ranges for each case.
-      slot = m_range_allocator.allocate (case_range);
+      slot = m_range_allocator.clone <irange> (case_range);
     }
 
   irange *&slot = m_edge_table->get_or_insert (default_edge, &existed);
   // This should be the first call into this switch.
   gcc_checking_assert (!existed);
-  irange *dr = m_range_allocator.allocate (default_range);
+  irange *dr = m_range_allocator.clone <irange> (default_range);
   slot = dr;
 }
 

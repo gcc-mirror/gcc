@@ -75,7 +75,7 @@ ssa_block_ranges::dump (FILE *f)
 class sbr_vector : public ssa_block_ranges
 {
 public:
-  sbr_vector (tree t, irange_allocator *allocator);
+  sbr_vector (tree t, vrange_allocator *allocator);
 
   virtual bool set_bb_range (const_basic_block bb, const irange &r) override;
   virtual bool get_bb_range (irange &r, const_basic_block bb) override;
@@ -86,20 +86,21 @@ protected:
   int_range<2> m_varying;
   int_range<2> m_undefined;
   tree m_type;
-  irange_allocator *m_irange_allocator;
+  vrange_allocator *m_range_allocator;
   void grow ();
 };
 
 
 // Initialize a block cache for an ssa_name of type T.
 
-sbr_vector::sbr_vector (tree t, irange_allocator *allocator)
+sbr_vector::sbr_vector (tree t, vrange_allocator *allocator)
 {
   gcc_checking_assert (TYPE_P (t));
   m_type = t;
-  m_irange_allocator = allocator;
+  m_range_allocator = allocator;
   m_tab_size = last_basic_block_for_fn (cfun) + 1;
-  m_tab = (irange **)allocator->get_memory (m_tab_size * sizeof (irange *));
+  m_tab = static_cast <irange **>
+    (allocator->alloc (m_tab_size * sizeof (irange *)));
   memset (m_tab, 0, m_tab_size * sizeof (irange *));
 
   // Create the cached type range.
@@ -121,8 +122,8 @@ sbr_vector::grow ()
   int new_size = inc + curr_bb_size;
 
   // Allocate new memory, copy the old vector and clear the new space.
-  irange **t = (irange **)m_irange_allocator->get_memory (new_size
-							  * sizeof (irange *));
+  irange **t = static_cast <irange **>
+    (m_range_allocator->alloc (new_size * sizeof (irange *)));
   memcpy (t, m_tab, m_tab_size * sizeof (irange *));
   memset (t + m_tab_size, 0, (new_size - m_tab_size) * sizeof (irange *));
 
@@ -143,7 +144,7 @@ sbr_vector::set_bb_range (const_basic_block bb, const irange &r)
   else if (r.undefined_p ())
     m = &m_undefined;
   else
-    m = m_irange_allocator->allocate (r);
+    m = m_range_allocator->clone (r);
   m_tab[bb->index] = m;
   return true;
 }
@@ -191,14 +192,14 @@ sbr_vector::bb_range_p (const_basic_block bb)
 class sbr_sparse_bitmap : public ssa_block_ranges
 {
 public:
-  sbr_sparse_bitmap (tree t, irange_allocator *allocator, bitmap_obstack *bm);
+  sbr_sparse_bitmap (tree t, vrange_allocator *allocator, bitmap_obstack *bm);
   virtual bool set_bb_range (const_basic_block bb, const irange &r) override;
   virtual bool get_bb_range (irange &r, const_basic_block bb) override;
   virtual bool bb_range_p (const_basic_block bb) override;
 private:
   void bitmap_set_quad (bitmap head, int quad, int quad_value);
   int bitmap_get_quad (const_bitmap head, int quad);
-  irange_allocator *m_irange_allocator;
+  vrange_allocator *m_range_allocator;
   irange *m_range[SBR_NUM];
   bitmap_head bitvec;
   tree m_type;
@@ -206,23 +207,25 @@ private:
 
 // Initialize a block cache for an ssa_name of type T.
 
-sbr_sparse_bitmap::sbr_sparse_bitmap (tree t, irange_allocator *allocator,
-				bitmap_obstack *bm)
+sbr_sparse_bitmap::sbr_sparse_bitmap (tree t, vrange_allocator *allocator,
+				      bitmap_obstack *bm)
 {
   gcc_checking_assert (TYPE_P (t));
   m_type = t;
   bitmap_initialize (&bitvec, bm);
   bitmap_tree_view (&bitvec);
-  m_irange_allocator = allocator;
+  m_range_allocator = allocator;
   // Pre-cache varying.
-  m_range[0] = m_irange_allocator->allocate (2);
+  m_range[0] = static_cast <irange *> (m_range_allocator->alloc_vrange (t));
   m_range[0]->set_varying (t);
   // Pre-cache zero and non-zero values for pointers.
   if (POINTER_TYPE_P (t))
     {
-      m_range[1] = m_irange_allocator->allocate (2);
+      m_range[1]
+	= static_cast <irange *> (m_range_allocator->alloc_vrange (t));
       m_range[1]->set_nonzero (t);
-      m_range[2] = m_irange_allocator->allocate (2);
+      m_range[2]
+	= static_cast <irange *> (m_range_allocator->alloc_vrange (t));
       m_range[2]->set_zero (t);
     }
   else
@@ -267,7 +270,7 @@ sbr_sparse_bitmap::set_bb_range (const_basic_block bb, const irange &r)
     if (!m_range[x] || r == *(m_range[x]))
       {
 	if (!m_range[x])
-	  m_range[x] = m_irange_allocator->allocate (r);
+	  m_range[x] = m_range_allocator->clone (r);
 	bitmap_set_quad (&bitvec, bb->index, x + 1);
 	return true;
       }
@@ -312,14 +315,14 @@ block_range_cache::block_range_cache ()
   bitmap_obstack_initialize (&m_bitmaps);
   m_ssa_ranges.create (0);
   m_ssa_ranges.safe_grow_cleared (num_ssa_names);
-  m_irange_allocator = new irange_allocator;
+  m_range_allocator = new vrange_allocator;
 }
 
 // Remove any m_block_caches which have been created.
 
 block_range_cache::~block_range_cache ()
 {
-  delete m_irange_allocator;
+  delete m_range_allocator;
   // Release the vector itself.
   m_ssa_ranges.release ();
   bitmap_obstack_release (&m_bitmaps);
@@ -341,17 +344,17 @@ block_range_cache::set_bb_range (tree name, const_basic_block bb,
       // Use sparse representation if there are too many basic blocks.
       if (last_basic_block_for_fn (cfun) > param_evrp_sparse_threshold)
 	{
-	  void *r = m_irange_allocator->get_memory (sizeof (sbr_sparse_bitmap));
+	  void *r = m_range_allocator->alloc (sizeof (sbr_sparse_bitmap));
 	  m_ssa_ranges[v] = new (r) sbr_sparse_bitmap (TREE_TYPE (name),
-						       m_irange_allocator,
+						       m_range_allocator,
 						       &m_bitmaps);
 	}
       else
 	{
 	  // Otherwise use the default vector implemntation.
-	  void *r = m_irange_allocator->get_memory (sizeof (sbr_vector));
+	  void *r = m_range_allocator->alloc (sizeof (sbr_vector));
 	  m_ssa_ranges[v] = new (r) sbr_vector (TREE_TYPE (name),
-						m_irange_allocator);
+						m_range_allocator);
 	}
     }
   return m_ssa_ranges[v]->set_bb_range (bb, r);
@@ -467,7 +470,7 @@ block_range_cache::dump (FILE *f, basic_block bb, bool print_varying)
 ssa_global_cache::ssa_global_cache ()
 {
   m_tab.create (0);
-  m_irange_allocator = new irange_allocator;
+  m_range_allocator = new vrange_allocator;
 }
 
 // Deconstruct a global cache.
@@ -475,7 +478,7 @@ ssa_global_cache::ssa_global_cache ()
 ssa_global_cache::~ssa_global_cache ()
 {
   m_tab.release ();
-  delete m_irange_allocator;
+  delete m_range_allocator;
 }
 
 // Retrieve the global range of NAME from cache memory if it exists. 
@@ -509,7 +512,7 @@ ssa_global_cache::set_global_range (tree name, const irange &r)
   if (m && m->fits_p (r))
     *m = r;
   else
-    m_tab[v] = m_irange_allocator->allocate (r);
+    m_tab[v] = m_range_allocator->clone (r);
   return m != NULL;
 }
 

@@ -44,7 +44,7 @@ private:
   vec<class ssa_block_ranges *> m_ssa_ranges;
   ssa_block_ranges &get_block_ranges (tree name);
   ssa_block_ranges *query_block_ranges (tree name);
-  irange_allocator *m_irange_allocator;
+  vrange_allocator *m_range_allocator;
   bitmap_obstack m_bitmaps;
 };
 
@@ -64,7 +64,7 @@ public:
   void dump (FILE *f = stderr);
 private:
   vec<irange *> m_tab;
-  class irange_allocator *m_irange_allocator;
+  vrange_allocator *m_range_allocator;
 };
 
 // This class provides all the caches a global ranger may need, and makes 

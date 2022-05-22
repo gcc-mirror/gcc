@@ -92,7 +92,7 @@ protected:
 
 class GTY((user)) irange : public vrange
 {
-  friend class irange_allocator;
+  friend class vrange_allocator;
 public:
   // In-place setters.
   virtual void set (tree, tree, value_range_kind = VR_RANGE) override;
@@ -897,56 +897,63 @@ vrp_val_min (const_tree type)
   return NULL_TREE;
 }
 
-// This is the irange storage class.  It is used to allocate the
-// minimum amount of storage needed for a given irange.  Storage is
-// automatically freed at destruction of the storage class.
-//
-// It is meant for long term storage, as opposed to int_range_max
-// which is meant for intermediate temporary results on the stack.
-//
-// The newly allocated irange is initialized to the empty set
-// (undefined_p() is true).
+// This is the range storage class.  It is used to allocate the
+// minimum amount of storage needed for a given range.  Storage is
+// automatically freed at destruction of the class.
 
-class irange_allocator
+class vrange_allocator
 {
 public:
-  irange_allocator ();
-  ~irange_allocator ();
-  // Return a new range with NUM_PAIRS.
-  irange *allocate (unsigned num_pairs);
-  // Return a copy of SRC with the minimum amount of sub-ranges needed
-  // to represent it.
-  irange *allocate (const irange &src);
-  void *get_memory (unsigned num_bytes);
+  vrange_allocator ();
+  ~vrange_allocator ();
+  // Allocate a range of TYPE.
+  vrange *alloc_vrange (tree type);
+  // Allocate a memory block of BYTES.
+  void *alloc (unsigned bytes);
+  // Return a clone of SRC.
+  template <typename T> T *clone (const T &src);
 private:
-  DISABLE_COPY_AND_ASSIGN (irange_allocator);
+  irange *alloc_irange (unsigned pairs);
+  DISABLE_COPY_AND_ASSIGN (vrange_allocator);
   struct obstack m_obstack;
 };
 
 inline
-irange_allocator::irange_allocator ()
+vrange_allocator::vrange_allocator ()
 {
   obstack_init (&m_obstack);
 }
 
 inline
-irange_allocator::~irange_allocator ()
+vrange_allocator::~vrange_allocator ()
 {
   obstack_free (&m_obstack, NULL);
 }
 
 // Provide a hunk of memory from the obstack.
+
 inline void *
-irange_allocator::get_memory (unsigned num_bytes)
+vrange_allocator::alloc (unsigned bytes)
 {
-  void *r = obstack_alloc (&m_obstack, num_bytes);
-  return r;
+  return obstack_alloc (&m_obstack, bytes);
+}
+
+// Return a new range to hold ranges of TYPE.  The newly allocated
+// range is initialized to VR_UNDEFINED.
+
+inline vrange *
+vrange_allocator::alloc_vrange (tree type)
+{
+  if (irange::supports_type_p (type))
+    return alloc_irange (2);
+
+  gcc_unreachable ();
 }
 
 // Return a new range with NUM_PAIRS.
 
 inline irange *
-irange_allocator::allocate (unsigned num_pairs)
+vrange_allocator::alloc_irange (unsigned num_pairs)
 {
   // Never allocate 0 pairs.
   // Don't allocate 1 either, or we get legacy value_range's.
@@ -956,17 +963,32 @@ irange_allocator::allocate (unsigned num_pairs)
   size_t nbytes = sizeof (tree) * 2 * num_pairs;
 
   // Allocate the irange and required memory for the vector.
-  void *r = obstack_alloc (&m_obstack, sizeof (irange));
-  tree *mem = (tree *) obstack_alloc (&m_obstack, nbytes);
+  void *r = alloc (sizeof (irange));
+  tree *mem = static_cast <tree *> (alloc (nbytes));
   return new (r) irange (mem, num_pairs);
 }
 
+// Return a clone of an irange.
+
+template <>
 inline irange *
-irange_allocator::allocate (const irange &src)
+vrange_allocator::clone <irange> (const irange &src)
 {
-  irange *r = allocate (src.num_pairs ());
+  irange *r = alloc_irange (src.num_pairs ());
   *r = src;
   return r;
+}
+
+// Return a clone of a vrange.
+
+template <>
+inline vrange *
+vrange_allocator::clone <vrange> (const vrange &src)
+{
+  if (is_a <irange> (src))
+    return clone <irange> (as_a <irange> (src));
+
+  gcc_unreachable ();
 }
 
 #endif // GCC_VALUE_RANGE_H
