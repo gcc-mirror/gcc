@@ -8301,9 +8301,15 @@ maybe_constant_init_1 (tree t, tree decl, bool allow_non_constant,
   else if (CONSTANT_CLASS_P (t) && allow_non_constant)
     /* No evaluation needed.  */;
   else
-    t = cxx_eval_outermost_constant_expr (t, allow_non_constant,
-					  /*strict*/false,
-					  manifestly_const_eval, false, decl);
+    {
+      /* [basic.start.static] allows constant-initialization of variables with
+	 static or thread storage duration even if it isn't required, but we
+	 shouldn't bend the rules the same way for automatic variables.  */
+      bool is_static = (decl && DECL_P (decl)
+			&& (TREE_STATIC (decl) || DECL_EXTERNAL (decl)));
+      t = cxx_eval_outermost_constant_expr (t, allow_non_constant, !is_static,
+					    manifestly_const_eval, false, decl);
+    }
   if (TREE_CODE (t) == TARGET_EXPR)
     {
       tree init = TARGET_EXPR_INITIAL (t);
