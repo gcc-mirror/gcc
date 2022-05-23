@@ -20,7 +20,6 @@
 #define RUST_COMPILE_BLOCK
 
 #include "rust-compile-base.h"
-#include "rust-compile-tyty.h"
 
 namespace Rust {
 namespace Compile {

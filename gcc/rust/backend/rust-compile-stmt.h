@@ -20,7 +20,6 @@
 #define RUST_COMPILE_STMT
 
 #include "rust-compile-base.h"
-#include "rust-compile-tyty.h"
 #include "rust-compile-expr.h"
 
 namespace Rust {

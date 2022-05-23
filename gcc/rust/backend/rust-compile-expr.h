@@ -20,7 +20,6 @@
 #define RUST_COMPILE_EXPR
 
 #include "rust-compile-base.h"
-#include "rust-compile-tyty.h"
 #include "rust-compile-resolve-path.h"
 #include "rust-compile-block.h"
 #include "rust-compile-struct-field-expr.h"

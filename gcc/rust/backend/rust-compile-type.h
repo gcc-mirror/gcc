@@ -28,12 +28,7 @@ class TyTyResolveCompile : public TyTy::TyConstVisitor
 {
 public:
   static tree compile (Context *ctx, const TyTy::BaseType *ty,
-		       bool trait_object_mode = false)
-  {
-    TyTyResolveCompile compiler (ctx, trait_object_mode);
-    ty->accept_vis (compiler);
-    return compiler.translated;
-  }
+		       bool trait_object_mode = false);
 
   static tree get_implicit_enumeral_node_type (Context *ctx);
 
@@ -62,6 +57,9 @@ public:
   void visit (const TyTy::DynamicObjectType &) override;
   void visit (const TyTy::ClosureType &) override;
 
+public:
+  static hashval_t type_hasher (tree type);
+
 private:
   TyTyResolveCompile (Context *ctx, bool trait_object_mode)
     : ctx (ctx), trait_object_mode (trait_object_mode),
@@ -72,8 +70,8 @@ private:
   bool trait_object_mode;
   tree translated;
 
+  // FIXME this needs to be derived from the gcc config option
   size_t recursion_count;
-
   static const size_t kDefaultRecusionLimit = 5;
 };
 
