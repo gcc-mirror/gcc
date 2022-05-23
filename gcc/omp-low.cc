@@ -1372,7 +1372,9 @@ scan_sharing_clauses (tree clauses, omp_context *ctx)
 	       || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_HAS_DEVICE_ADDR)
 	      && is_gimple_omp_offloaded (ctx->stmt))
 	    {
-	      if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_FIRSTPRIVATE)
+	      if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_FIRSTPRIVATE
+		  || (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_HAS_DEVICE_ADDR
+		      && lang_hooks.decls.omp_array_data (decl, true)))
 		{
 		  by_ref = !omp_privatize_by_reference (decl);
 		  install_var_field (decl, by_ref, 3, ctx);
@@ -1424,6 +1426,15 @@ scan_sharing_clauses (tree clauses, omp_context *ctx)
 		install_var_field (decl, by_ref, 3, ctx);
 	    }
 	  install_var_local (decl, ctx);
+	  /* For descr arrays on target: firstprivatize data + attach ptr.  */
+	  if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_FIRSTPRIVATE
+	      && is_gimple_omp_offloaded (ctx->stmt)
+	      && !is_gimple_omp_oacc (ctx->stmt)
+	      && lang_hooks.decls.omp_array_data (decl, true))
+	    {
+	      install_var_field (decl, false, 16 | 3, ctx);
+	      install_var_field (decl, true, 8 | 3, ctx);
+	    }
 	  break;
 
 	case OMP_CLAUSE_USE_DEVICE_PTR:
@@ -12871,6 +12882,7 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 	break;
 
       case OMP_CLAUSE_FIRSTPRIVATE:
+      omp_firstprivate_recv:
 	gcc_checking_assert (offloaded);
 	if (is_gimple_omp_oacc (ctx->stmt))
 	  {
@@ -12902,6 +12914,10 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 	    SET_DECL_VALUE_EXPR (new_var, x);
 	    DECL_HAS_VALUE_EXPR_P (new_var) = 1;
 	  }
+	  /* Fortran array descriptors: firstprivate of data + attach.  */
+	  if (OMP_CLAUSE_CODE (c) != OMP_CLAUSE_HAS_DEVICE_ADDR
+	      && lang_hooks.decls.omp_array_data (var, true))
+	    map_cnt += 2;
 	break;
 
       case OMP_CLAUSE_PRIVATE:
@@ -12941,6 +12957,8 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 	    while (TREE_CODE (var) == INDIRECT_REF
 		   || TREE_CODE (var) == ARRAY_REF)
 	      var = TREE_OPERAND (var, 0);
+	    if (lang_hooks.decls.omp_array_data (var, true))
+	      goto omp_firstprivate_recv;
 	  }
 	map_cnt++;
 	if (is_variable_sized (var))
@@ -13354,6 +13372,7 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 	    break;
 
 	  case OMP_CLAUSE_FIRSTPRIVATE:
+	  omp_has_device_addr_descr:
 	    if (is_gimple_omp_oacc (ctx->stmt))
 	      goto oacc_firstprivate_map;
 	    ovar = OMP_CLAUSE_DECL (c);
@@ -13419,6 +13438,82 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 				 <= tree_to_uhwi (TYPE_MAX_VALUE (tkind_type)));
 	    CONSTRUCTOR_APPEND_ELT (vkind, purpose,
 				    build_int_cstu (tkind_type, tkind));
+	    /* Fortran array descriptors: firstprivate of data + attach.  */
+	    if (OMP_CLAUSE_CODE (c) != OMP_CLAUSE_HAS_DEVICE_ADDR
+		&& lang_hooks.decls.omp_array_data (ovar, true))
+	      {
+		tree not_null_lb, null_lb, after_lb;
+		tree var1, var2, size1, size2;
+		tree present = omp_check_optional_argument (ovar, true);
+		if (present)
+		  {
+		    location_t clause_loc = OMP_CLAUSE_LOCATION (c);
+		    not_null_lb = create_artificial_label (clause_loc);
+		    null_lb = create_artificial_label (clause_loc);
+		    after_lb = create_artificial_label (clause_loc);
+		    gimple_seq seq = NULL;
+		    present = force_gimple_operand (present, &seq, true,
+						    NULL_TREE);
+		    gimple_seq_add_seq (&ilist, seq);
+		    gimple_seq_add_stmt (&ilist,
+		      gimple_build_cond_from_tree (present,
+						   not_null_lb, null_lb));
+		    gimple_seq_add_stmt (&ilist,
+					 gimple_build_label (not_null_lb));
+		  }
+		var1 = lang_hooks.decls.omp_array_data (var, false);
+		size1 = lang_hooks.decls.omp_array_size (var, &ilist);
+		var2 = build_fold_addr_expr (x);
+		if (!POINTER_TYPE_P (TREE_TYPE (var)))
+		  var = build_fold_addr_expr (var);
+		size2 = fold_build2 (POINTER_DIFF_EXPR, ssizetype,
+				   build_fold_addr_expr (var1), var);
+		size2 = fold_convert (sizetype, size2);
+		if (present)
+		  {
+		    tree tmp = create_tmp_var (TREE_TYPE (var1));
+		    gimplify_assign (tmp, var1, &ilist);
+		    var1 = tmp;
+		    tmp = create_tmp_var (TREE_TYPE (var2));
+		    gimplify_assign (tmp, var2, &ilist);
+		    var2 = tmp;
+		    tmp = create_tmp_var (TREE_TYPE (size1));
+		    gimplify_assign (tmp, size1, &ilist);
+		    size1 = tmp;
+		    tmp = create_tmp_var (TREE_TYPE (size2));
+		    gimplify_assign (tmp, size2, &ilist);
+		    size2 = tmp;
+		    gimple_seq_add_stmt (&ilist, gimple_build_goto (after_lb));
+		    gimple_seq_add_stmt (&ilist, gimple_build_label (null_lb));
+		    gimplify_assign (var1, null_pointer_node, &ilist);
+		    gimplify_assign (var2, null_pointer_node, &ilist);
+		    gimplify_assign (size1, size_zero_node, &ilist);
+		    gimplify_assign (size2, size_zero_node, &ilist);
+		    gimple_seq_add_stmt (&ilist, gimple_build_label (after_lb));
+		  }
+		x = build_sender_ref ((splay_tree_key) &DECL_NAME (ovar), ctx);
+		gimplify_assign (x, var1, &ilist);
+		tkind = GOMP_MAP_FIRSTPRIVATE;
+		talign = DECL_ALIGN_UNIT (ovar);
+		talign = ceil_log2 (talign);
+		tkind |= talign << talign_shift;
+		gcc_checking_assert (tkind
+				     <= tree_to_uhwi (
+					  TYPE_MAX_VALUE (tkind_type)));
+		purpose = size_int (map_idx++);
+		CONSTRUCTOR_APPEND_ELT (vsize, purpose, size1);
+		if (TREE_CODE (size1) != INTEGER_CST)
+		  TREE_STATIC (TREE_VEC_ELT (t, 1)) = 0;
+		CONSTRUCTOR_APPEND_ELT (vkind, purpose,
+					build_int_cstu (tkind_type, tkind));
+		x = build_sender_ref ((splay_tree_key) &DECL_UID (ovar), ctx);
+		gimplify_assign (x, var2, &ilist);
+		tkind = GOMP_MAP_ATTACH;
+		purpose = size_int (map_idx++);
+		CONSTRUCTOR_APPEND_ELT (vsize, purpose, size2);
+		CONSTRUCTOR_APPEND_ELT (vkind, purpose,
+					build_int_cstu (tkind_type, tkind));
+	      }
 	    break;
 
 	  case OMP_CLAUSE_USE_DEVICE_PTR:
@@ -13428,6 +13523,8 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 	    ovar = OMP_CLAUSE_DECL (c);
 	    if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_HAS_DEVICE_ADDR)
 	      {
+		if (lang_hooks.decls.omp_array_data (ovar, true))
+		  goto omp_has_device_addr_descr;
 		while (TREE_CODE (ovar) == INDIRECT_REF
 		       || TREE_CODE (ovar) == ARRAY_REF)
 		  ovar = TREE_OPERAND (ovar, 0);
@@ -13594,6 +13691,7 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 	  default:
 	    break;
 	  case OMP_CLAUSE_FIRSTPRIVATE:
+	  omp_firstprivatize_data_region:
 	    if (is_gimple_omp_oacc (ctx->stmt))
 	      break;
 	    var = OMP_CLAUSE_DECL (c);
@@ -13688,6 +13786,8 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 	    do_optional_check = false;
 	    var = OMP_CLAUSE_DECL (c);
 	    is_array_data = lang_hooks.decls.omp_array_data (var, true) != NULL;
+	    if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_HAS_DEVICE_ADDR && is_array_data)
+	      goto omp_firstprivatize_data_region;
 
 	    if (OMP_CLAUSE_CODE (c) != OMP_CLAUSE_IS_DEVICE_PTR
 		&& OMP_CLAUSE_CODE (c) != OMP_CLAUSE_HAS_DEVICE_ADDR)

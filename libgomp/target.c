@@ -1352,7 +1352,24 @@ gomp_map_vars_internal (struct gomp_device_descr *devicep,
 		gomp_copy_host2dev (devicep, aq,
 				    (void *) (tgt->tgt_start + tgt_size),
 				    (void *) hostaddrs[i], len, false, cbufp);
+		/* Save device address in hostaddr to permit latter availablity
+		   when doing a deep-firstprivate with pointer attach.  */
+		hostaddrs[i] = (void *) (tgt->tgt_start + tgt_size);
 		tgt_size += len;
+
+		/* If followed by GOMP_MAP_ATTACH, pointer assign this
+		   firstprivate to hostaddrs[i+1], which is assumed to contain a
+		   device address.  */
+		if (i + 1 < mapnum
+		    && (GOMP_MAP_ATTACH
+			== (typemask & get_kind (short_mapkind, kinds, i+1))))
+		  {
+		    uintptr_t target = (uintptr_t) hostaddrs[i];
+		    void *devptr = *(void**) hostaddrs[i+1] + sizes[i+1];
+		    gomp_copy_host2dev (devicep, aq, devptr, &target,
+					sizeof (void *), false, cbufp);
+		    ++i;
+		  }
 		continue;
 	      case GOMP_MAP_FIRSTPRIVATE_INT:
 	      case GOMP_MAP_ZERO_LEN_ARRAY_SECTION:
@@ -2519,6 +2536,11 @@ copy_firstprivate_data (char *tgt, size_t mapnum, void **hostaddrs,
 	memcpy (tgt + tgt_size, hostaddrs[i], sizes[i]);
 	hostaddrs[i] = tgt + tgt_size;
 	tgt_size = tgt_size + sizes[i];
+	if (i + 1 < mapnum && (kinds[i+1] & 0xff) == GOMP_MAP_ATTACH)
+	  {
+	    *(*(uintptr_t**) hostaddrs[i+1] + sizes[i+1]) = (uintptr_t) hostaddrs[i];
+	    ++i;
+	  }
       }
 }
 
