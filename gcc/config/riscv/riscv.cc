@@ -1797,6 +1797,12 @@ riscv_rtx_costs (rtx x, machine_mode mode, int outer_code, int opno ATTRIBUTE_UN
     case SYMBOL_REF:
     case LABEL_REF:
     case CONST_DOUBLE:
+      /* With TARGET_SUPPORTS_WIDE_INT const int can't be in CONST_DOUBLE
+	 rtl object. Weird recheck due to switch-case fall through above.  */
+      if (GET_CODE (x) == CONST_DOUBLE)
+	gcc_assert (GET_MODE (x) != VOIDmode);
+      /* Fall through.  */
+
     case CONST:
       if ((cost = riscv_const_insns (x)) > 0)
 	{
