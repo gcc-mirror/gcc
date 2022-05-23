@@ -665,7 +665,7 @@ slm nehalem westmere sandybridge ivybridge haswell broadwell bonnell \
 silvermont knl knm skylake-avx512 cannonlake icelake-client icelake-server \
 skylake goldmont goldmont-plus tremont cascadelake tigerlake cooperlake \
 sapphirerapids alderlake rocketlake eden-x2 nano nano-1000 nano-2000 nano-3000 \
-nano-x2 eden-x4 nano-x4 x86-64 x86-64-v2 x86-64-v3 x86-64-v4 native"
+nano-x2 eden-x4 nano-x4 lujiazui x86-64 x86-64-v2 x86-64-v3 x86-64-v4 native"
 
 # Additional x86 processors supported by --with-cpu=.  Each processor
 # MUST be separated by exactly one space.
@@ -3790,6 +3790,10 @@ case ${target} in
 	cpu=geode
 	arch_without_sse2=yes
 	;;
+      lujiazui-*)
+	arch=lujiazui
+	cpu=lujiazui
+	;;
       pentium2-*)
 	arch=pentium2
 	cpu=pentium2
@@ -3898,6 +3902,10 @@ case ${target} in
       k8-*|opteron-*|athlon_64-*)
 	arch=k8
 	cpu=k8
+	;;
+    lujiazui-*)
+	arch=lujiazui
+	cpu=lujiazui
 	;;
       nocona-*)
 	arch=nocona

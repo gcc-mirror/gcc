@@ -21840,6 +21840,9 @@ Intel Knights Landing CPU.
 @item knm
 Intel Knights Mill CPU.
 
+@item lujiazui
+ZHAOXIN lujiazui CPU.
+
 @item amdfam10h
 AMD Family 10h CPU.
 
