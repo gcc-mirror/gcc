@@ -850,11 +850,12 @@ package body Exp_Ch6 is
       --  The return type in the function declaration may have been a limited
       --  view, and the extra formals for the function were not generated at
       --  that point. At the point of call the full view must be available and
-      --  the extra formals can be created.
+      --  the extra formals can be created and Returns_By_Ref computed.
 
       if No (Extra_Formal) then
          Create_Extra_Formals (Func);
          Extra_Formal := Extra_Formals (Func);
+         Compute_Returns_By_Ref (Func);
       end if;
 
       --  We search for a formal with a matching suffix. We can't search
