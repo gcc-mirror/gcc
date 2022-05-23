@@ -8731,6 +8731,17 @@ gnat_gimplify_expr (tree *expr_p, gimple_seq *pre_p,
       gimplify_and_add (TREE_OPERAND (expr, 0), pre_p);
       return GS_OK;
 
+    case SAVE_EXPR:
+      op = TREE_OPERAND (expr, 0);
+
+      /* Propagate TREE_NO_WARNING from expression to temporary by using the
+	 SAVE_EXPR itself as an intermediate step.  See gimplify_save_expr.  */
+      if (SAVE_EXPR_RESOLVED_P (expr))
+	TREE_NO_WARNING (op) = TREE_NO_WARNING (expr);
+      else
+	TREE_NO_WARNING (expr) = TREE_NO_WARNING (op);
+      break;
+
     case UNCONSTRAINED_ARRAY_REF:
       /* We should only do this if we are just elaborating for side effects,
 	 but we can't know that yet.  */
