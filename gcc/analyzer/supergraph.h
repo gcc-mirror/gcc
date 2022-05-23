@@ -308,7 +308,8 @@ class superedge : public dedge<supergraph_traits>
 
   void dump (pretty_printer *pp) const;
   void dump () const;
-  void dump_dot (graphviz_out *gv, const dump_args_t &args) const;
+  void dump_dot (graphviz_out *gv, const dump_args_t &args)
+    const final override;
 
   virtual void dump_label_to_pp (pretty_printer *pp,
 				 bool user_facing) const = 0;

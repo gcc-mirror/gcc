@@ -600,13 +600,13 @@ public:
   involvement_visitor (const svalue *needle)
   : m_needle (needle), m_found (false) {}
 
-  void visit_initial_svalue (const initial_svalue *candidate)
+  void visit_initial_svalue (const initial_svalue *candidate) final override
   {
     if (candidate == m_needle)
       m_found = true;
   }
 
-  void visit_conjured_svalue (const conjured_svalue *candidate)
+  void visit_conjured_svalue (const conjured_svalue *candidate) final override
   {
     if (candidate == m_needle)
       m_found = true;

@@ -1640,7 +1640,7 @@ public:
 
   const char *get_kind () const final override { return "reason_attr_access"; }
 
-  void emit () const
+  void emit () const final override
   {
     inform (DECL_SOURCE_LOCATION (m_callee_fndecl),
 	    "parameter %i of %qD marked with attribute %qs",

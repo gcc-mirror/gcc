@@ -466,7 +466,7 @@ public:
     return va_list_sm_diagnostic::subclass_equal_p (other);
   }
 
-  bool emit (rich_location *rich_loc)
+  bool emit (rich_location *rich_loc) final override
   {
     auto_diagnostic_group d;
     return warning_at (rich_loc, get_controlling_option (),

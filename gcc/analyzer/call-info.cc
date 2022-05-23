@@ -96,7 +96,7 @@ call_info::add_events_to_path (checker_path *emission_path,
 	m_call_info (call_info)
     {}
 
-    label_text get_desc (bool can_colorize) const
+    label_text get_desc (bool can_colorize) const final override
     {
       return m_call_info->get_desc (can_colorize);
     }

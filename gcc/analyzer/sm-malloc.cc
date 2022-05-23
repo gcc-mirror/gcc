@@ -1015,7 +1015,8 @@ public:
 
   const char *get_kind () const final override { return "possible_null_arg"; }
 
-  bool subclass_equal_p (const pending_diagnostic &base_other) const
+  bool subclass_equal_p (const pending_diagnostic &base_other)
+    const final override
   {
     const possible_null_arg &sub_other
       = (const possible_null_arg &)base_other;
@@ -1119,7 +1120,8 @@ public:
 
   const char *get_kind () const final override { return "null_arg"; }
 
-  bool subclass_equal_p (const pending_diagnostic &base_other) const
+  bool subclass_equal_p (const pending_diagnostic &base_other)
+    const final override
   {
     const null_arg &sub_other
       = (const null_arg &)base_other;

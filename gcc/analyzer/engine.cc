@@ -328,7 +328,7 @@ public:
   }
 
   state_machine::state_t get_state (const gimple *stmt ATTRIBUTE_UNUSED,
-				    tree var)
+				    tree var) final override
   {
     logger * const logger = get_logger ();
     LOG_FUNC (logger);
@@ -342,7 +342,7 @@ public:
     return current;
   }
   state_machine::state_t get_state (const gimple *stmt ATTRIBUTE_UNUSED,
-				    const svalue *sval)
+				    const svalue *sval) final override
   {
     logger * const logger = get_logger ();
     LOG_FUNC (logger);
@@ -355,7 +355,7 @@ public:
   void set_next_state (const gimple *stmt,
 		       tree var,
 		       state_machine::state_t to,
-		       tree origin)
+		       tree origin) final override
   {
     logger * const logger = get_logger ();
     LOG_FUNC (logger);
@@ -384,7 +384,7 @@ public:
   void set_next_state (const gimple *stmt,
 		       const svalue *sval,
 		       state_machine::state_t to,
-		       tree origin)
+		       tree origin) final override
   {
     logger * const logger = get_logger ();
     LOG_FUNC (logger);
@@ -1597,7 +1597,7 @@ public:
     return false;
   }
 
-  label_text describe_final_event (const evdesc::final_event &ev)
+  label_text describe_final_event (const evdesc::final_event &ev) final override
   {
     if (m_stack_pop_event)
       return ev.formatted_print
