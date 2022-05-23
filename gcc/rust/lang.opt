@@ -66,6 +66,10 @@ frust-dump-
 Rust Joined RejectNegative
 -frust-dump-<type>	Dump Rust frontend internal information.
 
+frust-max-recursion-depth=
+Rust RejectNegative Type(int) Var(rust_max_recursion_depth) Init(64)
+-frust-max-recursion-depth=integer
+
 frust-mangling=
 Rust Joined RejectNegative Enum(frust_mangling) Var(flag_rust_mangling)
 -frust-mangling=[legacy|v0]     Choose which version to use for name mangling
