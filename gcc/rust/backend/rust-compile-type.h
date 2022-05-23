@@ -60,11 +60,11 @@ public:
 public:
   static hashval_t type_hasher (tree type);
 
+protected:
+  tree create_slice_type_record (const TyTy::SliceType &type);
+
 private:
-  TyTyResolveCompile (Context *ctx, bool trait_object_mode)
-    : ctx (ctx), trait_object_mode (trait_object_mode),
-      translated (error_mark_node), recurisve_ops (0)
-  {}
+  TyTyResolveCompile (Context *ctx, bool trait_object_mode);
 
   Context *ctx;
   bool trait_object_mode;

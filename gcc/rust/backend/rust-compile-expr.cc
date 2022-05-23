@@ -123,6 +123,11 @@ void
 CompileExpr::visit (HIR::BorrowExpr &expr)
 {
   tree main_expr = CompileExpr::Compile (expr.get_expr ().get (), ctx);
+  if (SLICE_TYPE_P (TREE_TYPE (main_expr)))
+    {
+      translated = main_expr;
+      return;
+    }
 
   TyTy::BaseType *tyty = nullptr;
   if (!ctx->get_tyctx ()->lookup_type (expr.get_mappings ().get_hirid (),
@@ -164,6 +169,12 @@ CompileExpr::visit (HIR::DereferenceExpr &expr)
     }
 
   tree expected_type = TyTyResolveCompile::compile (ctx, tyty);
+  if (SLICE_TYPE_P (TREE_TYPE (main_expr)) && SLICE_TYPE_P (expected_type))
+    {
+      translated = main_expr;
+      return;
+    }
+
   bool known_valid = true;
   translated
     = ctx->get_backend ()->indirect_expression (expected_type, main_expr,
@@ -1092,6 +1103,32 @@ CompileExpr::type_cast_expression (tree type_to_cast_to, tree expr_tree,
       return fold_build1_loc (location.gcc_location (), VIEW_CONVERT_EXPR,
 			      type_to_cast_to, expr_tree);
     }
+  else if (TREE_CODE (type_to_cast_to) == POINTER_TYPE
+	   && SLICE_TYPE_P (TREE_TYPE (expr_tree)))
+    {
+      // returning a raw cast using NOP_EXPR seems to resut in an ICE:
+      //
+      // Analyzing compilation unit
+      // Performing interprocedural optimizations
+      //  <*free_lang_data> {heap 2644k} <visibility> {heap 2644k}
+      //  <build_ssa_passes> {heap 2644k} <opt_local_passes> {heap 2644k}during
+      //  GIMPLE pass: cddce
+      // In function ‘*T::as_ptr<i32>’:
+      // rust1: internal compiler error: in propagate_necessity, at
+      // tree-ssa-dce.cc:984 0x1d5b43e propagate_necessity
+      //         ../../gccrs/gcc/tree-ssa-dce.cc:984
+      // 0x1d5e180 perform_tree_ssa_dce
+      //         ../../gccrs/gcc/tree-ssa-dce.cc:1876
+      // 0x1d5e2c8 tree_ssa_cd_dce
+      //         ../../gccrs/gcc/tree-ssa-dce.cc:1920
+      // 0x1d5e49a execute
+      //         ../../gccrs/gcc/tree-ssa-dce.cc:1992
+
+      // this is returning the direct raw pointer of the slice an assumes a very
+      // specific layout
+      return ctx->get_backend ()->struct_field_expression (expr_tree, 0,
+							   location);
+    }
 
   return fold_convert_loc (location.gcc_location (), type_to_cast_to,
 			   expr_tree);
@@ -1261,9 +1298,13 @@ HIRCompileBase::resolve_adjustements (
 
 	case Resolver::Adjustment::AdjustmentType::IMM_REF:
 	  case Resolver::Adjustment::AdjustmentType::MUT_REF: {
-	    tree ptrtype
-	      = TyTyResolveCompile::compile (ctx, adjustment.get_expected ());
-	    e = address_expression (e, ptrtype, locus);
+	    if (!SLICE_TYPE_P (TREE_TYPE (e)))
+	      {
+		tree ptrtype
+		  = TyTyResolveCompile::compile (ctx,
+						 adjustment.get_expected ());
+		e = address_expression (e, ptrtype, locus);
+	      }
 	  }
 	  break;
 
@@ -1618,6 +1659,15 @@ CompileExpr::visit (HIR::ArrayIndexExpr &expr)
 	= resolve_operator_overload (lang_item_type, expr, array_reference,
 				     index, expr.get_array_expr (),
 				     expr.get_index_expr ());
+
+      tree actual_type = TREE_TYPE (operator_overload_call);
+      bool can_indirect = TYPE_PTR_P (actual_type) || TYPE_REF_P (actual_type);
+      if (!can_indirect)
+	{
+	  // nothing to do
+	  translated = operator_overload_call;
+	  return;
+	}
 
       // lookup the expected type for this expression
       TyTy::BaseType *tyty = nullptr;
