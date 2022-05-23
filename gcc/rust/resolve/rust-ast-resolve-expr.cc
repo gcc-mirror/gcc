@@ -199,6 +199,31 @@ ResolveExpr::visit (AST::IfExprConseqIf &expr)
 }
 
 void
+ResolveExpr::visit (AST::IfLetExpr &expr)
+{
+  resolve_expr (expr.get_value_expr ().get (), expr.get_node_id ());
+
+  NodeId scope_node_id = expr.get_node_id ();
+  resolver->get_name_scope ().push (scope_node_id);
+  resolver->get_type_scope ().push (scope_node_id);
+  resolver->get_label_scope ().push (scope_node_id);
+  resolver->push_new_name_rib (resolver->get_name_scope ().peek ());
+  resolver->push_new_type_rib (resolver->get_type_scope ().peek ());
+  resolver->push_new_label_rib (resolver->get_type_scope ().peek ());
+
+  for (auto &pattern : expr.get_patterns ())
+    {
+      PatternDeclaration::go (pattern.get (), expr.get_node_id ());
+    }
+
+  resolve_expr (expr.get_if_block ().get (), expr.get_node_id ());
+
+  resolver->get_name_scope ().pop ();
+  resolver->get_type_scope ().pop ();
+  resolver->get_label_scope ().pop ();
+}
+
+void
 ResolveExpr::visit (AST::BlockExpr &expr)
 {
   NodeId scope_node_id = expr.get_node_id ();
