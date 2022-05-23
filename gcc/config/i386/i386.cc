@@ -20738,66 +20738,121 @@ ix86_rtx_costs (rtx x, machine_mode mode, int outer_code_i, int opno,
 	}
 
       if (SSE_FLOAT_MODE_SSEMATH_OR_HF_P (mode))
-	{
-	  *total = cost->addss;
-	  return false;
-	}
+	*total = cost->addss;
       else if (X87_FLOAT_MODE_P (mode))
-	{
-	  *total = cost->fadd;
-	  return false;
-	}
+	*total = cost->fadd;
       else if (FLOAT_MODE_P (mode))
-	{
-	  *total = ix86_vec_cost (mode, cost->addss);
-	  return false;
-	}
-      /* FALLTHRU */
+	*total = ix86_vec_cost (mode, cost->addss);
+      else if (GET_MODE_CLASS (mode) == MODE_VECTOR_INT)
+	*total = ix86_vec_cost (mode, cost->sse_op);
+      else if (GET_MODE_SIZE (mode) > UNITS_PER_WORD)
+	*total = cost->add * 2;
+      else
+	*total = cost->add;
+      return false;
 
-    case AND:
     case IOR:
     case XOR:
-      if (GET_MODE_CLASS (mode) == MODE_INT
-	  && GET_MODE_SIZE (mode) > UNITS_PER_WORD)
-	{
-	  *total = (cost->add * 2
-		    + (rtx_cost (XEXP (x, 0), mode, outer_code, opno, speed)
-		       << (GET_MODE (XEXP (x, 0)) != DImode))
-		    + (rtx_cost (XEXP (x, 1), mode, outer_code, opno, speed)
-	               << (GET_MODE (XEXP (x, 1)) != DImode)));
-	  return true;
-	}
-      else if (code == AND
-	       && address_no_seg_operand (x, mode))
-	{
-	  *total = cost->lea;
-	  return true;
-	}
-      /* FALLTHRU */
-
-    case NEG:
-      if (SSE_FLOAT_MODE_SSEMATH_OR_HF_P (mode))
-	{
-	  *total = cost->sse_op;
-	  return false;
-	}
-      else if (X87_FLOAT_MODE_P (mode))
-	{
-	  *total = cost->fchs;
-	  return false;
-	}
-      else if (FLOAT_MODE_P (mode))
-	{
-	  *total = ix86_vec_cost (mode, cost->sse_op);
-	  return false;
-	}
-      /* FALLTHRU */
-
-    case NOT:
       if (GET_MODE_CLASS (mode) == MODE_VECTOR_INT)
 	*total = ix86_vec_cost (mode, cost->sse_op);
       else if (GET_MODE_SIZE (mode) > UNITS_PER_WORD)
 	*total = cost->add * 2;
+      else
+	*total = cost->add;
+      return false;
+
+    case AND:
+      if (address_no_seg_operand (x, mode))
+	{
+	  *total = cost->lea;
+	  return true;
+	}
+      else if (GET_MODE_CLASS (mode) == MODE_VECTOR_INT)
+	{
+	  /* pandn is a single instruction.  */
+	  if (GET_CODE (XEXP (x, 0)) == NOT)
+	    {
+	      *total = ix86_vec_cost (mode, cost->sse_op)
+		       + rtx_cost (XEXP (XEXP (x, 0), 0), mode,
+				   outer_code, opno, speed)
+		       + rtx_cost (XEXP (x, 1), mode,
+				   outer_code, opno, speed);
+	      return true;
+	    }
+	  else if (GET_CODE (XEXP (x, 1)) == NOT)
+	    {
+	      *total = ix86_vec_cost (mode, cost->sse_op)
+		       + rtx_cost (XEXP (x, 0), mode,
+				   outer_code, opno, speed)
+		       + rtx_cost (XEXP (XEXP (x, 1), 0), mode,
+				   outer_code, opno, speed);
+	      return true;
+	    }
+	  *total = ix86_vec_cost (mode, cost->sse_op);
+	}
+      else if (GET_MODE_SIZE (mode) > UNITS_PER_WORD)
+	{
+	  if (TARGET_BMI && GET_CODE (XEXP (x,0)) == NOT)
+	    {
+	      *total = cost->add * 2
+		       + rtx_cost (XEXP (XEXP (x, 0), 0), mode,
+				   outer_code, opno, speed)
+		       + rtx_cost (XEXP (x, 1), mode,
+				   outer_code, opno, speed);
+	      return true;
+	    }
+	  else if (TARGET_BMI && GET_CODE (XEXP (x, 1)) == NOT)
+	    {
+	      *total = cost->add * 2
+		       + rtx_cost (XEXP (x, 0), mode,
+				   outer_code, opno, speed)
+		       + rtx_cost (XEXP (XEXP (x, 1), 0), mode,
+				   outer_code, opno, speed);
+	      return true;
+	    }
+	  *total = cost->add * 2;
+	}
+      else if (TARGET_BMI && GET_CODE (XEXP (x,0)) == NOT)
+	{
+	  *total = cost->add
+		   + rtx_cost (XEXP (XEXP (x, 0), 0), mode,
+			       outer_code, opno, speed)
+		   + rtx_cost (XEXP (x, 1), mode, outer_code, opno, speed);
+	  return true;
+	}
+      else if (TARGET_BMI && GET_CODE (XEXP (x,1)) == NOT)
+	{
+	  *total = cost->add
+		   + rtx_cost (XEXP (x, 0), mode, outer_code, opno, speed)
+		   + rtx_cost (XEXP (XEXP (x, 1), 0), mode,
+			       outer_code, opno, speed);
+	  return true;
+	}
+      else
+	*total = cost->add;
+      return false;
+
+    case NOT:
+      if (GET_MODE_CLASS (mode) == MODE_VECTOR_INT)
+	// vnot is pxor -1.
+	*total = ix86_vec_cost (mode, cost->sse_op) + 1;
+      else if (GET_MODE_SIZE (mode) > UNITS_PER_WORD)
+	*total = cost->add * 2;
+      else
+	*total = cost->add;
+      return false;
+
+    case NEG:
+      if (SSE_FLOAT_MODE_SSEMATH_OR_HF_P (mode))
+	*total = cost->sse_op;
+      else if (X87_FLOAT_MODE_P (mode))
+	*total = cost->fchs;
+      else if (FLOAT_MODE_P (mode))
+	*total = ix86_vec_cost (mode, cost->sse_op);
+      else if (GET_MODE_CLASS (mode) == MODE_VECTOR_INT)
+	*total = ix86_vec_cost (mode, cost->sse_op);
+      else if (GET_MODE_SIZE (mode) > UNITS_PER_WORD)
+	*total = cost->add * 3;
       else
 	*total = cost->add;
       return false;
