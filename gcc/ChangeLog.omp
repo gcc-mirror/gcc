@@ -1,3 +1,16 @@
+2022-05-23  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backport from mainline:
+	2022-05-23  Tobias Burnus  <tobias@codesourcery.com>
+
+	* langhooks-def.h (lhd_omp_array_size): New.
+	(LANG_HOOKS_OMP_ARRAY_SIZE): Define.
+	(LANG_HOOKS_DECLS): Add it.
+	* langhooks.cc (lhd_omp_array_size): New.
+	* langhooks.h (struct lang_hooks_for_decls): Add hook.
+	* omp-low.cc (scan_sharing_clauses, lower_omp_target):
+	Handle GOMP_MAP_FIRSTPRIVATE for array descriptors.
+
 2022-05-09  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	Backport from master:

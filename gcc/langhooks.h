@@ -246,6 +246,11 @@ struct lang_hooks_for_decls
      is true, only the TREE_TYPE is returned without generating a new tree.  */
   tree (*omp_array_data) (tree, bool);
 
+  /* Return a tree for the actual data of an array descriptor - or NULL_TREE
+     if original tree is not an array descriptor.  If the second argument
+     is true, only the TREE_TYPE is returned without generating a new tree.  */
+  tree (*omp_array_size) (tree, gimple_seq *pre_p);
+
   /* True if OpenMP should regard this DECL as being a scalar which has Fortran's
      allocatable or pointer attribute.  */
   bool (*omp_is_allocatable_or_ptr) (const_tree);

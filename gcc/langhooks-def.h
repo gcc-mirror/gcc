@@ -88,6 +88,7 @@ extern bool lhd_omp_deep_mapping_p (const gimple *, tree);
 extern tree lhd_omp_deep_mapping_cnt (const gimple *, tree, gimple_seq *);
 extern void lhd_omp_deep_mapping (const gimple *, tree, unsigned HOST_WIDE_INT,
 				  tree, tree, tree, tree, tree, gimple_seq *);
+extern tree lhd_omp_array_size (tree, gimple_seq *);
 struct gimplify_omp_ctx;
 extern void lhd_omp_firstprivatize_type_sizes (struct gimplify_omp_ctx *,
 					       tree);
@@ -261,6 +262,7 @@ extern tree lhd_unit_size_without_reusable_padding (tree);
 #define LANG_HOOKS_POST_COMPILATION_PARSING_CLEANUPS NULL
 #define LANG_HOOKS_DECL_OK_FOR_SIBCALL	lhd_decl_ok_for_sibcall
 #define LANG_HOOKS_OMP_ARRAY_DATA	hook_tree_tree_bool_null
+#define LANG_HOOKS_OMP_ARRAY_SIZE	lhd_omp_array_size
 #define LANG_HOOKS_OMP_IS_ALLOCATABLE_OR_PTR hook_bool_const_tree_false
 #define LANG_HOOKS_OMP_CHECK_OPTIONAL_ARGUMENT hook_tree_tree_bool_null
 #define LANG_HOOKS_OMP_PRIVATIZE_BY_REFERENCE hook_bool_const_tree_false
@@ -297,6 +299,7 @@ extern tree lhd_unit_size_without_reusable_padding (tree);
   LANG_HOOKS_POST_COMPILATION_PARSING_CLEANUPS, \
   LANG_HOOKS_DECL_OK_FOR_SIBCALL, \
   LANG_HOOKS_OMP_ARRAY_DATA, \
+  LANG_HOOKS_OMP_ARRAY_SIZE, \
   LANG_HOOKS_OMP_IS_ALLOCATABLE_OR_PTR, \
   LANG_HOOKS_OMP_CHECK_OPTIONAL_ARGUMENT, \
   LANG_HOOKS_OMP_PRIVATIZE_BY_REFERENCE, \
