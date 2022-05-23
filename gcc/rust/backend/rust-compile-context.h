@@ -67,6 +67,17 @@ public:
     return type;
   }
 
+  tree insert_main_variant (tree type)
+  {
+    hashval_t h = type_hasher (type);
+    auto it = main_variants.find (h);
+    if (it != main_variants.end ())
+      return it->second;
+
+    main_variants.insert ({h, type});
+    return type;
+  }
+
   ::Backend *get_backend () { return backend; }
   Resolver::Resolver *get_resolver () { return resolver; }
   Resolver::TypeCheckContext *get_tyctx () { return tyctx; }
@@ -314,6 +325,7 @@ private:
   std::map<DefId, std::vector<std::pair<const TyTy::BaseType *, tree>>>
     mono_fns;
   std::map<HirId, tree> implicit_pattern_bindings;
+  std::map<hashval_t, tree> main_variants;
 
   // To GCC middle-end
   std::vector<tree> type_decls;

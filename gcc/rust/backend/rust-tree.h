@@ -74,6 +74,12 @@
   (INDIRECT_REF_P (NODE) && TREE_TYPE (TREE_OPERAND (NODE, 0))                 \
    && TYPE_REF_P (TREE_TYPE (TREE_OPERAND ((NODE), 0))))
 
+// this is a helper to differentiate RECORD types between actual records and
+// slices
+#define SLICE_FLAG TREE_LANG_FLAG_0
+#define SLICE_TYPE_P(TYPE)                                                     \
+  (TREE_CODE (TYPE) == RECORD_TYPE && TREE_LANG_FLAG_0 (TYPE))
+
 namespace Rust {
 
 // forked from gcc/cp/cvt.cc convert_to_void

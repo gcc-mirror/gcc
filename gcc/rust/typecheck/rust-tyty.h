@@ -2180,6 +2180,21 @@ public:
 
   bool is_mutable () const { return mut == Mutability::Mut; }
 
+  bool is_dyn_slice_type () const
+  {
+    return get_base ()->destructure ()->get_kind () == TyTy::TypeKind::SLICE;
+  }
+
+  bool is_dyn_slice_type (const TyTy::SliceType **slice) const
+  {
+    const TyTy::BaseType *element = get_base ()->destructure ();
+    if (element->get_kind () != TyTy::TypeKind::SLICE)
+      return false;
+
+    *slice = static_cast<const TyTy::SliceType *> (element);
+    return true;
+  }
+
 private:
   TyVar base;
   Mutability mut;
@@ -2240,6 +2255,21 @@ public:
   bool is_mutable () const { return mut == Mutability::Mut; }
 
   bool is_const () const { return mut == Mutability::Imm; }
+
+  bool is_dyn_slice_type () const
+  {
+    return get_base ()->destructure ()->get_kind () == TyTy::TypeKind::SLICE;
+  }
+
+  bool is_dyn_slice_type (const TyTy::SliceType **slice) const
+  {
+    const TyTy::BaseType *element = get_base ()->destructure ();
+    if (element->get_kind () != TyTy::TypeKind::SLICE)
+      return false;
+
+    *slice = static_cast<const TyTy::SliceType *> (element);
+    return true;
+  }
 
 private:
   TyVar base;

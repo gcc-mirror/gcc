@@ -25,6 +25,13 @@
 namespace Rust {
 namespace Compile {
 
+static const std::string RUST_ENUM_DISR_FIELD_NAME = "RUST$ENUM$DISR";
+
+TyTyResolveCompile::TyTyResolveCompile (Context *ctx, bool trait_object_mode)
+  : ctx (ctx), trait_object_mode (trait_object_mode),
+    translated (error_mark_node), recurisve_ops (0)
+{}
+
 tree
 TyTyResolveCompile::compile (Context *ctx, const TyTy::BaseType *ty,
 			     bool trait_object_mode)
@@ -41,8 +48,6 @@ TyTyResolveCompile::compile (Context *ctx, const TyTy::BaseType *ty,
 
   return compiler.translated;
 }
-
-static const std::string RUST_ENUM_DISR_FIELD_NAME = "RUST$ENUM$DISR";
 
 // see: gcc/c/c-decl.cc:8230-8241
 // https://github.com/Rust-GCC/gccrs/blob/0024bc2f028369b871a65ceb11b2fddfb0f9c3aa/gcc/c/c-decl.c#L8229-L8241
@@ -375,24 +380,7 @@ TyTyResolveCompile::visit (const TyTy::ArrayType &type)
 void
 TyTyResolveCompile::visit (const TyTy::SliceType &type)
 {
-  std::vector<Backend::typed_identifier> fields;
-
-  tree element_type
-    = TyTyResolveCompile::compile (ctx, type.get_element_type ());
-  tree data_field_ty = build_pointer_type (element_type);
-  Backend::typed_identifier data_field ("data", data_field_ty, Location ());
-  fields.push_back (std::move (data_field));
-
-  // lookup usize
-  TyTy::BaseType *usize = nullptr;
-  bool ok = ctx->get_tyctx ()->lookup_builtin ("usize", &usize);
-  rust_assert (ok);
-
-  tree len_field_ty = TyTyResolveCompile::compile (ctx, usize);
-  Backend::typed_identifier len_field ("len", len_field_ty, Location ());
-  fields.push_back (std::move (len_field));
-
-  tree type_record = ctx->get_backend ()->struct_type (fields);
+  tree type_record = create_slice_type_record (type);
 
   std::string named_struct_str
     = std::string ("[") + type.get_element_type ()->get_name () + "]";
@@ -536,6 +524,21 @@ TyTyResolveCompile::visit (const TyTy::CharType &type)
 void
 TyTyResolveCompile::visit (const TyTy::ReferenceType &type)
 {
+  const TyTy::SliceType *slice = nullptr;
+  if (type.is_dyn_slice_type (&slice))
+    {
+      tree type_record = create_slice_type_record (*slice);
+      std::string dyn_slice_type_str
+	= std::string (type.is_mutable () ? "&mut " : "&") + "["
+	  + slice->get_element_type ()->get_name () + "]";
+
+      translated
+	= ctx->get_backend ()->named_type (dyn_slice_type_str, type_record,
+					   slice->get_locus ());
+
+      return;
+    }
+
   tree base_compiled_type
     = TyTyResolveCompile::compile (ctx, type.get_base (), trait_object_mode);
   if (type.is_mutable ())
@@ -552,6 +555,21 @@ TyTyResolveCompile::visit (const TyTy::ReferenceType &type)
 void
 TyTyResolveCompile::visit (const TyTy::PointerType &type)
 {
+  const TyTy::SliceType *slice = nullptr;
+  if (type.is_dyn_slice_type (&slice))
+    {
+      tree type_record = create_slice_type_record (*slice);
+      std::string dyn_slice_type_str
+	= std::string (type.is_mutable () ? "*mut " : "*const ") + "["
+	  + slice->get_element_type ()->get_name () + "]";
+
+      translated
+	= ctx->get_backend ()->named_type (dyn_slice_type_str, type_record,
+					   slice->get_locus ());
+
+      return;
+    }
+
   tree base_compiled_type
     = TyTyResolveCompile::compile (ctx, type.get_base (), trait_object_mode);
   if (type.is_mutable ())
@@ -613,6 +631,30 @@ TyTyResolveCompile::visit (const TyTy::DynamicObjectType &type)
   tree type_record = ctx->get_backend ()->struct_type (fields);
   translated = ctx->get_backend ()->named_type (type.get_name (), type_record,
 						type.get_ident ().locus);
+}
+
+tree
+TyTyResolveCompile::create_slice_type_record (const TyTy::SliceType &type)
+{
+  // lookup usize
+  TyTy::BaseType *usize = nullptr;
+  bool ok = ctx->get_tyctx ()->lookup_builtin ("usize", &usize);
+  rust_assert (ok);
+
+  tree element_type
+    = TyTyResolveCompile::compile (ctx, type.get_element_type ());
+  tree data_field_ty = build_pointer_type (element_type);
+  Backend::typed_identifier data_field ("data", data_field_ty,
+					type.get_locus ());
+
+  tree len_field_ty = TyTyResolveCompile::compile (ctx, usize);
+  Backend::typed_identifier len_field ("len", len_field_ty, type.get_locus ());
+
+  tree record = ctx->get_backend ()->struct_type ({data_field, len_field});
+  SLICE_FLAG (record) = 1;
+  TYPE_MAIN_VARIANT (record) = ctx->insert_main_variant (record);
+
+  return record;
 }
 
 } // namespace Compile
