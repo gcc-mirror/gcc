@@ -58,55 +58,55 @@
 extern __inline __m128 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_addsub_ps (__m128 __X, __m128 __Y)
 {
-  const __v4sf even_n0 = {-0.0, 0.0, -0.0, 0.0};
-  __v4sf even_neg_Y = vec_xor(__Y, even_n0);
-  return (__m128) vec_add (__X, even_neg_Y);
+  const __v4sf __even_n0 = {-0.0, 0.0, -0.0, 0.0};
+  __v4sf __even_neg_Y = vec_xor(__Y, __even_n0);
+  return (__m128) vec_add (__X, __even_neg_Y);
 }
 
 extern __inline __m128d __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_addsub_pd (__m128d __X, __m128d __Y)
 {
-  const __v2df even_n0 = {-0.0, 0.0};
-  __v2df even_neg_Y = vec_xor(__Y, even_n0);
-  return (__m128d) vec_add (__X, even_neg_Y);
+  const __v2df __even_n0 = {-0.0, 0.0};
+  __v2df __even_neg_Y = vec_xor(__Y, __even_n0);
+  return (__m128d) vec_add (__X, __even_neg_Y);
 }
 
 extern __inline __m128 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_hadd_ps (__m128 __X, __m128 __Y)
 {
-  __vector unsigned char xform2 = {
+  __vector unsigned char __xform2 = {
       0x00, 0x01, 0x02, 0x03,
       0x08, 0x09, 0x0A, 0x0B,
       0x10, 0x11, 0x12, 0x13,
       0x18, 0x19, 0x1A, 0x1B
     };
-  __vector unsigned char xform1 = {
+  __vector unsigned char __xform1 = {
       0x04, 0x05, 0x06, 0x07,
       0x0C, 0x0D, 0x0E, 0x0F,
       0x14, 0x15, 0x16, 0x17,
       0x1C, 0x1D, 0x1E, 0x1F
     };
-  return (__m128) vec_add (vec_perm ((__v4sf) __X, (__v4sf) __Y, xform2),
-			   vec_perm ((__v4sf) __X, (__v4sf) __Y, xform1));
+  return (__m128) vec_add (vec_perm ((__v4sf) __X, (__v4sf) __Y, __xform2),
+			   vec_perm ((__v4sf) __X, (__v4sf) __Y, __xform1));
 }
 
 extern __inline __m128 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_hsub_ps (__m128 __X, __m128 __Y)
 {
-  __vector unsigned char xform2 = {
+  __vector unsigned char __xform2 = {
       0x00, 0x01, 0x02, 0x03,
       0x08, 0x09, 0x0A, 0x0B,
       0x10, 0x11, 0x12, 0x13,
       0x18, 0x19, 0x1A, 0x1B
     };
-  __vector unsigned char xform1 = {
+  __vector unsigned char __xform1 = {
       0x04, 0x05, 0x06, 0x07,
       0x0C, 0x0D, 0x0E, 0x0F,
       0x14, 0x15, 0x16, 0x17,
       0x1C, 0x1D, 0x1E, 0x1F
     };
-  return (__m128) vec_sub (vec_perm ((__v4sf) __X, (__v4sf) __Y, xform2),
-			   vec_perm ((__v4sf) __X, (__v4sf) __Y, xform1));
+  return (__m128) vec_sub (vec_perm ((__v4sf) __X, (__v4sf) __Y, __xform2),
+			   vec_perm ((__v4sf) __X, (__v4sf) __Y, __xform1));
 }
 
 extern __inline __m128d __attribute__((__gnu_inline__, __always_inline__, __artificial__))

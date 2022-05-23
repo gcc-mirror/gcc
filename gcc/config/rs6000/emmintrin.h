@@ -141,9 +141,9 @@ _mm_setzero_pd (void)
 extern __inline __m128d __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_move_sd (__m128d __A, __m128d __B)
 {
-  __v2df result = (__v2df) __A;
-  result [0] = ((__v2df) __B)[0];
-  return (__m128d) result;
+  __v2df __result = (__v2df) __A;
+  __result [0] = ((__v2df) __B)[0];
+  return (__m128d) __result;
 }
 
 /* Load two DPFP values from P.  The address must be 16-byte aligned.  */
@@ -329,9 +329,9 @@ _mm_sqrt_pd (__m128d __A)
 extern __inline __m128d __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_sqrt_sd (__m128d __A, __m128d __B)
 {
-  __v2df c;
-  c = vec_sqrt ((__v2df) _mm_set1_pd (__B[0]));
-  return (__m128d) _mm_setr_pd (c[0], __A[1]);
+  __v2df __c;
+  __c = vec_sqrt ((__v2df) _mm_set1_pd (__B[0]));
+  return (__m128d) _mm_setr_pd (__c[0], __A[1]);
 }
 
 extern __inline __m128d __attribute__((__gnu_inline__, __always_inline__, __artificial__))
@@ -343,11 +343,11 @@ _mm_min_pd (__m128d __A, __m128d __B)
 extern __inline __m128d __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_min_sd (__m128d __A, __m128d __B)
 {
-  __v2df a, b, c;
-  a = vec_splats (__A[0]);
-  b = vec_splats (__B[0]);
-  c = vec_min (a, b);
-  return (__m128d) _mm_setr_pd (c[0], __A[1]);
+  __v2df __a, __b, __c;
+  __a = vec_splats (__A[0]);
+  __b = vec_splats (__B[0]);
+  __c = vec_min (__a, __b);
+  return (__m128d) _mm_setr_pd (__c[0], __A[1]);
 }
 
 extern __inline __m128d __attribute__((__gnu_inline__, __always_inline__, __artificial__))
@@ -359,11 +359,11 @@ _mm_max_pd (__m128d __A, __m128d __B)
 extern __inline __m128d __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_max_sd (__m128d __A, __m128d __B)
 {
-  __v2df a, b, c;
-  a = vec_splats (__A[0]);
-  b = vec_splats (__B[0]);
-  c = vec_max (a, b);
-  return (__m128d) _mm_setr_pd (c[0], __A[1]);
+  __v2df __a, __b, __c;
+  __a = vec_splats (__A[0]);
+  __b = vec_splats (__B[0]);
+  __c = vec_max (__a, __b);
+  return (__m128d) _mm_setr_pd (__c[0], __A[1]);
 }
 
 extern __inline __m128d __attribute__((__gnu_inline__, __always_inline__, __artificial__))
@@ -399,8 +399,8 @@ _mm_cmpge_pd (__m128d __A, __m128d __B)
 extern __inline __m128d __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_cmpneq_pd (__m128d __A, __m128d __B)
 {
-  __v2df temp = (__v2df) vec_cmpeq ((__v2df) __A, (__v2df)__B);
-  return ((__m128d)vec_nor (temp, temp));
+  __v2df __temp = (__v2df) vec_cmpeq ((__v2df) __A, (__v2df)__B);
+  return ((__m128d)vec_nor (__temp, __temp));
 }
 
 extern __inline __m128d __attribute__((__gnu_inline__, __always_inline__, __artificial__))
@@ -427,26 +427,18 @@ _mm_cmpnge_pd (__m128d __A, __m128d __B)
   return ((__m128d)vec_cmplt ((__v2df) __A, (__v2df) __B));
 }
 
+#if _ARCH_PWR8
 extern __inline __m128d __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_cmpord_pd (__m128d __A, __m128d __B)
 {
-#if _ARCH_PWR8
   __v2du c, d;
   /* Compare against self will return false (0's) if NAN.  */
   c = (__v2du)vec_cmpeq (__A, __A);
   d = (__v2du)vec_cmpeq (__B, __B);
-#else
-  __v2du a, b;
-  __v2du c, d;
-  const __v2du double_exp_mask  = {0x7ff0000000000000, 0x7ff0000000000000};
-  a = (__v2du)vec_abs ((__v2df)__A);
-  b = (__v2du)vec_abs ((__v2df)__B);
-  c = (__v2du)vec_cmpgt (double_exp_mask, a);
-  d = (__v2du)vec_cmpgt (double_exp_mask, b);
-#endif
   /* A != NAN and B != NAN.  */
   return ((__m128d)vec_and(c, d));
 }
+#endif
 
 extern __inline __m128d __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_cmpunord_pd (__m128d __A, __m128d __B)
@@ -583,6 +575,7 @@ _mm_cmpnge_sd (__m128d __A, __m128d __B)
   return (__m128d) _mm_setr_pd (c[0], __A[1]);
 }
 
+#if _ARCH_PWR8
 extern __inline __m128d __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_cmpord_sd (__m128d __A, __m128d __B)
 {
@@ -590,6 +583,7 @@ _mm_cmpord_sd (__m128d __A, __m128d __B)
   r = (__v2df)_mm_cmpord_pd (vec_splats (__A[0]), vec_splats (__B[0]));
   return (__m128d) _mm_setr_pd (r[0], ((__v2df)__A)[1]);
 }
+#endif
 
 extern __inline __m128d __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_cmpunord_sd (__m128d __A, __m128d __B)
@@ -855,12 +849,12 @@ _mm_setzero_si128 (void)
 extern __inline __m128d __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_cvtepi32_pd (__m128i __A)
 {
-  __v2di val;
+  __v2di __val;
   /* For LE need to generate Vector Unpack Low Signed Word.
      Which is generated from unpackh.  */
-  val = (__v2di)vec_unpackh ((__v4si)__A);
+  __val = (__v2di)vec_unpackh ((__v4si)__A);
 
-  return (__m128d)vec_ctf (val, 0);
+  return (__m128d)vec_ctf (__val, 0);
 }
 #endif
 
@@ -873,116 +867,116 @@ _mm_cvtepi32_ps (__m128i __A)
 extern __inline __m128i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_cvtpd_epi32 (__m128d __A)
 {
-  __v2df rounded = vec_rint (__A);
-  __v4si result, temp;
-  const __v4si vzero =
+  __v2df __rounded = vec_rint (__A);
+  __v4si __result, __temp;
+  const __v4si __vzero =
     { 0, 0, 0, 0 };
 
   /* VSX Vector truncate Double-Precision to integer and Convert to
    Signed Integer Word format with Saturate.  */
   __asm__(
       "xvcvdpsxws %x0,%x1"
-      : "=wa" (temp)
-      : "wa" (rounded)
+      : "=wa" (__temp)
+      : "wa" (__rounded)
       : );
 
 #ifdef _ARCH_PWR8
 #ifdef __LITTLE_ENDIAN__
-  temp = vec_mergeo (temp, temp);
+  __temp = vec_mergeo (__temp, __temp);
 #else
-  temp = vec_mergee (temp, temp);
+  __temp = vec_mergee (__temp, __temp);
 #endif
-  result = (__v4si) vec_vpkudum ((__vector long long) temp,
-				 (__vector long long) vzero);
+  __result = (__v4si) vec_vpkudum ((__vector long long) __temp,
+				 (__vector long long) __vzero);
 #else
   {
-    const __v16qu pkperm = {0x00, 0x01, 0x02, 0x03, 0x08, 0x09, 0x0a, 0x0b,
+    const __v16qu __pkperm = {0x00, 0x01, 0x02, 0x03, 0x08, 0x09, 0x0a, 0x0b,
 	0x14, 0x15, 0x16, 0x17, 0x1c, 0x1d, 0x1e, 0x1f };
-    result = (__v4si) vec_perm ((__v16qu) temp, (__v16qu) vzero, pkperm);
+    __result = (__v4si) vec_perm ((__v16qu) __temp, (__v16qu) __vzero, __pkperm);
   }
 #endif
-  return (__m128i) result;
+  return (__m128i) __result;
 }
 
 extern __inline __m64 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_cvtpd_pi32 (__m128d __A)
 {
-  __m128i result = _mm_cvtpd_epi32(__A);
+  __m128i __result = _mm_cvtpd_epi32(__A);
 
-  return (__m64) result[0];
+  return (__m64) __result[0];
 }
 
 extern __inline __m128 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_cvtpd_ps (__m128d __A)
 {
-  __v4sf result;
-  __v4si temp;
-  const __v4si vzero = { 0, 0, 0, 0 };
+  __v4sf __result;
+  __v4si __temp;
+  const __v4si __vzero = { 0, 0, 0, 0 };
 
   __asm__(
       "xvcvdpsp %x0,%x1"
-      : "=wa" (temp)
+      : "=wa" (__temp)
       : "wa" (__A)
       : );
 
 #ifdef _ARCH_PWR8
 #ifdef __LITTLE_ENDIAN__
-  temp = vec_mergeo (temp, temp);
+  __temp = vec_mergeo (__temp, __temp);
 #else
-  temp = vec_mergee (temp, temp);
+  __temp = vec_mergee (__temp, __temp);
 #endif
-  result = (__v4sf) vec_vpkudum ((__vector long long) temp,
-				 (__vector long long) vzero);
+  __result = (__v4sf) vec_vpkudum ((__vector long long) __temp,
+				 (__vector long long) __vzero);
 #else
   {
-    const __v16qu pkperm = {0x00, 0x01, 0x02, 0x03, 0x08, 0x09, 0x0a, 0x0b,
+    const __v16qu __pkperm = {0x00, 0x01, 0x02, 0x03, 0x08, 0x09, 0x0a, 0x0b,
 	0x14, 0x15, 0x16, 0x17, 0x1c, 0x1d, 0x1e, 0x1f };
-    result = (__v4sf) vec_perm ((__v16qu) temp, (__v16qu) vzero, pkperm);
+    __result = (__v4sf) vec_perm ((__v16qu) __temp, (__v16qu) __vzero, __pkperm);
   }
 #endif
-  return ((__m128)result);
+  return ((__m128)__result);
 }
 
 extern __inline __m128i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_cvttpd_epi32 (__m128d __A)
 {
-  __v4si result;
-  __v4si temp;
-  const __v4si vzero = { 0, 0, 0, 0 };
+  __v4si __result;
+  __v4si __temp;
+  const __v4si __vzero = { 0, 0, 0, 0 };
 
   /* VSX Vector truncate Double-Precision to integer and Convert to
    Signed Integer Word format with Saturate.  */
   __asm__(
       "xvcvdpsxws %x0,%x1"
-      : "=wa" (temp)
+      : "=wa" (__temp)
       : "wa" (__A)
       : );
 
 #ifdef _ARCH_PWR8
 #ifdef __LITTLE_ENDIAN__
-  temp = vec_mergeo (temp, temp);
+  __temp = vec_mergeo (__temp, __temp);
 #else
-  temp = vec_mergee (temp, temp);
+  __temp = vec_mergee (__temp, __temp);
 #endif
-  result = (__v4si) vec_vpkudum ((__vector long long) temp,
-				 (__vector long long) vzero);
+  __result = (__v4si) vec_vpkudum ((__vector long long) __temp,
+				 (__vector long long) __vzero);
 #else
   {
-    const __v16qu pkperm = {0x00, 0x01, 0x02, 0x03, 0x08, 0x09, 0x0a, 0x0b,
+    const __v16qu __pkperm = {0x00, 0x01, 0x02, 0x03, 0x08, 0x09, 0x0a, 0x0b,
 	0x14, 0x15, 0x16, 0x17, 0x1c, 0x1d, 0x1e, 0x1f };
-    result = (__v4si) vec_perm ((__v16qu) temp, (__v16qu) vzero, pkperm);
+    __result = (__v4si) vec_perm ((__v16qu) __temp, (__v16qu) __vzero, __pkperm);
   }
 #endif
 
-  return ((__m128i) result);
+  return ((__m128i) __result);
 }
 
 extern __inline __m64 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_cvttpd_pi32 (__m128d __A)
 {
-  __m128i result = _mm_cvttpd_epi32 (__A);
+  __m128i __result = _mm_cvttpd_epi32 (__A);
 
-  return (__m64) result[0];
+  return (__m64) __result[0];
 }
 
 extern __inline int __attribute__((__gnu_inline__, __always_inline__, __artificial__))
@@ -995,35 +989,35 @@ _mm_cvtsi128_si32 (__m128i __A)
 extern __inline __m128d __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_cvtpi32_pd (__m64 __A)
 {
-  __v4si temp;
-  __v2di tmp2;
-  __v2df result;
+  __v4si __temp;
+  __v2di __tmp2;
+  __v2df __result;
 
-  temp = (__v4si)vec_splats (__A);
-  tmp2 = (__v2di)vec_unpackl (temp);
-  result = vec_ctf ((__vector signed long long) tmp2, 0);
-  return (__m128d)result;
+  __temp = (__v4si)vec_splats (__A);
+  __tmp2 = (__v2di)vec_unpackl (__temp);
+  __result = vec_ctf ((__vector signed long long) __tmp2, 0);
+  return (__m128d)__result;
 }
 #endif
 
 extern __inline __m128i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_cvtps_epi32 (__m128 __A)
 {
-  __v4sf rounded;
-  __v4si result;
+  __v4sf __rounded;
+  __v4si __result;
 
-  rounded = vec_rint((__v4sf) __A);
-  result = vec_cts (rounded, 0);
-  return (__m128i) result;
+  __rounded = vec_rint((__v4sf) __A);
+  __result = vec_cts (__rounded, 0);
+  return (__m128i) __result;
 }
 
 extern __inline __m128i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_cvttps_epi32 (__m128 __A)
 {
-  __v4si result;
+  __v4si __result;
 
-  result = vec_cts ((__v4sf) __A, 0);
-  return (__m128i) result;
+  __result = vec_cts ((__v4sf) __A, 0);
+  return (__m128i) __result;
 }
 
 extern __inline __m128d __attribute__((__gnu_inline__, __always_inline__, __artificial__))
@@ -1035,48 +1029,48 @@ _mm_cvtps_pd (__m128 __A)
 #else
   /* Otherwise the compiler is not current and so need to generate the
      equivalent code.  */
-  __v4sf a = (__v4sf)__A;
-  __v4sf temp;
-  __v2df result;
+  __v4sf __a = (__v4sf)__A;
+  __v4sf __temp;
+  __v2df __result;
 #ifdef __LITTLE_ENDIAN__
   /* The input float values are in elements {[0], [1]} but the convert
      instruction needs them in elements {[1], [3]}, So we use two
      shift left double vector word immediates to get the elements
      lined up.  */
-  temp = __builtin_vsx_xxsldwi (a, a, 3);
-  temp = __builtin_vsx_xxsldwi (a, temp, 2);
+  __temp = __builtin_vsx_xxsldwi (__a, __a, 3);
+  __temp = __builtin_vsx_xxsldwi (__a, __temp, 2);
 #else
   /* The input float values are in elements {[0], [1]} but the convert
      instruction needs them in elements {[0], [2]}, So we use two
      shift left double vector word immediates to get the elements
      lined up.  */
-  temp = vec_vmrghw (a, a);
+  __temp = vec_vmrghw (__a, __a);
 #endif
   __asm__(
       " xvcvspdp %x0,%x1"
-      : "=wa" (result)
-      : "wa" (temp)
+      : "=wa" (__result)
+      : "wa" (__temp)
       : );
-  return (__m128d) result;
+  return (__m128d) __result;
 #endif
 }
 
 extern __inline int __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_cvtsd_si32 (__m128d __A)
 {
-  __v2df rounded = vec_rint((__v2df) __A);
-  int result = ((__v2df)rounded)[0];
+  __v2df __rounded = vec_rint((__v2df) __A);
+  int __result = ((__v2df)__rounded)[0];
 
-  return result;
+  return __result;
 }
 /* Intel intrinsic.  */
 extern __inline long long __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_cvtsd_si64 (__m128d __A)
 {
-  __v2df rounded = vec_rint ((__v2df) __A );
-  long long result = ((__v2df) rounded)[0];
+  __v2df __rounded = vec_rint ((__v2df) __A );
+  long long __result = ((__v2df) __rounded)[0];
 
-  return result;
+  return __result;
 }
 
 /* Microsoft intrinsic.  */
@@ -1089,18 +1083,18 @@ _mm_cvtsd_si64x (__m128d __A)
 extern __inline int __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_cvttsd_si32 (__m128d __A)
 {
-  int result = ((__v2df)__A)[0];
+  int __result = ((__v2df)__A)[0];
 
-  return result;
+  return __result;
 }
 
 /* Intel intrinsic.  */
 extern __inline long long __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_cvttsd_si64 (__m128d __A)
 {
-  long long result = ((__v2df)__A)[0];
+  long long __result = ((__v2df)__A)[0];
 
-  return result;
+  return __result;
 }
 
 /* Microsoft intrinsic.  */
@@ -1113,46 +1107,46 @@ _mm_cvttsd_si64x (__m128d __A)
 extern __inline __m128 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_cvtsd_ss (__m128 __A, __m128d __B)
 {
-  __v4sf result = (__v4sf)__A;
+  __v4sf __result = (__v4sf)__A;
 
 #ifdef __LITTLE_ENDIAN__
-  __v4sf temp_s;
+  __v4sf __temp_s;
   /* Copy double element[0] to element [1] for conversion.  */
-  __v2df temp_b = vec_splat((__v2df)__B, 0);
+  __v2df __temp_b = vec_splat((__v2df)__B, 0);
 
   /* Pre-rotate __A left 3 (logically right 1) elements.  */
-  result = __builtin_vsx_xxsldwi (result, result, 3);
+  __result = __builtin_vsx_xxsldwi (__result, __result, 3);
   /* Convert double to single float scalar in a vector.  */
   __asm__(
       "xscvdpsp %x0,%x1"
-      : "=wa" (temp_s)
-      : "wa" (temp_b)
+      : "=wa" (__temp_s)
+      : "wa" (__temp_b)
       : );
   /* Shift the resulting scalar into vector element [0].  */
-  result = __builtin_vsx_xxsldwi (result, temp_s, 1);
+  __result = __builtin_vsx_xxsldwi (__result, __temp_s, 1);
 #else
-  result [0] = ((__v2df)__B)[0];
+  __result [0] = ((__v2df)__B)[0];
 #endif
-  return (__m128) result;
+  return (__m128) __result;
 }
 
 extern __inline __m128d __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_cvtsi32_sd (__m128d __A, int __B)
 {
-  __v2df result = (__v2df)__A;
-  double db = __B;
-  result [0] = db;
-  return (__m128d)result;
+  __v2df __result = (__v2df)__A;
+  double __db = __B;
+  __result [0] = __db;
+  return (__m128d)__result;
 }
 
 /* Intel intrinsic.  */
 extern __inline __m128d __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_cvtsi64_sd (__m128d __A, long long __B)
 {
-  __v2df result = (__v2df)__A;
-  double db = __B;
-  result [0] = db;
-  return (__m128d)result;
+  __v2df __result = (__v2df)__A;
+  double __db = __B;
+  __result [0] = __db;
+  return (__m128d)__result;
 }
 
 /* Microsoft intrinsic.  */
@@ -1167,45 +1161,45 @@ _mm_cvtss_sd (__m128d __A, __m128 __B)
 {
 #ifdef __LITTLE_ENDIAN__
   /* Use splat to move element [0] into position for the convert. */
-  __v4sf temp = vec_splat ((__v4sf)__B, 0);
-  __v2df res;
+  __v4sf __temp = vec_splat ((__v4sf)__B, 0);
+  __v2df __res;
   /* Convert single float scalar to double in a vector.  */
   __asm__(
       "xscvspdp %x0,%x1"
-      : "=wa" (res)
-      : "wa" (temp)
+      : "=wa" (__res)
+      : "wa" (__temp)
       : );
-  return (__m128d) vec_mergel (res, (__v2df)__A);
+  return (__m128d) vec_mergel (__res, (__v2df)__A);
 #else
-  __v2df res = (__v2df)__A;
-  res [0] = ((__v4sf)__B) [0];
-  return (__m128d) res;
+  __v2df __res = (__v2df)__A;
+  __res [0] = ((__v4sf)__B) [0];
+  return (__m128d) __res;
 #endif
 }
 
 extern __inline __m128d __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_shuffle_pd(__m128d __A, __m128d __B, const int __mask)
 {
-  __vector double result;
-  const int litmsk = __mask & 0x3;
+  __vector double __result;
+  const int __litmsk = __mask & 0x3;
 
-  if (litmsk == 0)
-    result = vec_mergeh (__A, __B);
+  if (__litmsk == 0)
+    __result = vec_mergeh (__A, __B);
 #if __GNUC__ < 6
-  else if (litmsk == 1)
-    result = vec_xxpermdi (__B, __A, 2);
-  else if (litmsk == 2)
-    result = vec_xxpermdi (__B, __A, 1);
+  else if (__litmsk == 1)
+    __result = vec_xxpermdi (__B, __A, 2);
+  else if (__litmsk == 2)
+    __result = vec_xxpermdi (__B, __A, 1);
 #else
-  else if (litmsk == 1)
-    result = vec_xxpermdi (__A, __B, 2);
-  else if (litmsk == 2)
-    result = vec_xxpermdi (__A, __B, 1);
+  else if (__litmsk == 1)
+    __result = vec_xxpermdi (__A, __B, 2);
+  else if (__litmsk == 2)
+    __result = vec_xxpermdi (__A, __B, 1);
 #endif
   else
-    result = vec_mergel (__A, __B);
+    __result = vec_mergel (__A, __B);
 
-  return result;
+  return __result;
 }
 
 extern __inline __m128d __attribute__((__gnu_inline__, __always_inline__, __artificial__))
@@ -1223,17 +1217,17 @@ _mm_unpacklo_pd (__m128d __A, __m128d __B)
 extern __inline __m128d __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_loadh_pd (__m128d __A, double const *__B)
 {
-  __v2df result = (__v2df)__A;
-  result [1] = *__B;
-  return (__m128d)result;
+  __v2df __result = (__v2df)__A;
+  __result [1] = *__B;
+  return (__m128d)__result;
 }
 
 extern __inline __m128d __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_loadl_pd (__m128d __A, double const *__B)
 {
-  __v2df result = (__v2df)__A;
-  result [0] = *__B;
-  return (__m128d)result;
+  __v2df __result = (__v2df)__A;
+  __result [0] = *__B;
+  return (__m128d)__result;
 }
 
 #ifdef _ARCH_PWR8
@@ -1243,8 +1237,8 @@ _mm_loadl_pd (__m128d __A, double const *__B)
 extern __inline int __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_movemask_pd (__m128d  __A)
 {
-  __vector unsigned long long result;
-  static const __vector unsigned int perm_mask =
+  __vector unsigned long long __result;
+  static const __vector unsigned int __perm_mask =
     {
 #ifdef __LITTLE_ENDIAN__
 	0x80800040, 0x80808080, 0x80808080, 0x80808080
@@ -1253,14 +1247,14 @@ _mm_movemask_pd (__m128d  __A)
 #endif
     };
 
-  result = ((__vector unsigned long long)
+  __result = ((__vector unsigned long long)
 	    vec_vbpermq ((__vector unsigned char) __A,
-			 (__vector unsigned char) perm_mask));
+			 (__vector unsigned char) __perm_mask));
 
 #ifdef __LITTLE_ENDIAN__
-  return result[1];
+  return __result[1];
 #else
-  return result[0];
+  return __result[0];
 #endif
 }
 #endif /* _ARCH_PWR8 */
@@ -1432,17 +1426,17 @@ _mm_subs_epu16 (__m128i __A, __m128i __B)
 extern __inline __m128i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_madd_epi16 (__m128i __A, __m128i __B)
 {
-  __vector signed int zero = {0, 0, 0, 0};
+  __vector signed int __zero = {0, 0, 0, 0};
 
-  return (__m128i) vec_vmsumshm ((__v8hi)__A, (__v8hi)__B, zero);
+  return (__m128i) vec_vmsumshm ((__v8hi)__A, (__v8hi)__B, __zero);
 }
 
 extern __inline __m128i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_mulhi_epi16 (__m128i __A, __m128i __B)
 {
-  __vector signed int w0, w1;
+  __vector signed int __w0, __w1;
 
-  __vector unsigned char xform1 = {
+  __vector unsigned char __xform1 = {
 #ifdef __LITTLE_ENDIAN__
       0x02, 0x03, 0x12, 0x13,  0x06, 0x07, 0x16, 0x17,
       0x0A, 0x0B, 0x1A, 0x1B,  0x0E, 0x0F, 0x1E, 0x1F
@@ -1452,9 +1446,9 @@ _mm_mulhi_epi16 (__m128i __A, __m128i __B)
 #endif
     };
 
-  w0 = vec_vmulesh ((__v8hi)__A, (__v8hi)__B);
-  w1 = vec_vmulosh ((__v8hi)__A, (__v8hi)__B);
-  return (__m128i) vec_perm (w0, w1, xform1);
+  __w0 = vec_vmulesh ((__v8hi)__A, (__v8hi)__B);
+  __w1 = vec_vmulosh ((__v8hi)__A, (__v8hi)__B);
+  return (__m128i) vec_perm (__w0, __w1, __xform1);
 }
 
 extern __inline __m128i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
@@ -1466,34 +1460,34 @@ _mm_mullo_epi16 (__m128i __A, __m128i __B)
 extern __inline __m64 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_mul_su32 (__m64 __A, __m64 __B)
 {
-  unsigned int a = __A;
-  unsigned int b = __B;
+  unsigned int __a = __A;
+  unsigned int __b = __B;
 
-  return ((__m64)a * (__m64)b);
+  return ((__m64)__a * (__m64)__b);
 }
 
 extern __inline __m128i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_mul_epu32 (__m128i __A, __m128i __B)
 {
-#if __GNUC__ < 8
-  __v2du result;
+#if __GNUC__ < 8 || !defined (_ARCH_PWR8)
+  __v2du __result;
 
 #ifdef __LITTLE_ENDIAN__
   /* VMX Vector Multiply Odd Unsigned Word.  */
   __asm__(
       "vmulouw %0,%1,%2"
-      : "=v" (result)
+      : "=v" (__result)
       : "v" (__A), "v" (__B)
       : );
 #else
   /* VMX Vector Multiply Even Unsigned Word.  */
   __asm__(
       "vmuleuw %0,%1,%2"
-      : "=v" (result)
+      : "=v" (__result)
       : "v" (__A), "v" (__B)
       : );
 #endif
-  return (__m128i) result;
+  return (__m128i) __result;
 #else
   return (__m128i) vec_mule ((__v4su)__A, (__v4su)__B);
 #endif
@@ -1502,122 +1496,122 @@ _mm_mul_epu32 (__m128i __A, __m128i __B)
 extern __inline __m128i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_slli_epi16 (__m128i __A, int __B)
 {
-  __v8hu lshift;
-  __v8hi result = { 0, 0, 0, 0, 0, 0, 0, 0 };
+  __v8hu __lshift;
+  __v8hi __result = { 0, 0, 0, 0, 0, 0, 0, 0 };
 
   if (__B >= 0 && __B < 16)
     {
       if (__builtin_constant_p(__B))
-	lshift = (__v8hu) vec_splat_s16(__B);
+	__lshift = (__v8hu) vec_splat_s16(__B);
       else
-	lshift = vec_splats ((unsigned short) __B);
+	__lshift = vec_splats ((unsigned short) __B);
 
-      result = vec_sl ((__v8hi) __A, lshift);
+      __result = vec_sl ((__v8hi) __A, __lshift);
     }
 
-  return (__m128i) result;
+  return (__m128i) __result;
 }
 
 extern __inline __m128i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_slli_epi32 (__m128i __A, int __B)
 {
-  __v4su lshift;
-  __v4si result = { 0, 0, 0, 0 };
+  __v4su __lshift;
+  __v4si __result = { 0, 0, 0, 0 };
 
   if (__B >= 0 && __B < 32)
     {
       if (__builtin_constant_p(__B) && __B < 16)
-	lshift = (__v4su) vec_splat_s32(__B);
+	__lshift = (__v4su) vec_splat_s32(__B);
       else
-	lshift = vec_splats ((unsigned int) __B);
+	__lshift = vec_splats ((unsigned int) __B);
 
-      result = vec_sl ((__v4si) __A, lshift);
+      __result = vec_sl ((__v4si) __A, __lshift);
     }
 
-  return (__m128i) result;
+  return (__m128i) __result;
 }
 
 #ifdef _ARCH_PWR8
 extern __inline __m128i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_slli_epi64 (__m128i __A, int __B)
 {
-  __v2du lshift;
-  __v2di result = { 0, 0 };
+  __v2du __lshift;
+  __v2di __result = { 0, 0 };
 
   if (__B >= 0 && __B < 64)
     {
       if (__builtin_constant_p(__B) && __B < 16)
-	lshift = (__v2du) vec_splat_s32(__B);
+	__lshift = (__v2du) vec_splat_s32(__B);
       else
-	lshift = (__v2du) vec_splats ((unsigned int) __B);
+	__lshift = (__v2du) vec_splats ((unsigned int) __B);
 
-      result = vec_sl ((__v2di) __A, lshift);
+      __result = vec_sl ((__v2di) __A, __lshift);
     }
 
-  return (__m128i) result;
+  return (__m128i) __result;
 }
 #endif
 
 extern __inline __m128i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_srai_epi16 (__m128i __A, int __B)
 {
-  __v8hu rshift = { 15, 15, 15, 15, 15, 15, 15, 15 };
-  __v8hi result;
+  __v8hu __rshift = { 15, 15, 15, 15, 15, 15, 15, 15 };
+  __v8hi __result;
 
   if (__B < 16)
     {
       if (__builtin_constant_p(__B))
-	rshift = (__v8hu) vec_splat_s16(__B);
+	__rshift = (__v8hu) vec_splat_s16(__B);
       else
-	rshift = vec_splats ((unsigned short) __B);
+	__rshift = vec_splats ((unsigned short) __B);
     }
-  result = vec_sra ((__v8hi) __A, rshift);
+  __result = vec_sra ((__v8hi) __A, __rshift);
 
-  return (__m128i) result;
+  return (__m128i) __result;
 }
 
 extern __inline __m128i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_srai_epi32 (__m128i __A, int __B)
 {
-  __v4su rshift = { 31, 31, 31, 31 };
-  __v4si result;
+  __v4su __rshift = { 31, 31, 31, 31 };
+  __v4si __result;
 
   if (__B < 32)
     {
       if (__builtin_constant_p(__B))
 	{
 	  if (__B < 16)
-	      rshift = (__v4su) vec_splat_s32(__B);
+	      __rshift = (__v4su) vec_splat_s32(__B);
 	    else
-	      rshift = (__v4su) vec_splats((unsigned int)__B);
+	      __rshift = (__v4su) vec_splats((unsigned int)__B);
 	}
       else
-	rshift = vec_splats ((unsigned int) __B);
+	__rshift = vec_splats ((unsigned int) __B);
     }
-  result = vec_sra ((__v4si) __A, rshift);
+  __result = vec_sra ((__v4si) __A, __rshift);
 
-  return (__m128i) result;
+  return (__m128i) __result;
 }
 
 extern __inline __m128i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_bslli_si128 (__m128i __A, const int __N)
 {
-  __v16qu result;
-  const __v16qu zeros = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+  __v16qu __result;
+  const __v16qu __zeros = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 
   if (__N < 16)
-    result = vec_sld ((__v16qu) __A, zeros, __N);
+    __result = vec_sld ((__v16qu) __A, __zeros, __N);
   else
-    result = zeros;
+    __result = __zeros;
 
-  return (__m128i) result;
+  return (__m128i) __result;
 }
 
 extern __inline __m128i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_bsrli_si128 (__m128i __A, const int __N)
 {
-  __v16qu result;
-  const __v16qu zeros = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+  __v16qu __result;
+  const __v16qu __zeros = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 
   if (__N < 16)
 #ifdef __LITTLE_ENDIAN__
@@ -1625,21 +1619,21 @@ _mm_bsrli_si128 (__m128i __A, const int __N)
       /* Would like to use Vector Shift Left Double by Octet
 	 Immediate here to use the immediate form and avoid
 	 load of __N * 8 value into a separate VR.  */
-      result = vec_sld (zeros, (__v16qu) __A, (16 - __N));
+      __result = vec_sld (__zeros, (__v16qu) __A, (16 - __N));
     else
 #endif
       {
-	__v16qu shift = vec_splats((unsigned char)(__N*8));
+	__v16qu __shift = vec_splats((unsigned char)(__N*8));
 #ifdef __LITTLE_ENDIAN__
-	result = vec_sro ((__v16qu)__A, shift);
+	__result = vec_sro ((__v16qu)__A, __shift);
 #else
-	result = vec_slo ((__v16qu)__A, shift);
+	__result = vec_slo ((__v16qu)__A, __shift);
 #endif
       }
   else
-    result = zeros;
+    __result = __zeros;
 
-  return (__m128i) result;
+  return (__m128i) __result;
 }
 
 extern __inline __m128i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
@@ -1651,239 +1645,239 @@ _mm_srli_si128 (__m128i __A, const int __N)
 extern __inline  __m128i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_slli_si128 (__m128i __A, const int _imm5)
 {
-  __v16qu result;
-  const __v16qu zeros = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+  __v16qu __result;
+  const __v16qu __zeros = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 
   if (_imm5 < 16)
 #ifdef __LITTLE_ENDIAN__
-    result = vec_sld ((__v16qu) __A, zeros, _imm5);
+    __result = vec_sld ((__v16qu) __A, __zeros, _imm5);
 #else
-    result = vec_sld (zeros, (__v16qu) __A, (16 - _imm5));
+    __result = vec_sld (__zeros, (__v16qu) __A, (16 - _imm5));
 #endif
   else
-    result = zeros;
+    __result = __zeros;
 
-  return (__m128i) result;
+  return (__m128i) __result;
 }
 
 extern __inline __m128i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 
 _mm_srli_epi16 (__m128i  __A, int __B)
 {
-  __v8hu rshift;
-  __v8hi result = { 0, 0, 0, 0, 0, 0, 0, 0 };
+  __v8hu __rshift;
+  __v8hi __result = { 0, 0, 0, 0, 0, 0, 0, 0 };
 
   if (__B < 16)
     {
       if (__builtin_constant_p(__B))
-	rshift = (__v8hu) vec_splat_s16(__B);
+	__rshift = (__v8hu) vec_splat_s16(__B);
       else
-	rshift = vec_splats ((unsigned short) __B);
+	__rshift = vec_splats ((unsigned short) __B);
 
-      result = vec_sr ((__v8hi) __A, rshift);
+      __result = vec_sr ((__v8hi) __A, __rshift);
     }
 
-  return (__m128i) result;
+  return (__m128i) __result;
 }
 
 extern __inline __m128i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_srli_epi32 (__m128i __A, int __B)
 {
-  __v4su rshift;
-  __v4si result = { 0, 0, 0, 0 };
+  __v4su __rshift;
+  __v4si __result = { 0, 0, 0, 0 };
 
   if (__B < 32)
     {
       if (__builtin_constant_p(__B))
 	{
 	  if (__B < 16)
-	      rshift = (__v4su) vec_splat_s32(__B);
+	      __rshift = (__v4su) vec_splat_s32(__B);
 	    else
-	      rshift = (__v4su) vec_splats((unsigned int)__B);
+	      __rshift = (__v4su) vec_splats((unsigned int)__B);
 	}
       else
-	rshift = vec_splats ((unsigned int) __B);
+	__rshift = vec_splats ((unsigned int) __B);
 
-      result = vec_sr ((__v4si) __A, rshift);
+      __result = vec_sr ((__v4si) __A, __rshift);
     }
 
-  return (__m128i) result;
+  return (__m128i) __result;
 }
 
 #ifdef _ARCH_PWR8
 extern __inline __m128i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_srli_epi64 (__m128i __A, int __B)
 {
-  __v2du rshift;
-  __v2di result = { 0, 0 };
+  __v2du __rshift;
+  __v2di __result = { 0, 0 };
 
   if (__B < 64)
     {
       if (__builtin_constant_p(__B))
 	{
 	  if (__B < 16)
-	      rshift = (__v2du) vec_splat_s32(__B);
+	      __rshift = (__v2du) vec_splat_s32(__B);
 	    else
-	      rshift = (__v2du) vec_splats((unsigned long long)__B);
+	      __rshift = (__v2du) vec_splats((unsigned long long)__B);
 	}
       else
-	rshift = (__v2du) vec_splats ((unsigned int) __B);
+	__rshift = (__v2du) vec_splats ((unsigned int) __B);
 
-      result = vec_sr ((__v2di) __A, rshift);
+      __result = vec_sr ((__v2di) __A, __rshift);
     }
 
-  return (__m128i) result;
+  return (__m128i) __result;
 }
 #endif
 
 extern __inline __m128i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_sll_epi16 (__m128i __A, __m128i __B)
 {
-  __v8hu lshift;
-  __vector __bool short shmask;
-  const __v8hu shmax = { 15, 15, 15, 15, 15, 15, 15, 15 };
-  __v8hu result;
+  __v8hu __lshift;
+  __vector __bool short __shmask;
+  const __v8hu __shmax = { 15, 15, 15, 15, 15, 15, 15, 15 };
+  __v8hu __result;
 
 #ifdef __LITTLE_ENDIAN__
-  lshift = vec_splat ((__v8hu) __B, 0);
+  __lshift = vec_splat ((__v8hu) __B, 0);
 #else
-  lshift = vec_splat ((__v8hu) __B, 3);
+  __lshift = vec_splat ((__v8hu) __B, 3);
 #endif
-  shmask = vec_cmple (lshift, shmax);
-  result = vec_sl ((__v8hu) __A, lshift);
-  result = vec_sel ((__v8hu) shmask, result, shmask);
+  __shmask = vec_cmple (__lshift, __shmax);
+  __result = vec_sl ((__v8hu) __A, __lshift);
+  __result = vec_sel ((__v8hu) __shmask, __result, __shmask);
 
-  return (__m128i) result;
+  return (__m128i) __result;
 }
 
 extern __inline __m128i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_sll_epi32 (__m128i __A, __m128i __B)
 {
-  __v4su lshift;
-  __vector __bool int shmask;
-  const __v4su shmax = { 32, 32, 32, 32 };
-  __v4su result;
+  __v4su __lshift;
+  __vector __bool int __shmask;
+  const __v4su __shmax = { 32, 32, 32, 32 };
+  __v4su __result;
 #ifdef __LITTLE_ENDIAN__
-  lshift = vec_splat ((__v4su) __B, 0);
+  __lshift = vec_splat ((__v4su) __B, 0);
 #else
-  lshift = vec_splat ((__v4su) __B, 1);
+  __lshift = vec_splat ((__v4su) __B, 1);
 #endif
-  shmask = vec_cmplt (lshift, shmax);
-  result = vec_sl ((__v4su) __A, lshift);
-  result = vec_sel ((__v4su) shmask, result, shmask);
+  __shmask = vec_cmplt (__lshift, __shmax);
+  __result = vec_sl ((__v4su) __A, __lshift);
+  __result = vec_sel ((__v4su) __shmask, __result, __shmask);
 
-  return (__m128i) result;
+  return (__m128i) __result;
 }
 
 #ifdef _ARCH_PWR8
 extern __inline __m128i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_sll_epi64 (__m128i __A, __m128i __B)
 {
-  __v2du lshift;
-  __vector __bool long long shmask;
-  const __v2du shmax = { 64, 64 };
-  __v2du result;
+  __v2du __lshift;
+  __vector __bool long long __shmask;
+  const __v2du __shmax = { 64, 64 };
+  __v2du __result;
 
-  lshift = vec_splat ((__v2du) __B, 0);
-  shmask = vec_cmplt (lshift, shmax);
-  result = vec_sl ((__v2du) __A, lshift);
-  result = vec_sel ((__v2du) shmask, result, shmask);
+  __lshift = vec_splat ((__v2du) __B, 0);
+  __shmask = vec_cmplt (__lshift, __shmax);
+  __result = vec_sl ((__v2du) __A, __lshift);
+  __result = vec_sel ((__v2du) __shmask, __result, __shmask);
 
-  return (__m128i) result;
+  return (__m128i) __result;
 }
 #endif
 
 extern __inline __m128i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_sra_epi16 (__m128i __A, __m128i __B)
 {
-  const __v8hu rshmax = { 15, 15, 15, 15, 15, 15, 15, 15 };
-  __v8hu rshift;
-  __v8hi result;
+  const __v8hu __rshmax = { 15, 15, 15, 15, 15, 15, 15, 15 };
+  __v8hu __rshift;
+  __v8hi __result;
 
 #ifdef __LITTLE_ENDIAN__
-  rshift = vec_splat ((__v8hu)__B, 0);
+  __rshift = vec_splat ((__v8hu)__B, 0);
 #else
-  rshift = vec_splat ((__v8hu)__B, 3);
+  __rshift = vec_splat ((__v8hu)__B, 3);
 #endif
-  rshift = vec_min (rshift, rshmax);
-  result = vec_sra ((__v8hi) __A, rshift);
+  __rshift = vec_min (__rshift, __rshmax);
+  __result = vec_sra ((__v8hi) __A, __rshift);
 
-  return (__m128i) result;
+  return (__m128i) __result;
 }
 
 extern __inline __m128i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_sra_epi32 (__m128i __A, __m128i __B)
 {
-  const __v4su rshmax = { 31, 31, 31, 31 };
-  __v4su rshift;
-  __v4si result;
+  const __v4su __rshmax = { 31, 31, 31, 31 };
+  __v4su __rshift;
+  __v4si __result;
 
 #ifdef __LITTLE_ENDIAN__
-  rshift = vec_splat ((__v4su)__B, 0);
+  __rshift = vec_splat ((__v4su)__B, 0);
 #else
-  rshift = vec_splat ((__v4su)__B, 1);
+  __rshift = vec_splat ((__v4su)__B, 1);
 #endif
-  rshift = vec_min (rshift, rshmax);
-  result = vec_sra ((__v4si) __A, rshift);
+  __rshift = vec_min (__rshift, __rshmax);
+  __result = vec_sra ((__v4si) __A, __rshift);
 
-  return (__m128i) result;
+  return (__m128i) __result;
 }
 
 extern __inline __m128i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_srl_epi16 (__m128i __A, __m128i __B)
 {
-  __v8hu rshift;
-  __vector __bool short shmask;
-  const __v8hu shmax = { 15, 15, 15, 15, 15, 15, 15, 15 };
-  __v8hu result;
+  __v8hu __rshift;
+  __vector __bool short __shmask;
+  const __v8hu __shmax = { 15, 15, 15, 15, 15, 15, 15, 15 };
+  __v8hu __result;
 
 #ifdef __LITTLE_ENDIAN__
-  rshift = vec_splat ((__v8hu) __B, 0);
+  __rshift = vec_splat ((__v8hu) __B, 0);
 #else
-  rshift = vec_splat ((__v8hu) __B, 3);
+  __rshift = vec_splat ((__v8hu) __B, 3);
 #endif
-  shmask = vec_cmple (rshift, shmax);
-  result = vec_sr ((__v8hu) __A, rshift);
-  result = vec_sel ((__v8hu) shmask, result, shmask);
+  __shmask = vec_cmple (__rshift, __shmax);
+  __result = vec_sr ((__v8hu) __A, __rshift);
+  __result = vec_sel ((__v8hu) __shmask, __result, __shmask);
 
-  return (__m128i) result;
+  return (__m128i) __result;
 }
 
 extern __inline __m128i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_srl_epi32 (__m128i __A, __m128i __B)
 {
-  __v4su rshift;
-  __vector __bool int shmask;
-  const __v4su shmax = { 32, 32, 32, 32 };
-  __v4su result;
+  __v4su __rshift;
+  __vector __bool int __shmask;
+  const __v4su __shmax = { 32, 32, 32, 32 };
+  __v4su __result;
 
 #ifdef __LITTLE_ENDIAN__
-  rshift = vec_splat ((__v4su) __B, 0);
+  __rshift = vec_splat ((__v4su) __B, 0);
 #else
-  rshift = vec_splat ((__v4su) __B, 1);
+  __rshift = vec_splat ((__v4su) __B, 1);
 #endif
-  shmask = vec_cmplt (rshift, shmax);
-  result = vec_sr ((__v4su) __A, rshift);
-  result = vec_sel ((__v4su) shmask, result, shmask);
+  __shmask = vec_cmplt (__rshift, __shmax);
+  __result = vec_sr ((__v4su) __A, __rshift);
+  __result = vec_sel ((__v4su) __shmask, __result, __shmask);
 
-  return (__m128i) result;
+  return (__m128i) __result;
 }
 
 #ifdef _ARCH_PWR8
 extern __inline __m128i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_srl_epi64 (__m128i __A, __m128i __B)
 {
-  __v2du rshift;
-  __vector __bool long long shmask;
-  const __v2du shmax = { 64, 64 };
-  __v2du result;
+  __v2du __rshift;
+  __vector __bool long long __shmask;
+  const __v2du __shmax = { 64, 64 };
+  __v2du __result;
 
-  rshift = vec_splat ((__v2du) __B, 0);
-  shmask = vec_cmplt (rshift, shmax);
-  result = vec_sr ((__v2du) __A, rshift);
-  result = vec_sel ((__v2du) shmask, result, shmask);
+  __rshift = vec_splat ((__v2du) __B, 0);
+  __shmask = vec_cmplt (__rshift, __shmax);
+  __result = vec_sr ((__v2du) __A, __rshift);
+  __result = vec_sel ((__v2du) __shmask, __result, __shmask);
 
-  return (__m128i) result;
+  return (__m128i) __result;
 }
 #endif
 
@@ -1998,11 +1992,11 @@ _mm_extract_epi16 (__m128i const __A, int const __N)
 extern __inline __m128i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_insert_epi16 (__m128i const __A, int const __D, int const __N)
 {
-  __v8hi result = (__v8hi)__A;
+  __v8hi __result = (__v8hi)__A;
 
-  result [(__N & 7)] = __D;
+  __result [(__N & 7)] = __D;
 
-  return (__m128i) result;
+  return (__m128i) __result;
 }
 
 extern __inline __m128i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
@@ -2037,21 +2031,21 @@ _mm_min_epu8 (__m128i __A, __m128i __B)
 extern __inline int __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_movemask_epi8 (__m128i __A)
 {
-  __vector unsigned long long result;
-  static const __vector unsigned char perm_mask =
+  __vector unsigned long long __result;
+  static const __vector unsigned char __perm_mask =
     {
 	0x78, 0x70, 0x68, 0x60, 0x58, 0x50, 0x48, 0x40,
 	0x38, 0x30, 0x28, 0x20, 0x18, 0x10, 0x08, 0x00
     };
 
-  result = ((__vector unsigned long long)
+  __result = ((__vector unsigned long long)
 	    vec_vbpermq ((__vector unsigned char) __A,
-			 (__vector unsigned char) perm_mask));
+			 (__vector unsigned char) __perm_mask));
 
 #ifdef __LITTLE_ENDIAN__
-  return result[1];
+  return __result[1];
 #else
-  return result[0];
+  return __result[0];
 #endif
 }
 #endif /* _ARCH_PWR8 */
@@ -2059,8 +2053,8 @@ _mm_movemask_epi8 (__m128i __A)
 extern __inline __m128i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_mulhi_epu16 (__m128i __A, __m128i __B)
 {
-  __v4su w0, w1;
-  __v16qu xform1 = {
+  __v4su __w0, __w1;
+  __v16qu __xform1 = {
 #ifdef __LITTLE_ENDIAN__
       0x02, 0x03, 0x12, 0x13,  0x06, 0x07, 0x16, 0x17,
       0x0A, 0x0B, 0x1A, 0x1B,  0x0E, 0x0F, 0x1E, 0x1F
@@ -2070,19 +2064,19 @@ _mm_mulhi_epu16 (__m128i __A, __m128i __B)
 #endif
     };
 
-  w0 = vec_vmuleuh ((__v8hu)__A, (__v8hu)__B);
-  w1 = vec_vmulouh ((__v8hu)__A, (__v8hu)__B);
-  return (__m128i) vec_perm (w0, w1, xform1);
+  __w0 = vec_vmuleuh ((__v8hu)__A, (__v8hu)__B);
+  __w1 = vec_vmulouh ((__v8hu)__A, (__v8hu)__B);
+  return (__m128i) vec_perm (__w0, __w1, __xform1);
 }
 
 extern __inline __m128i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_shufflehi_epi16 (__m128i __A, const int __mask)
 {
-  unsigned long element_selector_98 = __mask & 0x03;
-  unsigned long element_selector_BA = (__mask >> 2) & 0x03;
-  unsigned long element_selector_DC = (__mask >> 4) & 0x03;
-  unsigned long element_selector_FE = (__mask >> 6) & 0x03;
-  static const unsigned short permute_selectors[4] =
+  unsigned long __element_selector_98 = __mask & 0x03;
+  unsigned long __element_selector_BA = (__mask >> 2) & 0x03;
+  unsigned long __element_selector_DC = (__mask >> 4) & 0x03;
+  unsigned long __element_selector_FE = (__mask >> 6) & 0x03;
+  static const unsigned short __permute_selectors[4] =
     {
 #ifdef __LITTLE_ENDIAN__
 	      0x0908, 0x0B0A, 0x0D0C, 0x0F0E
@@ -2090,33 +2084,33 @@ _mm_shufflehi_epi16 (__m128i __A, const int __mask)
 	      0x0809, 0x0A0B, 0x0C0D, 0x0E0F
 #endif
     };
-  __v2du pmask =
+  __v2du __pmask =
 #ifdef __LITTLE_ENDIAN__
       { 0x1716151413121110UL,  0UL};
 #else
       { 0x1011121314151617UL,  0UL};
 #endif
-  __m64_union t;
-  __v2du a, r;
+  __m64_union __t;
+  __v2du __a, __r;
 
-  t.as_short[0] = permute_selectors[element_selector_98];
-  t.as_short[1] = permute_selectors[element_selector_BA];
-  t.as_short[2] = permute_selectors[element_selector_DC];
-  t.as_short[3] = permute_selectors[element_selector_FE];
-  pmask[1] = t.as_m64;
-  a = (__v2du)__A;
-  r = vec_perm (a, a, (__vector unsigned char)pmask);
-  return (__m128i) r;
+  __t.as_short[0] = __permute_selectors[__element_selector_98];
+  __t.as_short[1] = __permute_selectors[__element_selector_BA];
+  __t.as_short[2] = __permute_selectors[__element_selector_DC];
+  __t.as_short[3] = __permute_selectors[__element_selector_FE];
+  __pmask[1] = __t.as_m64;
+  __a = (__v2du)__A;
+  __r = vec_perm (__a, __a, (__vector unsigned char)__pmask);
+  return (__m128i) __r;
 }
 
 extern __inline __m128i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_shufflelo_epi16 (__m128i __A, const int __mask)
 {
-  unsigned long element_selector_10 = __mask & 0x03;
-  unsigned long element_selector_32 = (__mask >> 2) & 0x03;
-  unsigned long element_selector_54 = (__mask >> 4) & 0x03;
-  unsigned long element_selector_76 = (__mask >> 6) & 0x03;
-  static const unsigned short permute_selectors[4] =
+  unsigned long __element_selector_10 = __mask & 0x03;
+  unsigned long __element_selector_32 = (__mask >> 2) & 0x03;
+  unsigned long __element_selector_54 = (__mask >> 4) & 0x03;
+  unsigned long __element_selector_76 = (__mask >> 6) & 0x03;
+  static const unsigned short __permute_selectors[4] =
     {
 #ifdef __LITTLE_ENDIAN__
 	      0x0100, 0x0302, 0x0504, 0x0706
@@ -2124,32 +2118,32 @@ _mm_shufflelo_epi16 (__m128i __A, const int __mask)
 	      0x0001, 0x0203, 0x0405, 0x0607
 #endif
     };
-  __v2du pmask =
+  __v2du __pmask =
 #ifdef __LITTLE_ENDIAN__
                  { 0UL,  0x1f1e1d1c1b1a1918UL};
 #else
                  { 0UL,  0x18191a1b1c1d1e1fUL};
 #endif
-  __m64_union t;
-  __v2du a, r;
-  t.as_short[0] = permute_selectors[element_selector_10];
-  t.as_short[1] = permute_selectors[element_selector_32];
-  t.as_short[2] = permute_selectors[element_selector_54];
-  t.as_short[3] = permute_selectors[element_selector_76];
-  pmask[0] = t.as_m64;
-  a = (__v2du)__A;
-  r = vec_perm (a, a, (__vector unsigned char)pmask);
-  return (__m128i) r;
+  __m64_union __t;
+  __v2du __a, __r;
+  __t.as_short[0] = __permute_selectors[__element_selector_10];
+  __t.as_short[1] = __permute_selectors[__element_selector_32];
+  __t.as_short[2] = __permute_selectors[__element_selector_54];
+  __t.as_short[3] = __permute_selectors[__element_selector_76];
+  __pmask[0] = __t.as_m64;
+  __a = (__v2du)__A;
+  __r = vec_perm (__a, __a, (__vector unsigned char)__pmask);
+  return (__m128i) __r;
 }
 
 extern __inline __m128i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_shuffle_epi32 (__m128i __A, const int __mask)
 {
-  unsigned long element_selector_10 = __mask & 0x03;
-  unsigned long element_selector_32 = (__mask >> 2) & 0x03;
-  unsigned long element_selector_54 = (__mask >> 4) & 0x03;
-  unsigned long element_selector_76 = (__mask >> 6) & 0x03;
-  static const unsigned int permute_selectors[4] =
+  unsigned long __element_selector_10 = __mask & 0x03;
+  unsigned long __element_selector_32 = (__mask >> 2) & 0x03;
+  unsigned long __element_selector_54 = (__mask >> 4) & 0x03;
+  unsigned long __element_selector_76 = (__mask >> 6) & 0x03;
+  static const unsigned int __permute_selectors[4] =
     {
 #ifdef __LITTLE_ENDIAN__
 	0x03020100, 0x07060504, 0x0B0A0908, 0x0F0E0D0C
@@ -2157,26 +2151,26 @@ _mm_shuffle_epi32 (__m128i __A, const int __mask)
       0x00010203, 0x04050607, 0x08090A0B, 0x0C0D0E0F
 #endif
     };
-  __v4su t;
+  __v4su __t;
 
-  t[0] = permute_selectors[element_selector_10];
-  t[1] = permute_selectors[element_selector_32];
-  t[2] = permute_selectors[element_selector_54] + 0x10101010;
-  t[3] = permute_selectors[element_selector_76] + 0x10101010;
-  return (__m128i)vec_perm ((__v4si) __A, (__v4si)__A, (__vector unsigned char)t);
+  __t[0] = __permute_selectors[__element_selector_10];
+  __t[1] = __permute_selectors[__element_selector_32];
+  __t[2] = __permute_selectors[__element_selector_54] + 0x10101010;
+  __t[3] = __permute_selectors[__element_selector_76] + 0x10101010;
+  return (__m128i)vec_perm ((__v4si) __A, (__v4si)__A, (__vector unsigned char)__t);
 }
 
 extern __inline void __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_maskmoveu_si128 (__m128i __A, __m128i __B, char *__C)
 {
-  __v2du hibit = { 0x7f7f7f7f7f7f7f7fUL, 0x7f7f7f7f7f7f7f7fUL};
-  __v16qu mask, tmp;
-  __m128i_u *p = (__m128i_u*)__C;
+  __v2du __hibit = { 0x7f7f7f7f7f7f7f7fUL, 0x7f7f7f7f7f7f7f7fUL};
+  __v16qu __mask, __tmp;
+  __m128i_u *__p = (__m128i_u*)__C;
 
-  tmp = (__v16qu)_mm_loadu_si128(p);
-  mask = (__v16qu)vec_cmpgt ((__v16qu)__B, (__v16qu)hibit);
-  tmp = vec_sel (tmp, (__v16qu)__A, mask);
-  _mm_storeu_si128 (p, (__m128i)tmp);
+  __tmp = (__v16qu)_mm_loadu_si128(__p);
+  __mask = (__v16qu)vec_cmpgt ((__v16qu)__B, (__v16qu)__hibit);
+  __tmp = vec_sel (__tmp, (__v16qu)__A, __mask);
+  _mm_storeu_si128 (__p, (__m128i)__tmp);
 }
 
 extern __inline __m128i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
@@ -2195,29 +2189,29 @@ _mm_avg_epu16 (__m128i __A, __m128i __B)
 extern __inline __m128i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_sad_epu8 (__m128i __A, __m128i __B)
 {
-  __v16qu a, b;
-  __v16qu vmin, vmax, vabsdiff;
-  __v4si vsum;
-  const __v4su zero = { 0, 0, 0, 0 };
-  __v4si result;
+  __v16qu __a, __b;
+  __v16qu __vmin, __vmax, __vabsdiff;
+  __v4si __vsum;
+  const __v4su __zero = { 0, 0, 0, 0 };
+  __v4si __result;
 
-  a = (__v16qu) __A;
-  b = (__v16qu) __B;
-  vmin = vec_min (a, b);
-  vmax = vec_max (a, b);
-  vabsdiff = vec_sub (vmax, vmin);
+  __a = (__v16qu) __A;
+  __b = (__v16qu) __B;
+  __vmin = vec_min (__a, __b);
+  __vmax = vec_max (__a, __b);
+  __vabsdiff = vec_sub (__vmax, __vmin);
   /* Sum four groups of bytes into integers.  */
-  vsum = (__vector signed int) vec_sum4s (vabsdiff, zero);
+  __vsum = (__vector signed int) vec_sum4s (__vabsdiff, __zero);
   /* Sum across four integers with two integer results.  */
-  result = vec_sum2s (vsum, (__vector signed int) zero);
+  __result = vec_sum2s (__vsum, (__vector signed int) __zero);
   /* Rotate the sums into the correct position.  */
 #ifdef __LITTLE_ENDIAN__
-  result = vec_sld (result, result, 4);
+  __result = vec_sld (__result, __result, 4);
 #else
-  result = vec_sld (result, result, 6);
+  __result = vec_sld (__result, __result, 6);
 #endif
   /* Rotate the sums into the correct position.  */
-  return (__m128i) result;
+  return (__m128i) __result;
 }
 
 extern __inline void __attribute__((__gnu_inline__, __always_inline__, __artificial__))
