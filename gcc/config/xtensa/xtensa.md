@@ -1080,6 +1080,22 @@
   DONE;
 })
 
+;; Block sets
+
+(define_expand "setmemsi"
+  [(match_operand:BLK 0 "memory_operand")
+   (match_operand:SI 1 "")
+   (match_operand:SI 2 "")
+   (match_operand:SI 3 "const_int_operand")]
+  "!optimize_debug && optimize"
+{
+  if (xtensa_expand_block_set_unrolled_loop (operands))
+    DONE;
+  if (xtensa_expand_block_set_small_loop (operands))
+    DONE;
+  FAIL;
+})
+
 
 ;; Shift instructions.
 

@@ -1373,6 +1373,217 @@ xtensa_expand_block_move (rtx *operands)
 }
 
 
+/* Try to expand a block set operation to a sequence of RTL move
+   instructions.  If not optimizing, or if the block size is not a
+   constant, or if the block is too large, or if the value to
+   initialize the block with is not a constant, the expansion
+   fails and GCC falls back to calling memset().
+
+   operands[0] is the destination
+   operands[1] is the length
+   operands[2] is the initialization value
+   operands[3] is the alignment */
+
+static int
+xtensa_sizeof_MOVI (HOST_WIDE_INT imm)
+{
+  return (TARGET_DENSITY && IN_RANGE (imm, -32, 95)) ? 2 : 3;
+}
+
+int
+xtensa_expand_block_set_unrolled_loop (rtx *operands)
+{
+  rtx dst_mem = operands[0];
+  HOST_WIDE_INT bytes, value, align;
+  int expand_len, funccall_len;
+  rtx x, reg;
+  int offset;
+
+  if (!CONST_INT_P (operands[1]) || !CONST_INT_P (operands[2]))
+    return 0;
+
+  bytes = INTVAL (operands[1]);
+  if (bytes <= 0)
+    return 0;
+  value = (int8_t)INTVAL (operands[2]);
+  align = INTVAL (operands[3]);
+  if (align > MOVE_MAX)
+    align = MOVE_MAX;
+
+  /* Insn expansion: holding the init value.
+     Either MOV(.N) or L32R w/litpool.  */
+  if (align == 1)
+    expand_len = xtensa_sizeof_MOVI (value);
+  else if (value == 0 || value == -1)
+    expand_len = TARGET_DENSITY ? 2 : 3;
+  else
+    expand_len = 3 + 4;
+  /* Insn expansion: a series of aligned memory stores.
+     Consist of S8I, S16I or S32I(.N).  */
+  expand_len += (bytes / align) * (TARGET_DENSITY
+				   && align == 4 ? 2 : 3);
+  /* Insn expansion: the remainder, sub-aligned memory stores.
+     A combination of S8I and S16I as needed.  */
+  expand_len += ((bytes % align + 1) / 2) * 3;
+
+  /* Function call: preparing two arguments.  */
+  funccall_len = xtensa_sizeof_MOVI (value);
+  funccall_len += xtensa_sizeof_MOVI (bytes);
+  /* Function call: calling memset().  */
+  funccall_len += TARGET_LONGCALLS ? (3 + 4 + 3) : 3;
+
+  /* Apply expansion bonus (2x) if optimizing for speed.  */
+  if (optimize > 1 && !optimize_size)
+    funccall_len *= 2;
+
+  /* Decide whether to expand or not, based on the sum of the length
+     of instructions.  */
+  if (expand_len > funccall_len)
+    return 0;
+
+  x = XEXP (dst_mem, 0);
+  if (!REG_P (x))
+    dst_mem = replace_equiv_address (dst_mem, force_reg (Pmode, x));
+  switch (align)
+    {
+    case 1:
+      break;
+    case 2:
+      value = (int16_t)((uint8_t)value * 0x0101U);
+      break;
+    case 4:
+      value = (int32_t)((uint8_t)value * 0x01010101U);
+      break;
+    default:
+      gcc_unreachable ();
+    }
+  reg = force_reg (SImode, GEN_INT (value));
+
+  offset = 0;
+  do
+    {
+      int unit_size = MIN (bytes, align);
+      machine_mode unit_mode = (unit_size >= 4 ? SImode :
+			       (unit_size >= 2 ? HImode :
+						 QImode));
+      unit_size = GET_MODE_SIZE (unit_mode);
+
+      emit_move_insn (adjust_address (dst_mem, unit_mode, offset),
+		      unit_mode == SImode ? reg
+		      : convert_to_mode (unit_mode, reg, true));
+
+      offset += unit_size;
+      bytes -= unit_size;
+    }
+  while (bytes > 0);
+
+  return 1;
+}
+
+int
+xtensa_expand_block_set_small_loop (rtx *operands)
+{
+  HOST_WIDE_INT bytes, value, align;
+  int expand_len, funccall_len;
+  rtx x, dst, end, reg;
+  machine_mode unit_mode;
+  rtx_code_label *label;
+
+  if (!CONST_INT_P (operands[1]) || !CONST_INT_P (operands[2]))
+    return 0;
+
+  bytes = INTVAL (operands[1]);
+  if (bytes <= 0)
+    return 0;
+  value = (int8_t)INTVAL (operands[2]);
+  align = INTVAL (operands[3]);
+  if (align > MOVE_MAX)
+    align = MOVE_MAX;
+
+  /* Totally-aligned block only.  */
+  if (bytes % align != 0)
+    return 0;
+
+  /* If 4-byte aligned, small loop substitution is almost optimal, thus
+     limited to only offset to the end address for ADDI/ADDMI instruction.  */
+  if (align == 4
+      && ! (bytes <= 127 || (bytes <= 32512 && bytes % 256 == 0)))
+    return 0;
+
+  /* If no 4-byte aligned, loop count should be treated as the constraint.  */
+  if (align != 4
+      && bytes / align > ((optimize > 1 && !optimize_size) ? 8 : 15))
+    return 0;
+
+  /* Insn expansion: holding the init value.
+     Either MOV(.N) or L32R w/litpool.  */
+  if (align == 1)
+    expand_len = xtensa_sizeof_MOVI (value);
+  else if (value == 0 || value == -1)
+    expand_len = TARGET_DENSITY ? 2 : 3;
+  else
+    expand_len = 3 + 4;
+  /* Insn expansion: Either ADDI(.N) or ADDMI for the end address.  */
+  expand_len += bytes > 127 ? 3
+			    : (TARGET_DENSITY && bytes <= 15) ? 2 : 3;
+
+  /* Insn expansion: the loop body and branch instruction.
+     For store, one of S8I, S16I or S32I(.N).
+     For advance, ADDI(.N).
+     For branch, BNE.  */
+  expand_len += (TARGET_DENSITY && align == 4 ? 2 : 3)
+		+ (TARGET_DENSITY ? 2 : 3) + 3;
+
+  /* Function call: preparing two arguments.  */
+  funccall_len = xtensa_sizeof_MOVI (value);
+  funccall_len += xtensa_sizeof_MOVI (bytes);
+  /* Function call: calling memset().  */
+  funccall_len += TARGET_LONGCALLS ? (3 + 4 + 3) : 3;
+
+  /* Apply expansion bonus (2x) if optimizing for speed.  */
+  if (optimize > 1 && !optimize_size)
+    funccall_len *= 2;
+
+  /* Decide whether to expand or not, based on the sum of the length
+     of instructions.  */
+  if (expand_len > funccall_len)
+    return 0;
+
+  x = XEXP (operands[0], 0);
+  if (!REG_P (x))
+    x = XEXP (replace_equiv_address (operands[0], force_reg (Pmode, x)), 0);
+  dst = gen_reg_rtx (SImode);
+  emit_move_insn (dst, x);
+  end = gen_reg_rtx (SImode);
+  emit_insn (gen_addsi3 (end, dst, operands[1] /* the length */));
+  switch (align)
+    {
+    case 1:
+      unit_mode = QImode;
+      break;
+    case 2:
+      value = (int16_t)((uint8_t)value * 0x0101U);
+      unit_mode = HImode;
+      break;
+    case 4:
+      value = (int32_t)((uint8_t)value * 0x01010101U);
+      unit_mode = SImode;
+      break;
+    default:
+      gcc_unreachable ();
+    }
+  reg = force_reg (unit_mode, GEN_INT (value));
+
+  label = gen_label_rtx ();
+  emit_label (label);
+  emit_move_insn (gen_rtx_MEM (unit_mode, dst), reg);
+  emit_insn (gen_addsi3 (dst, dst, GEN_INT (align)));
+  emit_cmp_and_jump_insns (dst, end, NE, const0_rtx, SImode, true, label);
+
+  return 1;
+}
+
+
 void
 xtensa_expand_nonlocal_goto (rtx *operands)
 {

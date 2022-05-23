@@ -27,7 +27,7 @@ Target Mask(FORCE_NO_PIC)
 Disable position-independent code (PIC) for use in OS kernel code.
 
 mlongcalls
-Target
+Target Mask(LONGCALLS)
 Use indirect CALLXn instructions for large programs.
 
 mtarget-align
