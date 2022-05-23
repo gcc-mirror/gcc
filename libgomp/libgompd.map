@@ -1,0 +1,21 @@
+OMPD_5.1 {
+  global:
+    ompd_initialize;
+    ompd_get_api_version;
+    ompd_get_version_string;
+    ompd_process_initialize;
+    ompd_device_initialize;
+    ompd_rel_address_space_handle;
+    ompd_finalize;
+    ompd_enumerate_icvs;
+    ompd_get_icv_from_scope;
+    ompd_get_icv_string_from_scope;
+    ompd_get_thread_handle;
+    ompd_get_thread_in_parallel;
+    ompd_rel_thread_handle;
+    ompd_thread_handle_compare;
+    ompd_get_thread_id;
+    ompd_get_device_from_thread;
+  local:
+    *;
+};

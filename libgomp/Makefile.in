@@ -16,7 +16,7 @@
 
 # Plugins for offload execution, Makefile.am fragment.
 #
-# Copyright (C) 2014-2021 Free Software Foundation, Inc.
+# Copyright (C) 2014-2022 Free Software Foundation, Inc.
 #
 # Contributed by Mentor Embedded.
 #
@@ -158,7 +158,7 @@ am__CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
 mkinstalldirs = $(SHELL) $(top_srcdir)/../mkinstalldirs
 CONFIG_HEADER = config.h
 CONFIG_CLEAN_FILES = omp.h omp_lib.h omp_lib.f90 libgomp_f.h \
-	libgomp.spec
+	omp-tools.h ompd-types.h libgomp.spec
 CONFIG_CLEAN_VPATH_FILES =
 am__vpath_adj_setup = srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`;
 am__vpath_adj = case $$p in \
@@ -231,8 +231,10 @@ am_libgomp_la_OBJECTS = alloc.lo atomic.lo barrier.lo critical.lo \
 	oacc-parallel.lo oacc-host.lo oacc-init.lo oacc-mem.lo \
 	oacc-async.lo oacc-plugin.lo oacc-cuda.lo priority_queue.lo \
 	affinity-fmt.lo teams.lo allocator.lo oacc-profiling.lo \
-	oacc-target.lo $(am__objects_1)
+	oacc-target.lo ompd-support.lo $(am__objects_1)
 libgomp_la_OBJECTS = $(am_libgomp_la_OBJECTS)
+am_libgompd_la_OBJECTS = ompd-init.lo ompd-helper.lo ompd-icv.lo
+libgompd_la_OBJECTS = $(am_libgompd_la_OBJECTS)
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
 am__v_P_0 = false
@@ -280,7 +282,8 @@ am__v_FCLD_ = $(am__v_FCLD_@AM_DEFAULT_V@)
 am__v_FCLD_0 = @echo "  FCLD    " $@;
 am__v_FCLD_1 = 
 SOURCES = $(libgomp_plugin_gcn_la_SOURCES) \
-	$(libgomp_plugin_nvptx_la_SOURCES) $(libgomp_la_SOURCES)
+	$(libgomp_plugin_nvptx_la_SOURCES) $(libgomp_la_SOURCES) \
+	$(libgompd_la_SOURCES)
 AM_V_DVIPS = $(am__v_DVIPS_@AM_V@)
 am__v_DVIPS_ = $(am__v_DVIPS_@AM_DEFAULT_V@)
 am__v_DVIPS_0 = @echo "  DVIPS   " $@;
@@ -538,7 +541,8 @@ libsubincludedir = $(libdir)/gcc/$(target_alias)/$(gcc_version)/include
 AM_CPPFLAGS = $(addprefix -I, $(search_path))
 AM_CFLAGS = $(XCFLAGS)
 AM_LDFLAGS = $(XLDFLAGS) $(SECTION_LDFLAGS) $(OPT_LDFLAGS)
-toolexeclib_LTLIBRARIES = libgomp.la $(am__append_1) $(am__append_6)
+toolexeclib_LTLIBRARIES = libgomp.la libgompd.la $(am__append_1) \
+	$(am__append_6)
 nodist_toolexeclib_HEADERS = libgomp.spec
 
 # -Wc is only a libtool option.
@@ -547,16 +551,29 @@ nodist_toolexeclib_HEADERS = libgomp.spec
 @LIBGOMP_BUILD_VERSIONED_SHLIB_FALSE@libgomp_version_script = 
 @LIBGOMP_BUILD_VERSIONED_SHLIB_GNU_TRUE@@LIBGOMP_BUILD_VERSIONED_SHLIB_TRUE@libgomp_version_script = -Wl,--version-script,libgomp.ver
 @LIBGOMP_BUILD_VERSIONED_SHLIB_SUN_TRUE@@LIBGOMP_BUILD_VERSIONED_SHLIB_TRUE@libgomp_version_script = -Wl,-M,libgomp.ver-sun
+@LIBGOMP_BUILD_VERSIONED_SHLIB_FALSE@libgompd_version_script = 
+@LIBGOMP_BUILD_VERSIONED_SHLIB_GNU_TRUE@@LIBGOMP_BUILD_VERSIONED_SHLIB_TRUE@libgompd_version_script = -Wl,--version-script,libgompd.ver
+@LIBGOMP_BUILD_VERSIONED_SHLIB_SUN_TRUE@@LIBGOMP_BUILD_VERSIONED_SHLIB_TRUE@libgompd_version_script = -Wl,-M,libgompd.ver-sun
 @LIBGOMP_BUILD_VERSIONED_SHLIB_FALSE@libgomp_version_dep = 
 @LIBGOMP_BUILD_VERSIONED_SHLIB_GNU_TRUE@@LIBGOMP_BUILD_VERSIONED_SHLIB_TRUE@libgomp_version_dep = libgomp.ver
 @LIBGOMP_BUILD_VERSIONED_SHLIB_SUN_TRUE@@LIBGOMP_BUILD_VERSIONED_SHLIB_TRUE@libgomp_version_dep = libgomp.ver-sun
+@LIBGOMP_BUILD_VERSIONED_SHLIB_FALSE@libgompd_version_dep = 
+@LIBGOMP_BUILD_VERSIONED_SHLIB_GNU_TRUE@@LIBGOMP_BUILD_VERSIONED_SHLIB_TRUE@libgompd_version_dep = libgompd.ver
+@LIBGOMP_BUILD_VERSIONED_SHLIB_SUN_TRUE@@LIBGOMP_BUILD_VERSIONED_SHLIB_TRUE@libgompd_version_dep = libgompd.ver-sun
 libgomp_version_info = -version-info $(libtool_VERSION)
+libgompd_version_info = -version-info $(libtool_VERSION)
 libgomp_la_LDFLAGS = $(libgomp_version_info) $(libgomp_version_script) \
         $(lt_host_flags)
 
+libgompd_la_LDFLAGS = $(libgompd_version_info) $(libgompd_version_script) \
+        $(lt_host_flags)
+
 libgomp_la_LIBADD = $(DL_LIBS)
+libgompd_la_LIBADD = 
 libgomp_la_DEPENDENCIES = $(libgomp_version_dep)
+libgompd_la_DEPENDENCIES = $(libgompd_version_dep)
 libgomp_la_LINK = $(LINK) $(libgomp_la_LDFLAGS)
+libgompd_la_LINK = $(LINK) $(libgompd_la_LDFLAGS)
 libgomp_la_SOURCES = alloc.c atomic.c barrier.c critical.c env.c \
 	error.c icv.c icv-device.c iter.c iter_ull.c loop.c loop_ull.c \
 	ordered.c parallel.c scope.c sections.c single.c task.c team.c \
@@ -565,7 +582,8 @@ libgomp_la_SOURCES = alloc.c atomic.c barrier.c critical.c env.c \
 	oacc-parallel.c oacc-host.c oacc-init.c oacc-mem.c \
 	oacc-async.c oacc-plugin.c oacc-cuda.c priority_queue.c \
 	affinity-fmt.c teams.c allocator.c oacc-profiling.c \
-	oacc-target.c $(am__append_7)
+	oacc-target.c ompd-support.c $(am__append_7)
+libgompd_la_SOURCES = ompd-init.c ompd-helper.c ompd-icv.c
 
 # Nvidia PTX OpenACC plugin.
 @PLUGIN_NVPTX_TRUE@libgomp_plugin_nvptx_version_info = -version-info $(libtool_VERSION)
@@ -591,7 +609,7 @@ libgomp_la_SOURCES = alloc.c atomic.c barrier.c critical.c env.c \
 @PLUGIN_GCN_TRUE@libgomp_plugin_gcn_la_LIBADD = libgomp.la $(DL_LIBS)
 @PLUGIN_GCN_TRUE@libgomp_plugin_gcn_la_LIBTOOLFLAGS = --tag=disable-static
 nodist_noinst_HEADERS = libgomp_f.h
-nodist_libsubinclude_HEADERS = omp.h openacc.h acc_prof.h
+nodist_libsubinclude_HEADERS = omp.h openacc.h acc_prof.h omp-tools.h ompd-types.h
 @USE_FORTRAN_TRUE@nodist_finclude_HEADERS = omp_lib.h omp_lib.f90 omp_lib.mod omp_lib_kinds.mod \
 @USE_FORTRAN_TRUE@	openacc_lib.h openacc.f90 openacc.mod openacc_kinds.mod
 
@@ -688,6 +706,10 @@ omp_lib.f90: $(top_builddir)/config.status $(srcdir)/omp_lib.f90.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
 libgomp_f.h: $(top_builddir)/config.status $(srcdir)/libgomp_f.h.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
+omp-tools.h: $(top_builddir)/config.status $(srcdir)/omp-tools.h.in
+	cd $(top_builddir) && $(SHELL) ./config.status $@
+ompd-types.h: $(top_builddir)/config.status $(srcdir)/ompd-types.h.in
+	cd $(top_builddir) && $(SHELL) ./config.status $@
 libgomp.spec: $(top_builddir)/config.status $(srcdir)/libgomp.spec.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
 
@@ -735,6 +757,9 @@ libgomp-plugin-nvptx.la: $(libgomp_plugin_nvptx_la_OBJECTS) $(libgomp_plugin_nvp
 libgomp.la: $(libgomp_la_OBJECTS) $(libgomp_la_DEPENDENCIES) $(EXTRA_libgomp_la_DEPENDENCIES) 
 	$(AM_V_GEN)$(libgomp_la_LINK) -rpath $(toolexeclibdir) $(libgomp_la_OBJECTS) $(libgomp_la_LIBADD) $(LIBS)
 
+libgompd.la: $(libgompd_la_OBJECTS) $(libgompd_la_DEPENDENCIES) $(EXTRA_libgompd_la_DEPENDENCIES) 
+	$(AM_V_GEN)$(libgompd_la_LINK) -rpath $(toolexeclibdir) $(libgompd_la_OBJECTS) $(libgompd_la_LIBADD) $(LIBS)
+
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
 
@@ -772,6 +797,10 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/oacc-plugin.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/oacc-profiling.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/oacc-target.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ompd-helper.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ompd-icv.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ompd-init.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ompd-support.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ordered.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/parallel.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/priority_queue.Plo@am__quote@
@@ -1374,6 +1403,10 @@ vpath % $(strip $(search_path))
 @LIBGOMP_BUILD_VERSIONED_SHLIB_TRUE@libgomp.ver: $(top_srcdir)/libgomp.map
 @LIBGOMP_BUILD_VERSIONED_SHLIB_TRUE@	$(EGREP) -v '#(#| |$$)' $< | \
 @LIBGOMP_BUILD_VERSIONED_SHLIB_TRUE@	  $(PREPROCESS) -P -include config.h - > $@ || (rm -f $@ ; exit 1)
+
+@LIBGOMP_BUILD_VERSIONED_SHLIB_TRUE@libgompd.ver: $(top_srcdir)/libgompd.map
+@LIBGOMP_BUILD_VERSIONED_SHLIB_TRUE@	$(EGREP) -v '#(#| |$$)' $< | \
+@LIBGOMP_BUILD_VERSIONED_SHLIB_TRUE@	  $(PREPROCESS) -P -include config.h - > $@ || (rm -f $@ ; exit 1)
 @LIBGOMP_BUILD_VERSIONED_SHLIB_SUN_TRUE@@LIBGOMP_BUILD_VERSIONED_SHLIB_TRUE@libgomp.ver-sun : libgomp.ver \
 @LIBGOMP_BUILD_VERSIONED_SHLIB_SUN_TRUE@@LIBGOMP_BUILD_VERSIONED_SHLIB_TRUE@		$(top_srcdir)/../contrib/make_sunver.pl \
 @LIBGOMP_BUILD_VERSIONED_SHLIB_SUN_TRUE@@LIBGOMP_BUILD_VERSIONED_SHLIB_TRUE@		$(libgomp_la_OBJECTS) $(libgomp_la_LIBADD)
@@ -1381,6 +1414,15 @@ vpath % $(strip $(search_path))
 @LIBGOMP_BUILD_VERSIONED_SHLIB_SUN_TRUE@@LIBGOMP_BUILD_VERSIONED_SHLIB_TRUE@	  libgomp.ver \
 @LIBGOMP_BUILD_VERSIONED_SHLIB_SUN_TRUE@@LIBGOMP_BUILD_VERSIONED_SHLIB_TRUE@	  $(libgomp_la_OBJECTS:%.lo=.libs/%.o) \
 @LIBGOMP_BUILD_VERSIONED_SHLIB_SUN_TRUE@@LIBGOMP_BUILD_VERSIONED_SHLIB_TRUE@	 `echo $(libgomp_la_LIBADD) | \
+@LIBGOMP_BUILD_VERSIONED_SHLIB_SUN_TRUE@@LIBGOMP_BUILD_VERSIONED_SHLIB_TRUE@	    sed 's,/\([^/.]*\)\.la,/.libs/\1.a,g'` \
+@LIBGOMP_BUILD_VERSIONED_SHLIB_SUN_TRUE@@LIBGOMP_BUILD_VERSIONED_SHLIB_TRUE@	 > $@ || (rm -f $@ ; exit 1)
+@LIBGOMP_BUILD_VERSIONED_SHLIB_SUN_TRUE@@LIBGOMP_BUILD_VERSIONED_SHLIB_TRUE@libgompd.ver-sun : libgompd.ver \
+@LIBGOMP_BUILD_VERSIONED_SHLIB_SUN_TRUE@@LIBGOMP_BUILD_VERSIONED_SHLIB_TRUE@		$(top_srcdir)/../contrib/make_sunver.pl \
+@LIBGOMP_BUILD_VERSIONED_SHLIB_SUN_TRUE@@LIBGOMP_BUILD_VERSIONED_SHLIB_TRUE@		$(libgompd_la_OBJECTS) $(libgompd_la_LIBADD)
+@LIBGOMP_BUILD_VERSIONED_SHLIB_SUN_TRUE@@LIBGOMP_BUILD_VERSIONED_SHLIB_TRUE@	perl $(top_srcdir)/../contrib/make_sunver.pl \
+@LIBGOMP_BUILD_VERSIONED_SHLIB_SUN_TRUE@@LIBGOMP_BUILD_VERSIONED_SHLIB_TRUE@	  libgompd.ver \
+@LIBGOMP_BUILD_VERSIONED_SHLIB_SUN_TRUE@@LIBGOMP_BUILD_VERSIONED_SHLIB_TRUE@	  $(libgompd_la_OBJECTS:%.lo=.libs/%.o) \
+@LIBGOMP_BUILD_VERSIONED_SHLIB_SUN_TRUE@@LIBGOMP_BUILD_VERSIONED_SHLIB_TRUE@	 `echo $(libgompd_la_LIBADD) | \
 @LIBGOMP_BUILD_VERSIONED_SHLIB_SUN_TRUE@@LIBGOMP_BUILD_VERSIONED_SHLIB_TRUE@	    sed 's,/\([^/.]*\)\.la,/.libs/\1.a,g'` \
 @LIBGOMP_BUILD_VERSIONED_SHLIB_SUN_TRUE@@LIBGOMP_BUILD_VERSIONED_SHLIB_TRUE@	 > $@ || (rm -f $@ ; exit 1)
 

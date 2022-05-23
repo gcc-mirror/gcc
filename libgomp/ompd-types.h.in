@@ -1,0 +1,54 @@
+/* Copyright (C) The GNU Toolchain Authors.
+   Contributed by Mohamed Atef <mohamedatef1698@gmail.com>.
+   This file is part of the GNU Offloading and Multi Processing Library
+   (libgomp).
+   Libgomp is free software; you can redistribute it and/or modify it
+   under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 3, or (at your option)
+   any later version.
+   Libgomp is distributed in the hope that it will be useful, but WITHOUT ANY
+   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+   FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+   more details.
+   Under Section 7 of GPL version 3, you are granted additional
+   permissions described in the GCC Runtime Library Exception, version
+   3.1, as published by the Free Software Foundation.
+   You should have received a copy of the GNU General Public License and
+   a copy of the GCC Runtime Library Exception along with this program;
+   see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
+   <http://www.gnu.org/licenses/>.  */
+
+/* This file contains the types needed for OMPD implementation.  */
+
+#ifndef _OMPD_TYPES_H
+#define _OMPD_TYPES_H
+
+#ifdef __cpulsplus
+extern "C" {
+#endif
+
+#define OMPD_TYPES_VERSION   20180906 /* YYYYMMDD Format.  */
+
+/* Kinds of device threads.  */
+#define OMPD_THREAD_ID_PTHREAD      ((ompd_thread_id_t)0)
+#define OMPD_THREAD_ID_LWP          ((ompd_thread_id_t)1)
+#define OMPD_THREAD_ID_WINTHREAD    ((ompd_thread_id_t)2)
+
+/* The range of non-standard implementation defined values.  */
+#define OMPD_THREAD_ID_LO       ((ompd_thread_id_t)1000000)
+#define OMPD_THREAD_ID_HI       ((ompd_thread_id_t)1100000)
+
+/* Memory Access Segment definitions for Host and Target Devices.  */
+#define OMPD_SEGMENT_UNSPECIFIED             ((ompd_seg_t)0)
+
+/* Kinds of device device address spaces.  */
+#define OMPD_DEVICE_KIND_HOST     ((ompd_device_t)1)
+
+/* The range of non-standard implementation defined values.  */
+#define OMPD_DEVICE_IMPL_LO       ((ompd_device_t)1000000)
+#define OMPD_DEVICE_IMPL_HI       ((ompd_device_t)1100000)
+
+#ifdef __cplusplus
+} // extern C
+#endif
+#endif /* _OMPD_TYPES_H */

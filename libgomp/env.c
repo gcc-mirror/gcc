@@ -33,6 +33,7 @@
 #ifndef LIBGOMP_OFFLOADED_ONLY
 #include "libgomp_f.h"
 #include "oacc-int.h"
+#include "ompd-support.h"
 #include <ctype.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -89,6 +90,7 @@ void **gomp_places_list;
 unsigned long gomp_places_list_len;
 uintptr_t gomp_def_allocator = omp_default_mem_alloc;
 int gomp_debug_var;
+int gompd_enabled;
 unsigned int gomp_num_teams_var;
 int gomp_nteams_var;
 int gomp_teams_thread_limit_var;
@@ -416,6 +418,38 @@ parse_target_offload (const char *name, enum gomp_target_offload_t *offload)
     }
 
   gomp_error ("Invalid value for environment variable OMP_TARGET_OFFLOAD");
+}
+
+/* Parse OMP_DEBUG environment variable.  */
+
+static void
+parse_debug (const char *name, int *debug_value)
+{
+  const char *env;
+  int ret = -1;
+  env = getenv (name);
+  if (env == NULL)
+    return;
+  while (isspace ((unsigned char) *env))
+    ++env;
+  if (strncasecmp (env, "enabled", 7) == 0)
+    {
+      env += 7;
+      ret = 1;
+    }
+  else if (strncasecmp (env, "disabled", 8) == 0)
+    {
+      env += 8;
+      ret = 0;
+    }
+  while (isspace ((unsigned char) *env))
+    ++env;
+  if (ret != -1 && *env == '\0')
+    {
+      *debug_value = ret;
+      return;
+    }
+  gomp_error ("Invalid value for environment variable OMP_DEBUG");
 }
 
 /* Parse environment variable set to a boolean or list of omp_proc_bind_t
@@ -1483,6 +1517,9 @@ initialize_env (void)
 	= thread_limit_var > INT_MAX ? UINT_MAX : thread_limit_var;
     }
   parse_int_secure ("GOMP_DEBUG", &gomp_debug_var, true);
+  parse_debug ("OMP_DEBUG", &gompd_enabled);
+  if (gompd_enabled == 1)
+    gompd_load ();
 #ifndef HAVE_SYNC_BUILTINS
   gomp_mutex_init (&gomp_managed_threads_lock);
 #endif

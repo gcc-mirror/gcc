@@ -23,4 +23,4 @@
    see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    <http://www.gnu.org/licenses/>.  */
 
-#define SONAME_SUFFIX(n) ("." #n ".dylib")
+#define SONAME_SUFFIX(n) "." #n ".dylib"

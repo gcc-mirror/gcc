@@ -30,6 +30,7 @@
 #include "pool.h"
 #include <stdlib.h>
 #include <string.h>
+#include "ompd-support.h"
 
 #ifdef LIBGOMP_USE_PTHREADS
 pthread_attr_t gomp_thread_attr;
@@ -75,6 +76,7 @@ gomp_thread_start (void *xdata)
   void (*local_fn) (void *);
   void *local_data;
 
+  ompd_bp_thread_begin ();
 #if defined HAVE_TLS || defined USE_EMUTLS
   thr = &gomp_tls_data;
 #else
@@ -336,6 +338,7 @@ gomp_team_start (void (*fn) (void *), void *data, unsigned nthreads,
   struct gomp_thread **affinity_thr = NULL;
   bool force_display = false;
 
+  ompd_bp_parallel_begin ();
   thr = gomp_thread ();
   nested = thr->ts.level;
   pool = thr->thread_pool;
@@ -1011,6 +1014,7 @@ gomp_team_end (void)
       pool->last_team = team;
       gomp_release_thread_pool (pool);
     }
+  ompd_bp_parallel_end ();
 }
 
 #ifdef LIBGOMP_USE_PTHREADS

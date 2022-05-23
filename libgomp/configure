@@ -16980,7 +16980,7 @@ fi
 
 
 
-ac_config_files="$ac_config_files omp.h omp_lib.h omp_lib.f90 libgomp_f.h"
+ac_config_files="$ac_config_files omp.h omp_lib.h omp_lib.f90 libgomp_f.h omp-tools.h ompd-types.h"
 
 ac_config_files="$ac_config_files Makefile testsuite/Makefile libgomp.spec"
 
@@ -18137,6 +18137,8 @@ do
     "omp_lib.h") CONFIG_FILES="$CONFIG_FILES omp_lib.h" ;;
     "omp_lib.f90") CONFIG_FILES="$CONFIG_FILES omp_lib.f90" ;;
     "libgomp_f.h") CONFIG_FILES="$CONFIG_FILES libgomp_f.h" ;;
+    "omp-tools.h") CONFIG_FILES="$CONFIG_FILES omp-tools.h" ;;
+    "ompd-types.h") CONFIG_FILES="$CONFIG_FILES ompd-types.h" ;;
     "Makefile") CONFIG_FILES="$CONFIG_FILES Makefile" ;;
     "testsuite/Makefile") CONFIG_FILES="$CONFIG_FILES testsuite/Makefile" ;;
     "libgomp.spec") CONFIG_FILES="$CONFIG_FILES libgomp.spec" ;;
