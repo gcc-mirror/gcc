@@ -121,9 +121,31 @@ package Ada.Containers.Helpers is
       pragma Inline (TE_Check);
       --  Tampering-with-elements check
 
-      -----------------
-      --  RAII Types --
-      -----------------
+      ---------------------------------------
+      -- Queries of busy and locked status --
+      ---------------------------------------
+
+      --  These are never called when tampering checks are suppressed.
+
+      use type SAC.Atomic_Unsigned;
+
+      pragma Warnings (Off);
+      --  Otherwise, the -gnatw.n switch triggers unwanted warnings on the
+      --  references to atomic variables below.
+
+      function Is_Busy (T_Counts : Tamper_Counts) return Boolean is
+        (if T_Check then T_Counts.Busy > 0 else raise Program_Error);
+      pragma Inline (Is_Busy);
+
+      function Is_Locked (T_Counts : Tamper_Counts) return Boolean is
+        (if T_Check then T_Counts.Lock > 0 else raise Program_Error);
+      pragma Inline (Is_Locked);
+
+      pragma Warnings (On);
+
+      ----------------
+      -- RAII Types --
+      ----------------
 
       --  Initialize of With_Busy increments the Busy count, and Finalize
       --  decrements it. Thus, to prohibit tampering with elements within a

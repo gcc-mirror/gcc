@@ -230,6 +230,25 @@ is
       Start     : Cursor)
       return Set_Iterator_Interfaces.Reversible_Iterator'class;
 
+   --  Ada 2022 features:
+
+   function Has_Element (Container : Set; Position : Cursor) return Boolean;
+
+   function Tampering_With_Cursors_Prohibited (Container : Set) return Boolean;
+
+   function Element (Container : Set; Position : Cursor) return Element_Type;
+
+   procedure Query_Element
+     (Container : Set;
+      Position  : Cursor;
+      Process   : not null access procedure (Element : Element_Type));
+
+   function Next (Container : Set; Position : Cursor) return Cursor;
+
+   procedure Next (Container : Set; Position : in out Cursor);
+
+   ----------------
+
    generic
       type Key_Type (<>) is private;
 
