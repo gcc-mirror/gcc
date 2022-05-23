@@ -721,14 +721,14 @@ public:
   /* Strip off the "const", giving the underlying type.  */
   type *unqualified () final override { return m_other_type; }
 
-  virtual bool is_same_type_as (type *other)
+  bool is_same_type_as (type *other) final override
   {
     if (!other->is_const ())
       return false;
     return m_other_type->is_same_type_as (other->is_const ());
   }
 
-  virtual type *is_const () { return m_other_type; }
+  type *is_const () final override { return m_other_type; }
 
   void replay_into (replayer *) final override;
 
@@ -744,7 +744,7 @@ public:
   memento_of_get_volatile (type *other_type)
   : decorated_type (other_type) {}
 
-  virtual bool is_same_type_as (type *other)
+  bool is_same_type_as (type *other) final override
   {
     if (!other->is_volatile ())
       return false;
@@ -754,7 +754,7 @@ public:
   /* Strip off the "volatile", giving the underlying type.  */
   type *unqualified () final override { return m_other_type; }
 
-  virtual type *is_volatile () { return m_other_type; }
+  type *is_volatile () final override { return m_other_type; }
 
   void replay_into (replayer *) final override;
 
@@ -1051,7 +1051,7 @@ public:
 
   void replay_into (replayer *r) final override;
 
-  virtual bool is_union () const final override { return true; }
+  bool is_union () const final override { return true; }
 
 private:
   string * make_debug_string () final override;
