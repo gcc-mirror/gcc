@@ -36,7 +36,6 @@
 
 #pragma GCC system_header
 
-#include <ext/atomicity.h>
 #include <ext/alloc_traits.h>
 #include <debug/debug.h>
 

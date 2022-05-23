@@ -91,7 +91,7 @@ public:
   }
 
   void dump_dot (graphviz_out *gv,
-		 const dump_args_t &args) const FINAL OVERRIDE;
+		 const dump_args_t &args) const final override;
 
   const feasibility_state &get_state () const { return m_state; }
   const region_model &get_model () const { return m_state.get_model (); }
@@ -123,7 +123,7 @@ public:
   ~infeasible_node () { delete m_rc; }
 
   void dump_dot (graphviz_out *gv,
-		 const dump_args_t &args) const FINAL OVERRIDE;
+		 const dump_args_t &args) const final override;
 
 private:
   rejected_constraint *m_rc;
@@ -135,7 +135,7 @@ class base_feasible_edge : public dedge<fg_traits>
 {
  public:
   void dump_dot (graphviz_out *gv,
-		 const dump_args_t &args) const FINAL OVERRIDE;
+		 const dump_args_t &args) const final override;
 
   const exploded_edge *get_inner_edge () const { return m_inner_edge; }
 

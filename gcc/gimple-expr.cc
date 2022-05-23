@@ -614,17 +614,6 @@ is_gimple_condexpr_1 (tree t, bool allow_traps, bool allow_cplx)
 	      && is_gimple_val (TREE_OPERAND (t, 1))));
 }
 
-/* Return true if T is a condition operand in a GIMPLE assignment
-   with a COND_EXPR RHS.  */
-
-bool
-is_gimple_condexpr (tree t)
-{
-  /* Always split out _Complex type compares since complex lowering
-     doesn't handle this case.  */
-  return is_gimple_condexpr_1 (t, true, false);
-}
-
 /* Like is_gimple_condexpr, but does not allow T to trap.  */
 
 bool

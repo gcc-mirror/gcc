@@ -31816,6 +31816,11 @@ VIA Nano Quad Core CPU with x86-64, MMX, SSE, SSE2, SSE3, SSSE3 and SSE4.1
 instruction set support.
 (No scheduling is implemented for this chip.)
 
+@item lujiazui
+ZHAOXIN lujiazui CPU with x86-64, MOVBE, MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1,
+SSE4.2, AVX, POPCNT, AES, PCLMUL, RDRND, XSAVE, XSAVEOPT, FSGSBASE, CX16,
+ABM, BMI, BMI2, F16C, FXSR, RDSEED instruction set support.
+
 @item geode
 AMD Geode embedded processor with MMX and 3DNow!@: instruction set support.
 @end table

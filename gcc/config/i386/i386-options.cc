@@ -138,6 +138,8 @@ along with GCC; see the file COPYING3.  If not see
 #define m_TREMONT (HOST_WIDE_INT_1U<<PROCESSOR_TREMONT)
 #define m_INTEL (HOST_WIDE_INT_1U<<PROCESSOR_INTEL)
 
+#define m_LUJIAZUI (HOST_WIDE_INT_1U<<PROCESSOR_LUJIAZUI)
+
 #define m_GEODE (HOST_WIDE_INT_1U<<PROCESSOR_GEODE)
 #define m_K6 (HOST_WIDE_INT_1U<<PROCESSOR_K6)
 #define m_K6_GEODE (m_K6 | m_GEODE)
@@ -755,6 +757,7 @@ static const struct processor_costs *processor_cost_table[] =
   &alderlake_cost,
   &icelake_cost,
   &intel_cost,
+  &lujiazui_cost,
   &geode_cost,
   &k6_cost,
   &athlon_cost,

@@ -90,6 +90,8 @@ typedef long long MUL_TYPE;
 #define MIN(x, y)  ((x) <= (y) ? (x) : (y))
 #define MAX(x, y)  ((x) >= (y) ? (x) : (y))
 
+#define ARRAY_SIZE(a) (sizeof (a) / sizeof ((a)[0]))
+
 /* For this program a unary op is one which has only one nonconstant
    operand.  So shift left by 5 is considered unary.  */
 typedef MUL_TYPE (*unary_op_func) (MUL_TYPE);

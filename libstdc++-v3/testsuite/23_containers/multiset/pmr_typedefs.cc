@@ -18,7 +18,8 @@
 // { dg-do compile { target c++17 } }
 
 #include <set>
-#include <memory_resource>
+
+std::pmr::multiset<int> c{1, 2, 3, 4};
 
 struct X { };
 struct Cmp { bool operator()(X, X) const { return false; } };

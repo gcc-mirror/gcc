@@ -19,7 +19,8 @@
 // { dg-require-effective-target cxx11_abi }
 
 #include <string>
-#include <memory_resource>
+
+std::pmr::string s = "polly";
 
 struct T : std::char_traits<char> { };
 

@@ -1,3 +1,319 @@
+2022-05-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.cc (gnat_to_gnu_entity) <E_Constant>: Deal with
+	a constant related to a return in a function specially.
+	* gcc-interface/trans.cc (Call_to_gnu): Use return slot optimization
+	if the target is a return object.
+	(gnat_to_gnu) <N_Object_Declaration>: Deal with a constant related
+	to a return in a function specially.
+
+2022-05-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/utils.cc (gnat_pushdecl): Also set TREE_NO_WARNING
+	on the decl if Comes_From_Source is false for the associated node.
+
+2022-05-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.cc (gnat_gimplify_expr): Tidy up.
+
+2022-05-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.cc (gnat_to_gnu_entity) <E_Function>: Also call
+	process_attributes for built-in functions.
+	(prepend_one_attribute_pragma): Deal with "simd" attribute.
+	* gcc-interface/utils.cc (handle_simd_attribute): New function.
+	(gnat_internal_attribute_table): Add entry for "simd" attribute.
+
+2022-05-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.cc (components_to_record): Use NULL recursively
+	as P_GNU_REP_LIST for the innermost variant level in the unchecked
+	union case with a fixed part.
+
+2022-05-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.cc (gnat_to_gnu): Do not set Current_Error_Node
+	to a node without location.
+
+2022-05-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.cc (gnat_to_gnu_entity) <E_Access_Subtype>: And
+	skip the elaboration of the designated subtype when that of its base
+	type has been delayed.
+
+2022-05-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.cc (gnat_to_gnu_entity) <E_Record_Subtype>: If
+	it is a special subtype designated by an access subtype, then defer
+	the completion of incomplete types.
+
+2022-05-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/ada-tree.h, gcc-interface/ada.h,
+	gcc-interface/gadaint.h, gcc-interface/targtyps.cc: Adjust
+	copyright line.
+
+2022-05-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/utils.cc (unchecked_convert): Do not fold a string
+	constant if the target type is pointer to character.
+
+2022-05-19  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_prag.adb (Analyze_Pragma): Remove redundant call to
+	Set_Error_Posted.
+
+2022-05-19  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_ch8.adb (Find_Expanded_Name): Emit a main error message
+	before adding a continuation with the call to
+	Error_Missing_With_Of_Known_Unit.
+
+2022-05-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_util.ads (Requires_Transient_Scope): Add pragma Inline.
+
+2022-05-19  Steve Baird  <baird@adacore.com>
+
+	* sem_ch13.adb (Build_Predicate_Functions): If a semantic error
+	has been detected then ignore Predicate_Failure aspect
+	specifications in the same way as is done for CodePeer and
+	SPARK. This avoids an internal compiler error if
+	Ancestor_Predicate_Function_Called is True but Result_Expr is
+	not an N_And_Then node (and is therefore unsuitable as an
+	argument in a call to Left_Opnd).
+
+2022-05-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch7.adb (Wrap_Transient_Declaration): Propagate Uses_Sec_Stack
+	to enclosing function if it does not return on the secondary stack.
+	* exp_ch6.adb (Expand_Call_Helper): Call Establish_Transient_Scope
+	with Manage_Sec_Stack set to True only when necessary.
+	* sem_res.adb (Resolve_Call): Likewise.
+	(Resolve_Entry_Call): Likewise.
+
+2022-05-19  Daniel Mercier  <mercier@adacore.com>
+
+	* sem_ch13.adb (Build_Predicate_Function): Ignore predicate
+	failure in CodePeer mode.
+
+2022-05-19  Arnaud Charlet  <charlet@adacore.com>
+
+	* raise-gcc.c: Fix compilation with -DSTANDALONE under windows.
+
+2022-05-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch4.adb (Narrow_Large_Operation): Preserve and reuse Etype.
+
+2022-05-19  Javier Miranda  <miranda@adacore.com>
+
+	* exp_attr.adb (Add_Implicit_Interface_Type_Conversion): New
+	subprogram which factorizes code.
+	(Expand_N_Attribute_Reference): Call the new subprogram to add
+	the missing implicit interface type conversion.
+
+2022-05-19  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_ch13.adb (Build_Predicate_Function): Ignore predicate
+	failure in GNATprove mode.
+
+2022-05-19  Steve Baird  <baird@adacore.com>
+
+	* einfo-utils.ads, einfo-utils.adb: Delete Predicate_Function_M
+	function and Set_Predicate_Function_M procedure.
+	* einfo.ads: Delete comments for Is_Predicate_Function_M and
+	Predicate_Function_M functions. Add comment for new
+	Predicate_Expression function. Update comment describing
+	predicate functions.
+	* exp_util.ads, exp_util.adb (Make_Predicate_Call): Replace Mem
+	formal parameter with Static_Mem and Dynamic_Mem formals.
+	(Make_Predicate_Check): Delete Add_Failure_Expression and call
+	to it.
+	* exp_ch4.adb (Expand_N_In.Predicate_Check): Update
+	Make_Predicate_Call call to match profile change.
+	* gen_il-fields.ads: Delete Is_Predicate_Function_M field, add
+	Predicate_Expression field.
+	* gen_il-gen-gen_entities.adb: Delete Is_Predicate_Function_M
+	use, add Predicate_Expression use.
+	* sem_ch13.adb (Build_Predicate_Functions): Rename as singular,
+	not plural; we no longer build a Predicate_M function. Delete
+	Predicate_M references. Add new Boolean parameter for predicate
+	functions when needed. Restructure body of generated predicate
+	functions to implement required Predicate_Failure behavior and
+	to set new Predicate_Expression attribute. Remove special
+	treatment of raise expressions within predicate expressions.
+	* sem_util.ads (Predicate_Failure_Expression,
+	Predicate_Function_Needs_Membership_Parameter): New functions.
+	* sem_util.adb (Is_Current_Instance): Fix bugs which caused
+	wrong result.
+	(Is_Current_Instance_Reference_In_Type_Aspect): Delete
+	Is_Predicate_Function_M reference.
+	(Predicate_Failure_Expression): New function.
+	(Propagate_Predicate_Attributes): Delete Is_Predicate_Function_M
+	references.
+
+2022-05-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch6.adb (Expand_Call_Helper): Adjust comment.
+	(Expand_Simple_Function_Return): For the case of a type which needs
+	finalization and is returned on the primary stack, do not create a
+	copy if the expression originates from a function call.
+	* exp_ch7.adb (Transient Scope Management): Adjust comment.
+	* exp_util.ads (Is_Related_To_Func_Return): Add WARNING line.
+	* fe.h (Is_Related_To_Func_Return): Declare.
+
+2022-05-19  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_ch9.adb (Build_Find_Body_Index): Remove empty Elsif_Parts
+	from the constructed IF statement.
+
+2022-05-19  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_ch9.adb (Build_Find_Body_Index): Remove IF statement whose
+	condition was true-by-construction; remove excessive assertion
+	(since the call to Elsif_Parts will check that Nod is present
+	and it is an if-statement).
+
+2022-05-19  Arnaud Charlet  <charlet@adacore.com>
+
+	* gnat1drv.adb, gnatcmd.adb: Remove references to gnatfind/xref.
+	* doc/gnat_ugn/building_executable_programs_with_gnat.rst,
+	doc/gnat_ugn/the_gnat_compilation_model.rst: Ditto.
+	* gnat_ugn.texi: Regenerate.
+	* gnatfind.adb, gnatxref.adb, xr_tabls.adb, xr_tabls.ads,
+	xref_lib.adb, xref_lib.ads: Removed, no longer used.
+
+2022-05-19  Claire Dross  <dross@adacore.com>
+
+	* libgnat/a-strfix.adb: Add assertions.
+	* libgnat/a-strsup.adb: Idem.
+
+2022-05-19  Ed Schonberg  <schonberg@adacore.com>
+
+	* erroutc.ads: Fix a single-character typo in a comment.
+	* exp_aggr.adb: Fix a single-character typo in a comment.
+	Replace several pairs of calls to Low_Bound and
+	High_Bound (which do not handle an identifier that denotes a
+	scalar subtype) with corresponding calls to Get_Index_Bounds
+	(which does handle that case).
+	* par-ch4.adb (P_Aggregate_Or_Paren_Expr): Set the
+	Component_Associations attribute of a null array aggregate to
+	New_List.
+	* sem_aggr.ads: New visible function
+	Is_Null_Array_Aggregate_High_Bound.
+	* sem_aggr.adb (Is_Null_Array_Aggregate_High_Bound,
+	Is_Null_Aggregate, Resolve_Null_Array_Aggregate): New functions.
+	(Resolve_Aggregate): Recognize null array aggregates (using
+	Is_Null_Aggregate) and, when one is recognized, resolve
+	it (using Resolve_Null_Array_Aggregate).  Avoid calling
+	Array_Aggr_Subtype for a null array aggregate; the needed
+	subtype is built in Resolve_Null_Array_Aggregate. Do not
+	incorrectly flag a null aggregate (after it is transformed by
+	expansion) as being both positional and named.
+	* sem_attr.adb (Eval_Attribute): Special treatment for null
+	array aggregate high bounds to avoid incorrectly flagging
+	something like Integer'Pred (Integer'First) as an illegal static
+	expression.
+	* sem_eval.adb (Out_Of_Range): Special treatment for null array
+	aggregate high bounds to avoid incorrectly flagging something
+	like Integer'Pred (Integer'First) as an illegal static
+	expression.
+
+2022-05-19  Yannick Moy  <moy@adacore.com>
+
+	* libgnat/s-aridou.adb (Lemma_Abs_Range,
+	Lemma_Double_Shift_Left, Lemma_Shift_Left): New lemmas.
+	(Double_Divide): Add ghost code.
+	(Lemma_Concat_Definition, Lemma_Double_Shift_Left,
+	Lemma_Shift_Left, Lemma_Shift_Right): Define or complete lemmas.
+	(Scaled_Divide): Add ghost code.
+
+2022-05-19  Bob Duff  <duff@adacore.com>
+
+	* exp_pakd.adb (Expand_Packed_Eq): Replace the check for *same*
+	modular type, with a check for any modular type, and assert that
+	the two types have the same modulus and so on.
+	* exp_pakd.ads: Minor comment improvements.
+
+2022-05-19  Bob Duff  <duff@adacore.com>
+
+	* style.adb (Check_Identifier): Deal with the case where a
+	record component definition has been transformed; we want to
+	warn if the original came from source.
+	* libgnat/s-objrea.ads, libgnat/s-objrea.adb: Fix casing of MF
+	to be consistent.
+	* uname.adb: Fix casing of Chars to be consistent.
+	* sem_util.ads: Minor comment fix.
+
+2022-05-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* Makefile.rtl (GNATRTL_NONTASKING_OBJS): Add s-retsta.
+	* debug.adb (d_r): Document usage.
+	* exp_ch4.adb (Expand_N_Allocato): Deal with the return stack pool.
+	* exp_ch6.adb (Expand_Simple_Function_Return): Replace calls to
+	Requires_Transient_Scope with Returns_On_Secondary_Stack.  Deal
+	with types that need finalization returned on the primary stack,
+	use CW_Or_Needs_Finalization for those returned on the secondary.
+	* exp_util.adb (Build_Allocate_Deallocate_Proc): Return early
+	for the return stack pool.
+	(Remove_Side_Effects): Call CW_Or_Needs_Finalization.
+	* fe.h (Requires_Transient_Scope): Delete.
+	(Returns_On_Secondary_Stack): Declare.
+	* gnat1drv.adb (Adjust_Global_Switches): Set Back_End_Return_Slot
+	to False when generating C code or if -gnatd_r is specified.
+	* opt.ads (Back_End_Return_Slot): New boolean variable.
+	* rtsfind.ads (RTU_Id): Add System_Return_Stack.
+	(RE_Id): Add RE_RS_Allocate and RE_RS_Pool.
+	(RE_Unit_Table): Add entries for RE_RS_Allocate and RE_RS_Pool.
+	* sem_util.ads (CW_Or_Has_Controlled_Part): Delete.
+	(CW_Or_Needs_Finalization): Declare.
+	(Requires_Transient_Scope): Adjust description.
+	(Returns_On_Secondary_Stack): Declare.
+	* sem_util.adb (Compute_Returns_By_Ref): Set Returns_By_Ref on types
+	which need finalization if they are returned on the secondary stack.
+	(CW_Or_Has_Controlled_Part): Rename to...
+	(CW_Or_Needs_Finalization): ...this.
+	(Requires_Transient_Scope): Move bulk of implementation to...
+	(Returns_On_Secondary_Stack): ...here.  Return true for types which
+	need finalization only if the back-end return slot is not supported.
+	* libgnat/s-retsta.ads: New file.
+	* gcc-interface/ada-builtin-types.def (BT_FN_PTR_SSIZE): Define.
+	* gcc-interface/ada-builtins.def (return_slot): Likewise.
+	* gcc-interface/ada-tree.h (BUILT_IN_RETURN_SLOT): Likewise.
+	* gcc-interface/decl.cc (gnat_to_gnu_subprog_type): Replace call to
+	Requires_Transient_Scope with Returns_On_Secondary_Stack.
+	* gcc-interface/trans.cc (gnat_to_gnu) <N_Simple_Return_Statement>:
+	In the return by invisible reference, skip the copy if the source
+	is the same as the destination.
+	* gcc-interface/utils2.cc (build_call_alloc_dealloc_proc): Deal with
+	the return stack pool.
+
+2022-05-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.cc: Fix formatting issues in comments.
+	(Subprogram_Body_to_gnu): Tidy up.
+	(Exception_Handler_to_gnu_gcc): Rename into...
+	(Exception_Handler_to_gnu): ...this.
+	(gnat_to_gnu) <N_Exception_Handler>: Adjust to above renaming.
+
+2022-05-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.cc (Subprogram_Body_to_gnu): Rename a couple
+	of local variables and use Is_Generic_Subprogram predicate.
+	(process_decls): Likewise.
+
+2022-05-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.cc (Subprogram_Body_to_gnu): Do not deal with
+	inlining heuristics for expression functions here but...
+	* gcc-interface/decl.cc (inline_status_for_subprog): ...here instead
+	and do not override them at -Os.
+
+2022-05-19  Piotr Trojanek  <trojanek@adacore.com>
+
+	* gcc-interface/decl.cc (gnat_to_gnu_entity): Remove dead code
+	which expected Scope to return E_Subprogram_Body entity.
+
 2022-05-18  Claire Dross  <dross@adacore.com>
 
 	* libgnat/s-imageu.adb (Set_Image_Unsigned): Change assertion.

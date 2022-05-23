@@ -50,6 +50,12 @@ along with GCC; see the file COPYING3.  If not see
 #include "vec-perm-indices.h"
 #include "gimple-range.h"
 
+
+/* TODO:  Note the vectorizer still builds COND_EXPRs with GENERIC compares
+   in the first operand.  Disentangling this is future work, the
+   IL is properly transfered to VEC_COND_EXPRs with separate compares.  */
+
+
 /* Return true if we have a useful VR_RANGE range for VAR, storing it
    in *MIN_VALUE and *MAX_VALUE if so.  Note the range in the dump files.  */
 

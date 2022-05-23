@@ -897,7 +897,9 @@ loop_cand::undo_simple_reduction (reduction_p re, bitmap dce_seeds)
       /* Init new_var to MEM_REF or CONST depending on if it is the first
 	 iteration.  */
       induction_p iv = m_inductions[0];
-      cond = fold_build2 (NE_EXPR, boolean_type_node, iv->var, iv->init_val);
+      cond = make_ssa_name (boolean_type_node);
+      stmt = gimple_build_assign (cond, NE_EXPR, iv->var, iv->init_val);
+      gimple_seq_add_stmt_without_update (&stmts, stmt);
       new_var = copy_ssa_name (re->var);
       stmt = gimple_build_assign (new_var, COND_EXPR, cond, tmp, re->init);
       gimple_seq_add_stmt_without_update (&stmts, stmt);

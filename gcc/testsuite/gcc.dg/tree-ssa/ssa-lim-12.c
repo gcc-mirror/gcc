@@ -23,4 +23,4 @@ void bar (int x, int z)
     }
 }
 
-/* { dg-final { scan-tree-dump-times "!= 0 ? " 2 "lim2" } } */
+/* { dg-final { scan-tree-dump-times " = _\[0-9\]+ ? " 2 "lim2" } } */

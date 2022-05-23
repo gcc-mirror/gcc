@@ -80,25 +80,25 @@ class taint_state_machine : public state_machine
 public:
   taint_state_machine (logger *logger);
 
-  bool inherited_state_p () const FINAL OVERRIDE { return true; }
+  bool inherited_state_p () const final override { return true; }
 
   state_t alt_get_inherited_state (const sm_state_map &map,
 				   const svalue *sval,
 				   const extrinsic_state &ext_state)
-    const FINAL OVERRIDE;
+    const final override;
 
   bool on_stmt (sm_context *sm_ctxt,
 		const supernode *node,
-		const gimple *stmt) const FINAL OVERRIDE;
+		const gimple *stmt) const final override;
 
   void on_condition (sm_context *sm_ctxt,
 		     const supernode *node,
 		     const gimple *stmt,
 		     const svalue *lhs,
 		     enum tree_code op,
-		     const svalue *rhs) const FINAL OVERRIDE;
+		     const svalue *rhs) const final override;
 
-  bool can_purge_p (state_t s) const FINAL OVERRIDE;
+  bool can_purge_p (state_t s) const final override;
 
   bool get_taint (state_t s, tree type, enum bounds *out) const;
 
@@ -135,7 +135,7 @@ public:
   : m_sm (sm), m_arg (arg), m_has_bounds (has_bounds)
   {}
 
-  bool subclass_equal_p (const pending_diagnostic &base_other) const OVERRIDE
+  bool subclass_equal_p (const pending_diagnostic &base_other) const override
   {
     const taint_diagnostic &other = (const taint_diagnostic &)base_other;
     return (same_tree_p (m_arg, other.m_arg)
@@ -143,7 +143,7 @@ public:
   }
 
   label_text describe_state_change (const evdesc::state_change &change)
-    FINAL OVERRIDE
+    final override
   {
     if (change.m_new_state == m_sm.m_tainted)
       {
@@ -180,14 +180,14 @@ public:
   : taint_diagnostic (sm, arg, has_bounds)
   {}
 
-  const char *get_kind () const FINAL OVERRIDE { return "tainted_array_index"; }
+  const char *get_kind () const final override { return "tainted_array_index"; }
 
-  int get_controlling_option () const FINAL OVERRIDE
+  int get_controlling_option () const final override
   {
     return OPT_Wanalyzer_tainted_array_index;
   }
 
-  bool emit (rich_location *rich_loc) FINAL OVERRIDE
+  bool emit (rich_location *rich_loc) final override
   {
     diagnostic_metadata m;
     /* CWE-129: "Improper Validation of Array Index".  */
@@ -217,7 +217,7 @@ public:
       }
   }
 
-  label_text describe_final_event (const evdesc::final_event &ev) FINAL OVERRIDE
+  label_text describe_final_event (const evdesc::final_event &ev) final override
   {
     switch (m_has_bounds)
       {
@@ -253,14 +253,14 @@ public:
   : taint_diagnostic (sm, arg, has_bounds)
   {}
 
-  const char *get_kind () const FINAL OVERRIDE { return "tainted_offset"; }
+  const char *get_kind () const final override { return "tainted_offset"; }
 
-  int get_controlling_option () const FINAL OVERRIDE
+  int get_controlling_option () const final override
   {
     return OPT_Wanalyzer_tainted_offset;
   }
 
-  bool emit (rich_location *rich_loc) FINAL OVERRIDE
+  bool emit (rich_location *rich_loc) final override
   {
     diagnostic_metadata m;
     /* CWE-823: "Use of Out-of-range Pointer Offset".  */
@@ -312,7 +312,7 @@ public:
 	}
   }
 
-  label_text describe_final_event (const evdesc::final_event &ev) FINAL OVERRIDE
+  label_text describe_final_event (const evdesc::final_event &ev) final override
   {
     if (m_arg)
       switch (m_has_bounds)
@@ -363,14 +363,14 @@ public:
   : taint_diagnostic (sm, arg, has_bounds)
   {}
 
-  const char *get_kind () const OVERRIDE { return "tainted_size"; }
+  const char *get_kind () const override { return "tainted_size"; }
 
-  int get_controlling_option () const FINAL OVERRIDE
+  int get_controlling_option () const final override
   {
     return OPT_Wanalyzer_tainted_size;
   }
 
-  bool emit (rich_location *rich_loc) OVERRIDE
+  bool emit (rich_location *rich_loc) override
   {
     diagnostic_metadata m;
     m.add_cwe (129);
@@ -399,7 +399,7 @@ public:
       }
   }
 
-  label_text describe_final_event (const evdesc::final_event &ev) FINAL OVERRIDE
+  label_text describe_final_event (const evdesc::final_event &ev) final override
   {
     switch (m_has_bounds)
       {
@@ -436,12 +436,12 @@ public:
   {
   }
 
-  const char *get_kind () const OVERRIDE
+  const char *get_kind () const override
   {
     return "tainted_access_attrib_size";
   }
 
-  bool emit (rich_location *rich_loc) FINAL OVERRIDE
+  bool emit (rich_location *rich_loc) final override
   {
     bool warned = tainted_size::emit (rich_loc);
     if (warned)
@@ -470,14 +470,14 @@ public:
   : taint_diagnostic (sm, arg, has_bounds)
   {}
 
-  const char *get_kind () const FINAL OVERRIDE { return "tainted_divisor"; }
+  const char *get_kind () const final override { return "tainted_divisor"; }
 
-  int get_controlling_option () const FINAL OVERRIDE
+  int get_controlling_option () const final override
   {
     return OPT_Wanalyzer_tainted_divisor;
   }
 
-  bool emit (rich_location *rich_loc) FINAL OVERRIDE
+  bool emit (rich_location *rich_loc) final override
   {
     diagnostic_metadata m;
     /* CWE-369: "Divide By Zero".  */
@@ -493,7 +493,7 @@ public:
 			   " without checking for zero");
   }
 
-  label_text describe_final_event (const evdesc::final_event &ev) FINAL OVERRIDE
+  label_text describe_final_event (const evdesc::final_event &ev) final override
   {
     if (m_arg)
       return ev.formatted_print
@@ -520,12 +520,12 @@ public:
   {
   }
 
-  const char *get_kind () const FINAL OVERRIDE
+  const char *get_kind () const final override
   {
     return "tainted_allocation_size";
   }
 
-  bool subclass_equal_p (const pending_diagnostic &base_other) const OVERRIDE
+  bool subclass_equal_p (const pending_diagnostic &base_other) const override
   {
     if (!taint_diagnostic::subclass_equal_p (base_other))
       return false;
@@ -534,12 +534,12 @@ public:
     return m_mem_space == other.m_mem_space;
   }
 
-  int get_controlling_option () const FINAL OVERRIDE
+  int get_controlling_option () const final override
   {
     return OPT_Wanalyzer_tainted_allocation_size;
   }
 
-  bool emit (rich_location *rich_loc) FINAL OVERRIDE
+  bool emit (rich_location *rich_loc) final override
   {
     diagnostic_metadata m;
     /* "CWE-789: Memory Allocation with Excessive Size Value".  */
@@ -614,7 +614,7 @@ public:
     return warned;
   }
 
-  label_text describe_final_event (const evdesc::final_event &ev) FINAL OVERRIDE
+  label_text describe_final_event (const evdesc::final_event &ev) final override
   {
     if (m_arg)
       switch (m_has_bounds)

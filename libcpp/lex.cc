@@ -1523,7 +1523,7 @@ class unpaired_bidi_rich_location : public rich_location
   class custom_range_label : public range_label
   {
    public:
-     label_text get_text (unsigned range_idx) const FINAL OVERRIDE
+     label_text get_text (unsigned range_idx) const final override
      {
        /* range 0 is the primary location; each subsequent range i + 1
 	  is for bidi::vec[i].  */

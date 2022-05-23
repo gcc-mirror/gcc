@@ -109,12 +109,12 @@ class vr_values : public range_query
   vr_values (void);
   ~vr_values (void);
 
-  virtual bool range_of_expr (irange &r, tree expr, gimple *stmt) OVERRIDE;
-  virtual tree value_of_expr (tree, gimple * = NULL) OVERRIDE;
-  virtual tree value_on_edge (edge, tree) OVERRIDE;
-  virtual tree value_of_stmt (gimple *, tree = NULL_TREE) OVERRIDE;
+  virtual bool range_of_expr (irange &r, tree expr, gimple *stmt) override;
+  virtual tree value_of_expr (tree, gimple * = NULL) override;
+  virtual tree value_on_edge (edge, tree) override;
+  virtual tree value_of_stmt (gimple *, tree = NULL_TREE) override;
   virtual const value_range_equiv *get_value_range (const_tree,
-						    gimple * = NULL) OVERRIDE;
+						    gimple * = NULL) override;
   void set_vr_value (tree, value_range_equiv *);
   value_range_equiv *swap_vr_value (tree, value_range_equiv *);
 
@@ -124,7 +124,7 @@ class vr_values : public range_query
   tree op_with_constant_singleton_value_range (tree);
   void adjust_range_with_scev (value_range_equiv *, class loop *,
 			       gimple *, tree);
-  virtual void dump (FILE *) OVERRIDE;
+  virtual void dump (FILE *) override;
 
   void extract_range_for_var_from_comparison_expr (tree, enum tree_code,
 						   tree, tree,

@@ -18,7 +18,8 @@
 // { dg-do compile { target c++17 } }
 
 #include <map>
-#include <memory_resource>
+
+std::pmr::map<int, int> c{{1,0}, {2,0}, {3,0}, {4,0}};
 
 struct X { };
 struct Y { };

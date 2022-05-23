@@ -3427,6 +3427,17 @@ proc check_effective_target_dfprt { } {
     }]
 }
 
+# Return 1 if the target uses the BID format for Decimal Floating
+# Point, 0 otherwise.
+
+proc check_effective_target_dfp_bid { } {
+    if { [istarget aarch64*-*-*]
+	 || [istarget i?86-*-*] || [istarget x86_64-*-*]} {
+	return 1
+    }
+    return 0
+}
+
 # Return 1 iff target has unsigned plain 'char' by default.
 
 proc check_effective_target_unsigned_char {} {

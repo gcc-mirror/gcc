@@ -25,6 +25,14 @@
 #include <functional>
 #include <testsuite_random.h>
 
+// { dg-additional-options "-DSIMULATOR_TEST" { target simulator } }
+
+#ifdef SIMULATOR_TEST
+# define ARGS 100, 1000
+#else
+# define ARGS
+#endif
+
 void test01()
 {
   using namespace __gnu_test;
@@ -33,9 +41,9 @@ void test01()
 
   std::binomial_distribution<> bd1(5, 0.3);
   auto bbd1 = std::bind(bd1, eng);
-  testDiscreteDist(bbd1, [](int n) { return binomial_pdf(n, 5, 0.3); } );
+  testDiscreteDist<ARGS>(bbd1, [](int n) { return binomial_pdf(n, 5, 0.3); } );
 
-  // These tests take a relatively long time on soft-float simulated
+  // These tests take a relatively long time on soft-float simulated targets.
   // targets, so please don't add new tests here, instead add a new file.
 }
 

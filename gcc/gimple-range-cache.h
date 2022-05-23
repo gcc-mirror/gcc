@@ -92,7 +92,7 @@ public:
   side_effect_manager m_exit;
 
   void dump_bb (FILE *f, basic_block bb);
-  virtual void dump (FILE *f) OVERRIDE;
+  virtual void dump (FILE *f) override;
 private:
   ssa_global_cache m_globals;
   block_range_cache m_on_entry;

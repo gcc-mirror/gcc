@@ -31,6 +31,12 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "tm.h"
 #include "libgcc_tm.h"
 
+#ifdef __LIBGCC_HAS_HF_MODE__
+#define LIBGCC2_HAS_HF_MODE 1
+#else
+#define LIBGCC2_HAS_HF_MODE 0
+#endif
+
 #ifdef __LIBGCC_HAS_XF_MODE__
 #define LIBGCC2_HAS_XF_MODE 1
 #else
@@ -43,6 +49,10 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define LIBGCC2_HAS_TF_MODE 0
 #endif
 
+#ifndef BID_HAS_HF_MODE
+#define BID_HAS_HF_MODE LIBGCC2_HAS_HF_MODE
+#endif
+
 #ifndef BID_HAS_XF_MODE
 #define BID_HAS_XF_MODE LIBGCC2_HAS_XF_MODE
 #endif
@@ -53,6 +63,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 /* Some handy typedefs.  */
 
+#if LIBGCC2_HAS_HF_MODE
+typedef float HFtype __attribute__ ((mode (HF)));
+#endif /* LIBGCC2_HAS_HF_MODE */
 typedef float SFtype __attribute__ ((mode (SF)));
 typedef float DFtype __attribute__ ((mode (DF)));
 #if LIBGCC2_HAS_XF_MODE
@@ -98,6 +111,12 @@ typedef __attribute__ ((aligned(16))) struct
 #endif
 #endif
 
+#if BID_HAS_HF_MODE
+#ifndef HFtype
+#define HFtype _Float16
+#endif
+#endif
+
 #ifndef SFtype
 #define SFtype float
 #endif
@@ -110,8 +129,7 @@ typedef __attribute__ ((aligned(16))) struct
 #ifndef XFtype
 #define XFtype long double
 #endif
-
-#endif   /* IN_LIBGCC2 */
+#endif
 
 #if BID_HAS_TF_MODE
 #ifndef TFtype
@@ -249,6 +267,14 @@ extern _Decimal128 __bid_extendxftd (XFtype);
 extern int isinfd32 (_Decimal32);
 extern int isinfd64 (_Decimal64);
 extern int isinfd128 (_Decimal128);
+#if BID_HAS_HF_MODE
+extern _Decimal32 __bid_extendhfsd (HFtype);
+extern _Decimal64 __bid_extendhfdd (HFtype);
+extern _Decimal128 __bid_extendhftd (HFtype);
+extern HFtype __bid_truncsdhf (_Decimal32);
+extern HFtype __bid_truncddhf (_Decimal64);
+extern HFtype __bid_trunctdhf (_Decimal128);
+#endif
 #endif  /* BID_HAS_GCC_DECIMAL_INTRINSICS */
 
 extern void __dfp_set_round (int);

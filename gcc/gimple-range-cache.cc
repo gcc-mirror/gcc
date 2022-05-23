@@ -77,9 +77,9 @@ class sbr_vector : public ssa_block_ranges
 public:
   sbr_vector (tree t, irange_allocator *allocator);
 
-  virtual bool set_bb_range (const_basic_block bb, const irange &r) OVERRIDE;
-  virtual bool get_bb_range (irange &r, const_basic_block bb) OVERRIDE;
-  virtual bool bb_range_p (const_basic_block bb) OVERRIDE;
+  virtual bool set_bb_range (const_basic_block bb, const irange &r) override;
+  virtual bool get_bb_range (irange &r, const_basic_block bb) override;
+  virtual bool bb_range_p (const_basic_block bb) override;
 protected:
   irange **m_tab;	// Non growing vector.
   int m_tab_size;
@@ -192,9 +192,9 @@ class sbr_sparse_bitmap : public ssa_block_ranges
 {
 public:
   sbr_sparse_bitmap (tree t, irange_allocator *allocator, bitmap_obstack *bm);
-  virtual bool set_bb_range (const_basic_block bb, const irange &r) OVERRIDE;
-  virtual bool get_bb_range (irange &r, const_basic_block bb) OVERRIDE;
-  virtual bool bb_range_p (const_basic_block bb) OVERRIDE;
+  virtual bool set_bb_range (const_basic_block bb, const irange &r) override;
+  virtual bool get_bb_range (irange &r, const_basic_block bb) override;
+  virtual bool bb_range_p (const_basic_block bb) override;
 private:
   void bitmap_set_quad (bitmap head, int quad, int quad_value);
   int bitmap_get_quad (const_bitmap head, int quad);

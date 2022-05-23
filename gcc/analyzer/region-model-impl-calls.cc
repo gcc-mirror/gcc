@@ -621,7 +621,7 @@ region_model::impl_call_realloc (const call_details &cd)
 
     bool update_model (region_model *model,
 		       const exploded_edge *,
-		       region_model_context *ctxt) const FINAL OVERRIDE
+		       region_model_context *ctxt) const final override
     {
       /* Return NULL; everything else is unchanged.  */
       const call_details cd (get_call_details (model, ctxt));
@@ -647,7 +647,7 @@ region_model::impl_call_realloc (const call_details &cd)
     {
     }
 
-    label_text get_desc (bool can_colorize) const FINAL OVERRIDE
+    label_text get_desc (bool can_colorize) const final override
     {
       return make_label_text (can_colorize,
 			      "when %qE succeeds, without moving buffer",
@@ -656,7 +656,7 @@ region_model::impl_call_realloc (const call_details &cd)
 
     bool update_model (region_model *model,
 		       const exploded_edge *,
-		       region_model_context *ctxt) const FINAL OVERRIDE
+		       region_model_context *ctxt) const final override
     {
       /* Update size of buffer and return the ptr unchanged.  */
       const call_details cd (get_call_details (model, ctxt));
@@ -699,7 +699,7 @@ region_model::impl_call_realloc (const call_details &cd)
     {
     }
 
-    label_text get_desc (bool can_colorize) const FINAL OVERRIDE
+    label_text get_desc (bool can_colorize) const final override
     {
       return make_label_text (can_colorize,
 			      "when %qE succeeds, moving buffer",
@@ -707,7 +707,7 @@ region_model::impl_call_realloc (const call_details &cd)
     }
     bool update_model (region_model *model,
 		       const exploded_edge *,
-		       region_model_context *ctxt) const FINAL OVERRIDE
+		       region_model_context *ctxt) const final override
     {
       const call_details cd (get_call_details (model, ctxt));
       const svalue *old_ptr_sval = cd.get_arg_svalue (0);
@@ -800,7 +800,7 @@ region_model::impl_call_strchr (const call_details &cd)
     {
     }
 
-    label_text get_desc (bool can_colorize) const FINAL OVERRIDE
+    label_text get_desc (bool can_colorize) const final override
     {
       if (m_found)
 	return make_label_text (can_colorize,
@@ -814,7 +814,7 @@ region_model::impl_call_strchr (const call_details &cd)
 
     bool update_model (region_model *model,
 		       const exploded_edge *,
-		       region_model_context *ctxt) const FINAL OVERRIDE
+		       region_model_context *ctxt) const final override
     {
       const call_details cd (get_call_details (model, ctxt));
       if (tree lhs_type = cd.get_lhs_type ())

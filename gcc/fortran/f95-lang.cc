@@ -114,6 +114,7 @@ static const struct attribute_spec gfc_attribute_table[] =
 #undef LANG_HOOKS_TYPE_FOR_SIZE
 #undef LANG_HOOKS_INIT_TS
 #undef LANG_HOOKS_OMP_ARRAY_DATA
+#undef LANG_HOOKS_OMP_ARRAY_SIZE
 #undef LANG_HOOKS_OMP_IS_ALLOCATABLE_OR_PTR
 #undef LANG_HOOKS_OMP_CHECK_OPTIONAL_ARGUMENT
 #undef LANG_HOOKS_OMP_PRIVATIZE_BY_REFERENCE
@@ -152,6 +153,7 @@ static const struct attribute_spec gfc_attribute_table[] =
 #define LANG_HOOKS_TYPE_FOR_SIZE	gfc_type_for_size
 #define LANG_HOOKS_INIT_TS		gfc_init_ts
 #define LANG_HOOKS_OMP_ARRAY_DATA		gfc_omp_array_data
+#define LANG_HOOKS_OMP_ARRAY_SIZE		gfc_omp_array_size
 #define LANG_HOOKS_OMP_IS_ALLOCATABLE_OR_PTR	gfc_omp_is_allocatable_or_ptr
 #define LANG_HOOKS_OMP_CHECK_OPTIONAL_ARGUMENT	gfc_omp_check_optional_argument
 #define LANG_HOOKS_OMP_PRIVATIZE_BY_REFERENCE	gfc_omp_privatize_by_reference

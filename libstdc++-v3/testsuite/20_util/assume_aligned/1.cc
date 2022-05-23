@@ -19,6 +19,7 @@
 // { dg-do run { target c++2a } }
 
 #include <memory>
+#include <cstdint>
 #include <testsuite_hooks.h>
 
 void

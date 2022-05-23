@@ -106,10 +106,10 @@ class simple_diagnostic_event : public diagnostic_event
 			   const char *desc);
   ~simple_diagnostic_event ();
 
-  location_t get_location () const FINAL OVERRIDE { return m_loc; }
-  tree get_fndecl () const FINAL OVERRIDE { return m_fndecl; }
-  int get_stack_depth () const FINAL OVERRIDE { return m_depth; }
-  label_text get_desc (bool) const FINAL OVERRIDE
+  location_t get_location () const final override { return m_loc; }
+  tree get_fndecl () const final override { return m_fndecl; }
+  int get_stack_depth () const final override { return m_depth; }
+  label_text get_desc (bool) const final override
   {
     return label_text::borrow (m_desc);
   }
@@ -130,8 +130,8 @@ class simple_diagnostic_path : public diagnostic_path
   simple_diagnostic_path (pretty_printer *event_pp)
   : m_event_pp (event_pp) {}
 
-  unsigned num_events () const FINAL OVERRIDE;
-  const diagnostic_event & get_event (int idx) const FINAL OVERRIDE;
+  unsigned num_events () const final override;
+  const diagnostic_event & get_event (int idx) const final override;
 
   diagnostic_event_id_t add_event (location_t loc, tree fndecl, int depth,
 				   const char *fmt, ...)

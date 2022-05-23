@@ -204,6 +204,10 @@
 #define signature_VORTEX_ecx	0x436f5320
 #define signature_VORTEX_edx	0x36387865
 
+#define signature_SHANGHAI_ebx	0x68532020
+#define signature_SHANGHAI_ecx	0x20206961
+#define signature_SHANGHAI_edx	0x68676e61
+
 #ifndef __x86_64__
 /* At least one cpu (Winchip 2) does not set %ebx and %ecx
    for cpuid leaf 1. Forcibly zero the two registers before

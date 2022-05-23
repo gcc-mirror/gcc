@@ -634,6 +634,14 @@ lhd_omp_finish_clause (tree, gimple_seq *, bool)
 {
 }
 
+/* Return array size; cf. omp_array_data.  */
+
+tree
+lhd_omp_array_size (tree, gimple_seq *)
+{
+  return NULL_TREE;
+}
+
 /* Return true if DECL is a scalar variable (for the purpose of
    implicit firstprivatization & mapping). Only if alloc_ptr_ok
    are allocatables and pointers accepted. */

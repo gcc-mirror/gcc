@@ -526,6 +526,39 @@ get_intel_cpu (struct __processor_model *cpu_model,
   return cpu;
 }
 
+/* Get the specific type of ZHAOXIN CPU and return ZHAOXIN CPU name.
+   Return NULL for unknown ZHAOXIN CPU.  */
+
+static inline const char *
+get_zhaoxin_cpu (struct __processor_model *cpu_model,
+		struct __processor_model2 *cpu_model2,
+		unsigned int *cpu_features2)
+{
+  const char *cpu = NULL;
+  unsigned int family = cpu_model2->__cpu_family;
+  unsigned int model = cpu_model2->__cpu_model;
+
+  switch (family)
+    {
+    /* ZHAOXIN family 7h.  */
+    case 0x07:
+      cpu_model->__cpu_type = ZHAOXIN_FAM7H;
+      if (model == 0x3b)
+	{
+	cpu = "lujiazui";
+	CHECK___builtin_cpu_is ("lujiazui");
+	cpu_model->__cpu_features[0] &= ~(1U <<(FEATURE_AVX & 31));
+	cpu_features2[0] &= ~(1U <<((FEATURE_F16C - 32) & 31));
+	cpu_model->__cpu_subtype = ZHAOXIN_FAM7H_LUJIAZUI;
+	}
+      break;
+    default:
+      break;
+    }
+
+  return cpu;
+}
+
 /* ECX and EDX are output of CPUID at level one.  */
 static inline void
 get_available_features (struct __processor_model *cpu_model,
@@ -936,8 +969,27 @@ cpu_indicator_init (struct __processor_model *cpu_model,
       get_amd_cpu (cpu_model, cpu_model2, cpu_features2);
       cpu_model->__cpu_vendor = VENDOR_AMD;
     }
-  else if (vendor == signature_CENTAUR_ebx)
+  else if (vendor == signature_CENTAUR_ebx && family < 0x07)
     cpu_model->__cpu_vendor = VENDOR_CENTAUR;
+  else if (vendor == signature_SHANGHAI_ebx
+		|| vendor == signature_CENTAUR_ebx)
+    {
+      /* Adjust model and family for ZHAOXIN CPUS.  */
+      if (family == 0x07)
+	{
+	  model += extended_model;
+	}
+
+      cpu_model2->__cpu_family = family;
+      cpu_model2->__cpu_model = model;
+
+      /* Find available features.  */
+      get_available_features (cpu_model, cpu_model2, cpu_features2,
+				  ecx, edx);
+      /* Get CPU type.  */
+      get_zhaoxin_cpu (cpu_model, cpu_model2,cpu_features2);
+      cpu_model->__cpu_vendor = VENDOR_ZHAOXIN;
+    }
   else if (vendor == signature_CYRIX_ebx)
     cpu_model->__cpu_vendor = VENDOR_CYRIX;
   else if (vendor == signature_NSC_ebx)

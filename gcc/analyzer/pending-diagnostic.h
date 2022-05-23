@@ -331,7 +331,7 @@ class pending_diagnostic_subclass : public pending_diagnostic
 {
  public:
   bool subclass_equal_p (const pending_diagnostic &base_other) const
-    FINAL OVERRIDE
+    final override
   {
     const Subclass &other = (const Subclass &)base_other;
     return *(const Subclass*)this == other;
@@ -374,7 +374,7 @@ class pending_note_subclass : public pending_note
 {
  public:
   bool subclass_equal_p (const pending_note &base_other) const
-    FINAL OVERRIDE
+    final override
   {
     const Subclass &other = (const Subclass &)base_other;
     return *(const Subclass*)this == other;

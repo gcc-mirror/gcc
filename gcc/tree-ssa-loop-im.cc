@@ -1241,8 +1241,11 @@ move_computations_worker (basic_block bb)
 	     edges of COND.  */
 	  extract_true_false_args_from_phi (dom, stmt, &arg0, &arg1);
 	  gcc_assert (arg0 && arg1);
-	  t = build2 (gimple_cond_code (cond), boolean_type_node,
-		      gimple_cond_lhs (cond), gimple_cond_rhs (cond));
+	  t = make_ssa_name (boolean_type_node);
+	  new_stmt = gimple_build_assign (t, gimple_cond_code (cond),
+					  gimple_cond_lhs (cond),
+					  gimple_cond_rhs (cond));
+	  gsi_insert_on_edge (loop_preheader_edge (level), new_stmt);
 	  new_stmt = gimple_build_assign (gimple_phi_result (stmt),
 					  COND_EXPR, t, arg0, arg1);
 	  todo |= TODO_cleanup_cfg;

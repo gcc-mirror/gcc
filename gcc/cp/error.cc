@@ -144,12 +144,12 @@ class cxx_format_postprocessor : public format_postprocessor
   : m_type_a (), m_type_b ()
   {}
 
-  format_postprocessor *clone() const FINAL OVERRIDE
+  format_postprocessor *clone() const final override
   {
     return new cxx_format_postprocessor ();
   }
 
-  void handle (pretty_printer *pp) FINAL OVERRIDE;
+  void handle (pretty_printer *pp) final override;
 
   deferred_printed_type m_type_a;
   deferred_printed_type m_type_b;

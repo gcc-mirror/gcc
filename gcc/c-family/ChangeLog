@@ -1,3 +1,9 @@
+2022-05-20  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-format.cc: Replace uses of "FINAL" and "OVERRIDE" with "final"
+	and "override".
+	* c-pretty-print.h: Likewise.
+
 2022-05-18  Marek Polacek  <polacek@redhat.com>
 
 	PR c/105131

@@ -51,7 +51,7 @@ class path_label : public range_label
   : m_path (path), m_start_idx (start_idx)
   {}
 
-  label_text get_text (unsigned range_idx) const FINAL OVERRIDE
+  label_text get_text (unsigned range_idx) const final override
   {
     unsigned event_idx = m_start_idx + range_idx;
     const diagnostic_event &event = m_path->get_event (event_idx);
