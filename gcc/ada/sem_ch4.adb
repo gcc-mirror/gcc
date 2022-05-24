@@ -670,10 +670,19 @@ package body Sem_Ch4 is
                then
                   Def_Id := Make_Temporary (Loc, 'S');
 
-                  Insert_Action (E,
-                    Make_Subtype_Declaration (Loc,
-                      Defining_Identifier => Def_Id,
-                      Subtype_Indication  => Relocate_Node (E)));
+                  declare
+                     Subtype_Decl : constant Node_Id :=
+                       Make_Subtype_Declaration (Loc,
+                         Defining_Identifier => Def_Id,
+                         Subtype_Indication  => Relocate_Node (E));
+                  begin
+                     Insert_Action (E, Subtype_Decl);
+
+                     --  Handle unusual case where Insert_Action does not
+                     --  analyze the declaration. Subtype_Decl must be
+                     --  preanalyzed before call to Process_Subtype below.
+                     Preanalyze (Subtype_Decl);
+                  end;
 
                   if Sav_Errs /= Serious_Errors_Detected
                     and then Nkind (Constraint (E)) =
