@@ -109,9 +109,7 @@ struct unswitch_predicate
   /* CTOR for a switch edge predicate.  */
   unswitch_predicate (tree cond, tree lhs_, int edge_index_, edge e,
 		      const int_range_max& edge_range)
-  : condition (cond), lhs (lhs_), true_range (edge_range), false_range (),
-    merged_true_range (), merged_false_range (),
-    edge_index (edge_index_)
+  : condition (cond), lhs (lhs_), true_range (edge_range), edge_index (edge_index_)
   {
     gcc_assert (!(e->flags & (EDGE_TRUE_VALUE|EDGE_FALSE_VALUE))
 		&& irange::supports_type_p (TREE_TYPE (lhs)));
@@ -125,7 +123,6 @@ struct unswitch_predicate
 
   /* CTOR for a GIMPLE condition statement.  */
   unswitch_predicate (gcond *stmt)
-    : true_range (), false_range (), merged_true_range (), merged_false_range ()
   {
     if (EDGE_SUCC (gimple_bb (stmt), 0)->flags & EDGE_TRUE_VALUE)
       edge_index = 0;
@@ -173,10 +170,10 @@ struct unswitch_predicate
   tree lhs;
 
   /* Initial ranges (when the expression is true/false) for the expression.  */
-  int_range_max true_range, false_range;
+  int_range_max true_range = {}, false_range = {};
 
   /* Modified range that is part of a predicate path.  */
-  int_range_max merged_true_range, merged_false_range;
+  int_range_max merged_true_range = {}, merged_false_range = {};
 
   /* For switch predicates, index of the edge the predicate belongs to
      in the successor vector.  */
