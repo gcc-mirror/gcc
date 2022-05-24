@@ -198,9 +198,9 @@ public:
   {}
 
   /* Duplicate info when an edge is cloned.  */
-  virtual void duplicate (cgraph_edge *, cgraph_edge *,
-			  speculative_call_summary *old_sum,
-			  speculative_call_summary *new_sum);
+  void duplicate (cgraph_edge *, cgraph_edge *,
+		  speculative_call_summary *old_sum,
+		  speculative_call_summary *new_sum) final override;
 };
 
 static ipa_profile_call_summaries *call_sums = NULL;

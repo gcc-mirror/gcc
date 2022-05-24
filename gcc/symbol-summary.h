@@ -248,7 +248,7 @@ protected:
 
 private:
   /* Indication if we use ggc summary.  */
-  virtual bool is_ggc ()
+  bool is_ggc () final override
   {
     return m_ggc;
   }
@@ -439,7 +439,7 @@ public:
 				  void *data);
 
 private:
-  virtual bool is_ggc ();
+  bool is_ggc () final override;
 
   /* Summary is stored in the vector.  */
   vec <T *, V> *m_vector;
@@ -744,7 +744,7 @@ protected:
 
 private:
   /* Indication if we use ggc summary.  */
-  virtual bool is_ggc ()
+  bool is_ggc () final override
   {
     return m_ggc;
   }
@@ -910,7 +910,7 @@ public:
 				  void *data);
 
 private:
-  virtual bool is_ggc ();
+  bool is_ggc () final override;
 
   /* Summary is stored in the vector.  */
   vec <T *, V> *m_vector;
