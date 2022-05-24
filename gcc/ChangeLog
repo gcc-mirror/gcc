@@ -1,3 +1,15 @@
+2022-05-23  Paul A. Clarke  <pc@us.ibm.com>
+
+	PR target/104257
+	* config/rs6000/bmi2intrin.h: Uglify local variables.
+	* config/rs6000/emmintrin.h: Likewise.
+	* config/rs6000/mm_malloc.h: Likewise.
+	* config/rs6000/mmintrin.h: Likewise.
+	* config/rs6000/pmmintrin.h: Likewise.
+	* config/rs6000/smmintrin.h: Likewise.
+	* config/rs6000/tmmintrin.h: Likewise.
+	* config/rs6000/xmmintrin.h: Likewise.
+
 2022-05-19  Michael Meissner  <meissner@linux.ibm.com>
 
 	Backported from master:
