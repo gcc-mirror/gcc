@@ -303,7 +303,7 @@ The OpenMP 4.5 specification is fully supported.
       @code{target} regions @tab N @tab
 @item @code{interop} directive @tab N @tab
 @item @code{omp_interop_t} object support in runtime routines @tab N @tab
-@item @code{nowait} clause in @code{taskwait} directive @tab N @tab
+@item @code{nowait} clause in @code{taskwait} directive @tab Y @tab
 @item Extensions to the @code{atomic} directive @tab Y @tab
 @item @code{seq_cst} clause on a @code{flush} construct @tab Y @tab
 @item @code{inoutset} argument to the @code{depend} clause @tab Y @tab
