@@ -7539,9 +7539,7 @@ package body Sem_Res is
       if T = Any_Type then
          --  Deal with explicit ambiguity of operands
 
-         if Ekind (Entity (N)) = E_Operator
-           and then (Is_Overloaded (L) or else Is_Overloaded (R))
-         then
+         if Is_Overloaded (L) or else Is_Overloaded (R) then
             Ambiguous_Operands (N);
          end if;
 
@@ -8563,6 +8561,16 @@ package body Sem_Res is
       L : constant Node_Id := Left_Opnd (N);
       R : constant Node_Id := Right_Opnd (N);
 
+      Implicit_NE_For_User_Defined_Operator : constant Boolean :=
+        Nkind (N) = N_Op_Ne
+          and then Ekind (Entity (N)) = E_Function
+          and then not Comes_From_Source (Entity (N))
+          and then not
+            Is_Intrinsic_Subprogram (Corresponding_Equality (Entity (N)));
+      --  Whether this is a call to the implicit inequality operator created
+      --  for a user-defined operator that is not an intrinsic subprogram, in
+      --  which case we need to skip some processing.
+
       T : Entity_Id := Find_Unique_Type (L, R);
 
       procedure Check_Access_Attribute (N : Node_Id);
@@ -8833,9 +8841,12 @@ package body Sem_Res is
       Generate_Reference (T, N, ' ');
 
       if T = Any_Type then
-         --  Deal with explicit ambiguity of operands
+         --  Deal with explicit ambiguity of operands, unless this is a call
+         --  to the implicit inequality operator created for a user-defined
+         --  operator that is not an intrinsic subprogram, since the common
+         --  resolution of operands done here does not apply to it.
 
-         if Ekind (Entity (N)) = E_Operator
+         if not Implicit_NE_For_User_Defined_Operator
            and then (Is_Overloaded (L) or else Is_Overloaded (R))
          then
             Ambiguous_Operands (N);
@@ -9009,17 +9020,11 @@ package body Sem_Res is
          Generate_Operator_Reference (N, T);
          Check_Low_Bound_Tested (N);
 
-         --  If this is an inequality, it may be the implicit inequality
-         --  created for a user-defined operation, in which case the corres-
-         --  ponding equality operation is not intrinsic, and the operation
-         --  cannot be constant-folded. Else fold.
+         --  Unless this is a call to the implicit inequality operator created
+         --  for a user-defined operator that is not an intrinsic subprogram,
+         --  try to fold the operation.
 
-         if Nkind (N) = N_Op_Eq
-           or else Comes_From_Source (Entity (N))
-           or else Ekind (Entity (N)) = E_Operator
-           or else
-             Is_Intrinsic_Subprogram (Corresponding_Equality (Entity (N)))
-         then
+         if not Implicit_NE_For_User_Defined_Operator then
             Analyze_Dimension (N);
             Eval_Relational_Op (N);
 
