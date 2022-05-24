@@ -263,6 +263,9 @@ is
 
       function Key (Position : Cursor) return Key_Type;
 
+      function Key (Container : Set; Position : Cursor) return Key_Type is
+        (Key (Element (Container, Position)));
+
       function Element (Container : Set; Key : Key_Type) return Element_Type;
 
       procedure Replace

@@ -403,6 +403,9 @@ is
       --  Applies generic formal operation Key to the element of the node
       --  designated by Position.
 
+      function Key (Container : Set; Position : Cursor) return Key_Type is
+        (Key (Element (Container, Position)));
+
       function Element (Container : Set; Key : Key_Type) return Element_Type;
       --  Searches (as per the key-based Find) for the node containing Key, and
       --  returns the associated element.
