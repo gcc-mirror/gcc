@@ -253,6 +253,28 @@ in mind, it may well be generally useful in that it is a simplified more
 efficient version than the one defined in the standard. In particular it
 does not have the complex overhead required to detect cursor tampering.
 
+.. _`Ada.Containers.Functional_Infinite_Sequences_(a-cfinse.ads)`:
+
+``Ada.Containers.Functional_Infinite_Sequences`` (:file:`a-cfinse.ads`)
+=======================================================================
+
+.. index:: Ada.Containers.Functional_Infinite_Sequences (a-cfinse.ads)
+
+.. index:: Functional Infinite Sequences
+
+This child of ``Ada.Containers`` defines immutable sequences indexed by
+``Big_Integer``. These containers are unbounded and may contain indefinite
+elements. Their API features functions creating new containers from existing
+ones. To remain reasonably efficient, their implementation involves sharing
+between data-structures. As they are functional, that is, no primitives are
+provided which would allow modifying an existing container, these containers
+can still be used safely.
+
+These containers are controlled so that the allocated memory can be reclaimed
+when the container is no longer referenced. Thus, they cannot directly be used
+in contexts where controlled types are not supported.
+The specification of this unit is compatible with SPARK 2014.
+
 .. _`Ada.Containers.Functional_Vectors_(a-cofuve.ads)`:
 
 ``Ada.Containers.Functional_Vectors`` (:file:`a-cofuve.ads`)
