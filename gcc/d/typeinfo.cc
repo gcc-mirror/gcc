@@ -556,7 +556,7 @@ public:
 	void **__vptr;
 	void *__monitor;  */
 
-  void visit (TypeInfoDeclaration *)
+  void visit (TypeInfoDeclaration *) final override
   {
     /* The vtable for TypeInfo.  */
     this->layout_base (Type::dtypeinfo);
@@ -567,7 +567,7 @@ public:
 	void *__monitor;
 	TypeInfo base;  */
 
-  void visit (TypeInfoConstDeclaration *d)
+  void visit (TypeInfoConstDeclaration *d) final override
   {
     Type *tm = d->tinfo->mutableOf ();
     tm = tm->merge2 ();
@@ -584,7 +584,7 @@ public:
 	void *__monitor;
 	TypeInfo base;  */
 
-  void visit (TypeInfoInvariantDeclaration *d)
+  void visit (TypeInfoInvariantDeclaration *d) final override
   {
     Type *tm = d->tinfo->mutableOf ();
     tm = tm->merge2 ();
@@ -601,7 +601,7 @@ public:
 	void *__monitor;
 	TypeInfo base;  */
 
-  void visit (TypeInfoSharedDeclaration *d)
+  void visit (TypeInfoSharedDeclaration *d) final override
   {
     Type *tm = d->tinfo->unSharedOf ();
     tm = tm->merge2 ();
@@ -618,7 +618,7 @@ public:
 	void *__monitor;
 	TypeInfo base;  */
 
-  void visit (TypeInfoWildDeclaration *d)
+  void visit (TypeInfoWildDeclaration *d) final override
   {
     Type *tm = d->tinfo->mutableOf ();
     tm = tm->merge2 ();
@@ -637,7 +637,7 @@ public:
 	string name;
 	void[] m_init;  */
 
-  void visit (TypeInfoEnumDeclaration *d)
+  void visit (TypeInfoEnumDeclaration *d) final override
   {
     TypeEnum *ti = d->tinfo->isTypeEnum ();
     EnumDeclaration *ed = ti->sym;
@@ -669,7 +669,7 @@ public:
 	void *__monitor;
 	TypeInfo m_next;  */
 
-  void visit (TypeInfoPointerDeclaration *d)
+  void visit (TypeInfoPointerDeclaration *d) final override
   {
     TypePointer *ti = d->tinfo->isTypePointer ();
 
@@ -685,7 +685,7 @@ public:
 	void *__monitor;
 	TypeInfo value;  */
 
-  void visit (TypeInfoArrayDeclaration *d)
+  void visit (TypeInfoArrayDeclaration *d) final override
   {
     TypeDArray *ti = d->tinfo->isTypeDArray ();
 
@@ -702,7 +702,7 @@ public:
 	TypeInfo value;
 	size_t len;  */
 
-  void visit (TypeInfoStaticArrayDeclaration *d)
+  void visit (TypeInfoStaticArrayDeclaration *d) final override
   {
     TypeSArray *ti = d->tinfo->isTypeSArray ();
 
@@ -722,7 +722,7 @@ public:
 	TypeInfo value;
 	TypeInfo key;  */
 
-  void visit (TypeInfoAssociativeArrayDeclaration *d)
+  void visit (TypeInfoAssociativeArrayDeclaration *d) final override
   {
     TypeAArray *ti = d->tinfo->isTypeAArray ();
 
@@ -741,7 +741,7 @@ public:
 	void *__monitor;
 	TypeInfo base;  */
 
-  void visit (TypeInfoVectorDeclaration *d)
+  void visit (TypeInfoVectorDeclaration *d) final override
   {
     TypeVector *ti = d->tinfo->isTypeVector ();
 
@@ -758,7 +758,7 @@ public:
 	TypeInfo next;
 	string deco;  */
 
-  void visit (TypeInfoFunctionDeclaration *d)
+  void visit (TypeInfoFunctionDeclaration *d) final override
   {
     TypeFunction *ti = d->tinfo->isTypeFunction ();
     gcc_assert (ti->deco != NULL);
@@ -779,7 +779,7 @@ public:
 	TypeInfo next;
 	string deco;  */
 
-  void visit (TypeInfoDelegateDeclaration *d)
+  void visit (TypeInfoDelegateDeclaration *d) final override
   {
     TypeDelegate *ti = d->tinfo->isTypeDelegate ();
     gcc_assert (ti->deco != NULL);
@@ -813,7 +813,7 @@ public:
      Information relating to interfaces, and their vtables are laid out
      immediately after the named fields, if there is anything to write.  */
 
-  void visit (TypeInfoClassDeclaration *d)
+  void visit (TypeInfoClassDeclaration *d) final override
   {
     TypeClass *ti = d->tinfo->isTypeClass ();
     ClassDeclaration *cd = ti->sym;
@@ -1004,7 +1004,7 @@ public:
 	void *__monitor;
 	TypeInfo_Class info;  */
 
-  void visit (TypeInfoInterfaceDeclaration *d)
+  void visit (TypeInfoInterfaceDeclaration *d) final override
   {
     TypeClass *ti = d->tinfo->isTypeClass ();
 
@@ -1034,7 +1034,7 @@ public:
 	uint m_align;
 	immutable(void)* xgetRTInfo;  */
 
-  void visit (TypeInfoStructDeclaration *d)
+  void visit (TypeInfoStructDeclaration *d) final override
   {
     TypeStruct *ti = d->tinfo->isTypeStruct ();
     StructDeclaration *sd = ti->sym;
@@ -1119,7 +1119,7 @@ public:
 	void *__monitor;
 	TypeInfo[] elements;  */
 
-  void visit (TypeInfoTupleDeclaration *d)
+  void visit (TypeInfoTupleDeclaration *d) final override
   {
     TypeTuple *ti = d->tinfo->isTypeTuple ();
 

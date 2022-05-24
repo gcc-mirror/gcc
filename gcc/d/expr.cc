@@ -2556,7 +2556,7 @@ public:
   /* Build a tuple literal.  Just an argument list that may have
      side effects that need evaluation.  */
 
-  void visit (TupleExp *e)
+  void visit (TupleExp *e) final override
   {
     tree result = NULL_TREE;
 

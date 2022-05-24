@@ -149,13 +149,13 @@ public:
 
   /* This should be overridden by each declaration class.  */
 
-  void visit (Dsymbol *)
+  void visit (Dsymbol *) final override
   {
   }
 
   /* Compile a D module, and all members of it.  */
 
-  void visit (Module *d)
+  void visit (Module *d) final override
   {
     if (d->semanticRun >= PASS::obj)
       return;
@@ -166,7 +166,7 @@ public:
 
   /* Write the imported symbol to debug.  */
 
-  void visit (Import *d)
+  void visit (Import *d) final override
   {
     if (d->semanticRun >= PASS::obj)
       return;
@@ -218,7 +218,7 @@ public:
 
   /* Expand any local variables found in tuples.  */
 
-  void visit (TupleDeclaration *d)
+  void visit (TupleDeclaration *d) final override
   {
     for (size_t i = 0; i < d->objects->length; i++)
       {
@@ -234,7 +234,7 @@ public:
 
   /* Walk over all declarations in the attribute scope.  */
 
-  void visit (AttribDeclaration *d)
+  void visit (AttribDeclaration *d) final override
   {
     Dsymbols *ds = d->include (NULL);
 
@@ -248,7 +248,7 @@ public:
   /* Pragmas are a way to pass special information to the compiler and to add
      vendor specific extensions to D.  */
 
-  void visit (PragmaDeclaration *d)
+  void visit (PragmaDeclaration *d) final override
   {
     if (d->ident == Identifier::idPool ("lib")
 	|| d->ident == Identifier::idPool ("startaddress"))
@@ -266,7 +266,7 @@ public:
   /* Conditional compilation is the process of selecting which code to compile
      and which code to not compile.  Look for version conditions that may  */
 
-  void visit (ConditionalDeclaration *d)
+  void visit (ConditionalDeclaration *d) final override
   {
     bool old_condition = this->in_version_unittest_;
 
@@ -284,7 +284,7 @@ public:
 
   /* Walk over all members in the namespace scope.  */
 
-  void visit (Nspace *d)
+  void visit (Nspace *d) final override
   {
     if (isError (d) || !d->members)
       return;
@@ -298,7 +298,7 @@ public:
      voldemort type, then it's members must be compiled before the parent
      function finishes.  */
 
-  void visit (TemplateDeclaration *d)
+  void visit (TemplateDeclaration *d) final override
   {
     /* Type cannot be directly named outside of the scope it's declared in, so
        the only way it can be escaped is if the function has auto return.  */
@@ -329,7 +329,7 @@ public:
 
   /* Walk over all members in the instantiated template.  */
 
-  void visit (TemplateInstance *d)
+  void visit (TemplateInstance *d) final override
   {
     if (isError (d)|| !d->members)
       return;
@@ -343,7 +343,7 @@ public:
 
   /* Walk over all members in the mixin template scope.  */
 
-  void visit (TemplateMixin *d)
+  void visit (TemplateMixin *d) final override
   {
     if (isError (d)|| !d->members)
       return;
@@ -355,7 +355,7 @@ public:
   /* Write out compiler generated TypeInfo, initializer and functions for the
      given struct declaration, walking over all static members.  */
 
-  void visit (StructDeclaration *d)
+  void visit (StructDeclaration *d) final override
   {
     if (d->semanticRun >= PASS::obj)
       return;
@@ -470,7 +470,7 @@ public:
   /* Write out compiler generated TypeInfo, initializer and vtables for the
      given class declaration, walking over all static members.  */
 
-  void visit (ClassDeclaration *d)
+  void visit (ClassDeclaration *d) final override
   {
     if (d->semanticRun >= PASS::obj)
       return;
@@ -544,7 +544,7 @@ public:
   /* Write out compiler generated TypeInfo and vtables for the given interface
      declaration, walking over all static members.  */
 
-  void visit (InterfaceDeclaration *d)
+  void visit (InterfaceDeclaration *d) final override
   {
     if (d->semanticRun >= PASS::obj)
       return;
@@ -587,7 +587,7 @@ public:
   /* Write out compiler generated TypeInfo and initializer for the given
      enum declaration.  */
 
-  void visit (EnumDeclaration *d)
+  void visit (EnumDeclaration *d) final override
   {
     if (d->semanticRun >= PASS::obj)
       return;
@@ -626,7 +626,7 @@ public:
   /* Finish up a variable declaration and push it into the current scope.
      This can either be a static, local or manifest constant.  */
 
-  void visit (VarDeclaration *d)
+  void visit (VarDeclaration *d) final override
   {
     if (d->semanticRun >= PASS::obj)
       return;
@@ -753,7 +753,7 @@ public:
   /* Generate and compile a static TypeInfo declaration, but only if it is
      needed in the current compilation.  */
 
-  void visit (TypeInfoDeclaration *d)
+  void visit (TypeInfoDeclaration *d) final override
   {
     if (d->semanticRun >= PASS::obj)
       return;
@@ -770,7 +770,7 @@ public:
   /* Finish up a function declaration and compile it all the way
      down to assembler language output.  */
 
-  void visit (FuncDeclaration *d)
+  void visit (FuncDeclaration *d) final override
   {
     /* Already generated the function.  */
     if (d->semanticRun >= PASS::obj)
