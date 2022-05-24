@@ -40,12 +40,11 @@ class TypeCheckExpr : public TypeCheckBase
   using Rust::Resolver::TypeCheckBase::visit;
 
 public:
-  /* Perform type checking on expr. Also runs type unification algorithm.
-     Returns the unified type of expr.
-     `inside_loop` acts as a context for BreakExpr, etc. May change later. */
-  static TyTy::BaseType *Resolve (HIR::Expr *expr, bool inside_loop)
+  // Perform type checking on expr. Also runs type unification algorithm.
+  // Returns the unified type of expr
+  static TyTy::BaseType *Resolve (HIR::Expr *expr)
   {
-    TypeCheckExpr resolver (inside_loop);
+    TypeCheckExpr resolver;
     expr->accept_vis (resolver);
 
     if (resolver.infered == nullptr)
@@ -66,8 +65,7 @@ public:
 
   void visit (HIR::TupleIndexExpr &expr) override
   {
-    auto resolved
-      = TypeCheckExpr::Resolve (expr.get_tuple_expr ().get (), inside_loop);
+    auto resolved = TypeCheckExpr::Resolve (expr.get_tuple_expr ().get ());
     if (resolved->get_kind () == TyTy::TypeKind::ERROR)
       {
 	rust_error_at (expr.get_tuple_expr ()->get_locus (),
@@ -154,7 +152,7 @@ public:
     std::vector<TyTy::TyVar> fields;
     for (auto &elem : expr.get_tuple_elems ())
       {
-	auto field_ty = TypeCheckExpr::Resolve (elem.get (), false);
+	auto field_ty = TypeCheckExpr::Resolve (elem.get ());
 	fields.push_back (TyTy::TyVar (field_ty->get_ref ()));
       }
     infered = new TyTy::TupleType (expr.get_mappings ().get_hirid (),
@@ -168,7 +166,7 @@ public:
 
     TyTy::BaseType *expr_ty
       = expr.has_return_expr ()
-	  ? TypeCheckExpr::Resolve (expr.get_expr (), false)
+	  ? TypeCheckExpr::Resolve (expr.get_expr ())
 	  : TyTy::TupleType::get_unit_type (expr.get_mappings ().get_hirid ());
 
     infered = fn_return_tyty->unify (expr_ty);
@@ -181,8 +179,7 @@ public:
 
   void visit (HIR::CallExpr &expr) override
   {
-    TyTy::BaseType *function_tyty
-      = TypeCheckExpr::Resolve (expr.get_fnexpr (), false);
+    TyTy::BaseType *function_tyty = TypeCheckExpr::Resolve (expr.get_fnexpr ());
 
     bool valid_tyty = function_tyty->get_kind () == TyTy::TypeKind::ADT
 		      || function_tyty->get_kind () == TyTy::TypeKind::FNDEF
@@ -225,8 +222,7 @@ public:
 
   void visit (HIR::MethodCallExpr &expr) override
   {
-    auto receiver_tyty
-      = TypeCheckExpr::Resolve (expr.get_receiver ().get (), false);
+    auto receiver_tyty = TypeCheckExpr::Resolve (expr.get_receiver ().get ());
     if (receiver_tyty->get_kind () == TyTy::TypeKind::ERROR)
       {
 	rust_error_at (expr.get_receiver ()->get_locus (),
@@ -381,8 +377,8 @@ public:
     infered
       = TyTy::TupleType::get_unit_type (expr.get_mappings ().get_hirid ());
 
-    auto lhs = TypeCheckExpr::Resolve (expr.get_lhs (), false);
-    auto rhs = TypeCheckExpr::Resolve (expr.get_rhs (), false);
+    auto lhs = TypeCheckExpr::Resolve (expr.get_lhs ());
+    auto rhs = TypeCheckExpr::Resolve (expr.get_rhs ());
 
     auto result = lhs->coerce (rhs);
     if (result->get_kind () == TyTy::TypeKind::ERROR)
@@ -431,8 +427,8 @@ public:
     infered
       = TyTy::TupleType::get_unit_type (expr.get_mappings ().get_hirid ());
 
-    auto lhs = TypeCheckExpr::Resolve (expr.get_left_expr ().get (), false);
-    auto rhs = TypeCheckExpr::Resolve (expr.get_right_expr ().get (), false);
+    auto lhs = TypeCheckExpr::Resolve (expr.get_left_expr ().get ());
+    auto rhs = TypeCheckExpr::Resolve (expr.get_right_expr ().get ());
 
     // we dont care about the result of the unify from a compound assignment
     // since this is a unit-type expr
@@ -534,8 +530,8 @@ public:
 
   void visit (HIR::ArithmeticOrLogicalExpr &expr) override
   {
-    auto lhs = TypeCheckExpr::Resolve (expr.get_lhs (), false);
-    auto rhs = TypeCheckExpr::Resolve (expr.get_rhs (), false);
+    auto lhs = TypeCheckExpr::Resolve (expr.get_lhs ());
+    auto rhs = TypeCheckExpr::Resolve (expr.get_rhs ());
 
     auto lang_item_type
       = Analysis::RustLangItem::OperatorToLangItem (expr.get_expr_type ());
@@ -570,8 +566,8 @@ public:
 
   void visit (HIR::ComparisonExpr &expr) override
   {
-    auto lhs = TypeCheckExpr::Resolve (expr.get_lhs (), false);
-    auto rhs = TypeCheckExpr::Resolve (expr.get_rhs (), false);
+    auto lhs = TypeCheckExpr::Resolve (expr.get_lhs ());
+    auto rhs = TypeCheckExpr::Resolve (expr.get_rhs ());
 
     auto result = lhs->unify (rhs);
     if (result == nullptr || result->get_kind () == TyTy::TypeKind::ERROR)
@@ -583,8 +579,8 @@ public:
 
   void visit (HIR::LazyBooleanExpr &expr) override
   {
-    auto lhs = TypeCheckExpr::Resolve (expr.get_lhs (), false);
-    auto rhs = TypeCheckExpr::Resolve (expr.get_rhs (), false);
+    auto lhs = TypeCheckExpr::Resolve (expr.get_lhs ());
+    auto rhs = TypeCheckExpr::Resolve (expr.get_rhs ());
 
     // we expect the lhs and rhs must be bools at this point
     TyTy::BoolType elhs (expr.get_mappings ().get_hirid ());
@@ -602,8 +598,7 @@ public:
 
   void visit (HIR::NegationExpr &expr) override
   {
-    auto negated_expr_ty
-      = TypeCheckExpr::Resolve (expr.get_expr ().get (), false);
+    auto negated_expr_ty = TypeCheckExpr::Resolve (expr.get_expr ().get ());
 
     // check for operator overload
     auto lang_item_type = Analysis::RustLangItem::NegationOperatorToLangItem (
@@ -664,8 +659,8 @@ public:
 
   void visit (HIR::IfExpr &expr) override
   {
-    TypeCheckExpr::Resolve (expr.get_if_condition (), false);
-    TypeCheckExpr::Resolve (expr.get_if_block (), inside_loop);
+    TypeCheckExpr::Resolve (expr.get_if_condition ());
+    TypeCheckExpr::Resolve (expr.get_if_block ());
 
     infered
       = TyTy::TupleType::get_unit_type (expr.get_mappings ().get_hirid ());
@@ -673,11 +668,9 @@ public:
 
   void visit (HIR::IfExprConseqElse &expr) override
   {
-    TypeCheckExpr::Resolve (expr.get_if_condition (), false);
-    auto if_blk_resolved
-      = TypeCheckExpr::Resolve (expr.get_if_block (), inside_loop);
-    auto else_blk_resolved
-      = TypeCheckExpr::Resolve (expr.get_else_block (), inside_loop);
+    TypeCheckExpr::Resolve (expr.get_if_condition ());
+    auto if_blk_resolved = TypeCheckExpr::Resolve (expr.get_if_block ());
+    auto else_blk_resolved = TypeCheckExpr::Resolve (expr.get_else_block ());
 
     if (if_blk_resolved->get_kind () == TyTy::NEVER)
       infered = else_blk_resolved;
@@ -689,11 +682,10 @@ public:
 
   void visit (HIR::IfExprConseqIf &expr) override
   {
-    TypeCheckExpr::Resolve (expr.get_if_condition (), false);
-    auto if_blk_resolved
-      = TypeCheckExpr::Resolve (expr.get_if_block (), inside_loop);
+    TypeCheckExpr::Resolve (expr.get_if_condition ());
+    auto if_blk_resolved = TypeCheckExpr::Resolve (expr.get_if_block ());
     auto else_blk_resolved
-      = TypeCheckExpr::Resolve (expr.get_conseq_if_expr (), inside_loop);
+      = TypeCheckExpr::Resolve (expr.get_conseq_if_expr ());
 
     if (if_blk_resolved->get_kind () == TyTy::NEVER)
       infered = else_blk_resolved;
@@ -708,7 +700,7 @@ public:
     // this needs to perform a least upper bound coercion on the blocks and then
     // unify the scruintee and arms
     TyTy::BaseType *scrutinee_tyty
-      = TypeCheckExpr::Resolve (expr.get_scrutinee_expr ().get (), false);
+      = TypeCheckExpr::Resolve (expr.get_scrutinee_expr ().get ());
 
     for (auto &pattern : expr.get_patterns ())
       {
@@ -720,7 +712,7 @@ public:
 	  return;
       }
 
-    TypeCheckExpr::Resolve (expr.get_if_block (), inside_loop);
+    TypeCheckExpr::Resolve (expr.get_if_block ());
 
     infered
       = TyTy::TupleType::get_unit_type (expr.get_mappings ().get_hirid ());
@@ -730,8 +722,7 @@ public:
 
   void visit (HIR::UnsafeBlockExpr &expr) override
   {
-    infered
-      = TypeCheckExpr::Resolve (expr.get_block_expr ().get (), inside_loop);
+    infered = TypeCheckExpr::Resolve (expr.get_block_expr ().get ());
   }
 
   void visit (HIR::ArrayIndexExpr &expr) override;
@@ -747,11 +738,10 @@ public:
 	case HIR::ArrayElems::ArrayExprType::COPIED: {
 	  HIR::ArrayElemsCopied &elems
 	    = static_cast<HIR::ArrayElemsCopied &> (elements);
-	  element_type
-	    = TypeCheckExpr::Resolve (elems.get_elem_to_copy (), false);
+	  element_type = TypeCheckExpr::Resolve (elems.get_elem_to_copy ());
 
 	  auto capacity_type
-	    = TypeCheckExpr::Resolve (elems.get_num_copies_expr (), false);
+	    = TypeCheckExpr::Resolve (elems.get_num_copies_expr ());
 
 	  TyTy::BaseType *expected_ty = nullptr;
 	  bool ok = context->lookup_builtin ("usize", &expected_ty);
@@ -774,7 +764,7 @@ public:
 	  std::vector<TyTy::BaseType *> types;
 	  for (auto &elem : elems.get_values ())
 	    {
-	      types.push_back (TypeCheckExpr::Resolve (elem.get (), false));
+	      types.push_back (TypeCheckExpr::Resolve (elem.get ()));
 	    }
 
 	  element_type = TyTy::TyVar::get_implicit_infer_var (expr.get_locus ())
@@ -813,7 +803,7 @@ public:
   void visit (HIR::StructExprStruct &struct_expr) override
   {
     TyTy::BaseType *struct_path_ty
-      = TypeCheckExpr::Resolve (&struct_expr.get_struct_name (), false);
+      = TypeCheckExpr::Resolve (&struct_expr.get_struct_name ());
     if (struct_path_ty->get_kind () != TyTy::TypeKind::ADT)
       {
 	rust_error_at (struct_expr.get_struct_name ().get_locus (),
@@ -831,13 +821,13 @@ public:
 
   void visit (HIR::GroupedExpr &expr) override
   {
-    infered = TypeCheckExpr::Resolve (expr.get_expr_in_parens ().get (), false);
+    infered = TypeCheckExpr::Resolve (expr.get_expr_in_parens ().get ());
   }
 
   void visit (HIR::FieldAccessExpr &expr) override
   {
     auto struct_base
-      = TypeCheckExpr::Resolve (expr.get_receiver_expr ().get (), false);
+      = TypeCheckExpr::Resolve (expr.get_receiver_expr ().get ());
 
     // FIXME does this require autoderef here?
     if (struct_base->get_kind () == TyTy::TypeKind::REF)
@@ -885,7 +875,7 @@ public:
     context->push_new_loop_context (expr.get_mappings ().get_hirid (),
 				    expr.get_locus ());
     TyTy::BaseType *block_expr
-      = TypeCheckExpr::Resolve (expr.get_loop_block ().get (), true);
+      = TypeCheckExpr::Resolve (expr.get_loop_block ().get ());
     if (!block_expr->is_unit ())
       {
 	rust_error_at (expr.get_loop_block ()->get_locus (),
@@ -912,9 +902,9 @@ public:
   {
     context->push_new_while_loop_context (expr.get_mappings ().get_hirid ());
 
-    TypeCheckExpr::Resolve (expr.get_predicate_expr ().get (), false);
+    TypeCheckExpr::Resolve (expr.get_predicate_expr ().get ());
     TyTy::BaseType *block_expr
-      = TypeCheckExpr::Resolve (expr.get_loop_block ().get (), true);
+      = TypeCheckExpr::Resolve (expr.get_loop_block ().get ());
 
     if (!block_expr->is_unit ())
       {
@@ -931,7 +921,7 @@ public:
 
   void visit (HIR::BreakExpr &expr) override
   {
-    if (!inside_loop)
+    if (!context->have_loop_context ())
       {
 	rust_error_at (expr.get_locus (), "cannot %<break%> outside of a loop");
 	return;
@@ -940,7 +930,7 @@ public:
     if (expr.has_break_expr ())
       {
 	TyTy::BaseType *break_expr_tyty
-	  = TypeCheckExpr::Resolve (expr.get_expr ().get (), false);
+	  = TypeCheckExpr::Resolve (expr.get_expr ().get ());
 
 	TyTy::BaseType *loop_context = context->peek_loop_context ();
 	if (loop_context->get_kind () == TyTy::TypeKind::ERROR)
@@ -959,7 +949,7 @@ public:
 
   void visit (HIR::ContinueExpr &expr) override
   {
-    if (!inside_loop)
+    if (!context->have_loop_context ())
       {
 	rust_error_at (expr.get_locus (),
 		       "cannot %<continue%> outside of a loop");
@@ -972,7 +962,7 @@ public:
   void visit (HIR::BorrowExpr &expr) override
   {
     TyTy::BaseType *resolved_base
-      = TypeCheckExpr::Resolve (expr.get_expr ().get (), false);
+      = TypeCheckExpr::Resolve (expr.get_expr ().get ());
 
     if (expr.get_is_double_borrow ())
       {
@@ -988,7 +978,7 @@ public:
   void visit (HIR::DereferenceExpr &expr) override
   {
     TyTy::BaseType *resolved_base
-      = TypeCheckExpr::Resolve (expr.get_expr ().get (), false);
+      = TypeCheckExpr::Resolve (expr.get_expr ().get ());
 
     auto lang_item_type = Analysis::RustLangItem::ItemType::DEREF;
     bool operator_overloaded
@@ -1029,7 +1019,7 @@ public:
   void visit (HIR::TypeCastExpr &expr) override
   {
     TyTy::BaseType *expr_to_convert
-      = TypeCheckExpr::Resolve (expr.get_casted_expr ().get (), false);
+      = TypeCheckExpr::Resolve (expr.get_casted_expr ().get ());
     TyTy::BaseType *tyty_to_convert_to
       = TypeCheckType::Resolve (expr.get_type_to_convert_to ().get ());
 
@@ -1041,7 +1031,7 @@ public:
     // this needs to perform a least upper bound coercion on the blocks and then
     // unify the scruintee and arms
     TyTy::BaseType *scrutinee_tyty
-      = TypeCheckExpr::Resolve (expr.get_scrutinee_expr ().get (), false);
+      = TypeCheckExpr::Resolve (expr.get_scrutinee_expr ().get ());
 
     std::vector<TyTy::BaseType *> kase_block_tys;
     for (auto &kase : expr.get_match_cases ())
@@ -1060,7 +1050,7 @@ public:
 
 	// check the kase type
 	TyTy::BaseType *kase_block_ty
-	  = TypeCheckExpr::Resolve (kase.get_expr ().get (), inside_loop);
+	  = TypeCheckExpr::Resolve (kase.get_expr ().get ());
 	kase_block_tys.push_back (kase_block_ty);
       }
 
@@ -1098,9 +1088,7 @@ protected:
 			     TyTy::BaseType *rhs);
 
 private:
-  TypeCheckExpr (bool inside_loop)
-    : TypeCheckBase (), infered (nullptr), inside_loop (inside_loop)
-  {}
+  TypeCheckExpr () : TypeCheckBase (), infered (nullptr) {}
 
   TyTy::BaseType *resolve_root_path (HIR::PathInExpression &expr,
 				     size_t *offset,
@@ -1166,8 +1154,6 @@ private:
 
   /* The return value of TypeCheckExpr::Resolve */
   TyTy::BaseType *infered;
-
-  bool inside_loop;
 };
 
 } // namespace Resolver

@@ -210,7 +210,7 @@ public:
 			       expected_ret_tyty);
 
     auto block_expr_ty
-      = TypeCheckExpr::Resolve (function.get_definition ().get (), false);
+      = TypeCheckExpr::Resolve (function.get_definition ().get ());
 
     context->pop_return_type ();
 

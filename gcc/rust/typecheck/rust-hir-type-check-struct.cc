@@ -28,7 +28,7 @@ void
 TypeCheckStructExpr::visit (HIR::StructExprStructFields &struct_expr)
 {
   TyTy::BaseType *struct_path_ty
-    = TypeCheckExpr::Resolve (&struct_expr.get_struct_name (), false);
+    = TypeCheckExpr::Resolve (&struct_expr.get_struct_name ());
   if (struct_path_ty->get_kind () != TyTy::TypeKind::ADT)
     {
       rust_error_at (struct_expr.get_struct_name ().get_locus (),
@@ -41,8 +41,7 @@ TypeCheckStructExpr::visit (HIR::StructExprStructFields &struct_expr)
   if (struct_expr.has_struct_base ())
     {
       TyTy::BaseType *base_resolved
-	= TypeCheckExpr::Resolve (struct_expr.struct_base->base_struct.get (),
-				  false);
+	= TypeCheckExpr::Resolve (struct_expr.struct_base->base_struct.get ());
       struct_def
 	= (TyTy::ADTType *) struct_path_resolved->coerce (base_resolved);
       if (struct_def == nullptr)
@@ -221,7 +220,7 @@ TypeCheckStructExpr::visit (HIR::StructExprFieldIdentifierValue &field)
       return;
     }
 
-  TyTy::BaseType *value = TypeCheckExpr::Resolve (field.get_value (), false);
+  TyTy::BaseType *value = TypeCheckExpr::Resolve (field.get_value ());
   resolved_field_value_expr = field_type->get_field_type ()->coerce (value);
   if (resolved_field_value_expr != nullptr)
     {
@@ -250,7 +249,7 @@ TypeCheckStructExpr::visit (HIR::StructExprFieldIndexValue &field)
       return;
     }
 
-  TyTy::BaseType *value = TypeCheckExpr::Resolve (field.get_value (), false);
+  TyTy::BaseType *value = TypeCheckExpr::Resolve (field.get_value ());
   resolved_field_value_expr = field_type->get_field_type ()->coerce (value);
   if (resolved_field_value_expr != nullptr)
     {
@@ -283,7 +282,7 @@ TypeCheckStructExpr::visit (HIR::StructExprFieldIdentifier &field)
   // existing code to figure out the type
   HIR::IdentifierExpr expr (field.get_mappings (), field.get_field_name (),
 			    field.get_locus ());
-  TyTy::BaseType *value = TypeCheckExpr::Resolve (&expr, false);
+  TyTy::BaseType *value = TypeCheckExpr::Resolve (&expr);
 
   resolved_field_value_expr = field_type->get_field_type ()->coerce (value);
   if (resolved_field_value_expr != nullptr)

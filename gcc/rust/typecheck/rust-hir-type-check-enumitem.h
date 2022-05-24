@@ -81,7 +81,7 @@ public:
       rust_error_at (item.get_locus (), "discriminant too big");
 
     auto &discriminant = item.get_discriminant_expression ();
-    auto capacity_type = TypeCheckExpr::Resolve (discriminant.get (), false);
+    auto capacity_type = TypeCheckExpr::Resolve (discriminant.get ());
     if (capacity_type->get_kind () == TyTy::TypeKind::ERROR)
       return;
 

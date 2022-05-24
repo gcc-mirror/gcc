@@ -351,7 +351,7 @@ public:
   void visit (HIR::StaticItem &var) override
   {
     TyTy::BaseType *type = TypeCheckType::Resolve (var.get_type ());
-    TyTy::BaseType *expr_type = TypeCheckExpr::Resolve (var.get_expr (), false);
+    TyTy::BaseType *expr_type = TypeCheckExpr::Resolve (var.get_expr ());
 
     context->insert_type (var.get_mappings (), type->unify (expr_type));
   }
@@ -359,8 +359,7 @@ public:
   void visit (HIR::ConstantItem &constant) override
   {
     TyTy::BaseType *type = TypeCheckType::Resolve (constant.get_type ());
-    TyTy::BaseType *expr_type
-      = TypeCheckExpr::Resolve (constant.get_expr (), false);
+    TyTy::BaseType *expr_type = TypeCheckExpr::Resolve (constant.get_expr ());
 
     context->insert_type (constant.get_mappings (), type->unify (expr_type));
   }

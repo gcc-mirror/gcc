@@ -34,21 +34,21 @@ class TypeCheckStmt : public TypeCheckBase
   using Rust::Resolver::TypeCheckBase::visit;
 
 public:
-  static TyTy::BaseType *Resolve (HIR::Stmt *stmt, bool inside_loop)
+  static TyTy::BaseType *Resolve (HIR::Stmt *stmt)
   {
-    TypeCheckStmt resolver (inside_loop);
+    TypeCheckStmt resolver;
     stmt->accept_vis (resolver);
     return resolver.infered;
   }
 
   void visit (HIR::ExprStmtWithBlock &stmt) override
   {
-    infered = TypeCheckExpr::Resolve (stmt.get_expr (), inside_loop);
+    infered = TypeCheckExpr::Resolve (stmt.get_expr ());
   }
 
   void visit (HIR::ExprStmtWithoutBlock &stmt) override
   {
-    infered = TypeCheckExpr::Resolve (stmt.get_expr (), inside_loop);
+    infered = TypeCheckExpr::Resolve (stmt.get_expr ());
   }
 
   void visit (HIR::EmptyStmt &stmt) override
@@ -68,8 +68,7 @@ public:
   void visit (HIR::ConstantItem &constant) override
   {
     TyTy::BaseType *type = TypeCheckType::Resolve (constant.get_type ());
-    TyTy::BaseType *expr_type
-      = TypeCheckExpr::Resolve (constant.get_expr (), false);
+    TyTy::BaseType *expr_type = TypeCheckExpr::Resolve (constant.get_expr ());
 
     infered = type->unify (expr_type);
     context->insert_type (constant.get_mappings (), infered);
@@ -83,8 +82,7 @@ public:
     TyTy::BaseType *init_expr_ty = nullptr;
     if (stmt.has_init_expr ())
       {
-	init_expr_ty
-	  = TypeCheckExpr::Resolve (stmt.get_init_expr (), inside_loop);
+	init_expr_ty = TypeCheckExpr::Resolve (stmt.get_init_expr ());
 	if (init_expr_ty->get_kind () == TyTy::TypeKind::ERROR)
 	  return;
 
@@ -494,7 +492,7 @@ public:
 			       expected_ret_tyty);
 
     auto block_expr_ty
-      = TypeCheckExpr::Resolve (function.get_definition ().get (), false);
+      = TypeCheckExpr::Resolve (function.get_definition ().get ());
 
     context->pop_return_type ();
 
@@ -505,12 +503,9 @@ public:
   }
 
 private:
-  TypeCheckStmt (bool inside_loop)
-    : TypeCheckBase (), infered (nullptr), inside_loop (inside_loop)
-  {}
+  TypeCheckStmt () : TypeCheckBase (), infered (nullptr) {}
 
   TyTy::BaseType *infered;
-  bool inside_loop;
 };
 
 } // namespace Resolver
