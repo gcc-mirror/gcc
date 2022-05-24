@@ -4331,15 +4331,31 @@ Debugging and Assertion Control
   Which is a shorthand for::
 
        pragma Assertion_Policy
-         (Assert               => Check,
-          Static_Predicate     => Check,
-          Dynamic_Predicate    => Check,
-          Pre                  => Check,
-          Pre'Class            => Check,
-          Post                 => Check,
-          Post'Class           => Check,
-          Type_Invariant       => Check,
-          Type_Invariant'Class => Check);
+       --  Ada RM assertion pragmas
+         (Assert                    => Check,
+          Static_Predicate          => Check,
+          Dynamic_Predicate         => Check,
+          Pre                       => Check,
+          Pre'Class                 => Check,
+          Post                      => Check,
+          Post'Class                => Check,
+          Type_Invariant            => Check,
+          Type_Invariant'Class      => Check,
+          Default_Initial_Condition => Check,
+       --  GNAT specific assertion pragmas
+          Assert_And_Cut            => Check,
+          Assume                    => Check,
+          Contract_Cases            => Check,
+          Debug                     => Check,
+          Ghost                     => Check,
+          Initial_Condition         => Check,
+          Loop_Invariant            => Check,
+          Loop_Variant              => Check,
+          Postcondition             => Check,
+          Precondition              => Check,
+          Predicate                 => Check,
+          Refined_Post              => Check,
+          Subprogram_Variant        => Check);
 
   The pragmas ``Assert`` and ``Debug`` normally have no effect and
   are ignored. This switch, where ``a`` stands for 'assert', causes

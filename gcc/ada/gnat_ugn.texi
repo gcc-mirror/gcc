@@ -21,7 +21,7 @@
 
 @copying
 @quotation
-GNAT User's Guide for Native Platforms , May 24, 2022
+GNAT User's Guide for Native Platforms , Jun 24, 2022
 
 AdaCore
 
@@ -12853,15 +12853,31 @@ Which is a shorthand for:
 
 @example
 pragma Assertion_Policy
-  (Assert               => Check,
-   Static_Predicate     => Check,
-   Dynamic_Predicate    => Check,
-   Pre                  => Check,
-   Pre'Class            => Check,
-   Post                 => Check,
-   Post'Class           => Check,
-   Type_Invariant       => Check,
-   Type_Invariant'Class => Check);
+--  Ada RM assertion pragmas
+  (Assert                    => Check,
+   Static_Predicate          => Check,
+   Dynamic_Predicate         => Check,
+   Pre                       => Check,
+   Pre'Class                 => Check,
+   Post                      => Check,
+   Post'Class                => Check,
+   Type_Invariant            => Check,
+   Type_Invariant'Class      => Check,
+   Default_Initial_Condition => Check,
+--  GNAT specific assertion pragmas
+   Assert_And_Cut            => Check,
+   Assume                    => Check,
+   Contract_Cases            => Check,
+   Debug                     => Check,
+   Ghost                     => Check,
+   Initial_Condition         => Check,
+   Loop_Invariant            => Check,
+   Loop_Variant              => Check,
+   Postcondition             => Check,
+   Precondition              => Check,
+   Predicate                 => Check,
+   Refined_Post              => Check,
+   Subprogram_Variant        => Check);
 @end example
 
 The pragmas @code{Assert} and @code{Debug} normally have no effect and
@@ -29249,8 +29265,8 @@ to permit their use in free software.
 
 @printindex ge
 
-@anchor{gnat_ugn/gnat_utility_programs switches-related-to-project-files}@w{                              }
 @anchor{cf}@w{                              }
+@anchor{gnat_ugn/gnat_utility_programs switches-related-to-project-files}@w{                              }
 
 @c %**end of body
 @bye
