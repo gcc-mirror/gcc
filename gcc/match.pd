@@ -7642,6 +7642,8 @@ and,
  (with
   {
     tree op0 = @0, op1 = @1, op2 = @2;
+    machine_mode result_mode = TYPE_MODE (type);
+    machine_mode op_mode = TYPE_MODE (TREE_TYPE (op0));
 
     /* Build a vector of integers from the tree mask.  */
     vec_perm_builder builder;
@@ -7703,7 +7705,7 @@ and,
 	   insert from a CONSTRUCTOR or constant and use a BIT_INSERT_EXPR
 	   in that case.  But only if the vector mode is supported,
 	   otherwise this is invalid GIMPLE.  */
-        if (TYPE_MODE (type) != BLKmode
+        if (op_mode != BLKmode
 	    && (TREE_CODE (cop0) == VECTOR_CST
 		|| TREE_CODE (cop0) == CONSTRUCTOR
 		|| TREE_CODE (cop1) == VECTOR_CST
@@ -7749,12 +7751,12 @@ and,
 	       2-argument version.  */
 	    tree oldop2 = op2;
 	    if (sel.ninputs () == 2
-	       || can_vec_perm_const_p (TYPE_MODE (type), sel, false))
+	       || can_vec_perm_const_p (result_mode, op_mode, sel, false))
 	      op2 = vec_perm_indices_to_tree (TREE_TYPE (op2), sel);
 	    else
 	      {
 	        vec_perm_indices sel2 (builder, 2, nelts);
-	        if (can_vec_perm_const_p (TYPE_MODE (type), sel2, false))
+		if (can_vec_perm_const_p (result_mode, op_mode, sel2, false))
 	          op2 = vec_perm_indices_to_tree (TREE_TYPE (op2), sel2);
 	        else
 	          /* Not directly supported with either encoding,

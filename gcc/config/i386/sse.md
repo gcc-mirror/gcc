@@ -15842,8 +15842,9 @@
 	      sel[7] = 15;
 	    }
 	  vec_perm_indices indices (sel, 2, 8);
-	  bool ok = targetm.vectorize.vec_perm_const (V8SImode, target,
-						      arg0, arg1, indices);
+	  bool ok = targetm.vectorize.vec_perm_const (V8SImode, V8SImode,
+						      target, arg0, arg1,
+						      indices);
 	  gcc_assert (ok);
 	  emit_move_insn (operands[0],
 			  lowpart_subreg (V4DImode, target, V8SImode));
@@ -24629,8 +24630,9 @@
 	      sel[3] = 7;
 	    }
 	  vec_perm_indices indices (sel, arg0 != arg1 ? 2 : 1, 4);
-	  bool ok = targetm.vectorize.vec_perm_const (V4SImode, target,
-						      arg0, arg1, indices);
+	  bool ok = targetm.vectorize.vec_perm_const (V4SImode, V4SImode,
+						      target, arg0, arg1,
+						      indices);
 	  gcc_assert (ok);
 	  emit_move_insn (operands[0],
 			  lowpart_subreg (V2DImode, target, V4SImode));

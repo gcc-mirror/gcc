@@ -420,8 +420,9 @@ can_duplicate_and_interleave_p (vec_info *vinfo, unsigned int count,
 		}
 	      vec_perm_indices indices1 (sel1, 2, nelts);
 	      vec_perm_indices indices2 (sel2, 2, nelts);
-	      if (can_vec_perm_const_p (TYPE_MODE (vector_type), indices1)
-		  && can_vec_perm_const_p (TYPE_MODE (vector_type), indices2))
+	      machine_mode vmode = TYPE_MODE (vector_type);
+	      if (can_vec_perm_const_p (vmode, vmode, indices1)
+		  && can_vec_perm_const_p (vmode, vmode, indices2))
 		{
 		  if (nvectors_out)
 		    *nvectors_out = nvectors;
@@ -6762,7 +6763,7 @@ vect_transform_slp_perm_load (vec_info *vinfo,
       if (index == count && !noop_p)
 	{
 	  indices.new_vector (mask, second_vec_index == -1 ? 1 : 2, nunits);
-	  if (!can_vec_perm_const_p (mode, indices))
+	  if (!can_vec_perm_const_p (mode, mode, indices))
 	    {
 	      if (dump_enabled_p ())
 		{
@@ -7122,8 +7123,9 @@ vectorizable_slp_permutation (vec_info *vinfo, gimple_stmt_iterator *gsi,
 	{
 	  indices.new_vector (mask, second_vec.first == -1U ? 1 : 2, nunits);
 	  bool identity_p = indices.series_p (0, 1, 0, 1);
+	  machine_mode vmode = TYPE_MODE (vectype);
 	  if (!identity_p
-	      && !can_vec_perm_const_p (TYPE_MODE (vectype), indices))
+	      && !can_vec_perm_const_p (vmode, vmode, indices))
 	    {
 	      if (dump_enabled_p ())
 		{

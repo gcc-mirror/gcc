@@ -31813,9 +31813,13 @@ arm_expand_vec_perm_const_1 (struct expand_vec_perm_d *d)
 /* Implement TARGET_VECTORIZE_VEC_PERM_CONST.  */
 
 static bool
-arm_vectorize_vec_perm_const (machine_mode vmode, rtx target, rtx op0, rtx op1,
+arm_vectorize_vec_perm_const (machine_mode vmode, machine_mode op_mode,
+			      rtx target, rtx op0, rtx op1,
 			      const vec_perm_indices &sel)
 {
+  if (vmode != op_mode)
+    return false;
+
   struct expand_vec_perm_d d;
   int i, nelt, which;
 

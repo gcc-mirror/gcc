@@ -4161,10 +4161,13 @@ gcn_make_vec_perm_address (unsigned int *perm)
    permutations.  */
 
 static bool
-gcn_vectorize_vec_perm_const (machine_mode vmode, rtx dst,
-			      rtx src0, rtx src1,
+gcn_vectorize_vec_perm_const (machine_mode vmode, machine_mode op_mode,
+			      rtx dst, rtx src0, rtx src1,
 			      const vec_perm_indices & sel)
 {
+  if (vmode != op_mode)
+    return false;
+
   unsigned int nelt = GET_MODE_NUNITS (vmode);
 
   gcc_assert (VECTOR_MODE_P (vmode));

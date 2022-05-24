@@ -407,9 +407,9 @@ can_vec_perm_var_p (machine_mode mode)
 }
 
 /* Return true if the target directly supports VEC_PERM_EXPRs on vectors
-   of mode MODE using the selector SEL.  ALLOW_VARIABLE_P is true if it
-   is acceptable to force the selector into a register and use a variable
-   permute (if the target supports that).
+   of mode OP_MODE and result vector of mode MODE using the selector SEL.
+   ALLOW_VARIABLE_P is true if it is acceptable to force the selector into a
+   register and use a variable permute (if the target supports that).
 
    Note that additional permutations representing whole-vector shifts may
    also be handled via the vec_shr or vec_shl optab, but only where the
@@ -417,8 +417,8 @@ can_vec_perm_var_p (machine_mode mode)
    with here.  */
 
 bool
-can_vec_perm_const_p (machine_mode mode, const vec_perm_indices &sel,
-		      bool allow_variable_p)
+can_vec_perm_const_p (machine_mode mode, machine_mode op_mode,
+		      const vec_perm_indices &sel, bool allow_variable_p)
 {
   /* If the target doesn't implement a vector mode for the vector type,
      then no operations are supported.  */
@@ -448,7 +448,7 @@ can_vec_perm_const_p (machine_mode mode, const vec_perm_indices &sel,
 
   if (targetm.vectorize.vec_perm_const != NULL)
     {
-      if (targetm.vectorize.vec_perm_const (mode, NULL_RTX, NULL_RTX,
+      if (targetm.vectorize.vec_perm_const (mode, op_mode, NULL_RTX, NULL_RTX,
 					    NULL_RTX, sel))
 	return true;
 
@@ -534,7 +534,7 @@ can_mult_highpart_p (machine_mode mode, bool uns_p)
 			    + (i & ~1)
 			    + ((i & 1) ? nunits : 0));
 	  vec_perm_indices indices (sel, 2, nunits);
-	  if (can_vec_perm_const_p (mode, indices))
+	  if (can_vec_perm_const_p (mode, mode, indices))
 	    return 2;
 	}
     }
@@ -550,7 +550,7 @@ can_mult_highpart_p (machine_mode mode, bool uns_p)
 	  for (unsigned int i = 0; i < 3; ++i)
 	    sel.quick_push (2 * i + (BYTES_BIG_ENDIAN ? 0 : 1));
 	  vec_perm_indices indices (sel, 2, nunits);
-	  if (can_vec_perm_const_p (mode, indices))
+	  if (can_vec_perm_const_p (mode, mode, indices))
 	    return 3;
 	}
     }

@@ -312,7 +312,8 @@ interleave_supported_p (vec_perm_indices *indices, tree vectype,
       sel.quick_push (base + i + nelts);
     }
   indices->new_vector (sel, 2, nelts);
-  return can_vec_perm_const_p (TYPE_MODE (vectype), *indices);
+  return can_vec_perm_const_p (TYPE_MODE (vectype), TYPE_MODE (vectype),
+			       *indices);
 }
 
 /* Try to use permutes to define the masks in DEST_RGM using the masks

@@ -2953,7 +2953,8 @@ simplify_vector_constructor (gimple_stmt_iterator *gsi)
 			: (elts[0].second == 0 && elts[0].first == 0
 			   ? 0 : refnelts) + i);
       vec_perm_indices indices (sel, orig[1] ? 2 : 1, refnelts);
-      if (!can_vec_perm_const_p (TYPE_MODE (perm_type), indices))
+      machine_mode vmode = TYPE_MODE (perm_type);
+      if (!can_vec_perm_const_p (vmode, vmode, indices))
 	return false;
       mask_type
 	= build_vector_type (build_nonstandard_integer_type (elem_size, 1),
@@ -3002,7 +3003,8 @@ simplify_vector_constructor (gimple_stmt_iterator *gsi)
 	    sel.quick_push (elts[i].first
 			    ? elts[i].second + nelts : i);
 	  vec_perm_indices indices (sel, 2, nelts);
-	  if (!can_vec_perm_const_p (TYPE_MODE (type), indices))
+	  machine_mode vmode = TYPE_MODE (type);
+	  if (!can_vec_perm_const_p (vmode, vmode, indices))
 	    return false;
 	  mask_type
 	    = build_vector_type (build_nonstandard_integer_type (elem_size, 1),

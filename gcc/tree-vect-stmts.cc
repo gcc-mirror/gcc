@@ -2016,7 +2016,8 @@ perm_mask_for_reverse (tree vectype)
     sel.quick_push (nunits - 1 - i);
 
   vec_perm_indices indices (sel, 1, nunits);
-  if (!can_vec_perm_const_p (TYPE_MODE (vectype), indices))
+  if (!can_vec_perm_const_p (TYPE_MODE (vectype), TYPE_MODE (vectype),
+			     indices))
     return NULL_TREE;
   return vect_gen_perm_mask_checked (vectype, indices);
 }
@@ -3168,7 +3169,8 @@ vectorizable_bswap (vec_info *vinfo,
       elts.quick_push ((i + 1) * word_bytes - j - 1);
 
   vec_perm_indices indices (elts, 1, num_bytes);
-  if (!can_vec_perm_const_p (TYPE_MODE (char_vectype), indices))
+  machine_mode vmode = TYPE_MODE (char_vectype);
+  if (!can_vec_perm_const_p (vmode, vmode, indices))
     return false;
 
   if (! vec_stmt)
@@ -6712,7 +6714,7 @@ scan_store_can_perm_p (tree vectype, tree init,
 	    sel[j] = nunits + k;
 	}
       vec_perm_indices indices (sel, i == units_log2 ? 1 : 2, nunits);
-      if (!can_vec_perm_const_p (vec_mode, indices))
+      if (!can_vec_perm_const_p (vec_mode, vec_mode, indices))
 	{
 	  if (i == units_log2)
 	    return -1;
@@ -8582,7 +8584,8 @@ vect_gen_perm_mask_any (tree vectype, const vec_perm_indices &sel)
 tree
 vect_gen_perm_mask_checked (tree vectype, const vec_perm_indices &sel)
 {
-  gcc_assert (can_vec_perm_const_p (TYPE_MODE (vectype), sel));
+  machine_mode vmode = TYPE_MODE (vectype);
+  gcc_assert (can_vec_perm_const_p (vmode, vmode, sel));
   return vect_gen_perm_mask_any (vectype, sel);
 }
 
