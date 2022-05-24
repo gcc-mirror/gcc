@@ -1511,8 +1511,10 @@ structural_comptypes (tree t1, tree t2, int strict)
 	 substitute into the specialization arguments at instantiation
 	 time.  And aliases can't be equivalent without being ==, so
 	 we don't need to look any deeper.  */
+      ++processing_template_decl;
       tree dep1 = dependent_alias_template_spec_p (t1, nt_transparent);
       tree dep2 = dependent_alias_template_spec_p (t2, nt_transparent);
+      --processing_template_decl;
       if ((dep1 || dep2) && dep1 != dep2)
 	return false;
     }

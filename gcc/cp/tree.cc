@@ -2901,7 +2901,11 @@ bind_template_template_parm (tree t, tree newargs)
   TYPE_NAME (t2) = decl;
   TYPE_STUB_DECL (t2) = decl;
   TYPE_SIZE (t2) = 0;
-  SET_TYPE_STRUCTURAL_EQUALITY (t2);
+
+  if (any_template_arguments_need_structural_equality_p (newargs))
+    SET_TYPE_STRUCTURAL_EQUALITY (t2);
+  else
+    TYPE_CANONICAL (t2) = canonical_type_parameter (t2);
 
   return t2;
 }

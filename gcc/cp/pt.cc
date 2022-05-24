@@ -203,7 +203,6 @@ static tree copy_default_args_to_explicit_spec_1 (tree, tree);
 static void copy_default_args_to_explicit_spec (tree);
 static bool invalid_nontype_parm_type_p (tree, tsubst_flags_t);
 static bool dependent_template_arg_p (tree);
-static bool any_template_arguments_need_structural_equality_p (tree);
 static bool dependent_type_p_r (tree);
 static tree tsubst_copy	(tree, tree, tsubst_flags_t, tree);
 static tree tsubst_decl (tree, tree, tsubst_flags_t);
@@ -4526,6 +4525,27 @@ build_template_parm_index (int index,
   return t;
 }
 
+struct ctp_hasher : ggc_ptr_hash<tree_node>
+{
+  static hashval_t hash (tree t)
+  {
+    tree_code code = TREE_CODE (t);
+    hashval_t val = iterative_hash_object (code, 0);
+    val = iterative_hash_object (TEMPLATE_TYPE_LEVEL (t), val);
+    val = iterative_hash_object (TEMPLATE_TYPE_IDX (t), val);
+    if (TREE_CODE (t) == BOUND_TEMPLATE_TEMPLATE_PARM)
+      val = iterative_hash_template_arg (TYPE_TI_ARGS (t), val);
+    return val;
+  }
+
+  static bool equal (tree t, tree u)
+  {
+    return comptypes (t, u, COMPARE_STRUCTURAL);
+  }
+};
+
+static GTY (()) hash_table<ctp_hasher> *ctp_table;
+
 /* Find the canonical type parameter for the given template type
    parameter.  Returns the canonical type parameter, which may be TYPE
    if no such parameter existed.  */
@@ -4533,21 +4553,13 @@ build_template_parm_index (int index,
 tree
 canonical_type_parameter (tree type)
 {
-  int idx = TEMPLATE_TYPE_IDX (type);
+  if (ctp_table == NULL)
+    ctp_table = hash_table<ctp_hasher>::create_ggc (61);
 
-  gcc_assert (TREE_CODE (type) != TEMPLATE_TEMPLATE_PARM);
-
-  if (vec_safe_length (canonical_template_parms) <= (unsigned) idx)
-    vec_safe_grow_cleared (canonical_template_parms, idx + 1, true);
-
-  for (tree list = (*canonical_template_parms)[idx];
-       list; list = TREE_CHAIN (list))
-    if (comptypes (type, TREE_VALUE (list), COMPARE_STRUCTURAL))
-      return TREE_VALUE (list);
-
-  (*canonical_template_parms)[idx]
-    = tree_cons (NULL_TREE, type, (*canonical_template_parms)[idx]);
-  return type;
+  tree& slot = *ctp_table->find_slot (type, INSERT);
+  if (slot == NULL_TREE)
+    slot = type;
+  return slot;
 }
 
 /* Return a TEMPLATE_PARM_INDEX, similar to INDEX, but whose
@@ -4720,10 +4732,7 @@ process_template_parm (tree list, location_t parm_loc, tree parm,
 				     current_template_depth,
 				     decl, TREE_TYPE (parm));
       TEMPLATE_TYPE_PARAMETER_PACK (t) = is_parameter_pack;
-      if (TREE_CODE (t) == TEMPLATE_TEMPLATE_PARM)
-	SET_TYPE_STRUCTURAL_EQUALITY (t);
-      else
-	TYPE_CANONICAL (t) = canonical_type_parameter (t);
+      TYPE_CANONICAL (t) = canonical_type_parameter (t);
     }
   DECL_ARTIFICIAL (decl) = 1;
   SET_DECL_TEMPLATE_PARM_P (decl);
@@ -10131,9 +10140,6 @@ lookup_template_class_1 (tree d1, tree arglist, tree in_decl, tree context,
 	       appropriately. */
 	    TYPE_CANONICAL (t) = template_type;
 	  else if (any_template_arguments_need_structural_equality_p (arglist))
-	    /* Some of the template arguments require structural
-	       equality testing, so this template class requires
-	       structural equality testing. */
 	    SET_TYPE_STRUCTURAL_EQUALITY (t);
 	}
       else
@@ -15908,20 +15914,6 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 		       only instantiated during satisfaction.  */
 		    PLACEHOLDER_TYPE_CONSTRAINTS_INFO (r) = ci;
 
-		if (TREE_CODE (r) == TEMPLATE_TEMPLATE_PARM)
-		  /* We have reduced the level of the template
-		     template parameter, but not the levels of its
-		     template parameters, so canonical_type_parameter
-		     will not be able to find the canonical template
-		     template parameter for this level. Thus, we
-		     require structural equality checking to compare
-		     TEMPLATE_TEMPLATE_PARMs. */
-		  SET_TYPE_STRUCTURAL_EQUALITY (r);
-		else if (TYPE_STRUCTURAL_EQUALITY_P (t))
-		  SET_TYPE_STRUCTURAL_EQUALITY (r);
-		else
-		  TYPE_CANONICAL (r) = canonical_type_parameter (r);
-
 		if (code == BOUND_TEMPLATE_TEMPLATE_PARM)
 		  {
 		    tree tinfo = TYPE_TEMPLATE_INFO (t);
@@ -15939,6 +15931,11 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 		    TEMPLATE_TEMPLATE_PARM_TEMPLATE_INFO (r)
 		      = build_template_info (tmpl, argvec);
 		  }
+
+		if (TYPE_STRUCTURAL_EQUALITY_P (t))
+		  SET_TYPE_STRUCTURAL_EQUALITY (r);
+		else
+		  TYPE_CANONICAL (r) = canonical_type_parameter (r);
 	      }
 	    break;
 
@@ -28227,8 +28224,8 @@ find_parm_usage_r (tree *tp, int *walk_subtrees, void*)
   return NULL_TREE;
 }
 
-/* Returns true if ARGS (a collection of template arguments) contains
-   any types that require structural equality testing.  */
+/* Returns true if a type specialization formed using the template
+   arguments ARGS needs to use structural equality.  */
 
 bool
 any_template_arguments_need_structural_equality_p (tree args)
@@ -28266,10 +28263,11 @@ any_template_arguments_need_structural_equality_p (tree args)
 		return true;
 	      else if (TREE_CODE (arg) == TEMPLATE_DECL)
 		continue;
-	      else if (TYPE_P (arg) && TYPE_STRUCTURAL_EQUALITY_P (arg))
-		return true;
-	      else if (!TYPE_P (arg) && TREE_TYPE (arg)
-		       && TYPE_STRUCTURAL_EQUALITY_P (TREE_TYPE (arg)))
+	      else if (arg == any_targ_node)
+		/* An any_targ_node argument (added by add_defaults_to_ttp)
+		   makes the corresponding specialization not canonicalizable,
+		   since template_args_equal always return true for it.  We
+		   may see this when called from bind_template_template_parm.  */
 		return true;
 	      /* Checking current_function_decl because this structural
 		 comparison is only necessary for redeclaration.  */
@@ -28277,6 +28275,16 @@ any_template_arguments_need_structural_equality_p (tree args)
 		       && dependent_template_arg_p (arg)
 		       && (cp_walk_tree_without_duplicates
 			   (&arg, find_parm_usage_r, NULL)))
+		/* The identity of a class template specialization that uses
+		   a function parameter depends on the identity of the function.
+		   And if this specialization appeared in the trailing return
+		   type thereof, we don't know the identity of the function
+		   (e.g. if it's a redeclaration or a new function) until we
+		   form its signature and go through duplicate_decls.  Thus
+		   it's unsafe to decide on a canonical type now (which depends
+		   on the DECL_CONTEXT of the function parameter, which can get
+		   mutated after the fact by duplicate_decls), so just require
+		   structural equality in this case (PR52830).  */
 		return true;
 	    }
 	}
@@ -29144,10 +29152,6 @@ rewrite_template_parm (tree olddecl, unsigned index, unsigned level,
       TEMPLATE_PARM_PARAMETER_PACK (newidx)
 	= TEMPLATE_PARM_PARAMETER_PACK (oldidx);
       TYPE_STUB_DECL (newtype) = TYPE_NAME (newtype) = newdecl;
-      if (TYPE_STRUCTURAL_EQUALITY_P (TREE_TYPE (olddecl)))
-	SET_TYPE_STRUCTURAL_EQUALITY (newtype);
-      else
-	TYPE_CANONICAL (newtype) = canonical_type_parameter (newtype);
 
       if (TREE_CODE (olddecl) == TEMPLATE_DECL)
 	{
@@ -29189,6 +29193,11 @@ rewrite_template_parm (tree olddecl, unsigned index, unsigned level,
 	  // All done.
 	  DECL_TEMPLATE_PARMS (newdecl) = ttparms;
 	}
+
+      if (TYPE_STRUCTURAL_EQUALITY_P (TREE_TYPE (olddecl)))
+	SET_TYPE_STRUCTURAL_EQUALITY (newtype);
+      else
+	TYPE_CANONICAL (newtype) = canonical_type_parameter (newtype);
     }
   else
     {
