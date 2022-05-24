@@ -7608,7 +7608,7 @@ package body Sem_Attr is
 
       --  In SPARK certain attributes (see below) depend on Tasking_State.
       --  Ensure that the entity is available for gnat2why by loading it.
-      --  See SPARK RM 9(18) for the relevant rule.
+      --  See SPARK RM 9(19) for the relevant rule.
 
       if GNATprove_Mode then
          case Attr_Id is
