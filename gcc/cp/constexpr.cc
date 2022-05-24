@@ -1356,6 +1356,7 @@ static tree cxx_eval_constant_expression (const constexpr_ctx *, tree,
 					  value_cat, bool *, bool *, tree * = NULL);
 static tree cxx_fold_indirect_ref (const constexpr_ctx *, location_t, tree, tree,
 				   bool * = NULL);
+static tree find_heap_var_refs (tree *, int *, void *);
 
 /* Attempt to evaluate T which represents a call to a builtin function.
    We assume here that all builtin functions evaluate to scalar types
@@ -2965,6 +2966,10 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
 		      cacheable = false;
 		      break;
 		    }
+	      /* Also don't cache a call that returns a deallocated pointer.  */
+	      if (cacheable && (cp_walk_tree_without_duplicates
+				(&result, find_heap_var_refs, NULL)))
+		cacheable = false;
 	    }
 
 	    /* Rewrite all occurrences of the function's RESULT_DECL with the
