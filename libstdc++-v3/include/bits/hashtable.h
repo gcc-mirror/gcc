@@ -34,11 +34,10 @@
 
 #include <bits/hashtable_policy.h>
 #include <bits/enable_special_members.h>
+#include <bits/stl_function.h> // __has_is_transparent_t
 #if __cplusplus > 201402L
 # include <bits/node_handle.h>
 #endif
-#include <bits/functional_hash.h>
-#include <bits/stl_function.h> // equal_to, _Identity, _Select1st
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
