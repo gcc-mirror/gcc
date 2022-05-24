@@ -291,8 +291,7 @@ TypeCheckExpr::visit (HIR::ArrayIndexExpr &expr)
   bool ok = context->lookup_builtin ("usize", &size_ty);
   rust_assert (ok);
 
-  auto resolved_index_expr
-    = size_ty->unify (TypeCheckExpr::Resolve (expr.get_index_expr (), false));
+  auto resolved_index_expr = size_ty->unify (index_expr_ty);
   if (resolved_index_expr->get_kind () == TyTy::TypeKind::ERROR)
     return;
 
