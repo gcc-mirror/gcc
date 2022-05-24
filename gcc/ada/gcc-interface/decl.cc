@@ -5777,10 +5777,9 @@ gnat_to_gnu_subprog_type (Entity_Id gnat_subprog, bool definition,
 			  bool debug_info_p, tree *param_list)
 {
   const Entity_Kind kind = Ekind (gnat_subprog);
+  const Entity_Id gnat_return_type = Etype (gnat_subprog);
   const bool method_p = is_cplusplus_method (gnat_subprog);
   const bool variadic = IN (Convention (gnat_subprog), Convention_C_Variadic);
-  Entity_Id gnat_return_type = Etype (gnat_subprog);
-  Entity_Id gnat_param;
   tree gnu_type = present_gnu_tree (gnat_subprog)
 		  ? TREE_TYPE (get_gnu_tree (gnat_subprog)) : NULL_TREE;
   tree gnu_return_type;
@@ -5810,7 +5809,6 @@ gnat_to_gnu_subprog_type (Entity_Id gnat_subprog, bool definition,
   bool return_by_direct_ref_p = false;
   bool return_by_invisi_ref_p = false;
   bool incomplete_profile_p = false;
-  int num;
 
   /* Look into the return type and get its associated GCC tree if it is not
      void, and then compute various flags for the subprogram type.  But make
@@ -5944,6 +5942,8 @@ gnat_to_gnu_subprog_type (Entity_Id gnat_subprog, bool definition,
 
   /* Loop over the parameters and get their associated GCC tree.  While doing
      this, build a copy-in copy-out structure if we need one.  */
+  Entity_Id gnat_param;
+  int num;
   for (gnat_param = First_Formal_With_Extras (gnat_subprog), num = 0;
        Present (gnat_param);
        gnat_param = Next_Formal_With_Extras (gnat_param), num++)
