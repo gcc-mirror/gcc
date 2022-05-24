@@ -20453,7 +20453,8 @@ c_parser_omp_task (location_t loc, c_parser *parser, bool *if_p)
 */
 
 #define OMP_TASKWAIT_CLAUSE_MASK					\
-	(OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_DEPEND)
+	( (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_DEPEND)		\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_NOWAIT))
 
 static void
 c_parser_omp_taskwait (c_parser *parser)

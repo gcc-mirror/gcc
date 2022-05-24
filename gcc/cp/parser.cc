@@ -43793,7 +43793,8 @@ cp_parser_omp_task (cp_parser *parser, cp_token *pragma_tok, bool *if_p)
    # pragma omp taskwait taskwait-clause[opt] new-line  */
 
 #define OMP_TASKWAIT_CLAUSE_MASK				\
-	(OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_DEPEND)
+	( (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_DEPEND)	\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_NOWAIT))
 
 static void
 cp_parser_omp_taskwait (cp_parser *parser, cp_token *pragma_tok)
