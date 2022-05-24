@@ -1410,7 +1410,7 @@ OBJS = \
 	gimple-range-edge.o \
 	gimple-range-fold.o \
 	gimple-range-gori.o \
-	gimple-range-side-effect.o \
+	gimple-range-infer.o \
 	gimple-range-trace.o \
 	gimple-ssa-backprop.o \
 	gimple-ssa-evrp.o \

@@ -22,7 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 #define GCC_SSA_RANGE_CACHE_H
 
 #include "gimple-range-gori.h" 
-#include "gimple-range-side-effect.h"
+#include "gimple-range-infer.h"
 
 // This class manages a vector of pointers to ssa_block ranges.  It
 // provides the basis for the "range on entry" cache for all
@@ -87,9 +87,9 @@ public:
 
   void propagate_updated_value (tree name, basic_block bb);
 
-  void apply_side_effects (gimple *s);
+  void apply_inferred_ranges (gimple *s);
   gori_compute m_gori;
-  side_effect_manager m_exit;
+  infer_range_manager m_exit;
 
   void dump_bb (FILE *f, basic_block bb);
   virtual void dump (FILE *f) override;

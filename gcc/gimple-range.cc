@@ -446,12 +446,11 @@ gimple_ranger::fold_stmt (gimple_stmt_iterator *gsi, tree (*valueize) (tree))
   return ret;
 }
 
-// Called during dominator walks to register any side effects that take effect
-// from this point forward.  Current release is only for tracking non-null
-// within a block.
+// Called during dominator walks to register any inferred ranges that take
+// effect from this point forward.  
 
 void
-gimple_ranger::register_side_effects (gimple *s)
+gimple_ranger::register_inferred_ranges (gimple *s)
 {
   // First, export the LHS if it is a new global range.
   tree lhs = gimple_get_lhs (s);
@@ -475,7 +474,7 @@ gimple_ranger::register_side_effects (gimple *s)
 	  fputc ('\n', dump_file);
 	}
     }
-  m_cache.apply_side_effects (s);
+  m_cache.apply_inferred_ranges (s);
 }
 
 // This routine will export whatever global ranges are known to GCC

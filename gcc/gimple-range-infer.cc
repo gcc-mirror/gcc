@@ -1,4 +1,4 @@
-/* Gimple range side effect implementation.
+/* Gimple range inference implementation.
    Copyright (C) 2022 Free Software Foundation, Inc.
    Contributed by Andrew MacLeod <amacleod@redhat.com>.
 
@@ -37,7 +37,7 @@ along with GCC; see the file COPYING3.  If not see
 
 // Adapted from infer_nonnull_range_by_dereference and check_loadstore
 // to process nonnull ssa_name OP in S.  DATA contains a pointer to a
-// stmt side effects instance.
+// stmt range inference instance.
 
 static bool
 non_null_loadstore (gimple *, tree op, tree, void *data)
@@ -49,16 +49,16 @@ non_null_loadstore (gimple *, tree op, tree, void *data)
       if (!targetm.addr_space.zero_address_valid (as))
 	{
 	  tree ssa = TREE_OPERAND (op, 0);
-	  ((stmt_side_effects *)data)->add_nonzero (ssa);
+	  ((gimple_infer_range *)data)->add_nonzero (ssa);
 	}
     }
   return false;
 }
 
-// Add NAME and RANGE to the the side effect summary.
+// Add NAME and RANGE to the the range inference summary.
 
 void
-stmt_side_effects::add_range (tree name, irange &range)
+gimple_infer_range::add_range (tree name, irange &range)
 {
   m_names[num_args] = name;
   m_ranges[num_args] = range;
@@ -66,10 +66,10 @@ stmt_side_effects::add_range (tree name, irange &range)
     num_args++;
 }
 
-// Add a nonzero range for NAME to the side effect summary.
+// Add a nonzero range for NAME to the range inference summary.
 
 void
-stmt_side_effects::add_nonzero (tree name)
+gimple_infer_range::add_nonzero (tree name)
 {
   if (!gimple_range_ssa_p (name))
     return;
@@ -78,10 +78,10 @@ stmt_side_effects::add_nonzero (tree name)
   add_range (name, nz);
 }
 
-// Process S for side effects and fill in the summary list.
-// This is the routine where new side effects should be added.
+// Process S for range inference and fill in the summary list.
+// This is the routine where new inferred ranges should be added.
 
-stmt_side_effects::stmt_side_effects (gimple *s)
+gimple_infer_range::gimple_infer_range (gimple *s)
 {
   num_args = 0;
 
@@ -120,7 +120,7 @@ stmt_side_effects::stmt_side_effects (gimple *s)
 
 // -------------------------------------------------------------------------
 
-// This class is an element in list of side effect ranges.
+// This class is an element in list of infered ranges.
 
 class exit_range
 {
@@ -134,7 +134,7 @@ public:
 // Otherwise return NULL.
 
 exit_range *
-side_effect_manager::exit_range_head::find_ptr (tree ssa)
+infer_range_manager::exit_range_head::find_ptr (tree ssa)
 {
   // Return NULL if SSA is not in this list.
   if (!m_names || !bitmap_bit_p (m_names, SSA_NAME_VERSION (ssa)))
@@ -147,11 +147,11 @@ side_effect_manager::exit_range_head::find_ptr (tree ssa)
   return NULL;
 }
 
-// Construct a side effects manager.  DO_SEARCH indicates whether an immediate
+// Construct a range infer manager.  DO_SEARCH indicates whether an immediate
 // use scan should be made the first time a name is processed.  This is for
 // on-demand clients who may not visit every statement and may miss uses.
 
-side_effect_manager::side_effect_manager (bool do_search)
+infer_range_manager::infer_range_manager (bool do_search)
 {
   bitmap_obstack_initialize (&m_bitmaps);
   m_on_exit.create (0);
@@ -168,9 +168,9 @@ side_effect_manager::side_effect_manager (bool do_search)
   m_nonzero.safe_grow_cleared (num_ssa_names + 1);
 }
 
-// Destruct a side effects manager.
+// Destruct a range infer manager.
 
-side_effect_manager::~side_effect_manager ()
+infer_range_manager::~infer_range_manager ()
 {
   m_nonzero.release ();
   obstack_free (&m_list_obstack, NULL);
@@ -182,7 +182,7 @@ side_effect_manager::~side_effect_manager ()
 // the cache, creating it if necessary.
 
 const irange&
-side_effect_manager::get_nonzero (tree name)
+infer_range_manager::get_nonzero (tree name)
 {
   unsigned v = SSA_NAME_VERSION (name);
   if (v >= m_nonzero.length ())
@@ -195,10 +195,10 @@ side_effect_manager::get_nonzero (tree name)
   return *(m_nonzero[v]);
 }
 
-// Return TRUE if NAME has a side effect range in block BB.
+// Return TRUE if NAME has a range inference in block BB.
 
 bool
-side_effect_manager::has_range_p (tree name, basic_block bb)
+infer_range_manager::has_range_p (tree name, basic_block bb)
 {
   // Check if this is an immediate use search model.
   if (m_seen && !bitmap_bit_p (m_seen, SSA_NAME_VERSION (name)))
@@ -213,11 +213,11 @@ side_effect_manager::has_range_p (tree name, basic_block bb)
   return true;
 }
 
-// Return TRUE if NAME has a side effect range in block BB, and adjust range R
+// Return TRUE if NAME has a range inference in block BB, and adjust range R
 // to include it.
 
 bool
-side_effect_manager::maybe_adjust_range (irange &r, tree name, basic_block bb)
+infer_range_manager::maybe_adjust_range (irange &r, tree name, basic_block bb)
 {
   if (!has_range_p (name, bb))
     return false;
@@ -227,10 +227,10 @@ side_effect_manager::maybe_adjust_range (irange &r, tree name, basic_block bb)
   return r.intersect (*(ptr->range));
 }
 
-// Add range R as a side effect for NAME in block BB.
+// Add range R as an inferred range for NAME in block BB.
 
 void
-side_effect_manager::add_range (tree name, basic_block bb, const irange &r)
+infer_range_manager::add_range (tree name, basic_block bb, const irange &r)
 {
   if (bb->index >= (int)m_on_exit.length ())
     m_on_exit.safe_grow_cleared (last_basic_block_for_fn (cfun) + 1);
@@ -272,18 +272,18 @@ side_effect_manager::add_range (tree name, basic_block bb, const irange &r)
   m_on_exit[bb->index].head = ptr;
 }
 
-// Add a non-zero side effect for NAME in block BB.
+// Add a non-zero inferred range for NAME in block BB.
 
 void
-side_effect_manager::add_nonzero (tree name, basic_block bb)
+infer_range_manager::add_nonzero (tree name, basic_block bb)
 {
   add_range (name, bb, get_nonzero (name));
 }
 
-// Follow immediate use chains and find all side effects for NAME.
+// Follow immediate use chains and find all inferred ranges for NAME.
 
 void
-side_effect_manager::register_all_uses (tree name)
+infer_range_manager::register_all_uses (tree name)
 {
   gcc_checking_assert (m_seen);
 
@@ -296,15 +296,15 @@ side_effect_manager::register_all_uses (tree name)
   use_operand_p use_p;
   imm_use_iterator iter;
 
-  // Loop over each immediate use and see if it has a side effect.
+  // Loop over each immediate use and see if it has an inferred range.
   FOR_EACH_IMM_USE_FAST (use_p, iter, name)
     {
       gimple *s = USE_STMT (use_p);
-      stmt_side_effects se (s);
-      for (unsigned x = 0; x < se.num (); x++)
+      gimple_infer_range infer (s);
+      for (unsigned x = 0; x < infer.num (); x++)
 	{
-	  if (name == se.name (x))
-	    add_range (name, gimple_bb (s), se.range (x));
+	  if (name == infer.name (x))
+	    add_range (name, gimple_bb (s), infer.range (x));
 	}
     }
 }
