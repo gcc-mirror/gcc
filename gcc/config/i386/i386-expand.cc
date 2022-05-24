@@ -4026,6 +4026,7 @@ ix86_expand_sse_movcc (rtx dest, rtx cmp, rtx op_true, rtx op_false)
     case E_V8HFmode:
     case E_V4SImode:
     case E_V2DImode:
+    case E_V1TImode:
       if (TARGET_SSE4_1)
 	{
 	  gen = gen_sse4_1_pblendvb;

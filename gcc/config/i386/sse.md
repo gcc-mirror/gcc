@@ -4579,10 +4579,10 @@
 })
 
 (define_expand "vcond_mask_<mode><sseintvecmodelower>"
-  [(set (match_operand:VI124_128 0 "register_operand")
-	(vec_merge:VI124_128
-	  (match_operand:VI124_128 1 "vector_operand")
-	  (match_operand:VI124_128 2 "nonimm_or_0_operand")
+  [(set (match_operand:VI_128 0 "register_operand")
+	(vec_merge:VI_128
+	  (match_operand:VI_128 1 "vector_operand")
+	  (match_operand:VI_128 2 "nonimm_or_0_operand")
 	  (match_operand:<sseintvecmode> 3 "register_operand")))]
   "TARGET_SSE2"
 {
@@ -4591,13 +4591,13 @@
   DONE;
 })
 
-(define_expand "vcond_mask_v2div2di"
-  [(set (match_operand:V2DI 0 "register_operand")
-	(vec_merge:V2DI
-	  (match_operand:V2DI 1 "vector_operand")
-	  (match_operand:V2DI 2 "nonimm_or_0_operand")
-	  (match_operand:V2DI 3 "register_operand")))]
-  "TARGET_SSE4_2"
+(define_expand "vcond_mask_v1tiv1ti"
+  [(set (match_operand:V1TI 0 "register_operand")
+	(vec_merge:V1TI
+	  (match_operand:V1TI 1 "vector_operand")
+	  (match_operand:V1TI 2 "nonimm_or_0_operand")
+	  (match_operand:V1TI 3 "register_operand")))]
+  "TARGET_SSE2"
 {
   ix86_expand_sse_movcc (operands[0], operands[3],
 			 operands[1], operands[2]);
