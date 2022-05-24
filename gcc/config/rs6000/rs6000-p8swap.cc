@@ -214,8 +214,9 @@ union_defs (swap_web_entry *insn_entry, rtx insn, df_ref use)
       if (DF_REF_INSN_INFO (link->ref))
 	{
 	  rtx def_insn = DF_REF_INSN (link->ref);
-	  (void)unionfind_union (insn_entry + INSN_UID (insn),
-				 insn_entry + INSN_UID (def_insn));
+	  gcc_assert (NONDEBUG_INSN_P (def_insn));
+	  unionfind_union (insn_entry + INSN_UID (insn),
+			   insn_entry + INSN_UID (def_insn));
 	}
 
       link = link->next;
@@ -242,8 +243,9 @@ union_uses (swap_web_entry *insn_entry, rtx insn, df_ref def)
       if (DF_REF_INSN_INFO (link->ref))
 	{
 	  rtx use_insn = DF_REF_INSN (link->ref);
-	  (void)unionfind_union (insn_entry + INSN_UID (insn),
-				 insn_entry + INSN_UID (use_insn));
+	  if (NONDEBUG_INSN_P (use_insn))
+	    unionfind_union (insn_entry + INSN_UID (insn),
+			     insn_entry + INSN_UID (use_insn));
 	}
 
       link = link->next;
