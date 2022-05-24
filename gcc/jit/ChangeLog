@@ -1,3 +1,8 @@
+2022-05-23  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit-recording.h: Add "final" and "override" to all vfunc
+	implementations that were missing them, as appropriate.
+
 2022-05-20  David Malcolm  <dmalcolm@redhat.com>
 
 	* jit-playback.h: Replace uses of "FINAL" and "OVERRIDE" with

@@ -1,3 +1,12 @@
+2022-05-23  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/104949
+	* target.c (gomp_map_vars_internal, copy_firstprivate_data):
+	Support attach for GOMP_MAP_FIRSTPRIVATE.
+	* testsuite/libgomp.fortran/target-firstprivate-1.f90: New test.
+	* testsuite/libgomp.fortran/target-firstprivate-2.f90: New test.
+	* testsuite/libgomp.fortran/target-firstprivate-3.f90: New test.
+
 2022-05-20  Marcel Vollweiler  <marcel@codesourcery.com>
 
 	* libgomp.map: Added omp_target_memcpy_async and

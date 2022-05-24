@@ -1,3 +1,14 @@
+2022-05-23  David Malcolm  <dmalcolm@redhat.com>
+
+	* call-info.cc: Add "final" and "override" to all vfunc
+	implementations that were missing them, as appropriate.
+	* engine.cc: Likewise.
+	* region-model.cc: Likewise.
+	* sm-malloc.cc: Likewise.
+	* supergraph.h: Likewise.
+	* svalue.cc: Likewise.
+	* varargs.cc: Likewise.
+
 2022-05-20  David Malcolm  <dmalcolm@redhat.com>
 
 	* analyzer-pass.cc: Replace uses of "FINAL" and "OVERRIDE" with

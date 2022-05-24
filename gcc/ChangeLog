@@ -1,3 +1,155 @@
+2022-05-23  Vineet Gupta  <vineetg@rivosinc.com>
+
+	* config/riscv/predicates.md (const_0_operand): Remove
+	const_double.
+	* config/riscv/riscv.cc (riscv_rtx_costs): Add check for
+	CONST_DOUBLE.
+	* config/riscv/riscv.h (TARGET_SUPPORTS_WIDE_INT): New define.
+
+2022-05-23  Mayshao  <mayshao-oc@zhaoxin.com>
+
+	* common/config/i386/cpuinfo.h (get_zhaoxin_cpu): Detect
+	the specific type of Zhaoxin CPU, and return Zhaoxin CPU name.
+	(cpu_indicator_init): Handle Zhaoxin processors.
+	* common/config/i386/i386-common.cc: Add lujiazui.
+	* common/config/i386/i386-cpuinfo.h (enum processor_vendor): Add
+	VENDOR_ZHAOXIN.
+	(enum processor_types): Add ZHAOXIN_FAM7H.
+	(enum processor_subtypes): Add ZHAOXIN_FAM7H_LUJIAZUI.
+	* config.gcc: Add lujiazui.
+	* config/i386/cpuid.h (signature_SHANGHAI_ebx): Add
+	Signatures for zhaoxin
+	(signature_SHANGHAI_ecx): Ditto.
+	(signature_SHANGHAI_edx): Ditto.
+	* config/i386/driver-i386.cc (host_detect_local_cpu): Let
+	-march=native recognize lujiazui processors.
+	* config/i386/i386-c.cc (ix86_target_macros_internal): Add lujiazui.
+	* config/i386/i386-options.cc (m_LUJIAZUI): New_definition.
+	* config/i386/i386.h (enum processor_type): Ditto.
+	* config/i386/i386.md: Add lujiazui.
+	* config/i386/x86-tune-costs.h (struct processor_costs): Add
+	lujiazui costs.
+	* config/i386/x86-tune-sched.cc (ix86_issue_rate): Add lujiazui.
+	(ix86_adjust_cost): Ditto.
+	* config/i386/x86-tune.def (X86_TUNE_SCHEDULE): Add lujiazui Tunnings.
+	(X86_TUNE_PARTIAL_REG_DEPENDENCY): Ditto.
+	(X86_TUNE_SSE_PARTIAL_REG_DEPENDENCY): Ditto.
+	(X86_TUNE_SSE_PARTIAL_REG_FP_CONVERTS_DEPENDENCY): Ditto.
+	(X86_TUNE_SSE_PARTIAL_REG_CONVERTS_DEPENDENCY): Ditto.
+	(X86_TUNE_MOVX): Ditto.
+	(X86_TUNE_MEMORY_MISMATCH_STALL): Ditto.
+	(X86_TUNE_FUSE_CMP_AND_BRANCH_32): Ditto.
+	(X86_TUNE_FUSE_CMP_AND_BRANCH_64): Ditto.
+	(X86_TUNE_FUSE_CMP_AND_BRANCH_SOFLAGS): Ditto.
+	(X86_TUNE_FUSE_ALU_AND_BRANCH): Ditto.
+	(X86_TUNE_ACCUMULATE_OUTGOING_ARGS): Ditto.
+	(X86_TUNE_USE_LEAVE): Ditto.
+	(X86_TUNE_PUSH_MEMORY): Ditto.
+	(X86_TUNE_LCP_STALL): Ditto.
+	(X86_TUNE_USE_INCDEC): Ditto.
+	(X86_TUNE_INTEGER_DFMODE_MOVES): Ditto.
+	(X86_TUNE_OPT_AGU): Ditto.
+	(X86_TUNE_PREFER_KNOWN_REP_MOVSB_STOSB): Ditto.
+	(X86_TUNE_MISALIGNED_MOVE_STRING_PRO_EPILOGUES): Ditto.
+	(X86_TUNE_USE_SAHF): Ditto.
+	(X86_TUNE_USE_BT): Ditto.
+	(X86_TUNE_AVOID_FALSE_DEP_FOR_BMI): Ditto.
+	(X86_TUNE_ONE_IF_CONV_INSN): Ditto.
+	(X86_TUNE_AVOID_MFENCE): Ditto.
+	(X86_TUNE_EXPAND_ABS): Ditto.
+	(X86_TUNE_USE_SIMODE_FIOP): Ditto.
+	(X86_TUNE_USE_FFREEP): Ditto.
+	(X86_TUNE_EXT_80387_CONSTANTS): Ditto.
+	(X86_TUNE_SSE_UNALIGNED_LOAD_OPTIMAL): Ditto.
+	(X86_TUNE_SSE_UNALIGNED_STORE_OPTIMAL): Ditto.
+	(X86_TUNE_SSE_TYPELESS_STORES): Ditto.
+	(X86_TUNE_SSE_LOAD0_BY_PXOR): Ditto.
+	* doc/extend.texi: Add details about lujiazui.
+	* doc/invoke.texi: Add details about lujiazui.
+	* config/i386/lujiazui.md: Introduce lujiazui cpu and include new md file.
+
+2022-05-23  Martin Liska  <mliska@suse.cz>
+
+	* config/tilepro/gen-mul-tables.cc (ARRAY_SIZE): Add new macro.
+
+2022-05-23  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-forwprop.cc (forward_propagate_into_cond): Remove.
+	(pass_forwprop::execute): Do not propagate into COND_EXPR conditions.
+
+2022-05-23  Richard Biener  <rguenther@suse.de>
+
+	* gimple-expr.cc (is_gimple_condexpr): Remove.
+	* gimple-expr.h (is_gimple_condexpr): Likewise.
+	* gimplify.cc (gimplify_expr): Remove is_gimple_condexpr usage.
+	* tree-if-conv.cc (set_bb_predicate): Likewie.
+	(add_to_predicate_list): Likewise.
+	(gen_phi_arg_condition): Likewise.
+	(predicate_scalar_phi): Likewise.
+	(predicate_statements): Likewise.
+
+2022-05-23  Richard Biener  <rguenther@suse.de>
+
+	* gimple-expr.cc (is_gimple_condexpr): Equate to is_gimple_val.
+	* gimplify.cc (gimplify_pure_cond_expr): Gimplify the condition
+	as is_gimple_val.
+	* gimple-fold.cc (valid_gimple_rhs_p): Simplify.
+	* tree-cfg.cc (verify_gimple_assign_ternary): Likewise.
+	* gimple-loop-interchange.cc (loop_cand::undo_simple_reduction):
+	Build the condition of the COND_EXPR separately.
+	* tree-ssa-loop-im.cc (move_computations_worker): Likewise.
+	* tree-vect-generic.cc (expand_vector_condition): Likewise.
+	* tree-vect-loop.cc (vect_create_epilog_for_reduction):
+	Likewise.
+	* vr-values.cc (simplify_using_ranges::simplify): Likewise.
+	* tree-vect-patterns.cc: Add comment indicating we are
+	building invalid COND_EXPRs and why.
+	* omp-expand.cc (expand_omp_simd): Gimplify the condition
+	to the COND_EXPR separately.
+	(expand_omp_atomic_cas): Note part that should be unreachable
+	now.
+	* tree-ssa-forwprop.cc (forward_propagate_into_cond): Adjust
+	condition for valid replacements.
+	* tree-if-conv.cc (predicate_bbs): Simulate previous
+	re-folding of the condition in folded COND_EXPRs which
+	is necessary because of unfolded GIMPLE_CONDs in the IL
+	as in for example gcc.dg/fold-bopcond-1.c.
+	* gimple-range-gori.cc (gori_compute::condexpr_adjust):
+	Handle that the comparison is now in the def stmt of
+	the select operand.  Required by gcc.dg/pr104526.c.
+
+2022-05-23  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/104949
+	* langhooks-def.h (lhd_omp_array_size): New.
+	(LANG_HOOKS_OMP_ARRAY_SIZE): Define.
+	(LANG_HOOKS_DECLS): Add it.
+	* langhooks.cc (lhd_omp_array_size): New.
+	* langhooks.h (struct lang_hooks_for_decls): Add hook.
+	* omp-low.cc (scan_sharing_clauses, lower_omp_target):
+	Handle GOMP_MAP_FIRSTPRIVATE for array descriptors.
+
+2022-05-23  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* config/i386/i386.cc (ix86_rtx_costs) <case AND>: Split from
+	XOR/IOR case.  Account for two instructions for double-word
+	operations.  In case of vector pandn, account for single
+	instruction.  Likewise for integer andn with TARGET_BMI.
+	<case NOT>: Vector NOT requires more than 1 instruction (pxor).
+	<case NEG>: Double-word negation requires 3 instructions.
+
+2022-05-23  Tsukasa OI  <research_trasio@irq.a4lg.com>
+
+	* common/config/riscv/riscv-common.cc (riscv_supported_std_ext):
+	Fix "K" extension prefix to be placed before "J".
+	* config/riscv/arch-canonicalize: Likewise.
+
+2022-05-23  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/x86-tune-costs.h (skylake_cost): Increase gpr
+	<-> mask cost from 5 to 6.
+	(icelake_cost): Ditto.
+
 2022-05-20  Wilco Dijkstra  <wilco.dijkstra@arm.com>
 
 	* config/aarch64/aarch64.md

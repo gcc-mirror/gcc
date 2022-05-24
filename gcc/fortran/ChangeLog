@@ -1,3 +1,12 @@
+2022-05-23  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/104949
+	* f95-lang.cc (LANG_HOOKS_OMP_ARRAY_SIZE): Redefine.
+	* trans-openmp.cc (gfc_omp_array_size): New.
+	(gfc_trans_omp_variable_list): Never turn has_device_addr
+	to firstprivate.
+	* trans.h (gfc_omp_array_size): New.
+
 2022-05-18  Tobias Burnus  <tobias@codesourcery.com>
 
 	* gfortran.h (enum gfc_omp_depend_op): Add OMP_DEPEND_INOUTSET.

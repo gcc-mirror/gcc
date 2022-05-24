@@ -1,3 +1,37 @@
+2022-05-23  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/104441
+	* gcc.target/i386/pr104441-1a.c (load8bit_4x4_avx2): Initialize
+	src23.
+
+2022-05-23  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/plugin/analyzer_gil_plugin.c: Replace uses of "FINAL" and
+	"OVERRIDE" with "final" and "override".
+
+2022-05-23  Mayshao  <mayshao-oc@zhaoxin.com>
+
+	* gcc.target/i386/funcspec-56.inc: Test -arch=lujiauzi and -tune=lujiazui.
+	* g++.target/i386/mv32.C: Ditto.
+
+2022-05-23  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	* gcc.dg/mallign.c: Skip check if sizeof(word)==1.
+
+2022-05-23  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/gimplefe-27.c: Adjust.
+	* gcc.dg/gimplefe-45.c: Likewise.
+	* gcc.dg/pr101145-2.c: Likewise.
+	* gcc.dg/pr98211.c: Likewise.
+	* gcc.dg/torture/pr89595.c: Likewise.
+	* gcc.dg/tree-ssa/divide-7.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-lim-12.c: Likewise.
+
+2022-05-23  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/spill_to_mask-1.c: New test.
+
 2022-05-21  Dimitar Dimitrov  <dimitar@dinux.eu>
 
 	* gcc.dg/tree-ssa/gen-vect-11.c: For PRU target, skip the
