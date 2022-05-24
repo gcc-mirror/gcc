@@ -1052,6 +1052,11 @@ gcc_jit_global_set_initializer (gcc_jit_lvalue *global,
 				const void *blob,
 				size_t num_bytes);
 
+extern void
+gcc_jit_global_set_readonly (gcc_jit_lvalue *global);
+
+#define LIBGCCJIT_HAVE_gcc_jit_global_set_readonly
+
 /* Upcasting.  */
 extern gcc_jit_object *
 gcc_jit_lvalue_as_object (gcc_jit_lvalue *lvalue);

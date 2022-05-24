@@ -1284,6 +1284,16 @@ public:
 
   void add_string_attribute (gcc_jit_variable_attribute attribute, const char* value);
 
+  bool get_readonly () const
+  {
+    return m_readonly;
+  }
+
+  void set_readonly ()
+  {
+    m_readonly = true;
+  }
+
   virtual const char *access_as_lvalue (reproducer &r);
   virtual bool is_global () const { return false; }
   virtual bool is_local () const { return false; }
@@ -1300,6 +1310,7 @@ protected:
   unsigned m_alignment;
   std::vector<std::pair<gcc_jit_variable_attribute,
 	      std::string>> m_string_attributes;
+  bool m_readonly = false;
 };
 
 class param : public lvalue

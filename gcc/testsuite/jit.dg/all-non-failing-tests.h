@@ -351,6 +351,9 @@
 #undef create_code
 #undef verify_code
 
+/* test-readonly.c: This can't be in the testcases array as it
+   is target-specific.  */
+
 /* test-restrict.c: This can't be in the testcases array as it needs
    the `-O3` flag.  */
 

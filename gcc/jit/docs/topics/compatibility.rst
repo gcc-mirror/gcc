@@ -404,3 +404,10 @@ on functions and variables:
 --------------------
 ``LIBGCCJIT_ABI_28`` covers the addition of
 :func:`gcc_jit_context_new_alignof`
+
+.. _LIBGCCJIT_ABI_29:
+
+``LIBGCCJIT_ABI_29``
+--------------------
+``LIBGCCJIT_ABI_29`` covers the addition of
+:func:`gcc_jit_global_set_readonly`

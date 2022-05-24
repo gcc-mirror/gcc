@@ -5051,13 +5051,15 @@ recording::global::replay_into (replayer *r)
 				 m_initializer,
 				 playback_string (m_name),
 				 m_flags,
-				 m_string_attributes)
+				 m_string_attributes,
+				 m_readonly)
     : r->new_global (playback_location (r, m_loc),
 		     m_kind,
 		     m_type->playback_type (),
 		     playback_string (m_name),
 		     m_flags,
-		     m_string_attributes);
+		     m_string_attributes,
+		     m_readonly);
 
   if (m_tls_model != GCC_JIT_TLS_MODEL_NONE)
     global->set_tls_model (recording::tls_models[m_tls_model]);
@@ -5234,6 +5236,9 @@ recording::global::write_reproducer (reproducer &r)
 	    gcc_jit_variable_attribute_enum_strings[std::get<0>(attribute)],
 	    std::get<1>(attribute).c_str());
 
+  if (m_readonly)
+    r.write ("  gcc_jit_global_set_readonly (%s /* gcc_jit_lvalue *lvalue */);\n",
+     id);
 
   if (m_initializer)
     switch (m_type->dereference ()->get_size ())
