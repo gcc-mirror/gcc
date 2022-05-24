@@ -58,6 +58,7 @@
 #include <debug/debug.h>
 #include <bits/move.h>
 #include <bits/predefined_ops.h>
+#include <bits/stl_iterator_base_funcs.h>
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
