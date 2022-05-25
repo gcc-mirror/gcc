@@ -21,6 +21,8 @@
 #include "config.h"
 #include "selftest.h"
 
+#if CHECKING_P
+
 static void
 rust_optional_create ()
 {
@@ -93,12 +95,17 @@ rust_optional_reference ()
   ASSERT_EQ (opt->at (2), "gcc");
 }
 
+#endif /* #if CHECKING_P */
+
 void
 rust_optional_test ()
 {
+#if CHECKING_P
   rust_optional_create ();
   rust_optional_operators ();
   rust_optional_take ();
   rust_optional_map ();
   rust_optional_reference ();
+
+#endif /* #if CHECKING_P */
 }
