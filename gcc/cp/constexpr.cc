@@ -3507,6 +3507,13 @@ cxx_eval_conditional_expression (const constexpr_ctx *ctx, tree t,
     val = TREE_OPERAND (t, 1);
   if (TREE_CODE (t) == IF_STMT && !val)
     val = void_node;
+  /* A TARGET_EXPR may be nested inside another TARGET_EXPR, but still
+     serve as the initializer for the same object as the outer TARGET_EXPR,
+     as in
+       A a = true ? A{} : A{};
+     so strip the inner TARGET_EXPR so we don't materialize a temporary.  */
+  if (TREE_CODE (val) == TARGET_EXPR)
+    val = TARGET_EXPR_INITIAL (val);
   return cxx_eval_constant_expression (ctx, val, lval, non_constant_p,
 				       overflow_p, jump_target);
 }
