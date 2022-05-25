@@ -9235,8 +9235,9 @@ c_parser_postfix_expression (c_parser *parser)
 	    if (c_parser_next_token_is (parser, CPP_NAME))
 	      {
 		c_token *comp_tok = c_parser_peek_token (parser);
-		offsetof_ref = build_component_ref
-		  (loc, offsetof_ref, comp_tok->value, comp_tok->location);
+		offsetof_ref
+		  = build_component_ref (loc, offsetof_ref, comp_tok->value,
+					 comp_tok->location, UNKNOWN_LOCATION);
 		c_parser_consume_token (parser);
 		while (c_parser_next_token_is (parser, CPP_DOT)
 		       || c_parser_next_token_is (parser,
@@ -9263,9 +9264,11 @@ c_parser_postfix_expression (c_parser *parser)
 			    break;
 			  }
 			c_token *comp_tok = c_parser_peek_token (parser);
-			offsetof_ref = build_component_ref
-			  (loc, offsetof_ref, comp_tok->value,
-			   comp_tok->location);
+			offsetof_ref
+			  = build_component_ref (loc, offsetof_ref,
+						 comp_tok->value,
+						 comp_tok->location,
+						 UNKNOWN_LOCATION);
 			c_parser_consume_token (parser);
 		      }
 		    else
@@ -10612,7 +10615,7 @@ c_parser_postfix_expression_after_primary (c_parser *parser,
 	  finish = c_parser_peek_token (parser)->get_finish ();
 	  c_parser_consume_token (parser);
 	  expr.value = build_component_ref (op_loc, expr.value, ident,
-					    comp_loc);
+					    comp_loc, UNKNOWN_LOCATION);
 	  set_c_expr_source_range (&expr, start, finish);
 	  expr.original_code = ERROR_MARK;
 	  if (TREE_CODE (expr.value) != COMPONENT_REF)
@@ -10652,7 +10655,8 @@ c_parser_postfix_expression_after_primary (c_parser *parser,
 					    build_indirect_ref (op_loc,
 								expr.value,
 								RO_ARROW),
-					    ident, comp_loc);
+					    ident, comp_loc,
+					    expr.get_location ());
 	  set_c_expr_source_range (&expr, start, finish);
 	  expr.original_code = ERROR_MARK;
 	  if (TREE_CODE (expr.value) != COMPONENT_REF)
@@ -13171,6 +13175,7 @@ c_parser_omp_variable_list (c_parser *parser,
 			 && c_parser_next_token_is (parser, CPP_DEREF)))
 		{
 		  location_t op_loc = c_parser_peek_token (parser)->location;
+		  location_t arrow_loc = UNKNOWN_LOCATION;
 		  if (c_parser_next_token_is (parser, CPP_DEREF))
 		    {
 		      c_expr t_expr;
@@ -13181,6 +13186,7 @@ c_parser_omp_variable_list (c_parser *parser,
 		      t_expr = convert_lvalue_to_rvalue (op_loc, t_expr,
 							 true, false);
 		      t = build_indirect_ref (op_loc, t_expr.value, RO_ARROW);
+		      arrow_loc = t_expr.get_location ();
 		    }
 		  c_parser_consume_token (parser);
 		  if (!c_parser_next_token_is (parser, CPP_NAME))
@@ -13194,7 +13200,8 @@ c_parser_omp_variable_list (c_parser *parser,
 		  tree ident = comp_tok->value;
 		  location_t comp_loc = comp_tok->location;
 		  c_parser_consume_token (parser);
-		  t = build_component_ref (op_loc, t, ident, comp_loc);
+		  t = build_component_ref (op_loc, t, ident, comp_loc,
+					   arrow_loc);
 		}
 	      /* FALLTHROUGH  */
 	    case OMP_CLAUSE_AFFINITY:

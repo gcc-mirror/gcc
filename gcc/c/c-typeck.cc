@@ -2457,11 +2457,12 @@ should_suggest_deref_p (tree datum_type)
 /* Make an expression to refer to the COMPONENT field of structure or
    union value DATUM.  COMPONENT is an IDENTIFIER_NODE.  LOC is the
    location of the COMPONENT_REF.  COMPONENT_LOC is the location
-   of COMPONENT.  */
+   of COMPONENT.  ARROW_LOC is the location of the first -> operand if
+   it is from -> operator.  */
 
 tree
 build_component_ref (location_t loc, tree datum, tree component,
-		     location_t component_loc)
+		     location_t component_loc, location_t arrow_loc)
 {
   tree type = TREE_TYPE (datum);
   enum tree_code code = TREE_CODE (type);
@@ -2577,11 +2578,23 @@ build_component_ref (location_t loc, tree datum, tree component,
       /* Special-case the error message for "ptr.field" for the case
 	 where the user has confused "." vs "->".  */
       rich_location richloc (line_table, loc);
-      /* "loc" should be the "." token.  */
-      richloc.add_fixit_replace ("->");
-      error_at (&richloc,
-		"%qE is a pointer; did you mean to use %<->%>?",
-		datum);
+      if (TREE_CODE (datum) == INDIRECT_REF && arrow_loc != UNKNOWN_LOCATION)
+	{
+	  richloc.add_fixit_insert_before (arrow_loc, "(*");
+	  richloc.add_fixit_insert_after (arrow_loc, ")");
+	  error_at (&richloc,
+		    "%qE is a pointer to pointer; did you mean to dereference "
+		    "it before applying %<->%> to it?",
+		    TREE_OPERAND (datum, 0));
+	}
+      else
+	{
+	  /* "loc" should be the "." token.  */
+	  richloc.add_fixit_replace ("->");
+	  error_at (&richloc,
+		    "%qE is a pointer; did you mean to use %<->%>?",
+		    datum);
+	}
       return error_mark_node;
     }
   else if (code != ERROR_MARK)
