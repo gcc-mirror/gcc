@@ -4205,11 +4205,11 @@ gfc_conv_array_ref (gfc_se * se, gfc_array_ref * ar, gfc_expr *expr,
 				  gfc_array_index_type, offset, cst_offset);
       se->class_vptr = vptr;
       vptr = get_class_array_vptr (se->expr, vptr);
-      se->expr = gfc_build_array_ref (base, offset, cooked_decl, vptr);
+      se->expr = gfc_build_array_ref (base, offset, cooked_decl, false, vptr);
     }
- else
-   /* Return the outermost ARRAY_REF we already built.  */
-   se->expr = aref;
+  else
+    /* Return the outermost ARRAY_REF we already built.  */
+    se->expr = aref;
 }
 
 
