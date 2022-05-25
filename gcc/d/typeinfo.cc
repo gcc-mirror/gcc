@@ -1328,7 +1328,7 @@ public:
   {
   }
 
-  void visit (TypeInfoDeclaration *tid)
+  void visit (TypeInfoDeclaration *tid) final override
   {
     tree ident = get_identifier (tid->ident->toChars ());
     tree type = tinfo_types[get_typeinfo_kind (tid->tinfo)];
@@ -1342,7 +1342,7 @@ public:
     TREE_READONLY (tid->csym) = 1;
   }
 
-  void visit (TypeInfoClassDeclaration *tid)
+  void visit (TypeInfoClassDeclaration *tid) final override
   {
     TypeClass *tc = tid->tinfo->isTypeClass ();
     tid->csym = get_classinfo_decl (tc->sym);
@@ -1716,40 +1716,40 @@ public:
     return this->result_;
   }
 
-  void visit (Type *t)
+  void visit (Type *t) final override
   {
     Type *tb = t->toBasetype ();
     if (tb != t)
       tb->accept (this);
   }
 
-  void visit (TypeNext *t)
+  void visit (TypeNext *t) final override
   {
     if (t->next)
       t->next->accept (this);
   }
 
-  void visit (TypeBasic *)
+  void visit (TypeBasic *) final override
   {
   }
 
-  void visit (TypeVector *t)
+  void visit (TypeVector *t) final override
   {
     t->basetype->accept (this);
   }
 
-  void visit (TypeAArray *t)
+  void visit (TypeAArray *t) final override
   {
     t->index->accept (this);
     visit ((TypeNext *) t);
   }
 
-  void visit (TypeFunction *t)
+  void visit (TypeFunction *t) final override
   {
     visit ((TypeNext *) t);
   }
 
-  void visit (TypeStruct *t)
+  void visit (TypeStruct *t) final override
   {
     StructDeclaration *sd = t->sym;
     if (TemplateInstance *ti = sd->isInstantiated ())
@@ -1764,7 +1764,7 @@ public:
       }
   }
 
-  void visit (TypeClass *t)
+  void visit (TypeClass *t) final override
   {
     ClassDeclaration *cd = t->sym;
     if (TemplateInstance *ti = cd->isInstantiated ())
@@ -1776,7 +1776,7 @@ public:
       }
   }
 
-  void visit (TypeTuple *t)
+  void visit (TypeTuple *t) final override
   {
     if (!t->arguments)
       return;
