@@ -90,7 +90,7 @@ TypeCheckExpr::visit (HIR::BlockExpr &expr)
       if (!s->is_item ())
 	continue;
 
-      TypeCheckStmt::Resolve (s.get (), inside_loop);
+      TypeCheckStmt::Resolve (s.get ());
     }
 
   for (auto &s : expr.get_statements ())
@@ -98,7 +98,7 @@ TypeCheckExpr::visit (HIR::BlockExpr &expr)
       if (s->is_item ())
 	continue;
 
-      auto resolved = TypeCheckStmt::Resolve (s.get (), inside_loop);
+      auto resolved = TypeCheckStmt::Resolve (s.get ());
       if (resolved == nullptr)
 	{
 	  rust_error_at (s->get_locus (), "failure to resolve type");
@@ -114,9 +114,7 @@ TypeCheckExpr::visit (HIR::BlockExpr &expr)
     }
 
   if (expr.has_expr ())
-    infered
-      = TypeCheckExpr::Resolve (expr.get_final_expr ().get (), inside_loop)
-	  ->clone ();
+    infered = TypeCheckExpr::Resolve (expr.get_final_expr ().get ())->clone ();
   else if (expr.is_tail_reachable ())
     infered
       = TyTy::TupleType::get_unit_type (expr.get_mappings ().get_hirid ());
@@ -184,7 +182,7 @@ TraitItemReference::get_type_from_constant (
   if (constant.has_expr ())
     {
       TyTy::BaseType *expr
-	= TypeCheckExpr::Resolve (constant.get_expr ().get (), false);
+	= TypeCheckExpr::Resolve (constant.get_expr ().get ());
 
       return type->unify (expr);
     }

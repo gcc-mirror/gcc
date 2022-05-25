@@ -25,13 +25,13 @@ namespace Resolver {
 void
 TypeCheckPattern::visit (HIR::PathInExpression &pattern)
 {
-  infered = TypeCheckExpr::Resolve (&pattern, false);
+  infered = TypeCheckExpr::Resolve (&pattern);
 }
 
 void
 TypeCheckPattern::visit (HIR::TupleStructPattern &pattern)
 {
-  infered = TypeCheckExpr::Resolve (&pattern.get_path (), false);
+  infered = TypeCheckExpr::Resolve (&pattern.get_path ());
   if (infered->get_kind () == TyTy::TypeKind::ERROR)
     return;
 
@@ -117,7 +117,7 @@ TypeCheckPattern::visit (HIR::TupleStructPattern &pattern)
 void
 TypeCheckPattern::visit (HIR::StructPattern &pattern)
 {
-  infered = TypeCheckExpr::Resolve (&pattern.get_path (), false);
+  infered = TypeCheckExpr::Resolve (&pattern.get_path ());
   if (infered->get_kind () == TyTy::TypeKind::ERROR)
     return;
 
@@ -300,7 +300,7 @@ TypeCheckPattern::visit (HIR::RangePattern &pattern)
 	  = *static_cast<HIR::RangePatternBoundPath *> (
 	    pattern.get_upper_bound ().get ());
 
-	upper = TypeCheckExpr::Resolve (&ref.get_path (), false);
+	upper = TypeCheckExpr::Resolve (&ref.get_path ());
       }
       break;
 
@@ -309,7 +309,7 @@ TypeCheckPattern::visit (HIR::RangePattern &pattern)
 	  = *static_cast<HIR::RangePatternBoundQualPath *> (
 	    pattern.get_upper_bound ().get ());
 
-	upper = TypeCheckExpr::Resolve (&ref.get_qualified_path (), false);
+	upper = TypeCheckExpr::Resolve (&ref.get_qualified_path ());
       }
       break;
     }
@@ -333,7 +333,7 @@ TypeCheckPattern::visit (HIR::RangePattern &pattern)
 	  = *static_cast<HIR::RangePatternBoundPath *> (
 	    pattern.get_lower_bound ().get ());
 
-	lower = TypeCheckExpr::Resolve (&ref.get_path (), false);
+	lower = TypeCheckExpr::Resolve (&ref.get_path ());
       }
       break;
 
@@ -342,7 +342,7 @@ TypeCheckPattern::visit (HIR::RangePattern &pattern)
 	  = *static_cast<HIR::RangePatternBoundQualPath *> (
 	    pattern.get_lower_bound ().get ());
 
-	lower = TypeCheckExpr::Resolve (&ref.get_qualified_path (), false);
+	lower = TypeCheckExpr::Resolve (&ref.get_qualified_path ());
       }
       break;
     }

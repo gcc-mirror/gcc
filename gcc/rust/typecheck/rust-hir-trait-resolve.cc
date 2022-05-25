@@ -324,8 +324,7 @@ TraitItemReference::resolve_item (HIR::TraitItemFunc &func)
   auto expected_ret_tyty = resolved_fn_type->get_return_type ();
   context->push_return_type (TypeCheckContextItem (&func), expected_ret_tyty);
 
-  auto block_expr_ty
-    = TypeCheckExpr::Resolve (func.get_block_expr ().get (), false);
+  auto block_expr_ty = TypeCheckExpr::Resolve (func.get_block_expr ().get ());
 
   context->pop_return_type ();
 

@@ -535,7 +535,7 @@ TypeCheckType::visit (HIR::TraitObjectType &type)
 void
 TypeCheckType::visit (HIR::ArrayType &type)
 {
-  auto capacity_type = TypeCheckExpr::Resolve (type.get_size_expr (), false);
+  auto capacity_type = TypeCheckExpr::Resolve (type.get_size_expr ());
   if (capacity_type->get_kind () == TyTy::TypeKind::ERROR)
     return;
 

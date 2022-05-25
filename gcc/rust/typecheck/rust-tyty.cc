@@ -3227,7 +3227,7 @@ TypeCheckCallExpr::visit (ADTType &type)
       StructFieldType *field = variant.get_field_at_index (i);
       BaseType *field_tyty = field->get_field_type ();
 
-      BaseType *arg = Resolver::TypeCheckExpr::Resolve (argument.get (), false);
+      BaseType *arg = Resolver::TypeCheckExpr::Resolve (argument.get ());
       if (arg->get_kind () == TyTy::TypeKind::ERROR)
 	{
 	  rust_error_at (argument->get_locus (),
@@ -3285,7 +3285,7 @@ TypeCheckCallExpr::visit (FnType &type)
   for (auto &argument : call.get_arguments ())
     {
       auto argument_expr_tyty
-	= Resolver::TypeCheckExpr::Resolve (argument.get (), false);
+	= Resolver::TypeCheckExpr::Resolve (argument.get ());
       if (argument_expr_tyty->get_kind () == TyTy::TypeKind::ERROR)
 	{
 	  rust_error_at (
@@ -3341,7 +3341,7 @@ TypeCheckCallExpr::visit (FnPtr &type)
     {
       auto fnparam = type.param_at (i);
       auto argument_expr_tyty
-	= Resolver::TypeCheckExpr::Resolve (argument.get (), false);
+	= Resolver::TypeCheckExpr::Resolve (argument.get ());
       if (argument_expr_tyty->get_kind () == TyTy::TypeKind::ERROR)
 	{
 	  rust_error_at (
@@ -3396,7 +3396,7 @@ TypeCheckMethodCallExpr::visit (FnType &type)
     {
       auto fnparam = type.param_at (i);
       auto argument_expr_tyty
-	= Resolver::TypeCheckExpr::Resolve (argument.get (), false);
+	= Resolver::TypeCheckExpr::Resolve (argument.get ());
       if (argument_expr_tyty->get_kind () == TyTy::TypeKind::ERROR)
 	{
 	  rust_error_at (

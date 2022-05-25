@@ -126,6 +126,8 @@ public:
       }
   }
 
+  bool have_loop_context () const { return !loop_type_stack.empty (); }
+
   void push_new_loop_context (HirId id, Location locus)
   {
     TyTy::BaseType *infer_var

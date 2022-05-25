@@ -56,9 +56,8 @@ TypeCheckExpr::visit (HIR::RangeFromToExpr &expr)
   // resolve the range expressions and these types must unify then we use that
   // type to substitute into the ADT
   TyTy::BaseType *from_ty
-    = TypeCheckExpr::Resolve (expr.get_from_expr ().get (), false);
-  TyTy::BaseType *to_ty
-    = TypeCheckExpr::Resolve (expr.get_to_expr ().get (), false);
+    = TypeCheckExpr::Resolve (expr.get_from_expr ().get ());
+  TyTy::BaseType *to_ty = TypeCheckExpr::Resolve (expr.get_to_expr ().get ());
   TyTy::BaseType *unified = from_ty->unify (to_ty);
 
   // substitute it in
@@ -105,7 +104,7 @@ TypeCheckExpr::visit (HIR::RangeFromExpr &expr)
   // resolve the range expressions and these types must unify then we use that
   // type to substitute into the ADT
   TyTy::BaseType *from_ty
-    = TypeCheckExpr::Resolve (expr.get_from_expr ().get (), false);
+    = TypeCheckExpr::Resolve (expr.get_from_expr ().get ());
 
   // substitute it in
   std::vector<TyTy::SubstitutionArg> subst_mappings;
@@ -150,8 +149,7 @@ TypeCheckExpr::visit (HIR::RangeToExpr &expr)
 
   // resolve the range expressions and these types must unify then we use that
   // type to substitute into the ADT
-  TyTy::BaseType *from_ty
-    = TypeCheckExpr::Resolve (expr.get_to_expr ().get (), false);
+  TyTy::BaseType *from_ty = TypeCheckExpr::Resolve (expr.get_to_expr ().get ());
 
   // substitute it in
   std::vector<TyTy::SubstitutionArg> subst_mappings;
@@ -228,9 +226,8 @@ TypeCheckExpr::visit (HIR::RangeFromToInclExpr &expr)
   // resolve the range expressions and these types must unify then we use that
   // type to substitute into the ADT
   TyTy::BaseType *from_ty
-    = TypeCheckExpr::Resolve (expr.get_from_expr ().get (), false);
-  TyTy::BaseType *to_ty
-    = TypeCheckExpr::Resolve (expr.get_to_expr ().get (), false);
+    = TypeCheckExpr::Resolve (expr.get_from_expr ().get ());
+  TyTy::BaseType *to_ty = TypeCheckExpr::Resolve (expr.get_to_expr ().get ());
   TyTy::BaseType *unified = from_ty->unify (to_ty);
 
   // substitute it in
@@ -245,12 +242,11 @@ TypeCheckExpr::visit (HIR::RangeFromToInclExpr &expr)
 void
 TypeCheckExpr::visit (HIR::ArrayIndexExpr &expr)
 {
-  auto array_expr_ty
-    = TypeCheckExpr::Resolve (expr.get_array_expr (), inside_loop);
+  auto array_expr_ty = TypeCheckExpr::Resolve (expr.get_array_expr ());
   if (array_expr_ty->get_kind () == TyTy::TypeKind::ERROR)
     return;
 
-  auto index_expr_ty = TypeCheckExpr::Resolve (expr.get_index_expr (), false);
+  auto index_expr_ty = TypeCheckExpr::Resolve (expr.get_index_expr ());
   if (index_expr_ty->get_kind () == TyTy::TypeKind::ERROR)
     return;
 
