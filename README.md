@@ -18,6 +18,15 @@ Now that the language is stable, it is an excellent time to create alternative c
 the project are keen “Rustaceans” with a desire to give back to the Rust community and to learn what GCC is capable
 of when it comes to a modern language.
 
+## Build Farm Status
+
+- [Fedora X86_64](https://builder.sourceware.org/buildbot/#/builders/gccrust-fedora-x86_64) [![Fedora X86-64](https://builder.sourceware.org/buildbot/badges/gccrust-fedora-x86_64.svg)](https://builder.sourceware.org/buildbot/#/builders/gccrust-fedora-x86_64)
+- [Debian i386](https://builder.sourceware.org/buildbot/#/builders/gccrust-debian-i386) [![Fedora X86-64](https://builder.sourceware.org/buildbot/badges/gccrust-debian-i386.svg)](https://builder.sourceware.org/buildbot/#/builders/gccrust-debian-i386)
+- [Fedora s390x](https://builder.sourceware.org/buildbot/#/builders/gccrust-fedora-s390x) [![Fedora X86-64](https://builder.sourceware.org/buildbot/badges/gccrust-fedora-s390x.svg)](https://builder.sourceware.org/buildbot/#/builders/gccrust-fedora-s390x)
+- [Debian ppc64](https://builder.sourceware.org/buildbot/#/builders/gccrust-debian-ppc64) [![Fedora X86-64](https://builder.sourceware.org/buildbot/badges/gccrust-debian-ppc64.svg)](https://builder.sourceware.org/buildbot/#/builders/gccrust-debian-ppc64)
+- [Fedora ppc64le](https://builder.sourceware.org/buildbot/#/builders/gccrust-fedora-ppc64le) [![Fedora
+X86-64](https://builder.sourceware.org/buildbot/badges/gccrust-fedora-ppc64le.svg)](https://builder.sourceware.org/buildbot/#/builders/gccrust-fedora-ppc64le)
+
 ## FAQ
 
 Please find the answers to frequently asked questions over on: https://github.com/Rust-GCC/gccrs/wiki/Frequently-Asked-Questions
