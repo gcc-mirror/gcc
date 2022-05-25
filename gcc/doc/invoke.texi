@@ -19737,7 +19737,6 @@ Set architecture type or tuning for @var{gpu}. Supported values for @var{gpu}
 are
 
 @table @samp
-@opindex fiji
 @item fiji
 Compile for GCN3 Fiji devices (gfx803).
 
@@ -19746,6 +19745,12 @@ Compile for GCN5 Vega 10 devices (gfx900).
 
 @item gfx906
 Compile for GCN5 Vega 20 devices (gfx906).
+
+@item gfx908
+Compile for CDNA1 Instinct MI100 series devices (gfx908).
+
+@item gfx90a
+Compile for CDNA2 Instinct MI200 series devices (gfx90a).
 
 @end table
 
