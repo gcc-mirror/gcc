@@ -278,7 +278,7 @@ The specification of this unit is compatible with SPARK 2014.
 .. _`Ada.Containers.Functional_Vectors_(a-cofuve.ads)`:
 
 ``Ada.Containers.Functional_Vectors`` (:file:`a-cofuve.ads`)
-=================================================================
+============================================================
 
 .. index:: Ada.Containers.Functional_Vectors (a-cofuve.ads)
 
@@ -300,7 +300,7 @@ specification of this unit is compatible with SPARK 2014.
 .. _`Ada.Containers.Functional_Sets_(a-cofuse.ads)`:
 
 ``Ada.Containers.Functional_Sets`` (:file:`a-cofuse.ads`)
-=================================================================
+=========================================================
 
 .. index:: Ada.Containers.Functional_Sets (a-cofuse.ads)
 
@@ -321,7 +321,7 @@ The specification of this unit is compatible with SPARK 2014.
 .. _`Ada.Containers.Functional_Maps_(a-cofuma.ads)`:
 
 ``Ada.Containers.Functional_Maps`` (:file:`a-cofuma.ads`)
-=================================================================
+=========================================================
 
 .. index:: Ada.Containers.Functional_Maps (a-cofuma.ads)
 
