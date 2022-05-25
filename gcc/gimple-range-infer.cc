@@ -120,7 +120,7 @@ gimple_infer_range::gimple_infer_range (gimple *s)
 
 // -------------------------------------------------------------------------
 
-// This class is an element in list of infered ranges.
+// This class is an element in the list of infered ranges.
 
 class exit_range
 {

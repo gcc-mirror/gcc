@@ -1440,7 +1440,7 @@ ranger_cache::apply_inferred_ranges (gimple *s)
   if (infer.num () == 0)
     return;
 
-  // Do not update the on-netry cache for block ending stmts.
+  // Do not update the on-entry cache for block ending stmts.
   if (stmt_ends_bb_p (s))
     {
       edge_iterator ei;

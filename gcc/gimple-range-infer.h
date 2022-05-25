@@ -26,7 +26,7 @@ along with GCC; see the file COPYING3.  If not see
 
 // This class manages an on-demand summary of inferred ranges for a statement.
 // It can be instantiated as required and provides a list of inferred ranges.
-// New inferred ranges should added in the constructor of this class.
+// New inferred ranges should be added in the constructor of this class.
 
 class gimple_infer_range
 {
@@ -49,7 +49,7 @@ private:
 
 // This class manages a list of inferred ranges for each basic block.
 // As inferences are made, they can be registered to a block and later
-// queried.  WHen constructed with a TRUE flag, immediate uses chains are
+// queried.  When constructed with a TRUE flag, immediate uses chains are
 // followed the first time a name is referenced and block populated if
 // there are any inferred ranges.
 

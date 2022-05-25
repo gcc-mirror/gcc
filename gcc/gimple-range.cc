@@ -118,7 +118,7 @@ gimple_ranger::range_of_expr (irange &r, tree expr, gimple *stmt)
       // If name is defined in this block, try to get an range from S.
       if (def_stmt && gimple_bb (def_stmt) == bb)
 	{
-	  // Declared in ths block, if it has a global set, check for an
+	  // Declared in this block, if it has a global set, check for an
 	  // override from a block walk, otherwise calculate it.
 	  if (m_cache.get_global_range (r, expr))
 	    m_cache.block_range (r, bb, expr, false);
