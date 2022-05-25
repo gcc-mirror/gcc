@@ -1382,10 +1382,30 @@ gomp_task_run_post_handle_dependers (struct gomp_task *child_task,
 	{
 	  if (!parent)
 	    task->parent = NULL;
+	  else if (__builtin_expect (task->parent_depends_on, 0)
+		   && --parent->taskwait->n_depend == 0
+		   && parent->taskwait->in_depend_wait)
+	    {
+	      parent->taskwait->in_depend_wait = false;
+	      gomp_sem_post (&parent->taskwait->taskwait_sem);
+	    }
 	  if (gomp_task_run_post_handle_depend (task, team))
 	    ++ret;
 	  if (taskgroup)
-	    taskgroup->num_children--;
+	    {
+	      if (taskgroup->num_children > 1)
+		--taskgroup->num_children;
+	      else
+		{
+		  __atomic_store_n (&taskgroup->num_children, 0,
+				    MEMMODEL_RELEASE);
+		  if (taskgroup->in_taskgroup_wait)
+		    {
+		      taskgroup->in_taskgroup_wait = false;
+		      gomp_sem_post (&taskgroup->taskgroup_sem);
+		    }
+		}
+	    }
 	  gomp_finish_task (task);
 	  free (task);
 	  continue;
