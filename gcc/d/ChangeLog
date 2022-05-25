@@ -1,3 +1,12 @@
+2022-05-24  David Malcolm  <dmalcolm@redhat.com>
+
+	* decl.cc: Add "final" and "override" to all "visit" vfunc decls
+	as appropriate.
+	* expr.cc: Likewise.
+	* toir.cc: Likewise.
+	* typeinfo.cc: Likewise.
+	* types.cc: Likewise.
+
 2022-05-16  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* dmd/MERGE: Merge upstream dmd 60bfa0ee7.

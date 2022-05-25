@@ -1,3 +1,79 @@
+2022-05-24  Martin Sebor  <msebor@redhat.com>
+	    Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/105604
+	* gcc.dg/Wrestrict-24.c: New test.
+	* gcc.dg/Wrestrict-25.c: New test.
+	* gcc.dg/Wrestrict-26.c: New test.
+
+2022-05-24  Joel Brobecker  <brobecker@adacore.com>
+
+	* gcc.misc-tests/outputs.exp: Make the -gsplit-dwarf test
+	a compile-and-link test rather than a compile-only test.
+
+2022-05-24  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105622
+	* g++.dg/cpp2a/no_unique_address14.C: New test.
+
+2022-05-24  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* gcc.target/i386/neg-zext-1.c: New test case for -m32.
+	* gcc.target/i386/neg-zext-2.c: New test case for -m64.
+
+2022-05-24  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR tree-optimization/105668
+	* gcc.target/i386/pr105668.c: New test case.
+
+2022-05-24  Patrick Palka  <ppalka@redhat.com>
+
+	* g++.dg/cpp0x/constexpr-52830a.C: New test.
+
+2022-05-24  ShiYulong  <shiyulong@iscas.ac.cn>
+
+	* gcc.target/riscv/cmo-zicbom-1.c: New test.
+	* gcc.target/riscv/cmo-zicbom-2.c: New test.
+	* gcc.target/riscv/cmo-zicbop-1.c: New test.
+	* gcc.target/riscv/cmo-zicbop-2.c: New test.
+	* gcc.target/riscv/cmo-zicboz-1.c: New test.
+	* gcc.target/riscv/cmo-zicboz-2.c: New test.
+
+2022-05-24  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/105711
+	* gcc.target/i386/pr105711.c: New testcase.
+
+2022-05-24  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR c/105378
+	* gfortran.dg/gomp/taskwait-depend-nowait-1.f90: New.
+
+2022-05-24  Vineet Gupta  <vineetg@rivosinc.com>
+
+	* gcc.target/riscv/pr105666.c: New test.
+
+2022-05-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/105378
+	* c-c++-common/gomp/taskwait-depend-nowait-1.c: New test.
+
+2022-05-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/100221
+	* gcc.dg/tree-ssa/ssa-dse-44.c: New testcase.
+	* gcc.dg/tree-ssa/ssa-dse-45.c: Likewise.
+
+2022-05-24  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR testsuite/105706
+	* gcc.target/powerpc/pr78604.c: Adjust.
+
+2022-05-24  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/105627
+	* gcc.target/powerpc/pr105627.c: New test.
+
 2022-05-23  H.J. Lu  <hjl.tools@gmail.com>
 
 	PR target/104441

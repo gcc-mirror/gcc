@@ -1,3 +1,276 @@
+2022-05-24  Eugene Rozenfeld  <erozen@microsoft.com>
+
+	* tree-vect-loop-manip.cc (vect_do_peeling): Save/restore profile
+	counts for the epilog loop.
+
+2022-05-24  Martin Sebor  <msebor@redhat.com>
+	    Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/105604
+	* gimple-ssa-sprintf.cc (set_aggregate_size_and_offset): Add comments.
+	(get_origin_and_offset_r): Remove null handling.  Handle variable array
+	sizes.
+	(get_origin_and_offset): Handle null argument here.  Simplify.
+	(alias_offset): Update comment.
+	* pointer-query.cc (field_at_offset): Update comment.  Handle members
+	of variable-length types.
+
+2022-05-24  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	* target.def (vec_perm_const): Define new parameter op_mode and
+	update doc.
+	* doc/tm.texi: Regenerate.
+	* config/aarch64/aarch64.cc (aarch64_vectorize_vec_perm_const): Adjust
+	vec_perm_const hook to add new parameter op_mode and return false
+	if result and operand modes do not match.
+	* config/arm/arm.cc (arm_vectorize_vec_perm_const): Likewise.
+	* config/gcn/gcn.cc (gcn_vectorize_vec_perm_const): Likewise.
+	* config/ia64/ia64.cc (ia64_vectorize_vec_perm_const): Likewise.
+	* config/mips/mips.cc (mips_vectorize_vec_perm_const): Likewise.
+	* config/rs6000/rs6000.cc (rs6000_vectorize_vec_perm_const): Likewise
+	* config/s390/s390.cc (s390_vectorize_vec_perm_const): Likewise.
+	* config/sparc/sparc.cc (sparc_vectorize_vec_perm_const): Likewise.
+	* config/i386/i386-expand.cc (ix86_vectorize_vec_perm_const): Likewise.
+	* config/i386/i386-expand.h (ix86_vectorize_vec_perm_const): Adjust
+	prototype.
+	* config/i386/sse.md (ashrv4di3): Adjust call to vec_perm_const hook.
+	(ashrv2di3): Likewise.
+	* optabs.cc (expand_vec_perm_const): Likewise.
+	* optabs-query.h (can_vec_perm_const_p): Adjust prototype.
+	* optabs-query.cc (can_vec_perm_const_p): Define new parameter
+	op_mode and pass it to vec_perm_const hook.
+	(can_mult_highpart_p): Adjust call to can_vec_perm_const_p.
+	* match.pd (vec_perm X Y CST): Likewise.
+	* tree-ssa-forwprop.cc (simplify_vector_constructor): Likewise.
+	* tree-vect-data-refs.cc (vect_grouped_store_supported): Likewise.
+	(vect_grouped_load_supported): Likewise.
+	(vect_shift_permute_load_chain): Likewise.
+	* tree-vect-generic.cc (lower_vec_perm): Likewise.
+	* tree-vect-loop-manip.cc (interleave_supported_p): Likewise.
+	* tree-vect-loop.cc (have_whole_vector_shift): Likewise.
+	* tree-vect-patterns.cc (vect_recog_rotate_pattern): Likewise.
+	* tree-vect-slp.cc (can_duplicate_and_interleave_p): Likewise.
+	(vect_transform_slp_perm_load): Likewise.
+	(vectorizable_slp_permutation): Likewise.
+	* tree-vect-stmts.cc (perm_mask_for_reverse): Likewise.
+	(vectorizable_bswap): Likewise.
+	(scan_store_can_perm_p): Likewise.
+	(vect_gen_perm_mask_checked): Likewise.
+
+2022-05-24  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/104816
+	* config/i386/i386.opt: Remove Undocumented.
+	* doc/invoke.texi: Document -mcet-switch.
+
+2022-05-24  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config.gcc (amdgcn): Accept --with-arch=gfx908 and gfx90a.
+	* config/gcn/gcn-opts.h (enum gcn_isa): New.
+	(TARGET_GCN3): Use enum gcn_isa.
+	(TARGET_GCN3_PLUS): Likewise.
+	(TARGET_GCN5): Likewise.
+	(TARGET_GCN5_PLUS): Likewise.
+	(TARGET_CDNA1): New.
+	(TARGET_CDNA1_PLUS): New.
+	(TARGET_CDNA2): New.
+	(TARGET_CDNA2_PLUS): New.
+	(TARGET_M0_LDS_LIMIT): New.
+	(TARGET_PACKED_WORK_ITEMS): New.
+	* config/gcn/gcn.cc (gcn_isa): Change to enum gcn_isa.
+	(gcn_option_override): Recognise CDNA ISA variants.
+	(gcn_omp_device_kind_arch_isa): Support gfx90a.
+	(gcn_expand_prologue): Make m0 init optional.
+	Add support for packed work items.
+	(output_file_start): Support gfx90a.
+	(gcn_hsa_declare_function_name): Support gfx90a metadata.
+	* config/gcn/gcn.h (TARGET_CPU_CPP_BUILTINS):Add __CDNA1__ and
+	__CDNA2__.
+	* config/gcn/gcn.md (<su>mulsi3_highpart): Use TARGET_GCN5_PLUS.
+	(<su>mulsi3_highpart_imm): Likewise.
+	(<su>mulsidi3): Likewise.
+	(<su>mulsidi3_imm): Likewise.
+	* config/gcn/gcn.opt (gpu_type): Add gfx90a.
+	* config/gcn/mkoffload.cc (EF_AMDGPU_MACH_AMDGCN_GFX90a): New.
+	(main): Support gfx90a.
+	* config/gcn/t-gcn-hsa: Add gfx90a multilib.
+	* config/gcn/t-omp-device: Add gfx90a isa.
+
+2022-05-24  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config.in: Regenerate.
+	* config/gcn/gcn-hsa.h (X_FIJI): Delete.
+	(X_900): Delete.
+	(X_906): Delete.
+	(X_908): Delete.
+	(S_FIJI): Delete.
+	(S_900): Delete.
+	(S_906): Delete.
+	(S_908): Delete.
+	(NO_XNACK): New macro.
+	(NO_SRAM_ECC): New macro.
+	(SRAMOPT): Keep only v4 variant.
+	(HSACO3_SELECT_OPT): Delete.
+	(DRIVER_SELF_SPECS): Delete.
+	(ASM_SPEC): Remove LLVM 9 support.
+	* config/gcn/gcn-valu.md
+	(gather<mode>_insn_2offsets<exec>): Remove assembler bug workaround.
+	(scatter<mode>_insn_2offsets<exec_scatter>): Likewise.
+	* config/gcn/gcn.cc (output_file_start): Remove LLVM 9 support.
+	(print_operand_address): Remove assembler bug workaround.
+	* config/gcn/mkoffload.cc (EF_AMDGPU_XNACK_V3): Delete.
+	(EF_AMDGPU_SRAM_ECC_V3): Delete.
+	(SET_XNACK_ON): Delete v3 variants.
+	(SET_XNACK_OFF): Delete v3 variants.
+	(TEST_XNACK): Delete v3 variants.
+	(SET_SRAM_ECC_ON): Delete v3 variants.
+	(SET_SRAM_ECC_ANY): Delete v3 variants.
+	(SET_SRAM_ECC_OFF): Delete v3 variants.
+	(SET_SRAM_ECC_UNSUPPORTED): Delete v3 variants.
+	(TEST_SRAM_ECC_ANY): Delete v3 variants.
+	(TEST_SRAM_ECC_ON): Delete v3 variants.
+	(copy_early_debug_info): Remove v3 support.
+	(main): Remove v3 support.
+	* configure: Regenerate.
+	* configure.ac: Replace all GCN feature checks with a version check.
+
+2022-05-24  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* config/i386/i386.md (peephole2): Convert xor;neg;adc;neg,
+	i.e. a double word negation of a zero extended operand, to
+	neg;sbb.
+
+2022-05-24  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR tree-optimization/105668
+	* config/i386/i386-expand.cc (ix86_expand_sse_movcc): Support
+	V1TImode, just like V2DImode.
+	* config/i386/sse.md (vcond_mask_<mode><sseintvecmodelower>):
+	Use VI_128 mode iterator instead of VI124_128 to include V2DI.
+	(vcond_mask_v2div2di): Delete.
+	(vcond_mask_v1tiv1ti): New define_expand.
+
+2022-05-24  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* genpreds.cc (write_lookup_constraint_1): Avoid generating a call
+	to strncmp for strings of length one.
+
+2022-05-24  ShiYulong  <shiyulong@iscas.ac.cn>
+
+	* config/riscv/predicates.md (imm5_operand): Add a new operand type for
+	prefetch instructions.
+	* config/riscv/riscv-builtins.cc (AVAIL): Add new AVAILs for CMO ISA
+	Extensions.
+	(RISCV_ATYPE_SI): New.
+	(RISCV_ATYPE_DI): New.
+	* config/riscv/riscv-ftypes.def (0): New.
+	(1): New.
+	* config/riscv/riscv.md (riscv_clean_<mode>): New.
+	(riscv_flush_<mode>): New.
+	(riscv_inval_<mode>): New.
+	(riscv_zero_<mode>): New.
+	(prefetch): New.
+	(riscv_prefetchi_<mode>): New.
+	* config/riscv/riscv-cmo.def: New file.
+
+2022-05-24  ShiYulong  <shiyulong@iscas.ac.cn>
+
+	* common/config/riscv/riscv-common.cc: Add zicbom, zicboz, zicbop extensions.
+	* config/riscv/riscv-opts.h (MASK_ZICBOZ): New.
+	(MASK_ZICBOM): New.
+	(MASK_ZICBOP): New.
+	(TARGET_ZICBOZ): New.
+	(TARGET_ZICBOM): New.
+	(TARGET_ZICBOP): New.
+	* config/riscv/riscv.opt (riscv_zicmo_subext): New.
+
+2022-05-24  David Malcolm  <dmalcolm@redhat.com>
+
+	* tree-vect-slp-patterns.cc: Add "final" and "override" to
+	vect_pattern::build impls as appropriate.
+
+2022-05-24  David Malcolm  <dmalcolm@redhat.com>
+
+	* ipa-cp.cc: Add "final" and "override" to call_summary_base vfunc
+	implementations, removing redundant "virtual" as appropriate.
+	* ipa-fnsummary.h: Likewise.
+	* ipa-modref.cc: Likewise.
+	* ipa-param-manipulation.cc: Likewise.
+	* ipa-profile.cc: Likewise.
+	* ipa-prop.h: Likewise.
+	* ipa-pure-const.cc: Likewise.
+	* ipa-reference.cc: Likewise.
+	* ipa-sra.cc: Likewise.
+	* symbol-summary.h: Likewise.
+	* symtab-thunks.cc: Likewise.
+
+2022-05-24  Martin Liska  <mliska@suse.cz>
+
+	Revert:
+	2022-05-24  Martin Liska  <mliska@suse.cz>
+
+	* expmed.cc (emit_store_flag_1): Mitigate -Wmaybe-uninitialized
+	warning.
+
+2022-05-24  Martin Liska  <mliska@suse.cz>
+
+	* expmed.cc (emit_store_flag_1): Mitigate -Wmaybe-uninitialized
+	warning.
+
+2022-05-24  Bruno Haible  <bruno@clisp.org>
+
+	PR other/105527
+	* doc/install.texi (Configuration): Add more details about --with-zstd.
+	Document --with-zstd-include and --with-zstd-lib
+
+2022-05-24  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/105711
+	* expmed.cc (extract_bit_field_as_subreg): Add op0_mode parameter
+	and use it.
+	(extract_bit_field_1): Pass down the mode of op0 to
+	extract_bit_field_as_subreg.
+
+2022-05-24  Vineet Gupta  <vineetg@rivosinc.com>
+
+	* config/riscv/riscv.cc: (struct riscv_tune_param): Add
+	  fmv_cost.
+	(rocket_tune_info): Add default fmv_cost 8.
+	(sifive_7_tune_info): Ditto.
+	(thead_c906_tune_info): Ditto.
+	(optimize_size_tune_info): Ditto.
+	(riscv_register_move_cost): Use fmv_cost for int<->fp moves.
+
+2022-05-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/105378
+	* omp-builtins.def (BUILT_IN_GOMP_TASKWAIT_DEPEND_NOWAIT): New
+	builtin.
+	* gimplify.cc (gimplify_omp_task): Diagnose taskwait with nowait
+	clause but no depend clauses.
+	* omp-expand.cc (expand_taskwait_call): Use
+	BUILT_IN_GOMP_TASKWAIT_DEPEND_NOWAIT rather than
+	BUILT_IN_GOMP_TASKWAIT_DEPEND if nowait clause is present.
+
+2022-05-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/100221
+	* tree-ssa-dse.cc (contains_phi_arg): New function.
+	(dse_classify_store): Postpone PHI defs that feed another PHI in defs.
+
+2022-05-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/105629
+	* tree-ssa-phiopt.cc (spaceship_replacement): Allow
+	a sign-extending conversion.
+
+2022-05-24  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/105627
+	* config/rs6000/rs6000-p8swap.cc (union_defs): Assert def_insn can't
+	be a debug insn.
+	(union_uses): Skip debug use_insn.
+
 2022-05-23  Vineet Gupta  <vineetg@rivosinc.com>
 
 	* config/riscv/predicates.md (const_0_operand): Remove

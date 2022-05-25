@@ -1,3 +1,31 @@
+2022-05-24  Andrew Stubbs  <ams@codesourcery.com>
+
+	* plugin/plugin-gcn.c (EF_AMDGPU_MACH): Add
+	EF_AMDGPU_MACH_AMDGCN_GFX90a.
+	(gcn_gfx90a_s): New.
+	(isa_hsa_name): Support gfx90a.
+	(isa_code): Likewise.
+
+2022-05-24  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR c/105378
+	* libgomp.texi (OpenMP 5.1): Set 'taskwait nowait' to 'Y'.
+	* testsuite/libgomp.fortran/taskwait-depend-nowait-1.f90: New.
+
+2022-05-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/105378
+	* libgomp_g.h (GOMP_taskwait_depend_nowait): Declare.
+	* libgomp.map (GOMP_taskwait_depend_nowait): Export at GOMP_5.1.1.
+	* task.c (empty_task): New function.
+	(gomp_task_run_post_handle_depend_hash): Declare earlier.
+	(gomp_task_run_post_handle_depend): Declare.
+	(GOMP_task): Optimize fn == empty_task if there is nothing to wait
+	for.
+	(gomp_task_run_post_handle_dependers): Optimize task->fn == empty_task.
+	(GOMP_taskwait_depend_nowait): New function.
+	* testsuite/libgomp.c-c++-common/taskwait-depend-nowait-1.c: New test.
+
 2022-05-23  Tobias Burnus  <tobias@codesourcery.com>
 
 	PR fortran/104949

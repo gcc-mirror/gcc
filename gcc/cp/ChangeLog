@@ -1,3 +1,57 @@
+2022-05-24  Jason Merrill  <jason@redhat.com>
+
+	* constexpr.cc (cxx_fold_indirect_ref): Add default arg.
+	(cxx_eval_call_expression): Call it.
+	(cxx_fold_indirect_ref_1): Handle null empty_base.
+
+2022-05-24  Jason Merrill  <jason@redhat.com>
+
+	* constexpr.cc (enum value_cat): New. Change all 'lval' parameters
+	from int to value_cat.  Change most false to vc_prvalue, most true
+	to vc_glvalue, cases where the return value is ignored to
+	vc_discard.
+	(cxx_eval_statement_list): Only vc_prvalue for stmt-expr result.
+	(cxx_eval_store_expression): Only build _REF for vc_glvalue.
+	(cxx_eval_array_reference, cxx_eval_component_reference)
+	(cxx_eval_indirect_ref, cxx_eval_constant_expression): Likewise.
+
+2022-05-24  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105622
+	* constexpr.cc (cxx_eval_store_expression): Adjust assert.
+	Use initialized_type.
+
+2022-05-24  Patrick Palka  <ppalka@redhat.com>
+
+	* cp-tree.h (any_template_arguments_need_structural_equality_p):
+	Declare.
+	* pt.cc (struct ctp_hasher): Define.
+	(ctp_table): Define.
+	(canonical_type_parameter): Use it.
+	(process_template_parm): Set TYPE_CANONICAL for
+	TEMPLATE_TEMPLATE_PARM too.
+	(lookup_template_class_1): Remove now outdated comment for the
+	any_template_arguments_need_structural_equality_p test.
+	(tsubst) <case TEMPLATE_TEMPLATE_PARM, etc>: Don't specifically
+	clear TYPE_CANONICAL for ttps.  Set TYPE_CANONICAL on the
+	substituted type later.
+	(any_template_arguments_need_structural_equality_p): Return
+	true for any_targ_node.  Don't return true just because a
+	template argument uses structural equality.  Add comment for
+	the PARM_DECL special case.
+	(rewrite_template_parm): Set TYPE_CANONICAL on the rewritten
+	parm's type later.
+	* tree.cc (bind_template_template_parm): Set TYPE_CANONICAL
+	when safe to do so.
+	* typeck.cc (structural_comptypes) [check_alias]: Increment
+	processing_template_decl before checking
+	dependent_alias_template_spec_p.
+
+2022-05-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/105378
+	* parser.cc (OMP_TASKWAIT_CLAUSE_MASK): Add nowait clause.
+
 2022-05-20  David Malcolm  <dmalcolm@redhat.com>
 
 	* cxx-pretty-print.h: Replace uses of "FINAL" and "OVERRIDE" with
