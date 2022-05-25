@@ -974,6 +974,26 @@ public:
     TyTy::BaseType *resolved_base
       = TypeCheckExpr::Resolve (expr.get_expr ().get (), false);
 
+    // In Rust this is valid because of DST's
+    //
+    // fn test() {
+    //     let a:&str = "TEST 1";
+    //     let b:&str = &"TEST 2";
+    // }
+    if (resolved_base->get_kind () == TyTy::TypeKind::REF)
+      {
+	const TyTy::ReferenceType *ref
+	  = static_cast<const TyTy::ReferenceType *> (resolved_base);
+
+	// this might end up being a more generic is_dyn object check but lets
+	// double check dyn traits type-layout first
+	if (ref->is_dyn_str_type ())
+	  {
+	    infered = resolved_base;
+	    return;
+	  }
+      }
+
     if (expr.get_is_double_borrow ())
       {
 	// FIXME double_reference
