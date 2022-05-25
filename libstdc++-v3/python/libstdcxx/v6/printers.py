@@ -1688,7 +1688,7 @@ class StdSpanPrinter:
             return '[%d]' % count, (self.begin + count).dereference()
 
     def __init__(self, typename, val):
-        self.typename = typename
+        self.typename = strip_versioned_namespace(typename)
         self.val = val
         if val.type.template_argument(1) == gdb.parse_and_eval('static_cast<std::size_t>(-1)'):
             self.size = val['_M_extent']['_M_extent_value']
@@ -1995,7 +1995,7 @@ class FilteringTypePrinter(object):
         self.enabled = True
 
     class _recognizer(object):
-        "The recognizer class for TemplateTypePrinter."
+        "The recognizer class for FilteringTypePrinter."
 
         def __init__(self, match, name):
             self.match = match
