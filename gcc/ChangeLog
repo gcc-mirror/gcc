@@ -1,3 +1,15 @@
+2022-05-24  Qing Zhao  <qing.zhao@oracle.com>
+
+	Backported from master:
+	2022-05-09  Qing Zhao  <qing.zhao@oracle.com>
+
+	PR target/101891
+	* config/i386/i386.c (zero_call_used_regno_mode): use V2SImode
+	as a generic MMX mode instead of V4HImode.
+	(zero_all_mm_registers): Use SET to zero instead of MOV for
+	zeroing scratch registers.
+	(ix86_zero_call_used_regs): Likewise.
+
 2022-05-23  Paul A. Clarke  <pc@us.ibm.com>
 
 	PR target/104257

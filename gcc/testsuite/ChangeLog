@@ -1,3 +1,40 @@
+2022-05-24  Qing Zhao  <qing.zhao@oracle.com>
+
+	Backported from master:
+	2022-05-09  Qing Zhao  <qing.zhao@oracle.com>
+
+	* gcc.target/i386/zero-scratch-regs-1.c: Add -fno-stack-protector
+	-fno-PIC.
+	* gcc.target/i386/zero-scratch-regs-10.c: Adjust mov to xor.
+	* gcc.target/i386/zero-scratch-regs-13.c: Add -msse.
+	* gcc.target/i386/zero-scratch-regs-14.c: Adjust mov to xor.
+	* gcc.target/i386/zero-scratch-regs-15.c: Add -fno-stack-protector
+	-fno-PIC.
+	* gcc.target/i386/zero-scratch-regs-16.c: Likewise.
+	* gcc.target/i386/zero-scratch-regs-17.c: Likewise.
+	* gcc.target/i386/zero-scratch-regs-18.c: Add -fno-stack-protector
+	-fno-PIC, adjust mov to xor.
+	* gcc.target/i386/zero-scratch-regs-19.c: Add -fno-stack-protector
+	-fno-PIC.
+	* gcc.target/i386/zero-scratch-regs-2.c: Adjust mov to xor.
+	* gcc.target/i386/zero-scratch-regs-20.c: Add -msse.
+	* gcc.target/i386/zero-scratch-regs-21.c: Add -fno-stack-protector
+	-fno-PIC, Adjust mov to xor.
+	* gcc.target/i386/zero-scratch-regs-22.c: Adjust mov to xor.
+	* gcc.target/i386/zero-scratch-regs-23.c: Likewise.
+	* gcc.target/i386/zero-scratch-regs-26.c: Likewise.
+	* gcc.target/i386/zero-scratch-regs-27.c: Likewise.
+	* gcc.target/i386/zero-scratch-regs-28.c: Likewise.
+	* gcc.target/i386/zero-scratch-regs-3.c: Add -fno-stack-protector.
+	* gcc.target/i386/zero-scratch-regs-31.c: Adjust mov to xor.
+	* gcc.target/i386/zero-scratch-regs-4.c: Add -fno-stack-protector
+	-fno-PIC.
+	* gcc.target/i386/zero-scratch-regs-5.c: Adjust mov to xor.
+	* gcc.target/i386/zero-scratch-regs-6.c: Add -fno-stack-protector.
+	* gcc.target/i386/zero-scratch-regs-7.c: Likewise.
+	* gcc.target/i386/zero-scratch-regs-8.c: Adjust mov to xor.
+	* gcc.target/i386/zero-scratch-regs-9.c: Add -fno-stack-protector.
+
 2022-05-19  Michael Meissner  <meissner@linux.ibm.com>
 
 	Backported from master:
