@@ -5021,6 +5021,8 @@ maybe_update_decl_type (tree orig_type, tree scope)
 static tree
 build_template_decl (tree decl, tree parms, bool member_template_p)
 {
+  gcc_checking_assert (TREE_CODE (decl) != TEMPLATE_DECL);
+
   tree tmpl = build_lang_decl (TEMPLATE_DECL, DECL_NAME (decl), NULL_TREE);
   SET_DECL_LANGUAGE (tmpl, DECL_LANGUAGE (decl));
   DECL_TEMPLATE_PARMS (tmpl) = parms;
@@ -14074,7 +14076,9 @@ tsubst_function_decl (tree t, tree args, tsubst_flags_t complain,
 	{
 	  hash = hash_tmpl_and_args (gen_tmpl, argvec);
 	  if (tree spec = retrieve_specialization (gen_tmpl, argvec, hash))
-	    return spec;
+	    /* The spec for these args might be a partial instantiation of the
+	       template, but here what we want is the FUNCTION_DECL.  */
+	    return STRIP_TEMPLATE (spec);
 	}
     }
   else
