@@ -27,7 +27,7 @@ foo(double *a, double *b, double *c, double *d, double *r, int size, int order)
         tmp = 3 * a[i] +  2 * b[i] - c[i];
         tmp2 = b[i] - 2 * c[i] + 8 * d[i];
         break;
-      defaut:
+      default:
         __builtin_unreachable ();
     }
 
