@@ -113,7 +113,7 @@ package body Exp_Util is
      (Header_Num => Type_Map_Header,
       Key        => Entity_Id,
       Element    => Node_Or_Entity_Id,
-      No_element => Empty,
+      No_Element => Empty,
       Hash       => Type_Map_Hash,
       Equal      => "=");
 
@@ -5730,8 +5730,17 @@ package body Exp_Util is
             or else not Is_Array_Type (Exp_Typ)
             or else not Aliased_Present (N))
       then
-         if Is_Itype (Exp_Typ) then
+         if Is_Itype (Exp_Typ)
 
+           --  If Exp_Typ was created for a previous declaration whose nominal
+           --  subtype is unconstrained, and that declaration is aliased,
+           --  we need to generate a new subtype, because otherwise the
+           --  Is_Constr_Subt_For_U_Nominal flag will be set on the wrong
+           --  subtype, causing failure to detect non-statically-matching
+           --  subtypes on 'Access of the previously-declared object.
+
+           and then not Is_Constr_Subt_For_UN_Aliased (Exp_Typ)
+         then
             --  Within an initialization procedure, a selected component
             --  denotes a component of the enclosing record, and it appears as
             --  an actual in a call to its own initialization procedure. If
@@ -5770,7 +5779,7 @@ package body Exp_Util is
             --  This type is marked as an itype even though it has an explicit
             --  declaration since otherwise Is_Generic_Actual_Type can get
             --  set, resulting in the generation of spurious errors. (See
-            --  sem_ch8.Analyze_Package_Renaming and sem_type.covers)
+            --  sem_ch8.Analyze_Package_Renaming and Sem_Type.Covers.)
 
             Set_Is_Itype (T);
             Set_Associated_Node_For_Itype (T, Exp);

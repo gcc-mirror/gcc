@@ -18276,7 +18276,7 @@ package body Sem_Ch3 is
 
    begin
       --  If the parent is a component_definition node we climb to the
-      --  component_declaration node
+      --  component_declaration node.
 
       if Nkind (P) = N_Component_Definition then
          P := Parent (P);
