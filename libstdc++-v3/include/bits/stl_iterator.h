@@ -2341,7 +2341,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return *this;
       }
 
-      decltype(auto)
+      constexpr decltype(auto)
       operator++(int)
       {
 	__glibcxx_assert(_M_length > 0);
@@ -2353,7 +2353,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    ++_M_length;
 	    __throw_exception_again;
 	  }
-
       }
 
       constexpr counted_iterator
