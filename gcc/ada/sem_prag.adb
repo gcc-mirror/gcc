@@ -1361,36 +1361,15 @@ package body Sem_Prag is
 
                when E_Generic_In_Out_Parameter
                   | E_In_Out_Parameter
+                  | E_Out_Parameter
                   | E_Variable
                =>
-                  --  When pragma Global is present it determines the mode of
-                  --  the object.
-
-                  if Global_Seen then
-
-                     --  A variable has mode IN when its type is unconstrained
-                     --  or tagged because array bounds, discriminants or tags
-                     --  can be read.
-
-                     Item_Is_Input :=
-                       Appears_In (Subp_Inputs, Item_Id)
-                         or else Is_Unconstrained_Or_Tagged_Item (Item_Id);
-
-                     Item_Is_Output := Appears_In (Subp_Outputs, Item_Id);
-
-                  --  Otherwise the variable has a default IN OUT mode
-
-                  else
-                     Item_Is_Input  := True;
-                     Item_Is_Output := True;
-                  end if;
-
-               when E_Out_Parameter =>
-
                   --  An OUT parameter of the related subprogram; it cannot
                   --  appear in Global.
 
-                  if Scope (Item_Id) = Spec_Id then
+                  if Adjusted_Kind = E_Out_Parameter
+                    and then Scope (Item_Id) = Spec_Id
+                  then
 
                      --  The parameter has mode IN if its type is unconstrained
                      --  or tagged because array bounds, discriminants or tags
@@ -1401,8 +1380,8 @@ package body Sem_Prag is
 
                      Item_Is_Output := True;
 
-                  --  An OUT parameter of an enclosing subprogram; it can
-                  --  appear in Global and behaves as a read-write variable.
+                  --  A parameter of an enclosing subprogram; it can appear
+                  --  in Global and behaves as a read-write variable.
 
                   else
                      --  When pragma Global is present it determines the mode
@@ -1411,8 +1390,8 @@ package body Sem_Prag is
                      if Global_Seen then
 
                         --  A variable has mode IN when its type is
-                        --  unconstrained or tagged because array
-                        --  bounds, discriminants or tags can be read.
+                        --  unconstrained or tagged because array bounds,
+                        --  discriminants, or tags can be read.
 
                         Item_Is_Input :=
                           Appears_In (Subp_Inputs, Item_Id)

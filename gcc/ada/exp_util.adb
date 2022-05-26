@@ -12017,31 +12017,23 @@ package body Exp_Util is
       --  renaming is handled by the front end, as the back end may balk at
       --  the nonstandard representation (see Evaluation_Required in Exp_Ch8).
 
-      elsif Nkind (Exp) in N_Indexed_Component | N_Selected_Component
-        and then Has_Non_Standard_Rep (Etype (Prefix (Exp)))
-      then
-         Def_Id := Build_Temporary (Loc, 'R', Exp);
-         Res := New_Occurrence_Of (Def_Id, Loc);
+      elsif (Nkind (Exp) in N_Indexed_Component | N_Selected_Component
+              and then Has_Non_Standard_Rep (Etype (Prefix (Exp))))
 
-         Insert_Action (Exp,
-           Make_Object_Renaming_Declaration (Loc,
-             Defining_Identifier => Def_Id,
-             Subtype_Mark        => New_Occurrence_Of (Exp_Type, Loc),
-             Name                => Relocate_Node (Exp)));
+        --  For an expression that denotes a name, we can use a renaming
+        --  scheme. This is needed for correctness in the case of a volatile
+        --  object of a nonvolatile type because the Make_Reference call of the
+        --  "default" approach would generate an illegal access value (an
+        --  access value cannot designate such an object - see
+        --  Analyze_Reference).
 
-      --  For an expression that denotes a name, we can use a renaming scheme.
-      --  This is needed for correctness in the case of a volatile object of
-      --  a nonvolatile type because the Make_Reference call of the "default"
-      --  approach would generate an illegal access value (an access value
-      --  cannot designate such an object - see Analyze_Reference).
+        or else (Is_Name_Reference (Exp)
 
-      elsif Is_Name_Reference (Exp)
+          --  We skip using this scheme if we have an object of a volatile
+          --  type and we do not have Name_Req set true (see comments for
+          --  Side_Effect_Free).
 
-        --  We skip using this scheme if we have an object of a volatile
-        --  type and we do not have Name_Req set true (see comments for
-        --  Side_Effect_Free).
-
-        and then (Name_Req or else not Treat_As_Volatile (Exp_Type))
+          and then (Name_Req or else not Treat_As_Volatile (Exp_Type)))
       then
          Def_Id := Build_Temporary (Loc, 'R', Exp);
          Res := New_Occurrence_Of (Def_Id, Loc);

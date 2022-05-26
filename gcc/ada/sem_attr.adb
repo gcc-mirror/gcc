@@ -4451,7 +4451,9 @@ package body Sem_Attr is
       -- Has_Same_Storage --
       ----------------------
 
-      when Attribute_Has_Same_Storage =>
+      when Attribute_Has_Same_Storage
+         | Attribute_Overlaps_Storage
+      =>
          Check_E1;
 
          --  The arguments must be objects of any type
@@ -5562,21 +5564,6 @@ package body Sem_Attr is
             end if;
          end if;
       end Old;
-
-      ----------------------
-      -- Overlaps_Storage --
-      ----------------------
-
-      when Attribute_Overlaps_Storage =>
-         Check_E1;
-
-         --  Both arguments must be objects of any type
-
-         Analyze_And_Resolve (P);
-         Analyze_And_Resolve (E1);
-         Check_Object_Reference (P);
-         Check_Object_Reference (E1);
-         Set_Etype (N, Standard_Boolean);
 
       ------------
       -- Output --

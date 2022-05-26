@@ -798,44 +798,30 @@ package body Sem_Util is
             --  in effect we treat discriminant components as regular
             --  components.
 
-            elsif Nkind (E) = N_Selected_Component
-              and then Ekind (Etype (E))   =  E_Anonymous_Access_Type
-              and then Ekind (Etype (Pre)) /= E_Anonymous_Access_Type
-              and then (not (Nkind (Selector_Name (E)) in N_Has_Entity
-                              and then Ekind (Entity (Selector_Name (E)))
-                                         = E_Discriminant)
+            elsif
+              (Nkind (E) = N_Selected_Component
+                and then Ekind (Etype (E))   =  E_Anonymous_Access_Type
+                and then Ekind (Etype (Pre)) /= E_Anonymous_Access_Type
+                and then (not (Nkind (Selector_Name (E)) in N_Has_Entity
+                                and then Ekind (Entity (Selector_Name (E)))
+                                           = E_Discriminant)
 
-                        --  The alternative accessibility models both treat
-                        --  discriminants as regular components.
+                           --  The alternative accessibility models both treat
+                           --  discriminants as regular components.
 
-                        or else (No_Dynamic_Accessibility_Checks_Enabled (E)
-                                  and then Allow_Alt_Model))
-            then
-               --  When restriction No_Dynamic_Accessibility_Checks is active
-               --  and -gnatd_b set, the level is that of the designated type.
+                           or else (No_Dynamic_Accessibility_Checks_Enabled (E)
+                                     and then Allow_Alt_Model)))
 
-               if Allow_Alt_Model
-                 and then No_Dynamic_Accessibility_Checks_Enabled (E)
-                 and then Debug_Flag_Underscore_B
-               then
-                  return Make_Level_Literal
-                           (Typ_Access_Level (Etype (E)));
-               end if;
+              --  Arrays featuring components of anonymous access components
+              --  get their corresponding level from their containing type's
+              --  declaration.
 
-               --  Otherwise proceed normally
-
-               return Make_Level_Literal
-                        (Typ_Access_Level (Etype (Prefix (E))));
-
-            --  Similar to the previous case - arrays featuring components of
-            --  anonymous access components get their corresponding level from
-            --  their containing type's declaration.
-
-            elsif Nkind (E) = N_Indexed_Component
-              and then Ekind (Etype (E)) = E_Anonymous_Access_Type
-              and then Ekind (Etype (Pre)) in Array_Kind
-              and then Ekind (Component_Type (Base_Type (Etype (Pre))))
-                         = E_Anonymous_Access_Type
+              or else
+                (Nkind (E) = N_Indexed_Component
+                  and then Ekind (Etype (E)) = E_Anonymous_Access_Type
+                  and then Ekind (Etype (Pre)) in Array_Kind
+                  and then Ekind (Component_Type (Base_Type (Etype (Pre))))
+                             = E_Anonymous_Access_Type)
             then
                --  When restriction No_Dynamic_Accessibility_Checks is active
                --  and -gnatd_b set, the level is that of the designated type.
