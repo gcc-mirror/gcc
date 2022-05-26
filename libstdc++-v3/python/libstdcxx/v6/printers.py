@@ -1552,6 +1552,15 @@ class StdErrorCodePrinter:
         return None
 
     @classmethod
+    def _find_standard_errc_enum(cls, name):
+        for ns in ['', _versioned_namespace]:
+            try:
+                qname = 'std::{}{}'.format(ns, name)
+                return cls._find_errc_enum(qname)
+            except RuntimeError:
+                pass
+
+    @classmethod
     def _match_net_ts_category(cls, cat):
         net_cats = ['stream', 'socket', 'ip::resolver']
         for c in net_cats:
@@ -1592,10 +1601,10 @@ class StdErrorCodePrinter:
             is_errno = cls._system_is_posix
         if typ.tag.endswith('::future_error_category'):
             name = 'future'
-            enum = cls._find_errc_enum('std::future_errc')
+            enum = cls._find_standard_errc_enum('future_errc')
         if typ.tag.endswith('::io_error_category'):
             name = 'io'
-            enum = cls._find_errc_enum('std::io_errc')
+            enum = cls._find_standard_errc_enum('io_errc')
 
         if name is None:
             try:
@@ -1725,7 +1734,7 @@ class StdAtomicPrinter:
     "Print a std:atomic"
 
     def __init__(self, typename, val):
-        self.typename = typename
+        self.typename = strip_versioned_namespace(typename)
         self.val = val
         self.shptr_printer = None
         self.value_type = self.val.type.template_argument(0)
