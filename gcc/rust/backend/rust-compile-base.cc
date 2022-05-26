@@ -555,7 +555,7 @@ HIRCompileBase::compile_constant_item (
   if (!is_block_expr)
     {
       tree value = CompileExpr::Compile (const_value_expr, ctx);
-      folded_expr = ConstCtx::fold (value);
+      folded_expr = fold_expr (value);
     }
   else
     {
@@ -605,7 +605,7 @@ HIRCompileBase::compile_constant_item (
       // lets fold it into a call expr
       tree call = build_call_array_loc (locus.gcc_location (), const_type,
 					fndecl, 0, NULL);
-      folded_expr = ConstCtx::fold (call);
+      folded_expr = fold_expr (call);
     }
 
   return named_constant_expression (const_type, ident, folded_expr, locus);

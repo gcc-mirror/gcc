@@ -99,7 +99,7 @@ ResolvePathRef::resolve (const HIR::PathIdentSegment &final_segment,
       // make the ctor for the union
       HIR::Expr *discrim_expr = variant->get_discriminant ();
       tree discrim_expr_node = CompileExpr::Compile (discrim_expr, ctx);
-      tree folded_discrim_expr = ConstCtx::fold (discrim_expr_node);
+      tree folded_discrim_expr = fold_expr (discrim_expr_node);
       tree qualifier = folded_discrim_expr;
 
       return ctx->get_backend ()->constructor_expression (compiled_adt_type,

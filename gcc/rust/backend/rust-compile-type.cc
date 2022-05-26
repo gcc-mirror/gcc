@@ -371,7 +371,7 @@ TyTyResolveCompile::visit (const TyTy::ArrayType &type)
   tree element_type
     = TyTyResolveCompile::compile (ctx, type.get_element_type ());
   tree capacity_expr = CompileExpr::Compile (&type.get_capacity_expr (), ctx);
-  tree folded_capacity_expr = ConstCtx::fold (capacity_expr);
+  tree folded_capacity_expr = fold_expr (capacity_expr);
 
   translated
     = ctx->get_backend ()->array_type (element_type, folded_capacity_expr);

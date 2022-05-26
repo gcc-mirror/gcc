@@ -29,6 +29,18 @@
 namespace Rust {
 namespace Compile {
 
+struct constexpr_global_ctx
+{
+  HOST_WIDE_INT constexpr_ops_count;
+
+  constexpr_global_ctx () : constexpr_ops_count (0) {}
+};
+
+struct constexpr_ctx
+{
+  constexpr_global_ctx *global;
+};
+
 static tree
 constant_value_1 (tree decl, bool strict_p, bool return_aggregate_cst_ok_p,
 		  bool unshare_p);
@@ -39,22 +51,39 @@ static void
 non_const_var_error (location_t loc, tree r);
 
 static tree
+constexpr_expression (const constexpr_ctx *ctx, tree);
+
+static tree
+constexpr_fn_retval (const constexpr_ctx *ctx, tree r);
+
+static tree
+eval_store_expression (const constexpr_ctx *ctx, tree r);
+
+static tree
+eval_call_expression (const constexpr_ctx *ctx, tree r);
+
+static tree
+eval_binary_expression (const constexpr_ctx *ctx, tree r);
+
+static tree
 get_function_named_in_call (tree t);
 
-ConstCtx::ConstCtx () : constexpr_ops_count (0) {}
-
 tree
-ConstCtx::fold (tree expr)
+fold_expr (tree expr)
 {
-  tree folded = ConstCtx ().constexpr_expression (expr);
+  constexpr_global_ctx global_ctx;
+  constexpr_ctx ctx = {&global_ctx};
+
+  tree folded = constexpr_expression (&ctx, expr);
   rust_assert (folded != NULL_TREE);
   return folded;
 }
 
-tree
-ConstCtx::constexpr_expression (tree t)
+static tree
+constexpr_expression (const constexpr_ctx *ctx, tree t)
 {
   location_t loc = EXPR_LOCATION (t);
+
   if (CONSTANT_CLASS_P (t))
     {
       if (TREE_OVERFLOW (t))
@@ -67,7 +96,7 @@ ConstCtx::constexpr_expression (tree t)
     }
 
   // Avoid excessively long constexpr evaluations
-  if (++constexpr_ops_count >= constexpr_ops_limit)
+  if (++ctx->global->constexpr_ops_count >= constexpr_ops_limit)
     {
       rust_error_at (
 	Location (loc),
@@ -136,20 +165,20 @@ ConstCtx::constexpr_expression (tree t)
     case LTGT_EXPR:
     case RANGE_EXPR:
     case COMPLEX_EXPR:
-      r = eval_binary_expression (t);
+      r = eval_binary_expression (ctx, t);
       break;
 
     case CALL_EXPR:
-      r = eval_call_expression (t);
+      r = eval_call_expression (ctx, t);
       break;
 
     case RETURN_EXPR:
       rust_assert (TREE_OPERAND (t, 0) != NULL_TREE);
-      r = constexpr_expression (TREE_OPERAND (t, 0));
+      r = constexpr_expression (ctx, TREE_OPERAND (t, 0));
       break;
 
     case MODIFY_EXPR:
-      r = eval_store_expression (t);
+      r = eval_store_expression (ctx, t);
       break;
 
     default:
@@ -159,8 +188,8 @@ ConstCtx::constexpr_expression (tree t)
   return r;
 }
 
-tree
-ConstCtx::eval_store_expression (tree t)
+static tree
+eval_store_expression (const constexpr_ctx *ctx, tree t)
 {
   tree init = TREE_OPERAND (t, 1);
   if (TREE_CLOBBER_P (init))
@@ -176,7 +205,7 @@ ConstCtx::eval_store_expression (tree t)
     {
       /* Evaluate the value to be stored without knowing what object it will be
 	 stored in, so that any side-effects happen first.  */
-      init = ConstCtx::fold (init);
+      init = fold_expr (init);
     }
 
   bool evaluated = false;
@@ -190,7 +219,7 @@ ConstCtx::eval_store_expression (tree t)
 	    object = probe;
 	  else
 	    {
-	      probe = constexpr_expression (probe);
+	      probe = constexpr_expression (ctx, probe);
 	      evaluated = true;
 	    }
 	  break;
@@ -202,16 +231,15 @@ ConstCtx::eval_store_expression (tree t)
 
 /* Subroutine of cxx_eval_constant_expression.
  Like cxx_eval_unary_expression, except for binary expressions.  */
-
-tree
-ConstCtx::eval_binary_expression (tree t)
+static tree
+eval_binary_expression (const constexpr_ctx *ctx, tree t)
 {
   tree orig_lhs = TREE_OPERAND (t, 0);
   tree orig_rhs = TREE_OPERAND (t, 1);
   tree lhs, rhs;
 
-  lhs = constexpr_expression (orig_lhs);
-  rhs = constexpr_expression (orig_rhs);
+  lhs = constexpr_expression (ctx, orig_lhs);
+  rhs = constexpr_expression (ctx, orig_rhs);
 
   location_t loc = EXPR_LOCATION (t);
   enum tree_code code = TREE_CODE (t);
@@ -223,19 +251,19 @@ ConstCtx::eval_binary_expression (tree t)
 // Subroutine of cxx_eval_constant_expression.
 // Evaluate the call expression tree T in the context of OLD_CALL expression
 // evaluation.
-tree
-ConstCtx::eval_call_expression (tree t)
+static tree
+eval_call_expression (const constexpr_ctx *ctx, tree t)
 {
   tree fun = get_function_named_in_call (t);
-  return constexpr_fn_retval (DECL_SAVED_TREE (fun));
+  return constexpr_fn_retval (ctx, DECL_SAVED_TREE (fun));
 }
 
 // Subroutine of check_constexpr_fundef.  BODY is the body of a function
 // declared to be constexpr, or a sub-statement thereof.  Returns the
 // return value if suitable, error_mark_node for a statement not allowed in
 // a constexpr function, or NULL_TREE if no return value was found.
-tree
-ConstCtx::constexpr_fn_retval (tree body)
+static tree
+constexpr_fn_retval (const constexpr_ctx *ctx, tree body)
 {
   switch (TREE_CODE (body))
     {
@@ -243,7 +271,7 @@ ConstCtx::constexpr_fn_retval (tree body)
 	tree expr = NULL_TREE;
 	for (tree stmt : tsi_range (body))
 	  {
-	    tree s = constexpr_fn_retval (stmt);
+	    tree s = constexpr_fn_retval (ctx, stmt);
 	    if (s == error_mark_node)
 	      return error_mark_node;
 	    else if (s == NULL_TREE)
@@ -258,7 +286,7 @@ ConstCtx::constexpr_fn_retval (tree body)
       }
 
     case RETURN_EXPR:
-      return constexpr_expression (body);
+      return constexpr_expression (ctx, body);
 
       case DECL_EXPR: {
 	tree decl = DECL_EXPR_DECL (body);
@@ -270,11 +298,11 @@ ConstCtx::constexpr_fn_retval (tree body)
       }
 
     case CLEANUP_POINT_EXPR:
-      return constexpr_fn_retval (TREE_OPERAND (body, 0));
+      return constexpr_fn_retval (ctx, TREE_OPERAND (body, 0));
 
       case BIND_EXPR: {
 	tree b = BIND_EXPR_BODY (body);
-	return constexpr_fn_retval (b);
+	return constexpr_fn_retval (ctx, b);
       }
       break;
 
