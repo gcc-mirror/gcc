@@ -46,15 +46,23 @@ namespace detail
 {
   enum
     {
+      num_distinct_sizes_16_bit = 14,
       num_distinct_sizes_32_bit = 30,
       num_distinct_sizes_64_bit = 62,
-      num_distinct_sizes = sizeof(std::size_t) != 8 ? 
-            num_distinct_sizes_32_bit : num_distinct_sizes_64_bit,	
+      // The number of values is limited by the width of size_t.
+      // Maybe we could just use (__SIZE_WIDTH__ - 2) here.
+#if __SIZE_WIDTH__ >= 64
+      num_distinct_sizes =  num_distinct_sizes_64_bit
+#elif __SIZE_WIDTH__ >= 32
+      num_distinct_sizes =  num_distinct_sizes_32_bit
+#else
+      num_distinct_sizes =  num_distinct_sizes_16_bit
+#endif
     };
 
   // Originally taken from the SGI implementation; acknowledged in the docs.
   // Further modified (for 64 bits) from tr1's hashtable.
-  static const std::size_t g_a_sizes[num_distinct_sizes_64_bit] =
+  static const std::size_t g_a_sizes[num_distinct_sizes] =
     {
       /* 0     */              5ul,
       /* 1     */              11ul, 
@@ -70,6 +78,7 @@ namespace detail
       /* 11    */              14033ul, 
       /* 12    */              28411ul, 
       /* 13    */              57557ul, 
+#if __SIZE_WIDTH__ >= 32
       /* 14    */              116731ul, 
       /* 15    */              236897ul,
       /* 16    */              480881ul, 
@@ -86,6 +95,7 @@ namespace detail
       /* 27    */              1164186217ul,
       /* 28    */              2364114217ul, 
       /* 29    */              4294967291ul,
+#if __SIZE_WIDTH__ >= 64
       /* 30    */ (std::size_t)8589934583ull,
       /* 31    */ (std::size_t)17179869143ull,
       /* 32    */ (std::size_t)34359738337ull,
@@ -118,6 +128,8 @@ namespace detail
       /* 59    */ (std::size_t)4611686018427387847ull,
       /* 60    */ (std::size_t)9223372036854775783ull,
       /* 61    */ (std::size_t)18446744073709551557ull,
+#endif
+#endif
     };
 
 } // namespace detail
