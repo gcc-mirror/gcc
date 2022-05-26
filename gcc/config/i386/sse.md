@@ -1035,6 +1035,13 @@
    (V16HI "v16hi") (V8HI "v8hi")
    (V32QI "v32qi") (V16QI "v16qi")])
 
+;; Mapping of vector modes to an V*SImode of the same size
+(define_mode_attr ssedvecmode
+ [(V64QI "V16SI") (V32QI "V8SI") (V16QI "V4SI")])
+
+(define_mode_attr ssedvecmodelower
+ [(V64QI "v16si") (V32QI "v8si") (V16QI "v4si")])
+
 ;; Mapping of vector modes to a vector mode of double size
 (define_mode_attr ssedoublevecmode
   [(V64QI "V128QI") (V32HI "V64HI") (V16SI "V32SI") (V8DI "V16DI")
@@ -28509,29 +28516,23 @@
    [(set_attr ("prefix") ("evex"))
    (set_attr "mode" "<sseinsnmode>")])
 
-(define_mode_attr VI1SI
- [(V64QI "V16SI") (V32QI "V8SI") (V16QI "V4SI")])
-
-(define_mode_attr vi1si
- [(V64QI "v16si") (V32QI "v8si") (V16QI "v4si")])
-
 (define_expand "usdot_prod<mode>"
-  [(match_operand:<VI1SI> 0 "register_operand")
+  [(match_operand:<ssedvecmode> 0 "register_operand")
    (match_operand:VI1_AVX512VNNI 1 "register_operand")
    (match_operand:VI1_AVX512VNNI 2 "register_operand")
-   (match_operand:<VI1SI> 3 "register_operand")]
+   (match_operand:<ssedvecmode> 3 "register_operand")]
   "(<MODE_SIZE> == 64
     ||((TARGET_AVX512VNNI && TARGET_AVX512VL)
 	    || TARGET_AVXVNNI))"
 {
-  operands[1] = lowpart_subreg (<VI1SI>mode,
+  operands[1] = lowpart_subreg (<ssedvecmode>mode,
 				force_reg (<MODE>mode, operands[1]),
 				<MODE>mode);
-  operands[2] = lowpart_subreg (<VI1SI>mode,
+  operands[2] = lowpart_subreg (<ssedvecmode>mode,
 				force_reg (<MODE>mode, operands[2]),
 				<MODE>mode);
   emit_insn (gen_rtx_SET (operands[0], operands[3]));
-  emit_insn (gen_vpdpbusd_<vi1si> (operands[0], operands[3],
+  emit_insn (gen_vpdpbusd_<ssedvecmodelower> (operands[0], operands[3],
 				  operands[1], operands[2]));
   DONE;
 })
@@ -29255,6 +29256,44 @@
   [(UNSPEC_VPDPBSSD "bssd") (UNSPEC_VPDPBSSDS "bssds")
    (UNSPEC_VPDPBSUD "bsud") (UNSPEC_VPDPBSUDS "bsuds")
    (UNSPEC_VPDPBUUD "buud") (UNSPEC_VPDPBUUDS "buuds")])
+
+(define_expand "sdot_prod<mode>"
+  [(match_operand:<ssedvecmode> 0 "register_operand")
+   (match_operand:VI1 1 "register_operand")
+   (match_operand:VI1 2 "register_operand")
+   (match_operand:<ssedvecmode> 3 "register_operand")]
+  "TARGET_AVXVNNIINT8"
+{
+  operands[1] = lowpart_subreg (<ssedvecmode>mode,
+                                force_reg (<MODE>mode, operands[1]),
+                                <MODE>mode);
+  operands[2] = lowpart_subreg (<ssedvecmode>mode,
+                                force_reg (<MODE>mode, operands[2]),
+                                <MODE>mode);
+  emit_insn (gen_rtx_SET (operands[0], operands[3]));
+  emit_insn (gen_vpdpbssd_<ssedvecmodelower> (operands[0], operands[3],
+				   operands[1], operands[2]));
+  DONE;
+})
+
+(define_expand "udot_prod<mode>"
+  [(match_operand:<ssedvecmode> 0 "register_operand")
+   (match_operand:VI1 1 "register_operand")
+   (match_operand:VI1 2 "register_operand")
+   (match_operand:<ssedvecmode> 3 "register_operand")]
+  "TARGET_AVXVNNIINT8"
+{
+  operands[1] = lowpart_subreg (<ssedvecmode>mode,
+                                force_reg (<MODE>mode, operands[1]),
+                                <MODE>mode);
+  operands[2] = lowpart_subreg (<ssedvecmode>mode,
+                                force_reg (<MODE>mode, operands[2]),
+                                <MODE>mode);
+  emit_insn (gen_rtx_SET (operands[0], operands[3]));
+  emit_insn (gen_vpdpbuud_<ssedvecmodelower> (operands[0], operands[3],
+				   operands[1], operands[2]));
+  DONE;
+})
 
 (define_insn "vpdp<vpdotprodtype>_<mode>"
   [(set (match_operand:VI4_AVX 0 "register_operand" "=x")
