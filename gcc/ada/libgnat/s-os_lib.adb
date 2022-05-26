@@ -1940,7 +1940,7 @@ package body System.OS_Lib is
       procedure Quote_Argument (Arg : in out String_Access) is
          J            : Positive := 1;
          Quote_Needed : Boolean  := False;
-         Res          : String (1 .. Arg'Length * 2);
+         Res          : String (1 .. Arg'Length * 2 + 2);
 
       begin
          if Arg (Arg'First) /= '"' or else Arg (Arg'Last) /= '"' then
