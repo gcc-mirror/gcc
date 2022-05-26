@@ -242,6 +242,7 @@ class SharedPointerPrinter:
         state = 'empty'
         refcounts = self._get_refcounts()
         targ = self.val.type.template_argument(0)
+        targ = strip_versioned_namespace(str(targ))
 
         if refcounts != 0:
             usecount = refcounts['_M_use_count']
@@ -250,7 +251,7 @@ class SharedPointerPrinter:
                 state = 'expired, weak count %d' % weakcount
             else:
                 state = 'use count %d, weak count %d' % (usecount, weakcount - 1)
-        return '%s<%s> (%s)' % (self.typename, str(targ), state)
+        return '%s<%s> (%s)' % (self.typename, targ, state)
 
 def _tuple_impl_get(val):
     "Return the tuple element stored in a _Tuple_impl<N, T> base class."
