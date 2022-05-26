@@ -13126,7 +13126,6 @@ package body Sem_Ch3 is
 
       procedure Check_Possible_Deferred_Completion
         (Prev_Id      : Entity_Id;
-         Prev_Obj_Def : Node_Id;
          Curr_Obj_Def : Node_Id);
       --  Determine whether the two object definitions describe the partial
       --  and the full view of a constrained deferred constant. Generate
@@ -13146,15 +13145,16 @@ package body Sem_Ch3 is
 
       procedure Check_Possible_Deferred_Completion
         (Prev_Id      : Entity_Id;
-         Prev_Obj_Def : Node_Id;
          Curr_Obj_Def : Node_Id)
       is
+         Curr_Typ : Entity_Id;
+         Prev_Typ : constant Entity_Id := Etype (Prev_Id);
+         Anon_Acc : constant Boolean := Is_Anonymous_Access_Type (Prev_Typ);
+         Mismatch : Boolean := False;
       begin
-         if Nkind (Prev_Obj_Def) = N_Subtype_Indication
-           and then Present (Constraint (Prev_Obj_Def))
-           and then Nkind (Curr_Obj_Def) = N_Subtype_Indication
-           and then Present (Constraint (Curr_Obj_Def))
-         then
+         if Anon_Acc then
+            null;
+         elsif Nkind (Curr_Obj_Def) = N_Subtype_Indication then
             declare
                Loc    : constant Source_Ptr := Sloc (N);
                Def_Id : constant Entity_Id  := Make_Temporary (Loc, 'S');
@@ -13167,13 +13167,32 @@ package body Sem_Ch3 is
             begin
                Insert_Before_And_Analyze (N, Decl);
                Set_Etype (Id, Def_Id);
-
-               if not Subtypes_Statically_Match (Etype (Prev_Id), Def_Id) then
-                  Error_Msg_Sloc := Sloc (Prev_Id);
-                  Error_Msg_N ("subtype does not statically match deferred "
-                               & "declaration #", N);
-               end if;
+               Curr_Typ := Def_Id;
             end;
+         else
+            Curr_Typ := Etype (Curr_Obj_Def);
+         end if;
+
+         if Anon_Acc then
+            if Nkind (Curr_Obj_Def) /= N_Access_Definition then
+               Mismatch := True;
+            elsif Has_Null_Exclusion (Prev_Typ)
+              and then not Null_Exclusion_Present (Curr_Obj_Def)
+            then
+               Mismatch := True;
+            end if;
+            --  ??? Another check needed: mismatch if disagreement
+            --  between designated types/profiles .
+         else
+            Mismatch :=
+              Is_Constrained (Prev_Typ)
+                and then not Subtypes_Statically_Match (Prev_Typ, Curr_Typ);
+         end if;
+
+         if Mismatch then
+            Error_Msg_Sloc := Sloc (Prev_Id);
+            Error_Msg_N ("subtype does not statically match deferred "
+                         & "declaration #", N);
          end if;
       end Check_Possible_Deferred_Completion;
 
@@ -13316,7 +13335,6 @@ package body Sem_Ch3 is
 
          Check_Possible_Deferred_Completion
            (Prev_Id      => Prev,
-            Prev_Obj_Def => Object_Definition (Parent (Prev)),
             Curr_Obj_Def => Obj_Def);
 
          Set_Full_View (Prev, Id);
