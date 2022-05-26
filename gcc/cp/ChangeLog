@@ -1,3 +1,40 @@
+2022-05-25  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/96637
+	* cp-tree.h (attr_chainon): Declare.
+	* decl.cc (start_decl): Use attr_chainon.
+	(grokdeclarator): Likewise.
+	* parser.cc (cp_parser_statement): No longer static.
+
+2022-05-25  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105655
+	* pt.cc (build_template_decl): Add assert.
+	(tsubst_function_decl): Don't return a template.
+
+2022-05-25  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105623
+	* decl2.cc (mark_used): Copy type from fn to BASELINK.
+	* pt.cc (unify_one_argument): Call mark_single_function.
+
+2022-05-25  Jason Merrill  <jason@redhat.com>
+
+	* constexpr.cc (cxx_eval_call_expression): Check for
+	heap vars in the result.
+
+2022-05-25  Jason Merrill  <jason@redhat.com>
+
+	* constexpr.cc (maybe_constant_init_1): Only pass false for
+	strict when initializing a variable of static duration.
+
+2022-05-25  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/100252
+	* typeck2.cc (potential_prvalue_result_of): New.
+	(replace_placeholders_for_class_temp_r): New.
+	(digest_nsdmi_init): Call it.
+
 2022-05-24  Jason Merrill  <jason@redhat.com>
 
 	* constexpr.cc (cxx_fold_indirect_ref): Add default arg.

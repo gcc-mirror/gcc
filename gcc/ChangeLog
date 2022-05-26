@@ -1,3 +1,83 @@
+2022-05-25  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range-cache.cc: Adjust comments.
+	* gimple-range-infer.cc: Adjust comments.
+	* gimple-range-infer.h: Adjust comments.
+	* gimple-range.cc: Adjust comments.
+
+2022-05-25  Andrew MacLeod  <amacleod@redhat.com>
+
+	* Makefile.in (OBJS): Use gimple-range-infer.o.
+	* gimple-range-cache.cc (ranger_cache::fill_block_cache): Change msg.
+	(ranger_cache::range_from_dom): Rename var side_effect to infer.
+	(ranger_cache::apply_inferred_ranges): Rename from apply_side_effects.
+	* gimple-range-cache.h: Include gimple-range-infer.h.
+	(class ranger_cache): Adjust prototypes, use infer_range_manager.
+	* gimple-range-infer.cc: Rename from gimple-range-side-effects.cc.
+	(gimple_infer_range::*): Rename from stmt_side_effects.
+	(infer_range_manager::*): Rename from side_effect_manager.
+	* gimple-range-side-effect.cc: Rename.
+	* gimple-range-side-effect.h: Rename.
+	* gimple-range-infer.h: Rename from gimple-range-side-effects.h.
+	(class gimple_infer_range): Rename from stmt_side_effects.
+	(class infer_range_manager): Rename from side_effect_manager.
+	* gimple-range.cc (gimple_ranger::register_inferred_ranges): Rename
+	from register_side_effects.
+	* gimple-range.h (register_inferred_ranges): Adjust prototype.
+	* range-op.h: Adjust comment.
+	* tree-vrp.cc (rvrp_folder::pre_fold_bb): Use register_inferred_ranges.
+	(rvrp_folder::post_fold_bb): Use register_inferred_ranges.
+
+2022-05-25  Simon Cook  <simon.cook@embecosm.com>
+
+	* config/riscv/arch-canonicalize: Only add mafd extension if
+	base was rv32/rv64g.
+
+2022-05-25  Tobias Burnus  <tobias@codesourcery.com>
+
+	* doc/invoke.texi (AMD GCN Options): Add gfx908/gfx90a.
+
+2022-05-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/105714
+	* asan.cc (has_stmt_been_instrumented_p): For assignments which
+	are both stores and loads, return true only if both destination
+	and source have been instrumented.
+
+2022-05-25  Martin Liska  <mliska@suse.cz>
+	    Richard Biener   <rguenther@suse.de>
+
+	* dbgcnt.def (DEBUG_COUNTER): Add loop_unswitch counter.
+	* params.opt (max-unswitch-level): Remove.
+	* doc/invoke.texi (max-unswitch-level): Likewise.
+	* tree-cfg.cc (gimple_lv_add_condition_to_bb): Support not
+	gimplified expressions.
+	* tree-ssa-loop-unswitch.cc (struct unswitch_predicate): New.
+	(tree_may_unswitch_on): Rename to ...
+	(find_unswitching_predicates_for_bb): ... this and handle
+	switch statements.
+	(get_predicates_for_bb): Likewise.
+	(set_predicates_for_bb): Likewise.
+	(init_loop_unswitch_info): Likewise.
+	(tree_ssa_unswitch_loops): Prepare stuff before calling
+	tree_unswitch_single_loop.
+	(tree_unswitch_single_loop): Rework the function using
+	pre-computed predicates and with a per original loop cost model.
+	(merge_last): New.
+	(add_predicate_to_path): Likewise.
+	(find_range_for_lhs): Likewise.
+	(simplify_using_entry_checks): Rename to ...
+	(evaluate_control_stmt_using_entry_checks): ... this, handle
+	switch statements and improve simplifications using ranger.
+	(simplify_loop_version): Rework using
+	evaluate_control_stmt_using_entry_checks.
+	(evaluate_bbs): New.
+	(evaluate_loop_insns_for_predicate): Likewise.
+	(tree_unswitch_loop): Adjust to allow switch statements and
+	pass in the edge to unswitch.
+	(clean_up_after_unswitching): New.
+	(pass_tree_unswitch::execute): Pass down fun.
+
 2022-05-24  Eugene Rozenfeld  <erozen@microsoft.com>
 
 	* tree-vect-loop-manip.cc (vect_do_peeling): Save/restore profile

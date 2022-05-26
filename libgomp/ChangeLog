@@ -1,3 +1,11 @@
+2022-05-25  Jakub Jelinek  <jakub@redhat.com>
+
+	* task.c (gomp_task_run_post_handle_dependers): If empty_task
+	is the last task taskwait depend depends on, wake it up.
+	Similarly if it is the last child of a taskgroup, use atomic
+	store instead of decrement and awak taskgroup wait if any.
+	* testsuite/libgomp.c-c++-common/taskwait-depend-nowait-2.c: New test.
+
 2022-05-24  Andrew Stubbs  <ams@codesourcery.com>
 
 	* plugin/plugin-gcn.c (EF_AMDGPU_MACH): Add
