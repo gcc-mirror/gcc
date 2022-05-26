@@ -144,7 +144,7 @@ package body Sem_Res is
    --  returns true if the prefix denotes an atomic object that has an address
    --  clause (the case in which we may want to issue a warning).
 
-   function Is_Definite_Access_Type (E : Entity_Id) return Boolean;
+   function Is_Definite_Access_Type (E : N_Entity_Id) return Boolean;
    --  Determine whether E is an access type declared by an access declaration,
    --  and not an (anonymous) allocator type.
 
@@ -1510,7 +1510,7 @@ package body Sem_Res is
    -- Is_Definite_Access_Type --
    -----------------------------
 
-   function Is_Definite_Access_Type (E : Entity_Id) return Boolean is
+   function Is_Definite_Access_Type (E : N_Entity_Id) return Boolean is
       Btyp : constant Entity_Id := Base_Type (E);
    begin
       return Ekind (Btyp) = E_Access_Type
@@ -1561,7 +1561,7 @@ package body Sem_Res is
       Orig_Type : Entity_Id := Empty;
       Pack      : Entity_Id;
 
-      type Kind_Test is access function (E : Entity_Id) return Boolean;
+      type Kind_Test is access function (E : N_Entity_Id) return Boolean;
 
       function Operand_Type_In_Scope (S : Entity_Id) return Boolean;
       --  If the operand is not universal, and the operator is given by an
