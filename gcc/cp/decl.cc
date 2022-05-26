@@ -5464,7 +5464,8 @@ shadow_tag (cp_decl_specifier_seq *declspecs)
   if (!t)
     return NULL_TREE;
 
-  if (maybe_process_partial_specialization (t) == error_mark_node)
+  t = maybe_process_partial_specialization (t);
+  if (t == error_mark_node)
     return NULL_TREE;
 
   /* This is where the variables in an anonymous union are
