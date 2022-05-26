@@ -1,3 +1,19 @@
+2022-05-25  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	Backported from master:
+	2022-04-07  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	PR target/105147
+	* gcc.dg/pr105140.c: Skip for s390*-*-*.
+
+2022-05-25  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	Backported from master:
+	2022-04-06  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/105147
+	* gcc.dg/pr105140.c: Skip for powerpc*-*-*.
+
 2022-05-24  Qing Zhao  <qing.zhao@oracle.com>
 
 	Backported from master:
