@@ -7252,7 +7252,6 @@ package body Exp_Ch6 is
 
       if not Comes_From_Extended_Return_Statement (N)
         and then Is_Build_In_Place_Function (Scope_Id)
-        and then not Debug_Flag_Dot_L
 
          --  The functionality of interface thunks is simple and it is always
          --  handled by means of simple return statements. This leaves their
@@ -8534,72 +8533,9 @@ package body Exp_Ch6 is
       --  of a function with a limited interface result, where the function
       --  may return objects of nonlimited descendants.
 
-      if Is_Limited_View (Typ) then
-         return Ada_Version >= Ada_2005 and then not Debug_Flag_Dot_L;
-
-      else
-         if Debug_Flag_Dot_9 then
-            return False;
-         end if;
-
-         if Has_Interfaces (Typ) then
-            return False;
-         end if;
-
-         declare
-            T : Entity_Id := Typ;
-         begin
-            --  For T'Class, return True if it's True for T. This is necessary
-            --  because a class-wide function might say "return F (...)", where
-            --  F returns the corresponding specific type. We need a loop in
-            --  case T is a subtype of a class-wide type.
-
-            while Is_Class_Wide_Type (T) loop
-               T := Etype (T);
-            end loop;
-
-            --  If this is a generic formal type in an instance, return True if
-            --  it's True for the generic actual type.
-
-            if Nkind (Parent (T)) = N_Subtype_Declaration
-              and then Present (Generic_Parent_Type (Parent (T)))
-            then
-               T := Entity (Subtype_Indication (Parent (T)));
-
-               if Present (Full_View (T)) then
-                  T := Full_View (T);
-               end if;
-            end if;
-
-            if Present (Underlying_Type (T)) then
-               T := Underlying_Type (T);
-            end if;
-
-            declare
-               Result : Boolean;
-               --  So we can stop here in the debugger
-            begin
-               --  ???For now, enable build-in-place for a very narrow set of
-               --  controlled types. Change "if True" to "if False" to
-               --  experiment with more controlled types. Eventually, we might
-               --  like to enable build-in-place for all tagged types, all
-               --  types that need finalization, and all caller-unknown-size
-               --  types.
-
-               if True then
-                  Result := Is_Controlled (T)
-                    and then not Is_Generic_Actual_Type (T)
-                    and then Present (Enclosing_Subprogram (T))
-                    and then not Is_Compilation_Unit (Enclosing_Subprogram (T))
-                    and then Ekind (Enclosing_Subprogram (T)) = E_Procedure;
-               else
-                  Result := Is_Controlled (T);
-               end if;
-
-               return Result;
-            end;
-         end;
-      end if;
+      return Is_Limited_View (Typ)
+        and then Ada_Version >= Ada_2005
+        and then not Debug_Flag_Dot_L;
    end Is_Build_In_Place_Result_Type;
 
    ------------------------------
@@ -8635,6 +8571,9 @@ package body Exp_Ch6 is
    --------------------------------
 
    function Is_Build_In_Place_Function (E : Entity_Id) return Boolean is
+      Kind : constant Entity_Kind := Ekind (E);
+      Typ  : constant Entity_Id   := Etype (E);
+
    begin
       --  This function is called from Expand_Subtype_From_Expr during
       --  semantic analysis, even when expansion is off. In those cases
@@ -8644,22 +8583,16 @@ package body Exp_Ch6 is
          return False;
       end if;
 
-      if Ekind (E) in E_Function | E_Generic_Function
-        or else (Ekind (E) = E_Subprogram_Type
-                  and then Etype (E) /= Standard_Void_Type)
-      then
-         --  If the function is imported from a foreign language, we don't do
-         --  build-in-place. Note that Import (Ada) functions can do
-         --  build-in-place. Note that it is OK for a build-in-place function
-         --  to return a type with a foreign convention; the build-in-place
-         --  machinery will ensure there is no copying.
+      --  If the function is imported from a foreign language, we don't do
+      --  build-in-place, whereas Import (Ada) functions can do it. Note also
+      --  that it is OK for a build-in-place function to return a type with a
+      --  foreign convention because the machinery ensures there is no copying.
 
-         return Is_Build_In_Place_Result_Type (Etype (E))
-           and then not (Has_Foreign_Convention (E) and then Is_Imported (E))
-           and then not Debug_Flag_Dot_L;
-      else
-         return False;
-      end if;
+      return (Kind in E_Function | E_Generic_Function
+               or else
+             (Kind = E_Subprogram_Type and then Typ /= Standard_Void_Type))
+        and then Is_Build_In_Place_Result_Type (Typ)
+        and then not (Is_Imported (E) and then Has_Foreign_Convention (E));
    end Is_Build_In_Place_Function;
 
    -------------------------------------
