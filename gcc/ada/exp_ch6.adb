@@ -247,10 +247,10 @@ package body Exp_Ch6 is
    procedure Expand_Call_Helper (N : Node_Id; Post_Call : out List_Id);
    --  Does the main work of Expand_Call. Post_Call is as for Expand_Actuals.
 
-   procedure Expand_Ctrl_Function_Call (N : Node_Id);
+   procedure Expand_Ctrl_Function_Call (N : Node_Id; Use_Sec_Stack : Boolean);
    --  N is a function call which returns a controlled object. Transform the
    --  call into a temporary which retrieves the returned object from the
-   --  secondary stack using 'reference.
+   --  primary or secondary stack (Use_Sec_Stack says which) using 'reference.
 
    procedure Expand_Non_Function_Return (N : Node_Id);
    --  Expand a simple return statement found in a procedure body, entry body,
@@ -4916,7 +4916,7 @@ package body Exp_Ch6 is
       --  different processing applies. If the call is to a protected function,
       --  the expansion above will call Expand_Call recursively. Otherwise the
       --  function call is transformed into a reference to the result that has
-      --  been built either on the return or the secondary stack.
+      --  been built either on the primary or the secondary stack.
 
       if Needs_Finalization (Etype (Subp)) then
          if not Is_Build_In_Place_Function_Call (Call_Node)
@@ -4925,7 +4925,8 @@ package body Exp_Ch6 is
                or else
                  not Is_Concurrent_Record_Type (Etype (First_Formal (Subp))))
          then
-            Expand_Ctrl_Function_Call (Call_Node);
+            Expand_Ctrl_Function_Call
+              (Call_Node, Needs_Secondary_Stack (Etype (Subp)));
 
          --  Build-in-place function calls which appear in anonymous contexts
          --  need a transient scope to ensure the proper finalization of the
@@ -4956,7 +4957,10 @@ package body Exp_Ch6 is
    -- Expand_Ctrl_Function_Call --
    -------------------------------
 
-   procedure Expand_Ctrl_Function_Call (N : Node_Id) is
+   procedure Expand_Ctrl_Function_Call (N : Node_Id; Use_Sec_Stack : Boolean)
+   is
+      Par : constant Node_Id := Parent (N);
+
       function Is_Element_Reference (N : Node_Id) return Boolean;
       --  Determine whether node N denotes a reference to an Ada 2012 container
       --  element.
@@ -4981,12 +4985,19 @@ package body Exp_Ch6 is
    --  Start of processing for Expand_Ctrl_Function_Call
 
    begin
-      --  Optimization, if the returned value (which is on the sec-stack) is
-      --  returned again, no need to copy/readjust/finalize, we can just pass
-      --  the value thru (see Expand_N_Simple_Return_Statement), and thus no
-      --  attachment is needed.
+      --  Optimization: if the returned value is returned again, then no need
+      --  to copy/readjust/finalize, we can just pass the value through (see
+      --  Expand_N_Simple_Return_Statement), and thus no attachment is needed.
 
-      if Nkind (Parent (N)) = N_Simple_Return_Statement then
+      if Nkind (Par) = N_Simple_Return_Statement then
+         return;
+      end if;
+
+      --  Another optimization: if the returned value is used to initialize an
+      --  object, and the secondary stack is not involved in the call, then no
+      --  need to copy/readjust/finalize, we can just initialize it in place.
+
+      if Nkind (Par) = N_Object_Declaration and then not Use_Sec_Stack then
          return;
       end if;
 

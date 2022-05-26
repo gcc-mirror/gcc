@@ -3063,6 +3063,13 @@ package body Exp_Ch7 is
 
                return;
 
+            --  If the initialization is in the declaration, we're done, so
+            --  early return if we have no more statements or they have been
+            --  rewritten, which means that they were in the source code.
+
+            elsif No (Stmt) or else Original_Node (Stmt) /= Stmt then
+               return;
+
             --  In all other cases the initialization calls follow the related
             --  object. The general structure of object initialization built by
             --  routine Default_Initialize_Object is as follows:
@@ -3091,8 +3098,6 @@ package body Exp_Ch7 is
             --  Otherwise the initialization calls follow the related object
 
             else
-               pragma Assert (Present (Stmt));
-
                Stmt_2 := Next_Suitable_Statement (Stmt);
 
                --  Check for an optional call to Deep_Initialize which may

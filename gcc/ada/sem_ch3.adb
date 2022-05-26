@@ -5046,21 +5046,21 @@ package body Sem_Ch3 is
       end if;
 
       --  Another optimization: if the nominal subtype is unconstrained and
-      --  the expression is a function call that returns an unconstrained
-      --  type, rewrite the declaration as a renaming of the result of the
+      --  the expression is a function call that returns on the secondary
+      --  stack, rewrite the declaration as a renaming of the result of the
       --  call. The exceptions below are cases where the copy is expected,
       --  either by the back end (Aliased case) or by the semantics, as for
       --  initializing controlled types or copying tags for class-wide types.
+      --  ??? To be moved to Expand_N_Object_Declaration.Rewrite_As_Renaming.
 
       if Present (E)
         and then Nkind (E) = N_Explicit_Dereference
         and then Nkind (Original_Node (E)) = N_Function_Call
         and then not Is_Library_Level_Entity (Id)
-        and then not Is_Constrained (Underlying_Type (T))
         and then not Is_Aliased (Id)
+        and then Needs_Secondary_Stack (T)
         and then not Is_Class_Wide_Type (T)
-        and then not Is_Controlled (T)
-        and then not Has_Controlled_Component (Base_Type (T))
+        and then not Needs_Finalization (T)
         and then Expander_Active
       then
          Rewrite (N,

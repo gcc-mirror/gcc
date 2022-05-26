@@ -6810,28 +6810,25 @@ package body Exp_Ch3 is
 
          --  If the object declaration appears in the form
 
-         --    Obj : Ctrl_Typ := Func (...);
+         --    Obj : Typ := Func (...);
 
-         --  where Ctrl_Typ is controlled but not immutably limited type, then
-         --  the expansion of the function call should use a dereference of the
-         --  result to reference the value on the secondary stack.
+         --  where Typ both needs finalization and is returned on the secondary
+         --  stack, the object declaration can be rewritten into a dereference
+         --  of the reference to the result built on the secondary stack (see
+         --  Expand_Ctrl_Function_Call for this expansion of the call):
 
-         --    Obj : Ctrl_Typ renames Func (...).all;
+         --    type Axx is access all Typ;
+         --    Rxx : constant Axx := Func (...)'reference;
+         --    Obj : Typ renames Rxx.all;
 
-         --  As a result, the call avoids an extra copy. This an optimization,
-         --  but it is required for passing ACATS tests in some cases where it
-         --  would otherwise make two copies. The RM allows removing redunant
-         --  Adjust/Finalize calls, but does not allow insertion of extra ones.
+         --  This avoids an extra copy and the pair of Adjust/Finalize calls.
 
-         --  This part is disabled for now, because it breaks GNAT Studio
-         --  builds
-
-         (False -- ???
+         (not Is_Library_Level_Entity (Def_Id)
             and then Nkind (Expr_Q) = N_Explicit_Dereference
             and then not Comes_From_Source (Expr_Q)
             and then Nkind (Original_Node (Expr_Q)) = N_Function_Call
-            and then Nkind (Object_Definition (N)) in N_Has_Entity
-            and then (Needs_Finalization (Entity (Object_Definition (N)))))
+            and then Needs_Finalization (Typ)
+            and then not Is_Class_Wide_Type (Typ))
 
            --  If the initializing expression is for a variable with attribute
            --  OK_To_Rename set, then transform:
@@ -6843,8 +6840,7 @@ package body Exp_Ch3 is
            --     Obj : Typ renames Expr;
 
            --  provided that Obj is not aliased. The aliased case has to be
-           --  excluded in general because Expr will not be aliased in
-           --  general.
+           --  excluded in general because Expr will not be aliased in general.
 
            or else
              (not Aliased_Present (N)
@@ -6853,7 +6849,7 @@ package body Exp_Ch3 is
                and then OK_To_Rename (Entity (Expr_Q))
                and then Is_Entity_Name (Obj_Def));
       begin
-         --  Return False if there are any aspect specifications, because
+         --  ??? Return False if there are any aspect specifications, because
          --  otherwise we duplicate that corresponding implicit attribute
          --  definition, and call Insert_Action, which has no place to insert
          --  the attribute definition. The attribute definition is stored in
@@ -7423,16 +7419,18 @@ package body Exp_Ch3 is
                end if;
             end if;
 
-            --  If the type is controlled and not inherently limited, then
-            --  the target is adjusted after the copy and attached to the
-            --  finalization list. However, no adjustment is done in the case
-            --  where the object was initialized by a call to a function whose
-            --  result is built in place, since no copy occurred. Similarly, no
-            --  adjustment is required if we are going to rewrite the object
-            --  declaration into a renaming declaration.
+            --  If the type needs finalization and is not inherently limited,
+            --  then the target is adjusted after the copy and attached to the
+            --  finalization list. However, no adjustment is needed in the case
+            --  where the object has been initialized by a call to a function
+            --  returning on the primary stack (see Expand_Ctrl_Function_Call)
+            --  since no copy occurred, given that the type is by-reference.
+            --  Similarly, no adjustment is needed if we are going to rewrite
+            --  the object declaration into a renaming declaration.
 
             if Needs_Finalization (Typ)
               and then not Is_Limited_View (Typ)
+              and then Nkind (Expr_Q) /= N_Function_Call
               and then not Rewrite_As_Renaming
             then
                Adj_Call :=
