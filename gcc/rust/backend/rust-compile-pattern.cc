@@ -52,7 +52,7 @@ CompilePatternCaseLabelExpr::visit (HIR::PathInExpression &pattern)
 
   HIR::Expr *discrim_expr = variant->get_discriminant ();
   tree discrim_expr_node = CompileExpr::Compile (discrim_expr, ctx);
-  tree folded_discrim_expr = ConstCtx::fold (discrim_expr_node);
+  tree folded_discrim_expr = fold_expr (discrim_expr_node);
   tree case_low = folded_discrim_expr;
 
   case_label_expr
@@ -132,7 +132,7 @@ compile_range_pattern_bound (HIR::RangePatternBound *bound,
 	result = ResolvePathRef::Compile (ref.get_path (), ctx);
 
 	// If the path resolves to a const expression, fold it.
-	result = ConstCtx::fold (result);
+	result = fold_expr (result);
       }
       break;
 
@@ -143,7 +143,7 @@ compile_range_pattern_bound (HIR::RangePatternBound *bound,
 	result = ResolvePathRef::Compile (ref.get_qualified_path (), ctx);
 
 	// If the path resolves to a const expression, fold it.
-	result = ConstCtx::fold (result);
+	result = fold_expr (result);
       }
     }
 

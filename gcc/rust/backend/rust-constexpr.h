@@ -23,22 +23,7 @@
 namespace Rust {
 namespace Compile {
 
-class ConstCtx
-{
-public:
-  static tree fold (tree);
-
-  tree constexpr_expression (tree);
-  tree eval_binary_expression (tree);
-  tree eval_call_expression (tree);
-  tree constexpr_fn_retval (tree);
-  tree eval_store_expression (tree);
-
-private:
-  ConstCtx ();
-
-  HOST_WIDE_INT constexpr_ops_count;
-};
+extern tree fold_expr (tree);
 
 } // namespace Compile
 } // namespace Rust
