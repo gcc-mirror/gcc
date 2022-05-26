@@ -1,3 +1,16 @@
+2022-05-25  Jason Merrill  <jason@redhat.com>
+
+	PR c++/102307
+	* g++.dg/cpp1z/constexpr-array2.C: New test.
+
+2022-05-25  Jason Merrill  <jason@redhat.com>
+
+	Revert:
+	2022-05-25  Jason Merrill  <jason@redhat.com>
+
+	PR c++/102629
+	* g++.dg/cpp2a/lambda-pack-init7.C: New test.
+
 2022-05-16  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:
