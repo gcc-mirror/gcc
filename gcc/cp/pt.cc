@@ -874,12 +874,12 @@ check_explicit_instantiation_namespace (tree spec)
 	       spec, current_namespace, ns);
 }
 
-/* Returns the type of a template specialization only if that
-   specialization needs to be defined. Otherwise (e.g., if the type has
-   already been defined), the function returns NULL_TREE.  */
+/* Returns true if TYPE is a new partial specialization that needs to be
+   set up.  This may also modify TYPE to point to the correct (new or
+   existing) constrained partial specialization.  */
 
-static tree
-maybe_new_partial_specialization (tree type)
+static bool
+maybe_new_partial_specialization (tree& type)
 {
   /* An implicit instantiation of an incomplete type implies
      the definition of a new class template.
@@ -893,7 +893,7 @@ maybe_new_partial_specialization (tree type)
      Here, S<T*> is an implicit instantiation of S whose type
      is incomplete.  */
   if (CLASSTYPE_IMPLICIT_INSTANTIATION (type) && !COMPLETE_TYPE_P (type))
-    return type;
+    return true;
 
   /* It can also be the case that TYPE is a completed specialization.
      Continuing the previous example, suppose we also declare:
@@ -919,11 +919,11 @@ maybe_new_partial_specialization (tree type)
       /* If there are no template parameters, this cannot be a new
 	 partial template specialization?  */
       if (!current_template_parms)
-        return NULL_TREE;
+	return false;
 
       /* The injected-class-name is not a new partial specialization.  */
       if (DECL_SELF_REFERENCE_P (TYPE_NAME (type)))
-	return NULL_TREE;
+	return false;
 
       /* If the constraints are not the same as those of the primary
 	 then, we can probably create a new specialization.  */
@@ -933,7 +933,7 @@ maybe_new_partial_specialization (tree type)
 	{
 	  tree main_constr = get_constraints (tmpl);
 	  if (equivalent_constraints (type_constr, main_constr))
-	    return NULL_TREE;
+	    return false;
 	}
 
       /* Also, if there's a pre-existing specialization with matching
@@ -946,7 +946,10 @@ maybe_new_partial_specialization (tree type)
           tree spec_constr = get_constraints (spec_tmpl);
           if (comp_template_args (args, spec_args)
 	      && equivalent_constraints (type_constr, spec_constr))
-            return NULL_TREE;
+	    {
+	      type = TREE_TYPE (spec_tmpl);
+	      return false;
+	    }
           specs = TREE_CHAIN (specs);
         }
 
@@ -971,10 +974,11 @@ maybe_new_partial_specialization (tree type)
       set_instantiating_module (d);
       DECL_MODULE_EXPORT_P (d) = DECL_MODULE_EXPORT_P (tmpl);
 
-      return t;
+      type = t;
+      return true;
     }
 
-  return NULL_TREE;
+  return false;
 }
 
 /* The TYPE is being declared.  If it is a template type, that means it
@@ -1030,16 +1034,16 @@ maybe_process_partial_specialization (tree type)
 
 	 Make sure that `C<int>' and `C<T*>' are implicit instantiations.  */
 
-      if (tree t = maybe_new_partial_specialization (type))
+      if (maybe_new_partial_specialization (type))
 	{
-	  if (!check_specialization_namespace (CLASSTYPE_TI_TEMPLATE (t))
+	  if (!check_specialization_namespace (CLASSTYPE_TI_TEMPLATE (type))
 	      && !at_namespace_scope_p ())
 	    return error_mark_node;
-	  SET_CLASSTYPE_TEMPLATE_SPECIALIZATION (t);
-	  DECL_SOURCE_LOCATION (TYPE_MAIN_DECL (t)) = input_location;
+	  SET_CLASSTYPE_TEMPLATE_SPECIALIZATION (type);
+	  DECL_SOURCE_LOCATION (TYPE_MAIN_DECL (type)) = input_location;
 	  if (processing_template_decl)
 	    {
-	      tree decl = push_template_decl (TYPE_MAIN_DECL (t));
+	      tree decl = push_template_decl (TYPE_MAIN_DECL (type));
 	      if (decl == error_mark_node)
 		return error_mark_node;
 	      return TREE_TYPE (decl);
