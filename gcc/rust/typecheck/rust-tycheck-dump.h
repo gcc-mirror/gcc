@@ -98,6 +98,7 @@ public:
 
   void visit (HIR::BlockExpr &expr) override
   {
+    dump += "{\n";
     indentation_level++;
 
     for (auto &s : expr.get_statements ())
@@ -115,6 +116,13 @@ public:
       }
 
     indentation_level--;
+    dump += "}\n";
+  }
+
+  void visit (HIR::UnsafeBlockExpr &expr) override
+  {
+    dump += "unsafe ";
+    expr.get_block_expr ()->accept_vis (*this);
   }
 
   void visit (HIR::LetStmt &stmt) override

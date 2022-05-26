@@ -210,6 +210,12 @@ HIRCompileBase::coercion_site (tree rvalue, const TyTy::BaseType *rval,
 
   if (expected->get_kind () == TyTy::TypeKind::REF)
     {
+      // this is a dyn object
+      if (SLICE_TYPE_P (TREE_TYPE (rvalue)))
+	{
+	  return rvalue;
+	}
+
       // bad coercion... of something to a reference
       if (actual->get_kind () != TyTy::TypeKind::REF)
 	return error_mark_node;
@@ -218,11 +224,6 @@ HIRCompileBase::coercion_site (tree rvalue, const TyTy::BaseType *rval,
 	= static_cast<const TyTy::ReferenceType *> (expected);
       const TyTy::ReferenceType *act
 	= static_cast<const TyTy::ReferenceType *> (actual);
-      if (act->is_dyn_slice_type ())
-	{
-	  // nothing to do
-	  return rvalue;
-	}
 
       tree expected_type = TyTyResolveCompile::compile (ctx, act->get_base ());
       tree deref_rvalue
@@ -232,7 +233,7 @@ HIRCompileBase::coercion_site (tree rvalue, const TyTy::BaseType *rval,
       tree coerced
 	= coercion_site (deref_rvalue, act->get_base (), exp->get_base (),
 			 lvalue_locus, rvalue_locus);
-      if (exp->is_dyn_slice_type () && SLICE_TYPE_P (TREE_TYPE (coerced)))
+      if (exp->is_dyn_object () && SLICE_TYPE_P (TREE_TYPE (coerced)))
 	return coerced;
 
       return address_expression (coerced,
@@ -241,6 +242,12 @@ HIRCompileBase::coercion_site (tree rvalue, const TyTy::BaseType *rval,
     }
   else if (expected->get_kind () == TyTy::TypeKind::POINTER)
     {
+      // this is a dyn object
+      if (SLICE_TYPE_P (TREE_TYPE (rvalue)))
+	{
+	  return rvalue;
+	}
+
       // bad coercion... of something to a reference
       bool valid_coercion = actual->get_kind () == TyTy::TypeKind::REF
 			    || actual->get_kind () == TyTy::TypeKind::POINTER;
@@ -256,11 +263,6 @@ HIRCompileBase::coercion_site (tree rvalue, const TyTy::BaseType *rval,
 	{
 	  const TyTy::ReferenceType *act
 	    = static_cast<const TyTy::ReferenceType *> (actual);
-	  if (act->is_dyn_slice_type ())
-	    {
-	      // nothing to do
-	      return rvalue;
-	    }
 
 	  actual_base = act->get_base ();
 	  expected_type = TyTyResolveCompile::compile (ctx, act->get_base ());
@@ -269,11 +271,6 @@ HIRCompileBase::coercion_site (tree rvalue, const TyTy::BaseType *rval,
 	{
 	  const TyTy::PointerType *act
 	    = static_cast<const TyTy::PointerType *> (actual);
-	  if (act->is_dyn_slice_type ())
-	    {
-	      // nothing to do
-	      return rvalue;
-	    }
 
 	  actual_base = act->get_base ();
 	  expected_type = TyTyResolveCompile::compile (ctx, act->get_base ());
@@ -286,6 +283,8 @@ HIRCompileBase::coercion_site (tree rvalue, const TyTy::BaseType *rval,
 						    rvalue_locus);
       tree coerced = coercion_site (deref_rvalue, actual_base, exp->get_base (),
 				    lvalue_locus, rvalue_locus);
+      if (exp->is_dyn_object () && SLICE_TYPE_P (TREE_TYPE (coerced)))
+	return coerced;
 
       return address_expression (coerced,
 				 build_pointer_type (TREE_TYPE (coerced)),

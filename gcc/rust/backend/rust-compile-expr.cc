@@ -1014,13 +1014,28 @@ tree
 CompileExpr::compile_string_literal (const HIR::LiteralExpr &expr,
 				     const TyTy::BaseType *tyty)
 {
+  tree fat_pointer = TyTyResolveCompile::compile (ctx, tyty);
+
   rust_assert (expr.get_lit_type () == HIR::Literal::STRING);
   const auto literal_value = expr.get_literal ();
 
   auto base = ctx->get_backend ()->string_constant_expression (
     literal_value.as_string ());
-  return address_expression (base, build_pointer_type (TREE_TYPE (base)),
-			     expr.get_locus ());
+  tree data = address_expression (base, build_pointer_type (TREE_TYPE (base)),
+				  expr.get_locus ());
+
+  TyTy::BaseType *usize = nullptr;
+  bool ok = ctx->get_tyctx ()->lookup_builtin ("usize", &usize);
+  rust_assert (ok);
+  tree type = TyTyResolveCompile::compile (ctx, usize);
+
+  mpz_t ival;
+  mpz_init_set_ui (ival, literal_value.as_string ().size ());
+  tree size = double_int_to_tree (type, mpz_get_double_int (type, ival, true));
+
+  return ctx->get_backend ()->constructor_expression (fat_pointer, false,
+						      {data, size}, -1,
+						      expr.get_locus ());
 }
 
 tree

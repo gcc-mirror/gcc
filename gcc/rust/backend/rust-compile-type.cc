@@ -525,6 +525,7 @@ void
 TyTyResolveCompile::visit (const TyTy::ReferenceType &type)
 {
   const TyTy::SliceType *slice = nullptr;
+  const TyTy::StrType *str = nullptr;
   if (type.is_dyn_slice_type (&slice))
     {
       tree type_record = create_slice_type_record (*slice);
@@ -535,6 +536,18 @@ TyTyResolveCompile::visit (const TyTy::ReferenceType &type)
       translated
 	= ctx->get_backend ()->named_type (dyn_slice_type_str, type_record,
 					   slice->get_locus ());
+
+      return;
+    }
+  else if (type.is_dyn_str_type (&str))
+    {
+      tree type_record = create_str_type_record (*str);
+      std::string dyn_str_type_str
+	= std::string (type.is_mutable () ? "&mut " : "&") + "str";
+
+      translated
+	= ctx->get_backend ()->named_type (dyn_str_type_str, type_record,
+					   str->get_locus ());
 
       return;
     }
@@ -556,6 +569,7 @@ void
 TyTyResolveCompile::visit (const TyTy::PointerType &type)
 {
   const TyTy::SliceType *slice = nullptr;
+  const TyTy::StrType *str = nullptr;
   if (type.is_dyn_slice_type (&slice))
     {
       tree type_record = create_slice_type_record (*slice);
@@ -566,6 +580,18 @@ TyTyResolveCompile::visit (const TyTy::PointerType &type)
       translated
 	= ctx->get_backend ()->named_type (dyn_slice_type_str, type_record,
 					   slice->get_locus ());
+
+      return;
+    }
+  else if (type.is_dyn_str_type (&str))
+    {
+      tree type_record = create_str_type_record (*str);
+      std::string dyn_str_type_str
+	= std::string (type.is_mutable () ? "*mut " : "*const ") + "str";
+
+      translated
+	= ctx->get_backend ()->named_type (dyn_str_type_str, type_record,
+					   str->get_locus ());
 
       return;
     }
@@ -586,7 +612,7 @@ TyTyResolveCompile::visit (const TyTy::PointerType &type)
 void
 TyTyResolveCompile::visit (const TyTy::StrType &type)
 {
-  tree raw_str = ctx->get_backend ()->raw_str_type ();
+  tree raw_str = create_str_type_record (type);
   translated
     = ctx->get_backend ()->named_type ("str", raw_str,
 				       Linemap::predeclared_location ());
@@ -643,6 +669,32 @@ TyTyResolveCompile::create_slice_type_record (const TyTy::SliceType &type)
 
   tree element_type
     = TyTyResolveCompile::compile (ctx, type.get_element_type ());
+  tree data_field_ty = build_pointer_type (element_type);
+  Backend::typed_identifier data_field ("data", data_field_ty,
+					type.get_locus ());
+
+  tree len_field_ty = TyTyResolveCompile::compile (ctx, usize);
+  Backend::typed_identifier len_field ("len", len_field_ty, type.get_locus ());
+
+  tree record = ctx->get_backend ()->struct_type ({data_field, len_field});
+  SLICE_FLAG (record) = 1;
+  TYPE_MAIN_VARIANT (record) = ctx->insert_main_variant (record);
+
+  return record;
+}
+
+tree
+TyTyResolveCompile::create_str_type_record (const TyTy::StrType &type)
+{
+  // lookup usize
+  TyTy::BaseType *usize = nullptr;
+  bool ok = ctx->get_tyctx ()->lookup_builtin ("usize", &usize);
+  rust_assert (ok);
+
+  tree char_ptr = build_pointer_type (char_type_node);
+  tree const_char_type = build_qualified_type (char_ptr, TYPE_QUAL_CONST);
+
+  tree element_type = const_char_type;
   tree data_field_ty = build_pointer_type (element_type);
   Backend::typed_identifier data_field ("data", data_field_ty,
 					type.get_locus ());

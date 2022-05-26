@@ -2126,6 +2126,42 @@ public:
   bool is_concrete () const override final { return true; }
 };
 
+class StrType : public BaseType
+{
+public:
+  StrType (HirId ref, std::set<HirId> refs = std::set<HirId> ())
+    : BaseType (ref, ref, TypeKind::STR,
+		{Resolver::CanonicalPath::create_empty (),
+		 Linemap::predeclared_location ()},
+		refs)
+  {}
+
+  StrType (HirId ref, HirId ty_ref, std::set<HirId> refs = std::set<HirId> ())
+    : BaseType (ref, ty_ref, TypeKind::STR,
+		{Resolver::CanonicalPath::create_empty (),
+		 Linemap::predeclared_location ()},
+		refs)
+  {}
+
+  std::string get_name () const override final { return as_string (); }
+
+  void accept_vis (TyVisitor &vis) override;
+  void accept_vis (TyConstVisitor &vis) const override;
+
+  std::string as_string () const override;
+
+  BaseType *unify (BaseType *other) override;
+  bool can_eq (const BaseType *other, bool emit_errors) const override final;
+  BaseType *coerce (BaseType *other) override;
+  BaseType *cast (BaseType *other) override;
+
+  bool is_equal (const BaseType &other) const override;
+
+  BaseType *clone () const final override;
+  BaseType *monomorphized_clone () const final override;
+  bool is_concrete () const override final { return true; }
+};
+
 class ReferenceType : public BaseType
 {
 public:
@@ -2180,18 +2216,32 @@ public:
 
   bool is_mutable () const { return mut == Mutability::Mut; }
 
-  bool is_dyn_slice_type () const
+  bool is_dyn_object () const
   {
-    return get_base ()->destructure ()->get_kind () == TyTy::TypeKind::SLICE;
+    return is_dyn_slice_type () || is_dyn_str_type ();
   }
 
-  bool is_dyn_slice_type (const TyTy::SliceType **slice) const
+  bool is_dyn_slice_type (const TyTy::SliceType **slice = nullptr) const
   {
     const TyTy::BaseType *element = get_base ()->destructure ();
     if (element->get_kind () != TyTy::TypeKind::SLICE)
       return false;
+    if (slice == nullptr)
+      return true;
 
     *slice = static_cast<const TyTy::SliceType *> (element);
+    return true;
+  }
+
+  bool is_dyn_str_type (const TyTy::StrType **str = nullptr) const
+  {
+    const TyTy::BaseType *element = get_base ()->destructure ();
+    if (element->get_kind () != TyTy::TypeKind::STR)
+      return false;
+    if (str == nullptr)
+      return true;
+
+    *str = static_cast<const TyTy::StrType *> (element);
     return true;
   }
 
@@ -2256,60 +2306,38 @@ public:
 
   bool is_const () const { return mut == Mutability::Imm; }
 
-  bool is_dyn_slice_type () const
+  bool is_dyn_object () const
   {
-    return get_base ()->destructure ()->get_kind () == TyTy::TypeKind::SLICE;
+    return is_dyn_slice_type () || is_dyn_str_type ();
   }
 
-  bool is_dyn_slice_type (const TyTy::SliceType **slice) const
+  bool is_dyn_slice_type (const TyTy::SliceType **slice = nullptr) const
   {
     const TyTy::BaseType *element = get_base ()->destructure ();
     if (element->get_kind () != TyTy::TypeKind::SLICE)
       return false;
+    if (slice == nullptr)
+      return true;
 
     *slice = static_cast<const TyTy::SliceType *> (element);
+    return true;
+  }
+
+  bool is_dyn_str_type (const TyTy::StrType **str = nullptr) const
+  {
+    const TyTy::BaseType *element = get_base ()->destructure ();
+    if (element->get_kind () != TyTy::TypeKind::STR)
+      return false;
+    if (str == nullptr)
+      return true;
+
+    *str = static_cast<const TyTy::StrType *> (element);
     return true;
   }
 
 private:
   TyVar base;
   Mutability mut;
-};
-
-class StrType : public BaseType
-{
-public:
-  StrType (HirId ref, std::set<HirId> refs = std::set<HirId> ())
-    : BaseType (ref, ref, TypeKind::STR,
-		{Resolver::CanonicalPath::create_empty (),
-		 Linemap::predeclared_location ()},
-		refs)
-  {}
-
-  StrType (HirId ref, HirId ty_ref, std::set<HirId> refs = std::set<HirId> ())
-    : BaseType (ref, ty_ref, TypeKind::STR,
-		{Resolver::CanonicalPath::create_empty (),
-		 Linemap::predeclared_location ()},
-		refs)
-  {}
-
-  std::string get_name () const override final { return as_string (); }
-
-  void accept_vis (TyVisitor &vis) override;
-  void accept_vis (TyConstVisitor &vis) const override;
-
-  std::string as_string () const override;
-
-  BaseType *unify (BaseType *other) override;
-  bool can_eq (const BaseType *other, bool emit_errors) const override final;
-  BaseType *coerce (BaseType *other) override;
-  BaseType *cast (BaseType *other) override;
-
-  bool is_equal (const BaseType &other) const override;
-
-  BaseType *clone () const final override;
-  BaseType *monomorphized_clone () const final override;
-  bool is_concrete () const override final { return true; }
 };
 
 // https://doc.rust-lang.org/std/primitive.never.html
