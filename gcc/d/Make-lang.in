@@ -279,7 +279,7 @@ d.srcextra:
 
 d.tags: force
 	cd $(srcdir)/d; \
-	$(ETAGS) -o TAGS.sub *.c *.cc *.h dmd/*.h dmd/root/*.h; \
+	$(ETAGS) -o TAGS.sub *.cc *.h dmd/*.h dmd/root/*.h; \
 	$(ETAGS) --include TAGS.sub --include ../TAGS.sub
 
 d.man: doc/gdc.1
