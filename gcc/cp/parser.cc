@@ -33666,7 +33666,8 @@ class_decl_loc_t::add (cp_parser *parser, location_t key_loc,
   bool key_redundant = (!def_p && !decl_p
 			&& (decl == type_decl
 			    || TREE_CODE (decl) == TEMPLATE_DECL
-			    || TYPE_BEING_DEFINED (type)));
+			    || (CLASS_TYPE_P (type)
+				&& TYPE_BEING_DEFINED (type))));
 
   if (key_redundant
       && class_key != class_type
@@ -33704,7 +33705,7 @@ class_decl_loc_t::add (cp_parser *parser, location_t key_loc,
 	}
       else
 	{
-	  /* TYPE was previously defined in some unknown precompiled hdeader.
+	  /* TYPE was previously defined in some unknown precompiled header.
 	     Simply add a record of its definition at an unknown location and
 	     proceed below to add a reference to it at the current location.
 	     (Declarations in precompiled headers that are not definitions
