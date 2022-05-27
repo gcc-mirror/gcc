@@ -6806,6 +6806,21 @@ package body Exp_Ch3 is
       -------------------------
 
       function Rewrite_As_Renaming return Boolean is
+
+         function OK_To_Rename_Entity_Name (N : Node_Id) return Boolean;
+         --  Return True if N denotes an entity with OK_To_Rename set
+
+         ------------------------------
+         -- OK_To_Rename_Entity_Name --
+         ------------------------------
+
+         function OK_To_Rename_Entity_Name (N : Node_Id) return Boolean is
+         begin
+            return Is_Entity_Name (N)
+              and then Ekind (Entity (N)) = E_Variable
+              and then OK_To_Rename (Entity (N));
+         end OK_To_Rename_Entity_Name;
+
          Result : constant Boolean :=
 
          --  If the object declaration appears in the form
@@ -6844,10 +6859,11 @@ package body Exp_Ch3 is
 
            or else
              (not Aliased_Present (N)
-               and then Is_Entity_Name (Expr_Q)
-               and then Ekind (Entity (Expr_Q)) = E_Variable
-               and then OK_To_Rename (Entity (Expr_Q))
-               and then Is_Entity_Name (Obj_Def));
+               and then (OK_To_Rename_Entity_Name (Expr_Q)
+                          or else
+                         (Nkind (Expr_Q) = N_Slice
+                           and then
+                          OK_To_Rename_Entity_Name (Prefix (Expr_Q)))));
       begin
          --  ??? Return False if there are any aspect specifications, because
          --  otherwise we duplicate that corresponding implicit attribute
