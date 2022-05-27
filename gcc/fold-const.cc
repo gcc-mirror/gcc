@@ -9516,6 +9516,16 @@ fold_unary_loc (location_t loc, enum tree_code code, tree type, tree op0)
 		  > min_align_of_type (TREE_TYPE (TREE_TYPE (arg00)))))
 	    return NULL_TREE;
 
+	  /* Similarly, avoid this optimization in GENERIC for -fsanitize=null
+	     when type is a reference type and arg00's type is not,
+	     because arg00 could be validly nullptr and if arg01 doesn't return,
+	     we don't want false positive binding of reference to nullptr.  */
+	  if (TREE_CODE (type) == REFERENCE_TYPE
+	      && !in_gimple_form
+	      && sanitize_flags_p (SANITIZE_NULL)
+	      && TREE_CODE (TREE_TYPE (arg00)) != REFERENCE_TYPE)
+	    return NULL_TREE;
+
 	  arg00 = fold_convert_loc (loc, type, arg00);
 	  return fold_build_pointer_plus_loc (loc, arg00, arg01);
 	}
