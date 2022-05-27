@@ -1,3 +1,295 @@
+2022-05-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/105681
+	* include/ext/pb_ds/detail/resize_policy/hash_prime_size_policy_imp.hpp:
+	Limit ga_sizes array to values that fit in size_t.
+	* include/ext/random [__SIZE_WIDTH < 32] (sfmt86243)
+	(sfmt86243_64, sfmt132049, sfmt132049_64, sfmt216091)
+	(sfmt216091_64): Do not declare.
+
+2022-05-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	* python/libstdcxx/v6/printers.py (StdErrorCodePrinter): Make
+	lookup for ios_errc and future_errc check versioned namespace.
+	(StdAtomicPrinter): Strip versioned namespace from typename.
+
+2022-05-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++11/Makefile.am: Add new source file.
+	* src/c++11/Makefile.in: Regenerate.
+	* src/c++11/cxx11-ios_failure.cc (iostream_category):
+	Move to ...
+	* src/c++11/ios_errcat.cc: New file.
+	* testsuite/27_io/ios_base/failure/error_code.cc: Check that
+	std::iostream_category() is defined and used for std::io_errc.
+
+2022-05-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_iterator.h (counted_iterator::operator++(int)):
+	Add 'constexpr' as per LWG 3643.
+	* testsuite/24_iterators/counted_iterator/lwg3643.cc: New test.
+
+2022-05-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/functional_hash.h (__is_fast_hash): Add doxygen
+	comment.
+	* include/bits/hashtable.h: Do not include <bits/stl_function.h>
+	here.
+	* include/bits/hashtable_policy.h: Include <bits/stl_pair.h> and
+	<bits/functional_hash.h>.
+	* include/bits/unordered_map.h: Include required headers.
+	* include/bits/unordered_set.h: Likewise.
+	* include/std/unordered_map: Do not include headers for indirect
+	dependencies.
+	* include/std/unordered_set: Likewise.
+
+2022-05-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/ranges_algobase.h: Do not include
+	<bits/stl_iterator_base_types.h>.
+	* include/std/string: Likewise.
+	* include/std/variant: Likewise.
+
+2022-05-26  Nathan Sidwell  <nathan@acm.org>
+
+	* include/bits/hashtable.h: Include required headers.
+	* include/bits/hashtable_policy.h: Likewise.
+	* include/bits/stl_heap.h: Likewise.
+	* include/bits/stl_iterator_base_funcs.h: Likewise.
+
+2022-05-26  François Dumont  <fdumont@gcc.gnu.org>
+
+	* python/libstdcxx/v6/printers.py (StdSpanPrinter.__init__):
+	Strip typename from version namespace.
+
+2022-05-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	* python/libstdcxx/v6/printers.py (SharedPointerPrinter): Strip
+	versioned namespace from the template argument too.
+
+2022-05-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/21_strings/basic_string/modifiers/pop_back/char/1.cc:
+	Moved to...
+	* testsuite/21_strings/basic_string/modifiers/pop_back/char.cc:
+	...here.
+	* testsuite/21_strings/basic_string/modifiers/pop_back/wchar_t/1.cc:
+	Moved to...
+	* testsuite/21_strings/basic_string/modifiers/pop_back/wchar_t.cc:
+	...here.
+	* testsuite/21_strings/basic_string/modifiers/swap/wchar_t/constexpr.cc:
+	Moved to...
+	* testsuite/21_strings/basic_string/modifiers/swap/constexpr-wchar_t.cc:
+	...here.
+	* testsuite/21_strings/basic_string/modifiers/swap/char/constexpr.cc:
+	Moved to...
+	* testsuite/21_strings/basic_string/modifiers/swap/constexpr.cc:
+	...here.
+	* testsuite/21_strings/basic_string/operations/contains/char/1.cc:
+	Moved to...
+	* testsuite/21_strings/basic_string/operations/contains/char.cc:
+	...here.
+	* testsuite/21_strings/basic_string/operations/contains/wchar_t/1.cc:
+	Moved to...
+	* testsuite/21_strings/basic_string/operations/contains/wchar_t.cc:
+	...here.
+	* testsuite/21_strings/basic_string/operations/data/char/1.cc:
+	Moved to...
+	* testsuite/21_strings/basic_string/operations/data/char.cc:
+	...here.
+	* testsuite/21_strings/basic_string/operations/data/wchar_t/1.cc:
+	Moved to...
+	* testsuite/21_strings/basic_string/operations/data/wchar_t.cc:
+	...here.
+	* testsuite/21_strings/basic_string/operations/ends_with/char/1.cc:
+	Moved to...
+	* testsuite/21_strings/basic_string/operations/ends_with/char.cc:
+	...here.
+	* testsuite/21_strings/basic_string/operations/ends_with/wchar_t/1.cc:
+	Moved to...
+	* testsuite/21_strings/basic_string/operations/ends_with/wchar_t.cc:
+	...here.
+	* testsuite/21_strings/basic_string/operations/starts_with/char/1.cc:
+	Moved to...
+	* testsuite/21_strings/basic_string/operations/starts_with/char.cc:
+	...here.
+	* testsuite/21_strings/basic_string/operations/starts_with/wchar_t/1.cc:
+	Moved to...
+	* testsuite/21_strings/basic_string/operations/starts_with/wchar_t.cc:
+	...here.
+	* testsuite/21_strings/basic_string/operations/substr/char/1.cc:
+	Moved to...
+	* testsuite/21_strings/basic_string/operations/substr/char.cc:
+	...here.
+	* testsuite/21_strings/basic_string/operations/substr/wchar_t/1.cc:
+	Moved to...
+	* testsuite/21_strings/basic_string/operations/substr/wchar_t.cc:
+	...here.
+	* testsuite/21_strings/basic_string/range_access/char/1.cc:
+	Moved to...
+	* testsuite/21_strings/basic_string/range_access/char.cc:
+	...here.
+	* testsuite/21_strings/basic_string/range_access/wchar_t/1.cc:
+	Moved to...
+	* testsuite/21_strings/basic_string/range_access/wchar_t.cc:
+	...here.
+	* testsuite/21_strings/basic_string_view/modifiers/remove_prefix/char/1.cc:
+	Moved to...
+	* testsuite/21_strings/basic_string_view/modifiers/remove_prefix/char.cc:
+	...here.
+	* testsuite/21_strings/basic_string_view/modifiers/remove_prefix/wchar_t/1.cc:
+	Moved to...
+	* testsuite/21_strings/basic_string_view/modifiers/remove_prefix/wchar_t.cc:
+	...here.
+	* testsuite/21_strings/basic_string_view/modifiers/remove_suffix/char/1.cc:
+	Moved to...
+	* testsuite/21_strings/basic_string_view/modifiers/remove_suffix/char.cc:
+	...here.
+	* testsuite/21_strings/basic_string_view/modifiers/remove_suffix/wchar_t/1.cc:
+	Moved to...
+	* testsuite/21_strings/basic_string_view/modifiers/remove_suffix/wchar_t.cc:
+	...here.
+	* testsuite/21_strings/basic_string_view/modifiers/swap/char/1.cc:
+	Moved to...
+	* testsuite/21_strings/basic_string_view/modifiers/swap/char.cc:
+	...here.
+	* testsuite/21_strings/basic_string_view/modifiers/swap/wchar_t/1.cc:
+	Moved to...
+	* testsuite/21_strings/basic_string_view/modifiers/swap/wchar_t.cc:
+	...here.
+	* testsuite/21_strings/basic_string_view/operations/contains/char/1.cc:
+	Moved to...
+	* testsuite/21_strings/basic_string_view/operations/contains/char.cc:
+	...here.
+	* testsuite/21_strings/basic_string_view/operations/contains/wchar_t/1.cc:
+	Moved to...
+	* testsuite/21_strings/basic_string_view/operations/contains/wchar_t.cc:
+	...here.
+	* testsuite/21_strings/basic_string_view/operations/data/char/1.cc:
+	Moved to...
+	* testsuite/21_strings/basic_string_view/operations/data/char.cc:
+	...here.
+	* testsuite/21_strings/basic_string_view/operations/data/wchar_t/1.cc:
+	Moved to...
+	* testsuite/21_strings/basic_string_view/operations/data/wchar_t.cc:
+	...here.
+	* testsuite/21_strings/basic_string_view/operations/ends_with/char/1.cc:
+	Moved to...
+	* testsuite/21_strings/basic_string_view/operations/ends_with/char.cc:
+	...here.
+	* testsuite/21_strings/basic_string_view/operations/ends_with/wchar_t/1.cc:
+	Moved to...
+	* testsuite/21_strings/basic_string_view/operations/ends_with/wchar_t.cc:
+	...here.
+	* testsuite/21_strings/basic_string_view/operations/starts_with/char/1.cc:
+	Moved to...
+	* testsuite/21_strings/basic_string_view/operations/starts_with/char.cc:
+	...here.
+	* testsuite/21_strings/basic_string_view/operations/starts_with/wchar_t/1.cc:
+	Moved to...
+	* testsuite/21_strings/basic_string_view/operations/starts_with/wchar_t.cc:
+	...here.
+	* testsuite/21_strings/basic_string_view/operations/substr/char/1.cc:
+	Moved to...
+	* testsuite/21_strings/basic_string_view/operations/substr/char.cc:
+	...here.
+	* testsuite/21_strings/basic_string_view/operations/substr/wchar_t/1.cc:
+	Moved to...
+	* testsuite/21_strings/basic_string_view/operations/substr/wchar_t.cc:
+	...here.
+	* testsuite/21_strings/basic_string_view/range_access/char/1.cc:
+	Moved to...
+	* testsuite/21_strings/basic_string_view/range_access/char.cc:
+	...here.
+	* testsuite/21_strings/basic_string_view/range_access/wchar_t/1.cc:
+	Moved to...
+	* testsuite/21_strings/basic_string_view/range_access/wchar_t.cc:
+	...here.
+	* testsuite/21_strings/basic_string/requirements/explicit_instantiation/char/1.cc:
+	Moved to...
+	* testsuite/21_strings/basic_string/requirements/explicit_instantiation/char.cc:
+	...here.
+	* testsuite/21_strings/basic_string/requirements/explicit_instantiation/char16_t/1.cc:
+	Moved to...
+	* testsuite/21_strings/basic_string/requirements/explicit_instantiation/char16_t.cc:
+	...here.
+	* testsuite/21_strings/basic_string/requirements/explicit_instantiation/char32_t/1.cc:
+	Moved to...
+	* testsuite/21_strings/basic_string/requirements/explicit_instantiation/char32_t.cc:
+	...here.
+	* testsuite/21_strings/basic_string/requirements/explicit_instantiation/char8_t/1.cc:
+	Moved to...
+	* testsuite/21_strings/basic_string/requirements/explicit_instantiation/char8_t.cc:
+	...here.
+	* testsuite/21_strings/basic_string/requirements/explicit_instantiation/1.cc:
+	Moved to...
+	* testsuite/21_strings/basic_string/requirements/explicit_instantiation/int.cc:
+	...here.
+	* testsuite/21_strings/basic_string/requirements/explicit_instantiation/wchar_t/1.cc:
+	Moved to...
+	* testsuite/21_strings/basic_string/requirements/explicit_instantiation/wchar_t.cc:
+	...here.
+	* testsuite/21_strings/basic_string_view/requirements/explicit_instantiation/char/1.cc:
+	Moved to...
+	* testsuite/21_strings/basic_string_view/requirements/explicit_instantiation/char.cc:
+	...here.
+	* testsuite/21_strings/basic_string_view/requirements/explicit_instantiation/char16_t/1.cc:
+	Moved to...
+	* testsuite/21_strings/basic_string_view/requirements/explicit_instantiation/char16_t.cc:
+	...here.
+	* testsuite/21_strings/basic_string_view/requirements/explicit_instantiation/char32_t/1.cc:
+	Moved to...
+	* testsuite/21_strings/basic_string_view/requirements/explicit_instantiation/char32_t.cc:
+	...here.
+	* testsuite/21_strings/basic_string_view/requirements/explicit_instantiation/char8_t/1.cc:
+	Moved to...
+	* testsuite/21_strings/basic_string_view/requirements/explicit_instantiation/char8_t.cc:
+	...here.
+	* testsuite/21_strings/basic_string_view/requirements/explicit_instantiation/1.cc:
+	Moved to...
+	* testsuite/21_strings/basic_string_view/requirements/explicit_instantiation/int.cc:
+	...here.
+	* testsuite/21_strings/basic_string_view/requirements/explicit_instantiation/wchar_t/1.cc:
+	Moved to...
+	* testsuite/21_strings/basic_string_view/requirements/explicit_instantiation/wchar_t.cc:
+	...here.
+	* testsuite/21_strings/char_traits/requirements/explicit_instantiation/char/1.cc:
+	Moved to...
+	* testsuite/21_strings/char_traits/requirements/explicit_instantiation/char.cc:
+	...here.
+	* testsuite/21_strings/char_traits/requirements/explicit_instantiation/char16_t/1.cc:
+	Moved to...
+	* testsuite/21_strings/char_traits/requirements/explicit_instantiation/char16_t.cc:
+	...here.
+	* testsuite/21_strings/char_traits/requirements/explicit_instantiation/char32_t/1.cc:
+	Moved to...
+	* testsuite/21_strings/char_traits/requirements/explicit_instantiation/char32_t.cc:
+	...here.
+	* testsuite/21_strings/char_traits/requirements/explicit_instantiation/char8_t/1.cc:
+	Moved to...
+	* testsuite/21_strings/char_traits/requirements/explicit_instantiation/char8_t.cc:
+	...here.
+	* testsuite/21_strings/char_traits/requirements/explicit_instantiation/short/1.cc:
+	Moved to...
+	* testsuite/21_strings/char_traits/requirements/explicit_instantiation/short.cc:
+	...here.
+	* testsuite/21_strings/char_traits/requirements/explicit_instantiation/wchar_t/1.cc:
+	Moved to...
+	* testsuite/21_strings/char_traits/requirements/explicit_instantiation/wchar_t.cc:
+	...here.
+
+2022-05-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/20_util/duration/requirements/explicit_instantiation/explicit_instantiation.cc:
+	Moved to...
+	* testsuite/20_util/duration/requirements/explicit_instantiation.cc: ...here.
+	* testsuite/20_util/time_point/requirements/explicit_instantiation/explicit_instantiation.cc:
+	Moved to...
+	* testsuite/20_util/time_point/requirements/explicit_instantiation.cc: ...here.
+	* testsuite/20_util/unique_ptr/requirements/explicit_instantiation/explicit_instantiation.cc:
+	Moved to...
+	* testsuite/20_util/unique_ptr/requirements/explicit_instantiation.cc: ...here.
+
 2022-05-25  Jason Merrill  <jason@redhat.com>
 
 	* testsuite/20_util/function_objects/constexpr_searcher.cc: Add

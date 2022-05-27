@@ -1,3 +1,25 @@
+2022-05-26  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/xtensa.cc (xtensa_expand_block_move):
+	Make instruction counting more accurate, and simplify emitting insns.
+
+2022-05-26  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/constraints.md (M, O): Use the macro.
+	* config/xtensa/predicates.md (addsubx_operand, extui_fldsz_operand,
+	sext_fldsz_operand): Ditto.
+	* config/xtensa/xtensa.cc (xtensa_simm8, xtensa_simm8x256,
+	xtensa_simm12b, xtensa_uimm8, xtensa_uimm8x2, xtensa_uimm8x4,
+	xtensa_mask_immediate, smalloffset_mem_p, printx, xtensa_call_save_reg,
+	xtensa_expand_prologue): Ditto.
+	* config/xtensa/xtensa.h (FUNCTION_ARG_REGNO_P): Ditto.
+
+2022-05-26  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/predicates.md (extui_fldsz_operand): Simplify.
+	* config/xtensa/xtensa.cc (xtensa_mask_immediate, print_operand):
+	Ditto.
+
 2022-05-25  Andrew MacLeod  <amacleod@redhat.com>
 
 	* gimple-range-cache.cc: Adjust comments.
