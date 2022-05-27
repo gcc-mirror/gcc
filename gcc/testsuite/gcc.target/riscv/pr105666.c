@@ -6,6 +6,7 @@
    spilling to stack.  */
 
 /* { dg-do compile } */
+/* { dg-require-effective-target hard_float } */
 /* { dg-options "-march=rv64g -ffast-math" } */
 
 #define NITER 4
