@@ -11,7 +11,7 @@ foo (void)
   v++;
 }
 
-#pragma omp declare target to (v, foo)
+#pragma omp declare target enter (v, foo)
 
 int
 main ()

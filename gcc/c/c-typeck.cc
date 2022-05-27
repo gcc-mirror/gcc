@@ -15248,37 +15248,40 @@ c_finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	    }
 	  break;
 
-	case OMP_CLAUSE_TO_DECLARE:
+	case OMP_CLAUSE_ENTER:
 	case OMP_CLAUSE_LINK:
 	  t = OMP_CLAUSE_DECL (c);
+	  const char *cname;
+	  cname = omp_clause_code_name[OMP_CLAUSE_CODE (c)];
+	  if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_ENTER
+	      && OMP_CLAUSE_ENTER_TO (c))
+	    cname = "to";
 	  if (TREE_CODE (t) == FUNCTION_DECL
-	      && OMP_CLAUSE_CODE (c) == OMP_CLAUSE_TO_DECLARE)
+	      && OMP_CLAUSE_CODE (c) == OMP_CLAUSE_ENTER)
 	    ;
 	  else if (!VAR_P (t))
 	    {
-	      if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_TO_DECLARE)
+	      if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_ENTER)
 		error_at (OMP_CLAUSE_LOCATION (c),
 			  "%qE is neither a variable nor a function name in "
-			  "clause %qs", t,
-			  omp_clause_code_name[OMP_CLAUSE_CODE (c)]);
+			  "clause %qs", t, cname);
 	      else
 		error_at (OMP_CLAUSE_LOCATION (c),
-			  "%qE is not a variable in clause %qs", t,
-			  omp_clause_code_name[OMP_CLAUSE_CODE (c)]);
+			  "%qE is not a variable in clause %qs", t, cname);
 	      remove = true;
 	    }
 	  else if (DECL_THREAD_LOCAL_P (t))
 	    {
 	      error_at (OMP_CLAUSE_LOCATION (c),
 			"%qD is threadprivate variable in %qs clause", t,
-			omp_clause_code_name[OMP_CLAUSE_CODE (c)]);
+			cname);
 	      remove = true;
 	    }
 	  else if (!lang_hooks.types.omp_mappable_type (TREE_TYPE (t)))
 	    {
 	      error_at (OMP_CLAUSE_LOCATION (c),
 			"%qD does not have a mappable type in %qs clause", t,
-			omp_clause_code_name[OMP_CLAUSE_CODE (c)]);
+			cname);
 	      remove = true;
 	    }
 	  if (remove)

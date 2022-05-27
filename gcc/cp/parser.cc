@@ -36498,6 +36498,10 @@ cp_parser_omp_clause_name (cp_parser *parser)
 	  else if (!strcmp ("dist_schedule", p))
 	    result = PRAGMA_OMP_CLAUSE_DIST_SCHEDULE;
 	  break;
+	case 'e':
+	  if (!strcmp ("enter", p))
+	    result = PRAGMA_OMP_CLAUSE_ENTER;
+	  break;
 	case 'f':
 	  if (!strcmp ("filter", p))
 	    result = PRAGMA_OMP_CLAUSE_FILTER;
@@ -40418,8 +40422,13 @@ cp_parser_omp_all_clauses (cp_parser *parser, omp_clause_mask mask,
 	  break;
 	case PRAGMA_OMP_CLAUSE_TO:
 	  if ((mask & (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_LINK)) != 0)
-	    clauses = cp_parser_omp_var_list (parser, OMP_CLAUSE_TO_DECLARE,
-					      clauses);
+	    {
+	      tree nl = cp_parser_omp_var_list (parser, OMP_CLAUSE_ENTER,
+						clauses);
+	      for (tree c = nl; c != clauses; c = OMP_CLAUSE_CHAIN (c))
+		OMP_CLAUSE_ENTER_TO (c) = 1;
+	      clauses = nl;
+	    }
 	  else
 	    clauses = cp_parser_omp_var_list (parser, OMP_CLAUSE_TO, clauses,
 					      true);
@@ -40525,6 +40534,11 @@ cp_parser_omp_all_clauses (cp_parser *parser, omp_clause_mask mask,
 	    = cp_parser_omp_clause_orderedkind (parser, OMP_CLAUSE_SIMD,
 						clauses, token->location);
 	  c_name = "simd";
+	  break;
+	case PRAGMA_OMP_CLAUSE_ENTER:
+	  clauses = cp_parser_omp_var_list (parser, OMP_CLAUSE_ENTER,
+					    clauses);
+	  c_name = "enter";
 	  break;
 	default:
 	  cp_parser_error (parser, "expected %<#pragma omp%> clause");
@@ -46037,6 +46051,7 @@ handle_omp_declare_target_clause (tree c, tree t, int device_type)
 
 #define OMP_DECLARE_TARGET_CLAUSE_MASK				\
 	( (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_TO)		\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_ENTER)	\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_LINK)		\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_DEVICE_TYPE))
 
@@ -46056,7 +46071,7 @@ cp_parser_omp_declare_target (cp_parser *parser, cp_token *pragma_tok)
 				   "#pragma omp declare target", pragma_tok);
   else if (cp_lexer_next_token_is (parser->lexer, CPP_OPEN_PAREN))
     {
-      clauses = cp_parser_omp_var_list (parser, OMP_CLAUSE_TO_DECLARE,
+      clauses = cp_parser_omp_var_list (parser, OMP_CLAUSE_ENTER,
 					clauses);
       clauses = finish_omp_clauses (clauses, C_ORT_OMP);
       cp_parser_require_pragma_eol (parser, pragma_tok);
