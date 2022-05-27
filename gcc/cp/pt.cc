@@ -19740,11 +19740,18 @@ tsubst_lambda_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
     return error_mark_node;
 
   if (LAMBDA_EXPR_EXTRA_SCOPE (t) == NULL_TREE)
-    /* A lambda in a default argument outside a class gets no
-       LAMBDA_EXPR_EXTRA_SCOPE, as specified by the ABI.  But
-       tsubst_default_argument calls start_lambda_scope, so we need to
-       specifically ignore it here, and use the global scope.  */
-    record_null_lambda_scope (r);
+    {
+      /* A lambda in a default argument outside a class gets no
+	 LAMBDA_EXPR_EXTRA_SCOPE, as specified by the ABI.  But
+	 tsubst_default_argument calls start_lambda_scope, so we need to
+	 specifically ignore it here, and use the global scope.  */
+      record_null_lambda_scope (r);
+
+      /* If we're pushed into another scope (PR105652), fix it.  */
+      if (TYPE_NAMESPACE_SCOPE_P (TREE_TYPE (t)))
+	TYPE_CONTEXT (type) = DECL_CONTEXT (TYPE_NAME (type))
+	  = TYPE_CONTEXT (TREE_TYPE (t));
+    }
   else
     record_lambda_scope (r);
 
