@@ -20,6 +20,7 @@
 template <typename TYPE> struct Array;
 
 class FileManager;
+struct Loc;
 
 typedef unsigned char Diagnostic;
 enum
@@ -117,6 +118,7 @@ struct Param
     bool useInline;     // inline expand functions
     FeatureState useDIP25;      // implement https://wiki.dlang.org/DIP25
     FeatureState useDIP1000; // implement https://dlang.org/spec/memory-safe-d.html#scope-return-params
+    bool fixImmutableConv;
     bool useDIP1021;    // implement https://github.com/dlang/DIPs/blob/master/DIPs/accepted/DIP1021.md
     bool release;       // build release version
     bool preservePaths; // true means don't strip path from source file
@@ -270,7 +272,7 @@ struct Global
 
     FileManager* fileManager;
 
-    FileName (*preprocess)(FileName, const char*, Array<const char *>& cppswitches, bool&);
+    FileName (*preprocess)(FileName, const Loc&, Array<const char *>& cppswitches, bool&, OutBuffer&);
 
     /* Start gagging. Return the current number of gagged errors
      */

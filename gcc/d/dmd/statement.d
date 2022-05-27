@@ -696,7 +696,7 @@ extern (C++) final class UnrolledLoopStatement : Statement
 
 /***********************************************************
  */
-extern (C++) class ScopeStatement : Statement
+extern (C++) final class ScopeStatement : Statement
 {
     Statement statement;
     Loc endloc;                 // location of closing curly bracket

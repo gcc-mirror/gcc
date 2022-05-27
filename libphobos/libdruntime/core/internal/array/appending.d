@@ -85,20 +85,35 @@ ref Tarr _d_arrayappendT(Tarr : T[], T)(return ref scope Tarr x, scope Tarr y) @
     import core.internal.traits : hasElaborateCopyConstructor, Unqual;
     import core.lifetime : copyEmplace;
 
+    enum hasPostblit = __traits(hasPostblit, T);
     auto length = x.length;
 
     _d_arrayappendcTXImpl!Tarr._d_arrayappendcTX(x, y.length);
 
-    static if (hasElaborateCopyConstructor!T)
+    // Only call `copyEmplace` if `T` has a copy ctor and no postblit.
+    static if (hasElaborateCopyConstructor!T && !hasPostblit)
     {
         foreach (i, ref elem; y)
             copyEmplace(elem, x[length + i]);
     }
     else
     {
-        // blit all elements at once
         if (y.length)
-            memcpy(cast(Unqual!T *)&x[length], cast(Unqual!T *)&y[0], y.length * T.sizeof);
+        {
+            // blit all elements at once
+            auto xptr = cast(Unqual!T *)&x[length];
+            immutable size = T.sizeof;
+
+            memcpy(xptr, cast(Unqual!T *)&y[0], y.length * size);
+
+            // call postblits if they exist
+            static if (hasPostblit)
+            {
+                auto eptr = xptr + y.length;
+                for (auto ptr = xptr; ptr < eptr; ptr++)
+                    ptr.__xpostblit();
+            }
+        }
     }
 
     return x;

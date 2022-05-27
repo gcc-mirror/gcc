@@ -13,7 +13,7 @@ fail_compilation/fail_scope.d(82): Error: returning `& string` escapes a referen
 fail_compilation/fail_scope.d(92): Error: returning `cast(int[])a` escapes a reference to local variable `a`
 fail_compilation/fail_scope.d(100): Error: returning `cast(int[])a` escapes a reference to local variable `a`
 fail_compilation/fail_scope.d(108): Deprecation: escaping reference to outer local variable `x`
-fail_compilation/fail_scope.d(127): Error: returning `s.bar()` escapes a reference to local variable `s`
+fail_compilation/fail_scope.d(127): Deprecation: returning `s.bar()` escapes a reference to local variable `s`
 fail_compilation/fail_scope.d(137): Error: returning `foo16226(i)` escapes a reference to local variable `i`
 ---
 //fail_compilation/fail_scope.d(30): Error: scope variable `da` may not be returned

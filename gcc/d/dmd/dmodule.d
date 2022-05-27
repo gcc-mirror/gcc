@@ -363,6 +363,9 @@ extern (C++) final class Module : Package
     int selfimports;            // 0: don't know, 1: does not, 2: does
     Dsymbol[void*] tagSymTab;   /// ImportC: tag symbols that conflict with other symbols used as the index
 
+    private OutBuffer defines;  // collect all the #define lines here
+
+
     /*************************************
      * Return true if module imports itself.
      */
@@ -677,33 +680,7 @@ extern (C++) final class Module : Package
             FileName.equalsExt(srcfile.toString(), c_ext) &&
             FileName.exists(srcfile.toString()))
         {
-            /* Look for "importc.h" by searching along import path.
-             * It should be in the same place as "object.d"
-             */
-            const(char)* importc_h;
-
-            foreach (entry; (global.path ? (*global.path)[] : null))
-            {
-                auto f = FileName.combine(entry, "importc.h");
-                if (FileName.exists(f) == 1)
-                {
-                     importc_h = f;
-                     break;
-                }
-                FileName.free(f);
-            }
-
-            if (importc_h)
-            {
-                if (global.params.verbose)
-                    message("include   %s", importc_h);
-            }
-            else
-            {
-                error("cannot find \"importc.h\" along import path");
-                fatal();
-            }
-            filename = global.preprocess(srcfile, importc_h, global.params.cppswitches, ifile);  // run C preprocessor
+            filename = global.preprocess(srcfile, loc, global.params.cppswitches, ifile, &defines);  // run C preprocessor
         }
 
         if (auto result = global.fileManager.lookup(filename))
@@ -1001,7 +978,7 @@ extern (C++) final class Module : Package
         {
             filetype = FileType.c;
 
-            scope p = new CParser!AST(this, buf, cast(bool) docfile, target.c);
+            scope p = new CParser!AST(this, buf, cast(bool) docfile, target.c, &defines);
             p.nextToken();
             checkCompiledImport();
             members = p.parseModule();

@@ -581,6 +581,7 @@ d_handle_option (size_t scode, const char *arg, HOST_WIDE_INT value,
       global.params.rvalueRefParam = FeatureState::enabled;
       global.params.inclusiveInContracts = value;
       global.params.shortenedMethods = value;
+      global.params.fixImmutableConv = value;
       break;
 
     case OPT_fpreview_bitfields:
@@ -613,6 +614,10 @@ d_handle_option (size_t scode, const char *arg, HOST_WIDE_INT value,
 
     case OPT_fpreview_fixaliasthis:
       global.params.fixAliasThis = value;
+      break;
+
+    case OPT_fpreview_fiximmutableconv:
+      global.params.fixImmutableConv = value;
       break;
 
     case OPT_fpreview_in:

@@ -525,10 +525,12 @@ extern (C++) abstract class Type : ASTNode
      * Params:
      *      t = type 'this' is covariant with
      *      pstc = if not null, store STCxxxx which would make it covariant
+     *      cppCovariant = true if extern(C++) function types should follow C++ covariant rules
      * Returns:
      *     An enum value of either `Covariant.yes` or a reason it's not covariant.
      */
-    final Covariant covariant(Type t, StorageClass* pstc = null)
+    extern (D)
+    final Covariant covariant(Type t, StorageClass* pstc = null, bool cppCovariant = false)
     {
         version (none)
         {
@@ -563,11 +565,11 @@ extern (C++) abstract class Type : ASTNode
             foreach (i, fparam1; t1.parameterList)
             {
                 Parameter fparam2 = t2.parameterList[i];
+                Type tp1 = fparam1.type;
+                Type tp2 = fparam2.type;
 
-                if (!fparam1.type.equals(fparam2.type))
+                if (!tp1.equals(tp2))
                 {
-                    Type tp1 = fparam1.type;
-                    Type tp2 = fparam2.type;
                     if (tp1.ty == tp2.ty)
                     {
                         if (auto tc1 = tp1.isTypeClass())
@@ -600,6 +602,16 @@ extern (C++) abstract class Type : ASTNode
                 }
             Lcov:
                 notcovariant |= !fparam1.isCovariant(t1.isref, fparam2);
+
+                /* https://issues.dlang.org/show_bug.cgi?id=23135
+                 * extern(C++) mutable parameters are not covariant with const.
+                 */
+                if (t1.linkage == LINK.cpp && cppCovariant)
+                {
+                    notcovariant |= tp1.isNaked() != tp2.isNaked();
+                    if (auto tpn1 = tp1.nextOf())
+                        notcovariant |= tpn1.isNaked() != tp2.nextOf().isNaked();
+                }
             }
         }
         else if (t1.parameterList.parameters != t2.parameterList.parameters)
@@ -699,6 +711,12 @@ extern (C++) abstract class Type : ASTNode
 
         // We can subtract 'return ref' from 'this', but cannot add it
         else if (t1.isreturn && !t2.isreturn)
+            goto Lnotcovariant;
+
+        /* https://issues.dlang.org/show_bug.cgi?id=23135
+         * extern(C++) mutable member functions are not covariant with const.
+         */
+        if (t1.linkage == LINK.cpp && cppCovariant && t1.isNaked() != t2.isNaked())
             goto Lnotcovariant;
 
         /* Can convert mutable to const
@@ -3237,7 +3255,7 @@ extern (C++) final class TypeBasic : Type
         return this;
     }
 
-    override uinteger_t size(const ref Loc loc) const
+    override uinteger_t size(const ref Loc loc)
     {
         uint size;
         //printf("TypeBasic::size()\n");
@@ -3325,32 +3343,32 @@ extern (C++) final class TypeBasic : Type
         return (flags & TFlags.integral) != 0;
     }
 
-    override bool isfloating() const
+    override bool isfloating()
     {
         return (flags & TFlags.floating) != 0;
     }
 
-    override bool isreal() const
+    override bool isreal()
     {
         return (flags & TFlags.real_) != 0;
     }
 
-    override bool isimaginary() const
+    override bool isimaginary()
     {
         return (flags & TFlags.imaginary) != 0;
     }
 
-    override bool iscomplex() const
+    override bool iscomplex()
     {
         return (flags & TFlags.complex) != 0;
     }
 
-    override bool isscalar() const
+    override bool isscalar()
     {
         return (flags & (TFlags.integral | TFlags.floating)) != 0;
     }
 
-    override bool isunsigned() const
+    override bool isunsigned()
     {
         return (flags & TFlags.unsigned) != 0;
     }
@@ -3447,7 +3465,7 @@ extern (C++) final class TypeBasic : Type
         return MATCH.convert;
     }
 
-    override bool isZeroInit(const ref Loc loc) const
+    override bool isZeroInit(const ref Loc loc)
     {
         switch (ty)
         {
@@ -3543,7 +3561,7 @@ extern (C++) final class TypeVector : Type
         return basetype.nextOf().isunsigned();
     }
 
-    override bool isBoolean() const
+    override bool isBoolean()
     {
         return false;
     }
@@ -3860,13 +3878,13 @@ extern (C++) final class TypeDArray : TypeArray
         return result;
     }
 
-    override uinteger_t size(const ref Loc loc) const
+    override uinteger_t size(const ref Loc loc)
     {
         //printf("TypeDArray::size()\n");
         return target.ptrsize * 2;
     }
 
-    override uint alignsize() const
+    override uint alignsize()
     {
         // A DArray consists of two ptr-sized values, so align it on pointer size
         // boundary
@@ -3879,12 +3897,12 @@ extern (C++) final class TypeDArray : TypeArray
         return nty.isSomeChar;
     }
 
-    override bool isZeroInit(const ref Loc loc) const
+    override bool isZeroInit(const ref Loc loc)
     {
         return true;
     }
 
-    override bool isBoolean() const
+    override bool isBoolean()
     {
         return true;
     }
@@ -3918,7 +3936,7 @@ extern (C++) final class TypeDArray : TypeArray
         return Type.implicitConvTo(to);
     }
 
-    override bool hasPointers() const
+    override bool hasPointers()
     {
         return true;
     }
@@ -3964,22 +3982,22 @@ extern (C++) final class TypeAArray : TypeArray
         return result;
     }
 
-    override uinteger_t size(const ref Loc loc) const
+    override uinteger_t size(const ref Loc loc)
     {
         return target.ptrsize;
     }
 
-    override bool isZeroInit(const ref Loc loc) const
+    override bool isZeroInit(const ref Loc loc)
     {
         return true;
     }
 
-    override bool isBoolean() const
+    override bool isBoolean()
     {
         return true;
     }
 
-    override bool hasPointers() const
+    override bool hasPointers()
     {
         return true;
     }
@@ -4056,7 +4074,7 @@ extern (C++) final class TypePointer : TypeNext
         return result;
     }
 
-    override uinteger_t size(const ref Loc loc) const
+    override uinteger_t size(const ref Loc loc)
     {
         return target.ptrsize;
     }
@@ -4112,17 +4130,17 @@ extern (C++) final class TypePointer : TypeNext
         return TypeNext.constConv(to);
     }
 
-    override bool isscalar() const
+    override bool isscalar()
     {
         return true;
     }
 
-    override bool isZeroInit(const ref Loc loc) const
+    override bool isZeroInit(const ref Loc loc)
     {
         return true;
     }
 
-    override bool hasPointers() const
+    override bool hasPointers()
     {
         return true;
     }
@@ -4159,12 +4177,12 @@ extern (C++) final class TypeReference : TypeNext
         return result;
     }
 
-    override uinteger_t size(const ref Loc loc) const
+    override uinteger_t size(const ref Loc loc)
     {
         return target.ptrsize;
     }
 
-    override bool isZeroInit(const ref Loc loc) const
+    override bool isZeroInit(const ref Loc loc)
     {
         return true;
     }
@@ -4760,7 +4778,7 @@ extern (C++) final class TypeFunction : TypeNext
                                         char[] s;
                                         if (!f.isPure && sc.func.setImpure())
                                             s ~= "pure ";
-                                        if (!f.isSafe() && !f.isTrusted() && sc.func.setUnsafe())
+                                        if (!f.isSafe() && !f.isTrusted() && sc.setUnsafe())
                                             s ~= "@safe ";
                                         if (!f.isNogc && sc.func.setGC())
                                             s ~= "nogc ";
@@ -5156,12 +5174,12 @@ extern (C++) final class TypeDelegate : TypeNext
         return t;
     }
 
-    override uinteger_t size(const ref Loc loc) const
+    override uinteger_t size(const ref Loc loc)
     {
         return target.ptrsize * 2;
     }
 
-    override uint alignsize() const
+    override uint alignsize()
     {
         return target.ptrsize;
     }
@@ -5189,17 +5207,17 @@ extern (C++) final class TypeDelegate : TypeNext
         return MATCH.nomatch;
     }
 
-    override bool isZeroInit(const ref Loc loc) const
+    override bool isZeroInit(const ref Loc loc)
     {
         return true;
     }
 
-    override bool isBoolean() const
+    override bool isBoolean()
     {
         return true;
     }
 
-    override bool hasPointers() const
+    override bool hasPointers()
     {
         return true;
     }
@@ -5748,12 +5766,12 @@ extern (C++) final class TypeStruct : Type
         return assignable;
     }
 
-    override bool isBoolean() const
+    override bool isBoolean()
     {
         return false;
     }
 
-    override bool needsDestruction() const
+    override bool needsDestruction()
     {
         return sym.dtor !is null;
     }
@@ -5985,6 +6003,7 @@ extern (C++) final class TypeEnum : Type
     {
         return sym.getMemtype(loc);
     }
+
     override uint alignsize()
     {
         Type t = memType();
@@ -6143,7 +6162,7 @@ extern (C++) final class TypeClass : Type
         return "class";
     }
 
-    override uinteger_t size(const ref Loc loc) const
+    override uinteger_t size(const ref Loc loc)
     {
         return target.ptrsize;
     }
@@ -6268,22 +6287,22 @@ extern (C++) final class TypeClass : Type
         return this;
     }
 
-    override bool isZeroInit(const ref Loc loc) const
+    override bool isZeroInit(const ref Loc loc)
     {
         return true;
     }
 
-    override bool isscope() const
+    override bool isscope()
     {
         return sym.stack;
     }
 
-    override bool isBoolean() const
+    override bool isBoolean()
     {
         return true;
     }
 
-    override bool hasPointers() const
+    override bool hasPointers()
     {
         return true;
     }
@@ -6538,12 +6557,12 @@ extern (C++) final class TypeNull : Type
         return true;
     }
 
-    override bool isBoolean() const
+    override bool isBoolean()
     {
         return true;
     }
 
-    override uinteger_t size(const ref Loc loc) const
+    override uinteger_t size(const ref Loc loc)
     {
         return tvoidptr.size(loc);
     }
@@ -6597,12 +6616,12 @@ extern (C++) final class TypeNoreturn : Type
         return this.implicitConvTo(to);
     }
 
-    override bool isBoolean() const
+    override bool isBoolean()
     {
         return true;  // bottom type can be implicitly converted to any other type
     }
 
-    override uinteger_t size(const ref Loc loc) const
+    override uinteger_t size(const ref Loc loc)
     {
         return 0;
     }

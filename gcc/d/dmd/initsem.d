@@ -197,10 +197,9 @@ extern(C++) Initializer initializerSemantic(Initializer init, Scope* sc, ref Typ
                 if (vd.type.hasPointers)
                 {
                     if ((!t.alignment.isDefault() && t.alignment.get() < target.ptrsize ||
-                         (vd.offset & (target.ptrsize - 1))) &&
-                        sc.func)
+                         (vd.offset & (target.ptrsize - 1))))
                     {
-                        if (sc.func.setUnsafe(false, i.value[j].loc,
+                        if (sc.setUnsafe(false, i.value[j].loc,
                             "field `%s.%s` cannot assign to misaligned pointers in `@safe` code", sd, vd))
                         {
                             errors = true;

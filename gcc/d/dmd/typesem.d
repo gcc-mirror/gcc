@@ -239,9 +239,10 @@ private void resolveHelper(TypeQualified mt, const ref Loc loc, Scope* sc, Dsymb
     for (size_t i = 0; i < mt.idents.dim; i++)
     {
         RootObject id = mt.idents[i];
-        if (id.dyncast() == DYNCAST.expression ||
-            id.dyncast() == DYNCAST.type)
+        switch (id.dyncast()) with (DYNCAST)
         {
+        case expression:
+        case type:
             Type tx;
             Expression ex;
             Dsymbol sx;
@@ -259,6 +260,8 @@ private void resolveHelper(TypeQualified mt, const ref Loc loc, Scope* sc, Dsymb
             ex = ex.expressionSemantic(sc);
             resolveExp(ex, pt, pe, ps);
             return;
+        default:
+            break;
         }
 
         Type t = s.getType(); // type symbol, type alias, or type tuple?
@@ -2799,21 +2802,20 @@ void resolve(Type mt, const ref Loc loc, Scope* sc, out Expression pe, out Type 
                 }
 
                 RootObject o = (*tup.objects)[cast(size_t)d];
-                if (o.dyncast() == DYNCAST.dsymbol)
+                switch (o.dyncast()) with (DYNCAST)
                 {
+                case dsymbol:
                     return returnSymbol(cast(Dsymbol)o);
-                }
-                if (o.dyncast() == DYNCAST.expression)
-                {
+                case expression:
                     Expression e = cast(Expression)o;
                     if (e.op == EXP.dSymbol)
                         return returnSymbol(e.isDsymbolExp().s);
                     else
                         return returnExp(e);
-                }
-                if (o.dyncast() == DYNCAST.type)
-                {
+                case type:
                     return returnType((cast(Type)o).addMod(mt.mod));
+                default:
+                    break;
                 }
 
                 /* Create a new TupleDeclaration which

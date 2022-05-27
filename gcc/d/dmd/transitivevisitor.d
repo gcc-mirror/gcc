@@ -423,12 +423,20 @@ package mixin template ParseVisitMethods(AST)
         //printf("Visiting TypeQualified\n");
         foreach (id; t.idents)
         {
-            if (id.dyncast() == DYNCAST.dsymbol)
+            switch(id.dyncast()) with(DYNCAST)
+            {
+            case dsymbol:
                 (cast(AST.TemplateInstance)id).accept(this);
-            else if (id.dyncast() == DYNCAST.expression)
+                break;
+            case expression:
                 (cast(AST.Expression)id).accept(this);
-            else if (id.dyncast() == DYNCAST.type)
+                break;
+            case type:
                 (cast(AST.Type)id).accept(this);
+                break;
+            default:
+                break;
+            }
         }
     }
 

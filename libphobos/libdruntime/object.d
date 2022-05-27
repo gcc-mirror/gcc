@@ -1481,7 +1481,7 @@ class TypeInfo_Delegate : TypeInfo
 
     override size_t getHash(scope const void* p) @trusted const
     {
-        return hashOf(*cast(void delegate()*)p);
+        return hashOf(*cast(const void delegate() *)p);
     }
 
     override bool equals(in void* p1, in void* p2) const
@@ -4428,7 +4428,7 @@ nothrow @safe @nogc unittest
     }
 }
 
-private extern (C) void rt_finalize(void *data, bool det=true) nothrow;
+private extern (C) void rt_finalize2(void* p, bool det = true, bool resetMemory = true) nothrow;
 
 /// ditto
 void destroy(bool initialize = true, T)(T obj) if (is(T == class))
@@ -4448,7 +4448,7 @@ void destroy(bool initialize = true, T)(T obj) if (is(T == class))
     {
         // Bypass overloaded opCast
         auto ptr = (() @trusted => *cast(void**) &obj)();
-        rt_finalize(ptr);
+        rt_finalize2(ptr, true, initialize);
     }
 }
 
@@ -4721,6 +4721,25 @@ nothrow unittest
     }
 
     destroy(B.init);
+}
+
+// make sure destroy!false skips re-initialization
+unittest
+{
+    static struct S { int x; }
+    static class C { int x; }
+    static extern(C++) class Cpp { int x; }
+
+    static void test(T)(T inst)
+    {
+        inst.x = 123;
+        destroy!false(inst);
+        assert(inst.x == 123, T.stringof);
+    }
+
+    test(S());
+    test(new C());
+    test(new Cpp());
 }
 
 /// ditto

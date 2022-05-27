@@ -5352,7 +5352,7 @@ extern (C++) class TemplateParameter : ASTNode
         return this.ident.toChars();
     }
 
-    override DYNCAST dyncast() const pure @nogc nothrow @safe
+    override DYNCAST dyncast() const
     {
         return DYNCAST.templateparameter;
     }

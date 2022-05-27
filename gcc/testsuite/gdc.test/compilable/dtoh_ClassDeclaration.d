@@ -142,8 +142,8 @@ class B : public A, public I1, public I2
 {
 public:
     using A::bar;
-    void foo();
-    void bar();
+    void foo() final override;
+    void bar() override;
 };
 
 class Parent
@@ -157,7 +157,7 @@ public:
 class Child final : public Parent
 {
 public:
-    void foo() /* const */;
+    void foo() override;
 };
 
 class VisitorBase
@@ -289,7 +289,7 @@ interface I2 : I1
 class B : A, I1, I2
 {
     alias bar = A.bar;
-    override void foo() {}
+    override final void foo() {}
     override void bar() {}
 }
 
@@ -303,7 +303,7 @@ class Parent
 final class Child : Parent
 {
     extern(D) override void over() {}
-    override void foo() const {}
+    override void foo() {}
 }
 
 class VisitorBase

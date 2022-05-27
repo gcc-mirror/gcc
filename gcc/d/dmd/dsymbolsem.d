@@ -468,12 +468,9 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
         dsym.type.checkComplexTransition(dsym.loc, sc);
 
         // Calculate type size + safety checks
-        if (sc.func && !sc.intypeof)
+        if (dsym.storage_class & STC.gshared && !dsym.isMember())
         {
-            if (dsym.storage_class & STC.gshared && !dsym.isMember())
-            {
-                sc.func.setUnsafe(false, dsym.loc, "__gshared not allowed in safe functions; use shared");
-            }
+            sc.setUnsafe(false, dsym.loc, "__gshared not allowed in safe functions; use shared");
         }
 
         Dsymbol parent = dsym.toParent();
@@ -857,23 +854,23 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
         }
 
         // Calculate type size + safety checks
-        if (sc.func && !sc.intypeof)
+        if (1)
         {
             if (dsym._init && dsym._init.isVoidInitializer() &&
                 (dsym.type.hasPointers() || dsym.type.hasInvariant())) // also computes type size
             {
                 if (dsym.type.hasPointers())
-                    sc.func.setUnsafe(false, dsym.loc,
+                    sc.setUnsafe(false, dsym.loc,
                         "`void` initializers for pointers not allowed in safe functions");
                 else
-                    sc.func.setUnsafe(false, dsym.loc,
+                    sc.setUnsafe(false, dsym.loc,
                         "`void` initializers for structs with invariants are not allowed in safe functions");
             }
             else if (!dsym._init &&
                      !(dsym.storage_class & (STC.static_ | STC.extern_ | STC.gshared | STC.manifest | STC.field | STC.parameter)) &&
                      dsym.type.hasVoidInitPointers())
             {
-                sc.func.setUnsafe(false, dsym.loc, "`void` initializers for pointers not allowed in safe functions");
+                sc.setUnsafe(false, dsym.loc, "`void` initializers for pointers not allowed in safe functions");
             }
         }
 
@@ -3594,6 +3591,11 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
                         doesoverride = true;
                         break;
                     }
+
+                    auto vtf = getFunctionType(fdv);
+                    if (vtf.trust > TRUST.system && f.trust == TRUST.system)
+                        funcdecl.error("cannot override `@safe` method `%s` with a `@system` attribute",
+                                       fdv.toPrettyChars);
 
                     if (fdc.toParent() == parent)
                     {
