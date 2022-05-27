@@ -425,6 +425,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       // This might not be the same character as _M_string.end() because
       // basic_stringbuf::overflow might have written to unused capacity
       // in _M_string without updating its length.
+      __attribute__((__always_inline__))
       char_type*
       _M_high_mark() const _GLIBCXX_NOEXCEPT
       {
