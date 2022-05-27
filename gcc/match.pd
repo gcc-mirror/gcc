@@ -285,14 +285,6 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
            || !COMPLEX_FLOAT_TYPE_P (type)))
    (negate @0)))
 
-/* Transform { 0 or 1 } * { 0 or 1 } into { 0 or 1 } & { 0 or 1 } */
-(simplify
- (mult SSA_NAME@1 SSA_NAME@2)
-  (if (INTEGRAL_TYPE_P (type)
-       && get_nonzero_bits (@1) == 1
-       && get_nonzero_bits (@2) == 1)
-   (bit_and @1 @2)))
-
 /* Transform x * { 0 or 1, 0 or 1, ... } into x & { 0 or -1, 0 or -1, ...},
    unless the target has native support for the former but not the latter.  */
 (simplify
@@ -1786,6 +1778,27 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 (simplify
   (bit_not (bit_not @0))
   @0)
+
+(match zero_one_valued_p
+ @0
+ (if (INTEGRAL_TYPE_P (type) && tree_nonzero_bits (@0) == 1)))
+(match zero_one_valued_p
+ truth_valued_p@0)
+
+/* Transform { 0 or 1 } * { 0 or 1 } into { 0 or 1 } & { 0 or 1 }.  */
+(simplify
+ (mult zero_one_valued_p@0 zero_one_valued_p@1)
+ (if (INTEGRAL_TYPE_P (type))
+  (bit_and @0 @1)))
+
+/* Transform X & -Y into X * Y when Y is { 0 or 1 }.  */
+(simplify
+ (bit_and:c (convert? (negate zero_one_valued_p@0)) @1)
+ (if (INTEGRAL_TYPE_P (type)
+      && INTEGRAL_TYPE_P (TREE_TYPE (@0))
+      && TREE_CODE (TREE_TYPE (@0)) != BOOLEAN_TYPE
+      && !TYPE_UNSIGNED (TREE_TYPE (@0)))
+  (mult (convert @0) @1)))
 
 /* Convert ~ (-A) to A - 1.  */
 (simplify
@@ -3281,44 +3294,27 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (cmp @0 (minmax:c @0 @1))
   { constant_boolean_node (cmp == GE_EXPR || cmp == LE_EXPR, type); } ))
 
-/* Undo fancy way of writing max/min or other ?: expressions,
-   like a - ((a - b) & -(a < b)), in this case into (a < b) ? b : a.
+/* Undo fancy ways of writing max/min or other ?: expressions, like
+   a - ((a - b) & -(a < b))  and  a - (a - b) * (a < b) into (a < b) ? b : a.
    People normally use ?: and that is what we actually try to optimize.  */
-(for cmp (simple_comparison)
- (simplify
-  (minus @0 (bit_and:c (minus @0 @1)
-		       (convert? (negate@4 (convert? (cmp@5 @2 @3))))))
-  (if (INTEGRAL_TYPE_P (type)
-       && INTEGRAL_TYPE_P (TREE_TYPE (@4))
-       && TREE_CODE (TREE_TYPE (@4)) != BOOLEAN_TYPE
-       && INTEGRAL_TYPE_P (TREE_TYPE (@5))
-       && (TYPE_PRECISION (TREE_TYPE (@4)) >= TYPE_PRECISION (type)
-	   || !TYPE_UNSIGNED (TREE_TYPE (@4)))
-       && (GIMPLE || !TREE_SIDE_EFFECTS (@1)))
-   (cond (cmp @2 @3) @1 @0)))
- (simplify
-  (plus:c @0 (bit_and:c (minus @1 @0)
-			(convert? (negate@4 (convert? (cmp@5 @2 @3))))))
-  (if (INTEGRAL_TYPE_P (type)
-       && INTEGRAL_TYPE_P (TREE_TYPE (@4))
-       && TREE_CODE (TREE_TYPE (@4)) != BOOLEAN_TYPE
-       && INTEGRAL_TYPE_P (TREE_TYPE (@5))
-       && (TYPE_PRECISION (TREE_TYPE (@4)) >= TYPE_PRECISION (type)
-	   || !TYPE_UNSIGNED (TREE_TYPE (@4)))
-       && (GIMPLE || !TREE_SIDE_EFFECTS (@1)))
-   (cond (cmp @2 @3) @1 @0)))
- /* Similarly with ^ instead of - though in that case with :c.  */
- (simplify
-  (bit_xor:c @0 (bit_and:c (bit_xor:c @0 @1)
-			   (convert? (negate@4 (convert? (cmp@5 @2 @3))))))
-  (if (INTEGRAL_TYPE_P (type)
-       && INTEGRAL_TYPE_P (TREE_TYPE (@4))
-       && TREE_CODE (TREE_TYPE (@4)) != BOOLEAN_TYPE
-       && INTEGRAL_TYPE_P (TREE_TYPE (@5))
-       && (TYPE_PRECISION (TREE_TYPE (@4)) >= TYPE_PRECISION (type)
-	   || !TYPE_UNSIGNED (TREE_TYPE (@4)))
-       && (GIMPLE || !TREE_SIDE_EFFECTS (@1)))
-   (cond (cmp @2 @3) @1 @0))))
+/* Transform A + (B-A)*cmp into cmp ? B : A.  */
+(simplify
+ (plus:c @0 (mult:c (minus @1 @0) zero_one_valued_p@2))
+ (if (INTEGRAL_TYPE_P (type)
+      && (GIMPLE || !TREE_SIDE_EFFECTS (@1)))
+  (cond (convert:boolean_type_node @2) @1 @0)))
+/* Transform A - (A-B)*cmp into cmp ? B : A.  */
+(simplify
+ (minus @0 (mult:c (minus @0 @1) zero_one_valued_p@2))
+ (if (INTEGRAL_TYPE_P (type)
+      && (GIMPLE || !TREE_SIDE_EFFECTS (@1)))
+  (cond (convert:boolean_type_node @2) @1 @0)))
+/* Transform A ^ (A^B)*cmp into cmp ? B : A.  */
+(simplify
+ (bit_xor:c @0 (mult:c (bit_xor:c @0 @1) zero_one_valued_p@2))
+ (if (INTEGRAL_TYPE_P (type)
+      && (GIMPLE || !TREE_SIDE_EFFECTS (@1)))
+  (cond (convert:boolean_type_node @2) @1 @0)))
 
 /* Simplifications of shift and rotates.  */
 
