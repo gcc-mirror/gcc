@@ -351,7 +351,7 @@ typedef struct async_unit
   struct adv_cond work;
   struct adv_cond emptysignal;
   struct st_parameter_dt *pdt;
-  pthread_t thread;
+  __gthread_t thread;
   struct transfer_queue *head;
   struct transfer_queue *tail;
 
