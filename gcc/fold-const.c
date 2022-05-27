@@ -8889,8 +8889,18 @@ fold_unary_loc (location_t loc, enum tree_code code, tree type, tree op0)
 	  tree arg00 = TREE_OPERAND (arg0, 0);
 	  tree arg01 = TREE_OPERAND (arg0, 1);
 
-	  return fold_build_pointer_plus_loc
-		   (loc, fold_convert_loc (loc, type, arg00), arg01);
+	  /* Avoid this optimization in GENERIC for -fsanitize=null
+	     when type is a reference type and arg00's type is not,
+	     because arg00 could be validly nullptr and if arg01 doesn't return,
+	     we don't want false positive binding of reference to nullptr.  */
+	  if (TREE_CODE (type) == REFERENCE_TYPE
+	      && !in_gimple_form
+	      && (flag_sanitize & SANITIZE_NULL) != 0
+	      && TREE_CODE (TREE_TYPE (arg00)) != REFERENCE_TYPE)
+	    return NULL_TREE;
+
+	  arg00 = fold_convert_loc (loc, type, arg00);
+	  return fold_build_pointer_plus_loc (loc, arg00, arg01);
 	}
 
       /* Convert (T1)(~(T2)X) into ~(T1)X if T1 and T2 are integral types
