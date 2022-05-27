@@ -5272,7 +5272,7 @@ gfc_check_omp_requires (gfc_namespace *ns, int ref_omp_requires)
       if ((ref_omp_requires & OMP_REQ_REVERSE_OFFLOAD)
 	  && !(ns->omp_requires & OMP_REQ_REVERSE_OFFLOAD))
 	gfc_error ("Program unit at %L has OpenMP device constructs/routines "
-		   "but does not set !$OMP REQUIRES REVERSE_OFFSET but other "
+		   "but does not set !$OMP REQUIRES REVERSE_OFFLOAD but other "
 		   "program units do", &ns->proc_name->declared_at);
       if ((ref_omp_requires & OMP_REQ_UNIFIED_ADDRESS)
 	  && !(ns->omp_requires & OMP_REQ_UNIFIED_ADDRESS))
