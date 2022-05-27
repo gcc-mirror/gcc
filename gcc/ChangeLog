@@ -1,3 +1,18 @@
+2022-05-26  Simon Cook  <simon.cook@embecosm.com>
+
+	Backported from master:
+	2022-05-25  Simon Cook  <simon.cook@embecosm.com>
+
+	* config/riscv/arch-canonicalize: Only add mafd extension if
+	base was rv32/rv64g.
+
+2022-05-26  Kito Cheng  <kito.cheng@sifive.com>
+
+	Backported from master:
+	2022-05-09  Kito Cheng  <kito.cheng@sifive.com>
+
+	* config/riscv/arch-canonicalize: Handle g correctly.
+
 2022-05-24  Qing Zhao  <qing.zhao@oracle.com>
 
 	Backported from master:
