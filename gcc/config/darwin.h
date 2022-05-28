@@ -465,48 +465,36 @@ extern GTY(()) int darwin_ms_struct;
 
 #define LIB_SPEC "%{!static:-lSystem}"
 
-/*
-   Note that by default, -lgcc_eh is not linked against.
-   This is because,in general, we need to unwind through system libraries that
-   are linked with the shared unwinder in libunwind (or libgcc_s for 10.4/5).
+/* Note that by default, -lgcc_eh (which provides a statically-linked unwinder)
+   is not used. This is because, in general, we need to unwind through system
+   libraries that are linked with the shared unwinder in libunwind (or libgcc_s
+   for OSX 10.4/5 [darwin8/9]).
 
-   For -static-libgcc: < 10.6, use the unwinder in libgcc_eh (and find
-   the emultls impl. there too).
+   When -static-libgcc is forced: < 10.6, use the unwinder in libgcc_eh (and
+   find the emultls impl. there too).
 
    For -static-libgcc: >= 10.6, the unwinder *still* comes from libSystem and
    we find the emutls impl from lemutls_w. In either case, the builtins etc.
-   are linked from -lgcc.
+   are linked from -lgcc.  The eh library is still available so that it could
+   be specified explicitly if there is some reason to do so.
 
    When we have specified shared-libgcc or any case that might require
    exceptions, we pull the libgcc content (including emulated tls) from
-   -lgcc_s.1 in GCC and the unwinder from /usr/lib/libgcc_s.1 for < 10.6 and
+   -lgcc_s.1.1 in GCC and the unwinder from /usr/lib/libgcc_s.1 for < 10.6 and
    libSystem for >= 10.6 respectively.
    Otherwise, we just link the emutls/builtins from convenience libs.
-
-   If we need exceptions, prior to 10.3.9, then we have to link the static
-   eh lib, since there's no shared version on the system.
-
-   In all cases, libgcc_s.1 will be installed with the compiler, or any app
-   built using it, so we can link the builtins and emutls shared on all.
 
    We have to work around that DYLD_XXXX are disabled in macOS 10.11+ which
    means that any bootstrap trying to use a shared libgcc with a bumped SO-
    name will fail.  This means that we do not accept shared libgcc for these
-   versions.
+   versions (the primary reason for forcing a shared libgcc was that it
+   contained the unwinder on Darwin8 and 9).
 
-   For -static-libgcc: >= 10.6, the unwinder *still* comes from libSystem and
-   we find the emutls impl from lemutls_w. In either case, the builtins etc.
-   are linked from -lgcc.
->
-   Otherwise, we just link the shared version of gcc_s.1.1 and pick up
-   exceptions:
+   When using the shared version of gcc_s.1.1 the unwinder is provided by:
      * Prior to 10.3.9, then we have to link the static eh lib, since there
-       is no shared version on the system.
+       is no shared unwinder version on the system.
      * from 10.3.9 to 10.5, from /usr/lib/libgcc_s.1.dylib
      * from 10.6 onwards, from libSystem.dylib
-
-   In all cases, libgcc_s.1.1 will be installed with the compiler, or any app
-   built using it, so we can link the builtins and emutls shared on all.
 */
 #undef REAL_LIBGCC_SPEC
 #define REAL_LIBGCC_SPEC \
