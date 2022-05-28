@@ -321,6 +321,19 @@ extern GTY(()) int darwin_ms_struct;
  %:version-compare(>= 10.11 mmacosx-version-min= -lemutls_w) "
 #endif
 
+/* We might elect to add a path even when this compiler does not use embedded
+   run paths, so that we can use libraries from an alternate compiler that is
+   using embedded runpaths.  */
+#if DARWIN_DO_EXTRA_RPATH
+# define DARWIN_EXTRA_RPATH \
+"%{!r:%{!nostdlib:%{!nodefaultrpaths:\
+    %:version-compare(>= 10.5 mmacosx-version-min= -rpath) \
+    %:version-compare(>= 10.5 mmacosx-version-min= " DARWIN_ADD_RPATH ") \
+  }}}"
+#else
+# define DARWIN_EXTRA_RPATH ""
+#endif
+
 #define SUBSUBTARGET_OVERRIDE_OPTIONS					\
   do {									\
     darwin_override_options ();						\
@@ -415,6 +428,7 @@ extern GTY(()) int darwin_ms_struct;
     DARWIN_NOPIE_SPEC \
     DARWIN_RDYNAMIC \
     DARWIN_NOCOMPACT_UNWIND \
+    DARWIN_EXTRA_RPATH \
     DARWIN_RPATH_LINK \
     "}}}}}}} %<pie %<no-pie %<rdynamic %<X %<rpath %<nodefaultrpaths "
 

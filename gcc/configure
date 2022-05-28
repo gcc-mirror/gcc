@@ -1012,6 +1012,7 @@ with_pic
 enable_fast_install
 enable_libtool_lock
 enable_darwin_at_rpath
+with_darwin_extra_rpath
 enable_ld
 enable_gold
 with_plugin_ld
@@ -1873,6 +1874,9 @@ Optional Packages:
   --with-pic              try to use only PIC/non-PIC objects [default=use
                           both]
   --with-gnu-ld           assume the C compiler uses GNU ld [default=no]
+  --with-darwin-extra-rpath=[ARG]
+                          Specify a runpath directory, additional to those
+                          provided by the compiler
   --with-plugin-ld=[ARG]  specify the plugin linker
   --with-glibc-version=M.N
                           assume GCC used with glibc version M.N or later
@@ -19976,7 +19980,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 19979 "configure"
+#line 19983 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -20082,7 +20086,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 20085 "configure"
+#line 20089 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -23409,6 +23413,26 @@ else
   ENABLE_DARWIN_AT_RPATH_TRUE='#'
   ENABLE_DARWIN_AT_RPATH_FALSE=
 fi
+
+DARWIN_DO_EXTRA_RPATH=0
+
+# Check whether --with-darwin-extra-rpath was given.
+if test "${with_darwin_extra_rpath+set}" = set; then :
+  withval=$with_darwin_extra_rpath; if test x"$withval" != x; then
+   DARWIN_ADD_RPATH="$withval"
+   DARWIN_DO_EXTRA_RPATH=1
+ fi
+fi
+
+
+cat >>confdefs.h <<_ACEOF
+#define DARWIN_DO_EXTRA_RPATH $DARWIN_DO_EXTRA_RPATH
+_ACEOF
+
+
+cat >>confdefs.h <<_ACEOF
+#define DARWIN_ADD_RPATH "$DARWIN_ADD_RPATH"
+_ACEOF
 
 
 # Identify the assembler which will work hand-in-glove with the newly
