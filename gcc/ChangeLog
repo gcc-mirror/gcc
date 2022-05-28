@@ -1,3 +1,69 @@
+2022-05-27  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-04-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/105250
+	* fold-const.c (fold_convertible_p): Revert
+	r12-7979-geaaf77dd85c333, instead check for size equality
+	of the vector types involved.
+
+2022-05-27  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-04-04  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/105140
+	* fold-const.c (fold_convertible_p): Allow a TYPE_P arg.
+
+2022-05-27  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-04-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/105163
+	* tree-ssa-reassoc.c (repropagate_negates): Avoid propagating
+	negated abnormals.
+
+2022-05-27  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-04-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/105173
+	* tree-ssa-reassoc.c (find_insert_point): Get extra
+	insert_before output argument and compute it.
+	(insert_stmt_before_use): Adjust.
+	(rewrite_expr_tree): Likewise.
+
+2022-05-27  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-04-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/105431
+	* tree-ssa-math-opts.c (powi_as_mults_1): Make n unsigned.
+	(powi_as_mults): Use absu_hwi.
+	(gimple_expand_builtin_powi): Remove now pointless n != -n
+	check.
+
+2022-05-27  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-04-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/105368
+	* tree-ssa-math-opts.c (powi_cost): Use absu_hwi.
+
+2022-05-27  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-05-11  Richard Biener  <rguenther@suse.de>
+
+	PR rtl-optimization/105559
+	* cfgrtl.c (delete_insn_and_edges): Only perform search to BB_END
+	for non-debug insns.
+
 2022-05-23  Paul A. Clarke  <pc@us.ibm.com>
 
 	PR target/104257

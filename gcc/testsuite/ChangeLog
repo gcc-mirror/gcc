@@ -1,3 +1,59 @@
+2022-05-27  Kewen Lin  <linkw@linux.ibm.com>
+
+	Backported from master:
+	2022-04-18  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR testsuite/105266
+	* gcc.dg/pr105250.c: Skip for powerpc*-*-* and s390*-*-*.
+
+2022-05-27  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-04-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/105250
+	* gcc.dg/pr105250.c: New testcase.
+
+2022-05-27  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	Backported from master:
+	2022-04-07  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	PR target/105147
+	* gcc.dg/pr105140.c: Skip for s390*-*-*.
+
+2022-05-27  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	Backported from master:
+	2022-04-06  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/105147
+	* gcc.dg/pr105140.c: Skip for powerpc*-*-*.
+
+2022-05-27  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-04-04  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/105140
+	* gcc.dg/pr105140.c: New testcase.
+
+2022-05-27  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-04-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/105163
+	* gcc.dg/torture/pr105163.c: New testcase.
+
+2022-05-27  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-04-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/105173
+	* gcc.dg/pr105173.c: New testcase.
+
 2022-05-25  Jason Merrill  <jason@redhat.com>
 
 	PR c++/102307
