@@ -55,7 +55,7 @@ c_prefix (const char *str)
 {
   static const char *const prefixes[] =
     {
-      "attiny", "atmega", "atxmega", "ata", "at90"
+      "attiny", "atmega", "atxmega", "ata", "at90", "avr"
     };
 
   int i, n = (int) (ARRAY_SIZE (prefixes));
