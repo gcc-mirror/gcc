@@ -22067,9 +22067,14 @@ c_parser_omp_declare_target (c_parser *parser)
 	id = get_identifier ("omp declare target");
       if (at2)
 	{
-	  error_at (OMP_CLAUSE_LOCATION (c),
-		    "%qD specified both in declare target %<link%> and %<to%>"
-		    " clauses", t);
+	  if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_ENTER)
+	    error_at (OMP_CLAUSE_LOCATION (c),
+		      "%qD specified both in declare target %<link%> and %qs"
+		      " clauses", t, OMP_CLAUSE_ENTER_TO (c) ? "to" : "enter");
+	  else
+	    error_at (OMP_CLAUSE_LOCATION (c),
+		      "%qD specified both in declare target %<link%> and "
+		      "%<to%> or %<enter%> clauses", t);
 	  continue;
 	}
       if (!at1)

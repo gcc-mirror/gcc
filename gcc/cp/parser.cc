@@ -45992,9 +45992,14 @@ handle_omp_declare_target_clause (tree c, tree t, int device_type)
     id = get_identifier ("omp declare target");
   if (at2)
     {
-      error_at (OMP_CLAUSE_LOCATION (c),
-		"%qD specified both in declare target %<link%> and %<to%>"
-		" clauses", t);
+      if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_ENTER)
+	error_at (OMP_CLAUSE_LOCATION (c),
+		  "%qD specified both in declare target %<link%> and %qs"
+		  " clauses", t, OMP_CLAUSE_ENTER_TO (c) ? "to" : "enter");
+      else
+	error_at (OMP_CLAUSE_LOCATION (c),
+		  "%qD specified both in declare target %<link%> and "
+		  "%<to%> or %<enter%> clauses", t);
       return false;
     }
   if (!at1)

@@ -10,7 +10,22 @@ int b;
 #pragma omp declare target enter (b) link (b)	/* { dg-error "appears more than once on the same .declare target. directive" } */
 int c;
 #pragma omp declare target (c)
-#pragma omp declare target link (c)		/* { dg-error "specified both in declare target" } */
+#pragma omp declare target link (c)		/* { dg-error "specified both in declare target 'link' and 'to' or 'enter' clauses" } */
+int c2;
+#pragma omp declare target to (c2)
+#pragma omp declare target link (c2)		/* { dg-error "specified both in declare target 'link' and 'to' or 'enter' clauses" } */
+int c3;
+#pragma omp declare target enter (c3)
+#pragma omp declare target link (c3)		/* { dg-error "specified both in declare target 'link' and 'to' or 'enter' clauses" } */
+int c4;
+#pragma omp declare target link (c4)
+#pragma omp declare target (c4)			/* { dg-error "specified both in declare target 'link' and 'enter' clauses" } */
+int c5;
+#pragma omp declare target link (c5)
+#pragma omp declare target to (c5)		/* { dg-error "specified both in declare target 'link' and 'to' clauses" } */
+int c6;
+#pragma omp declare target link (c6)
+#pragma omp declare target enter (c6)		/* { dg-error "specified both in declare target 'link' and 'enter' clauses" } */
 int foo (void);
 #pragma omp declare target link (foo)		/* { dg-error "is not a variable in clause" } */
 struct S;
