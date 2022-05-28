@@ -1,3 +1,89 @@
+2022-05-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-05-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	* python/libstdcxx/v6/printers.py (StdErrorCodePrinter): Make
+	lookup for ios_errc and future_errc check versioned namespace.
+	(StdAtomicPrinter): Strip versioned namespace from typename.
+
+2022-05-27  François Dumont  <fdumont@gcc.gnu.org>
+
+	Backported from master:
+	2022-05-26  François Dumont  <fdumont@gcc.gnu.org>
+
+	* python/libstdcxx/v6/printers.py (StdSpanPrinter.__init__):
+	Strip typename from version namespace.
+
+2022-05-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-05-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	* python/libstdcxx/v6/printers.py (SharedPointerPrinter): Strip
+	versioned namespace from the template argument too.
+
+2022-05-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-05-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_iterator.h (counted_iterator::operator++(int)):
+	Add 'constexpr' as per LWG 3643.
+	* testsuite/24_iterators/counted_iterator/lwg3643.cc: New test.
+
+2022-05-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-05-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/memory_resource (polymorphic_allocator): Add
+	non-template equality operator, as proposed for LWG 3683.
+	* testsuite/20_util/polymorphic_allocator/lwg3683.cc: New test.
+
+2022-05-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-05-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/26_numerics/random/bernoulli_distribution/operators/values.cc:
+	Run fewer iterations for simulator targets.
+	* testsuite/26_numerics/random/binomial_distribution/operators/values.cc:
+	Likewise.
+	* testsuite/26_numerics/random/discrete_distribution/operators/values.cc:
+	Likewise.
+	* testsuite/26_numerics/random/geometric_distribution/operators/values.cc:
+	Likewise.
+	* testsuite/26_numerics/random/negative_binomial_distribution/operators/values.cc:
+	Likewise.
+	* testsuite/26_numerics/random/poisson_distribution/operators/values.cc:
+	Likewise.
+	* testsuite/26_numerics/random/uniform_int_distribution/operators/values.cc:
+	Likewise.
+
+2022-05-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-05-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/20_util/expected/synopsis.cc: Skip for versioned
+	namespace.
+	* testsuite/27_io/headers/iosfwd/synopsis.cc: Likewise.
+
+2022-05-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-05-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/mofunc_impl.h: Fix doxygen command.
+
+2022-05-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-05-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/future (launch): Make operators noexcept.
+
 2022-05-16  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:
