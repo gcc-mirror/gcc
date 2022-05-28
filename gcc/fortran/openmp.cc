@@ -986,6 +986,7 @@ enum omp_mask2
   OMP_CLAUSE_ATTACH,
   OMP_CLAUSE_NOHOST,
   OMP_CLAUSE_HAS_DEVICE_ADDR,  /* OpenMP 5.1  */
+  OMP_CLAUSE_ENTER, /* OpenMP 5.2 */
   /* This must come last.  */
   OMP_MASK2_LAST
 };
@@ -2101,6 +2102,16 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 		continue;
 	    }
 	  break;
+	case 'e':
+	  if ((mask & OMP_CLAUSE_ENTER))
+	    {
+	      m = gfc_match_omp_to_link ("enter (", &c->lists[OMP_LIST_ENTER]);
+	      if (m == MATCH_ERROR)
+		goto error;
+	      if (m == MATCH_YES)
+		continue;
+	    }
+	  break;
 	case 'f':
 	  if ((mask & OMP_CLAUSE_FAIL)
 	      && (m = gfc_match_dupl_check (c->fail == OMP_MEMORDER_UNSET,
@@ -2921,8 +2932,12 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 	    continue;
 	  if ((mask & OMP_CLAUSE_TO) && (mask & OMP_CLAUSE_LINK))
 	    {
-	      if (gfc_match_omp_to_link ("to (", &c->lists[OMP_LIST_TO])
-		  == MATCH_YES)
+	      /* Declare target: 'to' is an alias for 'enter';
+		 'to' is deprecated since 5.2.  */
+	      m = gfc_match_omp_to_link ("to (", &c->lists[OMP_LIST_TO]);
+	      if (m == MATCH_ERROR)
+		goto error;
+	      if (m == MATCH_YES)
 		continue;
 	    }
 	  else if ((mask & OMP_CLAUSE_TO)
@@ -3724,7 +3739,8 @@ cleanup:
 #define OMP_ORDERED_CLAUSES \
   (omp_mask (OMP_CLAUSE_THREADS) | OMP_CLAUSE_SIMD)
 #define OMP_DECLARE_TARGET_CLAUSES \
-  (omp_mask (OMP_CLAUSE_TO) | OMP_CLAUSE_LINK | OMP_CLAUSE_DEVICE_TYPE)
+  (omp_mask (OMP_CLAUSE_ENTER) | OMP_CLAUSE_LINK | OMP_CLAUSE_DEVICE_TYPE \
+   | OMP_CLAUSE_TO)
 #define OMP_ATOMIC_CLAUSES \
   (omp_mask (OMP_CLAUSE_ATOMIC) | OMP_CLAUSE_CAPTURE | OMP_CLAUSE_HINT	\
    | OMP_CLAUSE_MEMORDER | OMP_CLAUSE_COMPARE | OMP_CLAUSE_FAIL 	\
@@ -4530,7 +4546,7 @@ gfc_match_omp_declare_target (void)
     {
       c = gfc_get_omp_clauses ();
       gfc_current_locus = old_loc;
-      m = gfc_match_omp_to_link (" (", &c->lists[OMP_LIST_TO]);
+      m = gfc_match_omp_to_link (" (", &c->lists[OMP_LIST_ENTER]);
       if (m != MATCH_YES)
 	goto syntax;
       if (gfc_match_omp_eos () != MATCH_YES)
@@ -4544,38 +4560,40 @@ gfc_match_omp_declare_target (void)
 
   gfc_buffer_error (false);
 
-  for (list = OMP_LIST_TO; list != OMP_LIST_NUM;
-       list = (list == OMP_LIST_TO ? OMP_LIST_LINK : OMP_LIST_NUM))
+  static const int to_enter_link_lists[]
+    = { OMP_LIST_TO, OMP_LIST_ENTER, OMP_LIST_LINK };
+  for (size_t listn = 0; listn < ARRAY_SIZE (to_enter_link_lists)
+			 && (list = to_enter_link_lists[listn], true); ++listn)
     for (n = c->lists[list]; n; n = n->next)
       if (n->sym)
 	n->sym->mark = 0;
       else if (n->u.common->head)
 	n->u.common->head->mark = 0;
 
-  for (list = OMP_LIST_TO; list != OMP_LIST_NUM;
-       list = (list == OMP_LIST_TO ? OMP_LIST_LINK : OMP_LIST_NUM))
+  for (size_t listn = 0; listn < ARRAY_SIZE (to_enter_link_lists)
+			 && (list = to_enter_link_lists[listn], true); ++listn)
     for (n = c->lists[list]; n; n = n->next)
       if (n->sym)
 	{
 	  if (n->sym->attr.in_common)
 	    gfc_error_now ("OMP DECLARE TARGET variable at %L is an "
 			   "element of a COMMON block", &n->where);
-	  else if (n->sym->attr.omp_declare_target
-		   && n->sym->attr.omp_declare_target_link
-		   && list != OMP_LIST_LINK)
-	    gfc_error_now ("OMP DECLARE TARGET variable at %L previously "
-			   "mentioned in LINK clause and later in TO clause",
-			   &n->where);
-	  else if (n->sym->attr.omp_declare_target
-		   && !n->sym->attr.omp_declare_target_link
-		   && list == OMP_LIST_LINK)
-	    gfc_error_now ("OMP DECLARE TARGET variable at %L previously "
-			   "mentioned in TO clause and later in LINK clause",
-			   &n->where);
 	  else if (n->sym->mark)
 	    gfc_error_now ("Variable at %L mentioned multiple times in "
 			   "clauses of the same OMP DECLARE TARGET directive",
 			   &n->where);
+	  else if (n->sym->attr.omp_declare_target
+		   && n->sym->attr.omp_declare_target_link
+		   && list != OMP_LIST_LINK)
+	    gfc_error_now ("OMP DECLARE TARGET variable at %L previously "
+			   "mentioned in LINK clause and later in %s clause",
+			   &n->where, list == OMP_LIST_TO ? "TO" : "ENTER");
+	  else if (n->sym->attr.omp_declare_target
+		   && !n->sym->attr.omp_declare_target_link
+		   && list == OMP_LIST_LINK)
+	    gfc_error_now ("OMP DECLARE TARGET variable at %L previously "
+			   "mentioned in TO or ENTER clause and later in "
+			   "LINK clause", &n->where);
 	  else if (gfc_add_omp_declare_target (&n->sym->attr, n->sym->name,
 					       &n->sym->declared_at))
 	    {
@@ -4598,14 +4616,14 @@ gfc_match_omp_declare_target (void)
 	       && n->u.common->omp_declare_target_link
 	       && list != OMP_LIST_LINK)
 	gfc_error_now ("OMP DECLARE TARGET COMMON at %L previously "
-		       "mentioned in LINK clause and later in TO clause",
-		       &n->where);
+		       "mentioned in LINK clause and later in %s clause",
+		       &n->where, list == OMP_LIST_TO ? "TO" : "ENTER");
       else if (n->u.common->omp_declare_target
 	       && !n->u.common->omp_declare_target_link
 	       && list == OMP_LIST_LINK)
 	gfc_error_now ("OMP DECLARE TARGET COMMON at %L previously "
-		       "mentioned in TO clause and later in LINK clause",
-		       &n->where);
+		       "mentioned in TO or ENTER clause and later in "
+		       "LINK clause", &n->where);
       else if (n->u.common->head && n->u.common->head->mark)
 	gfc_error_now ("COMMON at %L mentioned multiple times in "
 		       "clauses of the same OMP DECLARE TARGET directive",
@@ -4639,7 +4657,10 @@ gfc_match_omp_declare_target (void)
 	      s->attr.omp_device_type = c->device_type;
 	    }
 	}
-  if (c->device_type && !c->lists[OMP_LIST_TO] && !c->lists[OMP_LIST_LINK])
+  if (c->device_type
+      && !c->lists[OMP_LIST_ENTER]
+      && !c->lists[OMP_LIST_TO]
+      && !c->lists[OMP_LIST_LINK])
     gfc_warning_now (0, "OMP DECLARE TARGET directive at %L with only "
 			"DEVICE_TYPE clause is ignored", &old_loc);
 
@@ -6331,7 +6352,7 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 	"IN_REDUCTION", "TASK_REDUCTION",
 	"DEVICE_RESIDENT", "LINK", "USE_DEVICE",
 	"CACHE", "IS_DEVICE_PTR", "USE_DEVICE_PTR", "USE_DEVICE_ADDR",
-	"NONTEMPORAL", "ALLOCATE", "HAS_DEVICE_ADDR" };
+	"NONTEMPORAL", "ALLOCATE", "HAS_DEVICE_ADDR", "ENTER" };
   STATIC_ASSERT (ARRAY_SIZE (clause_names) == OMP_LIST_NUM);
 
   if (omp_clauses == NULL)
