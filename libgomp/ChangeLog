@@ -1,3 +1,15 @@
+2022-05-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/libgomp.c-c++-common/target-40.c: Modify some existing to
+	clauses to enter.
+	* testsuite/libgomp.c/target-41.c: Likewise.
+
+2022-05-27  Tobias Burnus  <tobias@codesourcery.com>
+
+	* libgomp.texi (Other new OpenMP 5.1 features): Add
+	'begin declare target'.
+	(Other new OpenMP 5.2 features): New.
+
 2022-05-25  Jakub Jelinek  <jakub@redhat.com>
 
 	* task.c (gomp_task_run_post_handle_dependers): If empty_task

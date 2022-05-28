@@ -1,3 +1,62 @@
+2022-05-27  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/105725
+	* g++.dg/warn/Wmismatched-tags-10.C: New test.
+
+2022-05-27  Marek Polacek  <polacek@redhat.com>
+
+	PR c/90658
+	* c-c++-common/attr-cdtor-1.c: New test.
+
+2022-05-27  Tobias Burnus  <tobias@codesourcery.com>
+	    Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* gfortran.dg/gomp/requires-4.f90: Update dg-error.
+	* gfortran.dg/gomp/requires-8.f90: Update dg-error.
+
+2022-05-27  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/105639
+	* gcc.dg/ipa/pr105639.c: New test.
+
+2022-05-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/gomp/clauses-3.c: Add tests with enter clause instead
+	of to or modify some existing to clauses to enter.
+	* c-c++-common/gomp/declare-target-1.c: Likewise.
+	* c-c++-common/gomp/declare-target-2.c: Likewise.
+	* c-c++-common/gomp/declare-target-3.c: Likewise.
+	* g++.dg/gomp/attrs-9.C: Likewise.
+	* g++.dg/gomp/declare-target-1.C: Likewise.
+
+2022-05-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/105726
+	* g++.dg/warn/Warray-bounds-27.C: New testcase.
+
+2022-05-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/105729
+	* g++.dg/ubsan/pr105729.C: New test.
+
+2022-05-27  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* gcc.dg/pr98865.c: New test case.
+
+2022-05-27  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* gcc.target/i386/pr91400-1.c: Update for improved code generation.
+	* gcc.target/i386/pr91400-2.c: Likewise.
+	* gcc.target/i386/testnot-1.c: New test case.
+	* gcc.target/i386/testnot-2.c: Likewise.
+
+2022-05-27  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* gcc.target/xtensa/bswap.c: Remove test.
+	* gcc.target/xtensa/bswap-O1.c: New.
+	* gcc.target/xtensa/bswap-O2.c: Ditto.
+	* gcc.target/xtensa/bswap-Os.c: Ditto.
+
 2022-05-26  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/105569

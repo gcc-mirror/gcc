@@ -1,3 +1,8 @@
+2022-05-27  Richard Biener  <rguenther@suse.de>
+
+	* gcc-changelog/git_update_version.py (active_refs): Remove
+	releases/gcc-9.
+
 2022-05-06  Jakub Jelinek  <jakub@redhat.com>
 
 	* gennews (files): Add files for GCC 12.

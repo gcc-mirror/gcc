@@ -1,3 +1,75 @@
+2022-05-27  Richard Biener  <rguenther@suse.de>
+
+	* tree-dfa.cc (get_ref_base_and_extent): Avoid shift.
+
+2022-05-27  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/105639
+	* ipa-prop.cc (propagate_controlled_uses): Check type of the
+	constant before adding a LOAD reference.
+
+2022-05-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree-core.h (enum omp_clause_code): Rename OMP_CLAUSE_TO_DECLARE
+	to OMP_CLAUSE_ENTER.
+	* tree.h (OMP_CLAUSE_ENTER_TO): Define.
+	* tree.cc (omp_clause_num_ops, omp_clause_code_name): Rename
+	OMP_CLAUSE_TO_DECLARE to OMP_CLAUSE_ENTER.
+	* tree-pretty-print.cc (dump_omp_clause): Handle OMP_CLAUSE_ENTER
+	instead of OMP_CLAUSE_TO_DECLARE, if OMP_CLAUSE_ENTER_TO, print
+	"to" instead of "enter".
+	* tree-nested.cc (convert_nonlocal_omp_clauses,
+	convert_local_omp_clauses): Handle OMP_CLAUSE_ENTER instead of
+	OMP_CLAUSE_TO_DECLARE.
+
+2022-05-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/105726
+	* gimple-ssa-warn-restrict.cc (builtin_memref::set_base_and_offset):
+	Constrain array-of-flexarray case more.
+
+2022-05-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/105729
+	* fold-const.cc (fold_unary_loc): Don't optimize (X &) ((Y *) z + w)
+	to (X &) z + w if -fsanitize=null during GENERIC folding.
+
+2022-05-27  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* match.pd (match_zero_one_valued_p): New predicate.
+	(mult @0 @1): Use zero_one_valued_p for optimization to the
+	expression "bit_and @0 @1".
+	(bit_and (negate zero_one_valued_p@0) @1): Optimize to MULT_EXPR.
+	(plus @0 (mult (minus @1 @0) zero_one_valued_p@2)): New transform.
+	(minus @0 (mult (minus @0 @1) zero_one_valued_p@2)): Likewise.
+	(bit_xor @0 (mult (bit_xor @0 @1) zero_one_valued_p@2)): Likewise.
+	Remove three redundant transforms obsoleted by the three above.
+
+2022-05-27  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* config/i386/i386.md (*test<mode>_not): New define_insn_and_split
+	to split a combined "and;cmp" sequence into "not;test".
+
+2022-05-27  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/xtensa.md (bswapsi2): New expansion pattern.
+	(bswapsi2_internal): Revise the template and condition, and add
+	detection code for preceding the same insn in order to omit a
+	"SSAI 8" instruction of the latter.
+	(bswapdi2): Suppress built-in insn expansion with the corresponding
+	library call when optimizing for size.
+
+2022-05-27  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/xtensa-protos.h
+	(xtensa_expand_block_set_unrolled_loop,
+	xtensa_expand_block_set_small_loop): New prototypes.
+	* config/xtensa/xtensa.cc (xtensa_sizeof_MOVI,
+	xtensa_expand_block_set_unrolled_loop,
+	xtensa_expand_block_set_small_loop): New functions.
+	* config/xtensa/xtensa.md (setmemsi): New expansion pattern.
+	* config/xtensa/xtensa.opt (mlongcalls): Add target mask.
+
 2022-05-26  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
 
 	* config/xtensa/xtensa.cc (xtensa_expand_block_move):

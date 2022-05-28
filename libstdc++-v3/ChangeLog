@@ -1,3 +1,9 @@
+2022-05-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/105671
+	* include/std/sstream (basic_stringbuf::_M_high_mark): Add
+	always_inline attribute.
+
 2022-05-26  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/105681

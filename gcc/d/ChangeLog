@@ -1,3 +1,10 @@
+2022-05-27  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* dmd/MERGE: Merge upstream dmd 4d07f22f2
+	* d-lang.cc (d_handle_option): Handle OPT_fpreview_fiximmutableconv.
+	* lang.opt (fpreview=fiximmutableconv): New option.
+	* runtime.def (ARRAYAPPENDT): Remove.
+
 2022-05-25  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* expr.cc: Add "final" and "override" to all "visit" vfunc decls

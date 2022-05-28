@@ -1,3 +1,17 @@
+2022-05-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.cc (c_parser_omp_clause_name): Parse enter clause.
+	(c_parser_omp_all_clauses): For to clause on declare target, use
+	OMP_CLAUSE_ENTER clause with OMP_CLAUSE_ENTER_TO instead of
+	OMP_CLAUSE_TO_DECLARE clause.  Handle PRAGMA_OMP_CLAUSE_ENTER.
+	(OMP_DECLARE_TARGET_CLAUSE_MASK): Add enter clause.
+	(c_parser_omp_declare_target): Use OMP_CLAUSE_ENTER instead of
+	OMP_CLAUSE_TO_DECLARE.
+	* c-typeck.cc (c_finish_omp_clauses): Handle OMP_CLAUSE_ENTER instead
+	of OMP_CLAUSE_TO_DECLARE, to OMP_CLAUSE_ENTER_TO use "to" as clause
+	name in diagnostics instead of
+	omp_clause_code_name[OMP_CLAUSE_CODE (c)].
+
 2022-05-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/91134

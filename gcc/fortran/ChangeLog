@@ -1,3 +1,8 @@
+2022-05-27  Tobias Burnus  <tobias@codesourcery.com>
+	    Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* openmp.cc (gfc_check_omp_requires): Fix clause name in error.
+
 2022-05-24  Tobias Burnus  <tobias@codesourcery.com>
 
 	PR c/105378
