@@ -772,7 +772,7 @@ gfc_call_malloc (stmtblock_t * block, tree type, tree size)
       if (newmem == NULL)
       {
         if (stat)
-          *stat = LIBERROR_ALLOCATION;
+	  *stat = LIBERROR_NO_MEMORY;
         else
 	  runtime_error ("Allocation would exceed memory limit");
       }
@@ -807,7 +807,7 @@ gfc_allocate_using_malloc (stmtblock_t * block, tree pointer,
   if (status != NULL_TREE)
     {
       tmp = fold_build2_loc (input_location, MODIFY_EXPR, status_type, status,
-			     build_int_cst (status_type, LIBERROR_ALLOCATION));
+			     build_int_cst (status_type, LIBERROR_NO_MEMORY));
       gfc_add_expr_to_block (&on_error, tmp);
     }
   else
