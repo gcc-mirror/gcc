@@ -556,16 +556,26 @@
    (set_attr "mode"	"SI")
    (set_attr "length"	"3")])
 
-(define_expand "one_cmplsi2"
-  [(set (match_operand:SI 0 "register_operand" "")
-	(not:SI (match_operand:SI 1 "register_operand" "")))]
+(define_insn_and_split "one_cmplsi2"
+  [(set (match_operand:SI 0 "register_operand" "=a")
+	(not:SI (match_operand:SI 1 "register_operand" "r")))]
   ""
+  "#"
+  "&& can_create_pseudo_p ()"
+  [(set (match_dup 2)
+	(const_int -1))
+   (set (match_dup 0)
+	(xor:SI (match_dup 1)
+		(match_dup 2)))]
 {
-  rtx temp = gen_reg_rtx (SImode);
-  emit_insn (gen_movsi (temp, constm1_rtx));
-  emit_insn (gen_xorsi3 (operands[0], temp, operands[1]));
-  DONE;
-})
+  operands[2] = gen_reg_rtx (SImode);
+}
+  [(set_attr "type"	"arith")
+   (set_attr "mode"	"SI")
+   (set (attr "length")
+	(if_then_else (match_test "TARGET_DENSITY")
+		      (const_int 5)
+		      (const_int 6)))])
 
 (define_insn "negsf2"
   [(set (match_operand:SF 0 "register_operand" "=f")
