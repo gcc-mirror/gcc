@@ -27,6 +27,10 @@
 
 /* Run-time Target.  */
 
+/* Assembler supports '-v' option; handle similar to
+   '../../gcc.cc:asm_options', 'HAVE_GNU_AS'.  */
+#define ASM_SPEC "%{v}"
+
 #define STARTFILE_SPEC "%{mmainkernel:crt0.o}"
 
 #define TARGET_CPU_CPP_BUILTINS() nvptx_cpu_cpp_builtins ()
