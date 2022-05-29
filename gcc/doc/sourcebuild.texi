@@ -27,9 +27,9 @@ distributions such as that of GNU Binutils.  It also contains several
 subdirectories that contain parts of GCC and its runtime libraries:
 
 @table @file
-@item boehm-gc
-The Boehm conservative garbage collector, optionally used as part of
-the ObjC runtime library when configured with @option{--enable-objc-gc}.
+@item c++tools
+Contains the sources for the g++-mapper-server, a tool used with
+C++ modules.
 
 @item config
 Autoconf macros and Makefile fragments used throughout the tree.
@@ -55,6 +55,9 @@ language front ends, and testsuites.  @xref{gcc Directory, , The
 @item gnattools
 Support tools for GNAT.
 
+@item gotools
+Support tools for Go.
+
 @item include
 Headers for the @code{libiberty} library.
 
@@ -68,6 +71,16 @@ The Ada runtime library.
 @item libatomic
 The runtime support library for atomic operations (e.g.@: for @code{__sync}
 and @code{__atomic}).
+
+@item libbacktrace
+A library that allows gcc to produce backtraces when it crashes.
+
+@item libcc1
+A library that allows gdb to make use of the compiler.
+
+@item libcody
+A compiler dynamism library to allow communication between compilers and
+build systems, for purposes such as C++ modules.
 
 @item libcpp
 The C preprocessor library.
@@ -103,18 +116,29 @@ The runtime support library for transactional memory.
 @item libobjc
 The Objective-C and Objective-C++ runtime library.
 
-@item libquadmath
-The runtime support library for quad-precision math operations.
+@item liboffloadmic
+A library to allow OpenMP to Intel MIC targets.
 
 @item libphobos
 The D standard and runtime library.  The bulk of this library is mirrored
 from the @uref{https://github.com/@/dlang, master D repositories}.
+
+@item libquadmath
+The runtime support library for quad-precision math operations.
+
+@item libsanitizer
+Libraries for various sanitizers.  The bulk of this directory is mirrored
+from the @uref{https://github.com/google/sanitizers, Google sanitizers
+repositories}.
 
 @item libssp
 The Stack protector runtime library.
 
 @item libstdc++-v3
 The C++ runtime library.
+
+@item libvtv
+The vtable verification library.
 
 @item lto-plugin
 Plugin used by the linker if link-time optimizations are enabled.
