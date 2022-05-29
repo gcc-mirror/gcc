@@ -471,6 +471,16 @@
 
 ;; Byte swap.
 
+(define_insn "bswaphi2"
+  [(set (match_operand:HI 0 "register_operand" "=a")
+	(bswap:HI (match_operand:HI 1 "register_operand" "r")))
+   (clobber (match_scratch:HI 2 "=&a"))]
+  ""
+  "extui\t%2, %1, 8, 8\;slli\t%0, %1, 8\;or\t%0, %0, %2"
+   [(set_attr "type"	"arith")
+    (set_attr "mode"	"HI")
+    (set_attr "length"	"9")])
+
 (define_expand "bswapsi2"
   [(set (match_operand:SI 0 "register_operand" "")
         (bswap:SI (match_operand:SI 1 "register_operand" "")))]
