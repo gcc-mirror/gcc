@@ -6865,13 +6865,20 @@ package body Exp_Ch3 is
                            and then
                           OK_To_Rename_Entity_Name (Prefix (Expr_Q)))));
       begin
-         --  ??? Return False if there are any aspect specifications, because
-         --  otherwise we duplicate that corresponding implicit attribute
-         --  definition, and call Insert_Action, which has no place to insert
-         --  the attribute definition. The attribute definition is stored in
-         --  Aspect_Rep_Item, which is not a list.
+         return Result
 
-         return Result and then No (Aspect_Specifications (N));
+           --  The declaration cannot be rewritten if it has got constraints,
+           --  in other words the nominal subtype must be unconstrained.
+
+           and then Is_Entity_Name (Original_Node (Obj_Def))
+
+           --  ??? Return False if there are any aspect specifications, because
+           --  otherwise we duplicate that corresponding implicit attribute
+           --  definition, and call Insert_Action, which has no place to insert
+           --  the attribute definition. The attribute definition is stored in
+           --  Aspect_Rep_Item, which is not a list.
+
+           and then No (Aspect_Specifications (N));
       end Rewrite_As_Renaming;
 
       --  Local variables

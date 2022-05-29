@@ -4651,7 +4651,7 @@ package Sinfo is
 
       --  Note: The Actions field temporarily holds any actions associated with
       --  evaluation of the Expression. During expansion of the case expression
-      --  these actions are wrapped into an N_Expressions_With_Actions node
+      --  these actions are wrapped into an N_Expression_With_Actions node
       --  replacing the original expression.
 
       --  Note: this node never appears in the tree passed to the back end,
