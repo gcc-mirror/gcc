@@ -78,6 +78,12 @@ public:
     expr.get_internal_elements ()->accept_vis (*this);
   }
 
+  void visit (HIR::ArrayIndexExpr &expr) override
+  {
+    expr.get_array_expr ()->accept_vis (*this);
+    expr.get_index_expr ()->accept_vis (*this);
+  }
+
   void visit (HIR::ArrayElemsValues &expr) override
   {
     for (auto &elem : expr.get_values ())
