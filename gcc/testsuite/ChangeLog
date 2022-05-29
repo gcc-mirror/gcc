@@ -1,3 +1,18 @@
+2022-05-28  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/gomp/declare-target-2.f90: Add 'enter' clause test.
+	* gfortran.dg/gomp/declare-target-4.f90: Likewise.
+
+2022-05-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/gomp/declare-target-2.c: Add further tests for mixing of
+	link and to/enter clauses on separate directives.
+
+2022-05-28  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105652
+	* g++.dg/cpp2a/concepts-lambda20.C: New test.
+
 2022-05-27  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/105725

@@ -1,3 +1,12 @@
+2022-05-28  Tobias Burnus  <tobias@codesourcery.com>
+
+	* dump-parse-tree.cc (show_omp_clauses): Handle OMP_LIST_ENTER.
+	* gfortran.h: Add OMP_LIST_ENTER.
+	* openmp.cc (enum omp_mask2, OMP_DECLARE_TARGET_CLAUSES): Add
+	OMP_CLAUSE_ENTER.
+	(gfc_match_omp_clauses, gfc_match_omp_declare_target,
+	resolve_omp_clauses): Handle 'enter' clause.
+
 2022-05-27  Tobias Burnus  <tobias@codesourcery.com>
 	    Chung-Lin Tang  <cltang@codesourcery.com>
 

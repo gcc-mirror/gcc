@@ -1,3 +1,23 @@
+2022-05-28  Joel Holdsworth  <jholdsworth@nvidia.com>
+
+	* config/avr/avr-mcus.def: Add device definitions.
+	* doc/avr-mmcu.texi: Corresponding changes.
+	* config/avr/gen-avr-mmcu-texi.cc: Added support for avr
+	device prefix.
+	* config/avr/gen-avr-mmcu-specs.cc: Prevent -mmcu=avr* flags
+	from leaking into cc1.
+
+2022-05-28  Vladimir Makarov  <vmakarov@gcc.gnu.org>
+
+	PR target/103722
+	* config/sh/sh.cc (sh_register_move_cost): Avoid cost "2" (which
+	is special) for various scenarios.
+
+2022-05-28  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin.h (REAL_LIBGCC_SPEC): Update the comment block
+	describing this macro.
+
 2022-05-27  Richard Biener  <rguenther@suse.de>
 
 	* tree-dfa.cc (get_ref_base_and_extent): Avoid shift.

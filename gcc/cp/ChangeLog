@@ -1,3 +1,16 @@
+2022-05-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* parser.cc (handle_omp_declare_target_clause): If OMP_CLAUSE_LINK was
+	seen first, use "%<to%>" or "%<enter%>" depending on
+	OMP_CLAUSE_ENTER_TO of the current clause, otherwise use
+	"%<to%> or %<enter%>" wording.
+
+2022-05-28  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105652
+	* pt.cc (tsubst_lambda_expr): Don't let a namespace-scope lambda
+	instantiate into a class-scope lambda.
+
 2022-05-27  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/105725

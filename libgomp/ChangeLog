@@ -1,3 +1,20 @@
+2022-05-28  Tobias Burnus  <tobias@codesourcery.com>
+
+	* libgomp.texi (OpenMP 5.2): Mark 'enter' clause as supported.
+	* testsuite/libgomp.fortran/declare-target-1.f90: Extend to test
+	explicit 'to' and 'enter' clause.
+	* testsuite/libgomp.fortran/declare-target-2.f90: Update accordingly.
+
+2022-05-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgomp/105745
+	* libgomp.h (GOMP_HAVE_EFFICIENT_ALIGNED_ALLOC): Don't define for
+	defined(HAVE__ALIGNED_MALLOC) case.
+	* alloc.c (gomp_aligned_alloc): Move defined(HAVE__ALIGNED_MALLOC)
+	handling as last option before fallback instead of first.
+	(gomp_aligned_free): For defined(HAVE__ALIGNED_MALLOC) call
+	_aligned_free.
+
 2022-05-27  Jakub Jelinek  <jakub@redhat.com>
 
 	* testsuite/libgomp.c-c++-common/target-40.c: Modify some existing to
