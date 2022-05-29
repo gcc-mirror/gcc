@@ -1376,11 +1376,7 @@ package body Sem_Ch5 is
          --  Initialize unblocked exit count for statements of begin block
          --  plus one for each exception handler that is present.
 
-         Unblocked_Exit_Count := 1;
-
-         if Present (EH) then
-            Unblocked_Exit_Count := Unblocked_Exit_Count + List_Length (EH);
-         end if;
+         Unblocked_Exit_Count := 1 + List_Length (EH);
 
          --  If a label is present analyze it and mark it as referenced
 
