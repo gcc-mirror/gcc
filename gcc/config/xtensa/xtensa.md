@@ -429,7 +429,17 @@
    (set_attr "length"	"3")])
 
 
-;; Count leading/trailing zeros and find first bit.
+;; Count redundant leading sign bits and leading/trailing zeros,
+;; and find first bit.
+
+(define_insn "clrsbsi2"
+  [(set (match_operand:SI 0 "register_operand" "=a")
+	(clrsb:SI (match_operand:SI 1 "register_operand" "r")))]
+  "TARGET_NSA"
+  "nsa\t%0, %1"
+  [(set_attr "type"	"arith")
+   (set_attr "mode"	"SI")
+   (set_attr "length"	"3")])
 
 (define_insn "clzsi2"
   [(set (match_operand:SI 0 "register_operand" "=a")
