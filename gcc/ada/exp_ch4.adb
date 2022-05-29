@@ -81,6 +81,10 @@ with Warnsw;         use Warnsw;
 
 package body Exp_Ch4 is
 
+   Too_Large_Length_For_Array : constant Unat := Uint_256;
+   --  Threshold from which we do not try to create static array temporaries in
+   --  order to eliminate dynamic stack allocations.
+
    -----------------------
    -- Local Subprograms --
    -----------------------
@@ -2693,9 +2697,6 @@ package body Exp_Ch4 is
       --  this loop is complete, always contains the last operand (which is not
       --  the same as Operands (NN), since null operands are skipped).
 
-      Too_Large_Max_Length : constant Unat := UI_From_Int (256);
-      --  Threshold from which the computation of maximum lengths is useless
-
       --  Arrays describing the operands, only the first NN entries of each
       --  array are set (NN < N when we exclude known null operands).
 
@@ -2711,9 +2712,9 @@ package body Exp_Ch4 is
       --  corresponding entry in Is_Fixed_Length is True.
 
       Max_Length : array (1 .. N) of Unat;
-      --  Set to the maximum length of operand, or Too_Large_Max_Length if it
-      --  is not known. Entries in this array are set only if the corresponding
-      --  entry in Is_Fixed_Length is False;
+      --  Set to the maximum length of operand, or Too_Large_Length_For_Array
+      --  if it is not known. Entries in this array are set only if the
+      --  corresponding entry in Is_Fixed_Length is False;
 
       Opnd_Low_Bound : array (1 .. N) of Node_Id;
       --  Set to lower bound of operand. Either an integer literal in the case
@@ -2733,9 +2734,9 @@ package body Exp_Ch4 is
       --  to just do a Copy_Node to get an appropriate copy. The extra zeroth
       --  entry always is set to zero. The length is of type Artyp.
 
-      Max_Aggr_Length : Unat := Too_Large_Max_Length;
-      --  Set to the maximum total length, or at least Too_Large_Max_Length if
-      --  it is not known.
+      Max_Aggr_Length : Unat := Too_Large_Length_For_Array;
+      --  Set to the maximum total length, or Too_Large_Length_For_Array at
+      --  least if it is not known.
 
       Low_Bound : Node_Id := Empty;
       --  A tree node representing the low bound of the result (of type Ityp).
@@ -3115,7 +3116,7 @@ package body Exp_Ch4 is
                   end;
 
                else
-                  Max_Length (NN) := Too_Large_Max_Length;
+                  Max_Length (NN) := Too_Large_Length_For_Array;
                end if;
 
                Append_To (Actions,
@@ -3362,7 +3363,7 @@ package body Exp_Ch4 is
 
       if Compile_Time_Known_Value (Low_Bound)
         and then not Compile_Time_Known_Value (High_Bound)
-        and then Max_Aggr_Length < Too_Large_Max_Length
+        and then Max_Aggr_Length < Too_Large_Length_For_Array
       then
          declare
             Known_High_Bound : constant Node_Id :=
@@ -5860,19 +5861,43 @@ package body Exp_Ch4 is
       Elsex : constant Node_Id    := Next (Thenx);
       Typ   : constant Entity_Id  := Etype (N);
 
-      Actions      : List_Id;
-      Decl         : Node_Id;
-      Expr         : Node_Id;
-      New_If       : Node_Id;
-      New_N        : Node_Id;
-
+      Force_Expand : constant Boolean := Is_Anonymous_Access_Actual (N);
       --  Determine if we are dealing with a special case of a conditional
       --  expression used as an actual for an anonymous access type which
       --  forces us to transform the if expression into an expression with
       --  actions in order to create a temporary to capture the level of the
       --  expression in each branch.
 
-      Force_Expand : constant Boolean := Is_Anonymous_Access_Actual (N);
+      function OK_For_Single_Subtype (T1, T2 : Entity_Id) return Boolean;
+      --  Return true if it is acceptable to use a single subtype for two
+      --  dependent expressions of subtype T1 and T2 respectively, which are
+      --  unidimensional arrays whose index bounds are known at compile time.
+
+      ---------------------------
+      -- OK_For_Single_Subtype --
+      ---------------------------
+
+      function OK_For_Single_Subtype (T1, T2 : Entity_Id) return Boolean is
+         Lo1, Hi1 : Uint;
+         Lo2, Hi2 : Uint;
+
+      begin
+         Get_First_Index_Bounds (T1, Lo1, Hi1);
+         Get_First_Index_Bounds (T2, Lo2, Hi2);
+
+         --  Return true if the length of the covering subtype is not too large
+
+         return
+           UI_Max (Hi1, Hi2) - UI_Min (Lo1, Lo2) < Too_Large_Length_For_Array;
+      end OK_For_Single_Subtype;
+
+      --  Local variables
+
+      Actions : List_Id;
+      Decl    : Node_Id;
+      Expr    : Node_Id;
+      New_If  : Node_Id;
+      New_N   : Node_Id;
 
    --  Start of processing for Expand_N_If_Expression
 
@@ -6049,6 +6074,223 @@ package body Exp_Ch4 is
                 Prefix => New_Occurrence_Of (Cnn, Loc));
          end;
 
+      --  If the result is a unidimensional unconstrained array but the two
+      --  dependent expressions have constrained subtypes with known bounds,
+      --  then we expand as follows:
+
+      --      subtype Txx is Typ (<static low-bound> .. <static high-bound>);
+      --      Cnn : Txx;
+      --      if cond then
+      --         <<then actions>>
+      --         Cnn (<then low-bound .. then high-bound>) := then-expr;
+      --      else
+      --         <<else actions>>
+      --         Cnn (<else low bound .. else high-bound>) := else-expr;
+      --      end if;
+
+      --  and replace the if expression by a slice of Cnn, provided that Txx
+      --  is not too large. This will create a static temporary instead of the
+      --  dynamic one of the next case and thus help the code generator.
+
+      --  Note that we need to deal with the case where the else expression is
+      --  itself such a slice, in order to catch if expressions with more than
+      --  two dependent expressions in the source code.
+
+      elsif Is_Array_Type (Typ)
+        and then Number_Dimensions (Typ) = 1
+        and then not Is_Constrained (Typ)
+        and then Is_Constrained (Etype (Thenx))
+        and then Compile_Time_Known_Bounds (Etype (Thenx))
+        and then
+          ((Is_Constrained (Etype (Elsex))
+             and then Compile_Time_Known_Bounds (Etype (Elsex))
+             and then OK_For_Single_Subtype (Etype (Thenx), Etype (Elsex)))
+            or else
+           (Nkind (Elsex) = N_Slice
+             and then Is_Constrained (Etype (Prefix (Elsex)))
+             and then Compile_Time_Known_Bounds (Etype (Prefix (Elsex)))
+             and then
+               OK_For_Single_Subtype (Etype (Thenx), Etype (Prefix (Elsex)))))
+        and then not Generate_C_Code
+      then
+         declare
+            Ityp : constant Entity_Id := Base_Type (Etype (First_Index (Typ)));
+
+            function Build_New_Bound
+              (Then_Bnd  : Uint;
+               Else_Bnd  : Uint;
+               Slice_Bnd : Node_Id) return Node_Id;
+            --  Build a new bound from the bounds of the if expression
+
+            function To_Ityp (V : Uint) return Node_Id;
+            --  Convert V to an index value in Ityp
+
+            ---------------------
+            -- Build_New_Bound --
+            ---------------------
+
+            function Build_New_Bound
+              (Then_Bnd  : Uint;
+               Else_Bnd  : Uint;
+               Slice_Bnd : Node_Id) return Node_Id is
+
+            begin
+               if Nkind (Elsex) = N_Slice then
+                  if Compile_Time_Known_Value (Slice_Bnd)
+                    and then Expr_Value (Slice_Bnd) = Then_Bnd
+                  then
+                     return To_Ityp (Then_Bnd);
+
+                  else
+                     return Make_If_Expression (Loc,
+                       Expressions => New_List (
+                         Duplicate_Subexpr (Cond),
+                         To_Ityp (Then_Bnd),
+                         New_Copy_Tree (Slice_Bnd)));
+                  end if;
+
+               elsif Then_Bnd = Else_Bnd then
+                  return To_Ityp (Then_Bnd);
+
+               else
+                  return Make_If_Expression (Loc,
+                    Expressions => New_List (
+                      Duplicate_Subexpr (Cond),
+                      To_Ityp (Then_Bnd),
+                      To_Ityp (Else_Bnd)));
+               end if;
+            end Build_New_Bound;
+
+            -------------
+            -- To_Ityp --
+            -------------
+
+            function To_Ityp (V : Uint) return Node_Id is
+               Result : constant Node_Id := Make_Integer_Literal (Loc, V);
+
+            begin
+               if Is_Enumeration_Type (Ityp) then
+                  return
+                    Make_Attribute_Reference (Loc,
+                      Prefix         => New_Occurrence_Of (Ityp, Loc),
+                      Attribute_Name => Name_Val,
+                      Expressions    => New_List (Result));
+               else
+                  return Result;
+               end if;
+            end To_Ityp;
+
+            Ent                  : Node_Id;
+            Slice_Lo, Slice_Hi   : Node_Id;
+            Subtyp_Ind           : Node_Id;
+            Else_Lo, Else_Hi     : Uint;
+            Min_Lo, Max_Hi       : Uint;
+            Then_Lo, Then_Hi     : Uint;
+            Then_List, Else_List : List_Id;
+
+         begin
+            Get_First_Index_Bounds (Etype (Thenx), Then_Lo, Then_Hi);
+
+            if Nkind (Elsex) = N_Slice then
+               Slice_Lo := Low_Bound (Discrete_Range (Elsex));
+               Slice_Hi := High_Bound (Discrete_Range (Elsex));
+               Get_First_Index_Bounds
+                 (Etype (Prefix (Elsex)), Else_Lo, Else_Hi);
+
+            else
+               Slice_Lo := Empty;
+               Slice_Hi := Empty;
+               Get_First_Index_Bounds (Etype (Elsex), Else_Lo, Else_Hi);
+            end if;
+
+            Min_Lo := UI_Min (Then_Lo, Else_Lo);
+            Max_Hi := UI_Max (Then_Hi, Else_Hi);
+
+            --  Now we construct an array object with appropriate bounds and
+            --  mark it as internal to prevent useless initialization when
+            --  Initialize_Scalars is enabled. Also since this is the actual
+            --  result entity, we make sure we have debug information for it.
+
+            Subtyp_Ind :=
+              Make_Subtype_Indication (Loc,
+                Subtype_Mark => New_Occurrence_Of (Typ, Loc),
+                Constraint   =>
+                  Make_Index_Or_Discriminant_Constraint (Loc,
+                    Constraints => New_List (
+                      Make_Range (Loc,
+                        Low_Bound  => To_Ityp (Min_Lo),
+                        High_Bound => To_Ityp (Max_Hi)))));
+
+            Ent := Make_Temporary (Loc, 'C');
+            Set_Is_Internal       (Ent);
+            Set_Debug_Info_Needed (Ent);
+
+            Decl :=
+              Make_Object_Declaration (Loc,
+                Defining_Identifier => Ent,
+                Object_Definition   => Subtyp_Ind);
+
+            --  If the result of the expression appears as the initializing
+            --  expression of an object declaration, we can just rename the
+            --  result, rather than copying it.
+
+            Mutate_Ekind (Ent, E_Variable);
+            Set_OK_To_Rename (Ent);
+
+            Then_List := New_List (
+              Make_Assignment_Statement (Loc,
+                Name       =>
+                  Make_Slice (Loc,
+                    Prefix         => New_Occurrence_Of (Ent, Loc),
+                    Discrete_Range =>
+                      Make_Range (Loc,
+                        Low_Bound  => To_Ityp (Then_Lo),
+                        High_Bound => To_Ityp (Then_Hi))),
+                Expression => Relocate_Node (Thenx)));
+
+            Set_Suppress_Assignment_Checks (Last (Then_List));
+
+            if Nkind (Elsex) = N_Slice then
+               Else_List := New_List (
+                 Make_Assignment_Statement (Loc,
+                   Name       =>
+                     Make_Slice (Loc,
+                       Prefix         => New_Occurrence_Of (Ent, Loc),
+                       Discrete_Range =>
+                         Make_Range (Loc,
+                           Low_Bound  => New_Copy_Tree (Slice_Lo),
+                           High_Bound => New_Copy_Tree (Slice_Hi))),
+                   Expression => Relocate_Node (Elsex)));
+
+            else
+               Else_List := New_List (
+                 Make_Assignment_Statement (Loc,
+                   Name       =>
+                     Make_Slice (Loc,
+                       Prefix         => New_Occurrence_Of (Ent, Loc),
+                       Discrete_Range =>
+                         Make_Range (Loc,
+                           Low_Bound  => To_Ityp (Else_Lo),
+                           High_Bound => To_Ityp (Else_Hi))),
+                   Expression => Relocate_Node (Elsex)));
+            end if;
+
+            Set_Suppress_Assignment_Checks (Last (Else_List));
+
+            New_If :=
+              Make_Implicit_If_Statement (N,
+                Condition       => Duplicate_Subexpr (Cond),
+                Then_Statements => Then_List,
+                Else_Statements => Else_List);
+
+            New_N :=
+              Make_Slice (Loc,
+                Prefix         => New_Occurrence_Of (Ent, Loc),
+                Discrete_Range => Make_Range (Loc,
+                  Low_Bound  => Build_New_Bound (Then_Lo, Else_Lo, Slice_Lo),
+                  High_Bound => Build_New_Bound (Then_Hi, Else_Hi, Slice_Hi)));
+         end;
+
       --  If the result is an unconstrained array and the if expression is in a
       --  context other than the initializing expression of the declaration of
       --  an object, then we pull out the if expression as follows:
@@ -6223,7 +6465,7 @@ package body Exp_Ch4 is
          end if;
 
       --  For the sake of GNATcoverage, generate an intermediate temporary in
-      --  the case where the if-expression is a condition in an outer decision,
+      --  the case where the if expression is a condition in an outer decision,
       --  in order to make sure that no branch is shared between the decisions.
 
       elsif Opt.Suppress_Control_Flow_Optimizations
@@ -13400,10 +13642,16 @@ package body Exp_Ch4 is
 
       --  This follows Sem_Eval.Compile_Time_Known_Bounds
 
-      Typ := Underlying_Type (Etype (First_Index (T)));
+      if Ekind (T) = E_String_Literal_Subtype then
+         Lo := Expr_Value (String_Literal_Low_Bound (T));
+         Hi := Lo + String_Literal_Length (T) - 1;
 
-      Lo := Expr_Value (Type_Low_Bound (Typ));
-      Hi := Expr_Value (Type_High_Bound (Typ));
+      else
+         Typ := Underlying_Type (Etype (First_Index (T)));
+
+         Lo := Expr_Value (Type_Low_Bound (Typ));
+         Hi := Expr_Value (Type_High_Bound (Typ));
+      end if;
    end Get_First_Index_Bounds;
 
    ------------------------
