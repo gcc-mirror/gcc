@@ -601,6 +601,26 @@
    (set_attr "mode"	"SI")
    (set_attr "length"	"3,3")])
 
+(define_insn_and_split "*andsi3_bitcmpl"
+  [(set (match_operand:SI 0 "register_operand" "=a")
+	(and:SI (not:SI (match_operand:SI 1 "register_operand" "r"))
+		(match_operand:SI 2 "register_operand" "r")))]
+  ""
+  "#"
+  "&& can_create_pseudo_p ()"
+  [(set (match_dup 3)
+	(and:SI (match_dup 1)
+		(match_dup 2)))
+   (set (match_dup 0)
+	(xor:SI (match_dup 3)
+		(match_dup 2)))]
+{
+  operands[3] = gen_reg_rtx (SImode);
+}
+  [(set_attr "type"	"arith")
+   (set_attr "mode"	"SI")
+   (set_attr "length"	"6")])
+
 (define_insn "iorsi3"
   [(set (match_operand:SI 0 "register_operand" "=a")
 	(ior:SI (match_operand:SI 1 "register_operand" "%r")
