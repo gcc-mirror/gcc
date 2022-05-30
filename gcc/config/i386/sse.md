@@ -10590,11 +10590,11 @@
 ;; see comment above inline_secondary_memory_needed function in i386.cc
 (define_insn "vec_set<mode>_0"
   [(set (match_operand:VI4F_128 0 "nonimmediate_operand"
-	  "=Yr,*x,v,v,v,x,x,v,Yr ,*x ,x  ,m ,m   ,m")
+	  "=Yr,*x,v,v,v,x,x,v,Yr ,?x ,x  ,m ,m   ,m")
 	(vec_merge:VI4F_128
 	  (vec_duplicate:VI4F_128
 	    (match_operand:<ssescalarmode> 2 "general_operand"
-	  " Yr,*x,v,m,r ,m,x,v,*rm,*rm,*rm,!x,!*re,!*fF"))
+	  " Yr,*x,v,m,r ,m,x,v,?rm,?rm,?rm,!x,?re,!*fF"))
 	  (match_operand:VI4F_128 1 "nonimm_or_0_operand"
 	  " C , C,C,C,C ,C,0,v,0  ,0  ,x  ,0 ,0   ,0")
 	  (const_int 1)))]
@@ -11056,7 +11056,7 @@
    (set_attr "mode" "V4SF,V4SF,V4SF,*,*")])
 
 (define_insn_and_split "*vec_extractv4sf_mem"
-  [(set (match_operand:SF 0 "register_operand" "=v,*r,f")
+  [(set (match_operand:SF 0 "register_operand" "=v,?r,f")
 	(vec_select:SF
 	  (match_operand:V4SF 1 "memory_operand" "o,o,o")
 	  (parallel [(match_operand 2 "const_0_to_3_operand")])))]
@@ -11933,7 +11933,7 @@
   "operands[1] = gen_lowpart (HFmode, operands[1]);")
 
 (define_insn "*vec_extracthf"
-  [(set (match_operand:HF 0 "register_sse4nonimm_operand" "=*r,m,x,v")
+  [(set (match_operand:HF 0 "register_sse4nonimm_operand" "=?r,m,x,v")
 	(vec_select:HF
 	  (match_operand:V8HF 1 "register_operand" "v,v,0,v")
 	  (parallel
