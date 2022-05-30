@@ -3109,6 +3109,7 @@ ix86_expand_int_movcc (rtx operands[])
   rtx compare_op;
   machine_mode mode = GET_MODE (operands[0]);
   bool sign_bit_compare_p = false;
+  bool negate_cc_compare_p = false;
   rtx op0 = XEXP (operands[1], 0);
   rtx op1 = XEXP (operands[1], 1);
   rtx op2 = operands[2];
@@ -3155,16 +3156,48 @@ ix86_expand_int_movcc (rtx operands[])
       HOST_WIDE_INT cf = INTVAL (op3);
       HOST_WIDE_INT diff;
 
+      if ((mode == SImode
+	   || (TARGET_64BIT && mode == DImode))
+	  && (GET_MODE (op0) == SImode
+	      || (TARGET_64BIT && GET_MODE (op0) == DImode)))
+	{
+	  /* Special case x != 0 ? -1 : y.  */
+	  if (code == NE && op1 == const0_rtx && ct == -1)
+	    {
+	      negate_cc_compare_p = true;
+	      std::swap (ct, cf);
+	      code = EQ;
+	    }
+	  else if (code == EQ && op1 == const0_rtx && cf == -1)
+	    negate_cc_compare_p = true;
+	}
+
       diff = ct - cf;
       /*  Sign bit compares are better done using shifts than we do by using
 	  sbb.  */
       if (sign_bit_compare_p
+	  || negate_cc_compare_p
 	  || ix86_expand_carry_flag_compare (code, op0, op1, &compare_op))
 	{
 	  /* Detect overlap between destination and compare sources.  */
 	  rtx tmp = out;
 
-          if (!sign_bit_compare_p)
+	  if (negate_cc_compare_p)
+	    {
+	      if (GET_MODE (op0) == DImode)
+		emit_insn (gen_x86_negdi_ccc (gen_reg_rtx (DImode), op0));
+	      else
+		emit_insn (gen_x86_negsi_ccc (gen_reg_rtx (SImode),
+					      gen_lowpart (SImode, op0)));
+
+	      tmp = gen_reg_rtx (mode);
+	      if (mode == DImode)
+		emit_insn (gen_x86_movdicc_0_m1_neg (tmp));
+	      else
+		emit_insn (gen_x86_movsicc_0_m1_neg (gen_lowpart (SImode,
+								  tmp)));
+	    }
+	  else if (!sign_bit_compare_p)
 	    {
 	      rtx flags;
 	      bool fpcmp = false;
