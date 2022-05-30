@@ -18,7 +18,6 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-
 /* The subprograms used by Modula-2 to facilitate linking are:
    gm2l - parses the top level module and all other dependent
           modules.  It creates a dependency tree and emits a list

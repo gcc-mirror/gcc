@@ -205,7 +205,9 @@ gm2_langhook_handle_option (
 
   switch (code)
     {
-
+    case OPT_c:
+      M2Options_Setc (value);
+      return 1;
     case OPT_I:
       if (insideCppArgs)
         {

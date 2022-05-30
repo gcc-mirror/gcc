@@ -1,3 +1,17 @@
+2022-05-30   Gaius Mulley   <gaius.mulley@southwales.ac.uk>
+
+	* gm2-compiler/M2Options.def (cflag): New boolean.
+	(Setc) New procedure.  (Getc) New procedure function.
+	* gm2-compiler/M2Options.mod (Setc): New procedure.
+	(Getc) New procedure function.  Initialize cflag to
+	FALSE.
+	* gm2-gcc/m2options.h (Setc): New external function.
+	(Getc) New external function.
+	* gm2-lang.cc: Handle OPT_c and call M2Options_Setc.
+	* lang-specs.h: Remove all link rules for m2.
+	* lang.opt: Allow m2 to process the -c option.
+	* All m2 linking is disabled.
+
 2022-05-20   Gaius Mulley   <gaius.mulley@southwales.ac.uk>
 
 	* m2pp.cc: (Renamed from m2pp.c).  Comments tidied up.

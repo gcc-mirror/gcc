@@ -23,26 +23,15 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "m2-link-support.h"
 
-#if !defined(MODULA_PROJECT_SUPPORT)
-# define MODULA_PROJECT_SUPPORT " "
-#endif
-
-#if !defined(MODULA_LINK_SUPPORT)
-# define MODULA_LINK_SUPPORT " "
-#endif
-
 #if !defined(M2CPP)
 # define M2CPP " "
 #endif
 
   {".mod", "@modula-2", 0, 0, 0},
-  // {".m2l", "@modula-2-linker", 0, 0, 0},
   {"@modula-2",
-      "%{c:" MODULA_PROJECT_SUPPORT "}"
-      "%{c|S:cc1gm2 " M2CPP
-      "      %(cc1_options) %{f*} %{+e*} %{I*} "
+      "cc1gm2 " M2CPP
+      "      %(cc1_options) %{c*} %{f*} %{+e*} %{I*} "
       "      %{MD} %{MMD} %{M} %{MM} %{MA} %{MT*} %{MF*} %V"
       "      %{save-temps*}"
-      "      %i %{!fsyntax-only:%(invoke_as)}}"
-      MODULA_LINK_SUPPORT ,
+      "      %i %{!fsyntax-only:%(invoke_as)}",
       0, 0, 0},

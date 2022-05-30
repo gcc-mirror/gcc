@@ -382,6 +382,26 @@ END GetCpp ;
 
 
 (*
+   Setc - set the cflag (compile only flag -c) to value.
+*)
+
+PROCEDURE Setc (value: BOOLEAN) ;
+BEGIN
+   cflag := value
+END Setc ;
+
+
+(*
+   Getc - get the cflag (compile only flag -c).
+*)
+
+PROCEDURE Getc () : BOOLEAN ;
+BEGIN
+   RETURN cflag
+END Getc ;
+
+
+(*
    SetM2g - returns TRUE if the -fm2-g flags was used.
 *)
 
@@ -1016,6 +1036,7 @@ END SetSaveTempsDir ;
 
 
 BEGIN
+   cflag                        := FALSE ;  (* -c.  *)
    CppArgs                      := InitString ('') ;
    CppProgram                   := InitString ('') ;
    Pim                          :=  TRUE ;
