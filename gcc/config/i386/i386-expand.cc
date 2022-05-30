@@ -2317,21 +2317,15 @@ ix86_expand_branch (enum rtx_code code, rtx op0, rtx op1, rtx label)
     case E_DImode:
       if (TARGET_64BIT)
 	goto simple;
-      /* For 32-bit target DI comparison may be performed on
-	 SSE registers.  To allow this we should avoid split
-	 to SI mode which is achieved by doing xor in DI mode
-	 and then comparing with zero (which is recognized by
-	 STV pass).  We don't compare using xor when optimizing
-	 for size.  */
-      if (!optimize_insn_for_size_p ()
-	  && TARGET_STV
-	  && (code == EQ || code == NE))
-	{
-	  op0 = force_reg (mode, gen_rtx_XOR (mode, op0, op1));
-	  op1 = const0_rtx;
-	}
       /* FALLTHRU */
     case E_TImode:
+      /* DI and TI mode equality/inequality comparisons may be performed
+         on SSE registers.  Avoid splitting them, except when optimizing
+	 for size.  */
+      if ((code == EQ || code == NE)
+	  && !optimize_insn_for_size_p ())
+	goto simple;
+
       /* Expand DImode branch into multiple compare+branch.  */
       {
 	rtx lo[2], hi[2];
@@ -2350,34 +2344,7 @@ ix86_expand_branch (enum rtx_code code, rtx op0, rtx op1, rtx label)
 
 	submode = mode == DImode ? SImode : DImode;
 
-	/* When comparing for equality, we can use (hi0^hi1)|(lo0^lo1) to
-	   avoid two branches.  This costs one extra insn, so disable when
-	   optimizing for size.  */
-
-	if ((code == EQ || code == NE)
-	    && (!optimize_insn_for_size_p ()
-	        || hi[1] == const0_rtx || lo[1] == const0_rtx))
-	  {
-	    rtx xor0, xor1;
-
-	    xor1 = hi[0];
-	    if (hi[1] != const0_rtx)
-	      xor1 = expand_binop (submode, xor_optab, xor1, hi[1],
-				   NULL_RTX, 0, OPTAB_WIDEN);
-
-	    xor0 = lo[0];
-	    if (lo[1] != const0_rtx)
-	      xor0 = expand_binop (submode, xor_optab, xor0, lo[1],
-				   NULL_RTX, 0, OPTAB_WIDEN);
-
-	    tmp = expand_binop (submode, ior_optab, xor1, xor0,
-				NULL_RTX, 0, OPTAB_WIDEN);
-
-	    ix86_expand_branch (code, tmp, const0_rtx, label);
-	    return;
-	  }
-
-	/* Otherwise, if we are doing less-than or greater-or-equal-than,
+	/* If we are doing less-than or greater-or-equal-than,
 	   op1 is a constant and the low word is zero, then we can just
 	   examine the high word.  Similarly for low word -1 and
 	   less-or-equal-than or greater-than.  */

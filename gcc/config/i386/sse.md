@@ -466,9 +466,9 @@
 
 ;; All DImode vector integer modes
 (define_mode_iterator V_AVX
-  [V16QI V8HI V4SI V2DI V4SF V2DF
+  [V16QI V8HI V4SI V2DI V1TI V4SF V2DF
    (V32QI "TARGET_AVX") (V16HI "TARGET_AVX")
-   (V8SI "TARGET_AVX") (V4DI "TARGET_AVX")
+   (V8SI "TARGET_AVX") (V4DI "TARGET_AVX") (V2TI "TARGET_AVX")
    (V8SF "TARGET_AVX") (V4DF"TARGET_AVX")])
 
 (define_mode_iterator VI48_AVX
@@ -890,6 +890,7 @@
   [(V4SF "sse4_1") (V2DF "sse4_1")
    (V8SF "avx") (V4DF "avx")
    (V8DF "avx512f")
+   (V2TI "avx") (V1TI "sse4_1")
    (V4DI "avx") (V2DI "sse4_1")
    (V8SI "avx") (V4SI "sse4_1")
    (V16QI "sse4_1") (V32QI "avx")

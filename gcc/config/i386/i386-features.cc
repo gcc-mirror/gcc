@@ -711,8 +711,7 @@ gen_gpr_to_xmm_move_src (enum machine_mode vmode, rtx gpr)
   switch (GET_MODE_NUNITS (vmode))
     {
     case 1:
-      /* We are not using this case currently.  */
-      gcc_unreachable ();
+      return gen_rtx_SUBREG (vmode, gpr, 0);
     case 2:
       return gen_rtx_VEC_CONCAT (vmode, gpr,
 				 CONST0_RTX (GET_MODE_INNER (vmode)));
@@ -932,6 +931,48 @@ general_scalar_chain::convert_op (rtx *op, rtx_insn *insn)
     }
 }
 
+/* Convert COMPARE to vector mode.  */
+
+rtx
+general_scalar_chain::convert_compare (rtx op1, rtx op2, rtx_insn *insn)
+{
+  rtx tmp = gen_reg_rtx (vmode);
+  rtx src;
+  convert_op (&op1, insn);
+  /* Comparison against anything other than zero, requires an XOR.  */
+  if (op2 != const0_rtx)
+    {
+      convert_op (&op2, insn);
+      /* If both operands are MEMs, explicitly load the OP1 into TMP.  */
+      if (MEM_P (op1) && MEM_P (op2))
+	{
+	  emit_insn_before (gen_rtx_SET (tmp, op1), insn);
+	  src = tmp;
+	}
+      else
+	src = op1;
+      src = gen_rtx_XOR (vmode, src, op2);
+    }
+  else
+    src = op1;
+  emit_insn_before (gen_rtx_SET (tmp, src), insn);
+
+  if (vmode == V2DImode)
+    emit_insn_before (gen_vec_interleave_lowv2di (copy_rtx_if_shared (tmp),
+						  copy_rtx_if_shared (tmp),
+						  copy_rtx_if_shared (tmp)),
+		      insn);
+  else if (vmode == V4SImode)
+    emit_insn_before (gen_sse2_pshufd (copy_rtx_if_shared (tmp),
+				       copy_rtx_if_shared (tmp),
+				       const0_rtx),
+		      insn);
+
+  return gen_rtx_UNSPEC (CCmode, gen_rtvec (2, copy_rtx_if_shared (tmp),
+					       copy_rtx_if_shared (tmp)),
+			 UNSPEC_PTEST);
+}
+
 /* Convert INSN to vector mode.  */
 
 void
@@ -1090,19 +1131,8 @@ general_scalar_chain::convert_insn (rtx_insn *insn)
       break;
 
     case COMPARE:
-      src = SUBREG_REG (XEXP (XEXP (src, 0), 0));
-
-      gcc_assert (REG_P (src) && GET_MODE (src) == DImode);
-      subreg = gen_rtx_SUBREG (V2DImode, src, 0);
-      emit_insn_before (gen_vec_interleave_lowv2di
-			(copy_rtx_if_shared (subreg),
-			 copy_rtx_if_shared (subreg),
-			 copy_rtx_if_shared (subreg)),
-			insn);
       dst = gen_rtx_REG (CCmode, FLAGS_REG);
-      src = gen_rtx_UNSPEC (CCmode, gen_rtvec (2, copy_rtx_if_shared (subreg),
-					       copy_rtx_if_shared (subreg)),
-			    UNSPEC_PTEST);
+      src = convert_compare (XEXP (src, 0), XEXP (src, 1), insn);
       break;
 
     case CONST_INT:
@@ -1339,20 +1369,14 @@ pseudo_reg_set (rtx_insn *insn)
   return set;
 }
 
-/* Check if comparison INSN may be transformed
-   into vector comparison.  Currently we transform
-   zero checks only which look like:
-
-   (set (reg:CCZ 17 flags)
-        (compare:CCZ (ior:SI (subreg:SI (reg:DI x) 4)
-                             (subreg:SI (reg:DI x) 0))
-		     (const_int 0 [0])))  */
+/* Check if comparison INSN may be transformed into vector comparison.
+   Currently we transform equality/inequality checks which look like:
+   (set (reg:CCZ 17 flags) (compare:CCZ (reg:TI x) (reg:TI y)))  */
 
 static bool
 convertible_comparison_p (rtx_insn *insn, enum machine_mode mode)
 {
-  /* ??? Currently convertible for double-word DImode chain only.  */
-  if (TARGET_64BIT || mode != DImode)
+  if (mode != (TARGET_64BIT ? TImode : DImode))
     return false;
 
   if (!TARGET_SSE4_1)
@@ -1375,31 +1399,14 @@ convertible_comparison_p (rtx_insn *insn, enum machine_mode mode)
   rtx op1 = XEXP (src, 0);
   rtx op2 = XEXP (src, 1);
 
-  if (op2 != CONST0_RTX (GET_MODE (op2)))
+  if (!CONST_INT_P (op1)
+      && ((!REG_P (op1) && !MEM_P (op1))
+	  || GET_MODE (op1) != mode))
     return false;
 
-  if (GET_CODE (op1) != IOR)
-    return false;
-
-  op2 = XEXP (op1, 1);
-  op1 = XEXP (op1, 0);
-
-  if (!SUBREG_P (op1)
-      || !SUBREG_P (op2)
-      || GET_MODE (op1) != SImode
-      || GET_MODE (op2) != SImode
-      || ((SUBREG_BYTE (op1) != 0
-	   || SUBREG_BYTE (op2) != GET_MODE_SIZE (SImode))
-	  && (SUBREG_BYTE (op2) != 0
-	      || SUBREG_BYTE (op1) != GET_MODE_SIZE (SImode))))
-    return false;
-
-  op1 = SUBREG_REG (op1);
-  op2 = SUBREG_REG (op2);
-
-  if (op1 != op2
-      || !REG_P (op1)
-      || GET_MODE (op1) != DImode)
+  if (!CONST_INT_P (op2)
+      && ((!REG_P (op2) && !MEM_P (op2))
+	  || GET_MODE (op2) != mode))
     return false;
 
   return true;
