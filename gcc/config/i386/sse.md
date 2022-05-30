@@ -9176,11 +9176,27 @@
    (set_attr "prefix" "evex")
    (set_attr "mode" "<sseinsnmode>")])
 
+(define_expand "extendv2sfv2df2"
+  [(set (match_operand:V2DF 0 "register_operand")
+	(float_extend:V2DF
+	  (match_operand:V2SF 1 "nonimmediate_operand")))]
+  "TARGET_MMX_WITH_SSE"
+{
+  if (!MEM_P (operands[1]))
+    {
+      operands[1] = lowpart_subreg (V4SFmode,
+				    force_reg (V2SFmode, operands[1]),
+				    V2SFmode);
+      emit_insn (gen_sse2_cvtps2pd (operands[0], operands[1]));
+      DONE;
+    }
+})
+
 (define_insn "sse2_cvtps2pd<mask_name>"
   [(set (match_operand:V2DF 0 "register_operand" "=v")
 	(float_extend:V2DF
 	  (vec_select:V2SF
-	    (match_operand:V4SF 1 "vector_operand" "vm")
+	    (match_operand:V4SF 1 "register_operand" "v")
 	    (parallel [(const_int 0) (const_int 1)]))))]
   "TARGET_SSE2 && <mask_avx512vl_condition>"
   "%vcvtps2pd\t{%1, %0<mask_operand2>|%0<mask_operand2>, %q1}"
@@ -9192,12 +9208,12 @@
    (set_attr "prefix" "maybe_vex")
    (set_attr "mode" "V2DF")])
 
-(define_insn "extendv2sfv2df2"
+(define_insn "*sse2_cvtps2pd<mask_name>_1"
   [(set (match_operand:V2DF 0 "register_operand" "=v")
 	(float_extend:V2DF
-	  (match_operand:V2SF 1 "register_operand" "v")))]
-  "TARGET_MMX_WITH_SSE"
-  "%vcvtps2pd\t{%1, %0|%0, %1}"
+	  (match_operand:V2SF 1 "memory_operand" "m")))]
+  "TARGET_SSE2 && <mask_avx512vl_condition>"
+  "%vcvtps2pd\t{%1, %0<mask_operand2>|%0<mask_operand2>, %q1}"
   [(set_attr "type" "ssecvt")
    (set_attr "amdfam10_decode" "direct")
    (set_attr "athlon_decode" "double")
