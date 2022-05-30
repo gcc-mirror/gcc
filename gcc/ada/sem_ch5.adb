@@ -4468,8 +4468,7 @@ package body Sem_Ch5 is
                   end loop;
                end if;
 
-               Error_Msg
-                 ("??unreachable code!", Sloc (Error_Node), Error_Node);
+               Error_Msg_N ("??unreachable code!", Error_Node);
             end if;
 
          --  If the unconditional transfer of control instruction is the
