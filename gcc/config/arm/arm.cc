@@ -296,8 +296,8 @@ static int arm_cortex_a5_branch_cost (bool, bool);
 static int arm_cortex_m_branch_cost (bool, bool);
 static int arm_cortex_m7_branch_cost (bool, bool);
 
-static bool arm_vectorize_vec_perm_const (machine_mode, rtx, rtx, rtx,
-					  const vec_perm_indices &);
+static bool arm_vectorize_vec_perm_const (machine_mode, machine_mode, rtx, rtx,
+					  rtx, const vec_perm_indices &);
 
 static bool aarch_macro_fusion_pair_p (rtx_insn*, rtx_insn*);
 
