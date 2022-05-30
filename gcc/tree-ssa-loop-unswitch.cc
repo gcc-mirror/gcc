@@ -494,8 +494,7 @@ find_unswitching_predicates_for_bb (basic_block bb, class loop *loop,
     {
       unsigned nlabels = gimple_switch_num_labels (stmt);
       tree idx = gimple_switch_index (stmt);
-      if (TREE_CODE (idx) != SSA_NAME
-	  || nlabels < 1)
+      if (!gimple_range_ssa_p (idx) || nlabels < 1)
 	return;
       /* Index must be invariant.  */
       def = SSA_NAME_DEF_STMT (idx);
