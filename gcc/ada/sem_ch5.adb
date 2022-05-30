@@ -4398,7 +4398,7 @@ package body Sem_Ch5 is
       P          : Node_Id;
 
    begin
-      if Is_List_Member (N) and then Comes_From_Source (N) then
+      if Comes_From_Source (N) then
          Nxt := Original_Node (Next (N));
 
          --  Skip past pragmas
@@ -4415,8 +4415,7 @@ package body Sem_Ch5 is
 
          --  Otherwise see if we have a real statement following us
 
-         elsif Present (Nxt)
-           and then Comes_From_Source (Nxt)
+         elsif Comes_From_Source (Nxt)
            and then Is_Statement (Nxt)
          then
             --  Special very annoying exception. If we have a return that
