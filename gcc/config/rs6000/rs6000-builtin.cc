@@ -2000,16 +2000,14 @@ rs6000_gimple_fold_builtin (gimple_stmt_iterator *gsi)
     case RS6000_BIF_VCMPEQUH:
     case RS6000_BIF_VCMPEQUW:
     case RS6000_BIF_VCMPEQUD:
-    /* We deliberately omit RS6000_BIF_VCMPEQUT for now, because gimple
-       folding produces worse code for 128-bit compares.  */
+    case RS6000_BIF_VCMPEQUT:
       fold_compare_helper (gsi, EQ_EXPR, stmt);
       return true;
 
     case RS6000_BIF_VCMPNEB:
     case RS6000_BIF_VCMPNEH:
     case RS6000_BIF_VCMPNEW:
-    /* We deliberately omit RS6000_BIF_VCMPNET for now, because gimple
-       folding produces worse code for 128-bit compares.  */
+    case RS6000_BIF_VCMPNET:
       fold_compare_helper (gsi, NE_EXPR, stmt);
       return true;
 
@@ -2021,9 +2019,8 @@ rs6000_gimple_fold_builtin (gimple_stmt_iterator *gsi)
     case RS6000_BIF_CMPGE_U4SI:
     case RS6000_BIF_CMPGE_2DI:
     case RS6000_BIF_CMPGE_U2DI:
-    /* We deliberately omit RS6000_BIF_CMPGE_1TI and RS6000_BIF_CMPGE_U1TI
-       for now, because gimple folding produces worse code for 128-bit
-       compares.  */
+    case RS6000_BIF_CMPGE_1TI:
+    case RS6000_BIF_CMPGE_U1TI:
       fold_compare_helper (gsi, GE_EXPR, stmt);
       return true;
 
@@ -2035,9 +2032,8 @@ rs6000_gimple_fold_builtin (gimple_stmt_iterator *gsi)
     case RS6000_BIF_VCMPGTUW:
     case RS6000_BIF_VCMPGTUD:
     case RS6000_BIF_VCMPGTSD:
-    /* We deliberately omit RS6000_BIF_VCMPGTUT and RS6000_BIF_VCMPGTST
-       for now, because gimple folding produces worse code for 128-bit
-       compares.  */
+    case RS6000_BIF_VCMPGTUT:
+    case RS6000_BIF_VCMPGTST:
       fold_compare_helper (gsi, GT_EXPR, stmt);
       return true;
 
@@ -2049,9 +2045,8 @@ rs6000_gimple_fold_builtin (gimple_stmt_iterator *gsi)
     case RS6000_BIF_CMPLE_U4SI:
     case RS6000_BIF_CMPLE_2DI:
     case RS6000_BIF_CMPLE_U2DI:
-    /* We deliberately omit RS6000_BIF_CMPLE_1TI and RS6000_BIF_CMPLE_U1TI
-       for now, because gimple folding produces worse code for 128-bit
-       compares.  */
+    case RS6000_BIF_CMPLE_1TI:
+    case RS6000_BIF_CMPLE_U1TI:
       fold_compare_helper (gsi, LE_EXPR, stmt);
       return true;
 
