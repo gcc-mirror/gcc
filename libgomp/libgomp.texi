@@ -303,7 +303,7 @@ The OpenMP 4.5 specification is fully supported.
       @code{target} regions @tab N @tab
 @item @code{interop} directive @tab N @tab
 @item @code{omp_interop_t} object support in runtime routines @tab N @tab
-@item @code{nowait} clause in @code{taskwait} directive @tab N @tab
+@item @code{nowait} clause in @code{taskwait} directive @tab Y @tab
 @item Extensions to the @code{atomic} directive @tab Y @tab
 @item @code{seq_cst} clause on a @code{flush} construct @tab Y @tab
 @item @code{inoutset} argument to the @code{depend} clause @tab Y @tab
@@ -343,6 +343,7 @@ The OpenMP 4.5 specification is fully supported.
 @item Support of structured block sequences in C/C++ @tab Y @tab
 @item @code{unconstrained} and @code{reproducible} modifiers on @code{order}
       clause @tab Y @tab
+@item Support @code{begin/end declare target} syntax in C/C++ @tab N @tab
 @end multitable
 
 
@@ -367,7 +368,7 @@ The OpenMP 4.5 specification is fully supported.
 @item If a matching mapped list item is not found in the data environment, the
       pointer retains its original value @tab N @tab
 @item New @code{enter} clause as alias for @code{to} on declare target directive
-      @tab N @tab
+      @tab Y @tab
 @item Deprecation of @code{to} clause on declare target directive @tab N @tab
 @item Extended list of directives permitted in Fortran pure procedures
       @tab N @tab
@@ -387,12 +388,26 @@ The OpenMP 4.5 specification is fully supported.
 @item @code{allocate} and @code{firstprivate} clauses on @code{scope}
       @tab N @tab
 @item @code{ompt_callback_work} @tab N @tab
-@item Extended map-type handling of @code{target enter/exit data} @tab N @tab
+@item Default map-type for @code{map} clause in @code{target enter/exit data}
+      @tab N @tab
 @item New @code{doacross} clause as alias for @code{depend} with
       @code{source}/@code{sink} modifier @tab N @tab
 @item Deprecation of @code{depend} with @code{source}/@code{sink} modifier
       @tab N @tab
 @item @code{omp_cur_iteration} keyword @tab N @tab
+@end multitable
+
+@unnumberedsubsec Other new OpenMP 5.2 features
+
+@multitable @columnfractions .60 .10 .25
+@headitem Description @tab Status @tab Comments
+@item For Fortran, optional comma between directive and clause @tab N @tab
+@item Conforming device numbers and @code{omp_initial_device} and
+      @code{omp_invalid_device} enum/PARAMETER @tab N @tab
+@item Initial value of @emph{default-device-var} ICV with
+      @code{OMP_TARGET_OFFLOAD=mandatory} @tab N @tab
+@item @emph{interop_types} in any position of the modifier list for the @code{init} clause
+      of the @code{interop} construct @tab N @tab
 @end multitable
 
 

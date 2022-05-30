@@ -209,6 +209,9 @@ int riscv_vector_elen_flags
 TargetVariable
 int riscv_zvl_flags
 
+TargetVariable
+int riscv_zicmo_subext
+
 Enum
 Name(isa_spec_class) Type(enum riscv_isa_spec_class)
 Supported ISA specs (for use with the -misa-spec= option):

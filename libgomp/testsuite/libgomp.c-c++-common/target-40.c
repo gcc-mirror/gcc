@@ -18,7 +18,7 @@ int a = 1;
 int *b = &a;
 int **c = &b;
 fnp2 f5 (void) { f3 (); return f4; }
-#pragma omp declare target to (c)
+#pragma omp declare target enter (c)
 
 int
 main ()

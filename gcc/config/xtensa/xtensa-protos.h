@@ -41,6 +41,8 @@ extern void xtensa_expand_conditional_branch (rtx *, machine_mode);
 extern int xtensa_expand_conditional_move (rtx *, int);
 extern int xtensa_expand_scc (rtx *, machine_mode);
 extern int xtensa_expand_block_move (rtx *);
+extern int xtensa_expand_block_set_unrolled_loop (rtx *);
+extern int xtensa_expand_block_set_small_loop (rtx *);
 extern void xtensa_split_operand_pair (rtx *, machine_mode);
 extern int xtensa_emit_move_sequence (rtx *, machine_mode);
 extern rtx xtensa_copy_incoming_a7 (rtx);

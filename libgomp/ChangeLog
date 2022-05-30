@@ -1,3 +1,77 @@
+2022-05-28  Tobias Burnus  <tobias@codesourcery.com>
+
+	* libgomp.texi (OpenMP 5.2): Mark 'enter' clause as supported.
+	* testsuite/libgomp.fortran/declare-target-1.f90: Extend to test
+	explicit 'to' and 'enter' clause.
+	* testsuite/libgomp.fortran/declare-target-2.f90: Update accordingly.
+
+2022-05-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgomp/105745
+	* libgomp.h (GOMP_HAVE_EFFICIENT_ALIGNED_ALLOC): Don't define for
+	defined(HAVE__ALIGNED_MALLOC) case.
+	* alloc.c (gomp_aligned_alloc): Move defined(HAVE__ALIGNED_MALLOC)
+	handling as last option before fallback instead of first.
+	(gomp_aligned_free): For defined(HAVE__ALIGNED_MALLOC) call
+	_aligned_free.
+
+2022-05-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/libgomp.c-c++-common/target-40.c: Modify some existing to
+	clauses to enter.
+	* testsuite/libgomp.c/target-41.c: Likewise.
+
+2022-05-27  Tobias Burnus  <tobias@codesourcery.com>
+
+	* libgomp.texi (Other new OpenMP 5.1 features): Add
+	'begin declare target'.
+	(Other new OpenMP 5.2 features): New.
+
+2022-05-25  Jakub Jelinek  <jakub@redhat.com>
+
+	* task.c (gomp_task_run_post_handle_dependers): If empty_task
+	is the last task taskwait depend depends on, wake it up.
+	Similarly if it is the last child of a taskgroup, use atomic
+	store instead of decrement and awak taskgroup wait if any.
+	* testsuite/libgomp.c-c++-common/taskwait-depend-nowait-2.c: New test.
+
+2022-05-24  Andrew Stubbs  <ams@codesourcery.com>
+
+	* plugin/plugin-gcn.c (EF_AMDGPU_MACH): Add
+	EF_AMDGPU_MACH_AMDGCN_GFX90a.
+	(gcn_gfx90a_s): New.
+	(isa_hsa_name): Support gfx90a.
+	(isa_code): Likewise.
+
+2022-05-24  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR c/105378
+	* libgomp.texi (OpenMP 5.1): Set 'taskwait nowait' to 'Y'.
+	* testsuite/libgomp.fortran/taskwait-depend-nowait-1.f90: New.
+
+2022-05-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/105378
+	* libgomp_g.h (GOMP_taskwait_depend_nowait): Declare.
+	* libgomp.map (GOMP_taskwait_depend_nowait): Export at GOMP_5.1.1.
+	* task.c (empty_task): New function.
+	(gomp_task_run_post_handle_depend_hash): Declare earlier.
+	(gomp_task_run_post_handle_depend): Declare.
+	(GOMP_task): Optimize fn == empty_task if there is nothing to wait
+	for.
+	(gomp_task_run_post_handle_dependers): Optimize task->fn == empty_task.
+	(GOMP_taskwait_depend_nowait): New function.
+	* testsuite/libgomp.c-c++-common/taskwait-depend-nowait-1.c: New test.
+
+2022-05-23  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/104949
+	* target.c (gomp_map_vars_internal, copy_firstprivate_data):
+	Support attach for GOMP_MAP_FIRSTPRIVATE.
+	* testsuite/libgomp.fortran/target-firstprivate-1.f90: New test.
+	* testsuite/libgomp.fortran/target-firstprivate-2.f90: New test.
+	* testsuite/libgomp.fortran/target-firstprivate-3.f90: New test.
+
 2022-05-20  Marcel Vollweiler  <marcel@codesourcery.com>
 
 	* libgomp.map: Added omp_target_memcpy_async and

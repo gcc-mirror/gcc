@@ -2063,6 +2063,11 @@ package body Sem_Ch6 is
          Analyze_Generic_Subprogram_Body (Null_Body, Prev);
          Is_Completion := True;
 
+         --  Mark the newly generated subprogram body as trivial
+
+         Set_Is_Trivial_Subprogram
+           (Defining_Unit_Name (Specification (Null_Body)));
+
          goto Leave;
 
       else
@@ -12303,7 +12308,34 @@ package body Sem_Ch6 is
                            --  Work done in Override_Dispatching_Operation, so
                            --  nothing else needs to be done here.
 
-                           null;
+                           --  ??? Special case to keep supporting the hiding
+                           --  of the predefined "=" operator for a nonlimited
+                           --  tagged type by a user-defined "=" operator for
+                           --  its class-wide type when the type is private.
+
+                           if Chars (E) = Name_Op_Eq then
+                              declare
+                                 Typ : constant Entity_Id
+                                         := Etype (First_Entity (E));
+                                 H   : Entity_Id := Homonym (E);
+
+                              begin
+                                 while Present (H)
+                                   and then Scope (H) = Scope (E)
+                                 loop
+                                    if Is_User_Defined_Equality (H)
+                                       and then Is_Immediately_Visible (H)
+                                       and then Etype (First_Entity (H))
+                                                  = Class_Wide_Type (Typ)
+                                    then
+                                       Remove_Entity_And_Homonym (E);
+                                       exit;
+                                    end if;
+
+                                    H := Homonym (H);
+                                 end loop;
+                              end;
+                           end if;
                         end if;
 
                      else

@@ -67,14 +67,14 @@ public:
   }
 
   /* This should be overridden by each symbol class.  */
-  void visit (Dsymbol *)
+  void visit (Dsymbol *) final override
   {
     gcc_unreachable ();
   }
 
   /* Build the module decl for M, this is considered toplevel, regardless
      of whether there are any parent packages in the module system.  */
-  void visit (Module *m)
+  void visit (Module *m) final override
   {
     Loc loc = (m->md != NULL) ? m->md->loc
       : Loc (m->srcfile.toChars (), 1, 0);
@@ -93,7 +93,7 @@ public:
 
   /* Build an import of another module symbol.  */
 
-  void visit (Import *m)
+  void visit (Import *m) final override
   {
     tree module = build_import_decl (m->mod);
     this->result_ = this->make_import (module);
@@ -101,7 +101,7 @@ public:
 
   /* Build an import for any kind of user defined type.
      Use the TYPE_DECL associated with the type symbol.  */
-  void visit (EnumDeclaration *d)
+  void visit (EnumDeclaration *d) final override
   {
     tree type = build_ctype (d->type);
     /* Not all kinds of D enums create a TYPE_DECL.  */
@@ -109,13 +109,13 @@ public:
       this->result_ = this->make_import (TYPE_STUB_DECL (type));
   }
 
-  void visit (AggregateDeclaration *d)
+  void visit (AggregateDeclaration *d) final override
   {
     tree type = build_ctype (d->type);
     this->result_ = this->make_import (TYPE_STUB_DECL (type));
   }
 
-  void visit (ClassDeclaration *d)
+  void visit (ClassDeclaration *d) final override
   {
     /* Want the RECORD_TYPE, not POINTER_TYPE.  */
     tree type = TREE_TYPE (build_ctype (d->type));
@@ -123,12 +123,12 @@ public:
   }
 
   /* For now, ignore importing other kinds of dsymbols.  */
-  void visit (ScopeDsymbol *)
+  void visit (ScopeDsymbol *) final override
   {
   }
 
   /* Alias symbols aren't imported, but their targets are.  */
-  void visit (AliasDeclaration *d)
+  void visit (AliasDeclaration *d) final override
   {
     Dsymbol *dsym = d->toAlias ();
 
@@ -154,14 +154,14 @@ public:
   }
 
   /* Visit the underlying alias symbol of overloadable aliases.  */
-  void visit (OverDeclaration *d)
+  void visit (OverDeclaration *d) final override
   {
     if (d->aliassym != NULL)
       d->aliassym->accept (this);
   }
 
   /* Function aliases are the same as alias symbols.  */
-  void visit (FuncAliasDeclaration *d)
+  void visit (FuncAliasDeclaration *d) final override
   {
     FuncDeclaration *fd = d->toAliasFunc ();
 
@@ -170,17 +170,17 @@ public:
   }
 
   /* Skip over importing templates and tuples.  */
-  void visit (TemplateDeclaration *)
+  void visit (TemplateDeclaration *) final override
   {
   }
 
-  void visit (TupleDeclaration *)
+  void visit (TupleDeclaration *) final override
   {
   }
 
   /* Import any other kind of declaration.  If the class does not implement
      symbol generation routines, the compiler will throw an error.  */
-  void visit (Declaration *d)
+  void visit (Declaration *d) final override
   {
     this->result_ = this->make_import (get_symbol_decl (d));
   }

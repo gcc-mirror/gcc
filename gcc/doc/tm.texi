@@ -6088,14 +6088,18 @@ for the given scalar type @var{type}.  @var{is_packed} is false if the scalar
 access using @var{type} is known to be naturally aligned.
 @end deftypefn
 
-@deftypefn {Target Hook} bool TARGET_VECTORIZE_VEC_PERM_CONST (machine_mode @var{mode}, rtx @var{output}, rtx @var{in0}, rtx @var{in1}, const vec_perm_indices @var{&sel})
+@deftypefn {Target Hook} bool TARGET_VECTORIZE_VEC_PERM_CONST (machine_mode @var{mode}, machine_mode @var{op_mode}, rtx @var{output}, rtx @var{in0}, rtx @var{in1}, const vec_perm_indices @var{&sel})
 This hook is used to test whether the target can permute up to two
-vectors of mode @var{mode} using the permutation vector @code{sel}, and
-also to emit such a permutation.  In the former case @var{in0}, @var{in1}
-and @var{out} are all null.  In the latter case @var{in0} and @var{in1} are
-the source vectors and @var{out} is the destination vector; all three are
-operands of mode @var{mode}.  @var{in1} is the same as @var{in0} if
-@var{sel} describes a permutation on one vector instead of two.
+vectors of mode @var{op_mode} using the permutation vector @code{sel},
+producing a vector of mode @var{mode}.  The hook is also used to emit such
+a permutation.
+
+When the hook is being used to test whether the target supports a permutation,
+@var{in0}, @var{in1}, and @var{out} are all null.  When the hook is being used
+to emit a permutation, @var{in0} and @var{in1} are the source vectors of mode
+@var{op_mode} and @var{out} is the destination vector of mode @var{mode}.
+@var{in1} is the same as @var{in0} if @var{sel} describes a permutation on one
+vector instead of two.
 
 Return true if the operation is possible, emitting instructions for it
 if rtxes are provided.

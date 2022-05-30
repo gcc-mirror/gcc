@@ -19,7 +19,7 @@ struct Data
 }
 
 ref int identity(return ref int x) @safe { return x; }
-ref int fun(return int x) { return identity(x); }
+ref int fun(return int x) @safe { return identity(x); }
 ref int fun2(ref int x) @safe { return identity(x); }
 
 void main()

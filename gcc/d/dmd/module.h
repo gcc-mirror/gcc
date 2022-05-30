@@ -35,21 +35,21 @@ public:
     unsigned tag;       // auto incremented tag, used to mask package tree in scopes
     Module *mod;        // != NULL if isPkgMod == PKGmodule
 
-    const char *kind() const;
+    const char *kind() const override;
 
-    bool equals(const RootObject *o) const;
+    bool equals(const RootObject *o) const override;
 
-    Package *isPackage() { return this; }
+    Package *isPackage() override final { return this; }
 
     bool isAncestorPackageOf(const Package * const pkg) const;
 
-    Dsymbol *search(const Loc &loc, Identifier *ident, int flags = SearchLocalsOnly);
-    void accept(Visitor *v) { v->visit(this); }
+    Dsymbol *search(const Loc &loc, Identifier *ident, int flags = SearchLocalsOnly) override;
+    void accept(Visitor *v) override { v->visit(this); }
 
     Module *isPackageMod();
 };
 
-class Module : public Package
+class Module final : public Package
 {
 public:
     static Module *rootModule;
@@ -82,6 +82,7 @@ public:
     int needmoduleinfo;
     int selfimports;            // 0: don't know, 1: does not, 2: does
     void* tagSymTab;            // ImportC: tag symbols that conflict with other symbols used as the index
+    OutBuffer defines;          // collect all the #define lines here
     bool selfImports();         // returns true if module imports itself
 
     int rootimports;            // 0: don't know, 1: does not, 2: does
@@ -119,14 +120,14 @@ public:
 
     static Module *load(const Loc &loc, Identifiers *packages, Identifier *ident);
 
-    const char *kind() const;
+    const char *kind() const override;
     bool read(const Loc &loc); // read file, returns 'true' if succeed, 'false' otherwise.
     Module *parse();    // syntactic parse
-    void importAll(Scope *sc);
+    void importAll(Scope *sc) override;
     int needModuleInfo();
-    Dsymbol *search(const Loc &loc, Identifier *ident, int flags = SearchLocalsOnly);
-    bool isPackageAccessible(Package *p, Visibility visibility, int flags = 0);
-    Dsymbol *symtabInsert(Dsymbol *s);
+    Dsymbol *search(const Loc &loc, Identifier *ident, int flags = SearchLocalsOnly) override;
+    bool isPackageAccessible(Package *p, Visibility visibility, int flags = 0) override;
+    Dsymbol *symtabInsert(Dsymbol *s) override;
     void deleteObjFile();
     static void runDeferredSemantic();
     static void runDeferredSemantic2();
@@ -155,8 +156,8 @@ public:
 
     void *ctfe_cov;             // stores coverage information from ctfe
 
-    Module *isModule() { return this; }
-    void accept(Visitor *v) { v->visit(this); }
+    Module *isModule() override { return this; }
+    void accept(Visitor *v) override { v->visit(this); }
 };
 
 

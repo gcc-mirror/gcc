@@ -87,6 +87,18 @@ struct riscv_builtin_description {
 
 AVAIL (hard_float, TARGET_HARD_FLOAT)
 
+
+AVAIL (clean32, TARGET_ZICBOM && !TARGET_64BIT)
+AVAIL (clean64, TARGET_ZICBOM && TARGET_64BIT)
+AVAIL (flush32, TARGET_ZICBOM && !TARGET_64BIT)
+AVAIL (flush64, TARGET_ZICBOM && TARGET_64BIT)
+AVAIL (inval32, TARGET_ZICBOM && !TARGET_64BIT)
+AVAIL (inval64, TARGET_ZICBOM && TARGET_64BIT)
+AVAIL (zero32,  TARGET_ZICBOZ && !TARGET_64BIT)
+AVAIL (zero64,  TARGET_ZICBOZ && TARGET_64BIT)
+AVAIL (prefetchi32, TARGET_ZICBOP && !TARGET_64BIT)
+AVAIL (prefetchi64, TARGET_ZICBOP && TARGET_64BIT)
+
 /* Construct a riscv_builtin_description from the given arguments.
 
    INSN is the name of the associated instruction pattern, without the
@@ -119,6 +131,8 @@ AVAIL (hard_float, TARGET_HARD_FLOAT)
 /* Argument types.  */
 #define RISCV_ATYPE_VOID void_type_node
 #define RISCV_ATYPE_USI unsigned_intSI_type_node
+#define RISCV_ATYPE_SI intSI_type_node
+#define RISCV_ATYPE_DI intDI_type_node
 
 /* RISCV_FTYPE_ATYPESN takes N RISCV_FTYPES-like type codes and lists
    their associated RISCV_ATYPEs.  */
@@ -128,6 +142,8 @@ AVAIL (hard_float, TARGET_HARD_FLOAT)
   RISCV_ATYPE_##A, RISCV_ATYPE_##B
 
 static const struct riscv_builtin_description riscv_builtins[] = {
+  #include "riscv-cmo.def"
+
   DIRECT_BUILTIN (frflags, RISCV_USI_FTYPE, hard_float),
   DIRECT_NO_TARGET_BUILTIN (fsflags, RISCV_VOID_FTYPE_USI, hard_float)
 };

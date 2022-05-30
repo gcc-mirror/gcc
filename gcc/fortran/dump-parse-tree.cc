@@ -1679,6 +1679,7 @@ show_omp_clauses (gfc_omp_clauses *omp_clauses)
 	  case OMP_LIST_IN_REDUCTION: type = "IN_REDUCTION"; break;
 	  case OMP_LIST_TASK_REDUCTION: type = "TASK_REDUCTION"; break;
 	  case OMP_LIST_DEVICE_RESIDENT: type = "DEVICE_RESIDENT"; break;
+	  case OMP_LIST_ENTER: type = "ENTER"; break;
 	  case OMP_LIST_LINK: type = "LINK"; break;
 	  case OMP_LIST_USE_DEVICE: type = "USE_DEVICE"; break;
 	  case OMP_LIST_CACHE: type = "CACHE"; break;

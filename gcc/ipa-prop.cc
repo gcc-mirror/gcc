@@ -4187,14 +4187,13 @@ propagate_controlled_uses (struct cgraph_edge *cs)
 	{
 	  int d = ipa_get_controlled_uses (old_root_info, i);
 	  int c = rdesc->refcount;
+	  tree cst = ipa_get_jf_constant (jf);
 	  rdesc->refcount = combine_controlled_uses_counters (c, d);
 	  if (rdesc->refcount != IPA_UNDESCRIBED_USE
-	      && ipa_get_param_load_dereferenced (old_root_info, i))
+	      && ipa_get_param_load_dereferenced (old_root_info, i)
+	      && TREE_CODE (cst) == ADDR_EXPR
+	      && TREE_CODE (TREE_OPERAND (cst, 0)) == VAR_DECL)
 	    {
-	      tree cst = ipa_get_jf_constant (jf);
-	      gcc_checking_assert (TREE_CODE (cst) == ADDR_EXPR
-				   && (TREE_CODE (TREE_OPERAND (cst, 0))
-				       == VAR_DECL));
 	      symtab_node *n = symtab_node::get (TREE_OPERAND (cst, 0));
 	      new_root->create_reference (n, IPA_REF_LOAD, NULL);
 	      if (dump_file)
@@ -4204,7 +4203,6 @@ propagate_controlled_uses (struct cgraph_edge *cs)
 	    }
 	  if (rdesc->refcount == 0)
 	    {
-	      tree cst = ipa_get_jf_constant (jf);
 	      gcc_checking_assert (TREE_CODE (cst) == ADDR_EXPR
 				   && ((TREE_CODE (TREE_OPERAND (cst, 0))
 					== FUNCTION_DECL)

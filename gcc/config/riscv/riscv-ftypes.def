@@ -28,3 +28,7 @@ along with GCC; see the file COPYING3.  If not see
 
 DEF_RISCV_FTYPE (0, (USI))
 DEF_RISCV_FTYPE (1, (VOID, USI))
+DEF_RISCV_FTYPE (0, (SI))
+DEF_RISCV_FTYPE (0, (DI))
+DEF_RISCV_FTYPE (1, (SI, SI))
+DEF_RISCV_FTYPE (1, (DI, DI))

@@ -5799,10 +5799,15 @@ mark_used (tree decl, tsubst_flags_t complain)
      actually used until after overload resolution.  */
   if (BASELINK_P (decl))
     {
-      decl = BASELINK_FUNCTIONS (decl);
-      if (really_overloaded_fn (decl))
+      tree fns = BASELINK_FUNCTIONS (decl);
+      if (really_overloaded_fn (fns))
 	return true;
-      decl = OVL_FIRST (decl);
+      fns = OVL_FIRST (fns);
+      if (!mark_used (fns, complain))
+	return false;
+      /* We might have deduced its return type.  */
+      TREE_TYPE (decl) = TREE_TYPE (fns);
+      return true;
     }
 
   if (!DECL_P (decl))

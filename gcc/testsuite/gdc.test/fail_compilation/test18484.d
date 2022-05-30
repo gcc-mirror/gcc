@@ -19,7 +19,7 @@ int* test1() @safe
     auto x = S(); return x.bar();  // error
 }
 
-int* test2()
+int* test2() @safe
 {
     return S().bar();  // error
 }

@@ -8,7 +8,7 @@ __attribute__((always_inline, target("avx2")))
 static __m256i
 load8bit_4x4_avx2(const uint8_t *const src, const uint32_t stride)
 {
-  __m128i src01, src23;
+  __m128i src01, src23 = _mm_setzero_si128();
   src01 = _mm_cvtsi32_si128(*(int32_t*)(src + 0 * stride));
   src23 = _mm_insert_epi32(src23, *(int32_t *)(src + 3 * stride), 1);
   return _mm256_setr_m128i(src01, src23);

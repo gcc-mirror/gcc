@@ -1370,7 +1370,7 @@ extern (C++) abstract class Expression : ASTNode
          */
         if (v.storage_class & STC.gshared)
         {
-            if (sc.func.setUnsafe(false, this.loc,
+            if (sc.setUnsafe(false, this.loc,
                 "`@safe` function `%s` cannot access `__gshared` data `%s`", sc.func, v))
             {
                 err = true;
@@ -1419,12 +1419,26 @@ extern (C++) abstract class Expression : ASTNode
                 error("`@safe` %s `%s` cannot call `@system` %s `%s`",
                     sc.func.kind(), sc.func.toPrettyChars(), f.kind(),
                     prettyChars);
-                f.errorSupplementalInferredSafety(/*max depth*/ 10);
+                f.errorSupplementalInferredSafety(/*max depth*/ 10, /*deprecation*/ false);
                 .errorSupplemental(f.loc, "`%s` is declared here", prettyChars);
 
                 checkOverridenDtor(sc, f, dd => dd.type.toTypeFunction().trust > TRUST.system, "@system");
 
                 return true;
+            }
+        }
+        else if (f.isSafe() && f.safetyViolation)
+        {
+            // for dip1000 by default transition, print deprecations for calling functions that will become `@system`
+            if (sc.func.isSafeBypassingInference())
+            {
+                .deprecation(this.loc, "`@safe` function `%s` calling `%s`", sc.func.toChars(), f.toChars());
+                errorSupplementalInferredSafety(f, 10, true);
+            }
+            else if (!sc.func.safetyViolation)
+            {
+                import dmd.func : AttributeViolation;
+                sc.func.safetyViolation = new AttributeViolation(this.loc, null, f, null);
             }
         }
         return false;
@@ -5761,7 +5775,7 @@ extern (C++) final class DelegatePtrExp : UnaExp
 
     override Expression modifiableLvalue(Scope* sc, Expression e)
     {
-        if (sc.func.setUnsafe(false, this.loc, "cannot modify delegate pointer in `@safe` code `%s`", this))
+        if (sc.setUnsafe(false, this.loc, "cannot modify delegate pointer in `@safe` code `%s`", this))
         {
             return ErrorExp.get();
         }
@@ -5799,7 +5813,7 @@ extern (C++) final class DelegateFuncptrExp : UnaExp
 
     override Expression modifiableLvalue(Scope* sc, Expression e)
     {
-        if (sc.func.setUnsafe(false, this.loc, "cannot modify delegate function pointer in `@safe` code `%s`", this))
+        if (sc.setUnsafe(false, this.loc, "cannot modify delegate function pointer in `@safe` code `%s`", this))
         {
             return ErrorExp.get();
         }

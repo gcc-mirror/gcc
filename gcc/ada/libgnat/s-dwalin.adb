@@ -44,6 +44,8 @@ with System.Storage_Elements;  use System.Storage_Elements;
 
 package body System.Dwarf_Lines is
 
+   subtype Offset is Object_Reader.Offset;
+
    function Get_Load_Displacement (C : Dwarf_Context) return Storage_Offset;
    --  Return the displacement between the load address present in the binary
    --  and the run-time address at which it is loaded (i.e. non-zero for PIE).

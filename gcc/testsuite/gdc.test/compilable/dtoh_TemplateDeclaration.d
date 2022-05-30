@@ -160,7 +160,7 @@ class Child final : public Parent<T >
 {
 public:
     T childMember;
-    void parentVirtual();
+    void parentVirtual() override;
     T childFinal();
 };
 

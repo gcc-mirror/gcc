@@ -15,10 +15,13 @@ extern int f[];
 #pragma omp declare target to (f) /* { dg-error "'f' does not have a mappable type in 'to' clause" } */
 extern int g[];
 #pragma omp declare target to (g) /* { dg-error "'g' does not have a mappable type in 'to' clause" } */
+extern int g2[];
+#pragma omp declare target enter (g2) /* { dg-error "'g2' does not have a mappable type in 'enter' clause" } */
 int g[3];
 extern int h[];
 int h[3];
 #pragma omp declare target to (h)
+#pragma omp declare target enter (h)
 
 int i[] = { 1, 2, 3 };
 int j[] = { 1, 2, 3 };

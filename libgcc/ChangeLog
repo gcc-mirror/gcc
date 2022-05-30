@@ -1,3 +1,15 @@
+2022-05-25  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	PR libgcc/105708
+	* config/aarch64/lse-init.c: Increase constructor priority.
+
+2022-05-25  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	PR target/104689
+	* config/aarch64/aarch64-unwind.h (aarch64_frob_update_context):
+	Handle the !REG_UNSAVED case.
+	* unwind-dw2.c (execute_cfa_program): Fail toggle if !REG_UNSAVED.
+
 2022-05-20  Christophe Lyon  <christophe.lyon@arm.com>
 
 	* Makefile.in (D32PBIT_FUNCS): Add _hf_to_sd and _sd_to_hf.

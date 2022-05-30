@@ -1527,7 +1527,10 @@ lower_vec_perm (gimple_stmt_iterator *gsi)
       && tree_to_vec_perm_builder (&sel_int, mask))
     {
       vec_perm_indices indices (sel_int, 2, elements);
-      if (can_vec_perm_const_p (TYPE_MODE (vect_type), indices))
+      machine_mode vmode = TYPE_MODE (vect_type);
+      tree lhs_type = TREE_TYPE (gimple_assign_lhs (stmt));
+      machine_mode lhs_mode = TYPE_MODE (lhs_type);
+      if (can_vec_perm_const_p (lhs_mode, vmode, indices))
 	{
 	  gimple_assign_set_rhs3 (stmt, mask);
 	  update_stmt (stmt);

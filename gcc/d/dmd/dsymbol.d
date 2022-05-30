@@ -1978,8 +1978,9 @@ extern (C++) final class ArrayScopeSymbol : ScopeDsymbol
         }
 
         const DYNCAST kind = arrayContent.dyncast();
-        if (kind == DYNCAST.dsymbol)
+        switch (kind) with (DYNCAST)
         {
+        case dsymbol:
             TupleDeclaration td = cast(TupleDeclaration) arrayContent;
             /* $ gives the number of elements in the tuple
              */
@@ -1989,10 +1990,10 @@ extern (C++) final class ArrayScopeSymbol : ScopeDsymbol
             v.storage_class |= STC.temp | STC.static_ | STC.const_;
             v.dsymbolSemantic(sc);
             return v;
-        }
-        if (kind == DYNCAST.type)
-        {
+        case type:
             return dollarFromTypeTuple(loc, cast(TypeTuple) arrayContent, sc);
+        default:
+            break;
         }
         Expression exp = cast(Expression) arrayContent;
         if (auto ie = exp.isIndexExp())
@@ -2531,6 +2532,16 @@ Dsymbol handleSymbolRedeclarations(ref Scope sc, Dsymbol s, Dsymbol s2, ScopeDsy
         if (log) printf(" collision\n");
         return null;
     }
+    /*
+    Handle merging declarations with asm("foo") and their definitions
+    */
+    static void mangleWrangle(Declaration oldDecl, Declaration newDecl)
+    {
+        if (oldDecl && newDecl)
+        {
+            newDecl.mangleOverride = oldDecl.mangleOverride ? oldDecl.mangleOverride : null;
+        }
+    }
 
     auto vd = s.isVarDeclaration(); // new declaration
     auto vd2 = s2.isVarDeclaration(); // existing declaration
@@ -2547,6 +2558,8 @@ Dsymbol handleSymbolRedeclarations(ref Scope sc, Dsymbol s, Dsymbol s2, ScopeDsy
 
         if (i1 && i2)
             return collision();         // can't both have initializers
+
+        mangleWrangle(vd2, vd);
 
         if (i1)                         // vd is the definition
         {
@@ -2592,6 +2605,8 @@ Dsymbol handleSymbolRedeclarations(ref Scope sc, Dsymbol s, Dsymbol s2, ScopeDsy
 
         if (fd.fbody && fd2.fbody)
             return collision();         // can't both have bodies
+
+        mangleWrangle(fd2, fd);
 
         if (fd.fbody)                   // fd is the definition
         {

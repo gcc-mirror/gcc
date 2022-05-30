@@ -16,6 +16,7 @@ void f5 (T);
 #pragma omp declare target (f3)
 #pragma omp declare target to (f4)	// { dg-error "overloaded function name .f4. in clause .to." }
 #pragma omp declare target to (f5<int>)	// { dg-error "template .f5<int>. in clause .to." }
+#pragma omp declare target enter (f5<short>) // { dg-error "template .f5<short int>. in clause .enter." }
 template <int N>
 void f6 (int)
 {
@@ -35,3 +36,7 @@ int v;
 #pragma omp declare target (N::M::f7)
 #pragma omp declare target to (::N::f8)
 #pragma omp declare target to (::f9) to (::v)
+#pragma omp declare target to (::f9, ::v)
+#pragma omp declare target enter (::N::f8)
+#pragma omp declare target enter (::f9) enter (::v)
+#pragma omp declare target enter (::f9, ::v)

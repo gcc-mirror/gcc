@@ -33,4 +33,4 @@ parse_tag: ;
 }
 
 /* Test that we actually unswitched something.  */
-/* { dg-final { scan-tree-dump "Unswitching loop" "unswitch" } } */
+/* { dg-final { scan-tree-dump "unswitching loop" "unswitch" } } */

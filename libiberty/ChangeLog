@@ -1,3 +1,14 @@
+2022-05-23  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-demangle.c (d_make_comp): Adjust.
+	(d_name, d_prefix): Adjust subst handling. Add module handling.
+	(d_maybe_module_name): New.
+	(d_unqualified_name): Add incoming module parm. Handle it.  Adjust all callers.
+	(d_special_name): Add 'GI' support.
+	(d_count_template_scopes): Adjust.
+	(d_print_comp_inner): Print module.
+	* testsuite/demangle-expected: New test cases
+
 2022-05-18  Nathan Sidwell  <nathan@acm.org>
 
 	* cp-demangle.c (d_name): Add SUBSTABLE parameter,

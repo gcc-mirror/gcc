@@ -57,14 +57,6 @@ package body Lib.Xref is
    -- Declarations --
    ------------------
 
-   package Deferred_References is new Table.Table (
-     Table_Component_Type => Deferred_Reference_Entry,
-     Table_Index_Type     => Int,
-     Table_Low_Bound      => 0,
-     Table_Initial        => 512,
-     Table_Increment      => 200,
-     Table_Name           => "Name_Deferred_References");
-
    --  The Xref table is used to record references. The Loc field is set
    --  to No_Location for a definition entry.
 
@@ -210,21 +202,6 @@ package body Lib.Xref is
          Xrefs.Decrement_Last;
       end if;
    end Add_Entry;
-
-   ---------------------
-   -- Defer_Reference --
-   ---------------------
-
-   procedure Defer_Reference (Deferred_Reference : Deferred_Reference_Entry) is
-   begin
-      --  If Get_Ignore_Errors, then we are in Preanalyze_Without_Errors, and
-      --  we should not record cross references, because that will cause
-      --  duplicates when we call Analyze.
-
-      if not Get_Ignore_Errors then
-         Deferred_References.Append (Deferred_Reference);
-      end if;
-   end Defer_Reference;
 
    -----------
    -- Equal --
@@ -1290,21 +1267,6 @@ package body Lib.Xref is
    begin
       return E;
    end Get_Key;
-
-   ----------------------------
-   -- Has_Deferred_Reference --
-   ----------------------------
-
-   function Has_Deferred_Reference (Ent : Entity_Id) return Boolean is
-   begin
-      for J in Deferred_References.First .. Deferred_References.Last loop
-         if Deferred_References.Table (J).E = Ent then
-            return True;
-         end if;
-      end loop;
-
-      return False;
-   end Has_Deferred_Reference;
 
    ----------
    -- Hash --
@@ -2752,33 +2714,6 @@ package body Lib.Xref is
          Write_Info_EOL;
       end Output_Refs;
    end Output_References;
-
-   ---------------------------------
-   -- Process_Deferred_References --
-   ---------------------------------
-
-   procedure Process_Deferred_References is
-   begin
-      for J in Deferred_References.First .. Deferred_References.Last loop
-         declare
-            D : Deferred_Reference_Entry renames Deferred_References.Table (J);
-
-         begin
-            case Known_To_Be_Assigned (D.N) is
-               when True =>
-                  Generate_Reference (D.E, D.N, 'm');
-
-               when False =>
-                  Generate_Reference (D.E, D.N, 'r');
-
-            end case;
-         end;
-      end loop;
-
-      --  Clear processed entries from table
-
-      Deferred_References.Init;
-   end Process_Deferred_References;
 
 --  Start of elaboration for Lib.Xref
 

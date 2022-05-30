@@ -359,6 +359,26 @@ package body Erroutc is
       return Cur_Msg;
    end Get_Msg_Id;
 
+   ------------------------
+   -- Get_Warning_Option --
+   ------------------------
+
+   function Get_Warning_Option (Id : Error_Msg_Id) return String is
+      Warn     : constant Boolean         := Errors.Table (Id).Warn;
+      Warn_Chr : constant String (1 .. 2) := Errors.Table (Id).Warn_Chr;
+   begin
+      if Warn and then Warn_Chr /= "  " and then Warn_Chr (1) /= '?' then
+         if Warn_Chr = "$ " then
+            return "-gnatel";
+         elsif Warn_Chr (2) = ' ' then
+            return "-gnatw" & Warn_Chr (1);
+         else
+            return "-gnatw" & Warn_Chr;
+         end if;
+      end if;
+      return "";
+   end Get_Warning_Option;
+
    ---------------------
    -- Get_Warning_Tag --
    ---------------------
@@ -366,22 +386,19 @@ package body Erroutc is
    function Get_Warning_Tag (Id : Error_Msg_Id) return String is
       Warn     : constant Boolean         := Errors.Table (Id).Warn;
       Warn_Chr : constant String (1 .. 2) := Errors.Table (Id).Warn_Chr;
+      Option   : constant String          := Get_Warning_Option (Id);
    begin
-      if Warn and then Warn_Chr /= "  " then
+      if Warn then
          if Warn_Chr = "? " then
             return "[enabled by default]";
          elsif Warn_Chr = "* " then
             return "[restriction warning]";
-         elsif Warn_Chr = "$ " then
-            return "[-gnatel]";
-         elsif Warn_Chr (2) = ' ' then
-            return "[-gnatw" & Warn_Chr (1) & ']';
-         else
-            return "[-gnatw" & Warn_Chr & ']';
+         elsif Option /= "" then
+            return "[" & Option & "]";
          end if;
-      else
-         return "";
       end if;
+
+      return "";
    end Get_Warning_Tag;
 
    -------------

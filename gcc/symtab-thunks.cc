@@ -71,10 +71,10 @@ public:
     function_summary<thunk_info *> (table, ggc) { }
 
   /* Hook that is called by summary when a node is duplicated.  */
-  virtual void duplicate (cgraph_node *node,
-			  cgraph_node *node2,
-			  thunk_info *data,
-			  thunk_info *data2);
+  void duplicate (cgraph_node *node,
+		  cgraph_node *node2,
+		  thunk_info *data,
+		  thunk_info *data2) final override;
 };
 
 /* Duplication hook.  */

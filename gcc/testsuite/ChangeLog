@@ -1,3 +1,275 @@
+2022-05-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/105732
+	* c-c++-common/cpp/va-opt-10.c: New test.
+
+2022-05-28  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/gomp/declare-target-2.f90: Add 'enter' clause test.
+	* gfortran.dg/gomp/declare-target-4.f90: Likewise.
+
+2022-05-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/gomp/declare-target-2.c: Add further tests for mixing of
+	link and to/enter clauses on separate directives.
+
+2022-05-28  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105652
+	* g++.dg/cpp2a/concepts-lambda20.C: New test.
+
+2022-05-27  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/105725
+	* g++.dg/warn/Wmismatched-tags-10.C: New test.
+
+2022-05-27  Marek Polacek  <polacek@redhat.com>
+
+	PR c/90658
+	* c-c++-common/attr-cdtor-1.c: New test.
+
+2022-05-27  Tobias Burnus  <tobias@codesourcery.com>
+	    Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* gfortran.dg/gomp/requires-4.f90: Update dg-error.
+	* gfortran.dg/gomp/requires-8.f90: Update dg-error.
+
+2022-05-27  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/105639
+	* gcc.dg/ipa/pr105639.c: New test.
+
+2022-05-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/gomp/clauses-3.c: Add tests with enter clause instead
+	of to or modify some existing to clauses to enter.
+	* c-c++-common/gomp/declare-target-1.c: Likewise.
+	* c-c++-common/gomp/declare-target-2.c: Likewise.
+	* c-c++-common/gomp/declare-target-3.c: Likewise.
+	* g++.dg/gomp/attrs-9.C: Likewise.
+	* g++.dg/gomp/declare-target-1.C: Likewise.
+
+2022-05-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/105726
+	* g++.dg/warn/Warray-bounds-27.C: New testcase.
+
+2022-05-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/105729
+	* g++.dg/ubsan/pr105729.C: New test.
+
+2022-05-27  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* gcc.dg/pr98865.c: New test case.
+
+2022-05-27  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* gcc.target/i386/pr91400-1.c: Update for improved code generation.
+	* gcc.target/i386/pr91400-2.c: Likewise.
+	* gcc.target/i386/testnot-1.c: New test case.
+	* gcc.target/i386/testnot-2.c: Likewise.
+
+2022-05-27  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* gcc.target/xtensa/bswap.c: Remove test.
+	* gcc.target/xtensa/bswap-O1.c: New.
+	* gcc.target/xtensa/bswap-O2.c: Ditto.
+	* gcc.target/xtensa/bswap-Os.c: Ditto.
+
+2022-05-26  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/105569
+	* g++.dg/warn/Waddress-9.C: New test.
+
+2022-05-26  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/96363
+	* g++.dg/cpp2a/concepts-partial-spec12.C: New test.
+	* g++.dg/cpp2a/concepts-partial-spec12a.C: New test.
+	* g++.dg/cpp2a/concepts-partial-spec13.C: New test.
+
+2022-05-25  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/96637
+	* g++.dg/parse/error64.C: New test.
+
+2022-05-25  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105655
+	* g++.dg/cpp2a/class-deduction-alias13.C: New test.
+
+2022-05-25  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105623
+	* g++.dg/cpp1y/auto-fn62.C: New test.
+
+2022-05-25  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp1y/constexpr-local4.C: New test.
+
+2022-05-25  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/100252
+	* g++.dg/cpp1y/nsdmi-aggr14.C: New test.
+	* g++.dg/cpp1y/nsdmi-aggr15.C: New test.
+	* g++.dg/cpp1y/nsdmi-aggr16.C: New test.
+	* g++.dg/cpp1y/nsdmi-aggr17.C: New test.
+	* g++.dg/cpp1y/nsdmi-aggr18.C: New test.
+	* g++.dg/cpp1y/nsdmi-aggr19.C: New test.
+
+2022-05-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/91134
+	* gcc.dg/pr91134.c: New test.
+
+2022-05-25  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/loop-unswitch-10.c: Fix misspelled defaut:
+	* gcc.dg/loop-unswitch-11.c: Likewise.
+	* gcc.dg/loop-unswitch-14.c: Likewise.
+
+2022-05-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/105714
+	* gcc.dg/asan/pr105714.c: New test.
+
+2022-05-25  Martin Liska  <mliska@suse.cz>
+	    Richard Biener   <rguenther@suse.de>
+
+	* gcc.dg/loop-unswitch-7.c: New test.
+	* gcc.dg/loop-unswitch-8.c: New test.
+	* gcc.dg/loop-unswitch-9.c: New test.
+	* gcc.dg/loop-unswitch-10.c: New test.
+	* gcc.dg/loop-unswitch-11.c: New test.
+	* gcc.dg/loop-unswitch-12.c: New test.
+	* gcc.dg/loop-unswitch-13.c: New test.
+	* gcc.dg/loop-unswitch-14.c: New test.
+	* gcc.dg/loop-unswitch-15.c: New test.
+	* gcc.dg/loop-unswitch-16.c: New test.
+	* gcc.dg/loop-unswitch-17.c: New test.
+	* gcc.dg/torture/20220518-1.c: New test.
+	* gcc.dg/torture/20220518-2.c: New test.
+	* gcc.dg/torture/20220525-1.c: New test.
+	* gcc.dg/alias-10.c: Adjust.
+	* gcc.dg/tree-ssa/loop-6.c: Likewise.
+	* gcc.dg/loop-unswitch-1.c: Likewise.
+
+2022-05-25  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	PR target/104689
+	* gcc.target/aarch64/pr104689.c: New test.
+
+2022-05-24  Martin Sebor  <msebor@redhat.com>
+	    Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/105604
+	* gcc.dg/Wrestrict-24.c: New test.
+	* gcc.dg/Wrestrict-25.c: New test.
+	* gcc.dg/Wrestrict-26.c: New test.
+
+2022-05-24  Joel Brobecker  <brobecker@adacore.com>
+
+	* gcc.misc-tests/outputs.exp: Make the -gsplit-dwarf test
+	a compile-and-link test rather than a compile-only test.
+
+2022-05-24  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105622
+	* g++.dg/cpp2a/no_unique_address14.C: New test.
+
+2022-05-24  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* gcc.target/i386/neg-zext-1.c: New test case for -m32.
+	* gcc.target/i386/neg-zext-2.c: New test case for -m64.
+
+2022-05-24  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR tree-optimization/105668
+	* gcc.target/i386/pr105668.c: New test case.
+
+2022-05-24  Patrick Palka  <ppalka@redhat.com>
+
+	* g++.dg/cpp0x/constexpr-52830a.C: New test.
+
+2022-05-24  ShiYulong  <shiyulong@iscas.ac.cn>
+
+	* gcc.target/riscv/cmo-zicbom-1.c: New test.
+	* gcc.target/riscv/cmo-zicbom-2.c: New test.
+	* gcc.target/riscv/cmo-zicbop-1.c: New test.
+	* gcc.target/riscv/cmo-zicbop-2.c: New test.
+	* gcc.target/riscv/cmo-zicboz-1.c: New test.
+	* gcc.target/riscv/cmo-zicboz-2.c: New test.
+
+2022-05-24  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/105711
+	* gcc.target/i386/pr105711.c: New testcase.
+
+2022-05-24  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR c/105378
+	* gfortran.dg/gomp/taskwait-depend-nowait-1.f90: New.
+
+2022-05-24  Vineet Gupta  <vineetg@rivosinc.com>
+
+	* gcc.target/riscv/pr105666.c: New test.
+
+2022-05-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/105378
+	* c-c++-common/gomp/taskwait-depend-nowait-1.c: New test.
+
+2022-05-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/100221
+	* gcc.dg/tree-ssa/ssa-dse-44.c: New testcase.
+	* gcc.dg/tree-ssa/ssa-dse-45.c: Likewise.
+
+2022-05-24  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR testsuite/105706
+	* gcc.target/powerpc/pr78604.c: Adjust.
+
+2022-05-24  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/105627
+	* gcc.target/powerpc/pr105627.c: New test.
+
+2022-05-23  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/104441
+	* gcc.target/i386/pr104441-1a.c (load8bit_4x4_avx2): Initialize
+	src23.
+
+2022-05-23  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/plugin/analyzer_gil_plugin.c: Replace uses of "FINAL" and
+	"OVERRIDE" with "final" and "override".
+
+2022-05-23  Mayshao  <mayshao-oc@zhaoxin.com>
+
+	* gcc.target/i386/funcspec-56.inc: Test -arch=lujiauzi and -tune=lujiazui.
+	* g++.target/i386/mv32.C: Ditto.
+
+2022-05-23  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	* gcc.dg/mallign.c: Skip check if sizeof(word)==1.
+
+2022-05-23  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/gimplefe-27.c: Adjust.
+	* gcc.dg/gimplefe-45.c: Likewise.
+	* gcc.dg/pr101145-2.c: Likewise.
+	* gcc.dg/pr98211.c: Likewise.
+	* gcc.dg/torture/pr89595.c: Likewise.
+	* gcc.dg/tree-ssa/divide-7.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-lim-12.c: Likewise.
+
+2022-05-23  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/spill_to_mask-1.c: New test.
+
 2022-05-21  Dimitar Dimitrov  <dimitar@dinux.eu>
 
 	* gcc.dg/tree-ssa/gen-vect-11.c: For PRU target, skip the

@@ -280,7 +280,7 @@ unsigned const char omp_clause_num_ops[] =
   1, /* OMP_CLAUSE_DEPEND  */
   1, /* OMP_CLAUSE_NONTEMPORAL  */
   1, /* OMP_CLAUSE_UNIFORM  */
-  1, /* OMP_CLAUSE_TO_DECLARE  */
+  1, /* OMP_CLAUSE_ENTER  */
   1, /* OMP_CLAUSE_LINK  */
   1, /* OMP_CLAUSE_DETACH  */
   1, /* OMP_CLAUSE_USE_DEVICE_PTR  */
@@ -370,7 +370,7 @@ const char * const omp_clause_code_name[] =
   "depend",
   "nontemporal",
   "uniform",
-  "to",
+  "enter",
   "link",
   "detach",
   "use_device_ptr",

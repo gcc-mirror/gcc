@@ -2812,7 +2812,7 @@ objc_build_component_ref (tree datum, tree component)
                                           tf_warning_or_error);
 #else
   return build_component_ref (input_location, datum, component,
-			      UNKNOWN_LOCATION);
+			      UNKNOWN_LOCATION, UNKNOWN_LOCATION);
 #endif
 }
 

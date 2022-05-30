@@ -1895,7 +1895,7 @@ get_priority (tree args, bool is_destructor)
     }
 
   arg = TREE_VALUE (args);
-  if (TREE_CODE (arg) == IDENTIFIER_NODE)
+  if (TREE_CODE (arg) == IDENTIFIER_NODE || TREE_CODE (arg) == FUNCTION_DECL)
     goto invalid;
   if (arg == error_mark_node)
     return DEFAULT_INIT_PRIORITY;

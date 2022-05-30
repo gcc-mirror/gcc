@@ -4958,7 +4958,7 @@ package body Sem_Elab is
          then
             Error_Msg_Name_1 := Attribute_Name (Attr);
             Error_Msg_NE
-              ("??% attribute of & before body seen", Attr, Subp_Id);
+              ("?.f?% attribute of & before body seen", Attr, Subp_Id);
             Error_Msg_N ("\possible Program_Error on later references", Attr);
 
             Output_Active_Scenarios (Attr, New_In_State);

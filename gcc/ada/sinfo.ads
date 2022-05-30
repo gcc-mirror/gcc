@@ -1005,12 +1005,6 @@ package Sinfo is
    --    direct conversion of the underlying integer result, with no regard to
    --    the small operand.
 
-   --  Convert_To_Return_False
-   --    Present in N_Raise_Expression nodes that appear in the body of the
-   --    special predicateM function used to test a predicate in the context
-   --    of a membership test, where raise expression results in returning a
-   --    value of False rather than raising an exception.
-
    --  Corresponding_Aspect
    --    Present in N_Pragma node. Used to point back to the source aspect from
    --    the corresponding pragma. This field is Empty for source pragmas.
@@ -6932,7 +6926,6 @@ package Sinfo is
       --  Sloc points to RAISE
       --  Name (always present)
       --  Expression (set to Empty if no expression present)
-      --  Convert_To_Return_False
       --  plus fields for expression
 
       -------------------------------

@@ -2217,7 +2217,7 @@ spaceship_replacement (basic_block cond_bb, basic_block middle_bb,
 
       if (!TYPE_UNSIGNED (ty2) || !INTEGRAL_TYPE_P (ty2))
 	return false;
-      if (TYPE_PRECISION (ty1) != TYPE_PRECISION (ty2))
+      if (TYPE_PRECISION (ty1) > TYPE_PRECISION (ty2))
 	return false;
       if (SSA_NAME_OCCURS_IN_ABNORMAL_PHI (orig_use_lhs))
 	return false;

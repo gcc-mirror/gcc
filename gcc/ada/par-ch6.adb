@@ -1656,6 +1656,28 @@ package body Ch6 is
 
             P_Aspect_Specifications (Specification_Node, False);
 
+            --  Set the aspect specifications for previous Ids
+
+            if Has_Aspects (Specification_Node)
+              and then Prev_Ids (Specification_Node)
+            then
+               --  Loop through each previous id
+
+               declare
+                  Prev_Id : Node_Id := Prev (Specification_Node);
+               begin
+                  loop
+                     Set_Aspect_Specifications
+                       (Prev_Id, Aspect_Specifications (Specification_Node));
+
+                     --  Exit when we reach the first parameter in the list
+
+                     exit when not Prev_Ids (Prev_Id);
+                     Prev_Id := Prev (Prev_Id);
+                  end loop;
+               end;
+            end if;
+
             if Token = Tok_Right_Paren then
                Scan;  -- past right paren
                exit Specification_Loop;
