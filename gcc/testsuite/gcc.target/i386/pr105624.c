@@ -1,5 +1,5 @@
 /* PR target/105624 */
-/* { dg-do compile } */
+/* { dg-do compile { target { ! ia32 } } } */
 /* { dg-options "-O1 -march=k8" } */
 
 union U {
