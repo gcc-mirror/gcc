@@ -21,6 +21,39 @@
 namespace Rust {
 namespace AST {
 
+Indent::Indent () : tabs (0) {}
+
+std::ofstream &
+Indent::operator<< (std::ofstream &stream)
+{
+  for (size_t i = 0; i < tabs; i++)
+    stream << '\t';
+
+  return stream;
+}
+
+void
+Indent::increment ()
+{
+  tabs++;
+}
+
+void
+Indent::decrement ()
+{
+  rust_assert (tabs != 0);
+  tabs--;
+}
+
+Dump::Dump (std::ofstream &stream) : stream (stream), indentation (Indent ()) {}
+
+void
+Dump::go (AST::Crate &crate)
+{
+  for (auto &item : crate.items)
+    item->accept_vis (*this);
+}
+
 void
 Dump::visit (Token &tok)
 {}

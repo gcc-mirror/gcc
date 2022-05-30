@@ -25,8 +25,35 @@
 namespace Rust {
 namespace AST {
 
+// TODO: We might want to reuse this class somewhere else
+class Indent
+{
+public:
+  Indent ();
+
+  std::ofstream &operator<< (std::ofstream &stream);
+
+  void increment ();
+  void decrement ();
+
+private:
+  size_t tabs;
+};
+
 class Dump : public ASTVisitor
 {
+public:
+  Dump (std::ofstream &stream);
+
+  /**
+   * Run the visitor on an entire crate and its items
+   */
+  void go (AST::Crate &crate);
+
+private:
+  std::ofstream &stream;
+  Indent indentation;
+
   // rust-ast.h
   void visit (Token &tok);
   void visit (DelimTokenTree &delim_tok_tree);
