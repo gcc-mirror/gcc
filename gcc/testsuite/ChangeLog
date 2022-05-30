@@ -1,3 +1,8 @@
+2022-05-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/105732
+	* c-c++-common/cpp/va-opt-10.c: New test.
+
 2022-05-28  Tobias Burnus  <tobias@codesourcery.com>
 
 	* gfortran.dg/gomp/declare-target-2.f90: Add 'enter' clause test.

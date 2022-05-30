@@ -1,3 +1,17 @@
+2022-05-29  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR target/105599
+	* config/darwin.h: Move versions-specific handling of multiply_defined
+	from SUBTARGET_DRIVER_SELF_SPECS to LINK_SPEC.
+
+2022-05-29  Eric Gallager  <egallager@gcc.gnu.org>
+
+	PR other/82383
+	* doc/sourcebuild.texi: Add entries for the c++tools,
+	gotools, libbacktrace, libcc1, libcody, liboffloadmic,
+	and libsanitizer directories. Remove entry for boehm-gc.
+	Fix alphabetization for libquadmath.
+
 2022-05-28  Joel Holdsworth  <jholdsworth@nvidia.com>
 
 	* config/avr/avr-mcus.def: Add device definitions.
