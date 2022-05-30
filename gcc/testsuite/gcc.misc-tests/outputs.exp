@@ -36,8 +36,8 @@ gcc_parallel_test_enable 0
 # having to deal with .dSYM directories, as long as -gsplit-dwarf is
 # not supported on platforms that use .dSYM directories.
 set gsplit_dwarf "-g -gsplit-dwarf"
-if ![check_no_compiler_messages gsplitdwarf object {
-    void foo (void) { }
+if ![check_no_compiler_messages gsplitdwarf executable {
+    int main (void) { return 0; }
 } "$gsplit_dwarf"] {
     set gsplit_dwarf ""
 }

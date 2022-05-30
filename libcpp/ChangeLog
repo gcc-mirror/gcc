@@ -1,3 +1,9 @@
+2022-05-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/105732
+	* expr.cc (_cpp_parse_expr): Handle CPP_PADDING by just another
+	token.
+
 2022-05-20  David Malcolm  <dmalcolm@redhat.com>
 
 	* lex.cc: Replace uses of "FINAL" and "OVERRIDE" with "final" and

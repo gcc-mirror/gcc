@@ -145,10 +145,6 @@ DEF_D_RUNTIME (ARRAYAPPENDCD, "_d_arrayappendcd", RT(ARRAY_VOID),
 DEF_D_RUNTIME (ARRAYAPPENDWD, "_d_arrayappendwd", RT(ARRAY_VOID),
 	       P2(ARRAYPTR_BYTE, DCHAR), 0)
 
-/* Used for appending an existing array to another.  */
-DEF_D_RUNTIME (ARRAYAPPENDT, "_d_arrayappendT", RT(ARRAY_VOID),
-	       P3(TYPEINFO, ARRAYPTR_BYTE, ARRAY_BYTE), 0)
-
 /* Used for allocating a new associative array.  */
 DEF_D_RUNTIME (ASSOCARRAYLITERALTX, "_d_assocarrayliteralTX", RT(VOIDPTR),
 	       P3(CONST_TYPEINFO, ARRAY_VOID, ARRAY_VOID), 0)

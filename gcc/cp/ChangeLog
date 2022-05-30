@@ -1,3 +1,145 @@
+2022-05-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* parser.cc (handle_omp_declare_target_clause): If OMP_CLAUSE_LINK was
+	seen first, use "%<to%>" or "%<enter%>" depending on
+	OMP_CLAUSE_ENTER_TO of the current clause, otherwise use
+	"%<to%> or %<enter%>" wording.
+
+2022-05-28  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105652
+	* pt.cc (tsubst_lambda_expr): Don't let a namespace-scope lambda
+	instantiate into a class-scope lambda.
+
+2022-05-27  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/105725
+	* parser.cc (class_decl_loc_t::add): Check CLASS_TYPE_P.
+
+2022-05-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* parser.cc (cp_parser_omp_clause_name): Parse enter clause.
+	(cp_parser_omp_all_clauses): For to clause on declare target, use
+	OMP_CLAUSE_ENTER clause with OMP_CLAUSE_ENTER_TO instead of
+	OMP_CLAUSE_TO_DECLARE clause.  Handle PRAGMA_OMP_CLAUSE_ENTER.
+	(OMP_DECLARE_TARGET_CLAUSE_MASK): Add enter clause.
+	(cp_parser_omp_declare_target): Use OMP_CLAUSE_ENTER instead of
+	OMP_CLAUSE_TO_DECLARE.
+	* semantics.cc (finish_omp_clauses): Handle OMP_CLAUSE_ENTER instead
+	of OMP_CLAUSE_TO_DECLARE, to OMP_CLAUSE_ENTER_TO use "to" as clause
+	name in diagnostics instead of
+	omp_clause_code_name[OMP_CLAUSE_CODE (c)].
+
+2022-05-26  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/105569
+	* typeck.cc (warn_for_null_address): Improve the warning when
+	the POINTER_PLUS_EXPR's base is of reference type.
+
+2022-05-26  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/96363
+	* decl.cc (shadow_tag): Use the return value of
+	maybe_process_partial_specialization.
+	* parser.cc (cp_parser_single_declaration): Call shadow_tag
+	before associate_classtype_constraints.
+	* pt.cc (maybe_new_partial_specialization): Change return type
+	to bool.  Take 'type' argument by mutable reference.  Set 'type'
+	to point to the correct constrained specialization when
+	appropriate.
+	(maybe_process_partial_specialization): Adjust accordingly.
+
+2022-05-25  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/96637
+	* cp-tree.h (attr_chainon): Declare.
+	* decl.cc (start_decl): Use attr_chainon.
+	(grokdeclarator): Likewise.
+	* parser.cc (cp_parser_statement): No longer static.
+
+2022-05-25  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105655
+	* pt.cc (build_template_decl): Add assert.
+	(tsubst_function_decl): Don't return a template.
+
+2022-05-25  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105623
+	* decl2.cc (mark_used): Copy type from fn to BASELINK.
+	* pt.cc (unify_one_argument): Call mark_single_function.
+
+2022-05-25  Jason Merrill  <jason@redhat.com>
+
+	* constexpr.cc (cxx_eval_call_expression): Check for
+	heap vars in the result.
+
+2022-05-25  Jason Merrill  <jason@redhat.com>
+
+	* constexpr.cc (maybe_constant_init_1): Only pass false for
+	strict when initializing a variable of static duration.
+
+2022-05-25  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/100252
+	* typeck2.cc (potential_prvalue_result_of): New.
+	(replace_placeholders_for_class_temp_r): New.
+	(digest_nsdmi_init): Call it.
+
+2022-05-24  Jason Merrill  <jason@redhat.com>
+
+	* constexpr.cc (cxx_fold_indirect_ref): Add default arg.
+	(cxx_eval_call_expression): Call it.
+	(cxx_fold_indirect_ref_1): Handle null empty_base.
+
+2022-05-24  Jason Merrill  <jason@redhat.com>
+
+	* constexpr.cc (enum value_cat): New. Change all 'lval' parameters
+	from int to value_cat.  Change most false to vc_prvalue, most true
+	to vc_glvalue, cases where the return value is ignored to
+	vc_discard.
+	(cxx_eval_statement_list): Only vc_prvalue for stmt-expr result.
+	(cxx_eval_store_expression): Only build _REF for vc_glvalue.
+	(cxx_eval_array_reference, cxx_eval_component_reference)
+	(cxx_eval_indirect_ref, cxx_eval_constant_expression): Likewise.
+
+2022-05-24  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105622
+	* constexpr.cc (cxx_eval_store_expression): Adjust assert.
+	Use initialized_type.
+
+2022-05-24  Patrick Palka  <ppalka@redhat.com>
+
+	* cp-tree.h (any_template_arguments_need_structural_equality_p):
+	Declare.
+	* pt.cc (struct ctp_hasher): Define.
+	(ctp_table): Define.
+	(canonical_type_parameter): Use it.
+	(process_template_parm): Set TYPE_CANONICAL for
+	TEMPLATE_TEMPLATE_PARM too.
+	(lookup_template_class_1): Remove now outdated comment for the
+	any_template_arguments_need_structural_equality_p test.
+	(tsubst) <case TEMPLATE_TEMPLATE_PARM, etc>: Don't specifically
+	clear TYPE_CANONICAL for ttps.  Set TYPE_CANONICAL on the
+	substituted type later.
+	(any_template_arguments_need_structural_equality_p): Return
+	true for any_targ_node.  Don't return true just because a
+	template argument uses structural equality.  Add comment for
+	the PARM_DECL special case.
+	(rewrite_template_parm): Set TYPE_CANONICAL on the rewritten
+	parm's type later.
+	* tree.cc (bind_template_template_parm): Set TYPE_CANONICAL
+	when safe to do so.
+	* typeck.cc (structural_comptypes) [check_alias]: Increment
+	processing_template_decl before checking
+	dependent_alias_template_spec_p.
+
+2022-05-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/105378
+	* parser.cc (OMP_TASKWAIT_CLAUSE_MASK): Add nowait clause.
+
 2022-05-20  David Malcolm  <dmalcolm@redhat.com>
 
 	* cxx-pretty-print.h: Replace uses of "FINAL" and "OVERRIDE" with

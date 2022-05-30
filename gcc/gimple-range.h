@@ -60,7 +60,7 @@ public:
   void dump_bb (FILE *f, basic_block bb);
   auto_edge_flag non_executable_edge_flag;
   bool fold_stmt (gimple_stmt_iterator *gsi, tree (*) (tree));
-  void register_side_effects (gimple *s);
+  void register_inferred_ranges (gimple *s);
 protected:
   bool fold_range_internal (irange &r, gimple *s, tree name);
   void prefill_name (irange &r, tree name);

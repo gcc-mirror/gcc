@@ -2448,9 +2448,13 @@ field_at_offset (tree type, tree start_after, HOST_WIDE_INT off,
       /* The offset of FLD within its immediately enclosing structure.  */
       HOST_WIDE_INT fldpos = next_pos < 0 ? int_byte_position (fld) : next_pos;
 
+      tree typesize = TYPE_SIZE_UNIT (fldtype);
+      if (typesize && TREE_CODE (typesize) != INTEGER_CST)
+	/* Bail if FLD is a variable length member.  */
+	return NULL_TREE;
+
       /* If the size is not available the field is a flexible array
 	 member.  Treat this case as success.  */
-      tree typesize = TYPE_SIZE_UNIT (fldtype);
       HOST_WIDE_INT fldsize = (tree_fits_uhwi_p (typesize)
 			       ? tree_to_uhwi (typesize)
 			       : off);
@@ -2464,7 +2468,11 @@ field_at_offset (tree type, tree start_after, HOST_WIDE_INT off,
 	{
 	  /* If OFF is equal to the offset of the next field continue
 	     to it and skip the array/struct business below.  */
-	  next_pos = int_byte_position (next_fld);
+	  tree pos = byte_position (next_fld);
+	  if (!tree_fits_shwi_p (pos))
+	    /* Bail if NEXT_FLD is a variable length member.  */
+	    return NULL_TREE;
+	  next_pos = tree_to_shwi (pos);
 	  *nextoff = *fldoff + next_pos;
 	  if (*nextoff == off && TREE_CODE (type) != UNION_TYPE)
 	    continue;

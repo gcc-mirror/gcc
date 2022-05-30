@@ -801,26 +801,22 @@ public:
         if (adparent && fd.isDisabled && global.params.cplusplus < CppStdRevision.cpp11)
             writeProtection(AST.Visibility.Kind.private_);
         funcToBuffer(tf, fd);
-        // FIXME: How to determine if fd is const without tf?
-        if (adparent && tf && (tf.isConst() || tf.isImmutable()))
+        if (adparent)
         {
-            bool fdOverridesAreConst = true;
-            foreach (fdv; fd.foverrides)
+            if (tf && (tf.isConst() || tf.isImmutable()))
+                buf.writestring(" const");
+            if (global.params.cplusplus >= CppStdRevision.cpp11)
             {
-                auto tfv = cast(AST.TypeFunction)fdv.type;
-                if (!tfv.isConst() && !tfv.isImmutable())
-                {
-                    fdOverridesAreConst = false;
-                    break;
-                }
+                if (fd.vtblIndex != -1 && !(adparent.storage_class & AST.STC.final_) && fd.isFinalFunc())
+                    buf.writestring(" final");
+                if (fd.isOverride())
+                    buf.writestring(" override");
             }
-
-            buf.writestring(fdOverridesAreConst ? " const" : " /* const */");
+            if (fd.isAbstract())
+                buf.writestring(" = 0");
+            else if (global.params.cplusplus >= CppStdRevision.cpp11 && fd.isDisabled())
+                buf.writestring(" = delete");
         }
-        if (adparent && fd.isAbstract())
-            buf.writestring(" = 0");
-        if (adparent && fd.isDisabled && global.params.cplusplus >= CppStdRevision.cpp11)
-            buf.writestring(" = delete");
         buf.writestringln(";");
         if (adparent && fd.isDisabled && global.params.cplusplus < CppStdRevision.cpp11)
             writeProtection(AST.Visibility.Kind.public_);

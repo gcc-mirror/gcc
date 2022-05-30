@@ -493,6 +493,10 @@ package Erroutc is
    --  Returns the number of warnings in the Errors table that were triggered
    --  by a Compile_Time_Warning pragma.
 
+   function Get_Warning_Option (Id : Error_Msg_Id) return String;
+   --  Returns the warning switch causing this warning message or an empty
+   --  string is there is none..
+
    function Get_Warning_Tag (Id : Error_Msg_Id) return String;
    --  Given an error message ID, return tag showing warning message class, or
    --  the null string if this option is not enabled or this is not a warning.

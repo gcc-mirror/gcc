@@ -653,14 +653,9 @@ class Fiber
      */
     this( void delegate() dg, size_t sz = PAGESIZE * defaultStackPages,
           size_t guardPageSize = PAGESIZE ) nothrow
-    in
-    {
-        assert( dg );
-    }
-    do
     {
         allocStack( sz, guardPageSize );
-        reset( dg );
+        reset( cast(void delegate() const) dg );
     }
 
 

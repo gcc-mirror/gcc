@@ -52,7 +52,7 @@
        (match_test "INTVAL (op) + 1 != 0")))
 
 (define_predicate "const_0_operand"
-  (and (match_code "const_int,const_wide_int,const_double,const_vector")
+  (and (match_code "const_int,const_wide_int,const_vector")
        (match_test "op == CONST0_RTX (GET_MODE (op))")))
 
 (define_predicate "reg_or_0_operand"
@@ -239,3 +239,7 @@
 (define_predicate "const63_operand"
   (and (match_code "const_int")
        (match_test "INTVAL (op) == 63")))
+
+(define_predicate "imm5_operand"
+  (and (match_code "const_int")
+       (match_test "INTVAL (op) < 5")))

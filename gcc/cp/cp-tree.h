@@ -6647,6 +6647,7 @@ extern bool make_safe_copy_elision		(tree, tree);
 extern bool cp_handle_deprecated_or_unavailable (tree, tsubst_flags_t = tf_warning_or_error);
 extern void cp_warn_deprecated_use_scopes	(tree);
 extern tree get_function_version_dispatcher	(tree);
+extern bool any_template_arguments_need_structural_equality_p (tree);
 
 /* in class.cc */
 extern tree build_vfield_ref			(tree, tree);
@@ -7234,6 +7235,7 @@ extern void inject_this_parameter (tree, cp_cv_quals);
 extern location_t defparse_location (tree);
 extern void maybe_show_extern_c_location (void);
 extern bool literal_integer_zerop (const_tree);
+extern tree attr_chainon (tree, tree);
 
 /* in pt.cc */
 extern tree canonical_type_parameter		(tree);

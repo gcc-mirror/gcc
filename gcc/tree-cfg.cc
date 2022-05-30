@@ -9028,11 +9028,16 @@ gimple_lv_add_condition_to_bb (basic_block first_head ATTRIBUTE_UNUSED,
   edge e0;
 
   /* Build new conditional expr */
+  gsi = gsi_last_bb (cond_bb);
+
+  cond_expr = force_gimple_operand_gsi_1 (&gsi, cond_expr,
+					  is_gimple_condexpr_for_cond,
+					  NULL_TREE, false,
+					  GSI_CONTINUE_LINKING);
   new_cond_expr = gimple_build_cond_from_tree (cond_expr,
 					       NULL_TREE, NULL_TREE);
 
   /* Add new cond in cond_bb.  */
-  gsi = gsi_last_bb (cond_bb);
   gsi_insert_after (&gsi, new_cond_expr, GSI_NEW_STMT);
 
   /* Adjust edges appropriately to connect new head with first head

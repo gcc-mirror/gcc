@@ -35,14 +35,16 @@ public:
     Loc loc;
     Include inc;
 
+    DYNCAST dyncast() const override final { return DYNCAST_CONDITION; }
+
     virtual Condition *syntaxCopy() = 0;
     virtual int include(Scope *sc) = 0;
     virtual DebugCondition *isDebugCondition() { return NULL; }
     virtual VersionCondition *isVersionCondition() { return NULL; }
-    void accept(Visitor *v) { v->visit(this); }
+    void accept(Visitor *v) override { v->visit(this); }
 };
 
-class StaticForeach
+class StaticForeach final : public RootObject
 {
 public:
     Loc loc;
@@ -62,37 +64,37 @@ public:
     Identifier *ident;
     Module *mod;
 
-    DVCondition *syntaxCopy();
-    void accept(Visitor *v) { v->visit(this); }
+    DVCondition *syntaxCopy() override final;
+    void accept(Visitor *v) override { v->visit(this); }
 };
 
-class DebugCondition : public DVCondition
+class DebugCondition final : public DVCondition
 {
 public:
     static void addGlobalIdent(const char *ident);
 
-    int include(Scope *sc);
-    DebugCondition *isDebugCondition() { return this; }
-    void accept(Visitor *v) { v->visit(this); }
+    int include(Scope *sc) override;
+    DebugCondition *isDebugCondition() override { return this; }
+    void accept(Visitor *v) override { v->visit(this); }
 };
 
-class VersionCondition : public DVCondition
+class VersionCondition final : public DVCondition
 {
 public:
     static void addGlobalIdent(const char *ident);
     static void addPredefinedGlobalIdent(const char *ident);
 
-    int include(Scope *sc);
-    VersionCondition *isVersionCondition() { return this; }
-    void accept(Visitor *v) { v->visit(this); }
+    int include(Scope *sc) override;
+    VersionCondition *isVersionCondition() override { return this; }
+    void accept(Visitor *v) override { v->visit(this); }
 };
 
-class StaticIfCondition : public Condition
+class StaticIfCondition final : public Condition
 {
 public:
     Expression *exp;
 
-    StaticIfCondition *syntaxCopy();
-    int include(Scope *sc);
-    void accept(Visitor *v) { v->visit(this); }
+    StaticIfCondition *syntaxCopy() override;
+    int include(Scope *sc) override;
+    void accept(Visitor *v) override { v->visit(this); }
 };

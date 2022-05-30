@@ -534,7 +534,7 @@ public:
 
   /* This should be overridden by each statement class.  */
 
-  void visit (Statement *)
+  void visit (Statement *) final override
   {
     gcc_unreachable ();
   }
@@ -543,13 +543,13 @@ public:
      try/catch/finally.  At this point, this statement is just an empty
      placeholder.  Maybe the frontend shouldn't leak these.  */
 
-  void visit (ScopeGuardStatement *)
+  void visit (ScopeGuardStatement *) final override
   {
   }
 
   /* If statements provide simple conditional execution of statements.  */
 
-  void visit (IfStatement *s)
+  void visit (IfStatement *s) final override
   {
     this->start_scope (level_cond);
 
@@ -588,7 +588,7 @@ public:
      here would be the place to do it.  For now, all pragmas are handled
      by the frontend.  */
 
-  void visit (PragmaStatement *)
+  void visit (PragmaStatement *) final override
   {
   }
 
@@ -596,7 +596,7 @@ public:
      This visitor is not strictly required other than to enforce that
      these kinds of statements never reach here.  */
 
-  void visit (WhileStatement *)
+  void visit (WhileStatement *) final override
   {
     gcc_unreachable ();
   }
@@ -604,7 +604,7 @@ public:
   /* Do while statments implement simple loops.  The body is executed, then
      the condition is evaluated.  */
 
-  void visit (DoStatement *s)
+  void visit (DoStatement *s) final override
   {
     tree lbreak = this->push_break_label (s);
 
@@ -633,7 +633,7 @@ public:
   /* For statements implement loops with initialization, test, and
      increment clauses.  */
 
-  void visit (ForStatement *s)
+  void visit (ForStatement *s) final override
   {
     tree lbreak = this->push_break_label (s);
     this->start_scope (level_loop);
@@ -674,7 +674,7 @@ public:
      This visitor is not strictly required other than to enforce that
      these kinds of statements never reach here.  */
 
-  void visit (ForeachStatement *)
+  void visit (ForeachStatement *) final override
   {
     gcc_unreachable ();
   }
@@ -683,7 +683,7 @@ public:
      loops.  This visitor is not strictly required other than to enforce that
      these kinds of statements never reach here.  */
 
-  void visit (ForeachRangeStatement *)
+  void visit (ForeachRangeStatement *) final override
   {
     gcc_unreachable ();
   }
@@ -691,7 +691,7 @@ public:
   /* Jump to the associated exit label for the current loop.  If IDENT
      for the Statement is not null, then the label is user defined.  */
 
-  void visit (BreakStatement *s)
+  void visit (BreakStatement *s) final override
   {
     if (s->ident)
       {
@@ -710,7 +710,7 @@ public:
   /* Jump to the associated continue label for the current loop.  If IDENT
      for the Statement is not null, then the label is user defined.  */
 
-  void visit (ContinueStatement *s)
+  void visit (ContinueStatement *s) final override
   {
     if (s->ident)
       {
@@ -726,7 +726,7 @@ public:
 
   /* A goto statement jumps to the statement identified by the given label.  */
 
-  void visit (GotoStatement *s)
+  void visit (GotoStatement *s) final override
   {
     gcc_assert (s->label->statement != NULL);
     gcc_assert (s->tf == s->label->statement->tf);
@@ -742,7 +742,7 @@ public:
   /* Statements can be labeled.  A label is an identifier that precedes
      a statement.  */
 
-  void visit (LabelStatement *s)
+  void visit (LabelStatement *s) final override
   {
     LabelDsymbol *sym;
 
@@ -766,7 +766,7 @@ public:
   /* A switch statement goes to one of a collection of case statements
      depending on the value of the switch expression.  */
 
-  void visit (SwitchStatement *s)
+  void visit (SwitchStatement *s) final override
   {
     this->start_scope (level_switch);
     tree lbreak = this->push_break_label (s);
@@ -855,7 +855,7 @@ public:
 
   /* Declare the case label associated with the current SwitchStatement.  */
 
-  void visit (CaseStatement *s)
+  void visit (CaseStatement *s) final override
   {
     /* Emit the case label.  */
     tree label = this->define_label (s);
@@ -881,7 +881,7 @@ public:
 
   /* Declare the default label associated with the current SwitchStatement.  */
 
-  void visit (DefaultStatement *s)
+  void visit (DefaultStatement *s) final override
   {
     /* Emit the default case label.  */
     tree label = this->define_label (s);
@@ -902,7 +902,7 @@ public:
   /* Implements `goto default' by jumping to the label associated with
      the DefaultStatement in a switch block.  */
 
-  void visit (GotoDefaultStatement *s)
+  void visit (GotoDefaultStatement *s) final override
   {
     tree label = this->lookup_label (s->sw->sdefault);
     this->do_jump (label);
@@ -911,7 +911,7 @@ public:
   /* Implements `goto case' by jumping to the label associated with the
      CaseStatement in a switch block.  */
 
-  void visit (GotoCaseStatement *s)
+  void visit (GotoCaseStatement *s) final override
   {
     tree label = this->lookup_label (s->cs);
     this->do_jump (label);
@@ -920,7 +920,7 @@ public:
   /* Throw a SwitchError exception, called when a switch statement has
      no DefaultStatement, yet none of the cases match.  */
 
-  void visit (SwitchErrorStatement *s)
+  void visit (SwitchErrorStatement *s) final override
   {
     /* A throw SwitchError statement gets turned into a library call.
        The call is wrapped in the enclosed expression.  */
@@ -931,7 +931,7 @@ public:
   /* A return statement exits the current function and supplies its return
      value, if the return type is not void.  */
 
-  void visit (ReturnStatement *s)
+  void visit (ReturnStatement *s) final override
   {
     if (s->exp == NULL || s->exp->type->toBasetype ()->ty == TY::Tvoid)
       {
@@ -1044,7 +1044,7 @@ public:
 
   /* Evaluate the enclosed expression, and add it to the statement list.  */
 
-  void visit (ExpStatement *s)
+  void visit (ExpStatement *s) final override
   {
     if (s->exp)
       {
@@ -1056,7 +1056,7 @@ public:
 
   /* Evaluate all enclosed statements.  */
 
-  void visit (CompoundStatement *s)
+  void visit (CompoundStatement *s) final override
   {
     if (s->statements == NULL)
       return;
@@ -1074,7 +1074,7 @@ public:
      These are compiled down as a `do ... while (0)', where each unrolled loop
      is nested inside and given their own continue label to jump to.  */
 
-  void visit (UnrolledLoopStatement *s)
+  void visit (UnrolledLoopStatement *s) final override
   {
     if (s->statements == NULL)
       return;
@@ -1105,7 +1105,7 @@ public:
   /* Start a new scope and visit all nested statements, wrapping
      them up into a BIND_EXPR at the end of the scope.  */
 
-  void visit (ScopeStatement *s)
+  void visit (ScopeStatement *s) final override
   {
     if (s->statement == NULL)
       return;
@@ -1118,7 +1118,7 @@ public:
   /* A with statement is a way to simplify repeated references to the same
      object, where the handle is either a class or struct instance.  */
 
-  void visit (WithStatement *s)
+  void visit (WithStatement *s) final override
   {
     this->start_scope (level_with);
 
@@ -1143,7 +1143,7 @@ public:
      thrown is a class type, but does not check if it is derived from
      Object.  Foreign objects are not currently supported at run-time.  */
 
-  void visit (ThrowStatement *s)
+  void visit (ThrowStatement *s) final override
   {
     ClassDeclaration *cd = s->exp->type->toBasetype ()->isClassHandle ();
     InterfaceDeclaration *id = cd->isInterfaceDeclaration ();
@@ -1174,7 +1174,7 @@ public:
      handling generated by the frontend.  This is also used to implement
      `scope (failure)' statements.  */
 
-  void visit (TryCatchStatement *s)
+  void visit (TryCatchStatement *s) final override
   {
     this->start_scope (level_try);
     if (s->_body)
@@ -1263,7 +1263,7 @@ public:
      handling generated by the frontend.  This is also used to implement
      `scope (exit)' statements.  */
 
-  void visit (TryFinallyStatement *s)
+  void visit (TryFinallyStatement *s) final override
   {
     this->start_scope (level_try);
     if (s->_body)
@@ -1285,7 +1285,7 @@ public:
      This visitor is not strictly required other than to enforce that
      these kinds of statements never reach here.  */
 
-  void visit (SynchronizedStatement *)
+  void visit (SynchronizedStatement *) final override
   {
     gcc_unreachable ();
   }
@@ -1294,7 +1294,7 @@ public:
      an assembly parser for each supported target.  Instead we leverage
      GCC extended assembler using the GccAsmStatement class.  */
 
-  void visit (AsmStatement *)
+  void visit (AsmStatement *) final override
   {
     sorry ("D inline assembler statements are not supported in GDC.");
   }
@@ -1302,7 +1302,7 @@ public:
   /* Build a GCC extended assembler expression, whose components are
      an INSN string, some OUTPUTS, some INPUTS, and some CLOBBERS.  */
 
-  void visit (GccAsmStatement *s)
+  void visit (GccAsmStatement *s) final override
   {
     StringExp *insn = s->insn->toStringExp ();
     tree outputs = NULL_TREE;
@@ -1454,7 +1454,7 @@ public:
 
   /* Import symbols from another module.  */
 
-  void visit (ImportStatement *s)
+  void visit (ImportStatement *s) final override
   {
     if (s->imports == NULL)
       return;

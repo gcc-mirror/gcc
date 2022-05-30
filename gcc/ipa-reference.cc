@@ -133,11 +133,11 @@ public:
   ipa_ref_opt_summary_t (symbol_table *symtab):
     fast_function_summary <ipa_reference_optimization_summary_d *, va_heap> (symtab) {}
 
-  virtual void remove (cgraph_node *src_node,
-		       ipa_reference_optimization_summary_d *data);
-  virtual void duplicate (cgraph_node *src_node, cgraph_node *dst_node,
-			  ipa_reference_optimization_summary_d *src_data,
-			  ipa_reference_optimization_summary_d *dst_data);
+  void remove (cgraph_node *src_node,
+	       ipa_reference_optimization_summary_d *data) final override;
+  void duplicate (cgraph_node *src_node, cgraph_node *dst_node,
+		  ipa_reference_optimization_summary_d *src_data,
+		  ipa_reference_optimization_summary_d *dst_data) final override;
 };
 
 static ipa_ref_opt_summary_t *ipa_ref_opt_sum_summaries = NULL;

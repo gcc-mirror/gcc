@@ -203,7 +203,6 @@ static tree copy_default_args_to_explicit_spec_1 (tree, tree);
 static void copy_default_args_to_explicit_spec (tree);
 static bool invalid_nontype_parm_type_p (tree, tsubst_flags_t);
 static bool dependent_template_arg_p (tree);
-static bool any_template_arguments_need_structural_equality_p (tree);
 static bool dependent_type_p_r (tree);
 static tree tsubst_copy	(tree, tree, tsubst_flags_t, tree);
 static tree tsubst_decl (tree, tree, tsubst_flags_t);
@@ -875,12 +874,12 @@ check_explicit_instantiation_namespace (tree spec)
 	       spec, current_namespace, ns);
 }
 
-/* Returns the type of a template specialization only if that
-   specialization needs to be defined. Otherwise (e.g., if the type has
-   already been defined), the function returns NULL_TREE.  */
+/* Returns true if TYPE is a new partial specialization that needs to be
+   set up.  This may also modify TYPE to point to the correct (new or
+   existing) constrained partial specialization.  */
 
-static tree
-maybe_new_partial_specialization (tree type)
+static bool
+maybe_new_partial_specialization (tree& type)
 {
   /* An implicit instantiation of an incomplete type implies
      the definition of a new class template.
@@ -894,7 +893,7 @@ maybe_new_partial_specialization (tree type)
      Here, S<T*> is an implicit instantiation of S whose type
      is incomplete.  */
   if (CLASSTYPE_IMPLICIT_INSTANTIATION (type) && !COMPLETE_TYPE_P (type))
-    return type;
+    return true;
 
   /* It can also be the case that TYPE is a completed specialization.
      Continuing the previous example, suppose we also declare:
@@ -920,11 +919,11 @@ maybe_new_partial_specialization (tree type)
       /* If there are no template parameters, this cannot be a new
 	 partial template specialization?  */
       if (!current_template_parms)
-        return NULL_TREE;
+	return false;
 
       /* The injected-class-name is not a new partial specialization.  */
       if (DECL_SELF_REFERENCE_P (TYPE_NAME (type)))
-	return NULL_TREE;
+	return false;
 
       /* If the constraints are not the same as those of the primary
 	 then, we can probably create a new specialization.  */
@@ -934,7 +933,7 @@ maybe_new_partial_specialization (tree type)
 	{
 	  tree main_constr = get_constraints (tmpl);
 	  if (equivalent_constraints (type_constr, main_constr))
-	    return NULL_TREE;
+	    return false;
 	}
 
       /* Also, if there's a pre-existing specialization with matching
@@ -947,7 +946,10 @@ maybe_new_partial_specialization (tree type)
           tree spec_constr = get_constraints (spec_tmpl);
           if (comp_template_args (args, spec_args)
 	      && equivalent_constraints (type_constr, spec_constr))
-            return NULL_TREE;
+	    {
+	      type = TREE_TYPE (spec_tmpl);
+	      return false;
+	    }
           specs = TREE_CHAIN (specs);
         }
 
@@ -972,10 +974,11 @@ maybe_new_partial_specialization (tree type)
       set_instantiating_module (d);
       DECL_MODULE_EXPORT_P (d) = DECL_MODULE_EXPORT_P (tmpl);
 
-      return t;
+      type = t;
+      return true;
     }
 
-  return NULL_TREE;
+  return false;
 }
 
 /* The TYPE is being declared.  If it is a template type, that means it
@@ -1031,16 +1034,16 @@ maybe_process_partial_specialization (tree type)
 
 	 Make sure that `C<int>' and `C<T*>' are implicit instantiations.  */
 
-      if (tree t = maybe_new_partial_specialization (type))
+      if (maybe_new_partial_specialization (type))
 	{
-	  if (!check_specialization_namespace (CLASSTYPE_TI_TEMPLATE (t))
+	  if (!check_specialization_namespace (CLASSTYPE_TI_TEMPLATE (type))
 	      && !at_namespace_scope_p ())
 	    return error_mark_node;
-	  SET_CLASSTYPE_TEMPLATE_SPECIALIZATION (t);
-	  DECL_SOURCE_LOCATION (TYPE_MAIN_DECL (t)) = input_location;
+	  SET_CLASSTYPE_TEMPLATE_SPECIALIZATION (type);
+	  DECL_SOURCE_LOCATION (TYPE_MAIN_DECL (type)) = input_location;
 	  if (processing_template_decl)
 	    {
-	      tree decl = push_template_decl (TYPE_MAIN_DECL (t));
+	      tree decl = push_template_decl (TYPE_MAIN_DECL (type));
 	      if (decl == error_mark_node)
 		return error_mark_node;
 	      return TREE_TYPE (decl);
@@ -4526,6 +4529,27 @@ build_template_parm_index (int index,
   return t;
 }
 
+struct ctp_hasher : ggc_ptr_hash<tree_node>
+{
+  static hashval_t hash (tree t)
+  {
+    tree_code code = TREE_CODE (t);
+    hashval_t val = iterative_hash_object (code, 0);
+    val = iterative_hash_object (TEMPLATE_TYPE_LEVEL (t), val);
+    val = iterative_hash_object (TEMPLATE_TYPE_IDX (t), val);
+    if (TREE_CODE (t) == BOUND_TEMPLATE_TEMPLATE_PARM)
+      val = iterative_hash_template_arg (TYPE_TI_ARGS (t), val);
+    return val;
+  }
+
+  static bool equal (tree t, tree u)
+  {
+    return comptypes (t, u, COMPARE_STRUCTURAL);
+  }
+};
+
+static GTY (()) hash_table<ctp_hasher> *ctp_table;
+
 /* Find the canonical type parameter for the given template type
    parameter.  Returns the canonical type parameter, which may be TYPE
    if no such parameter existed.  */
@@ -4533,21 +4557,13 @@ build_template_parm_index (int index,
 tree
 canonical_type_parameter (tree type)
 {
-  int idx = TEMPLATE_TYPE_IDX (type);
+  if (ctp_table == NULL)
+    ctp_table = hash_table<ctp_hasher>::create_ggc (61);
 
-  gcc_assert (TREE_CODE (type) != TEMPLATE_TEMPLATE_PARM);
-
-  if (vec_safe_length (canonical_template_parms) <= (unsigned) idx)
-    vec_safe_grow_cleared (canonical_template_parms, idx + 1, true);
-
-  for (tree list = (*canonical_template_parms)[idx];
-       list; list = TREE_CHAIN (list))
-    if (comptypes (type, TREE_VALUE (list), COMPARE_STRUCTURAL))
-      return TREE_VALUE (list);
-
-  (*canonical_template_parms)[idx]
-    = tree_cons (NULL_TREE, type, (*canonical_template_parms)[idx]);
-  return type;
+  tree& slot = *ctp_table->find_slot (type, INSERT);
+  if (slot == NULL_TREE)
+    slot = type;
+  return slot;
 }
 
 /* Return a TEMPLATE_PARM_INDEX, similar to INDEX, but whose
@@ -4720,10 +4736,7 @@ process_template_parm (tree list, location_t parm_loc, tree parm,
 				     current_template_depth,
 				     decl, TREE_TYPE (parm));
       TEMPLATE_TYPE_PARAMETER_PACK (t) = is_parameter_pack;
-      if (TREE_CODE (t) == TEMPLATE_TEMPLATE_PARM)
-	SET_TYPE_STRUCTURAL_EQUALITY (t);
-      else
-	TYPE_CANONICAL (t) = canonical_type_parameter (t);
+      TYPE_CANONICAL (t) = canonical_type_parameter (t);
     }
   DECL_ARTIFICIAL (decl) = 1;
   SET_DECL_TEMPLATE_PARM_P (decl);
@@ -5012,6 +5025,8 @@ maybe_update_decl_type (tree orig_type, tree scope)
 static tree
 build_template_decl (tree decl, tree parms, bool member_template_p)
 {
+  gcc_checking_assert (TREE_CODE (decl) != TEMPLATE_DECL);
+
   tree tmpl = build_lang_decl (TEMPLATE_DECL, DECL_NAME (decl), NULL_TREE);
   SET_DECL_LANGUAGE (tmpl, DECL_LANGUAGE (decl));
   DECL_TEMPLATE_PARMS (tmpl) = parms;
@@ -10131,9 +10146,6 @@ lookup_template_class_1 (tree d1, tree arglist, tree in_decl, tree context,
 	       appropriately. */
 	    TYPE_CANONICAL (t) = template_type;
 	  else if (any_template_arguments_need_structural_equality_p (arglist))
-	    /* Some of the template arguments require structural
-	       equality testing, so this template class requires
-	       structural equality testing. */
 	    SET_TYPE_STRUCTURAL_EQUALITY (t);
 	}
       else
@@ -14068,7 +14080,9 @@ tsubst_function_decl (tree t, tree args, tsubst_flags_t complain,
 	{
 	  hash = hash_tmpl_and_args (gen_tmpl, argvec);
 	  if (tree spec = retrieve_specialization (gen_tmpl, argvec, hash))
-	    return spec;
+	    /* The spec for these args might be a partial instantiation of the
+	       template, but here what we want is the FUNCTION_DECL.  */
+	    return STRIP_TEMPLATE (spec);
 	}
     }
   else
@@ -15908,20 +15922,6 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 		       only instantiated during satisfaction.  */
 		    PLACEHOLDER_TYPE_CONSTRAINTS_INFO (r) = ci;
 
-		if (TREE_CODE (r) == TEMPLATE_TEMPLATE_PARM)
-		  /* We have reduced the level of the template
-		     template parameter, but not the levels of its
-		     template parameters, so canonical_type_parameter
-		     will not be able to find the canonical template
-		     template parameter for this level. Thus, we
-		     require structural equality checking to compare
-		     TEMPLATE_TEMPLATE_PARMs. */
-		  SET_TYPE_STRUCTURAL_EQUALITY (r);
-		else if (TYPE_STRUCTURAL_EQUALITY_P (t))
-		  SET_TYPE_STRUCTURAL_EQUALITY (r);
-		else
-		  TYPE_CANONICAL (r) = canonical_type_parameter (r);
-
 		if (code == BOUND_TEMPLATE_TEMPLATE_PARM)
 		  {
 		    tree tinfo = TYPE_TEMPLATE_INFO (t);
@@ -15939,6 +15939,11 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 		    TEMPLATE_TEMPLATE_PARM_TEMPLATE_INFO (r)
 		      = build_template_info (tmpl, argvec);
 		  }
+
+		if (TYPE_STRUCTURAL_EQUALITY_P (t))
+		  SET_TYPE_STRUCTURAL_EQUALITY (r);
+		else
+		  TYPE_CANONICAL (r) = canonical_type_parameter (r);
 	      }
 	    break;
 
@@ -19735,11 +19740,18 @@ tsubst_lambda_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
     return error_mark_node;
 
   if (LAMBDA_EXPR_EXTRA_SCOPE (t) == NULL_TREE)
-    /* A lambda in a default argument outside a class gets no
-       LAMBDA_EXPR_EXTRA_SCOPE, as specified by the ABI.  But
-       tsubst_default_argument calls start_lambda_scope, so we need to
-       specifically ignore it here, and use the global scope.  */
-    record_null_lambda_scope (r);
+    {
+      /* A lambda in a default argument outside a class gets no
+	 LAMBDA_EXPR_EXTRA_SCOPE, as specified by the ABI.  But
+	 tsubst_default_argument calls start_lambda_scope, so we need to
+	 specifically ignore it here, and use the global scope.  */
+      record_null_lambda_scope (r);
+
+      /* If we're pushed into another scope (PR105652), fix it.  */
+      if (TYPE_NAMESPACE_SCOPE_P (TREE_TYPE (t)))
+	TYPE_CONTEXT (type) = DECL_CONTEXT (TYPE_NAME (type))
+	  = TYPE_CONTEXT (TREE_TYPE (t));
+    }
   else
     record_lambda_scope (r);
 
@@ -22645,6 +22657,10 @@ unify_one_argument (tree tparms, tree targs, tree parm, tree arg,
 	         non-deduced context, so we still succeed. */
 	      return unify_success (explain_p);
 	    }
+
+	  /* Force auto deduction now.  Use tf_none to avoid redundant
+	     deprecated warning on deprecated-14.C.  */
+	  mark_single_function (arg, tf_none);
 
 	  arg_expr = arg;
 	  arg = unlowered_expr_type (arg);
@@ -28227,8 +28243,8 @@ find_parm_usage_r (tree *tp, int *walk_subtrees, void*)
   return NULL_TREE;
 }
 
-/* Returns true if ARGS (a collection of template arguments) contains
-   any types that require structural equality testing.  */
+/* Returns true if a type specialization formed using the template
+   arguments ARGS needs to use structural equality.  */
 
 bool
 any_template_arguments_need_structural_equality_p (tree args)
@@ -28266,10 +28282,11 @@ any_template_arguments_need_structural_equality_p (tree args)
 		return true;
 	      else if (TREE_CODE (arg) == TEMPLATE_DECL)
 		continue;
-	      else if (TYPE_P (arg) && TYPE_STRUCTURAL_EQUALITY_P (arg))
-		return true;
-	      else if (!TYPE_P (arg) && TREE_TYPE (arg)
-		       && TYPE_STRUCTURAL_EQUALITY_P (TREE_TYPE (arg)))
+	      else if (arg == any_targ_node)
+		/* An any_targ_node argument (added by add_defaults_to_ttp)
+		   makes the corresponding specialization not canonicalizable,
+		   since template_args_equal always return true for it.  We
+		   may see this when called from bind_template_template_parm.  */
 		return true;
 	      /* Checking current_function_decl because this structural
 		 comparison is only necessary for redeclaration.  */
@@ -28277,6 +28294,16 @@ any_template_arguments_need_structural_equality_p (tree args)
 		       && dependent_template_arg_p (arg)
 		       && (cp_walk_tree_without_duplicates
 			   (&arg, find_parm_usage_r, NULL)))
+		/* The identity of a class template specialization that uses
+		   a function parameter depends on the identity of the function.
+		   And if this specialization appeared in the trailing return
+		   type thereof, we don't know the identity of the function
+		   (e.g. if it's a redeclaration or a new function) until we
+		   form its signature and go through duplicate_decls.  Thus
+		   it's unsafe to decide on a canonical type now (which depends
+		   on the DECL_CONTEXT of the function parameter, which can get
+		   mutated after the fact by duplicate_decls), so just require
+		   structural equality in this case (PR52830).  */
 		return true;
 	    }
 	}
@@ -29144,10 +29171,6 @@ rewrite_template_parm (tree olddecl, unsigned index, unsigned level,
       TEMPLATE_PARM_PARAMETER_PACK (newidx)
 	= TEMPLATE_PARM_PARAMETER_PACK (oldidx);
       TYPE_STUB_DECL (newtype) = TYPE_NAME (newtype) = newdecl;
-      if (TYPE_STRUCTURAL_EQUALITY_P (TREE_TYPE (olddecl)))
-	SET_TYPE_STRUCTURAL_EQUALITY (newtype);
-      else
-	TYPE_CANONICAL (newtype) = canonical_type_parameter (newtype);
 
       if (TREE_CODE (olddecl) == TEMPLATE_DECL)
 	{
@@ -29189,6 +29212,11 @@ rewrite_template_parm (tree olddecl, unsigned index, unsigned level,
 	  // All done.
 	  DECL_TEMPLATE_PARMS (newdecl) = ttparms;
 	}
+
+      if (TYPE_STRUCTURAL_EQUALITY_P (TREE_TYPE (olddecl)))
+	SET_TYPE_STRUCTURAL_EQUALITY (newtype);
+      else
+	TYPE_CANONICAL (newtype) = canonical_type_parameter (newtype);
     }
   else
     {

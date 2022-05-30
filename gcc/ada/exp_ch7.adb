@@ -341,8 +341,8 @@ package body Exp_Ch7 is
    --  Build_Finalizer.
 
    procedure Build_Finalizer_Call (N : Node_Id; Fin_Id : Entity_Id);
-   --  N is a construct which contains a handled sequence of statements, Fin_Id
-   --  is the entity of a finalizer. Create an At_End handler which covers the
+   --  N is a construct that contains a handled sequence of statements, Fin_Id
+   --  is the entity of a finalizer. Create an At_End handler that covers the
    --  statements of N and calls Fin_Id. If the handled statement sequence has
    --  an exception handler, the statements will be wrapped in a block to avoid
    --  unwanted interaction with the new At_End handler.
@@ -3722,7 +3722,7 @@ package body Exp_Ch7 is
       --  which belongs to a protected type.
 
       Loc : constant Source_Ptr := Sloc (N);
-      HSS : Node_Id;
+      HSS : Node_Id := Handled_Statement_Sequence (N);
 
    begin
       --  Do not perform this expansion in SPARK mode because we do not create
@@ -3732,13 +3732,8 @@ package body Exp_Ch7 is
          return;
       end if;
 
-      --  The At_End handler should have been assimilated by the finalizer
-
-      HSS := Handled_Statement_Sequence (N);
-      pragma Assert (No (At_End_Proc (HSS)));
-
       --  If the construct to be cleaned up is a protected subprogram body, the
-      --  finalizer call needs to be associated with the block which wraps the
+      --  finalizer call needs to be associated with the block that wraps the
       --  unprotected version of the subprogram. The following illustrates this
       --  scenario:
 
@@ -3760,27 +3755,9 @@ package body Exp_Ch7 is
 
       if Is_Prot_Body then
          HSS := Handled_Statement_Sequence (Last (Statements (HSS)));
-
-      --  An At_End handler and regular exception handlers cannot coexist in
-      --  the same statement sequence. Wrap the original statements in a block.
-
-      elsif Present (Exception_Handlers (HSS)) then
-         declare
-            End_Lab : constant Node_Id := End_Label (HSS);
-            Block   : Node_Id;
-
-         begin
-            Block :=
-              Make_Block_Statement (Loc, Handled_Statement_Sequence => HSS);
-
-            Set_Handled_Statement_Sequence (N,
-              Make_Handled_Sequence_Of_Statements (Loc, New_List (Block)));
-
-            HSS := Handled_Statement_Sequence (N);
-            Set_End_Label (HSS, End_Lab);
-         end;
       end if;
 
+      pragma Assert (No (At_End_Proc (HSS)));
       Set_At_End_Proc (HSS, New_Occurrence_Of (Fin_Id, Loc));
 
       --  Attach reference to finalizer to tree, for LLVM use
@@ -5568,10 +5545,10 @@ package body Exp_Ch7 is
    procedure Expand_Cleanup_Actions (N : Node_Id) is
       pragma Assert
         (Nkind (N) in N_Block_Statement
-                    | N_Entry_Body
-                    | N_Extended_Return_Statement
                     | N_Subprogram_Body
-                    | N_Task_Body);
+                    | N_Task_Body
+                    | N_Entry_Body
+                    | N_Extended_Return_Statement);
 
       Scop : constant Entity_Id := Current_Scope;
 
@@ -5639,18 +5616,14 @@ package body Exp_Ch7 is
       -----------------------
 
       procedure Wrap_HSS_In_Block is
-         Block    : Node_Id;
-         Block_Id : Entity_Id;
-         End_Lab  : Node_Id;
-
-      begin
+         Block : constant Node_Id :=
+           Make_Block_Statement (Loc, Handled_Statement_Sequence => HSS);
+         Block_Id : constant Entity_Id :=
+           New_Internal_Entity (E_Block, Current_Scope, Loc, 'B');
+         End_Lab : constant Node_Id := End_Label (HSS);
          --  Preserve end label to provide proper cross-reference information
 
-         End_Lab := End_Label (HSS);
-         Block :=
-           Make_Block_Statement (Loc, Handled_Statement_Sequence => HSS);
-
-         Block_Id := New_Internal_Entity (E_Block, Current_Scope, Loc, 'B');
+      begin
          Set_Identifier (Block, New_Occurrence_Of (Block_Id, Loc));
          Set_Etype (Block_Id, Standard_Void_Type);
          Set_Block_Node (Block_Id, Identifier (Block));
@@ -5660,14 +5633,11 @@ package body Exp_Ch7 is
 
          Set_Is_Finalization_Wrapper (Block);
 
-         Set_Handled_Statement_Sequence (N,
-           Make_Handled_Sequence_Of_Statements (Loc, New_List (Block)));
-         HSS := Handled_Statement_Sequence (N);
-
+         HSS := Make_Handled_Sequence_Of_Statements (Loc,
+           Statements => New_List (Block),
+           End_Label => End_Lab);
          Set_First_Real_Statement (HSS, Block);
-         Set_End_Label (HSS, End_Lab);
-
-         --  Comment needed here, see RH for 1.306 ???
+         Set_Handled_Statement_Sequence (N, HSS);
 
          if Nkind (N) = N_Subprogram_Body then
             Set_Has_Nested_Block_With_Handler (Scop);
@@ -5789,11 +5759,17 @@ package body Exp_Ch7 is
             Set_Uses_Sec_Stack (Scop, False);
          end if;
 
-         --  If exception handlers are present, wrap the sequence of statements
-         --  in a block since it is not possible to have exception handlers and
-         --  an At_End handler in the same construct.
+         --  If exception handlers are present in a non-subprogram
+         --  construct, wrap the sequence of statements in a block.
+         --  Otherwise, code can be moved so that the wrong handlers
+         --  apply. It is important not to do this for function bodies,
+         --  because otherwise transient finalizable objects created
+         --  by a return statement get finalized too late. It is harmless
+         --  not to do this for procedures.
 
-         if Present (Exception_Handlers (HSS)) then
+         if Present (Exception_Handlers (HSS))
+           and then Nkind (N) /= N_Subprogram_Body
+         then
             Wrap_HSS_In_Block;
 
          --  Ensure that the First_Real_Statement field is set

@@ -332,8 +332,8 @@ static fixed_size_mode ia64_get_reg_raw_mode (int regno);
 static section * ia64_hpux_function_section (tree, enum node_frequency,
 					     bool, bool);
 
-static bool ia64_vectorize_vec_perm_const (machine_mode, rtx, rtx, rtx,
-					   const vec_perm_indices &);
+static bool ia64_vectorize_vec_perm_const (machine_mode, machine_mode, rtx,
+					   rtx, rtx, const vec_perm_indices &);
 
 static unsigned int ia64_hard_regno_nregs (unsigned int, machine_mode);
 static bool ia64_hard_regno_mode_ok (unsigned int, machine_mode);
@@ -11751,9 +11751,13 @@ ia64_expand_vec_perm_const_1 (struct expand_vec_perm_d *d)
 /* Implement TARGET_VECTORIZE_VEC_PERM_CONST.  */
 
 static bool
-ia64_vectorize_vec_perm_const (machine_mode vmode, rtx target, rtx op0,
-			       rtx op1, const vec_perm_indices &sel)
+ia64_vectorize_vec_perm_const (machine_mode vmode, machine_mode op_mode,
+			       rtx target, rtx op0, rtx op1,
+			       const vec_perm_indices &sel)
 {
+  if (vmode != op_mode)
+    return false;
+
   struct expand_vec_perm_d d;
   unsigned char perm[MAX_VECT_LEN];
   unsigned int i, nelt, which;

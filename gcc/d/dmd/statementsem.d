@@ -1616,9 +1616,8 @@ package (dmd) extern (C++) final class StatementSemanticVisitor : Visitor
     static FuncExp foreachBodyToFunction(Scope* sc, ForeachStatement fs, TypeFunction tfld)
     {
         auto params = new Parameters();
-        foreach (i; 0 .. fs.parameters.dim)
+        foreach (i, p; *fs.parameters)
         {
-            Parameter p = (*fs.parameters)[i];
             StorageClass stc = STC.ref_ | (p.storageClass & STC.scope_);
             Identifier id;
 
@@ -3929,7 +3928,7 @@ package (dmd) extern (C++) final class StatementSemanticVisitor : Visitor
             cas.error("`asm` statement is assumed to use the GC - mark it with `@nogc` if it does not");
         if (!(cas.stc & (STC.trusted | STC.safe)))
         {
-            sc.func.setUnsafe(false, cas.loc, "`asm` statement is assumed to be `@system` - mark it with `@trusted` if it is not");
+            sc.setUnsafe(false, cas.loc, "`asm` statement is assumed to be `@system` - mark it with `@trusted` if it is not");
         }
 
         sc.pop();
@@ -4034,9 +4033,9 @@ void catchSemantic(Catch c, Scope* sc)
             error(c.loc, "catching C++ class objects not supported for this target");
             c.errors = true;
         }
-        if (sc.func && !sc.intypeof && !c.internalCatch)
+        if (!c.internalCatch)
         {
-            if (sc.func.setUnsafe(false, c.loc, "cannot catch C++ class objects in `@safe` code"))
+            if (sc.setUnsafe(false, c.loc, "cannot catch C++ class objects in `@safe` code"))
                 c.errors = true;
         }
     }
@@ -4045,9 +4044,9 @@ void catchSemantic(Catch c, Scope* sc)
         error(c.loc, "can only catch class objects derived from `Throwable`, not `%s`", c.type.toChars());
         c.errors = true;
     }
-    else if (sc.func && !sc.intypeof && !c.internalCatch && ClassDeclaration.exception &&
+    else if (!c.internalCatch && ClassDeclaration.exception &&
             cd != ClassDeclaration.exception && !ClassDeclaration.exception.isBaseOf(cd, null) &&
-            sc.func.setUnsafe(false, c.loc,
+            sc.setUnsafe(false, c.loc,
                 "can only catch class objects derived from `Exception` in `@safe` code, not `%s`", c.type))
     {
         c.errors = true;

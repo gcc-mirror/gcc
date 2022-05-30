@@ -1925,6 +1925,10 @@ class auto_suppress_location_wrappers
 #define OMP_CLAUSE_BIND_KIND(NODE) \
   (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_BIND)->omp_clause.subcode.bind_kind)
 
+/* True if ENTER clause is spelled as TO.  */
+#define OMP_CLAUSE_ENTER_TO(NODE) \
+  (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_ENTER)->base.public_flag)
+
 #define OMP_CLAUSE_TILE_LIST(NODE) \
   OMP_CLAUSE_OPERAND (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_TILE), 0)
 #define OMP_CLAUSE_TILE_ITERVAR(NODE) \

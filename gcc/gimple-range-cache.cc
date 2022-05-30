@@ -944,7 +944,7 @@ bool
 ranger_cache::edge_range (irange &r, edge e, tree name, enum rfd_mode mode)
 {
   exit_range (r, name, e->src, mode);
-  // If this is not an abnormal edge, check for side effects on exit.
+  // If this is not an abnormal edge, check for inferred ranges on exit.
   if ((e->flags & (EDGE_EH | EDGE_ABNORMAL)) == 0)
     m_exit.maybe_adjust_range (r, name, e->src);
   int_range_max er;
@@ -1251,12 +1251,12 @@ ranger_cache::fill_block_cache (tree name, basic_block bb, basic_block def_bb)
 	    }
 
 	  // Regardless of whether we have visited pred or not, if the
-	  // pred has side_effects, revisit this block.
+	  // pred has inferred ranges, revisit this block.
 	  // Don't search the DOM tree.
 	  if (m_exit.has_range_p (name, pred))
 	    {
 	      if (DEBUG_RANGE_CACHE)
-		fprintf (dump_file, "side effect: update ");
+		fprintf (dump_file, "Inferred range: update ");
 	      m_update->add (node);
 	    }
 
@@ -1317,8 +1317,8 @@ ranger_cache::range_from_dom (irange &r, tree name, basic_block start_bb,
   basic_block bb;
   basic_block prev_bb = start_bb;
 
-  // Track any side effects seen
-  int_range_max side_effect (TREE_TYPE (name));
+  // Track any inferred ranges seen.
+  int_range_max infer (TREE_TYPE (name));
 
   // Range on entry to the DEF block should not be queried.
   gcc_checking_assert (start_bb != def_bb);
@@ -1332,8 +1332,8 @@ ranger_cache::range_from_dom (irange &r, tree name, basic_block start_bb,
        bb;
        prev_bb = bb, bb = get_immediate_dominator (CDI_DOMINATORS, bb))
     {
-      // Accumulate any block exit side effects.
-      m_exit.maybe_adjust_range (side_effect, name, bb);
+      // Accumulate any block exit inferred ranges.
+      m_exit.maybe_adjust_range (infer, name, bb);
 
       // This block has an outgoing range.
       if (m_gori.has_edge_range_p (name, bb))
@@ -1399,7 +1399,7 @@ ranger_cache::range_from_dom (irange &r, tree name, basic_block start_bb,
       if (m_gori.outgoing_edge_range_p (er, e, name, *this))
 	{
 	  r.intersect (er);
-	  // If this is a normal edge, apply any side effects.
+	  // If this is a normal edge, apply any inferred ranges.
 	  if ((e->flags & (EDGE_EH | EDGE_ABNORMAL)) == 0)
 	    m_exit.maybe_adjust_range (r, name, bb);
 
@@ -1415,7 +1415,7 @@ ranger_cache::range_from_dom (irange &r, tree name, basic_block start_bb,
 
   // Apply non-null if appropriate.
   if (!has_abnormal_call_or_eh_pred_edge_p (start_bb))
-    r.intersect (side_effect);
+    r.intersect (infer);
 
   if (DEBUG_RANGE_CACHE)
     {
@@ -1430,17 +1430,17 @@ ranger_cache::range_from_dom (irange &r, tree name, basic_block start_bb,
 // any operands on stmt S to nonnull.
 
 void
-ranger_cache::apply_side_effects (gimple *s)
+ranger_cache::apply_inferred_ranges (gimple *s)
 {
   int_range_max r;
   bool update = true;
 
   basic_block bb = gimple_bb (s);
-  stmt_side_effects se(s);
-  if (se.num () == 0)
+  gimple_infer_range infer(s);
+  if (infer.num () == 0)
     return;
 
-  // Do not update the on-netry cache for block ending stmts.
+  // Do not update the on-entry cache for block ending stmts.
   if (stmt_ends_bb_p (s))
     {
       edge_iterator ei;
@@ -1452,15 +1452,15 @@ ranger_cache::apply_side_effects (gimple *s)
 	update = false;
     }
 
-  for (unsigned x = 0; x < se.num (); x++)
+  for (unsigned x = 0; x < infer.num (); x++)
     {
-      tree name = se.name (x);
-      m_exit.add_range (name, bb, se.range (x));
+      tree name = infer.name (x);
+      m_exit.add_range (name, bb, infer.range (x));
       if (update)
 	{
 	  if (!m_on_entry.get_bb_range (r, name, bb))
 	    exit_range (r, name, bb, RFD_READ_ONLY);
-	  if (r.intersect (se.range (x)))
+	  if (r.intersect (infer.range (x)))
 	    m_on_entry.set_bb_range (name, bb, r);
 	}
     }

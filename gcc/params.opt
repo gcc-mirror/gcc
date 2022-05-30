@@ -745,10 +745,6 @@ The maximum number of instructions to consider to unroll in a loop.
 Common Joined UInteger Var(param_max_unswitch_insns) Init(50) Param Optimization
 The maximum number of insns of an unswitched loop.
 
--param=max-unswitch-level=
-Common Joined UInteger Var(param_max_unswitch_level) Init(3) Param Optimization
-The maximum number of unswitchings in a single loop.
-
 -param=max-variable-expansions-in-unroller=
 Common Joined UInteger Var(param_max_variable_expansions) Init(1) Param Optimization
 If -fvariable-expansion-in-unroller is used, the maximum number of times that an individual variable will be expanded during loop unrolling.

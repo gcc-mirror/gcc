@@ -372,6 +372,10 @@ fpreview=fixaliasthis
 D RejectNegative
 When a symbol is resolved, check `alias this' scope before going to upper scopes.
 
+fpreview=fiximmutableconv
+D RejectNegative
+Disallow unsound immutable conversions that were formerly incorrectly permitted.
+
 fpreview=in
 D RejectNegative
 Implement 'in' parameters to mean scope const.

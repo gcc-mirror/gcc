@@ -4026,6 +4026,7 @@ ix86_expand_sse_movcc (rtx dest, rtx cmp, rtx op_true, rtx op_false)
     case E_V8HFmode:
     case E_V4SImode:
     case E_V2DImode:
+    case E_V1TImode:
       if (TARGET_SSE4_1)
 	{
 	  gen = gen_sse4_1_pblendvb;
@@ -22068,9 +22069,13 @@ canonicalize_perm (struct expand_vec_perm_d *d)
 /* Implement TARGET_VECTORIZE_VEC_PERM_CONST.  */
 
 bool
-ix86_vectorize_vec_perm_const (machine_mode vmode, rtx target, rtx op0,
-			       rtx op1, const vec_perm_indices &sel)
+ix86_vectorize_vec_perm_const (machine_mode vmode, machine_mode op_mode,
+			       rtx target, rtx op0, rtx op1,
+			       const vec_perm_indices &sel)
 {
+  if (vmode != op_mode)
+    return false;
+
   struct expand_vec_perm_d d;
   unsigned char perm[MAX_VECT_LEN];
   unsigned int i, nelt, which;

@@ -1,3 +1,8 @@
+2022-05-28  Ian Lance Taylor  <iant@golang.org>
+
+	PR libbacktrace/105721
+	* README: Update.
+
 2022-04-05  Ian Lance Taylor  <iant@golang.org>
 
 	* elf.c (elf_zlib_inflate): Don't skip initial aligned byte in

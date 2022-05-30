@@ -471,23 +471,68 @@
 
 ;; Byte swap.
 
-(define_insn "bswapsi2"
-  [(set (match_operand:SI 0 "register_operand" "=&a")
-	(bswap:SI (match_operand:SI 1 "register_operand" "r")))]
-  "!optimize_size"
-  "ssai\t8\;srli\t%0, %1, 16\;src\t%0, %0, %1\;src\t%0, %0, %0\;src\t%0, %1, %0"
-  [(set_attr "type"	"arith")
-   (set_attr "mode"	"SI")
-   (set_attr "length"	"15")])
+(define_expand "bswapsi2"
+  [(set (match_operand:SI 0 "register_operand" "")
+        (bswap:SI (match_operand:SI 1 "register_operand" "")))]
+  "!optimize_debug && optimize > 1"
+{
+  /* GIMPLE manual byte-swapping recognition is now activated.
+     For both built-in and manual bswaps, emit corresponding library call
+     if optimizing for size, or a series of dedicated machine instructions
+     if otherwise.  */
+  if (optimize_size)
+    emit_library_call_value (optab_libfunc (bswap_optab, SImode),
+			     operands[0], LCT_NORMAL, SImode,
+			     operands[1], SImode);
+  else
+    emit_insn (gen_bswapsi2_internal (operands[0], operands[1]));
+  DONE;
+})
 
-(define_insn "bswapdi2"
-  [(set (match_operand:DI 0 "register_operand" "=&a")
-	(bswap:DI (match_operand:DI 1 "register_operand" "r")))]
-  "!optimize_size"
-  "ssai\t8\;srli\t%0, %D1, 16\;src\t%0, %0, %D1\;src\t%0, %0, %0\;src\t%0, %D1, %0\;srli\t%D0, %1, 16\;src\t%D0, %D0, %1\;src\t%D0, %D0, %D0\;src\t%D0, %1, %D0"
-  [(set_attr "type"	"arith")
-   (set_attr "mode"	"DI")
-   (set_attr "length"	"27")])
+(define_insn "bswapsi2_internal"
+  [(set (match_operand:SI 0 "register_operand" "=a,&a")
+	(bswap:SI (match_operand:SI 1 "register_operand" "0,r")))
+   (clobber (match_scratch:SI 2 "=&a,X"))]
+  "!optimize_debug && optimize > 1 && !optimize_size"
+{
+  rtx_insn *prev_insn = prev_nonnote_nondebug_insn (insn);
+  const char *init = "ssai\t8\;";
+  static char result[64];
+  if (prev_insn && NONJUMP_INSN_P (prev_insn))
+    {
+      rtx x = PATTERN (prev_insn);
+      if (GET_CODE (x) == PARALLEL && XVECLEN (x, 0) == 2
+	  && GET_CODE (XVECEXP (x, 0, 0)) == SET
+	  && GET_CODE (XVECEXP (x, 0, 1)) == CLOBBER)
+	{
+	  x = XEXP (XVECEXP (x, 0, 0), 1);
+	  if (GET_CODE (x) == BSWAP && GET_MODE (x) == SImode)
+	    init = "";
+	}
+    }
+  sprintf (result,
+	   (which_alternative == 0)
+	   ? "%s" "srli\t%%2, %%1, 16\;src\t%%2, %%2, %%1\;src\t%%2, %%2, %%2\;src\t%%0, %%1, %%2"
+	   : "%s" "srli\t%%0, %%1, 16\;src\t%%0, %%0, %%1\;src\t%%0, %%0, %%0\;src\t%%0, %%1, %%0",
+	   init);
+  return result;
+}
+   [(set_attr "type"	"arith,arith")
+    (set_attr "mode"	"SI")
+    (set_attr "length"	"15,15")])
+
+(define_expand "bswapdi2"
+  [(set (match_operand:DI 0 "register_operand" "")
+	(bswap:DI (match_operand:DI 1 "register_operand" "")))]
+  "!optimize_debug && optimize > 1 && optimize_size"
+{
+  /* Replace with a single DImode library call.
+     Without this, two SImode library calls are emitted.  */
+  emit_library_call_value (optab_libfunc (bswap_optab, DImode),
+			   operands[0], LCT_NORMAL, DImode,
+			   operands[1], DImode);
+  DONE;
+})
 
 
 ;; Negation and one's complement.
@@ -1078,6 +1123,22 @@
   if (!xtensa_expand_block_move (operands))
     FAIL;
   DONE;
+})
+
+;; Block sets
+
+(define_expand "setmemsi"
+  [(match_operand:BLK 0 "memory_operand")
+   (match_operand:SI 1 "")
+   (match_operand:SI 2 "")
+   (match_operand:SI 3 "const_int_operand")]
+  "!optimize_debug && optimize"
+{
+  if (xtensa_expand_block_set_unrolled_loop (operands))
+    DONE;
+  if (xtensa_expand_block_set_small_loop (operands))
+    DONE;
+  FAIL;
 })
 
 

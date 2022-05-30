@@ -588,9 +588,9 @@ install-gnatlib: ../stamp-gnatlib-$(RTSDIR) install-gcc-specs
 	touch ../stamp-gnatlib1-$(RTSDIR)
 
 # GCC_FOR_TARGET has paths relative to the gcc directory, so we need to adjust
-# for running it from ada/rts
+# for running it from ada/rts.
 
-OSCONS_CC=$(subst ./xgcc,../../xgcc,$(subst -B./, -B../../,$(GCC_FOR_TARGET)))
+GCC_FOR_ADA_RTS=$(subst ./xgcc,../../xgcc,$(subst -B./, -B../../,$(GCC_FOR_TARGET)))
 
 # The main ada source directory must be on the include path for #include "..."
 # because s-oscons-tmplt.c requires adaint.h, gsocket.h, and any file included
@@ -598,9 +598,9 @@ OSCONS_CC=$(subst ./xgcc,../../xgcc,$(subst -B./, -B../../,$(GCC_FOR_TARGET)))
 # ada/types.h does not conflict with a same-named system header (VxWorks
 # has a <types.h> header).
 
-OSCONS_CPP=$(OSCONS_CC) $(GNATLIBCFLAGS_FOR_C) -E -C \
+OSCONS_CPP=$(GCC_FOR_ADA_RTS) $(GNATLIBCFLAGS_FOR_C) -E -C \
   -DTARGET=\"$(target_noncanonical)\" -iquote $(fsrcpfx)ada $(fsrcpfx)ada/s-oscons-tmplt.c > s-oscons-tmplt.i
-OSCONS_EXTRACT=$(OSCONS_CC) $(GNATLIBCFLAGS_FOR_C) -S s-oscons-tmplt.i
+OSCONS_EXTRACT=$(GCC_FOR_ADA_RTS) $(GNATLIBCFLAGS_FOR_C) -S s-oscons-tmplt.i
 
 # Note: if you need to build with a non-GNU compiler, you could adapt the
 # following definitions (written for VMS DEC-C)
@@ -629,8 +629,7 @@ gnatlib: ../stamp-gnatlib1-$(RTSDIR) ../stamp-gnatlib2-$(RTSDIR) $(RTSDIR)/s-osc
 	test -f $(RTSDIR)/s-oscons.ads || exit 1
 # C files
 	$(MAKE) -C $(RTSDIR) \
-		CC="`echo \"$(GCC_FOR_TARGET)\" \
-		| sed -e 's,\./xgcc,../../xgcc,' -e 's,-B\./,-B../../,'`" \
+		CC="$(GCC_FOR_ADA_RTS)" \
 	        INCLUDES="$(INCLUDES_FOR_SUBDIR) -I./../.." \
                 CFLAGS="$(GNATLIBCFLAGS_FOR_C)" \
 	        FORCE_DEBUG_ADAFLAGS="$(FORCE_DEBUG_ADAFLAGS)" \
@@ -638,8 +637,7 @@ gnatlib: ../stamp-gnatlib1-$(RTSDIR) ../stamp-gnatlib2-$(RTSDIR) $(RTSDIR)/s-osc
 	        -f ../Makefile $(LIBGNAT_OBJS) $(EXTRA_ADALIB_OBJS)
 # Ada files
 	$(MAKE) -C $(RTSDIR) \
-		CC="`echo \"$(GCC_FOR_TARGET)\" \
-		| sed -e 's,\./xgcc,../../xgcc,' -e 's,-B\./,-B../../,'`" \
+		CC="$(GCC_FOR_ADA_RTS)" \
 	        ADA_INCLUDES="" \
                 CFLAGS="$(GNATLIBCFLAGS)" \
 	        ADAFLAGS="$(GNATLIBFLAGS)" \
@@ -672,15 +670,13 @@ gnatlib-shared-default:
 	     LN_S="$(LN_S)" \
              gnatlib
 	$(RM) $(RTSDIR)/libgna*$(soext)
-	cd $(RTSDIR); `echo "$(GCC_FOR_TARGET)" \
-                | sed -e 's,\./xgcc,../../xgcc,' -e 's,-B\./,-B../../,'` -shared $(GNATLIBCFLAGS) \
+	cd $(RTSDIR); $(GCC_FOR_ADA_RTS) -shared $(GNATLIBCFLAGS) \
 		$(PICFLAG_FOR_TARGET) \
 		-o libgnat$(hyphen)$(LIBRARY_VERSION)$(soext) \
 		$(GNATRTL_NONTASKING_OBJS) $(LIBGNAT_OBJS) \
 		$(SO_OPTS)libgnat$(hyphen)$(LIBRARY_VERSION)$(soext) \
 		$(MISCLIB) -lm
-	cd $(RTSDIR); `echo "$(GCC_FOR_TARGET)" \
-                | sed -e 's,\./xgcc,../../xgcc,' -e 's,-B\./,-B../../,'` -shared $(GNATLIBCFLAGS) \
+	cd $(RTSDIR); $(GCC_FOR_ADA_RTS) -shared $(GNATLIBCFLAGS) \
 		$(PICFLAG_FOR_TARGET) \
 		-o libgnarl$(hyphen)$(LIBRARY_VERSION)$(soext) \
 		$(GNATRTL_TASKING_OBJS) \
@@ -764,14 +760,12 @@ gnatlib-shared-win32:
 	$(RM) $(RTSDIR)/libgna*$(soext)
 	$(CP) $(RTSDIR)/libgnat$(arext) $(RTSDIR)/libgnat_pic$(arext)
 	$(CP) $(RTSDIR)/libgnarl$(arext) $(RTSDIR)/libgnarl_pic$(arext)
-	cd $(RTSDIR); `echo "$(GCC_FOR_TARGET)" \
-                | sed -e 's,\./xgcc,../../xgcc,' -e 's,-B\./,-B../../,'` -shared -shared-libgcc \
+	cd $(RTSDIR); $(GCC_FOR_ADA_RTS) -shared -shared-libgcc \
 		$(PICFLAG_FOR_TARGET) \
 		-o libgnat$(hyphen)$(LIBRARY_VERSION)$(soext) \
 		$(GNATRTL_NONTASKING_OBJS) $(LIBGNAT_OBJS) \
 		$(SO_OPTS)libgnat$(hyphen)$(LIBRARY_VERSION)$(soext) $(MISCLIB)
-	cd $(RTSDIR); `echo "$(GCC_FOR_TARGET)" \
-                | sed -e 's,\./xgcc,../../xgcc,' -e 's,-B\./,-B../../,'` -shared -shared-libgcc \
+	cd $(RTSDIR); $(GCC_FOR_ADA_RTS) -shared -shared-libgcc \
 		$(PICFLAG_FOR_TARGET) \
 		-o libgnarl$(hyphen)$(LIBRARY_VERSION)$(soext) \
 		$(GNATRTL_TASKING_OBJS) \
@@ -790,15 +784,13 @@ gnatlib-shared-darwin:
 	$(RM) $(RTSDIR)/libgnat$(soext) $(RTSDIR)/libgnarl$(soext)
 	$(CP) $(RTSDIR)/libgnat$(arext) $(RTSDIR)/libgnat_pic$(arext)
 	$(CP) $(RTSDIR)/libgnarl$(arext) $(RTSDIR)/libgnarl_pic$(arext)
-	cd $(RTSDIR); `echo "$(GCC_FOR_TARGET)" \
-                | sed -e 's,\./xgcc,../../xgcc,' -e 's,-B\./,-B../../,'` -dynamiclib $(PICFLAG_FOR_TARGET) \
+	cd $(RTSDIR); $(GCC_FOR_ADA_RTS) -dynamiclib $(PICFLAG_FOR_TARGET) \
 		-o libgnat$(hyphen)$(LIBRARY_VERSION)$(soext) \
 		$(GNATRTL_NONTASKING_OBJS) $(LIBGNAT_OBJS) \
 		$(SO_OPTS) \
 		-Wl,-install_name,@rpath/libgnat$(hyphen)$(LIBRARY_VERSION)$(soext) \
 		$(MISCLIB)
-	cd $(RTSDIR); `echo "$(GCC_FOR_TARGET)" \
-                | sed -e 's,\./xgcc,../../xgcc,' -e 's,-B\./,-B../../,'` -dynamiclib $(PICFLAG_FOR_TARGET) \
+	cd $(RTSDIR); $(GCC_FOR_ADA_RTS) -dynamiclib $(PICFLAG_FOR_TARGET) \
 		-o libgnarl$(hyphen)$(LIBRARY_VERSION)$(soext) \
 		$(GNATRTL_TASKING_OBJS) \
 		$(SO_OPTS) \

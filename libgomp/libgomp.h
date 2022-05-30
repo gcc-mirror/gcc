@@ -87,7 +87,6 @@ enum memmodel
 /* alloc.c */
 
 #if defined(HAVE_ALIGNED_ALLOC) \
-    || defined(HAVE__ALIGNED_MALLOC) \
     || defined(HAVE_POSIX_MEMALIGN) \
     || defined(HAVE_MEMALIGN)
 /* Defined if gomp_aligned_alloc doesn't use fallback version

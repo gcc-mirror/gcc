@@ -376,10 +376,10 @@ public:
   ipa_sra_function_summaries (symbol_table *table, bool ggc):
     function_summary<isra_func_summary *> (table, ggc) { }
 
-  virtual void duplicate (cgraph_node *, cgraph_node *,
-			  isra_func_summary *old_sum,
-			  isra_func_summary *new_sum);
-  virtual void insert (cgraph_node *, isra_func_summary *);
+  void duplicate (cgraph_node *, cgraph_node *,
+		  isra_func_summary *old_sum,
+		  isra_func_summary *new_sum) final override;
+  void insert (cgraph_node *, isra_func_summary *) final override;
 };
 
 /* Hook that is called by summary when a node is duplicated.  */
@@ -458,9 +458,9 @@ public:
     call_summary<isra_call_summary *> (table) { }
 
   /* Duplicate info when an edge is cloned.  */
-  virtual void duplicate (cgraph_edge *, cgraph_edge *,
-			  isra_call_summary *old_sum,
-			  isra_call_summary *new_sum);
+  void duplicate (cgraph_edge *, cgraph_edge *,
+		  isra_call_summary *old_sum,
+		  isra_call_summary *new_sum) final override;
 };
 
 static ipa_sra_call_summaries *call_sums;

@@ -119,10 +119,10 @@ public:
   fnspec_summaries_t (symbol_table *symtab)
       : call_summary <fnspec_summary *> (symtab) {}
   /* Hook that is called by summary when an edge is duplicated.  */
-  virtual void duplicate (cgraph_edge *,
-			  cgraph_edge *,
-			  fnspec_summary *src,
-			  fnspec_summary *dst)
+  void duplicate (cgraph_edge *,
+		  cgraph_edge *,
+		  fnspec_summary *src,
+		  fnspec_summary *dst) final override
   {
     dst->fnspec = xstrdup (src->fnspec);
   }
@@ -194,10 +194,10 @@ public:
   escape_summaries_t (symbol_table *symtab)
       : call_summary <escape_summary *> (symtab) {}
   /* Hook that is called by summary when an edge is duplicated.  */
-  virtual void duplicate (cgraph_edge *,
-			  cgraph_edge *,
-			  escape_summary *src,
-			  escape_summary *dst)
+  void duplicate (cgraph_edge *,
+		  cgraph_edge *,
+		  escape_summary *src,
+		  escape_summary *dst) final override
   {
     dst->esc = src->esc.copy ();
   }
@@ -217,11 +217,11 @@ class GTY((user)) modref_summaries
 public:
   modref_summaries (symbol_table *symtab)
       : fast_function_summary <modref_summary *, va_gc> (symtab) {}
-  virtual void insert (cgraph_node *, modref_summary *state);
-  virtual void duplicate (cgraph_node *src_node,
-			  cgraph_node *dst_node,
-			  modref_summary *src_data,
-			  modref_summary *dst_data);
+  void insert (cgraph_node *, modref_summary *state) final override;
+  void duplicate (cgraph_node *src_node,
+		  cgraph_node *dst_node,
+		  modref_summary *src_data,
+		  modref_summary *dst_data) final override;
   static modref_summaries *create_ggc (symbol_table *symtab)
   {
     return new (ggc_alloc_no_dtor<modref_summaries> ())
@@ -241,11 +241,11 @@ public:
   modref_summaries_lto (symbol_table *symtab)
       : fast_function_summary <modref_summary_lto *, va_gc> (symtab),
 	propagated (false) {}
-  virtual void insert (cgraph_node *, modref_summary_lto *state);
-  virtual void duplicate (cgraph_node *src_node,
-			  cgraph_node *dst_node,
-			  modref_summary_lto *src_data,
-			  modref_summary_lto *dst_data);
+  void insert (cgraph_node *, modref_summary_lto *state) final override;
+  void duplicate (cgraph_node *src_node,
+		  cgraph_node *dst_node,
+		  modref_summary_lto *src_data,
+		  modref_summary_lto *dst_data) final override;
   static modref_summaries_lto *create_ggc (symbol_table *symtab)
   {
     return new (ggc_alloc_no_dtor<modref_summaries_lto> ())

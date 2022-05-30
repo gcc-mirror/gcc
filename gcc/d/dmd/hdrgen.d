@@ -3835,26 +3835,24 @@ private void typeToBufferx(Type t, OutBuffer* buf, HdrGenState* hgs)
     {
         foreach (id; t.idents)
         {
-            if (id.dyncast() == DYNCAST.dsymbol)
+            switch (id.dyncast()) with (DYNCAST)
             {
+            case dsymbol:
                 buf.writeByte('.');
                 TemplateInstance ti = cast(TemplateInstance)id;
                 ti.dsymbolToBuffer(buf, hgs);
-            }
-            else if (id.dyncast() == DYNCAST.expression)
-            {
+                break;
+            case expression:
                 buf.writeByte('[');
                 (cast(Expression)id).expressionToBuffer(buf, hgs);
                 buf.writeByte(']');
-            }
-            else if (id.dyncast() == DYNCAST.type)
-            {
+                break;
+            case type:
                 buf.writeByte('[');
                 typeToBufferx(cast(Type)id, buf, hgs);
                 buf.writeByte(']');
-            }
-            else
-            {
+                break;
+            default:
                 buf.writeByte('.');
                 buf.writestring(id.toString());
             }

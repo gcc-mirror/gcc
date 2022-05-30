@@ -1,3 +1,11 @@
+2022-05-24  David Malcolm  <dmalcolm@redhat.com>
+
+	* ansidecl.h: Drop macros OVERRIDE and FINAL.
+
+2022-05-23  Nathan Sidwell  <nathan@acm.org>
+
+	* demangle.h (enum demangle_component_type): Add module components.
+
 2022-05-18  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* cuda/cuda.h (enum CUjit_option): Add

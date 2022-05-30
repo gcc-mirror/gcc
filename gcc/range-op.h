@@ -95,7 +95,7 @@ protected:
 		        const wide_int &lh_ub,
 		        const wide_int &rh_lb,
 		        const wide_int &rh_ub) const;
-  // Side effect of relation for generic fold_range clients.
+  // Effect of relation for generic fold_range clients.
   virtual bool op1_op2_relation_effect (irange &lhs_range, tree type,
 					const irange &op1_range,
 					const irange &op2_range,

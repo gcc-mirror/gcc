@@ -65,9 +65,7 @@ gomp_aligned_alloc (size_t al, size_t size)
   void *ret;
   if (al < sizeof (void *))
     al = sizeof (void *);
-#ifdef HAVE__ALIGNED_MALLOC
-  ret = _aligned_malloc (size, al);
-#elif defined(HAVE_MEMALIGN)
+#ifdef HAVE_MEMALIGN
   {
     extern void *memalign (size_t, size_t);
     ret = memalign (al, size);
@@ -83,6 +81,8 @@ gomp_aligned_alloc (size_t al, size_t size)
     else
       ret = NULL;
   }
+#elif defined(HAVE__ALIGNED_MALLOC)
+  ret = _aligned_malloc (size, al);
 #else
   ret = NULL;
   if ((al & (al - 1)) == 0 && size)
@@ -106,6 +106,8 @@ gomp_aligned_free (void *ptr)
 {
 #ifdef GOMP_HAVE_EFFICIENT_ALIGNED_ALLOC
   free (ptr);
+#elif defined(HAVE__ALIGNED_MALLOC)
+  _aligned_free (ptr);
 #else
   if (ptr)
     free (((void **) ptr)[-1]);

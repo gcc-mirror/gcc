@@ -234,7 +234,7 @@ public:
   /* Visitor interfaces, each Expression class should have
      overridden the default.  */
 
-  void visit (Expression *)
+  void visit (Expression *) final override
   {
     gcc_unreachable ();
   }
@@ -243,7 +243,7 @@ public:
      expression is void, then the resulting type is void.  Otherwise
      they are implicitly converted to a common type.  */
 
-  void visit (CondExp *e)
+  void visit (CondExp *e) final override
   {
     tree cond = convert_for_condition (build_expr (e->econd),
 				       e->econd->type);
@@ -263,7 +263,7 @@ public:
      usual conversions to bring them to a common type before comparison.
      The result type is bool.  */
 
-  void visit (IdentityExp *e)
+  void visit (IdentityExp *e) final override
   {
     tree_code code = (e->op == EXP::identity) ? EQ_EXPR : NE_EXPR;
     Type *tb1 = e->e1->type->toBasetype ();
@@ -328,7 +328,7 @@ public:
      equality or inequality.  Operands go through the usual conversions to bring
      them to a common type before comparison.  The result type is bool.  */
 
-  void visit (EqualExp *e)
+  void visit (EqualExp *e) final override
   {
     Type *tb1 = e->e1->type->toBasetype ();
     Type *tb2 = e->e2->type->toBasetype ();
@@ -475,7 +475,7 @@ public:
      exists in an associative array.  The result is a pointer to the
      element, or null if false.  */
 
-  void visit (InExp *e)
+  void visit (InExp *e) final override
   {
     Type *tb2 = e->e2->type->toBasetype ();
     Type *tkey = tb2->isTypeAArray ()->index->toBasetype ();
@@ -490,7 +490,7 @@ public:
 
   /* Build a relational expression.  The result type is bool.  */
 
-  void visit (CmpExp *e)
+  void visit (CmpExp *e) final override
   {
     Type *tb1 = e->e1->type->toBasetype ();
     Type *tb2 = e->e2->type->toBasetype ();
@@ -539,7 +539,7 @@ public:
      expression is void, then the resulting type is void.  Otherwise the
      result is bool.  */
 
-  void visit (LogicalExp *e)
+  void visit (LogicalExp *e) final override
   {
     tree_code code = (e->op == EXP::andAnd) ? TRUTH_ANDIF_EXPR : TRUTH_ORIF_EXPR;
 
@@ -571,7 +571,7 @@ public:
   /* Build a binary operand expression.  Operands go through usual arithmetic
      conversions to bring them to a common type before evaluating.  */
 
-  void visit (BinExp *e)
+  void visit (BinExp *e) final override
   {
     tree_code code;
 
@@ -666,7 +666,7 @@ public:
      same type, producing a dynamic array with the result.  If one operand
      is an element type, that element is converted to an array of length 1.  */
 
-  void visit (CatExp *e)
+  void visit (CatExp *e) final override
   {
     Type *tb1 = e->e1->type->toBasetype ();
     Type *tb2 = e->e2->type->toBasetype ();
@@ -745,7 +745,7 @@ public:
   /* Build an assignment operator expression.  The right operand is implicitly
      converted to the type of the left operand, and assigned to it.  */
 
-  void visit (BinAssignExp *e)
+  void visit (BinAssignExp *e) final override
   {
     tree_code code;
     Expression *e1b = e->e1;
@@ -818,7 +818,7 @@ public:
   /* Build a concat assignment expression.  The right operand is appended
      to the left operand.  */
 
-  void visit (CatAssignExp *e)
+  void visit (CatAssignExp *e) final override
   {
     Type *tb1 = e->e1->type->toBasetype ();
     Type *tb2 = e->e2->type->toBasetype ();
@@ -861,7 +861,7 @@ public:
   /* Build an assignment expression.  The right operand is implicitly
      converted to the type of the left operand, and assigned to it.  */
 
-  void visit (AssignExp *e)
+  void visit (AssignExp *e) final override
   {
     /* First, handle special assignment semantics.  */
 
@@ -1146,7 +1146,7 @@ public:
 
   /* Build a throw expression.  */
 
-  void visit (ThrowExp *e)
+  void visit (ThrowExp *e) final override
   {
     tree arg = build_expr_dtor (e->e1);
     this->result_ = build_libcall (LIBCALL_THROW, Type::tvoid, 1, arg);
@@ -1154,7 +1154,7 @@ public:
 
   /* Build a postfix expression.  */
 
-  void visit (PostExp *e)
+  void visit (PostExp *e) final override
   {
     tree result;
 
@@ -1177,7 +1177,7 @@ public:
 
   /* Build an index expression.  */
 
-  void visit (IndexExp *e)
+  void visit (IndexExp *e) final override
   {
     Type *tb1 = e->e1->type->toBasetype ();
 
@@ -1254,7 +1254,7 @@ public:
 
   /* Build a comma expression.  The type is the type of the right operand.  */
 
-  void visit (CommaExp *e)
+  void visit (CommaExp *e) final override
   {
     tree t1 = build_expr (e->e1);
     tree t2 = build_expr (e->e2);
@@ -1266,7 +1266,7 @@ public:
   /* Build an array length expression.  Returns the number of elements
      in the array.  The result is of type size_t.  */
 
-  void visit (ArrayLengthExp *e)
+  void visit (ArrayLengthExp *e) final override
   {
     if (e->e1->type->toBasetype ()->ty == TY::Tarray)
       this->result_ = d_array_length (build_expr (e->e1));
@@ -1281,7 +1281,7 @@ public:
   /* Build a delegate pointer expression.  This will return the frame
      pointer value as a type void*.  */
 
-  void visit (DelegatePtrExp *e)
+  void visit (DelegatePtrExp *e) final override
   {
     tree t1 = build_expr (e->e1);
     this->result_ = delegate_object (t1);
@@ -1290,7 +1290,7 @@ public:
   /* Build a delegate function pointer expression.  This will return the
      function pointer value as a function type.  */
 
-  void visit (DelegateFuncptrExp *e)
+  void visit (DelegateFuncptrExp *e) final override
   {
     tree t1 = build_expr (e->e1);
     this->result_ = delegate_method (t1);
@@ -1298,7 +1298,7 @@ public:
 
   /* Build a slice expression.  */
 
-  void visit (SliceExp *e)
+  void visit (SliceExp *e) final override
   {
     Type *tb = e->type->toBasetype ();
     Type *tb1 = e->e1->type->toBasetype ();
@@ -1371,7 +1371,7 @@ public:
   /* Build a cast expression, which converts the given unary expression to the
      type of result.  */
 
-  void visit (CastExp *e)
+  void visit (CastExp *e) final override
   {
     Type *ebtype = e->e1->type->toBasetype ();
     Type *tbtype = e->to->toBasetype ();
@@ -1386,7 +1386,7 @@ public:
 
   /* Build a delete expression.  */
 
-  void visit (DeleteExp *e)
+  void visit (DeleteExp *e) final override
   {
     tree t1 = build_expr (e->e1);
     Type *tb1 = e->e1->type->toBasetype ();
@@ -1416,7 +1416,7 @@ public:
   /* Build a remove expression, which removes a particular key from an
      associative array.  */
 
-  void visit (RemoveExp *e)
+  void visit (RemoveExp *e) final override
   {
     /* Check that the array is actually an associative array.  */
     if (e->e1->type->toBasetype ()->ty == TY::Taarray)
@@ -1439,7 +1439,7 @@ public:
 
   /* Build an unary not expression.  */
 
-  void visit (NotExp *e)
+  void visit (NotExp *e) final override
   {
     tree result = convert_for_condition (build_expr (e->e1), e->e1->type);
     /* Need to convert to boolean type or this will fail.  */
@@ -1452,7 +1452,7 @@ public:
      complemented.  Note: unlike in C, the usual integral promotions
      are not performed prior to the complement operation.  */
 
-  void visit (ComExp *e)
+  void visit (ComExp *e) final override
   {
     TY ty1 = e->e1->type->toBasetype ()->ty;
     gcc_assert (ty1 != TY::Tarray && ty1 != TY::Tsarray);
@@ -1463,7 +1463,7 @@ public:
 
   /* Build an unary negation expression.  */
 
-  void visit (NegExp *e)
+  void visit (NegExp *e) final override
   {
     TY ty1 = e->e1->type->toBasetype ()->ty;
     gcc_assert (ty1 != TY::Tarray && ty1 != TY::Tsarray);
@@ -1484,7 +1484,7 @@ public:
 
   /* Build a pointer index expression.  */
 
-  void visit (PtrExp *e)
+  void visit (PtrExp *e) final override
   {
     Type *tnext = NULL;
     size_t offset;
@@ -1547,7 +1547,7 @@ public:
 
   /* Build an unary address expression.  */
 
-  void visit (AddrExp *e)
+  void visit (AddrExp *e) final override
   {
     tree type = build_ctype (e->type);
     tree exp;
@@ -1581,7 +1581,7 @@ public:
 
   /* Build a function call expression.  */
 
-  void visit (CallExp *e)
+  void visit (CallExp *e) final override
   {
     Type *tb = e->e1->type->toBasetype ();
     Expression *e1b = e->e1;
@@ -1763,7 +1763,7 @@ public:
 
   /* Build a delegate expression.  */
 
-  void visit (DelegateExp *e)
+  void visit (DelegateExp *e) final override
   {
     if (e->func->semanticRun == PASS::semantic3done)
       {
@@ -1827,7 +1827,7 @@ public:
 
   /* Build a type component expression.  */
 
-  void visit (DotTypeExp *e)
+  void visit (DotTypeExp *e) final override
   {
     /* Just a pass through to underlying expression.  */
     this->result_ = build_expr (e->e1);
@@ -1835,7 +1835,7 @@ public:
 
   /* Build a component reference expression.  */
 
-  void visit (DotVarExp *e)
+  void visit (DotVarExp *e) final override
   {
     VarDeclaration *vd = e->var->isVarDeclaration ();
 
@@ -1873,7 +1873,7 @@ public:
   /* Build an assert expression, used to declare conditions that must hold at
      that a given point in the program.  */
 
-  void visit (AssertExp *e)
+  void visit (AssertExp *e) final override
   {
     Type *tb1 = e->e1->type->toBasetype ();
     tree arg = build_expr (e->e1);
@@ -1958,7 +1958,7 @@ public:
 
   /* Build a declaration expression.  */
 
-  void visit (DeclarationExp *e)
+  void visit (DeclarationExp *e) final override
   {
     /* Compile the declaration.  */
     push_stmt_list ();
@@ -1977,7 +1977,7 @@ public:
   /* Build a typeid expression.  Returns an instance of class TypeInfo
      corresponding to.  */
 
-  void visit (TypeidExp *e)
+  void visit (TypeidExp *e) final override
   {
     if (Type *tid = isType (e->obj))
       {
@@ -2011,7 +2011,7 @@ public:
 
   /* Build a function/lambda expression.  */
 
-  void visit (FuncExp *e)
+  void visit (FuncExp *e) final override
   {
     Type *ftype = e->type->toBasetype ();
 
@@ -2053,7 +2053,7 @@ public:
 
   /* Build a halt expression.  */
 
-  void visit (HaltExp *)
+  void visit (HaltExp *) final override
   {
     /* Should we use trap() or abort()?  */
     tree ttrap = builtin_decl_explicit (BUILT_IN_TRAP);
@@ -2062,7 +2062,7 @@ public:
 
   /* Build a symbol pointer offset expression.  */
 
-  void visit (SymOffExp *e)
+  void visit (SymOffExp *e) final override
   {
     /* Build the address and offset of the symbol.  */
     size_t soffset = e->isSymOffExp ()->offset;
@@ -2088,7 +2088,7 @@ public:
 
   /* Build a variable expression.  */
 
-  void visit (VarExp *e)
+  void visit (VarExp *e) final override
   {
     if (e->var->needThis ())
       {
@@ -2192,7 +2192,7 @@ public:
 
   /* Build a this variable expression.  */
 
-  void visit (ThisExp *e)
+  void visit (ThisExp *e) final override
   {
     FuncDeclaration *fd = d_function_chain ? d_function_chain->function : NULL;
     tree result = NULL_TREE;
@@ -2214,7 +2214,7 @@ public:
   /* Build a new expression, which allocates memory either on the garbage
      collected heap or by using a class or struct specific allocator.  */
 
-  void visit (NewExp *e)
+  void visit (NewExp *e) final override
   {
     Type *tb = e->type->toBasetype ();
     tree result;
@@ -2464,7 +2464,7 @@ public:
 
   /* Build an integer literal.  */
 
-  void visit (IntegerExp *e)
+  void visit (IntegerExp *e) final override
   {
     tree ctype = build_ctype (e->type->toBasetype ());
     this->result_ = build_integer_cst (e->value, ctype);
@@ -2472,14 +2472,14 @@ public:
 
   /* Build a floating-point literal.  */
 
-  void visit (RealExp *e)
+  void visit (RealExp *e) final override
   {
     this->result_ = build_float_cst (e->value, e->type->toBasetype ());
   }
 
   /* Build a complex literal.  */
 
-  void visit (ComplexExp *e)
+  void visit (ComplexExp *e) final override
   {
     Type *tnext;
 
@@ -2509,7 +2509,7 @@ public:
   /* Build a string literal, all strings are null terminated except for
      static arrays.  */
 
-  void visit (StringExp *e)
+  void visit (StringExp *e) final override
   {
     Type *tb = e->type->toBasetype ();
     tree type = build_ctype (e->type);
@@ -2556,7 +2556,7 @@ public:
   /* Build a tuple literal.  Just an argument list that may have
      side effects that need evaluation.  */
 
-  void visit (TupleExp *e)
+  void visit (TupleExp *e) final override
   {
     tree result = NULL_TREE;
 
@@ -2579,7 +2579,7 @@ public:
      be the type of the array element, and all elements are implicitly
      converted to that type.  */
 
-  void visit (ArrayLiteralExp *e)
+  void visit (ArrayLiteralExp *e) final override
   {
     Type *tb = e->type->toBasetype ();
 
@@ -2711,7 +2711,7 @@ public:
      taken to be the key type, and common type of all values the value type.
      All keys and values are then implicitly converted as needed.  */
 
-  void visit (AssocArrayLiteralExp *e)
+  void visit (AssocArrayLiteralExp *e) final override
   {
     /* Want the mutable type for typeinfo reference.  */
     Type *tb = e->type->toBasetype ()->mutableOf ();
@@ -2758,7 +2758,7 @@ public:
 
   /* Build a struct literal.  */
 
-  void visit (StructLiteralExp *e)
+  void visit (StructLiteralExp *e) final override
   {
     /* Handle empty struct literals.  */
     if (e->elements == NULL || e->sd->fields.length == 0)
@@ -2880,14 +2880,14 @@ public:
 
   /* Build a null literal.  */
 
-  void visit (NullExp *e)
+  void visit (NullExp *e) final override
   {
     this->result_ = build_typeof_null_value (e->type);
   }
 
   /* Build a vector literal.  */
 
-  void visit (VectorExp *e)
+  void visit (VectorExp *e) final override
   {
     tree type = build_ctype (e->type);
 
@@ -2927,7 +2927,7 @@ public:
 
   /* Build a static array representation of a vector expression.  */
 
-  void visit (VectorArrayExp *e)
+  void visit (VectorArrayExp *e) final override
   {
     this->result_ = convert_expr (build_expr (e->e1, this->constp_, true),
 				  e->e1->type, e->type);
@@ -2935,7 +2935,7 @@ public:
 
   /* Build a static class literal, return its reference.  */
 
-  void visit (ClassReferenceExp *e)
+  void visit (ClassReferenceExp *e) final override
   {
     /* The result of build_new_class_expr is a RECORD_TYPE, we want
        the reference.  */
@@ -2965,7 +2965,7 @@ public:
 
   /* Build an uninitialized value, generated from void initializers.  */
 
-  void visit (VoidInitExp *e)
+  void visit (VoidInitExp *e) final override
   {
     /* The front-end only generates these for the initializer of globals.
        Represent `void' as zeroes, regardless of the type's default value.  */
@@ -2976,14 +2976,14 @@ public:
   /* These expressions are mainly just a placeholders in the frontend.
      We shouldn't see them here.  */
 
-  void visit (ScopeExp *e)
+  void visit (ScopeExp *e) final override
   {
     error_at (make_location_t (e->loc), "%qs is not an expression",
 	      e->toChars ());
     this->result_ = error_mark_node;
   }
 
-  void visit (TypeExp *e)
+  void visit (TypeExp *e) final override
   {
     error_at (make_location_t (e->loc), "type %qs is not an expression",
 	      e->toChars ());

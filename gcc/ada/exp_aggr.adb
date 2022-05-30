@@ -8474,11 +8474,21 @@ package body Exp_Aggr is
                   Parent_Name  : Node_Id;
 
                begin
-                  --  Remove the inherited component association from the
-                  --  aggregate and store them in the parent aggregate
-
                   First_Comp   := First (Component_Associations (N));
                   Parent_Comps := New_List;
+
+                  --  First skip the discriminants
+
+                  while Present (First_Comp)
+                    and then Ekind (Entity (First (Choices (First_Comp))))
+                                                               = E_Discriminant
+                  loop
+                     Next (First_Comp);
+                  end loop;
+
+                  --  Then remove the inherited component association from the
+                  --  aggregate and store them in the parent aggregate
+
                   while Present (First_Comp)
                     and then
                       Scope (Original_Record_Component

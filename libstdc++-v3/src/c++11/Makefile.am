@@ -65,6 +65,7 @@ sources = \
 	hash_c++0x.cc \
 	hashtable_c++0x.cc \
 	ios.cc \
+	ios_errcat.cc \
 	limits.cc \
 	mutex.cc \
 	placeholders.cc \

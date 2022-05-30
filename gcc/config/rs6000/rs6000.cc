@@ -23294,9 +23294,13 @@ rs6000_expand_vec_perm_const_1 (rtx target, rtx op0, rtx op1,
 /* Implement TARGET_VECTORIZE_VEC_PERM_CONST.  */
 
 static bool
-rs6000_vectorize_vec_perm_const (machine_mode vmode, rtx target, rtx op0,
-				 rtx op1, const vec_perm_indices &sel)
+rs6000_vectorize_vec_perm_const (machine_mode vmode, machine_mode op_mode,
+				 rtx target, rtx op0, rtx op1,
+				 const vec_perm_indices &sel)
 {
+  if (vmode != op_mode)
+    return false;
+
   bool testing_p = !target;
 
   /* AltiVec (and thus VSX) can handle arbitrary permutations.  */

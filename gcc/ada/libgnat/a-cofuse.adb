@@ -63,6 +63,13 @@ package body Ada.Containers.Functional_Sets with SPARK_Mode => Off is
    function Contains (Container : Set; Item : Element_Type) return Boolean is
      (Find (Container.Content, Item) > 0);
 
+   ---------------
+   -- Empty_Set --
+   ---------------
+
+   function Empty_Set return Set is
+      ((others => <>));
+
    ---------------------
    -- Included_Except --
    ---------------------

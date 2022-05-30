@@ -4190,9 +4190,9 @@ public:
       m_initialize_when_cloning = true;
     }
 
-  virtual void duplicate (cgraph_edge *src_edge, cgraph_edge *dst_edge,
-			  edge_clone_summary *src_data,
-			  edge_clone_summary *dst_data);
+  void duplicate (cgraph_edge *src_edge, cgraph_edge *dst_edge,
+		  edge_clone_summary *src_data,
+		  edge_clone_summary *dst_data) final override;
 };
 
 /* Edge duplication hook.  */

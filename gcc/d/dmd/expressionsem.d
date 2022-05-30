@@ -4989,7 +4989,7 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
                         sc.func.kind(), sc.func.toPrettyChars(), p, exp.e1.toChars());
                     err = true;
                 }
-                if (tf.trust <= TRUST.system && sc.func.setUnsafe())
+                if (tf.trust <= TRUST.system && sc.setUnsafe())
                 {
                     exp.error("`@safe` %s `%s` cannot call `@system` %s `%s`",
                         sc.func.kind(), sc.func.toPrettyChars(), p, exp.e1.toChars());
@@ -5995,7 +5995,7 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
         auto idxReserved = FileName.findReservedChar(namez);
         if (idxReserved != size_t.max)
         {
-            e.error("`%s` is  not a valid filename on this platform", se.toChars());
+            e.error("`%s` is not a valid filename on this platform", se.toChars());
             e.errorSupplemental("Character `'%c'` is reserved and cannot be used", namez[idxReserved]);
             return setError();
         }
@@ -6543,8 +6543,9 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
                 RootObject o = (*tup.objects)[i];
                 Expression e;
                 Declaration var;
-                if (o.dyncast() == DYNCAST.expression)
+                switch (o.dyncast()) with (DYNCAST)
                 {
+                case expression:
                     e = cast(Expression)o;
                     if (auto se = e.isDsymbolExp())
                         var = se.s.isDeclaration();
@@ -6553,9 +6554,8 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
                             // Exempt functions for backwards compatibility reasons.
                             // See: https://issues.dlang.org/show_bug.cgi?id=20470#c1
                             var = ve.var;
-                }
-                else if (o.dyncast() == DYNCAST.dsymbol)
-                {
+                    break;
+                case dsymbol:
                     Dsymbol s = cast(Dsymbol) o;
                     Declaration d = s.isDeclaration();
                     if (!d || d.isFuncDeclaration())
@@ -6564,13 +6564,11 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
                         e = new DsymbolExp(exp.loc, s);
                     else
                         var = d;
-                }
-                else if (o.dyncast() == DYNCAST.type)
-                {
+                    break;
+                case type:
                     e = new TypeExp(exp.loc, cast(Type)o);
-                }
-                else
-                {
+                    break;
+                default:
                     exp.error("`%s` is not an expression", o.toChars());
                     return setError();
                 }
@@ -6894,9 +6892,9 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
                          * because it might end up being a pointer to undefined
                          * memory.
                          */
-                        if (sc.func && !sc.intypeof && !(sc.flags & SCOPE.debug_))
+                        if (1)
                         {
-                            if (sc.func.setUnsafe(false, exp.loc,
+                            if (sc.setUnsafe(false, exp.loc,
                                 "cannot take address of lazy parameter `%s` in `@safe` function `%s`", ve, sc.func))
                             {
                                 setError();
@@ -7045,7 +7043,7 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
                     }
                     if (sc.func && !sc.intypeof && !(sc.flags & SCOPE.debug_))
                     {
-                        sc.func.setUnsafe(false, exp.loc,
+                        sc.setUnsafe(false, exp.loc,
                             "`this` reference necessary to take address of member `%s` in `@safe` function `%s`",
                             f, sc.func);
                     }
@@ -7552,10 +7550,8 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
         }
 
         // Check for unsafe casts
-        if (!sc.intypeof &&
-            !(sc.flags & SCOPE.debug_) &&
-            !isSafeCast(ex, t1b, tob) &&
-            (!sc.func && sc.stc & STC.safe || sc.func && sc.func.setUnsafe()))
+        if (!isSafeCast(ex, t1b, tob) &&
+            (!sc.func && sc.stc & STC.safe || sc.setUnsafe()))
         {
             exp.error("cast from `%s` to `%s` not allowed in safe code", exp.e1.type.toChars(), exp.to.toChars());
             return setError();
@@ -7816,11 +7812,8 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
 
                 return setError();
             }
-            if (sc.func && !sc.intypeof && !(sc.flags & SCOPE.debug_))
-            {
-                if (sc.func.setUnsafe(false, exp.loc, "pointer slicing not allowed in safe functions"))
-                    return setError();
-            }
+            if (sc.setUnsafe(false, exp.loc, "pointer slicing not allowed in safe functions"))
+                return setError();
         }
         else if (t1b.ty == Tarray)
         {
@@ -8328,11 +8321,9 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
             if (exp.e2.op == EXP.int64 && exp.e2.toInteger() == 0)
             {
             }
-            else if (sc.func && !(sc.flags & SCOPE.debug_))
+            else if (sc.setUnsafe(false, exp.loc, "`@safe` function `%s` cannot index pointer `%s`", sc.func, exp.e1))
             {
-                if (sc.func.setUnsafe(false, exp.loc,
-                    "`@safe` function `%s` cannot index pointer `%s`", sc.func, exp.e1))
-                    return setError();
+                return setError();
             }
             exp.type = (cast(TypeNext)t1b).next;
             break;
@@ -9729,11 +9720,8 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
             }
             if (t1n.toBasetype.ty == Tvoid && t2n.toBasetype.ty == Tvoid)
             {
-                if (!sc.intypeof && sc.func && !(sc.flags & SCOPE.debug_))
-                {
-                    if (sc.func.setUnsafe(false, exp.loc, "cannot copy `void[]` to `void[]` in `@safe` code"))
-                        return setError();
-                }
+                if (sc.setUnsafe(false, exp.loc, "cannot copy `void[]` to `void[]` in `@safe` code"))
+                    return setError();
             }
         }
         else
@@ -13089,9 +13077,8 @@ bool checkAddressVar(Scope* sc, Expression exp, VarDeclaration v)
             v.storage_class &= ~STC.maybescope;
             v.doNotInferScope = true;
             if (global.params.useDIP1000 != FeatureState.enabled &&
-                !(sc.flags & SCOPE.debug_) &&
                 !(v.storage_class & STC.temp) &&
-                sc.func.setUnsafe())
+                sc.setUnsafe())
             {
                 exp.error("cannot take address of %s `%s` in `@safe` function `%s`", p, v.toChars(), sc.func.toChars());
                 return false;
@@ -13304,7 +13291,7 @@ private bool fit(StructDeclaration sd, const ref Loc loc, Scope* sc, Expressions
         {
             if ((!stype.alignment.isDefault() && stype.alignment.get() < target.ptrsize ||
                  (v.offset & (target.ptrsize - 1))) &&
-                (sc.func && sc.func.setUnsafe(false, loc,
+                (sc.setUnsafe(false, loc,
                     "field `%s.%s` cannot assign to misaligned pointers in `@safe` code", sd, v)))
             {
                 return false;

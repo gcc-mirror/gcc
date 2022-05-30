@@ -312,7 +312,8 @@ interleave_supported_p (vec_perm_indices *indices, tree vectype,
       sel.quick_push (base + i + nelts);
     }
   indices->new_vector (sel, 2, nelts);
-  return can_vec_perm_const_p (TYPE_MODE (vectype), *indices);
+  return can_vec_perm_const_p (TYPE_MODE (vectype), TYPE_MODE (vectype),
+			       *indices);
 }
 
 /* Try to use permutes to define the masks in DEST_RGM using the masks
@@ -2809,9 +2810,20 @@ vect_do_peeling (loop_vec_info loop_vinfo, tree niters, tree nitersm1,
   if (LOOP_VINFO_PEELING_FOR_GAPS (loop_vinfo))
     skip_epilog = false;
 
+  class loop *scalar_loop = LOOP_VINFO_SCALAR_LOOP (loop_vinfo);
+  auto_vec<profile_count> original_counts;
+  basic_block *original_bbs = NULL;
+
   if (skip_vector)
     {
       split_edge (loop_preheader_edge (loop));
+
+      if (epilog_peeling && (vect_epilogues || scalar_loop == NULL))
+	{
+	  original_bbs = get_loop_body (loop);
+	  for (unsigned int i = 0; i < loop->num_nodes; i++)
+	    original_counts.safe_push(original_bbs[i]->count);
+	}
 
       /* Due to the order in which we peel prolog and epilog, we first
 	 propagate probability to the whole loop.  The purpose is to
@@ -2827,7 +2839,6 @@ vect_do_peeling (loop_vec_info loop_vinfo, tree niters, tree nitersm1,
     }
 
   dump_user_location_t loop_loc = find_loop_location (loop);
-  class loop *scalar_loop = LOOP_VINFO_SCALAR_LOOP (loop_vinfo);
   if (vect_epilogues)
     /* Make sure to set the epilogue's epilogue scalar loop, such that we can
        use the original scalar loop as remaining epilogue if necessary.  */
@@ -2984,16 +2995,19 @@ vect_do_peeling (loop_vec_info loop_vinfo, tree niters, tree nitersm1,
 	     a merge point of control flow.  */
 	  guard_to->count = guard_bb->count;
 
-	  /* Scale probability of epilog loop back.
-	     FIXME: We should avoid scaling down and back up.  Profile may
-	     get lost if we scale down to 0.  */
-	  basic_block *bbs = get_loop_body (epilog);
-	  for (unsigned int i = 0; i < epilog->num_nodes; i++)
-	    bbs[i]->count = bbs[i]->count.apply_scale
-				 (bbs[i]->count,
-				  bbs[i]->count.apply_probability
-				    (prob_vector));
-	  free (bbs);
+	  /* Restore the counts of the epilog loop if we didn't use the scalar loop. */
+	  if (vect_epilogues || scalar_loop == NULL)
+	    {
+	      gcc_assert(epilog->num_nodes == loop->num_nodes);
+	      basic_block *bbs = get_loop_body (epilog);
+	      for (unsigned int i = 0; i < epilog->num_nodes; i++)
+		{
+		  gcc_assert(get_bb_original (bbs[i]) == original_bbs[i]);
+		  bbs[i]->count = original_counts[i];
+		}
+	      free (bbs);
+	      free (original_bbs);
+	    }
 	}
 
       basic_block bb_before_epilog = loop_preheader_edge (epilog)->src;

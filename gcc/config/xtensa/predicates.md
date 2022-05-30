@@ -25,8 +25,7 @@
 
 (define_predicate "addsubx_operand"
   (and (match_code "const_int")
-       (match_test "INTVAL (op) >= 1
-		    && INTVAL (op) <= 3")))
+       (match_test "IN_RANGE (INTVAL (op), 1, 3)")))
 
 (define_predicate "arith_operand"
   (ior (and (match_code "const_int")
@@ -55,7 +54,7 @@
 
 (define_predicate "extui_fldsz_operand"
   (and (match_code "const_int")
-       (match_test "xtensa_mask_immediate ((1 << INTVAL (op)) - 1)")))
+       (match_test "IN_RANGE (INTVAL (op), 1, 16)")))
 
 (define_predicate "sext_operand"
   (if_then_else (match_test "TARGET_SEXT")
@@ -64,7 +63,7 @@
 
 (define_predicate "sext_fldsz_operand"
   (and (match_code "const_int")
-       (match_test "INTVAL (op) >= 8 && INTVAL (op) <= 23")))
+       (match_test "IN_RANGE (INTVAL (op), 8, 23)")))
 
 (define_predicate "lsbitnum_operand"
   (and (match_code "const_int")

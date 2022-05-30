@@ -1,3 +1,9 @@
+2022-05-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/91134
+	* objc-act.cc (objc_build_component_ref): Adjust build_component_ref
+	caller.
+
 2022-05-11  Martin Liska  <mliska@suse.cz>
 
 	PR target/105355

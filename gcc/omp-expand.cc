@@ -916,10 +916,12 @@ expand_taskwait_call (basic_block bb, gomp_task *entry_stmt)
 
   depend = OMP_CLAUSE_DECL (depend);
 
+  bool nowait = omp_find_clause (clauses, OMP_CLAUSE_NOWAIT) != NULL_TREE;
   gimple_stmt_iterator gsi = gsi_last_nondebug_bb (bb);
-  tree t
-    = build_call_expr (builtin_decl_explicit (BUILT_IN_GOMP_TASKWAIT_DEPEND),
-		       1, depend);
+  enum built_in_function f = (nowait
+			      ? BUILT_IN_GOMP_TASKWAIT_DEPEND_NOWAIT
+			      : BUILT_IN_GOMP_TASKWAIT_DEPEND);
+  tree t = build_call_expr (builtin_decl_explicit (f), 1, depend);
 
   force_gimple_operand_gsi (&gsi, t, true, NULL_TREE,
 			    false, GSI_CONTINUE_LINKING);

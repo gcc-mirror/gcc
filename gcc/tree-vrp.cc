@@ -4304,7 +4304,7 @@ public:
     m_pta->enter (bb);
     for (gphi_iterator gsi = gsi_start_phis (bb); !gsi_end_p (gsi);
 	 gsi_next (&gsi))
-      m_ranger->register_side_effects (gsi.phi ());
+      m_ranger->register_inferred_ranges (gsi.phi ());
   }
 
   void post_fold_bb (basic_block bb) override
@@ -4322,7 +4322,7 @@ public:
     bool ret = m_simplifier.simplify (gsi);
     if (!ret)
       ret = m_ranger->fold_stmt (gsi, follow_single_use_edges);
-    m_ranger->register_side_effects (gsi_stmt (*gsi));
+    m_ranger->register_inferred_ranges (gsi_stmt (*gsi));
     return ret;
   }
 

@@ -48,8 +48,9 @@ rtx gen_push (rtx arg);
 rtx gen_pop (rtx arg);
 rtx ix86_expand_builtin (tree exp, rtx target, rtx subtarget,
 			 machine_mode mode, int ignore);
-bool ix86_vectorize_vec_perm_const (machine_mode vmode, rtx target, rtx op0,
-				    rtx op1, const vec_perm_indices &sel);
+bool ix86_vectorize_vec_perm_const (machine_mode vmode, machine_mode op_mode,
+				    rtx target, rtx op0, rtx op1,
+				    const vec_perm_indices &sel);
 bool ix86_notrack_prefixed_insn_p (rtx_insn *);
 machine_mode ix86_split_reduction (machine_mode mode);
 void ix86_expand_divmod_libfunc (rtx libfunc, machine_mode mode, rtx op0,

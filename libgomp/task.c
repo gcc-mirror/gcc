@@ -460,6 +460,17 @@ gomp_task_handle_depend (struct gomp_task *task, struct gomp_task *parent,
     }
 }
 
+/* Body of empty task like taskwait nowait depend.  */
+
+static void
+empty_task (void *data __attribute__((unused)))
+{
+}
+
+static void gomp_task_run_post_handle_depend_hash (struct gomp_task *);
+static inline size_t gomp_task_run_post_handle_depend (struct gomp_task *,
+						       struct gomp_team *);
+
 /* Called when encountering an explicit task directive.  If IF_CLAUSE is
    false, then we must not delay in executing the task.  If UNTIED is true,
    then the task may be executed by any member of the team.
@@ -681,6 +692,18 @@ GOMP_task (void (*fn) (void *), void *data, void (*cpyfn) (void *, void *),
 	      gomp_mutex_unlock (&team->task_lock);
 	      return;
 	    }
+	  /* Check for taskwait nowait depend which doesn't need to wait for
+	     anything.  */
+	  if (__builtin_expect (fn == empty_task, 0))
+	    {
+	      if (taskgroup)
+		taskgroup->num_children--;
+	      gomp_task_run_post_handle_depend_hash (task);
+	      gomp_mutex_unlock (&team->task_lock);
+	      gomp_finish_task (task);
+	      free (task);
+	      return;
+	    }
 	}
 
       priority_queue_insert (PQ_CHILDREN, &parent->children_queue,
@@ -838,8 +861,6 @@ GOMP_PLUGIN_target_task_completion (void *data)
   gomp_target_task_completion (team, task);
   gomp_mutex_unlock (&team->task_lock);
 }
-
-static void gomp_task_run_post_handle_depend_hash (struct gomp_task *);
 
 /* Called for nowait target tasks.  */
 
@@ -1357,6 +1378,38 @@ gomp_task_run_post_handle_dependers (struct gomp_task *child_task,
 	continue;
 
       struct gomp_taskgroup *taskgroup = task->taskgroup;
+      if (__builtin_expect (task->fn == empty_task, 0))
+	{
+	  if (!parent)
+	    task->parent = NULL;
+	  else if (__builtin_expect (task->parent_depends_on, 0)
+		   && --parent->taskwait->n_depend == 0
+		   && parent->taskwait->in_depend_wait)
+	    {
+	      parent->taskwait->in_depend_wait = false;
+	      gomp_sem_post (&parent->taskwait->taskwait_sem);
+	    }
+	  if (gomp_task_run_post_handle_depend (task, team))
+	    ++ret;
+	  if (taskgroup)
+	    {
+	      if (taskgroup->num_children > 1)
+		--taskgroup->num_children;
+	      else
+		{
+		  __atomic_store_n (&taskgroup->num_children, 0,
+				    MEMMODEL_RELEASE);
+		  if (taskgroup->in_taskgroup_wait)
+		    {
+		      taskgroup->in_taskgroup_wait = false;
+		      gomp_sem_post (&taskgroup->taskgroup_sem);
+		    }
+		}
+	    }
+	  gomp_finish_task (task);
+	  free (task);
+	  continue;
+	}
       if (parent)
 	{
 	  priority_queue_insert (PQ_CHILDREN, &parent->children_queue,
@@ -1830,6 +1883,16 @@ GOMP_taskwait_depend (void **depend)
 
   if (thr->task && thr->task->depend_hash)
     gomp_task_maybe_wait_for_dependencies (depend);
+}
+
+/* Called when encountering a taskwait directive with nowait and depend
+   clause(s).  Create a possibly deferred task construct with empty body.  */
+
+void
+GOMP_taskwait_depend_nowait (void **depend)
+{
+  ialias_call (GOMP_task) (empty_task, "", NULL, 0, 1, true,
+			   GOMP_TASK_FLAG_DEPEND, depend, 0, NULL);
 }
 
 /* An undeferred task is about to run.  Wait for all tasks that this

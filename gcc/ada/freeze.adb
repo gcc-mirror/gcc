@@ -789,7 +789,7 @@ package body Freeze is
                then
                   Error_Msg_Sloc := Sloc (Addr);
                   Error_Msg_NE
-                    ("??constant& may be modified via address clause#",
+                    ("?o?constant& may be modified via address clause#",
                      Decl, O_Ent);
                end if;
             end;
@@ -4631,9 +4631,7 @@ package body Freeze is
                   Result := No_List;
                   return False;
 
-               elsif not After_Last_Declaration
-                 and then not Freezing_Library_Level_Tagged_Type
-               then
+               elsif not After_Last_Declaration then
                   Error_Msg_NE
                     ("type & must be fully defined before this point",
                      N,
@@ -4750,17 +4748,6 @@ package body Freeze is
             if not From_Limited_With (F_Type) then
                if Is_Access_Type (F_Type) then
                   F_Type := Designated_Type (F_Type);
-               end if;
-
-               --  If the formal is an anonymous_access_to_subprogram
-               --  freeze the  subprogram type as well, to prevent
-               --  scope anomalies in gigi, because there is no other
-               --  clear point at which it could be frozen.
-
-               if Is_Itype (Etype (Formal))
-                 and then Ekind (F_Type) = E_Subprogram_Type
-               then
-                  Freeze_And_Append (F_Type, N, Result);
                end if;
             end if;
 
@@ -6490,9 +6477,10 @@ package body Freeze is
 
             --  In Ada 2012, freezing a subprogram does not always freeze the
             --  corresponding profile (see AI05-019). An attribute reference
-            --  is not a freezing point of the profile. Flag Do_Freeze_Profile
+            --  is not a freezing point of the profile. Similarly, we do not
+            --  freeze the profile of primitives of a library-level tagged type
+            --  when we are building its dispatch table. Flag Do_Freeze_Profile
             --  indicates whether the profile should be frozen now.
-            --  Other constructs that should not freeze ???
 
             --  This processing doesn't apply to internal entities (see below)
 
@@ -10650,11 +10638,11 @@ package body Freeze is
          if Present (Old) then
             Error_Msg_Node_2 := Old;
             Error_Msg_N
-              ("default initialization of & may modify &??",
+              ("default initialization of & may modify &?o?",
                Nam);
          else
             Error_Msg_N
-              ("default initialization of & may modify overlaid storage??",
+              ("default initialization of & may modify overlaid storage?o?",
                Nam);
          end if;
 

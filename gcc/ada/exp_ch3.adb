@@ -6909,9 +6909,9 @@ package body Exp_Ch3 is
 
          begin
             if Is_Concurrent_Type (Base_Typ) then
-               New_Nodes := Make_DT (Corresponding_Record_Type (Base_Typ), N);
+               New_Nodes := Make_DT (Corresponding_Record_Type (Base_Typ));
             else
-               New_Nodes := Make_DT (Base_Typ, N);
+               New_Nodes := Make_DT (Base_Typ);
             end if;
 
             Insert_List_Before (N, New_Nodes);

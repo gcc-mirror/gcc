@@ -130,9 +130,10 @@ am__objects_2 = ctype_configure_char.lo ctype_members.lo
 am__objects_3 = chrono.lo codecvt.lo condition_variable.lo \
 	cow-stdexcept.lo ctype.lo debug.lo functexcept.lo \
 	functional.lo futex.lo future.lo hash_c++0x.lo \
-	hashtable_c++0x.lo ios.lo limits.lo mutex.lo placeholders.lo \
-	random.lo regex.lo shared_ptr.lo snprintf_lite.lo \
-	system_error.lo thread.lo $(am__objects_1) $(am__objects_2)
+	hashtable_c++0x.lo ios.lo ios_errcat.lo limits.lo mutex.lo \
+	placeholders.lo random.lo regex.lo shared_ptr.lo \
+	snprintf_lite.lo system_error.lo thread.lo $(am__objects_1) \
+	$(am__objects_2)
 @ENABLE_DUAL_ABI_TRUE@am__objects_4 = cow-fstream-inst.lo \
 @ENABLE_DUAL_ABI_TRUE@	cow-sstream-inst.lo cow-string-inst.lo \
 @ENABLE_DUAL_ABI_TRUE@	cow-string-io-inst.lo \
@@ -479,6 +480,7 @@ sources = \
 	hash_c++0x.cc \
 	hashtable_c++0x.cc \
 	ios.cc \
+	ios_errcat.cc \
 	limits.cc \
 	mutex.cc \
 	placeholders.cc \
