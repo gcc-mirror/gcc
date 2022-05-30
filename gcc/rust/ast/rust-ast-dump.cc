@@ -23,10 +23,10 @@ namespace AST {
 
 Indent::Indent () : tabs (0) {}
 
-std::ofstream &
-Indent::operator<< (std::ofstream &stream)
+std::ostream &
+operator<< (std::ostream &stream, const Indent &indent)
 {
-  for (size_t i = 0; i < tabs; i++)
+  for (size_t i = 0; i < indent.tabs; i++)
     stream << '\t';
 
   return stream;
@@ -45,13 +45,21 @@ Indent::decrement ()
   tabs--;
 }
 
-Dump::Dump (std::ofstream &stream) : stream (stream), indentation (Indent ()) {}
+Dump::Dump (std::ostream &stream) : stream (stream), indentation (Indent ()) {}
 
 void
 Dump::go (AST::Crate &crate)
 {
   for (auto &item : crate.items)
     item->accept_vis (*this);
+}
+
+void
+Dump::format_function_param (FunctionParam &param)
+{
+  param.get_pattern ()->accept_vis (*this);
+  stream << ": ";
+  param.get_type ()->accept_vis (*this);
 }
 
 void
@@ -234,7 +242,23 @@ Dump::visit (ClosureExprInner &expr)
 
 void
 Dump::visit (BlockExpr &expr)
-{}
+{
+  stream << "{\n";
+  indentation.increment ();
+
+  for (auto &stmt : expr.get_statements ())
+    {
+      stream << indentation;
+      stmt->accept_vis (*this);
+      stream << ";\n";
+    }
+
+  if (expr.has_tail_expr ())
+    expr.get_tail_expr ()->accept_vis (*this);
+
+  stream << "\n}\n";
+  indentation.increment ();
+}
 
 void
 Dump::visit (ClosureExprInnerTyped &expr)
@@ -383,7 +407,36 @@ Dump::visit (UseDeclaration &use_decl)
 
 void
 Dump::visit (Function &function)
-{}
+{
+  stream << "fn " << function.get_function_name () << '(';
+
+  auto &params = function.get_function_params ();
+  if (params.size () >= 1)
+    {
+      format_function_param (params[0]);
+      for (size_t i = 1; i < params.size (); i++)
+	{
+	  stream << ", ";
+	  format_function_param (params[i]);
+	}
+    }
+
+  stream << ") ";
+
+  if (function.has_return_type ())
+    {
+      stream << "-> ";
+      function.get_return_type ()->accept_vis (*this);
+    }
+
+  auto &block = function.get_definition ();
+  if (!block)
+    stream << ';';
+  else
+    block->accept_vis (*this);
+
+  stream << '\n';
+}
 
 void
 Dump::visit (TypeAlias &type_alias)
@@ -521,7 +574,9 @@ Dump::visit (LiteralPattern &pattern)
 
 void
 Dump::visit (IdentifierPattern &pattern)
-{}
+{
+  stream << pattern.get_ident ();
+}
 
 void
 Dump::visit (WildcardPattern &pattern)
@@ -610,7 +665,24 @@ Dump::visit (EmptyStmt &stmt)
 
 void
 Dump::visit (LetStmt &stmt)
-{}
+{
+  stream << "let ";
+  auto &pattern = stmt.get_pattern ();
+  if (pattern)
+    pattern->accept_vis (*this);
+
+  if (stmt.has_type ())
+    {
+      stream << ": ";
+      stmt.get_type ()->accept_vis (*this);
+    }
+
+  if (stmt.has_init_expr ())
+    {
+      stream << " = ";
+      stmt.get_init_expr ()->accept_vis (*this);
+    }
+}
 
 void
 Dump::visit (ExprStmtWithoutBlock &stmt)

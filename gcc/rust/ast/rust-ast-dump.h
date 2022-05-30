@@ -18,6 +18,7 @@
 
 #include "rust-ast-visitor.h"
 #include "rust-ast.h"
+#include "rust-ast-full.h"
 
 #ifndef RUST_AST_DUMP_H
 #define RUST_AST_DUMP_H
@@ -31,7 +32,7 @@ class Indent
 public:
   Indent ();
 
-  std::ofstream &operator<< (std::ofstream &stream);
+  friend std::ostream &operator<< (std::ostream &stream, const Indent &indent);
 
   void increment ();
   void decrement ();
@@ -43,7 +44,7 @@ private:
 class Dump : public ASTVisitor
 {
 public:
-  Dump (std::ofstream &stream);
+  Dump (std::ostream &stream);
 
   /**
    * Run the visitor on an entire crate and its items
@@ -51,8 +52,13 @@ public:
   void go (AST::Crate &crate);
 
 private:
-  std::ofstream &stream;
+  std::ostream &stream;
   Indent indentation;
+
+  /**
+   * Format a function's definition parameter
+   */
+  void format_function_param (FunctionParam &param);
 
   // rust-ast.h
   void visit (Token &tok);
