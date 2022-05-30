@@ -1,3 +1,50 @@
+2022-05-29  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config.host: Add weak emutls crt to the extra_parts.
+	(*-*-darwin*): Add logic to build a shared unwinder library for
+	Darwin8-10.  Add shim declaration header to powerpc*-darwin builds.
+	* config/i386/darwin-lib.h (DECLARE_LIBRARY_RENAMES): Remove
+	workaround.
+	* config/libgcc-libsystem.ver: Add exclude list for the system-
+	provided unwinder.
+	* config/t-slibgcc-darwin: Bump SO version, remove stubs code.
+	Build a legacy libgcc_s.1 and the supporting pieces (all FAT libs).
+	* config/t-darwin-ehs: Add dependencies to the shared unwinder
+	objects.  Add dependency on unwind.h.
+	* config/t-darwin: Reorganise the EH fragments to place them for
+	inclusion in a shared EH lib.  Add libgcc_tm.h to the dependencies
+	for darwin10-unwind-find-enc-func.
+	* config/i386/libgcc-darwin.10.4.ver: Removed.
+	* config/i386/libgcc-darwin.10.5.ver: Removed.
+	* config/rs6000/libgcc-darwin.10.4.ver: Removed.
+	* config/rs6000/libgcc-darwin.10.5.ver: Removed.
+	* config/i386/t-darwin: Build legacy libgcc_s.1.
+	* config/rs6000/t-darwin: Likewise.
+	* config/rs6000/t-darwin-ehs: Remove dependency on the powerpc end
+	file.  Add darwin-fallback.o.
+	* config/darwin-unwind.ver: New file.
+	* config/i386/libgcc-darwin.ver: New file.
+
+2022-05-29  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2021-11-19  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/t-darwin: Build weak-defined emutls objects.
+	* emutls.c (__emutls_get_address): Add optional attributes.
+	(__emutls_register_common): Likewise.
+	(EMUTLS_ATTR): New.
+
+2022-05-29  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2021-09-19  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config.host: Use convenience library for Darwin10
+	unwinder shim.
+	* config/t-darwin: Build Darwin10 unwinder shim as a
+	convenience library.
+
 2022-05-16  Sebastian Pop  <spop@amazon.com>
 
 	PR target/105162

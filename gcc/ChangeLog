@@ -1,3 +1,208 @@
+2022-05-29  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2021-11-15  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR fortran/102992
+	* config/darwin.h (TARGET_DTORS_FROM_CXA_ATEXIT): New.
+	* doc/tm.texi: Regenerated.
+	* doc/tm.texi.in: Add TARGET_DTORS_FROM_CXA_ATEXIT hook.
+	* ipa.c (cgraph_build_static_cdtor_1): Return the built
+	function decl.
+	(build_cxa_atexit_decl): New.
+	(build_dso_handle_decl): New.
+	(build_cxa_dtor_registrations): New.
+	(compare_cdtor_tu_order): New.
+	(build_cxa_atexit_fns): New.
+	(ipa_cdtor_merge): If dtors_from_cxa_atexit is set,
+	process the DTORs/CTORs accordingly.
+	(pass_ipa_cdtor_merge::gate): Also run if
+	dtors_from_cxa_atexit is set.
+	* target.def (dtors_from_cxa_atexit): New hook.
+
+2022-05-29  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2021-07-09  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR target/100152
+	* config/i386/i386-expand.c (ix86_expand_call): If a call is
+	to a non-local-binding, or local but to a public symbol, then
+	assume that it might be indirected via the lazy symbol binder.
+	Mark R10 and R10 as clobbered in that case.
+
+2022-05-29  Iain Sandoe  <iain@sandoe.co.uk>
+	    Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR target/104117
+	* config/rs6000/rs6000.c (darwin_rs6000_legitimate_lo_sum_const_p):
+	Check for UNSPEC_MACHOPIC_OFFSET wrappers on symbolic addresses when
+	emitting PIC code.
+	(legitimate_lo_sum_address_p): Likewise.
+	(rs6000_legitimize_address): Do not apply the TLS processing to
+	Darwin.
+	* config/rs6000/darwin.md (@machopic_high_<mode>): New.
+	(@machopic_low_<mode>): New.
+	* config/rs6000/predicates.md (macho_pic_address): New.
+
+2022-05-29  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR target/80556
+	* config/darwin-driver.c (darwin_driver_init): Handle exported
+	symbols and symbol lists (suppress automatic export of the TLS
+	symbols).
+	* config/darwin.c (darwin_rename_builtins): Remove workaround.
+	* config/darwin.h (LINK_GCC_C_SEQUENCE_SPEC): Likewise.
+	(REAL_LIBGCC_SPEC): Handle revised library uses.
+	* config/darwin.opt (nodefaultexport): New.
+	* config/i386/darwin.h (PR80556_WORKAROUND): Remove.
+	* config/i386/darwin32-biarch.h (PR80556_WORKAROUND): Likewise.
+	* config/i386/darwin64-biarch.h (PR80556_WORKAROUND): Likewise.
+
+2022-05-29  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin-driver.c (darwin_driver_init): Revise comments, handle
+	filelist and framework options in specs instead of code. Exit from the
+	option handling early if the command line is definitely enpty.
+	* config/darwin.h (SUBTARGET_DRIVER_SELF_SPECS): Update to handle link
+	specs that are really driver ones. Remove setting for the default content
+	of weak_reference_mismatches
+	(DARWIN_CC1_SPEC): Likewise.
+	(CPP_SPEC): Likewise.
+	(SYSROOT_SPEC): Append space.
+	(LINK_SYSROOT_SPEC): Remove most driver link specs.
+	(STANDARD_STARTFILE_PREFIX_2): Update link-related specs.
+	(STARTFILE_SPEC): Likewise.
+	(ASM_MMACOSX_VERSION_MIN_SPEC): Fix line wrap.
+	(ASM_SPEC): Update driver-related specs.
+	(ASM_FINAL_SPEC): Likewise.
+	(LINK_COMMAND_SPEC_A): Update 'r' handling to skip gomp and itm when r
+	or nodefaultlibs is given.
+	(DSYMUTIL_SPEC): Do not call dsymutil for '-r' link lines.
+	Update ordering of exclusions, remove duplicate 'v' addition
+	(collect2 will add this from the main command line).
+	* config/darwin.opt: Remove now unused option aliases.
+	* config/i386/darwin.h (EXTRA_ASM_OPTS): Ensure space after opt.
+	(ASM_SPEC): Update driver-related specs.
+
+2022-05-29  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2021-09-19  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin.h (LINK_COMMAND_SPEC_A): Use Darwin10
+	unwinder shim as a convenience library.
+
+2022-05-29  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2021-10-13  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* collect2.c (is_lto_object_file): Release simple-object
+	resources, close files.
+
+2022-05-29  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2021-11-05  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin.h (ASM_GENERATE_INTERNAL_LABEL): Add LTRAMP
+	to the list of symbol prefixes that must be made linker-
+	visible.
+
+2022-05-29  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2021-08-27  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin.c (finalize_ctors): Add a section-start linker-
+	visible symbol.
+	(finalize_dtors): Likewise.
+	* config/darwin.h (MIN_LD64_INIT_TERM_START_LABELS): New.
+
+2022-05-29  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2021-08-17  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin.c (darwin_file_end): Reset and reclaim the
+	section names table at the end of compile.
+
+2022-05-29  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2021-01-02  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin.h (MIN_LD64_NO_COAL_SECTS): Adjust.
+	Amend handling for LD64_VERSION fallback defaults.
+
+2022-05-29  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* configure.ac: Handle --with-dsymutil in the same way as we
+	do for the assembler and linker.  (DEFAULT_DSYMUTIL): New.
+	Extract the type and version for the dsymutil configured or
+	found by the default searches.
+	* config.in: Regenerated.
+	* configure: Regenerated.
+	* collect2.c (do_dsymutil): Handle locating dsymutil in the
+	same way as for the assembler and  linker.
+	* config/darwin.h (DSYMUTIL): Delete.
+	* gcc.c: Report a configured dsymutil correctly.
+	* exec-tool.in: Allow for dsymutil.
+	* doc/install.texi: Document --with-dsymutil.
+
+2022-05-29  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2021-09-28  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/rs6000/darwin.h (FIXED_R13): Add for PPC64.
+	(FIRST_SAVED_GP_REGNO): Save from R13 even when it is one
+	of the fixed regs.
+
+2022-05-29  François-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	Backported from master:
+	2021-12-18  François-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* config/darwin-driver.c: Make version code more future-proof.
+	* config.gcc: Homogeneize darwin versions.
+	* configure.ac: Homogeneize darwin versions.
+	* configure: Regenerate.
+
+2022-05-29  Saagar Jha  <saagar@saagarjha.com>
+
+	Backported from master:
+	2021-10-27  Saagar Jha  <saagar@saagarjha.com>
+
+	* config.gcc: Adjust for Darwin21.
+	* config/darwin-c.c (macosx_version_as_macro): Likewise.
+	* config/darwin-driver.c (validate_macosx_version_min):
+	Likewise.
+	(darwin_find_version_from_kernel): Likewise.
+
+2022-05-29  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2021-08-17  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR target/100340
+	* config.in: Regenerate.
+	* config/i386/darwin.h (EXTRA_ASM_OPTS): New
+	(ASM_SPEC): Pass options to disable branch shortening where
+	needed.
+	* configure: Regenerate.
+	* configure.ac: Detect versions of 'as' that support the
+	optimisation which has the bug.
+
+2022-05-29  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2022-03-04  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin.c (darwin_fold_builtin): Make fcode an int to
+	avoid a mismatch with DECL_MD_FUNCTION_CODE().
+
 2022-05-27  Richard Biener  <rguenther@suse.de>
 
 	Backported from master:

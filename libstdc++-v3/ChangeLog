@@ -1,3 +1,18 @@
+2022-05-29  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2021-03-15  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* testsuite/17_intro/names.cc: Exclude j from the list
+	of test symbols for Darwin.
+
+2022-05-29  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2021-11-19  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* testsuite/lib/prune.exp: Prune dsymutil (ld64) warning.
+
 2022-05-16  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:

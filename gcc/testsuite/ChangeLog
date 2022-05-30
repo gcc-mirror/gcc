@@ -1,3 +1,46 @@
+2022-05-29  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-03-28  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/torture/pr100786.c: Add dg-require alias.
+
+2022-05-29  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2021-03-04  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* lib/prune.exp: Prune useless output caused by a linker bug.
+
+2022-05-29  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2021-08-18  Iain Sandoe  <iain@sandoe.co.uk>
+		    Matt Jacobson   <mhjacobson@me.com>
+
+	PR objc/101666
+	* obj-c++.dg/pr101666-0.mm: New test.
+	* obj-c++.dg/pr101666-1.mm: New test.
+	* obj-c++.dg/pr101666.inc: New.
+	* objc.dg/pr101666-0.m: New test.
+	* objc.dg/pr101666-1.m: New test.
+	* objc.dg/pr101666.inc: New.
+
+2022-05-29  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc.dg/torture/fp-int-convert-timode-3.c: Remove XFAIL.
+	* gcc.dg/torture/fp-int-convert-timode-4.c: Likewise.
+
+2022-05-29  François-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	Backported from master:
+	2021-12-18  François-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* gcc.dg/darwin-minversion-link.c: Test darwin21.
+	* obj-c++.dg/cxx-ivars-3.mm: Homogeneize darwin versions.
+	* obj-c++.dg/objc-gc-3.mm: Homogeneize darwin versions.
+	* objc.dg/objc-gc-4.m: Homogeneize darwin versions.
+
 2022-05-27  Kewen Lin  <linkw@linux.ibm.com>
 
 	Backported from master:

@@ -1,3 +1,21 @@
+2022-05-29  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2021-09-01  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* configure: Regenerate.
+	* configure.ac: Do not search for sbrk on Darwin.
+	* xmalloc.c: Do not declare sbrk unless it has been found
+	by configure.
+
+2022-05-29  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2021-08-18  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* simple-object-mach-o.c (simple_object_mach_o_write_segment):
+	Arrange to swap the LTO index tables where needed.
+
 2022-05-10  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:

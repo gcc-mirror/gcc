@@ -1,3 +1,8 @@
+2022-05-29  Iain Sandoe  <iainsandoe@Apollo-1-leo.local>
+
+	* Makefile.am: Switch mdynamic-no-pic to fPIC.
+	* Makefile.in: Regenerated.
+
 2021-04-08  Release Manager
 
 	* GCC 10.3.0 released.
