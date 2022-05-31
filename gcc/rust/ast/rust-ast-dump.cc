@@ -26,10 +26,7 @@ Indent::Indent () : tabs (0) {}
 std::ostream &
 operator<< (std::ostream &stream, const Indent &indent)
 {
-  for (size_t i = 0; i < indent.tabs; i++)
-    stream << '\t';
-
-  return stream;
+  return stream << std::string (indent.tabs, '\t');
 }
 
 void
