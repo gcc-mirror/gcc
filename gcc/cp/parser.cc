@@ -8262,7 +8262,7 @@ cp_parser_postfix_dot_deref_expression (cp_parser *parser,
       tree type = TREE_TYPE (postfix_expression);
       /* If we don't have a (type-dependent) object of class type, use
 	 typeof to figure out the type of the object.  */
-      if (type == NULL_TREE)
+      if (type == NULL_TREE || is_auto (type))
 	type = finish_typeof (postfix_expression);
       parser->context->object_type = type;
     }
