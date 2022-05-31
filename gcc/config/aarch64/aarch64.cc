@@ -19748,15 +19748,15 @@ aarch64_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
 	  field_t = long_double_type_node;
 	  field_ptr_t = long_double_ptr_type_node;
 	  break;
-	case SDmode:
+	case E_SDmode:
 	  field_t = dfloat32_type_node;
 	  field_ptr_t = build_pointer_type (dfloat32_type_node);
 	  break;
-	case DDmode:
+	case E_DDmode:
 	  field_t = dfloat64_type_node;
 	  field_ptr_t = build_pointer_type (dfloat64_type_node);
 	  break;
-	case TDmode:
+	case E_TDmode:
 	  field_t = dfloat128_type_node;
 	  field_ptr_t = build_pointer_type (dfloat128_type_node);
 	  break;
