@@ -70,8 +70,7 @@ namespace ranges
 
   template<typename _Tp>
     concept view
-      = range<_Tp> && movable<_Tp> && default_initializable<_Tp>
-	&& enable_view<_Tp>;
+      = range<_Tp> && movable<_Tp> && enable_view<_Tp>;
 
   /// A range which can be safely converted to a view.
   template<typename _Tp>
@@ -251,7 +250,7 @@ namespace ranges
       [[no_unique_address]] _Size<iter_difference_t<_It>> _M_size = {};
 
     public:
-      subrange() = default;
+      subrange() requires default_initializable<_It> = default;
 
       constexpr
       subrange(__detail::__convertible_to_non_slicing<_It> auto __i, _Sent __s)
@@ -486,10 +485,13 @@ namespace ranges
 	noexcept(is_nothrow_copy_constructible_v<_Tp>)
 	requires (!copyable<_Tp>)
 	{
-	  if ((bool)__that)
-	    this->emplace(*__that);
-	  else
-	    this->reset();
+	  if (this != std::__addressof(__that))
+	    {
+	      if ((bool)__that)
+		this->emplace(*__that);
+	      else
+		this->reset();
+	    }
 	  return *this;
 	}
 
@@ -498,10 +500,13 @@ namespace ranges
 	noexcept(is_nothrow_move_constructible_v<_Tp>)
 	requires (!movable<_Tp>)
 	{
-	  if ((bool)__that)
-	    this->emplace(std::move(*__that));
-	  else
-	    this->reset();
+	  if (this != std::__addressof(__that))
+	    {
+	      if ((bool)__that)
+		this->emplace(std::move(*__that));
+	      else
+		this->reset();
+	    }
 	  return *this;
 	}
       };
@@ -513,7 +518,7 @@ namespace ranges
     class single_view : public view_interface<single_view<_Tp>>
     {
     public:
-      single_view() = default;
+      single_view() requires default_initializable<_Tp> = default;
 
       constexpr explicit
       single_view(const _Tp& __t)
@@ -622,7 +627,7 @@ namespace ranges
   template<weakly_incrementable _Winc,
 	   semiregular _Bound = unreachable_sentinel_t>
     requires std::__detail::__weakly_eq_cmp_with<_Winc, _Bound>
-      && semiregular<_Winc>
+      && copyable<_Winc>
     class iota_view : public view_interface<iota_view<_Winc, _Bound>>
     {
     private:
@@ -651,7 +656,7 @@ namespace ranges
 	using value_type = _Winc;
 	using difference_type = __detail::__iota_diff_t<_Winc>;
 
-	_Iterator() = default;
+	_Iterator() requires default_initializable<_Winc> = default;
 
 	constexpr explicit
 	_Iterator(_Winc __value)
@@ -848,7 +853,7 @@ namespace ranges
       _Bound _M_bound = _Bound();
 
     public:
-      iota_view() = default;
+      iota_view() requires default_initializable<_Winc> = default;
 
       constexpr explicit
       iota_view(_Winc __value)
@@ -1475,7 +1480,7 @@ namespace views
 	using value_type = range_value_t<_Vp>;
 	using difference_type = range_difference_t<_Vp>;
 
-	_Iterator() = default;
+	_Iterator() requires default_initializable<_Vp_iter> = default;
 
 	constexpr
 	_Iterator(filter_view* __parent, _Vp_iter __current)
@@ -1587,7 +1592,9 @@ namespace views
       [[no_unique_address]] __detail::_CachedPosition<_Vp> _M_cached_begin;
 
     public:
-      filter_view() = default;
+      filter_view() requires (default_initializable<_Vp>
+			      && default_initializable<_Pred>)
+	= default;
 
       constexpr
       filter_view(_Vp __base, _Pred __pred)
@@ -1718,7 +1725,7 @@ namespace views
 	    = remove_cvref_t<invoke_result_t<_Fp&, range_reference_t<_Base>>>;
 	  using difference_type = range_difference_t<_Base>;
 
-	  _Iterator() = default;
+	  _Iterator() requires default_initializable<_Base_iter> = default;
 
 	  constexpr
 	  _Iterator(_Parent* __parent, _Base_iter __current)
@@ -1933,7 +1940,9 @@ namespace views
       __detail::__box<_Fp> _M_fun;
 
     public:
-      transform_view() = default;
+      transform_view() requires (default_initializable<_Vp>
+				 && default_initializable<_Fp>)
+	= default;
 
       constexpr
       transform_view(_Vp __base, _Fp __fun)
@@ -2050,7 +2059,7 @@ namespace views
       range_difference_t<_Vp> _M_count = 0;
 
     public:
-      take_view() = default;
+      take_view() requires default_initializable<_Vp> = default;
 
       constexpr
       take_view(_Vp base, range_difference_t<_Vp> __count)
@@ -2211,7 +2220,9 @@ namespace views
       __detail::__box<_Pred> _M_pred;
 
     public:
-      take_while_view() = default;
+      take_while_view() requires (default_initializable<_Vp>
+				  && default_initializable<_Pred>)
+	= default;
 
       constexpr
       take_while_view(_Vp base, _Pred __pred)
@@ -2282,7 +2293,7 @@ namespace views
 				      _M_cached_begin;
 
     public:
-      drop_view() = default;
+      drop_view() requires default_initializable<_Vp> = default;
 
       constexpr
       drop_view(_Vp __base, range_difference_t<_Vp> __count)
@@ -2378,7 +2389,9 @@ namespace views
       [[no_unique_address]] __detail::_CachedPosition<_Vp> _M_cached_begin;
 
     public:
-      drop_while_view() = default;
+      drop_while_view() requires (default_initializable<_Vp>
+				  && default_initializable<_Pred>)
+	= default;
 
       constexpr
       drop_while_view(_Vp __base, _Pred __pred)
@@ -2553,7 +2566,9 @@ namespace views
 	    = common_type_t<range_difference_t<_Base>,
 			    range_difference_t<range_reference_t<_Base>>>;
 
-	  _Iterator() = default;
+	  _Iterator() requires (default_initializable<_Outer_iter>
+				&& default_initializable<_Inner_iter>)
+	    = default;
 
 	  constexpr
 	  _Iterator(_Parent* __parent, _Outer_iter __outer)
@@ -2709,7 +2724,7 @@ namespace views
 				    views::all_t<_InnerRange>> _M_inner;
 
     public:
-      join_view() = default;
+      join_view() requires default_initializable<_Vp> = default;
 
       constexpr explicit
       join_view(_Vp __base)
@@ -3123,7 +3138,10 @@ namespace views
 
 
     public:
-      split_view() = default;
+      split_view() requires (default_initializable<_Vp>
+			     && default_initializable<_Pattern>
+			     && default_initializable<iterator_t<_Vp>>)
+	= default;
 
       constexpr
       split_view(_Vp __base, _Pattern __pattern)
@@ -3229,7 +3247,7 @@ namespace views
       _Vp _M_base = _Vp();
 
     public:
-      common_view() = default;
+      common_view() requires default_initializable<_Vp> = default;
 
       constexpr explicit
       common_view(_Vp __r)
@@ -3339,7 +3357,7 @@ namespace views
 				      _M_cached_begin;
 
     public:
-      reverse_view() = default;
+      reverse_view() requires default_initializable<_Vp> = default;
 
       constexpr explicit
       reverse_view(_Vp __r)
@@ -3466,7 +3484,7 @@ namespace views
     class elements_view : public view_interface<elements_view<_Vp, _Nm>>
     {
     public:
-      elements_view() = default;
+      elements_view() requires default_initializable<_Vp> = default;
 
       constexpr explicit
       elements_view(_Vp base)
@@ -3587,7 +3605,7 @@ namespace views
 	    = remove_cvref_t<tuple_element_t<_Nm, range_value_t<_Base>>>;
 	  using difference_type = range_difference_t<_Base>;
 
-	  _Iterator() = default;
+	  _Iterator() requires default_initializable<iterator_t<_Base>> = default;
 
 	  constexpr explicit
 	  _Iterator(iterator_t<_Base> current)
