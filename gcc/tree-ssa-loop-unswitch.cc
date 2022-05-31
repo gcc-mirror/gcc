@@ -113,7 +113,7 @@ struct unswitch_predicate
       true_range (edge_range), edge_index (edge_index_), switch_p (true)
   {
     gcc_assert (!(e->flags & (EDGE_TRUE_VALUE|EDGE_FALSE_VALUE))
-		&& irange::supports_type_p (TREE_TYPE (lhs)));
+		&& irange::supports_p (TREE_TYPE (lhs)));
     false_range = true_range;
     if (!false_range.varying_p ()
 	&& !false_range.undefined_p ())
@@ -134,7 +134,7 @@ struct unswitch_predicate
     tree rhs = gimple_cond_rhs (stmt);
     enum tree_code code = gimple_cond_code (stmt);
     condition = build2 (code, boolean_type_node, lhs, rhs);
-    if (irange::supports_type_p (TREE_TYPE (lhs)))
+    if (irange::supports_p (TREE_TYPE (lhs)))
       {
 	auto range_op = range_op_handler (code, TREE_TYPE (lhs));
 	int_range<2> rhs_range (TREE_TYPE (rhs));
@@ -646,7 +646,7 @@ evaluate_control_stmt_using_entry_checks (gimple *stmt,
 			      TREE_OPERAND (last_predicate->condition, 1)))
 	return true_edge ? boolean_true_node : boolean_false_node;
       /* Else try ranger if it supports LHS.  */
-      else if (irange::supports_type_p (TREE_TYPE (lhs)))
+      else if (irange::supports_p (TREE_TYPE (lhs)))
 	{
 	  int_range<2> r;
 	  int_range_max path_range;

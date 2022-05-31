@@ -80,7 +80,7 @@ range_query::value_of_expr (tree expr, gimple *stmt)
 {
   tree t;
 
-  if (!vrange::supports_type_p (TREE_TYPE (expr)))
+  if (!Value_Range::supports_type_p (TREE_TYPE (expr)))
     return NULL_TREE;
 
   Value_Range r (TREE_TYPE (expr));
@@ -102,7 +102,7 @@ range_query::value_on_edge (edge e, tree expr)
 {
   tree t;
 
-  if (!vrange::supports_type_p (TREE_TYPE (expr)))
+  if (!Value_Range::supports_type_p (TREE_TYPE (expr)))
     return NULL_TREE;
   Value_Range r (TREE_TYPE (expr));
   if (range_on_edge (r, e, expr))
@@ -128,7 +128,7 @@ range_query::value_of_stmt (gimple *stmt, tree name)
 
   gcc_checking_assert (!name || name == gimple_get_lhs (stmt));
 
-  if (!name || !vrange::supports_type_p (TREE_TYPE (name)))
+  if (!name || !Value_Range::supports_type_p (TREE_TYPE (name)))
     return NULL_TREE;
   Value_Range r (TREE_TYPE (name));
   if (range_of_stmt (r, stmt, name) && r.singleton_p (&t))
@@ -196,7 +196,7 @@ range_query::get_tree_range (vrange &r, tree expr, gimple *stmt)
   else
     type = TREE_TYPE (expr);
 
-  if (!vrange::supports_type_p (type))
+  if (!Value_Range::supports_type_p (type))
     {
       r.set_undefined ();
       return false;
@@ -252,7 +252,7 @@ range_query::get_tree_range (vrange &r, tree expr, gimple *stmt)
     {
       range_op_handler op (TREE_CODE (expr), type);
       tree op0_type = TREE_TYPE (TREE_OPERAND (expr, 0));
-      if (op && vrange::supports_type_p (op0_type))
+      if (op && Value_Range::supports_type_p (op0_type))
 	{
 	  Value_Range r0 (TREE_TYPE (TREE_OPERAND (expr, 0)));
 	  Value_Range r1 (type);
@@ -387,7 +387,7 @@ get_range_global (vrange &r, tree name)
    }
   else if (!POINTER_TYPE_P (type) && SSA_NAME_RANGE_INFO (name))
     {
-      gcc_checking_assert (irange::supports_type_p (TREE_TYPE (name)));
+      gcc_checking_assert (irange::supports_p (TREE_TYPE (name)));
       get_ssa_name_range_info (as_a <irange> (r), name);
       if (r.undefined_p ())
 	r.set_varying (type);
@@ -441,9 +441,7 @@ global_range_query global_ranges;
 bool
 global_range_query::range_of_expr (vrange &r, tree expr, gimple *stmt)
 {
-  tree type = TREE_TYPE (expr);
-
-  if (!irange::supports_type_p (type) || !gimple_range_ssa_p (expr))
+  if (!gimple_range_ssa_p (expr))
     return get_tree_range (r, expr, stmt);
 
   get_range_global (r, expr);

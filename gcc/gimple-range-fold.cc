@@ -632,7 +632,7 @@ fold_using_range::range_of_range_op (vrange &r, gimple *s, fur_source &src)
 	    }
 	  // Fold range, and register any dependency if available.
 	  handler.fold_range (r, type, range1, range2, rel);
-	  if (irange::supports_type_p (type))
+	  if (irange::supports_p (type))
 	    relation_fold_and_or (as_a <irange> (r), s, src);
 	  if (lhs)
 	    {
@@ -709,7 +709,6 @@ fold_using_range::range_of_address (irange &r, gimple *stmt, fur_source &src)
       tree lhs = gimple_get_lhs (stmt);
       if (lhs && gimple_range_ssa_p (ssa) && src.gori ())
 	src.gori ()->register_dependency (lhs, ssa);
-      gcc_checking_assert (irange::supports_type_p (TREE_TYPE (ssa)));
       src.get_operand (r, ssa);
       range_cast (r, TREE_TYPE (gimple_assign_rhs1 (stmt)));
 
@@ -985,7 +984,7 @@ fold_using_range::range_of_builtin_call (vrange &r, gcall *call,
   tree type = gimple_range_type (call);
   gcc_checking_assert (type);
 
-  if (irange::supports_type_p (type))
+  if (irange::supports_p (type))
     return range_of_builtin_int_call (as_a <irange> (r), call, src);
 
   return false;

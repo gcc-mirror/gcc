@@ -44,8 +44,7 @@ gimple_outgoing_range_stmt_p (basic_block bb)
       gimple *s = gsi_stmt (gsi);
       if (is_a<gcond *> (s) && range_op_handler (s))
 	return gsi_stmt (gsi);
-      gswitch *sw = dyn_cast<gswitch *> (s);
-      if (sw && irange::supports_type_p (TREE_TYPE (gimple_switch_index (sw))))
+      if (is_a <gswitch *> (s))
 	return gsi_stmt (gsi);
     }
   return NULL;

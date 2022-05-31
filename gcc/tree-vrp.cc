@@ -932,8 +932,8 @@ supported_types_p (value_range *vr,
 		   tree type0,
 		   tree type1 = NULL)
 {
-  if (!value_range::supports_type_p (type0)
-      || (type1 && !value_range::supports_type_p (type1)))
+  if (!value_range_equiv::supports_p (type0)
+      || (type1 && !value_range_equiv::supports_p (type1)))
     {
       vr->set_varying (type0);
       return false;

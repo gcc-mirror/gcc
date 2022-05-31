@@ -111,7 +111,7 @@ range_operator::wi_fold (irange &r, tree type,
 			 const wide_int &rh_lb ATTRIBUTE_UNUSED,
 			 const wide_int &rh_ub ATTRIBUTE_UNUSED) const
 {
-  gcc_checking_assert (irange::supports_type_p (type));
+  gcc_checking_assert (r.supports_type_p (type));
   r.set_varying (type);
 }
 
@@ -181,7 +181,7 @@ range_operator::fold_range (irange &r, tree type,
 			    const irange &rh,
 			    relation_kind rel) const
 {
-  gcc_checking_assert (irange::supports_type_p (type));
+  gcc_checking_assert (r.supports_type_p (type));
   if (empty_range_varying (r, type, lh, rh))
     return true;
 

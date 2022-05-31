@@ -201,7 +201,7 @@ bool
 gimple_ranger::range_on_edge (vrange &r, edge e, tree name)
 {
   Value_Range edge_range (TREE_TYPE (name));
-  gcc_checking_assert (vrange::supports_type_p (TREE_TYPE (name)));
+  gcc_checking_assert (r.supports_type_p (TREE_TYPE (name)));
 
   // Do not process values along abnormal edges.
   if (e->flags & EDGE_ABNORMAL)
@@ -514,7 +514,7 @@ gimple_ranger::export_global_ranges ()
 	      print_header = false;
 	    }
 
-	  if (!irange::supports_type_p (TREE_TYPE (name)))
+	  if (!irange::supports_p (TREE_TYPE (name)))
 	    continue;
 
 	  vrange &v = r;

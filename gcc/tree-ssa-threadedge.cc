@@ -1452,7 +1452,7 @@ hybrid_jt_simplifier::compute_ranges_from_state (gimple *stmt, jt_state *state)
 	  tree op = gimple_op (stmt, i);
 	  if (op
 	      && TREE_CODE (op) == SSA_NAME
-	      && irange::supports_type_p (TREE_TYPE (op)))
+	      && Value_Range::supports_type_p (TREE_TYPE (op)))
 	    bitmap_set_bit (imports, SSA_NAME_VERSION (op));
 	}
     }

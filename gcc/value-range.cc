@@ -107,6 +107,12 @@ vrange::operator== (const vrange &src) const
   gcc_unreachable ();
 }
 
+bool
+irange::supports_type_p (tree type) const
+{
+  return supports_p (type);
+}
+
 // Return TRUE if R fits in THIS.
 
 bool
@@ -138,6 +144,12 @@ unsupported_range::type () const
 {
   gcc_unreachable ();
   return nullptr;
+}
+
+bool
+unsupported_range::supports_type_p (tree) const
+{
+  return false;
 }
 
 void

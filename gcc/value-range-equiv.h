@@ -67,6 +67,10 @@ class GTY((user)) value_range_equiv : public value_range
   void deep_copy (const value_range_equiv *);
   void dump (FILE *) const;
   void dump () const;
+  static bool supports_p (tree type)
+  {
+    return INTEGRAL_TYPE_P (type) || POINTER_TYPE_P (type);
+  }
 
  private:
   /* Deep-copies bitmap argument.  */

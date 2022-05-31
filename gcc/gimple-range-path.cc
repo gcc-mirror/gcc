@@ -192,7 +192,7 @@ path_range_query::range_on_path_entry (vrange &r, tree name)
 bool
 path_range_query::internal_range_of_expr (vrange &r, tree name, gimple *stmt)
 {
-  if (!vrange::supports_type_p (TREE_TYPE (name)))
+  if (!r.supports_type_p (TREE_TYPE (name)))
     return false;
 
   if (get_cache (r, name))
@@ -548,7 +548,7 @@ bool
 path_range_query::add_to_imports (tree name, bitmap imports)
 {
   if (TREE_CODE (name) == SSA_NAME
-      && vrange::supports_type_p (TREE_TYPE (name)))
+      && Value_Range::supports_type_p (TREE_TYPE (name)))
     return bitmap_set_bit (imports, SSA_NAME_VERSION (name));
   return false;
 }
@@ -764,7 +764,7 @@ path_range_query::range_of_stmt (vrange &r, gimple *stmt, tree)
 {
   tree type = gimple_range_type (stmt);
 
-  if (!type || !vrange::supports_type_p (type))
+  if (!type || !r.supports_type_p (type))
     return false;
 
   // If resolving unknowns, fold the statement making use of any
