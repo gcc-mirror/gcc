@@ -12375,7 +12375,7 @@ grokdeclarator (const cp_declarator *declarator,
     type = DECL_ORIGINAL_TYPE (TYPE_NAME (type));
 
   type_quals |= cp_type_quals (type);
-  type = cp_build_qualified_type_real
+  type = cp_build_qualified_type
     (type, type_quals, ((((typedef_decl && !DECL_ARTIFICIAL (typedef_decl))
 			  || declspecs->decltype_p)
 			 ? tf_ignore_bad_quals : 0) | tf_warning_or_error));
