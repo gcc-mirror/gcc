@@ -1,3 +1,43 @@
+2022-05-30  Martin Jambor  <mjambor@suse.cz>
+
+	Backported from master:
+	2022-05-27  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/105639
+	* gcc.dg/ipa/pr105639.c: New test.
+
+2022-05-30  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-05-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/105732
+	* c-c++-common/cpp/va-opt-10.c: New test.
+
+2022-05-30  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-05-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/105729
+	* g++.dg/ubsan/pr105729.C: New test.
+
+2022-05-30  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-05-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/105714
+	* gcc.dg/asan/pr105714.c: New test.
+
+2022-05-30  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-05-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/105635
+	* gcc.dg/pr105635.c: New test.
+
 2022-05-27  Marek Polacek  <polacek@redhat.com>
 
 	Backported from master:

@@ -1,3 +1,40 @@
+2022-05-30  Martin Jambor  <mjambor@suse.cz>
+
+	Backported from master:
+	2022-05-27  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/105639
+	* ipa-prop.cc (propagate_controlled_uses): Check type of the
+	constant before adding a LOAD reference.
+
+2022-05-30  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-05-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/105729
+	* fold-const.cc (fold_unary_loc): Don't optimize (X &) ((Y *) z + w)
+	to (X &) z + w if -fsanitize=null during GENERIC folding.
+
+2022-05-30  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-05-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/105714
+	* asan.cc (has_stmt_been_instrumented_p): For assignments which
+	are both stores and loads, return true only if both destination
+	and source have been instrumented.
+
+2022-05-30  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-05-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/105635
+	* pointer-query.cc (gimple_parm_array_size): Return NULL if var
+	doesn't have pointer or reference type.
+
 2022-05-26  Simon Cook  <simon.cook@embecosm.com>
 
 	Backported from master:
