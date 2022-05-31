@@ -9812,10 +9812,12 @@ maybe_get_template_decl_from_type_decl (tree decl)
    that we want to avoid. It also causes some problems with argument
    coercion (see convert_nontype_argument for more information on this).  */
 
-static tree
-lookup_template_class_1 (tree d1, tree arglist, tree in_decl, tree context,
-			 int entering_scope, tsubst_flags_t complain)
+tree
+lookup_template_class (tree d1, tree arglist, tree in_decl, tree context,
+		       int entering_scope, tsubst_flags_t complain)
 {
+  auto_timevar tv (TV_TEMPLATE_INST);
+
   tree templ = NULL_TREE, parmlist;
   tree t;
   spec_entry **slot;
@@ -10351,20 +10353,6 @@ lookup_template_class_1 (tree d1, tree arglist, tree in_decl, tree context,
 
       return t;
     }
-}
-
-/* Wrapper for lookup_template_class_1.  */
-
-tree
-lookup_template_class (tree d1, tree arglist, tree in_decl, tree context,
-                       int entering_scope, tsubst_flags_t complain)
-{
-  tree ret;
-  timevar_push (TV_TEMPLATE_INST);
-  ret = lookup_template_class_1 (d1, arglist, in_decl, context,
-                                 entering_scope, complain);
-  timevar_pop (TV_TEMPLATE_INST);
-  return ret;
 }
 
 /* Return a TEMPLATE_ID_EXPR for the given variable template and ARGLIST.  */
@@ -11871,9 +11859,11 @@ perform_instantiation_time_access_checks (tree tmpl, tree targs)
       }
 }
 
-static tree
-instantiate_class_template_1 (tree type)
+tree
+instantiate_class_template (tree type)
 {
+  auto_timevar tv (TV_TEMPLATE_INST);
+
   tree templ, args, pattern, t, member;
   tree typedecl;
   tree pbinfo;
@@ -12393,18 +12383,6 @@ instantiate_class_template_1 (tree type)
     vec_safe_push (keyed_classes, type);
 
   return type;
-}
-
-/* Wrapper for instantiate_class_template_1.  */
-
-tree
-instantiate_class_template (tree type)
-{
-  tree ret;
-  timevar_push (TV_TEMPLATE_INST);
-  ret = instantiate_class_template_1 (type);
-  timevar_pop (TV_TEMPLATE_INST);
-  return ret;
 }
 
 tree
@@ -21545,9 +21523,11 @@ recheck_decl_substitution (tree d, tree tmpl, tree args)
 /* Instantiate the indicated variable, function, or alias template TMPL with
    the template arguments in TARG_PTR.  */
 
-static tree
-instantiate_template_1 (tree tmpl, tree orig_args, tsubst_flags_t complain)
+tree
+instantiate_template (tree tmpl, tree orig_args, tsubst_flags_t complain)
 {
+  auto_timevar tv (TV_TEMPLATE_INST);
+
   tree targ_ptr = orig_args;
   tree fndecl;
   tree gen_tmpl;
@@ -21717,18 +21697,6 @@ instantiate_template_1 (tree tmpl, tree orig_args, tsubst_flags_t complain)
       return error_mark_node;
     }
   return fndecl;
-}
-
-/* Wrapper for instantiate_template_1.  */
-
-tree
-instantiate_template (tree tmpl, tree orig_args, tsubst_flags_t complain)
-{
-  tree ret;
-  timevar_push (TV_TEMPLATE_INST);
-  ret = instantiate_template_1 (tmpl, orig_args,  complain);
-  timevar_pop (TV_TEMPLATE_INST);
-  return ret;
 }
 
 /* Instantiate the alias template TMPL with ARGS.  Also push a template
@@ -26568,7 +26536,7 @@ instantiate_decl (tree d, bool defer_ok, bool expl_inst_class_mem_p)
   if (! push_tinst_level (d))
     return d;
 
-  timevar_push (TV_TEMPLATE_INST);
+  auto_timevar tv (TV_TEMPLATE_INST);
 
   /* Set TD to the template whose DECL_TEMPLATE_RESULT is the pattern
      for the instantiation.  */
@@ -26734,7 +26702,6 @@ instantiate_decl (tree d, bool defer_ok, bool expl_inst_class_mem_p)
     }
 
   pop_deferring_access_checks ();
-  timevar_pop (TV_TEMPLATE_INST);
   pop_tinst_level ();
   input_location = saved_loc;
   cp_unevaluated_operand = saved_unevaluated_operand;
