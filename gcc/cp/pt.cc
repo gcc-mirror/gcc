@@ -22624,10 +22624,6 @@ unify_one_argument (tree tparms, tree targs, tree parm, tree arg,
 	      return unify_success (explain_p);
 	    }
 
-	  /* Force auto deduction now.  Use tf_none to avoid redundant
-	     deprecated warning on deprecated-14.C.  */
-	  mark_single_function (arg, tf_none);
-
 	  arg_expr = arg;
 	  arg = unlowered_expr_type (arg);
 	  if (arg == error_mark_node)

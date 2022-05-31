@@ -4672,6 +4672,11 @@ resolve_args (vec<tree, va_gc> *args, tsubst_flags_t complain)
 	}
       else if (invalid_nonstatic_memfn_p (EXPR_LOCATION (arg), arg, complain))
 	return NULL;
+
+      /* Force auto deduction now.  Omit tf_warning to avoid redundant
+	 deprecated warning on deprecated-14.C.  */
+      if (!mark_single_function (arg, tf_error))
+	return NULL;
     }
   return args;
 }
