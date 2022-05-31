@@ -7327,7 +7327,7 @@ extern tree get_template_info			(const_tree);
 extern int template_class_depth			(tree);
 extern int is_specialization_of			(tree, tree);
 extern bool is_specialization_of_friend		(tree, tree);
-extern int comp_template_args			(tree, tree, tree * = NULL,
+extern bool comp_template_args			(tree, tree, tree * = NULL,
 						 tree * = NULL, bool = false);
 extern int template_args_equal                  (tree, tree, bool = false);
 extern tree maybe_process_partial_specialization (tree);

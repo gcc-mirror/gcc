@@ -9367,27 +9367,25 @@ template_args_equal (tree ot, tree nt, bool partial_order /* = false */)
     }
 }
 
-/* Returns 1 iff the OLDARGS and NEWARGS are in fact identical sets of
-   template arguments.  Returns 0 otherwise, and updates OLDARG_PTR and
+/* Returns true iff the OLDARGS and NEWARGS are in fact identical sets of
+   template arguments.  Returns false otherwise, and updates OLDARG_PTR and
    NEWARG_PTR with the offending arguments if they are non-NULL.  */
 
-int
+bool
 comp_template_args (tree oldargs, tree newargs,
-		    tree *oldarg_ptr, tree *newarg_ptr,
-		    bool partial_order)
+		    tree *oldarg_ptr /* = NULL */, tree *newarg_ptr /* = NULL */,
+		    bool partial_order /* = false */)
 {
-  int i;
-
   if (oldargs == newargs)
-    return 1;
+    return true;
 
   if (!oldargs || !newargs)
-    return 0;
+    return false;
 
   if (TREE_VEC_LENGTH (oldargs) != TREE_VEC_LENGTH (newargs))
-    return 0;
+    return false;
 
-  for (i = 0; i < TREE_VEC_LENGTH (oldargs); ++i)
+  for (int i = 0; i < TREE_VEC_LENGTH (oldargs); ++i)
     {
       tree nt = TREE_VEC_ELT (newargs, i);
       tree ot = TREE_VEC_ELT (oldargs, i);
@@ -9398,10 +9396,10 @@ comp_template_args (tree oldargs, tree newargs,
 	    *oldarg_ptr = ot;
 	  if (newarg_ptr != NULL)
 	    *newarg_ptr = nt;
-	  return 0;
+	  return false;
 	}
     }
-  return 1;
+  return true;
 }
 
 inline bool
