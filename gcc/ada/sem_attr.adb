@@ -12300,7 +12300,9 @@ package body Sem_Attr is
          --  if it is an element of an entry family, the index itself may
          --  have to be resolved because it can be a general expression.
 
-         when Attribute_Count =>
+         when Attribute_Count
+            | Attribute_Index
+         =>
             if Nkind (P) = N_Indexed_Component
               and then Is_Entity_Name (Prefix (P))
             then
@@ -12338,19 +12340,7 @@ package body Sem_Attr is
          -- Index --
          -----------
 
-         when Attribute_Index =>
-            if Nkind (P) = N_Indexed_Component
-              and then Is_Entity_Name (Prefix (P))
-            then
-               declare
-                  Indx : constant Node_Id   := First (Expressions (P));
-                  Fam  : constant Entity_Id := Entity (Prefix (P));
-
-               begin
-                  Resolve (Indx, Entry_Index_Type (Fam));
-                  Apply_Scalar_Range_Check (Indx, Entry_Index_Type (Fam));
-               end;
-            end if;
+         --  Processing is shared with Count
 
          ----------------
          -- Loop_Entry --
