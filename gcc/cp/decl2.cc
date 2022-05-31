@@ -66,14 +66,14 @@ typedef struct priority_info_s {
   int destructions_p;
 } *priority_info;
 
-static tree start_objects (int, int);
-static void finish_objects (int, int, tree);
+static tree start_objects (bool, unsigned);
+static tree finish_objects (bool, unsigned, tree);
 static tree start_static_storage_duration_function (unsigned);
 static void finish_static_storage_duration_function (tree);
 static priority_info get_priority_info (int);
-static void do_static_initialization_or_destruction (tree, bool);
-static void one_static_initialization_or_destruction (tree, tree, bool);
-static void generate_ctor_or_dtor_function (bool, int, location_t *);
+static void do_static_initialization_or_destruction (bool, tree);
+static void one_static_initialization_or_destruction (bool, tree, tree);
+static void generate_ctor_or_dtor_function (bool, unsigned, location_t *);
 static int generate_ctor_and_dtor_functions_for_priority (splay_tree_node,
 							  void *);
 static tree prune_vars_needing_no_initialization (tree *);
@@ -3813,17 +3813,14 @@ generate_tls_wrapper (tree fn)
   expand_or_defer_fn (finish_function (/*inline_p=*/false));
 }
 
-/* Start the process of running a particular set of global constructors
-   or destructors.  Subroutine of do_[cd]tors.  Also called from
-   vtv_start_verification_constructor_init_function.  */
+/* Start a global constructor or destructor function.  */
 
 static tree
-start_objects (int method_type, int initp)
+start_objects (bool initp, unsigned priority)
 {
-  /* Make ctor or dtor function.  METHOD_TYPE may be 'I' or 'D'.  */
   int module_init = 0;
 
-  if (initp == DEFAULT_INIT_PRIORITY && method_type == 'I')
+  if (priority == DEFAULT_INIT_PRIORITY && initp)
     module_init = module_initializer_kind ();
 
   tree name = NULL_TREE;
@@ -3833,15 +3830,17 @@ start_objects (int method_type, int initp)
     {
       char type[14];
 
-      unsigned len = sprintf (type, "sub_%c", method_type);
-      if (initp != DEFAULT_INIT_PRIORITY)
+      /* We use `I' to indicate initialization and `D' to indicate
+	 destruction.  */
+      unsigned len = sprintf (type, "sub_%c", initp ? 'I' : 'D');
+      if (priority != DEFAULT_INIT_PRIORITY)
 	{
 	  char joiner = '_';
 #ifdef JOINER
 	  joiner = JOINER;
 #endif
 	  type[len++] = joiner;
-	  sprintf (type + len, "%.5u", initp);
+	  sprintf (type + len, "%.5u", priority);
 	}
       name = get_file_function_name (type);
     }
@@ -3867,7 +3866,7 @@ start_objects (int method_type, int initp)
   TREE_USED (current_function_decl) = 1;
 
   /* Mark this function as a global constructor or destructor.  */
-  if (method_type == 'I')
+  if (initp)
     DECL_GLOBAL_CTOR_P (current_function_decl) = 1;
   else
     DECL_GLOBAL_DTOR_P (current_function_decl) = 1;
@@ -3905,28 +3904,27 @@ start_objects (int method_type, int initp)
   return body;
 }
 
-/* Finish the process of running a particular set of global constructors
-   or destructors.  Subroutine of do_[cd]tors.  */
+/* Finish a global constructor or destructor.  */
 
-static void
-finish_objects (int method_type, int initp, tree body)
+static tree
+finish_objects (bool initp, unsigned priority, tree body)
 {
   /* Finish up.  */
   finish_compound_stmt (body);
   tree fn = finish_function (/*inline_p=*/false);
 
-  if (method_type == 'I')
+  if (initp)
     {
       DECL_STATIC_CONSTRUCTOR (fn) = 1;
-      decl_init_priority_insert (fn, initp);
+      decl_init_priority_insert (fn, priority);
     }
   else
     {
       DECL_STATIC_DESTRUCTOR (fn) = 1;
-      decl_fini_priority_insert (fn, initp);
+      decl_fini_priority_insert (fn, priority);
     }
 
-  expand_or_defer_fn (fn);
+  return fn;
 }
 
 /* The names of the parameters to the function created to handle
@@ -4135,7 +4133,7 @@ fix_temporary_vars_context_r (tree *node,
    are destroying it.  */
 
 static void
-one_static_initialization_or_destruction (tree decl, tree init, bool initp)
+one_static_initialization_or_destruction (bool initp, tree decl, tree init)
 {
   tree guard_if_stmt = NULL_TREE;
   tree guard;
@@ -4282,7 +4280,7 @@ one_static_initialization_or_destruction (tree decl, tree init, bool initp)
    Whether initialization or destruction is performed is specified by INITP.  */
 
 static void
-do_static_initialization_or_destruction (tree vars, bool initp)
+do_static_initialization_or_destruction (bool initp, tree vars)
 {
   tree node, init_if_stmt, cond;
 
@@ -4345,8 +4343,8 @@ do_static_initialization_or_destruction (tree vars, bool initp)
 	   && DECL_EFFECTIVE_INIT_PRIORITY (TREE_VALUE (node)) == priority;
 	 node = TREE_CHAIN (node))
       /* Do one initialization or destruction.  */
-      one_static_initialization_or_destruction (TREE_VALUE (node),
-						TREE_PURPOSE (node), initp);
+      one_static_initialization_or_destruction (initp, TREE_VALUE (node),
+						TREE_PURPOSE (node));
 
     /* Finish up the priority if-stmt body.  */
     finish_then_clause (priority_if_stmt);
@@ -4445,27 +4443,22 @@ write_out_vars (tree vars)
    storage duration having the indicated PRIORITY.  */
 
 static void
-generate_ctor_or_dtor_function (bool constructor_p, int priority,
-				location_t *locus)
+generate_ctor_or_dtor_function (bool initp, unsigned priority, location_t *locus)
 {
   input_location = *locus;
-
-  /* We use `I' to indicate initialization and `D' to indicate
-     destruction.  */
-  char function_key = constructor_p ? 'I' : 'D';
 
   /* We emit the function lazily, to avoid generating empty
      global constructors and destructors.  */
   tree body = NULL_TREE;
 
-  if (constructor_p && priority == DEFAULT_INIT_PRIORITY)
+  if (initp && priority == DEFAULT_INIT_PRIORITY)
     {
       bool objc = c_dialect_objc () && objc_static_init_needed_p ();
 
       /* We may have module initialization to emit and/or insert
 	 before other intializations.  */
       if (module_initializer_kind () || objc)
-	body = start_objects (function_key, priority);
+	body = start_objects (initp, priority);
 
       /* For Objective-C++, we may need to initialize metadata found
          in this module.  This must be done _before_ any other static
@@ -4484,11 +4477,11 @@ generate_ctor_or_dtor_function (bool constructor_p, int priority,
       if (! (flags_from_decl_or_type (fndecl) & (ECF_CONST | ECF_PURE)))
 	{
 	  if (! body)
-	    body = start_objects (function_key, priority);
+	    body = start_objects (initp, priority);
 
 	  tree call = cp_build_function_call_nary (fndecl, tf_warning_or_error,
 						   build_int_cst (NULL_TREE,
-								  constructor_p),
+								  initp),
 						   build_int_cst (NULL_TREE,
 								  priority),
 						   NULL_TREE);
@@ -4498,7 +4491,7 @@ generate_ctor_or_dtor_function (bool constructor_p, int priority,
 
   /* Close out the function.  */
   if (body)
-    finish_objects (function_key, priority, body);
+    expand_or_defer_fn (finish_objects (initp, priority, body));
 }
 
 /* Generate constructor and destructor functions for the priority
@@ -4514,9 +4507,9 @@ generate_ctor_and_dtor_functions_for_priority (splay_tree_node n, void * data)
   /* Generate the functions themselves, but only if they are really
      needed.  */
   if (pi->initializations_p)
-    generate_ctor_or_dtor_function (/*constructor_p=*/true, priority, locus);
+    generate_ctor_or_dtor_function (/*initp=*/true, priority, locus);
   if (pi->destructions_p)
-    generate_ctor_or_dtor_function (/*constructor_p=*/false, priority, locus);
+    generate_ctor_or_dtor_function (/*initp=*/false, priority, locus);
 
   /* Keep iterating.  */
   return 0;
@@ -4800,7 +4793,7 @@ handle_tls_init (void)
     {
       tree var = TREE_VALUE (vars);
       tree init = TREE_PURPOSE (vars);
-      one_static_initialization_or_destruction (var, init, true);
+      one_static_initialization_or_destruction (/*initp=*/true, var, init);
 
       /* Output init aliases even with -fno-extern-tls-init.  */
       if (TARGET_SUPPORTS_ALIASES && TREE_PUBLIC (var))
@@ -5191,7 +5184,7 @@ c_parse_final_cleanups (void)
 
 	  /* First generate code to do all the initializations.  */
 	  if (vars)
-	    do_static_initialization_or_destruction (vars, /*initp=*/true);
+	    do_static_initialization_or_destruction (/*initp=*/true, vars);
 
 	  /* Then, generate code to do all the destructions.  Do these
 	     in reverse order so that the most recently constructed
@@ -5202,7 +5195,7 @@ c_parse_final_cleanups (void)
 	  if (!flag_use_cxa_atexit && vars)
 	    {
 	      vars = nreverse (vars);
-	      do_static_initialization_or_destruction (vars, /*initp=*/false);
+	      do_static_initialization_or_destruction (/*initp=*/false, vars);
 	    }
 	  else
 	    vars = NULL_TREE;
@@ -6038,20 +6031,13 @@ mark_used (tree decl)
 tree
 vtv_start_verification_constructor_init_function (void)
 {
-  return start_objects ('I', MAX_RESERVED_INIT_PRIORITY - 1);
+  return start_objects (/*initp=*/true, MAX_RESERVED_INIT_PRIORITY - 1);
 }
 
 tree
-vtv_finish_verification_constructor_init_function (tree function_body)
+vtv_finish_verification_constructor_init_function (tree body)
 {
-  tree fn;
-
-  finish_compound_stmt (function_body);
-  fn = finish_function (/*inline_p=*/false);
-  DECL_STATIC_CONSTRUCTOR (fn) = 1;
-  decl_init_priority_insert (fn, MAX_RESERVED_INIT_PRIORITY - 1);
-
-  return fn;
+  return finish_objects (/*initp=*/true, MAX_RESERVED_INIT_PRIORITY - 1, body);
 }
 
 #include "gt-cp-decl2.h"
