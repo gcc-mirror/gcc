@@ -1077,6 +1077,10 @@ d_parse_file (void)
 				      global.params.dihdr.doOutput);
 	  modules.push (m);
 
+	  /* Zero the padding past the end of the buffer so the D lexer has a
+	     sentinel.  The lexer only reads up to 4 bytes at a time.  */
+	  memset (buffer + len, '\0', 16);
+
 	  /* Overwrite the source file for the module, the one created by
 	     Module::create would have a forced a `.d' suffix.  */
 	  m->src.length = len;
