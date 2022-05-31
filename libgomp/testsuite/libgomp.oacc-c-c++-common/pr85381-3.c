@@ -9,6 +9,7 @@ int a;
 #pragma acc declare create(a)
 
 #pragma acc routine vector
+/* { dg-warning "region is vector partitioned but does not contain vector partitioned code" "" { target *-*-* } .+2 } */
 void __attribute__((noinline, noclone))
 foo_v (void)
 {
@@ -16,6 +17,8 @@ foo_v (void)
 }
 
 #pragma acc routine worker
+/* { dg-warning "region is worker partitioned but does not contain worker partitioned code" "" { target *-*-* } .+3 }
+   { dg-warning "region is vector partitioned but does not contain vector partitioned code" "" { target *-*-* } .+2 } */
 void __attribute__((noinline, noclone))
 foo_w (void)
 {
