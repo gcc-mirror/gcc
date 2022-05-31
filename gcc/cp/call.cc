@@ -9244,8 +9244,8 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
 	}
       else
 	{
-	  tree binfo = TYPE_BINFO (TREE_TYPE (first_arg));
-	  callee = build_baselink (binfo, binfo, fn, NULL_TREE);
+	  callee = build_baselink (cand->conversion_path, cand->access_path,
+				   fn, NULL_TREE);
 	  callee = build_min (COMPONENT_REF, TREE_TYPE (fn),
 			      first_arg, callee, NULL_TREE);
 	}
