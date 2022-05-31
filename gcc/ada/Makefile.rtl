@@ -2937,6 +2937,7 @@ ADA_EXCLUDE_SRCS =\
   s-linux.ads  s-vxwext.adb s-vxwext.ads s-win32.ads  s-winext.ads \
   s-stchop.ads s-stchop.adb \
   s-strcom.adb s-strcom.ads s-thread.ads \
+  s-qnx.ads \
 
 # ADA_EXCLUDE_SRCS without the sources used by the target
 ADA_EXCLUDE_FILES=$(filter-out \
