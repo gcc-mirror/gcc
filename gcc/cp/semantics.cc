@@ -3387,8 +3387,7 @@ finish_template_template_parm (tree aggr, tree identifier)
 
   /* Associate the constraints with the underlying declaration,
      not the template.  */
-  tree reqs = TEMPLATE_PARMS_CONSTRAINTS (current_template_parms);
-  tree constr = build_constraints (reqs, NULL_TREE);
+  tree constr = current_template_constraints ();
   set_constraints (decl, constr);
 
   end_template_decl ();

@@ -10789,9 +10789,7 @@ grokvardecl (tree type,
   else if (flag_concepts
 	   && current_template_depth > template_class_depth (scope))
     {
-      tree reqs = TEMPLATE_PARMS_CONSTRAINTS (current_template_parms);
-      tree ci = build_constraints (reqs, NULL_TREE);
-
+      tree ci = current_template_constraints ();
       set_constraints (decl, ci);
     }
 
@@ -14227,9 +14225,7 @@ grokdeclarator (const cp_declarator *declarator,
 				> template_class_depth (current_class_type));
 		if (memtmpl)
 		  {
-		    tree tmpl_reqs
-		      = TEMPLATE_PARMS_CONSTRAINTS (current_template_parms);
-		    tree ci = build_constraints (tmpl_reqs, NULL_TREE);
+		    tree ci = current_template_constraints ();
 		    set_constraints (decl, ci);
 		  }
 	      }
@@ -15852,13 +15848,8 @@ xref_tag (enum tag_types tag_code, tree name,
         {
           /* Check that we aren't trying to overload a class with different
              constraints.  */
-          tree constr = NULL_TREE;
-          if (current_template_parms)
-            {
-              tree reqs = TEMPLATE_PARMS_CONSTRAINTS (current_template_parms);
-              constr = build_constraints (reqs, NULL_TREE);
-            }
-	  if (!redeclare_class_template (t, current_template_parms, constr))
+	  if (!redeclare_class_template (t, current_template_parms,
+					 current_template_constraints ()))
 	    return error_mark_node;
         }
       else if (!processing_template_decl
