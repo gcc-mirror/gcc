@@ -1,3 +1,12 @@
+2022-05-30  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/91300
+	* libgfortran.h: Define new error code LIBERROR_NO_MEMORY.
+	* trans-stmt.cc (gfc_trans_allocate): Generate code for setting
+	ERRMSG depending on result of STAT result of ALLOCATE.
+	* trans.cc (gfc_allocate_using_malloc): Use STAT value of
+	LIBERROR_NO_MEMORY in case of failed malloc.
+
 2022-05-28  Tobias Burnus  <tobias@codesourcery.com>
 
 	* dump-parse-tree.cc (show_omp_clauses): Handle OMP_LIST_ENTER.

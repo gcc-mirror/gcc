@@ -1,3 +1,82 @@
+2022-05-30  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* config/i386/i386.cc (ix86_modes_tieable_p): Allow SCmode to be
+	tieable with DImode on TARGET_64BIT, and SCmode tieable with
+	V2SFmode, and DCmode with V2DFmode.
+
+2022-05-30  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR rtl-optimization/101617
+	* config/i386/i386-expand.cc (ix86_expand_int_movcc): Add a
+	special case (indicated by negate_cc_compare_p) to generate a
+	-1/0 mask using neg;sbb.
+	* config/i386/i386.md (x86_neg<mode>_ccc): New define_expand
+	to generate an *x86_neg<mode>_ccc instruction.
+	(x86_mov<mode>cc_0_m1_neg): Likewise, a new define_expand to
+	generate a *x86_mov<mode>cc_0_m1_neg instruction.
+
+2022-05-30  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* rtlanal.cc (rtx_cost) <MULT>: Treat FMA, SS_MULT, US_MULT,
+	SMUL_HIGHPART and UMUL_HIGHPART as having the same cost as MULT.
+	<DIV>: Likewise, SS_DIV and US_DIV have the same default as DIV.
+
+2022-05-30  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR target/70321
+	* config/i386/i386-expand.cc (ix86_expand_branch): Don't decompose
+	DI mode equality/inequality using XOR here.  Instead generate a
+	COMPARE for doubleword modes (DImode on !TARGET_64BIT or TImode).
+	* config/i386/i386-features.cc (gen_gpr_to_xmm_move_src): Use
+	gen_rtx_SUBREG when NUNITS is 1, i.e. for TImode to V1TImode.
+	(general_scalar_chain::convert_compare): New function to convert
+	scalar equality/inequality comparison into vector operations.
+	(general_scalar_chain::convert_insn) [COMPARE]: Refactor. Call
+	new convert_compare helper method.
+	(convertible_comparion_p): Update to match doubleword COMPARE
+	of two register, memory or integer constant operands.
+	* config/i386/i386-features.h (general_scalar_chain::convert_compare):
+	Prototype/declare member function here.
+	* config/i386/i386.md (cstore<mode>4): Change mode to SDWIM, but
+	only allow new doubleword modes for EQ and NE operators.
+	(*cmp<dwi>_doubleword): New define_insn_and_split, to split a
+	doubleword comparison into a pair of XORs followed by an IOR to
+	set the (zero) flags register, optimizing the XORs if possible.
+	* config/i386/sse.md (V_AVX): Include V1TI and V2TI in mode
+	iterator; V_AVX is (currently) only used by ptest.
+	(sse4_1 mode attribute): Update to support V1TI and V2TI.
+
+2022-05-30  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md: Remove constraints when used with
+	const_int_operand, const0_operand, const_1_operand, constm1_operand,
+	const8_operand, const128_operand, const248_operand, const123_operand,
+	const2367_operand, const1248_operand, const359_operand,
+	const_4_or_8_to_11_operand, const48_operand, const_0_to_1_operand,
+	const_0_to_3_operand, const_0_to_4_operand, const_0_to_5_operand,
+	const_0_to_7_operand, const_0_to_15_operand, const_0_to_31_operand,
+	const_0_to_63_operand, const_0_to_127_operand, const_0_to_255_operand,
+	const_0_to_255_mul_8_operand, const_1_to_31_operand,
+	const_1_to_63_operand, const_2_to_3_operand, const_4_to_5_operand,
+	const_4_to_7_operand, const_6_to_7_operand, const_8_to_9_operand,
+	const_8_to_11_operand, const_8_to_15_operand, const_10_to_11_operand,
+	const_12_to_13_operand, const_12_to_15_operand, const_14_to_15_operand,
+	const_16_to_19_operand, const_16_to_31_operand, const_20_to_23_operand,
+	const_24_to_27_operand and const_28_to_31_operand.
+	* config/i386/mmx.md: Ditto.
+	* config/i386/sse.md: Ditto.
+	* config/i386/subst.md: Ditto.
+	* config/i386/sync.md: Ditto.
+
+2022-05-30  Jan Beulich  <jbeulich@suse.com>
+
+	* config/i386/i386.md (bmi2_umul<mode><dwi>3_1): Correct MEM_P()
+	arguments.
+
+2022-05-30  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	* config/arm/arm.cc (arm_vectorize_vec_perm_const): Adjust prototype.
+
 2022-05-29  Iain Sandoe  <iain@sandoe.co.uk>
 
 	PR target/105599

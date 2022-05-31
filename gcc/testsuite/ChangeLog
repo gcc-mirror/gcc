@@ -1,3 +1,39 @@
+2022-05-30  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/91300
+	* gfortran.dg/allocate_alloc_opt_15.f90: New test.
+
+2022-05-30  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR rtl-optimization/101617
+	* gcc.target/i386/pr101617.c: New test case.
+
+2022-05-30  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR target/70321
+	* gcc.target/i386/pr70321.c: New test case.
+	* gcc.target/i386/sse4_1-stv-1.c: New test case.
+
+2022-05-30  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/pr105624.c: New test.
+
+2022-05-30  Vineet Gupta  <vineetg@rivosinc.com>
+
+	* gcc.target/riscv/fmax.c: Add dg-require-effective-target hard_float.
+	* gcc.target/riscv/fmaxf.c: Ditto.
+	* gcc.target/riscv/fmin.c: Ditto.
+	* gcc.target/riscv/fminf.c: Ditto.
+	* gcc.target/riscv/smax-ieee.c: Ditto.
+	* gcc.target/riscv/smax.c: Ditto.
+	* gcc.target/riscv/smaxf-ieee.c: Ditto.
+	* gcc.target/riscv/smaxf.c: Ditto.
+	* gcc.target/riscv/smin-ieee.c: Ditto.
+	* gcc.target/riscv/smin.c: Ditto.
+	* gcc.target/riscv/sminf-ieee.c: Ditto.
+	* gcc.target/riscv/sminf.c: Ditto.
+	* gcc.target/riscv/pr105666.c: Ditto.
+
 2022-05-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR preprocessor/105732
