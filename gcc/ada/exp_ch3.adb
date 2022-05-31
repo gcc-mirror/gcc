@@ -6173,7 +6173,7 @@ package body Exp_Ch3 is
       Obj_Def  : constant Node_Id    := Object_Definition (N);
       Typ      : constant Entity_Id  := Etype (Def_Id);
       Base_Typ : constant Entity_Id  := Base_Type (Typ);
-      Expr_Q   : Node_Id;
+      Next_N   : constant Node_Id    := Next (N);
 
       function Build_Equivalent_Aggregate return Boolean;
       --  If the object has a constrained discriminated type and no initial
@@ -6193,9 +6193,8 @@ package body Exp_Ch3 is
       --  Generate all default initialization actions for object Def_Id. Any
       --  new code is inserted after node After.
 
-      function Rewrite_As_Renaming return Boolean;
-      --  Indicate whether to rewrite a declaration with initialization into an
-      --  object renaming declaration (see below).
+      function OK_To_Rename_Ref (N : Node_Id) return Boolean;
+      --  Return True if N denotes an entity with OK_To_Rename set
 
       --------------------------------
       -- Build_Equivalent_Aggregate --
@@ -6801,91 +6800,21 @@ package body Exp_Ch3 is
          end if;
       end Default_Initialize_Object;
 
-      -------------------------
-      -- Rewrite_As_Renaming --
-      -------------------------
+      ----------------------
+      -- OK_To_Rename_Ref --
+      ----------------------
 
-      function Rewrite_As_Renaming return Boolean is
-
-         function OK_To_Rename_Entity_Name (N : Node_Id) return Boolean;
-         --  Return True if N denotes an entity with OK_To_Rename set
-
-         ------------------------------
-         -- OK_To_Rename_Entity_Name --
-         ------------------------------
-
-         function OK_To_Rename_Entity_Name (N : Node_Id) return Boolean is
-         begin
-            return Is_Entity_Name (N)
-              and then Ekind (Entity (N)) = E_Variable
-              and then OK_To_Rename (Entity (N));
-         end OK_To_Rename_Entity_Name;
-
-         Result : constant Boolean :=
-
-         --  If the object declaration appears in the form
-
-         --    Obj : Typ := Func (...);
-
-         --  where Typ both needs finalization and is returned on the secondary
-         --  stack, the object declaration can be rewritten into a dereference
-         --  of the reference to the result built on the secondary stack (see
-         --  Expand_Ctrl_Function_Call for this expansion of the call):
-
-         --    type Axx is access all Typ;
-         --    Rxx : constant Axx := Func (...)'reference;
-         --    Obj : Typ renames Rxx.all;
-
-         --  This avoids an extra copy and the pair of Adjust/Finalize calls.
-
-         (not Is_Library_Level_Entity (Def_Id)
-            and then Nkind (Expr_Q) = N_Explicit_Dereference
-            and then not Comes_From_Source (Expr_Q)
-            and then Nkind (Original_Node (Expr_Q)) = N_Function_Call
-            and then Needs_Finalization (Typ)
-            and then not Is_Class_Wide_Type (Typ))
-
-           --  If the initializing expression is for a variable with attribute
-           --  OK_To_Rename set, then transform:
-
-           --     Obj : Typ := Expr;
-
-           --  into
-
-           --     Obj : Typ renames Expr;
-
-           --  provided that Obj is not aliased. The aliased case has to be
-           --  excluded in general because Expr will not be aliased in general.
-
-           or else
-             (not Aliased_Present (N)
-               and then (OK_To_Rename_Entity_Name (Expr_Q)
-                          or else
-                         (Nkind (Expr_Q) = N_Slice
-                           and then
-                          OK_To_Rename_Entity_Name (Prefix (Expr_Q)))));
+      function OK_To_Rename_Ref (N : Node_Id) return Boolean is
       begin
-         return Result
-
-           --  The declaration cannot be rewritten if it has got constraints,
-           --  in other words the nominal subtype must be unconstrained.
-
-           and then Is_Entity_Name (Original_Node (Obj_Def))
-
-           --  ??? Return False if there are any aspect specifications, because
-           --  otherwise we duplicate that corresponding implicit attribute
-           --  definition, and call Insert_Action, which has no place to insert
-           --  the attribute definition. The attribute definition is stored in
-           --  Aspect_Rep_Item, which is not a list.
-
-           and then No (Aspect_Specifications (N));
-      end Rewrite_As_Renaming;
+         return Is_Entity_Name (N)
+           and then Ekind (Entity (N)) = E_Variable
+           and then OK_To_Rename (Entity (N));
+      end OK_To_Rename_Ref;
 
       --  Local variables
 
-      Next_N : constant Node_Id := Next (N);
-
       Adj_Call   : Node_Id;
+      Expr_Q     : Node_Id;
       Id_Ref     : Node_Id;
       Tag_Assign : Node_Id;
 
@@ -6894,6 +6823,9 @@ package body Exp_Ch3 is
       --  is normally N, except for the case of a shared passive variable, in
       --  which case the init proc call must be inserted only after the bodies
       --  of the shared variable procedures have been seen.
+
+      Rewrite_As_Renaming : Boolean := False;
+      --  Whether to turn the declaration into a renaming at the end
 
    --  Start of processing for Expand_N_Object_Declaration
 
@@ -7442,33 +7374,6 @@ package body Exp_Ch3 is
                end if;
             end if;
 
-            --  If the type needs finalization and is not inherently limited,
-            --  then the target is adjusted after the copy and attached to the
-            --  finalization list. However, no adjustment is needed in the case
-            --  where the object has been initialized by a call to a function
-            --  returning on the primary stack (see Expand_Ctrl_Function_Call)
-            --  since no copy occurred, given that the type is by-reference.
-            --  Similarly, no adjustment is needed if we are going to rewrite
-            --  the object declaration into a renaming declaration.
-
-            if Needs_Finalization (Typ)
-              and then not Is_Limited_View (Typ)
-              and then Nkind (Expr_Q) /= N_Function_Call
-              and then not Rewrite_As_Renaming
-            then
-               Adj_Call :=
-                 Make_Adjust_Call (
-                   Obj_Ref => New_Occurrence_Of (Def_Id, Loc),
-                   Typ     => Base_Typ);
-
-               --  Guard against a missing [Deep_]Adjust when the base type
-               --  was not properly frozen.
-
-               if Present (Adj_Call) then
-                  Insert_Action_After (Init_After, Adj_Call);
-               end if;
-            end if;
-
             --  For tagged types, when an init value is given, the tag has to
             --  be re-initialized separately in order to avoid the propagation
             --  of a wrong tag coming from a view conversion unless the type
@@ -7585,6 +7490,91 @@ package body Exp_Ch3 is
                Ensure_Valid (Expr);
                if Safe_To_Capture_Value (N, Def_Id) then
                   Set_Is_Known_Valid (Def_Id);
+               end if;
+            end if;
+
+            --  Now determine whether we will use a renaming
+
+            Rewrite_As_Renaming :=
+
+              --  If the object declaration appears in the form
+
+              --    Obj : Typ := Func (...);
+
+              --  where Typ needs finalization and is returned on the secondary
+              --  stack, the declaration can be rewritten into a dereference of
+              --  the reference to the result built on the secondary stack (see
+              --  Expand_Ctrl_Function_Call for this expansion of the call):
+
+              --    type Axx is access all Typ;
+              --    Rxx : constant Axx := Func (...)'reference;
+              --    Obj : Typ renames Rxx.all;
+
+              --  This avoids an extra copy and a pair of Adjust/Finalize calls
+
+              ((not Is_Library_Level_Entity (Def_Id)
+                 and then Nkind (Expr_Q) = N_Explicit_Dereference
+                 and then not Comes_From_Source (Expr_Q)
+                 and then Nkind (Original_Node (Expr_Q)) = N_Function_Call
+                 and then Needs_Finalization (Typ)
+                 and then not Is_Class_Wide_Type (Typ))
+
+                --  If the initializing expression is for a variable with flag
+                --  OK_To_Rename set, then transform:
+
+                --     Obj : Typ := Expr;
+
+                --  into
+
+                --     Obj : Typ renames Expr;
+
+                --  provided that Obj is not aliased. The aliased case has to
+                --  be excluded because Expr will not be aliased in general.
+
+               or else (not Aliased_Present (N)
+                         and then (OK_To_Rename_Ref (Expr_Q)
+                                    or else
+                                   (Nkind (Expr_Q) = N_Slice
+                                     and then
+                                    OK_To_Rename_Ref (Prefix (Expr_Q))))))
+
+              --  The declaration cannot be rewritten if it has got constraints
+              --  in other words the nominal subtype must be unconstrained.
+
+              and then Is_Entity_Name (Original_Node (Obj_Def))
+
+              --  ??? Likewise if there are any aspect specifications, because
+              --  otherwise we duplicate that corresponding implicit attribute
+              --  definition and call Insert_Action, which has no place for the
+              --  attribute definition. The attribute definition is stored in
+              --  Aspect_Rep_Item, which is not a list.
+
+              and then No (Aspect_Specifications (N));
+
+            --  If the type needs finalization and is not inherently limited,
+            --  then the target is adjusted after the copy and attached to the
+            --  finalization list. However, no adjustment is needed in the case
+            --  where the object has been initialized by a call to a function
+            --  returning on the primary stack (see Expand_Ctrl_Function_Call)
+            --  since no copy occurred, given that the type is by-reference.
+            --  Similarly, no adjustment is needed if we are going to rewrite
+            --  the object declaration into a renaming declaration.
+
+            if Needs_Finalization (Typ)
+              and then not Is_Limited_View (Typ)
+              and then Nkind (Expr_Q) /= N_Function_Call
+              and then not Rewrite_As_Renaming
+            then
+               Adj_Call :=
+                 Make_Adjust_Call (
+                   Obj_Ref => New_Occurrence_Of (Def_Id, Loc),
+                   Typ     => Base_Typ);
+
+               --  Guard against a missing [Deep_]Adjust when the base type
+               --  was not properly frozen.
+
+               if Present (Adj_Call) then
+                  Insert_Action_After (Init_After, Adj_Call);
                end if;
             end if;
          end if;
@@ -7714,40 +7704,32 @@ package body Exp_Ch3 is
       --  declaration, then this transformation generates what would be
       --  illegal code if written by hand, but that's OK.
 
-      if Present (Expr) then
-         if Rewrite_As_Renaming then
-            Rewrite (N,
-              Make_Object_Renaming_Declaration (Loc,
-                Defining_Identifier => Defining_Identifier (N),
-                Subtype_Mark        => Obj_Def,
-                Name                => Expr_Q));
+      if Rewrite_As_Renaming then
+         Rewrite (N,
+           Make_Object_Renaming_Declaration (Loc,
+             Defining_Identifier => Defining_Identifier (N),
+             Subtype_Mark        => Obj_Def,
+             Name                => Expr_Q));
 
-            --  We do not analyze this renaming declaration, because all its
-            --  components have already been analyzed, and if we were to go
-            --  ahead and analyze it, we would in effect be trying to generate
-            --  another declaration of X, which won't do.
+         --  We do not analyze this renaming declaration, because all its
+         --  components have already been analyzed, and if we were to go
+         --  ahead and analyze it, we would in effect be trying to generate
+         --  another declaration of X, which won't do.
 
-            Set_Renamed_Object (Defining_Identifier (N), Expr_Q);
-            Set_Analyzed (N);
+         Set_Renamed_Object (Defining_Identifier (N), Expr_Q);
+         Set_Analyzed (N);
 
-            --  We do need to deal with debug issues for this renaming
+         --  We do need to deal with debug issues for this renaming
 
-            --  First, if entity comes from source, then mark it as needing
-            --  debug information, even though it is defined by a generated
-            --  renaming that does not come from source.
+         --  First, if entity comes from source, then mark it as needing
+         --  debug information, even though it is defined by a generated
+         --  renaming that does not come from source.
 
-            Set_Debug_Info_Defining_Id (N);
+         Set_Debug_Info_Defining_Id (N);
 
-            --  Now call the routine to generate debug info for the renaming
+         --  Now call the routine to generate debug info for the renaming
 
-            declare
-               Decl : constant Node_Id := Debug_Renaming_Declaration (N);
-            begin
-               if Present (Decl) then
-                  Insert_Action (N, Decl);
-               end if;
-            end;
-         end if;
+         Insert_Action (N, Debug_Renaming_Declaration (N));
       end if;
 
    --  Exception on library entity not available
