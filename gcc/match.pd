@@ -489,6 +489,87 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (if (!overflow || TYPE_OVERFLOW_WRAPS (type))
    (mult @0 { wide_int_to_tree (type, mul); }))))
 
+/* Similar to above, but there could be an extra add/sub between
+   successive multuiplications.  */
+(simplify
+ (mult (plus:s (mult:s@4 @0 INTEGER_CST@1) INTEGER_CST@2) INTEGER_CST@3)
+ (with {
+   bool overflowed = true;
+   wi::overflow_type ovf1, ovf2;
+   wide_int mul = wi::mul (wi::to_wide (@1), wi::to_wide (@3),
+			   TYPE_SIGN (type), &ovf1);
+   wide_int add = wi::mul (wi::to_wide (@2), wi::to_wide (@3),
+			   TYPE_SIGN (type), &ovf2);
+  if (TYPE_OVERFLOW_UNDEFINED (type))
+    {
+#if GIMPLE
+      value_range vr0;
+      if (ovf1 == wi::OVF_NONE && ovf2 == wi::OVF_NONE
+	  && get_global_range_query ()->range_of_expr (vr0, @4)
+	  && vr0.kind () == VR_RANGE)
+	{
+	  wide_int wmin0 = vr0.lower_bound ();
+	  wide_int wmax0 = vr0.upper_bound ();
+	  wmin0 = wi::mul (wmin0, wi::to_wide (@3), TYPE_SIGN (type), &ovf1);
+	  wmax0 = wi::mul (wmax0, wi::to_wide (@3), TYPE_SIGN (type), &ovf2);
+	  if (ovf1 == wi::OVF_NONE && ovf2 == wi::OVF_NONE)
+	    {
+	      wi::add (wmin0, add, TYPE_SIGN (type), &ovf1);
+	      wi::add (wmax0, add, TYPE_SIGN (type), &ovf2);
+	      if (ovf1 == wi::OVF_NONE && ovf2 == wi::OVF_NONE)
+		overflowed = false;
+	    }
+	}
+#endif
+    }
+  else
+   overflowed = false;
+ }
+  /* Skip folding on overflow.  */
+  (if (!overflowed)
+   (plus (mult @0 { wide_int_to_tree (type, mul); })
+	 { wide_int_to_tree (type, add); }))))
+
+/* Similar to above, but a multiplication between successive additions.  */
+(simplify
+ (plus (mult:s (plus:s @0 INTEGER_CST@1) INTEGER_CST@2) INTEGER_CST@3)
+ (with {
+   bool overflowed = true;
+   wi::overflow_type ovf1;
+   wi::overflow_type ovf2;
+   wide_int mul = wi::mul (wi::to_wide (@1), wi::to_wide (@2),
+			   TYPE_SIGN (type), &ovf1);
+   wide_int add = wi::add (mul, wi::to_wide (@3),
+			   TYPE_SIGN (type), &ovf2);
+  if (TYPE_OVERFLOW_UNDEFINED (type))
+    {
+#if GIMPLE
+      value_range vr0;
+      if (ovf1 == wi::OVF_NONE && ovf2 == wi::OVF_NONE
+	  && get_global_range_query ()->range_of_expr (vr0, @0)
+	  && vr0.kind () == VR_RANGE)
+	{
+	  wide_int wmin0 = vr0.lower_bound ();
+	  wide_int wmax0 = vr0.upper_bound ();
+	  wmin0 = wi::mul (wmin0, wi::to_wide (@2), TYPE_SIGN (type), &ovf1);
+	  wmax0 = wi::mul (wmax0, wi::to_wide (@2), TYPE_SIGN (type), &ovf2);
+	  if (ovf1 == wi::OVF_NONE && ovf2 == wi::OVF_NONE)
+	    {
+	      wi::add (wmin0, mul, TYPE_SIGN (type), &ovf1);
+	      wi::add (wmax0, mul, TYPE_SIGN (type), &ovf2);
+	      if (ovf1 == wi::OVF_NONE && ovf2 == wi::OVF_NONE)
+		overflowed = false;
+	    }
+	}
+#endif
+    }
+  else
+   overflowed = false;
+ }
+  /* Skip folding on overflow.  */
+  (if (!overflowed)
+   (plus (mult @0 @2) { wide_int_to_tree (type, add); }))))
+
 /* Optimize A / A to 1.0 if we don't care about
    NaNs or Infinities.  */
 (simplify
