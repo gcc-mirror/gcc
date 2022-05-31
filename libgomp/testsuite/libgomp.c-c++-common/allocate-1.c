@@ -11,7 +11,7 @@ foo (int x, int *p, int *q, int px, omp_allocator_handle_t h, int fl)
   int i2, j2, n2 = 9, l4;
   int i3, j3, n3 = 10, l5;
   int i4, j4, n4 = 11, l6;
-  int i5;
+  int i5, n5;
   int v[x], w[x];
   int r2[4] = { 0, 0, 0, 0 };
   int xo = x;
@@ -213,6 +213,34 @@ foo (int x, int *p, int *q, int px, omp_allocator_handle_t h, int fl)
   if (p[2] != (32 * 31) / 2 || p[3] != 2 * (32 * 31) / 2
       || q[0] != 3 * (32 * 31) / 2 || q[2] != 4 * (32 * 31) / 2
       || r2[0] != 5 * (32 * 31) / 2 || r2[3] != 6 * (32 * 31) / 2)
+    abort ();
+  r = 0;
+  x = xo;
+  #pragma omp parallel shared (x, y, r, n5) firstprivate (h)
+  {
+    #pragma omp masked
+    n5 = omp_get_num_threads ();
+    #pragma omp scope private (y) firstprivate (x) reduction(+:r) \
+		      allocate (h: x, y, r)
+    {
+      int *volatile p1 = &x;
+      int *volatile p2 = &y;
+      int *volatile p3 = &r;
+      if (x != 42)
+	abort ();
+      #pragma omp barrier
+      *p2 = 1;
+      p1[0]++;
+      p3[0]++;
+      #pragma omp barrier
+      if (x != 43 || y != 1 || r != 1)
+	abort ();
+      if ((fl & 1) && (((uintptr_t) p1 | (uintptr_t) p2
+			| (uintptr_t) p3) & 63) != 0)
+	abort ();
+    }
+  }
+  if (x != 42 || r != n5)
     abort ();
 }
 
