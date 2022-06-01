@@ -70,6 +70,7 @@ public:
 
     // https://github.com/rust-lang/rust/blob/master/library/core/src/ptr/const_ptr.rs
     CONST_PTR,
+    MUT_PTR,
     CONST_SLICE_PTR,
 
     UNKNOWN,
@@ -209,6 +210,10 @@ public:
       {
 	return ItemType::CONST_PTR;
       }
+    else if (item.compare ("mut_ptr") == 0)
+      {
+	return ItemType::MUT_PTR;
+      }
     else if (item.compare ("const_slice_ptr") == 0)
       {
 	return ItemType::CONST_SLICE_PTR;
@@ -287,6 +292,8 @@ public:
 	return "RangeToInclusive";
       case CONST_PTR:
 	return "const_ptr";
+      case MUT_PTR:
+	return "mut_ptr";
       case CONST_SLICE_PTR:
 	return "const_slice_ptr";
 
