@@ -4085,34 +4085,25 @@ get_priority_info (int priority)
 						    || DECL_ONE_ONLY (decl) \
 						    || DECL_WEAK (decl)))
 
-/* Called from one_static_initialization_or_destruction(),
-   via walk_tree.
-   Walks the initializer list of a global variable and looks for
+/* Walks the initializer list of a global variable and looks for
    temporary variables (DECL_NAME() == NULL and DECL_ARTIFICIAL != 0)
-   and that have their DECL_CONTEXT() == NULL.
-   For each such temporary variable, set their DECL_CONTEXT() to
-   the current function. This is necessary because otherwise
-   some optimizers (enabled by -O2 -fprofile-arcs) might crash
-   when trying to refer to a temporary variable that does not have
-   it's DECL_CONTECT() properly set.  */
+   and that have their DECL_CONTEXT() == NULL.  For each such
+   temporary variable, set their DECL_CONTEXT() to CTX -- the
+   initializing function. This is necessary because otherwise some
+   optimizers (enabled by -O2 -fprofile-arcs) might crash when trying
+   to refer to a temporary variable that does not have its
+   DECL_CONTEXT() properly set.  */
+
 static tree 
 fix_temporary_vars_context_r (tree *node,
 			      int  * /*unused*/,
-			      void * /*unused1*/)
+			      void *ctx)
 {
-  gcc_assert (current_function_decl);
-
   if (TREE_CODE (*node) == BIND_EXPR)
-    {
-      tree var;
-
-      for (var = BIND_EXPR_VARS (*node); var; var = DECL_CHAIN (var))
-	if (VAR_P (var)
-	  && !DECL_NAME (var)
-	  && DECL_ARTIFICIAL (var)
-	  && !DECL_CONTEXT (var))
-	  DECL_CONTEXT (var) = current_function_decl;
-    }
+    for (tree var = BIND_EXPR_VARS (*node); var; var = DECL_CHAIN (var))
+      if (VAR_P (var) && !DECL_NAME (var)
+	  && DECL_ARTIFICIAL (var) && !DECL_CONTEXT (var))
+	DECL_CONTEXT (var) = tree (ctx);
 
   return NULL_TREE;
 }
@@ -4124,9 +4115,6 @@ fix_temporary_vars_context_r (tree *node,
 static void
 one_static_initialization_or_destruction (bool initp, tree decl, tree init)
 {
-  tree guard_if_stmt = NULL_TREE;
-  tree guard;
-
   /* If we are supposed to destruct and there's a trivial destructor,
      nothing has to be done.  */
   if (!initp
@@ -4150,7 +4138,7 @@ one_static_initialization_or_destruction (bool initp, tree decl, tree init)
      of the temporaries are set to the current function decl.  */
   cp_walk_tree_without_duplicates (&init,
 				   fix_temporary_vars_context_r,
-				   NULL);
+				   current_function_decl);
 
   /* Because of:
 
@@ -4171,62 +4159,50 @@ one_static_initialization_or_destruction (bool initp, tree decl, tree init)
     }
 
   /* Assume we don't need a guard.  */
-  guard = NULL_TREE;
+  tree guard_if_stmt = NULL_TREE;
+
   /* We need a guard if this is an object with external linkage that
      might be initialized in more than one place.  (For example, a
      static data member of a template, when the data member requires
      construction.)  */
   if (NEEDS_GUARD_P (decl))
     {
+      tree guard = get_guard (decl);
       tree guard_cond;
 
-      guard = get_guard (decl);
-
-      /* When using __cxa_atexit, we just check the GUARD as we would
-	 for a local static.  */
       if (flag_use_cxa_atexit)
 	{
-	  /* When using __cxa_atexit, we never try to destroy
+	  /* When using __cxa_atexit, we just check the GUARD as we
+	     would for a local static.  We never try to destroy
 	     anything from a static destructor.  */
 	  gcc_assert (initp);
 	  guard_cond = get_guard_cond (guard, false);
 	}
-      /* If we don't have __cxa_atexit, then we will be running
-	 destructors from .fini sections, or their equivalents.  So,
-	 we need to know how many times we've tried to initialize this
-	 object.  We do initializations only if the GUARD is zero,
-	 i.e., if we are the first to initialize the variable.  We do
-	 destructions only if the GUARD is one, i.e., if we are the
-	 last to destroy the variable.  */
-      else if (initp)
-	guard_cond
-	  = cp_build_binary_op (input_location,
-				EQ_EXPR,
-				cp_build_unary_op (PREINCREMENT_EXPR,
-						   guard,
-						   /*noconvert=*/true,
-						   tf_warning_or_error),
-				integer_one_node,
-				tf_warning_or_error);
       else
-	guard_cond
-	  = cp_build_binary_op (input_location,
-				EQ_EXPR,
-				cp_build_unary_op (PREDECREMENT_EXPR,
-						   guard,
-						   /*noconvert=*/true,
-						   tf_warning_or_error),
-				integer_zero_node,
-				tf_warning_or_error);
+	{
+	  /* If we don't have __cxa_atexit, then we will be running
+	     destructors from .fini sections, or their equivalents.
+	     So, we need to know how many times we've tried to
+	     initialize this object.  We do initializations only if
+	     the GUARD was or becomes zero (initp vs !initp
+	     respectively).  */
+	  guard_cond = cp_build_unary_op (initp ? POSTINCREMENT_EXPR
+					  : PREDECREMENT_EXPR,
+					  guard,
+					  /*noconvert=*/true,
+					  tf_warning_or_error);
+	  guard_cond = cp_build_binary_op (input_location, EQ_EXPR, guard_cond, 
+					   integer_zero_node,
+					   tf_warning_or_error);
+	}
 
       guard_if_stmt = begin_if_stmt ();
       finish_if_stmt_cond (guard_cond, guard_if_stmt);
-    }
 
-  /* If we're using __cxa_atexit, we have not already set the GUARD,
-     so we must do so now.  */
-  if (guard && initp && flag_use_cxa_atexit)
-    finish_expr_stmt (set_guard (guard));
+      if (flag_use_cxa_atexit)
+	/* Set the GUARD now.  */
+	finish_expr_stmt (set_guard (guard));
+    }
 
   /* Perform the initialization or destruction.  */
   if (initp)
@@ -4235,11 +4211,8 @@ one_static_initialization_or_destruction (bool initp, tree decl, tree init)
 	{
 	  finish_expr_stmt (init);
 	  if (sanitize_flags_p (SANITIZE_ADDRESS, decl))
-	    {
-	      varpool_node *vnode = varpool_node::get (decl);
-	      if (vnode)
-		vnode->dynamically_initialized = 1;
-	    }
+	    if (varpool_node *vnode = varpool_node::get (decl))
+	      vnode->dynamically_initialized = 1;
 	}
 
       /* If we're using __cxa_atexit, register a function that calls the
@@ -4251,7 +4224,7 @@ one_static_initialization_or_destruction (bool initp, tree decl, tree init)
     finish_expr_stmt (build_cleanup (decl));
 
   /* Finish the guard if-stmt, if necessary.  */
-  if (guard)
+  if (guard_if_stmt)
     {
       finish_then_clause (guard_if_stmt);
       finish_if_stmt (guard_if_stmt);
