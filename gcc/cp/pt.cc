@@ -27643,6 +27643,14 @@ value_dependent_expression_p (tree expression)
 	 under instantiate_non_dependent_expr; it can't be constant.  */
       return true;
 
+    case NEW_EXPR:
+    case VEC_NEW_EXPR:
+      /* The second operand is a type, which type_dependent_expression_p
+	 (and therefore value_dependent_expression_p) doesn't want to see.  */
+      return (value_dependent_expression_p (TREE_OPERAND (expression, 0))
+	      || value_dependent_expression_p (TREE_OPERAND (expression, 2))
+	      || value_dependent_expression_p (TREE_OPERAND (expression, 3)));
+
     default:
       /* A constant expression is value-dependent if any subexpression is
 	 value-dependent.  */
