@@ -523,22 +523,19 @@ find_unswitching_predicates_for_bb (basic_block bb, class loop *loop,
 	  tree lab = gimple_switch_label (stmt, i);
 	  tree cmp;
 	  int_range<2> lab_range;
+	  tree low = fold_convert (idx_type, CASE_LOW (lab));
 	  if (CASE_HIGH (lab) != NULL_TREE)
 	    {
-	      tree cmp1 = fold_build2 (GE_EXPR, boolean_type_node, idx,
-				       fold_convert (idx_type,
-						     CASE_LOW (lab)));
-	      tree cmp2 = fold_build2 (LE_EXPR, boolean_type_node, idx,
-				       fold_convert (idx_type,
-						     CASE_HIGH (lab)));
+	      tree high = fold_convert (idx_type, CASE_HIGH (lab));
+	      tree cmp1 = fold_build2 (GE_EXPR, boolean_type_node, idx, low);
+	      tree cmp2 = fold_build2 (LE_EXPR, boolean_type_node, idx, high);
 	      cmp = fold_build2 (BIT_AND_EXPR, boolean_type_node, cmp1, cmp2);
-	      lab_range.set (CASE_LOW (lab), CASE_HIGH (lab));
+	      lab_range.set (low, high);
 	    }
 	  else
 	    {
-	      cmp = fold_build2 (EQ_EXPR, boolean_type_node, idx,
-				 fold_convert (idx_type, CASE_LOW (lab)));
-	      lab_range.set (CASE_LOW (lab));
+	      cmp = fold_build2 (EQ_EXPR, boolean_type_node, idx, low);
+	      lab_range.set (low);
 	    }
 
 	  /* Combine the expression with the existing one.  */
