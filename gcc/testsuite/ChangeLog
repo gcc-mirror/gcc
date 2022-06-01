@@ -1,3 +1,23 @@
+2022-05-31  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105652
+	* g++.dg/cpp2a/concepts-lambda20.C: New test.
+
+2022-05-31  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105655
+	* g++.dg/cpp2a/class-deduction-alias13.C: New test.
+
+2022-05-31  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105623
+	* g++.dg/cpp1y/auto-fn62.C: New test.
+
+2022-05-31  Jason Merrill  <jason@redhat.com>
+
+	PR c++/102307
+	* g++.dg/cpp1z/constexpr-array2.C: New test.
+
 2022-05-30  Martin Jambor  <mjambor@suse.cz>
 
 	Backported from master:

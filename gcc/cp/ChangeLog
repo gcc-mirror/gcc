@@ -1,3 +1,27 @@
+2022-05-31  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105652
+	* pt.cc (tsubst_lambda_expr): Don't let a namespace-scope lambda
+	instantiate into a class-scope lambda.
+
+2022-05-31  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105655
+	* pt.cc (build_template_decl): Add assert.
+	(tsubst_function_decl): Don't return a template.
+
+2022-05-31  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105623
+	* decl2.cc (mark_used): Copy type from fn to BASELINK.
+	* pt.cc (unify_one_argument): Call mark_single_function.
+
+2022-05-31  Jason Merrill  <jason@redhat.com>
+
+	PR c++/102307
+	* decl.cc (check_initializer): Use build_cplus_new in case of
+	constexpr failure.
+
 2022-05-27  Marek Polacek  <polacek@redhat.com>
 
 	Backported from master:
