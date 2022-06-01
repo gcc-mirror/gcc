@@ -2441,6 +2441,9 @@ ReferenceType::is_equal (const BaseType &other) const
     return false;
 
   auto other2 = static_cast<const ReferenceType &> (other);
+  if (mutability () != other2.mutability ())
+    return false;
+
   return get_base ()->is_equal (*other2.get_base ());
 }
 
@@ -2535,6 +2538,9 @@ PointerType::is_equal (const BaseType &other) const
     return false;
 
   auto other2 = static_cast<const PointerType &> (other);
+  if (mutability () != other2.mutability ())
+    return false;
+
   return get_base ()->is_equal (*other2.get_base ());
 }
 
