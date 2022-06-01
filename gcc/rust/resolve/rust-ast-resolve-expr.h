@@ -99,6 +99,8 @@ public:
 
   void visit (AST::WhileLoopExpr &expr) override;
 
+  void visit (AST::ForLoopExpr &expr) override;
+
   void visit (AST::ContinueExpr &expr) override;
 
   void visit (AST::BorrowExpr &expr) override;

@@ -421,6 +421,53 @@ ResolveExpr::visit (AST::WhileLoopExpr &expr)
 }
 
 void
+ResolveExpr::visit (AST::ForLoopExpr &expr)
+{
+  if (expr.has_loop_label ())
+    {
+      auto label = expr.get_loop_label ();
+      if (label.get_lifetime ().get_lifetime_type ()
+	  != AST::Lifetime::LifetimeType::NAMED)
+	{
+	  rust_error_at (label.get_locus (),
+			 "Labels must be a named lifetime value");
+	  return;
+	}
+
+      auto label_name = label.get_lifetime ().get_lifetime_name ();
+      auto label_lifetime_node_id = label.get_lifetime ().get_node_id ();
+      resolver->get_label_scope ().insert (
+	CanonicalPath::new_seg (label.get_node_id (), label_name),
+	label_lifetime_node_id, label.get_locus (), false,
+	[&] (const CanonicalPath &, NodeId, Location locus) -> void {
+	  rust_error_at (label.get_locus (), "label redefined multiple times");
+	  rust_error_at (locus, "was defined here");
+	});
+      resolver->insert_new_definition (label_lifetime_node_id,
+				       Definition{label_lifetime_node_id,
+						  label.get_node_id ()});
+    }
+
+  // this needs a new rib to contain the pattern
+  NodeId scope_node_id = expr.get_node_id ();
+  resolver->get_name_scope ().push (scope_node_id);
+  resolver->get_type_scope ().push (scope_node_id);
+  resolver->get_label_scope ().push (scope_node_id);
+  resolver->push_new_name_rib (resolver->get_name_scope ().peek ());
+  resolver->push_new_type_rib (resolver->get_type_scope ().peek ());
+  resolver->push_new_label_rib (resolver->get_type_scope ().peek ());
+
+  // resolve the expression
+  PatternDeclaration::go (expr.get_pattern ().get (), expr.get_node_id ());
+  resolve_expr (expr.get_iterator_expr ().get (), expr.get_node_id ());
+  resolve_expr (expr.get_loop_block ().get (), expr.get_node_id ());
+
+  resolver->get_name_scope ().pop ();
+  resolver->get_type_scope ().pop ();
+  resolver->get_label_scope ().pop ();
+}
+
+void
 ResolveExpr::visit (AST::ContinueExpr &expr)
 {
   if (expr.has_label ())
