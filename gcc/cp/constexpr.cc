@@ -4695,9 +4695,17 @@ init_subob_ctx (const constexpr_ctx *ctx, constexpr_ctx &new_ctx,
       else
 	new_ctx.object = build_ctor_subob_ref (index, type, ctx->object);
     }
-  tree elt = build_constructor (type, NULL);
-  CONSTRUCTOR_NO_CLEARING (elt) = true;
-  new_ctx.ctor = elt;
+
+  if (is_empty_class (type))
+    /* Leave ctor null for an empty subobject, they aren't represented in the
+       result of evaluation.  */
+    new_ctx.ctor = NULL_TREE;
+  else
+    {
+      tree elt = build_constructor (type, NULL);
+      CONSTRUCTOR_NO_CLEARING (elt) = true;
+      new_ctx.ctor = elt;
+    }
 
   if (TREE_CODE (value) == TARGET_EXPR)
     /* Avoid creating another CONSTRUCTOR when we expand the TARGET_EXPR.  */
@@ -4762,11 +4770,14 @@ cxx_eval_bare_aggregate (const constexpr_ctx *ctx, tree t,
       ctx = &new_ctx;
     };
   verify_ctor_sanity (ctx, type);
-  vec<constructor_elt, va_gc> **p = &CONSTRUCTOR_ELTS (ctx->ctor);
-  vec_alloc (*p, vec_safe_length (v));
-
-  if (CONSTRUCTOR_PLACEHOLDER_BOUNDARY (t))
-    CONSTRUCTOR_PLACEHOLDER_BOUNDARY (ctx->ctor) = 1;
+  vec<constructor_elt, va_gc> **p = nullptr;
+  if (ctx->ctor)
+    {
+      p = &CONSTRUCTOR_ELTS (ctx->ctor);
+      vec_alloc (*p, vec_safe_length (v));
+      if (CONSTRUCTOR_PLACEHOLDER_BOUNDARY (t))
+	CONSTRUCTOR_PLACEHOLDER_BOUNDARY (ctx->ctor) = 1;
+    }
 
   unsigned i;
   tree index, value;
@@ -4814,17 +4825,19 @@ cxx_eval_bare_aggregate (const constexpr_ctx *ctx, tree t,
 	  inner->value = elt;
 	  changed = true;
 	}
+      else if (no_slot)
+	/* This is an initializer for an empty field; now that we've
+	   checked that it's constant, we can ignore it.  */
+	changed = true;
       else if (index
 	       && (TREE_CODE (index) == NOP_EXPR
 		   || TREE_CODE (index) == POINTER_PLUS_EXPR))
 	{
-	  /* This is an initializer for an empty base; now that we've
-	     checked that it's constant, we can ignore it.  */
+	  /* Old representation of empty bases.  FIXME remove.  */
+	  gcc_checking_assert (false);
 	  gcc_assert (is_empty_class (TREE_TYPE (TREE_TYPE (index))));
 	  changed = true;
 	}
-      else if (no_slot)
-	changed = true;
       else
 	{
 	  if (TREE_CODE (type) == UNION_TYPE
@@ -4849,6 +4862,8 @@ cxx_eval_bare_aggregate (const constexpr_ctx *ctx, tree t,
   if (*non_constant_p || !changed)
     return t;
   t = ctx->ctor;
+  if (!t)
+    t = build_constructor (type, NULL);
   /* We're done building this CONSTRUCTOR, so now we can interpret an
      element without an explicit initializer as value-initialized.  */
   CONSTRUCTOR_NO_CLEARING (t) = false;
@@ -5833,6 +5848,16 @@ cxx_eval_store_expression (const constexpr_ctx *ctx, tree t,
       valp = &cep->value;
     }
 
+  /* For initialization of an empty base, the original target will be
+     *(base*)this, evaluation of which resolves to the object
+     argument, which has the derived type rather than the base type.  */
+  if (!empty_base && !(same_type_ignoring_top_level_qualifiers_p
+		       (initialized_type (init), type)))
+    {
+      gcc_assert (is_empty_class (TREE_TYPE (target)));
+      empty_base = true;
+    }
+
   /* Detect modifying a constant object in constexpr evaluation.
      We have found a const object that is being modified.  Figure out
      if we need to issue an error.  Consider
@@ -5901,7 +5926,7 @@ cxx_eval_store_expression (const constexpr_ctx *ctx, tree t,
 	  *valp = build_constructor (type, NULL);
 	  CONSTRUCTOR_NO_CLEARING (*valp) = no_zero_init;
 	}
-      new_ctx.ctor = *valp;
+      new_ctx.ctor = empty_base ? NULL_TREE : *valp;
       new_ctx.object = target;
       /* Avoid temporary materialization when initializing from a TARGET_EXPR.
 	 We don't need to mess with AGGR_EXPR_SLOT/VEC_INIT_EXPR_SLOT because
@@ -5931,16 +5956,10 @@ cxx_eval_store_expression (const constexpr_ctx *ctx, tree t,
 
   gcc_checking_assert (!*valp || (same_type_ignoring_top_level_qualifiers_p
 				  (TREE_TYPE (*valp), type)));
-  if (empty_base || !(same_type_ignoring_top_level_qualifiers_p
-		      (initialized_type (init), type)))
+  if (empty_base)
     {
-      /* For initialization of an empty base, the original target will be
-       *(base*)this, evaluation of which resolves to the object
-       argument, which has the derived type rather than the base type.  In
-       this situation, just evaluate the initializer and return, since
-       there's no actual data to store, and we didn't build a CONSTRUCTOR.  */
-      gcc_assert (is_empty_class (TREE_TYPE (target)));
-      empty_base = true;
+      /* Just evaluate the initializer and return, since there's no actual data
+	 to store, and we didn't build a CONSTRUCTOR.  */
       if (!*valp)
 	{
 	  /* But do make sure we have something in *valp.  */
