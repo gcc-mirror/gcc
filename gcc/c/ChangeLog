@@ -1,3 +1,12 @@
+2022-05-31  Jason Merrill  <jason@redhat.com>
+
+	* Make-lang.in (c.tags): Look at *.cc.
+
+2022-05-31  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.cc (OMP_SCOPE_CLAUSE_MASK): Add firstprivate and allocate
+	clauses.
+
 2022-05-28  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-parser.cc (c_parser_omp_declare_target): If OMP_CLAUSE_LINK was

@@ -1,3 +1,10 @@
+2022-05-31  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/libgomp.c-c++-common/allocate-1.c (foo): Add testcase for
+	scope construct with allocate clause.
+	* testsuite/libgomp.c-c++-common/allocate-3.c (foo): Likewise.
+	* testsuite/libgomp.c-c++-common/scope-2.c: New test.
+
 2022-05-28  Tobias Burnus  <tobias@codesourcery.com>
 
 	* libgomp.texi (OpenMP 5.2): Mark 'enter' clause as supported.

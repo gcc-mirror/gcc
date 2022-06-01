@@ -1,3 +1,24 @@
+2022-05-31  Jason Merrill  <jason@redhat.com>
+
+	* Makefile.in (TAGS): Look at libcpp/*.cc.
+
+2022-05-31  Christophe Lyon  <christophe.lyon@arm.com>
+
+	* config/aarch64/aarch64.cc (aarch64_gimplify_va_arg_expr):
+	Prefix mode names with E_.
+
+2022-05-31  Alan Modra  <amodra@gmail.com>
+
+	* dwarf2out.cc (gen_namelist_decl): Adjust to suit correct
+	spelling of DW_AT_namelist_item.
+
+2022-05-31  Jakub Jelinek  <jakub@redhat.com>
+
+	* omp-low.cc (build_outer_var_ref): For code == OMP_CLAUSE_ALLOCATE
+	allow var to be private in the outer context.
+	(lower_private_allocate): Pass OMP_CLAUSE_ALLOCATE as last argument
+	to build_outer_var_ref.
+
 2022-05-30  Roger Sayle  <roger@nextmovesoftware.com>
 
 	* config/i386/i386.cc (ix86_modes_tieable_p): Allow SCmode to be

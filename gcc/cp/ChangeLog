@@ -1,3 +1,52 @@
+2022-05-31  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/105758
+	* call.cc (build_over_call): Use z_candidate::conversion_path
+	and ::access_path instead of TYPE_BINFO when building the
+	BASELINK for the templated form.
+
+2022-05-31  Patrick Palka  <ppalka@redhat.com>
+
+	* parser.cc: Use auto_timevar instead of timevar_push/pop.
+	Remove wrapper functions.
+	* pt.cc: Likewise.
+
+2022-05-31  Patrick Palka  <ppalka@redhat.com>
+
+	* cp-tree.h (cp_build_qualified_type_real): Rename to ...
+	(cp_build_qualified_type): ... this.  Give its last parameter
+	a default argument.  Remove macro of the same name.
+	* decl.cc (grokdeclarator): Adjust accordingly.
+	* pt.cc (tsubst_aggr_type): Likewise.
+	(rebuild_function_or_method_type): Likewise.
+	(tsubst): Likewise.
+	(maybe_dependent_member_ref): Likewise.
+	(unify): Likewise.
+	* tree.cc (cp_build_qualified_type_real): Rename to ...
+	(cp_build_qualified_type): ... this.  Adjust accordingly.
+
+2022-05-31  Jason Merrill  <jason@redhat.com>
+
+	* Make-lang.in (c++.tags): Just look at *.cc.
+
+2022-05-31  Patrick Palka  <ppalka@redhat.com>
+
+	* cp-tree.h (comp_template_args): Change return type to bool.
+	* pt.cc (comp_template_args): Document default arguments.
+	Change return type to bool and adjust returns accordingly.
+
+2022-05-31  Patrick Palka  <ppalka@redhat.com>
+
+	* decl.cc (grokvardecl): Use current_template_constraints.
+	(grokdeclarator): Likewise.
+	(xref_tag): Likewise.
+	* semantics.cc (finish_template_template_parm): Likewise.
+
+2022-05-31  Jakub Jelinek  <jakub@redhat.com>
+
+	* parser.cc (OMP_SCOPE_CLAUSE_MASK): Add firstprivate and allocate
+	clauses.
+
 2022-05-30  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/99080

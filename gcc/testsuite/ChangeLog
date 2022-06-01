@@ -1,3 +1,16 @@
+2022-05-31  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/105758
+	* g++.dg/template/non-dependent24.C: New test.
+
+2022-05-31  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/gomp/scope-5.c: New test.
+	* c-c++-common/gomp/scope-6.c: New test.
+	* g++.dg/gomp/attrs-1.C (bar): Add firstprivate and allocate clauses
+	to scope construct.
+	* g++.dg/gomp/attrs-2.C (bar): Likewise.
+
 2022-05-30  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/91300
