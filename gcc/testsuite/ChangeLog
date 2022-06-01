@@ -1,3 +1,8 @@
+2022-05-31  Jason Merrill  <jason@redhat.com>
+
+	PR c++/102307
+	* g++.dg/cpp1z/constexpr-array2.C: New test.
+
 2022-05-27  Kewen Lin  <linkw@linux.ibm.com>
 
 	Backported from master:
