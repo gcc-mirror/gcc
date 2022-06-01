@@ -1,3 +1,39 @@
+2022-05-31  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2021-09-01  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR objc/101718
+	* objc-next-runtime-abi-02.c (build_v2_build_objc_method_call):
+	Revise for cases where scalar objects use an sret parameter.
+	(next_runtime_abi_02_build_objc_method_call): Likwise.
+
+2022-05-31  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* objc-next-metadata-tags.h (objc_rt_trees): Declare here.
+	* objc-next-runtime-abi-01.c: Remove from here.
+	(generate_static_references): Likewise.
+	* objc-next-runtime-abi-02.c: Likewise.
+	(objc_next_runtime_abi_02_init): Warn about and reset
+	flag_objc_sjlj_exceptions regardless of flag_objc_exceptions.
+	(next_runtime_02_initialize): Use a checking assert that
+	flag_objc_sjlj_exceptions is off.
+	(next_runtime_abi_02_category_decl): Adjust category
+	superclass name ordering.
+	(next_runtime_abi_02_init_metadata_attributes): Attach metadata
+	for the special string sections to class, method and method type
+	string sections.
+	(next_runtime_abi_02_protocol_decl): Do not dead-strip the runtime
+	meta-data symbols.
+	(build_v2_classrefs_table): Likewise.
+	(build_v2_protocol_list_address_table): Likewise.
+	(objc_next_runtime_abi_02_init): Default receiver nilchecks on.
+	* objc-runtime-shared-support.c: Reorder headers, provide
+	a GTY declaration the definition of objc_rt_trees.
+	* objc-gnu-runtime-abi-01.c
+	(build_shared_structure_initializer): Remove references to
+	the NeXT runtime.
+
 2022-05-29  Iain Sandoe  <iain@sandoe.co.uk>
 
 	Backported from master:

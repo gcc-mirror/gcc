@@ -1,3 +1,16 @@
+2022-05-31  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* c-opts.c (c_common_post_options): Default to
+	flag_objc_sjlj_exceptions = 1 only when flag_objc_abi < 2.
+
+2022-05-31  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2020-11-16  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR objc/97854
+	* stub-objc.c: Include c-common.h to declare enum rid.
+
 2022-05-10  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:

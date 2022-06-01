@@ -1,3 +1,56 @@
+2022-05-31  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2021-07-16  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/103904
+	PR libstdc++/101231
+	* include/std/ranges (_CachedPosition::_M_get): For non-forward
+	ranges, just call __builtin_unreachable.
+	* testsuite/std/ranges/istream_view.cc (test05): New test.
+
+2022-05-31  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2021-06-18  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/103904
+	* include/bits/iterator_concepts.h (weakly_incrementable): Remove
+	default_initializable requirement.
+	* include/bits/stl_iterator.h (common_iterator): Constrain the
+	default ctor.
+	(counted_iterator): Likewise.
+	* include/std/ranges (ranges::view): Remove default_initializable
+	requirement.
+	(subrange): Constrain the default ctor.
+	(__detail::__box::operator=): Handle self-assignment.
+	(single_view): Constraint the default ctor.
+	(iota_view): Relax semiregular constraint to copyable.
+	Constrain the default ctor.
+	(iota_view::_Iterator): Constraint the default ctor.
+	(filter_view): Likewise.
+	(filter_view::_Iterator): Likewise.
+	(transform_view): Likewise.
+	(transform_view::_Iterator): Likewise.
+	(take_view): Likewise.
+	(take_view::_Iterator): Likewise.
+	(take_while_view): Likewise.
+	(take_while_view::_Iterator): Likewise.
+	(drop_while_view): Likewise.
+	(drop_while_view::_Iterator): Likewise.
+	(join_view): Likewise.
+	(split_view): Constrain the default ctor.
+	(common_view): Likewise.
+	(reverse_view): Likewise.
+	(elements_view): Likewise.
+	(elements_view::_Iterator): Likewise.
+	* include/std/span (enable_view<span<_ElementType, _Extent>>):
+	Define this partial specialization to true unconditionally.
+	* testsuite/std/ranges/p2325.cc: New test.
+	* testsuite/std/ranges/single_view.cc (test06): New test.
+	* testsuite/std/ranges/view.cc: Adjust now that view doesn't
+	require default_initializable.
+
 2022-05-29  Iain Sandoe  <iain@sandoe.co.uk>
 
 	Backported from master:

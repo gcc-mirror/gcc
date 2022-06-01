@@ -1,3 +1,13 @@
+2022-05-31  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin-sections.def (objc2_class_names_section,
+	objc2_method_names_section, objc2_method_types_section): New
+	* config/darwin.c (output_objc_section_asm_op): Output new
+	sections.  (darwin_objc2_section): Select new sections where
+	used.
+	(darwin_label_is_anonymous_local_objc_name): Make
+	protocol class methods linker-visible.
+
 2022-05-29  Iain Sandoe  <iain@sandoe.co.uk>
 
 	Backported from master:
