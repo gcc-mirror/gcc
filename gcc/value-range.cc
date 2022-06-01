@@ -66,20 +66,113 @@ debug (const Value_Range &r)
   fprintf (stderr, "\n");
 }
 
-// Default implementation when none has been defined.
+// Default vrange definitions.
 
 bool
 vrange::contains_p (tree) const
 {
-  return false;
+  return varying_p ();
 }
-
-// Default implementation when none has been defined.
 
 bool
 vrange::singleton_p (tree *) const
 {
   return false;
+}
+
+void
+vrange::set (tree, tree, value_range_kind)
+{
+}
+
+tree
+vrange::type () const
+{
+  return void_type_node;
+}
+
+bool
+vrange::supports_type_p (tree) const
+{
+  return false;
+}
+
+void
+vrange::set_undefined ()
+{
+  m_kind = VR_UNDEFINED;
+}
+
+void
+vrange::set_varying (tree)
+{
+  m_kind = VR_VARYING;
+}
+
+bool
+vrange::union_ (const vrange &r)
+{
+  if (r.undefined_p () || varying_p ())
+    return false;
+  if (undefined_p () || r.varying_p ())
+    {
+      operator= (r);
+      return true;
+    }
+  gcc_unreachable ();
+  return false;
+}
+
+bool
+vrange::intersect (const vrange &r)
+{
+  if (undefined_p () || r.varying_p ())
+    return false;
+  if (r.undefined_p ())
+    {
+      set_undefined ();
+      return true;
+    }
+  if (varying_p ())
+    {
+      operator= (r);
+      return true;
+    }
+  gcc_unreachable ();
+  return false;
+}
+
+bool
+vrange::zero_p () const
+{
+  return false;
+}
+
+bool
+vrange::nonzero_p () const
+{
+  return false;
+}
+
+void
+vrange::set_nonzero (tree)
+{
+}
+
+void
+vrange::set_zero (tree)
+{
+}
+
+void
+vrange::set_nonnegative (tree)
+{
+}
+
+bool
+vrange::fits_p (const vrange &) const
+{
+  return true;
 }
 
 // Assignment operator for generic ranges.  Copying incompatible types
@@ -134,37 +227,6 @@ unsupported_range::unsupported_range ()
 }
 
 void
-unsupported_range::set (tree, tree, value_range_kind)
-{
-  gcc_unreachable ();
-}
-
-tree
-unsupported_range::type () const
-{
-  gcc_unreachable ();
-  return nullptr;
-}
-
-bool
-unsupported_range::supports_type_p (tree) const
-{
-  return false;
-}
-
-void
-unsupported_range::set_undefined ()
-{
-  m_kind = VR_UNDEFINED;
-}
-
-void
-unsupported_range::set_varying (tree)
-{
-  gcc_unreachable ();
-}
-
-void
 unsupported_range::dump (FILE *file) const
 {
   fprintf (file, "[unsupported_range] ");
@@ -180,61 +242,6 @@ unsupported_range::dump (FILE *file) const
     }
   gcc_unreachable ();
 }
-
-bool
-unsupported_range::union_ (const vrange &)
-{
-  gcc_unreachable ();
-  return false;
-}
-
-bool
-unsupported_range::intersect (const vrange &)
-{
-  gcc_unreachable ();
-  return false;
-}
-
-bool
-unsupported_range::zero_p () const
-{
-  gcc_unreachable ();
-  return false;
-}
-
-bool
-unsupported_range::nonzero_p () const
-{
-  gcc_unreachable ();
-  return false;
-}
-
-void
-unsupported_range::set_nonzero (tree)
-{
-  gcc_unreachable ();
-}
-
-void
-unsupported_range::set_zero (tree)
-{
-  gcc_unreachable ();
-}
-
-void
-unsupported_range::set_nonnegative (tree)
-{
-  gcc_unreachable ();
-}
-
-bool
-unsupported_range::fits_p (const vrange &) const
-{
-  gcc_unreachable ();
-  return false;
-}
-
-unsupported_range Value_Range::m_unsupported;
 
 // Here we copy between any two irange's.  The ranges can be legacy or
 // multi-ranges, and copying between any combination works correctly.

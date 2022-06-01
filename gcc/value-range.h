@@ -73,22 +73,22 @@ class vrange
   template <typename T> friend bool is_a (vrange &);
   friend class Value_Range;
 public:
-  virtual void set (tree, tree, value_range_kind = VR_RANGE) = 0;
-  virtual tree type () const = 0;
-  virtual bool supports_type_p (tree type) const = 0;
-  virtual void set_varying (tree type) = 0;
-  virtual void set_undefined () = 0;
+  virtual void set (tree, tree, value_range_kind = VR_RANGE);
+  virtual tree type () const;
+  virtual bool supports_type_p (tree type) const;
+  virtual void set_varying (tree type);
+  virtual void set_undefined ();
   virtual void dump (FILE * = stderr) const = 0;
-  virtual bool union_ (const vrange &) = 0;
-  virtual bool intersect (const vrange &) = 0;
+  virtual bool union_ (const vrange &);
+  virtual bool intersect (const vrange &);
   virtual bool singleton_p (tree *result = NULL) const;
   virtual bool contains_p (tree cst) const;
-  virtual bool zero_p () const = 0;
-  virtual bool nonzero_p () const = 0;
-  virtual void set_nonzero (tree type) = 0;
-  virtual void set_zero (tree type) = 0;
-  virtual void set_nonnegative (tree type) = 0;
-  virtual bool fits_p (const vrange &r) const = 0;
+  virtual bool zero_p () const;
+  virtual bool nonzero_p () const;
+  virtual void set_nonzero (tree type);
+  virtual void set_zero (tree type);
+  virtual void set_nonnegative (tree type);
+  virtual bool fits_p (const vrange &r) const;
 
   bool varying_p () const;
   bool undefined_p () const;
@@ -236,27 +236,13 @@ private:
 };
 
 // Unsupported temporaries may be created by ranger before it's known
-// they're unsupported, or by vr_values::get_value_range.  All
-// operations except construction cause a trap.
+// they're unsupported, or by vr_values::get_value_range.
 
 class unsupported_range : public vrange
 {
 public:
   unsupported_range ();
-  virtual void set (tree, tree, value_range_kind) override;
-  virtual tree type () const override;
-  virtual bool supports_type_p (tree type) const override;
-  virtual void set_varying (tree type) override;
-  virtual void set_undefined () override;
   virtual void dump (FILE *) const override;
-  virtual bool union_ (const vrange &) override;
-  virtual bool intersect (const vrange &) override;
-  virtual bool zero_p () const override;
-  virtual bool nonzero_p () const override;
-  virtual void set_nonzero (tree) override;
-  virtual void set_zero (tree) override;
-  virtual void set_nonnegative (tree) override;
-  virtual bool fits_p (const vrange &) const override;
 };
 
 // Traits to implement vrange is_a<> and as_a<>.
@@ -369,7 +355,7 @@ public:
   wide_int upper_bound () const; // For irange/prange compatability.
 private:
   void init (tree type);
-  static unsupported_range m_unsupported;
+  unsupported_range m_unsupported;
   vrange *m_vrange;
   int_range_max m_irange;
   DISABLE_COPY_AND_ASSIGN (Value_Range);
