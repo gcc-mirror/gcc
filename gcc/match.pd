@@ -5969,6 +5969,17 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
        && (!TYPE_UNSIGNED (TREE_TYPE (@2)) || TYPE_UNSIGNED (TREE_TYPE (@0))))
    (ovf @1 @0))))
 
+/* Optimize __builtin_mul_overflow_p (x, cst, (utype) 0) if all 3 types
+   are unsigned to x > (umax / cst).  */
+(simplify
+ (imagpart (IFN_MUL_OVERFLOW:cs@2 @0 integer_nonzerop@1))
+  (if (INTEGRAL_TYPE_P (TREE_TYPE (@0))
+       && TYPE_UNSIGNED (TREE_TYPE (@0))
+       && TYPE_MAX_VALUE (TREE_TYPE (@0))
+       && types_match (TREE_TYPE (@0), TREE_TYPE (TREE_TYPE (@2)))
+       && int_fits_type_p (@1, TREE_TYPE (@0)))
+   (convert (gt @0 (trunc_div! { TYPE_MAX_VALUE (TREE_TYPE (@0)); } @1)))))
+
 /* Simplification of math builtins.  These rules must all be optimizations
    as well as IL simplifications.  If there is a possibility that the new
    form could be a pessimization, the rule should go in the canonicalization
