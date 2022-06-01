@@ -494,6 +494,7 @@ find_unswitching_predicates_for_bb (basic_block bb, class loop *loop,
     {
       unsigned nlabels = gimple_switch_num_labels (stmt);
       tree idx = gimple_switch_index (stmt);
+      tree idx_type = TREE_TYPE (idx);
       if (!gimple_range_ssa_p (idx) || nlabels < 1)
 	return;
       /* Index must be invariant.  */
@@ -525,16 +526,18 @@ find_unswitching_predicates_for_bb (basic_block bb, class loop *loop,
 	  if (CASE_HIGH (lab) != NULL_TREE)
 	    {
 	      tree cmp1 = fold_build2 (GE_EXPR, boolean_type_node, idx,
-				       CASE_LOW (lab));
+				       fold_convert (idx_type,
+						     CASE_LOW (lab)));
 	      tree cmp2 = fold_build2 (LE_EXPR, boolean_type_node, idx,
-				       CASE_HIGH (lab));
+				       fold_convert (idx_type,
+						     CASE_HIGH (lab)));
 	      cmp = fold_build2 (BIT_AND_EXPR, boolean_type_node, cmp1, cmp2);
 	      lab_range.set (CASE_LOW (lab), CASE_HIGH (lab));
 	    }
 	  else
 	    {
 	      cmp = fold_build2 (EQ_EXPR, boolean_type_node, idx,
-				 CASE_LOW (lab));
+				 fold_convert (idx_type, CASE_LOW (lab)));
 	      lab_range.set (CASE_LOW (lab));
 	    }
 
