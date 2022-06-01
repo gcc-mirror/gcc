@@ -245,24 +245,12 @@ public:
   virtual void dump (FILE *) const override;
 };
 
-// Traits to implement vrange is_a<> and as_a<>.
+// is_a<> and as_a<> implementation for vrange.
 
-template<typename T>
-struct vrange_traits
-{
-  // Default to something unusable.
-  typedef void range_type;
-};
-
-template<>
-struct vrange_traits<irange>
-{
-  typedef irange range_type;
-};
-
+// Anything we haven't specialized is a hard fail.
 template <typename T>
 inline bool
-is_a (vrange &v)
+is_a (vrange &)
 {
   gcc_unreachable ();
   return false;
@@ -281,18 +269,16 @@ template <typename T>
 inline T &
 as_a (vrange &v)
 {
-  typedef typename vrange_traits<T>::range_type range_type;
-  gcc_checking_assert (is_a <range_type> (v));
-  return static_cast <range_type &> (v);
+  gcc_checking_assert (is_a <T> (v));
+  return static_cast <T &> (v);
 }
 
 template <typename T>
 inline const T &
 as_a (const vrange &v)
 {
-  typedef typename vrange_traits<T>::range_type range_type;
-  gcc_checking_assert (is_a <range_type> (v));
-  return static_cast <const range_type &> (v);
+  gcc_checking_assert (is_a <T> (v));
+  return static_cast <const T &> (v);
 }
 
 // Specializations for the different range types.
