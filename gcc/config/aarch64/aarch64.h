@@ -148,9 +148,6 @@
 
 #define PCC_BITFIELD_TYPE_MATTERS	1
 
-/* Major revision number of the ARM Architecture implemented by the target.  */
-extern unsigned aarch64_architecture_version;
-
 /* Instruction tuning/selection flags.  */
 
 /* Bit values used to identify processor capabilities.  */

@@ -672,14 +672,6 @@ enum simd_immediate_check {
   AARCH64_CHECK_MOV  = AARCH64_CHECK_ORR | AARCH64_CHECK_BIC
 };
 
-/* The key type that -msign-return-address should use.  */
-enum aarch64_key_type {
-  AARCH64_KEY_A,
-  AARCH64_KEY_B
-};
-
-extern enum aarch64_key_type aarch64_ra_sign_key;
-
 extern struct tune_params aarch64_tune_params;
 
 /* The available SVE predicate patterns, known in the ACLE as "svpattern".  */
