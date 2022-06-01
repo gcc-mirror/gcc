@@ -6409,6 +6409,25 @@ next_initializable_field (tree field)
   return field;
 }
 
+/* FIELD is an element of TYPE_FIELDS or NULL.  In the former case, the value
+   returned is the next FIELD_DECL (possibly FIELD itself) that corresponds
+   to a subobject.  If there are no more such fields, the return value will be
+   NULL.  */
+
+tree
+next_subobject_field (tree field)
+{
+  while (field
+	 && (TREE_CODE (field) != FIELD_DECL
+	     || DECL_UNNAMED_BIT_FIELD (field)
+	     || (DECL_ARTIFICIAL (field)
+		 && !DECL_FIELD_IS_BASE (field)
+		 && !DECL_VIRTUAL_P (field))))
+     field = DECL_CHAIN (field);
+
+  return field;
+}
+
 /* Return true for [dcl.init.list] direct-list-initialization from
    single element of enumeration with a fixed underlying type.  */
 
