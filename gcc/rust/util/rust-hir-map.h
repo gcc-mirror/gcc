@@ -326,6 +326,14 @@ public:
   void insert_module_child (NodeId module, NodeId child);
   Optional<std::vector<NodeId> &> lookup_module_children (NodeId module);
 
+  void insert_module_child_item (NodeId module, Resolver::CanonicalPath item);
+  Optional<std::vector<Resolver::CanonicalPath> &>
+  lookup_module_chidren_items (NodeId module);
+
+  void insert_child_item_to_parent_module_mapping (NodeId child_item,
+						   NodeId parent_module);
+  Optional<NodeId> lookup_parent_module (NodeId child_item);
+
 private:
   Mappings ();
 
@@ -396,6 +404,8 @@ private:
 
   // Maps each module's node id to a list of its children
   std::map<NodeId, std::vector<NodeId>> module_child_map;
+  std::map<NodeId, std::vector<Resolver::CanonicalPath>> module_child_items;
+  std::map<NodeId, NodeId> child_to_parent_module_map;
 };
 
 } // namespace Analysis

@@ -41,6 +41,8 @@ public:
 
     ResolveTopLevel resolver (prefix, canonical_prefix, current_module);
     item->accept_vis (resolver);
+    resolver.mappings->insert_child_item_to_parent_module_mapping (
+      item->get_node_id (), current_module);
   };
 
   void visit (AST::Module &module) override
@@ -62,6 +64,7 @@ public:
 				     Definition{module.get_node_id (),
 						module.get_node_id ()});
 
+    mappings->insert_module_child_item (current_module, mod);
     mappings->insert_module_child (current_module, module.get_node_id ());
 
     for (auto &item : module.get_items ())
@@ -86,6 +89,7 @@ public:
 	rust_error_at (r, "redefined multiple times");
       });
 
+    mappings->insert_module_child_item (current_module, talias);
     mappings->insert_canonical_path (mappings->get_current_crate (),
 				     alias.get_node_id (), cpath);
   }
@@ -105,6 +109,7 @@ public:
 	rust_error_at (r, "redefined multiple times");
       });
 
+    mappings->insert_module_child_item (current_module, decl);
     mappings->insert_canonical_path (mappings->get_current_crate (),
 				     struct_decl.get_node_id (), cpath);
   }
@@ -127,6 +132,7 @@ public:
     for (auto &variant : enum_decl.get_variants ())
       ResolveTopLevel::go (variant.get (), path, cpath, current_module);
 
+    mappings->insert_module_child_item (current_module, decl);
     mappings->insert_canonical_path (mappings->get_current_crate (),
 				     enum_decl.get_node_id (), cpath);
   }
@@ -146,6 +152,7 @@ public:
 	rust_error_at (r, "redefined multiple times");
       });
 
+    mappings->insert_module_child_item (current_module, decl);
     mappings->insert_canonical_path (mappings->get_current_crate (),
 				     item.get_node_id (), cpath);
   }
@@ -222,6 +229,7 @@ public:
 	rust_error_at (r, "redefined multiple times");
       });
 
+    mappings->insert_module_child_item (current_module, decl);
     mappings->insert_canonical_path (mappings->get_current_crate (),
 				     struct_decl.get_node_id (), cpath);
   }
@@ -241,6 +249,7 @@ public:
 	rust_error_at (r, "redefined multiple times");
       });
 
+    mappings->insert_module_child_item (current_module, decl);
     mappings->insert_canonical_path (mappings->get_current_crate (),
 				     union_decl.get_node_id (), cpath);
   }
@@ -264,6 +273,7 @@ public:
 						var.get_node_id ()});
     resolver->mark_decl_mutability (var.get_node_id (), var.is_mutable ());
 
+    mappings->insert_module_child_item (current_module, decl);
     mappings->insert_canonical_path (mappings->get_current_crate (),
 				     var.get_node_id (), cpath);
   }
@@ -285,6 +295,7 @@ public:
 				     Definition{constant.get_node_id (),
 						constant.get_node_id ()});
 
+    mappings->insert_module_child_item (current_module, decl);
     mappings->insert_canonical_path (mappings->get_current_crate (),
 				     constant.get_node_id (), cpath);
   }
@@ -314,6 +325,7 @@ public:
 					function.get_node_id ());
       }
 
+    mappings->insert_module_child_item (current_module, decl);
     mappings->insert_canonical_path (mappings->get_current_crate (),
 				     function.get_node_id (), cpath);
   }
@@ -391,6 +403,7 @@ public:
     for (auto &item : trait.get_trait_items ())
       ResolveTopLevelTraitItems::go (item.get (), path, cpath);
 
+    mappings->insert_module_child_item (current_module, decl);
     mappings->insert_canonical_path (mappings->get_current_crate (),
 				     trait.get_node_id (), cpath);
   }

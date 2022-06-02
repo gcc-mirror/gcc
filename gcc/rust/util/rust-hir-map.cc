@@ -884,5 +884,46 @@ Mappings::lookup_module_children (NodeId module)
   return Optional<std::vector<NodeId> &>::some (it->second);
 }
 
+void
+Mappings::insert_module_child_item (NodeId module,
+				    Resolver::CanonicalPath child)
+{
+  rust_assert (!child.is_empty ());
+  rust_assert (child.get_node_id () != UNKNOWN_NODEID);
+
+  auto it = module_child_items.find (module);
+  if (it == module_child_items.end ())
+    module_child_items.insert ({module, {child}});
+  else
+    it->second.emplace_back (child);
+}
+
+Optional<std::vector<Resolver::CanonicalPath> &>
+Mappings::lookup_module_chidren_items (NodeId module)
+{
+  auto it = module_child_items.find (module);
+  if (it == module_child_items.end ())
+    return Optional<std::vector<Resolver::CanonicalPath> &>::none ();
+
+  return Optional<std::vector<Resolver::CanonicalPath> &>::some (it->second);
+}
+
+void
+Mappings::insert_child_item_to_parent_module_mapping (NodeId child_item,
+						      NodeId parent_module)
+{
+  child_to_parent_module_map.insert ({child_item, parent_module});
+}
+
+Optional<NodeId>
+Mappings::lookup_parent_module (NodeId child_item)
+{
+  auto it = child_to_parent_module_map.find (child_item);
+  if (it == child_to_parent_module_map.end ())
+    return Optional<NodeId>::none ();
+
+  return Optional<NodeId>::some (it->second);
+}
+
 } // namespace Analysis
 } // namespace Rust
