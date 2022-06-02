@@ -28727,9 +28727,17 @@ cp_nth_tokens_can_be_attribute_p (cp_parser *parser, size_t n)
 static tree
 cp_parser_attributes_opt (cp_parser *parser)
 {
-  if (cp_next_tokens_can_be_gnu_attribute_p (parser))
-    return cp_parser_gnu_attributes_opt (parser);
-  return cp_parser_std_attribute_spec_seq (parser);
+  tree attrs = NULL_TREE;
+  while (true)
+    {
+      if (cp_next_tokens_can_be_gnu_attribute_p (parser))
+	attrs = attr_chainon (attrs, cp_parser_gnu_attributes_opt (parser));
+      else if (cp_next_tokens_can_be_std_attribute_p (parser))
+	attrs = attr_chainon (attrs, cp_parser_std_attribute_spec_seq (parser));
+      else
+	break;
+    }
+  return attrs;
 }
 
 /* Parse an (optional) series of attributes.
