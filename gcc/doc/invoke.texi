@@ -301,7 +301,7 @@ Objective-C and Objective-C++ Dialects}.
 -fdiagnostics-show-location=@r{[}once@r{|}every-line@r{]}  @gol
 -fdiagnostics-color=@r{[}auto@r{|}never@r{|}always@r{]}  @gol
 -fdiagnostics-urls=@r{[}auto@r{|}never@r{|}always@r{]}  @gol
--fdiagnostics-format=@r{[}text@r{|}json@r{]}  @gol
+-fdiagnostics-format=@r{[}text@r{|}json@r{|}json-stderr@r{|}json-file@r{]}  @gol
 -fno-diagnostics-show-option  -fno-diagnostics-show-caret @gol
 -fno-diagnostics-show-labels  -fno-diagnostics-show-line-numbers @gol
 -fno-diagnostics-show-cwe  @gol
@@ -5305,14 +5305,19 @@ Unicode characters.  For the example above, the following will be printed:
 @item -fdiagnostics-format=@var{FORMAT}
 @opindex fdiagnostics-format
 Select a different format for printing diagnostics.
-@var{FORMAT} is @samp{text} or @samp{json}.
+@var{FORMAT} is @samp{text}, @samp{json}, @samp{json-stderr},
+or @samp{json-file}.
+
 The default is @samp{text}.
 
-The @samp{json} format consists of a top-level JSON array containing JSON
-objects representing the diagnostics.
+The @samp{json} format is a synonym for @samp{json-stderr}.
+The @samp{json-stderr} and @samp{json-file} formats are identical, apart from
+where the JSON is emitted to - with the former, the JSON is emitted to stderr,
+whereas with @samp{json-file} it is written to @file{@var{source}.gcc.json}.
 
-The JSON is emitted as one line, without formatting; the examples below
-have been formatted for clarity.
+The emitted JSON consists of a top-level JSON array containing JSON objects
+representing the diagnostics.  The JSON is emitted as one line, without
+formatting; the examples below have been formatted for clarity.
 
 Diagnostics can have child diagnostics.  For example, this error and note:
 

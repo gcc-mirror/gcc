@@ -4335,7 +4335,7 @@ driver_handle_option (struct gcc_options *opts,
       break;
 
     case OPT_fdiagnostics_format_:
-      diagnostic_output_format_init (dc,
+      diagnostic_output_format_init (dc, opts->x_dump_base_name,
 				     (enum diagnostics_output_format)value);
       break;
 

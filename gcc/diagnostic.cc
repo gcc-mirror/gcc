@@ -2072,6 +2072,32 @@ auto_diagnostic_group::~auto_diagnostic_group ()
     }
 }
 
+/* Set the output format for CONTEXT to FORMAT, using BASE_FILE_NAME for
+   file-based output formats.  */
+
+void
+diagnostic_output_format_init (diagnostic_context *context,
+			       const char *base_file_name,
+			       enum diagnostics_output_format format)
+{
+  switch (format)
+    {
+    default:
+      gcc_unreachable ();
+    case DIAGNOSTICS_OUTPUT_FORMAT_TEXT:
+      /* The default; do nothing.  */
+      break;
+
+    case DIAGNOSTICS_OUTPUT_FORMAT_JSON_STDERR:
+      diagnostic_output_format_init_json_stderr (context);
+      break;
+
+    case DIAGNOSTICS_OUTPUT_FORMAT_JSON_FILE:
+      diagnostic_output_format_init_json_file (context, base_file_name);
+      break;
+    }
+}
+
 /* Implementation of diagnostic_path::num_events vfunc for
    simple_diagnostic_path: simply get the number of events in the vec.  */
 

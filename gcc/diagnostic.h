@@ -59,8 +59,11 @@ enum diagnostics_output_format
   /* The default: textual output.  */
   DIAGNOSTICS_OUTPUT_FORMAT_TEXT,
 
-  /* JSON-based output.  */
-  DIAGNOSTICS_OUTPUT_FORMAT_JSON
+  /* JSON-based output, to stderr.  */
+  DIAGNOSTICS_OUTPUT_FORMAT_JSON_STDERR,
+
+  /* JSON-based output, to a file.  */
+  DIAGNOSTICS_OUTPUT_FORMAT_JSON_FILE
 };
 
 /* An enum for controlling how diagnostic_paths should be printed.  */
@@ -577,7 +580,11 @@ extern char *file_name_as_prefix (diagnostic_context *, const char *);
 extern char *build_message_string (const char *, ...) ATTRIBUTE_PRINTF_1;
 
 extern void diagnostic_output_format_init (diagnostic_context *,
+					   const char *base_file_name,
 					   enum diagnostics_output_format);
+extern void diagnostic_output_format_init_json_stderr (diagnostic_context *context);
+extern void diagnostic_output_format_init_json_file (diagnostic_context *context,
+						     const char *base_file_name);
 
 /* Compute the number of digits in the decimal representation of an integer.  */
 extern int num_digits (int);

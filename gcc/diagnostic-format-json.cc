@@ -285,57 +285,93 @@ json_end_group (diagnostic_context *)
   cur_children_array = NULL;
 }
 
-/* Callback for final cleanup for JSON output.  */
+/* Flush the top-level array to OUTF.  */
 
 static void
-json_final_cb (diagnostic_context *)
+json_flush_to_file (FILE *outf)
 {
-  /* Flush the top-level array.  */
-  toplevel_array->dump (stderr);
-  fprintf (stderr, "\n");
+  toplevel_array->dump (outf);
+  fprintf (outf, "\n");
   delete toplevel_array;
   toplevel_array = NULL;
 }
 
-/* Set the output format for CONTEXT to FORMAT.  */
+/* Callback for final cleanup for JSON output to stderr.  */
+
+static void
+json_stderr_final_cb (diagnostic_context *)
+{
+  json_flush_to_file (stderr);
+}
+
+static char *json_output_base_file_name;
+
+/* Callback for final cleanup for JSON output to a file.  */
+
+static void
+json_file_final_cb (diagnostic_context *)
+{
+  char *filename = concat (json_output_base_file_name, ".gcc.json", NULL);
+  FILE *outf = fopen (filename, "w");
+  if (!outf)
+    {
+      const char *errstr = xstrerror (errno);
+      fnotice (stderr, "error: unable to open '%s' for writing: %s\n",
+	       filename, errstr);
+      free (filename);
+      return;
+    }
+  json_flush_to_file (outf);
+  fclose (outf);
+  free (filename);
+}
+
+/* Populate CONTEXT in preparation for JSON output (either to stderr, or
+   to a file).  */
+
+static void
+diagnostic_output_format_init_json (diagnostic_context *context)
+{
+  /* Set up top-level JSON array.  */
+  if (toplevel_array == NULL)
+    toplevel_array = new json::array ();
+
+  /* Override callbacks.  */
+  context->begin_diagnostic = json_begin_diagnostic;
+  context->end_diagnostic = json_end_diagnostic;
+  context->begin_group_cb = json_begin_group;
+  context->end_group_cb =  json_end_group;
+  context->print_path = NULL; /* handled in json_end_diagnostic.  */
+
+  /* The metadata is handled in JSON format, rather than as text.  */
+  context->show_cwe = false;
+
+  /* The option is handled in JSON format, rather than as text.  */
+  context->show_option_requested = false;
+
+  /* Don't colorize the text.  */
+  pp_show_color (context->printer) = false;
+}
+
+/* Populate CONTEXT in preparation for JSON output to stderr.  */
 
 void
-diagnostic_output_format_init (diagnostic_context *context,
-			       enum diagnostics_output_format format)
+diagnostic_output_format_init_json_stderr (diagnostic_context *context)
 {
-  switch (format)
-    {
-    default:
-      gcc_unreachable ();
-    case DIAGNOSTICS_OUTPUT_FORMAT_TEXT:
-      /* The default; do nothing.  */
-      break;
+  diagnostic_output_format_init_json (context);
+  context->final_cb = json_stderr_final_cb;
+}
 
-    case DIAGNOSTICS_OUTPUT_FORMAT_JSON:
-      {
-	/* Set up top-level JSON array.  */
-	if (toplevel_array == NULL)
-	  toplevel_array = new json::array ();
+/* Populate CONTEXT in preparation for JSON output to a file named
+   BASE_FILE_NAME.gcc.json.  */
 
-	/* Override callbacks.  */
-	context->begin_diagnostic = json_begin_diagnostic;
-	context->end_diagnostic = json_end_diagnostic;
-	context->begin_group_cb = json_begin_group;
-	context->end_group_cb =  json_end_group;
-	context->final_cb =  json_final_cb;
-	context->print_path = NULL; /* handled in json_end_diagnostic.  */
-
-	/* The metadata is handled in JSON format, rather than as text.  */
-	context->show_cwe = false;
-
-	/* The option is handled in JSON format, rather than as text.  */
-	context->show_option_requested = false;
-
-	/* Don't colorize the text.  */
-	pp_show_color (context->printer) = false;
-      }
-      break;
-    }
+void
+diagnostic_output_format_init_json_file (diagnostic_context *context,
+					 const char *base_file_name)
+{
+  diagnostic_output_format_init_json (context);
+  context->final_cb = json_file_final_cb;
+  json_output_base_file_name = xstrdup (base_file_name);
 }
 
 #if CHECKING_P
