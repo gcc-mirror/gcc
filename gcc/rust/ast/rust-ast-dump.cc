@@ -624,7 +624,21 @@ Dump::visit (InherentImpl &impl)
 
 void
 Dump::visit (TraitImpl &impl)
-{}
+{
+  stream << "impl ";
+  impl.get_trait_path ().accept_vis (*this);
+  stream << " for ";
+  impl.get_type ()->accept_vis (*this);
+
+  stream << " {\n";
+  indentation.increment ();
+
+  for (auto &item : impl.get_impl_items ())
+    item->accept_vis (*this);
+
+  indentation.decrement ();
+  stream << "\n}\n";
+}
 
 void
 Dump::visit (ExternalStaticItem &item)
