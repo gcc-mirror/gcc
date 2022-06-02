@@ -1372,7 +1372,7 @@ ranger_cache::range_from_dom (vrange &r, tree name, basic_block start_bb,
 	      // each incoming edge now and accumulate the results.
 	      r.set_undefined ();
 	      edge_iterator ei;
-	      int_range_max er;
+	      Value_Range er (TREE_TYPE (name));
 	      FOR_EACH_EDGE (e, ei, prev_bb->preds)
 		{
 		  edge_range (er, e, name, RFD_READ_ONLY);

@@ -461,17 +461,20 @@ gimple_ranger::register_inferred_ranges (gimple *s)
   tree lhs = gimple_get_lhs (s);
   if (lhs)
     {
-      int_range_max tmp;
+      Value_Range tmp (TREE_TYPE (lhs));
       if (range_of_stmt (tmp, s, lhs) && !tmp.varying_p ()
 	  && update_global_range (tmp, lhs) && dump_file)
 	{
-	  value_range vr = tmp;
+	  // ?? This section should be adjusted when non-iranges can
+	  // be exported.  For now, the only way update_global_range
+	  // above can succeed is with an irange so this is safe.
+	  value_range vr = as_a <irange> (tmp);
 	  fprintf (dump_file, "Global Exported: ");
 	  print_generic_expr (dump_file, lhs, TDF_SLIM);
 	  fprintf (dump_file, " = ");
 	  vr.dump (dump_file);
 	  int_range_max same = vr;
-	  if (same != tmp)
+	  if (same != as_a <irange> (tmp))
 	    {
 	      fprintf (dump_file, " ...  irange was : ");
 	      tmp.dump (dump_file);

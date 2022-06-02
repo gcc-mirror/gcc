@@ -314,6 +314,7 @@ public:
   Value_Range ();
   Value_Range (const vrange &r);
   Value_Range (tree type);
+  Value_Range (const Value_Range &);
   void set_type (tree type);
   vrange& operator= (const vrange &);
   bool operator== (const Value_Range &r) const;
@@ -344,7 +345,6 @@ private:
   unsupported_range m_unsupported;
   vrange *m_vrange;
   int_range_max m_irange;
-  DISABLE_COPY_AND_ASSIGN (Value_Range);
 };
 
 inline
@@ -368,6 +368,12 @@ inline
 Value_Range::Value_Range (tree type)
 {
   init (type);
+}
+
+inline
+Value_Range::Value_Range (const Value_Range &r)
+{
+  m_vrange = r.m_vrange;
 }
 
 // Initialize object so it is possible to store temporaries of TYPE
