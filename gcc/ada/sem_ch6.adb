@@ -3568,6 +3568,10 @@ package body Sem_Ch6 is
                Id := Body_Id;
             end if;
 
+            --  A function body shall contain at least one return statement
+            --  that applies to the function body, unless the function contains
+            --  code_statements; RM 6.5(5).
+
             if Return_Present (Id) then
                Check_Returns (HSS, 'F', Missing_Ret);
 
