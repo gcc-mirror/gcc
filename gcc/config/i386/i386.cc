@@ -20995,6 +20995,20 @@ ix86_rtx_costs (rtx x, machine_mode mode, int outer_code_i, int opno,
         *total += 1;
       return false;
 
+    case ZERO_EXTRACT:
+      if (XEXP (x, 1) == const1_rtx
+	  && GET_CODE (XEXP (x, 2)) == ZERO_EXTEND
+	  && GET_MODE (XEXP (x, 2)) == SImode
+	  && GET_MODE (XEXP (XEXP (x, 2), 0)) == QImode)
+	{
+	  /* Ignore cost of zero extension and masking of last argument.  */
+	  *total += rtx_cost (XEXP (x, 0), mode, code, 0, speed);
+	  *total += rtx_cost (XEXP (x, 1), mode, code, 1, speed);
+	  *total += rtx_cost (XEXP (XEXP (x, 2), 0), mode, code, 2, speed);
+	  return true;
+	}
+      return false;
+
     default:
       return false;
     }
