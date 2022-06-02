@@ -1,3 +1,388 @@
+2022-06-01  David Seifert  <soap@gentoo.org>
+
+	PR plugins/95648
+	* configure: Regenerate.
+
+2022-06-01  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR rtl-optimization/105638
+	* df-core.cc (df_find_single_def_src): Moved and renamed from
+	find_single_def_src in loop-iv.cc.  Change the argument to rtx
+	and use rtx_equal_p.  Return null for partial or conditional
+	defs.
+	* df.h (df_find_single_def_src): New prototype.
+	* dse.cc (record_store): Use the constant source if the source
+	register is set only once.
+	* loop-iv.cc (find_single_def_src): Moved to df-core.cc.
+	(replace_single_def_regs): Replace find_single_def_src with
+	df_find_single_def_src.
+
+2022-06-01  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	* config/aarch64/aarch64.opt (explicit_tune_core): Rename to
+	selected_tune.
+	(explicit_arch): Rename to selected_arch.
+	(x_aarch64_override_tune_string): Remove.
+	(aarch64_ra_sign_key): Add as TargetVariable so it gets saved/restored.
+	(aarch64_override_tune_string): Add Save so it gets saved/restored.
+	* config/aarch64/aarch64.h (aarch64_architecture_version): Remove.
+	* config/aarch64/aarch64.cc (aarch64_architecture_version): Remove.
+	(processor): Remove archtecture_version field.
+	(selected_arch): Remove global.
+	(selected_cpu): Remove global.
+	(selected_tune): Remove global.
+	(aarch64_ra_sign_key): Move global to aarch64.opt so it is saved.
+	(aarch64_override_options_internal): Use aarch64_get_tune_cpu.
+	(aarch64_override_options): Further simplify code to only set
+	selected_arch and selected_tune globals.
+	(aarch64_option_save): Remove now that target options are saved.
+	(aarch64_option_restore): Remove redundant target option restores.
+	* config/aarch64/aarch64-c.cc (aarch64_update_cpp_builtins): Use
+	AARCH64_ISA_V9.
+	* config/aarch64/aarch64-opts.h (aarch64_key_type): Add, moved from...
+	* config/aarch64/aarch64-protos.h (aarch64_key_type): Remove.
+	(aarch64_ra_sign_key): Remove.
+
+2022-06-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/30314
+	* match.pd (__builtin_mul_overflow_p (x, cst, (utype) 0) ->
+	x > ~(utype)0 / cst): New simplification.
+
+2022-06-01  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/105786
+	* tree-loop-distribution.cc
+	(loop_distribution::transform_reduction_loop): Only do strlen
+	replacement for integer type reductions.
+
+2022-06-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/105770
+	* tree-ssa-loop-unswitch.cc (find_unswitching_predicates_for_bb): Cast
+	CASE_LOW and CASE_HIGH to TREE_TYPE (idx) before comparisons with idx.
+
+2022-06-01  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gimple-range-cache.cc (ssa_block_ranges::dump): Convert to vrange.
+	(sbr_vector::sbr_vector): Same.
+	(sbr_vector::grow): Same.
+	(sbr_vector::set_bb_range): Same.
+	(sbr_vector::get_bb_range): Same.
+	(sbr_sparse_bitmap::sbr_sparse_bitmap): Same.
+	(sbr_sparse_bitmap::set_bb_range): Same.
+	(sbr_sparse_bitmap::get_bb_range): Same.
+	(block_range_cache::set_bb_range): Same.
+	(block_range_cache::get_bb_range): Same.
+	(block_range_cache::dump): Same.
+	(ssa_global_cache::get_global_range): Same.
+	(ssa_global_cache::set_global_range): Same.
+	(ssa_global_cache::clear): Same.
+	(ssa_global_cache::dump): Same.
+	(ranger_cache::get_global_range): Same.
+	(ranger_cache::set_global_range): Same.
+	(ranger_cache::range_of_def): Same.
+	(ranger_cache::entry_range): Same.
+	(ranger_cache::exit_range): Same.
+	(ranger_cache::edge_range): Same.
+	(ranger_cache::range_of_expr): Same.
+	(ranger_cache::range_on_edge): Same.
+	(ranger_cache::block_range): Same.
+	(ranger_cache::propagate_cache): Same.
+	(ranger_cache::fill_block_cache): Same.
+	(ranger_cache::range_from_dom): Same.
+	* gimple-range-cache.h: Same.
+	* gimple-range-edge.cc (gimple_outgoing_range::get_edge_range):
+	Same.
+	(gimple_outgoing_range::switch_edge_range): Same.
+	(gimple_outgoing_range::edge_range_p): Same.
+	* gimple-range-edge.h: Same.
+	* gimple-range-fold.cc (fur_source::get_operand): Same.
+	(fur_source::get_phi_operand): Same.
+	(fur_edge::get_operand): Same.
+	(fur_edge::get_phi_operand): Same.
+	(fur_stmt::get_operand): Same.
+	(fur_stmt::get_phi_operand): Same.
+	(fur_list::fur_list): Same.
+	(fur_list::get_operand): Same.
+	(fur_list::get_phi_operand): Same.
+	(fold_range): Same.
+	(adjust_imagpart_expr): Same.
+	(adjust_realpart_expr): Same.
+	(gimple_range_adjustment): Same.
+	(fold_using_range::fold_stmt): Same.
+	(fold_using_range::range_of_range_op): Same.
+	(fold_using_range::range_of_address): Same.
+	(fold_using_range::range_of_phi): Same.
+	(fold_using_range::range_of_call): Same.
+	(fold_using_range::range_of_builtin_call): Same.
+	(fold_using_range::range_of_builtin_int_call): Same.
+	(fold_using_range::range_of_cond_expr): Same.
+	(fur_source::register_outgoing_edges): Same.
+	* gimple-range-fold.h (fold_range): Same.
+	(gimple_range_type): Same.
+	(gimple_range_ssa_p): Same.
+	* gimple-range-gori.cc (gimple_range_calc_op1): Same.
+	(gimple_range_calc_op2): Same.
+	(gori_compute::compute_operand_range_switch): Same.
+	(gori_compute::compute_operand_range): Same.
+	(gori_compute::logical_combine): Same.
+	(gori_compute::compute_logical_operands): Same.
+	(gori_compute::compute_operand1_range): Same.
+	(gori_compute::compute_operand2_range): Same.
+	(gori_compute::compute_operand1_and_operand2_range): Same.
+	(gori_compute::outgoing_edge_range_p): Same.
+	(gori_compute::condexpr_adjust): Same.
+	* gimple-range-gori.h (gimple_range_calc_op1): Same.
+	(gimple_range_calc_op2): Same.
+	* gimple-range-path.cc (path_range_query::get_cache): Same.
+	(path_range_query::set_cache): Same.
+	(path_range_query::range_on_path_entry): Same.
+	(path_range_query::internal_range_of_expr): Same.
+	(path_range_query::range_of_expr): Same.
+	(path_range_query::ssa_range_in_phi): Same.
+	(path_range_query::range_defined_in_block): Same.
+	(path_range_query::compute_ranges_in_phis): Same.
+	(path_range_query::compute_ranges_in_block): Same.
+	(path_range_query::add_to_imports): Same.
+	(path_range_query::range_of_stmt): Same.
+	* gimple-range-path.h: Same.
+	* gimple-range-infer.cc (gimple_infer_range::add_range): Same.
+	(gimple_infer_range::~side_effect_manager): Same.
+	(gimple_infer_range::get_nonzero): Same.
+	(gimple_infer_range::maybe_adjust_range): Same.
+	(gimple_infer_range::add_range): Same.
+	* gimple-range-infer.h: Same.
+	* gimple-range-tests.cc: Same.
+	* gimple-range-trace.cc (range_tracer::trailer): Same.
+	(debug_seed_ranger): Same.
+	* gimple-range-trace.h: Same.
+	* gimple-range.cc (gimple_ranger::range_of_expr): Same.
+	(gimple_ranger::range_on_entry): Same.
+	(gimple_ranger::range_on_exit): Same.
+	(gimple_ranger::range_on_edge): Same.
+	(gimple_ranger::fold_range_internal): Same.
+	(gimple_ranger::range_of_stmt): Same.
+	(gimple_ranger::prefill_name): Same.
+	(gimple_ranger::prefill_stmt_dependencies): Same.
+	(gimple_ranger::export_global_ranges): Same.
+	(gimple_ranger::dump_bb): Same.
+	* gimple-range.h: Same.
+	* gimple-ssa-warn-access.cc (check_nul_terminated_array): Same.
+	(memmodel_to_uhwi): Same.
+	* tree-ssa-loop-niter.cc (refine_value_range_using_guard): Same.
+	(determine_value_range): Same.
+	(record_nonwrapping_iv): Same.
+	(infer_loop_bounds_from_signedness): Same.
+	(scev_var_range_cant_overflow): Same.
+	* tree-ssa-threadedge.cc (hybrid_jt_simplifier::simplify): Same.
+	* value-query.cc (range_query::range_on_edge): Same.
+	(range_query::range_of_stmt): Same.
+	(range_query::value_of_expr): Same.
+	(range_query::value_on_edge): Same.
+	(range_query::value_of_stmt): Same.
+	(range_query::get_tree_range): Same.
+	(update_global_range): Same.
+	(get_range_global): Same.
+	(gimple_range_global): Same.
+	(global_range_query::range_of_expr): Same.
+	(range_query::query_relation): Same.
+	* value-query.h (gimple_range_global): Same.
+	(update_global_range): Same.
+	* vr-values.cc (vr_values::range_of_expr): Same.
+	(bounds_of_var_in_loop): Same.
+	(simplify_using_ranges::vrp_visit_cond_stmt): Same.
+	* vr-values.h (class vr_values): Same.
+	* tree-ssa-loop-unswitch.cc (unswitch_predicate): Same.
+
+2022-06-01  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gimple-range-cache.cc (sbr_vector::sbr_vector): Adjust for
+	vrange allocator.
+	(sbr_vector::grow): Same.
+	(sbr_vector::set_bb_range): Same.
+	(sbr_sparse_bitmap::sbr_sparse_bitmap): Same.
+	(sbr_sparse_bitmap::set_bb_range): Same.
+	(block_range_cache::~block_range_cache): Same.
+	(block_range_cache::set_bb_range): Same.
+	(ssa_global_cache::ssa_global_cache): Same.
+	(ssa_global_cache::~ssa_global_cache): Same.
+	(ssa_global_cache::set_global_range): Same.
+	* gimple-range-cache.h (block_range_cache): Same.
+	(ssa_global_cache): Same.
+	* gimple-range-edge.cc
+	(gimple_outgoing_range::calc_switch_ranges): Same.
+	* gimple-range-edge.h (gimple_outgoing_range): Same.
+	* gimple-range-infer.cc (infer_range_manager::get_nonzero):
+	Same.
+	(infer_range_manager::add_range): Same.
+	* gimple-range-infer.h (class infer_range_manager): Same.
+	* value-range.h (class irange_allocator): Rename to...
+	(class vrange_allocator): ...this.
+	(irange_allocator::irange_allocator): New.
+	(vrange_allocator::vrange_allocator): New.
+	(irange_allocator::~irange_allocator): New.
+	(vrange_allocator::~vrange_allocator): New.
+	(irange_allocator::get_memory): Rename to...
+	(vrange_allocator::alloc): ...this.
+	(vrange_allocator::alloc_vrange): Rename from...
+	(irange_allocator::allocate): ...this.
+	(vrange_allocator::alloc_irange): New.
+
+2022-06-01  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gimple-range-edge.cc (gimple_outgoing_range_stmt_p): Adjust for
+	vrange and convert range_op_handler function calls to use the
+	identically named object.
+	* gimple-range-fold.cc (gimple_range_operand1): Same.
+	(gimple_range_operand2): Same.
+	(fold_using_range::fold_stmt): Same.
+	(fold_using_range::range_of_range_op): Same.
+	(fold_using_range::range_of_builtin_ubsan_call): Same.
+	(fold_using_range::relation_fold_and_or): Same.
+	(fur_source::register_outgoing_edges): Same.
+	* gimple-range-fold.h (gimple_range_handler): Remove.
+	* gimple-range-gori.cc (gimple_range_calc_op1): Adjust for vrange.
+	(gimple_range_calc_op2): Same.
+	(range_def_chain::get_def_chain): Same.
+	(gori_compute::compute_operand_range): Same.
+	(gori_compute::condexpr_adjust): Same.
+	* gimple-range.cc (gimple_ranger::prefill_name): Same.
+	(gimple_ranger::prefill_stmt_dependencies): Same.
+	* range-op.cc (get_bool_state): Same.
+	(class operator_equal): Add using clause.
+	(class operator_not_equal): Same.
+	(class operator_lt): Same.
+	(class operator_le): Same.
+	(class operator_gt): Same.
+	(class operator_ge): Same.
+	(class operator_plus): Same.
+	(class operator_minus): Same.
+	(class operator_mult): Same.
+	(class operator_exact_divide): Same.
+	(class operator_lshift): Same.
+	(class operator_rshift): Same.
+	(class operator_cast): Same.
+	(class operator_logical_and): Same.
+	(class operator_bitwise_and): Same.
+	(class operator_logical_or): Same.
+	(class operator_bitwise_or): Same.
+	(class operator_bitwise_xor): Same.
+	(class operator_trunc_mod): Same.
+	(class operator_logical_not): Same.
+	(class operator_bitwise_not): Same.
+	(class operator_cst): Same.
+	(class operator_identity): Same.
+	(class operator_unknown): Same.
+	(class operator_abs): Same.
+	(class operator_negate): Same.
+	(class operator_addr_expr): Same.
+	(class pointer_or_operator): Same.
+	(operator_plus::op1_range): Adjust for vrange.
+	(operator_minus::op1_range): Same.
+	(operator_mult::op1_range): Same.
+	(operator_cast::op1_range): Same.
+	(operator_bitwise_not::fold_range): Same.
+	(operator_negate::fold_range): Same.
+	(range_op_handler): Rename to...
+	(get_handler): ...this.
+	(range_op_handler::range_op_handler): New.
+	(range_op_handler::fold_range): New.
+	(range_op_handler::op1_range): New.
+	(range_op_handler::op2_range): New.
+	(range_op_handler::lhs_op1_relation): New.
+	(range_op_handler::lhs_op2_relation): New.
+	(range_op_handler::op1_op2_relation): New.
+	(range_cast): Adjust for vrange.
+	* range-op.h (range_op_handler): Remove function.
+	(range_cast): Adjust for vrange.
+	(class range_op_handler): New.
+	(get_bool_state): Adjust for vrange.
+	(empty_range_varying): Same.
+	(relop_early_resolve): Same.
+	* tree-data-ref.cc (compute_distributive_range): Same.
+	* tree-vrp.cc (get_range_op_handler): Remove.
+	(range_fold_binary_symbolics_p): Use range_op_handler class
+	instead of get_range_op_handler.
+	(range_fold_unary_symbolics_p): Same.
+	(range_fold_binary_expr): Same.
+	(range_fold_unary_expr): Same.
+	* value-query.cc (range_query::get_tree_range): Adjust for vrange.
+
+2022-06-01  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gimple-range-fold.h (gimple_range_type): Check type before
+	calling supports_type_p.
+	* gimple-range-path.cc (path_range_query::range_of_stmt): Same.
+	* value-query.cc (range_query::get_tree_range): Same.
+	* value-range.cc (Value_Range::lower_bound): New.
+	(Value_Range::upper_bound): New.
+	(Value_Range::dump): New.
+	* value-range.h (class Value_Range): New.
+	(irange::supports_type_p): Do not check if type is non-zero.
+
+2022-06-01  Aldy Hernandez  <aldyh@redhat.com>
+
+	* value-range-equiv.cc (value_range_equiv::set): New.
+	* value-range-equiv.h (class value_range_equiv): Make set method
+	virtual.
+	Remove default bitmap argument from set method.
+	* value-range.cc (vrange::contains_p): New.
+	(vrange::singleton_p): New.
+	(vrange::operator=): New.
+	(vrange::operator==): New.
+	(irange::fits_p): Move to .cc file.
+	(irange::set_nonnegative): New.
+	(unsupported_range::unsupported_range): New.
+	(unsupported_range::set): New.
+	(unsupported_range::type): New.
+	(unsupported_range::set_undefined): New.
+	(unsupported_range::set_varying): New.
+	(unsupported_range::dump): New.
+	(unsupported_range::union_): New.
+	(unsupported_range::intersect): New.
+	(unsupported_range::zero_p): New.
+	(unsupported_range::nonzero_p): New.
+	(unsupported_range::set_nonzero): New.
+	(unsupported_range::set_zero): New.
+	(unsupported_range::set_nonnegative): New.
+	(unsupported_range::fits_p): New.
+	(irange::set): Call irange::set_undefined.
+	(irange::verify_range): Check discriminator field.
+	(irange::dump): Dump [irange] marker.
+	(irange::debug): Move to...
+	(vrange::debug): ...here.
+	(dump_value_range): Accept vrange.
+	(debug): Same.
+	* value-range.h (enum value_range_discriminator): New.
+	(class vrange): New.
+	(class unsupported_range): New.
+	(struct vrange_traits): New.
+	(is_a): New.
+	(as_a): New.
+	(class irange): Inherit from vrange.
+	(dump_value_range): Adjust for vrange.
+	(irange::kind): Rename to...
+	(vrange::kind): ...this.
+	(irange::varying_p): Rename to...
+	(vrange::varying_p): ...this.
+	(irange::undefined_p): Rename to...
+	(vrange::undefined_p): ...this.
+	(irange::irange): Set discriminator.
+	(irange::union_): Convert to irange before passing to irange
+	method.
+	(irange::intersect): Same.
+	(vrange::supports_type_p): New.
+	* vr-values.cc (vr_values::extract_range_from_binary_expr): Pass
+	NULL bitmap argument to value_range_equiv::set.
+	(vr_values::extract_range_basic): Same.
+
+2022-06-01  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/105763
+	* tree-ssa-loop-unswitch.cc (find_unswitching_predicates_for_bb):
+	Check gimple_range_ssa_p.
+
 2022-05-31  Jason Merrill  <jason@redhat.com>
 
 	* Makefile.in (TAGS): Look at libcpp/*.cc.

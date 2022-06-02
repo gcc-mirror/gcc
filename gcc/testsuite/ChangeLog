@@ -1,3 +1,38 @@
+2022-06-01  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR rtl-optimization/105638
+	* g++.target/i386/pr105638.C: New test.
+
+2022-06-01  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105734
+	* g++.dg/cpp0x/auto57.C: New test.
+
+2022-06-01  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105779
+	* g++.dg/cpp1y/auto-fn63.C: New test.
+
+2022-06-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/30314
+	* gcc.dg/tree-ssa/pr30314.c: New test.
+
+2022-06-01  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/105786
+	* gcc.dg/torture/pr105786.c: New testcase.
+
+2022-06-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/105770
+	* gcc.dg/pr105770.c: New test.
+
+2022-06-01  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/105763
+	* gcc.dg/pr105763.c: New testcase.
+
 2022-05-31  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/105758

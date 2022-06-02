@@ -1,3 +1,44 @@
+2022-06-01  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105734
+	* parser.cc (cp_parser_postfix_dot_deref_expression): Use typeof
+	if the expression has auto type.
+
+2022-06-01  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105779
+	* call.cc (resolve_args): Call mark_single_function here.
+	* pt.cc (unify_one_argument): Not here.
+
+2022-06-01  Nathan Sidwell  <nathan@acm.org>
+
+	* decl2.cc (fix_temporary_vars_context_r): Use data argument
+	for new context.
+	(one_static_initialization_or_destruction): Adjust tree walk
+	call.  Refactor guard generation.
+
+2022-06-01  Nathan Sidwell  <nathan@acm.org>
+
+	* decl2.cc (ssdf_decl): Delete global.
+	(start_static_storage_duration_function): Use some RAII.
+	(do_static_initialization_or_destruction): Likewise.
+	(c_parse_final_cleanups): Likewise.  Avoid rechecking 'vars'.
+
+2022-06-01  Nathan Sidwell  <nathan@acm.org>
+
+	* decl2.cc (start_objects): Replace 'method_type' parameter
+	with 'initp' boolean, rename and retype 'priority' parameter.
+	(finish_objects): Likewise.  Do not expand here.
+	(one_static_initialization_or_destruction): Move 'initp'
+	parameter first.
+	(do_static_initialization_or_destruction): Likewise.
+	(generate_ctor_or_dtor_function): Rename 'initp' parameter.
+	Adjust start_objects/finish_obects calls and expand here.
+	(generate_ctor_and_dtor_functions_for_priority): Adjust calls.
+	(c_parse_final_cleanups): Likewise.
+	(vtv_start_verification_constructor_init): Adjust.
+	(vtv_finish_verification_constructor_init): Use finish_objects.
+
 2022-05-31  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/105758
