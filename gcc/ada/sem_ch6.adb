@@ -2987,9 +2987,7 @@ package body Sem_Ch6 is
 
       procedure Check_Missing_Return;
       --  Checks for a function with a no return statements, and also performs
-      --  the warning checks implemented by Check_Returns. In formal mode, also
-      --  verify that a function ends with a RETURN and that a procedure does
-      --  not contain any RETURN.
+      --  the warning checks implemented by Check_Returns.
 
       function Disambiguate_Spec return Entity_Id;
       --  When a primitive is declared between the private view and the full
