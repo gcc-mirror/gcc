@@ -44,7 +44,8 @@ RUN apt-get update; \
     xz-utils \
     zlib1g-dev \
     flex \
-    bison
+    bison \
+    git
 
 ADD . /usr/src/gcc
 RUN /bin/sh -c set -ex; \
@@ -58,6 +59,9 @@ RUN /bin/sh -c set -ex; \
     cd /root; \
     rm -rf /usr/src/gcc
 
+RUN cd /usr/src/gcc; \
+  git log -1 --format="%h" > /GCCRS_BUILD; \
+
 RUN /bin/sh -c set -ex; \
     echo '/usr/local/lib64' > /etc/ld.so.conf.d/local-lib64.conf; \
     ldconfig -v
@@ -69,6 +73,7 @@ RUN /bin/sh -c set -ex; \
 
 FROM rust:latest
 COPY --from=gcc-builder /usr/ /usr/
+COPY --from=gcc-builder /GCCRS_BUILD /GCCRS_BUILD
 RUN cargo install --git https://github.com/Rust-GCC/cargo-gccrs cargo-gccrs
 
 CMD ["bash"]
