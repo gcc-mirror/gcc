@@ -1090,7 +1090,6 @@ package body Sem_Attr is
 
                else
                   Error_Attr ("% attribute cannot be applied to type", P);
-                  return;
                end if;
             end if;
          end if;
@@ -1429,7 +1428,6 @@ package body Sem_Attr is
 
             else
                Placement_Error;
-               return;
             end if;
 
          --  'Old attribute reference ok in a _Postconditions procedure
@@ -1445,7 +1443,6 @@ package body Sem_Attr is
 
          else
             Placement_Error;
-            return;
          end if;
 
          --  Find the related subprogram subject to the aspect or pragma
@@ -1715,14 +1712,12 @@ package body Sem_Attr is
 
             else
                Placement_Error;
-               return;
             end if;
 
          --  Otherwise the placement of the attribute is illegal
 
          else
             Placement_Error;
-            return;
          end if;
 
          --  Find the related subprogram subject to the aspect or pragma
@@ -3666,7 +3661,6 @@ package body Sem_Attr is
 
          else
             Error_Attr ("invalid entry name", N);
-            return;
          end if;
 
          for J in reverse 0 .. Scope_Stack.Last loop
@@ -3945,7 +3939,6 @@ package body Sem_Attr is
                else
                   Error_Attr ("invalid entry family name", P);
                end if;
-               return;
 
             else
                Ent := Entity (Prefix (P));
@@ -3960,7 +3953,6 @@ package body Sem_Attr is
 
          else
             Error_Attr ("invalid entry name", N);
-            return;
          end if;
 
          for J in reverse 0 .. Scope_Stack.Last loop
@@ -4479,7 +4471,6 @@ package body Sem_Attr is
 
          if not Legal or else No (Spec_Id) then
             Error_Attr ("attribute % must apply to entry family", P);
-            return;
          end if;
 
          --  Legality checks
@@ -5898,7 +5889,6 @@ package body Sem_Attr is
 
          elsif not Legal then
             Error_Attr ("prefix of % attribute must be a function", P);
-            return;
          end if;
 
          --  Attribute 'Result is part of a _Postconditions procedure. There is

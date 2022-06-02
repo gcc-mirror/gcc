@@ -4585,7 +4585,6 @@ package body Sem_Prag is
 
          else
             Pragma_Misplaced;
-            return;
          end if;
 
          --  If we get here, then the pragma is legal
@@ -4600,7 +4599,6 @@ package body Sem_Prag is
            and then Ekind (Scope (Spec_Id)) /= E_Protected_Type
          then
             Pragma_Misplaced;
-            return;
 
          --  When the related context is an anonymous object created for a
          --  simple concurrent type, the type must be a task
@@ -4610,7 +4608,6 @@ package body Sem_Prag is
            and then Ekind (Etype (Spec_Id)) /= E_Task_Type
          then
             Pragma_Misplaced;
-            return;
          end if;
 
          --  A pragma that applies to a Ghost entity becomes Ghost for the
@@ -4926,7 +4923,6 @@ package body Sem_Prag is
 
          else
             Pragma_Misplaced;
-            return;
          end if;
 
          Subp_Id := Defining_Entity (Subp_Decl);
@@ -4991,7 +4987,6 @@ package body Sem_Prag is
               N_Task_Body  | N_Task_Body_Stub
          then
             Pragma_Misplaced;
-            return;
          end if;
 
          Body_Id := Defining_Entity (Body_Decl);
@@ -5002,14 +4997,12 @@ package body Sem_Prag is
 
          if No (Spec_Id) then
             Error_Pragma ("pragma % cannot apply to a stand alone body");
-            return;
 
          --  Catch the case where the subprogram body is a subunit and acts as
          --  the third declaration of the subprogram.
 
          elsif Nkind (Parent (Body_Decl)) = N_Subunit then
             Error_Pragma ("pragma % cannot apply to a subunit");
-            return;
          end if;
 
          --  A refined pragma can only apply to the body [stub] of a subprogram
@@ -5034,7 +5027,6 @@ package body Sem_Prag is
             Error_Pragma
               (Fix_Msg (Spec_Id, "pragma % must apply to the body of "
                & "subprogram declared in a package specification"));
-            return;
          end if;
 
          --  If we get here, then the pragma is legal
@@ -6376,7 +6368,6 @@ package body Sem_Prag is
                      Statements (Handled_Statement_Sequence (Stmt))
                then
                   Placement_Error (Prev);
-                  return;
 
                --  Keep inspecting the parents because we are now within a
                --  chain of nested blocks.
@@ -6411,7 +6402,6 @@ package body Sem_Prag is
 
             else
                Placement_Error (Prev);
-               return;
             end if;
          end loop;
 
@@ -7475,7 +7465,6 @@ package body Sem_Prag is
                Error_Pragma
                  ("cannot have Full_Access_Only without Volatile/Atomic "
                   & "(RM C.6(8.2))");
-               return;
             end if;
 
             --  Check all the subcomponents of the type recursively, if any
@@ -7983,7 +7972,6 @@ package body Sem_Prag is
                            Error_Msg_Sloc := Sloc (Decl);
                            Error_Pragma_Arg
                              ("convention differs from that given#", Arg1);
-                           return;
                         end if;
                      end if;
                   end if;
@@ -9988,7 +9976,6 @@ package body Sem_Prag is
             then
                Error_Pragma_Arg
                  ("argument of% must be entity in current scope", Assoc);
-               return;
             end if;
 
             --  Processing for procedure, operator or function. If subprogram
@@ -12461,7 +12448,6 @@ package body Sem_Prag is
                  N_Generic_Package_Declaration | N_Package_Declaration
             then
                Pragma_Misplaced;
-               return;
             end if;
 
             Pack_Id := Defining_Entity (Pack_Decl);
@@ -13488,7 +13474,6 @@ package body Sem_Prag is
                             N_Protected_Type_Declaration
                then
                   Pragma_Misplaced;
-                  return;
                end if;
             end if;
 
@@ -14498,7 +14483,6 @@ package body Sem_Prag is
 
             if Nkind (Obj_Decl) /= N_Object_Declaration then
                Pragma_Misplaced;
-               return;
             end if;
 
             Obj_Id := Defining_Entity (Obj_Decl);
@@ -14511,14 +14495,12 @@ package body Sem_Prag is
                if not Is_Library_Level_Entity (Obj_Id) then
                   Error_Pragma
                     ("pragma % must apply to a library level variable");
-                  return;
                end if;
 
             --  Otherwise the pragma applies to a constant, which is illegal
 
             else
                Error_Pragma ("pragma % must apply to a variable declaration");
-               return;
             end if;
 
             --  A pragma that applies to a Ghost entity becomes Ghost for the
@@ -14641,7 +14623,6 @@ package body Sem_Prag is
 
             else
                Pragma_Misplaced;
-               return;
             end if;
 
             Spec_Id := Unique_Defining_Entity (Subp_Decl);
@@ -15391,7 +15372,6 @@ package body Sem_Prag is
 
                else
                   Pragma_Misplaced;
-                  return;
                end if;
 
                Stmt := Prev (Stmt);
@@ -15402,7 +15382,6 @@ package body Sem_Prag is
 
             if No (Typ) then
                Pragma_Misplaced;
-               return;
             end if;
 
             --  A pragma that applies to a Ghost entity becomes Ghost for the
@@ -16700,7 +16679,6 @@ package body Sem_Prag is
 
             else
                Error_Pragma ("pragma % must apply to a subprogram");
-               return;
             end if;
 
             --  Mark the pragma as Ghost if the related subprogram is also
@@ -16979,7 +16957,6 @@ package body Sem_Prag is
                        N_Single_Task_Declaration | N_Task_Type_Declaration
                then
                   Error_Pragma ("pragma % cannot apply to a task type");
-                  return;
 
                --  Skip internally generated code
 
@@ -17043,7 +17020,6 @@ package body Sem_Prag is
                   Error_Pragma
                     ("pragma % must apply to an object, package, subprogram "
                      & "or type");
-                  return;
                end if;
 
                Stmt := Prev (Stmt);
@@ -17063,11 +17039,9 @@ package body Sem_Prag is
             if Nkind (Context) in N_Protected_Body | N_Protected_Definition
             then
                Error_Pragma ("pragma % cannot apply to a protected type");
-               return;
 
             elsif Nkind (Context) in N_Task_Body | N_Task_Definition then
                Error_Pragma ("pragma % cannot apply to a task type");
-               return;
             end if;
 
             if No (Id) then
@@ -17105,7 +17079,6 @@ package body Sem_Prag is
                Error_Pragma
                  ("pragma % must apply to an object, package, subprogram or "
                   & "type");
-               return;
             end if;
 
             --  Handle completions of types and constants that are subject to
@@ -17153,11 +17126,9 @@ package body Sem_Prag is
             elsif Ekind (Id) = E_Variable then
                if Is_Protected_Type (Etype (Id)) then
                   Error_Pragma ("pragma % cannot apply to a protected object");
-                  return;
 
                elsif Is_Task_Type (Etype (Id)) then
                   Error_Pragma ("pragma % cannot apply to a task object");
-                  return;
                end if;
             end if;
 
@@ -17179,7 +17150,6 @@ package body Sem_Prag is
                      Error_Pragma
                        ("pragma % with value False cannot appear in enabled "
                         & "ghost region");
-                     return;
                   end if;
 
                --  Otherwise the expression is not static
@@ -17187,7 +17157,6 @@ package body Sem_Prag is
                else
                   Error_Pragma_Arg
                     ("expression of pragma % must be static", Expr);
-                  return;
                end if;
             end if;
 
@@ -17470,7 +17439,6 @@ package body Sem_Prag is
                   Error_Pragma_Arg
                     ("controlling formal must be of synchronized tagged type",
                      Arg1);
-                  return;
                end if;
 
                --  Ada 2012 (AI05-0030): Cannot apply the implementation_kind
@@ -17484,7 +17452,6 @@ package body Sem_Prag is
                   Error_Pragma_Arg
                     ("implementation kind By_Protected_Procedure cannot be "
                      & "applied to a task interface primitive", Arg2);
-                  return;
                end if;
 
             --  Procedures declared inside a protected type must be accepted
@@ -17499,7 +17466,6 @@ package body Sem_Prag is
             else
                Error_Pragma_Arg
                  ("pragma % must be applied to a primitive procedure", Arg1);
-               return;
             end if;
 
             --  Ada 2012 (AI12-0279): Cannot apply the implementation_kind
@@ -17511,7 +17477,6 @@ package body Sem_Prag is
                Error_Pragma_Arg
                  ("implementation kind By_Protected_Procedure cannot be "
                   & "applied to entities with aspect 'Yield", Arg2);
-               return;
             end if;
 
             Record_Rep_Item (Proc_Id, N);
@@ -17922,7 +17887,6 @@ package body Sem_Prag is
                  N_Generic_Package_Declaration | N_Package_Declaration
             then
                Pragma_Misplaced;
-               return;
             end if;
 
             Pack_Id := Defining_Entity (Pack_Decl);
@@ -18203,7 +18167,6 @@ package body Sem_Prag is
                  N_Generic_Package_Declaration | N_Package_Declaration
             then
                Pragma_Misplaced;
-               return;
             end if;
 
             Pack_Id := Defining_Entity (Pack_Decl);
@@ -18539,7 +18502,6 @@ package body Sem_Prag is
 
             if Nkind (P) not in N_Task_Definition | N_Protected_Definition then
                Pragma_Misplaced;
-               return;
 
             else
                Ent := Defining_Identifier (Parent (P));
@@ -18755,7 +18717,6 @@ package body Sem_Prag is
             elsif Class_Present (N) then
                Error_Pragma_Arg
                  ("pragma % only allowed for private type", Arg1);
-               return;
 
             --  A regular invariant may appear on both views
 
@@ -18763,7 +18724,6 @@ package body Sem_Prag is
                Error_Pragma_Arg
                  ("pragma % only allowed for private type or corresponding "
                   & "full view", Arg1);
-               return;
             end if;
 
             --  An invariant associated with an abstract type (this includes
@@ -18772,7 +18732,6 @@ package body Sem_Prag is
             if Is_Abstract_Type (Typ) and then not Class_Present (N) then
                Error_Pragma_Arg
                  ("pragma % not allowed for abstract type", Arg1);
-               return;
             end if;
 
             --  A pragma that applies to a Ghost entity becomes Ghost for the
@@ -19685,7 +19644,6 @@ package body Sem_Prag is
 
                if Nkind (Parent (N)) = N_Task_Definition then
                   Error_Pragma ("pragma % cannot apply to task entries");
-                  return;
                end if;
 
                Entry_Id := Defining_Entity (Entry_Decl);
@@ -19695,7 +19653,6 @@ package body Sem_Prag is
             else
                Error_Pragma
                  ("pragma % must apply to a protected entry declaration");
-               return;
             end if;
 
             --  Mark the pragma as Ghost if the related subprogram is also
@@ -20999,7 +20956,6 @@ package body Sem_Prag is
 
             else
                Pragma_Misplaced;
-               return;
             end if;
 
             --  Extract the entity of the related object declaration or package
@@ -22612,7 +22568,6 @@ package body Sem_Prag is
 
             if Nkind (Pack_Decl) /= N_Package_Body then
                Pragma_Misplaced;
-               return;
             end if;
 
             Spec_Id := Corresponding_Spec (Pack_Decl);
@@ -23944,7 +23899,6 @@ package body Sem_Prag is
 
             if Nkind (P) /= N_Task_Definition then
                Pragma_Misplaced;
-               return;
 
             else
                if Has_Storage_Size_Pragma (P) then
@@ -24310,7 +24264,6 @@ package body Sem_Prag is
 
             else
                Pragma_Misplaced;
-               return;
             end if;
 
             Spec_Id := Unique_Defining_Entity (Subp_Decl);
@@ -24798,7 +24751,6 @@ package body Sem_Prag is
             else
                Error_Pragma
                  ("pragma % must be specified within a package declaration");
-               return;
             end if;
 
             Subp_Decl := Find_Related_Declaration_Or_Body (N);
@@ -24816,11 +24768,9 @@ package body Sem_Prag is
             if Nkind (Subp_Decl) = N_Abstract_Subprogram_Declaration then
                Error_Pragma
                  ("pragma % cannot be applied to abstract subprogram");
-               return;
 
             elsif Nkind (Subp_Decl) = N_Entry_Declaration then
                Error_Pragma ("pragma % cannot be applied to entry");
-               return;
 
             --  The context is a [generic] subprogram declared at the top level
             --  of the [generic] package unit.
@@ -24839,7 +24789,6 @@ package body Sem_Prag is
                Error_Pragma
                  ("pragma % must be applied to a library-level subprogram "
                   & "declaration");
-               return;
             end if;
 
             Subp_Id := Defining_Entity (Subp_Decl);
@@ -25530,14 +25479,12 @@ package body Sem_Prag is
 
             else
                Pragma_Misplaced;
-               return;
             end if;
 
             Spec_Id := Unique_Defining_Entity (Subp_Decl);
 
             if Ekind (Spec_Id) not in E_Function | E_Generic_Function then
                Pragma_Misplaced;
-               return;
             end if;
 
             --  A pragma that applies to a Ghost entity becomes Ghost for the
