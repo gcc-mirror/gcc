@@ -2872,11 +2872,7 @@ public:
   }
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<Type> &get_return_type ()
-  {
-    rust_assert (has_return_type ());
-    return return_type;
-  }
+  std::unique_ptr<Type> &get_return_type () { return return_type; }
 
   // TODO: is this better? Or is a "vis_block" better?
   WhereClause &get_where_clause () { return where_clause; }
@@ -2954,11 +2950,7 @@ public:
   const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<BlockExpr> &get_definition ()
-  {
-    rust_assert (has_definition ());
-    return block_expr;
-  }
+  std::unique_ptr<BlockExpr> &get_definition () { return block_expr; }
 
   // TODO: is this better? Or is a "vis_block" better?
   TraitFunctionDecl &get_trait_function_decl ()
@@ -3097,11 +3089,7 @@ public:
   }
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<Type> &get_return_type ()
-  {
-    rust_assert (has_return_type ());
-    return return_type;
-  }
+  std::unique_ptr<Type> &get_return_type () { return return_type; }
 
   // TODO: is this better? Or is a "vis_block" better?
   WhereClause &get_where_clause () { return where_clause; }
@@ -3189,11 +3177,7 @@ public:
   }
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<BlockExpr> &get_definition ()
-  {
-    rust_assert (has_definition ());
-    return block_expr;
-  }
+  std::unique_ptr<BlockExpr> &get_definition () { return block_expr; }
 
 protected:
   // Clone function implementation as (not pure) virtual method
