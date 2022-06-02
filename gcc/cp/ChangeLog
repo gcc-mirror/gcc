@@ -1,3 +1,26 @@
+2022-06-01  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105734
+	* parser.cc (cp_parser_postfix_dot_deref_expression): Use typeof
+	if the expression has auto type.
+
+2022-06-01  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105779
+	* call.cc (resolve_args): Call mark_single_function here.
+	* pt.cc (unify_one_argument): Not here.
+
+2022-06-01  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2022-05-09  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/105491
+	* constexpr.cc (reduced_constant_expression_p): Use
+	next_subobject_field instead.
+	* cp-tree.h (next_subobject_field): Declare.
+	* decl.cc (next_subobject_field): Define.
+
 2022-05-31  Jason Merrill  <jason@redhat.com>
 
 	PR c++/105652

@@ -1,3 +1,23 @@
+2022-06-01  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105734
+	* g++.dg/cpp0x/auto57.C: New test.
+
+2022-06-01  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105779
+	* g++.dg/cpp1y/auto-fn63.C: New test.
+
+2022-06-01  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2022-05-09  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/105491
+	* g++.dg/cpp0x/constexpr-union7.C: New test.
+	* g++.dg/cpp0x/constexpr-union7a.C: New test.
+	* g++.dg/cpp2a/constinit17.C: New test.
+
 2022-05-31  Jason Merrill  <jason@redhat.com>
 
 	PR c++/105652
