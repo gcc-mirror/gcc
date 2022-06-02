@@ -9039,12 +9039,20 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
 		  "before C++17");
       return false;
 
-    case DYNAMIC_CAST_EXPR:
-    case PSEUDO_DTOR_EXPR:
     case NEW_EXPR:
     case VEC_NEW_EXPR:
     case DELETE_EXPR:
     case VEC_DELETE_EXPR:
+      if (cxx_dialect >= cxx20)
+	/* In C++20, new-expressions are potentially constant.  */
+	return true;
+      else if (flags & tf_error)
+	error_at (loc, "new-expression is not a constant expression "
+		  "before C++20");
+      return false;
+
+    case DYNAMIC_CAST_EXPR:
+    case PSEUDO_DTOR_EXPR:
     case THROW_EXPR:
     case OMP_PARALLEL:
     case OMP_TASK:
