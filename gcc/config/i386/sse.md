@@ -301,7 +301,8 @@
 
 ;; All 128bit and 256bit vector modes
 (define_mode_iterator V_128_256
-  [V32QI V16QI V16HI V8HI V8SI V4SI V4DI V2DI V16HF V8HF V8SF V4SF V4DF V2DF])
+  [V32QI V16QI V16HI V8HI V8SI V4SI V4DI V2DI V2TI V1TI
+   V16HF V8HF V8SF V4SF V4DF V2DF])
 
 ;; All 512bit vector modes
 (define_mode_iterator V_512 [V64QI V32HI V16SI V8DI V16SF V8DF])
@@ -897,9 +898,9 @@
    (V8HI "sse4_1") (V16HI "avx")])
 
 (define_mode_attr avxsizesuffix
-  [(V64QI "512") (V32HI "512") (V16SI "512") (V8DI "512")
-   (V32QI "256") (V16HI "256") (V8SI "256") (V4DI "256")
-   (V16QI "") (V8HI "") (V4SI "") (V2DI "")
+  [(V64QI "512") (V32HI "512") (V16SI "512") (V8DI "512") (V4TI "512")
+   (V32QI "256") (V16HI "256") (V8SI "256") (V4DI "256") (V2TI "256")
+   (V16QI "") (V8HI "") (V4SI "") (V2DI "") (V1TI "")
    (V32HF "512") (V16SF "512") (V8DF "512")
    (V16HF "256") (V8SF "256") (V4DF "256")
    (V8HF "") (V4SF "") (V2DF "")])
