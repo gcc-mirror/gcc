@@ -102,7 +102,9 @@ Dump::visit (TypePathSegmentFunction &segment)
 
 void
 Dump::visit (TypePath &path)
-{}
+{
+  stream << path.as_string ();
+}
 
 void
 Dump::visit (QualifiedPathInExpression &path)
@@ -253,8 +255,8 @@ Dump::visit (BlockExpr &expr)
   if (expr.has_tail_expr ())
     expr.get_tail_expr ()->accept_vis (*this);
 
-  stream << "\n}\n";
-  indentation.increment ();
+  indentation.decrement ();
+  stream << "\n" << indentation << "}\n";
 }
 
 void
@@ -364,7 +366,10 @@ Dump::visit (AsyncBlockExpr &expr)
 // rust-item.h
 void
 Dump::visit (TypeParam &param)
-{}
+{
+  // Is it possible to have a null type here?
+  param.get_type ()->accept_vis (*this);
+}
 
 void
 Dump::visit (LifetimeWhereClauseItem &item)
@@ -376,7 +381,36 @@ Dump::visit (TypeBoundWhereClauseItem &item)
 
 void
 Dump::visit (Method &method)
-{}
+{
+  stream << indentation << "fn " << method.get_method_name () << '(';
+
+  auto &self = method.get_self_param ();
+  stream << self.as_string ();
+
+  auto &params = method.get_function_params ();
+  for (auto &param : params)
+    {
+      stream << ", ";
+      format_function_param (param);
+    }
+
+  stream << ") ";
+
+  if (method.has_return_type ())
+    {
+      stream << "-> ";
+      method.get_return_type ()->accept_vis (*this);
+      stream << " ";
+    }
+
+  auto &block = method.get_definition ();
+  if (!block)
+    stream << ';';
+  else
+    block->accept_vis (*this);
+
+  stream << '\n';
+}
 
 void
 Dump::visit (Module &module)
@@ -405,7 +439,7 @@ Dump::visit (UseDeclaration &use_decl)
 void
 Dump::visit (Function &function)
 {
-  stream << "fn " << function.get_function_name () << '(';
+  stream << indentation << "fn " << function.get_function_name () << '(';
 
   auto &params = function.get_function_params ();
   if (params.size () >= 1)
@@ -424,6 +458,7 @@ Dump::visit (Function &function)
     {
       stream << "-> ";
       function.get_return_type ()->accept_vis (*this);
+      stream << " ";
     }
 
   auto &block = function.get_definition ();
@@ -501,7 +536,25 @@ Dump::visit (Trait &trait)
 
 void
 Dump::visit (InherentImpl &impl)
-{}
+{
+  stream << "impl ";
+
+  // FIXME: Handle generics
+
+  impl.get_type ()->accept_vis (*this);
+
+  // FIXME: Handle where-clause
+  // FIXME: Handle inner attributes
+
+  stream << " {\n";
+  indentation.increment ();
+
+  for (auto &item : impl.get_impl_items ())
+    item->accept_vis (*this);
+
+  indentation.decrement ();
+  stream << "\n}\n";
+}
 
 void
 Dump::visit (TraitImpl &impl)
@@ -728,19 +781,27 @@ Dump::visit (RawPointerType &type)
 
 void
 Dump::visit (ReferenceType &type)
-{}
+{
+  type.get_type_referenced ()->accept_vis (*this);
+}
 
 void
 Dump::visit (ArrayType &type)
-{}
+{
+  type.get_elem_type ()->accept_vis (*this);
+}
 
 void
 Dump::visit (SliceType &type)
-{}
+{
+  type.get_elem_type ()->accept_vis (*this);
+}
 
 void
 Dump::visit (InferredType &type)
-{}
+{
+  stream << "_";
+}
 
 void
 Dump::visit (BareFunctionType &type)
