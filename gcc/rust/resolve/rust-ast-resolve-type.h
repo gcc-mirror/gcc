@@ -211,15 +211,12 @@ public:
     ResolveType resolver (parent, canonicalize_type_with_generics,
 			  canonical_path);
     type->accept_vis (resolver);
-    if (!resolver.ok)
-      rust_error_at (type->get_locus (), "unresolved type");
 
     return resolver.resolved_node;
   };
 
   void visit (AST::BareFunctionType &fntype) override
   {
-    ok = true;
     for (auto &param : fntype.get_function_params ())
       ResolveType::go (param.get_type ().get (), fntype.get_node_id ());
 
@@ -252,8 +249,6 @@ public:
 		       "Failed to resolve canonical path for TypePath");
 	return;
       }
-
-    ok = !rel_canonical_path.is_empty ();
 
     // lets try and resolve in one go else leave it up to the type resolver to
     // figure outer
@@ -331,7 +326,7 @@ public:
 
   void visit (AST::QualifiedPathInType &path) override
   {
-    ok = ResolveRelativeTypePath::go (path);
+    ResolveRelativeTypePath::go (path);
   }
 
   void visit (AST::ArrayType &type) override;
