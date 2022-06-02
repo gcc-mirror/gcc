@@ -21,6 +21,8 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_ANALYZER_PENDING_DIAGNOSTIC_H
 #define GCC_ANALYZER_PENDING_DIAGNOSTIC_H
 
+#include "diagnostic-path.h"
+
 namespace ana {
 
 /* A bundle of information about things that are of interest to a
@@ -230,6 +232,15 @@ class pending_diagnostic
   {
     /* Default no-op implementation.  */
     return label_text ();
+  }
+
+  /* Vfunc for implementing diagnostic_event::get_meaning for
+     state_change_event.  */
+  virtual diagnostic_event::meaning
+  get_meaning_for_state_change (const evdesc::state_change &) const
+  {
+    /* Default no-op implementation.  */
+    return diagnostic_event::meaning ();
   }
 
   /* Precision-of-wording vfunc for describing an interprocedural call

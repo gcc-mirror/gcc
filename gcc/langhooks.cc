@@ -925,6 +925,14 @@ lhd_finalize_early_debug (void)
     (*debug_hooks->early_global_decl) (cnode->decl);
 }
 
+/* Default implementation of LANG_HOOKS_GET_SARIF_SOURCE_LANGUAGE.  */
+
+const char *
+lhd_get_sarif_source_language (const char *)
+{
+  return NULL;
+}
+
 /* Returns true if the current lang_hooks represents the GNU C frontend.  */
 
 bool

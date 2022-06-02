@@ -117,6 +117,15 @@ public:
     return label_text ();
   }
 
+  diagnostic_event::meaning
+  get_meaning_for_state_change (const evdesc::state_change &change)
+    const final override
+  {
+    if (change.m_new_state == m_sm.m_sensitive)
+      return diagnostic_event::meaning (diagnostic_event::VERB_acquire,
+					diagnostic_event::NOUN_sensitive);
+    return diagnostic_event::meaning ();
+  }
   label_text describe_call_with_state (const evdesc::call_with_state &info)
     final override
   {

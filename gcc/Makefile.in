@@ -1617,6 +1617,7 @@ OBJS = \
 	tree-data-ref.o \
 	tree-dfa.o \
 	tree-diagnostic.o \
+	tree-diagnostic-client-data-hooks.o \
 	tree-diagnostic-path.o \
 	tree-dump.o \
 	tree-eh.o \
@@ -1625,6 +1626,7 @@ OBJS = \
 	tree-inline.o \
 	tree-into-ssa.o \
 	tree-iterator.o \
+	tree-logical-location.o \
 	tree-loop-distribution.o \
 	tree-nested.o \
 	tree-nrv.o \
@@ -1728,9 +1730,12 @@ OBJS = \
 # Objects in libcommon.a, potentially used by all host binaries and with
 # no target dependencies.
 OBJS-libcommon = diagnostic-spec.o diagnostic.o diagnostic-color.o \
-	diagnostic-show-locus.o diagnostic-format-json.o json.o \
+	diagnostic-format-json.o \
+	diagnostic-format-sarif.o \
+	diagnostic-show-locus.o \
 	edit-context.o \
 	pretty-print.o intl.o \
+	json.o \
 	sbitmap.o \
 	vec.o input.o hash-table.o ggc-none.o memory-block.o \
 	selftest.o selftest-diagnostic.o sort.o
@@ -2368,6 +2373,7 @@ s-bversion: BASE-VER
 	$(STAMP) s-bversion
 
 CFLAGS-toplev.o += -DTARGET_NAME=\"$(target_noncanonical)\"
+CFLAGS-tree-diagnostic-client-data-hooks.o += -DTARGET_NAME=\"$(target_noncanonical)\"
 CFLAGS-optinfo-emit-json.o += -DTARGET_NAME=\"$(target_noncanonical)\" $(ZLIBINC)
 CFLAGS-analyzer/engine.o += $(ZLIBINC)
 

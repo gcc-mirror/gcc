@@ -42,6 +42,7 @@ load_gcc_lib scanasm.exp
 load_gcc_lib scandump.exp
 load_gcc_lib scanlang.exp
 load_gcc_lib scanrtl.exp
+load_gcc_lib scansarif.exp
 load_gcc_lib scantree.exp
 load_gcc_lib scanltranstree.exp
 load_gcc_lib scanipa.exp

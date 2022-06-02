@@ -1,0 +1,42 @@
+# Copyright (C) 2000-2022 Free Software Foundation, Inc.
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+# Various utilities for scanning SARIF output, used by gcc-dg.exp and
+# g++-dg.exp.
+#
+# This is largely borrowed from scanasm.exp.
+
+# Look for a pattern in the .sarif file produced by the compiler.  See
+# dg-scan for details.
+
+proc scan-sarif-file { args } {
+    set testcase [testname-for-summary]
+    # The name might include a list of options; extract the file name.
+    set filename [lindex $testcase 0]
+    set output_file "[file tail $filename].sarif"
+    dg-scan "scan-sarif-file" 1 $testcase $output_file $args
+}
+
+# Check that a pattern is not present in the .sarif file.  See dg-scan
+# for details.
+
+proc scan-sarif-file-not { args } {
+    set testcase [testname-for-summary]
+    # The name might include a list of options; extract the file name.
+    set filename [lindex $testcase 0]
+    set output_file "[file tail $filename].sarif"
+    dg-scan "scan-sarif-file-not" 0 $testcase $output_file $args
+}

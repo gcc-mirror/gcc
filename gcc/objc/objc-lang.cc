@@ -46,9 +46,17 @@ enum c_language_kind c_language = clk_objc;
 #define LANG_HOOKS_INIT_TS objc_common_init_ts
 #undef LANG_HOOKS_TREE_SIZE
 #define LANG_HOOKS_TREE_SIZE objc_common_tree_size
+#undef LANG_HOOKS_GET_SARIF_SOURCE_LANGUAGE
+#define LANG_HOOKS_GET_SARIF_SOURCE_LANGUAGE objc_get_sarif_source_language
 
 /* Each front end provides its own lang hook initializer.  */
 struct lang_hooks lang_hooks = LANG_HOOKS_INITIALIZER;
+
+const char *
+objc_get_sarif_source_language (const char *)
+{
+  return "objectivec";
+}
 
 /* Lang hook routines common to C and ObjC appear in c-objc-common.cc;
    there should be very few (if any) routines below.  */

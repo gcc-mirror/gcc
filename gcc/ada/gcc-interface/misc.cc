@@ -1292,6 +1292,15 @@ gnat_eh_personality (void)
   return gnat_eh_personality_decl;
 }
 
+/* Get a value for the SARIF v2.1.0 "artifact.sourceLanguage" property,
+   based on the list in SARIF v2.1.0 Appendix J.  */
+
+static const char *
+gnat_get_sarif_source_language (const char *)
+{
+  return "ada";
+}
+
 /* Initialize language-specific bits of tree_contains_struct.  */
 
 static void
@@ -1414,6 +1423,8 @@ get_lang_specific (tree node)
 #define LANG_HOOKS_DEEP_UNSHARING	true
 #undef  LANG_HOOKS_CUSTOM_FUNCTION_DESCRIPTORS
 #define LANG_HOOKS_CUSTOM_FUNCTION_DESCRIPTORS true
+#undef LANG_HOOKS_GET_SARIF_SOURCE_LANGUAGE
+#define LANG_HOOKS_GET_SARIF_SOURCE_LANGUAGE gnat_get_sarif_source_language
 
 struct lang_hooks lang_hooks = LANG_HOOKS_INITIALIZER;
 

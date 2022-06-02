@@ -25,6 +25,7 @@ load_lib scanltranstree.exp
 load_lib scanipa.exp
 load_lib scanwpaipa.exp
 load_lib scanlang.exp
+load_lib scansarif.exp
 load_lib timeout.exp
 load_lib timeout-dg.exp
 load_lib prune.exp

@@ -69,6 +69,75 @@ along with GCC; see the file COPYING3.  If not see
 class diagnostic_event
 {
  public:
+  /* Enums for giving a sense of what this event means.
+     Roughly corresponds to SARIF v2.1.0 section 3.38.8.  */
+  enum verb
+  {
+    VERB_unknown,
+
+    VERB_acquire,
+    VERB_release,
+    VERB_enter,
+    VERB_exit,
+    VERB_call,
+    VERB_return,
+    VERB_branch,
+
+    VERB_danger
+  };
+  enum noun
+  {
+    NOUN_unknown,
+
+    NOUN_taint,
+    NOUN_sensitive, // this one isn't in SARIF v2.1.0; filed as https://github.com/oasis-tcs/sarif-spec/issues/530
+    NOUN_function,
+    NOUN_lock,
+    NOUN_memory,
+    NOUN_resource
+  };
+  enum property
+  {
+    PROPERTY_unknown,
+
+    PROPERTY_true,
+    PROPERTY_false
+  };
+  /* A bundle of such enums, allowing for descriptions of the meaning of
+     an event, such as
+     - "acquire memory": meaning (VERB_acquire, NOUN_memory)
+     - "take true branch"": meaning (VERB_branch, PROPERTY_true)
+     - "return from function": meaning (VERB_return, NOUN_function)
+     etc, as per SARIF's threadFlowLocation "kinds" property
+     (SARIF v2.1.0 section 3.38.8).  */
+  struct meaning
+  {
+    meaning ()
+    : m_verb (VERB_unknown),
+      m_noun (NOUN_unknown),
+      m_property (PROPERTY_unknown)
+    {
+    }
+    meaning (enum verb verb, enum noun noun)
+    : m_verb (verb), m_noun (noun), m_property (PROPERTY_unknown)
+    {
+    }
+    meaning (enum verb verb, enum property property)
+    : m_verb (verb), m_noun (NOUN_unknown), m_property (property)
+    {
+    }
+
+    void dump_to_pp (pretty_printer *pp) const;
+
+    static const char *maybe_get_verb_str (enum verb);
+    static const char *maybe_get_noun_str (enum noun);
+    static const char *maybe_get_property_str (enum property);
+
+    enum verb m_verb;
+    enum noun m_noun;
+    enum property m_property;
+  };
+
   virtual ~diagnostic_event () {}
 
   virtual location_t get_location () const = 0;
@@ -81,6 +150,11 @@ class diagnostic_event
 
   /* Get a localized (and possibly colorized) description of this event.  */
   virtual label_text get_desc (bool can_colorize) const = 0;
+
+  /* Get a logical_location for this event, or NULL.  */
+  virtual const logical_location *get_logical_location () const = 0;
+
+  virtual meaning get_meaning () const = 0;
 };
 
 /* Abstract base class for getting at a sequence of events.  */
@@ -112,6 +186,14 @@ class simple_diagnostic_event : public diagnostic_event
   label_text get_desc (bool) const final override
   {
     return label_text::borrow (m_desc);
+  }
+  const logical_location *get_logical_location () const final override
+  {
+    return NULL;
+  }
+  meaning get_meaning () const final override
+  {
+    return meaning ();
   }
 
  private:

@@ -112,6 +112,15 @@ event_kind_to_string (enum event_kind ek)
 
 /* class checker_event : public diagnostic_event.  */
 
+/* No-op implementation of diagnostic_event::get_meaning vfunc for
+   checker_event: checker events have no meaning by default.  */
+
+diagnostic_event::meaning
+checker_event::get_meaning () const
+{
+  return meaning ();
+}
+
 /* Dump this event to PP (for debugging/logging purposes).  */
 
 void
@@ -242,6 +251,15 @@ function_entry_event::get_desc (bool can_colorize) const
   return make_label_text (can_colorize, "entry to %qE", m_fndecl);
 }
 
+/* Implementation of diagnostic_event::get_meaning vfunc for
+   function entry.  */
+
+diagnostic_event::meaning
+function_entry_event::get_meaning () const
+{
+  return meaning (VERB_enter, NOUN_function);
+}
+
 /* class state_change_event : public checker_event.  */
 
 /* state_change_event's ctor.  */
@@ -292,25 +310,33 @@ state_change_event::get_desc (bool can_colorize) const
 	{
 	  if (flag_analyzer_verbose_state_changes)
 	    {
+	      /* Get any "meaning" of event.  */
+	      diagnostic_event::meaning meaning = get_meaning ();
+	      pretty_printer meaning_pp;
+	      meaning.dump_to_pp (&meaning_pp);
+
 	      /* Append debug version.  */
 	      label_text result;
 	      if (m_origin)
 		result = make_label_text
 		  (can_colorize,
-		   "%s (state of %qE: %qs -> %qs, origin: %qE)",
+		   "%s (state of %qE: %qs -> %qs, origin: %qE, meaning: %s)",
 		   custom_desc.m_buffer,
 		   var,
 		   m_from->get_name (),
 		   m_to->get_name (),
-		   origin);
+		   origin,
+		   pp_formatted_text (&meaning_pp));
 	      else
 		result = make_label_text
 		  (can_colorize,
-		   "%s (state of %qE: %qs -> %qs, NULL origin)",
+		   "%s (state of %qE: %qs -> %qs, NULL origin, meaning: %s)",
 		   custom_desc.m_buffer,
 		   var,
 		   m_from->get_name (),
-		   m_to->get_name ());
+		   m_to->get_name (),
+		   pp_formatted_text (&meaning_pp));
+
 	      custom_desc.maybe_free ();
 	      return result;
 	    }
@@ -355,6 +381,26 @@ state_change_event::get_desc (bool can_colorize) const
 	 m_from->get_name (),
 	 m_to->get_name ());
     }
+}
+
+/* Implementation of diagnostic_event::get_meaning vfunc for
+   state change events: delegate to the pending_diagnostic to
+   get any meaning.  */
+
+diagnostic_event::meaning
+state_change_event::get_meaning () const
+{
+  if (m_pending_diagnostic)
+    {
+      region_model *model = m_dst_state.m_region_model;
+      tree var = model->get_representative_tree (m_sval);
+      tree origin = model->get_representative_tree (m_origin);
+      return m_pending_diagnostic->get_meaning_for_state_change
+	(evdesc::state_change (false, var, origin,
+			       m_from, m_to, m_emission_id, *this));
+    }
+  else
+    return meaning ();
 }
 
 /* class superedge_event : public checker_event.  */
@@ -430,6 +476,21 @@ cfg_edge_event::cfg_edge_event (enum event_kind kind,
 : superedge_event (kind, eedge, loc, fndecl, depth)
 {
   gcc_assert (eedge.m_sedge->m_kind == SUPEREDGE_CFG_EDGE);
+}
+
+/* Implementation of diagnostic_event::get_meaning vfunc for
+   CFG edge events.  */
+
+diagnostic_event::meaning
+cfg_edge_event::get_meaning () const
+{
+  const cfg_superedge& cfg_sedge = get_cfg_superedge ();
+  if (cfg_sedge.true_value_p ())
+    return meaning (VERB_branch, PROPERTY_true);
+  else if (cfg_sedge.false_value_p ())
+    return meaning (VERB_branch, PROPERTY_false);
+  else
+    return meaning ();
 }
 
 /* class start_cfg_edge_event : public cfg_edge_event.  */
@@ -690,6 +751,15 @@ call_event::get_desc (bool can_colorize) const
 			  get_caller_fndecl ());
 }
 
+/* Implementation of diagnostic_event::get_meaning vfunc for
+   function call events.  */
+
+diagnostic_event::meaning
+call_event::get_meaning () const
+{
+  return meaning (VERB_call, NOUN_function);
+}
+
 /* Override of checker_event::is_call_p for calls.  */
 
 bool
@@ -760,6 +830,15 @@ return_event::get_desc (bool can_colorize) const
 			  m_src_snode->m_fun->decl);
 }
 
+/* Implementation of diagnostic_event::get_meaning vfunc for
+   function return events.  */
+
+diagnostic_event::meaning
+return_event::get_meaning () const
+{
+  return meaning (VERB_return, NOUN_function);
+}
+
 /* Override of checker_event::is_return_p for returns.  */
 
 bool
@@ -776,6 +855,16 @@ start_consolidated_cfg_edges_event::get_desc (bool can_colorize) const
   return make_label_text (can_colorize,
 			  "following %qs branch...",
 			  m_edge_sense ? "true" : "false");
+}
+
+/* Implementation of diagnostic_event::get_meaning vfunc for
+   start_consolidated_cfg_edges_event.  */
+
+diagnostic_event::meaning
+start_consolidated_cfg_edges_event::get_meaning () const
+{
+  return meaning (VERB_branch,
+		  (m_edge_sense ? PROPERTY_true : PROPERTY_false));
 }
 
 /* class setjmp_event : public checker_event.  */
@@ -975,6 +1064,15 @@ warning_event::get_desc (bool can_colorize) const
     }
   else
     return label_text::borrow ("here");
+}
+
+/* Implementation of diagnostic_event::get_meaning vfunc for
+   warning_event.  */
+
+diagnostic_event::meaning
+warning_event::get_meaning () const
+{
+  return meaning (VERB_danger, NOUN_unknown);
 }
 
 /* Print a single-line representation of this path to PP.  */

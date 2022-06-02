@@ -301,7 +301,7 @@ Objective-C and Objective-C++ Dialects}.
 -fdiagnostics-show-location=@r{[}once@r{|}every-line@r{]}  @gol
 -fdiagnostics-color=@r{[}auto@r{|}never@r{|}always@r{]}  @gol
 -fdiagnostics-urls=@r{[}auto@r{|}never@r{|}always@r{]}  @gol
--fdiagnostics-format=@r{[}text@r{|}json@r{|}json-stderr@r{|}json-file@r{]}  @gol
+-fdiagnostics-format=@r{[}text@r{|}sarif-stderr@r{|}sarif-file@r{|}json@r{|}json-stderr@r{|}json-file@r{]}  @gol
 -fno-diagnostics-show-option  -fno-diagnostics-show-caret @gol
 -fno-diagnostics-show-labels  -fno-diagnostics-show-line-numbers @gol
 -fno-diagnostics-show-cwe  @gol
@@ -5305,10 +5305,14 @@ Unicode characters.  For the example above, the following will be printed:
 @item -fdiagnostics-format=@var{FORMAT}
 @opindex fdiagnostics-format
 Select a different format for printing diagnostics.
-@var{FORMAT} is @samp{text}, @samp{json}, @samp{json-stderr},
-or @samp{json-file}.
+@var{FORMAT} is @samp{text}, @samp{sarif-stderr}, @samp{sarif-file},
+@samp{json}, @samp{json-stderr}, or @samp{json-file}.
 
 The default is @samp{text}.
+
+The @samp{sarif-stderr} and @samp{sarif-file} formats both emit
+diagnostics in SARIF Version 2.1.0 format, either to stderr, or to a file
+named @file{@var{source}.sarif}, respectively.
 
 The @samp{json} format is a synonym for @samp{json-stderr}.
 The @samp{json-stderr} and @samp{json-file} formats are identical, apart from

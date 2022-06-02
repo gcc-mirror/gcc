@@ -640,6 +640,12 @@ struct lang_hooks
   /* Invoked before the early_finish debug hook is invoked.  */
   void (*finalize_early_debug) (void);
 
+  /* Get a value for the SARIF v2.1.0 "artifact.sourceLanguage" property
+     for FILENAME, or return NULL.
+     See SARIF v2.1.0 Appendix J for suggested values for common programming
+     languages.  */
+  const char *(*get_sarif_source_language) (const char *filename);
+
   /* Whenever you add entries here, make sure you adjust langhooks-def.h
      and langhooks.cc accordingly.  */
 };
