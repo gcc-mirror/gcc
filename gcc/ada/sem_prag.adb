@@ -8336,7 +8336,6 @@ package body Sem_Prag is
                Error_Pragma_Arg
                  ("argument of pragma% must be subprogram or access type",
                   Arg2);
-               Subp := Empty;
             end if;
 
             --  ISO C requires a named parameter before the ellipsis, so a
@@ -18641,7 +18640,6 @@ package body Sem_Prag is
                     Interrupt_States.Table (IST_Num).Pragma_Loc;
                   Error_Pragma_Arg
                     ("state conflicts with that given #", Arg2);
-                  exit;
                end if;
 
                IST_Num := IST_Num + 1;
@@ -23762,7 +23760,6 @@ package body Sem_Prag is
 
                   else
                      Pragma_Misplaced;
-                     exit;
                   end if;
 
                   Prev (Stmt);

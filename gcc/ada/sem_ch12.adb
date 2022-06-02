@@ -10572,7 +10572,6 @@ package body Sem_Ch12 is
          Error_Msg_N
            ("expect package instance to instantiate formal", Actual);
          Abandon_Instantiation (Actual);
-         raise Program_Error;
 
       else
          Actual_Pack := Entity (Actual);

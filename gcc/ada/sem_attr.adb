@@ -4747,7 +4747,6 @@ package body Sem_Attr is
                   Error_Attr
                     ("prefix of attribute % cannot reference local entities",
                      Nod);
-                  return Abandon;
                else
                   return OK;
                end if;
@@ -4989,7 +4988,6 @@ package body Sem_Attr is
             else
                Error_Attr
                  ("attribute % cannot appear in body or accept statement", N);
-               exit;
             end if;
          end loop;
 
@@ -5383,7 +5381,6 @@ package body Sem_Attr is
                   Error_Attr
                     ("prefix of attribute % cannot reference local entities",
                      Nod);
-                  return Abandon;
 
                --  Otherwise keep inspecting the prefix
 
