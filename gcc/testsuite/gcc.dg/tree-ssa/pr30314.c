@@ -4,6 +4,8 @@
 /* { dg-final { scan-tree-dump-not "\.MUL_OVERFLOW " "optimized" } } */
 /* { dg-final { scan-tree-dump " > 122713351" "optimized" { target int32 } } } */
 /* { dg-final { scan-tree-dump " > 527049830677415760" "optimized" { target lp64 } } } */
+/* { dg-final { scan-tree-dump " > 102261126" "optimized" { target int32 } } } */
+/* { dg-final { scan-tree-dump " > 439208192231179800" "optimized" { target lp64 } } } */
 
 int
 foo (unsigned int x)
@@ -15,4 +17,16 @@ int
 bar (unsigned long int x)
 {
   return __builtin_mul_overflow_p (x, 35UL, 0UL);
+}
+
+int
+baz (unsigned int x)
+{
+  return __builtin_mul_overflow_p (42, x, 0U);
+}
+
+int
+qux (unsigned long int x)
+{
+  return __builtin_mul_overflow_p (42, x, 0UL);
 }
