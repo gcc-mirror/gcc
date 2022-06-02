@@ -2139,6 +2139,8 @@ build_call_alloc_dealloc_proc (tree gnu_obj, tree gnu_size, tree gnu_type,
 			       Entity_Id gnat_proc, Entity_Id gnat_pool)
 {
   tree gnu_proc = gnat_to_gnu (gnat_proc);
+  tree gnu_align = size_int (TYPE_ALIGN (gnu_type) / BITS_PER_UNIT);
+
   tree gnu_call;
 
   /* A storage pool's underlying type is a record type for both predefined
@@ -2154,7 +2156,6 @@ build_call_alloc_dealloc_proc (tree gnu_obj, tree gnu_size, tree gnu_type,
 
       tree gnu_pool = gnat_to_gnu (gnat_pool);
       tree gnu_pool_addr = build_unary_op (ADDR_EXPR, NULL_TREE, gnu_pool);
-      tree gnu_align = size_int (TYPE_ALIGN (gnu_type) / BITS_PER_UNIT);
 
       gnu_size = convert (gnu_size_type, gnu_size);
       gnu_align = convert (gnu_size_type, gnu_align);
@@ -2178,6 +2179,7 @@ build_call_alloc_dealloc_proc (tree gnu_obj, tree gnu_size, tree gnu_type,
       tree gnu_size_type = gnat_to_gnu_type (gnat_size_type);
 
       gnu_size = convert (gnu_size_type, gnu_size);
+      gnu_align = convert (gnu_size_type, gnu_align);
 
       if (DECL_BUILT_IN_CLASS (gnu_proc) == BUILT_IN_FRONTEND
 	  && DECL_FE_FUNCTION_CODE (gnu_proc) == BUILT_IN_RETURN_SLOT)
@@ -2191,7 +2193,7 @@ build_call_alloc_dealloc_proc (tree gnu_obj, tree gnu_size, tree gnu_type,
 
 	  gnu_call = DECL_RESULT (current_function_decl);
 
-	  /* The allocation has alreay been done by the caller so we check that
+	  /* The allocation has already been done by the caller so we check that
 	     we are not going to overflow the return slot.  */
 	  if (TYPE_CI_CO_LIST (TREE_TYPE (current_function_decl)))
 	    gnu_ret_size
@@ -2216,7 +2218,7 @@ build_call_alloc_dealloc_proc (tree gnu_obj, tree gnu_size, tree gnu_type,
 	gnu_call = build_call_n_expr (gnu_proc, 2, gnu_obj, gnu_size);
 
       else
-	gnu_call = build_call_n_expr (gnu_proc, 1, gnu_size);
+	gnu_call = build_call_n_expr (gnu_proc, 2, gnu_size, gnu_align);
     }
 
   return gnu_call;
@@ -2334,7 +2336,7 @@ maybe_wrap_free (tree data_ptr, tree data_type)
 
 /* Build a GCC tree to call an allocation or deallocation function.
    If GNU_OBJ is nonzero, it is an object to deallocate.  Otherwise,
-   generate an allocator.
+   generate an allocation.
 
    GNU_SIZE is the number of bytes to allocate and GNU_TYPE is the contained
    object type, used to determine the to-be-honored address alignment.
