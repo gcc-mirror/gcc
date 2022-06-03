@@ -711,6 +711,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
     case E_Variable:
       {
 	const Entity_Id gnat_type = Etype (gnat_entity);
+	const Entity_Id gnat_und_type = Underlying_Type (gnat_type);
 	/* Always create a variable for volatile objects and variables seen
 	   constant but with a Linker_Section pragma.  */
 	bool const_flag
@@ -749,7 +750,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	  }
 
 	/* Get the type after elaborating the renamed object.  */
-	if (foreign && Is_Descendant_Of_Address (Underlying_Type (gnat_type)))
+	if (foreign && Is_Descendant_Of_Address (gnat_und_type))
 	  gnu_type = ptr_type_node;
 	else
 	  gnu_type = gnat_to_gnu_type (gnat_type);
@@ -947,7 +948,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	   subtype, make a type that includes the template.  We will either
 	   allocate or create a variable of that type, see below.  */
 	if (Is_Constr_Subt_For_UN_Aliased (gnat_type)
-	    && Is_Array_Type (Underlying_Type (gnat_type))
+	    && Is_Array_Type (gnat_und_type)
 	    && !type_annotate_only)
 	  {
 	    tree gnu_array = gnat_to_gnu_type (Base_Type (gnat_type));
@@ -996,8 +997,9 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	/* If the object is aliased, of a constrained nominal subtype and its
 	   size might be zero at run time, we force at least the unit size.  */
 	if (Is_Aliased (gnat_entity)
+	    && Is_Constrained (gnat_type)
 	    && !Is_Constr_Subt_For_UN_Aliased (gnat_type)
-	    && Is_Array_Type (Underlying_Type (gnat_type))
+	    && Is_Array_Type (gnat_und_type)
 	    && !TREE_CONSTANT (gnu_object_size))
 	  gnu_size = size_binop (MAX_EXPR, gnu_object_size, bitsize_unit_node);
 
@@ -1246,7 +1248,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	       subtype, then it can overlay only another aliased object with an
 	       unconstrained array nominal subtype and compatible template.  */
 	    if (Is_Constr_Subt_For_UN_Aliased (gnat_type)
-		&& Is_Array_Type (Underlying_Type (gnat_type))
+		&& Is_Array_Type (gnat_und_type)
 		&& !type_annotate_only)
 	      {
 		tree rec_type = TREE_TYPE (gnu_type);
@@ -1487,7 +1489,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	   object.  Note that we have to do it this late because of the
 	   couple of allocation adjustments that might be made above.  */
 	if (Is_Constr_Subt_For_UN_Aliased (gnat_type)
-	    && Is_Array_Type (Underlying_Type (gnat_type))
+	    && Is_Array_Type (gnat_und_type)
 	    && !type_annotate_only)
 	  {
 	    /* In case the object with the template has already been allocated
