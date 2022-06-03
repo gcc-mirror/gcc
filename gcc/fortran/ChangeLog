@@ -1,3 +1,8 @@
+2022-06-02  David Malcolm  <dmalcolm@redhat.com>
+
+	* f95-lang.cc (gfc_get_sarif_source_language): New.
+	(LANG_HOOKS_GET_SARIF_SOURCE_LANGUAGE): Redefine.
+
 2022-05-31  Jason Merrill  <jason@redhat.com>
 
 	* Make-lang.in (fortran.tags): Look at *.cc.

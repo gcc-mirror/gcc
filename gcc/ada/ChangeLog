@@ -1,3 +1,305 @@
+2022-06-02  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc-interface/misc.cc (gnat_get_sarif_source_language): New.
+	(LANG_HOOKS_GET_SARIF_SOURCE_LANGUAGE): Redefine.
+
+2022-06-02  Pierre-Marie de Rodat  <derodat@adacore.com>
+
+	* gcc-interface/gigi.h: Update copyright notice.
+	* gcc-interface/lang-specs.h: Likewise.
+	* gcc-interface/utils.cc: Likewise.
+
+2022-06-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/gigi.h (enum standard_datatypes): Remove values
+	for the SJLJ exception mechanism.
+	(jmpbuf_type): Delete.
+	(jmpbuf_ptr_type): Likewise.
+	(get_jmpbuf_decl): Likewise.
+	(set_jmpbuf_decl): Likewise.
+	(get_excptr_decl): Likewise.
+	(not_handled_by_others_decl): Likewise.
+	(setjmp_decl): Likewise.
+	(update_setjmp_buf_decl): Likewise.
+	(raise_nodefer_decl): Likewise.
+	(set_block_jmpbuf_decl): Likewise.
+	(get_block_jmpbuf_decl): Likewise.
+	* gcc-interface/trans.cc (gigi): Delete dead code.
+	* gcc-interface/utils.cc (gnat_binding_level): Remove JMPBUF_DECL.
+	(gnat_pushlevel): Do not clear it.
+	(set_block_jmpbuf_decl): Delete.
+	(get_block_jmpbuf_decl): Likewise.
+
+2022-06-02  Ghjuvan Lacambre  <lacambre@adacore.com>
+
+	* gcc-interface/decl.cc (warn_on_field_placement): Add insertion
+	character '.q' to warning string.
+
+2022-06-02  Arnaud Charlet  <charlet@adacore.com>
+
+	* gcc-interface/Makefile.in (gnatlib-shared-default): Add
+	-fno-lto.
+
+2022-06-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.cc (gnat_to_gnu_entity): Do not check the
+	scope of anonymous access Itypes.
+	* gcc-interface/trans.cc (Identifier_to_gnu): Do not translate
+	the return type of a subprogram here.
+
+2022-06-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch7.adb (Expand_N_Package_Body): Build static dispatch
+	tables only for units that are not compilation units, unless
+	they are generic instances.  Do not push a scope for this.
+	(Expand_N_Package_Declaration): Build static dispatch tables
+	only for units that are both not compilation units and generic
+	instances.
+	* exp_disp.adb (Build_Static_Dispatch_Tables): Remove redundant
+	early return.  Push a scope for package bodies.
+	* sem_ch10.adb: Add with and use clauses for Exp_Disp.
+	(Analyze_Compilation_Unit): Build static dispatch tables here.
+
+2022-06-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch6.adb (Analyze_Subprogram_Body_Helper): Clear the Is_Public
+	flag on thunks.
+
+2022-06-02  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_ch13.adb, exp_ch5.adb, exp_ch9.adb, exp_strm.adb,
+	sem_ch10.adb, sem_ch13.adb, sem_ch5.adb, sem_ch6.adb,
+	sem_ch8.adb, sem_elab.adb, sem_eval.adb, sem_prag.adb,
+	sem_util.adb: Remove checks for the missing list before
+	iterating with First/Next; reindent code and refill comments.
+
+2022-06-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* einfo.ads (Has_Controlling_Result): Document new usage.
+	(Is_Thunk): Document secondary stack thunks.
+	(Returns_By_Ref): Adjust.
+	* exp_ch6.adb (Caller_Known_Size): Return true for tagged types.
+	(Expand_N_Extended_Return_Statement): Do not call Set_By_Ref.
+	(Expand_Simple_Function_Return): For a BIP return with an Alloc_Form
+	parameter, mark the node as returning on the secondary stack.
+	Replace call to Is_Limited_Interface with Is_Limited_View.  Deal wit
+	secondary stack thunks.  Do not call Set_By_Ref.  Optimize the case
+	of a call to a function whose type also needs finalization.
+	(Needs_BIP_Task_Actuals): Replace Thunk_Entity with Thunk_Target.
+	(Needs_BIP_Finalization_Master): Cosmetic fixes.
+	(Needs_BIP_Alloc_Form): Check No_Secondary_Stack restriction and
+	return true for tagged types.
+	* exp_ch7.adb (Transient Scope Management): Update description.
+	* exp_disp.adb (Expand_Dispatching_Call): Always set Returns_By_Ref
+	on designated type if the call is dispatching on result.  Tidy up.
+	(Expand_Interface_Thunk): Change type of Thunk_Code from Node_Id to
+	List_Id.  Change type of local variables from Node_Id to Entity_Id.
+	Propagate Aliased_Present flag to create the formals and explicitly
+	set Has_Controlling_Result to False.  Build a secondary stack thunk
+	if necessary in the function case.
+	(Expand_Secondary_Stack_Thunk): New function.
+	(Make_Secondary_DT): Build secondary stack thunks if necessary.
+	(Make_DT): Likewise.
+	(Register_Predefined_Primitive): Likewise.
+	(Register_Primitive): Likewise.
+	* exp_util.ads (Is_Secondary_Stack_Thunk): Declare.
+	(Thunk_Target): Likewise.
+	* exp_util.adb (Is_Secondary_Stack_Thunk): New function.
+	(Thunk_Target): Likewise.
+	* fe.h (Is_Secondary_Stack_Thunk): Declare.
+	(Thunk_Target): Likewise.
+	* gen_il-fields.ads (Opt_Field_Enum): Remove By_Ref.
+	* gen_il-gen-gen_nodes.adb (N_Simple_Return_Statement): Likewise.
+	(N_Extended_Return_Statement): Likewise.
+	* sem_ch6.adb (Analyze_Subprogram_Specification): Skip check for
+	abstract return type in the thunk case.
+	(Create_Extra_Formals): Replace Thunk_Entity with Thunk_Target.
+	* sem_disp.adb (Check_Controlling_Formals): Skip in the thunk case.
+	* sem_util.adb: Add use and with clauses for Exp_Ch6.
+	(Compute_Returns_By_Ref): Do not process procedures and only set
+	the flag for direct return by reference.
+	(Needs_Secondary_Stack): Do not return true for specific tagged
+	types and adjust comments accordingly.
+	* sinfo.ads (By_Ref): Delete.
+	(N_Simple_Return_Statement): Remove By_Ref.
+	(N_Extended_Return_Statement): Likewise.
+	* gcc-interface/ada-tree.h (TYPE_RETURN_UNCONSTRAINED_P): Delete.
+	* gcc-interface/decl.cc (gnat_to_gnu_subprog_type): Do not use it.
+	Return by direct reference if the return type needs the secondary
+	stack as well as for secondary stack thunks.
+	* gcc-interface/gigi.h (fntype_same_flags_p): Remove parameter.
+	* gcc-interface/misc.cc (gnat_type_hash_eq): Adjust to above change.
+	* gcc-interface/trans.cc (finalize_nrv): Replace test on
+	TYPE_RETURN_UNCONSTRAINED_P with TYPE_RETURN_BY_DIRECT_REF_P.
+	(Subprogram_Body_to_gnu): Do not call maybe_make_gnu_thunk for
+	secondary stack thunks.
+	(Call_to_gnu): Do not test TYPE_RETURN_UNCONSTRAINED_P.
+	(gnat_to_gnu) <N_Simple_Return_Statement>: In the return by direct
+	reference case, test for the presence of Storage_Pool on the node
+	to build an allocator.
+	(maybe_make_gnu_thunk): Deal with Thunk_Entity and Thunk_Target.
+	* gcc-interface/utils.cc (fntype_same_flags_p): Remove parameter.
+
+2022-06-02  Marc Poulhiès  <poulhies@adacore.com>
+
+	* einfo.ads: Fix reference to Global_Entity_Suppress and
+	Local_Entity_Suppress variable in the comments.
+	* sem.ads: Likewise.
+	* sem_prag.adb: Likewise.
+
+2022-06-02  Claire Dross  <dross@adacore.com>
+
+	* libgnat/s-aridou.adb: Use Always_Return instead of Terminating
+	to annotate termination for GNATprove.
+	* libgnat/s-arit32.adb: Idem.
+	* libgnat/s-spcuop.ads: Idem.
+
+2022-06-02  Julien Bortolussi  <bortolussi@adacore.com>
+
+	* libgnat/a-cofuse.ads, libgnat/a-cofuse.adb,
+	libgnat/a-cofuma.ads, libgnat/a-cofuma.adb: Make Length and
+	Num_Overlaps return Big_Natural.
+	* libgnat/a-cforse.ads, libgnat/a-cforse.adb,
+	libgnat/a-cforma.adb, libgnat/a-cfhase.ads,
+	libgnat/a-cfhase.adb, libgnat/a-cfhama.adb,
+	libgnat/a-cfdlli.adb: Adapt code to handle Big_Integers instead
+	of Count_Type.
+
+2022-06-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch3.adb (Init_Secondary_Tags.Initialize_Tag): Initialize the
+	Offset_Func component by means of 'Unrestricted_Access.
+
+2022-06-02  Ghjuvan Lacambre  <lacambre@adacore.com>
+
+	* errout.adb (Write_JSON_Span): Add subprogram name to emitted
+	JSON.
+
+2022-06-02  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem_ch7.adb (Set_Referencer_Of_Non_Subprograms): New local
+	procedure, used for code refactoring. Also take into account
+	Inline_Always pragma when deciding to make a symbol public for
+	C generation.
+
+2022-06-02  Yannick Moy  <moy@adacore.com>
+
+	* atree.adb (New_Copy): Reset flags related to ghost entities
+	before marking the new node.
+
+2022-06-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch6.adb (Freeze_Subprogram.Register_Predefined_DT_Entry): Move
+	procedure to...
+	* exp_disp.ads (Expand_Interface_Thunk): Move declaration to...
+	(Register_Predefined_Primitive): Declare.
+	* exp_disp.adb (Expand_Interface_Thunk): ...here.
+	(Register_Predefined_Primitive): ...here and change into a function
+	returning List_Id.
+
+2022-06-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch3.adb (Expand_Freeze_Record_Type): Adjust comment.
+	(Expand_N_Object_Declaration): Do not build static dispatch tables.
+	* exp_disp.adb (Make_And_Insert_Dispatch_Table): New procedure.
+	(Build_Static_Dispatch_Tables): Call it to build the dispatch tables
+	and wrap them in the Actions list of a freeze node.
+
+2022-06-02  Doug Rupp  <rupp@adacore.com>
+
+	* libgnat/system-vxworks7-arm.ads (Support_Atomic_Primitives):
+	Set True.
+	* libgnat/system-vxworks7-arm-rtp-smp.ads: Likewise.
+	* libgnat/system-vxworks7-aarch64.ads: Likewise.
+	* libgnat/system-vxworks7-aarch64-rtp-smp.ads: Likewise:
+
+2022-06-02  Javier Miranda  <miranda@adacore.com>
+
+	* libgnat/g-dyntab.ads (Table_Type): Update documentation.
+
+2022-06-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* freeze.adb (Check_Expression_Function.Find_Constant): Make test
+	for deferred constants more robust.
+
+2022-06-02  Joffrey Huguet  <huguet@adacore.com>
+
+	* libgnat/i-cstrin.ads (Update): Update precondition.
+
+2022-06-02  Yannick Moy  <moy@adacore.com>
+
+	* sem_ch2.adb (Analyze_Identifier): Add checking for ghost
+	context.
+	* sem_ch5.adb (Analyze_Implicit_Label_Declaration): Treat
+	implicit labels like other entities by setting their ghost
+	status according to context.
+	* ghost.adb (Check_Ghost_Context): Adapt checking.
+
+2022-06-02  Joffrey Huguet  <huguet@adacore.com>
+
+	* libgnat/i-cstrin.ads (Update): Add precondition.
+
+2022-06-02  Yannick Moy  <moy@adacore.com>
+
+	* sem_ch5.adb (Analyze_Label_Entity): Remove body.
+	* sem_ch5.ads (Analyze_Label_Entity): Remove spec.
+
+2022-06-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_util.adb (Propagate_DIC_Attributes): Add ??? comment.
+	(Propagate_Invariant_Attributes): Likewise.  Propagate the
+	Has_Inheritable_Invariants and Has_Inherited_Invariants to
+	the base type of the target type.
+
+2022-06-02  Doug Rupp  <rupp@adacore.com>
+
+	* libgnat/system-linux-arm.ads (Memory_Size): Compute based on
+	Word_Size.
+
+2022-06-02  Doug Rupp  <rupp@adacore.com>
+
+	* libgnat/system-vxworks7-aarch64-rtp-smp.ads (Word_Size):
+	Compute based on Standard'Word_Size. (Memory_Size): Compute
+	based on Word_Size.
+	* libgnat/system-vxworks7-arm-rtp-smp.ads: Likewise.
+	* libgnat/system-vxworks7-e500-rtp-smp.ads: Likewise.
+	* libgnat/system-vxworks7-e500-rtp.ads: Likewise.
+	* libgnat/system-vxworks7-ppc-rtp-smp.ads: Likewise.
+	* libgnat/system-vxworks7-ppc-rtp.ads: Likewise.
+	* libgnat/system-vxworks7-ppc64-rtp-smp.ads: Likewise.
+	* libgnat/system-vxworks7-x86-rtp-smp.ads: Likewise.
+	* libgnat/system-vxworks7-x86-rtp.ads: Likewise.
+
+2022-06-02  Justin Squirek  <squirek@adacore.com>
+
+	* gnatbind.adb (Gnatbind): Add initialize call for Uintp
+	* gnatls.adb (Gnatls): Likewise.
+	* gprep.adb (Gnatprep): Likewise.
+	* make.adb (Initialize): Likewise.
+
+2022-06-02  Claire Dross  <dross@adacore.com>
+
+	* libgnat/a-cfinve.ads (Element): Change the type of the
+	Position parameter to Extended_Index.
+	* libgnat/a-cfinve.adb (Element): Idem.
+	* libgnat/a-cofove.ads (Element): Idem.
+	* libgnat/a-cofove.adb (Element): Idem.
+
+2022-06-02  Joffrey Huguet  <huguet@adacore.com>
+
+	* libgnat/s-atacco.ads (To_Pointer): Add Global => null.
+	(To_Address): Add SPARK_Mode => Off.
+
+2022-06-02  Joffrey Huguet  <huguet@adacore.com>
+
+	* libgnat/i-cstrin.ads (To_Chars_Ptr): Add SPARK_Mode => Off.
+	(Free): Likewise.
+	(New_Char_Array): Add global contracts and Volatile attribute.
+	(New_String): Likewise.
+	(Value, Strlen, Update): Add global contracts and preconditions.
+	* libgnat/i-cstrin.adb: Add SPARK_Mode => Off to the package
+	body.
+
 2022-06-01  Yannick Moy  <moy@adacore.com>
 
 	* contracts.adb (Check_Type_Or_Object_External_Properties): Check

@@ -1,3 +1,62 @@
+2022-06-02  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/105803
+	* g++.dg/template/new13.C: New test.
+
+2022-06-02  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-c++-common/diagnostic-format-sarif-file-1.c: New test.
+	* c-c++-common/diagnostic-format-sarif-file-2.c: New test.
+	* c-c++-common/diagnostic-format-sarif-file-3.c: New test.
+	* c-c++-common/diagnostic-format-sarif-file-4.c: New test.
+	* gcc.dg/analyzer/file-meaning-1.c: New test.
+	* gcc.dg/analyzer/malloc-meaning-1.c: New test.
+	* gcc.dg/analyzer/malloc-sarif-1.c: New test.
+	* gcc.dg/plugin/analyzer_gil_plugin.c
+	(gil_diagnostic::get_meaning_for_state_change): New vfunc impl.
+	* gcc.dg/plugin/diagnostic-test-paths-5.c: New test.
+	* gcc.dg/plugin/plugin.exp (plugin_test_list): Add
+	diagnostic-test-paths-5.c to tests for
+	diagnostic_plugin_test_paths.c.
+	* lib/gcc-dg.exp: Load scansarif.exp.
+	* lib/scansarif.exp: New test.
+
+2022-06-02  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-c++-common/diagnostic-format-json-file-1.c: New test.
+	* c-c++-common/diagnostic-format-json-stderr-1.c: New test.
+
+2022-06-02  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105795
+	* g++.dg/cpp1z/constexpr-aggr-base1.C: New test.
+
+2022-06-02  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR target/105791
+	* gcc.target/i386/pr105791.c: New test case.
+
+2022-06-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/30314
+	* gcc.dg/tree-ssa/pr30314.c: Add tests with swapped arguments.
+
+2022-06-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/105778
+	* gcc.target/i386/pr105778.c: New test.
+
+2022-06-02  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/101668
+	* gcc.target/i386/pr101668.c: New testcase.
+	* gcc.dg/vect/bb-slp-pr101668.c: Likewise.
+
+2022-06-02  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/105802
+	* g++.dg/opt/pr105802.C: New testcase.
+
 2022-06-01  H.J. Lu  <hjl.tools@gmail.com>
 
 	PR rtl-optimization/105638

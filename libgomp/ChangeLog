@@ -1,3 +1,7 @@
+2022-06-02  David Malcolm  <dmalcolm@redhat.com>
+
+	* testsuite/lib/libgomp.exp: Add load_gcc_lib of scansarif.exp.
+
 2022-05-31  Jakub Jelinek  <jakub@redhat.com>
 
 	* testsuite/libgomp.c-c++-common/allocate-1.c (foo): Add testcase for

@@ -1,3 +1,173 @@
+2022-06-02  David Malcolm  <dmalcolm@redhat.com>
+
+	* Makefile.in (OBJS): Add tree-diagnostic-client-data-hooks.o and
+	tree-logical-location.o.
+	(OBJS-libcommon): Add diagnostic-format-sarif.o; reorder.
+	(CFLAGS-tree-diagnostic-client-data-hooks.o): Add TARGET_NAME.
+	* common.opt (fdiagnostics-format=): Add sarif-stderr and sarif-file.
+	(sarif-stderr, sarif-file): New enum values.
+	* diagnostic-client-data-hooks.h: New file.
+	* diagnostic-format-sarif.cc: New file.
+	* diagnostic-path.h (enum diagnostic_event::verb): New enum.
+	(enum diagnostic_event::noun): New enum.
+	(enum diagnostic_event::property): New enum.
+	(struct diagnostic_event::meaning): New struct.
+	(diagnostic_event::get_logical_location): New vfunc.
+	(diagnostic_event::get_meaning): New vfunc.
+	(simple_diagnostic_event::get_logical_location): New vfunc impl.
+	(simple_diagnostic_event::get_meaning): New vfunc impl.
+	* diagnostic.cc: Include "diagnostic-client-data-hooks.h".
+	(diagnostic_initialize): Initialize m_client_data_hooks.
+	(diagnostic_finish): Clean up m_client_data_hooks.
+	(diagnostic_event::meaning::dump_to_pp): New.
+	(diagnostic_event::meaning::maybe_get_verb_str): New.
+	(diagnostic_event::meaning::maybe_get_noun_str): New.
+	(diagnostic_event::meaning::maybe_get_property_str): New.
+	(get_cwe_url): Make non-static.
+	(diagnostic_output_format_init): Handle
+	DIAGNOSTICS_OUTPUT_FORMAT_SARIF_STDERR and
+	DIAGNOSTICS_OUTPUT_FORMAT_SARIF_FILE.
+	* diagnostic.h (enum diagnostics_output_format): Add
+	DIAGNOSTICS_OUTPUT_FORMAT_SARIF_STDERR and
+	DIAGNOSTICS_OUTPUT_FORMAT_SARIF_FILE.
+	(class diagnostic_client_data_hooks): New forward decl.
+	(class logical_location): New forward decl.
+	(diagnostic_context::m_client_data_hooks): New field.
+	(diagnostic_output_format_init_sarif_stderr): New decl.
+	(diagnostic_output_format_init_sarif_file): New decl.
+	(get_cwe_url): New decl.
+	* doc/invoke.texi (-fdiagnostics-format=): Add sarif-stderr and
+	sarif-file.
+	* doc/sourcebuild.texi (Scan a particular file): Add
+	scan-sarif-file and scan-sarif-file-not.
+	* langhooks-def.h (lhd_get_sarif_source_language): New decl.
+	(LANG_HOOKS_GET_SARIF_SOURCE_LANGUAGE): New macro.
+	(LANG_HOOKS_INITIALIZER): Add
+	LANG_HOOKS_GET_SARIF_SOURCE_LANGUAGE.
+	* langhooks.cc (lhd_get_sarif_source_language): New.
+	* langhooks.h (lang_hooks::get_sarif_source_language): New field.
+	* logical-location.h: New file.
+	* plugin.cc (struct for_each_plugin_closure): New.
+	(for_each_plugin_cb): New.
+	(for_each_plugin): New.
+	* plugin.h (for_each_plugin): New decl.
+	* tree-diagnostic-client-data-hooks.cc: New file.
+	* tree-diagnostic.cc: Include "diagnostic-client-data-hooks.h".
+	(tree_diagnostics_defaults): Populate m_client_data_hooks.
+	* tree-logical-location.cc: New file.
+	* tree-logical-location.h: New file.
+
+2022-06-02  David Malcolm  <dmalcolm@redhat.com>
+
+	* common.opt (fdiagnostics-format=): Add json-stderr and json-file
+	to description.
+	(DIAGNOSTICS_OUTPUT_FORMAT_JSON): Rename to...
+	(DIAGNOSTICS_OUTPUT_FORMAT_JSON_STDERR): ...this.
+	(diagnostics_output_format): Add json-stderr and json-file.
+	* diagnostic-format-json.cc (json_flush_to_file): New.
+	(json_final_cb): Convert to...
+	(json_flush_to_file): ...this, ...
+	(json_stderr_final_cb): ...this, and...
+	(json_file_final_cb): ...this.
+	(diagnostic_output_format_init): Move to diagnostic.cc.
+	(json_output_base_file_name): New.
+	(diagnostic_output_format_init_json): New.
+	(diagnostic_output_format_init_json_stderr): New.
+	(diagnostic_output_format_init_json_file): New.
+	* diagnostic.cc (diagnostic_output_format_init): Move here from
+	diagnostic-format-json.cc; update for changes to enum.
+	* diagnostic.h (enum diagnostics_output_format): Rename
+	DIAGNOSTICS_OUTPUT_FORMAT_JSON to
+	DIAGNOSTICS_OUTPUT_FORMAT_JSON_STDERR, and add
+	DIAGNOSTICS_OUTPUT_FORMAT_JSON_FILE.
+	(diagnostic_output_format_init): Add base_file_name param.
+	(diagnostic_output_format_init_json_stderr): New decl.
+	(diagnostic_output_format_init_json_file): New dec.
+	* doc/invoke.texi (-fdiagnostics-format=): Add "json-stderr" and
+	"json-file".  Rewrite so that the existing "json" is a synonym of
+	"json-stderr".
+	* gcc.cc (driver_handle_option): Pass dump_base_name to
+	diagnostic_output_format_init.
+	* opts.cc (common_handle_option): Likewise.
+
+2022-06-02  David Malcolm  <dmalcolm@redhat.com>
+
+	* json.cc (string::print): Fix escaping of '\'.
+
+2022-06-02  Philipp Tomsich  <philipp.tomsich@vrull.eu>
+
+	* config/riscv/riscv.cc (riscv_build_integer_1): Rewrite value as
+	(-1 << 31) for the single-bit case, when operating on (1 << 31)
+	in SImode.
+	* config/riscv/riscv.h (SINGLE_BIT_MASK_OPERAND): Allow for
+	any single-bit value, moving the special case for (1 << 31) to
+	riscv_build_integer_1 (in riscv.c).
+
+2022-06-02  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR target/105791
+	* config/i386/sse.md (V_128_256):Add V1TI and V2TI.
+	(define_mode_attr avxsizesuffix): Add support for V1TI and V2TI.
+
+2022-06-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/105778
+	* config/i386/i386.md (*ashl<dwi>3_doubleword_mask): Remove :SI
+	from AND and its operands and just verify operands[2] has HImode,
+	SImode or for TARGET_64BIT DImode.  Allow operands[3] to be a mask
+	with all low 6 (64-bit) or 5 (32-bit) bits set and in that case
+	just throw away the masking.  Use force_reg before calling
+	gen_lowpart.
+	(*ashl<dwi>3_doubleword_mask_1): Allow operands[3] to be a mask
+	with all low 6 (64-bit) or 5 (32-bit) bits set and in that case
+	just throw away the masking.
+	(*ashl<mode>3_doubleword): Rename to ...
+	(ashl<mode>3_doubleword): ... this.
+	(*ashl<mode>3_mask): Remove :SI from AND and its operands and just
+	verify operands[2] has HImode, SImode or for TARGET_64BIT DImode.
+	Use force_reg before calling gen_lowpart.
+	(*<insn><mode>3_mask): Likewise.
+	(*<insn><dwi>3_doubleword_mask): Likewise.  Allow operands[3] to be
+	a mask with all low 6 (64-bit) or 5 (32-bit) bits set and in that
+	case just throw away the masking.  Use force_reg before calling
+	gen_lowpart.
+	(*<insn><dwi>3_doubleword_mask_1): Allow operands[3] to be a mask
+	with all low 6 (64-bit) or 5 (32-bit) bits set and in that case just
+	throw away the masking.
+	(*<insn><mode>3_doubleword): Rename to ...
+	(<insn><mode>3_doubleword): ... this.
+	(*<insn><mode>3_mask): Remove :SI from AND and its operands and just
+	verify operands[2] has HImode, SImode or for TARGET_64BIT DImode.
+	Use force_reg before calling gen_lowpart.
+	(splitter after it): Remove :SI from AND and its operands and just
+	verify operands[2] has HImode, SImode or for TARGET_64BIT DImode.
+	(*<btsc><mode>_mask, *<btsc><mode>_mask): Remove :SI from AND and its
+	operands and just verify operands[1] has HImode, SImode or for
+	TARGET_64BIT DImode.  Use force_reg before calling gen_lowpart.
+	(*jcc_bt<mode>_mask_1): New define_insn_and_split pattern.
+	* config/i386/i386.cc (ix86_rtx_costs): For ZERO_EXTRACT with
+	ZERO_EXTEND QI->SI in last operand ignore the cost of the ZERO_EXTEND.
+
+2022-06-02  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/101668
+	* tree-vect-slp.cc (vect_build_slp_tree_1): Allow BIT_FIELD_REFs
+	for vector types with compatible lane types.
+	(vect_build_slp_tree_2): Deal with this.
+	(vect_add_slp_permutation): Adjust.  Emit lowpart/concat
+	special cases without VEC_PERM.
+	(vectorizable_slp_permutation): Select the operand vector
+	type and relax requirements.  Handle identity permutes
+	with mismatching operand types.
+	* optabs-query.cc (can_vec_perm_const_p): Only allow variable
+	permutes for op_mode == mode.
+
+2022-06-02  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/105802
+	* tree-ssa-loop-unswitch.cc (find_unswitching_predicates_for_bb):
+	Make sure to also compute the range in the type of the switch index.
+
 2022-06-01  David Seifert  <soap@gentoo.org>
 
 	PR plugins/95648

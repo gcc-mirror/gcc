@@ -1,3 +1,32 @@
+2022-06-02  Marek Polacek  <polacek@redhat.com>
+
+	* constexpr.cc (potential_constant_expression_1): Treat
+	{,VEC_}NEW_EXPR and {,VEC_}DELETE_EXPRas potentially constant in C++20.
+
+2022-06-02  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/105803
+	* pt.cc (value_dependent_expression_p): Handle {,VEC_}NEW_EXPR
+	in the switch.
+
+2022-06-02  David Malcolm  <dmalcolm@redhat.com>
+
+	* cp-lang.cc (LANG_HOOKS_GET_SARIF_SOURCE_LANGUAGE): Redefine.
+	(cp_get_sarif_source_language): New.
+
+2022-06-02  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105795
+	* constexpr.cc (init_subob_ctx): Clear ctx->ctor for empty subob.
+	(cxx_eval_store_expression): Likewise.
+	(cxx_eval_bare_aggregate): Handle null ctx->ctor.
+
+2022-06-02  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105795
+	* constexpr.cc (cxx_eval_bare_aggregate): Always call
+	init_subob_ctx.
+
 2022-06-01  Jason Merrill  <jason@redhat.com>
 
 	PR c++/105734
