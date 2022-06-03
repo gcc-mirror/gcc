@@ -3071,13 +3071,129 @@ get_loop_invariant_expr (struct ivopts_data *data, tree inv_expr)
   return *slot;
 }
 
-/* Find the first undefined SSA name in *TP.  */
+/* Return TRUE iff VAR is marked as maybe-undefined.  See
+   mark_ssa_maybe_undefs.  */
+
+static inline bool
+ssa_name_maybe_undef_p (tree var)
+{
+  gcc_checking_assert (TREE_CODE (var) == SSA_NAME);
+  return TREE_VISITED (var);
+}
+
+/* Set (or clear, depending on VALUE) VAR's maybe-undefined mark.  */
+
+static inline void
+ssa_name_set_maybe_undef (tree var, bool value = true)
+{
+  gcc_checking_assert (TREE_CODE (var) == SSA_NAME);
+  TREE_VISITED (var) = value;
+}
+
+/* Return TRUE iff there are any non-PHI uses of VAR that dominate the
+   end of BB.  If we return TRUE and BB is a loop header, then VAR we
+   be assumed to be defined within the loop, even if it is marked as
+   maybe-undefined.  */
+
+static inline bool
+ssa_name_any_use_dominates_bb_p (tree var, basic_block bb)
+{
+  imm_use_iterator iter;
+  use_operand_p use_p;
+  FOR_EACH_IMM_USE_FAST (use_p, iter, var)
+    {
+      if (is_a <gphi *> (USE_STMT (use_p))
+	  || is_gimple_debug (USE_STMT (use_p)))
+	continue;
+      basic_block dombb = gimple_bb (USE_STMT (use_p));
+      if (dominated_by_p (CDI_DOMINATORS, bb, dombb))
+	return true;
+    }
+
+  return false;
+}
+
+/* Mark as maybe_undef any SSA_NAMEs that are unsuitable as ivopts
+   candidates for potentially involving undefined behavior.  */
+
+static void
+mark_ssa_maybe_undefs (void)
+{
+  auto_vec<tree> queue;
+
+  /* Scan all SSA_NAMEs, marking the definitely-undefined ones as
+     maybe-undefined and queuing them for propagation, while clearing
+     the mark on others.  */
+  unsigned int i;
+  tree var;
+  FOR_EACH_SSA_NAME (i, var, cfun)
+    {
+      if (SSA_NAME_IS_VIRTUAL_OPERAND (var)
+	  || !ssa_undefined_value_p (var, false))
+	ssa_name_set_maybe_undef (var, false);
+      else
+	{
+	  ssa_name_set_maybe_undef (var);
+	  queue.safe_push (var);
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    fprintf (dump_file, "marking _%i as maybe-undef\n",
+		     SSA_NAME_VERSION (var));
+	}
+    }
+
+  /* Now propagate maybe-undefined from a DEF to any other PHI that
+     uses it, as long as there isn't any intervening use of DEF.  */
+  while (!queue.is_empty ())
+    {
+      var = queue.pop ();
+      imm_use_iterator iter;
+      use_operand_p use_p;
+      FOR_EACH_IMM_USE_FAST (use_p, iter, var)
+	{
+	  /* Any uses of VAR that aren't PHI args imply VAR must be
+	     defined, otherwise undefined behavior would have been
+	     definitely invoked.  Only PHI args may hold
+	     maybe-undefined values without invoking undefined
+	     behavior for that reason alone.  */
+	  if (!is_a <gphi *> (USE_STMT (use_p)))
+	    continue;
+	  gphi *phi = as_a <gphi *> (USE_STMT (use_p));
+
+	  tree def = gimple_phi_result (phi);
+	  if (ssa_name_maybe_undef_p (def))
+	    continue;
+
+	  /* Look for any uses of the maybe-unused SSA_NAME that
+	     dominates the block that reaches the incoming block
+	     corresponding to the PHI arg in which it is mentioned.
+	     That means we can assume the SSA_NAME is defined in that
+	     path, so we only mark a PHI result as maybe-undef if we
+	     find an unused reaching SSA_NAME.  */
+	  int idx = phi_arg_index_from_use (use_p);
+	  basic_block bb = gimple_phi_arg_edge (phi, idx)->src;
+	  if (ssa_name_any_use_dominates_bb_p (var, bb))
+	    continue;
+
+	  ssa_name_set_maybe_undef (def);
+	  queue.safe_push (def);
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    fprintf (dump_file, "marking _%i as maybe-undef because of _%i\n",
+		     SSA_NAME_VERSION (def), SSA_NAME_VERSION (var));
+	}
+    }
+}
+
+/* Return *TP if it is an SSA_NAME marked with TREE_VISITED, i.e., as
+   unsuitable as ivopts candidates for potentially involving undefined
+   behavior.  */
 
 static tree
-find_ssa_undef (tree *tp, int *walk_subtrees, void *)
+find_ssa_undef (tree *tp, int *walk_subtrees, void *bb_)
 {
+  basic_block bb = (basic_block) bb_;
   if (TREE_CODE (*tp) == SSA_NAME
-      && ssa_undefined_value_p (*tp, false))
+      && ssa_name_maybe_undef_p (*tp)
+      && !ssa_name_any_use_dominates_bb_p (*tp, bb))
     return *tp;
   if (!EXPR_P (*tp))
     *walk_subtrees = 0;
@@ -3114,7 +3230,7 @@ add_candidate_1 (struct ivopts_data *data, tree base, tree step, bool important,
   /* If BASE contains undefined SSA names make sure we only record
      the original IV.  */
   bool involves_undefs = false;
-  if (walk_tree (&base, find_ssa_undef, NULL, NULL))
+  if (walk_tree (&base, find_ssa_undef, data->current_loop->header, NULL))
     {
       if (pos != IP_ORIGINAL)
 	return NULL;
@@ -8192,6 +8308,7 @@ tree_ssa_iv_optimize (void)
   auto_bitmap toremove;
 
   tree_ssa_iv_optimize_init (&data);
+  mark_ssa_maybe_undefs ();
 
   /* Optimize the loops starting with the innermost ones.  */
   for (auto loop : loops_list (cfun, LI_FROM_INNERMOST))
