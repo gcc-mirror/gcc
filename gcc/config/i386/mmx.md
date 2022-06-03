@@ -4405,13 +4405,21 @@
    (set_attr "type" "sseiadd")
    (set_attr "mode" "TI")])
 
-(define_insn "mmx_psadbw"
+(define_expand "mmx_psadbw"
+  [(set (match_operand:V1DI 0 "register_operand")
+	(unspec:V1DI [(match_operand:V8QI 1 "register_mmxmem_operand")
+		      (match_operand:V8QI 2 "register_mmxmem_operand")]
+		     UNSPEC_PSADBW))]
+  "(TARGET_MMX || TARGET_MMX_WITH_SSE) && (TARGET_SSE || TARGET_3DNOW_A)"
+  "ix86_fixup_binary_operands_no_copy (PLUS, V8QImode, operands);")
+
+(define_insn "*mmx_psadbw"
   [(set (match_operand:V1DI 0 "register_operand" "=y,x,Yw")
-        (unspec:V1DI [(match_operand:V8QI 1 "register_operand" "0,0,Yw")
+	(unspec:V1DI [(match_operand:V8QI 1 "register_mmxmem_operand" "%0,0,Yw")
 		      (match_operand:V8QI 2 "register_mmxmem_operand" "ym,x,Yw")]
 		     UNSPEC_PSADBW))]
-  "(TARGET_MMX || TARGET_MMX_WITH_SSE)
-   && (TARGET_SSE || TARGET_3DNOW_A)"
+  "(TARGET_MMX || TARGET_MMX_WITH_SSE) && (TARGET_SSE || TARGET_3DNOW_A)
+   && ix86_binary_operator_ok (PLUS, V8QImode, operands)"
   "@
    psadbw\t{%2, %0|%0, %2}
    psadbw\t{%2, %0|%0, %2}

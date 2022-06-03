@@ -19982,13 +19982,23 @@
 
 ;; The correct representation for this is absolutely enormous, and
 ;; surely not generally useful.
-(define_insn "<sse2_avx2>_psadbw"
-  [(set (match_operand:VI8_AVX2_AVX512BW 0 "register_operand" "=x,YW")
+(define_expand "<sse2_avx2>_psadbw"
+  [(set (match_operand:VI8_AVX2_AVX512BW 0 "register_operand")
 	(unspec:VI8_AVX2_AVX512BW
-	  [(match_operand:<ssebytemode> 1 "register_operand" "0,YW")
-	   (match_operand:<ssebytemode> 2 "vector_operand" "xBm,YWm")]
+	  [(match_operand:<ssebytemode> 1 "vector_operand")
+	   (match_operand:<ssebytemode> 2 "vector_operand")]
 	  UNSPEC_PSADBW))]
   "TARGET_SSE2"
+  "ix86_fixup_binary_operands_no_copy (PLUS, <ssebytemode>mode, operands);")
+
+(define_insn "*<sse2_avx2>_psadbw"
+  [(set (match_operand:VI8_AVX2_AVX512BW 0 "register_operand" "=x,YW")
+	(unspec:VI8_AVX2_AVX512BW
+	  [(match_operand:<ssebytemode> 1 "vector_operand" "%0,YW")
+	   (match_operand:<ssebytemode> 2 "vector_operand" "xBm,YWm")]
+	  UNSPEC_PSADBW))]
+  "TARGET_SSE2
+   && ix86_binary_operator_ok (PLUS, <ssebytemode>mode, operands)"
   "@
    psadbw\t{%2, %0|%0, %2}
    vpsadbw\t{%2, %1, %0|%0, %1, %2}"
