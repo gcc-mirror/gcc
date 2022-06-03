@@ -733,6 +733,8 @@ gcc_cv_readelf
 gcc_cv_objdump
 ORIGINAL_NM_FOR_TARGET
 gcc_cv_nm
+ORIGINAL_OBJCOPY_FOR_TARGET
+gcc_cv_objcopy
 ORIGINAL_LD_GOLD_FOR_TARGET
 ORIGINAL_LD_BFD_FOR_TARGET
 ORIGINAL_LD_FOR_TARGET
@@ -23436,6 +23438,83 @@ case "$ORIGINAL_NM_FOR_TARGET" in
  ;;
 esac
 
+# Figure out what objcopy we will be using.
+if ${gcc_cv_objcopy+:} false; then :
+
+else
+
+if test -f $gcc_cv_binutils_srcdir/configure.ac \
+     && test -f ../binutils/Makefile \
+     && test x$build = x$host; then
+	gcc_cv_objcopy=../binutils/objcopy$build_exeext
+elif test -x objcopy$build_exeext; then
+	gcc_cv_objcopy=./objcopy$build_exeext
+elif ( set dummy $OBJCOPY_FOR_TARGET; test -x $2 ); then
+        gcc_cv_objcopy="$OBJCOPY_FOR_TARGET"
+else
+        # Extract the first word of "$OBJCOPY_FOR_TARGET", so it can be a program name with args.
+set dummy $OBJCOPY_FOR_TARGET; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_path_gcc_cv_objcopy+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  case $gcc_cv_objcopy in
+  [\\/]* | ?:[\\/]*)
+  ac_cv_path_gcc_cv_objcopy="$gcc_cv_objcopy" # Let the user override the test with a path.
+  ;;
+  *)
+  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_path_gcc_cv_objcopy="$as_dir/$ac_word$ac_exec_ext"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+  ;;
+esac
+fi
+gcc_cv_objcopy=$ac_cv_path_gcc_cv_objcopy
+if test -n "$gcc_cv_objcopy"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_objcopy" >&5
+$as_echo "$gcc_cv_objcopy" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+fi
+fi
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking what objcopy to use" >&5
+$as_echo_n "checking what objcopy to use... " >&6; }
+if test "$gcc_cv_objcopy" = ../binutils/objcopy$build_exeext; then
+	# Single tree build which includes binutils.
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: newly built objcopy" >&5
+$as_echo "newly built objcopy" >&6; }
+	in_tree_objcopy=yes
+else
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_objcopy" >&5
+$as_echo "$gcc_cv_objcopy" >&6; }
+	in_tree_objcopy=no
+fi
+
+ORIGINAL_OBJCOPY_FOR_TARGET=$gcc_cv_objcopy
+
+case "$ORIGINAL_OBJCOPY_FOR_TARGET" in
+  ./objcopy | ./objcopy$build_exeext) ;;
+  *) ac_config_files="$ac_config_files objcopy:exec-tool.in"
+ ;;
+esac
 
 # Figure out what objdump we will be using.
 if ${gcc_cv_objdump+:} false; then :
@@ -33176,6 +33255,7 @@ do
     "as") CONFIG_FILES="$CONFIG_FILES as:exec-tool.in" ;;
     "collect-ld") CONFIG_FILES="$CONFIG_FILES collect-ld:exec-tool.in" ;;
     "nm") CONFIG_FILES="$CONFIG_FILES nm:exec-tool.in" ;;
+    "objcopy") CONFIG_FILES="$CONFIG_FILES objcopy:exec-tool.in" ;;
     "dsymutil") CONFIG_FILES="$CONFIG_FILES dsymutil:exec-tool.in" ;;
     "clearcap.map") CONFIG_LINKS="$CONFIG_LINKS clearcap.map:${srcdir}/config/$clearcap_map" ;;
     "$all_outputs") CONFIG_FILES="$CONFIG_FILES $all_outputs" ;;
@@ -33811,6 +33891,7 @@ $as_echo "$as_me: executing $ac_file commands" >&6;}
     "as":F) chmod +x as ;;
     "collect-ld":F) chmod +x collect-ld ;;
     "nm":F) chmod +x nm ;;
+    "objcopy":F) chmod +x objcopy ;;
     "dsymutil":F) chmod +x dsymutil ;;
     "default":C)
 case ${CONFIG_HEADERS} in
