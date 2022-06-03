@@ -579,6 +579,11 @@ public:
     translated = ASTLoweringExprWithBlock::translate (&expr, &terminated);
   }
 
+  void visit (AST::ForLoopExpr &expr) override
+  {
+    translated = ASTLoweringExprWithBlock::translate (&expr, &terminated);
+  }
+
   void visit (AST::BreakExpr &expr) override
   {
     HIR::Lifetime break_label = lower_lifetime (expr.get_label ());

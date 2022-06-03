@@ -613,6 +613,7 @@ ResolveItem::visit (AST::InherentImpl &impl_block)
       resolver->get_name_scope ().pop ();
       return;
     }
+  rust_assert (!self_cpath.is_empty ());
 
   // Setup paths
   bool canonicalize_type_args = !impl_block.has_generics ();
@@ -637,6 +638,7 @@ ResolveItem::visit (AST::InherentImpl &impl_block)
 	= CanonicalPath::new_seg (impl_block.get_node_id (), seg_buf);
       cpath = canonical_prefix.append (seg);
     }
+
   // done setup paths
 
   auto Self

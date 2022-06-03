@@ -209,43 +209,58 @@ ResolveTypeToCanonicalPath::visit (AST::SliceType &slice)
 void
 ResolveType::visit (AST::ReferenceType &type)
 {
-  type.get_type_referenced ()->accept_vis (*this);
-
-  if (canonical_path != nullptr && canonical_path->size () > 0)
+  CanonicalPath path = CanonicalPath::create_empty ();
+  resolved_node
+    = ResolveType::go (type.get_type_referenced ().get (), type.get_node_id (),
+		       canonicalize_type_with_generics, &path);
+  if (canonical_path != nullptr)
     {
-      std::string seg = canonical_path->get ();
-      *canonical_path = CanonicalPath::new_seg (type.get_node_id (), "&" + seg);
+      std::string ref_type_str = type.is_mut () ? "mut" : "";
+      std::string ref_path = "&" + ref_type_str + " " + path.get ();
+      *canonical_path = canonical_path->append (
+	CanonicalPath::new_seg (type.get_node_id (), ref_path));
     }
 }
 
 void
 ResolveType::visit (AST::RawPointerType &type)
 {
-  type.get_type_pointed_to ()->accept_vis (*this);
-
-  if (canonical_path != nullptr && canonical_path->size () > 0)
+  CanonicalPath path = CanonicalPath::create_empty ();
+  resolved_node
+    = ResolveType::go (type.get_type_pointed_to ().get (), type.get_node_id (),
+		       canonicalize_type_with_generics, &path);
+  if (canonical_path != nullptr)
     {
-      std::string seg = canonical_path->get ();
-      *canonical_path = CanonicalPath::new_seg (type.get_node_id (), "*" + seg);
+      std::string ptr_type_str
+	= type.get_pointer_type () == AST::RawPointerType::CONST ? "const"
+								 : "mut";
+      std::string ptr_path = "*" + ptr_type_str + " " + path.get ();
+      *canonical_path = canonical_path->append (
+	CanonicalPath::new_seg (type.get_node_id (), ptr_path));
     }
 }
 
 void
 ResolveType::visit (AST::InferredType &type)
-{
-  ok = true;
-}
+{}
 
 void
 ResolveType::visit (AST::NeverType &type)
-{
-  ok = true;
-}
+{}
 
 void
 ResolveType::visit (AST::SliceType &type)
 {
-  type.get_elem_type ()->accept_vis (*this);
+  CanonicalPath path = CanonicalPath::create_empty ();
+  resolved_node
+    = ResolveType::go (type.get_elem_type ().get (), type.get_node_id (),
+		       canonicalize_type_with_generics, &path);
+  if (canonical_path != nullptr)
+    {
+      std::string slice_path = "[" + path.get () + "]";
+      *canonical_path = canonical_path->append (
+	CanonicalPath::new_seg (type.get_node_id (), slice_path));
+    }
 }
 
 ResolveRelativeTypePath::ResolveRelativeTypePath (CanonicalPath qualified_path)
