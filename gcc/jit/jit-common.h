@@ -93,6 +93,21 @@ const int NUM_GCC_JIT_TYPES = GCC_JIT_TYPE_BFLOAT16 + 1;
 
    End of comment for inclusion in the docs.  */
 
+/* See c_tree_chain_next in gcc/c-family/c-common.h.  */
+static inline tree
+jit_tree_chain_next (tree t)
+{
+  /* TREE_CHAIN of a type is TYPE_STUB_DECL, which is different
+     kind of object, never a long chain of nodes.  Prefer
+     TYPE_NEXT_VARIANT for types.  */
+  if (CODE_CONTAINS_STRUCT (TREE_CODE (t), TS_TYPE_COMMON))
+    return TYPE_NEXT_VARIANT (t);
+  /* Otherwise, if there is TREE_CHAIN, return it.  */
+  if (CODE_CONTAINS_STRUCT (TREE_CODE (t), TS_COMMON))
+    return TREE_CHAIN (t);
+  return NULL;
+}
+
 namespace gcc {
 
 namespace jit {
