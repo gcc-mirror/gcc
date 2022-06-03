@@ -34,7 +34,6 @@ with Einfo.Utils;    use Einfo.Utils;
 with Elists;         use Elists;
 with Errout;         use Errout;
 with Expander;       use Expander;
-with Exp_Ch3;        use Exp_Ch3;
 with Exp_Ch6;        use Exp_Ch6;
 with Exp_Ch9;        use Exp_Ch9;
 with Exp_Dbug;       use Exp_Dbug;
@@ -1520,33 +1519,7 @@ package body Sem_Ch6 is
             --  object declaration.
 
             Set_Is_Return_Object (Defining_Identifier (Obj_Decl));
-
-            --  Returning a build-in-place unconstrained array type we defer
-            --  the full analysis of the returned object to avoid generating
-            --  the corresponding constrained subtype; otherwise the bounds
-            --  would be created in the stack and a dangling reference would
-            --  be returned pointing to the bounds. We perform its preanalysis
-            --  to report errors on the initializing aggregate now (if any);
-            --  we also ensure its activation chain and Master variable are
-            --  defined (if tasks are being declared) since they are generated
-            --  as part of the analysis and expansion of the object declaration
-            --  at this stage.
-
-            if Is_Array_Type (R_Type)
-              and then not Is_Constrained (R_Type)
-              and then Is_Build_In_Place_Function (Scope_Id)
-              and then Needs_BIP_Alloc_Form (Scope_Id)
-              and then Nkind (Expr) in N_Aggregate | N_Extension_Aggregate
-            then
-               Preanalyze (Obj_Decl);
-
-               if Expander_Active then
-                  Ensure_Activation_Chain_And_Master (Obj_Decl);
-               end if;
-
-            else
-               Analyze (Obj_Decl);
-            end if;
+            Analyze (Obj_Decl);
 
             Check_Return_Subtype_Indication (Obj_Decl);
 
@@ -9274,7 +9247,9 @@ package body Sem_Ch6 is
             --  Force the definition of the Itype in case of internal function
             --  calls within the same or nested scope.
 
-            if Is_Subprogram_Or_Generic_Subprogram (E) then
+            if Is_Subprogram_Or_Generic_Subprogram (E)
+              and then not Is_Compilation_Unit (E)
+            then
                Subp_Decl := Parent (E);
 
                --  The insertion point for an Itype reference should be after

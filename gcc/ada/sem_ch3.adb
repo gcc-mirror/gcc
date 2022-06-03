@@ -4043,7 +4043,6 @@ package body Sem_Ch3 is
 
       Prev_Entity       : Entity_Id := Empty;
       Related_Id        : Entity_Id;
-      Full_View_Present : Boolean := False;
 
    --  Start of processing for Analyze_Object_Declaration
 
@@ -4732,28 +4731,32 @@ package body Sem_Ch3 is
                Act_T := Find_Type_Of_Object (Object_Definition (N), N);
             end if;
 
-            --  Propagate attributes to full view when needed
+            if Act_T /= T then
+               declare
+                  Full_View_Present : constant Boolean :=
+                    Is_Private_Type (Act_T)
+                      and then Present (Full_View (Act_T));
+                  --  Propagate attributes to full view when needed
 
-            Set_Is_Constr_Subt_For_U_Nominal (Act_T);
+               begin
+                  Set_Is_Constr_Subt_For_U_Nominal (Act_T);
 
-            if Is_Private_Type (Act_T) and then Present (Full_View (Act_T))
-            then
-               Full_View_Present := True;
+                  if Full_View_Present then
+                     Set_Is_Constr_Subt_For_U_Nominal (Full_View (Act_T));
+                  end if;
+
+                  if Aliased_Present (N) then
+                     Set_Is_Constr_Subt_For_UN_Aliased (Act_T);
+
+                     if Full_View_Present then
+                        Set_Is_Constr_Subt_For_UN_Aliased (Full_View (Act_T));
+                     end if;
+                  end if;
+
+                  Freeze_Before (N, Act_T);
+               end;
             end if;
 
-            if Full_View_Present then
-               Set_Is_Constr_Subt_For_U_Nominal (Full_View (Act_T));
-            end if;
-
-            if Aliased_Present (N) then
-               Set_Is_Constr_Subt_For_UN_Aliased (Act_T);
-
-               if Full_View_Present then
-                  Set_Is_Constr_Subt_For_UN_Aliased (Full_View (Act_T));
-               end if;
-            end if;
-
-            Freeze_Before (N, Act_T);
             Freeze_Before (N, T);
          end if;
 

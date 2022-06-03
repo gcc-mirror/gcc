@@ -441,10 +441,6 @@ package body Exp_Ch7 is
    --  of the formal of Proc, or force a conversion to the class-wide type in
    --  the case where the operation is abstract.
 
-   function Enclosing_Function (E : Entity_Id) return Entity_Id;
-   --  Given an arbitrary entity, traverse the scope chain looking for the
-   --  first enclosing function. Return Empty if no function was found.
-
    function Make_Call
      (Loc       : Source_Ptr;
       Proc_Id   : Entity_Id;
@@ -3431,7 +3427,9 @@ package body Exp_Ch7 is
 
             if Is_Return_Object (Obj_Id) then
                declare
-                  Func_Id : constant Entity_Id := Enclosing_Function (Obj_Id);
+                  Func_Id : constant Entity_Id :=
+                              Return_Applies_To (Scope (Obj_Id));
+
                begin
                   if Is_Build_In_Place_Function (Func_Id)
                     and then Needs_BIP_Finalization_Master (Func_Id)
@@ -5083,26 +5081,6 @@ package body Exp_Ch7 is
          return Arg;
       end if;
    end Convert_View;
-
-   ------------------------
-   -- Enclosing_Function --
-   ------------------------
-
-   function Enclosing_Function (E : Entity_Id) return Entity_Id is
-      Func_Id : Entity_Id;
-
-   begin
-      Func_Id := E;
-      while Present (Func_Id) and then Func_Id /= Standard_Standard loop
-         if Ekind (Func_Id) = E_Function then
-            return Func_Id;
-         end if;
-
-         Func_Id := Scope (Func_Id);
-      end loop;
-
-      return Empty;
-   end Enclosing_Function;
 
    -------------------------------
    -- Establish_Transient_Scope --
