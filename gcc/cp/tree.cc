@@ -4319,15 +4319,31 @@ maybe_dummy_object (tree type, tree* binfop)
   if (binfop)
     *binfop = binfo;
 
-  if (current_class_ref
-      /* current_class_ref might not correspond to current_class_type if
-	 we're in tsubst_default_argument or a lambda-declarator; in either
-	 case, we want to use current_class_ref if it matches CONTEXT.  */
-      && (same_type_ignoring_top_level_qualifiers_p
-	  (TREE_TYPE (current_class_ref), context)))
+  /* current_class_ref might not correspond to current_class_type if
+     we're in tsubst_default_argument or a lambda-declarator; in either
+     case, we want to use current_class_ref if it matches CONTEXT.  */
+  tree ctype = current_class_ref ? TREE_TYPE (current_class_ref) : NULL_TREE;
+  if (ctype
+      && same_type_ignoring_top_level_qualifiers_p (ctype, context))
     decl = current_class_ref;
   else
-    decl = build_dummy_object (context);
+    {
+      /* Return a dummy object whose cv-quals are consistent with (the
+	 non-lambda) 'this' if available.  */
+      if (ctype)
+	{
+	  int quals = TYPE_UNQUALIFIED;
+	  if (tree lambda = CLASSTYPE_LAMBDA_EXPR (ctype))
+	    {
+	      if (tree cap = lambda_expr_this_capture (lambda, false))
+		quals = cp_type_quals (TREE_TYPE (TREE_TYPE (cap)));
+	    }
+	  else
+	    quals = cp_type_quals (ctype);
+	  context = cp_build_qualified_type (context, quals);
+	}
+      decl = build_dummy_object (context);
+    }
 
   return decl;
 }
