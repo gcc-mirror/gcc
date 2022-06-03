@@ -2654,7 +2654,13 @@ duplicate_decls (tree newdecl, tree olddecl, bool hiding, bool was_hidden)
       if (LANG_DECL_HAS_MIN (newdecl))
 	{
 	  DECL_ACCESS (newdecl) = DECL_ACCESS (olddecl);
-	  if (DECL_TEMPLATE_INFO (newdecl))
+	  if (new_defines_function
+	      && DECL_TEMPLATE_INFO (olddecl)
+	      && DECL_UNIQUE_FRIEND_P (DECL_TEMPLATE_RESULT
+				       (DECL_TI_TEMPLATE (olddecl))))
+	    /* Don't copy template info from a non-template friend declaration
+	       in a class template (PR105761).  */;
+	  else if (DECL_TEMPLATE_INFO (newdecl))
 	    {
 	      new_template_info = DECL_TEMPLATE_INFO (newdecl);
 	      if (DECL_TEMPLATE_INSTANTIATION (olddecl)
@@ -2662,8 +2668,10 @@ duplicate_decls (tree newdecl, tree olddecl, bool hiding, bool was_hidden)
 		/* Remember the presence of explicit specialization args.  */
 		TINFO_USED_TEMPLATE_ID (DECL_TEMPLATE_INFO (olddecl))
 		  = TINFO_USED_TEMPLATE_ID (new_template_info);
+	      DECL_TEMPLATE_INFO (newdecl) = DECL_TEMPLATE_INFO (olddecl);
 	    }
-	  DECL_TEMPLATE_INFO (newdecl) = DECL_TEMPLATE_INFO (olddecl);
+	  else
+	    DECL_TEMPLATE_INFO (newdecl) = DECL_TEMPLATE_INFO (olddecl);
 	}
 
       if (DECL_DECLARES_FUNCTION_P (newdecl))
