@@ -184,6 +184,7 @@ static int unify_pack_expansion (tree, tree, tree,
 				 tree, unification_kind_t, bool, bool);
 static tree copy_template_args (tree);
 static tree tsubst_template_parms (tree, tree, tsubst_flags_t);
+static void tsubst_each_template_parm_constraints (tree, tree, tsubst_flags_t);
 tree most_specialized_partial_spec (tree, tsubst_flags_t);
 static tree tsubst_aggr_type (tree, tree, tsubst_flags_t, tree, int);
 static tree tsubst_arg_types (tree, tree, tree, tsubst_flags_t, tree);
@@ -2323,8 +2324,8 @@ determine_specialization (tree template_id,
 	      if (!compparms (fn_arg_types, decl_arg_types))
 		continue;
 
-	      tree freq = get_trailing_function_requirements (fn);
-	      tree dreq = get_trailing_function_requirements (decl);
+	      tree freq = get_constraints (fn);
+	      tree dreq = get_constraints (decl);
 	      if (!freq != !dreq)
 		continue;
 	      if (freq)
@@ -2333,7 +2334,7 @@ determine_specialization (tree template_id,
 		     constraint-expression.  */
 		  tree fargs = DECL_TI_ARGS (fn);
 		  tsubst_flags_t complain = tf_none;
-		  freq = tsubst_constraint (freq, fargs, complain, fn);
+		  freq = tsubst_constraint_info (freq, fargs, complain, fn);
 		  if (!cp_tree_equal (freq, dreq))
 		    continue;
 		}
@@ -11240,7 +11241,13 @@ tsubst_friend_function (tree decl, tree args)
       tree parms = DECL_TEMPLATE_PARMS (new_friend);
       tree treqs = TEMPLATE_PARMS_CONSTRAINTS (parms);
       treqs = maybe_substitute_reqs_for (treqs, new_friend);
-      TEMPLATE_PARMS_CONSTRAINTS (parms) = treqs;
+      if (treqs != TEMPLATE_PARMS_CONSTRAINTS (parms))
+	{
+	  TEMPLATE_PARMS_CONSTRAINTS (parms) = treqs;
+	  /* As well as each TEMPLATE_PARM_CONSTRAINTS.  */
+	  tsubst_each_template_parm_constraints (parms, args,
+						 tf_warning_or_error);
+	}
     }
 
   /* The mangled name for the NEW_FRIEND is incorrect.  The function
@@ -11486,6 +11493,8 @@ tsubst_friend_class (tree friend_tmpl, tree args)
 	{
 	  tree parms = tsubst_template_parms (DECL_TEMPLATE_PARMS (friend_tmpl),
 					      args, tf_warning_or_error);
+	  tsubst_each_template_parm_constraints (parms, args,
+						 tf_warning_or_error);
           location_t saved_input_location = input_location;
           input_location = DECL_SOURCE_LOCATION (friend_tmpl);
           tree cons = get_constraints (tmpl);
@@ -11520,6 +11529,8 @@ tsubst_friend_class (tree friend_tmpl, tree args)
 					   DECL_FRIEND_CONTEXT (friend_tmpl));
 	      --processing_template_decl;
 	      set_constraints (tmpl, ci);
+	      tsubst_each_template_parm_constraints (DECL_TEMPLATE_PARMS (tmpl),
+						     args, tf_warning_or_error);
 	    }
 
 	  /* Inject this template into the enclosing namspace scope.  */
@@ -13632,7 +13643,6 @@ tsubst_template_parm (tree t, tree args, tsubst_flags_t complain)
 
   default_value = TREE_PURPOSE (t);
   parm_decl = TREE_VALUE (t);
-  tree constraint = TEMPLATE_PARM_CONSTRAINTS (t);
 
   parm_decl = tsubst (parm_decl, args, complain, NULL_TREE);
   if (TREE_CODE (parm_decl) == PARM_DECL
@@ -13640,11 +13650,29 @@ tsubst_template_parm (tree t, tree args, tsubst_flags_t complain)
     parm_decl = error_mark_node;
   default_value = tsubst_template_arg (default_value, args,
 				       complain, NULL_TREE);
-  constraint = tsubst_constraint (constraint, args, complain, NULL_TREE);
 
   tree r = build_tree_list (default_value, parm_decl);
-  TEMPLATE_PARM_CONSTRAINTS (r) = constraint;
+  TEMPLATE_PARM_CONSTRAINTS (r) = TEMPLATE_PARM_CONSTRAINTS (t);
   return r;
+}
+
+/* Substitute in-place the TEMPLATE_PARM_CONSTRAINTS of each template
+   parameter in PARMS for sake of declaration matching.  */
+
+static void
+tsubst_each_template_parm_constraints (tree parms, tree args,
+				       tsubst_flags_t complain)
+{
+  ++processing_template_decl;
+  for (; parms; parms = TREE_CHAIN (parms))
+    {
+      tree level = TREE_VALUE (parms);
+      for (tree parm : tree_vec_range (level))
+	TEMPLATE_PARM_CONSTRAINTS (parm)
+	  = tsubst_constraint (TEMPLATE_PARM_CONSTRAINTS (parm), args,
+			       complain, NULL_TREE);
+    }
+  --processing_template_decl;
 }
 
 /* Substitute the ARGS into the indicated aggregate (or enumeration)
