@@ -62,6 +62,7 @@ with Sem_Case;       use Sem_Case;
 with Sem_Cat;        use Sem_Cat;
 with Sem_Ch3;        use Sem_Ch3;
 with Sem_Ch4;        use Sem_Ch4;
+with Sem_Ch5;        use Sem_Ch5;
 with Sem_Ch6;        use Sem_Ch6;
 with Sem_Ch8;        use Sem_Ch8;
 with Sem_Ch13;       use Sem_Ch13;
@@ -7192,6 +7193,14 @@ package body Sem_Res is
       --  propagate the dimensions from the returned type to N.
 
       Analyze_Dimension_Call (N, Nam);
+
+      --  Check unreachable code after calls to procedures with No_Return
+
+      if Ekind (Nam) = E_Procedure
+        and then No_Return (Nam)
+      then
+         Check_Unreachable_Code (N);
+      end if;
 
       --  All done, evaluate call and deal with elaboration issues
 

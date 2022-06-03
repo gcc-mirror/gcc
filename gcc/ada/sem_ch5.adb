@@ -4418,12 +4418,20 @@ package body Sem_Ch5 is
          elsif Comes_From_Source (Nxt)
            and then Is_Statement (Nxt)
          then
-            --  Special very annoying exception. If we have a return that
-            --  follows a raise, then we allow it without a warning, since
-            --  the Ada RM annoyingly requires a useless return here.
+            --  Special very annoying exception. Ada RM 6.5(5) annoyingly
+            --  requires functions to have at least one return statement, so
+            --  don't complain about a simple return that follows a raise or a
+            --  call to procedure with No_Return.
 
-            if Nkind (Original_Node (N)) /= N_Raise_Statement
-              or else Nkind (Nxt) /= N_Simple_Return_Statement
+            if not (Present (Current_Subprogram)
+                    and then Ekind (Current_Subprogram) = E_Function
+                    and then (Nkind (Original_Node (N)) = N_Raise_Statement
+                                or else
+                              (Nkind (N) = N_Procedure_Call_Statement
+                               and then Is_Entity_Name (Name (N))
+                               and then Present (Entity (Name (N)))
+                               and then No_Return (Entity (Name (N)))))
+                    and then Nkind (Nxt) = N_Simple_Return_Statement)
             then
                --  The rather strange shenanigans with the warning message
                --  here reflects the fact that Kill_Dead_Code is very good at
