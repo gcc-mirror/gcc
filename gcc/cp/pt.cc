@@ -10561,11 +10561,14 @@ for_each_template_parm_r (tree *tp, int *walk_subtrees, void *d)
     case VAR_DECL:
       if (DECL_LANG_SPECIFIC (t) && DECL_TEMPLATE_INFO (t))
 	WALK_SUBTREE (DECL_TI_ARGS (t));
-      /* Fall through.  */
+      break;
 
     case PARM_DECL:
+      WALK_SUBTREE (TREE_TYPE (t));
+      break;
+
     case CONST_DECL:
-      if (TREE_CODE (t) == CONST_DECL && DECL_TEMPLATE_PARM_P (t))
+      if (DECL_TEMPLATE_PARM_P (t))
 	WALK_SUBTREE (DECL_INITIAL (t));
       if (DECL_CONTEXT (t)
 	  && pfd->include_nondeduced_p)
@@ -10824,9 +10827,6 @@ any_template_parm_r (tree t, void *data)
       break;
 
     case TEMPLATE_PARM_INDEX:
-    case PARM_DECL:
-      /* A parameter or constraint variable may also depend on a template
-	 parameter without explicitly naming it.  */
       WALK_SUBTREE (TREE_TYPE (t));
       break;
 
