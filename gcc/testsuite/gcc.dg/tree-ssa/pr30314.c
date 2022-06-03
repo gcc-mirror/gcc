@@ -7,25 +7,25 @@
 /* { dg-final { scan-tree-dump " > 102261126" "optimized" { target int32 } } } */
 /* { dg-final { scan-tree-dump " > 439208192231179800" "optimized" { target lp64 } } } */
 
-int
+__attribute__((noipa)) int
 foo (unsigned int x)
 {
   return __builtin_mul_overflow_p (x, 35U, 0U);
 }
 
-int
+__attribute__((noipa)) int
 bar (unsigned long int x)
 {
   return __builtin_mul_overflow_p (x, 35UL, 0UL);
 }
 
-int
+__attribute__((noipa)) int
 baz (unsigned int x)
 {
   return __builtin_mul_overflow_p (42, x, 0U);
 }
 
-int
+__attribute__((noipa)) int
 qux (unsigned long int x)
 {
   return __builtin_mul_overflow_p (42, x, 0UL);
