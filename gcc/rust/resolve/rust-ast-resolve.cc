@@ -81,20 +81,29 @@ NameResolution::go (AST::Crate &crate)
     = CanonicalPath::new_seg (scope_node_id, crate_name);
   crate_prefix.set_crate_num (cnum);
 
+  // setup the root scope
+  resolver->push_new_module_scope (scope_node_id);
+
   // first gather the top-level namespace names then we drill down so this
   // allows for resolving forward declarations since an impl block might have
   // a Self type Foo which is defined after the impl block for example.
   for (auto it = crate.items.begin (); it != crate.items.end (); it++)
     ResolveTopLevel::go (it->get (), CanonicalPath::create_empty (),
-			 crate_prefix, scope_node_id);
+			 crate_prefix);
 
   // FIXME remove this
   if (saw_errors ())
-    return;
+    {
+      resolver->pop_module_scope ();
+      return;
+    }
 
   // next we can drill down into the items and their scopes
   for (auto it = crate.items.begin (); it != crate.items.end (); it++)
     ResolveItem::go (it->get (), CanonicalPath::create_empty (), crate_prefix);
+
+  // done
+  resolver->pop_module_scope ();
 }
 
 // rust-ast-resolve-struct-expr-field.h

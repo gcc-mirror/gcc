@@ -253,11 +253,13 @@ ResolveItem::visit (AST::Module &module)
   // FIXME: Should we reinsert a child here? Any reason we ResolveTopLevel::go
   // in ResolveTopLevel::visit (AST::Module) as well as here?
   for (auto &item : module.get_items ())
-    ResolveTopLevel::go (item.get (), CanonicalPath::create_empty (), cpath,
-			 module.get_node_id ());
+    ResolveTopLevel::go (item.get (), CanonicalPath::create_empty (), cpath);
 
+  resolver->push_new_module_scope (module.get_node_id ());
   for (auto &item : module.get_items ())
     ResolveItem::go (item.get (), path, cpath);
+
+  resolver->pop_module_scope ();
 
   resolver->get_name_scope ().pop ();
   resolver->get_type_scope ().pop ();

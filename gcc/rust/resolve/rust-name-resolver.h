@@ -166,6 +166,23 @@ public:
   void set_unit_type_node_id (NodeId id) { unit_ty_node_id = id; }
   NodeId get_unit_type_node_id () { return unit_ty_node_id; }
 
+  void push_new_module_scope (NodeId module_id)
+  {
+    current_module_stack.push_back (module_id);
+  }
+
+  void pop_module_scope ()
+  {
+    rust_assert (!current_module_stack.empty ());
+    current_module_stack.pop_back ();
+  }
+
+  NodeId peek_current_module_scope () const
+  {
+    rust_assert (!current_module_stack.empty ());
+    return current_module_stack.back ();
+  }
+
 private:
   Resolver ();
 
@@ -211,6 +228,9 @@ private:
   std::map<NodeId, bool> decl_mutability;
   // map of resolved names and set of assignments to the decl
   std::map<NodeId, std::set<NodeId>> assignment_to_decl;
+
+  // keep track of the current module scope ids
+  std::vector<NodeId> current_module_stack;
 };
 
 } // namespace Resolver
