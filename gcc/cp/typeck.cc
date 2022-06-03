@@ -4939,7 +4939,7 @@ cp_build_binary_op (const op_location_t &location,
      convert it to this type.  */
   tree final_type = 0;
 
-  tree result, result_ovl;
+  tree result;
 
   /* Nonzero if this is an operation like MIN or MAX which can
      safely be computed in short if both args are promoted shorts.
@@ -6263,25 +6263,29 @@ cp_build_binary_op (const op_location_t &location,
     result = build2 (COMPOUND_EXPR, TREE_TYPE (result),
 		     instrument_expr, result);
 
-  if (!processing_template_decl)
-    {
-      if (resultcode == SPACESHIP_EXPR)
-	result = get_target_expr_sfinae (result, complain);
-      op0 = cp_fully_fold (op0);
-      /* Only consider the second argument if the first isn't overflowed.  */
-      if (!CONSTANT_CLASS_P (op0) || TREE_OVERFLOW_P (op0))
-	return result;
-      op1 = cp_fully_fold (op1);
-      if (!CONSTANT_CLASS_P (op1) || TREE_OVERFLOW_P (op1))
-	return result;
-    }
-  else if (!CONSTANT_CLASS_P (op0) || !CONSTANT_CLASS_P (op1)
-	   || TREE_OVERFLOW_P (op0) || TREE_OVERFLOW_P (op1))
-    return result;
+  if (resultcode == SPACESHIP_EXPR && !processing_template_decl)
+    result = get_target_expr_sfinae (result, complain);
 
-  result_ovl = fold_build2 (resultcode, build_type, op0, op1);
-  if (TREE_OVERFLOW_P (result_ovl))
-    overflow_warning (location, result_ovl);
+  if (!c_inhibit_evaluation_warnings)
+    {
+      if (!processing_template_decl)
+	{
+	  op0 = cp_fully_fold (op0);
+	  /* Only consider the second argument if the first isn't overflowed.  */
+	  if (!CONSTANT_CLASS_P (op0) || TREE_OVERFLOW_P (op0))
+	    return result;
+	  op1 = cp_fully_fold (op1);
+	  if (!CONSTANT_CLASS_P (op1) || TREE_OVERFLOW_P (op1))
+	    return result;
+	}
+      else if (!CONSTANT_CLASS_P (op0) || !CONSTANT_CLASS_P (op1)
+	       || TREE_OVERFLOW_P (op0) || TREE_OVERFLOW_P (op1))
+	return result;
+
+      tree result_ovl = fold_build2 (resultcode, build_type, op0, op1);
+      if (TREE_OVERFLOW_P (result_ovl))
+	overflow_warning (location, result_ovl);
+    }
 
   return result;
 }
