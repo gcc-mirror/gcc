@@ -79,6 +79,7 @@ public:
     infered
       = TyTy::TupleType::get_unit_type (stmt.get_mappings ().get_hirid ());
 
+    const HIR::Pattern &stmt_pattern = *stmt.get_pattern ();
     TyTy::BaseType *init_expr_ty = nullptr;
     if (stmt.has_init_expr ())
       {
@@ -86,10 +87,8 @@ public:
 	if (init_expr_ty->get_kind () == TyTy::TypeKind::ERROR)
 	  return;
 
-	init_expr_ty = init_expr_ty->clone ();
-	auto ref = init_expr_ty->get_ref ();
-	init_expr_ty->set_ref (stmt.get_mappings ().get_hirid ());
-	init_expr_ty->append_reference (ref);
+	init_expr_ty->append_reference (
+	  stmt_pattern.get_pattern_mappings ().get_hirid ());
       }
 
     TyTy::BaseType *specified_ty = nullptr;
@@ -99,38 +98,35 @@ public:
     // let x:i32 = 123;
     if (specified_ty != nullptr && init_expr_ty != nullptr)
       {
-	auto unified_ty = specified_ty->coerce (init_expr_ty);
-	if (unified_ty->get_kind () == TyTy::TypeKind::ERROR)
-	  return;
-
-	context->insert_type (stmt.get_mappings (), specified_ty);
+	// FIXME use this result and look at the regressions
+	specified_ty->coerce (init_expr_ty);
+	context->insert_type (stmt_pattern.get_pattern_mappings (),
+			      specified_ty);
       }
     else
       {
 	// let x:i32;
 	if (specified_ty != nullptr)
 	  {
-	    context->insert_type (stmt.get_mappings (), specified_ty);
+	    context->insert_type (stmt_pattern.get_pattern_mappings (),
+				  specified_ty);
 	  }
 	// let x = 123;
 	else if (init_expr_ty != nullptr)
 	  {
-	    context->insert_type (stmt.get_mappings (), init_expr_ty);
+	    context->insert_type (stmt_pattern.get_pattern_mappings (),
+				  init_expr_ty);
 	  }
 	// let x;
 	else
 	  {
 	    context->insert_type (
-	      stmt.get_mappings (),
-	      new TyTy::InferType (stmt.get_mappings ().get_hirid (),
-				   TyTy::InferType::InferTypeKind::GENERAL,
-				   stmt.get_locus ()));
+	      stmt_pattern.get_pattern_mappings (),
+	      new TyTy::InferType (
+		stmt_pattern.get_pattern_mappings ().get_hirid (),
+		TyTy::InferType::InferTypeKind::GENERAL, stmt.get_locus ()));
 	  }
       }
-
-    TyTy::BaseType *lookup = nullptr;
-    bool ok = context->lookup_type (stmt.get_mappings ().get_hirid (), &lookup);
-    rust_assert (ok);
   }
 
   void visit (HIR::TupleStruct &struct_decl) override

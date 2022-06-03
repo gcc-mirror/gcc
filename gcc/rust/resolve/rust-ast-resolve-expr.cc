@@ -113,16 +113,12 @@ ResolveExpr::visit (AST::IdentifierExpr &expr)
 	&resolved_node))
     {
       resolver->insert_resolved_name (expr.get_node_id (), resolved_node);
-      resolver->insert_new_definition (expr.get_node_id (),
-				       Definition{expr.get_node_id (), parent});
     }
   else if (resolver->get_type_scope ().lookup (
 	     CanonicalPath::new_seg (expr.get_node_id (), expr.as_string ()),
 	     &resolved_node))
     {
       resolver->insert_resolved_type (expr.get_node_id (), resolved_node);
-      resolver->insert_new_definition (expr.get_node_id (),
-				       Definition{expr.get_node_id (), parent});
     }
   else
     {
@@ -352,9 +348,6 @@ ResolveExpr::visit (AST::LoopExpr &expr)
 	  rust_error_at (label.get_locus (), "label redefined multiple times");
 	  rust_error_at (locus, "was defined here");
 	});
-      resolver->insert_new_definition (label_lifetime_node_id,
-				       Definition{label_lifetime_node_id,
-						  label.get_node_id ()});
     }
   resolve_expr (expr.get_loop_block ().get (), expr.get_node_id ());
 }
@@ -412,9 +405,6 @@ ResolveExpr::visit (AST::WhileLoopExpr &expr)
 	  rust_error_at (label.get_locus (), "label redefined multiple times");
 	  rust_error_at (locus, "was defined here");
 	});
-      resolver->insert_new_definition (label_lifetime_node_id,
-				       Definition{label_lifetime_node_id,
-						  label.get_node_id ()});
     }
   resolve_expr (expr.get_predicate_expr ().get (), expr.get_node_id ());
   resolve_expr (expr.get_loop_block ().get (), expr.get_node_id ());
@@ -443,9 +433,6 @@ ResolveExpr::visit (AST::ForLoopExpr &expr)
 	  rust_error_at (label.get_locus (), "label redefined multiple times");
 	  rust_error_at (locus, "was defined here");
 	});
-      resolver->insert_new_definition (label_lifetime_node_id,
-				       Definition{label_lifetime_node_id,
-						  label.get_node_id ()});
     }
 
   // this needs a new rib to contain the pattern

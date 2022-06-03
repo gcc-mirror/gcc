@@ -71,9 +71,6 @@ public:
 	r.add_range (locus);
 	rust_error_at (r, "redefined multiple times");
       });
-    resolver->insert_new_definition (constant.get_node_id (),
-				     Definition{constant.get_node_id (),
-						constant.get_node_id ()});
 
     ResolveType::go (constant.get_type ().get (), constant.get_node_id ());
     ResolveExpr::go (constant.get_expr ().get (), constant.get_node_id (),
@@ -361,9 +358,6 @@ public:
 	r.add_range (locus);
 	rust_error_at (r, "redefined multiple times");
       });
-    resolver->insert_new_definition (function.get_node_id (),
-				     Definition{function.get_node_id (),
-						function.get_node_id ()});
 
     NodeId scope_node_id = function.get_node_id ();
     resolver->get_name_scope ().push (scope_node_id);

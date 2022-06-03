@@ -34,6 +34,12 @@
       _R.push_back (builtin_type);                                             \
       tyctx->insert_builtin (_TY->get_ref (), builtin_type->get_node_id (),    \
 			     _TY);                                             \
+      mappings->insert_node_to_hir (mappings->get_current_crate (),            \
+				    builtin_type->get_node_id (),              \
+				    _TY->get_ref ());                          \
+      mappings->insert_canonical_path (                                        \
+	mappings->get_current_crate (), builtin_type->get_node_id (),          \
+	CanonicalPath::new_seg (builtin_type->get_node_id (), _X));            \
     }                                                                          \
   while (0)
 
@@ -165,6 +171,16 @@ Scope::iterate (std::function<bool (Rib *)> cb)
     }
 }
 
+void
+Scope::iterate (std::function<bool (const Rib *)> cb) const
+{
+  for (auto it = stack.rbegin (); it != stack.rend (); ++it)
+    {
+      if (!cb (*it))
+	return;
+    }
+}
+
 Rib *
 Scope::peek ()
 {
@@ -198,6 +214,21 @@ Scope::append_reference_for_def (NodeId refId, NodeId defId)
     return true;
   });
   rust_assert (ok);
+}
+
+bool
+Scope::decl_was_declared_here (NodeId def) const
+{
+  bool found = false;
+  iterate ([&] (const Rib *r) -> bool {
+    if (r->decl_was_declared_here (def))
+      {
+	found = true;
+	return false;
+      }
+    return true;
+  });
+  return found;
 }
 
 Resolver::Resolver ()
@@ -368,29 +399,6 @@ Resolver::generate_builtins ()
   tyctx->insert_builtin (unit_tyty->get_ref (), unit_type->get_node_id (),
 			 unit_tyty);
   set_unit_type_node_id (unit_type->get_node_id ());
-}
-
-void
-Resolver::insert_new_definition (NodeId id, Definition def)
-{
-  auto it = name_definitions.find (id);
-  if (it != name_definitions.end ())
-    {
-      rust_assert (it->second.is_equal (def));
-      return;
-    }
-  name_definitions[id] = def;
-}
-
-bool
-Resolver::lookup_definition (NodeId id, Definition *def)
-{
-  auto it = name_definitions.find (id);
-  if (it == name_definitions.end ())
-    return false;
-
-  *def = it->second;
-  return true;
 }
 
 void

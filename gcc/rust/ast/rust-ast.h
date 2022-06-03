@@ -350,8 +350,16 @@ public:
   Location get_locus () const { return locus; }
   NodeId get_node_id () const { return node_id; }
   const std::string &get_segment_name () const { return segment_name; }
-
-  // TODO: visitor pattern?
+  bool is_super_path_seg () const
+  {
+    return as_string ().compare ("super") == 0;
+  }
+  bool is_crate_path_seg () const
+  {
+    return as_string ().compare ("crate") == 0;
+  }
+  bool is_lower_self () const { return as_string ().compare ("self") == 0; }
+  bool is_big_self () const { return as_string ().compare ("Self") == 0; }
 };
 
 // A simple path without generic or type arguments

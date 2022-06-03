@@ -423,35 +423,14 @@ public:
 
     // then lookup the reference_node_id
     NodeId ref_node_id = UNKNOWN_NODEID;
-    if (resolver->lookup_resolved_name (ast_node_id, &ref_node_id))
+    if (!resolver->lookup_resolved_name (ast_node_id, &ref_node_id))
       {
-	// these ref_node_ids will resolve to a pattern declaration but we are
-	// interested in the definition that this refers to get the parent id
-	Definition def;
-	if (!resolver->lookup_definition (ref_node_id, &def))
-	  {
-	    // FIXME
-	    // this is an internal error
-	    rust_error_at (expr.get_locus (),
-			   "unknown reference for resolved name");
-	    return;
-	  }
-	ref_node_id = def.parent;
-      }
-    else if (!resolver->lookup_resolved_type (ast_node_id, &ref_node_id))
-      {
-	// FIXME
-	// this is an internal error
-	rust_error_at (expr.get_locus (),
-		       "Failed to lookup type reference for node: %s",
-		       expr.as_string ().c_str ());
-	return;
+	resolver->lookup_resolved_type (ast_node_id, &ref_node_id);
       }
 
     if (ref_node_id == UNKNOWN_NODEID)
       {
-	// FIXME
-	// this is an internal error
+	// FIXME this needs to go away and just return error node
 	rust_error_at (expr.get_locus (), "unresolved node: %s",
 		       expr.as_string ().c_str ());
 	return;

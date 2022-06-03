@@ -53,22 +53,12 @@ ResolvePathRef::resolve (const HIR::PathIdentSegment &final_segment,
 
   // need to look up the reference for this identifier
   NodeId ref_node_id = UNKNOWN_NODEID;
-  if (ctx->get_resolver ()->lookup_resolved_name (mappings.get_nodeid (),
-						  &ref_node_id))
+  if (!ctx->get_resolver ()->lookup_resolved_name (mappings.get_nodeid (),
+						   &ref_node_id))
     {
-      Resolver::Definition def;
-      if (!ctx->get_resolver ()->lookup_definition (ref_node_id, &def))
-	{
-	  rust_error_at (expr_locus, "unknown reference for resolved name");
-	  return error_mark_node;
-	}
-      ref_node_id = def.parent;
-    }
+      // this can fail because it might be a Constructor for something
+      // in that case the caller should attempt ResolvePathType::Compile
 
-  // this can fail because it might be a Constructor for something
-  // in that case the caller should attempt ResolvePathType::Compile
-  if (ref_node_id == UNKNOWN_NODEID)
-    {
       // it might be an enum data-less enum variant
       if (lookup->get_kind () != TyTy::TypeKind::ADT)
 	return error_mark_node;

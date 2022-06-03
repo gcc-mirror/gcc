@@ -122,6 +122,7 @@ public:
   void insert_ast_crate (AST::Crate *crate);
 
   HIR::Crate *get_hir_crate (CrateNum crateNum);
+  bool is_local_hirid_crate (HirId crateNum);
   void insert_hir_crate (HIR::Crate *crate);
 
   void insert_defid_mapping (DefId id, HIR::Item *item);
@@ -329,10 +330,13 @@ public:
   void insert_module_child_item (NodeId module, Resolver::CanonicalPath item);
   Optional<std::vector<Resolver::CanonicalPath> &>
   lookup_module_chidren_items (NodeId module);
+  Optional<Resolver::CanonicalPath &>
+  lookup_module_child (NodeId module, const std::string &item_name);
 
   void insert_child_item_to_parent_module_mapping (NodeId child_item,
 						   NodeId parent_module);
   Optional<NodeId> lookup_parent_module (NodeId child_item);
+  bool node_is_module (NodeId query);
 
 private:
   Mappings ();

@@ -47,301 +47,326 @@ ResolvePath::go (AST::SimplePath *expr, NodeId parent)
 void
 ResolvePath::resolve_path (AST::PathInExpression *expr)
 {
-  // resolve root segment first then apply segments in turn
-  std::vector<AST::PathExprSegment> &segs = expr->get_segments ();
-  AST::PathExprSegment &root_segment = segs.at (0);
-  AST::PathIdentSegment &root_ident_seg = root_segment.get_ident_segment ();
+  NodeId resolved_node_id = UNKNOWN_NODEID;
+  NodeId module_scope_id = resolver->peek_current_module_scope ();
+  NodeId previous_resolved_node_id = module_scope_id;
+  for (size_t i = 0; i < expr->get_segments ().size (); i++)
+    {
+      auto &segment = expr->get_segments ().at (i);
+      const AST::PathIdentSegment &ident_seg = segment.get_ident_segment ();
+      bool is_first_segment = i == 0;
+      resolved_node_id = UNKNOWN_NODEID;
 
-  bool segment_is_type = false;
-  CanonicalPath root_seg_path
-    = CanonicalPath::new_seg (root_segment.get_node_id (),
-			      root_ident_seg.as_string ());
-
-  // name scope first
-  if (resolver->get_name_scope ().lookup (root_seg_path, &resolved_node))
-    {
-      segment_is_type = false;
-      resolver->insert_resolved_name (root_segment.get_node_id (),
-				      resolved_node);
-      resolver->insert_new_definition (root_segment.get_node_id (),
-				       Definition{expr->get_node_id (),
-						  parent});
-    }
-  // check the type scope
-  else if (resolver->get_type_scope ().lookup (root_seg_path, &resolved_node))
-    {
-      segment_is_type = true;
-      resolver->insert_resolved_type (root_segment.get_node_id (),
-				      resolved_node);
-      resolver->insert_new_definition (root_segment.get_node_id (),
-				       Definition{expr->get_node_id (),
-						  parent});
-    }
-  else
-    {
-      rust_error_at (expr->get_locus (),
-		     "Cannot find path %<%s%> in this scope",
-		     root_segment.as_string ().c_str ());
-      return;
-    }
-
-  if (root_segment.has_generic_args ())
-    {
-      bool ok = ResolveTypeToCanonicalPath::type_resolve_generic_args (
-	root_segment.get_generic_args ());
-      if (!ok)
+      NodeId crate_scope_id = resolver->peek_crate_module_scope ();
+      if (segment.is_crate_path_seg ())
 	{
-	  rust_error_at (root_segment.get_locus (),
-			 "failed to resolve generic arguments");
-	  return;
+	  // what is the current crate scope node id?
+	  module_scope_id = crate_scope_id;
+	  previous_resolved_node_id = module_scope_id;
+	  resolver->insert_resolved_name (segment.get_node_id (),
+					  module_scope_id);
+	  continue;
+	}
+      else if (segment.is_super_path_seg ())
+	{
+	  if (module_scope_id == crate_scope_id)
+	    {
+	      rust_error_at (segment.get_locus (),
+			     "cannot use %<super%> at the crate scope");
+	      return;
+	    }
+
+	  module_scope_id = resolver->peek_parent_module_scope ();
+	  previous_resolved_node_id = module_scope_id;
+	  resolver->insert_resolved_name (segment.get_node_id (),
+					  module_scope_id);
+	  continue;
+	}
+
+      // resolve any generic args
+      if (segment.has_generic_args ())
+	{
+	  bool ok = ResolveTypeToCanonicalPath::type_resolve_generic_args (
+	    segment.get_generic_args ());
+	  if (!ok)
+	    {
+	      rust_error_at (segment.get_locus (),
+			     "failed to resolve generic arguments");
+	      return;
+	    }
+	}
+
+      // logic is awkward here there are a few cases
+      //
+      // T::Default
+      // mod::foo::impl_item
+      // super::super::module::item
+      // self
+      // self::foo
+      // self::foo::baz
+      //
+      // T::Default we can only resolve the T and cant do anything about Default
+      // its dependant on associated types
+      //
+      // mod::foo::impl_item
+      // we can resolve mod::foo but nothing about impl_item but we need to
+      // _always resolve generic arguments
+      //
+      // self is a simple single lookup
+      //
+      // we have module_scope_id for the next module_scope to lookup
+      // resolved_node_id is the thing we have resolve this segment to
+      //
+      // new algo?
+      // we can only use module resolution when the previous segment is either
+      // unknown or equal to this module_scope_id
+      //
+      // can only use old resolution when previous segment is unkown
+
+      if (previous_resolved_node_id == module_scope_id)
+	{
+	  Optional<CanonicalPath &> resolved_child
+	    = mappings->lookup_module_child (module_scope_id,
+					     ident_seg.as_string ());
+	  if (resolved_child.is_some ())
+	    {
+	      NodeId resolved_node = resolved_child->get_node_id ();
+	      if (resolver->get_name_scope ().decl_was_declared_here (
+		    resolved_node))
+		{
+		  resolved_node_id = resolved_node;
+		  resolver->insert_resolved_name (segment.get_node_id (),
+						  resolved_node);
+		}
+	      else if (resolver->get_type_scope ().decl_was_declared_here (
+			 resolved_node))
+		{
+		  resolved_node_id = resolved_node;
+		  resolver->insert_resolved_type (segment.get_node_id (),
+						  resolved_node);
+		}
+	      else
+		{
+		  rust_error_at (segment.get_locus (),
+				 "Cannot find path %<%s%> in this scope",
+				 segment.as_string ().c_str ());
+		  return;
+		}
+	    }
+	}
+
+      if (resolved_node_id == UNKNOWN_NODEID && is_first_segment)
+	{
+	  // name scope first
+	  NodeId resolved_node = UNKNOWN_NODEID;
+	  const CanonicalPath path
+	    = CanonicalPath::new_seg (segment.get_node_id (),
+				      ident_seg.as_string ());
+	  if (resolver->get_name_scope ().lookup (path, &resolved_node))
+	    {
+	      resolver->insert_resolved_name (segment.get_node_id (),
+					      resolved_node);
+	    }
+	  // check the type scope
+	  else if (resolver->get_type_scope ().lookup (path, &resolved_node))
+	    {
+	      resolver->insert_resolved_type (segment.get_node_id (),
+					      resolved_node);
+	    }
+	  else
+	    {
+	      rust_error_at (segment.get_locus (),
+			     "Cannot find path %<%s%> in this scope",
+			     segment.as_string ().c_str ());
+	      return;
+	    }
+
+	  resolved_node_id = resolved_node;
+	}
+
+      if (resolved_node_id != UNKNOWN_NODEID)
+	{
+	  if (mappings->node_is_module (resolved_node_id))
+	    {
+	      module_scope_id = resolved_node_id;
+	    }
+	  previous_resolved_node_id = resolved_node_id;
 	}
     }
 
-  bool is_single_segment = segs.size () == 1;
-  if (is_single_segment)
+  resolved_node = resolved_node_id;
+  if (resolved_node_id != UNKNOWN_NODEID)
     {
-      if (segment_is_type)
-	resolver->insert_resolved_type (expr->get_node_id (), resolved_node);
+      // name scope first
+      if (resolver->get_name_scope ().decl_was_declared_here (resolved_node_id))
+	{
+	  resolver->insert_resolved_name (expr->get_node_id (),
+					  resolved_node_id);
+	}
+      // check the type scope
+      else if (resolver->get_type_scope ().decl_was_declared_here (
+		 resolved_node_id))
+	{
+	  resolver->insert_resolved_type (expr->get_node_id (),
+					  resolved_node_id);
+	}
       else
-	resolver->insert_resolved_name (expr->get_node_id (), resolved_node);
-
-      resolver->insert_new_definition (expr->get_node_id (),
-				       Definition{expr->get_node_id (),
-						  parent});
-      return;
+	{
+	  gcc_unreachable ();
+	}
     }
-
-  resolve_segments (root_seg_path, 1, expr->get_segments (),
-		    expr->get_node_id (), expr->get_locus ());
 }
 
 void
 ResolvePath::resolve_path (AST::QualifiedPathInExpression *expr)
 {
   AST::QualifiedPathType &root_segment = expr->get_qualified_path_type ();
-
-  bool canonicalize_type_with_generics = false;
   ResolveType::go (&root_segment.get_as_type_path (),
-		   root_segment.get_node_id (),
-		   canonicalize_type_with_generics);
+		   root_segment.get_node_id ());
+  ResolveType::go (root_segment.get_type ().get (),
+		   root_segment.get_node_id ());
 
-  ResolveType::go (root_segment.get_type ().get (), root_segment.get_node_id (),
-		   canonicalize_type_with_generics);
-
-  bool type_resolve_generic_args = true;
-  CanonicalPath impl_type_seg
-    = ResolveTypeToCanonicalPath::resolve (*root_segment.get_type ().get (),
-					   canonicalize_type_with_generics,
-					   type_resolve_generic_args);
-
-  CanonicalPath trait_type_seg
-    = ResolveTypeToCanonicalPath::resolve (root_segment.get_as_type_path (),
-					   canonicalize_type_with_generics,
-					   type_resolve_generic_args);
-  CanonicalPath root_seg_path
-    = TraitImplProjection::resolve (root_segment.get_node_id (), trait_type_seg,
-				    impl_type_seg);
-  bool segment_is_type = false;
-
-  // name scope first
-  if (resolver->get_name_scope ().lookup (root_seg_path, &resolved_node))
+  for (auto &segment : expr->get_segments ())
     {
-      segment_is_type = false;
-      resolver->insert_resolved_name (root_segment.get_node_id (),
-				      resolved_node);
-      resolver->insert_new_definition (root_segment.get_node_id (),
-				       Definition{expr->get_node_id (),
-						  parent});
+      // we cant actually do anything with the segment itself since this is all
+      // the job of the type system to figure it out but we can resolve any
+      // generic arguments used
+      if (segment.has_generic_args ())
+	{
+	  bool ok = ResolveTypeToCanonicalPath::type_resolve_generic_args (
+	    segment.get_generic_args ());
+	  if (!ok)
+	    {
+	      rust_error_at (segment.get_locus (),
+			     "failed to resolve generic arguments");
+	      return;
+	    }
+	}
     }
-  // check the type scope
-  else if (resolver->get_type_scope ().lookup (root_seg_path, &resolved_node))
-    {
-      segment_is_type = true;
-      resolver->insert_resolved_type (root_segment.get_node_id (),
-				      resolved_node);
-      resolver->insert_new_definition (root_segment.get_node_id (),
-				       Definition{expr->get_node_id (),
-						  parent});
-    }
-  else
-    {
-      rust_error_at (expr->get_locus (),
-		     "Cannot find path %<%s%> in this scope",
-		     root_segment.as_string ().c_str ());
-      return;
-    }
-
-  bool is_single_segment = expr->get_segments ().empty ();
-  if (is_single_segment)
-    {
-      if (segment_is_type)
-	resolver->insert_resolved_type (expr->get_node_id (), resolved_node);
-      else
-	resolver->insert_resolved_name (expr->get_node_id (), resolved_node);
-
-      resolver->insert_new_definition (expr->get_node_id (),
-				       Definition{expr->get_node_id (),
-						  parent});
-      return;
-    }
-
-  resolve_segments (root_seg_path, 0, expr->get_segments (),
-		    expr->get_node_id (), expr->get_locus ());
 }
 
 void
-ResolvePath::resolve_segments (CanonicalPath prefix, size_t offs,
-			       std::vector<AST::PathExprSegment> &segs,
-			       NodeId expr_node_id, Location expr_locus)
+ResolvePath::resolve_path (AST::SimplePath *expr)
 {
-  // we can attempt to resolve this path fully
-  CanonicalPath path = prefix;
-  bool segment_is_type = false;
-  for (size_t i = offs; i < segs.size (); i++)
+  NodeId crate_scope_id = resolver->peek_crate_module_scope ();
+  NodeId module_scope_id = resolver->peek_current_module_scope ();
+
+  NodeId resolved_node_id = UNKNOWN_NODEID;
+  for (size_t i = 0; i < expr->get_segments ().size (); i++)
     {
-      AST::PathExprSegment &seg = segs.at (i);
-      auto s = ResolvePathSegmentToCanonicalPath::resolve (seg);
-      path = path.append (s);
+      auto &segment = expr->get_segments ().at (i);
+      bool is_first_segment = i == 0;
+      resolved_node_id = UNKNOWN_NODEID;
 
-      // reset state
-      segment_is_type = false;
-      resolved_node = UNKNOWN_NODEID;
-
-      if (resolver->get_name_scope ().lookup (path, &resolved_node))
+      if (segment.is_crate_path_seg ())
 	{
-	  resolver->insert_resolved_name (seg.get_node_id (), resolved_node);
-	  resolver->insert_new_definition (seg.get_node_id (),
-					   Definition{expr_node_id, parent});
+	  // what is the current crate scope node id?
+	  module_scope_id = crate_scope_id;
+	  resolver->insert_resolved_name (segment.get_node_id (),
+					  module_scope_id);
+	  continue;
+	}
+      else if (segment.is_super_path_seg ())
+	{
+	  if (module_scope_id == crate_scope_id)
+	    {
+	      rust_error_at (segment.get_locus (),
+			     "cannot use %<super%> at the crate scope");
+	      return;
+	    }
+
+	  module_scope_id = resolver->peek_parent_module_scope ();
+	  resolver->insert_resolved_name (segment.get_node_id (),
+					  module_scope_id);
+	  continue;
+	}
+
+      Optional<CanonicalPath &> resolved_child
+	= mappings->lookup_module_child (module_scope_id,
+					 segment.get_segment_name ());
+      if (resolved_child.is_some ())
+	{
+	  NodeId resolved_node = resolved_child->get_node_id ();
+	  if (resolver->get_name_scope ().decl_was_declared_here (
+		resolved_node))
+	    {
+	      resolved_node_id = resolved_node;
+	      resolver->insert_resolved_name (segment.get_node_id (),
+					      resolved_node);
+	    }
+	  else if (resolver->get_type_scope ().decl_was_declared_here (
+		     resolved_node))
+	    {
+	      resolved_node_id = resolved_node;
+	      resolver->insert_resolved_type (segment.get_node_id (),
+					      resolved_node);
+	    }
+	  else
+	    {
+	      rust_error_at (segment.get_locus (),
+			     "Cannot find path %<%s%> in this scope",
+			     segment.as_string ().c_str ());
+	      return;
+	    }
+	}
+
+      if (resolved_node_id == UNKNOWN_NODEID && is_first_segment)
+	{
+	  // name scope first
+	  NodeId resolved_node = UNKNOWN_NODEID;
+	  const CanonicalPath path
+	    = CanonicalPath::new_seg (segment.get_node_id (),
+				      segment.get_segment_name ());
+	  if (resolver->get_name_scope ().lookup (path, &resolved_node))
+	    {
+	      resolved_node_id = resolved_node;
+	      resolver->insert_resolved_name (segment.get_node_id (),
+					      resolved_node);
+	    }
+	  // check the type scope
+	  else if (resolver->get_type_scope ().lookup (path, &resolved_node))
+	    {
+	      resolved_node_id = resolved_node;
+	      resolver->insert_resolved_type (segment.get_node_id (),
+					      resolved_node);
+	    }
+	}
+
+      if (resolved_node_id == UNKNOWN_NODEID)
+	{
+	  rust_error_at (segment.get_locus (),
+			 "cannot find simple path segment %<%s%> in this scope",
+			 segment.as_string ().c_str ());
+	  return;
+	}
+
+      if (mappings->node_is_module (resolved_node_id))
+	{
+	  module_scope_id = resolved_node_id;
+	}
+    }
+
+  resolved_node = resolved_node_id;
+  if (resolved_node_id != UNKNOWN_NODEID)
+    {
+      // name scope first
+      if (resolver->get_name_scope ().decl_was_declared_here (resolved_node_id))
+	{
+	  resolver->insert_resolved_name (expr->get_node_id (),
+					  resolved_node_id);
 	}
       // check the type scope
-      else if (resolver->get_type_scope ().lookup (path, &resolved_node))
+      else if (resolver->get_type_scope ().decl_was_declared_here (
+		 resolved_node_id))
 	{
-	  segment_is_type = true;
-	  resolver->insert_resolved_type (seg.get_node_id (), resolved_node);
-	  resolver->insert_new_definition (seg.get_node_id (),
-					   Definition{expr_node_id, parent});
+	  resolver->insert_resolved_type (expr->get_node_id (),
+					  resolved_node_id);
 	}
       else
 	{
-	  // attempt to fully resolve the path which is allowed to fail given
-	  // the following scenario
-	  //
-	  // https://github.com/Rust-GCC/gccrs/issues/355 Paths are
-	  // resolved fully here, there are limitations though imagine:
-	  //
-	  // struct Foo<A> (A);
-	  //
-	  // impl Foo<isize> {
-	  //    fn test() -> ...
-	  //
-	  // impl Foo<f32> {
-	  //    fn test() -> ...
-	  //
-	  // fn main() {
-	  //    let a:i32 = Foo::test();
-	  //
-	  // there are multiple paths that test can resolve to Foo::<?>::test
-	  // here so we cannot resolve this case
-	  //
-	  // canonical names:
-	  //
-	  // struct Foo<A>            -> Foo
-	  // impl Foo<isize>::fn test -> Foo::isize::test
-	  // impl Foo<f32>::fn test   -> Foo::f32::test
-	  //
-	  // Since there is the case we have the following paths for test:
-	  //
-	  // Foo::isize::test
-	  // Foo::f32::test
-	  // vs
-	  // Foo::test
-	  //
-	  // but the lookup was simply Foo::test we must rely on type resolution
-	  // to figure this type out in a similar fashion to method resolution
-	  // with a probe phase
-
-	  // nothing more we can do we need the type resolver to try and resolve
-	  // this
-	  return;
+	  gcc_unreachable ();
 	}
     }
-
-  // its fully resolved lets mark it as such
-  if (resolved_node != UNKNOWN_NODEID)
-    {
-      if (segment_is_type)
-	resolver->insert_resolved_type (expr_node_id, resolved_node);
-      else
-	resolver->insert_resolved_name (expr_node_id, resolved_node);
-
-      resolver->insert_new_definition (expr_node_id,
-				       Definition{expr_node_id, parent});
-    }
-}
-
-static bool
-lookup_and_insert_segment (Resolver *resolver, CanonicalPath path,
-			   NodeId segment_id, NodeId *to_resolve, bool &is_type)
-{
-  if (resolver->get_name_scope ().lookup (path, to_resolve))
-    {
-      resolver->insert_resolved_name (segment_id, *to_resolve);
-    }
-  else if (resolver->get_type_scope ().lookup (path, to_resolve))
-    {
-      is_type = true;
-      resolver->insert_resolved_type (segment_id, *to_resolve);
-    }
-  else
-    {
-      return false;
-    }
-
-  return true;
-}
-
-void
-ResolvePath::resolve_path (AST::SimplePath *simple_path)
-{
-  // resolve root segment first then apply segments in turn
-  auto expr_node_id = simple_path->get_node_id ();
-  auto is_type = false;
-
-  auto path = CanonicalPath::create_empty ();
-  for (const auto &seg : simple_path->get_segments ())
-    {
-      auto s = ResolveSimplePathSegmentToCanonicalPath::resolve (seg);
-      path = path.append (s);
-
-      // Reset state
-      resolved_node = UNKNOWN_NODEID;
-      is_type = false;
-
-      if (!lookup_and_insert_segment (resolver, path, seg.get_node_id (),
-				      &resolved_node, is_type))
-	{
-	  rust_error_at (seg.get_locus (),
-			 "cannot find simple path segment %qs",
-			 seg.as_string ().c_str ());
-	  return;
-	}
-    }
-
-  if (resolved_node == UNKNOWN_NODEID)
-    {
-      rust_error_at (simple_path->get_locus (),
-		     "could not resolve simple path %qs",
-		     simple_path->as_string ().c_str ());
-      return;
-    }
-
-  if (is_type)
-    resolver->insert_resolved_type (expr_node_id, resolved_node);
-  else
-    resolver->insert_resolved_name (expr_node_id, resolved_node);
-
-  resolver->insert_new_definition (expr_node_id,
-				   Definition{expr_node_id, parent});
 }
 
 } // namespace Resolver

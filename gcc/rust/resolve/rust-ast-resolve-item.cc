@@ -528,6 +528,7 @@ ResolveItem::visit (AST::Function &function)
   auto decl = ResolveFunctionItemToCanonicalPath::resolve (function);
   auto path = prefix.append (decl);
   auto cpath = canonical_prefix.append (decl);
+
   mappings->insert_canonical_path (mappings->get_current_crate (),
 				   function.get_node_id (), cpath);
 
@@ -788,6 +789,7 @@ ResolveItem::visit (AST::TraitImpl &impl_block)
       resolver->get_name_scope ().pop ();
       return;
     }
+  rust_assert (!canonical_impl_type.is_empty ());
 
   // setup paths
   bool canonicalize_type_args = !impl_block.has_generics ();

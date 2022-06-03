@@ -48,9 +48,6 @@ public:
 	  &resolved_node))
       {
 	resolver->insert_resolved_name (pattern.get_node_id (), resolved_node);
-	resolver->insert_new_definition (pattern.get_node_id (),
-					 Definition{pattern.get_node_id (),
-						    parent});
       }
   }
 
@@ -76,9 +73,7 @@ public:
     resolver->get_name_scope ().insert (
       CanonicalPath::new_seg (pattern.get_node_id (), pattern.get_ident ()),
       pattern.get_node_id (), pattern.get_locus ());
-    resolver->insert_new_definition (pattern.get_node_id (),
-				     Definition{pattern.get_node_id (),
-						parent});
+
     resolver->mark_decl_mutability (pattern.get_node_id (),
 				    pattern.get_is_mut ());
   }
@@ -88,9 +83,7 @@ public:
     resolver->get_name_scope ().insert (
       CanonicalPath::new_seg (pattern.get_node_id (), "_"),
       pattern.get_node_id (), pattern.get_locus ());
-    resolver->insert_new_definition (pattern.get_node_id (),
-				     Definition{pattern.get_node_id (),
-						parent});
+
     resolver->mark_decl_mutability (pattern.get_node_id (), false);
   }
 

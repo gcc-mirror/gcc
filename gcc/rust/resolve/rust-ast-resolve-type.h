@@ -190,13 +190,13 @@ class ResolveRelativeTypePath : public ResolveTypeToCanonicalPath
   using ResolveTypeToCanonicalPath::visit;
 
 public:
+  static bool go (AST::TypePath &path, NodeId &resolved_node_id);
   static bool go (AST::QualifiedPathInType &path);
 
 private:
   ResolveRelativeTypePath (CanonicalPath qualified_path);
 
-  static bool resolve_qual_seg (AST::QualifiedPathType &seg,
-				CanonicalPath &result);
+  bool resolve_qual_seg (AST::QualifiedPathType &seg, CanonicalPath &result);
 };
 
 class ResolveType : public ResolverBase
@@ -211,7 +211,6 @@ public:
     ResolveType resolver (parent, canonicalize_type_with_generics,
 			  canonical_path);
     type->accept_vis (resolver);
-
     return resolver.resolved_node;
   };
 
@@ -226,7 +225,6 @@ public:
 
   void visit (AST::TupleType &tuple) override
   {
-    ok = true;
     if (tuple.is_unit_type ())
       {
 	resolved_node = resolver->get_unit_type_node_id ();
@@ -239,87 +237,16 @@ public:
 
   void visit (AST::TypePath &path) override
   {
-    auto rel_canonical_path
-      = ResolveTypeToCanonicalPath::resolve (path,
-					     canonicalize_type_with_generics,
-					     true);
-    if (rel_canonical_path.is_empty ())
+    if (ResolveRelativeTypePath::go (path, resolved_node))
       {
-	rust_error_at (path.get_locus (),
-		       "Failed to resolve canonical path for TypePath");
-	return;
-      }
+	if (canonical_path == nullptr)
+	  return;
 
-    // lets try and resolve in one go else leave it up to the type resolver to
-    // figure outer
-
-    if (resolver->get_type_scope ().lookup (rel_canonical_path, &resolved_node))
-      {
-	resolver->insert_resolved_type (path.get_node_id (), resolved_node);
-	resolver->insert_new_definition (path.get_node_id (),
-					 Definition{path.get_node_id (),
-						    parent});
-
-	if (canonical_path != nullptr)
+	const CanonicalPath *type_path = nullptr;
+	if (mappings->lookup_canonical_path (mappings->get_current_crate (),
+					     resolved_node, &type_path))
 	  {
-	    const CanonicalPath *cpath = nullptr;
-	    bool ok
-	      = mappings->lookup_canonical_path (mappings->get_current_crate (),
-						 resolved_node, &cpath);
-	    if (!ok)
-	      {
-		*canonical_path = rel_canonical_path;
-	      }
-	    else
-	      {
-		*canonical_path = *cpath;
-	      }
-	  }
-
-	return;
-      }
-
-    // lets resolve as many segments as we can and leave it up to the type
-    // resolver otherwise
-    size_t nprocessed = 0;
-    rel_canonical_path.iterate ([&] (const CanonicalPath &seg) -> bool {
-      resolved_node = UNKNOWN_NODEID;
-
-      if (!resolver->get_type_scope ().lookup (seg, &resolved_node))
-	return false;
-
-      resolver->insert_resolved_type (seg.get_node_id (), resolved_node);
-      resolver->insert_new_definition (seg.get_node_id (),
-				       Definition{path.get_node_id (), parent});
-      nprocessed++;
-      return true;
-    });
-
-    if (nprocessed == 0)
-      {
-	rust_error_at (path.get_locus (), "failed to resolve TypePath: %s",
-		       path.as_string ().c_str ());
-	return;
-      }
-
-    // its ok if this fails since the type resolver sometimes will need to
-    // investigate the bounds of a type for the associated type for example see:
-    // https://github.com/Rust-GCC/gccrs/issues/746
-    if (nprocessed == rel_canonical_path.size ())
-      {
-	resolver->insert_resolved_type (path.get_node_id (), resolved_node);
-	resolver->insert_new_definition (path.get_node_id (),
-					 Definition{path.get_node_id (),
-						    parent});
-
-	if (canonical_path != nullptr)
-	  {
-	    const CanonicalPath *cpath = nullptr;
-	    bool ok
-	      = mappings->lookup_canonical_path (mappings->get_current_crate (),
-						 resolved_node, &cpath);
-	    rust_assert (ok);
-	    *canonical_path = *cpath;
+	    *canonical_path = *type_path;
 	  }
       }
   }
@@ -350,11 +277,10 @@ private:
 	       CanonicalPath *canonical_path)
     : ResolverBase (parent),
       canonicalize_type_with_generics (canonicalize_type_with_generics),
-      ok (false), canonical_path (canonical_path)
+      canonical_path (canonical_path)
   {}
 
   bool canonicalize_type_with_generics;
-  bool ok;
   CanonicalPath *canonical_path;
 };
 

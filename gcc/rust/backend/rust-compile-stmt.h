@@ -51,9 +51,11 @@ public:
     if (!stmt.has_init_expr ())
       return;
 
+    const HIR::Pattern &stmt_pattern = *stmt.get_pattern ();
+    HirId stmt_id = stmt_pattern.get_pattern_mappings ().get_hirid ();
+
     TyTy::BaseType *ty = nullptr;
-    if (!ctx->get_tyctx ()->lookup_type (stmt.get_mappings ().get_hirid (),
-					 &ty))
+    if (!ctx->get_tyctx ()->lookup_type (stmt_id, &ty))
       {
 	// FIXME this should be an assertion instead
 	rust_fatal_error (stmt.get_locus (),
@@ -62,7 +64,7 @@ public:
       }
 
     Bvariable *var = nullptr;
-    if (!ctx->lookup_var_decl (stmt.get_mappings ().get_hirid (), &var))
+    if (!ctx->lookup_var_decl (stmt_id, &var))
       {
 	// FIXME this should be an assertion instead and use error mark node
 	rust_fatal_error (stmt.get_locus (),

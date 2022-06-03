@@ -512,8 +512,8 @@ public:
 
   void visit (HIR::FieldAccessExpr &expr) override
   {
-    tree receiver_ref
-      = CompileExpr::Compile (expr.get_receiver_expr ().get (), ctx);
+    HIR::Expr *receiver_expr = expr.get_receiver_expr ().get ();
+    tree receiver_ref = CompileExpr::Compile (receiver_expr, ctx);
 
     // resolve the receiver back to ADT type
     TyTy::BaseType *receiver = nullptr;

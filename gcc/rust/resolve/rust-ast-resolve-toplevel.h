@@ -62,10 +62,6 @@ public:
 	rust_error_at (r, "redefined multiple times");
       });
 
-    resolver->insert_new_definition (module.get_node_id (),
-				     Definition{module.get_node_id (),
-						module.get_node_id ()});
-
     NodeId current_module = resolver->peek_current_module_scope ();
     mappings->insert_module_child_item (current_module, mod);
     mappings->insert_module_child (current_module, module.get_node_id ());
@@ -278,9 +274,7 @@ public:
 	r.add_range (locus);
 	rust_error_at (r, "redefined multiple times");
       });
-    resolver->insert_new_definition (var.get_node_id (),
-				     Definition{var.get_node_id (),
-						var.get_node_id ()});
+
     resolver->mark_decl_mutability (var.get_node_id (), var.is_mutable ());
 
     NodeId current_module = resolver->peek_current_module_scope ();
@@ -302,9 +296,6 @@ public:
 	r.add_range (locus);
 	rust_error_at (r, "redefined multiple times");
       });
-    resolver->insert_new_definition (constant.get_node_id (),
-				     Definition{constant.get_node_id (),
-						constant.get_node_id ()});
 
     NodeId current_module = resolver->peek_current_module_scope ();
     mappings->insert_module_child_item (current_module, decl);
@@ -325,17 +316,6 @@ public:
 	r.add_range (locus);
 	rust_error_at (r, "redefined multiple times");
       });
-    resolver->insert_new_definition (function.get_node_id (),
-				     Definition{function.get_node_id (),
-						function.get_node_id ()});
-
-    // if this does not get a reference it will be determined to be unused
-    // lets give it a fake reference to itself
-    if (function.get_function_name ().compare ("main") == 0)
-      {
-	resolver->insert_resolved_name (function.get_node_id (),
-					function.get_node_id ());
-      }
 
     NodeId current_module = resolver->peek_current_module_scope ();
     mappings->insert_module_child_item (current_module, decl);
@@ -386,11 +366,6 @@ public:
 	r.add_range (locus);
 	rust_error_at (r, "redefined multiple times");
       });
-    resolver->insert_new_definition (impl_block.get_node_id (),
-				     Definition{impl_block.get_node_id (),
-						impl_block.get_node_id ()});
-    resolver->insert_resolved_name (impl_block.get_node_id (),
-				    impl_block.get_node_id ());
 
     for (auto &impl_item : impl_block.get_impl_items ())
       ResolveToplevelImplItem::go (impl_item.get (), impl_prefix);
