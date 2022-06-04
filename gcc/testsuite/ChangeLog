@@ -1,3 +1,21 @@
+2022-06-03  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105761
+	* g++.dg/cpp1y/auto-fn64.C: New test.
+
+2022-06-03  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105795
+	* g++.dg/cpp1z/constexpr-aggr-base1.C: New test.
+
+2022-06-02  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-05-02  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/105437
+	* g++.dg/vect/pr105437.cc: New testcase.
+
 2022-05-31  Jason Merrill  <jason@redhat.com>
 
 	PR c++/102307

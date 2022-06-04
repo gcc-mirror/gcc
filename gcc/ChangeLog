@@ -1,3 +1,12 @@
+2022-06-02  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-05-02  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/105437
+	* tree-vect-slp.c (vect_schedule_slp_node): Handle the
+	case where last_stmt alters control flow.
+
 2022-05-26  Simon Cook  <simon.cook@embecosm.com>
 
 	Backported from master:
