@@ -1,3 +1,126 @@
+2022-06-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/30314
+	PR middle-end/105777
+	* match.pd (__builtin_mul_overflow_p (x, cst, (stype) 0) ->
+	x > stype_max / cst || x < stype_min / cst): New simplification.
+
+2022-06-03  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gimple-range-cache.cc (ranger_cache::range_from_dom): Use
+	Value_Range.
+	* gimple-range.cc (gimple_ranger::register_inferred_ranges): Same.
+	* value-range.h (Value_Range::Value_Range): Implement copy
+	constructor for Value_Range.
+
+2022-06-03  Aldy Hernandez  <aldyh@redhat.com>
+
+	* value-range.h (struct vrange_traits): Remove.
+	(is_a): Rewrite without vrange_traits.
+	(as_a): Same.
+
+2022-06-03  Aldy Hernandez  <aldyh@redhat.com>
+
+	* value-range.cc (vrange::contains_p): Implement.
+	(vrange::type): Return void.
+	(vrange::supports_type_p): Implement.
+	(irange::fits_p): Same.
+	(vrange::set_undefined): Same.
+	(irange::set_nonnegative): Same.
+	(vrange::set_varying): Same.
+	(vrange::union_): Same.
+	(unsupported_range::set): Move to vrange.
+	(unsupported_range::type): Move to vrange.
+	(vrange::intersect): Implement for varying and undefined.
+	(vrange::zero_p): Implement.
+	(unsupported_range::supports_type_p): Move to vrange.
+	(vrange::nonzero_p): Implement.
+	(unsupported_range::set_undefined): Move to vrange.
+	(unsupported_range::set_varying): Same.
+	(unsupported_range::dump): Same.
+	(unsupported_range::union_): Same.  Implement for varying and
+	undefined.
+	(unsupported_range::intersect): Move to vrange.
+	(unsupported_range::zero_p): Same.
+	(unsupported_range::nonzero_p): Same.
+	(unsupported_range::set_nonzero): Same.
+	(unsupported_range::set_zero): Same.
+	(unsupported_range::set_nonnegative): Same.
+	(unsupported_range::fits_p): Same.
+	* value-range.h (class vrange): Remove abstract markers for most
+	methods.
+	(class unsupported_range): Remove most methods as they will now be
+	inherited from vrange.
+
+2022-06-03  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gimple-range-edge.cc (gimple_outgoing_range_stmt_p): Adjust for
+	an object level supports_type_p for irange and a static
+	Value_Range::supports_type_p.
+	* gimple-range-fold.cc (fold_using_range::range_of_range_op): Same.
+	(fold_using_range::range_of_address): Same.
+	(fold_using_range::range_of_builtin_call): Same.
+	* gimple-range-fold.h (gimple_range_type): Same.
+	(gimple_range_ssa_p): Same.
+	* gimple-range-path.cc (path_range_query::internal_range_of_expr):
+	Same.
+	(path_range_query::range_of_stmt): Same.
+	(path_range_query::add_to_imports): Same.
+	* gimple-range.cc (gimple_ranger::range_on_edge): Same.
+	(gimple_ranger::export_global_ranges): Same.
+	* gimple-ssa-evrp-analyze.cc
+	(evrp_range_analyzer::record_ranges_from_phis):  Same.
+	* range-op.cc (range_operator::wi_fold): Same.
+	(range_operator::fold_range): Same.
+	* tree-ssa-loop-ch.cc (entry_loop_condition_is_static): Same.
+	* tree-ssa-loop-unswitch.cc (struct unswitch_predicate): Same.
+	(evaluate_control_stmt_using_entry_checks): Same.
+	* tree-ssa-threadedge.cc
+	(hybrid_jt_simplifier::compute_ranges_from_state): Same.
+	* tree-vrp.cc (supported_types_p): Same.
+	* value-query.cc (range_query::value_of_expr): Same.
+	(range_query::value_on_edge): Same.
+	(range_query::value_of_stmt): Same.
+	(range_query::get_tree_range): Same.
+	(get_range_global): Same.
+	(global_range_query::range_of_expr): Same.
+	* value-range-equiv.h (class value_range_equiv): Same.
+	* value-range.cc (irange::supports_type_p): Same.
+	(unsupported_range::supports_type_p): Same.
+	* value-range.h (enum value_range_discriminator): Same.
+	(Value_Range::init): Same.
+	(Value_Range::supports_type_p): Same.
+	(irange::supports_type_p): Same.
+	(irange::supports_p): Same.
+	(vrange::supports_type_p): Same.
+	(vrange_allocator::alloc_vrange): Same.
+
+2022-06-03  Jan Beulich  <jbeulich@suse.com>
+
+	* Makefile.in (ORIGINAL_OBJCOPY_FOR_TARGET): New.
+	* configure.ac: Check for objcopy, producing
+	ORIGINAL_OBJCOPY_FOR_TARGET.
+	* configure: Update accordingly.
+	* exec-tool.in (ORIGINAL_OBJCOPY_FOR_TARGET): New.
+	Handle objcopy.
+
+2022-06-03  Jan Beulich  <jbeulich@suse.com>
+
+	* config/i386/mmx.md (mmx_psadbw): Convert to expander.
+	(*mmx_psadbw): New. Mark as commutative.
+	* config/i386/sse.md (<sse2_avx2>_psadbw): Convert to expander.
+	(*<sse2_avx2>_psadbw): New. Mark as commutative.
+
+2022-06-03  Alexandre Oliva  <oliva@adacore.com>
+
+	PR tree-optimization/105665
+	PR tree-optimization/100810
+	* tree-ssa-loop-ivopts.cc
+	(ssa_name_maybe_undef_p, ssa_name_set_maybe_undef): New.
+	(ssa_name_any_use_dominates_bb_p, mark_ssa_maybe_undefs): New.
+	(find_ssa_undef): Check precomputed flag and intervening uses.
+	(tree_ssa_iv_optimize): Call mark_ssa_maybe_undefs.
+
 2022-06-02  David Malcolm  <dmalcolm@redhat.com>
 
 	* Makefile.in (OBJS): Add tree-diagnostic-client-data-hooks.o and

@@ -1,3 +1,8 @@
+2022-06-03  Tobias Burnus  <tobias@codesourcery.com>
+
+	* libgomp.texi (OpenMP 5.2): Mark scope w/ firstprivate/allocate as Y.
+	* testsuite/libgomp.fortran/scope-2.f90: New test.
+
 2022-06-02  David Malcolm  <dmalcolm@redhat.com>
 
 	* testsuite/lib/libgomp.exp: Add load_gcc_lib of scansarif.exp.

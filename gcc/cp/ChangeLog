@@ -1,3 +1,40 @@
+2022-06-03  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/105756
+	* typeck.cc (cp_build_binary_op): Don't fold operands
+	when c_inhibit_evaluation_warnings.
+
+2022-06-03  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105761
+	* decl.cc (duplicate_decls): Don't copy DECL_TEMPLATE_INFO
+	from a hidden friend.
+
+2022-06-03  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/105637
+	* tree.cc (maybe_dummy_object): When returning a dummy
+	object, respect the cv-quals of 'this' if available.
+
+2022-06-03  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/100374
+	* pt.cc (determine_specialization): Compare overall constraints
+	not just the trailing constraints.
+	(tsubst_each_template_parm_constraints): Define.
+	(tsubst_friend_function): Use it.
+	(tsubst_friend_class): Use it.
+	(tsubst_template_parm): Don't substitute TEMPLATE_PARM_CONSTRAINTS.
+
+2022-06-03  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/105797
+	* pt.cc (for_each_template_parm_r) <case FUNCTION_DECL, VAR_DECL>:
+	Don't walk DECL_CONTEXT.
+	<case PARM_DECL>: Likewise.  Walk TREE_TYPE.
+	<case CONST_DECL>: Simplify.
+	(any_template_parm_r) <case PARM_DECL>: Don't walk TREE_TYPE.
+
 2022-06-02  Marek Polacek  <polacek@redhat.com>
 
 	* constexpr.cc (potential_constant_expression_1): Treat

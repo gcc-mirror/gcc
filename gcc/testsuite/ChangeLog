@@ -1,3 +1,59 @@
+2022-06-03  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp0x/auto56.C: New test.
+
+2022-06-03  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/105756
+	* g++.dg/cpp0x/decltype82.C: New test.
+
+2022-06-03  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105761
+	* g++.dg/cpp1y/auto-fn64.C: New test.
+
+2022-06-03  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/105637
+	* g++.dg/cpp0x/lambda/lambda-this22.C: New test.
+	* g++.dg/template/non-dependent23.C: New test.
+
+2022-06-03  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/gomp/scope-6.f90: Fix dg-final scan-tree-dump.
+
+2022-06-03  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/gomp/scope-5.f90: New test.
+	* gfortran.dg/gomp/scope-6.f90: New test.
+
+2022-06-03  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/100374
+	* g++.dg/cpp2a/concepts-spec2.C: New test.
+	* g++.dg/cpp2a/concepts-template-parm11.C: New test.
+
+2022-06-03  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/105797
+	* g++.dg/cpp2a/concepts-decltype4.C: New test.
+	* g++.dg/cpp2a/concepts-memfun3.C: New test.
+
+2022-06-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/30314
+	PR middle-end/105777
+	* gcc.dg/tree-ssa/pr30314.c: Add noipa attribute to all functions.
+	* gcc.dg/tree-ssa/pr105777.c: New test.
+	* gcc.c-torture/execute/pr30314.c: New test.
+	* gcc.c-torture/execute/pr105777.c: New test.
+
+2022-06-03  Alexandre Oliva  <oliva@adacore.com>
+
+	PR tree-optimization/105665
+	PR tree-optimization/100810
+	* gcc.dg/torture/pr105665.c: New.
+
 2022-06-02  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/105803
