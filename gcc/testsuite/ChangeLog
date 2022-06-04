@@ -1,3 +1,68 @@
+2022-06-03  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105761
+	* g++.dg/cpp1y/auto-fn64.C: New test.
+
+2022-06-02  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105795
+	* g++.dg/cpp1z/constexpr-aggr-base1.C: New test.
+
+2022-06-02  Philipp Tomsich  <philipp.tomsich@vrull.eu>
+
+	Backported from master:
+	2022-05-13  Philipp Tomsich  <philipp.tomsich@vrull.eu>
+		    Manolis Tsamis  <manolis.tsamis@vrull.eu>
+
+	* gcc.dg/pr90838.c: Add additional flags (dg-additional-options)
+	  when compiling for riscv64 and subsume gcc.target/aarch64/pr90838.c
+	  and gcc.target/i386/pr95863-2.c.
+	* gcc.target/aarch64/pr90838.c: Removed.
+	* gcc.target/i386/pr95863-2.c: Removed.
+	* lib/target-supports.exp: Recognize RV32 or RV64 via XLEN
+
+2022-06-02  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-06-01  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/105786
+	* gcc.dg/torture/pr105786.c: New testcase.
+
+2022-06-02  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-05-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/105726
+	* g++.dg/warn/Warray-bounds-27.C: New testcase.
+
+2022-06-02  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-05-24  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/105711
+	* gcc.target/i386/pr105711.c: New testcase.
+
+2022-06-02  Martin Sebor  <msebor@redhat.com>
+
+	Backported from master:
+	2022-05-24  Martin Sebor  <msebor@redhat.com>
+		    Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/105604
+	* gcc.dg/Wrestrict-24.c: New test.
+	* gcc.dg/Wrestrict-25.c: New test.
+	* gcc.dg/Wrestrict-26.c: New test.
+
+2022-06-02  Vineet Gupta  <vineetg@rivosinc.com>
+
+	Backported from master:
+	2022-05-24  Vineet Gupta  <vineetg@rivosinc.com>
+
+	* gcc.target/riscv/pr105666.c: New test.
+
 2022-06-01  Jason Merrill  <jason@redhat.com>
 
 	PR c++/105734

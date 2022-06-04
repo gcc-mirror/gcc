@@ -1,3 +1,72 @@
+2022-06-02  Philipp Tomsich  <philipp.tomsich@vrull.eu>
+
+	Backported from master:
+	2022-05-13  Philipp Tomsich  <philipp.tomsich@vrull.eu>
+		    Manolis Tsamis  <manolis.tsamis@vrull.eu>
+
+	* config/riscv/riscv.h (CLZ_DEFINED_VALUE_AT_ZERO): Implement.
+	(CTZ_DEFINED_VALUE_AT_ZERO): Same.
+	* doc/sourcebuild.texi: add documentation for RISC-V specific
+	test target keywords
+
+2022-06-02  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-06-01  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/105786
+	* tree-loop-distribution.cc
+	(loop_distribution::transform_reduction_loop): Only do strlen
+	replacement for integer type reductions.
+
+2022-06-02  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-05-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/105726
+	* gimple-ssa-warn-restrict.cc (builtin_memref::set_base_and_offset):
+	Constrain array-of-flexarray case more.
+
+2022-06-02  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-05-24  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/105711
+	* expmed.cc (extract_bit_field_as_subreg): Add op0_mode parameter
+	and use it.
+	(extract_bit_field_1): Pass down the mode of op0 to
+	extract_bit_field_as_subreg.
+
+2022-06-02  Martin Sebor  <msebor@redhat.com>
+
+	Backported from master:
+	2022-05-24  Martin Sebor  <msebor@redhat.com>
+		    Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/105604
+	* gimple-ssa-sprintf.cc (set_aggregate_size_and_offset): Add comments.
+	(get_origin_and_offset_r): Remove null handling.  Handle variable array
+	sizes.
+	(get_origin_and_offset): Handle null argument here.  Simplify.
+	(alias_offset): Update comment.
+	* pointer-query.cc (field_at_offset): Update comment.  Handle members
+	of variable-length types.
+
+2022-06-02  Vineet Gupta  <vineetg@rivosinc.com>
+
+	Backported from master:
+	2022-05-24  Vineet Gupta  <vineetg@rivosinc.com>
+
+	* config/riscv/riscv.cc: (struct riscv_tune_param): Add
+	  fmv_cost.
+	(rocket_tune_info): Add default fmv_cost 8.
+	(sifive_7_tune_info): Ditto.
+	(thead_c906_tune_info): Ditto.
+	(optimize_size_tune_info): Ditto.
+	(riscv_register_move_cost): Use fmv_cost for int<->fp moves.
+
 2022-05-30  Martin Jambor  <mjambor@suse.cz>
 
 	Backported from master:
