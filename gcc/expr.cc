@@ -100,7 +100,7 @@ static void do_tablejump (rtx, machine_mode, rtx, rtx, rtx,
 			  profile_probability);
 static rtx const_vector_from_tree (tree);
 static tree tree_expr_size (const_tree);
-static HOST_WIDE_INT int_expr_size (tree);
+static HOST_WIDE_INT int_expr_size (const_tree);
 static void convert_mode_scalar (rtx, rtx, int);
 
 
@@ -4867,7 +4867,22 @@ emit_push_insn (rtx x, machine_mode mode, tree type, rtx size,
 		    return false;
 		}
 	    }
-	  emit_block_move (target, xinner, size, BLOCK_OP_CALL_PARM);
+
+	  /* If source is a constant VAR_DECL with a simple constructor,
+             store the constructor to the stack instead of moving it.  */
+	  const_tree decl;
+	  if (partial == 0
+	      && MEM_P (xinner)
+	      && SYMBOL_REF_P (XEXP (xinner, 0))
+	      && (decl = SYMBOL_REF_DECL (XEXP (xinner, 0))) != NULL_TREE
+	      && VAR_P (decl)
+	      && TREE_READONLY (decl)
+	      && !TREE_SIDE_EFFECTS (decl)
+	      && immediate_const_ctor_p (DECL_INITIAL (decl), 2))
+	    store_constructor (DECL_INITIAL (decl), target, 0,
+			       int_expr_size (DECL_INITIAL (decl)), false);
+	  else
+	    emit_block_move (target, xinner, size, BLOCK_OP_CALL_PARM);
 	}
     }
   else if (partial > 0)
@@ -6574,6 +6589,25 @@ categorize_ctor_elements (const_tree ctor, HOST_WIDE_INT *p_nz_elts,
 
   return categorize_ctor_elements_1 (ctor, p_nz_elts, p_unique_nz_elts,
 				     p_init_elts, p_complete);
+}
+
+/* Return true if constructor CTOR is simple enough to be materialized
+   in an integer mode register.  Limit the size to WORDS words, which
+   is 1 by default.  */
+
+bool
+immediate_const_ctor_p (const_tree ctor, unsigned int words)
+{
+  /* Allow function to be called with a VAR_DECL's DECL_INITIAL.  */
+  if (!ctor || TREE_CODE (ctor) != CONSTRUCTOR)
+    return false;
+
+  return TREE_CONSTANT (ctor)
+	 && !TREE_ADDRESSABLE (ctor)
+	 && CONSTRUCTOR_NELTS (ctor)
+	 && TREE_CODE (TREE_TYPE (ctor)) != ARRAY_TYPE
+	 && int_expr_size (ctor) <= words * UNITS_PER_WORD
+	 && initializer_constant_valid_for_bitfield_p (ctor);
 }
 
 /* TYPE is initialized by a constructor with NUM_ELTS elements, the last
@@ -10567,6 +10601,21 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 	  if (temp)
 	    return temp;
 	}
+      /* Expand const VAR_DECLs with CONSTRUCTOR initializers that
+	 have scalar integer modes to a reg via store_constructor.  */
+      if (TREE_READONLY (exp)
+	  && !TREE_SIDE_EFFECTS (exp)
+	  && (modifier == EXPAND_NORMAL || modifier == EXPAND_STACK_PARM)
+	  && immediate_const_ctor_p (DECL_INITIAL (exp))
+	  && SCALAR_INT_MODE_P (TYPE_MODE (TREE_TYPE (exp)))
+	  && crtl->emit.regno_pointer_align_length
+	  && !target)
+	{
+	  target = gen_reg_rtx (TYPE_MODE (TREE_TYPE (exp)));
+	  store_constructor (DECL_INITIAL (exp), target, 0,
+			     int_expr_size (DECL_INITIAL (exp)), false);
+	  return target;
+	}
       /* ... fall through ...  */
 
     case PARM_DECL:
@@ -13161,7 +13210,7 @@ expr_size (tree exp)
    if the size can vary or is larger than an integer.  */
 
 static HOST_WIDE_INT
-int_expr_size (tree exp)
+int_expr_size (const_tree exp)
 {
   tree size;
 
