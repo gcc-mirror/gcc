@@ -6152,15 +6152,11 @@ package body Sem_Prag is
          --------------------------------
 
          procedure Check_Loop_Pragma_Grouping (Loop_Stmt : Node_Id) is
-            Stop_Search : exception;
-            --  This exception is used to terminate the recursive descent of
-            --  routine Check_Grouping.
-
-            procedure Check_Grouping (L : List_Id);
+            function Check_Grouping (L : List_Id) return Boolean;
             --  Find the first group of pragmas in list L and if successful,
             --  ensure that the current pragma is part of that group. The
-            --  routine raises Stop_Search once such a check is performed to
-            --  halt the recursive descent.
+            --  routine returns True once such a check is performed to
+            --  stop the analysis.
 
             procedure Grouping_Error (Prag : Node_Id);
             pragma No_Return (Grouping_Error);
@@ -6171,7 +6167,7 @@ package body Sem_Prag is
             -- Check_Grouping --
             --------------------
 
-            procedure Check_Grouping (L : List_Id) is
+            function Check_Grouping (L : List_Id) return Boolean is
                HSS  : Node_Id;
                Stmt : Node_Id;
                Prag : Node_Id := Empty; -- init to avoid warning
@@ -6219,7 +6215,7 @@ package body Sem_Prag is
                            --  Stop the search as the placement is legal.
 
                            if Stmt = N then
-                              raise Stop_Search;
+                              return True;
 
                            --  Skip group members, but keep track of the
                            --  last pragma in the group.
@@ -6266,15 +6262,21 @@ package body Sem_Prag is
                   elsif Nkind (Stmt) = N_Block_Statement then
                      HSS := Handled_Statement_Sequence (Stmt);
 
-                     Check_Grouping (Declarations (Stmt));
+                     if Check_Grouping (Declarations (Stmt)) then
+                        return True;
+                     end if;
 
                      if Present (HSS) then
-                        Check_Grouping (Statements (HSS));
+                        if Check_Grouping (Statements (HSS)) then
+                           return True;
+                        end if;
                      end if;
                   end if;
 
                   Next (Stmt);
                end loop;
+
+               return False;
             end Check_Grouping;
 
             --------------------
@@ -6287,6 +6289,8 @@ package body Sem_Prag is
                Error_Pragma ("pragma% must appear next to pragma#");
             end Grouping_Error;
 
+            Ignore : Boolean;
+
          --  Start of processing for Check_Loop_Pragma_Grouping
 
          begin
@@ -6294,10 +6298,7 @@ package body Sem_Prag is
             --  within to determine whether the current pragma is part of the
             --  first topmost grouping of Loop_Invariant and Loop_Variant.
 
-            Check_Grouping (Statements (Loop_Stmt));
-
-         exception
-            when Stop_Search => null;
+            Ignore := Check_Grouping (Statements (Loop_Stmt));
          end Check_Loop_Pragma_Grouping;
 
          --------------------
@@ -24617,7 +24618,7 @@ package body Sem_Prag is
             Check_First_Subtype (Task_Type);
 
             if Rep_Item_Too_Late (Ent, N) then
-               raise Pragma_Exit;
+               return;
             end if;
          end Task_Storage;
 
@@ -24879,7 +24880,7 @@ package body Sem_Prag is
                  or else
                Rep_Item_Too_Late (E, N)
             then
-               raise Pragma_Exit;
+               return;
             end if;
 
             Set_Has_Pragma_Thread_Local_Storage (E);
@@ -25642,16 +25643,15 @@ package body Sem_Prag is
                      if CodePeer_Mode or GNATprove_Mode then
                         Rewrite (N, Make_Null_Statement (Loc));
                         Analyze (N);
-                        raise Pragma_Exit;
+                        return;
                      end if;
 
                   elsif Chars (Argx) = Name_Gnatprove then
                      if not GNATprove_Mode then
                         Rewrite (N, Make_Null_Statement (Loc));
                         Analyze (N);
-                        raise Pragma_Exit;
+                        return;
                      end if;
-
                   else
                      raise Program_Error;
                   end if;
@@ -25679,7 +25679,7 @@ package body Sem_Prag is
                       Chars                        => Name_Warnings,
                       Pragma_Argument_Associations => Shifted_Args));
                   Analyze (N);
-                  raise Pragma_Exit;
+                  return;
                end if;
 
                --  One argument case
