@@ -1,3 +1,10 @@
+2022-06-04  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/102399
+	PR c++/69585
+	* parser.cc (cp_parser_attributes_opt): Accept GNU attributes
+	followed by [[]] attributes and vice versa.
+
 2022-06-03  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/105756

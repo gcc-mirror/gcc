@@ -1,3 +1,28 @@
+2022-06-04  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/102399
+	PR c++/69585
+	* g++.dg/ext/attrib65.C: New test.
+	* g++.dg/ext/attrib66.C: New test.
+	* g++.dg/ext/attrib67.C: New test.
+
+2022-06-04  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR middle-end/95126
+	* gcc.target/i386/pr95126-m32-1.c: New test case.
+	* gcc.target/i386/pr95126-m32-2.c: New test case.
+	* gcc.target/i386/pr95126-m32-3.c: New test case.
+	* gcc.target/i386/pr95126-m32-4.c: New test case.
+	* gcc.target/i386/pr95126-m64-1.c: New test case.
+	* gcc.target/i386/pr95126-m64-2.c: New test case.
+	* gcc.target/i386/pr95126-m64-3.c: New test case.
+	* gcc.target/i386/pr95126-m64-4.c: New test case.
+
+2022-06-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/105825
+	* gcc.dg/pr105825.c: New test.
+
 2022-06-03  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/cpp0x/auto56.C: New test.

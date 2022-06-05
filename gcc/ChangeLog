@@ -1,3 +1,30 @@
+2022-06-04  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR middle-end/95126
+	* calls.cc (load_register_parameters): When loading a suitable
+	immediate_const_ctor_p VAR_DECL into a single word_mode register,
+	construct it directly in a pseudo rather than read it (by parts)
+	from memory.
+	* expr.cc (int_expr_size): Make tree argument a const_tree.
+	(immediate_const_ctor_p): Helper predicate.  Return true for
+	simple constructors that may be materialized in a register.
+	(expand_expr_real_1) [VAR_DECL]: When expanding a constant
+	VAR_DECL with a suitable immediate_const_ctor_p constructor
+	use store_constructor to materialize it directly in a pseudo.
+	* expr.h (immediate_const_ctor_p): Prototype here.
+	* varasm.cc (initializer_constant_valid_for_bitfield_p): Change
+	VALUE argument from tree to const_tree.
+	* varasm.h (initializer_constant_valid_for_bitfield_p): Update
+	prototype.
+
+2022-06-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/105825
+	* config/i386/i386.md (*ashl<dwi>3_doubleword_mask,
+	*<insn><dwi>3_doubleword_mask): If top bit of mask is clear, but lower
+	bits of mask aren't all set, use operands[2] mode for the AND
+	operation instead of always SImode.
+
 2022-06-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/30314
