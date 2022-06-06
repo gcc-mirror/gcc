@@ -7675,59 +7675,54 @@ package body Exp_Ch3 is
 
             Rewrite_As_Renaming :=
 
-              --  If the object declaration appears in the form
-
-              --    Obj : Typ := Func (...);
-
-              --  where Typ needs finalization and is returned on the secondary
-              --  stack, the declaration can be rewritten into a dereference of
-              --  the reference to the result built on the secondary stack (see
-              --  Expand_Ctrl_Function_Call for this expansion of the call):
-
-              --    type Axx is access all Typ;
-              --    Rxx : constant Axx := Func (...)'reference;
-              --    Obj : Typ renames Rxx.all;
-
-              --  This avoids an extra copy and a pair of Adjust/Finalize calls
-
-              ((not Is_Library_Level_Entity (Def_Id)
-                 and then Nkind (Expr_Q) = N_Explicit_Dereference
-                 and then not Comes_From_Source (Expr_Q)
-                 and then Nkind (Original_Node (Expr_Q)) = N_Function_Call
-                 and then Needs_Finalization (Typ)
-                 and then not Is_Class_Wide_Type (Typ))
-
-                --  If the initializing expression is for a variable with flag
-                --  OK_To_Rename set, then transform:
-
-                --     Obj : Typ := Expr;
-
-                --  into
-
-                --     Obj : Typ renames Expr;
-
-                --  provided that Obj is not aliased. The aliased case has to
-                --  be excluded because Expr will not be aliased in general.
-
-               or else (not Aliased_Present (N)
-                         and then (OK_To_Rename_Ref (Expr_Q)
-                                    or else
-                                   (Nkind (Expr_Q) = N_Slice
-                                     and then
-                                    OK_To_Rename_Ref (Prefix (Expr_Q))))))
-
               --  The declaration cannot be rewritten if it has got constraints
               --  in other words the nominal subtype must be unconstrained.
 
-              and then Is_Entity_Name (Original_Node (Obj_Def))
+              Is_Entity_Name (Original_Node (Obj_Def))
 
-              --  ??? Likewise if there are any aspect specifications, because
-              --  otherwise we duplicate that corresponding implicit attribute
-              --  definition and call Insert_Action, which has no place for the
-              --  attribute definition. The attribute definition is stored in
-              --  Aspect_Rep_Item, which is not a list.
+                --  The aliased case has to be excluded because the expression
+                --  will not be aliased in the general case.
 
-              and then No (Aspect_Specifications (N));
+                and then not Aliased_Present (N)
+
+                --  If the object declaration originally appears in the form
+
+                --    Obj : Typ := Func (...);
+
+                --  and has been rewritten as the dereference of a reference
+                --  to the function result built either on the primary or the
+                --  secondary stack, then the declaration can be rewritten as
+                --  the renaming of this dereference:
+
+                --    type Axx is access all Typ;
+                --    Rxx : constant Axx := Func (...)'reference;
+                --    Obj : Typ renames Rxx.all;
+
+                --  This avoids an extra copy and, in the case where Typ needs
+                --  finalization, a pair of Adjust/Finalize calls (see below).
+
+                and then
+                  ((not Is_Library_Level_Entity (Def_Id)
+                     and then Nkind (Expr_Q) = N_Explicit_Dereference
+                     and then not Comes_From_Source (Expr_Q)
+                     and then Nkind (Original_Node (Expr_Q)) = N_Function_Call
+                     and then not Is_Class_Wide_Type (Typ))
+
+                   --  If the initializing expression is a variable with the
+                   --  flag OK_To_Rename set, then transform:
+
+                   --     Obj : Typ := Expr;
+
+                   --  into
+
+                   --     Obj : Typ renames Expr;
+
+                   or else OK_To_Rename_Ref (Expr_Q)
+
+                   --  Likewise if it is a slice of such a variable
+
+                   or else (Nkind (Expr_Q) = N_Slice
+                             and then OK_To_Rename_Ref (Prefix (Expr_Q))));
 
             --  If the type needs finalization and is not inherently limited,
             --  then the target is adjusted after the copy and attached to the

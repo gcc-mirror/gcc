@@ -5048,41 +5048,6 @@ package body Sem_Ch3 is
          end;
       end if;
 
-      --  Another optimization: if the nominal subtype is unconstrained and
-      --  the expression is a function call that returns on the secondary
-      --  stack, rewrite the declaration as a renaming of the result of the
-      --  call. The exceptions below are cases where the copy is expected,
-      --  either by the back end (Aliased case) or by the semantics, as for
-      --  initializing controlled types or copying tags for class-wide types.
-      --  ??? To be moved to Expand_N_Object_Declaration.Rewrite_As_Renaming.
-
-      if Present (E)
-        and then Nkind (E) = N_Explicit_Dereference
-        and then Nkind (Original_Node (E)) = N_Function_Call
-        and then not Is_Library_Level_Entity (Id)
-        and then not Is_Aliased (Id)
-        and then Needs_Secondary_Stack (T)
-        and then not Is_Class_Wide_Type (T)
-        and then not Needs_Finalization (T)
-        and then Expander_Active
-      then
-         Rewrite (N,
-           Make_Object_Renaming_Declaration (Loc,
-             Defining_Identifier => Id,
-             Access_Definition   => Empty,
-             Subtype_Mark        => New_Occurrence_Of
-                                      (Base_Type (Etype (Id)), Loc),
-             Name                => E));
-
-         Set_Renamed_Object (Id, E);
-
-         --  Force generation of debugging information for the constant and for
-         --  the renamed function call.
-
-         Set_Debug_Info_Needed (Id);
-         Set_Debug_Info_Needed (Entity (Prefix (E)));
-      end if;
-
       if Present (Prev_Entity)
         and then Is_Frozen (Prev_Entity)
         and then not Error_Posted (Id)
