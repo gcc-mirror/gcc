@@ -867,19 +867,16 @@ package body Exp_Ch7 is
       Additional_Cleanup : List_Id) return List_Id
    is
       Is_Asynchronous_Call : constant Boolean :=
-                               Nkind (N) = N_Block_Statement
-                                 and then Is_Asynchronous_Call_Block (N);
-      Is_Master            : constant Boolean :=
-                               Nkind (N) /= N_Entry_Body
-                                 and then Is_Task_Master (N);
-      Is_Protected_Body    : constant Boolean :=
-                               Nkind (N) = N_Subprogram_Body
-                                 and then Is_Protected_Subprogram_Body (N);
-      Is_Task_Allocation   : constant Boolean :=
-                               Nkind (N) = N_Block_Statement
-                                 and then Is_Task_Allocation_Block (N);
-      Is_Task_Body         : constant Boolean :=
-                               Nkind (Original_Node (N)) = N_Task_Body;
+        Nkind (N) = N_Block_Statement and then Is_Asynchronous_Call_Block (N);
+      Is_Master : constant Boolean :=
+        Nkind (N) /= N_Entry_Body and then Is_Task_Master (N);
+      Is_Protected_Subp_Body : constant Boolean :=
+        Nkind (N) = N_Subprogram_Body
+        and then Is_Protected_Subprogram_Body (N);
+      Is_Task_Allocation : constant Boolean :=
+        Nkind (N) = N_Block_Statement and then Is_Task_Allocation_Block (N);
+      Is_Task_Body : constant Boolean :=
+        Nkind (Original_Node (N)) = N_Task_Body;
 
       Loc   : constant Source_Ptr := Sloc (N);
       Stmts : constant List_Id    := New_List;
@@ -905,7 +902,7 @@ package body Exp_Ch7 is
       --  NOTE: The generated code references _object, a parameter to the
       --  procedure.
 
-      elsif Is_Protected_Body then
+      elsif Is_Protected_Subp_Body then
          declare
             Spec      : constant Node_Id := Parent (Corresponding_Spec (N));
             Conc_Typ  : Entity_Id := Empty;
@@ -3695,9 +3692,9 @@ package body Exp_Ch7 is
    --------------------------
 
    procedure Build_Finalizer_Call (N : Node_Id; Fin_Id : Entity_Id) is
-      Is_Prot_Body : constant Boolean :=
-                       Nkind (N) = N_Subprogram_Body
-                         and then Is_Protected_Subprogram_Body (N);
+      Is_Protected_Subp_Body : constant Boolean :=
+        Nkind (N) = N_Subprogram_Body
+        and then Is_Protected_Subprogram_Body (N);
       --  Determine whether N denotes the protected version of a subprogram
       --  which belongs to a protected type.
 
@@ -3733,7 +3730,7 @@ package body Exp_Ch7 is
       --        end;
       --     end Prot_SubpP;
 
-      if Is_Prot_Body then
+      if Is_Protected_Subp_Body then
          HSS := Handled_Statement_Sequence (Last (Statements (HSS)));
       end if;
 
@@ -5745,24 +5742,12 @@ package body Exp_Ch7 is
 
          if Is_Task_Allocation then
             declare
-               Chain : constant Entity_Id := Activation_Chain_Entity (N);
-               Decl  : Node_Id;
-
+               Chain_Decl : constant N_Object_Declaration_Id :=
+                 Parent (Activation_Chain_Entity (N));
+               pragma Assert (List_Containing (Chain_Decl) = Decls);
             begin
-               Decl := First (Decls);
-               while Nkind (Decl) /= N_Object_Declaration
-                 or else Defining_Identifier (Decl) /= Chain
-               loop
-                  Next (Decl);
-
-                  --  A task allocation block should always include a _chain
-                  --  declaration.
-
-                  pragma Assert (Present (Decl));
-               end loop;
-
-               Remove (Decl);
-               Prepend_To (New_Decls, Decl);
+               Remove (Chain_Decl);
+               Prepend_To (New_Decls, Chain_Decl);
             end;
          end if;
 
