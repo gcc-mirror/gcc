@@ -20884,10 +20884,22 @@ tsubst_copy_and_build (tree t,
 	  }
 
 	/* Remember that there was a reference to this entity.  */
-	if (function != NULL_TREE
-	    && DECL_P (function)
-	    && !mark_used (function, complain) && !(complain & tf_error))
-	  RETURN (error_mark_node);
+	if (function != NULL_TREE)
+	  {
+	    tree inner = function;
+	    if (TREE_CODE (inner) == ADDR_EXPR
+		&& TREE_CODE (TREE_OPERAND (inner, 0)) == FUNCTION_DECL)
+	      /* We should already have called mark_used when taking the
+		 address of this function, but do so again anyway to make
+		 sure it's odr-used: at worst this is a no-op, but if we
+		 obtained this FUNCTION_DECL as part of ahead-of-time overload
+		 resolution then that call to mark_used wouldn't have marked it
+		 odr-used yet (53164).  */
+	      inner = TREE_OPERAND (inner, 0);
+	    if (DECL_P (inner)
+		&& !mark_used (inner, complain) && !(complain & tf_error))
+	      RETURN (error_mark_node);
+	  }
 
 	if (!maybe_fold_fn_template_args (function, complain))
 	  return error_mark_node;
