@@ -24861,7 +24861,6 @@ package body Sem_Prag is
             Check_Arg_Is_Library_Level_Local_Name (Arg1);
 
             Id := Get_Pragma_Arg (Arg1);
-            Analyze (Id);
 
             if not Is_Entity_Name (Id)
               or else Ekind (Entity (Id)) /= E_Variable
