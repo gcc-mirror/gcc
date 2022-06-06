@@ -2872,7 +2872,7 @@ package Sem_Util is
    --  This routine is called if the sub-expression N maybe the target of
    --  an assignment (e.g. it is the left side of an assignment, used as
    --  an out parameters, or used as prefixes of access attributes). It
-   --  sets May_Be_Modified in the associated entity if there is one,
+   --  sets Never_Set_In_Source in the associated entity if there is one,
    --  taking into account the rule that in the case of renamed objects,
    --  it is the flag in the renamed object that must be set.
    --
