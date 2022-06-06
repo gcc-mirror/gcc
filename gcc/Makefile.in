@@ -499,6 +499,7 @@ RANLIB_FOR_TARGET := $(shell \
 ORIGINAL_LD_FOR_TARGET = @ORIGINAL_LD_FOR_TARGET@
 ORIGINAL_NM_FOR_TARGET = @ORIGINAL_NM_FOR_TARGET@
 NM_FOR_TARGET = ./nm
+ORIGINAL_OBJCOPY_FOR_TARGET = @ORIGINAL_OBJCOPY_FOR_TARGET@
 STRIP_FOR_TARGET := $(shell \
   if [ -f $(objdir)/../binutils/strip-new ] ; then \
     echo $(objdir)/../binutils/strip-new ; \
@@ -1617,6 +1618,7 @@ OBJS = \
 	tree-data-ref.o \
 	tree-dfa.o \
 	tree-diagnostic.o \
+	tree-diagnostic-client-data-hooks.o \
 	tree-diagnostic-path.o \
 	tree-dump.o \
 	tree-eh.o \
@@ -1625,6 +1627,7 @@ OBJS = \
 	tree-inline.o \
 	tree-into-ssa.o \
 	tree-iterator.o \
+	tree-logical-location.o \
 	tree-loop-distribution.o \
 	tree-nested.o \
 	tree-nrv.o \
@@ -1728,9 +1731,12 @@ OBJS = \
 # Objects in libcommon.a, potentially used by all host binaries and with
 # no target dependencies.
 OBJS-libcommon = diagnostic-spec.o diagnostic.o diagnostic-color.o \
-	diagnostic-show-locus.o diagnostic-format-json.o json.o \
+	diagnostic-format-json.o \
+	diagnostic-format-sarif.o \
+	diagnostic-show-locus.o \
 	edit-context.o \
 	pretty-print.o intl.o \
+	json.o \
 	sbitmap.o \
 	vec.o input.o hash-table.o ggc-none.o memory-block.o \
 	selftest.o selftest-diagnostic.o sort.o
@@ -2368,6 +2374,7 @@ s-bversion: BASE-VER
 	$(STAMP) s-bversion
 
 CFLAGS-toplev.o += -DTARGET_NAME=\"$(target_noncanonical)\"
+CFLAGS-tree-diagnostic-client-data-hooks.o += -DTARGET_NAME=\"$(target_noncanonical)\"
 CFLAGS-optinfo-emit-json.o += -DTARGET_NAME=\"$(target_noncanonical)\" $(ZLIBINC)
 CFLAGS-analyzer/engine.o += $(ZLIBINC)
 
@@ -4338,10 +4345,10 @@ TAGS: lang.tags
 	    incs="$$incs --include $$dir/TAGS.sub";	\
 	  fi;						\
 	done;						\
-	$(ETAGS) -o TAGS.sub c-family/*.h c-family/*.cc c-family/*.cc \
-	      *.h *.c *.cc \
+	$(ETAGS) -o TAGS.sub c-family/*.h c-family/*.cc \
+	      *.h *.cc \
 	      ../include/*.h ../libiberty/*.c \
-	      ../libcpp/*.c ../libcpp/include/*.h \
+	      ../libcpp/*.cc ../libcpp/include/*.h \
 	      --language=none --regex="/\(char\|unsigned int\|int\|bool\|void\|HOST_WIDE_INT\|enum [A-Za-z_0-9]+\) [*]?\([A-Za-z_0-9]+\)/\2/" common.opt	\
 	      --language=none --regex="/\(DEF_RTL_EXPR\|DEFTREECODE\|DEFGSCODE\|DEFTIMEVAR\|DEFPARAM\|DEFPARAMENUM5\)[ ]?(\([A-Za-z_0-9]+\)/\2/" rtl.def tree.def gimple.def timevar.def \
 		; \

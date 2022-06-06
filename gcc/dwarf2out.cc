@@ -27479,7 +27479,7 @@ gen_namelist_decl (tree name, dw_die_ref scope_die, tree item_decls)
 	nml_item_ref_die = force_decl_die (value);
 
       nml_item_die = new_die (DW_TAG_namelist_item, nml_die, NULL);
-      add_AT_die_ref (nml_item_die, DW_AT_namelist_items, nml_item_ref_die);
+      add_AT_die_ref (nml_item_die, DW_AT_namelist_item, nml_item_ref_die);
     }
   return nml_die;
 }

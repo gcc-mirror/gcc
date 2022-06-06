@@ -100,6 +100,15 @@ static const struct attribute_spec gfc_attribute_table[] =
   { NULL,		  0, 0, false, false, false, false, NULL, NULL }
 };
 
+/* Get a value for the SARIF v2.1.0 "artifact.sourceLanguage" property,
+   based on the list in SARIF v2.1.0 Appendix J.  */
+
+static const char *
+gfc_get_sarif_source_language (const char *)
+{
+  return "fortran";
+}
+
 #undef LANG_HOOKS_NAME
 #undef LANG_HOOKS_INIT
 #undef LANG_HOOKS_FINISH
@@ -138,6 +147,7 @@ static const struct attribute_spec gfc_attribute_table[] =
 #undef LANG_HOOKS_BUILTIN_FUNCTION
 #undef LANG_HOOKS_GET_ARRAY_DESCR_INFO
 #undef LANG_HOOKS_ATTRIBUTE_TABLE
+#undef LANG_HOOKS_GET_SARIF_SOURCE_LANGUAGE
 
 /* Define lang hooks.  */
 #define LANG_HOOKS_NAME                 "GNU Fortran"
@@ -177,6 +187,7 @@ static const struct attribute_spec gfc_attribute_table[] =
 #define LANG_HOOKS_BUILTIN_FUNCTION	gfc_builtin_function
 #define LANG_HOOKS_GET_ARRAY_DESCR_INFO	gfc_get_array_descr_info
 #define LANG_HOOKS_ATTRIBUTE_TABLE	gfc_attribute_table
+#define LANG_HOOKS_GET_SARIF_SOURCE_LANGUAGE gfc_get_sarif_source_language
 
 struct lang_hooks lang_hooks = LANG_HOOKS_INITIALIZER;
 

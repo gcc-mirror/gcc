@@ -2944,14 +2944,28 @@ package body Checks is
 
          --  Similarly, if the expression is an aggregate in an object
          --  declaration, apply it to the object after the declaration.
-         --  This is only necessary in rare cases of tagged extensions
-         --  initialized with an aggregate with an "others => <>" clause.
+
+         --  This is only necessary in cases of tagged extensions
+         --  initialized with an aggregate with an "others => <>" clause,
+         --  when the subtypes of LHS and RHS do not statically match or
+         --  when we know the object's type will be rewritten later.
+         --  The condition for the later is copied from the
+         --  Analyze_Object_Declaration procedure when it actually builds the
+         --  subtype.
 
          elsif Nkind (Par) = N_Object_Declaration then
-            Insert_Action_After (Par,
-              Make_Predicate_Check (Typ,
-                New_Occurrence_Of (Defining_Identifier (Par), Sloc (N))));
-            return;
+            if Subtypes_Statically_Match
+                 (Etype (Defining_Identifier (Par)), Typ)
+              and then (Nkind (N) = N_Extension_Aggregate
+                         or else (Is_Definite_Subtype (Typ)
+                                   and then Build_Default_Subtype_OK (Typ)))
+            then
+               Insert_Action_After (Par,
+                  Make_Predicate_Check (Typ,
+                    New_Occurrence_Of (Defining_Identifier (Par), Sloc (N))));
+               return;
+            end if;
+
          end if;
       end if;
 

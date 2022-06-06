@@ -1,3 +1,808 @@
+2022-06-04  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR middle-end/95126
+	* calls.cc (load_register_parameters): When loading a suitable
+	immediate_const_ctor_p VAR_DECL into a single word_mode register,
+	construct it directly in a pseudo rather than read it (by parts)
+	from memory.
+	* expr.cc (int_expr_size): Make tree argument a const_tree.
+	(immediate_const_ctor_p): Helper predicate.  Return true for
+	simple constructors that may be materialized in a register.
+	(expand_expr_real_1) [VAR_DECL]: When expanding a constant
+	VAR_DECL with a suitable immediate_const_ctor_p constructor
+	use store_constructor to materialize it directly in a pseudo.
+	* expr.h (immediate_const_ctor_p): Prototype here.
+	* varasm.cc (initializer_constant_valid_for_bitfield_p): Change
+	VALUE argument from tree to const_tree.
+	* varasm.h (initializer_constant_valid_for_bitfield_p): Update
+	prototype.
+
+2022-06-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/105825
+	* config/i386/i386.md (*ashl<dwi>3_doubleword_mask,
+	*<insn><dwi>3_doubleword_mask): If top bit of mask is clear, but lower
+	bits of mask aren't all set, use operands[2] mode for the AND
+	operation instead of always SImode.
+
+2022-06-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/30314
+	PR middle-end/105777
+	* match.pd (__builtin_mul_overflow_p (x, cst, (stype) 0) ->
+	x > stype_max / cst || x < stype_min / cst): New simplification.
+
+2022-06-03  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gimple-range-cache.cc (ranger_cache::range_from_dom): Use
+	Value_Range.
+	* gimple-range.cc (gimple_ranger::register_inferred_ranges): Same.
+	* value-range.h (Value_Range::Value_Range): Implement copy
+	constructor for Value_Range.
+
+2022-06-03  Aldy Hernandez  <aldyh@redhat.com>
+
+	* value-range.h (struct vrange_traits): Remove.
+	(is_a): Rewrite without vrange_traits.
+	(as_a): Same.
+
+2022-06-03  Aldy Hernandez  <aldyh@redhat.com>
+
+	* value-range.cc (vrange::contains_p): Implement.
+	(vrange::type): Return void.
+	(vrange::supports_type_p): Implement.
+	(irange::fits_p): Same.
+	(vrange::set_undefined): Same.
+	(irange::set_nonnegative): Same.
+	(vrange::set_varying): Same.
+	(vrange::union_): Same.
+	(unsupported_range::set): Move to vrange.
+	(unsupported_range::type): Move to vrange.
+	(vrange::intersect): Implement for varying and undefined.
+	(vrange::zero_p): Implement.
+	(unsupported_range::supports_type_p): Move to vrange.
+	(vrange::nonzero_p): Implement.
+	(unsupported_range::set_undefined): Move to vrange.
+	(unsupported_range::set_varying): Same.
+	(unsupported_range::dump): Same.
+	(unsupported_range::union_): Same.  Implement for varying and
+	undefined.
+	(unsupported_range::intersect): Move to vrange.
+	(unsupported_range::zero_p): Same.
+	(unsupported_range::nonzero_p): Same.
+	(unsupported_range::set_nonzero): Same.
+	(unsupported_range::set_zero): Same.
+	(unsupported_range::set_nonnegative): Same.
+	(unsupported_range::fits_p): Same.
+	* value-range.h (class vrange): Remove abstract markers for most
+	methods.
+	(class unsupported_range): Remove most methods as they will now be
+	inherited from vrange.
+
+2022-06-03  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gimple-range-edge.cc (gimple_outgoing_range_stmt_p): Adjust for
+	an object level supports_type_p for irange and a static
+	Value_Range::supports_type_p.
+	* gimple-range-fold.cc (fold_using_range::range_of_range_op): Same.
+	(fold_using_range::range_of_address): Same.
+	(fold_using_range::range_of_builtin_call): Same.
+	* gimple-range-fold.h (gimple_range_type): Same.
+	(gimple_range_ssa_p): Same.
+	* gimple-range-path.cc (path_range_query::internal_range_of_expr):
+	Same.
+	(path_range_query::range_of_stmt): Same.
+	(path_range_query::add_to_imports): Same.
+	* gimple-range.cc (gimple_ranger::range_on_edge): Same.
+	(gimple_ranger::export_global_ranges): Same.
+	* gimple-ssa-evrp-analyze.cc
+	(evrp_range_analyzer::record_ranges_from_phis):  Same.
+	* range-op.cc (range_operator::wi_fold): Same.
+	(range_operator::fold_range): Same.
+	* tree-ssa-loop-ch.cc (entry_loop_condition_is_static): Same.
+	* tree-ssa-loop-unswitch.cc (struct unswitch_predicate): Same.
+	(evaluate_control_stmt_using_entry_checks): Same.
+	* tree-ssa-threadedge.cc
+	(hybrid_jt_simplifier::compute_ranges_from_state): Same.
+	* tree-vrp.cc (supported_types_p): Same.
+	* value-query.cc (range_query::value_of_expr): Same.
+	(range_query::value_on_edge): Same.
+	(range_query::value_of_stmt): Same.
+	(range_query::get_tree_range): Same.
+	(get_range_global): Same.
+	(global_range_query::range_of_expr): Same.
+	* value-range-equiv.h (class value_range_equiv): Same.
+	* value-range.cc (irange::supports_type_p): Same.
+	(unsupported_range::supports_type_p): Same.
+	* value-range.h (enum value_range_discriminator): Same.
+	(Value_Range::init): Same.
+	(Value_Range::supports_type_p): Same.
+	(irange::supports_type_p): Same.
+	(irange::supports_p): Same.
+	(vrange::supports_type_p): Same.
+	(vrange_allocator::alloc_vrange): Same.
+
+2022-06-03  Jan Beulich  <jbeulich@suse.com>
+
+	* Makefile.in (ORIGINAL_OBJCOPY_FOR_TARGET): New.
+	* configure.ac: Check for objcopy, producing
+	ORIGINAL_OBJCOPY_FOR_TARGET.
+	* configure: Update accordingly.
+	* exec-tool.in (ORIGINAL_OBJCOPY_FOR_TARGET): New.
+	Handle objcopy.
+
+2022-06-03  Jan Beulich  <jbeulich@suse.com>
+
+	* config/i386/mmx.md (mmx_psadbw): Convert to expander.
+	(*mmx_psadbw): New. Mark as commutative.
+	* config/i386/sse.md (<sse2_avx2>_psadbw): Convert to expander.
+	(*<sse2_avx2>_psadbw): New. Mark as commutative.
+
+2022-06-03  Alexandre Oliva  <oliva@adacore.com>
+
+	PR tree-optimization/105665
+	PR tree-optimization/100810
+	* tree-ssa-loop-ivopts.cc
+	(ssa_name_maybe_undef_p, ssa_name_set_maybe_undef): New.
+	(ssa_name_any_use_dominates_bb_p, mark_ssa_maybe_undefs): New.
+	(find_ssa_undef): Check precomputed flag and intervening uses.
+	(tree_ssa_iv_optimize): Call mark_ssa_maybe_undefs.
+
+2022-06-02  David Malcolm  <dmalcolm@redhat.com>
+
+	* Makefile.in (OBJS): Add tree-diagnostic-client-data-hooks.o and
+	tree-logical-location.o.
+	(OBJS-libcommon): Add diagnostic-format-sarif.o; reorder.
+	(CFLAGS-tree-diagnostic-client-data-hooks.o): Add TARGET_NAME.
+	* common.opt (fdiagnostics-format=): Add sarif-stderr and sarif-file.
+	(sarif-stderr, sarif-file): New enum values.
+	* diagnostic-client-data-hooks.h: New file.
+	* diagnostic-format-sarif.cc: New file.
+	* diagnostic-path.h (enum diagnostic_event::verb): New enum.
+	(enum diagnostic_event::noun): New enum.
+	(enum diagnostic_event::property): New enum.
+	(struct diagnostic_event::meaning): New struct.
+	(diagnostic_event::get_logical_location): New vfunc.
+	(diagnostic_event::get_meaning): New vfunc.
+	(simple_diagnostic_event::get_logical_location): New vfunc impl.
+	(simple_diagnostic_event::get_meaning): New vfunc impl.
+	* diagnostic.cc: Include "diagnostic-client-data-hooks.h".
+	(diagnostic_initialize): Initialize m_client_data_hooks.
+	(diagnostic_finish): Clean up m_client_data_hooks.
+	(diagnostic_event::meaning::dump_to_pp): New.
+	(diagnostic_event::meaning::maybe_get_verb_str): New.
+	(diagnostic_event::meaning::maybe_get_noun_str): New.
+	(diagnostic_event::meaning::maybe_get_property_str): New.
+	(get_cwe_url): Make non-static.
+	(diagnostic_output_format_init): Handle
+	DIAGNOSTICS_OUTPUT_FORMAT_SARIF_STDERR and
+	DIAGNOSTICS_OUTPUT_FORMAT_SARIF_FILE.
+	* diagnostic.h (enum diagnostics_output_format): Add
+	DIAGNOSTICS_OUTPUT_FORMAT_SARIF_STDERR and
+	DIAGNOSTICS_OUTPUT_FORMAT_SARIF_FILE.
+	(class diagnostic_client_data_hooks): New forward decl.
+	(class logical_location): New forward decl.
+	(diagnostic_context::m_client_data_hooks): New field.
+	(diagnostic_output_format_init_sarif_stderr): New decl.
+	(diagnostic_output_format_init_sarif_file): New decl.
+	(get_cwe_url): New decl.
+	* doc/invoke.texi (-fdiagnostics-format=): Add sarif-stderr and
+	sarif-file.
+	* doc/sourcebuild.texi (Scan a particular file): Add
+	scan-sarif-file and scan-sarif-file-not.
+	* langhooks-def.h (lhd_get_sarif_source_language): New decl.
+	(LANG_HOOKS_GET_SARIF_SOURCE_LANGUAGE): New macro.
+	(LANG_HOOKS_INITIALIZER): Add
+	LANG_HOOKS_GET_SARIF_SOURCE_LANGUAGE.
+	* langhooks.cc (lhd_get_sarif_source_language): New.
+	* langhooks.h (lang_hooks::get_sarif_source_language): New field.
+	* logical-location.h: New file.
+	* plugin.cc (struct for_each_plugin_closure): New.
+	(for_each_plugin_cb): New.
+	(for_each_plugin): New.
+	* plugin.h (for_each_plugin): New decl.
+	* tree-diagnostic-client-data-hooks.cc: New file.
+	* tree-diagnostic.cc: Include "diagnostic-client-data-hooks.h".
+	(tree_diagnostics_defaults): Populate m_client_data_hooks.
+	* tree-logical-location.cc: New file.
+	* tree-logical-location.h: New file.
+
+2022-06-02  David Malcolm  <dmalcolm@redhat.com>
+
+	* common.opt (fdiagnostics-format=): Add json-stderr and json-file
+	to description.
+	(DIAGNOSTICS_OUTPUT_FORMAT_JSON): Rename to...
+	(DIAGNOSTICS_OUTPUT_FORMAT_JSON_STDERR): ...this.
+	(diagnostics_output_format): Add json-stderr and json-file.
+	* diagnostic-format-json.cc (json_flush_to_file): New.
+	(json_final_cb): Convert to...
+	(json_flush_to_file): ...this, ...
+	(json_stderr_final_cb): ...this, and...
+	(json_file_final_cb): ...this.
+	(diagnostic_output_format_init): Move to diagnostic.cc.
+	(json_output_base_file_name): New.
+	(diagnostic_output_format_init_json): New.
+	(diagnostic_output_format_init_json_stderr): New.
+	(diagnostic_output_format_init_json_file): New.
+	* diagnostic.cc (diagnostic_output_format_init): Move here from
+	diagnostic-format-json.cc; update for changes to enum.
+	* diagnostic.h (enum diagnostics_output_format): Rename
+	DIAGNOSTICS_OUTPUT_FORMAT_JSON to
+	DIAGNOSTICS_OUTPUT_FORMAT_JSON_STDERR, and add
+	DIAGNOSTICS_OUTPUT_FORMAT_JSON_FILE.
+	(diagnostic_output_format_init): Add base_file_name param.
+	(diagnostic_output_format_init_json_stderr): New decl.
+	(diagnostic_output_format_init_json_file): New dec.
+	* doc/invoke.texi (-fdiagnostics-format=): Add "json-stderr" and
+	"json-file".  Rewrite so that the existing "json" is a synonym of
+	"json-stderr".
+	* gcc.cc (driver_handle_option): Pass dump_base_name to
+	diagnostic_output_format_init.
+	* opts.cc (common_handle_option): Likewise.
+
+2022-06-02  David Malcolm  <dmalcolm@redhat.com>
+
+	* json.cc (string::print): Fix escaping of '\'.
+
+2022-06-02  Philipp Tomsich  <philipp.tomsich@vrull.eu>
+
+	* config/riscv/riscv.cc (riscv_build_integer_1): Rewrite value as
+	(-1 << 31) for the single-bit case, when operating on (1 << 31)
+	in SImode.
+	* config/riscv/riscv.h (SINGLE_BIT_MASK_OPERAND): Allow for
+	any single-bit value, moving the special case for (1 << 31) to
+	riscv_build_integer_1 (in riscv.c).
+
+2022-06-02  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR target/105791
+	* config/i386/sse.md (V_128_256):Add V1TI and V2TI.
+	(define_mode_attr avxsizesuffix): Add support for V1TI and V2TI.
+
+2022-06-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/105778
+	* config/i386/i386.md (*ashl<dwi>3_doubleword_mask): Remove :SI
+	from AND and its operands and just verify operands[2] has HImode,
+	SImode or for TARGET_64BIT DImode.  Allow operands[3] to be a mask
+	with all low 6 (64-bit) or 5 (32-bit) bits set and in that case
+	just throw away the masking.  Use force_reg before calling
+	gen_lowpart.
+	(*ashl<dwi>3_doubleword_mask_1): Allow operands[3] to be a mask
+	with all low 6 (64-bit) or 5 (32-bit) bits set and in that case
+	just throw away the masking.
+	(*ashl<mode>3_doubleword): Rename to ...
+	(ashl<mode>3_doubleword): ... this.
+	(*ashl<mode>3_mask): Remove :SI from AND and its operands and just
+	verify operands[2] has HImode, SImode or for TARGET_64BIT DImode.
+	Use force_reg before calling gen_lowpart.
+	(*<insn><mode>3_mask): Likewise.
+	(*<insn><dwi>3_doubleword_mask): Likewise.  Allow operands[3] to be
+	a mask with all low 6 (64-bit) or 5 (32-bit) bits set and in that
+	case just throw away the masking.  Use force_reg before calling
+	gen_lowpart.
+	(*<insn><dwi>3_doubleword_mask_1): Allow operands[3] to be a mask
+	with all low 6 (64-bit) or 5 (32-bit) bits set and in that case just
+	throw away the masking.
+	(*<insn><mode>3_doubleword): Rename to ...
+	(<insn><mode>3_doubleword): ... this.
+	(*<insn><mode>3_mask): Remove :SI from AND and its operands and just
+	verify operands[2] has HImode, SImode or for TARGET_64BIT DImode.
+	Use force_reg before calling gen_lowpart.
+	(splitter after it): Remove :SI from AND and its operands and just
+	verify operands[2] has HImode, SImode or for TARGET_64BIT DImode.
+	(*<btsc><mode>_mask, *<btsc><mode>_mask): Remove :SI from AND and its
+	operands and just verify operands[1] has HImode, SImode or for
+	TARGET_64BIT DImode.  Use force_reg before calling gen_lowpart.
+	(*jcc_bt<mode>_mask_1): New define_insn_and_split pattern.
+	* config/i386/i386.cc (ix86_rtx_costs): For ZERO_EXTRACT with
+	ZERO_EXTEND QI->SI in last operand ignore the cost of the ZERO_EXTEND.
+
+2022-06-02  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/101668
+	* tree-vect-slp.cc (vect_build_slp_tree_1): Allow BIT_FIELD_REFs
+	for vector types with compatible lane types.
+	(vect_build_slp_tree_2): Deal with this.
+	(vect_add_slp_permutation): Adjust.  Emit lowpart/concat
+	special cases without VEC_PERM.
+	(vectorizable_slp_permutation): Select the operand vector
+	type and relax requirements.  Handle identity permutes
+	with mismatching operand types.
+	* optabs-query.cc (can_vec_perm_const_p): Only allow variable
+	permutes for op_mode == mode.
+
+2022-06-02  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/105802
+	* tree-ssa-loop-unswitch.cc (find_unswitching_predicates_for_bb):
+	Make sure to also compute the range in the type of the switch index.
+
+2022-06-01  David Seifert  <soap@gentoo.org>
+
+	PR plugins/95648
+	* configure: Regenerate.
+
+2022-06-01  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR rtl-optimization/105638
+	* df-core.cc (df_find_single_def_src): Moved and renamed from
+	find_single_def_src in loop-iv.cc.  Change the argument to rtx
+	and use rtx_equal_p.  Return null for partial or conditional
+	defs.
+	* df.h (df_find_single_def_src): New prototype.
+	* dse.cc (record_store): Use the constant source if the source
+	register is set only once.
+	* loop-iv.cc (find_single_def_src): Moved to df-core.cc.
+	(replace_single_def_regs): Replace find_single_def_src with
+	df_find_single_def_src.
+
+2022-06-01  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	* config/aarch64/aarch64.opt (explicit_tune_core): Rename to
+	selected_tune.
+	(explicit_arch): Rename to selected_arch.
+	(x_aarch64_override_tune_string): Remove.
+	(aarch64_ra_sign_key): Add as TargetVariable so it gets saved/restored.
+	(aarch64_override_tune_string): Add Save so it gets saved/restored.
+	* config/aarch64/aarch64.h (aarch64_architecture_version): Remove.
+	* config/aarch64/aarch64.cc (aarch64_architecture_version): Remove.
+	(processor): Remove archtecture_version field.
+	(selected_arch): Remove global.
+	(selected_cpu): Remove global.
+	(selected_tune): Remove global.
+	(aarch64_ra_sign_key): Move global to aarch64.opt so it is saved.
+	(aarch64_override_options_internal): Use aarch64_get_tune_cpu.
+	(aarch64_override_options): Further simplify code to only set
+	selected_arch and selected_tune globals.
+	(aarch64_option_save): Remove now that target options are saved.
+	(aarch64_option_restore): Remove redundant target option restores.
+	* config/aarch64/aarch64-c.cc (aarch64_update_cpp_builtins): Use
+	AARCH64_ISA_V9.
+	* config/aarch64/aarch64-opts.h (aarch64_key_type): Add, moved from...
+	* config/aarch64/aarch64-protos.h (aarch64_key_type): Remove.
+	(aarch64_ra_sign_key): Remove.
+
+2022-06-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/30314
+	* match.pd (__builtin_mul_overflow_p (x, cst, (utype) 0) ->
+	x > ~(utype)0 / cst): New simplification.
+
+2022-06-01  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/105786
+	* tree-loop-distribution.cc
+	(loop_distribution::transform_reduction_loop): Only do strlen
+	replacement for integer type reductions.
+
+2022-06-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/105770
+	* tree-ssa-loop-unswitch.cc (find_unswitching_predicates_for_bb): Cast
+	CASE_LOW and CASE_HIGH to TREE_TYPE (idx) before comparisons with idx.
+
+2022-06-01  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gimple-range-cache.cc (ssa_block_ranges::dump): Convert to vrange.
+	(sbr_vector::sbr_vector): Same.
+	(sbr_vector::grow): Same.
+	(sbr_vector::set_bb_range): Same.
+	(sbr_vector::get_bb_range): Same.
+	(sbr_sparse_bitmap::sbr_sparse_bitmap): Same.
+	(sbr_sparse_bitmap::set_bb_range): Same.
+	(sbr_sparse_bitmap::get_bb_range): Same.
+	(block_range_cache::set_bb_range): Same.
+	(block_range_cache::get_bb_range): Same.
+	(block_range_cache::dump): Same.
+	(ssa_global_cache::get_global_range): Same.
+	(ssa_global_cache::set_global_range): Same.
+	(ssa_global_cache::clear): Same.
+	(ssa_global_cache::dump): Same.
+	(ranger_cache::get_global_range): Same.
+	(ranger_cache::set_global_range): Same.
+	(ranger_cache::range_of_def): Same.
+	(ranger_cache::entry_range): Same.
+	(ranger_cache::exit_range): Same.
+	(ranger_cache::edge_range): Same.
+	(ranger_cache::range_of_expr): Same.
+	(ranger_cache::range_on_edge): Same.
+	(ranger_cache::block_range): Same.
+	(ranger_cache::propagate_cache): Same.
+	(ranger_cache::fill_block_cache): Same.
+	(ranger_cache::range_from_dom): Same.
+	* gimple-range-cache.h: Same.
+	* gimple-range-edge.cc (gimple_outgoing_range::get_edge_range):
+	Same.
+	(gimple_outgoing_range::switch_edge_range): Same.
+	(gimple_outgoing_range::edge_range_p): Same.
+	* gimple-range-edge.h: Same.
+	* gimple-range-fold.cc (fur_source::get_operand): Same.
+	(fur_source::get_phi_operand): Same.
+	(fur_edge::get_operand): Same.
+	(fur_edge::get_phi_operand): Same.
+	(fur_stmt::get_operand): Same.
+	(fur_stmt::get_phi_operand): Same.
+	(fur_list::fur_list): Same.
+	(fur_list::get_operand): Same.
+	(fur_list::get_phi_operand): Same.
+	(fold_range): Same.
+	(adjust_imagpart_expr): Same.
+	(adjust_realpart_expr): Same.
+	(gimple_range_adjustment): Same.
+	(fold_using_range::fold_stmt): Same.
+	(fold_using_range::range_of_range_op): Same.
+	(fold_using_range::range_of_address): Same.
+	(fold_using_range::range_of_phi): Same.
+	(fold_using_range::range_of_call): Same.
+	(fold_using_range::range_of_builtin_call): Same.
+	(fold_using_range::range_of_builtin_int_call): Same.
+	(fold_using_range::range_of_cond_expr): Same.
+	(fur_source::register_outgoing_edges): Same.
+	* gimple-range-fold.h (fold_range): Same.
+	(gimple_range_type): Same.
+	(gimple_range_ssa_p): Same.
+	* gimple-range-gori.cc (gimple_range_calc_op1): Same.
+	(gimple_range_calc_op2): Same.
+	(gori_compute::compute_operand_range_switch): Same.
+	(gori_compute::compute_operand_range): Same.
+	(gori_compute::logical_combine): Same.
+	(gori_compute::compute_logical_operands): Same.
+	(gori_compute::compute_operand1_range): Same.
+	(gori_compute::compute_operand2_range): Same.
+	(gori_compute::compute_operand1_and_operand2_range): Same.
+	(gori_compute::outgoing_edge_range_p): Same.
+	(gori_compute::condexpr_adjust): Same.
+	* gimple-range-gori.h (gimple_range_calc_op1): Same.
+	(gimple_range_calc_op2): Same.
+	* gimple-range-path.cc (path_range_query::get_cache): Same.
+	(path_range_query::set_cache): Same.
+	(path_range_query::range_on_path_entry): Same.
+	(path_range_query::internal_range_of_expr): Same.
+	(path_range_query::range_of_expr): Same.
+	(path_range_query::ssa_range_in_phi): Same.
+	(path_range_query::range_defined_in_block): Same.
+	(path_range_query::compute_ranges_in_phis): Same.
+	(path_range_query::compute_ranges_in_block): Same.
+	(path_range_query::add_to_imports): Same.
+	(path_range_query::range_of_stmt): Same.
+	* gimple-range-path.h: Same.
+	* gimple-range-infer.cc (gimple_infer_range::add_range): Same.
+	(gimple_infer_range::~side_effect_manager): Same.
+	(gimple_infer_range::get_nonzero): Same.
+	(gimple_infer_range::maybe_adjust_range): Same.
+	(gimple_infer_range::add_range): Same.
+	* gimple-range-infer.h: Same.
+	* gimple-range-tests.cc: Same.
+	* gimple-range-trace.cc (range_tracer::trailer): Same.
+	(debug_seed_ranger): Same.
+	* gimple-range-trace.h: Same.
+	* gimple-range.cc (gimple_ranger::range_of_expr): Same.
+	(gimple_ranger::range_on_entry): Same.
+	(gimple_ranger::range_on_exit): Same.
+	(gimple_ranger::range_on_edge): Same.
+	(gimple_ranger::fold_range_internal): Same.
+	(gimple_ranger::range_of_stmt): Same.
+	(gimple_ranger::prefill_name): Same.
+	(gimple_ranger::prefill_stmt_dependencies): Same.
+	(gimple_ranger::export_global_ranges): Same.
+	(gimple_ranger::dump_bb): Same.
+	* gimple-range.h: Same.
+	* gimple-ssa-warn-access.cc (check_nul_terminated_array): Same.
+	(memmodel_to_uhwi): Same.
+	* tree-ssa-loop-niter.cc (refine_value_range_using_guard): Same.
+	(determine_value_range): Same.
+	(record_nonwrapping_iv): Same.
+	(infer_loop_bounds_from_signedness): Same.
+	(scev_var_range_cant_overflow): Same.
+	* tree-ssa-threadedge.cc (hybrid_jt_simplifier::simplify): Same.
+	* value-query.cc (range_query::range_on_edge): Same.
+	(range_query::range_of_stmt): Same.
+	(range_query::value_of_expr): Same.
+	(range_query::value_on_edge): Same.
+	(range_query::value_of_stmt): Same.
+	(range_query::get_tree_range): Same.
+	(update_global_range): Same.
+	(get_range_global): Same.
+	(gimple_range_global): Same.
+	(global_range_query::range_of_expr): Same.
+	(range_query::query_relation): Same.
+	* value-query.h (gimple_range_global): Same.
+	(update_global_range): Same.
+	* vr-values.cc (vr_values::range_of_expr): Same.
+	(bounds_of_var_in_loop): Same.
+	(simplify_using_ranges::vrp_visit_cond_stmt): Same.
+	* vr-values.h (class vr_values): Same.
+	* tree-ssa-loop-unswitch.cc (unswitch_predicate): Same.
+
+2022-06-01  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gimple-range-cache.cc (sbr_vector::sbr_vector): Adjust for
+	vrange allocator.
+	(sbr_vector::grow): Same.
+	(sbr_vector::set_bb_range): Same.
+	(sbr_sparse_bitmap::sbr_sparse_bitmap): Same.
+	(sbr_sparse_bitmap::set_bb_range): Same.
+	(block_range_cache::~block_range_cache): Same.
+	(block_range_cache::set_bb_range): Same.
+	(ssa_global_cache::ssa_global_cache): Same.
+	(ssa_global_cache::~ssa_global_cache): Same.
+	(ssa_global_cache::set_global_range): Same.
+	* gimple-range-cache.h (block_range_cache): Same.
+	(ssa_global_cache): Same.
+	* gimple-range-edge.cc
+	(gimple_outgoing_range::calc_switch_ranges): Same.
+	* gimple-range-edge.h (gimple_outgoing_range): Same.
+	* gimple-range-infer.cc (infer_range_manager::get_nonzero):
+	Same.
+	(infer_range_manager::add_range): Same.
+	* gimple-range-infer.h (class infer_range_manager): Same.
+	* value-range.h (class irange_allocator): Rename to...
+	(class vrange_allocator): ...this.
+	(irange_allocator::irange_allocator): New.
+	(vrange_allocator::vrange_allocator): New.
+	(irange_allocator::~irange_allocator): New.
+	(vrange_allocator::~vrange_allocator): New.
+	(irange_allocator::get_memory): Rename to...
+	(vrange_allocator::alloc): ...this.
+	(vrange_allocator::alloc_vrange): Rename from...
+	(irange_allocator::allocate): ...this.
+	(vrange_allocator::alloc_irange): New.
+
+2022-06-01  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gimple-range-edge.cc (gimple_outgoing_range_stmt_p): Adjust for
+	vrange and convert range_op_handler function calls to use the
+	identically named object.
+	* gimple-range-fold.cc (gimple_range_operand1): Same.
+	(gimple_range_operand2): Same.
+	(fold_using_range::fold_stmt): Same.
+	(fold_using_range::range_of_range_op): Same.
+	(fold_using_range::range_of_builtin_ubsan_call): Same.
+	(fold_using_range::relation_fold_and_or): Same.
+	(fur_source::register_outgoing_edges): Same.
+	* gimple-range-fold.h (gimple_range_handler): Remove.
+	* gimple-range-gori.cc (gimple_range_calc_op1): Adjust for vrange.
+	(gimple_range_calc_op2): Same.
+	(range_def_chain::get_def_chain): Same.
+	(gori_compute::compute_operand_range): Same.
+	(gori_compute::condexpr_adjust): Same.
+	* gimple-range.cc (gimple_ranger::prefill_name): Same.
+	(gimple_ranger::prefill_stmt_dependencies): Same.
+	* range-op.cc (get_bool_state): Same.
+	(class operator_equal): Add using clause.
+	(class operator_not_equal): Same.
+	(class operator_lt): Same.
+	(class operator_le): Same.
+	(class operator_gt): Same.
+	(class operator_ge): Same.
+	(class operator_plus): Same.
+	(class operator_minus): Same.
+	(class operator_mult): Same.
+	(class operator_exact_divide): Same.
+	(class operator_lshift): Same.
+	(class operator_rshift): Same.
+	(class operator_cast): Same.
+	(class operator_logical_and): Same.
+	(class operator_bitwise_and): Same.
+	(class operator_logical_or): Same.
+	(class operator_bitwise_or): Same.
+	(class operator_bitwise_xor): Same.
+	(class operator_trunc_mod): Same.
+	(class operator_logical_not): Same.
+	(class operator_bitwise_not): Same.
+	(class operator_cst): Same.
+	(class operator_identity): Same.
+	(class operator_unknown): Same.
+	(class operator_abs): Same.
+	(class operator_negate): Same.
+	(class operator_addr_expr): Same.
+	(class pointer_or_operator): Same.
+	(operator_plus::op1_range): Adjust for vrange.
+	(operator_minus::op1_range): Same.
+	(operator_mult::op1_range): Same.
+	(operator_cast::op1_range): Same.
+	(operator_bitwise_not::fold_range): Same.
+	(operator_negate::fold_range): Same.
+	(range_op_handler): Rename to...
+	(get_handler): ...this.
+	(range_op_handler::range_op_handler): New.
+	(range_op_handler::fold_range): New.
+	(range_op_handler::op1_range): New.
+	(range_op_handler::op2_range): New.
+	(range_op_handler::lhs_op1_relation): New.
+	(range_op_handler::lhs_op2_relation): New.
+	(range_op_handler::op1_op2_relation): New.
+	(range_cast): Adjust for vrange.
+	* range-op.h (range_op_handler): Remove function.
+	(range_cast): Adjust for vrange.
+	(class range_op_handler): New.
+	(get_bool_state): Adjust for vrange.
+	(empty_range_varying): Same.
+	(relop_early_resolve): Same.
+	* tree-data-ref.cc (compute_distributive_range): Same.
+	* tree-vrp.cc (get_range_op_handler): Remove.
+	(range_fold_binary_symbolics_p): Use range_op_handler class
+	instead of get_range_op_handler.
+	(range_fold_unary_symbolics_p): Same.
+	(range_fold_binary_expr): Same.
+	(range_fold_unary_expr): Same.
+	* value-query.cc (range_query::get_tree_range): Adjust for vrange.
+
+2022-06-01  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gimple-range-fold.h (gimple_range_type): Check type before
+	calling supports_type_p.
+	* gimple-range-path.cc (path_range_query::range_of_stmt): Same.
+	* value-query.cc (range_query::get_tree_range): Same.
+	* value-range.cc (Value_Range::lower_bound): New.
+	(Value_Range::upper_bound): New.
+	(Value_Range::dump): New.
+	* value-range.h (class Value_Range): New.
+	(irange::supports_type_p): Do not check if type is non-zero.
+
+2022-06-01  Aldy Hernandez  <aldyh@redhat.com>
+
+	* value-range-equiv.cc (value_range_equiv::set): New.
+	* value-range-equiv.h (class value_range_equiv): Make set method
+	virtual.
+	Remove default bitmap argument from set method.
+	* value-range.cc (vrange::contains_p): New.
+	(vrange::singleton_p): New.
+	(vrange::operator=): New.
+	(vrange::operator==): New.
+	(irange::fits_p): Move to .cc file.
+	(irange::set_nonnegative): New.
+	(unsupported_range::unsupported_range): New.
+	(unsupported_range::set): New.
+	(unsupported_range::type): New.
+	(unsupported_range::set_undefined): New.
+	(unsupported_range::set_varying): New.
+	(unsupported_range::dump): New.
+	(unsupported_range::union_): New.
+	(unsupported_range::intersect): New.
+	(unsupported_range::zero_p): New.
+	(unsupported_range::nonzero_p): New.
+	(unsupported_range::set_nonzero): New.
+	(unsupported_range::set_zero): New.
+	(unsupported_range::set_nonnegative): New.
+	(unsupported_range::fits_p): New.
+	(irange::set): Call irange::set_undefined.
+	(irange::verify_range): Check discriminator field.
+	(irange::dump): Dump [irange] marker.
+	(irange::debug): Move to...
+	(vrange::debug): ...here.
+	(dump_value_range): Accept vrange.
+	(debug): Same.
+	* value-range.h (enum value_range_discriminator): New.
+	(class vrange): New.
+	(class unsupported_range): New.
+	(struct vrange_traits): New.
+	(is_a): New.
+	(as_a): New.
+	(class irange): Inherit from vrange.
+	(dump_value_range): Adjust for vrange.
+	(irange::kind): Rename to...
+	(vrange::kind): ...this.
+	(irange::varying_p): Rename to...
+	(vrange::varying_p): ...this.
+	(irange::undefined_p): Rename to...
+	(vrange::undefined_p): ...this.
+	(irange::irange): Set discriminator.
+	(irange::union_): Convert to irange before passing to irange
+	method.
+	(irange::intersect): Same.
+	(vrange::supports_type_p): New.
+	* vr-values.cc (vr_values::extract_range_from_binary_expr): Pass
+	NULL bitmap argument to value_range_equiv::set.
+	(vr_values::extract_range_basic): Same.
+
+2022-06-01  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/105763
+	* tree-ssa-loop-unswitch.cc (find_unswitching_predicates_for_bb):
+	Check gimple_range_ssa_p.
+
+2022-05-31  Jason Merrill  <jason@redhat.com>
+
+	* Makefile.in (TAGS): Look at libcpp/*.cc.
+
+2022-05-31  Christophe Lyon  <christophe.lyon@arm.com>
+
+	* config/aarch64/aarch64.cc (aarch64_gimplify_va_arg_expr):
+	Prefix mode names with E_.
+
+2022-05-31  Alan Modra  <amodra@gmail.com>
+
+	* dwarf2out.cc (gen_namelist_decl): Adjust to suit correct
+	spelling of DW_AT_namelist_item.
+
+2022-05-31  Jakub Jelinek  <jakub@redhat.com>
+
+	* omp-low.cc (build_outer_var_ref): For code == OMP_CLAUSE_ALLOCATE
+	allow var to be private in the outer context.
+	(lower_private_allocate): Pass OMP_CLAUSE_ALLOCATE as last argument
+	to build_outer_var_ref.
+
+2022-05-30  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* config/i386/i386.cc (ix86_modes_tieable_p): Allow SCmode to be
+	tieable with DImode on TARGET_64BIT, and SCmode tieable with
+	V2SFmode, and DCmode with V2DFmode.
+
+2022-05-30  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR rtl-optimization/101617
+	* config/i386/i386-expand.cc (ix86_expand_int_movcc): Add a
+	special case (indicated by negate_cc_compare_p) to generate a
+	-1/0 mask using neg;sbb.
+	* config/i386/i386.md (x86_neg<mode>_ccc): New define_expand
+	to generate an *x86_neg<mode>_ccc instruction.
+	(x86_mov<mode>cc_0_m1_neg): Likewise, a new define_expand to
+	generate a *x86_mov<mode>cc_0_m1_neg instruction.
+
+2022-05-30  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* rtlanal.cc (rtx_cost) <MULT>: Treat FMA, SS_MULT, US_MULT,
+	SMUL_HIGHPART and UMUL_HIGHPART as having the same cost as MULT.
+	<DIV>: Likewise, SS_DIV and US_DIV have the same default as DIV.
+
+2022-05-30  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR target/70321
+	* config/i386/i386-expand.cc (ix86_expand_branch): Don't decompose
+	DI mode equality/inequality using XOR here.  Instead generate a
+	COMPARE for doubleword modes (DImode on !TARGET_64BIT or TImode).
+	* config/i386/i386-features.cc (gen_gpr_to_xmm_move_src): Use
+	gen_rtx_SUBREG when NUNITS is 1, i.e. for TImode to V1TImode.
+	(general_scalar_chain::convert_compare): New function to convert
+	scalar equality/inequality comparison into vector operations.
+	(general_scalar_chain::convert_insn) [COMPARE]: Refactor. Call
+	new convert_compare helper method.
+	(convertible_comparion_p): Update to match doubleword COMPARE
+	of two register, memory or integer constant operands.
+	* config/i386/i386-features.h (general_scalar_chain::convert_compare):
+	Prototype/declare member function here.
+	* config/i386/i386.md (cstore<mode>4): Change mode to SDWIM, but
+	only allow new doubleword modes for EQ and NE operators.
+	(*cmp<dwi>_doubleword): New define_insn_and_split, to split a
+	doubleword comparison into a pair of XORs followed by an IOR to
+	set the (zero) flags register, optimizing the XORs if possible.
+	* config/i386/sse.md (V_AVX): Include V1TI and V2TI in mode
+	iterator; V_AVX is (currently) only used by ptest.
+	(sse4_1 mode attribute): Update to support V1TI and V2TI.
+
+2022-05-30  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md: Remove constraints when used with
+	const_int_operand, const0_operand, const_1_operand, constm1_operand,
+	const8_operand, const128_operand, const248_operand, const123_operand,
+	const2367_operand, const1248_operand, const359_operand,
+	const_4_or_8_to_11_operand, const48_operand, const_0_to_1_operand,
+	const_0_to_3_operand, const_0_to_4_operand, const_0_to_5_operand,
+	const_0_to_7_operand, const_0_to_15_operand, const_0_to_31_operand,
+	const_0_to_63_operand, const_0_to_127_operand, const_0_to_255_operand,
+	const_0_to_255_mul_8_operand, const_1_to_31_operand,
+	const_1_to_63_operand, const_2_to_3_operand, const_4_to_5_operand,
+	const_4_to_7_operand, const_6_to_7_operand, const_8_to_9_operand,
+	const_8_to_11_operand, const_8_to_15_operand, const_10_to_11_operand,
+	const_12_to_13_operand, const_12_to_15_operand, const_14_to_15_operand,
+	const_16_to_19_operand, const_16_to_31_operand, const_20_to_23_operand,
+	const_24_to_27_operand and const_28_to_31_operand.
+	* config/i386/mmx.md: Ditto.
+	* config/i386/sse.md: Ditto.
+	* config/i386/subst.md: Ditto.
+	* config/i386/sync.md: Ditto.
+
+2022-05-30  Jan Beulich  <jbeulich@suse.com>
+
+	* config/i386/i386.md (bmi2_umul<mode><dwi>3_1): Correct MEM_P()
+	arguments.
+
+2022-05-30  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	* config/arm/arm.cc (arm_vectorize_vec_perm_const): Adjust prototype.
+
 2022-05-29  Iain Sandoe  <iain@sandoe.co.uk>
 
 	PR target/105599

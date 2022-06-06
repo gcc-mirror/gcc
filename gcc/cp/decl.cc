@@ -2654,7 +2654,13 @@ duplicate_decls (tree newdecl, tree olddecl, bool hiding, bool was_hidden)
       if (LANG_DECL_HAS_MIN (newdecl))
 	{
 	  DECL_ACCESS (newdecl) = DECL_ACCESS (olddecl);
-	  if (DECL_TEMPLATE_INFO (newdecl))
+	  if (new_defines_function
+	      && DECL_TEMPLATE_INFO (olddecl)
+	      && DECL_UNIQUE_FRIEND_P (DECL_TEMPLATE_RESULT
+				       (DECL_TI_TEMPLATE (olddecl))))
+	    /* Don't copy template info from a non-template friend declaration
+	       in a class template (PR105761).  */;
+	  else if (DECL_TEMPLATE_INFO (newdecl))
 	    {
 	      new_template_info = DECL_TEMPLATE_INFO (newdecl);
 	      if (DECL_TEMPLATE_INSTANTIATION (olddecl)
@@ -2662,8 +2668,10 @@ duplicate_decls (tree newdecl, tree olddecl, bool hiding, bool was_hidden)
 		/* Remember the presence of explicit specialization args.  */
 		TINFO_USED_TEMPLATE_ID (DECL_TEMPLATE_INFO (olddecl))
 		  = TINFO_USED_TEMPLATE_ID (new_template_info);
+	      DECL_TEMPLATE_INFO (newdecl) = DECL_TEMPLATE_INFO (olddecl);
 	    }
-	  DECL_TEMPLATE_INFO (newdecl) = DECL_TEMPLATE_INFO (olddecl);
+	  else
+	    DECL_TEMPLATE_INFO (newdecl) = DECL_TEMPLATE_INFO (olddecl);
 	}
 
       if (DECL_DECLARES_FUNCTION_P (newdecl))
@@ -10789,9 +10797,7 @@ grokvardecl (tree type,
   else if (flag_concepts
 	   && current_template_depth > template_class_depth (scope))
     {
-      tree reqs = TEMPLATE_PARMS_CONSTRAINTS (current_template_parms);
-      tree ci = build_constraints (reqs, NULL_TREE);
-
+      tree ci = current_template_constraints ();
       set_constraints (decl, ci);
     }
 
@@ -12377,7 +12383,7 @@ grokdeclarator (const cp_declarator *declarator,
     type = DECL_ORIGINAL_TYPE (TYPE_NAME (type));
 
   type_quals |= cp_type_quals (type);
-  type = cp_build_qualified_type_real
+  type = cp_build_qualified_type
     (type, type_quals, ((((typedef_decl && !DECL_ARTIFICIAL (typedef_decl))
 			  || declspecs->decltype_p)
 			 ? tf_ignore_bad_quals : 0) | tf_warning_or_error));
@@ -14227,9 +14233,7 @@ grokdeclarator (const cp_declarator *declarator,
 				> template_class_depth (current_class_type));
 		if (memtmpl)
 		  {
-		    tree tmpl_reqs
-		      = TEMPLATE_PARMS_CONSTRAINTS (current_template_parms);
-		    tree ci = build_constraints (tmpl_reqs, NULL_TREE);
+		    tree ci = current_template_constraints ();
 		    set_constraints (decl, ci);
 		  }
 	      }
@@ -15852,13 +15856,8 @@ xref_tag (enum tag_types tag_code, tree name,
         {
           /* Check that we aren't trying to overload a class with different
              constraints.  */
-          tree constr = NULL_TREE;
-          if (current_template_parms)
-            {
-              tree reqs = TEMPLATE_PARMS_CONSTRAINTS (current_template_parms);
-              constr = build_constraints (reqs, NULL_TREE);
-            }
-	  if (!redeclare_class_template (t, current_template_parms, constr))
+	  if (!redeclare_class_template (t, current_template_parms,
+					 current_template_constraints ()))
 	    return error_mark_node;
         }
       else if (!processing_template_decl

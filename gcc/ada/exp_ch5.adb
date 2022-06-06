@@ -4530,75 +4530,72 @@ package body Exp_Ch5 is
       --  Loop through elsif parts, dealing with constant conditions and
       --  possible condition actions that are present.
 
-      if Present (Elsif_Parts (N)) then
-         E := First (Elsif_Parts (N));
-         while Present (E) loop
+      E := First (Elsif_Parts (N));
+      while Present (E) loop
 
-            --  Do not consider controlled objects found in an if statement
-            --  which actually models an if expression because their early
-            --  finalization will affect the result of the expression.
+         --  Do not consider controlled objects found in an if statement which
+         --  actually models an if expression because their early finalization
+         --  will affect the result of the expression.
 
-            if not From_Conditional_Expression (N) then
-               Process_Statements_For_Controlled_Objects (E);
-            end if;
+         if not From_Conditional_Expression (N) then
+            Process_Statements_For_Controlled_Objects (E);
+         end if;
 
-            Adjust_Condition (Condition (E));
+         Adjust_Condition (Condition (E));
 
-            --  If there are condition actions, then rewrite the if statement
-            --  as indicated above. We also do the same rewrite for a True or
-            --  False condition. The further processing of this constant
-            --  condition is then done by the recursive call to expand the
-            --  newly created if statement
+         --  If there are condition actions, then rewrite the if statement as
+         --  indicated above. We also do the same rewrite for a True or False
+         --  condition. The further processing of this constant condition is
+         --  then done by the recursive call to expand the newly created if
+         --  statement
 
-            if Present (Condition_Actions (E))
-              or else Compile_Time_Known_Value (Condition (E))
-            then
-               New_If :=
-                 Make_If_Statement (Sloc (E),
-                   Condition       => Condition (E),
-                   Then_Statements => Then_Statements (E),
-                   Elsif_Parts     => No_List,
-                   Else_Statements => Else_Statements (N));
+         if Present (Condition_Actions (E))
+           or else Compile_Time_Known_Value (Condition (E))
+         then
+            New_If :=
+              Make_If_Statement (Sloc (E),
+                Condition       => Condition (E),
+                Then_Statements => Then_Statements (E),
+                Elsif_Parts     => No_List,
+                Else_Statements => Else_Statements (N));
 
-               --  Elsif parts for new if come from remaining elsif's of parent
+            --  Elsif parts for new if come from remaining elsif's of parent
 
-               while Present (Next (E)) loop
-                  if No (Elsif_Parts (New_If)) then
-                     Set_Elsif_Parts (New_If, New_List);
-                  end if;
-
-                  Append (Remove_Next (E), Elsif_Parts (New_If));
-               end loop;
-
-               Set_Else_Statements (N, New_List (New_If));
-
-               Insert_List_Before (New_If, Condition_Actions (E));
-
-               Remove (E);
-
-               if Is_Empty_List (Elsif_Parts (N)) then
-                  Set_Elsif_Parts (N, No_List);
+            while Present (Next (E)) loop
+               if No (Elsif_Parts (New_If)) then
+                  Set_Elsif_Parts (New_If, New_List);
                end if;
 
-               Analyze (New_If);
+               Append (Remove_Next (E), Elsif_Parts (New_If));
+            end loop;
 
-               --  Note this is not an implicit if statement, since it is part
-               --  of an explicit if statement in the source (or of an implicit
-               --  if statement that has already been tested). We set the flag
-               --  after calling Analyze to avoid generating extra warnings
-               --  specific to pure if statements, however (see
-               --  Sem_Ch5.Analyze_If_Statement).
+            Set_Else_Statements (N, New_List (New_If));
 
-               Preserve_Comes_From_Source (New_If, N);
-               return;
+            Insert_List_Before (New_If, Condition_Actions (E));
 
-            --  No special processing for that elsif part, move to next
+            Remove (E);
 
-            else
-               Next (E);
+            if Is_Empty_List (Elsif_Parts (N)) then
+               Set_Elsif_Parts (N, No_List);
             end if;
-         end loop;
-      end if;
+
+            Analyze (New_If);
+
+            --  Note this is not an implicit if statement, since it is part of
+            --  an explicit if statement in the source (or of an implicit if
+            --  statement that has already been tested). We set the flag after
+            --  calling Analyze to avoid generating extra warnings specific to
+            --  pure if statements, however (see Sem_Ch5.Analyze_If_Statement).
+
+            Preserve_Comes_From_Source (New_If, N);
+            return;
+
+         --  No special processing for that elsif part, move to next
+
+         else
+            Next (E);
+         end if;
+      end loop;
 
       --  Some more optimizations applicable if we still have an IF statement
 
@@ -5203,22 +5200,36 @@ package body Exp_Ch5 is
 
             Ent := First_Entity (Pack);
             while Present (Ent) loop
+               --  Get_Element_Access function with one parameter called
+               --  Position.
+
                if Chars (Ent) = Name_Get_Element_Access
+                 and then Ekind (Ent) = E_Function
                  and then Present (First_Formal (Ent))
                  and then Chars (First_Formal (Ent)) = Name_Position
                  and then No (Next_Formal (First_Formal (Ent)))
                then
+                  pragma Assert (No (Fast_Element_Access_Op));
                   Fast_Element_Access_Op := Ent;
+
+               --  Next or Prev procedure with one parameter called
+               --  Position.
 
                elsif Chars (Ent) = Name_Step
                  and then Ekind (Ent) = E_Procedure
+                 and then Present (First_Formal (Ent))
+                 and then Chars (First_Formal (Ent)) = Name_Position
+                 and then No (Next_Formal (First_Formal (Ent)))
                then
+                  pragma Assert (No (Fast_Step_Op));
                   Fast_Step_Op := Ent;
 
                elsif Chars (Ent) = Name_Reference_Control_Type then
+                  pragma Assert (No (Reference_Control_Type));
                   Reference_Control_Type := Ent;
 
                elsif Chars (Ent) = Name_Pseudo_Reference then
+                  pragma Assert (No (Pseudo_Reference));
                   Pseudo_Reference := Ent;
                end if;
 

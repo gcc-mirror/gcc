@@ -1508,6 +1508,14 @@ record_store (rtx body, bb_info_t bb_info)
 
 	  if (tem && CONSTANT_P (tem))
 	    const_rhs = tem;
+	  else
+	    {
+	      /* If RHS is set only once to a constant, set CONST_RHS
+		 to the constant.  */
+	      rtx def_src = df_find_single_def_src (rhs);
+	      if (def_src != nullptr && CONSTANT_P (def_src))
+		const_rhs = def_src;
+	    }
 	}
     }
 

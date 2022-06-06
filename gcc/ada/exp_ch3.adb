@@ -106,6 +106,13 @@ package body Exp_Ch3 is
    --  types with discriminants. Otherwise new identifiers are created,
    --  with the source names of the discriminants.
 
+   procedure Build_Discr_Checking_Funcs (N : Node_Id);
+   --  For each variant component, builds a function which checks whether
+   --  the component name is consistent with the current discriminants
+   --  and sets the component's Dcheck_Function attribute to refer to it.
+   --  N is the full type declaration node; the discriminant checking
+   --  functions are inserted after this node.
+
    function Build_Equivalent_Array_Aggregate (T : Entity_Id) return Node_Id;
    --  This function builds a static aggregate that can serve as the initial
    --  value for an array type whose bounds are static, and whose component
@@ -151,6 +158,12 @@ package body Exp_Ch3 is
    --  for task subcomponents, indicate that secondary stack cleanup is
    --  needed after an initialization. Typ is the component type, and Proc_Id
    --  the initialization procedure for the enclosing composite type.
+
+   procedure Copy_Discr_Checking_Funcs (N : Node_Id);
+   --  For a derived untagged type, copy the attributes that were set
+   --  for the components of the parent type onto the components of the
+   --  derived type. No new subprograms are constructed.
+   --  N is the full type declaration node, as for Build_Discr_Checking_Funcs.
 
    procedure Expand_Freeze_Array_Type (N : Node_Id);
    --  Freeze an array type. Deals with building the initialization procedure,
@@ -1218,6 +1231,25 @@ package body Exp_Ch3 is
          Set_Discr_Check_Funcs_Built (N);
       end if;
    end Build_Discr_Checking_Funcs;
+
+   ----------------------------------------
+   -- Build_Or_Copy_Discr_Checking_Funcs --
+   ----------------------------------------
+
+   procedure Build_Or_Copy_Discr_Checking_Funcs (N : Node_Id) is
+      Typ : constant Entity_Id := Defining_Identifier (N);
+   begin
+      if Is_Unchecked_Union (Typ) or else not Has_Discriminants (Typ) then
+         null;
+      elsif not Is_Derived_Type (Typ)
+        or else Has_New_Non_Standard_Rep (Typ)
+        or else Is_Tagged_Type (Typ)
+      then
+         Build_Discr_Checking_Funcs (N);
+      else
+         Copy_Discr_Checking_Funcs (N);
+      end if;
+   end Build_Or_Copy_Discr_Checking_Funcs;
 
    --------------------------------
    -- Build_Discriminant_Formals --
@@ -4842,6 +4874,27 @@ package body Exp_Ch3 is
       end if;
    end Clean_Task_Names;
 
+   -------------------------------
+   -- Copy_Discr_Checking_Funcs --
+   -------------------------------
+
+   procedure Copy_Discr_Checking_Funcs (N : Node_Id) is
+      Typ      : constant Entity_Id := Defining_Identifier (N);
+      Comp     : Entity_Id := First_Component (Typ);
+      Old_Comp : Entity_Id := First_Component
+                                (Base_Type (Underlying_Type (Etype (Typ))));
+   begin
+      while Present (Comp) loop
+         if Chars (Comp) = Chars (Old_Comp) then
+            Set_Discriminant_Checking_Func
+              (Comp, Discriminant_Checking_Func (Old_Comp));
+         end if;
+
+         Next_Component (Old_Comp);
+         Next_Component (Comp);
+      end loop;
+   end Copy_Discr_Checking_Funcs;
+
    ----------------------------------------
    -- Ensure_Activation_Chain_And_Master --
    ----------------------------------------
@@ -5527,40 +5580,7 @@ package body Exp_Ch3 is
       --  we copy explicitly the discriminant checking functions from the
       --  parent into the components of the derived type.
 
-      if not Is_Derived_Type (Typ)
-        or else Has_New_Non_Standard_Rep (Typ)
-        or else Is_Tagged_Type (Typ)
-      then
-         Build_Discr_Checking_Funcs (Typ_Decl);
-
-      elsif Is_Derived_Type (Typ)
-        and then not Is_Tagged_Type (Typ)
-
-        --  If we have a derived Unchecked_Union, we do not inherit the
-        --  discriminant checking functions from the parent type since the
-        --  discriminants are non existent.
-
-        and then not Is_Unchecked_Union (Typ)
-        and then Has_Discriminants (Typ)
-      then
-         declare
-            Old_Comp : Entity_Id;
-
-         begin
-            Old_Comp :=
-              First_Component (Base_Type (Underlying_Type (Etype (Typ))));
-            Comp := First_Component (Typ);
-            while Present (Comp) loop
-               if Chars (Comp) = Chars (Old_Comp) then
-                  Set_Discriminant_Checking_Func
-                    (Comp, Discriminant_Checking_Func (Old_Comp));
-               end if;
-
-               Next_Component (Old_Comp);
-               Next_Component (Comp);
-            end loop;
-         end;
-      end if;
+      Build_Or_Copy_Discr_Checking_Funcs (Typ_Decl);
 
       if Is_Derived_Type (Typ)
         and then Is_Limited_Type (Typ)
@@ -5743,7 +5763,7 @@ package body Exp_Ch3 is
 
                --  Generate dispatch table of locally defined tagged type.
                --  Dispatch tables of library level tagged types are built
-               --  later (see Analyze_Declarations).
+               --  later (see Build_Static_Dispatch_Tables).
 
                if not Building_Static_DT (Typ) then
                   Append_Freeze_Actions (Typ, Make_DT (Typ));
@@ -6885,37 +6905,6 @@ package body Exp_Ch3 is
         and then Related_Type (Def_Id) = Implementation_Base_Type (Typ)
       then
          return;
-      end if;
-
-      --  First we do special processing for objects of a tagged type where
-      --  this is the point at which the type is frozen. The creation of the
-      --  dispatch table and the initialization procedure have to be deferred
-      --  to this point, since we reference previously declared primitive
-      --  subprograms.
-
-      --  Force construction of dispatch tables of library level tagged types
-
-      if Tagged_Type_Expansion
-        and then Building_Static_Dispatch_Tables
-        and then Is_Library_Level_Entity (Def_Id)
-        and then Is_Library_Level_Tagged_Type (Base_Typ)
-        and then Ekind (Base_Typ) in E_Record_Type
-                                   | E_Protected_Type
-                                   | E_Task_Type
-        and then not Has_Dispatch_Table (Base_Typ)
-      then
-         declare
-            New_Nodes : List_Id := No_List;
-
-         begin
-            if Is_Concurrent_Type (Base_Typ) then
-               New_Nodes := Make_DT (Corresponding_Record_Type (Base_Typ));
-            else
-               New_Nodes := Make_DT (Base_Typ);
-            end if;
-
-            Insert_List_Before (N, New_Nodes);
-         end;
       end if;
 
       --  Make shared memory routines for shared passive variable
@@ -9517,7 +9506,7 @@ package body Exp_Ch3 is
             --       Prim_T       => Typ'Tag,
             --       Interface_T  => Iface'Tag,
             --       Offset_Value => n,
-            --       Offset_Func  => Fn'Address)
+            --       Offset_Func  => Fn'Unrestricted_Access)
 
             Append_To (Stmts_List,
               Make_Procedure_Call_Statement (Loc,
@@ -9552,7 +9541,7 @@ package body Exp_Ch3 is
                     Make_Attribute_Reference (Loc,
                       Prefix => New_Occurrence_Of
                                   (DT_Offset_To_Top_Func (Tag_Comp), Loc),
-                      Attribute_Name => Name_Address)))));
+                      Attribute_Name => Name_Unrestricted_Access)))));
 
             --  In this case the next component stores the value of the offset
             --  to the top.
@@ -10010,6 +9999,13 @@ package body Exp_Ch3 is
 
             Mutate_Ekind (Func_Id, E_Function);
             Set_Is_Wrapper (Func_Id);
+
+            --  Corresponding_Spec will be set again to the same value during
+            --  analysis, but we need this information earlier.
+            --  Expand_N_Freeze_Entity needs to know whether a subprogram body
+            --  is a wrapper's body in order to get check suppression right.
+
+            Set_Corresponding_Spec (Func_Body, Func_Id);
 
             Override_Dispatching_Operation (Tag_Typ, Subp, New_Op => Func_Id);
          end if;

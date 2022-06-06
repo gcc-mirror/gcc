@@ -1,3 +1,7 @@
+2022-06-02  David Malcolm  <dmalcolm@redhat.com>
+
+	* testsuite/lib/libphobos-dg.exp: Add load_gcc_lib of scansarif.exp.
+
 2022-05-27  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* libdruntime/MERGE: Merge upstream druntime f89da313.

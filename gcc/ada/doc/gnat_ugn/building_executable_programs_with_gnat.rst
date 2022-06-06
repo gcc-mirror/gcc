@@ -1238,7 +1238,8 @@ Alphabetical List of All Switches
 :switch:`-fdiagnostics-format=json`
   Makes GNAT emit warning and error messages as JSON. Inhibits printing of
   text warning and errors messages except if :switch:`-gnatv` or
-  :switch:`-gnatl` are present.
+  :switch:`-gnatl` are present. Uses absolute file paths when used along
+  :switch:`-gnatef`.
 
 
 .. index:: -fdump-scos  (gcc)
@@ -1582,7 +1583,8 @@ Alphabetical List of All Switches
 .. index:: -gnatef  (gcc)
 
 :switch:`-gnatef`
-  Display full source path name in brief error messages.
+  Display full source path name in brief error messages and absolute paths in
+  :switch:`-fdiagnostics-format=json`'s output.
 
 
 .. index:: -gnateF  (gcc)

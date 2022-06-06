@@ -924,20 +924,6 @@ extract_range_from_plus_minus_expr (value_range *vr,
     vr->set (min, max, kind);
 }
 
-/* Return the range-ops handler for CODE and EXPR_TYPE.  If no
-   suitable operator is found, return NULL and set VR to VARYING.  */
-
-static const range_operator *
-get_range_op_handler (value_range *vr,
-		      enum tree_code code,
-		      tree expr_type)
-{
-  const range_operator *op = range_op_handler (code, expr_type);
-  if (!op)
-    vr->set_varying (expr_type);
-  return op;
-}
-
 /* If the types passed are supported, return TRUE, otherwise set VR to
    VARYING and return FALSE.  */
 
@@ -946,8 +932,8 @@ supported_types_p (value_range *vr,
 		   tree type0,
 		   tree type1 = NULL)
 {
-  if (!value_range::supports_type_p (type0)
-      || (type1 && !value_range::supports_type_p (type1)))
+  if (!value_range_equiv::supports_p (type0)
+      || (type1 && !value_range_equiv::supports_p (type1)))
     {
       vr->set_varying (type0);
       return false;
@@ -1005,10 +991,12 @@ range_fold_binary_symbolics_p (value_range *vr,
 						&vr0, &vr1);
 	  return true;
 	}
-      const range_operator *op = get_range_op_handler (vr, code, expr_type);
+      range_op_handler op (code, expr_type);
+      if (!op)
+	vr->set_varying (expr_type);
       vr0.normalize_symbolics ();
       vr1.normalize_symbolics ();
-      return op->fold_range (*vr, expr_type, vr0, vr1);
+      return op.fold_range (*vr, expr_type, vr0, vr1);
     }
   return false;
 }
@@ -1040,10 +1028,12 @@ range_fold_unary_symbolics_p (value_range *vr,
 	  range_fold_binary_expr (vr, MINUS_EXPR, expr_type, &minusone, vr0);
 	  return true;
 	}
-      const range_operator *op = get_range_op_handler (vr, code, expr_type);
+      range_op_handler op (code, expr_type);
+      if (!op)
+	vr->set_varying (expr_type);
       value_range vr0_cst (*vr0);
       vr0_cst.normalize_symbolics ();
-      return op->fold_range (*vr, expr_type, vr0_cst, value_range (expr_type));
+      return op.fold_range (*vr, expr_type, vr0_cst, value_range (expr_type));
     }
   return false;
 }
@@ -1060,9 +1050,12 @@ range_fold_binary_expr (value_range *vr,
   if (!supported_types_p (vr, expr_type)
       || !defined_ranges_p (vr, vr0_, vr1_))
     return;
-  const range_operator *op = get_range_op_handler (vr, code, expr_type);
+  range_op_handler op (code, expr_type);
   if (!op)
-    return;
+    {
+      vr->set_varying (expr_type);
+      return;
+    }
 
   if (range_fold_binary_symbolics_p (vr, code, expr_type, vr0_, vr1_))
     return;
@@ -1075,7 +1068,7 @@ range_fold_binary_expr (value_range *vr,
     vr1.set_varying (expr_type);
   vr0.normalize_addresses ();
   vr1.normalize_addresses ();
-  op->fold_range (*vr, expr_type, vr0, vr1);
+  op.fold_range (*vr, expr_type, vr0, vr1);
 }
 
 /* Perform a unary operation on a range.  */
@@ -1089,16 +1082,19 @@ range_fold_unary_expr (value_range *vr,
   if (!supported_types_p (vr, expr_type, vr0_type)
       || !defined_ranges_p (vr, vr0))
     return;
-  const range_operator *op = get_range_op_handler (vr, code, expr_type);
+  range_op_handler op (code, expr_type);
   if (!op)
-    return;
+    {
+      vr->set_varying (expr_type);
+      return;
+    }
 
   if (range_fold_unary_symbolics_p (vr, code, expr_type, vr0))
     return;
 
   value_range vr0_cst (*vr0);
   vr0_cst.normalize_addresses ();
-  op->fold_range (*vr, expr_type, vr0_cst, value_range (expr_type));
+  op.fold_range (*vr, expr_type, vr0_cst, value_range (expr_type));
 }
 
 /* If the range of values taken by OP can be inferred after STMT executes,

@@ -174,7 +174,7 @@ c++.srcinfo:
 c++.srcextra:
 
 c++.tags: force
-	cd $(srcdir)/cp; $(ETAGS) -o TAGS.sub *.c *.cc *.h --language=none \
+	cd $(srcdir)/cp; $(ETAGS) -o TAGS.sub *.cc *.h --language=none \
 	  --regex='/DEFTREECODE [(]\([A-Z_]+\)/\1/' cp-tree.def; \
 	$(ETAGS) --include TAGS.sub --include ../TAGS.sub
 

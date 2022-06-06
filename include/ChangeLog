@@ -1,3 +1,7 @@
+2022-05-31  Alan Modra  <amodra@gmail.com>
+
+	* dwarf2.def: Correct spelling of DW_AT_namelist_item.
+
 2022-05-24  David Malcolm  <dmalcolm@redhat.com>
 
 	* ansidecl.h: Drop macros OVERRIDE and FINAL.

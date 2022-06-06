@@ -57,13 +57,13 @@ value_query::value_of_stmt (gimple *stmt, tree name)
 // range_query default methods.
 
 bool
-range_query::range_on_edge (irange &r, edge, tree expr)
+range_query::range_on_edge (vrange &r, edge, tree expr)
 {
   return range_of_expr (r, expr);
 }
 
 bool
-range_query::range_of_stmt (irange &r, gimple *stmt, tree name)
+range_query::range_of_stmt (vrange &r, gimple *stmt, tree name)
 {
   if (!name)
     name = gimple_get_lhs (stmt);
@@ -79,10 +79,11 @@ tree
 range_query::value_of_expr (tree expr, gimple *stmt)
 {
   tree t;
-  int_range_max r;
 
-  if (!irange::supports_type_p (TREE_TYPE (expr)))
+  if (!Value_Range::supports_type_p (TREE_TYPE (expr)))
     return NULL_TREE;
+
+  Value_Range r (TREE_TYPE (expr));
 
   if (range_of_expr (r, expr, stmt))
     {
@@ -100,10 +101,10 @@ tree
 range_query::value_on_edge (edge e, tree expr)
 {
   tree t;
-  int_range_max r;
 
-  if (!irange::supports_type_p (TREE_TYPE (expr)))
+  if (!Value_Range::supports_type_p (TREE_TYPE (expr)))
     return NULL_TREE;
+  Value_Range r (TREE_TYPE (expr));
   if (range_on_edge (r, e, expr))
     {
       // A constant used in an unreachable block oftens returns as UNDEFINED.
@@ -121,15 +122,15 @@ tree
 range_query::value_of_stmt (gimple *stmt, tree name)
 {
   tree t;
-  int_range_max r;
 
   if (!name)
     name = gimple_get_lhs (stmt);
 
   gcc_checking_assert (!name || name == gimple_get_lhs (stmt));
 
-  if (!name || !irange::supports_type_p (TREE_TYPE (name)))
+  if (!name || !Value_Range::supports_type_p (TREE_TYPE (name)))
     return NULL_TREE;
+  Value_Range r (TREE_TYPE (name));
   if (range_of_stmt (r, stmt, name) && r.singleton_p (&t))
     return t;
   return NULL_TREE;
@@ -187,7 +188,7 @@ range_query::~range_query ()
 // representable, and UNDEFINED/false if not.
 
 bool
-range_query::get_tree_range (irange &r, tree expr, gimple *stmt)
+range_query::get_tree_range (vrange &r, tree expr, gimple *stmt)
 {
   tree type;
   if (TYPE_P (expr))
@@ -195,7 +196,7 @@ range_query::get_tree_range (irange &r, tree expr, gimple *stmt)
   else
     type = TREE_TYPE (expr);
 
-  if (!irange::supports_type_p (type))
+  if (!Value_Range::supports_type_p (type))
     {
       r.set_undefined ();
       return false;
@@ -214,7 +215,7 @@ range_query::get_tree_range (irange &r, tree expr, gimple *stmt)
       return true;
 
     case SSA_NAME:
-      r = gimple_range_global (expr);
+      gimple_range_global (r, expr);
       return true;
 
     case ADDR_EXPR:
@@ -223,7 +224,7 @@ range_query::get_tree_range (irange &r, tree expr, gimple *stmt)
 	bool ov;
 	if (tree_single_nonzero_warnv_p (expr, &ov))
 	  {
-	    r = range_nonzero (type);
+	    r.set_nonzero (type);
 	    return true;
 	  }
 	break;
@@ -234,13 +235,14 @@ range_query::get_tree_range (irange &r, tree expr, gimple *stmt)
     }
   if (BINARY_CLASS_P (expr))
     {
-      range_operator *op = range_op_handler (TREE_CODE (expr), type);
+      range_op_handler op (TREE_CODE (expr), type);
       if (op)
 	{
-	  int_range_max r0, r1;
+	  Value_Range r0 (TREE_TYPE (TREE_OPERAND (expr, 0)));
+	  Value_Range r1 (TREE_TYPE (TREE_OPERAND (expr, 1)));
 	  range_of_expr (r0, TREE_OPERAND (expr, 0), stmt);
 	  range_of_expr (r1, TREE_OPERAND (expr, 1), stmt);
-	  op->fold_range (r, type, r0, r1);
+	  op.fold_range (r, type, r0, r1);
 	}
       else
 	r.set_varying (type);
@@ -248,12 +250,15 @@ range_query::get_tree_range (irange &r, tree expr, gimple *stmt)
     }
   if (UNARY_CLASS_P (expr))
     {
-      range_operator *op = range_op_handler (TREE_CODE (expr), type);
-      if (op)
+      range_op_handler op (TREE_CODE (expr), type);
+      tree op0_type = TREE_TYPE (TREE_OPERAND (expr, 0));
+      if (op && Value_Range::supports_type_p (op0_type))
 	{
-	  int_range_max r0;
+	  Value_Range r0 (TREE_TYPE (TREE_OPERAND (expr, 0)));
+	  Value_Range r1 (type);
+	  r1.set_varying (type);
 	  range_of_expr (r0, TREE_OPERAND (expr, 0), stmt);
-	  op->fold_range (r, type, r0, int_range<1> (type));
+	  op.fold_range (r, type, r0, r1);
 	}
       else
 	r.set_varying (type);
@@ -310,7 +315,7 @@ get_ssa_name_ptr_info_nonnull (const_tree name)
 // updated.
 
 bool
-update_global_range (irange &r, tree name)
+update_global_range (vrange &r, tree name)
 {
   tree type = TREE_TYPE (name);
 
@@ -329,8 +334,7 @@ update_global_range (irange &r, tree name)
       if (r.undefined_p ())
 	return false;
 
-      value_range vr = r;
-      set_range_info (name, vr);
+      set_range_info (name, as_a <irange> (r));
       return true;
     }
   else if (POINTER_TYPE_P (type))
@@ -348,7 +352,7 @@ update_global_range (irange &r, tree name)
 // return VARYING.
 
 static void
-get_range_global (irange &r, tree name)
+get_range_global (vrange &r, tree name)
 {
   tree type = TREE_TYPE (name);
 
@@ -368,7 +372,7 @@ get_range_global (irange &r, tree name)
 	    r.set_nonzero (type);
 	  else if (INTEGRAL_TYPE_P (type))
 	    {
-	      get_ssa_name_range_info (r, name);
+	      get_ssa_name_range_info (as_a <irange> (r), name);
 	      if (r.undefined_p ())
 		r.set_varying (type);
 	    }
@@ -383,7 +387,8 @@ get_range_global (irange &r, tree name)
    }
   else if (!POINTER_TYPE_P (type) && SSA_NAME_RANGE_INFO (name))
     {
-      get_ssa_name_range_info (r, name);
+      gcc_checking_assert (irange::supports_p (TREE_TYPE (name)));
+      get_ssa_name_range_info (as_a <irange> (r), name);
       if (r.undefined_p ())
 	r.set_varying (type);
     }
@@ -413,21 +418,19 @@ get_range_global (irange &r, tree name)
 // See discussion here:
 // https://gcc.gnu.org/pipermail/gcc-patches/2021-June/571709.html
 
-value_range
-gimple_range_global (tree name)
+void
+gimple_range_global (vrange &r, tree name)
 {
   tree type = TREE_TYPE (name);
-  gcc_checking_assert (TREE_CODE (name) == SSA_NAME
-		       && irange::supports_type_p (type));
+  gcc_checking_assert (TREE_CODE (name) == SSA_NAME);
 
   if (SSA_NAME_IS_DEFAULT_DEF (name) || (cfun && cfun->after_inlining)
       || is_a<gphi *> (SSA_NAME_DEF_STMT (name)))
     {
-      value_range vr;
-      get_range_global (vr, name);
-      return vr;
+      get_range_global (r, name);
+      return;
     }
-  return value_range (type);
+  r.set_varying (type);
 }
 
 // ----------------------------------------------
@@ -436,11 +439,9 @@ gimple_range_global (tree name)
 global_range_query global_ranges;
 
 bool
-global_range_query::range_of_expr (irange &r, tree expr, gimple *stmt)
+global_range_query::range_of_expr (vrange &r, tree expr, gimple *stmt)
 {
-  tree type = TREE_TYPE (expr);
-
-  if (!irange::supports_type_p (type) || !gimple_range_ssa_p (expr))
+  if (!gimple_range_ssa_p (expr))
     return get_tree_range (r, expr, stmt);
 
   get_range_global (r, expr);
@@ -455,15 +456,16 @@ global_range_query::range_of_expr (irange &r, tree expr, gimple *stmt)
 relation_kind
 range_query::query_relation (gimple *s, tree ssa1, tree ssa2, bool get_range)
 {
-  int_range_max tmp;
   if (!m_oracle || TREE_CODE (ssa1) != SSA_NAME || TREE_CODE (ssa2) != SSA_NAME)
     return VREL_VARYING;
 
   // Ensure ssa1 and ssa2 have both been evaluated.
   if (get_range)
     {
-      range_of_expr (tmp, ssa1, s);
-      range_of_expr (tmp, ssa2, s);
+      Value_Range tmp1 (TREE_TYPE (ssa1));
+      Value_Range tmp2 (TREE_TYPE (ssa2));
+      range_of_expr (tmp1, ssa1, s);
+      range_of_expr (tmp2, ssa2, s);
     }
   return m_oracle->query_relation (gimple_bb (s), ssa1, ssa2);
 }
@@ -476,7 +478,6 @@ relation_kind
 range_query::query_relation (edge e, tree ssa1, tree ssa2, bool get_range)
 {
   basic_block bb;
-  int_range_max tmp;
   if (!m_oracle || TREE_CODE (ssa1) != SSA_NAME || TREE_CODE (ssa2) != SSA_NAME)
     return VREL_VARYING;
 
@@ -491,6 +492,7 @@ range_query::query_relation (edge e, tree ssa1, tree ssa2, bool get_range)
   // Ensure ssa1 and ssa2 have both been evaluated.
   if (get_range)
     {
+      Value_Range tmp (TREE_TYPE (ssa1));
       range_on_edge (tmp, e, ssa1);
       range_on_edge (tmp, e, ssa2);
     }

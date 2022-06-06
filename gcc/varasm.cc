@@ -5069,7 +5069,7 @@ initializer_constant_valid_p (tree value, tree endtype, bool reverse)
    an element of a "constant" initializer.  */
 
 bool
-initializer_constant_valid_for_bitfield_p (tree value)
+initializer_constant_valid_for_bitfield_p (const_tree value)
 {
   /* For bitfields we support integer constants or possibly nested aggregates
      of such.  */
@@ -5078,7 +5078,7 @@ initializer_constant_valid_for_bitfield_p (tree value)
     case CONSTRUCTOR:
       {
 	unsigned HOST_WIDE_INT idx;
-	tree elt;
+	const_tree elt;
 
 	FOR_EACH_CONSTRUCTOR_VALUE (CONSTRUCTOR_ELTS (value), idx, elt)
 	  if (!initializer_constant_valid_for_bitfield_p (elt))

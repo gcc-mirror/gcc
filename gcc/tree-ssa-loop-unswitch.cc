@@ -113,7 +113,7 @@ struct unswitch_predicate
       true_range (edge_range), edge_index (edge_index_), switch_p (true)
   {
     gcc_assert (!(e->flags & (EDGE_TRUE_VALUE|EDGE_FALSE_VALUE))
-		&& irange::supports_type_p (TREE_TYPE (lhs)));
+		&& irange::supports_p (TREE_TYPE (lhs)));
     false_range = true_range;
     if (!false_range.varying_p ()
 	&& !false_range.undefined_p ())
@@ -134,19 +134,19 @@ struct unswitch_predicate
     tree rhs = gimple_cond_rhs (stmt);
     enum tree_code code = gimple_cond_code (stmt);
     condition = build2 (code, boolean_type_node, lhs, rhs);
-    if (irange::supports_type_p (TREE_TYPE (lhs)))
+    if (irange::supports_p (TREE_TYPE (lhs)))
       {
 	auto range_op = range_op_handler (code, TREE_TYPE (lhs));
 	int_range<2> rhs_range (TREE_TYPE (rhs));
 	if (CONSTANT_CLASS_P (rhs))
 	  rhs_range.set (rhs);
-	if (!range_op->op1_range (true_range, TREE_TYPE (lhs),
-				  int_range<2> (boolean_true_node,
-						boolean_true_node), rhs_range)
-	    || !range_op->op1_range (false_range, TREE_TYPE (lhs),
-				     int_range<2> (boolean_false_node,
-						   boolean_false_node),
-				     rhs_range))
+	if (!range_op.op1_range (true_range, TREE_TYPE (lhs),
+				 int_range<2> (boolean_true_node,
+					       boolean_true_node), rhs_range)
+	    || !range_op.op1_range (false_range, TREE_TYPE (lhs),
+				    int_range<2> (boolean_false_node,
+						  boolean_false_node),
+				    rhs_range))
 	  {
 	    true_range.set_varying (TREE_TYPE (lhs));
 	    false_range.set_varying (TREE_TYPE (lhs));
@@ -494,8 +494,8 @@ find_unswitching_predicates_for_bb (basic_block bb, class loop *loop,
     {
       unsigned nlabels = gimple_switch_num_labels (stmt);
       tree idx = gimple_switch_index (stmt);
-      if (TREE_CODE (idx) != SSA_NAME
-	  || nlabels < 1)
+      tree idx_type = TREE_TYPE (idx);
+      if (!gimple_range_ssa_p (idx) || nlabels < 1)
 	return;
       /* Index must be invariant.  */
       def = SSA_NAME_DEF_STMT (idx);
@@ -523,20 +523,19 @@ find_unswitching_predicates_for_bb (basic_block bb, class loop *loop,
 	  tree lab = gimple_switch_label (stmt, i);
 	  tree cmp;
 	  int_range<2> lab_range;
+	  tree low = fold_convert (idx_type, CASE_LOW (lab));
 	  if (CASE_HIGH (lab) != NULL_TREE)
 	    {
-	      tree cmp1 = fold_build2 (GE_EXPR, boolean_type_node, idx,
-				       CASE_LOW (lab));
-	      tree cmp2 = fold_build2 (LE_EXPR, boolean_type_node, idx,
-				       CASE_HIGH (lab));
+	      tree high = fold_convert (idx_type, CASE_HIGH (lab));
+	      tree cmp1 = fold_build2 (GE_EXPR, boolean_type_node, idx, low);
+	      tree cmp2 = fold_build2 (LE_EXPR, boolean_type_node, idx, high);
 	      cmp = fold_build2 (BIT_AND_EXPR, boolean_type_node, cmp1, cmp2);
-	      lab_range.set (CASE_LOW (lab), CASE_HIGH (lab));
+	      lab_range.set (low, high);
 	    }
 	  else
 	    {
-	      cmp = fold_build2 (EQ_EXPR, boolean_type_node, idx,
-				 CASE_LOW (lab));
-	      lab_range.set (CASE_LOW (lab));
+	      cmp = fold_build2 (EQ_EXPR, boolean_type_node, idx, low);
+	      lab_range.set (low);
 	    }
 
 	  /* Combine the expression with the existing one.  */
@@ -647,7 +646,7 @@ evaluate_control_stmt_using_entry_checks (gimple *stmt,
 			      TREE_OPERAND (last_predicate->condition, 1)))
 	return true_edge ? boolean_true_node : boolean_false_node;
       /* Else try ranger if it supports LHS.  */
-      else if (irange::supports_type_p (TREE_TYPE (lhs)))
+      else if (irange::supports_p (TREE_TYPE (lhs)))
 	{
 	  int_range<2> r;
 	  int_range_max path_range;

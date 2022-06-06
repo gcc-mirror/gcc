@@ -66,14 +66,14 @@ typedef struct priority_info_s {
   int destructions_p;
 } *priority_info;
 
-static tree start_objects (int, int);
-static void finish_objects (int, int, tree);
+static tree start_objects (bool, unsigned);
+static tree finish_objects (bool, unsigned, tree);
 static tree start_static_storage_duration_function (unsigned);
 static void finish_static_storage_duration_function (tree);
 static priority_info get_priority_info (int);
-static void do_static_initialization_or_destruction (tree, bool);
-static void one_static_initialization_or_destruction (tree, tree, bool);
-static void generate_ctor_or_dtor_function (bool, int, location_t *);
+static void do_static_initialization_or_destruction (bool, tree);
+static void one_static_initialization_or_destruction (bool, tree, tree);
+static void generate_ctor_or_dtor_function (bool, unsigned, location_t *);
 static int generate_ctor_and_dtor_functions_for_priority (splay_tree_node,
 							  void *);
 static tree prune_vars_needing_no_initialization (tree *);
@@ -3813,17 +3813,14 @@ generate_tls_wrapper (tree fn)
   expand_or_defer_fn (finish_function (/*inline_p=*/false));
 }
 
-/* Start the process of running a particular set of global constructors
-   or destructors.  Subroutine of do_[cd]tors.  Also called from
-   vtv_start_verification_constructor_init_function.  */
+/* Start a global constructor or destructor function.  */
 
 static tree
-start_objects (int method_type, int initp)
+start_objects (bool initp, unsigned priority)
 {
-  /* Make ctor or dtor function.  METHOD_TYPE may be 'I' or 'D'.  */
   int module_init = 0;
 
-  if (initp == DEFAULT_INIT_PRIORITY && method_type == 'I')
+  if (priority == DEFAULT_INIT_PRIORITY && initp)
     module_init = module_initializer_kind ();
 
   tree name = NULL_TREE;
@@ -3833,15 +3830,17 @@ start_objects (int method_type, int initp)
     {
       char type[14];
 
-      unsigned len = sprintf (type, "sub_%c", method_type);
-      if (initp != DEFAULT_INIT_PRIORITY)
+      /* We use `I' to indicate initialization and `D' to indicate
+	 destruction.  */
+      unsigned len = sprintf (type, "sub_%c", initp ? 'I' : 'D');
+      if (priority != DEFAULT_INIT_PRIORITY)
 	{
 	  char joiner = '_';
 #ifdef JOINER
 	  joiner = JOINER;
 #endif
 	  type[len++] = joiner;
-	  sprintf (type + len, "%.5u", initp);
+	  sprintf (type + len, "%.5u", priority);
 	}
       name = get_file_function_name (type);
     }
@@ -3867,7 +3866,7 @@ start_objects (int method_type, int initp)
   TREE_USED (current_function_decl) = 1;
 
   /* Mark this function as a global constructor or destructor.  */
-  if (method_type == 'I')
+  if (initp)
     DECL_GLOBAL_CTOR_P (current_function_decl) = 1;
   else
     DECL_GLOBAL_DTOR_P (current_function_decl) = 1;
@@ -3905,28 +3904,27 @@ start_objects (int method_type, int initp)
   return body;
 }
 
-/* Finish the process of running a particular set of global constructors
-   or destructors.  Subroutine of do_[cd]tors.  */
+/* Finish a global constructor or destructor.  */
 
-static void
-finish_objects (int method_type, int initp, tree body)
+static tree
+finish_objects (bool initp, unsigned priority, tree body)
 {
   /* Finish up.  */
   finish_compound_stmt (body);
   tree fn = finish_function (/*inline_p=*/false);
 
-  if (method_type == 'I')
+  if (initp)
     {
       DECL_STATIC_CONSTRUCTOR (fn) = 1;
-      decl_init_priority_insert (fn, initp);
+      decl_init_priority_insert (fn, priority);
     }
   else
     {
       DECL_STATIC_DESTRUCTOR (fn) = 1;
-      decl_fini_priority_insert (fn, initp);
+      decl_fini_priority_insert (fn, priority);
     }
 
-  expand_or_defer_fn (fn);
+  return fn;
 }
 
 /* The names of the parameters to the function created to handle
@@ -3944,9 +3942,6 @@ static GTY(()) tree initialize_p_decl;
 
 /* The declaration for the __PRIORITY argument.  */
 static GTY(()) tree priority_decl;
-
-/* The declaration for the static storage duration function.  */
-static GTY(()) tree ssdf_decl;
 
 /* All the static storage duration functions created in this
    translation unit.  */
@@ -3972,24 +3967,20 @@ static splay_tree priority_info_map;
 static tree
 start_static_storage_duration_function (unsigned count)
 {
-  tree type;
-  tree body;
   char id[sizeof (SSDF_IDENTIFIER) + 1 /* '\0' */ + 32];
 
   /* Create the identifier for this function.  It will be of the form
      SSDF_IDENTIFIER_<number>.  */
   sprintf (id, "%s_%u", SSDF_IDENTIFIER, count);
 
-  type = build_function_type_list (void_type_node,
-				   integer_type_node, integer_type_node,
-				   NULL_TREE);
+  tree type = build_function_type_list (void_type_node,
+					integer_type_node, integer_type_node,
+					NULL_TREE);
 
   /* Create the FUNCTION_DECL itself.  */
-  ssdf_decl = build_lang_decl (FUNCTION_DECL,
-			       get_identifier (id),
-			       type);
-  TREE_PUBLIC (ssdf_decl) = 0;
-  DECL_ARTIFICIAL (ssdf_decl) = 1;
+  tree fn = build_lang_decl (FUNCTION_DECL, get_identifier (id), type);
+  TREE_PUBLIC (fn) = 0;
+  DECL_ARTIFICIAL (fn) = 1;
 
   /* Put this function in the list of functions to be called from the
      static constructors and destructors.  */
@@ -4011,21 +4002,21 @@ start_static_storage_duration_function (unsigned count)
       get_priority_info (DEFAULT_INIT_PRIORITY);
     }
 
-  vec_safe_push (ssdf_decls, ssdf_decl);
+  vec_safe_push (ssdf_decls, fn);
 
   /* Create the argument list.  */
   initialize_p_decl = cp_build_parm_decl
-    (ssdf_decl, get_identifier (INITIALIZE_P_IDENTIFIER), integer_type_node);
+    (fn, get_identifier (INITIALIZE_P_IDENTIFIER), integer_type_node);
   TREE_USED (initialize_p_decl) = 1;
   priority_decl = cp_build_parm_decl
-    (ssdf_decl, get_identifier (PRIORITY_IDENTIFIER), integer_type_node);
+    (fn, get_identifier (PRIORITY_IDENTIFIER), integer_type_node);
   TREE_USED (priority_decl) = 1;
 
   DECL_CHAIN (initialize_p_decl) = priority_decl;
-  DECL_ARGUMENTS (ssdf_decl) = initialize_p_decl;
+  DECL_ARGUMENTS (fn) = initialize_p_decl;
 
   /* Put the function in the global scope.  */
-  pushdecl (ssdf_decl);
+  pushdecl (fn);
 
   /* Start the function itself.  This is equivalent to declaring the
      function as:
@@ -4034,14 +4025,10 @@ start_static_storage_duration_function (unsigned count)
 
      It is static because we only need to call this function from the
      various constructor and destructor functions for this module.  */
-  start_preparsed_function (ssdf_decl,
-			    /*attrs=*/NULL_TREE,
-			    SF_PRE_PARSED);
+  start_preparsed_function (fn, /*attrs=*/NULL_TREE, SF_PRE_PARSED);
 
   /* Set up the scope of the outermost block in the function.  */
-  body = begin_compound_stmt (BCS_FN_BODY);
-
-  return body;
+  return begin_compound_stmt (BCS_FN_BODY);
 }
 
 /* Finish the generation of the function which performs initialization
@@ -4098,34 +4085,25 @@ get_priority_info (int priority)
 						    || DECL_ONE_ONLY (decl) \
 						    || DECL_WEAK (decl)))
 
-/* Called from one_static_initialization_or_destruction(),
-   via walk_tree.
-   Walks the initializer list of a global variable and looks for
+/* Walks the initializer list of a global variable and looks for
    temporary variables (DECL_NAME() == NULL and DECL_ARTIFICIAL != 0)
-   and that have their DECL_CONTEXT() == NULL.
-   For each such temporary variable, set their DECL_CONTEXT() to
-   the current function. This is necessary because otherwise
-   some optimizers (enabled by -O2 -fprofile-arcs) might crash
-   when trying to refer to a temporary variable that does not have
-   it's DECL_CONTECT() properly set.  */
+   and that have their DECL_CONTEXT() == NULL.  For each such
+   temporary variable, set their DECL_CONTEXT() to CTX -- the
+   initializing function. This is necessary because otherwise some
+   optimizers (enabled by -O2 -fprofile-arcs) might crash when trying
+   to refer to a temporary variable that does not have its
+   DECL_CONTEXT() properly set.  */
+
 static tree 
 fix_temporary_vars_context_r (tree *node,
 			      int  * /*unused*/,
-			      void * /*unused1*/)
+			      void *ctx)
 {
-  gcc_assert (current_function_decl);
-
   if (TREE_CODE (*node) == BIND_EXPR)
-    {
-      tree var;
-
-      for (var = BIND_EXPR_VARS (*node); var; var = DECL_CHAIN (var))
-	if (VAR_P (var)
-	  && !DECL_NAME (var)
-	  && DECL_ARTIFICIAL (var)
-	  && !DECL_CONTEXT (var))
-	  DECL_CONTEXT (var) = current_function_decl;
-    }
+    for (tree var = BIND_EXPR_VARS (*node); var; var = DECL_CHAIN (var))
+      if (VAR_P (var) && !DECL_NAME (var)
+	  && DECL_ARTIFICIAL (var) && !DECL_CONTEXT (var))
+	DECL_CONTEXT (var) = tree (ctx);
 
   return NULL_TREE;
 }
@@ -4135,11 +4113,8 @@ fix_temporary_vars_context_r (tree *node,
    are destroying it.  */
 
 static void
-one_static_initialization_or_destruction (tree decl, tree init, bool initp)
+one_static_initialization_or_destruction (bool initp, tree decl, tree init)
 {
-  tree guard_if_stmt = NULL_TREE;
-  tree guard;
-
   /* If we are supposed to destruct and there's a trivial destructor,
      nothing has to be done.  */
   if (!initp
@@ -4163,7 +4138,7 @@ one_static_initialization_or_destruction (tree decl, tree init, bool initp)
      of the temporaries are set to the current function decl.  */
   cp_walk_tree_without_duplicates (&init,
 				   fix_temporary_vars_context_r,
-				   NULL);
+				   current_function_decl);
 
   /* Because of:
 
@@ -4184,63 +4159,50 @@ one_static_initialization_or_destruction (tree decl, tree init, bool initp)
     }
 
   /* Assume we don't need a guard.  */
-  guard = NULL_TREE;
+  tree guard_if_stmt = NULL_TREE;
+
   /* We need a guard if this is an object with external linkage that
      might be initialized in more than one place.  (For example, a
      static data member of a template, when the data member requires
      construction.)  */
   if (NEEDS_GUARD_P (decl))
     {
+      tree guard = get_guard (decl);
       tree guard_cond;
 
-      guard = get_guard (decl);
-
-      /* When using __cxa_atexit, we just check the GUARD as we would
-	 for a local static.  */
       if (flag_use_cxa_atexit)
 	{
-	  /* When using __cxa_atexit, we never try to destroy
+	  /* When using __cxa_atexit, we just check the GUARD as we
+	     would for a local static.  We never try to destroy
 	     anything from a static destructor.  */
 	  gcc_assert (initp);
 	  guard_cond = get_guard_cond (guard, false);
 	}
-      /* If we don't have __cxa_atexit, then we will be running
-	 destructors from .fini sections, or their equivalents.  So,
-	 we need to know how many times we've tried to initialize this
-	 object.  We do initializations only if the GUARD is zero,
-	 i.e., if we are the first to initialize the variable.  We do
-	 destructions only if the GUARD is one, i.e., if we are the
-	 last to destroy the variable.  */
-      else if (initp)
-	guard_cond
-	  = cp_build_binary_op (input_location,
-				EQ_EXPR,
-				cp_build_unary_op (PREINCREMENT_EXPR,
-						   guard,
-						   /*noconvert=*/true,
-						   tf_warning_or_error),
-				integer_one_node,
-				tf_warning_or_error);
       else
-	guard_cond
-	  = cp_build_binary_op (input_location,
-				EQ_EXPR,
-				cp_build_unary_op (PREDECREMENT_EXPR,
-						   guard,
-						   /*noconvert=*/true,
-						   tf_warning_or_error),
-				integer_zero_node,
-				tf_warning_or_error);
+	{
+	  /* If we don't have __cxa_atexit, then we will be running
+	     destructors from .fini sections, or their equivalents.
+	     So, we need to know how many times we've tried to
+	     initialize this object.  We do initializations only if
+	     the GUARD was or becomes zero (initp vs !initp
+	     respectively).  */
+	  guard_cond = cp_build_unary_op (initp ? POSTINCREMENT_EXPR
+					  : PREDECREMENT_EXPR,
+					  guard,
+					  /*noconvert=*/true,
+					  tf_warning_or_error);
+	  guard_cond = cp_build_binary_op (input_location, EQ_EXPR, guard_cond, 
+					   integer_zero_node,
+					   tf_warning_or_error);
+	}
 
       guard_if_stmt = begin_if_stmt ();
       finish_if_stmt_cond (guard_cond, guard_if_stmt);
+
+      if (flag_use_cxa_atexit)
+	/* Set the GUARD now.  */
+	finish_expr_stmt (set_guard (guard));
     }
-
-
-  /* If we're using __cxa_atexit, we have not already set the GUARD,
-     so we must do so now.  */
-  if (guard && initp && flag_use_cxa_atexit)
-    finish_expr_stmt (set_guard (guard));
 
   /* Perform the initialization or destruction.  */
   if (initp)
@@ -4249,11 +4211,8 @@ one_static_initialization_or_destruction (tree decl, tree init, bool initp)
 	{
 	  finish_expr_stmt (init);
 	  if (sanitize_flags_p (SANITIZE_ADDRESS, decl))
-	    {
-	      varpool_node *vnode = varpool_node::get (decl);
-	      if (vnode)
-		vnode->dynamically_initialized = 1;
-	    }
+	    if (varpool_node *vnode = varpool_node::get (decl))
+	      vnode->dynamically_initialized = 1;
 	}
 
       /* If we're using __cxa_atexit, register a function that calls the
@@ -4265,7 +4224,7 @@ one_static_initialization_or_destruction (tree decl, tree init, bool initp)
     finish_expr_stmt (build_cleanup (decl));
 
   /* Finish the guard if-stmt, if necessary.  */
-  if (guard)
+  if (guard_if_stmt)
     {
       finish_then_clause (guard_if_stmt);
       finish_if_stmt (guard_if_stmt);
@@ -4282,13 +4241,11 @@ one_static_initialization_or_destruction (tree decl, tree init, bool initp)
    Whether initialization or destruction is performed is specified by INITP.  */
 
 static void
-do_static_initialization_or_destruction (tree vars, bool initp)
+do_static_initialization_or_destruction (bool initp, tree vars)
 {
-  tree node, init_if_stmt, cond;
-
   /* Build the outer if-stmt to check for initialization or destruction.  */
-  init_if_stmt = begin_if_stmt ();
-  cond = initp ? integer_one_node : integer_zero_node;
+  tree init_if_stmt = begin_if_stmt ();
+  tree cond = initp ? integer_one_node : integer_zero_node;
   cond = cp_build_binary_op (input_location,
 			     EQ_EXPR,
 			     initialize_p_decl,
@@ -4306,12 +4263,9 @@ do_static_initialization_or_destruction (tree vars, bool initp)
   if (initp && (flag_sanitize & SANITIZE_ADDRESS))
     finish_expr_stmt (asan_dynamic_init_call (/*after_p=*/false));
 
-  node = vars;
+  tree node = vars;
   do {
     tree decl = TREE_VALUE (node);
-    tree priority_if_stmt;
-    int priority;
-    priority_info pi;
 
     /* If we don't need a destructor, there's nothing to do.  Avoid
        creating a possibly empty if-stmt.  */
@@ -4323,8 +4277,8 @@ do_static_initialization_or_destruction (tree vars, bool initp)
 
     /* Remember that we had an initialization or finalization at this
        priority.  */
-    priority = DECL_EFFECTIVE_INIT_PRIORITY (decl);
-    pi = get_priority_info (priority);
+    int priority = DECL_EFFECTIVE_INIT_PRIORITY (decl);
+    priority_info pi = get_priority_info (priority);
     if (initp)
       pi->initializations_p = 1;
     else
@@ -4332,7 +4286,7 @@ do_static_initialization_or_destruction (tree vars, bool initp)
 
     /* Conditionalize this initialization on being in the right priority
        and being initializing/finalizing appropriately.  */
-    priority_if_stmt = begin_if_stmt ();
+    tree priority_if_stmt = begin_if_stmt ();
     cond = cp_build_binary_op (input_location,
 			       EQ_EXPR,
 			       priority_decl,
@@ -4345,8 +4299,8 @@ do_static_initialization_or_destruction (tree vars, bool initp)
 	   && DECL_EFFECTIVE_INIT_PRIORITY (TREE_VALUE (node)) == priority;
 	 node = TREE_CHAIN (node))
       /* Do one initialization or destruction.  */
-      one_static_initialization_or_destruction (TREE_VALUE (node),
-						TREE_PURPOSE (node), initp);
+      one_static_initialization_or_destruction (initp, TREE_VALUE (node),
+						TREE_PURPOSE (node));
 
     /* Finish up the priority if-stmt body.  */
     finish_then_clause (priority_if_stmt);
@@ -4445,27 +4399,22 @@ write_out_vars (tree vars)
    storage duration having the indicated PRIORITY.  */
 
 static void
-generate_ctor_or_dtor_function (bool constructor_p, int priority,
-				location_t *locus)
+generate_ctor_or_dtor_function (bool initp, unsigned priority, location_t *locus)
 {
   input_location = *locus;
-
-  /* We use `I' to indicate initialization and `D' to indicate
-     destruction.  */
-  char function_key = constructor_p ? 'I' : 'D';
 
   /* We emit the function lazily, to avoid generating empty
      global constructors and destructors.  */
   tree body = NULL_TREE;
 
-  if (constructor_p && priority == DEFAULT_INIT_PRIORITY)
+  if (initp && priority == DEFAULT_INIT_PRIORITY)
     {
       bool objc = c_dialect_objc () && objc_static_init_needed_p ();
 
       /* We may have module initialization to emit and/or insert
 	 before other intializations.  */
       if (module_initializer_kind () || objc)
-	body = start_objects (function_key, priority);
+	body = start_objects (initp, priority);
 
       /* For Objective-C++, we may need to initialize metadata found
          in this module.  This must be done _before_ any other static
@@ -4484,11 +4433,11 @@ generate_ctor_or_dtor_function (bool constructor_p, int priority,
       if (! (flags_from_decl_or_type (fndecl) & (ECF_CONST | ECF_PURE)))
 	{
 	  if (! body)
-	    body = start_objects (function_key, priority);
+	    body = start_objects (initp, priority);
 
 	  tree call = cp_build_function_call_nary (fndecl, tf_warning_or_error,
 						   build_int_cst (NULL_TREE,
-								  constructor_p),
+								  initp),
 						   build_int_cst (NULL_TREE,
 								  priority),
 						   NULL_TREE);
@@ -4498,7 +4447,7 @@ generate_ctor_or_dtor_function (bool constructor_p, int priority,
 
   /* Close out the function.  */
   if (body)
-    finish_objects (function_key, priority, body);
+    expand_or_defer_fn (finish_objects (initp, priority, body));
 }
 
 /* Generate constructor and destructor functions for the priority
@@ -4514,9 +4463,9 @@ generate_ctor_and_dtor_functions_for_priority (splay_tree_node n, void * data)
   /* Generate the functions themselves, but only if they are really
      needed.  */
   if (pi->initializations_p)
-    generate_ctor_or_dtor_function (/*constructor_p=*/true, priority, locus);
+    generate_ctor_or_dtor_function (/*initp=*/true, priority, locus);
   if (pi->destructions_p)
-    generate_ctor_or_dtor_function (/*constructor_p=*/false, priority, locus);
+    generate_ctor_or_dtor_function (/*initp=*/false, priority, locus);
 
   /* Keep iterating.  */
   return 0;
@@ -4800,7 +4749,7 @@ handle_tls_init (void)
     {
       tree var = TREE_VALUE (vars);
       tree init = TREE_PURPOSE (vars);
-      one_static_initialization_or_destruction (var, init, true);
+      one_static_initialization_or_destruction (/*initp=*/true, var, init);
 
       /* Output init aliases even with -fno-extern-tls-init.  */
       if (TARGET_SUPPORTS_ALIASES && TREE_PUBLIC (var))
@@ -5172,6 +5121,9 @@ c_parse_final_cleanups (void)
 	      hash_map_safe_put<hm_ggc> (dynamic_initializers,
 					 TREE_VALUE (t), TREE_PURPOSE (t));
 
+	  /* Make sure the back end knows about all the variables.  */
+	  write_out_vars (vars);
+
 	  /* We need to start a new initialization function each time
 	     through the loop.  That's because we need to know which
 	     vtables have been referenced, and TREE_SYMBOL_REFERENCED
@@ -5179,19 +5131,14 @@ c_parse_final_cleanups (void)
 	     out.  That's a deficiency in the back end.  When this is
 	     fixed, these initialization functions could all become
 	     inline, with resulting performance improvements.  */
-	  tree ssdf_body;
-
-	  /* Make sure the back end knows about all the variables.  */
-	  write_out_vars (vars);
 
 	  /* Set the line and file, so that it is obviously not from
 	     the source file.  */
 	  input_location = locus_at_end_of_parsing;
-	  ssdf_body = start_static_storage_duration_function (ssdf_count);
+	  tree ssdf_body = start_static_storage_duration_function (ssdf_count);
 
 	  /* First generate code to do all the initializations.  */
-	  if (vars)
-	    do_static_initialization_or_destruction (vars, /*initp=*/true);
+	  do_static_initialization_or_destruction (/*initp=*/true, vars);
 
 	  /* Then, generate code to do all the destructions.  Do these
 	     in reverse order so that the most recently constructed
@@ -5199,13 +5146,11 @@ c_parse_final_cleanups (void)
 	     __cxa_atexit, then we don't need to do this; functions
 	     were registered at initialization time to destroy the
 	     local statics.  */
-	  if (!flag_use_cxa_atexit && vars)
+	  if (!flag_use_cxa_atexit)
 	    {
 	      vars = nreverse (vars);
-	      do_static_initialization_or_destruction (vars, /*initp=*/false);
+	      do_static_initialization_or_destruction (/*initp=*/false, vars);
 	    }
-	  else
-	    vars = NULL_TREE;
 
 	  /* Finish up the static storage duration function for this
 	     round.  */
@@ -6038,20 +5983,13 @@ mark_used (tree decl)
 tree
 vtv_start_verification_constructor_init_function (void)
 {
-  return start_objects ('I', MAX_RESERVED_INIT_PRIORITY - 1);
+  return start_objects (/*initp=*/true, MAX_RESERVED_INIT_PRIORITY - 1);
 }
 
 tree
-vtv_finish_verification_constructor_init_function (tree function_body)
+vtv_finish_verification_constructor_init_function (tree body)
 {
-  tree fn;
-
-  finish_compound_stmt (function_body);
-  fn = finish_function (/*inline_p=*/false);
-  DECL_STATIC_CONSTRUCTOR (fn) = 1;
-  decl_init_priority_insert (fn, MAX_RESERVED_INIT_PRIORITY - 1);
-
-  return fn;
+  return finish_objects (/*initp=*/true, MAX_RESERVED_INIT_PRIORITY - 1, body);
 }
 
 #include "gt-cp-decl2.h"

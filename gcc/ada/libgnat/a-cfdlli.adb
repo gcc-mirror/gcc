@@ -29,9 +29,17 @@ with Ada.Containers.Stable_Sorting; use Ada.Containers.Stable_Sorting;
 
 with System; use type System.Address;
 
+with Ada.Numerics.Big_Numbers.Big_Integers;
+use Ada.Numerics.Big_Numbers.Big_Integers;
+
 package body Ada.Containers.Formal_Doubly_Linked_Lists with
   SPARK_Mode => Off
 is
+   --  Convert Count_Type to Big_Interger
+
+   package Conversions is new Signed_Conversions (Int => Count_Type);
+   use Conversions;
+
    -----------------------
    -- Local Subprograms --
    -----------------------
@@ -68,9 +76,9 @@ is
       end if;
 
       LI := Left.First;
-      RI := Left.First;
+      RI := Right.First;
       while LI /= 0 loop
-         if Left.Nodes (LI).Element /= Right.Nodes (LI).Element then
+         if Left.Nodes (LI).Element /= Right.Nodes (RI).Element then
             return False;
          end if;
 
@@ -809,7 +817,7 @@ is
 
          while Position /= 0 loop
             R := P.Add (R, (Node => Position), I);
-            pragma Assert (P.Length (R) = I);
+            pragma Assert (P.Length (R) = To_Big_Integer (I));
             Position := Container.Nodes (Position).Next;
             I := I + 1;
          end loop;

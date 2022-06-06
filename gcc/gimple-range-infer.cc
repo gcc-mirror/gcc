@@ -58,7 +58,7 @@ non_null_loadstore (gimple *, tree op, tree, void *data)
 // Add NAME and RANGE to the the range inference summary.
 
 void
-gimple_infer_range::add_range (tree name, irange &range)
+gimple_infer_range::add_range (tree name, vrange &range)
 {
   m_names[num_args] = name;
   m_ranges[num_args] = range;
@@ -126,7 +126,7 @@ class exit_range
 {
 public:
   tree name;
-  irange *range;
+  vrange *range;
   exit_range *next;
 };
 
@@ -181,7 +181,7 @@ infer_range_manager::~infer_range_manager ()
 // Return a non-zero range value of the appropriate type for NAME from
 // the cache, creating it if necessary.
 
-const irange&
+const vrange&
 infer_range_manager::get_nonzero (tree name)
 {
   unsigned v = SSA_NAME_VERSION (name);
@@ -189,7 +189,7 @@ infer_range_manager::get_nonzero (tree name)
     m_nonzero.safe_grow_cleared (num_ssa_names + 20);
   if (!m_nonzero[v])
     {
-      m_nonzero[v] = m_range_allocator.allocate (2);
+      m_nonzero[v] = m_range_allocator.alloc_vrange (TREE_TYPE (name));
       m_nonzero[v]->set_nonzero (TREE_TYPE (name));
     }
   return *(m_nonzero[v]);
@@ -217,7 +217,7 @@ infer_range_manager::has_range_p (tree name, basic_block bb)
 // to include it.
 
 bool
-infer_range_manager::maybe_adjust_range (irange &r, tree name, basic_block bb)
+infer_range_manager::maybe_adjust_range (vrange &r, tree name, basic_block bb)
 {
   if (!has_range_p (name, bb))
     return false;
@@ -230,7 +230,7 @@ infer_range_manager::maybe_adjust_range (irange &r, tree name, basic_block bb)
 // Add range R as an inferred range for NAME in block BB.
 
 void
-infer_range_manager::add_range (tree name, basic_block bb, const irange &r)
+infer_range_manager::add_range (tree name, basic_block bb, const vrange &r)
 {
   if (bb->index >= (int)m_on_exit.length ())
     m_on_exit.safe_grow_cleared (last_basic_block_for_fn (cfun) + 1);
@@ -252,21 +252,24 @@ infer_range_manager::add_range (tree name, basic_block bb, const irange &r)
   exit_range *ptr = m_on_exit[bb->index].find_ptr (name);
   if (ptr)
     {
-      int_range_max cur = r;
+      Value_Range cur (r);
       // If no new info is added, just return.
       if (!cur.intersect (*(ptr->range)))
 	return;
       if (ptr->range->fits_p (cur))
 	*(ptr->range) = cur;
       else
-	ptr->range = m_range_allocator.allocate (cur);
+	{
+	  vrange &v = cur;
+	  ptr->range = m_range_allocator.clone (v);
+	}
       return;
     }
 
   // Otherwise create a record.
   bitmap_set_bit (m_on_exit[bb->index].m_names, SSA_NAME_VERSION (name));
   ptr = (exit_range *)obstack_alloc (&m_list_obstack, sizeof (exit_range));
-  ptr->range = m_range_allocator.allocate (r);
+  ptr->range = m_range_allocator.clone (r);
   ptr->name = name;
   ptr->next = m_on_exit[bb->index].head;
   m_on_exit[bb->index].head = ptr;

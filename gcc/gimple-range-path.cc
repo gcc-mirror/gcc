@@ -83,7 +83,7 @@ path_range_query::clear_cache (tree name)
 // If NAME has a cache entry, return it in R, and return TRUE.
 
 inline bool
-path_range_query::get_cache (irange &r, tree name)
+path_range_query::get_cache (vrange &r, tree name)
 {
   if (!gimple_range_ssa_p (name))
     return get_global_range_query ()->range_of_expr (r, name);
@@ -98,7 +98,7 @@ path_range_query::get_cache (irange &r, tree name)
 // Set the cache entry for NAME to R.
 
 void
-path_range_query::set_cache (const irange &r, tree name)
+path_range_query::set_cache (const vrange &r, tree name)
 {
   unsigned v = SSA_NAME_VERSION (name);
   bitmap_set_bit (m_has_cache_entry, v);
@@ -149,7 +149,7 @@ path_range_query::defined_outside_path (tree name)
 // Return the range of NAME on entry to the path.
 
 void
-path_range_query::range_on_path_entry (irange &r, tree name)
+path_range_query::range_on_path_entry (vrange &r, tree name)
 {
   gcc_checking_assert (defined_outside_path (name));
   basic_block entry = entry_bb ();
@@ -168,7 +168,7 @@ path_range_query::range_on_path_entry (irange &r, tree name)
   // block.  This can happen when we're querying a block with only an
   // outgoing edge (no statement but the fall through edge), but for
   // which we can determine a range on entry to the block.
-  int_range_max tmp;
+  Value_Range tmp (TREE_TYPE (name));
   bool changed = false;
   r.set_undefined ();
   for (unsigned i = 0; i < EDGE_COUNT (entry->preds); ++i)
@@ -190,9 +190,9 @@ path_range_query::range_on_path_entry (irange &r, tree name)
 // Return the range of NAME at the end of the path being analyzed.
 
 bool
-path_range_query::internal_range_of_expr (irange &r, tree name, gimple *stmt)
+path_range_query::internal_range_of_expr (vrange &r, tree name, gimple *stmt)
 {
-  if (!irange::supports_type_p (TREE_TYPE (name)))
+  if (!r.supports_type_p (TREE_TYPE (name)))
     return false;
 
   if (get_cache (r, name))
@@ -209,18 +209,22 @@ path_range_query::internal_range_of_expr (irange &r, tree name, gimple *stmt)
       && range_defined_in_block (r, name, gimple_bb (stmt)))
     {
       if (TREE_CODE (name) == SSA_NAME)
-	r.intersect (gimple_range_global (name));
+	{
+	  Value_Range glob (TREE_TYPE (name));
+	  gimple_range_global (glob, name);
+	  r.intersect (glob);
+	}
 
       set_cache (r, name);
       return true;
     }
 
-  r = gimple_range_global (name);
+  gimple_range_global (r, name);
   return true;
 }
 
 bool
-path_range_query::range_of_expr (irange &r, tree name, gimple *stmt)
+path_range_query::range_of_expr (vrange &r, tree name, gimple *stmt)
 {
   if (internal_range_of_expr (r, name, stmt))
     {
@@ -269,7 +273,7 @@ path_range_query::ssa_defined_in_bb (tree name, basic_block bb)
 // calculating the PHI's range must not trigger additional lookups.
 
 void
-path_range_query::ssa_range_in_phi (irange &r, gphi *phi)
+path_range_query::ssa_range_in_phi (vrange &r, gphi *phi)
 {
   tree name = gimple_phi_result (phi);
   basic_block bb = gimple_bb (phi);
@@ -283,7 +287,7 @@ path_range_query::ssa_range_in_phi (irange &r, gphi *phi)
       // Try to fold the phi exclusively with global or cached values.
       // This will get things like PHI <5(99), 6(88)>.  We do this by
       // calling range_of_expr with no context.
-      int_range_max arg_range;
+      Value_Range arg_range (TREE_TYPE (name));
       r.set_undefined ();
       for (size_t i = 0; i < nargs; ++i)
 	{
@@ -312,7 +316,7 @@ path_range_query::ssa_range_in_phi (irange &r, gphi *phi)
 	  {
 	    if (m_resolve)
 	      {
-		int_range_max tmp;
+		Value_Range tmp (TREE_TYPE (name));
 		// Using both the range on entry to the path, and the
 		// range on this edge yields significantly better
 		// results.
@@ -335,7 +339,7 @@ path_range_query::ssa_range_in_phi (irange &r, gphi *phi)
 // TRUE.  Otherwise, return FALSE.
 
 bool
-path_range_query::range_defined_in_block (irange &r, tree name, basic_block bb)
+path_range_query::range_defined_in_block (vrange &r, tree name, basic_block bb)
 {
   gimple *def_stmt = SSA_NAME_DEF_STMT (name);
   basic_block def_bb = gimple_bb (def_stmt);
@@ -377,7 +381,6 @@ path_range_query::range_defined_in_block (irange &r, tree name, basic_block bb)
 void
 path_range_query::compute_ranges_in_phis (basic_block bb)
 {
-  int_range_max r;
   auto_bitmap phi_set;
 
   // PHIs must be resolved simultaneously on entry to the block
@@ -390,7 +393,11 @@ path_range_query::compute_ranges_in_phis (basic_block bb)
       gphi *phi = iter.phi ();
       tree name = gimple_phi_result (phi);
 
-      if (import_p (name) && range_defined_in_block (r, name, bb))
+      if (!import_p (name))
+	continue;
+
+      Value_Range r (TREE_TYPE (name));
+      if (range_defined_in_block (r, name, bb))
 	{
 	  unsigned v = SSA_NAME_VERSION (name);
 	  set_cache (r, name);
@@ -423,7 +430,6 @@ void
 path_range_query::compute_ranges_in_block (basic_block bb)
 {
   bitmap_iterator bi;
-  int_range_max r, cached_range;
   unsigned i;
 
   if (m_resolve && !at_entry ())
@@ -444,6 +450,7 @@ path_range_query::compute_ranges_in_block (basic_block bb)
   EXECUTE_IF_SET_IN_BITMAP (m_imports, 0, i, bi)
     {
       tree name = ssa_name (i);
+      Value_Range r (TREE_TYPE (name));
 
       if (gimple_code (SSA_NAME_DEF_STMT (name)) != GIMPLE_PHI
 	  && range_defined_in_block (r, name, bb))
@@ -480,8 +487,10 @@ path_range_query::compute_ranges_in_block (basic_block bb)
 
       if (bitmap_bit_p (exports, i))
 	{
+	  Value_Range r (TREE_TYPE (name));
 	  if (g.outgoing_edge_range_p (r, e, name, *this))
 	    {
+	      Value_Range cached_range (TREE_TYPE (name));
 	      if (get_cache (cached_range, name))
 		r.intersect (cached_range);
 
@@ -539,7 +548,7 @@ bool
 path_range_query::add_to_imports (tree name, bitmap imports)
 {
   if (TREE_CODE (name) == SSA_NAME
-      && irange::supports_type_p (TREE_TYPE (name)))
+      && Value_Range::supports_type_p (TREE_TYPE (name)))
     return bitmap_set_bit (imports, SSA_NAME_VERSION (name));
   return false;
 }
@@ -751,11 +760,11 @@ jt_fur_source::query_relation (tree op1, tree op2)
 // Return the range of STMT at the end of the path being analyzed.
 
 bool
-path_range_query::range_of_stmt (irange &r, gimple *stmt, tree)
+path_range_query::range_of_stmt (vrange &r, gimple *stmt, tree)
 {
   tree type = gimple_range_type (stmt);
 
-  if (!irange::supports_type_p (type))
+  if (!type || !r.supports_type_p (type))
     return false;
 
   // If resolving unknowns, fold the statement making use of any

@@ -56,10 +56,15 @@ package Exp_Ch3 is
    --  checks on the relevant aspects. The wrapper body could be simplified to
    --  a null body when expansion is disabled ???
 
-   procedure Build_Discr_Checking_Funcs (N : Node_Id);
-   --  Builds function which checks whether the component name is consistent
-   --  with the current discriminants. N is the full type declaration node,
-   --  and the discriminant checking functions are inserted after this node.
+   procedure Build_Or_Copy_Discr_Checking_Funcs (N : Node_Id);
+   --  For each variant component, builds a function that checks whether
+   --  the component name is consistent with the current discriminants
+   --  and sets the component's Dcheck_Function attribute to refer to it.
+   --  N is the full type declaration node; the discriminant checking
+   --  functions are inserted after this node.
+   --  In the case of a derived untagged type, copy the attributes that were
+   --  set for the components of the parent type onto the components of the
+   --  derived type; no new subprograms are constructed in this case.
 
    function Build_Initialization_Call
      (Loc                 : Source_Ptr;

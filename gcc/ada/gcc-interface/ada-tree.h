@@ -97,11 +97,6 @@ do {							 \
    an Ada array other than the first.  */
 #define TYPE_MULTI_ARRAY_P(NODE) TYPE_LANG_FLAG_1 (ARRAY_TYPE_CHECK (NODE))
 
-/* For FUNCTION_TYPE and METHOD_TYPE, nonzero if function returns an
-   unconstrained array or record type.  */
-#define TYPE_RETURN_UNCONSTRAINED_P(NODE) \
-  TYPE_LANG_FLAG_1 (FUNC_OR_METHOD_CHECK (NODE))
-
 /* For RECORD_TYPE, UNION_TYPE, and QUAL_UNION_TYPE, nonzero if this denotes
    a justified modular type (will only be true for RECORD_TYPE).  */
 #define TYPE_JUSTIFIED_MODULAR_P(NODE) \

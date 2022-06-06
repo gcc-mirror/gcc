@@ -892,9 +892,15 @@ package body Contracts is
          end;
       end if;
 
-      --  Verify the mutual interaction of the various external properties
+      --  Verify the mutual interaction of the various external properties.
+      --  For variables for which No_Caching is enabled, it has been checked
+      --  already that only False values for other external properties are
+      --  allowed.
 
-      if Seen then
+      if Seen
+        and then (Ekind (Type_Or_Obj_Id) /= E_Variable
+                   or else not No_Caching_Enabled (Type_Or_Obj_Id))
+      then
          Check_External_Properties
            (Type_Or_Obj_Id, AR_Val, AW_Val, ER_Val, EW_Val);
       end if;
@@ -2365,6 +2371,10 @@ package body Contracts is
          Set_Debug_Info_Needed   (Proc_Id);
          Set_Postconditions_Proc (Subp_Id, Proc_Id);
 
+         --  Mark it inlined to speed up the call
+
+         Set_Is_Inlined (Proc_Id);
+
          --  Force the front-end inlining of _Postconditions when generating C
          --  code, since its body may have references to itypes defined in the
          --  enclosing subprogram, which would cause problems for unnesting
@@ -2373,7 +2383,6 @@ package body Contracts is
          if Modify_Tree_For_C then
             Set_Has_Pragma_Inline        (Proc_Id);
             Set_Has_Pragma_Inline_Always (Proc_Id);
-            Set_Is_Inlined               (Proc_Id);
          end if;
 
          --  The related subprogram is a function: create the specification of

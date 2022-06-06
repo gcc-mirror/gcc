@@ -306,9 +306,6 @@ static bool aarch64_print_address_internal (FILE*, machine_mode, rtx,
 					    aarch64_addr_query_type);
 static HOST_WIDE_INT aarch64_clamp_to_uimm12_shift (HOST_WIDE_INT val);
 
-/* Major revision number of the ARM Architecture implemented by the target.  */
-unsigned aarch64_architecture_version;
-
 /* The processor for which instructions should be scheduled.  */
 enum aarch64_processor aarch64_tune = cortexa53;
 
@@ -2677,7 +2674,6 @@ struct processor
   enum aarch64_processor ident;
   enum aarch64_processor sched_core;
   enum aarch64_arch arch;
-  unsigned architecture_version;
   const uint64_t flags;
   const struct tune_params *const tune;
 };
@@ -2686,9 +2682,9 @@ struct processor
 static const struct processor all_architectures[] =
 {
 #define AARCH64_ARCH(NAME, CORE, ARCH_IDENT, ARCH_REV, FLAGS) \
-  {NAME, CORE, CORE, AARCH64_ARCH_##ARCH_IDENT, ARCH_REV, FLAGS, NULL},
+  {NAME, CORE, CORE, AARCH64_ARCH_##ARCH_IDENT, FLAGS, NULL},
 #include "aarch64-arches.def"
-  {NULL, aarch64_none, aarch64_none, aarch64_no_arch, 0, 0, NULL}
+  {NULL, aarch64_none, aarch64_none, aarch64_no_arch, 0, NULL}
 };
 
 /* Processor cores implementing AArch64.  */
@@ -2696,22 +2692,12 @@ static const struct processor all_cores[] =
 {
 #define AARCH64_CORE(NAME, IDENT, SCHED, ARCH, FLAGS, COSTS, IMP, PART, VARIANT) \
   {NAME, IDENT, SCHED, AARCH64_ARCH_##ARCH,				\
-  all_architectures[AARCH64_ARCH_##ARCH].architecture_version,	\
   FLAGS, &COSTS##_tunings},
 #include "aarch64-cores.def"
-  {"generic", generic, cortexa53, AARCH64_ARCH_8A, 8,
+  {"generic", generic, cortexa53, AARCH64_ARCH_8A,
     AARCH64_FL_FOR_ARCH8, &generic_tunings},
-  {NULL, aarch64_none, aarch64_none, aarch64_no_arch, 0, 0, NULL}
+  {NULL, aarch64_none, aarch64_none, aarch64_no_arch, 0, NULL}
 };
-
-
-/* Target specification.  These are populated by the -march, -mtune, -mcpu
-   handling code or by target attributes.  */
-static const struct processor *selected_arch;
-static const struct processor *selected_cpu;
-static const struct processor *selected_tune;
-
-enum aarch64_key_type aarch64_ra_sign_key = AARCH64_KEY_A;
 
 /* The current tuning set.  */
 struct tune_params aarch64_tune_params = generic_tunings;
@@ -10353,8 +10339,8 @@ aarch64_case_values_threshold (void)
   /* Use the specified limit for the number of cases before using jump
      tables at higher optimization levels.  */
   if (optimize > 2
-      && selected_cpu->tune->max_case_values != 0)
-    return selected_cpu->tune->max_case_values;
+      && aarch64_tune_params.max_case_values != 0)
+    return aarch64_tune_params.max_case_values;
   else
     return optimize_size ? 8 : 11;
 }
@@ -17425,6 +17411,26 @@ initialize_aarch64_tls_size (struct gcc_options *opts)
   return;
 }
 
+/* Return the CPU corresponding to the enum CPU.  */
+
+static const struct processor *
+aarch64_get_tune_cpu (enum aarch64_processor cpu)
+{
+  gcc_assert (cpu != aarch64_none);
+
+  return &all_cores[cpu];
+}
+
+/* Return the architecture corresponding to the enum ARCH.  */
+
+static const struct processor *
+aarch64_get_arch (enum aarch64_arch arch)
+{
+  gcc_assert (arch != aarch64_no_arch);
+
+  return &all_architectures[arch];
+}
+
 /* Parse STRING looking for options in the format:
      string	:: option:string
      option	:: name=substring
@@ -17535,18 +17541,18 @@ aarch64_override_options_after_change_1 (struct gcc_options *opts)
 void
 aarch64_override_options_internal (struct gcc_options *opts)
 {
-  aarch64_tune_flags = selected_tune->flags;
-  aarch64_tune = selected_tune->sched_core;
+  const struct processor *tune = aarch64_get_tune_cpu (opts->x_selected_tune);
+  aarch64_tune_flags = tune->flags;
+  aarch64_tune = tune->sched_core;
   /* Make a copy of the tuning parameters attached to the core, which
      we may later overwrite.  */
-  aarch64_tune_params = *(selected_tune->tune);
-  aarch64_architecture_version = selected_arch->architecture_version;
-  if (selected_tune->tune == &generic_tunings)
+  aarch64_tune_params = *(tune->tune);
+  if (tune->tune == &generic_tunings)
     aarch64_adjust_generic_arch_tuning (aarch64_tune_params);
 
   if (opts->x_aarch64_override_tune_string)
     aarch64_parse_override_string (opts->x_aarch64_override_tune_string,
-				  &aarch64_tune_params);
+				   &aarch64_tune_params);
 
   /* This target defaults to strict volatile bitfields.  */
   if (opts->x_flag_strict_volatile_bitfields < 0 && abi_version_at_least (2))
@@ -17706,13 +17712,6 @@ aarch64_override_options_internal (struct gcc_options *opts)
       && aarch64_tune_params.prefetch->default_opt_level >= 0
       && opts->x_optimize >= aarch64_tune_params.prefetch->default_opt_level)
     opts->x_flag_prefetch_loop_arrays = 1;
-
-  if (opts->x_aarch64_arch_string == NULL)
-    opts->x_aarch64_arch_string = selected_arch->name;
-  if (opts->x_aarch64_cpu_string == NULL)
-    opts->x_aarch64_cpu_string = selected_cpu->name;
-  if (opts->x_aarch64_tune_string == NULL)
-    opts->x_aarch64_tune_string = selected_tune->name;
 
   aarch64_override_options_after_change_1 (opts);
 }
@@ -18065,26 +18064,6 @@ aarch64_validate_mtune (const char *str, const struct processor **res)
   return false;
 }
 
-/* Return the CPU corresponding to the enum CPU.  */
-
-static const struct processor *
-aarch64_get_tune_cpu (enum aarch64_processor cpu)
-{
-  gcc_assert (cpu != aarch64_none);
-
-  return &all_cores[cpu];
-}
-
-/* Return the architecture corresponding to the enum ARCH.  */
-
-static const struct processor *
-aarch64_get_arch (enum aarch64_arch arch)
-{
-  gcc_assert (arch != aarch64_no_arch);
-
-  return &all_architectures[arch];
-}
-
 /* Return the VG value associated with -msve-vector-bits= value VALUE.  */
 
 static poly_uint16
@@ -18120,9 +18099,9 @@ aarch64_override_options (void)
   uint64_t arch_isa = 0;
   aarch64_isa_flags = 0;
 
-  selected_cpu = NULL;
-  selected_arch = NULL;
-  selected_tune = NULL;
+  const struct processor *cpu = NULL;
+  const struct processor *arch = NULL;
+  const struct processor *tune = NULL;
 
   if (aarch64_harden_sls_string)
     aarch64_validate_sls_mitigation (aarch64_harden_sls_string);
@@ -18134,56 +18113,52 @@ aarch64_override_options (void)
      If either of -march or -mtune is given, they override their
      respective component of -mcpu.  */
   if (aarch64_cpu_string)
-    aarch64_validate_mcpu (aarch64_cpu_string, &selected_cpu, &cpu_isa);
+    aarch64_validate_mcpu (aarch64_cpu_string, &cpu, &cpu_isa);
 
   if (aarch64_arch_string)
-    aarch64_validate_march (aarch64_arch_string, &selected_arch, &arch_isa);
+    aarch64_validate_march (aarch64_arch_string, &arch, &arch_isa);
 
   if (aarch64_tune_string)
-    aarch64_validate_mtune (aarch64_tune_string, &selected_tune);
+    aarch64_validate_mtune (aarch64_tune_string, &tune);
 
 #ifdef SUBTARGET_OVERRIDE_OPTIONS
   SUBTARGET_OVERRIDE_OPTIONS;
 #endif
 
-  if (selected_cpu && selected_arch)
+  if (cpu && arch)
     {
       /* If both -mcpu and -march are specified, warn if they are not
 	 architecturally compatible and prefer the -march ISA flags.  */
-      if (selected_arch->arch != selected_cpu->arch)
+      if (arch->arch != cpu->arch)
 	{
 	  warning (0, "switch %<-mcpu=%s%> conflicts with %<-march=%s%> switch",
 		       aarch64_cpu_string,
 		       aarch64_arch_string);
 	}
 
+      selected_arch = arch->arch;
       aarch64_isa_flags = arch_isa;
     }
-  else if (selected_cpu)
+  else if (cpu)
     {
-      selected_arch = &all_architectures[selected_cpu->arch];
+      selected_arch = cpu->arch;
       aarch64_isa_flags = cpu_isa;
     }
-  else if (selected_arch)
+  else if (arch)
     {
-      selected_cpu = &all_cores[selected_arch->ident];
+      cpu = &all_cores[arch->ident];
+      selected_arch = arch->arch;
       aarch64_isa_flags = arch_isa;
     }
   else
     {
       /* No -mcpu or -march specified, so use the default CPU.  */
-      selected_cpu = &all_cores[TARGET_CPU_DEFAULT];
-      selected_arch = &all_architectures[selected_cpu->arch];
-      aarch64_isa_flags = selected_cpu->flags;
+      cpu = &all_cores[TARGET_CPU_DEFAULT];
+      selected_arch = cpu->arch;
+      aarch64_isa_flags = cpu->flags;
     }
 
-  explicit_arch = selected_arch->arch;
-  if (!selected_tune)
-    selected_tune = selected_cpu;
-  explicit_tune_core = selected_tune->ident;
-
-  gcc_assert (explicit_tune_core != aarch64_none);
-  gcc_assert (explicit_arch != aarch64_no_arch);
+  selected_tune = tune ? tune->ident : cpu->ident;
 
   if (aarch64_enable_bti == 2)
     {
@@ -18302,38 +18277,14 @@ initialize_aarch64_code_model (struct gcc_options *opts)
     }
 }
 
-/* Implement TARGET_OPTION_SAVE.  */
-
-static void
-aarch64_option_save (struct cl_target_option *ptr, struct gcc_options *opts,
-		     struct gcc_options */* opts_set */)
-{
-  ptr->x_aarch64_override_tune_string = opts->x_aarch64_override_tune_string;
-  ptr->x_aarch64_branch_protection_string
-    = opts->x_aarch64_branch_protection_string;
-}
-
 /* Implements TARGET_OPTION_RESTORE.  Restore the backend codegen decisions
    using the information saved in PTR.  */
 
 static void
 aarch64_option_restore (struct gcc_options *opts,
-			struct gcc_options */* opts_set */,
-			struct cl_target_option *ptr)
+			struct gcc_options * /* opts_set */,
+			struct cl_target_option * /* ptr */)
 {
-  opts->x_explicit_arch = ptr->x_explicit_arch;
-  selected_arch = aarch64_get_arch (ptr->x_explicit_arch);
-  opts->x_explicit_tune_core = ptr->x_explicit_tune_core;
-  selected_tune = aarch64_get_tune_cpu (ptr->x_explicit_tune_core);
-  opts->x_aarch64_override_tune_string = ptr->x_aarch64_override_tune_string;
-  opts->x_aarch64_branch_protection_string
-    = ptr->x_aarch64_branch_protection_string;
-  if (opts->x_aarch64_branch_protection_string)
-    {
-      aarch64_parse_branch_protection (opts->x_aarch64_branch_protection_string,
-					NULL);
-    }
-
   aarch64_override_options_internal (opts);
 }
 
@@ -18343,11 +18294,11 @@ static void
 aarch64_option_print (FILE *file, int indent, struct cl_target_option *ptr)
 {
   const struct processor *cpu
-    = aarch64_get_tune_cpu (ptr->x_explicit_tune_core);
-  uint64_t isa_flags = ptr->x_aarch64_isa_flags;
-  const struct processor *arch = aarch64_get_arch (ptr->x_explicit_arch);
+    = aarch64_get_tune_cpu (ptr->x_selected_tune);
+  const struct processor *arch = aarch64_get_arch (ptr->x_selected_arch);
   std::string extension
-    = aarch64_get_extension_string_for_isa_flags (isa_flags, arch->flags);
+    = aarch64_get_extension_string_for_isa_flags (ptr->x_aarch64_isa_flags,
+						  arch->flags);
 
   fprintf (file, "%*sselected tune = %s\n", indent, "", cpu->name);
   fprintf (file, "%*sselected arch = %s%s\n", indent, "",
@@ -18460,8 +18411,7 @@ aarch64_handle_attr_arch (const char *str)
   if (parse_res == AARCH64_PARSE_OK)
     {
       gcc_assert (tmp_arch);
-      selected_arch = tmp_arch;
-      explicit_arch = selected_arch->arch;
+      selected_arch = tmp_arch->arch;
       return true;
     }
 
@@ -18499,11 +18449,8 @@ aarch64_handle_attr_cpu (const char *str)
   if (parse_res == AARCH64_PARSE_OK)
     {
       gcc_assert (tmp_cpu);
-      selected_tune = tmp_cpu;
-      explicit_tune_core = selected_tune->ident;
-
-      selected_arch = &all_architectures[tmp_cpu->arch];
-      explicit_arch = selected_arch->arch;
+      selected_tune = tmp_cpu->ident;
+      selected_arch = tmp_cpu->arch;
       return true;
     }
 
@@ -18571,8 +18518,7 @@ aarch64_handle_attr_tune (const char *str)
   if (parse_res == AARCH64_PARSE_OK)
     {
       gcc_assert (tmp_tune);
-      selected_tune = tmp_tune;
-      explicit_tune_core = selected_tune->ident;
+      selected_tune = tmp_tune->ident;
       return true;
     }
 
@@ -19748,15 +19694,15 @@ aarch64_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
 	  field_t = long_double_type_node;
 	  field_ptr_t = long_double_ptr_type_node;
 	  break;
-	case SDmode:
+	case E_SDmode:
 	  field_t = dfloat32_type_node;
 	  field_ptr_t = build_pointer_type (dfloat32_type_node);
 	  break;
-	case DDmode:
+	case E_DDmode:
 	  field_t = dfloat64_type_node;
 	  field_ptr_t = build_pointer_type (dfloat64_type_node);
 	  break;
-	case TDmode:
+	case E_TDmode:
 	  field_t = dfloat128_type_node;
 	  field_ptr_t = build_pointer_type (dfloat128_type_node);
 	  break;
@@ -22492,7 +22438,7 @@ aarch64_declare_function_name (FILE *stream, const char* name,
   gcc_assert (targ_options);
 
   const struct processor *this_arch
-    = aarch64_get_arch (targ_options->x_explicit_arch);
+    = aarch64_get_arch (targ_options->x_selected_arch);
 
   uint64_t isa_flags = targ_options->x_aarch64_isa_flags;
   std::string extension
@@ -22511,7 +22457,7 @@ aarch64_declare_function_name (FILE *stream, const char* name,
      useful to readers of the generated asm.  Do it only when it changes
      from function to function and verbose assembly is requested.  */
   const struct processor *this_tune
-    = aarch64_get_tune_cpu (targ_options->x_explicit_tune_core);
+    = aarch64_get_tune_cpu (targ_options->x_selected_tune);
 
   if (flag_debug_asm && aarch64_last_printed_tune_string != this_tune->name)
     {
@@ -22597,7 +22543,7 @@ aarch64_start_file (void)
     = TREE_TARGET_OPTION (target_option_default_node);
 
   const struct processor *default_arch
-    = aarch64_get_arch (default_options->x_explicit_arch);
+    = aarch64_get_arch (default_options->x_selected_arch);
   uint64_t default_isa_flags = default_options->x_aarch64_isa_flags;
   std::string extension
     = aarch64_get_extension_string_for_isa_flags (default_isa_flags,
@@ -27476,9 +27422,6 @@ aarch64_libgcc_floating_mode_supported_p
 
 #undef TARGET_OFFLOAD_OPTIONS
 #define TARGET_OFFLOAD_OPTIONS aarch64_offload_options
-
-#undef TARGET_OPTION_SAVE
-#define TARGET_OPTION_SAVE aarch64_option_save
 
 #undef TARGET_OPTION_RESTORE
 #define TARGET_OPTION_RESTORE aarch64_option_restore

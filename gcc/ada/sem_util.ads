@@ -320,6 +320,16 @@ package Sem_Util is
    --  declaration in the tree before N, and return the entity of that
    --  subtype. Otherwise, simply return T.
 
+   function Build_Default_Subtype_OK (T : Entity_Id) return Boolean;
+   --  When analyzing components or object declarations, it is possible, in
+   --  some cases, to build subtypes for discriminated types. This is
+   --  worthwhile to avoid the backend allocating the maximum possible size for
+   --  objects of the type.
+   --  In particular, when T is limited, the discriminants and therefore the
+   --  size of an object of type T cannot change. Furthermore, if T is definite
+   --  with statically initialized defaulted discriminants, we are able and
+   --  want to build a constrained subtype of the right size.
+
    function Build_Discriminal_Subtype_Of_Component
      (T : Entity_Id) return Node_Id;
    --  Determine whether a record component has a type that depends on
@@ -2667,6 +2677,12 @@ package Sem_Util is
    --  parameter to identify the accessibility level of the function result
    --  "determined by the point of call".
 
+   function Needs_Secondary_Stack (Id : Entity_Id) return Boolean;
+   --  Return true if functions whose result type is Id must return on the
+   --  secondary stack, i.e. allocate the return object on this stack.
+
+   --  WARNING: There is a matching C declaration of this subprogram in fe.h
+
    function Needs_Simple_Initialization
      (Typ         : Entity_Id;
       Consider_IS : Boolean := True) return Boolean;
@@ -3082,12 +3098,6 @@ package Sem_Util is
    --  Set the current SPARK_Mode to Mode and SPARK_Mode_Pragma to Prag. This
    --  routine must be used in tandem with Set_SPARK_Mode.
 
-   function Returns_On_Secondary_Stack (Id : Entity_Id) return Boolean;
-   --  Return true if functions whose result type is Id must return on the
-   --  secondary stack, i.e. allocate the return object on this stack.
-
-   --  WARNING: There is a matching C declaration of this subprogram in fe.h
-
    function Returns_Unconstrained_Type (Subp : Entity_Id) return Boolean;
    --  Return true if Subp is a function that returns an unconstrained type
 
@@ -3452,6 +3462,18 @@ package Sem_Util is
 
    function Within_Scope (E : Entity_Id; S : Entity_Id) return Boolean;
    --  Returns True if entity E is declared within scope S
+
+   procedure Warn_On_Hiding_Entity
+     (N               : Node_Id;
+      Hidden, Visible : Entity_Id;
+      On_Use_Clause   : Boolean);
+   --  Warn on hiding of an entity, either because a new declaration hides
+   --  an entity directly visible or potentially visible through a use_clause
+   --  (On_Use_Clause = False), or because the entity would be potentially
+   --  visible through a use_clause if it was now hidden by a visible
+   --  declaration (On_Use_Clause = True). N is the node on which the warning
+   --  is potentially issued: it is the visible entity in the former case, and
+   --  the use_clause in the latter case.
 
    procedure Wrong_Type (Expr : Node_Id; Expected_Type : Entity_Id);
    --  Output error message for incorrectly typed expression. Expr is the node

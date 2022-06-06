@@ -2560,6 +2560,39 @@ __gnat_install_handler (void)
 #include <errno.h>
 #include "sigtramp.h"
 
+#if defined (__ARMEL__) && !defined (__aarch64__)
+
+/* ARM-QNX case with arm unwinding exceptions */
+#define HAVE_GNAT_ADJUST_CONTEXT_FOR_RAISE
+
+#include <ucontext.h>
+#include <arm/cpu.h>
+#include <stdint.h>
+
+void
+__gnat_adjust_context_for_raise (int signo ATTRIBUTE_UNUSED,
+				 void *sc ATTRIBUTE_UNUSED)
+{
+  /* In case of ARM exceptions, the registers context have the PC pointing
+     to the instruction that raised the signal.  However the unwinder expects
+     the instruction to be in the range [PC+2,PC+3].  */
+  uintptr_t *pc_addr;
+  mcontext_t *mcontext = &((ucontext_t *) sc)->uc_mcontext;
+  pc_addr = (uintptr_t *)&mcontext->cpu.gpr [ARM_REG_PC];
+
+  /* ARM Bump has to be an even number because of odd/even architecture.  */
+  *pc_addr += 2;
+#ifdef __thumb2__
+  /* For thumb, the return address must have the low order bit set, otherwise
+     the unwinder will reset to "arm" mode upon return.  As long as the
+     compilation unit containing the landing pad is compiled with the same
+     mode (arm vs thumb) as the signaling compilation unit, this works.  */
+  if (mcontext->cpu.spsr & ARM_CPSR_T)
+    *pc_addr += 1;
+#endif
+}
+#endif /* ARMEL */
+
 void
 __gnat_map_signal (int sig,
 		   siginfo_t *si ATTRIBUTE_UNUSED,
@@ -2597,6 +2630,13 @@ __gnat_map_signal (int sig,
 static void
 __gnat_error_handler (int sig, siginfo_t *si, void *ucontext)
 {
+#ifdef HAVE_GNAT_ADJUST_CONTEXT_FOR_RAISE
+  /* We need to sometimes to adjust the PC in case of signals so that it
+     doesn't reference the exception that actually raised the signal but the
+     instruction before it.  */
+  __gnat_adjust_context_for_raise (sig, ucontext);
+#endif
+
   __gnat_sigtramp (sig, (void *) si, (void *) ucontext,
 		   (__sigtramphandler_t *)&__gnat_map_signal);
 }

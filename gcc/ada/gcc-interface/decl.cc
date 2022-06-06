@@ -346,10 +346,12 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
       && !present_gnu_tree (gnat_entity)
       && In_Extended_Main_Code_Unit (gnat_entity))
     {
-      /* Ensure that we are in a subprogram mentioned in the Scope chain of
+      /* Unless it's for an anonymous access type, whose scope is irrelevant,
+	 ensure that we are in a subprogram mentioned in the Scope chain of
 	 this entity, our current scope is global, or we encountered a task
 	 or entry (where we can't currently accurately check scoping).  */
-      if (!current_function_decl
+      if (Ekind (gnat_entity) == E_Anonymous_Access_Type
+	  || !current_function_decl
 	  || DECL_ELABORATION_PROC_P (current_function_decl))
 	{
 	  process_type (gnat_entity);
@@ -5807,7 +5809,6 @@ gnat_to_gnu_subprog_type (Entity_Id gnat_subprog, bool definition,
   bool pure_flag = Is_Pure (gnat_subprog);
   bool return_by_direct_ref_p = false;
   bool return_by_invisi_ref_p = false;
-  bool return_unconstrained_p = false;
   bool incomplete_profile_p = false;
   int num;
 
@@ -5822,7 +5823,6 @@ gnat_to_gnu_subprog_type (Entity_Id gnat_subprog, bool definition,
 	   && !TYPE_IS_DUMMY_P (TREE_TYPE (gnu_type)))
     {
       gnu_return_type = TREE_TYPE (gnu_type);
-      return_unconstrained_p = TYPE_RETURN_UNCONSTRAINED_P (gnu_type);
       return_by_direct_ref_p = TYPE_RETURN_BY_DIRECT_REF_P (gnu_type);
       return_by_invisi_ref_p = TREE_ADDRESSABLE (gnu_type);
     }
@@ -5838,36 +5838,14 @@ gnat_to_gnu_subprog_type (Entity_Id gnat_subprog, bool definition,
       else
 	gnu_return_type = gnat_to_gnu_profile_type (gnat_return_type);
 
-      /* If this function returns by reference, make the actual return type
-	 the reference type and make a note of that.  */
-      if (Returns_By_Ref (gnat_subprog))
+      /* If this function returns by reference or on the secondary stack, make
+	 the actual return type the reference type and make a note of that.  */
+      if (Returns_By_Ref (gnat_subprog)
+	  || Needs_Secondary_Stack (gnat_return_type)
+	  || Is_Secondary_Stack_Thunk (gnat_subprog))
 	{
 	  gnu_return_type = build_reference_type (gnu_return_type);
 	  return_by_direct_ref_p = true;
-	}
-
-      /* If the return type is an unconstrained array type, the return value
-	 will be allocated on the secondary stack so the actual return type
-	 is the fat pointer type.  */
-      else if (TREE_CODE (gnu_return_type) == UNCONSTRAINED_ARRAY_TYPE)
-	{
-	  gnu_return_type = TYPE_REFERENCE_TO (gnu_return_type);
-	  return_unconstrained_p = true;
-	}
-
-      /* This is the same unconstrained array case, but for a dummy type.  */
-      else if (TYPE_REFERENCE_TO (gnu_return_type)
-	       && TYPE_IS_FAT_POINTER_P (TYPE_REFERENCE_TO (gnu_return_type)))
-	{
-	  gnu_return_type = TYPE_REFERENCE_TO (gnu_return_type);
-	  return_unconstrained_p = true;
-	}
-
-      /* This is for the other types returned on the secondary stack.  */
-      else if (Returns_On_Secondary_Stack (gnat_return_type))
-	{
-	  gnu_return_type = build_reference_type (gnu_return_type);
-	  return_unconstrained_p = true;
 	}
 
       /* If the Mechanism is By_Reference, ensure this function uses the
@@ -5949,8 +5927,7 @@ gnat_to_gnu_subprog_type (Entity_Id gnat_subprog, bool definition,
 	}
 
       if (kind == E_Function)
-	Set_Mechanism (gnat_subprog, return_unconstrained_p
-				     || return_by_direct_ref_p
+	Set_Mechanism (gnat_subprog, return_by_direct_ref_p
 				     || return_by_invisi_ref_p
 				     ? By_Reference : By_Copy);
     }
@@ -5962,7 +5939,7 @@ gnat_to_gnu_subprog_type (Entity_Id gnat_subprog, bool definition,
      Similarly, if the function returns an unconstrained type, then the
      function will allocate the return value on the secondary stack and
      thus calls to it cannot be CSE'ed, lest the stack be reclaimed.  */
-  if (VOID_TYPE_P (gnu_return_type) || return_unconstrained_p)
+  if (VOID_TYPE_P (gnu_return_type) || return_by_direct_ref_p)
     pure_flag = false;
 
   /* Loop over the parameters and get their associated GCC tree.  While doing
@@ -6250,7 +6227,6 @@ gnat_to_gnu_subprog_type (Entity_Id gnat_subprog, bool definition,
 	gnu_type = make_node (method_p ? METHOD_TYPE : FUNCTION_TYPE);
       TREE_TYPE (gnu_type) = gnu_return_type;
       TYPE_ARG_TYPES (gnu_type) = gnu_param_type_list;
-      TYPE_RETURN_UNCONSTRAINED_P (gnu_type) = return_unconstrained_p;
       TYPE_RETURN_BY_DIRECT_REF_P (gnu_type) = return_by_direct_ref_p;
       TREE_ADDRESSABLE (gnu_type) = return_by_invisi_ref_p;
     }
@@ -6267,7 +6243,6 @@ gnat_to_gnu_subprog_type (Entity_Id gnat_subprog, bool definition,
 		= TYPE_MAIN_VARIANT (gnu_basetype);
 	    }
 	  TYPE_CI_CO_LIST (gnu_type) = gnu_cico_list;
-	  TYPE_RETURN_UNCONSTRAINED_P (gnu_type) = return_unconstrained_p;
 	  TYPE_RETURN_BY_DIRECT_REF_P (gnu_type) = return_by_direct_ref_p;
 	  TREE_ADDRESSABLE (gnu_type) = return_by_invisi_ref_p;
 	  TYPE_CANONICAL (gnu_type) = gnu_type;
@@ -6289,13 +6264,11 @@ gnat_to_gnu_subprog_type (Entity_Id gnat_subprog, bool definition,
 	  /* GNU_TYPE may be shared since GCC hashes types.  Unshare it if it
 	     has a different TYPE_CI_CO_LIST or flags.  */
 	  if (!fntype_same_flags_p (gnu_type, gnu_cico_list,
-				    return_unconstrained_p,
 				    return_by_direct_ref_p,
 				    return_by_invisi_ref_p))
 	    {
 	      gnu_type = copy_type (gnu_type);
 	      TYPE_CI_CO_LIST (gnu_type) = gnu_cico_list;
-	      TYPE_RETURN_UNCONSTRAINED_P (gnu_type) = return_unconstrained_p;
 	      TYPE_RETURN_BY_DIRECT_REF_P (gnu_type) = return_by_direct_ref_p;
 	      TREE_ADDRESSABLE (gnu_type) = return_by_invisi_ref_p;
 	    }
@@ -7797,20 +7770,20 @@ warn_on_field_placement (tree gnu_field, Node_Id gnat_component_list,
 
   const char *msg1
     = in_variant
-      ? "??variant layout may cause performance issues"
-      : "??record layout may cause performance issues";
+      ? "?.q?variant layout may cause performance issues"
+      : "?.q?record layout may cause performance issues";
   const char *msg2
     = Ekind (gnat_field) == E_Discriminant
-      ? "??discriminant & whose length is not multiple of a byte"
+      ? "?.q?discriminant & whose length is not multiple of a byte"
       : field_has_self_size (gnu_field)
-	? "??component & whose length depends on a discriminant"
+	? "?.q?component & whose length depends on a discriminant"
 	: field_has_variable_size (gnu_field)
-	  ? "??component & whose length is not fixed"
-	  : "??component & whose length is not multiple of a byte";
+	  ? "?.q?component & whose length is not fixed"
+	  : "?.q?component & whose length is not multiple of a byte";
   const char *msg3
     = do_reorder
-      ? "??comes too early and was moved down"
-      : "??comes too early and ought to be moved down";
+      ? "?.q?comes too early and was moved down"
+      : "?.q?comes too early and ought to be moved down";
 
   post_error (msg1, gnat_field);
   post_error_ne (msg2, gnat_field, gnat_field);

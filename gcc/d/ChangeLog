@@ -1,3 +1,18 @@
+2022-06-02  David Malcolm  <dmalcolm@redhat.com>
+
+	* d-lang.cc (d_get_sarif_source_language): New.
+	(LANG_HOOKS_GET_SARIF_SOURCE_LANGUAGE): Redefine.
+
+2022-05-31  Jason Merrill  <jason@redhat.com>
+
+	* Make-lang.in (d.tags): Just look at *.cc.
+
+2022-05-31  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/105544
+	* d-lang.cc (d_parse_file): Zero padding past the end of the stdin
+	buffer so the D lexer has a sentinel to stop parsing at.
+
 2022-05-27  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* dmd/MERGE: Merge upstream dmd 4d07f22f2

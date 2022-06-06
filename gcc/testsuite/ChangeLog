@@ -1,3 +1,227 @@
+2022-06-04  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/102399
+	PR c++/69585
+	* g++.dg/ext/attrib65.C: New test.
+	* g++.dg/ext/attrib66.C: New test.
+	* g++.dg/ext/attrib67.C: New test.
+
+2022-06-04  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR middle-end/95126
+	* gcc.target/i386/pr95126-m32-1.c: New test case.
+	* gcc.target/i386/pr95126-m32-2.c: New test case.
+	* gcc.target/i386/pr95126-m32-3.c: New test case.
+	* gcc.target/i386/pr95126-m32-4.c: New test case.
+	* gcc.target/i386/pr95126-m64-1.c: New test case.
+	* gcc.target/i386/pr95126-m64-2.c: New test case.
+	* gcc.target/i386/pr95126-m64-3.c: New test case.
+	* gcc.target/i386/pr95126-m64-4.c: New test case.
+
+2022-06-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/105825
+	* gcc.dg/pr105825.c: New test.
+
+2022-06-03  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp0x/auto56.C: New test.
+
+2022-06-03  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/105756
+	* g++.dg/cpp0x/decltype82.C: New test.
+
+2022-06-03  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105761
+	* g++.dg/cpp1y/auto-fn64.C: New test.
+
+2022-06-03  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/105637
+	* g++.dg/cpp0x/lambda/lambda-this22.C: New test.
+	* g++.dg/template/non-dependent23.C: New test.
+
+2022-06-03  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/gomp/scope-6.f90: Fix dg-final scan-tree-dump.
+
+2022-06-03  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/gomp/scope-5.f90: New test.
+	* gfortran.dg/gomp/scope-6.f90: New test.
+
+2022-06-03  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/100374
+	* g++.dg/cpp2a/concepts-spec2.C: New test.
+	* g++.dg/cpp2a/concepts-template-parm11.C: New test.
+
+2022-06-03  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/105797
+	* g++.dg/cpp2a/concepts-decltype4.C: New test.
+	* g++.dg/cpp2a/concepts-memfun3.C: New test.
+
+2022-06-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/30314
+	PR middle-end/105777
+	* gcc.dg/tree-ssa/pr30314.c: Add noipa attribute to all functions.
+	* gcc.dg/tree-ssa/pr105777.c: New test.
+	* gcc.c-torture/execute/pr30314.c: New test.
+	* gcc.c-torture/execute/pr105777.c: New test.
+
+2022-06-03  Alexandre Oliva  <oliva@adacore.com>
+
+	PR tree-optimization/105665
+	PR tree-optimization/100810
+	* gcc.dg/torture/pr105665.c: New.
+
+2022-06-02  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/105803
+	* g++.dg/template/new13.C: New test.
+
+2022-06-02  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-c++-common/diagnostic-format-sarif-file-1.c: New test.
+	* c-c++-common/diagnostic-format-sarif-file-2.c: New test.
+	* c-c++-common/diagnostic-format-sarif-file-3.c: New test.
+	* c-c++-common/diagnostic-format-sarif-file-4.c: New test.
+	* gcc.dg/analyzer/file-meaning-1.c: New test.
+	* gcc.dg/analyzer/malloc-meaning-1.c: New test.
+	* gcc.dg/analyzer/malloc-sarif-1.c: New test.
+	* gcc.dg/plugin/analyzer_gil_plugin.c
+	(gil_diagnostic::get_meaning_for_state_change): New vfunc impl.
+	* gcc.dg/plugin/diagnostic-test-paths-5.c: New test.
+	* gcc.dg/plugin/plugin.exp (plugin_test_list): Add
+	diagnostic-test-paths-5.c to tests for
+	diagnostic_plugin_test_paths.c.
+	* lib/gcc-dg.exp: Load scansarif.exp.
+	* lib/scansarif.exp: New test.
+
+2022-06-02  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-c++-common/diagnostic-format-json-file-1.c: New test.
+	* c-c++-common/diagnostic-format-json-stderr-1.c: New test.
+
+2022-06-02  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105795
+	* g++.dg/cpp1z/constexpr-aggr-base1.C: New test.
+
+2022-06-02  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR target/105791
+	* gcc.target/i386/pr105791.c: New test case.
+
+2022-06-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/30314
+	* gcc.dg/tree-ssa/pr30314.c: Add tests with swapped arguments.
+
+2022-06-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/105778
+	* gcc.target/i386/pr105778.c: New test.
+
+2022-06-02  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/101668
+	* gcc.target/i386/pr101668.c: New testcase.
+	* gcc.dg/vect/bb-slp-pr101668.c: Likewise.
+
+2022-06-02  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/105802
+	* g++.dg/opt/pr105802.C: New testcase.
+
+2022-06-01  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR rtl-optimization/105638
+	* g++.target/i386/pr105638.C: New test.
+
+2022-06-01  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105734
+	* g++.dg/cpp0x/auto57.C: New test.
+
+2022-06-01  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105779
+	* g++.dg/cpp1y/auto-fn63.C: New test.
+
+2022-06-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/30314
+	* gcc.dg/tree-ssa/pr30314.c: New test.
+
+2022-06-01  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/105786
+	* gcc.dg/torture/pr105786.c: New testcase.
+
+2022-06-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/105770
+	* gcc.dg/pr105770.c: New test.
+
+2022-06-01  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/105763
+	* gcc.dg/pr105763.c: New testcase.
+
+2022-05-31  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/105758
+	* g++.dg/template/non-dependent24.C: New test.
+
+2022-05-31  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/gomp/scope-5.c: New test.
+	* c-c++-common/gomp/scope-6.c: New test.
+	* g++.dg/gomp/attrs-1.C (bar): Add firstprivate and allocate clauses
+	to scope construct.
+	* g++.dg/gomp/attrs-2.C (bar): Likewise.
+
+2022-05-30  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/91300
+	* gfortran.dg/allocate_alloc_opt_15.f90: New test.
+
+2022-05-30  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR rtl-optimization/101617
+	* gcc.target/i386/pr101617.c: New test case.
+
+2022-05-30  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR target/70321
+	* gcc.target/i386/pr70321.c: New test case.
+	* gcc.target/i386/sse4_1-stv-1.c: New test case.
+
+2022-05-30  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/pr105624.c: New test.
+
+2022-05-30  Vineet Gupta  <vineetg@rivosinc.com>
+
+	* gcc.target/riscv/fmax.c: Add dg-require-effective-target hard_float.
+	* gcc.target/riscv/fmaxf.c: Ditto.
+	* gcc.target/riscv/fmin.c: Ditto.
+	* gcc.target/riscv/fminf.c: Ditto.
+	* gcc.target/riscv/smax-ieee.c: Ditto.
+	* gcc.target/riscv/smax.c: Ditto.
+	* gcc.target/riscv/smaxf-ieee.c: Ditto.
+	* gcc.target/riscv/smaxf.c: Ditto.
+	* gcc.target/riscv/smin-ieee.c: Ditto.
+	* gcc.target/riscv/smin.c: Ditto.
+	* gcc.target/riscv/sminf-ieee.c: Ditto.
+	* gcc.target/riscv/sminf.c: Ditto.
+	* gcc.target/riscv/pr105666.c: Ditto.
+
 2022-05-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR preprocessor/105732

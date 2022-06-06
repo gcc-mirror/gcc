@@ -38,29 +38,29 @@ public:
 		       const bitmap_head *imports = NULL);
   void compute_ranges (edge e);
   void compute_imports (bitmap imports, basic_block exit);
-  bool range_of_expr (irange &r, tree name, gimple * = NULL) override;
-  bool range_of_stmt (irange &r, gimple *, tree name = NULL) override;
+  bool range_of_expr (vrange &r, tree name, gimple * = NULL) override;
+  bool range_of_stmt (vrange &r, gimple *, tree name = NULL) override;
   bool unreachable_path_p ();
   void dump (FILE *) override;
   void debug ();
 
 private:
-  bool internal_range_of_expr (irange &r, tree name, gimple *);
+  bool internal_range_of_expr (vrange &r, tree name, gimple *);
   bool defined_outside_path (tree name);
-  void range_on_path_entry (irange &r, tree name);
+  void range_on_path_entry (vrange &r, tree name);
   path_oracle *get_path_oracle () { return (path_oracle *)m_oracle; }
 
   // Cache manipulation.
-  void set_cache (const irange &r, tree name);
-  bool get_cache (irange &r, tree name);
+  void set_cache (const vrange &r, tree name);
+  bool get_cache (vrange &r, tree name);
   void clear_cache (tree name);
 
   // Methods to compute ranges for the given path.
-  bool range_defined_in_block (irange &, tree name, basic_block bb);
+  bool range_defined_in_block (vrange &, tree name, basic_block bb);
   void compute_ranges_in_block (basic_block bb);
   void compute_ranges_in_phis (basic_block bb);
   void adjust_for_non_null_uses (basic_block bb);
-  void ssa_range_in_phi (irange &r, gphi *phi);
+  void ssa_range_in_phi (vrange &r, gphi *phi);
   void compute_outgoing_relations (basic_block bb, basic_block next);
   void compute_phi_relations (basic_block bb, basic_block prev);
   void maybe_register_phi_relation (gphi *, edge e);

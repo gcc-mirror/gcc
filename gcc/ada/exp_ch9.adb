@@ -9303,171 +9303,167 @@ package body Exp_Ch9 is
 
       --  Add private field components
 
-      if Present (Private_Declarations (Pdef)) then
-         Priv := First (Private_Declarations (Pdef));
-         while Present (Priv) loop
-            if Nkind (Priv) = N_Component_Declaration then
-               if not Static_Component_Size (Defining_Identifier (Priv)) then
+      Priv := First (Private_Declarations (Pdef));
+      while Present (Priv) loop
+         if Nkind (Priv) = N_Component_Declaration then
+            if not Static_Component_Size (Defining_Identifier (Priv)) then
 
-                  --  When compiling for a restricted profile, the private
-                  --  components must have a static size. If not, this is an
-                  --  error for a single protected declaration, and rates a
-                  --  warning on a protected type declaration.
+               --  When compiling for a restricted profile, the private
+               --  components must have a static size. If not, this is an error
+               --  for a single protected declaration, and rates a warning on a
+               --  protected type declaration.
 
-                  if not Comes_From_Source (Prot_Typ) then
+               if not Comes_From_Source (Prot_Typ) then
 
-                     --  It's ok to be checking this restriction at expansion
-                     --  time, because this is only for the restricted profile,
-                     --  which is not subject to strict RM conformance, so it
-                     --  is OK to miss this check in -gnatc mode.
+                  --  It's ok to be checking this restriction at expansion
+                  --  time, because this is only for the restricted profile,
+                  --  which is not subject to strict RM conformance, so it
+                  --  is OK to miss this check in -gnatc mode.
 
-                     Check_Restriction (No_Implicit_Heap_Allocations, Priv);
-                     Check_Restriction
-                       (No_Implicit_Protected_Object_Allocations, Priv);
+                  Check_Restriction (No_Implicit_Heap_Allocations, Priv);
+                  Check_Restriction
+                    (No_Implicit_Protected_Object_Allocations, Priv);
 
-                  elsif Restriction_Active (No_Implicit_Heap_Allocations) then
-                     if not Discriminated_Size (Defining_Identifier (Priv))
-                     then
-                        --  Any object of the type will be non-static
-
-                        Error_Msg_N ("component has non-static size??", Priv);
-                        Error_Msg_NE
-                          ("\creation of protected object of type& will "
-                           & "violate restriction "
-                           & "No_Implicit_Heap_Allocations??", Priv, Prot_Typ);
-                     else
-                        --  Object will be non-static if discriminants are
-
-                        Error_Msg_NE
-                          ("creation of protected object of type& with "
-                           & "non-static discriminants will violate "
-                           & "restriction No_Implicit_Heap_Allocations??",
-                           Priv, Prot_Typ);
-                     end if;
-
-                  --  Likewise for No_Implicit_Protected_Object_Allocations
-
-                  elsif Restriction_Active
-                    (No_Implicit_Protected_Object_Allocations)
+               elsif Restriction_Active (No_Implicit_Heap_Allocations) then
+                  if not Discriminated_Size (Defining_Identifier (Priv))
                   then
-                     if not Discriminated_Size (Defining_Identifier (Priv))
-                     then
-                        --  Any object of the type will be non-static
+                     --  Any object of the type will be non-static
 
-                        Error_Msg_N ("component has non-static size??", Priv);
-                        Error_Msg_NE
-                          ("\creation of protected object of type& will "
-                           & "violate restriction "
-                           & "No_Implicit_Protected_Object_Allocations??",
-                           Priv, Prot_Typ);
-                     else
-                        --  Object will be non-static if discriminants are
-
-                        Error_Msg_NE
-                          ("creation of protected object of type& with "
-                           & "non-static discriminants will violate "
-                           & "restriction "
-                           & "No_Implicit_Protected_Object_Allocations??",
-                           Priv, Prot_Typ);
-                     end if;
-                  end if;
-               end if;
-
-               --  The component definition consists of a subtype indication,
-               --  or (in Ada 2005) an access definition. Make a copy of the
-               --  proper definition.
-
-               declare
-                  Old_Comp : constant Node_Id   := Component_Definition (Priv);
-                  Oent     : constant Entity_Id := Defining_Identifier (Priv);
-                  Nent     : constant Entity_Id :=
-                               Make_Defining_Identifier (Sloc (Oent),
-                                 Chars => Chars (Oent));
-                  New_Comp : Node_Id;
-
-               begin
-                  if Present (Subtype_Indication (Old_Comp)) then
-                     New_Comp :=
-                       Make_Component_Definition (Sloc (Oent),
-                         Aliased_Present    => False,
-                         Subtype_Indication =>
-                           New_Copy_Tree
-                             (Subtype_Indication (Old_Comp), Discr_Map));
+                     Error_Msg_N ("component has non-static size??", Priv);
+                     Error_Msg_NE
+                       ("\creation of protected object of type& will "
+                        & "violate restriction "
+                        & "No_Implicit_Heap_Allocations??", Priv, Prot_Typ);
                   else
-                     New_Comp :=
-                       Make_Component_Definition (Sloc (Oent),
-                         Aliased_Present    => False,
-                         Access_Definition  =>
-                           New_Copy_Tree
-                             (Access_Definition (Old_Comp), Discr_Map));
+                     --  Object will be non-static if discriminants are
 
-                      --  A self-reference in the private part becomes a
-                      --  self-reference to the corresponding record.
-
-                     if Entity (Subtype_Mark (Access_Definition (New_Comp)))
-                       = Prot_Typ
-                     then
-                        Replace_Access_Definition (New_Comp);
-                     end if;
+                     Error_Msg_NE
+                       ("creation of protected object of type& with "
+                        & "non-static discriminants will violate "
+                        & "restriction No_Implicit_Heap_Allocations??",
+                        Priv, Prot_Typ);
                   end if;
 
-                  New_Priv :=
-                    Make_Component_Declaration (Loc,
-                      Defining_Identifier  => Nent,
-                      Component_Definition => New_Comp,
-                      Expression           => Expression (Priv));
+               --  Likewise for No_Implicit_Protected_Object_Allocations
 
-                  Set_Has_Per_Object_Constraint (Nent,
-                    Has_Per_Object_Constraint (Oent));
-
-                  Append_To (Cdecls, New_Priv);
-               end;
-
-            elsif Nkind (Priv) = N_Subprogram_Declaration then
-
-               --  Make the unprotected version of the subprogram available
-               --  for expansion of intra object calls. There is need for
-               --  a protected version only if the subprogram is an interrupt
-               --  handler, otherwise  this operation can only be called from
-               --  within the body.
-
-               Sub :=
-                 Make_Subprogram_Declaration (Loc,
-                   Specification =>
-                     Build_Protected_Sub_Specification
-                       (Priv, Prot_Typ, Unprotected_Mode));
-
-               Insert_After (Current_Node, Sub);
-               Analyze (Sub);
-
-               Set_Protected_Body_Subprogram
-                 (Defining_Unit_Name (Specification (Priv)),
-                  Defining_Unit_Name (Specification (Sub)));
-               Check_Inlining (Defining_Unit_Name (Specification (Priv)));
-               Current_Node := Sub;
-
-               Sub :=
-                 Make_Subprogram_Declaration (Loc,
-                   Specification =>
-                     Build_Protected_Sub_Specification
-                       (Priv, Prot_Typ, Protected_Mode));
-
-               Insert_After (Current_Node, Sub);
-               Analyze (Sub);
-               Current_Node := Sub;
-
-               if Is_Interrupt_Handler
-                 (Defining_Unit_Name (Specification (Priv)))
+               elsif Restriction_Active
+                 (No_Implicit_Protected_Object_Allocations)
                then
-                  if not Restricted_Profile then
-                     Register_Handler;
+                  if not Discriminated_Size (Defining_Identifier (Priv)) then
+                     --  Any object of the type will be non-static
+
+                     Error_Msg_N ("component has non-static size??", Priv);
+                     Error_Msg_NE
+                       ("\creation of protected object of type& will violate "
+                        & "restriction "
+                        & "No_Implicit_Protected_Object_Allocations??",
+                        Priv, Prot_Typ);
+                  else
+                     --  Object will be non-static if discriminants are
+
+                     Error_Msg_NE
+                       ("creation of protected object of type& with "
+                        & "non-static discriminants will violate restriction "
+                        & "No_Implicit_Protected_Object_Allocations??",
+                        Priv, Prot_Typ);
                   end if;
                end if;
             end if;
 
-            Next (Priv);
-         end loop;
-      end if;
+            --  The component definition consists of a subtype indication, or
+            --  (in Ada 2005) an access definition. Make a copy of the proper
+            --  definition.
+
+            declare
+               Old_Comp : constant Node_Id   := Component_Definition (Priv);
+               Oent     : constant Entity_Id := Defining_Identifier (Priv);
+               Nent     : constant Entity_Id :=
+                            Make_Defining_Identifier (Sloc (Oent),
+                              Chars => Chars (Oent));
+               New_Comp : Node_Id;
+
+            begin
+               if Present (Subtype_Indication (Old_Comp)) then
+                  New_Comp :=
+                    Make_Component_Definition (Sloc (Oent),
+                      Aliased_Present    => False,
+                      Subtype_Indication =>
+                        New_Copy_Tree
+                          (Subtype_Indication (Old_Comp), Discr_Map));
+               else
+                  New_Comp :=
+                    Make_Component_Definition (Sloc (Oent),
+                      Aliased_Present   => False,
+                      Access_Definition =>
+                        New_Copy_Tree
+                          (Access_Definition (Old_Comp), Discr_Map));
+
+                   --  A self-reference in the private part becomes a
+                   --  self-reference to the corresponding record.
+
+                  if Entity (Subtype_Mark (Access_Definition (New_Comp)))
+                    = Prot_Typ
+                  then
+                     Replace_Access_Definition (New_Comp);
+                  end if;
+               end if;
+
+               New_Priv :=
+                 Make_Component_Declaration (Loc,
+                   Defining_Identifier  => Nent,
+                   Component_Definition => New_Comp,
+                   Expression           => Expression (Priv));
+
+               Set_Has_Per_Object_Constraint (Nent,
+                 Has_Per_Object_Constraint (Oent));
+
+               Append_To (Cdecls, New_Priv);
+            end;
+
+         elsif Nkind (Priv) = N_Subprogram_Declaration then
+
+            --  Make the unprotected version of the subprogram available for
+            --  expansion of intra object calls. There is need for a protected
+            --  version only if the subprogram is an interrupt handler,
+            --  otherwise this operation can only be called from within the
+            --  body.
+
+            Sub :=
+              Make_Subprogram_Declaration (Loc,
+                Specification =>
+                  Build_Protected_Sub_Specification
+                    (Priv, Prot_Typ, Unprotected_Mode));
+
+            Insert_After (Current_Node, Sub);
+            Analyze (Sub);
+
+            Set_Protected_Body_Subprogram
+              (Defining_Unit_Name (Specification (Priv)),
+               Defining_Unit_Name (Specification (Sub)));
+            Check_Inlining (Defining_Unit_Name (Specification (Priv)));
+            Current_Node := Sub;
+
+            Sub :=
+              Make_Subprogram_Declaration (Loc,
+                Specification =>
+                  Build_Protected_Sub_Specification
+                    (Priv, Prot_Typ, Protected_Mode));
+
+            Insert_After (Current_Node, Sub);
+            Analyze (Sub);
+            Current_Node := Sub;
+
+            if Is_Interrupt_Handler
+              (Defining_Unit_Name (Specification (Priv)))
+            then
+               if not Restricted_Profile then
+                  Register_Handler;
+               end if;
+            end if;
+         end if;
+
+         Next (Priv);
+      end loop;
 
       --  Except for the lock-free implementation, append the _Object field
       --  with the right type to the component list. We need to compute the
@@ -9708,16 +9704,14 @@ package body Exp_Ch9 is
       --  If there are some private entry declarations, expand it as if they
       --  were visible entries.
 
-      if Present (Private_Declarations (Pdef)) then
-         Comp := First (Private_Declarations (Pdef));
-         while Present (Comp) loop
-            if Nkind (Comp) = N_Entry_Declaration then
-               Expand_Entry_Declaration (Comp);
-            end if;
+      Comp := First (Private_Declarations (Pdef));
+      while Present (Comp) loop
+         if Nkind (Comp) = N_Entry_Declaration then
+            Expand_Entry_Declaration (Comp);
+         end if;
 
-            Next (Comp);
-         end loop;
-      end if;
+         Next (Comp);
+      end loop;
 
       --  Create the declaration of an array object which contains the values
       --  of aspect/pragma Max_Queue_Length for all entries of the protected

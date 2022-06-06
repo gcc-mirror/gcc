@@ -837,6 +837,8 @@ set_c_expr_source_range (c_expr *expr,
 /* In c-fold.cc */
 extern vec<tree> incomplete_record_decls;
 
+extern const char *c_get_sarif_source_language (const char *filename);
+
 #if CHECKING_P
 namespace selftest {
   extern void run_c_tests (void);

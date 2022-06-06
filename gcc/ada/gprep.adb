@@ -37,6 +37,7 @@ with Snames;
 with Stringt;  use Stringt;
 with Switch;   use Switch;
 with Types;    use Types;
+with Uintp;
 
 with Ada.Command_Line; use Ada.Command_Line;
 with Ada.Text_IO;      use Ada.Text_IO;
@@ -169,6 +170,7 @@ package body GPrep is
       --  Do some initializations (order is important here)
 
       Csets.Initialize;
+      Uintp.Initialize;
       Snames.Initialize;
       Stringt.Initialize;
       Prep.Initialize;

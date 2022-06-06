@@ -51,6 +51,7 @@ with Sinfo.Utils;    use Sinfo.Utils;
 with Snames;         use Snames;
 with Stand;          use Stand;
 with Stylesw;        use Stylesw;
+with System.OS_Lib;
 with Uname;          use Uname;
 
 package body Errout is
@@ -2082,6 +2083,7 @@ package body Errout is
       --  Return True if E is a continuation message.
 
       procedure Write_JSON_Escaped_String (Str : String_Ptr);
+      procedure Write_JSON_Escaped_String (Str : String);
       --  Write each character of Str, taking care of preceding each quote and
       --  backslash with a backslash. Note that this escaping differs from what
       --  GCC does.
@@ -2095,11 +2097,14 @@ package body Errout is
       --  Write Sptr as a JSON location, an object containing a file attribute,
       --  a line number and a column number.
 
-      procedure Write_JSON_Span (Span : Source_Span);
-      --  Write Span as a JSON span, an object containing a "caret" attribute
-      --  whose value is the JSON location of Span.Ptr. If Span.First and
-      --  Span.Last are different from Span.Ptr, they will be printed as JSON
+      procedure Write_JSON_Span (Error : Error_Msg_Object);
+      --  Write Error as a JSON span, an object containing a "caret" attribute
+      --  whose value is the JSON location of Error.Sptr.Ptr. If Sptr.First and
+      --  Sptr.Last are different from Sptr.Ptr, they will be printed as JSON
       --  locations under the names "start" and "finish".
+      --  When Include_Subprogram_In_Messages is true (-gnatdJ) an additional,
+      --  non-standard, attribute named "subprogram" will be added, allowing
+      --  precisely identifying the subprogram surrounding the span.
 
       -----------------------
       --  Is_Continuation  --
@@ -2114,9 +2119,9 @@ package body Errout is
       -- Write_JSON_Escaped_String --
       -------------------------------
 
-      procedure Write_JSON_Escaped_String (Str : String_Ptr) is
+      procedure Write_JSON_Escaped_String (Str : String) is
       begin
-         for C of Str.all loop
+         for C of Str loop
             if C = '"' or else C = '\' then
                Write_Char ('\');
             end if;
@@ -2125,14 +2130,30 @@ package body Errout is
          end loop;
       end Write_JSON_Escaped_String;
 
+      -------------------------------
+      -- Write_JSON_Escaped_String --
+      -------------------------------
+
+      procedure Write_JSON_Escaped_String (Str : String_Ptr) is
+      begin
+         Write_JSON_Escaped_String (Str.all);
+      end Write_JSON_Escaped_String;
+
       -------------------------
       -- Write_JSON_Location --
       -------------------------
 
       procedure Write_JSON_Location (Sptr : Source_Ptr) is
+         Name : constant File_Name_Type :=
+           Full_Ref_Name (Get_Source_File_Index (Sptr));
       begin
          Write_Str ("{""file"":""");
-         Write_Name (Full_Ref_Name (Get_Source_File_Index (Sptr)));
+         if Full_Path_Name_For_Brief_Errors then
+            Write_JSON_Escaped_String
+              (System.OS_Lib.Normalize_Pathname (Get_Name_String (Name)));
+         else
+            Write_Name (Name);
+         end if;
          Write_Str (""",""line"":");
          Write_Int (Pos (Get_Physical_Line_Number (Sptr)));
          Write_Str (", ""column"":");
@@ -2144,7 +2165,8 @@ package body Errout is
       -- Write_JSON_Span --
       ---------------------
 
-      procedure Write_JSON_Span (Span : Source_Span) is
+      procedure Write_JSON_Span (Error : Error_Msg_Object) is
+         Span : constant Source_Span := Error.Sptr;
       begin
          Write_Str ("{""caret"":");
          Write_JSON_Location (Span.Ptr);
@@ -2157,6 +2179,11 @@ package body Errout is
          if Span.Ptr /= Span.Last then
             Write_Str (",""finish"":");
             Write_JSON_Location (Span.Last);
+         end if;
+
+         if Include_Subprogram_In_Messages then
+            Write_Str
+              (",""subprogram"":""" & Subprogram_Name_Ptr (Error.Node) & """");
          end if;
 
          Write_Str ("}");
@@ -2192,7 +2219,7 @@ package body Errout is
       --  Print message location
 
       Write_Str (",""locations"":[");
-      Write_JSON_Span (Errors.Table (E).Sptr);
+      Write_JSON_Span (Errors.Table (E));
 
       if Errors.Table (E).Optr /= Errors.Table (E).Sptr.Ptr then
          Write_Str (",{""caret"":");

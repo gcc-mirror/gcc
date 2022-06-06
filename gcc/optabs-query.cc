@@ -426,7 +426,7 @@ can_vec_perm_const_p (machine_mode mode, machine_mode op_mode,
     return false;
 
   /* It's probably cheaper to test for the variable case first.  */
-  if (allow_variable_p && selector_fits_mode_p (mode, sel))
+  if (op_mode == mode && allow_variable_p && selector_fits_mode_p (mode, sel))
     {
       if (direct_optab_handler (vec_perm_optab, mode) != CODE_FOR_nothing)
 	return true;

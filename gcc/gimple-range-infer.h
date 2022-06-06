@@ -35,15 +35,15 @@ public:
   inline unsigned num () const { return num_args; }
   inline tree name (unsigned index) const
     { gcc_checking_assert (index < num_args); return m_names[index]; }
-  inline const irange& range (unsigned index) const
+  inline const vrange& range (unsigned index) const
     { gcc_checking_assert (index < num_args); return m_ranges[index]; }
-  void add_range (tree name, irange &range);
+  void add_range (tree name, vrange &range);
   void add_nonzero (tree name);
 private:
   unsigned num_args;
   static const int size_limit = 10;
   tree m_names[size_limit];
-  int_range<3> m_ranges[size_limit];
+  Value_Range m_ranges[size_limit];
   inline void bump_index () { if (num_args < size_limit - 1) num_args++; }
 };
 
@@ -58,10 +58,10 @@ class infer_range_manager
 public:
   infer_range_manager (bool do_search);
   ~infer_range_manager ();
-  void add_range (tree name, basic_block bb, const irange &r);
+  void add_range (tree name, basic_block bb, const vrange &r);
   void add_nonzero (tree name, basic_block bb);
   bool has_range_p (tree name, basic_block bb);
-  bool maybe_adjust_range (irange &r, tree name, basic_block bb);
+  bool maybe_adjust_range (vrange &r, tree name, basic_block bb);
 private:
   class exit_range_head
   {
@@ -73,12 +73,12 @@ private:
   };
   void register_all_uses (tree name);
   vec <exit_range_head> m_on_exit;
-  const irange &get_nonzero (tree name);
-  vec <irange *> m_nonzero;
+  const vrange &get_nonzero (tree name);
+  vec <vrange *> m_nonzero;
   bitmap m_seen;
   bitmap_obstack m_bitmaps;
   struct obstack m_list_obstack;
-  irange_allocator m_range_allocator;
+  vrange_allocator m_range_allocator;
 };
 
 #endif // GCC_GIMPLE_RANGE_SIDE_H

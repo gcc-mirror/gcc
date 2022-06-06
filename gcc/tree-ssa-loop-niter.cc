@@ -221,7 +221,7 @@ refine_value_range_using_guard (tree type, tree var,
   get_type_static_bounds (type, mint, maxt);
   mpz_init (minc1);
   mpz_init (maxc1);
-  value_range r;
+  Value_Range r (TREE_TYPE (varc1));
   /* Setup range information for varc1.  */
   if (integer_zerop (varc1))
     {
@@ -374,7 +374,7 @@ determine_value_range (class loop *loop, tree type, tree var, mpz_t off,
       gphi_iterator gsi;
 
       /* Either for VAR itself...  */
-      value_range var_range;
+      Value_Range var_range (TREE_TYPE (var));
       get_range_query (cfun)->range_of_expr (var_range, var);
       rtype = var_range.kind ();
       if (!var_range.undefined_p ())
@@ -385,10 +385,10 @@ determine_value_range (class loop *loop, tree type, tree var, mpz_t off,
 
       /* Or for PHI results in loop->header where VAR is used as
 	 PHI argument from the loop preheader edge.  */
+      Value_Range phi_range (TREE_TYPE (var));
       for (gsi = gsi_start_phis (loop->header); !gsi_end_p (gsi); gsi_next (&gsi))
 	{
 	  gphi *phi = gsi.phi ();
-	  value_range phi_range;
 	  if (PHI_ARG_DEF_FROM_EDGE (phi, e) == var
 	      && get_range_query (cfun)->range_of_expr (phi_range,
 						    gimple_phi_result (phi))
@@ -410,7 +410,7 @@ determine_value_range (class loop *loop, tree type, tree var, mpz_t off,
 		     involved.  */
 		  if (wi::gt_p (minv, maxv, sgn))
 		    {
-		      value_range vr;
+		      Value_Range vr (TREE_TYPE (var));
 		      get_range_query (cfun)->range_of_expr (vr, var);
 		      rtype = vr.kind ();
 		      if (!vr.undefined_p ())
@@ -3650,7 +3650,7 @@ record_nonwrapping_iv (class loop *loop, tree base, tree step, gimple *stmt,
   if (tree_int_cst_sign_bit (step))
     {
       wide_int max;
-      value_range base_range;
+      Value_Range base_range (TREE_TYPE (orig_base));
       if (get_range_query (cfun)->range_of_expr (base_range, orig_base)
 	  && !base_range.undefined_p ())
 	max = base_range.upper_bound ();
@@ -3672,7 +3672,7 @@ record_nonwrapping_iv (class loop *loop, tree base, tree step, gimple *stmt,
   else
     {
       wide_int min;
-      value_range base_range;
+      Value_Range base_range (TREE_TYPE (orig_base));
       if (get_range_query (cfun)->range_of_expr (base_range, orig_base)
 	  && !base_range.undefined_p ())
 	min = base_range.lower_bound ();
@@ -3947,7 +3947,7 @@ infer_loop_bounds_from_signedness (class loop *loop, gimple *stmt)
 
   low = lower_bound_in_type (type, type);
   high = upper_bound_in_type (type, type);
-  value_range r;
+  Value_Range r (TREE_TYPE (def));
   get_range_query (cfun)->range_of_expr (r, def);
   if (r.kind () == VR_RANGE)
     {
@@ -4997,7 +4997,7 @@ scev_var_range_cant_overflow (tree var, tree step, class loop *loop)
   if (!def_bb || !dominated_by_p (CDI_DOMINATORS, loop->latch, def_bb))
     return false;
 
-  value_range r;
+  Value_Range r (TREE_TYPE (var));
   get_range_query (cfun)->range_of_expr (r, var);
   if (r.kind () != VR_RANGE)
     return false;

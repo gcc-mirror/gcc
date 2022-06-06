@@ -163,6 +163,17 @@ public:
 				     change.m_expr);
     return label_text ();
   }
+
+  diagnostic_event::meaning
+  get_meaning_for_state_change (const evdesc::state_change &change)
+    const final override
+  {
+    if (change.m_new_state == m_sm.m_tainted)
+      return diagnostic_event::meaning (diagnostic_event::VERB_acquire,
+					diagnostic_event::NOUN_taint);
+    return diagnostic_event::meaning ();
+  }
+
 protected:
   const taint_state_machine &m_sm;
   tree m_arg;

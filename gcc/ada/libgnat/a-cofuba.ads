@@ -34,6 +34,10 @@
 
 pragma Ada_2012;
 
+--  To allow reference counting on the base container
+
+private with Ada.Finalization;
+
 private generic
    type Index_Type is (<>);
    --  To avoid Constraint_Error being raised at run time, Index_Type'Base
@@ -98,33 +102,97 @@ package Ada.Containers.Functional_Base with SPARK_Mode => Off is
 
 private
 
+   --  Theoretically, each operation on a functional container implies the
+   --  creation of a new container i.e. the copy of the array itself and all
+   --  the elements in it. In the implementation, most of these copies are
+   --  avoided by sharing between the containers.
+   --
+   --  A container stores its last used index. So, when adding an
+   --  element at the end of the container, the exact same array can be reused.
+   --  As a functionnal container cannot be modifed once created, there is no
+   --  risk of unwanted modifications.
+   --
+   --                 _1_2_3_
+   --  S             :    end       => [1, 2, 3]
+   --                      |
+   --                 |1|2|3|4|.|.|
+   --                        |
+   --  Add (S, 4, 4) :      end     => [1, 2, 3, 4]
+   --
+   --  The elements are also shared between containers as much as possible. For
+   --  example, when something is added in the middle, the array is changed but
+   --  the elementes are reused.
+   --
+   --                  _1_2_3_4_
+   --  S             : |1|2|3|4|    => [1, 2, 3, 4]
+   --                   |  \ \ \
+   --  Add (S, 2, 5) : |1|5|2|3|4|  => [1, 5, 2, 3, 4]
+   --
+   --  To make this sharing possible, both the elements and the arrays are
+   --  stored inside dynamically allocated access types which shall be
+   --  deallocated when they are no longer used. The memory is managed using
+   --  reference counting both at the array and at the element level.
+
    subtype Positive_Count_Type is Count_Type range 1 .. Count_Type'Last;
+
+   type Reference_Count_Type is new Natural;
 
    type Element_Access is access all Element_Type;
 
+   type Refcounted_Element is record
+      Reference_Count : Reference_Count_Type;
+      E_Access        : Element_Access;
+   end record;
+
+   type Refcounted_Element_Access is access Refcounted_Element;
+
+   type Controlled_Element_Access is new Ada.Finalization.Controlled
+   with record
+      Ref : Refcounted_Element_Access := null;
+   end record;
+
+   function Element_Init (E : Element_Type) return Controlled_Element_Access;
+   --  Use to initialize a refcounted element
+
    type Element_Array is
-     array (Positive_Count_Type range <>) of Element_Access;
+     array (Positive_Count_Type range <>) of Controlled_Element_Access;
 
    type Element_Array_Access_Base is access Element_Array;
 
-   subtype Element_Array_Access is not null Element_Array_Access_Base;
-
-   Empty_Element_Array_Access : constant Element_Array_Access :=
-     new Element_Array'(1 .. 0 => null);
+   subtype Element_Array_Access is Element_Array_Access_Base;
 
    type Array_Base is record
-     Max_Length : Count_Type;
-     Elements   : Element_Array_Access;
+     Reference_Count : Reference_Count_Type;
+     Max_Length      : Count_Type;
+     Elements        : Element_Array_Access;
    end record;
 
-   type Array_Base_Access is not null access Array_Base;
+   type Array_Base_Access is access Array_Base;
 
-   function Content_Init (L : Count_Type := 0) return Array_Base_Access;
+   type Array_Base_Controlled_Access is new Ada.Finalization.Controlled
+   with record
+      Base : Array_Base_Access;
+   end record;
+
+   overriding procedure Adjust
+     (Controlled_Base : in out Array_Base_Controlled_Access);
+
+   overriding procedure Finalize
+     (Controlled_Base : in out Array_Base_Controlled_Access);
+
+   overriding procedure Adjust
+     (Ctrl_E : in out Controlled_Element_Access);
+
+   overriding procedure Finalize
+     (Ctrl_E : in out Controlled_Element_Access);
+
+   function Content_Init (L : Count_Type := 0)
+                          return Array_Base_Controlled_Access;
    --  Used to initialize the content of an array base with length L
 
    type Container is record
-      Length : Count_Type := 0;
-      Base   : Array_Base_Access := Content_Init;
+      Length          : Count_Type := 0;
+      Controlled_Base : Array_Base_Controlled_Access := Content_Init;
    end record;
 
 end Ada.Containers.Functional_Base;

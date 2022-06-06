@@ -7130,7 +7130,8 @@ gfc_trans_allocate (gfc_code * code)
   if (code->expr1 && code->expr2)
     {
       const char *msg = "Attempt to allocate an allocated object";
-      tree slen, dlen, errmsg_str;
+      const char *oommsg = "Insufficient virtual memory";
+      tree slen, dlen, errmsg_str, oom_str, oom_loc;
       stmtblock_t errmsg_block;
 
       gfc_init_block (&errmsg_block);
@@ -7151,8 +7152,34 @@ gfc_trans_allocate (gfc_code * code)
 			     gfc_default_character_kind);
       dlen = gfc_finish_block (&errmsg_block);
 
-      tmp = fold_build2_loc (input_location, NE_EXPR, logical_type_node,
-			     stat, build_int_cst (TREE_TYPE (stat), 0));
+      tmp = fold_build2_loc (input_location, EQ_EXPR, logical_type_node,
+			     stat, build_int_cst (TREE_TYPE (stat),
+						  LIBERROR_ALLOCATION));
+
+      tmp = build3_v (COND_EXPR, tmp,
+		      dlen, build_empty_stmt (input_location));
+
+      gfc_add_expr_to_block (&block, tmp);
+
+      oom_str = gfc_create_var (pchar_type_node, "OOMMSG");
+      oom_loc = gfc_build_localized_cstring_const (oommsg);
+      gfc_add_modify (&errmsg_block, oom_str,
+		      gfc_build_addr_expr (pchar_type_node, oom_loc));
+
+      slen = build_int_cst (gfc_charlen_type_node, strlen (oommsg));
+      dlen = gfc_get_expr_charlen (code->expr2);
+      slen = fold_build2_loc (input_location, MIN_EXPR,
+			      TREE_TYPE (slen), dlen, slen);
+
+      gfc_trans_string_copy (&errmsg_block, dlen, errmsg,
+			     code->expr2->ts.kind,
+			     slen, oom_str,
+			     gfc_default_character_kind);
+      dlen = gfc_finish_block (&errmsg_block);
+
+      tmp = fold_build2_loc (input_location, EQ_EXPR, logical_type_node,
+			     stat, build_int_cst (TREE_TYPE (stat),
+						  LIBERROR_NO_MEMORY));
 
       tmp = build3_v (COND_EXPR, tmp,
 		      dlen, build_empty_stmt (input_location));

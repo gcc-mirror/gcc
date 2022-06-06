@@ -365,6 +365,17 @@ package body Ghost is
                if Is_Ghost_Pragma (Prag) then
                   return True;
 
+               --  A pragma may not be analyzed, so that its Ghost status is
+               --  not determined yet, but it is guaranteed to be Ghost when
+               --  referencing a Ghost entity.
+
+               elsif Prag_Nam in Name_Annotate
+                               | Name_Compile_Time_Error
+                               | Name_Compile_Time_Warning
+                               | Name_Unreferenced
+               then
+                  return True;
+
                --  An assertion expression pragma is Ghost when it contains a
                --  reference to a Ghost entity (SPARK RM 6.9(10)), except for
                --  predicate pragmas (SPARK RM 6.9(11)).
@@ -444,14 +455,6 @@ package body Ghost is
          if Ghost_Mode > None then
             return True;
 
-         --  A Ghost type may be referenced in a use_type clause
-         --  (SPARK RM 6.9.10).
-
-         elsif Present (Parent (Context))
-           and then Nkind (Parent (Context)) = N_Use_Type_Clause
-         then
-            return True;
-
          --  Routine Expand_Record_Extension creates a parent subtype without
          --  inserting it into the tree. There is no good way of recognizing
          --  this special case as there is no parent. Try to approximate the
@@ -479,6 +482,46 @@ package body Ghost is
                elsif Nkind (Par) = N_Aspect_Specification
                  and then not Same_Aspect
                                 (Get_Aspect_Id (Par), Aspect_Predicate)
+               then
+                  return True;
+
+               --  A Ghost type may be referenced in a use or use_type clause
+               --  (SPARK RM 6.9(10)).
+
+               elsif Present (Parent (Par))
+                 and then Nkind (Parent (Par)) in N_Use_Package_Clause
+                                                | N_Use_Type_Clause
+               then
+                  return True;
+
+               --  The context is an attribute definition clause for a Ghost
+               --  entity.
+
+               elsif Nkind (Parent (Par)) = N_Attribute_Definition_Clause
+                 and then Par = Name (Parent (Par))
+               then
+                  return True;
+
+               --  The context is the instantiation or renaming of a Ghost
+               --  entity.
+
+               elsif Nkind (Parent (Par)) in N_Generic_Instantiation
+                                           | N_Renaming_Declaration
+                                           | N_Generic_Renaming_Declaration
+                   and then Par = Name (Parent (Par))
+               then
+                  return True;
+
+               --  In the context of an instantiation, accept currently Ghost
+               --  arguments for formal subprograms, as SPARK does not provide
+               --  a way to distinguish Ghost formal parameters from non-Ghost
+               --  ones. Illegal use of such arguments in a non-Ghost context
+               --  will lead to errors inside the instantiation.
+
+               elsif Nkind (Parent (Par)) = N_Generic_Association
+                 and then (Nkind (Par) in N_Has_Entity
+                            and then Present (Entity (Par))
+                            and then Is_Subprogram (Entity (Par)))
                then
                   return True;
 
@@ -590,6 +633,13 @@ package body Ghost is
       --  their context to avoid reporting spurious errors.
 
       if Inside_Class_Condition_Preanalysis then
+         return;
+      end if;
+
+      --  When assertions are enabled, compiler generates code for ghost
+      --  entities, that is not subject to Ghost policy.
+
+      if not Comes_From_Source (Ghost_Ref) then
          return;
       end if;
 

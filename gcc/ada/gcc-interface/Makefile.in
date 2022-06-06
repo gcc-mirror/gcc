@@ -663,8 +663,8 @@ gnatlib: ../stamp-gnatlib1-$(RTSDIR) ../stamp-gnatlib2-$(RTSDIR) $(RTSDIR)/s-osc
 gnatlib-shared-default:
 	$(MAKE) $(FLAGS_TO_PASS) \
              GNATLIBFLAGS="$(GNATLIBFLAGS)" \
-	     GNATLIBCFLAGS="$(GNATLIBCFLAGS) $(PICFLAG_FOR_TARGET)" \
-	     GNATLIBCFLAGS_FOR_C="$(GNATLIBCFLAGS_FOR_C) $(PICFLAG_FOR_TARGET)" \
+	     GNATLIBCFLAGS="$(GNATLIBCFLAGS) $(PICFLAG_FOR_TARGET) -fno-lto" \
+	     GNATLIBCFLAGS_FOR_C="$(GNATLIBCFLAGS_FOR_C) $(PICFLAG_FOR_TARGET) -fno-lto" \
 	     MULTISUBDIR="$(MULTISUBDIR)" \
 	     THREAD_KIND="$(THREAD_KIND)" \
 	     LN_S="$(LN_S)" \

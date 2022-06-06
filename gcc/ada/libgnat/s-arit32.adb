@@ -104,7 +104,7 @@ is
 
    function To_Neg_Int (A : Uns32) return Int32
    with
-     Annotate => (GNATprove, Terminating),
+     Annotate => (GNATprove, Always_Return),
      Pre      => In_Int32_Range (-Big (A)),
      Post     => Big (To_Neg_Int'Result) = -Big (A);
    --  Convert to negative integer equivalent. If the input is in the range
@@ -114,7 +114,7 @@ is
 
    function To_Pos_Int (A : Uns32) return Int32
    with
-     Annotate => (GNATprove, Terminating),
+     Annotate => (GNATprove, Always_Return),
      Pre      => In_Int32_Range (Big (A)),
      Post     => Big (To_Pos_Int'Result) = Big (A);
    --  Convert to positive integer equivalent. If the input is in the range

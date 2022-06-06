@@ -545,6 +545,15 @@ go_langhook_eh_personality (void)
   return personality_decl;
 }
 
+/* Get a value for the SARIF v2.1.0 "artifact.sourceLanguage" property,
+   based on the list in SARIF v2.1.0 Appendix J.  */
+
+static const char *
+go_get_sarif_source_language (const char *)
+{
+  return "go";
+}
+
 /* Functions called directly by the generic backend.  */
 
 tree
@@ -615,6 +624,7 @@ go_localize_identifier (const char *ident)
 #undef LANG_HOOKS_GETDECLS
 #undef LANG_HOOKS_GIMPLIFY_EXPR
 #undef LANG_HOOKS_EH_PERSONALITY
+#undef LANG_HOOKS_GET_SARIF_SOURCE_LANGUAGE
 
 #define LANG_HOOKS_NAME			"GNU Go"
 #define LANG_HOOKS_INIT			go_langhook_init
@@ -631,6 +641,7 @@ go_localize_identifier (const char *ident)
 #define LANG_HOOKS_GETDECLS		go_langhook_getdecls
 #define LANG_HOOKS_GIMPLIFY_EXPR	go_langhook_gimplify_expr
 #define LANG_HOOKS_EH_PERSONALITY	go_langhook_eh_personality
+#define LANG_HOOKS_GET_SARIF_SOURCE_LANGUAGE go_get_sarif_source_language
 
 struct lang_hooks lang_hooks = LANG_HOOKS_INITIALIZER;
 

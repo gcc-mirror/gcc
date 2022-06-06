@@ -41,9 +41,10 @@ class GTY((user)) value_range_equiv : public value_range
   void move (value_range_equiv *);
 
   /* Leaves equiv bitmap alone.  */
+  virtual void set (tree, tree, value_range_kind = VR_RANGE) override;
   void update (tree, tree, value_range_kind = VR_RANGE);
   /* Deep-copies equiv bitmap argument.  */
-  void set (tree, tree, bitmap = NULL, value_range_kind = VR_RANGE);
+  void set (tree, tree, bitmap, value_range_kind = VR_RANGE);
   void set (tree);
 
   bool operator== (const value_range_equiv &) const /* = delete */;
@@ -66,6 +67,10 @@ class GTY((user)) value_range_equiv : public value_range
   void deep_copy (const value_range_equiv *);
   void dump (FILE *) const;
   void dump () const;
+  static bool supports_p (tree type)
+  {
+    return INTEGRAL_TYPE_P (type) || POINTER_TYPE_P (type);
+  }
 
  private:
   /* Deep-copies bitmap argument.  */

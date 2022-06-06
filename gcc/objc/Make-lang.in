@@ -102,7 +102,7 @@ objc.srcman:
 objc.install-plugin:
 
 objc.tags: force
-	cd $(srcdir)/objc; $(ETAGS) -o TAGS.sub *.c *.h; \
+	cd $(srcdir)/objc; $(ETAGS) -o TAGS.sub *.cc *.h; \
 	$(ETAGS) --include TAGS.sub --include ../TAGS.sub
 
 lang_checks += check-objc

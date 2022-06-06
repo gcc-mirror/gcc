@@ -2060,7 +2060,11 @@ package body Sem_Res is
       --  case of Ada 2012 constructs such as quantified expressions, which are
       --  expanded in two separate steps.
 
-      if GNATprove_Mode then
+      --  We also do not want to suppress checks if we are not dealing
+      --  with a default expression. One such case that is known to reach
+      --  this point is the expression of an expression function.
+
+      if GNATprove_Mode or Nkind (Parent (N)) = N_Simple_Return_Statement then
          Analyze_And_Resolve (N, T);
       else
          Analyze_And_Resolve (N, T, Suppress => All_Checks);
@@ -6955,8 +6959,7 @@ package body Sem_Res is
         and then Requires_Transient_Scope (Etype (Nam))
         and then not Is_Ignored_Ghost_Entity (Nam)
       then
-         Establish_Transient_Scope
-           (N, Returns_On_Secondary_Stack (Etype (Nam)));
+         Establish_Transient_Scope (N, Needs_Secondary_Stack (Etype (Nam)));
 
          --  If the call appears within the bounds of a loop, it will be
          --  rewritten and reanalyzed, nothing left to do here.
@@ -8536,8 +8539,7 @@ package body Sem_Res is
       elsif Expander_Active
         and then Requires_Transient_Scope (Etype (Nam))
       then
-         Establish_Transient_Scope
-           (N, Returns_On_Secondary_Stack (Etype (Nam)));
+         Establish_Transient_Scope (N, Needs_Secondary_Stack (Etype (Nam)));
       end if;
 
       --  Now we know that this is not a call to a function that returns an

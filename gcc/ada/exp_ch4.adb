@@ -46,6 +46,7 @@ with Exp_Tss;        use Exp_Tss;
 with Exp_Util;       use Exp_Util;
 with Freeze;         use Freeze;
 with Inline;         use Inline;
+with Lib;            use Lib;
 with Namet;          use Namet;
 with Nlists;         use Nlists;
 with Nmake;          use Nmake;
@@ -6388,7 +6389,7 @@ package body Exp_Ch4 is
             Lcheck : Compare_Result;
             Ucheck : Compare_Result;
 
-            Warn1 : constant Boolean :=
+            Warn : constant Boolean :=
                       Constant_Condition_Warnings
                         and then Comes_From_Source (N)
                         and then not In_Instance;
@@ -6396,16 +6397,6 @@ package body Exp_Ch4 is
             --  clearly want to give them only for source with the flag on. We
             --  also skip these warnings in an instance since it may be the
             --  case that different instantiations have different ranges.
-
-            Warn2 : constant Boolean :=
-                      Warn1
-                        and then Nkind (Original_Node (Rop)) = N_Range
-                        and then Is_Integer_Type (Etype (Lo));
-            --  For the case where only one bound warning is elided, we also
-            --  insist on an explicit range and an integer type. The reason is
-            --  that the use of enumeration ranges including an end point is
-            --  common, as is the use of a subtype name, one of whose bounds is
-            --  the same as the type of the expression.
 
          begin
             --  If test is explicit x'First .. x'Last, replace by valid check
@@ -6491,7 +6482,7 @@ package body Exp_Ch4 is
             --  legality checks, because we are constant-folding beyond RM 4.9.
 
             if Lcheck = LT or else Ucheck = GT then
-               if Warn1 then
+               if Warn then
                   Error_Msg_N ("?c?range test optimized away", N);
                   Error_Msg_N ("\?c?value is known to be out of range", N);
                end if;
@@ -6505,7 +6496,7 @@ package body Exp_Ch4 is
             --  since we know we are in range.
 
             elsif Lcheck in Compare_GE and then Ucheck in Compare_LE then
-               if Warn1 then
+               if Warn then
                   Error_Msg_N ("?c?range test optimized away", N);
                   Error_Msg_N ("\?c?value is known to be in range", N);
                end if;
@@ -6520,11 +6511,6 @@ package body Exp_Ch4 is
             --  a comparison against the upper bound.
 
             elsif Lcheck in Compare_GE then
-               if Warn2 and then not In_Instance then
-                  Error_Msg_N ("??lower bound test optimized away", Lo);
-                  Error_Msg_N ("\??value is known to be in range", Lo);
-               end if;
-
                Rewrite (N,
                  Make_Op_Le (Loc,
                    Left_Opnd  => Lop,
@@ -6532,16 +6518,9 @@ package body Exp_Ch4 is
                Analyze_And_Resolve (N, Restyp);
                goto Leave;
 
-            --  If upper bound check succeeds and lower bound check is not
-            --  known to succeed or fail, then replace the range check with
-            --  a comparison against the lower bound.
+            --  Inverse of previous case.
 
             elsif Ucheck in Compare_LE then
-               if Warn2 and then not In_Instance then
-                  Error_Msg_N ("??upper bound test optimized away", Hi);
-                  Error_Msg_N ("\??value is known to be in range", Hi);
-               end if;
-
                Rewrite (N,
                  Make_Op_Ge (Loc,
                    Left_Opnd  => Lop,
@@ -6555,7 +6534,7 @@ package body Exp_Ch4 is
             --  see if we can determine the outcome assuming everything is
             --  valid, and if so give an appropriate warning.
 
-            if Warn1 and then not Assume_No_Invalid_Values then
+            if Warn and then not Assume_No_Invalid_Values then
                Lcheck := Compile_Time_Compare (Lop, Lo, Assume_Valid => True);
                Ucheck := Compile_Time_Compare (Lop, Hi, Assume_Valid => True);
 
@@ -6570,18 +6549,6 @@ package body Exp_Ch4 is
                elsif Lcheck in Compare_GE and then Ucheck in Compare_LE then
                   Error_Msg_N
                     ("?c?value can only be out of range if it is invalid", N);
-
-               --  Lower bound check succeeds if value is valid
-
-               elsif Warn2 and then Lcheck in Compare_GE then
-                  Error_Msg_N
-                    ("?c?lower bound check only fails if it is invalid", Lo);
-
-               --  Upper bound  check succeeds if value is valid
-
-               elsif Warn2 and then Ucheck in Compare_LE then
-                  Error_Msg_N
-                    ("?c?upper bound check only fails for invalid values", Hi);
                end if;
             end if;
          end;
@@ -11042,6 +11009,16 @@ package body Exp_Ch4 is
          --  actually performed.
 
          else
+            if (not Is_Unchecked_Union
+                     (Implementation_Base_Type (Etype (Prefix (N)))))
+              and then not Is_Predefined_Unit (Get_Source_Unit (N))
+            then
+               Error_Msg_N
+                 ("sorry - unable to generate discriminant check for" &
+                    " reference to variant component &",
+                  Selector_Name (N));
+            end if;
+
             Set_Do_Discriminant_Check (N, False);
          end if;
       end if;

@@ -540,13 +540,11 @@ package Rtsfind is
    --  value is required syntactically, but no real entry is required or
    --  needed. Use of this value will cause a fatal error in an RTE call.
 
-   --  Note that under no circumstances can any of these entities be defined
-   --  more than once in a given package, i.e. no overloading is allowed for
-   --  any entity that is found using rtsfind. A fatal error is given if this
-   --  rule is violated. The one exception is for Save_Occurrence, where the
-   --  RM mandates the overloading. In this case, the compiler only uses the
-   --  procedure, not the function, and the procedure must come first so that
-   --  the compiler finds it and not the function.
+   --  It is normally not allowed to have more than one of these entities with
+   --  the same name in a given package. The one exception is Save_Occurrence,
+   --  where the RM mandates the overloading. In this case, the compiler uses
+   --  the procedure, not the function, and the procedure must come first so
+   --  that the compiler finds it and not the function.
 
    type RE_Id is (
 

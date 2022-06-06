@@ -338,6 +338,7 @@ extern unsigned HOST_WIDE_INT highest_pow2_factor (const_tree);
 extern bool categorize_ctor_elements (const_tree, HOST_WIDE_INT *,
 				      HOST_WIDE_INT *, HOST_WIDE_INT *,
 				      bool *);
+extern bool immediate_const_ctor_p (const_tree, unsigned int words = 1);
 
 extern void expand_operands (tree, tree, rtx, rtx*, rtx*,
 			     enum expand_modifier);

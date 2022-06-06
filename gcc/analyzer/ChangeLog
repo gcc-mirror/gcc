@@ -1,3 +1,41 @@
+2022-06-02  David Malcolm  <dmalcolm@redhat.com>
+
+	* checker-path.cc (checker_event::get_meaning): New.
+	(function_entry_event::get_meaning): New.
+	(state_change_event::get_desc): Add dump of meaning of the event
+	to the -fanalyzer-verbose-state-changes output.
+	(state_change_event::get_meaning): New.
+	(cfg_edge_event::get_meaning): New.
+	(call_event::get_meaning): New.
+	(return_event::get_meaning): New.
+	(start_consolidated_cfg_edges_event::get_meaning): New.
+	(warning_event::get_meaning): New.
+	* checker-path.h: Include "tree-logical-location.h".
+	(checker_event::checker_event): Construct m_logical_loc.
+	(checker_event::get_logical_location): New.
+	(checker_event::get_meaning): New decl.
+	(checker_event::m_logical_loc): New.
+	(function_entry_event::get_meaning): New decl.
+	(state_change_event::get_meaning): New decl.
+	(cfg_edge_event::get_meaning): New decl.
+	(call_event::get_meaning): New decl.
+	(return_event::get_meaning): New decl.
+	(start_consolidated_cfg_edges_event::get_meaning): New.
+	(warning_event::get_meaning): New decl.
+	* pending-diagnostic.h: Include "diagnostic-path.h".
+	(pending_diagnostic::get_meaning_for_state_change): New vfunc.
+	* sm-file.cc (file_diagnostic::get_meaning_for_state_change): New
+	vfunc impl.
+	* sm-malloc.cc (malloc_diagnostic::get_meaning_for_state_change):
+	Likewise.
+	* sm-sensitive.cc
+	(exposure_through_output_file::get_meaning_for_state_change):
+	Likewise.
+	* sm-taint.cc (taint_diagnostic::get_meaning_for_state_change):
+	Likewise.
+	* varargs.cc
+	(va_list_sm_diagnostic::get_meaning_for_state_change): Likewise.
+
 2022-05-23  David Malcolm  <dmalcolm@redhat.com>
 
 	* call-info.cc: Add "final" and "override" to all vfunc

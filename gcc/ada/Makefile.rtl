@@ -1542,9 +1542,8 @@ ifeq ($(strip $(filter-out arm aarch64 %qnx,$(target_cpu) $(target_os))),)
        s-dorepr.adb<libgnat/s-dorepr__fma.adb
      LIBGNAT_TARGET_PAIRS += $(GNATRTL_128BIT_PAIRS)
      EXTRA_GNATRTL_NONTASKING_OBJS = $(GNATRTL_128BIT_OBJS)
-     # Temporarily restrict shared library build to aarch64 (V303-025)
-     GNATLIB_SHARED = gnatlib-shared-dual
   endif
+  GNATLIB_SHARED = gnatlib-shared-dual
   EXTRA_LIBGNAT_OBJS+=$(SIGTRAMP_OBJ)
   EXTRA_LIBGNAT_SRCS+=sigtramp.h
 

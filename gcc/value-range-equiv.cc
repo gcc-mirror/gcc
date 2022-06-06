@@ -51,6 +51,12 @@ value_range_equiv::set (tree min, tree max, bitmap equiv,
 }
 
 void
+value_range_equiv::set (tree min, tree max, value_range_kind kind)
+{
+  set (min, max, m_equiv, kind);
+}
+
+void
 value_range_equiv::set (tree val)
 {
   gcc_assert (TREE_CODE (val) == SSA_NAME || is_gimple_min_invariant (val));

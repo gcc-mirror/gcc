@@ -261,7 +261,8 @@ STATIC func_ptr __DTOR_LIST__[1]
 /* Stick a label at the beginning of the frame unwind info so we can register
    and deregister it with the exception handling library code.  */
 STATIC EH_FRAME_SECTION_CONST char __EH_FRAME_BEGIN__[]
-     __attribute__((section(__LIBGCC_EH_FRAME_SECTION_NAME__), aligned(4)))
+     __attribute__((section(__LIBGCC_EH_FRAME_SECTION_NAME__),
+		    aligned(__alignof__ (void *))))
      = { };
 #endif /* USE_EH_FRAME_REGISTRY */
 

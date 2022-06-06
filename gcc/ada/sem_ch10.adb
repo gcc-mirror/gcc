@@ -31,6 +31,7 @@ with Einfo;          use Einfo;
 with Einfo.Entities; use Einfo.Entities;
 with Einfo.Utils;    use Einfo.Utils;
 with Errout;         use Errout;
+with Exp_Disp;       use Exp_Disp;
 with Exp_Put_Image;
 with Exp_Util;       use Exp_Util;
 with Elists;         use Elists;
@@ -946,16 +947,14 @@ package body Sem_Ch10 is
 
       --  Treat compilation unit pragmas that appear after the library unit
 
-      if Present (Pragmas_After (Aux_Decls_Node (N))) then
-         declare
-            Prag_Node : Node_Id := First (Pragmas_After (Aux_Decls_Node (N)));
-         begin
-            while Present (Prag_Node) loop
-               Analyze (Prag_Node);
-               Next (Prag_Node);
-            end loop;
-         end;
-      end if;
+      declare
+         Prag_Node : Node_Id := First (Pragmas_After (Aux_Decls_Node (N)));
+      begin
+         while Present (Prag_Node) loop
+            Analyze (Prag_Node);
+            Next (Prag_Node);
+         end loop;
+      end;
 
       --  Analyze the contract of a [generic] subprogram that acts as a
       --  compilation unit after all compilation pragmas have been analyzed.
@@ -1000,6 +999,22 @@ package body Sem_Ch10 is
 
             Add_Stub_Constructs (N);
          end if;
+      end if;
+
+      --  Build dispatch tables of library-level tagged types only now because
+      --  the generation of distribution stubs above may create some of them.
+
+      if Expander_Active and then Tagged_Type_Expansion then
+         case Nkind (Unit_Node) is
+            when N_Package_Declaration | N_Package_Body =>
+               Build_Static_Dispatch_Tables (Unit_Node);
+
+            when N_Package_Instantiation =>
+               Build_Static_Dispatch_Tables (Instance_Spec (Unit_Node));
+
+            when others =>
+               null;
+         end case;
       end if;
 
       --  Remove unit from visibility, so that environment is clean for the
@@ -3353,19 +3368,17 @@ package body Sem_Ch10 is
    --  Start of processing for Has_With_Clause
 
    begin
-      if Present (Context_Items (C_Unit)) then
-         Item := First (Context_Items (C_Unit));
-         while Present (Item) loop
-            if Nkind (Item) = N_With_Clause
-              and then Limited_Present (Item) = Is_Limited
-              and then Named_Unit (Item) = Pack
-            then
-               return True;
-            end if;
+      Item := First (Context_Items (C_Unit));
+      while Present (Item) loop
+         if Nkind (Item) = N_With_Clause
+           and then Limited_Present (Item) = Is_Limited
+           and then Named_Unit (Item) = Pack
+         then
+            return True;
+         end if;
 
-            Next (Item);
-         end loop;
-      end if;
+         Next (Item);
+      end loop;
 
       return False;
    end Has_With_Clause;

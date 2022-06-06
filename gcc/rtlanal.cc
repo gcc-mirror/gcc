@@ -4578,6 +4578,11 @@ rtx_cost (rtx x, machine_mode mode, enum rtx_code outer_code,
   switch (code)
     {
     case MULT:
+    case FMA:
+    case SS_MULT:
+    case US_MULT:
+    case SMUL_HIGHPART:
+    case UMUL_HIGHPART:
       /* Multiplication has time-complexity O(N*N), where N is the
 	 number of units (translated from digits) when using
 	 schoolbook long multiplication.  */
@@ -4587,6 +4592,8 @@ rtx_cost (rtx x, machine_mode mode, enum rtx_code outer_code,
     case UDIV:
     case MOD:
     case UMOD:
+    case SS_DIV:
+    case US_DIV:
       /* Similarly, complexity for schoolbook long division.  */
       total = factor * factor * COSTS_N_INSNS (7);
       break;

@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *          Copyright (C) 1992-2021, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2022, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -264,9 +264,6 @@ struct GTY((chain_next ("%h.chain"))) gnat_binding_level {
   struct gnat_binding_level *chain;
   /* The BLOCK node for this level.  */
   tree block;
-  /* If nonzero, the setjmp buffer that needs to be updated for any
-     variable-sized definition within this context.  */
-  tree jmpbuf_decl;
 };
 
 /* The binding level currently in effect.  */
@@ -599,7 +596,6 @@ gnat_pushlevel (void)
 
   /* Add this level to the front of the chain (stack) of active levels.  */
   newlevel->chain = current_binding_level;
-  newlevel->jmpbuf_decl = NULL_TREE;
   current_binding_level = newlevel;
 }
 
@@ -612,22 +608,6 @@ set_current_block_context (tree fndecl)
   BLOCK_SUPERCONTEXT (current_binding_level->block) = fndecl;
   DECL_INITIAL (fndecl) = current_binding_level->block;
   set_block_for_group (current_binding_level->block);
-}
-
-/* Set the jmpbuf_decl for the current binding level to DECL.  */
-
-void
-set_block_jmpbuf_decl (tree decl)
-{
-  current_binding_level->jmpbuf_decl = decl;
-}
-
-/* Get the jmpbuf_decl, if any, for the current binding level.  */
-
-tree
-get_block_jmpbuf_decl (void)
-{
-  return current_binding_level->jmpbuf_decl;
 }
 
 /* Exit a binding level.  Set any BLOCK into the current code group.  */
@@ -3841,11 +3821,10 @@ gnat_useless_type_conversion (tree expr)
 /* Return true if T, a {FUNCTION,METHOD}_TYPE, has the specified flags.  */
 
 bool
-fntype_same_flags_p (const_tree t, tree cico_list, bool return_unconstrained_p,
-		     bool return_by_direct_ref_p, bool return_by_invisi_ref_p)
+fntype_same_flags_p (const_tree t, tree cico_list, bool return_by_direct_ref_p,
+		     bool return_by_invisi_ref_p)
 {
   return TYPE_CI_CO_LIST (t) == cico_list
-	 && TYPE_RETURN_UNCONSTRAINED_P (t) == return_unconstrained_p
 	 && TYPE_RETURN_BY_DIRECT_REF_P (t) == return_by_direct_ref_p
 	 && TREE_ADDRESSABLE (t) == return_by_invisi_ref_p;
 }

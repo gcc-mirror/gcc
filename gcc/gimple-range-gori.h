@@ -121,7 +121,7 @@ private:
 //   on *ANY* edge that has been seen.  FALSE indicates that the global value
 //   is applicable everywhere that has been processed.
 //
-// outgoing_edge_range_p (irange &range, edge e, tree name)
+// outgoing_edge_range_p (vrange &range, edge e, tree name)
 //   Actually does the calculation of RANGE for name on E
 //   This represents application of whatever static range effect edge E
 //   may have on NAME, not any cumulative effect.
@@ -157,8 +157,8 @@ class gori_compute : public gori_map
 {
 public:
   gori_compute (int not_executable_flag = 0);
-  bool outgoing_edge_range_p (irange &r, edge e, tree name, range_query &q);
-  bool condexpr_adjust (irange &r1, irange &r2, gimple *s, tree cond, tree op1,
+  bool outgoing_edge_range_p (vrange &r, edge e, tree name, range_query &q);
+  bool condexpr_adjust (vrange &r1, vrange &r2, gimple *s, tree cond, tree op1,
 			tree op2, fur_source &src);
   bool has_edge_range_p (tree name, basic_block bb = NULL);
   bool has_edge_range_p (tree name, edge e);
@@ -166,24 +166,24 @@ public:
 private:
   bool may_recompute_p (tree name, edge e);
   bool may_recompute_p (tree name, basic_block bb = NULL);
-  bool compute_operand_range (irange &r, gimple *stmt, const irange &lhs,
+  bool compute_operand_range (vrange &r, gimple *stmt, const vrange &lhs,
 			      tree name, class fur_source &src);
-  bool compute_operand_range_switch (irange &r, gswitch *s, const irange &lhs,
+  bool compute_operand_range_switch (vrange &r, gswitch *s, const vrange &lhs,
 				     tree name, fur_source &src);
-  bool compute_operand1_range (irange &r, gimple *stmt, const irange &lhs,
+  bool compute_operand1_range (vrange &r, gimple *stmt, const vrange &lhs,
 			       tree name, fur_source &src);
-  bool compute_operand2_range (irange &r, gimple *stmt, const irange &lhs,
+  bool compute_operand2_range (vrange &r, gimple *stmt, const vrange &lhs,
 			       tree name, fur_source &src);
-  bool compute_operand1_and_operand2_range (irange &r, gimple *stmt,
-					    const irange &lhs, tree name,
+  bool compute_operand1_and_operand2_range (vrange &r, gimple *stmt,
+					    const vrange &lhs, tree name,
 					    fur_source &src);
-  void compute_logical_operands (irange &true_range, irange &false_range,
+  void compute_logical_operands (vrange &true_range, vrange &false_range,
 				 gimple *stmt, const irange &lhs,
 				 tree name, fur_source &src, tree op,
 				 bool op_in_chain);
-  bool logical_combine (irange &r, enum tree_code code, const irange &lhs,
-			const irange &op1_true, const irange &op1_false,
-			const irange &op2_true, const irange &op2_false);
+  bool logical_combine (vrange &r, enum tree_code code, const irange &lhs,
+			const vrange &op1_true, const vrange &op1_false,
+			const vrange &op2_true, const vrange &op2_false);
   int_range<2> m_bool_zero;	// Boolean false cached.
   int_range<2> m_bool_one;	// Boolean true cached.
 
@@ -193,14 +193,14 @@ private:
 };
 
 // These routines provide a GIMPLE interface to the range-ops code.
-extern bool gimple_range_calc_op1 (irange &r, const gimple *s,
-				   const irange &lhs_range);
-extern bool gimple_range_calc_op1 (irange &r, const gimple *s,
-				   const irange &lhs_range,
-				   const irange &op2_range);
-extern bool gimple_range_calc_op2 (irange &r, const gimple *s,
-				   const irange &lhs_range,
-				   const irange &op1_range);
+extern bool gimple_range_calc_op1 (vrange &r, const gimple *s,
+				   const vrange &lhs_range);
+extern bool gimple_range_calc_op1 (vrange &r, const gimple *s,
+				   const vrange &lhs_range,
+				   const vrange &op2_range);
+extern bool gimple_range_calc_op2 (vrange &r, const gimple *s,
+				   const vrange &lhs_range,
+				   const vrange &op1_range);
 
 // For each name that is an import into BB's exports..
 #define FOR_EACH_GORI_IMPORT_NAME(gori, bb, name)			\

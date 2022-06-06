@@ -2139,11 +2139,24 @@ package body Sem_Prag is
       Expr     : Node_Id;
 
    begin
-      --  Do not analyze the pragma multiple times, but set the output
-      --  parameter to the argument specified by the pragma.
+      --  Ensure that the Boolean expression (if present) is static. A missing
+      --  argument defaults the value to True (SPARK RM 7.1.2(5)).
+
+      Expr_Val := True;
+
+      if Present (Arg1) then
+         Expr := Get_Pragma_Arg (Arg1);
+
+         if Is_OK_Static_Expression (Expr) then
+            Expr_Val := Is_True (Expr_Value (Expr));
+         end if;
+      end if;
+
+      --  The output parameter was set to the argument specified by the pragma.
+      --  Do not analyze the pragma multiple times.
 
       if Is_Analyzed_Pragma (N) then
-         goto Leave;
+         return;
       end if;
 
       Error_Msg_Name_1 := Pragma_Name (N);
@@ -2163,9 +2176,11 @@ package body Sem_Prag is
          if Ekind (Obj_Id) = E_Variable
            and then No_Caching_Enabled (Obj_Id)
          then
-            SPARK_Msg_N
-              ("illegal combination of external property % and property "
-               & """No_Caching"" (SPARK RM 7.1.2(6))", N);
+            if Expr_Val then  --  Confirming value of False is allowed
+               SPARK_Msg_N
+                 ("illegal combination of external property % and property "
+                  & """No_Caching"" (SPARK RM 7.1.2(6))", N);
+            end if;
          else
             SPARK_Msg_N
               ("external property % must apply to a volatile type or object",
@@ -2185,22 +2200,6 @@ package body Sem_Prag is
       end if;
 
       Set_Is_Analyzed_Pragma (N);
-
-      <<Leave>>
-
-      --  Ensure that the Boolean expression (if present) is static. A missing
-      --  argument defaults the value to True (SPARK RM 7.1.2(5)).
-
-      Expr_Val := True;
-
-      if Present (Arg1) then
-         Expr := Get_Pragma_Arg (Arg1);
-
-         if Is_OK_Static_Expression (Expr) then
-            Expr_Val := Is_True (Expr_Value (Expr));
-         end if;
-      end if;
-
    end Analyze_External_Property_In_Decl_Part;
 
    ---------------------------------
@@ -3293,27 +3292,25 @@ package body Sem_Prag is
          --  Collect all objects that appear in the visible declarations of the
          --  related package.
 
-         if Present (Visible_Declarations (Pack_Spec)) then
-            Decl := First (Visible_Declarations (Pack_Spec));
-            while Present (Decl) loop
-               if Comes_From_Source (Decl)
-                 and then Nkind (Decl) in N_Object_Declaration
-                                        | N_Object_Renaming_Declaration
-               then
-                  Append_New_Elmt (Defining_Entity (Decl), States_And_Objs);
+         Decl := First (Visible_Declarations (Pack_Spec));
+         while Present (Decl) loop
+            if Comes_From_Source (Decl)
+              and then Nkind (Decl) in N_Object_Declaration
+                                     | N_Object_Renaming_Declaration
+            then
+               Append_New_Elmt (Defining_Entity (Decl), States_And_Objs);
 
-               elsif Nkind (Decl) = N_Package_Declaration then
-                  Collect_States_And_Objects (Decl);
+            elsif Nkind (Decl) = N_Package_Declaration then
+               Collect_States_And_Objects (Decl);
 
-               elsif Is_Single_Concurrent_Type_Declaration (Decl) then
-                  Append_New_Elmt
-                    (Anonymous_Object (Defining_Entity (Decl)),
-                     States_And_Objs);
-               end if;
+            elsif Is_Single_Concurrent_Type_Declaration (Decl) then
+               Append_New_Elmt
+                 (Anonymous_Object (Defining_Entity (Decl)),
+                  States_And_Objs);
+            end if;
 
-               Next (Decl);
-            end loop;
-         end if;
+            Next (Decl);
+         end loop;
       end Collect_States_And_Objects;
 
       --  Local variables
@@ -11001,7 +10998,7 @@ package body Sem_Prag is
                Scope_Suppress.Suppress (C) := Suppress_Case;
             end if;
 
-            --  Also make an entry in the Local_Entity_Suppress table
+            --  Also push an entry in the local suppress stack
 
             Push_Local_Suppress_Stack_Entry
               (Entity   => Empty,

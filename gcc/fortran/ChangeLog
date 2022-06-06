@@ -1,3 +1,25 @@
+2022-06-03  Tobias Burnus  <tobias@codesourcery.com>
+
+	* openmp.cc (OMP_SCOPE_CLAUSES): Add firstprivate and allocate.
+
+2022-06-02  David Malcolm  <dmalcolm@redhat.com>
+
+	* f95-lang.cc (gfc_get_sarif_source_language): New.
+	(LANG_HOOKS_GET_SARIF_SOURCE_LANGUAGE): Redefine.
+
+2022-05-31  Jason Merrill  <jason@redhat.com>
+
+	* Make-lang.in (fortran.tags): Look at *.cc.
+
+2022-05-30  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/91300
+	* libgfortran.h: Define new error code LIBERROR_NO_MEMORY.
+	* trans-stmt.cc (gfc_trans_allocate): Generate code for setting
+	ERRMSG depending on result of STAT result of ALLOCATE.
+	* trans.cc (gfc_allocate_using_malloc): Use STAT value of
+	LIBERROR_NO_MEMORY in case of failed malloc.
+
 2022-05-28  Tobias Burnus  <tobias@codesourcery.com>
 
 	* dump-parse-tree.cc (show_omp_clauses): Handle OMP_LIST_ENTER.

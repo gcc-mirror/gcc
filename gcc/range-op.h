@@ -108,8 +108,39 @@ protected:
 			 const wide_int &rh_ub) const;
 };
 
-extern range_operator *range_op_handler (enum tree_code code, tree type);
-extern void range_cast (irange &, tree type);
+class range_op_handler
+{
+public:
+  range_op_handler (enum tree_code code, tree type);
+  range_op_handler (const gimple *s);
+  operator bool () const { return m_op; }
+
+  bool fold_range (vrange &r, tree type,
+		   const vrange &lh,
+		   const vrange &rh,
+		   relation_kind rel = VREL_VARYING) const;
+  bool op1_range (vrange &r, tree type,
+		  const vrange &lhs,
+		  const vrange &op2,
+		  relation_kind rel = VREL_VARYING) const;
+  bool op2_range (vrange &r, tree type,
+		  const vrange &lhs,
+		  const vrange &op1,
+		  relation_kind rel = VREL_VARYING) const;
+  relation_kind lhs_op1_relation (const vrange &lhs,
+				  const vrange &op1,
+				  const vrange &op2,
+				  relation_kind = VREL_VARYING) const;
+  relation_kind lhs_op2_relation (const vrange &lhs,
+				  const vrange &op1,
+				  const vrange &op2,
+				  relation_kind = VREL_VARYING) const;
+  relation_kind op1_op2_relation (const vrange &lhs) const;
+private:
+  range_operator *m_op;
+};
+
+extern bool range_cast (vrange &, tree type);
 extern void wi_set_zero_nonzero_bits (tree type,
 				      const wide_int &, const wide_int &,
 				      wide_int &maybe_nonzero,
@@ -124,7 +155,7 @@ relation_kind gt_op1_op2_relation (const irange &lhs);
 relation_kind ge_op1_op2_relation (const irange &lhs);
 
 enum bool_range_state { BRS_FALSE, BRS_TRUE, BRS_EMPTY, BRS_FULL };
-bool_range_state get_bool_state (irange &r, const irange &lhs, tree val_type);
+bool_range_state get_bool_state (vrange &r, const vrange &lhs, tree val_type);
 
 // If the range of either op1 or op2 is undefined, set the result to
 // varying and return TRUE.  If the caller truely cares about a result,
@@ -132,8 +163,8 @@ bool_range_state get_bool_state (irange &r, const irange &lhs, tree val_type);
 // treated as a varying.
 
 inline bool
-empty_range_varying (irange &r, tree type,
-		     const irange &op1, const irange & op2)
+empty_range_varying (vrange &r, tree type,
+		     const vrange &op1, const vrange & op2)
 {
   if (op1.undefined_p () || op2.undefined_p ())
     {
@@ -150,8 +181,8 @@ empty_range_varying (irange &r, tree type,
 // return false.
 
 inline bool
-relop_early_resolve (irange &r, tree type, const irange &op1,
-		     const irange &op2, relation_kind rel,
+relop_early_resolve (irange &r, tree type, const vrange &op1,
+		     const vrange &op2, relation_kind rel,
 		     relation_kind my_rel)
 {
   // If known relation is a complete subset of this relation, always true.

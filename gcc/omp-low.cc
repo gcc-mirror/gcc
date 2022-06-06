@@ -683,6 +683,7 @@ build_outer_var_ref (tree var, omp_context *ctx,
   else if ((gimple_code (ctx->stmt) == GIMPLE_OMP_FOR
 	    && gimple_omp_for_kind (ctx->stmt) == GF_OMP_FOR_KIND_SIMD)
 	   || ctx->loop_p
+	   || code == OMP_CLAUSE_ALLOCATE
 	   || (code == OMP_CLAUSE_PRIVATE
 	       && (gimple_code (ctx->stmt) == GIMPLE_OMP_FOR
 		   || gimple_code (ctx->stmt) == GIMPLE_OMP_SECTIONS
@@ -4849,7 +4850,7 @@ lower_private_allocate (tree var, tree new_var, tree &allocator,
       allocator = TREE_PURPOSE (allocator);
     }
   if (TREE_CODE (allocator) != INTEGER_CST)
-    allocator = build_outer_var_ref (allocator, ctx);
+    allocator = build_outer_var_ref (allocator, ctx, OMP_CLAUSE_ALLOCATE);
   allocator = fold_convert (pointer_sized_int_node, allocator);
   if (TREE_CODE (allocator) != INTEGER_CST)
     {

@@ -1359,9 +1359,8 @@ c_build_qualified_type (tree type, int type_quals, tree /* orig_qual_type */,
    in a similar manner for restricting non-pointer types.  */
 
 tree
-cp_build_qualified_type_real (tree type,
-			      int type_quals,
-			      tsubst_flags_t complain)
+cp_build_qualified_type (tree type, int type_quals,
+			 tsubst_flags_t complain /* = tf_warning_or_error */)
 {
   tree result;
   int bad_quals = TYPE_UNQUALIFIED;
@@ -1378,9 +1377,7 @@ cp_build_qualified_type_real (tree type,
 	 type.  Obtain the appropriately qualified element type.  */
       tree t;
       tree element_type
-	= cp_build_qualified_type_real (TREE_TYPE (type),
-					type_quals,
-					complain);
+	= cp_build_qualified_type (TREE_TYPE (type), type_quals, complain);
 
       if (element_type == error_mark_node)
 	return error_mark_node;
@@ -1431,7 +1428,7 @@ cp_build_qualified_type_real (tree type,
     {
       tree t = PACK_EXPANSION_PATTERN (type);
 
-      t = cp_build_qualified_type_real (t, type_quals, complain);
+      t = cp_build_qualified_type (t, type_quals, complain);
       return make_pack_expansion (t, complain);
     }
 
@@ -4322,15 +4319,31 @@ maybe_dummy_object (tree type, tree* binfop)
   if (binfop)
     *binfop = binfo;
 
-  if (current_class_ref
-      /* current_class_ref might not correspond to current_class_type if
-	 we're in tsubst_default_argument or a lambda-declarator; in either
-	 case, we want to use current_class_ref if it matches CONTEXT.  */
-      && (same_type_ignoring_top_level_qualifiers_p
-	  (TREE_TYPE (current_class_ref), context)))
+  /* current_class_ref might not correspond to current_class_type if
+     we're in tsubst_default_argument or a lambda-declarator; in either
+     case, we want to use current_class_ref if it matches CONTEXT.  */
+  tree ctype = current_class_ref ? TREE_TYPE (current_class_ref) : NULL_TREE;
+  if (ctype
+      && same_type_ignoring_top_level_qualifiers_p (ctype, context))
     decl = current_class_ref;
   else
-    decl = build_dummy_object (context);
+    {
+      /* Return a dummy object whose cv-quals are consistent with (the
+	 non-lambda) 'this' if available.  */
+      if (ctype)
+	{
+	  int quals = TYPE_UNQUALIFIED;
+	  if (tree lambda = CLASSTYPE_LAMBDA_EXPR (ctype))
+	    {
+	      if (tree cap = lambda_expr_this_capture (lambda, false))
+		quals = cp_type_quals (TREE_TYPE (TREE_TYPE (cap)));
+	    }
+	  else
+	    quals = cp_type_quals (ctype);
+	  context = cp_build_qualified_type (context, quals);
+	}
+      decl = build_dummy_object (context);
+    }
 
   return decl;
 }

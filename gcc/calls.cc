@@ -2095,7 +2095,8 @@ load_register_parameters (struct arg_data *args, int num_actuals,
 	  poly_int64 size = 0;
 	  HOST_WIDE_INT const_size = 0;
 	  rtx_insn *before_arg = get_last_insn ();
-	  tree type = TREE_TYPE (args[i].tree_value);
+	  tree tree_value = args[i].tree_value;
+	  tree type = TREE_TYPE (tree_value);
 	  if (RECORD_OR_UNION_TYPE_P (type) && TYPE_TRANSPARENT_AGGR (type))
 	    type = TREE_TYPE (first_field (type));
 	  /* Set non-negative if we must move a word at a time, even if
@@ -2172,6 +2173,24 @@ load_register_parameters (struct arg_data *args, int num_actuals,
 	      emit_move_insn (gen_rtx_REG (word_mode, REGNO (reg) + j),
 			      args[i].aligned_regs[j]);
 
+	  /* If we need a single register and the source is a constant
+	     VAR_DECL with a simple constructor, expand that constructor
+	     via a pseudo rather than read from (possibly misaligned)
+	     memory.  PR middle-end/95126.  */
+	  else if (nregs == 1
+		   && partial == 0
+		   && !args[i].pass_on_stack
+		   && VAR_P (tree_value)
+		   && TREE_READONLY (tree_value)
+		   && !TREE_SIDE_EFFECTS (tree_value)
+		   && immediate_const_ctor_p (DECL_INITIAL (tree_value)))
+	    {
+	      rtx target = gen_reg_rtx (word_mode);
+	      rtx x = expand_expr (DECL_INITIAL (tree_value),
+				   target, word_mode, EXPAND_NORMAL);
+	      reg = gen_rtx_REG (word_mode, REGNO (reg));
+	      emit_move_insn (reg, x);
+	    }
 	  else if (partial == 0 || args[i].pass_on_stack)
 	    {
 	      /* SIZE and CONST_SIZE are 0 for partial arguments and

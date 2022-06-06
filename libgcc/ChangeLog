@@ -1,3 +1,8 @@
+2022-06-01  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR libgcc/27576
+	* crtstuff.c (__EH_FRAME_BEGIN__): Aligned to pointer size.
+
 2022-05-25  Wilco Dijkstra  <wilco.dijkstra@arm.com>
 
 	PR libgcc/105708

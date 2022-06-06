@@ -335,6 +335,19 @@ public:
     return label_text ();
   }
 
+  diagnostic_event::meaning
+  get_meaning_for_state_change (const evdesc::state_change &change)
+    const final override
+  {
+    if (change.m_new_state == m_sm.m_started)
+      return diagnostic_event::meaning (diagnostic_event::VERB_acquire,
+					diagnostic_event::NOUN_resource);
+    if (change.m_new_state == m_sm.m_ended)
+      return diagnostic_event::meaning (diagnostic_event::VERB_release,
+					diagnostic_event::NOUN_resource);
+    return diagnostic_event::meaning ();
+  }
+
 protected:
   va_list_sm_diagnostic (const va_list_state_machine &sm,
 			 const svalue *ap_sval, tree ap_tree)

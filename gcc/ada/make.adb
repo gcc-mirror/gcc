@@ -44,6 +44,7 @@ with SFN_Scan;
 with Sinput;
 with Snames;
 with Stringt;
+with Uintp;
 
 pragma Warnings (Off);
 with System.HTable;
@@ -3676,6 +3677,7 @@ package body Make is
       Linker_Switches.Init;
 
       Csets.Initialize;
+      Uintp.Initialize;
       Snames.Initialize;
       Stringt.Initialize;
 

@@ -21,7 +21,7 @@
 
 @copying
 @quotation
-GNAT User's Guide for Native Platforms , Apr 22, 2022
+GNAT User's Guide for Native Platforms , May 24, 2022
 
 AdaCore
 
@@ -8552,7 +8552,8 @@ dynamically allocated objects.
 
 Makes GNAT emit warning and error messages as JSON. Inhibits printing of
 text warning and errors messages except if @code{-gnatv} or
-@code{-gnatl} are present.
+@code{-gnatl} are present. Uses absolute file paths when used along
+@code{-gnatef}.
 @end table
 
 @geindex -fdump-scos (gcc)
@@ -9037,7 +9038,8 @@ produced at run time.
 
 @item @code{-gnatef}
 
-Display full source path name in brief error messages.
+Display full source path name in brief error messages and absolute paths in
+@code{-fdiagnostics-format=json}’s output.
 @end table
 
 @geindex -gnateF (gcc)
@@ -29247,8 +29249,8 @@ to permit their use in free software.
 
 @printindex ge
 
-@anchor{cf}@w{                              }
 @anchor{gnat_ugn/gnat_utility_programs switches-related-to-project-files}@w{                              }
+@anchor{cf}@w{                              }
 
 @c %**end of body
 @bye

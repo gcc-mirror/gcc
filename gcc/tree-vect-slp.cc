@@ -1086,8 +1086,13 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
 	      tree vec = TREE_OPERAND (gimple_assign_rhs1 (stmt), 0);
 	      if (!is_a <bb_vec_info> (vinfo)
 		  || TREE_CODE (vec) != SSA_NAME
-		  || !operand_equal_p (TYPE_SIZE (vectype),
-				       TYPE_SIZE (TREE_TYPE (vec))))
+		  /* When the element types are not compatible we pun the
+		     source to the target vectype which requires equal size.  */
+		  || ((!VECTOR_TYPE_P (TREE_TYPE (vec))
+		       || !types_compatible_p (TREE_TYPE (vectype),
+					       TREE_TYPE (TREE_TYPE (vec))))
+		      && !operand_equal_p (TYPE_SIZE (vectype),
+					   TYPE_SIZE (TREE_TYPE (vec)))))
 		{
 		  if (dump_enabled_p ())
 		    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -1796,11 +1801,21 @@ vect_build_slp_tree_2 (vec_info *vinfo, slp_tree node,
 	  lperm.safe_push (std::make_pair (0, (unsigned)lane));
 	}
       slp_tree vnode = vect_create_new_slp_node (vNULL);
-      /* ???  We record vectype here but we hide eventually necessary
-	 punning and instead rely on code generation to materialize
-	 VIEW_CONVERT_EXPRs as necessary.  We instead should make
-	 this explicit somehow.  */
-      SLP_TREE_VECTYPE (vnode) = vectype;
+      if (operand_equal_p (TYPE_SIZE (vectype), TYPE_SIZE (TREE_TYPE (vec))))
+	/* ???  We record vectype here but we hide eventually necessary
+	   punning and instead rely on code generation to materialize
+	   VIEW_CONVERT_EXPRs as necessary.  We instead should make
+	   this explicit somehow.  */
+	SLP_TREE_VECTYPE (vnode) = vectype;
+      else
+	{
+	  /* For different size but compatible elements we can still
+	     use VEC_PERM_EXPR without punning.  */
+	  gcc_assert (VECTOR_TYPE_P (TREE_TYPE (vec))
+		      && types_compatible_p (TREE_TYPE (vectype),
+					     TREE_TYPE (TREE_TYPE (vec))));
+	  SLP_TREE_VECTYPE (vnode) = TREE_TYPE (vec);
+	}
       SLP_TREE_VEC_DEFS (vnode).safe_push (vec);
       /* We are always building a permutation node even if it is an identity
 	 permute to shield the rest of the vectorizer from the odd node
@@ -6900,7 +6915,8 @@ vect_add_slp_permutation (vec_info *vinfo, gimple_stmt_iterator *gsi,
   /* ???  We SLP match existing vector element extracts but
      allow punning which we need to re-instantiate at uses
      but have no good way of explicitly representing.  */
-  if (!types_compatible_p (TREE_TYPE (first_def), vectype))
+  if (operand_equal_p (TYPE_SIZE (TREE_TYPE (first_def)), TYPE_SIZE (vectype))
+      && !types_compatible_p (TREE_TYPE (first_def), vectype))
     {
       gassign *conv_stmt
 	= gimple_build_assign (make_ssa_name (vectype),
@@ -6912,7 +6928,9 @@ vect_add_slp_permutation (vec_info *vinfo, gimple_stmt_iterator *gsi,
   tree perm_dest = make_ssa_name (vectype);
   if (mask_vec)
     {
-      if (!types_compatible_p (TREE_TYPE (second_def), vectype))
+      if (operand_equal_p (TYPE_SIZE (TREE_TYPE (first_def)),
+			   TYPE_SIZE (vectype))
+	  && !types_compatible_p (TREE_TYPE (second_def), vectype))
 	{
 	  gassign *conv_stmt
 	    = gimple_build_assign (make_ssa_name (vectype),
@@ -6925,9 +6943,34 @@ vect_add_slp_permutation (vec_info *vinfo, gimple_stmt_iterator *gsi,
 				       first_def, second_def,
 				       mask_vec);
     }
+  else if (!types_compatible_p (TREE_TYPE (first_def), vectype))
+    {
+      /* For identity permutes we still need to handle the case
+	 of lowpart extracts or concats.  */
+      unsigned HOST_WIDE_INT c;
+      auto first_def_nunits
+	= TYPE_VECTOR_SUBPARTS (TREE_TYPE (first_def));
+      if (known_le (TYPE_VECTOR_SUBPARTS (vectype), first_def_nunits))
+	{
+	  tree lowpart = build3 (BIT_FIELD_REF, vectype, first_def,
+				 TYPE_SIZE (vectype), bitsize_zero_node);
+	  perm_stmt = gimple_build_assign (perm_dest, lowpart);
+	}
+      else if (constant_multiple_p (TYPE_VECTOR_SUBPARTS (vectype),
+				    first_def_nunits, &c) && c == 2)
+	{
+	  tree ctor = build_constructor_va (vectype, 2, NULL_TREE, first_def,
+					    NULL_TREE, second_def);
+	  perm_stmt = gimple_build_assign (perm_dest, ctor);
+	}
+      else
+	gcc_unreachable ();
+    }
   else
-    /* We need a copy here in case the def was external.  */
-    perm_stmt = gimple_build_assign (perm_dest, first_def);
+    {
+      /* We need a copy here in case the def was external.  */
+      perm_stmt = gimple_build_assign (perm_dest, first_def);
+    }
   vect_finish_stmt_generation (vinfo, NULL, perm_stmt, gsi);
   /* Store the vector statement in NODE.  */
   SLP_TREE_VEC_STMTS (node).quick_push (perm_stmt);
@@ -6950,21 +6993,32 @@ vectorizable_slp_permutation (vec_info *vinfo, gimple_stmt_iterator *gsi,
 {
   tree vectype = SLP_TREE_VECTYPE (node);
 
-  /* ???  We currently only support all same vector input and output types
+  /* ???  We currently only support all same vector input types
      while the SLP IL should really do a concat + select and thus accept
      arbitrary mismatches.  */
   slp_tree child;
   unsigned i;
   poly_uint64 nunits = TYPE_VECTOR_SUBPARTS (vectype);
   bool repeating_p = multiple_p (nunits, SLP_TREE_LANES (node));
+  tree op_vectype = NULL_TREE;
+  FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (node), i, child)
+    if (SLP_TREE_VECTYPE (child))
+      {
+	op_vectype = SLP_TREE_VECTYPE (child);
+	break;
+      }
+  if (!op_vectype)
+    op_vectype = vectype;
   FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (node), i, child)
     {
-      if (!vect_maybe_update_slp_op_vectype (child, vectype)
-	  || !types_compatible_p (SLP_TREE_VECTYPE (child), vectype))
+      if ((SLP_TREE_DEF_TYPE (child) != vect_internal_def
+	   && !vect_maybe_update_slp_op_vectype (child, op_vectype))
+	  || !types_compatible_p (SLP_TREE_VECTYPE (child), op_vectype)
+	  || !types_compatible_p (TREE_TYPE (vectype), TREE_TYPE (op_vectype)))
 	{
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			     "Unsupported lane permutation\n");
+			     "Unsupported vector types in lane permutation\n");
 	  return false;
 	}
       if (SLP_TREE_LANES (child) != SLP_TREE_LANES (node))
@@ -7121,11 +7175,20 @@ vectorizable_slp_permutation (vec_info *vinfo, gimple_stmt_iterator *gsi,
 
       if (index == count)
 	{
-	  indices.new_vector (mask, second_vec.first == -1U ? 1 : 2, nunits);
+	  indices.new_vector (mask, second_vec.first == -1U ? 1 : 2,
+			      TYPE_VECTOR_SUBPARTS (op_vectype));
 	  bool identity_p = indices.series_p (0, 1, 0, 1);
 	  machine_mode vmode = TYPE_MODE (vectype);
-	  if (!identity_p
-	      && !can_vec_perm_const_p (vmode, vmode, indices))
+	  machine_mode op_vmode = TYPE_MODE (op_vectype);
+	  unsigned HOST_WIDE_INT c;
+	  if ((!identity_p
+	       && !can_vec_perm_const_p (vmode, op_vmode, indices))
+	      || (identity_p
+		  && !known_le (nunits,
+				TYPE_VECTOR_SUBPARTS (op_vectype))
+		  && (!constant_multiple_p (nunits,
+					    TYPE_VECTOR_SUBPARTS (op_vectype),
+					    &c) || c != 2)))
 	    {
 	      if (dump_enabled_p ())
 		{

@@ -31,6 +31,7 @@ with Elists;         use Elists;
 with Errout;         use Errout;
 with Erroutc;        use Erroutc;
 with Exp_Ch3;        use Exp_Ch3;
+with Exp_Ch6;        use Exp_Ch6;
 with Exp_Ch11;       use Exp_Ch11;
 with Exp_Util;       use Exp_Util;
 with Fname;          use Fname;
@@ -2532,6 +2533,80 @@ package body Sem_Util is
          return Act;
       end;
    end Build_Default_Subtype;
+
+   ------------------------------
+   -- Build_Default_Subtype_OK --
+   ------------------------------
+
+   function Build_Default_Subtype_OK (T : Entity_Id) return Boolean is
+
+      function Default_Discriminant_Values_Known_At_Compile_Time
+         (T : Entity_Id) return Boolean;
+         --  For an unconstrained type T, return False if the given type has a
+         --  discriminant with default value not known at compile time. Return
+         --  True otherwise.
+
+      ---------------------------------------------------------
+      -- Default_Discriminant_Values_Known_At_Compile_Time --
+      ---------------------------------------------------------
+
+      function Default_Discriminant_Values_Known_At_Compile_Time
+         (T : Entity_Id) return Boolean
+      is
+         Discr : Entity_Id;
+         DDV : Node_Id;
+
+      begin
+
+         --  If the type has no discriminant, we know them all at compile time
+
+         if not Has_Discriminants (T) then
+            return True;
+         end if;
+
+         --  The type has discriminants, check that none of them has a default
+         --  value not known at compile time.
+
+         Discr := First_Discriminant (T);
+
+         while Present (Discr) loop
+            DDV := Discriminant_Default_Value (Discr);
+
+            if Present (DDV) and then not Compile_Time_Known_Value (DDV) then
+               return False;
+            end if;
+
+            Next_Discriminant (Discr);
+         end loop;
+
+         return True;
+      end Default_Discriminant_Values_Known_At_Compile_Time;
+
+   --  Start of processing for Build_Default_Subtype_OK
+
+   begin
+
+      if Is_Constrained (T) then
+
+         --  We won't build a new subtype if T is constrained
+
+         return False;
+      end if;
+
+      if not Default_Discriminant_Values_Known_At_Compile_Time (T) then
+
+         --  This is a special case of definite subtypes. To allocate a
+         --  specific size to the subtype, we need to know the value at compile
+         --  time. This might not be the case if the default value is the
+         --  result of a function. In that case, the object might be definite
+         --  and limited but the needed size might not be statically known or
+         --  too tricky to obtain. In that case, we will not build the subtype.
+
+         return False;
+      end if;
+
+      return Is_Definite_Subtype (T) and then Is_Limited_View (T);
+   end Build_Default_Subtype_OK;
 
    --------------------------------------------
    -- Build_Discriminal_Subtype_Of_Component --
@@ -6807,19 +6882,25 @@ package body Sem_Util is
    ----------------------------
 
    procedure Compute_Returns_By_Ref (Func : Entity_Id) is
-      Typ  : constant Entity_Id := Etype (Func);
+      Kind : constant Entity_Kind := Ekind (Func);
+      Typ  : constant Entity_Id   := Etype (Func);
 
    begin
-      if Is_Limited_View (Typ) then
+      --  Nothing to do for procedures
+
+      if Kind in E_Procedure | E_Generic_Procedure
+        or else (Kind = E_Subprogram_Type and then Typ = Standard_Void_Type)
+      then
+         null;
+
+      --  The build-in-place protocols return a reference to the result
+
+      elsif Is_Build_In_Place_Function (Func) then
          Set_Returns_By_Ref (Func);
 
-      --  For class-wide types and types which both need finalization and are
-      --  returned on the secondary stack, the secondary stack allocation is
-      --  done by the front end, see Expand_Simple_Function_Return.
+      --  In Ada 95, limited types are returned by reference
 
-      elsif Returns_On_Secondary_Stack (Typ)
-        and then CW_Or_Needs_Finalization (Underlying_Type (Typ))
-      then
+      elsif Is_Limited_View (Typ) then
          Set_Returns_By_Ref (Func);
       end if;
    end Compute_Returns_By_Ref;
@@ -7048,16 +7129,14 @@ package body Sem_Util is
 
       --  Create new entities for the formal parameters
 
-      if Present (Parameter_Specifications (Result)) then
-         Formal_Spec := First (Parameter_Specifications (Result));
-         while Present (Formal_Spec) loop
-            Def_Id := Defining_Identifier (Formal_Spec);
-            Set_Defining_Identifier (Formal_Spec,
-              Make_Defining_Identifier (Sloc (Def_Id), Chars (Def_Id)));
+      Formal_Spec := First (Parameter_Specifications (Result));
+      while Present (Formal_Spec) loop
+         Def_Id := Defining_Identifier (Formal_Spec);
+         Set_Defining_Identifier (Formal_Spec,
+           Make_Defining_Identifier (Sloc (Def_Id), Chars (Def_Id)));
 
-            Next (Formal_Spec);
-         end loop;
-      end if;
+         Next (Formal_Spec);
+      end loop;
 
       return Result;
    end Copy_Subprogram_Spec;
@@ -8825,47 +8904,9 @@ package body Sem_Util is
 
       --  Warn if new entity hides an old one
 
-      if Warn_On_Hiding and then Present (C)
-
-        --  Don't warn for record components since they always have a well
-        --  defined scope which does not confuse other uses. Note that in
-        --  some cases, Ekind has not been set yet.
-
-        and then Ekind (C) /= E_Component
-        and then Ekind (C) /= E_Discriminant
-        and then Nkind (Parent (C)) /= N_Component_Declaration
-        and then Ekind (Def_Id) /= E_Component
-        and then Ekind (Def_Id) /= E_Discriminant
-        and then Nkind (Parent (Def_Id)) /= N_Component_Declaration
-
-        --  Don't warn for one character variables. It is too common to use
-        --  such variables as locals and will just cause too many false hits.
-
-        and then Length_Of_Name (Chars (C)) /= 1
-
-        --  Don't warn for non-source entities
-
-        and then Comes_From_Source (C)
-        and then Comes_From_Source (Def_Id)
-
-        --  Don't warn within a generic instantiation
-
-        and then not In_Instance
-
-        --  Don't warn unless entity in question is in extended main source
-
-        and then In_Extended_Main_Source_Unit (Def_Id)
-
-        --  Finally, the hidden entity must be either immediately visible or
-        --  use visible (i.e. from a used package).
-
-        and then
-          (Is_Immediately_Visible (C)
-             or else
-           Is_Potentially_Use_Visible (C))
-      then
-         Error_Msg_Sloc := Sloc (C);
-         Error_Msg_N ("declaration hides &#?h?", Def_Id);
+      if Warn_On_Hiding and then Present (C) then
+         Warn_On_Hiding_Entity (Def_Id, Hidden => C, Visible => Def_Id,
+                                On_Use_Clause => False);
       end if;
    end Enter_Name;
 
@@ -19052,13 +19093,11 @@ package body Sem_Util is
          Nod : Node_Id;
 
       begin
-         if Present (List) then
-            Nod := First (List);
-            while Present (Nod) loop
-               Visit (Nod);
-               Next (Nod);
-            end loop;
-         end if;
+         Nod := First (List);
+         while Present (Nod) loop
+            Visit (Nod);
+            Next (Nod);
+         end loop;
       end Visit_List;
 
       ------------------
@@ -23229,6 +23268,268 @@ package body Sem_Util is
       end if;
    end Needs_Result_Accessibility_Level;
 
+   ----------------------------
+   --  Needs_Secondary_Stack --
+   ----------------------------
+
+   function Needs_Secondary_Stack (Id : Entity_Id) return Boolean is
+      pragma Assert (if Present (Id) then Ekind (Id) in E_Void | Type_Kind);
+
+      function Caller_Known_Size_Record (Typ : Entity_Id) return Boolean;
+      --  Called for untagged record and protected types. Return True if the
+      --  size of function results is known in the caller for Typ.
+
+      function Large_Max_Size_Mutable (Typ : Entity_Id) return Boolean;
+      --  Returns True if Typ is a nonlimited record with defaulted
+      --  discriminants whose max size makes it unsuitable for allocating on
+      --  the primary stack.
+
+      ------------------------------
+      -- Caller_Known_Size_Record --
+      ------------------------------
+
+      function Caller_Known_Size_Record (Typ : Entity_Id) return Boolean is
+         pragma Assert (Typ = Underlying_Type (Typ));
+
+         function Depends_On_Discriminant (Typ : Entity_Id) return Boolean;
+         --  Called for untagged record and protected types. Return True if Typ
+         --  depends on discriminants, either directly when it is unconstrained
+         --  or indirectly when it is constrained by uplevel discriminants.
+
+         -----------------------------
+         -- Depends_On_Discriminant --
+         -----------------------------
+
+         function Depends_On_Discriminant (Typ : Entity_Id) return Boolean is
+            Cons : Elmt_Id;
+
+         begin
+            if Has_Discriminants (Typ) then
+               if not Is_Constrained (Typ) then
+                  return True;
+
+               else
+                  Cons := First_Elmt (Discriminant_Constraint (Typ));
+                  while Present (Cons) loop
+                     if Nkind (Node (Cons)) = N_Identifier
+                       and then Ekind (Entity (Node (Cons))) = E_Discriminant
+                     then
+                        return True;
+                     end if;
+
+                     Next_Elmt (Cons);
+                  end loop;
+               end if;
+            end if;
+
+            return False;
+         end Depends_On_Discriminant;
+
+      begin
+         --  First see if we have a variant part and return False if it depends
+         --  on discriminants.
+
+         if Has_Variant_Part (Typ) and then Depends_On_Discriminant (Typ) then
+            return False;
+         end if;
+
+         --  Then loop over components and return False if their subtype has a
+         --  caller-unknown size, possibly recursively.
+
+         --  ??? This is overly conservative, an array could be nested inside
+         --  some other record that is constrained by nondiscriminants. That
+         --  is, the recursive calls are too conservative.
+
+         declare
+            Comp : Entity_Id;
+
+         begin
+            Comp := First_Component (Typ);
+            while Present (Comp) loop
+               declare
+                  Comp_Type : constant Entity_Id :=
+                                Underlying_Type (Etype (Comp));
+
+               begin
+                  if Is_Record_Type (Comp_Type)
+                        or else
+                     Is_Protected_Type (Comp_Type)
+                  then
+                     if not Caller_Known_Size_Record (Comp_Type) then
+                        return False;
+                     end if;
+
+                  elsif Is_Array_Type (Comp_Type) then
+                     if Size_Depends_On_Discriminant (Comp_Type) then
+                        return False;
+                     end if;
+                  end if;
+               end;
+
+               Next_Component (Comp);
+            end loop;
+         end;
+
+         return True;
+      end Caller_Known_Size_Record;
+
+      ------------------------------
+      -- Large_Max_Size_Mutable --
+      ------------------------------
+
+      function Large_Max_Size_Mutable (Typ : Entity_Id) return Boolean is
+         pragma Assert (Typ = Underlying_Type (Typ));
+
+         function Is_Large_Discrete_Type (T : Entity_Id) return Boolean;
+         --  Returns true if the discrete type T has a large range
+
+         ----------------------------
+         -- Is_Large_Discrete_Type --
+         ----------------------------
+
+         function Is_Large_Discrete_Type (T : Entity_Id) return Boolean is
+            Threshold : constant Int := 16;
+            --  Arbitrary threshold above which we consider it "large". We want
+            --  a fairly large threshold, because these large types really
+            --  shouldn't have default discriminants in the first place, in
+            --  most cases.
+
+         begin
+            return UI_To_Int (RM_Size (T)) > Threshold;
+         end Is_Large_Discrete_Type;
+
+      --  Start of processing for Large_Max_Size_Mutable
+
+      begin
+         if Is_Record_Type (Typ)
+           and then not Is_Limited_View (Typ)
+           and then Has_Defaulted_Discriminants (Typ)
+         then
+            --  Loop through the components, looking for an array whose upper
+            --  bound(s) depends on discriminants, where both the subtype of
+            --  the discriminant and the index subtype are too large.
+
+            declare
+               Comp : Entity_Id;
+
+            begin
+               Comp := First_Component (Typ);
+               while Present (Comp) loop
+                  declare
+                     Comp_Type : constant Entity_Id :=
+                                   Underlying_Type (Etype (Comp));
+
+                     Hi   : Node_Id;
+                     Indx : Node_Id;
+                     Ityp : Entity_Id;
+
+                  begin
+                     if Is_Array_Type (Comp_Type) then
+                        Indx := First_Index (Comp_Type);
+
+                        while Present (Indx) loop
+                           Ityp := Etype (Indx);
+                           Hi := Type_High_Bound (Ityp);
+
+                           if Nkind (Hi) = N_Identifier
+                             and then Ekind (Entity (Hi)) = E_Discriminant
+                             and then Is_Large_Discrete_Type (Ityp)
+                             and then Is_Large_Discrete_Type
+                                        (Etype (Entity (Hi)))
+                           then
+                              return True;
+                           end if;
+
+                           Next_Index (Indx);
+                        end loop;
+                     end if;
+                  end;
+
+                  Next_Component (Comp);
+               end loop;
+            end;
+         end if;
+
+         return False;
+      end Large_Max_Size_Mutable;
+
+      --  Local declarations
+
+      Typ : constant Entity_Id := Underlying_Type (Id);
+
+   --  Start of processing for Needs_Secondary_Stack
+
+   begin
+      --  This is a private type which is not completed yet. This can only
+      --  happen in a default expression (of a formal parameter or of a
+      --  record component). Do not expand transient scope in this case.
+
+      if No (Typ) then
+         return False;
+      end if;
+
+      --  Do not expand transient scope for non-existent procedure return or
+      --  string literal types.
+
+      if Typ = Standard_Void_Type
+        or else Ekind (Typ) = E_String_Literal_Subtype
+      then
+         return False;
+
+      --  If Typ is a generic formal incomplete type, then we want to look at
+      --  the actual type.
+
+      elsif Ekind (Typ) = E_Record_Subtype
+        and then Present (Cloned_Subtype (Typ))
+      then
+         return Needs_Secondary_Stack (Cloned_Subtype (Typ));
+
+      --  Class-wide types obviously have an unknown size. For specific tagged
+      --  types, if a call returning one of them is dispatching on result, and
+      --  this type is not returned on the secondary stack, then the call goes
+      --  through a thunk that only moves the result from the primary onto the
+      --  secondary stack, because the computation of the size of the result is
+      --  possible but complex from the outside.
+
+      elsif Is_Class_Wide_Type (Typ) then
+         return True;
+
+      --  If the return slot of the back end cannot be accessed, then there
+      --  is no way to call Adjust at the right time for the return object if
+      --  the type needs finalization, so the return object must be allocated
+      --  on the secondary stack.
+
+      elsif not Back_End_Return_Slot and then Needs_Finalization (Typ) then
+         return True;
+
+      --  Definite subtypes have a known size. This includes all elementary
+      --  types. Tasks have a known size even if they have discriminants, so
+      --  we return False here, with one exception:
+      --  For a type like:
+      --    type T (Last : Natural := 0) is
+      --       X : String (1 .. Last);
+      --    end record;
+      --  we return True. That's because for "P(F(...));", where F returns T,
+      --  we don't know the size of the result at the call site, so if we
+      --  allocated it on the primary stack, we would have to allocate the
+      --  maximum size, which is way too big.
+
+      elsif Is_Definite_Subtype (Typ) or else Is_Task_Type (Typ) then
+         return Large_Max_Size_Mutable (Typ);
+
+      --  Indefinite (discriminated) record or protected type
+
+      elsif Is_Record_Type (Typ) or else Is_Protected_Type (Typ) then
+         return not Caller_Known_Size_Record (Typ);
+
+      --  Unconstrained array
+
+      else
+         pragma Assert (Is_Array_Type (Typ) and not Is_Definite_Subtype (Typ));
+         return True;
+      end if;
+   end Needs_Secondary_Stack;
+
    ---------------------------------
    -- Needs_Simple_Initialization --
    ---------------------------------
@@ -27015,7 +27316,7 @@ package body Sem_Util is
          --  The setting of the attributes is intentionally conservative. This
          --  prevents accidental clobbering of enabled attributes. We need to
          --  call Base_Type twice, because it is sometimes not set to an actual
-         --  base type.
+         --  base type???
 
          if Has_Inherited_DIC (From_Typ) then
             Set_Has_Inherited_DIC (Base_Type (Base_Type (Typ)));
@@ -27065,14 +27366,14 @@ package body Sem_Util is
          --  The setting of the attributes is intentionally conservative. This
          --  prevents accidental clobbering of enabled attributes. We need to
          --  call Base_Type twice, because it is sometimes not set to an actual
-         --  base type.
+         --  base type???
 
          if Has_Inheritable_Invariants (From_Typ) then
-            Set_Has_Inheritable_Invariants (Typ);
+            Set_Has_Inheritable_Invariants (Base_Type (Base_Type (Typ)));
          end if;
 
          if Has_Inherited_Invariants (From_Typ) then
-            Set_Has_Inherited_Invariants (Typ);
+            Set_Has_Inherited_Invariants (Base_Type (Base_Type (Typ)));
          end if;
 
          if Has_Own_Invariants (From_Typ) then
@@ -27370,7 +27671,7 @@ package body Sem_Util is
 
    function Requires_Transient_Scope (Typ : Entity_Id) return Boolean is
    begin
-      return Returns_On_Secondary_Stack (Typ) or else Needs_Finalization (Typ);
+      return Needs_Secondary_Stack (Typ) or else Needs_Finalization (Typ);
    end Requires_Transient_Scope;
 
    --------------------------
@@ -27417,234 +27718,6 @@ package body Sem_Util is
       SPARK_Mode        := Mode;
       SPARK_Mode_Pragma := Prag;
    end Restore_SPARK_Mode;
-
-   ---------------------------------
-   --  Returns_On_Secondary_Stack --
-   ---------------------------------
-
-   function Returns_On_Secondary_Stack (Id : Entity_Id) return Boolean is
-      pragma Assert (if Present (Id) then Ekind (Id) in E_Void | Type_Kind);
-
-      function Caller_Known_Size_Record (Typ : Entity_Id) return Boolean;
-      --  This is called for untagged records and protected types, with
-      --  nondefaulted discriminants. Returns True if the size of function
-      --  results is known at the call site, False otherwise. Returns False
-      --  if there is a variant part that depends on the discriminants of
-      --  this type, or if there is an array constrained by the discriminants
-      --  of this type. ???Currently, this is overly conservative (the array
-      --  could be nested inside some other record that is constrained by
-      --  nondiscriminants). That is, the recursive calls are too conservative.
-
-      function Large_Max_Size_Mutable (Typ : Entity_Id) return Boolean;
-      --  Returns True if Typ is a nonlimited record with defaulted
-      --  discriminants whose max size makes it unsuitable for allocating on
-      --  the primary stack.
-
-      ------------------------------
-      -- Caller_Known_Size_Record --
-      ------------------------------
-
-      function Caller_Known_Size_Record (Typ : Entity_Id) return Boolean is
-         pragma Assert (Typ = Underlying_Type (Typ));
-
-      begin
-         if Has_Variant_Part (Typ) and then not Is_Definite_Subtype (Typ) then
-            return False;
-         end if;
-
-         declare
-            Comp : Entity_Id;
-
-         begin
-            Comp := First_Component (Typ);
-            while Present (Comp) loop
-
-               --  Only look at E_Component entities. No need to look at
-               --  E_Discriminant entities, and we must ignore internal
-               --  subtypes generated for constrained components.
-
-               declare
-                  Comp_Type : constant Entity_Id :=
-                                Underlying_Type (Etype (Comp));
-
-               begin
-                  if Is_Record_Type (Comp_Type)
-                        or else
-                     Is_Protected_Type (Comp_Type)
-                  then
-                     if not Caller_Known_Size_Record (Comp_Type) then
-                        return False;
-                     end if;
-
-                  elsif Is_Array_Type (Comp_Type) then
-                     if Size_Depends_On_Discriminant (Comp_Type) then
-                        return False;
-                     end if;
-                  end if;
-               end;
-
-               Next_Component (Comp);
-            end loop;
-         end;
-
-         return True;
-      end Caller_Known_Size_Record;
-
-      ------------------------------
-      -- Large_Max_Size_Mutable --
-      ------------------------------
-
-      function Large_Max_Size_Mutable (Typ : Entity_Id) return Boolean is
-         pragma Assert (Typ = Underlying_Type (Typ));
-
-         function Is_Large_Discrete_Type (T : Entity_Id) return Boolean;
-         --  Returns true if the discrete type T has a large range
-
-         ----------------------------
-         -- Is_Large_Discrete_Type --
-         ----------------------------
-
-         function Is_Large_Discrete_Type (T : Entity_Id) return Boolean is
-            Threshold : constant Int := 16;
-            --  Arbitrary threshold above which we consider it "large". We want
-            --  a fairly large threshold, because these large types really
-            --  shouldn't have default discriminants in the first place, in
-            --  most cases.
-
-         begin
-            return UI_To_Int (RM_Size (T)) > Threshold;
-         end Is_Large_Discrete_Type;
-
-      --  Start of processing for Large_Max_Size_Mutable
-
-      begin
-         if Is_Record_Type (Typ)
-           and then not Is_Limited_View (Typ)
-           and then Has_Defaulted_Discriminants (Typ)
-         then
-            --  Loop through the components, looking for an array whose upper
-            --  bound(s) depends on discriminants, where both the subtype of
-            --  the discriminant and the index subtype are too large.
-
-            declare
-               Comp : Entity_Id;
-
-            begin
-               Comp := First_Component (Typ);
-               while Present (Comp) loop
-                  declare
-                     Comp_Type : constant Entity_Id :=
-                                   Underlying_Type (Etype (Comp));
-
-                     Hi   : Node_Id;
-                     Indx : Node_Id;
-                     Ityp : Entity_Id;
-
-                  begin
-                     if Is_Array_Type (Comp_Type) then
-                        Indx := First_Index (Comp_Type);
-
-                        while Present (Indx) loop
-                           Ityp := Etype (Indx);
-                           Hi := Type_High_Bound (Ityp);
-
-                           if Nkind (Hi) = N_Identifier
-                             and then Ekind (Entity (Hi)) = E_Discriminant
-                             and then Is_Large_Discrete_Type (Ityp)
-                             and then Is_Large_Discrete_Type
-                                        (Etype (Entity (Hi)))
-                           then
-                              return True;
-                           end if;
-
-                           Next_Index (Indx);
-                        end loop;
-                     end if;
-                  end;
-
-                  Next_Component (Comp);
-               end loop;
-            end;
-         end if;
-
-         return False;
-      end Large_Max_Size_Mutable;
-
-      --  Local declarations
-
-      Typ : constant Entity_Id := Underlying_Type (Id);
-
-   --  Start of processing for Returns_On_Secondary_Stack
-
-   begin
-      --  This is a private type which is not completed yet. This can only
-      --  happen in a default expression (of a formal parameter or of a
-      --  record component). Do not expand transient scope in this case.
-
-      if No (Typ) then
-         return False;
-      end if;
-
-      --  Do not expand transient scope for non-existent procedure return or
-      --  string literal types.
-
-      if Typ = Standard_Void_Type
-        or else Ekind (Typ) = E_String_Literal_Subtype
-      then
-         return False;
-
-      --  If Typ is a generic formal incomplete type, then we want to look at
-      --  the actual type.
-
-      elsif Ekind (Typ) = E_Record_Subtype
-        and then Present (Cloned_Subtype (Typ))
-      then
-         return Returns_On_Secondary_Stack (Cloned_Subtype (Typ));
-
-      --  Functions returning specific tagged types may dispatch on result, so
-      --  their returned value is allocated on the secondary stack, even in the
-      --  definite case. We must treat nondispatching functions the same way,
-      --  because access-to-function types can point at both, so the calling
-      --  conventions must be compatible.
-
-      elsif Is_Tagged_Type (Typ) then
-         return True;
-
-      --  If the return slot of the back end cannot be accessed, then there
-      --  is no way to call Adjust at the right time for the return object if
-      --  the type needs finalization, so the return object must be allocated
-      --  on the secondary stack.
-
-      elsif not Back_End_Return_Slot and then Needs_Finalization (Typ) then
-         return True;
-
-      --  Untagged definite subtypes are known size. This includes all
-      --  elementary [sub]types. Tasks are known size even if they have
-      --  discriminants. So we return False here, with one exception:
-      --  For a type like:
-      --    type T (Last : Natural := 0) is
-      --       X : String (1 .. Last);
-      --    end record;
-      --  we return True. That's because for "P(F(...));", where F returns T,
-      --  we don't know the size of the result at the call site, so if we
-      --  allocated it on the primary stack, we would have to allocate the
-      --  maximum size, which is way too big.
-
-      elsif Is_Definite_Subtype (Typ) or else Is_Task_Type (Typ) then
-         return Large_Max_Size_Mutable (Typ);
-
-      --  Indefinite (discriminated) untagged record or protected type
-
-      elsif Is_Record_Type (Typ) or else Is_Protected_Type (Typ) then
-         return not Caller_Known_Size_Record (Typ);
-
-      --  Unconstrained array
-
-      else
-         pragma Assert (Is_Array_Type (Typ) and not Is_Definite_Subtype (Typ));
-         return True;
-      end if;
-   end Returns_On_Secondary_Stack;
 
    --------------------------------
    -- Returns_Unconstrained_Type --
@@ -30344,6 +30417,69 @@ package body Sem_Util is
       return List_1;
    end Visible_Ancestors;
 
+   ---------------------------
+   -- Warn_On_Hiding_Entity --
+   ---------------------------
+
+   procedure Warn_On_Hiding_Entity
+     (N               : Node_Id;
+      Hidden, Visible : Entity_Id;
+      On_Use_Clause   : Boolean)
+   is
+   begin
+      --  Don't warn for record components since they always have a well
+      --  defined scope which does not confuse other uses. Note that in
+      --  some cases, Ekind has not been set yet.
+
+      if Ekind (Hidden) /= E_Component
+        and then Ekind (Hidden) /= E_Discriminant
+        and then Nkind (Parent (Hidden)) /= N_Component_Declaration
+        and then Ekind (Visible) /= E_Component
+        and then Ekind (Visible) /= E_Discriminant
+        and then Nkind (Parent (Visible)) /= N_Component_Declaration
+
+        --  Don't warn for one character variables. It is too common to use
+        --  such variables as locals and will just cause too many false hits.
+
+        and then Length_Of_Name (Chars (Hidden)) /= 1
+
+        --  Don't warn for non-source entities
+
+        and then Comes_From_Source (Hidden)
+        and then Comes_From_Source (Visible)
+
+        --  Don't warn within a generic instantiation
+
+        and then not In_Instance
+
+        --  Don't warn unless entity in question is in extended main source
+
+        and then In_Extended_Main_Source_Unit (Visible)
+
+        --  Finally, in the case of a declaration, the hidden entity must
+        --  be either immediately visible or use visible (i.e. from a used
+        --  package). In the case of a use clause, the visible entity must
+        --  be immediately visible.
+
+        and then
+          (if On_Use_Clause then
+             Is_Immediately_Visible (Visible)
+           else
+             (Is_Immediately_Visible (Hidden)
+               or else
+              Is_Potentially_Use_Visible (Hidden)))
+      then
+         if On_Use_Clause then
+            Error_Msg_Sloc := Sloc (Visible);
+            Error_Msg_NE ("visible declaration of&# hides homonym "
+                          & "from use clause?h?", N, Hidden);
+         else
+            Error_Msg_Sloc := Sloc (Hidden);
+            Error_Msg_NE ("declaration hides &#?h?", N, Visible);
+         end if;
+      end if;
+   end Warn_On_Hiding_Entity;
+
    ----------------------
    -- Within_Init_Proc --
    ----------------------
@@ -32069,10 +32205,9 @@ package body Sem_Util is
             --    type Typ (Len : Natural := 0) is
             --      record F : String (1 .. Len); end record;
             --
-            --  See Large_Max_Size_Mutable function elsewhere in this
-            --  file (currently declared inside of
-            --  Requires_Transient_Scope, so it would have to be
-            --  moved if we want it to be callable from here).
+            --  See Large_Max_Size_Mutable function elsewhere in this file,
+            --  currently declared inside of Needs_Secondary_Stack, so it
+            --  would have to be moved if we want it to be callable from here.
 
          end Indirect_Temp_Needed;
 

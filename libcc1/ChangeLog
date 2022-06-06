@@ -1,3 +1,8 @@
+2022-06-01  David Seifert  <soap@gentoo.org>
+
+	PR plugins/95648
+	* configure: Regenerate.
+
 2021-12-16  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/51577

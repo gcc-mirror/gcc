@@ -9831,22 +9831,20 @@ package body Sem_Ch8 is
       Decl : Node_Id;
 
    begin
-      if Present (L) then
-         Decl := First (L);
-         while Present (Decl) loop
-            if Nkind (Decl) = N_Use_Package_Clause then
-               Chain_Use_Clause (Decl);
-               Use_One_Package (Decl, Name (Decl));
+      Decl := First (L);
+      while Present (Decl) loop
+         if Nkind (Decl) = N_Use_Package_Clause then
+            Chain_Use_Clause (Decl);
+            Use_One_Package (Decl, Name (Decl));
 
-            elsif Nkind (Decl) = N_Use_Type_Clause then
-               Chain_Use_Clause (Decl);
-               Use_One_Type (Subtype_Mark (Decl));
+         elsif Nkind (Decl) = N_Use_Type_Clause then
+            Chain_Use_Clause (Decl);
+            Use_One_Type (Subtype_Mark (Decl));
 
-            end if;
+         end if;
 
-            Next (Decl);
-         end loop;
-      end if;
+         Next (Decl);
+      end loop;
    end Set_Use;
 
    -----------------------------
@@ -10325,6 +10323,11 @@ package body Sem_Ch8 is
                if No (Current_Instance) then
 
                   --  Potentially use-visible entity remains hidden
+
+                  if Warn_On_Hiding then
+                     Warn_On_Hiding_Entity (N, Hidden => Id, Visible => Prev,
+                                            On_Use_Clause => True);
+                  end if;
 
                   goto Next_Usable_Entity;
 

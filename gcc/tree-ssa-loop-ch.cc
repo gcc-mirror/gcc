@@ -55,7 +55,7 @@ entry_loop_condition_is_static (class loop *l, path_range_query *query)
   gcond *last = safe_dyn_cast <gcond *> (last_stmt (e->dest));
 
   if (!last
-      || !irange::supports_type_p (TREE_TYPE (gimple_cond_lhs (last))))
+      || !irange::supports_p (TREE_TYPE (gimple_cond_lhs (last))))
     return false;
 
   edge true_e, false_e;

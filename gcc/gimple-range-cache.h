@@ -34,8 +34,8 @@ public:
   block_range_cache ();
   ~block_range_cache ();
 
-  bool set_bb_range (tree name, const_basic_block bb, const irange &r);
-  bool get_bb_range (irange &r, tree name, const_basic_block bb);
+  bool set_bb_range (tree name, const_basic_block bb, const vrange &v);
+  bool get_bb_range (vrange &v, tree name, const_basic_block bb);
   bool bb_range_p (tree name, const_basic_block bb);
 
   void dump (FILE *f);
@@ -44,7 +44,7 @@ private:
   vec<class ssa_block_ranges *> m_ssa_ranges;
   ssa_block_ranges &get_block_ranges (tree name);
   ssa_block_ranges *query_block_ranges (tree name);
-  irange_allocator *m_irange_allocator;
+  vrange_allocator *m_range_allocator;
   bitmap_obstack m_bitmaps;
 };
 
@@ -57,14 +57,14 @@ class ssa_global_cache
 public:
   ssa_global_cache ();
   ~ssa_global_cache ();
-  bool get_global_range (irange &r, tree name) const;
-  bool set_global_range (tree name, const irange &r);
+  bool get_global_range (vrange &r, tree name) const;
+  bool set_global_range (tree name, const vrange &r);
   void clear_global_range (tree name);
   void clear ();
   void dump (FILE *f = stderr);
 private:
-  vec<irange *> m_tab;
-  class irange_allocator *m_irange_allocator;
+  vec<vrange *> m_tab;
+  vrange_allocator *m_range_allocator;
 };
 
 // This class provides all the caches a global ranger may need, and makes 
@@ -77,13 +77,13 @@ public:
   ranger_cache (int not_executable_flag, bool use_imm_uses);
   ~ranger_cache ();
 
-  virtual bool range_of_expr (irange &r, tree name, gimple *stmt);
-  virtual bool range_on_edge (irange &r, edge e, tree expr);
-  bool block_range (irange &r, basic_block bb, tree name, bool calc = true);
+  virtual bool range_of_expr (vrange &r, tree name, gimple *stmt);
+  virtual bool range_on_edge (vrange &r, edge e, tree expr);
+  bool block_range (vrange &r, basic_block bb, tree name, bool calc = true);
 
-  bool get_global_range (irange &r, tree name) const;
-  bool get_global_range (irange &r, tree name, bool &current_p);
-  void set_global_range (tree name, const irange &r);
+  bool get_global_range (vrange &r, tree name) const;
+  bool get_global_range (vrange &r, tree name, bool &current_p);
+  void set_global_range (tree name, const vrange &r);
 
   void propagate_updated_value (tree name, basic_block bb);
 
@@ -106,11 +106,11 @@ private:
       RFD_READ_ONLY,	// Scan DOM tree, do not write to cache.
       RFD_FILL		// Scan DOM tree, updating important nodes.
     };
-  bool range_from_dom (irange &r, tree name, basic_block bb, enum rfd_mode);
-  void range_of_def (irange &r, tree name, basic_block bb = NULL);
-  void entry_range (irange &r, tree expr, basic_block bb, enum rfd_mode);
-  void exit_range (irange &r, tree expr, basic_block bb, enum rfd_mode);
-  bool edge_range (irange &r, edge e, tree name, enum rfd_mode);
+  bool range_from_dom (vrange &r, tree name, basic_block bb, enum rfd_mode);
+  void range_of_def (vrange &r, tree name, basic_block bb = NULL);
+  void entry_range (vrange &r, tree expr, basic_block bb, enum rfd_mode);
+  void exit_range (vrange &r, tree expr, basic_block bb, enum rfd_mode);
+  bool edge_range (vrange &r, edge e, tree name, enum rfd_mode);
 
   vec<basic_block> m_workback;
   class update_list *m_update;

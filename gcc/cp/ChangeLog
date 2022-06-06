@@ -1,3 +1,173 @@
+2022-06-04  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/102399
+	PR c++/69585
+	* parser.cc (cp_parser_attributes_opt): Accept GNU attributes
+	followed by [[]] attributes and vice versa.
+
+2022-06-03  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/105756
+	* typeck.cc (cp_build_binary_op): Don't fold operands
+	when c_inhibit_evaluation_warnings.
+
+2022-06-03  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105761
+	* decl.cc (duplicate_decls): Don't copy DECL_TEMPLATE_INFO
+	from a hidden friend.
+
+2022-06-03  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/105637
+	* tree.cc (maybe_dummy_object): When returning a dummy
+	object, respect the cv-quals of 'this' if available.
+
+2022-06-03  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/100374
+	* pt.cc (determine_specialization): Compare overall constraints
+	not just the trailing constraints.
+	(tsubst_each_template_parm_constraints): Define.
+	(tsubst_friend_function): Use it.
+	(tsubst_friend_class): Use it.
+	(tsubst_template_parm): Don't substitute TEMPLATE_PARM_CONSTRAINTS.
+
+2022-06-03  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/105797
+	* pt.cc (for_each_template_parm_r) <case FUNCTION_DECL, VAR_DECL>:
+	Don't walk DECL_CONTEXT.
+	<case PARM_DECL>: Likewise.  Walk TREE_TYPE.
+	<case CONST_DECL>: Simplify.
+	(any_template_parm_r) <case PARM_DECL>: Don't walk TREE_TYPE.
+
+2022-06-02  Marek Polacek  <polacek@redhat.com>
+
+	* constexpr.cc (potential_constant_expression_1): Treat
+	{,VEC_}NEW_EXPR and {,VEC_}DELETE_EXPRas potentially constant in C++20.
+
+2022-06-02  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/105803
+	* pt.cc (value_dependent_expression_p): Handle {,VEC_}NEW_EXPR
+	in the switch.
+
+2022-06-02  David Malcolm  <dmalcolm@redhat.com>
+
+	* cp-lang.cc (LANG_HOOKS_GET_SARIF_SOURCE_LANGUAGE): Redefine.
+	(cp_get_sarif_source_language): New.
+
+2022-06-02  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105795
+	* constexpr.cc (init_subob_ctx): Clear ctx->ctor for empty subob.
+	(cxx_eval_store_expression): Likewise.
+	(cxx_eval_bare_aggregate): Handle null ctx->ctor.
+
+2022-06-02  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105795
+	* constexpr.cc (cxx_eval_bare_aggregate): Always call
+	init_subob_ctx.
+
+2022-06-01  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105734
+	* parser.cc (cp_parser_postfix_dot_deref_expression): Use typeof
+	if the expression has auto type.
+
+2022-06-01  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105779
+	* call.cc (resolve_args): Call mark_single_function here.
+	* pt.cc (unify_one_argument): Not here.
+
+2022-06-01  Nathan Sidwell  <nathan@acm.org>
+
+	* decl2.cc (fix_temporary_vars_context_r): Use data argument
+	for new context.
+	(one_static_initialization_or_destruction): Adjust tree walk
+	call.  Refactor guard generation.
+
+2022-06-01  Nathan Sidwell  <nathan@acm.org>
+
+	* decl2.cc (ssdf_decl): Delete global.
+	(start_static_storage_duration_function): Use some RAII.
+	(do_static_initialization_or_destruction): Likewise.
+	(c_parse_final_cleanups): Likewise.  Avoid rechecking 'vars'.
+
+2022-06-01  Nathan Sidwell  <nathan@acm.org>
+
+	* decl2.cc (start_objects): Replace 'method_type' parameter
+	with 'initp' boolean, rename and retype 'priority' parameter.
+	(finish_objects): Likewise.  Do not expand here.
+	(one_static_initialization_or_destruction): Move 'initp'
+	parameter first.
+	(do_static_initialization_or_destruction): Likewise.
+	(generate_ctor_or_dtor_function): Rename 'initp' parameter.
+	Adjust start_objects/finish_obects calls and expand here.
+	(generate_ctor_and_dtor_functions_for_priority): Adjust calls.
+	(c_parse_final_cleanups): Likewise.
+	(vtv_start_verification_constructor_init): Adjust.
+	(vtv_finish_verification_constructor_init): Use finish_objects.
+
+2022-05-31  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/105758
+	* call.cc (build_over_call): Use z_candidate::conversion_path
+	and ::access_path instead of TYPE_BINFO when building the
+	BASELINK for the templated form.
+
+2022-05-31  Patrick Palka  <ppalka@redhat.com>
+
+	* parser.cc: Use auto_timevar instead of timevar_push/pop.
+	Remove wrapper functions.
+	* pt.cc: Likewise.
+
+2022-05-31  Patrick Palka  <ppalka@redhat.com>
+
+	* cp-tree.h (cp_build_qualified_type_real): Rename to ...
+	(cp_build_qualified_type): ... this.  Give its last parameter
+	a default argument.  Remove macro of the same name.
+	* decl.cc (grokdeclarator): Adjust accordingly.
+	* pt.cc (tsubst_aggr_type): Likewise.
+	(rebuild_function_or_method_type): Likewise.
+	(tsubst): Likewise.
+	(maybe_dependent_member_ref): Likewise.
+	(unify): Likewise.
+	* tree.cc (cp_build_qualified_type_real): Rename to ...
+	(cp_build_qualified_type): ... this.  Adjust accordingly.
+
+2022-05-31  Jason Merrill  <jason@redhat.com>
+
+	* Make-lang.in (c++.tags): Just look at *.cc.
+
+2022-05-31  Patrick Palka  <ppalka@redhat.com>
+
+	* cp-tree.h (comp_template_args): Change return type to bool.
+	* pt.cc (comp_template_args): Document default arguments.
+	Change return type to bool and adjust returns accordingly.
+
+2022-05-31  Patrick Palka  <ppalka@redhat.com>
+
+	* decl.cc (grokvardecl): Use current_template_constraints.
+	(grokdeclarator): Likewise.
+	(xref_tag): Likewise.
+	* semantics.cc (finish_template_template_parm): Likewise.
+
+2022-05-31  Jakub Jelinek  <jakub@redhat.com>
+
+	* parser.cc (OMP_SCOPE_CLAUSE_MASK): Add firstprivate and allocate
+	clauses.
+
+2022-05-30  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/99080
+	* pt.cc (type_dependent_expression_p): Assert !TYPE_P.
+	* semantics.cc (finish_id_expression_1): Handle UNBOUND_CLASS_TEMPLATE
+	specifically.
+
 2022-05-28  Jakub Jelinek  <jakub@redhat.com>
 
 	* parser.cc (handle_omp_declare_target_clause): If OMP_CLAUSE_LINK was

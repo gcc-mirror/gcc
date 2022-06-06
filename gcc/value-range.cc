@@ -30,6 +30,219 @@ along with GCC; see the file COPYING3.  If not see
 #include "fold-const.h"
 #include "gimple-range.h"
 
+// Convenience function only available for integers and pointers.
+
+wide_int
+Value_Range::lower_bound () const
+{
+  if (is_a <irange> (*m_vrange))
+    return as_a <irange> (*m_vrange).lower_bound ();
+  gcc_unreachable ();
+}
+
+// Convenience function only available for integers and pointers.
+
+wide_int
+Value_Range::upper_bound () const
+{
+  if (is_a <irange> (*m_vrange))
+    return as_a <irange> (*m_vrange).upper_bound ();
+  gcc_unreachable ();
+}
+
+void
+Value_Range::dump (FILE *out) const
+{
+  if (m_vrange)
+    m_vrange->dump (out);
+  else
+    fprintf (out, "NULL");
+}
+
+DEBUG_FUNCTION void
+debug (const Value_Range &r)
+{
+  r.dump (stderr);
+  fprintf (stderr, "\n");
+}
+
+// Default vrange definitions.
+
+bool
+vrange::contains_p (tree) const
+{
+  return varying_p ();
+}
+
+bool
+vrange::singleton_p (tree *) const
+{
+  return false;
+}
+
+void
+vrange::set (tree, tree, value_range_kind)
+{
+}
+
+tree
+vrange::type () const
+{
+  return void_type_node;
+}
+
+bool
+vrange::supports_type_p (tree) const
+{
+  return false;
+}
+
+void
+vrange::set_undefined ()
+{
+  m_kind = VR_UNDEFINED;
+}
+
+void
+vrange::set_varying (tree)
+{
+  m_kind = VR_VARYING;
+}
+
+bool
+vrange::union_ (const vrange &r)
+{
+  if (r.undefined_p () || varying_p ())
+    return false;
+  if (undefined_p () || r.varying_p ())
+    {
+      operator= (r);
+      return true;
+    }
+  gcc_unreachable ();
+  return false;
+}
+
+bool
+vrange::intersect (const vrange &r)
+{
+  if (undefined_p () || r.varying_p ())
+    return false;
+  if (r.undefined_p ())
+    {
+      set_undefined ();
+      return true;
+    }
+  if (varying_p ())
+    {
+      operator= (r);
+      return true;
+    }
+  gcc_unreachable ();
+  return false;
+}
+
+bool
+vrange::zero_p () const
+{
+  return false;
+}
+
+bool
+vrange::nonzero_p () const
+{
+  return false;
+}
+
+void
+vrange::set_nonzero (tree)
+{
+}
+
+void
+vrange::set_zero (tree)
+{
+}
+
+void
+vrange::set_nonnegative (tree)
+{
+}
+
+bool
+vrange::fits_p (const vrange &) const
+{
+  return true;
+}
+
+// Assignment operator for generic ranges.  Copying incompatible types
+// is not allowed.
+
+vrange &
+vrange::operator= (const vrange &src)
+{
+  if (is_a <irange> (src))
+    {
+      as_a <irange> (*this) = as_a <irange> (src);
+      return *this;
+    }
+  else
+    gcc_unreachable ();
+}
+
+// Equality operator for generic ranges.
+
+bool
+vrange::operator== (const vrange &src) const
+{
+  if (is_a <irange> (src))
+    return as_a <irange> (*this) == as_a <irange> (src);
+  gcc_unreachable ();
+}
+
+bool
+irange::supports_type_p (tree type) const
+{
+  return supports_p (type);
+}
+
+// Return TRUE if R fits in THIS.
+
+bool
+irange::fits_p (const vrange &r) const
+{
+  return m_max_ranges >= as_a <irange> (r).num_pairs ();
+}
+
+void
+irange::set_nonnegative (tree type)
+{
+  set (build_int_cst (type, 0), TYPE_MAX_VALUE (type));
+}
+
+unsupported_range::unsupported_range ()
+{
+  m_discriminator = VR_UNKNOWN;
+  set_undefined ();
+}
+
+void
+unsupported_range::dump (FILE *file) const
+{
+  fprintf (file, "[unsupported_range] ");
+  if (undefined_p ())
+    {
+      fprintf (file, "UNDEFINED");
+      return;
+    }
+  if (varying_p ())
+    {
+      fprintf (file, "VARYING");
+      return;
+    }
+  gcc_unreachable ();
+}
+
 // Here we copy between any two irange's.  The ranges can be legacy or
 // multi-ranges, and copying between any combination works correctly.
 
@@ -291,7 +504,7 @@ irange::set (tree min, tree max, value_range_kind kind)
     }
   if (kind == VR_UNDEFINED)
     {
-      set_undefined ();
+      irange::set_undefined ();
       return;
     }
 
@@ -370,6 +583,7 @@ irange::set (tree min, tree max, value_range_kind kind)
 void
 irange::verify_range ()
 {
+  gcc_checking_assert (m_discriminator == VR_IRANGE);
   if (m_kind == VR_UNDEFINED)
     {
       gcc_checking_assert (m_num_ranges == 0);
@@ -2087,6 +2301,7 @@ dump_bound_with_infinite_markers (FILE *file, tree bound)
 void
 irange::dump (FILE *file) const
 {
+  fprintf (file, "[irange] ");
   if (undefined_p ())
     {
       fprintf (file, "UNDEFINED");
@@ -2121,27 +2336,27 @@ irange::dump (FILE *file) const
 }
 
 void
-irange::debug () const
+vrange::debug () const
 {
   dump (stderr);
   fprintf (stderr, "\n");
 }
 
 void
-dump_value_range (FILE *file, const irange *vr)
+dump_value_range (FILE *file, const vrange *vr)
 {
   vr->dump (file);
 }
 
 DEBUG_FUNCTION void
-debug (const irange *vr)
+debug (const vrange *vr)
 {
   dump_value_range (stderr, vr);
   fprintf (stderr, "\n");
 }
 
 DEBUG_FUNCTION void
-debug (const irange &vr)
+debug (const vrange &vr)
 {
   debug (&vr);
 }

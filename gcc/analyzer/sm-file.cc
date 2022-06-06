@@ -143,6 +143,20 @@ public:
     return label_text ();
   }
 
+  diagnostic_event::meaning
+  get_meaning_for_state_change (const evdesc::state_change &change)
+    const final override
+  {
+    if (change.m_old_state == m_sm.get_start_state ()
+	&& change.m_new_state == m_sm.m_unchecked)
+      return diagnostic_event::meaning (diagnostic_event::VERB_acquire,
+					diagnostic_event::NOUN_resource);
+    if (change.m_new_state == m_sm.m_closed)
+      return diagnostic_event::meaning (diagnostic_event::VERB_release,
+					diagnostic_event::NOUN_resource);
+    return diagnostic_event::meaning ();
+  }
+
 protected:
   const fileptr_state_machine &m_sm;
   tree m_arg;

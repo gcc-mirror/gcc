@@ -1,3 +1,7 @@
+2022-05-31  Jason Merrill  <jason@redhat.com>
+
+	* Make-lang.in (obj-c++.tags): Look at *.cc.
+
 2022-05-11  Martin Liska  <mliska@suse.cz>
 
 	PR target/105355

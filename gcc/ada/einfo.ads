@@ -605,10 +605,10 @@ package Einfo is
 
 --    Checks_May_Be_Suppressed
 --       Defined in all entities. Set if a pragma Suppress or Unsuppress
---       mentions the entity specifically in the second argument. If this
---       flag is set the Global_Entity_Suppress and Local_Entity_Suppress
---       tables must be consulted to determine if there actually is an active
---       Suppress or Unsuppress pragma that applies to the entity.
+--       mentions the entity specifically in the second argument. If this flag
+--       is set the global and local suppress stacks must be consulted to
+--       determine if there actually is an active Suppress or Unsuppress pragma
+--       that applies to the entity.
 
 --    Class_Postconditions
 --       Defined on subprogram entities. Set if the subprogram has class-wide
@@ -1576,7 +1576,8 @@ package Einfo is
 
 --    Has_Controlling_Result
 --       Defined in E_Function entities. Set if the function is a primitive
---       function of a tagged type which can dispatch on result.
+--       function of a tagged type which can dispatch on result. Also set on
+--       secondary stack thunks built for such a primitive function.
 
 --    Has_Convention_Pragma
 --       Defined in all entities. Set for an entity for which a valid pragma
@@ -3322,17 +3323,29 @@ package Einfo is
 --       Applies to all entities. True for task types and subtypes
 
 --    Is_Thunk
---       Defined in all entities. True for subprograms that are thunks: that is
---       small subprograms built by the expander for tagged types that cover
---       interface types. As part of the runtime call to an interface, thunks
+--       Defined in all entities. True for subprograms that are thunks, that is
+--       small subprograms built by the expander for particular tagged types.
+--       There are two different kinds of thunk: interface thunk and secondary
+--       stack thunk. Interface thunks are built for tagged types that cover
+--       interface types. As part of the runtime call to an interface, they
 --       displace the pointer to the object (pointer named "this" in the C++
 --       terminology) from a secondary dispatch table to the primary dispatch
 --       table associated with a given tagged type; if the thunk is a function
 --       that returns an object which covers an interface type then the thunk
 --       displaces the pointer to the object from the primary dispatch table to
---       the secondary dispatch table associated with the interface type. Set
---       by Expand_Interface_Thunk and used by Expand_Call to handle extra
---       actuals associated with accessibility level.
+--       the secondary dispatch table associated with the interface type.
+
+--       Secondary stack thunks are built for tagged types that do not need to
+--       be returned on the secondary stack but have primitive functions which
+--       can dispatch on result. In this case, dispatching calls made to these
+--       primitive functions nevertheless need to return on the secondary stack
+--       and a thunk is built to move the result from the primary stack onto
+--       the secondary stack on return from the primitive function. The flag
+--       Has_Controlling_Result is set on secondary stack thunks but not on
+--       interface thunks.
+
+--       Thunks may be chained in a single way: an interface thunk may point to
+--       a secondary stack thunk, which points to the final thunk target.
 
 --    Is_Trivial_Subprogram
 --       Defined in all entities. Set in subprograms where either the body
@@ -4241,8 +4254,7 @@ package Einfo is
 --    Returns_By_Ref
 --       Defined in subprogram type entities and functions. Set if a function
 --       (or an access-to-function type) returns a result by reference, either
---       because its return type is a by-reference-type or because the function
---       explicitly uses the secondary stack.
+--       because the result is built in place, or its type is by-reference.
 
 --    Reverse_Bit_Order [base type only]
 --       Defined in all record type entities. Set if entity has a Bit_Order

@@ -5969,6 +5969,41 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
        && (!TYPE_UNSIGNED (TREE_TYPE (@2)) || TYPE_UNSIGNED (TREE_TYPE (@0))))
    (ovf @1 @0))))
 
+/* Optimize __builtin_mul_overflow_p (x, cst, (utype) 0) if all 3 types
+   are unsigned to x > (umax / cst).  Similarly for signed type, but
+   in that case it needs to be outside of a range.  */
+(simplify
+ (imagpart (IFN_MUL_OVERFLOW:cs@2 @0 integer_nonzerop@1))
+  (if (INTEGRAL_TYPE_P (TREE_TYPE (@0))
+       && TYPE_MAX_VALUE (TREE_TYPE (@0))
+       && types_match (TREE_TYPE (@0), TREE_TYPE (TREE_TYPE (@2)))
+       && int_fits_type_p (@1, TREE_TYPE (@0)))
+   (if (TYPE_UNSIGNED (TREE_TYPE (@0)))
+    (convert (gt @0 (trunc_div! { TYPE_MAX_VALUE (TREE_TYPE (@0)); } @1)))
+    (if (TYPE_MIN_VALUE (TREE_TYPE (@0)))
+     (if (integer_minus_onep (@1))
+      (convert (eq @0 { TYPE_MIN_VALUE (TREE_TYPE (@0)); }))
+      (with
+       {
+	 tree lo = int_const_binop (TRUNC_DIV_EXPR,
+				    TYPE_MIN_VALUE (TREE_TYPE (@0)),
+				    fold_convert (TREE_TYPE (@0), @1));
+	 tree hi = int_const_binop (TRUNC_DIV_EXPR,
+				    TYPE_MAX_VALUE (TREE_TYPE (@0)),
+				    fold_convert (TREE_TYPE (@0), @1));
+	 tree etype = range_check_type (TREE_TYPE (@0));
+	 if (etype)
+	   {
+	     if (wi::neg_p (wi::to_wide (@1)))
+	       std::swap (lo, hi);
+	     lo = fold_convert (etype, lo);
+	     hi = fold_convert (etype, hi);
+	     hi = int_const_binop (MINUS_EXPR, hi, lo);
+	   }
+       }
+       (if (etype)
+        (convert (gt (minus (convert:etype @0) { lo; }) { hi; })))))))))
+
 /* Simplification of math builtins.  These rules must all be optimizations
    as well as IL simplifications.  If there is a possibility that the new
    form could be a pessimization, the rule should go in the canonicalization
