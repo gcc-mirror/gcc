@@ -191,12 +191,14 @@ package body GNAT.Sockets is
        else Value);
    --  Removes dot at the end of error message
 
-   procedure Raise_Host_Error (H_Error : Integer; Name : String);
+   procedure Raise_Host_Error (H_Error : Integer; Name : String)
+   with No_Return;
    --  Raise Host_Error exception with message describing error code (note
    --  hstrerror seems to be obsolete) from h_errno. Name is the name
    --  or address that was being looked up.
 
-   procedure Raise_GAI_Error (RC : C.int; Name : String);
+   procedure Raise_GAI_Error (RC : C.int; Name : String)
+   with No_Return;
    --  Raise Host_Error with exception message in case of errors in
    --  getaddrinfo and getnameinfo.
 
