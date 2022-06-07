@@ -1,3 +1,9 @@
+2022-06-06  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac: Reinstate HAVE_GAS_ARM_EXTENDED_ARCH test.
+
 2022-06-04  Roger Sayle  <roger@nextmovesoftware.com>
 
 	PR middle-end/95126

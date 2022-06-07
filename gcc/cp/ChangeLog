@@ -1,3 +1,10 @@
+2022-06-06  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/53164
+	PR c++/105848
+	* pt.cc (tsubst_copy_and_build) <case CALL_EXPR>: Look through an
+	ADDR_EXPR callee when calling mark_used.
+
 2022-06-04  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/102399

@@ -1,3 +1,9 @@
+2022-06-06  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/53164
+	PR c++/105848
+	* g++.dg/template/fn-ptr3.C: New test.
+
 2022-06-04  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/102399
