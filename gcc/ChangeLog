@@ -1,3 +1,11 @@
+2022-06-06  Alan Modra  <amodra@gmail.com>
+
+	Backported from master:
+	2020-10-24  Alan Modra  <amodra@gmail.com>
+
+	* config/rs6000/rs6000.c (rs6000_legitimate_address_p): Limit
+	AND addressing to just lvx/stvx style addresses.
+
 2022-05-31  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* config/darwin-sections.def (objc2_class_names_section,
