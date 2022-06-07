@@ -13616,6 +13616,9 @@ tsubst_template_args (tree t, tree args, tsubst_flags_t complain, tree in_decl)
   if (t == error_mark_node)
     return error_mark_node;
 
+  /* In "sizeof(X<I>)" we need to evaluate "I".  */
+  cp_evaluated ev;
+
   const int len = TREE_VEC_LENGTH (t);
   tree *elts = XALLOCAVEC (tree, len);
   int expanded_len_adjust = 0;
@@ -13887,9 +13890,6 @@ tsubst_aggr_type (tree t,
 	{
 	  tree argvec;
 	  tree r;
-
-	  /* In "sizeof(X<I>)" we need to evaluate "I".  */
-	  cp_evaluated ev;
 
 	  /* Figure out what arguments are appropriate for the
 	     type we are trying to find.  For example, given:
