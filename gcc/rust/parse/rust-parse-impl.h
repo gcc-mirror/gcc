@@ -914,7 +914,8 @@ Parser<ManagedTokenSource>::parse_delim_token_tree ()
 
   // repeat loop until finding the matching delimiter
   t = lexer.peek_token ();
-  while (!token_id_matches_delims (t->get_id (), delim_type))
+  while (!token_id_matches_delims (t->get_id (), delim_type)
+	 && t->get_id () != END_OF_FILE)
     {
       std::unique_ptr<AST::TokenTree> tok_tree = parse_token_tree ();
 

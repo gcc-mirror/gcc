@@ -1856,6 +1856,35 @@ Lexer::parse_raw_identifier (Location loc)
     }
 }
 
+// skip broken string input (unterminated strings)
+void
+Lexer::skip_broken_string_input (int current_char)
+{
+  while (current_char != '"' && current_char != EOF)
+    {
+      if (current_char == '\n')
+	{
+	  current_line++;
+	  current_column = 1;
+	}
+      else
+	{
+	  current_column++;
+	}
+      skip_input ();
+      current_char = peek_input ();
+    }
+  if (current_char == '"')
+    {
+      current_column++;
+
+      skip_input ();
+      current_char = peek_input ();
+    }
+  rust_debug ("skipped to %d:%d due to bad quotes", current_line,
+	      current_column);
+}
+
 // Parses a unicode string.
 TokenPtr
 Lexer::parse_string (Location loc)
@@ -1903,6 +1932,9 @@ Lexer::parse_string (Location loc)
   if (current_char32.value == '\n')
     {
       rust_error_at (get_current_location (), "unended string literal");
+      // by this point, the parser will stuck at this position due to
+      // undetermined string termination. we now need to unstuck the parser
+      skip_broken_string_input (current_char32.value);
     }
   else if (current_char32.value == '"')
     {
