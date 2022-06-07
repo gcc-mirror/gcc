@@ -2186,10 +2186,11 @@ load_register_parameters (struct arg_data *args, int num_actuals,
 		   && immediate_const_ctor_p (DECL_INITIAL (tree_value)))
 	    {
 	      rtx target = gen_reg_rtx (word_mode);
-	      rtx x = expand_expr (DECL_INITIAL (tree_value),
-				   target, word_mode, EXPAND_NORMAL);
+	      store_constructor (DECL_INITIAL (tree_value), target, 0,
+				 int_expr_size (DECL_INITIAL (tree_value)),
+				 false);
 	      reg = gen_rtx_REG (word_mode, REGNO (reg));
-	      emit_move_insn (reg, x);
+	      emit_move_insn (reg, target);
 	    }
 	  else if (partial == 0 || args[i].pass_on_stack)
 	    {

@@ -84,7 +84,6 @@ static void emit_block_move_via_loop (rtx, rtx, rtx, unsigned);
 static void clear_by_pieces (rtx, unsigned HOST_WIDE_INT, unsigned int);
 static rtx_insn *compress_float_constant (rtx, rtx);
 static rtx get_subtarget (rtx);
-static void store_constructor (tree, rtx, int, poly_int64, bool);
 static rtx store_field (rtx, poly_int64, poly_int64, poly_uint64, poly_uint64,
 			machine_mode, tree, alias_set_type, bool, bool);
 
@@ -100,7 +99,6 @@ static void do_tablejump (rtx, machine_mode, rtx, rtx, rtx,
 			  profile_probability);
 static rtx const_vector_from_tree (tree);
 static tree tree_expr_size (const_tree);
-static HOST_WIDE_INT int_expr_size (const_tree);
 static void convert_mode_scalar (rtx, rtx, int);
 
 
@@ -6757,7 +6755,7 @@ fields_length (const_tree type)
    which has been packed to exclude padding bits.
    If REVERSE is true, the store is to be done in reverse order.  */
 
-static void
+void
 store_constructor (tree exp, rtx target, int cleared, poly_int64 size,
 		   bool reverse)
 {
@@ -13209,7 +13207,7 @@ expr_size (tree exp)
 /* Return a wide integer for the size in bytes of the value of EXP, or -1
    if the size can vary or is larger than an integer.  */
 
-static HOST_WIDE_INT
+HOST_WIDE_INT
 int_expr_size (const_tree exp)
 {
   tree size;
