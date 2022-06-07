@@ -23868,6 +23868,30 @@
   "vpcmov\t{%3, %2, %1, %0|%0, %1, %2, %3}"
   [(set_attr "type" "sse4arg")])
 
+;; Recognize XOP's vpcmov from canonical (xor (and (xor t f) c) f)
+(define_split
+  [(set (match_operand:V_128_256 0 "register_operand")
+	(xor:V_128_256
+	  (and:V_128_256
+	    (xor:V_128_256 (match_operand:V_128_256 1 "register_operand")
+			   (match_operand:V_128_256 2 "register_operand"))
+	    (match_operand:V_128_256 3 "nonimmediate_operand"))
+	  (match_operand:V_128_256 4 "register_operand")))]
+  "TARGET_XOP
+   && (REGNO (operands[4]) == REGNO (operands[1])
+       || REGNO (operands[4]) == REGNO (operands[2]))"
+  [(set (match_dup 0) (if_then_else:V_128_256 (match_dup 3)
+					      (match_dup 5)
+					      (match_dup 4)))]
+{
+  /* To handle the commutivity of XOR, operands[4] is either operands[1]
+     or operands[2], we need operands[5] to be the other one.  */
+  if (REGNO (operands[4]) == REGNO (operands[1]))
+    operands[5] = operands[2];
+  else
+    operands[5] = operands[1];
+})
+
 ;; XOP horizontal add/subtract instructions
 (define_insn "xop_phadd<u>bw"
   [(set (match_operand:V8HI 0 "register_operand" "=x")
