@@ -55,6 +55,10 @@ private:
   std::ostream &stream;
   Indent indentation;
 
+  // Format together common items of functions: Parameters, return type, block
+  void format_function_common (std::unique_ptr<Type> &return_type,
+			       std::unique_ptr<BlockExpr> &block);
+
   /**
    * Format a function's definition parameter
    */
