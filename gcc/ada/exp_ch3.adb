@@ -3319,11 +3319,9 @@ package body Exp_Ch3 is
                         --  Pragma case
 
                         if Nkind (Ritem) = N_Pragma then
-                           Exp := First (Pragma_Argument_Associations (Ritem));
-
-                           if Nkind (Exp) = N_Pragma_Argument_Association then
-                              Exp := Expression (Exp);
-                           end if;
+                           Exp :=
+                             Get_Pragma_Arg
+                               (First (Pragma_Argument_Associations (Ritem)));
 
                            --  Conversion for Priority expression
 
