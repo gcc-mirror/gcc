@@ -16314,8 +16314,11 @@ start_enum (tree name, tree enumtype, tree underlying_type,
       else if (dependent_type_p (underlying_type))
 	ENUM_UNDERLYING_TYPE (enumtype) = underlying_type;
       else
-        error ("underlying type %qT of %qT must be an integral type", 
-               underlying_type, enumtype);
+	{
+	  error ("underlying type %qT of %qT must be an integral type", 
+		 underlying_type, enumtype);
+	  ENUM_UNDERLYING_TYPE (enumtype) = integer_type_node;
+	}
     }
 
   /* If into a template class, the returned enum is always the first
