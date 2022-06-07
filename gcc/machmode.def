@@ -142,9 +142,10 @@ along with GCC; see the file COPYING3.  If not see
 	than two bytes (if CLASS is FLOAT).  CLASS must be INT or
 	FLOAT.  The names follow the same rule as VECTOR_MODE uses.
 
-     VECTOR_MODES_WITH_PREFIX (PREFIX, CLASS, WIDTH);
+     VECTOR_MODES_WITH_PREFIX (PREFIX, CLASS, WIDTH, ORDER);
 	Like VECTOR_MODES, but start the mode names with PREFIX instead
-	of the usual "V".
+	of the usual "V".  ORDER is the top-level sorting order of the
+	mode, with smaller numbers indicating a higher priority.
 
      VECTOR_BOOL_MODE (NAME, COUNT, COMPONENT, BYTESIZE)
         Create a vector mode called NAME that contains COUNT boolean
