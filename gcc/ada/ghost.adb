@@ -508,7 +508,16 @@ package body Ghost is
                elsif Nkind (Parent (Par)) in N_Generic_Instantiation
                                            | N_Renaming_Declaration
                                            | N_Generic_Renaming_Declaration
-                   and then Par = Name (Parent (Par))
+                 and then Par = Name (Parent (Par))
+               then
+                  return True;
+
+               --  In the case of the renaming of a ghost object, the type
+               --  itself may be ghost.
+
+               elsif Nkind (Parent (Par)) = N_Object_Renaming_Declaration
+                 and then (Par = Subtype_Mark (Parent (Par))
+                             or else Par = Access_Definition (Parent (Par)))
                then
                   return True;
 
