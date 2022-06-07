@@ -582,10 +582,7 @@ public:
   ArrayType (ArrayType const &other)
     : TypeNoBounds (other.mappings), elem_type (other.elem_type->clone_type ()),
       size (other.size->clone_expr ()), locus (other.locus)
-  {
-    // Untested.
-    gcc_unreachable ();
-  }
+  {}
 
   // Overload assignment operator to deep copy pointers
   ArrayType &operator= (ArrayType const &other)

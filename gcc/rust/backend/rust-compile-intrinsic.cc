@@ -20,6 +20,8 @@
 #include "rust-compile-context.h"
 #include "rust-compile-type.h"
 #include "rust-compile-fnparam.h"
+#include "rust-diagnostics.h"
+#include "rust-location.h"
 #include "rust-tree.h"
 #include "tree-core.h"
 
@@ -477,6 +479,7 @@ transmute_intrinsic_handler (Context *ctx, TyTy::BaseType *fntype_tyty)
 
   // setup the params
   std::vector<Bvariable *> param_vars;
+  std::vector<tree_node *> compiled_types;
   for (auto &parm : fntype->get_params ())
     {
       auto &referenced_param = parm.first;
@@ -489,6 +492,7 @@ transmute_intrinsic_handler (Context *ctx, TyTy::BaseType *fntype_tyty)
 				   compiled_param_type, param_locus);
 
       param_vars.push_back (compiled_param_var);
+      compiled_types.push_back (compiled_param_type);
     }
 
   rust_assert (param_vars.size () == 1);
@@ -499,6 +503,34 @@ transmute_intrinsic_handler (Context *ctx, TyTy::BaseType *fntype_tyty)
   Bvariable *convert_me_param = param_vars.at (0);
   tree convert_me_expr
     = ctx->get_backend ()->var_expression (convert_me_param, Location ());
+
+  // check for transmute pre-conditions
+  tree target_type_expr = TREE_TYPE (DECL_RESULT (fndecl));
+  tree source_type_expr = compiled_types.at (0);
+  tree target_size_expr = TYPE_SIZE (target_type_expr);
+  tree source_size_expr = TYPE_SIZE (source_type_expr);
+  // for some reason, unit types and other zero-sized types return NULL for the
+  // size expressions
+  unsigned HOST_WIDE_INT target_size
+    = target_size_expr ? TREE_INT_CST_LOW (target_size_expr) : 0;
+  unsigned HOST_WIDE_INT source_size
+    = source_size_expr ? TREE_INT_CST_LOW (source_size_expr) : 0;
+
+  // size check for concrete types
+  // TODO(liushuyu): check alignment for pointers; check for dependently-sized
+  // types
+  if (target_size != source_size)
+    {
+      rust_error_at (fntype->get_locus (),
+		     "cannot transmute between types of different sizes, or "
+		     "dependently-sized types");
+      rust_inform (fntype->get_ident ().locus, "source type: %qs (%lu bits)",
+		   fntype->get_params ().at (0).second->as_string ().c_str (),
+		   source_size);
+      rust_inform (fntype->get_ident ().locus, "target type: %qs (%lu bits)",
+		   fntype->get_return_type ()->as_string ().c_str (),
+		   target_size);
+    }
 
   tree enclosing_scope = NULL_TREE;
   Location start_location = Location ();
