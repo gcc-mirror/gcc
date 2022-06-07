@@ -660,8 +660,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	 like variables.  */
       if (definition
 	  && !gnu_expr
-	  && No (Address_Clause (gnat_entity))
 	  && !No_Initialization (gnat_decl)
+	  && No (Address_Clause (gnat_entity))
 	  && No (gnat_renamed_obj))
 	{
 	  gnu_decl = error_mark_node;
@@ -780,6 +780,11 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	   of the subtype is smaller than the type.  */
 	if (kind == E_Loop_Parameter)
 	  gnu_type = get_base_type (gnu_type);
+
+	/* If this is a simple constant, strip the qualifiers from its type,
+	   since the constant represents only its value.  */
+	else if (simple_constant_p (gnat_entity))
+	  gnu_type = TYPE_MAIN_VARIANT (gnu_type);
 
 	/* Reject non-renamed objects whose type is an unconstrained array or
 	   any object whose type is a dummy type or void.  */
@@ -9539,6 +9544,19 @@ promote_object_alignment (tree gnu_type, tree gnu_size, Entity_Id gnat_entity)
 #endif
 
   return align;
+}
+
+/* Return whether GNAT_ENTITY is a simple constant, i.e. it represents only
+   its value and reading it has no side effects.  */
+
+bool
+simple_constant_p (Entity_Id gnat_entity)
+{
+  return Ekind (gnat_entity) == E_Constant
+	 && Present (Constant_Value (gnat_entity))
+	 && !No_Initialization (gnat_entity)
+	 && No (Address_Clause (gnat_entity))
+	 && No (Renamed_Object (gnat_entity));
 }
 
 /* Verify that TYPE is something we can implement atomically.  If not, issue

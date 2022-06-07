@@ -4111,9 +4111,11 @@ node_is_atomic (Node_Id gnat_node)
     case N_Identifier:
     case N_Expanded_Name:
       gnat_entity = Entity (gnat_node);
-      if (Ekind (gnat_entity) != E_Variable)
+      if (!Is_Object (gnat_entity))
 	break;
-      return Is_Atomic (gnat_entity) || Is_Atomic (Etype (gnat_entity));
+      return Is_Atomic (gnat_entity)
+	     || (Is_Atomic (Etype (gnat_entity))
+		 && !simple_constant_p (gnat_entity));
 
     case N_Selected_Component:
       return Is_Atomic (Etype (gnat_node))
@@ -4152,7 +4154,8 @@ node_is_volatile_full_access (Node_Id gnat_node)
       if (!Is_Object (gnat_entity))
 	break;
       return Is_Volatile_Full_Access (gnat_entity)
-	     || Is_Volatile_Full_Access (Etype (gnat_entity));
+	     || (Is_Volatile_Full_Access (Etype (gnat_entity))
+		 && !simple_constant_p (gnat_entity));
 
     case N_Selected_Component:
       return Is_Volatile_Full_Access (Etype (gnat_node))
