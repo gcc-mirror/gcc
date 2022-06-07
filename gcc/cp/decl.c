@@ -2590,10 +2590,11 @@ duplicate_decls (tree newdecl, tree olddecl, bool hiding, bool was_hidden)
 		  = TINFO_USED_TEMPLATE_ID (new_template_info);
 	    }
 
-	  if (non_templated_friend_p (olddecl))
-	    /* Don't copy tinfo from a non-templated friend (PR105761).  */;
-	  else
-	    DECL_TEMPLATE_INFO (newdecl) = DECL_TEMPLATE_INFO (olddecl);
+	  /* We don't want to copy template info from a non-templated friend
+	     (PR105761), but these shouldn't have DECL_TEMPLATE_INFO now.  */
+	  gcc_checking_assert (!DECL_TEMPLATE_INFO (olddecl)
+			       || !non_templated_friend_p (olddecl));
+	  DECL_TEMPLATE_INFO (newdecl) = DECL_TEMPLATE_INFO (olddecl);
 	}
 
       if (DECL_DECLARES_FUNCTION_P (newdecl))
