@@ -10201,6 +10201,61 @@ arm_mem_costs (rtx x, const struct cpu_cost_table *extra_cost,
   return true;
 }
 
+/* Helper for arm_bfi_p.  */
+static bool
+arm_bfi_1_p (rtx op0, rtx op1, rtx *sub0, rtx *sub1)
+{
+  unsigned HOST_WIDE_INT const1;
+  unsigned HOST_WIDE_INT const2 = 0;
+
+  if (!CONST_INT_P (XEXP (op0, 1)))
+    return false;
+
+  const1 = XUINT (XEXP (op0, 1), 0);
+  if (!CONST_INT_P (XEXP (op1, 1))
+      || ~XUINT (XEXP (op1, 1), 0) != const1)
+    return false;
+
+  if (GET_CODE (XEXP (op0, 0)) == ASHIFT
+      && CONST_INT_P (XEXP (XEXP (op0, 0), 1)))
+    {
+      const2 = XUINT (XEXP (XEXP (op0, 0), 1), 0);
+      *sub0 = XEXP (XEXP (op0, 0), 0);
+    }
+  else
+    *sub0 = XEXP (op0, 0);
+
+  if (const2 >= GET_MODE_BITSIZE (GET_MODE (op0)))
+    return false;
+
+  *sub1 = XEXP (op1, 0);
+  return exact_log2 (const1 + (HOST_WIDE_INT_1U << const2)) >= 0;
+}
+
+/* Recognize a BFI idiom.  Helper for arm_rtx_costs_internal.  The
+   format looks something like:
+
+   (IOR (AND (reg1) (~const1))
+	(AND (ASHIFT (reg2) (const2))
+	     (const1)))
+
+   where const1 is a consecutive sequence of 1-bits with the
+   least-significant non-zero bit starting at bit position const2.  If
+   const2 is zero, then the shift will not appear at all, due to
+   canonicalization.  The two arms of the IOR expression may be
+   flipped.  */
+static bool
+arm_bfi_p (rtx x, rtx *sub0, rtx *sub1)
+{
+  if (GET_CODE (x) != IOR)
+    return false;
+  if (GET_CODE (XEXP (x, 0)) != AND
+      || GET_CODE (XEXP (x, 1)) != AND)
+    return false;
+  return (arm_bfi_1_p (XEXP (x, 0), XEXP (x, 1), sub0, sub1)
+	  || arm_bfi_1_p (XEXP (x, 1), XEXP (x, 0), sub1, sub0));
+}
+
 /* RTX costs.  Make an estimate of the cost of executing the operation
    X, which is contained within an operation with code OUTER_CODE.
    SPEED_P indicates whether the cost desired is the performance cost,
@@ -10959,14 +11014,28 @@ arm_rtx_costs_internal (rtx x, enum rtx_code code, enum rtx_code outer_code,
       *cost = LIBCALL_COST (2);
       return false;
     case IOR:
-      if (mode == SImode && arm_arch6 && aarch_rev16_p (x))
-        {
-          if (speed_p)
-            *cost += extra_cost->alu.rev;
+      {
+	rtx sub0, sub1;
+	if (mode == SImode && arm_arch6 && aarch_rev16_p (x))
+	  {
+	    if (speed_p)
+	      *cost += extra_cost->alu.rev;
 
-          return true;
-        }
-    /* Fall through.  */
+	    return true;
+	  }
+	else if (mode == SImode && arm_arch_thumb2
+		 && arm_bfi_p (x, &sub0, &sub1))
+	  {
+	    *cost += rtx_cost (sub0, mode, ZERO_EXTRACT, 1, speed_p);
+	    *cost += rtx_cost (sub1, mode, ZERO_EXTRACT, 0, speed_p);
+	    if (speed_p)
+	      *cost += extra_cost->alu.bfi;
+
+	    return true;
+	  }
+      }
+
+      /* Fall through.  */
     case AND: case XOR:
       if (mode == SImode)
 	{
@@ -23780,8 +23849,8 @@ arm_print_condition (FILE *stream)
 /* Globally reserved letters: acln
    Puncutation letters currently used: @_|?().!#
    Lower case letters currently used: bcdefhimpqtvwxyz
-   Upper case letters currently used: ABCDEFGHIJKLMNOPQRSTU
-   Letters previously used, but now deprecated/obsolete: sVWXYZ.
+   Upper case letters currently used: ABCDEFGHIJKLMNOPQRSTUV
+   Letters previously used, but now deprecated/obsolete: sWXYZ.
 
    Note that the global reservation for 'c' is only for CONSTANT_ADDRESS_P.
 
@@ -23797,7 +23866,10 @@ arm_print_condition (FILE *stream)
    If CODE is 'N' then X is a floating point operand that must be negated
    before output.
    If CODE is 'B' then output a bitwise inverted value of X (a const int).
-   If X is a REG and CODE is `M', output a ldm/stm style multi-reg.  */
+   If X is a REG and CODE is `M', output a ldm/stm style multi-reg.
+   If CODE is 'V', then the operand must be a CONST_INT representing
+   the bits to preserve in the modified register (Rd) of a BFI or BFC
+   instruction: print out both the width and lsb (shift) fields.  */
 static void
 arm_print_operand (FILE *stream, rtx x, int code)
 {
@@ -24106,8 +24178,27 @@ arm_print_operand (FILE *stream, rtx x, int code)
 	     stream);
       return;
 
-    case 's':
     case 'V':
+      {
+	/* Output the LSB (shift) and width for a bitmask instruction
+	   based on a literal mask.  The LSB is printed first,
+	   followed by the width.
+
+	   Eg. For 0b1...1110001, the result is #1, #3.  */
+	if (!CONST_INT_P (x))
+	  {
+	    output_operand_lossage ("invalid operand for code '%c'", code);
+	    return;
+	  }
+
+	unsigned HOST_WIDE_INT val = ~XUINT (x, 0);
+	int lsb = exact_log2 (val & -val);
+	asm_fprintf (stream, "#%d, #%d", lsb,
+		     (exact_log2 (val + (val & -val)) - lsb));
+      }
+      return;
+
+    case 's':
     case 'W':
     case 'X':
     case 'Y':
