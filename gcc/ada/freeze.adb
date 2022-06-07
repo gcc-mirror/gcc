@@ -1470,6 +1470,10 @@ package body Freeze is
             if Is_Entity_Name (Prefix (Nod))
               and then Is_Type (Entity (Prefix (Nod)))
             then
+               if Expander_Active then
+                  Check_Fully_Declared (Entity (Prefix (Nod)), N);
+               end if;
+
                Freeze_Before (N, Entity (Prefix (Nod)));
             end if;
          end if;
@@ -2632,7 +2636,13 @@ package body Freeze is
       N      : Node_Id;
       Result : in out List_Id)
    is
-      L : constant List_Id := Freeze_Entity (Ent, N);
+      --  Freezing an Expression_Function does not freeze its profile:
+      --  the formals will have been frozen otherwise before the E_F
+      --  can be called.
+
+      L : constant List_Id :=
+        Freeze_Entity
+          (Ent, N, Do_Freeze_Profile => not Is_Expression_Function (Ent));
    begin
       if Is_Non_Empty_List (L) then
          if Result = No_List then
@@ -7807,11 +7817,37 @@ package body Freeze is
          --  type itself is frozen, because the class-wide type refers to the
          --  tagged type which generates the class.
 
+         --  For a tagged type, freeze explicitly those primitive operations
+         --  that are expression functions, which otherwise have no clear
+         --  freeze point: these have to be frozen before the dispatch table
+         --  for the type is built, and before any explicit call to the
+         --  primitive, which would otherwise be the freeze point for it.
+
          if Is_Tagged_Type (E)
            and then not Is_Class_Wide_Type (E)
            and then Present (Class_Wide_Type (E))
          then
             Freeze_And_Append (Class_Wide_Type (E), N, Result);
+
+            declare
+               Ops  : constant Elist_Id := Primitive_Operations (E);
+
+               Elmt : Elmt_Id;
+               Subp : Entity_Id;
+
+            begin
+               if Ops /= No_Elist  then
+                  Elmt := First_Elmt (Ops);
+                  while Present (Elmt) loop
+                     Subp := Node (Elmt);
+                     if Is_Expression_Function (Subp) then
+                        Freeze_And_Append (Subp, N, Result);
+                     end if;
+
+                     Next_Elmt (Elmt);
+                  end loop;
+               end if;
+            end;
          end if;
       end if;
 

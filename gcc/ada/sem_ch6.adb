@@ -4508,7 +4508,16 @@ package body Sem_Ch6 is
             --  This also needs to be done in the case of an ignored Ghost
             --  expression function, where the expander isn't active.
 
-            Set_Is_Frozen (Spec_Id);
+            --  A further complication arises if the expression function is
+            --  a primitive operation of a tagged type: in that case the
+            --  function entity must be frozen before the dispatch table for
+            --  the type is constructed, so it will be frozen like other local
+            --  entities, at the end of the current scope.
+
+            if not Is_Dispatching_Operation (Spec_Id) then
+               Set_Is_Frozen (Spec_Id);
+            end if;
+
             Mask_Types := Mask_Unfrozen_Types (Spec_Id);
 
          elsif not Is_Frozen (Spec_Id)
