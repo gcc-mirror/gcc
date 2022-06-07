@@ -11165,6 +11165,33 @@ outermost_tinst_level (void)
   return level;
 }
 
+/* True iff T is a friend function declaration that is not itself a template
+   and is not defined in a class template.  */
+
+bool
+non_templated_friend_p (tree t)
+{
+  if (t && TREE_CODE (t) == FUNCTION_DECL
+      && DECL_UNIQUE_FRIEND_P (t))
+    {
+      tree ti = DECL_TEMPLATE_INFO (t);
+      if (!ti)
+	return true;
+      /* DECL_FRIEND_CONTEXT is set for a friend defined in class.  */
+      if (DECL_FRIEND_CONTEXT (t))
+	return false;
+      /* Non-templated friends in a class template are still represented with a
+	 TEMPLATE_DECL; check that its primary template is the befriending
+	 class.  Note that DECL_PRIMARY_TEMPLATE is null for
+	 template <class T> friend A<T>::f(); */
+      tree tmpl = TI_TEMPLATE (ti);
+      tree primary = DECL_PRIMARY_TEMPLATE (tmpl);
+      return (primary && primary != tmpl);
+    }
+  else
+    return false;
+}
+
 /* DECL is a friend FUNCTION_DECL or TEMPLATE_DECL.  ARGS is the
    vector of template arguments, as for tsubst.
 
@@ -14094,7 +14121,7 @@ tsubst_function_decl (tree t, tree args, tsubst_flags_t complain,
       /* This special case arises when we have something like this:
 
 	 template <class T> struct S {
-	 friend void f<int>(int, double);
+	   friend void f<int>(int, double);
 	 };
 
 	 Here, the DECL_TI_TEMPLATE for the friend declaration
