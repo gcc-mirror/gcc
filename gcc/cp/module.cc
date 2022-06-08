@@ -19026,22 +19026,21 @@ declare_module (module_state *module, location_t from_loc, bool exporting_p,
     }
 }
 
-/* +1, we're the primary or a partition.  Therefore emitting a
-   globally-callable idemportent initializer function.
-   -1, we have direct imports.  Therefore emitting calls to their
-   initializers.  */
+/* Return true IFF we must emit a module global initializer function
+   (which will be called by importers' init code).  */
 
-int
-module_initializer_kind ()
+bool
+module_global_init_needed ()
 {
-  int result = 0;
+  return module_has_cmi_p () && !header_module_p ();
+}
 
-  if (module_has_cmi_p () && !header_module_p ())
-    result = +1;
-  else if (num_init_calls_needed)
-    result = -1;
+/* Return true IFF we have import global inits to call.  */
 
-  return result;
+bool
+module_has_import_inits ()
+{
+  return bool (num_init_calls_needed);
 }
 
 /* Emit calls to each direct import's global initializer.  Including

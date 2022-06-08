@@ -55,7 +55,7 @@ int raw_dump_id;
  
 extern cpp_reader *parse_in;
 
-static tree start_objects (bool, unsigned);
+static tree start_objects (bool, unsigned, bool);
 static tree finish_objects (bool, unsigned, tree);
 static tree start_partial_init_fini_fn (bool, unsigned, unsigned);
 static void finish_partial_init_fini_fn (tree);
@@ -3848,15 +3848,13 @@ generate_tls_wrapper (tree fn)
 /* Start a global constructor or destructor function.  */
 
 static tree
-start_objects (bool initp, unsigned priority)
+start_objects (bool initp, unsigned priority, bool has_body)
 {
-  int module_init = 0;
-
-  if (priority == DEFAULT_INIT_PRIORITY && initp)
-    module_init = module_initializer_kind ();
-
+  bool default_init = initp && priority == DEFAULT_INIT_PRIORITY;
+  bool is_module_init = default_init && module_global_init_needed ();
   tree name = NULL_TREE;
-  if (module_init > 0)
+
+  if (is_module_init)
     name = mangle_module_global_init (0);
   else
     {
@@ -3880,7 +3878,7 @@ start_objects (bool initp, unsigned priority)
   tree fntype =	build_function_type (void_type_node, void_list_node);
   tree fndecl = build_lang_decl (FUNCTION_DECL, name, fntype);
   DECL_CONTEXT (fndecl) = FROB_CONTEXT (global_namespace);
-  if (module_init > 0)
+  if (is_module_init)
     {
       SET_DECL_ASSEMBLER_NAME (fndecl, name);
       TREE_PUBLIC (fndecl) = true;
@@ -3905,8 +3903,10 @@ start_objects (bool initp, unsigned priority)
 
   tree body = begin_compound_stmt (BCS_FN_BODY);
 
-  if (module_init > 0)
+  bool has_import_inits = default_init && module_has_import_inits ();
+  if (is_module_init && (has_import_inits || has_body))
     {
+      // If the function is going to be empty, don't emit idempotency.
       // 'static bool __in_chrg = false;
       // if (__inchrg) return;
       // __inchrg = true
@@ -3930,7 +3930,7 @@ start_objects (bool initp, unsigned priority)
       finish_expr_stmt (assign);
     }
 
-  if (module_init)
+  if (has_import_inits)
     module_add_import_initializers ();
 
   return body;
@@ -4321,7 +4321,7 @@ generate_ctor_or_dtor_function (bool initp, unsigned priority,
 {
   input_location = locus;
 
-  tree body = start_objects (initp, priority);
+  tree body = start_objects (initp, priority, bool (fns));
 
   /* To make sure dynamic construction doesn't access globals from other
      compilation units where they might not be yet constructed, for
@@ -4359,7 +4359,9 @@ generate_ctor_or_dtor_function (bool initp, unsigned priority,
   if (initp && (flag_sanitize & SANITIZE_ADDRESS))
     finish_expr_stmt (asan_dynamic_init_call (/*after_p=*/true));
 
-  /* Close out the function.  */
+  /* Close out the function, and arrange for it to be called at init
+     or fini time.  (Even module initializer functions need this, as
+     we cannot guarantee the module is imported somewhere in the programq.)  */
   expand_or_defer_fn (finish_objects (initp, priority, body));
 }
 
@@ -5205,7 +5207,7 @@ c_parse_final_cleanups (void)
   push_lang_context (lang_name_c);
 
   if ((c_dialect_objc () && objc_static_init_needed_p ())
-      || module_initializer_kind ())
+      || module_global_init_needed () || module_has_import_inits ())
     {
       // Make sure there's a default priority entry.
       if (!static_init_fini_fns[true])
@@ -5871,7 +5873,7 @@ mark_used (tree decl)
 tree
 vtv_start_verification_constructor_init_function (void)
 {
-  return start_objects (/*initp=*/true, MAX_RESERVED_INIT_PRIORITY - 1);
+  return start_objects (/*initp=*/true, MAX_RESERVED_INIT_PRIORITY - 1, true);
 }
 
 tree
