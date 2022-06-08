@@ -1,3 +1,13 @@
+2022-06-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.cc (c_parser_omp_clause_linear): Parse OpenMP 5.2
+	style linear clause modifiers.  Set
+	OMP_CLAUSE_LINEAR_OLD_LINEAR_MODIFIER flag on the clauses when
+	old style modifiers are used.
+	* c-typeck.cc (c_finish_omp_clauses): Only reject linear clause
+	with val modifier on simd or for if the old style modifiers are
+	used.
+
 2022-06-02  David Malcolm  <dmalcolm@redhat.com>
 
 	* c-lang.cc (LANG_HOOKS_GET_SARIF_SOURCE_LANGUAGE): Redefine.

@@ -1,3 +1,31 @@
+2022-06-07  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr105854.c: New test.
+
+2022-06-07  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR middle-end/105853
+	PR target/105856
+	* gcc.dg/pr105853.c: New test case.
+	* gcc.dg/pr105856.c: New test case.
+
+2022-06-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/gomp/linear-2.c: New test.
+	* c-c++-common/gomp/linear-3.c: New test.
+	* g++.dg/gomp/linear-3.C: New test.
+	* g++.dg/gomp/linear-4.C: New test.
+	* g++.dg/gomp/linear-5.C: New test.
+
+2022-06-07  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR c++/96442
+	* g++.dg/parse/pr96442.C: New test case.
+
+2022-06-07  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* gcc.target/i386/xop-pcmov3.c: New test case.
+
 2022-06-06  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/53164

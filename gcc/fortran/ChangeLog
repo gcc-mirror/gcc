@@ -1,3 +1,9 @@
+2022-06-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* trans-openmp.cc (gfc_trans_omp_clauses): Set
+	OMP_CLAUSE_LINEAR_OLD_LINEAR_MODIFIER on OMP_CLAUSE_LINEAR
+	clauses unconditionally for now.
+
 2022-06-03  Tobias Burnus  <tobias@codesourcery.com>
 
 	* openmp.cc (OMP_SCOPE_CLAUSES): Add firstprivate and allocate.

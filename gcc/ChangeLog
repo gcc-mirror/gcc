@@ -1,3 +1,80 @@
+2022-06-07  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/105090
+	* config/arm/arm.cc (arm_bfi_1_p): New function.
+	(arm_bfi_p): New function.
+	(arm_rtx_costs_internal): Add costs for BFI idioms.
+	(arm_print_operand [case 'V']): Format output for BFI/BFC masks.
+	* config/arm/constraints.md (Dj): New constraint.
+	* config/arm/arm.md (arm_andsi3_insn): Add alternative to use BFC.
+	(insv_zero): Convert to an insn with a split.
+	(*bfi, *bfi_alt1, *bfi_alt2, *bfi_alt3): New patterns.
+
+2022-06-07  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/105854
+	* config/i386/sse.md (ssse3_palignrdi): Change alternative 2
+	from Yv to Yw.
+
+2022-06-07  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR middle-end/105853
+	PR target/105856
+	* calls.cc (load_register_parameters): Call store_constructor
+	and int_expr_size directly instead of expanding via expand_expr.
+	* expr.cc (static void store_constructor): Don't prototype here.
+	(static HOST_WIDE_INT int_expr_size): Likewise.
+	(store_constructor): No longer static.
+	(int_expr_size): Likewise, no longer static.
+	* expr.h (store_constructor): Prototype here.
+	(int_expr_size): Prototype here.
+
+2022-06-07  Jan Beulich  <jbeulich@suse.com>
+
+	Revert:
+	2022-06-03  Jan Beulich  <jbeulich@suse.com>
+
+	* Makefile.in (ORIGINAL_OBJCOPY_FOR_TARGET): New.
+	* configure.ac: Check for objcopy, producing
+	ORIGINAL_OBJCOPY_FOR_TARGET.
+	* configure: Update accordingly.
+	* exec-tool.in (ORIGINAL_OBJCOPY_FOR_TARGET): New.
+	Handle objcopy.
+
+2022-06-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree.h (OMP_CLAUSE_LINEAR_OLD_LINEAR_MODIFIER): Define.
+	* tree-pretty-print.cc (dump_omp_clause) <case OMP_CLAUSE_LINEAR>:
+	Adjust clause printing style depending on
+	OMP_CLAUSE_LINEAR_OLD_LINEAR_MODIFIER.
+
+2022-06-07  Jan Beulich  <jbeulich@suse.com>
+
+	* config/i386/i386-builtin.def (__builtin_ia32_psadbw256):
+	Change type.
+	* config/i386/i386-builtin-types.def: New function type
+	(V4DI, V32QI, V32QI).
+	* config/i386/i386-expand.cc (ix86_expand_args_builtin): Handle
+	V4DI_FTYPE_V32QI_V32QI.
+
+2022-06-07  Jan Beulich  <jbeulich@suse.com>
+
+	* config/i386/i386.cc (ix86_attr_length_vex_default): Take REX.B
+	into account for reg-only insns.
+
+2022-06-07  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* config/i386/i386.cc (ix86_rtx_costs): Add a new case for
+	IF_THEN_ELSE, and provide costs for TARGET_XOP's vpcmov and
+	TARGET_CMOVE's (scalar integer) conditional moves.
+	* config/i386/sse.md (define_split): Recognize XOP's vpcmov
+	from its equivalent (canonical) pxor;pand;pxor sequence.
+
+2022-06-07  Kewen Lin  <linkw@linux.ibm.com>
+
+	* machmode.def (VECTOR_MODES_WITH_PREFIX): Update document for
+	parameter ORDER.
+
 2022-06-06  Andrew Stubbs  <ams@codesourcery.com>
 
 	* config.in: Regenerate.

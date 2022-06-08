@@ -1,3 +1,20 @@
+2022-06-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* parser.cc (cp_parser_omp_clause_linear): Parse OpenMP 5.2
+	style linear clause modifiers.  Set
+	OMP_CLAUSE_LINEAR_OLD_LINEAR_MODIFIER flag on the clauses when
+	old style modifiers are used.
+	* semantics.cc (finish_omp_clauses): Only reject linear clause
+	with val modifier on simd or for if the old style modifiers are
+	used.
+
+2022-06-07  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR c++/96442
+	* decl.cc (start_enum): When emitting a "must be integral" error,
+	set ENUM_UNDERLYING_TYPE to integer_type_node, to avoid an ICE
+	downstream in build_enumeration.
+
 2022-06-06  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/53164
