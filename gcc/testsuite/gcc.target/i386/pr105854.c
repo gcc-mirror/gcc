@@ -1,4 +1,5 @@
-/* { dg-do compile } */
+/* { dg-do compile { target int128 } } */
+/* { dg-require-effective-target dfp } */
 /* { dg-options "-O -fcaller-saves -mavx512vl -mno-avx512bw" } */
 
 typedef int __attribute__((__vector_size__ (8))) T;
