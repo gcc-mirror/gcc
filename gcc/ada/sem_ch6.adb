@@ -9988,17 +9988,8 @@ package body Sem_Ch6 is
          N2 : Node_Id;
 
       begin
-         if L1 = No_List then
-            N1 := Empty;
-         else
-            N1 := First (L1);
-         end if;
-
-         if L2 = No_List then
-            N2 := Empty;
-         else
-            N2 := First (L2);
-         end if;
+         N1 := First (L1);
+         N2 := First (L2);
 
          --  Compare two lists, skipping rewrite insertions (we want to compare
          --  the original trees, not the expanded versions).
