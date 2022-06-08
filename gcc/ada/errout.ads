@@ -858,11 +858,6 @@ package Errout is
    --  Remove warnings on all elements of a list (Calls Remove_Warning_Messages
    --  on each element of the list, see above).
 
-   procedure Reset_Warnings;
-   --  Reset the counts related to warnings. This is used both to initialize
-   --  these counts and to reset them after each phase of analysis for a given
-   --  value of Opt.Warning_Mode in gnat2why.
-
    procedure Set_Ignore_Errors (To : Boolean);
    --  Following a call to this procedure with To=True, all error calls are
    --  ignored. A call with To=False restores the default treatment in which
@@ -910,11 +905,10 @@ package Errout is
    --  matching Warnings Off pragma preceding this one.
 
    function Compilation_Errors return Boolean;
-   --  Returns True if errors have been detected, or warnings in -gnatwe (treat
-   --  warnings as errors) mode. Note that it is mandatory to call Finalize
-   --  before calling this routine. To account for changes to Warning_Mode in
-   --  gnat2why between phases, the past or current presence of an error is
-   --  recorded in a global variable at each call.
+   --  Returns True if errors have been detected, or warnings when they are
+   --  treated as errors, which corresponds to switch -gnatwe in the compiler,
+   --  and other switches in other tools. Note that it is mandatory to call
+   --  Finalize before calling this routine.
 
    procedure Error_Msg_CRT (Feature : String; N : Node_Id);
    --  Posts a non-fatal message on node N saying that the feature identified
