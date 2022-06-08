@@ -114,6 +114,7 @@ private:
   Codepoint peek_codepoint_input ();
   Codepoint test_peek_codepoint_input (int n);
   void skip_codepoint_input ();
+  void skip_broken_string_input (int current_char);
 
   TokenPtr parse_byte_char (Location loc);
   TokenPtr parse_byte_string (Location loc);
