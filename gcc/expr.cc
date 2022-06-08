@@ -11181,6 +11181,13 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 	   infinitely recurse.  */
 	gcc_assert (tem != exp);
 
+	/* If tem is a VAR_DECL, we need a memory reference.  */
+	enum expand_modifier tem_modifier = modifier;
+	if (tem_modifier == EXPAND_SUM)
+	  tem_modifier = EXPAND_NORMAL;
+	if (TREE_CODE (tem) == VAR_DECL)
+	  tem_modifier = EXPAND_MEMORY;
+
 	/* If TEM's type is a union of variable size, pass TARGET to the inner
 	   computation, since it will need a temporary and TARGET is known
 	   to have to do.  This occurs in unchecked conversion in Ada.  */
@@ -11192,9 +11199,7 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 				   != INTEGER_CST)
 			       && modifier != EXPAND_STACK_PARM
 			       ? target : NULL_RTX),
-			      VOIDmode,
-			      modifier == EXPAND_SUM ? EXPAND_NORMAL : modifier,
-			      NULL, true);
+			      VOIDmode, tem_modifier, NULL, true);
 
 	/* If the field has a mode, we want to access it in the
 	   field's mode, not the computed mode.
