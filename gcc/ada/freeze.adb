@@ -2309,67 +2309,6 @@ package body Freeze is
       end loop;
    end Check_Unsigned_Type;
 
-   ------------------------------
-   -- Is_Full_Access_Aggregate --
-   ------------------------------
-
-   function Is_Full_Access_Aggregate (N : Node_Id) return Boolean is
-      Loc   : constant Source_Ptr := Sloc (N);
-      New_N : Node_Id;
-      Par   : Node_Id;
-      Temp  : Entity_Id;
-      Typ   : Entity_Id;
-
-   begin
-      Par := Parent (N);
-
-      --  Array may be qualified, so find outer context
-
-      if Nkind (Par) = N_Qualified_Expression then
-         Par := Parent (Par);
-      end if;
-
-      if not Comes_From_Source (Par) then
-         return False;
-      end if;
-
-      case Nkind (Par) is
-         when N_Assignment_Statement =>
-            Typ := Etype (Name (Par));
-
-            if not Is_Full_Access (Typ)
-              and then not Is_Full_Access_Object (Name (Par))
-            then
-               return False;
-            end if;
-
-         when N_Object_Declaration =>
-            Typ := Etype (Defining_Identifier (Par));
-
-            if not Is_Full_Access (Typ)
-              and then not Is_Full_Access (Defining_Identifier (Par))
-            then
-               return False;
-            end if;
-
-         when others =>
-            return False;
-      end case;
-
-      Temp := Make_Temporary (Loc, 'T', N);
-      New_N :=
-        Make_Object_Declaration (Loc,
-          Defining_Identifier => Temp,
-          Constant_Present    => True,
-          Object_Definition   => New_Occurrence_Of (Typ, Loc),
-          Expression          => Relocate_Node (N));
-      Insert_Before (Par, New_N);
-      Analyze (New_N);
-
-      Set_Expression (Par, New_Occurrence_Of (Temp, Loc));
-      return True;
-   end Is_Full_Access_Aggregate;
-
    -----------------------------------------------
    -- Explode_Initialization_Compound_Statement --
    -----------------------------------------------
@@ -6447,20 +6386,6 @@ package body Freeze is
          then
             Set_Encoded_Interface_Name
               (E, Get_Default_External_Name (E));
-
-         --  If entity is an atomic object appearing in a declaration and
-         --  the expression is an aggregate, assign it to a temporary to
-         --  ensure that the actual assignment is done atomically rather
-         --  than component-wise (the assignment to the temp may be done
-         --  component-wise, but that is harmless).
-
-         elsif Is_Full_Access (E)
-           and then Nkind (Parent (E)) = N_Object_Declaration
-           and then Present (Expression (Parent (E)))
-           and then Nkind (Expression (Parent (E))) = N_Aggregate
-           and then Is_Full_Access_Aggregate (Expression (Parent (E)))
-         then
-            null;
          end if;
 
          --  Subprogram case
