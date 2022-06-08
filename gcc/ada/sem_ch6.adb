@@ -13298,10 +13298,9 @@ package body Sem_Ch6 is
             Mutate_Ekind (Formal_Id, E_In_Out_Parameter);
 
          else
-            Mutate_Ekind            (Formal_Id, E_Out_Parameter);
-            Set_Never_Set_In_Source (Formal_Id, True);
-            Set_Is_True_Constant    (Formal_Id, False);
-            Set_Current_Value       (Formal_Id, Empty);
+            Mutate_Ekind         (Formal_Id, E_Out_Parameter);
+            Set_Is_True_Constant (Formal_Id, False);
+            Set_Current_Value    (Formal_Id, Empty);
          end if;
 
       else
