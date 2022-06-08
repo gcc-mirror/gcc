@@ -50,6 +50,7 @@ RUN apt-get update; \
 ADD . /usr/src/gcc
 RUN /bin/sh -c set -ex; \
     cd /usr/src/gcc; \
+    git log -1 --format="%h" > /GCCRS_BUILD; \
     ./contrib/download_prerequisites; 	{ rm *.tar.* || true; }; \
     mkdir -p /usr/src/gcc/gcc-build; \
     cd /usr/src/gcc/gcc-build; \
@@ -58,9 +59,6 @@ RUN /bin/sh -c set -ex; \
     make install-strip; \
     cd /root; \
     rm -rf /usr/src/gcc
-
-RUN cd /usr/src/gcc; \
-  git log -1 --format="%h" > /GCCRS_BUILD; \
 
 RUN /bin/sh -c set -ex; \
     echo '/usr/local/lib64' > /etc/ld.so.conf.d/local-lib64.conf; \
