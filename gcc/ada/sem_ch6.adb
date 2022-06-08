@@ -12985,10 +12985,10 @@ package body Sem_Ch6 is
          Set_Formal_Mode (Formal);
 
          if Ekind (Formal) = E_In_Parameter then
-            Set_Default_Value (Formal, Expression (Param_Spec));
+            Default := Expression (Param_Spec);
 
-            if Present (Expression (Param_Spec)) then
-               Default := Expression (Param_Spec);
+            if Present (Default) then
+               Set_Default_Value (Formal, Default);
 
                if Is_Scalar_Type (Etype (Default)) then
                   if Nkind (Parameter_Type (Param_Spec)) /=
