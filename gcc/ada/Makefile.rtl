@@ -1124,6 +1124,7 @@ ifeq ($(strip $(filter-out powerpc% wrs vxworks vxworks7%, $(target_cpu) $(targe
 
   EH_MECHANISM=-gcc
 
+  # The rtp and kernel sections must be retained for the sake of ppc-vx6
   ifeq ($(strip $(filter-out rtp,$(THREAD_KIND))),)
     LIBGNAT_TARGET_PAIRS += \
     s-vxwext.ads<libgnarl/s-vxwext__rtp.ads \
@@ -1153,15 +1154,15 @@ ifeq ($(strip $(filter-out powerpc% wrs vxworks vxworks7%, $(target_cpu) $(targe
 
         EXTRA_LIBGNAT_OBJS+=affinity.o
       else
-        LIBGNAT_TARGET_PAIRS += \
-        s-interr.adb<libgnarl/s-interr__vxworks.adb \
-        s-tpopsp.adb<libgnarl/s-tpopsp__vxworks.adb
-
         ifeq ($(strip $(filter-out kernel,$(THREAD_KIND))),)
           LIBGNAT_TARGET_PAIRS += \
+          s-interr.adb<libgnarl/s-interr__vxworks.adb \
+          s-tpopsp.adb<libgnarl/s-tpopsp__vxworks.adb \
           s-vxwext.ads<libgnarl/s-vxwext__kernel.ads \
           s-vxwext.adb<libgnarl/s-vxwext__kernel.adb \
           system.ads<libgnat/$(SVX)-$(ARCH_STR)-kernel.ads
+        else
+          RTSERR = $(error NO SUCH RUNTIME)
         endif
       endif
       EXTRA_GNATRTL_NONTASKING_OBJS+=i-vxinco.o i-vxwork.o i-vxwoio.o
@@ -1257,48 +1258,31 @@ ifeq ($(strip $(filter-out %86 x86_64 wrs vxworks7%, $(target_cpu) $(target_vend
 
   GNATLIBCFLAGS_FOR_C := $(GNATLIBCFLAGS_FOR_C) -D__VXSIM_CPU__=$(VXSIM_CPU)
 
-  ifeq ($(strip $(filter-out rtp,$(THREAD_KIND))),)
+  ifeq ($(strip $(filter-out rtp-smp, $(THREAD_KIND))),)
     LIBGNAT_TARGET_PAIRS += \
+    s-mudido.adb<libgnarl/s-mudido__affinity.adb \
     s-vxwext.ads<libgnarl/s-vxwext__rtp.ads \
-    s-vxwext.adb<libgnarl/s-vxwext__rtp.adb \
-    s-tpopsp.adb<libgnarl/s-tpopsp__vxworks-rtp.adb \
-    system.ads<libgnat/system-vxworks7-x86-rtp.ads
+    s-vxwext.adb<libgnarl/s-vxwext__rtp-smp.adb \
+    s-tpopsp.adb<libgnarl/s-tpopsp__vxworks-tls.adb \
+    system.ads<libgnat/system-vxworks7-$(X86CPU)-rtp-smp.ads
+
+    EXTRA_LIBGNAT_OBJS+=affinity.o
   else
-    ifeq ($(strip $(filter-out rtp-smp, $(THREAD_KIND))),)
+    ifeq ($(strip $(filter-out kernel-smp, $(THREAD_KIND))),)
       LIBGNAT_TARGET_PAIRS += \
+      s-interr.adb<libgnarl/s-interr__vxworks.adb \
       s-mudido.adb<libgnarl/s-mudido__affinity.adb \
-      s-vxwext.ads<libgnarl/s-vxwext__rtp.ads \
-      s-vxwext.adb<libgnarl/s-vxwext__rtp-smp.adb \
       s-tpopsp.adb<libgnarl/s-tpopsp__vxworks-tls.adb \
-      system.ads<libgnat/system-vxworks7-$(X86CPU)-rtp-smp.ads
+      s-vxwext.ads<libgnarl/s-vxwext__kernel.ads \
+      s-vxwext.adb<libgnarl/s-vxwext__kernel-smp.adb \
+      system.ads<libgnat/system-vxworks7-$(X86CPU)-kernel.ads
 
       EXTRA_LIBGNAT_OBJS+=affinity.o
     else
-      ifeq ($(strip $(filter-out kernel-smp, $(THREAD_KIND))),)
-        LIBGNAT_TARGET_PAIRS += \
-        s-interr.adb<libgnarl/s-interr__vxworks.adb \
-        s-mudido.adb<libgnarl/s-mudido__affinity.adb \
-        s-tpopsp.adb<libgnarl/s-tpopsp__vxworks-tls.adb \
-        s-vxwext.ads<libgnarl/s-vxwext__kernel.ads \
-        s-vxwext.adb<libgnarl/s-vxwext__kernel-smp.adb \
-        system.ads<libgnat/system-vxworks7-$(X86CPU)-kernel.ads
-
-        EXTRA_LIBGNAT_OBJS+=affinity.o
-      else
-        LIBGNAT_TARGET_PAIRS += \
-        s-interr.adb<libgnarl/s-interr__vxworks.adb \
-        s-tpopsp.adb<libgnarl/s-tpopsp__vxworks.adb
-
-        ifeq ($(strip $(filter-out kernel,$(THREAD_KIND))),)
-          LIBGNAT_TARGET_PAIRS += \
-          s-vxwext.ads<libgnarl/s-vxwext__kernel.ads \
-          s-vxwext.adb<libgnarl/s-vxwext__kernel.adb \
-          system.ads<libgnat/system-vxworks7-x86-kernel.ads
-        endif
-      endif
-
-      EXTRA_GNATRTL_NONTASKING_OBJS += i-vxinco.o i-vxwork.o i-vxwoio.o
+      RTSERR = $(error NO SUCH RUNTIME)
     endif
+
+    EXTRA_GNATRTL_NONTASKING_OBJS += i-vxinco.o i-vxwork.o i-vxwoio.o
   endif
 
   EXTRA_GNATRTL_NONTASKING_OBJS += s-stchop.o
@@ -1385,18 +1369,7 @@ ifeq ($(strip $(filter-out aarch64 arm wrs vxworks7%, $(target_cpu) $(target_ven
       EXTRA_LIBGNAT_OBJS+=$(SIGTRAMP_OBJ)
       EXTRA_LIBGNAT_SRCS+=$(VX_SIGTRAMP_EXTRA_SRCS)
     else
-      LIBGNAT_TARGET_PAIRS += \
-      s-tpopsp.adb<libgnarl/s-tpopsp__vxworks.adb \
-      system.ads<libgnat/system-vxworks7-$(ARCH_STR).ads
-
-      ifeq ($(strip $(filter-out kernel,$(THREAD_KIND))),)
-        LIBGNAT_TARGET_PAIRS += \
-        s-vxwext.ads<libgnarl/s-vxwext__kernel.ads \
-        s-vxwext.adb<libgnarl/s-vxwext__kernel.adb
-
-        EXTRA_LIBGNAT_OBJS+=$(SIGTRAMP_OBJ)
-        EXTRA_LIBGNAT_SRCS+=$(VX_SIGTRAMP_EXTRA_SRCS)
-      endif
+      RTSERR = $(error NO SUCH RUNTIME)
     endif
   endif
 
@@ -2879,7 +2852,10 @@ ADA_EXCLUDE_FILES=$(filter-out \
   $(patsubst %$(objext),%.adb,$(GNATRTL_OBJS)), \
   $(ADA_EXCLUDE_SRCS))
 
-setup-rts: force
+.PHONY: rts-err
+rts-err: ; $(RTSERR)
+
+setup-rts: rts-err force
 	$(RMDIR) $(RTSDIR)
 	$(MKDIR) $(RTSDIR)
 	$(CHMOD) u+w $(RTSDIR)
