@@ -7578,9 +7578,7 @@ package body Exp_Ch6 is
               and then Etype (F) /= Etype (A)
             then
                Append_To (Actuals,
-                 Make_Unchecked_Type_Conversion (Loc,
-                   New_Occurrence_Of (Etype (F), Loc),
-                   New_Copy_Tree (A)));
+                 Unchecked_Convert_To (Etype (F), New_Copy_Tree (A)));
             else
                Append_To (Actuals, New_Copy_Tree (A));
             end if;
