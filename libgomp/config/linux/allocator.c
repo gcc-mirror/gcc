@@ -33,4 +33,4 @@
 #define LIBGOMP_USE_MEMKIND
 #endif
 
-#include "../../../allocator.c"
+#include "../../allocator.c"
