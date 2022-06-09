@@ -4198,9 +4198,16 @@ cxx_eval_bit_field_ref (const constexpr_ctx *ctx, tree t,
   if (*non_constant_p)
     return t;
 
-  if (TREE_CODE (whole) == VECTOR_CST)
-    return fold_ternary (BIT_FIELD_REF, TREE_TYPE (t), whole,
-			 TREE_OPERAND (t, 1), TREE_OPERAND (t, 2));
+  if (TREE_CODE (whole) == VECTOR_CST || !INTEGRAL_TYPE_P (TREE_TYPE (t)))
+    {
+      if (tree r = fold_ternary (BIT_FIELD_REF, TREE_TYPE (t), whole,
+				 TREE_OPERAND (t, 1), TREE_OPERAND (t, 2)))
+	return r;
+      if (!ctx->quiet)
+	error ("%qE is not a constant expression", orig_whole);
+      *non_constant_p = true;
+      return t;
+    }
 
   start = TREE_OPERAND (t, 2);
   istart = tree_to_shwi (start);
