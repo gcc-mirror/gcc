@@ -3523,7 +3523,10 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
 
  public:
   /* Read and write module.  */
-  void write (elf_out *to, cpp_reader *);
+  void write_begin (elf_out *to, cpp_reader *,
+		    module_state_config &, unsigned &crc);
+  void write_end (elf_out *to, cpp_reader *,
+		  module_state_config &, unsigned &crc);
   bool read_initial (cpp_reader *);
   bool read_preprocessor (bool);
   bool read_language (bool);
@@ -3545,8 +3548,7 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
 
  private:
   /* The README, for human consumption.  */
-  void write_readme (elf_out *to, cpp_reader *,
-		     const char *dialect, unsigned extensions);
+  void write_readme (elf_out *to, cpp_reader *, const char *dialect);
   void write_env (elf_out *to);
 
  private:
@@ -13954,8 +13956,7 @@ module_state::announce (const char *what) const
      readelf -pgnu.c++.README $(module).gcm */
 
 void
-module_state::write_readme (elf_out *to, cpp_reader *reader,
-			    const char *dialect, unsigned extensions)
+module_state::write_readme (elf_out *to, cpp_reader *reader, const char *dialect)
 {
   bytes_out readme (to);
 
@@ -17560,7 +17561,8 @@ ool_cmp (const void *a_, const void *b_)
 */
 
 void
-module_state::write (elf_out *to, cpp_reader *reader)
+module_state::write_begin (elf_out *to, cpp_reader *reader,
+			   module_state_config &config, unsigned &crc)
 {
   /* Figure out remapped module numbers, which might elide
      partitions.  */
@@ -17656,8 +17658,6 @@ module_state::write (elf_out *to, cpp_reader *reader)
     }
   ool->qsort (ool_cmp);
 
-  unsigned crc = 0;
-  module_state_config config;
   location_map_info map_info = write_prepare_maps (&config);
   unsigned counts[MSC_HWM];
 
@@ -17811,19 +17811,14 @@ module_state::write (elf_out *to, cpp_reader *reader)
   unsigned clusters = counts[MSC_sec_hwm] - counts[MSC_sec_lwm];
   dump () && dump ("Wrote %u clusters, average %u bytes/cluster",
 		   clusters, (bytes + clusters / 2) / (clusters + !clusters));
+  trees_out::instrument ();
 
   write_counts (to, counts, &crc);
-
-  /* And finish up.  */
-  write_config (to, config, crc);
 
   spaces.release ();
   sccs.release ();
 
   vec_free (ool);
-
-  /* Human-readable info.  */
-  write_readme (to, reader, config.dialect_str, extensions);
 
   // FIXME:QOI:  Have a command line switch to control more detailed
   // information (which might leak data you do not want to leak).
@@ -17831,8 +17826,20 @@ module_state::write (elf_out *to, cpp_reader *reader)
   // so-controlled.
   if (false)
     write_env (to);
+}
 
-  trees_out::instrument ();
+// Finish module writing after we've emitted all dynamic initializers. 
+
+void
+module_state::write_end (elf_out *to, cpp_reader *reader,
+			 module_state_config &config, unsigned &crc)
+{
+  /* And finish up.  */
+  write_config (to, config, crc);
+
+  /* Human-readable info.  */
+  write_readme (to, reader, config.dialect_str);
+
   dump () && dump ("Wrote %u sections", to->get_section_limit ());
 }
 
@@ -19855,15 +19862,18 @@ maybe_check_all_macros (cpp_reader *reader)
 }
 
 // State propagated from finish_module_processing to fini_modules
+
 struct module_processing_cookie
 {
   elf_out out;
+  module_state_config config;
   char *cmi_name;
   char *tmp_name;
+  unsigned crc;
   bool began;
 
   module_processing_cookie (char *cmi, char *tmp, int fd, int e)
-    : out (fd, e), cmi_name (cmi), tmp_name (tmp), began (false)
+    : out (fd, e), cmi_name (cmi), tmp_name (tmp), crc (0), began (false)
   {
   }
   ~module_processing_cookie ()
@@ -19941,7 +19951,7 @@ finish_module_processing (cpp_reader *reader)
 	  auto loc = input_location;
 	  /* So crashes finger-point the module decl.  */
 	  input_location = state->loc;
-	  state->write (&cookie->out, reader);
+	  state->write_begin (&cookie->out, reader, cookie->config, cookie->crc);
 	  input_location = loc;
 	}
 
@@ -19976,6 +19986,9 @@ late_finish_module (cpp_reader *reader, module_processing_cookie *cookie)
   module_state *state = (*modules)[0];
   unsigned n = dump.push (state);
   state->announce ("finishing");
+
+  if (cookie->began)
+    state->write_end (&cookie->out, reader, cookie->config, cookie->crc);
 
   if (cookie->out.end () && cookie->cmi_name)
     {
