@@ -21,6 +21,7 @@
 #include <string>
 #include <memory_resource>
 #include <testsuite_hooks.h>
+#include <testsuite_allocator.h>
 
 // C++2a N4810 21.3.5 [basic.string.hash]
 // If S is one of these string types, SV is the corresponding string view type,
@@ -55,9 +56,20 @@ test02()
   VERIFY( hash<std::string>()(native) == hash<std::u8string>()(utf8) );
 }
 
+void
+test03()
+{
+  using Alloc = __gnu_test::SimpleAllocator<char8_t>;
+  using Stringu8 = std::basic_string<char8_t, std::char_traits<char8_t>, Alloc>;
+
+  // LWG 3705. Hashability shouldn't depend on basic_string's allocator
+  VERIFY( test(Stringu8(u8"a utf-8 string, with custom allocator")) );
+}
+
 int
 main()
 {
   test01();
   test02();
+  test03();
 }

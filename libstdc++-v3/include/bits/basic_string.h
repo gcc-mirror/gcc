@@ -4226,85 +4226,75 @@ namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
-  // DR 1182.
+  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+  // 3705. Hashability shouldn't depend on basic_string's allocator
+
+  template<typename _CharT, typename _Alloc,
+	   typename _StrT = basic_string<_CharT, char_traits<_CharT>, _Alloc>>
+    struct __str_hash_base
+    : public __hash_base<size_t, _StrT>
+    {
+      size_t
+      operator()(const _StrT& __s) const noexcept
+      { return _Hash_impl::hash(__s.data(), __s.length() * sizeof(_CharT)); }
+    };
 
 #ifndef _GLIBCXX_COMPATIBILITY_CXX0X
   /// std::hash specialization for string.
-  template<>
-    struct hash<string>
-    : public __hash_base<size_t, string>
-    {
-      size_t
-      operator()(const string& __s) const noexcept
-      { return std::_Hash_impl::hash(__s.data(), __s.length()); }
-    };
-
-  template<>
-    struct __is_fast_hash<hash<string>> : std::false_type
+  template<typename _Alloc>
+    struct hash<basic_string<char, char_traits<char>, _Alloc>>
+    : public __str_hash_base<char, _Alloc>
     { };
 
   /// std::hash specialization for wstring.
-  template<>
-    struct hash<wstring>
-    : public __hash_base<size_t, wstring>
-    {
-      size_t
-      operator()(const wstring& __s) const noexcept
-      { return std::_Hash_impl::hash(__s.data(),
-                                     __s.length() * sizeof(wchar_t)); }
-    };
+  template<typename _Alloc>
+    struct hash<basic_string<wchar_t, char_traits<wchar_t>, _Alloc>>
+    : public __str_hash_base<wchar_t, _Alloc>
+    { };
 
-  template<>
-    struct __is_fast_hash<hash<wstring>> : std::false_type
+  template<typename _Alloc>
+    struct __is_fast_hash<hash<basic_string<wchar_t, char_traits<wchar_t>,
+					    _Alloc>>>
+    : std::false_type
     { };
 #endif /* _GLIBCXX_COMPATIBILITY_CXX0X */
 
 #ifdef _GLIBCXX_USE_CHAR8_T
   /// std::hash specialization for u8string.
-  template<>
-    struct hash<u8string>
-    : public __hash_base<size_t, u8string>
-    {
-      size_t
-      operator()(const u8string& __s) const noexcept
-      { return std::_Hash_impl::hash(__s.data(),
-                                     __s.length() * sizeof(char8_t)); }
-    };
-
-  template<>
-    struct __is_fast_hash<hash<u8string>> : std::false_type
+  template<typename _Alloc>
+    struct hash<basic_string<char8_t, char_traits<char8_t>, _Alloc>>
+    : public __str_hash_base<char8_t, _Alloc>
     { };
 #endif
 
   /// std::hash specialization for u16string.
-  template<>
-    struct hash<u16string>
-    : public __hash_base<size_t, u16string>
-    {
-      size_t
-      operator()(const u16string& __s) const noexcept
-      { return std::_Hash_impl::hash(__s.data(),
-                                     __s.length() * sizeof(char16_t)); }
-    };
-
-  template<>
-    struct __is_fast_hash<hash<u16string>> : std::false_type
+  template<typename _Alloc>
+    struct hash<basic_string<char16_t, char_traits<char16_t>, _Alloc>>
+    : public __str_hash_base<char16_t, _Alloc>
     { };
 
   /// std::hash specialization for u32string.
-  template<>
-    struct hash<u32string>
-    : public __hash_base<size_t, u32string>
-    {
-      size_t
-      operator()(const u32string& __s) const noexcept
-      { return std::_Hash_impl::hash(__s.data(),
-                                     __s.length() * sizeof(char32_t)); }
-    };
-
-  template<>
-    struct __is_fast_hash<hash<u32string>> : std::false_type
+  template<typename _Alloc>
+    struct hash<basic_string<char32_t, char_traits<char32_t>, _Alloc>>
+    : public __str_hash_base<char32_t, _Alloc>
     { };
+
+#if ! _GLIBCXX_INLINE_VERSION
+  // PR libstdc++/105907 - __is_fast_hash affects unordered container ABI.
+  template<> struct __is_fast_hash<hash<string>> : std::false_type { };
+  template<> struct __is_fast_hash<hash<wstring>> : std::false_type { };
+  template<> struct __is_fast_hash<hash<u16string>> : std::false_type { };
+  template<> struct __is_fast_hash<hash<u32string>> : std::false_type { };
+#ifdef _GLIBCXX_USE_CHAR8_T
+  template<> struct __is_fast_hash<hash<u8string>> : std::false_type { };
+#endif
+#else
+  // For versioned namespace, assume every std::hash<basic_string<>> is slow.
+  template<typename _CharT, typename _Traits, typename _Alloc>
+    struct __is_fast_hash<hash<basic_string<_CharT, _Traits, _Alloc>>>
+    : std::false_type
+    { };
+#endif
 
 #if __cplusplus >= 201402L
 
