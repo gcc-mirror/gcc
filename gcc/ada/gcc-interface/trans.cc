@@ -7387,9 +7387,7 @@ gnat_to_gnu (Node_Id gnat_node)
 		    gnu_ret_val = maybe_unconstrained_array (gnu_ret_val);
 
 		    /* And find out whether it is a candidate for Named Return
-		       Value.  If so, record it.  Note that we disable this NRV
-		       optimization when we're preserving the control flow as
-		       it entails hoisting the allocation done below.  */
+		       Value.  If so, record it.  */
 		    if (optimize
 			&& !optimize_debug
 			&& !TYPE_CI_CO_LIST (gnu_subprog_type))
