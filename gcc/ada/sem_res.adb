@@ -4620,6 +4620,7 @@ package body Sem_Res is
                  ("invalid use of untagged formal incomplete type", A);
             end if;
 
+            --  For mode IN, if actual is an entity, and the type of the formal
             --  has warnings suppressed, then we reset Never_Set_In_Source for
             --  the calling entity. The reason for this is to catch cases like
             --  GNAT.Spitbol.Patterns.Vstring_Var where the called subprogram
