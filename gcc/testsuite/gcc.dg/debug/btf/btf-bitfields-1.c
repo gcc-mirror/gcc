@@ -9,6 +9,7 @@
 
 /* { dg-do compile )  */
 /* { dg-options "-O0 -gbtf -dA" } */
+/* { dg-require-effective-target int32plus } */
 
 /* { dg-final { scan-assembler-times "\[\t \]0x84000004\[\t \]+\[^\n\]*btt_info" 1 } } */
 
