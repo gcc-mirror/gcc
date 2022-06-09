@@ -1,3 +1,10 @@
+2022-06-08  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105852
+	PR c++/105761
+	* g++.dg/modules/tpl-friend-2_a.C: Adjust expected dump.
+	* g++.dg/template/friend74.C: New test.
+
 2022-06-03  Jason Merrill  <jason@redhat.com>
 
 	PR c++/105761

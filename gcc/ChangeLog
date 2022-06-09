@@ -1,3 +1,20 @@
+2022-06-08  Max Filippov  <jcmvbkbc@gmail.com>
+
+	Backported from master:
+	2022-06-08  Max Filippov  <jcmvbkbc@gmail.com>
+
+	PR target/105879
+	* config/xtensa/xtensa.md (movdi): Rename 'first' and 'second'
+	to 'lowpart' and 'highpart' so that they match 'gen_lowpart' and
+	'gen_highpart' bitwise semantics and fix order of highpart and
+	lowpart depending on target endianness.
+
+2022-06-08  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/105854
+	* config/i386/sse.md (ssse3_palignrdi): Change alternative 2
+	from Yv to Yw.
+
 2022-06-02  Philipp Tomsich  <philipp.tomsich@vrull.eu>
 
 	Backported from master:

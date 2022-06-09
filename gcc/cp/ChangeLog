@@ -1,3 +1,13 @@
+2022-06-08  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105852
+	PR c++/105761
+	* decl.cc (duplicate_decls): Avoid copying template info
+	from non-templated friend even if newdecl isn't a definition.
+	Correct handling of DECL_UNIQUE_FRIEND_P on templates.
+	* pt.cc (non_templated_friend_p): New.
+	* cp-tree.h (non_templated_friend_p): Declare it.
+
 2022-06-03  Jason Merrill  <jason@redhat.com>
 
 	PR c++/105761

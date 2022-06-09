@@ -1,3 +1,33 @@
+2022-06-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-05-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/105671
+	* include/std/sstream (basic_stringbuf::_M_high_mark): Add
+	always_inline attribute.
+
+2022-06-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-05-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/105681
+	* include/ext/pb_ds/detail/resize_policy/hash_prime_size_policy_imp.hpp:
+	Limit ga_sizes array to values that fit in size_t.
+	* include/ext/random [__SIZE_WIDTH < 32] (sfmt86243)
+	(sfmt86243_64, sfmt132049, sfmt132049_64, sfmt216091)
+	(sfmt216091_64): Do not declare.
+
+2022-06-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-05-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/basic_string.h: Do not include <ext/atomicity.h>
+	here.
+	* include/bits/cow_string.h: Include it here.
+
 2022-05-27  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:
