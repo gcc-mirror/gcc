@@ -3439,7 +3439,7 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
   bool exported_p : 1;	/* directness != MD_NONE && exported.  */
   bool cmi_noted_p : 1; /* We've told the user about the CMI, don't
 			   do it again  */
-  bool call_init_p : 1; /* This module's global initializer needs
+  bool active_init_p : 1; /* This module's global initializer needs
 			   calling.  */
   bool inform_cmi_p : 1; /* Inform of a read/write.  */
   bool visited_p : 1;    /* A walk-once flag. */
@@ -3677,7 +3677,7 @@ module_state::module_state (tree name, module_state *parent, bool partition)
   exported_p = false;
 
   cmi_noted_p = false;
-  call_init_p = false;
+  active_init_p = false;
 
   partition_p = partition;
 
@@ -14393,12 +14393,14 @@ struct module_state_config {
   unsigned ordinary_locs;
   unsigned macro_locs;
   unsigned ordinary_loc_align;
+  unsigned active_init;
 
 public:
   module_state_config ()
     :dialect_str (get_dialect ()),
      num_imports (0), num_partitions (0), num_entities (0),
-     ordinary_locs (0), macro_locs (0), ordinary_loc_align (0)
+     ordinary_locs (0), macro_locs (0), ordinary_loc_align (0),
+     active_init (0)
   {
   }
 
@@ -17336,7 +17338,9 @@ module_state::write_config (elf_out *to, module_state_config &config,
 
   cfg.u (config.ordinary_locs);
   cfg.u (config.macro_locs);
-  cfg.u (config.ordinary_loc_align);  
+  cfg.u (config.ordinary_loc_align);
+
+  cfg.u (config.active_init);
 
   /* Now generate CRC, we'll have incorporated the inner CRC because
      of its serialization above.  */
@@ -17521,6 +17525,8 @@ module_state::read_config (module_state_config &config)
   config.ordinary_locs = cfg.u ();
   config.macro_locs = cfg.u ();
   config.ordinary_loc_align = cfg.u ();
+
+  config.active_init = cfg.u ();
 
  done:
   return cfg.end (from ());
@@ -17921,6 +17927,9 @@ module_state::read_initial (cpp_reader *reader)
   /* Macro maps after the imports.  */
   if (ok && have_locs && !read_macro_maps ())
     ok = false;
+
+  /* Note whether there's an active initializer.  */
+  active_init_p = !is_header () && bool (config.active_init);
 
   gcc_assert (slurp->current == ~0u);
   return ok;
@@ -19047,10 +19056,10 @@ module_determine_import_inits ()
   if (!modules || header_module_p ())
     return false;
 
-  /* Determine call_init_p.  We need the same bitmap allocation
+  /* Prune active_init_p.  We need the same bitmap allocation
      scheme as for the imports member.  */
   function_depth++; /* Disable GC.  */
-  bitmap indirect_imports (BITMAP_GGC_ALLOC ());
+  bitmap covered_imports (BITMAP_GGC_ALLOC ());
 
   bool any = false;
 
@@ -19060,16 +19069,15 @@ module_determine_import_inits ()
     {
       module_state *import = (*modules)[ix];
 
-      if (!import->is_header ()
-	  && !bitmap_bit_p (indirect_imports, ix))
+      if (!import->active_init_p)
+	;
+      else if (bitmap_bit_p (covered_imports, ix))
+	import->active_init_p = false;
+      else
 	{
-	  /* Everything this imports is therefore indirectly
-	     imported.  */
-	  bitmap_ior_into (indirect_imports, import->imports);
-	  /* We don't have to worry about the self-import bit,
-	     because of the single pass.  */
-
-	  import->call_init_p = true;
+	  /* Everything this imports is therefore handled by its
+	     initializer, so doesn't need initializing by us.  */
+	  bitmap_ior_into (covered_imports, import->imports);
 	  any = true;
 	}
     }
@@ -19098,7 +19106,7 @@ module_add_import_initializers ()
   for (unsigned ix = modules->length (); --ix;)
     {
       module_state *import = (*modules)[ix];
-      if (import->call_init_p)
+      if (import->active_init_p)
 	{
 	  tree name = mangle_module_global_init (ix);
 	  tree fndecl = build_lang_decl (FUNCTION_DECL, name, fntype);
@@ -19979,7 +19987,8 @@ finish_module_processing (cpp_reader *reader)
 // the module static initializer is a NOP or not.
 
 static void
-late_finish_module (cpp_reader *reader, module_processing_cookie *cookie)
+late_finish_module (cpp_reader *reader,  module_processing_cookie *cookie,
+		    bool init_fn_non_empty)
 {
   timevar_start (TV_MODULE_EXPORT);
 
@@ -19987,6 +19996,7 @@ late_finish_module (cpp_reader *reader, module_processing_cookie *cookie)
   unsigned n = dump.push (state);
   state->announce ("finishing");
 
+  cookie->config.active_init = init_fn_non_empty;
   if (cookie->began)
     state->write_end (&cookie->out, reader, cookie->config, cookie->crc);
 
@@ -20029,11 +20039,12 @@ late_finish_module (cpp_reader *reader, module_processing_cookie *cookie)
 }
 
 void
-fini_modules (cpp_reader *reader, void *cookie)
+fini_modules (cpp_reader *reader, void *cookie, bool has_inits)
 {
   if (cookie)
     late_finish_module (reader,
-			static_cast<module_processing_cookie *> (cookie));
+			static_cast<module_processing_cookie *> (cookie),
+			has_inits);
 
   /* We're done with the macro tables now.  */
   vec_free (macro_exports);

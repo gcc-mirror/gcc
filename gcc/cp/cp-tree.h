@@ -7209,7 +7209,7 @@ extern void import_module (module_state *, location_t, bool export_p,
 extern void declare_module (module_state *, location_t, bool export_p,
 			    tree attr, cpp_reader *);
 extern void init_modules (cpp_reader *);
-extern void fini_modules (cpp_reader *, void *cookie);
+extern void fini_modules (cpp_reader *, void *cookie, bool);
 extern void maybe_check_all_macros (cpp_reader *);
 extern void *finish_module_processing (cpp_reader *);
 extern char const *module_name (unsigned, bool header_ok);

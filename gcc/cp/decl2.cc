@@ -5205,7 +5205,8 @@ c_parse_final_cleanups (void)
   if (c_dialect_objc ())
     objc_write_global_declarations ();
 
-  if (module_determine_import_inits ())
+  bool has_module_inits = module_determine_import_inits ();
+  if (has_module_inits)
     {
       input_location = locus_at_end_of_parsing;
       tree body = start_partial_init_fini_fn (true, DEFAULT_INIT_PRIORITY,
@@ -5221,8 +5222,9 @@ c_parse_final_cleanups (void)
       // Make sure there's a default priority entry.
       if (!static_init_fini_fns[true])
 	static_init_fini_fns[true] = priority_map_t::create_ggc ();
-      static_init_fini_fns[true]->get_or_insert (DEFAULT_INIT_PRIORITY);
-    } 
+      if (static_init_fini_fns[true]->get_or_insert (DEFAULT_INIT_PRIORITY))
+	has_module_inits = true;
+    }
 
   /* Generate initialization and destruction functions for all
      priorities for which they are required.  They have C-language
@@ -5238,7 +5240,7 @@ c_parse_final_cleanups (void)
       }
   pop_lang_context ();
 
-  fini_modules (parse_in, module_cookie);
+  fini_modules (parse_in, module_cookie, has_module_inits);
 
   /* Generate any missing aliases.  */
   maybe_apply_pending_pragma_weaks ();
