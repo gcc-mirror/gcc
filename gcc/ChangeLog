@@ -1,3 +1,37 @@
+2022-06-08  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR middle-end/105874
+	* expr.cc (expand_expr_real_1) <normal_inner_ref>:  New local
+	variable tem_modifier for calculating the expand_modifier enum to
+	use for expanding tem.  If tem is a VAR_DECL, use EXPAND_MEMORY.
+
+2022-06-08  Max Filippov  <jcmvbkbc@gmail.com>
+
+	PR target/105879
+	* config/xtensa/xtensa.md (movdi): Rename 'first' and 'second'
+	to 'lowpart' and 'highpart' so that they match 'gen_lowpart' and
+	'gen_highpart' bitwise semantics and fix order of highpart and
+	lowpart depending on target endianness.
+
+2022-06-08  Chung-Ju Wu  <jasonwucj@gmail.com>
+
+	* config/arm/arm-cpus.in (star-mc1): New cpu.
+	* config/arm/arm-tables.opt: Regenerate.
+	* config/arm/arm-tune.md: Regenerate.
+	* doc/invoke.texi: Update docs.
+
+2022-06-08  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/105513
+	PR target/105504
+	* config/i386/i386.md (*movsi_internal): Change alternative
+	from *v to ?v.
+	(*movdi_internal): Ditto.
+	* config/i386/sse.md (vec_set<mode>_0): Change alternative *r
+	to ?r.
+	(*vec_extractv4sf_mem): Ditto.
+	(*vec_extracthf): Ditto.
+
 2022-06-07  Richard Earnshaw  <rearnsha@arm.com>
 
 	PR target/105090

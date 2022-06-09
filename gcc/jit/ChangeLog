@@ -1,3 +1,8 @@
+2022-06-08  Yang Yujie  <yangyujie@loongson.cn>
+
+	* Make-lang.in: only link objects from $(EXTRA_GCC_OBJS)
+	that's not in $(EXTRA_OBJS) into libgccjit.
+
 2022-05-23  David Malcolm  <dmalcolm@redhat.com>
 
 	* jit-recording.h: Add "final" and "override" to all vfunc

@@ -1,3 +1,50 @@
+2022-06-08  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105852
+	* decl.cc (duplicate_decls): Change non-templated friend
+	check to an assert.
+	* pt.cc	(tsubst_function_decl): Don't set DECL_TEMPLATE_INFO
+	on non-templated friends.
+	(tsubst_friend_function): Adjust.
+
+2022-06-08  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105852
+	PR c++/105761
+	* decl.cc (duplicate_decls): Avoid copying template info
+	from non-templated friend even if newdecl isn't a definition.
+	Correct handling of DECL_UNIQUE_FRIEND_P on templates.
+	* pt.cc (non_templated_friend_p): New.
+	* cp-tree.h (non_templated_friend_p): Declare it.
+
+2022-06-08  Nathan Sidwell  <nathan@acm.org>
+
+	* decl2.cc (struct priority_info_s, priority_info): Delete.
+	(priority_map_traits, priority_map_t): New.
+	(static_init_fini_fns): New.
+	(INITIALIZE_P_IDENTIFIER, PRIORITY_IDENTIFIER): Delete.
+	(initialize_p_decl, priority_decl): Delete.
+	(ssdf_decls, priority_info_map): Delete.
+	(start_static_storage_duration_function): Rename to ...
+	(start_partial_init_fini_fn): ... here. Create a void arg fn.
+	Add it to the slot in the appropriate static_init_fini_fns
+	hash table.
+	(finish_static_storage_duration_function): Rename to ...
+	(finish_partial_init_fini_fn): ... here.
+	(get_priority_info): Delete.
+	(one_static_initialization_or_destruction): Assert not
+	trivial dtor.
+	(do_static_initialization_or_destruction): Rename to ...
+	(emit_partial_init_fini_fn) ... here.  Start & finish the fn.
+	Simply init/fini each var.
+	(partition_vars_for_init_fini): Partition vars according to
+	priority and add to init and/or fini list.
+	(generate_ctor_or_dtor_function): Start and finish the function.
+	Do santitizer calls here.
+	(generate_ctor_and_dtor_functions_for_priority): Delete.
+	(c_parse_final_cleanups): Reimplement global init/fini
+	processing.
+
 2022-06-07  Jakub Jelinek  <jakub@redhat.com>
 
 	* parser.cc (cp_parser_omp_clause_linear): Parse OpenMP 5.2

@@ -1,3 +1,8 @@
+2022-06-08  Tobias Burnus  <tobias@codesourcery.com>
+
+	* openmp.cc (gfc_match_omp_clauses): Check also parent namespace
+	for 'requires reverse_offload'.
+
 2022-06-07  Jakub Jelinek  <jakub@redhat.com>
 
 	* trans-openmp.cc (gfc_trans_omp_clauses): Set
