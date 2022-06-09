@@ -5154,7 +5154,7 @@ c_parse_final_cleanups (void)
 	reconsider = true;
     }
 
-  finish_module_processing (parse_in);
+  void *module_cookie = finish_module_processing (parse_in);
 
   lower_var_init ();
 
@@ -5238,7 +5238,7 @@ c_parse_final_cleanups (void)
       }
   pop_lang_context ();
 
-  fini_modules ();
+  fini_modules (parse_in, module_cookie);
 
   /* Generate any missing aliases.  */
   maybe_apply_pending_pragma_weaks ();

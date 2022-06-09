@@ -19854,11 +19854,32 @@ maybe_check_all_macros (cpp_reader *reader)
   dump.pop (n);
 }
 
+// State propagated from finish_module_processing to fini_modules
+struct module_processing_cookie
+{
+  elf_out out;
+  char *cmi_name;
+  char *tmp_name;
+  bool began;
+
+  module_processing_cookie (char *cmi, char *tmp, int fd, int e)
+    : out (fd, e), cmi_name (cmi), tmp_name (tmp), began (false)
+  {
+  }
+  ~module_processing_cookie ()
+  {
+    XDELETEVEC (tmp_name);
+    XDELETEVEC (cmi_name);
+  }
+};
+
 /* Write the CMI, if we're a module interface.  */
 
-void
+void *
 finish_module_processing (cpp_reader *reader)
 {
+  module_processing_cookie *cookie = nullptr;
+
   if (header_module_p ())
     module_kind &= ~MK_EXPORTING;
 
@@ -19870,7 +19891,7 @@ finish_module_processing (cpp_reader *reader)
   else if (!flag_syntax_only)
     {
       int fd = -1;
-      int e = ENOENT;
+      int e = -1;
 
       timevar_start (TV_MODULE_EXPORT);
 
@@ -19879,7 +19900,7 @@ finish_module_processing (cpp_reader *reader)
       linemap_add (line_table, LC_ENTER, false, "", 0);
 
       /* We write to a tmpname, and then atomically rename.  */
-      const char *path = NULL;
+      char *cmi_name = NULL;
       char *tmp_name = NULL;
       module_state *state = (*modules)[0];
 
@@ -19888,9 +19909,9 @@ finish_module_processing (cpp_reader *reader)
       if (state->filename)
 	{
 	  size_t len = 0;
-	  path = maybe_add_cmi_prefix (state->filename, &len);
+	  cmi_name = xstrdup (maybe_add_cmi_prefix (state->filename, &len));
 	  tmp_name = XNEWVEC (char, len + 3);
-	  memcpy (tmp_name, path, len);
+	  memcpy (tmp_name, cmi_name, len);
 	  strcpy (&tmp_name[len], "~");
 
 	  if (!errorcount)
@@ -19905,57 +19926,23 @@ finish_module_processing (cpp_reader *reader)
 		create_dirs (tmp_name);
 	      }
 	  if (note_module_cmi_yes || state->inform_cmi_p)
-	    inform (state->loc, "writing CMI %qs", path);
-	  dump () && dump ("CMI is %s", path);
+	    inform (state->loc, "writing CMI %qs", cmi_name);
+	  dump () && dump ("CMI is %s", cmi_name);
 	}
+
+      cookie = new module_processing_cookie (cmi_name, tmp_name, fd, e);
 
       if (errorcount)
 	warning_at (state->loc, 0, "not writing module %qs due to errors",
 		    state->get_flatname ());
-      else
+      else if (cookie->out.begin ())
 	{
-	  elf_out to (fd, e);
-	  if (to.begin ())
-	    {
-	      auto loc = input_location;
-	      /* So crashes finger-point the module decl.  */
-	      input_location = state->loc;
-	      state->write (&to, reader);
-	      input_location = loc;
-	    }
-	  if (to.end ())
-	    {
-	      /* Some OS's do not replace NEWNAME if it already
-		 exists.  This'll have a race condition in erroneous
-		 concurrent builds.  */
-	      unlink (path);
-	      if (rename (tmp_name, path))
-		{
-		  dump () && dump ("Rename ('%s','%s') errno=%u", errno);
-		  to.set_error (errno);
-		}
-	    }
-
-	  if (to.get_error ())
-	    {
-	      error_at (state->loc, "failed to write compiled module: %s",
-			to.get_error (state->filename));
-	      state->note_cmi_name ();
-	    }
-	}
-
-      if (!errorcount)
-	{
-	  auto *mapper = get_mapper (cpp_main_loc (reader));
-
-	  mapper->ModuleCompiled (state->get_flatname ());
-	}
-      else if (path)
-	{
-	  /* We failed, attempt to erase all evidence we even tried.  */
-	  unlink (tmp_name);
-	  unlink (path);
-	  XDELETEVEC (tmp_name);
+	  cookie->began = true;
+	  auto loc = input_location;
+	  /* So crashes finger-point the module decl.  */
+	  input_location = state->loc;
+	  state->write (&cookie->out, reader);
+	  input_location = loc;
 	}
 
       dump.pop (n);
@@ -19974,11 +19961,67 @@ finish_module_processing (cpp_reader *reader)
 		       (available_clusters + !available_clusters));
       dump.pop (n);
     }
+
+  return cookie;
+}
+
+// Do the final emission of a module.  At this point we know whether
+// the module static initializer is a NOP or not.
+
+static void
+late_finish_module (cpp_reader *reader, module_processing_cookie *cookie)
+{
+  timevar_start (TV_MODULE_EXPORT);
+
+  module_state *state = (*modules)[0];
+  unsigned n = dump.push (state);
+  state->announce ("finishing");
+
+  if (cookie->out.end () && cookie->cmi_name)
+    {
+      /* Some OS's do not replace NEWNAME if it already exists.
+	 This'll have a race condition in erroneous concurrent
+	 builds.  */
+      unlink (cookie->cmi_name);
+      if (rename (cookie->tmp_name, cookie->cmi_name))
+	{
+	  dump () && dump ("Rename ('%s','%s') errno=%u",
+			   cookie->tmp_name, cookie->cmi_name, errno);
+	  cookie->out.set_error (errno);
+	}
+    }
+
+  if (cookie->out.get_error () && cookie->began)
+    {
+      error_at (state->loc, "failed to write compiled module: %s",
+		cookie->out.get_error (state->filename));
+      state->note_cmi_name ();
+    }
+
+  if (!errorcount)
+    {
+      auto *mapper = get_mapper (cpp_main_loc (reader));
+      mapper->ModuleCompiled (state->get_flatname ());
+    }
+  else if (cookie->cmi_name)
+    {
+      /* We failed, attempt to erase all evidence we even tried.  */
+      unlink (cookie->tmp_name);
+      unlink (cookie->cmi_name);
+    }
+
+  delete cookie;
+  dump.pop (n);
+  timevar_stop (TV_MODULE_EXPORT);
 }
 
 void
-fini_modules ()
+fini_modules (cpp_reader *reader, void *cookie)
 {
+  if (cookie)
+    late_finish_module (reader,
+			static_cast<module_processing_cookie *> (cookie));
+
   /* We're done with the macro tables now.  */
   vec_free (macro_exports);
   vec_free (macro_imports);
