@@ -389,7 +389,9 @@ find_conditions (basic_block bb,
   if (cond == NULL)
     return;
 
-  if (!no_side_effect_bb (bb))
+  /* An empty conditions_in_bbs indicates we are processing the first
+     basic-block then no need check side effect.  */
+  if (!conditions_in_bbs->is_empty () && !no_side_effect_bb (bb))
     return;
 
   tree lhs = gimple_cond_lhs (cond);
