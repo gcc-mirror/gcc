@@ -144,6 +144,5 @@ get_range_query (const struct function *fun)
 }
 
 extern void gimple_range_global (vrange &v, tree name);
-extern bool update_global_range (vrange &v, tree name);
 
 #endif // GCC_QUERY_H
