@@ -1,3 +1,22 @@
+2022-06-09  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2021-09-19  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* jit.dg/jit.exp (fixed_local_execute): Amend the match and
+	exit conditions to cater for more platforms.
+	* lib/target-supports.exp: Add support for checking that the
+	jit lib is usable on the target.
+
+2022-06-09  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2021-08-19  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* jit.dg/harness.h: Include jit-dejagnu.h.
+	* jit.dg/jit.exp: Use -rdynamic conditionally on target
+	support, instead of unconditional -Wl,--export-dynamic.
+
 2022-05-29  Richard Biener  <rguenther@suse.de>
 
 	Backported from master:

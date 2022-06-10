@@ -1,3 +1,14 @@
+2022-06-09  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2021-09-14  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* Makefile.in: Remove variables related to applying no-PIE
+	to the exes on $build.
+	* configure: Regenerate.
+	* configure.ac: Remove configuration related to applying
+	no-PIE to the exes on $build.
+
 2022-06-06  Alan Modra  <amodra@gmail.com>
 
 	Backported from master:
