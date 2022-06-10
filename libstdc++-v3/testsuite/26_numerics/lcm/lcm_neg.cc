@@ -46,9 +46,11 @@ test01()
   std::lcm<const int&, const int&>(0.1, 0.1);   // { dg-error "from here" }
 }
 
-// { dg-error "must be integers" "" { target *-*-* } 148 }
-// { dg-error "must be integers" "" { target *-*-* } 149 }
-// { dg-error "must not be bool" "" { target *-*-* } 150 }
-// { dg-error "must not be bool" "" { target *-*-* } 151 }
+// { dg-error "must be integers" "" { target *-*-* } 0 }
+// { dg-error "must not be bool" "" { target *-*-* } 0 }
+// These prunes could be removed if a fix for PR c++/96286 stops them.
 // { dg-prune-output "deleted function" }
 // { dg-prune-output "incomplete type .*make_unsigned" }
+// { dg-prune-output "does not have integral type" }
+// { dg-prune-output "non-integral type" }
+// { dg-prune-output "invalid specialization" }
