@@ -1427,10 +1427,10 @@ parse_real (st_parameter_dt *dtp, void *buffer, int length)
   unget_char (dtp, c);
   push_char (dtp, '\0');
 
-  m = convert_infnan (dtp, buffer, dtp->u.p.saved_string, length);
+  convert_infnan (dtp, buffer, dtp->u.p.saved_string, length);
   free_saved (dtp);
 
-  return m;
+  return 0;
 
  inf_nan:
   /* Match INF and Infinity.  */
@@ -1986,8 +1986,7 @@ read_real (st_parameter_dt *dtp, void *dest, int length)
   unget_char (dtp, c);
   eat_separator (dtp);
   push_char (dtp, '\0');
-  if (convert_infnan (dtp, dest, dtp->u.p.saved_string, length))
-    return;
+  convert_infnan (dtp, dest, dtp->u.p.saved_string, length);
 
   free_saved (dtp);
   dtp->u.p.saved_type = BT_REAL;

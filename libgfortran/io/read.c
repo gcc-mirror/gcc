@@ -227,7 +227,7 @@ convert_real (st_parameter_dt *dtp, void *dest, const char *buffer, int length)
    that the storage pointed to by the dest argument is properly aligned
    for the type in question.  */
 
-int
+void
 convert_infnan (st_parameter_dt *dtp, void *dest, const char *buffer,
 	        int length)
 {
@@ -296,8 +296,6 @@ convert_infnan (st_parameter_dt *dtp, void *dest, const char *buffer,
     default:
       internal_error (&dtp->common, "Unsupported real kind during IO");
     }
-
-  return 0;
 }
 
 
