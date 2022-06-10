@@ -1,3 +1,68 @@
+2022-06-09  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/xtensa.md (clrsbsi2): New insn pattern.
+
+2022-06-09  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/xtensa.md (*andsi3_bitcmpl):
+	New insn_and_split pattern.
+
+2022-06-09  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/xtensa.md (one_cmplsi2):
+	Rearrange as an insn_and_split pattern.
+
+2022-06-09  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/xtensa.md (bswaphi2): New insn pattern.
+
+2022-06-09  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.md (FP_ISA3): Delete.
+	(float<QHI:mode><FP_ISA3:mode>2): Rename to...
+	(float<QHI:mode><SFDF:mode>2): ... this.  Adjust.
+	(*float<QHI:mode><FP_ISA3:mode>2_internal): Rename to...
+	(*float<QHI:mode><SFDF:mode>2_internal): ... this.  Adjust.
+	(floatuns<QHI:mode><FP_ISA3:mode>2): Rename to...
+	(floatuns<QHI:mode><SFDF:mode>2): ... this.  Adjust.
+	(*floatuns<QHI:mode><FP_ISA3:mode>2_internal): Rename to...
+	(*floatuns<QHI:mode><SFDF:mode>2_internal): ... this.  Adjust.
+
+2022-06-09  Maciej W. Rozycki  <macro@embecosm.com>
+
+	* config/riscv/riscv.md
+	(*f<quiet_pattern>_quiet<ANYF:mode><X:mode>4_default)
+	(*f<quiet_pattern>_quiet<ANYF:mode><X:mode>4_snan): Emit a tab
+	rather than space with FSFLAGS.
+
+2022-06-09  Tobias Burnus  <tobias@codesourcery.com>
+
+	* omp-offload.cc (omp_discover_declare_target_tgt_fn_r,
+	omp_discover_declare_target_fn_r): Don't walk reverse-offload
+	target regions.
+
+2022-06-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* doc/invoke.texi (-Waddress): Fix a typo in small example.
+	Fix typos inptr_t -> intptr_t and uinptr_t -> uintptr_t.
+
+2022-06-09  Cui,Lili  <lili.cui@intel.com>
+
+	PR target/105493
+	* config/i386/x86-tune-costs.h (skylake_cost): Raise the gpr load cost
+	from 4 to 6 and gpr store cost from 6 to 8. Change SSE loads and
+	unaligned loads cost from {6, 6, 6, 10, 20} to {8, 8, 8, 8, 16}.
+	(icelake_cost): Ditto.
+	(alderlake_cost): Raise the gpr store cost from 6 to 8 and SSE loads,
+	stores and unaligned stores cost from {6, 6, 6, 10, 15} to
+	{8, 8, 8, 10, 15}.
+
+2022-06-09  Haochen Gui  <guihaoc@gcc.gnu.org>
+
+	* config/rs6000/rs6000.md (define_split for bswapdi load): Merge shift
+	and ior insns to one rotate and mask insn.
+	(define_split for bswapdi register): Likewise.
+
 2022-06-08  Roger Sayle  <roger@nextmovesoftware.com>
 
 	PR middle-end/105874

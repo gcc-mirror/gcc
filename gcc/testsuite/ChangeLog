@@ -1,3 +1,38 @@
+2022-06-09  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* gcc.target/xtensa/check_zero_byte.c: New.
+
+2022-06-09  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* gcc.target/xtensa/one_cmpl_abs.c: New.
+
+2022-06-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/105871
+	* g++.dg/pr105871.C: New test.
+
+2022-06-09  Nathan Sidwell  <nathan@acm.org>
+
+	* g++.dg/modules/init-2_a.C: Check no idempotency.
+	* g++.dg/modules/init-2_b.C: Check idempotency.
+
+2022-06-09  Tobias Burnus  <tobias@codesourcery.com>
+
+	* c-c++-common/gomp/reverse-offload-1.c: New.
+
+2022-06-09  Cui,Lili  <lili.cui@intel.com>
+
+	PR target/105493
+	* gcc.target/i386/pr91446.c: Adjust to expect vectorization
+	* gcc.target/i386/pr99881.c: XFAIL.
+	* gcc.target/i386/pr105493.c: New.
+	* g++.target/i386/pr105638.C: Use other sequence checks
+	instead of vpxor, because code generation changed.
+
+2022-06-09  Haochen Gui  <guihaoc@gcc.gnu.org>
+
+	* gcc.target/powerpc/pr93453-1.c: New.
+
 2022-06-08  Jason Merrill  <jason@redhat.com>
 
 	PR c++/105852

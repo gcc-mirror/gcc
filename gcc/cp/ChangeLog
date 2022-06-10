@@ -1,3 +1,26 @@
+2022-06-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/105871
+	* constexpr.cc (cxx_eval_bit_field_ref): For BIT_FIELD_REF with
+	non-integral result type use fold_ternary too like for BIT_FIELD_REFs
+	from VECTOR_CST.  If fold_ternary returns NULL, diagnose non-constant
+	expression, set *non_constant_p and return t, instead of returning
+	NULL.
+
+2022-06-09  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-tree.h (module_initializer_kind): Replace with ...
+	(module_global_init_needed, module_has_import_inits): ...
+	these.
+	* decl2.cc (start_objects): Add has_body parm.  Reorganize
+	module initializer creation.
+	(generate_ctor_or_dtor_function): Adjust.
+	(c_parse_final_cleanups): Adjust.
+	(vtv_start_verification_constructor_init_function): Adjust.
+	* module.cc (module_initializer_kind): Replace with ...
+	(module_global_init_needed, module_has_import_inits): ...
+	these.
+
 2022-06-08  Jason Merrill  <jason@redhat.com>
 
 	PR c++/105852
