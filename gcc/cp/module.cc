@@ -3783,9 +3783,6 @@ static unsigned loaded_clusters;
 /* What the current TU is.  */
 unsigned module_kind;
 
-/* Number of global init calls needed.  */
-unsigned num_init_calls_needed = 0;
-
 /* Global trees.  */
 static const std::pair<tree *, unsigned> global_tree_arys[] =
   {
@@ -19035,12 +19032,43 @@ module_global_init_needed ()
   return module_has_cmi_p () && !header_module_p ();
 }
 
-/* Return true IFF we have import global inits to call.  */
+/* Calculate which, if any, import initializers need calling.  */
 
 bool
-module_has_import_inits ()
+module_determine_import_inits ()
 {
-  return bool (num_init_calls_needed);
+  if (!modules || header_module_p ())
+    return false;
+
+  /* Determine call_init_p.  We need the same bitmap allocation
+     scheme as for the imports member.  */
+  function_depth++; /* Disable GC.  */
+  bitmap indirect_imports (BITMAP_GGC_ALLOC ());
+
+  bool any = false;
+
+  /* Because indirect imports are before their direct import, and
+     we're scanning the array backwards, we only need one pass!  */
+  for (unsigned ix = modules->length (); --ix;)
+    {
+      module_state *import = (*modules)[ix];
+
+      if (!import->is_header ()
+	  && !bitmap_bit_p (indirect_imports, ix))
+	{
+	  /* Everything this imports is therefore indirectly
+	     imported.  */
+	  bitmap_ior_into (indirect_imports, import->imports);
+	  /* We don't have to worry about the self-import bit,
+	     because of the single pass.  */
+
+	  import->call_init_p = true;
+	  any = true;
+	}
+    }
+  function_depth--;
+
+  return any;
 }
 
 /* Emit calls to each direct import's global initializer.  Including
@@ -19054,35 +19082,30 @@ module_has_import_inits ()
 void
 module_add_import_initializers ()
 {
-  unsigned calls = 0;
-  if (modules)
+  if (!modules || header_module_p ())
+    return;
+
+  tree fntype = build_function_type (void_type_node, void_list_node);
+  releasing_vec args;  // There are no args
+
+  for (unsigned ix = modules->length (); --ix;)
     {
-      tree fntype = build_function_type (void_type_node, void_list_node);
-      releasing_vec args;  // There are no args
-
-      for (unsigned ix = modules->length (); --ix;)
+      module_state *import = (*modules)[ix];
+      if (import->call_init_p)
 	{
-	  module_state *import = (*modules)[ix];
-	  if (import->call_init_p)
-	    {
-	      tree name = mangle_module_global_init (ix);
-	      tree fndecl = build_lang_decl (FUNCTION_DECL, name, fntype);
+	  tree name = mangle_module_global_init (ix);
+	  tree fndecl = build_lang_decl (FUNCTION_DECL, name, fntype);
 
-	      DECL_CONTEXT (fndecl) = FROB_CONTEXT (global_namespace);
-	      SET_DECL_ASSEMBLER_NAME (fndecl, name);
-	      TREE_PUBLIC (fndecl) = true;
-	      determine_visibility (fndecl);
+	  DECL_CONTEXT (fndecl) = FROB_CONTEXT (global_namespace);
+	  SET_DECL_ASSEMBLER_NAME (fndecl, name);
+	  TREE_PUBLIC (fndecl) = true;
+	  determine_visibility (fndecl);
 
-	      tree call = cp_build_function_call_vec (fndecl, &args,
-						      tf_warning_or_error);
-	      finish_expr_stmt (call);
-	      
-	      calls++;
-	    }
+	  tree call = cp_build_function_call_vec (fndecl, &args,
+						  tf_warning_or_error);
+	  finish_expr_stmt (call);
 	}
     }
-
-  gcc_checking_assert (calls == num_init_calls_needed);
 }
 
 /* NAME & LEN are a preprocessed header name, possibly including the
@@ -19950,35 +19973,6 @@ finish_module_processing (cpp_reader *reader)
 		       (loaded_clusters * 100 + available_clusters / 2) /
 		       (available_clusters + !available_clusters));
       dump.pop (n);
-    }
-
-  if (modules && !header_module_p ())
-    {
-      /* Determine call_init_p.  We need the same bitmap allocation
-         scheme as for the imports member.  */
-      function_depth++; /* Disable GC.  */
-      bitmap indirect_imports (BITMAP_GGC_ALLOC ());
-
-      /* Because indirect imports are before their direct import, and
-	 we're scanning the array backwards, we only need one pass!  */
-      for (unsigned ix = modules->length (); --ix;)
-	{
-	  module_state *import = (*modules)[ix];
-
-	  if (!import->is_header ()
-	      && !bitmap_bit_p (indirect_imports, ix))
-	    {
-	      /* Everything this imports is therefore indirectly
-		 imported.  */
-	      bitmap_ior_into (indirect_imports, import->imports);
-	      /* We don't have to worry about the self-import bit,
-		 because of the single pass.  */
-
-	      import->call_init_p = true;
-	      num_init_calls_needed++;
-	    }
-	}
-      function_depth--;
     }
 }
 

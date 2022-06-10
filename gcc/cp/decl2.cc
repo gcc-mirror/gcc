@@ -3903,8 +3903,7 @@ start_objects (bool initp, unsigned priority, bool has_body)
 
   tree body = begin_compound_stmt (BCS_FN_BODY);
 
-  bool has_import_inits = default_init && module_has_import_inits ();
-  if (is_module_init && (has_import_inits || has_body))
+  if (is_module_init && has_body)
     {
       // If the function is going to be empty, don't emit idempotency.
       // 'static bool __in_chrg = false;
@@ -3929,9 +3928,6 @@ start_objects (bool initp, unsigned priority, bool has_body)
       TREE_SIDE_EFFECTS (assign) = true;
       finish_expr_stmt (assign);
     }
-
-  if (has_import_inits)
-    module_add_import_initializers ();
 
   return body;
 }
@@ -5195,6 +5191,12 @@ c_parse_final_cleanups (void)
 
   maybe_warn_sized_delete ();
 
+  // Place the init fns in the right order.  We need to do this now,
+  // so that any module init will go at the start.
+  if (static_init_fini_fns[true])
+    for (auto iter : *static_init_fini_fns[true])
+      iter.second = nreverse (iter.second);
+  
   /* Then, do the Objective-C stuff.  This is where all the
      Objective-C module stuff gets generated (symtab,
      class/protocol/selector lists etc).  This must be done after C++
@@ -5203,11 +5205,18 @@ c_parse_final_cleanups (void)
   if (c_dialect_objc ())
     objc_write_global_declarations ();
 
-  /* We give C linkage to static constructors and destructors.  */
-  push_lang_context (lang_name_c);
+  if (module_determine_import_inits ())
+    {
+      input_location = locus_at_end_of_parsing;
+      tree body = start_partial_init_fini_fn (true, DEFAULT_INIT_PRIORITY,
+					      ssdf_count++);
+      module_add_import_initializers ();
+      input_location = locus_at_end_of_parsing;
+      finish_partial_init_fini_fn (body);
+    }
 
   if ((c_dialect_objc () && objc_static_init_needed_p ())
-      || module_global_init_needed () || module_has_import_inits ())
+      || module_global_init_needed ())
     {
       // Make sure there's a default priority entry.
       if (!static_init_fini_fns[true])
@@ -5216,31 +5225,23 @@ c_parse_final_cleanups (void)
     } 
 
   /* Generate initialization and destruction functions for all
-     priorities for which they are required.  */
+     priorities for which they are required.  They have C-language
+     linkage.  */
+  push_lang_context (lang_name_c);
   for (unsigned initp = 2; initp--;)
     if (static_init_fini_fns[initp])
       {
 	for (auto iter : *static_init_fini_fns[initp])
-	  {
-	    tree fns = iter.second;
-	    // The list of functions was constructed in reverse
-	    // order, which we only want for dtors.
-	    if (initp)
-	      fns = nreverse (fns);
-	    generate_ctor_or_dtor_function (initp, iter.first, fns,
-					    locus_at_end_of_parsing);
-	  }
+	  generate_ctor_or_dtor_function (initp, iter.first, iter.second,
+					  locus_at_end_of_parsing);
 	static_init_fini_fns[initp] = nullptr;
       }
-  
+  pop_lang_context ();
+
   fini_modules ();
 
   /* Generate any missing aliases.  */
   maybe_apply_pending_pragma_weaks ();
-
-  /* We're done with static constructors, so we can go back to "C++"
-     linkage now.  */
-  pop_lang_context ();
 
   if (flag_vtable_verify)
     {

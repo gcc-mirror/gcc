@@ -7180,7 +7180,7 @@ extern module_state *get_module (tree name, module_state *parent = NULL,
 extern bool module_may_redeclare (tree decl);
 
 extern bool module_global_init_needed ();
-extern bool module_has_import_inits ();
+extern bool module_determine_import_inits ();
 extern void module_add_import_initializers ();
 
 /* Where the namespace-scope decl was originally declared.  */
