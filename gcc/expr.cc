@@ -2801,10 +2801,26 @@ emit_group_store (rtx orig_dst, rtx src, tree type ATTRIBUTE_UNUSED,
 	    {
 	      machine_mode dest_mode = GET_MODE (dest);
 	      machine_mode tmp_mode = GET_MODE (tmps[i]);
+	      scalar_int_mode imode;
 
 	      gcc_assert (known_eq (bytepos, 0) && XVECLEN (src, 0));
 
-	      if (GET_MODE_ALIGNMENT (dest_mode)
+	      if (finish == 1
+		  && REG_P (tmps[i])
+		  && COMPLEX_MODE_P (dest_mode)
+		  && SCALAR_INT_MODE_P (tmp_mode)
+		  && int_mode_for_mode (dest_mode).exists (&imode))
+		{
+		  if (tmp_mode != imode)
+		    {
+		      rtx tmp = gen_reg_rtx (imode);
+		      emit_move_insn (tmp, gen_lowpart (imode, tmps[i]));
+		      dst = gen_lowpart (dest_mode, tmp);
+		    }
+		  else
+		    dst = gen_lowpart (dest_mode, tmps[i]);
+		}
+	      else if (GET_MODE_ALIGNMENT (dest_mode)
 		  >= GET_MODE_ALIGNMENT (tmp_mode))
 		{
 		  dest = assign_stack_temp (dest_mode,
