@@ -55,6 +55,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "dumpfile.h"
 #include "hw-doloop.h"
 #include "rtl-iter.h"
+#include "insn-attr.h"
 
 /* This file should be included last.  */
 #include "target-def.h"
@@ -134,6 +135,7 @@ static unsigned int xtensa_multibss_section_type_flags (tree, const char *,
 static section *xtensa_select_rtx_section (machine_mode, rtx,
 					   unsigned HOST_WIDE_INT);
 static bool xtensa_rtx_costs (rtx, machine_mode, int, int, int *, bool);
+static int xtensa_insn_cost (rtx_insn *, bool);
 static int xtensa_register_move_cost (machine_mode, reg_class_t,
 				      reg_class_t);
 static int xtensa_memory_move_cost (machine_mode, reg_class_t, bool);
@@ -212,6 +214,8 @@ static rtx xtensa_delegitimize_address (rtx);
 #define TARGET_MEMORY_MOVE_COST xtensa_memory_move_cost
 #undef TARGET_RTX_COSTS
 #define TARGET_RTX_COSTS xtensa_rtx_costs
+#undef TARGET_INSN_COST
+#define TARGET_INSN_COST xtensa_insn_cost
 #undef TARGET_ADDRESS_COST
 #define TARGET_ADDRESS_COST hook_int_rtx_mode_as_bool_0
 
@@ -3937,7 +3941,7 @@ xtensa_memory_move_cost (machine_mode mode ATTRIBUTE_UNUSED,
 static bool
 xtensa_rtx_costs (rtx x, machine_mode mode, int outer_code,
 		  int opno ATTRIBUTE_UNUSED,
-		  int *total, bool speed ATTRIBUTE_UNUSED)
+		  int *total, bool speed)
 {
   int code = GET_CODE (x);
 
@@ -4025,7 +4029,12 @@ xtensa_rtx_costs (rtx x, machine_mode mode, int outer_code,
       return true;
 
     case CLZ:
+    case CLRSB:
       *total = COSTS_N_INSNS (TARGET_NSA ? 1 : 50);
+      return true;
+
+    case BSWAP:
+      *total = COSTS_N_INSNS (mode == HImode ? 3 : 5);
       return true;
 
     case NOT:
@@ -4051,13 +4060,16 @@ xtensa_rtx_costs (rtx x, machine_mode mode, int outer_code,
       return true;
 
     case ABS:
+    case NEG:
       {
 	if (mode == SFmode)
 	  *total = COSTS_N_INSNS (TARGET_HARD_FLOAT ? 1 : 50);
 	else if (mode == DFmode)
 	  *total = COSTS_N_INSNS (50);
-	else
+	else if (mode == DImode)
 	  *total = COSTS_N_INSNS (4);
+	else
+	  *total = COSTS_N_INSNS (1);
 	return true;
       }
 
@@ -4072,10 +4084,6 @@ xtensa_rtx_costs (rtx x, machine_mode mode, int outer_code,
 	  *total = COSTS_N_INSNS (1);
 	return true;
       }
-
-    case NEG:
-      *total = COSTS_N_INSNS (mode == DImode ? 4 : 2);
-      return true;
 
     case MULT:
       {
@@ -4116,11 +4124,11 @@ xtensa_rtx_costs (rtx x, machine_mode mode, int outer_code,
     case UMOD:
       {
 	if (mode == DImode)
-	  *total = COSTS_N_INSNS (50);
+	  *total = COSTS_N_INSNS (speed ? 100 : 50);
 	else if (TARGET_DIV32)
 	  *total = COSTS_N_INSNS (32);
 	else
-	  *total = COSTS_N_INSNS (50);
+	  *total = COSTS_N_INSNS (speed ? 100 : 50);
 	return true;
       }
 
@@ -4151,6 +4159,98 @@ xtensa_rtx_costs (rtx x, machine_mode mode, int outer_code,
     default:
       return false;
     }
+}
+
+static bool
+xtensa_is_insn_L32R_p(const rtx_insn *insn)
+{
+  rtx x = PATTERN (insn);
+
+  if (GET_CODE (x) == SET)
+    {
+      x = XEXP (x, 1);
+      if (GET_CODE (x) == MEM)
+	{
+	  x = XEXP (x, 0);
+	  return (GET_CODE (x) == SYMBOL_REF || CONST_INT_P (x))
+		 && CONSTANT_POOL_ADDRESS_P (x);
+	}
+    }
+
+  return false;
+}
+
+/* Compute a relative costs of RTL insns.  This is necessary in order to
+   achieve better RTL insn splitting/combination result.  */
+
+static int
+xtensa_insn_cost (rtx_insn *insn, bool speed)
+{
+  if (!(recog_memoized (insn) < 0))
+    {
+      int len = get_attr_length (insn), n = (len + 2) / 3;
+
+      if (len == 0)
+	return COSTS_N_INSNS (0);
+
+      if (speed)  /* For speed cost.  */
+	{
+	  /* "L32R" may be particular slow (implementation-dependent).  */
+	  if (xtensa_is_insn_L32R_p (insn))
+	    return COSTS_N_INSNS (1 + xtensa_extra_l32r_costs);
+
+	  /* Cost based on the pipeline model.  */
+	  switch (get_attr_type (insn))
+	    {
+	    case TYPE_STORE:
+	    case TYPE_MOVE:
+	    case TYPE_ARITH:
+	    case TYPE_MULTI:
+	    case TYPE_NOP:
+	    case TYPE_FSTORE:
+	      return COSTS_N_INSNS (n);
+
+	    case TYPE_LOAD:
+	      return COSTS_N_INSNS (n - 1 + 2);
+
+	    case TYPE_JUMP:
+	    case TYPE_CALL:
+	      return COSTS_N_INSNS (n - 1 + 3);
+
+	    case TYPE_FCONV:
+	    case TYPE_FLOAD:
+	    case TYPE_MUL16:
+	    case TYPE_MUL32:
+	    case TYPE_RSR:
+	      return COSTS_N_INSNS (n * 2);
+
+	    case TYPE_FMADD:
+	      return COSTS_N_INSNS (n * 4);
+
+	    case TYPE_DIV32:
+	      return COSTS_N_INSNS (n * 16);
+
+	    default:
+	      break;
+	    }
+	}
+      else  /* For size cost.  */
+	{
+	  /* Cost based on the instruction length.  */
+	  if (get_attr_type (insn) != TYPE_UNKNOWN)
+	    {
+	      /* "L32R" itself plus constant in litpool.  */
+	      if (xtensa_is_insn_L32R_p (insn))
+		return COSTS_N_INSNS (2) + 1;
+
+	      /* Consider ".n" short instructions.  */
+	      return COSTS_N_INSNS (n) - (n * 3 - len);
+	    }
+	}
+    }
+
+  /* Fall back.  */
+  return pattern_cost (PATTERN (insn), speed);
 }
 
 /* Worker function for TARGET_RETURN_IN_MEMORY.  */

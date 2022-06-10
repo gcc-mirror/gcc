@@ -98,7 +98,10 @@
 
 ;; Describe a user's asm statement.
 (define_asm_attributes
-  [(set_attr "type" "multi")])
+  [(set_attr "type"	"multi")
+   (set_attr "mode"	"none")
+   (set_attr "length"	"3")])  ;; Should be the maximum possible length
+				;; of a single machine instruction.
 
 
 ;; Pipeline model.
@@ -1879,7 +1882,10 @@
 }
   [(set_attr "type"	"jump")
    (set_attr "mode"	"none")
-   (set_attr "length"	"2")])
+   (set (attr "length")
+	(if_then_else (match_test "TARGET_DENSITY")
+		      (const_int 2)
+		      (const_int 3)))])
 
 
 ;; Miscellaneous instructions.
@@ -1934,7 +1940,10 @@
 }
   [(set_attr "type"	"nop")
    (set_attr "mode"	"none")
-   (set_attr "length"	"3")])
+   (set (attr "length")
+	(if_then_else (match_test "TARGET_DENSITY")
+		      (const_int 2)
+		      (const_int 3)))])
 
 (define_expand "nonlocal_goto"
   [(match_operand:SI 0 "general_operand" "")
@@ -1998,8 +2007,9 @@
   [(unspec_volatile [(const_int 0)] UNSPECV_BLOCKAGE)]
   ""
   ""
-  [(set_attr "length" "0")
-   (set_attr "type" "nop")])
+  [(set_attr "type"	"nop")
+   (set_attr "mode"	"none")
+   (set_attr "length"	"0")])
 
 ;; Do not schedule instructions accessing memory before this point.
 
@@ -2018,7 +2028,9 @@
         (unspec:BLK [(match_operand:SI 1 "" "")] UNSPEC_FRAME_BLOCKAGE))]
   ""
   ""
-  [(set_attr "length" "0")])
+  [(set_attr "type"	"nop")
+   (set_attr "mode"	"none")
+   (set_attr "length"	"0")])
 
 (define_insn "trap"
   [(trap_if (const_int 1) (const_int 0))]
@@ -2031,7 +2043,10 @@
 }
   [(set_attr "type"	"trap")
    (set_attr "mode"	"none")
-   (set_attr "length"	"3")])
+   (set (attr "length")
+	(if_then_else (match_test "!TARGET_DEBUG && TARGET_DENSITY")
+		      (const_int 2)
+		      (const_int 3)))])
 
 ;; Setting up a frame pointer is tricky for Xtensa because GCC doesn't
 ;; know if a frame pointer is required until the reload pass, and
