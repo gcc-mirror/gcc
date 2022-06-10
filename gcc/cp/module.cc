@@ -13962,11 +13962,11 @@ module_state::write_readme (elf_out *to, cpp_reader *reader, const char *dialect
 
   readme.begin (false);
 
-  readme.printf ("GNU C++ %smodule%s%s",
-		 is_header () ? "header " : is_partition () ? "" : "primary ",
-		 is_header () ? ""
-		 : is_interface () ? " interface" : " implementation",
-		 is_partition () ? " partition" : "");
+  readme.printf ("GNU C++ %s",
+		 is_header () ? "header unit"
+		 : !is_partition () ? "primary interface"
+		 : is_interface () ? "interface partition"
+		 : "internal partition");
 
   /* Compiler's version.  */
   readme.printf ("compiler: %s", version_string);
