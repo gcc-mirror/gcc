@@ -224,18 +224,40 @@
 
 ;; Multiplication.
 
-(define_expand "<u>mulsidi3"
+(define_expand "mulsidi3"
   [(set (match_operand:DI 0 "register_operand")
-	(mult:DI (any_extend:DI (match_operand:SI 1 "register_operand"))
-		 (any_extend:DI (match_operand:SI 2 "register_operand"))))]
+	(mult:DI (sign_extend:DI (match_operand:SI 1 "register_operand"))
+		 (sign_extend:DI (match_operand:SI 2 "register_operand"))))]
   "TARGET_MUL32_HIGH"
 {
   rtx temp = gen_reg_rtx (SImode);
   emit_insn (gen_mulsi3 (temp, operands[1], operands[2]));
-  emit_insn (gen_<u>mulsi3_highpart (gen_highpart (SImode, operands[0]),
-				     operands[1], operands[2]));
+  emit_insn (gen_mulsi3_highpart (gen_highpart (SImode, operands[0]),
+				  operands[1], operands[2]));
   emit_insn (gen_movsi (gen_lowpart (SImode, operands[0]), temp));
   DONE;
+})
+
+(define_expand "umulsidi3"
+  [(set (match_operand:DI 0 "register_operand")
+	(mult:DI (zero_extend:DI (match_operand:SI 1 "register_operand"))
+		 (zero_extend:DI (match_operand:SI 2 "register_operand"))))]
+  ""
+{
+  if (TARGET_MUL32_HIGH)
+    {
+      rtx temp = gen_reg_rtx (SImode);
+      emit_insn (gen_mulsi3 (temp, operands[1], operands[2]));
+      emit_insn (gen_umulsi3_highpart (gen_highpart (SImode, operands[0]),
+				       operands[1], operands[2]));
+      emit_insn (gen_movsi (gen_lowpart (SImode, operands[0]), temp));
+    }
+  else
+    emit_library_call_value (gen_rtx_SYMBOL_REF (Pmode, "__umulsidi3"),
+			     operands[0], LCT_NORMAL, DImode,
+			     operands[1], SImode,
+			     operands[2], SImode);
+   DONE;
 })
 
 (define_insn "<u>mulsi3_highpart"
@@ -261,30 +283,16 @@
    (set_attr "mode"	"SI")
    (set_attr "length"	"3")])
 
-(define_insn "mulhisi3"
+(define_insn "<u>mulhisi3"
   [(set (match_operand:SI 0 "register_operand" "=C,A")
-	(mult:SI (sign_extend:SI
+	(mult:SI (any_extend:SI
 		  (match_operand:HI 1 "register_operand" "%r,r"))
-		 (sign_extend:SI
+		 (any_extend:SI
 		  (match_operand:HI 2 "register_operand" "r,r"))))]
   "TARGET_MUL16 || TARGET_MAC16"
   "@
-   mul16s\t%0, %1, %2
-   mul.aa.ll\t%1, %2"
-  [(set_attr "type"	"mul16,mac16")
-   (set_attr "mode"	"SI")
-   (set_attr "length"	"3,3")])
-
-(define_insn "umulhisi3"
-  [(set (match_operand:SI 0 "register_operand" "=C,A")
-	(mult:SI (zero_extend:SI
-		  (match_operand:HI 1 "register_operand" "%r,r"))
-		 (zero_extend:SI
-		  (match_operand:HI 2 "register_operand" "r,r"))))]
-  "TARGET_MUL16 || TARGET_MAC16"
-  "@
-   mul16u\t%0, %1, %2
-   umul.aa.ll\t%1, %2"
+   mul16<su>\t%0, %1, %2
+   <u>mul.aa.ll\t%1, %2"
   [(set_attr "type"	"mul16,mac16")
    (set_attr "mode"	"SI")
    (set_attr "length"	"3,3")])
