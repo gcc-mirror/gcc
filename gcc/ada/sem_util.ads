@@ -625,6 +625,11 @@ package Sem_Util is
    --  create a new compatible record type. Loc is the source location assigned
    --  to the created nodes.
 
+   procedure Copy_Ghost_Aspect (From : Node_Id; To : Node_Id);
+   --  Copy the Ghost aspect if present in the aspect specifications of node
+   --  From to node To. On entry it is assumed that To does not have aspect
+   --  specifications. If From has no aspects, the routine has no effect.
+
    function Copy_Parameter_List (Subp_Id : Entity_Id) return List_Id;
    --  Utility to create a parameter profile for a new subprogram spec, when
    --  the subprogram has a body that acts as spec. This is done for some cases
@@ -1182,6 +1187,12 @@ package Sem_Util is
    function Get_Enclosing_Object (N : Node_Id) return Entity_Id;
    --  If expression N references a part of an object, return this object.
    --  Otherwise return Empty. Expression N should have been resolved already.
+
+   function Get_Enclosing_Deep_Object (N : Node_Id) return Entity_Id;
+   --  If expression N references a reachable part of an object (as defined in
+   --  SPARK RM 6.9), return this object. Otherwise return Empty. It is similar
+   --  to Get_Enclosing_Object, but treats pointer dereference like component
+   --  selection. Expression N should have been resolved already.
 
    function Get_Generic_Entity (N : Node_Id) return Entity_Id;
    --  Returns the true generic entity in an instantiation. If the name in the

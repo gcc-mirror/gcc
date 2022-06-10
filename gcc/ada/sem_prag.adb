@@ -17002,6 +17002,9 @@ package body Sem_Prag is
                --  The pragma applies to a legal construct, stop the traversal
 
                elsif Nkind (Stmt) in N_Abstract_Subprogram_Declaration
+                                   | N_Formal_Object_Declaration
+                                   | N_Formal_Subprogram_Declaration
+                                   | N_Formal_Type_Declaration
                                    | N_Full_Type_Declaration
                                    | N_Generic_Subprogram_Declaration
                                    | N_Object_Declaration

@@ -7024,6 +7024,25 @@ package body Sem_Util is
       return Comps;
    end Copy_Component_List;
 
+   -----------------------
+   -- Copy_Ghost_Aspect --
+   -----------------------
+
+   procedure Copy_Ghost_Aspect (From : Node_Id; To : Node_Id) is
+      pragma Assert (not Has_Aspects (To));
+      Asp : Node_Id;
+
+   begin
+      if Has_Aspects (From) then
+         Asp := Find_Aspect (Defining_Entity (From), Aspect_Ghost);
+
+         if Present (Asp) then
+            Set_Aspect_Specifications (To, New_List (New_Copy_Tree (Asp)));
+            Set_Has_Aspects (To, True);
+         end if;
+      end if;
+   end Copy_Ghost_Aspect;
+
    -------------------------
    -- Copy_Parameter_List --
    -------------------------
@@ -11003,6 +11022,32 @@ package body Sem_Util is
          end case;
       end if;
    end Get_Enclosing_Object;
+
+   -------------------------------
+   -- Get_Enclosing_Deep_Object --
+   -------------------------------
+
+   function Get_Enclosing_Deep_Object (N : Node_Id) return Entity_Id is
+   begin
+      if Is_Entity_Name (N) then
+         return Entity (N);
+      else
+         case Nkind (N) is
+            when N_Explicit_Dereference
+               | N_Indexed_Component
+               | N_Selected_Component
+               | N_Slice
+            =>
+               return Get_Enclosing_Deep_Object (Prefix (N));
+
+            when N_Type_Conversion =>
+               return Get_Enclosing_Deep_Object (Expression (N));
+
+            when others =>
+               return Empty;
+         end case;
+      end if;
+   end Get_Enclosing_Deep_Object;
 
    ---------------------------
    -- Get_Enum_Lit_From_Pos --
