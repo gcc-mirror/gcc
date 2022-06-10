@@ -68,6 +68,7 @@
 #if __cplusplus >= 201402L
 # include <type_traits>
 # include <bit>
+# include <ext/numeric_traits.h>
 #endif
 
 #if __cplusplus >= 201703L
@@ -93,19 +94,25 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #if __cplusplus >= 201402L
 namespace __detail
 {
-  // std::abs is not constexpr, doesn't support unsigned integers,
-  // and std::abs(std::numeric_limits<T>::min()) is undefined.
-  template<typename _Up, typename _Tp>
-    constexpr _Up
-    __absu(_Tp __val)
+  // Like std::abs, but supports unsigned types and returns the specified type,
+  // so |std::numeric_limits<_Tp>::min()| is OK if representable in _Res.
+  template<typename _Res, typename _Tp>
+    constexpr _Res
+    __abs_r(_Tp __val)
     {
-      static_assert(is_unsigned<_Up>::value, "result type must be unsigned");
-      static_assert(sizeof(_Up) >= sizeof(_Tp),
+      static_assert(sizeof(_Res) >= sizeof(_Tp),
 	  "result type must be at least as wide as the input type");
-      return __val < 0 ? -(_Up)__val : (_Up)__val;
+
+      if (__val >= 0)
+	return __val;
+#ifdef _GLIBCXX_ASSERTIONS
+      if (!__is_constant_evaluated()) // overflow already detected in constexpr
+	__glibcxx_assert(__val != __gnu_cxx::__int_traits<_Res>::__min);
+#endif
+      return -static_cast<_Res>(__val);
     }
 
-  template<typename _Up> void __absu(bool) = delete;
+  template<typename> void __abs_r(bool) = delete;
 
   // GCD implementation, using Stein's algorithm
   template<typename _Tp>
@@ -142,16 +149,6 @@ namespace __detail
 	  __n >>= std::__countr_zero(__n);
 	}
     }
-
-  // LCM implementation
-  template<typename _Tp>
-    constexpr _Tp
-    __lcm(_Tp __m, _Tp __n)
-    {
-      return (__m != 0 && __n != 0)
-	? (__m / __detail::__gcd(__m, __n)) * __n
-	: 0;
-    }
 } // namespace __detail
 
 #if __cplusplus >= 201703L
@@ -166,13 +163,14 @@ namespace __detail
     constexpr common_type_t<_Mn, _Nn>
     gcd(_Mn __m, _Nn __n) noexcept
     {
-      static_assert(is_integral_v<_Mn>, "std::gcd arguments must be integers");
-      static_assert(is_integral_v<_Nn>, "std::gcd arguments must be integers");
-      static_assert(_Mn(2) != _Mn(1), "std::gcd arguments must not be bool");
-      static_assert(_Nn(2) != _Nn(1), "std::gcd arguments must not be bool");
-      using _Up = make_unsigned_t<common_type_t<_Mn, _Nn>>;
-      return __detail::__gcd(__detail::__absu<_Up>(__m),
-			     __detail::__absu<_Up>(__n));
+      static_assert(is_integral_v<_Mn> && is_integral_v<_Nn>,
+		    "std::gcd arguments must be integers");
+      static_assert(_Mn(2) == 2 && _Nn(2) == 2,
+		    "std::gcd arguments must not be bool");
+      using _Ct = common_type_t<_Mn, _Nn>;
+      const _Ct __m2 = __detail::__abs_r<_Ct>(__m);
+      const _Ct __n2 = __detail::__abs_r<_Ct>(__n);
+      return __detail::__gcd<make_unsigned_t<_Ct>>(__m2, __n2);
     }
 
   /// Least common multiple
@@ -180,13 +178,24 @@ namespace __detail
     constexpr common_type_t<_Mn, _Nn>
     lcm(_Mn __m, _Nn __n) noexcept
     {
-      static_assert(is_integral_v<_Mn>, "std::lcm arguments must be integers");
-      static_assert(is_integral_v<_Nn>, "std::lcm arguments must be integers");
-      static_assert(_Mn(2) == 2, "std::lcm arguments must not be bool");
-      static_assert(_Nn(2) == 2, "std::lcm arguments must not be bool");
-      using _Up = make_unsigned_t<common_type_t<_Mn, _Nn>>;
-      return __detail::__lcm(__detail::__absu<_Up>(__m),
-			     __detail::__absu<_Up>(__n));
+      static_assert(is_integral_v<_Mn> && is_integral_v<_Nn>,
+		    "std::lcm arguments must be integers");
+      static_assert(_Mn(2) == 2 && _Nn(2) == 2,
+		    "std::lcm arguments must not be bool");
+      using _Ct = common_type_t<_Mn, _Nn>;
+      const _Ct __m2 = __detail::__abs_r<_Ct>(__m);
+      const _Ct __n2 = __detail::__abs_r<_Ct>(__n);
+      if (__m2 == 0 || __n2 == 0)
+	return 0;
+      _Ct __r = __m2 / __detail::__gcd<make_unsigned_t<_Ct>>(__m2, __n2);
+
+      if constexpr (is_signed_v<_Ct>)
+	if (__is_constant_evaluated())
+	  return __r * __n2; // constant evaluation can detect overflow here.
+
+      bool __overflow = __builtin_mul_overflow(__r, __n2, &__r);
+      __glibcxx_assert(!__overflow);
+      return __r;
     }
 
 #endif // C++17
