@@ -12939,6 +12939,20 @@ also at @option{-O0} if @option{-fsection-anchors} is explicitly requested.
 Additionally @option{-fno-toplevel-reorder} implies
 @option{-fno-section-anchors}.
 
+@item -funreachable-traps
+@opindex funreachable-traps
+With this option, the compiler turns calls to
+@code{__builtin_unreachable} into traps, instead of using them for
+optimization.  This also affects any such calls implicitly generated
+by the compiler.
+
+This option has the same effect as @option{-fsanitize=unreachable
+-fsanitize-trap=unreachable}, but does not affect the values of those
+options.  If @option{-fsanitize=unreachable} is enabled, that option
+takes priority over this one.
+
+This option is enabled by default at @option{-O0} and @option{-Og}.
+
 @item -fweb
 @opindex fweb
 Constructs webs as commonly used for register allocation purposes and assign

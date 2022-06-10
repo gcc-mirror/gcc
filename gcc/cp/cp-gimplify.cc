@@ -1814,7 +1814,7 @@ cp_maybe_instrument_return (tree fndecl)
 	 information is provided, while the __builtin_unreachable () below
 	 if return sanitization is disabled will just result in hard to
 	 understand runtime error without location.  */
-      && (!optimize
+      && ((!optimize && !flag_unreachable_traps)
 	  || sanitize_flags_p (SANITIZE_UNREACHABLE, fndecl)))
     return;
 
@@ -1864,10 +1864,7 @@ cp_maybe_instrument_return (tree fndecl)
   if (sanitize_flags_p (SANITIZE_RETURN, fndecl))
     t = ubsan_instrument_return (loc);
   else
-    {
-      tree fndecl = builtin_decl_explicit (BUILT_IN_UNREACHABLE);
-      t = build_call_expr_loc (BUILTINS_LOCATION, fndecl, 0);
-    }
+    t = build_builtin_unreachable (BUILTINS_LOCATION);
 
   append_to_statement_list (t, p);
 }

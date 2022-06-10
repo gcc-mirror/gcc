@@ -5184,6 +5184,9 @@ expand_builtin_trap (void)
 static void
 expand_builtin_unreachable (void)
 {
+  /* Use gimple_build_builtin_unreachable or builtin_decl_unreachable
+     to avoid this.  */
+  gcc_checking_assert (!sanitize_flags_p (SANITIZE_UNREACHABLE));
   emit_barrier ();
 }
 
@@ -9260,6 +9263,12 @@ fold_builtin_0 (location_t loc, tree fndecl)
 
     case BUILT_IN_CLASSIFY_TYPE:
       return fold_builtin_classify_type (NULL_TREE);
+
+    case BUILT_IN_UNREACHABLE:
+      /* Rewrite any explicit calls to __builtin_unreachable.  */
+      if (sanitize_flags_p (SANITIZE_UNREACHABLE))
+	return build_builtin_unreachable (loc);
+      break;
 
     default:
       break;

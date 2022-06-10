@@ -5510,9 +5510,8 @@ gimple_fold_call (gimple_stmt_iterator *gsi, bool inplace)
 		}
 	      else
 		{
-		  tree fndecl = builtin_decl_implicit (BUILT_IN_UNREACHABLE);
-		  gimple *new_stmt = gimple_build_call (fndecl, 0);
-		  gimple_set_location (new_stmt, gimple_location (stmt));
+		  location_t loc = gimple_location (stmt);
+		  gimple *new_stmt = gimple_build_builtin_unreachable (loc);
 		  /* If the call had a SSA name as lhs morph that into
 		     an uninitialized value.  */
 		  if (lhs && TREE_CODE (lhs) == SSA_NAME)
@@ -8396,7 +8395,7 @@ gimple_get_virt_method_for_vtable (HOST_WIDE_INT token,
   if (!fn
       || (TREE_CODE (fn) != ADDR_EXPR && TREE_CODE (fn) != FDESC_EXPR)
       || TREE_CODE (TREE_OPERAND (fn, 0)) != FUNCTION_DECL)
-    fn = builtin_decl_implicit (BUILT_IN_UNREACHABLE);
+    fn = builtin_decl_unreachable ();
   else
     {
       fn = TREE_OPERAND (fn, 0);

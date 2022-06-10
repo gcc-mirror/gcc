@@ -44,6 +44,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "stringpool.h"
 #include "attribs.h"
 #include "asan.h"
+#include "ubsan.h"
 #include "langhooks.h"
 #include "attr-fnspec.h"
 #include "ipa-modref-tree.h"
@@ -421,6 +422,18 @@ gimple_build_call_from_tree (tree t, tree fnptrtype)
   return call;
 }
 
+/* Build a gcall to __builtin_unreachable as rewritten by
+   -fsanitize=unreachable.  */
+
+gcall *
+gimple_build_builtin_unreachable (location_t loc)
+{
+  tree data = NULL_TREE;
+  tree fn = sanitize_unreachable_fn (&data, loc);
+  gcall *g = gimple_build_call (fn, data != NULL_TREE, data);
+  gimple_set_location (g, loc);
+  return g;
+}
 
 /* Build a GIMPLE_ASSIGN statement.
 

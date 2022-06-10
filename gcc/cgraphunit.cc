@@ -1033,8 +1033,7 @@ walk_polymorphic_call_targets (hash_set<void *> *reachable_call_targets,
 	  if (targets.length () == 1)
 	    target = targets[0];
 	  else
-	    target = cgraph_node::create
-			(builtin_decl_implicit (BUILT_IN_UNREACHABLE));
+	    target = cgraph_node::create (builtin_decl_unreachable ());
 
 	  if (symtab->dump_file)
 	    {

@@ -250,8 +250,8 @@ static struct cgraph_edge *
 redirect_to_unreachable (struct cgraph_edge *e)
 {
   struct cgraph_node *callee = !e->inline_failed ? e->callee : NULL;
-  struct cgraph_node *target = cgraph_node::get_create
-		      (builtin_decl_implicit (BUILT_IN_UNREACHABLE));
+  struct cgraph_node *target
+    = cgraph_node::get_create (builtin_decl_unreachable ());
 
   if (e->speculative)
     e = cgraph_edge::resolve_speculation (e, target->decl);

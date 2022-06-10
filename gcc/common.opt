@@ -3017,6 +3017,10 @@ funit-at-a-time
 Common Var(flag_unit_at_a_time) Init(1)
 Compile whole compilation unit at a time.
 
+funreachable-traps
+Common Var(flag_unreachable_traps) Optimization
+Trap on __builtin_unreachable instead of using it for optimization.
+
 funroll-loops
 Common Var(flag_unroll_loops) Optimization EnabledBy(funroll-all-loops)
 Perform loop unrolling when iteration count is known.

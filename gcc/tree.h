@@ -5858,6 +5858,11 @@ builtin_decl_implicit (enum built_in_function fncode)
   return builtin_info[uns_fncode].decl;
 }
 
+/* For BUILTIN_UNREACHABLE, use one of these or
+   gimple_build_builtin_unreachable instead of one of the above.  */
+extern tree builtin_decl_unreachable ();
+extern tree build_builtin_unreachable (location_t);
+
 /* Set explicit builtin function nodes and whether it is an implicit
    function.  */
 
