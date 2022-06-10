@@ -1483,7 +1483,7 @@ xtensa_expand_block_set_unrolled_loop (rtx *operands)
 int
 xtensa_expand_block_set_small_loop (rtx *operands)
 {
-  HOST_WIDE_INT bytes, value, align;
+  HOST_WIDE_INT bytes, value, align, count;
   int expand_len, funccall_len;
   rtx x, dst, end, reg;
   machine_mode unit_mode;
@@ -1503,17 +1503,25 @@ xtensa_expand_block_set_small_loop (rtx *operands)
   /* Totally-aligned block only.  */
   if (bytes % align != 0)
     return 0;
+  count = bytes / align;
 
-  /* If 4-byte aligned, small loop substitution is almost optimal, thus
-     limited to only offset to the end address for ADDI/ADDMI instruction.  */
-  if (align == 4
-      && ! (bytes <= 127 || (bytes <= 32512 && bytes % 256 == 0)))
-    return 0;
+  /* If the Loop Option (zero-overhead looping) is configured and active,
+     almost no restrictions about the length of the block.  */
+  if (! (TARGET_LOOPS && optimize))
+    {
+      /* If 4-byte aligned, small loop substitution is almost optimal,
+	 thus limited to only offset to the end address for ADDI/ADDMI
+	 instruction.  */
+      if (align == 4
+	  && ! (bytes <= 127 || (bytes <= 32512 && bytes % 256 == 0)))
+	return 0;
 
-  /* If no 4-byte aligned, loop count should be treated as the constraint.  */
-  if (align != 4
-      && bytes / align > ((optimize > 1 && !optimize_size) ? 8 : 15))
-    return 0;
+      /* If no 4-byte aligned, loop count should be treated as the
+	 constraint.  */
+      if (align != 4
+	  && count > ((optimize > 1 && !optimize_size) ? 8 : 15))
+	return 0;
+    }
 
   /* Insn expansion: holding the init value.
      Either MOV(.N) or L32R w/litpool.  */
@@ -1523,16 +1531,33 @@ xtensa_expand_block_set_small_loop (rtx *operands)
     expand_len = TARGET_DENSITY ? 2 : 3;
   else
     expand_len = 3 + 4;
-  /* Insn expansion: Either ADDI(.N) or ADDMI for the end address.  */
-  expand_len += bytes > 127 ? 3
-			    : (TARGET_DENSITY && bytes <= 15) ? 2 : 3;
-
-  /* Insn expansion: the loop body and branch instruction.
-     For store, one of S8I, S16I or S32I(.N).
-     For advance, ADDI(.N).
-     For branch, BNE.  */
-  expand_len += (TARGET_DENSITY && align == 4 ? 2 : 3)
-		+ (TARGET_DENSITY ? 2 : 3) + 3;
+  if (TARGET_LOOPS && optimize) /* zero-overhead looping */
+    {
+      /* Insn translation: Either MOV(.N) or L32R w/litpool for the
+	 loop count.  */
+      expand_len += xtensa_simm12b (count) ? xtensa_sizeof_MOVI (count)
+					   : 3 + 4;
+      /* Insn translation: LOOP, the zero-overhead looping setup
+	 instruction.  */
+      expand_len += 3;
+      /* Insn expansion: the loop body instructions.
+	For store, one of S8I, S16I or S32I(.N).
+	For advance, ADDI(.N).  */
+      expand_len += (TARGET_DENSITY && align == 4 ? 2 : 3)
+		    + (TARGET_DENSITY ? 2 : 3);
+    }
+  else /* NO zero-overhead looping */
+    {
+      /* Insn expansion: Either ADDI(.N) or ADDMI for the end address.  */
+      expand_len += bytes > 127 ? 3
+				: (TARGET_DENSITY && bytes <= 15) ? 2 : 3;
+      /* Insn expansion: the loop body and branch instruction.
+	For store, one of S8I, S16I or S32I(.N).
+	For advance, ADDI(.N).
+	For branch, BNE.  */
+      expand_len += (TARGET_DENSITY && align == 4 ? 2 : 3)
+		    + (TARGET_DENSITY ? 2 : 3) + 3;
+    }
 
   /* Function call: preparing two arguments.  */
   funccall_len = xtensa_sizeof_MOVI (value);
@@ -1555,7 +1580,11 @@ xtensa_expand_block_set_small_loop (rtx *operands)
   dst = gen_reg_rtx (SImode);
   emit_move_insn (dst, x);
   end = gen_reg_rtx (SImode);
-  emit_insn (gen_addsi3 (end, dst, operands[1] /* the length */));
+  if (TARGET_LOOPS && optimize)
+    x = force_reg (SImode, operands[1] /* the length */);
+  else
+    x = operands[1];
+  emit_insn (gen_addsi3 (end, dst, x));
   switch (align)
     {
     case 1:
