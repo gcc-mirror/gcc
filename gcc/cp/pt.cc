@@ -9840,8 +9840,6 @@ lookup_template_class (tree d1, tree arglist, tree in_decl, tree context,
 	  if (context)
 	    pop_decl_namespace ();
 	}
-      if (templ)
-	context = DECL_CONTEXT (templ);
     }
   else if (TREE_CODE (d1) == TYPE_DECL && MAYBE_CLASS_TYPE_P (TREE_TYPE (d1)))
     {
@@ -9868,7 +9866,6 @@ lookup_template_class (tree d1, tree arglist, tree in_decl, tree context,
     {
       templ = d1;
       d1 = DECL_NAME (templ);
-      context = DECL_CONTEXT (templ);
     }
   else if (DECL_TEMPLATE_TEMPLATE_PARM_P (d1))
     {
@@ -10059,8 +10056,26 @@ lookup_template_class (tree d1, tree arglist, tree in_decl, tree context,
       context = DECL_CONTEXT (gen_tmpl);
       if (context && TYPE_P (context))
 	{
-	  context = tsubst_aggr_type (context, arglist, complain, in_decl, true);
-	  context = complete_type (context);
+	  if (!uses_template_parms (DECL_CONTEXT (templ)))
+	    /* If the context of the partially instantiated template is
+	       already non-dependent, then we might as well use it.  */
+	    context = DECL_CONTEXT (templ);
+	  else
+	    {
+	      context = tsubst_aggr_type (context, arglist,
+					  complain, in_decl, true);
+	      context = complete_type (context);
+	      if (is_dependent_type && arg_depth > 1)
+		{
+		  /* If this is a dependent nested specialization such as
+		     A<T>::B<U> [with T=int, U=U], then completion of A<int>
+		     could have caused to register the desired specialization
+		     of B already, so check the table again (33959).  */
+		  entry = type_specializations->find_with_hash (&elt, hash);
+		  if (entry)
+		    return entry->spec;
+		}
+	    }
 	}
       else
 	context = tsubst (context, arglist, complain, in_decl);
@@ -13739,25 +13754,12 @@ tsubst_aggr_type (tree t,
       if (TYPE_TEMPLATE_INFO (t) && uses_template_parms (t))
 	{
 	  tree argvec;
-	  tree context;
 	  tree r;
 
 	  /* In "sizeof(X<I>)" we need to evaluate "I".  */
 	  cp_evaluated ev;
 
-	  /* First, determine the context for the type we are looking
-	     up.  */
-	  context = TYPE_CONTEXT (t);
-	  if (context && TYPE_P (context))
-	    {
-	      context = tsubst_aggr_type (context, args, complain,
-					  in_decl, /*entering_scope=*/1);
-	      /* If context is a nested class inside a class template,
-	         it may still need to be instantiated (c++/33959).  */
-	      context = complete_type (context);
-	    }
-
-	  /* Then, figure out what arguments are appropriate for the
+	  /* Figure out what arguments are appropriate for the
 	     type we are trying to find.  For example, given:
 
 	       template <class T> struct S;
@@ -13772,7 +13774,7 @@ tsubst_aggr_type (tree t,
 	    r = error_mark_node;
 	  else
 	    {
-	      r = lookup_template_class (t, argvec, in_decl, context,
+	      r = lookup_template_class (t, argvec, in_decl, NULL_TREE,
 					 entering_scope, complain);
 	      r = cp_build_qualified_type (r, cp_type_quals (t), complain);
 	    }
@@ -14913,6 +14915,10 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 		ctx = tsubst_aggr_type (ctx, args,
 					complain,
 					in_decl, /*entering_scope=*/1);
+		if (DECL_SELF_REFERENCE_P (t))
+		  /* The context and type of an injected-class-name are
+		     the same, so we don't need to substitute both.  */
+		  type = ctx;
 		/* If CTX is unchanged, then T is in fact the
 		   specialization we want.  That situation occurs when
 		   referencing a static data member within in its own
@@ -14931,16 +14937,32 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 
 	    if (!spec)
 	      {
+		int args_depth = TMPL_ARGS_DEPTH (args);
+		int parms_depth = TMPL_ARGS_DEPTH (DECL_TI_ARGS (t));
 		tmpl = DECL_TI_TEMPLATE (t);
 		gen_tmpl = most_general_template (tmpl);
-		argvec = tsubst (DECL_TI_ARGS (t), args, complain, in_decl);
-		if (argvec != error_mark_node)
-		  argvec = (coerce_innermost_template_parms
-			    (DECL_TEMPLATE_PARMS (gen_tmpl),
-			     argvec, t, complain,
-			     /*all*/true, /*defarg*/true));
-		if (argvec == error_mark_node)
-		  RETURN (error_mark_node);
+		if (args_depth == parms_depth
+		    && !PRIMARY_TEMPLATE_P (gen_tmpl))
+		  /* The DECL_TI_ARGS in this case are the generic template
+		     arguments for the enclosing class template, so we can
+		     shortcut substitution (which would just be the identity
+		     mapping).  */
+		  argvec = args;
+		else
+		  {
+		    argvec = tsubst (DECL_TI_ARGS (t), args, complain, in_decl);
+		    /* Coerce the innermost arguments again if necessary.  If
+		       there's fewer levels of args than of parms, then the
+		       substitution could not have changed the innermost args
+		       (modulo level lowering).  */
+		    if (args_depth >= parms_depth && argvec != error_mark_node)
+		      argvec = (coerce_innermost_template_parms
+				(DECL_TEMPLATE_PARMS (gen_tmpl),
+				 argvec, t, complain,
+				 /*all*/true, /*defarg*/true));
+		    if (argvec == error_mark_node)
+		      RETURN (error_mark_node);
+		  }
 		hash = hash_tmpl_and_args (gen_tmpl, argvec);
 		spec = retrieve_specialization (gen_tmpl, argvec, hash);
 	      }
