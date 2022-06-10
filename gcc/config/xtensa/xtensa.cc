@@ -1037,6 +1037,123 @@ xtensa_split_operand_pair (rtx operands[4], machine_mode mode)
 }
 
 
+/* Try to emit insns to load srcval (that cannot fit into signed 12-bit)
+   into dst with synthesizing a such constant value from a sequence of
+   load-immediate / arithmetic ones, instead of a L32R instruction
+   (plus a constant in litpool).  */
+
+static void
+xtensa_emit_constantsynth (rtx dst, enum rtx_code code,
+			   HOST_WIDE_INT imm0, HOST_WIDE_INT imm1,
+			   rtx (*gen_op)(rtx, HOST_WIDE_INT),
+			   HOST_WIDE_INT imm2)
+{
+  gcc_assert (REG_P (dst));
+  emit_move_insn (dst, GEN_INT (imm0));
+  emit_move_insn (dst, gen_rtx_fmt_ee (code, SImode,
+				       dst, GEN_INT (imm1)));
+  if (gen_op)
+    emit_move_insn (dst, gen_op (dst, imm2));
+}
+
+static int
+xtensa_constantsynth_2insn (rtx dst, HOST_WIDE_INT srcval,
+			    rtx (*gen_op)(rtx, HOST_WIDE_INT),
+			    HOST_WIDE_INT op_imm)
+{
+  int shift = exact_log2 (srcval + 1);
+
+  if (IN_RANGE (shift, 1, 31))
+    {
+      xtensa_emit_constantsynth (dst, LSHIFTRT, -1, 32 - shift,
+				 gen_op, op_imm);
+      return 1;
+    }
+
+  if (IN_RANGE (srcval, (-2048 - 32768), (2047 + 32512)))
+    {
+      HOST_WIDE_INT imm0, imm1;
+
+      if (srcval < -32768)
+	imm1 = -32768;
+      else if (srcval > 32512)
+	imm1 = 32512;
+      else
+	imm1 = srcval & ~255;
+      imm0 = srcval - imm1;
+      if (TARGET_DENSITY && imm1 < 32512 && IN_RANGE (imm0, 224, 255))
+	imm0 -= 256, imm1 += 256;
+      xtensa_emit_constantsynth (dst, PLUS, imm0, imm1, gen_op, op_imm);
+	return 1;
+    }
+
+  shift = ctz_hwi (srcval);
+  if (xtensa_simm12b (srcval >> shift))
+    {
+      xtensa_emit_constantsynth (dst, ASHIFT, srcval >> shift, shift,
+				 gen_op, op_imm);
+      return 1;
+    }
+
+  return 0;
+}
+
+static rtx
+xtensa_constantsynth_rtx_SLLI (rtx reg, HOST_WIDE_INT imm)
+{
+  return gen_rtx_ASHIFT (SImode, reg, GEN_INT (imm));
+}
+
+static rtx
+xtensa_constantsynth_rtx_ADDSUBX (rtx reg, HOST_WIDE_INT imm)
+{
+  return imm == 7
+	 ? gen_rtx_MINUS (SImode, gen_rtx_ASHIFT (SImode, reg, GEN_INT (3)),
+			  reg)
+	 : gen_rtx_PLUS (SImode, gen_rtx_ASHIFT (SImode, reg,
+						 GEN_INT (floor_log2 (imm - 1))),
+			 reg);
+}
+
+int
+xtensa_constantsynth (rtx dst, HOST_WIDE_INT srcval)
+{
+  /* No need for synthesizing for what fits into MOVI instruction.  */
+  if (xtensa_simm12b (srcval))
+    return 0;
+
+  /* 2-insns substitution.  */
+  if ((optimize_size || (optimize && xtensa_extra_l32r_costs >= 1))
+      && xtensa_constantsynth_2insn (dst, srcval, NULL, 0))
+    return 1;
+
+  /* 3-insns substitution.  */
+  if (optimize > 1 && !optimize_size && xtensa_extra_l32r_costs >= 2)
+    {
+      int shift, divisor;
+
+      /* 2-insns substitution followed by SLLI.  */
+      shift = ctz_hwi (srcval);
+      if (IN_RANGE (shift, 1, 31) &&
+	  xtensa_constantsynth_2insn (dst, srcval >> shift,
+				      xtensa_constantsynth_rtx_SLLI,
+				      shift))
+	return 1;
+
+      /* 2-insns substitution followed by ADDX[248] or SUBX8.  */
+      if (TARGET_ADDX)
+	for (divisor = 3; divisor <= 9; divisor += 2)
+	  if (srcval % divisor == 0 &&
+	      xtensa_constantsynth_2insn (dst, srcval / divisor,
+					  xtensa_constantsynth_rtx_ADDSUBX,
+					  divisor))
+	    return 1;
+    }
+
+  return 0;
+}
+
+
 /* Emit insns to move operands[1] into operands[0].
    Return 1 if we have written out everything that needs to be done to
    do the move.  Otherwise, return 0 and the caller will emit the move
@@ -1074,22 +1191,6 @@ xtensa_emit_move_sequence (rtx *operands, machine_mode mode)
 
       if (! TARGET_AUTO_LITPOOLS && ! TARGET_CONST16)
 	{
-	  /* Try to emit MOVI + SLLI sequence, that is smaller
-	     than L32R + literal.  */
-	  if (optimize_size && mode == SImode && CONST_INT_P (src)
-	      && register_operand (dst, mode))
-	    {
-	      HOST_WIDE_INT srcval = INTVAL (src);
-	      int shift = ctz_hwi (srcval);
-
-	      if (xtensa_simm12b (srcval >> shift))
-		{
-		  emit_move_insn (dst, GEN_INT (srcval >> shift));
-		  emit_insn (gen_ashlsi3_internal (dst, dst, GEN_INT (shift)));
-		  return 1;
-		}
-	    }
-
 	  src = force_const_mem (SImode, src);
 	  operands[1] = src;
 	}
