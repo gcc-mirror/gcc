@@ -1,3 +1,185 @@
+2022-06-09  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/xtensa.md (clrsbsi2): New insn pattern.
+
+2022-06-09  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/xtensa.md (*andsi3_bitcmpl):
+	New insn_and_split pattern.
+
+2022-06-09  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/xtensa.md (one_cmplsi2):
+	Rearrange as an insn_and_split pattern.
+
+2022-06-09  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/xtensa.md (bswaphi2): New insn pattern.
+
+2022-06-09  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.md (FP_ISA3): Delete.
+	(float<QHI:mode><FP_ISA3:mode>2): Rename to...
+	(float<QHI:mode><SFDF:mode>2): ... this.  Adjust.
+	(*float<QHI:mode><FP_ISA3:mode>2_internal): Rename to...
+	(*float<QHI:mode><SFDF:mode>2_internal): ... this.  Adjust.
+	(floatuns<QHI:mode><FP_ISA3:mode>2): Rename to...
+	(floatuns<QHI:mode><SFDF:mode>2): ... this.  Adjust.
+	(*floatuns<QHI:mode><FP_ISA3:mode>2_internal): Rename to...
+	(*floatuns<QHI:mode><SFDF:mode>2_internal): ... this.  Adjust.
+
+2022-06-09  Maciej W. Rozycki  <macro@embecosm.com>
+
+	* config/riscv/riscv.md
+	(*f<quiet_pattern>_quiet<ANYF:mode><X:mode>4_default)
+	(*f<quiet_pattern>_quiet<ANYF:mode><X:mode>4_snan): Emit a tab
+	rather than space with FSFLAGS.
+
+2022-06-09  Tobias Burnus  <tobias@codesourcery.com>
+
+	* omp-offload.cc (omp_discover_declare_target_tgt_fn_r,
+	omp_discover_declare_target_fn_r): Don't walk reverse-offload
+	target regions.
+
+2022-06-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* doc/invoke.texi (-Waddress): Fix a typo in small example.
+	Fix typos inptr_t -> intptr_t and uinptr_t -> uintptr_t.
+
+2022-06-09  Cui,Lili  <lili.cui@intel.com>
+
+	PR target/105493
+	* config/i386/x86-tune-costs.h (skylake_cost): Raise the gpr load cost
+	from 4 to 6 and gpr store cost from 6 to 8. Change SSE loads and
+	unaligned loads cost from {6, 6, 6, 10, 20} to {8, 8, 8, 8, 16}.
+	(icelake_cost): Ditto.
+	(alderlake_cost): Raise the gpr store cost from 6 to 8 and SSE loads,
+	stores and unaligned stores cost from {6, 6, 6, 10, 15} to
+	{8, 8, 8, 10, 15}.
+
+2022-06-09  Haochen Gui  <guihaoc@gcc.gnu.org>
+
+	* config/rs6000/rs6000.md (define_split for bswapdi load): Merge shift
+	and ior insns to one rotate and mask insn.
+	(define_split for bswapdi register): Likewise.
+
+2022-06-08  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR middle-end/105874
+	* expr.cc (expand_expr_real_1) <normal_inner_ref>:  New local
+	variable tem_modifier for calculating the expand_modifier enum to
+	use for expanding tem.  If tem is a VAR_DECL, use EXPAND_MEMORY.
+
+2022-06-08  Max Filippov  <jcmvbkbc@gmail.com>
+
+	PR target/105879
+	* config/xtensa/xtensa.md (movdi): Rename 'first' and 'second'
+	to 'lowpart' and 'highpart' so that they match 'gen_lowpart' and
+	'gen_highpart' bitwise semantics and fix order of highpart and
+	lowpart depending on target endianness.
+
+2022-06-08  Chung-Ju Wu  <jasonwucj@gmail.com>
+
+	* config/arm/arm-cpus.in (star-mc1): New cpu.
+	* config/arm/arm-tables.opt: Regenerate.
+	* config/arm/arm-tune.md: Regenerate.
+	* doc/invoke.texi: Update docs.
+
+2022-06-08  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/105513
+	PR target/105504
+	* config/i386/i386.md (*movsi_internal): Change alternative
+	from *v to ?v.
+	(*movdi_internal): Ditto.
+	* config/i386/sse.md (vec_set<mode>_0): Change alternative *r
+	to ?r.
+	(*vec_extractv4sf_mem): Ditto.
+	(*vec_extracthf): Ditto.
+
+2022-06-07  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/105090
+	* config/arm/arm.cc (arm_bfi_1_p): New function.
+	(arm_bfi_p): New function.
+	(arm_rtx_costs_internal): Add costs for BFI idioms.
+	(arm_print_operand [case 'V']): Format output for BFI/BFC masks.
+	* config/arm/constraints.md (Dj): New constraint.
+	* config/arm/arm.md (arm_andsi3_insn): Add alternative to use BFC.
+	(insv_zero): Convert to an insn with a split.
+	(*bfi, *bfi_alt1, *bfi_alt2, *bfi_alt3): New patterns.
+
+2022-06-07  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/105854
+	* config/i386/sse.md (ssse3_palignrdi): Change alternative 2
+	from Yv to Yw.
+
+2022-06-07  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR middle-end/105853
+	PR target/105856
+	* calls.cc (load_register_parameters): Call store_constructor
+	and int_expr_size directly instead of expanding via expand_expr.
+	* expr.cc (static void store_constructor): Don't prototype here.
+	(static HOST_WIDE_INT int_expr_size): Likewise.
+	(store_constructor): No longer static.
+	(int_expr_size): Likewise, no longer static.
+	* expr.h (store_constructor): Prototype here.
+	(int_expr_size): Prototype here.
+
+2022-06-07  Jan Beulich  <jbeulich@suse.com>
+
+	Revert:
+	2022-06-03  Jan Beulich  <jbeulich@suse.com>
+
+	* Makefile.in (ORIGINAL_OBJCOPY_FOR_TARGET): New.
+	* configure.ac: Check for objcopy, producing
+	ORIGINAL_OBJCOPY_FOR_TARGET.
+	* configure: Update accordingly.
+	* exec-tool.in (ORIGINAL_OBJCOPY_FOR_TARGET): New.
+	Handle objcopy.
+
+2022-06-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree.h (OMP_CLAUSE_LINEAR_OLD_LINEAR_MODIFIER): Define.
+	* tree-pretty-print.cc (dump_omp_clause) <case OMP_CLAUSE_LINEAR>:
+	Adjust clause printing style depending on
+	OMP_CLAUSE_LINEAR_OLD_LINEAR_MODIFIER.
+
+2022-06-07  Jan Beulich  <jbeulich@suse.com>
+
+	* config/i386/i386-builtin.def (__builtin_ia32_psadbw256):
+	Change type.
+	* config/i386/i386-builtin-types.def: New function type
+	(V4DI, V32QI, V32QI).
+	* config/i386/i386-expand.cc (ix86_expand_args_builtin): Handle
+	V4DI_FTYPE_V32QI_V32QI.
+
+2022-06-07  Jan Beulich  <jbeulich@suse.com>
+
+	* config/i386/i386.cc (ix86_attr_length_vex_default): Take REX.B
+	into account for reg-only insns.
+
+2022-06-07  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* config/i386/i386.cc (ix86_rtx_costs): Add a new case for
+	IF_THEN_ELSE, and provide costs for TARGET_XOP's vpcmov and
+	TARGET_CMOVE's (scalar integer) conditional moves.
+	* config/i386/sse.md (define_split): Recognize XOP's vpcmov
+	from its equivalent (canonical) pxor;pand;pxor sequence.
+
+2022-06-07  Kewen Lin  <linkw@linux.ibm.com>
+
+	* machmode.def (VECTOR_MODES_WITH_PREFIX): Update document for
+	parameter ORDER.
+
+2022-06-06  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac: Reinstate HAVE_GAS_ARM_EXTENDED_ARCH test.
+
 2022-06-04  Roger Sayle  <roger@nextmovesoftware.com>
 
 	PR middle-end/95126

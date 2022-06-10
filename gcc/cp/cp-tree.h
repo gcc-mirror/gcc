@@ -7179,7 +7179,8 @@ extern module_state *get_module (tree name, module_state *parent = NULL,
 				 bool partition = false);
 extern bool module_may_redeclare (tree decl);
 
-extern int module_initializer_kind ();
+extern bool module_global_init_needed ();
+extern bool module_has_import_inits ();
 extern void module_add_import_initializers ();
 
 /* Where the namespace-scope decl was originally declared.  */
@@ -7395,6 +7396,7 @@ extern bool push_tinst_level_loc                (tree, location_t);
 extern bool push_tinst_level_loc                (tree, tree, location_t);
 extern void pop_tinst_level                     (void);
 extern struct tinst_level *outermost_tinst_level(void);
+extern bool non_templated_friend_p		(tree);
 extern void init_template_processing		(void);
 extern void print_template_statistics		(void);
 bool template_template_parameter_p		(const_tree);

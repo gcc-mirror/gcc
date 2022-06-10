@@ -1,3 +1,22 @@
+2022-06-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/linux/allocator.c: Fix up #include directive.
+
+2022-06-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* allocator.c: Include dlfcn.h if LIBGOMP_USE_MEMKIND is defined.
+	(enum gomp_memkind_kind): New type.
+	(struct omp_allocator_data): Add memkind field if LIBGOMP_USE_MEMKIND
+	is defined.
+	(struct gomp_memkind_data): New type.
+	(memkind_data, memkind_data_once): New variables.
+	(gomp_init_memkind, gomp_get_memkind): New functions.
+	(omp_init_allocator): Initialize data.memkind, don't fail for
+	omp_high_bw_mem_space if libmemkind supports it.
+	(omp_aligned_alloc, omp_free, omp_aligned_calloc, omp_realloc): Add
+	memkind support of LIBGOMP_USE_MEMKIND is defined.
+	* config/linux/allocator.c: New file.
+
 2022-06-03  Tobias Burnus  <tobias@codesourcery.com>
 
 	* libgomp.texi (OpenMP 5.2): Mark scope w/ firstprivate/allocate as Y.

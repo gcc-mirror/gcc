@@ -1,6 +1,7 @@
 /* { dg-do compile { target { ! ia32 } } } */
 /* { dg-options "-std=gnu++20 -O2 -march=skylake" } */
-/* { dg-final { scan-assembler-not "vpxor" } } */
+/* { dg-final { scan-assembler-not "call\[\\t \]_?memset\[\r\n\]\[^\r\n\]movq\[\\t \]%\[a-z0-9]*, %\[a-z0-9]*\[\r\n\]\[^\r\n\]vpxor\[\\t \]%xmm0, %xmm0, %xmm0\[\r\n\]\[^\r\n\]vmovdqu\[\\t \]%xmm0, 36\\(%rax\\)" } } */
+
 
 #include <stdint.h>
 #include <vector>

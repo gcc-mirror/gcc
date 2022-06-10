@@ -2815,36 +2815,6 @@ case "$ORIGINAL_NM_FOR_TARGET" in
   *) AC_CONFIG_FILES(nm:exec-tool.in, [chmod +x nm]) ;;
 esac
 
-# Figure out what objcopy we will be using.
-AS_VAR_SET_IF(gcc_cv_objcopy,, [
-if test -f $gcc_cv_binutils_srcdir/configure.ac \
-     && test -f ../binutils/Makefile \
-     && test x$build = x$host; then
-	gcc_cv_objcopy=../binutils/objcopy$build_exeext
-elif test -x objcopy$build_exeext; then
-	gcc_cv_objcopy=./objcopy$build_exeext
-elif ( set dummy $OBJCOPY_FOR_TARGET; test -x $[2] ); then
-        gcc_cv_objcopy="$OBJCOPY_FOR_TARGET"
-else
-        AC_PATH_PROG(gcc_cv_objcopy, $OBJCOPY_FOR_TARGET)
-fi])
-
-AC_MSG_CHECKING(what objcopy to use)
-if test "$gcc_cv_objcopy" = ../binutils/objcopy$build_exeext; then
-	# Single tree build which includes binutils.
-	AC_MSG_RESULT(newly built objcopy)
-	in_tree_objcopy=yes
-else
-	AC_MSG_RESULT($gcc_cv_objcopy)
-	in_tree_objcopy=no
-fi
-
-ORIGINAL_OBJCOPY_FOR_TARGET=$gcc_cv_objcopy
-AC_SUBST(ORIGINAL_OBJCOPY_FOR_TARGET)
-case "$ORIGINAL_OBJCOPY_FOR_TARGET" in
-  ./objcopy | ./objcopy$build_exeext) ;;
-  *) AC_CONFIG_FILES(objcopy:exec-tool.in, [chmod +x objcopy]) ;;
-esac
 
 # Figure out what objdump we will be using.
 AS_VAR_SET_IF(gcc_cv_objdump,, [
@@ -5425,6 +5395,19 @@ case "$target" in
     fi
     AC_MSG_RESULT([$gcc_cv_as_version, ok])
     ;;
+esac
+
+case "$target" in
+  arm*)
+    gcc_GAS_CHECK_FEATURE([assembler for arm accepts context-specific architecture extensions],
+      gcc_cv_as_arm_option_extensions,
+      [-march=armv8.1-m.main+mve],
+      [.text
+	.thumb
+	.syntax unified
+	vmov.f32 s0, s1],,
+      [AC_DEFINE(HAVE_GAS_ARM_EXTENDED_ARCH, 1,
+       [Define if your Arm assembler permits context-specific feature extensions.])])
 esac
 
 # ??? Not all targets support dwarf2 debug_line, even within a version

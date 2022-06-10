@@ -1,3 +1,107 @@
+2022-06-09  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* gcc.target/xtensa/check_zero_byte.c: New.
+
+2022-06-09  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* gcc.target/xtensa/one_cmpl_abs.c: New.
+
+2022-06-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/105871
+	* g++.dg/pr105871.C: New test.
+
+2022-06-09  Nathan Sidwell  <nathan@acm.org>
+
+	* g++.dg/modules/init-2_a.C: Check no idempotency.
+	* g++.dg/modules/init-2_b.C: Check idempotency.
+
+2022-06-09  Tobias Burnus  <tobias@codesourcery.com>
+
+	* c-c++-common/gomp/reverse-offload-1.c: New.
+
+2022-06-09  Cui,Lili  <lili.cui@intel.com>
+
+	PR target/105493
+	* gcc.target/i386/pr91446.c: Adjust to expect vectorization
+	* gcc.target/i386/pr99881.c: XFAIL.
+	* gcc.target/i386/pr105493.c: New.
+	* g++.target/i386/pr105638.C: Use other sequence checks
+	instead of vpxor, because code generation changed.
+
+2022-06-09  Haochen Gui  <guihaoc@gcc.gnu.org>
+
+	* gcc.target/powerpc/pr93453-1.c: New.
+
+2022-06-08  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105852
+	PR c++/105761
+	* g++.dg/modules/tpl-friend-2_a.C: Adjust expected dump.
+	* g++.dg/template/friend74.C: New test.
+
+2022-06-08  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR middle-end/105874
+	* g++.dg/opt/pr105874.C: New test case.
+
+2022-06-08  Nathan Sidwell  <nathan@acm.org>
+
+	* g++.dg/init/static-cdtor1.C: New.
+
+2022-06-08  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* gcc.target/i386/xop-pcmov3.c: Add -mno-avx512vl to dg-options.
+
+2022-06-08  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/gomp/target-device-ancestor-5.f90: New test.
+
+2022-06-08  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr105513-1.c: New test.
+	* gcc.target/i386/extract-insert-combining.c: Add new
+	scan-assembler-not for spill.
+
+2022-06-08  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/105854
+	* gcc.target/i386/pr105854.c: Add target int128 and dfp.
+
+2022-06-07  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr105854.c: New test.
+
+2022-06-07  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR middle-end/105853
+	PR target/105856
+	* gcc.dg/pr105853.c: New test case.
+	* gcc.dg/pr105856.c: New test case.
+
+2022-06-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/gomp/linear-2.c: New test.
+	* c-c++-common/gomp/linear-3.c: New test.
+	* g++.dg/gomp/linear-3.C: New test.
+	* g++.dg/gomp/linear-4.C: New test.
+	* g++.dg/gomp/linear-5.C: New test.
+
+2022-06-07  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR c++/96442
+	* g++.dg/parse/pr96442.C: New test case.
+
+2022-06-07  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* gcc.target/i386/xop-pcmov3.c: New test case.
+
+2022-06-06  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/53164
+	PR c++/105848
+	* g++.dg/template/fn-ptr3.C: New test.
+
 2022-06-04  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/102399

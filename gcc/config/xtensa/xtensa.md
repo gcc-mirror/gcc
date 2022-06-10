@@ -429,7 +429,17 @@
    (set_attr "length"	"3")])
 
 
-;; Count leading/trailing zeros and find first bit.
+;; Count redundant leading sign bits and leading/trailing zeros,
+;; and find first bit.
+
+(define_insn "clrsbsi2"
+  [(set (match_operand:SI 0 "register_operand" "=a")
+	(clrsb:SI (match_operand:SI 1 "register_operand" "r")))]
+  "TARGET_NSA"
+  "nsa\t%0, %1"
+  [(set_attr "type"	"arith")
+   (set_attr "mode"	"SI")
+   (set_attr "length"	"3")])
 
 (define_insn "clzsi2"
   [(set (match_operand:SI 0 "register_operand" "=a")
@@ -470,6 +480,16 @@
 
 
 ;; Byte swap.
+
+(define_insn "bswaphi2"
+  [(set (match_operand:HI 0 "register_operand" "=a")
+	(bswap:HI (match_operand:HI 1 "register_operand" "r")))
+   (clobber (match_scratch:HI 2 "=&a"))]
+  ""
+  "extui\t%2, %1, 8, 8\;slli\t%0, %1, 8\;or\t%0, %0, %2"
+   [(set_attr "type"	"arith")
+    (set_attr "mode"	"HI")
+    (set_attr "length"	"9")])
 
 (define_expand "bswapsi2"
   [(set (match_operand:SI 0 "register_operand" "")
@@ -546,16 +566,26 @@
    (set_attr "mode"	"SI")
    (set_attr "length"	"3")])
 
-(define_expand "one_cmplsi2"
-  [(set (match_operand:SI 0 "register_operand" "")
-	(not:SI (match_operand:SI 1 "register_operand" "")))]
+(define_insn_and_split "one_cmplsi2"
+  [(set (match_operand:SI 0 "register_operand" "=a")
+	(not:SI (match_operand:SI 1 "register_operand" "r")))]
   ""
+  "#"
+  "&& can_create_pseudo_p ()"
+  [(set (match_dup 2)
+	(const_int -1))
+   (set (match_dup 0)
+	(xor:SI (match_dup 1)
+		(match_dup 2)))]
 {
-  rtx temp = gen_reg_rtx (SImode);
-  emit_insn (gen_movsi (temp, constm1_rtx));
-  emit_insn (gen_xorsi3 (operands[0], temp, operands[1]));
-  DONE;
-})
+  operands[2] = gen_reg_rtx (SImode);
+}
+  [(set_attr "type"	"arith")
+   (set_attr "mode"	"SI")
+   (set (attr "length")
+	(if_then_else (match_test "TARGET_DENSITY")
+		      (const_int 5)
+		      (const_int 6)))])
 
 (define_insn "negsf2"
   [(set (match_operand:SF 0 "register_operand" "=f")
@@ -580,6 +610,26 @@
   [(set_attr "type"	"arith,arith")
    (set_attr "mode"	"SI")
    (set_attr "length"	"3,3")])
+
+(define_insn_and_split "*andsi3_bitcmpl"
+  [(set (match_operand:SI 0 "register_operand" "=a")
+	(and:SI (not:SI (match_operand:SI 1 "register_operand" "r"))
+		(match_operand:SI 2 "register_operand" "r")))]
+  ""
+  "#"
+  "&& can_create_pseudo_p ()"
+  [(set (match_dup 3)
+	(and:SI (match_dup 1)
+		(match_dup 2)))
+   (set (match_dup 0)
+	(xor:SI (match_dup 3)
+		(match_dup 2)))]
+{
+  operands[3] = gen_reg_rtx (SImode);
+}
+  [(set_attr "type"	"arith")
+   (set_attr "mode"	"SI")
+   (set_attr "length"	"6")])
 
 (define_insn "iorsi3"
   [(set (match_operand:SI 0 "register_operand" "=a")
@@ -799,11 +849,14 @@
 	 because of offering further optimization opportunities.  */
       if (register_operand (operands[0], DImode))
 	{
-	  rtx first, second;
+	  rtx lowpart, highpart;
 
-	  split_double (operands[1], &first, &second);
-	  emit_insn (gen_movsi (gen_lowpart (SImode, operands[0]), first));
-	  emit_insn (gen_movsi (gen_highpart (SImode, operands[0]), second));
+	  if (TARGET_BIG_ENDIAN)
+	    split_double (operands[1], &highpart, &lowpart);
+	  else
+	    split_double (operands[1], &lowpart, &highpart);
+	  emit_insn (gen_movsi (gen_lowpart (SImode, operands[0]), lowpart));
+	  emit_insn (gen_movsi (gen_highpart (SImode, operands[0]), highpart));
 	  DONE;
 	}
 

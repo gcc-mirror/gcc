@@ -38942,7 +38942,21 @@ cp_parser_omp_clause_lastprivate (cp_parser *parser, tree list)
 
    OpenMP 4.5:
    linear ( modifier ( variable-list ) )
-   linear ( modifier ( variable-list ) : expression ) */
+   linear ( modifier ( variable-list ) : expression )
+
+   modifier:
+     val
+     ref
+     uval
+
+   OpenMP 5.2:
+   linear ( variable-list : modifiers-list )
+
+   modifiers:
+     val
+     ref
+     uval
+     step ( expression )  */
 
 static tree
 cp_parser_omp_clause_linear (cp_parser *parser, tree list,
@@ -38951,6 +38965,7 @@ cp_parser_omp_clause_linear (cp_parser *parser, tree list,
   tree nlist, c, step = integer_one_node;
   bool colon;
   enum omp_clause_linear_kind kind = OMP_CLAUSE_LINEAR_DEFAULT;
+  bool old_linear_modifier = false;
 
   matching_parens parens;
   if (!parens.require_open (parser))
@@ -38968,7 +38983,10 @@ cp_parser_omp_clause_linear (cp_parser *parser, tree list,
       else if (strcmp ("uval", p) == 0)
 	kind = OMP_CLAUSE_LINEAR_UVAL;
       if (cp_lexer_nth_token_is (parser->lexer, 2, CPP_OPEN_PAREN))
-	cp_lexer_consume_token (parser->lexer);
+	{
+	  cp_lexer_consume_token (parser->lexer);
+	  old_linear_modifier = true;
+	}
       else
 	kind = OMP_CLAUSE_LINEAR_DEFAULT;
     }
@@ -38990,10 +39008,109 @@ cp_parser_omp_clause_linear (cp_parser *parser, tree list,
 
   if (colon)
     {
+      bool has_modifiers = false;
+      if (kind == OMP_CLAUSE_LINEAR_DEFAULT
+	  && cp_lexer_next_token_is (parser->lexer, CPP_NAME))
+	{
+	  tree id = cp_lexer_peek_token (parser->lexer)->u.value;
+	  const char *p = IDENTIFIER_POINTER (id);
+	  size_t pos = 0;
+	  if (strcmp ("ref", p) == 0
+	      || strcmp ("val", p) == 0
+	      || strcmp ("uval", p) == 0)
+	    pos = 2;
+	  else if (strcmp ("step", p) == 0
+		   && cp_lexer_nth_token_is (parser->lexer, 2, CPP_OPEN_PAREN))
+	    {
+	      pos = cp_parser_skip_balanced_tokens (parser, 2);
+	      if (pos == 2)
+		pos = 0;
+	    }
+	  if (pos != 0
+	      && (cp_lexer_nth_token_is (parser->lexer, pos, CPP_COMMA)
+		  || cp_lexer_nth_token_is (parser->lexer, pos,
+					    CPP_CLOSE_PAREN)))
+	    has_modifiers = true;
+	}
+
       step = NULL_TREE;
-      if (declare_simd
-	  && cp_lexer_next_token_is (parser->lexer, CPP_NAME)
-	  && cp_lexer_nth_token_is (parser->lexer, 2, CPP_CLOSE_PAREN))
+      if (has_modifiers)
+	{
+	  while (cp_lexer_next_token_is (parser->lexer, CPP_NAME))
+	    {
+	      tree id = cp_lexer_peek_token (parser->lexer)->u.value;
+	      const char *p = IDENTIFIER_POINTER (id);
+	      enum omp_clause_linear_kind nkind = OMP_CLAUSE_LINEAR_DEFAULT;
+	      if (strcmp ("ref", p) == 0)
+		nkind = OMP_CLAUSE_LINEAR_REF;
+	      else if (strcmp ("val", p) == 0)
+		nkind = OMP_CLAUSE_LINEAR_VAL;
+	      else if (strcmp ("uval", p) == 0)
+		nkind = OMP_CLAUSE_LINEAR_UVAL;
+	      if (nkind != OMP_CLAUSE_LINEAR_DEFAULT)
+		{
+		  if (kind != OMP_CLAUSE_LINEAR_DEFAULT)
+		    error_at (cp_lexer_peek_token (parser->lexer)->location,
+			      "multiple linear modifiers");
+		  kind = nkind;
+		  cp_lexer_consume_token (parser->lexer);
+		}
+	      else if (strcmp ("step", p) == 0)
+		{
+		  location_t step_loc
+		    = cp_lexer_peek_token (parser->lexer)->location;
+		  cp_lexer_consume_token (parser->lexer);
+		  matching_parens parens2;
+		  if (parens2.require_open (parser))
+		    {
+		      if (step)
+			error_at (step_loc, "multiple %<step%> modifiers");
+		      if (declare_simd
+			  && cp_lexer_next_token_is (parser->lexer, CPP_NAME)
+			  && cp_lexer_nth_token_is (parser->lexer, 2,
+						    CPP_CLOSE_PAREN))
+			{
+			  cp_token *token
+			    = cp_lexer_peek_token (parser->lexer);
+			  location_t tok_loc = token->location;
+			  cp_parser_parse_tentatively (parser);
+			  step = cp_parser_id_expression (parser, false, true,
+							  NULL, false, false);
+			  if (step != error_mark_node)
+			    step = cp_parser_lookup_name_simple (parser, step,
+								 tok_loc);
+			  if (step == error_mark_node)
+			    {
+			      step = NULL_TREE;
+			      cp_parser_abort_tentative_parse (parser);
+			    }
+			  else if (!cp_parser_parse_definitely (parser))
+			    step = NULL_TREE;
+			}
+		      if (!step)
+			step = cp_parser_assignment_expression (parser);
+		      if (!parens2.require_close (parser))
+			cp_parser_skip_to_closing_parenthesis (parser, true,
+							       false, true);
+		    }
+		  else
+		    break;
+		}
+	      else
+		break;
+	      if (cp_lexer_next_token_is (parser->lexer, CPP_COMMA))
+		{
+		  cp_lexer_consume_token (parser->lexer);
+		  continue;
+		}
+	      break;
+	    }
+	  if (!step)
+	    step = integer_one_node;
+	}
+      else if (declare_simd
+	       && cp_lexer_next_token_is (parser->lexer, CPP_NAME)
+	       && cp_lexer_nth_token_is (parser->lexer, 2, CPP_CLOSE_PAREN))
 	{
 	  cp_token *token = cp_lexer_peek_token (parser->lexer);
 	  cp_parser_parse_tentatively (parser);
@@ -39028,6 +39145,7 @@ cp_parser_omp_clause_linear (cp_parser *parser, tree list,
     {
       OMP_CLAUSE_LINEAR_STEP (c) = step;
       OMP_CLAUSE_LINEAR_KIND (c) = kind;
+      OMP_CLAUSE_LINEAR_OLD_LINEAR_MODIFIER (c) = old_linear_modifier;
     }
 
   return nlist;

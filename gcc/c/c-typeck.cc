@@ -14478,11 +14478,13 @@ c_finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	    need_implicitly_determined = true;
 	  t = OMP_CLAUSE_DECL (c);
 	  if (ort != C_ORT_OMP_DECLARE_SIMD
-	      && OMP_CLAUSE_LINEAR_KIND (c) != OMP_CLAUSE_LINEAR_DEFAULT)
+	      && OMP_CLAUSE_LINEAR_KIND (c) != OMP_CLAUSE_LINEAR_DEFAULT
+	      && OMP_CLAUSE_LINEAR_OLD_LINEAR_MODIFIER (c))
 	    {
 	      error_at (OMP_CLAUSE_LOCATION (c),
 			"modifier should not be specified in %<linear%> "
-			"clause on %<simd%> or %<for%> constructs");
+			"clause on %<simd%> or %<for%> constructs when not "
+			"using OpenMP 5.2 modifiers");
 	      OMP_CLAUSE_LINEAR_KIND (c) = OMP_CLAUSE_LINEAR_DEFAULT;
 	    }
 	  if (!INTEGRAL_TYPE_P (TREE_TYPE (t))

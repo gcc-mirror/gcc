@@ -6827,10 +6827,22 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	  if (ort != C_ORT_OMP_DECLARE_SIMD
 	      && OMP_CLAUSE_LINEAR_KIND (c) != OMP_CLAUSE_LINEAR_DEFAULT)
 	    {
-	      error_at (OMP_CLAUSE_LOCATION (c),
-			"modifier should not be specified in %<linear%> "
-			"clause on %<simd%> or %<for%> constructs");
-	      OMP_CLAUSE_LINEAR_KIND (c) = OMP_CLAUSE_LINEAR_DEFAULT;
+	      if (OMP_CLAUSE_LINEAR_OLD_LINEAR_MODIFIER (c))
+		{
+		  error_at (OMP_CLAUSE_LOCATION (c),
+			    "modifier should not be specified in %<linear%> "
+			    "clause on %<simd%> or %<for%> constructs when "
+			    "not using OpenMP 5.2 modifiers");
+		  OMP_CLAUSE_LINEAR_KIND (c) = OMP_CLAUSE_LINEAR_DEFAULT;
+		}
+	      else if (OMP_CLAUSE_LINEAR_KIND (c) != OMP_CLAUSE_LINEAR_VAL)
+		{
+		  error_at (OMP_CLAUSE_LOCATION (c),
+			    "modifier other than %<val%> specified in "
+			    "%<linear%> clause on %<simd%> or %<for%> "
+			    "constructs when using OpenMP 5.2 modifiers");
+		  OMP_CLAUSE_LINEAR_KIND (c) = OMP_CLAUSE_LINEAR_DEFAULT;
+		}
 	    }
 	  if ((VAR_P (t) || TREE_CODE (t) == PARM_DECL)
 	      && !type_dependent_expression_p (t))

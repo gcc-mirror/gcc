@@ -16820,7 +16820,8 @@ int
 ix86_attr_length_vex_default (rtx_insn *insn, bool has_0f_opcode,
 			      bool has_vex_w)
 {
-  int i;
+  int i, reg_only = 2 + 1;
+  bool has_mem = false;
 
   /* Only 0f opcode can use 2 byte VEX prefix and  VEX W bit uses 3
      byte VEX prefix.  */
@@ -16840,16 +16841,23 @@ ix86_attr_length_vex_default (rtx_insn *insn, bool has_0f_opcode,
 	if (GET_MODE (recog_data.operand[i]) == DImode
 	    && GENERAL_REG_P (recog_data.operand[i]))
 	  return 3 + 1;
+
+	/* REX.B bit requires 3-byte VEX. Right here we don't know which
+	   operand will be encoded using VEX.B, so be conservative.  */
+	if (REX_INT_REGNO_P (recog_data.operand[i])
+	    || REX_SSE_REGNO_P (recog_data.operand[i]))
+	  reg_only = 3 + 1;
       }
-    else
+    else if (MEM_P (recog_data.operand[i]))
       {
 	/* REX.X or REX.B bits use 3 byte VEX prefix.  */
-	if (MEM_P (recog_data.operand[i])
-	    && x86_extended_reg_mentioned_p (recog_data.operand[i]))
+	if (x86_extended_reg_mentioned_p (recog_data.operand[i]))
 	  return 3 + 1;
+
+	has_mem = true;
       }
 
-  return 2 + 1;
+  return has_mem ? 2 + 1 : reg_only;
 }
 
 
@@ -21005,6 +21013,37 @@ ix86_rtx_costs (rtx x, machine_mode mode, int outer_code_i, int opno,
 	  *total += rtx_cost (XEXP (x, 0), mode, code, 0, speed);
 	  *total += rtx_cost (XEXP (x, 1), mode, code, 1, speed);
 	  *total += rtx_cost (XEXP (XEXP (x, 2), 0), mode, code, 2, speed);
+	  return true;
+	}
+      return false;
+
+    case IF_THEN_ELSE:
+      if (TARGET_XOP
+	  && VECTOR_MODE_P (mode)
+	  && (GET_MODE_SIZE (mode) == 16 || GET_MODE_SIZE (mode) == 32))
+	{
+	  /* vpcmov.  */
+	  *total = speed ? COSTS_N_INSNS (2) : COSTS_N_BYTES (6);
+	  if (!REG_P (XEXP (x, 0)))
+	    *total += rtx_cost (XEXP (x, 0), mode, code, 0, speed);
+	  if (!REG_P (XEXP (x, 1)))
+	    *total += rtx_cost (XEXP (x, 1), mode, code, 1, speed);
+	  if (!REG_P (XEXP (x, 2)))
+	    *total += rtx_cost (XEXP (x, 2), mode, code, 2, speed);
+	  return true;
+	}
+      else if (TARGET_CMOVE
+	       && SCALAR_INT_MODE_P (mode)
+	       && GET_MODE_SIZE (mode) <= UNITS_PER_WORD)
+	{
+	  /* cmov.  */
+	  *total = COSTS_N_INSNS (1);
+	  if (!REG_P (XEXP (x, 0)))
+	    *total += rtx_cost (XEXP (x, 0), mode, code, 0, speed);
+	  if (!REG_P (XEXP (x, 1)))
+	    *total += rtx_cost (XEXP (x, 1), mode, code, 1, speed);
+	  if (!REG_P (XEXP (x, 2)))
+	    *total += rtx_cost (XEXP (x, 2), mode, code, 2, speed);
 	  return true;
 	}
       return false;

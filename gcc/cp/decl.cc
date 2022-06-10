@@ -2294,8 +2294,8 @@ duplicate_decls (tree newdecl, tree olddecl, bool hiding, bool was_hidden)
 	      merge_default_template_args (new_parms, old_parms,
 					   /*class_p=*/false);
 	    }
-	  if (!DECL_UNIQUE_FRIEND_P (old_result))
-	    DECL_UNIQUE_FRIEND_P (new_result) = false;
+	  if (!DECL_UNIQUE_FRIEND_P (new_result))
+	    DECL_UNIQUE_FRIEND_P (old_result) = false;
 
 	  check_default_args (newdecl);
 
@@ -2654,13 +2654,7 @@ duplicate_decls (tree newdecl, tree olddecl, bool hiding, bool was_hidden)
       if (LANG_DECL_HAS_MIN (newdecl))
 	{
 	  DECL_ACCESS (newdecl) = DECL_ACCESS (olddecl);
-	  if (new_defines_function
-	      && DECL_TEMPLATE_INFO (olddecl)
-	      && DECL_UNIQUE_FRIEND_P (DECL_TEMPLATE_RESULT
-				       (DECL_TI_TEMPLATE (olddecl))))
-	    /* Don't copy template info from a non-template friend declaration
-	       in a class template (PR105761).  */;
-	  else if (DECL_TEMPLATE_INFO (newdecl))
+	  if (DECL_TEMPLATE_INFO (newdecl))
 	    {
 	      new_template_info = DECL_TEMPLATE_INFO (newdecl);
 	      if (DECL_TEMPLATE_INSTANTIATION (olddecl)
@@ -2668,10 +2662,13 @@ duplicate_decls (tree newdecl, tree olddecl, bool hiding, bool was_hidden)
 		/* Remember the presence of explicit specialization args.  */
 		TINFO_USED_TEMPLATE_ID (DECL_TEMPLATE_INFO (olddecl))
 		  = TINFO_USED_TEMPLATE_ID (new_template_info);
-	      DECL_TEMPLATE_INFO (newdecl) = DECL_TEMPLATE_INFO (olddecl);
 	    }
-	  else
-	    DECL_TEMPLATE_INFO (newdecl) = DECL_TEMPLATE_INFO (olddecl);
+
+	  /* We don't want to copy template info from a non-templated friend
+	     (PR105761), but these shouldn't have DECL_TEMPLATE_INFO now.  */
+	  gcc_checking_assert (!DECL_TEMPLATE_INFO (olddecl)
+			       || !non_templated_friend_p (olddecl));
+	  DECL_TEMPLATE_INFO (newdecl) = DECL_TEMPLATE_INFO (olddecl);
 	}
 
       if (DECL_DECLARES_FUNCTION_P (newdecl))
@@ -16314,8 +16311,11 @@ start_enum (tree name, tree enumtype, tree underlying_type,
       else if (dependent_type_p (underlying_type))
 	ENUM_UNDERLYING_TYPE (enumtype) = underlying_type;
       else
-        error ("underlying type %qT of %qT must be an integral type", 
-               underlying_type, enumtype);
+	{
+	  error ("underlying type %qT of %qT must be an integral type", 
+		 underlying_type, enumtype);
+	  ENUM_UNDERLYING_TYPE (enumtype) = integer_type_node;
+	}
     }
 
   /* If into a template class, the returned enum is always the first

@@ -2344,7 +2344,7 @@
 	  QUIET_COMPARISON))
     (clobber (match_scratch:X 3 "=&r"))]
   "TARGET_HARD_FLOAT && ! HONOR_SNANS (<ANYF:MODE>mode)"
-  "frflags\t%3\n\tf<quiet_pattern>.<fmt>\t%0,%1,%2\n\tfsflags %3"
+  "frflags\t%3\n\tf<quiet_pattern>.<fmt>\t%0,%1,%2\n\tfsflags\t%3"
   [(set_attr "type" "fcmp")
    (set_attr "mode" "<UNITMODE>")
    (set (attr "length") (const_int 12))])
@@ -2357,7 +2357,7 @@
 	  QUIET_COMPARISON))
     (clobber (match_scratch:X 3 "=&r"))]
   "TARGET_HARD_FLOAT && HONOR_SNANS (<ANYF:MODE>mode)"
-  "frflags\t%3\n\tf<quiet_pattern>.<fmt>\t%0,%1,%2\n\tfsflags %3\n\tfeq.<fmt>\tzero,%1,%2"
+  "frflags\t%3\n\tf<quiet_pattern>.<fmt>\t%0,%1,%2\n\tfsflags\t%3\n\tfeq.<fmt>\tzero,%1,%2"
   [(set_attr "type" "fcmp")
    (set_attr "mode" "<UNITMODE>")
    (set (attr "length") (const_int 16))])

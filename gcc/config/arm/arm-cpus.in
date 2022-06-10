@@ -1638,6 +1638,16 @@ begin cpu cortex-m55
  vendor 41
 end cpu cortex-m55
 
+begin cpu star-mc1
+ cname starmc1
+ tune flags LDSCHED
+ architecture armv8-m.main+dsp+fp
+ option nofp remove ALL_FP
+ option nodsp remove armv7em
+ isa quirk_no_asmcpu quirk_vlldm
+ costs v7m
+end cpu star-mc1
+
 # V8 R-profile implementations.
 begin cpu cortex-r52
  cname cortexr52

@@ -2769,6 +2769,7 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 			    gcc_unreachable ();
 			  }
 			OMP_CLAUSE_LINEAR_KIND (node) = kind;
+			OMP_CLAUSE_LINEAR_OLD_LINEAR_MODIFIER (node) = 1;
 			if (last_step_expr && last_step == NULL_TREE)
 			  {
 			    if (!declare_simd)

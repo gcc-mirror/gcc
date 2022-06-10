@@ -31,8 +31,27 @@
 #include "libgomp.h"
 #include <stdlib.h>
 #include <string.h>
+#ifdef LIBGOMP_USE_MEMKIND
+#include <dlfcn.h>
+#endif
 
 #define omp_max_predefined_alloc omp_thread_mem_alloc
+
+enum gomp_memkind_kind
+{
+  GOMP_MEMKIND_NONE = 0,
+#define GOMP_MEMKIND_KINDS \
+  GOMP_MEMKIND_KIND (HBW_INTERLEAVE),		\
+  GOMP_MEMKIND_KIND (HBW_PREFERRED),		\
+  GOMP_MEMKIND_KIND (DAX_KMEM_ALL),		\
+  GOMP_MEMKIND_KIND (DAX_KMEM),			\
+  GOMP_MEMKIND_KIND (INTERLEAVE),		\
+  GOMP_MEMKIND_KIND (DEFAULT)
+#define GOMP_MEMKIND_KIND(kind) GOMP_MEMKIND_##kind
+  GOMP_MEMKIND_KINDS,
+#undef GOMP_MEMKIND_KIND
+  GOMP_MEMKIND_COUNT
+};
 
 struct omp_allocator_data
 {
@@ -46,6 +65,9 @@ struct omp_allocator_data
   unsigned int fallback : 8;
   unsigned int pinned : 1;
   unsigned int partition : 7;
+#ifdef LIBGOMP_USE_MEMKIND
+  unsigned int memkind : 8;
+#endif
 #ifndef HAVE_SYNC_BUILTINS
   gomp_mutex_t lock;
 #endif
@@ -59,13 +81,95 @@ struct omp_mem_header
   void *pad;
 };
 
+struct gomp_memkind_data
+{
+  void *memkind_handle;
+  void *(*memkind_malloc) (void *, size_t);
+  void *(*memkind_calloc) (void *, size_t, size_t);
+  void *(*memkind_realloc) (void *, void *, size_t);
+  void (*memkind_free) (void *, void *);
+  int (*memkind_check_available) (void *);
+  void **kinds[GOMP_MEMKIND_COUNT];
+};
+
+#ifdef LIBGOMP_USE_MEMKIND
+static struct gomp_memkind_data *memkind_data;
+static pthread_once_t memkind_data_once = PTHREAD_ONCE_INIT;
+
+static void
+gomp_init_memkind (void)
+{
+  void *handle = dlopen ("libmemkind.so", RTLD_LAZY);
+  struct gomp_memkind_data *data;
+  int i;
+  static const char *kinds[] = {
+    NULL,
+#define GOMP_MEMKIND_KIND(kind) "MEMKIND_" #kind
+    GOMP_MEMKIND_KINDS
+#undef GOMP_MEMKIND_KIND
+  };
+
+  data = calloc (1, sizeof (struct gomp_memkind_data));
+  if (data == NULL)
+    {
+      if (handle)
+	dlclose (handle);
+      return;
+    }
+  if (!handle)
+    {
+      __atomic_store_n (&memkind_data, data, MEMMODEL_RELEASE);
+      return;
+    }
+  data->memkind_handle = handle;
+  data->memkind_malloc
+    = (__typeof (data->memkind_malloc)) dlsym (handle, "memkind_malloc");
+  data->memkind_calloc
+    = (__typeof (data->memkind_calloc)) dlsym (handle, "memkind_calloc");
+  data->memkind_realloc
+    = (__typeof (data->memkind_realloc)) dlsym (handle, "memkind_realloc");
+  data->memkind_free
+    = (__typeof (data->memkind_free)) dlsym (handle, "memkind_free");
+  data->memkind_check_available
+    = (__typeof (data->memkind_check_available))
+      dlsym (handle, "memkind_check_available");
+  if (data->memkind_malloc
+      && data->memkind_calloc
+      && data->memkind_realloc
+      && data->memkind_free
+      && data->memkind_check_available)
+    for (i = 1; i < GOMP_MEMKIND_COUNT; ++i)
+      {
+	data->kinds[i] = (void **) dlsym (handle, kinds[i]);
+	if (data->kinds[i] && data->memkind_check_available (*data->kinds[i]))
+	  data->kinds[i] = NULL;
+      }
+  __atomic_store_n (&memkind_data, data, MEMMODEL_RELEASE);
+}
+
+static struct gomp_memkind_data *
+gomp_get_memkind (void)
+{
+  struct gomp_memkind_data *data
+    = __atomic_load_n (&memkind_data, MEMMODEL_ACQUIRE);
+  if (data)
+    return data;
+  pthread_once (&memkind_data_once, gomp_init_memkind);
+  return __atomic_load_n (&memkind_data, MEMMODEL_ACQUIRE);
+}
+#endif
+
 omp_allocator_handle_t
 omp_init_allocator (omp_memspace_handle_t memspace, int ntraits,
 		    const omp_alloctrait_t traits[])
 {
   struct omp_allocator_data data
     = { memspace, 1, ~(uintptr_t) 0, 0, 0, omp_atv_contended, omp_atv_all,
-	omp_atv_default_mem_fb, omp_atv_false, omp_atv_environment };
+	omp_atv_default_mem_fb, omp_atv_false, omp_atv_environment,
+#ifdef LIBGOMP_USE_MEMKIND
+	GOMP_MEMKIND_NONE
+#endif
+      };
   struct omp_allocator_data *ret;
   int i;
 
@@ -179,8 +283,48 @@ omp_init_allocator (omp_memspace_handle_t memspace, int ntraits,
   if (data.alignment < sizeof (void *))
     data.alignment = sizeof (void *);
 
-  /* No support for these so far (for hbw will use memkind).  */
-  if (data.pinned || data.memspace == omp_high_bw_mem_space)
+  switch (memspace)
+    {
+    case omp_high_bw_mem_space:
+#ifdef LIBGOMP_USE_MEMKIND
+      struct gomp_memkind_data *memkind_data;
+      memkind_data = gomp_get_memkind ();
+      if (data.partition == omp_atv_interleaved
+	  && memkind_data->kinds[GOMP_MEMKIND_HBW_INTERLEAVE])
+	{
+	  data.memkind = GOMP_MEMKIND_HBW_INTERLEAVE;
+	  break;
+	}
+      else if (memkind_data->kinds[GOMP_MEMKIND_HBW_PREFERRED])
+	{
+	  data.memkind = GOMP_MEMKIND_HBW_PREFERRED;
+	  break;
+	}
+#endif
+      return omp_null_allocator;
+    case omp_large_cap_mem_space:
+#ifdef LIBGOMP_USE_MEMKIND
+      memkind_data = gomp_get_memkind ();
+      if (memkind_data->kinds[GOMP_MEMKIND_DAX_KMEM_ALL])
+	data.memkind = GOMP_MEMKIND_DAX_KMEM_ALL;
+      else if (memkind_data->kinds[GOMP_MEMKIND_DAX_KMEM])
+	data.memkind = GOMP_MEMKIND_DAX_KMEM;
+#endif
+      break;
+    default:
+#ifdef LIBGOMP_USE_MEMKIND
+      if (data.partition == omp_atv_interleaved)
+	{
+	  memkind_data = gomp_get_memkind ();
+	  if (memkind_data->kinds[GOMP_MEMKIND_INTERLEAVE])
+	    data.memkind = GOMP_MEMKIND_INTERLEAVE;
+	}
+#endif
+      break;
+    }
+
+  /* No support for this so far.  */
+  if (data.pinned)
     return omp_null_allocator;
 
   ret = gomp_malloc (sizeof (struct omp_allocator_data));
@@ -213,6 +357,9 @@ omp_aligned_alloc (size_t alignment, size_t size,
   struct omp_allocator_data *allocator_data;
   size_t new_size, new_alignment;
   void *ptr, *ret;
+#ifdef LIBGOMP_USE_MEMKIND
+  enum gomp_memkind_kind memkind;
+#endif
 
   if (__builtin_expect (size == 0, 0))
     return NULL;
@@ -232,12 +379,28 @@ retry:
       allocator_data = (struct omp_allocator_data *) allocator;
       if (new_alignment < allocator_data->alignment)
 	new_alignment = allocator_data->alignment;
+#ifdef LIBGOMP_USE_MEMKIND
+      memkind = allocator_data->memkind;
+#endif
     }
   else
     {
       allocator_data = NULL;
       if (new_alignment < sizeof (void *))
 	new_alignment = sizeof (void *);
+#ifdef LIBGOMP_USE_MEMKIND
+      memkind = GOMP_MEMKIND_NONE;
+      if (allocator == omp_high_bw_mem_alloc)
+	memkind = GOMP_MEMKIND_HBW_PREFERRED;
+      else if (allocator == omp_large_cap_mem_alloc)
+	memkind = GOMP_MEMKIND_DAX_KMEM_ALL;
+      if (memkind)
+	{
+	  struct gomp_memkind_data *memkind_data = gomp_get_memkind ();
+	  if (!memkind_data->kinds[memkind])
+	    memkind = GOMP_MEMKIND_NONE;
+	}
+#endif
     }
 
   new_size = sizeof (struct omp_mem_header);
@@ -281,7 +444,16 @@ retry:
       allocator_data->used_pool_size = used_pool_size;
       gomp_mutex_unlock (&allocator_data->lock);
 #endif
-      ptr = malloc (new_size);
+#ifdef LIBGOMP_USE_MEMKIND
+      if (memkind)
+	{
+	  struct gomp_memkind_data *memkind_data = gomp_get_memkind ();
+	  void *kind = *memkind_data->kinds[memkind];
+	  ptr = memkind_data->memkind_malloc (kind, new_size);
+	}
+      else
+#endif
+	ptr = malloc (new_size);
       if (ptr == NULL)
 	{
 #ifdef HAVE_SYNC_BUILTINS
@@ -297,7 +469,16 @@ retry:
     }
   else
     {
-      ptr = malloc (new_size);
+#ifdef LIBGOMP_USE_MEMKIND
+      if (memkind)
+	{
+	  struct gomp_memkind_data *memkind_data = gomp_get_memkind ();
+	  void *kind = *memkind_data->kinds[memkind];
+	  ptr = memkind_data->memkind_malloc (kind, new_size);
+	}
+      else
+#endif
+	ptr = malloc (new_size);
       if (ptr == NULL)
 	goto fail;
     }
@@ -321,6 +502,9 @@ fail:
 	{
 	case omp_atv_default_mem_fb:
 	  if ((new_alignment > sizeof (void *) && new_alignment > alignment)
+#ifdef LIBGOMP_USE_MEMKIND
+	      || memkind
+#endif
 	      || (allocator_data
 		  && allocator_data->pool_size < ~(uintptr_t) 0))
 	    {
@@ -393,7 +577,36 @@ omp_free (void *ptr, omp_allocator_handle_t allocator)
 	  gomp_mutex_unlock (&allocator_data->lock);
 #endif
 	}
+#ifdef LIBGOMP_USE_MEMKIND
+      if (allocator_data->memkind)
+	{
+	  struct gomp_memkind_data *memkind_data = gomp_get_memkind ();
+	  void *kind = *memkind_data->kinds[allocator_data->memkind];
+	  memkind_data->memkind_free (kind, data->ptr);
+	  return;
+	}
+#endif
     }
+#ifdef LIBGOMP_USE_MEMKIND
+  else
+    {
+      enum gomp_memkind_kind memkind = GOMP_MEMKIND_NONE;
+      if (data->allocator == omp_high_bw_mem_alloc)
+	memkind = GOMP_MEMKIND_HBW_PREFERRED;
+      else if (data->allocator == omp_large_cap_mem_alloc)
+	memkind = GOMP_MEMKIND_DAX_KMEM_ALL;
+      if (memkind)
+	{
+	  struct gomp_memkind_data *memkind_data = gomp_get_memkind ();
+	  if (memkind_data->kinds[memkind])
+	    {
+	      void *kind = *memkind_data->kinds[memkind];
+	      memkind_data->memkind_free (kind, data->ptr);
+	      return;
+	    }
+	}
+    }
+#endif
   free (data->ptr);
 }
 
@@ -412,6 +625,9 @@ omp_aligned_calloc (size_t alignment, size_t nmemb, size_t size,
   struct omp_allocator_data *allocator_data;
   size_t new_size, size_temp, new_alignment;
   void *ptr, *ret;
+#ifdef LIBGOMP_USE_MEMKIND
+  enum gomp_memkind_kind memkind;
+#endif
 
   if (__builtin_expect (size == 0 || nmemb == 0, 0))
     return NULL;
@@ -431,12 +647,28 @@ retry:
       allocator_data = (struct omp_allocator_data *) allocator;
       if (new_alignment < allocator_data->alignment)
 	new_alignment = allocator_data->alignment;
+#ifdef LIBGOMP_USE_MEMKIND
+      memkind = allocator_data->memkind;
+#endif
     }
   else
     {
       allocator_data = NULL;
       if (new_alignment < sizeof (void *))
 	new_alignment = sizeof (void *);
+#ifdef LIBGOMP_USE_MEMKIND
+      memkind = GOMP_MEMKIND_NONE;
+      if (allocator == omp_high_bw_mem_alloc)
+	memkind = GOMP_MEMKIND_HBW_PREFERRED;
+      else if (allocator == omp_large_cap_mem_alloc)
+	memkind = GOMP_MEMKIND_DAX_KMEM_ALL;
+      if (memkind)
+	{
+	  struct gomp_memkind_data *memkind_data = gomp_get_memkind ();
+	  if (!memkind_data->kinds[memkind])
+	    memkind = GOMP_MEMKIND_NONE;
+	}
+#endif
     }
 
   new_size = sizeof (struct omp_mem_header);
@@ -482,7 +714,16 @@ retry:
       allocator_data->used_pool_size = used_pool_size;
       gomp_mutex_unlock (&allocator_data->lock);
 #endif
-      ptr = calloc (1, new_size);
+#ifdef LIBGOMP_USE_MEMKIND
+      if (memkind)
+	{
+	  struct gomp_memkind_data *memkind_data = gomp_get_memkind ();
+	  void *kind = *memkind_data->kinds[memkind];
+	  ptr = memkind_data->memkind_calloc (kind, 1, new_size);
+	}
+      else
+#endif
+	ptr = calloc (1, new_size);
       if (ptr == NULL)
 	{
 #ifdef HAVE_SYNC_BUILTINS
@@ -498,7 +739,16 @@ retry:
     }
   else
     {
-      ptr = calloc (1, new_size);
+#ifdef LIBGOMP_USE_MEMKIND
+      if (memkind)
+	{
+	  struct gomp_memkind_data *memkind_data = gomp_get_memkind ();
+	  void *kind = *memkind_data->kinds[memkind];
+	  ptr = memkind_data->memkind_calloc (kind, 1, new_size);
+	}
+      else
+#endif
+	ptr = calloc (1, new_size);
       if (ptr == NULL)
 	goto fail;
     }
@@ -522,6 +772,9 @@ fail:
 	{
 	case omp_atv_default_mem_fb:
 	  if ((new_alignment > sizeof (void *) && new_alignment > alignment)
+#ifdef LIBGOMP_USE_MEMKIND
+	      || memkind
+#endif
 	      || (allocator_data
 		  && allocator_data->pool_size < ~(uintptr_t) 0))
 	    {
@@ -562,6 +815,9 @@ omp_realloc (void *ptr, size_t size, omp_allocator_handle_t allocator,
   size_t new_size, old_size, new_alignment, old_alignment;
   void *new_ptr, *ret;
   struct omp_mem_header *data;
+#ifdef LIBGOMP_USE_MEMKIND
+  enum gomp_memkind_kind memkind, free_memkind;
+#endif
 
   if (__builtin_expect (ptr == NULL, 0))
     return ialias_call (omp_aligned_alloc) (1, size, allocator);
@@ -585,13 +841,51 @@ retry:
       allocator_data = (struct omp_allocator_data *) allocator;
       if (new_alignment < allocator_data->alignment)
 	new_alignment = allocator_data->alignment;
+#ifdef LIBGOMP_USE_MEMKIND
+      memkind = allocator_data->memkind;
+#endif
     }
   else
-    allocator_data = NULL;
+    {
+      allocator_data = NULL;
+#ifdef LIBGOMP_USE_MEMKIND
+      memkind = GOMP_MEMKIND_NONE;
+      if (allocator == omp_high_bw_mem_alloc)
+	memkind = GOMP_MEMKIND_HBW_PREFERRED;
+      else if (allocator == omp_large_cap_mem_alloc)
+	memkind = GOMP_MEMKIND_DAX_KMEM_ALL;
+      if (memkind)
+	{
+	  struct gomp_memkind_data *memkind_data = gomp_get_memkind ();
+	  if (!memkind_data->kinds[memkind])
+	    memkind = GOMP_MEMKIND_NONE;
+	}
+#endif
+    }
   if (free_allocator > omp_max_predefined_alloc)
-    free_allocator_data = (struct omp_allocator_data *) free_allocator;
+    {
+      free_allocator_data = (struct omp_allocator_data *) free_allocator;
+#ifdef LIBGOMP_USE_MEMKIND
+      free_memkind = free_allocator_data->memkind;
+#endif
+    }
   else
-    free_allocator_data = NULL;
+    {
+      free_allocator_data = NULL;
+#ifdef LIBGOMP_USE_MEMKIND
+      free_memkind = GOMP_MEMKIND_NONE;
+      if (free_allocator == omp_high_bw_mem_alloc)
+	free_memkind = GOMP_MEMKIND_HBW_PREFERRED;
+      else if (free_allocator == omp_large_cap_mem_alloc)
+	free_memkind = GOMP_MEMKIND_DAX_KMEM_ALL;
+      if (free_memkind)
+	{
+	  struct gomp_memkind_data *memkind_data = gomp_get_memkind ();
+	  if (!memkind_data->kinds[free_memkind])
+	    free_memkind = GOMP_MEMKIND_NONE;
+	}
+#endif
+    }
   old_alignment = (uintptr_t) ptr - (uintptr_t) (data->ptr);
 
   new_size = sizeof (struct omp_mem_header);
@@ -659,6 +953,19 @@ retry:
       allocator_data->used_pool_size = used_pool_size;
       gomp_mutex_unlock (&allocator_data->lock);
 #endif
+#ifdef LIBGOMP_USE_MEMKIND
+      if (memkind)
+	{
+	  struct gomp_memkind_data *memkind_data = gomp_get_memkind ();
+	  void *kind = *memkind_data->kinds[memkind];
+	  if (prev_size)
+	    new_ptr = memkind_data->memkind_realloc (kind, data->ptr,
+						     new_size);
+	  else
+	    new_ptr = memkind_data->memkind_malloc (kind, new_size);
+	}
+      else
+#endif
       if (prev_size)
 	new_ptr = realloc (data->ptr, new_size);
       else
@@ -687,10 +994,23 @@ retry:
     }
   else if (new_alignment == sizeof (void *)
 	   && old_alignment == sizeof (struct omp_mem_header)
+#ifdef LIBGOMP_USE_MEMKIND
+	   && memkind == free_memkind
+#endif
 	   && (free_allocator_data == NULL
 	       || free_allocator_data->pool_size == ~(uintptr_t) 0))
     {
-      new_ptr = realloc (data->ptr, new_size);
+#ifdef LIBGOMP_USE_MEMKIND
+      if (memkind)
+	{
+	  struct gomp_memkind_data *memkind_data = gomp_get_memkind ();
+	  void *kind = *memkind_data->kinds[memkind];
+	  new_ptr = memkind_data->memkind_realloc (kind, data->ptr,
+						   new_size);
+	}
+      else
+#endif
+	new_ptr = realloc (data->ptr, new_size);
       if (new_ptr == NULL)
 	goto fail;
       ret = (char *) new_ptr + sizeof (struct omp_mem_header);
@@ -701,7 +1021,16 @@ retry:
     }
   else
     {
-      new_ptr = malloc (new_size);
+#ifdef LIBGOMP_USE_MEMKIND
+      if (memkind)
+	{
+	  struct gomp_memkind_data *memkind_data = gomp_get_memkind ();
+	  void *kind = *memkind_data->kinds[memkind];
+	  new_ptr = memkind_data->memkind_malloc (kind, new_size);
+	}
+      else
+#endif
+	new_ptr = malloc (new_size);
       if (new_ptr == NULL)
 	goto fail;
     }
@@ -731,6 +1060,15 @@ retry:
       gomp_mutex_unlock (&free_allocator_data->lock);
 #endif
     }
+#ifdef LIBGOMP_USE_MEMKIND
+  if (free_memkind)
+    {
+      struct gomp_memkind_data *memkind_data = gomp_get_memkind ();
+      void *kind = *memkind_data->kinds[free_memkind];
+      memkind_data->memkind_free (kind, data->ptr);
+      return ret;
+    }
+#endif
   free (data->ptr);
   return ret;
 
@@ -741,6 +1079,9 @@ fail:
 	{
 	case omp_atv_default_mem_fb:
 	  if (new_alignment > sizeof (void *)
+#ifdef LIBGOMP_USE_MEMKIND
+	      || memkind
+#endif
 	      || (allocator_data
 		  && allocator_data->pool_size < ~(uintptr_t) 0))
 	    {

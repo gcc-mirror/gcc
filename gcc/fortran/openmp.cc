@@ -2014,8 +2014,15 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 		}
 	      else if (gfc_match ("ancestor : ") == MATCH_YES)
 		{
+		  bool has_requires = false;
 		  c->ancestor = true;
-		  if (!(gfc_current_ns->omp_requires & OMP_REQ_REVERSE_OFFLOAD))
+		  for (gfc_namespace *ns = gfc_current_ns; ns; ns = ns->parent)
+		    if (ns->omp_requires & OMP_REQ_REVERSE_OFFLOAD)
+		      {
+			has_requires = true;
+			break;
+		      }
+		  if (!has_requires)
 		    {
 		      gfc_error ("%<ancestor%> device modifier not "
 				 "preceded by %<requires%> directive "

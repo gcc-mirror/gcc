@@ -10590,11 +10590,11 @@
 ;; see comment above inline_secondary_memory_needed function in i386.cc
 (define_insn "vec_set<mode>_0"
   [(set (match_operand:VI4F_128 0 "nonimmediate_operand"
-	  "=Yr,*x,v,v,v,x,x,v,Yr ,*x ,x  ,m ,m   ,m")
+	  "=Yr,*x,v,v,v,x,x,v,Yr ,?x ,x  ,m ,m   ,m")
 	(vec_merge:VI4F_128
 	  (vec_duplicate:VI4F_128
 	    (match_operand:<ssescalarmode> 2 "general_operand"
-	  " Yr,*x,v,m,r ,m,x,v,*rm,*rm,*rm,!x,!*re,!*fF"))
+	  " Yr,*x,v,m,r ,m,x,v,?rm,?rm,?rm,!x,?re,!*fF"))
 	  (match_operand:VI4F_128 1 "nonimm_or_0_operand"
 	  " C , C,C,C,C ,C,0,v,0  ,0  ,x  ,0 ,0   ,0")
 	  (const_int 1)))]
@@ -11056,7 +11056,7 @@
    (set_attr "mode" "V4SF,V4SF,V4SF,*,*")])
 
 (define_insn_and_split "*vec_extractv4sf_mem"
-  [(set (match_operand:SF 0 "register_operand" "=v,*r,f")
+  [(set (match_operand:SF 0 "register_operand" "=v,?r,f")
 	(vec_select:SF
 	  (match_operand:V4SF 1 "memory_operand" "o,o,o")
 	  (parallel [(match_operand 2 "const_0_to_3_operand")])))]
@@ -11933,7 +11933,7 @@
   "operands[1] = gen_lowpart (HFmode, operands[1]);")
 
 (define_insn "*vec_extracthf"
-  [(set (match_operand:HF 0 "register_sse4nonimm_operand" "=*r,m,x,v")
+  [(set (match_operand:HF 0 "register_sse4nonimm_operand" "=?r,m,x,v")
 	(vec_select:HF
 	  (match_operand:V8HF 1 "register_operand" "v,v,0,v")
 	  (parallel
@@ -21123,9 +21123,9 @@
    (set_attr "mode" "<sseinsnmode>")])
 
 (define_insn_and_split "ssse3_palignrdi"
-  [(set (match_operand:DI 0 "register_operand" "=y,x,Yv")
-	(unspec:DI [(match_operand:DI 1 "register_operand" "0,0,Yv")
-		    (match_operand:DI 2 "register_mmxmem_operand" "ym,x,Yv")
+  [(set (match_operand:DI 0 "register_operand" "=y,x,Yw")
+	(unspec:DI [(match_operand:DI 1 "register_operand" "0,0,Yw")
+		    (match_operand:DI 2 "register_mmxmem_operand" "ym,x,Yw")
 		    (match_operand:SI 3 "const_0_to_255_mul_8_operand")]
 		   UNSPEC_PALIGNR))]
   "(TARGET_MMX || TARGET_MMX_WITH_SSE) && TARGET_SSSE3"
@@ -23867,6 +23867,30 @@
   "TARGET_XOP"
   "vpcmov\t{%3, %2, %1, %0|%0, %1, %2, %3}"
   [(set_attr "type" "sse4arg")])
+
+;; Recognize XOP's vpcmov from canonical (xor (and (xor t f) c) f)
+(define_split
+  [(set (match_operand:V_128_256 0 "register_operand")
+	(xor:V_128_256
+	  (and:V_128_256
+	    (xor:V_128_256 (match_operand:V_128_256 1 "register_operand")
+			   (match_operand:V_128_256 2 "register_operand"))
+	    (match_operand:V_128_256 3 "nonimmediate_operand"))
+	  (match_operand:V_128_256 4 "register_operand")))]
+  "TARGET_XOP
+   && (REGNO (operands[4]) == REGNO (operands[1])
+       || REGNO (operands[4]) == REGNO (operands[2]))"
+  [(set (match_dup 0) (if_then_else:V_128_256 (match_dup 3)
+					      (match_dup 5)
+					      (match_dup 4)))]
+{
+  /* To handle the commutivity of XOR, operands[4] is either operands[1]
+     or operands[2], we need operands[5] to be the other one.  */
+  if (REGNO (operands[4]) == REGNO (operands[1]))
+    operands[5] = operands[2];
+  else
+    operands[5] = operands[1];
+})
 
 ;; XOP horizontal add/subtract instructions
 (define_insn "xop_phadd<u>bw"
