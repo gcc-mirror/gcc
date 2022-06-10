@@ -1711,6 +1711,7 @@ OBJS = \
 	value-query.o \
 	value-range.o \
 	value-range-equiv.o \
+	value-range-storage.o \
 	value-relation.o \
 	value-prof.o \
 	var-tracking.o \
@@ -2719,6 +2720,7 @@ GTFILES = $(CPPLIB_H) $(srcdir)/input.h $(srcdir)/coretypes.h \
   $(srcdir)/tree-ssanames.h \
   $(srcdir)/tree-vrp.h \
   $(srcdir)/value-range.h \
+  $(srcdir)/value-range-storage.h \
   $(srcdir)/ipa-prop.h \
   $(srcdir)/trans-mem.cc \
   $(srcdir)/lto-streamer.h \

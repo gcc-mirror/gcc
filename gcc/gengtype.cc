@@ -1705,6 +1705,7 @@ open_base_files (void)
       "stmt.h", "expr.h", "alloc-pool.h", "cselib.h", "insn-addr.h",
       "optabs.h", "libfuncs.h", "debug.h", "internal-fn.h",
       "gimple-iterator.h", "gimple-fold.h", "value-range.h",
+      "value-range-storage.h",
       "tree-eh.h", "gimple-ssa.h", "tree-cfg.h",
       "tree-vrp.h", "tree-phinodes.h", "ssa-iterators.h", "stringpool.h",
       "tree-ssanames.h", "tree-ssa-loop.h", "tree-ssa-loop-ivopts.h",
