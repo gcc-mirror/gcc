@@ -996,13 +996,13 @@
     {})
 
 (define_insn "gather<mode>_insn_1offset<exec>"
-  [(set (match_operand:V_ALL 0 "register_operand"		   "=v")
+  [(set (match_operand:V_ALL 0 "register_operand"		   "=v,&v")
 	(unspec:V_ALL
-	  [(plus:<VnDI> (match_operand:<VnDI> 1 "register_operand" " v")
+	  [(plus:<VnDI> (match_operand:<VnDI> 1 "register_operand" " v, v")
 			(vec_duplicate:<VnDI>
-			  (match_operand 2 "immediate_operand"	   " n")))
-	   (match_operand 3 "immediate_operand"			   " n")
-	   (match_operand 4 "immediate_operand"			   " n")
+			  (match_operand 2 "immediate_operand"	   " n, n")))
+	   (match_operand 3 "immediate_operand"			   " n, n")
+	   (match_operand 4 "immediate_operand"			   " n, n")
 	   (mem:BLK (scratch))]
 	  UNSPEC_GATHER))]
   "(AS_FLAT_P (INTVAL (operands[3]))
@@ -1032,7 +1032,8 @@
     return buf;
   }
   [(set_attr "type" "flat")
-   (set_attr "length" "12")])
+   (set_attr "length" "12")
+   (set_attr "xnack" "off,on")])
 
 (define_insn "gather<mode>_insn_1offset_ds<exec>"
   [(set (match_operand:V_ALL 0 "register_operand"		   "=v")
@@ -1057,17 +1058,18 @@
    (set_attr "length" "12")])
 
 (define_insn "gather<mode>_insn_2offsets<exec>"
-  [(set (match_operand:V_ALL 0 "register_operand"			"=v")
+  [(set (match_operand:V_ALL 0 "register_operand"		     "=v,&v")
 	(unspec:V_ALL
 	  [(plus:<VnDI>
 	     (plus:<VnDI>
 	       (vec_duplicate:<VnDI>
-		 (match_operand:DI 1 "register_operand"			"Sv"))
+		 (match_operand:DI 1 "register_operand"		     "Sv,Sv"))
 	       (sign_extend:<VnDI>
-		 (match_operand:<VnSI> 2 "register_operand"		" v")))
-	     (vec_duplicate:<VnDI> (match_operand 3 "immediate_operand" " n")))
-	   (match_operand 4 "immediate_operand"				" n")
-	   (match_operand 5 "immediate_operand"				" n")
+		 (match_operand:<VnSI> 2 "register_operand"	     " v, v")))
+	     (vec_duplicate:<VnDI> (match_operand 3 "immediate_operand"
+								     " n, n")))
+	   (match_operand 4 "immediate_operand"			     " n, n")
+	   (match_operand 5 "immediate_operand"			     " n, n")
 	   (mem:BLK (scratch))]
 	  UNSPEC_GATHER))]
   "(AS_GLOBAL_P (INTVAL (operands[4]))
@@ -1086,7 +1088,8 @@
     return buf;
   }
   [(set_attr "type" "flat")
-   (set_attr "length" "12")])
+   (set_attr "length" "12")
+   (set_attr "xnack" "off,on")])
 
 (define_expand "scatter_store<mode><vnsi>"
   [(match_operand:DI 0 "register_operand")

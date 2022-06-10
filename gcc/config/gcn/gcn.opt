@@ -81,23 +81,23 @@ Wopenacc-dims
 Target Var(warn_openacc_dims) Warning
 Warn about invalid OpenACC dimensions.
 
-mxnack
-Target Var(flag_xnack) Init(0)
-Compile for devices requiring XNACK enabled. Default off.
-
 Enum
-Name(sram_ecc_type) Type(enum sram_ecc_type)
+Name(hsaco_attr_type) Type(enum hsaco_attr_type)
 SRAM-ECC modes:
 
 EnumValue
-Enum(sram_ecc_type) String(off) Value(SRAM_ECC_OFF)
+Enum(hsaco_attr_type) String(off) Value(HSACO_ATTR_OFF)
 
 EnumValue
-Enum(sram_ecc_type) String(on) Value(SRAM_ECC_ON)
+Enum(hsaco_attr_type) String(on) Value(HSACO_ATTR_ON)
 
 EnumValue
-Enum(sram_ecc_type) String(any) Value(SRAM_ECC_ANY)
+Enum(hsaco_attr_type) String(any) Value(HSACO_ATTR_ANY)
+
+mxnack=
+Target RejectNegative Joined ToLower Enum(hsaco_attr_type) Var(flag_xnack) Init(HSACO_ATTR_ANY)
+Compile for devices requiring XNACK enabled. Default off.
 
 msram-ecc=
-Target RejectNegative Joined ToLower Enum(sram_ecc_type) Var(flag_sram_ecc) Init(SRAM_ECC_ANY)
+Target RejectNegative Joined ToLower Enum(hsaco_attr_type) Var(flag_sram_ecc) Init(HSACO_ATTR_ANY)
 Compile for devices with the SRAM ECC feature enabled, or not. Default \"any\".

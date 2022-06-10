@@ -81,12 +81,13 @@ extern unsigned int gcn_local_sym_hash (const char *name);
 /* In HSACOv4 no attribute setting means the binary supports "any" hardware
    configuration.  The name of the attribute also changed.  */
 #define SRAMOPT "msram-ecc=on:-mattr=+sramecc;msram-ecc=off:-mattr=-sramecc"
+#define XNACKOPT "mxnack=on:-mattr=+xnack;mxnack=off:-mattr=-xnack"
 
 /* Use LLVM assembler and linker options.  */
 #define ASM_SPEC  "-triple=amdgcn--amdhsa "  \
 		  "%:last_arg(%{march=*:-mcpu=%*}) " \
 		  "%{!march=*|march=fiji:--amdhsa-code-object-version=3} " \
-		  "%{" NO_XNACK "mxnack:-mattr=+xnack;:-mattr=-xnack} " \
+		  "%{" NO_XNACK XNACKOPT "}" \
 		  "%{" NO_SRAM_ECC SRAMOPT "} " \
 		  "-filetype=obj"
 #define LINK_SPEC "--pie --export-dynamic"

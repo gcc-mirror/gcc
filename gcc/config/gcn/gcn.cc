@@ -157,9 +157,14 @@ gcn_option_override (void)
 	acc_lds_size = 32768;
     }
 
-  /* The xnack option is a placeholder, for now.  */
-  if (flag_xnack)
-    sorry ("XNACK support");
+  /* gfx908 "Fiji" does not support XNACK.  */
+  if (gcn_arch == PROCESSOR_FIJI)
+    {
+      if (flag_xnack == HSACO_ATTR_ON)
+	error ("-mxnack=on is incompatible with -march=fiji");
+      /* Allow HSACO_ATTR_ANY silently because that's the default.  */
+      flag_xnack = HSACO_ATTR_OFF;
+    }
 }
 
 /* }}}  */
@@ -3586,17 +3591,19 @@ gcn_expand_epilogue (void)
       /* Assume that an exit value compatible with gcn-run is expected.
          That is, the third input parameter is an int*.
 
-         We can't allocate any new registers, but the kernarg_reg is
-         dead after this, so we'll use that.  */
+	 We can't allocate any new registers, but the dispatch_ptr and
+	 kernarg_reg are dead after this, so we'll use those.  */
+      rtx dispatch_ptr_reg = gen_rtx_REG (DImode, cfun->machine->args.reg
+					  [DISPATCH_PTR_ARG]);
       rtx kernarg_reg = gen_rtx_REG (DImode, cfun->machine->args.reg
 				     [KERNARG_SEGMENT_PTR_ARG]);
       rtx retptr_mem = gen_rtx_MEM (DImode,
 				    gen_rtx_PLUS (DImode, kernarg_reg,
 						  GEN_INT (16)));
       set_mem_addr_space (retptr_mem, ADDR_SPACE_SCALAR_FLAT);
-      emit_move_insn (kernarg_reg, retptr_mem);
+      emit_move_insn (dispatch_ptr_reg, retptr_mem);
 
-      rtx retval_mem = gen_rtx_MEM (SImode, kernarg_reg);
+      rtx retval_mem = gen_rtx_MEM (SImode, dispatch_ptr_reg);
       rtx scalar_retval = gen_rtx_REG (SImode, FIRST_PARM_REG);
       set_mem_addr_space (retval_mem, ADDR_SPACE_SCALAR_FLAT);
       emit_move_insn (scalar_retval, gen_rtx_REG (SImode, RETURN_VALUE_REG));
@@ -6155,11 +6162,12 @@ static void
 output_file_start (void)
 {
   /* In HSACOv4 no attribute setting means the binary supports "any" hardware
-     configuration.  In GCC binaries, this is true for SRAM ECC, but not
-     XNACK.  */
-  const char *xnack = (flag_xnack ? ":xnack+" : ":xnack-");
-  const char *sram_ecc = (flag_sram_ecc == SRAM_ECC_ON ? ":sramecc+"
-			  : flag_sram_ecc == SRAM_ECC_OFF ? ":sramecc-"
+     configuration.  */
+  const char *xnack = (flag_xnack == HSACO_ATTR_ON ? ":xnack+"
+		       : flag_xnack == HSACO_ATTR_OFF ? ":xnack-"
+		       : "");
+  const char *sram_ecc = (flag_sram_ecc == HSACO_ATTR_ON ? ":sramecc+"
+			  : flag_sram_ecc == HSACO_ATTR_OFF ? ":sramecc-"
 			  : "");
 
   const char *cpu;
@@ -6203,7 +6211,7 @@ void
 gcn_hsa_declare_function_name (FILE *file, const char *name, tree)
 {
   int sgpr, vgpr;
-  bool xnack_enabled = false;
+  bool xnack_enabled = TARGET_XNACK;
 
   fputs ("\n\n", file);
 
