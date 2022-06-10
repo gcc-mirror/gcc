@@ -21714,8 +21714,14 @@ instantiate_template (tree tmpl, tree orig_args, tsubst_flags_t complain)
     ++processing_template_decl;
   if (DECL_CLASS_SCOPE_P (gen_tmpl))
     {
-      tree ctx = tsubst_aggr_type (DECL_CONTEXT (gen_tmpl), targ_ptr,
-				   complain, gen_tmpl, true);
+      tree ctx;
+      if (!uses_template_parms (DECL_CONTEXT (tmpl)))
+	/* If the context of the partially instantiated template is
+	   already non-dependent, then we might as well use it.  */
+	ctx = DECL_CONTEXT (tmpl);
+      else
+	ctx = tsubst_aggr_type (DECL_CONTEXT (gen_tmpl), targ_ptr,
+				complain, gen_tmpl, true);
       push_nested_class (ctx);
     }
 
