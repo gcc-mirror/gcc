@@ -691,7 +691,8 @@ macosx_version_as_macro (void)
   if (!version_array)
     goto fail;
 
-  if (version_array[MAJOR] < 10 || version_array[MAJOR] > 12)
+  /* System tools accept up to 99 as a major version.  */
+  if (version_array[MAJOR] < 10 || version_array[MAJOR] > 99)
     goto fail;
 
   if (version_array[MAJOR] == 10 && version_array[MINOR] < 10)
