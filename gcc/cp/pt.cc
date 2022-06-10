@@ -106,6 +106,7 @@ static bool excessive_deduction_depth;
 
 struct spec_hasher : ggc_ptr_hash<spec_entry>
 {
+  static hashval_t hash (tree, tree);
   static hashval_t hash (spec_entry *);
   static bool equal (spec_entry *, spec_entry *);
 };
@@ -1768,13 +1769,22 @@ hash_tmpl_and_args (tree tmpl, tree args)
   return iterative_hash_template_arg (args, val);
 }
 
+hashval_t
+spec_hasher::hash (tree tmpl, tree args)
+{
+  ++comparing_specializations;
+  hashval_t val = hash_tmpl_and_args (tmpl, args);
+  --comparing_specializations;
+  return val;
+}
+
 /* Returns a hash for a spec_entry node based on the TMPL and ARGS members,
    ignoring SPEC.  */
 
 hashval_t
 spec_hasher::hash (spec_entry *e)
 {
-  return hash_tmpl_and_args (e->tmpl, e->args);
+  return spec_hasher::hash (e->tmpl, e->args);
 }
 
 /* Recursively calculate a hash value for a template argument ARG, for use
@@ -1958,6 +1968,21 @@ iterative_hash_template_arg (tree arg, hashval_t val)
 
 	case  DECLTYPE_TYPE:
 	  val = iterative_hash_template_arg (DECLTYPE_TYPE_EXPR (arg), val);
+	  break;
+
+	case TYPENAME_TYPE:
+	  if (comparing_specializations)
+	    {
+	      /* Hash the components that are relevant to TYPENAME_TYPE
+		 equivalence as determined by structural_comptypes.  We
+		 can only coherently do this when comparing_specializations
+		 is set, because otherwise structural_comptypes tries
+		 resolving TYPENAME_TYPE via the current instantiation.  */
+	      tree context = TYPE_MAIN_VARIANT (TYPE_CONTEXT (arg));
+	      tree fullname = TYPENAME_TYPE_FULLNAME (arg);
+	      val = iterative_hash_template_arg (context, val);
+	      val = iterative_hash_template_arg (fullname, val);
+	    }
 	  break;
 
 	default:
@@ -14116,7 +14141,7 @@ tsubst_function_decl (tree t, tree args, tsubst_flags_t complain,
       /* Check to see if we already have this specialization.  */
       if (!lambda_fntype)
 	{
-	  hash = hash_tmpl_and_args (gen_tmpl, argvec);
+	  hash = spec_hasher::hash (gen_tmpl, argvec);
 	  if (tree spec = retrieve_specialization (gen_tmpl, argvec, hash))
 	    /* The spec for these args might be a partial instantiation of the
 	       template, but here what we want is the FUNCTION_DECL.  */
@@ -14419,7 +14444,7 @@ tsubst_template_decl (tree t, tree args, tsubst_flags_t complain,
       if (full_args == tmpl_args)
 	return t;
 
-      hash = hash_tmpl_and_args (t, full_args);
+      hash = spec_hasher::hash (t, full_args);
       spec = retrieve_specialization (t, full_args, hash);
       if (spec != NULL_TREE)
 	{
@@ -14963,7 +14988,7 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 		    if (argvec == error_mark_node)
 		      RETURN (error_mark_node);
 		  }
-		hash = hash_tmpl_and_args (gen_tmpl, argvec);
+		hash = spec_hasher::hash (gen_tmpl, argvec);
 		spec = retrieve_specialization (gen_tmpl, argvec, hash);
 	      }
 	  }
