@@ -903,39 +903,54 @@ vrp_val_min (const_tree type)
 class vrange_allocator
 {
 public:
-  vrange_allocator ();
-  ~vrange_allocator ();
+  vrange_allocator () { }
+  virtual ~vrange_allocator () { }
   // Allocate a range of TYPE.
   vrange *alloc_vrange (tree type);
   // Allocate a memory block of BYTES.
-  void *alloc (unsigned bytes);
+  virtual void *alloc (unsigned bytes) = 0;
+  virtual void free (void *p) = 0;
   // Return a clone of SRC.
   template <typename T> T *clone (const T &src);
 private:
   irange *alloc_irange (unsigned pairs);
-  DISABLE_COPY_AND_ASSIGN (vrange_allocator);
-  struct obstack m_obstack;
+  void operator= (const vrange_allocator &) = delete;
 };
 
-inline
-vrange_allocator::vrange_allocator ()
+class obstack_vrange_allocator : public vrange_allocator
 {
-  obstack_init (&m_obstack);
-}
+public:
+  obstack_vrange_allocator ()
+  {
+    obstack_init (&m_obstack);
+  }
+  virtual ~obstack_vrange_allocator () final override
+  {
+    obstack_free (&m_obstack, NULL);
+  }
+  virtual void *alloc (unsigned bytes) final override
+  {
+    return obstack_alloc (&m_obstack, bytes);
+  }
+  virtual void free (void *) final override { }
+private:
+  obstack m_obstack;
+};
 
-inline
-vrange_allocator::~vrange_allocator ()
+class ggc_vrange_allocator : public vrange_allocator
 {
-  obstack_free (&m_obstack, NULL);
-}
-
-// Provide a hunk of memory from the obstack.
-
-inline void *
-vrange_allocator::alloc (unsigned bytes)
-{
-  return obstack_alloc (&m_obstack, bytes);
-}
+public:
+  ggc_vrange_allocator () { }
+  virtual ~ggc_vrange_allocator () final override { }
+  virtual void *alloc (unsigned bytes) final override
+  {
+    return ggc_internal_alloc (bytes);
+  }
+  virtual void free (void *p) final override
+  {
+    return ggc_free (p);
+  }
+};
 
 // Return a new range to hold ranges of TYPE.  The newly allocated
 // range is initialized to VR_UNDEFINED.
