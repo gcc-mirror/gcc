@@ -3941,6 +3941,9 @@ if test x$with_arch = x ; then
     mips*-*-vxworks)
       with_arch=mips2
       ;;
+    nvptx-*)
+      with_arch=sm_30
+      ;;
   esac
 
   # Avoid overriding --with-arch-32 and --with-arch-64 values.
@@ -5291,6 +5294,19 @@ case "${target}" in
 				exit 1
 				;;
 			esac
+		;;
+
+	nvptx-*)
+		supported_defaults=arch
+		case $with_arch in
+			sm_30 )
+				# OK; default.
+				;;
+			* )
+				echo "Unknown arch used in --with-arch=$with_arch" 1>&2
+				exit 1
+				;;
+		esac
 		;;
 
 	powerpc*-*-* | rs6000-*-*)
