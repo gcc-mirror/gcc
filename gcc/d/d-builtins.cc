@@ -37,6 +37,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "common/common-target.h"
 #include "stringpool.h"
 #include "stor-layout.h"
+#include "builtins.h"
 
 #include "d-tree.h"
 #include "d-frontend.h"
@@ -44,7 +45,6 @@ along with GCC; see the file COPYING3.  If not see
 
 
 static GTY(()) vec <tree, va_gc> *gcc_builtins_functions = NULL;
-static GTY(()) vec <tree, va_gc> *gcc_builtins_libfuncs = NULL;
 static GTY(()) vec <tree, va_gc> *gcc_builtins_types = NULL;
 
 /* Record built-in types and their associated decls for re-use when
@@ -672,6 +672,87 @@ d_build_builtins_module (Module *m)
   m->members->push (LinkDeclaration::create (Loc (), LINK::c, members));
 }
 
+/* Remove all type modifiers from TYPE, returning the naked type.  */
+
+static Type *
+strip_type_modifiers (Type *type)
+{
+  if (type->ty == TY::Tpointer)
+    {
+      Type *tnext = strip_type_modifiers (type->nextOf ());
+      return tnext->pointerTo ();
+    }
+
+  return type->castMod (0);
+}
+
+/* Returns true if types T1 and T2 representing return types or types of
+   function arguments are close enough to be considered interchangeable.  */
+
+static bool
+matches_builtin_type (Type *t1, Type *t2)
+{
+  Type *tb1 = strip_type_modifiers (t1);
+  Type *tb2 = strip_type_modifiers (t2);
+
+  if (same_type_p (t1, t2))
+    return true;
+
+  if (((tb1->isTypePointer () && tb2->isTypePointer ())
+       || (tb1->isTypeVector () && tb2->isTypeVector ()))
+      && tb1->implicitConvTo (tb2) != MATCH::nomatch)
+    return true;
+
+  if (tb1->isintegral () == tb2->isintegral ()
+      && tb1->size () == tb2->size ())
+    return true;
+
+  return false;
+}
+
+/* Check whether the declared function type T1 is covariant with the built-in
+   function type T2.  Returns true if they are covariant.  */
+
+static bool
+covariant_with_builtin_type_p (Type *t1, Type *t2)
+{
+  /* Check whether the declared function matches the built-in.  */
+  if (same_type_p (t1, t2) || t1->covariant (t2) == Covariant::yes)
+    return true;
+
+  /* May not be covariant because of D attributes applied on t1.
+     Strip them all off and compare again.  */
+  TypeFunction *tf1 = t1->isTypeFunction ();
+  TypeFunction *tf2 = t2->isTypeFunction ();
+
+  /* Check for obvious reasons why types may be distinct.  */
+  if (tf1 == NULL || tf2 == NULL
+      || tf1->isref () != tf2->isref ()
+      || tf1->parameterList.varargs != tf2->parameterList.varargs
+      || tf1->parameterList.length () != tf2->parameterList.length ())
+    return false;
+
+  /* Check return type and each parameter type for mismatch.  */
+  if (!matches_builtin_type (tf1->next, tf2->next))
+    return false;
+
+  const size_t nparams = tf1->parameterList.length ();
+  for (size_t i = 0; i < nparams; i++)
+    {
+      Parameter *fparam1 = tf1->parameterList[i];
+      Parameter *fparam2 = tf2->parameterList[i];
+
+      if (fparam1->isReference () != fparam2->isReference ()
+	  || fparam1->isLazy () != fparam2->isLazy ())
+	return false;
+
+      if (!matches_builtin_type (fparam1->type, fparam2->type))
+	return false;
+    }
+
+  return true;
+}
+
 /* Search for any `extern(C)' functions that match any known GCC library builtin
    function in D and override its internal back-end symbol.  */
 
@@ -694,23 +775,46 @@ maybe_set_builtin_1 (Dsymbol *d)
 	    }
 	}
     }
-  else if (fd && !fd->fbody)
+  else if (fd && !fd->fbody && fd->resolvedLinkage () == LINK::c)
     {
-      tree t;
+      tree ident = get_identifier (fd->ident->toChars ());
+      tree decl = IDENTIFIER_DECL_TREE (ident);
 
-      for (size_t i = 0; vec_safe_iterate (gcc_builtins_libfuncs, i, &t); ++i)
+      if (decl && TREE_CODE (decl) == FUNCTION_DECL
+	  && DECL_ASSEMBLER_NAME_SET_P (decl)
+	  && fndecl_built_in_p (decl, BUILT_IN_NORMAL))
 	{
-	  gcc_assert (DECL_ASSEMBLER_NAME_SET_P (t));
-
-	  const char *name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (t));
-	  if (fd->ident != Identifier::idPool (name))
-	    continue;
-
 	  /* Found a match, tell the frontend this is a builtin.  */
-	  DECL_LANG_SPECIFIC (t) = build_lang_decl (fd);
-	  fd->csym = t;
+	  DECL_LANG_SPECIFIC (decl) = build_lang_decl (fd);
+	  fd->csym = decl;
 	  fd->builtin = BUILTIN::gcc;
-	  return;
+
+	  /* Copy front-end attributes to the builtin.  */
+	  apply_user_attributes (fd, fd->csym);
+
+	  /* Function has `pragma(mangle)' specified, override its name.  */
+	  if (fd->mangleOverride.length)
+	    {
+	      tree mangle =
+		get_identifier_with_length (fd->mangleOverride.ptr,
+					    fd->mangleOverride.length);
+	      const char *asmname = IDENTIFIER_POINTER (mangle);
+	      set_builtin_user_assembler_name (decl, asmname);
+	    }
+
+	  /* Warn when return and argument types of the user defined function is
+	     not covariant with the built-in function type.  */
+	  if (Type *type = build_frontend_type (TREE_TYPE (decl)))
+	    {
+	      if (!covariant_with_builtin_type_p (fd->type, type))
+		{
+		  warning_at (make_location_t (fd->loc),
+			      OPT_Wbuiltin_declaration_mismatch,
+			      "conflicting types for built-in function %qs; "
+			      "expected %qs",
+			      fd->toChars (), type->toChars ());
+		}
+	    }
 	}
     }
 }
@@ -1221,7 +1325,11 @@ tree
 d_builtin_function (tree decl)
 {
   if (!flag_no_builtin && DECL_ASSEMBLER_NAME_SET_P (decl))
-    vec_safe_push (gcc_builtins_libfuncs, decl);
+    {
+      /* Associate the assembler identifier with the built-in.  */
+      tree ident = DECL_ASSEMBLER_NAME (decl);
+      IDENTIFIER_DECL_TREE (ident) = decl;
+    }
 
   vec_safe_push (gcc_builtins_functions, decl);
   return decl;

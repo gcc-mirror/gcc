@@ -118,6 +118,10 @@ Wno-alloca-larger-than
 D
 ; Documented in C
 
+Wbuiltin-declaration-mismatch
+D
+; Documented in C
+
 Wcast-result
 D Warning Var(warn_cast_result) LangEnabledBy(D, Wextra)
 Warn about casts that will produce a null result.
