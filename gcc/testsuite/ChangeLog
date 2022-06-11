@@ -1,3 +1,20 @@
+2022-06-10  Nathan Sidwell  <nathan@acm.org>
+
+	* g++.dg/modules/init-3_a.C: New.
+	* g++.dg/modules/init-3_b.C: New.
+	* g++.dg/modules/init-3_c.C: New.
+
+2022-06-10  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR rtl-optimization/7061
+	* gcc.target/i386/pr7061-1.c: New test case.
+	* gcc.target/i386/pr7061-2.c: New test case.
+
+2022-06-10  Antoni Boucher  <bouanto@zoho.com>
+
+	PR jit/105829
+	* jit.dg/test-types.c: Add tests for gcc_jit_type_get_size.
+
 2022-06-09  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
 
 	* gcc.target/xtensa/check_zero_byte.c: New.

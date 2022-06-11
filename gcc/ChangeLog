@@ -1,3 +1,12 @@
+2022-06-10  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR rtl-optimization/7061
+	* expr.cc (emit_group_store): For groups that consist of a single
+	scalar integer register that hold a complex mode value, use
+	gen_lowpart to generate a SUBREG to "view_convert" to the complex
+	mode.  For modes of different sizes, first convert to an integer
+	mode of the appropriate size.
+
 2022-06-09  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
 
 	* config/xtensa/xtensa.md (clrsbsi2): New insn pattern.

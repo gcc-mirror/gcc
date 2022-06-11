@@ -1,3 +1,68 @@
+2022-06-10  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/65328
+	* decl.cc (typename_hasher::hash): Add extra overloads.
+	Use iterative_hash_object instead of htab_hash_pointer.
+	Hash TYPENAME_TYPE_FULLNAME instead of TYPE_IDENTIFIER.
+	(build_typename_type): Use typename_hasher::hash.
+	* pt.cc (spec_hasher::hash): Add two-parameter overload.
+	Set comparing_specializations around the call to
+	hash_tmpl_and_args.
+	(iterative_hash_template_arg) <case TYPENAME_TYPE>:
+	When comparing_specializations, hash the TYPE_CONTEXT
+	and TYPENAME_TYPE_FULLNAME.
+	(tsubst_function_decl): Use spec_hasher::hash instead of
+	hash_tmpl_and_args.
+	(tsubst_template_decl): Likewise.
+	(tsubst_decl): Likewise.
+
+2022-06-10  Patrick Palka  <ppalka@redhat.com>
+
+	* pt.cc (instantiate_template): Don't substitute the context
+	of the most general template if that of the partially
+	instantiated template is already non-dependent.
+
+2022-06-10  Patrick Palka  <ppalka@redhat.com>
+
+	* pt.cc (lookup_template_class): Remove dead stores to
+	context parameter.  Don't substitute the context of the
+	most general template if that of the partially instantiated
+	template is already non-dependent.  Check the specializations
+	table again after completing the context of a nested dependent
+	specialization.
+	(tsubst_aggr_type) <case RECORD_TYPE>: Don't substitute
+	TYPE_CONTEXT or pass it to lookup_template_class.
+	(tsubst_decl) <case TYPE_DECL, case TYPE_DECL>: Avoid substituting
+	the TREE_TYPE for DECL_SELF_REFERENCE_P.  Avoid template argument
+	substitution or coercion in some cases.
+
+2022-06-10  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-tree.h (fini_modules): Add some parameters.
+	(finish_module_processing): Return an opaque pointer.
+	* decl2.cc (c_parse_final_cleanups): Propagate a cookie from
+	finish_module_processing to fini_modules.
+	* module.cc (struct module_processing_cookie): New.
+	(finish_module_processing): Return a heap-allocated cookie.
+	(late_finish_module): New.  Finish out the module writing.
+	(fini_modules): Adjust.
+
+2022-06-10  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-tree.h (module_has_import_init): Rename to ...
+	(module_determined_import_inits): ... here.
+	* decl2.cc (start_objects): Do not handle module initializers
+	here.
+	(c_parse_final_cleanups): Generate a separate module
+	initializer calling function and add it to the list.  Shrink
+	the c-lang region.
+	* module.cc (num_init_calls_needed): Delete.
+	 (module_has_import_init): Rename to ...
+	(module_determined_import_inits): ... here. Do the
+	calculation here ...
+	(finish_module_processing): ... rather than here.
+	(module_add_import_initializers): Reformat.
+
 2022-06-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/105871

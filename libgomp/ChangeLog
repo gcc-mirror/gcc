@@ -1,3 +1,23 @@
+2022-06-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* allocator.c (gomp_init_memkind): Call dlopen with "libmemkind.so.0"
+	rather than "libmemkind.so".
+
+2022-06-10  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* plugin/Makefrag.am: Evaluate 'if PLUGIN_NVPTX_DYNAMIC' to true.
+	* plugin/configfrag.ac (--with-cuda-driver)
+	(--with-cuda-driver-include, --with-cuda-driver-lib)
+	(CUDA_DRIVER_INCLUDE, CUDA_DRIVER_LIB, PLUGIN_NVPTX_CPPFLAGS)
+	(PLUGIN_NVPTX_LDFLAGS, PLUGIN_NVPTX_LIBS, PLUGIN_NVPTX_DYNAMIC):
+	Remove.
+	* testsuite/libgomp-test-support.exp.in (cuda_driver_include)
+	(cuda_driver_lib): Remove.
+	* testsuite/lib/libgomp.exp (libgomp_init): Don't consider these.
+	* Makefile.in: Regenerate.
+	* configure: Likewise.
+	* testsuite/Makefile.in: Likewise.
+
 2022-06-09  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/linux/allocator.c: Fix up #include directive.

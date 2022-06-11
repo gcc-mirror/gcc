@@ -1,3 +1,9 @@
+2022-06-10  Antoni Boucher  <bouanto@zoho.com>
+
+	PR jit/105829
+	* libgccjit.cc: Add support for floating-point types in
+	gcc_jit_type_get_size.
+
 2022-06-08  Yang Yujie  <yangyujie@loongson.cn>
 
 	* Make-lang.in: only link objects from $(EXTRA_GCC_OBJS)

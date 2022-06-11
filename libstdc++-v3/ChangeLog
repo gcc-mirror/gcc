@@ -1,3 +1,48 @@
+2022-06-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/105844
+	* include/experimental/numeric (experimental::gcd): Simplify
+	assertions. Use __abs_r instead of __absu.
+	(experimental::lcm): Likewise. Remove use of __detail::__lcm so
+	overflow can be detected.
+	* include/std/numeric (__detail::__absu): Rename to __abs_r and
+	change to allow signed result type, so overflow can be detected.
+	(__detail::__lcm): Remove.
+	(gcd): Simplify assertions. Use __abs_r instead of __absu.
+	(lcm): Likewise. Remove use of __detail::__lcm so overflow can
+	be detected.
+	* testsuite/26_numerics/gcd/gcd_neg.cc: Adjust dg-error lines.
+	* testsuite/26_numerics/lcm/lcm_neg.cc: Likewise.
+	* testsuite/26_numerics/gcd/105844.cc: New test.
+	* testsuite/26_numerics/lcm/105844.cc: New test.
+
+2022-06-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/105880
+	* libsupc++/eh_globals.cc (eh_globals): Ensure constant init and
+	prevent destruction during termination.
+	(__eh_globals_init::_M_init): Replace with static member _S_init.
+	(__cxxabiv1::__cxa_get_globals_fast): Update.
+	(__cxxabiv1::__cxa_get_globals): Likewise.
+
+2022-06-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/basic_string.h (__hash_str_base): New class
+	template.
+	(hash<basic_string<C, char_traits<C>, A>>): Define partial
+	specialization for each of the standard character types.
+	(hash<string>, hash<wstring>, hash<u8string>, hash<u16string>)
+	(hash<u32string>): Remove explicit specializations.
+	* include/std/string (__hash_string_base): Remove class
+	template.
+	(hash<pmr::string>, hash<pmr::wstring>, hash<pmr::u8string>)
+	(hash<pmr::u16string>, hash<pmr::u32string>): Remove explicit
+	specializations.
+	* testsuite/21_strings/basic_string/hash/hash.cc: Test with
+	custom allocators.
+	* testsuite/21_strings/basic_string/hash/hash_char8_t.cc:
+	Likewise.
+
 2022-05-27  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/105671
