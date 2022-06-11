@@ -5298,6 +5298,7 @@ case "${target}" in
 
 	nvptx-*)
 		supported_defaults=arch
+		TM_MULTILIB_CONFIG=$with_arch
 		case $with_arch in
 			sm_30 )
 				# OK; default.
