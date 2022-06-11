@@ -5299,9 +5299,14 @@ case "${target}" in
 	nvptx-*)
 		supported_defaults=arch
 		TM_MULTILIB_CONFIG=$with_arch
+		#TODO 'sm_[...]' list per 'nvptx-sm.def'.
 		case $with_arch in
 			sm_30 )
 				# OK; default.
+				;;
+			sm_35 | sm_53 | sm_70 | sm_75 | sm_80 )
+				# OK, but we'd like 'sm_30', too.
+				TM_MULTILIB_CONFIG="$TM_MULTILIB_CONFIG sm_30"
 				;;
 			* )
 				echo "Unknown arch used in --with-arch=$with_arch" 1>&2
