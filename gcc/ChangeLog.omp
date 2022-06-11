@@ -3,6 +3,19 @@
 	Backported from master:
 	2022-09-26  Thomas Schwinge  <thomas@codesourcery.com>
 
+	* config.gcc (with_arch) [nvptx]: Allow '--with-arch' to override
+	the default.
+	* config/nvptx/gen-multilib-matches.sh: New.
+	* config/nvptx/t-nvptx (MULTILIB_OPTIONS, MULTILIB_MATCHES)
+	(MULTILIB_EXCEPTIONS): Handle this.
+	* doc/install.texi (Specific) <nvptx-*-none>: Document this.
+	* doc/invoke.texi (Nvidia PTX Options): Likewise.
+
+2022-09-26  Thomas Schwinge  <thomas@codesourcery.com>
+
+	Backported from master:
+	2022-09-26  Thomas Schwinge  <thomas@codesourcery.com>
+
 	* config.gcc (TM_MULTILIB_CONFIG) [nvptx]: Set to '$with_arch'.
 	* config/nvptx/t-nvptx (MULTILIB_OPTIONS, MULTILIB_MATCHES)
 	(MULTILIB_EXCEPTIONS): Handle it.
