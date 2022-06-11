@@ -27,6 +27,10 @@
 
 /* Run-time Target.  */
 
+/* Use '--with-arch' for default '-misa'.  */
+#define OPTION_DEFAULT_SPECS \
+  { "arch", "%{!misa=*:-misa=%(VALUE)}" }, \
+
 /* Assembler supports '-v' option; handle similar to
    '../../gcc.cc:asm_options', 'HAVE_GNU_AS'.  */
 #define ASM_SPEC "%{v}"

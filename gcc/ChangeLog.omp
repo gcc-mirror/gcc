@@ -3,6 +3,17 @@
 	Backported from master:
 	2022-09-26  Thomas Schwinge  <thomas@codesourcery.com>
 
+	* config.gcc (with_arch) [nvptx]: Set to 'sm_30'.
+	* config/nvptx/nvptx.cc (nvptx_option_override): Assert that
+	'-misa' appeared.
+	* config/nvptx/nvptx.h (OPTION_DEFAULT_SPECS): Define.
+	* config/nvptx/nvptx.opt (misa=): Remove 'Init'.
+
+2022-09-26  Thomas Schwinge  <thomas@codesourcery.com>
+
+	Backported from master:
+	2022-09-26  Thomas Schwinge  <thomas@codesourcery.com>
+
 	* config/nvptx/nvptx.h (ASM_SPEC): Define.
 
 2022-09-24  Tobias Burnus  <tobias@codesourcery.com>
