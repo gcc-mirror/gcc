@@ -7980,16 +7980,11 @@ package body Exp_Ch3 is
             --  the value one, then the caller has passed access to an
             --  existing object for use as the return object. If the value
             --  is two, then the return object must be allocated on the
-            --  secondary stack. Otherwise, the object must be allocated in
-            --  a storage pool. We generate an if statement to test the
-            --  implicit allocation formal and initialize a local access
-            --  value appropriately, creating allocators in the secondary
-            --  stack and global heap cases. The special formal also exists
-            --  and must be tested when the function has a tagged result,
-            --  even when the result subtype is constrained, because in
-            --  general such functions can be called in dispatching contexts
-            --  and must be handled similarly to functions with a class-wide
-            --  result.
+            --  secondary stack. If the value is three, then the return
+            --  object must be allocated on the heap. Otherwise, the object
+            --  must be allocated in a storage pool. We generate an if
+            --  statement to test the BIP_Alloc_Form formal and initialize
+            --  a local access value appropriately.
 
             if Needs_BIP_Alloc_Form (Func_Id) then
                declare
@@ -8004,6 +7999,73 @@ package body Exp_Ch3 is
                     Build_In_Place_Formal (Func_Id, BIP_Alloc_Form);
                   Pool_Id          : constant Entity_Id :=
                     Make_Temporary (Loc, 'P');
+
+                  function Make_Allocator_For_BIP_Return return Node_Id;
+                  --  Make an allocator for the BIP return being processed
+
+                  -----------------------------------
+                  -- Make_Allocator_For_BIP_Return --
+                  -----------------------------------
+
+                  function Make_Allocator_For_BIP_Return return Node_Id is
+                     Alloc : Node_Id;
+
+                  begin
+                     if Present (Expr_Q)
+                       and then not Is_Delayed_Aggregate (Expr_Q)
+                       and then not No_Initialization (N)
+                     then
+                        --  Always use the type of the expression for the
+                        --  qualified expression, rather than the result type.
+                        --  In general we cannot always use the result type
+                        --  for the allocator, because the expression might be
+                        --  of a specific type, such as in the case of an
+                        --  aggregate or even a nonlimited object when the
+                        --  result type is a limited class-wide interface type.
+
+                        Alloc :=
+                          Make_Allocator (Loc,
+                            Expression =>
+                              Make_Qualified_Expression (Loc,
+                                Subtype_Mark =>
+                                  New_Occurrence_Of (Etype (Expr_Q), Loc),
+                                Expression   => New_Copy_Tree (Expr_Q)));
+
+                     else
+                        --  If the function returns a class-wide type we cannot
+                        --  use the return type for the allocator. Instead we
+                        --  use the type of the expression, which must be an
+                        --  aggregate of a definite type.
+
+                        if Is_Class_Wide_Type (Ret_Obj_Typ) then
+                           Alloc :=
+                             Make_Allocator (Loc,
+                               Expression =>
+                                 New_Occurrence_Of (Etype (Expr_Q), Loc));
+
+                        else
+                           Alloc :=
+                             Make_Allocator (Loc,
+                               Expression =>
+                                 New_Occurrence_Of (Ret_Obj_Typ, Loc));
+                        end if;
+
+                        --  If the object requires default initialization then
+                        --  that will happen later following the elaboration of
+                        --  the object renaming. If we don't turn it off here
+                        --  then the object will be default initialized twice.
+
+                        Set_No_Initialization (Alloc);
+                     end if;
+
+                     --  Set the flag indicating that the allocator came from
+                     --  a build-in-place return statement, so we can avoid
+                     --  adjusting the allocated object.
+
+                     Set_Alloc_For_BIP_Return (Alloc);
+
+                     return Alloc;
+                  end Make_Allocator_For_BIP_Return;
 
                   Alloc_Obj_Id   : Entity_Id;
                   Alloc_Obj_Decl : Node_Id;
@@ -8049,71 +8111,15 @@ package body Exp_Ch3 is
 
                   Insert_Action (N, Alloc_Obj_Decl);
 
-                     --  Create allocators for both the secondary stack and
-                     --  global heap. If there's an initialization expression,
-                     --  then create these as initialized allocators.
+                  --  First create the Heap_Allocator
 
-                  if Present (Expr_Q)
-                    and then not Is_Delayed_Aggregate (Expr_Q)
-                    and then not No_Initialization (N)
-                  then
-                     --  Always use the type of the expression for the
-                     --  qualified expression, rather than the result type.
-                     --  In general we cannot always use the result type
-                     --  for the allocator, because the expression might be
-                     --  of a specific type, such as in the case of an
-                     --  aggregate or even a nonlimited object when the
-                     --  result type is a limited class-wide interface type.
-
-                     Heap_Allocator :=
-                       Make_Allocator (Loc,
-                         Expression =>
-                           Make_Qualified_Expression (Loc,
-                             Subtype_Mark =>
-                               New_Occurrence_Of (Etype (Expr_Q), Loc),
-                             Expression   => New_Copy_Tree (Expr_Q)));
-
-                  else
-                     --  If the function returns a class-wide type we cannot
-                     --  use the return type for the allocator. Instead we
-                     --  use the type of the expression, which must be an
-                     --  aggregate of a definite type.
-
-                     if Is_Class_Wide_Type (Ret_Obj_Typ) then
-                        Heap_Allocator :=
-                          Make_Allocator (Loc,
-                            Expression =>
-                              New_Occurrence_Of (Etype (Expr_Q), Loc));
-
-                     else
-                        Heap_Allocator :=
-                          Make_Allocator (Loc,
-                            Expression =>
-                              New_Occurrence_Of (Ret_Obj_Typ, Loc));
-                     end if;
-
-                     --  If the object requires default initialization then
-                     --  that will happen later following the elaboration of
-                     --  the object renaming. If we don't turn it off here
-                     --  then the object will be default initialized twice.
-
-                     Set_No_Initialization (Heap_Allocator);
-                  end if;
-
-                  --  Set the flag indicating that the allocator came from
-                  --  a build-in-place return statement, so we can avoid
-                  --  adjusting the allocated object. Note that this flag
-                  --  will be inherited by the copies made below.
-
-                  Set_Alloc_For_BIP_Return (Heap_Allocator);
+                  Heap_Allocator := Make_Allocator_For_BIP_Return;
 
                   --  The Pool_Allocator is just like the Heap_Allocator,
                   --  except we set Storage_Pool and Procedure_To_Call so
                   --  it will use the user-defined storage pool.
 
-                  Pool_Allocator := New_Copy_Tree (Heap_Allocator);
-
-                  pragma Assert (Alloc_For_BIP_Return (Pool_Allocator));
+                  Pool_Allocator := Make_Allocator_For_BIP_Return;
 
                   --  Do not generate the renaming of the build-in-place
                   --  pool parameter on ZFP because the parameter is not
@@ -8154,9 +8160,7 @@ package body Exp_Ch3 is
                   --  allocation.
 
                   else
-                     SS_Allocator := New_Copy_Tree (Heap_Allocator);
-
-                     pragma Assert (Alloc_For_BIP_Return (SS_Allocator));
+                     SS_Allocator := Make_Allocator_For_BIP_Return;
 
                      --  The heap and pool allocators are marked as
                      --  Comes_From_Source since they correspond to an
