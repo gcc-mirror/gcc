@@ -4141,7 +4141,10 @@ rs6000_option_override_internal (bool global_init_p)
 
   if (!(rs6000_isa_flags_explicit & OPTION_MASK_BLOCK_OPS_VECTOR_PAIR))
     {
-      if (TARGET_MMA && TARGET_EFFICIENT_UNALIGNED_VSX)
+      /* Do not generate lxvp and stxvp on power10 since there are some
+	 performance issues.  */
+      if (TARGET_MMA && TARGET_EFFICIENT_UNALIGNED_VSX
+	  && rs6000_tune != PROCESSOR_POWER10)
 	rs6000_isa_flags |= OPTION_MASK_BLOCK_OPS_VECTOR_PAIR;
       else
 	rs6000_isa_flags &= ~OPTION_MASK_BLOCK_OPS_VECTOR_PAIR;
