@@ -1,3 +1,9 @@
+2022-06-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/105915
+	* include/experimental/bits/fs_path.h (path::begin, path::end):
+	Remove noexcept from declarations.
+
 2022-05-16  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/xml/manual/status_cxx2023.xml: Update status.
