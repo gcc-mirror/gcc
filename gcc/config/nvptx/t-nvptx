@@ -31,4 +31,22 @@ s-nvptx-gen-opt: $(srcdir)/config/nvptx/nvptx-sm.def \
 	  tmp-nvptx-gen.opt $(srcdir)/config/nvptx/nvptx-gen.opt
 	$(STAMP) s-nvptx-gen-opt
 
-MULTILIB_OPTIONS = mgomp mptx=3.1
+
+# Multilib setup.
+
+MULTILIB_OPTIONS =
+MULTILIB_MATCHES =
+MULTILIB_EXCEPTIONS =
+
+MULTILIB_OPTIONS += mgomp
+
+multilib_options_isa_list := $(TM_MULTILIB_CONFIG)
+multilib_options_isa_default := $(word 1,$(multilib_options_isa_list))
+# Add the default '-misa' as a multilib option:
+MULTILIB_OPTIONS += misa=$(multilib_options_isa_default)
+# ..., but don't handle it specially (remap to default):
+MULTILIB_MATCHES += .=misa?$(multilib_options_isa_default)
+# ..., and don't actually build it:
+MULTILIB_EXCEPTIONS += *misa=$(multilib_options_isa_default)*
+
+MULTILIB_OPTIONS += mptx=3.1

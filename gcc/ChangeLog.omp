@@ -3,6 +3,15 @@
 	Backported from master:
 	2022-09-26  Thomas Schwinge  <thomas@codesourcery.com>
 
+	* config.gcc (TM_MULTILIB_CONFIG) [nvptx]: Set to '$with_arch'.
+	* config/nvptx/t-nvptx (MULTILIB_OPTIONS, MULTILIB_MATCHES)
+	(MULTILIB_EXCEPTIONS): Handle it.
+
+2022-09-26  Thomas Schwinge  <thomas@codesourcery.com>
+
+	Backported from master:
+	2022-09-26  Thomas Schwinge  <thomas@codesourcery.com>
+
 	* config.gcc (with_arch) [nvptx]: Set to 'sm_30'.
 	* config/nvptx/nvptx.cc (nvptx_option_override): Assert that
 	'-misa' appeared.
