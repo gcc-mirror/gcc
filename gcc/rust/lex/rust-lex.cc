@@ -489,6 +489,7 @@ Lexer::build_token ()
 	      // (but not an inner or outer doc comment)
 	      skip_input ();
 	      current_column += 2;
+	      current_char = peek_input ();
 
 	      // basically ignore until line finishes
 	      while (current_char != '\n' && current_char != EOF)
