@@ -87,8 +87,9 @@ SubstituteCtx::check_repetition_amount (size_t pattern_start,
 		      rust_error_at (
 			frag_token->get_locus (),
 			"different amount of matches used in merged "
-			"repetitions: expected %ld, got %ld",
-			expected_repetition_amount, repeat_amount);
+			"repetitions: expected %lu, got %lu",
+			(unsigned long) expected_repetition_amount,
+			(unsigned long) repeat_amount);
 		      is_valid = false;
 		    }
 		}
@@ -110,7 +111,7 @@ SubstituteCtx::substitute_repetition (
   if (!check_repetition_amount (pattern_start, pattern_end, repeat_amount))
     return {};
 
-  rust_debug ("repetition amount to use: %lu", repeat_amount);
+  rust_debug ("repetition amount to use: %lu", (unsigned long) repeat_amount);
   std::vector<std::unique_ptr<AST::Token>> expanded;
   std::vector<std::unique_ptr<AST::Token>> new_macro;
 

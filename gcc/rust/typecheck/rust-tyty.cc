@@ -678,7 +678,8 @@ SubstitutionRef::get_mappings_from_generic_args (HIR::GenericArgs &args)
       rust_error_at (
 	r,
 	"generic item takes at most %lu type arguments but %lu were supplied",
-	substitutions.size (), args.get_type_args ().size ());
+	(unsigned long) substitutions.size (),
+	(unsigned long) args.get_type_args ().size ());
       return SubstitutionArgumentMappings::error ();
     }
 
@@ -690,7 +691,8 @@ SubstitutionRef::get_mappings_from_generic_args (HIR::GenericArgs &args)
       rust_error_at (
 	r,
 	"generic item takes at least %lu type arguments but %lu were supplied",
-	(min_required_substitutions () - offs), args.get_type_args ().size ());
+	(unsigned long) (min_required_substitutions () - offs),
+	(unsigned long) args.get_type_args ().size ());
       return SubstitutionArgumentMappings::error ();
     }
 
@@ -3223,7 +3225,8 @@ TypeCheckCallExpr::visit (ADTType &type)
     {
       rust_error_at (call.get_locus (),
 		     "unexpected number of arguments %lu expected %lu",
-		     call.num_params (), variant.num_fields ());
+		     (unsigned long) call.num_params (),
+		     (unsigned long) variant.num_fields ());
       return;
     }
 
@@ -3254,8 +3257,8 @@ TypeCheckCallExpr::visit (ADTType &type)
   if (i != call.num_params ())
     {
       rust_error_at (call.get_locus (),
-		     "unexpected number of arguments %lu expected %lu", i,
-		     call.num_params ());
+		     "unexpected number of arguments %lu expected %lu",
+		     (unsigned long) i, (unsigned long) call.num_params ());
       return;
     }
 
@@ -3274,7 +3277,8 @@ TypeCheckCallExpr::visit (FnType &type)
 	    {
 	      rust_error_at (call.get_locus (),
 			     "unexpected number of arguments %lu expected %lu",
-			     call.num_params (), type.num_params ());
+			     (unsigned long) call.num_params (),
+			     (unsigned long) type.num_params ());
 	      return;
 	    }
 	}
@@ -3282,7 +3286,8 @@ TypeCheckCallExpr::visit (FnType &type)
 	{
 	  rust_error_at (call.get_locus (),
 			 "unexpected number of arguments %lu expected %lu",
-			 call.num_params (), type.num_params ());
+			 (unsigned long) call.num_params (),
+			 (unsigned long) type.num_params ());
 	  return;
 	}
     }
@@ -3322,8 +3327,8 @@ TypeCheckCallExpr::visit (FnType &type)
   if (i < call.num_params ())
     {
       rust_error_at (call.get_locus (),
-		     "unexpected number of arguments %lu expected %lu", i,
-		     call.num_params ());
+		     "unexpected number of arguments %lu expected %lu",
+		     (unsigned long) i, (unsigned long) call.num_params ());
       return;
     }
 
@@ -3338,7 +3343,8 @@ TypeCheckCallExpr::visit (FnPtr &type)
     {
       rust_error_at (call.get_locus (),
 		     "unexpected number of arguments %lu expected %lu",
-		     call.num_params (), type.num_params ());
+		     (unsigned long) call.num_params (),
+		     (unsigned long) type.num_params ());
       return;
     }
 
@@ -3372,8 +3378,8 @@ TypeCheckCallExpr::visit (FnPtr &type)
   if (i != call.num_params ())
     {
       rust_error_at (call.get_locus (),
-		     "unexpected number of arguments %lu expected %lu", i,
-		     call.num_params ());
+		     "unexpected number of arguments %lu expected %lu",
+		     (unsigned long) i, (unsigned long) call.num_params ());
       return;
     }
 
@@ -3393,7 +3399,8 @@ TypeCheckMethodCallExpr::visit (FnType &type)
     {
       rust_error_at (call.get_locus (),
 		     "unexpected number of arguments %lu expected %lu",
-		     call.num_params (), type.num_params ());
+		     (unsigned long) call.num_params (),
+		     (unsigned long) type.num_params ());
       return;
     }
 
@@ -3427,8 +3434,8 @@ TypeCheckMethodCallExpr::visit (FnType &type)
   if (i != num_args_to_call)
     {
       rust_error_at (call.get_locus (),
-		     "unexpected number of arguments %lu expected %lu", i,
-		     call.num_params ());
+		     "unexpected number of arguments %lu expected %lu",
+		     (unsigned long) i, (unsigned long) call.num_params ());
       return;
     }
 

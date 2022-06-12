@@ -235,8 +235,8 @@ MarkLive::visit (HIR::FieldAccessExpr &expr)
   if (index >= variant->num_fields ())
     {
       rust_error_at (expr.get_receiver_expr ()->get_locus (),
-		     "cannot access struct %s by index: %ld",
-		     adt->get_name ().c_str (), index);
+		     "cannot access struct %s by index: %lu",
+		     adt->get_name ().c_str (), (unsigned long) index);
       return;
     }
 

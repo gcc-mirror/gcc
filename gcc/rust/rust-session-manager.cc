@@ -98,8 +98,8 @@ validate_crate_name (const std::string &crate_name, Error &error)
     }
   if (crate_name.length () > kMaxNameLength)
     {
-      error = Error (Location (), "crate name cannot exceed %ld characters",
-		     kMaxNameLength);
+      error = Error (Location (), "crate name cannot exceed %lu characters",
+		     (unsigned long) kMaxNameLength);
       return false;
     }
   for (auto &c : crate_name)

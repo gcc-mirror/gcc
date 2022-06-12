@@ -87,11 +87,12 @@ TypeCheckPattern::visit (HIR::TupleStructPattern &pattern)
 
 	if (items_no_range.get_patterns ().size () != variant->num_fields ())
 	  {
-	    rust_error_at (pattern.get_locus (),
-			   "this pattern has %lu fields but the corresponding "
-			   "tuple variant has %lu field",
-			   items_no_range.get_patterns ().size (),
-			   variant->num_fields ());
+	    rust_error_at (
+	      pattern.get_locus (),
+	      "this pattern has %lu fields but the corresponding "
+	      "tuple variant has %lu field",
+	      (unsigned long) items_no_range.get_patterns ().size (),
+	      (unsigned long) variant->num_fields ());
 	    // we continue on to try and setup the types as best we can for
 	    // type checking
 	  }
