@@ -1,3 +1,53 @@
+2022-06-11  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/xtensa-protos.h (xtensa_constantsynth):
+	New prototype.
+	* config/xtensa/xtensa.cc (xtensa_emit_constantsynth,
+	xtensa_constantsynth_2insn, xtensa_constantsynth_rtx_SLLI,
+	xtensa_constantsynth_rtx_ADDSUBX, xtensa_constantsynth):
+	New backend functions that process the abovementioned logic.
+	(xtensa_emit_move_sequence): Revert the previous changes.
+	* config/xtensa/xtensa.md: New split patterns for integer
+	and floating-point, as the frontend part.
+
+2022-06-11  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/xtensa.cc (xtensa_rtx_costs): Correct wrong case
+	for ABS and NEG, add missing case for BSWAP and CLRSB, and
+	double the costs for integer divisions using libfuncs if
+	optimizing for speed, in order to take advantage of fast constant
+	division by multiplication.
+	(TARGET_INSN_COST): New macro definition.
+	(xtensa_is_insn_L32R_p, xtensa_insn_cost): New functions for
+	calculating relative costs of a RTL insns, for both of speed and
+	size.
+	* config/xtensa/xtensa.md (return, nop, trap): Correct values of
+	the attribute "length" that depends on TARGET_DENSITY.
+	(define_asm_attributes, blockage, frame_blockage): Add missing
+	attributes.
+	* config/xtensa/xtensa.opt (-mextra-l32r-costs=): New machine-
+	dependent option, however, preparatory work for now.
+
+2022-06-11  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/xtensa.cc (xtensa_expand_block_set_small_loop):
+	Pass through the block length / loop count conditions if
+	zero-overhead looping is configured and active,
+
+2022-06-11  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/xtensa.md (mulsidi3, umulsidi3):
+	Split into individual signedness, in order to use libcall
+	"__umulsidi3" but not the other.
+	(<u>mulhisi3): Merge into one by using code iterator.
+	(<u>mulsidi3, mulhisi3, umulhisi3): Remove.
+
+2022-06-11   Michael Meissner  <meissner@linux.ibm.com>
+
+	* config/rs6000/rs6000.cc (rs6000_option_override_internal): Do
+	not generate block copies with vector pair instructions if we are
+	tuning for power10.
+
 2022-06-10  Roger Sayle  <roger@nextmovesoftware.com>
 
 	PR rtl-optimization/7061

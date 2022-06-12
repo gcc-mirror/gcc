@@ -1,3 +1,9 @@
+2022-06-11  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* gcc.target/xtensa/constsynth_2insns.c: New.
+	* gcc.target/xtensa/constsynth_3insns.c: Ditto.
+	* gcc.target/xtensa/constsynth_double.c: Ditto.
+
 2022-06-10  Nathan Sidwell  <nathan@acm.org>
 
 	* g++.dg/modules/init-3_a.C: New.
