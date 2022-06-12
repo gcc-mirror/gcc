@@ -209,8 +209,13 @@ HIRCompileBase::handle_deprecated_attribute_on_fndecl (
 	}
     }
 
-  DECL_ATTRIBUTES (fndecl) = tree_cons (get_identifier ("deprecated"), value,
-					DECL_ATTRIBUTES (fndecl));
+  if (value)
+    {
+      tree attr_list = build_tree_list (NULL_TREE, value);
+      DECL_ATTRIBUTES (fndecl)
+	= tree_cons (get_identifier ("deprecated"), attr_list,
+		     DECL_ATTRIBUTES (fndecl));
+    }
 }
 
 void
