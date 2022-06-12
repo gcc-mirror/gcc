@@ -1,3 +1,12 @@
+2022-06-11  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2022-06-03  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/105756
+	* typeck.cc (cp_build_binary_op): Don't fold operands
+	when c_inhibit_evaluation_warnings.
+
 2022-06-08  Jason Merrill  <jason@redhat.com>
 
 	PR c++/105852

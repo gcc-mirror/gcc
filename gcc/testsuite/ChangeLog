@@ -1,3 +1,11 @@
+2022-06-11  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2022-06-03  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/105756
+	* g++.dg/cpp0x/decltype82.C: New test.
+
 2022-06-08  Jason Merrill  <jason@redhat.com>
 
 	PR c++/105852
