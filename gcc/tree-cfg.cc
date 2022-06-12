@@ -4297,18 +4297,14 @@ verify_gimple_assign_ternary (gassign *stmt)
       break;
 
     case VEC_PERM_EXPR:
-      if (!useless_type_conversion_p (lhs_type, rhs1_type)
-	  || !useless_type_conversion_p (lhs_type, rhs2_type))
-	{
-	  error ("type mismatch in %qs", code_name);
-	  debug_generic_expr (lhs_type);
-	  debug_generic_expr (rhs1_type);
-	  debug_generic_expr (rhs2_type);
-	  debug_generic_expr (rhs3_type);
-	  return true;
-	}
+      /* If permute is constant, then we allow for lhs and rhs
+	 to have different vector types, provided:
+	 (1) lhs, rhs1, rhs2 have same element type.
+	 (2) rhs3 vector is constant and has integer element type.
+	 (3) len(lhs) == len(rhs3) && len(rhs1) == len(rhs2).  */
 
-      if (TREE_CODE (rhs1_type) != VECTOR_TYPE
+      if (TREE_CODE (lhs_type) != VECTOR_TYPE
+	  || TREE_CODE (rhs1_type) != VECTOR_TYPE
 	  || TREE_CODE (rhs2_type) != VECTOR_TYPE
 	  || TREE_CODE (rhs3_type) != VECTOR_TYPE)
 	{
@@ -4320,10 +4316,28 @@ verify_gimple_assign_ternary (gassign *stmt)
 	  return true;
 	}
 
+      /* If rhs3 is constant, we allow lhs, rhs1 and rhs2 to be different vector types,
+	 as long as lhs, rhs1 and rhs2 have same element type.  */
+      if (TREE_CONSTANT (rhs3)
+	  ? (!useless_type_conversion_p (TREE_TYPE (lhs_type), TREE_TYPE (rhs1_type))
+	     || !useless_type_conversion_p (TREE_TYPE (lhs_type), TREE_TYPE (rhs2_type)))
+	  : (!useless_type_conversion_p (lhs_type, rhs1_type)
+	     || !useless_type_conversion_p (lhs_type, rhs2_type)))
+	{
+	    error ("type mismatch in %qs", code_name);
+	    debug_generic_expr (lhs_type);
+	    debug_generic_expr (rhs1_type);
+	    debug_generic_expr (rhs2_type);
+	    debug_generic_expr (rhs3_type);
+	    return true;
+	}
+
+      /* If rhs3 is constant, relax the check len(rhs2) == len(rhs3).  */
       if (maybe_ne (TYPE_VECTOR_SUBPARTS (rhs1_type),
 		    TYPE_VECTOR_SUBPARTS (rhs2_type))
-	  || maybe_ne (TYPE_VECTOR_SUBPARTS (rhs2_type),
-		       TYPE_VECTOR_SUBPARTS (rhs3_type))
+	  || (!TREE_CONSTANT(rhs3)
+	      && maybe_ne (TYPE_VECTOR_SUBPARTS (rhs2_type),
+			   TYPE_VECTOR_SUBPARTS (rhs3_type)))
 	  || maybe_ne (TYPE_VECTOR_SUBPARTS (rhs3_type),
 		       TYPE_VECTOR_SUBPARTS (lhs_type)))
 	{

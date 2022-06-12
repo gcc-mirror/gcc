@@ -23342,7 +23342,9 @@ struct expand_vec_perm_d
   rtx target, op0, op1;
   vec_perm_indices perm;
   machine_mode vmode;
+  machine_mode op_mode;
   unsigned int vec_flags;
+  unsigned int op_vec_flags;
   bool one_vector_p;
   bool testing_p;
 };
@@ -23577,6 +23579,8 @@ aarch64_evpc_reencode (struct expand_vec_perm_d *d)
 
   newd.vmode = new_mode;
   newd.vec_flags = VEC_ADVSIMD;
+  newd.op_mode = newd.vmode;
+  newd.op_vec_flags = newd.vec_flags;
   newd.target = d->target ? gen_lowpart (new_mode, d->target) : NULL;
   newd.op0 = d->op0 ? gen_lowpart (new_mode, d->op0) : NULL;
   newd.op1 = d->op1 ? gen_lowpart (new_mode, d->op1) : NULL;
@@ -23891,6 +23895,33 @@ aarch64_evpc_sve_tbl (struct expand_vec_perm_d *d)
   return true;
 }
 
+/* Try to implement D using SVE dup instruction.  */
+
+static bool
+aarch64_evpc_sve_dup (struct expand_vec_perm_d *d)
+{
+  if (BYTES_BIG_ENDIAN
+      || !d->one_vector_p
+      || d->vec_flags != VEC_SVE_DATA
+      || d->op_vec_flags != VEC_ADVSIMD
+      || d->perm.encoding ().nelts_per_pattern () != 1
+      || !known_eq (d->perm.encoding ().npatterns (),
+		    GET_MODE_NUNITS (d->op_mode))
+      || !known_eq (GET_MODE_BITSIZE (d->op_mode), 128))
+    return false;
+
+  int npatterns = d->perm.encoding ().npatterns ();
+  for (int i = 0; i < npatterns; i++)
+    if (!known_eq (d->perm[i], i))
+      return false;
+
+  if (d->testing_p)
+    return true;
+
+  aarch64_expand_sve_dupq (d->target, GET_MODE (d->target), d->op0);
+  return true;
+}
+
 /* Try to implement D using SVE SEL instruction.  */
 
 static bool
@@ -24014,6 +24045,8 @@ aarch64_evpc_ins (struct expand_vec_perm_d *d)
 static bool
 aarch64_expand_vec_perm_const_1 (struct expand_vec_perm_d *d)
 {
+  gcc_assert (d->op_mode != E_VOIDmode);
+
   /* The pattern matching functions above are written to look for a small
      number to begin the sequence (0, 1, N/2).  If we begin with an index
      from the second operand, we can swap the operands.  */
@@ -24030,30 +24063,39 @@ aarch64_expand_vec_perm_const_1 (struct expand_vec_perm_d *d)
        || d->vec_flags == VEC_SVE_PRED)
       && known_gt (nelt, 1))
     {
-      if (aarch64_evpc_rev_local (d))
-	return true;
-      else if (aarch64_evpc_rev_global (d))
-	return true;
-      else if (aarch64_evpc_ext (d))
-	return true;
-      else if (aarch64_evpc_dup (d))
-	return true;
-      else if (aarch64_evpc_zip (d))
-	return true;
-      else if (aarch64_evpc_uzp (d))
-	return true;
-      else if (aarch64_evpc_trn (d))
-	return true;
-      else if (aarch64_evpc_sel (d))
-	return true;
-      else if (aarch64_evpc_ins (d))
-	return true;
-      else if (aarch64_evpc_reencode (d))
-	return true;
-      if (d->vec_flags == VEC_SVE_DATA)
-	return aarch64_evpc_sve_tbl (d);
-      else if (d->vec_flags == VEC_ADVSIMD)
-	return aarch64_evpc_tbl (d);
+      if (d->vmode == d->op_mode)
+	{
+	  if (aarch64_evpc_rev_local (d))
+	    return true;
+	  else if (aarch64_evpc_rev_global (d))
+	    return true;
+	  else if (aarch64_evpc_ext (d))
+	    return true;
+	  else if (aarch64_evpc_dup (d))
+	    return true;
+	  else if (aarch64_evpc_zip (d))
+	    return true;
+	  else if (aarch64_evpc_uzp (d))
+	    return true;
+	  else if (aarch64_evpc_trn (d))
+	    return true;
+	  else if (aarch64_evpc_sel (d))
+	    return true;
+	  else if (aarch64_evpc_ins (d))
+	    return true;
+	  else if (aarch64_evpc_reencode (d))
+	    return true;
+
+	  if (d->vec_flags == VEC_SVE_DATA)
+	    return aarch64_evpc_sve_tbl (d);
+	  else if (d->vec_flags == VEC_ADVSIMD)
+	    return aarch64_evpc_tbl (d);
+	}
+      else
+	{
+	  if (aarch64_evpc_sve_dup (d))
+	    return true;
+	}
     }
   return false;
 }
@@ -24065,9 +24107,6 @@ aarch64_vectorize_vec_perm_const (machine_mode vmode, machine_mode op_mode,
 				  rtx target, rtx op0, rtx op1,
 				  const vec_perm_indices &sel)
 {
-  if (vmode != op_mode)
-    return false;
-
   struct expand_vec_perm_d d;
 
   /* Check whether the mask can be applied to a single vector.  */
@@ -24091,6 +24130,8 @@ aarch64_vectorize_vec_perm_const (machine_mode vmode, machine_mode op_mode,
 		     sel.nelts_per_input ());
   d.vmode = vmode;
   d.vec_flags = aarch64_classify_vector_mode (d.vmode);
+  d.op_mode = op_mode;
+  d.op_vec_flags = aarch64_classify_vector_mode (d.op_mode);
   d.target = target;
   d.op0 = op0 ? force_reg (vmode, op0) : NULL_RTX;
   if (op0 == op1)
