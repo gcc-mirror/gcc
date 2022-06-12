@@ -80,6 +80,37 @@
 #define SLICE_TYPE_P(TYPE)                                                     \
   (TREE_CODE (TYPE) == RECORD_TYPE && TREE_LANG_FLAG_0 (TYPE))
 
+/* Returns true if NODE is a pointer to member function type.  */
+#define TYPE_PTRMEMFUNC_P(NODE)                                                \
+  (TREE_CODE (NODE) == RECORD_TYPE && TYPE_PTRMEMFUNC_FLAG (NODE))
+
+#define TYPE_PTRMEMFUNC_FLAG(NODE) (TYPE_LANG_FLAG_2 (RECORD_TYPE_CHECK (NODE)))
+
+#define TYPE_PTRMEMFUNC_FN_TYPE_RAW(NODE) (TREE_TYPE (TYPE_FIELDS (NODE)))
+
+/* True if NODE is a compound-literal, i.e., a brace-enclosed
+   initializer cast to a particular type.  This is mostly only set during
+   template parsing; once the initializer has been digested into an actual
+   value of the type, the expression is represented by a TARGET_EXPR.  */
+#define COMPOUND_LITERAL_P(NODE)                                               \
+  (TREE_CODE (NODE) == CONSTRUCTOR && TREE_HAS_CONSTRUCTOR (NODE))
+
+/* When appearing in an INDIRECT_REF, it means that the tree structure
+   underneath is actually a call to a constructor.  This is needed
+   when the constructor must initialize local storage (which can
+   be automatically destroyed), rather than allowing it to allocate
+   space from the heap.
+
+   When appearing in a SAVE_EXPR, it means that underneath
+   is a call to a constructor.
+
+   When appearing in a CONSTRUCTOR, the expression is an unconverted
+   compound literal.
+
+   When appearing in a FIELD_DECL, it means that this field
+   has been duly initialized in its constructor.  */
+#define TREE_HAS_CONSTRUCTOR(NODE) (TREE_LANG_FLAG_4 (NODE))
+
 namespace Rust {
 
 // forked from gcc/cp/cvt.cc convert_to_void
@@ -188,6 +219,13 @@ get_fndecl_from_callee (tree fn);
 // Return an expression for the address of BASE[INDEX], used in offset intrinsic
 extern tree
 pointer_offset_expression (tree base_tree, tree index_tree, location_t locus);
+
+extern tree
+rs_walk_subtrees (tree *, int *, walk_tree_fn, void *, hash_set<tree> *);
+#define rs_walk_tree(tp, func, data, pset)                                     \
+  walk_tree_1 (tp, func, data, pset, rs_walk_subtrees)
+#define rs_walk_tree_without_duplicates(tp, func, data)                        \
+  walk_tree_without_duplicates_1 (tp, func, data, rs_walk_subtrees)
 
 } // namespace Rust
 
