@@ -12916,7 +12916,7 @@ output_one_line_info_table (dw_line_info_table *table)
   char line_label[MAX_ARTIFICIAL_LABEL_BYTES];
   unsigned int current_line = 1;
   bool current_is_stmt = DWARF_LINE_DEFAULT_IS_STMT_START;
-  dw_line_info_entry *ent, *prev_addr;
+  dw_line_info_entry *ent, *prev_addr = NULL;
   size_t i;
   unsigned int view;
 

@@ -1913,7 +1913,8 @@ static inline void
 gimple_set_location (gimple *g, location_t location)
 {
   /* Copy the no-warning data to the statement location.  */
-  copy_warning (location, g->location);
+  if (g->location != UNKNOWN_LOCATION)
+    copy_warning (location, g->location);
   g->location = location;
 }
 

@@ -264,10 +264,8 @@ expand_widen_pattern_expr (sepops ops, rtx op0, rtx op1, rtx wide_op,
   bool sbool = false;
 
   oprnd0 = ops->op0;
-  if (nops >= 2)
-    oprnd1 = ops->op1;
-  if (nops >= 3)
-    oprnd2 = ops->op2;
+  oprnd1 = nops >= 2 ? ops->op1 : NULL_TREE;
+  oprnd2 = nops >= 3 ? ops->op2 : NULL_TREE;
 
   tmode0 = TYPE_MODE (TREE_TYPE (oprnd0));
   if (ops->code == VEC_UNPACK_FIX_TRUNC_HI_EXPR
