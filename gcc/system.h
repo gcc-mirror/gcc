@@ -1292,6 +1292,14 @@ void gcc_stablesort_r (void *, size_t, size_t, sort_r_cmp_fn *, void *data);
 #define NULL nullptr
 #endif
 
+/* Return true if STR string starts with PREFIX.  */
+
+static inline bool
+startswith (const char *str, const char *prefix)
+{
+  return strncmp (str, prefix, strlen (prefix)) == 0;
+}
+
 /* Return true if STR string ends with SUFFIX.  */
 
 static inline bool

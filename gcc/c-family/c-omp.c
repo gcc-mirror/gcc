@@ -2009,6 +2009,7 @@ c_omp_split_clauses (location_t loc, enum tree_code code,
 	case OMP_CLAUSE_IS_DEVICE_PTR:
 	case OMP_CLAUSE_DEFAULTMAP:
 	case OMP_CLAUSE_DEPEND:
+	case OMP_CLAUSE_USES_ALLOCATORS:
 	  s = C_OMP_CLAUSE_SPLIT_TARGET;
 	  break;
 	case OMP_CLAUSE_NUM_TEAMS:
