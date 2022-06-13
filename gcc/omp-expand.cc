@@ -9983,6 +9983,8 @@ expand_omp_target (struct omp_region *region)
   tree device = NULL_TREE;
   location_t device_loc = UNKNOWN_LOCATION;
   tree goacc_flags = NULL_TREE;
+  bool need_device_adjustment = false;
+  gimple_stmt_iterator adj_gsi;
   if (is_gimple_omp_oacc (entry_stmt))
     {
       /* By default, no GOACC_FLAGs are set.  */
@@ -9994,6 +9996,19 @@ expand_omp_target (struct omp_region *region)
       if (c)
 	{
 	  device = OMP_CLAUSE_DEVICE_ID (c);
+	  /* Ensure 'device' is of the correct type.  */
+	  device = fold_convert_loc (device_loc, integer_type_node, device);
+	  if (TREE_CODE (device) == INTEGER_CST)
+	    {
+	      if (wi::to_wide (device) == GOMP_DEVICE_ICV)
+		device = build_int_cst (integer_type_node,
+					GOMP_DEVICE_HOST_FALLBACK);
+	      else if (wi::to_wide (device) == GOMP_DEVICE_HOST_FALLBACK)
+		device = build_int_cst (integer_type_node,
+					GOMP_DEVICE_HOST_FALLBACK - 1);
+	    }
+	  else
+	    need_device_adjustment = true;
 	  device_loc = OMP_CLAUSE_LOCATION (c);
 	  if (OMP_CLAUSE_DEVICE_ANCESTOR (c))
 	    sorry_at (device_loc, "%<ancestor%> not yet supported");
@@ -10021,7 +10036,8 @@ expand_omp_target (struct omp_region *region)
   if (c)
     cond = OMP_CLAUSE_IF_EXPR (c);
   /* If we found the clause 'if (cond)', build:
-     OpenACC: goacc_flags = (cond ? goacc_flags : flags | GOACC_FLAG_HOST_FALLBACK)
+     OpenACC: goacc_flags = (cond ? goacc_flags
+				  : goacc_flags | GOACC_FLAG_HOST_FALLBACK)
      OpenMP: device = (cond ? device : GOMP_DEVICE_HOST_FALLBACK) */
   if (cond)
     {
@@ -10029,20 +10045,13 @@ expand_omp_target (struct omp_region *region)
       if (is_gimple_omp_oacc (entry_stmt))
 	tp = &goacc_flags;
       else
-	{
-	  /* Ensure 'device' is of the correct type.  */
-	  device = fold_convert_loc (device_loc, integer_type_node, device);
-
-	  tp = &device;
-	}
+	tp = &device;
 
       cond = gimple_boolify (cond);
 
       basic_block cond_bb, then_bb, else_bb;
       edge e;
-      tree tmp_var;
-
-      tmp_var = create_tmp_var (TREE_TYPE (*tp));
+      tree tmp_var = create_tmp_var (TREE_TYPE (*tp));
       if (offloaded)
 	e = split_block_after_labels (new_bb);
       else
@@ -10067,6 +10076,7 @@ expand_omp_target (struct omp_region *region)
       gsi = gsi_start_bb (then_bb);
       stmt = gimple_build_assign (tmp_var, *tp);
       gsi_insert_after (&gsi, stmt, GSI_CONTINUE_LINKING);
+      adj_gsi = gsi;
 
       gsi = gsi_start_bb (else_bb);
       if (is_gimple_omp_oacc (entry_stmt))
@@ -10099,6 +10109,50 @@ expand_omp_target (struct omp_region *region)
       if (device != NULL_TREE)
 	device = force_gimple_operand_gsi (&gsi, device, true, NULL_TREE,
 					   true, GSI_SAME_STMT);
+      if (need_device_adjustment)
+	{
+	  tree tmp_var = create_tmp_var (TREE_TYPE (device));
+	  stmt = gimple_build_assign (tmp_var, device);
+	  gsi_insert_before (&gsi, stmt, GSI_SAME_STMT);
+	  adj_gsi = gsi_for_stmt (stmt);
+	  device = tmp_var;
+	}
+    }
+
+  if (need_device_adjustment)
+    {
+      tree uns = fold_convert (unsigned_type_node, device);
+      uns = force_gimple_operand_gsi (&adj_gsi, uns, true, NULL_TREE,
+				      false, GSI_CONTINUE_LINKING);
+      edge e = split_block (gsi_bb (adj_gsi), gsi_stmt (adj_gsi));
+      basic_block cond_bb = e->src;
+      basic_block else_bb = e->dest;
+      if (gsi_bb (adj_gsi) == new_bb)
+	{
+	  new_bb = else_bb;
+	  gsi = gsi_last_nondebug_bb (new_bb);
+	}
+
+      basic_block then_bb = create_empty_bb (cond_bb);
+      set_immediate_dominator (CDI_DOMINATORS, then_bb, cond_bb);
+
+      cond = build2 (GT_EXPR, boolean_type_node, uns,
+		     build_int_cst (unsigned_type_node,
+				    GOMP_DEVICE_HOST_FALLBACK - 1));
+      stmt = gimple_build_cond_empty (cond);
+      adj_gsi = gsi_last_bb (cond_bb);
+      gsi_insert_after (&adj_gsi, stmt, GSI_CONTINUE_LINKING);
+
+      adj_gsi = gsi_start_bb (then_bb);
+      tree add = build2 (PLUS_EXPR, integer_type_node, device,
+			 build_int_cst (integer_type_node, -1));
+      stmt = gimple_build_assign (device, add);
+      gsi_insert_after (&adj_gsi, stmt, GSI_CONTINUE_LINKING);
+
+      make_edge (cond_bb, then_bb, EDGE_TRUE_VALUE);
+      e->flags = EDGE_FALSE_VALUE;
+      add_bb_to_loop (then_bb, cond_bb->loop_father);
+      make_edge (then_bb, else_bb, EDGE_FALLTHRU);
     }
 
   t = gimple_omp_target_data_arg (entry_stmt);
