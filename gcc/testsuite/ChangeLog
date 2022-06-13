@@ -1,3 +1,14 @@
+2022-06-12  Max Filippov  <jcmvbkbc@gmail.com>
+
+	* g++.target/xtensa/pr95571.C (__xtensa_libgcc_window_spill):
+	New definition.
+
+2022-06-12  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	PR target/96463
+	* gcc.target/aarch64/sve/acle/general/pr96463-1.c: New test.
+	* gcc.target/aarch64/sve/acle/general/pr96463-2.c: Likewise.
+
 2022-06-11  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
 
 	* gcc.target/xtensa/constsynth_2insns.c: New.

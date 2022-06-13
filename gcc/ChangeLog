@@ -1,3 +1,33 @@
+2022-06-12  Simon Wright  <simon@pushface.org>
+
+	PR target/104871
+	* config/darwin-driver.cc (darwin_find_version_from_kernel): If the OS
+	version is darwin20 (macOS 11) or greater, truncate the version to the
+	major number.
+
+2022-06-12  Mark Mentovai  <mark@mentovai.com>
+
+	* config/darwin-c.cc: Make -mmacosx-version-min more future-proof.
+
+2022-06-12  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	PR target/96463
+	* config/aarch64/aarch64-sve-builtins-base.cc: Include ssa.h.
+	(svld1rq_impl::fold): Define.
+	* config/aarch64/aarch64.cc (expand_vec_perm_d): Define new members
+	op_mode and op_vec_flags.
+	(aarch64_evpc_reencode): Initialize newd.op_mode and
+	newd.op_vec_flags.
+	(aarch64_evpc_sve_dup): New function.
+	(aarch64_expand_vec_perm_const_1): Gate existing calls to
+	aarch64_evpc_* functions under d->vmode == d->op_mode,
+	and call aarch64_evpc_sve_dup.
+	(aarch64_vectorize_vec_perm_const): Remove assert
+	d->vmode != d->op_mode, and initialize d.op_mode and d.op_vec_flags.
+	* tree-cfg.cc (verify_gimple_assign_ternary): Allow different
+	vector types for lhs and rhs in VEC_PERM_EXPR if rhs3 is
+	constant.
+
 2022-06-11  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
 
 	* config/xtensa/xtensa-protos.h (xtensa_constantsynth):
