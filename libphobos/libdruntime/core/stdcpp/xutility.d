@@ -23,14 +23,27 @@ else
     enum StdNamespace = "std";
 }
 
+/**
+ * Possible values of the `__cplusplus` macro provided by C++ compilers
+ *
+ * For foolproofness, use ordering comparison, e.g. `__cplusplus >= CppStdRevision.cpp17`.
+ */
 enum CppStdRevision : uint
 {
     cpp98 = 199711,
     cpp11 = 201103,
     cpp14 = 201402,
-    cpp17 = 201703
+    cpp17 = 201703,
+    cpp20 = 202002,
 }
 
+/**
+ * Returns the target C++ version, encoded as C++ compilers do
+ *
+ * C++ compilers provide a `__cplusplus` macro which returns an integer
+ * representing the targetted standard. This manifest provides the same
+ * interface, retrieved from the compiler via a `__traits`.
+ */
 enum __cplusplus = __traits(getTargetInfo, "cppStd");
 
 // wrangle C++ features

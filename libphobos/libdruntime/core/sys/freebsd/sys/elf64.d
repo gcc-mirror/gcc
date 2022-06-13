@@ -18,6 +18,16 @@ alias Elf64_Word Elf64_Hashelt;
 alias Elf64_Xword Elf64_Size;
 alias Elf64_Sxword Elf64_Ssize;
 
+struct Elf64_Dyn
+{
+  Elf64_Sxword  d_tag;
+  union _d_un
+  {
+      Elf64_Xword d_val;
+      Elf64_Addr d_ptr;
+  } _d_un d_un;
+}
+
 extern (D)
 {
     auto ELF64_R_TYPE_DATA(I)(I i) { return (cast(Elf64_Xword) i << 32) >> 40; }

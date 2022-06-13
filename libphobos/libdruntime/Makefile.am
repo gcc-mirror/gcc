@@ -200,9 +200,9 @@ DRUNTIME_DSOURCES = core/atomic.d core/attribute.d core/bitop.d \
 	core/stdc/tgmath.d core/stdc/time.d core/stdc/wchar_.d \
 	core/stdc/wctype.d core/sync/barrier.d core/sync/condition.d \
 	core/sync/config.d core/sync/event.d core/sync/exception.d \
-	core/sync/mutex.d core/sync/rwmutex.d core/sync/semaphore.d \
-	core/thread/context.d core/thread/fiber.d core/thread/osthread.d \
-	core/thread/package.d core/thread/threadbase.d \
+	core/sync/mutex.d core/sync/package.d core/sync/rwmutex.d \
+	core/sync/semaphore.d core/thread/context.d core/thread/fiber.d \
+	core/thread/osthread.d core/thread/package.d core/thread/threadbase.d \
 	core/thread/threadgroup.d core/thread/types.d core/time.d \
 	core/vararg.d core/volatile.d gcc/attribute.d gcc/attributes.d \
 	gcc/backtrace.d gcc/builtins.d gcc/deh.d gcc/emutls.d gcc/gthread.d \

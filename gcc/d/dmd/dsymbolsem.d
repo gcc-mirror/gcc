@@ -3276,13 +3276,6 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
         if ((funcdecl.storage_class & STC.auto_) && !f.isref && !funcdecl.inferRetType)
             funcdecl.error("storage class `auto` has no effect if return type is not inferred");
 
-        /* Functions can only be 'scope' if they have a 'this'
-         */
-        if (f.isScopeQual && !funcdecl.isNested() && !ad)
-        {
-            funcdecl.error("functions cannot be `scope`");
-        }
-
         if (f.isreturn && !funcdecl.needThis() && !funcdecl.isNested())
         {
             /* Non-static nested functions have a hidden 'this' pointer to which

@@ -1460,7 +1460,7 @@ class Parser(AST, Lexer = dmd.lexer.Lexer) : Lexer
 
         if (token.value != TOK.leftCurly)
         {
-            error("members of template declaration expected");
+            error("`{` expected after template parameter list, not `%s`", token.toChars());
             goto Lerr;
         }
         decldefs = parseBlock(null);

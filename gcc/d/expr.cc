@@ -2238,13 +2238,17 @@ public:
 	    new_call = build_nop (type, build_address (var));
 	    setup_exp = modify_expr (var, aggregate_initializer_decl (cd));
 	  }
+	else if (global.params.ehnogc && e->thrownew)
+	  {
+	    /* Allocating a `@nogc' Exception with `_d_newThrowable' has already
+	       been handled by the front-end.  */
+	    gcc_unreachable ();
+	  }
 	else
 	  {
 	    /* Generate: _d_newclass()  */
 	    tree arg = build_address (get_classinfo_decl (cd));
-	    libcall_fn libcall = (global.params.ehnogc && e->thrownew)
-	      ? LIBCALL_NEWTHROW : LIBCALL_NEWCLASS;
-	    new_call = build_libcall (libcall, tb, 1, arg);
+	    new_call = build_libcall (LIBCALL_NEWCLASS, tb, 1, arg);
 	  }
 
 	/* Set the context pointer for nested classes.  */

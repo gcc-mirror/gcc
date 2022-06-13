@@ -1773,7 +1773,7 @@ extern (C++) class FuncDeclaration : Declaration
             if (!tp)
                 continue;
 
-            if (fparam.storageClass & (STC.lazy_ | STC.out_ | STC.ref_))
+            if (fparam.isLazy() || fparam.isReference())
             {
                 if (!traverseIndirections(tp, t))
                     return false;
@@ -2528,7 +2528,7 @@ extern (C++) class FuncDeclaration : Declaration
             foreach (n, p; parameterList)
             {
                 p = p.syntaxCopy();
-                if (!(p.storageClass & STC.lazy_))
+                if (!p.isLazy())
                     p.storageClass = (p.storageClass | STC.ref_) & ~STC.out_;
                 p.defaultArg = null; // won't be the same with ref
                 result.push(p);

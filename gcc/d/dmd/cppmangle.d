@@ -1318,7 +1318,7 @@ private final class CppMangleVisitor : Visitor
             Type t = fparam.type.merge2();
             if (fparam.isReference())
                 t = t.referenceTo();
-            else if (fparam.storageClass & STC.lazy_)
+            else if (fparam.isLazy())
             {
                 // Mangle as delegate
                 auto tf = new TypeFunction(ParameterList(), t, LINK.d);

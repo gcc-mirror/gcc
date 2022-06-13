@@ -1313,6 +1313,7 @@ version (D_BetterC) {} else
 // Types with invariants
 // Disabled in BetterC due to use of exceptions
 version (D_BetterC) {} else
+version (D_Invariants)
 @system unittest
 {
     import std.exception : assertThrown;
@@ -1330,22 +1331,13 @@ version (D_BetterC) {} else
         invariant { assert(i >= 0); }
     }
 
-    // Only run test if contract checking is enabled
-    try
-    {
-        S probe = S(-1);
-        assert(&probe);
-    }
-    catch (AssertError _)
-    {
-        SumType!S x;
-        x.match!((ref v) { v.i = -1; });
-        assertThrown!AssertError(assert(&x));
+    SumType!S x;
+    x.match!((ref v) { v.i = -1; });
+    assertThrown!AssertError(assert(&x));
 
-        SumType!C y = new C();
-        y.match!((ref v) { v.i = -1; });
-        assertThrown!AssertError(assert(&y));
-    }
+    SumType!C y = new C();
+    y.match!((ref v) { v.i = -1; });
+    assertThrown!AssertError(assert(&y));
 }
 
 // Calls value postblit on self-assignment

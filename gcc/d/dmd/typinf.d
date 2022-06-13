@@ -18,6 +18,7 @@ import dmd.dscope;
 import dmd.dclass;
 import dmd.dstruct;
 import dmd.errors;
+import dmd.expression;
 import dmd.globals;
 import dmd.gluelayer;
 import dmd.mtype;
@@ -28,11 +29,12 @@ import core.stdc.stdio;
  * Generates the `TypeInfo` object associated with `torig` if it
  * hasn't already been generated
  * Params:
+ *      e     = if not null, then expression for pretty-printing errors
  *      loc   = the location for reporting line numbers in errors
  *      torig = the type to generate the `TypeInfo` object for
  *      sc    = the scope
  */
-extern (C++) void genTypeInfo(const ref Loc loc, Type torig, Scope* sc)
+extern (C++) void genTypeInfo(Expression e, const ref Loc loc, Type torig, Scope* sc)
 {
     // printf("genTypeInfo() %s\n", torig.toChars());
 
@@ -43,7 +45,10 @@ extern (C++) void genTypeInfo(const ref Loc loc, Type torig, Scope* sc)
     {
         if (!global.params.useTypeInfo)
         {
-            .error(loc, "`TypeInfo` cannot be used with -betterC");
+            if (e)
+                .error(loc, "expression `%s` uses the GC and cannot be used with switch `-betterC`", e.toChars());
+            else
+                .error(loc, "`TypeInfo` cannot be used with -betterC");
             fatal();
         }
     }

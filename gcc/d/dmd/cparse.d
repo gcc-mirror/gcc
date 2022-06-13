@@ -5156,26 +5156,80 @@ final class CParser(AST) : Parser!AST
                 {
                     auto id = n.ident;
                     scan(&n);
-                    if (n.value == TOK.endOfLine)       // #define identifier
+
+                    AST.Type t;
+
+                    switch (n.value)
                     {
-                        nextDefineLine();
-                        continue;
-                    }
-                    if (n.value == TOK.int32Literal)
-                    {
-                        const value = n.intvalue;
-                        scan(&n);
-                        if (n.value == TOK.endOfLine)
-                        {
-                            /* Declare manifest constant:
-                             *  enum id = value;
-                             */
-                            AST.Expression e = new AST.IntegerExp(scanloc, value, AST.Type.tint32);
-                            auto v = new AST.VarDeclaration(scanloc, AST.Type.tint32, id, new AST.ExpInitializer(scanloc, e), STC.manifest);
-                            symbols.push(v);
+                        case TOK.endOfLine:     // #define identifier
                             nextDefineLine();
                             continue;
-                        }
+
+                        case TOK.int32Literal:
+                        case TOK.charLiteral:       t = AST.Type.tint32;    goto Linteger;
+                        case TOK.uns32Literal:      t = AST.Type.tuns32;    goto Linteger;
+                        case TOK.int64Literal:      t = AST.Type.tint64;    goto Linteger;
+                        case TOK.uns64Literal:      t = AST.Type.tuns64;    goto Linteger;
+
+                        Linteger:
+                            const intvalue = n.intvalue;
+                            scan(&n);
+                            if (n.value == TOK.endOfLine)
+                            {
+                                /* Declare manifest constant:
+                                 *  enum id = intvalue;
+                                 */
+                                AST.Expression e = new AST.IntegerExp(scanloc, intvalue, t);
+                                auto v = new AST.VarDeclaration(scanloc, t, id, new AST.ExpInitializer(scanloc, e), STC.manifest);
+                                symbols.push(v);
+                                nextDefineLine();
+                                continue;
+                            }
+                            break;
+
+                        case TOK.float32Literal:      t = AST.Type.tfloat32;     goto Lfloat;
+                        case TOK.float64Literal:      t = AST.Type.tfloat64;     goto Lfloat;
+                        case TOK.float80Literal:      t = AST.Type.tfloat80;     goto Lfloat;
+                        case TOK.imaginary32Literal:  t = AST.Type.timaginary32; goto Lfloat;
+                        case TOK.imaginary64Literal:  t = AST.Type.timaginary64; goto Lfloat;
+                        case TOK.imaginary80Literal:  t = AST.Type.timaginary80; goto Lfloat;
+
+                        Lfloat:
+                            const floatvalue = n.floatvalue;
+                            scan(&n);
+                            if (n.value == TOK.endOfLine)
+                            {
+                                /* Declare manifest constant:
+                                 *  enum id = floatvalue;
+                                 */
+                                AST.Expression e = new AST.RealExp(scanloc, floatvalue, t);
+                                auto v = new AST.VarDeclaration(scanloc, t, id, new AST.ExpInitializer(scanloc, e), STC.manifest);
+                                symbols.push(v);
+                                nextDefineLine();
+                                continue;
+                            }
+                            break;
+
+                        case TOK.string_:
+                            const str = n.ustring;
+                            const len = n.len;
+                            const postfix = n.postfix;
+                            scan(&n);
+                            if (n.value == TOK.endOfLine)
+                            {
+                                /* Declare manifest constant:
+                                 *  enum id = "string";
+                                 */
+                                AST.Expression e = new AST.StringExp(scanloc, str[0 .. len], len, 1, postfix);
+                                auto v = new AST.VarDeclaration(scanloc, null, id, new AST.ExpInitializer(scanloc, e), STC.manifest);
+                                symbols.push(v);
+                                nextDefineLine();
+                                continue;
+                            }
+                            break;
+
+                        default:
+                            break;
                     }
                 }
                 skipToNextLine();

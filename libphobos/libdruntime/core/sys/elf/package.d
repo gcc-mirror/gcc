@@ -617,26 +617,6 @@ enum PF_R =            (1 << 2);
 enum PF_MASKOS =       0x0ff00000;
 enum PF_MASKPROC =     0xf0000000;
 
-struct Elf32_Dyn
-{
-  Elf32_Sword   d_tag;
-  union _d_un
-  {
-      Elf32_Word d_val;
-      Elf32_Addr d_ptr;
-  } _d_un d_un;
-}
-
-struct Elf64_Dyn
-{
-  Elf64_Sxword  d_tag;
-  union _d_un
-  {
-      Elf64_Xword d_val;
-      Elf64_Addr d_ptr;
-  } _d_un d_un;
-}
-
 enum DT_NULL =         0;
 enum DT_NEEDED =       1;
 enum DT_PLTRELSZ =     2;

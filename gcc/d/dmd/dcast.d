@@ -916,7 +916,7 @@ MATCH implicitConvTo(Expression e, Type t)
             if (i - j < nparams)
             {
                 Parameter fparam = tf.parameterList[i - j];
-                if (fparam.storageClass & STC.lazy_)
+                if (fparam.isLazy())
                     return result; // not sure what to do with this
                 Type tparam = fparam.type;
                 if (!tparam)
@@ -1224,7 +1224,7 @@ MATCH implicitConvTo(Expression e, Type t)
                 if (i - j < nparams)
                 {
                     Parameter fparam = tf.parameterList[i - j];
-                    if (fparam.storageClass & STC.lazy_)
+                    if (fparam.isLazy())
                         return MATCH.nomatch; // not sure what to do with this
                     Type tparam = fparam.type;
                     if (!tparam)

@@ -1274,14 +1274,14 @@ extern (C++) final class StaticForeachDeclaration : AttribDeclaration
  * declarations.
  */
 
-extern(C++) final class ForwardingAttribDeclaration: AttribDeclaration
+extern(C++) final class ForwardingAttribDeclaration : AttribDeclaration
 {
     ForwardingScopeDsymbol sym = null;
 
     this(Dsymbols* decl)
     {
         super(decl);
-        sym = new ForwardingScopeDsymbol(null);
+        sym = new ForwardingScopeDsymbol();
         sym.symtab = new DsymbolTable();
     }
 
@@ -1298,7 +1298,7 @@ extern(C++) final class ForwardingAttribDeclaration: AttribDeclaration
      */
     override void addMember(Scope* sc, ScopeDsymbol sds)
     {
-        parent = sym.parent = sym.forward = sds;
+        sym.parent = sds;
         return super.addMember(sc, sym);
     }
 

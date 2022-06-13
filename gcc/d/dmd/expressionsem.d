@@ -443,7 +443,7 @@ private Expression searchUFCS(Scope* sc, UnaExp ue, Identifier ident)
     }
 
     if (!s)
-        return ue.e1.type.Type.getProperty(sc, loc, ident, 0);
+        return ue.e1.type.getProperty(sc, loc, ident, 0);
 
     FuncDeclaration f = s.isFuncDeclaration();
     if (f)
@@ -1856,7 +1856,7 @@ private bool functionParameters(const ref Loc loc, Scope* sc,
             }
 
         L1:
-            if (!(p.storageClass & STC.lazy_ && p.type.ty == Tvoid))
+            if (!(p.isLazy() && p.type.ty == Tvoid))
             {
                 if (ubyte wm = arg.type.deduceWild(p.type, p.isReference()))
                 {
@@ -1953,7 +1953,7 @@ private bool functionParameters(const ref Loc loc, Scope* sc,
             Type targ = arg.type;               // keep original type for isCopyable() because alias this
                                                 // resolution may hide an uncopyable type
 
-            if (!(p.storageClass & STC.lazy_ && p.type.ty == Tvoid))
+            if (!(p.isLazy() && p.type.ty == Tvoid))
             {
                 Type tprm = p.type.hasWild()
                     ? p.type.substWildTo(wildmatch)
@@ -2018,7 +2018,7 @@ private bool functionParameters(const ref Loc loc, Scope* sc,
                 }
                 arg = arg.toLvalue(sc, arg);
             }
-            else if (p.storageClass & STC.lazy_)
+            else if (p.isLazy())
             {
                 // Convert lazy argument to a delegate
                 auto t = (p.type.ty == Tvoid) ? p.type : arg.type;
@@ -2050,7 +2050,7 @@ private bool functionParameters(const ref Loc loc, Scope* sc,
             // Turning heap allocations into stack allocations is dangerous without dip1000, since `scope` inference
             // may be unreliable when scope violations only manifest as deprecation warnings.
             // However, existing `@nogc` code may rely on it, so still do it when the parameter is explicitly marked `scope`
-            const explicitScope = (p.storageClass & STC.lazy_) ||
+            const explicitScope = p.isLazy() ||
                 ((p.storageClass & STC.scope_) && !(p.storageClass & STC.scopeinferred));
             if ((pStc & (STC.scope_ | STC.lazy_)) &&
                 ((global.params.useDIP1000 == FeatureState.enabled) || explicitScope) &&
@@ -2261,7 +2261,7 @@ private bool functionParameters(const ref Loc loc, Scope* sc,
             if (arg.type.needsDestruction())
             {
                 Parameter p = (i >= nparams ? null : tf.parameterList[i]);
-                if (!(p && (p.storageClass & (STC.lazy_ | STC.ref_ | STC.out_))))
+                if (!(p && (p.isLazy() || p.isReference())))
                 {
                     if (firstdtor == -1)
                         firstdtor = i;
@@ -2302,7 +2302,7 @@ private bool functionParameters(const ref Loc loc, Scope* sc,
 
             Parameter parameter = (i >= nparams ? null : tf.parameterList[i]);
             const bool isRef = parameter && parameter.isReference();
-            const bool isLazy = (parameter && (parameter.storageClass & STC.lazy_));
+            const bool isLazy = parameter && parameter.isLazy();
 
             /* Skip lazy parameters
              */
@@ -3721,6 +3721,36 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
                         v.inuse--;
                     }
                 }
+            }
+
+            // When using `@nogc` exception handling, lower `throw new E(args)` to
+            // `throw (__tmp = _d_newThrowable!E(), __tmp.__ctor(args), __tmp)`.
+            if (global.params.ehnogc && exp.thrownew &&
+                !cd.isCOMclass() && !cd.isCPPclass())
+            {
+                assert(cd.ctor);
+
+                Expression id = new IdentifierExp(exp.loc, Id.empty);
+                id = new DotIdExp(exp.loc, id, Id.object);
+
+                auto tiargs = new Objects();
+                tiargs.push(exp.newtype);
+                id = new DotTemplateInstanceExp(exp.loc, id, Id._d_newThrowable, tiargs);
+                id = new CallExp(exp.loc, id).expressionSemantic(sc);
+
+                Expression idVal;
+                Expression tmp = extractSideEffect(sc, "__tmpThrowable", idVal, id, true);
+                // auto castTmp = new CastExp(exp.loc, tmp, exp.type);
+
+                auto ctor = new DotIdExp(exp.loc, tmp, Id.ctor).expressionSemantic(sc);
+                auto ctorCall = new CallExp(exp.loc, ctor, exp.arguments);
+
+                id = Expression.combine(idVal, exp.argprefix).expressionSemantic(sc);
+                id = Expression.combine(id, ctorCall).expressionSemantic(sc);
+                // id = Expression.combine(id, castTmp).expressionSemantic(sc);
+
+                result = id.expressionSemantic(sc);
+                return;
             }
         }
         else if (auto ts = tb.isTypeStruct())
@@ -6582,6 +6612,14 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
             result = e;
             return;
         }
+        else if (auto ad = exp.var.isAliasDeclaration())
+        {
+            if (auto t = ad.getType())
+            {
+                result = new TypeExp(exp.loc, t).expressionSemantic(sc);
+                return;
+            }
+        }
 
         exp.e1 = exp.e1.addDtorHook(sc);
 
@@ -7006,9 +7044,19 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
                 /* Because nested functions cannot be overloaded,
                  * mark here that we took its address because castTo()
                  * may not be called with an exact match.
+                 *
+                 * https://issues.dlang.org/show_bug.cgi?id=19285 :
+                 * We also need to make sure we aren't inside a typeof. Ideally the compiler
+                 * would do typeof(...) semantic analysis speculatively then collect information
+                 * about what it used rather than relying on what are effectively semantically-global
+                 * variables but it doesn't.
                  */
-                if (!ve.hasOverloads || (f.isNested() && !f.needThis()))
+                if (!sc.isFromSpeculativeSemanticContext() && (!ve.hasOverloads || (f.isNested() && !f.needThis())))
+                {
+                    // TODO: Refactor to use a proper interface that can keep track of causes.
                     f.tookAddressOf++;
+                }
+
                 if (f.isNested() && !f.needThis())
                 {
                     if (f.isFuncLiteralDeclaration())
@@ -12855,11 +12903,8 @@ Expression semanticY(DotTemplateInstanceExp exp, Scope* sc, int flag)
 
         if (Declaration v = exp.ti.toAlias().isDeclaration())
         {
-            if (v.isFuncDeclaration() || v.isVarDeclaration())
-            {
-                return new DotVarExp(exp.loc, exp.e1, v)
-                       .expressionSemantic(sc);
-            }
+            return new DotVarExp(exp.loc, exp.e1, v)
+                   .expressionSemantic(sc);
         }
         return new DotExp(exp.loc, exp.e1, new ScopeExp(exp.loc, exp.ti))
                .expressionSemantic(sc);
@@ -12966,8 +13011,19 @@ bool checkSharedAccess(Expression e, Scope* sc, bool returnRef = false)
 
         bool visitVar(VarExp e)
         {
-            if (!allowRef && e.var.type.isShared())
+            // https://issues.dlang.org/show_bug.cgi?id=22626
+            // Synchronized functions don't need to use core.atomic
+            // when accessing `this`.
+            if (sc.func && sc.func.isSynchronized())
+            {
+                if (e.var.isThisDeclaration())
+                    return false;
+                else
+                    return sharedError(e);
+            }
+            else if (!allowRef && e.var.type.isShared())
                 return sharedError(e);
+
             return false;
         }
 
@@ -12987,15 +13043,22 @@ bool checkSharedAccess(Expression e, Scope* sc, bool returnRef = false)
             return check(e.e1, false);
         }
 
+        bool visitThis(ThisExp e)
+        {
+            if (sc.func && sc.func.isSynchronized())
+                return false;
+
+            return sharedError(e);
+        }
+
         bool visitDotVar(DotVarExp e)
         {
+            //printf("dotvarexp = %s\n", e.toChars());
             auto fd = e.var.isFuncDeclaration();
             const sharedFunc = fd && fd.type.isShared;
-
-            if (!allowRef && e.type.isShared() && !sharedFunc)
-                return sharedError(e);
-
             // Allow using `DotVarExp` within value types
+            if (!allowRef && e.type.isShared() && !sharedFunc && !(sc.func && sc.func.isSynchronized()))
+                return sharedError(e);
             if (e.e1.type.isTypeSArray() || e.e1.type.isTypeStruct())
                 return check(e.e1, allowRef);
 
@@ -13044,6 +13107,7 @@ bool checkSharedAccess(Expression e, Scope* sc, bool returnRef = false)
             case EXP.star:        return visitPtr(e.isPtrExp());
             case EXP.dotVariable: return visitDotVar(e.isDotVarExp());
             case EXP.index:       return visitIndex(e.isIndexExp());
+            case EXP.this_:       return visitThis(e.isThisExp());
         }
     }
 

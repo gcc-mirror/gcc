@@ -109,3 +109,12 @@ auto foo13550() @nogc
     }
     return &bar;
 }
+
+// https://issues.dlang.org/show_bug.cgi?id=19285
+
+void f(bool cond, string s) @nogc {
+    auto inner() { return s; }
+    alias Unused1 = typeof(inner); // OK
+    alias Unused2 = typeof(&inner); // (Does not) INFERS GC (anymore)
+    enum Unused3 = __traits(compiles , &inner);
+}
