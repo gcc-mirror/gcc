@@ -427,7 +427,7 @@ public:
 	    tree result = build_libcall (LIBCALL_ADEQ2, e->type, 3,
 					 d_array_convert (e->e1),
 					 d_array_convert (e->e2),
-					 build_typeinfo (e->loc, t1array));
+					 build_typeinfo (e, t1array));
 
 	    if (e->op == EXP::notEqual)
 	      result = build1 (TRUTH_NOT_EXPR, build_ctype (e->type), result);
@@ -450,7 +450,7 @@ public:
       {
 	/* Use _aaEqual() for associative arrays.  */
 	tree result = build_libcall (LIBCALL_AAEQUAL, e->type, 3,
-				     build_typeinfo (e->loc, tb1),
+				     build_typeinfo (e, tb1),
 				     build_expr (e->e1),
 				     build_expr (e->e2));
 
@@ -484,7 +484,7 @@ public:
     /* Build a call to _aaInX().  */
     this->result_ = build_libcall (LIBCALL_AAINX, e->type, 3,
 				   build_expr (e->e2),
-				   build_typeinfo (e->loc, tkey),
+				   build_typeinfo (e, tkey),
 				   build_address (key));
   }
 
@@ -728,13 +728,13 @@ public:
 				   size_int (ndims), build_address (var));
 
 	result = build_libcall (LIBCALL_ARRAYCATNTX, e->type, 2,
-				build_typeinfo (e->loc, e->type), arrs);
+				build_typeinfo (e, e->type), arrs);
       }
     else
       {
 	/* Handle single concatenation (a ~ b).  */
 	result = build_libcall (LIBCALL_ARRAYCATT, e->type, 3,
-				build_typeinfo (e->loc, e->type),
+				build_typeinfo (e, e->type),
 				d_array_convert (etype, e->e1),
 				d_array_convert (etype, e->e2));
       }
@@ -903,7 +903,7 @@ public:
 
 		/* So we can call postblits on const/immutable objects.  */
 		Type *tm = etype->unSharedOf ()->mutableOf ();
-		tree ti = build_typeinfo (e->loc, tm);
+		tree ti = build_typeinfo (e, tm);
 
 		/* Generate: _d_arraysetassign (t1.ptr, &t2, t1.length, ti);  */
 		result = build_libcall (LIBCALL_ARRAYSETASSIGN, Type::tvoid, 4,
@@ -977,7 +977,7 @@ public:
 	      {
 		/* Generate: _d_arrayassign(ti, from, to);  */
 		this->result_ = build_libcall (LIBCALL_ARRAYASSIGN, e->type, 3,
-					       build_typeinfo (e->loc, etype),
+					       build_typeinfo (e, etype),
 					       d_array_convert (e->e2),
 					       d_array_convert (e->e1));
 	      }
@@ -1122,7 +1122,7 @@ public:
 	Type *arrtype = (e->type->ty == TY::Tsarray)
 	  ? etype->arrayOf () : e->type;
 	tree result = build_libcall (libcall, arrtype, 4,
-				     build_typeinfo (e->loc, etype),
+				     build_typeinfo (e, etype),
 				     d_array_convert (e->e2),
 				     d_array_convert (e->e1),
 				     build_address (elembuf));
@@ -1193,13 +1193,13 @@ public:
 	  {
 	    libcall = LIBCALL_AAGETY;
 	    ptr = build_address (build_expr (e->e1));
-	    tinfo = build_typeinfo (e->loc, tb1->unSharedOf ()->mutableOf ());
+	    tinfo = build_typeinfo (e, tb1->unSharedOf ()->mutableOf ());
 	  }
 	else
 	  {
 	    libcall = LIBCALL_AAGETRVALUEX;
 	    ptr = build_expr (e->e1);
-	    tinfo = build_typeinfo (e->loc, tkey);
+	    tinfo = build_typeinfo (e, tkey);
 	  }
 
 	/* Index the associative array.  */
@@ -1427,7 +1427,7 @@ public:
 
 	this->result_ = build_libcall (LIBCALL_AADELX, Type::tbool, 3,
 				       build_expr (e->e1),
-				       build_typeinfo (e->loc, tkey),
+				       build_typeinfo (e, tkey),
 				       build_address (index));
       }
     else
@@ -1981,7 +1981,7 @@ public:
   {
     if (Type *tid = isType (e->obj))
       {
-	tree ti = build_typeinfo (e->loc, tid);
+	tree ti = build_typeinfo (e, tid);
 
 	/* If the typeinfo is at an offset.  */
 	if (tid->vtinfo->offset)
@@ -2319,7 +2319,7 @@ public:
 	/* Generate: _d_newitemT()  */
 	libcall_fn libcall = htype->isZeroInit ()
 	  ? LIBCALL_NEWITEMT : LIBCALL_NEWITEMIT;
-	tree arg = build_typeinfo (e->loc, e->newtype);
+	tree arg = build_typeinfo (e, e->newtype);
 	new_call = build_libcall (libcall, tb, 1, arg);
 
 	if (e->member || !e->arguments)
@@ -2387,7 +2387,7 @@ public:
 	    libcall_fn libcall = tarray->next->isZeroInit ()
 	      ? LIBCALL_NEWARRAYT : LIBCALL_NEWARRAYIT;
 	    result = build_libcall (libcall, tb, 2,
-				    build_typeinfo (e->loc, e->type),
+				    build_typeinfo (e, e->type),
 				    build_expr (arg));
 	  }
 	else
@@ -2419,7 +2419,7 @@ public:
 	    libcall_fn libcall = telem->isZeroInit ()
 	      ? LIBCALL_NEWARRAYMTX : LIBCALL_NEWARRAYMITX;
 
-	    tree tinfo = build_typeinfo (e->loc, e->type);
+	    tree tinfo = build_typeinfo (e, e->type);
 	    tree dims = d_array_value (build_ctype (Type::tsize_t->arrayOf ()),
 				       size_int (e->arguments->length),
 				       build_address (var));
@@ -2446,7 +2446,7 @@ public:
 	libcall_fn libcall = tpointer->next->isZeroInit (e->loc)
 	  ? LIBCALL_NEWITEMT : LIBCALL_NEWITEMIT;
 
-	tree arg = build_typeinfo (e->loc, e->newtype);
+	tree arg = build_typeinfo (e, e->newtype);
 	result = build_libcall (libcall, tb, 1, arg);
 
 	if (e->arguments && e->arguments->length == 1)
@@ -2691,7 +2691,7 @@ public:
 	/* Allocate space on the memory managed heap.  */
 	tree mem = build_libcall (LIBCALL_ARRAYLITERALTX,
 				  etype->pointerTo (), 2,
-				  build_typeinfo (e->loc, etype->arrayOf ()),
+				  build_typeinfo (e, etype->arrayOf ()),
 				  size_int (e->elements->length));
 	mem = d_save_expr (mem);
 
@@ -2748,7 +2748,7 @@ public:
 			       build_address (avals));
 
     tree mem = build_libcall (LIBCALL_ASSOCARRAYLITERALTX, Type::tvoidptr, 3,
-			      build_typeinfo (e->loc, ta), keys, vals);
+			      build_typeinfo (e, ta), keys, vals);
 
     /* Return an associative array pointed to by MEM.  */
     tree aatype = build_ctype (ta);
