@@ -34,17 +34,19 @@ package Ada.Text_IO.Fixed_IO with SPARK_Mode => On is
       Item  : out Num;
       Width : Field := 0)
    with
-     Pre    => Is_Open (File) and then Mode (File) = In_File,
-     Global => (In_Out => File_System);
+     Pre      => Is_Open (File) and then Mode (File) = In_File,
+     Global   => (In_Out => File_System),
+     Annotate => (GNATprove, Might_Not_Return);
 
    procedure Get
      (Item  : out Num;
       Width : Field := 0)
    with
-     Post   =>
+     Post     =>
        Line_Length'Old = Line_Length
        and Page_Length'Old = Page_Length,
-     Global => (In_Out => File_System);
+     Global   => (In_Out => File_System),
+     Annotate => (GNATprove, Might_Not_Return);
 
    procedure Put
      (File : File_Type;
@@ -53,11 +55,12 @@ package Ada.Text_IO.Fixed_IO with SPARK_Mode => On is
       Aft  : Field := Default_Aft;
       Exp  : Field := Default_Exp)
    with
-     Pre    => Is_Open (File) and then Mode (File) /= In_File,
-     Post   =>
+     Pre      => Is_Open (File) and then Mode (File) /= In_File,
+     Post     =>
        Line_Length (File)'Old = Line_Length (File)
        and Page_Length (File)'Old = Page_Length (File),
-     Global => (In_Out => File_System);
+     Global   => (In_Out => File_System),
+     Annotate => (GNATprove, Might_Not_Return);
 
    procedure Put
      (Item : Num;
@@ -65,17 +68,19 @@ package Ada.Text_IO.Fixed_IO with SPARK_Mode => On is
       Aft  : Field := Default_Aft;
       Exp  : Field := Default_Exp)
    with
-     Post   =>
+     Post     =>
        Line_Length'Old = Line_Length
        and Page_Length'Old = Page_Length,
-     Global => (In_Out => File_System);
+     Global   => (In_Out => File_System),
+     Annotate => (GNATprove, Might_Not_Return);
 
    procedure Get
      (From : String;
       Item : out Num;
       Last : out Positive)
    with
-     Global => null;
+     Global   => null,
+     Annotate => (GNATprove, Might_Not_Return);
 
    procedure Put
      (To   : out String;
@@ -83,7 +88,8 @@ package Ada.Text_IO.Fixed_IO with SPARK_Mode => On is
       Aft  : Field := Default_Aft;
       Exp  : Field := Default_Exp)
    with
-     Global => null;
+     Global   => null,
+     Annotate => (GNATprove, Might_Not_Return);
 
 private
    pragma Inline (Get);

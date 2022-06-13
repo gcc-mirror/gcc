@@ -49,6 +49,7 @@ with Ada.Strings.Search;
 
 package Ada.Strings.Bounded with SPARK_Mode is
    pragma Preelaborate;
+   pragma Annotate (GNATprove, Always_Return, Bounded);
 
    generic
       Max : Positive;
@@ -68,6 +69,7 @@ package Ada.Strings.Bounded with SPARK_Mode is
                                Post           => Ignore,
                                Contract_Cases => Ignore,
                                Ghost          => Ignore);
+      pragma Annotate (GNATprove, Always_Return, Generic_Bounded_Length);
 
       Max_Length : constant Positive := Max;
 

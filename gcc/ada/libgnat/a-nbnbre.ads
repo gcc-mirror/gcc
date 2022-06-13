@@ -20,6 +20,8 @@ with Ada.Strings.Text_Buffers; use Ada.Strings.Text_Buffers;
 package Ada.Numerics.Big_Numbers.Big_Reals
   with Preelaborate
 is
+   pragma Annotate (GNATprove, Always_Return, Big_Reals);
+
    type Big_Real is private with
      Real_Literal => From_Universal_Image,
      Put_Image    => Put_Image;
