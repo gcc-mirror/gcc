@@ -645,6 +645,83 @@
    (set_attr "mode"	"SI")
    (set_attr "length"	"6")])
 
+(define_insn_and_split "*andsi3_const_pow2_minus_one"
+  [(set (match_operand:SI 0 "register_operand" "=a")
+	(and:SI (match_operand:SI 1 "register_operand" "r")
+		(match_operand:SI 2 "const_int_operand" "i")))]
+  "IN_RANGE (exact_log2 (INTVAL (operands[2]) + 1), 17, 31)"
+  "#"
+  "&& 1"
+  [(set (match_dup 0)
+	(ashift:SI (match_dup 1)
+		   (match_dup 2)))
+   (set (match_dup 0)
+	(lshiftrt:SI (match_dup 0)
+		     (match_dup 2)))]
+{
+  operands[2] = GEN_INT (32 - floor_log2 (INTVAL (operands[2]) + 1));
+}
+  [(set_attr "type"	"arith")
+   (set_attr "mode"	"SI")
+   (set (attr "length")
+	(if_then_else (match_test "TARGET_DENSITY
+				   && INTVAL (operands[2]) == 0x7FFFFFFF")
+		      (const_int 5)
+		      (const_int 6)))])
+
+(define_insn_and_split "*andsi3_const_negative_pow2"
+  [(set (match_operand:SI 0 "register_operand" "=a")
+	(and:SI (match_operand:SI 1 "register_operand" "r")
+		(match_operand:SI 2 "const_int_operand" "i")))]
+  "IN_RANGE (exact_log2 (-INTVAL (operands[2])), 12, 31)"
+  "#"
+  "&& 1"
+  [(set (match_dup 0)
+	(lshiftrt:SI (match_dup 1)
+		     (match_dup 2)))
+   (set (match_dup 0)
+	(ashift:SI (match_dup 0)
+		   (match_dup 2)))]
+{
+  operands[2] = GEN_INT (floor_log2 (-INTVAL (operands[2])));
+}
+  [(set_attr "type"	"arith")
+   (set_attr "mode"	"SI")
+   (set_attr "length"	"6")])
+
+(define_insn_and_split "*andsi3_const_shifted_mask"
+  [(set (match_operand:SI 0 "register_operand" "=a")
+	(and:SI (match_operand:SI 1 "register_operand" "r")
+		(match_operand:SI 2 "shifted_mask_operand" "i")))]
+  "! xtensa_simm12b (INTVAL (operands[2]))"
+  "#"
+  "&& 1"
+  [(set (match_dup 0)
+	(zero_extract:SI (match_dup 1)
+			 (match_dup 3)
+			 (match_dup 4)))
+   (set (match_dup 0)
+	(ashift:SI (match_dup 0)
+		   (match_dup 2)))]
+{
+  HOST_WIDE_INT mask = INTVAL (operands[2]);
+  int shift = ctz_hwi (mask);
+  int mask_size = floor_log2 (((uint32_t)mask >> shift) + 1);
+  int mask_pos = shift;
+  if (BITS_BIG_ENDIAN)
+    mask_pos = (32 - (mask_size + shift)) & 0x1f;
+  operands[2] = GEN_INT (shift);
+  operands[3] = GEN_INT (mask_size);
+  operands[4] = GEN_INT (mask_pos);
+}
+  [(set_attr "type"	"arith")
+   (set_attr "mode"	"SI")
+   (set (attr "length")
+	(if_then_else (match_test "TARGET_DENSITY
+				   && ctz_hwi (INTVAL (operands[2])) == 1")
+		      (const_int 5)
+		      (const_int 6)))])
+
 (define_insn "iorsi3"
   [(set (match_operand:SI 0 "register_operand" "=a")
 	(ior:SI (match_operand:SI 1 "register_operand" "%r")
@@ -1648,6 +1725,108 @@
   [(set_attr "type"	"jump")
    (set_attr "mode"	"none")
    (set_attr "length"	"3")])
+
+(define_insn_and_split "*masktrue_const_pow2_minus_one"
+  [(set (pc)
+	(if_then_else (match_operator 3 "boolean_operator"
+			[(and:SI (match_operand:SI 0 "register_operand" "r")
+				 (match_operand:SI 1 "const_int_operand" "i"))
+			 (const_int 0)])
+		      (label_ref (match_operand 2 "" ""))
+		      (pc)))]
+  "IN_RANGE (exact_log2 (INTVAL (operands[1]) + 1), 17, 31)"
+  "#"
+  "&& can_create_pseudo_p ()"
+  [(set (match_dup 4)
+	(ashift:SI (match_dup 0)
+		   (match_dup 1)))
+   (set (pc)
+	(if_then_else (match_op_dup 3
+			[(match_dup 4)
+			 (const_int 0)])
+		      (label_ref (match_dup 2))
+		      (pc)))]
+{
+  operands[1] = GEN_INT (32 - floor_log2 (INTVAL (operands[1]) + 1));
+  operands[4] = gen_reg_rtx (SImode);
+}
+  [(set_attr "type"	"jump")
+   (set_attr "mode"	"none")
+   (set (attr "length")
+	(if_then_else (match_test "TARGET_DENSITY
+				   && INTVAL (operands[1]) == 0x7FFFFFFF")
+		      (const_int 5)
+		      (const_int 6)))])
+
+(define_insn_and_split "*masktrue_const_negative_pow2"
+  [(set (pc)
+	(if_then_else (match_operator 3 "boolean_operator"
+			[(and:SI (match_operand:SI 0 "register_operand" "r")
+				 (match_operand:SI 1 "const_int_operand" "i"))
+			 (const_int 0)])
+		      (label_ref (match_operand 2 "" ""))
+		      (pc)))]
+  "IN_RANGE (exact_log2 (-INTVAL (operands[1])), 12, 30)"
+  "#"
+  "&& can_create_pseudo_p ()"
+  [(set (match_dup 4)
+	(lshiftrt:SI (match_dup 0)
+		     (match_dup 1)))
+   (set (pc)
+	(if_then_else (match_op_dup 3
+			[(match_dup 4)
+			 (const_int 0)])
+		      (label_ref (match_dup 2))
+		      (pc)))]
+{
+  operands[1] = GEN_INT (floor_log2 (-INTVAL (operands[1])));
+  operands[4] = gen_reg_rtx (SImode);
+}
+  [(set_attr "type"	"jump")
+   (set_attr "mode"	"none")
+   (set_attr "length"	"6")])
+
+(define_insn_and_split "*masktrue_const_shifted_mask"
+  [(set (pc)
+	(if_then_else (match_operator 4 "boolean_operator"
+			[(and:SI (match_operand:SI 0 "register_operand" "r")
+				 (match_operand:SI 1 "shifted_mask_operand" "i"))
+			 (match_operand:SI 2 "const_int_operand" "i")])
+		      (label_ref (match_operand 3 "" ""))
+		      (pc)))]
+  "(INTVAL (operands[2]) & ((1 << ctz_hwi (INTVAL (operands[1]))) - 1)) == 0
+   && xtensa_b4const_or_zero ((uint32_t)INTVAL (operands[2]) >> ctz_hwi (INTVAL (operands[1])))"
+  "#"
+  "&& can_create_pseudo_p ()"
+  [(set (match_dup 6)
+	(zero_extract:SI (match_dup 0)
+			 (match_dup 5)
+			 (match_dup 1)))
+   (set (pc)
+	(if_then_else (match_op_dup 4
+			[(match_dup 6)
+			 (match_dup 2)])
+		      (label_ref (match_dup 3))
+		      (pc)))]
+{
+  HOST_WIDE_INT mask = INTVAL (operands[1]);
+  int shift = ctz_hwi (mask);
+  int mask_size = floor_log2 (((uint32_t)mask >> shift) + 1);
+  int mask_pos = shift;
+  if (BITS_BIG_ENDIAN)
+    mask_pos = (32 - (mask_size + shift)) & 0x1f;
+  operands[1] = GEN_INT (mask_pos);
+  operands[2] = GEN_INT ((uint32_t)INTVAL (operands[2]) >> shift);
+  operands[5] = GEN_INT (mask_size);
+  operands[6] = gen_reg_rtx (SImode);
+}
+  [(set_attr "type"	"jump")
+   (set_attr "mode"	"none")
+   (set (attr "length")
+	(if_then_else (match_test "TARGET_DENSITY
+				   && (uint32_t)INTVAL (operands[2]) >> ctz_hwi (INTVAL (operands[1])) == 0")
+		      (const_int 5)
+		      (const_int 6)))])
 
 
 ;; Zero-overhead looping support.
