@@ -672,6 +672,12 @@
 {
   if (SUBREG_P (op))
     op = SUBREG_REG (op);
+
+  /* Before reload, we can allow (SUBREG (MEM...)) as a register operand
+     because it is guaranteed to be reloaded into one.  */
+  if (MEM_P (op))
+    return true;
+
   return !(op == arg_pointer_rtx
 	   || op == frame_pointer_rtx
 	   || IN_RANGE (REGNO (op),
@@ -685,6 +691,7 @@
 {
   if (SUBREG_P (op))
     op = SUBREG_REG (op);
+
   if (reload_completed)
     return REG_OK_FOR_INDEX_STRICT_P (op);
   else
