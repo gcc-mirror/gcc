@@ -231,8 +231,6 @@
 
 	  (eq_attr "got" "load") (const_int 8)
 
-	  (eq_attr "type" "fcmp") (const_int 8)
-
 	  ;; SHIFT_SHIFTs are decomposed into two separate instructions.
 	  (eq_attr "move_type" "shift_shift")
 		(const_int 8)
