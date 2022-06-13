@@ -164,8 +164,14 @@
 (define_predicate "boolean_operator"
   (match_code "eq,ne"))
 
+(define_predicate "logical_shift_operator"
+  (match_code "ashift,lshiftrt"))
+
 (define_predicate "xtensa_cstoresi_operator"
   (match_code "eq,ne,gt,ge,lt,le"))
+
+(define_predicate "xtensa_shift_per_byte_operator"
+  (match_code "ashift,ashiftrt,lshiftrt"))
 
 (define_predicate "tls_symbol_operand"
   (and (match_code "symbol_ref")

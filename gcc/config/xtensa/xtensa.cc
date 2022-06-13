@@ -2403,6 +2403,20 @@ xtensa_tls_referenced_p (rtx x)
 }
 
 
+/* Helper function for "*shlrd_..." patterns.  */
+
+enum rtx_code
+xtensa_shlrd_which_direction (rtx op0, rtx op1)
+{
+  if (GET_CODE (op0) == ASHIFT && GET_CODE (op1) == LSHIFTRT)
+    return ASHIFT;	/* shld  */
+  if (GET_CODE (op0) == LSHIFTRT && GET_CODE (op1) == ASHIFT)
+    return LSHIFTRT;	/* shrd  */
+
+  return UNKNOWN;
+}
+
+
 /* Implement TARGET_CANNOT_FORCE_CONST_MEM.  */
 
 static bool
