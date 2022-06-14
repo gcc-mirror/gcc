@@ -223,10 +223,12 @@ private:
   AST::FunctionQualifiers parse_function_qualifiers ();
   std::vector<std::unique_ptr<AST::GenericParam> >
   parse_generic_params_in_angles ();
-  std::vector<std::unique_ptr<AST::GenericParam> > parse_generic_params ();
   template <typename EndTokenPred>
   std::vector<std::unique_ptr<AST::GenericParam> >
   parse_generic_params (EndTokenPred is_end_token);
+  template <typename EndTokenPred>
+  std::unique_ptr<AST::GenericParam>
+  parse_generic_param (EndTokenPred is_end_token);
 
   template <typename EndTokenPred>
   std::vector<std::unique_ptr<AST::LifetimeParam> >
