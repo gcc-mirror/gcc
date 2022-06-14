@@ -1112,6 +1112,10 @@ ipa_load_from_parm_agg (struct ipa_func_body_info *fbi,
   if (!base)
     return false;
 
+  /* We can not propagate across volatile loads.  */
+  if (TREE_THIS_VOLATILE (op))
+    return false;
+
   if (DECL_P (base))
     {
       int index = ipa_get_param_decl_index_1 (descriptors, base);
