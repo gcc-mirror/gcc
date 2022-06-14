@@ -2892,18 +2892,34 @@ Parser<ManagedTokenSource>::parse_generic_params (EndTokenPred is_end_token)
    * parsed but it turns out to be type param */
   AST::Attribute parsed_outer_attr = AST::Attribute::create_empty ();
 
+  // Did we parse a generic type param yet
+  auto type_seen = false;
+  // Did the user write a lifetime parameter after a type one
+  auto order_error = false;
+
   // parse lifetime params
   while (!is_end_token (lexer.peek_token ()->get_id ()))
     {
       auto param = parse_generic_param (is_end_token);
       if (param)
 	{
+	  // TODO: Handle `Const` here as well if necessary
+	  if (param->get_kind () == AST::GenericParam::Kind::Type)
+	    type_seen = true;
+	  else if (param->get_kind () == AST::GenericParam::Kind::Lifetime
+		   && type_seen)
+	    order_error = true;
+
 	  generic_params.emplace_back (std::move (param));
 	  maybe_skip_token (COMMA);
 	}
-
-      // error out if lifetime after type
     }
+
+  // FIXME: Add reordering hint
+  if (order_error)
+    rust_error_at (generic_params.front ()->get_locus (),
+		   "invalid order for generic parameters: lifetimes should "
+		   "always come before types");
 
   generic_params.shrink_to_fit ();
   return generic_params;
