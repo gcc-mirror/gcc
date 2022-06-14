@@ -1474,7 +1474,8 @@ See RS/6000 and PowerPC Options.
 -mauto-litpools  -mno-auto-litpools @gol
 -mtarget-align  -mno-target-align @gol
 -mlongcalls  -mno-longcalls @gol
--mabi=@var{abi-type}}
+-mabi=@var{abi-type} @gol
+-mextra-l32r-costs=@var{cycles}}
 
 @emph{zSeries Options}
 See S/390 and zSeries Options.
@@ -33549,6 +33550,14 @@ by 8 registers on entry so that its arguments are found in registers
 pointer.  Register window is rotated 8 registers back upon return.
 When this version of the ABI is enabled the C preprocessor symbol
 @code{__XTENSA_WINDOWED_ABI__} is defined.
+
+@item -mextra-l32r-costs=@var{n}
+@opindex mextra-l32r-costs
+Specify an extra cost of instruction RAM/ROM access for @code{L32R}
+instructions, in clock cycles.  This affects, when optimizing for speed,
+whether loading a constant from literal pool using @code{L32R} or
+synthesizing the constant from a small one with a couple of arithmetic
+instructions.  The default value is 0.
 @end table
 
 @node zSeries Options
