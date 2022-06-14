@@ -674,4 +674,90 @@ pointer_offset_expression (tree base_tree, tree index_tree, location_t location)
 			  base_tree, offset);
 }
 
+// forked from gcc/cp/tree.cc cp_walk_subtrees
+/* Apply FUNC to all language-specific sub-trees of TP in a pre-order
+   traversal.  Called from walk_tree.  */
+
+tree
+rs_walk_subtrees (tree *tp, int *walk_subtrees_p, walk_tree_fn func, void *data,
+		  hash_set<tree> *pset)
+{
+  enum tree_code code = TREE_CODE (*tp);
+  tree result;
+
+#define WALK_SUBTREE(NODE)                                                     \
+  do                                                                           \
+    {                                                                          \
+      result = rs_walk_tree (&(NODE), func, data, pset);                       \
+      if (result)                                                              \
+	goto out;                                                              \
+    }                                                                          \
+  while (0)
+
+  if (TYPE_P (*tp))
+    {
+      /* If *WALK_SUBTREES_P is 1, we're interested in the syntactic form of
+	 the argument, so don't look through typedefs, but do walk into
+	 template arguments for alias templates (and non-typedefed classes).
+
+	 If *WALK_SUBTREES_P > 1, we're interested in type identity or
+	 equivalence, so look through typedefs, ignoring template arguments for
+	 alias templates, and walk into template args of classes.
+
+	 See find_abi_tags_r for an example of setting *WALK_SUBTREES_P to 2
+	 when that's the behavior the walk_tree_fn wants.  */
+      if (*walk_subtrees_p == 1 && typedef_variant_p (*tp))
+	{
+	  *walk_subtrees_p = 0;
+	  return NULL_TREE;
+	}
+    }
+
+  /* Not one of the easy cases.  We must explicitly go through the
+     children.  */
+  result = NULL_TREE;
+  switch (code)
+    {
+    case TREE_LIST:
+      WALK_SUBTREE (TREE_PURPOSE (*tp));
+      break;
+
+    case RECORD_TYPE:
+      if (TYPE_PTRMEMFUNC_P (*tp))
+	WALK_SUBTREE (TYPE_PTRMEMFUNC_FN_TYPE_RAW (*tp));
+      break;
+
+    case CONSTRUCTOR:
+      if (COMPOUND_LITERAL_P (*tp))
+	WALK_SUBTREE (TREE_TYPE (*tp));
+      break;
+
+    case DECL_EXPR:
+      /* User variables should be mentioned in BIND_EXPR_VARS
+	 and their initializers and sizes walked when walking
+	 the containing BIND_EXPR.  Compiler temporaries are
+	 handled here.  And also normal variables in templates,
+	 since do_poplevel doesn't build a BIND_EXPR then.  */
+      if (VAR_P (TREE_OPERAND (*tp, 0))
+	  && (DECL_ARTIFICIAL (TREE_OPERAND (*tp, 0))
+	      && !TREE_STATIC (TREE_OPERAND (*tp, 0))))
+	{
+	  tree decl = TREE_OPERAND (*tp, 0);
+	  WALK_SUBTREE (DECL_INITIAL (decl));
+	  WALK_SUBTREE (DECL_SIZE (decl));
+	  WALK_SUBTREE (DECL_SIZE_UNIT (decl));
+	}
+      break;
+
+    default:
+      return NULL_TREE;
+    }
+
+  /* We didn't find what we were looking for.  */
+out:
+  return result;
+
+#undef WALK_SUBTREE
+}
+
 } // namespace Rust
