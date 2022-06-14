@@ -1015,6 +1015,15 @@ ix86_function_ok_for_sibcall (tree decl, tree exp)
 	}
     }
 
+  if (decl && ix86_use_pseudo_pic_reg ())
+    {
+      /* When PIC register is used, it must be restored after ifunc
+	 function returns.  */
+       cgraph_node *node = cgraph_node::get (decl);
+       if (node && node->ifunc_resolver)
+	 return false;
+    }
+
   /* Otherwise okay.  That also includes certain types of indirect calls.  */
   return true;
 }
