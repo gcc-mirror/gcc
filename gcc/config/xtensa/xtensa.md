@@ -87,6 +87,10 @@
 ;; This code iterator is for *shlrd and its variants.
 (define_code_iterator ior_op [ior plus])
 
+;; This mode iterator allows the DC and SC patterns to be defined from
+;; the same template.
+(define_mode_iterator DSC [DC SC])
+
 
 ;; Attributes.
 
@@ -2779,4 +2783,28 @@
     }
   operands[6] = gen_rtx_MEM (SFmode, XEXP (operands[6], 0));
   operands[7] = gen_rtx_MEM (SFmode, XEXP (operands[7], 0));
+})
+
+(define_split
+  [(clobber (match_operand:DSC 0 "register_operand"))]
+  "GP_REG_P (REGNO (operands[0]))"
+  [(const_int 0)]
+{
+  unsigned int regno = REGNO (operands[0]);
+  machine_mode inner_mode = GET_MODE_INNER (<MODE>mode);
+  rtx_insn *insn;
+  rtx x;
+  if (! ((insn = next_nonnote_nondebug_insn (curr_insn))
+	 && NONJUMP_INSN_P (insn)
+	 && GET_CODE (x = PATTERN (insn)) == SET
+	 && REG_P (x = XEXP (x, 0))
+	 && GET_MODE (x) == inner_mode
+	 && REGNO (x) == regno
+	 && (insn = next_nonnote_nondebug_insn (insn))
+	 && NONJUMP_INSN_P (insn)
+	 && GET_CODE (x = PATTERN (insn)) == SET
+	 && REG_P (x = XEXP (x, 0))
+	 && GET_MODE (x) == inner_mode
+	 && REGNO (x) == regno + REG_NREGS (operands[0]) / 2))
+    FAIL;
 })
