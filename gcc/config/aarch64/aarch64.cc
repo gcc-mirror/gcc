@@ -7536,9 +7536,9 @@ aarch64_vfp_is_call_candidate (cumulative_args_t pcum_v, machine_mode mode,
 /* Given MODE and TYPE of a function argument, return the alignment in
    bits.  The idea is to suppress any stronger alignment requested by
    the user and opt for the natural alignment (specified in AAPCS64 \S
-   4.1).  ABI_BREAK is set to true if the alignment was incorrectly
-   calculated in versions of GCC prior to GCC-9.  This is a helper
-   function for local use only.  */
+   4.1).  ABI_BREAK is set to the old alignment if the alignment was
+   incorrectly calculated in versions of GCC prior to GCC-9.  This is
+   a helper function for local use only.  */
 
 static unsigned int
 aarch64_function_arg_alignment (machine_mode mode, const_tree type,
@@ -7614,11 +7614,24 @@ aarch64_layout_arg (cumulative_args_t pcum_v, const function_arg_info &arg)
   if (pcum->aapcs_arg_processed)
     return;
 
+  bool warn_pcs_change
+    = (warn_psabi
+       && !pcum->silent_p
+       && (currently_expanding_function_start
+	   || currently_expanding_gimple_stmt));
+
+  unsigned int alignment
+    = aarch64_function_arg_alignment (mode, type, &abi_break);
+  gcc_assert (!alignment || abi_break < alignment);
+
   pcum->aapcs_arg_processed = true;
 
   pure_scalable_type_info pst_info;
   if (type && pst_info.analyze_registers (type))
     {
+      /* aarch64_function_arg_alignment has never had an effect on
+	 this case.  */
+
       /* The PCS says that it is invalid to pass an SVE value to an
 	 unprototyped function.  There is no ABI-defined location we
 	 can return in this case, so we have no real choice but to raise
@@ -7689,6 +7702,8 @@ aarch64_layout_arg (cumulative_args_t pcum_v, const function_arg_info &arg)
      and homogenous short-vector aggregates (HVA).  */
   if (allocate_nvrn)
     {
+      /* aarch64_function_arg_alignment has never had an effect on
+	 this case.  */
       if (!pcum->silent_p && !TARGET_FLOAT)
 	aarch64_err_no_fpadvsimd (mode);
 
@@ -7753,7 +7768,7 @@ aarch64_layout_arg (cumulative_args_t pcum_v, const function_arg_info &arg)
 	  && (aarch64_function_arg_alignment (mode, type, &abi_break)
 	      == 16 * BITS_PER_UNIT))
 	{
-	  if (abi_break && warn_psabi && currently_expanding_gimple_stmt)
+	  if (warn_pcs_change && abi_break)
 	    inform (input_location, "parameter passing for argument of type "
 		    "%qT changed in GCC 9.1", type);
 	  ++ncrn;
@@ -7816,7 +7831,7 @@ on_stack:
       int new_size = ROUND_UP (pcum->aapcs_stack_size, 16 / UNITS_PER_WORD);
       if (pcum->aapcs_stack_size != new_size)
 	{
-	  if (abi_break && warn_psabi && currently_expanding_gimple_stmt)
+	  if (warn_pcs_change && abi_break)
 	    inform (input_location, "parameter passing for argument of type "
 		    "%qT changed in GCC 9.1", type);
 	  pcum->aapcs_stack_size = new_size;
@@ -7936,14 +7951,13 @@ aarch64_function_arg_boundary (machine_mode mode, const_tree type)
   unsigned int alignment = aarch64_function_arg_alignment (mode, type,
 							   &abi_break);
   alignment = MIN (MAX (alignment, PARM_BOUNDARY), STACK_BOUNDARY);
-  if (abi_break & warn_psabi)
+  if (abi_break && warn_psabi)
     {
       abi_break = MIN (MAX (abi_break, PARM_BOUNDARY), STACK_BOUNDARY);
       if (alignment != abi_break)
 	inform (input_location, "parameter passing for argument of type "
 		"%qT changed in GCC 9.1", type);
     }
-
   return alignment;
 }
 

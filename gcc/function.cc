@@ -5062,9 +5062,12 @@ stack_protect_epilogue (void)
    PARMS_HAVE_CLEANUPS is nonzero if there are cleanups associated with
    the function's parameters, which must be run at any return statement.  */
 
+bool currently_expanding_function_start;
 void
 expand_function_start (tree subr)
 {
+  currently_expanding_function_start = true;
+
   /* Make sure volatile mem refs aren't considered
      valid operands of arithmetic insns.  */
   init_recog_no_volatile ();
@@ -5257,6 +5260,8 @@ expand_function_start (tree subr)
   /* If we are doing generic stack checking, the probe should go here.  */
   if (flag_stack_check == GENERIC_STACK_CHECK)
     stack_check_probe_note = emit_note (NOTE_INSN_DELETED);
+
+  currently_expanding_function_start = false;
 }
 
 void

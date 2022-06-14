@@ -723,4 +723,6 @@ extern const char *current_function_name (void);
 
 extern void used_types_insert (tree);
 
+extern bool currently_expanding_function_start;
+
 #endif  /* GCC_FUNCTION_H */
