@@ -165,6 +165,19 @@
   (and (match_code "const_int")
        (match_test "xtensa_mem_offset (INTVAL (op), SFmode)")))
 
+(define_predicate "reload_operand"
+  (match_code "mem")
+{
+  const_rtx addr = XEXP (op, 0);
+  if (REG_P (addr))
+    return REGNO (addr) == A1_REG;
+  if (GET_CODE (addr) == PLUS)
+    return REG_P (XEXP (addr, 0))
+	   && REGNO (XEXP (addr, 0)) == A1_REG
+	   && CONST_INT_P (XEXP (addr, 1));
+  return false;
+})
+
 (define_predicate "branch_operator"
   (match_code "eq,ne,lt,ge"))
 
