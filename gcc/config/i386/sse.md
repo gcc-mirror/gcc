@@ -3643,8 +3643,7 @@
 			  gen_lowpart (<ssebytemode>mode, operands[1]));
   operands[2] = gen_lowpart (<ssebytemode>mode, operands[2]);
 
-  if (!MEM_P (operands[3]))
-    operands[3] = force_reg (<ssebytemode>mode, operands[3]);
+  operands[3] = force_reg (<ssebytemode>mode, operands[3]);
   operands[3] = lowpart_subreg (<MODE>mode, operands[3], <ssebytemode>mode);
 })
 
