@@ -1,3 +1,12 @@
+2022-06-13  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2022-03-08  Marek Polacek  <polacek@redhat.com>
+
+	PR rtl-optimization/104777
+	* rtl.c (classify_insn): For ASM_OPERANDS, return JUMP_INSN only if
+	ASM_OPERANDS_LABEL_VEC has at least one element.
+
 2022-06-09  Iain Sandoe  <iain@sandoe.co.uk>
 
 	Backported from master:
