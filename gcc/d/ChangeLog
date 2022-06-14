@@ -1,3 +1,15 @@
+2022-06-13  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	Backported from master:
+	2022-06-13  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-tree.h (check_typeinfo_type): Add Expression* parameter.
+	(build_typeinfo): Likewise.  Declare new override.
+	* expr.cc (ExprVisitor): Call build_typeinfo with Expression*.
+	* typeinfo.cc (check_typeinfo_type): Include expression in the
+	diagnostic message.
+	(build_typeinfo): New override.
+
 2022-05-31  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	Backported from master:
