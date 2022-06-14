@@ -676,13 +676,9 @@ package body GNAT.Directory_Operations is
          return;
       end if;
 
-      Last :=
-        (if Str'Length > Filename_Len then Str'First + Filename_Len - 1
-         else Str'Last);
-
       declare
          subtype Path_String is String (1 .. Filename_Len);
-         type    Path_String_Access is access Path_String;
+         type    Path_String_Access is not null access constant Path_String;
 
          function Address_To_Access is new
            Ada.Unchecked_Conversion
@@ -693,9 +689,13 @@ package body GNAT.Directory_Operations is
                          Address_To_Access (Filename_Addr);
 
       begin
-         for J in Str'First .. Last loop
-            Str (J) := Path_Access (J - Str'First + 1);
-         end loop;
+         if Str'Length > Filename_Len then
+            Last := Str'First + Filename_Len - 1;
+            Str (Str'First .. Last) := Path_Access.all;
+         else
+            Last := Str'Last;
+            Str := Path_Access (1 .. Str'Length);
+         end if;
       end;
    end Read;
 
