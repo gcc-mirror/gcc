@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+//go:build aix
 // +build aix
 
 package syscall
@@ -95,6 +96,7 @@ func PtraceDetach(pid int) (err error) { return ptrace64(_PT_DETACH, int64(pid),
 
 //sys	reboot(how int) (err error)
 //__linux_reboot(how _C_int) _C_int
+
 func Reboot(how int) (err error) {
 	return reboot(how)
 }

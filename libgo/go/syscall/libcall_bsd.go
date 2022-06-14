@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+//go:build darwin || dragonfly || freebsd || netbsd || openbsd
 // +build darwin dragonfly freebsd netbsd openbsd
 
 // BSD library calls.
@@ -53,6 +54,7 @@ func Accept4(fd, flags int) (nfd int, sa Sockaddr, err error) {
 
 //sysnb	pipe2(p *[2]_C_int, flags int) (err error)
 //pipe2(p *[2]_C_int, flags _C_int) _C_int
+
 func Pipe2(p []int, flags int) (err error) {
 	if len(p) != 2 {
 		return EINVAL
