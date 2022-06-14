@@ -115,6 +115,7 @@ tree
 copy_aggregate_type (tree type)
 {
   tree newtype = build_distinct_type_copy (type);
+  TYPE_STUB_DECL (newtype) = TYPE_NAME (newtype);
   TYPE_FIELDS (newtype) = copy_list (TYPE_FIELDS (type));
 
   for (tree f = TYPE_FIELDS (newtype); f; f = DECL_CHAIN (f))

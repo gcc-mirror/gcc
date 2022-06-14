@@ -57,6 +57,9 @@ typedef Array <Expression *> Expressions;
    4: TYPE_DELEGATE (in RECORD_TYPE).
    5: TYPE_ASSOCIATIVE_ARRAY (in RECORD_TYPE).
 
+   Usage of TYPE_LANG_SLOT_?:
+   1: TYPE_FORWARD_REFERENCES (in RECORD_TYPE, UNION_TYPE).
+
    Usage of DECL_LANG_FLAG_?:
    0: LABEL_VARIABLE_CASE (in LABEL_DECL).
       DECL_BUILT_IN_CTFE (in FUNCTION_DECL).
@@ -67,6 +70,10 @@ typedef Array <Expression *> Expressions;
 
 #define VAR_OR_FUNCTION_DECL_CHECK(NODE) \
   TREE_CHECK2 (NODE, VAR_DECL, FUNCTION_DECL)
+
+#define AGGREGATE_OR_ENUM_TYPE_CHECK(NODE) \
+  TREE_CHECK4 (NODE, RECORD_TYPE, UNION_TYPE, \
+	       QUAL_UNION_TYPE, ENUMERAL_TYPE)
 
 /* The kinds of scopes we recognize.  */
 
@@ -377,6 +384,11 @@ lang_tree_node
 /* True if the type is a D associative array.  */
 #define TYPE_ASSOCIATIVE_ARRAY(NODE) \
   (TYPE_LANG_FLAG_5 (RECORD_TYPE_CHECK (NODE)))
+
+/* In an incomplete RECORD_TYPE, UNION_TYPE, or ENUMERAL_TYPE, a list of field
+   declarations whose type would be completed by completing that type.  */
+#define TYPE_FORWARD_REFERENCES(NODE) \
+  (TYPE_LANG_SLOT_1 (AGGREGATE_OR_ENUM_TYPE_CHECK (NODE)))
 
 /* True if the decl is a variable case label decl.  */
 #define LABEL_VARIABLE_CASE(NODE) \

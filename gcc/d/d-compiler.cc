@@ -129,22 +129,22 @@ Compiler::onParseModule (Module *m)
   if (md && md->id)
     {
       if (md->packages.length == 0)
-    	{
-    	  Identifier *id = (md && md->id) ? md->id : m->ident;
-    	  if (!strcmp (id->toChars (), "object"))
+	{
+	  Identifier *id = (md && md->id) ? md->id : m->ident;
+	  if (!strcmp (id->toChars (), "object"))
 	    {
 	      create_tinfo_types (m);
 	      return;
 	    }
 	}
       else if (md->packages.length == 1)
-    	{
-    	  if (!strcmp (md->packages.ptr[0]->toChars (), "gcc")
-    	      && !strcmp (md->id->toChars (), "builtins"))
-    	    {
-    	      d_build_builtins_module (m);
-    	      return;
-    	    }
+	{
+	  if (!strcmp (md->packages.ptr[0]->toChars (), "gcc")
+	      && !strcmp (md->id->toChars (), "builtins"))
+	    {
+	      d_build_builtins_module (m);
+	      return;
+	    }
 	}
     }
 

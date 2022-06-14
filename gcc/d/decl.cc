@@ -99,7 +99,7 @@ mangle_internal_decl (Dsymbol *decl, const char *name, const char *suffix)
   return ident;
 }
 
-/* Returns true if DECL is from the gcc.attribute module.  */
+/* Returns true if DECL is from the gcc.attributes module.  */
 
 static bool
 gcc_attribute_p (Dsymbol *decl)
@@ -367,6 +367,10 @@ public:
 	return;
       }
 
+    /* Don't emit any symbols from gcc.attributes module.  */
+    if (gcc_attribute_p (d))
+      return;
+
     /* Add this decl to the current binding level.  */
     tree ctype = build_ctype (d->type);
     if (TYPE_NAME (ctype))
@@ -375,10 +379,6 @@ public:
     /* Anonymous structs/unions only exist as part of others,
        do not output forward referenced structs.  */
     if (d->isAnonymous () || !d->members)
-      return;
-
-    /* Don't emit any symbols from gcc.attribute module.  */
-    if (gcc_attribute_p (d))
       return;
 
     /* Generate TypeInfo.  */
@@ -482,6 +482,11 @@ public:
 	return;
       }
 
+    /* Add this decl to the current binding level.  */
+    tree ctype = TREE_TYPE (build_ctype (d->type));
+    if (TYPE_NAME (ctype))
+      d_pushdecl (TYPE_NAME (ctype));
+
     if (!d->members)
       return;
 
@@ -533,11 +538,6 @@ public:
       = build_constructor (TREE_TYPE (vtblsym->csym), elms);
     d_finish_decl (vtblsym->csym);
 
-    /* Add this decl to the current binding level.  */
-    tree ctype = TREE_TYPE (build_ctype (d->type));
-    if (TYPE_NAME (ctype))
-      d_pushdecl (TYPE_NAME (ctype));
-
     d->semanticRun = PASS::obj;
   }
 
@@ -555,6 +555,11 @@ public:
 		  "had semantic errors when compiling");
 	return;
       }
+
+    /* Add this decl to the current binding level.  */
+    tree ctype = TREE_TYPE (build_ctype (d->type));
+    if (TYPE_NAME (ctype))
+      d_pushdecl (TYPE_NAME (ctype));
 
     if (!d->members)
       return;
@@ -576,11 +581,6 @@ public:
     DECL_INITIAL (d->csym) = layout_classinfo (d);
     d_finish_decl (d->csym);
 
-    /* Add this decl to the current binding level.  */
-    tree ctype = TREE_TYPE (build_ctype (d->type));
-    if (TYPE_NAME (ctype))
-      d_pushdecl (TYPE_NAME (ctype));
-
     d->semanticRun = PASS::obj;
   }
 
@@ -599,6 +599,11 @@ public:
 	return;
       }
 
+    /* Add this decl to the current binding level.  */
+    tree ctype = build_ctype (d->type);
+    if (TREE_CODE (ctype) == ENUMERAL_TYPE && TYPE_NAME (ctype))
+      d_pushdecl (TYPE_NAME (ctype));
+
     if (d->isAnonymous ())
       return;
 
@@ -614,11 +619,6 @@ public:
 	DECL_INITIAL (d->sinit) = build_expr (tc->sym->defaultval, true);
 	d_finish_decl (d->sinit);
       }
-
-    /* Add this decl to the current binding level.  */
-    tree ctype = build_ctype (d->type);
-    if (TYPE_NAME (ctype))
-      d_pushdecl (TYPE_NAME (ctype));
 
     d->semanticRun = PASS::obj;
   }
@@ -776,7 +776,7 @@ public:
     if (d->semanticRun >= PASS::obj)
       return;
 
-    /* Don't emit any symbols from gcc.attribute module.  */
+    /* Don't emit any symbols from gcc.attributes module.  */
     if (gcc_attribute_p (d))
       return;
 
@@ -2336,8 +2336,6 @@ build_type_decl (tree type, Dsymbol *dsym)
     }
   else if (type != TYPE_MAIN_VARIANT (type))
     DECL_ORIGINAL_TYPE (decl) = TYPE_MAIN_VARIANT (type);
-
-  rest_of_decl_compilation (decl, DECL_FILE_SCOPE_P (decl), 0);
 }
 
 /* Create a declaration for field NAME of a given TYPE, setting the flags

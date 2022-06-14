@@ -424,9 +424,12 @@ apply_user_attributes (Dsymbol *sym, tree node)
   location_t saved_location = input_location;
   input_location = make_location_t (sym->loc);
 
+  int attr_flags = 0;
+  if (TYPE_P (node) && !COMPLETE_TYPE_P (node))
+    attr_flags |= ATTR_FLAG_TYPE_IN_PLACE;
+
   Expressions *attrs = sym->userAttribDecl->getAttributes ();
-  decl_attributes (&node, build_attributes (attrs),
-		   TYPE_P (node) ? ATTR_FLAG_TYPE_IN_PLACE : 0);
+  decl_attributes (&node, build_attributes (attrs), attr_flags);
 
   input_location = saved_location;
 }
