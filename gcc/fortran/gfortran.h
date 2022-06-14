@@ -1352,8 +1352,6 @@ typedef struct gfc_omp_namelist
       struct gfc_omp_namelist_udr *udr;
       gfc_namespace *ns;
     } u2;
-  struct gfc_symbol *memspace_sym;
-  struct gfc_symbol *traits_sym;
   struct gfc_omp_namelist *next;
   locus where;
 }
@@ -1395,7 +1393,6 @@ enum
   OMP_LIST_NONTEMPORAL,
   OMP_LIST_ALLOCATE,
   OMP_LIST_ALLOCATOR,
-  OMP_LIST_USES_ALLOCATORS,
   OMP_LIST_NUM
 };
 

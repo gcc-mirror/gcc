@@ -80,8 +80,7 @@ subroutine foo(x, y)
   
   !$omp target teams distribute parallel do private (x) firstprivate (y) &
   !$omp allocate ((omp_default_mem_alloc + 0):z) allocate &
-  !$omp (omp_default_mem_alloc: x, y) allocate (h: r) lastprivate (z) reduction(+:r) &
-  !$omp uses_allocators (h)
+  !$omp (omp_default_mem_alloc: x, y) allocate (h: r) lastprivate (z) reduction(+:r)
   do i = 1, 10
     call bar (0, x, z);
     call bar2 (1, y, r);

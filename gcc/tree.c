@@ -365,7 +365,6 @@ unsigned const char omp_clause_num_ops[] =
   0, /* OMP_CLAUSE_IF_PRESENT */
   0, /* OMP_CLAUSE_FINALIZE */
   2, /* OMP_CLAUSE_ALLOCATOR */
-  3, /* OMP_CLAUSE_USES_ALLOCATORS */
 };
 
 const char * const omp_clause_code_name[] =
@@ -455,8 +454,6 @@ const char * const omp_clause_code_name[] =
   "tile",
   "if_present",
   "finalize",
-  "allocator",
-  "uses_allocators",
 };
 
 
