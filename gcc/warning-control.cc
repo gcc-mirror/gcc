@@ -191,7 +191,7 @@ void copy_warning (ToType to, FromType from)
 {
   const location_t to_loc = get_location (to);
 
-  bool supp = get_no_warning_bit (from);
+  const bool supp = get_no_warning_bit (from);
 
   nowarn_spec_t *from_spec = get_nowarn_spec (from);
   if (RESERVED_LOCATION_P (to_loc))
@@ -209,7 +209,7 @@ void copy_warning (ToType to, FromType from)
 	  nowarn_spec_t tem = *from_spec;
 	  nowarn_map->put (to_loc, tem);
 	}
-      else
+      else if (supp)
 	{
 	  if (nowarn_map)
 	    nowarn_map->remove (to_loc);
@@ -226,6 +226,8 @@ void copy_warning (ToType to, FromType from)
 void
 copy_warning (tree to, const_tree from)
 {
+  if (to == from)
+    return;
   copy_warning<tree, const_tree>(to, from);
 }
 
@@ -250,5 +252,7 @@ copy_warning (gimple *to, const_tree from)
 void
 copy_warning (gimple *to, const gimple *from)
 {
+  if (to == from)
+    return;
   copy_warning<gimple *, const gimple *>(to, from);
 }
