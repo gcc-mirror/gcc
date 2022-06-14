@@ -1,3 +1,43 @@
+2022-06-13  Jakub Jelinek  <jakub@redhat.com>
+
+	* omp.h.in (omp_initial_device, omp_invalid_device): New enumerators.
+	* omp_lib.f90.in (omp_initial_device, omp_invalid_device): New
+	parameters.
+	* omp_lib.h.in (omp_initial_device, omp_invalid_device): Likewise.
+	* target.c (resolve_device): Add remapped argument, handle
+	GOMP_DEVICE_ICV only if remapped is true (and clear remapped),
+	for negative values, treat GOMP_DEVICE_FALLBACK as fallback only
+	if remapped, otherwise treat omp_initial_device that way.  For
+	omp_invalid_device, always emit gomp_fatal, even when
+	OMP_TARGET_OFFLOAD isn't mandatory.
+	(GOMP_target, GOMP_target_ext, GOMP_target_data, GOMP_target_data_ext,
+	GOMP_target_update, GOMP_target_update_ext,
+	GOMP_target_enter_exit_data): Pass true as remapped argument to
+	resolve_device.
+	(omp_target_alloc, omp_target_free, omp_target_is_present,
+	omp_target_memcpy_check, omp_target_associate_ptr,
+	omp_target_disassociate_ptr, omp_get_mapped_ptr,
+	omp_target_is_accessible): Pass false as remapped argument to
+	resolve_device.  Treat omp_initial_device the same as
+	gomp_get_num_devices ().  Don't bypass resolve_device calls if
+	device_num is negative.
+	(omp_pause_resource): Treat omp_initial_device the same as
+	gomp_get_num_devices ().  Call resolve_device.
+	* icv-device.c (omp_set_default_device): Always set to device_num
+	even when it is negative.
+	* libgomp.texi: Document that Conforming device numbers,
+	omp_initial_device and omp_invalid_device is implemented.
+	* testsuite/libgomp.c/target-41.c (main): Add test with
+	omp_initial_device.
+	* testsuite/libgomp.c/target-45.c: New test.
+	* testsuite/libgomp.c/target-46.c: New test.
+	* testsuite/libgomp.c/target-47.c: New test.
+	* testsuite/libgomp.c-c++-common/target-is-accessible-1.c (main): Add
+	test with omp_initial_device.  Use -5 instead of -1 for negative value
+	test.
+	* testsuite/libgomp.fortran/target-is-accessible-1.f90 (main):
+	Likewise.  Reorder stop numbers.
+
 2022-06-10  Jakub Jelinek  <jakub@redhat.com>
 
 	* allocator.c (gomp_init_memkind): Call dlopen with "libmemkind.so.0"

@@ -1,3 +1,34 @@
+2022-06-13  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-builtins.cc: Include builtins.h.
+	(gcc_builtins_libfuncs): Remove.
+	(strip_type_modifiers): New function.
+	(matches_builtin_type): New function.
+	(covariant_with_builtin_type_p): New function.
+	(maybe_set_builtin_1): Set front-end built-in if identifier matches
+	gcc built-in name.  Apply user-specified attributes and assembler name
+	overrides to the built-in.  Warn about built-in declaration mismatches.
+	(d_builtin_function): Set IDENTIFIER_DECL_TREE of built-in functions.
+	* d-compiler.cc (Compiler::onParseModule): Scan all modules for any
+	identifiers that match built-in function names.
+	* lang.opt (Wbuiltin-declaration-mismatch): New option.
+
+2022-06-13  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-tree.h (check_typeinfo_type): Add Expression* parameter.
+	(build_typeinfo): Likewise.  Declare new override.
+	* expr.cc (ExprVisitor): Call build_typeinfo with Expression*.
+	* typeinfo.cc (check_typeinfo_type): Include expression in the
+	diagnostic message.
+	(build_typeinfo): New override.
+
+2022-06-13  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* dmd/MERGE: Merge upstream dmd 821ed393d.
+	* expr.cc (ExprVisitor::visit (NewExp *)): Remove handled of
+	allocating `@nogc' throwable object.
+	* runtime.def (NEWTHROW): Remove.
+
 2022-06-02  David Malcolm  <dmalcolm@redhat.com>
 
 	* d-lang.cc (d_get_sarif_source_language): New.

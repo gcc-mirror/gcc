@@ -1,3 +1,40 @@
+2022-06-13  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/ubsan/return-8.C: New test.
+
+2022-06-13  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/105927
+	* gcc.target/i386/pr105927.c: New test.
+
+2022-06-13  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* gdc.dg/Wbuiltin_declaration_mismatch.d: New test.
+	* gdc.dg/builtins.d: New test.
+
+2022-06-13  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* gdc.dg/rtti1.d: New test.
+
+2022-06-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.dg/instrument-4.c: New test.
+
+2022-06-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-c++-common/nonnull-1.c: Remove XFAIL for C++.
+
+2022-06-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/105911
+	* gcc.dg/pr105911.c: New test.
+
+2022-06-13  Cui,Lili  <lili.cui@intel.com>
+
+	* gcc.dg/vect/costmodel/x86_64/costmodel-pr104582-2.c: Add
+	-mtune=generic to dg-options.
+	* gcc.target/i386/pr84101.c: Likewise.
+
 2022-06-12  Max Filippov  <jcmvbkbc@gmail.com>
 
 	* g++.target/xtensa/pr95571.C (__xtensa_libgcc_window_spill):

@@ -1,3 +1,7 @@
+2022-06-13  Jason Merrill  <jason@redhat.com>
+
+	* c-ubsan.cc (ubsan_instrument_return): Use BUILTINS_LOCATION.
+
 2022-05-27  Marek Polacek  <polacek@redhat.com>
 
 	PR c/90658

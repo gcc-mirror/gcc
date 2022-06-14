@@ -1,3 +1,15 @@
+2022-06-13  Mark Mentovai  <mark@mentovai.com>
+
+	* include/experimental/bits/fs_path.h (__detail::__null_terminated):
+	Rename to __nul_terminated to avoid colliding with a macro in
+	Apple's SDK.
+
+2022-06-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/atomic (__atomic_val_t): Use __type_identity_t
+	instead of atomic<T>::value_type, as per LWG 3220.
+	* testsuite/29_atomics/atomic/lwg3220.cc: New test.
+
 2022-06-10  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/105844

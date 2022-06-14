@@ -1,3 +1,13 @@
+2022-06-13  Nathan Sidwell  <nathan@acm.org>
+
+	* module.cc (module_state::write): Separate to ...
+	(module_state::write_begin, module_state::write_end): ...
+	these.
+	(module_state::write_readme): Drop extensions parameter.
+	(struct module_processing_cookie): Add more fields.
+	(finish_module_processing): Adjust state writing call.
+	(late_finish_module): Call write_end.
+
 2022-06-10  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/65328
