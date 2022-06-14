@@ -253,11 +253,13 @@ ResolveItem::visit (AST::Module &module)
   // FIXME: Should we reinsert a child here? Any reason we ResolveTopLevel::go
   // in ResolveTopLevel::visit (AST::Module) as well as here?
   for (auto &item : module.get_items ())
-    ResolveTopLevel::go (item.get (), CanonicalPath::create_empty (), cpath,
-			 module.get_node_id ());
+    ResolveTopLevel::go (item.get (), CanonicalPath::create_empty (), cpath);
 
+  resolver->push_new_module_scope (module.get_node_id ());
   for (auto &item : module.get_items ())
     ResolveItem::go (item.get (), path, cpath);
+
+  resolver->pop_module_scope ();
 
   resolver->get_name_scope ().pop ();
   resolver->get_type_scope ().pop ();
@@ -526,6 +528,7 @@ ResolveItem::visit (AST::Function &function)
   auto decl = ResolveFunctionItemToCanonicalPath::resolve (function);
   auto path = prefix.append (decl);
   auto cpath = canonical_prefix.append (decl);
+
   mappings->insert_canonical_path (mappings->get_current_crate (),
 				   function.get_node_id (), cpath);
 
@@ -786,6 +789,7 @@ ResolveItem::visit (AST::TraitImpl &impl_block)
       resolver->get_name_scope ().pop ();
       return;
     }
+  rust_assert (!canonical_impl_type.is_empty ());
 
   // setup paths
   bool canonicalize_type_args = !impl_block.has_generics ();

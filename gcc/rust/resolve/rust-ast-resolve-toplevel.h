@@ -34,13 +34,15 @@ class ResolveTopLevel : public ResolverBase
 
 public:
   static void go (AST::Item *item, const CanonicalPath &prefix,
-		  const CanonicalPath &canonical_prefix, NodeId current_module)
+		  const CanonicalPath &canonical_prefix)
   {
     if (item->is_marked_for_strip ())
       return;
 
-    ResolveTopLevel resolver (prefix, canonical_prefix, current_module);
+    ResolveTopLevel resolver (prefix, canonical_prefix);
     item->accept_vis (resolver);
+
+    NodeId current_module = resolver.resolver->peek_current_module_scope ();
     resolver.mappings->insert_child_item_to_parent_module_mapping (
       item->get_node_id (), current_module);
   };
@@ -60,15 +62,15 @@ public:
 	rust_error_at (r, "redefined multiple times");
       });
 
-    resolver->insert_new_definition (module.get_node_id (),
-				     Definition{module.get_node_id (),
-						module.get_node_id ()});
-
+    NodeId current_module = resolver->peek_current_module_scope ();
     mappings->insert_module_child_item (current_module, mod);
     mappings->insert_module_child (current_module, module.get_node_id ());
 
+    resolver->push_new_module_scope (module.get_node_id ());
     for (auto &item : module.get_items ())
-      ResolveTopLevel::go (item.get (), path, cpath, module.get_node_id ());
+      ResolveTopLevel::go (item.get (), path, cpath);
+
+    resolver->pop_module_scope ();
 
     mappings->insert_canonical_path (mappings->get_current_crate (),
 				     module.get_node_id (), cpath);
@@ -89,6 +91,7 @@ public:
 	rust_error_at (r, "redefined multiple times");
       });
 
+    NodeId current_module = resolver->peek_current_module_scope ();
     mappings->insert_module_child_item (current_module, talias);
     mappings->insert_canonical_path (mappings->get_current_crate (),
 				     alias.get_node_id (), cpath);
@@ -109,6 +112,7 @@ public:
 	rust_error_at (r, "redefined multiple times");
       });
 
+    NodeId current_module = resolver->peek_current_module_scope ();
     mappings->insert_module_child_item (current_module, decl);
     mappings->insert_canonical_path (mappings->get_current_crate (),
 				     struct_decl.get_node_id (), cpath);
@@ -130,8 +134,9 @@ public:
       });
 
     for (auto &variant : enum_decl.get_variants ())
-      ResolveTopLevel::go (variant.get (), path, cpath, current_module);
+      ResolveTopLevel::go (variant.get (), path, cpath);
 
+    NodeId current_module = resolver->peek_current_module_scope ();
     mappings->insert_module_child_item (current_module, decl);
     mappings->insert_canonical_path (mappings->get_current_crate (),
 				     enum_decl.get_node_id (), cpath);
@@ -152,7 +157,6 @@ public:
 	rust_error_at (r, "redefined multiple times");
       });
 
-    mappings->insert_module_child_item (current_module, decl);
     mappings->insert_canonical_path (mappings->get_current_crate (),
 				     item.get_node_id (), cpath);
   }
@@ -229,6 +233,7 @@ public:
 	rust_error_at (r, "redefined multiple times");
       });
 
+    NodeId current_module = resolver->peek_current_module_scope ();
     mappings->insert_module_child_item (current_module, decl);
     mappings->insert_canonical_path (mappings->get_current_crate (),
 				     struct_decl.get_node_id (), cpath);
@@ -249,6 +254,7 @@ public:
 	rust_error_at (r, "redefined multiple times");
       });
 
+    NodeId current_module = resolver->peek_current_module_scope ();
     mappings->insert_module_child_item (current_module, decl);
     mappings->insert_canonical_path (mappings->get_current_crate (),
 				     union_decl.get_node_id (), cpath);
@@ -268,11 +274,10 @@ public:
 	r.add_range (locus);
 	rust_error_at (r, "redefined multiple times");
       });
-    resolver->insert_new_definition (var.get_node_id (),
-				     Definition{var.get_node_id (),
-						var.get_node_id ()});
+
     resolver->mark_decl_mutability (var.get_node_id (), var.is_mutable ());
 
+    NodeId current_module = resolver->peek_current_module_scope ();
     mappings->insert_module_child_item (current_module, decl);
     mappings->insert_canonical_path (mappings->get_current_crate (),
 				     var.get_node_id (), cpath);
@@ -291,10 +296,8 @@ public:
 	r.add_range (locus);
 	rust_error_at (r, "redefined multiple times");
       });
-    resolver->insert_new_definition (constant.get_node_id (),
-				     Definition{constant.get_node_id (),
-						constant.get_node_id ()});
 
+    NodeId current_module = resolver->peek_current_module_scope ();
     mappings->insert_module_child_item (current_module, decl);
     mappings->insert_canonical_path (mappings->get_current_crate (),
 				     constant.get_node_id (), cpath);
@@ -313,18 +316,8 @@ public:
 	r.add_range (locus);
 	rust_error_at (r, "redefined multiple times");
       });
-    resolver->insert_new_definition (function.get_node_id (),
-				     Definition{function.get_node_id (),
-						function.get_node_id ()});
 
-    // if this does not get a reference it will be determined to be unused
-    // lets give it a fake reference to itself
-    if (function.get_function_name ().compare ("main") == 0)
-      {
-	resolver->insert_resolved_name (function.get_node_id (),
-					function.get_node_id ());
-      }
-
+    NodeId current_module = resolver->peek_current_module_scope ();
     mappings->insert_module_child_item (current_module, decl);
     mappings->insert_canonical_path (mappings->get_current_crate (),
 				     function.get_node_id (), cpath);
@@ -373,11 +366,6 @@ public:
 	r.add_range (locus);
 	rust_error_at (r, "redefined multiple times");
       });
-    resolver->insert_new_definition (impl_block.get_node_id (),
-				     Definition{impl_block.get_node_id (),
-						impl_block.get_node_id ()});
-    resolver->insert_resolved_name (impl_block.get_node_id (),
-				    impl_block.get_node_id ());
 
     for (auto &impl_item : impl_block.get_impl_items ())
       ResolveToplevelImplItem::go (impl_item.get (), impl_prefix);
@@ -403,6 +391,7 @@ public:
     for (auto &item : trait.get_trait_items ())
       ResolveTopLevelTraitItems::go (item.get (), path, cpath);
 
+    NodeId current_module = resolver->peek_current_module_scope ();
     mappings->insert_module_child_item (current_module, decl);
     mappings->insert_canonical_path (mappings->get_current_crate (),
 				     trait.get_node_id (), cpath);
@@ -418,8 +407,8 @@ public:
 
 private:
   ResolveTopLevel (const CanonicalPath &prefix,
-		   const CanonicalPath &canonical_prefix, NodeId current_module)
-    : ResolverBase (UNKNOWN_NODEID, current_module), prefix (prefix),
+		   const CanonicalPath &canonical_prefix)
+    : ResolverBase (UNKNOWN_NODEID), prefix (prefix),
       canonical_prefix (canonical_prefix)
   {}
 

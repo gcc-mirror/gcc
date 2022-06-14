@@ -333,39 +333,33 @@ std::vector<Bvariable *>
 HIRCompileBase::compile_locals_for_block (Context *ctx, Resolver::Rib &rib,
 					  tree fndecl)
 {
+  CrateNum crate = ctx->get_mappings ()->get_current_crate ();
+
   std::vector<Bvariable *> locals;
   for (auto it : rib.get_declarations ())
     {
-      auto node_id = it.first;
+      NodeId node_id = it.first;
+      HirId ref = UNKNOWN_HIRID;
+      if (!ctx->get_mappings ()->lookup_node_to_hir (crate, node_id, &ref))
+	continue;
 
-      Resolver::Definition d;
-      bool ok = ctx->get_resolver ()->lookup_definition (node_id, &d);
-      rust_assert (ok);
+      // we only care about local patterns
+      HIR::Pattern *pattern
+	= ctx->get_mappings ()->lookup_hir_pattern (crate, ref);
+      if (pattern == nullptr)
+	continue;
 
-      HIR::Stmt *decl = nullptr;
-      if (!ctx->get_mappings ()->resolve_nodeid_to_stmt (d.parent, &decl))
-	{
-	  // might be an extern block see fix for
-	  // https://github.com/Rust-GCC/gccrs/issues/976
-	  continue;
-	}
+      // lookup the type
+      TyTy::BaseType *tyty = nullptr;
+      if (!ctx->get_tyctx ()->lookup_type (ref, &tyty))
+	continue;
 
-      // if its a function we extract this out side of this fn context
-      // and it is not a local to this function
-      bool is_item = ctx->get_mappings ()->lookup_hir_item (
-		       decl->get_mappings ().get_crate_num (),
-		       decl->get_mappings ().get_hirid ())
-		     != nullptr;
-      if (is_item)
-	{
-	  HIR::Item *item = static_cast<HIR::Item *> (decl);
-	  CompileItem::compile (item, ctx);
-	}
-
-      Bvariable *compiled = CompileVarDecl::compile (fndecl, decl, ctx);
+      // compile the local
+      tree type = TyTyResolveCompile::compile (ctx, tyty);
+      Bvariable *compiled
+	= CompileVarDecl::compile (fndecl, type, pattern, ctx);
       locals.push_back (compiled);
-    };
-
+    }
   return locals;
 }
 
@@ -482,7 +476,9 @@ HIRCompileBase::compile_function (
 				   compiled_param_type, param_locus);
 
       param_vars.push_back (compiled_param_var);
-      ctx->insert_var_decl (referenced_param.get_mappings ().get_hirid (),
+
+      const HIR::Pattern &param_pattern = *referenced_param.get_param_name ();
+      ctx->insert_var_decl (param_pattern.get_pattern_mappings ().get_hirid (),
 			    compiled_param_var);
     }
 

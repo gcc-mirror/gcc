@@ -350,5 +350,11 @@ TypeCheckPattern::visit (HIR::RangePattern &pattern)
   infered = upper->unify (lower);
 }
 
+void
+TypeCheckPattern::visit (HIR::IdentifierPattern &pattern)
+{
+  infered = parent;
+}
+
 } // namespace Resolver
 } // namespace Rust

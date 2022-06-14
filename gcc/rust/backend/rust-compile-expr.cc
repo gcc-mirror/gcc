@@ -1432,16 +1432,6 @@ CompileExpr::visit (HIR::IdentifierExpr &expr)
   NodeId ref_node_id = UNKNOWN_NODEID;
   if (ctx->get_resolver ()->lookup_resolved_name (ast_node_id, &ref_node_id))
     {
-      // these ref_node_ids will resolve to a pattern declaration but we are
-      // interested in the definition that this refers to get the parent id
-      Resolver::Definition def;
-      if (!ctx->get_resolver ()->lookup_definition (ref_node_id, &def))
-	{
-	  rust_error_at (expr.get_locus (),
-			 "unknown reference for resolved name");
-	  return;
-	}
-      ref_node_id = def.parent;
       is_value = true;
     }
   else if (!ctx->get_resolver ()->lookup_resolved_type (ast_node_id,

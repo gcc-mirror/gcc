@@ -133,15 +133,12 @@ ResolveType::visit (AST::ArrayType &type)
 void
 ResolveType::visit (AST::TraitObjectTypeOneBound &type)
 {
-  NodeId bound_resolved_id
-    = ResolveTypeBound::go (&type.get_trait_bound (), type.get_node_id ());
-  ok = bound_resolved_id != UNKNOWN_NODEID;
+  ResolveTypeBound::go (&type.get_trait_bound (), type.get_node_id ());
 }
 
 void
 ResolveType::visit (AST::TraitObjectType &type)
 {
-  ok = true;
   for (auto &bound : type.get_type_param_bounds ())
     {
       /* NodeId bound_resolved_id = */
@@ -270,30 +267,183 @@ ResolveRelativeTypePath::ResolveRelativeTypePath (CanonicalPath qualified_path)
 }
 
 bool
+ResolveRelativeTypePath::go (AST::TypePath &path, NodeId &resolved_node_id)
+{
+  CanonicalPath result = CanonicalPath::create_empty ();
+  ResolveRelativeTypePath o (result);
+  auto &resolver = o.resolver;
+  auto &mappings = o.mappings;
+
+  NodeId module_scope_id = resolver->peek_current_module_scope ();
+  NodeId previous_resolved_node_id = module_scope_id;
+  for (size_t i = 0; i < path.get_segments ().size (); i++)
+    {
+      auto &segment = path.get_segments ().at (i);
+      const AST::PathIdentSegment &ident_seg = segment->get_ident_segment ();
+      bool is_first_segment = i == 0;
+      resolved_node_id = UNKNOWN_NODEID;
+
+      NodeId crate_scope_id = resolver->peek_crate_module_scope ();
+      if (segment->is_crate_path_seg ())
+	{
+	  // what is the current crate scope node id?
+	  module_scope_id = crate_scope_id;
+	  previous_resolved_node_id = module_scope_id;
+	  resolver->insert_resolved_name (segment->get_node_id (),
+					  module_scope_id);
+
+	  continue;
+	}
+      else if (segment->is_super_path_seg ())
+	{
+	  if (module_scope_id == crate_scope_id)
+	    {
+	      rust_error_at (segment->get_locus (),
+			     "cannot use super at the crate scope");
+	      return false;
+	    }
+
+	  module_scope_id = resolver->peek_parent_module_scope ();
+	  previous_resolved_node_id = module_scope_id;
+	  resolver->insert_resolved_name (segment->get_node_id (),
+					  module_scope_id);
+	  continue;
+	}
+
+      switch (segment->get_type ())
+	{
+	  case AST::TypePathSegment::SegmentType::GENERIC: {
+	    AST::TypePathSegmentGeneric *s
+	      = static_cast<AST::TypePathSegmentGeneric *> (segment.get ());
+	    if (s->has_generic_args ())
+	      {
+		for (auto &gt : s->get_generic_args ().get_type_args ())
+		  {
+		    ResolveType::go (gt.get (), UNKNOWN_NODEID);
+		  }
+	      }
+	  }
+	  break;
+
+	case AST::TypePathSegment::SegmentType::REG:
+	  // nothing to do
+	  break;
+
+	case AST::TypePathSegment::SegmentType::FUNCTION:
+	  gcc_unreachable ();
+	  break;
+	}
+
+      if (previous_resolved_node_id == module_scope_id
+	  && path.get_segments ().size () > 1)
+	{
+	  Optional<CanonicalPath &> resolved_child
+	    = mappings->lookup_module_child (module_scope_id,
+					     ident_seg.as_string ());
+	  if (resolved_child.is_some ())
+	    {
+	      NodeId resolved_node = resolved_child->get_node_id ();
+	      if (resolver->get_name_scope ().decl_was_declared_here (
+		    resolved_node))
+		{
+		  resolved_node_id = resolved_node;
+		  resolver->insert_resolved_name (segment->get_node_id (),
+						  resolved_node);
+		}
+	      else if (resolver->get_type_scope ().decl_was_declared_here (
+			 resolved_node))
+		{
+		  resolved_node_id = resolved_node;
+		  resolver->insert_resolved_type (segment->get_node_id (),
+						  resolved_node);
+		}
+	      else
+		{
+		  rust_error_at (segment->get_locus (),
+				 "Cannot find path %<%s%> in this scope",
+				 segment->as_string ().c_str ());
+		  return false;
+		}
+	    }
+	}
+
+      if (resolved_node_id == UNKNOWN_NODEID && is_first_segment)
+	{
+	  // name scope first
+	  NodeId resolved_node = UNKNOWN_NODEID;
+	  const CanonicalPath path
+	    = CanonicalPath::new_seg (segment->get_node_id (),
+				      ident_seg.as_string ());
+	  if (resolver->get_type_scope ().lookup (path, &resolved_node))
+	    {
+	      resolver->insert_resolved_type (segment->get_node_id (),
+					      resolved_node);
+	    }
+	  else if (resolver->get_name_scope ().lookup (path, &resolved_node))
+	    {
+	      resolver->insert_resolved_name (segment->get_node_id (),
+					      resolved_node);
+	    }
+	  else
+	    {
+	      rust_error_at (segment->get_locus (),
+			     "failed to resolve TypePath: %s in this scope",
+			     segment->as_string ().c_str ());
+	      return false;
+	    }
+
+	  resolved_node_id = resolved_node;
+	}
+
+      if (resolved_node_id != UNKNOWN_NODEID)
+	{
+	  if (mappings->node_is_module (resolved_node_id))
+	    {
+	      module_scope_id = resolved_node_id;
+	    }
+	  previous_resolved_node_id = resolved_node_id;
+	}
+    }
+
+  if (resolved_node_id != UNKNOWN_NODEID)
+    {
+      // name scope first
+      if (resolver->get_name_scope ().decl_was_declared_here (resolved_node_id))
+	{
+	  resolver->insert_resolved_name (path.get_node_id (),
+					  resolved_node_id);
+	}
+      // check the type scope
+      else if (resolver->get_type_scope ().decl_was_declared_here (
+		 resolved_node_id))
+	{
+	  resolver->insert_resolved_type (path.get_node_id (),
+					  resolved_node_id);
+	}
+      else
+	{
+	  gcc_unreachable ();
+	}
+    }
+
+  return true;
+}
+
+bool
 ResolveRelativeTypePath::go (AST::QualifiedPathInType &path)
 {
+  CanonicalPath result = CanonicalPath::create_empty ();
+  ResolveRelativeTypePath o (result);
+
   // resolve the type and trait path
   auto &qualified_path = path.get_qualified_path_type ();
-  CanonicalPath result = CanonicalPath::create_empty ();
-  if (!resolve_qual_seg (qualified_path, result))
+  if (!o.resolve_qual_seg (qualified_path, result))
     return false;
-
-  // resolve the associated impl if available but it can also be from a trait
-  // and this is allowed to fail
-  auto resolver = Resolver::get ();
-  NodeId projection_resolved_id = UNKNOWN_NODEID;
-  if (resolver->get_name_scope ().lookup (result, &projection_resolved_id))
-    {
-      // mark the resolution for this
-      resolver->insert_resolved_name (qualified_path.get_node_id (),
-				      projection_resolved_id);
-    }
 
   // qualified types are similar to other paths in that we cannot guarantee
   // that we can resolve the path at name resolution. We must look up
   // associated types and type information to figure this out properly
 
-  ResolveRelativeTypePath o (result);
   std::unique_ptr<AST::TypePathSegment> &associated
     = path.get_associated_segment ();
 

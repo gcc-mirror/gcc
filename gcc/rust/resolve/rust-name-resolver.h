@@ -73,11 +73,13 @@ public:
   bool lookup (const CanonicalPath &ident, NodeId *id);
 
   void iterate (std::function<bool (Rib *)> cb);
+  void iterate (std::function<bool (const Rib *)> cb) const;
 
   Rib *peek ();
   void push (NodeId id);
   Rib *pop ();
 
+  bool decl_was_declared_here (NodeId def) const;
   void append_reference_for_def (NodeId refId, NodeId defId);
 
   CrateNum get_crate_num () const { return crate_num; }
@@ -85,32 +87,6 @@ public:
 private:
   CrateNum crate_num;
   std::vector<Rib *> stack;
-};
-
-// This can map simple NodeIds for names to their parent node
-// for example:
-//
-// var x = y + 1;
-//
-// say y has node id=1 and the plus_expression has id=2
-// then the Definition will have
-// Definition { node=1, parent=2 }
-// this will be used later to gather the ribs for the type inferences context
-//
-// if parent is UNKNOWN_NODEID then this is a root declaration
-// say the var_decl hasa node_id=4;
-// the parent could be a BLOCK_Expr node_id but lets make it UNKNOWN_NODE_ID
-// so we know when it terminates
-struct Definition
-{
-  NodeId node;
-  NodeId parent;
-  // add kind ?
-
-  bool is_equal (const Definition &other)
-  {
-    return node == other.node && parent == other.parent;
-  }
 };
 
 class Resolver
@@ -135,9 +111,6 @@ public:
   bool find_type_rib (NodeId id, Rib **rib);
   bool find_label_rib (NodeId id, Rib **rib);
   bool find_macro_rib (NodeId id, Rib **rib);
-
-  void insert_new_definition (NodeId id, Definition def);
-  bool lookup_definition (NodeId id, Definition *def);
 
   void insert_resolved_name (NodeId refId, NodeId defId);
   bool lookup_resolved_name (NodeId refId, NodeId *defId);
@@ -166,6 +139,35 @@ public:
   void set_unit_type_node_id (NodeId id) { unit_ty_node_id = id; }
   NodeId get_unit_type_node_id () { return unit_ty_node_id; }
 
+  void push_new_module_scope (NodeId module_id)
+  {
+    current_module_stack.push_back (module_id);
+  }
+
+  void pop_module_scope ()
+  {
+    rust_assert (!current_module_stack.empty ());
+    current_module_stack.pop_back ();
+  }
+
+  NodeId peek_current_module_scope () const
+  {
+    rust_assert (!current_module_stack.empty ());
+    return current_module_stack.back ();
+  }
+
+  NodeId peek_crate_module_scope () const
+  {
+    rust_assert (!current_module_stack.empty ());
+    return current_module_stack.front ();
+  }
+
+  NodeId peek_parent_module_scope () const
+  {
+    rust_assert (current_module_stack.size () > 1);
+    return current_module_stack.at (current_module_stack.size () - 2);
+  }
+
 private:
   Resolver ();
 
@@ -190,10 +192,6 @@ private:
   std::map<NodeId, Rib *> label_ribs;
   std::map<NodeId, Rib *> macro_ribs;
 
-  // map any Node to its Definition
-  // ie any name or type usage
-  std::map<NodeId, Definition> name_definitions;
-
   // Rust uses DefIds to namespace these under a crate_num
   // but then it uses the def_collector to assign local_defids
   // to each ast node as well. not sure if this is going to fit
@@ -211,6 +209,9 @@ private:
   std::map<NodeId, bool> decl_mutability;
   // map of resolved names and set of assignments to the decl
   std::map<NodeId, std::set<NodeId>> assignment_to_decl;
+
+  // keep track of the current module scope ids
+  std::vector<NodeId> current_module_stack;
 };
 
 } // namespace Resolver

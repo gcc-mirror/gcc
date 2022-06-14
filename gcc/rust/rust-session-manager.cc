@@ -737,6 +737,9 @@ Session::parse_file (const char *filename)
   if (saw_errors ())
     return;
 
+  // add the mappings to it
+  mappings->insert_hir_crate (&hir);
+
   // type resolve
   Resolver::TypeResolution::Resolve (hir);
   if (options.dump_option_enabled (CompileOptions::TYPE_RESOLUTION_DUMP))

@@ -128,7 +128,7 @@ public:
   void visit (HIR::LetStmt &stmt) override
   {
     dump += "let " + stmt.get_pattern ()->as_string () + ":"
-	    + type_string (stmt.get_mappings ());
+	    + type_string (stmt.get_pattern ()->get_pattern_mappings ());
     if (stmt.has_init_expr ())
       {
 	dump += " = ";

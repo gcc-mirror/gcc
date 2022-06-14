@@ -76,9 +76,6 @@ public:
 	r.add_range (locus);
 	rust_error_at (r, "redefined multiple times");
       });
-    resolver->insert_new_definition (constant.get_node_id (),
-				     Definition{constant.get_node_id (),
-						constant.get_node_id ()});
   }
 
   void visit (AST::Function &function) override
@@ -93,9 +90,6 @@ public:
 	r.add_range (locus);
 	rust_error_at (r, "redefined multiple times");
       });
-    resolver->insert_new_definition (function.get_node_id (),
-				     Definition{function.get_node_id (),
-						function.get_node_id ()});
   }
 
   void visit (AST::Method &method) override
@@ -110,9 +104,6 @@ public:
 	r.add_range (locus);
 	rust_error_at (r, "redefined multiple times");
       });
-    resolver->insert_new_definition (method.get_node_id (),
-				     Definition{method.get_node_id (),
-						method.get_node_id ()});
   }
 
 private:
@@ -150,9 +141,6 @@ public:
 	r.add_range (locus);
 	rust_error_at (r, "redefined multiple times");
       });
-    resolver->insert_new_definition (function.get_node_id (),
-				     Definition{function.get_node_id (),
-						function.get_node_id ()});
 
     mappings->insert_canonical_path (mappings->get_current_crate (),
 				     function.get_node_id (), cpath);
@@ -171,9 +159,6 @@ public:
 	r.add_range (locus);
 	rust_error_at (r, "redefined multiple times");
       });
-    resolver->insert_new_definition (method.get_node_id (),
-				     Definition{method.get_node_id (),
-						method.get_node_id ()});
 
     mappings->insert_canonical_path (mappings->get_current_crate (),
 				     method.get_node_id (), cpath);
@@ -192,9 +177,6 @@ public:
 	r.add_range (locus);
 	rust_error_at (r, "redefined multiple times");
       });
-    resolver->insert_new_definition (constant.get_node_id (),
-				     Definition{constant.get_node_id (),
-						constant.get_node_id ()});
 
     mappings->insert_canonical_path (mappings->get_current_crate (),
 				     constant.get_node_id (), cpath);
@@ -253,9 +235,9 @@ public:
 	r.add_range (locus);
 	rust_error_at (r, "redefined multiple times");
       });
-    resolver->insert_new_definition (function.get_node_id (),
-				     Definition{function.get_node_id (),
-						function.get_node_id ()});
+
+    NodeId current_module = resolver->peek_current_module_scope ();
+    mappings->insert_module_child_item (current_module, decl);
   }
 
   void visit (AST::ExternalStaticItem &item) override
@@ -271,9 +253,9 @@ public:
 	r.add_range (locus);
 	rust_error_at (r, "redefined multiple times");
       });
-    resolver->insert_new_definition (item.get_node_id (),
-				     Definition{item.get_node_id (),
-						item.get_node_id ()});
+
+    NodeId current_module = resolver->peek_current_module_scope ();
+    mappings->insert_module_child_item (current_module, decl);
   }
 
 private:

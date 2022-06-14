@@ -81,20 +81,34 @@ NameResolution::go (AST::Crate &crate)
     = CanonicalPath::new_seg (scope_node_id, crate_name);
   crate_prefix.set_crate_num (cnum);
 
+  // setup a dummy crate node
+  resolver->get_name_scope ().insert (
+    CanonicalPath::new_seg (crate.get_node_id (), "__$$crate__"),
+    crate.get_node_id (), Location ());
+
+  // setup the root scope
+  resolver->push_new_module_scope (scope_node_id);
+
   // first gather the top-level namespace names then we drill down so this
   // allows for resolving forward declarations since an impl block might have
   // a Self type Foo which is defined after the impl block for example.
   for (auto it = crate.items.begin (); it != crate.items.end (); it++)
     ResolveTopLevel::go (it->get (), CanonicalPath::create_empty (),
-			 crate_prefix, scope_node_id);
+			 crate_prefix);
 
   // FIXME remove this
   if (saw_errors ())
-    return;
+    {
+      resolver->pop_module_scope ();
+      return;
+    }
 
   // next we can drill down into the items and their scopes
   for (auto it = crate.items.begin (); it != crate.items.end (); it++)
     ResolveItem::go (it->get (), CanonicalPath::create_empty (), crate_prefix);
+
+  // done
+  resolver->pop_module_scope ();
 }
 
 // rust-ast-resolve-struct-expr-field.h
@@ -158,19 +172,21 @@ ResolveRelativeTypePath::resolve_qual_seg (AST::QualifiedPathType &seg,
 		     seg.as_string ().c_str ());
       return false;
     }
-  bool include_generic_args_in_path = false;
 
-  NodeId type_resolved_node
-    = ResolveType::go (seg.get_type ().get (), seg.get_node_id ());
+  auto type = seg.get_type ().get ();
+  NodeId type_resolved_node = ResolveType::go (type, seg.get_node_id ());
   if (type_resolved_node == UNKNOWN_NODEID)
     return false;
 
-  CanonicalPath impl_type_seg
-    = ResolveTypeToCanonicalPath::resolve (*seg.get_type ().get (),
-					   include_generic_args_in_path);
+  const CanonicalPath *impl_type_seg = nullptr;
+  bool ok
+    = mappings->lookup_canonical_path (mappings->get_current_crate (),
+				       type_resolved_node, &impl_type_seg);
+  rust_assert (ok);
+
   if (!seg.has_as_clause ())
     {
-      result = result.append (impl_type_seg);
+      result = result.append (*impl_type_seg);
       return true;
     }
 
@@ -179,12 +195,15 @@ ResolveRelativeTypePath::resolve_qual_seg (AST::QualifiedPathType &seg,
   if (trait_resolved_node == UNKNOWN_NODEID)
     return false;
 
-  CanonicalPath trait_type_seg
-    = ResolveTypeToCanonicalPath::resolve (seg.get_as_type_path (),
-					   include_generic_args_in_path);
+  const CanonicalPath *trait_type_seg = nullptr;
+  ok = mappings->lookup_canonical_path (mappings->get_current_crate (),
+					trait_resolved_node, &trait_type_seg);
+  rust_assert (ok);
+
   CanonicalPath projection
-    = TraitImplProjection::resolve (seg.get_node_id (), trait_type_seg,
-				    impl_type_seg);
+    = TraitImplProjection::resolve (seg.get_node_id (), *trait_type_seg,
+				    *impl_type_seg);
+
   result = result.append (projection);
   return true;
 }

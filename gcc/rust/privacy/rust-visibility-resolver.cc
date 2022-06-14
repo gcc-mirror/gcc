@@ -71,12 +71,6 @@ VisibilityResolver::resolve_module_path (const HIR::SimplePath &restriction,
   // TODO: For the hint, can we point to the original item's definition if
   // present?
 
-  Resolver::Definition def;
-  rust_assert (resolver.lookup_definition (ref_node_id, &def));
-
-  // FIXME: Is that what we want?
-  ref_node_id = def.parent;
-
   HirId ref;
   rust_assert (
     mappings.lookup_node_to_hir (restriction.get_mappings ().get_crate_num (),

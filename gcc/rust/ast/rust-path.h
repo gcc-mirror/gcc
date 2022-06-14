@@ -38,12 +38,6 @@ public:
     : segment_name (std::move (segment_name)), locus (locus)
   {}
 
-  /* TODO: insert check in constructor for this? Or is this a semantic error
-   * best handled then? */
-
-  /* TODO: does this require visitor? pretty sure this isn't polymorphic, but
-   * not entirely sure */
-
   // Creates an error PathIdentSegment.
   static PathIdentSegment create_error ()
   {
@@ -54,6 +48,11 @@ public:
   bool is_error () const { return segment_name.empty (); }
 
   std::string as_string () const { return segment_name; }
+
+  bool is_super_segment () const { return as_string ().compare ("super") == 0; }
+  bool is_crate_segment () const { return as_string ().compare ("crate") == 0; }
+  bool is_lower_self () const { return as_string ().compare ("self") == 0; }
+  bool is_big_self () const { return as_string ().compare ("Self") == 0; }
 };
 
 // A binding of an identifier to a type used in generic arguments in paths
@@ -264,8 +263,23 @@ public:
   }
 
   PathIdentSegment &get_ident_segment () { return segment_name; }
+  const PathIdentSegment &get_ident_segment () const { return segment_name; }
 
   NodeId get_node_id () const { return node_id; }
+
+  bool is_super_path_seg () const
+  {
+    return !has_generic_args () && get_ident_segment ().is_super_segment ();
+  }
+
+  bool is_crate_path_seg () const
+  {
+    return !has_generic_args () && get_ident_segment ().is_crate_segment ();
+  }
+  bool is_lower_self_seg () const
+  {
+    return !has_generic_args () && get_ident_segment ().is_lower_self ();
+  }
 };
 
 // AST node representing a pattern that involves a "path" - abstract base class
@@ -397,6 +411,15 @@ protected:
  * ident-only segment) */
 class TypePathSegment
 {
+public:
+  enum SegmentType
+  {
+    REG,
+    GENERIC,
+    FUNCTION
+  };
+
+private:
   PathIdentSegment ident_segment;
   Location locus;
 
@@ -414,6 +437,8 @@ protected:
 
 public:
   virtual ~TypePathSegment () {}
+
+  virtual SegmentType get_type () const { return SegmentType::REG; }
 
   // Unique pointer custom clone function
   std::unique_ptr<TypePathSegment> clone_type_path_segment () const
@@ -456,9 +481,20 @@ public:
     return has_separating_scope_resolution;
   }
 
-  PathIdentSegment get_ident_segment () { return ident_segment; };
+  PathIdentSegment &get_ident_segment () { return ident_segment; };
+  const PathIdentSegment &get_ident_segment () const { return ident_segment; };
 
   NodeId get_node_id () const { return node_id; }
+
+  bool is_crate_path_seg () const
+  {
+    return get_ident_segment ().is_crate_segment ();
+  }
+  bool is_super_path_seg () const
+  {
+    return get_ident_segment ().is_super_segment ();
+  }
+  bool is_big_self_seg () const { return get_ident_segment ().is_big_self (); }
 };
 
 // Segment used in type path with generic args
@@ -467,6 +503,8 @@ class TypePathSegmentGeneric : public TypePathSegment
   GenericArgs generic_args;
 
 public:
+  SegmentType get_type () const override { return SegmentType::GENERIC; }
+
   bool has_generic_args () const { return generic_args.has_generic_args (); }
 
   bool is_ident_only () const override { return false; }
@@ -620,6 +658,8 @@ class TypePathSegmentFunction : public TypePathSegment
   TypePathFunction function_path;
 
 public:
+  SegmentType get_type () const override { return SegmentType::FUNCTION; }
+
   // Constructor with PathIdentSegment and TypePathFn
   TypePathSegmentFunction (PathIdentSegment ident_segment,
 			   bool has_separating_scope_resolution,

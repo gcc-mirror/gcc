@@ -79,7 +79,7 @@ ASTLowering::go ()
 
   auto mappings = Analysis::Mappings::get ();
   auto crate_num = mappings->get_current_crate ();
-  Analysis::NodeMapping mapping (crate_num, UNKNOWN_NODEID,
+  Analysis::NodeMapping mapping (crate_num, astCrate.get_node_id (),
 				 mappings->get_next_hir_id (crate_num),
 				 UNKNOWN_LOCAL_DEFID);
 

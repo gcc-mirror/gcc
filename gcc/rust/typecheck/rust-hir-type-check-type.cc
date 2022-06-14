@@ -151,6 +151,36 @@ TypeCheckType::visit (HIR::QualifiedPathInType &path)
   // inherit the bound
   root->inherit_bounds ({specified_bound});
 
+  // setup the associated types
+  const TraitReference *specified_bound_ref = specified_bound.get ();
+  auto candidates = TypeBoundsProbe::Probe (root);
+  AssociatedImplTrait *associated_impl_trait = nullptr;
+  for (auto &probed_bound : candidates)
+    {
+      const TraitReference *bound_trait_ref = probed_bound.first;
+      const HIR::ImplBlock *associated_impl = probed_bound.second;
+
+      HirId impl_block_id = associated_impl->get_mappings ().get_hirid ();
+      AssociatedImplTrait *associated = nullptr;
+      bool found_impl_trait
+	= context->lookup_associated_trait_impl (impl_block_id, &associated);
+      if (found_impl_trait)
+	{
+	  bool found_trait = specified_bound_ref->is_equal (*bound_trait_ref);
+	  bool found_self = associated->get_self ()->can_eq (root, false);
+	  if (found_trait && found_self)
+	    {
+	      associated_impl_trait = associated;
+	      break;
+	    }
+	}
+    }
+
+  if (associated_impl_trait != nullptr)
+    {
+      associated_impl_trait->setup_associated_types (root, specified_bound);
+    }
+
   // lookup the associated item from the specified bound
   std::unique_ptr<HIR::TypePathSegment> &item_seg
     = path.get_associated_segment ();
@@ -165,28 +195,6 @@ TypeCheckType::visit (HIR::QualifiedPathInType &path)
 
   // infer the root type
   translated = item.get_tyty_for_receiver (root);
-
-  // we need resolve to the impl block
-  NodeId impl_resolved_id = UNKNOWN_NODEID;
-  bool have_associated_impl = resolver->lookup_resolved_name (
-    qual_path_type.get_mappings ().get_nodeid (), &impl_resolved_id);
-  AssociatedImplTrait *lookup_associated = nullptr;
-  if (have_associated_impl)
-    {
-      HirId impl_block_id;
-      bool ok
-	= mappings->lookup_node_to_hir (path.get_mappings ().get_crate_num (),
-					impl_resolved_id, &impl_block_id);
-      rust_assert (ok);
-
-      bool found_impl_trait
-	= context->lookup_associated_trait_impl (impl_block_id,
-						 &lookup_associated);
-      if (found_impl_trait)
-	{
-	  lookup_associated->setup_associated_types (root, specified_bound);
-	}
-    }
 
   // turbo-fish segment path::<ty>
   if (item_seg->get_type () == HIR::TypePathSegment::SegmentType::GENERIC)
@@ -245,21 +253,7 @@ TypeCheckType::resolve_root_path (HIR::TypePath &path, size_t *offset,
 
       // then lookup the reference_node_id
       NodeId ref_node_id = UNKNOWN_NODEID;
-      if (resolver->lookup_resolved_name (ast_node_id, &ref_node_id))
-	{
-	  // these ref_node_ids will resolve to a pattern declaration but we
-	  // are interested in the definition that this refers to get the
-	  // parent id
-	  Definition def;
-	  if (!resolver->lookup_definition (ref_node_id, &def))
-	    {
-	      rust_error_at (path.get_locus (),
-			     "unknown reference for resolved name");
-	      return new TyTy::ErrorType (path.get_mappings ().get_hirid ());
-	    }
-	  ref_node_id = def.parent;
-	}
-      else
+      if (!resolver->lookup_resolved_name (ast_node_id, &ref_node_id))
 	{
 	  resolver->lookup_resolved_type (ast_node_id, &ref_node_id);
 	}
@@ -270,14 +264,15 @@ TypeCheckType::resolve_root_path (HIR::TypePath &path, size_t *offset,
 	  if (is_root)
 	    {
 	      rust_error_at (seg->get_locus (),
-			     "failed to type resolve root segment");
+			     "unknown reference for resolved name: %<%s%>",
+			     seg->get_ident_segment ().as_string ().c_str ());
 	      return new TyTy::ErrorType (path.get_mappings ().get_hirid ());
 	    }
 	  return root_tyty;
 	}
 
       // node back to HIR
-      HirId ref;
+      HirId ref = UNKNOWN_HIRID;
       if (!mappings->lookup_node_to_hir (path.get_mappings ().get_crate_num (),
 					 ref_node_id, &ref))
 	{
@@ -300,8 +295,8 @@ TypeCheckType::resolve_root_path (HIR::TypePath &path, size_t *offset,
 	= (nullptr
 	   != mappings->lookup_module (path.get_mappings ().get_crate_num (),
 				       ref));
-
-      if (seg_is_module)
+      auto seg_is_crate = mappings->is_local_hirid_crate (ref);
+      if (seg_is_module || seg_is_crate)
 	{
 	  // A::B::C::this_is_a_module::D::E::F
 	  //          ^^^^^^^^^^^^^^^^
@@ -498,8 +493,19 @@ TypeCheckType::resolve_segments (
     }
   else
     {
-      resolver->insert_resolved_type (expr_mappings.get_nodeid (),
-				      resolved_node_id);
+      // name scope first
+      if (resolver->get_name_scope ().decl_was_declared_here (resolved_node_id))
+	{
+	  resolver->insert_resolved_name (expr_mappings.get_nodeid (),
+					  resolved_node_id);
+	}
+      // check the type scope
+      else if (resolver->get_type_scope ().decl_was_declared_here (
+		 resolved_node_id))
+	{
+	  resolver->insert_resolved_type (expr_mappings.get_nodeid (),
+					  resolved_node_id);
+	}
     }
 
   return tyseg;

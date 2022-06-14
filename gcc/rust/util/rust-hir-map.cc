@@ -201,6 +201,18 @@ Mappings::get_hir_crate (CrateNum crateNum)
   return it->second;
 }
 
+bool
+Mappings::is_local_hirid_crate (HirId crateNum)
+{
+  for (const auto &it : hirCrateMappings)
+    {
+      const HIR::Crate *crate = it.second;
+      if (crate->get_mappings ().get_hirid () == crateNum)
+	return true;
+    }
+  return false;
+}
+
 void
 Mappings::insert_hir_crate (HIR::Crate *crate)
 {
@@ -208,6 +220,9 @@ Mappings::insert_hir_crate (HIR::Crate *crate)
   rust_assert (get_hir_crate (crateNum) == nullptr);
 
   hirCrateMappings[crateNum] = crate;
+  insert_node_to_hir (crate->get_mappings ().get_crate_num (),
+		      crate->get_mappings ().get_nodeid (),
+		      crate->get_mappings ().get_hirid ());
 }
 
 void
@@ -908,6 +923,25 @@ Mappings::lookup_module_chidren_items (NodeId module)
   return Optional<std::vector<Resolver::CanonicalPath> &>::some (it->second);
 }
 
+Optional<Resolver::CanonicalPath &>
+Mappings::lookup_module_child (NodeId module, const std::string &item_name)
+{
+  Optional<std::vector<Resolver::CanonicalPath> &> children
+    = lookup_module_chidren_items (module);
+  if (children.is_none ())
+    return Optional<Resolver::CanonicalPath &>::none ();
+
+  // lookup the children to match the name if we can
+  for (auto &child : children.get ())
+    {
+      const std::string &raw_identifier = child.get ();
+      bool found = raw_identifier.compare (item_name) == 0;
+      if (found)
+	return Optional<Resolver::CanonicalPath &>::some (child);
+    }
+  return Optional<Resolver::CanonicalPath &>::none ();
+}
+
 void
 Mappings::insert_child_item_to_parent_module_mapping (NodeId child_item,
 						      NodeId parent_module)
@@ -923,6 +957,12 @@ Mappings::lookup_parent_module (NodeId child_item)
     return Optional<NodeId>::none ();
 
   return Optional<NodeId>::some (it->second);
+}
+
+bool
+Mappings::node_is_module (NodeId query)
+{
+  return module_child_items.find (query) != module_child_items.end ();
 }
 
 } // namespace Analysis

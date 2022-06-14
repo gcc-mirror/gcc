@@ -67,6 +67,36 @@ TypeCheckExpr::visit (HIR::QualifiedPathInExpression &expr)
   // inherit the bound
   root->inherit_bounds ({specified_bound});
 
+  // setup the associated types
+  const TraitReference *specified_bound_ref = specified_bound.get ();
+  auto candidates = TypeBoundsProbe::Probe (root);
+  AssociatedImplTrait *associated_impl_trait = nullptr;
+  for (auto &probed_bound : candidates)
+    {
+      const TraitReference *bound_trait_ref = probed_bound.first;
+      const HIR::ImplBlock *associated_impl = probed_bound.second;
+
+      HirId impl_block_id = associated_impl->get_mappings ().get_hirid ();
+      AssociatedImplTrait *associated = nullptr;
+      bool found_impl_trait
+	= context->lookup_associated_trait_impl (impl_block_id, &associated);
+      if (found_impl_trait)
+	{
+	  bool found_trait = specified_bound_ref->is_equal (*bound_trait_ref);
+	  bool found_self = associated->get_self ()->can_eq (root, false);
+	  if (found_trait && found_self)
+	    {
+	      associated_impl_trait = associated;
+	      break;
+	    }
+	}
+    }
+
+  if (associated_impl_trait != nullptr)
+    {
+      associated_impl_trait->setup_associated_types (root, specified_bound);
+    }
+
   // lookup the associated item from the specified bound
   HIR::PathExprSegment &item_seg = expr.get_segments ().at (0);
   HIR::PathIdentSegment item_seg_identifier = item_seg.get_segment ();
@@ -80,28 +110,6 @@ TypeCheckExpr::visit (HIR::QualifiedPathInExpression &expr)
 
   // infer the root type
   infered = item.get_tyty_for_receiver (root);
-
-  // we need resolve to the impl block
-  NodeId impl_resolved_id = UNKNOWN_NODEID;
-  bool have_associated_impl = resolver->lookup_resolved_name (
-    qual_path_type.get_mappings ().get_nodeid (), &impl_resolved_id);
-  AssociatedImplTrait *lookup_associated = nullptr;
-  if (have_associated_impl)
-    {
-      HirId impl_block_id;
-      bool ok
-	= mappings->lookup_node_to_hir (expr.get_mappings ().get_crate_num (),
-					impl_resolved_id, &impl_block_id);
-      rust_assert (ok);
-
-      bool found_impl_trait
-	= context->lookup_associated_trait_impl (impl_block_id,
-						 &lookup_associated);
-      if (found_impl_trait)
-	{
-	  lookup_associated->setup_associated_types (root, specified_bound);
-	}
-    }
 
   // turbo-fish segment path::<ty>
   if (item_seg.has_generic_args ())
@@ -145,7 +153,9 @@ TypeCheckExpr::visit (HIR::PathInExpression &expr)
     return;
 
   if (tyseg->needs_generic_substitutions ())
-    tyseg = SubstMapper::InferSubst (tyseg, expr.get_locus ());
+    {
+      tyseg = SubstMapper::InferSubst (tyseg, expr.get_locus ());
+    }
 
   bool fully_resolved = offset == expr.get_segments ().size ();
   if (fully_resolved)
@@ -162,30 +172,19 @@ TyTy::BaseType *
 TypeCheckExpr::resolve_root_path (HIR::PathInExpression &expr, size_t *offset,
 				  NodeId *root_resolved_node_id)
 {
+  TyTy::BaseType *root_tyty = nullptr;
   *offset = 0;
   for (size_t i = 0; i < expr.get_num_segments (); i++)
     {
       HIR::PathExprSegment &seg = expr.get_segments ().at (i);
+
       bool have_more_segments = (expr.get_num_segments () - 1 != i);
+      bool is_root = *offset == 0;
       NodeId ast_node_id = seg.get_mappings ().get_nodeid ();
 
       // then lookup the reference_node_id
       NodeId ref_node_id = UNKNOWN_NODEID;
-      if (resolver->lookup_resolved_name (ast_node_id, &ref_node_id))
-	{
-	  // these ref_node_ids will resolve to a pattern declaration but we
-	  // are interested in the definition that this refers to get the
-	  // parent id
-	  Definition def;
-	  if (!resolver->lookup_definition (ref_node_id, &def))
-	    {
-	      rust_error_at (expr.get_locus (),
-			     "unknown reference for resolved name");
-	      return new TyTy::ErrorType (expr.get_mappings ().get_hirid ());
-	    }
-	  ref_node_id = def.parent;
-	}
-      else
+      if (!resolver->lookup_resolved_name (ast_node_id, &ref_node_id))
 	{
 	  resolver->lookup_resolved_type (ast_node_id, &ref_node_id);
 	}
@@ -193,6 +192,12 @@ TypeCheckExpr::resolve_root_path (HIR::PathInExpression &expr, size_t *offset,
       // ref_node_id is the NodeId that the segments refers to.
       if (ref_node_id == UNKNOWN_NODEID)
 	{
+	  if (root_tyty != nullptr && *offset > 0)
+	    {
+	      // then we can let the impl path probe take over now
+	      return root_tyty;
+	    }
+
 	  rust_error_at (seg.get_locus (),
 			 "failed to type resolve root segment");
 	  return new TyTy::ErrorType (expr.get_mappings ().get_hirid ());
@@ -217,7 +222,8 @@ TypeCheckExpr::resolve_root_path (HIR::PathInExpression &expr, size_t *offset,
 	= (nullptr
 	   != mappings->lookup_module (expr.get_mappings ().get_crate_num (),
 				       ref));
-      if (seg_is_module)
+      auto seg_is_crate = mappings->is_local_hirid_crate (ref);
+      if (seg_is_module || seg_is_crate)
 	{
 	  // A::B::C::this_is_a_module::D::E::F
 	  //          ^^^^^^^^^^^^^^^^
@@ -239,8 +245,33 @@ TypeCheckExpr::resolve_root_path (HIR::PathInExpression &expr, size_t *offset,
       TyTy::BaseType *lookup = nullptr;
       if (!context->lookup_type (ref, &lookup))
 	{
-	  rust_error_at (seg.get_locus (), "failed to resolve root segment");
-	  return new TyTy::ErrorType (expr.get_mappings ().get_hirid ());
+	  if (is_root)
+	    {
+	      rust_error_at (seg.get_locus (),
+			     "failed to resolve root segment");
+	      return new TyTy::ErrorType (expr.get_mappings ().get_hirid ());
+	    }
+	  return root_tyty;
+	}
+
+      // if we have a previous segment type
+      if (root_tyty != nullptr)
+	{
+	  // if this next segment needs substitution we must apply the
+	  // previous type arguments
+	  //
+	  // such as: GenericStruct::<_>::new(123, 456)
+	  if (lookup->needs_generic_substitutions ())
+	    {
+	      if (!root_tyty->needs_generic_substitutions ())
+		{
+		  auto used_args_in_prev_segment
+		    = GetUsedSubstArgs::From (root_tyty);
+		  lookup
+		    = SubstMapperInternal::Resolve (lookup,
+						    used_args_in_prev_segment);
+		}
+	    }
 	}
 
       // turbo-fish segment path::<ty>
@@ -248,21 +279,24 @@ TypeCheckExpr::resolve_root_path (HIR::PathInExpression &expr, size_t *offset,
 	{
 	  if (!lookup->can_substitute ())
 	    {
-	      rust_error_at (seg.get_locus (),
+	      rust_error_at (expr.get_locus (),
 			     "substitutions not supported for %s",
-			     lookup->as_string ().c_str ());
-	      return new TyTy::ErrorType (lookup->get_ref ());
+			     root_tyty->as_string ().c_str ());
+	      return new TyTy::ErrorType (expr.get_mappings ().get_hirid ());
 	    }
-	  lookup = SubstMapper::Resolve (lookup, seg.get_locus (),
+
+	  lookup = SubstMapper::Resolve (lookup, expr.get_locus (),
 					 &seg.get_generic_args ());
+	  if (lookup->get_kind () == TyTy::TypeKind::ERROR)
+	    return new TyTy::ErrorType (expr.get_mappings ().get_hirid ());
 	}
 
       *root_resolved_node_id = ref_node_id;
       *offset = *offset + 1;
-      return lookup;
+      root_tyty = lookup;
     }
 
-  return new TyTy::ErrorType (expr.get_mappings ().get_hirid ());
+  return root_tyty;
 }
 
 void
@@ -423,22 +457,17 @@ TypeCheckExpr::resolve_segments (NodeId root_resolved_node_id,
 
   context->insert_receiver (expr_mappings.get_hirid (), prev_segment);
 
-  // lookup if the name resolver was able to canonically resolve this or not
-  NodeId path_resolved_id = UNKNOWN_NODEID;
-  if (resolver->lookup_resolved_name (expr_mappings.get_nodeid (),
-				      &path_resolved_id))
-    {
-      rust_assert (path_resolved_id == resolved_node_id);
-    }
-  // check the type scope
-  else if (resolver->lookup_resolved_type (expr_mappings.get_nodeid (),
-					   &path_resolved_id))
-    {
-      rust_assert (path_resolved_id == resolved_node_id);
-    }
-  else
+  // name scope first
+  if (resolver->get_name_scope ().decl_was_declared_here (resolved_node_id))
     {
       resolver->insert_resolved_name (expr_mappings.get_nodeid (),
+				      resolved_node_id);
+    }
+  // check the type scope
+  else if (resolver->get_type_scope ().decl_was_declared_here (
+	     resolved_node_id))
+    {
+      resolver->insert_resolved_type (expr_mappings.get_nodeid (),
 				      resolved_node_id);
     }
 

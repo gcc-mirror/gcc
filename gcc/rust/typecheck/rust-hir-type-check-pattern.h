@@ -58,6 +58,8 @@ public:
 
   void visit (HIR::RangePattern &pattern) override;
 
+  void visit (HIR::IdentifierPattern &pattern) override;
+
 private:
   TypeCheckPattern (TyTy::BaseType *parent)
     : TypeCheckBase (), parent (parent), infered (nullptr)
