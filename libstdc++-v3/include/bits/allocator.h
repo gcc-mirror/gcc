@@ -184,7 +184,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       allocate(size_t __n)
       {
 	if (std::__is_constant_evaluated())
-	  return static_cast<_Tp*>(::operator new(__n * sizeof(_Tp)));
+	  {
+	    if (__builtin_mul_overflow(__n, sizeof(_Tp), &__n))
+	      std::__throw_bad_array_new_length();
+	    return static_cast<_Tp*>(::operator new(__n));
+	  }
+
 	return __allocator_base<_Tp>::allocate(__n, 0);
       }
 
