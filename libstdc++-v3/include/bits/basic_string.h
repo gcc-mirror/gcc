@@ -3235,7 +3235,17 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       */
       _GLIBCXX20_CONSTEXPR
       int
-      compare(size_type __pos, size_type __n, const basic_string& __str) const;
+      compare(size_type __pos, size_type __n, const basic_string& __str) const
+      {
+	_M_check(__pos, "basic_string::compare");
+	__n = _M_limit(__pos, __n);
+	const size_type __osize = __str.size();
+	const size_type __len = std::min(__n, __osize);
+	int __r = traits_type::compare(_M_data() + __pos, __str.data(), __len);
+	if (!__r)
+	  __r = _S_compare(__n, __osize);
+	return __r;
+      }
 
       /**
        *  @brief  Compare substring to a substring.
@@ -3263,7 +3273,19 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       _GLIBCXX20_CONSTEXPR
       int
       compare(size_type __pos1, size_type __n1, const basic_string& __str,
-	      size_type __pos2, size_type __n2 = npos) const;
+	      size_type __pos2, size_type __n2 = npos) const
+      {
+	_M_check(__pos1, "basic_string::compare");
+	__str._M_check(__pos2, "basic_string::compare");
+	__n1 = _M_limit(__pos1, __n1);
+	__n2 = __str._M_limit(__pos2, __n2);
+	const size_type __len = std::min(__n1, __n2);
+	int __r = traits_type::compare(_M_data() + __pos1,
+				       __str.data() + __pos2, __len);
+	if (!__r)
+	  __r = _S_compare(__n1, __n2);
+	return __r;
+      }
 
       /**
        *  @brief  Compare to a C string.
@@ -3281,7 +3303,17 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       */
       _GLIBCXX20_CONSTEXPR
       int
-      compare(const _CharT* __s) const _GLIBCXX_NOEXCEPT;
+      compare(const _CharT* __s) const _GLIBCXX_NOEXCEPT
+      {
+	__glibcxx_requires_string(__s);
+	const size_type __size = this->size();
+	const size_type __osize = traits_type::length(__s);
+	const size_type __len = std::min(__size, __osize);
+	int __r = traits_type::compare(_M_data(), __s, __len);
+	if (!__r)
+	  __r = _S_compare(__size, __osize);
+	return __r;
+      }
 
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // 5 String::compare specification questionable
@@ -3306,7 +3338,18 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       */
       _GLIBCXX20_CONSTEXPR
       int
-      compare(size_type __pos, size_type __n1, const _CharT* __s) const;
+      compare(size_type __pos, size_type __n1, const _CharT* __s) const
+      {
+	__glibcxx_requires_string(__s);
+	_M_check(__pos, "basic_string::compare");
+	__n1 = _M_limit(__pos, __n1);
+	const size_type __osize = traits_type::length(__s);
+	const size_type __len = std::min(__n1, __osize);
+	int __r = traits_type::compare(_M_data() + __pos, __s, __len);
+	if (!__r)
+	  __r = _S_compare(__n1, __osize);
+	return __r;
+      }
 
       /**
        *  @brief  Compare substring against a character %array.
@@ -3335,7 +3378,17 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       _GLIBCXX20_CONSTEXPR
       int
       compare(size_type __pos, size_type __n1, const _CharT* __s,
-	      size_type __n2) const;
+	      size_type __n2) const
+      {
+	__glibcxx_requires_string_len(__s, __n2);
+	_M_check(__pos, "basic_string::compare");
+	__n1 = _M_limit(__pos, __n1);
+	const size_type __len = std::min(__n1, __n2);
+	int __r = traits_type::compare(_M_data() + __pos, __s, __len);
+	if (!__r)
+	  __r = _S_compare(__n1, __n2);
+	return __r;
+      }
 
 #if __cplusplus >= 202002L
       constexpr bool
