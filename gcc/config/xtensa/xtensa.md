@@ -2704,3 +2704,48 @@
   xtensa_expand_atomic (<CODE>, operands[0], operands[1], operands[2], true);
   DONE;
 })
+
+(define_insn_and_split "*round_up_to_even"
+  [(set (match_operand:SI 0 "register_operand" "=a")
+	(and:SI (plus:SI (match_operand:SI 1 "register_operand" "r")
+			 (const_int 1))
+		(const_int -2)))]
+  ""
+  "#"
+  "can_create_pseudo_p ()"
+  [(set (match_dup 2)
+	(and:SI (match_dup 1)
+		(const_int 1)))
+   (set (match_dup 0)
+	(plus:SI (match_dup 2)
+		 (match_dup 1)))]
+{
+  operands[2] = gen_reg_rtx (SImode);
+}
+  [(set_attr "type"	"arith")
+   (set_attr "mode"	"SI")
+   (set (attr "length")
+	(if_then_else (match_test "TARGET_DENSITY")
+		      (const_int 5)
+		      (const_int 6)))])
+
+(define_insn_and_split "*signed_ge_zero"
+  [(set (match_operand:SI 0 "register_operand" "=a")
+	(ge:SI (match_operand:SI 1 "register_operand" "r")
+	       (const_int 0)))]
+  ""
+  "#"
+  ""
+  [(set (match_dup 0)
+	(ashiftrt:SI (match_dup 1)
+		     (const_int 31)))
+   (set (match_dup 0)
+	(plus:SI (match_dup 0)
+		 (const_int 1)))]
+  ""
+  [(set_attr "type"	"arith")
+   (set_attr "mode"	"SI")
+   (set (attr "length")
+	(if_then_else (match_test "TARGET_DENSITY")
+		      (const_int 5)
+		      (const_int 6)))])
