@@ -2613,6 +2613,7 @@ common_handle_option (struct gcc_options *opts,
       break;
 
     case OPT_fsanitize_:
+      opts_set->x_flag_sanitize = true;
       opts->x_flag_sanitize
 	= parse_sanitizer_options (arg, loc, code,
 				   opts->x_flag_sanitize, value, true);
