@@ -1255,6 +1255,13 @@ protected:
 class GenericParam
 {
 public:
+  enum class Kind
+  {
+    Lifetime,
+    Type,
+    Const,
+  };
+
   virtual ~GenericParam () {}
 
   // Unique pointer custom clone function
@@ -1268,6 +1275,8 @@ public:
   virtual void accept_vis (ASTVisitor &vis) = 0;
 
   virtual Location get_locus () const = 0;
+
+  virtual Kind get_kind () const = 0;
 
   NodeId get_node_id () { return node_id; }
 
@@ -1321,6 +1330,8 @@ public:
   void accept_vis (ASTVisitor &vis) override;
 
   Location get_locus () const override final { return locus; }
+
+  Kind get_kind () const override final { return Kind::Lifetime; }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather

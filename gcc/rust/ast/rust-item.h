@@ -132,6 +132,8 @@ public:
 
   Location get_locus () const override final { return locus; }
 
+  Kind get_kind () const override final { return Kind::Type; }
+
   void accept_vis (ASTVisitor &vis) override;
 
   // TODO: is this better? Or is a "vis_block" better?
