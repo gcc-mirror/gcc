@@ -3627,17 +3627,10 @@ _GLIBCXX_END_NAMESPACE_CXX11
     operator==(const basic_string<_CharT, _Traits, _Alloc>& __lhs,
 	       const basic_string<_CharT, _Traits, _Alloc>& __rhs)
     _GLIBCXX_NOEXCEPT
-    { return __lhs.compare(__rhs) == 0; }
-
-  template<typename _CharT>
-    _GLIBCXX20_CONSTEXPR
-    inline
-    typename __gnu_cxx::__enable_if<__is_char<_CharT>::__value, bool>::__type
-    operator==(const basic_string<_CharT>& __lhs,
-	       const basic_string<_CharT>& __rhs) _GLIBCXX_NOEXCEPT
-    { return (__lhs.size() == __rhs.size()
-	      && !std::char_traits<_CharT>::compare(__lhs.data(), __rhs.data(),
-						    __lhs.size())); }
+    {
+      return __lhs.size() == __rhs.size()
+	       && !_Traits::compare(__lhs.data(), __rhs.data(), __lhs.size());
+    }
 
   /**
    *  @brief  Test equivalence of string and C string.
@@ -3650,7 +3643,10 @@ _GLIBCXX_END_NAMESPACE_CXX11
     inline bool
     operator==(const basic_string<_CharT, _Traits, _Alloc>& __lhs,
 	       const _CharT* __rhs)
-    { return __lhs.compare(__rhs) == 0; }
+    {
+      return __lhs.size() == _Traits::length(__rhs)
+	       && !_Traits::compare(__lhs.data(), __rhs, __lhs.size());
+    }
 
 #if __cpp_lib_three_way_comparison
   /**
@@ -3691,7 +3687,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
     inline bool
     operator==(const _CharT* __lhs,
 	       const basic_string<_CharT, _Traits, _Alloc>& __rhs)
-    { return __rhs.compare(__lhs) == 0; }
+    { return __rhs == __lhs; }
 
   // operator !=
   /**
@@ -3717,7 +3713,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
     inline bool
     operator!=(const _CharT* __lhs,
 	       const basic_string<_CharT, _Traits, _Alloc>& __rhs)
-    { return !(__lhs == __rhs); }
+    { return !(__rhs == __lhs); }
 
   /**
    *  @brief  Test difference of string and C string.
