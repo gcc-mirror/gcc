@@ -403,11 +403,7 @@ fi
 # Some basic types.
 echo 'type Size_t _size_t' >> ${OUT}
 echo "type Ssize_t _ssize_t" >> ${OUT}
-if grep '^const _HAVE_OFF64_T = ' gen-sysinfo.go > /dev/null 2>&1; then
-  echo "type Offset_t _off64_t" >> ${OUT}
-else
-  echo "type Offset_t _off_t" >> ${OUT}
-fi
+echo "type Offset_t _libgo_off_t_type" >> ${OUT}
 echo "type Mode_t _mode_t" >> ${OUT}
 echo "type Pid_t _pid_t" >> ${OUT}
 echo "type Uid_t _uid_t" >> ${OUT}
