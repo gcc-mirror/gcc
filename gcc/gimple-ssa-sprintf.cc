@@ -2319,7 +2319,7 @@ get_origin_and_offset_r (tree x, HOST_WIDE_INT *fldoff, HOST_WIDE_INT *fldsize,
 
 	if (byteoff < HOST_WIDE_INT_MAX
 	    && elbytes < HOST_WIDE_INT_MAX
-	    && byteoff / elbytes == idx)
+	    && (elbytes == 0 || byteoff / elbytes == idx))
 	  {
 	    /* For in-bounds constant offsets into constant-sized arrays
 	       bump up *OFF, and for what's likely arrays or structs of
