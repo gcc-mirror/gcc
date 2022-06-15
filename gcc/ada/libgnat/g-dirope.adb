@@ -34,7 +34,6 @@ with Ada.Characters.Handling;
 with Ada.Strings.Fixed;
 
 with Ada.Unchecked_Deallocation;
-with Ada.Unchecked_Conversion;
 
 with System;      use System;
 with System.CRTL; use System.CRTL;
@@ -677,24 +676,15 @@ package body GNAT.Directory_Operations is
       end if;
 
       declare
-         subtype Path_String is String (1 .. Filename_Len);
-         type    Path_String_Access is not null access constant Path_String;
-
-         function Address_To_Access is new
-           Ada.Unchecked_Conversion
-             (Source => Address,
-              Target => Path_String_Access);
-
-         Path_Access : constant Path_String_Access :=
-                         Address_To_Access (Filename_Addr);
-
+         Filename : constant String (1 .. Filename_Len)
+           with Import, Address => Filename_Addr;
       begin
          if Str'Length > Filename_Len then
             Last := Str'First + Filename_Len - 1;
-            Str (Str'First .. Last) := Path_Access.all;
+            Str (Str'First .. Last) := Filename;
          else
             Last := Str'Last;
-            Str := Path_Access (1 .. Str'Length);
+            Str := Filename (1 .. Str'Length);
          end if;
       end;
    end Read;

@@ -1367,9 +1367,7 @@ package body Ada.Directories is
          --  the Filter add it to our search vector.
 
          declare
-            subtype File_Name_String is String (1 .. File_Name_Len);
-
-            File_Name : constant File_Name_String
+            File_Name : constant String (1 .. File_Name_Len)
               with Import, Address => File_Name_Addr;
 
          begin
