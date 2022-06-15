@@ -1209,6 +1209,27 @@ exploded_node::dump_dot (graphviz_out *gv, const dump_args_t &args) const
   pp_write_text_as_dot_label_to_stream (pp, /*for_record=*/true);
 
   pp_string (pp, "\"];\n\n");
+
+  /* It can be hard to locate the saved diagnostics as text within the
+     enode nodes, so add extra nodes to the graph for each saved_diagnostic,
+     highlighted in red.
+     Compare with dump_saved_diagnostics.  */
+  {
+    unsigned i;
+    const saved_diagnostic *sd;
+    FOR_EACH_VEC_ELT (m_saved_diagnostics, i, sd)
+      {
+	sd->dump_as_dot_node (pp);
+
+	/* Add edge connecting this enode to the saved_diagnostic.  */
+	dump_dot_id (pp);
+	pp_string (pp, " -> ");
+	sd->dump_dot_id (pp);
+	pp_string (pp, " [style=\"dotted\" arrowhead=\"none\"];");
+	pp_newline (pp);
+      }
+  }
+
   pp_flush (pp);
 }
 
