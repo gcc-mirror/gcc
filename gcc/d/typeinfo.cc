@@ -180,6 +180,7 @@ make_internal_typeinfo (tinfo_kind tk, Identifier *ident, ...)
 
   /* Create the TypeInfo type.  */
   tree type = make_node (RECORD_TYPE);
+  TYPE_ARTIFICIAL (type) = 1;
   finish_builtin_struct (type, ident->toChars (), fields, NULL_TREE);
 
   tinfo_types[tk] = type;
