@@ -284,6 +284,12 @@ find_int (const char *name)
 {
   HOST_WIDE_INT tmp;
 
+  struct md_constant tmp_def;
+  tmp_def.name = const_cast<char *> (name);
+  auto htab = rtx_reader_ptr->get_md_constants ();
+  if (auto def = (struct md_constant *) htab_find (htab, &tmp_def))
+    name = def->value;
+
   validate_const_int (name);
 #if HOST_BITS_PER_WIDE_INT == HOST_BITS_PER_INT
   tmp = atoi (name);
