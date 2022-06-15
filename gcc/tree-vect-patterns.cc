@@ -2614,8 +2614,7 @@ vect_recog_rotate_pattern (vec_info *vinfo,
 	  || TYPE_PRECISION (TREE_TYPE (lhs)) != 16
 	  || TYPE_PRECISION (type) <= 16
 	  || TREE_CODE (oprnd0) != SSA_NAME
-	  || BITS_PER_UNIT != 8
-	  || !TYPE_UNSIGNED (TREE_TYPE (lhs)))
+	  || BITS_PER_UNIT != 8)
 	return NULL;
 
       stmt_vec_info def_stmt_info;
@@ -2688,8 +2687,7 @@ vect_recog_rotate_pattern (vec_info *vinfo,
 
   if (TREE_CODE (oprnd0) != SSA_NAME
       || TYPE_PRECISION (TREE_TYPE (lhs)) != TYPE_PRECISION (type)
-      || !INTEGRAL_TYPE_P (type)
-      || !TYPE_UNSIGNED (type))
+      || !INTEGRAL_TYPE_P (type))
     return NULL;
 
   stmt_vec_info def_stmt_info;
@@ -2745,31 +2743,36 @@ vect_recog_rotate_pattern (vec_info *vinfo,
 	goto use_rotate;
     }
 
+  tree utype = unsigned_type_for (type);
+  tree uvectype = get_vectype_for_scalar_type (vinfo, utype);
+  if (!uvectype)
+    return NULL;
+
   /* If vector/vector or vector/scalar shifts aren't supported by the target,
      don't do anything here either.  */
-  optab1 = optab_for_tree_code (LSHIFT_EXPR, vectype, optab_vector);
-  optab2 = optab_for_tree_code (RSHIFT_EXPR, vectype, optab_vector);
+  optab1 = optab_for_tree_code (LSHIFT_EXPR, uvectype, optab_vector);
+  optab2 = optab_for_tree_code (RSHIFT_EXPR, uvectype, optab_vector);
   if (!optab1
-      || optab_handler (optab1, TYPE_MODE (vectype)) == CODE_FOR_nothing
+      || optab_handler (optab1, TYPE_MODE (uvectype)) == CODE_FOR_nothing
       || !optab2
-      || optab_handler (optab2, TYPE_MODE (vectype)) == CODE_FOR_nothing)
+      || optab_handler (optab2, TYPE_MODE (uvectype)) == CODE_FOR_nothing)
     {
       if (! is_a <bb_vec_info> (vinfo) && dt == vect_internal_def)
 	return NULL;
-      optab1 = optab_for_tree_code (LSHIFT_EXPR, vectype, optab_scalar);
-      optab2 = optab_for_tree_code (RSHIFT_EXPR, vectype, optab_scalar);
+      optab1 = optab_for_tree_code (LSHIFT_EXPR, uvectype, optab_scalar);
+      optab2 = optab_for_tree_code (RSHIFT_EXPR, uvectype, optab_scalar);
       if (!optab1
-	  || optab_handler (optab1, TYPE_MODE (vectype)) == CODE_FOR_nothing
+	  || optab_handler (optab1, TYPE_MODE (uvectype)) == CODE_FOR_nothing
 	  || !optab2
-	  || optab_handler (optab2, TYPE_MODE (vectype)) == CODE_FOR_nothing)
+	  || optab_handler (optab2, TYPE_MODE (uvectype)) == CODE_FOR_nothing)
 	return NULL;
     }
 
   *type_out = vectype;
 
-  if (bswap16_p && !useless_type_conversion_p (type, TREE_TYPE (oprnd0)))
+  if (!useless_type_conversion_p (utype, TREE_TYPE (oprnd0)))
     {
-      def = vect_recog_temp_ssa_var (type, NULL);
+      def = vect_recog_temp_ssa_var (utype, NULL);
       def_stmt = gimple_build_assign (def, NOP_EXPR, oprnd0);
       append_pattern_def_seq (vinfo, stmt_vinfo, def_stmt);
       oprnd0 = def;
@@ -2779,7 +2782,7 @@ vect_recog_rotate_pattern (vec_info *vinfo,
     ext_def = vect_get_external_def_edge (vinfo, oprnd1);
 
   def = NULL_TREE;
-  scalar_int_mode mode = SCALAR_INT_TYPE_MODE (type);
+  scalar_int_mode mode = SCALAR_INT_TYPE_MODE (utype);
   if (dt != vect_internal_def || TYPE_MODE (TREE_TYPE (oprnd1)) == mode)
     def = oprnd1;
   else if (def_stmt && gimple_assign_cast_p (def_stmt))
@@ -2793,7 +2796,7 @@ vect_recog_rotate_pattern (vec_info *vinfo,
 
   if (def == NULL_TREE)
     {
-      def = vect_recog_temp_ssa_var (type, NULL);
+      def = vect_recog_temp_ssa_var (utype, NULL);
       def_stmt = gimple_build_assign (def, NOP_EXPR, oprnd1);
       append_pattern_def_seq (vinfo, stmt_vinfo, def_stmt);
     }
@@ -2839,13 +2842,13 @@ vect_recog_rotate_pattern (vec_info *vinfo,
 	append_pattern_def_seq (vinfo, stmt_vinfo, def_stmt, vecstype);
     }
 
-  var1 = vect_recog_temp_ssa_var (type, NULL);
+  var1 = vect_recog_temp_ssa_var (utype, NULL);
   def_stmt = gimple_build_assign (var1, rhs_code == LROTATE_EXPR
 					? LSHIFT_EXPR : RSHIFT_EXPR,
 				  oprnd0, def);
   append_pattern_def_seq (vinfo, stmt_vinfo, def_stmt);
 
-  var2 = vect_recog_temp_ssa_var (type, NULL);
+  var2 = vect_recog_temp_ssa_var (utype, NULL);
   def_stmt = gimple_build_assign (var2, rhs_code == LROTATE_EXPR
 					? RSHIFT_EXPR : LSHIFT_EXPR,
 				  oprnd0, def2);
@@ -2855,9 +2858,15 @@ vect_recog_rotate_pattern (vec_info *vinfo,
   vect_pattern_detected ("vect_recog_rotate_pattern", last_stmt);
 
   /* Pattern supported.  Create a stmt to be used to replace the pattern.  */
-  var = vect_recog_temp_ssa_var (type, NULL);
+  var = vect_recog_temp_ssa_var (utype, NULL);
   pattern_stmt = gimple_build_assign (var, BIT_IOR_EXPR, var1, var2);
 
+  if (!useless_type_conversion_p (type, utype))
+    {
+      append_pattern_def_seq (vinfo, stmt_vinfo, pattern_stmt);
+      tree result = vect_recog_temp_ssa_var (type, NULL);
+      pattern_stmt = gimple_build_assign (result, NOP_EXPR, var);
+    }
   return pattern_stmt;
 }
 

@@ -3621,17 +3621,18 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
     (if (integer_zerop (@2) || integer_all_onesp (@2))
      (cmp @0 @2)))))
 
-/* Both signed and unsigned lshift produce the same result, so use
-   the form that minimizes the number of conversions.  Postpone this
-   transformation until after shifts by zero have been folded.  */
+/* Narrow a lshift by constant.  */
 (simplify
- (convert (lshift:s@0 (convert:s@1 @2) INTEGER_CST@3))
+ (convert (lshift:s@0 @1 INTEGER_CST@2))
  (if (INTEGRAL_TYPE_P (type)
-      && tree_nop_conversion_p (type, TREE_TYPE (@0))
-      && INTEGRAL_TYPE_P (TREE_TYPE (@2))
-      && TYPE_PRECISION (TREE_TYPE (@2)) <= TYPE_PRECISION (type)
-      && !integer_zerop (@3))
-  (lshift (convert @2) @3)))
+      && INTEGRAL_TYPE_P (TREE_TYPE (@0))
+      && !integer_zerop (@2)
+      && TYPE_PRECISION (type) <= TYPE_PRECISION (TREE_TYPE (@0)))
+  (if (TYPE_PRECISION (type) == TYPE_PRECISION (TREE_TYPE (@0))
+       || wi::ltu_p (wi::to_wide (@2), TYPE_PRECISION (type)))
+   (lshift (convert @1) @2)
+   (if (wi::ltu_p (wi::to_wide (@2), TYPE_PRECISION (TREE_TYPE (@0))))
+    { build_zero_cst (type); }))))
 
 /* Simplifications of conversions.  */
 
