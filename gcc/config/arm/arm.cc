@@ -10211,15 +10211,15 @@ arm_bfi_1_p (rtx op0, rtx op1, rtx *sub0, rtx *sub1)
   if (!CONST_INT_P (XEXP (op0, 1)))
     return false;
 
-  const1 = XUINT (XEXP (op0, 1), 0);
+  const1 = UINTVAL (XEXP (op0, 1));
   if (!CONST_INT_P (XEXP (op1, 1))
-      || ~XUINT (XEXP (op1, 1), 0) != const1)
+      || ~UINTVAL (XEXP (op1, 1)) != const1)
     return false;
 
   if (GET_CODE (XEXP (op0, 0)) == ASHIFT
       && CONST_INT_P (XEXP (XEXP (op0, 0), 1)))
     {
-      const2 = XUINT (XEXP (XEXP (op0, 0), 1), 0);
+      const2 = UINTVAL (XEXP (XEXP (op0, 0), 1));
       *sub0 = XEXP (XEXP (op0, 0), 0);
     }
   else
