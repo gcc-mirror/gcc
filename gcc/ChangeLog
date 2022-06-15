@@ -1,3 +1,106 @@
+2022-06-14  Surya Kumari Jangala  <jskumari@linux.ibm.com>
+
+	PR rtl-optimization/105041
+	* regrename.cc (check_new_reg_p): Use nregs value from du chain.
+
+2022-06-14  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/vsx.md (VS_scalar): Delete.
+	(rest of file): Adjust.
+
+2022-06-14  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/105739
+	* ipa-prop.cc (ipa_load_from_parm_agg): Punt on volatile loads.
+
+2022-06-14  Philipp Tomsich  <philipp.tomsich@vrull.eu>
+
+	* config/riscv/bitmanip.md: Add split to handle opportunities
+	for slli + sh[123]add.uw
+
+2022-06-14  Philipp Tomsich  <philipp.tomsich@vrull.eu>
+
+	* config/riscv/predicates.md (consecutive_bits_operand):
+	Implement new predicate.
+
+2022-06-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/105946
+	* tree-ssa-uninit.cc (maybe_warn_pass_by_reference):
+	Do not look at arguments not specified in the function call.
+
+2022-06-14  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/105965
+	* match.pd (view_convert CONSTRUCTOR): Handle single-element
+	CTOR case.
+
+2022-06-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* warning-control.cc (copy_warning) [generic version]: Do not erase
+	the warning data of the destination location when the no-warning
+	bit is not set on the source.
+	(copy_warning) [tree version]: Return early if TO is equal to FROM.
+	(copy_warning) [gimple version]: Likewise.
+
+2022-06-14  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR tree-optimization/105940
+	* tree-vect-loop.cc (vect_analyze_loop_2): Move the place of
+	applying suggested_unroll_factor after start_over.
+
+2022-06-14  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/predicates.md (shifted_mask_operand):
+	New predicate.
+	* config/xtensa/xtensa.md (*andsi3_const_pow2_minus_one):
+	New insn-and-split pattern.
+	(*andsi3_const_negative_pow2, *andsi3_const_shifted_mask,
+	*masktrue_const_pow2_minus_one, *masktrue_const_negative_pow2,
+	*masktrue_const_shifted_mask): Ditto.
+
+2022-06-14  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/xtensa.md (*masktrue_bitcmpl): New insn pattern.
+
+2022-06-14  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/xtensa-protos.h (xtensa_emit_branch):
+	Remove the first argument.
+	(xtensa_emit_bit_branch): Remove it because now called only from the
+	output statement of *bittrue insn pattern.
+	* config/xtensa/xtensa.cc (gen_int_relational): Remove the last
+	argument 'p_invert', and make so that the condition is reversed by
+	itself as needed.
+	(xtensa_expand_conditional_branch): Share the common path, and remove
+	condition inversion code.
+	(xtensa_emit_branch, xtensa_emit_movcc): Simplify by removing the
+	"false side" pattern.
+	(xtensa_emit_bit_branch): Remove it because of the abovementioned
+	reason, and move the function body to *bittrue insn pattern.
+	* config/xtensa/xtensa.md (*bittrue): Transplant the output
+	statement from removed xtensa_emit_bit_branch().
+	(*bfalse, *ubfalse, *bitfalse, *maskfalse): Remove the "false side"
+	insn patterns.
+
+2022-06-14  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/predicates.md (logical_shift_operator,
+	xtensa_shift_per_byte_operator): New predicates.
+	* config/xtensa/xtensa-protos.h (xtensa_shlrd_which_direction):
+	New prototype.
+	* config/xtensa/xtensa.cc (xtensa_shlrd_which_direction):
+	New helper function for funnel shift patterns.
+	* config/xtensa/xtensa.md (ior_op): New code iterator.
+	(*ashlsi3_1): Replace with new split pattern.
+	(*shift_per_byte): Unify *ashlsi3_3x, *ashrsi3_3x and *lshrsi3_3x.
+	(*shift_per_byte_omit_AND_0, *shift_per_byte_omit_AND_1):
+	New insn-and-split patterns that redirect to *xtensa_shift_per_byte,
+	in order to omit unnecessary bitwise AND operation.
+	(*shlrd_reg_<code>, *shlrd_const_<code>, *shlrd_per_byte_<code>,
+	*shlrd_per_byte_<code>_omit_AND):
+	New insn patterns for funnel shifts.
+
 2022-06-13  Jason Merrill  <jason@redhat.com>
 
 	* tree-cfg.cc (pass_warn_function_return::execute): Also check

@@ -1,3 +1,39 @@
+2022-06-14  Surya Kumari Jangala  <jskumari@linux.ibm.com>
+
+	PR rtl-optimization/105041
+	* gcc.target/powerpc/pr105041.c: New test.
+
+2022-06-14  Nathan Sidwell  <nathan@acm.org>
+
+	* g++.dg/modules/init-2_a.C: Adjust.
+	* g++.dg/modules/init-2_c.C: Adjust.
+	* g++.dg/modules/init-2_d.C: New.
+
+2022-06-14  Jan Hubicka  <hubicka@ucw.cz>
+
+	* gcc.dg/ipa/pr105739.c: New test.
+
+2022-06-14  Philipp Tomsich  <philipp.tomsich@vrull.eu>
+
+	* gcc.target/riscv/zba-shadd.c: New test.
+
+2022-06-14  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/105965
+	* gcc.target/i386/pr105965.c: New testcase.
+
+2022-06-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* g++.dg/warn/Wuse-after-free5.C: New test.
+
+2022-06-14  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* gcc.target/xtensa/BALL-BNALL.c: New.
+
+2022-06-14  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* gcc.target/xtensa/funnel_shifter.c: New.
+
 2022-06-13  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/ubsan/return-8.C: New test.

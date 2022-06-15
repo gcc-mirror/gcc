@@ -1,3 +1,33 @@
+2022-06-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/62187
+	* include/bits/basic_string.h (operator==): Always compare
+	lengths before checking string contents.
+	[!__cpp_lib_three_way_comparison] (operator==, operator!=):
+	Reorder arguments.
+
+2022-06-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/59048
+	* include/bits/basic_string.h (compare): Define inline.
+	* include/bits/basic_string.tcc (compare): Remove out-of-line
+	definitions.
+	* include/bits/cow_string.h (compare): Define inline.
+	* testsuite/21_strings/basic_string/operations/compare/char/3.cc:
+	New test.
+
+2022-06-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/new_allocator.h: Fix indentation.
+	* include/ext/malloc_allocator.h: Likewise.
+
+2022-06-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/105957
+	* include/bits/allocator.h (allocator::allocate): Check for
+	overflow in constexpr allocation.
+	* testsuite/20_util/allocator/105975.cc: New test.
+
 2022-06-13  Mark Mentovai  <mark@mentovai.com>
 
 	* include/experimental/bits/fs_path.h (__detail::__null_terminated):

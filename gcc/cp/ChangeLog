@@ -1,3 +1,17 @@
+2022-06-14  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-tree.h (fini_modules): Add has_inits parm.
+	* decl2.cc (c_parse_final_cleanups): Check for
+	inits, adjust fini_modules flags.
+	* module.cc (module_state): Rename call_init_p to
+	active_init_p.
+	(module_state::write_config): Write active_init.
+	(module_state::read_config): Read it.
+	(module_determine_import_inits): Clear active_init_p
+	of covered inits.
+	(late_finish_module): Add has_init parm.  Record it.
+	(fini_modules): Adjust.
+
 2022-06-13  Nathan Sidwell  <nathan@acm.org>
 
 	* module.cc (module_state::write): Separate to ...
