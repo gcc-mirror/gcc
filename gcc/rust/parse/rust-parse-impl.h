@@ -2865,6 +2865,63 @@ Parser<ManagedTokenSource>::parse_generic_param (EndTokenPred is_end_token)
 			      std::move (outer_attrs)));
 	break;
       }
+      case CONST: {
+	lexer.skip_token ();
+
+	auto name = expect_token (IDENTIFIER);
+
+	if (!name || !expect_token (COLON))
+	  return nullptr;
+
+	auto type = parse_type ();
+	if (!type)
+	  return nullptr;
+
+	// FIXME: instantiate proper AST::ConstGeneric class here
+	// auto const_generic = new ...
+
+	// optional default value
+	if (lexer.peek_token ()->get_id () == EQUAL)
+	  {
+	    lexer.skip_token ();
+	    auto tok = lexer.peek_token ();
+
+	    switch (tok->get_id ())
+	      {
+		case LEFT_CURLY: {
+		  auto block = parse_block_expr ();
+		  // pass block to `const_generic`
+		  break;
+		}
+		case IDENTIFIER: {
+		  auto ident = tok->get_str ();
+		  // pass identifier to `const_generic`
+		  break;
+		}
+	      case MINUS:
+	      case STRING_LITERAL:
+	      case CHAR_LITERAL:
+	      case INT_LITERAL:
+	      case FLOAT_LITERAL:
+	      case TRUE_LITERAL:
+		case FALSE_LITERAL: {
+		  auto literal = parse_literal_expr ();
+		  // pass literal to `const_generic`
+		  break;
+		}
+	      default:
+		rust_error_at (tok->get_locus (),
+			       "invalid token for start of default value for "
+			       "const generic parameter: expected %<block%>, "
+			       "%<identifier%> or %<literal%>, got %qs",
+			       token_id_to_str (tok->get_id ()));
+	      }
+	  }
+
+	// param = std::unique_ptr<AST::GenericParam> (const_generic)
+
+	break;
+      }
     default:
       // FIXME: Can we clean this last call with a method call?
       rust_error_at (token->get_locus (),
@@ -2925,8 +2982,8 @@ Parser<ManagedTokenSource>::parse_generic_params (EndTokenPred is_end_token)
   return generic_params;
 }
 
-/* Parses lifetime generic parameters (pointers). Will also consume any trailing
- * comma. No extra checks for end token. */
+/* Parses lifetime generic parameters (pointers). Will also consume any
+ * trailing comma. No extra checks for end token. */
 template <typename ManagedTokenSource>
 std::vector<std::unique_ptr<AST::LifetimeParam>>
 Parser<ManagedTokenSource>::parse_lifetime_params ()
@@ -2958,8 +3015,8 @@ Parser<ManagedTokenSource>::parse_lifetime_params ()
   return lifetime_params;
 }
 
-/* Parses lifetime generic parameters (pointers). Will also consume any trailing
- * comma. Has extra is_end_token predicate checking. */
+/* Parses lifetime generic parameters (pointers). Will also consume any
+ * trailing comma. Has extra is_end_token predicate checking. */
 template <typename ManagedTokenSource>
 template <typename EndTokenPred>
 std::vector<std::unique_ptr<AST::LifetimeParam>>
@@ -2998,8 +3055,8 @@ Parser<ManagedTokenSource>::parse_lifetime_params (EndTokenPred is_end_token)
   return lifetime_params;
 }
 
-/* Parses lifetime generic parameters (objects). Will also consume any trailing
- * comma. No extra checks for end token.
+/* Parses lifetime generic parameters (objects). Will also consume any
+ * trailing comma. No extra checks for end token.
  * TODO: is this best solution? implements most of the same algorithm. */
 template <typename ManagedTokenSource>
 std::vector<AST::LifetimeParam>
@@ -3032,8 +3089,8 @@ Parser<ManagedTokenSource>::parse_lifetime_params_objs ()
   return lifetime_params;
 }
 
-/* Parses lifetime generic parameters (objects). Will also consume any trailing
- * comma. Has extra is_end_token predicate checking.
+/* Parses lifetime generic parameters (objects). Will also consume any
+ * trailing comma. Has extra is_end_token predicate checking.
  * TODO: is this best solution? implements most of the same algorithm. */
 template <typename ManagedTokenSource>
 template <typename EndTokenPred>
@@ -3092,7 +3149,8 @@ Parser<ManagedTokenSource>::parse_non_ptr_sequence (
 
       if (param.is_error ())
 	{
-	  // TODO: is it worth throwing away all params just because one failed?
+	  // TODO: is it worth throwing away all params just because one
+	  // failed?
 	  Error error (lexer.peek_token ()->get_locus (),
 		       std::move (error_msg));
 	  add_error (std::move (error));
@@ -3130,8 +3188,8 @@ Parser<ManagedTokenSource>::parse_lifetime_param ()
       return AST::LifetimeParam::create_error ();
     }
   lexer.skip_token ();
-  /* TODO: does this always create a named lifetime? or can a different type be
-   * made? */
+  /* TODO: does this always create a named lifetime? or can a different type
+   * be made? */
   AST::Lifetime lifetime (AST::Lifetime::NAMED, lifetime_tok->get_str (),
 			  lifetime_tok->get_locus ());
 
@@ -3212,12 +3270,12 @@ Parser<ManagedTokenSource>::parse_type_params (EndTokenPred is_end_token)
 
   type_params.shrink_to_fit ();
   return type_params;
-  /* TODO: this shares most code with parse_lifetime_params - good place to use
-   * template (i.e. parse_non_ptr_sequence if doable) */
+  /* TODO: this shares most code with parse_lifetime_params - good place to
+   * use template (i.e. parse_non_ptr_sequence if doable) */
 }
 
-/* Parses a single type (generic) parameter, not including commas. May change to
- * return value. */
+/* Parses a single type (generic) parameter, not including commas. May change
+ * to return value. */
 template <typename ManagedTokenSource>
 std::unique_ptr<AST::TypeParam>
 Parser<ManagedTokenSource>::parse_type_param ()
@@ -3228,7 +3286,8 @@ Parser<ManagedTokenSource>::parse_type_param ()
   const_TokenPtr identifier_tok = lexer.peek_token ();
   if (identifier_tok->get_id () != IDENTIFIER)
     {
-      // return null as type param can't exist without this required identifier
+      // return null as type param can't exist without this required
+      // identifier
       return nullptr;
     }
   // TODO: create identifier from identifier token
@@ -3326,8 +3385,8 @@ Parser<ManagedTokenSource>::parse_function_params (EndTokenPred is_end_token)
   return params;
 }
 
-/* Parses a single regular (i.e. non-generic) parameter in a function or method,
- * i.e. the "name: type" bit. Also handles it not existing. */
+/* Parses a single regular (i.e. non-generic) parameter in a function or
+ * method, i.e. the "name: type" bit. Also handles it not existing. */
 template <typename ManagedTokenSource>
 AST::FunctionParam
 Parser<ManagedTokenSource>::parse_function_param ()
@@ -3380,8 +3439,8 @@ Parser<ManagedTokenSource>::parse_function_return_type ()
   return type;
 }
 
-/* Parses a "where clause" (in a function, struct, method, etc.). Also handles a
- * where clause not existing, in which it will return
+/* Parses a "where clause" (in a function, struct, method, etc.). Also handles
+ * a where clause not existing, in which it will return
  * WhereClause::create_empty(), which can be checked via
  * WhereClause::is_empty(). */
 template <typename ManagedTokenSource>
@@ -3397,8 +3456,8 @@ Parser<ManagedTokenSource>::parse_where_clause ()
 
   lexer.skip_token ();
 
-  /* parse where clause items - this is not a separate rule in the reference so
-   * won't be here */
+  /* parse where clause items - this is not a separate rule in the reference
+   * so won't be here */
   std::vector<std::unique_ptr<AST::WhereClauseItem>> where_clause_items;
 
   /* HACK: where clauses end with a right curly or semicolon or equals in all
@@ -3438,7 +3497,8 @@ template <typename ManagedTokenSource>
 std::unique_ptr<AST::WhereClauseItem>
 Parser<ManagedTokenSource>::parse_where_clause_item ()
 {
-  // shitty cheat way of determining lifetime or type bound - test for lifetime
+  // shitty cheat way of determining lifetime or type bound - test for
+  // lifetime
   const_TokenPtr t = lexer.peek_token ();
 
   if (t->get_id () == LIFETIME)
@@ -3509,7 +3569,8 @@ Parser<ManagedTokenSource>::parse_type_bound_where_clause_item ()
 				       std::move (type_param_bounds), locus));
 }
 
-// Parses a for lifetimes clause, including the for keyword and angle brackets.
+// Parses a for lifetimes clause, including the for keyword and angle
+// brackets.
 template <typename ManagedTokenSource>
 std::vector<AST::LifetimeParam>
 Parser<ManagedTokenSource>::parse_for_lifetimes ()
@@ -3637,7 +3698,8 @@ template <typename ManagedTokenSource>
 std::unique_ptr<AST::TypeParamBound>
 Parser<ManagedTokenSource>::parse_type_param_bound ()
 {
-  // shitty cheat way of determining lifetime or trait bound - test for lifetime
+  // shitty cheat way of determining lifetime or trait bound - test for
+  // lifetime
   const_TokenPtr t = lexer.peek_token ();
   switch (t->get_id ())
     {
@@ -3724,8 +3786,8 @@ Parser<ManagedTokenSource>::parse_lifetime_bounds ()
 
       lifetime_bounds.push_back (std::move (lifetime));
 
-      /* plus is maybe not allowed at end - spec defines it weirdly, so assuming
-       * allowed at end */
+      /* plus is maybe not allowed at end - spec defines it weirdly, so
+       * assuming allowed at end */
       if (lexer.peek_token ()->get_id () != PLUS)
 	break;
 
@@ -3761,8 +3823,8 @@ Parser<ManagedTokenSource>::parse_lifetime_bounds (EndTokenPred is_end_token)
 
       lifetime_bounds.push_back (std::move (lifetime));
 
-      /* plus is maybe not allowed at end - spec defines it weirdly, so assuming
-       * allowed at end */
+      /* plus is maybe not allowed at end - spec defines it weirdly, so
+       * assuming allowed at end */
       if (lexer.peek_token ()->get_id () != PLUS)
 	break;
 
@@ -3860,9 +3922,9 @@ std::unique_ptr<AST::Struct>
 Parser<ManagedTokenSource>::parse_struct (AST::Visibility vis,
 					  AST::AttrVec outer_attrs)
 {
-  /* TODO: determine best way to parse the proper struct vs tuple struct - share
-   * most of initial constructs so lookahead might be impossible, and if not
-   * probably too expensive. Best way is probably unified parsing for the
+  /* TODO: determine best way to parse the proper struct vs tuple struct -
+   * share most of initial constructs so lookahead might be impossible, and if
+   * not probably too expensive. Best way is probably unified parsing for the
    * initial parts and then pass them in as params to more derived functions.
    * Alternatively, just parse everything in this one function - do this if
    * function not too long. */
@@ -3930,8 +3992,8 @@ Parser<ManagedTokenSource>::parse_struct (AST::Visibility vis,
 			      std::move (outer_attrs), locus));
     }
 
-  // assume it is a proper struct being parsed and continue outside of switch -
-  // label only here to suppress warning
+  // assume it is a proper struct being parsed and continue outside of switch
+  // - label only here to suppress warning
 
   // parse where clause, which is optional
   AST::WhereClause where_clause = parse_where_clause ();
@@ -4059,7 +4121,8 @@ Parser<ManagedTokenSource>::parse_struct_fields (EndTokenPred is_end_tok)
   // TODO: template if possible (parse_non_ptr_seq)
 }
 
-// Parses a single struct field (in a struct definition). Does not parse commas.
+// Parses a single struct field (in a struct definition). Does not parse
+// commas.
 template <typename ManagedTokenSource>
 AST::StructField
 Parser<ManagedTokenSource>::parse_struct_field ()
@@ -4124,8 +4187,8 @@ Parser<ManagedTokenSource>::parse_tuple_fields ()
 
   // maybe think of a better control structure here - do-while with an initial
   // error state? basically, loop through field list until can't find any more
-  // params HACK: all current syntax uses of tuple fields have them ending with
-  // a right paren token
+  // params HACK: all current syntax uses of tuple fields have them ending
+  // with a right paren token
   const_TokenPtr t = lexer.peek_token ();
   while (t->get_id () == COMMA)
     {
@@ -4156,7 +4219,8 @@ Parser<ManagedTokenSource>::parse_tuple_fields ()
   fields.shrink_to_fit ();
   return fields;
 
-  // TODO: this shares basically all code with function params and struct fields
+  // TODO: this shares basically all code with function params and struct
+  // fields
   // - templates?
 }
 
@@ -4434,8 +4498,8 @@ Parser<ManagedTokenSource>::parse_union (AST::Visibility vis,
       return nullptr;
     }
 
-  /* parse union inner items as "struct fields" because hey, syntax reuse. Spec
-   * said so. */
+  /* parse union inner items as "struct fields" because hey, syntax reuse.
+   * Spec said so. */
   std::vector<AST::StructField> union_fields
     = parse_struct_fields ([] (TokenId id) { return id == RIGHT_CURLY; });
 
@@ -4451,8 +4515,8 @@ Parser<ManagedTokenSource>::parse_union (AST::Visibility vis,
 		    std::move (union_fields), std::move (outer_attrs), locus));
 }
 
-/* Parses a "constant item" (compile-time constant to maybe "inline" throughout
- * the program - like constexpr). */
+/* Parses a "constant item" (compile-time constant to maybe "inline"
+ * throughout the program - like constexpr). */
 template <typename ManagedTokenSource>
 std::unique_ptr<AST::ConstantItem>
 Parser<ManagedTokenSource>::parse_const_item (AST::Visibility vis,
@@ -4710,18 +4774,18 @@ Parser<ManagedTokenSource>::parse_trait_item ()
 	    return nullptr;
 	  }
 
-	/* now for function vs method disambiguation - method has opening "self"
-	 * param */
+	/* now for function vs method disambiguation - method has opening
+	 * "self" param */
 	AST::SelfParam self_param = parse_self_param ();
-	/* FIXME: ensure that self param doesn't accidently consume tokens for a
-	 * function */
+	/* FIXME: ensure that self param doesn't accidently consume tokens for
+	 * a function */
 	bool is_method = false;
 	if (!self_param.is_error ())
 	  {
 	    is_method = true;
 
-	    /* skip comma so function and method regular params can be parsed in
-	     * same way */
+	    /* skip comma so function and method regular params can be parsed
+	     * in same way */
 	    if (lexer.peek_token ()->get_id () == COMMA)
 	      lexer.skip_token ();
 	  }
@@ -4815,8 +4879,8 @@ Parser<ManagedTokenSource>::parse_trait_item ()
 	  {
 	    return macro_invoc;
 	  }
-	/* FIXME: macro invocations can only start with certain tokens. be more
-	 * picky with these? */
+	/* FIXME: macro invocations can only start with certain tokens. be
+	 * more picky with these? */
       }
     }
 }
@@ -4905,16 +4969,16 @@ Parser<ManagedTokenSource>::parse_trait_const (AST::AttrVec outer_attrs)
 			     locus));
 }
 
-/* Parses a struct "impl" item (both inherent impl and trait impl can be parsed
- * here), */
+/* Parses a struct "impl" item (both inherent impl and trait impl can be
+ * parsed here), */
 template <typename ManagedTokenSource>
 std::unique_ptr<AST::Impl>
 Parser<ManagedTokenSource>::parse_impl (AST::Visibility vis,
 					AST::AttrVec outer_attrs)
 {
-  /* Note that only trait impls are allowed to be unsafe. So if unsafe, it must
-   * be a trait impl. However, this isn't enough for full disambiguation, so
-   * don't branch here. */
+  /* Note that only trait impls are allowed to be unsafe. So if unsafe, it
+   * must be a trait impl. However, this isn't enough for full disambiguation,
+   * so don't branch here. */
   Location locus = lexer.peek_token ()->get_locus ();
   bool is_unsafe = false;
   if (lexer.peek_token ()->get_id () == UNSAFE)
@@ -5218,8 +5282,8 @@ Parser<ManagedTokenSource>::parse_inherent_impl_item ()
 }
 
 /* For internal use only by parse_inherent_impl_item() - splits giant method
- * into smaller ones and prevents duplication of logic. Strictly, this parses a
- * function or method item inside an inherent impl item block. */
+ * into smaller ones and prevents duplication of logic. Strictly, this parses
+ * a function or method item inside an inherent impl item block. */
 // TODO: make this a templated function with "return type" as type param -
 // InherentImplItem is this specialisation of the template while TraitImplItem
 // will be the other.
@@ -5251,18 +5315,19 @@ Parser<ManagedTokenSource>::parse_inherent_impl_function_or_method (
       return nullptr;
     }
 
-  // now for function vs method disambiguation - method has opening "self" param
+  // now for function vs method disambiguation - method has opening "self"
+  // param
   AST::SelfParam self_param = parse_self_param ();
   /* FIXME: ensure that self param doesn't accidently consume tokens for a
-   * function one idea is to lookahead up to 4 tokens to see whether self is one
-   * of them */
+   * function one idea is to lookahead up to 4 tokens to see whether self is
+   * one of them */
   bool is_method = false;
   if (!self_param.is_error ())
     {
       is_method = true;
 
-      /* skip comma so function and method regular params can be parsed in same
-       * way */
+      /* skip comma so function and method regular params can be parsed in
+       * same way */
       if (lexer.peek_token ()->get_id () == COMMA)
 	lexer.skip_token ();
     }
@@ -5286,10 +5351,10 @@ Parser<ManagedTokenSource>::parse_inherent_impl_function_or_method (
   // parse function definition (in block) - semicolon not allowed
   if (lexer.peek_token ()->get_id () == SEMICOLON)
     {
-      Error error (
-	lexer.peek_token ()->get_locus (),
-	"%s declaration in inherent impl not allowed - must have a definition",
-	is_method ? "method" : "function");
+      Error error (lexer.peek_token ()->get_locus (),
+		   "%s declaration in inherent impl not allowed - must have "
+		   "a definition",
+		   is_method ? "method" : "function");
       add_error (std::move (error));
 
       lexer.skip_token ();
@@ -5347,7 +5412,8 @@ Parser<ManagedTokenSource>::parse_trait_impl_item ()
     case SELF:
     case CRATE:
     case DOLLAR_SIGN:
-      // these seem to be SimplePath tokens, so this is a macro invocation semi
+      // these seem to be SimplePath tokens, so this is a macro invocation
+      // semi
       return parse_macro_invocation_semi (std::move (outer_attrs));
     case TYPE:
       return parse_type_alias (AST::Visibility::create_private (),
@@ -5454,7 +5520,8 @@ std::unique_ptr<AST::TraitImplItem>
 Parser<ManagedTokenSource>::parse_trait_impl_function_or_method (
   AST::Visibility vis, AST::AttrVec outer_attrs)
 {
-  // this shares virtually all logic with parse_inherent_impl_function_or_method
+  // this shares virtually all logic with
+  // parse_inherent_impl_function_or_method
   // - template?
   Location locus = lexer.peek_token ()->get_locus ();
 
@@ -5489,7 +5556,8 @@ Parser<ManagedTokenSource>::parse_trait_impl_function_or_method (
       return nullptr;
     }
 
-  // now for function vs method disambiguation - method has opening "self" param
+  // now for function vs method disambiguation - method has opening "self"
+  // param
   AST::SelfParam self_param = parse_self_param ();
   // FIXME: ensure that self param doesn't accidently consume tokens for a
   // function
@@ -5498,8 +5566,8 @@ Parser<ManagedTokenSource>::parse_trait_impl_function_or_method (
     {
       is_method = true;
 
-      // skip comma so function and method regular params can be parsed in same
-      // way
+      // skip comma so function and method regular params can be parsed in
+      // same way
       if (lexer.peek_token ()->get_id () == COMMA)
 	{
 	  lexer.skip_token ();
@@ -5921,8 +5989,8 @@ Parser<ManagedTokenSource>::parse_stmt (ParseRestrictions restrictions)
 
   // parsing this will be annoying because of the many different possibilities
   /* best may be just to copy paste in parse_item switch, and failing that try
-   * to parse outer attributes, and then pass them in to either a let statement
-   * or (fallback) expression statement. */
+   * to parse outer attributes, and then pass them in to either a let
+   * statement or (fallback) expression statement. */
   // FIXME: think of a way to do this without such a large switch?
   t = lexer.peek_token ();
   switch (t->get_id ())
@@ -5976,8 +6044,8 @@ Parser<ManagedTokenSource>::parse_stmt (ParseRestrictions restrictions)
 	       || lexer.peek_token (1)->get_id () == EXCLAM)
 	{
 	  // FIXME: ensure doesn't take any expressions by mistake
-	  /* path (probably) or macro invocation, so probably a macro invocation
-	   * semi */
+	  /* path (probably) or macro invocation, so probably a macro
+	   * invocation semi */
 	  return parse_macro_item (std::move (outer_attrs));
 	}
       gcc_fallthrough ();
@@ -6262,8 +6330,8 @@ Parser<ManagedTokenSource>::parse_generic_args_binding ()
 }
 
 /* Parses a single type path segment (not including opening scope resolution,
- * but includes any internal ones). Includes generic args or type path functions
- * too. */
+ * but includes any internal ones). Includes generic args or type path
+ * functions too. */
 template <typename ManagedTokenSource>
 std::unique_ptr<AST::TypePathSegment>
 Parser<ManagedTokenSource>::parse_type_path_segment ()
@@ -6460,8 +6528,8 @@ Parser<ManagedTokenSource>::parse_path_expr_segment ()
     }
 
   // parse generic args (and turbofish), if they exist
-  /* use lookahead to determine if they actually exist (don't want to accidently
-   * parse over next ident segment) */
+  /* use lookahead to determine if they actually exist (don't want to
+   * accidently parse over next ident segment) */
   if (lexer.peek_token ()->get_id () == SCOPE_RESOLUTION
       && lexer.peek_token (1)->get_id () == LEFT_ANGLE)
     {
@@ -6478,8 +6546,8 @@ Parser<ManagedTokenSource>::parse_path_expr_segment ()
   return AST::PathExprSegment (std::move (ident), locus);
 }
 
-/* Parses a fully qualified path in expression (i.e. a pattern). FIXME does not
- * parse outer attrs. */
+/* Parses a fully qualified path in expression (i.e. a pattern). FIXME does
+ * not parse outer attrs. */
 template <typename ManagedTokenSource>
 AST::QualifiedPathInExpression
 Parser<ManagedTokenSource>::parse_qualified_path_in_expression (
@@ -6487,14 +6555,14 @@ Parser<ManagedTokenSource>::parse_qualified_path_in_expression (
 {
   /* Note: the Rust grammar is defined in such a way that it is impossible to
    * determine whether a prospective qualified path is a
-   * QualifiedPathInExpression or QualifiedPathInType in all cases by the rules
-   * themselves (the only possible difference is a TypePathSegment with
-   * function, and lookahead to find this is too difficult). However, as this is
-   * a pattern and QualifiedPathInType is a type, I believe it that their
+   * QualifiedPathInExpression or QualifiedPathInType in all cases by the
+   * rules themselves (the only possible difference is a TypePathSegment with
+   * function, and lookahead to find this is too difficult). However, as this
+   * is a pattern and QualifiedPathInType is a type, I believe it that their
    * construction will not be confused (due to rules regarding patterns vs
    * types).
-   * As such, this function will not attempt to minimise errors created by their
-   * confusion. */
+   * As such, this function will not attempt to minimise errors created by
+   * their confusion. */
 
   // parse the qualified path type (required)
   AST::QualifiedPathType qual_path_type
@@ -6568,8 +6636,8 @@ Parser<ManagedTokenSource>::parse_qualified_path_type (
   Location pratt_parsed_loc)
 {
   Location locus = pratt_parsed_loc;
-  /* TODO: should this actually be error? is there anywhere where this could be
-   * valid? */
+  /* TODO: should this actually be error? is there anywhere where this could
+   * be valid? */
   if (locus == Linemap::unknown_location ())
     {
       locus = lexer.peek_token ()->get_locus ();
@@ -6612,8 +6680,8 @@ Parser<ManagedTokenSource>::parse_qualified_path_type (
 	}
     }
 
-  /* NOTE: should actually be a right-angle token, so skip_generics_right_angle
-   * shouldn't be required */
+  /* NOTE: should actually be a right-angle token, so
+   * skip_generics_right_angle shouldn't be required */
   if (!skip_token (RIGHT_ANGLE))
     {
       // skip after somewhere?
@@ -6845,9 +6913,9 @@ Parser<ManagedTokenSource>::parse_method ()
 
   if (!skip_token (RIGHT_PAREN))
     {
-      Error error (
-	lexer.peek_token ()->get_locus (),
-	"method declaration missing closing parentheses after parameter list");
+      Error error (lexer.peek_token ()->get_locus (),
+		   "method declaration missing closing parentheses after "
+		   "parameter list");
       add_error (std::move (error));
 
       skip_after_next_block ();
@@ -6887,15 +6955,17 @@ std::unique_ptr<AST::ExprStmt>
 Parser<ManagedTokenSource>::parse_expr_stmt (AST::AttrVec outer_attrs,
 					     ParseRestrictions restrictions)
 {
-  /* potential thoughts - define new virtual method "has_block()" on expr. parse
-   * expr and then determine whether semicolon is needed as a result of this
-   * method. but then this would require dynamic_cast, which is not allowed. */
+  /* potential thoughts - define new virtual method "has_block()" on expr.
+   * parse expr and then determine whether semicolon is needed as a result of
+   * this method. but then this would require dynamic_cast, which is not
+   * allowed. */
 
   /* okay new thought - big switch to disambiguate exprs with blocks - either
-   * block expr, async block expr, unsafe block expr, loop expr, if expr, if let
-   * expr, or match expr. So all others are exprs without block. */
-  /* new thought: possible initial tokens: 'loop', 'while', 'for', lifetime (and
-   * then ':' and then loop), 'if', 'match', '{', 'async', 'unsafe' (and then
+   * block expr, async block expr, unsafe block expr, loop expr, if expr, if
+   * let expr, or match expr. So all others are exprs without block. */
+  /* new thought: possible initial tokens: 'loop', 'while', 'for', lifetime
+   * (and then ':' and then loop), 'if', 'match', '{', 'async', 'unsafe' (and
+   * then
    * '{')). This seems to have no ambiguity. */
 
   const_TokenPtr t = lexer.peek_token ();
@@ -6929,8 +6999,8 @@ Parser<ManagedTokenSource>::parse_expr_stmt (AST::AttrVec outer_attrs,
 	  }
       }
       case UNSAFE: {
-	/* FIXME: are there any expressions without blocks that can have unsafe
-	 * as their first token? Or is unsafe the only one? */
+	/* FIXME: are there any expressions without blocks that can have
+	 * unsafe as their first token? Or is unsafe the only one? */
 	// safe side for now
 	if (lexer.peek_token (1)->get_id () == LEFT_CURLY)
 	  {
@@ -6944,9 +7014,9 @@ Parser<ManagedTokenSource>::parse_expr_stmt (AST::AttrVec outer_attrs,
       }
     default:
       // not a parse expr with block, so must be expr without block
-      /* TODO: if possible, be more selective about possible expr without block
-       * initial tokens in order to prevent more syntactical errors at parse
-       * time. */
+      /* TODO: if possible, be more selective about possible expr without
+       * block initial tokens in order to prevent more syntactical errors at
+       * parse time. */
       return parse_expr_stmt_without_block (std::move (outer_attrs),
 					    restrictions);
     }
@@ -7066,8 +7136,8 @@ std::unique_ptr<AST::ExprStmtWithoutBlock>
 Parser<ManagedTokenSource>::parse_expr_stmt_without_block (
   AST::AttrVec outer_attrs, ParseRestrictions restrictions)
 {
-  /* TODO: maybe move more logic for expr without block in here for better error
-   * handling */
+  /* TODO: maybe move more logic for expr without block in here for better
+   * error handling */
 
   // attempt to parse via parse_expr_without_block - seems to work
   std::unique_ptr<AST::ExprWithoutBlock> expr = nullptr;
@@ -7118,30 +7188,32 @@ Parser<ManagedTokenSource>::parse_expr_without_block (
    *  - await expr            expr '.' 'await'
    *  - (array/slice) index expr  expr '[' expr ']'
    *  - tuple expr            '(' inner_attributes tuple_elems? ')'
-   *      note that a single elem tuple is distinguished from a grouped expr by
-   * a trailing comma, i.e. a grouped expr is preferred over a tuple expr
+   *      note that a single elem tuple is distinguished from a grouped expr
+   * by a trailing comma, i.e. a grouped expr is preferred over a tuple expr
    *  - tuple index expr      expr '.' tuple_index
    *  - struct expr           path_in_expr (and optional other stuff)
    *  - enum variant expr     path_in_expr (and optional other stuff)
    *      this means that there is no syntactic difference between an enum
    * variant and a struct
-   *      - only name resolution can tell the difference. Thus, maybe rework AST
-   * to take this into account ("struct or enum" nodes?)
+   *      - only name resolution can tell the difference. Thus, maybe rework
+   * AST to take this into account ("struct or enum" nodes?)
    *  - (function) call expr  expr '(' call_params? ')'
    *  - method call expr      expr '.' path_expr_segment '(' call_params? ')'
    *  - field expr            expr '.' identifier
    *      note that method call expr is preferred, i.e. field expr must not be
    * followed by parenthesised expression sequence.
-   *  - closure expr          'move'? ( '||' | '|' closure_params? '|' ) ( expr
-   * | '->' type_no_bounds block_expr )
+   *  - closure expr          'move'? ( '||' | '|' closure_params? '|' ) (
+   * expr | '->' type_no_bounds block_expr )
    *  - continue expr         'continue' labelled_lifetime?
    *  - break expr            'break' labelled_lifetime? expr?
-   *  - range expr            many different types but all involve '..' or '..='
+   *  - range expr            many different types but all involve '..' or
+   * '..='
    *  - return expr           'return' as 1st tok
    *  - macro invocation      identifier then :: or identifier then !
    * (simple_path '!')
    *
-   * any that have rules beginning with 'expr' should probably be pratt-parsed,
+   * any that have rules beginning with 'expr' should probably be
+   * pratt-parsed,
    * with parsing type to use determined by token AND lookahead. */
 
   // ok well at least can do easy ones
@@ -7164,8 +7236,10 @@ Parser<ManagedTokenSource>::parse_expr_without_block (
       // array expr (creation, not index)
       return parse_array_expr (std::move (outer_attrs));
     case LEFT_PAREN:
-      /* either grouped expr or tuple expr - depends on whether there is a comma
-       * inside the parentheses - if so, tuple expr, otherwise, grouped expr. */
+      /* either grouped expr or tuple expr - depends on whether there is a
+       * comma
+       * inside the parentheses - if so, tuple expr, otherwise, grouped expr.
+       */
       return parse_grouped_or_tuple_expr (std::move (outer_attrs));
       default: {
 	/* HACK: piggyback on pratt parsed expr and abuse polymorphism to
@@ -8179,8 +8253,8 @@ Parser<ManagedTokenSource>::parse_for_loop_expr (AST::AttrVec outer_attrs,
       return nullptr;
     }
 
-  /* parse iterator expression, which is required - also HACK to prevent struct
-   * expr */
+  /* parse iterator expression, which is required - also HACK to prevent
+   * struct expr */
   ParseRestrictions no_struct_expr;
   no_struct_expr.can_be_struct_expr = false;
   std::unique_ptr<AST::Expr> expr = parse_expr ({}, no_struct_expr);
@@ -8219,8 +8293,8 @@ std::unique_ptr<AST::BaseLoopExpr>
 Parser<ManagedTokenSource>::parse_labelled_loop_expr (AST::AttrVec outer_attrs)
 {
   /* TODO: decide whether it should not work if there is no label, or parse it
-   * with no label at the moment, I will make it not work with no label because
-   * that's the implication. */
+   * with no label at the moment, I will make it not work with no label
+   * because that's the implication. */
 
   if (lexer.peek_token ()->get_id () != LIFETIME)
     {
@@ -8304,8 +8378,8 @@ Parser<ManagedTokenSource>::parse_match_expr (AST::AttrVec outer_attrs,
       // skip somewhere?
       return nullptr;
     }
-  /* TODO: check for scrutinee expr not being struct expr? or do so in semantic
-   * analysis */
+  /* TODO: check for scrutinee expr not being struct expr? or do so in
+   * semantic analysis */
 
   if (!skip_token (LEFT_CURLY))
     {
@@ -8483,9 +8557,9 @@ Parser<ManagedTokenSource>::parse_match_arm ()
 			std::move (guard_expr), std::move (outer_attrs));
 }
 
-/* Parses the patterns used in a match arm. End token id is the id of the token
- * that would exist after the patterns are done (e.g. '}' for match expr, '='
- * for if let and while let). */
+/* Parses the patterns used in a match arm. End token id is the id of the
+ * token that would exist after the patterns are done (e.g. '}' for match
+ * expr, '=' for if let and while let). */
 template <typename ManagedTokenSource>
 std::vector<std::unique_ptr<AST::Pattern>>
 Parser<ManagedTokenSource>::parse_match_arm_patterns (TokenId end_token_id)
@@ -8494,8 +8568,8 @@ Parser<ManagedTokenSource>::parse_match_arm_patterns (TokenId end_token_id)
   if (lexer.peek_token ()->get_id () == PIPE)
     lexer.skip_token ();
   /* TODO: do I even need to store the result of this? can't be used.
-   * If semantically different, I need a wrapped "match arm patterns" object for
-   * this. */
+   * If semantically different, I need a wrapped "match arm patterns" object
+   * for this. */
 
   std::vector<std::unique_ptr<AST::Pattern>> patterns;
 
@@ -8925,14 +8999,16 @@ Parser<ManagedTokenSource>::parse_type ()
    *  TraitBound              '?'? ForLifetimes? TypePath | '(' '?'?
    * ForLifetimes? TypePath ')' BareFunctionType:        ForLifetimes?
    * FunctionQualifiers 'fn' etc. ForLifetimes (not type) 'for' '<'
-   * LifetimeParams '>' FunctionQualifiers      ( 'async' | 'const' )? 'unsafe'?
-   * ('extern' abi?)? QualifiedPathInType:     '<' Type ( 'as' TypePath )? '>' (
+   * LifetimeParams '>' FunctionQualifiers      ( 'async' | 'const' )?
+   * 'unsafe'?
+   * ('extern' abi?)? QualifiedPathInType:     '<' Type ( 'as' TypePath )? '>'
+   * (
    * '::' TypePathSegment )+ TypePath:                '::'? TypePathSegment (
    * '::' TypePathSegment)* ArrayType:               '[' Type ';' Expr ']'
    * ReferenceType:           '&' Lifetime? 'mut'? TypeNoBounds
    * RawPointerType:          '*' ( 'mut' | 'const' ) TypeNoBounds
-   * TupleType:               '(' Type etc. - regular tuple stuff. Also regular
-   * tuple vs parenthesised precedence
+   * TupleType:               '(' Type etc. - regular tuple stuff. Also
+   * regular tuple vs parenthesised precedence
    *
    * Disambiguate between macro and type path via type path being parsed, and
    * then if '!' found, convert type path to simple path for macro. Usual
@@ -8999,10 +9075,10 @@ Parser<ManagedTokenSource>::parse_type ()
 	/* for parsing path component of each rule, perhaps parse it as a
 	 * typepath and attempt conversion to simplepath if a trailing '!' is
 	 * found */
-	/* Type path also includes TraitObjectTypeOneBound BUT if it starts with
-	 * it, it is exactly the same as a TypePath syntactically, so this is a
-	 * syntactical ambiguity. As such, the parser will parse it as a
-	 * TypePath. This, however, does not prevent TraitObjectType from
+	/* Type path also includes TraitObjectTypeOneBound BUT if it starts
+	 * with it, it is exactly the same as a TypePath syntactically, so
+	 * this is a syntactical ambiguity. As such, the parser will parse it
+	 * as a TypePath. This, however, does not prevent TraitObjectType from
 	 * starting with a typepath. */
 
 	// parse path as type path
@@ -9082,9 +9158,9 @@ Parser<ManagedTokenSource>::parse_type ()
 	  }
       }
     case LEFT_PAREN:
-      /* tuple type or parenthesised type - requires further disambiguation (the
-       * usual). ok apparently can be a parenthesised TraitBound too, so could
-       * be TraitObjectTypeOneBound or TraitObjectType */
+      /* tuple type or parenthesised type - requires further disambiguation
+       * (the usual). ok apparently can be a parenthesised TraitBound too, so
+       * could be TraitObjectTypeOneBound or TraitObjectType */
       return parse_paren_prefixed_type ();
     case FOR:
       // TraitObjectTypeOneBound or BareFunctionType
@@ -9245,15 +9321,15 @@ Parser<ManagedTokenSource>::parse_type ()
 }
 
 /* Parses a type that has '(' as its first character. Returns a tuple type,
- * parenthesised type, TraitObjectTypeOneBound, or TraitObjectType depending on
- * following characters. */
+ * parenthesised type, TraitObjectTypeOneBound, or TraitObjectType depending
+ * on following characters. */
 template <typename ManagedTokenSource>
 std::unique_ptr<AST::Type>
 Parser<ManagedTokenSource>::parse_paren_prefixed_type ()
 {
-  /* NOTE: Syntactical ambiguity of a parenthesised trait bound is considered a
-   * trait bound, not a parenthesised type, so that it can still be used in type
-   * param bounds. */
+  /* NOTE: Syntactical ambiguity of a parenthesised trait bound is considered
+   * a trait bound, not a parenthesised type, so that it can still be used in
+   * type param bounds. */
 
   /* NOTE: this implementation is really shit but I couldn't think of a better
    * one. It requires essentially breaking polymorphism and downcasting via
@@ -9379,12 +9455,12 @@ Parser<ManagedTokenSource>::parse_paren_prefixed_type ()
       return std::unique_ptr<AST::TupleType> (
 	new AST::TupleType (std::move (types), left_delim_locus));
     }
-  /* TODO: ensure that this ensures that dynamic dispatch for traits is not lost
-   * somehow */
+  /* TODO: ensure that this ensures that dynamic dispatch for traits is not
+   * lost somehow */
 }
 
-/* Parses a type that has 'for' as its first character. This means it has a "for
- * lifetimes", so returns either a BareFunctionType, TraitObjectType, or
+/* Parses a type that has 'for' as its first character. This means it has a
+ * "for lifetimes", so returns either a BareFunctionType, TraitObjectType, or
  * TraitObjectTypeOneBound depending on following characters. */
 template <typename ManagedTokenSource>
 std::unique_ptr<AST::Type>
@@ -9703,8 +9779,8 @@ Parser<ManagedTokenSource>::parse_raw_pointer_type ()
     new AST::RawPointerType (kind, std::move (type), locus));
 }
 
-/* Parses a slice or array type, depending on following arguments (as lookahead
- * is not possible). */
+/* Parses a slice or array type, depending on following arguments (as
+ * lookahead is not possible). */
 template <typename ManagedTokenSource>
 std::unique_ptr<AST::TypeNoBounds>
 Parser<ManagedTokenSource>::parse_slice_or_array_type ()
@@ -9828,10 +9904,10 @@ Parser<ManagedTokenSource>::parse_type_no_bounds ()
 	/* for parsing path component of each rule, perhaps parse it as a
 	 * typepath and attempt conversion to simplepath if a trailing '!' is
 	 * found */
-	/* Type path also includes TraitObjectTypeOneBound BUT if it starts with
-	 * it, it is exactly the same as a TypePath syntactically, so this is a
-	 * syntactical ambiguity. As such, the parser will parse it as a
-	 * TypePath. This, however, does not prevent TraitObjectType from
+	/* Type path also includes TraitObjectTypeOneBound BUT if it starts
+	 * with it, it is exactly the same as a TypePath syntactically, so
+	 * this is a syntactical ambiguity. As such, the parser will parse it
+	 * as a TypePath. This, however, does not prevent TraitObjectType from
 	 * starting with a typepath. */
 
 	// parse path as type path
@@ -9882,9 +9958,9 @@ Parser<ManagedTokenSource>::parse_type_no_bounds ()
 	  }
       }
     case LEFT_PAREN:
-      /* tuple type or parenthesised type - requires further disambiguation (the
-       * usual). ok apparently can be a parenthesised TraitBound too, so could
-       * be TraitObjectTypeOneBound */
+      /* tuple type or parenthesised type - requires further disambiguation
+       * (the usual). ok apparently can be a parenthesised TraitBound too, so
+       * could be TraitObjectTypeOneBound */
       return parse_paren_prefixed_type_no_bounds ();
     case FOR:
     case ASYNC:
@@ -9954,8 +10030,8 @@ Parser<ManagedTokenSource>::parse_type_no_bounds ()
 
 	if (lexer.peek_token ()->get_id () == LIFETIME)
 	  {
-	    /* means that cannot be TraitObjectTypeOneBound - so here for error
-	     * message */
+	    /* means that cannot be TraitObjectTypeOneBound - so here for
+	     * error message */
 	    Error error (lexer.peek_token ()->get_locus (),
 			 "lifetime as bound in TraitObjectTypeOneBound "
 			 "is not allowed, so cannot be TypeNoBounds");
@@ -10015,8 +10091,8 @@ Parser<ManagedTokenSource>::parse_paren_prefixed_type_no_bounds ()
    * parse_paren_prefixed_type, but I was lazy. So FIXME for future.*/
 
   /* NOTE: again, syntactical ambiguity of a parenthesised trait bound is
-   * considered a trait bound, not a parenthesised type, so that it can still be
-   * used in type param bounds. */
+   * considered a trait bound, not a parenthesised type, so that it can still
+   * be used in type param bounds. */
 
   Location left_paren_locus = lexer.peek_token ()->get_locus ();
 
@@ -10105,8 +10181,8 @@ Parser<ManagedTokenSource>::parse_paren_prefixed_type_no_bounds ()
       return std::unique_ptr<AST::TupleType> (
 	new AST::TupleType (std::move (types), left_paren_locus));
     }
-  /* TODO: ensure that this ensures that dynamic dispatch for traits is not lost
-   * somehow */
+  /* TODO: ensure that this ensures that dynamic dispatch for traits is not
+   * lost somehow */
 }
 
 /* Parses a literal pattern or range pattern. Assumes that literals passed in
@@ -10353,7 +10429,8 @@ Parser<ManagedTokenSource>::parse_pattern ()
       return std::unique_ptr<AST::LiteralPattern> (
 	new AST::LiteralPattern (t->get_str (), AST::Literal::BYTE_STRING,
 				 t->get_locus ()));
-    // raw string and raw byte string literals too if they are readded to lexer
+    // raw string and raw byte string literals too if they are readded to
+    // lexer
     case MINUS:
       if (lexer.peek_token (1)->get_id () == INT_LITERAL)
 	{
@@ -10379,9 +10456,10 @@ Parser<ManagedTokenSource>::parse_pattern ()
     case MUT:
       return parse_identifier_pattern ();
     case IDENTIFIER:
-      /* if identifier with no scope resolution afterwards, identifier pattern.
-       * if scope resolution afterwards, path pattern (or range pattern or
-       * struct pattern or tuple struct pattern) or macro invocation */
+      /* if identifier with no scope resolution afterwards, identifier
+       * pattern. if scope resolution afterwards, path pattern (or range
+       * pattern or struct pattern or tuple struct pattern) or macro
+       * invocation */
       return parse_ident_leading_pattern ();
     case AMP:
     case LOGICAL_AND:
@@ -10568,8 +10646,8 @@ Parser<ManagedTokenSource>::parse_reference_pattern ()
 			       t->get_locus ()));
 }
 
-/* Parses a grouped pattern or tuple pattern. Prefers grouped over tuple if only
- * a single element with no commas. */
+/* Parses a grouped pattern or tuple pattern. Prefers grouped over tuple if
+ * only a single element with no commas. */
 template <typename ManagedTokenSource>
 std::unique_ptr<AST::Pattern>
 Parser<ManagedTokenSource>::parse_grouped_or_tuple_pattern ()
@@ -11357,7 +11435,8 @@ Parser<ManagedTokenSource>::parse_stmt_or_expr_with_block (
   if (tok->get_id () == RIGHT_CURLY)
     return ExprOrStmt (std::move (expr));
 
-  // internal block expr must either have semicolons followed, or evaluate to ()
+  // internal block expr must either have semicolons followed, or evaluate to
+  // ()
   auto locus = expr->get_locus ();
   std::unique_ptr<AST::ExprStmtWithBlock> stmt (
     new AST::ExprStmtWithBlock (std::move (expr), locus,
@@ -11390,16 +11469,16 @@ Parser<ManagedTokenSource>::parse_stmt_or_expr_without_block ()
 
   // parsing this will be annoying because of the many different possibilities
   /* best may be just to copy paste in parse_item switch, and failing that try
-   * to parse outer attributes, and then pass them in to either a let statement
-   * or (fallback) expression statement. */
+   * to parse outer attributes, and then pass them in to either a let
+   * statement or (fallback) expression statement. */
   // FIXME: think of a way to do this without such a large switch?
 
   /* FIXME: for expressions at least, the only way that they can really be
    * parsed properly in this way is if they don't support operators on them.
    * They must be pratt-parsed otherwise. As such due to composability, only
    * explicit statements will have special cases here. This should roughly
-   * correspond to "expr-with-block", but this warning is here in case it isn't
-   * the case. */
+   * correspond to "expr-with-block", but this warning is here in case it
+   * isn't the case. */
   t = lexer.peek_token ();
   switch (t->get_id ())
     {
@@ -11495,8 +11574,8 @@ Parser<ManagedTokenSource>::parse_stmt_or_expr_without_block ()
       }
       /* FIXME: this is either a macro invocation or macro invocation semi.
        * start parsing to determine which one it is. */
-      // FIXME: or this is another path-based thing - struct/enum or path itself
-      // return parse_path_based_stmt_or_expr(std::move(outer_attrs));
+      // FIXME: or this is another path-based thing - struct/enum or path
+      // itself return parse_path_based_stmt_or_expr(std::move(outer_attrs));
       // FIXME: old code there
     case LOOP:
     case WHILE:
@@ -11560,9 +11639,9 @@ Parser<ManagedTokenSource>::parse_stmt_or_expr_without_block ()
 	       || lexer.peek_token (1)->get_id () == EXCLAM
 	       || lexer.peek_token (1)->get_id () == LEFT_CURLY)
 	{
-	  /* path (probably) or macro invocation or struct or enum, so probably
-	   * a macro invocation semi decide how to parse - probably parse path
-	   * and then get macro from it */
+	  /* path (probably) or macro invocation or struct or enum, so
+	   * probably a macro invocation semi decide how to parse - probably
+	   * parse path and then get macro from it */
 
 	  // FIXME: old code was good until composability was required
 	  // return parse_path_based_stmt_or_expr(std::move(outer_attrs));
@@ -11625,8 +11704,8 @@ Parser<ManagedTokenSource>::parse_path_based_stmt_or_expr (
   switch (t2->get_id ())
     {
       case EXCLAM: {
-	/* macro invocation or macro invocation semi - depends on whether there
-	 * is a final ';' */
+	/* macro invocation or macro invocation semi - depends on whether
+	 * there is a final ';' */
 	// convert path in expr to simple path (as that is used in macros)
 	AST::SimplePath macro_path = path.as_simple_path ();
 	if (macro_path.is_empty ())
@@ -11682,11 +11761,11 @@ Parser<ManagedTokenSource>::parse_path_based_stmt_or_expr (
 
 	    if (tree == nullptr)
 	      {
-		Error error (
-		  t3->get_locus (),
-		  "failed to parse token tree for macro invocation (or semi) - "
-		  "found %qs",
-		  t3->get_token_description ());
+		Error error (t3->get_locus (),
+			     "failed to parse token tree for macro "
+			     "invocation (or semi) - "
+			     "found %qs",
+			     t3->get_token_description ());
 		add_error (std::move (error));
 
 		return ExprOrStmt::create_error ();
@@ -11710,9 +11789,9 @@ Parser<ManagedTokenSource>::parse_path_based_stmt_or_expr (
 
 	    /* with curly bracketed macros, assume it is a macro invocation
 	     * unless a semicolon is explicitly put at the end. this is not
-	     * necessarily true (i.e. context-dependence) and so may have to be
-	     * fixed up via HACKs in semantic analysis (by checking whether it
-	     * is the last elem in the vector). */
+	     * necessarily true (i.e. context-dependence) and so may have to
+	     * be fixed up via HACKs in semantic analysis (by checking whether
+	     * it is the last elem in the vector). */
 
 	    AST::DelimTokenTree delim_tok_tree (type, std::move (token_trees),
 						tok_tree_loc);
@@ -11767,8 +11846,8 @@ Parser<ManagedTokenSource>::parse_path_based_stmt_or_expr (
 
 	if (not_a_block)
 	  {
-	    /* assume struct expr struct (as struct-enum disambiguation requires
-	     * name lookup) again, make statement if final ';' */
+	    /* assume struct expr struct (as struct-enum disambiguation
+	     * requires name lookup) again, make statement if final ';' */
 	    expr = parse_struct_expr_struct_partial (std::move (path),
 						     std::move (outer_attrs));
 	    if (expr == nullptr)
@@ -11806,8 +11885,8 @@ Parser<ManagedTokenSource>::parse_path_based_stmt_or_expr (
 	return ExprOrStmt (std::move (expr));
       }
       case LEFT_PAREN: {
-	/* assume struct expr tuple (as struct-enum disambiguation requires name
-	 * lookup) again, make statement if final ';' */
+	/* assume struct expr tuple (as struct-enum disambiguation requires
+	 * name lookup) again, make statement if final ';' */
 	std::unique_ptr<AST::CallExpr> struct_expr
 	  = parse_struct_expr_tuple_partial (std::move (path),
 					     std::move (outer_attrs));
@@ -11927,8 +12006,8 @@ Parser<ManagedTokenSource>::parse_struct_expr_field ()
 					      t->get_locus ()));
       }
     case DOT_DOT:
-      /* this is a struct base and can't be parsed here, so just return nothing
-       * without erroring */
+      /* this is a struct base and can't be parsed here, so just return
+       * nothing without erroring */
 
       return nullptr;
     default:
@@ -12031,8 +12110,8 @@ Parser<ManagedTokenSource>::parse_macro_invocation_maybe_semi (
       /* with curly bracketed macros, assume it is a macro invocation unless
        * a semicolon is explicitly put at the end. this is not necessarily
        * true (i.e. context-dependence) and so may have to be fixed up via
-       * HACKs in semantic analysis (by checking whether it is the last elem in
-       * the vector). */
+       * HACKs in semantic analysis (by checking whether it is the last elem
+       * in the vector). */
 
       AST::DelimTokenTree delim_tok_tree (type, std::move (token_trees),
 					  tok_tree_loc);
@@ -12193,8 +12272,8 @@ Parser<ManagedTokenSource>::skip_after_end_block ()
     }
 }
 
-/* Skips tokens until the end of the next block. i.e. assumes that the block has
- * not been entered yet. */
+/* Skips tokens until the end of the next block. i.e. assumes that the block
+ * has not been entered yet. */
 template <typename ManagedTokenSource>
 void
 Parser<ManagedTokenSource>::skip_after_next_block ()
@@ -12219,8 +12298,8 @@ Parser<ManagedTokenSource>::skip_after_next_block ()
   // otherwise, do nothing as EOF
 }
 
-/* Skips all tokens until ] (the end of an attribute) - does not skip the ] (as
- * designed for attribute body use) */
+/* Skips all tokens until ] (the end of an attribute) - does not skip the ]
+ * (as designed for attribute body use) */
 template <typename ManagedTokenSource>
 void
 Parser<ManagedTokenSource>::skip_after_end_attribute ()
@@ -12236,8 +12315,8 @@ Parser<ManagedTokenSource>::skip_after_end_attribute ()
   // Don't skip the RIGHT_SQUARE token
 }
 
-/* Pratt parser impl of parse_expr. FIXME: this is only provisional and probably
- * will be changed.
+/* Pratt parser impl of parse_expr. FIXME: this is only provisional and
+ * probably will be changed.
  * FIXME: this may only parse expressions without blocks as they are the only
  * expressions to have precedence? */
 template <typename ManagedTokenSource>
@@ -12469,9 +12548,9 @@ Parser<ManagedTokenSource>::null_denotation (const_TokenPtr tok,
 	      return nullptr;
 	  // can only apply to integer and float expressions
 	  if (expr->get_type() != integer_type_node || expr->get_type() !=
-      float_type_node) { rust_error_at(tok->get_locus(), "operand of unary plus
-      must be int or float but it is %s", print_type(expr->get_type())); return
-      nullptr;
+      float_type_node) { rust_error_at(tok->get_locus(), "operand of unary
+      plus must be int or float but it is %s", print_type(expr->get_type()));
+      return nullptr;
 	  }
 
 	  return Tree(expr, tok->get_locus());
@@ -12490,15 +12569,16 @@ Parser<ManagedTokenSource>::null_denotation (const_TokenPtr tok,
 	// can only apply to integer and float expressions
 	/*if (expr.get_type() != integer_type_node || expr.get_type() !=
 	float_type_node) { rust_error_at(tok->get_locus(), "operand of unary
-	minus must be int or float but it is %s", print_type(expr.get_type()));
-	    return Tree::error();
+	minus must be int or float but it is %s",
+	print_type(expr.get_type())); return Tree::error();
 	}*/
 	/* FIXME: when implemented the "get type" method on expr, ensure it is
 	 * int or float type (except unsigned int). Actually, this would
-	 * probably have to be done in semantic analysis (as type checking). */
+	 * probably have to be done in semantic analysis (as type checking).
+	 */
 
-	/* FIXME: allow outer attributes on these expressions by having an outer
-	 * attrs parameter in function*/
+	/* FIXME: allow outer attributes on these expressions by having an
+	 * outer attrs parameter in function*/
 	return std::unique_ptr<AST::NegationExpr> (
 	  new AST::NegationExpr (std::move (expr), NegationOperator::NEGATE,
 				 std::move (outer_attrs), tok->get_locus ()));
@@ -12529,8 +12609,8 @@ Parser<ManagedTokenSource>::null_denotation (const_TokenPtr tok,
 				 std::move (outer_attrs), tok->get_locus ()));
       }
       case ASTERISK: {
-	/* pointer dereference only - HACK: as struct expressions should always
-	 * be value expressions, cannot be dereferenced */
+	/* pointer dereference only - HACK: as struct expressions should
+	 * always be value expressions, cannot be dereferenced */
 	ParseRestrictions entered_from_unary;
 	entered_from_unary.entered_from_unary = true;
 	entered_from_unary.can_be_struct_expr = false;
@@ -12620,7 +12700,8 @@ Parser<ManagedTokenSource>::null_denotation (const_TokenPtr tok,
 	  "token is '%s'",
 	  lexer.peek_token ()->get_token_description ());
 
-	// HACK: always make "self" by itself a path (regardless of next tokens)
+	// HACK: always make "self" by itself a path (regardless of next
+	// tokens)
 	if (tok->get_id () == SELF && path.is_single_segment ())
 	  {
 	    // HACK: add outer attrs to path
@@ -12742,8 +12823,8 @@ Parser<ManagedTokenSource>::null_denotation (const_TokenPtr tok,
 }
 
 /* Called for each token that can appear in infix (between) position. Can be
- * operators or other punctuation. Returns a function pointer to member function
- * that implements the left denotation for the token given. */
+ * operators or other punctuation. Returns a function pointer to member
+ * function that implements the left denotation for the token given. */
 template <typename ManagedTokenSource>
 std::unique_ptr<AST::Expr>
 Parser<ManagedTokenSource>::left_denotation (const_TokenPtr tok,
@@ -12773,7 +12854,8 @@ Parser<ManagedTokenSource>::left_denotation (const_TokenPtr tok,
     case MINUS:
       // difference expression - binary infix
       /*return parse_binary_minus_expr (tok, std::move (left),
-				      std::move (outer_attrs), restrictions);*/
+				      std::move (outer_attrs),
+	 restrictions);*/
       return parse_arithmetic_or_logical_expr (
 	tok, std::move (left), std::move (outer_attrs),
 	ArithmeticOrLogicalOperator::SUBTRACT, restrictions);
@@ -12836,7 +12918,8 @@ Parser<ManagedTokenSource>::left_denotation (const_TokenPtr tok,
     case EQUAL_EQUAL:
       // equal to expression - binary infix (no associativity)
       /*return parse_binary_equal_expr (tok, std::move (left),
-				      std::move (outer_attrs), restrictions);*/
+				      std::move (outer_attrs),
+	 restrictions);*/
       return parse_comparison_expr (tok, std::move (left),
 				    std::move (outer_attrs),
 				    ComparisonOperator::EQUAL, restrictions);
@@ -12899,7 +12982,8 @@ Parser<ManagedTokenSource>::left_denotation (const_TokenPtr tok,
       return parse_type_cast_expr (tok, std::move (left),
 				   std::move (outer_attrs), restrictions);
     case EQUAL:
-      // assignment expression - binary infix (note right-to-left associativity)
+      // assignment expression - binary infix (note right-to-left
+      // associativity)
       return parse_assig_expr (tok, std::move (left), std::move (outer_attrs),
 			       restrictions);
     case PLUS_EQ:
@@ -12998,7 +13082,8 @@ Parser<ManagedTokenSource>::left_denotation (const_TokenPtr tok,
       return parse_range_inclusive_expr (tok, std::move (left),
 					 std::move (outer_attrs), restrictions);
     case SCOPE_RESOLUTION:
-      // path expression - binary infix? FIXME should this even be parsed here?
+      // path expression - binary infix? FIXME should this even be parsed
+      // here?
       add_error (
 	Error (tok->get_locus (),
 	       "found scope resolution operator in left denotation "
@@ -13375,8 +13460,8 @@ get_lbp_for_comparison_expr (AST::ComparisonExpr::ExprType expr_type)
 }
 
 /* Parses a ComparisonExpr of given type and LBP. TODO find a way to only
- * specify one and have the other looked up - e.g. specify ExprType and binding
- * power is looked up? */
+ * specify one and have the other looked up - e.g. specify ExprType and
+ * binding power is looked up? */
 template <typename ManagedTokenSource>
 std::unique_ptr<AST::ComparisonExpr>
 Parser<ManagedTokenSource>::parse_comparison_expr (
@@ -14093,8 +14178,8 @@ Parser<ManagedTokenSource>::parse_field_access_expr (
   const_TokenPtr tok ATTRIBUTE_UNUSED, std::unique_ptr<AST::Expr> struct_expr,
   AST::AttrVec outer_attrs, ParseRestrictions restrictions ATTRIBUTE_UNUSED)
 {
-  /* get field name identifier (assume that this is a field access expr and not
-   * await, for instance) */
+  /* get field name identifier (assume that this is a field access expr and
+   * not await, for instance) */
   const_TokenPtr ident_tok = expect_token (IDENTIFIER);
   if (ident_tok == nullptr)
     return nullptr;
@@ -14254,7 +14339,8 @@ Parser<ManagedTokenSource>::parse_macro_invocation_partial (
     std::move (outer_attrs), macro_locus, restrictions.expr_can_be_stmt));
 }
 
-/* Parses a struct expr struct with a path in expression already parsed (but not
+/* Parses a struct expr struct with a path in expression already parsed (but
+ * not
  * '{' token). */
 template <typename ManagedTokenSource>
 std::unique_ptr<AST::StructExprStruct>
@@ -14387,7 +14473,8 @@ Parser<ManagedTokenSource>::parse_struct_expr_struct_partial (
     }
 }
 
-/* Parses a struct expr tuple with a path in expression already parsed (but not
+/* Parses a struct expr tuple with a path in expression already parsed (but
+ * not
  * '(' token).
  * FIXME: this currently outputs a call expr, as they cannot be disambiguated.
  * A better solution would be to just get this to call that function directly.
@@ -14413,9 +14500,8 @@ Parser<ManagedTokenSource>::parse_struct_expr_tuple_partial (
       std::unique_ptr<AST::Expr> expr = parse_expr ();
       if (expr == nullptr)
 	{
-	  Error error (
-	    t->get_locus (),
-	    "failed to parse expression in struct (or enum) expression tuple");
+	  Error error (t->get_locus (), "failed to parse expression in "
+					"struct (or enum) expression tuple");
 	  add_error (std::move (error));
 
 	  return nullptr;
@@ -14445,9 +14531,9 @@ Parser<ManagedTokenSource>::parse_struct_expr_tuple_partial (
 		       std::move (outer_attrs), path_locus));
 }
 
-/* Parses a path in expression with the first token passed as a parameter (as it
- * is skipped in token stream). Note that this only parses segment-first paths,
- * not global ones. */
+/* Parses a path in expression with the first token passed as a parameter (as
+ * it is skipped in token stream). Note that this only parses segment-first
+ * paths, not global ones. */
 template <typename ManagedTokenSource>
 AST::PathInExpression
 Parser<ManagedTokenSource>::parse_path_in_expression_pratt (const_TokenPtr tok)
@@ -14498,8 +14584,8 @@ Parser<ManagedTokenSource>::parse_path_in_expression_pratt (const_TokenPtr tok)
   // parse required initial segment
   AST::PathExprSegment initial_segment (initial_str, tok->get_locus ());
   // parse generic args (and turbofish), if they exist
-  /* use lookahead to determine if they actually exist (don't want to accidently
-   * parse over next ident segment) */
+  /* use lookahead to determine if they actually exist (don't want to
+   * accidently parse over next ident segment) */
   if (lexer.peek_token ()->get_id () == SCOPE_RESOLUTION
       && lexer.peek_token (1)->get_id () == LEFT_ANGLE)
     {
@@ -14564,7 +14650,8 @@ std::unique_ptr<AST::ClosureExpr>
 Parser<ManagedTokenSource>::parse_closure_expr_pratt (const_TokenPtr tok,
 						      AST::AttrVec outer_attrs)
 {
-  // TODO: does this need pratt parsing (for precedence)? probably not, but idk
+  // TODO: does this need pratt parsing (for precedence)? probably not, but
+  // idk
   Location locus = tok->get_locus ();
   bool has_move = false;
   if (tok->get_id () == MOVE)
@@ -14741,10 +14828,11 @@ template <typename ManagedTokenSource>
 void
 Parser<ManagedTokenSource>::debug_dump_lex_output (std::ostream &out)
 {
-  /* TODO: a better implementation of "lexer dump" (as in dump what was actually
-   * tokenised) would actually be to "write" a token to a file every time
-   * skip_token() here was called. This would reflect the parser modifications
-   * to the token stream, such as fixing the template angle brackets. */
+  /* TODO: a better implementation of "lexer dump" (as in dump what was
+   * actually tokenised) would actually be to "write" a token to a file every
+   * time skip_token() here was called. This would reflect the parser
+   * modifications to the token stream, such as fixing the template angle
+   * brackets. */
 
   const_TokenPtr tok = lexer.peek_token ();
 
