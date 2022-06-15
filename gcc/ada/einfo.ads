@@ -2309,6 +2309,10 @@ package Einfo is
 --       the corresponding entity. Reset at end of corresponding declarative
 --       part. The flag on a type is also used to determine the visibility of
 --       the primitive operators of the type.
+--
+--       Note that manipulation of scopes on the scope stack will also cause
+--       the flag to be set/unset since the setting of scopes affects
+--       visibility.
 
 --    Is_Abstract_Subprogram
 --       Defined in all subprograms and entries. Set for abstract subprograms.
