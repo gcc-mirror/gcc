@@ -138,7 +138,7 @@ public:
    */
   std::unique_ptr<AST::Stmt> parse_stmt (ParseRestrictions restrictions
 					 = ParseRestrictions ());
-  std::unique_ptr<AST::Type> parse_type ();
+  std::unique_ptr<AST::Type> parse_type (bool save_errors = true);
   std::unique_ptr<AST::ExternalItem> parse_external_item ();
   std::unique_ptr<AST::TraitItem> parse_trait_item ();
   std::unique_ptr<AST::InherentImplItem> parse_inherent_impl_item ();
@@ -177,6 +177,7 @@ private:
   AST::TypePath parse_type_path ();
   std::unique_ptr<AST::TypePathSegment> parse_type_path_segment ();
   AST::PathIdentSegment parse_path_ident_segment ();
+  std::unique_ptr<AST::Expr> parse_const_generic_expression ();
   AST::GenericArgs parse_path_generic_args ();
   AST::GenericArgsBinding parse_generic_args_binding ();
   AST::TypePathFunction parse_type_path_function (Location locus);
