@@ -1,3 +1,23 @@
+2022-06-14  H.J. Lu  <hjl.tools@gmail.com>
+
+	Backported from master:
+	2022-06-13  H.J. Lu  <hjl.tools@gmail.com>
+
+	* common/config/i386/cpuinfo.h (get_available_features): Require
+	AVX for F16C and VAES.
+
+2022-06-14  Philipp Tomsich  <philipp.tomsich@vrull.eu>
+
+	Backported from master:
+	2022-06-02  Philipp Tomsich  <philipp.tomsich@vrull.eu>
+
+	* config/riscv/riscv.cc (riscv_build_integer_1): Rewrite value as
+	(-1 << 31) for the single-bit case, when operating on (1 << 31)
+	in SImode.
+	* config/riscv/riscv.h (SINGLE_BIT_MASK_OPERAND): Allow for
+	any single-bit value, moving the special case for (1 << 31) to
+	riscv_build_integer_1 (in riscv.c).
+
 2022-06-08  Max Filippov  <jcmvbkbc@gmail.com>
 
 	Backported from master:
