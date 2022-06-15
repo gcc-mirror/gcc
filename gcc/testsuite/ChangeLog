@@ -1,3 +1,15 @@
+2022-06-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/104637
+	* gcc.target/i386/pr104637.c: Don't run on ia32.  Add -Wno-div-by-zero
+	to dg-options.
+	(foo): Remove extraneous initializer.
+
+2022-06-14  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/104637
+	* gcc.target/i386/pr104637.c: New.
+
 2022-06-08  Jason Merrill  <jason@redhat.com>
 
 	PR c++/105852
