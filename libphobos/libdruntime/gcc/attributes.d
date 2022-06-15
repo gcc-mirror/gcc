@@ -425,6 +425,30 @@ auto target_clones(A...)(A arguments)
 enum used = attribute("used");
 
 /**
+ * The `@visibility` attribute affects the linkage of the declaration to which
+ * it is attached. It can be applied to variables, types, and functions.
+ *
+ * There are four supported visibility_type values: `default`, `hidden`,
+ * `protected`, or `internal` visibility.
+ *
+ * Example:
+ * ---
+ * import gcc.attributes;
+ *
+ * @visibility("protected") void func() {  }
+ * ---
+ */
+auto visibility(string visibilityName)
+{
+    return attribute("visibility", visibilityName);
+}
+
+auto visibility(A...)(A arguments)
+{
+    assert(false, "visibility attribute argument not a string constant");
+}
+
+/**
  * The `@weak` attribute causes a declaration of an external symbol to be
  * emitted as a weak symbol rather than a global.  This is primarily useful in
  * defining library functions that can be overridden in user code, though it can
@@ -541,6 +565,16 @@ enum dynamicCompileEmit = false;
  * ---
  */
 enum fastmath = optimize("Ofast");
+
+/**
+ * Sets the visibility of a function or global variable to "hidden".
+ * Such symbols aren't directly accessible from outside the DSO
+ * (executable or DLL/.so/.dylib) and are resolved inside the DSO
+ * during linking. If unreferenced within the DSO, the linker can
+ * strip a hidden symbol.
+ * An `export` visibility overrides this attribute.
+ */
+enum hidden = visibility("hidden");
 
 /**
  * Adds GCC's "naked" attribute to a function, disabling function prologue /

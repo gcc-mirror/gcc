@@ -1343,26 +1343,9 @@ get_symbol_decl (Declaration *decl)
   if (decl->storage_class & STCvolatile)
     TREE_THIS_VOLATILE (decl->csym) = 1;
 
-  /* Visibility attributes are used by the debugger.  */
-  if (decl->visibility.kind == Visibility::private_)
-    TREE_PRIVATE (decl->csym) = 1;
-  else if (decl->visibility.kind == Visibility::protected_)
-    TREE_PROTECTED (decl->csym) = 1;
-
   /* Likewise, so could the deprecated attribute.  */
   if (decl->storage_class & STCdeprecated)
     TREE_DEPRECATED (decl->csym) = 1;
-
-#if TARGET_DLLIMPORT_DECL_ATTRIBUTES
-  /* Have to test for import first.  */
-  if (decl->isImportedSymbol ())
-    {
-      insert_decl_attribute (decl->csym, "dllimport");
-      DECL_DLLIMPORT_P (decl->csym) = 1;
-    }
-  else if (decl->isExport ())
-    insert_decl_attribute (decl->csym, "dllexport");
-#endif
 
   if (decl->isDataseg () || decl->isCodeseg () || decl->isThreadlocal ())
     {
@@ -1373,6 +1356,9 @@ get_symbol_decl (Declaration *decl)
       TREE_STATIC (decl->csym) = 1;
       /* The decl has not been defined -- yet.  */
       DECL_EXTERNAL (decl->csym) = 1;
+
+      /* Visibility attributes are used by the debugger.  */
+      set_visibility_for_decl (decl->csym, decl);
 
       DECL_INSTANTIATED (decl->csym) = (decl->isInstantiated () != NULL);
       set_linkage_for_decl (decl->csym);
@@ -2446,4 +2432,38 @@ set_linkage_for_decl (tree decl)
   /* Compiler generated public symbols can appear in multiple contexts.  */
   if (DECL_ARTIFICIAL (decl))
     return d_weak_linkage (decl);
+}
+
+/* NODE is a FUNCTION_DECL, VAR_DECL or RECORD_TYPE for the declaration SYM.
+   Set flags to reflect visibility that NODE will get in the object file.  */
+
+void
+set_visibility_for_decl (tree node, Dsymbol *sym)
+{
+  Visibility visibility = sym->visible ();
+  if (visibility.kind == Visibility::private_)
+    TREE_PRIVATE (node) = 1;
+  else if (visibility.kind == Visibility::protected_)
+    TREE_PROTECTED (node) = 1;
+
+  /* If the declaration was declared `export', append either the dllimport
+     or dllexport attribute.  */
+  if (TARGET_DLLIMPORT_DECL_ATTRIBUTES)
+    {
+      const char *attrname = NULL;
+
+      /* Have to test for import first.  */
+      if (sym->isImportedSymbol ())
+	attrname = "dllimport";
+      else if (sym->isExport ())
+	attrname = "dllexport";
+
+      if (attrname != NULL)
+	{
+	  if (DECL_P (node))
+	    insert_decl_attribute (node, attrname);
+	  else if (TYPE_P (node))
+	    insert_type_attribute (node, attrname);
+	}
+    }
 }

@@ -654,6 +654,7 @@ extern tree build_artificial_decl (tree, tree, const char * = NULL);
 extern tree create_field_decl (tree, const char *, int, int);
 extern void build_type_decl (tree, Dsymbol *);
 extern void set_linkage_for_decl (tree);
+extern void set_visibility_for_decl (tree, Dsymbol *);
 
 /* In expr.cc.  */
 extern tree build_expr (Expression *, bool = false, bool = false);

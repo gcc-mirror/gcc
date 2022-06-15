@@ -1180,6 +1180,7 @@ public:
 	/* Put out all fields.  */
 	layout_aggregate_type (t->sym, t->ctype, t->sym);
 	build_type_decl (t->ctype, t->sym);
+	set_visibility_for_decl (t->ctype, t->sym);
 	apply_user_attributes (t->sym, t->ctype);
 	finish_aggregate_type (structsize, alignsize, t->ctype);
       }
@@ -1224,6 +1225,7 @@ public:
     /* Put out all fields, including from each base class.  */
     layout_aggregate_type (t->sym, basetype, t->sym);
     build_type_decl (basetype, t->sym);
+    set_visibility_for_decl (basetype, t->sym);
     apply_user_attributes (t->sym, basetype);
     finish_aggregate_type (t->sym->structsize, t->sym->alignsize, basetype);
 
