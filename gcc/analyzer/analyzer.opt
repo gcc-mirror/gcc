@@ -206,6 +206,10 @@ fanalyzer-call-summaries
 Common Var(flag_analyzer_call_summaries) Init(0)
 Approximate the effect of function calls to simplify analysis.
 
+fanalyzer-undo-inlining
+Common Var(flag_analyzer_undo_inlining) Init(1)
+Try to reconstruct function calls and returns after inlining.
+
 fanalyzer-verbose-edges
 Common Var(flag_analyzer_verbose_edges) Init(0)
 Emit more verbose descriptions of control flow in diagnostics.

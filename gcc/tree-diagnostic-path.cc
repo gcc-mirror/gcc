@@ -463,8 +463,27 @@ default_tree_diagnostic_path_printer (diagnostic_context *context,
 	    label_text event_text (event.get_desc (false));
 	    gcc_assert (event_text.m_buffer);
 	    diagnostic_event_id_t event_id (i);
-	    inform (event.get_location (),
-		    "%@ %s", &event_id, event_text.m_buffer);
+	    if (context->show_path_depths)
+	      {
+		int stack_depth = event.get_stack_depth ();
+		tree fndecl = event.get_fndecl ();
+		/* -fdiagnostics-path-format=separate-events doesn't print
+		   fndecl information, so with -fdiagnostics-show-path-depths
+		   print the fndecls too, if any.  */
+		if (fndecl)
+		  inform (event.get_location (),
+			  "%@ %s (fndecl %qD, depth %i)",
+			  &event_id, event_text.m_buffer,
+			  fndecl, stack_depth);
+		else
+		  inform (event.get_location (),
+			  "%@ %s (depth %i)",
+			  &event_id, event_text.m_buffer,
+			  stack_depth);
+	      }
+	    else
+	      inform (event.get_location (),
+		      "%@ %s", &event_id, event_text.m_buffer);
 	    event_text.maybe_free ();
 	  }
       }

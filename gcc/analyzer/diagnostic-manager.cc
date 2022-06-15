@@ -52,6 +52,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "basic-block.h"
 #include "gimple.h"
 #include "gimple-iterator.h"
+#include "inlining-iterator.h"
 #include "cgraph.h"
 #include "digraph.h"
 #include "analyzer/supergraph.h"
@@ -1390,6 +1391,8 @@ diagnostic_manager::emit_saved_diagnostic (const exploded_graph &eg,
   if (sd.m_trailing_eedge)
     add_events_for_eedge (pb, *sd.m_trailing_eedge, &emission_path, NULL);
 
+  emission_path.inject_any_inlined_call_events (get_logger ());
+
   emission_path.prepare_for_emission (sd.m_d);
 
   location_t loc
@@ -2452,6 +2455,11 @@ diagnostic_manager::prune_for_sm_diagnostic (checker_path *path,
 		  }
 	      }
 	  }
+	  break;
+
+	case EK_INLINED_CALL:
+	  /* We don't expect to see these yet, as they're added later.
+	     We'd want to keep them around.  */
 	  break;
 
 	case EK_SETJMP:

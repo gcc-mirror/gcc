@@ -2904,7 +2904,7 @@ public:
     return make_label_text (can_colorize,
 			    "function %qE used as initializer for field %qE"
 			    " marked with %<__attribute__((tainted_args))%>",
-			    m_fndecl, m_field);
+			    get_fndecl (), m_field);
   }
 
 private:

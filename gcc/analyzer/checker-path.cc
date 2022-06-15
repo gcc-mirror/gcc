@@ -25,6 +25,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "function.h"
 #include "basic-block.h"
 #include "gimple.h"
+#include "diagnostic-core.h"
 #include "gimple-pretty-print.h"
 #include "fold-const.h"
 #include "function.h"
@@ -54,6 +55,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "analyzer/program-state.h"
 #include "analyzer/checker-path.h"
 #include "gimple-iterator.h"
+#include "inlining-iterator.h"
 #include "analyzer/supergraph.h"
 #include "analyzer/pending-diagnostic.h"
 #include "analyzer/diagnostic-manager.h"
@@ -99,6 +101,8 @@ event_kind_to_string (enum event_kind ek)
       return "EK_START_CONSOLIDATED_CFG_EDGES";
     case EK_END_CONSOLIDATED_CFG_EDGES:
       return "EK_END_CONSOLIDATED_CFG_EDGES";
+    case EK_INLINED_CALL:
+      return "EK_INLINED_CALL";
     case EK_SETJMP:
       return "EK_SETJMP";
     case EK_REWIND_FROM_LONGJMP:
@@ -110,7 +114,70 @@ event_kind_to_string (enum event_kind ek)
     }
 }
 
+/* A class for fixing up fndecls and stack depths in checker_event, based
+   on inlining records.
+
+   The early inliner runs before the analyzer, which can lead to confusing
+   output.
+
+   Tne base fndecl and depth within a checker_event are from call strings
+   in program_points, which reflect the call strings after inlining.
+   This class lets us offset the depth and fix up the reported fndecl and
+   stack depth to better reflect the user's original code.  */
+
+class inlining_info
+{
+public:
+  inlining_info (location_t loc)
+  {
+    inlining_iterator iter (loc);
+    m_inner_fndecl = iter.get_fndecl ();
+    int num_frames = 0;
+    while (!iter.done_p ())
+      {
+	m_outer_fndecl = iter.get_fndecl ();
+	num_frames++;
+	iter.next ();
+      }
+    if (num_frames > 1)
+      m_extra_frames = num_frames - 1;
+    else
+      m_extra_frames = 0;
+  }
+
+  tree get_inner_fndecl () const { return m_inner_fndecl; }
+  int get_extra_frames () const { return m_extra_frames; }
+
+private:
+  tree m_outer_fndecl;
+  tree m_inner_fndecl;
+  int m_extra_frames;
+};
+
 /* class checker_event : public diagnostic_event.  */
+
+/* checker_event's ctor.  */
+
+checker_event::checker_event (enum event_kind kind,
+			      location_t loc, tree fndecl, int depth)
+: m_kind (kind), m_loc (loc),
+  m_original_fndecl (fndecl), m_effective_fndecl (fndecl),
+  m_original_depth (depth), m_effective_depth (depth),
+  m_pending_diagnostic (NULL), m_emission_id (),
+  m_logical_loc (fndecl)
+{
+  /* Update effective fndecl and depth if inlining has been recorded.  */
+  if (flag_analyzer_undo_inlining)
+    {
+      inlining_info info (loc);
+      if (info.get_inner_fndecl ())
+	{
+	  m_effective_fndecl = info.get_inner_fndecl ();
+	  m_effective_depth += info.get_extra_frames ();
+	  m_logical_loc = tree_logical_location (m_effective_fndecl);
+	}
+    }
+}
 
 /* No-op implementation of diagnostic_event::get_meaning vfunc for
    checker_event: checker events have no meaning by default.  */
@@ -127,11 +194,21 @@ void
 checker_event::dump (pretty_printer *pp) const
 {
   label_text event_desc (get_desc (false));
-  pp_printf (pp, "\"%s\" (depth %i, m_loc=%x)",
-	     event_desc.m_buffer,
-	     get_stack_depth (),
-	     get_location ());
+  pp_printf (pp, "\"%s\" (depth %i",
+	     event_desc.m_buffer, m_effective_depth);
   event_desc.maybe_free ();
+
+  if (m_effective_depth != m_original_depth)
+    pp_printf (pp, " corrected from %i",
+	       m_original_depth);
+  if (m_effective_fndecl)
+    {
+      pp_printf (pp, ", fndecl %qE", m_effective_fndecl);
+      if (m_effective_fndecl != m_original_fndecl)
+	pp_printf (pp, " corrected from %qE", m_original_fndecl);
+    }
+  pp_printf (pp, ", m_loc=%x)",
+	     get_location ());
 }
 
 /* Hook for being notified when this event has its final id EMISSION_ID
@@ -248,7 +325,7 @@ region_creation_event::get_desc (bool) const
 label_text
 function_entry_event::get_desc (bool can_colorize) const
 {
-  return make_label_text (can_colorize, "entry to %qE", m_fndecl);
+  return make_label_text (can_colorize, "entry to %qE", m_effective_fndecl);
 }
 
 /* Implementation of diagnostic_event::get_meaning vfunc for
@@ -867,6 +944,26 @@ start_consolidated_cfg_edges_event::get_meaning () const
 		  (m_edge_sense ? PROPERTY_true : PROPERTY_false));
 }
 
+/* class inlined_call_event : public checker_event.  */
+
+label_text
+inlined_call_event::get_desc (bool can_colorize) const
+{
+  return make_label_text (can_colorize,
+			  "inlined call to %qE from %qE",
+			  m_apparent_callee_fndecl,
+			  m_apparent_caller_fndecl);
+}
+
+/* Implementation of diagnostic_event::get_meaning vfunc for
+   reconstructed inlined function calls.  */
+
+diagnostic_event::meaning
+inlined_call_event::get_meaning () const
+{
+  return meaning (VERB_call, NOUN_function);
+}
+
 /* class setjmp_event : public checker_event.  */
 
 /* Implementation of diagnostic_event::get_desc vfunc for
@@ -1178,6 +1275,163 @@ checker_path::cfg_edge_pair_at_p (unsigned idx) const
     return false;
   return (m_events[idx]->m_kind == EK_START_CFG_EDGE
 	  && m_events[idx + 1]->m_kind == EK_END_CFG_EDGE);
+}
+
+/* Consider a call from "outer" to "middle" which calls "inner",
+   where "inner" and "middle" have been inlined into "outer".
+
+   We expect the stmt locations for the inlined stmts to have a
+   chain like:
+
+     [{fndecl: inner},
+      {fndecl: middle, callsite: within middle to inner},
+      {fndecl: outer, callsite: without outer to middle}]
+
+   The location for the stmt will already be fixed up to reflect
+   the two extra frames, so that we have e.g. this as input
+   (for gcc.dg/analyzer/inlining-4.c):
+
+    before[0]:
+      EK_FUNCTION_ENTRY "entry to ‘outer’"
+      (depth 1, fndecl ‘outer’, m_loc=511c4)
+    before[1]:
+      EK_START_CFG_EDGE "following ‘true’ branch (when ‘flag != 0’)..."
+      (depth 3 corrected from 1,
+       fndecl ‘inner’ corrected from ‘outer’, m_loc=8000000f)
+    before[2]:
+      EK_END_CFG_EDGE "...to here"
+      (depth 1, fndecl ‘outer’, m_loc=0)
+    before[3]:
+      EK_WARNING "here (‘<unknown>’ is in state ‘null’)"
+      (depth 1, fndecl ‘outer’, m_loc=80000004)
+
+   We want to add inlined_call_events showing the calls, so that
+   the above becomes:
+
+    after[0]:
+      EK_FUNCTION_ENTRY "entry to ‘outer’"
+      (depth 1, fndecl ‘outer’, m_loc=511c4)
+    after[1]:
+      EK_INLINED_CALL "inlined call to ‘middle’ from ‘outer’"
+      (depth 1, fndecl ‘outer’, m_loc=53300)
+    after[2]:
+      EK_INLINED_CALL "inlined call to ‘inner’ from ‘middle’"
+      (depth 2, fndecl ‘middle’, m_loc=4d2e0)
+    after[3]:
+      EK_START_CFG_EDGE "following ‘true’ branch (when ‘flag != 0’)..."
+      (depth 3 corrected from 1,
+       fndecl ‘inner’ corrected from ‘outer’, m_loc=8000000f)
+    after[4]: EK_END_CFG_EDGE "...to here"
+      (depth 1, fndecl ‘outer’, m_loc=0)
+    after[5]: EK_WARNING "here (‘<unknown>’ is in state ‘null’)"
+      (depth 1, fndecl ‘outer’, m_loc=80000004)
+
+    where we've added events between before[0] and before[1] to show
+    the inlined calls leading to the effective stack depths, making
+    the generated path much easier for a user to read.
+
+    Note how in the above we have a branch (before[1] to before[2])
+    where the locations were originally in different functions.
+    Hence we have to add these events quite late when generating
+    checker_path.  */
+
+void
+checker_path::inject_any_inlined_call_events (logger *logger)
+{
+  LOG_SCOPE (logger);
+
+  if (!flag_analyzer_undo_inlining)
+    return;
+
+  /* Build a copy of m_events with the new events inserted.  */
+  auto_vec<checker_event *> updated_events;
+
+  maybe_log (logger, "before");
+
+  hash_set<tree> blocks_in_prev_event;
+
+  for (unsigned ev_idx = 0; ev_idx < m_events.length (); ev_idx++)
+    {
+      checker_event *curr_event = m_events[ev_idx];
+      location_t curr_loc = curr_event->get_location ();
+      hash_set<tree> blocks_in_curr_event;
+
+      if (logger)
+	{
+	  logger->start_log_line ();
+	  logger->log_partial ("event[%i]: %s ", ev_idx,
+			       event_kind_to_string (curr_event->m_kind));
+	  curr_event->dump (logger->get_printer ());
+	  logger->end_log_line ();
+	  for (inlining_iterator iter (curr_event->get_location ());
+	       !iter.done_p (); iter.next ())
+	    {
+	      logger->start_log_line ();
+	      logger->log_partial ("  %qE (%p), fndecl: %qE, callsite: 0x%x",
+				   iter.get_block (), iter.get_block (),
+				   iter.get_fndecl (), iter.get_callsite ());
+	      if (iter.get_callsite ())
+		dump_location (logger->get_printer (), iter.get_callsite ());
+	      logger->end_log_line ();
+	    }
+	}
+
+      /* We want to add events to show inlined calls.
+
+	 We want to show changes relative to the previous event, omitting
+	 the commonality between the inlining chain.
+
+	 The chain is ordered from innermost frame to outermost frame;
+	 we want to walk it backwards to show the calls, so capture it
+	 in a vec.  */
+      struct chain_element { tree m_block; tree m_fndecl; };
+      auto_vec<chain_element> elements;
+      for (inlining_iterator iter (curr_loc); !iter.done_p (); iter.next ())
+	{
+	  chain_element ce;
+	  ce.m_block = iter.get_block ();
+	  ce.m_fndecl = iter.get_fndecl ();
+
+	  if (!blocks_in_prev_event.contains (ce.m_block))
+	    elements.safe_push (ce);
+	  blocks_in_curr_event.add (ce.m_block);
+	}
+
+      /* Walk from outermost to innermost.  */
+      if (elements.length () > 0)
+	{
+	  int orig_stack_depth = curr_event->get_original_stack_depth ();
+	  for (unsigned element_idx = elements.length () - 1; element_idx > 0;
+	       element_idx--)
+	    {
+	      const chain_element &ce = elements[element_idx];
+	      int stack_depth_adjustment
+		= (blocks_in_curr_event.elements () - element_idx) - 1;
+	      if (location_t callsite = BLOCK_SOURCE_LOCATION (ce.m_block))
+		updated_events.safe_push
+		  (new inlined_call_event (callsite,
+					   elements[element_idx - 1].m_fndecl,
+					   ce.m_fndecl,
+					   orig_stack_depth,
+					   stack_depth_adjustment));
+	    }
+	}
+
+      /* Ideally we'd use assignment here:
+	   blocks_in_prev_event = blocks_in_curr_event; */
+      blocks_in_prev_event.empty ();
+      for (auto iter : blocks_in_curr_event)
+	blocks_in_prev_event.add (iter);
+
+      /* Add the existing event.  */
+      updated_events.safe_push (curr_event);
+    }
+
+  /* Replace m_events with updated_events.  */
+  m_events.truncate (0);
+  m_events.safe_splice (updated_events);
+
+  maybe_log (logger, " after");
 }
 
 } // namespace ana

@@ -425,6 +425,7 @@ Objective-C and Objective-C++ Dialects}.
 -fno-analyzer-state-merge @gol
 -fno-analyzer-state-purge @gol
 -fanalyzer-transitivity @gol
+-fno-analyzer-undo-inlining @gol
 -fanalyzer-verbose-edges @gol
 -fanalyzer-verbose-state-changes @gol
 -fanalyzer-verbosity=@var{level} @gol
@@ -5233,7 +5234,10 @@ This option provides additional information when printing control-flow paths
 associated with a diagnostic.
 
 If this is option is provided then the stack depth will be printed for
-each run of events within @option{-fdiagnostics-path-format=separate-events}.
+each run of events within @option{-fdiagnostics-path-format=inline-events}.
+If provided with @option{-fdiagnostics-path-format=separate-events}, then
+the stack depth and function declaration will be appended when printing
+each event.
 
 This is intended for use by GCC developers and plugin developers when
 debugging diagnostics that report interprocedural control flow.
@@ -10201,6 +10205,25 @@ be suppressed, for debugging state-handling issues.
 @opindex fanalyzer-transitivity
 @opindex fno-analyzer-transitivity
 This option enables transitivity of constraints within the analyzer.
+
+@item -fno-analyzer-undo-inlining
+@opindex fanalyzer-undo-inlining
+@opindex fno-analyzer-undo-inlining
+This option is intended for analyzer developers.
+
+@option{-fanalyzer} runs relatively late compared to other code analysis
+tools, and some optimizations have already been applied to the code.  In
+particular function inlining may have occurred, leading to the
+interprocedural execution paths emitted by the analyzer containing
+function frames that don't correspond to those in the original source
+code.
+
+By default the analyzer attempts to reconstruct the original function
+frames, and to emit events showing the inlined calls.
+
+With @option{-fno-analyzer-undo-inlining} this attempt to reconstruct
+the original frame information can be be disabled, which may be of help
+when debugging issues in the analyzer.
 
 @item -fanalyzer-verbose-edges
 This option is intended for analyzer developers.  It enables more
