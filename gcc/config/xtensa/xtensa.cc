@@ -189,7 +189,7 @@ static bool xtensa_can_eliminate (const int from ATTRIBUTE_UNUSED,
 				  const int to);
 static HOST_WIDE_INT xtensa_starting_frame_offset (void);
 static unsigned HOST_WIDE_INT xtensa_asan_shadow_offset (void);
-
+static bool xtensa_function_ok_for_sibcall (tree, tree);
 static rtx xtensa_delegitimize_address (rtx);
 
 
@@ -346,6 +346,9 @@ static rtx xtensa_delegitimize_address (rtx);
 
 #undef TARGET_DELEGITIMIZE_ADDRESS
 #define TARGET_DELEGITIMIZE_ADDRESS xtensa_delegitimize_address
+
+#undef TARGET_FUNCTION_OK_FOR_SIBCALL
+#define TARGET_FUNCTION_OK_FOR_SIBCALL xtensa_function_ok_for_sibcall
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -2127,6 +2130,20 @@ xtensa_emit_movcc (bool inverted, bool isfp, bool isbool, rtx *operands)
 }
 
 
+void
+xtensa_prepare_expand_call (int callop, rtx *operands)
+{
+  rtx addr = XEXP (operands[callop], 0);
+
+  if (flag_pic && SYMBOL_REF_P (addr)
+      && (!SYMBOL_REF_LOCAL_P (addr) || SYMBOL_REF_EXTERNAL_P (addr)))
+    addr = gen_sym_PLT (addr);
+
+  if (!call_insn_operand (addr, VOIDmode))
+    XEXP (operands[callop], 0) = copy_to_mode_reg (Pmode, addr);
+}
+
+
 char *
 xtensa_emit_call (int callop, rtx *operands)
 {
@@ -2140,6 +2157,24 @@ xtensa_emit_call (int callop, rtx *operands)
     sprintf (result, "callx%d\t%%%d", WINDOW_SIZE, callop);
   else
     sprintf (result, "call%d\t%%%d", WINDOW_SIZE, callop);
+
+  return result;
+}
+
+
+char *
+xtensa_emit_sibcall (int callop, rtx *operands)
+{
+  static char result[64];
+  rtx tgt = operands[callop];
+
+  if (GET_CODE (tgt) == CONST_INT)
+    sprintf (result, "j.l\t" HOST_WIDE_INT_PRINT_HEX ", a9",
+	     INTVAL (tgt));
+  else if (register_operand (tgt, VOIDmode))
+    sprintf (result, "jx\t%%%d", callop);
+  else
+    sprintf (result, "j.l\t%%%d, a9", callop);
 
   return result;
 }
@@ -3270,7 +3305,7 @@ xtensa_expand_prologue (void)
 }
 
 void
-xtensa_expand_epilogue (void)
+xtensa_expand_epilogue (bool sibcall_p)
 {
   if (!TARGET_WINDOWED_ABI)
     {
@@ -3304,10 +3339,13 @@ xtensa_expand_epilogue (void)
 	  if (xtensa_call_save_reg(regno))
 	    {
 	      rtx x = gen_rtx_PLUS (Pmode, stack_pointer_rtx, GEN_INT (offset));
+	      rtx reg;
 
 	      offset -= UNITS_PER_WORD;
-	      emit_move_insn (gen_rtx_REG (SImode, regno),
+	      emit_move_insn (reg = gen_rtx_REG (SImode, regno),
 			      gen_frame_mem (SImode, x));
+	      if (regno == A0_REG && sibcall_p)
+		emit_use (reg);
 	    }
 	}
 
@@ -3342,7 +3380,8 @@ xtensa_expand_epilogue (void)
 				  EH_RETURN_STACKADJ_RTX));
     }
   cfun->machine->epilogue_done = true;
-  emit_jump_insn (gen_return ());
+  if (!sibcall_p)
+    emit_jump_insn (gen_return ());
 }
 
 bool
@@ -4867,6 +4906,17 @@ static unsigned HOST_WIDE_INT
 xtensa_asan_shadow_offset (void)
 {
   return HOST_WIDE_INT_UC (0x10000000);
+}
+
+/* Implement TARGET_FUNCTION_OK_FOR_SIBCALL.  */
+static bool
+xtensa_function_ok_for_sibcall (tree decl ATTRIBUTE_UNUSED, tree exp ATTRIBUTE_UNUSED)
+{
+  /* Do not allow sibcalls when windowed registers ABI is in effect.  */
+  if (TARGET_WINDOWED_ABI)
+    return false;
+
+  return true;
 }
 
 static rtx

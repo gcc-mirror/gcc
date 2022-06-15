@@ -53,7 +53,9 @@ extern void xtensa_expand_atomic (enum rtx_code, rtx, rtx, rtx, bool);
 extern void xtensa_emit_loop_end (rtx_insn *, rtx *);
 extern char *xtensa_emit_branch (bool, rtx *);
 extern char *xtensa_emit_movcc (bool, bool, bool, rtx *);
+extern void xtensa_prepare_expand_call (int, rtx *);
 extern char *xtensa_emit_call (int, rtx *);
+extern char *xtensa_emit_sibcall (int, rtx *);
 extern bool xtensa_tls_referenced_p (rtx);
 extern enum rtx_code xtensa_shlrd_which_direction (rtx, rtx);
 
@@ -73,7 +75,7 @@ extern int xtensa_dbx_register_number (int);
 extern long compute_frame_size (poly_int64);
 extern bool xtensa_use_return_instruction_p (void);
 extern void xtensa_expand_prologue (void);
-extern void xtensa_expand_epilogue (void);
+extern void xtensa_expand_epilogue (bool);
 extern void order_regs_for_local_alloc (void);
 extern enum reg_class xtensa_regno_to_class (int regno);
 extern HOST_WIDE_INT xtensa_initial_elimination_offset (int from, int to);
