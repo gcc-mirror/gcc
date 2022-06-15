@@ -1,3 +1,43 @@
+2022-06-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/97944
+	* testsuite/30_threads/jthread/95989.cc: Mark XFAIL.
+
+2022-06-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2020-11-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/30_threads/jthread/95989.cc: Run all three test
+	functions, not just the first one twice.
+
+2022-06-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-04-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/99290
+	* src/c++17/fs_ops.cc (fs::copy): Pass error_code to
+	directory_iterator constructor, and check on each iteration.
+	* src/filesystem/ops.cc (fs::copy): Likewise.
+	* testsuite/27_io/filesystem/operations/copy.cc: Check for
+	errors during recursion.
+	* testsuite/experimental/filesystem/operations/copy.cc:
+	Likewise.
+
+2022-06-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-11-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/lib/gdb-test.exp: Add target selector support to the
+	dg-final directives.
+	* testsuite/libstdc++-prettyprinters/80276.cc: Add xfail for
+	C++20.
+	* testsuite/libstdc++-prettyprinters/libfundts.cc: Likewise.
+	* testsuite/libstdc++-prettyprinters/prettyprinters.exp: Tweak
+	comment.
+
 2022-06-10  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:
