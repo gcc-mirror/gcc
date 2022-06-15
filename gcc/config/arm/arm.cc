@@ -15744,13 +15744,21 @@ gen_cpymem_ldrd_strd (rtx *operands)
     {
       len -= 8;
       reg0 = gen_reg_rtx (DImode);
-      rtx low_reg = NULL_RTX;
-      rtx hi_reg = NULL_RTX;
+      rtx first_reg = NULL_RTX;
+      rtx second_reg = NULL_RTX;
 
       if (!src_aligned || !dst_aligned)
 	{
-	  low_reg = gen_lowpart (SImode, reg0);
-	  hi_reg = gen_highpart_mode (SImode, DImode, reg0);
+	  if (BYTES_BIG_ENDIAN)
+	    {
+	      second_reg = gen_lowpart (SImode, reg0);
+	      first_reg = gen_highpart_mode (SImode, DImode, reg0);
+	    }
+	  else
+	    {
+	      first_reg = gen_lowpart (SImode, reg0);
+	      second_reg = gen_highpart_mode (SImode, DImode, reg0);
+	    }
 	}
       if (MEM_ALIGN (src) >= 2 * BITS_PER_WORD)
 	emit_move_insn (reg0, src);
@@ -15758,9 +15766,9 @@ gen_cpymem_ldrd_strd (rtx *operands)
 	emit_insn (gen_unaligned_loaddi (reg0, src));
       else
 	{
-	  emit_insn (gen_unaligned_loadsi (low_reg, src));
+	  emit_insn (gen_unaligned_loadsi (first_reg, src));
 	  src = next_consecutive_mem (src);
-	  emit_insn (gen_unaligned_loadsi (hi_reg, src));
+	  emit_insn (gen_unaligned_loadsi (second_reg, src));
 	}
 
       if (MEM_ALIGN (dst) >= 2 * BITS_PER_WORD)
@@ -15769,9 +15777,9 @@ gen_cpymem_ldrd_strd (rtx *operands)
 	emit_insn (gen_unaligned_storedi (dst, reg0));
       else
 	{
-	  emit_insn (gen_unaligned_storesi (dst, low_reg));
+	  emit_insn (gen_unaligned_storesi (dst, first_reg));
 	  dst = next_consecutive_mem (dst);
-	  emit_insn (gen_unaligned_storesi (dst, hi_reg));
+	  emit_insn (gen_unaligned_storesi (dst, second_reg));
 	}
 
       src = next_consecutive_mem (src);
