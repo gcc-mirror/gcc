@@ -182,6 +182,33 @@ enum flatten = attribute("flatten");
 enum no_icf = attribute("no_icf");
 
 /**
+ * The `@no_sanitize` attribute on functions is used to inform the compiler
+ * that it should not do sanitization of any option mentioned in
+ * sanitize_option.  A list of values acceptable by the `-fsanitize` option
+ * can be provided.
+ *
+ * Example:
+ * ---
+ * import gcc.attributes;
+ *
+ * @no_sanitize("alignment", "object-size") void func1() { }
+ * @no_sanitize("alignment,object-size") void func2() { }
+ * ---
+ */
+
+auto no_sanitize(A...)(A arguments)
+    if (allSatisfy!(isStringValue, arguments))
+{
+    return attribute("no_sanitize", arguments);
+}
+
+auto no_sanitize(A...)(A arguments)
+    if (!allSatisfy!(isStringValue, arguments))
+{
+    assert(false, "no_sanitize attribute argument not a string constant");
+}
+
+/**
  * The `@noclone` attribute prevents a function from being considered for
  * cloning - a mechanism that produces specialized copies of functions and
  * which is (currently) performed by interprocedural constant propagation.
@@ -593,6 +620,14 @@ enum hidden = visibility("hidden");
  * ---
  */
 enum naked = attribute("naked");
+
+/**
+ * Disables a particular sanitizer for this function.
+ * Valid sanitizer names are all names accepted by `-fsanitize=` commandline option.
+ * Multiple sanitizers can be disabled by applying this UDA multiple times, e.g.
+ * `@noSanitize("address") `@noSanitize("thread")` to disable both ASan and TSan.
+ */
+alias noSanitize = no_sanitize;
 
 /**
  * Sets the optimization strategy for a function.

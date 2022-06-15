@@ -78,6 +78,7 @@ static tree d_handle_cold_attribute (tree *, tree, tree, int, bool *);
 static tree d_handle_restrict_attribute (tree *, tree, tree, int, bool *);
 static tree d_handle_used_attribute (tree *, tree, tree, int, bool *);
 static tree d_handle_visibility_attribute (tree *, tree, tree, int, bool *);
+static tree d_handle_no_sanitize_attribute (tree *, tree, tree, int, bool *);
 
 /* Helper to define attribute exclusions.  */
 #define ATTR_EXCL(name, function, type, variable)	\
@@ -220,6 +221,8 @@ const attribute_spec d_langhook_attribute_table[] =
 	     d_handle_alloc_size_attribute, attr_alloc_exclusions),
   ATTR_SPEC ("cold", 0, 0, true, false, false, false,
 	     d_handle_cold_attribute, attr_cold_hot_exclusions),
+  ATTR_SPEC ("no_sanitize", 1, -1, true, false, false, false,
+	     d_handle_no_sanitize_attribute, NULL),
   ATTR_SPEC ("restrict", 0, 0, true, false, false, false,
 	     d_handle_restrict_attribute, NULL),
   ATTR_SPEC ("used", 0, 0, true, false, false, false,
@@ -1359,6 +1362,55 @@ d_handle_cold_attribute (tree *node, tree name, tree, int, bool *no_add_attrs)
     {
       warning (OPT_Wattributes, "%qE attribute ignored", name);
       *no_add_attrs = true;
+    }
+
+  return NULL_TREE;
+}
+
+/* Handle a "no_sanitize" attribute; arguments as in
+   struct attribute_spec.handler.  */
+
+static tree
+d_handle_no_sanitize_attribute (tree *node, tree name, tree args, int,
+				bool *no_add_attrs)
+{
+  *no_add_attrs = true;
+
+  if (TREE_CODE (*node) != FUNCTION_DECL)
+    {
+      warning (OPT_Wattributes, "%qE attribute ignored", name);
+      return NULL_TREE;
+    }
+
+  unsigned int flags = 0;
+  for (; args; args = TREE_CHAIN (args))
+    {
+      tree id = TREE_VALUE (args);
+      if (TREE_CODE (id) != STRING_CST)
+	{
+	  error ("%qE argument not a string", name);
+	  return NULL_TREE;
+	}
+
+      char *string = ASTRDUP (TREE_STRING_POINTER (id));
+      flags |= parse_no_sanitize_attribute (string);
+    }
+
+  /* Store the flags argument back into no_sanitize attribute as an integer,
+     merge existing flags if no_sanitize was previously handled.  */
+  if (tree attr = lookup_attribute ("no_sanitize", DECL_ATTRIBUTES (*node)))
+    {
+      unsigned int old_value = tree_to_uhwi (TREE_VALUE (attr));
+      flags |= old_value;
+
+      if (flags != old_value)
+	TREE_VALUE (attr) = build_int_cst (d_uint_type, flags);
+    }
+  else
+    {
+      DECL_ATTRIBUTES (*node) = tree_cons (get_identifier ("no_sanitize"),
+		      			   build_int_cst (d_uint_type, flags),
+		      			   DECL_ATTRIBUTES (*node));
     }
 
   return NULL_TREE;
