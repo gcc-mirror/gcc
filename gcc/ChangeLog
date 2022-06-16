@@ -1,3 +1,35 @@
+2022-06-15  Simon Wright  <simon@pushface.org>
+
+	Backported from master:
+	2022-06-12  Simon Wright  <simon@pushface.org>
+
+	PR target/104871
+	* config/darwin-driver.cc (darwin_find_version_from_kernel): If the OS
+	version is darwin20 (macOS 11) or greater, truncate the version to the
+	major number.
+
+2022-06-15  Mark Mentovai  <mark@mentovai.com>
+
+	Backported from master:
+	2022-06-12  Mark Mentovai  <mark@mentovai.com>
+
+	* config/darwin-c.cc: Make -mmacosx-version-min more future-proof.
+
+2022-06-15  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2022-05-29  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR target/105599
+	* config/darwin.h: Move versions-specific handling of multiply_defined
+	from SUBTARGET_DRIVER_SELF_SPECS to LINK_SPEC.
+
+2022-06-15  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/105953
+	* config/i386/sse.md (*avx_cmp<mode>3_ltint_not): Force_reg
+	operands[3].
+
 2022-06-14  H.J. Lu  <hjl.tools@gmail.com>
 
 	Backported from master:
