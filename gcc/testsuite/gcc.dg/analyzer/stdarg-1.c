@@ -195,7 +195,7 @@ __analyzer_called_by_test_type_mismatch_1 (int placeholder, ...)
   __builtin_va_list ap;
   __builtin_va_start (ap, placeholder);
 
-  i = __builtin_va_arg (ap, int); /* { dg-warning "'va_arg' expected 'int' but received '\[^\n\r\]*' for variadic argument 1 of 'ap'" } */
+  i = __builtin_va_arg (ap, int); /* { dg-warning "'va_arg' expected 'int' but received '\[^\n\r\]*' for variadic argument 1 of 'ap' \\\[CWE-686\\\]" } */
 
   __builtin_va_end (ap);
 }
