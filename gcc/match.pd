@@ -2460,14 +2460,14 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 
 /* y == XXX_MIN || x < y --> x <= y - 1 */
 (simplify
- (bit_ior:c (eq:s @1 min_value) (lt:s @0 @1))
+ (bit_ior:c (eq:s @1 min_value) (lt:cs @0 @1))
   (if (INTEGRAL_TYPE_P (TREE_TYPE (@1))
        && TYPE_OVERFLOW_WRAPS (TREE_TYPE (@1)))
   (le @0 (minus @1 { build_int_cst (TREE_TYPE (@1), 1); }))))
 
 /* y != XXX_MIN && x >= y --> x > y - 1 */
 (simplify
- (bit_and:c (ne:s @1 min_value) (ge:s @0 @1))
+ (bit_and:c (ne:s @1 min_value) (ge:cs @0 @1))
   (if (INTEGRAL_TYPE_P (TREE_TYPE (@1))
        && TYPE_OVERFLOW_WRAPS (TREE_TYPE (@1)))
   (gt @0 (minus @1 { build_int_cst (TREE_TYPE (@1), 1); }))))
