@@ -155,7 +155,7 @@ struct priority_map_traits
   {
     return false;
   }
-  template <typename T> static void mark_deleted (T &entry)
+  template <typename T> static void mark_deleted (T &)
   {
     gcc_unreachable ();
   }
