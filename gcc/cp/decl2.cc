@@ -56,7 +56,7 @@ int raw_dump_id;
 extern cpp_reader *parse_in;
 
 static tree start_objects (bool, unsigned, bool);
-static tree finish_objects (bool, unsigned, tree);
+static tree finish_objects (bool, unsigned, tree, bool = true);
 static tree start_partial_init_fini_fn (bool, unsigned, unsigned);
 static void finish_partial_init_fini_fn (tree);
 static void emit_partial_init_fini_fn (bool, unsigned, tree,
@@ -3932,16 +3932,19 @@ start_objects (bool initp, unsigned priority, bool has_body)
   return body;
 }
 
-/* Finish a global constructor or destructor.  */
+/* Finish a global constructor or destructor.  Add it to the global
+   ctors or dtors, if STARTP is true.  */
 
 static tree
-finish_objects (bool initp, unsigned priority, tree body)
+finish_objects (bool initp, unsigned priority, tree body, bool startp)
 {
   /* Finish up.  */
   finish_compound_stmt (body);
   tree fn = finish_function (/*inline_p=*/false);
 
-  if (initp)
+  if (!startp)
+    ; // Neither ctor nor dtor I be.
+  else if (initp)
     {
       DECL_STATIC_CONSTRUCTOR (fn) = 1;
       decl_init_priority_insert (fn, priority);
@@ -4307,58 +4310,54 @@ write_out_vars (tree vars)
     }
 }
 
-/* Generate a static constructor (if CONSTRUCTOR_P) or destructor
-   (otherwise) that will initialize all global objects with static
-   storage duration having the indicated PRIORITY.  */
+/* Generate a static constructor or destructor that calls the given
+   init/fini fns at the indicated priority.  */
 
 static void
 generate_ctor_or_dtor_function (bool initp, unsigned priority,
 				tree fns, location_t locus)
 {
   input_location = locus;
-
   tree body = start_objects (initp, priority, bool (fns));
 
-  /* To make sure dynamic construction doesn't access globals from other
-     compilation units where they might not be yet constructed, for
-     -fsanitize=address insert __asan_before_dynamic_init call that
-     prevents access to either all global variables that need construction
-     in other compilation units, or at least those that haven't been
-     initialized yet.  Variables that need dynamic construction in
-     the current compilation unit are kept accessible.  */
-  if (initp && (flag_sanitize & SANITIZE_ADDRESS))
-    finish_expr_stmt (asan_dynamic_init_call (/*after_p=*/false));
-
-  if (initp && priority == DEFAULT_INIT_PRIORITY
-      && c_dialect_objc () && objc_static_init_needed_p ())
-    /* For Objective-C++, we may need to initialize metadata found in
-       this module.  This must be done _before_ any other static
-       initializations.  */
-    objc_generate_static_init_call (NULL_TREE);
-
-  /* Call the static init/fini functions.  */
-  for (tree node = fns; node; node = TREE_CHAIN (node))
+  if (fns)
     {
-      tree fn = TREE_PURPOSE (node);
+      /* To make sure dynamic construction doesn't access globals from
+	 other compilation units where they might not be yet
+	 constructed, for -fsanitize=address insert
+	 __asan_before_dynamic_init call that prevents access to
+	 either all global variables that need construction in other
+	 compilation units, or at least those that haven't been
+	 initialized yet.  Variables that need dynamic construction in
+	 the current compilation unit are kept accessible.  */
+      if (initp && (flag_sanitize & SANITIZE_ADDRESS))
+	finish_expr_stmt (asan_dynamic_init_call (/*after_p=*/false));
 
-      // We should never find a pure or constant cdtor.
-      gcc_checking_assert (!(flags_from_decl_or_type (fn)
-			     & (ECF_CONST | ECF_PURE)));
+      /* Call the static init/fini functions.  */
+      for (tree node = fns; node; node = TREE_CHAIN (node))
+	{
+	  tree fn = TREE_PURPOSE (node);
 
-      tree call = cp_build_function_call_nary (fn, tf_warning_or_error,
-					       NULL_TREE);
-      finish_expr_stmt (call);
+	  // We should never find a pure or constant cdtor.
+	  gcc_checking_assert (!(flags_from_decl_or_type (fn)
+				 & (ECF_CONST | ECF_PURE)));
+
+	  tree call = cp_build_function_call_nary (fn, tf_warning_or_error,
+						   NULL_TREE);
+	  finish_expr_stmt (call);
+	}
+
+      /* Revert what __asan_before_dynamic_init did by calling
+	 __asan_after_dynamic_init.  */
+      if (initp && (flag_sanitize & SANITIZE_ADDRESS))
+	finish_expr_stmt (asan_dynamic_init_call (/*after_p=*/true));
     }
 
-  /* Revert what __asan_before_dynamic_init did by calling
-     __asan_after_dynamic_init.  */
-  if (initp && (flag_sanitize & SANITIZE_ADDRESS))
-    finish_expr_stmt (asan_dynamic_init_call (/*after_p=*/true));
-
   /* Close out the function, and arrange for it to be called at init
-     or fini time.  (Even module initializer functions need this, as
-     we cannot guarantee the module is imported somewhere in the programq.)  */
-  expand_or_defer_fn (finish_objects (initp, priority, body));
+     or fini time, if non-empty.  (Even non-nop module initializer
+     functions need this, as we cannot guarantee the module is
+     imported somewhere in the program.)  */
+  expand_or_defer_fn (finish_objects (initp, priority, body, fns != NULL_TREE));
 }
 
 /* Return C++ property of T, based on given operation OP.  */
@@ -5206,18 +5205,24 @@ c_parse_final_cleanups (void)
     objc_write_global_declarations ();
 
   bool has_module_inits = module_determine_import_inits ();
-  if (has_module_inits)
+  bool has_objc_init = c_dialect_objc () && objc_static_init_needed_p ();
+  if (has_module_inits || has_objc_init)
     {
       input_location = locus_at_end_of_parsing;
       tree body = start_partial_init_fini_fn (true, DEFAULT_INIT_PRIORITY,
 					      ssdf_count++);
-      module_add_import_initializers ();
+      /* For Objective-C++, we may need to initialize metadata found
+	 in this module.  This must be done _before_ any other static
+	 initializations.  */
+      if (has_objc_init)
+	objc_generate_static_init_call (NULL_TREE);
+      if (has_module_inits)
+	module_add_import_initializers ();
       input_location = locus_at_end_of_parsing;
       finish_partial_init_fini_fn (body);
     }
 
-  if ((c_dialect_objc () && objc_static_init_needed_p ())
-      || module_global_init_needed ())
+  if (module_global_init_needed ())
     {
       // Make sure there's a default priority entry.
       if (!static_init_fini_fns[true])
