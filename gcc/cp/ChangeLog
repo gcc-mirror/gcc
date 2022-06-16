@@ -1,3 +1,8 @@
+2022-06-15  Nathan Sidwell  <nathan@acm.org>
+
+	* module.cc (module_state::write_readme): Use less confusing
+	importable unit names.
+
 2022-06-14  Nathan Sidwell  <nathan@acm.org>
 
 	* cp-tree.h (fini_modules): Add has_inits parm.

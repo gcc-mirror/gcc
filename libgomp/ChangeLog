@@ -1,3 +1,12 @@
+2022-06-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/libgomp.c-c++-common/get-mapped-ptr-1.c (main): Initialize
+	q to ddress of an automatic variable.  Use -5 instead of -1 in
+	omp_get_mapped_ptr call.  Add test with omp_initial_device.
+	* testsuite/libgomp.fortran/get-mapped-ptr-1.f90 (main): Use -5 instead
+	of -1 in omp_get_mapped_ptr call.  Add test with omp_initial_device.
+	Renumber stop arguments afterwards.
+
 2022-06-13  Jakub Jelinek  <jakub@redhat.com>
 
 	* omp.h.in (omp_initial_device, omp_invalid_device): New enumerators.

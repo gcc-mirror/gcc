@@ -1,3 +1,82 @@
+2022-06-15  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* gcc.target/xtensa/sibcalls.c: New.
+
+2022-06-15  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/105962
+	* gcc.dg/analyzer/inlining-1-multiline.c: New test.
+	* gcc.dg/analyzer/inlining-1-no-undo.c: New test.
+	* gcc.dg/analyzer/inlining-1.c: New test.
+	* gcc.dg/analyzer/inlining-2-multiline.c: New test.
+	* gcc.dg/analyzer/inlining-2.c: New test.
+	* gcc.dg/analyzer/inlining-3-multiline.c: New test.
+	* gcc.dg/analyzer/inlining-3.c: New test.
+	* gcc.dg/analyzer/inlining-4-multiline.c: New test.
+	* gcc.dg/analyzer/inlining-4.c: New test.
+	* gcc.dg/analyzer/inlining-5-multiline.c: New test.
+	* gcc.dg/analyzer/inlining-5.c: New test.
+	* gcc.dg/analyzer/inlining-6-multiline.c: New test.
+	* gcc.dg/analyzer/inlining-6.c: New test.
+	* gcc.dg/analyzer/inlining-7-multiline.c: New test.
+	* gcc.dg/analyzer/inlining-7.c: New test.
+
+2022-06-15  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/analyzer/uninit-1.c: Add test coverage of attempts
+	to jump through an uninitialized function pointer, and of attempts
+	to pass an uninitialized value to a function call.
+
+2022-06-15  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* gdc.dg/asan/attr_no_sanitize1.d: New test.
+	* gdc.dg/ubsan/attr_no_sanitize2.d: New test.
+
+2022-06-15  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* gdc.dg/attr_visibility1.d: New test.
+	* gdc.dg/attr_visibility2.d: New test.
+	* gdc.dg/attr_visibility3.d: New test.
+
+2022-06-15  David Edelsohn  <dje.gcc@gmail.com>
+
+	* g++.dg/cpp1z/aligned-new9.C: Skip on AIX.
+
+2022-06-15  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* gdc.dg/Wpadded.d: New test.
+
+2022-06-15  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/105971
+	* gcc.dg/torture/pr106971.c: New testcase.
+
+2022-06-15  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/105969
+	* gcc.dg/pr105969.c: New testcase.
+
+2022-06-15  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/cost_model_14.c: New test.
+
+2022-06-15  Roger Sayle  <roger@nextmovesoftware.com>
+	    Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/fold-convlshift-4.c: New test case.
+	* gcc.dg/optimize-bswaphi-1.c: Update found bswap count.
+	* gcc.dg/tree-ssa/pr61839_3.c: Shift is now optimized before VRP.
+	* gcc.dg/vect/vect-over-widen-1-big-array.c: Remove obsolete tests.
+	* gcc.dg/vect/vect-over-widen-1.c: Likewise.
+	* gcc.dg/vect/vect-over-widen-3-big-array.c: Likewise.
+	* gcc.dg/vect/vect-over-widen-3.c: Likewise.
+	* gcc.dg/vect/vect-over-widen-4-big-array.c: Likewise.
+	* gcc.dg/vect/vect-over-widen-4.c: Likewise.
+
+2022-06-15  liuhongt  <hongtao.liu@intel.com>
+
+	* g++.target/i386/pr105953.C: New test.
+
 2022-06-14  Surya Kumari Jangala  <jskumari@linux.ibm.com>
 
 	PR rtl-optimization/105041

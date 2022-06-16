@@ -1,3 +1,61 @@
+2022-06-15  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-attribs.cc (d_langhook_attribute_table): Add no_sanitize.
+	(d_handle_no_sanitize_attribute): New function.
+
+2022-06-15  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-attribs.cc (d_langhook_attribute_table): Add visibility.
+	(insert_type_attribute): Use decl_attributes instead of
+	merge_attributes.
+	(insert_decl_attribute): Likewise.
+	(apply_user_attributes): Do nothing when no UDAs applied.
+	(d_handle_visibility_attribute): New function.
+	* d-gimplify.cc (d_gimplify_binary_expr): Adjust.
+	* d-tree.h (set_visibility_for_decl): Declare.
+	* decl.cc (get_symbol_decl): Move setting of visibility flags to...
+	(set_visibility_for_decl): ... here.  New function.
+	* types.cc (TypeVisitor::visit (TypeStruct *)): Call
+	set_visibility_for_decl().
+	(TypeVisitor::visit (TypeClass *)): Likewise.
+
+2022-06-15  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* typeinfo.cc (make_internal_typeinfo): Set TYPE_ARTIFICIAL.
+
+2022-06-15  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-attribs.cc (apply_user_attributes): Set ATTR_FLAG_TYPE_IN_PLACE
+	only on incomplete types.
+	* d-codegen.cc (copy_aggregate_type): Set TYPE_STUB_DECL after copy.
+	* d-compiler.cc (Compiler::onParseModule): Adjust.
+	* d-tree.h (AGGREGATE_OR_ENUM_TYPE_CHECK): Define.
+	(TYPE_FORWARD_REFERENCES): Define.
+	* decl.cc (gcc_attribute_p): Update documentation.
+	(DeclVisitor::visit (StructDeclaration *)): Exit before building type
+	node if gcc.attributes symbol.
+	(DeclVisitor::visit (ClassDeclaration *)): Build type node and add
+	TYPE_NAME to current binding level before emitting anything else.
+	(DeclVisitor::visit (InterfaceDeclaration *)): Likewise.
+	(DeclVisitor::visit (EnumDeclaration *)): Likewise.
+	(build_type_decl): Move rest_of_decl_compilation() call to
+	finish_aggregate_type().
+	* types.cc (insert_aggregate_field): Move layout_decl() call to
+	finish_aggregate_type().
+	(insert_aggregate_bitfield): Likewise.
+	(layout_aggregate_members): Adjust.
+	(finish_incomplete_fields): New function.
+	(finish_aggregate_type): Handle forward referenced field types.  Call
+	rest_of_type_compilation() after completing the aggregate.
+	(TypeVisitor::visit (TypeEnum *)): Don't set size and alignment until
+	after apply_user_attributes().  Call rest_of_type_compilation() after
+	completing the enumeral.
+	(TypeVisitor::visit (TypeStruct *)): Call build_type_decl() before
+	apply_user_attributes().  Don't set size, alignment, and mode until
+	after apply_user_attributes().
+	(TypeVisitor::visit (TypeClass *)): Call build_type_decl() before
+	applly_user_attributes().
+
 2022-06-13  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* d-builtins.cc: Include builtins.h.

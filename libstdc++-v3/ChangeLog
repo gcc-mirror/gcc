@@ -1,3 +1,19 @@
+2022-06-15  François Dumont  <fdumont@gcc.gnu.org>
+
+	PR libstdc++/105717
+	* include/bits/hashtable_policy.h (_ConvertToValueType): New.
+	* include/bits/hashtable.h (_Hashtable<>::_M_insert_unique_aux): New.
+	(_Hashtable<>::_M_insert(_Arg&&, const _NodeGenerator&, true_type)): Use latters.
+	(_Hashtable<>::_M_insert(_Arg&&, const _NodeGenerator&, false_type)): Likewise.
+	(_Hashtable(_InputIterator, _InputIterator, size_type, const _Hash&, const _Equal&,
+	const allocator_type&, true_type)): Use this.insert range.
+	(_Hashtable(_InputIterator, _InputIterator, size_type, const _Hash&, const _Equal&,
+	const allocator_type&, false_type)): Use _M_insert.
+	* testsuite/23_containers/unordered_map/cons/56112.cc: Check how many times conversion
+	is done.
+	* testsuite/23_containers/unordered_map/insert/105717.cc: New test.
+	* testsuite/23_containers/unordered_set/insert/105717.cc: New test.
+
 2022-06-14  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/62187

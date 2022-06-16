@@ -1,3 +1,53 @@
+2022-06-15  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/105962
+	* analyzer.opt (fanalyzer-undo-inlining): New option.
+	* checker-path.cc: Include "diagnostic-core.h" and
+	"inlining-iterator.h".
+	(event_kind_to_string): Handle EK_INLINED_CALL.
+	(class inlining_info): New class.
+	(checker_event::checker_event): Move here from checker-path.h.
+	Store original fndecl and depth, and calculate effective fndecl
+	and depth based on inlining information.
+	(checker_event::dump): Emit original depth as well as effective
+	depth when they differ; likewise for fndecl.
+	(region_creation_event::get_desc): Use m_effective_fndecl.
+	(inlined_call_event::get_desc): New.
+	(inlined_call_event::get_meaning): New.
+	(checker_path::inject_any_inlined_call_events): New.
+	* checker-path.h (enum event_kind): Add EK_INLINED_CALL.
+	(checker_event::checker_event): Make protected, and move
+	definition to checker-path.cc.
+	(checker_event::get_fndecl): Use effective fndecl.
+	(checker_event::get_stack_depth): Use effective stack depth.
+	(checker_event::get_logical_location): Use effective stack depth.
+	(checker_event::get_original_stack_depth): New.
+	(checker_event::m_fndecl): Rename to...
+	(checker_event::m_original_fndecl): ...this.
+	(checker_event::m_depth): Rename to...
+	(checker_event::m_original_depth): ...this.
+	(checker_event::m_effective_fndecl): New field.
+	(checker_event::m_effective_depth): New field.
+	(class inlined_call_event): New checker_event subclass.
+	(checker_path::inject_any_inlined_call_events): New decl.
+	* diagnostic-manager.cc: Include "inlining-iterator.h".
+	(diagnostic_manager::emit_saved_diagnostic): Call
+	checker_path::inject_any_inlined_call_events.
+	(diagnostic_manager::prune_for_sm_diagnostic): Handle
+	EK_INLINED_CALL.
+	* engine.cc (tainted_args_function_custom_event::get_desc): Use
+	effective fndecl.
+	* inlining-iterator.h: New file.
+
+2022-06-15  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic-manager.cc (saved_diagnostic::dump_dot_id): New.
+	(saved_diagnostic::dump_as_dot_node): New.
+	* diagnostic-manager.h (saved_diagnostic::dump_dot_id): New decl.
+	(saved_diagnostic::dump_as_dot_node): New decl.
+	* engine.cc (exploded_node::dump_dot): Add nodes for saved
+	diagnostics.
+
 2022-06-02  David Malcolm  <dmalcolm@redhat.com>
 
 	* checker-path.cc (checker_event::get_meaning): New.
