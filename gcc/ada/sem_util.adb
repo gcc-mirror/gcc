@@ -18952,8 +18952,9 @@ package body Sem_Util is
                if Has_Init_Expression (Nod) then
                   Visit (Expression (Nod));
 
-               elsif not Has_Preelaborable_Initialization
-                           (Etype (Defining_Entity (Nod)))
+               elsif not Constant_Present (Nod)
+                 and then not Has_Preelaborable_Initialization
+                                (Etype (Defining_Entity (Nod)))
                then
                   raise Non_Preelaborable;
                end if;
