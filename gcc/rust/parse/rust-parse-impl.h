@@ -2868,24 +2868,22 @@ Parser<ManagedTokenSource>::parse_generic_param (EndTokenPred is_end_token)
       case CONST: {
 	lexer.skip_token ();
 
-	auto name = expect_token (IDENTIFIER);
+	auto name_token = expect_token (IDENTIFIER);
 
-	if (!name || !expect_token (COLON))
+	if (!name_token || !expect_token (COLON))
 	  return nullptr;
 
 	auto type = parse_type ();
 	if (!type)
 	  return nullptr;
 
-	// FIXME: instantiate proper AST::ConstGeneric class here
-	// auto const_generic = new ...
-
 	// optional default value
+	std::unique_ptr<AST::Expr> default_expr = nullptr;
 	if (lexer.peek_token ()->get_id () == EQUAL)
 	  {
 	    lexer.skip_token ();
 	    auto tok = lexer.peek_token ();
-	    auto default_expr = parse_const_generic_expression ();
+	    default_expr = parse_const_generic_expression ();
 
 	    if (!default_expr)
 	      rust_error_at (tok->get_locus (),
@@ -2895,7 +2893,11 @@ Parser<ManagedTokenSource>::parse_generic_param (EndTokenPred is_end_token)
 			     token_id_to_str (tok->get_id ()));
 	  }
 
-	// param = std::unique_ptr<AST::GenericParam> (const_generic)
+	param = std::unique_ptr<AST::ConstGenericParam> (
+	  new AST::ConstGenericParam (name_token->get_str (), std::move (type),
+				      std::move (default_expr),
+				      std::move (outer_attrs),
+				      token->get_locus ()));
 
 	break;
       }
