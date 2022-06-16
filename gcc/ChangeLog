@@ -1,3 +1,22 @@
+2022-06-15  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	Backported from master:
+	2021-12-01  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* common.opt (static-libphobos): Add option.
+	* config/darwin.h (LINK_SPEC): Substitute -lgphobos with libgphobos.a
+	when linking statically.
+	* gcc.c (driver_handle_option): Set -static-libphobos as always valid.
+
+2022-06-15  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-05-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/105726
+	* gimple-ssa-warn-restrict.c (builtin_memref::set_base_and_offset):
+	Constrain array-of-flexarray case more.
+
 2022-06-14  Vladimir N. Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/104637

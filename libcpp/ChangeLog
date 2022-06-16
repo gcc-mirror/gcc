@@ -1,3 +1,12 @@
+2022-06-15  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-05-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/105732
+	* expr.c (_cpp_parse_expr): Handle CPP_PADDING by just another
+	token.
+
 2022-04-21  Release Manager
 
 	* GCC 11.3.0 released.
