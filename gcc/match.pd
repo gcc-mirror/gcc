@@ -6076,16 +6076,15 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
       (convert (eq @0 { TYPE_MIN_VALUE (TREE_TYPE (@0)); }))
       (with
        {
+	 tree div = fold_convert (TREE_TYPE (@0), @1);
 	 tree lo = int_const_binop (TRUNC_DIV_EXPR,
-				    TYPE_MIN_VALUE (TREE_TYPE (@0)),
-				    fold_convert (TREE_TYPE (@0), @1));
+				    TYPE_MIN_VALUE (TREE_TYPE (@0)), div);
 	 tree hi = int_const_binop (TRUNC_DIV_EXPR,
-				    TYPE_MAX_VALUE (TREE_TYPE (@0)),
-				    fold_convert (TREE_TYPE (@0), @1));
+				    TYPE_MAX_VALUE (TREE_TYPE (@0)), div);
 	 tree etype = range_check_type (TREE_TYPE (@0));
 	 if (etype)
 	   {
-	     if (wi::neg_p (wi::to_wide (@1)))
+	     if (wi::neg_p (wi::to_wide (div)))
 	       std::swap (lo, hi);
 	     lo = fold_convert (etype, lo);
 	     hi = fold_convert (etype, hi);
