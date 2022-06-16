@@ -76,7 +76,7 @@ __analyzer_called_by_test_not_enough_args (int placeholder, ...)
   s = __builtin_va_arg (ap, char *);
   __analyzer_eval (s[0] == 'f'); /* { dg-warning "TRUE" } */
 
-  i = __builtin_va_arg (ap, int); /* { dg-warning "'ap' has no more arguments \\(1 consumed\\)" } */
+  i = __builtin_va_arg (ap, int); /* { dg-warning "'ap' has no more arguments \\(1 consumed\\) \\\[CWE-685\\\]" } */
 
   __builtin_va_end (ap);
 }

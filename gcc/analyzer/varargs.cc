@@ -50,6 +50,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "sbitmap.h"
 #include "analyzer/diagnostic-manager.h"
 #include "analyzer/exploded-graph.h"
+#include "diagnostic-metadata.h"
 
 #if ENABLE_ANALYZER
 
@@ -903,9 +904,12 @@ public:
   bool emit (rich_location *rich_loc) final override
   {
     auto_diagnostic_group d;
-    bool warned = warning_at (rich_loc, get_controlling_option (),
-			      "%qE has no more arguments (%i consumed)",
-			      m_va_list_tree, get_num_consumed ());
+    diagnostic_metadata m;
+    /* CWE-685: Function Call With Incorrect Number of Arguments.  */
+    m.add_cwe (685);
+    bool warned = warning_meta (rich_loc, m, get_controlling_option (),
+				"%qE has no more arguments (%i consumed)",
+				m_va_list_tree, get_num_consumed ());
     return warned;
   }
 
