@@ -1,3 +1,10 @@
+2022-06-15  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	Backported from master:
+	2022-06-15  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* typeinfo.cc (make_internal_typeinfo): Set TYPE_ARTIFICIAL.
+
 2021-12-10  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	Backported from master:
