@@ -1474,7 +1474,12 @@ ranger_cache::apply_inferred_ranges (gimple *s)
 	  if (!m_on_entry.get_bb_range (r, name, bb))
 	    exit_range (r, name, bb, RFD_READ_ONLY);
 	  if (r.intersect (infer.range (x)))
-	    m_on_entry.set_bb_range (name, bb, r);
+	    {
+	      m_on_entry.set_bb_range (name, bb, r);
+	      // If this range was invariant before, remove invariance.
+	      if (!m_gori.has_edge_range_p (name))
+		m_gori.set_range_invariant (name, false);
+	    }
 	}
     }
 }

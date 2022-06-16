@@ -94,7 +94,7 @@ public:
   bool is_import_p (tree name, basic_block bb);
   bitmap exports (basic_block bb);
   bitmap imports (basic_block bb);
-  void set_range_invariant (tree name);
+  void set_range_invariant (tree name, bool invariant = true);
 
   void dump (FILE *f);
   void dump (FILE *f, basic_block bb, bool verbose = true);
