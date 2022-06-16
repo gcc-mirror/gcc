@@ -2609,6 +2609,20 @@ GenericArgs::as_string () const
 	}
     }
 
+  // const args
+  if (!const_args.empty ())
+    {
+      auto i = const_args.begin ();
+      auto e = const_args.end ();
+
+      for (; i != e; i++)
+	{
+	  args += i->as_string ();
+	  if (e != i + 1)
+	    args += ", ";
+	}
+    }
+
   // binding args
   if (!binding_args.empty ())
     {
