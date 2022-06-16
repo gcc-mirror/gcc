@@ -341,6 +341,13 @@ public:
     ok = true;
   }
 
+  void visit (AST::ConstGenericParam &) override
+  {
+    // For now do not do anything and accept everything.
+    // FIXME: This needs to change soon!
+    ok = true;
+  }
+
   void visit (AST::TypeParam &param) override
   {
     ok = true;

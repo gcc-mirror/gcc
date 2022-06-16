@@ -67,6 +67,10 @@ ResolverBase::visit (AST::LifetimeParam &)
 {}
 
 void
+ResolverBase::visit (AST::ConstGenericParam &)
+{}
+
+void
 ResolverBase::visit (AST::PathInExpression &)
 {}
 

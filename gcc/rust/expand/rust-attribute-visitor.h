@@ -119,6 +119,7 @@ public:
   void visit (AST::IdentifierExpr &ident_expr) override;
   void visit (AST::Lifetime &) override;
   void visit (AST::LifetimeParam &) override;
+  void visit (AST::ConstGenericParam &) override;
 
   void visit (AST::MacroInvocation &macro_invoc) override;
 

@@ -354,6 +354,11 @@ AttrVisitor::visit (AST::LifetimeParam &)
 {
   // supposedly does not require - cfg does nothing
 }
+void
+AttrVisitor::visit (AST::ConstGenericParam &)
+{
+  // likewise
+}
 
 void
 AttrVisitor::visit (AST::MacroInvocation &macro_invoc)

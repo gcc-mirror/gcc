@@ -71,6 +71,7 @@ private:
   void visit (IdentifierExpr &ident_expr);
   void visit (Lifetime &lifetime);
   void visit (LifetimeParam &lifetime_param);
+  void visit (ConstGenericParam &const_param);
 
   // rust-path.h
   void visit (PathInExpression &path);

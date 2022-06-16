@@ -50,6 +50,7 @@ class TypeParamBound;
 class Lifetime;
 class GenericParam;
 class LifetimeParam;
+class ConstGenericParam;
 class MacroItem;
 class TraitItem;
 class InherentImplItem;

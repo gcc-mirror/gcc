@@ -49,6 +49,9 @@ ASTLoweringBase::visit (AST::Lifetime &lifetime)
 void
 ASTLoweringBase::visit (AST::LifetimeParam &lifetime_param)
 {}
+void
+ASTLoweringBase::visit (AST::ConstGenericParam &const_param)
+{}
 //  void ASTLoweringBase::visit(TraitItem& trait_item) {}
 //  void ASTLoweringBase::visit(InherentImplItem& inherent_impl_item) {}
 //  void ASTLoweringBase::visit(TraitImplItem& trait_impl_item) {}
