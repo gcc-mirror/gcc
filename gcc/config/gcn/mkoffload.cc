@@ -80,6 +80,8 @@
 			     == EF_AMDGPU_FEATURE_XNACK_ANY_V4)
 #define TEST_XNACK_ON(VAR) ((VAR & EF_AMDGPU_FEATURE_XNACK_V4) \
 			    == EF_AMDGPU_FEATURE_XNACK_ON_V4)
+#define TEST_XNACK_OFF(VAR) ((VAR & EF_AMDGPU_FEATURE_XNACK_V4) \
+			     == EF_AMDGPU_FEATURE_XNACK_OFF_V4)
 
 #define SET_SRAM_ECC_ON(VAR) VAR = ((VAR & ~EF_AMDGPU_FEATURE_SRAMECC_V4) \
 				    | EF_AMDGPU_FEATURE_SRAMECC_ON_V4)
@@ -476,6 +478,7 @@ static void
 process_asm (FILE *in, FILE *out, FILE *cfile)
 {
   int fn_count = 0, var_count = 0, dims_count = 0, regcount_count = 0;
+  bool unified_shared_memory_enabled = false;
   struct obstack fns_os, dims_os, regcounts_os;
   obstack_init (&fns_os);
   obstack_init (&dims_os);
@@ -500,6 +503,7 @@ process_asm (FILE *in, FILE *out, FILE *cfile)
   fn_count += 2;
 
   char buf[1000];
+  char dummy;
   enum
     { IN_CODE,
       IN_METADATA,
@@ -518,6 +522,9 @@ process_asm (FILE *in, FILE *out, FILE *cfile)
 		obstack_grow (&dims_os, &dim, sizeof (dim));
 		dims_count++;
 	      }
+
+	    if (sscanf (buf, " ;; MKOFFLOAD OPTIONS: USM+%c", &dummy) > 0)
+	      unified_shared_memory_enabled = true;
 
 	    break;
 	  }
@@ -568,7 +575,6 @@ process_asm (FILE *in, FILE *out, FILE *cfile)
 	  }
 	}
 
-      char dummy;
       if (sscanf (buf, " .section .gnu.offload_vars%c", &dummy) > 0)
 	{
 	  state = IN_VARS;
@@ -628,6 +634,7 @@ process_asm (FILE *in, FILE *out, FILE *cfile)
   fprintf (cfile, "#include <stdlib.h>\n");
   fprintf (cfile, "#include <stdint.h>\n");
   fprintf (cfile, "#include <stdbool.h>\n\n");
+  fprintf (cfile, "#include <stdio.h>\n\n");
 
   fprintf (cfile, "static const int gcn_num_vars = %d;\n\n", var_count);
 
@@ -679,6 +686,34 @@ process_asm (FILE *in, FILE *out, FILE *cfile)
 	     "    setenv (\"GCN_STACK_SIZE\", \"%d\", true);\n"
 	     "}\n\n",
 	     gcn_stack_size);
+
+  /* Emit a constructor function to set the HSA_XNACK environment variable.
+     This must be done before the ROCr runtime library is loaded.
+     We never override a user value (exit empty string), but we do emit a
+     useful diagnostic in the wrong mode (the ROCr message is not good.  */
+  if (TEST_XNACK_OFF (elf_flags) && unified_shared_memory_enabled)
+    fatal_error (input_location,
+		 "conflicting settings; XNACK is forced off but Unified "
+		 "Shared Memory is on");
+  if (!TEST_XNACK_ANY (elf_flags) || unified_shared_memory_enabled)
+    fprintf (cfile,
+	     "static __attribute__((constructor))\n"
+	     "void configure_xnack (void)\n"
+	     "{\n"
+	     "  const char *val = getenv (\"HSA_XNACK\");\n"
+	     "  if (!val || val[0] == '\\0')\n"
+	     "    setenv (\"HSA_XNACK\", \"%d\", true);\n"
+	     "  else if (%s)\n"
+	     "    {\n"
+	     "      fprintf (stderr, \"error: HSA_XNACK=%%s is incompatible; "
+			    "please unset\\n\", val);\n"
+	     "      exit (1);\n"
+	     "    }\n"
+	     "}\n\n",
+	     unified_shared_memory_enabled || TEST_XNACK_ON (elf_flags),
+	     (unified_shared_memory_enabled || TEST_XNACK_ON (elf_flags)
+	      ? "val[0] != '1' || val[1] != '\\0'"
+	      : "val[0] == '1' && val[1] == '\\0'"));
 
   obstack_free (&fns_os, NULL);
   for (i = 0; i < dims_count; i++)

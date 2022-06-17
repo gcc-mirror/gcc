@@ -2423,6 +2423,10 @@ create_omp_child_function (omp_context *ctx, bool task_copy)
 	DECL_ATTRIBUTES (decl)
 	  = tree_cons (get_identifier (target_attr),
 		       NULL_TREE, DECL_ATTRIBUTES (decl));
+      if (flag_offload_memory == OFFLOAD_MEMORY_UNIFIED)
+	DECL_ATTRIBUTES (decl)
+	  = tree_cons (get_identifier ("omp unified memory"),
+		       NULL_TREE, DECL_ATTRIBUTES (decl));
     }
 
   t = build_decl (DECL_SOURCE_LOCATION (decl),

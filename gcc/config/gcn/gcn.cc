@@ -70,6 +70,11 @@ static bool ext_gcn_constants_init = 0;
 
 enum gcn_isa gcn_isa = ISA_GCN3;	/* Default to GCN3.  */
 
+/* Record whether the host compiler added "omp unifed memory" attributes to
+   any functions.  We can then pass this on to mkoffload to ensure xnack is
+   compatible there too.  */
+static bool unified_shared_memory_enabled = false;
+
 /* Reserve this much space for LDS (for propagating variables from
    worker-single mode to worker-partitioned mode), per workgroup.  Global
    analysis could calculate an exact bound, but we don't do that yet.
@@ -2909,6 +2914,25 @@ gcn_init_cumulative_args (CUMULATIVE_ARGS *cum /* Argument info to init */ ,
   cfun->machine->args = cum->args;
   if (!caller && cfun->machine->normal_function)
     gcn_detect_incoming_pointer_arg (fndecl);
+
+  if (fndecl && lookup_attribute ("omp unified memory",
+				  DECL_ATTRIBUTES (fndecl)))
+    {
+      unified_shared_memory_enabled = true;
+
+      switch (gcn_arch)
+	{
+	case PROCESSOR_FIJI:
+	case PROCESSOR_VEGA10:
+	case PROCESSOR_VEGA20:
+	  error ("GPU architecture does not support Unified Shared Memory");
+	default:
+	  ;
+	}
+
+      if (flag_xnack == HSACO_ATTR_OFF)
+	error ("Unified Shared Memory is enabled, but XNACK is disabled");
+    }
 
   reinit_regs ();
 }
@@ -6359,12 +6383,14 @@ gcn_hsa_declare_function_name (FILE *file, const char *name, tree)
   assemble_name (file, name);
   fputs (":\n", file);
 
-  /* This comment is read by mkoffload.  */
+  /* These comments are read by mkoffload.  */
   if (flag_openacc)
     fprintf (file, "\t;; OPENACC-DIMS: %d, %d, %d : %s\n",
 	     oacc_get_fn_dim_size (cfun->decl, GOMP_DIM_GANG),
 	     oacc_get_fn_dim_size (cfun->decl, GOMP_DIM_WORKER),
 	     oacc_get_fn_dim_size (cfun->decl, GOMP_DIM_VECTOR), name);
+  if (unified_shared_memory_enabled)
+    fprintf (asm_out_file, "\t;; MKOFFLOAD OPTIONS: USM+\n");
 }
 
 /* Implement TARGET_ASM_SELECT_SECTION.
