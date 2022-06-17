@@ -1573,7 +1573,7 @@ Lexer::parse_partial_unicode_escape ()
       rust_error_at (get_current_location (),
 		     "unicode escape should be between 1 and 6 hex "
 		     "characters; it is %lu",
-		     num_str.length ());
+		     (unsigned long) num_str.length ());
       // return false;
       return std::make_pair (Codepoint (0), additional_length_offset);
     }
