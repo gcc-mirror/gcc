@@ -96,8 +96,7 @@ CompilePatternCaseLabelExpr::visit (HIR::LiteralPattern &pattern)
   // floating point types.
   if (pattern.get_literal ().get_lit_type () == HIR::Literal::LitType::FLOAT)
     {
-      sorry_at (pattern.get_locus ().gcc_location (),
-		"floating-point literal in pattern");
+      rust_sorry_at (pattern.get_locus (), "floating-point literal in pattern");
     }
 
   tree lit = CompileExpr::Compile (litexpr, ctx);

@@ -239,8 +239,8 @@ CompileExpr::visit (HIR::MatchExpr &expr)
     {
       // FIXME: CASE_LABEL_EXPR does not support floating point types.
       // Find another way to compile these.
-      sorry_at (expr.get_locus ().gcc_location (),
-		"match on floating-point types is not yet supported");
+      rust_sorry_at (expr.get_locus (),
+		     "match on floating-point types is not yet supported");
     }
 
   TyTy::BaseType *expr_tyty = nullptr;
