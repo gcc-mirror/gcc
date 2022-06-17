@@ -2046,16 +2046,18 @@ package body Sem_Res is
       Full_Analysis := False;
       Expander_Mode_Save_And_Set (False);
 
+      --  See also Preanalyze_And_Resolve in sem.adb for similar handling
+
       --  Normally, we suppress all checks for this preanalysis. There is no
       --  point in processing them now, since they will be applied properly
       --  and in the proper location when the default expressions reanalyzed
       --  and reexpanded later on. We will also have more information at that
       --  point for possible suppression of individual checks.
 
-      --  However, in SPARK mode, most expansion is suppressed, and this
-      --  later reanalysis and reexpansion may not occur. SPARK mode does
+      --  However, in GNATprove mode, most expansion is suppressed, and this
+      --  later reanalysis and reexpansion may not occur. GNATprove mode does
       --  require the setting of checking flags for proof purposes, so we
-      --  do the SPARK preanalysis without suppressing checks.
+      --  do the GNATprove preanalysis without suppressing checks.
 
       --  This special handling for SPARK mode is required for example in the
       --  case of Ada 2012 constructs such as quantified expressions, which are

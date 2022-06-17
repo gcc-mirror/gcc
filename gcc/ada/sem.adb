@@ -1338,7 +1338,15 @@ package body Sem is
       Full_Analysis := False;
       Expander_Mode_Save_And_Set (False);
 
-      Analyze (N);
+      --  See comment in sem_res.adb for Preanalyze_And_Resolve
+
+      if GNATprove_Mode
+        or else Nkind (Parent (N)) = N_Simple_Return_Statement
+      then
+         Analyze (N);
+      else
+         Analyze (N, Suppress => All_Checks);
+      end if;
 
       Expander_Mode_Restore;
       Full_Analysis := Save_Full_Analysis;
