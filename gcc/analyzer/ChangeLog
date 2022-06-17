@@ -1,3 +1,19 @@
+2022-06-16  David Malcolm  <dmalcolm@redhat.com>
+
+	* varargs.cc (va_arg_type_mismatch::emit): Associate the warning
+	with CWE-686 ("Function Call With Incorrect Argument Type").
+
+2022-06-16  David Malcolm  <dmalcolm@redhat.com>
+
+	* varargs.cc: Include "diagnostic-metadata.h".
+	(va_list_exhausted::emit): Associate the warning with
+	CWE-685 ("Function Call With Incorrect Number of Arguments").
+
+2022-06-16  David Malcolm  <dmalcolm@redhat.com>
+
+	* sm-file.cc (double_fclose::emit): Associate the warning with
+	CWE-1341 ("Multiple Releases of Same Resource or Handle").
+
 2022-06-15  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/105962

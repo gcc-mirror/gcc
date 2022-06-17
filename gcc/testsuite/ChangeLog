@@ -1,3 +1,60 @@
+2022-06-16  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/analyzer/stdarg-1.c
+	(__analyzer_called_by_test_type_mismatch_1): Verify that
+	-Wanalyzer-va-arg-type-mismatch is associated with CWE-686.
+
+2022-06-16  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/analyzer/stdarg-1.c
+	(__analyzer_called_by_test_not_enough_args): Verify that
+	-Wanalyzer-va-list-exhausted is associated with CWE-685.
+
+2022-06-16  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/analyzer/file-1.c (test_1): Verify that double-fclose is
+	associated with CWE-1341.
+
+2022-06-16  Nathan Sidwell  <nathan@acm.org>
+
+	* g++.dg/modules/init-2_b.C: Add init check.
+	* g++.dg/modules/init-2_c.C: Add init check.
+
+2022-06-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/105983
+	* gcc.dg/tree-ssa/pr105983.c: New test.
+
+2022-06-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/105984
+	* gcc.c-torture/execute/pr105984.c: New test.
+
+2022-06-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/105951
+	* gcc.target/i386/pr105951-1.c: New test.
+	* gcc.target/i386/pr105951-2.c: New test.
+
+2022-06-16  Haochen Gui  <guihaoc@gcc.gnu.org>
+
+	PR target/103316
+	* gcc.target/powerpc/pr103316.c: New.
+	* gcc.target/powerpc/fold-vec-cmp-int128.c: New.
+
+2022-06-16  Jia-wei Chen  <jiawei@iscas.ac.cn>
+
+	* gcc.target/riscv/pr105666.c: New options.
+
+2022-06-16  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr53533-1.c: New test.
+	* gcc.target/i386/pr53533-2.c: New test.
+	* gcc.target/i386/pr53533-3.c: New test.
+	* gcc.target/i386/pr53533-4.c: New test.
+	* gcc.target/i386/pr53533-5.c: New test.
+	* gcc.dg/vect/slp-11a.c: Adjust testcase.
+
 2022-06-15  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
 
 	* gcc.target/xtensa/sibcalls.c: New.

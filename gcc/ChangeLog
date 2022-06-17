@@ -1,3 +1,113 @@
+2022-06-16  David Malcolm  <dmalcolm@redhat.com>
+
+	* gimple-ssa-warn-access.cc (warn_string_no_nul): Add
+	auto_diagnostic_group to group any warning with its note.
+	(maybe_warn_for_bound): Likewise.
+	(check_access): Likewise.
+	(warn_dealloc_offset): Likewise.
+	(pass_waccess::maybe_warn_memmodel): Likewise.
+	(pass_waccess::maybe_check_dealloc_call): Likewise.
+	(pass_waccess::warn_invalid_pointer): Likewise.
+	(pass_waccess::check_dangling_stores): Likewise.
+
+2022-06-16  Jason Merrill  <jason@redhat.com>
+
+	* opts.cc (common_handle_option) [OPT_fsanitize_]: Set
+	opts_set->x_flag_sanitize.
+
+2022-06-16  Jason Merrill  <jason@redhat.com>
+
+	* flags.h (issue_strict_overflow_warning): Comment #endif.
+
+2022-06-16  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range-cache.cc (ranger_cache::apply_inferred_ranges): If name
+	was invaraint before, clear the invariant bit.
+	* gimple-range-gori.cc (gori_map::set_range_invariant): Add a flag.
+	* gimple-range-gori.h (gori_map::set_range_invariant): Adjust prototype.
+
+2022-06-16  Andrew MacLeod  <amacleod@redhat.com>
+
+	* tree-ssa-propagate.cc (before_dom_children): Call value_of_stmt.
+
+2022-06-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/105983
+	* match.pd (y == XXX_MIN || x < y -> x <= y - 1,
+	y != XXX_MIN && x >= y -> x > y - 1): Use :cs instead of :s
+	on non-equality comparisons.
+
+2022-06-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/105984
+	* match.pd (__builtin_mul_overflow_p (x, cst, (stype) 0) ->
+	x > stype_max / cst || x < stype_min / cst): fold_convert @1
+	to TREE_TYPE (@0) just once and test for negative divisor
+	also on that folded constant instead of on @1.
+
+2022-06-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/105951
+	* tree-ssa-ccp.cc (optimize_atomic_bit_test_and,
+	optimize_atomic_op_fetch_cmp_0): Remember gimple_call_fn (call)
+	as last argument to the internal functions.
+	* builtins.cc (expand_ifn_atomic_bit_test_and): Adjust for the
+	extra call argument to ifns.  If expand_atomic_fetch_op fails for the
+	lhs == NULL_TREE case, fall through into the optab code with
+	gen_reg_rtx (mode) as target.  If second expand_atomic_fetch_op
+	fails, construct a CALL_EXPR and expand that.
+	(expand_ifn_atomic_op_fetch_cmp_0): Adjust for the extra call argument
+	to ifns.  If expand_atomic_fetch_op fails, construct a CALL_EXPR and
+	expand that.
+
+2022-06-16  Haochen Gui  <guihaoc@gcc.gnu.org>
+
+	PR target/103316
+	* config/rs6000/rs6000-builtin.cc (rs6000_gimple_fold_builtin): Enable
+	gimple folding for RS6000_BIF_VCMPEQUT, RS6000_BIF_VCMPNET,
+	RS6000_BIF_CMPGE_1TI, RS6000_BIF_CMPGE_U1TI, RS6000_BIF_VCMPGTUT,
+	RS6000_BIF_VCMPGTST, RS6000_BIF_CMPLE_1TI, RS6000_BIF_CMPLE_U1TI.
+	* config/rs6000/vector.md (VEC_IC): New mode iterator.  Add support
+	for new Power10 V1TI instructions.
+	(vec_cmp<mode><mode>): Set mode iterator to VEC_IC.
+	(vec_cmpu<mode><mode>): Likewise.
+	(vector_nlt<mode>): Set mode iterator to VEC_IC.
+	(vector_nltv1ti): Remove.
+	(vector_gtu<mode>): Set mode iterator to VEC_IC.
+	(vector_gtuv1ti): Remove.
+	(vector_nltu<mode>): Set mode iterator to VEC_IC.
+	(vector_nltuv1ti): Remove.
+	(vector_geu<mode>): Set mode iterator to VEC_IC.
+	(vector_ngt<mode>): Likewise.
+	(vector_ngtv1ti): Remove.
+	(vector_ngtu<mode>): Set mode iterator to VEC_IC.
+	(vector_ngtuv1ti): Remove.
+	(vector_gtu_<mode>_p): Set mode iterator to VEC_IC.
+	(vector_gtu_v1ti_p): Remove.
+	(vrotl<mode>3): Set mode iterator to VEC_IC.  Emit insns for V1TI.
+	(vrotlv1ti3): Remove.
+	(vashr<mode>3): Set mode iterator to VEC_IC.  Emit insns for V1TI.
+	(vashrv1ti3): Remove.
+
+2022-06-16  Martin Liska  <mliska@suse.cz>
+
+	* gengtype-state.cc (read_a_state_token): Do not skip extra
+	character after escaped sequence.
+
+2022-06-16  Martin Liska  <mliska@suse.cz>
+
+	PR driver/105564
+	* spellcheck.cc (test_find_closest_string): Add new test.
+	* spellcheck.h (class best_match): Prefer a difference in
+	trailing sign symbol.
+
+2022-06-16  liuhongt  <hongtao.liu@intel.com>
+
+	PR tree-optimization/53533
+	* match.pd: Simplify (B * v + C) * D -> BD * v + CD and
+	(v + B) * C + D -> C * v + BCD when B,C,D are all INTEGER_CST,
+	and there's no overflow or !TYPE_OVERFLOW_UNDEFINED.
+
 2022-06-15  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
 
 	* config/xtensa/xtensa.md (DSC): New split pattern and mode iterator.

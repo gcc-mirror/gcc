@@ -1,3 +1,26 @@
+2022-06-16  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-decl.cc (implicitly_declare): Add auto_diagnostic_group to
+	group the warning with any note.
+	(warn_about_goto): Likewise to group error or warning with note.
+	Bail out if the warning wasn't emitted, to avoid emitting orphan
+	notes.
+	(lookup_label_for_goto): Add auto_diagnostic_group to
+	group the error with the note.
+	(check_earlier_gotos): Likewise.
+	(c_check_switch_jump_warnings): Likewise for any error/warning.
+	Conditionalize emission of the notes.
+	(diagnose_uninitialized_cst_member): Likewise for warning,
+	conditionalizing emission of the note.
+	(grokdeclarator): Add auto_diagnostic_group to group the "array
+	type has incomplete element type" error with any note.
+	(parser_xref_tag): Add auto_diagnostic_group to group warnings
+	with their notes.  Conditionalize emission of notes.
+	(start_struct): Add auto_diagnostic_group to group the
+	"redefinition of" errors with any note.
+	(start_enum): Likewise for "redeclaration of %<enum %E%>" error.
+	(check_for_loop_decls): Likewise for pre-C99 error.
+
 2022-06-07  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-parser.cc (c_parser_omp_clause_linear): Parse OpenMP 5.2

@@ -1,3 +1,14 @@
+2022-06-16  Nathan Sidwell  <nathan@acm.org>
+
+	* decl2.cc (finish_objects): Add startp parameter, adjust.
+	(generate_ctor_or_dtor_function): Detect empty fn, and don't
+	generate unnecessary code.  Remove objc startup here ...
+	(c_parse_final_cleanyps): ... do it here.
+
+2022-06-16  Martin Liska  <mliska@suse.cz>
+
+	* decl2.cc (struct priority_map_traits): Remove unused param.
+
 2022-06-15  Nathan Sidwell  <nathan@acm.org>
 
 	* module.cc (module_state::write_readme): Use less confusing

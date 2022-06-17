@@ -1,3 +1,16 @@
+2022-06-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/105995
+	* include/bits/basic_string.h (_M_use_local_data): Initialize
+	the entire SSO buffer.
+	* testsuite/21_strings/basic_string/cons/char/105995.cc: New test.
+
+2022-06-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/101482
+	* include/ext/vstring.h (operator==): Always check lengths
+	before comparing.
+
 2022-06-15  François Dumont  <fdumont@gcc.gnu.org>
 
 	PR libstdc++/105717
