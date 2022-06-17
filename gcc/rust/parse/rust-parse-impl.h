@@ -2885,37 +2885,14 @@ Parser<ManagedTokenSource>::parse_generic_param (EndTokenPred is_end_token)
 	  {
 	    lexer.skip_token ();
 	    auto tok = lexer.peek_token ();
+	    auto default_expr = parse_const_generic_expression ();
 
-	    switch (tok->get_id ())
-	      {
-		case LEFT_CURLY: {
-		  auto block = parse_block_expr ();
-		  // pass block to `const_generic`
-		  break;
-		}
-		case IDENTIFIER: {
-		  auto ident = tok->get_str ();
-		  // pass identifier to `const_generic`
-		  break;
-		}
-	      case MINUS:
-	      case STRING_LITERAL:
-	      case CHAR_LITERAL:
-	      case INT_LITERAL:
-	      case FLOAT_LITERAL:
-	      case TRUE_LITERAL:
-		case FALSE_LITERAL: {
-		  auto literal = parse_literal_expr ();
-		  // pass literal to `const_generic`
-		  break;
-		}
-	      default:
-		rust_error_at (tok->get_locus (),
-			       "invalid token for start of default value for "
-			       "const generic parameter: expected %<block%>, "
-			       "%<identifier%> or %<literal%>, got %qs",
-			       token_id_to_str (tok->get_id ()));
-	      }
+	    if (!default_expr)
+	      rust_error_at (tok->get_locus (),
+			     "invalid token for start of default value for "
+			     "const generic parameter: expected %<block%>, "
+			     "%<identifier%> or %<literal%>, got %qs",
+			     token_id_to_str (tok->get_id ()));
 	  }
 
 	// param = std::unique_ptr<AST::GenericParam> (const_generic)
@@ -6182,6 +6159,39 @@ Parser<ManagedTokenSource>::parse_type_path ()
 			has_opening_scope_resolution);
 }
 
+template <typename ManagedTokenSource>
+std::unique_ptr<AST::Expr>
+Parser<ManagedTokenSource>::parse_const_generic_expression ()
+{
+  auto tok = lexer.peek_token ();
+  switch (tok->get_id ())
+    {
+    case LEFT_CURLY:
+      return parse_block_expr ();
+      case IDENTIFIER: {
+	lexer.skip_token ();
+
+	// TODO: This is ambiguous with regular generic types. We probably need
+	// to differentiate later on during type checking, and thus keep a
+	// special variant here
+
+	// return this
+	return std::unique_ptr<AST::IdentifierExpr> (
+	  new AST::IdentifierExpr (tok->get_str (), {}, tok->get_locus ()));
+      }
+    case MINUS:
+    case STRING_LITERAL:
+    case CHAR_LITERAL:
+    case INT_LITERAL:
+    case FLOAT_LITERAL:
+    case TRUE_LITERAL:
+    case FALSE_LITERAL:
+      return parse_literal_expr ();
+    default:
+      return nullptr;
+    }
+}
+
 // Parses the generic arguments in each path segment.
 template <typename ManagedTokenSource>
 AST::GenericArgs
@@ -6192,6 +6202,9 @@ Parser<ManagedTokenSource>::parse_path_generic_args ()
       // skip after somewhere?
       return AST::GenericArgs::create_empty ();
     }
+
+  // We need to parse all lifetimes, then parse types and const generics in
+  // any order.
 
   // try to parse lifetimes first
   std::vector<AST::Lifetime> lifetime_args;
@@ -6222,35 +6235,42 @@ Parser<ManagedTokenSource>::parse_path_generic_args ()
 
   // try to parse types second
   std::vector<std::unique_ptr<AST::Type>> type_args;
+  std::vector<std::unique_ptr<AST::Expr>> const_args;
+
+  // TODO: Keep list of const expressions as well
 
   // TODO: think of better control structure
   t = lexer.peek_token ();
   while (!is_right_angle_tok (t->get_id ()))
     {
+      // FIXME: Is it fine to break if there is one binding? Can't there be
+      // bindings in between types?
+
       // ensure not binding being parsed as type accidently
       if (t->get_id () == IDENTIFIER
 	  && lexer.peek_token (1)->get_id () == EQUAL)
-	{
-	  break;
-	}
+	break;
 
-      std::unique_ptr<AST::Type> type = parse_type ();
-      if (type == nullptr)
+      auto type = parse_type (false);
+      if (type)
 	{
-	  // not necessarily an error
-	  break;
+	  type_args.emplace_back (std::move (type));
 	}
-
-      type_args.push_back (std::move (type));
+      else
+	{
+	  auto const_generic_expr = parse_const_generic_expression ();
+	  if (const_generic_expr)
+	    const_args.emplace_back (std::move (const_generic_expr));
+	  else
+	    break;
+	}
 
       // if next token isn't comma, then it must be end of list
       if (lexer.peek_token ()->get_id () != COMMA)
-	{
-	  break;
-	}
+	break;
+
       // skip comma
       lexer.skip_token ();
-
       t = lexer.peek_token ();
     }
 
@@ -8982,7 +9002,7 @@ Parser<ManagedTokenSource>::parse_grouped_or_tuple_expr (
 // Parses a type (will further disambiguate any type).
 template <typename ManagedTokenSource>
 std::unique_ptr<AST::Type>
-Parser<ManagedTokenSource>::parse_type ()
+Parser<ManagedTokenSource>::parse_type (bool save_errors)
 {
   /* rules for all types:
    * NeverType:               '!'
@@ -9034,9 +9054,12 @@ Parser<ManagedTokenSource>::parse_type ()
 	AST::QualifiedPathInType path = parse_qualified_path_in_type ();
 	if (path.is_error ())
 	  {
-	    Error error (t->get_locus (),
-			 "failed to parse qualified path in type");
-	    add_error (std::move (error));
+	    if (save_errors)
+	      {
+		Error error (t->get_locus (),
+			     "failed to parse qualified path in type");
+		add_error (std::move (error));
+	      }
 
 	    return nullptr;
 	  }
@@ -9085,9 +9108,12 @@ Parser<ManagedTokenSource>::parse_type ()
 	AST::TypePath path = parse_type_path ();
 	if (path.is_error ())
 	  {
-	    Error error (t->get_locus (),
-			 "failed to parse path as first component of type");
-	    add_error (std::move (error));
+	    if (save_errors)
+	      {
+		Error error (t->get_locus (),
+			     "failed to parse path as first component of type");
+		add_error (std::move (error));
+	      }
 
 	    return nullptr;
 	  }
@@ -9103,10 +9129,13 @@ Parser<ManagedTokenSource>::parse_type ()
 	      AST::SimplePath macro_path = path.as_simple_path ();
 	      if (macro_path.is_empty ())
 		{
-		  Error error (t->get_locus (),
-			       "failed to parse simple path in macro "
-			       "invocation (for type)");
-		  add_error (std::move (error));
+		  if (save_errors)
+		    {
+		      Error error (t->get_locus (),
+				   "failed to parse simple path in macro "
+				   "invocation (for type)");
+		      add_error (std::move (error));
+		    }
 
 		  return nullptr;
 		}
@@ -9190,9 +9219,12 @@ Parser<ManagedTokenSource>::parse_type ()
 	  std::unique_ptr<AST::TraitBound> initial_bound = parse_trait_bound ();
 	  if (initial_bound == nullptr)
 	    {
-	      Error error (lexer.peek_token ()->get_locus (),
-			   "failed to parse ImplTraitType initial bound");
-	      add_error (std::move (error));
+	      if (save_errors)
+		{
+		  Error error (lexer.peek_token ()->get_locus (),
+			       "failed to parse ImplTraitType initial bound");
+		  add_error (std::move (error));
+		}
 
 	      return nullptr;
 	    }
@@ -9265,9 +9297,13 @@ Parser<ManagedTokenSource>::parse_type ()
 	      = parse_trait_bound ();
 	    if (initial_bound == nullptr)
 	      {
-		Error error (lexer.peek_token ()->get_locus (),
-			     "failed to parse TraitObjectType initial bound");
-		add_error (std::move (error));
+		if (save_errors)
+		  {
+		    Error error (
+		      lexer.peek_token ()->get_locus (),
+		      "failed to parse TraitObjectType initial bound");
+		    add_error (std::move (error));
+		  }
 
 		return nullptr;
 	      }
@@ -9313,8 +9349,9 @@ Parser<ManagedTokenSource>::parse_type ()
 	  }
       }
     default:
-      add_error (Error (t->get_locus (), "unrecognised token %qs in type",
-			t->get_token_description ()));
+      if (save_errors)
+	add_error (Error (t->get_locus (), "unrecognised token %qs in type",
+			  t->get_token_description ()));
 
       return nullptr;
     }

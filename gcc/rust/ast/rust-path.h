@@ -134,6 +134,8 @@ struct GenericArgs
   std::vector<Lifetime> lifetime_args;
   std::vector<std::unique_ptr<Type> > type_args;
   std::vector<GenericArgsBinding> binding_args;
+  // TODO: Handle const generics here as well.
+  // We can probably keep a vector of `Expr`s for this.
   Location locus;
 
 public:
