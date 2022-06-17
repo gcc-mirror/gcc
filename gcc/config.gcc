@@ -2472,6 +2472,9 @@ riscv*-*-linux*)
 riscv*-*-elf* | riscv*-*-rtems*)
 	tm_file="elfos.h newlib-stdint.h ${tm_file} riscv/elf.h"
 	case ${target} in
+	*-zephyr*)
+	  tmake_file="${tmake_file} riscv/t-zephyr"
+	  ;;
 	*-*-rtems*)
 	  tm_file="${tm_file} riscv/rtems.h rtems.h"
 	  tmake_file="${tmake_file} riscv/t-rtems"

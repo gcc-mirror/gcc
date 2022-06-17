@@ -1,0 +1,62 @@
+# Multilib target configurations
+MULTILIB_SRC_ARCH  = rv32im_zicsr_zifencei
+MULTILIB_SRC_ARCH += rv32imc_zicsr_zifencei
+MULTILIB_SRC_ARCH += rv32imac_zicsr_zifencei
+MULTILIB_SRC_ARCH += rv32imafc_zicsr_zifencei
+MULTILIB_SRC_ARCH += rv32imafd_zicsr_zifencei
+MULTILIB_SRC_ARCH += rv32imafdc_zicsr_zifencei
+MULTILIB_SRC_ARCH += rv32g
+MULTILIB_SRC_ARCH += rv32gc
+MULTILIB_SRC_ARCH += rv32em_zicsr_zifencei
+MULTILIB_SRC_ARCH += rv32ema_zicsr_zifencei
+MULTILIB_SRC_ARCH += rv32emc_zicsr_zifencei
+MULTILIB_SRC_ARCH += rv32emac_zicsr_zifencei
+MULTILIB_SRC_ARCH += rv64imac_zicsr_zifencei
+MULTILIB_SRC_ARCH += rv64imafdc_zicsr_zifencei
+MULTILIB_SRC_ARCH += rv64gc
+MULTILIB_SRC_ARCH += rv64imafd_zicsr_zifencei
+MULTILIB_SRC_ARCH += rv64g
+
+MULTILIB_SRC_ABI  = ilp32
+MULTILIB_SRC_ABI += ilp32f
+MULTILIB_SRC_ABI += ilp32d
+MULTILIB_SRC_ABI += ilp32e
+MULTILIB_SRC_ABI += lp64
+MULTILIB_SRC_ABI += lp64d
+
+MULTILIB_SRC_MCMODEL  = medany
+
+# Multilib build configurations
+MULTILIB_REQUIRED = \
+march=rv32im_zicsr_zifencei/mabi=ilp32 \
+march=rv32imac_zicsr_zifencei/mabi=ilp32 \
+march=rv32imafc_zicsr_zifencei/mabi=ilp32f \
+march=rv32imafd_zicsr_zifencei/mabi=ilp32d \
+march=rv32em_zicsr_zifencei/mabi=ilp32e \
+march=rv32emc_zicsr_zifencei/mabi=ilp32e \
+march=rv64imac_zicsr_zifencei/mabi=lp64 \
+march=rv64imafdc_zicsr_zifencei/mabi=lp64d \
+march=rv64imafd_zicsr_zifencei/mabi=lp64d \
+march=rv64imac_zicsr_zifencei/mabi=lp64/mcmodel=medany \
+march=rv64imafdc_zicsr_zifencei/mabi=lp64d/mcmodel=medany \
+march=rv64imafd_zicsr_zifencei/mabi=lp64d/mcmodel=medany
+
+# Multilib alternate mapping
+MULTILIB_REUSE = \
+march.rv32im_zicsr_zifencei/mabi.ilp32=march.rv32imc_zicsr_zifencei/mabi.ilp32 \
+march.rv32imafd_zicsr_zifencei/mabi.ilp32d=march.rv32imafdc_zicsr_zifencei/mabi.ilp32d \
+march.rv32imafd_zicsr_zifencei/mabi.ilp32d=march.rv32g/mabi.ilp32d \
+march.rv32imafd_zicsr_zifencei/mabi.ilp32d=march.rv32gc/mabi.ilp32d \
+march.rv32em_zicsr_zifencei/mabi.ilp32e=march.rv32ema_zicsr_zifencei/mabi.ilp32e \
+march.rv32emc_zicsr_zifencei/mabi.ilp32e=march.rv32emac_zicsr_zifencei/mabi.ilp32e \
+march.rv64imafdc_zicsr_zifencei/mabi.lp64d=march.rv64gc/mabi.lp64d \
+march.rv64imafd_zicsr_zifencei/mabi.lp64d=march.rv64g/mabi.lp64d
+
+# Automatically generate multilib options and directory names from the target configurations
+space := $(subst ,, )
+
+MULTILIB_OPTIONS  = $(subst $(space),/,$(patsubst %,march=%,$(MULTILIB_SRC_ARCH)))
+MULTILIB_OPTIONS += $(subst $(space),/,$(patsubst %,mabi=%,$(MULTILIB_SRC_ABI)))
+MULTILIB_OPTIONS += $(subst $(space),/,$(patsubst %,mcmodel=%,$(MULTILIB_SRC_MCMODEL)))
+
+MULTILIB_DIRNAMES = $(MULTILIB_SRC_ARCH) $(MULTILIB_SRC_ABI) $(MULTILIB_SRC_MCMODEL)
