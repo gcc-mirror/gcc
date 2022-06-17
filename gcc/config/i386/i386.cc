@@ -3348,7 +3348,7 @@ ix86_function_arg (cumulative_args_t cum_v, const function_arg_info &arg)
       if (POINTER_TYPE_P (arg.type))
 	{
 	  /* This is the pointer argument.  */
-	  gcc_assert (TYPE_MODE (arg.type) == Pmode);
+	  gcc_assert (TYPE_MODE (arg.type) == ptr_mode);
 	  /* It is at -WORD(AP) in the current frame in interrupt and
 	     exception handlers.  */
 	  reg = plus_constant (Pmode, arg_pointer_rtx, -UNITS_PER_WORD);
