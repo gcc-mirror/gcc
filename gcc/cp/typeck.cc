@@ -6344,7 +6344,7 @@ build_x_shufflevector (location_t loc, vec<tree, va_gc> *args,
   auto_vec<tree, 16> mask;
   for (unsigned i = 2; i < args->length (); ++i)
     {
-      tree idx = maybe_constant_value ((*args)[i]);
+      tree idx = fold_non_dependent_expr ((*args)[i], complain);
       mask.safe_push (idx);
     }
   tree exp = c_build_shufflevector (loc, arg0, arg1, mask, complain & tf_error);
